@@ -1,21 +1,25 @@
 public class GRYAstFunctionDeclaration: GRYAstDeclaration {
-	public var identifier: String
-	public var type: String!
-	public var access: String!
-	public var parameters = [GRYAstParameter]()
-	public var body: [GRYAstStatement]!
+	public let identifier: String
+	public let type: String
+	public let access: String
+	public let parameters: [GRYAstParameter]
+	public let body: [GRYAstStatement]
 	
 	internal init(parser: GRYSExpressionParser) {
-		self.identifier = parser.readDoubleQuotedString()
+		let identifier: String
+		var type: String?
+		var access: String?
+		var parameters = [GRYAstParameter]()
+		var body: [GRYAstStatement]?
 		
-		super.init()
+		identifier = parser.readDoubleQuotedString()
 		
 		while let attribute = parser.attemptToReadIdentifier(oneOf: ["interface type=", "access="]) {
 			switch attribute {
 			case "interface type=":
-				self.type = parser.readSingleQuotedString()
+				type = parser.readSingleQuotedString()
 			case "access=":
-				self.access = parser.readIdentifier()
+				access = parser.readIdentifier()
 			default: fatalError() // Exhaustive switch
 			}
 		}
@@ -25,19 +29,25 @@ public class GRYAstFunctionDeclaration: GRYAstDeclaration {
 			let itemName = parser.readIdentifier(oneOf: ["parameter_list", "brace_stmt"])
 			switch itemName {
 			case "parameter_list":
-				let parameters = readParameterList(withParser: parser)
-				self.parameters.append(contentsOf: parameters)
+				let parameterList = GRYAstFunctionDeclaration.readParameterList(withParser: parser)
+				parameters.append(contentsOf: parameterList)
 			case "brace_stmt":
 				assert(body == nil)
-				self.body = readStatementList(withParser: parser)
+				body = GRYAstFunctionDeclaration.readStatementList(withParser: parser)
 			default: fatalError() // Exhaustive switch
 			}
 		}
 		
-		assert(type != nil && access != nil && body != nil)
+		// Initialize
+		self.identifier = identifier
+		self.type = type!
+		self.access = access!
+		self.parameters = parameters
+		self.body = body!
+		super.init()
 	}
 	
-	private func readParameterList(withParser parser: GRYSExpressionParser) -> [GRYAstParameter] {
+	private static func readParameterList(withParser parser: GRYSExpressionParser) -> [GRYAstParameter] {
 		var result = [GRYAstParameter]()
 		
 		while parser.canReadOpenParentheses() {
@@ -52,13 +62,11 @@ public class GRYAstFunctionDeclaration: GRYAstDeclaration {
 		return result
 	}
 	
-	private func readStatementList(withParser parser: GRYSExpressionParser) -> [GRYAstStatement] {
+	private static func readStatementList(withParser parser: GRYSExpressionParser) -> [GRYAstStatement] {
 		var result = [GRYAstStatement]()
 		
 		while parser.canReadOpenParentheses() {
-			parser.readOpenParentheses()
-			parser.readIdentifier("brace_stmt")
-			let statement = GRYAstStatement(parser: parser)
+			let statement = GRYAstStatement.initialize(parser: parser)
 			result.append(statement)
 		}
 		
@@ -72,8 +80,8 @@ public class GRYAstFunctionDeclaration: GRYAstDeclaration {
 	public override var printableSubTrees: [GRYPrintableAsTree] {
 		return [
 			"Identifier: \(identifier)",
-			"Type: \(type!)",
-			"Access: \(access!)",
+			"Type: \(type)",
+			"Access: \(access)",
 			GRYPrintableTree(description: "Parameters", subTrees: parameters),
 			GRYPrintableTree(description: "Statements", subTrees: body)]
 	}

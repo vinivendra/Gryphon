@@ -16,6 +16,12 @@ internal class GRYSExpressionParser {
 		return contents.prefix(1) == ")"
 	}
 	
+	func canReadIdentifierOrString() -> Bool {
+		return canReadIdentifier() ||
+			canReadDoubleQuotedString() ||
+			canReadSingleQuotedString()
+	}
+	
 	func canReadIdentifier() -> Bool {
 		contents =~ "^\\s+" => ""
 		var matchIterator = contents =~ "^[^\\s\\)\\(\"']+"
@@ -35,6 +41,30 @@ internal class GRYSExpressionParser {
 	}
 	
 	//
+	func readUntilCloseParentheses() {
+		var parenthesesLevel = 1
+		var infiniteLoopStopper = 1_000
+		
+		while parenthesesLevel > 0 && infiniteLoopStopper > 0 {
+			defer { infiniteLoopStopper -= 1 }
+			
+			if canReadOpenParentheses() {
+				readOpenParentheses()
+				parenthesesLevel += 1
+			}
+			if canReadIdentifierOrString() {
+				_ = readIdentifierOrString()
+			}
+			if canReadCloseParentheses() {
+				readCloseParentheses()
+				parenthesesLevel -= 1
+			}
+		}
+		
+		let enteredInfiniteLoop = (infiniteLoopStopper == 0)
+		if enteredInfiniteLoop { fatalError("Parsing error") }
+	}
+	
 	func readOpenParentheses() {
 		contents =~ "^\\s+" => ""
 		

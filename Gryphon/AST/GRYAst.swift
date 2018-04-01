@@ -1,5 +1,5 @@
 public class GRYAst: GRYPrintableAsTree {
-	public var items = [GRYAstItem]()
+	public let items: [GRYAstItem]
 	
 	convenience public init(fileContents: String) {
 		let parser = GRYSExpressionParser(fileContents: fileContents)
@@ -7,6 +7,8 @@ public class GRYAst: GRYPrintableAsTree {
 	}
 	
 	internal init(parser: GRYSExpressionParser) {
+		var items = [GRYAstItem]()
+		
 		parser.readOpenParentheses()
 		parser.readIdentifier("source_file")
 		
@@ -21,6 +23,8 @@ public class GRYAst: GRYPrintableAsTree {
 			default: fatalError() // Exhaustive switch
 			}
 		}
+		
+		self.items = items
 	}
 	
 	//

@@ -1,14 +1,17 @@
 public class GRYAstParameter: GRYPrintableAsTree {
-	public var apiName: String
-	public var type: String!
+	public let apiName: String
+	public let type: String
 	
 	internal init(parser: GRYSExpressionParser) {
-		self.apiName = parser.readDoubleQuotedString()
+		let apiName: String
+		var type: String?
+		
+		apiName = parser.readDoubleQuotedString()
 		
 		while let attribute = parser.attemptToReadIdentifier(oneOf: ["apiName=", "type=", "interface type="]) {
 			switch attribute {
 			case "type=":
-				self.type = parser.readSingleQuotedString()
+				type = parser.readSingleQuotedString()
 			case "apiName=": parser.readIdentifier()
 			case "interface type=": parser.readSingleQuotedString()
 			default: fatalError() // Exhaustive switch
@@ -16,11 +19,14 @@ public class GRYAstParameter: GRYPrintableAsTree {
 		}
 		
 		parser.readCloseParentheses()
+		
+		self.apiName = apiName
+		self.type = type!
 	}
 	
 	//
 	public var treeDescription: String { return "Parameter" }
 	public var printableSubTrees: [GRYPrintableAsTree] {
-		return ["API Name: \(apiName)", "Type: \(type!)"]
+		return ["API Name: \(apiName)", "Type: \(type)"]
 	}
 }
