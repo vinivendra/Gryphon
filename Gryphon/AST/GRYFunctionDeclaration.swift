@@ -3,6 +3,7 @@ public class GRYAstFunctionDeclaration: GRYAstDeclaration {
 	public var type: String!
 	public var access: String!
 	public var parameters = [GRYAstParameter]()
+	public var body: [GRYAstStatement]!
 	
 	internal init(parser: GRYSExpressionParser) {
 		self.identifier = parser.readDoubleQuotedString()
@@ -26,10 +27,14 @@ public class GRYAstFunctionDeclaration: GRYAstDeclaration {
 			case "parameter_list":
 				let parameters = readParameterList(withParser: parser)
 				self.parameters.append(contentsOf: parameters)
-			case "brace_stmt": break
+			case "brace_stmt":
+				assert(body == nil)
+				self.body = readStatementList(withParser: parser)
 			default: fatalError() // Exhaustive switch
 			}
 		}
+		
+		assert(type != nil && access != nil && body != nil)
 	}
 	
 	private func readParameterList(withParser parser: GRYSExpressionParser) -> [GRYAstParameter] {
@@ -42,6 +47,23 @@ public class GRYAstFunctionDeclaration: GRYAstDeclaration {
 			result.append(parameter)
 		}
 		
+		parser.readCloseParentheses()
+		
+		return result
+	}
+	
+	private func readStatementList(withParser parser: GRYSExpressionParser) -> [GRYAstStatement] {
+		var result = [GRYAstStatement]()
+		
+		while parser.canReadOpenParentheses() {
+			parser.readOpenParentheses()
+			parser.readIdentifier("brace_stmt")
+			let statement = GRYAstStatement(parser: parser)
+			result.append(statement)
+		}
+		
+		parser.readCloseParentheses()
+		
 		return result
 	}
 	
@@ -52,6 +74,7 @@ public class GRYAstFunctionDeclaration: GRYAstDeclaration {
 			"Identifier: \(identifier)",
 			"Type: \(type!)",
 			"Access: \(access!)",
-			GRYPrintableTree(description: "Parameters", subTrees: parameters)]
+			GRYPrintableTree(description: "Parameters", subTrees: parameters),
+			GRYPrintableTree(description: "Statements", subTrees: body)]
 	}
 }

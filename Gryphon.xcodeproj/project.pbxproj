@@ -13,6 +13,7 @@
 		24AB5ADA20712ABF00AFC71A /* GRYAstDeclaration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AB5AD920712ABF00AFC71A /* GRYAstDeclaration.swift */; };
 		24AB5ADC20712ADF00AFC71A /* GRYFunctionDeclaration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AB5ADB20712ADF00AFC71A /* GRYFunctionDeclaration.swift */; };
 		24AB5ADE20712AF400AFC71A /* GRYAstParameter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AB5ADD20712AF400AFC71A /* GRYAstParameter.swift */; };
+		24AB5AE020712B5400AFC71A /* GRYAstStatement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AB5ADF20712B5400AFC71A /* GRYAstStatement.swift */; };
 		24F36D0C206C2E27008078F5 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24F36D0B206C2E27008078F5 /* main.swift */; };
 		24F36D13206C2E9C008078F5 /* GRYRegex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24F36D12206C2E9C008078F5 /* GRYRegex.swift */; };
 		24F36D15206C2EA4008078F5 /* GRYPrintableAsTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24F36D14206C2EA4008078F5 /* GRYPrintableAsTree.swift */; };
@@ -39,6 +40,7 @@
 		24AB5AD920712ABF00AFC71A /* GRYAstDeclaration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRYAstDeclaration.swift; sourceTree = "<group>"; };
 		24AB5ADB20712ADF00AFC71A /* GRYFunctionDeclaration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRYFunctionDeclaration.swift; sourceTree = "<group>"; };
 		24AB5ADD20712AF400AFC71A /* GRYAstParameter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRYAstParameter.swift; sourceTree = "<group>"; };
+		24AB5ADF20712B5400AFC71A /* GRYAstStatement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRYAstStatement.swift; sourceTree = "<group>"; };
 		24F36D08206C2E27008078F5 /* Gryphon */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Gryphon; sourceTree = BUILT_PRODUCTS_DIR; };
 		24F36D0B206C2E27008078F5 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		24F36D12206C2E9C008078F5 /* GRYRegex.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GRYRegex.swift; sourceTree = "<group>"; };
@@ -63,6 +65,7 @@
 			children = (
 				24AB5AD520712A9A00AFC71A /* GRYAst.swift */,
 				24AB5AD720712AB700AFC71A /* GRYAstItem.swift */,
+				24AB5ADF20712B5400AFC71A /* GRYAstStatement.swift */,
 				24AB5AD920712ABF00AFC71A /* GRYAstDeclaration.swift */,
 				24AB5ADB20712ADF00AFC71A /* GRYFunctionDeclaration.swift */,
 				24AB5ADD20712AF400AFC71A /* GRYAstParameter.swift */,
@@ -164,6 +167,7 @@
 				24AB5ADA20712ABF00AFC71A /* GRYAstDeclaration.swift in Sources */,
 				24AB5AD620712A9A00AFC71A /* GRYAst.swift in Sources */,
 				24F36D0C206C2E27008078F5 /* main.swift in Sources */,
+				24AB5AE020712B5400AFC71A /* GRYAstStatement.swift in Sources */,
 				24F36D15206C2EA4008078F5 /* GRYPrintableAsTree.swift in Sources */,
 				24F36D13206C2E9C008078F5 /* GRYRegex.swift in Sources */,
 				24F36D1B206C3240008078F5 /* GRYUtils.swift in Sources */,
