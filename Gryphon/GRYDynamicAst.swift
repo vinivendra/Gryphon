@@ -1,16 +1,21 @@
-class DynamicAST: SExpressionParseable {
-    var name = ""
-    var attributes = ""
-    var subTrees = [DynamicAST]()
+class GRYDynamicAst {
+    public var name = ""
+    public var attributes = ""
+    public var subTrees = [GRYDynamicAst]()
 	
-	required init(parser: SExpressionParser) {
+	convenience public init(fileContents: String) {
+		let parser = GRYSExpressionParser(fileContents: fileContents)
+		self.init(parser: parser)
+	}
+	
+	internal init(parser: GRYSExpressionParser) {
 		parser.readOpenParentheses()
 		self.name = parser.readIdentifier()
 		
 		for _ in 0..<1_000 { // To avoid infinite loops
 			
 			if parser.canReadOpenParentheses() {
-				let subTree = DynamicAST(parser: parser)
+				let subTree = GRYDynamicAst(parser: parser)
 				subTrees.append(subTree)
 			}
 			else if parser.canReadCloseParentheses() {
@@ -28,7 +33,7 @@ class DynamicAST: SExpressionParseable {
 	}
 }
 
-extension DynamicAST: PrintableAsTree {
+extension GRYDynamicAst: GRYPrintableAsTree {
     private func improveNameDescription(_ name: String) -> String {
         // Separate snake case and capitalize
         var nameComponents = name.split(separator: "_").map { $0.capitalized }
@@ -51,7 +56,7 @@ extension DynamicAST: PrintableAsTree {
         return nameComponents.joined(separator: " ")
     }
     
-    var treeDescription: String {
+    public var treeDescription: String {
 		let improvedName = improveNameDescription(name)
 		
 		if attributes.isEmpty {
@@ -62,7 +67,5 @@ extension DynamicAST: PrintableAsTree {
 		}
     }
     
-    var printableSubTrees: [PrintableAsTree] {
-        return subTrees
-    }
+    public var printableSubTrees: [GRYPrintableAsTree] { return subTrees }
 }

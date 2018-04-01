@@ -13,11 +13,11 @@ var contents = """
 
 func main() {
 	print("-- Swift AST --")
-	let root = DynamicAST(fileContents: contents)
+	let root = GRYDynamicAst(fileContents: contents)
 	root.prettyPrint()
 	
 	print("\n-- Gryphon AST --")
-	let ast = SourceFile(fileContents: contents)
+	let ast = GRYAst(fileContents: contents)
 	ast.prettyPrint()
 	
 	print()

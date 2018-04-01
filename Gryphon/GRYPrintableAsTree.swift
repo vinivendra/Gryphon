@@ -1,34 +1,27 @@
-class PrintableTree: PrintableAsTree {
-    var treeDescription: String
-    var printableSubTrees = [PrintableAsTree]()
-    
-    var parent: PrintableTree?
+public class GRYPrintableTree: GRYPrintableAsTree {
+    public var treeDescription: String
+    public var printableSubTrees = [GRYPrintableAsTree]()
     
     init(description: String) {
         self.treeDescription = description
     }
 	
-	init(description: String, subTrees: [PrintableAsTree]) {
+	init(description: String, subTrees: [GRYPrintableAsTree]) {
 		self.treeDescription = description
 		self.printableSubTrees = subTrees
 	}
     
-    func addChild(_ child: PrintableTree) {
+    func addChild(_ child: GRYPrintableTree) {
         printableSubTrees.append(child)
-        child.parent = self
-    }
-    
-    func addSibling(_ sibling: PrintableTree) {
-        parent!.addChild(sibling)
     }
 }
 
-protocol PrintableAsTree {
+public protocol GRYPrintableAsTree {
     var treeDescription: String { get }
-    var printableSubTrees: [PrintableAsTree] { get }
+    var printableSubTrees: [GRYPrintableAsTree] { get }
 }
 
-extension PrintableAsTree {
+public extension GRYPrintableAsTree {
     func prettyPrint(indentation: [String] = [], isLast: Bool = true) {
         var indentation = indentation
         
@@ -66,12 +59,12 @@ extension PrintableAsTree {
 
 // MARK: Common Types
 
-extension String: PrintableAsTree {
-	var treeDescription: String { return self }
-	var printableSubTrees: [PrintableAsTree] { return [] }
+extension String: GRYPrintableAsTree {
+	public var treeDescription: String { return self }
+	public var printableSubTrees: [GRYPrintableAsTree] { return [] }
 }
 
-extension Array: PrintableAsTree where Element: PrintableAsTree {
-	var treeDescription: String { return "Array" }
-	var printableSubTrees: [PrintableAsTree] { return self }
+extension Array: GRYPrintableAsTree where Element: GRYPrintableAsTree {
+	public var treeDescription: String { return "Array" }
+	public var printableSubTrees: [GRYPrintableAsTree] { return self }
 }

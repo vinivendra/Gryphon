@@ -1,15 +1,4 @@
-protocol SExpressionParseable {
-	init(parser: SExpressionParser)
-}
-
-extension SExpressionParseable {
-	init(fileContents: String) {
-		let parser = SExpressionParser(fileContents: fileContents)
-		self.init(parser: parser)
-	}
-}
-
-class SExpressionParser {
+internal class GRYSExpressionParser {
 	var contents: String
 	var parenthesesLevel: Int = 0
 	
@@ -54,7 +43,7 @@ class SExpressionParser {
 		contents.removeFirst()
 		parenthesesLevel += 1
 
-		parserLog?("-- Open parenthesis: level \(parenthesesLevel)")
+		gryParserLog?("-- Open parenthesis: level \(parenthesesLevel)")
 	}
 	
 	func readCloseParentheses() {
@@ -65,7 +54,7 @@ class SExpressionParser {
 		contents.removeFirst()
 		parenthesesLevel -= 1
 		
-		parserLog?("-- Close parenthesis: level \(parenthesesLevel)")
+		gryParserLog?("-- Close parenthesis: level \(parenthesesLevel)")
 	}
 	
 	func readIdentifierOrString() -> String {
@@ -90,7 +79,7 @@ class SExpressionParser {
 		var matchIterator = contents =~ "^[^\\s\\)\\(\"']+"
 		guard let match = matchIterator.next() else { fatalError("Parsing error") }
 		let matchedString = match.matchedString
-		parserLog?("-- Read some string: \"\(matchedString)\"")
+		gryParserLog?("-- Read some string: \"\(matchedString)\"")
 		contents.removeFirst(matchedString.count)
 		return matchedString
 	}
@@ -102,7 +91,7 @@ class SExpressionParser {
 		
 		contents.removeFirst(string.count)
 		
-		parserLog?("-- Read string \(string)")
+		gryParserLog?("-- Read string \(string)")
 	}
 	
 	func readIdentifier(oneOf strings: [String]) -> String {
@@ -116,7 +105,7 @@ class SExpressionParser {
 		for string in strings {
 			if contents.hasPrefix(string) {
 				contents.removeFirst(string.count)
-				parserLog?("-- Read from array \(string)")
+				gryParserLog?("-- Read from array \(string)")
 				return string
 			}
 		}
@@ -129,7 +118,7 @@ class SExpressionParser {
 		var matchIterator = contents =~ "^\"[^\"]+\""
 		guard let match = matchIterator.next() else { fatalError("Parsing error") }
 		let matchedString = match.matchedString
-		parserLog?("-- String: \"\(matchedString)\"")
+		gryParserLog?("-- String: \"\(matchedString)\"")
 		contents.removeFirst(matchedString.count)
 		let result = matchedString.dropFirst().dropLast()
 		return String(result)
@@ -141,7 +130,7 @@ class SExpressionParser {
 		var matchIterator = contents =~ "^'[^']+'"
 		guard let match = matchIterator.next() else { fatalError("Parsing error") }
 		let matchedString = match.matchedString
-		parserLog?("-- String: \"\(matchedString)\"")
+		gryParserLog?("-- String: \"\(matchedString)\"")
 		contents.removeFirst(matchedString.count)
 		let result = matchedString.dropFirst().dropLast()
 		return String(result)

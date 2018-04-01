@@ -5,7 +5,7 @@
 #endif
 
 //
-let shouldLogParser = false
+private let gryShouldLogParser = false
 
 //
-let parserLog = shouldLogParser ? log : nil
+let gryParserLog = gryShouldLogParser ? log : nil

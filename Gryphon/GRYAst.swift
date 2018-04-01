@@ -1,7 +1,12 @@
-class SourceFile: PrintableAsTree, SExpressionParseable {
-	var items = [Item]()
+public class GRYAst: GRYPrintableAsTree {
+	public var items = [GRYAstItem]()
+
+	convenience public init(fileContents: String) {
+		let parser = GRYSExpressionParser(fileContents: fileContents)
+		self.init(parser: parser)
+	}
 	
-	required init(parser: SExpressionParser) {
+	internal init(parser: GRYSExpressionParser) {
 		parser.readOpenParentheses()
 		parser.readIdentifier("source_file")
 		
@@ -11,7 +16,7 @@ class SourceFile: PrintableAsTree, SExpressionParseable {
 			
 			switch itemName {
 			case "func_decl":
-				let functionDeclaration = FunctionDeclaration(parser: parser)
+				let functionDeclaration = GRYAstFunctionDeclaration(parser: parser)
 				items.append(functionDeclaration)
 			default: fatalError() // Exhaustive switch
 			}
@@ -19,24 +24,24 @@ class SourceFile: PrintableAsTree, SExpressionParseable {
 	}
 	
 	//
-	var treeDescription = "Source File"
-	var printableSubTrees: [PrintableAsTree] { return items }
+	public private(set) var treeDescription = "Source File"
+	public var printableSubTrees: [GRYPrintableAsTree] { return items }
 }
 
-class Item: PrintableAsTree {
-	private(set) var treeDescription = "<Item>"
-	private(set) var printableSubTrees = [PrintableAsTree]()
+public class GRYAstItem: GRYPrintableAsTree {
+	public private(set) var treeDescription = "<Item>"
+	public private(set) var printableSubTrees = [GRYPrintableAsTree]()
 }
 
-class Declaration: Item { }
+public class GRYAstDeclaration: GRYAstItem { }
 
-class FunctionDeclaration: Declaration {
-	var identifier: String
-	var type: String!
-	var access: String!
-	var parameters = [Parameter]()
+public class GRYAstFunctionDeclaration: GRYAstDeclaration {
+	public var identifier: String
+	public var type: String!
+	public var access: String!
+	public var parameters = [GRYAstParameter]()
 	
-	init(parser: SExpressionParser) {
+	internal init(parser: GRYSExpressionParser) {
 		self.identifier = parser.readDoubleQuotedString()
 		
 		super.init()
@@ -64,13 +69,13 @@ class FunctionDeclaration: Declaration {
 		}
 	}
 	
-	func readParameterList(withParser parser: SExpressionParser) -> [Parameter] {
-		var result = [Parameter]()
+	private func readParameterList(withParser parser: GRYSExpressionParser) -> [GRYAstParameter] {
+		var result = [GRYAstParameter]()
 		
 		while parser.canReadOpenParentheses() {
 			parser.readOpenParentheses()
 			parser.readIdentifier("parameter")
-			let parameter = Parameter(parser: parser)
+			let parameter = GRYAstParameter(parser: parser)
 			result.append(parameter)
 		}
 		
@@ -78,21 +83,21 @@ class FunctionDeclaration: Declaration {
 	}
 	
 	//
-	override var treeDescription: String { return "Function Declaration" }
-	override var printableSubTrees: [PrintableAsTree] {
+	public override var treeDescription: String { return "Function Declaration" }
+	public override var printableSubTrees: [GRYPrintableAsTree] {
 		return [
 			"Identifier: \(identifier)",
 			"Type: \(type!)",
 			"Access: \(access!)",
-			PrintableTree(description: "Parameters", subTrees: parameters)]
+			GRYPrintableTree(description: "Parameters", subTrees: parameters)]
 	}
 }
 
-class Parameter: PrintableAsTree {
-	var apiName: String
-	var type: String!
+public class GRYAstParameter: GRYPrintableAsTree {
+	public var apiName: String
+	public var type: String!
 	
-	init(parser: SExpressionParser) {
+	internal init(parser: GRYSExpressionParser) {
 		self.apiName = parser.readDoubleQuotedString()
 		
 		while let attribute = parser.attemptToReadIdentifier(oneOf: ["apiName=", "type=", "interface type="]) {
@@ -109,8 +114,8 @@ class Parameter: PrintableAsTree {
 	}
 	
 	//
-	var treeDescription: String { return "Parameter" }
-	var printableSubTrees: [PrintableAsTree] {
+	public var treeDescription: String { return "Parameter" }
+	public var printableSubTrees: [GRYPrintableAsTree] {
 		return ["API Name: \(apiName)", "Type: \(type!)"]
 	}
 }
