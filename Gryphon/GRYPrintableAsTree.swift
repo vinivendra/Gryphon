@@ -42,7 +42,7 @@ public extension GRYPrintableAsTree {
             }
         }
         
-        print(treeDescription)
+        print(" " + treeDescription)
         
         for subTree in printableSubTrees.dropLast() {
             var newIndentation = indentation

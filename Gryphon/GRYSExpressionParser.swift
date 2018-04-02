@@ -2,6 +2,8 @@ internal class GRYSExpressionParser {
 	var contents: String
 	var parenthesesLevel: Int = 0
 	
+	static let knownComposedKeys = ["interface type="]
+	
 	init(fileContents contents: String) {
 		self.contents = contents
 	}
@@ -19,7 +21,23 @@ internal class GRYSExpressionParser {
 	func canReadIdentifierOrString() -> Bool {
 		return canReadIdentifier() ||
 			canReadDoubleQuotedString() ||
-			canReadSingleQuotedString()
+			canReadSingleQuotedString() ||
+			canReadStringInBrackets()
+	}
+	
+	func canReadKey() -> Bool {
+		contents =~ "^\\s+" => ""
+		
+		// Try finding known composed keys before trying for any non-composed keys
+		for composedKey in GRYSExpressionParser.knownComposedKeys {
+			if contents.hasPrefix(composedKey) {
+				return true
+			}
+		}
+		
+		// If no known composed keys were found
+		var matchIterator = contents =~ "^[^\\s\\)\\(\"'=]+="
+		return matchIterator.next() != nil
 	}
 	
 	func canReadIdentifier() -> Bool {
@@ -37,6 +55,12 @@ internal class GRYSExpressionParser {
 	func canReadSingleQuotedString() -> Bool {
 		contents =~ "^\\s+" => ""
 		var matchIterator = contents =~ "^'[^']+'"
+		return matchIterator.next() != nil
+	}
+	
+	func canReadStringInBrackets() -> Bool {
+		contents =~ "^\\s+" => ""
+		var matchIterator = contents =~ "^\\[[^\\]]+\\]"
 		return matchIterator.next() != nil
 	}
 	
@@ -93,11 +117,11 @@ internal class GRYSExpressionParser {
 		}
 		else if canReadDoubleQuotedString() {
 			let string = readDoubleQuotedString()
-			return "\"\(string)\""
+			return "\(string)"
 		}
 		else if canReadSingleQuotedString() {
 			let string = readSingleQuotedString()
-			return "'\(string)'"
+			return "\(string)"
 		}
 		
 		fatalError("Parsing error")
@@ -106,12 +130,55 @@ internal class GRYSExpressionParser {
 	@discardableResult
 	func readIdentifier() -> String {
 		contents =~ "^\\s+" => ""
-		var matchIterator = contents =~ "^[^\\s\\)\\(\"']+"
+		
+		var result = ""
+		
+		var parenthesesLevel = 0
+		loop: for character in contents {
+			switch character {
+			case "(":
+				parenthesesLevel += 1
+				result.append(character)
+			case ")":
+				parenthesesLevel -= 1
+				if parenthesesLevel < 0 {
+					break loop
+				}
+				else {
+					result.append(character)
+				}
+			case " ", "\n", "\"", "'": break loop
+			default:
+				result.append(character)
+			}
+		}
+
+		gryParserLog?("-- Read identifier: \"\(result)\"")
+		contents.removeFirst(result.count)
+		return result
+	}
+
+	func readKey() -> String {
+		contents =~ "^\\s+" => ""
+		
+		// Try finding known composed keys before trying for any non-composed keys
+		for composedKey in GRYSExpressionParser.knownComposedKeys {
+			if contents.hasPrefix(composedKey) {
+				gryParserLog?("-- Read composed key: \"\(composedKey)\"")
+				contents.removeFirst(composedKey.count)
+				let result = composedKey.dropLast()
+				return String(result)
+			}
+		}
+		
+		// If no known composed keys were found
+		var matchIterator = contents =~ "^[^\\s\\)\\(\"'=]+="
 		guard let match = matchIterator.next() else { fatalError("Parsing error") }
 		let matchedString = match.matchedString
-		gryParserLog?("-- Read some string: \"\(matchedString)\"")
+		gryParserLog?("-- Read key: \"\(matchedString)\"")
 		contents.removeFirst(matchedString.count)
-		return matchedString
+		let result = matchedString.dropLast()
+		return String(result)
 	}
 	
 	func readIdentifier(_ string: String) {
@@ -158,6 +225,18 @@ internal class GRYSExpressionParser {
 	func readSingleQuotedString() -> String {
 		contents =~ "^\\s+" => ""
 		var matchIterator = contents =~ "^'[^']+'"
+		guard let match = matchIterator.next() else { fatalError("Parsing error") }
+		let matchedString = match.matchedString
+		gryParserLog?("-- String: \"\(matchedString)\"")
+		contents.removeFirst(matchedString.count)
+		let result = matchedString.dropFirst().dropLast()
+		return String(result)
+	}
+	
+	@discardableResult
+	func readStringInBrackets() -> String {
+		contents =~ "^\\s+" => ""
+		var matchIterator = contents =~ "^\\[[^\\]]+\\]"
 		guard let match = matchIterator.next() else { fatalError("Parsing error") }
 		let matchedString = match.matchedString
 		gryParserLog?("-- String: \"\(matchedString)\"")

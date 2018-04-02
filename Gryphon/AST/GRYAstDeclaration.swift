@@ -1,1 +1,1 @@
-public class GRYAstDeclaration: GRYAstItem { }
+//public class GRYAstDeclaration: GRYAstItem { }
