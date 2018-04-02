@@ -1,4 +1,3 @@
-// TODO: Automatically calculate -dump-ast from terminal output
 // TODO: Move test.swift into the project directory, change absolute paths to be relative, change the project's location
 
 func main() {
