@@ -2,7 +2,7 @@ import Foundation
 
 internal enum Shell {
 	@discardableResult
-	static func runShellCommand(_ command: String) -> (output: String, error: String, status: Int32) {
+	static func runShellCommand(_ command: String) -> (standardOutput: String, standardError: String, status: Int32) {
 		let arguments = command.components(separatedBy: " ")
 		let outputPipe = Pipe()
 		let errorPipe = Pipe()
@@ -20,8 +20,8 @@ internal enum Shell {
 		let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
 		let errorString = String(data: errorData, encoding: .utf8) ?? ""
 		
-		return (output: outputString,
-				error: errorString,
+		return (standardOutput: outputString,
+				standardError: errorString,
 				status: task.terminationStatus)
 	}
 	
