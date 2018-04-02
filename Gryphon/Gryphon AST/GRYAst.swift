@@ -1,5 +1,5 @@
 // TODO: Test with more complex examples (at least one with a bracketed expression, as in (I think) location and range)
-// TODO: Clean SExpressionParser and old GRYAst
+// TODO: Clean SExpressionParser and old GRYAst (and Dynamic AST too)
 
 
 public class GRYAst: GRYPrintableAsTree {
