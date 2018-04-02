@@ -112,16 +112,20 @@ internal class GRYSExpressionParser {
 	}
 	
 	func readIdentifierOrString() -> String {
-		if canReadIdentifier() {
-			return readIdentifier()
-		}
-		else if canReadDoubleQuotedString() {
+		if canReadDoubleQuotedString() {
 			let string = readDoubleQuotedString()
 			return "\(string)"
 		}
 		else if canReadSingleQuotedString() {
 			let string = readSingleQuotedString()
 			return "\(string)"
+		}
+		else if canReadStringInBrackets() {
+			let string = readStringInBrackets()
+			return "\(string)"
+		}
+		else if canReadIdentifier() {
+			return readIdentifier()
 		}
 		
 		fatalError("Parsing error")
