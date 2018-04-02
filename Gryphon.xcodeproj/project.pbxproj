@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		249333252072C95C00FA8408 /* GRYShell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 249333242072C95C00FA8408 /* GRYShell.swift */; };
 		24952737206EEB2E0055E686 /* GRYSExpressionParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24952736206EEB2E0055E686 /* GRYSExpressionParser.swift */; };
 		24ADB5932072C60A00111193 /* GRYAst.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24ADB5922072C60A00111193 /* GRYAst.swift */; };
 		24F36D0C206C2E27008078F5 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24F36D0B206C2E27008078F5 /* main.swift */; };
@@ -28,6 +29,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		249333242072C95C00FA8408 /* GRYShell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRYShell.swift; sourceTree = "<group>"; };
 		24952736206EEB2E0055E686 /* GRYSExpressionParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRYSExpressionParser.swift; sourceTree = "<group>"; };
 		24ADB5922072C60A00111193 /* GRYAst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GRYAst.swift; sourceTree = "<group>"; };
 		24F36D08206C2E27008078F5 /* Gryphon */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Gryphon; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -71,8 +73,9 @@
 				24ADB5922072C60A00111193 /* GRYAst.swift */,
 				24952736206EEB2E0055E686 /* GRYSExpressionParser.swift */,
 				24F36D14206C2EA4008078F5 /* GRYPrintableAsTree.swift */,
-				24F36D12206C2E9C008078F5 /* GRYRegex.swift */,
 				24F36D1A206C3240008078F5 /* GRYUtils.swift */,
+				24F36D12206C2E9C008078F5 /* GRYRegex.swift */,
+				249333242072C95C00FA8408 /* GRYShell.swift */,
 			);
 			path = Gryphon;
 			sourceTree = "<group>";
@@ -139,6 +142,7 @@
 				24F36D13206C2E9C008078F5 /* GRYRegex.swift in Sources */,
 				24ADB5932072C60A00111193 /* GRYAst.swift in Sources */,
 				24F36D1B206C3240008078F5 /* GRYUtils.swift in Sources */,
+				249333252072C95C00FA8408 /* GRYShell.swift in Sources */,
 				24952737206EEB2E0055E686 /* GRYSExpressionParser.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
