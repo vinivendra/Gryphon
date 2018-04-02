@@ -1,5 +1,3 @@
-// TODO: Move test.swift into the project directory, change absolute paths to be relative, change the project's location
-
 import Darwin
 
 func main() {
