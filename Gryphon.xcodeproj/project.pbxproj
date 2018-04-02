@@ -7,12 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		24374FB22072A8850066D341 /* GRYAst.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24374FB12072A8850066D341 /* GRYAst.swift */; };
 		24952737206EEB2E0055E686 /* GRYSExpressionParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24952736206EEB2E0055E686 /* GRYSExpressionParser.swift */; };
+		24ADB5932072C60A00111193 /* GRYAst.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24ADB5922072C60A00111193 /* GRYAst.swift */; };
 		24F36D0C206C2E27008078F5 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24F36D0B206C2E27008078F5 /* main.swift */; };
 		24F36D13206C2E9C008078F5 /* GRYRegex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24F36D12206C2E9C008078F5 /* GRYRegex.swift */; };
 		24F36D15206C2EA4008078F5 /* GRYPrintableAsTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24F36D14206C2EA4008078F5 /* GRYPrintableAsTree.swift */; };
-		24F36D17206C2F1E008078F5 /* GRYDynamicAst.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24F36D16206C2F1E008078F5 /* GRYDynamicAst.swift */; };
 		24F36D1B206C3240008078F5 /* GRYUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24F36D1A206C3240008078F5 /* GRYUtils.swift */; };
 /* End PBXBuildFile section */
 
@@ -29,13 +28,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		24374FB12072A8850066D341 /* GRYAst.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRYAst.swift; sourceTree = "<group>"; };
 		24952736206EEB2E0055E686 /* GRYSExpressionParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRYSExpressionParser.swift; sourceTree = "<group>"; };
+		24ADB5922072C60A00111193 /* GRYAst.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GRYAst.swift; sourceTree = "<group>"; };
 		24F36D08206C2E27008078F5 /* Gryphon */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Gryphon; sourceTree = BUILT_PRODUCTS_DIR; };
 		24F36D0B206C2E27008078F5 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		24F36D12206C2E9C008078F5 /* GRYRegex.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GRYRegex.swift; sourceTree = "<group>"; };
 		24F36D14206C2EA4008078F5 /* GRYPrintableAsTree.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GRYPrintableAsTree.swift; sourceTree = "<group>"; };
-		24F36D16206C2F1E008078F5 /* GRYDynamicAst.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRYDynamicAst.swift; sourceTree = "<group>"; };
 		24F36D1A206C3240008078F5 /* GRYUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRYUtils.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -50,14 +48,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		24374FB02072A8710066D341 /* Gryphon AST */ = {
-			isa = PBXGroup;
-			children = (
-				24374FB12072A8850066D341 /* GRYAst.swift */,
-			);
-			path = "Gryphon AST";
-			sourceTree = "<group>";
-		};
 		24F36CFF206C2E26008078F5 = {
 			isa = PBXGroup;
 			children = (
@@ -78,8 +68,7 @@
 			isa = PBXGroup;
 			children = (
 				24F36D0B206C2E27008078F5 /* main.swift */,
-				24374FB02072A8710066D341 /* Gryphon AST */,
-				24F36D16206C2F1E008078F5 /* GRYDynamicAst.swift */,
+				24ADB5922072C60A00111193 /* GRYAst.swift */,
 				24952736206EEB2E0055E686 /* GRYSExpressionParser.swift */,
 				24F36D14206C2EA4008078F5 /* GRYPrintableAsTree.swift */,
 				24F36D12206C2E9C008078F5 /* GRYRegex.swift */,
@@ -145,11 +134,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				24F36D17206C2F1E008078F5 /* GRYDynamicAst.swift in Sources */,
 				24F36D0C206C2E27008078F5 /* main.swift in Sources */,
 				24F36D15206C2EA4008078F5 /* GRYPrintableAsTree.swift in Sources */,
-				24374FB22072A8850066D341 /* GRYAst.swift in Sources */,
 				24F36D13206C2E9C008078F5 /* GRYRegex.swift in Sources */,
+				24ADB5932072C60A00111193 /* GRYAst.swift in Sources */,
 				24F36D1B206C3240008078F5 /* GRYUtils.swift in Sources */,
 				24952737206EEB2E0055E686 /* GRYSExpressionParser.swift in Sources */,
 			);

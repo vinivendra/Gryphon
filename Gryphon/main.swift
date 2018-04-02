@@ -1,4 +1,3 @@
-// TODO: Clean SExpressionParser and old GRYAst (and Dynamic AST too)
 // TODO: Automatically calculate -dump-ast from terminal output
 // TODO: Move test.swift into the project directory, change absolute paths to be relative, change the project's location
 
@@ -30,11 +29,7 @@ var contents = """
 ////////////////////////////////////////////////////////////////////////////////
 
 func main() {
-	print("-- Swift AST --")
-	let root = GRYDynamicAst(fileContents: contents)
-	root.prettyPrint()
-	
-	print("\n-- Gryphon AST --")
+	print("-- Gryphon AST --")
 	let ast = GRYAst(fileContents: contents)
 	ast.prettyPrint()
 	

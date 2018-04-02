@@ -65,30 +65,6 @@ internal class GRYSExpressionParser {
 	}
 	
 	//
-	func readUntilCloseParentheses() {
-		var parenthesesLevel = 1
-		var infiniteLoopStopper = 1_000
-		
-		while parenthesesLevel > 0 && infiniteLoopStopper > 0 {
-			defer { infiniteLoopStopper -= 1 }
-			
-			if canReadOpenParentheses() {
-				readOpenParentheses()
-				parenthesesLevel += 1
-			}
-			if canReadIdentifierOrString() {
-				_ = readIdentifierOrString()
-			}
-			if canReadCloseParentheses() {
-				readCloseParentheses()
-				parenthesesLevel -= 1
-			}
-		}
-		
-		let enteredInfiniteLoop = (infiniteLoopStopper == 0)
-		if enteredInfiniteLoop { fatalError("Parsing error") }
-	}
-	
 	func readOpenParentheses() {
 		contents =~ "^\\s+" => ""
 		
@@ -131,7 +107,6 @@ internal class GRYSExpressionParser {
 		fatalError("Parsing error")
 	}
 	
-	@discardableResult
 	func readIdentifier() -> String {
 		contents =~ "^\\s+" => ""
 		
@@ -184,36 +159,7 @@ internal class GRYSExpressionParser {
 		let result = matchedString.dropLast()
 		return String(result)
 	}
-	
-	func readIdentifier(_ string: String) {
-		contents =~ "^\\s+" => ""
-		
-		guard contents.hasPrefix(string) else { fatalError("Parsing error") }
-		
-		contents.removeFirst(string.count)
-		
-		gryParserLog?("-- Read string \(string)")
-	}
-	
-	func readIdentifier(oneOf strings: [String]) -> String {
-		guard let result = attemptToReadIdentifier(oneOf: strings) else { fatalError("Parsing error") }
-		return result
-	}
-	
-	func attemptToReadIdentifier(oneOf strings: [String]) -> String? {
-		contents =~ "^\\s+" => ""
-		
-		for string in strings {
-			if contents.hasPrefix(string) {
-				contents.removeFirst(string.count)
-				gryParserLog?("-- Read from array \(string)")
-				return string
-			}
-		}
-		return nil
-	}
 
-	@discardableResult
 	func readDoubleQuotedString() -> String {
 		contents =~ "^\\s+" => ""
 		var matchIterator = contents =~ "^\"[^\"]+\""
@@ -225,7 +171,6 @@ internal class GRYSExpressionParser {
 		return String(result)
 	}
 	
-	@discardableResult
 	func readSingleQuotedString() -> String {
 		contents =~ "^\\s+" => ""
 		var matchIterator = contents =~ "^'[^']+'"
@@ -237,7 +182,6 @@ internal class GRYSExpressionParser {
 		return String(result)
 	}
 	
-	@discardableResult
 	func readStringInBrackets() -> String {
 		contents =~ "^\\s+" => ""
 		var matchIterator = contents =~ "^\\[[^\\]]+\\]"
