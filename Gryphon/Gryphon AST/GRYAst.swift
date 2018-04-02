@@ -1,4 +1,3 @@
-// TODO: Clean subtree names when printing GRYAsr
 // TODO: Test with more complex examples (at least one with a bracketed expression, as in (I think) location and range)
 // TODO: Clean SExpressionParser and old GRYAst
 
@@ -20,7 +19,8 @@ public class GRYAst: GRYPrintableAsTree {
 		var subTrees = [GRYAst]()
 		
 		parser.readOpenParentheses()
-		self.name = parser.readIdentifier()
+		let name = parser.readIdentifier()
+		self.name = Utils.expandSwiftAbbreviation(name)
 		
 		var maxIterations = 1_000
 		

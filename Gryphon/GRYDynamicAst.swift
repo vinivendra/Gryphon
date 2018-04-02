@@ -34,30 +34,8 @@ class GRYDynamicAst {
 }
 
 extension GRYDynamicAst: GRYPrintableAsTree {
-    private func improveNameDescription(_ name: String) -> String {
-        // Separate snake case and capitalize
-        var nameComponents = name.split(separator: "_").map { $0.capitalized }
-        
-        // Expand swift abbreviations
-        nameComponents = nameComponents.map { (word: String) -> String in
-            switch word {
-            case "Var": return "Variable"
-            case "Ref": return "Reference"
-            case "Func": return "Function"
-            case "Stmt": return "Statement"
-            case "Expr": return "Expression"
-            case "Decl": return "Declaration"
-            case "Ident": return "Identity"
-            default: return word
-            }
-        }
-        
-        // Join words into a single string
-        return nameComponents.joined(separator: " ")
-    }
-    
     public var treeDescription: String {
-		let improvedName = improveNameDescription(name)
+		let improvedName = Utils.expandSwiftAbbreviation(name)
 		
 		if attributes.isEmpty {
 			return " \(improvedName)"
