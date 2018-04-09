@@ -17,12 +17,9 @@ public class GRYAst: GRYPrintableAsTree {
 		parser.readOpenParentheses()
 		let name = parser.readIdentifier()
 		self.name = Utils.expandSwiftAbbreviation(name)
-		
-		var maxIterations = 1_000
-		
-		while !parser.canReadCloseParentheses(), maxIterations > 0 {
-			defer { maxIterations -= 1 }
-			
+
+		/// -- The loop stops: all branches tell the parser to read, and the input string must end eventually.
+		while true {
 			if parser.canReadKey() {
 				let key = parser.readKey()
 				let value = parser.readIdentifierOrString()
@@ -36,14 +33,12 @@ public class GRYAst: GRYPrintableAsTree {
 				let subTree = GRYAst(parser: parser)
 				subTrees.append(subTree)
 			}
+			else {
+				parser.readCloseParentheses()
+				break
+			}
 		}
-		
-		parser.readCloseParentheses()
 
-		guard maxIterations > 0 else {
-			fatalError("Entered infinite loop!")
-		}
-		
 		self.standaloneAttributes = standaloneAttributes
 		self.keyValueAttributes = keyValueAttributes
 		self.subTrees = subTrees

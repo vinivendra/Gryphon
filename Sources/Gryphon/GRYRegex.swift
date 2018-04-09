@@ -127,7 +127,7 @@ struct GRYRegexMatch: CustomStringConvertible {
 		
 		guard range.location != NSNotFound else { return nil }
 		
-		let ns = originalText as NSString
+		let ns = NSString(string: originalText)
 		let substring = ns.substring(with: range)
 		let matchedString = substring as String
 		
