@@ -44,6 +44,21 @@ public class GRYAst: GRYPrintableAsTree {
 		self.subTrees = subTrees
 	}
 	
+    //
+    subscript (key: String) -> String? {
+        return keyValueAttributes[key]
+    }
+    
+    func subTree(named name: String) -> GRYAst? {
+        for subTree in subTrees {
+            if subTree.name == name {
+                return subTree
+            }
+        }
+        
+        return nil
+    }
+    
 	//
 	public var treeDescription: String {
 		return name

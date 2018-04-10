@@ -1,3 +1,5 @@
+// TODO: `location` values are read incorrectly when the file path has spaces
+
 #if os(Linux) || os(FreeBSD)
     import Glibc
 #else
@@ -7,13 +9,13 @@
 func main() {
     
     // Get the file path
-    guard CommandLine.arguments.count == 2 else {
-        let commandName = CommandLine.arguments[0]
+    guard CommandLine.arguments.count >= 2 else {
+        let commandPath = CommandLine.arguments[0]
+        let commandName = commandPath.split(separator: "/").last!
         print("Usage: \(commandName) <filePath>")
         return
     }
     let testFilePath = CommandLine.arguments[1]
-    print(testFilePath)
     
     // Call the swift compiler
     let command = ["swiftc", "-dump-ast", testFilePath]
@@ -28,6 +30,8 @@ func main() {
     // The compiler has dumped the ast to stderr
     var commandOutput = commandResult.standardError
     
+    print(commandOutput)
+    
     // Trim any warnings swift may have printed before the actual AST dump
     commandOutput =~ "^((.*)\n)*\\(source\\_file\n" => "\\(source\\_file\n"
     
@@ -35,6 +39,12 @@ func main() {
     print("-- Gryphon AST --")
     let ast = GRYAst(fileContents: commandOutput)
     ast.prettyPrint()
+    print()
+    
+    // Translate the AST to Kotlin
+    print("-- Kotlin --")
+    let kotlin = GRYKotlinTranslator().translateAST(ast)
+    print(kotlin)
     print()
 }
 
