@@ -45,6 +45,7 @@ public class GRYKotlinTranslator {
         
         result += ")"
 
+        // TODO: Doesn't allow to return function types
         let returnType = functionDeclaration["interface type"]!.split(separator: " -> ").last!
         if returnType != "()" {
             result += ": " + returnType
