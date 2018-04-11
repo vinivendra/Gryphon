@@ -26,8 +26,12 @@ class GRYExtensionTest: XCTestCase {
                        ["a", "b", "c"])
         XCTAssertEqual("->b->c".split(withStringSeparator: "->"),
                        ["b", "c"])
+        XCTAssertEqual("->->c".split(withStringSeparator: "->"),
+                       ["c"])
         XCTAssertEqual("a->b->".split(withStringSeparator: "->"),
                        ["a", "b"])
+        XCTAssertEqual("a->->".split(withStringSeparator: "->"),
+                       ["a"])
         XCTAssertEqual("a->->b".split(withStringSeparator: "->"),
                        ["a", "b"])
         XCTAssertEqual("abc".split(withStringSeparator: "->"),
@@ -47,8 +51,12 @@ class GRYExtensionTest: XCTestCase {
                        [TestableRange(1, 3), TestableRange(4, 6)])
         XCTAssertEqual("->b->c".occurrences(of: "->").map(TestableRange.init),
                        [TestableRange(0, 2), TestableRange(3, 5)])
+        XCTAssertEqual("->->c".occurrences(of: "->").map(TestableRange.init),
+                       [TestableRange(0, 2), TestableRange(2, 4)])
         XCTAssertEqual("a->b->".occurrences(of: "->").map(TestableRange.init),
                        [TestableRange(1, 3), TestableRange(4, 6)])
+        XCTAssertEqual("a->->".occurrences(of: "->").map(TestableRange.init),
+                       [TestableRange(1, 3), TestableRange(3, 5)])
         XCTAssertEqual("a->->b".occurrences(of: "->").map(TestableRange.init),
                        [TestableRange(1, 3), TestableRange(3, 5)])
         XCTAssertEqual("abc".occurrences(of: "->").map(TestableRange.init),
