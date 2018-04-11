@@ -63,6 +63,18 @@ internal class GRYSExpressionParser {
 		var matchIterator = contents =~ "^\\[[^\\]]+\\]"
 		return matchIterator.next() != nil
 	}
+    
+    func canReadLocation() -> Bool {
+        contents =~ "^\\s+" => ""
+        var matchIterator = contents =~ "^([^:]*?):(\\d+):(\\d+)"
+        return matchIterator.next() != nil
+    }
+    
+    func canReadDeclarationLocation() -> Bool {
+        contents =~ "^\\s+" => ""
+        var matchIterator = contents =~ "^([^@\\s]*?)@"
+        return matchIterator.next() != nil
+    }
 	
 	//
 	func readOpenParentheses() {
@@ -160,6 +172,31 @@ internal class GRYSExpressionParser {
 		return String(result)
 	}
 
+    func readLocation() -> String {
+        contents =~ "^\\s+" => ""
+        
+        var matchIterator = contents =~ "^([^:]*?):(\\d+):(\\d+)"
+        guard let match = matchIterator.next() else { fatalError("Parsing error") }
+        let matchedString = match.matchedString
+        gryParserLog?("-- Read location: \"\(matchedString)\"")
+        contents.removeFirst(matchedString.count)
+        return matchedString
+    }
+    
+    func readDeclarationLocation() -> String {
+        contents =~ "^\\s+" => ""
+        
+        var matchIterator = contents =~ "^([^@\\s]*?)@"
+        guard let match = matchIterator.next() else { fatalError("Parsing error") }
+        let matchedString = match.matchedString
+        gryParserLog?("-- Read location: \"\(matchedString)\"")
+        contents.removeFirst(matchedString.count)
+        
+        let location = readLocation()
+        
+        return matchedString + location
+    }
+    
 	func readDoubleQuotedString() -> String {
 		contents =~ "^\\s+" => ""
 		var matchIterator = contents =~ "^\"[^\"]+\""

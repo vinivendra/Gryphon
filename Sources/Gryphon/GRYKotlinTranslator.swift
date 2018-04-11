@@ -15,7 +15,10 @@ public class GRYKotlinTranslator {
         return result
     }
     
+    // TODO: Functions with different parameter/API names
     private func translate(functionDeclaration: GRYAst, withIndentation indentation: String) -> String {
+        assert(functionDeclaration.name == "Function Declaration")
+        
         var indentation = indentation
         var result = ""
 
@@ -55,13 +58,114 @@ public class GRYKotlinTranslator {
         
         indentation = increaseIndentation(indentation)
         
-        // TODO: Write statements
+        let braceStatement = functionDeclaration.subTree(named: "Brace Statement")!
+        result += translate(statements: braceStatement.subTrees, withIndentation: indentation)
         
         indentation = decreaseIndentation(indentation)
         
         result += indentation + "}\n"
         
         return result
+    }
+    
+    //
+    private func translate(statements: [GRYAst], withIndentation indentation: String) -> String {
+        var result = ""
+        
+        var i = 0
+        while i < statements.count {
+            defer { i += 1 }
+            
+            let statement = statements[i]
+            
+            switch statement.name {
+            case "Pattern Binding Declaration":
+                let variableDeclaration = statements[i + 1]
+                i += 1 // skip the variable declaration
+                assert(variableDeclaration.name == "Variable Declaration")
+                result += translate(patternBindingDeclaration: statement,
+                                    variableDeclaration: variableDeclaration,
+                                    withIndentation: indentation)
+            case "Return Statement":
+                result += translate(returnStatement: statement, withIndentation: indentation)
+            default:
+                result += indentation + "<Unknown statement: \(statement.name)>\n"
+            }
+        }
+        
+        return result
+    }
+    
+    private func translate(returnStatement: GRYAst,
+                           withIndentation indentation: String) -> String
+    {
+        assert(returnStatement.name == "Return Statement")
+        var result = indentation
+        
+        let expression = translate(expression: returnStatement.subTree(named: "Declref Expression")!)
+        
+        result += "return " + expression + "\n"
+        
+        return result
+    }
+    
+    private func translate(patternBindingDeclaration: GRYAst,
+                           variableDeclaration: GRYAst,
+                           withIndentation indentation: String) -> String
+    {
+        assert(patternBindingDeclaration.name == "Pattern Binding Declaration")
+        assert(variableDeclaration.name == "Variable Declaration")
+        var result = indentation
+        
+        let identifier = variableDeclaration.standaloneAttributes[0]
+        let type = variableDeclaration["interface type"]!
+        
+        let varOrValKeyword: String
+        if variableDeclaration.standaloneAttributes.contains("let") {
+            varOrValKeyword = "val"
+        }
+        else {
+            varOrValKeyword = "var"
+        }
+        
+        result += varOrValKeyword + " " + identifier + ": " + type + " = "
+        
+        result += translate(expression: patternBindingDeclaration.subTree(named: "Call Expression")!)
+        
+        result += "\n"
+        
+        return result
+    }
+    
+    //
+    private func translate(expression: GRYAst) -> String {
+        switch expression.name {
+        case "Call Expression":
+            if let argumentLabels = expression["arg_labels"],
+                argumentLabels == "_builtinIntegerLiteral:",
+                let tupleExpression = expression.subTree(named: "Tuple Expression"),
+                let integerLiteralExpression = tupleExpression.subTree(named: "Integer Literal Expression"),
+                let value = integerLiteralExpression["value"]
+            {
+                return value
+            }
+            else {
+                return "<Unknown expression: \(expression.name)>"
+            }
+        case "Declref Expression":
+            let decl = expression["decl"]!
+            
+            var matchIterator = decl =~ "^([^@\\s]*?)@"
+            let match = matchIterator.next()!
+            let matchedString = match.captureGroup(1)!.matchedString
+            
+            let components = matchedString.split(separator: ".")
+            let identifier = components.last!
+            
+            return identifier
+        default:
+            return "<Unknown expression: \(expression.name)>"
+        }
     }
     
     //

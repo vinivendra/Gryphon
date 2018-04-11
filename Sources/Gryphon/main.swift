@@ -30,7 +30,7 @@ func main() {
     // The compiler has dumped the ast to stderr
     var commandOutput = commandResult.standardError
     
-    print(commandOutput)
+//    print(commandOutput)
     
     // Trim any warnings swift may have printed before the actual AST dump
     commandOutput =~ "^((.*)\n)*\\(source\\_file\n" => "\\(source\\_file\n"

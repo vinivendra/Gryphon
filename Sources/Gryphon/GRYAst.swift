@@ -18,12 +18,21 @@ public class GRYAst: GRYPrintableAsTree {
 		let name = parser.readIdentifier()
 		self.name = Utils.expandSwiftAbbreviation(name)
 
-		/// -- The loop stops: all branches tell the parser to read, and the input string must end eventually.
+		// The loop stops: all branches tell the parser to read, and the input string must end eventually.
 		while true {
 			if parser.canReadKey() {
 				let key = parser.readKey()
-				let value = parser.readIdentifierOrString()
-				keyValueAttributes[key] = value
+                if key == "location" && parser.canReadLocation() {
+                    keyValueAttributes[key] = parser.readLocation()
+                    print(keyValueAttributes[key])
+                }
+                else if key == "decl" && parser.canReadDeclarationLocation() {
+                    keyValueAttributes[key] = parser.readDeclarationLocation()
+                    print(keyValueAttributes[key])
+                }
+                else {
+                    keyValueAttributes[key] = parser.readIdentifierOrString()
+                }
 			}
 			else if parser.canReadIdentifierOrString() {
 				let attribute = parser.readIdentifierOrString()
