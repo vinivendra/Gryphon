@@ -15,7 +15,7 @@ let gryParserLog = gryShouldLogParser ? log : nil
 internal enum Utils {
 	internal static func expandSwiftAbbreviation(_ name: String) -> String {
 		// Separate snake case and capitalize
-		var nameComponents = name.split(separator: "_").map { $0.capitalized }
+		var nameComponents = name.split(withStringSeparator: "_").map { $0.capitalized }
 		
 		// Expand swift abbreviations
 		nameComponents = nameComponents.map { (word: String) -> String in

@@ -6,75 +6,171 @@
 	objectVersion = 46;
 	objects = {
 
+/* Begin PBXAggregateTarget section */
+		"Gryphon::GryphonPackageTests::ProductTarget" /* GryphonPackageTests */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = OBJ_69 /* Build configuration list for PBXAggregateTarget "GryphonPackageTests" */;
+			buildPhases = (
+			);
+			dependencies = (
+				OBJ_72 /* PBXTargetDependency */,
+			);
+			name = GryphonPackageTests;
+			productName = GryphonPackageTests;
+		};
+/* End PBXAggregateTarget section */
+
 /* Begin PBXBuildFile section */
-		24C3CD10207D42FE00BE57C7 /* GRYExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24C3CD0F207D42FE00BE57C7 /* GRYExtensions.swift */; };
-		24EB00B5207C0437006015CD /* GRYKotlinTranslator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24EB00B4207C0437006015CD /* GRYKotlinTranslator.swift */; };
-		OBJ_24 /* GRYAst.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_9 /* GRYAst.swift */; };
-		OBJ_25 /* GRYPrintableAsTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_10 /* GRYPrintableAsTree.swift */; };
-		OBJ_26 /* GRYRegex.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_11 /* GRYRegex.swift */; };
-		OBJ_27 /* GRYSExpressionParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_12 /* GRYSExpressionParser.swift */; };
-		OBJ_28 /* GRYShell.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_13 /* GRYShell.swift */; };
-		OBJ_29 /* GRYUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_14 /* GRYUtils.swift */; };
-		OBJ_30 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_15 /* main.swift */; };
-		OBJ_37 /* Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_6 /* Package.swift */; };
+		OBJ_33 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_9 /* main.swift */; };
+		OBJ_35 /* GryphonLib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "Gryphon::GryphonLib::Product" /* GryphonLib.framework */; };
+		OBJ_42 /* GRYAst.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_11 /* GRYAst.swift */; };
+		OBJ_43 /* GRYCompiler.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_12 /* GRYCompiler.swift */; };
+		OBJ_44 /* GRYExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_13 /* GRYExtensions.swift */; };
+		OBJ_45 /* GRYKotlinTranslator.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_14 /* GRYKotlinTranslator.swift */; };
+		OBJ_46 /* GRYPrintableAsTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_15 /* GRYPrintableAsTree.swift */; };
+		OBJ_47 /* GRYRegex.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_16 /* GRYRegex.swift */; };
+		OBJ_48 /* GRYSExpressionParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_17 /* GRYSExpressionParser.swift */; };
+		OBJ_49 /* GRYShell.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_18 /* GRYShell.swift */; };
+		OBJ_50 /* GRYUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_19 /* GRYUtils.swift */; };
+		OBJ_57 /* GRYExtensionsTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_22 /* GRYExtensionsTest.swift */; };
+		OBJ_58 /* XCTestManifests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_23 /* XCTestManifests.swift */; };
+		OBJ_60 /* GryphonLib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "Gryphon::GryphonLib::Product" /* GryphonLib.framework */; };
+		OBJ_67 /* Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_6 /* Package.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		24C213BA207E8ECE00F9EB59 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = OBJ_1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = "Gryphon::GryphonLib";
+			remoteInfo = GryphonLib;
+		};
+		24C213BB207E8ECE00F9EB59 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = OBJ_1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = "Gryphon::GryphonLib";
+			remoteInfo = GryphonLib;
+		};
+		24C213BC207E8ECF00F9EB59 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = OBJ_1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = "Gryphon::GryphonLibTests";
+			remoteInfo = GryphonLibTests;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
-		24C3CD0E207D3F4B00BE57C7 /* test.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = test.swift; sourceTree = "<group>"; };
-		24C3CD0F207D42FE00BE57C7 /* GRYExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRYExtensions.swift; sourceTree = "<group>"; };
-		24EB00B4207C0437006015CD /* GRYKotlinTranslator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRYKotlinTranslator.swift; sourceTree = "<group>"; };
+		24C213BD207E8FA300F9EB59 /* test.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = test.swift; sourceTree = "<group>"; };
 		"Gryphon::Gryphon::Product" /* Gryphon */ = {isa = PBXFileReference; lastKnownFileType = text; path = Gryphon; sourceTree = BUILT_PRODUCTS_DIR; };
-		OBJ_10 /* GRYPrintableAsTree.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRYPrintableAsTree.swift; sourceTree = "<group>"; };
-		OBJ_11 /* GRYRegex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRYRegex.swift; sourceTree = "<group>"; };
-		OBJ_12 /* GRYSExpressionParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRYSExpressionParser.swift; sourceTree = "<group>"; };
-		OBJ_13 /* GRYShell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRYShell.swift; sourceTree = "<group>"; };
-		OBJ_14 /* GRYUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRYUtils.swift; sourceTree = "<group>"; };
-		OBJ_15 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		"Gryphon::GryphonLib::Product" /* GryphonLib.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = GryphonLib.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		"Gryphon::GryphonLibTests::Product" /* GryphonLibTests.xctest */ = {isa = PBXFileReference; lastKnownFileType = file; path = GryphonLibTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		OBJ_11 /* GRYAst.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRYAst.swift; sourceTree = "<group>"; };
+		OBJ_12 /* GRYCompiler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRYCompiler.swift; sourceTree = "<group>"; };
+		OBJ_13 /* GRYExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRYExtensions.swift; sourceTree = "<group>"; };
+		OBJ_14 /* GRYKotlinTranslator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRYKotlinTranslator.swift; sourceTree = "<group>"; };
+		OBJ_15 /* GRYPrintableAsTree.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRYPrintableAsTree.swift; sourceTree = "<group>"; };
+		OBJ_16 /* GRYRegex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRYRegex.swift; sourceTree = "<group>"; };
+		OBJ_17 /* GRYSExpressionParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRYSExpressionParser.swift; sourceTree = "<group>"; };
+		OBJ_18 /* GRYShell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRYShell.swift; sourceTree = "<group>"; };
+		OBJ_19 /* GRYUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRYUtils.swift; sourceTree = "<group>"; };
+		OBJ_22 /* GRYExtensionsTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRYExtensionsTest.swift; sourceTree = "<group>"; };
+		OBJ_23 /* XCTestManifests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XCTestManifests.swift; sourceTree = "<group>"; };
 		OBJ_6 /* Package.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
-		OBJ_9 /* GRYAst.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRYAst.swift; sourceTree = "<group>"; };
+		OBJ_9 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		OBJ_31 /* Frameworks */ = {
+		OBJ_34 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 0;
+			files = (
+				OBJ_35 /* GryphonLib.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		OBJ_51 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 0;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		OBJ_59 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 0;
+			files = (
+				OBJ_60 /* GryphonLib.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		OBJ_16 /* Tests */ = {
+		OBJ_10 /* GryphonLib */ = {
 			isa = PBXGroup;
 			children = (
+				OBJ_11 /* GRYAst.swift */,
+				OBJ_12 /* GRYCompiler.swift */,
+				OBJ_13 /* GRYExtensions.swift */,
+				OBJ_14 /* GRYKotlinTranslator.swift */,
+				OBJ_15 /* GRYPrintableAsTree.swift */,
+				OBJ_16 /* GRYRegex.swift */,
+				OBJ_17 /* GRYSExpressionParser.swift */,
+				OBJ_18 /* GRYShell.swift */,
+				OBJ_19 /* GRYUtils.swift */,
+			);
+			name = GryphonLib;
+			path = Sources/GryphonLib;
+			sourceTree = SOURCE_ROOT;
+		};
+		OBJ_20 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				OBJ_21 /* GryphonLibTests */,
 			);
 			name = Tests;
 			sourceTree = SOURCE_ROOT;
 		};
-		OBJ_17 /* Products */ = {
+		OBJ_21 /* GryphonLibTests */ = {
 			isa = PBXGroup;
 			children = (
+				OBJ_22 /* GRYExtensionsTest.swift */,
+				OBJ_23 /* XCTestManifests.swift */,
+			);
+			name = GryphonLibTests;
+			path = Tests/GryphonLibTests;
+			sourceTree = SOURCE_ROOT;
+		};
+		OBJ_24 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				"Gryphon::GryphonLib::Product" /* GryphonLib.framework */,
 				"Gryphon::Gryphon::Product" /* Gryphon */,
+				"Gryphon::GryphonLibTests::Product" /* GryphonLibTests.xctest */,
 			);
 			name = Products;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		OBJ_5 = {
+		OBJ_5 /*  */ = {
 			isa = PBXGroup;
 			children = (
 				OBJ_6 /* Package.swift */,
-				24C3CD0E207D3F4B00BE57C7 /* test.swift */,
+				24C213BD207E8FA300F9EB59 /* test.swift */,
 				OBJ_7 /* Sources */,
-				OBJ_16 /* Tests */,
-				OBJ_17 /* Products */,
+				OBJ_20 /* Tests */,
+				OBJ_24 /* Products */,
 			);
+			name = "";
 			sourceTree = "<group>";
 		};
 		OBJ_7 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
 				OBJ_8 /* Gryphon */,
+				OBJ_10 /* GryphonLib */,
 			);
 			name = Sources;
 			sourceTree = SOURCE_ROOT;
@@ -82,15 +178,7 @@
 		OBJ_8 /* Gryphon */ = {
 			isa = PBXGroup;
 			children = (
-				OBJ_15 /* main.swift */,
-				OBJ_12 /* GRYSExpressionParser.swift */,
-				OBJ_9 /* GRYAst.swift */,
-				24EB00B4207C0437006015CD /* GRYKotlinTranslator.swift */,
-				OBJ_10 /* GRYPrintableAsTree.swift */,
-				OBJ_11 /* GRYRegex.swift */,
-				OBJ_13 /* GRYShell.swift */,
-				OBJ_14 /* GRYUtils.swift */,
-				24C3CD0F207D42FE00BE57C7 /* GRYExtensions.swift */,
+				OBJ_9 /* main.swift */,
 			);
 			name = Gryphon;
 			path = Sources/Gryphon;
@@ -101,25 +189,59 @@
 /* Begin PBXNativeTarget section */
 		"Gryphon::Gryphon" /* Gryphon */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = OBJ_20 /* Build configuration list for PBXNativeTarget "Gryphon" */;
+			buildConfigurationList = OBJ_29 /* Build configuration list for PBXNativeTarget "Gryphon" */;
 			buildPhases = (
-				OBJ_23 /* Sources */,
-				OBJ_31 /* Frameworks */,
+				OBJ_32 /* Sources */,
+				OBJ_34 /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				OBJ_36 /* PBXTargetDependency */,
 			);
 			name = Gryphon;
 			productName = Gryphon;
 			productReference = "Gryphon::Gryphon::Product" /* Gryphon */;
 			productType = "com.apple.product-type.tool";
 		};
+		"Gryphon::GryphonLib" /* GryphonLib */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = OBJ_38 /* Build configuration list for PBXNativeTarget "GryphonLib" */;
+			buildPhases = (
+				OBJ_41 /* Sources */,
+				OBJ_51 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GryphonLib;
+			productName = GryphonLib;
+			productReference = "Gryphon::GryphonLib::Product" /* GryphonLib.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		"Gryphon::GryphonLibTests" /* GryphonLibTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = OBJ_53 /* Build configuration list for PBXNativeTarget "GryphonLibTests" */;
+			buildPhases = (
+				OBJ_56 /* Sources */,
+				OBJ_59 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				OBJ_61 /* PBXTargetDependency */,
+			);
+			name = GryphonLibTests;
+			productName = GryphonLibTests;
+			productReference = "Gryphon::GryphonLibTests::Product" /* GryphonLibTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		"Gryphon::SwiftPMPackageDescription" /* GryphonPackageDescription */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = OBJ_33 /* Build configuration list for PBXNativeTarget "GryphonPackageDescription" */;
+			buildConfigurationList = OBJ_63 /* Build configuration list for PBXNativeTarget "GryphonPackageDescription" */;
 			buildPhases = (
-				OBJ_36 /* Sources */,
+				OBJ_66 /* Sources */,
 			);
 			buildRules = (
 			);
@@ -144,85 +266,83 @@
 			knownRegions = (
 				en,
 			);
-			mainGroup = OBJ_5;
-			productRefGroup = OBJ_17 /* Products */;
+			mainGroup = OBJ_5 /*  */;
+			productRefGroup = OBJ_24 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				"Gryphon::Gryphon" /* Gryphon */,
+				"Gryphon::GryphonLib" /* GryphonLib */,
+				"Gryphon::GryphonLibTests" /* GryphonLibTests */,
 				"Gryphon::SwiftPMPackageDescription" /* GryphonPackageDescription */,
+				"Gryphon::GryphonPackageTests::ProductTarget" /* GryphonPackageTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
-		OBJ_23 /* Sources */ = {
+		OBJ_32 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 0;
 			files = (
-				OBJ_24 /* GRYAst.swift in Sources */,
-				24EB00B5207C0437006015CD /* GRYKotlinTranslator.swift in Sources */,
-				OBJ_25 /* GRYPrintableAsTree.swift in Sources */,
-				OBJ_26 /* GRYRegex.swift in Sources */,
-				24C3CD10207D42FE00BE57C7 /* GRYExtensions.swift in Sources */,
-				OBJ_27 /* GRYSExpressionParser.swift in Sources */,
-				OBJ_28 /* GRYShell.swift in Sources */,
-				OBJ_29 /* GRYUtils.swift in Sources */,
-				OBJ_30 /* main.swift in Sources */,
+				OBJ_33 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		OBJ_36 /* Sources */ = {
+		OBJ_41 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 0;
 			files = (
-				OBJ_37 /* Package.swift in Sources */,
+				OBJ_42 /* GRYAst.swift in Sources */,
+				OBJ_43 /* GRYCompiler.swift in Sources */,
+				OBJ_44 /* GRYExtensions.swift in Sources */,
+				OBJ_45 /* GRYKotlinTranslator.swift in Sources */,
+				OBJ_46 /* GRYPrintableAsTree.swift in Sources */,
+				OBJ_47 /* GRYRegex.swift in Sources */,
+				OBJ_48 /* GRYSExpressionParser.swift in Sources */,
+				OBJ_49 /* GRYShell.swift in Sources */,
+				OBJ_50 /* GRYUtils.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		OBJ_56 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 0;
+			files = (
+				OBJ_57 /* GRYExtensionsTest.swift in Sources */,
+				OBJ_58 /* XCTestManifests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		OBJ_66 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 0;
+			files = (
+				OBJ_67 /* Package.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		OBJ_36 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = "Gryphon::GryphonLib" /* GryphonLib */;
+			targetProxy = 24C213BA207E8ECE00F9EB59 /* PBXContainerItemProxy */;
+		};
+		OBJ_61 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = "Gryphon::GryphonLib" /* GryphonLib */;
+			targetProxy = 24C213BB207E8ECE00F9EB59 /* PBXContainerItemProxy */;
+		};
+		OBJ_72 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = "Gryphon::GryphonLibTests" /* GryphonLibTests */;
+			targetProxy = 24C213BC207E8ECF00F9EB59 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
-		OBJ_21 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
-				);
-				HEADER_SEARCH_PATHS = "$(inherited)";
-				INFOPLIST_FILE = Gryphon.xcodeproj/Gryphon_Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) $(TOOLCHAIN_DIR)/usr/lib/swift/macosx @executable_path";
-				OTHER_CFLAGS = "$(inherited)";
-				OTHER_LDFLAGS = "$(inherited)";
-				OTHER_SWIFT_FLAGS = "$(inherited)";
-				SWIFT_FORCE_DYNAMIC_LINK_STDLIB = YES;
-				SWIFT_FORCE_STATIC_LINK_STDLIB = NO;
-				SWIFT_VERSION = 4.0;
-				TARGET_NAME = Gryphon;
-			};
-			name = Debug;
-		};
-		OBJ_22 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
-				);
-				HEADER_SEARCH_PATHS = "$(inherited)";
-				INFOPLIST_FILE = Gryphon.xcodeproj/Gryphon_Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) $(TOOLCHAIN_DIR)/usr/lib/swift/macosx @executable_path";
-				OTHER_CFLAGS = "$(inherited)";
-				OTHER_LDFLAGS = "$(inherited)";
-				OTHER_SWIFT_FLAGS = "$(inherited)";
-				SWIFT_FORCE_DYNAMIC_LINK_STDLIB = YES;
-				SWIFT_FORCE_STATIC_LINK_STDLIB = NO;
-				SWIFT_VERSION = 4.0;
-				TARGET_NAME = Gryphon;
-			};
-			name = Release;
-		};
 		OBJ_3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -245,23 +365,68 @@
 			};
 			name = Debug;
 		};
-		OBJ_34 /* Debug */ = {
+		OBJ_30 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				LD = /usr/bin/true;
-				OTHER_SWIFT_FLAGS = "-swift-version 4 -I $(TOOLCHAIN_DIR)/usr/lib/swift/pm/4 -target x86_64-apple-macosx10.10 -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
+				);
+				HEADER_SEARCH_PATHS = "$(inherited)";
+				INFOPLIST_FILE = Gryphon.xcodeproj/Gryphon_Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) $(TOOLCHAIN_DIR)/usr/lib/swift/macosx @executable_path";
+				OTHER_CFLAGS = "$(inherited)";
+				OTHER_LDFLAGS = "$(inherited)";
+				OTHER_SWIFT_FLAGS = "$(inherited)";
+				SWIFT_FORCE_DYNAMIC_LINK_STDLIB = YES;
+				SWIFT_FORCE_STATIC_LINK_STDLIB = NO;
 				SWIFT_VERSION = 4.0;
+				TARGET_NAME = Gryphon;
 			};
 			name = Debug;
 		};
-		OBJ_35 /* Release */ = {
+		OBJ_31 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				LD = /usr/bin/true;
-				OTHER_SWIFT_FLAGS = "-swift-version 4 -I $(TOOLCHAIN_DIR)/usr/lib/swift/pm/4 -target x86_64-apple-macosx10.10 -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
+				);
+				HEADER_SEARCH_PATHS = "$(inherited)";
+				INFOPLIST_FILE = Gryphon.xcodeproj/Gryphon_Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) $(TOOLCHAIN_DIR)/usr/lib/swift/macosx @executable_path";
+				OTHER_CFLAGS = "$(inherited)";
+				OTHER_LDFLAGS = "$(inherited)";
+				OTHER_SWIFT_FLAGS = "$(inherited)";
+				SWIFT_FORCE_DYNAMIC_LINK_STDLIB = YES;
+				SWIFT_FORCE_STATIC_LINK_STDLIB = NO;
 				SWIFT_VERSION = 4.0;
+				TARGET_NAME = Gryphon;
 			};
 			name = Release;
+		};
+		OBJ_39 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ENABLE_TESTABILITY = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
+				);
+				HEADER_SEARCH_PATHS = "$(inherited)";
+				INFOPLIST_FILE = Gryphon.xcodeproj/GryphonLib_Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) $(TOOLCHAIN_DIR)/usr/lib/swift/macosx";
+				OTHER_CFLAGS = "$(inherited)";
+				OTHER_LDFLAGS = "$(inherited)";
+				OTHER_SWIFT_FLAGS = "$(inherited)";
+				PRODUCT_BUNDLE_IDENTIFIER = GryphonLib;
+				PRODUCT_MODULE_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 4.0;
+				TARGET_NAME = GryphonLib;
+			};
+			name = Debug;
 		};
 		OBJ_4 /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -283,6 +448,97 @@
 			};
 			name = Release;
 		};
+		OBJ_40 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ENABLE_TESTABILITY = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
+				);
+				HEADER_SEARCH_PATHS = "$(inherited)";
+				INFOPLIST_FILE = Gryphon.xcodeproj/GryphonLib_Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) $(TOOLCHAIN_DIR)/usr/lib/swift/macosx";
+				OTHER_CFLAGS = "$(inherited)";
+				OTHER_LDFLAGS = "$(inherited)";
+				OTHER_SWIFT_FLAGS = "$(inherited)";
+				PRODUCT_BUNDLE_IDENTIFIER = GryphonLib;
+				PRODUCT_MODULE_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 4.0;
+				TARGET_NAME = GryphonLib;
+			};
+			name = Release;
+		};
+		OBJ_54 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
+				);
+				HEADER_SEARCH_PATHS = "$(inherited)";
+				INFOPLIST_FILE = Gryphon.xcodeproj/GryphonLibTests_Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @loader_path/../Frameworks @loader_path/Frameworks";
+				OTHER_CFLAGS = "$(inherited)";
+				OTHER_LDFLAGS = "$(inherited)";
+				OTHER_SWIFT_FLAGS = "$(inherited)";
+				SWIFT_VERSION = 4.0;
+				TARGET_NAME = GryphonLibTests;
+			};
+			name = Debug;
+		};
+		OBJ_55 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
+				);
+				HEADER_SEARCH_PATHS = "$(inherited)";
+				INFOPLIST_FILE = Gryphon.xcodeproj/GryphonLibTests_Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @loader_path/../Frameworks @loader_path/Frameworks";
+				OTHER_CFLAGS = "$(inherited)";
+				OTHER_LDFLAGS = "$(inherited)";
+				OTHER_SWIFT_FLAGS = "$(inherited)";
+				SWIFT_VERSION = 4.0;
+				TARGET_NAME = GryphonLibTests;
+			};
+			name = Release;
+		};
+		OBJ_64 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				LD = /usr/bin/true;
+				OTHER_SWIFT_FLAGS = "-swift-version 4 -I $(TOOLCHAIN_DIR)/usr/lib/swift/pm/4 -target x86_64-apple-macosx10.10 -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk";
+				SWIFT_VERSION = 4.0;
+			};
+			name = Debug;
+		};
+		OBJ_65 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				LD = /usr/bin/true;
+				OTHER_SWIFT_FLAGS = "-swift-version 4 -I $(TOOLCHAIN_DIR)/usr/lib/swift/pm/4 -target x86_64-apple-macosx10.10 -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk";
+				SWIFT_VERSION = 4.0;
+			};
+			name = Release;
+		};
+		OBJ_70 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		OBJ_71 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -295,20 +551,47 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		OBJ_20 /* Build configuration list for PBXNativeTarget "Gryphon" */ = {
+		OBJ_29 /* Build configuration list for PBXNativeTarget "Gryphon" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				OBJ_21 /* Debug */,
-				OBJ_22 /* Release */,
+				OBJ_30 /* Debug */,
+				OBJ_31 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		OBJ_33 /* Build configuration list for PBXNativeTarget "GryphonPackageDescription" */ = {
+		OBJ_38 /* Build configuration list for PBXNativeTarget "GryphonLib" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				OBJ_34 /* Debug */,
-				OBJ_35 /* Release */,
+				OBJ_39 /* Debug */,
+				OBJ_40 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		OBJ_53 /* Build configuration list for PBXNativeTarget "GryphonLibTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				OBJ_54 /* Debug */,
+				OBJ_55 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		OBJ_63 /* Build configuration list for PBXNativeTarget "GryphonPackageDescription" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				OBJ_64 /* Debug */,
+				OBJ_65 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		OBJ_69 /* Build configuration list for PBXAggregateTarget "GryphonPackageTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				OBJ_70 /* Debug */,
+				OBJ_71 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

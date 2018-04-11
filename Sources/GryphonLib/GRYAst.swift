@@ -24,11 +24,9 @@ public class GRYAst: GRYPrintableAsTree {
 				let key = parser.readKey()
                 if key == "location" && parser.canReadLocation() {
                     keyValueAttributes[key] = parser.readLocation()
-                    print(keyValueAttributes[key])
                 }
                 else if key == "decl" && parser.canReadDeclarationLocation() {
                     keyValueAttributes[key] = parser.readDeclarationLocation()
-                    print(keyValueAttributes[key])
                 }
                 else {
                     keyValueAttributes[key] = parser.readIdentifierOrString()

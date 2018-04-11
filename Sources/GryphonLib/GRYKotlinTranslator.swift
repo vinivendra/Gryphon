@@ -49,7 +49,7 @@ public class GRYKotlinTranslator {
         result += ")"
 
         // TODO: Doesn't allow to return function types
-        let returnType = functionDeclaration["interface type"]!.split(separator: " -> ").last!
+        let returnType = functionDeclaration["interface type"]!.split(withStringSeparator: " -> ").last!
         if returnType != "()" {
             result += ": " + returnType
         }
@@ -102,7 +102,7 @@ public class GRYKotlinTranslator {
         assert(returnStatement.name == "Return Statement")
         var result = indentation
         
-        let expression = translate(expression: returnStatement.subTree(named: "Declref Expression")!)
+        let expression = translate(expression: returnStatement.subTrees.last!)
         
         result += "return " + expression + "\n"
         
@@ -162,7 +162,7 @@ public class GRYKotlinTranslator {
             let components = matchedString.split(separator: ".")
             let identifier = components.last!
             
-            return identifier
+            return String(identifier)
         default:
             return "<Unknown expression: \(expression.name)>"
         }
