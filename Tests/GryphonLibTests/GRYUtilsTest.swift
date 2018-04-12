@@ -9,7 +9,7 @@ class GRYUtilsTest: XCTestCase {
 		var numbersHit = [Bool](repeating: false, count: count)
 		
 		for _ in 0..<10_000 {
-			let randomNumber = Utils.rng.random(0...(count - 1))
+			let randomNumber = TestUtils.rng.random(0...(count - 1))
 			numbersHit[randomNumber] = true
 		}
 		
@@ -25,7 +25,7 @@ class GRYUtilsTest: XCTestCase {
 		var numbersHit = [Bool](repeating: false, count: count)
 		
 		for _ in 0..<10_000 {
-			let randomNumber = Utils.rng.random(0..<count)
+			let randomNumber = TestUtils.rng.random(0..<count)
 			numbersHit[randomNumber] = true
 		}
 		
@@ -39,7 +39,7 @@ class GRYUtilsTest: XCTestCase {
 		var hadFalseResult = false
 		
 		for _ in 0..<100 {
-			let randomBoolean = Utils.rng.randomBool()
+			let randomBoolean = TestUtils.rng.randomBool()
 			hadTrueResult = hadTrueResult || randomBoolean
 			hadFalseResult = hadFalseResult || !randomBoolean
 			

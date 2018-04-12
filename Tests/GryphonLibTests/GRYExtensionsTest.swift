@@ -106,14 +106,14 @@ fileprivate enum Fuzzer {
 		let (separatorCharacterSet, componentCharacterSet) =
 			characterSets.distinctRandomElements()
 		
-		let separatorSize = Utils.rng.random(1...5)
+		let separatorSize = TestUtils.rng.random(1...5)
 		
 		for _ in 0..<separatorSize {
 			separator.append(separatorCharacterSet.randomElement())
 		}
 		
-		let count = Utils.rng.random(0...10)
-		let startsWithSeparator = Utils.rng.randomBool()
+		let count = TestUtils.rng.random(0...10)
+		let startsWithSeparator = TestUtils.rng.randomBool()
 		
 		var isSeparator = startsWithSeparator
 		var currentIndex = 0
@@ -128,7 +128,7 @@ fileprivate enum Fuzzer {
 				currentIndex += separator.count
 			}
 			else {
-				let componentSize = Utils.rng.random(0...10)
+				let componentSize = TestUtils.rng.random(0...10)
 				
 				// Allow separators to be glued together
 				guard componentSize > 0 else { continue }
