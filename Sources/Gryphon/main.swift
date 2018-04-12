@@ -1,5 +1,3 @@
-// TODO: `location` values are read incorrectly when the file path has spaces
-
 import GryphonLib
 
 func main() {
