@@ -25,6 +25,7 @@
 		2455FB44207FC37C00C1E024 /* CwlRandom.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2455FB42207FC37A00C1E024 /* CwlRandom.swift */; };
 		2455FB46207FC79800C1E024 /* TestUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2455FB45207FC79800C1E024 /* TestUtilities.swift */; };
 		2455FB4820800A9500C1E024 /* GRYShellTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2455FB4720800A9500C1E024 /* GRYShellTest.swift */; };
+		2455FB4A2080122100C1E024 /* GRYPrintableAsTreeTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2455FB492080122100C1E024 /* GRYPrintableAsTreeTest.swift */; };
 		OBJ_33 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_9 /* main.swift */; };
 		OBJ_35 /* GryphonLib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "Gryphon::GryphonLib::Product" /* GryphonLib.framework */; };
 		OBJ_42 /* GRYAst.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_11 /* GRYAst.swift */; };
@@ -71,6 +72,7 @@
 		2455FB42207FC37A00C1E024 /* CwlRandom.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CwlRandom.swift; path = Sources/GryphonLib/CwlRandom.swift; sourceTree = SOURCE_ROOT; };
 		2455FB45207FC79800C1E024 /* TestUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestUtilities.swift; sourceTree = "<group>"; };
 		2455FB4720800A9500C1E024 /* GRYShellTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GRYShellTest.swift; path = Tests/GryphonLibTests/GRYShellTest.swift; sourceTree = SOURCE_ROOT; };
+		2455FB492080122100C1E024 /* GRYPrintableAsTreeTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRYPrintableAsTreeTest.swift; sourceTree = "<group>"; };
 		24C213BD207E8FA300F9EB59 /* test.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = test.swift; sourceTree = "<group>"; };
 		"Gryphon::Gryphon::Product" /* Gryphon */ = {isa = PBXFileReference; lastKnownFileType = text; path = Gryphon; sourceTree = BUILT_PRODUCTS_DIR; };
 		"Gryphon::GryphonLib::Product" /* GryphonLib.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = GryphonLib.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -122,11 +124,11 @@
 			children = (
 				OBJ_11 /* GRYAst.swift */,
 				OBJ_12 /* GRYCompiler.swift */,
-				OBJ_13 /* GRYExtensions.swift */,
+				OBJ_17 /* GRYSExpressionParser.swift */,
 				OBJ_14 /* GRYKotlinTranslator.swift */,
 				OBJ_15 /* GRYPrintableAsTree.swift */,
 				OBJ_16 /* GRYRegex.swift */,
-				OBJ_17 /* GRYSExpressionParser.swift */,
+				OBJ_13 /* GRYExtensions.swift */,
 				OBJ_18 /* GRYShell.swift */,
 				OBJ_19 /* GRYUtils.swift */,
 				2455FB42207FC37A00C1E024 /* CwlRandom.swift */,
@@ -147,6 +149,7 @@
 			isa = PBXGroup;
 			children = (
 				OBJ_22 /* GRYExtensionsTest.swift */,
+				2455FB492080122100C1E024 /* GRYPrintableAsTreeTest.swift */,
 				2455FB4720800A9500C1E024 /* GRYShellTest.swift */,
 				2455FB40207FBD9800C1E024 /* GRYUtilsTest.swift */,
 				2455FB45207FC79800C1E024 /* TestUtilities.swift */,
@@ -323,6 +326,7 @@
 			files = (
 				2455FB41207FBD9800C1E024 /* GRYUtilsTest.swift in Sources */,
 				OBJ_57 /* GRYExtensionsTest.swift in Sources */,
+				2455FB4A2080122100C1E024 /* GRYPrintableAsTreeTest.swift in Sources */,
 				2455FB46207FC79800C1E024 /* TestUtilities.swift in Sources */,
 				OBJ_58 /* XCTestManifests.swift in Sources */,
 				2455FB4820800A9500C1E024 /* GRYShellTest.swift in Sources */,

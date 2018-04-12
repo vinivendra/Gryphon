@@ -6,6 +6,7 @@ public func allTests() -> [XCTestCaseEntry] {
         testCase(GRYExtensionTest.allTests),
 		testCase(GRYUtilsTest.allTests),
 		testCase(GRYShellTest.allTests),
+		testCase(GRYPrintableAsTreeTest.allTests)
     ]
 }
 #endif
