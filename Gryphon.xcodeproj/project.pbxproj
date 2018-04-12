@@ -21,6 +21,8 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		2455FB41207FBD9800C1E024 /* GRYUtilsTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2455FB40207FBD9800C1E024 /* GRYUtilsTest.swift */; };
+		2455FB44207FC37C00C1E024 /* CwlRandom.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2455FB42207FC37A00C1E024 /* CwlRandom.swift */; };
 		OBJ_33 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_9 /* main.swift */; };
 		OBJ_35 /* GryphonLib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "Gryphon::GryphonLib::Product" /* GryphonLib.framework */; };
 		OBJ_42 /* GRYAst.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_11 /* GRYAst.swift */; };
@@ -63,6 +65,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		2455FB40207FBD9800C1E024 /* GRYUtilsTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRYUtilsTest.swift; sourceTree = "<group>"; };
+		2455FB42207FC37A00C1E024 /* CwlRandom.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CwlRandom.swift; path = Sources/GryphonLib/CwlRandom.swift; sourceTree = SOURCE_ROOT; };
 		24C213BD207E8FA300F9EB59 /* test.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = test.swift; sourceTree = "<group>"; };
 		"Gryphon::Gryphon::Product" /* Gryphon */ = {isa = PBXFileReference; lastKnownFileType = text; path = Gryphon; sourceTree = BUILT_PRODUCTS_DIR; };
 		"Gryphon::GryphonLib::Product" /* GryphonLib.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = GryphonLib.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -121,6 +125,7 @@
 				OBJ_17 /* GRYSExpressionParser.swift */,
 				OBJ_18 /* GRYShell.swift */,
 				OBJ_19 /* GRYUtils.swift */,
+				2455FB42207FC37A00C1E024 /* CwlRandom.swift */,
 			);
 			name = GryphonLib;
 			path = Sources/GryphonLib;
@@ -137,6 +142,7 @@
 		OBJ_21 /* GryphonLibTests */ = {
 			isa = PBXGroup;
 			children = (
+				2455FB40207FBD9800C1E024 /* GRYUtilsTest.swift */,
 				OBJ_22 /* GRYExtensionsTest.swift */,
 				OBJ_23 /* XCTestManifests.swift */,
 			);
@@ -299,6 +305,7 @@
 				OBJ_46 /* GRYPrintableAsTree.swift in Sources */,
 				OBJ_47 /* GRYRegex.swift in Sources */,
 				OBJ_48 /* GRYSExpressionParser.swift in Sources */,
+				2455FB44207FC37C00C1E024 /* CwlRandom.swift in Sources */,
 				OBJ_49 /* GRYShell.swift in Sources */,
 				OBJ_50 /* GRYUtils.swift in Sources */,
 			);
@@ -308,6 +315,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 0;
 			files = (
+				2455FB41207FBD9800C1E024 /* GRYUtilsTest.swift in Sources */,
 				OBJ_57 /* GRYExtensionsTest.swift in Sources */,
 				OBJ_58 /* XCTestManifests.swift in Sources */,
 			);

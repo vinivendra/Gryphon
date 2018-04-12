@@ -1,9 +1,3 @@
-#if os(Linux) || os(FreeBSD)
-import Glibc
-#else
-import Darwin
-#endif
-
 #if DEBUG
     let log: ((Any) -> Void)? = { (item: Any) in print(item) }
 #else
@@ -43,38 +37,32 @@ internal enum Utils {
 
 /////////////////////////////////////////////
 
-func random(_ range: Range<Int>) -> Int {
-	let rangeSize = range.upperBound - range.lowerBound
-	
-	#if os(Linux) || os(FreeBSD)
-	let randomNumber = Int(rand()) % rangeSize
-	#else
-	let randomNumber = Int(arc4random_uniform(UInt32(rangeSize)))
-	#endif
-	
-	return range.lowerBound + randomNumber
+extension Utils {
+	static var rng: RandomGenerator = Xoroshiro()
 }
 
-func random(_ range: ClosedRange<Int>) -> Int {
-	let rangeSize = range.upperBound - range.lowerBound + 1
+extension RandomGenerator {
+	mutating func random(_ range: Range<Int>) -> Int {
+		let rangeSize = range.upperBound - range.lowerBound
+		let randomNumber = Int(random32()) % rangeSize
+		return range.lowerBound + randomNumber
+	}
 	
-	#if os(Linux) || os(FreeBSD)
-	let randomNumber = Int(rand()) % rangeSize
-	#else
-	let randomNumber = Int(arc4random_uniform(UInt32(rangeSize)))
-	#endif
+	mutating func random(_ range: ClosedRange<Int>) -> Int {
+		let rangeSize = range.upperBound - range.lowerBound + 1
+		let randomNumber = Int(random32()) % rangeSize
+		return range.lowerBound + randomNumber
+	}
 	
-	return range.lowerBound + randomNumber
-}
-
-func randomBool() -> Bool {
-	return random(0...1) == 0
+	mutating func randomBool() -> Bool {
+		return random(0...1) == 0
+	}
 }
 
 /////////////////////////////////////////////
 extension RandomAccessCollection where Index == Int {
 	func randomElement() -> Element {
-		let index = random(0..<count)
+		let index = Utils.rng.random(0..<count)
 		return self[index]
 	}
 }
