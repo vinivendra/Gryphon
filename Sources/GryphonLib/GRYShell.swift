@@ -23,23 +23,4 @@ internal enum Shell {
                 standardError: errorString,
                 status: task.terminationStatus)
     }
-    
-    static func writeString(_ contents: String, toFileAtPath filePath: String) {
-        if FileManager.default.fileExists(atPath: filePath) {
-            try? FileManager.default.removeItem(atPath: filePath)
-        }
-        
-        let success = FileManager.default.createFile(
-            atPath: filePath,
-            contents: nil)
-        guard success else { return }
-        
-        guard let data = contents.data(using: .utf8),
-            let file = FileHandle(forUpdatingAtPath: filePath)
-            else { return }
-        
-        file.seek(toFileOffset: 0)
-        file.write(data)
-        file.closeFile()
-    }
 }
