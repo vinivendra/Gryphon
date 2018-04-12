@@ -47,7 +47,7 @@ func random(_ range: Range<Int>) -> Int {
 	let rangeSize = range.upperBound - range.lowerBound
 	
 	#if os(Linux) || os(FreeBSD)
-	let randomNumber = rand() % rangeSize
+	let randomNumber = Int(rand()) % rangeSize
 	#else
 	let randomNumber = Int(arc4random_uniform(UInt32(rangeSize)))
 	#endif
@@ -59,7 +59,7 @@ func random(_ range: ClosedRange<Int>) -> Int {
 	let rangeSize = range.upperBound - range.lowerBound + 1
 	
 	#if os(Linux) || os(FreeBSD)
-	let randomNumber = rand() % rangeSize
+	let randomNumber = Int(rand()) % rangeSize
 	#else
 	let randomNumber = Int(arc4random_uniform(UInt32(rangeSize)))
 	#endif

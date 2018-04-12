@@ -43,7 +43,7 @@ class GRYExtensionTest: XCTestCase {
 		
 		for _ in 0..<1000 {
 			let (string, separator, _, components) =
-				FuzzTesting.randomTest()
+				Fuzzer.randomTest()
 			XCTAssertEqual(string.split(withStringSeparator: separator),
 						   components)
 		}
@@ -76,7 +76,7 @@ class GRYExtensionTest: XCTestCase {
 		
 		for _ in 0..<1000 {
 			let (string, separator, occurrences, _) =
-				FuzzTesting.randomTest()
+				Fuzzer.randomTest()
 			XCTAssertEqual(string.occurrences(of: separator).map(TestableRange.init),
 						   occurrences)
 		}
@@ -88,8 +88,8 @@ class GRYExtensionTest: XCTestCase {
         ]
 }
 
-fileprivate enum FuzzTesting {
-	private let characterSets: [[Character]]
+fileprivate enum Fuzzer {
+	static private let characterSets: [[Character]]
 		= [["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "A", "S", "D", "F", "G", "H", "J", "K", "L", "Z", "X", "C", "V", "B", "N", "M"],
 		   ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "a", "s", "d", "f", "g", "h", "j", "k", "l", "z", "x", "c", "v", "b", "n", "m"],
 		   ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"],
