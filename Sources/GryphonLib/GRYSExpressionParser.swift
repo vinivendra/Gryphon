@@ -1,20 +1,26 @@
 internal class GRYSExpressionParser {
-	var contents: String
-	var parenthesesLevel: Int = 0
+	private(set) var contents: String
+	private(set) var parenthesesLevel: Int = 0
 	
-	static let knownComposedKeys = ["interface type="]
+	private static let knownComposedKeys = ["interface type="]
 	
 	init(fileContents contents: String) {
 		self.contents = contents
 	}
 	
-	func canReadOpenParentheses() -> Bool {
+	//
+	func cleanLeadingWhitespace() {
 		contents =~ "^\\s+" => ""
+	}
+	
+	// MARK: - Can read information
+	func canReadOpenParentheses() -> Bool {
+		cleanLeadingWhitespace()
 		return contents.prefix(1) == "("
 	}
 	
 	func canReadCloseParentheses() -> Bool {
-		contents =~ "^\\s+" => ""
+		cleanLeadingWhitespace()
 		return contents.prefix(1) == ")"
 	}
 	
@@ -26,7 +32,7 @@ internal class GRYSExpressionParser {
 	}
 	
 	func canReadKey() -> Bool {
-		contents =~ "^\\s+" => ""
+		cleanLeadingWhitespace()
 		
 		// Try finding known composed keys before trying for any non-composed keys
 		for composedKey in GRYSExpressionParser.knownComposedKeys {
@@ -36,49 +42,73 @@ internal class GRYSExpressionParser {
 		}
 		
 		// If no known composed keys were found
+		// Regex: String start,
+		//   many characters but no whitespace, ), (, ", ' or =
+		//   then = at the end
 		var matchIterator = contents =~ "^[^\\s\\)\\(\"'=]+="
 		return matchIterator.next() != nil
 	}
 	
 	func canReadIdentifier() -> Bool {
-		contents =~ "^\\s+" => ""
+		cleanLeadingWhitespace()
+		// Regex: String start,
+		//   many characters but no whitespace, ), (, " or '
 		var matchIterator = contents =~ "^[^\\s\\)\\(\"']+"
 		return matchIterator.next() != nil
 	}
 	
 	func canReadDoubleQuotedString() -> Bool {
-		contents =~ "^\\s+" => ""
+		cleanLeadingWhitespace()
+		// Regex: String start,
+		//   open ",
+		//   many characters but no closing ",
+		//   then close "
 		var matchIterator = contents =~ "^\"[^\"]+\""
 		return matchIterator.next() != nil
 	}
 	
 	func canReadSingleQuotedString() -> Bool {
-		contents =~ "^\\s+" => ""
+		cleanLeadingWhitespace()
+		// Regex: String start,
+		//   open ',
+		//   many characters but no closing ',
+		//   then close '
 		var matchIterator = contents =~ "^'[^']+'"
 		return matchIterator.next() != nil
 	}
 	
 	func canReadStringInBrackets() -> Bool {
-		contents =~ "^\\s+" => ""
+		cleanLeadingWhitespace()
+		// Regex: String start,
+		//   open [,
+		//   many characters but no closing ],
+		//   then close ]
 		var matchIterator = contents =~ "^\\[[^\\]]+\\]"
 		return matchIterator.next() != nil
 	}
     
     func canReadLocation() -> Bool {
-        contents =~ "^\\s+" => ""
-        var matchIterator = contents =~ "^([^:]*?):(\\d+):(\\d+)"
+        cleanLeadingWhitespace()
+		// Regex: String start,
+		//   many characters but no :, ( or ) (not greedy so it won't go past this specific location),
+		//   then :, a number, :, and another number
+        var matchIterator = contents =~ "^([^:\\(\\)]*?):(\\d+):(\\d+)"
         return matchIterator.next() != nil
     }
     
     func canReadDeclarationLocation() -> Bool {
-        contents =~ "^\\s+" => ""
-        var matchIterator = contents =~ "^([^@\\s]*?)@"
+        cleanLeadingWhitespace()
+		// Regex: String start,
+		//   some character that's not a (,
+		//   many characters but no @ or whitespace (not greedy so it won't go past this specific declaration location),
+		//   then @
+        var matchIterator = contents =~ "^([^\\(][^@\\s]*?)@"
         return matchIterator.next() != nil
     }
 	
-	//
+	// MARK: - Read information
 	func readOpenParentheses() {
-		contents =~ "^\\s+" => ""
+		cleanLeadingWhitespace()
 		
 		guard canReadOpenParentheses() else { fatalError("Parsing error") }
 		
@@ -89,7 +119,7 @@ internal class GRYSExpressionParser {
 	}
 	
 	func readCloseParentheses() {
-		contents =~ "^\\s+" => ""
+		cleanLeadingWhitespace()
 		
 		guard canReadCloseParentheses() else { fatalError("Parsing error") }
 		
@@ -120,7 +150,7 @@ internal class GRYSExpressionParser {
 	}
 	
 	func readIdentifier() -> String {
-		contents =~ "^\\s+" => ""
+		cleanLeadingWhitespace()
 		
 		var result = ""
 		
@@ -150,7 +180,7 @@ internal class GRYSExpressionParser {
 	}
 
 	func readKey() -> String {
-		contents =~ "^\\s+" => ""
+		cleanLeadingWhitespace()
 		
 		// Try finding known composed keys before trying for any non-composed keys
 		for composedKey in GRYSExpressionParser.knownComposedKeys {
@@ -163,6 +193,9 @@ internal class GRYSExpressionParser {
 		}
 		
 		// If no known composed keys were found
+		// Regex: String start,
+		//   many characters but no whitespace, ), (, ", ' or =
+		//   then = at the end
 		var matchIterator = contents =~ "^[^\\s\\)\\(\"'=]+="
 		guard let match = matchIterator.next() else { fatalError("Parsing error") }
 		let matchedString = match.matchedString
@@ -173,8 +206,10 @@ internal class GRYSExpressionParser {
 	}
 
     func readLocation() -> String {
-        contents =~ "^\\s+" => ""
-        
+        cleanLeadingWhitespace()
+		// Regex: String start,
+		//   many characters but no : (not greedy so it won't go past this specific location),
+		//   then :, a number, :, and another number
         var matchIterator = contents =~ "^([^:]*?):(\\d+):(\\d+)"
         guard let match = matchIterator.next() else { fatalError("Parsing error") }
         let matchedString = match.matchedString
@@ -184,12 +219,14 @@ internal class GRYSExpressionParser {
     }
     
     func readDeclarationLocation() -> String {
-        contents =~ "^\\s+" => ""
-        
+        cleanLeadingWhitespace()
+		// Regex: String start,
+		//   many characters but no @ or whitespace (not greedy so it won't go past this specific declaration location),
+		//   then @
         var matchIterator = contents =~ "^([^@\\s]*?)@"
         guard let match = matchIterator.next() else { fatalError("Parsing error") }
         let matchedString = match.matchedString
-        gryParserLog?("-- Read location: \"\(matchedString)\"")
+        gryParserLog?("-- Read declaration location: \"\(matchedString)\"")
         contents.removeFirst(matchedString.count)
         
         let location = readLocation()
@@ -198,7 +235,11 @@ internal class GRYSExpressionParser {
     }
     
 	func readDoubleQuotedString() -> String {
-		contents =~ "^\\s+" => ""
+		cleanLeadingWhitespace()
+		// Regex: String start,
+		//   open ",
+		//   many characters but no closing ",
+		//   then close "
 		var matchIterator = contents =~ "^\"[^\"]+\""
 		guard let match = matchIterator.next() else { fatalError("Parsing error") }
 		let matchedString = match.matchedString
@@ -209,7 +250,11 @@ internal class GRYSExpressionParser {
 	}
 	
 	func readSingleQuotedString() -> String {
-		contents =~ "^\\s+" => ""
+		cleanLeadingWhitespace()
+		// Regex: String start,
+		//   open ',
+		//   many characters but no closing ',
+		//   then close '
 		var matchIterator = contents =~ "^'[^']+'"
 		guard let match = matchIterator.next() else { fatalError("Parsing error") }
 		let matchedString = match.matchedString
@@ -220,7 +265,11 @@ internal class GRYSExpressionParser {
 	}
 	
 	func readStringInBrackets() -> String {
-		contents =~ "^\\s+" => ""
+		cleanLeadingWhitespace()
+		// Regex: String start,
+		//   open [,
+		//   many characters but no closing ],
+		//   then close ]
 		var matchIterator = contents =~ "^\\[[^\\]]+\\]"
 		guard let match = matchIterator.next() else { fatalError("Parsing error") }
 		let matchedString = match.matchedString
