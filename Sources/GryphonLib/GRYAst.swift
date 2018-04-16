@@ -71,12 +71,13 @@ public class GRYAst: GRYPrintableAsTree, Equatable {
 		return name
 	}
 	public var printableSubTrees: [GRYPrintableAsTree] {
-		let keyValueStrings: [GRYPrintableAsTree] = keyValueAttributes.map {
+		let keyValueStrings = keyValueAttributes.map {
 			"\($0.key) → \($0.value)"
-		}
-		let result: [GRYPrintableAsTree] =
-			(standaloneAttributes as [GRYPrintableAsTree]) +
-			keyValueStrings + subTrees
+		}.sorted() as [GRYPrintableAsTree]
+
+		let standaloneStrings = standaloneAttributes.sorted() as [GRYPrintableAsTree]
+		
+		let result: [GRYPrintableAsTree] = standaloneStrings + keyValueStrings + subTrees
 		return result
 	}
 	
