@@ -35,4 +35,6 @@ func seedFromLastHour() -> (UInt64, UInt64) {
 
 enum TestUtils {
 	static var rng: RandomGenerator = Xoroshiro(seed: seedFromCurrentHour())
+	
+	static let testFilesPath: String = Process().currentDirectoryPath + "/test.swift"
 }
