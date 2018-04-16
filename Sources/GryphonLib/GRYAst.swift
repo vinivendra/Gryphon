@@ -1,4 +1,4 @@
-public class GRYAst: GRYPrintableAsTree {
+public class GRYAst: GRYPrintableAsTree, Equatable {
 	let name: String
 	let standaloneAttributes: [String]
 	let keyValueAttributes: [String: String]
@@ -78,5 +78,33 @@ public class GRYAst: GRYPrintableAsTree {
 			(standaloneAttributes as [GRYPrintableAsTree]) +
 			keyValueStrings + subTrees
 		return result
+	}
+	
+	// MARK: - Testing
+	internal init(_ name: String,
+				  _ subTrees: [GRYAst] = [])
+	{
+		self.name = name
+		self.standaloneAttributes = []
+		self.keyValueAttributes = [:]
+		self.subTrees = subTrees
+	}
+	
+	internal init(_ name: String,
+				  _ standaloneAttributes: [String],
+				  _ keyValueAttributes: [String: String],
+				  _ subTrees: [GRYAst] = [])
+	{
+		self.name = name
+		self.standaloneAttributes = standaloneAttributes
+		self.keyValueAttributes = keyValueAttributes
+		self.subTrees = subTrees
+	}
+	
+	public static func == (lhs: GRYAst, rhs: GRYAst) -> Bool {
+		return lhs.name == rhs.name &&
+			lhs.standaloneAttributes == rhs.standaloneAttributes &&
+			lhs.keyValueAttributes == rhs.keyValueAttributes &&
+			lhs.subTrees == rhs.subTrees
 	}
 }
