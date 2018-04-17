@@ -1,4 +1,4 @@
-public class GRYAst: GRYPrintableAsTree, Equatable {
+public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvertible {
 	let name: String
 	let standaloneAttributes: [String]
 	let keyValueAttributes: [String: String]
@@ -78,6 +78,12 @@ public class GRYAst: GRYPrintableAsTree, Equatable {
 		let standaloneStrings = standaloneAttributes.sorted() as [GRYPrintableAsTree]
 		
 		let result: [GRYPrintableAsTree] = standaloneStrings + keyValueStrings + subTrees
+		return result
+	}
+	
+	public var description: String {
+		var result = ""
+		self.prettyPrint() { result += $0 }
 		return result
 	}
 	

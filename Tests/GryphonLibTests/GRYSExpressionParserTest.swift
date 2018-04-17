@@ -147,23 +147,21 @@ class GRYSExpressionParserTest: XCTestCase {
 	func testParser() {
 		let tests = ["emptyFunction", "functionWithAssignment", "functionWithParameters", "functionWithReturn", "functionWithVariable"]
 		
-		for test in tests {
-			let testFilePath = TestUtils.testFilesPath + test
-			
+		for testName in tests {
+			// Create an AST using the parser
+			let testFilePath = TestUtils.testFilesPath + testName
 			let swiftASTDump = GRYCompiler.getSwiftASTDump(forFileAt: testFilePath + ".swift")
 			let createdAST = GRYAst(fileContents: swiftASTDump)
 			
-			var rawASTText = ""
-			createdAST.prettyPrint { rawASTText += $0 }
+			// Load the previously stored AST from file
+			let astRawJSON = try! String(contentsOfFile: testFilePath + ".json")
+			let astProcessedJSON = astRawJSON
+				.replacingOccurrences(of: "##testPath##", with: testFilePath + ".swift")
+				.replacingOccurrences(of: "##testFileName##", with: testName)
+			let astData = Data(astProcessedJSON.utf8)
+			let expectedAST = try! JSONDecoder().decode(GRYAst.self, from: astData)
 			
-			// The file's path and its name (respectively) must be changed to equal the expected result
-			let createdASTText = rawASTText
-				.replacingOccurrences(of: testFilePath + ".swift", with: "##testFilePath##")
-				.replacingOccurrences(of: test, with: "test")
-			
-			let expectedASTText = try! String(contentsOfFile: testFilePath + ".ast")
-			
-			XCTAssertEqual(createdASTText, expectedASTText, "Test \(test): parser failed to produce expected result. Diff:\n\n===\n\(TestUtils.diff(createdASTText, expectedASTText))===\n")
+			XCTAssert(createdAST == expectedAST, "Test \(testName): parser failed to produce expected result. Diff:\n\n===\n\(TestUtils.diff(createdAST.description, expectedAST.description))===\n")
 		}
 	}
 	

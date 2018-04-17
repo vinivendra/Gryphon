@@ -4,6 +4,8 @@ import Glibc
 import Darwin
 #endif
 
+import Foundation
+
 public enum GRYCompiler {
 	public static func compile(fileAt filePath: String) -> String {
 		let ast = generateAST(forFileAt: filePath)
@@ -14,6 +16,13 @@ public enum GRYCompiler {
 		print(kotlin)
 		
 		return kotlin
+	}
+	
+	public static func generateAstJson(forFileAt filePath: String) -> String? {
+		let ast = generateAST(forFileAt: filePath)
+		let jsonData = try! JSONEncoder().encode(ast)
+		let jsonString = String(data: jsonData, encoding: .utf8)
+		return jsonString
 	}
 	
 	public static func generateAST(forFileAt filePath: String) -> GRYAst {
