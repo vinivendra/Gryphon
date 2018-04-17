@@ -1,6 +1,6 @@
 import Foundation
 
-internal enum Shell {
+internal enum GRYShell {
     @discardableResult
     static func runShellCommand(_ arguments: [String]) -> (standardOutput: String, standardError: String, status: Int32) {
         let outputPipe = Pipe()

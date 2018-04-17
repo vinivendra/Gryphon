@@ -30,7 +30,7 @@ public enum GRYCompiler {
 	public static func getSwiftASTDump(forFileAt filePath: String) -> String {
 		// Call the swift compiler
 		let command = ["swiftc", "-dump-ast", filePath]
-		let commandResult = Shell.runShellCommand(command)
+		let commandResult = GRYShell.runShellCommand(command)
 		
 		// Ensure the compiler terminated successfully
 		guard commandResult.status == 0 else {
