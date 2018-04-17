@@ -9,7 +9,7 @@ class GRYSExpressionParserTest: XCTestCase {
 			"  \n\t(foo)").canReadOpenParentheses())
 		XCTAssertFalse(GRYSExpressionParser(fileContents:
 			"foo)").canReadOpenParentheses())
-
+		
 		XCTAssert(GRYSExpressionParser(fileContents:
 			") foo").canReadCloseParentheses())
 		XCTAssert(GRYSExpressionParser(fileContents:
@@ -66,7 +66,7 @@ class GRYSExpressionParserTest: XCTestCase {
 		XCTAssertFalse(GRYSExpressionParser(fileContents:
 			"(test.(file).Bla.foo(bar:baz:).x@/blah/blah blah/test.swift 4:13)").canReadDeclarationLocation())
 	}
-
+	
 	func testRead() {
 		var parser: GRYSExpressionParser
 		var string: String
@@ -166,7 +166,7 @@ class GRYSExpressionParserTest: XCTestCase {
 			XCTAssertEqual(createdASTText, expectedASTText, "Test \(test): parser failed to produce expected result. Diff:\n\n===\n\(TestUtils.diff(createdASTText, expectedASTText))===\n")
 		}
 	}
-
+	
 	static var allTests = [
 		("testCanRead", testCanRead),
 		("testRead", testRead),

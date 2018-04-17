@@ -17,20 +17,20 @@ public class GRYAst: GRYPrintableAsTree, Equatable {
 		parser.readOpenParentheses()
 		let name = parser.readIdentifier()
 		self.name = Utils.expandSwiftAbbreviation(name)
-
+		
 		// The loop stops: all branches tell the parser to read, and the input string must end eventually.
 		while true {
 			if parser.canReadKey() {
 				let key = parser.readKey()
-                if key == "location" && parser.canReadLocation() {
-                    keyValueAttributes[key] = parser.readLocation()
-                }
-                else if key == "decl" && parser.canReadDeclarationLocation() {
-                    keyValueAttributes[key] = parser.readDeclarationLocation()
-                }
-                else {
-                    keyValueAttributes[key] = parser.readIdentifierOrString()
-                }
+				if key == "location" && parser.canReadLocation() {
+					keyValueAttributes[key] = parser.readLocation()
+				}
+				else if key == "decl" && parser.canReadDeclarationLocation() {
+					keyValueAttributes[key] = parser.readDeclarationLocation()
+				}
+				else {
+					keyValueAttributes[key] = parser.readIdentifierOrString()
+				}
 			}
 			else if parser.canReadIdentifierOrString() {
 				let attribute = parser.readIdentifierOrString()
@@ -45,27 +45,27 @@ public class GRYAst: GRYPrintableAsTree, Equatable {
 				break
 			}
 		}
-
+		
 		self.standaloneAttributes = standaloneAttributes
 		self.keyValueAttributes = keyValueAttributes
 		self.subTrees = subTrees
 	}
 	
-    //
-    subscript (key: String) -> String? {
-        return keyValueAttributes[key]
-    }
-    
-    func subTree(named name: String) -> GRYAst? {
-        for subTree in subTrees {
-            if subTree.name == name {
-                return subTree
-            }
-        }
-        
-        return nil
-    }
-    
+	//
+	subscript (key: String) -> String? {
+		return keyValueAttributes[key]
+	}
+	
+	func subTree(named name: String) -> GRYAst? {
+		for subTree in subTrees {
+			if subTree.name == name {
+				return subTree
+			}
+		}
+		
+		return nil
+	}
+	
 	//
 	public var treeDescription: String {
 		return name
@@ -73,8 +73,8 @@ public class GRYAst: GRYPrintableAsTree, Equatable {
 	public var printableSubTrees: [GRYPrintableAsTree] {
 		let keyValueStrings = keyValueAttributes.map {
 			"\($0.key) → \($0.value)"
-		}.sorted() as [GRYPrintableAsTree]
-
+			}.sorted() as [GRYPrintableAsTree]
+		
 		let standaloneStrings = standaloneAttributes.sorted() as [GRYPrintableAsTree]
 		
 		let result: [GRYPrintableAsTree] = standaloneStrings + keyValueStrings + subTrees

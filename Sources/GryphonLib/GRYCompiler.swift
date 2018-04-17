@@ -5,17 +5,17 @@ import Darwin
 #endif
 
 public enum GRYCompiler {
-    public static func compile(fileAt filePath: String) -> String {
-        let ast = generateAST(forFileAt: filePath)
+	public static func compile(fileAt filePath: String) -> String {
+		let ast = generateAST(forFileAt: filePath)
 		
 		// Translate the AST to Kotlin
-        print("-- Kotlin --")
-        let kotlin = GRYKotlinTranslator().translateAST(ast)
-        print(kotlin)
-        
-        return kotlin
-    }
-
+		print("-- Kotlin --")
+		let kotlin = GRYKotlinTranslator().translateAST(ast)
+		print(kotlin)
+		
+		return kotlin
+	}
+	
 	public static func generateAST(forFileAt filePath: String) -> GRYAst {
 		let astDump = getSwiftASTDump(forFileAt: filePath)
 		
@@ -40,7 +40,7 @@ public enum GRYCompiler {
 		
 		// The compiler has dumped the ast to stderr
 		var astDump = commandResult.standardError
-
+		
 		// Trim any warnings swift may have printed before the actual AST dump
 		astDump =~ "^((.*)\n)*\\(source\\_file\n" => "\\(source\\_file\n"
 		

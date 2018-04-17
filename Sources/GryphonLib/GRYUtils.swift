@@ -1,7 +1,7 @@
 #if DEBUG
-    let log: ((Any) -> Void)? = { (item: Any) in print(item) }
+let log: ((Any) -> Void)? = { (item: Any) in print(item) }
 #else
-    let log: ((Any) -> Void)? = nil
+let log: ((Any) -> Void)? = nil
 #endif
 
 //

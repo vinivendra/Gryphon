@@ -86,25 +86,25 @@ internal class GRYSExpressionParser {
 		var matchIterator = contents =~ "^\\[[^\\]]+\\]"
 		return matchIterator.next() != nil
 	}
-    
-    func canReadLocation() -> Bool {
-        cleanLeadingWhitespace()
+	
+	func canReadLocation() -> Bool {
+		cleanLeadingWhitespace()
 		// Regex: String start,
 		//   many characters but no :, ( or ) (not greedy so it won't go past this specific location),
 		//   then :, a number, :, and another number
-        var matchIterator = contents =~ "^([^:\\(\\)]*?):(\\d+):(\\d+)"
-        return matchIterator.next() != nil
-    }
-    
-    func canReadDeclarationLocation() -> Bool {
-        cleanLeadingWhitespace()
+		var matchIterator = contents =~ "^([^:\\(\\)]*?):(\\d+):(\\d+)"
+		return matchIterator.next() != nil
+	}
+	
+	func canReadDeclarationLocation() -> Bool {
+		cleanLeadingWhitespace()
 		// Regex: String start,
 		//   some character that's not a (,
 		//   many characters but no @ or whitespace (not greedy so it won't go past this specific declaration location),
 		//   then @
-        var matchIterator = contents =~ "^([^\\(][^@\\s]*?)@"
-        return matchIterator.next() != nil
-    }
+		var matchIterator = contents =~ "^([^\\(][^@\\s]*?)@"
+		return matchIterator.next() != nil
+	}
 	
 	// MARK: - Read information
 	func readOpenParentheses() {
@@ -114,7 +114,7 @@ internal class GRYSExpressionParser {
 		
 		contents.removeFirst()
 		parenthesesLevel += 1
-
+		
 		gryParserLog?("-- Open parenthesis: level \(parenthesesLevel)")
 	}
 	
@@ -173,12 +173,12 @@ internal class GRYSExpressionParser {
 				result.append(character)
 			}
 		}
-
+		
 		gryParserLog?("-- Read identifier: \"\(result)\"")
 		contents.removeFirst(result.count)
 		return result
 	}
-
+	
 	func readKey() -> String {
 		cleanLeadingWhitespace()
 		
@@ -204,36 +204,36 @@ internal class GRYSExpressionParser {
 		let result = matchedString.dropLast()
 		return String(result)
 	}
-
-    func readLocation() -> String {
-        cleanLeadingWhitespace()
+	
+	func readLocation() -> String {
+		cleanLeadingWhitespace()
 		// Regex: String start,
 		//   many characters but no : (not greedy so it won't go past this specific location),
 		//   then :, a number, :, and another number
-        var matchIterator = contents =~ "^([^:]*?):(\\d+):(\\d+)"
-        guard let match = matchIterator.next() else { fatalError("Parsing error") }
-        let matchedString = match.matchedString
-        gryParserLog?("-- Read location: \"\(matchedString)\"")
-        contents.removeFirst(matchedString.count)
-        return matchedString
-    }
-    
-    func readDeclarationLocation() -> String {
-        cleanLeadingWhitespace()
+		var matchIterator = contents =~ "^([^:]*?):(\\d+):(\\d+)"
+		guard let match = matchIterator.next() else { fatalError("Parsing error") }
+		let matchedString = match.matchedString
+		gryParserLog?("-- Read location: \"\(matchedString)\"")
+		contents.removeFirst(matchedString.count)
+		return matchedString
+	}
+	
+	func readDeclarationLocation() -> String {
+		cleanLeadingWhitespace()
 		// Regex: String start,
 		//   many characters but no @ or whitespace (not greedy so it won't go past this specific declaration location),
 		//   then @
-        var matchIterator = contents =~ "^([^@\\s]*?)@"
-        guard let match = matchIterator.next() else { fatalError("Parsing error") }
-        let matchedString = match.matchedString
-        gryParserLog?("-- Read declaration location: \"\(matchedString)\"")
-        contents.removeFirst(matchedString.count)
-        
-        let location = readLocation()
-        
-        return matchedString + location
-    }
-    
+		var matchIterator = contents =~ "^([^@\\s]*?)@"
+		guard let match = matchIterator.next() else { fatalError("Parsing error") }
+		let matchedString = match.matchedString
+		gryParserLog?("-- Read declaration location: \"\(matchedString)\"")
+		contents.removeFirst(matchedString.count)
+		
+		let location = readLocation()
+		
+		return matchedString + location
+	}
+	
 	func readDoubleQuotedString() -> String {
 		cleanLeadingWhitespace()
 		// Regex: String start,
