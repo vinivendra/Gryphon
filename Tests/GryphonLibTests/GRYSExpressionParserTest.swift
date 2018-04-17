@@ -144,8 +144,32 @@ class GRYSExpressionParserTest: XCTestCase {
 		XCTAssertEqual(parser.contents, " foo)")
 	}
 	
+	func testParser() {
+		let tests = ["emptyFunction", "functionWithParameters", "functionWithReturn", "functionWithVariable"]
+		
+		for test in tests {
+			let testFilePath = TestUtils.testFilesPath + test
+			
+			let swiftASTDump = GRYCompiler.getSwiftASTDump(forFileAt: testFilePath + ".swift")
+			let createdAST = GRYAst(fileContents: swiftASTDump)
+			
+			var rawASTText = ""
+			createdAST.prettyPrint { rawASTText += $0 }
+			
+			// The file's path and its name (respectively) must be changed to equal the expected result
+			let createdASTText = rawASTText
+				.replacingOccurrences(of: testFilePath + ".swift", with: "##testFilePath##")
+				.replacingOccurrences(of: test, with: "test")
+			
+			let expectedASTText = try! String(contentsOfFile: testFilePath + ".ast")
+			
+			XCTAssertEqual(createdASTText, expectedASTText, "Test \(test): parser failed to produce expected result.")
+		}
+	}
+
 	static var allTests = [
 		("testCanRead", testCanRead),
-		("testRead", testRead)
+		("testRead", testRead),
+		("testParser", testParser)
 	]
 }

@@ -1,0 +1,7 @@
+ Source File
+ └─ Function Declaration
+    ├─ foo()
+    ├─ access → internal
+    ├─ interface type → () -> ()
+    ├─ Parameter List
+    └─ Brace Statement

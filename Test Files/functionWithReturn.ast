@@ -1,0 +1,50 @@
+ Source File
+ └─ Function Declaration
+    ├─ foo()
+    ├─ access → internal
+    ├─ interface type → () -> Int
+    ├─ Parameter List
+    ├─ Result
+    │  └─ Type Identity
+    │     └─ Component
+    │        ├─ bind → Swift.(file).Int
+    │        └─ id → Int
+    └─ Brace Statement
+       └─ Return Statement
+          └─ Call Expression
+             ├─ implicit
+             ├─ nothrow
+             ├─ arg_labels → _builtinIntegerLiteral:
+             ├─ location → ##testFilePath##:3:9
+             ├─ range → ##testFilePath##:3:9 - line:3:9
+             ├─ type → Int
+             ├─ Constructor Reference Call Expression
+             │  ├─ implicit
+             │  ├─ nothrow
+             │  ├─ location → ##testFilePath##:3:9
+             │  ├─ range → ##testFilePath##:3:9 - line:3:9
+             │  ├─ type → (_MaxBuiltinIntegerType) -> Int
+             │  ├─ Declref Expression
+             │  │  ├─ implicit
+             │  │  ├─ decl → Swift.(file).Int.init(_builtinIntegerLiteral:)
+             │  │  ├─ function_ref → single
+             │  │  ├─ location → ##testFilePath##:3:9
+             │  │  ├─ range → ##testFilePath##:3:9 - line:3:9
+             │  │  └─ type → (Int.Type) -> (_MaxBuiltinIntegerType) -> Int
+             │  └─ Type Expression
+             │     ├─ implicit
+             │     ├─ location → ##testFilePath##:3:9
+             │     ├─ range → ##testFilePath##:3:9 - line:3:9
+             │     ├─ type → Int.Type
+             │     └─ typerepr → Int
+             └─ Tuple Expression
+                ├─ implicit
+                ├─ location → ##testFilePath##:3:9
+                ├─ names → _builtinIntegerLiteral
+                ├─ range → ##testFilePath##:3:9 - line:3:9
+                ├─ type → (_builtinIntegerLiteral: Int2048)
+                └─ Integer Literal Expression
+                   ├─ location → ##testFilePath##:3:9
+                   ├─ range → ##testFilePath##:3:9 - line:3:9
+                   ├─ type → Int2048
+                   └─ value → 0
