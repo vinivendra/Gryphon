@@ -1,5 +1,5 @@
+@testable import GryphonLib
 import Foundation
-import GryphonLib
 
 func seedFromCurrentHour() -> (UInt64, UInt64) {
 	let calendar = Calendar.current
@@ -37,4 +37,36 @@ enum TestUtils {
 	static var rng: RandomGenerator = Xoroshiro(seed: seedFromCurrentHour())
 	
 	static let testFilesPath: String = Process().currentDirectoryPath + "/Test Files/"
+	
+	static func diff(_ string1: String, _ string2: String) -> String {
+		return withTemporaryFile(named: "file1.txt", containing: string1) { file1Path in
+			return withTemporaryFile(named: "file2.txt", containing: string2) { file2Path in
+				let command = ["diff", file1Path, file2Path]
+				let commandResult = GRYShell.runShellCommand(command)
+				return commandResult.standardOutput
+			}
+		}
+	}
+	
+	static func withTemporaryFile<T>(named fileName: String, containing contents: String, _ closure: (String) throws -> T) rethrows -> T
+	{
+		let temporaryDirectory = ".tmp"
+		
+		let fileManager = FileManager.default
+		
+		try! fileManager.createDirectory(atPath: temporaryDirectory, withIntermediateDirectories: true)
+		
+		let filePath = temporaryDirectory + "/" + fileName
+		let fileURL = URL(fileURLWithPath: filePath)
+		
+		// Remove it if it already exists
+		try? fileManager.removeItem(at: fileURL)
+		
+		let success = fileManager.createFile(atPath: filePath, contents: Data(contents.utf8))
+		assert(success)
+		
+		defer { try? fileManager.removeItem(at: fileURL) }
+		
+		return try closure(filePath)
+	}
 }

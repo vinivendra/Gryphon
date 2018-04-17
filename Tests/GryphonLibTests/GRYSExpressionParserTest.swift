@@ -145,7 +145,7 @@ class GRYSExpressionParserTest: XCTestCase {
 	}
 	
 	func testParser() {
-		let tests = ["emptyFunction", "functionWithParameters", "functionWithReturn", "functionWithVariable"]
+		let tests = ["emptyFunction", "functionWithAssignment", "functionWithParameters", "functionWithReturn", "functionWithVariable"]
 		
 		for test in tests {
 			let testFilePath = TestUtils.testFilesPath + test
@@ -163,7 +163,7 @@ class GRYSExpressionParserTest: XCTestCase {
 			
 			let expectedASTText = try! String(contentsOfFile: testFilePath + ".ast")
 			
-			XCTAssertEqual(createdASTText, expectedASTText, "Test \(test): parser failed to produce expected result.")
+			XCTAssertEqual(createdASTText, expectedASTText, "Test \(test): parser failed to produce expected result. Diff:\n\n===\n\(TestUtils.diff(createdASTText, expectedASTText))===\n")
 		}
 	}
 
