@@ -1,7 +1,13 @@
 import Foundation
 
 public enum GRYCompiler {
-	public static func compile(fileAt filePath: String) -> String {
+	public static func generateKotlinMainCode(forFileAt filePath: String) -> String {
+		let ast = generateAST(forFileAt: filePath)
+		let kotlin = GRYKotlinTranslator().translateASTWithMain(ast)
+		return kotlin
+	}
+	
+	public static func generateKotlinCode(forFileAt filePath: String) -> String {
 		let ast = generateAST(forFileAt: filePath)
 		let kotlin = GRYKotlinTranslator().translateAST(ast)
 		return kotlin

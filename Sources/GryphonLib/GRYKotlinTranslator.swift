@@ -1,4 +1,30 @@
 public class GRYKotlinTranslator {
+	
+	var danglingPatternBindingDeclaration: String?
+	
+	public func translateASTWithMain(_ ast: GRYAst) -> String {
+		var result = "fun main(args : Array<String>) {\n"
+		
+		let indentation = increaseIndentation("")
+		
+		for subTree in ast.subTrees {
+			switch subTree.name {
+			case "Top Level Code Declaration":
+				let string = translate(topLevelCode: subTree, withIndentation: indentation)
+				result += string
+			case "Variable Declaration":
+				let string = translate(variableDeclaration: subTree, withIndentation: indentation)
+				result += string
+			default:
+				result += "<Unknown: \(subTree.name)>\n\n"
+			}
+		}
+		
+		result += "}\n"
+		
+		return result
+	}
+	
 	public func translateAST(_ ast: GRYAst) -> String {
 		var result = ""
 		
@@ -13,6 +39,13 @@ public class GRYKotlinTranslator {
 		}
 		
 		return result
+	}
+	
+	private func translate(topLevelCode: GRYAst, withIndentation indentation: String) -> String {
+		assert(topLevelCode.name == "Top Level Code Declaration")
+		
+		let braceStatement = topLevelCode.subTree(named: "Brace Statement")!
+		return translate(statements: braceStatement.subTrees, withIndentation: indentation)
 	}
 	
 	// TODO: Functions with different parameter/API names
@@ -80,12 +113,9 @@ public class GRYKotlinTranslator {
 			
 			switch statement.name {
 			case "Pattern Binding Declaration":
-				let variableDeclaration = statements[i + 1]
-				i += 1 // skip the variable declaration
-				assert(variableDeclaration.name == "Variable Declaration")
-				result += translate(patternBindingDeclaration: statement,
-									variableDeclaration: variableDeclaration,
-									withIndentation: indentation)
+				danglingPatternBindingDeclaration = translate(expression: statement.subTree(named: "Call Expression")!)
+			case "Variable Declaration":
+				result += translate(variableDeclaration: statement, withIndentation: indentation)
 			case "Return Statement":
 				result += translate(returnStatement: statement, withIndentation: indentation)
 			default:
@@ -109,11 +139,9 @@ public class GRYKotlinTranslator {
 		return result
 	}
 	
-	private func translate(patternBindingDeclaration: GRYAst,
-						   variableDeclaration: GRYAst,
+	private func translate(variableDeclaration: GRYAst,
 						   withIndentation indentation: String) -> String
 	{
-		assert(patternBindingDeclaration.name == "Pattern Binding Declaration")
 		assert(variableDeclaration.name == "Variable Declaration")
 		var result = indentation
 		
@@ -128,9 +156,12 @@ public class GRYKotlinTranslator {
 			varOrValKeyword = "var"
 		}
 		
-		result += varOrValKeyword + " " + identifier + ": " + type + " = "
+		result += varOrValKeyword + " " + identifier + ": " + type
 		
-		result += translate(expression: patternBindingDeclaration.subTree(named: "Call Expression")!)
+		if let patternBindingDeclaration = danglingPatternBindingDeclaration {
+			result += " = " + patternBindingDeclaration
+			danglingPatternBindingDeclaration = nil
+		}
 		
 		result += "\n"
 		
