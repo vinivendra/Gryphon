@@ -1,6 +1,35 @@
 import Foundation
 
 public enum GRYCompiler {
+	public static func compileAndRun(fileAt filePath: String) -> GRYShell.CommandOutput {
+		_ = compile(fileAt: filePath)
+		
+		let arguments = ["java", "-jar", "kotlin.jar"]
+		let commandResult = GRYShell.runShellCommand(arguments, fromFolder: Utils.buildFolder)
+		
+		return commandResult
+	}
+	
+	@discardableResult
+	public static func compile(fileAt filePath: String) -> String {
+		let kotlinCode = generateKotlinMainCode(forFileAt: filePath)
+		let kotlinFileName = Utils.trimmedFileName(fromPath: filePath) + ".kt"
+		let kotlinFilePath = Utils.createFile(named: kotlinFileName,
+											  inDirectory: Utils.buildFolder,
+											  containing: kotlinCode)
+		
+		// Call the kotlin compiler
+		let arguments = ["-include-runtime",  "-d", Utils.buildFolder + "/kotlin.jar", kotlinFilePath]
+		let commandResult = GRYShell.runShellCommand("/usr/local/bin/kotlinc", arguments: arguments)
+		
+		// Ensure the compiler terminated successfully
+		guard commandResult.status == 0 else {
+			fatalError("Compiling kotlin files. Kotlin compiler says:\n\(commandResult.standardError)")
+		}
+		
+		return kotlinFilePath
+	}
+	
 	public static func generateKotlinMainCode(forFileAt filePath: String) -> String {
 		let ast = generateAST(forFileAt: filePath)
 		let kotlin = GRYKotlinTranslator().translateASTWithMain(ast)

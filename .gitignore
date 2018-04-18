@@ -4,3 +4,4 @@
 /*.xcodeproj
 test.swift
 .tmp/
+/.kotlinBuild
