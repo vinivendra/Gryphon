@@ -1,3 +1,5 @@
+import Foundation
+
 #if DEBUG
 let log: ((Any) -> Void)? = { (item: Any) in print(item) }
 #else
@@ -32,6 +34,34 @@ internal enum Utils {
 		
 		// Join words into a single string
 		return nameComponents.joined(separator: " ")
+	}
+}
+
+extension Utils {
+	private static func fileNameAndEscapedFilePath(from filePath: String) -> (fileName: String, escapedFilePath: String) {
+		// Get the only file name from the path and drop the ".swift" extension
+		let fileName = String(URL(fileURLWithPath: filePath).lastPathComponent.dropLast(6))
+		// JSON escapes '/'s in file paths
+		let escapedFilePath = filePath.replacingOccurrences(of: "/", with: "\\/")
+		return (fileName, escapedFilePath)
+	}
+	
+	internal static func insertPlaceholders(in string: String, forFilePath filePath: String) -> String {
+		let (fileName, escapedFilePath) = fileNameAndEscapedFilePath(from: filePath)
+		
+		let processedString = string
+			.replacingOccurrences(of: escapedFilePath, with: "##testPath##")
+			.replacingOccurrences(of: fileName, with: "##testFileName##")
+		return processedString
+	}
+	
+	internal static func replacePlaceholders(in string: String, withFilePath filePath: String) -> String {
+		let (fileName, escapedFilePath) = fileNameAndEscapedFilePath(from: filePath)
+		
+		let processedString = string
+			.replacingOccurrences(of: "##testPath##", with: escapedFilePath)
+			.replacingOccurrences(of: "##testFileName##", with: fileName)
+		return processedString
 	}
 }
 

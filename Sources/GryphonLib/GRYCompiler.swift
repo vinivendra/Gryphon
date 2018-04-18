@@ -21,8 +21,11 @@ public enum GRYCompiler {
 	public static func generateAstJson(forFileAt filePath: String) -> String? {
 		let ast = generateAST(forFileAt: filePath)
 		let jsonData = try! JSONEncoder().encode(ast)
-		let jsonString = String(data: jsonData, encoding: .utf8)
-		return jsonString
+
+		guard let rawJsonString = String(data: jsonData, encoding: .utf8) else { return nil }
+
+		let processedJsonString = Utils.insertPlaceholders(in: rawJsonString, forFilePath: filePath)
+		return processedJsonString
 	}
 	
 	public static func generateAST(forFileAt filePath: String) -> GRYAst {
