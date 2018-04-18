@@ -6,7 +6,7 @@ public class GRYKotlinTranslator {
 			switch subTree.name {
 			case "Function Declaration":
 				let string = translate(functionDeclaration: subTree, withIndentation: "")
-				result += string + "\n"
+				result += string
 			default:
 				result += "<Unknown: \(subTree.name)>\n\n"
 			}
