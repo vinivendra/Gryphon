@@ -1,15 +1,24 @@
 import Foundation
 
-internal enum GRYShell {
+public enum GRYShell {
+	public typealias CommandOutput = (standardOutput: String, standardError: String, status: Int32)
+	
 	@discardableResult
-	static func runShellCommand(_ arguments: [String]) -> (standardOutput: String, standardError: String, status: Int32) {
+	internal static func runShellCommand(_ command: String, arguments: [String], fromFolder currentFolder: String? = nil)
+		-> CommandOutput
+	{
 		let outputPipe = Pipe()
 		let errorPipe = Pipe()
 		let task = Process()
-		task.launchPath = "/usr/bin/env"
+		task.launchPath = command
 		task.arguments = arguments
 		task.standardOutput = outputPipe
 		task.standardError = errorPipe
+		
+		if let currentFolder = currentFolder {
+			task.currentDirectoryPath = currentFolder
+		}
+		
 		task.launch()
 		task.waitUntilExit()
 		
@@ -22,5 +31,12 @@ internal enum GRYShell {
 		return (standardOutput: outputString,
 				standardError: errorString,
 				status: task.terminationStatus)
+	}
+	
+	@discardableResult
+	internal static func runShellCommand(_ arguments: [String], fromFolder currentFolder: String? = nil)
+		-> CommandOutput
+	{
+		return runShellCommand("/usr/bin/env", arguments: arguments, fromFolder: currentFolder)
 	}
 }
