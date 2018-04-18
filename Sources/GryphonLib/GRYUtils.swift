@@ -38,30 +38,57 @@ internal enum Utils {
 }
 
 extension Utils {
-	private static func fileNameAndEscapedFilePath(from filePath: String) -> (fileName: String, escapedFilePath: String) {
-		// Get the only file name from the path and drop the ".swift" extension
-		let fileName = String(URL(fileURLWithPath: filePath).lastPathComponent.dropLast(6))
+	internal static func trimmedFileName(fromPath filePath: String) -> String {
+		// Get the only file name from the path and drop the extension
+		let rawFileName = URL(fileURLWithPath: filePath).lastPathComponent
+		return rawFileName.components(separatedBy: ".").dropLast().joined()
+	}
+	
+	private static func escapedFilePath(fromPath filePath: String) -> String {
 		// JSON escapes '/'s in file paths
 		let escapedFilePath = filePath.replacingOccurrences(of: "/", with: "\\/")
-		return (fileName, escapedFilePath)
+		return escapedFilePath
 	}
 	
 	internal static func insertPlaceholders(in string: String, forFilePath filePath: String) -> String {
-		let (fileName, escapedFilePath) = fileNameAndEscapedFilePath(from: filePath)
+		let fileName = trimmedFileName(fromPath: filePath)
+		let filePath = escapedFilePath(fromPath: filePath)
 		
 		let processedString = string
-			.replacingOccurrences(of: escapedFilePath, with: "##testPath##")
+			.replacingOccurrences(of: filePath, with: "##testPath##")
 			.replacingOccurrences(of: fileName, with: "##testFileName##")
 		return processedString
 	}
 	
 	internal static func replacePlaceholders(in string: String, withFilePath filePath: String) -> String {
-		let (fileName, escapedFilePath) = fileNameAndEscapedFilePath(from: filePath)
+		let fileName = trimmedFileName(fromPath: filePath)
+		let filePath = escapedFilePath(fromPath: filePath)
 		
 		let processedString = string
-			.replacingOccurrences(of: "##testPath##", with: escapedFilePath)
+			.replacingOccurrences(of: "##testPath##", with: filePath)
 			.replacingOccurrences(of: "##testFileName##", with: fileName)
 		return processedString
+	}
+}
+
+extension Utils {
+	static let buildFolder = ".kotlinBuild"
+	
+	static func createFile(named fileName: String, inDirectory directory: String, containing contents: String) -> String {
+		let fileManager = FileManager.default
+		
+		try! fileManager.createDirectory(atPath: directory, withIntermediateDirectories: true)
+		
+		let filePath = directory + "/" + fileName
+		let fileURL = URL(fileURLWithPath: filePath)
+		
+		// Remove it if it already exists
+		try? fileManager.removeItem(at: fileURL)
+		
+		let success = fileManager.createFile(atPath: filePath, contents: Data(contents.utf8))
+		assert(success)
+		
+		return filePath
 	}
 }
 
