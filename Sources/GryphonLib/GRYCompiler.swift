@@ -1,20 +1,9 @@
-#if os(Linux) || os(FreeBSD)
-import Glibc
-#else
-import Darwin
-#endif
-
 import Foundation
 
 public enum GRYCompiler {
 	public static func compile(fileAt filePath: String) -> String {
 		let ast = generateAST(forFileAt: filePath)
-		
-		// Translate the AST to Kotlin
-		print("-- Kotlin --")
 		let kotlin = GRYKotlinTranslator().translateAST(ast)
-		print(kotlin)
-		
 		return kotlin
 	}
 	
@@ -30,12 +19,7 @@ public enum GRYCompiler {
 	
 	public static func generateAST(forFileAt filePath: String) -> GRYAst {
 		let astDump = getSwiftASTDump(forFileAt: filePath)
-		
-		// Parse the AST into Gryphon data structures
-		print("-- Gryphon AST --")
 		let ast = GRYAst(fileContents: astDump)
-		ast.prettyPrint()
-		
 		return ast
 	}
 	
@@ -46,8 +30,7 @@ public enum GRYCompiler {
 		
 		// Ensure the compiler terminated successfully
 		guard commandResult.status == 0 else {
-			print("Error parsing and typechecking input files. Swift compiler says:\n\(commandResult.standardError)")
-			exit(commandResult.status)
+			fatalError("Error parsing and typechecking input files. Swift compiler says:\n\(commandResult.standardError)")
 		}
 		
 		// The compiler has dumped the ast to stderr
