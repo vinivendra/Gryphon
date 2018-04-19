@@ -284,6 +284,9 @@ public class GRYKotlinTranslator {
 		case "Declaration Reference Expression":
 			return translate(declarationReferenceExpression: expression)
 		// TODO: Docs, tests
+		case "String Literal Expression":
+			return translate(stringLiteralExpression: expression)
+		// TODO: Docs, tests
 		case "Erasure Expression":
 			return translate(expression: expression.subTrees[0])
 		// TODO: Docs, tests
@@ -390,6 +393,12 @@ public class GRYKotlinTranslator {
 		}
 		
 		return result.joined(separator: ", ")
+	}
+
+	// TODO: Docs, tests
+	private func translate(stringLiteralExpression: GRYAst) -> String {
+		let value = stringLiteralExpression["value"]!
+		return "\"\(value)\""
 	}
 	
 	//
