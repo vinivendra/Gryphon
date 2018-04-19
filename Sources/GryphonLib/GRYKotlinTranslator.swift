@@ -287,6 +287,9 @@ public class GRYKotlinTranslator {
 		case "String Literal Expression":
 			return translate(stringLiteralExpression: expression)
 		// TODO: Docs, tests
+		case "Interpolated String Literal Expression":
+			return translate(interpolatedStringLiteralExpression: expression)
+		// TODO: Docs, tests
 		case "Erasure Expression":
 			return translate(expression: expression.subTrees[0])
 		// TODO: Docs, tests
@@ -409,6 +412,26 @@ public class GRYKotlinTranslator {
 	private func translate(stringLiteralExpression: GRYAst) -> String {
 		let value = stringLiteralExpression["value"]!
 		return "\"\(value)\""
+	}
+	
+	// TODO: Docs, tests
+	private func translate(interpolatedStringLiteralExpression: GRYAst) -> String {
+		var result = "\""
+		
+		for expression in interpolatedStringLiteralExpression.subTrees {
+			if expression.name == "String Literal Expression" {
+				let quotedString = translate(stringLiteralExpression: expression)
+				let unquotedString = quotedString.dropLast().dropFirst()
+				result += unquotedString
+			}
+			else {
+				let expressionString = translate(expression: expression)
+				result += "${\(expressionString)}"
+			}
+		}
+		
+		result += "\""
+		return result
 	}
 	
 	//
