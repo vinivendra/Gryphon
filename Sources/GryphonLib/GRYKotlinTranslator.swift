@@ -290,6 +290,9 @@ public class GRYKotlinTranslator {
 		case "Erasure Expression":
 			return translate(expression: expression.subTrees[0])
 		// TODO: Docs, tests
+		case "Parentheses Expression":
+			return "(" + translate(expression: expression.subTrees[0]) + ")"
+		// TODO: Docs, tests
 		case "Load Expression":
 			return translate(expression: expression.subTree(named: "Declaration Reference Expression")!)
 		default:
@@ -327,17 +330,24 @@ public class GRYKotlinTranslator {
 					callExpression.subTree(named: "Declaration Reference Expression")!)
 			let functionNamePrefix = functionName.prefix(while: { $0 != "(" })
 			
-			let tupleExpression: GRYAst
-			if let unwrappedTupleExpression = callExpression.subTree(named: "Tuple Expression") {
-				tupleExpression = unwrappedTupleExpression
+			let parameters: String
+			if let tupleExpression = callExpression.subTree(named: "Tuple Expression") {
+				parameters = translate(tupleExpression: tupleExpression)
+			}
+			else if let tupleShuffleExpression = callExpression.subTree(named: "Tuple Shuffle Expression") {
+				if let tupleExpression = tupleShuffleExpression.subTree(named: "Tuple Expression") {
+					parameters = translate(tupleExpression: tupleExpression)
+				}
+				else {
+					let parenthesesExpression = tupleShuffleExpression.subTree(named: "Parentheses Expression")!
+					parameters = translate(expression: parenthesesExpression)
+				}
 			}
 			else {
-				let tupleShuffleExpression = callExpression.subTree(named: "Tuple Shuffle Expression")!
-				tupleExpression = tupleShuffleExpression.subTree(named: "Tuple Expression")!
+				return "<Unknown expression: \(callExpression.name)>"
 			}
 			
-			let parameters = translate(tupleExpression: tupleExpression)
-			return "\(functionNamePrefix)(\(parameters))\n"
+			return "\(functionNamePrefix)\(parameters)\n"
 		}
 	}
 	
@@ -392,7 +402,7 @@ public class GRYKotlinTranslator {
 			}
 		}
 		
-		return result.joined(separator: ", ")
+		return "(" + result.joined(separator: ", ") + ")"
 	}
 
 	// TODO: Docs, tests

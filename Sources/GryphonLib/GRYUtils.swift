@@ -26,6 +26,7 @@ internal enum Utils {
 			case "Expr": return "Expression"
 			case "Func": return "Function"
 			case "Ident": return "Identity"
+			case "Paren": return "Parentheses"
 			case "Ref": return "Reference"
 			case "Stmt": return "Statement"
 			case "Var": return "Variable"
