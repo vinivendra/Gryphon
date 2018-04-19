@@ -52,21 +52,7 @@ enum TestUtils {
 	{
 		let temporaryDirectory = ".tmp"
 		
-		let fileManager = FileManager.default
-		
-		try! fileManager.createDirectory(atPath: temporaryDirectory, withIntermediateDirectories: true)
-		
-		let filePath = temporaryDirectory + "/" + fileName
-		let fileURL = URL(fileURLWithPath: filePath)
-		
-		// Remove it if it already exists
-		try? fileManager.removeItem(at: fileURL)
-		
-		let success = fileManager.createFile(atPath: filePath, contents: Data(contents.utf8))
-		assert(success)
-		
-		defer { try? fileManager.removeItem(at: fileURL) }
-		
+		let filePath = Utils.createFile(named: fileName, inDirectory: temporaryDirectory, containing: contents)
 		return try closure(filePath)
 	}
 }
