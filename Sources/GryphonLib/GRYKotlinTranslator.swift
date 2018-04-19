@@ -173,7 +173,15 @@ public class GRYKotlinTranslator {
 			case "Pattern Binding Declaration":
 				if let expression = statement.subTree(named: "Call Expression") {
 
-					let binding = statement.subTree(named: "Pattern Typed")!.subTree(named: "Pattern Named")!
+					let binding: GRYAst
+					if let unwrappedBinding = statement.subTree(named: "Pattern Typed")?.subTree(named: "Pattern Named") {
+						binding = unwrappedBinding
+					}
+					else {
+						binding = statement.subTree(named: "Pattern Named")!
+					}
+					
+					
 					let identifier = binding.standaloneAttributes[0]
 					let type = binding.keyValueAttributes["type"]!
 				
@@ -185,6 +193,8 @@ public class GRYKotlinTranslator {
 				result += translate(variableDeclaration: statement, withIndentation: indentation)
 			case "Return Statement":
 				result += translate(returnStatement: statement, withIndentation: indentation)
+			case "Call Expression":
+				result += indentation + translate(callExpression: statement)
 			default:
 				result += indentation + "<Unknown statement: \(statement.name)>\n"
 			}
@@ -291,6 +301,7 @@ public class GRYKotlinTranslator {
 	private func translate(callExpression: GRYAst) -> String {
 		precondition(callExpression.name == "Call Expression")
 		
+		// If the call expression corresponds to an integer literal
 		if let argumentLabels = callExpression["arg_labels"],
 			argumentLabels == "_builtinIntegerLiteral:",
 			let tupleExpression = callExpression.subTree(named: "Tuple Expression"),
@@ -299,8 +310,25 @@ public class GRYKotlinTranslator {
 		{
 			return value
 		}
+		// If the call expression corresponds to an explicit function call
+		// TODO: Docs, tests
 		else {
-			return "<Unknown expression: \(callExpression.name)>"
+			let functionName =
+				translate(declarationReferenceExpression:
+					callExpression.subTree(named: "Declaration Reference Expression")!)
+			let functionNamePrefix = functionName.prefix(while: { $0 != "(" })
+			
+			let tupleExpression: GRYAst
+			if let unwrappedTupleExpression = callExpression.subTree(named: "Tuple Expression") {
+				tupleExpression = unwrappedTupleExpression
+			}
+			else {
+				let tupleShuffleExpression = callExpression.subTree(named: "Tuple Shuffle Expression")!
+				tupleExpression = tupleShuffleExpression.subTree(named: "Tuple Expression")!
+			}
+			
+			let parameters = translate(tupleExpression: tupleExpression)
+			return "\(functionNamePrefix)(\(parameters))\n"
 		}
 	}
 	
@@ -327,7 +355,7 @@ public class GRYKotlinTranslator {
 		
 		// Attempt to discard useless info after the '@'
 		// (both the '@' and the info after it may not be there)
-		string =~ "^([^@\\s]*?)@" => "$1"
+		string =~ "^([^@\\s]*?)@.*" => "$1"
 		
 		// Separate the remaining components
 		let components = string.split(separator: ".")
@@ -336,6 +364,26 @@ public class GRYKotlinTranslator {
 		let identifier = components.last!
 		
 		return String(identifier)
+	}
+	
+	// TODO: Docs, tests
+	private func translate(tupleExpression: GRYAst) -> String {
+		let names = tupleExpression["names"]!.split(separator: ",")
+		
+		var result = [String]()
+		
+		for (name, expression) in zip(names, tupleExpression.subTrees) {
+			let expressionString = translate(expression: expression)
+			
+			if name != "''" {
+				result.append("\(name): \(expressionString)")
+			}
+			else {
+				result.append("\(expressionString)")
+			}
+		}
+		
+		return result.joined(separator: ", ")
 	}
 	
 	//
