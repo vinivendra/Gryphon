@@ -331,7 +331,9 @@ public class GRYKotlinTranslator {
 			let functionName =
 				translate(declarationReferenceExpression:
 					callExpression.subTree(named: "Declaration Reference Expression")!)
-			let functionNamePrefix = functionName.prefix(while: { $0 != "(" })
+			let rawFunctionNamePrefix = functionName.prefix(while: { $0 != "(" })
+			let functionNamePrefix = (rawFunctionNamePrefix == "print") ?
+				"println" : String(rawFunctionNamePrefix)
 			
 			let parameters: String
 			if let tupleExpression = callExpression.subTree(named: "Tuple Expression") {
