@@ -63,17 +63,20 @@ public class GRYKotlinTranslator {
 	
 	// MARK: - Implementation
 	
-	// FIXME: This might be an imperfect process. For instance, if there's a pattern binding declaration that's not
-	// associated with a variable declaration, followed by a variable declaration with no value, they'll become
-	// associated and that'll be an error. Maybe we should at least check if the identifier and the type are the
-	// same before completing the association.
-	
 	/// Swift variables declared with a value, such as `var x = 0`, are represented in a weird way in the AST:
-	/// first comes the value, in a `Pattern Binding Declaration`, then the actual `Variable Declaration` in
-	/// a different branch. Since its hard to predict where that branch might be, first we process the value and
-	/// store it in this variable, and then (when the variable declaration is eventually processed) we recover the value,
-	/// use it, and reset this variable to nil.
-	var danglingPatternBindingDeclaration: String?
+	/// first comes a `Pattern Binding Declaration` containing the variable's name, its type, and
+	/// its initial value; then comes the actual `Variable Declaration`, but in a different branch of the AST and
+	/// with no information on the previously mentioned initial value.
+	/// Since both of them have essential information, we need both at the same time to translate a variable
+	/// declaration. However, since they are in unpredictably different branches, it's hard to find the Variable
+	/// Declaration when we first read the Pattern Binding Declaration.
+	///
+	/// The solution then is to temporarily save the Pattern Binding Declaration's information on this variable. Then,
+	/// once we find the Variable Declaration, we check to see if the stored value is appropriate
+	/// and then use all the information available to complete the translation process. This variable is then reset to nil.
+	///
+	/// - SeeAlso: translate(variableDeclaration:, withIndentation:)
+	var danglingPatternBinding: (identifier: String, type: String, translatedExpression: String)?
 	
 	/**
 	Translates a swift top-level statement into kotlin code.
@@ -168,7 +171,16 @@ public class GRYKotlinTranslator {
 			
 			switch statement.name {
 			case "Pattern Binding Declaration":
-				danglingPatternBindingDeclaration = translate(expression: statement.subTree(named: "Call Expression")!)
+				if let expression = statement.subTree(named: "Call Expression") {
+
+					let binding = statement.subTree(named: "Pattern Typed")!.subTree(named: "Pattern Named")!
+					let identifier = binding.standaloneAttributes[0]
+					let type = binding.keyValueAttributes["type"]!
+				
+					danglingPatternBinding = (identifier: identifier,
+														type: type,
+														translatedExpression: translate(expression: expression))
+				}
 			case "Variable Declaration":
 				result += translate(variableDeclaration: statement, withIndentation: indentation)
 			case "Return Statement":
@@ -204,10 +216,10 @@ public class GRYKotlinTranslator {
 	/**
 	Translates a swift variable declaration into kotlin code.
 	
-	This function checks the value stored in `danglingPatternBindingDeclaration`. If the value is present,
-	it's used as the value to be assigned to the variable in its declaration (and the
-	`danglingPatternBindingDeclaration` is reset to `nil`). If it's absent, the variable is declared
-	without an initial value.
+	This function checks the value stored in `danglingPatternBinding`. If a value is present and it's
+	consistent with this variable declaration (same identifier and type), we use the expression
+	inside it as the initial value for the variable (and the `danglingPatternBinding` is reset to
+	`nil`). Otherwise, the variable is declared without an initial value.
 	
 	- Parameter variableDeclaration: An AST representing a variable declaration.
 	- Parameter indentation: A string containing the indentation level to be added to the left of the generated code.
@@ -233,9 +245,12 @@ public class GRYKotlinTranslator {
 		
 		result += varOrValKeyword + " " + identifier + ": " + type
 		
-		if let patternBindingDeclaration = danglingPatternBindingDeclaration {
-			result += " = " + patternBindingDeclaration
-			danglingPatternBindingDeclaration = nil
+		if let patternBindingExpression = danglingPatternBinding,
+			patternBindingExpression.identifier == identifier,
+			patternBindingExpression.type == type
+		{
+			result += " = " + patternBindingExpression.translatedExpression
+			danglingPatternBinding = nil
 		}
 		
 		result += "\n"
