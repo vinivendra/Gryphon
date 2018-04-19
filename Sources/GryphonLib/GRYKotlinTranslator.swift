@@ -15,12 +15,25 @@ public class GRYKotlinTranslator {
 	- SeeAlso: To translate swift declarations into kotlin declarations without the `main` function
 	wrapping, see translateAST(_ ast: GRYAst).
 	*/
+	// TODO: Docs, tests
 	public func translateASTWithMain(_ ast: GRYAst) -> String {
-		var result = "fun main(args : Array<String>) {\n"
+		// First, translate declarations that can't be inside the main function
+		let declarationNames = ["Function Declaration"]
+		let isDeclaration = { (ast: GRYAst) -> Bool in declarationNames.contains(ast.name) }
+		
+		let declarations = ast.subTrees.filter(isDeclaration)
+		let declarationsAST = GRYAst("Source File", declarations)
+		
+		var result = translateAST(declarationsAST)
+		
+		// Then, translate the remaining statements and wrap them in the main function
+		result += "\nfun main(args : Array<String>) {\n"
+		
+		let statements = ast.subTrees.filter({!isDeclaration($0)})
 		
 		let indentation = increaseIndentation("")
 		
-		for subTree in ast.subTrees {
+		for subTree in statements {
 			switch subTree.name {
 			case "Top Level Code Declaration":
 				let string = translate(topLevelCode: subTree, withIndentation: indentation)

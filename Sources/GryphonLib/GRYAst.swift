@@ -51,6 +51,26 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 		self.subTrees = subTrees
 	}
 	
+	internal init(_ name: String,
+				  _ subTrees: [GRYAst] = [])
+	{
+		self.name = name
+		self.standaloneAttributes = []
+		self.keyValueAttributes = [:]
+		self.subTrees = subTrees
+	}
+	
+	internal init(_ name: String,
+				  _ standaloneAttributes: [String],
+				  _ keyValueAttributes: [String: String],
+				  _ subTrees: [GRYAst] = [])
+	{
+		self.name = name
+		self.standaloneAttributes = standaloneAttributes
+		self.keyValueAttributes = keyValueAttributes
+		self.subTrees = subTrees
+	}
+	
 	//
 	subscript (key: String) -> String? {
 		return keyValueAttributes[key]
@@ -85,27 +105,6 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 		var result = ""
 		self.prettyPrint() { result += $0 }
 		return result
-	}
-	
-	// MARK: - Testing
-	internal init(_ name: String,
-				  _ subTrees: [GRYAst] = [])
-	{
-		self.name = name
-		self.standaloneAttributes = []
-		self.keyValueAttributes = [:]
-		self.subTrees = subTrees
-	}
-	
-	internal init(_ name: String,
-				  _ standaloneAttributes: [String],
-				  _ keyValueAttributes: [String: String],
-				  _ subTrees: [GRYAst] = [])
-	{
-		self.name = name
-		self.standaloneAttributes = standaloneAttributes
-		self.keyValueAttributes = keyValueAttributes
-		self.subTrees = subTrees
 	}
 	
 	public static func == (lhs: GRYAst, rhs: GRYAst) -> Bool {
