@@ -283,6 +283,12 @@ public class GRYKotlinTranslator {
 			return translate(callExpression: expression)
 		case "Declaration Reference Expression":
 			return translate(declarationReferenceExpression: expression)
+		// TODO: Docs, tests
+		case "Erasure Expression":
+			return translate(expression: expression.subTrees[0])
+		// TODO: Docs, tests
+		case "Load Expression":
+			return translate(expression: expression.subTree(named: "Declaration Reference Expression")!)
 		default:
 			return "<Unknown expression: \(expression.name)>"
 		}
