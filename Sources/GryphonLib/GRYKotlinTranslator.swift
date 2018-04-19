@@ -258,10 +258,11 @@ public class GRYKotlinTranslator {
 		return result
 	}
 	
-	// TODO: refactor this method and document it better.
-	
 	/**
 	Translates a swift expression into kotlin code.
+	
+	This method actually figures out what kind of expression it's dealing with, then delegates to
+	other, more specific methods.
 	
 	- Parameter expression: An AST representing a swift expression. Many types of expressions are supported.
 	- Returns: A kotlin translation of the expression.
@@ -269,31 +270,71 @@ public class GRYKotlinTranslator {
 	private func translate(expression: GRYAst) -> String {
 		switch expression.name {
 		case "Call Expression":
-			if let argumentLabels = expression["arg_labels"],
-				argumentLabels == "_builtinIntegerLiteral:",
-				let tupleExpression = expression.subTree(named: "Tuple Expression"),
-				let integerLiteralExpression = tupleExpression.subTree(named: "Integer Literal Expression"),
-				let value = integerLiteralExpression["value"]
-			{
-				return value
-			}
-			else {
-				return "<Unknown expression: \(expression.name)>"
-			}
+			return translate(callExpression: expression)
 		case "Declref Expression":
-			let decl = expression["decl"]!
-			
-			var matchIterator = decl =~ "^([^@\\s]*?)@"
-			let match = matchIterator.next()!
-			let matchedString = match.captureGroup(1)!.matchedString
-			
-			let components = matchedString.split(separator: ".")
-			let identifier = components.last!
-			
-			return String(identifier)
+			return translate(declRefExpression: expression)
 		default:
 			return "<Unknown expression: \(expression.name)>"
 		}
+	}
+	
+	/**
+	Translates a swift call expression into kotlin code.
+	
+	A call expression is a function call, but it can be explicit (as usual) or implicit (i.e. integer literals).
+	Only integer literals currently are supported, and no other explicit or implicit calls.
+	
+	- Parameter expression: An AST representing a swift call expression.
+	- Returns: A kotlin translation of the expression.
+	- Precondition: The `callExpression` parameter must be a valid call expression.
+	*/
+	private func translate(callExpression: GRYAst) -> String {
+		precondition(callExpression.name == "Call Expression")
+		
+		if let argumentLabels = callExpression["arg_labels"],
+			argumentLabels == "_builtinIntegerLiteral:",
+			let tupleExpression = callExpression.subTree(named: "Tuple Expression"),
+			let integerLiteralExpression = tupleExpression.subTree(named: "Integer Literal Expression"),
+			let value = integerLiteralExpression["value"]
+		{
+			return value
+		}
+		else {
+			return "<Unknown expression: \(callExpression.name)>"
+		}
+	}
+	
+	/**
+	Translates a swift declRef expression into kotlin code.
+	
+	A declRef expression represents a reference to a declared variable. It's represented in the swift AST Dump
+	in a rather complex format, so a few operations are used to extract only the relevant identifier.
+	
+	For instance: a declRef expression referring to the variable `x`, inside the `foo` function,
+	in the /Users/Me/Documents/myFile.swift file, will be something like
+	`myFile.(file).foo().x@/Users/Me/Documents/MyFile.swift:2:6`
+	
+	Note that the only relevant part for the translator is the actual `x` identifier.
+	
+	- Parameter expression: An AST representing a swift call expression.
+	- Returns: A kotlin translation of the expression.
+	- Precondition: The `callExpression` parameter must be a valid call expression.
+	*/
+	private func translate(declRefExpression: GRYAst) -> String {
+		let decl = declRefExpression["decl"]!
+		
+		// Get everything before the '@'
+		var matchIterator = decl =~ "^([^@\\s]*?)@"
+		let match = matchIterator.next()!
+		let matchedString = match.captureGroup(1)!.matchedString
+		
+		// Separate the remaining components
+		let components = matchedString.split(separator: ".")
+		
+		// Extract only the identifier
+		let identifier = components.last!
+		
+		return String(identifier)
 	}
 	
 	//
