@@ -92,16 +92,6 @@ class GRYSExpressionParserTest: XCTestCase {
 		XCTAssertEqual(string, "foo(baz)bar")
 		XCTAssertEqual(parser.contents, ")")
 		
-		parser = GRYSExpressionParser(fileContents: "foo\"bar\"")
-		string = parser.readIdentifier()
-		XCTAssertEqual(string, "foo")
-		XCTAssertEqual(parser.contents, "\"bar\"")
-		
-		parser = GRYSExpressionParser(fileContents: "foo'bar'")
-		string = parser.readIdentifier()
-		XCTAssertEqual(string, "foo")
-		XCTAssertEqual(parser.contents, "'bar'")
-		
 		// Key
 		parser = GRYSExpressionParser(fileContents: "foo='bar'")
 		string = parser.readKey()

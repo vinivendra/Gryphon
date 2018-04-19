@@ -142,11 +142,9 @@ internal class GRYSExpressionParser {
 			let string = readStringInBrackets()
 			return "\(string)"
 		}
-		else if canReadIdentifier() {
+		else {
 			return readIdentifier()
 		}
-		
-		fatalError("Parsing error")
 	}
 	
 	func readIdentifier() -> String {
@@ -168,7 +166,7 @@ internal class GRYSExpressionParser {
 				else {
 					result.append(character)
 				}
-			case " ", "\n", "\"", "'": break loop
+			case " ", "\n": break loop
 			default:
 				result.append(character)
 			}
