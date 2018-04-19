@@ -382,7 +382,7 @@ public class GRYKotlinTranslator {
 			let expressionString = translate(expression: expression)
 			
 			if name != "''" {
-				result.append("\(name): \(expressionString)")
+				result.append("\(name) = \(expressionString)")
 			}
 			else {
 				result.append("\(expressionString)")
