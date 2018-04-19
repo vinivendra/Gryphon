@@ -27,7 +27,7 @@ public class GRYKotlinTranslator {
 		var result = translateAST(declarationsAST)
 		
 		// Then, translate the remaining statements and wrap them in the main function
-		result += "\nfun main(args : Array<String>) {\n"
+		result += "\nfun main(args: Array<String>) {\n"
 		
 		let statements = ast.subTrees.filter({!isDeclaration($0)})
 		
