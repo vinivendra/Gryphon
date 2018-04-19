@@ -271,8 +271,8 @@ public class GRYKotlinTranslator {
 		switch expression.name {
 		case "Call Expression":
 			return translate(callExpression: expression)
-		case "Declref Expression":
-			return translate(declRefExpression: expression)
+		case "Declaration Reference Expression":
+			return translate(declarationReferenceExpression: expression)
 		default:
 			return "<Unknown expression: \(expression.name)>"
 		}
@@ -305,31 +305,32 @@ public class GRYKotlinTranslator {
 	}
 	
 	/**
-	Translates a swift declRef expression into kotlin code.
+	Translates a swift declaration reference expression into kotlin code.
 	
-	A declRef expression represents a reference to a declared variable. It's represented in the swift AST Dump
-	in a rather complex format, so a few operations are used to extract only the relevant identifier.
+	A declaration reference expression represents a reference to a declaration, which may be a variable or a function.
+	It's represented in the swift AST Dump in a rather complex format, so a few operations are used to
+	extract only the relevant identifier.
 	
-	For instance: a declRef expression referring to the variable `x`, inside the `foo` function,
+	For instance: a declaration reference expression referring to the variable `x`, inside the `foo` function,
 	in the /Users/Me/Documents/myFile.swift file, will be something like
-	`myFile.(file).foo().x@/Users/Me/Documents/MyFile.swift:2:6`
+	`myFile.(file).foo().x@/Users/Me/Documents/MyFile.swift:2:6`, but a declaration reference for the print function
+	doesn't have the '@' or anything after it.
 	
 	Note that the only relevant part for the translator is the actual `x` identifier.
 	
-	- Parameter expression: An AST representing a swift call expression.
+	- Parameter expression: An AST representing a swift declaration reference expression.
 	- Returns: A kotlin translation of the expression.
-	- Precondition: The `callExpression` parameter must be a valid call expression.
+	- Precondition: The `declarationReferenceExpression` parameter must be a valid declaration reference expression.
 	*/
-	private func translate(declRefExpression: GRYAst) -> String {
-		let decl = declRefExpression["decl"]!
+	private func translate(declarationReferenceExpression: GRYAst) -> String {
+		var string = declarationReferenceExpression["decl"]!
 		
-		// Get everything before the '@'
-		var matchIterator = decl =~ "^([^@\\s]*?)@"
-		let match = matchIterator.next()!
-		let matchedString = match.captureGroup(1)!.matchedString
+		// Attempt to discard useless info after the '@'
+		// (both the '@' and the info after it may not be there)
+		string =~ "^([^@\\s]*?)@" => "$1"
 		
 		// Separate the remaining components
-		let components = matchedString.split(separator: ".")
+		let components = string.split(separator: ".")
 		
 		// Extract only the identifier
 		let identifier = components.last!

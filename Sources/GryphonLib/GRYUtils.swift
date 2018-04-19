@@ -21,13 +21,14 @@ internal enum Utils {
 		// Expand swift abbreviations
 		nameComponents = nameComponents.map { (word: String) -> String in
 			switch word {
-			case "Var": return "Variable"
-			case "Ref": return "Reference"
-			case "Func": return "Function"
-			case "Stmt": return "Statement"
-			case "Expr": return "Expression"
 			case "Decl": return "Declaration"
+			case "Declref": return "Declaration Reference"
+			case "Expr": return "Expression"
+			case "Func": return "Function"
 			case "Ident": return "Identity"
+			case "Ref": return "Reference"
+			case "Stmt": return "Statement"
+			case "Var": return "Variable"
 			default: return word
 			}
 		}
