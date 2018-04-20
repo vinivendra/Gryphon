@@ -139,7 +139,7 @@ public class GRYKotlinTranslator {
 		var parameterStrings = [String]()
 		if let parameterList = functionDeclaration.subTree(named: "Parameter List") {
 			for parameter in parameterList.subTrees {
-				let name = parameter["apiName"]!
+				let name = parameter.standaloneAttributes[0]
 				let type = parameter["interface type"]!
 				parameterStrings.append(name + ": " + type)
 			}
@@ -346,15 +346,23 @@ public class GRYKotlinTranslator {
 		// If the call expression corresponds to an explicit function call
 		// TODO: Docs, tests
 		else {
-			let functionName =
-				translate(declarationReferenceExpression:
-					callExpression.subTree(named: "Declaration Reference Expression")!)
+			let functionName: String
+			if let declarationReferenceExpression = callExpression.subTree(named: "Declaration Reference Expression") {
+				functionName = translate(declarationReferenceExpression: declarationReferenceExpression)
+			}
+			else {
+				functionName = getIdentifierFromDeclaration(callExpression["decl"]!)
+			}
+			
 			let rawFunctionNamePrefix = functionName.prefix(while: { $0 != "(" })
 			let functionNamePrefix = (rawFunctionNamePrefix == "print") ?
 				"println" : String(rawFunctionNamePrefix)
 			
 			let parameters: String
-			if let tupleExpression = callExpression.subTree(named: "Tuple Expression") {
+			if let parenthesesExpression = callExpression.subTree(named: "Parentheses Expression") {
+				parameters = translate(expression: parenthesesExpression)
+			}
+			else if let tupleExpression = callExpression.subTree(named: "Tuple Expression") {
 				parameters = translate(tupleExpression: tupleExpression)
 			}
 			else if let tupleShuffleExpression = callExpression.subTree(named: "Tuple Shuffle Expression") {
@@ -393,14 +401,21 @@ public class GRYKotlinTranslator {
 	- Precondition: The `declarationReferenceExpression` parameter must be a valid declaration reference expression.
 	*/
 	private func translate(declarationReferenceExpression: GRYAst) -> String {
-		var string = declarationReferenceExpression["decl"]!
+		precondition(declarationReferenceExpression.name == "Declaration Reference Expression")
+		let declaration = declarationReferenceExpression["decl"]!
+		return getIdentifierFromDeclaration(declaration)
+	}
+	
+	// TODO: Docs
+	private func getIdentifierFromDeclaration(_ declaration: String) -> String {
+		var declaration = declaration
 		
 		// Attempt to discard useless info after the '@'
 		// (both the '@' and the info after it may not be there)
-		string =~ "^([^@\\s]*?)@.*" => "$1"
+		declaration =~ "^([^@\\s]*?)@.*" => "$1"
 		
 		// Separate the remaining components
-		let components = string.split(separator: ".")
+		let components = declaration.split(separator: ".")
 		
 		// Extract only the identifier
 		let identifier = components.last!
@@ -408,9 +423,13 @@ public class GRYKotlinTranslator {
 		return String(identifier)
 	}
 	
-	// TODO: Docs, tests
+	// TODO: Docs
 	private func translate(tupleExpression: GRYAst) -> String {
-		let names = tupleExpression["names"]!.split(separator: ",")
+		precondition(tupleExpression.name == "Tuple Expression")
+		
+		guard let names = tupleExpression["names"]?.split(separator: ",") else {
+			return "()"
+		}
 		
 		var result = [String]()
 		

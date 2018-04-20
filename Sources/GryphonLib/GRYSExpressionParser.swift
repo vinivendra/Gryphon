@@ -130,7 +130,10 @@ internal class GRYSExpressionParser {
 	}
 	
 	func readIdentifierOrString() -> String {
-		if canReadDoubleQuotedString() {
+		if canReadOpenParentheses() {
+			return ""
+		}
+		else if canReadDoubleQuotedString() {
 			let string = readDoubleQuotedString()
 			return "\(string)"
 		}
