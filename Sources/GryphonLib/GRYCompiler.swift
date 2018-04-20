@@ -12,7 +12,7 @@ public enum GRYCompiler {
 	
 	@discardableResult
 	public static func compile(fileAt filePath: String) -> String {
-		let kotlinCode = generateKotlinMainCode(forFileAt: filePath)
+		let kotlinCode = generateKotlinCode(forFileAt: filePath)
 		let kotlinFileName = Utils.trimmedFileName(fromPath: filePath) + ".kt"
 		let kotlinFilePath = Utils.createFile(named: kotlinFileName,
 											  inDirectory: Utils.buildFolder,
@@ -28,12 +28,6 @@ public enum GRYCompiler {
 		}
 		
 		return kotlinFilePath
-	}
-	
-	public static func generateKotlinMainCode(forFileAt filePath: String) -> String {
-		let ast = generateAST(forFileAt: filePath)
-		let kotlin = GRYKotlinTranslator().translateAST(ast)
-		return kotlin
 	}
 	
 	public static func generateKotlinCode(forFileAt filePath: String) -> String {
