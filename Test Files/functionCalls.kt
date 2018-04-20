@@ -20,4 +20,6 @@ fun main(args: Array<String>) {
 	foo3(bar = 0, baz = 0)
 	foo4(0, baz = 0)
 	foo6(0, 0)
+	println("Hello!")
+	println(1)
 }

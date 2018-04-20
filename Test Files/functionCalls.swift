@@ -13,3 +13,6 @@ foo3(bar: 0, baz: 0)
 foo4(0, baz: 0)
 // foo5(bar: 0, 0) // Results in Kotlin error: mixing named and positioned arguments is not allowed
 foo6(0, 0)
+
+print("Hello!")
+print(1)

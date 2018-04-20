@@ -344,7 +344,7 @@ public class GRYKotlinTranslator {
 			return value
 		}
 		// If the call expression corresponds to an explicit function call
-		// TODO: Docs, tests
+		// TODO: Docs
 		else {
 			let functionName: String
 			if let declarationReferenceExpression = callExpression.subTree(named: "Declaration Reference Expression") {
