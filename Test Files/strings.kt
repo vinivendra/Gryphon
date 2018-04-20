@@ -1,4 +1,3 @@
-
 fun main(args: Array<String>) {
 	val x: String = "Hello, world!"
 	val y: String = "The string above is ${(x)}"""

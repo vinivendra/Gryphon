@@ -32,7 +32,7 @@ public enum GRYCompiler {
 	
 	public static func generateKotlinMainCode(forFileAt filePath: String) -> String {
 		let ast = generateAST(forFileAt: filePath)
-		let kotlin = GRYKotlinTranslator().translateASTWithMain(ast)
+		let kotlin = GRYKotlinTranslator().translateAST(ast)
 		return kotlin
 	}
 	

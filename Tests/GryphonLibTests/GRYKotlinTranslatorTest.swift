@@ -12,7 +12,7 @@ class GRYKotlinTranslatorTest: XCTestCase {
 			let astProcessedJSON = Utils.replacePlaceholders(in: astRawJSON, withFilePath: testFilePath + ".swift")
 			let astData = Data(astProcessedJSON.utf8)
 			let ast = try! JSONDecoder().decode(GRYAst.self, from: astData)
-			let createdKotlinCode = GRYKotlinTranslator().translateASTWithMain(ast)
+			let createdKotlinCode = GRYKotlinTranslator().translateAST(ast)
 			
 			// Load the previously stored Kotlin code from file
 			let expectedKotlinCode = try! String(contentsOfFile: testFilePath + ".kt")
