@@ -8,7 +8,8 @@ public func allTests() -> [XCTestCaseEntry] {
 		testCase(GRYPrintableAsTreeTest.allTests),
 		testCase(GRYSExpressionParserTest.allTests),
 		testCase(GRYShellTest.allTests),
-		testCase(GRYUtilsTest.allTests)
+		testCase(GRYUtilsTest.allTests),
+		testCase(IntegrationTest.allTests)
 	]
 }
 #endif
