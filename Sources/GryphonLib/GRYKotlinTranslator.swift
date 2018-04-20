@@ -26,10 +26,12 @@ public class GRYKotlinTranslator {
 		
 		var result = translateAST(declarationsAST)
 		
-		// Then, translate the remaining statements and wrap them in the main function
-		result += "\nfun main(args: Array<String>) {\n"
-		
+		// Then, translate the remaining statements (if there are any) and wrap them in the main function
 		let statements = ast.subTrees.filter({!isDeclaration($0)})
+		
+		guard !statements.isEmpty else { return result }
+		
+		result += "\nfun main(args: Array<String>) {\n"
 		
 		let indentation = increaseIndentation("")
 		
@@ -184,7 +186,10 @@ public class GRYKotlinTranslator {
 			
 			switch statement.name {
 			case "Pattern Binding Declaration":
-				if let expression = statement.subTree(named: "Call Expression") {
+				if statement.subTrees.count > 1,
+					statement.subTrees[1].name.hasSuffix("Expression")
+				{
+					let expression = statement.subTrees[1]
 
 					let binding: GRYAst
 					if let unwrappedBinding = statement.subTree(named: "Pattern Typed")?.subTree(named: "Pattern Named") {
@@ -423,14 +428,16 @@ public class GRYKotlinTranslator {
 		return "(" + result.joined(separator: ", ") + ")"
 	}
 
-	// TODO: Docs, tests
+	// TODO: Docs
 	private func translate(stringLiteralExpression: GRYAst) -> String {
 		let value = stringLiteralExpression["value"]!
 		return "\"\(value)\""
 	}
 	
-	// TODO: Docs, tests
+	// TODO: Docs
 	private func translate(interpolatedStringLiteralExpression: GRYAst) -> String {
+		precondition(interpolatedStringLiteralExpression.name == "Interpolated String Literal Expression")
+		
 		var result = "\""
 		
 		for expression in interpolatedStringLiteralExpression.subTrees {

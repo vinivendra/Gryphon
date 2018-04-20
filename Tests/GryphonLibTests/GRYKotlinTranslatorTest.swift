@@ -3,7 +3,7 @@ import XCTest
 
 class GRYKotlinTranslatorTest: XCTestCase {
 	func testTranslator() {
-		let tests = ["emptyFunction", "functionWithEmptyVariable", "functionWithParameters", "functionWithReturn", "functionWithVariable"]
+		let tests = ["emptyFunction", "functionWithEmptyVariable", "functionWithParameters", "functionWithReturn", "functionWithVariable", "strings"]
 		
 		for testName in tests {
 			// Create the Kotlin code using the mock AST
@@ -12,7 +12,7 @@ class GRYKotlinTranslatorTest: XCTestCase {
 			let astProcessedJSON = Utils.replacePlaceholders(in: astRawJSON, withFilePath: testFilePath + ".swift")
 			let astData = Data(astProcessedJSON.utf8)
 			let ast = try! JSONDecoder().decode(GRYAst.self, from: astData)
-			let createdKotlinCode = GRYKotlinTranslator().translateAST(ast)
+			let createdKotlinCode = GRYKotlinTranslator().translateASTWithMain(ast)
 			
 			// Load the previously stored Kotlin code from file
 			let expectedKotlinCode = try! String(contentsOfFile: testFilePath + ".kt")
