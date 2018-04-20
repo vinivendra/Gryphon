@@ -301,19 +301,19 @@ public class GRYKotlinTranslator {
 			return translate(callExpression: expression)
 		case "Declaration Reference Expression":
 			return translate(declarationReferenceExpression: expression)
-		// TODO: Docs, tests
+		// TODO: Docs
 		case "String Literal Expression":
 			return translate(stringLiteralExpression: expression)
-		// TODO: Docs, tests
+		// TODO: Docs
 		case "Interpolated String Literal Expression":
 			return translate(interpolatedStringLiteralExpression: expression)
-		// TODO: Docs, tests
+		// TODO: Docs
 		case "Erasure Expression":
 			return translate(expression: expression.subTrees[0])
-		// TODO: Docs, tests
+		// TODO: Docs
 		case "Parentheses Expression":
 			return "(" + translate(expression: expression.subTrees[0]) + ")"
-		// TODO: Docs, tests
+		// TODO: Docs
 		case "Load Expression":
 			return translate(expression: expression.subTree(named: "Declaration Reference Expression")!)
 		default:
