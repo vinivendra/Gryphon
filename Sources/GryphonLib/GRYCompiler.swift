@@ -23,7 +23,7 @@ public enum GRYCompiler {
 		let commandResult = GRYShell.runShellCommand("/usr/local/bin/kotlinc", arguments: arguments)
 		
 		// Ensure the compiler terminated successfully
-		guard commandResult.status == 0 else {
+		guard commandResult.standardError.isEmpty else {
 			fatalError("Compiling kotlin files. Kotlin compiler says:\n\(commandResult.standardError)")
 		}
 		
