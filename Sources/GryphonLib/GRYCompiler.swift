@@ -4,6 +4,7 @@ public enum GRYCompiler {
 	public static func compileAndRun(fileAt filePath: String) -> GRYShell.CommandOutput {
 		_ = compile(fileAt: filePath)
 		
+		log?("Running Kotlin...")
 		let arguments = ["java", "-jar", "kotlin.jar"]
 		let commandResult = GRYShell.runShellCommand(arguments, fromFolder: Utils.buildFolder)
 		
@@ -13,6 +14,8 @@ public enum GRYCompiler {
 	@discardableResult
 	public static func compile(fileAt filePath: String) -> String {
 		let kotlinCode = generateKotlinCode(forFileAt: filePath)
+		
+		log?("Compiling Kotlin...")
 		let kotlinFileName = Utils.trimmedFileName(fromPath: filePath) + ".kt"
 		let kotlinFilePath = Utils.createFile(named: kotlinFileName,
 											  inDirectory: Utils.buildFolder,
@@ -32,27 +35,32 @@ public enum GRYCompiler {
 	
 	public static func generateKotlinCode(forFileAt filePath: String) -> String {
 		let ast = generateAST(forFileAt: filePath)
+		
+		log?("Translating AST to Kotlin...")
 		let kotlin = GRYKotlinTranslator().translateAST(ast)
 		return kotlin
 	}
 	
 	public static func generateAstJson(forFileAt filePath: String) -> String? {
 		let ast = generateAST(forFileAt: filePath)
+
+		log?("Building AST JSON...")
 		let jsonData = try! JSONEncoder().encode(ast)
-
 		guard let rawJsonString = String(data: jsonData, encoding: .utf8) else { return nil }
-
 		let processedJsonString = Utils.insertPlaceholders(in: rawJsonString, forFilePath: filePath)
 		return processedJsonString
 	}
 	
 	public static func generateAST(forFileAt filePath: String) -> GRYAst {
 		let astDump = getSwiftASTDump(forFileAt: filePath)
+
+		log?("Building GRYAst...")
 		let ast = GRYAst(fileContents: astDump)
 		return ast
 	}
 	
 	public static func getSwiftASTDump(forFileAt filePath: String) -> String {
+		log?("Getting swift AST dump...")
 		// TODO: Check if the ast file is outdated
 		let filePathWithoutExtention = filePath.components(separatedBy: ".").dropLast().joined()
 		let astDumpFilePath = filePathWithoutExtention + ".ast"

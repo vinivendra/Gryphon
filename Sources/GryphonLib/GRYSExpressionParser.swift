@@ -115,7 +115,7 @@ internal class GRYSExpressionParser {
 		contents.removeFirst()
 		parenthesesLevel += 1
 		
-		gryParserLog?("-- Open parenthesis: level \(parenthesesLevel)")
+		log?("-- Open parenthesis: level \(parenthesesLevel)")
 	}
 	
 	func readCloseParentheses() {
@@ -126,7 +126,7 @@ internal class GRYSExpressionParser {
 		contents.removeFirst()
 		parenthesesLevel -= 1
 		
-		gryParserLog?("-- Close parenthesis: level \(parenthesesLevel)")
+		log?("-- Close parenthesis: level \(parenthesesLevel)")
 	}
 	
 	func readIdentifierOrString() -> String {
@@ -175,7 +175,7 @@ internal class GRYSExpressionParser {
 			}
 		}
 		
-		gryParserLog?("-- Read identifier: \"\(result)\"")
+		log?("-- Read identifier: \"\(result)\"")
 		contents.removeFirst(result.count)
 		return result
 	}
@@ -186,7 +186,7 @@ internal class GRYSExpressionParser {
 		// Try finding known composed keys before trying for any non-composed keys
 		for composedKey in GRYSExpressionParser.knownComposedKeys {
 			if contents.hasPrefix(composedKey) {
-				gryParserLog?("-- Read composed key: \"\(composedKey)\"")
+				log?("-- Read composed key: \"\(composedKey)\"")
 				contents.removeFirst(composedKey.count)
 				let result = composedKey.dropLast()
 				return String(result)
@@ -200,7 +200,7 @@ internal class GRYSExpressionParser {
 		var matchIterator = contents =~ "^[^\\s\\)\\(\"'=]+="
 		guard let match = matchIterator.next() else { fatalError("Parsing error") }
 		let matchedString = match.matchedString
-		gryParserLog?("-- Read key: \"\(matchedString)\"")
+		log?("-- Read key: \"\(matchedString)\"")
 		contents.removeFirst(matchedString.count)
 		let result = matchedString.dropLast()
 		return String(result)
@@ -214,7 +214,7 @@ internal class GRYSExpressionParser {
 		var matchIterator = contents =~ "^([^:]*?):(\\d+):(\\d+)"
 		guard let match = matchIterator.next() else { fatalError("Parsing error") }
 		let matchedString = match.matchedString
-		gryParserLog?("-- Read location: \"\(matchedString)\"")
+		log?("-- Read location: \"\(matchedString)\"")
 		contents.removeFirst(matchedString.count)
 		return matchedString
 	}
@@ -227,7 +227,7 @@ internal class GRYSExpressionParser {
 		var matchIterator = contents =~ "^([^@\\s]*?)@"
 		guard let match = matchIterator.next() else { fatalError("Parsing error") }
 		let matchedString = match.matchedString
-		gryParserLog?("-- Read declaration location: \"\(matchedString)\"")
+		log?("-- Read declaration location: \"\(matchedString)\"")
 		contents.removeFirst(matchedString.count)
 		
 		let location = readLocation()
@@ -244,7 +244,7 @@ internal class GRYSExpressionParser {
 		var matchIterator = contents =~ "^\"[^\"]+\""
 		guard let match = matchIterator.next() else { fatalError("Parsing error") }
 		let matchedString = match.matchedString
-		gryParserLog?("-- String: \"\(matchedString)\"")
+		log?("-- String: \"\(matchedString)\"")
 		contents.removeFirst(matchedString.count)
 		let result = matchedString.dropFirst().dropLast()
 		return String(result)
@@ -259,7 +259,7 @@ internal class GRYSExpressionParser {
 		var matchIterator = contents =~ "^'[^']+'"
 		guard let match = matchIterator.next() else { fatalError("Parsing error") }
 		let matchedString = match.matchedString
-		gryParserLog?("-- String: \"\(matchedString)\"")
+		log?("-- String: \"\(matchedString)\"")
 		contents.removeFirst(matchedString.count)
 		let result = matchedString.dropFirst().dropLast()
 		return String(result)
@@ -274,7 +274,7 @@ internal class GRYSExpressionParser {
 		var matchIterator = contents =~ "^\\[[^\\]]+\\]"
 		guard let match = matchIterator.next() else { fatalError("Parsing error") }
 		let matchedString = match.matchedString
-		gryParserLog?("-- String: \"\(matchedString)\"")
+		log?("-- String: \"\(matchedString)\"")
 		contents.removeFirst(matchedString.count)
 		let result = matchedString.dropFirst().dropLast()
 		return String(result)

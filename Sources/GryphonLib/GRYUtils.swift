@@ -7,10 +7,7 @@ let log: ((Any) -> Void)? = nil
 #endif
 
 //
-private let gryShouldLogParser = false
-
-//
-let gryParserLog = gryShouldLogParser ? log : nil
+private let gryShouldLog = false
 
 /////////////////////////////////////////////
 internal enum Utils {
