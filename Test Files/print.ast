@@ -1,0 +1,92 @@
+(source_file
+  (top_level_code_decl
+    (brace_stmt
+      (call_expr type='()' location=<<testFilePath>>:1:1 range=[<<testFilePath>>:1:1 - line:1:22] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:1:1 range=[<<testFilePath>>:1:1 - line:1:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:1:7 range=[<<testFilePath>>:1:6 - line:1:22] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:1:7 range=[<<testFilePath>>:1:6 - line:1:22]
+            (erasure_expr implicit type='Any' location=<<testFilePath>>:1:7 range=[<<testFilePath>>:1:7 - line:1:7]
+              (string_literal_expr type='String' location=<<testFilePath>>:1:7 range=[<<testFilePath>>:1:7 - line:1:7] encoding=utf8 value="Hello, world!" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))))))
+  (top_level_code_decl
+    (brace_stmt
+      (call_expr type='()' location=<<testFilePath>>:3:1 range=[<<testFilePath>>:3:1 - line:3:9] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:3:1 range=[<<testFilePath>>:3:1 - line:3:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:3:7 range=[<<testFilePath>>:3:6 - line:3:9] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:3:7 range=[<<testFilePath>>:3:6 - line:3:9]
+            (erasure_expr implicit type='Any' location=<<testFilePath>>:3:7 range=[<<testFilePath>>:3:7 - line:3:7]
+              (call_expr implicit type='Int' location=<<testFilePath>>:3:7 range=[<<testFilePath>>:3:7 - line:3:7] nothrow arg_labels=_builtinIntegerLiteral:
+                (constructor_ref_call_expr implicit type='(_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:3:7 range=[<<testFilePath>>:3:7 - line:3:7] nothrow
+                  (declref_expr implicit type='(Int.Type) -> (_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:3:7 range=[<<testFilePath>>:3:7 - line:3:7] decl=Swift.(file).Int.init(_builtinIntegerLiteral:) function_ref=single)
+                  (type_expr implicit type='Int.Type' location=<<testFilePath>>:3:7 range=[<<testFilePath>>:3:7 - line:3:7] typerepr='Int'))
+                (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' location=<<testFilePath>>:3:7 range=[<<testFilePath>>:3:7 - line:3:7] names=_builtinIntegerLiteral
+                  (integer_literal_expr type='Int2048' location=<<testFilePath>>:3:7 range=[<<testFilePath>>:3:7 - line:3:7] value=42)))))))))
+  (top_level_code_decl
+    (brace_stmt
+      (pattern_binding_decl
+        (pattern_named type='String' 'message')
+        (string_literal_expr type='String' location=<<testFilePath>>:5:15 range=[<<testFilePath>>:5:15 - line:5:15] encoding=utf8 value="A message in a variable." builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))
+))
+  (var_decl "message" type='String' interface type='String' access=internal let storage_kind=stored)
+  (top_level_code_decl
+    (brace_stmt
+      (call_expr type='()' location=<<testFilePath>>:6:1 range=[<<testFilePath>>:6:1 - line:6:14] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:6:1 range=[<<testFilePath>>:6:1 - line:6:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:6:7 range=[<<testFilePath>>:6:6 - line:6:14] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:6:7 range=[<<testFilePath>>:6:6 - line:6:14]
+            (erasure_expr implicit type='Any' location=<<testFilePath>>:6:7 range=[<<testFilePath>>:6:7 - line:6:7]
+              (declref_expr type='String' location=<<testFilePath>>:6:7 range=[<<testFilePath>>:6:7 - line:6:7] decl=print.(file).message@<<testFilePath>>:5:5 direct_to_storage function_ref=unapplied)))))))
+  (top_level_code_decl
+    (brace_stmt
+      (pattern_binding_decl
+        (pattern_named type='Int' 'number')
+        (call_expr implicit type='Int' location=<<testFilePath>>:8:14 range=[<<testFilePath>>:8:14 - line:8:14] nothrow arg_labels=_builtinIntegerLiteral:
+          (constructor_ref_call_expr implicit type='(_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:8:14 range=[<<testFilePath>>:8:14 - line:8:14] nothrow
+            (declref_expr implicit type='(Int.Type) -> (_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:8:14 range=[<<testFilePath>>:8:14 - line:8:14] decl=Swift.(file).Int.init(_builtinIntegerLiteral:) function_ref=single)
+            (type_expr implicit type='Int.Type' location=<<testFilePath>>:8:14 range=[<<testFilePath>>:8:14 - line:8:14] typerepr='Int'))
+          (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' location=<<testFilePath>>:8:14 range=[<<testFilePath>>:8:14 - line:8:14] names=_builtinIntegerLiteral
+            (integer_literal_expr type='Int2048' location=<<testFilePath>>:8:14 range=[<<testFilePath>>:8:14 - line:8:14] value=13))))
+))
+  (var_decl "number" type='Int' interface type='Int' access=internal let storage_kind=stored)
+  (top_level_code_decl
+    (brace_stmt
+      (call_expr type='()' location=<<testFilePath>>:9:1 range=[<<testFilePath>>:9:1 - line:9:13] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:9:1 range=[<<testFilePath>>:9:1 - line:9:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:9:7 range=[<<testFilePath>>:9:6 - line:9:13] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:9:7 range=[<<testFilePath>>:9:6 - line:9:13]
+            (erasure_expr implicit type='Any' location=<<testFilePath>>:9:7 range=[<<testFilePath>>:9:7 - line:9:7]
+              (declref_expr type='Int' location=<<testFilePath>>:9:7 range=[<<testFilePath>>:9:7 - line:9:7] decl=print.(file).number@<<testFilePath>>:8:5 direct_to_storage function_ref=unapplied)))))))
+  (top_level_code_decl
+    (brace_stmt
+      (call_expr type='()' location=<<testFilePath>>:11:1 range=[<<testFilePath>>:11:1 - line:11:83] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:11:1 range=[<<testFilePath>>:11:1 - line:11:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:11:7 range=[<<testFilePath>>:11:6 - line:11:83] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:11:7 range=[<<testFilePath>>:11:6 - line:11:83]
+            (erasure_expr implicit type='Any' location=<<testFilePath>>:11:7 range=[<<testFilePath>>:11:7 - line:11:7]
+              (interpolated_string_literal_expr type='String' location=<<testFilePath>>:11:7 range=[<<testFilePath>>:11:7 - line:11:7]
+                (string_literal_expr type='String' location=<<testFilePath>>:11:7 range=[<<testFilePath>>:11:7 - line:11:7] encoding=utf8 value="Here's a string literal: " builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
+                (paren_expr type='(String)' location=<<testFilePath>>:11:35 range=[<<testFilePath>>:11:34 - line:11:52]
+                  (string_literal_expr type='String' location=<<testFilePath>>:11:35 range=[<<testFilePath>>:11:35 - line:11:35] encoding=utf8 value="String Literal." builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))
+                (string_literal_expr type='String' location=<<testFilePath>>:11:53 range=[<<testFilePath>>:11:53 - line:11:53] encoding=utf8 value="\nAnd here's a number: " builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
+                (paren_expr type='(Int)' location=<<testFilePath>>:11:78 range=[<<testFilePath>>:11:77 - line:11:80]
+                  (call_expr implicit type='Int' location=<<testFilePath>>:11:78 range=[<<testFilePath>>:11:78 - line:11:78] nothrow arg_labels=_builtinIntegerLiteral:
+                    (constructor_ref_call_expr implicit type='(_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:11:78 range=[<<testFilePath>>:11:78 - line:11:78] nothrow
+                      (declref_expr implicit type='(Int.Type) -> (_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:11:78 range=[<<testFilePath>>:11:78 - line:11:78] decl=Swift.(file).Int.init(_builtinIntegerLiteral:) function_ref=single)
+                      (type_expr implicit type='Int.Type' location=<<testFilePath>>:11:78 range=[<<testFilePath>>:11:78 - line:11:78] typerepr='Int'))
+                    (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' location=<<testFilePath>>:11:78 range=[<<testFilePath>>:11:78 - line:11:78] names=_builtinIntegerLiteral
+                      (integer_literal_expr type='Int2048' location=<<testFilePath>>:11:78 range=[<<testFilePath>>:11:78 - line:11:78] value=17))))
+                (string_literal_expr type='String' location=<<testFilePath>>:11:81 range=[<<testFilePath>>:11:81 - line:11:81] encoding=utf8 value="." builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))))))
+  (top_level_code_decl
+    (brace_stmt
+      (call_expr type='()' location=<<testFilePath>>:12:1 range=[<<testFilePath>>:12:1 - line:12:80] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:12:1 range=[<<testFilePath>>:12:1 - line:12:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:12:7 range=[<<testFilePath>>:12:6 - line:12:80] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:12:7 range=[<<testFilePath>>:12:6 - line:12:80]
+            (erasure_expr implicit type='Any' location=<<testFilePath>>:12:7 range=[<<testFilePath>>:12:7 - line:12:7]
+              (interpolated_string_literal_expr type='String' location=<<testFilePath>>:12:7 range=[<<testFilePath>>:12:7 - line:12:7]
+                (string_literal_expr type='String' location=<<testFilePath>>:12:7 range=[<<testFilePath>>:12:7 - line:12:7] encoding=utf8 value="The stored message is: " builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
+                (paren_expr type='(String)' location=<<testFilePath>>:12:33 range=[<<testFilePath>>:12:32 - line:12:40]
+                  (declref_expr type='String' location=<<testFilePath>>:12:33 range=[<<testFilePath>>:12:33 - line:12:33] decl=print.(file).message@<<testFilePath>>:5:5 direct_to_storage function_ref=unapplied))
+                (string_literal_expr type='String' location=<<testFilePath>>:12:41 range=[<<testFilePath>>:12:41 - line:12:41] encoding=utf8 value="\nAnd the stored number is: " builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
+                (paren_expr type='(Int)' location=<<testFilePath>>:12:71 range=[<<testFilePath>>:12:70 - line:12:77]
+                  (declref_expr type='Int' location=<<testFilePath>>:12:71 range=[<<testFilePath>>:12:71 - line:12:71] decl=print.(file).number@<<testFilePath>>:8:5 direct_to_storage function_ref=unapplied))
+                (string_literal_expr type='String' location=<<testFilePath>>:12:78 range=[<<testFilePath>>:12:78 - line:12:78] encoding=utf8 value="." builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))))))))

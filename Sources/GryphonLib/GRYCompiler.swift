@@ -53,21 +53,17 @@ public enum GRYCompiler {
 	}
 	
 	public static func getSwiftASTDump(forFileAt filePath: String) -> String {
-		// Call the swift compiler
-		let command = ["swiftc", "-dump-ast", filePath]
-		let commandResult = GRYShell.runShellCommand(command)
+		// TODO: Check if the ast file is outdated
+		let filePathWithoutExtention = filePath.components(separatedBy: ".").dropLast().joined()
+		let astDumpFilePath = filePathWithoutExtention + ".ast"
 		
-		// Ensure the compiler terminated successfully
-		guard commandResult.status == 0 else {
-			fatalError("Error parsing and typechecking input files. Swift compiler says:\n\(commandResult.standardError)")
+		do {
+			let rawAstDump = try String(contentsOfFile: astDumpFilePath)
+			let processedAstDump = Utils.replacePlaceholders(in: rawAstDump, withFilePath: filePath, escapingSlashes: false)
+			return processedAstDump
 		}
-		
-		// The compiler has dumped the ast to stderr
-		var astDump = commandResult.standardError
-		
-		// Trim any warnings swift may have printed before the actual AST dump
-		astDump =~ "^((.*)\n)*\\(source\\_file\n" => "\\(source\\_file\n"
-		
-		return astDump
+		catch {
+			fatalError("Error opening \(astDumpFilePath). If the file doesn't exits, please run the perl script on \(filePath) to generate it.")
+		}
 	}
 }

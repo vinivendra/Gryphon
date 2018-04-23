@@ -53,22 +53,19 @@ extension Utils {
 	}
 	
 	internal static func insertPlaceholders(in string: String, forFilePath filePath: String) -> String {
-		let fileName = trimmedFileName(fromPath: filePath)
 		let filePath = escapedFilePath(fromPath: filePath)
-		
+
 		let processedString = string
-			.replacingOccurrences(of: filePath, with: "##testPath##")
-			.replacingOccurrences(of: fileName, with: "##testFileName##")
+			.replacingOccurrences(of: filePath, with: "<<testFilePath>>")
+		
 		return processedString
 	}
 	
-	internal static func replacePlaceholders(in string: String, withFilePath filePath: String) -> String {
-		let fileName = trimmedFileName(fromPath: filePath)
-		let filePath = escapedFilePath(fromPath: filePath)
-		
+	internal static func replacePlaceholders(in string: String, withFilePath filePath: String, escapingSlashes: Bool) -> String {
+		let filePath = escapingSlashes ? escapedFilePath(fromPath: filePath) : filePath
+
 		let processedString = string
-			.replacingOccurrences(of: "##testPath##", with: filePath)
-			.replacingOccurrences(of: "##testFileName##", with: fileName)
+			.replacingOccurrences(of: "<<testFilePath>>", with: filePath)
 		return processedString
 	}
 }

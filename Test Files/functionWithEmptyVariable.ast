@@ -1,0 +1,12 @@
+(source_file
+  (func_decl "foo()" interface type='() -> ()' access=internal
+    (parameter_list)
+    (brace_stmt
+      (pattern_binding_decl
+        (pattern_typed type='Int'
+          (pattern_named type='Int' 'x')
+          (type_ident
+            (component id='Int' bind=Swift.(file).Int))))
+
+      (var_decl "x" type='Int' interface type='Int' access=private storage_kind=stored)
+)))

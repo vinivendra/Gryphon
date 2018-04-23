@@ -145,7 +145,7 @@ class GRYSExpressionParserTest: XCTestCase {
 			
 			// Load the previously stored AST from file
 			let astRawJSON = try! String(contentsOfFile: testFilePath + ".json")
-			let astProcessedJSON = Utils.replacePlaceholders(in: astRawJSON, withFilePath: testFilePath + ".swift")
+			let astProcessedJSON = Utils.replacePlaceholders(in: astRawJSON, withFilePath: testFilePath + ".swift", escapingSlashes: true)
 			let astData = Data(astProcessedJSON.utf8)
 			let expectedAST = try! JSONDecoder().decode(GRYAst.self, from: astData)
 			
