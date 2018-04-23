@@ -3,67 +3,67 @@ import XCTest
 
 class GRYSExpressionParserTest: XCTestCase {
 	func testCanRead() {
-		XCTAssert(GRYSExpressionParser(fileContents:
+		XCTAssert(GRYSExpressionParser(sExpression:
 			"(foo)").canReadOpenParentheses())
-		XCTAssert(GRYSExpressionParser(fileContents:
+		XCTAssert(GRYSExpressionParser(sExpression:
 			"  \n\t(foo)").canReadOpenParentheses())
-		XCTAssertFalse(GRYSExpressionParser(fileContents:
+		XCTAssertFalse(GRYSExpressionParser(sExpression:
 			"foo)").canReadOpenParentheses())
 		
-		XCTAssert(GRYSExpressionParser(fileContents:
+		XCTAssert(GRYSExpressionParser(sExpression:
 			") foo").canReadCloseParentheses())
-		XCTAssert(GRYSExpressionParser(fileContents:
+		XCTAssert(GRYSExpressionParser(sExpression:
 			"  \n\t)foo").canReadCloseParentheses())
-		XCTAssertFalse(GRYSExpressionParser(fileContents:
+		XCTAssertFalse(GRYSExpressionParser(sExpression:
 			"(foo)").canReadCloseParentheses())
 		
-		XCTAssert(GRYSExpressionParser(fileContents:
+		XCTAssert(GRYSExpressionParser(sExpression:
 			"foo=bar )").canReadKey())
-		XCTAssert(GRYSExpressionParser(fileContents:
+		XCTAssert(GRYSExpressionParser(sExpression:
 			"  \n\tfoo=\"bar\"").canReadKey())
-		XCTAssertFalse(GRYSExpressionParser(fileContents:
+		XCTAssertFalse(GRYSExpressionParser(sExpression:
 			"(foo=bar)").canReadKey())
 		
-		XCTAssert(GRYSExpressionParser(fileContents:
+		XCTAssert(GRYSExpressionParser(sExpression:
 			"foo)").canReadIdentifier())
-		XCTAssert(GRYSExpressionParser(fileContents:
+		XCTAssert(GRYSExpressionParser(sExpression:
 			"  \n\tfoo").canReadIdentifier())
-		XCTAssertFalse(GRYSExpressionParser(fileContents:
+		XCTAssertFalse(GRYSExpressionParser(sExpression:
 			"(foo)").canReadIdentifier())
 		
-		XCTAssert(GRYSExpressionParser(fileContents:
+		XCTAssert(GRYSExpressionParser(sExpression:
 			"\"foo\")").canReadDoubleQuotedString())
-		XCTAssert(GRYSExpressionParser(fileContents:
+		XCTAssert(GRYSExpressionParser(sExpression:
 			"  \n\t\"foo\"").canReadDoubleQuotedString())
-		XCTAssertFalse(GRYSExpressionParser(fileContents:
+		XCTAssertFalse(GRYSExpressionParser(sExpression:
 			"(\"foo\")").canReadDoubleQuotedString())
 		
-		XCTAssert(GRYSExpressionParser(fileContents:
+		XCTAssert(GRYSExpressionParser(sExpression:
 			"'foo')").canReadSingleQuotedString())
-		XCTAssert(GRYSExpressionParser(fileContents:
+		XCTAssert(GRYSExpressionParser(sExpression:
 			"  \n\t'foo'").canReadSingleQuotedString())
-		XCTAssertFalse(GRYSExpressionParser(fileContents:
+		XCTAssertFalse(GRYSExpressionParser(sExpression:
 			"('foo')").canReadSingleQuotedString())
 		
-		XCTAssert(GRYSExpressionParser(fileContents:
+		XCTAssert(GRYSExpressionParser(sExpression:
 			"[foo])").canReadStringInBrackets())
-		XCTAssert(GRYSExpressionParser(fileContents:
+		XCTAssert(GRYSExpressionParser(sExpression:
 			"  \n\t[foo]").canReadStringInBrackets())
-		XCTAssertFalse(GRYSExpressionParser(fileContents:
+		XCTAssertFalse(GRYSExpressionParser(sExpression:
 			"([foo])").canReadStringInBrackets())
 		
-		XCTAssert(GRYSExpressionParser(fileContents:
+		XCTAssert(GRYSExpressionParser(sExpression:
 			"/foo/bar baz/test.swift:5:16)").canReadLocation())
-		XCTAssert(GRYSExpressionParser(fileContents:
+		XCTAssert(GRYSExpressionParser(sExpression:
 			"  \n\t/foo/bar baz/test.swift:5:16)").canReadLocation())
-		XCTAssertFalse(GRYSExpressionParser(fileContents:
+		XCTAssertFalse(GRYSExpressionParser(sExpression:
 			"(/foo/bar baz/test.swift:5:16))").canReadLocation())
 		
-		XCTAssert(GRYSExpressionParser(fileContents:
+		XCTAssert(GRYSExpressionParser(sExpression:
 			"test.(file).Bla.foo(bar:baz:).x@/blah/blah blah/test.swift 4:13)").canReadDeclarationLocation())
-		XCTAssert(GRYSExpressionParser(fileContents:
+		XCTAssert(GRYSExpressionParser(sExpression:
 			"  \n\ttest.(file).Bla.foo(bar:baz:).x@/blah/blah blah/test.swift 4:13)").canReadDeclarationLocation())
-		XCTAssertFalse(GRYSExpressionParser(fileContents:
+		XCTAssertFalse(GRYSExpressionParser(sExpression:
 			"(test.(file).Bla.foo(bar:baz:).x@/blah/blah blah/test.swift 4:13)").canReadDeclarationLocation())
 	}
 	
@@ -72,63 +72,63 @@ class GRYSExpressionParserTest: XCTestCase {
 		var string: String
 		
 		// Open parentheses
-		parser = GRYSExpressionParser(fileContents: "(foo")
+		parser = GRYSExpressionParser(sExpression: "(foo")
 		parser.readOpenParentheses()
 		XCTAssertEqual(parser.contents, "foo")
 		
 		// Close parentheses
-		parser = GRYSExpressionParser(fileContents: ") foo")
+		parser = GRYSExpressionParser(sExpression: ") foo")
 		parser.readCloseParentheses()
 		XCTAssertEqual(parser.contents, " foo")
 		
 		// Identifier
-		parser = GRYSExpressionParser(fileContents: "foo bla)")
+		parser = GRYSExpressionParser(sExpression: "foo bla)")
 		string = parser.readIdentifier()
 		XCTAssertEqual(string, "foo")
 		XCTAssertEqual(parser.contents, " bla)")
 		
-		parser = GRYSExpressionParser(fileContents: "foo(baz)bar)")
+		parser = GRYSExpressionParser(sExpression: "foo(baz)bar)")
 		string = parser.readIdentifier()
 		XCTAssertEqual(string, "foo(baz)bar")
 		XCTAssertEqual(parser.contents, ")")
 		
 		// Key
-		parser = GRYSExpressionParser(fileContents: "foo='bar'")
+		parser = GRYSExpressionParser(sExpression: "foo='bar'")
 		string = parser.readKey()
 		XCTAssertEqual(string, "foo")
 		XCTAssertEqual(parser.contents, "'bar'")
 		
-		parser = GRYSExpressionParser(fileContents: "interface type='bar'")
+		parser = GRYSExpressionParser(sExpression: "interface type='bar'")
 		string = parser.readKey()
 		XCTAssertEqual(string, "interface type")
 		XCTAssertEqual(parser.contents, "'bar'")
 		
 		// Location
-		parser = GRYSExpressionParser(fileContents: "/foo/bar baz/test.swift:5:16)")
+		parser = GRYSExpressionParser(sExpression: "/foo/bar baz/test.swift:5:16)")
 		string = parser.readLocation()
 		XCTAssertEqual(string, "/foo/bar baz/test.swift:5:16")
 		XCTAssertEqual(parser.contents, ")")
 		
 		// Declaration location
-		parser = GRYSExpressionParser(fileContents: "test.(file).Bla.foo(bar:baz:).x@/foo/bar baz/test.swift:5:16)")
+		parser = GRYSExpressionParser(sExpression: "test.(file).Bla.foo(bar:baz:).x@/foo/bar baz/test.swift:5:16)")
 		string = parser.readDeclarationLocation()
 		XCTAssertEqual(string, "test.(file).Bla.foo(bar:baz:).x@/foo/bar baz/test.swift:5:16")
 		XCTAssertEqual(parser.contents, ")")
 		
 		// Double quoted string
-		parser = GRYSExpressionParser(fileContents: "\"bla\" foo)")
+		parser = GRYSExpressionParser(sExpression: "\"bla\" foo)")
 		string = parser.readDoubleQuotedString()
 		XCTAssertEqual(string, "bla")
 		XCTAssertEqual(parser.contents, " foo)")
 		
 		// Single quoted string
-		parser = GRYSExpressionParser(fileContents: "'bla' foo)")
+		parser = GRYSExpressionParser(sExpression: "'bla' foo)")
 		string = parser.readSingleQuotedString()
 		XCTAssertEqual(string, "bla")
 		XCTAssertEqual(parser.contents, " foo)")
 		
 		// String in brackets
-		parser = GRYSExpressionParser(fileContents: "[bla] foo)")
+		parser = GRYSExpressionParser(sExpression: "[bla] foo)")
 		string = parser.readStringInBrackets()
 		XCTAssertEqual(string, "bla")
 		XCTAssertEqual(parser.contents, " foo)")
@@ -140,14 +140,10 @@ class GRYSExpressionParserTest: XCTestCase {
 		for testName in tests {
 			// Create an AST using the parser
 			let testFilePath = TestUtils.testFilesPath + testName
-			let swiftASTDump = GRYCompiler.getSwiftASTDump(forFileAt: testFilePath + ".swift")
-			let createdAST = GRYAst(fileContents: swiftASTDump)
+			let createdAST = GRYAst(astFile: testFilePath + ".ast")
 			
 			// Load the previously stored AST from file
-			let astRawJSON = try! String(contentsOfFile: testFilePath + ".json")
-			let astProcessedJSON = Utils.replacePlaceholders(in: astRawJSON, withFilePath: testFilePath + ".swift", escapingSlashes: true)
-			let astData = Data(astProcessedJSON.utf8)
-			let expectedAST = try! JSONDecoder().decode(GRYAst.self, from: astData)
+			let expectedAST = GRYAst.initialize(fromJsonInFile: testFilePath + ".json")
 			
 			XCTAssert(createdAST == expectedAST, "Test \(testName): parser failed to produce expected result. Diff:\n\n===\n\(TestUtils.diff(createdAST.description, expectedAST.description))===\n")
 		}

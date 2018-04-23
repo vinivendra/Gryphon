@@ -4,7 +4,7 @@ internal class GRYSExpressionParser {
 	
 	private static let knownComposedKeys = ["interface type="]
 	
-	init(fileContents contents: String) {
+	init(sExpression contents: String) {
 		self.contents = contents
 	}
 	

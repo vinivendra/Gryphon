@@ -1,12 +1,42 @@
+import Foundation
+
 public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvertible {
 	let name: String
 	let standaloneAttributes: [String]
 	let keyValueAttributes: [String: String]
 	let subTrees: [GRYAst]
 	
-	public convenience init(fileContents: String) {
-		let parser = GRYSExpressionParser(fileContents: fileContents)
-		self.init(parser: parser)
+	public convenience init(astFile astFilePath: String) {
+		do {
+			let rawAstDump = try String(contentsOfFile: astFilePath)
+
+			// Information in stored files has placeholders for file paths that must be replaced
+			let swiftFilePath = Utils.changeExtension(of: astFilePath, to: "swift")
+			let processedAstDump = rawAstDump.replacingOccurrences(of: "<<testFilePath>>", with: swiftFilePath)
+
+			let parser = GRYSExpressionParser(sExpression: processedAstDump)
+			self.init(parser: parser)
+		}
+		catch {
+			fatalError("Error opening \(astFilePath). If the file doesn't exist, please use dump-ast.pl to generate it.")
+		}
+	}
+	
+	public static func initialize(fromJsonInFile jsonFilePath: String) -> GRYAst {
+		do {
+			let rawJSON = try String(contentsOfFile: jsonFilePath)
+			
+			// Information in stored files has placeholders for file paths that must be replaced
+			let swiftFilePath = Utils.changeExtension(of: jsonFilePath, to: "swift")
+			let escapedFilePath = swiftFilePath.replacingOccurrences(of: "/", with: "\\/")
+			let processedJSON = rawJSON.replacingOccurrences(of: "<<testFilePath>>", with: escapedFilePath)
+			
+			let astData = Data(processedJSON.utf8)
+			return try JSONDecoder().decode(GRYAst.self, from: astData)
+		}
+		catch {
+			fatalError("Error decoding \(jsonFilePath). If the file doesn't exist, please run `updateJsonTestFiles()` to generate it.")
+		}
 	}
 	
 	internal init(parser: GRYSExpressionParser) {
@@ -84,6 +114,20 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 		}
 		
 		return nil
+	}
+	
+	//
+	func writeAsJSON(toFile filePath: String) {
+		log?("Building AST JSON...")
+		let jsonData = try! JSONEncoder().encode(self)
+		let rawJsonString = String(data: jsonData, encoding: .utf8)!
+
+		// Absolute file paths must be replaced with placeholders before writing to file.
+		let swiftFilePath = Utils.changeExtension(of: filePath, to: "swift")
+		let escapedFilePath = swiftFilePath.replacingOccurrences(of: "/", with: "\\/")
+		let processedJsonString = rawJsonString.replacingOccurrences(of: escapedFilePath, with: "<<testFilePath>>")
+
+		try! processedJsonString.write(toFile: filePath, atomically: true, encoding: .utf8)
 	}
 	
 	//

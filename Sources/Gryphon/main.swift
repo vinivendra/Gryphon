@@ -11,12 +11,8 @@ func updateJsonTestFiles() {
 	
 	for testFile in testFiles {
 		let testFilePath = testFile.path
-		
 		print("\tUpdating \(testFilePath)...")
-		
-		let jsonString = GRYCompiler.generateAstJson(forFileAt: testFilePath)!
-		let jsonFilePath = testFilePath.split(separator: ".").dropLast().joined() + ".json"
-		try! jsonString.write(toFile: jsonFilePath, atomically: true, encoding: .utf8)
+		GRYCompiler.updateAstJson(forFileAt: testFilePath)
 	}
 	
 	print("Done!")

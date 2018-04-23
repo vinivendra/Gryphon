@@ -16,8 +16,8 @@ public enum GRYCompiler {
 		let kotlinCode = generateKotlinCode(forFileAt: filePath)
 		
 		log?("Compiling Kotlin...")
-		let kotlinFileName = Utils.trimmedFileName(fromPath: filePath) + ".kt"
-		let kotlinFilePath = Utils.createFile(named: kotlinFileName,
+		let fileName = URL(fileURLWithPath: filePath).deletingPathExtension().lastPathComponent
+		let kotlinFilePath = Utils.createFile(named: fileName + ".kt",
 											  inDirectory: Utils.buildFolder,
 											  containing: kotlinCode)
 		
@@ -41,37 +41,26 @@ public enum GRYCompiler {
 		return kotlin
 	}
 	
-	public static func generateAstJson(forFileAt filePath: String) -> String? {
+	public static func updateAstJson(forFileAt filePath: String) {
 		let ast = generateAST(forFileAt: filePath)
 
-		log?("Building AST JSON...")
-		let jsonData = try! JSONEncoder().encode(ast)
-		guard let rawJsonString = String(data: jsonData, encoding: .utf8) else { return nil }
-		let processedJsonString = Utils.insertPlaceholders(in: rawJsonString, forFilePath: filePath)
-		return processedJsonString
+		log?("Writing AST JSON...")
+		let jsonFilePath = Utils.changeExtension(of: filePath, to: "json")
+		ast.writeAsJSON(toFile: jsonFilePath)
 	}
 	
 	public static func generateAST(forFileAt filePath: String) -> GRYAst {
-		let astDump = getSwiftASTDump(forFileAt: filePath)
-
+		let astDumpFilePath = Utils.changeExtension(of: filePath, to: "ast")
+		
 		log?("Building GRYAst...")
-		let ast = GRYAst(fileContents: astDump)
+		let ast = GRYAst(astFile: astDumpFilePath)
 		return ast
 	}
 	
 	public static func getSwiftASTDump(forFileAt filePath: String) -> String {
 		log?("Getting swift AST dump...")
 		// TODO: Check if the ast file is outdated
-		let filePathWithoutExtention = filePath.components(separatedBy: ".").dropLast().joined()
-		let astDumpFilePath = filePathWithoutExtention + ".ast"
-		
-		do {
-			let rawAstDump = try String(contentsOfFile: astDumpFilePath)
-			let processedAstDump = Utils.replacePlaceholders(in: rawAstDump, withFilePath: filePath, escapingSlashes: false)
-			return processedAstDump
-		}
-		catch {
-			fatalError("Error opening \(astDumpFilePath). If the file doesn't exits, please run the perl script on \(filePath) to generate it.")
-		}
+		let astDumpFilePath = Utils.changeExtension(of: filePath, to: "ast")
+		return try! String(contentsOfFile: astDumpFilePath)
 	}
 }

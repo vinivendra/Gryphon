@@ -37,33 +37,11 @@ internal enum Utils {
 }
 
 extension Utils {
-	internal static func trimmedFileName(fromPath filePath: String) -> String {
-		// Get the only file name from the path and drop the extension
-		let rawFileName = URL(fileURLWithPath: filePath).lastPathComponent
-		return rawFileName.components(separatedBy: ".").dropLast().joined()
-	}
-	
-	private static func escapedFilePath(fromPath filePath: String) -> String {
-		// JSON escapes '/'s in file paths
-		let escapedFilePath = filePath.replacingOccurrences(of: "/", with: "\\/")
-		return escapedFilePath
-	}
-	
-	internal static func insertPlaceholders(in string: String, forFilePath filePath: String) -> String {
-		let filePath = escapedFilePath(fromPath: filePath)
-
-		let processedString = string
-			.replacingOccurrences(of: filePath, with: "<<testFilePath>>")
-		
-		return processedString
-	}
-	
-	internal static func replacePlaceholders(in string: String, withFilePath filePath: String, escapingSlashes: Bool) -> String {
-		let filePath = escapingSlashes ? escapedFilePath(fromPath: filePath) : filePath
-
-		let processedString = string
-			.replacingOccurrences(of: "<<testFilePath>>", with: filePath)
-		return processedString
+	internal static func changeExtension(of filePath: String, to newExtension: String) -> String {
+		let url = URL(fileURLWithPath: filePath)
+		let urlWithoutExtension = url.deletingPathExtension()
+		let newURL = urlWithoutExtension.appendingPathExtension(newExtension)
+		return newURL.path
 	}
 }
 
