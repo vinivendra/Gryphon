@@ -9,10 +9,22 @@ func updateJsonTestFiles() {
 	
 	print("Updating JSON files...")
 	
-	for testFile in testFiles {
-		let testFilePath = testFile.path
-		print("\tUpdating \(testFilePath)...")
-		GRYCompiler.updateAstJson(forFileAt: testFilePath)
+	for swiftFile in testFiles {
+		let swiftFilePath = swiftFile.path
+		let jsonFilePath = GRYUtils.changeExtension(of: swiftFilePath, to: "json")
+		let jsonIsOutdated = GRYUtils.file(swiftFilePath, wasModifiedLaterThan: jsonFilePath)
+		
+		if jsonIsOutdated {
+			let astFilePath = GRYUtils.changeExtension(of: swiftFilePath, to: "ast")
+			let astIsOutdated = GRYUtils.file(swiftFilePath, wasModifiedLaterThan: astFilePath)
+		
+			if astIsOutdated {
+				fatalError("Please update ast file \(astFilePath) with the `dump-ast.pl` perl script.")
+			}
+			
+			print("\tUpdating \(swiftFilePath)...")
+			GRYCompiler.updateAstJson(forFileAt: swiftFilePath)
+		}
 	}
 	
 	print("Done!")

@@ -52,7 +52,7 @@ enum TestUtils {
 	{
 		let temporaryDirectory = ".tmp"
 		
-		let filePath = Utils.createFile(named: fileName, inDirectory: temporaryDirectory, containing: contents)
+		let filePath = GRYUtils.createFile(named: fileName, inDirectory: temporaryDirectory, containing: contents)
 		return try closure(filePath)
 	}
 }

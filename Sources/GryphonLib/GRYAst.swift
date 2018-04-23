@@ -11,7 +11,7 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 			let rawAstDump = try String(contentsOfFile: astFilePath)
 
 			// Information in stored files has placeholders for file paths that must be replaced
-			let swiftFilePath = Utils.changeExtension(of: astFilePath, to: "swift")
+			let swiftFilePath = GRYUtils.changeExtension(of: astFilePath, to: "swift")
 			let processedAstDump = rawAstDump.replacingOccurrences(of: "<<testFilePath>>", with: swiftFilePath)
 
 			let parser = GRYSExpressionParser(sExpression: processedAstDump)
@@ -27,7 +27,7 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 			let rawJSON = try String(contentsOfFile: jsonFilePath)
 			
 			// Information in stored files has placeholders for file paths that must be replaced
-			let swiftFilePath = Utils.changeExtension(of: jsonFilePath, to: "swift")
+			let swiftFilePath = GRYUtils.changeExtension(of: jsonFilePath, to: "swift")
 			let escapedFilePath = swiftFilePath.replacingOccurrences(of: "/", with: "\\/")
 			let processedJSON = rawJSON.replacingOccurrences(of: "<<testFilePath>>", with: escapedFilePath)
 			
@@ -46,7 +46,7 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 		
 		parser.readOpenParentheses()
 		let name = parser.readIdentifier()
-		self.name = Utils.expandSwiftAbbreviation(name)
+		self.name = GRYUtils.expandSwiftAbbreviation(name)
 		
 		// The loop stops: all branches tell the parser to read, and the input string must end eventually.
 		while true {
@@ -123,7 +123,7 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 		let rawJsonString = String(data: jsonData, encoding: .utf8)!
 
 		// Absolute file paths must be replaced with placeholders before writing to file.
-		let swiftFilePath = Utils.changeExtension(of: filePath, to: "swift")
+		let swiftFilePath = GRYUtils.changeExtension(of: filePath, to: "swift")
 		let escapedFilePath = swiftFilePath.replacingOccurrences(of: "/", with: "\\/")
 		let processedJsonString = rawJsonString.replacingOccurrences(of: escapedFilePath, with: "<<testFilePath>>")
 

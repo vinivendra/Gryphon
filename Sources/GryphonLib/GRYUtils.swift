@@ -10,7 +10,7 @@ let log: ((Any) -> Void)? = nil
 private let gryShouldLog = false
 
 /////////////////////////////////////////////
-internal enum Utils {
+public enum GRYUtils {
 	internal static func expandSwiftAbbreviation(_ name: String) -> String {
 		// Separate snake case and capitalize
 		var nameComponents = name.split(withStringSeparator: "_").map { $0.capitalized }
@@ -36,16 +36,29 @@ internal enum Utils {
 	}
 }
 
-extension Utils {
-	internal static func changeExtension(of filePath: String, to newExtension: String) -> String {
+extension GRYUtils {
+	public static func changeExtension(of filePath: String, to newExtension: String) -> String {
 		let url = URL(fileURLWithPath: filePath)
 		let urlWithoutExtension = url.deletingPathExtension()
 		let newURL = urlWithoutExtension.appendingPathExtension(newExtension)
 		return newURL.path
 	}
+	
+	public static func file(_ filePath: String, wasModifiedLaterThan otherFilePath: String) -> Bool {
+		let fileManager = FileManager.default
+		let fileAttributes = try! fileManager.attributesOfItem(atPath: filePath)
+		let otherFileAttributes = try! fileManager.attributesOfItem(atPath: otherFilePath)
+		
+		let fileModifiedDate = fileAttributes[.modificationDate] as! Date
+		let otherFileModifiedDate = otherFileAttributes[.modificationDate] as! Date
+		
+		let howMuchLater = fileModifiedDate.timeIntervalSince(otherFileModifiedDate)
+		
+		return howMuchLater > 0
+	}
 }
 
-extension Utils {
+extension GRYUtils {
 	static let buildFolder = ".kotlinBuild"
 	
 	static func createFile(named fileName: String, inDirectory directory: String, containing contents: String) -> String {
@@ -68,7 +81,7 @@ extension Utils {
 
 /////////////////////////////////////////////
 
-extension Utils {
+extension GRYUtils {
 	static var rng: RandomGenerator = Xoroshiro()
 }
 
@@ -93,7 +106,7 @@ extension RandomGenerator {
 /////////////////////////////////////////////
 extension RandomAccessCollection where Index == Int {
 	func randomElement() -> Element {
-		let index = Utils.rng.random(0..<count)
+		let index = GRYUtils.rng.random(0..<count)
 		return self[index]
 	}
 }

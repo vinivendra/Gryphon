@@ -6,7 +6,7 @@ public enum GRYCompiler {
 		
 		log?("Running Kotlin...")
 		let arguments = ["java", "-jar", "kotlin.jar"]
-		let commandResult = GRYShell.runShellCommand(arguments, fromFolder: Utils.buildFolder)
+		let commandResult = GRYShell.runShellCommand(arguments, fromFolder: GRYUtils.buildFolder)
 		
 		return commandResult
 	}
@@ -17,12 +17,12 @@ public enum GRYCompiler {
 		
 		log?("Compiling Kotlin...")
 		let fileName = URL(fileURLWithPath: filePath).deletingPathExtension().lastPathComponent
-		let kotlinFilePath = Utils.createFile(named: fileName + ".kt",
-											  inDirectory: Utils.buildFolder,
+		let kotlinFilePath = GRYUtils.createFile(named: fileName + ".kt",
+											  inDirectory: GRYUtils.buildFolder,
 											  containing: kotlinCode)
 		
 		// Call the kotlin compiler
-		let arguments = ["-include-runtime",  "-d", Utils.buildFolder + "/kotlin.jar", kotlinFilePath]
+		let arguments = ["-include-runtime",  "-d", GRYUtils.buildFolder + "/kotlin.jar", kotlinFilePath]
 		let commandResult = GRYShell.runShellCommand("/usr/local/bin/kotlinc", arguments: arguments)
 		
 		// Ensure the compiler terminated successfully
@@ -45,12 +45,12 @@ public enum GRYCompiler {
 		let ast = generateAST(forFileAt: filePath)
 
 		log?("Writing AST JSON...")
-		let jsonFilePath = Utils.changeExtension(of: filePath, to: "json")
+		let jsonFilePath = GRYUtils.changeExtension(of: filePath, to: "json")
 		ast.writeAsJSON(toFile: jsonFilePath)
 	}
 	
 	public static func generateAST(forFileAt filePath: String) -> GRYAst {
-		let astDumpFilePath = Utils.changeExtension(of: filePath, to: "ast")
+		let astDumpFilePath = GRYUtils.changeExtension(of: filePath, to: "ast")
 		
 		log?("Building GRYAst...")
 		let ast = GRYAst(astFile: astDumpFilePath)
@@ -60,7 +60,7 @@ public enum GRYCompiler {
 	public static func getSwiftASTDump(forFileAt filePath: String) -> String {
 		log?("Getting swift AST dump...")
 		// TODO: Check if the ast file is outdated
-		let astDumpFilePath = Utils.changeExtension(of: filePath, to: "ast")
+		let astDumpFilePath = GRYUtils.changeExtension(of: filePath, to: "ast")
 		return try! String(contentsOfFile: astDumpFilePath)
 	}
 }
