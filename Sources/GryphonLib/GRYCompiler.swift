@@ -66,7 +66,6 @@ public enum GRYCompiler {
 	
 	public static func getSwiftASTDump(forFileAt filePath: String) -> String {
 		log?("Getting swift AST dump...")
-		// TODO: Check if the ast file is outdated
 		let astDumpFilePath = GRYUtils.changeExtension(of: filePath, to: "ast")
 		return try! String(contentsOfFile: astDumpFilePath)
 	}

@@ -15,6 +15,7 @@ foreach (@ARGV) {
 	
 	# If the ast file was modified after the swift file, skip it
 	if (-C $filePath > -C $astFilePath) {
+		print "Skipping $filePath...\n";
 		next;
 	}
 	
