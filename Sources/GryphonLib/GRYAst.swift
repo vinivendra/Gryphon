@@ -55,7 +55,9 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 				if key == "location" && parser.canReadLocation() {
 					keyValueAttributes[key] = parser.readLocation()
 				}
-				else if key == "decl" && parser.canReadDeclarationLocation() {
+				else if (key == "decl" || key == "bind")
+					&& parser.canReadDeclarationLocation()
+				{
 					keyValueAttributes[key] = parser.readDeclarationLocation()
 				}
 				else {

@@ -105,6 +105,8 @@ public class GRYKotlinTranslator {
 		
 		let functionName = functionDeclaration.standaloneAttributes[0]
 		
+		guard !functionName.hasPrefix("GRYKotlinLiteral(") else { return "" }
+		
 		guard functionDeclaration.standaloneAttributes.count <= 1 else {
 			return "// <Generic function declaration: \(functionName)>"
 		}
@@ -322,12 +324,28 @@ public class GRYKotlinTranslator {
 			let rawFunctionNamePrefix = functionName.prefix(while: { $0 != "(" })
 			
 			guard rawFunctionNamePrefix != "GRYKotlinLiteral" else {
-				let tupleExpression = callExpression.subTree(named: "Tuple Expression")!
-				let stringExpression = tupleExpression.subTrees[1]
+				let parameterExpression: GRYAst
+				let terminatorString: String
+
+				// Version with both the swift value and the kotlin literal
+				if let unwrappedExpression = callExpression.subTree(named: "Tuple Expression") {
+					parameterExpression = unwrappedExpression
+					terminatorString = ""
+				}
+				// Version with just the kotlin literal
+				else if let unwrappedExpression = callExpression.subTree(named: "Parentheses Expression") {
+					parameterExpression = unwrappedExpression
+					terminatorString = "\n"
+				}
+				else {
+					fatalError("Unknown kotlin literal function called.")
+				}
+				
+				let stringExpression = parameterExpression.subTrees.last!
 				let string = translate(stringLiteralExpression: stringExpression)
 				let unquotedString = String(string.dropLast().dropFirst())
 				let unescapedString = removeBackslashEscapes(unquotedString)
-				return unescapedString
+				return unescapedString + terminatorString
 			}
 			
 			let functionNamePrefix = (rawFunctionNamePrefix == "print") ?

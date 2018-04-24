@@ -1,34 +1,44 @@
 (source_file
+  (func_decl "GRYKotlinLiteral(_:)" interface type='(String) -> ()' access=internal
+    (parameter_list
+      (parameter "kotlinExpression" type='String' interface type='String'))
+    (brace_stmt))
   (func_decl "GRYKotlinLiteral(_:_:)" <T> interface type='<T> (T, String) -> T' access=internal captures=(<generic> )
     (parameter_list
       (parameter "swiftExpression" type='T' interface type='T')
       (parameter "kotlinExpression" type='String' interface type='String'))
     (result
       (type_ident
-        (component id='T' bind=kotlinLiterals.(file).GRYKotlinLiteral(_:_:).T@<<testFilePath>>:1:23)))
+        (component id='T' bind=kotlinLiterals.(file).GRYKotlinLiteral(_:_:).T@<<testFilePath>>:3:23)))
     (brace_stmt
       (return_stmt
-        (declref_expr type='T' location=<<testFilePath>>:2:9 range=[<<testFilePath>>:2:9 - line:2:9] decl=kotlinLiterals.(file).GRYKotlinLiteral(_:_:).swiftExpression@<<testFilePath>>:1:28 function_ref=unapplied))))
+        (declref_expr type='T' location=<<testFilePath>>:4:9 range=[<<testFilePath>>:4:9 - line:4:9] decl=kotlinLiterals.(file).GRYKotlinLiteral(_:_:).swiftExpression@<<testFilePath>>:3:28 function_ref=unapplied))))
   (top_level_code_decl
     (brace_stmt
       (pattern_binding_decl
         (pattern_named type='String' 'languageName')
-        (call_expr type='String' location=<<testFilePath>>:5:20 range=[<<testFilePath>>:5:20 - line:5:58] nothrow arg_labels=_:_:
-          (declref_expr type='(String, String) -> String' location=<<testFilePath>>:5:20 range=[<<testFilePath>>:5:20 - line:5:20] decl=kotlinLiterals.(file).GRYKotlinLiteral@<<testFilePath>>:1:6 [with String] function_ref=single)
-          (tuple_expr type='(String, String)' location=<<testFilePath>>:5:36 range=[<<testFilePath>>:5:36 - line:5:58] names='',''
-            (string_literal_expr type='String' location=<<testFilePath>>:5:37 range=[<<testFilePath>>:5:37 - line:5:37] encoding=utf8 value="swift" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
-            (string_literal_expr type='String' location=<<testFilePath>>:5:46 range=[<<testFilePath>>:5:46 - line:5:46] encoding=utf8 value="\"kotlin\"" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+        (call_expr type='String' location=<<testFilePath>>:7:20 range=[<<testFilePath>>:7:20 - line:7:58] nothrow arg_labels=_:_:
+          (declref_expr type='(String, String) -> String' location=<<testFilePath>>:7:20 range=[<<testFilePath>>:7:20 - line:7:20] decl=kotlinLiterals.(file).GRYKotlinLiteral@<<testFilePath>>:3:6 [with String] function_ref=single)
+          (tuple_expr type='(String, String)' location=<<testFilePath>>:7:36 range=[<<testFilePath>>:7:36 - line:7:58] names='',''
+            (string_literal_expr type='String' location=<<testFilePath>>:7:37 range=[<<testFilePath>>:7:37 - line:7:37] encoding=utf8 value="swift" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
+            (string_literal_expr type='String' location=<<testFilePath>>:7:46 range=[<<testFilePath>>:7:46 - line:7:46] encoding=utf8 value="\"kotlin\"" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
 ))
   (var_decl "languageName" type='String' interface type='String' access=internal let storage_kind=stored)
   (top_level_code_decl
     (brace_stmt
-      (call_expr type='()' location=<<testFilePath>>:6:1 range=[<<testFilePath>>:6:1 - line:6:36] nothrow arg_labels=_:
-        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:6:1 range=[<<testFilePath>>:6:1 - line:6:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
-        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:6:7 range=[<<testFilePath>>:6:6 - line:6:36] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
-          (paren_expr type='Any' location=<<testFilePath>>:6:7 range=[<<testFilePath>>:6:6 - line:6:36]
-            (erasure_expr implicit type='Any' location=<<testFilePath>>:6:7 range=[<<testFilePath>>:6:7 - line:6:7]
-              (interpolated_string_literal_expr type='String' location=<<testFilePath>>:6:7 range=[<<testFilePath>>:6:7 - line:6:7]
-                (string_literal_expr type='String' location=<<testFilePath>>:6:7 range=[<<testFilePath>>:6:7 - line:6:7] encoding=utf8 value="Hello from " builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
-                (paren_expr type='(String)' location=<<testFilePath>>:6:21 range=[<<testFilePath>>:6:20 - line:6:33]
-                  (declref_expr type='String' location=<<testFilePath>>:6:21 range=[<<testFilePath>>:6:21 - line:6:21] decl=kotlinLiterals.(file).languageName@<<testFilePath>>:5:5 direct_to_storage function_ref=unapplied))
-                (string_literal_expr type='String' location=<<testFilePath>>:6:34 range=[<<testFilePath>>:6:34 - line:6:34] encoding=utf8 value="!" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))))))))
+      (call_expr type='()' location=<<testFilePath>>:8:1 range=[<<testFilePath>>:8:1 - line:8:36] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:8:1 range=[<<testFilePath>>:8:1 - line:8:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:8:7 range=[<<testFilePath>>:8:6 - line:8:36] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:8:7 range=[<<testFilePath>>:8:6 - line:8:36]
+            (erasure_expr implicit type='Any' location=<<testFilePath>>:8:7 range=[<<testFilePath>>:8:7 - line:8:7]
+              (interpolated_string_literal_expr type='String' location=<<testFilePath>>:8:7 range=[<<testFilePath>>:8:7 - line:8:7]
+                (string_literal_expr type='String' location=<<testFilePath>>:8:7 range=[<<testFilePath>>:8:7 - line:8:7] encoding=utf8 value="Hello from " builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
+                (paren_expr type='(String)' location=<<testFilePath>>:8:21 range=[<<testFilePath>>:8:20 - line:8:33]
+                  (declref_expr type='String' location=<<testFilePath>>:8:21 range=[<<testFilePath>>:8:21 - line:8:21] decl=kotlinLiterals.(file).languageName@<<testFilePath>>:7:5 direct_to_storage function_ref=unapplied))
+                (string_literal_expr type='String' location=<<testFilePath>>:8:34 range=[<<testFilePath>>:8:34 - line:8:34] encoding=utf8 value="!" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))))))
+  (top_level_code_decl
+    (brace_stmt
+      (call_expr type='()' location=<<testFilePath>>:9:1 range=[<<testFilePath>>:9:1 - line:9:82] nothrow arg_labels=_:
+        (declref_expr type='(String) -> ()' location=<<testFilePath>>:9:1 range=[<<testFilePath>>:9:1 - line:9:1] decl=kotlinLiterals.(file).GRYKotlinLiteral@<<testFilePath>>:1:6 function_ref=single)
+        (paren_expr type='(String)' location=<<testFilePath>>:9:18 range=[<<testFilePath>>:9:17 - line:9:82]
+          (string_literal_expr type='String' location=<<testFilePath>>:9:18 range=[<<testFilePath>>:9:18 - line:9:18] encoding=utf8 value="println(\"This will be ignored by swift, but not by kotlin.\")" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))))
