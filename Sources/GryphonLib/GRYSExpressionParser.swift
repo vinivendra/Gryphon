@@ -252,17 +252,38 @@ internal class GRYSExpressionParser {
 		cleanLeadingWhitespace()
 		defer { needsCleaningWhitespace = true }
 		
-		// Regex: String start,
-		//   open ",
-		//   many characters but no closing ",
-		//   then close "
-		var matchIterator = buffer =~ "^\"[^\"]+\""
-		guard let match = matchIterator.next() else { fatalError("Parsing error") }
-		let matchedString = match.matchedString
-		log?("-- String: \"\(matchedString)\"")
-		buffer.removeFirst(matchedString.count)
-		let result = matchedString.dropFirst().dropLast()
-		return String(result)
+		var result = "\""
+		
+		var isEscaping = false
+		loop: for character in buffer.dropFirst() {
+			result.append(character)
+			
+			switch character {
+			case "\\":
+				if isEscaping {
+					isEscaping = false
+				}
+				else {
+					isEscaping = true
+				}
+			case "\"":
+				if isEscaping {
+					isEscaping = false
+				}
+				else {
+					break loop
+				}
+			default:
+				isEscaping = false
+			}
+		}
+		
+		log?("-- String: \(result)")
+
+		buffer.removeFirst(result.count)
+
+		let unquotedResult = String(result.dropFirst().dropLast())
+		return unquotedResult
 	}
 	
 	func readSingleQuotedString() -> String {

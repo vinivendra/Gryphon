@@ -3,7 +3,7 @@ import XCTest
 
 class GRYKotlinTranslatorTest: XCTestCase {
 	func testTranslator() {
-		let tests = ["emptyFunction", "functionCalls", "functionWithAssignment", "functionWithEmptyVariable", "functionWithParameters", "functionWithReturn", "functionWithVariable", "operators", "print", "strings"]
+		let tests = ["emptyFunction", "functionCalls", "functionWithAssignment", "functionWithEmptyVariable", "functionWithParameters", "functionWithReturn", "functionWithVariable", "kotlinLiterals", "operators", "print", "strings"]
 		
 		for testName in tests {
 			// Create the Kotlin code using the mock AST

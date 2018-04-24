@@ -103,6 +103,12 @@ public class GRYKotlinTranslator {
 	private func translate(functionDeclaration: GRYAst, withIndentation indentation: String) -> String {
 		precondition(functionDeclaration.name == "Function Declaration")
 		
+		let functionName = functionDeclaration.standaloneAttributes[0]
+		
+		guard functionDeclaration.standaloneAttributes.count <= 1 else {
+			return "// <Generic function declaration: \(functionName)>"
+		}
+		
 		var indentation = indentation
 		var result = ""
 		
@@ -114,7 +120,6 @@ public class GRYKotlinTranslator {
 		
 		result += "fun "
 		
-		let functionName = functionDeclaration.standaloneAttributes[0]
 		let functionNamePrefix = functionName.prefix { $0 != "(" }
 		
 		result += functionNamePrefix + "("
@@ -315,6 +320,16 @@ public class GRYKotlinTranslator {
 				functionName = getIdentifierFromDeclaration(callExpression["decl"]!)
 			}
 			let rawFunctionNamePrefix = functionName.prefix(while: { $0 != "(" })
+			
+			guard rawFunctionNamePrefix != "GRYKotlinLiteral" else {
+				let tupleExpression = callExpression.subTree(named: "Tuple Expression")!
+				let stringExpression = tupleExpression.subTrees[1]
+				let string = translate(stringLiteralExpression: stringExpression)
+				let unquotedString = String(string.dropLast().dropFirst())
+				let unescapedString = removeBackslashEscapes(unquotedString)
+				return unescapedString
+			}
+			
 			let functionNamePrefix = (rawFunctionNamePrefix == "print") ?
 				"println" : String(rawFunctionNamePrefix)
 			
@@ -427,6 +442,29 @@ public class GRYKotlinTranslator {
 		}
 		
 		result += "\""
+		return result
+	}
+	
+	func removeBackslashEscapes(_ string: String) -> String {
+		var result = ""
+		
+		var isEscaping = false
+		loop: for character in string {
+			switch character {
+			case "\\":
+				if isEscaping {
+					result.append(character)
+					isEscaping = false
+				}
+				else {
+					isEscaping = true
+				}
+			default:
+				result.append(character)
+				isEscaping = false
+			}
+		}
+		
 		return result
 	}
 	

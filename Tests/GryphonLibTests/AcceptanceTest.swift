@@ -3,7 +3,7 @@ import XCTest
 
 class AcceptanceTest: XCTestCase {
 	func test() {
-		let tests = ["operators", "print"]
+		let tests = ["kotlinLiterals", "operators", "print"]
 		
 		for testName in tests {
 			// Translate the swift code to kotlin, compile the resulting kotlin code, run it, and get its output
