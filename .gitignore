@@ -3,5 +3,6 @@
 /Packages
 /*.xcodeproj
 test.swift
+test.ast
 /.tmp
 /.kotlinBuild
