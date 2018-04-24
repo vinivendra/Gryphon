@@ -6,63 +6,63 @@ class GRYSExpressionParserTest: XCTestCase {
 		XCTAssert(GRYSExpressionParser(sExpression:
 			"(foo)").canReadOpenParentheses())
 		XCTAssert(GRYSExpressionParser(sExpression:
-			"  \n\t(foo)").canReadOpenParentheses())
+			"  \n (foo)").canReadOpenParentheses())
 		XCTAssertFalse(GRYSExpressionParser(sExpression:
 			"foo)").canReadOpenParentheses())
 		
 		XCTAssert(GRYSExpressionParser(sExpression:
 			") foo").canReadCloseParentheses())
 		XCTAssert(GRYSExpressionParser(sExpression:
-			"  \n\t)foo").canReadCloseParentheses())
+			"  \n )foo").canReadCloseParentheses())
 		XCTAssertFalse(GRYSExpressionParser(sExpression:
 			"(foo)").canReadCloseParentheses())
 		
 		XCTAssert(GRYSExpressionParser(sExpression:
 			"foo=bar )").canReadKey())
 		XCTAssert(GRYSExpressionParser(sExpression:
-			"  \n\tfoo=\"bar\"").canReadKey())
+			"  \n foo=\"bar\"").canReadKey())
 		XCTAssertFalse(GRYSExpressionParser(sExpression:
 			"(foo=bar)").canReadKey())
 		
 		XCTAssert(GRYSExpressionParser(sExpression:
 			"foo)").canReadIdentifier())
 		XCTAssert(GRYSExpressionParser(sExpression:
-			"  \n\tfoo").canReadIdentifier())
+			"  \n foo").canReadIdentifier())
 		XCTAssertFalse(GRYSExpressionParser(sExpression:
 			"(foo)").canReadIdentifier())
 		
 		XCTAssert(GRYSExpressionParser(sExpression:
 			"\"foo\")").canReadDoubleQuotedString())
 		XCTAssert(GRYSExpressionParser(sExpression:
-			"  \n\t\"foo\"").canReadDoubleQuotedString())
+			"  \n \"foo\"").canReadDoubleQuotedString())
 		XCTAssertFalse(GRYSExpressionParser(sExpression:
 			"(\"foo\")").canReadDoubleQuotedString())
 		
 		XCTAssert(GRYSExpressionParser(sExpression:
 			"'foo')").canReadSingleQuotedString())
 		XCTAssert(GRYSExpressionParser(sExpression:
-			"  \n\t'foo'").canReadSingleQuotedString())
+			"  \n 'foo'").canReadSingleQuotedString())
 		XCTAssertFalse(GRYSExpressionParser(sExpression:
 			"('foo')").canReadSingleQuotedString())
 		
 		XCTAssert(GRYSExpressionParser(sExpression:
 			"[foo])").canReadStringInBrackets())
 		XCTAssert(GRYSExpressionParser(sExpression:
-			"  \n\t[foo]").canReadStringInBrackets())
+			"  \n [foo]").canReadStringInBrackets())
 		XCTAssertFalse(GRYSExpressionParser(sExpression:
 			"([foo])").canReadStringInBrackets())
 		
 		XCTAssert(GRYSExpressionParser(sExpression:
 			"/foo/bar baz/test.swift:5:16)").canReadLocation())
 		XCTAssert(GRYSExpressionParser(sExpression:
-			"  \n\t/foo/bar baz/test.swift:5:16)").canReadLocation())
+			"  \n /foo/bar baz/test.swift:5:16)").canReadLocation())
 		XCTAssertFalse(GRYSExpressionParser(sExpression:
 			"(/foo/bar baz/test.swift:5:16))").canReadLocation())
 		
 		XCTAssert(GRYSExpressionParser(sExpression:
 			"test.(file).Bla.foo(bar:baz:).x@/blah/blah blah/test.swift 4:13)").canReadDeclarationLocation())
 		XCTAssert(GRYSExpressionParser(sExpression:
-			"  \n\ttest.(file).Bla.foo(bar:baz:).x@/blah/blah blah/test.swift 4:13)").canReadDeclarationLocation())
+			"  \n test.(file).Bla.foo(bar:baz:).x@/blah/blah blah/test.swift 4:13)").canReadDeclarationLocation())
 		XCTAssertFalse(GRYSExpressionParser(sExpression:
 			"(test.(file).Bla.foo(bar:baz:).x@/blah/blah blah/test.swift 4:13)").canReadDeclarationLocation())
 	}

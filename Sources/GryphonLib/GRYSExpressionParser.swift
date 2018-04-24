@@ -1,6 +1,7 @@
 internal class GRYSExpressionParser {
 	private(set) var contents: String
 	private(set) var parenthesesLevel: Int = 0
+	private var needsCleaningWhitespace = true
 	
 	private static let knownComposedKeys = ["interface type="]
 	
@@ -10,7 +11,14 @@ internal class GRYSExpressionParser {
 	
 	//
 	func cleanLeadingWhitespace() {
-		contents =~ "^\\s+" => ""
+		if needsCleaningWhitespace {
+			needsCleaningWhitespace = false
+			
+			let whitespacePrefix = contents.prefix(while: { $0 == "\n" || $0 == " " })
+			if !whitespacePrefix.isEmpty {
+				contents = String(contents.suffix(from: whitespacePrefix.endIndex))
+			}
+		}
 	}
 	
 	// MARK: - Can read information
@@ -108,8 +116,6 @@ internal class GRYSExpressionParser {
 	
 	// MARK: - Read information
 	func readOpenParentheses() {
-		cleanLeadingWhitespace()
-		
 		guard canReadOpenParentheses() else { fatalError("Parsing error") }
 		
 		contents.removeFirst()
@@ -119,9 +125,8 @@ internal class GRYSExpressionParser {
 	}
 	
 	func readCloseParentheses() {
-		cleanLeadingWhitespace()
-		
 		guard canReadCloseParentheses() else { fatalError("Parsing error") }
+		defer { needsCleaningWhitespace = true }
 		
 		contents.removeFirst()
 		parenthesesLevel -= 1
@@ -130,6 +135,8 @@ internal class GRYSExpressionParser {
 	}
 	
 	func readIdentifierOrString() -> String {
+		defer { needsCleaningWhitespace = true }
+		
 		if canReadOpenParentheses() {
 			return ""
 		}
@@ -152,6 +159,7 @@ internal class GRYSExpressionParser {
 	
 	func readIdentifier() -> String {
 		cleanLeadingWhitespace()
+		defer { needsCleaningWhitespace = true }
 		
 		var result = ""
 		
@@ -182,6 +190,7 @@ internal class GRYSExpressionParser {
 	
 	func readKey() -> String {
 		cleanLeadingWhitespace()
+		defer { needsCleaningWhitespace = true }
 		
 		// Try finding known composed keys before trying for any non-composed keys
 		for composedKey in GRYSExpressionParser.knownComposedKeys {
@@ -208,6 +217,8 @@ internal class GRYSExpressionParser {
 	
 	func readLocation() -> String {
 		cleanLeadingWhitespace()
+		defer { needsCleaningWhitespace = true }
+		
 		// Regex: String start,
 		//   many characters but no : (not greedy so it won't go past this specific location),
 		//   then :, a number, :, and another number
@@ -221,6 +232,8 @@ internal class GRYSExpressionParser {
 	
 	func readDeclarationLocation() -> String {
 		cleanLeadingWhitespace()
+		defer { needsCleaningWhitespace = true }
+		
 		// Regex: String start,
 		//   many characters but no @ or whitespace (not greedy so it won't go past this specific declaration location),
 		//   then @
@@ -237,6 +250,8 @@ internal class GRYSExpressionParser {
 	
 	func readDoubleQuotedString() -> String {
 		cleanLeadingWhitespace()
+		defer { needsCleaningWhitespace = true }
+		
 		// Regex: String start,
 		//   open ",
 		//   many characters but no closing ",
@@ -252,6 +267,8 @@ internal class GRYSExpressionParser {
 	
 	func readSingleQuotedString() -> String {
 		cleanLeadingWhitespace()
+		defer { needsCleaningWhitespace = true }
+		
 		// Regex: String start,
 		//   open ',
 		//   many characters but no closing ',
@@ -267,6 +284,8 @@ internal class GRYSExpressionParser {
 	
 	func readStringInBrackets() -> String {
 		cleanLeadingWhitespace()
+		defer { needsCleaningWhitespace = true }
+		
 		// Regex: String start,
 		//   open [,
 		//   many characters but no closing ],
