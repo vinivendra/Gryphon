@@ -1,7 +1,22 @@
 use File::Basename;
+use File::stat;
+use Time::localtime;
 
 foreach (@ARGV) {
 	$filePath = $_;
+	
+	$astFilePath = $filePath;
+	$astFilePath =~ s/(.*).swift/$1.ast/;
+	$astFileHandle = IO::File->new($astFilePath,'r');
+	$astModifiedDate = localtime(stat($astFileHandle)->mtime);
+	
+	$swiftFileHandle = IO::File->new($filePath,'r');
+	$swiftModifiedDate = localtime(stat($swiftFileHandle)->mtime);
+	
+	# If the ast file was modified after the swift file, skip it
+	if (-C $filePath > -C $astFilePath) {
+		next;
+	}
 	
 	print "Processing $filePath...\n";
 	
@@ -16,11 +31,8 @@ foreach (@ARGV) {
 	
 	# Get the name of the output file
 	if ($filePath =~ /(.*).swift/) {
-		$nameWithoutExtension = $1;
-		$astFileName = "$nameWithoutExtension.ast";
-		
 		# Write to the output file
-		open(my $fh, '>', $astFileName) or die "Could not open file '$$astFileName' $!";
+		open(my $fh, '>', $astFilePath) or die "Could not open file '$$astFileName' $!";
 		print $fh $swiftAstDump;
 		close $fh;
 	}
