@@ -1,6 +1,13 @@
 import Foundation
 
 public enum GRYCompiler {
+	
+	#if os(Linux) || os(FreeBSD)
+	static let kotlinCompilerPath = "/opt/kotlinc/bin/kotlinc"
+	#else
+	static let kotlinCompilerPath = "/usr/local/bin/kotlinc"
+	#endif
+	
 	public static func compileAndRun(fileAt filePath: String) -> GRYShell.CommandOutput {
 		_ = compile(fileAt: filePath)
 		
@@ -23,10 +30,10 @@ public enum GRYCompiler {
 		
 		// Call the kotlin compiler
 		let arguments = ["-include-runtime",  "-d", GRYUtils.buildFolder + "/kotlin.jar", kotlinFilePath]
-		let commandResult = GRYShell.runShellCommand("/usr/local/bin/kotlinc", arguments: arguments)
+		let commandResult = GRYShell.runShellCommand(kotlinCompilerPath, arguments: arguments)
 		
 		// Ensure the compiler terminated successfully
-		guard commandResult.standardError.isEmpty else {
+		guard commandResult.status == 0 else {
 			fatalError("Compiling kotlin files. Kotlin compiler says:\n\(commandResult.standardError)")
 		}
 		

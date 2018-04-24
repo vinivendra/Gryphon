@@ -249,6 +249,8 @@ public class GRYKotlinTranslator {
 	
 	private func translate(expression: GRYAst) -> String {
 		switch expression.name {
+		case "Binary Expression":
+			return translate(binaryExpression: expression)
 		case "Call Expression":
 			return translate(callExpression: expression)
 		case "Declaration Reference Expression":
@@ -266,6 +268,20 @@ public class GRYKotlinTranslator {
 		default:
 			return "<Unknown expression: \(expression.name)>"
 		}
+	}
+	
+	private func translate(binaryExpression: GRYAst) -> String {
+		precondition(binaryExpression.name == "Binary Expression")
+		
+		let dotCallExpression = binaryExpression.subTree(named: "Dot Syntax Call Expression")!
+		let declarationReferenceExpression = dotCallExpression.subTree(named: "Declaration Reference Expression")!
+		let operatorIdentifier = getIdentifierFromDeclaration(declarationReferenceExpression["decl"]!)
+		
+		let tupleExpression = binaryExpression.subTree(named: "Tuple Expression")!
+		let leftHandSide = translate(expression: tupleExpression.subTrees[0])
+		let rightHandSide = translate(expression: tupleExpression.subTrees[1])
+		
+		return "\(leftHandSide) \(operatorIdentifier) \(rightHandSide)"
 	}
 	
 	/**
