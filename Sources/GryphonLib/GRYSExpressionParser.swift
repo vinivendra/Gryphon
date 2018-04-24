@@ -1,12 +1,12 @@
 internal class GRYSExpressionParser {
-	private(set) var contents: String
+	private(set) var buffer: String
 	private(set) var parenthesesLevel: Int = 0
 	private var needsCleaningWhitespace = true
 	
 	private static let knownComposedKeys = ["interface type="]
 	
-	init(sExpression contents: String) {
-		self.contents = contents
+	init(sExpression: String) {
+		self.buffer = sExpression
 	}
 	
 	//
@@ -14,9 +14,9 @@ internal class GRYSExpressionParser {
 		if needsCleaningWhitespace {
 			needsCleaningWhitespace = false
 			
-			let whitespacePrefix = contents.prefix(while: { $0 == "\n" || $0 == " " })
+			let whitespacePrefix = buffer.prefix(while: { $0 == "\n" || $0 == " " })
 			if !whitespacePrefix.isEmpty {
-				contents = String(contents.suffix(from: whitespacePrefix.endIndex))
+				buffer = String(buffer.suffix(from: whitespacePrefix.endIndex))
 			}
 		}
 	}
@@ -24,12 +24,12 @@ internal class GRYSExpressionParser {
 	// MARK: - Can read information
 	func canReadOpenParentheses() -> Bool {
 		cleanLeadingWhitespace()
-		return contents.prefix(1) == "("
+		return buffer.prefix(1) == "("
 	}
 	
 	func canReadCloseParentheses() -> Bool {
 		cleanLeadingWhitespace()
-		return contents.prefix(1) == ")"
+		return buffer.prefix(1) == ")"
 	}
 	
 	func canReadIdentifierOrString() -> Bool {
@@ -44,7 +44,7 @@ internal class GRYSExpressionParser {
 		
 		// Try finding known composed keys before trying for any non-composed keys
 		for composedKey in GRYSExpressionParser.knownComposedKeys {
-			if contents.hasPrefix(composedKey) {
+			if buffer.hasPrefix(composedKey) {
 				return true
 			}
 		}
@@ -53,7 +53,7 @@ internal class GRYSExpressionParser {
 		// Regex: String start,
 		//   many characters but no whitespace, ), (, ", ' or =
 		//   then = at the end
-		var matchIterator = contents =~ "^[^\\s\\)\\(\"'=]+="
+		var matchIterator = buffer =~ "^[^\\s\\)\\(\"'=]+="
 		return matchIterator.next() != nil
 	}
 	
@@ -61,7 +61,7 @@ internal class GRYSExpressionParser {
 		cleanLeadingWhitespace()
 		// Regex: String start,
 		//   many characters but no whitespace, ), (, " or '
-		var matchIterator = contents =~ "^[^\\s\\)\\(\"']+"
+		var matchIterator = buffer =~ "^[^\\s\\)\\(\"']+"
 		return matchIterator.next() != nil
 	}
 	
@@ -71,7 +71,7 @@ internal class GRYSExpressionParser {
 		//   open ",
 		//   many characters but no closing ",
 		//   then close "
-		var matchIterator = contents =~ "^\"[^\"]+\""
+		var matchIterator = buffer =~ "^\"[^\"]+\""
 		return matchIterator.next() != nil
 	}
 	
@@ -81,7 +81,7 @@ internal class GRYSExpressionParser {
 		//   open ',
 		//   many characters but no closing ',
 		//   then close '
-		var matchIterator = contents =~ "^'[^']+'"
+		var matchIterator = buffer =~ "^'[^']+'"
 		return matchIterator.next() != nil
 	}
 	
@@ -91,7 +91,7 @@ internal class GRYSExpressionParser {
 		//   open [,
 		//   many characters but no closing ],
 		//   then close ]
-		var matchIterator = contents =~ "^\\[[^\\]]+\\]"
+		var matchIterator = buffer =~ "^\\[[^\\]]+\\]"
 		return matchIterator.next() != nil
 	}
 	
@@ -100,7 +100,7 @@ internal class GRYSExpressionParser {
 		// Regex: String start,
 		//   many characters but no :, ( or ) (not greedy so it won't go past this specific location),
 		//   then :, a number, :, and another number
-		var matchIterator = contents =~ "^([^:\\(\\)]*?):(\\d+):(\\d+)"
+		var matchIterator = buffer =~ "^([^:\\(\\)]*?):(\\d+):(\\d+)"
 		return matchIterator.next() != nil
 	}
 	
@@ -110,7 +110,7 @@ internal class GRYSExpressionParser {
 		//   some character that's not a (,
 		//   many characters but no @ or whitespace (not greedy so it won't go past this specific declaration location),
 		//   then @
-		var matchIterator = contents =~ "^([^\\(][^@\\s]*?)@"
+		var matchIterator = buffer =~ "^([^\\(][^@\\s]*?)@"
 		return matchIterator.next() != nil
 	}
 	
@@ -118,7 +118,7 @@ internal class GRYSExpressionParser {
 	func readOpenParentheses() {
 		guard canReadOpenParentheses() else { fatalError("Parsing error") }
 		
-		contents.removeFirst()
+		buffer.removeFirst()
 		parenthesesLevel += 1
 		
 		log?("-- Open parenthesis: level \(parenthesesLevel)")
@@ -128,7 +128,7 @@ internal class GRYSExpressionParser {
 		guard canReadCloseParentheses() else { fatalError("Parsing error") }
 		defer { needsCleaningWhitespace = true }
 		
-		contents.removeFirst()
+		buffer.removeFirst()
 		parenthesesLevel -= 1
 		
 		log?("-- Close parenthesis: level \(parenthesesLevel)")
@@ -164,7 +164,7 @@ internal class GRYSExpressionParser {
 		var result = ""
 		
 		var parenthesesLevel = 0
-		loop: for character in contents {
+		loop: for character in buffer {
 			switch character {
 			case "(":
 				parenthesesLevel += 1
@@ -184,7 +184,7 @@ internal class GRYSExpressionParser {
 		}
 		
 		log?("-- Read identifier: \"\(result)\"")
-		contents.removeFirst(result.count)
+		buffer.removeFirst(result.count)
 		return result
 	}
 	
@@ -194,9 +194,9 @@ internal class GRYSExpressionParser {
 		
 		// Try finding known composed keys before trying for any non-composed keys
 		for composedKey in GRYSExpressionParser.knownComposedKeys {
-			if contents.hasPrefix(composedKey) {
+			if buffer.hasPrefix(composedKey) {
 				log?("-- Read composed key: \"\(composedKey)\"")
-				contents.removeFirst(composedKey.count)
+				buffer.removeFirst(composedKey.count)
 				let result = composedKey.dropLast()
 				return String(result)
 			}
@@ -206,11 +206,11 @@ internal class GRYSExpressionParser {
 		// Regex: String start,
 		//   many characters but no whitespace, ), (, ", ' or =
 		//   then = at the end
-		var matchIterator = contents =~ "^[^\\s\\)\\(\"'=]+="
+		var matchIterator = buffer =~ "^[^\\s\\)\\(\"'=]+="
 		guard let match = matchIterator.next() else { fatalError("Parsing error") }
 		let matchedString = match.matchedString
 		log?("-- Read key: \"\(matchedString)\"")
-		contents.removeFirst(matchedString.count)
+		buffer.removeFirst(matchedString.count)
 		let result = matchedString.dropLast()
 		return String(result)
 	}
@@ -222,11 +222,11 @@ internal class GRYSExpressionParser {
 		// Regex: String start,
 		//   many characters but no : (not greedy so it won't go past this specific location),
 		//   then :, a number, :, and another number
-		var matchIterator = contents =~ "^([^:]*?):(\\d+):(\\d+)"
+		var matchIterator = buffer =~ "^([^:]*?):(\\d+):(\\d+)"
 		guard let match = matchIterator.next() else { fatalError("Parsing error") }
 		let matchedString = match.matchedString
 		log?("-- Read location: \"\(matchedString)\"")
-		contents.removeFirst(matchedString.count)
+		buffer.removeFirst(matchedString.count)
 		return matchedString
 	}
 	
@@ -237,11 +237,11 @@ internal class GRYSExpressionParser {
 		// Regex: String start,
 		//   many characters but no @ or whitespace (not greedy so it won't go past this specific declaration location),
 		//   then @
-		var matchIterator = contents =~ "^([^@\\s]*?)@"
+		var matchIterator = buffer =~ "^([^@\\s]*?)@"
 		guard let match = matchIterator.next() else { fatalError("Parsing error") }
 		let matchedString = match.matchedString
 		log?("-- Read declaration location: \"\(matchedString)\"")
-		contents.removeFirst(matchedString.count)
+		buffer.removeFirst(matchedString.count)
 		
 		let location = readLocation()
 		
@@ -256,11 +256,11 @@ internal class GRYSExpressionParser {
 		//   open ",
 		//   many characters but no closing ",
 		//   then close "
-		var matchIterator = contents =~ "^\"[^\"]+\""
+		var matchIterator = buffer =~ "^\"[^\"]+\""
 		guard let match = matchIterator.next() else { fatalError("Parsing error") }
 		let matchedString = match.matchedString
 		log?("-- String: \"\(matchedString)\"")
-		contents.removeFirst(matchedString.count)
+		buffer.removeFirst(matchedString.count)
 		let result = matchedString.dropFirst().dropLast()
 		return String(result)
 	}
@@ -273,11 +273,11 @@ internal class GRYSExpressionParser {
 		//   open ',
 		//   many characters but no closing ',
 		//   then close '
-		var matchIterator = contents =~ "^'[^']+'"
+		var matchIterator = buffer =~ "^'[^']+'"
 		guard let match = matchIterator.next() else { fatalError("Parsing error") }
 		let matchedString = match.matchedString
 		log?("-- String: \"\(matchedString)\"")
-		contents.removeFirst(matchedString.count)
+		buffer.removeFirst(matchedString.count)
 		let result = matchedString.dropFirst().dropLast()
 		return String(result)
 	}
@@ -290,11 +290,11 @@ internal class GRYSExpressionParser {
 		//   open [,
 		//   many characters but no closing ],
 		//   then close ]
-		var matchIterator = contents =~ "^\\[[^\\]]+\\]"
+		var matchIterator = buffer =~ "^\\[[^\\]]+\\]"
 		guard let match = matchIterator.next() else { fatalError("Parsing error") }
 		let matchedString = match.matchedString
 		log?("-- String: \"\(matchedString)\"")
-		contents.removeFirst(matchedString.count)
+		buffer.removeFirst(matchedString.count)
 		let result = matchedString.dropFirst().dropLast()
 		return String(result)
 	}

@@ -74,64 +74,64 @@ class GRYSExpressionParserTest: XCTestCase {
 		// Open parentheses
 		parser = GRYSExpressionParser(sExpression: "(foo")
 		parser.readOpenParentheses()
-		XCTAssertEqual(parser.contents, "foo")
+		XCTAssertEqual(parser.buffer, "foo")
 		
 		// Close parentheses
 		parser = GRYSExpressionParser(sExpression: ") foo")
 		parser.readCloseParentheses()
-		XCTAssertEqual(parser.contents, " foo")
+		XCTAssertEqual(parser.buffer, " foo")
 		
 		// Identifier
 		parser = GRYSExpressionParser(sExpression: "foo bla)")
 		string = parser.readIdentifier()
 		XCTAssertEqual(string, "foo")
-		XCTAssertEqual(parser.contents, " bla)")
+		XCTAssertEqual(parser.buffer, " bla)")
 		
 		parser = GRYSExpressionParser(sExpression: "foo(baz)bar)")
 		string = parser.readIdentifier()
 		XCTAssertEqual(string, "foo(baz)bar")
-		XCTAssertEqual(parser.contents, ")")
+		XCTAssertEqual(parser.buffer, ")")
 		
 		// Key
 		parser = GRYSExpressionParser(sExpression: "foo='bar'")
 		string = parser.readKey()
 		XCTAssertEqual(string, "foo")
-		XCTAssertEqual(parser.contents, "'bar'")
+		XCTAssertEqual(parser.buffer, "'bar'")
 		
 		parser = GRYSExpressionParser(sExpression: "interface type='bar'")
 		string = parser.readKey()
 		XCTAssertEqual(string, "interface type")
-		XCTAssertEqual(parser.contents, "'bar'")
+		XCTAssertEqual(parser.buffer, "'bar'")
 		
 		// Location
 		parser = GRYSExpressionParser(sExpression: "/foo/bar baz/test.swift:5:16)")
 		string = parser.readLocation()
 		XCTAssertEqual(string, "/foo/bar baz/test.swift:5:16")
-		XCTAssertEqual(parser.contents, ")")
+		XCTAssertEqual(parser.buffer, ")")
 		
 		// Declaration location
 		parser = GRYSExpressionParser(sExpression: "test.(file).Bla.foo(bar:baz:).x@/foo/bar baz/test.swift:5:16)")
 		string = parser.readDeclarationLocation()
 		XCTAssertEqual(string, "test.(file).Bla.foo(bar:baz:).x@/foo/bar baz/test.swift:5:16")
-		XCTAssertEqual(parser.contents, ")")
+		XCTAssertEqual(parser.buffer, ")")
 		
 		// Double quoted string
 		parser = GRYSExpressionParser(sExpression: "\"bla\" foo)")
 		string = parser.readDoubleQuotedString()
 		XCTAssertEqual(string, "bla")
-		XCTAssertEqual(parser.contents, " foo)")
+		XCTAssertEqual(parser.buffer, " foo)")
 		
 		// Single quoted string
 		parser = GRYSExpressionParser(sExpression: "'bla' foo)")
 		string = parser.readSingleQuotedString()
 		XCTAssertEqual(string, "bla")
-		XCTAssertEqual(parser.contents, " foo)")
+		XCTAssertEqual(parser.buffer, " foo)")
 		
 		// String in brackets
 		parser = GRYSExpressionParser(sExpression: "[bla] foo)")
 		string = parser.readStringInBrackets()
 		XCTAssertEqual(string, "bla")
-		XCTAssertEqual(parser.contents, " foo)")
+		XCTAssertEqual(parser.buffer, " foo)")
 	}
 	
 	func testParser() {
