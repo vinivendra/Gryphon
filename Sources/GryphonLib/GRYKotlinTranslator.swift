@@ -205,7 +205,10 @@ public class GRYKotlinTranslator {
 			case "Return Statement":
 				result += translate(returnStatement: statement, withIndentation: indentation)
 			case "Call Expression":
-				result += indentation + translate(callExpression: statement) + "\n"
+				let string = translate(callExpression: statement)
+				if !string.isEmpty {
+					result += indentation + translate(callExpression: statement) + "\n"
+				}
 			default:
 				result += indentation + "<Unknown statement: \(statement.name)>\n"
 			}
