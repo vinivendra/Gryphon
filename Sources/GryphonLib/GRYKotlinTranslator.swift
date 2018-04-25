@@ -1,5 +1,12 @@
 public class GRYKotlinTranslator {
 	
+	/**
+	This variable is used to allow calls to the `GRYKotlinIgnoreNext` function to ignore
+	the next swift statement. When a call to that function is detected, this variable is set
+	to true. Then, when the next statement comes along, the translator will see that this
+	variable is set to true, ignore that statement, and then reset it to false to continue
+	translation.
+	*/
 	private var shouldIgnoreNext = false
 	
 	// MARK: - Interface
@@ -328,7 +335,10 @@ public class GRYKotlinTranslator {
 	A call expression is a function call, but it can be explicit (as usual) or implicit (i.e. integer literals).
 	Currently, the only implicit calls supported are integer literals.
 	
-	As a special case, a call to the `print` function gets renamed to `println` for compatibility with kotlin.
+	As a special case, functions called GRYKotlinLiteral and GRYKotlinIgnoreNext are used to directly manipulate
+	the resulting kotlin code, and are treated separately below.
+	
+	As another special case, a call to the `print` function gets renamed to `println` for compatibility with kotlin.
 	In the future, this will be done by a more complex system, but for now it allows integration tests to exist.
 	*/
 	private func translate(callExpression: GRYAst) -> String {
@@ -336,22 +346,9 @@ public class GRYKotlinTranslator {
 		
 		// If the call expression corresponds to an integer literal
 		if let argumentLabels = callExpression["arg_labels"],
-			argumentLabels == "_builtinIntegerLiteral:",
-			
-			let tupleExpression = callExpression.subTree(named: "Tuple Expression"),
-			let integerLiteralExpression = tupleExpression.subTree(named: "Integer Literal Expression"),
-			let value = integerLiteralExpression["value"],
-			
-			let constructorReferenceCallExpression = callExpression.subTree(named: "Constructor Reference Call Expression"),
-			let typeExpression = constructorReferenceCallExpression.subTree(named: "Type Expression"),
-			let type = typeExpression["typerepr"]
+			argumentLabels == "_builtinIntegerLiteral:"
 		{
-			if type == "Double" {
-				return value + ".0"
-			}
-			else {
-				return value
-			}
+			return translate(asNumericLiteral: callExpression)
 		}
 		// If the call expression corresponds to an explicit function call
 		else {
@@ -362,60 +359,111 @@ public class GRYKotlinTranslator {
 			else {
 				functionName = getIdentifierFromDeclaration(callExpression["decl"]!)
 			}
-			let rawFunctionNamePrefix = functionName.prefix(while: { $0 != "(" })
+			let functionNamePrefix = functionName.prefix(while: { $0 != "(" })
 			
-			guard rawFunctionNamePrefix != "GRYKotlinLiteral" else {
-				let parameterExpression: GRYAst
-
-				// Version with both the swift value and the kotlin literal
-				if let unwrappedExpression = callExpression.subTree(named: "Tuple Expression") {
-					parameterExpression = unwrappedExpression
-				}
-				// Version with just the kotlin literal
-				else if let unwrappedExpression = callExpression.subTree(named: "Parentheses Expression") {
-					parameterExpression = unwrappedExpression
-				}
-				else {
-					fatalError("Unknown kotlin literal function called.")
-				}
-				
-				let stringExpression = parameterExpression.subTrees.last!
-				let string = translate(stringLiteralExpression: stringExpression)
-				let unquotedString = String(string.dropLast().dropFirst())
-				let unescapedString = removeBackslashEscapes(unquotedString)
-				return unescapedString
+			guard functionNamePrefix != "GRYKotlinLiteral" else {
+				return translate(asKotlinLiteral: callExpression)
 			}
 			
-			guard rawFunctionNamePrefix != "GRYKotlinIgnoreNext" else {
+			// A call to `GRYKotlinIgnoreNext()` can be used to ignore the next swift statement.
+			guard functionNamePrefix != "GRYKotlinIgnoreNext" else {
 				shouldIgnoreNext = true
 				return ""
 			}
 			
-			let functionNamePrefix = (rawFunctionNamePrefix == "print") ?
-				"println" : String(rawFunctionNamePrefix)
-			
-			let parameters: String
-			if let parenthesesExpression = callExpression.subTree(named: "Parentheses Expression") {
-				parameters = translate(expression: parenthesesExpression)
-			}
-			else if let tupleExpression = callExpression.subTree(named: "Tuple Expression") {
+			return translate(asExplicitFunctionCall: callExpression,
+							 withFunctionNamePrefix: functionNamePrefix)
+		}
+	}
+	
+	/// Translates typical call expressions. The functionNamePrefix is passed as an argument here only
+	/// because it has already been calculated by translate(callExpression:).
+	private func translate(asExplicitFunctionCall callExpression: GRYAst,
+						   withFunctionNamePrefix functionNamePrefix: Substring) -> String
+	{
+		let functionNamePrefix = (functionNamePrefix == "print") ?
+			"println" : String(functionNamePrefix)
+		
+		let parameters: String
+		if let parenthesesExpression = callExpression.subTree(named: "Parentheses Expression") {
+			parameters = translate(expression: parenthesesExpression)
+		}
+		else if let tupleExpression = callExpression.subTree(named: "Tuple Expression") {
+			parameters = translate(tupleExpression: tupleExpression)
+		}
+		else if let tupleShuffleExpression = callExpression.subTree(named: "Tuple Shuffle Expression") {
+			if let tupleExpression = tupleShuffleExpression.subTree(named: "Tuple Expression") {
 				parameters = translate(tupleExpression: tupleExpression)
 			}
-			else if let tupleShuffleExpression = callExpression.subTree(named: "Tuple Shuffle Expression") {
-				if let tupleExpression = tupleShuffleExpression.subTree(named: "Tuple Expression") {
-					parameters = translate(tupleExpression: tupleExpression)
-				}
-				else {
-					let parenthesesExpression = tupleShuffleExpression.subTree(named: "Parentheses Expression")!
-					parameters = translate(expression: parenthesesExpression)
-				}
+			else {
+				let parenthesesExpression = tupleShuffleExpression.subTree(named: "Parentheses Expression")!
+				parameters = translate(expression: parenthesesExpression)
+			}
+		}
+		else {
+			return " <Unknown expression for parameters>"
+		}
+		
+		return "\(functionNamePrefix)\(parameters)"
+	}
+	
+	/// Translates numeric literals, which in swift are modeled as calls to specific builtin functions.
+	private func translate(asNumericLiteral callExpression: GRYAst) -> String {
+		precondition(callExpression.name == "Call Expression")
+
+		if let tupleExpression = callExpression.subTree(named: "Tuple Expression"),
+		let integerLiteralExpression = tupleExpression.subTree(named: "Integer Literal Expression"),
+		let value = integerLiteralExpression["value"],
+		
+		let constructorReferenceCallExpression = callExpression.subTree(named: "Constructor Reference Call Expression"),
+		let typeExpression = constructorReferenceCallExpression.subTree(named: "Type Expression"),
+		let type = typeExpression["typerepr"]
+		{
+			if type == "Double" {
+				return value + ".0"
 			}
 			else {
-				return " <Unknown expression for parameters>"
+				return value
 			}
-			
-			return "\(functionNamePrefix)\(parameters)"
 		}
+		else {
+			return "<Unknown literal>"
+		}
+	}
+	
+	/**
+	Translates kotlin literals. There are two functions that can be declared in swift,
+	`GRYKotlinLiteral(_: String)` and `GRYKotlinLiteral<T>(_: T, _: String) -> T`, that
+	allow a user to add literal kotlin code to the translation.
+	
+	The first kind can be used to insert kotlin statements in swift code, as in
+	`GRYKotlinLiteral("println(\"Hello, kotlin!\")")`./
+	
+	The second kind can be used to replace a swift value with a kotlin value, as in
+	`let x = GRYKotlinLiteral(mySwiftFunction(), "myKotlinFunction()")`.
+	*/
+	private func translate(asKotlinLiteral callExpression: GRYAst) -> String {
+		precondition(callExpression.name == "Call Expression")
+		
+		let parameterExpression: GRYAst
+		
+		// Version with both the swift value and the kotlin literal
+		if let unwrappedExpression = callExpression.subTree(named: "Tuple Expression") {
+			parameterExpression = unwrappedExpression
+		}
+		// Version with just the kotlin literal
+		else if let unwrappedExpression = callExpression.subTree(named: "Parentheses Expression") {
+			parameterExpression = unwrappedExpression
+		}
+		else {
+			fatalError("Unknown kotlin literal function called.")
+		}
+		
+		let stringExpression = parameterExpression.subTrees.last!
+		let string = translate(stringLiteralExpression: stringExpression)
+		let unquotedString = String(string.dropLast().dropFirst())
+		let unescapedString = removeBackslashEscapes(unquotedString)
+		return unescapedString
 	}
 	
 	private func translate(declarationReferenceExpression: GRYAst) -> String {
