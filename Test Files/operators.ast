@@ -239,100 +239,228 @@
   (var_decl "sum2" type='Int' interface type='Int' access=internal storage_kind=stored)
   (top_level_code_decl
     (brace_stmt
-      (call_expr type='()' location=<<testFilePath>>:15:1 range=[<<testFilePath>>:15:1 - line:15:8] nothrow arg_labels=_:
-        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:15:1 range=[<<testFilePath>>:15:1 - line:15:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
-        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:15:7 range=[<<testFilePath>>:15:6 - line:15:8] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
-          (paren_expr type='Any' location=<<testFilePath>>:15:7 range=[<<testFilePath>>:15:6 - line:15:8]
-            (erasure_expr implicit type='Any' location=<<testFilePath>>:15:7 range=[<<testFilePath>>:15:7 - line:15:7]
-              (load_expr implicit type='Int' location=<<testFilePath>>:15:7 range=[<<testFilePath>>:15:7 - line:15:7]
-                (declref_expr type='@lvalue Int' accessKind=read location=<<testFilePath>>:15:7 range=[<<testFilePath>>:15:7 - line:15:7] decl=operators.(file).x@<<testFilePath>>:1:5 direct_to_storage function_ref=unapplied))))))))
+      (pattern_binding_decl
+        (pattern_named type='Int' 'multiplication3')
+        (binary_expr type='Int' location=<<testFilePath>>:15:25 range=[<<testFilePath>>:15:23 - line:15:28] nothrow
+          (dot_syntax_call_expr implicit type='(Int, Int) -> Int' location=<<testFilePath>>:15:25 range=[<<testFilePath>>:15:25 - line:15:25] nothrow
+            (declref_expr type='(Int.Type) -> (Int, Int) -> Int' location=<<testFilePath>>:15:25 range=[<<testFilePath>>:15:25 - line:15:25] decl=Swift.(file).Int.* function_ref=unapplied)
+            (type_expr implicit type='Int.Type' location=<<testFilePath>>:15:25 range=[<<testFilePath>>:15:25 - line:15:25] typerepr='Int'))
+          (tuple_expr implicit type='(Int, Int)' location=<<testFilePath>>:15:23 range=[<<testFilePath>>:15:23 - line:15:28]
+            (call_expr implicit type='Int' location=<<testFilePath>>:15:23 range=[<<testFilePath>>:15:23 - line:15:23] nothrow arg_labels=_builtinIntegerLiteral:
+              (constructor_ref_call_expr implicit type='(_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:15:23 range=[<<testFilePath>>:15:23 - line:15:23] nothrow
+                (declref_expr implicit type='(Int.Type) -> (_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:15:23 range=[<<testFilePath>>:15:23 - line:15:23] decl=Swift.(file).Int.init(_builtinIntegerLiteral:) function_ref=single)
+                (type_expr implicit type='Int.Type' location=<<testFilePath>>:15:23 range=[<<testFilePath>>:15:23 - line:15:23] typerepr='Int'))
+              (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' location=<<testFilePath>>:15:23 range=[<<testFilePath>>:15:23 - line:15:23] names=_builtinIntegerLiteral
+                (integer_literal_expr type='Int2048' location=<<testFilePath>>:15:23 range=[<<testFilePath>>:15:23 - line:15:23] value=0)))
+            (call_expr implicit type='Int' location=<<testFilePath>>:15:27 range=[<<testFilePath>>:15:27 - line:15:28] nothrow arg_labels=_builtinIntegerLiteral:
+              (constructor_ref_call_expr implicit type='(_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:15:27 range=[<<testFilePath>>:15:27 - line:15:27] nothrow
+                (declref_expr implicit type='(Int.Type) -> (_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:15:27 range=[<<testFilePath>>:15:27 - line:15:27] decl=Swift.(file).Int.init(_builtinIntegerLiteral:) function_ref=single)
+                (type_expr implicit type='Int.Type' location=<<testFilePath>>:15:27 range=[<<testFilePath>>:15:27 - line:15:27] typerepr='Int'))
+              (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' location=<<testFilePath>>:15:27 range=[<<testFilePath>>:15:27 - line:15:28] names=_builtinIntegerLiteral
+                (integer_literal_expr type='Int2048' location=<<testFilePath>>:15:27 range=[<<testFilePath>>:15:27 - line:15:28] negative value=-1))))))
+))
+  (var_decl "multiplication3" type='Int' interface type='Int' access=internal storage_kind=stored)
   (top_level_code_decl
     (brace_stmt
-      (call_expr type='()' location=<<testFilePath>>:16:1 range=[<<testFilePath>>:16:1 - line:16:8] nothrow arg_labels=_:
-        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:16:1 range=[<<testFilePath>>:16:1 - line:16:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
-        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:16:7 range=[<<testFilePath>>:16:6 - line:16:8] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
-          (paren_expr type='Any' location=<<testFilePath>>:16:7 range=[<<testFilePath>>:16:6 - line:16:8]
-            (erasure_expr implicit type='Any' location=<<testFilePath>>:16:7 range=[<<testFilePath>>:16:7 - line:16:7]
-              (load_expr implicit type='Int' location=<<testFilePath>>:16:7 range=[<<testFilePath>>:16:7 - line:16:7]
-                (declref_expr type='@lvalue Int' accessKind=read location=<<testFilePath>>:16:7 range=[<<testFilePath>>:16:7 - line:16:7] decl=operators.(file).y@<<testFilePath>>:2:5 direct_to_storage function_ref=unapplied))))))))
+      (pattern_binding_decl
+        (pattern_named type='Int' 'division3')
+        (binary_expr type='Int' location=<<testFilePath>>:16:21 range=[<<testFilePath>>:16:17 - line:16:23] nothrow
+          (dot_syntax_call_expr implicit type='(Int, Int) -> Int' location=<<testFilePath>>:16:21 range=[<<testFilePath>>:16:21 - line:16:21] nothrow
+            (declref_expr type='(Int.Type) -> (Int, Int) -> Int' location=<<testFilePath>>:16:21 range=[<<testFilePath>>:16:21 - line:16:21] decl=Swift.(file).Int./ function_ref=unapplied)
+            (type_expr implicit type='Int.Type' location=<<testFilePath>>:16:21 range=[<<testFilePath>>:16:21 - line:16:21] typerepr='Int'))
+          (tuple_expr implicit type='(Int, Int)' location=<<testFilePath>>:16:17 range=[<<testFilePath>>:16:17 - line:16:23]
+            (call_expr implicit type='Int' location=<<testFilePath>>:16:17 range=[<<testFilePath>>:16:17 - line:16:18] nothrow arg_labels=_builtinIntegerLiteral:
+              (constructor_ref_call_expr implicit type='(_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:16:17 range=[<<testFilePath>>:16:17 - line:16:17] nothrow
+                (declref_expr implicit type='(Int.Type) -> (_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:16:17 range=[<<testFilePath>>:16:17 - line:16:17] decl=Swift.(file).Int.init(_builtinIntegerLiteral:) function_ref=single)
+                (type_expr implicit type='Int.Type' location=<<testFilePath>>:16:17 range=[<<testFilePath>>:16:17 - line:16:17] typerepr='Int'))
+              (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' location=<<testFilePath>>:16:17 range=[<<testFilePath>>:16:17 - line:16:18] names=_builtinIntegerLiteral
+                (integer_literal_expr type='Int2048' location=<<testFilePath>>:16:17 range=[<<testFilePath>>:16:17 - line:16:18] negative value=-10)))
+            (call_expr implicit type='Int' location=<<testFilePath>>:16:23 range=[<<testFilePath>>:16:23 - line:16:23] nothrow arg_labels=_builtinIntegerLiteral:
+              (constructor_ref_call_expr implicit type='(_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:16:23 range=[<<testFilePath>>:16:23 - line:16:23] nothrow
+                (declref_expr implicit type='(Int.Type) -> (_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:16:23 range=[<<testFilePath>>:16:23 - line:16:23] decl=Swift.(file).Int.init(_builtinIntegerLiteral:) function_ref=single)
+                (type_expr implicit type='Int.Type' location=<<testFilePath>>:16:23 range=[<<testFilePath>>:16:23 - line:16:23] typerepr='Int'))
+              (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' location=<<testFilePath>>:16:23 range=[<<testFilePath>>:16:23 - line:16:23] names=_builtinIntegerLiteral
+                (integer_literal_expr type='Int2048' location=<<testFilePath>>:16:23 range=[<<testFilePath>>:16:23 - line:16:23] value=2))))))
+))
+  (var_decl "division3" type='Int' interface type='Int' access=internal storage_kind=stored)
   (top_level_code_decl
     (brace_stmt
-      (call_expr type='()' location=<<testFilePath>>:17:1 range=[<<testFilePath>>:17:1 - line:17:8] nothrow arg_labels=_:
-        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:17:1 range=[<<testFilePath>>:17:1 - line:17:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
-        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:17:7 range=[<<testFilePath>>:17:6 - line:17:8] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
-          (paren_expr type='Any' location=<<testFilePath>>:17:7 range=[<<testFilePath>>:17:6 - line:17:8]
-            (erasure_expr implicit type='Any' location=<<testFilePath>>:17:7 range=[<<testFilePath>>:17:7 - line:17:7]
-              (load_expr implicit type='Int' location=<<testFilePath>>:17:7 range=[<<testFilePath>>:17:7 - line:17:7]
-                (declref_expr type='@lvalue Int' accessKind=read location=<<testFilePath>>:17:7 range=[<<testFilePath>>:17:7 - line:17:7] decl=operators.(file).z@<<testFilePath>>:3:5 direct_to_storage function_ref=unapplied))))))))
+      (pattern_binding_decl
+        (pattern_named type='Int' 'subtraction3')
+        (binary_expr type='Int' location=<<testFilePath>>:17:23 range=[<<testFilePath>>:17:20 - line:17:25] nothrow
+          (dot_syntax_call_expr implicit type='(Int, Int) -> Int' location=<<testFilePath>>:17:23 range=[<<testFilePath>>:17:23 - line:17:23] nothrow
+            (declref_expr type='(Int.Type) -> (Int, Int) -> Int' location=<<testFilePath>>:17:23 range=[<<testFilePath>>:17:23 - line:17:23] decl=Swift.(file).Int.- function_ref=unapplied)
+            (type_expr implicit type='Int.Type' location=<<testFilePath>>:17:23 range=[<<testFilePath>>:17:23 - line:17:23] typerepr='Int'))
+          (tuple_expr implicit type='(Int, Int)' location=<<testFilePath>>:17:20 range=[<<testFilePath>>:17:20 - line:17:25]
+            (call_expr implicit type='Int' location=<<testFilePath>>:17:20 range=[<<testFilePath>>:17:20 - line:17:21] nothrow arg_labels=_builtinIntegerLiteral:
+              (constructor_ref_call_expr implicit type='(_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:17:20 range=[<<testFilePath>>:17:20 - line:17:20] nothrow
+                (declref_expr implicit type='(Int.Type) -> (_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:17:20 range=[<<testFilePath>>:17:20 - line:17:20] decl=Swift.(file).Int.init(_builtinIntegerLiteral:) function_ref=single)
+                (type_expr implicit type='Int.Type' location=<<testFilePath>>:17:20 range=[<<testFilePath>>:17:20 - line:17:20] typerepr='Int'))
+              (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' location=<<testFilePath>>:17:20 range=[<<testFilePath>>:17:20 - line:17:21] names=_builtinIntegerLiteral
+                (integer_literal_expr type='Int2048' location=<<testFilePath>>:17:20 range=[<<testFilePath>>:17:20 - line:17:21] negative value=-3)))
+            (call_expr implicit type='Int' location=<<testFilePath>>:17:25 range=[<<testFilePath>>:17:25 - line:17:25] nothrow arg_labels=_builtinIntegerLiteral:
+              (constructor_ref_call_expr implicit type='(_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:17:25 range=[<<testFilePath>>:17:25 - line:17:25] nothrow
+                (declref_expr implicit type='(Int.Type) -> (_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:17:25 range=[<<testFilePath>>:17:25 - line:17:25] decl=Swift.(file).Int.init(_builtinIntegerLiteral:) function_ref=single)
+                (type_expr implicit type='Int.Type' location=<<testFilePath>>:17:25 range=[<<testFilePath>>:17:25 - line:17:25] typerepr='Int'))
+              (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' location=<<testFilePath>>:17:25 range=[<<testFilePath>>:17:25 - line:17:25] names=_builtinIntegerLiteral
+                (integer_literal_expr type='Int2048' location=<<testFilePath>>:17:25 range=[<<testFilePath>>:17:25 - line:17:25] value=1))))))
+))
+  (var_decl "subtraction3" type='Int' interface type='Int' access=internal storage_kind=stored)
   (top_level_code_decl
     (brace_stmt
-      (call_expr type='()' location=<<testFilePath>>:19:1 range=[<<testFilePath>>:19:1 - line:19:21] nothrow arg_labels=_:
-        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:19:1 range=[<<testFilePath>>:19:1 - line:19:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
-        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:19:7 range=[<<testFilePath>>:19:6 - line:19:21] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
-          (paren_expr type='Any' location=<<testFilePath>>:19:7 range=[<<testFilePath>>:19:6 - line:19:21]
-            (erasure_expr implicit type='Any' location=<<testFilePath>>:19:7 range=[<<testFilePath>>:19:7 - line:19:7]
-              (load_expr implicit type='Int' location=<<testFilePath>>:19:7 range=[<<testFilePath>>:19:7 - line:19:7]
-                (declref_expr type='@lvalue Int' accessKind=read location=<<testFilePath>>:19:7 range=[<<testFilePath>>:19:7 - line:19:7] decl=operators.(file).multiplication@<<testFilePath>>:5:5 direct_to_storage function_ref=unapplied))))))))
+      (pattern_binding_decl
+        (pattern_named type='Int' 'sum3')
+        (binary_expr type='Int' location=<<testFilePath>>:18:14 range=[<<testFilePath>>:18:12 - line:18:17] nothrow
+          (dot_syntax_call_expr implicit type='(Int, Int) -> Int' location=<<testFilePath>>:18:14 range=[<<testFilePath>>:18:14 - line:18:14] nothrow
+            (declref_expr type='(Int.Type) -> (Int, Int) -> Int' location=<<testFilePath>>:18:14 range=[<<testFilePath>>:18:14 - line:18:14] decl=Swift.(file).Int.+ function_ref=unapplied)
+            (type_expr implicit type='Int.Type' location=<<testFilePath>>:18:14 range=[<<testFilePath>>:18:14 - line:18:14] typerepr='Int'))
+          (tuple_expr implicit type='(Int, Int)' location=<<testFilePath>>:18:12 range=[<<testFilePath>>:18:12 - line:18:17]
+            (call_expr implicit type='Int' location=<<testFilePath>>:18:12 range=[<<testFilePath>>:18:12 - line:18:12] nothrow arg_labels=_builtinIntegerLiteral:
+              (constructor_ref_call_expr implicit type='(_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:18:12 range=[<<testFilePath>>:18:12 - line:18:12] nothrow
+                (declref_expr implicit type='(Int.Type) -> (_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:18:12 range=[<<testFilePath>>:18:12 - line:18:12] decl=Swift.(file).Int.init(_builtinIntegerLiteral:) function_ref=single)
+                (type_expr implicit type='Int.Type' location=<<testFilePath>>:18:12 range=[<<testFilePath>>:18:12 - line:18:12] typerepr='Int'))
+              (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' location=<<testFilePath>>:18:12 range=[<<testFilePath>>:18:12 - line:18:12] names=_builtinIntegerLiteral
+                (integer_literal_expr type='Int2048' location=<<testFilePath>>:18:12 range=[<<testFilePath>>:18:12 - line:18:12] value=4)))
+            (call_expr implicit type='Int' location=<<testFilePath>>:18:16 range=[<<testFilePath>>:18:16 - line:18:17] nothrow arg_labels=_builtinIntegerLiteral:
+              (constructor_ref_call_expr implicit type='(_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:18:16 range=[<<testFilePath>>:18:16 - line:18:16] nothrow
+                (declref_expr implicit type='(Int.Type) -> (_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:18:16 range=[<<testFilePath>>:18:16 - line:18:16] decl=Swift.(file).Int.init(_builtinIntegerLiteral:) function_ref=single)
+                (type_expr implicit type='Int.Type' location=<<testFilePath>>:18:16 range=[<<testFilePath>>:18:16 - line:18:16] typerepr='Int'))
+              (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' location=<<testFilePath>>:18:16 range=[<<testFilePath>>:18:16 - line:18:17] names=_builtinIntegerLiteral
+                (integer_literal_expr type='Int2048' location=<<testFilePath>>:18:16 range=[<<testFilePath>>:18:16 - line:18:17] negative value=-1))))))
+))
+  (var_decl "sum3" type='Int' interface type='Int' access=internal storage_kind=stored)
   (top_level_code_decl
     (brace_stmt
-      (call_expr type='()' location=<<testFilePath>>:20:1 range=[<<testFilePath>>:20:1 - line:20:15] nothrow arg_labels=_:
+      (call_expr type='()' location=<<testFilePath>>:20:1 range=[<<testFilePath>>:20:1 - line:20:8] nothrow arg_labels=_:
         (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:20:1 range=[<<testFilePath>>:20:1 - line:20:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
-        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:20:7 range=[<<testFilePath>>:20:6 - line:20:15] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
-          (paren_expr type='Any' location=<<testFilePath>>:20:7 range=[<<testFilePath>>:20:6 - line:20:15]
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:20:7 range=[<<testFilePath>>:20:6 - line:20:8] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:20:7 range=[<<testFilePath>>:20:6 - line:20:8]
             (erasure_expr implicit type='Any' location=<<testFilePath>>:20:7 range=[<<testFilePath>>:20:7 - line:20:7]
               (load_expr implicit type='Int' location=<<testFilePath>>:20:7 range=[<<testFilePath>>:20:7 - line:20:7]
-                (declref_expr type='@lvalue Int' accessKind=read location=<<testFilePath>>:20:7 range=[<<testFilePath>>:20:7 - line:20:7] decl=operators.(file).division@<<testFilePath>>:6:5 direct_to_storage function_ref=unapplied))))))))
+                (declref_expr type='@lvalue Int' accessKind=read location=<<testFilePath>>:20:7 range=[<<testFilePath>>:20:7 - line:20:7] decl=operators.(file).x@<<testFilePath>>:1:5 direct_to_storage function_ref=unapplied))))))))
   (top_level_code_decl
     (brace_stmt
-      (call_expr type='()' location=<<testFilePath>>:21:1 range=[<<testFilePath>>:21:1 - line:21:18] nothrow arg_labels=_:
+      (call_expr type='()' location=<<testFilePath>>:21:1 range=[<<testFilePath>>:21:1 - line:21:8] nothrow arg_labels=_:
         (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:21:1 range=[<<testFilePath>>:21:1 - line:21:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
-        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:21:7 range=[<<testFilePath>>:21:6 - line:21:18] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
-          (paren_expr type='Any' location=<<testFilePath>>:21:7 range=[<<testFilePath>>:21:6 - line:21:18]
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:21:7 range=[<<testFilePath>>:21:6 - line:21:8] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:21:7 range=[<<testFilePath>>:21:6 - line:21:8]
             (erasure_expr implicit type='Any' location=<<testFilePath>>:21:7 range=[<<testFilePath>>:21:7 - line:21:7]
               (load_expr implicit type='Int' location=<<testFilePath>>:21:7 range=[<<testFilePath>>:21:7 - line:21:7]
-                (declref_expr type='@lvalue Int' accessKind=read location=<<testFilePath>>:21:7 range=[<<testFilePath>>:21:7 - line:21:7] decl=operators.(file).subtraction@<<testFilePath>>:7:5 direct_to_storage function_ref=unapplied))))))))
+                (declref_expr type='@lvalue Int' accessKind=read location=<<testFilePath>>:21:7 range=[<<testFilePath>>:21:7 - line:21:7] decl=operators.(file).y@<<testFilePath>>:2:5 direct_to_storage function_ref=unapplied))))))))
   (top_level_code_decl
     (brace_stmt
-      (call_expr type='()' location=<<testFilePath>>:22:1 range=[<<testFilePath>>:22:1 - line:22:10] nothrow arg_labels=_:
+      (call_expr type='()' location=<<testFilePath>>:22:1 range=[<<testFilePath>>:22:1 - line:22:8] nothrow arg_labels=_:
         (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:22:1 range=[<<testFilePath>>:22:1 - line:22:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
-        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:22:7 range=[<<testFilePath>>:22:6 - line:22:10] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
-          (paren_expr type='Any' location=<<testFilePath>>:22:7 range=[<<testFilePath>>:22:6 - line:22:10]
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:22:7 range=[<<testFilePath>>:22:6 - line:22:8] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:22:7 range=[<<testFilePath>>:22:6 - line:22:8]
             (erasure_expr implicit type='Any' location=<<testFilePath>>:22:7 range=[<<testFilePath>>:22:7 - line:22:7]
               (load_expr implicit type='Int' location=<<testFilePath>>:22:7 range=[<<testFilePath>>:22:7 - line:22:7]
-                (declref_expr type='@lvalue Int' accessKind=read location=<<testFilePath>>:22:7 range=[<<testFilePath>>:22:7 - line:22:7] decl=operators.(file).sum@<<testFilePath>>:8:5 direct_to_storage function_ref=unapplied))))))))
+                (declref_expr type='@lvalue Int' accessKind=read location=<<testFilePath>>:22:7 range=[<<testFilePath>>:22:7 - line:22:7] decl=operators.(file).z@<<testFilePath>>:3:5 direct_to_storage function_ref=unapplied))))))))
   (top_level_code_decl
     (brace_stmt
-      (call_expr type='()' location=<<testFilePath>>:24:1 range=[<<testFilePath>>:24:1 - line:24:22] nothrow arg_labels=_:
+      (call_expr type='()' location=<<testFilePath>>:24:1 range=[<<testFilePath>>:24:1 - line:24:21] nothrow arg_labels=_:
         (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:24:1 range=[<<testFilePath>>:24:1 - line:24:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
-        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:24:7 range=[<<testFilePath>>:24:6 - line:24:22] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
-          (paren_expr type='Any' location=<<testFilePath>>:24:7 range=[<<testFilePath>>:24:6 - line:24:22]
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:24:7 range=[<<testFilePath>>:24:6 - line:24:21] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:24:7 range=[<<testFilePath>>:24:6 - line:24:21]
             (erasure_expr implicit type='Any' location=<<testFilePath>>:24:7 range=[<<testFilePath>>:24:7 - line:24:7]
               (load_expr implicit type='Int' location=<<testFilePath>>:24:7 range=[<<testFilePath>>:24:7 - line:24:7]
-                (declref_expr type='@lvalue Int' accessKind=read location=<<testFilePath>>:24:7 range=[<<testFilePath>>:24:7 - line:24:7] decl=operators.(file).multiplication2@<<testFilePath>>:10:5 direct_to_storage function_ref=unapplied))))))))
+                (declref_expr type='@lvalue Int' accessKind=read location=<<testFilePath>>:24:7 range=[<<testFilePath>>:24:7 - line:24:7] decl=operators.(file).multiplication@<<testFilePath>>:5:5 direct_to_storage function_ref=unapplied))))))))
   (top_level_code_decl
     (brace_stmt
-      (call_expr type='()' location=<<testFilePath>>:25:1 range=[<<testFilePath>>:25:1 - line:25:16] nothrow arg_labels=_:
+      (call_expr type='()' location=<<testFilePath>>:25:1 range=[<<testFilePath>>:25:1 - line:25:15] nothrow arg_labels=_:
         (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:25:1 range=[<<testFilePath>>:25:1 - line:25:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
-        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:25:7 range=[<<testFilePath>>:25:6 - line:25:16] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
-          (paren_expr type='Any' location=<<testFilePath>>:25:7 range=[<<testFilePath>>:25:6 - line:25:16]
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:25:7 range=[<<testFilePath>>:25:6 - line:25:15] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:25:7 range=[<<testFilePath>>:25:6 - line:25:15]
             (erasure_expr implicit type='Any' location=<<testFilePath>>:25:7 range=[<<testFilePath>>:25:7 - line:25:7]
               (load_expr implicit type='Int' location=<<testFilePath>>:25:7 range=[<<testFilePath>>:25:7 - line:25:7]
-                (declref_expr type='@lvalue Int' accessKind=read location=<<testFilePath>>:25:7 range=[<<testFilePath>>:25:7 - line:25:7] decl=operators.(file).division2@<<testFilePath>>:11:5 direct_to_storage function_ref=unapplied))))))))
+                (declref_expr type='@lvalue Int' accessKind=read location=<<testFilePath>>:25:7 range=[<<testFilePath>>:25:7 - line:25:7] decl=operators.(file).division@<<testFilePath>>:6:5 direct_to_storage function_ref=unapplied))))))))
   (top_level_code_decl
     (brace_stmt
-      (call_expr type='()' location=<<testFilePath>>:26:1 range=[<<testFilePath>>:26:1 - line:26:19] nothrow arg_labels=_:
+      (call_expr type='()' location=<<testFilePath>>:26:1 range=[<<testFilePath>>:26:1 - line:26:18] nothrow arg_labels=_:
         (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:26:1 range=[<<testFilePath>>:26:1 - line:26:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
-        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:26:7 range=[<<testFilePath>>:26:6 - line:26:19] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
-          (paren_expr type='Any' location=<<testFilePath>>:26:7 range=[<<testFilePath>>:26:6 - line:26:19]
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:26:7 range=[<<testFilePath>>:26:6 - line:26:18] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:26:7 range=[<<testFilePath>>:26:6 - line:26:18]
             (erasure_expr implicit type='Any' location=<<testFilePath>>:26:7 range=[<<testFilePath>>:26:7 - line:26:7]
               (load_expr implicit type='Int' location=<<testFilePath>>:26:7 range=[<<testFilePath>>:26:7 - line:26:7]
-                (declref_expr type='@lvalue Int' accessKind=read location=<<testFilePath>>:26:7 range=[<<testFilePath>>:26:7 - line:26:7] decl=operators.(file).subtraction2@<<testFilePath>>:12:5 direct_to_storage function_ref=unapplied))))))))
+                (declref_expr type='@lvalue Int' accessKind=read location=<<testFilePath>>:26:7 range=[<<testFilePath>>:26:7 - line:26:7] decl=operators.(file).subtraction@<<testFilePath>>:7:5 direct_to_storage function_ref=unapplied))))))))
   (top_level_code_decl
     (brace_stmt
-      (call_expr type='()' location=<<testFilePath>>:27:1 range=[<<testFilePath>>:27:1 - line:27:11] nothrow arg_labels=_:
+      (call_expr type='()' location=<<testFilePath>>:27:1 range=[<<testFilePath>>:27:1 - line:27:10] nothrow arg_labels=_:
         (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:27:1 range=[<<testFilePath>>:27:1 - line:27:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
-        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:27:7 range=[<<testFilePath>>:27:6 - line:27:11] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
-          (paren_expr type='Any' location=<<testFilePath>>:27:7 range=[<<testFilePath>>:27:6 - line:27:11]
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:27:7 range=[<<testFilePath>>:27:6 - line:27:10] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:27:7 range=[<<testFilePath>>:27:6 - line:27:10]
             (erasure_expr implicit type='Any' location=<<testFilePath>>:27:7 range=[<<testFilePath>>:27:7 - line:27:7]
               (load_expr implicit type='Int' location=<<testFilePath>>:27:7 range=[<<testFilePath>>:27:7 - line:27:7]
-                (declref_expr type='@lvalue Int' accessKind=read location=<<testFilePath>>:27:7 range=[<<testFilePath>>:27:7 - line:27:7] decl=operators.(file).sum2@<<testFilePath>>:13:5 direct_to_storage function_ref=unapplied)))))))))
+                (declref_expr type='@lvalue Int' accessKind=read location=<<testFilePath>>:27:7 range=[<<testFilePath>>:27:7 - line:27:7] decl=operators.(file).sum@<<testFilePath>>:8:5 direct_to_storage function_ref=unapplied))))))))
+  (top_level_code_decl
+    (brace_stmt
+      (call_expr type='()' location=<<testFilePath>>:29:1 range=[<<testFilePath>>:29:1 - line:29:22] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:29:1 range=[<<testFilePath>>:29:1 - line:29:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:29:7 range=[<<testFilePath>>:29:6 - line:29:22] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:29:7 range=[<<testFilePath>>:29:6 - line:29:22]
+            (erasure_expr implicit type='Any' location=<<testFilePath>>:29:7 range=[<<testFilePath>>:29:7 - line:29:7]
+              (load_expr implicit type='Int' location=<<testFilePath>>:29:7 range=[<<testFilePath>>:29:7 - line:29:7]
+                (declref_expr type='@lvalue Int' accessKind=read location=<<testFilePath>>:29:7 range=[<<testFilePath>>:29:7 - line:29:7] decl=operators.(file).multiplication2@<<testFilePath>>:10:5 direct_to_storage function_ref=unapplied))))))))
+  (top_level_code_decl
+    (brace_stmt
+      (call_expr type='()' location=<<testFilePath>>:30:1 range=[<<testFilePath>>:30:1 - line:30:16] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:30:1 range=[<<testFilePath>>:30:1 - line:30:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:30:7 range=[<<testFilePath>>:30:6 - line:30:16] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:30:7 range=[<<testFilePath>>:30:6 - line:30:16]
+            (erasure_expr implicit type='Any' location=<<testFilePath>>:30:7 range=[<<testFilePath>>:30:7 - line:30:7]
+              (load_expr implicit type='Int' location=<<testFilePath>>:30:7 range=[<<testFilePath>>:30:7 - line:30:7]
+                (declref_expr type='@lvalue Int' accessKind=read location=<<testFilePath>>:30:7 range=[<<testFilePath>>:30:7 - line:30:7] decl=operators.(file).division2@<<testFilePath>>:11:5 direct_to_storage function_ref=unapplied))))))))
+  (top_level_code_decl
+    (brace_stmt
+      (call_expr type='()' location=<<testFilePath>>:31:1 range=[<<testFilePath>>:31:1 - line:31:19] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:31:1 range=[<<testFilePath>>:31:1 - line:31:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:31:7 range=[<<testFilePath>>:31:6 - line:31:19] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:31:7 range=[<<testFilePath>>:31:6 - line:31:19]
+            (erasure_expr implicit type='Any' location=<<testFilePath>>:31:7 range=[<<testFilePath>>:31:7 - line:31:7]
+              (load_expr implicit type='Int' location=<<testFilePath>>:31:7 range=[<<testFilePath>>:31:7 - line:31:7]
+                (declref_expr type='@lvalue Int' accessKind=read location=<<testFilePath>>:31:7 range=[<<testFilePath>>:31:7 - line:31:7] decl=operators.(file).subtraction2@<<testFilePath>>:12:5 direct_to_storage function_ref=unapplied))))))))
+  (top_level_code_decl
+    (brace_stmt
+      (call_expr type='()' location=<<testFilePath>>:32:1 range=[<<testFilePath>>:32:1 - line:32:11] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:32:1 range=[<<testFilePath>>:32:1 - line:32:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:32:7 range=[<<testFilePath>>:32:6 - line:32:11] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:32:7 range=[<<testFilePath>>:32:6 - line:32:11]
+            (erasure_expr implicit type='Any' location=<<testFilePath>>:32:7 range=[<<testFilePath>>:32:7 - line:32:7]
+              (load_expr implicit type='Int' location=<<testFilePath>>:32:7 range=[<<testFilePath>>:32:7 - line:32:7]
+                (declref_expr type='@lvalue Int' accessKind=read location=<<testFilePath>>:32:7 range=[<<testFilePath>>:32:7 - line:32:7] decl=operators.(file).sum2@<<testFilePath>>:13:5 direct_to_storage function_ref=unapplied))))))))
+  (top_level_code_decl
+    (brace_stmt
+      (call_expr type='()' location=<<testFilePath>>:34:1 range=[<<testFilePath>>:34:1 - line:34:22] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:34:1 range=[<<testFilePath>>:34:1 - line:34:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:34:7 range=[<<testFilePath>>:34:6 - line:34:22] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:34:7 range=[<<testFilePath>>:34:6 - line:34:22]
+            (erasure_expr implicit type='Any' location=<<testFilePath>>:34:7 range=[<<testFilePath>>:34:7 - line:34:7]
+              (load_expr implicit type='Int' location=<<testFilePath>>:34:7 range=[<<testFilePath>>:34:7 - line:34:7]
+                (declref_expr type='@lvalue Int' accessKind=read location=<<testFilePath>>:34:7 range=[<<testFilePath>>:34:7 - line:34:7] decl=operators.(file).multiplication3@<<testFilePath>>:15:5 direct_to_storage function_ref=unapplied))))))))
+  (top_level_code_decl
+    (brace_stmt
+      (call_expr type='()' location=<<testFilePath>>:35:1 range=[<<testFilePath>>:35:1 - line:35:16] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:35:1 range=[<<testFilePath>>:35:1 - line:35:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:35:7 range=[<<testFilePath>>:35:6 - line:35:16] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:35:7 range=[<<testFilePath>>:35:6 - line:35:16]
+            (erasure_expr implicit type='Any' location=<<testFilePath>>:35:7 range=[<<testFilePath>>:35:7 - line:35:7]
+              (load_expr implicit type='Int' location=<<testFilePath>>:35:7 range=[<<testFilePath>>:35:7 - line:35:7]
+                (declref_expr type='@lvalue Int' accessKind=read location=<<testFilePath>>:35:7 range=[<<testFilePath>>:35:7 - line:35:7] decl=operators.(file).division3@<<testFilePath>>:16:5 direct_to_storage function_ref=unapplied))))))))
+  (top_level_code_decl
+    (brace_stmt
+      (call_expr type='()' location=<<testFilePath>>:36:1 range=[<<testFilePath>>:36:1 - line:36:19] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:36:1 range=[<<testFilePath>>:36:1 - line:36:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:36:7 range=[<<testFilePath>>:36:6 - line:36:19] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:36:7 range=[<<testFilePath>>:36:6 - line:36:19]
+            (erasure_expr implicit type='Any' location=<<testFilePath>>:36:7 range=[<<testFilePath>>:36:7 - line:36:7]
+              (load_expr implicit type='Int' location=<<testFilePath>>:36:7 range=[<<testFilePath>>:36:7 - line:36:7]
+                (declref_expr type='@lvalue Int' accessKind=read location=<<testFilePath>>:36:7 range=[<<testFilePath>>:36:7 - line:36:7] decl=operators.(file).subtraction3@<<testFilePath>>:17:5 direct_to_storage function_ref=unapplied))))))))
+  (top_level_code_decl
+    (brace_stmt
+      (call_expr type='()' location=<<testFilePath>>:37:1 range=[<<testFilePath>>:37:1 - line:37:11] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:37:1 range=[<<testFilePath>>:37:1 - line:37:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:37:7 range=[<<testFilePath>>:37:6 - line:37:11] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:37:7 range=[<<testFilePath>>:37:6 - line:37:11]
+            (erasure_expr implicit type='Any' location=<<testFilePath>>:37:7 range=[<<testFilePath>>:37:7 - line:37:7]
+              (load_expr implicit type='Int' location=<<testFilePath>>:37:7 range=[<<testFilePath>>:37:7 - line:37:7]
+                (declref_expr type='@lvalue Int' accessKind=read location=<<testFilePath>>:37:7 range=[<<testFilePath>>:37:7 - line:37:7] decl=operators.(file).sum3@<<testFilePath>>:18:5 direct_to_storage function_ref=unapplied)))))))))

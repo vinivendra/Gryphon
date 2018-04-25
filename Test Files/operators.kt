@@ -10,6 +10,10 @@ fun main(args: Array<String>) {
 	var division2: Int = 10 / 2
 	var subtraction2: Int = 3 - 1
 	var sum2: Int = 4 + 1
+	var multiplication3: Int = 0 * -1
+	var division3: Int = -10 / 2
+	var subtraction3: Int = -3 - 1
+	var sum3: Int = 4 + -1
 	println(x)
 	println(y)
 	println(z)
@@ -21,4 +25,8 @@ fun main(args: Array<String>) {
 	println(division2)
 	println(subtraction2)
 	println(sum2)
+	println(multiplication3)
+	println(division3)
+	println(subtraction3)
+	println(sum3)
 }
