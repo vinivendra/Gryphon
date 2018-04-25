@@ -34,7 +34,7 @@ public class GRYKotlinTranslator {
 		let statements = ast.subTrees.filter({!isDeclaration($0)})
 		
 		guard !statements.isEmpty else { return result }
-		if !declarations.isEmpty {
+		if !result.isEmpty {
 			result += "\n"
 		}
 		
