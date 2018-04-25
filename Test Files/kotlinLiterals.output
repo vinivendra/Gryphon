@@ -1,2 +1,4 @@
 Hello from kotlin!
+42
 This will be ignored by swift, but not by kotlin.
+3.0
