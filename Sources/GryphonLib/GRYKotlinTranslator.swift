@@ -1,5 +1,7 @@
 public class GRYKotlinTranslator {
 	
+	private var shouldIgnoreNext = false
+	
 	// MARK: - Interface
 
 	/**
@@ -41,6 +43,11 @@ public class GRYKotlinTranslator {
 		let indentation = increaseIndentation("")
 		
 		for statement in statements {
+			if shouldIgnoreNext {
+				shouldIgnoreNext = false
+				continue
+			}
+			
 			switch statement.name {
 			case "Top Level Code Declaration":
 				let string = translate(topLevelCode: statement, withIndentation: indentation)
@@ -64,6 +71,11 @@ public class GRYKotlinTranslator {
 		var result = ""
 		
 		for subTree in ast.subTrees {
+			if shouldIgnoreNext {
+				shouldIgnoreNext = false
+				continue
+			}
+			
 			switch subTree.name {
 			case "Function Declaration":
 				let string = translate(functionDeclaration: subTree, withIndentation: "")
@@ -105,7 +117,8 @@ public class GRYKotlinTranslator {
 		
 		let functionName = functionDeclaration.standaloneAttributes[0]
 		
-		guard !functionName.hasPrefix("GRYKotlinLiteral(") else { return "" }
+		guard !functionName.hasPrefix("GRYKotlinLiteral(") &&
+			!functionName.hasPrefix("GRYKotlinIgnoreNext(") else { return "" }
 		
 		guard functionDeclaration.standaloneAttributes.count <= 1 else {
 			return "// <Generic function declaration: \(functionName)>"
@@ -346,6 +359,11 @@ public class GRYKotlinTranslator {
 				let unquotedString = String(string.dropLast().dropFirst())
 				let unescapedString = removeBackslashEscapes(unquotedString)
 				return unescapedString + terminatorString
+			}
+			
+			guard rawFunctionNamePrefix != "GRYKotlinIgnoreNext" else {
+				shouldIgnoreNext = true
+				return ""
 			}
 			
 			let functionNamePrefix = (rawFunctionNamePrefix == "print") ?
