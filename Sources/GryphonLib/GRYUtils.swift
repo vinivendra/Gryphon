@@ -59,7 +59,23 @@ extension GRYUtils {
 }
 
 extension GRYUtils {
-	static let buildFolder = ".kotlinBuild"
+	public static let systemIdentifier: String = {
+		#if os(macOS)
+		let os = "macOS"
+		#elseif os(Linux)
+		let os = "Linux"
+		#endif
+		
+		#if arch(i386)
+		let arch = "i386"
+		#elseif arch(x86_64)
+		let arch = "x86_64"
+		#endif
+		
+		return os + "-" + arch
+	}()
+	
+	public static let buildFolder = ".kotlinBuild-\(GRYUtils.systemIdentifier)"
 	
 	static func createFile(named fileName: String, inDirectory directory: String, containing contents: String) -> String {
 		let fileManager = FileManager.default

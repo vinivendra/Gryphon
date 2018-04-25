@@ -5,4 +5,4 @@
 test.swift
 test.ast
 /.tmp
-/.kotlinBuild
+/.kotlinBuild*
