@@ -77,7 +77,7 @@ extension GRYUtils {
 	
 	public static let buildFolder = ".kotlinBuild-\(GRYUtils.systemIdentifier)"
 	
-	static func createFile(named fileName: String, inDirectory directory: String, containing contents: String) -> String {
+	internal static func createFile(named fileName: String, inDirectory directory: String, containing contents: String) -> String {
 		let fileManager = FileManager.default
 		
 		try! fileManager.createDirectory(atPath: directory, withIntermediateDirectories: true)
@@ -98,10 +98,10 @@ extension GRYUtils {
 /////////////////////////////////////////////
 
 extension GRYUtils {
-	static var rng: RandomGenerator = Xoroshiro()
+	internal static var rng: RandomGenerator = Xoroshiro()
 }
 
-extension RandomGenerator {
+internal extension RandomGenerator {
 	mutating func random(_ range: Range<Int>) -> Int {
 		let rangeSize = range.upperBound - range.lowerBound
 		let randomNumber = Int(random32()) % rangeSize
@@ -120,14 +120,14 @@ extension RandomGenerator {
 }
 
 /////////////////////////////////////////////
-extension RandomAccessCollection where Index == Int {
+internal extension RandomAccessCollection where Index == Int {
 	func randomElement() -> Element {
 		let index = GRYUtils.rng.random(0..<count)
 		return self[index]
 	}
 }
 
-extension RandomAccessCollection where Element: Equatable, Index == Int {
+internal extension RandomAccessCollection where Element: Equatable, Index == Int {
 	func distinctRandomElements() -> (Element, Element) {
 		precondition(count > 1)
 		let first = randomElement()
