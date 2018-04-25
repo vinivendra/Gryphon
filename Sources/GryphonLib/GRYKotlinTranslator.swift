@@ -366,17 +366,14 @@ public class GRYKotlinTranslator {
 			
 			guard rawFunctionNamePrefix != "GRYKotlinLiteral" else {
 				let parameterExpression: GRYAst
-				let terminatorString: String
 
 				// Version with both the swift value and the kotlin literal
 				if let unwrappedExpression = callExpression.subTree(named: "Tuple Expression") {
 					parameterExpression = unwrappedExpression
-					terminatorString = ""
 				}
 				// Version with just the kotlin literal
 				else if let unwrappedExpression = callExpression.subTree(named: "Parentheses Expression") {
 					parameterExpression = unwrappedExpression
-					terminatorString = "\n"
 				}
 				else {
 					fatalError("Unknown kotlin literal function called.")
@@ -386,7 +383,7 @@ public class GRYKotlinTranslator {
 				let string = translate(stringLiteralExpression: stringExpression)
 				let unquotedString = String(string.dropLast().dropFirst())
 				let unescapedString = removeBackslashEscapes(unquotedString)
-				return unescapedString + terminatorString
+				return unescapedString
 			}
 			
 			guard rawFunctionNamePrefix != "GRYKotlinIgnoreNext" else {
