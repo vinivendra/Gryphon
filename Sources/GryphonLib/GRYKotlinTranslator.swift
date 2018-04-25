@@ -283,6 +283,8 @@ public class GRYKotlinTranslator {
 			return translate(expression: expression.subTrees[0])
 		case "Parentheses Expression":
 			return "(" + translate(expression: expression.subTrees[0]) + ")"
+		case "Prefix Unary Expression":
+			return translate(prefixUnaryExpression: expression)
 		case "Load Expression":
 			return translate(expression: expression.subTree(named: "Declaration Reference Expression")!)
 		default:
@@ -304,6 +306,19 @@ public class GRYKotlinTranslator {
 		return "\(leftHandSide) \(operatorIdentifier) \(rightHandSide)"
 	}
 	
+	private func translate(prefixUnaryExpression: GRYAst) -> String {
+		precondition(prefixUnaryExpression.name == "Prefix Unary Expression")
+
+		let dotCallExpression = prefixUnaryExpression.subTree(named: "Dot Syntax Call Expression")!
+		let declarationReferenceExpression = dotCallExpression.subTree(named: "Declaration Reference Expression")!
+		let operatorIdentifier = getIdentifierFromDeclaration(declarationReferenceExpression["decl"]!)
+		
+		let expression = prefixUnaryExpression.subTrees[1]
+		let expressionString = translate(expression: expression)
+
+		return "\(operatorIdentifier)\(expressionString)"
+	}
+
 	/**
 	Translates a swift call expression into kotlin code.
 	
