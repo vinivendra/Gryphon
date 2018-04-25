@@ -41,7 +41,8 @@ public enum GRYCompiler {
 	}
 	
 	public static func generateKotlinCode(forFileAt filePath: String) -> String {
-		let ast = generateAST(forFileAt: filePath)
+		let jsonFile = GRYUtils.changeExtension(of: filePath, to: "json")
+		let ast = GRYAst.initialize(fromJsonInFile: jsonFile)
 		
 		log?("Translating AST to Kotlin...")
 		let kotlin = GRYKotlinTranslator().translateAST(ast)
