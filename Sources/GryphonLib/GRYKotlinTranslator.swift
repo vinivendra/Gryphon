@@ -334,11 +334,21 @@ public class GRYKotlinTranslator {
 		// If the call expression corresponds to an integer literal
 		if let argumentLabels = callExpression["arg_labels"],
 			argumentLabels == "_builtinIntegerLiteral:",
+			
 			let tupleExpression = callExpression.subTree(named: "Tuple Expression"),
 			let integerLiteralExpression = tupleExpression.subTree(named: "Integer Literal Expression"),
-			let value = integerLiteralExpression["value"]
+			let value = integerLiteralExpression["value"],
+			
+			let constructorReferenceCallExpression = callExpression.subTree(named: "Constructor Reference Call Expression"),
+			let typeExpression = constructorReferenceCallExpression.subTree(named: "Type Expression"),
+			let type = typeExpression["typerepr"]
 		{
-			return value
+			if type == "Double" {
+				return value + ".0"
+			}
+			else {
+				return value
+			}
 		}
 		// If the call expression corresponds to an explicit function call
 		else {
