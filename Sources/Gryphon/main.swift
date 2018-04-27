@@ -5,17 +5,22 @@ func updateJsonTestFiles() {
 	
 	let currentURL = URL(fileURLWithPath: Process().currentDirectoryPath + "/Test Files")
 	let fileURLs = try! FileManager.default.contentsOfDirectory(at: currentURL, includingPropertiesForKeys: nil)
-	let testFiles = fileURLs.filter { $0.pathExtension == "swift" }
+	var testFiles = fileURLs.filter { $0.pathExtension == "swift" }
+	
+	let mainTestFile = URL(fileURLWithPath: Process().currentDirectoryPath + "/test.swift")
+	testFiles.append(mainTestFile)
 	
 	print("Updating JSON files...")
 	
 	for swiftFile in testFiles {
 		let swiftFilePath = swiftFile.path
+		let astFilePath = GRYUtils.changeExtension(of: swiftFilePath, to: "ast")
 		let jsonFilePath = GRYUtils.changeExtension(of: swiftFilePath, to: "json")
-		let jsonIsOutdated = GRYUtils.file(swiftFilePath, wasModifiedLaterThan: jsonFilePath)
+
+		let jsonFileWasJustCreated = GRYUtils.createFileIfNeeded(at: jsonFilePath, containing: "")
+		let jsonIsOutdated = jsonFileWasJustCreated || GRYUtils.file(astFilePath, wasModifiedLaterThan: jsonFilePath)
 		
 		if jsonIsOutdated {
-			let astFilePath = GRYUtils.changeExtension(of: swiftFilePath, to: "ast")
 			let astIsOutdated = GRYUtils.file(swiftFilePath, wasModifiedLaterThan: astFilePath)
 		
 			if astIsOutdated {

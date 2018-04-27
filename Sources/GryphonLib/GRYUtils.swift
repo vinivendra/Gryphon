@@ -77,6 +77,7 @@ extension GRYUtils {
 	
 	public static let buildFolder = ".kotlinBuild-\(GRYUtils.systemIdentifier)"
 	
+	@discardableResult
 	internal static func createFile(named fileName: String, inDirectory directory: String, containing contents: String) -> String {
 		let fileManager = FileManager.default
 		
@@ -92,6 +93,20 @@ extension GRYUtils {
 		assert(success)
 		
 		return filePath
+	}
+	
+	/// - Returns: `true` if the file was created, `false` if it already existed.
+	public static func createFileIfNeeded(at filePath: String, containing contents: String) -> Bool {
+		let fileManager = FileManager.default
+
+		if !fileManager.fileExists(atPath: filePath) {
+			let success = fileManager.createFile(atPath: filePath, contents: Data(contents.utf8))
+			assert(success)
+			return true
+		}
+		else {
+			return false
+		}
 	}
 }
 
