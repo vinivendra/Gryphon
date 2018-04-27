@@ -1,7 +1,7 @@
 public class GRYKotlinTranslator {
 	
 	/**
-	This variable is used to allow calls to the `GRYKotlinIgnoreNext` function to ignore
+	This variable is used to allow calls to the `GRYIgnoreNext` function to ignore
 	the next swift statement. When a call to that function is detected, this variable is set
 	to true. Then, when the next statement comes along, the translator will see that this
 	variable is set to true, ignore that statement, and then reset it to false to continue
@@ -124,8 +124,9 @@ public class GRYKotlinTranslator {
 		
 		let functionName = functionDeclaration.standaloneAttributes[0]
 		
-		guard !functionName.hasPrefix("GRYKotlinLiteral(") &&
-			!functionName.hasPrefix("GRYKotlinIgnoreNext(") else { return "" }
+		guard !functionName.hasPrefix("GRYInsert(") &&
+			!functionName.hasPrefix("GRYAlternative(") &&
+			!functionName.hasPrefix("GRYIgnoreNext(") else { return "" }
 		
 		guard functionDeclaration.standaloneAttributes.count <= 1 else {
 			return "// <Generic function declaration: \(functionName)>"
@@ -335,8 +336,8 @@ public class GRYKotlinTranslator {
 	A call expression is a function call, but it can be explicit (as usual) or implicit (i.e. integer literals).
 	Currently, the only implicit calls supported are integer literals.
 	
-	As a special case, functions called GRYKotlinLiteral and GRYKotlinIgnoreNext are used to directly manipulate
-	the resulting kotlin code, and are treated separately below.
+	As a special case, functions called GRYInsert, GRYAlternative and GRYIgnoreNext are used to directly
+	manipulate the resulting kotlin code, and are treated separately below.
 	
 	As another special case, a call to the `print` function gets renamed to `println` for compatibility with kotlin.
 	In the future, this will be done by a more complex system, but for now it allows integration tests to exist.
@@ -361,12 +362,15 @@ public class GRYKotlinTranslator {
 			}
 			let functionNamePrefix = functionName.prefix(while: { $0 != "(" })
 			
-			guard functionNamePrefix != "GRYKotlinLiteral" else {
-				return translate(asKotlinLiteral: callExpression)
+			guard functionNamePrefix != "GRYInsert" &&
+				functionNamePrefix != "GRYAlternative" else
+			{
+				return translate(asKotlinLiteral: callExpression,
+								 withFunctionNamePrefix: functionNamePrefix)
 			}
 			
-			// A call to `GRYKotlinIgnoreNext()` can be used to ignore the next swift statement.
-			guard functionNamePrefix != "GRYKotlinIgnoreNext" else {
+			// A call to `GRYIgnoreNext()` can be used to ignore the next swift statement.
+			guard functionNamePrefix != "GRYIgnoreNext" else {
 				shouldIgnoreNext = true
 				return ""
 			}
@@ -432,28 +436,29 @@ public class GRYKotlinTranslator {
 	}
 	
 	/**
-	Translates kotlin literals. There are two functions that can be declared in swift,
-	`GRYKotlinLiteral(_: String)` and `GRYKotlinLiteral<T>(_: T, _: String) -> T`, that
-	allow a user to add literal kotlin code to the translation.
+	Translates functions that provide kotlin literals. There are two functions that
+	can be declared in swift, `GRYInsert(_: String)` and
+	`GRYAlternative<T>(swift: T, kotlin: String) -> T`, that allow a user to add
+	literal kotlin code to the translation.
 	
-	The first kind can be used to insert kotlin statements in swift code, as in
-	`GRYKotlinLiteral("println(\"Hello, kotlin!\")")`./
+	The first one can be used to insert arbitrary kotlin statements in the middle
+	of translated code, as in `GRYInsert("println(\"Hello, kotlin!\")")`.
 	
-	The second kind can be used to replace a swift value with a kotlin value, as in
-	`let x = GRYKotlinLiteral(mySwiftFunction(), "myKotlinFunction()")`.
+	The second one can be used to provide a manual translation of a swift value, as in
+	`let three = GRYAlternative(swift: sqrt(9), kotlin: "Math.sqrt(9.0)")`.
 	*/
-	private func translate(asKotlinLiteral callExpression: GRYAst) -> String {
+	private func translate(asKotlinLiteral callExpression: GRYAst,
+						   withFunctionNamePrefix functionNamePrefix: Substring) -> String
+	{
 		precondition(callExpression.name == "Call Expression")
 		
 		let parameterExpression: GRYAst
 		
-		// Version with both the swift value and the kotlin literal
-		if let unwrappedExpression = callExpression.subTree(named: "Tuple Expression") {
-			parameterExpression = unwrappedExpression
+		if functionNamePrefix == "GRYAlternative" {
+			parameterExpression = callExpression.subTree(named: "Tuple Expression")!
 		}
-		// Version with just the kotlin literal
-		else if let unwrappedExpression = callExpression.subTree(named: "Parentheses Expression") {
-			parameterExpression = unwrappedExpression
+		else if functionNamePrefix == "GRYInsert" {
+			parameterExpression = callExpression.subTree(named: "Parentheses Expression")!
 		}
 		else {
 			fatalError("Unknown kotlin literal function called.")

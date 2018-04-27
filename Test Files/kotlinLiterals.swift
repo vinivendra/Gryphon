@@ -1,28 +1,28 @@
-func GRYKotlinIgnoreNext() { }
+func GRYIgnoreNext() { }
 
-func GRYKotlinLiteral(_ kotlinExpression: String) { }
+func GRYInsert(_ kotlinExpression: String) { }
 
-func GRYKotlinLiteral<T>(_ swiftExpression: T, _ kotlinExpression: String) -> T {
+func GRYAlternative<T>(swift swiftExpression: T, kotlin kotlinExpression: String) -> T {
 	return swiftExpression
 }
 
 // Kotlin literals as expressions
-let languageName = GRYKotlinLiteral("swift", "\"kotlin\"")
+let languageName = GRYAlternative(swift: "swift", kotlin: "\"kotlin\"")
 print("Hello from \(languageName)!")
 
-let magicNumber = 40 + GRYKotlinLiteral(2, "5-3")
+let magicNumber = 40 + GRYAlternative(swift: 2, kotlin: "5-3")
 print(magicNumber)
 
 // Kotlin literals as statements
-GRYKotlinLiteral("println(\"This will be ignored by swift, but not by kotlin.\")")
+GRYInsert("println(\"This will be ignored by swift, but not by kotlin.\")")
 
 // Ignore swift statements
-GRYKotlinIgnoreNext()
+GRYIgnoreNext()
 import Foundation // There's no Foundation in kotlin
 
-GRYKotlinIgnoreNext()
+GRYIgnoreNext()
 print("This will be ignored by kotlin, but not by swift.")
 
 // Call something swift can't parse
-let squareRoot = GRYKotlinLiteral(sqrt(9), "Math.sqrt(9.0)")
+let squareRoot = GRYAlternative(swift: sqrt(9), kotlin: "Math.sqrt(9.0)")
 print(squareRoot)
