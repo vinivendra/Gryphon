@@ -6,6 +6,8 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 	let keyValueAttributes: [String: String]
 	let subTrees: [GRYAst]
 	
+	static public var horizontalLimitWhenPrinting = Int.max
+	
 	public convenience init(astFile astFilePath: String) {
 		do {
 			let rawAstDump = try String(contentsOfFile: astFilePath)
@@ -136,9 +138,18 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 	public var treeDescription: String {
 		return name
 	}
+	
 	public var printableSubTrees: [GRYPrintableAsTree] {
-		let keyValueStrings = keyValueAttributes.map {
-			"\($0.key) → \($0.value)"
+		let keyValueStrings = keyValueAttributes.map { (element: (key: String, value: String)) -> String in
+			let maxLineLength = GRYAst.horizontalLimitWhenPrinting
+			let prefixLength = element.key.count + 3
+			let lineLength = prefixLength + element.value.count
+			let maxValueLength = maxLineLength - prefixLength
+			let valueString = (lineLength > maxLineLength) ?
+				element.value.prefix(maxValueLength - 1) + "…" :
+				element.value
+			
+			return "\(element.key) → \(valueString)"
 			}.sorted() as [GRYPrintableAsTree]
 		
 		let standaloneStrings = standaloneAttributes.sorted() as [GRYPrintableAsTree]
@@ -147,6 +158,7 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 		return result
 	}
 	
+	//
 	public var description: String {
 		var result = ""
 		self.prettyPrint() { result += $0 }

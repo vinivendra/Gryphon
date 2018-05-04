@@ -36,6 +36,8 @@ func updateJsonTestFiles() {
 }
 
 func main() {
+	GRYAst.horizontalLimitWhenPrinting = 50
+	
 	updateJsonTestFiles()
 
 //	let filePath = Process().currentDirectoryPath + "/Test Files/strings.swift"
