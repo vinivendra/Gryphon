@@ -360,6 +360,9 @@ public class GRYKotlinTranslator {
 	
 	As another special case, a call to the `print` function gets renamed to `println` for compatibility with kotlin.
 	In the future, this will be done by a more complex system, but for now it allows integration tests to exist.
+	
+	- Note: If conditions include an "empty" call expression wrapping its real expression. This function handles
+	the unwrapping then delegates the translation.
 	*/
 	private func translate(callExpression: GRYAst) -> String {
 		precondition(callExpression.name == "Call Expression")
@@ -369,6 +372,12 @@ public class GRYKotlinTranslator {
 			argumentLabels == "_builtinIntegerLiteral:"
 		{
 			return translate(asNumericLiteral: callExpression)
+		}
+		// If the call expression corresponds to an boolean literal
+		else if let argumentLabels = callExpression["arg_labels"],
+			argumentLabels == "_builtinBooleanLiteral:"
+		{
+			return translate(asBooleanLiteral: callExpression)
 		}
 		else {
 			let functionName: String
@@ -380,8 +389,9 @@ public class GRYKotlinTranslator {
 				functionName = getIdentifierFromDeclaration(declaration)
 			}
 			else {
-				// If the call expression corresponds to a boolean literal
-				return translate(asBooleanLiteral: callExpression)
+				// If it's an empty expression used as in an "if" condition
+				let containedExpression = callExpression.subTree(named: "Dot Syntax Call Expression")!.subTrees.last!
+				return translate(expression: containedExpression)
 			}
 			
 			// If we're here, then the call expression corresponds to an explicit function call
@@ -440,9 +450,7 @@ public class GRYKotlinTranslator {
 	private func translate(asBooleanLiteral callExpression: GRYAst) -> String {
 		precondition(callExpression.name == "Call Expression")
 		
-		return callExpression.subTree(named: "Dot Syntax Call Expression")!
-			.subTree(named: "Call Expression")!
-			.subTree(named: "Tuple Expression")!
+		return callExpression.subTree(named: "Tuple Expression")!
 			.subTree(named: "Boolean Literal Expression")!["value"]!
 	}
 	
