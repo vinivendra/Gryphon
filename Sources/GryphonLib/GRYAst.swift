@@ -111,13 +111,7 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 	}
 	
 	func subTree(named name: String) -> GRYAst? {
-		for subTree in subTrees {
-			if subTree.name == name {
-				return subTree
-			}
-		}
-		
-		return nil
+		return subTrees.first { $0.name == name }
 	}
 	
 	//
