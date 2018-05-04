@@ -1,4 +1,10 @@
 public class GRYKotlinTranslator {
+	/// Used for the translation of Swift types into Kotlin types.
+	static let typeMappings = ["Bool": "Boolean"]
+	
+	private func translateType(_ type: String) -> String {
+		return GRYKotlinTranslator.typeMappings[type] ?? type
+	}
 	
 	/**
 	This variable is used to allow calls to the `GRYIgnoreNext` function to ignore
@@ -151,7 +157,8 @@ public class GRYKotlinTranslator {
 		if let parameterList = functionDeclaration.subTree(named: "Parameter List") {
 			for parameter in parameterList.subTrees {
 				let name = parameter.standaloneAttributes[0]
-				let type = parameter["interface type"]!
+				let rawType = parameter["interface type"]!
+				let type = translateType(rawType)
 				parameterStrings.append(name + ": " + type)
 			}
 		}
@@ -161,7 +168,8 @@ public class GRYKotlinTranslator {
 		result += ")"
 		
 		// TODO: Doesn't allow to return function types
-		let returnType = functionDeclaration["interface type"]!.split(withStringSeparator: " -> ").last!
+		let rawType = functionDeclaration["interface type"]!.split(withStringSeparator: " -> ").last!
+		let returnType = translateType(rawType)
 		if returnType != "()" {
 			result += ": " + returnType
 		}
@@ -204,7 +212,8 @@ public class GRYKotlinTranslator {
 					
 					
 					let identifier = binding.standaloneAttributes[0]
-					let type = binding.keyValueAttributes["type"]!
+					let rawType = binding.keyValueAttributes["type"]!
+					let type = translateType(rawType)
 				
 					danglingPatternBinding = (identifier: identifier,
 														type: type,
@@ -272,7 +281,8 @@ public class GRYKotlinTranslator {
 		var result = indentation
 		
 		let identifier = variableDeclaration.standaloneAttributes[0]
-		let type = variableDeclaration["interface type"]!
+		let rawType = variableDeclaration["interface type"]!
+		let type = translateType(rawType)
 		
 		let varOrValKeyword: String
 		if variableDeclaration.standaloneAttributes.contains("let") {
