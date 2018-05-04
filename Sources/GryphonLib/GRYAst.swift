@@ -140,16 +140,8 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 	}
 	
 	public var printableSubTrees: [GRYPrintableAsTree] {
-		let keyValueStrings = keyValueAttributes.map { (element: (key: String, value: String)) -> String in
-			let maxLineLength = GRYAst.horizontalLimitWhenPrinting
-			let prefixLength = element.key.count + 3
-			let lineLength = prefixLength + element.value.count
-			let maxValueLength = maxLineLength - prefixLength
-			let valueString = (lineLength > maxLineLength) ?
-				element.value.prefix(maxValueLength - 1) + "…" :
-				element.value
-			
-			return "\(element.key) → \(valueString)"
+		let keyValueStrings = keyValueAttributes.map {
+			return "\($0.key) → \($0.value)"
 			}.sorted() as [GRYPrintableAsTree]
 		
 		let standaloneStrings = standaloneAttributes.sorted() as [GRYPrintableAsTree]
@@ -160,8 +152,15 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 	
 	//
 	public var description: String {
-		var result = ""
-		self.prettyPrint() { result += $0 }
+		var rawResult = ""
+		self.prettyPrint() { rawResult += $0 }
+		
+		let result = rawResult.split(separator: "\n").map { line in
+			(line.count > GRYAst.horizontalLimitWhenPrinting) ?
+				line.prefix(GRYAst.horizontalLimitWhenPrinting - 1) + "…" :
+			line
+		}.joined(separator: "\n")
+		
 		return result
 	}
 	

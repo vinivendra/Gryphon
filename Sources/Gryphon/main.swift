@@ -36,7 +36,7 @@ func updateJsonTestFiles() {
 }
 
 func main() {
-	GRYAst.horizontalLimitWhenPrinting = 50
+	GRYAst.horizontalLimitWhenPrinting = 100
 	
 	updateJsonTestFiles()
 
