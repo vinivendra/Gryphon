@@ -237,6 +237,7 @@ public class GRYKotlinTranslator {
 	}
 	
 	private func translate(ifStatement: GRYAst,
+						   asElseIf isElseIf: Bool = false,
 						   withIndentation indentation: String) -> String
 	{
 		precondition(ifStatement.name == "If Statement")
@@ -249,8 +250,28 @@ public class GRYKotlinTranslator {
 		let statements = braceStatement.subTrees
 		let statementsString = translate(statements: statements, withIndentation: increasedIndentation)
 		
-		let result = "\(indentation)if (\(conditionString)) {\n\(statementsString)\(indentation)}\n"
-		return result
+		let keyword = isElseIf ? "else if" : "if"
+		
+		let ifResult = "\(indentation)\(keyword) (\(conditionString)) {\n\(statementsString)\(indentation)}\n"
+		
+		if ifStatement.subTrees.count > 2 {
+			let otherIfStatement = ifStatement.subTrees[2]
+			
+			// If it's an `else if`
+			if otherIfStatement.name == "If Statement" {
+				let elseIfResult = translate(ifStatement: otherIfStatement, asElseIf: true, withIndentation: indentation)
+				return ifResult + elseIfResult
+			}
+			// If it's an `else`
+			else {
+				let statementsString = translate(statements: otherIfStatement.subTrees, withIndentation: increasedIndentation)
+				let elseResult = "\(indentation)else {\n\(statementsString)\(indentation)}\n"
+				return ifResult + elseResult
+			}
+		}
+		else {
+			return ifResult
+		}
 	}
 	
 	private func translate(returnStatement: GRYAst,
