@@ -186,6 +186,8 @@ public class GRYKotlinTranslator {
 		for statement in statements {
 			
 			switch statement.name {
+			case "If Statement":
+				result += translate(ifStatement: statement, withIndentation: indentation)
 			case "Pattern Binding Declaration":
 				if statement.subTrees.count > 1,
 					statement.subTrees[1].name.hasSuffix("Expression")
@@ -222,6 +224,23 @@ public class GRYKotlinTranslator {
 			}
 		}
 		
+		return result
+	}
+	
+	private func translate(ifStatement: GRYAst,
+						   withIndentation indentation: String) -> String
+	{
+		precondition(ifStatement.name == "If Statement")
+
+		let condition = ifStatement.subTrees[0]
+		let conditionString = translate(expression: condition)
+		
+		let increasedIndentation = increaseIndentation(indentation)
+		let braceStatement = ifStatement.subTrees[1]
+		let statements = braceStatement.subTrees
+		let statementsString = translate(statements: statements, withIndentation: increasedIndentation)
+		
+		let result = "\(indentation)if (\(conditionString)) {\n\(statementsString)\(indentation)}\n"
 		return result
 	}
 	
@@ -334,7 +353,7 @@ public class GRYKotlinTranslator {
 	Translates a swift call expression into kotlin code.
 	
 	A call expression is a function call, but it can be explicit (as usual) or implicit (i.e. integer literals).
-	Currently, the only implicit calls supported are integer literals.
+	Currently, the only implicit calls supported are integer abd boolean literals.
 	
 	As a special case, functions called GRYInsert, GRYAlternative and GRYIgnoreNext are used to directly
 	manipulate the resulting kotlin code, and are treated separately below.
@@ -351,15 +370,21 @@ public class GRYKotlinTranslator {
 		{
 			return translate(asNumericLiteral: callExpression)
 		}
-		// If the call expression corresponds to an explicit function call
 		else {
 			let functionName: String
+			
 			if let declarationReferenceExpression = callExpression.subTree(named: "Declaration Reference Expression") {
 				functionName = translate(declarationReferenceExpression: declarationReferenceExpression)
 			}
-			else {
-				functionName = getIdentifierFromDeclaration(callExpression["decl"]!)
+			else if let declaration = callExpression["decl"] {
+				functionName = getIdentifierFromDeclaration(declaration)
 			}
+			else {
+				// If the call expression corresponds to a boolean literal
+				return translate(asBooleanLiteral: callExpression)
+			}
+			
+			// If we're here, then the call expression corresponds to an explicit function call
 			let functionNamePrefix = functionName.prefix(while: { $0 != "(" })
 			
 			guard functionNamePrefix != "GRYInsert" &&
@@ -409,6 +434,16 @@ public class GRYKotlinTranslator {
 		}
 		
 		return "\(functionNamePrefix)\(parameters)"
+	}
+	
+	/// Translates boolean literals, which in swift are modeled as calls to specific builtin functions.
+	private func translate(asBooleanLiteral callExpression: GRYAst) -> String {
+		precondition(callExpression.name == "Call Expression")
+		
+		return callExpression.subTree(named: "Dot Syntax Call Expression")!
+			.subTree(named: "Call Expression")!
+			.subTree(named: "Tuple Expression")!
+			.subTree(named: "Boolean Literal Expression")!["value"]!
 	}
 	
 	/// Translates numeric literals, which in swift are modeled as calls to specific builtin functions.

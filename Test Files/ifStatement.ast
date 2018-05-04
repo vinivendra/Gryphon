@@ -1,0 +1,41 @@
+(source_file
+  (top_level_code_decl
+    (brace_stmt
+      (if_stmt
+        (call_expr implicit type='Int1' location=<<testFilePath>>:1:4 range=[<<testFilePath>>:1:4 - line:1:4] nothrow arg_labels=
+          (dot_syntax_call_expr implicit type='() -> Int1' location=<<testFilePath>>:1:4 range=[<<testFilePath>>:1:4 - line:1:4] nothrow
+            (declref_expr implicit type='(Bool) -> () -> Int1' location=<<testFilePath>>:1:4 range=[<<testFilePath>>:1:4 - line:1:4] decl=Swift.(file).Bool._getBuiltinLogicValue() function_ref=double)
+            (call_expr implicit type='Bool' location=<<testFilePath>>:1:4 range=[<<testFilePath>>:1:4 - line:1:4] nothrow arg_labels=_builtinBooleanLiteral:
+              (constructor_ref_call_expr implicit type='(Int1) -> Bool' location=<<testFilePath>>:1:4 range=[<<testFilePath>>:1:4 - line:1:4] nothrow
+                (declref_expr implicit type='(Bool.Type) -> (Int1) -> Bool' location=<<testFilePath>>:1:4 range=[<<testFilePath>>:1:4 - line:1:4] decl=Swift.(file).Bool.init(_builtinBooleanLiteral:) function_ref=single)
+                (type_expr implicit type='Bool.Type' location=<<testFilePath>>:1:4 range=[<<testFilePath>>:1:4 - line:1:4] typerepr='Bool'))
+              (tuple_expr implicit type='(_builtinBooleanLiteral: Builtin.Int1)' location=<<testFilePath>>:1:4 range=[<<testFilePath>>:1:4 - line:1:4] names=_builtinBooleanLiteral
+                (boolean_literal_expr type='Builtin.Int1' location=<<testFilePath>>:1:4 range=[<<testFilePath>>:1:4 - line:1:4] value=true))))
+          (tuple_expr implicit type='()'))
+        (brace_stmt
+          (call_expr type='()' location=<<testFilePath>>:2:2 range=[<<testFilePath>>:2:2 - line:2:13] nothrow arg_labels=_:
+            (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:2:2 range=[<<testFilePath>>:2:2 - line:2:2] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+            (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:2:8 range=[<<testFilePath>>:2:7 - line:2:13] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+              (paren_expr type='Any' location=<<testFilePath>>:2:8 range=[<<testFilePath>>:2:7 - line:2:13]
+                (erasure_expr implicit type='Any' location=<<testFilePath>>:2:8 range=[<<testFilePath>>:2:8 - line:2:8]
+                  (string_literal_expr type='String' location=<<testFilePath>>:2:8 range=[<<testFilePath>>:2:8 - line:2:8] encoding=utf8 value="Hi!" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))))))))
+  (top_level_code_decl
+    (brace_stmt
+      (if_stmt
+        (call_expr implicit type='Int1' location=<<testFilePath>>:5:4 range=[<<testFilePath>>:5:4 - line:5:4] nothrow arg_labels=
+          (dot_syntax_call_expr implicit type='() -> Int1' location=<<testFilePath>>:5:4 range=[<<testFilePath>>:5:4 - line:5:4] nothrow
+            (declref_expr implicit type='(Bool) -> () -> Int1' location=<<testFilePath>>:5:4 range=[<<testFilePath>>:5:4 - line:5:4] decl=Swift.(file).Bool._getBuiltinLogicValue() function_ref=double)
+            (call_expr implicit type='Bool' location=<<testFilePath>>:5:4 range=[<<testFilePath>>:5:4 - line:5:4] nothrow arg_labels=_builtinBooleanLiteral:
+              (constructor_ref_call_expr implicit type='(Int1) -> Bool' location=<<testFilePath>>:5:4 range=[<<testFilePath>>:5:4 - line:5:4] nothrow
+                (declref_expr implicit type='(Bool.Type) -> (Int1) -> Bool' location=<<testFilePath>>:5:4 range=[<<testFilePath>>:5:4 - line:5:4] decl=Swift.(file).Bool.init(_builtinBooleanLiteral:) function_ref=single)
+                (type_expr implicit type='Bool.Type' location=<<testFilePath>>:5:4 range=[<<testFilePath>>:5:4 - line:5:4] typerepr='Bool'))
+              (tuple_expr implicit type='(_builtinBooleanLiteral: Builtin.Int1)' location=<<testFilePath>>:5:4 range=[<<testFilePath>>:5:4 - line:5:4] names=_builtinBooleanLiteral
+                (boolean_literal_expr type='Builtin.Int1' location=<<testFilePath>>:5:4 range=[<<testFilePath>>:5:4 - line:5:4] value=false))))
+          (tuple_expr implicit type='()'))
+        (brace_stmt
+          (call_expr type='()' location=<<testFilePath>>:6:2 range=[<<testFilePath>>:6:2 - line:6:14] nothrow arg_labels=_:
+            (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:6:2 range=[<<testFilePath>>:6:2 - line:6:2] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+            (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:6:8 range=[<<testFilePath>>:6:7 - line:6:14] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+              (paren_expr type='Any' location=<<testFilePath>>:6:8 range=[<<testFilePath>>:6:7 - line:6:14]
+                (erasure_expr implicit type='Any' location=<<testFilePath>>:6:8 range=[<<testFilePath>>:6:8 - line:6:8]
+                  (string_literal_expr type='String' location=<<testFilePath>>:6:8 range=[<<testFilePath>>:6:8 - line:6:8] encoding=utf8 value="Bye!" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))))))))
