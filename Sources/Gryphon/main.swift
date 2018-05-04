@@ -36,15 +36,13 @@ func updateJsonTestFiles() {
 }
 
 func main() {
-	GRYAst.horizontalLimitWhenPrinting = 100
-	
 	updateJsonTestFiles()
 
 //	let filePath = Process().currentDirectoryPath + "/Test Files/strings.swift"
 //	let filePath = Process().currentDirectoryPath + "/test.swift"
 
 //	print(GRYCompiler.getSwiftASTDump(forFileAt: filePath))
-//	print(GRYCompiler.generateAST(forFileAt: filePath))
+	print(GRYCompiler.generateAST(forFileAt: filePath).description(withHorizontalLimit: 100))
 //	print(GRYCompiler.generateKotlinCode(forFileAt: filePath))
 //	print(GRYCompiler.compileAndRun(fileAt: filePath))
 }

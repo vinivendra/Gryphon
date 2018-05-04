@@ -22,13 +22,19 @@ public protocol GRYPrintableAsTree {
 }
 
 public extension GRYPrintableAsTree {
-	func prettyPrint(indentation: [String] = [], isLast: Bool = true, printFunction: (String) -> () = { print($0, terminator: "") })
+	func prettyPrint(indentation: [String] = [], isLast: Bool = true, horizontalLimit: Int = Int.max, printFunction: (String) -> () = { print($0, terminator: "") })
 	{
 		var indentation = indentation
 		
 		// Print the indentation
 		let indentationString = indentation.joined(separator: "")
-		printFunction(indentationString)
+		
+		let rawLine = "\(indentationString) \(treeDescription)"
+		let line = (rawLine.count > horizontalLimit) ?
+			rawLine.prefix(horizontalLimit - 1) + "…" :
+			rawLine
+		
+		printFunction(line + "\n")
 		
 		// Correct the indentation for this level
 		if !indentation.isEmpty {
@@ -43,19 +49,19 @@ public extension GRYPrintableAsTree {
 			}
 		}
 		
-		printFunction(" " + treeDescription + "\n")
-		
 		for subTree in printableSubTrees.dropLast() {
 			var newIndentation = indentation
 			newIndentation.append(" ├─")
 			subTree.prettyPrint(indentation: newIndentation,
 								isLast: false,
+								horizontalLimit: horizontalLimit,
 								printFunction: printFunction)
 		}
 		var newIndentation = indentation
 		newIndentation.append(" └─")
 		printableSubTrees.last?.prettyPrint(indentation: newIndentation,
 											isLast: true,
+											horizontalLimit: horizontalLimit,
 											printFunction: printFunction)
 	}
 }

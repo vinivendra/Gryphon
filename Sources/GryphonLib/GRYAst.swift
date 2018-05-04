@@ -152,15 +152,14 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 	
 	//
 	public var description: String {
-		var rawResult = ""
-		self.prettyPrint() { rawResult += $0 }
-		
-		let result = rawResult.split(separator: "\n").map { line in
-			(line.count > GRYAst.horizontalLimitWhenPrinting) ?
-				line.prefix(GRYAst.horizontalLimitWhenPrinting - 1) + "…" :
-			line
-		}.joined(separator: "\n")
-		
+		var result = ""
+		self.prettyPrint() { result += $0 }
+		return result
+	}
+	
+	public func description(withHorizontalLimit horizontalLimit: Int) -> String {
+		var result = ""
+		self.prettyPrint(horizontalLimit: horizontalLimit) { result += $0 }
 		return result
 	}
 	

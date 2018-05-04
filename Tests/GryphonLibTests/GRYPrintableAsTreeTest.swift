@@ -72,9 +72,35 @@ class GRYPrintableAsTreeTest: XCTestCase {
 			""")
 	}
 	
+	func testHorizontalLimit() {
+		let root = GRYPrintableTree(description: "root")
+		let a = GRYPrintableTree(description: "aaaaaaaaaaaaaaaaaa")
+		let b = GRYPrintableTree(description: "bbbbbbbbbbbbbbbbbb")
+		let c = GRYPrintableTree(description: "cccccccccccccccccc")
+		let d = GRYPrintableTree(description: "dddddddddddddddddd")
+		
+		root.addChild(a)
+		a.addChild(b)
+		b.addChild(c)
+		root.addChild(d)
+		
+		var result = ""
+		root.prettyPrint(horizontalLimit: 15) {
+			result += $0
+		}
+		XCTAssertEqual(result, """
+			 root
+			 ├─ aaaaaaaaaa…
+			 │  └─ bbbbbbb…
+			 │     └─ cccc…
+			 └─ dddddddddd…\n
+			""")
+	}
+	
 	static var allTests = [
 		("testPrinting", testPrinting),
 		("testStrings", testStrings),
-		("testArrays", testArrays)
+		("testArrays", testArrays),
+		("testHorizontalLimit", testHorizontalLimit)
 	]
 }
