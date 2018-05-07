@@ -12,7 +12,7 @@
         (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' location=<<testFilePath>>:2:15 range=[<<testFilePath>>:2:15 - line:2:15] names=_builtinIntegerLiteral
           (integer_literal_expr type='Int2048' location=<<testFilePath>>:2:15 range=[<<testFilePath>>:2:15 - line:2:15] value=0))))
     (var_decl "x" type='Int' interface type='Int' access=internal storage_kind=stored_with_trivial_accessors
-      (func_decl implicit 'anonname=0x7fe0220057e0' interface type='(Calculator) -> () -> Int' access=internal getter_for=x
+      (func_decl implicit 'anonname=0x7fd3328686e0' interface type='(Calculator) -> () -> Int' access=internal getter_for=x
         (parameter_list
           (parameter "self" type='Calculator' interface type='Calculator'))
         (parameter_list)
@@ -21,7 +21,7 @@
             (load_expr implicit type='Int'
               (member_ref_expr implicit type='@lvalue Int' accessKind=read decl=classes.(file).Calculator.x@<<testFilePath>>:2:6 direct_to_storage
                 (declref_expr implicit type='Calculator' decl=classes.(file).Calculator.<anonymous>.self@<<testFilePath>>:2:6 function_ref=unapplied))))))
-      (func_decl implicit 'anonname=0x7fe02200a4c0' interface type='(Calculator) -> (Int) -> ()' access=internal setter_for=x
+      (func_decl implicit 'anonname=0x7fd332868950' interface type='(Calculator) -> (Int) -> ()' access=internal setter_for=x
         (parameter_list
           (parameter "self" type='Calculator' interface type='Calculator'))
         (parameter_list
@@ -31,13 +31,13 @@
             (member_ref_expr implicit type='@lvalue Int' accessKind=write decl=classes.(file).Calculator.x@<<testFilePath>>:2:6 direct_to_storage
               (declref_expr implicit type='Calculator' decl=classes.(file).Calculator.<anonymous>.self@<<testFilePath>>:2:6 function_ref=unapplied))
             (declref_expr implicit type='Int' decl=classes.(file).Calculator.<anonymous>.value@<<testFilePath>>:2:6 function_ref=unapplied))))
-      (func_decl implicit 'anonname=0x7fe02200ada0' interface type='(Calculator) -> (Builtin.RawPointer, inout Builtin.UnsafeValueBuffer) -> (Builtin.RawPointer, Builtin.RawPointer?)' access=internal materializeForSet_for=x
+      (func_decl implicit 'anonname=0x7fd332869230' interface type='(Calculator) -> (Builtin.RawPointer, inout Builtin.UnsafeValueBuffer) -> (Builtin.RawPointer, Builtin.RawPointer?)' access=internal materializeForSet_for=x
         (parameter_list
           (parameter "self" type='Calculator' interface type='Calculator'))
         (parameter_list
           (parameter "buffer" type='Builtin.RawPointer' interface type='Builtin.RawPointer')
           (parameter "callbackStorage" type='inout Builtin.UnsafeValueBuffer' interface type='inout Builtin.UnsafeValueBuffer' inout))))
-    (func_decl implicit 'anonname=0x7fe0220057e0' interface type='(Calculator) -> () -> Int' access=internal getter_for=x
+    (func_decl implicit 'anonname=0x7fd3328686e0' interface type='(Calculator) -> () -> Int' access=internal getter_for=x
       (parameter_list
         (parameter "self" type='Calculator' interface type='Calculator'))
       (parameter_list)
@@ -46,7 +46,7 @@
           (load_expr implicit type='Int'
             (member_ref_expr implicit type='@lvalue Int' accessKind=read decl=classes.(file).Calculator.x@<<testFilePath>>:2:6 direct_to_storage
               (declref_expr implicit type='Calculator' decl=classes.(file).Calculator.<anonymous>.self@<<testFilePath>>:2:6 function_ref=unapplied))))))
-    (func_decl implicit 'anonname=0x7fe02200a4c0' interface type='(Calculator) -> (Int) -> ()' access=internal setter_for=x
+    (func_decl implicit 'anonname=0x7fd332868950' interface type='(Calculator) -> (Int) -> ()' access=internal setter_for=x
       (parameter_list
         (parameter "self" type='Calculator' interface type='Calculator'))
       (parameter_list
@@ -56,12 +56,27 @@
           (member_ref_expr implicit type='@lvalue Int' accessKind=write decl=classes.(file).Calculator.x@<<testFilePath>>:2:6 direct_to_storage
             (declref_expr implicit type='Calculator' decl=classes.(file).Calculator.<anonymous>.self@<<testFilePath>>:2:6 function_ref=unapplied))
           (declref_expr implicit type='Int' decl=classes.(file).Calculator.<anonymous>.value@<<testFilePath>>:2:6 function_ref=unapplied))))
-    (func_decl implicit 'anonname=0x7fe02200ada0' interface type='(Calculator) -> (Builtin.RawPointer, inout Builtin.UnsafeValueBuffer) -> (Builtin.RawPointer, Builtin.RawPointer?)' access=internal materializeForSet_for=x
+    (func_decl implicit 'anonname=0x7fd332869230' interface type='(Calculator) -> (Builtin.RawPointer, inout Builtin.UnsafeValueBuffer) -> (Builtin.RawPointer, Builtin.RawPointer?)' access=internal materializeForSet_for=x
       (parameter_list
         (parameter "self" type='Calculator' interface type='Calculator'))
       (parameter_list
         (parameter "buffer" type='Builtin.RawPointer' interface type='Builtin.RawPointer')
         (parameter "callbackStorage" type='inout Builtin.UnsafeValueBuffer' interface type='inout Builtin.UnsafeValueBuffer' inout)))
+    (func_decl "returnFive()" interface type='(Calculator) -> () -> Int' access=internal
+      (parameter_list
+        (parameter "self" type='Calculator' interface type='Calculator'))
+      (parameter_list)
+      (result
+        (type_ident
+          (component id='Int' bind=Swift.(file).Int)))
+      (brace_stmt
+        (return_stmt
+          (call_expr implicit type='Int' location=<<testFilePath>>:5:10 range=[<<testFilePath>>:5:10 - line:5:10] nothrow arg_labels=_builtinIntegerLiteral:
+            (constructor_ref_call_expr implicit type='(_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:5:10 range=[<<testFilePath>>:5:10 - line:5:10] nothrow
+              (declref_expr implicit type='(Int.Type) -> (_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:5:10 range=[<<testFilePath>>:5:10 - line:5:10] decl=Swift.(file).Int.init(_builtinIntegerLiteral:) function_ref=single)
+              (type_expr implicit type='Int.Type' location=<<testFilePath>>:5:10 range=[<<testFilePath>>:5:10 - line:5:10] typerepr='Int'))
+            (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' location=<<testFilePath>>:5:10 range=[<<testFilePath>>:5:10 - line:5:10] names=_builtinIntegerLiteral
+              (integer_literal_expr type='Int2048' location=<<testFilePath>>:5:10 range=[<<testFilePath>>:5:10 - line:5:10] value=5))))))
     (destructor_decl implicit "deinit" interface type='(Calculator) -> () -> ()' access=internal @objc
       (parameter_list
         (parameter "self" interface type='Calculator'))
@@ -74,9 +89,9 @@
         (return_stmt implicit))))
   (top_level_code_decl
     (brace_stmt
-      (call_expr type='()' location=<<testFilePath>>:5:1 range=[<<testFilePath>>:5:1 - line:5:18] nothrow arg_labels=_:
-        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:5:1 range=[<<testFilePath>>:5:1 - line:5:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
-        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:5:7 range=[<<testFilePath>>:5:6 - line:5:18] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
-          (paren_expr type='Any' location=<<testFilePath>>:5:7 range=[<<testFilePath>>:5:6 - line:5:18]
-            (erasure_expr implicit type='Any' location=<<testFilePath>>:5:7 range=[<<testFilePath>>:5:7 - line:5:7]
-              (string_literal_expr type='String' location=<<testFilePath>>:5:7 range=[<<testFilePath>>:5:7 - line:5:7] encoding=utf8 value="It works!" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))))))
+      (call_expr type='()' location=<<testFilePath>>:9:1 range=[<<testFilePath>>:9:1 - line:9:18] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:9:1 range=[<<testFilePath>>:9:1 - line:9:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:9:7 range=[<<testFilePath>>:9:6 - line:9:18] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:9:7 range=[<<testFilePath>>:9:6 - line:9:18]
+            (erasure_expr implicit type='Any' location=<<testFilePath>>:9:7 range=[<<testFilePath>>:9:7 - line:9:7]
+              (string_literal_expr type='String' location=<<testFilePath>>:9:7 range=[<<testFilePath>>:9:7 - line:9:7] encoding=utf8 value="It works!" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))))))

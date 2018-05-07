@@ -216,6 +216,8 @@ public class GRYKotlinTranslator {
 		if let parameterList = functionDeclaration.subTree(named: "Parameter List") {
 			for parameter in parameterList.subTrees {
 				let name = parameter.standaloneAttributes[0]
+				guard name != "self" else { continue }
+				
 				let rawType = parameter["interface type"]!
 				let type = translateType(rawType)
 				parameterStrings.append(name + ": " + type)
