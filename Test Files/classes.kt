@@ -1,7 +1,7 @@
 class Calculator {
-	var x: Int = 0
+	var x: Int = 5
 	internal fun returnFive(): Int {
-		return 5
+		return this.x
 	}
 }
 

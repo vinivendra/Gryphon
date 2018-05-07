@@ -359,8 +359,18 @@ public class GRYKotlinTranslator {
 			return "(" + translate(expression: expression.subTrees[0]) + ")"
 		case "Prefix Unary Expression":
 			return translate(prefixUnaryExpression: expression)
+		case "Member Reference Expression":
+			return translate(memberReferenceExpression: expression)
 		case "Load Expression":
-			return translate(expression: expression.subTree(named: "Declaration Reference Expression")!)
+			if let innerExpression = expression.subTree(named: "Declaration Reference Expression") {
+				return translate(expression: innerExpression)
+			}
+			else if let innerExpression = expression.subTree(named: "Member Reference Expression") {
+				return translate(expression: innerExpression)
+			}
+			else {
+				return "<Unknown expression: \(expression.name)>"
+			}
 		default:
 			return "<Unknown expression: \(expression.name)>"
 		}
@@ -564,6 +574,16 @@ public class GRYKotlinTranslator {
 		return getIdentifierFromDeclaration(declaration)
 	}
 	
+	private func translate(memberReferenceExpression: GRYAst) -> String {
+		precondition(memberReferenceExpression.name == "Member Reference Expression")
+		let declaration = memberReferenceExpression["decl"]!
+		let member = getIdentifierFromDeclaration(declaration)
+		
+		let memberOwner = translate(expression: memberReferenceExpression.subTrees[0])
+		
+		return "\(memberOwner).\(member)"
+	}
+	
 	/**
 	Recovers an identifier formatted as a swift AST declaration.
 	
@@ -590,7 +610,12 @@ public class GRYKotlinTranslator {
 		// Extract only the identifier
 		let identifier = components.last!
 		
-		return String(identifier)
+		if identifier == "self" {
+			return "this"
+		}
+		else {
+			return String(identifier)
+		}
 	}
 	
 	private func translate(tupleExpression: GRYAst) -> String {

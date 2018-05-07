@@ -1,8 +1,8 @@
 class Calculator {
-	var x: Int = 0
+	var x: Int = 5
 	
 	func returnFive() -> Int {
-		return 5
+		return x
 	}
 }
 
