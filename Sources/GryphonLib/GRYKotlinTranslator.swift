@@ -436,8 +436,23 @@ public class GRYKotlinTranslator {
 		else {
 			let functionName: String
 			
+			if callExpression.standaloneAttributes.contains("implicit"),
+				let argumentLabels = callExpression["arg_labels"],
+				argumentLabels == "",
+				let type = callExpression["type"],
+				type == "Int1"
+			{
+				// If it's an empty expression used in an "if" condition
+				let containedExpression = callExpression.subTree(named: "Dot Syntax Call Expression")!.subTrees.last!
+				return translate(expression: containedExpression)
+			}
 			if let declarationReferenceExpression = callExpression.subTree(named: "Declaration Reference Expression") {
 				functionName = translate(declarationReferenceExpression: declarationReferenceExpression)
+			}
+			else if let dotSyntaxCallExpression = callExpression.subTree(named: "Dot Syntax Call Expression") {
+				let methodName = translate(declarationReferenceExpression: dotSyntaxCallExpression.subTrees[0])
+				let methodOwner = translate(expression: dotSyntaxCallExpression.subTrees[1])
+				functionName = "\(methodOwner).\(methodName)"
 			}
 			else if let constructorReferenceCallExpression = callExpression.subTree(named: "Constructor Reference Call Expression") {
 				let typeExpression = constructorReferenceCallExpression.subTree(named: "Type Expression")!
@@ -447,9 +462,7 @@ public class GRYKotlinTranslator {
 				functionName = getIdentifierFromDeclaration(declaration)
 			}
 			else {
-				// If it's an empty expression used as in an "if" condition
-				let containedExpression = callExpression.subTree(named: "Dot Syntax Call Expression")!.subTrees.last!
-				return translate(expression: containedExpression)
+				return " <Unknown call expression>"
 			}
 			
 			// If we're here, then the call expression corresponds to an explicit function call
@@ -498,7 +511,7 @@ public class GRYKotlinTranslator {
 			}
 		}
 		else {
-			return " <Unknown expression for parameters>"
+			return " <Unknown call expression>"
 		}
 		
 		return "\(functionNamePrefix)\(parameters)"

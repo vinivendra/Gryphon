@@ -8,4 +8,5 @@ class Box {
 fun main(args: Array<String>) {
 	val box1: Box = Box()
 	println(box1.a)
+	println(box1.returnFive())
 }

@@ -1,6 +1,6 @@
 class Box {
 	var a: Int = 5
-	
+
 	func returnFive() -> Int {
 		return a
 	}
@@ -9,3 +9,4 @@ class Box {
 let box1 = Box()
 
 print(box1.a)
+print(box1.returnFive())
