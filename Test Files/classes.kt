@@ -1,10 +1,11 @@
-class Calculator {
-	var x: Int = 5
+class Box {
+	var a: Int = 5
 	internal fun returnFive(): Int {
-		return this.x
+		return this.a
 	}
 }
 
 fun main(args: Array<String>) {
-	println("It works!")
+	val box1: Box = Box()
+	println(box1.a)
 }

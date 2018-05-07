@@ -439,6 +439,10 @@ public class GRYKotlinTranslator {
 			if let declarationReferenceExpression = callExpression.subTree(named: "Declaration Reference Expression") {
 				functionName = translate(declarationReferenceExpression: declarationReferenceExpression)
 			}
+			else if let constructorReferenceCallExpression = callExpression.subTree(named: "Constructor Reference Call Expression") {
+				let typeExpression = constructorReferenceCallExpression.subTree(named: "Type Expression")!
+				functionName = typeExpression["typerepr"]!
+			}
 			else if let declaration = callExpression["decl"] {
 				functionName = getIdentifierFromDeclaration(declaration)
 			}

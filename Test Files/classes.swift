@@ -1,9 +1,11 @@
-class Calculator {
-	var x: Int = 5
+class Box {
+	var a: Int = 5
 	
 	func returnFive() -> Int {
-		return x
+		return a
 	}
 }
 
-print("It works!")
+let box1 = Box()
+
+print(box1.a)
