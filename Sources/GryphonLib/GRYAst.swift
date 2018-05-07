@@ -138,7 +138,7 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 			return "\($0.key) → \($0.value)"
 			}.sorted() as [GRYPrintableAsTree]
 		
-		let standaloneStrings = standaloneAttributes.sorted() as [GRYPrintableAsTree]
+		let standaloneStrings = standaloneAttributes as [GRYPrintableAsTree]
 		
 		let result: [GRYPrintableAsTree] = standaloneStrings + keyValueStrings + subTrees
 		return result
