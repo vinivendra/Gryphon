@@ -1,0 +1,20 @@
+(source_file
+  (class_decl "Calculator" interface type='Calculator.Type' access=internal @_fixed_layout
+    (destructor_decl implicit "deinit" interface type='(Calculator) -> () -> ()' access=internal @objc
+      (parameter_list
+        (parameter "self" interface type='Calculator'))
+      (brace_stmt))
+    (constructor_decl implicit "init()" interface type='(Calculator.Type) -> () -> Calculator' access=internal designated
+      (parameter_list
+        (parameter "self" type='Calculator' interface type='Calculator'))
+      (parameter_list)
+      (brace_stmt
+        (return_stmt implicit))))
+  (top_level_code_decl
+    (brace_stmt
+      (call_expr type='()' location=<<testFilePath>>:5:1 range=[<<testFilePath>>:5:1 - line:5:18] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:5:1 range=[<<testFilePath>>:5:1 - line:5:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:5:7 range=[<<testFilePath>>:5:6 - line:5:18] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:5:7 range=[<<testFilePath>>:5:6 - line:5:18]
+            (erasure_expr implicit type='Any' location=<<testFilePath>>:5:7 range=[<<testFilePath>>:5:7 - line:5:7]
+              (string_literal_expr type='String' location=<<testFilePath>>:5:7 range=[<<testFilePath>>:5:7 - line:5:7] encoding=utf8 value="It works!" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))))))

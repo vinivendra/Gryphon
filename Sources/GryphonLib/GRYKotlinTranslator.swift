@@ -35,7 +35,7 @@ public class GRYKotlinTranslator {
 	*/
 	public func translateAST(_ ast: GRYAst) -> String {
 		// First, translate declarations that shouldn't be inside the main function
-		let declarationNames = ["Function Declaration"]
+		let declarationNames = ["Function Declaration", "Class Declaration"]
 		let isDeclaration = { (ast: GRYAst) -> Bool in declarationNames.contains(ast.name) }
 		
 		let declarations = ast.subTrees.filter(isDeclaration)
@@ -93,6 +93,9 @@ public class GRYKotlinTranslator {
 			case "Function Declaration":
 				let string = translate(functionDeclaration: subTree, withIndentation: "")
 				result += string
+			case "Class Declaration":
+				let string = translate(classDeclaration: subTree, withIndentation: "")
+				result += string
 			default:
 				result += "<Unknown: \(subTree.name)>\n\n"
 			}
@@ -123,6 +126,14 @@ public class GRYKotlinTranslator {
 		
 		let braceStatement = topLevelCode.subTree(named: "Brace Statement")!
 		return translate(statements: braceStatement.subTrees, withIndentation: indentation)
+	}
+	
+	private func translate(classDeclaration: GRYAst, withIndentation indentation: String) -> String {
+		precondition(classDeclaration.name == "Class Declaration")
+		
+		let className = classDeclaration.standaloneAttributes[0]
+		
+		return "class \(className) {\n\n}\n"
 	}
 	
 	private func translate(functionDeclaration: GRYAst, withIndentation indentation: String) -> String {
