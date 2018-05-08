@@ -91,6 +91,9 @@ public class GRYKotlinTranslator {
 			case "Variable Declaration":
 				let string = translate(variableDeclaration: subTree, withIndentation: indentation)
 				result += string
+			case "Assign Expression":
+				let string = translate(assignExpression: subTree, withIndentation: indentation)
+				result += string
 			case "If Statement":
 				result += translate(ifStatement: subTree, withIndentation: indentation)
 			case "Pattern Binding Declaration":
@@ -121,7 +124,7 @@ public class GRYKotlinTranslator {
 			case "Call Expression":
 				let string = translate(callExpression: subTree)
 				if !string.isEmpty {
-					result += indentation + translate(callExpression: subTree) + "\n"
+					result += indentation + string + "\n"
 				}
 			default:
 				result += "<Unknown: \(subTree.name)>\n\n"
@@ -357,6 +360,18 @@ public class GRYKotlinTranslator {
 		result += "\n"
 		
 		return result
+	}
+	
+	private func translate(assignExpression: GRYAst, withIndentation indentation: String) -> String {
+		precondition(assignExpression.name == "Assign Expression")
+		
+		let leftExpression = assignExpression.subTrees[0]
+		let leftString = translate(expression: leftExpression)
+		
+		let rightExpression = assignExpression.subTrees[1]
+		let rightString = translate(expression: rightExpression)
+		
+		return "\(indentation)\(leftString) = \(rightString)\n"
 	}
 	
 	private func translate(expression: GRYAst) -> String {
@@ -694,6 +709,11 @@ public class GRYKotlinTranslator {
 			if expression.name == "String Literal Expression" {
 				let quotedString = translate(stringLiteralExpression: expression)
 				let unquotedString = quotedString.dropLast().dropFirst()
+				
+				// Empty strings, as a special case, are represented by the swift ast dump
+				// as two double quotes with nothing between them, instead of an actual empty string
+				guard unquotedString != "\"\"" else { continue }
+				
 				result += unquotedString
 			}
 			else {
