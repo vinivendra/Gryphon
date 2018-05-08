@@ -417,14 +417,8 @@ public class GRYKotlinTranslator {
 		let operatorIdentifier: String
 		
 		let dotCallExpression = binaryExpression.subTree(named: "Dot Syntax Call Expression")!
-			let declarationReferenceExpression = dotCallExpression.subTree(named: "Declaration Reference Expression")!
-//		{
-			operatorIdentifier = getIdentifierFromDeclaration(declarationReferenceExpression["decl"]!)
-//		}
-//		else {
-//			let declarationReferenceExpression = binaryExpression.subTree(named: "Declaration Reference Expression")!
-//			operatorIdentifier = getIdentifierFromDeclaration(declarationReferenceExpression["decl"]!)
-//		}
+		let declarationReferenceExpression = dotCallExpression.subTree(named: "Declaration Reference Expression")!
+		operatorIdentifier = getIdentifierFromDeclaration(declarationReferenceExpression["decl"]!)
 		
 		let tupleExpression = binaryExpression.subTree(named: "Tuple Expression")!
 		let leftHandSide = translate(expression: tupleExpression.subTrees[0])
