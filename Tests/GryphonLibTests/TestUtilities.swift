@@ -56,3 +56,8 @@ enum TestUtils {
 		return try closure(filePath)
 	}
 }
+
+extension TestUtils {
+	static let acceptanceTestCases = ["assignments", "bhaskara", "classes", "functionCalls", "ifStatement", "kotlinLiterals", "logicOperators", "numericLiterals", "operators", "print"]
+	static let allTestCases = acceptanceTestCases + ["functionDefinitions", "strings"]
+}

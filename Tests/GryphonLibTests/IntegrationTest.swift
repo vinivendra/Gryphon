@@ -3,7 +3,7 @@ import XCTest
 
 class IntegrationTest: XCTestCase {
 	func test() {
-		let tests = ["assignments", "bhaskara", "classes", "functionCalls", "functionDefinitions", "ifStatement", "kotlinLiterals", "numericLiterals", "operators", "print", "strings"]
+		let tests = TestUtils.allTestCases
 		
 		for testName in tests {
 			// Generate kotlin code using the whole compiler

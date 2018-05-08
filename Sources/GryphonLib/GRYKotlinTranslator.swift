@@ -388,12 +388,14 @@ public class GRYKotlinTranslator {
 			return translate(interpolatedStringLiteralExpression: expression)
 		case "Erasure Expression":
 			return translate(expression: expression.subTrees[0])
-		case "Parentheses Expression":
-			return "(" + translate(expression: expression.subTrees[0]) + ")"
 		case "Prefix Unary Expression":
 			return translate(prefixUnaryExpression: expression)
 		case "Member Reference Expression":
 			return translate(memberReferenceExpression: expression)
+		case "Parentheses Expression":
+			return "(" + translate(expression: expression.subTrees[0]) + ")"
+		case "Autoclosure Expression":
+			return translate(expression: expression.subTrees.last!)
 		case "Load Expression":
 			if let innerExpression = expression.subTree(named: "Declaration Reference Expression") {
 				return translate(expression: innerExpression)
@@ -412,9 +414,17 @@ public class GRYKotlinTranslator {
 	private func translate(binaryExpression: GRYAst) -> String {
 		precondition(binaryExpression.name == "Binary Expression")
 		
+		let operatorIdentifier: String
+		
 		let dotCallExpression = binaryExpression.subTree(named: "Dot Syntax Call Expression")!
-		let declarationReferenceExpression = dotCallExpression.subTree(named: "Declaration Reference Expression")!
-		let operatorIdentifier = getIdentifierFromDeclaration(declarationReferenceExpression["decl"]!)
+			let declarationReferenceExpression = dotCallExpression.subTree(named: "Declaration Reference Expression")!
+//		{
+			operatorIdentifier = getIdentifierFromDeclaration(declarationReferenceExpression["decl"]!)
+//		}
+//		else {
+//			let declarationReferenceExpression = binaryExpression.subTree(named: "Declaration Reference Expression")!
+//			operatorIdentifier = getIdentifierFromDeclaration(declarationReferenceExpression["decl"]!)
+//		}
 		
 		let tupleExpression = binaryExpression.subTree(named: "Tuple Expression")!
 		let leftHandSide = translate(expression: tupleExpression.subTrees[0])
