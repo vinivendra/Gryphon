@@ -270,4 +270,124 @@
                 (string_literal_expr type='String' location=<<testFilePath>>:26:7 range=[<<testFilePath>>:26:7 - line:26:7] encoding=utf8 value="" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
                 (paren_expr type='(@lvalue Bool)' accessKind=read location=<<testFilePath>>:26:10 range=[<<testFilePath>>:26:9 - line:26:11]
                   (declref_expr type='@lvalue Bool' accessKind=read location=<<testFilePath>>:26:10 range=[<<testFilePath>>:26:10 - line:26:10] decl=logicOperators.(file).x@<<testFilePath>>:5:5 direct_to_storage function_ref=unapplied))
-                (string_literal_expr type='String' location=<<testFilePath>>:26:12 range=[<<testFilePath>>:26:12 - line:26:12] encoding=utf8 value="" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))))))))
+                (string_literal_expr type='String' location=<<testFilePath>>:26:12 range=[<<testFilePath>>:26:12 - line:26:12] encoding=utf8 value="" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))))))
+  (top_level_code_decl
+    (brace_stmt
+      (pattern_binding_decl
+        (pattern_named type='Bool' 'z')
+        (prefix_unary_expr type='Bool' location=<<testFilePath>>:29:9 range=[<<testFilePath>>:29:9 - line:29:10] nothrow
+          (dot_syntax_call_expr implicit type='(Bool) -> Bool' location=<<testFilePath>>:29:9 range=[<<testFilePath>>:29:9 - line:29:9] nothrow
+            (declref_expr type='(Bool.Type) -> (Bool) -> Bool' location=<<testFilePath>>:29:9 range=[<<testFilePath>>:29:9 - line:29:9] decl=Swift.(file).Bool.! function_ref=unapplied)
+            (type_expr implicit type='Bool.Type' location=<<testFilePath>>:29:9 range=[<<testFilePath>>:29:9 - line:29:9] typerepr='Bool'))
+          (load_expr implicit type='Bool' location=<<testFilePath>>:29:10 range=[<<testFilePath>>:29:10 - line:29:10]
+            (declref_expr type='@lvalue Bool' accessKind=read location=<<testFilePath>>:29:10 range=[<<testFilePath>>:29:10 - line:29:10] decl=logicOperators.(file).x@<<testFilePath>>:5:5 direct_to_storage function_ref=unapplied))))
+))
+  (var_decl "z" type='Bool' interface type='Bool' access=internal storage_kind=stored)
+  (top_level_code_decl
+    (brace_stmt
+      (call_expr type='()' location=<<testFilePath>>:30:1 range=[<<testFilePath>>:30:1 - line:30:13] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:30:1 range=[<<testFilePath>>:30:1 - line:30:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:30:7 range=[<<testFilePath>>:30:6 - line:30:13] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:30:7 range=[<<testFilePath>>:30:6 - line:30:13]
+            (erasure_expr implicit type='Any' location=<<testFilePath>>:30:7 range=[<<testFilePath>>:30:7 - line:30:7]
+              (interpolated_string_literal_expr type='String' location=<<testFilePath>>:30:7 range=[<<testFilePath>>:30:7 - line:30:7]
+                (string_literal_expr type='String' location=<<testFilePath>>:30:7 range=[<<testFilePath>>:30:7 - line:30:7] encoding=utf8 value="" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
+                (paren_expr type='(@lvalue Bool)' accessKind=read location=<<testFilePath>>:30:10 range=[<<testFilePath>>:30:9 - line:30:11]
+                  (declref_expr type='@lvalue Bool' accessKind=read location=<<testFilePath>>:30:10 range=[<<testFilePath>>:30:10 - line:30:10] decl=logicOperators.(file).z@<<testFilePath>>:29:5 direct_to_storage function_ref=unapplied))
+                (string_literal_expr type='String' location=<<testFilePath>>:30:12 range=[<<testFilePath>>:30:12 - line:30:12] encoding=utf8 value="" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))))))
+  (top_level_code_decl
+    (brace_stmt
+      (assign_expr
+        (declref_expr type='@lvalue Bool' accessKind=write location=<<testFilePath>>:32:1 range=[<<testFilePath>>:32:1 - line:32:1] decl=logicOperators.(file).z@<<testFilePath>>:29:5 direct_to_storage function_ref=unapplied)
+        (prefix_unary_expr type='Bool' location=<<testFilePath>>:32:5 range=[<<testFilePath>>:32:5 - line:32:6] nothrow
+          (dot_syntax_call_expr implicit type='(Bool) -> Bool' location=<<testFilePath>>:32:5 range=[<<testFilePath>>:32:5 - line:32:5] nothrow
+            (declref_expr type='(Bool.Type) -> (Bool) -> Bool' location=<<testFilePath>>:32:5 range=[<<testFilePath>>:32:5 - line:32:5] decl=Swift.(file).Bool.! function_ref=unapplied)
+            (type_expr implicit type='Bool.Type' location=<<testFilePath>>:32:5 range=[<<testFilePath>>:32:5 - line:32:5] typerepr='Bool'))
+          (load_expr implicit type='Bool' location=<<testFilePath>>:32:6 range=[<<testFilePath>>:32:6 - line:32:6]
+            (declref_expr type='@lvalue Bool' accessKind=read location=<<testFilePath>>:32:6 range=[<<testFilePath>>:32:6 - line:32:6] decl=logicOperators.(file).y@<<testFilePath>>:6:5 direct_to_storage function_ref=unapplied))))))
+  (top_level_code_decl
+    (brace_stmt
+      (call_expr type='()' location=<<testFilePath>>:33:1 range=[<<testFilePath>>:33:1 - line:33:13] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:33:1 range=[<<testFilePath>>:33:1 - line:33:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:33:7 range=[<<testFilePath>>:33:6 - line:33:13] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:33:7 range=[<<testFilePath>>:33:6 - line:33:13]
+            (erasure_expr implicit type='Any' location=<<testFilePath>>:33:7 range=[<<testFilePath>>:33:7 - line:33:7]
+              (interpolated_string_literal_expr type='String' location=<<testFilePath>>:33:7 range=[<<testFilePath>>:33:7 - line:33:7]
+                (string_literal_expr type='String' location=<<testFilePath>>:33:7 range=[<<testFilePath>>:33:7 - line:33:7] encoding=utf8 value="" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
+                (paren_expr type='(@lvalue Bool)' accessKind=read location=<<testFilePath>>:33:10 range=[<<testFilePath>>:33:9 - line:33:11]
+                  (declref_expr type='@lvalue Bool' accessKind=read location=<<testFilePath>>:33:10 range=[<<testFilePath>>:33:10 - line:33:10] decl=logicOperators.(file).z@<<testFilePath>>:29:5 direct_to_storage function_ref=unapplied))
+                (string_literal_expr type='String' location=<<testFilePath>>:33:12 range=[<<testFilePath>>:33:12 - line:33:12] encoding=utf8 value="" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))))))
+  (top_level_code_decl
+    (brace_stmt
+      (if_stmt
+        (call_expr implicit type='Int1' location=<<testFilePath>>:36:4 range=[<<testFilePath>>:36:4 - line:36:4] nothrow arg_labels=
+          (dot_syntax_call_expr implicit type='() -> Int1' location=<<testFilePath>>:36:4 range=[<<testFilePath>>:36:4 - line:36:4] nothrow
+            (declref_expr implicit type='(Bool) -> () -> Int1' location=<<testFilePath>>:36:4 range=[<<testFilePath>>:36:4 - line:36:4] decl=Swift.(file).Bool._getBuiltinLogicValue() function_ref=double)
+            (load_expr implicit type='Bool' location=<<testFilePath>>:36:4 range=[<<testFilePath>>:36:4 - line:36:4]
+              (declref_expr type='@lvalue Bool' accessKind=read location=<<testFilePath>>:36:4 range=[<<testFilePath>>:36:4 - line:36:4] decl=logicOperators.(file).x@<<testFilePath>>:5:5 direct_to_storage function_ref=unapplied)))
+          (tuple_expr implicit type='()'))
+        (brace_stmt
+          (call_expr type='()' location=<<testFilePath>>:37:2 range=[<<testFilePath>>:37:2 - line:37:14] nothrow arg_labels=_:
+            (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:37:2 range=[<<testFilePath>>:37:2 - line:37:2] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+            (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:37:8 range=[<<testFilePath>>:37:7 - line:37:14] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+              (paren_expr type='Any' location=<<testFilePath>>:37:8 range=[<<testFilePath>>:37:7 - line:37:14]
+                (erasure_expr implicit type='Any' location=<<testFilePath>>:37:8 range=[<<testFilePath>>:37:8 - line:37:8]
+                  (string_literal_expr type='String' location=<<testFilePath>>:37:8 range=[<<testFilePath>>:37:8 - line:37:8] encoding=utf8 value="true" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))))))))
+  (top_level_code_decl
+    (brace_stmt
+      (if_stmt
+        (call_expr implicit type='Int1' location=<<testFilePath>>:40:4 range=[<<testFilePath>>:40:4 - line:40:5] nothrow arg_labels=
+          (dot_syntax_call_expr implicit type='() -> Int1' location=<<testFilePath>>:40:4 range=[<<testFilePath>>:40:4 - line:40:5] nothrow
+            (declref_expr implicit type='(Bool) -> () -> Int1' location=<<testFilePath>>:40:4 range=[<<testFilePath>>:40:4 - line:40:4] decl=Swift.(file).Bool._getBuiltinLogicValue() function_ref=double)
+            (prefix_unary_expr type='Bool' location=<<testFilePath>>:40:4 range=[<<testFilePath>>:40:4 - line:40:5] nothrow
+              (dot_syntax_call_expr implicit type='(Bool) -> Bool' location=<<testFilePath>>:40:4 range=[<<testFilePath>>:40:4 - line:40:4] nothrow
+                (declref_expr type='(Bool.Type) -> (Bool) -> Bool' location=<<testFilePath>>:40:4 range=[<<testFilePath>>:40:4 - line:40:4] decl=Swift.(file).Bool.! function_ref=unapplied)
+                (type_expr implicit type='Bool.Type' location=<<testFilePath>>:40:4 range=[<<testFilePath>>:40:4 - line:40:4] typerepr='Bool'))
+              (load_expr implicit type='Bool' location=<<testFilePath>>:40:5 range=[<<testFilePath>>:40:5 - line:40:5]
+                (declref_expr type='@lvalue Bool' accessKind=read location=<<testFilePath>>:40:5 range=[<<testFilePath>>:40:5 - line:40:5] decl=logicOperators.(file).x@<<testFilePath>>:5:5 direct_to_storage function_ref=unapplied))))
+          (tuple_expr implicit type='()'))
+        (brace_stmt
+          (call_expr type='()' location=<<testFilePath>>:41:2 range=[<<testFilePath>>:41:2 - line:41:15] nothrow arg_labels=_:
+            (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:41:2 range=[<<testFilePath>>:41:2 - line:41:2] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+            (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:41:8 range=[<<testFilePath>>:41:7 - line:41:15] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+              (paren_expr type='Any' location=<<testFilePath>>:41:8 range=[<<testFilePath>>:41:7 - line:41:15]
+                (erasure_expr implicit type='Any' location=<<testFilePath>>:41:8 range=[<<testFilePath>>:41:8 - line:41:8]
+                  (string_literal_expr type='String' location=<<testFilePath>>:41:8 range=[<<testFilePath>>:41:8 - line:41:8] encoding=utf8 value="false" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))))))))
+  (top_level_code_decl
+    (brace_stmt
+      (if_stmt
+        (call_expr implicit type='Int1' location=<<testFilePath>>:44:4 range=[<<testFilePath>>:44:4 - line:44:17] nothrow arg_labels=
+          (dot_syntax_call_expr implicit type='() -> Int1' location=<<testFilePath>>:44:4 range=[<<testFilePath>>:44:4 - line:44:17] nothrow
+            (declref_expr implicit type='(Bool) -> () -> Int1' location=<<testFilePath>>:44:14 range=[<<testFilePath>>:44:14 - line:44:14] decl=Swift.(file).Bool._getBuiltinLogicValue() function_ref=double)
+            (binary_expr type='Bool' location=<<testFilePath>>:44:14 range=[<<testFilePath>>:44:4 - line:44:17] nothrow
+              (dot_syntax_call_expr implicit type='(Bool, @autoclosure () throws -> Bool) throws -> Bool' location=<<testFilePath>>:44:14 range=[<<testFilePath>>:44:14 - line:44:14] nothrow
+                (declref_expr type='(Bool.Type) -> (Bool, @autoclosure () throws -> Bool) throws -> Bool' location=<<testFilePath>>:44:14 range=[<<testFilePath>>:44:14 - line:44:14] decl=Swift.(file).Bool.|| function_ref=unapplied)
+                (type_expr implicit type='Bool.Type' location=<<testFilePath>>:44:14 range=[<<testFilePath>>:44:14 - line:44:14] typerepr='Bool'))
+              (tuple_expr implicit type='(Bool, @autoclosure () throws -> Bool)' location=<<testFilePath>>:44:4 range=[<<testFilePath>>:44:4 - line:44:17]
+                (binary_expr type='Bool' location=<<testFilePath>>:44:6 range=[<<testFilePath>>:44:4 - line:44:12] nothrow
+                  (dot_syntax_call_expr implicit type='(Bool, @autoclosure () throws -> Bool) throws -> Bool' location=<<testFilePath>>:44:6 range=[<<testFilePath>>:44:6 - line:44:6] nothrow
+                    (declref_expr type='(Bool.Type) -> (Bool, @autoclosure () throws -> Bool) throws -> Bool' location=<<testFilePath>>:44:6 range=[<<testFilePath>>:44:6 - line:44:6] decl=Swift.(file).Bool.&& function_ref=unapplied)
+                    (type_expr implicit type='Bool.Type' location=<<testFilePath>>:44:6 range=[<<testFilePath>>:44:6 - line:44:6] typerepr='Bool'))
+                  (tuple_expr implicit type='(Bool, @autoclosure () throws -> Bool)' location=<<testFilePath>>:44:4 range=[<<testFilePath>>:44:4 - line:44:12]
+                    (declref_expr type='Bool' location=<<testFilePath>>:44:4 range=[<<testFilePath>>:44:4 - line:44:4] decl=logicOperators.(file).t@<<testFilePath>>:1:5 direct_to_storage function_ref=unapplied)
+                    (autoclosure_expr implicit type='() throws -> Bool' location=<<testFilePath>>:44:9 range=[<<testFilePath>>:44:9 - line:44:12] discriminator=9 captures=(f<direct><noescape>)
+
+                      (parameter_list)
+                      (paren_expr type='(Bool)' location=<<testFilePath>>:44:10 range=[<<testFilePath>>:44:9 - line:44:12]
+                        (prefix_unary_expr type='Bool' location=<<testFilePath>>:44:10 range=[<<testFilePath>>:44:10 - line:44:11] nothrow
+                          (dot_syntax_call_expr implicit type='(Bool) -> Bool' location=<<testFilePath>>:44:10 range=[<<testFilePath>>:44:10 - line:44:10] nothrow
+                            (declref_expr type='(Bool.Type) -> (Bool) -> Bool' location=<<testFilePath>>:44:10 range=[<<testFilePath>>:44:10 - line:44:10] decl=Swift.(file).Bool.! function_ref=unapplied)
+                            (type_expr implicit type='Bool.Type' location=<<testFilePath>>:44:10 range=[<<testFilePath>>:44:10 - line:44:10] typerepr='Bool'))
+                          (declref_expr type='Bool' location=<<testFilePath>>:44:11 range=[<<testFilePath>>:44:11 - line:44:11] decl=logicOperators.(file).f@<<testFilePath>>:2:5 direct_to_storage function_ref=unapplied))))))
+                (autoclosure_expr implicit type='() throws -> Bool' location=<<testFilePath>>:44:17 range=[<<testFilePath>>:44:17 - line:44:17] discriminator=10 captures=(f<direct><noescape>)
+
+                  (parameter_list)
+                  (declref_expr type='Bool' location=<<testFilePath>>:44:17 range=[<<testFilePath>>:44:17 - line:44:17] decl=logicOperators.(file).f@<<testFilePath>>:2:5 direct_to_storage function_ref=unapplied)))))
+          (tuple_expr implicit type='()'))
+        (brace_stmt
+          (call_expr type='()' location=<<testFilePath>>:45:2 range=[<<testFilePath>>:45:2 - line:45:14] nothrow arg_labels=_:
+            (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:45:2 range=[<<testFilePath>>:45:2 - line:45:2] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+            (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:45:8 range=[<<testFilePath>>:45:7 - line:45:14] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+              (paren_expr type='Any' location=<<testFilePath>>:45:8 range=[<<testFilePath>>:45:7 - line:45:14]
+                (erasure_expr implicit type='Any' location=<<testFilePath>>:45:8 range=[<<testFilePath>>:45:8 - line:45:8]
+                  (string_literal_expr type='String' location=<<testFilePath>>:45:8 range=[<<testFilePath>>:45:8 - line:45:8] encoding=utf8 value="true" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))))))))

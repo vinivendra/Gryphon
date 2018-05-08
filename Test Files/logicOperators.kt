@@ -15,4 +15,17 @@ fun main(args: Array<String>) {
 	println("${(true && false)}")
 	x = true || false
 	println("${(x)}")
+	var z: Boolean = !x
+	println("${(z)}")
+	z = !y
+	println("${(z)}")
+	if (x) {
+		println("true")
+	}
+	if (!x) {
+		println("false")
+	}
+	if (t && (!f) || f) {
+		println("true")
+	}
 }

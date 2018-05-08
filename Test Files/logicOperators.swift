@@ -24,3 +24,23 @@ print("\(true && false)")
 //
 x = true || false
 print("\(x)")
+
+//
+var z = !x
+print("\(z)")
+
+z = !y
+print("\(z)")
+
+//
+if x {
+	print("true") // Will get printed
+}
+
+if !x {
+	print("false") // Won't get printed
+}
+
+if t && (!f) || f {
+	print("true") // Will get printed
+}
