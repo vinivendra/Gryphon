@@ -188,7 +188,9 @@ public class GRYKotlinTranslator {
 	private func translate(functionDeclaration: GRYAst, withIndentation indentation: String) -> String {
 		precondition(functionDeclaration.name == "Function Declaration")
 		
-		guard !functionDeclaration.standaloneAttributes.contains("implicit") else { return "" }
+		let isGetterOrSetter = (functionDeclaration["getter_for"] != nil) || (functionDeclaration["setter_for"] != nil)
+		let isImplicit = functionDeclaration.standaloneAttributes.contains("implicit")
+		guard !isImplicit && !isGetterOrSetter else { return "" }
 		
 		let functionName = functionDeclaration.standaloneAttributes[0]
 		
@@ -358,6 +360,41 @@ public class GRYKotlinTranslator {
 		}
 		
 		result += "\n"
+		
+		result += translateGetterAndSetter(forVariableDeclaration: variableDeclaration, withIndentation: indentation)
+		
+		return result
+	}
+	
+	private func translateGetterAndSetter(forVariableDeclaration variableDeclaration: GRYAst,
+										  withIndentation indentation: String) -> String
+	{
+		var result = ""
+
+		let getSetIndentation = increaseIndentation(indentation)
+		for subtree in variableDeclaration.subTrees
+			where !subtree.standaloneAttributes.contains("implicit")
+		{
+			assert(subtree.name == "Function Declaration")
+			
+			let keyword: String
+			
+			if subtree["getter_for"] != nil {
+				keyword = "get()"
+			}
+			else {
+				keyword = "set(newValue)"
+			}
+			
+			result += "\(getSetIndentation)\(keyword) {\n"
+			
+			let contentsIndentation = increaseIndentation(getSetIndentation)
+			let statements = subtree.subTree(named: "Brace Statement")!.subTrees
+			let contentsString = translate(subTrees: statements, withIndentation: contentsIndentation)
+			result += contentsString
+			
+			result += "\(getSetIndentation)}\n"
+		}
 		
 		return result
 	}

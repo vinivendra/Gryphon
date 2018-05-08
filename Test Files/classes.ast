@@ -12,7 +12,7 @@
         (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' location=<<testFilePath>>:2:15 range=[<<testFilePath>>:2:15 - line:2:15] names=_builtinIntegerLiteral
           (integer_literal_expr type='Int2048' location=<<testFilePath>>:2:15 range=[<<testFilePath>>:2:15 - line:2:15] value=5))))
     (var_decl "a" type='Int' interface type='Int' access=internal storage_kind=stored_with_trivial_accessors
-      (func_decl implicit 'anonname=0x7fa2178c8e20' interface type='(Box) -> () -> Int' access=internal getter_for=a
+      (func_decl implicit 'anonname=0x7fd78704de50' interface type='(Box) -> () -> Int' access=internal getter_for=a
         (parameter_list
           (parameter "self" type='Box' interface type='Box'))
         (parameter_list)
@@ -21,7 +21,7 @@
             (load_expr implicit type='Int'
               (member_ref_expr implicit type='@lvalue Int' accessKind=read decl=classes.(file).Box.a@<<testFilePath>>:2:6 direct_to_storage
                 (declref_expr implicit type='Box' decl=classes.(file).Box.<anonymous>.self@<<testFilePath>>:2:6 function_ref=unapplied))))))
-      (func_decl implicit 'anonname=0x7fa2178c9090' interface type='(Box) -> (Int) -> ()' access=internal setter_for=a
+      (func_decl implicit 'anonname=0x7fd78704e0c0' interface type='(Box) -> (Int) -> ()' access=internal setter_for=a
         (parameter_list
           (parameter "self" type='Box' interface type='Box'))
         (parameter_list
@@ -31,13 +31,13 @@
             (member_ref_expr implicit type='@lvalue Int' accessKind=write decl=classes.(file).Box.a@<<testFilePath>>:2:6 direct_to_storage
               (declref_expr implicit type='Box' decl=classes.(file).Box.<anonymous>.self@<<testFilePath>>:2:6 function_ref=unapplied))
             (declref_expr implicit type='Int' decl=classes.(file).Box.<anonymous>.value@<<testFilePath>>:2:6 function_ref=unapplied))))
-      (func_decl implicit 'anonname=0x7fa2178c9a00' interface type='(Box) -> (Builtin.RawPointer, inout Builtin.UnsafeValueBuffer) -> (Builtin.RawPointer, Builtin.RawPointer?)' access=internal materializeForSet_for=a
+      (func_decl implicit 'anonname=0x7fd78704e9c0' interface type='(Box) -> (Builtin.RawPointer, inout Builtin.UnsafeValueBuffer) -> (Builtin.RawPointer, Builtin.RawPointer?)' access=internal materializeForSet_for=a
         (parameter_list
           (parameter "self" type='Box' interface type='Box'))
         (parameter_list
           (parameter "buffer" type='Builtin.RawPointer' interface type='Builtin.RawPointer')
           (parameter "callbackStorage" type='inout Builtin.UnsafeValueBuffer' interface type='inout Builtin.UnsafeValueBuffer' inout))))
-    (func_decl implicit 'anonname=0x7fa2178c8e20' interface type='(Box) -> () -> Int' access=internal getter_for=a
+    (func_decl implicit 'anonname=0x7fd78704de50' interface type='(Box) -> () -> Int' access=internal getter_for=a
       (parameter_list
         (parameter "self" type='Box' interface type='Box'))
       (parameter_list)
@@ -46,7 +46,7 @@
           (load_expr implicit type='Int'
             (member_ref_expr implicit type='@lvalue Int' accessKind=read decl=classes.(file).Box.a@<<testFilePath>>:2:6 direct_to_storage
               (declref_expr implicit type='Box' decl=classes.(file).Box.<anonymous>.self@<<testFilePath>>:2:6 function_ref=unapplied))))))
-    (func_decl implicit 'anonname=0x7fa2178c9090' interface type='(Box) -> (Int) -> ()' access=internal setter_for=a
+    (func_decl implicit 'anonname=0x7fd78704e0c0' interface type='(Box) -> (Int) -> ()' access=internal setter_for=a
       (parameter_list
         (parameter "self" type='Box' interface type='Box'))
       (parameter_list
@@ -56,7 +56,63 @@
           (member_ref_expr implicit type='@lvalue Int' accessKind=write decl=classes.(file).Box.a@<<testFilePath>>:2:6 direct_to_storage
             (declref_expr implicit type='Box' decl=classes.(file).Box.<anonymous>.self@<<testFilePath>>:2:6 function_ref=unapplied))
           (declref_expr implicit type='Int' decl=classes.(file).Box.<anonymous>.value@<<testFilePath>>:2:6 function_ref=unapplied))))
-    (func_decl implicit 'anonname=0x7fa2178c9a00' interface type='(Box) -> (Builtin.RawPointer, inout Builtin.UnsafeValueBuffer) -> (Builtin.RawPointer, Builtin.RawPointer?)' access=internal materializeForSet_for=a
+    (func_decl implicit 'anonname=0x7fd78704e9c0' interface type='(Box) -> (Builtin.RawPointer, inout Builtin.UnsafeValueBuffer) -> (Builtin.RawPointer, Builtin.RawPointer?)' access=internal materializeForSet_for=a
+      (parameter_list
+        (parameter "self" type='Box' interface type='Box'))
+      (parameter_list
+        (parameter "buffer" type='Builtin.RawPointer' interface type='Builtin.RawPointer')
+        (parameter "callbackStorage" type='inout Builtin.UnsafeValueBuffer' interface type='inout Builtin.UnsafeValueBuffer' inout)))
+    (pattern_binding_decl
+      (pattern_typed type='String'
+        (pattern_named type='String' 'b')
+        (type_ident
+          (component id='String' bind=Swift.(file).String))))
+    (var_decl "b" type='String' interface type='String' access=internal storage_kind=computed
+      (func_decl 'anonname=0x7fd787046110' interface type='(Box) -> () -> String' access=internal getter_for=b
+        (parameter_list
+          (parameter "self" type='Box' interface type='Box'))
+        (parameter_list)
+        (brace_stmt
+          (return_stmt
+            (string_literal_expr type='String' location=<<testFilePath>>:6:11 range=[<<testFilePath>>:6:11 - line:6:11] encoding=utf8 value="get b" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+      (func_decl 'anonname=0x7fd787046450' interface type='(Box) -> (String) -> ()' access=internal setter_for=b
+        (parameter_list
+          (parameter "self" type='Box' interface type='Box'))
+        (parameter_list
+          (parameter "newValue" type='String' interface type='String'))
+        (brace_stmt
+          (call_expr type='()' location=<<testFilePath>>:9:4 range=[<<testFilePath>>:9:4 - line:9:17] nothrow arg_labels=_:
+            (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:9:4 range=[<<testFilePath>>:9:4 - line:9:4] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+            (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:9:10 range=[<<testFilePath>>:9:9 - line:9:17] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+              (paren_expr type='Any' location=<<testFilePath>>:9:10 range=[<<testFilePath>>:9:9 - line:9:17]
+                (erasure_expr implicit type='Any' location=<<testFilePath>>:9:10 range=[<<testFilePath>>:9:10 - line:9:10]
+                  (string_literal_expr type='String' location=<<testFilePath>>:9:10 range=[<<testFilePath>>:9:10 - line:9:10] encoding=utf8 value="set b" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))))))
+      (func_decl implicit 'anonname=0x7fd78704f200' interface type='(Box) -> (Builtin.RawPointer, inout Builtin.UnsafeValueBuffer) -> (Builtin.RawPointer, Builtin.RawPointer?)' access=internal materializeForSet_for=b
+        (parameter_list
+          (parameter "self" type='Box' interface type='Box'))
+        (parameter_list
+          (parameter "buffer" type='Builtin.RawPointer' interface type='Builtin.RawPointer')
+          (parameter "callbackStorage" type='inout Builtin.UnsafeValueBuffer' interface type='inout Builtin.UnsafeValueBuffer' inout))))
+    (func_decl 'anonname=0x7fd787046110' interface type='(Box) -> () -> String' access=internal getter_for=b
+      (parameter_list
+        (parameter "self" type='Box' interface type='Box'))
+      (parameter_list)
+      (brace_stmt
+        (return_stmt
+          (string_literal_expr type='String' location=<<testFilePath>>:6:11 range=[<<testFilePath>>:6:11 - line:6:11] encoding=utf8 value="get b" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+    (func_decl 'anonname=0x7fd787046450' interface type='(Box) -> (String) -> ()' access=internal setter_for=b
+      (parameter_list
+        (parameter "self" type='Box' interface type='Box'))
+      (parameter_list
+        (parameter "newValue" type='String' interface type='String'))
+      (brace_stmt
+        (call_expr type='()' location=<<testFilePath>>:9:4 range=[<<testFilePath>>:9:4 - line:9:17] nothrow arg_labels=_:
+          (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:9:4 range=[<<testFilePath>>:9:4 - line:9:4] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+          (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:9:10 range=[<<testFilePath>>:9:9 - line:9:17] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+            (paren_expr type='Any' location=<<testFilePath>>:9:10 range=[<<testFilePath>>:9:9 - line:9:17]
+              (erasure_expr implicit type='Any' location=<<testFilePath>>:9:10 range=[<<testFilePath>>:9:10 - line:9:10]
+                (string_literal_expr type='String' location=<<testFilePath>>:9:10 range=[<<testFilePath>>:9:10 - line:9:10] encoding=utf8 value="set b" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))))))
+    (func_decl implicit 'anonname=0x7fd78704f200' interface type='(Box) -> (Builtin.RawPointer, inout Builtin.UnsafeValueBuffer) -> (Builtin.RawPointer, Builtin.RawPointer?)' access=internal materializeForSet_for=b
       (parameter_list
         (parameter "self" type='Box' interface type='Box'))
       (parameter_list
@@ -71,9 +127,9 @@
           (component id='Int' bind=Swift.(file).Int)))
       (brace_stmt
         (return_stmt
-          (load_expr implicit type='Int' location=<<testFilePath>>:5:10 range=[<<testFilePath>>:5:10 - line:5:10]
-            (member_ref_expr type='@lvalue Int' accessKind=read location=<<testFilePath>>:5:10 range=[<<testFilePath>>:5:10 - line:5:10] decl=classes.(file).Box.a@<<testFilePath>>:2:6
-              (declref_expr implicit type='Box' location=<<testFilePath>>:5:10 range=[<<testFilePath>>:5:10 - line:5:10] decl=classes.(file).Box.returnFive().self@<<testFilePath>>:4:7 function_ref=unapplied))))))
+          (load_expr implicit type='Int' location=<<testFilePath>>:14:10 range=[<<testFilePath>>:14:10 - line:14:10]
+            (member_ref_expr type='@lvalue Int' accessKind=read location=<<testFilePath>>:14:10 range=[<<testFilePath>>:14:10 - line:14:10] decl=classes.(file).Box.a@<<testFilePath>>:2:6
+              (declref_expr implicit type='Box' location=<<testFilePath>>:14:10 range=[<<testFilePath>>:14:10 - line:14:10] decl=classes.(file).Box.returnFive().self@<<testFilePath>>:13:7 function_ref=unapplied))))))
     (func_decl "returnInt(a:)" interface type='(Box) -> (Int) -> Int' access=internal
       (parameter_list
         (parameter "self" type='Box' interface type='Box'))
@@ -84,7 +140,7 @@
           (component id='Int' bind=Swift.(file).Int)))
       (brace_stmt
         (return_stmt
-          (declref_expr type='Int' location=<<testFilePath>>:9:10 range=[<<testFilePath>>:9:10 - line:9:10] decl=classes.(file).Box.returnInt(a:).a@<<testFilePath>>:8:17 function_ref=unapplied))))
+          (declref_expr type='Int' location=<<testFilePath>>:18:10 range=[<<testFilePath>>:18:10 - line:18:10] decl=classes.(file).Box.returnInt(a:).a@<<testFilePath>>:17:17 function_ref=unapplied))))
     (destructor_decl implicit "deinit" interface type='(Box) -> () -> ()' access=internal @objc
       (parameter_list
         (parameter "self" interface type='Box'))
@@ -99,50 +155,66 @@
     (brace_stmt
       (pattern_binding_decl
         (pattern_named type='Box' 'box1')
-        (call_expr type='Box' location=<<testFilePath>>:13:12 range=[<<testFilePath>>:13:12 - line:13:16] nothrow arg_labels=
-          (constructor_ref_call_expr type='() -> Box' location=<<testFilePath>>:13:12 range=[<<testFilePath>>:13:12 - line:13:12] nothrow
-            (declref_expr implicit type='(Box.Type) -> () -> Box' location=<<testFilePath>>:13:12 range=[<<testFilePath>>:13:12 - line:13:12] decl=classes.(file).Box.init()@<<testFilePath>>:1:7 function_ref=single)
-            (type_expr type='Box.Type' location=<<testFilePath>>:13:12 range=[<<testFilePath>>:13:12 - line:13:12] typerepr='Box'))
-          (tuple_expr type='()' location=<<testFilePath>>:13:15 range=[<<testFilePath>>:13:15 - line:13:16])))
+        (call_expr type='Box' location=<<testFilePath>>:22:12 range=[<<testFilePath>>:22:12 - line:22:16] nothrow arg_labels=
+          (constructor_ref_call_expr type='() -> Box' location=<<testFilePath>>:22:12 range=[<<testFilePath>>:22:12 - line:22:12] nothrow
+            (declref_expr implicit type='(Box.Type) -> () -> Box' location=<<testFilePath>>:22:12 range=[<<testFilePath>>:22:12 - line:22:12] decl=classes.(file).Box.init()@<<testFilePath>>:1:7 function_ref=single)
+            (type_expr type='Box.Type' location=<<testFilePath>>:22:12 range=[<<testFilePath>>:22:12 - line:22:12] typerepr='Box'))
+          (tuple_expr type='()' location=<<testFilePath>>:22:15 range=[<<testFilePath>>:22:15 - line:22:16])))
 ))
   (var_decl "box1" type='Box' interface type='Box' access=internal let storage_kind=stored)
   (top_level_code_decl
     (brace_stmt
-      (call_expr type='()' location=<<testFilePath>>:15:1 range=[<<testFilePath>>:15:1 - line:15:13] nothrow arg_labels=_:
-        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:15:1 range=[<<testFilePath>>:15:1 - line:15:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
-        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:15:12 range=[<<testFilePath>>:15:6 - line:15:13] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
-          (paren_expr type='Any' location=<<testFilePath>>:15:12 range=[<<testFilePath>>:15:6 - line:15:13]
-            (erasure_expr implicit type='Any' location=<<testFilePath>>:15:12 range=[<<testFilePath>>:15:7 - line:15:12]
-              (load_expr implicit type='Int' location=<<testFilePath>>:15:12 range=[<<testFilePath>>:15:7 - line:15:12]
-                (member_ref_expr type='@lvalue Int' accessKind=read location=<<testFilePath>>:15:12 range=[<<testFilePath>>:15:7 - line:15:12] decl=classes.(file).Box.a@<<testFilePath>>:2:6
-                  (declref_expr type='Box' location=<<testFilePath>>:15:7 range=[<<testFilePath>>:15:7 - line:15:7] decl=classes.(file).box1@<<testFilePath>>:13:5 direct_to_storage function_ref=unapplied)))))))))
+      (call_expr type='()' location=<<testFilePath>>:24:1 range=[<<testFilePath>>:24:1 - line:24:13] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:24:1 range=[<<testFilePath>>:24:1 - line:24:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:24:12 range=[<<testFilePath>>:24:6 - line:24:13] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:24:12 range=[<<testFilePath>>:24:6 - line:24:13]
+            (erasure_expr implicit type='Any' location=<<testFilePath>>:24:12 range=[<<testFilePath>>:24:7 - line:24:12]
+              (load_expr implicit type='Int' location=<<testFilePath>>:24:12 range=[<<testFilePath>>:24:7 - line:24:12]
+                (member_ref_expr type='@lvalue Int' accessKind=read location=<<testFilePath>>:24:12 range=[<<testFilePath>>:24:7 - line:24:12] decl=classes.(file).Box.a@<<testFilePath>>:2:6
+                  (declref_expr type='Box' location=<<testFilePath>>:24:7 range=[<<testFilePath>>:24:7 - line:24:7] decl=classes.(file).box1@<<testFilePath>>:22:5 direct_to_storage function_ref=unapplied)))))))))
   (top_level_code_decl
     (brace_stmt
-      (call_expr type='()' location=<<testFilePath>>:16:1 range=[<<testFilePath>>:16:1 - line:16:24] nothrow arg_labels=_:
-        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:16:1 range=[<<testFilePath>>:16:1 - line:16:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
-        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:16:12 range=[<<testFilePath>>:16:6 - line:16:24] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
-          (paren_expr type='Any' location=<<testFilePath>>:16:12 range=[<<testFilePath>>:16:6 - line:16:24]
-            (erasure_expr implicit type='Any' location=<<testFilePath>>:16:12 range=[<<testFilePath>>:16:7 - line:16:23]
-              (call_expr type='Int' location=<<testFilePath>>:16:12 range=[<<testFilePath>>:16:7 - line:16:23] nothrow arg_labels=
-                (dot_syntax_call_expr type='() -> Int' location=<<testFilePath>>:16:12 range=[<<testFilePath>>:16:7 - line:16:12] nothrow
-                  (declref_expr type='(Box) -> () -> Int' location=<<testFilePath>>:16:12 range=[<<testFilePath>>:16:12 - line:16:12] decl=classes.(file).Box.returnFive()@<<testFilePath>>:4:7 function_ref=single)
-                  (declref_expr type='Box' location=<<testFilePath>>:16:7 range=[<<testFilePath>>:16:7 - line:16:7] decl=classes.(file).box1@<<testFilePath>>:13:5 direct_to_storage function_ref=unapplied))
-                (tuple_expr type='()' location=<<testFilePath>>:16:22 range=[<<testFilePath>>:16:22 - line:16:23]))))))))
+      (call_expr type='()' location=<<testFilePath>>:25:1 range=[<<testFilePath>>:25:1 - line:25:24] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:25:1 range=[<<testFilePath>>:25:1 - line:25:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:25:12 range=[<<testFilePath>>:25:6 - line:25:24] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:25:12 range=[<<testFilePath>>:25:6 - line:25:24]
+            (erasure_expr implicit type='Any' location=<<testFilePath>>:25:12 range=[<<testFilePath>>:25:7 - line:25:23]
+              (call_expr type='Int' location=<<testFilePath>>:25:12 range=[<<testFilePath>>:25:7 - line:25:23] nothrow arg_labels=
+                (dot_syntax_call_expr type='() -> Int' location=<<testFilePath>>:25:12 range=[<<testFilePath>>:25:7 - line:25:12] nothrow
+                  (declref_expr type='(Box) -> () -> Int' location=<<testFilePath>>:25:12 range=[<<testFilePath>>:25:12 - line:25:12] decl=classes.(file).Box.returnFive()@<<testFilePath>>:13:7 function_ref=single)
+                  (declref_expr type='Box' location=<<testFilePath>>:25:7 range=[<<testFilePath>>:25:7 - line:25:7] decl=classes.(file).box1@<<testFilePath>>:22:5 direct_to_storage function_ref=unapplied))
+                (tuple_expr type='()' location=<<testFilePath>>:25:22 range=[<<testFilePath>>:25:22 - line:25:23]))))))))
   (top_level_code_decl
     (brace_stmt
-      (call_expr type='()' location=<<testFilePath>>:17:1 range=[<<testFilePath>>:17:1 - line:17:28] nothrow arg_labels=_:
-        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:17:1 range=[<<testFilePath>>:17:1 - line:17:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
-        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:17:12 range=[<<testFilePath>>:17:6 - line:17:28] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
-          (paren_expr type='Any' location=<<testFilePath>>:17:12 range=[<<testFilePath>>:17:6 - line:17:28]
-            (erasure_expr implicit type='Any' location=<<testFilePath>>:17:12 range=[<<testFilePath>>:17:7 - line:17:27]
-              (call_expr type='Int' location=<<testFilePath>>:17:12 range=[<<testFilePath>>:17:7 - line:17:27] nothrow arg_labels=a:
-                (dot_syntax_call_expr type='(Int) -> Int' location=<<testFilePath>>:17:12 range=[<<testFilePath>>:17:7 - line:17:12] nothrow
-                  (declref_expr type='(Box) -> (Int) -> Int' location=<<testFilePath>>:17:12 range=[<<testFilePath>>:17:12 - line:17:12] decl=classes.(file).Box.returnInt(a:)@<<testFilePath>>:8:7 function_ref=single)
-                  (declref_expr type='Box' location=<<testFilePath>>:17:7 range=[<<testFilePath>>:17:7 - line:17:7] decl=classes.(file).box1@<<testFilePath>>:13:5 direct_to_storage function_ref=unapplied))
-                (tuple_expr type='(a: Int)' location=<<testFilePath>>:17:21 range=[<<testFilePath>>:17:21 - line:17:27] names=a
-                  (call_expr implicit type='Int' location=<<testFilePath>>:17:25 range=[<<testFilePath>>:17:25 - line:17:25] nothrow arg_labels=_builtinIntegerLiteral:
-                    (constructor_ref_call_expr implicit type='(_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:17:25 range=[<<testFilePath>>:17:25 - line:17:25] nothrow
-                      (declref_expr implicit type='(Int.Type) -> (_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:17:25 range=[<<testFilePath>>:17:25 - line:17:25] decl=Swift.(file).Int.init(_builtinIntegerLiteral:) function_ref=single)
-                      (type_expr implicit type='Int.Type' location=<<testFilePath>>:17:25 range=[<<testFilePath>>:17:25 - line:17:25] typerepr='Int'))
-                    (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' location=<<testFilePath>>:17:25 range=[<<testFilePath>>:17:25 - line:17:25] names=_builtinIntegerLiteral
-                      (integer_literal_expr type='Int2048' location=<<testFilePath>>:17:25 range=[<<testFilePath>>:17:25 - line:17:25] value=10))))))))))))
+      (call_expr type='()' location=<<testFilePath>>:26:1 range=[<<testFilePath>>:26:1 - line:26:28] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:26:1 range=[<<testFilePath>>:26:1 - line:26:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:26:12 range=[<<testFilePath>>:26:6 - line:26:28] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:26:12 range=[<<testFilePath>>:26:6 - line:26:28]
+            (erasure_expr implicit type='Any' location=<<testFilePath>>:26:12 range=[<<testFilePath>>:26:7 - line:26:27]
+              (call_expr type='Int' location=<<testFilePath>>:26:12 range=[<<testFilePath>>:26:7 - line:26:27] nothrow arg_labels=a:
+                (dot_syntax_call_expr type='(Int) -> Int' location=<<testFilePath>>:26:12 range=[<<testFilePath>>:26:7 - line:26:12] nothrow
+                  (declref_expr type='(Box) -> (Int) -> Int' location=<<testFilePath>>:26:12 range=[<<testFilePath>>:26:12 - line:26:12] decl=classes.(file).Box.returnInt(a:)@<<testFilePath>>:17:7 function_ref=single)
+                  (declref_expr type='Box' location=<<testFilePath>>:26:7 range=[<<testFilePath>>:26:7 - line:26:7] decl=classes.(file).box1@<<testFilePath>>:22:5 direct_to_storage function_ref=unapplied))
+                (tuple_expr type='(a: Int)' location=<<testFilePath>>:26:21 range=[<<testFilePath>>:26:21 - line:26:27] names=a
+                  (call_expr implicit type='Int' location=<<testFilePath>>:26:25 range=[<<testFilePath>>:26:25 - line:26:25] nothrow arg_labels=_builtinIntegerLiteral:
+                    (constructor_ref_call_expr implicit type='(_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:26:25 range=[<<testFilePath>>:26:25 - line:26:25] nothrow
+                      (declref_expr implicit type='(Int.Type) -> (_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:26:25 range=[<<testFilePath>>:26:25 - line:26:25] decl=Swift.(file).Int.init(_builtinIntegerLiteral:) function_ref=single)
+                      (type_expr implicit type='Int.Type' location=<<testFilePath>>:26:25 range=[<<testFilePath>>:26:25 - line:26:25] typerepr='Int'))
+                    (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' location=<<testFilePath>>:26:25 range=[<<testFilePath>>:26:25 - line:26:25] names=_builtinIntegerLiteral
+                      (integer_literal_expr type='Int2048' location=<<testFilePath>>:26:25 range=[<<testFilePath>>:26:25 - line:26:25] value=10)))))))))))
+  (top_level_code_decl
+    (brace_stmt
+      (call_expr type='()' location=<<testFilePath>>:27:1 range=[<<testFilePath>>:27:1 - line:27:13] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:27:1 range=[<<testFilePath>>:27:1 - line:27:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:27:12 range=[<<testFilePath>>:27:6 - line:27:13] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:27:12 range=[<<testFilePath>>:27:6 - line:27:13]
+            (erasure_expr implicit type='Any' location=<<testFilePath>>:27:12 range=[<<testFilePath>>:27:7 - line:27:12]
+              (load_expr implicit type='String' location=<<testFilePath>>:27:12 range=[<<testFilePath>>:27:7 - line:27:12]
+                (member_ref_expr type='@lvalue String' accessKind=read location=<<testFilePath>>:27:12 range=[<<testFilePath>>:27:7 - line:27:12] decl=classes.(file).Box.b@<<testFilePath>>:4:6
+                  (declref_expr type='Box' location=<<testFilePath>>:27:7 range=[<<testFilePath>>:27:7 - line:27:7] decl=classes.(file).box1@<<testFilePath>>:22:5 direct_to_storage function_ref=unapplied)))))))))
+  (top_level_code_decl
+    (brace_stmt
+      (assign_expr
+        (member_ref_expr type='@lvalue String' accessKind=write location=<<testFilePath>>:28:6 range=[<<testFilePath>>:28:1 - line:28:6] decl=classes.(file).Box.b@<<testFilePath>>:4:6
+          (declref_expr type='Box' location=<<testFilePath>>:28:1 range=[<<testFilePath>>:28:1 - line:28:1] decl=classes.(file).box1@<<testFilePath>>:22:5 direct_to_storage function_ref=unapplied))
+        (string_literal_expr type='String' location=<<testFilePath>>:28:10 range=[<<testFilePath>>:28:10 - line:28:10] encoding=utf8 value="whatever" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))))
