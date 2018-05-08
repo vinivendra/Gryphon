@@ -49,3 +49,16 @@ print(multiplication3)
 print(division3)
 print(subtraction3)
 print(sum3)
+
+// Equality
+if x == 0 {
+	print("true")
+}
+
+if x == 1 {
+	print("false")
+}
+
+if x != 1 {
+	print("true")
+}

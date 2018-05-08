@@ -37,4 +37,13 @@ fun main(args: Array<String>) {
 	println(division3)
 	println(subtraction3)
 	println(sum3)
+	if (x == 0) {
+		println("true")
+	}
+	if (x == 1) {
+		println("false")
+	}
+	if (x != 1) {
+		println("true")
+	}
 }
