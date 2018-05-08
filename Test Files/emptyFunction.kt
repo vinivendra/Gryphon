@@ -1,2 +1,0 @@
-internal fun foo() {
-}

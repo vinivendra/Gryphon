@@ -1,4 +1,0 @@
-(source_file
-  (func_decl "foo()" interface type='() -> ()' access=internal
-    (parameter_list)
-    (brace_stmt)))

@@ -1,6 +1,0 @@
-(source_file
-  (func_decl "foo(x:y:)" interface type='(Int, String) -> ()' access=internal
-    (parameter_list
-      (parameter "x" apiName=x type='Int' interface type='Int')
-      (parameter "y" apiName=y type='String' interface type='String'))
-    (brace_stmt)))

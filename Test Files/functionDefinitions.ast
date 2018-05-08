@@ -1,0 +1,39 @@
+(source_file
+  (func_decl "foo()" interface type='() -> ()' access=internal
+    (parameter_list)
+    (brace_stmt))
+  (func_decl "bar()" interface type='() -> ()' access=internal
+    (parameter_list)
+    (brace_stmt
+      (pattern_binding_decl
+        (pattern_typed type='Int'
+          (pattern_named type='Int' 'x')
+          (type_ident
+            (component id='Int' bind=Swift.(file).Int)))
+        (call_expr implicit type='Int' location=<<testFilePath>>:7:15 range=[<<testFilePath>>:7:15 - line:7:15] nothrow arg_labels=_builtinIntegerLiteral:
+          (constructor_ref_call_expr implicit type='(_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:7:15 range=[<<testFilePath>>:7:15 - line:7:15] nothrow
+            (declref_expr implicit type='(Int.Type) -> (_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:7:15 range=[<<testFilePath>>:7:15 - line:7:15] decl=Swift.(file).Int.init(_builtinIntegerLiteral:) function_ref=single)
+            (type_expr implicit type='Int.Type' location=<<testFilePath>>:7:15 range=[<<testFilePath>>:7:15 - line:7:15] typerepr='Int'))
+          (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' location=<<testFilePath>>:7:15 range=[<<testFilePath>>:7:15 - line:7:15] names=_builtinIntegerLiteral
+            (integer_literal_expr type='Int2048' location=<<testFilePath>>:7:15 range=[<<testFilePath>>:7:15 - line:7:15] value=0))))
+
+      (var_decl "x" type='Int' interface type='Int' access=private storage_kind=stored)
+))
+  (func_decl "baz(x:y:)" interface type='(Int, Int) -> ()' access=internal
+    (parameter_list
+      (parameter "x" apiName=x type='Int' interface type='Int')
+      (parameter "y" apiName=y type='Int' interface type='Int'))
+    (brace_stmt))
+  (func_decl "bla()" interface type='() -> Int' access=internal
+    (parameter_list)
+    (result
+      (type_ident
+        (component id='Int' bind=Swift.(file).Int)))
+    (brace_stmt
+      (return_stmt
+        (call_expr implicit type='Int' location=<<testFilePath>>:16:9 range=[<<testFilePath>>:16:9 - line:16:9] nothrow arg_labels=_builtinIntegerLiteral:
+          (constructor_ref_call_expr implicit type='(_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:16:9 range=[<<testFilePath>>:16:9 - line:16:9] nothrow
+            (declref_expr implicit type='(Int.Type) -> (_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:16:9 range=[<<testFilePath>>:16:9 - line:16:9] decl=Swift.(file).Int.init(_builtinIntegerLiteral:) function_ref=single)
+            (type_expr implicit type='Int.Type' location=<<testFilePath>>:16:9 range=[<<testFilePath>>:16:9 - line:16:9] typerepr='Int'))
+          (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' location=<<testFilePath>>:16:9 range=[<<testFilePath>>:16:9 - line:16:9] names=_builtinIntegerLiteral
+            (integer_literal_expr type='Int2048' location=<<testFilePath>>:16:9 range=[<<testFilePath>>:16:9 - line:16:9] value=0)))))))

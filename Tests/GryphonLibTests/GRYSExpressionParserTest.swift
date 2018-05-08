@@ -135,7 +135,7 @@ class GRYSExpressionParserTest: XCTestCase {
 	}
 	
 	func testParser() {
-		let tests = ["assignments", "bhaskara", "classes", "emptyFunction", "functionCalls", "functionWithEmptyVariable", "functionWithParameters", "functionWithReturn", "functionWithVariable", "ifStatement", "kotlinLiterals", "numericLiterals", "operators", "print", "strings"]
+		let tests = ["assignments", "bhaskara", "classes", "functionCalls", "functionDefinitions", "ifStatement", "kotlinLiterals", "numericLiterals", "operators", "print", "strings"]
 		
 		for testName in tests {
 			// Create an AST using the parser
