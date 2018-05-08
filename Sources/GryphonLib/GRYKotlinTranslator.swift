@@ -213,7 +213,25 @@ public class GRYKotlinTranslator {
 		result += functionNamePrefix + "("
 		
 		var parameterStrings = [String]()
-		if let parameterList = functionDeclaration.subTree(named: "Parameter List") {
+		
+		let parameterList: GRYAst?
+		if let list = functionDeclaration.subTree(named: "Parameter List"),
+			let parameter = list.subTrees.first,
+			let name = parameter.standaloneAttributes.first,
+			name != "self"
+		{
+			parameterList = list
+		}
+		else if functionDeclaration.subTrees.count > 1,
+			functionDeclaration.subTrees[1].name == "Parameter List"
+		{
+			parameterList = functionDeclaration.subTrees[1]
+		}
+		else {
+			parameterList = nil
+		}
+		
+		if let parameterList = parameterList {
 			for parameter in parameterList.subTrees {
 				let name = parameter.standaloneAttributes[0]
 				guard name != "self" else { continue }
