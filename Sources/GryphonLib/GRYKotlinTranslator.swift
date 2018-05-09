@@ -35,7 +35,7 @@ public class GRYKotlinTranslator {
 	*/
 	public func translateAST(_ ast: GRYAst) -> String {
 		// First, translate declarations that shouldn't be inside the main function
-		let declarationNames = ["Function Declaration", "Class Declaration"]
+		let declarationNames = ["Class Declaration", "Extension Declaration", "Function Declaration"]
 		let isDeclaration = { (ast: GRYAst) -> Bool in declarationNames.contains(ast.name) }
 		
 		let declarations = ast.subTrees.filter(isDeclaration)
@@ -81,6 +81,9 @@ public class GRYKotlinTranslator {
 				result += string
 			case "Destructor Declaration":
 				let string = translate(destructorDeclaration: subTree, withIndentation: indentation)
+				result += string
+			case "Extension Declaration":
+				let string = translate(subTrees: subTree.subTrees, withIndentation: indentation)
 				result += string
 			case "Function Declaration":
 				let string = translate(functionDeclaration: subTree, withIndentation: indentation)
@@ -341,15 +344,20 @@ public class GRYKotlinTranslator {
 		let rawType = variableDeclaration["interface type"]!
 		let type = translateType(rawType)
 		
-		let varOrValKeyword: String
-		if variableDeclaration.standaloneAttributes.contains("let") {
-			varOrValKeyword = "val"
+		let prefix: String
+		if let extensionType = variableDeclaration["extends_type"] {
+			prefix = "val \(extensionType)."
 		}
 		else {
-			varOrValKeyword = "var"
+			if variableDeclaration.standaloneAttributes.contains("let") {
+				prefix = "val "
+			}
+			else {
+				prefix = "var "
+			}
 		}
 		
-		result += varOrValKeyword + " " + identifier + ": " + type
+		result += "\(prefix)\(identifier): \(type)"
 		
 		if let patternBindingExpression = danglingPatternBinding,
 			patternBindingExpression.identifier == identifier,

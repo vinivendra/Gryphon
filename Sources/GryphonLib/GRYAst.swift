@@ -41,7 +41,7 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 		}
 	}
 	
-	internal init(parser: GRYSExpressionParser) {
+	internal init(parser: GRYSExpressionParser, extraKeyValues: [String: String] = [:]) {
 		var standaloneAttributes = [String]()
 		var keyValueAttributes = [String: String]()
 		var subTrees = [GRYAst]()
@@ -52,6 +52,7 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 		
 		// The loop stops: all branches tell the parser to read, and the input string must end eventually.
 		while true {
+			// Add key-value attributes
 			if parser.canReadKey() {
 				let key = parser.readKey()
 				if key == "location" && parser.canReadLocation() {
@@ -66,14 +67,28 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 					keyValueAttributes[key] = parser.readIdentifierOrString()
 				}
 			}
+			// Add standalone attributes
 			else if parser.canReadIdentifierOrString() {
 				let attribute = parser.readIdentifierOrString()
 				standaloneAttributes.append(attribute)
 			}
+			// Add subtrees
 			else if parser.canReadOpenParentheses() {
-				let subTree = GRYAst(parser: parser)
+				
+				// Check if there's info to pass on to subtrees
+				let extraKeyValuesForSubTrees: [String: String]
+				if self.name == "Extension Declaration" {
+					extraKeyValuesForSubTrees = ["extends_type": standaloneAttributes.first!]
+				}
+				else {
+					extraKeyValuesForSubTrees = [:]
+				}
+				
+				// Parse subtrees
+				let subTree = GRYAst(parser: parser, extraKeyValues: extraKeyValuesForSubTrees)
 				subTrees.append(subTree)
 			}
+			// Finish
 			else {
 				parser.readCloseParentheses()
 				break
@@ -81,7 +96,7 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 		}
 		
 		self.standaloneAttributes = standaloneAttributes
-		self.keyValueAttributes = keyValueAttributes
+		self.keyValueAttributes = keyValueAttributes.merging(extraKeyValues, uniquingKeysWith: { a, b in a })
 		self.subTrees = subTrees
 	}
 	
