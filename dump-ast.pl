@@ -30,6 +30,9 @@ foreach (@ARGV) {
 	# Replace file paths with placeholders
 	while ($swiftAstDump =~ s/$filePath/\<<testFilePath>>/) { }
 	
+    # Replace random memory addresses with placeholders
+    while ($swiftAstDump =~ s/0x[\da-f]+/<<memory address>>/) { }
+
 	# Get the name of the output file
 	if ($filePath =~ /(.*).swift/) {
 		# Write to the output file
