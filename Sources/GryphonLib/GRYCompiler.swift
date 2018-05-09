@@ -49,11 +49,10 @@ public enum GRYCompiler {
 		return kotlin
 	}
 	
-	public static func updateAstJson(forFileAt filePath: String) {
-		let ast = generateAST(forFileAt: filePath)
+	public static func updateAstJson(forSwiftFileAt swiftFilePath: String, intoJsonFileAt jsonFilePath: String) {
+		let ast = generateAST(forFileAt: swiftFilePath)
 
 		log?("Writing AST JSON...")
-		let jsonFilePath = GRYUtils.changeExtension(of: filePath, to: "json")
 		ast.writeAsJSON(toFile: jsonFilePath)
 	}
 	
