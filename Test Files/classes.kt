@@ -7,6 +7,7 @@ class Box {
 		set(newValue) {
 			println("set b")
 		}
+	var c: Int? = null
 	internal fun returnFive(): Int {
 		return this.a
 	}
@@ -22,4 +23,5 @@ fun main(args: Array<String>) {
 	println(box1.returnInt(a = 10))
 	println(box1.b)
 	box1.b = "whatever"
+	println(box1.c)
 }

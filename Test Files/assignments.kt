@@ -6,4 +6,6 @@ fun main(args: Array<String>) {
 	println("${(x)}")
 	println("${(y)}")
 	println("${(z)}")
+	val a: Int? = null
+	println("${(a)}")
 }

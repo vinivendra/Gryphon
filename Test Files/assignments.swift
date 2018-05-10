@@ -6,3 +6,8 @@ z = x
 print("\(x)")
 print("\(y)")
 print("\(z)")
+
+//
+let a: Int? = nil
+
+print("\(a)")

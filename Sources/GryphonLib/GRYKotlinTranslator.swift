@@ -492,7 +492,7 @@ public class GRYKotlinTranslator {
 	Translates a swift call expression into kotlin code.
 	
 	A call expression is a function call, but it can be explicit (as usual) or implicit (i.e. integer literals).
-	Currently, the only implicit calls supported are integer abd boolean literals.
+	Currently, the only implicit calls supported are integer, boolean and nil literals.
 	
 	As a special case, functions called GRYInsert, GRYAlternative and GRYIgnoreNext are used to directly
 	manipulate the resulting kotlin code, and are treated separately below.
@@ -517,6 +517,12 @@ public class GRYKotlinTranslator {
 			argumentLabels == "_builtinBooleanLiteral:"
 		{
 			return translate(asBooleanLiteral: callExpression)
+		}
+		// If the call expression corresponds to `nil`
+		else if let argumentLabels = callExpression["arg_labels"],
+			argumentLabels == "nilLiteral:"
+		{
+			return "null"
 		}
 		else {
 			let functionName: String
