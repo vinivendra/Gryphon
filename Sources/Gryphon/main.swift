@@ -47,7 +47,7 @@ func updateJsonTestFile(_ swiftFile: URL, includeParserTests: Bool) {
 }
 
 func main() {
-	updateJsonTestFiles(includeParserTests: true)
+	updateJsonTestFiles(includeParserTests: false)
 
 //	let filePath = Process().currentDirectoryPath + "/Test Files/<#testFile#>.swift"
 //	let filePath = Process().currentDirectoryPath + "/test.swift"
