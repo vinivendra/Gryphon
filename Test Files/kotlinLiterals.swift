@@ -6,6 +6,8 @@ func GRYAlternative<T>(swift swiftExpression: T, kotlin kotlinExpression: String
 	return swiftExpression
 }
 
+import Foundation
+
 // Kotlin literals as expressions
 let languageName = GRYAlternative(swift: "swift", kotlin: "\"kotlin\"")
 print("Hello from \(languageName)!")
@@ -17,9 +19,6 @@ print(magicNumber)
 GRYInsert("println(\"This will be ignored by swift, but not by kotlin.\")")
 
 // Ignore swift statements
-GRYIgnoreNext()
-import Foundation // There's no Foundation in kotlin
-
 GRYIgnoreNext()
 print("This will be ignored by kotlin, but not by swift.")
 

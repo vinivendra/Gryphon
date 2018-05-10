@@ -1,10 +1,7 @@
-func GRYIgnoreNext() { }
-
 func GRYAlternative<T>(swift swiftExpression: T, kotlin kotlinExpression: String) -> T {
 	return swiftExpression
 }
 
-GRYIgnoreNext()
 import Foundation
 
 func bhaskara(a: Double, b: Double, c: Double) -> Double {
