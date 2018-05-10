@@ -130,7 +130,7 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 	}
 	
 	//
-	func writeAsJSON(toFile filePath: String) {
+	public func writeAsJSON(toFile filePath: String) {
 		log?("Building AST JSON...")
 		let jsonData = try! JSONEncoder().encode(self)
 		let rawJsonString = String(data: jsonData, encoding: .utf8)!

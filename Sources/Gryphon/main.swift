@@ -1,7 +1,7 @@
 import Foundation
 import GryphonLib
 
-func updateJsonTestFiles(forParserTests: Bool = false) {
+func updateJsonTestFiles(includeParserTests: Bool = false) {
 	
 	let currentURL = URL(fileURLWithPath: Process().currentDirectoryPath + "/Test Files")
 	let fileURLs = try! FileManager.default.contentsOfDirectory(at: currentURL, includingPropertiesForKeys: nil)
@@ -10,21 +10,20 @@ func updateJsonTestFiles(forParserTests: Bool = false) {
 	let mainTestFile = URL(fileURLWithPath: Process().currentDirectoryPath + "/test.swift")
 	testFiles.append(mainTestFile)
 	
-	print("Updating JSON files\(forParserTests ? " for parser tests" : "")...")
+	print("Updating JSON files\(includeParserTests ? " and parser tests" : "")...")
 	
 	for swiftFile in testFiles {
-		updateJsonTestFile(swiftFile, forParserTests: forParserTests)
+		updateJsonTestFile(swiftFile, includeParserTests: includeParserTests)
 	}
 	
 	print("Done!")
 }
 
-func updateJsonTestFile(_ swiftFile: URL, forParserTests: Bool) {
-	let jsonExtension = forParserTests ? "expectedJson" : "json"
-	
+func updateJsonTestFile(_ swiftFile: URL, includeParserTests: Bool) {
 	let swiftFilePath = swiftFile.path
 	let astFilePath = GRYUtils.changeExtension(of: swiftFilePath, to: "ast")
-	let jsonFilePath = GRYUtils.changeExtension(of: swiftFilePath, to: jsonExtension)
+	let jsonFilePath = GRYUtils.changeExtension(of: swiftFilePath, to: "json")
+	let expectedJsonFilePath = GRYUtils.changeExtension(of: swiftFilePath, to: "expectedJson")
 	
 	let jsonFileWasJustCreated = GRYUtils.createFileIfNeeded(at: jsonFilePath, containing: "")
 	let jsonIsOutdated = jsonFileWasJustCreated || GRYUtils.file(astFilePath, wasModifiedLaterThan: jsonFilePath)
@@ -37,13 +36,18 @@ func updateJsonTestFile(_ swiftFile: URL, forParserTests: Bool) {
 		}
 		
 		print("\tUpdating \(swiftFilePath)...")
-		GRYCompiler.updateAstJson(forSwiftFileAt: swiftFilePath, intoJsonFileAt: jsonFilePath)
+		
+		let ast = GRYCompiler.generateAST(forFileAt: swiftFilePath)
+		ast.writeAsJSON(toFile: jsonFilePath)
+		
+		if includeParserTests {
+			ast.writeAsJSON(toFile: expectedJsonFilePath)
+		}
 	}
 }
 
 func main() {
-	updateJsonTestFiles()
-//	updateJsonTestFiles(forParserTests: true)
+	updateJsonTestFiles(includeParserTests: true)
 
 //	let filePath = Process().currentDirectoryPath + "/Test Files/<#testFile#>.swift"
 //	let filePath = Process().currentDirectoryPath + "/test.swift"
