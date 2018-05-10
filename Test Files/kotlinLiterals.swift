@@ -6,7 +6,13 @@ func GRYAlternative<T>(swift swiftExpression: T, kotlin kotlinExpression: String
 	return swiftExpression
 }
 
+//
 import Foundation
+
+private func GRYDeclarations() {
+	// Just to test imports in kotlin
+	GRYInsert("import java.util.*")
+}
 
 // Kotlin literals as expressions
 let languageName = GRYAlternative(swift: "swift", kotlin: "\"kotlin\"")
