@@ -781,7 +781,7 @@ public class GRYKotlinTranslator {
 		var result = ""
 		
 		var isEscaping = false
-		loop: for character in string {
+		for character in string {
 			switch character {
 			case "\\":
 				if isEscaping {
