@@ -198,6 +198,11 @@ public class GRYKotlinTranslator {
 			!functionName.hasPrefix("GRYAlternative(") &&
 			!functionName.hasPrefix("GRYIgnoreNext(") else { return "" }
 		
+		guard !functionName.hasPrefix("GRYDeclarations(") else {
+			let braceStatement = functionDeclaration.subTree(named: "Brace Statement")!
+			return translate(subTrees: braceStatement.subTrees, withIndentation: indentation)
+		}
+		
 		guard functionDeclaration.standaloneAttributes.count <= 1 else {
 			return "// <Generic function declaration: \(functionName)>"
 		}
