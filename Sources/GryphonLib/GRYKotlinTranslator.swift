@@ -87,6 +87,7 @@ public class GRYKotlinTranslator {
 			}
 			
 			switch subTree.name {
+			case "Import Declaration": break
 			case "Class Declaration":
 				let string = translate(classDeclaration: subTree, withIndentation: indentation)
 				result += string
