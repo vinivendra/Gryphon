@@ -6,6 +6,8 @@ class IntegrationTest: XCTestCase {
 		let tests = TestUtils.allTestCases
 		
 		for testName in tests {
+			print("\t Testing \(testName)...", terminator: "")
+			
 			// Generate kotlin code using the whole compiler
 			let testFilePath = TestUtils.testFilesPath + testName
 			let generatedKotlinCode = GRYCompiler.generateKotlinCode(forFileAt: testFilePath + ".swift")
@@ -14,6 +16,8 @@ class IntegrationTest: XCTestCase {
 			let expectedKotlinCode = try! String(contentsOfFile: testFilePath + ".kt")
 			
 			XCTAssert(generatedKotlinCode == expectedKotlinCode, "Test \(testName): parser failed to produce expected result. Diff:\n\n===\n\(TestUtils.diff(generatedKotlinCode, expectedKotlinCode))===\n")
+			
+			print(" Done!")
 		}
 	}
 

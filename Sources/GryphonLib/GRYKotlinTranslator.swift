@@ -112,31 +112,12 @@ public class GRYKotlinTranslator {
 			case "Assign Expression":
 				let string = translate(assignExpression: subTree, withIndentation: indentation)
 				result += string
+			case "Guard Statement":
+				result += translate(ifStatement: subTree, asGuard: true, withIndentation: indentation)
 			case "If Statement":
 				result += translate(ifStatement: subTree, withIndentation: indentation)
 			case "Pattern Binding Declaration":
-				if subTree.subTrees.count > 1,
-					subTree.subTrees[1].name.hasSuffix("Expression")
-				{
-					let expression = subTree.subTrees[1]
-					
-					let binding: GRYAst
-					if let unwrappedBinding = subTree.subTree(named: "Pattern Typed")?.subTree(named: "Pattern Named") {
-						binding = unwrappedBinding
-					}
-					else {
-						binding = subTree.subTree(named: "Pattern Named")!
-					}
-					
-					
-					let identifier = binding.standaloneAttributes[0]
-					let rawType = binding.keyValueAttributes["type"]!
-					let type = translateType(rawType)
-					
-					danglingPatternBinding = (identifier: identifier,
-											  type: type,
-											  translatedExpression: translate(expression: expression))
-				}
+				process(patternBindingDeclaration: subTree)
 			case "Return Statement":
 				result += translate(returnStatement: subTree, withIndentation: indentation)
 			case "Call Expression":
@@ -150,6 +131,30 @@ public class GRYKotlinTranslator {
 		}
 		
 		return result
+	}
+	
+	private func process(patternBindingDeclaration: GRYAst) {
+		precondition(patternBindingDeclaration.name == "Pattern Binding Declaration")
+
+		let expression = patternBindingDeclaration.subTrees.last!
+		guard ASTIsExpression(expression) else { return }
+		
+		let binding: GRYAst
+		if let unwrappedBinding = patternBindingDeclaration.subTree(named: "Pattern Typed")?.subTree(named: "Pattern Named") {
+			binding = unwrappedBinding
+		}
+		else {
+			binding = patternBindingDeclaration.subTree(named: "Pattern Named")!
+		}
+		
+		
+		let identifier = binding.standaloneAttributes[0]
+		let rawType = binding.keyValueAttributes["type"]!
+		let type = translateType(rawType)
+		
+		danglingPatternBinding = (identifier: identifier,
+								  type: type,
+								  translatedExpression: translate(expression: expression))
 	}
 	
 	private func translate(topLevelCode: GRYAst, withIndentation indentation: String) -> String {
@@ -280,53 +285,119 @@ public class GRYKotlinTranslator {
 	
 	private func translate(ifStatement: GRYAst,
 						   asElseIf isElseIf: Bool = false,
+						   asGuard isGuard: Bool = false,
 						   withIndentation indentation: String) -> String
 	{
-		precondition(ifStatement.name == "If Statement")
+		precondition(ifStatement.name == "If Statement" || ifStatement.name == "Guard Statement")
 
-		let condition = ifStatement.subTrees[0]
-		let conditionString = translate(expression: condition)
+		let (letDeclarationsString, conditionString) = translateDeclarationsAndConditions(forIfStatement: ifStatement,
+																						  withIndentation: indentation)
 		
 		let increasedIndentation = increaseIndentation(indentation)
-		let braceStatement = ifStatement.subTrees[1]
+		
+		var elseIfString = ""
+		var elseString = ""
+		let braceStatement: GRYAst
+		
+		if ifStatement.subTrees.count > 2,
+			let lastAST = ifStatement.subTrees.last,
+			lastAST.name == "If Statement"
+		{
+			braceStatement = ifStatement.subTrees.dropLast().last!
+
+			let elseIfAST = lastAST
+			elseIfString = translate(ifStatement: elseIfAST, asElseIf: true, withIndentation: indentation)
+		}
+		else if ifStatement.subTrees.count > 2,
+			let lastAST = ifStatement.subTrees.last,
+			lastAST.name == "Brace Statement",
+			ifStatement.subTrees.dropLast().last!.name == "Brace Statement"
+		{
+			braceStatement = ifStatement.subTrees.dropLast().last!
+
+			let elseAST = lastAST
+			let statementsString = translate(subTrees: elseAST.subTrees, withIndentation: increasedIndentation)
+			elseString = "\(indentation)else {\n\(statementsString)\(indentation)}\n"
+		}
+		else {
+			braceStatement = ifStatement.subTrees.last!
+		}
+		
 		let statements = braceStatement.subTrees
 		let statementsString = translate(subTrees: statements, withIndentation: increasedIndentation)
 		
 		let keyword = isElseIf ? "else if" : "if"
+		let parenthesizedCondition = isGuard ? "(!(\(conditionString)))" : "(\(conditionString))"
 		
-		let ifResult = "\(indentation)\(keyword) (\(conditionString)) {\n\(statementsString)\(indentation)}\n"
+		let ifString = "\(letDeclarationsString)\(indentation)\(keyword) \(parenthesizedCondition) {\n\(statementsString)\(indentation)}\n"
 		
-		if ifStatement.subTrees.count > 2 {
-			let otherIfStatement = ifStatement.subTrees[2]
-			
-			// If it's an `else if`
-			if otherIfStatement.name == "If Statement" {
-				let elseIfResult = translate(ifStatement: otherIfStatement, asElseIf: true, withIndentation: indentation)
-				return ifResult + elseIfResult
+		return ifString + elseIfString + elseString
+	}
+	
+	private func translateDeclarationsAndConditions(forIfStatement ifStatement: GRYAst, withIndentation indentation: String)
+		-> (letDeclarationsString: String, conditionString: String)
+	{
+		precondition(ifStatement.name == "If Statement" || ifStatement.name == "Guard Statement")
+
+		var conditionStrings = [String]()
+		var letDeclarations = [String]()
+		
+		let conditions = ifStatement.subTrees.filter { $0.name != "If Statement" && $0.name != "Brace Statement" }
+		
+		for condition in conditions {
+			// If it's an if-let
+			if condition.name == "Pattern" {
+				let optionalSomeElement = condition.subTree(named: "Optional Some Element")!
+				
+				let patternNamed: GRYAst
+				let varOrValKeyword: String
+				if let patternLet = optionalSomeElement.subTree(named: "Pattern Let") {
+					patternNamed = patternLet.subTree(named: "Pattern Named")!
+					varOrValKeyword = "val"
+				}
+				else {
+					patternNamed = optionalSomeElement.subTree(named: "Pattern Variable")!.subTree(named: "Pattern Named")!
+					varOrValKeyword = "var"
+				}
+				
+				let typeString: String
+				if let rawType = optionalSomeElement["type"] {
+					let type = translateType(rawType)
+					typeString = ": \(type)"
+				}
+				else {
+					typeString = ""
+				}
+				
+				let name = patternNamed.standaloneAttributes.first!
+				
+				let expressionString = translate(expression: condition.subTrees.last!)
+				
+				letDeclarations.append("\(indentation)\(varOrValKeyword) \(name)\(typeString) = \(expressionString)\n")
+				conditionStrings.append("\(name) != null")
 			}
-			// If it's an `else`
 			else {
-				let statementsString = translate(subTrees: otherIfStatement.subTrees, withIndentation: increasedIndentation)
-				let elseResult = "\(indentation)else {\n\(statementsString)\(indentation)}\n"
-				return ifResult + elseResult
+				conditionStrings.append(translate(expression: condition))
 			}
 		}
-		else {
-			return ifResult
-		}
+		let letDeclarationsString = letDeclarations.joined()
+		let conditionString = conditionStrings.joined(separator: " && ")
+		
+		return (letDeclarationsString, conditionString)
 	}
 	
 	private func translate(returnStatement: GRYAst,
 						   withIndentation indentation: String) -> String
 	{
 		precondition(returnStatement.name == "Return Statement")
-		var result = indentation
 		
-		let expression = translate(expression: returnStatement.subTrees.last!)
-		
-		result += "return " + expression + "\n"
-		
-		return result
+		if let expression = returnStatement.subTrees.last {
+			let expressionString = translate(expression: expression)
+			return "\(indentation)return \(expressionString)\n"
+		}
+		else {
+			return "\(indentation)return\n"
+		}
 	}
 	
 	/**
@@ -442,7 +513,9 @@ public class GRYKotlinTranslator {
 			return translate(memberReferenceExpression: expression)
 		case "Parentheses Expression":
 			return "(" + translate(expression: expression.subTrees[0]) + ")"
-		case "Autoclosure Expression":
+		case "Force Value Expression":
+			return translate(expression: expression.subTrees[0]) + "!!"
+		case "Autoclosure Expression", "Inject Into Optional":
 			return translate(expression: expression.subTrees.last!)
 		case "Load Expression":
 			if let innerExpression = expression.subTree(named: "Declaration Reference Expression") {
@@ -678,8 +751,16 @@ public class GRYKotlinTranslator {
 	
 	private func translate(declarationReferenceExpression: GRYAst) -> String {
 		precondition(declarationReferenceExpression.name == "Declaration Reference Expression")
-		let declaration = declarationReferenceExpression["decl"]!
-		return getIdentifierFromDeclaration(declaration)
+		
+		if let codeDeclaration = declarationReferenceExpression.standaloneAttributes.first,
+			codeDeclaration.hasPrefix("code.")
+		{
+			return getIdentifierFromDeclaration(codeDeclaration)
+		}
+		else {
+			let declaration = declarationReferenceExpression["decl"]!
+			return getIdentifierFromDeclaration(declaration)
+		}
 	}
 	
 	private func translate(memberReferenceExpression: GRYAst) -> String {
@@ -784,7 +865,11 @@ public class GRYKotlinTranslator {
 		return result
 	}
 	
-	func removeBackslashEscapes(_ string: String) -> String {
+	private func ASTIsExpression(_ ast: GRYAst) -> Bool {
+		return ast.name.hasSuffix("Expression") || ast.name == "Inject Into Optional"
+	}
+	
+	private func removeBackslashEscapes(_ string: String) -> String {
 		var result = ""
 		
 		var isEscaping = false
