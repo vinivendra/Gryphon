@@ -60,20 +60,17 @@ public class GRYKotlinTranslator {
 		var result = translate(subTrees: declarations, withIndentation: "")
 		
 		// Then, translate the remaining statements (if there are any) and wrap them in the main function
+		let indentation = increaseIndentation("")
 		let statements = ast.subTrees.filter({!isDeclaration($0)})
+		let statementsString = translate(subTrees: statements, withIndentation: indentation)
+		guard !statementsString.isEmpty else { return result }
 		
-		guard !statements.isEmpty else { return result }
+		// Add newline between declarations and the main function, if needed
 		if !result.isEmpty {
 			result += "\n"
 		}
 		
-		result += "fun main(args: Array<String>) {\n"
-		
-		let indentation = increaseIndentation("")
-		
-		result += translate(subTrees: statements, withIndentation: indentation)
-		
-		result += "}\n"
+		result += "fun main(args: Array<String>) {\n\(statementsString)}\n"
 		
 		return result
 	}
