@@ -15,6 +15,23 @@ public class GRYKotlinTranslator {
 	*/
 	private var shouldIgnoreNext = false
 	
+	/**
+	Swift variables declared with a value, such as `var x = 0`, are represented in a weird way in the AST:
+	first comes a `Pattern Binding Declaration` containing the variable's name, its type, and
+	its initial value; then comes the actual `Variable Declaration`, but in a different branch of the AST and
+	with no information on the previously mentioned initial value.
+	Since both of them have essential information, we need both at the same time to translate a variable
+	declaration. However, since they are in unpredictably different branches, it's hard to find the Variable
+	Declaration when we first read the Pattern Binding Declaration.
+	
+	The solution then is to temporarily save the Pattern Binding Declaration's information on this variable. Then,
+	once we find the Variable Declaration, we check to see if the stored value is appropriate
+	and then use all the information available to complete the translation process. This variable is then reset to nil.
+	
+	- SeeAlso: translate(variableDeclaration:, withIndentation:)
+	*/
+	var danglingPatternBinding: (identifier: String, type: String, translatedExpression: String)?
+	
 	// MARK: - Interface
 
 	/**
@@ -136,23 +153,6 @@ public class GRYKotlinTranslator {
 		
 		return result
 	}
-	
-	/**
-	Swift variables declared with a value, such as `var x = 0`, are represented in a weird way in the AST:
-	first comes a `Pattern Binding Declaration` containing the variable's name, its type, and
-	its initial value; then comes the actual `Variable Declaration`, but in a different branch of the AST and
-	with no information on the previously mentioned initial value.
-	Since both of them have essential information, we need both at the same time to translate a variable
-	declaration. However, since they are in unpredictably different branches, it's hard to find the Variable
-	Declaration when we first read the Pattern Binding Declaration.
-	
-	The solution then is to temporarily save the Pattern Binding Declaration's information on this variable. Then,
-	once we find the Variable Declaration, we check to see if the stored value is appropriate
-	and then use all the information available to complete the translation process. This variable is then reset to nil.
-	
-	- SeeAlso: translate(variableDeclaration:, withIndentation:)
-	*/
-	var danglingPatternBinding: (identifier: String, type: String, translatedExpression: String)?
 	
 	private func translate(topLevelCode: GRYAst, withIndentation indentation: String) -> String {
 		precondition(topLevelCode.name == "Top Level Code Declaration")
