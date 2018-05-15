@@ -350,7 +350,10 @@ internal class GRYSExpressionParser {
 	func readStringInBrackets() -> String {
 		defer { cleanLeadingWhitespace() }
 		
-		var index = buffer.index(after: currentIndex)
+		// Skip the opening [
+		let firstContentsIndex = buffer.index(after: currentIndex)
+		
+		var index = firstContentsIndex
 		while true {
 			let character = buffer[index]
 			if character == "]" {
@@ -359,13 +362,13 @@ internal class GRYSExpressionParser {
 			index = buffer.index(after: index)
 		}
 		
+		let string = String(buffer[firstContentsIndex..<index])
+		
 		// Skip the closing ]
 		index = buffer.index(after: index)
-		
-		let string = buffer[currentIndex..<index]
 		currentIndex = index
-		let result = string.dropFirst().dropLast() // TODO: Optimize this.
-		return String(result)
+		
+		return string
 	}
 }
 
