@@ -74,8 +74,7 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 				break
 			}
 			// Add key-value attributes
-			else if parser.canReadKey() {
-				let key = parser.readKey()
+			else if let key = parser.readKey() {
 				if key == "location" && parser.canReadLocation() {
 					keyValueAttributes[key] = parser.readLocation()
 				}
@@ -85,12 +84,12 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 					keyValueAttributes[key] = parser.readDeclarationLocation()
 				}
 				else {
-					keyValueAttributes[key] = parser.readIdentifierOrString()
+					keyValueAttributes[key] = parser.readStandaloneAttribute()
 				}
 			}
 			// Add standalone attributes
-			else if parser.canReadIdentifierOrString() {
-				let attribute = parser.readIdentifierOrString()
+			else {
+				let attribute = parser.readStandaloneAttribute()
 				standaloneAttributes.append(attribute)
 			}
 		}

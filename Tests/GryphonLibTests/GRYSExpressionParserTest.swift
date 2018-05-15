@@ -18,20 +18,6 @@ class GRYSExpressionParserTest: XCTestCase {
 			"(foo)").canReadCloseParentheses())
 		
 		XCTAssert(GRYSExpressionParser(sExpression:
-			"foo=bar )").canReadKey())
-		XCTAssert(GRYSExpressionParser(sExpression:
-			"  \n foo=\"bar\"").canReadKey())
-		XCTAssertFalse(GRYSExpressionParser(sExpression:
-			"(foo=bar)").canReadKey())
-		
-		XCTAssert(GRYSExpressionParser(sExpression:
-			"foo)").canReadIdentifier())
-		XCTAssert(GRYSExpressionParser(sExpression:
-			"  \n foo").canReadIdentifier())
-		XCTAssertFalse(GRYSExpressionParser(sExpression:
-			"(foo)").canReadIdentifier())
-		
-		XCTAssert(GRYSExpressionParser(sExpression:
 			"\"foo\")").canReadDoubleQuotedString())
 		XCTAssert(GRYSExpressionParser(sExpression:
 			"  \n \"foo\"").canReadDoubleQuotedString())
@@ -91,17 +77,6 @@ class GRYSExpressionParserTest: XCTestCase {
 		string = parser.readIdentifier()
 		XCTAssertEqual(string, "foo(baz)bar")
 		XCTAssertEqual(parser.buffer, ")")
-		
-		// Key
-		parser = GRYSExpressionParser(sExpression: "foo='bar'")
-		string = parser.readKey()
-		XCTAssertEqual(string, "foo")
-		XCTAssertEqual(parser.buffer, "'bar'")
-		
-		parser = GRYSExpressionParser(sExpression: "interface type='bar'")
-		string = parser.readKey()
-		XCTAssertEqual(string, "interface type")
-		XCTAssertEqual(parser.buffer, "'bar'")
 		
 		// Location
 		parser = GRYSExpressionParser(sExpression: "/foo/bar baz/test.swift:5:16)")

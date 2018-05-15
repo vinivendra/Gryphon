@@ -32,39 +32,6 @@ internal class GRYSExpressionParser {
 		return buffer.prefix(1) == ")"
 	}
 	
-	func canReadIdentifierOrString() -> Bool {
-		return canReadIdentifier() ||
-			canReadDoubleQuotedString() ||
-			canReadSingleQuotedString() ||
-			canReadStringInBrackets()
-	}
-	
-	func canReadKey() -> Bool {
-		cleanLeadingWhitespace()
-		
-		// Try finding known composed keys before trying for any non-composed keys
-		for composedKey in GRYSExpressionParser.knownComposedKeys {
-			if buffer.hasPrefix(composedKey) {
-				return true
-			}
-		}
-		
-		// If no known composed keys were found
-		// Regex: String start,
-		//   many characters but no whitespace, ), (, ", ' or =
-		//   then = at the end
-		var matchIterator = buffer =~ "^[^\\s\\)\\(\"'=]+="
-		return matchIterator.next() != nil
-	}
-	
-	func canReadIdentifier() -> Bool {
-		cleanLeadingWhitespace()
-		// Regex: String start,
-		//   many characters but no whitespace, ), (, " or '
-		var matchIterator = buffer =~ "^[^\\s\\)\\(\"']+"
-		return matchIterator.next() != nil
-	}
-	
 	func canReadDoubleQuotedString() -> Bool {
 		cleanLeadingWhitespace()
 		
@@ -171,7 +138,7 @@ internal class GRYSExpressionParser {
 		log?("-- Close parenthesis: level \(parenthesesLevel)")
 	}
 	
-	func readIdentifierOrString() -> String {
+	func readStandaloneAttribute() -> String {
 		defer { needsCleaningWhitespace = true }
 		
 		if canReadOpenParentheses() {
@@ -229,30 +196,41 @@ internal class GRYSExpressionParser {
 		return result
 	}
 	
-	func readKey() -> String {
+	func readKey() -> String? {
 		cleanLeadingWhitespace()
 		defer { needsCleaningWhitespace = true }
 		
-		// Try finding known composed keys before trying for any non-composed keys
-		for composedKey in GRYSExpressionParser.knownComposedKeys {
-			if buffer.hasPrefix(composedKey) {
-				log?("-- Read composed key: \"\(composedKey)\"")
-				buffer.removeFirst(composedKey.count)
-				let result = composedKey.dropLast()
-				return String(result)
+		var index = buffer.startIndex
+		while index != buffer.endIndex {
+			let character = buffer[index]
+			guard character != "\n",
+				character != "(",
+				character != ")",
+				character != "'",
+				character != "\"" else
+			{
+				return nil
 			}
+			
+			guard character != " " else {
+				if buffer.hasPrefix("interface type=") {
+					buffer.removeFirst(15)
+					return "interface type"
+				}
+				else {
+					return nil
+				}
+			}
+			
+			if character == "=" {
+				break
+			}
+			index = buffer.index(after: index)
 		}
 		
-		// If no known composed keys were found
-		// Regex: String start,
-		//   many characters but no whitespace, ), (, ", ' or =
-		//   then = at the end
-		var matchIterator = buffer =~ "^[^\\s\\)\\(\"'=]+="
-		guard let match = matchIterator.next() else { fatalError("Parsing error") }
-		let matchedString = match.matchedString
-		log?("-- Read key: \"\(matchedString)\"")
-		buffer.removeFirst(matchedString.count)
-		let result = matchedString.dropLast()
+		let string = String(buffer[buffer.startIndex...index])
+		buffer.removeFirst(string.count)
+		let result = string.dropLast() // TODO: Optimize
 		return String(result)
 	}
 	
@@ -399,7 +377,7 @@ internal class GRYSExpressionParser {
 		let otherString: String
 		if buffer[buffer.startIndex] == "," {
 			buffer.removeFirst()
-			otherString = readIdentifierOrString()
+			otherString = readStandaloneAttribute()
 			return result + "," + otherString
 		}
 		else {
