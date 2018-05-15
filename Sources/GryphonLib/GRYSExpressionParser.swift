@@ -1,78 +1,65 @@
+// TODO: Clean regex comments
+
 internal class GRYSExpressionParser {
-	private(set) var buffer: String
-	private var needsCleaningWhitespace = true
+	let buffer: String
+	var currentIndex: String.Index
+	
+	var remainingBuffer: Substring {
+		return buffer[currentIndex...]
+	}
 	
 	init(sExpression: String) {
 		self.buffer = sExpression
+		self.currentIndex = buffer.startIndex
+	}
+	
+	func nextIndex() -> String.Index {
+		return buffer.index(after: currentIndex)
 	}
 	
 	//
 	func cleanLeadingWhitespace() {
-		if needsCleaningWhitespace {
-			needsCleaningWhitespace = false
-			
-			let whitespacePrefix = buffer.prefix(while: { $0 == "\n" || $0 == " " })
-			if !whitespacePrefix.isEmpty {
-				buffer = String(buffer.suffix(from: whitespacePrefix.endIndex))
+		while true {
+			guard currentIndex != buffer.endIndex else {
+				return
 			}
+			
+			let character = buffer[currentIndex]
+			
+			if character != " " && character != "\n" {
+				return
+			}
+			
+			currentIndex = nextIndex()
 		}
 	}
 	
 	// MARK: - Can read information
 	func canReadOpenParentheses() -> Bool {
-		cleanLeadingWhitespace()
-		return buffer.prefix(1) == "("
+		return buffer[currentIndex] == "("
 	}
 	
 	func canReadCloseParentheses() -> Bool {
-		cleanLeadingWhitespace()
-		return buffer.prefix(1) == ")"
+		return buffer[currentIndex] == ")"
 	}
 	
 	func canReadDoubleQuotedString() -> Bool {
-		cleanLeadingWhitespace()
-		
-		if let character = buffer.first,
-			character == "\""
-		{
-			return true
-		}
-		else {
-			return false
-		}
+		return buffer[currentIndex] == "\""
 	}
 	
 	func canReadSingleQuotedString() -> Bool {
-		cleanLeadingWhitespace()
-		
-		if let character = buffer.first,
-			character == "'"
-		{
-			return true
-		}
-		else {
-			return false
-		}
+		return buffer[currentIndex] == "'"
 	}
 	
 	func canReadStringInBrackets() -> Bool {
-		cleanLeadingWhitespace()
-		
-		if let character = buffer.first,
-			character == "["
-		{
-			return true
-		}
-		else {
-			return false
-		}
+		return buffer[currentIndex] == "["
 	}
 	
 	func canReadLocation() -> Bool {
-		cleanLeadingWhitespace()
-		return buffer.hasPrefix("/")
+		return buffer[currentIndex] == "/"
 	}
 	
+	// TODO: This could return an optional
 	func canReadDeclarationLocation() -> Bool {
 		// Regex: ^([^\\(][^@\\s]*?)@
 		//   String start,
@@ -80,11 +67,8 @@ internal class GRYSExpressionParser {
 		//   many characters but no @ or whitespace (not greedy so it won't go past this specific declaration location),
 		//   then @
 		
-		cleanLeadingWhitespace()
-		
 		// At least the first character is not a '('
-		guard let firstCharacter = buffer.first,
-			firstCharacter != "(" else
+		guard buffer[currentIndex] != "(" else
 		{
 			return false
 		}
@@ -92,9 +76,9 @@ internal class GRYSExpressionParser {
 		// Expect no whitespace until '@'.
 		// If whitespace is found, return false early.
 		
-		var index = buffer.index(after: buffer.startIndex)
+		var index = buffer.index(after: currentIndex)
 		
-		while index != buffer.endIndex {
+		while true {
 			let character = buffer[index]
 			guard character != " " &&
 				character != "\n" else
@@ -118,20 +102,16 @@ internal class GRYSExpressionParser {
 	// MARK: - Read information
 	func readOpenParentheses() {
 		guard canReadOpenParentheses() else { fatalError("Parsing error") }
-		
-		buffer.removeFirst()
+		currentIndex = nextIndex()
 	}
 	
 	func readCloseParentheses() {
 		guard canReadCloseParentheses() else { fatalError("Parsing error") }
-		defer { needsCleaningWhitespace = true }
-		
-		buffer.removeFirst()
+		currentIndex = nextIndex()
+		cleanLeadingWhitespace()
 	}
 	
 	func readStandaloneAttribute() -> String {
-		defer { needsCleaningWhitespace = true }
-		
 		if canReadOpenParentheses() {
 			return ""
 		}
@@ -157,13 +137,16 @@ internal class GRYSExpressionParser {
 	}
 	
 	func readIdentifier() -> String {
-		cleanLeadingWhitespace()
-		defer { needsCleaningWhitespace = true }
+		defer { cleanLeadingWhitespace() }
 		
+		// TODO: result could probably be created in one go once we know the indices
 		var result = ""
 		
 		var parenthesesLevel = 0
-		loop: for character in buffer {
+		
+		loop: while true {
+			let character = buffer[currentIndex]
+			
 			switch character {
 			case "(":
 				parenthesesLevel += 1
@@ -176,23 +159,27 @@ internal class GRYSExpressionParser {
 				else {
 					result.append(character)
 				}
-			case " ", "\n": break loop
+			case " ", "\n":
+				if parenthesesLevel == 0 {
+					break loop
+				}
 			default:
 				result.append(character)
 			}
+			
+			currentIndex = nextIndex()
 		}
 		
-		buffer.removeFirst(result.count)
 		return result
 	}
 	
 	func readKey() -> String? {
-		cleanLeadingWhitespace()
-		defer { needsCleaningWhitespace = true }
+		defer { cleanLeadingWhitespace() }
 		
-		var index = buffer.startIndex
-		while index != buffer.endIndex {
+		var index = currentIndex
+		while true {
 			let character = buffer[index]
+
 			guard character != "\n",
 				character != "(",
 				character != ")",
@@ -203,8 +190,10 @@ internal class GRYSExpressionParser {
 			}
 			
 			guard character != " " else {
-				if buffer.hasPrefix("interface type=") {
-					buffer.removeFirst(15)
+				let composedKeyEndIndex = buffer.index(currentIndex, offsetBy: 15)
+				
+				if buffer[currentIndex..<composedKeyEndIndex] == "interface type=" {
+					currentIndex = composedKeyEndIndex
 					return "interface type"
 				}
 				else {
@@ -215,18 +204,21 @@ internal class GRYSExpressionParser {
 			if character == "=" {
 				break
 			}
+			
 			index = buffer.index(after: index)
 		}
 		
-		let string = String(buffer[buffer.startIndex...index])
-		buffer.removeFirst(string.count)
-		let result = string.dropLast() // TODO: Optimize
-		return String(result)
+		let string = String(buffer[currentIndex..<index])
+		
+		// Skip the =
+		currentIndex = buffer.index(after: index)
+		
+		return string
 	}
 	
+	// TODO: Update regex comments
 	func readLocation() -> String {
-		cleanLeadingWhitespace()
-		defer { needsCleaningWhitespace = true }
+		defer { cleanLeadingWhitespace() }
 		
 		// Regex: ^([^:\\(\\)]*?):(\\d+):(\\d+)
 		//   String start,
@@ -235,8 +227,8 @@ internal class GRYSExpressionParser {
 		
 		// Expect other ok characters until ':'.
 		// If '(' or ')' is found, return false early.
-		var index = buffer.startIndex
-		while index != buffer.endIndex {
+		var index = currentIndex
+		while true {
 			let character = buffer[index]
 			if character == ":" {
 				// Ok, first part is done, check the next parts
@@ -249,7 +241,7 @@ internal class GRYSExpressionParser {
 		index = buffer.index(after: index)
 		
 		// Read a few numbers
-		while index != buffer.endIndex {
+		while true {
 			let character = buffer[index]
 			if character == ":" {
 				break
@@ -261,7 +253,7 @@ internal class GRYSExpressionParser {
 		index = buffer.index(after: index)
 		
 		// Read at least one number
-		while index != buffer.endIndex {
+		while true {
 			let character = buffer[index]
 			if !character.isNumber {
 				break
@@ -270,14 +262,13 @@ internal class GRYSExpressionParser {
 		}
 		 
 		//
-		let string = String(buffer[buffer.startIndex..<index])
-		buffer.removeFirst(string.count)
+		let string = String(buffer[currentIndex..<index])
+		currentIndex = index
 		return string
 	}
 	
 	func readDeclarationLocation() -> String {
-		cleanLeadingWhitespace()
-		defer { needsCleaningWhitespace = true }
+		defer { cleanLeadingWhitespace() }
 		
 		// Regex: String start,
 		//   many characters but no @ or whitespace (not greedy so it won't go past this specific declaration location),
@@ -285,8 +276,8 @@ internal class GRYSExpressionParser {
 		
 		// Expect no whitespace until '@'.
 		// If whitespace is found, return false early.
-		var index = buffer.startIndex
-		while index != buffer.endIndex {
+		var index = currentIndex
+		while true {
 			let character = buffer[index]
 			if character == "@" {
 				break
@@ -294,9 +285,12 @@ internal class GRYSExpressionParser {
 			index = buffer.index(after: index)
 		}
 		
+		// Skip the @ sign
+		index = buffer.index(after: index)
+		
 		//
-		let string = buffer[buffer.startIndex...index]
-		buffer.removeFirst(string.count)
+		let string = buffer[currentIndex..<index]
+		currentIndex = index
 		
 		let location = readLocation()
 		
@@ -304,13 +298,16 @@ internal class GRYSExpressionParser {
 	}
 	
 	func readDoubleQuotedString() -> String {
-		cleanLeadingWhitespace()
-		defer { needsCleaningWhitespace = true }
+		defer { cleanLeadingWhitespace() }
 		
+		// TODO: Optimize this result building too
 		var result = "\""
 		
 		var isEscaping = false
-		loop: for character in buffer.dropFirst() {
+		
+		var index = buffer.index(after: currentIndex)
+		loop: while true {
+			let character = buffer[index]
 			result.append(character)
 			
 			switch character {
@@ -331,20 +328,24 @@ internal class GRYSExpressionParser {
 			default:
 				isEscaping = false
 			}
+			
+			index = buffer.index(after: index)
 		}
-
-		buffer.removeFirst(result.count)
+		
+		// Skip the closing "
+		index = buffer.index(after: index)
+		
+		currentIndex = index
 
 		let unquotedResult = String(result.dropFirst().dropLast())
 		return unquotedResult
 	}
 	
 	func readSingleQuotedString() -> String {
-		cleanLeadingWhitespace()
-		defer { needsCleaningWhitespace = true }
+		defer { cleanLeadingWhitespace() }
 		
-		var index = buffer.index(after: buffer.startIndex)
-		while index != buffer.endIndex {
+		var index = buffer.index(after: currentIndex)
+		while true {
 			let character = buffer[index]
 			if character == "'" {
 				break
@@ -352,16 +353,18 @@ internal class GRYSExpressionParser {
 			index = buffer.index(after: index)
 		}
 		
-		//
-		let string = buffer[buffer.startIndex...index]
-		buffer.removeFirst(string.count)
+		// Skip the closing '
+		index = buffer.index(after: index)
+		
+		let string = buffer[currentIndex..<index]
+		currentIndex = index
 		let unquotedResult = String(string.dropFirst().dropLast()) // TODO: Optimize this
 		let result = unquotedResult.isEmpty ? "_" : unquotedResult
 		
 		// Check if it's a list of identifiers
 		let otherString: String
-		if buffer[buffer.startIndex] == "," {
-			buffer.removeFirst()
+		if buffer[currentIndex] == "," {
+			currentIndex = nextIndex()
 			otherString = readStandaloneAttribute()
 			return result + "," + otherString
 		}
@@ -371,11 +374,10 @@ internal class GRYSExpressionParser {
 	}
 	
 	func readStringInBrackets() -> String {
-		cleanLeadingWhitespace()
-		defer { needsCleaningWhitespace = true }
+		defer { cleanLeadingWhitespace() }
 		
-		var index = buffer.index(after: buffer.startIndex)
-		while index != buffer.endIndex {
+		var index = buffer.index(after: currentIndex)
+		while true {
 			let character = buffer[index]
 			if character == "]" {
 				break
@@ -383,10 +385,12 @@ internal class GRYSExpressionParser {
 			index = buffer.index(after: index)
 		}
 		
-		//
-		let string = buffer[buffer.startIndex...index]
-		buffer.removeFirst(string.count)
-		let result = string.dropFirst().dropLast()
+		// Skip the closing ]
+		index = buffer.index(after: index)
+		
+		let string = buffer[currentIndex..<index]
+		currentIndex = index
+		let result = string.dropFirst().dropLast() // TODO: Optimize this.
 		return String(result)
 	}
 }
