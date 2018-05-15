@@ -16,7 +16,7 @@ class GRYKotlinTranslatorTest: XCTestCase {
 			// Load the previously stored Kotlin code from file
 			let expectedKotlinCode = try! String(contentsOfFile: testFilePath + ".kt")
 			
-			XCTAssert(createdKotlinCode == expectedKotlinCode, "Test \(testName): translator failed to produce expected result. Diff:\n\n===\n\(TestUtils.diff(createdKotlinCode, expectedKotlinCode))===\n")
+			XCTAssert(createdKotlinCode == expectedKotlinCode, "Test \(testName): translator failed to produce expected result. Diff:\(TestUtils.diff(createdKotlinCode, expectedKotlinCode))")
 			
 			print(" Done!")
 		}

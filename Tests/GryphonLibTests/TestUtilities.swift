@@ -43,7 +43,12 @@ enum TestUtils {
 			return withTemporaryFile(named: "file2.txt", containing: string2) { file2Path in
 				let command = ["diff", file1Path, file2Path]
 				let commandResult = GRYShell.runShellCommand(command)
-				return commandResult.standardOutput
+				if let commandResult = commandResult {
+					return "\n\n===\n\(commandResult.standardOutput)===\n"
+				}
+				else {
+					return " timed out."
+				}
 			}
 		}
 	}

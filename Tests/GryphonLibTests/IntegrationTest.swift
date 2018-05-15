@@ -15,7 +15,7 @@ class IntegrationTest: XCTestCase {
 			// Load the previously stored kotlin code from file
 			let expectedKotlinCode = try! String(contentsOfFile: testFilePath + ".kt")
 			
-			XCTAssert(generatedKotlinCode == expectedKotlinCode, "Test \(testName): parser failed to produce expected result. Diff:\n\n===\n\(TestUtils.diff(generatedKotlinCode, expectedKotlinCode))===\n")
+			XCTAssert(generatedKotlinCode == expectedKotlinCode, "Test \(testName): parser failed to produce expected result. Diff:\(TestUtils.diff(generatedKotlinCode, expectedKotlinCode))")
 			
 			print(" Done!")
 		}

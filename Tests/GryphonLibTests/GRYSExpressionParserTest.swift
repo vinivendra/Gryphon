@@ -147,7 +147,7 @@ class GRYSExpressionParserTest: XCTestCase {
 			// Load the previously stored AST from file
 			let expectedAST = GRYAst.initialize(fromJsonInFile: testFilePath + ".expectedJson")
 
-			XCTAssert(createdAST == expectedAST, "Test \(testName): parser failed to produce expected result.\n")
+			XCTAssert(createdAST == expectedAST, "Test \(testName): parser failed to produce expected result. Diff:\(TestUtils.diff(createdAST.description, expectedAST.description))")
 
 			print(" Done!")
 		}

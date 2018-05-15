@@ -8,8 +8,14 @@ public enum GRYCompiler {
 	static let kotlinCompilerPath = "/usr/local/bin/kotlinc"
 	#endif
 	
-	public static func compileAndRun(fileAt filePath: String) -> GRYShell.CommandOutput {
-		_ = compile(fileAt: filePath)
+	public enum KotlinCompilationResult {
+		case success(kotlinFilePath: String)
+		case failure(errorMessage: String)
+	}
+	
+	public static func compileAndRun(fileAt filePath: String) -> GRYShell.CommandOutput! {
+		let compilationResult = compile(fileAt: filePath)
+		guard case .success(_) = compilationResult else { return nil }
 		
 		log?("Running Kotlin...")
 		let arguments = ["java", "-jar", "kotlin.jar"]
@@ -18,8 +24,7 @@ public enum GRYCompiler {
 		return commandResult
 	}
 	
-	@discardableResult
-	public static func compile(fileAt filePath: String) -> String {
+	public static func compile(fileAt filePath: String) -> KotlinCompilationResult {
 		let kotlinCode = generateKotlinCode(forFileAt: filePath)
 		
 		log?("Compiling Kotlin...")
@@ -33,11 +38,14 @@ public enum GRYCompiler {
 		let commandResult = GRYShell.runShellCommand(kotlinCompilerPath, arguments: arguments)
 		
 		// Ensure the compiler terminated successfully
-		guard commandResult.status == 0 else {
-			fatalError("Compiling kotlin files. Kotlin compiler says:\n\(commandResult.standardError)")
+		guard let result = commandResult else {
+			return .failure(errorMessage: "Kotlin compiler timed out.")
 		}
-		
-		return kotlinFilePath
+		guard result.status == 0 else {
+			return .failure(errorMessage: "Error compiling kotlin files. Kotlin compiler says:\n\(result.standardError)")
+		}
+
+		return .success(kotlinFilePath: kotlinFilePath)
 	}
 	
 	public static func generateKotlinCode(forFileAt filePath: String) -> String {

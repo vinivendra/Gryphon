@@ -4,7 +4,10 @@ import XCTest
 class GRYShellTest: XCTestCase {
 	func testEcho() {
 		let command = ["echo", "foo bar baz"]
-		let commandResult = GRYShell.runShellCommand(command)
+		guard let commandResult = GRYShell.runShellCommand(command) else {
+			XCTFail("Timed out.")
+			return
+		}
 		XCTAssertEqual(commandResult.standardOutput, "foo bar baz\n")
 		XCTAssertEqual(commandResult.standardError, "")
 		XCTAssertEqual(commandResult.status, 0)
@@ -12,13 +15,19 @@ class GRYShellTest: XCTestCase {
 	
 	func testSwiftc() {
 		let command1 = ["swiftc", "-dump-ast"]
-		let command1Result = GRYShell.runShellCommand(command1)
+		guard let command1Result = GRYShell.runShellCommand(command1) else {
+			XCTFail("Timed out.")
+			return
+		}
 		XCTAssertEqual(command1Result.standardOutput, "")
 		XCTAssertEqual(command1Result.standardError, "<unknown>:0: error: no input files\n")
 		XCTAssertNotEqual(command1Result.status, 0)
 		
 		let command2 = ["swiftc", "--help"]
-		let command2Result = GRYShell.runShellCommand(command2)
+		guard let command2Result = GRYShell.runShellCommand(command2) else {
+			XCTFail("Timed out.")
+			return
+		}
 		XCTAssert(command2Result.standardOutput.contains("-dump-ast"))
 		XCTAssertEqual(command2Result.standardError, "")
 		XCTAssertEqual(command2Result.status, 0)
