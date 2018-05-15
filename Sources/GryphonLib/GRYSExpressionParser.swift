@@ -1,5 +1,3 @@
-// TODO: Clean regex comments
-
 internal class GRYSExpressionParser {
 	let buffer: String
 	var currentIndex: String.Index
@@ -95,6 +93,10 @@ internal class GRYSExpressionParser {
 		}
 	}
 	
+	/**
+	Reads an identifier. An identifier may have parentheses in it, so this function also
+	checks to see if they're balanced and only exits when the last open parethesis has been closed.
+	*/
 	func readIdentifier() -> String {
 		defer { cleanLeadingWhitespace() }
 
@@ -129,6 +131,11 @@ internal class GRYSExpressionParser {
 		return string
 	}
 	
+	/**
+	Reads a key. A key can't have parentheses, single or double quotes, or whitespace in it
+	(expect for composed keys, as a special case below) and it must end with an '='. If the
+	string in the beginning of the buffer isn't a key, this function returns nil.
+	*/
 	func readKey() -> String? {
 		defer { cleanLeadingWhitespace() }
 		
@@ -172,16 +179,14 @@ internal class GRYSExpressionParser {
 		return string
 	}
 	
-	// TODO: Update regex comments
+	/**
+	Reads a location. A location is a series of characters that can't be colons or parentheses
+	(usually it's a file path), followed by a colon, a number, another colon and another number.
+	*/
 	func readLocation() -> String {
 		defer { cleanLeadingWhitespace() }
 		
-		// Regex: ^([^:\\(\\)]*?):(\\d+):(\\d+)
-		//   String start,
-		//   many characters but no :, ( or ) (not greedy so it won't go past this specific location),
-		//   then :, a number, :, and another number
-		
-		// Expect other ok characters until ':'.
+		// Expect normal characters until ':'.
 		// If '(' or ')' is found, return false early.
 		var index = currentIndex
 		while true {
@@ -208,7 +213,7 @@ internal class GRYSExpressionParser {
 		// Skip another ':'
 		index = buffer.index(after: index)
 		
-		// Read at least one number
+		// Read at more numbers
 		while true {
 			let character = buffer[index]
 			if !character.isNumber {
@@ -223,12 +228,12 @@ internal class GRYSExpressionParser {
 		return string
 	}
 	
+	/**
+	Reads a declaration location. A declaration location is a series of characters defining a swift
+	declaration, up to an '@'. After that comes a location, read by the `readLocation` function.
+	*/
 	func readDeclarationLocation() -> String? {
 		defer { cleanLeadingWhitespace() }
-		
-		// Regex: String start,
-		//   many characters but no @ or whitespace (not greedy so it won't go past this specific declaration location),
-		//   then @
 		
 		guard buffer[currentIndex] != "(" else {
 			return nil
@@ -268,6 +273,9 @@ internal class GRYSExpressionParser {
 		return string + location
 	}
 	
+	/**
+	Reads a double quoted string, taking care not to count double quotes that have been escaped by a backslash.
+	*/
 	func readDoubleQuotedString() -> String {
 		defer { cleanLeadingWhitespace() }
 		
@@ -311,6 +319,12 @@ internal class GRYSExpressionParser {
 		return string
 	}
 	
+	/**
+	Reads a single quoted string. These often show up in lists of names, which may be in a form
+	such as `'',foo,'','',bar`. In this case, we want to parse the whole thing, not just the initial
+	empty single-quoted string, so this function calls `readStandaloneAttribute` if it finds a comma
+	in order to parse the rest of the list.
+	*/
 	func readSingleQuotedString() -> String {
 		defer { cleanLeadingWhitespace() }
 		
