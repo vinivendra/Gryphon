@@ -314,7 +314,10 @@ internal class GRYSExpressionParser {
 	func readSingleQuotedString() -> String {
 		defer { cleanLeadingWhitespace() }
 		
-		var index = buffer.index(after: currentIndex)
+		// Skip the opening '
+		let firstContentsIndex = buffer.index(after: currentIndex)
+		
+		var index = firstContentsIndex
 		while true {
 			let character = buffer[index]
 			if character == "'" {
@@ -323,23 +326,24 @@ internal class GRYSExpressionParser {
 			index = buffer.index(after: index)
 		}
 		
+		let string = (firstContentsIndex == index) ?
+			"_" :
+			String(buffer[firstContentsIndex..<index])
+		
 		// Skip the closing '
 		index = buffer.index(after: index)
 		
-		let string = buffer[currentIndex..<index]
 		currentIndex = index
-		let unquotedResult = String(string.dropFirst().dropLast()) // TODO: Optimize this
-		let result = unquotedResult.isEmpty ? "_" : unquotedResult
 		
 		// Check if it's a list of identifiers
 		let otherString: String
 		if buffer[currentIndex] == "," {
 			currentIndex = nextIndex()
 			otherString = readStandaloneAttribute()
-			return result + "," + otherString
+			return string + "," + otherString
 		}
 		else {
-			return result
+			return string
 		}
 	}
 	
