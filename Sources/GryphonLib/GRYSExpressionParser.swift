@@ -271,15 +271,14 @@ internal class GRYSExpressionParser {
 	func readDoubleQuotedString() -> String {
 		defer { cleanLeadingWhitespace() }
 		
-		// TODO: Optimize this result building too
-		var result = "\""
-		
 		var isEscaping = false
 		
-		var index = buffer.index(after: currentIndex)
+		// Skip the opening "
+		let firstContentsIndex = buffer.index(after: currentIndex)
+		
+		var index = firstContentsIndex
 		loop: while true {
 			let character = buffer[index]
-			result.append(character)
 			
 			switch character {
 			case "\\":
@@ -303,13 +302,13 @@ internal class GRYSExpressionParser {
 			index = buffer.index(after: index)
 		}
 		
+		let string = String(buffer[firstContentsIndex..<index])
+		
 		// Skip the closing "
 		index = buffer.index(after: index)
-		
 		currentIndex = index
 
-		let unquotedResult = String(result.dropFirst().dropLast())
-		return unquotedResult
+		return string
 	}
 	
 	func readSingleQuotedString() -> String {
