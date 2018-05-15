@@ -6,9 +6,6 @@ let log: ((Any) -> Void)? = { (item: Any) in print(item) }
 let log: ((Any) -> Void)? = nil
 #endif
 
-//
-private let gryShouldLog = false
-
 /////////////////////////////////////////////
 public enum GRYUtils {
 	internal static func expandSwiftAbbreviation(_ name: String) -> String {

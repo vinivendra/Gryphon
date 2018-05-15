@@ -1,9 +1,6 @@
 internal class GRYSExpressionParser {
 	private(set) var buffer: String
-	private(set) var parenthesesLevel: Int = 0
 	private var needsCleaningWhitespace = true
-	
-	private static let knownComposedKeys = ["interface type="]
 	
 	init(sExpression: String) {
 		self.buffer = sExpression
@@ -123,9 +120,6 @@ internal class GRYSExpressionParser {
 		guard canReadOpenParentheses() else { fatalError("Parsing error") }
 		
 		buffer.removeFirst()
-		parenthesesLevel += 1
-		
-		log?("-- Open parenthesis: level \(parenthesesLevel)")
 	}
 	
 	func readCloseParentheses() {
@@ -133,9 +127,6 @@ internal class GRYSExpressionParser {
 		defer { needsCleaningWhitespace = true }
 		
 		buffer.removeFirst()
-		parenthesesLevel -= 1
-		
-		log?("-- Close parenthesis: level \(parenthesesLevel)")
 	}
 	
 	func readStandaloneAttribute() -> String {
@@ -191,7 +182,6 @@ internal class GRYSExpressionParser {
 			}
 		}
 		
-		log?("-- Read identifier: \"\(result)\"")
 		buffer.removeFirst(result.count)
 		return result
 	}
@@ -278,10 +268,9 @@ internal class GRYSExpressionParser {
 			}
 			index = buffer.index(after: index)
 		}
-		
+		 
 		//
 		let string = String(buffer[buffer.startIndex..<index])
-		log?("-- Read location: \"\(string)\"")
 		buffer.removeFirst(string.count)
 		return string
 	}
@@ -307,7 +296,6 @@ internal class GRYSExpressionParser {
 		
 		//
 		let string = buffer[buffer.startIndex...index]
-		log?("-- Read declaration location: \"\(string)\"")
 		buffer.removeFirst(string.count)
 		
 		let location = readLocation()
@@ -344,8 +332,6 @@ internal class GRYSExpressionParser {
 				isEscaping = false
 			}
 		}
-		
-		log?("-- String: \(result)")
 
 		buffer.removeFirst(result.count)
 
@@ -368,7 +354,6 @@ internal class GRYSExpressionParser {
 		
 		//
 		let string = buffer[buffer.startIndex...index]
-		log?("-- String: \"\(string)\"")
 		buffer.removeFirst(string.count)
 		let unquotedResult = String(string.dropFirst().dropLast()) // TODO: Optimize this
 		let result = unquotedResult.isEmpty ? "_" : unquotedResult
@@ -400,7 +385,6 @@ internal class GRYSExpressionParser {
 		
 		//
 		let string = buffer[buffer.startIndex...index]
-		log?("-- String: \"\(string)\"")
 		buffer.removeFirst(string.count)
 		let result = string.dropFirst().dropLast()
 		return String(result)
