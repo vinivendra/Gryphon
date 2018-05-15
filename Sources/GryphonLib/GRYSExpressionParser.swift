@@ -115,9 +115,7 @@ internal class GRYSExpressionParser {
 					break loop
 				}
 			case " ", "\n":
-				if parenthesesLevel == 0 {
-					break loop
-				}
+				break loop
 			default: break
 			}
 			
