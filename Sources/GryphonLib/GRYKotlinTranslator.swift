@@ -787,17 +787,24 @@ public class GRYKotlinTranslator {
 	Note that this function's job (in the example above) is to extract only the actual `x` identifier.
 	*/
 	private func getIdentifierFromDeclaration(_ declaration: String) -> String {
-		var declaration = declaration
+		var index = declaration.startIndex
+		var lastPeriodIndex = declaration.startIndex
+		while index != declaration.endIndex {
+			let character = declaration[index]
+			
+			if character == "." {
+				lastPeriodIndex = index
+			}
+			if character == "@" {
+				break
+			}
+			
+			index = declaration.index(after: index)
+		}
 		
-		// Attempt to discard useless info after the '@'
-		// (both the '@' and the info after it may not be there)
-		declaration =~ "^([^@\\s]*?)@.*" => "$1"
+		let identifierStartIndex = declaration.index(after: lastPeriodIndex)
 		
-		// Separate the remaining components
-		let components = declaration.split(separator: ".")
-		
-		// Extract only the identifier
-		let identifier = components.last!
+		let identifier = declaration[identifierStartIndex..<index]
 		
 		if identifier == "self" {
 			return "this"
