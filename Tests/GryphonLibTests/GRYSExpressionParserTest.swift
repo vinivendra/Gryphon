@@ -32,16 +32,12 @@ class GRYSExpressionParserTest: XCTestCase {
 			"/foo/bar baz/test.swift:5:16)").canReadLocation())
 		XCTAssertFalse(GRYSExpressionParser(sExpression:
 			"(/foo/bar baz/test.swift:5:16))").canReadLocation())
-		
-		XCTAssert(GRYSExpressionParser(sExpression:
-			"test.(file).Bla.foo(bar:baz:).x@/blah/blah blah/test.swift 4:13)").canReadDeclarationLocation())
-		XCTAssertFalse(GRYSExpressionParser(sExpression:
-			"(test.(file).Bla.foo(bar:baz:).x@/blah/blah blah/test.swift 4:13)").canReadDeclarationLocation())
 	}
 	
 	func testRead() {
 		var parser: GRYSExpressionParser
 		var string: String
+		var optionalString: String?
 		
 		// Open parentheses
 		parser = GRYSExpressionParser(sExpression: "(foo")
@@ -72,9 +68,13 @@ class GRYSExpressionParserTest: XCTestCase {
 		
 		// Declaration location
 		parser = GRYSExpressionParser(sExpression: "test.(file).Bla.foo(bar:baz:).x@/foo/bar baz/test.swift:5:16  )")
-		string = parser.readDeclarationLocation()
-		XCTAssertEqual(string, "test.(file).Bla.foo(bar:baz:).x@/foo/bar baz/test.swift:5:16")
+		optionalString = parser.readDeclarationLocation()
+		XCTAssertEqual(optionalString, "test.(file).Bla.foo(bar:baz:).x@/foo/bar baz/test.swift:5:16")
 		XCTAssertEqual(parser.remainingBuffer, ")")
+		
+		parser = GRYSExpressionParser(sExpression: "(test.(file).Bla.foo(bar:baz:).x@/blah/blah blah/test.swift 4:13)")
+		optionalString = parser.readDeclarationLocation()
+		XCTAssertNil(optionalString)
 		
 		// Double quoted string
 		parser = GRYSExpressionParser(sExpression: "\"bla\" foo)")

@@ -59,46 +59,6 @@ internal class GRYSExpressionParser {
 		return buffer[currentIndex] == "/"
 	}
 	
-	// TODO: This could return an optional
-	func canReadDeclarationLocation() -> Bool {
-		// Regex: ^([^\\(][^@\\s]*?)@
-		//   String start,
-		//   some character that's not a (,
-		//   many characters but no @ or whitespace (not greedy so it won't go past this specific declaration location),
-		//   then @
-		
-		// At least the first character is not a '('
-		guard buffer[currentIndex] != "(" else
-		{
-			return false
-		}
-		
-		// Expect no whitespace until '@'.
-		// If whitespace is found, return false early.
-		
-		var index = buffer.index(after: currentIndex)
-		
-		while true {
-			let character = buffer[index]
-			guard character != " " &&
-				character != "\n" else
-			{
-				// Unexpected, this isn't a declaration location
-				return false
-			}
-			if character == "@" {
-				// Ok, it's a declaration location
-				break
-			}
-			index = buffer.index(after: index)
-		}
-		
-		index = buffer.index(after: index)
-		guard buffer[index] == "/" else { return false }
-		
-		return true
-	}
-	
 	// MARK: - Read information
 	func readOpenParentheses() {
 		guard canReadOpenParentheses() else { fatalError("Parsing error") }
@@ -127,8 +87,7 @@ internal class GRYSExpressionParser {
 			let string = readStringInBrackets()
 			return "\(string)"
 		}
-		else if canReadDeclarationLocation() {
-			let string = readDeclarationLocation()
+		else if let string = readDeclarationLocation() {
 			return "\(string)"
 		}
 		else {
@@ -267,19 +226,31 @@ internal class GRYSExpressionParser {
 		return string
 	}
 	
-	func readDeclarationLocation() -> String {
+	func readDeclarationLocation() -> String? {
 		defer { cleanLeadingWhitespace() }
 		
 		// Regex: String start,
 		//   many characters but no @ or whitespace (not greedy so it won't go past this specific declaration location),
 		//   then @
 		
+		guard buffer[currentIndex] != "(" else {
+			return nil
+		}
+		
 		// Expect no whitespace until '@'.
-		// If whitespace is found, return false early.
-		var index = currentIndex
+		// If whitespace is found, return nil early.
+		var index = buffer.index(after: currentIndex)
+
 		while true {
 			let character = buffer[index]
+			guard character != " " &&
+				character != "\n" else
+			{
+				// Unexpected, this isn't a declaration location
+				return nil
+			}
 			if character == "@" {
+				// Ok, it's a declaration location
 				break
 			}
 			index = buffer.index(after: index)
@@ -287,6 +258,9 @@ internal class GRYSExpressionParser {
 		
 		// Skip the @ sign
 		index = buffer.index(after: index)
+		
+		// Ensure a location comes after
+		guard buffer[index] == "/" else { return nil }
 		
 		//
 		let string = buffer[currentIndex..<index]
