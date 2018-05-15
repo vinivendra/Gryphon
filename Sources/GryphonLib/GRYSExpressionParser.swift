@@ -97,39 +97,36 @@ internal class GRYSExpressionParser {
 	
 	func readIdentifier() -> String {
 		defer { cleanLeadingWhitespace() }
-		
-		// TODO: result could probably be created in one go once we know the indices
-		var result = ""
-		
+
 		var parenthesesLevel = 0
 		
+		var index = currentIndex
 		loop: while true {
-			let character = buffer[currentIndex]
+			let character = buffer[index]
 			
 			switch character {
 			case "(":
 				parenthesesLevel += 1
-				result.append(character)
 			case ")":
 				parenthesesLevel -= 1
 				if parenthesesLevel < 0 {
 					break loop
 				}
-				else {
-					result.append(character)
-				}
 			case " ", "\n":
 				if parenthesesLevel == 0 {
 					break loop
 				}
-			default:
-				result.append(character)
+			default: break
 			}
 			
-			currentIndex = nextIndex()
+			index = buffer.index(after: index)
 		}
 		
-		return result
+		let string = String(buffer[currentIndex..<index])
+		
+		currentIndex = index
+		
+		return string
 	}
 	
 	func readKey() -> String? {
