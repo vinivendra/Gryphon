@@ -67,51 +67,88 @@ internal class GRYSExpressionParser {
 	
 	func canReadDoubleQuotedString() -> Bool {
 		cleanLeadingWhitespace()
-		// Regex: String start,
-		//   open ",
-		//   many characters but no closing ",
-		//   then close "
-		var matchIterator = buffer =~ "^\"[^\"]+\""
-		return matchIterator.next() != nil
+		
+		if let character = buffer.first,
+			character == "\""
+		{
+			return true
+		}
+		else {
+			return false
+		}
 	}
 	
 	func canReadSingleQuotedString() -> Bool {
 		cleanLeadingWhitespace()
-		// Regex: String start,
-		//   open ',
-		//   many characters but no closing ',
-		//   then close '
-		var matchIterator = buffer =~ "^'[^']+'"
-		return matchIterator.next() != nil
+		
+		if let character = buffer.first,
+			character == "'"
+		{
+			return true
+		}
+		else {
+			return false
+		}
 	}
 	
 	func canReadStringInBrackets() -> Bool {
 		cleanLeadingWhitespace()
-		// Regex: String start,
-		//   open [,
-		//   many characters but no closing ],
-		//   then close ]
-		var matchIterator = buffer =~ "^\\[[^\\]]+\\]"
-		return matchIterator.next() != nil
+		
+		if let character = buffer.first,
+			character == "["
+		{
+			return true
+		}
+		else {
+			return false
+		}
 	}
 	
 	func canReadLocation() -> Bool {
 		cleanLeadingWhitespace()
-		// Regex: String start,
-		//   many characters but no :, ( or ) (not greedy so it won't go past this specific location),
-		//   then :, a number, :, and another number
-		var matchIterator = buffer =~ "^([^:\\(\\)]*?):(\\d+):(\\d+)"
-		return matchIterator.next() != nil
+		return buffer.hasPrefix("/")
 	}
 	
 	func canReadDeclarationLocation() -> Bool {
-		cleanLeadingWhitespace()
-		// Regex: String start,
+		// Regex: ^([^\\(][^@\\s]*?)@
+		//   String start,
 		//   some character that's not a (,
 		//   many characters but no @ or whitespace (not greedy so it won't go past this specific declaration location),
 		//   then @
-		var matchIterator = buffer =~ "^([^\\(][^@\\s]*?)@"
-		return matchIterator.next() != nil
+		
+		cleanLeadingWhitespace()
+		
+		// At least the first character is not a '('
+		guard let firstCharacter = buffer.first,
+			firstCharacter != "(" else
+		{
+			return false
+		}
+		
+		// Expect no whitespace until '@'.
+		// If whitespace is found, return false early.
+		
+		var index = buffer.index(after: buffer.startIndex)
+		
+		while index != buffer.endIndex {
+			let character = buffer[index]
+			guard character != " " &&
+				character != "\n" else
+			{
+				// Unexpected, this isn't a declaration location
+				return false
+			}
+			if character == "@" {
+				// Ok, it's a declaration location
+				break
+			}
+			index = buffer.index(after: index)
+		}
+		
+		index = buffer.index(after: index)
+		guard buffer[index] == "/" else { return false }
+		
+		return true
 	}
 	
 	// MARK: - Read information
@@ -150,6 +187,10 @@ internal class GRYSExpressionParser {
 		}
 		else if canReadStringInBrackets() {
 			let string = readStringInBrackets()
+			return "\(string)"
+		}
+		else if canReadDeclarationLocation() {
+			let string = readDeclarationLocation()
 			return "\(string)"
 		}
 		else {
@@ -219,15 +260,52 @@ internal class GRYSExpressionParser {
 		cleanLeadingWhitespace()
 		defer { needsCleaningWhitespace = true }
 		
-		// Regex: String start,
-		//   many characters but no : (not greedy so it won't go past this specific location),
+		// Regex: ^([^:\\(\\)]*?):(\\d+):(\\d+)
+		//   String start,
+		//   many characters but no :, ( or ) (not greedy so it won't go past this specific location),
 		//   then :, a number, :, and another number
-		var matchIterator = buffer =~ "^([^:]*?):(\\d+):(\\d+)"
-		guard let match = matchIterator.next() else { fatalError("Parsing error") }
-		let matchedString = match.matchedString
-		log?("-- Read location: \"\(matchedString)\"")
-		buffer.removeFirst(matchedString.count)
-		return matchedString
+		
+		// Expect other ok characters until ':'.
+		// If '(' or ')' is found, return false early.
+		var index = buffer.startIndex
+		while index != buffer.endIndex {
+			let character = buffer[index]
+			if character == ":" {
+				// Ok, first part is done, check the next parts
+				break
+			}
+			index = buffer.index(after: index)
+		}
+		
+		// Skip the ':' we just found
+		index = buffer.index(after: index)
+		
+		// Read a few numbers
+		while index != buffer.endIndex {
+			let character = buffer[index]
+			if character == ":" {
+				break
+			}
+			index = buffer.index(after: index)
+		}
+		
+		// Skip another ':'
+		index = buffer.index(after: index)
+		
+		// Read at least one number
+		while index != buffer.endIndex {
+			let character = buffer[index]
+			if !character.isNumber {
+				break
+			}
+			index = buffer.index(after: index)
+		}
+		
+		//
+		let string = String(buffer[buffer.startIndex..<index])
+		log?("-- Read location: \"\(string)\"")
+		buffer.removeFirst(string.count)
+		return string
 	}
 	
 	func readDeclarationLocation() -> String {
@@ -237,15 +315,26 @@ internal class GRYSExpressionParser {
 		// Regex: String start,
 		//   many characters but no @ or whitespace (not greedy so it won't go past this specific declaration location),
 		//   then @
-		var matchIterator = buffer =~ "^([^@\\s]*?)@"
-		guard let match = matchIterator.next() else { fatalError("Parsing error") }
-		let matchedString = match.matchedString
-		log?("-- Read declaration location: \"\(matchedString)\"")
-		buffer.removeFirst(matchedString.count)
+		
+		// Expect no whitespace until '@'.
+		// If whitespace is found, return false early.
+		var index = buffer.startIndex
+		while index != buffer.endIndex {
+			let character = buffer[index]
+			if character == "@" {
+				break
+			}
+			index = buffer.index(after: index)
+		}
+		
+		//
+		let string = buffer[buffer.startIndex...index]
+		log?("-- Read declaration location: \"\(string)\"")
+		buffer.removeFirst(string.count)
 		
 		let location = readLocation()
 		
-		return matchedString + location
+		return string + location
 	}
 	
 	func readDoubleQuotedString() -> String {
@@ -290,33 +379,67 @@ internal class GRYSExpressionParser {
 		cleanLeadingWhitespace()
 		defer { needsCleaningWhitespace = true }
 		
-		// Regex: String start,
-		//   open ',
-		//   many characters but no closing ',
-		//   then close '
-		var matchIterator = buffer =~ "^'[^']+'"
-		guard let match = matchIterator.next() else { fatalError("Parsing error") }
-		let matchedString = match.matchedString
-		log?("-- String: \"\(matchedString)\"")
-		buffer.removeFirst(matchedString.count)
-		let result = matchedString.dropFirst().dropLast()
-		return String(result)
+		var index = buffer.index(after: buffer.startIndex)
+		while index != buffer.endIndex {
+			let character = buffer[index]
+			if character == "'" {
+				break
+			}
+			index = buffer.index(after: index)
+		}
+		
+		//
+		let string = buffer[buffer.startIndex...index]
+		log?("-- String: \"\(string)\"")
+		buffer.removeFirst(string.count)
+		let unquotedResult = String(string.dropFirst().dropLast()) // TODO: Optimize this
+		let result = unquotedResult.isEmpty ? "_" : unquotedResult
+		
+		// Check if it's a list of identifiers
+		let otherString: String
+		if buffer[buffer.startIndex] == "," {
+			buffer.removeFirst()
+			otherString = readIdentifierOrString()
+			return result + "," + otherString
+		}
+		else {
+			return result
+		}
 	}
 	
 	func readStringInBrackets() -> String {
 		cleanLeadingWhitespace()
 		defer { needsCleaningWhitespace = true }
 		
-		// Regex: String start,
-		//   open [,
-		//   many characters but no closing ],
-		//   then close ]
-		var matchIterator = buffer =~ "^\\[[^\\]]+\\]"
-		guard let match = matchIterator.next() else { fatalError("Parsing error") }
-		let matchedString = match.matchedString
-		log?("-- String: \"\(matchedString)\"")
-		buffer.removeFirst(matchedString.count)
-		let result = matchedString.dropFirst().dropLast()
+		var index = buffer.index(after: buffer.startIndex)
+		while index != buffer.endIndex {
+			let character = buffer[index]
+			if character == "]" {
+				break
+			}
+			index = buffer.index(after: index)
+		}
+		
+		//
+		let string = buffer[buffer.startIndex...index]
+		log?("-- String: \"\(string)\"")
+		buffer.removeFirst(string.count)
+		let result = string.dropFirst().dropLast()
 		return String(result)
+	}
+}
+
+private extension Character {
+	var isNumber: Bool {
+		return self == "0" ||
+			self == "1" ||
+			self == "2" ||
+			self == "3" ||
+			self == "4" ||
+			self == "5" ||
+			self == "6" ||
+			self == "7" ||
+			self == "8" ||
+			self == "9"
 	}
 }

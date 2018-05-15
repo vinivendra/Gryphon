@@ -9,19 +9,23 @@ public enum GRYCompiler {
 	#endif
 	
 	public enum KotlinCompilationResult {
-		case success(kotlinFilePath: String)
+		case success(commandOutput: GRYShell.CommandOutput)
 		case failure(errorMessage: String)
 	}
 	
-	public static func compileAndRun(fileAt filePath: String) -> GRYShell.CommandOutput! {
+	public static func compileAndRun(fileAt filePath: String) -> KotlinCompilationResult {
 		let compilationResult = compile(fileAt: filePath)
-		guard case .success(_) = compilationResult else { return nil }
+		guard case .success(_) = compilationResult else { return compilationResult }
 		
 		log?("Running Kotlin...")
 		let arguments = ["java", "-jar", "kotlin.jar"]
 		let commandResult = GRYShell.runShellCommand(arguments, fromFolder: GRYUtils.buildFolder)
 		
-		return commandResult
+		guard let result = commandResult else {
+			return .failure(errorMessage: "Java running timed out.")
+		}
+		
+		return .success(commandOutput: result)
 	}
 	
 	public static func compile(fileAt filePath: String) -> KotlinCompilationResult {
@@ -45,7 +49,7 @@ public enum GRYCompiler {
 			return .failure(errorMessage: "Error compiling kotlin files. Kotlin compiler says:\n\(result.standardError)")
 		}
 
-		return .success(kotlinFilePath: kotlinFilePath)
+		return .success(commandOutput: result)
 	}
 	
 	public static func generateKotlinCode(forFileAt filePath: String) -> String {

@@ -52,8 +52,29 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 		
 		// The loop stops: all branches tell the parser to read, and the input string must end eventually.
 		while true {
+			// Add subtree
+			if parser.canReadOpenParentheses() {
+				
+				// Check if there's info to pass on to subtrees
+				let extraKeyValuesForSubTrees: [String: String]
+				if self.name == "Extension Declaration" {
+					extraKeyValuesForSubTrees = ["extends_type": standaloneAttributes.first!]
+				}
+				else {
+					extraKeyValuesForSubTrees = [:]
+				}
+				
+				// Parse subtrees
+				let subTree = GRYAst(parser: parser, extraKeyValues: extraKeyValuesForSubTrees)
+				subTrees.append(subTree)
+			}
+			// Finish this branch
+			else if parser.canReadCloseParentheses() {
+				parser.readCloseParentheses()
+				break
+			}
 			// Add key-value attributes
-			if parser.canReadKey() {
+			else if parser.canReadKey() {
 				let key = parser.readKey()
 				if key == "location" && parser.canReadLocation() {
 					keyValueAttributes[key] = parser.readLocation()
@@ -71,27 +92,6 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 			else if parser.canReadIdentifierOrString() {
 				let attribute = parser.readIdentifierOrString()
 				standaloneAttributes.append(attribute)
-			}
-			// Add subtrees
-			else if parser.canReadOpenParentheses() {
-				
-				// Check if there's info to pass on to subtrees
-				let extraKeyValuesForSubTrees: [String: String]
-				if self.name == "Extension Declaration" {
-					extraKeyValuesForSubTrees = ["extends_type": standaloneAttributes.first!]
-				}
-				else {
-					extraKeyValuesForSubTrees = [:]
-				}
-				
-				// Parse subtrees
-				let subTree = GRYAst(parser: parser, extraKeyValues: extraKeyValuesForSubTrees)
-				subTrees.append(subTree)
-			}
-			// Finish
-			else {
-				parser.readCloseParentheses()
-				break
 			}
 		}
 		

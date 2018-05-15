@@ -11,7 +11,7 @@ func stopTask(_ task: Process) {
 public enum GRYShell {
 	public typealias CommandOutput = (standardOutput: String, standardError: String, status: Int32)
 
-	static let defaultTimeout: TimeInterval = 20
+	static let defaultTimeout: TimeInterval = 60
 
 	/// Returns nil when the operation times out.
 	@discardableResult

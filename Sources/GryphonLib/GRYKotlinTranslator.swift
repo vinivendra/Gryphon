@@ -823,7 +823,7 @@ public class GRYKotlinTranslator {
 			let expressionString = translate(expression: expression)
 			
 			// Empty names (like the underscore in "foo(_:)") are represented by ''
-			if name == "''" {
+			if name == "_" {
 				result.append("\(expressionString)")
 			}
 			else {

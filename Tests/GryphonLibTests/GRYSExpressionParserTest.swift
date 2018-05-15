@@ -153,6 +153,14 @@ class GRYSExpressionParserTest: XCTestCase {
 		}
 	}
 	
+	func testPerformance() {
+		let testFilePath = TestUtils.testFilesPath + "ifStatement.ast"
+		
+		measure {
+			_ = GRYAst(astFile: testFilePath)
+		}
+	}
+	
 	static var allTests = [
 		("testCanRead", testCanRead),
 		("testRead", testRead),
