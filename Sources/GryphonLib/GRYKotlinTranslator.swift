@@ -423,20 +423,44 @@ public class GRYKotlinTranslator {
 		let rawType = variableDeclaration["interface type"]!
 		let type = translateType(rawType)
 		
-		let prefix: String
-		if let extensionType = variableDeclaration["extends_type"] {
-			prefix = "val \(extensionType)."
+		let hasGetter = variableDeclaration.subTrees.contains(where:
+		{ (subTree: GRYAst) -> Bool in
+			return subTree.name == "Function Declaration" &&
+				!subTree.standaloneAttributes.contains("implicit") &&
+				subTree.keyValueAttributes["getter_for"] != nil
+		})
+		let hasSetter = variableDeclaration.subTrees.contains(where:
+		{ (subTree: GRYAst) -> Bool in
+			return subTree.name == "Function Declaration" &&
+				!subTree.standaloneAttributes.contains("implicit") &&
+				subTree.keyValueAttributes["setter_for"] != nil
+		})
+		
+		let keyword: String
+		if hasGetter && hasSetter {
+			keyword = "var"
+		}
+		else if hasGetter && !hasSetter {
+			keyword = "val"
 		}
 		else {
 			if variableDeclaration.standaloneAttributes.contains("let") {
-				prefix = "val "
+				keyword = "val"
 			}
 			else {
-				prefix = "var "
+				keyword = "var"
 			}
 		}
 		
-		result += "\(prefix)\(identifier): \(type)"
+		let extensionPrefix: String
+		if let extensionType = variableDeclaration["extends_type"] {
+			extensionPrefix = "\(extensionType)."
+		}
+		else {
+			extensionPrefix = ""
+		}
+		
+		result += "\(keyword) \(extensionPrefix)\(identifier): \(type)"
 		
 		if let patternBindingExpression = danglingPatternBinding,
 			patternBindingExpression.identifier == identifier,
