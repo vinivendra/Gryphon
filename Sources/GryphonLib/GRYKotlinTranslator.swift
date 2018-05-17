@@ -126,7 +126,12 @@ public class GRYKotlinTranslator {
 					result += indentation + string + "\n"
 				}
 			default:
-				result += "<Unknown: \(subTree.name)>\n\n"
+				if subTree.name.hasSuffix("Expression") {
+					result += indentation + translate(expression: subTree) + "\n"
+				}
+				else {
+					result += "<Unknown: \(subTree.name)>\n\n"
+				}
 			}
 		}
 		
@@ -515,7 +520,7 @@ public class GRYKotlinTranslator {
 			return "(" + translate(expression: expression.subTrees[0]) + ")"
 		case "Force Value Expression":
 			return translate(expression: expression.subTrees[0]) + "!!"
-		case "Autoclosure Expression", "Inject Into Optional":
+		case "Autoclosure Expression", "Inject Into Optional", "Inout Expression":
 			return translate(expression: expression.subTrees.last!)
 		case "Load Expression":
 			if let innerExpression = expression.subTree(named: "Declaration Reference Expression") {
