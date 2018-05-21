@@ -1,6 +1,6 @@
 public class GRYKotlinTranslator {
 	/// Used for the translation of Swift types into Kotlin types.
-	static let typeMappings = ["Bool": "Boolean"]
+	static let typeMappings = ["Bool": "Boolean", "Error": "Exception"]
 	
 	private func translateType(_ type: String) -> String {
 		return GRYKotlinTranslator.typeMappings[type] ?? type
@@ -52,7 +52,7 @@ public class GRYKotlinTranslator {
 	*/
 	public func translateAST(_ ast: GRYAst) -> String {
 		// First, translate declarations that shouldn't be inside the main function
-		let declarationNames = ["Class Declaration", "Extension Declaration", "Function Declaration"]
+		let declarationNames = ["Class Declaration", "Extension Declaration", "Function Declaration", "Enum Declaration"]
 		let isDeclaration = { (ast: GRYAst) -> Bool in declarationNames.contains(ast.name) }
 		
 		let declarations = ast.subTrees.filter(isDeclaration)
@@ -96,6 +96,9 @@ public class GRYKotlinTranslator {
 				result += string
 			case "Destructor Declaration":
 				let string = translate(destructorDeclaration: subTree, withIndentation: indentation)
+				result += string
+			case "Enum Declaration":
+				let string = translate(enumDeclaration: subTree, withIndentation: indentation)
 				result += string
 			case "Extension Declaration":
 				let string = translate(subTrees: subTree.subTrees, withIndentation: indentation)
@@ -167,6 +170,42 @@ public class GRYKotlinTranslator {
 		
 		let braceStatement = topLevelCode.subTree(named: "Brace Statement")!
 		return translate(subTrees: braceStatement.subTrees, withIndentation: indentation)
+	}
+	
+	private func translate(enumDeclaration: GRYAst, withIndentation indentation: String) -> String {
+		precondition(enumDeclaration.name == "Enum Declaration")
+		
+		let enumName = enumDeclaration.standaloneAttributes[0]
+		let access = enumDeclaration.keyValueAttributes["access"]!
+		
+		if let inheritanceList = enumDeclaration.keyValueAttributes["inherits"] {
+			let rawInheritanceArray = inheritanceList.split(withStringSeparator: ", ")
+			var inheritanceArray = rawInheritanceArray.map { GRYKotlinTranslator.typeMappings[$0] ?? $0 }
+			inheritanceArray[0] = inheritanceArray[0] + "()"
+
+			let inheritanceString = inheritanceArray.joined(separator: ", ")
+			
+			var result = "\(indentation)\(access) sealed class \(enumName): \(inheritanceString) {\n"
+			
+			let increasedIndentation = increaseIndentation(indentation)
+			
+			let enumElementDeclarations = enumDeclaration.subTrees.filter { $0.name == "Enum Element Declaration" }
+			for enumElementDeclaration in enumElementDeclarations {
+				let elementName = enumElementDeclaration.standaloneAttributes[0]
+				
+				let firstCharacter = elementName.first!
+				let capitalizedFirstCharacter = String(firstCharacter).uppercased()
+				let capitalizedElementName = String(capitalizedFirstCharacter + elementName.dropFirst())
+				
+				result += "\(increasedIndentation)class \(capitalizedElementName): \(enumName)()\n"
+			}
+			
+			result += "\(indentation)}\n"
+			
+			return result
+		}
+		
+		return "\(indentation)<Unknown: non-sealed-class enum>\n"
 	}
 	
 	private func translate(classDeclaration: GRYAst, withIndentation indentation: String) -> String {
