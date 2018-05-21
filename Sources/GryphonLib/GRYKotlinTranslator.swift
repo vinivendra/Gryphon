@@ -6,6 +6,8 @@ public class GRYKotlinTranslator {
 		return GRYKotlinTranslator.typeMappings[type] ?? type
 	}
 	
+	private var enums = [String]()
+	
 	/**
 	This variable is used to allow calls to the `GRYIgnoreNext` function to ignore
 	the next swift statement. When a call to that function is detected, this variable is set
@@ -109,6 +111,9 @@ public class GRYKotlinTranslator {
 			case "Top Level Code Declaration":
 				let string = translate(topLevelCode: subTree, withIndentation: indentation)
 				result += string
+			case "Throw Statement":
+				let string = translate(throwStatement: subTree, withIndentation: indentation)
+				result += string
 			case "Variable Declaration":
 				let string = translate(variableDeclaration: subTree, withIndentation: indentation)
 				result += string
@@ -176,6 +181,9 @@ public class GRYKotlinTranslator {
 		precondition(enumDeclaration.name == "Enum Declaration")
 		
 		let enumName = enumDeclaration.standaloneAttributes[0]
+		
+		self.enums.append(enumName)
+		
 		let access = enumDeclaration.keyValueAttributes["access"]!
 		
 		if let inheritanceList = enumDeclaration.keyValueAttributes["inherits"] {
@@ -430,6 +438,16 @@ public class GRYKotlinTranslator {
 		return (letDeclarationsString, conditionString)
 	}
 	
+	private func translate(throwStatement: GRYAst,
+						   withIndentation indentation: String) -> String
+	{
+		precondition(throwStatement.name == "Throw Statement")
+		
+		let expression = throwStatement.subTrees.last!
+		let expressionString = translate(expression: expression)
+		return "\(indentation)throw \(expressionString)\n"
+	}
+	
 	private func translate(returnStatement: GRYAst,
 						   withIndentation indentation: String) -> String
 	{
@@ -569,14 +587,18 @@ public class GRYKotlinTranslator {
 			return translate(callExpression: expression)
 		case "Declaration Reference Expression":
 			return translate(declarationReferenceExpression: expression)
+		case "Dot Syntax Call Expression":
+			return translate(dotSyntaxCallExpression: expression)
 		case "String Literal Expression":
 			return translate(stringLiteralExpression: expression)
 		case "Interpolated String Literal Expression":
 			return translate(interpolatedStringLiteralExpression: expression)
 		case "Erasure Expression":
-			return translate(expression: expression.subTrees[0])
+			return translate(expression: expression.subTrees.last!)
 		case "Prefix Unary Expression":
 			return translate(prefixUnaryExpression: expression)
+		case "Type Expression":
+			return translate(typeExpression: expression)
 		case "Member Reference Expression":
 			return translate(memberReferenceExpression: expression)
 		case "Parentheses Expression":
@@ -597,6 +619,34 @@ public class GRYKotlinTranslator {
 			}
 		default:
 			return "<Unknown expression: \(expression.name)>"
+		}
+	}
+	
+	private func translate(typeExpression: GRYAst) -> String {
+		precondition(typeExpression.name == "Type Expression")
+		let rawType = typeExpression.keyValueAttributes["typerepr"]!
+		return translateType(rawType)
+	}
+	
+	private func translate(dotSyntaxCallExpression: GRYAst) -> String {
+		precondition(dotSyntaxCallExpression.name == "Dot Syntax Call Expression")
+		let rightHandSide = translate(expression: dotSyntaxCallExpression.subTrees[0])
+		
+		let leftHandTree = dotSyntaxCallExpression.subTrees[1]
+		if leftHandTree.name == "Type Expression" {
+			let leftHandSide = translate(typeExpression: leftHandTree)
+			
+			// Enums become sealed classes, which need parentheses at the end
+			if enums.contains(leftHandSide) {
+				return "\(leftHandSide).\(rightHandSide)()"
+			}
+			else {
+				return "\(leftHandSide).\(rightHandSide)"
+			}
+		}
+		else {
+			let leftHandSide = translate(expression: leftHandTree)
+			return "\(leftHandSide).\(rightHandSide)"
 		}
 	}
 	
@@ -688,7 +738,7 @@ public class GRYKotlinTranslator {
 			}
 			else if let constructorReferenceCallExpression = callExpression.subTree(named: "Constructor Reference Call Expression") {
 				let typeExpression = constructorReferenceCallExpression.subTree(named: "Type Expression")!
-				functionName = typeExpression["typerepr"]!
+				functionName = translate(typeExpression: typeExpression)
 			}
 			else if let declaration = callExpression["decl"] {
 				functionName = getIdentifierFromDeclaration(declaration)

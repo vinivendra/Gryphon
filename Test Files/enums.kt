@@ -3,3 +3,6 @@ internal sealed class CalculatorError: Exception() {
 	class MultipleCharacters: CalculatorError()
 	class NilInput: CalculatorError()
 }
+internal fun throwingFunc() {
+	throw CalculatorError.invalidCharacter()
+}

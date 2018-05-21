@@ -3,3 +3,7 @@ enum CalculatorError: Error {
 	case multipleCharacters
 	case nilInput
 }
+
+func throwingFunc() throws {
+	throw CalculatorError.invalidCharacter
+}
