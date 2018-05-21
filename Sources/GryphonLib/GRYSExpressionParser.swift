@@ -53,6 +53,10 @@ internal class GRYSExpressionParser {
 		return buffer[currentIndex] == "["
 	}
 	
+	func canReadStringInAngleBrackets() -> Bool {
+		return buffer[currentIndex] == "<"
+	}
+	
 	func canReadLocation() -> Bool {
 		return buffer[currentIndex] == "/"
 	}
@@ -83,6 +87,10 @@ internal class GRYSExpressionParser {
 		}
 		else if canReadStringInBrackets() {
 			let string = readStringInBrackets()
+			return "\(string)"
+		}
+		else if canReadStringInAngleBrackets() {
+			let string = readStringInAngleBrackets()
 			return "\(string)"
 		}
 		else if let string = readDeclarationLocation() {
@@ -130,6 +138,33 @@ internal class GRYSExpressionParser {
 	}
 	
 	/**
+	Reads a list of identifiers. This is used to read a list of classes and/or protocols in inheritance clauses,
+	as in `class MyClass: A, B, C, D, E { }`.
+	This algorithm assumes an identifier list is always the last attribute in a subTree, and thus always ends in
+	whitespace. This may well not be true, and in that case this will have to change.
+	*/
+	func readIdentifierList() -> String {
+		defer { cleanLeadingWhitespace() }
+		
+		var index = currentIndex
+		loop: while true {
+			let character = buffer[index]
+
+			if character == "\n" {
+				break
+			}
+			
+			index = buffer.index(after: index)
+		}
+		
+		let string = String(buffer[currentIndex..<index])
+		
+		currentIndex = index
+		
+		return string
+	}
+	
+	/**
 	Reads a key. A key can't have parentheses, single or double quotes, or whitespace in it
 	(expect for composed keys, as a special case below) and it must end with an '='. If the
 	string in the beginning of the buffer isn't a key, this function returns nil.
@@ -162,7 +197,9 @@ internal class GRYSExpressionParser {
 				}
 			}
 			
-			if character == "=" {
+			if character == "=" ||
+				character == ":"
+			{
 				break
 			}
 			
@@ -378,6 +415,29 @@ internal class GRYSExpressionParser {
 		
 		// Skip the closing ]
 		index = buffer.index(after: index)
+		currentIndex = index
+		
+		return string
+	}
+	
+	func readStringInAngleBrackets() -> String {
+		defer { cleanLeadingWhitespace() }
+		
+		// Skip the opening <
+		var index = buffer.index(after: currentIndex)
+		while true {
+			let character = buffer[index]
+			if character == ">" {
+				break
+			}
+			index = buffer.index(after: index)
+		}
+		
+		// Skip the closing >
+		index = buffer.index(after: index)
+		
+		let string = String(buffer[currentIndex..<index])
+		
 		currentIndex = index
 		
 		return string

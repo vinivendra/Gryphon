@@ -83,6 +83,10 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 				{
 					keyValueAttributes[key] = string
 				}
+				else if (key == "inherits") {
+					let string = parser.readIdentifierList()
+					keyValueAttributes[key] = string
+				}
 				else {
 					keyValueAttributes[key] = parser.readStandaloneAttribute()
 				}
