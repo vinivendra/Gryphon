@@ -77,6 +77,7 @@ extension TestUtils {
 		"print"
 	]
 	static let allTestCases = acceptanceTestCases + [
+		"enums",
 		"functionDefinitions",
 		"strings"
 	]
