@@ -3,7 +3,7 @@
 /Packages
 /*.xcodeproj
 **/xcuserdata
-test.*
+test*
 /.tmp
 /.kotlinBuild*
 *.jar
