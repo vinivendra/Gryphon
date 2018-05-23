@@ -2,6 +2,7 @@
 /.build
 /Packages
 /*.xcodeproj
+**/xcuserdata
 test.*
 /.tmp
 /.kotlinBuild*

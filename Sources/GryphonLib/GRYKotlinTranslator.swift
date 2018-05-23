@@ -6,7 +6,11 @@ public class GRYKotlinTranslator {
 		return GRYKotlinTranslator.typeMappings[type] ?? type
 	}
 	
-	private var enums = [String]()
+	/**
+	This variable is used to store enum definitions in order to allow the translator
+	to translate them as sealed classes (see the `translate(dotSyntaxCallExpression)` method).
+	*/
+	private static var enums = [String]()
 	
 	/**
 	This variable is used to allow calls to the `GRYIgnoreNext` function to ignore
@@ -182,7 +186,7 @@ public class GRYKotlinTranslator {
 		
 		let enumName = enumDeclaration.standaloneAttributes[0]
 		
-		self.enums.append(enumName)
+		GRYKotlinTranslator.enums.append(enumName)
 		
 		let access = enumDeclaration.keyValueAttributes["access"]!
 		
@@ -201,9 +205,7 @@ public class GRYKotlinTranslator {
 			for enumElementDeclaration in enumElementDeclarations {
 				let elementName = enumElementDeclaration.standaloneAttributes[0]
 				
-				let firstCharacter = elementName.first!
-				let capitalizedFirstCharacter = String(firstCharacter).uppercased()
-				let capitalizedElementName = String(capitalizedFirstCharacter + elementName.dropFirst())
+				let capitalizedElementName = elementName.capitalizedAsCamelCase
 				
 				result += "\(increasedIndentation)class \(capitalizedElementName): \(enumName)()\n"
 			}
@@ -637,8 +639,9 @@ public class GRYKotlinTranslator {
 			let leftHandSide = translate(typeExpression: leftHandTree)
 			
 			// Enums become sealed classes, which need parentheses at the end
-			if enums.contains(leftHandSide) {
-				return "\(leftHandSide).\(rightHandSide)()"
+			if GRYKotlinTranslator.enums.contains(leftHandSide) {
+				let capitalizedEnumCase = rightHandSide.capitalizedAsCamelCase
+				return "\(leftHandSide).\(capitalizedEnumCase)()"
 			}
 			else {
 				return "\(leftHandSide).\(rightHandSide)"
@@ -1025,3 +1028,12 @@ public class GRYKotlinTranslator {
 		return String(indentation.dropLast())
 	}
 }
+
+extension String {
+	var capitalizedAsCamelCase: String {
+		let firstCharacter = self.first!
+		let capitalizedFirstCharacter = String(firstCharacter).uppercased()
+		return String(capitalizedFirstCharacter + self.dropFirst())
+	}
+}
+

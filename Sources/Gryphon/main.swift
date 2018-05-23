@@ -50,11 +50,11 @@ func main() {
 	updateJsonTestFiles(includeParserTests: false)
 
 //	let filePath = Process().currentDirectoryPath + "/Test Files/<#testFile#>.swift"
-//	let filePath = Process().currentDirectoryPath + "/test.swift"
+	let filePath = Process().currentDirectoryPath + "/test.swift"
 
 //	print(GRYCompiler.getSwiftASTDump(forFileAt: filePath))
 //	print(GRYCompiler.generateAST(forFileAt: filePath).description(withHorizontalLimit: 100))
-//	print(GRYCompiler.generateKotlinCode(forFileAt: filePath))
+	print(GRYCompiler.generateKotlinCode(forFileAt: filePath))
 //	print(GRYCompiler.compileAndRun(fileAt: filePath))
 }
 
