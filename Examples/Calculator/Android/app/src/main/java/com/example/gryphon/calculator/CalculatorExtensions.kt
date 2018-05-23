@@ -1,4 +1,5 @@
 package com.example.gryphon.calculator
+
 val String.isDelete: Boolean
     get() {
         return (this == "D")

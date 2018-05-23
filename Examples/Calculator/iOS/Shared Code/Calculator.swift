@@ -103,7 +103,7 @@ open class Calculator {
 			// If the inputted character is "D" and there is something displayed, remove its last character.
 		else if input.isDelete {
 			if !GRYAlternative(swift: display.isEmpty, kotlin: "display.isEmpty()") {
-				display = GRYAlternative(swift: String(display.dropLast()), kotlin: "display.substring(0, display.length - 1)")
+				display = GRYAlternative(swift: String(display.dropLast()), kotlin: "display.dropLast(1)")
 			}
 			isLastCharacterOperator = false
 		}
