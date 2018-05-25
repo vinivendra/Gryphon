@@ -5,10 +5,10 @@
       (parameter "kotlinExpression" apiName=kotlin type='String' interface type='String'))
     (result
       (type_ident
-        (component id='T' bind=bhaskara.(file).GRYAlternative(swift:kotlin:).T@<<testFilePath>>:1:21)))
+        (component id='T' bind=bhaskara.(file).GRYAlternative(swift:kotlin:).T@<<testFilePath>>:17:21)))
     (brace_stmt
       (return_stmt
-        (declref_expr type='T' location=<<testFilePath>>:2:9 range=[<<testFilePath>>:2:9 - line:2:9] decl=bhaskara.(file).GRYAlternative(swift:kotlin:).swiftExpression@<<testFilePath>>:1:30 function_ref=unapplied))))
+        (declref_expr type='T' location=<<testFilePath>>:18:9 range=[<<testFilePath>>:18:9 - line:18:9] decl=bhaskara.(file).GRYAlternative(swift:kotlin:).swiftExpression@<<testFilePath>>:17:30 function_ref=unapplied))))
   (import_decl 'Foundation')
   (func_decl "bhaskara(a:b:c:)" interface type='(Double, Double, Double) -> Double' access=internal
     (parameter_list
@@ -21,114 +21,114 @@
     (brace_stmt
       (pattern_binding_decl
         (pattern_named type='Double' 'delta')
-        (binary_expr type='Double' location=<<testFilePath>>:8:18 range=[<<testFilePath>>:8:14 - line:8:24] nothrow
-          (dot_syntax_call_expr implicit type='(Double, Double) -> Double' location=<<testFilePath>>:8:18 range=[<<testFilePath>>:8:18 - line:8:18] nothrow
-            (declref_expr type='(Double.Type) -> (Double, Double) -> Double' location=<<testFilePath>>:8:18 range=[<<testFilePath>>:8:18 - line:8:18] decl=Swift.(file).Double.- function_ref=unapplied)
-            (type_expr implicit type='Double.Type' location=<<testFilePath>>:8:18 range=[<<testFilePath>>:8:18 - line:8:18] typerepr='Double'))
-          (tuple_expr implicit type='(Double, Double)' location=<<testFilePath>>:8:14 range=[<<testFilePath>>:8:14 - line:8:24]
-            (binary_expr type='Double' location=<<testFilePath>>:8:15 range=[<<testFilePath>>:8:14 - line:8:16] nothrow
-              (dot_syntax_call_expr implicit type='(Double, Double) -> Double' location=<<testFilePath>>:8:15 range=[<<testFilePath>>:8:15 - line:8:15] nothrow
-                (declref_expr type='(Double.Type) -> (Double, Double) -> Double' location=<<testFilePath>>:8:15 range=[<<testFilePath>>:8:15 - line:8:15] decl=Swift.(file).Double.* function_ref=unapplied)
-                (type_expr implicit type='Double.Type' location=<<testFilePath>>:8:15 range=[<<testFilePath>>:8:15 - line:8:15] typerepr='Double'))
-              (tuple_expr implicit type='(Double, Double)' location=<<testFilePath>>:8:14 range=[<<testFilePath>>:8:14 - line:8:16]
-                (declref_expr type='Double' location=<<testFilePath>>:8:14 range=[<<testFilePath>>:8:14 - line:8:14] decl=bhaskara.(file).bhaskara(a:b:c:).b@<<testFilePath>>:7:26 function_ref=unapplied)
-                (declref_expr type='Double' location=<<testFilePath>>:8:16 range=[<<testFilePath>>:8:16 - line:8:16] decl=bhaskara.(file).bhaskara(a:b:c:).b@<<testFilePath>>:7:26 function_ref=unapplied)))
-            (binary_expr type='Double' location=<<testFilePath>>:8:23 range=[<<testFilePath>>:8:20 - line:8:24] nothrow
-              (dot_syntax_call_expr implicit type='(Double, Double) -> Double' location=<<testFilePath>>:8:23 range=[<<testFilePath>>:8:23 - line:8:23] nothrow
-                (declref_expr type='(Double.Type) -> (Double, Double) -> Double' location=<<testFilePath>>:8:23 range=[<<testFilePath>>:8:23 - line:8:23] decl=Swift.(file).Double.* function_ref=unapplied)
-                (type_expr implicit type='Double.Type' location=<<testFilePath>>:8:23 range=[<<testFilePath>>:8:23 - line:8:23] typerepr='Double'))
-              (tuple_expr implicit type='(Double, Double)' location=<<testFilePath>>:8:20 range=[<<testFilePath>>:8:20 - line:8:24]
-                (binary_expr type='Double' location=<<testFilePath>>:8:21 range=[<<testFilePath>>:8:20 - line:8:22] nothrow
-                  (dot_syntax_call_expr implicit type='(Double, Double) -> Double' location=<<testFilePath>>:8:21 range=[<<testFilePath>>:8:21 - line:8:21] nothrow
-                    (declref_expr type='(Double.Type) -> (Double, Double) -> Double' location=<<testFilePath>>:8:21 range=[<<testFilePath>>:8:21 - line:8:21] decl=Swift.(file).Double.* function_ref=unapplied)
-                    (type_expr implicit type='Double.Type' location=<<testFilePath>>:8:21 range=[<<testFilePath>>:8:21 - line:8:21] typerepr='Double'))
-                  (tuple_expr implicit type='(Double, Double)' location=<<testFilePath>>:8:20 range=[<<testFilePath>>:8:20 - line:8:22]
-                    (call_expr implicit type='Double' location=<<testFilePath>>:8:20 range=[<<testFilePath>>:8:20 - line:8:20] nothrow arg_labels=_builtinIntegerLiteral:
-                      (constructor_ref_call_expr implicit type='(Int2048) -> Double' location=<<testFilePath>>:8:20 range=[<<testFilePath>>:8:20 - line:8:20] nothrow
-                        (declref_expr implicit type='(Double.Type) -> (Int2048) -> Double' location=<<testFilePath>>:8:20 range=[<<testFilePath>>:8:20 - line:8:20] decl=Swift.(file).Double.init(_builtinIntegerLiteral:) function_ref=single)
-                        (type_expr implicit type='Double.Type' location=<<testFilePath>>:8:20 range=[<<testFilePath>>:8:20 - line:8:20] typerepr='Double'))
-                      (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' location=<<testFilePath>>:8:20 range=[<<testFilePath>>:8:20 - line:8:20] names=_builtinIntegerLiteral
-                        (integer_literal_expr type='Int2048' location=<<testFilePath>>:8:20 range=[<<testFilePath>>:8:20 - line:8:20] value=4)))
-                    (declref_expr type='Double' location=<<testFilePath>>:8:22 range=[<<testFilePath>>:8:22 - line:8:22] decl=bhaskara.(file).bhaskara(a:b:c:).a@<<testFilePath>>:7:15 function_ref=unapplied)))
-                (declref_expr type='Double' location=<<testFilePath>>:8:24 range=[<<testFilePath>>:8:24 - line:8:24] decl=bhaskara.(file).bhaskara(a:b:c:).c@<<testFilePath>>:7:37 function_ref=unapplied))))))
+        (binary_expr type='Double' location=<<testFilePath>>:24:18 range=[<<testFilePath>>:24:14 - line:24:24] nothrow
+          (dot_syntax_call_expr implicit type='(Double, Double) -> Double' location=<<testFilePath>>:24:18 range=[<<testFilePath>>:24:18 - line:24:18] nothrow
+            (declref_expr type='(Double.Type) -> (Double, Double) -> Double' location=<<testFilePath>>:24:18 range=[<<testFilePath>>:24:18 - line:24:18] decl=Swift.(file).Double.- function_ref=unapplied)
+            (type_expr implicit type='Double.Type' location=<<testFilePath>>:24:18 range=[<<testFilePath>>:24:18 - line:24:18] typerepr='Double'))
+          (tuple_expr implicit type='(Double, Double)' location=<<testFilePath>>:24:14 range=[<<testFilePath>>:24:14 - line:24:24]
+            (binary_expr type='Double' location=<<testFilePath>>:24:15 range=[<<testFilePath>>:24:14 - line:24:16] nothrow
+              (dot_syntax_call_expr implicit type='(Double, Double) -> Double' location=<<testFilePath>>:24:15 range=[<<testFilePath>>:24:15 - line:24:15] nothrow
+                (declref_expr type='(Double.Type) -> (Double, Double) -> Double' location=<<testFilePath>>:24:15 range=[<<testFilePath>>:24:15 - line:24:15] decl=Swift.(file).Double.* function_ref=unapplied)
+                (type_expr implicit type='Double.Type' location=<<testFilePath>>:24:15 range=[<<testFilePath>>:24:15 - line:24:15] typerepr='Double'))
+              (tuple_expr implicit type='(Double, Double)' location=<<testFilePath>>:24:14 range=[<<testFilePath>>:24:14 - line:24:16]
+                (declref_expr type='Double' location=<<testFilePath>>:24:14 range=[<<testFilePath>>:24:14 - line:24:14] decl=bhaskara.(file).bhaskara(a:b:c:).b@<<testFilePath>>:23:26 function_ref=unapplied)
+                (declref_expr type='Double' location=<<testFilePath>>:24:16 range=[<<testFilePath>>:24:16 - line:24:16] decl=bhaskara.(file).bhaskara(a:b:c:).b@<<testFilePath>>:23:26 function_ref=unapplied)))
+            (binary_expr type='Double' location=<<testFilePath>>:24:23 range=[<<testFilePath>>:24:20 - line:24:24] nothrow
+              (dot_syntax_call_expr implicit type='(Double, Double) -> Double' location=<<testFilePath>>:24:23 range=[<<testFilePath>>:24:23 - line:24:23] nothrow
+                (declref_expr type='(Double.Type) -> (Double, Double) -> Double' location=<<testFilePath>>:24:23 range=[<<testFilePath>>:24:23 - line:24:23] decl=Swift.(file).Double.* function_ref=unapplied)
+                (type_expr implicit type='Double.Type' location=<<testFilePath>>:24:23 range=[<<testFilePath>>:24:23 - line:24:23] typerepr='Double'))
+              (tuple_expr implicit type='(Double, Double)' location=<<testFilePath>>:24:20 range=[<<testFilePath>>:24:20 - line:24:24]
+                (binary_expr type='Double' location=<<testFilePath>>:24:21 range=[<<testFilePath>>:24:20 - line:24:22] nothrow
+                  (dot_syntax_call_expr implicit type='(Double, Double) -> Double' location=<<testFilePath>>:24:21 range=[<<testFilePath>>:24:21 - line:24:21] nothrow
+                    (declref_expr type='(Double.Type) -> (Double, Double) -> Double' location=<<testFilePath>>:24:21 range=[<<testFilePath>>:24:21 - line:24:21] decl=Swift.(file).Double.* function_ref=unapplied)
+                    (type_expr implicit type='Double.Type' location=<<testFilePath>>:24:21 range=[<<testFilePath>>:24:21 - line:24:21] typerepr='Double'))
+                  (tuple_expr implicit type='(Double, Double)' location=<<testFilePath>>:24:20 range=[<<testFilePath>>:24:20 - line:24:22]
+                    (call_expr implicit type='Double' location=<<testFilePath>>:24:20 range=[<<testFilePath>>:24:20 - line:24:20] nothrow arg_labels=_builtinIntegerLiteral:
+                      (constructor_ref_call_expr implicit type='(Int2048) -> Double' location=<<testFilePath>>:24:20 range=[<<testFilePath>>:24:20 - line:24:20] nothrow
+                        (declref_expr implicit type='(Double.Type) -> (Int2048) -> Double' location=<<testFilePath>>:24:20 range=[<<testFilePath>>:24:20 - line:24:20] decl=Swift.(file).Double.init(_builtinIntegerLiteral:) function_ref=single)
+                        (type_expr implicit type='Double.Type' location=<<testFilePath>>:24:20 range=[<<testFilePath>>:24:20 - line:24:20] typerepr='Double'))
+                      (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' location=<<testFilePath>>:24:20 range=[<<testFilePath>>:24:20 - line:24:20] names=_builtinIntegerLiteral
+                        (integer_literal_expr type='Int2048' location=<<testFilePath>>:24:20 range=[<<testFilePath>>:24:20 - line:24:20] value=4)))
+                    (declref_expr type='Double' location=<<testFilePath>>:24:22 range=[<<testFilePath>>:24:22 - line:24:22] decl=bhaskara.(file).bhaskara(a:b:c:).a@<<testFilePath>>:23:15 function_ref=unapplied)))
+                (declref_expr type='Double' location=<<testFilePath>>:24:24 range=[<<testFilePath>>:24:24 - line:24:24] decl=bhaskara.(file).bhaskara(a:b:c:).c@<<testFilePath>>:23:37 function_ref=unapplied))))))
 
       (var_decl "delta" type='Double' interface type='Double' access=private let storage_kind=stored)
 
       (pattern_binding_decl
         (pattern_named type='Double' 'deltaRoot')
-        (call_expr type='Double' location=<<testFilePath>>:9:18 range=[<<testFilePath>>:9:18 - line:10:38] nothrow arg_labels=swift:kotlin:
-          (declref_expr type='(Double, String) -> Double' location=<<testFilePath>>:9:18 range=[<<testFilePath>>:9:18 - line:9:18] decl=bhaskara.(file).GRYAlternative(swift:kotlin:)@<<testFilePath>>:1:6 [with Double] function_ref=single)
-          (tuple_expr type='(swift: Double, kotlin: String)' location=<<testFilePath>>:9:32 range=[<<testFilePath>>:9:32 - line:10:38] names=swift,kotlin
-            (call_expr type='Double' location=<<testFilePath>>:9:40 range=[<<testFilePath>>:9:40 - line:9:50] nothrow arg_labels=_:
-              (declref_expr type='(Double) -> Double' location=<<testFilePath>>:9:40 range=[<<testFilePath>>:9:40 - line:9:40] decl=Darwin.(file).sqrt function_ref=single)
-              (paren_expr type='(Double)' location=<<testFilePath>>:9:45 range=[<<testFilePath>>:9:44 - line:9:50]
-                (declref_expr type='Double' location=<<testFilePath>>:9:45 range=[<<testFilePath>>:9:45 - line:9:45] decl=bhaskara.(file).bhaskara(a:b:c:).delta@<<testFilePath>>:8:6 function_ref=unapplied)))
-            (string_literal_expr type='String' location=<<testFilePath>>:10:20 range=[<<testFilePath>>:10:20 - line:10:20] encoding=utf8 value="Math.sqrt(delta)" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
+        (call_expr type='Double' location=<<testFilePath>>:25:18 range=[<<testFilePath>>:25:18 - line:26:38] nothrow arg_labels=swift:kotlin:
+          (declref_expr type='(Double, String) -> Double' location=<<testFilePath>>:25:18 range=[<<testFilePath>>:25:18 - line:25:18] decl=bhaskara.(file).GRYAlternative(swift:kotlin:)@<<testFilePath>>:17:6 [with Double] function_ref=single)
+          (tuple_expr type='(swift: Double, kotlin: String)' location=<<testFilePath>>:25:32 range=[<<testFilePath>>:25:32 - line:26:38] names=swift,kotlin
+            (call_expr type='Double' location=<<testFilePath>>:25:40 range=[<<testFilePath>>:25:40 - line:25:50] nothrow arg_labels=_:
+              (declref_expr type='(Double) -> Double' location=<<testFilePath>>:25:40 range=[<<testFilePath>>:25:40 - line:25:40] decl=Darwin.(file).sqrt function_ref=single)
+              (paren_expr type='(Double)' location=<<testFilePath>>:25:45 range=[<<testFilePath>>:25:44 - line:25:50]
+                (declref_expr type='Double' location=<<testFilePath>>:25:45 range=[<<testFilePath>>:25:45 - line:25:45] decl=bhaskara.(file).bhaskara(a:b:c:).delta@<<testFilePath>>:24:6 function_ref=unapplied)))
+            (string_literal_expr type='String' location=<<testFilePath>>:26:20 range=[<<testFilePath>>:26:20 - line:26:20] encoding=utf8 value="Math.sqrt(delta)" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))
 
       (var_decl "deltaRoot" type='Double' interface type='Double' access=private let storage_kind=stored)
 
       (pattern_binding_decl
         (pattern_named type='Double' 'root1')
-        (binary_expr type='Double' location=<<testFilePath>>:11:31 range=[<<testFilePath>>:11:14 - line:11:37] nothrow
-          (dot_syntax_call_expr implicit type='(Double, Double) -> Double' location=<<testFilePath>>:11:31 range=[<<testFilePath>>:11:31 - line:11:31] nothrow
-            (declref_expr type='(Double.Type) -> (Double, Double) -> Double' location=<<testFilePath>>:11:31 range=[<<testFilePath>>:11:31 - line:11:31] decl=Swift.(file).Double./ function_ref=unapplied)
-            (type_expr implicit type='Double.Type' location=<<testFilePath>>:11:31 range=[<<testFilePath>>:11:31 - line:11:31] typerepr='Double'))
-          (tuple_expr implicit type='((Double), (Double))' location=<<testFilePath>>:11:14 range=[<<testFilePath>>:11:14 - line:11:37]
-            (paren_expr type='(Double)' location=<<testFilePath>>:11:18 range=[<<testFilePath>>:11:14 - line:11:29]
-              (binary_expr type='Double' location=<<testFilePath>>:11:18 range=[<<testFilePath>>:11:15 - line:11:20] nothrow
-                (dot_syntax_call_expr implicit type='(Double, Double) -> Double' location=<<testFilePath>>:11:18 range=[<<testFilePath>>:11:18 - line:11:18] nothrow
-                  (declref_expr type='(Double.Type) -> (Double, Double) -> Double' location=<<testFilePath>>:11:18 range=[<<testFilePath>>:11:18 - line:11:18] decl=Swift.(file).Double.+ function_ref=unapplied)
-                  (type_expr implicit type='Double.Type' location=<<testFilePath>>:11:18 range=[<<testFilePath>>:11:18 - line:11:18] typerepr='Double'))
-                (tuple_expr implicit type='(Double, Double)' location=<<testFilePath>>:11:15 range=[<<testFilePath>>:11:15 - line:11:20]
-                  (prefix_unary_expr type='Double' location=<<testFilePath>>:11:15 range=[<<testFilePath>>:11:15 - line:11:16] nothrow
-                    (dot_syntax_call_expr implicit type='(Double) -> Double' location=<<testFilePath>>:11:15 range=[<<testFilePath>>:11:15 - line:11:15] nothrow
-                      (declref_expr type='(Double.Type) -> (Double) -> Double' location=<<testFilePath>>:11:15 range=[<<testFilePath>>:11:15 - line:11:15] decl=Swift.(file).Double.- function_ref=unapplied)
-                      (type_expr implicit type='Double.Type' location=<<testFilePath>>:11:15 range=[<<testFilePath>>:11:15 - line:11:15] typerepr='Double'))
-                    (declref_expr type='Double' location=<<testFilePath>>:11:16 range=[<<testFilePath>>:11:16 - line:11:16] decl=bhaskara.(file).bhaskara(a:b:c:).b@<<testFilePath>>:7:26 function_ref=unapplied))
-                  (declref_expr type='Double' location=<<testFilePath>>:11:20 range=[<<testFilePath>>:11:20 - line:11:20] decl=bhaskara.(file).bhaskara(a:b:c:).deltaRoot@<<testFilePath>>:9:6 function_ref=unapplied))))
-            (paren_expr type='(Double)' location=<<testFilePath>>:11:35 range=[<<testFilePath>>:11:33 - line:11:37]
-              (binary_expr type='Double' location=<<testFilePath>>:11:35 range=[<<testFilePath>>:11:34 - line:11:36] nothrow
-                (dot_syntax_call_expr implicit type='(Double, Double) -> Double' location=<<testFilePath>>:11:35 range=[<<testFilePath>>:11:35 - line:11:35] nothrow
-                  (declref_expr type='(Double.Type) -> (Double, Double) -> Double' location=<<testFilePath>>:11:35 range=[<<testFilePath>>:11:35 - line:11:35] decl=Swift.(file).Double.* function_ref=unapplied)
-                  (type_expr implicit type='Double.Type' location=<<testFilePath>>:11:35 range=[<<testFilePath>>:11:35 - line:11:35] typerepr='Double'))
-                (tuple_expr implicit type='(Double, Double)' location=<<testFilePath>>:11:34 range=[<<testFilePath>>:11:34 - line:11:36]
-                  (call_expr implicit type='Double' location=<<testFilePath>>:11:34 range=[<<testFilePath>>:11:34 - line:11:34] nothrow arg_labels=_builtinIntegerLiteral:
-                    (constructor_ref_call_expr implicit type='(Int2048) -> Double' location=<<testFilePath>>:11:34 range=[<<testFilePath>>:11:34 - line:11:34] nothrow
-                      (declref_expr implicit type='(Double.Type) -> (Int2048) -> Double' location=<<testFilePath>>:11:34 range=[<<testFilePath>>:11:34 - line:11:34] decl=Swift.(file).Double.init(_builtinIntegerLiteral:) function_ref=single)
-                      (type_expr implicit type='Double.Type' location=<<testFilePath>>:11:34 range=[<<testFilePath>>:11:34 - line:11:34] typerepr='Double'))
-                    (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' location=<<testFilePath>>:11:34 range=[<<testFilePath>>:11:34 - line:11:34] names=_builtinIntegerLiteral
-                      (integer_literal_expr type='Int2048' location=<<testFilePath>>:11:34 range=[<<testFilePath>>:11:34 - line:11:34] value=2)))
-                  (declref_expr type='Double' location=<<testFilePath>>:11:36 range=[<<testFilePath>>:11:36 - line:11:36] decl=bhaskara.(file).bhaskara(a:b:c:).a@<<testFilePath>>:7:15 function_ref=unapplied)))))))
+        (binary_expr type='Double' location=<<testFilePath>>:27:31 range=[<<testFilePath>>:27:14 - line:27:37] nothrow
+          (dot_syntax_call_expr implicit type='(Double, Double) -> Double' location=<<testFilePath>>:27:31 range=[<<testFilePath>>:27:31 - line:27:31] nothrow
+            (declref_expr type='(Double.Type) -> (Double, Double) -> Double' location=<<testFilePath>>:27:31 range=[<<testFilePath>>:27:31 - line:27:31] decl=Swift.(file).Double./ function_ref=unapplied)
+            (type_expr implicit type='Double.Type' location=<<testFilePath>>:27:31 range=[<<testFilePath>>:27:31 - line:27:31] typerepr='Double'))
+          (tuple_expr implicit type='((Double), (Double))' location=<<testFilePath>>:27:14 range=[<<testFilePath>>:27:14 - line:27:37]
+            (paren_expr type='(Double)' location=<<testFilePath>>:27:18 range=[<<testFilePath>>:27:14 - line:27:29]
+              (binary_expr type='Double' location=<<testFilePath>>:27:18 range=[<<testFilePath>>:27:15 - line:27:20] nothrow
+                (dot_syntax_call_expr implicit type='(Double, Double) -> Double' location=<<testFilePath>>:27:18 range=[<<testFilePath>>:27:18 - line:27:18] nothrow
+                  (declref_expr type='(Double.Type) -> (Double, Double) -> Double' location=<<testFilePath>>:27:18 range=[<<testFilePath>>:27:18 - line:27:18] decl=Swift.(file).Double.+ function_ref=unapplied)
+                  (type_expr implicit type='Double.Type' location=<<testFilePath>>:27:18 range=[<<testFilePath>>:27:18 - line:27:18] typerepr='Double'))
+                (tuple_expr implicit type='(Double, Double)' location=<<testFilePath>>:27:15 range=[<<testFilePath>>:27:15 - line:27:20]
+                  (prefix_unary_expr type='Double' location=<<testFilePath>>:27:15 range=[<<testFilePath>>:27:15 - line:27:16] nothrow
+                    (dot_syntax_call_expr implicit type='(Double) -> Double' location=<<testFilePath>>:27:15 range=[<<testFilePath>>:27:15 - line:27:15] nothrow
+                      (declref_expr type='(Double.Type) -> (Double) -> Double' location=<<testFilePath>>:27:15 range=[<<testFilePath>>:27:15 - line:27:15] decl=Swift.(file).Double.- function_ref=unapplied)
+                      (type_expr implicit type='Double.Type' location=<<testFilePath>>:27:15 range=[<<testFilePath>>:27:15 - line:27:15] typerepr='Double'))
+                    (declref_expr type='Double' location=<<testFilePath>>:27:16 range=[<<testFilePath>>:27:16 - line:27:16] decl=bhaskara.(file).bhaskara(a:b:c:).b@<<testFilePath>>:23:26 function_ref=unapplied))
+                  (declref_expr type='Double' location=<<testFilePath>>:27:20 range=[<<testFilePath>>:27:20 - line:27:20] decl=bhaskara.(file).bhaskara(a:b:c:).deltaRoot@<<testFilePath>>:25:6 function_ref=unapplied))))
+            (paren_expr type='(Double)' location=<<testFilePath>>:27:35 range=[<<testFilePath>>:27:33 - line:27:37]
+              (binary_expr type='Double' location=<<testFilePath>>:27:35 range=[<<testFilePath>>:27:34 - line:27:36] nothrow
+                (dot_syntax_call_expr implicit type='(Double, Double) -> Double' location=<<testFilePath>>:27:35 range=[<<testFilePath>>:27:35 - line:27:35] nothrow
+                  (declref_expr type='(Double.Type) -> (Double, Double) -> Double' location=<<testFilePath>>:27:35 range=[<<testFilePath>>:27:35 - line:27:35] decl=Swift.(file).Double.* function_ref=unapplied)
+                  (type_expr implicit type='Double.Type' location=<<testFilePath>>:27:35 range=[<<testFilePath>>:27:35 - line:27:35] typerepr='Double'))
+                (tuple_expr implicit type='(Double, Double)' location=<<testFilePath>>:27:34 range=[<<testFilePath>>:27:34 - line:27:36]
+                  (call_expr implicit type='Double' location=<<testFilePath>>:27:34 range=[<<testFilePath>>:27:34 - line:27:34] nothrow arg_labels=_builtinIntegerLiteral:
+                    (constructor_ref_call_expr implicit type='(Int2048) -> Double' location=<<testFilePath>>:27:34 range=[<<testFilePath>>:27:34 - line:27:34] nothrow
+                      (declref_expr implicit type='(Double.Type) -> (Int2048) -> Double' location=<<testFilePath>>:27:34 range=[<<testFilePath>>:27:34 - line:27:34] decl=Swift.(file).Double.init(_builtinIntegerLiteral:) function_ref=single)
+                      (type_expr implicit type='Double.Type' location=<<testFilePath>>:27:34 range=[<<testFilePath>>:27:34 - line:27:34] typerepr='Double'))
+                    (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' location=<<testFilePath>>:27:34 range=[<<testFilePath>>:27:34 - line:27:34] names=_builtinIntegerLiteral
+                      (integer_literal_expr type='Int2048' location=<<testFilePath>>:27:34 range=[<<testFilePath>>:27:34 - line:27:34] value=2)))
+                  (declref_expr type='Double' location=<<testFilePath>>:27:36 range=[<<testFilePath>>:27:36 - line:27:36] decl=bhaskara.(file).bhaskara(a:b:c:).a@<<testFilePath>>:23:15 function_ref=unapplied)))))))
 
       (var_decl "root1" type='Double' interface type='Double' access=private let storage_kind=stored)
 
       (return_stmt
-        (declref_expr type='Double' location=<<testFilePath>>:12:9 range=[<<testFilePath>>:12:9 - line:12:9] decl=bhaskara.(file).bhaskara(a:b:c:).root1@<<testFilePath>>:11:6 function_ref=unapplied))))
+        (declref_expr type='Double' location=<<testFilePath>>:28:9 range=[<<testFilePath>>:28:9 - line:28:9] decl=bhaskara.(file).bhaskara(a:b:c:).root1@<<testFilePath>>:27:6 function_ref=unapplied))))
   (top_level_code_decl
     (brace_stmt
-      (call_expr type='()' location=<<testFilePath>>:15:1 range=[<<testFilePath>>:15:1 - line:15:34] nothrow arg_labels=_:
-        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:15:1 range=[<<testFilePath>>:15:1 - line:15:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
-        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:15:7 range=[<<testFilePath>>:15:6 - line:15:34] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
-          (paren_expr type='Any' location=<<testFilePath>>:15:7 range=[<<testFilePath>>:15:6 - line:15:34]
-            (erasure_expr implicit type='Any' location=<<testFilePath>>:15:7 range=[<<testFilePath>>:15:7 - line:15:33]
-              (call_expr type='Double' location=<<testFilePath>>:15:7 range=[<<testFilePath>>:15:7 - line:15:33] nothrow arg_labels=a:b:c:
-                (declref_expr type='(Double, Double, Double) -> Double' location=<<testFilePath>>:15:7 range=[<<testFilePath>>:15:7 - line:15:7] decl=bhaskara.(file).bhaskara(a:b:c:)@<<testFilePath>>:7:6 function_ref=single)
-                (tuple_expr type='(a: Double, b: Double, c: Double)' location=<<testFilePath>>:15:15 range=[<<testFilePath>>:15:15 - line:15:33] names=a,b,c
-                  (call_expr implicit type='Double' location=<<testFilePath>>:15:19 range=[<<testFilePath>>:15:19 - line:15:19] nothrow arg_labels=_builtinIntegerLiteral:
-                    (constructor_ref_call_expr implicit type='(Int2048) -> Double' location=<<testFilePath>>:15:19 range=[<<testFilePath>>:15:19 - line:15:19] nothrow
-                      (declref_expr implicit type='(Double.Type) -> (Int2048) -> Double' location=<<testFilePath>>:15:19 range=[<<testFilePath>>:15:19 - line:15:19] decl=Swift.(file).Double.init(_builtinIntegerLiteral:) function_ref=single)
-                      (type_expr implicit type='Double.Type' location=<<testFilePath>>:15:19 range=[<<testFilePath>>:15:19 - line:15:19] typerepr='Double'))
-                    (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' location=<<testFilePath>>:15:19 range=[<<testFilePath>>:15:19 - line:15:19] names=_builtinIntegerLiteral
-                      (integer_literal_expr type='Int2048' location=<<testFilePath>>:15:19 range=[<<testFilePath>>:15:19 - line:15:19] value=1)))
-                  (call_expr implicit type='Double' location=<<testFilePath>>:15:25 range=[<<testFilePath>>:15:25 - line:15:25] nothrow arg_labels=_builtinIntegerLiteral:
-                    (constructor_ref_call_expr implicit type='(Int2048) -> Double' location=<<testFilePath>>:15:25 range=[<<testFilePath>>:15:25 - line:15:25] nothrow
-                      (declref_expr implicit type='(Double.Type) -> (Int2048) -> Double' location=<<testFilePath>>:15:25 range=[<<testFilePath>>:15:25 - line:15:25] decl=Swift.(file).Double.init(_builtinIntegerLiteral:) function_ref=single)
-                      (type_expr implicit type='Double.Type' location=<<testFilePath>>:15:25 range=[<<testFilePath>>:15:25 - line:15:25] typerepr='Double'))
-                    (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' location=<<testFilePath>>:15:25 range=[<<testFilePath>>:15:25 - line:15:25] names=_builtinIntegerLiteral
-                      (integer_literal_expr type='Int2048' location=<<testFilePath>>:15:25 range=[<<testFilePath>>:15:25 - line:15:25] value=0)))
-                  (call_expr implicit type='Double' location=<<testFilePath>>:15:31 range=[<<testFilePath>>:15:31 - line:15:32] nothrow arg_labels=_builtinIntegerLiteral:
-                    (constructor_ref_call_expr implicit type='(Int2048) -> Double' location=<<testFilePath>>:15:31 range=[<<testFilePath>>:15:31 - line:15:31] nothrow
-                      (declref_expr implicit type='(Double.Type) -> (Int2048) -> Double' location=<<testFilePath>>:15:31 range=[<<testFilePath>>:15:31 - line:15:31] decl=Swift.(file).Double.init(_builtinIntegerLiteral:) function_ref=single)
-                      (type_expr implicit type='Double.Type' location=<<testFilePath>>:15:31 range=[<<testFilePath>>:15:31 - line:15:31] typerepr='Double'))
-                    (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' location=<<testFilePath>>:15:31 range=[<<testFilePath>>:15:31 - line:15:32] names=_builtinIntegerLiteral
-                      (integer_literal_expr type='Int2048' location=<<testFilePath>>:15:31 range=[<<testFilePath>>:15:31 - line:15:32] negative value=-9))))))))))))
+      (call_expr type='()' location=<<testFilePath>>:31:1 range=[<<testFilePath>>:31:1 - line:31:34] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:31:1 range=[<<testFilePath>>:31:1 - line:31:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:31:7 range=[<<testFilePath>>:31:6 - line:31:34] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:31:7 range=[<<testFilePath>>:31:6 - line:31:34]
+            (erasure_expr implicit type='Any' location=<<testFilePath>>:31:7 range=[<<testFilePath>>:31:7 - line:31:33]
+              (call_expr type='Double' location=<<testFilePath>>:31:7 range=[<<testFilePath>>:31:7 - line:31:33] nothrow arg_labels=a:b:c:
+                (declref_expr type='(Double, Double, Double) -> Double' location=<<testFilePath>>:31:7 range=[<<testFilePath>>:31:7 - line:31:7] decl=bhaskara.(file).bhaskara(a:b:c:)@<<testFilePath>>:23:6 function_ref=single)
+                (tuple_expr type='(a: Double, b: Double, c: Double)' location=<<testFilePath>>:31:15 range=[<<testFilePath>>:31:15 - line:31:33] names=a,b,c
+                  (call_expr implicit type='Double' location=<<testFilePath>>:31:19 range=[<<testFilePath>>:31:19 - line:31:19] nothrow arg_labels=_builtinIntegerLiteral:
+                    (constructor_ref_call_expr implicit type='(Int2048) -> Double' location=<<testFilePath>>:31:19 range=[<<testFilePath>>:31:19 - line:31:19] nothrow
+                      (declref_expr implicit type='(Double.Type) -> (Int2048) -> Double' location=<<testFilePath>>:31:19 range=[<<testFilePath>>:31:19 - line:31:19] decl=Swift.(file).Double.init(_builtinIntegerLiteral:) function_ref=single)
+                      (type_expr implicit type='Double.Type' location=<<testFilePath>>:31:19 range=[<<testFilePath>>:31:19 - line:31:19] typerepr='Double'))
+                    (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' location=<<testFilePath>>:31:19 range=[<<testFilePath>>:31:19 - line:31:19] names=_builtinIntegerLiteral
+                      (integer_literal_expr type='Int2048' location=<<testFilePath>>:31:19 range=[<<testFilePath>>:31:19 - line:31:19] value=1)))
+                  (call_expr implicit type='Double' location=<<testFilePath>>:31:25 range=[<<testFilePath>>:31:25 - line:31:25] nothrow arg_labels=_builtinIntegerLiteral:
+                    (constructor_ref_call_expr implicit type='(Int2048) -> Double' location=<<testFilePath>>:31:25 range=[<<testFilePath>>:31:25 - line:31:25] nothrow
+                      (declref_expr implicit type='(Double.Type) -> (Int2048) -> Double' location=<<testFilePath>>:31:25 range=[<<testFilePath>>:31:25 - line:31:25] decl=Swift.(file).Double.init(_builtinIntegerLiteral:) function_ref=single)
+                      (type_expr implicit type='Double.Type' location=<<testFilePath>>:31:25 range=[<<testFilePath>>:31:25 - line:31:25] typerepr='Double'))
+                    (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' location=<<testFilePath>>:31:25 range=[<<testFilePath>>:31:25 - line:31:25] names=_builtinIntegerLiteral
+                      (integer_literal_expr type='Int2048' location=<<testFilePath>>:31:25 range=[<<testFilePath>>:31:25 - line:31:25] value=0)))
+                  (call_expr implicit type='Double' location=<<testFilePath>>:31:31 range=[<<testFilePath>>:31:31 - line:31:32] nothrow arg_labels=_builtinIntegerLiteral:
+                    (constructor_ref_call_expr implicit type='(Int2048) -> Double' location=<<testFilePath>>:31:31 range=[<<testFilePath>>:31:31 - line:31:31] nothrow
+                      (declref_expr implicit type='(Double.Type) -> (Int2048) -> Double' location=<<testFilePath>>:31:31 range=[<<testFilePath>>:31:31 - line:31:31] decl=Swift.(file).Double.init(_builtinIntegerLiteral:) function_ref=single)
+                      (type_expr implicit type='Double.Type' location=<<testFilePath>>:31:31 range=[<<testFilePath>>:31:31 - line:31:31] typerepr='Double'))
+                    (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' location=<<testFilePath>>:31:31 range=[<<testFilePath>>:31:31 - line:31:32] names=_builtinIntegerLiteral
+                      (integer_literal_expr type='Int2048' location=<<testFilePath>>:31:31 range=[<<testFilePath>>:31:31 - line:31:32] negative value=-9))))))))))))

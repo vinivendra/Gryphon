@@ -4,5 +4,5 @@ internal sealed class CalculatorError: Exception() {
 	class NilInput: CalculatorError()
 }
 internal fun throwingFunc() {
-	throw CalculatorError.invalidCharacter()
+	throw CalculatorError.InvalidCharacter()
 }

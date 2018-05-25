@@ -218,12 +218,12 @@
     (parameter_list)
     (brace_stmt
       (throw_stmt
-        (erasure_expr implicit type='Error' location=<<testFilePath>>:8:24 range=[<<testFilePath>>:8:8 - line:8:24]
+        (erasure_expr implicit type='Error' location=<<testFilePath>>:24:24 range=[<<testFilePath>>:24:8 - line:24:24]
           (normal_conformance type=CalculatorError protocol=Error
             (value req=_domain witness=Swift.(file).Error._domain)
             (value req=_code witness=Swift.(file).Error._code)
             (value req=_userInfo witness=Swift.(file).Error._userInfo)
             (value req=_getEmbeddedNSError() witness=Swift.(file).Error._getEmbeddedNSError()))
-          (dot_syntax_call_expr type='CalculatorError' location=<<testFilePath>>:8:24 range=[<<testFilePath>>:8:8 - line:8:24] nothrow
-            (declref_expr type='(CalculatorError.Type) -> CalculatorError' location=<<testFilePath>>:8:24 range=[<<testFilePath>>:8:24 - line:8:24] decl=enums.(file).CalculatorError.invalidCharacter@<<testFilePath>>:2:7 function_ref=unapplied)
-            (type_expr type='CalculatorError.Type' location=<<testFilePath>>:8:8 range=[<<testFilePath>>:8:8 - line:8:8] typerepr='CalculatorError')))))))
+          (dot_syntax_call_expr type='CalculatorError' location=<<testFilePath>>:24:24 range=[<<testFilePath>>:24:8 - line:24:24] nothrow
+            (declref_expr type='(CalculatorError.Type) -> CalculatorError' location=<<testFilePath>>:24:24 range=[<<testFilePath>>:24:24 - line:24:24] decl=enums.(file).CalculatorError.invalidCharacter@<<testFilePath>>:18:7 function_ref=unapplied)
+            (type_expr type='CalculatorError.Type' location=<<testFilePath>>:24:8 range=[<<testFilePath>>:24:8 - line:24:8] typerepr='CalculatorError')))))))

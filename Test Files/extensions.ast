@@ -12,24 +12,24 @@
         (parameter_list)
         (brace_stmt
           (return_stmt
-            (call_expr implicit type='Bool' location=<<testFilePath>>:3:10 range=[<<testFilePath>>:3:10 - line:3:10] nothrow arg_labels=_builtinBooleanLiteral:
-              (constructor_ref_call_expr implicit type='(Int1) -> Bool' location=<<testFilePath>>:3:10 range=[<<testFilePath>>:3:10 - line:3:10] nothrow
-                (declref_expr implicit type='(Bool.Type) -> (Int1) -> Bool' location=<<testFilePath>>:3:10 range=[<<testFilePath>>:3:10 - line:3:10] decl=Swift.(file).Bool.init(_builtinBooleanLiteral:) function_ref=single)
-                (type_expr implicit type='Bool.Type' location=<<testFilePath>>:3:10 range=[<<testFilePath>>:3:10 - line:3:10] typerepr='Bool'))
-              (tuple_expr implicit type='(_builtinBooleanLiteral: Builtin.Int1)' location=<<testFilePath>>:3:10 range=[<<testFilePath>>:3:10 - line:3:10] names=_builtinBooleanLiteral
-                (boolean_literal_expr type='Builtin.Int1' location=<<testFilePath>>:3:10 range=[<<testFilePath>>:3:10 - line:3:10] value=true)))))))
+            (call_expr implicit type='Bool' location=<<testFilePath>>:19:10 range=[<<testFilePath>>:19:10 - line:19:10] nothrow arg_labels=_builtinBooleanLiteral:
+              (constructor_ref_call_expr implicit type='(Int1) -> Bool' location=<<testFilePath>>:19:10 range=[<<testFilePath>>:19:10 - line:19:10] nothrow
+                (declref_expr implicit type='(Bool.Type) -> (Int1) -> Bool' location=<<testFilePath>>:19:10 range=[<<testFilePath>>:19:10 - line:19:10] decl=Swift.(file).Bool.init(_builtinBooleanLiteral:) function_ref=single)
+                (type_expr implicit type='Bool.Type' location=<<testFilePath>>:19:10 range=[<<testFilePath>>:19:10 - line:19:10] typerepr='Bool'))
+              (tuple_expr implicit type='(_builtinBooleanLiteral: Builtin.Int1)' location=<<testFilePath>>:19:10 range=[<<testFilePath>>:19:10 - line:19:10] names=_builtinBooleanLiteral
+                (boolean_literal_expr type='Builtin.Int1' location=<<testFilePath>>:19:10 range=[<<testFilePath>>:19:10 - line:19:10] value=true)))))))
     (func_decl 'anonname=<<memory address>>' interface type='(String) -> () -> Bool' access=internal getter_for=isString
       (parameter_list
         (parameter "self" type='String' interface type='String'))
       (parameter_list)
       (brace_stmt
         (return_stmt
-          (call_expr implicit type='Bool' location=<<testFilePath>>:3:10 range=[<<testFilePath>>:3:10 - line:3:10] nothrow arg_labels=_builtinBooleanLiteral:
-            (constructor_ref_call_expr implicit type='(Int1) -> Bool' location=<<testFilePath>>:3:10 range=[<<testFilePath>>:3:10 - line:3:10] nothrow
-              (declref_expr implicit type='(Bool.Type) -> (Int1) -> Bool' location=<<testFilePath>>:3:10 range=[<<testFilePath>>:3:10 - line:3:10] decl=Swift.(file).Bool.init(_builtinBooleanLiteral:) function_ref=single)
-              (type_expr implicit type='Bool.Type' location=<<testFilePath>>:3:10 range=[<<testFilePath>>:3:10 - line:3:10] typerepr='Bool'))
-            (tuple_expr implicit type='(_builtinBooleanLiteral: Builtin.Int1)' location=<<testFilePath>>:3:10 range=[<<testFilePath>>:3:10 - line:3:10] names=_builtinBooleanLiteral
-              (boolean_literal_expr type='Builtin.Int1' location=<<testFilePath>>:3:10 range=[<<testFilePath>>:3:10 - line:3:10] value=true))))))
+          (call_expr implicit type='Bool' location=<<testFilePath>>:19:10 range=[<<testFilePath>>:19:10 - line:19:10] nothrow arg_labels=_builtinBooleanLiteral:
+            (constructor_ref_call_expr implicit type='(Int1) -> Bool' location=<<testFilePath>>:19:10 range=[<<testFilePath>>:19:10 - line:19:10] nothrow
+              (declref_expr implicit type='(Bool.Type) -> (Int1) -> Bool' location=<<testFilePath>>:19:10 range=[<<testFilePath>>:19:10 - line:19:10] decl=Swift.(file).Bool.init(_builtinBooleanLiteral:) function_ref=single)
+              (type_expr implicit type='Bool.Type' location=<<testFilePath>>:19:10 range=[<<testFilePath>>:19:10 - line:19:10] typerepr='Bool'))
+            (tuple_expr implicit type='(_builtinBooleanLiteral: Builtin.Int1)' location=<<testFilePath>>:19:10 range=[<<testFilePath>>:19:10 - line:19:10] names=_builtinBooleanLiteral
+              (boolean_literal_expr type='Builtin.Int1' location=<<testFilePath>>:19:10 range=[<<testFilePath>>:19:10 - line:19:10] value=true))))))
     (pattern_binding_decl
       (pattern_typed type='String'
         (pattern_named type='String' 'world')
@@ -42,37 +42,37 @@
         (parameter_list)
         (brace_stmt
           (return_stmt
-            (string_literal_expr type='String' location=<<testFilePath>>:7:10 range=[<<testFilePath>>:7:10 - line:7:10] encoding=utf8 value="World!" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))))
+            (string_literal_expr type='String' location=<<testFilePath>>:23:10 range=[<<testFilePath>>:23:10 - line:23:10] encoding=utf8 value="World!" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))))
     (func_decl 'anonname=<<memory address>>' interface type='(String) -> () -> String' access=internal getter_for=world
       (parameter_list
         (parameter "self" type='String' interface type='String'))
       (parameter_list)
       (brace_stmt
         (return_stmt
-          (string_literal_expr type='String' location=<<testFilePath>>:7:10 range=[<<testFilePath>>:7:10 - line:7:10] encoding=utf8 value="World!" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))))
+          (string_literal_expr type='String' location=<<testFilePath>>:23:10 range=[<<testFilePath>>:23:10 - line:23:10] encoding=utf8 value="World!" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))))
   (top_level_code_decl
     (brace_stmt
-      (call_expr type='()' location=<<testFilePath>>:11:1 range=[<<testFilePath>>:11:1 - line:11:29] nothrow arg_labels=_:
-        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:11:1 range=[<<testFilePath>>:11:1 - line:11:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
-        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:11:7 range=[<<testFilePath>>:11:6 - line:11:29] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
-          (paren_expr type='Any' location=<<testFilePath>>:11:7 range=[<<testFilePath>>:11:6 - line:11:29]
-            (erasure_expr implicit type='Any' location=<<testFilePath>>:11:7 range=[<<testFilePath>>:11:7 - line:11:7]
-              (interpolated_string_literal_expr type='String' location=<<testFilePath>>:11:7 range=[<<testFilePath>>:11:7 - line:11:7]
-                (string_literal_expr type='String' location=<<testFilePath>>:11:7 range=[<<testFilePath>>:11:7 - line:11:7] encoding=utf8 value="" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
-                (paren_expr type='(Bool)' location=<<testFilePath>>:11:19 range=[<<testFilePath>>:11:9 - line:11:27]
-                  (member_ref_expr type='Bool' location=<<testFilePath>>:11:19 range=[<<testFilePath>>:11:10 - line:11:19] decl=extensions.(file).String.isString@<<testFilePath>>:2:6
-                    (string_literal_expr type='String' location=<<testFilePath>>:11:10 range=[<<testFilePath>>:11:10 - line:11:10] encoding=utf8 value="Hello!" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))
-                (string_literal_expr type='String' location=<<testFilePath>>:11:28 range=[<<testFilePath>>:11:28 - line:11:28] encoding=utf8 value="" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))))))
+      (call_expr type='()' location=<<testFilePath>>:27:1 range=[<<testFilePath>>:27:1 - line:27:29] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:27:1 range=[<<testFilePath>>:27:1 - line:27:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:27:7 range=[<<testFilePath>>:27:6 - line:27:29] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:27:7 range=[<<testFilePath>>:27:6 - line:27:29]
+            (erasure_expr implicit type='Any' location=<<testFilePath>>:27:7 range=[<<testFilePath>>:27:7 - line:27:7]
+              (interpolated_string_literal_expr type='String' location=<<testFilePath>>:27:7 range=[<<testFilePath>>:27:7 - line:27:7]
+                (string_literal_expr type='String' location=<<testFilePath>>:27:7 range=[<<testFilePath>>:27:7 - line:27:7] encoding=utf8 value="" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
+                (paren_expr type='(Bool)' location=<<testFilePath>>:27:19 range=[<<testFilePath>>:27:9 - line:27:27]
+                  (member_ref_expr type='Bool' location=<<testFilePath>>:27:19 range=[<<testFilePath>>:27:10 - line:27:19] decl=extensions.(file).String.isString@<<testFilePath>>:18:6
+                    (string_literal_expr type='String' location=<<testFilePath>>:27:10 range=[<<testFilePath>>:27:10 - line:27:10] encoding=utf8 value="Hello!" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))
+                (string_literal_expr type='String' location=<<testFilePath>>:27:28 range=[<<testFilePath>>:27:28 - line:27:28] encoding=utf8 value="" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))))))))
   (top_level_code_decl
     (brace_stmt
-      (call_expr type='()' location=<<testFilePath>>:12:1 range=[<<testFilePath>>:12:1 - line:12:26] nothrow arg_labels=_:
-        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:12:1 range=[<<testFilePath>>:12:1 - line:12:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
-        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:12:7 range=[<<testFilePath>>:12:6 - line:12:26] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
-          (paren_expr type='Any' location=<<testFilePath>>:12:7 range=[<<testFilePath>>:12:6 - line:12:26]
-            (erasure_expr implicit type='Any' location=<<testFilePath>>:12:7 range=[<<testFilePath>>:12:7 - line:12:7]
-              (interpolated_string_literal_expr type='String' location=<<testFilePath>>:12:7 range=[<<testFilePath>>:12:7 - line:12:7]
-                (string_literal_expr type='String' location=<<testFilePath>>:12:7 range=[<<testFilePath>>:12:7 - line:12:7] encoding=utf8 value="" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
-                (paren_expr type='(String)' location=<<testFilePath>>:12:19 range=[<<testFilePath>>:12:9 - line:12:24]
-                  (member_ref_expr type='String' location=<<testFilePath>>:12:19 range=[<<testFilePath>>:12:10 - line:12:19] decl=extensions.(file).String.world@<<testFilePath>>:6:6
-                    (string_literal_expr type='String' location=<<testFilePath>>:12:10 range=[<<testFilePath>>:12:10 - line:12:10] encoding=utf8 value="Hello!" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))
-                (string_literal_expr type='String' location=<<testFilePath>>:12:25 range=[<<testFilePath>>:12:25 - line:12:25] encoding=utf8 value="" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))))))))
+      (call_expr type='()' location=<<testFilePath>>:28:1 range=[<<testFilePath>>:28:1 - line:28:26] nothrow arg_labels=_:
+        (declref_expr type='(Any..., String, String) -> ()' location=<<testFilePath>>:28:1 range=[<<testFilePath>>:28:1 - line:28:1] decl=Swift.(file).print(_:separator:terminator:) function_ref=single)
+        (tuple_shuffle_expr implicit type='(Any..., separator: String, terminator: String)' location=<<testFilePath>>:28:7 range=[<<testFilePath>>:28:6 - line:28:26] scalar_to_tuple elements=[-2, -1, -1] variadic_sources=[0] default_args_owner=Swift.(file).print(_:separator:terminator:)
+          (paren_expr type='Any' location=<<testFilePath>>:28:7 range=[<<testFilePath>>:28:6 - line:28:26]
+            (erasure_expr implicit type='Any' location=<<testFilePath>>:28:7 range=[<<testFilePath>>:28:7 - line:28:7]
+              (interpolated_string_literal_expr type='String' location=<<testFilePath>>:28:7 range=[<<testFilePath>>:28:7 - line:28:7]
+                (string_literal_expr type='String' location=<<testFilePath>>:28:7 range=[<<testFilePath>>:28:7 - line:28:7] encoding=utf8 value="" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
+                (paren_expr type='(String)' location=<<testFilePath>>:28:19 range=[<<testFilePath>>:28:9 - line:28:24]
+                  (member_ref_expr type='String' location=<<testFilePath>>:28:19 range=[<<testFilePath>>:28:10 - line:28:19] decl=extensions.(file).String.world@<<testFilePath>>:22:6
+                    (string_literal_expr type='String' location=<<testFilePath>>:28:10 range=[<<testFilePath>>:28:10 - line:28:10] encoding=utf8 value="Hello!" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))
+                (string_literal_expr type='String' location=<<testFilePath>>:28:25 range=[<<testFilePath>>:28:25 - line:28:25] encoding=utf8 value="" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))))))))

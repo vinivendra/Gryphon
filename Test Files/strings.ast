@@ -3,75 +3,75 @@
     (brace_stmt
       (pattern_binding_decl
         (pattern_named type='String' 'x')
-        (string_literal_expr type='String' location=<<testFilePath>>:2:9 range=[<<testFilePath>>:2:9 - line:2:9] encoding=utf8 value="Hello, world!" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))
+        (string_literal_expr type='String' location=<<testFilePath>>:18:9 range=[<<testFilePath>>:18:9 - line:18:9] encoding=utf8 value="Hello, world!" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))
 ))
   (var_decl "x" type='String' interface type='String' access=internal let storage_kind=stored)
   (top_level_code_decl
     (brace_stmt
       (pattern_binding_decl
         (pattern_named type='String' 'y')
-        (interpolated_string_literal_expr type='String' location=<<testFilePath>>:3:9 range=[<<testFilePath>>:3:9 - line:3:9]
-          (string_literal_expr type='String' location=<<testFilePath>>:3:9 range=[<<testFilePath>>:3:9 - line:3:9] encoding=utf8 value="The string above is " builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
-          (paren_expr type='(String)' location=<<testFilePath>>:3:32 range=[<<testFilePath>>:3:31 - line:3:33]
-            (declref_expr type='String' location=<<testFilePath>>:3:32 range=[<<testFilePath>>:3:32 - line:3:32] decl=strings.(file).x@<<testFilePath>>:2:5 direct_to_storage function_ref=unapplied))
-          (string_literal_expr type='String' location=<<testFilePath>>:3:34 range=[<<testFilePath>>:3:34 - line:3:34] encoding=utf8 value="" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))
+        (interpolated_string_literal_expr type='String' location=<<testFilePath>>:19:9 range=[<<testFilePath>>:19:9 - line:19:9]
+          (string_literal_expr type='String' location=<<testFilePath>>:19:9 range=[<<testFilePath>>:19:9 - line:19:9] encoding=utf8 value="The string above is " builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
+          (paren_expr type='(String)' location=<<testFilePath>>:19:32 range=[<<testFilePath>>:19:31 - line:19:33]
+            (declref_expr type='String' location=<<testFilePath>>:19:32 range=[<<testFilePath>>:19:32 - line:19:32] decl=strings.(file).x@<<testFilePath>>:18:5 direct_to_storage function_ref=unapplied))
+          (string_literal_expr type='String' location=<<testFilePath>>:19:34 range=[<<testFilePath>>:19:34 - line:19:34] encoding=utf8 value="" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))
 ))
   (var_decl "y" type='String' interface type='String' access=internal let storage_kind=stored)
   (top_level_code_decl
     (brace_stmt
       (pattern_binding_decl
         (pattern_named type='Int' 'z')
-        (call_expr implicit type='Int' location=<<testFilePath>>:4:9 range=[<<testFilePath>>:4:9 - line:4:9] nothrow arg_labels=_builtinIntegerLiteral:
-          (constructor_ref_call_expr implicit type='(_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:4:9 range=[<<testFilePath>>:4:9 - line:4:9] nothrow
-            (declref_expr implicit type='(Int.Type) -> (_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:4:9 range=[<<testFilePath>>:4:9 - line:4:9] decl=Swift.(file).Int.init(_builtinIntegerLiteral:) function_ref=single)
-            (type_expr implicit type='Int.Type' location=<<testFilePath>>:4:9 range=[<<testFilePath>>:4:9 - line:4:9] typerepr='Int'))
-          (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' location=<<testFilePath>>:4:9 range=[<<testFilePath>>:4:9 - line:4:9] names=_builtinIntegerLiteral
-            (integer_literal_expr type='Int2048' location=<<testFilePath>>:4:9 range=[<<testFilePath>>:4:9 - line:4:9] value=0))))
+        (call_expr implicit type='Int' location=<<testFilePath>>:20:9 range=[<<testFilePath>>:20:9 - line:20:9] nothrow arg_labels=_builtinIntegerLiteral:
+          (constructor_ref_call_expr implicit type='(_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:20:9 range=[<<testFilePath>>:20:9 - line:20:9] nothrow
+            (declref_expr implicit type='(Int.Type) -> (_MaxBuiltinIntegerType) -> Int' location=<<testFilePath>>:20:9 range=[<<testFilePath>>:20:9 - line:20:9] decl=Swift.(file).Int.init(_builtinIntegerLiteral:) function_ref=single)
+            (type_expr implicit type='Int.Type' location=<<testFilePath>>:20:9 range=[<<testFilePath>>:20:9 - line:20:9] typerepr='Int'))
+          (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' location=<<testFilePath>>:20:9 range=[<<testFilePath>>:20:9 - line:20:9] names=_builtinIntegerLiteral
+            (integer_literal_expr type='Int2048' location=<<testFilePath>>:20:9 range=[<<testFilePath>>:20:9 - line:20:9] value=0))))
 ))
   (var_decl "z" type='Int' interface type='Int' access=internal let storage_kind=stored)
   (top_level_code_decl
     (brace_stmt
       (pattern_binding_decl
         (pattern_named type='String' 'w')
-        (interpolated_string_literal_expr type='String' location=<<testFilePath>>:5:9 range=[<<testFilePath>>:5:9 - line:5:9]
-          (string_literal_expr type='String' location=<<testFilePath>>:5:9 range=[<<testFilePath>>:5:9 - line:5:9] encoding=utf8 value="Here's another interpolated string: " builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
-          (paren_expr type='(String)' location=<<testFilePath>>:5:48 range=[<<testFilePath>>:5:47 - line:5:49]
-            (declref_expr type='String' location=<<testFilePath>>:5:48 range=[<<testFilePath>>:5:48 - line:5:48] decl=strings.(file).x@<<testFilePath>>:2:5 direct_to_storage function_ref=unapplied))
-          (string_literal_expr type='String' location=<<testFilePath>>:5:50 range=[<<testFilePath>>:5:50 - line:5:50] encoding=utf8 value=", " builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
-          (paren_expr type='(String)' location=<<testFilePath>>:5:54 range=[<<testFilePath>>:5:53 - line:5:55]
-            (declref_expr type='String' location=<<testFilePath>>:5:54 range=[<<testFilePath>>:5:54 - line:5:54] decl=strings.(file).y@<<testFilePath>>:3:5 direct_to_storage function_ref=unapplied))
-          (string_literal_expr type='String' location=<<testFilePath>>:5:56 range=[<<testFilePath>>:5:56 - line:5:56] encoding=utf8 value=" and " builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
-          (paren_expr type='(Int)' location=<<testFilePath>>:5:63 range=[<<testFilePath>>:5:62 - line:5:64]
-            (declref_expr type='Int' location=<<testFilePath>>:5:63 range=[<<testFilePath>>:5:63 - line:5:63] decl=strings.(file).z@<<testFilePath>>:4:5 direct_to_storage function_ref=unapplied))
-          (string_literal_expr type='String' location=<<testFilePath>>:5:65 range=[<<testFilePath>>:5:65 - line:5:65] encoding=utf8 value="" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))
+        (interpolated_string_literal_expr type='String' location=<<testFilePath>>:21:9 range=[<<testFilePath>>:21:9 - line:21:9]
+          (string_literal_expr type='String' location=<<testFilePath>>:21:9 range=[<<testFilePath>>:21:9 - line:21:9] encoding=utf8 value="Here's another interpolated string: " builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
+          (paren_expr type='(String)' location=<<testFilePath>>:21:48 range=[<<testFilePath>>:21:47 - line:21:49]
+            (declref_expr type='String' location=<<testFilePath>>:21:48 range=[<<testFilePath>>:21:48 - line:21:48] decl=strings.(file).x@<<testFilePath>>:18:5 direct_to_storage function_ref=unapplied))
+          (string_literal_expr type='String' location=<<testFilePath>>:21:50 range=[<<testFilePath>>:21:50 - line:21:50] encoding=utf8 value=", " builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
+          (paren_expr type='(String)' location=<<testFilePath>>:21:54 range=[<<testFilePath>>:21:53 - line:21:55]
+            (declref_expr type='String' location=<<testFilePath>>:21:54 range=[<<testFilePath>>:21:54 - line:21:54] decl=strings.(file).y@<<testFilePath>>:19:5 direct_to_storage function_ref=unapplied))
+          (string_literal_expr type='String' location=<<testFilePath>>:21:56 range=[<<testFilePath>>:21:56 - line:21:56] encoding=utf8 value=" and " builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
+          (paren_expr type='(Int)' location=<<testFilePath>>:21:63 range=[<<testFilePath>>:21:62 - line:21:64]
+            (declref_expr type='Int' location=<<testFilePath>>:21:63 range=[<<testFilePath>>:21:63 - line:21:63] decl=strings.(file).z@<<testFilePath>>:20:5 direct_to_storage function_ref=unapplied))
+          (string_literal_expr type='String' location=<<testFilePath>>:21:65 range=[<<testFilePath>>:21:65 - line:21:65] encoding=utf8 value="" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))
 ))
   (var_decl "w" type='String' interface type='String' access=internal let storage_kind=stored)
   (top_level_code_decl
     (brace_stmt
       (pattern_binding_decl
         (pattern_named type='String' 'escapedString')
-        (string_literal_expr type='String' location=<<testFilePath>>:7:21 range=[<<testFilePath>>:7:21 - line:7:21] encoding=utf8 value="A string with \"escaped double quotes\" \\ and escaped backslashes \n\t and some escaped characters too." builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))
+        (string_literal_expr type='String' location=<<testFilePath>>:23:21 range=[<<testFilePath>>:23:21 - line:23:21] encoding=utf8 value="A string with \"escaped double quotes\" \\ and escaped backslashes \n\t and some escaped characters too." builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**))
 ))
   (var_decl "escapedString" type='String' interface type='String' access=internal let storage_kind=stored)
   (top_level_code_decl
     (brace_stmt
       (pattern_binding_decl
         (pattern_named type='String' 'singleInterpolation')
-        (interpolated_string_literal_expr type='String' location=<<testFilePath>>:9:27 range=[<<testFilePath>>:9:27 - line:9:27]
-          (string_literal_expr type='String' location=<<testFilePath>>:9:27 range=[<<testFilePath>>:9:27 - line:9:27] encoding=utf8 value="" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
-          (paren_expr type='(String)' location=<<testFilePath>>:9:30 range=[<<testFilePath>>:9:29 - line:9:31]
-            (declref_expr type='String' location=<<testFilePath>>:9:30 range=[<<testFilePath>>:9:30 - line:9:30] decl=strings.(file).x@<<testFilePath>>:2:5 direct_to_storage function_ref=unapplied))
-          (string_literal_expr type='String' location=<<testFilePath>>:9:32 range=[<<testFilePath>>:9:32 - line:9:32] encoding=utf8 value="" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))
+        (interpolated_string_literal_expr type='String' location=<<testFilePath>>:25:27 range=[<<testFilePath>>:25:27 - line:25:27]
+          (string_literal_expr type='String' location=<<testFilePath>>:25:27 range=[<<testFilePath>>:25:27 - line:25:27] encoding=utf8 value="" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
+          (paren_expr type='(String)' location=<<testFilePath>>:25:30 range=[<<testFilePath>>:25:29 - line:25:31]
+            (declref_expr type='String' location=<<testFilePath>>:25:30 range=[<<testFilePath>>:25:30 - line:25:30] decl=strings.(file).x@<<testFilePath>>:18:5 direct_to_storage function_ref=unapplied))
+          (string_literal_expr type='String' location=<<testFilePath>>:25:32 range=[<<testFilePath>>:25:32 - line:25:32] encoding=utf8 value="" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))
 ))
   (var_decl "singleInterpolation" type='String' interface type='String' access=internal let storage_kind=stored)
   (top_level_code_decl
     (brace_stmt
       (pattern_binding_decl
         (pattern_named type='String' 'interpolationWithDoubleQuotes')
-        (interpolated_string_literal_expr type='String' location=<<testFilePath>>:10:37 range=[<<testFilePath>>:10:37 - line:10:37]
-          (string_literal_expr type='String' location=<<testFilePath>>:10:37 range=[<<testFilePath>>:10:37 - line:10:37] encoding=utf8 value="\"\"" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
-          (paren_expr type='(String)' location=<<testFilePath>>:10:44 range=[<<testFilePath>>:10:43 - line:10:45]
-            (declref_expr type='String' location=<<testFilePath>>:10:44 range=[<<testFilePath>>:10:44 - line:10:44] decl=strings.(file).x@<<testFilePath>>:2:5 direct_to_storage function_ref=unapplied))
-          (string_literal_expr type='String' location=<<testFilePath>>:10:46 range=[<<testFilePath>>:10:46 - line:10:46] encoding=utf8 value="" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))
+        (interpolated_string_literal_expr type='String' location=<<testFilePath>>:26:37 range=[<<testFilePath>>:26:37 - line:26:37]
+          (string_literal_expr type='String' location=<<testFilePath>>:26:37 range=[<<testFilePath>>:26:37 - line:26:37] encoding=utf8 value="\"\"" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)
+          (paren_expr type='(String)' location=<<testFilePath>>:26:44 range=[<<testFilePath>>:26:43 - line:26:45]
+            (declref_expr type='String' location=<<testFilePath>>:26:44 range=[<<testFilePath>>:26:44 - line:26:44] decl=strings.(file).x@<<testFilePath>>:18:5 direct_to_storage function_ref=unapplied))
+          (string_literal_expr type='String' location=<<testFilePath>>:26:46 range=[<<testFilePath>>:26:46 - line:26:46] encoding=utf8 value="" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))
 ))
   (var_decl "interpolationWithDoubleQuotes" type='String' interface type='String' access=internal let storage_kind=stored))
