@@ -84,6 +84,7 @@ extension TestUtils {
 		"bhaskara",
 		"classes",
 		"extensions",
+		"forEachStatements",
 		"functionCalls",
 		"ifStatement",
 		"kotlinLiterals",

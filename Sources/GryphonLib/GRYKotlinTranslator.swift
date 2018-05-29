@@ -19,7 +19,14 @@ public class GRYKotlinTranslator {
 	static let typeMappings = ["Bool": "Boolean", "Error": "Exception"]
 	
 	private func translateType(_ type: String) -> String {
-		return GRYKotlinTranslator.typeMappings[type] ?? type
+		if type.hasPrefix("[") {
+			let innerType = String(type.dropLast().dropFirst())
+			let translatedInnerType = translateType(innerType)
+			return "List<\(translatedInnerType)>"
+		}
+		else {
+			return GRYKotlinTranslator.typeMappings[type] ?? type
+		}
 	}
 	
 	/**
@@ -124,6 +131,9 @@ public class GRYKotlinTranslator {
 				result += string
 			case "Extension Declaration":
 				let string = translate(subTrees: subTree.subTrees, withIndentation: indentation)
+				result += string
+			case "For Each Statement":
+				let string = translate(forEachStatement: subTree, withIndentation: indentation)
 				result += string
 			case "Function Declaration":
 				let string = translate(functionDeclaration: subTree, withIndentation: indentation)
@@ -351,6 +361,21 @@ public class GRYKotlinTranslator {
 		result += indentation + "}\n"
 		
 		return result
+	}
+	
+	private func translate(forEachStatement: GRYAst, withIndentation indentation: String) -> String {
+		precondition(forEachStatement.name == "For Each Statement")
+		
+		let patternNamed = forEachStatement.subTree(named: "Pattern Named")!
+		let variableName = patternNamed.standaloneAttributes[0]
+		
+		let collectionExpression = translate(expression: forEachStatement.subTrees[2])
+		
+		let increasedIndentation = increaseIndentation(indentation)
+		let braceStatement = forEachStatement.subTrees.last!
+		let statements = translate(subTrees: braceStatement.subTrees, withIndentation: increasedIndentation)
+		
+		return "\(indentation)for (\(variableName) in \(collectionExpression)) {\n\(statements)\(indentation)}\n"
 	}
 	
 	private func translate(ifStatement: GRYAst,
