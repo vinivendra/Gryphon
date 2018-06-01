@@ -681,6 +681,8 @@ public class GRYKotlinTranslator {
 			return translate(typeExpression: expression)
 		case "Member Reference Expression":
 			return translate(memberReferenceExpression: expression)
+		case "Subscript Expression":
+			return translate(subscriptExpression: expression)
 		case "Parentheses Expression":
 			return "(" + translate(expression: expression.subTrees[0]) + ")"
 		case "Force Value Expression":
@@ -706,6 +708,21 @@ public class GRYKotlinTranslator {
 		precondition(typeExpression.name == "Type Expression")
 		let rawType = typeExpression.keyValueAttributes["typerepr"]!
 		return translateType(rawType)
+	}
+	
+	private func translate(subscriptExpression: GRYAst) -> String {
+		precondition(subscriptExpression.name == "Subscript Expression")
+		
+		let subscriptedExpression = subscriptExpression.subTrees[0]
+		let subscriptedString = translate(expression: subscriptedExpression)
+		
+		var subscriptContents = subscriptExpression.subTrees[1]
+		if subscriptContents.name == "Parentheses Expression" {
+			subscriptContents = subscriptContents.subTrees[0]
+		}
+		let subscriptContentsString = translate(expression: subscriptContents)
+		
+		return "\(subscriptedString)[\(subscriptContentsString)]"
 	}
 	
 	private func translate(dotSyntaxCallExpression: GRYAst) -> String {
