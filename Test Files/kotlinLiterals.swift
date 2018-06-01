@@ -22,6 +22,8 @@ func GRYAlternative<T>(swift swiftExpression: T, kotlin kotlinExpression: String
 	return swiftExpression
 }
 
+protocol GRYIgnore { }
+
 //
 import Foundation
 
@@ -47,3 +49,8 @@ print("This will be ignored by kotlin, but not by swift.")
 // Call something swift can't parse
 let squareRoot = GRYAlternative(swift: sqrt(9), kotlin: "Math.sqrt(9.0)")
 print(squareRoot)
+
+// Ignore a swift class or an enum
+class IgnoredClass: GRYIgnore { }
+enum IgnoredEnum: GRYIgnore { }
+

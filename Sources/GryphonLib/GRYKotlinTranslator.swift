@@ -138,6 +138,9 @@ public class GRYKotlinTranslator {
 			case "Function Declaration":
 				let string = translate(functionDeclaration: subTree, withIndentation: indentation)
 				result += string
+			case "Protocol":
+				let string = translate(protocolDeclaration: subTree, withIndentation: indentation)
+				result += string
 			case "Top Level Code Declaration":
 				let string = translate(topLevelCode: subTree, withIndentation: indentation)
 				result += string
@@ -218,7 +221,12 @@ public class GRYKotlinTranslator {
 		
 		if let inheritanceList = enumDeclaration.keyValueAttributes["inherits"] {
 			let rawInheritanceArray = inheritanceList.split(withStringSeparator: ", ")
-			var inheritanceArray = rawInheritanceArray.map { GRYKotlinTranslator.typeMappings[$0] ?? $0 }
+			
+			if rawInheritanceArray.contains("GRYIgnore") {
+				return ""
+			}
+			
+			var inheritanceArray = rawInheritanceArray.map { translateType($0) }
 			inheritanceArray[0] = inheritanceArray[0] + "()"
 
 			let inheritanceString = inheritanceArray.joined(separator: ", ")
@@ -244,15 +252,44 @@ public class GRYKotlinTranslator {
 		return "\(indentation)<Unknown: non-sealed-class enum>\n"
 	}
 	
+	private func translate(protocolDeclaration: GRYAst, withIndentation indentation: String) -> String {
+		precondition(protocolDeclaration.name == "Protocol")
+		
+		let protocolName = protocolDeclaration.standaloneAttributes[0]
+		
+		if protocolName == "GRYIgnore" {
+			return ""
+		}
+		else {
+			// Add actual protocol translation here
+			return ""
+		}
+	}
+	
 	private func translate(classDeclaration: GRYAst, withIndentation indentation: String) -> String {
 		precondition(classDeclaration.name == "Class Declaration")
 		
 		let className = classDeclaration.standaloneAttributes[0]
 	
+		let inheritanceString: String
+		if let inheritanceList = classDeclaration.keyValueAttributes["inherits"] {
+			let rawInheritanceArray = inheritanceList.split(withStringSeparator: ", ")
+			
+			if rawInheritanceArray.contains("GRYIgnore") {
+				return ""
+			}
+			
+			let inheritanceArray = rawInheritanceArray.map { translateType($0) }
+			inheritanceString = ": \(inheritanceArray.joined(separator: ", "))"
+		}
+		else {
+			inheritanceString = ""
+		}
+		
 		let increasedIndentation = increaseIndentation(indentation)
 		let classContents = translate(subTrees: classDeclaration.subTrees, withIndentation: increasedIndentation)
 		
-		return "class \(className) {\n\(classContents)}\n"
+		return "class \(className)\(inheritanceString) {\n\(classContents)}\n"
 	}
 	
 	private func translate(constructorDeclaration: GRYAst, withIndentation indentation: String) -> String {

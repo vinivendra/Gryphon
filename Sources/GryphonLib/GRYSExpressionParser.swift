@@ -166,7 +166,7 @@ internal class GRYSExpressionParser {
 		loop: while true {
 			let character = buffer[index]
 
-			if character == "\n" {
+			if character == "\n" || character == ")" {
 				break
 			}
 			
