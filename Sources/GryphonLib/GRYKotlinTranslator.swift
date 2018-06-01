@@ -22,7 +22,7 @@ public class GRYKotlinTranslator {
 		if type.hasPrefix("[") {
 			let innerType = String(type.dropLast().dropFirst())
 			let translatedInnerType = translateType(innerType)
-			return "List<\(translatedInnerType)>"
+			return "MutableList<\(translatedInnerType)>"
 		}
 		else {
 			return GRYKotlinTranslator.typeMappings[type] ?? type
@@ -661,6 +661,8 @@ public class GRYKotlinTranslator {
 	
 	private func translate(expression: GRYAst) -> String {
 		switch expression.name {
+		case "Array Expression":
+			return translate(arrayExpression: expression)
 		case "Binary Expression":
 			return translate(binaryExpression: expression)
 		case "Call Expression":
@@ -723,6 +725,15 @@ public class GRYKotlinTranslator {
 		let subscriptContentsString = translate(expression: subscriptContents)
 		
 		return "\(subscriptedString)[\(subscriptContentsString)]"
+	}
+	
+	private func translate(arrayExpression: GRYAst) -> String {
+		precondition(arrayExpression.name == "Array Expression")
+		
+		let expressionsArray = arrayExpression.subTrees.map { translate(expression: $0) }
+		let expressionsString = expressionsArray.joined(separator: ", ")
+		
+		return "mutableListOf(\(expressionsString))"
 	}
 	
 	private func translate(dotSyntaxCallExpression: GRYAst) -> String {
