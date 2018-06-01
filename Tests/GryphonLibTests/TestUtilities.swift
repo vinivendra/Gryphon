@@ -80,11 +80,11 @@ enum TestUtils {
 
 extension TestUtils {
 	static let acceptanceTestCases: [String] = [
+		"arrays",
 		"assignments",
 		"bhaskara",
 		"classes",
 		"extensions",
-		"forEachStatements",
 		"functionCalls",
 		"ifStatement",
 		"kotlinLiterals",

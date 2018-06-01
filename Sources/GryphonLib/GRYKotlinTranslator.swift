@@ -24,6 +24,11 @@ public class GRYKotlinTranslator {
 			let translatedInnerType = translateType(innerType)
 			return "MutableList<\(translatedInnerType)>"
 		}
+		else if type.hasPrefix("ArrayReference<") {
+			let innerType = String(type.dropLast().dropFirst("ArrayReference<".count))
+			let translatedInnerType = translateType(innerType)
+			return "MutableList<\(translatedInnerType)>"
+		}
 		else {
 			return GRYKotlinTranslator.typeMappings[type] ?? type
 		}
@@ -689,18 +694,8 @@ public class GRYKotlinTranslator {
 			return "(" + translate(expression: expression.subTrees[0]) + ")"
 		case "Force Value Expression":
 			return translate(expression: expression.subTrees[0]) + "!!"
-		case "Autoclosure Expression", "Inject Into Optional", "Inout Expression":
+		case "Autoclosure Expression", "Inject Into Optional", "Inout Expression", "Load Expression":
 			return translate(expression: expression.subTrees.last!)
-		case "Load Expression":
-			if let innerExpression = expression.subTree(named: "Declaration Reference Expression") {
-				return translate(expression: innerExpression)
-			}
-			else if let innerExpression = expression.subTree(named: "Member Reference Expression") {
-				return translate(expression: innerExpression)
-			}
-			else {
-				return "<Unknown expression: \(expression.name)>"
-			}
 		default:
 			return "<Unknown expression: \(expression.name)>"
 		}
