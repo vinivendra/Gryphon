@@ -77,6 +77,23 @@ public enum GRYCompiler {
 		return kotlin
 	}
 	
+	public static func processExternalAST(_ filePath: String) -> GRYAst {
+		let astFilePath = GRYUtils.changeExtension(of: filePath, to: "ast")
+		
+		log?("Building GRYAst from external AST...")
+		let ast = GRYAst(astFile: astFilePath)
+		
+		let jsonFilePath = GRYUtils.changeExtension(of: filePath, to: "json")
+		let jsonFileWasJustCreated = GRYUtils.createFileIfNeeded(at: jsonFilePath, containing: "")
+		let jsonIsOutdated = jsonFileWasJustCreated || GRYUtils.file(astFilePath, wasModifiedLaterThan: jsonFilePath)
+		if jsonIsOutdated {
+			log?("\tUpdating \(jsonFilePath)...")
+			ast.writeAsJSON(toFile: jsonFilePath)
+		}
+		
+		return ast
+	}
+	
 	public static func generateAST(forFileAt filePath: String) -> GRYAst {
 		let astDumpFilePath = GRYUtils.changeExtension(of: filePath, to: "ast")
 		
