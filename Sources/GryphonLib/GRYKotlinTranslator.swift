@@ -15,6 +15,64 @@
 */
 
 public class GRYKotlinTranslator {
+	
+	/// Records the amount of translations that have been successfully translated;
+	/// that can be refactored into translatable code; or that can't be translated.
+	class Diagnostics: CustomStringConvertible {
+		/// The number of successfully translated subtrees
+		fileprivate(set) var translatedSubtrees = 0
+		/// The number of subtrees that can be refactored into translatable subtrees
+		fileprivate(set) var refactorableSubtrees = 0
+		/// The number of subtrees that can't be translated
+		fileprivate(set) var unknownSubtrees = 0
+		
+		private func addTranslationResult(_ result: TranslationResult) {
+			switch result {
+			case .translated: translatedSubtrees += 1
+			case .refactorable: refactorableSubtrees += 1
+			case .unknown: unknownSubtrees += 1
+			}
+		}
+		
+		var description: String {
+			return """
+			Kotlin translation diagnostics:
+				\(translatedSubtrees) translated subtrees
+				\(refactorableSubtrees) refactorable subtrees
+				\(unknownSubtrees) unknown subtrees
+			"""
+		}
+	}
+	
+	/// Records the amount of translations that have been successfully translated;
+	/// that can be refactored into translatable code; or that can't be translated.
+	let diagnostics = Diagnostics()
+	
+	/// records if a translation was successful (`translated`), if it can be refactored
+	/// into translatable code (`refactorable`), or if it can't be translated (`unknown`).
+	private enum TranslationResult {
+		case translated(String)
+		case refactorable(String)
+		case unknown(String)
+		
+		/// The code that should be added to the output source file
+		var code: String {
+			switch self {
+			case .translated(let result): return result
+			case .refactorable(let result): return "/* ⚠️ \(result) */"
+			case .unknown(let result): return "/* 🚨 \(result) */"
+			}
+		}
+		
+		func replacingCode(with code: String) -> TranslationResult {
+			switch self {
+			case .translated: return .translated(code)
+			case .refactorable: return .refactorable(code)
+			case .unknown: return .unknown(code)
+			}
+		}
+	}
+	
 	/// Used for the translation of Swift types into Kotlin types.
 	static let typeMappings = ["Bool": "Boolean", "Error": "Exception"]
 	
@@ -153,11 +211,9 @@ public class GRYKotlinTranslator {
 				let string = translate(throwStatement: subTree, withIndentation: indentation)
 				result += string
 			case "Variable Declaration":
-				let string = translate(variableDeclaration: subTree, withIndentation: indentation)
-				result += string
+				result += translate(variableDeclaration: subTree, withIndentation: indentation).code
 			case "Assign Expression":
-				let string = translate(assignExpression: subTree, withIndentation: indentation)
-				result += string
+				result += translate(assignExpression: subTree, withIndentation: indentation).code
 			case "Guard Statement":
 				result += translate(ifStatement: subTree, asGuard: true, withIndentation: indentation)
 			case "If Statement":
@@ -556,7 +612,7 @@ public class GRYKotlinTranslator {
 	`nil`). Otherwise, the variable is declared without an initial value.
 	*/
 	private func translate(variableDeclaration: GRYAst,
-						   withIndentation indentation: String) -> String
+						   withIndentation indentation: String) -> TranslationResult
 	{
 		precondition(variableDeclaration.name == "Variable Declaration")
 		var result = indentation
@@ -616,7 +672,7 @@ public class GRYKotlinTranslator {
 		
 		result += translateGetterAndSetter(forVariableDeclaration: variableDeclaration, withIndentation: indentation)
 		
-		return result
+		return .translated(result)
 	}
 	
 	private func translateGetterAndSetter(forVariableDeclaration variableDeclaration: GRYAst,
@@ -652,7 +708,7 @@ public class GRYKotlinTranslator {
 		return result
 	}
 	
-	private func translate(assignExpression: GRYAst, withIndentation indentation: String) -> String {
+	private func translate(assignExpression: GRYAst, withIndentation indentation: String) -> TranslationResult {
 		precondition(assignExpression.name == "Assign Expression")
 		
 		let leftExpression = assignExpression.subTrees[0]
@@ -661,13 +717,13 @@ public class GRYKotlinTranslator {
 		let rightExpression = assignExpression.subTrees[1]
 		let rightString = translate(expression: rightExpression)
 		
-		return "\(indentation)\(leftString) = \(rightString)\n"
+		return .translated("\(indentation)\(leftString) = \(rightString)\n")
 	}
 	
 	private func translate(expression: GRYAst) -> String {
 		switch expression.name {
 		case "Array Expression":
-			return translate(arrayExpression: expression)
+			return translate(arrayExpression: expression).code
 		case "Binary Expression":
 			return translate(binaryExpression: expression)
 		case "Call Expression":
@@ -675,17 +731,17 @@ public class GRYKotlinTranslator {
 		case "Declaration Reference Expression":
 			return translate(declarationReferenceExpression: expression)
 		case "Dot Syntax Call Expression":
-			return translate(dotSyntaxCallExpression: expression)
+			return translate(dotSyntaxCallExpression: expression).code
 		case "String Literal Expression":
-			return translate(stringLiteralExpression: expression)
+			return translate(stringLiteralExpression: expression).code
 		case "Interpolated String Literal Expression":
-			return translate(interpolatedStringLiteralExpression: expression)
+			return translate(interpolatedStringLiteralExpression: expression).code
 		case "Erasure Expression":
 			return translate(expression: expression.subTrees.last!)
 		case "Prefix Unary Expression":
 			return translate(prefixUnaryExpression: expression)
 		case "Type Expression":
-			return translate(typeExpression: expression)
+			return translate(typeExpression: expression).code
 		case "Member Reference Expression":
 			return translate(memberReferenceExpression: expression)
 		case "Subscript Expression":
@@ -701,10 +757,10 @@ public class GRYKotlinTranslator {
 		}
 	}
 	
-	private func translate(typeExpression: GRYAst) -> String {
+	private func translate(typeExpression: GRYAst) -> TranslationResult {
 		precondition(typeExpression.name == "Type Expression")
 		let rawType = typeExpression.keyValueAttributes["typerepr"]!
-		return translateType(rawType)
+		return .translated(translateType(rawType))
 	}
 	
 	private func translate(subscriptExpression: GRYAst) -> String {
@@ -722,35 +778,44 @@ public class GRYKotlinTranslator {
 		return "\(subscriptedString)[\(subscriptContentsString)]"
 	}
 	
-	private func translate(arrayExpression: GRYAst) -> String {
+	private func translate(arrayExpression: GRYAst) -> TranslationResult {
 		precondition(arrayExpression.name == "Array Expression")
 		
 		let expressionsArray = arrayExpression.subTrees.map { translate(expression: $0) }
 		let expressionsString = expressionsArray.joined(separator: ", ")
 		
-		return "mutableListOf(\(expressionsString))"
+		return .translated("mutableListOf(\(expressionsString))")
 	}
 	
-	private func translate(dotSyntaxCallExpression: GRYAst) -> String {
+	private func translate(dotSyntaxCallExpression: GRYAst) -> TranslationResult {
 		precondition(dotSyntaxCallExpression.name == "Dot Syntax Call Expression")
 		let rightHandSide = translate(expression: dotSyntaxCallExpression.subTrees[0])
 		
 		let leftHandTree = dotSyntaxCallExpression.subTrees[1]
 		if leftHandTree.name == "Type Expression" {
-			let leftHandSide = translate(typeExpression: leftHandTree)
+			
+			let leftHandSideResult = translate(typeExpression: leftHandTree)
+			guard case .translated(let leftHandSide) = leftHandSideResult else {
+				return leftHandSideResult.replacingCode(with: "Dot Syntax Call Expression")
+			}
 			
 			// Enums become sealed classes, which need parentheses at the end
 			if GRYKotlinTranslator.enums.contains(leftHandSide) {
 				let capitalizedEnumCase = rightHandSide.capitalizedAsCamelCase
-				return "\(leftHandSide).\(capitalizedEnumCase)()"
+				return .translated("\(leftHandSide).\(capitalizedEnumCase)()")
 			}
 			else {
-				return "\(leftHandSide).\(rightHandSide)"
+				return .translated("\(leftHandSide).\(rightHandSide)")
 			}
 		}
 		else {
-			let leftHandSide = translate(expression: leftHandTree)
-			return "\(leftHandSide).\(rightHandSide)"
+			
+			let leftHandSideResult = translate(typeExpression: leftHandTree)
+			guard case .translated(let leftHandSide) = leftHandSideResult else {
+				return leftHandSideResult.replacingCode(with: "Dot Syntax Call Expression")
+			}
+
+			return .translated("\(leftHandSide).\(rightHandSide)")
 		}
 	}
 	
@@ -842,7 +907,7 @@ public class GRYKotlinTranslator {
 			}
 			else if let constructorReferenceCallExpression = callExpression.subTree(named: "Constructor Reference Call Expression") {
 				let typeExpression = constructorReferenceCallExpression.subTree(named: "Type Expression")!
-				functionName = translate(typeExpression: typeExpression)
+				functionName = translate(typeExpression: typeExpression).code
 			}
 			else if let declaration = callExpression["decl"] {
 				functionName = getIdentifierFromDeclaration(declaration)
@@ -965,7 +1030,12 @@ public class GRYKotlinTranslator {
 		}
 		
 		let stringExpression = parameterExpression.subTrees.last!
-		let string = translate(stringLiteralExpression: stringExpression)
+		let stringTranslationResult = translate(stringLiteralExpression: stringExpression)
+		guard case .translated(let string) = stringTranslationResult else {
+			return ""
+//			return stringTranslationResult.replacingCode(with: callExpression.name)
+		}
+		
 		let unquotedString = String(string.dropLast().dropFirst())
 		let unescapedString = removeBackslashEscapes(unquotedString)
 		return unescapedString
@@ -1063,19 +1133,27 @@ public class GRYKotlinTranslator {
 		return "(" + result.joined(separator: ", ") + ")"
 	}
 
-	private func translate(stringLiteralExpression: GRYAst) -> String {
-		let value = stringLiteralExpression["value"]!
-		return "\"\(value)\""
+	private func translate(stringLiteralExpression: GRYAst) -> TranslationResult {
+		if let value = stringLiteralExpression["value"] {
+			return .translated("\"\(value)\"")
+		}
+		else {
+			return .unknown(stringLiteralExpression.name)
+		}
 	}
 	
-	private func translate(interpolatedStringLiteralExpression: GRYAst) -> String {
+	private func translate(interpolatedStringLiteralExpression: GRYAst) -> TranslationResult {
 		precondition(interpolatedStringLiteralExpression.name == "Interpolated String Literal Expression")
 		
 		var result = "\""
 		
 		for expression in interpolatedStringLiteralExpression.subTrees {
 			if expression.name == "String Literal Expression" {
-				let quotedString = translate(stringLiteralExpression: expression)
+				let quotedStringTranslationResult = translate(stringLiteralExpression: expression)
+				guard case .translated(let quotedString) = quotedStringTranslationResult else {
+					return quotedStringTranslationResult.replacingCode(with: interpolatedStringLiteralExpression.name)
+				}
+				
 				let unquotedString = quotedString.dropLast().dropFirst()
 				
 				// Empty strings, as a special case, are represented by the swift ast dump
@@ -1091,7 +1169,7 @@ public class GRYKotlinTranslator {
 		}
 		
 		result += "\""
-		return result
+		return .translated(result)
 	}
 	
 	private func ASTIsExpression(_ ast: GRYAst) -> Bool {

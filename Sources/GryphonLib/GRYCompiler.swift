@@ -73,8 +73,10 @@ public enum GRYCompiler {
 		let ast = GRYAst.initialize(fromJsonInFile: jsonFile)
 		
 		log?("Translating AST to Kotlin...")
-		let kotlin = GRYKotlinTranslator().translateAST(ast)
-		return kotlin
+		let kotlinTranslator = GRYKotlinTranslator()
+		let kotlinCode = kotlinTranslator.translateAST(ast)
+		print("======\n\(kotlinTranslator.diagnostics)\n======\n")
+		return kotlinCode
 	}
 	
 	public static func processExternalAST(_ filePath: String) -> GRYAst {
