@@ -283,6 +283,8 @@ public class GRYKotlinTranslator {
 		}
 		
 		var inheritanceArray = rawInheritanceArray.map { translateType($0) }
+		
+		// The inheritanceArray isn't empty because the inheritanceList isn't empty.
 		inheritanceArray[0] = inheritanceArray[0] + "()"
 
 		let inheritanceString = inheritanceArray.joined(separator: ", ")
@@ -858,15 +860,12 @@ public class GRYKotlinTranslator {
 	private func translate(prefixUnaryExpression: GRYAst) throws -> String {
 		precondition(prefixUnaryExpression.name == "Prefix Unary Expression")
 
-		if let dotCallExpression = prefixUnaryExpression.subTree(named: "Dot Syntax Call Expression"),
-			let declarationReferenceExpression = dotCallExpression.subTree(named: "Declaration Reference Expression"),
-			let declaration = declarationReferenceExpression["decl"]
+		if let declaration = prefixUnaryExpression.subTree(named: "Dot Syntax Call Expression")?
+			.subTree(named: "Declaration Reference Expression")?["decl"],
+			let expression = prefixUnaryExpression.subTree(at: 1)
 		{
 			let operatorIdentifier = getIdentifierFromDeclaration(declaration)
-		
-			let expression = prefixUnaryExpression.subTrees[1]
 			let expressionString = translate(expression: expression)
-
 			return "\(operatorIdentifier)\(expressionString)"
 		}
 		else {
@@ -914,12 +913,9 @@ public class GRYKotlinTranslator {
 			let functionName: String
 			
 			if callExpression.standaloneAttributes.contains("implicit"),
-				let argumentLabels = callExpression["arg_labels"],
-				argumentLabels == "",
-				let type = callExpression["type"],
-				type == "Int1",
-				let dotSyntaxCall = callExpression.subTree(named: "Dot Syntax Call Expression"),
-				let containedExpression = dotSyntaxCall.subTrees.last
+				callExpression["arg_labels"] == "",
+				callExpression["type"] == "Int1",
+				let containedExpression = callExpression.subTree(named: "Dot Syntax Call Expression")?.subTrees.last
 			{
 				// If it's an empty expression used in an "if" condition
 				return translate(expression: containedExpression)
@@ -927,10 +923,13 @@ public class GRYKotlinTranslator {
 			if let declarationReferenceExpression = callExpression.subTree(named: "Declaration Reference Expression") {
 				functionName = try translate(declarationReferenceExpression: declarationReferenceExpression)
 			}
-			else if let dotSyntaxCallExpression = callExpression.subTree(named: "Dot Syntax Call Expression") {
-				let methodName = try translate(declarationReferenceExpression: dotSyntaxCallExpression.subTrees[0])
-				let methodOwner = translate(expression: dotSyntaxCallExpression.subTrees[1])
-				functionName = "\(methodOwner).\(methodName)"
+			else if let dotSyntaxCallExpression = callExpression.subTree(named: "Dot Syntax Call Expression"),
+				let methodName = dotSyntaxCallExpression.subTree(at: 0, named: "Declaration Reference Expression"),
+				let methodOwner = dotSyntaxCallExpression.subTree(at: 1)
+			{
+				let methodNameString = try translate(declarationReferenceExpression: methodName)
+				let methodOwnerString = translate(expression: methodOwner)
+				functionName = "\(methodOwnerString).\(methodNameString)"
 			}
 			else if let constructorReferenceCallExpression = callExpression.subTree(named: "Constructor Reference Call Expression"),
 				let typeExpression = constructorReferenceCallExpression.subTree(named: "Type Expression")
@@ -951,7 +950,7 @@ public class GRYKotlinTranslator {
 				functionNamePrefix != "GRYAlternative" else
 			{
 				return try translate(asKotlinLiteral: callExpression,
-								 withFunctionNamePrefix: functionNamePrefix)
+									 withFunctionNamePrefix: functionNamePrefix)
 			}
 			
 			// A call to `GRYIgnoreNext()` can be used to ignore the next swift statement.
@@ -1097,10 +1096,16 @@ public class GRYKotlinTranslator {
 	private func translate(memberReferenceExpression: GRYAst) throws -> String {
 		precondition(memberReferenceExpression.name == "Member Reference Expression")
 		
-		let declaration = try unwrapOrThrow(memberReferenceExpression["decl"])
-		let member = getIdentifierFromDeclaration(declaration)
-		let memberOwner = translate(expression: memberReferenceExpression.subTrees[0])
-		return "\(memberOwner).\(member)"
+		if let declaration = memberReferenceExpression["decl"],
+			let memberOwner = memberReferenceExpression.subTree(at: 0)
+		{
+			let memberOwnerString = translate(expression: memberOwner)
+			let member = getIdentifierFromDeclaration(declaration)
+			return "\(memberOwnerString).\(member)"
+		}
+		else {
+			throw TranslationError.unknown
+		}
 	}
 	
 	/**

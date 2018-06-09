@@ -148,6 +148,19 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 		return subTrees.first { $0.name == name }
 	}
 	
+	func subTree(at index: Int) -> GRYAst? {
+		return subTrees[safe: index]
+	}
+	
+	func subTree(at index: Int, named name: String) -> GRYAst? {
+		guard let subTree = subTrees[safe: index],
+			subTree.name == name else
+		{
+			return nil
+		}
+		return subTree
+	}
+	
 	//
 	public func writeAsJSON(toFile filePath: String) {
 		log?("Building AST JSON...")
