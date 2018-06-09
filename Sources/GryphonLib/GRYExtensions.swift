@@ -56,3 +56,19 @@ internal extension String {
 		return result
 	}
 }
+
+extension Array {
+	/// TODO: Test this.
+	subscript (safe index: Int) -> Element? {
+		if index >= 0 && index < count {
+			return self[index]
+		}
+		else {
+			return nil
+		}
+	}
+	
+	var secondToLast: Element? {
+		return self.dropLast().last
+	}
+}
