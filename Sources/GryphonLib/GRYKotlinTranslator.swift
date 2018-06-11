@@ -139,12 +139,12 @@ public class GRYKotlinTranslator {
 		
 		let declarations = ast.subTrees.filter(isDeclaration)
 		
-		var result = translate(subTrees: declarations, withIndentation: "")
+		var result = try! translate(subTrees: declarations, withIndentation: "")
 		
 		// Then, translate the remaining statements (if there are any) and wrap them in the main function
 		let indentation = increaseIndentation("")
 		let statements = ast.subTrees.filter({!isDeclaration($0)})
-		let statementsString = translate(subTrees: statements, withIndentation: indentation)
+		let statementsString = try! translate(subTrees: statements, withIndentation: indentation)
 		guard !statementsString.isEmpty else { return result }
 		
 		// Add newline between declarations and the main function, if needed
@@ -159,7 +159,7 @@ public class GRYKotlinTranslator {
 	
 	// MARK: - Implementation
 	
-	private func translate(subTrees: [GRYAst], withIndentation indentation: String) -> String {
+	private func translate(subTrees: [GRYAst], withIndentation indentation: String) throws -> String {
 		var result = ""
 		
 		for subTree in subTrees {
@@ -171,55 +171,55 @@ public class GRYKotlinTranslator {
 			switch subTree.name {
 			case "Import Declaration": break
 			case "Class Declaration":
-				let string = try! translate(classDeclaration: subTree, withIndentation: indentation)
+				let string = try translate(classDeclaration: subTree, withIndentation: indentation)
 				result += string
 			case "Constructor Declaration":
-				let string = try! translate(constructorDeclaration: subTree, withIndentation: indentation)
+				let string = try translate(constructorDeclaration: subTree, withIndentation: indentation)
 				result += string
 			case "Destructor Declaration":
-				let string = try! translate(destructorDeclaration: subTree, withIndentation: indentation)
+				let string = try translate(destructorDeclaration: subTree, withIndentation: indentation)
 				result += string
 			case "Enum Declaration":
-				let string = try! translate(enumDeclaration: subTree, withIndentation: indentation)
+				let string = try translate(enumDeclaration: subTree, withIndentation: indentation)
 				result += string
 			case "Extension Declaration":
-				let string = translate(subTrees: subTree.subTrees, withIndentation: indentation)
+				let string = try translate(subTrees: subTree.subTrees, withIndentation: indentation)
 				result += string
 			case "For Each Statement":
-				let string = try! translate(forEachStatement: subTree, withIndentation: indentation)
+				let string = try translate(forEachStatement: subTree, withIndentation: indentation)
 				result += string
 			case "Function Declaration":
-				let string = try! translate(functionDeclaration: subTree, withIndentation: indentation)
+				let string = try translate(functionDeclaration: subTree, withIndentation: indentation)
 				result += string
 			case "Protocol":
-				let string = try! translate(protocolDeclaration: subTree, withIndentation: indentation)
+				let string = try translate(protocolDeclaration: subTree, withIndentation: indentation)
 				result += string
 			case "Top Level Code Declaration":
-				let string = try! translate(topLevelCode: subTree, withIndentation: indentation)
+				let string = try translate(topLevelCode: subTree, withIndentation: indentation)
 				result += string
 			case "Throw Statement":
-				let string = try! translate(throwStatement: subTree, withIndentation: indentation)
+				let string = try translate(throwStatement: subTree, withIndentation: indentation)
 				result += string
 			case "Variable Declaration":
-				result += try!  translate(variableDeclaration: subTree, withIndentation: indentation)
+				result += try translate(variableDeclaration: subTree, withIndentation: indentation)
 			case "Assign Expression":
-				result += try! translate(assignExpression: subTree, withIndentation: indentation)
+				result += try translate(assignExpression: subTree, withIndentation: indentation)
 			case "Guard Statement":
-				result += try! translate(ifStatement: subTree, asGuard: true, withIndentation: indentation)
+				result += try translate(ifStatement: subTree, asGuard: true, withIndentation: indentation)
 			case "If Statement":
-				result += try! translate(ifStatement: subTree, withIndentation: indentation)
+				result += try translate(ifStatement: subTree, withIndentation: indentation)
 			case "Pattern Binding Declaration":
-				try! process(patternBindingDeclaration: subTree)
+				try process(patternBindingDeclaration: subTree)
 			case "Return Statement":
-				result += try! translate(returnStatement: subTree, withIndentation: indentation)
+				result += try translate(returnStatement: subTree, withIndentation: indentation)
 			case "Call Expression":
-				let string = try! translate(callExpression: subTree)
+				let string = try translate(callExpression: subTree)
 				if !string.isEmpty {
 					result += indentation + string + "\n"
 				}
 			default:
 				if subTree.name.hasSuffix("Expression") {
-					result += try! indentation + translate(expression: subTree) + "\n"
+					result += try indentation + translate(expression: subTree) + "\n"
 				}
 				else {
 					result += "<Unknown: \(subTree.name)>\n\n"
@@ -263,7 +263,7 @@ public class GRYKotlinTranslator {
 		precondition(topLevelCode.name == "Top Level Code Declaration")
 		
 		let braceStatement = try unwrapOrThrow(topLevelCode.subTree(named: "Brace Statement"))
-		return translate(subTrees: braceStatement.subTrees, withIndentation: indentation)
+		return try translate(subTrees: braceStatement.subTrees, withIndentation: indentation)
 	}
 	
 	private func translate(enumDeclaration: GRYAst, withIndentation indentation: String) throws -> String {
@@ -342,7 +342,7 @@ public class GRYKotlinTranslator {
 		}
 		
 		let increasedIndentation = increaseIndentation(indentation)
-		let classContents = translate(subTrees: classDeclaration.subTrees, withIndentation: increasedIndentation)
+		let classContents = try translate(subTrees: classDeclaration.subTrees, withIndentation: increasedIndentation)
 		
 		return "class \(className)\(inheritanceString) {\n\(classContents)}\n"
 	}
@@ -378,7 +378,7 @@ public class GRYKotlinTranslator {
 		
 		guard !functionName.hasPrefix("GRYDeclarations(") else {
 			let braceStatement = try unwrapOrThrow(functionDeclaration.subTree(named: "Brace Statement"))
-			return translate(subTrees: braceStatement.subTrees, withIndentation: indentation)
+			return try translate(subTrees: braceStatement.subTrees, withIndentation: indentation)
 		}
 		
 		guard functionDeclaration.standaloneAttributes.count <= 1 else {
@@ -446,7 +446,7 @@ public class GRYKotlinTranslator {
 		
 		let braceStatement = try unwrapOrThrow(functionDeclaration.subTree(named: "Brace Statement"))
 
-		result += translate(subTrees: braceStatement.subTrees, withIndentation: indentation)
+		result += try translate(subTrees: braceStatement.subTrees, withIndentation: indentation)
 		
 		indentation = decreaseIndentation(indentation)
 		
@@ -469,7 +469,7 @@ public class GRYKotlinTranslator {
 		let collectionString = try translate(expression: collectionExpression)
 		
 		let increasedIndentation = increaseIndentation(indentation)
-		let statements = translate(subTrees: braceStatement.subTrees, withIndentation: increasedIndentation)
+		let statements = try translate(subTrees: braceStatement.subTrees, withIndentation: increasedIndentation)
 		
 		return "\(indentation)for (\(variableName) in \(collectionString)) {\n\(statements)\(indentation)}\n"
 	}
@@ -508,7 +508,7 @@ public class GRYKotlinTranslator {
 		{
 			braceStatement = unwrappedBraceStatement
 
-			let statementsString = translate(subTrees: elseAST.subTrees, withIndentation: increasedIndentation)
+			let statementsString = try translate(subTrees: elseAST.subTrees, withIndentation: increasedIndentation)
 			elseString = "\(indentation)else {\n\(statementsString)\(indentation)}\n"
 		}
 		else if let unwrappedBraceStatement = ifStatement.subTrees.last,
@@ -521,7 +521,7 @@ public class GRYKotlinTranslator {
 		}
 		
 		let statements = braceStatement.subTrees
-		let statementsString = translate(subTrees: statements, withIndentation: increasedIndentation)
+		let statementsString = try translate(subTrees: statements, withIndentation: increasedIndentation)
 		
 		let keyword = isElseIf ? "else if" : "if"
 		let parenthesizedCondition = isGuard ? "(!(\(conditionString)))" : "(\(conditionString))"
@@ -716,7 +716,7 @@ public class GRYKotlinTranslator {
 			
 			let statements = try unwrapOrThrow(subtree.subTree(named: "Brace Statement")?.subTrees)
 			
-			let contentsString = translate(subTrees: statements, withIndentation: contentsIndentation)
+			let contentsString = try translate(subTrees: statements, withIndentation: contentsIndentation)
 			result += contentsString
 			
 			result += "\(getSetIndentation)}\n"
