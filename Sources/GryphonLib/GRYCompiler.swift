@@ -54,7 +54,8 @@ public enum GRYCompiler {
 											  containing: kotlinCode)
 
 		// Call the kotlin compiler
-		let arguments = ["-include-runtime", "-d", GRYUtils.buildFolder + "/kotlin.jar", kotlinFilePath]
+		let arguments =
+			["-include-runtime", "-d", GRYUtils.buildFolder + "/kotlin.jar", kotlinFilePath]
 		let commandResult = GRYShell.runShellCommand(kotlinCompilerPath, arguments: arguments)
 
 		// Ensure the compiler terminated successfully
@@ -62,7 +63,8 @@ public enum GRYCompiler {
 			return .failure(errorMessage: "Kotlin compiler timed out.")
 		}
 		guard result.status == 0 else {
-			return .failure(errorMessage: "Error compiling kotlin files. Kotlin compiler says:\n\(result.standardError)")
+			return .failure(errorMessage:
+				"Error compiling kotlin files. Kotlin compiler says:\n\(result.standardError)")
 		}
 
 		return .success(commandOutput: result)
@@ -87,7 +89,9 @@ public enum GRYCompiler {
 
 		let jsonFilePath = GRYUtils.changeExtension(of: filePath, to: "json")
 		let jsonFileWasJustCreated = GRYUtils.createFileIfNeeded(at: jsonFilePath, containing: "")
-		let jsonIsOutdated = jsonFileWasJustCreated || GRYUtils.file(astFilePath, wasModifiedLaterThan: jsonFilePath)
+		let jsonIsOutdated =
+			jsonFileWasJustCreated ||
+			GRYUtils.file(astFilePath, wasModifiedLaterThan: jsonFilePath)
 		if jsonIsOutdated {
 			log?("\tUpdating \(jsonFilePath)...")
 			ast.writeAsJSON(toFile: jsonFilePath)

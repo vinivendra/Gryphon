@@ -30,13 +30,15 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 
 			// Information in stored files has placeholders for file paths that must be replaced
 			let swiftFilePath = GRYUtils.changeExtension(of: astFilePath, to: "swift")
-			let processedAstDump = rawAstDump.replacingOccurrences(of: "<<testFilePath>>", with: swiftFilePath)
+			let processedAstDump =
+				rawAstDump.replacingOccurrences(of: "<<testFilePath>>", with: swiftFilePath)
 
 			let parser = GRYSExpressionParser(sExpression: processedAstDump)
 			self.init(parser: parser)
 		}
 		catch {
-			fatalError("Error opening \(astFilePath). If the file doesn't exist, please use dump-ast.pl to generate it.")
+			fatalError("Error opening \(astFilePath)." +
+				" If the file doesn't exist, please use dump-ast.pl to generate it.")
 		}
 	}
 
@@ -47,13 +49,15 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 			// Information in stored files has placeholders for file paths that must be replaced
 			let swiftFilePath = GRYUtils.changeExtension(of: jsonFilePath, to: "swift")
 			let escapedFilePath = swiftFilePath.replacingOccurrences(of: "/", with: "\\/")
-			let processedJSON = rawJSON.replacingOccurrences(of: "<<testFilePath>>", with: escapedFilePath)
+			let processedJSON =
+				rawJSON.replacingOccurrences(of: "<<testFilePath>>", with: escapedFilePath)
 
 			let astData = Data(processedJSON.utf8)
 			return try JSONDecoder().decode(GRYAst.self, from: astData)
 		}
 		catch {
-			fatalError("Error decoding \(jsonFilePath). If the file doesn't exist, please run `updateJsonTestFiles()` to generate it.")
+			fatalError("Error decoding \(jsonFilePath)." +
+				" If the file doesn't exist, please run `updateJsonTestFiles()` to generate it.")
 		}
 	}
 
@@ -66,7 +70,8 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 		let name = parser.readIdentifier()
 		self.name = GRYUtils.expandSwiftAbbreviation(name)
 
-		// The loop stops: all branches tell the parser to read, and the input string must end eventually.
+		// The loop stops: all branches tell the parser to read, therefore the input string must end
+		// eventually
 		while true {
 			// Add subtree
 			if parser.canReadOpenParentheses() {
@@ -114,9 +119,10 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 			}
 		}
 
-		self.standaloneAttributes = standaloneAttributes
-		self.keyValueAttributes = keyValueAttributes.merging(extraKeyValues, uniquingKeysWith: { a, _ in a })
 		self.subTrees = subTrees
+		self.standaloneAttributes = standaloneAttributes
+		self.keyValueAttributes =
+			keyValueAttributes.merging(extraKeyValues, uniquingKeysWith: { a, _ in a })
 	}
 
 	internal init(_ name: String, _ subTrees: [GRYAst] = []) {
@@ -169,7 +175,8 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 		// Absolute file paths must be replaced with placeholders before writing to file.
 		let swiftFilePath = GRYUtils.changeExtension(of: filePath, to: "swift")
 		let escapedFilePath = swiftFilePath.replacingOccurrences(of: "/", with: "\\/")
-		let processedJsonString = rawJsonString.replacingOccurrences(of: escapedFilePath, with: "<<testFilePath>>")
+		let processedJsonString =
+			rawJsonString.replacingOccurrences(of: escapedFilePath, with: "<<testFilePath>>")
 
 		try! processedJsonString.write(toFile: filePath, atomically: true, encoding: .utf8)
 	}

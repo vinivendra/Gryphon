@@ -77,6 +77,10 @@ public enum GRYShell {
 		fromFolder currentFolder: String? = nil,
 		timeout: TimeInterval = GRYShell.defaultTimeout) -> CommandOutput!
 	{
-		return runShellCommand("/usr/bin/env", arguments: arguments, fromFolder: currentFolder, timeout: timeout)
+		return runShellCommand(
+			"/usr/bin/env",
+			arguments: arguments,
+			fromFolder: currentFolder,
+			timeout: timeout)
 	}
 }

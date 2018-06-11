@@ -38,7 +38,11 @@ public protocol GRYPrintableAsTree {
 }
 
 public extension GRYPrintableAsTree {
-	func prettyPrint(indentation: [String] = [], isLast: Bool = true, horizontalLimit: Int = Int.max, printFunction: (String) -> () = { print($0, terminator: "") })
+	func prettyPrint(
+		indentation: [String] = [],
+		isLast: Bool = true,
+		horizontalLimit: Int = Int.max,
+		printFunction: (String) -> () = { print($0, terminator: "") })
 	{
 		var indentation = indentation
 

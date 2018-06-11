@@ -20,7 +20,9 @@ import GryphonLib
 func updateJsonTestFiles(includeParserTests: Bool = false) {
 	
 	let currentURL = URL(fileURLWithPath: Process().currentDirectoryPath + "/Test Files")
-	let fileURLs = try! FileManager.default.contentsOfDirectory(at: currentURL, includingPropertiesForKeys: nil)
+	let fileURLs = try! FileManager.default.contentsOfDirectory(
+		at: currentURL,
+		includingPropertiesForKeys: nil)
 	var testFiles = fileURLs.filter { $0.pathExtension == "swift" }
 	
 	let mainTestFile = URL(fileURLWithPath: Process().currentDirectoryPath + "/test.swift")
@@ -42,7 +44,8 @@ func updateJsonTestFile(_ swiftFile: URL, includeParserTests: Bool) {
 	let expectedJsonFilePath = GRYUtils.changeExtension(of: swiftFilePath, to: "expectedJson")
 	
 	let jsonFileWasJustCreated = GRYUtils.createFileIfNeeded(at: jsonFilePath, containing: "")
-	let jsonIsOutdated = jsonFileWasJustCreated || GRYUtils.file(astFilePath, wasModifiedLaterThan: jsonFilePath)
+	let jsonIsOutdated =
+		jsonFileWasJustCreated || GRYUtils.file(astFilePath, wasModifiedLaterThan: jsonFilePath)
 	
 	if jsonIsOutdated {
 		let astIsOutdated = GRYUtils.file(swiftFilePath, wasModifiedLaterThan: astFilePath)
