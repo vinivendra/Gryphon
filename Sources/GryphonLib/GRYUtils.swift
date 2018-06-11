@@ -74,9 +74,9 @@ extension GRYUtils {
 extension GRYUtils {
 	public static let systemIdentifier: String = {
 		#if os(macOS)
-		let os = "macOS"
+		let osName = "macOS"
 		#elseif os(Linux)
-		let os = "Linux"
+		let osName = "Linux"
 		#endif
 
 		#if arch(i386)
@@ -85,7 +85,7 @@ extension GRYUtils {
 		let arch = "x86_64"
 		#endif
 
-		return os + "-" + arch
+		return osName + "-" + arch
 	}()
 
 	public static let buildFolder = ".kotlinBuild-\(GRYUtils.systemIdentifier)"

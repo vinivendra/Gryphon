@@ -23,7 +23,7 @@
 /// 	- error: The error to be thrown if the value is nil. If no error is given,
 /// 		throws `GRYKotlinTranslator.TranslationError.unknown`.
 /// - Returns: The unwrapped value, if present.
-fileprivate func unwrapOrThrow<T>(_ value: T?, error: @autoclosure () -> Error = GRYKotlinTranslator.TranslationError.unknown) throws -> T {
+private func unwrapOrThrow<T>(_ value: T?, error: @autoclosure () -> Error = GRYKotlinTranslator.TranslationError.unknown) throws -> T {
 	if value == nil {
 		throw error()
 	}
@@ -248,7 +248,6 @@ public class GRYKotlinTranslator {
 		else {
 			throw TranslationError.unknown
 		}
-
 
 		let identifier = try unwrapOrThrow(binding.standaloneAttributes.first)
 		let rawType = try unwrapOrThrow(binding.keyValueAttributes["type"])
@@ -1262,4 +1261,3 @@ extension String {
 		return String(capitalizedFirstCharacter + self.dropFirst())
 	}
 }
-

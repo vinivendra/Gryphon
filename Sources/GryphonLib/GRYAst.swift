@@ -115,7 +115,7 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 		}
 
 		self.standaloneAttributes = standaloneAttributes
-		self.keyValueAttributes = keyValueAttributes.merging(extraKeyValues, uniquingKeysWith: { a, b in a })
+		self.keyValueAttributes = keyValueAttributes.merging(extraKeyValues, uniquingKeysWith: { a, _ in a })
 		self.subTrees = subTrees
 	}
 
@@ -193,7 +193,7 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 	//
 	public var description: String {
 		var result = ""
-		self.prettyPrint() { result += $0 }
+		self.prettyPrint { result += $0 }
 		return result
 	}
 
