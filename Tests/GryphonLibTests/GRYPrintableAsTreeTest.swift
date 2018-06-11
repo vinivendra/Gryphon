@@ -24,12 +24,12 @@ class GRYPrintableAsTreeTest: XCTestCase {
 		let b = GRYPrintableTree(description: "b")
 		let c = GRYPrintableTree(description: "c")
 		let d = GRYPrintableTree(description: "d")
-		
+
 		root.addChild(a)
 		a.addChild(b)
 		b.addChild(c)
 		root.addChild(d)
-		
+
 		var result = ""
 		root.prettyPrint {
 			result += $0
@@ -42,17 +42,17 @@ class GRYPrintableAsTreeTest: XCTestCase {
 			 └─ d\n
 			""")
 	}
-	
+
 	func testStrings() {
 		let root = GRYPrintableTree(description: "root")
 		let a = GRYPrintableTree(description: "a")
 		let b = GRYPrintableTree(description: "b")
-		
+
 		root.addChild(a)
 		a.addChild(b)
 		b.addChild("c")
 		root.addChild("d")
-		
+
 		var result = ""
 		root.prettyPrint {
 			result += $0
@@ -65,15 +65,15 @@ class GRYPrintableAsTreeTest: XCTestCase {
 			 └─ d\n
 			""")
 	}
-	
+
 	func testArrays() {
 		let root = GRYPrintableTree(description: "root")
 		let a = GRYPrintableTree(description: "a")
-		
+
 		root.addChild(a)
 		root.addChild("d")
 		a.addChild(["b", "c"])
-		
+
 		var result = ""
 		root.prettyPrint {
 			result += $0
@@ -87,19 +87,19 @@ class GRYPrintableAsTreeTest: XCTestCase {
 			 └─ d\n
 			""")
 	}
-	
+
 	func testHorizontalLimit() {
 		let root = GRYPrintableTree(description: "root")
 		let a = GRYPrintableTree(description: "aaaaaaaaaaaaaaaaaa")
 		let b = GRYPrintableTree(description: "bbbbbbbbbbbbbbbbbb")
 		let c = GRYPrintableTree(description: "cccccccccccccccccc")
 		let d = GRYPrintableTree(description: "dddddddddddddddddd")
-		
+
 		root.addChild(a)
 		a.addChild(b)
 		b.addChild(c)
 		root.addChild(d)
-		
+
 		var result = ""
 		root.prettyPrint(horizontalLimit: 15) {
 			result += $0
@@ -112,7 +112,7 @@ class GRYPrintableAsTreeTest: XCTestCase {
 			 └─ dddddddddd…\n
 			""")
 	}
-	
+
 	static var allTests = [
 		("testPrinting", testPrinting),
 		("testStrings", testStrings),

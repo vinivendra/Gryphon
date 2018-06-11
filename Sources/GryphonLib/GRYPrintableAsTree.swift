@@ -51,8 +51,7 @@ public extension GRYPrintableAsTree {
 
 		let rawLine = "\(indentationString) \(treeDescription)"
 		let line = (rawLine.count > horizontalLimit) ?
-			rawLine.prefix(horizontalLimit - 1) + "…" :
-			rawLine
+			(rawLine.prefix(horizontalLimit - 1) + "…") : rawLine
 
 		printFunction(line + "\n")
 

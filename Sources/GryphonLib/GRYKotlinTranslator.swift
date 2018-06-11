@@ -52,9 +52,9 @@ public class GRYKotlinTranslator {
 		var description: String {
 			return """
 			Kotlin translation diagnostics:
-				\(translatedSubtrees) translated subtrees
-				\(refactorableSubtrees) refactorable subtrees
-				\(unknownSubtrees) unknown subtrees
+			\(translatedSubtrees) translated subtrees
+			\(refactorableSubtrees) refactorable subtrees
+			\(unknownSubtrees) unknown subtrees
 			"""
 		}
 	}
@@ -146,7 +146,7 @@ public class GRYKotlinTranslator {
 			"Extension Declaration",
 			"Function Declaration",
 			"Enum Declaration",
-		]
+			]
 		let isDeclaration = { (ast: GRYAst) -> Bool in declarationNames.contains(ast.name) }
 
 		let declarations = ast.subTrees.filter(isDeclaration)
@@ -299,9 +299,10 @@ public class GRYKotlinTranslator {
 		let rawType = try unwrapOrThrow(binding.keyValueAttributes["type"])
 		let type = translateType(rawType)
 
-		danglingPatternBinding = try (identifier: identifier,
-									  type: type,
-									  translatedExpression: translate(expression: expression))
+		danglingPatternBinding = try
+			(identifier: identifier,
+			 type: type,
+			 translatedExpression: translate(expression: expression))
 	}
 
 	private func translate(topLevelCode: GRYAst, withIndentation indentation: String)
@@ -542,13 +543,12 @@ public class GRYKotlinTranslator {
 		let statements =
 			try translate(subTrees: braceStatement.subTrees, withIndentation: increasedIndentation)
 
-		return
-			"""
-			\(indentation)for (\(variableName) in \(collectionString)) {
-			\(statements)\
-			\(indentation)}
+		return """
+		\(indentation)for (\(variableName) in \(collectionString)) {
+		\(statements)\
+		\(indentation)}
 
-			"""
+		"""
 	}
 
 	private func translate(
@@ -608,13 +608,12 @@ public class GRYKotlinTranslator {
 		let keyword = isElseIf ? "else if" : "if"
 		let parenthesizedCondition = isGuard ? "(!(\(conditionString)))" : "(\(conditionString))"
 
-		let ifString =
-			"""
-			\(letDeclarationsString)\(indentation)\(keyword) \(parenthesizedCondition) {
-			\(statementsString)\
-			\(indentation)}
+		let ifString = """
+		\(letDeclarationsString)\(indentation)\(keyword) \(parenthesizedCondition) {
+		\(statementsString)\
+		\(indentation)}
 
-			"""
+		"""
 
 		return ifString + elseIfString + elseString
 	}
@@ -1013,13 +1012,13 @@ public class GRYKotlinTranslator {
 		{
 			return try translate(asNumericLiteral: callExpression)
 		}
-		// If the call expression corresponds to an boolean literal
+			// If the call expression corresponds to an boolean literal
 		else if let argumentLabels = callExpression["arg_labels"],
 			argumentLabels == "_builtinBooleanLiteral:"
 		{
 			return try translate(asBooleanLiteral: callExpression)
 		}
-		// If the call expression corresponds to `nil`
+			// If the call expression corresponds to `nil`
 		else if let argumentLabels = callExpression["arg_labels"],
 			argumentLabels == "nilLiteral:"
 		{
@@ -1055,7 +1054,7 @@ public class GRYKotlinTranslator {
 				let methodOwnerString = try translate(expression: methodOwner)
 				functionName = "\(methodOwnerString).\(methodNameString)"
 			}
-			else if let typeExpression =  callExpression
+			else if let typeExpression = callExpression
 				.subTree(named: "Constructor Reference Call Expression")?
 				.subTree(named: "Type Expression")
 			{

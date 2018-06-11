@@ -89,12 +89,12 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 				let subTree = GRYAst(parser: parser, extraKeyValues: extraKeyValuesForSubTrees)
 				subTrees.append(subTree)
 			}
-			// Finish this branch
+				// Finish this branch
 			else if parser.canReadCloseParentheses() {
 				parser.readCloseParentheses()
 				break
 			}
-			// Add key-value attributes
+				// Add key-value attributes
 			else if let key = parser.readKey() {
 				if key == "location" && parser.canReadLocation() {
 					keyValueAttributes[key] = parser.readLocation()
@@ -112,7 +112,7 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 					keyValueAttributes[key] = parser.readStandaloneAttribute()
 				}
 			}
-			// Add standalone attributes
+				// Add standalone attributes
 			else {
 				let attribute = parser.readStandaloneAttribute()
 				standaloneAttributes.append(attribute)
@@ -187,9 +187,8 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 	}
 
 	public var printableSubTrees: [GRYPrintableAsTree] {
-		let keyValueStrings = keyValueAttributes.map {
-			return "\($0.key) → \($0.value)"
-			}.sorted() as [GRYPrintableAsTree]
+		let keyValueStrings = keyValueAttributes.map { "\($0.key) → \($0.value)" }
+			.sorted() as [GRYPrintableAsTree]
 
 		let standaloneStrings = standaloneAttributes as [GRYPrintableAsTree]
 

@@ -30,4 +30,3 @@ public func allTests() -> [XCTestCaseEntry] {
 	]
 }
 #endif
-

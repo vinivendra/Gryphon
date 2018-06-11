@@ -50,8 +50,8 @@ public enum GRYCompiler {
 		log?("Compiling Kotlin...")
 		let fileName = URL(fileURLWithPath: filePath).deletingPathExtension().lastPathComponent
 		let kotlinFilePath = GRYUtils.createFile(named: fileName + ".kt",
-											  inDirectory: GRYUtils.buildFolder,
-											  containing: kotlinCode)
+												 inDirectory: GRYUtils.buildFolder,
+												 containing: kotlinCode)
 
 		// Call the kotlin compiler
 		let arguments =
@@ -90,8 +90,7 @@ public enum GRYCompiler {
 		let jsonFilePath = GRYUtils.changeExtension(of: filePath, to: "json")
 		let jsonFileWasJustCreated = GRYUtils.createFileIfNeeded(at: jsonFilePath, containing: "")
 		let jsonIsOutdated =
-			jsonFileWasJustCreated ||
-			GRYUtils.file(astFilePath, wasModifiedLaterThan: jsonFilePath)
+			jsonFileWasJustCreated || GRYUtils.file(astFilePath, wasModifiedLaterThan: jsonFilePath)
 		if jsonIsOutdated {
 			log?("\tUpdating \(jsonFilePath)...")
 			ast.writeAsJSON(toFile: jsonFilePath)
