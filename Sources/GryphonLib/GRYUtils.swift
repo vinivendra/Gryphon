@@ -27,7 +27,7 @@ public enum GRYUtils {
 	internal static func expandSwiftAbbreviation(_ name: String) -> String {
 		// Separate snake case and capitalize
 		var nameComponents = name.split(withStringSeparator: "_").map { $0.capitalized }
-		
+
 		// Expand swift abbreviations
 		nameComponents = nameComponents.map { (word: String) -> String in
 			switch word {
@@ -43,7 +43,7 @@ public enum GRYUtils {
 			default: return word
 			}
 		}
-		
+
 		// Join words into a single string
 		return nameComponents.joined(separator: " ")
 	}
@@ -56,17 +56,17 @@ extension GRYUtils {
 		let newURL = urlWithoutExtension.appendingPathExtension(newExtension)
 		return newURL.path
 	}
-	
+
 	public static func file(_ filePath: String, wasModifiedLaterThan otherFilePath: String) -> Bool {
 		let fileManager = FileManager.default
 		let fileAttributes = try! fileManager.attributesOfItem(atPath: filePath)
 		let otherFileAttributes = try! fileManager.attributesOfItem(atPath: otherFilePath)
-		
+
 		let fileModifiedDate = fileAttributes[.modificationDate] as! Date
 		let otherFileModifiedDate = otherFileAttributes[.modificationDate] as! Date
-		
+
 		let howMuchLater = fileModifiedDate.timeIntervalSince(otherFileModifiedDate)
-		
+
 		return howMuchLater > 0
 	}
 }
@@ -78,36 +78,36 @@ extension GRYUtils {
 		#elseif os(Linux)
 		let os = "Linux"
 		#endif
-		
+
 		#if arch(i386)
 		let arch = "i386"
 		#elseif arch(x86_64)
 		let arch = "x86_64"
 		#endif
-		
+
 		return os + "-" + arch
 	}()
-	
+
 	public static let buildFolder = ".kotlinBuild-\(GRYUtils.systemIdentifier)"
-	
+
 	@discardableResult
 	internal static func createFile(named fileName: String, inDirectory directory: String, containing contents: String) -> String {
 		let fileManager = FileManager.default
-		
+
 		try! fileManager.createDirectory(atPath: directory, withIntermediateDirectories: true)
-		
+
 		let filePath = directory + "/" + fileName
 		let fileURL = URL(fileURLWithPath: filePath)
-		
+
 		// Remove it if it already exists
 		try? fileManager.removeItem(at: fileURL)
-		
+
 		let success = fileManager.createFile(atPath: filePath, contents: Data(contents.utf8))
 		assert(success)
-		
+
 		return filePath
 	}
-	
+
 	/// - Returns: `true` if the file was created, `false` if it already existed.
 	public static func createFileIfNeeded(at filePath: String, containing contents: String) -> Bool {
 		let fileManager = FileManager.default
@@ -135,13 +135,13 @@ internal extension RandomGenerator {
 		let randomNumber = Int(random32()) % rangeSize
 		return range.lowerBound + randomNumber
 	}
-	
+
 	mutating func random(_ range: ClosedRange<Int>) -> Int {
 		let rangeSize = range.upperBound - range.lowerBound + 1
 		let randomNumber = Int(random32()) % rangeSize
 		return range.lowerBound + randomNumber
 	}
-	
+
 	mutating func randomBool() -> Bool {
 		return random(0...1) == 0
 	}

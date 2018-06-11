@@ -17,16 +17,16 @@
 public class GRYPrintableTree: GRYPrintableAsTree {
 	public var treeDescription: String
 	public var printableSubTrees = [GRYPrintableAsTree]()
-	
+
 	init(description: String) {
 		self.treeDescription = description
 	}
-	
+
 	init(description: String, subTrees: [GRYPrintableAsTree]) {
 		self.treeDescription = description
 		self.printableSubTrees = subTrees
 	}
-	
+
 	func addChild(_ child: GRYPrintableAsTree) {
 		printableSubTrees.append(child)
 	}
@@ -41,17 +41,17 @@ public extension GRYPrintableAsTree {
 	func prettyPrint(indentation: [String] = [], isLast: Bool = true, horizontalLimit: Int = Int.max, printFunction: (String) -> () = { print($0, terminator: "") })
 	{
 		var indentation = indentation
-		
+
 		// Print the indentation
 		let indentationString = indentation.joined(separator: "")
-		
+
 		let rawLine = "\(indentationString) \(treeDescription)"
 		let line = (rawLine.count > horizontalLimit) ?
 			rawLine.prefix(horizontalLimit - 1) + "…" :
 			rawLine
-		
+
 		printFunction(line + "\n")
-		
+
 		// Correct the indentation for this level
 		if !indentation.isEmpty {
 			// If I'm the last branch, don't print a line in my level anymore.
@@ -64,7 +64,7 @@ public extension GRYPrintableAsTree {
 				indentation[indentation.count - 1] = " │ "
 			}
 		}
-		
+
 		for subTree in printableSubTrees.dropLast() {
 			var newIndentation = indentation
 			newIndentation.append(" ├─")

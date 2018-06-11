@@ -21,9 +21,9 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 	let standaloneAttributes: [String]
 	let keyValueAttributes: [String: String]
 	let subTrees: [GRYAst]
-	
+
 	static public var horizontalLimitWhenPrinting = Int.max
-	
+
 	public convenience init(astFile astFilePath: String) {
 		do {
 			let rawAstDump = try String(contentsOfFile: astFilePath)
@@ -39,16 +39,16 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 			fatalError("Error opening \(astFilePath). If the file doesn't exist, please use dump-ast.pl to generate it.")
 		}
 	}
-	
+
 	public static func initialize(fromJsonInFile jsonFilePath: String) -> GRYAst {
 		do {
 			let rawJSON = try String(contentsOfFile: jsonFilePath)
-			
+
 			// Information in stored files has placeholders for file paths that must be replaced
 			let swiftFilePath = GRYUtils.changeExtension(of: jsonFilePath, to: "swift")
 			let escapedFilePath = swiftFilePath.replacingOccurrences(of: "/", with: "\\/")
 			let processedJSON = rawJSON.replacingOccurrences(of: "<<testFilePath>>", with: escapedFilePath)
-			
+
 			let astData = Data(processedJSON.utf8)
 			return try JSONDecoder().decode(GRYAst.self, from: astData)
 		}
@@ -56,21 +56,21 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 			fatalError("Error decoding \(jsonFilePath). If the file doesn't exist, please run `updateJsonTestFiles()` to generate it.")
 		}
 	}
-	
+
 	internal init(parser: GRYSExpressionParser, extraKeyValues: [String: String] = [:]) {
 		var standaloneAttributes = [String]()
 		var keyValueAttributes = [String: String]()
 		var subTrees = [GRYAst]()
-		
+
 		parser.readOpenParentheses()
 		let name = parser.readIdentifier()
 		self.name = GRYUtils.expandSwiftAbbreviation(name)
-		
+
 		// The loop stops: all branches tell the parser to read, and the input string must end eventually.
 		while true {
 			// Add subtree
 			if parser.canReadOpenParentheses() {
-				
+
 				// Check if there's info to pass on to subtrees
 				let extraKeyValuesForSubTrees: [String: String]
 				if self.name == "Extension Declaration" {
@@ -79,7 +79,7 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 				else {
 					extraKeyValuesForSubTrees = [:]
 				}
-				
+
 				// Parse subtrees
 				let subTree = GRYAst(parser: parser, extraKeyValues: extraKeyValuesForSubTrees)
 				subTrees.append(subTree)
@@ -113,12 +113,12 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 				standaloneAttributes.append(attribute)
 			}
 		}
-		
+
 		self.standaloneAttributes = standaloneAttributes
 		self.keyValueAttributes = keyValueAttributes.merging(extraKeyValues, uniquingKeysWith: { a, b in a })
 		self.subTrees = subTrees
 	}
-	
+
 	internal init(_ name: String,
 				  _ subTrees: [GRYAst] = [])
 	{
@@ -127,7 +127,7 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 		self.keyValueAttributes = [:]
 		self.subTrees = subTrees
 	}
-	
+
 	internal init(_ name: String,
 				  _ standaloneAttributes: [String],
 				  _ keyValueAttributes: [String: String],
@@ -138,20 +138,20 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 		self.keyValueAttributes = keyValueAttributes
 		self.subTrees = subTrees
 	}
-	
+
 	//
 	subscript (key: String) -> String? {
 		return keyValueAttributes[key]
 	}
-	
+
 	func subTree(named name: String) -> GRYAst? {
 		return subTrees.first { $0.name == name }
 	}
-	
+
 	func subTree(at index: Int) -> GRYAst? {
 		return subTrees[safe: index]
 	}
-	
+
 	func subTree(at index: Int, named name: String) -> GRYAst? {
 		guard let subTree = subTrees[safe: index],
 			subTree.name == name else
@@ -160,7 +160,7 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 		}
 		return subTree
 	}
-	
+
 	//
 	public func writeAsJSON(toFile filePath: String) {
 		log?("Building AST JSON...")
@@ -174,36 +174,36 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 
 		try! processedJsonString.write(toFile: filePath, atomically: true, encoding: .utf8)
 	}
-	
+
 	//
 	public var treeDescription: String {
 		return name
 	}
-	
+
 	public var printableSubTrees: [GRYPrintableAsTree] {
 		let keyValueStrings = keyValueAttributes.map {
 			return "\($0.key) → \($0.value)"
 			}.sorted() as [GRYPrintableAsTree]
-		
+
 		let standaloneStrings = standaloneAttributes as [GRYPrintableAsTree]
-		
+
 		let result: [GRYPrintableAsTree] = standaloneStrings + keyValueStrings + subTrees
 		return result
 	}
-	
+
 	//
 	public var description: String {
 		var result = ""
 		self.prettyPrint() { result += $0 }
 		return result
 	}
-	
+
 	public func description(withHorizontalLimit horizontalLimit: Int) -> String {
 		var result = ""
 		self.prettyPrint(horizontalLimit: horizontalLimit) { result += $0 }
 		return result
 	}
-	
+
 	public static func == (lhs: GRYAst, rhs: GRYAst) -> Bool {
 		return lhs.name == rhs.name &&
 			lhs.standaloneAttributes == rhs.standaloneAttributes &&
