@@ -99,7 +99,7 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 				{
 					keyValueAttributes[key] = string
 				}
-				else if (key == "inherits") {
+				else if key == "inherits" {
 					let string = parser.readIdentifierList()
 					keyValueAttributes[key] = string
 				}
@@ -119,19 +119,18 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 		self.subTrees = subTrees
 	}
 
-	internal init(_ name: String,
-				  _ subTrees: [GRYAst] = [])
-	{
+	internal init(_ name: String, _ subTrees: [GRYAst] = []) {
 		self.name = name
 		self.standaloneAttributes = []
 		self.keyValueAttributes = [:]
 		self.subTrees = subTrees
 	}
 
-	internal init(_ name: String,
-				  _ standaloneAttributes: [String],
-				  _ keyValueAttributes: [String: String],
-				  _ subTrees: [GRYAst] = [])
+	internal init(
+		_ name: String,
+		_ standaloneAttributes: [String],
+		_ keyValueAttributes: [String: String],
+		_ subTrees: [GRYAst] = [])
 	{
 		self.name = name
 		self.standaloneAttributes = standaloneAttributes

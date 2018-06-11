@@ -31,9 +31,10 @@ public enum GRYShell {
 
 	/// Returns nil when the operation times out.
 	@discardableResult
-	internal static func runShellCommand(_ command: String, arguments: [String],
-										 fromFolder currentFolder: String? = nil,
-										 timeout: TimeInterval = GRYShell.defaultTimeout) -> CommandOutput!
+	internal static func runShellCommand(
+		_ command: String, arguments: [String],
+		fromFolder currentFolder: String? = nil,
+		timeout: TimeInterval = GRYShell.defaultTimeout) -> CommandOutput!
 	{
 		let outputPipe = Pipe()
 		let errorPipe = Pipe()
@@ -71,9 +72,10 @@ public enum GRYShell {
 
 	/// Returns nil when the operation times out.
 	@discardableResult
-	internal static func runShellCommand(_ arguments: [String],
-										 fromFolder currentFolder: String? = nil,
-										 timeout: TimeInterval = GRYShell.defaultTimeout) -> CommandOutput!
+	internal static func runShellCommand(
+		_ arguments: [String],
+		fromFolder currentFolder: String? = nil,
+		timeout: TimeInterval = GRYShell.defaultTimeout) -> CommandOutput!
 	{
 		return runShellCommand("/usr/bin/env", arguments: arguments, fromFolder: currentFolder, timeout: timeout)
 	}

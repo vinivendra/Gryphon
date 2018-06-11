@@ -474,10 +474,11 @@ public class GRYKotlinTranslator {
 		return "\(indentation)for (\(variableName) in \(collectionString)) {\n\(statements)\(indentation)}\n"
 	}
 
-	private func translate(ifStatement: GRYAst,
-						   asElseIf isElseIf: Bool = false,
-						   asGuard isGuard: Bool = false,
-						   withIndentation indentation: String) throws -> String
+	private func translate(
+		ifStatement: GRYAst,
+		asElseIf isElseIf: Bool = false,
+		asGuard isGuard: Bool = false,
+		withIndentation indentation: String) throws -> String
 	{
 		precondition(ifStatement.name == "If Statement" || ifStatement.name == "Guard Statement")
 
@@ -590,8 +591,9 @@ public class GRYKotlinTranslator {
 		return (letDeclarationsString, conditionString)
 	}
 
-	private func translate(throwStatement: GRYAst,
-						   withIndentation indentation: String) throws -> String
+	private func translate(
+		throwStatement: GRYAst,
+		withIndentation indentation: String) throws -> String
 	{
 		precondition(throwStatement.name == "Throw Statement")
 
@@ -602,8 +604,9 @@ public class GRYKotlinTranslator {
 		return "\(indentation)throw \(expressionString)\n"
 	}
 
-	private func translate(returnStatement: GRYAst,
-						   withIndentation indentation: String) throws -> String
+	private func translate(
+		returnStatement: GRYAst,
+		withIndentation indentation: String) throws -> String
 	{
 		precondition(returnStatement.name == "Return Statement")
 
@@ -624,8 +627,9 @@ public class GRYKotlinTranslator {
 	inside it as the initial value for the variable (and the `danglingPatternBinding` is reset to
 	`nil`). Otherwise, the variable is declared without an initial value.
 	*/
-	private func translate(variableDeclaration: GRYAst,
-						   withIndentation indentation: String) throws -> String
+	private func translate(
+		variableDeclaration: GRYAst,
+		withIndentation indentation: String) throws -> String
 	{
 		precondition(variableDeclaration.name == "Variable Declaration")
 		var result = indentation
@@ -690,8 +694,9 @@ public class GRYKotlinTranslator {
 		return result
 	}
 
-	private func translateGetterAndSetter(forVariableDeclaration variableDeclaration: GRYAst,
-										  withIndentation indentation: String) throws -> String
+	private func translateGetterAndSetter(
+		forVariableDeclaration variableDeclaration: GRYAst,
+		withIndentation indentation: String) throws -> String
 	{
 		var result = ""
 
@@ -970,8 +975,9 @@ public class GRYKotlinTranslator {
 
 	/// Translates typical call expressions. The functionNamePrefix is passed as an argument here only
 	/// because it has already been calculated by translate(callExpression:).
-	private func translate(asExplicitFunctionCall callExpression: GRYAst,
-						   withFunctionNamePrefix functionNamePrefix: Substring) throws -> String
+	private func translate(
+		asExplicitFunctionCall callExpression: GRYAst,
+		withFunctionNamePrefix functionNamePrefix: Substring) throws -> String
 	{
 		let functionNamePrefix = (functionNamePrefix == "print") ?
 			"println" : String(functionNamePrefix)
@@ -1052,8 +1058,9 @@ public class GRYKotlinTranslator {
 	The second one can be used to provide a manual translation of a swift value, as in
 	`let three = GRYAlternative(swift: sqrt(9), kotlin: "Math.sqrt(9.0)")`.
 	*/
-	private func translate(asKotlinLiteral callExpression: GRYAst,
-						   withFunctionNamePrefix functionNamePrefix: Substring) throws -> String
+	private func translate(
+		asKotlinLiteral callExpression: GRYAst,
+		withFunctionNamePrefix functionNamePrefix: Substring) throws -> String
 	{
 		precondition(callExpression.name == "Call Expression")
 

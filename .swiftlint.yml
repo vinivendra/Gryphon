@@ -1,11 +1,11 @@
 disabled_rules: # rule identifiers to exclude from running
-  - colon
-  - comma
-  - control_statement
+  # - colon
+  # - comma
+  # - control_statement
   # - trailing_whitespace
   - statement_position
   - opening_brace
-  - vertical_parameter_alignment
+  # - vertical_parameter_alignment
   - line_length
   - void_return
   - todo

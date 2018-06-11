@@ -54,7 +54,7 @@ public enum GRYCompiler {
 											  containing: kotlinCode)
 
 		// Call the kotlin compiler
-		let arguments = ["-include-runtime",  "-d", GRYUtils.buildFolder + "/kotlin.jar", kotlinFilePath]
+		let arguments = ["-include-runtime", "-d", GRYUtils.buildFolder + "/kotlin.jar", kotlinFilePath]
 		let commandResult = GRYShell.runShellCommand(kotlinCompilerPath, arguments: arguments)
 
 		// Ensure the compiler terminated successfully
