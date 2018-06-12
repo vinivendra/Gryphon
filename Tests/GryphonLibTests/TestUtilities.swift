@@ -98,11 +98,11 @@ extension TestUtils {
 		"logicOperators",
 		"numericLiterals",
 		"operators",
-		"print"
+		"print",
 	]
 	static let allTestCases = acceptanceTestCases + [
 		"enums",
 		"functionDefinitions",
-		"strings"
+		"strings",
 	]
 }

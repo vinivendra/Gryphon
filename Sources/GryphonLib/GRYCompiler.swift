@@ -31,7 +31,9 @@ public enum GRYCompiler {
 
 	public static func compileAndRun(fileAt filePath: String) -> KotlinCompilationResult {
 		let compilationResult = compile(fileAt: filePath)
-		guard case .success(_) = compilationResult else { return compilationResult }
+		guard case .success(_) = compilationResult else {
+			return compilationResult
+		}
 
 		log?("Running Kotlin...")
 		let arguments = ["java", "-jar", "kotlin.jar"]
@@ -49,9 +51,10 @@ public enum GRYCompiler {
 
 		log?("Compiling Kotlin...")
 		let fileName = URL(fileURLWithPath: filePath).deletingPathExtension().lastPathComponent
-		let kotlinFilePath = GRYUtils.createFile(named: fileName + ".kt",
-												 inDirectory: GRYUtils.buildFolder,
-												 containing: kotlinCode)
+		let kotlinFilePath = GRYUtils.createFile(
+			named: fileName + ".kt",
+			inDirectory: GRYUtils.buildFolder,
+			containing: kotlinCode)
 
 		// Call the kotlin compiler
 		let arguments =

@@ -42,6 +42,6 @@ class GRYKotlinTranslatorTest: XCTestCase {
 	}
 
 	static var allTests = [
-		("testTranslator", testTranslator)
+		("testTranslator", testTranslator),
 	]
 }

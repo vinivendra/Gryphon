@@ -139,6 +139,6 @@ class GRYSExpressionParserTest: XCTestCase {
 	static var allTests = [
 		("testCanRead", testCanRead),
 		("testRead", testRead),
-		("testParser", testParser)
+		("testParser", testParser),
 	]
 }

@@ -54,6 +54,6 @@ class AcceptanceTest: XCTestCase {
 	}
 
 	static var allTests = [
-		("test", test)
+		("test", test),
 	]
 }

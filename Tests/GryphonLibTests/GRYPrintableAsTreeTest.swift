@@ -117,6 +117,6 @@ class GRYPrintableAsTreeTest: XCTestCase {
 		("testPrinting", testPrinting),
 		("testStrings", testStrings),
 		("testArrays", testArrays),
-		("testHorizontalLimit", testHorizontalLimit)
+		("testHorizontalLimit", testHorizontalLimit),
 	]
 }

@@ -146,7 +146,7 @@ public class GRYKotlinTranslator {
 			"Extension Declaration",
 			"Function Declaration",
 			"Enum Declaration",
-			]
+		]
 		let isDeclaration = { (ast: GRYAst) -> Bool in declarationNames.contains(ast.name) }
 
 		let declarations = ast.subTrees.filter(isDeclaration)
@@ -156,9 +156,11 @@ public class GRYKotlinTranslator {
 		// Then, translate the remaining statements (if there are any) and wrap them in the main
 		// function
 		let indentation = increaseIndentation("")
-		let statements = ast.subTrees.filter({!isDeclaration($0)})
+		let statements = ast.subTrees.filter({ !isDeclaration($0) })
 		let statementsString = try! translate(subTrees: statements, withIndentation: indentation)
-		guard !statementsString.isEmpty else { return result }
+		guard !statementsString.isEmpty else {
+			return result
+		}
 
 		// Add newline between declarations and the main function, if needed
 		if !result.isEmpty {
@@ -409,7 +411,9 @@ public class GRYKotlinTranslator {
 	{
 		precondition(constructorDeclaration.name == "Constructor Declaration")
 
-		guard !constructorDeclaration.standaloneAttributes.contains("implicit") else { return "" }
+		guard !constructorDeclaration.standaloneAttributes.contains("implicit") else {
+			return ""
+		}
 
 		throw TranslationError.unknown
 	}
@@ -419,7 +423,9 @@ public class GRYKotlinTranslator {
 	{
 		precondition(destructorDeclaration.name == "Destructor Declaration")
 
-		guard !destructorDeclaration.standaloneAttributes.contains("implicit") else { return "" }
+		guard !destructorDeclaration.standaloneAttributes.contains("implicit") else {
+			return ""
+		}
 
 		throw TranslationError.unknown
 	}
@@ -432,7 +438,9 @@ public class GRYKotlinTranslator {
 		let isGetterOrSetter =
 			(functionDeclaration["getter_for"] != nil) || (functionDeclaration["setter_for"] != nil)
 		let isImplicit = functionDeclaration.standaloneAttributes.contains("implicit")
-		guard !isImplicit && !isGetterOrSetter else { return "" }
+		guard !isImplicit && !isGetterOrSetter else {
+			return ""
+		}
 
 		let functionName = try unwrapOrThrow(functionDeclaration.standaloneAttributes.first)
 
@@ -1073,8 +1081,9 @@ public class GRYKotlinTranslator {
 			guard functionNamePrefix != "GRYInsert" &&
 				functionNamePrefix != "GRYAlternative" else
 			{
-				return try translate(asKotlinLiteral: callExpression,
-									 withFunctionNamePrefix: functionNamePrefix)
+				return try translate(
+					asKotlinLiteral: callExpression,
+					withFunctionNamePrefix: functionNamePrefix)
 			}
 
 			// A call to `GRYIgnoreNext()` can be used to ignore the next swift statement.
@@ -1083,8 +1092,9 @@ public class GRYKotlinTranslator {
 				return ""
 			}
 
-			return try translate(asExplicitFunctionCall: callExpression,
-								 withFunctionNamePrefix: functionNamePrefix)
+			return try translate(
+				asExplicitFunctionCall: callExpression,
+				withFunctionNamePrefix: functionNamePrefix)
 		}
 	}
 

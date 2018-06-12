@@ -313,7 +313,9 @@ internal class GRYSExpressionParser {
 		index = buffer.index(after: index)
 
 		// Ensure a location comes after
-		guard buffer[index] == "/" else { return nil }
+		guard buffer[index] == "/" else {
+			return nil
+		}
 
 		//
 		let string = buffer[currentIndex..<index]

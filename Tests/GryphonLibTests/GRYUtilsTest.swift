@@ -79,6 +79,6 @@ class GRYUtilsTest: XCTestCase {
 	static var allTests = [
 		("testRandomCoverage", testRandomCoverage),
 		("testRandomClosedRangeCoverage", testRandomClosedRangeCoverage),
-		("testRandomBoolCoverage", testRandomBoolCoverage)
+		("testRandomBoolCoverage", testRandomBoolCoverage),
 	]
 }

@@ -32,9 +32,11 @@ public enum GRYShell {
 	/// Returns nil when the operation times out.
 	@discardableResult
 	internal static func runShellCommand(
-		_ command: String, arguments: [String],
+		_ command: String,
+		arguments: [String],
 		fromFolder currentFolder: String? = nil,
-		timeout: TimeInterval = GRYShell.defaultTimeout) -> CommandOutput!
+		timeout: TimeInterval = GRYShell.defaultTimeout)
+		-> CommandOutput!
 	{
 		let outputPipe = Pipe()
 		let errorPipe = Pipe()

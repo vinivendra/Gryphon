@@ -26,7 +26,7 @@ public func allTests() -> [XCTestCaseEntry] {
 		testCase(GRYShellTest.allTests),
 		testCase(GRYUtilsTest.allTests),
 		testCase(IntegrationTest.allTests),
-		testCase(AcceptanceTest.allTests)
+		testCase(AcceptanceTest.allTests),
 	]
 }
 #endif

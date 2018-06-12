@@ -71,17 +71,19 @@ public extension GRYPrintableAsTree {
 		for subTree in printableSubTrees.dropLast() {
 			var newIndentation = indentation
 			newIndentation.append(" ├─")
-			subTree.prettyPrint(indentation: newIndentation,
-								isLast: false,
-								horizontalLimit: horizontalLimit,
-								printFunction: printFunction)
+			subTree.prettyPrint(
+				indentation: newIndentation,
+				isLast: false,
+				horizontalLimit: horizontalLimit,
+				printFunction: printFunction)
 		}
 		var newIndentation = indentation
 		newIndentation.append(" └─")
-		printableSubTrees.last?.prettyPrint(indentation: newIndentation,
-											isLast: true,
-											horizontalLimit: horizontalLimit,
-											printFunction: printFunction)
+		printableSubTrees.last?.prettyPrint(
+			indentation: newIndentation,
+			isLast: true,
+			horizontalLimit: horizontalLimit,
+			printFunction: printFunction)
 	}
 }
 

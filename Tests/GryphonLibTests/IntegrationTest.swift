@@ -41,6 +41,6 @@ class IntegrationTest: XCTestCase {
 	}
 
 	static var allTests = [
-		("test", test)
+		("test", test),
 	]
 }

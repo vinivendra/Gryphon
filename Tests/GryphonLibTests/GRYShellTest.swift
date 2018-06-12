@@ -51,6 +51,6 @@ class GRYShellTest: XCTestCase {
 
 	static var allTests = [
 		("testEcho", testEcho),
-		("testSwiftc", testSwiftc)
+		("testSwiftc", testSwiftc),
 	]
 }

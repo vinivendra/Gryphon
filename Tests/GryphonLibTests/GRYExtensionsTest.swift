@@ -66,11 +66,10 @@ class GRYExtensionTest: XCTestCase {
 				.split(withStringSeparator: "->"),
 			["(Int, (String) ", " Int) ", " Int "])
 
-		for _ in 0..<1000 {
+		for _ in 0..<1_000 {
 			let (string, separator, _, components) =
 				Fuzzer.randomTest()
-			XCTAssertEqual(string.split(withStringSeparator: separator),
-						   components)
+			XCTAssertEqual(string.split(withStringSeparator: separator), components)
 		}
 	}
 
@@ -105,24 +104,28 @@ class GRYExtensionTest: XCTestCase {
 		XCTAssertEqual(
 			"->(Int, (String) -> Int) ->-> Int ->"
 				.occurrences(of: "->").map(TestableRange.init),
-			[TestableRange(0, 2), TestableRange(17, 19), TestableRange(25, 27),
-			 TestableRange(27, 29), TestableRange(34, 36)])
+			[TestableRange(0, 2),
+			 TestableRange(17, 19),
+			 TestableRange(25, 27),
+			 TestableRange(27, 29),
+			 TestableRange(34, 36),
+			 ])
 
-		for _ in 0..<1000 {
+		for _ in 0..<1_000 {
 			let (string, separator, occurrences, _) =
 				Fuzzer.randomTest()
-			XCTAssertEqual(string.occurrences(of: separator).map(TestableRange.init),
-						   occurrences)
+			XCTAssertEqual(string.occurrences(of: separator).map(TestableRange.init), occurrences)
 		}
 	}
 
 	static var allTests = [
 		("testStringSplit", testStringSplit),
-		("testOccurrencesOfSubstring", testOccurrencesOfSubstring)
+		("testOccurrencesOfSubstring", testOccurrencesOfSubstring),
 	]
 }
 
 private enum Fuzzer {
+	// swiftlint:disable trailing_comma
 	static private let characterSets: [[Character]]
 		= [["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "A", "S", "D", "F", "G", "H", "J",
 			"K", "L", "Z", "X", "C", "V", "B", "N", "M"],
@@ -132,6 +135,7 @@ private enum Fuzzer {
 		   ["~", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "+", "`", "-", "=", "[",
 			"]", "{", "}", "\\", "|", ";", ":", "'", "\"", ",", "<", ".", ">", "/", "?"],
 		   ["\n", " ", "\t"]]
+	// swiftlint:enable trailing_comma
 
 	static func randomTest()
 		-> (string: String, separator: String, occurrences: [TestableRange], components: [String])
@@ -161,8 +165,7 @@ private enum Fuzzer {
 
 			if isSeparator {
 				string += separator
-				occurrences.append(TestableRange(currentIndex,
-												 currentIndex + separator.count))
+				occurrences.append(TestableRange(currentIndex, currentIndex + separator.count))
 				currentIndex += separator.count
 			}
 			else {
