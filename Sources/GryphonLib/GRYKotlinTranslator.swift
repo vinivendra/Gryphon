@@ -960,8 +960,9 @@ public class GRYKotlinTranslator {
 
 		let operatorIdentifier: String
 
-		if let declaration = binaryExpression.subTree(named: "Dot Syntax Call Expression")?
-			.subTree(named: "Declaration Reference Expression")?["decl"],
+		if let declaration = binaryExpression
+				.subTree(named: "Dot Syntax Call Expression")?
+				.subTree(named: "Declaration Reference Expression")?["decl"],
 			let tupleExpression = binaryExpression.subTree(named: "Tuple Expression"),
 			let leftHandExpression = tupleExpression.subTree(at: 0),
 			let rightHandExpression = tupleExpression.subTree(at: 1)
@@ -981,8 +982,9 @@ public class GRYKotlinTranslator {
 	private func translate(prefixUnaryExpression: GRYAst) throws -> String {
 		precondition(prefixUnaryExpression.name == "Prefix Unary Expression")
 
-		if let declaration = prefixUnaryExpression.subTree(named: "Dot Syntax Call Expression")?
-			.subTree(named: "Declaration Reference Expression")?["decl"],
+		if let declaration = prefixUnaryExpression
+				.subTree(named: "Dot Syntax Call Expression")?
+				.subTree(named: "Declaration Reference Expression")?["decl"],
 			let expression = prefixUnaryExpression.subTree(at: 1)
 		{
 			let operatorIdentifier = getIdentifierFromDeclaration(declaration)
@@ -1051,8 +1053,7 @@ public class GRYKotlinTranslator {
 				functionName =
 					try translate(declarationReferenceExpression: declarationReferenceExpression)
 			}
-			else if
-				let dotSyntaxCallExpression = callExpression
+			else if let dotSyntaxCallExpression = callExpression
 					.subTree(named: "Dot Syntax Call Expression"),
 				let methodName = dotSyntaxCallExpression
 					.subTree(at: 0, named: "Declaration Reference Expression"),
