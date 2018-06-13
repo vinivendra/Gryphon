@@ -41,15 +41,15 @@ public class GRYKotlinTranslator {
 
 	/// Records the amount of translations that have been successfully translated;
 	/// that can be refactored into translatable code; or that can't be translated.
-	class Diagnostics: CustomStringConvertible {
+	public class Diagnostics: CustomStringConvertible {
 		/// The number of successfully translated subtrees
-		fileprivate(set) var translatedSubtrees = 0
+		private(set) var translatedSubtrees = 0
 		/// The number of subtrees that can be refactored into translatable subtrees
-		fileprivate(set) var refactorableSubtrees = 0
+		private(set) var refactorableSubtrees = 0
 		/// The number of subtrees that can't be translated
-		fileprivate(set) var unknownSubtrees = 0
+		private(set) var unknownSubtrees = 0
 
-		var description: String {
+		public var description: String {
 			return """
 			Kotlin translation diagnostics:
 			\(translatedSubtrees) translated subtrees
@@ -61,7 +61,7 @@ public class GRYKotlinTranslator {
 
 	/// Records the amount of translations that have been successfully translated;
 	/// that can be refactored into translatable code; or that can't be translated.
-	let diagnostics = Diagnostics()
+	var diagnostics: Diagnostics?
 
 	fileprivate enum TranslationError: Error {
 		case refactorable

@@ -74,7 +74,9 @@ func main() {
 //	print(GRYCompiler.getSwiftASTDump(forFileAt: filePath))
 //	print(GRYCompiler.generateAST(forFileAt: filePath).description(withHorizontalLimit: 100))
 	print(GRYCompiler.processExternalAST(filePath))
-	print(GRYCompiler.generateKotlinCode(forFileAt: filePath))
+	let (code, diagnostics) = GRYCompiler.generateKotlinCodeAndDiagnostics(forFileAt: filePath)
+	print(code)
+	print(diagnostics)
 //	print(GRYCompiler.compileAndRun(fileAt: filePath))
 }
 
