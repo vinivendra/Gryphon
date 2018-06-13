@@ -49,6 +49,20 @@ public class GRYKotlinTranslator {
 		/// The number of subtrees that can't be translated
 		private(set) var unknownSubtrees = 0
 
+		func logSuccessfulTranslation(_ translation: String) {
+			translatedSubtrees += 1
+			let firstLineOfTranslation = translation.prefix(while: { $0 != "\n" })
+			print("Translated: \(firstLineOfTranslation)")
+		}
+
+		func logRefactorableTranslation() {
+			refactorableSubtrees += 1
+		}
+
+		func logUnknownTranslation() {
+			unknownSubtrees += 1
+		}
+
 		public var description: String {
 			return """
 			Kotlin translation diagnostics:
@@ -733,69 +747,80 @@ public class GRYKotlinTranslator {
 		variableDeclaration: GRYAst,
 		withIndentation indentation: String) throws -> String
 	{
-		precondition(variableDeclaration.name == "Variable Declaration")
-		var result = indentation
+		do {
+			precondition(variableDeclaration.name == "Variable Declaration")
+			var result = indentation
 
-		let identifier = try unwrapOrThrow(variableDeclaration.standaloneAttributes.first)
+			let identifier = try unwrapOrThrow(variableDeclaration.standaloneAttributes.first)
 
-		let rawType = try unwrapOrThrow(variableDeclaration["interface type"])
+			let rawType = try unwrapOrThrow(variableDeclaration["interface type"])
 
-		let type = translateType(rawType)
+			let type = translateType(rawType)
 
-		let hasGetter = variableDeclaration.subTrees.contains(where:
-		{ (subTree: GRYAst) -> Bool in
-			return subTree.name == "Function Declaration" &&
-				!subTree.standaloneAttributes.contains("implicit") &&
-				subTree.keyValueAttributes["getter_for"] != nil
-		})
-		let hasSetter = variableDeclaration.subTrees.contains(where:
-		{ (subTree: GRYAst) -> Bool in
-			return subTree.name == "Function Declaration" &&
-				!subTree.standaloneAttributes.contains("implicit") &&
-				subTree.keyValueAttributes["setter_for"] != nil
-		})
+			let hasGetter = variableDeclaration.subTrees.contains(where:
+			{ (subTree: GRYAst) -> Bool in
+				return subTree.name == "Function Declaration" &&
+					!subTree.standaloneAttributes.contains("implicit") &&
+					subTree.keyValueAttributes["getter_for"] != nil
+			})
+			let hasSetter = variableDeclaration.subTrees.contains(where:
+			{ (subTree: GRYAst) -> Bool in
+				return subTree.name == "Function Declaration" &&
+					!subTree.standaloneAttributes.contains("implicit") &&
+					subTree.keyValueAttributes["setter_for"] != nil
+			})
 
-		let keyword: String
-		if hasGetter && hasSetter {
-			keyword = "var"
-		}
-		else if hasGetter && !hasSetter {
-			keyword = "val"
-		}
-		else {
-			if variableDeclaration.standaloneAttributes.contains("let") {
+			let keyword: String
+			if hasGetter && hasSetter {
+				keyword = "var"
+			}
+			else if hasGetter && !hasSetter {
 				keyword = "val"
 			}
 			else {
-				keyword = "var"
+				if variableDeclaration.standaloneAttributes.contains("let") {
+					keyword = "val"
+				}
+				else {
+					keyword = "var"
+				}
 			}
+
+			let extensionPrefix: String
+			if let extensionType = variableDeclaration["extends_type"] {
+				extensionPrefix = "\(extensionType)."
+			}
+			else {
+				extensionPrefix = ""
+			}
+
+			result += "\(keyword) \(extensionPrefix)\(identifier): \(type)"
+
+			if let patternBindingExpression = danglingPatternBinding,
+				patternBindingExpression.identifier == identifier,
+				patternBindingExpression.type == type
+			{
+				result += " = " + patternBindingExpression.translatedExpression
+				danglingPatternBinding = nil
+			}
+
+			result += "\n"
+
+			result += try translateGetterAndSetter(
+				forVariableDeclaration: variableDeclaration,
+				withIndentation: indentation)
+
+			diagnostics?.logSuccessfulTranslation(result)
+			return result
 		}
-
-		let extensionPrefix: String
-		if let extensionType = variableDeclaration["extends_type"] {
-			extensionPrefix = "\(extensionType)."
+		catch TranslationError.unknown {
+			diagnostics?.logUnknownTranslation()
+			return "<🚨 Unknown \(variableDeclaration.name)>"
 		}
-		else {
-			extensionPrefix = ""
+		catch TranslationError.refactorable {
+			diagnostics?.logRefactorableTranslation()
+			return "<⚠️ Refactorable \(variableDeclaration.name)>"
 		}
-
-		result += "\(keyword) \(extensionPrefix)\(identifier): \(type)"
-
-		if let patternBindingExpression = danglingPatternBinding,
-			patternBindingExpression.identifier == identifier,
-			patternBindingExpression.type == type
-		{
-			result += " = " + patternBindingExpression.translatedExpression
-			danglingPatternBinding = nil
-		}
-
-		result += "\n"
-
-		result += try translateGetterAndSetter(
-			forVariableDeclaration: variableDeclaration,
-			withIndentation: indentation)
-
-		return result
 	}
 
 	private func translateGetterAndSetter(
