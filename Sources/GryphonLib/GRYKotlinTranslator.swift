@@ -49,18 +49,25 @@ public class GRYKotlinTranslator {
 		/// The number of subtrees that can't be translated
 		private(set) var unknownSubtrees = 0
 
-		func logSuccessfulTranslation(_ translation: String) {
+		fileprivate func logSuccessfulTranslation(_ translation: String) {
 			translatedSubtrees += 1
 			let firstLineOfTranslation = translation.prefix(while: { $0 != "\n" })
 			print("Translated: \(firstLineOfTranslation)")
 		}
 
-		func logRefactorableTranslation() {
-			refactorableSubtrees += 1
-		}
+		fileprivate func logError(_ error: Error) {
+			guard let translationError = error as? TranslationError else {
+				// Methods in this class should only throw `TranslationError`s.
+				// If the thrown error isn't a `TranslationError`, something unexpected happened.
+				fatalError("Unkown error!")
+			}
 
-		func logUnknownTranslation() {
-			unknownSubtrees += 1
+			switch translationError {
+			case .refactorable:
+				refactorableSubtrees += 1
+			case .unknown:
+				unknownSubtrees += 1
+			}
 		}
 
 		public var description: String {
@@ -76,6 +83,8 @@ public class GRYKotlinTranslator {
 	/// Records the amount of translations that have been successfully translated;
 	/// that can be refactored into translatable code; or that can't be translated.
 	var diagnostics: Diagnostics?
+
+	private let successfulTranslationPrefix = "✅ "
 
 	fileprivate enum TranslationError: Error {
 		case refactorable
@@ -232,7 +241,7 @@ public class GRYKotlinTranslator {
 					withIndentation: indentation)
 				result += string
 			case "Protocol":
-				let string = try translate(
+				let string = translate(
 					protocolDeclaration: subTree,
 					withIndentation: indentation)
 				result += string
@@ -247,11 +256,11 @@ public class GRYKotlinTranslator {
 					withIndentation: indentation)
 				result += string
 			case "Variable Declaration":
-				result += try translate(
+				result += translate(
 					variableDeclaration: subTree,
 					withIndentation: indentation)
 			case "Assign Expression":
-				result += try translate(
+				result += translate(
 					assignExpression: subTree,
 					withIndentation: indentation)
 			case "Guard Statement":
@@ -270,9 +279,16 @@ public class GRYKotlinTranslator {
 					returnStatement: subTree,
 					withIndentation: indentation)
 			case "Call Expression":
-				let string = try translate(callExpression: subTree)
-				if !string.isEmpty {
-					result += indentation + string + "\n"
+				do {
+					let string = try translate(callExpression: subTree)
+					diagnostics?.logSuccessfulTranslation(string)
+					if !string.isEmpty {
+						result += successfulTranslationPrefix + indentation + string + "\n"
+					}
+				}
+				catch let error {
+					diagnostics?.logError(error)
+					return code(for: error, inASTNamed: subTree.name)
 				}
 			default:
 				if subTree.name.hasSuffix("Expression") {
@@ -375,18 +391,26 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translate(protocolDeclaration: GRYAst, withIndentation indentation: String)
-		throws -> String
+		-> String
 	{
 		precondition(protocolDeclaration.name == "Protocol")
 
-		let protocolName = try unwrapOrThrow(protocolDeclaration.standaloneAttributes.first)
+		do {
+			let protocolName = try unwrapOrThrow(protocolDeclaration.standaloneAttributes.first)
 
-		if protocolName == "GRYIgnore" {
-			return ""
+			if protocolName == "GRYIgnore" {
+				diagnostics?.logSuccessfulTranslation("Ignored protocol")
+				return ""
+			}
+			else {
+				// Add actual protocol translation here
+				diagnostics?.logError(TranslationError.unknown)
+				return code(for: TranslationError.unknown, inASTNamed: protocolDeclaration.name)
+			}
 		}
-		else {
-			// Add actual protocol translation here
-			throw TranslationError.unknown
+		catch let error {
+			diagnostics?.logError(error)
+			return code(for: error, inASTNamed: protocolDeclaration.name)
 		}
 	}
 
@@ -402,6 +426,7 @@ public class GRYKotlinTranslator {
 			let rawInheritanceArray = inheritanceList.split(withStringSeparator: ", ")
 
 			if rawInheritanceArray.contains("GRYIgnore") {
+				diagnostics?.logSuccessfulTranslation("Ignored class")
 				return ""
 			}
 
@@ -745,10 +770,11 @@ public class GRYKotlinTranslator {
 	*/
 	private func translate(
 		variableDeclaration: GRYAst,
-		withIndentation indentation: String) throws -> String
+		withIndentation indentation: String) -> String
 	{
+		precondition(variableDeclaration.name == "Variable Declaration")
+
 		do {
-			precondition(variableDeclaration.name == "Variable Declaration")
 			var result = indentation
 
 			let identifier = try unwrapOrThrow(variableDeclaration.standaloneAttributes.first)
@@ -811,15 +837,11 @@ public class GRYKotlinTranslator {
 				withIndentation: indentation)
 
 			diagnostics?.logSuccessfulTranslation(result)
-			return result
+			return successfulTranslationPrefix + result
 		}
-		catch TranslationError.unknown {
-			diagnostics?.logUnknownTranslation()
-			return "<🚨 Unknown \(variableDeclaration.name)>"
-		}
-		catch TranslationError.refactorable {
-			diagnostics?.logRefactorableTranslation()
-			return "<⚠️ Refactorable \(variableDeclaration.name)>"
+		catch let error {
+			diagnostics?.logError(error)
+			return code(for: error, inASTNamed: variableDeclaration.name)
 		}
 	}
 
@@ -860,17 +882,25 @@ public class GRYKotlinTranslator {
 		return result
 	}
 
-	private func translate(assignExpression: GRYAst, withIndentation indentation: String)
-		throws -> String
+	private func translate(assignExpression: GRYAst, withIndentation indentation: String) -> String
 	{
 		precondition(assignExpression.name == "Assign Expression")
 
-		let leftExpression = try unwrapOrThrow(assignExpression.subTree(at: 0))
-		let rightExpression = try unwrapOrThrow(assignExpression.subTree(at: 1))
-		let leftString = try translate(expression: leftExpression)
-		let rightString = try translate(expression: rightExpression)
+		do {
+			let leftExpression = try unwrapOrThrow(assignExpression.subTree(at: 0))
+			let rightExpression = try unwrapOrThrow(assignExpression.subTree(at: 1))
+			let leftString = try translate(expression: leftExpression)
+			let rightString = try translate(expression: rightExpression)
 
-		return "\(indentation)\(leftString) = \(rightString)\n"
+			let result = "\(indentation)\(leftString) = \(rightString)\n"
+
+			diagnostics?.logSuccessfulTranslation(result)
+			return successfulTranslationPrefix + result
+		}
+		catch let error {
+			diagnostics?.logError(error)
+			return code(for: error, inASTNamed: assignExpression.name)
+		}
 	}
 
 	private func translate(expression: GRYAst) throws -> String {
@@ -1415,6 +1445,21 @@ public class GRYKotlinTranslator {
 
 	func decreaseIndentation(_ indentation: String) -> String {
 		return String(indentation.dropLast())
+	}
+
+	func code(for error: Error, inASTNamed astName: String) -> String {
+		guard let translationError = error as? TranslationError else {
+			// Methods in this class should only throw `TranslationError`s.
+			// If the thrown error isn't a `TranslationError`, something unexpected happened.
+			fatalError("Unkown error!")
+		}
+
+		switch translationError {
+		case .refactorable:
+			return "<⚠️ Refactorable: \(astName)>"
+		case .unknown:
+			return "<🚨 Unknown: \(astName)>"
+		}
 	}
 }
 
