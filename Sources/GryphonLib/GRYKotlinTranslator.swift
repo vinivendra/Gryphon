@@ -290,7 +290,6 @@ public class GRYKotlinTranslator {
 		}
 	}
 
-	// TODO: This can't throw. If this has to throw, forEach should be reviewed.
 	private func translate(subTrees: [GRYAst], withIndentation indentation: String) -> String {
 		var result = ""
 
@@ -315,8 +314,7 @@ public class GRYKotlinTranslator {
 			ASTIsExpression(expression) else { return }
 
 		let binding: GRYAst
-		// TODO: Refactor some unwrappings to follow this cleaner convention instead of creating
-		// several variables that are only used once.
+
 		if let unwrappedBinding = patternBindingDeclaration
 			.subTree(named: "Pattern Typed")?
 			.subTree(named: "Pattern Named")
@@ -919,9 +917,6 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translate(expression: GRYAst) throws -> String {
-		// TODO: add unwrap or throw to force unwraps here
-		// TODO: default case should throw
-
 		switch expression.name {
 		case "Array Expression":
 			return try translate(arrayExpression: expression)
@@ -961,7 +956,7 @@ public class GRYKotlinTranslator {
 			let lastExpression = try unwrapOrThrow(expression.subTrees.last)
 			return try translate(expression: lastExpression)
 		default:
-			return "<Unknown expression: \(expression.name)>"
+			throw TranslationError.unknown
 		}
 	}
 
