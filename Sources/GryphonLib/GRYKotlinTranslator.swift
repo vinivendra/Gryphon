@@ -405,7 +405,14 @@ public class GRYKotlinTranslator {
 
 			let capitalizedElementName = elementName.capitalizedAsCamelCase
 
-			result += "\(increasedIndentation)class \(capitalizedElementName): \(enumName)()\n"
+			let subResult =
+				"\(increasedIndentation)class \(capitalizedElementName): \(enumName)()\n"
+
+			diagnostics?.logSuccessfulTranslation(
+				"[Enum Element Declaration] \(subResult)",
+				forAST: enumElementDeclaration)
+
+			result += checkmark + subResult
 		}
 
 		result += "\(indentation)}\n"
