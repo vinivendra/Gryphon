@@ -203,7 +203,6 @@ public class GRYKotlinTranslator {
 	// TODO: Make sure these methods only throw when they themselves can't be translated.
 	private func translate(subTree: GRYAst, withIndentation indentation: String) -> String {
 		do {
-			var shouldCountAsSuccessfulTranslation = true
 			let result: String
 
 			switch subTree.name {
@@ -214,12 +213,10 @@ public class GRYKotlinTranslator {
 					classDeclaration: subTree,
 					withIndentation: indentation)
 			case "Constructor Declaration":
-				// TODO: Shouldn't count when it's implicit
 				result = try translate(
 					constructorDeclaration: subTree,
 					withIndentation: indentation)
 			case "Destructor Declaration":
-				// TODO: Shouldn't count when it's implicit
 				result = try translate(
 					destructorDeclaration: subTree,
 					withIndentation: indentation)
@@ -270,7 +267,6 @@ public class GRYKotlinTranslator {
 					withIndentation: indentation)
 			case "Pattern Binding Declaration":
 				try process(patternBindingDeclaration: subTree)
-				shouldCountAsSuccessfulTranslation = false
 				result = ""
 			case "Return Statement":
 				result = try translate(
@@ -294,21 +290,20 @@ public class GRYKotlinTranslator {
 				}
 			}
 
-			if result.isEmpty {
-				if shouldCountAsSuccessfulTranslation {
-					diagnostics?.logSuccessfulTranslation(
-						"[\(subTree.name)] \(checkmark)",
-						forAST: subTree)
+			if !result.isEmpty {
+				diagnostics?.logSuccessfulTranslation(
+					"[\(subTree.name)] \(result)",
+					forAST: subTree)
+
+				if !result.hasPrefix(checkmark) {
+					return checkmark + result
 				}
-				return result
+				else {
+					return checkmark + "/*\(subTree.name)*/\n" + result
+				}
 			}
 			else {
-				if shouldCountAsSuccessfulTranslation {
-					diagnostics?.logSuccessfulTranslation(
-						"[\(subTree.name)] \(result)",
-					forAST: subTree)
-				}
-				return checkmark + result
+				return result
 			}
 		}
 		catch let error {
@@ -493,6 +488,7 @@ public class GRYKotlinTranslator {
 	{
 		precondition(functionDeclaration.name == "Function Declaration")
 
+		// Getters and setters will appear again in the Variable Declaration AST and get translated
 		let isGetterOrSetter =
 			(functionDeclaration["getter_for"] != nil) || (functionDeclaration["setter_for"] != nil)
 		let isImplicit = functionDeclaration.standaloneAttributes.contains("implicit")
@@ -875,6 +871,8 @@ public class GRYKotlinTranslator {
 		{
 			assert(subtree.name == "Function Declaration")
 
+			var subResult = ""
+
 			let keyword: String
 
 			if subtree["getter_for"] != nil {
@@ -884,7 +882,7 @@ public class GRYKotlinTranslator {
 				keyword = "set(newValue)"
 			}
 
-			result += "\(getSetIndentation)\(keyword) {\n"
+			subResult += "\(getSetIndentation)\(keyword) {\n"
 
 			let contentsIndentation = increaseIndentation(getSetIndentation)
 
@@ -892,9 +890,14 @@ public class GRYKotlinTranslator {
 
 			let contentsString =
 				translate(subTrees: statements, withIndentation: contentsIndentation)
-			result += contentsString
+			subResult += contentsString
 
-			result += "\(getSetIndentation)}\n"
+			subResult += "\(getSetIndentation)}\n"
+
+			diagnostics?.logSuccessfulTranslation(
+				"[Getter/Setter] \(subResult)",
+				forAST: subtree)
+			result += checkmark + subResult
 		}
 
 		return result
