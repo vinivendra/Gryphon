@@ -49,13 +49,14 @@ public class GRYKotlinTranslator {
 		/// The number of subtrees that can't be translated
 		private(set) var unknownSubtrees = 0
 
-		fileprivate func logSuccessfulTranslation(_ translation: String) {
+		fileprivate func logSuccessfulTranslation(_ translation: String, forAST ast: GRYAst) {
 			translatedSubtrees += 1
 			let firstLineOfTranslation = translation.prefix(while: { $0 != "\n" })
+			ast.translationStatus = .translated
 			print("Translated: \(firstLineOfTranslation)")
 		}
 
-		fileprivate func logError(_ error: Error) {
+		fileprivate func logError(_ error: Error, forAST ast: GRYAst) {
 			guard let translationError = error as? TranslationError else {
 				// Methods in this class should only throw `TranslationError`s.
 				// If the thrown error isn't a `TranslationError`, something unexpected happened.
@@ -65,8 +66,10 @@ public class GRYKotlinTranslator {
 			switch translationError {
 			case .refactorable:
 				refactorableSubtrees += 1
+				ast.translationStatus = .refactorable
 			case .unknown:
 				unknownSubtrees += 1
+				ast.translationStatus = .unknown
 			}
 		}
 
@@ -197,41 +200,47 @@ public class GRYKotlinTranslator {
 
 	// MARK: - Implementation
 
+	// TODO: Make sure these methods only throw when they themselves can't be translated.
 	private func translate(subTree: GRYAst, withIndentation indentation: String) -> String {
 		do {
+			var shouldCountAsSuccessfulTranslation = true
+			let result: String
+
 			switch subTree.name {
 			case "Import Declaration":
-				return ""
+				result = ""
 			case "Class Declaration":
-				return try translate(
+				result = try translate(
 					classDeclaration: subTree,
 					withIndentation: indentation)
 			case "Constructor Declaration":
-				return try translate(
+				// TODO: Shouldn't count when it's implicit
+				result = try translate(
 					constructorDeclaration: subTree,
 					withIndentation: indentation)
 			case "Destructor Declaration":
-				return try translate(
+				// TODO: Shouldn't count when it's implicit
+				result = try translate(
 					destructorDeclaration: subTree,
 					withIndentation: indentation)
 			case "Enum Declaration":
-				return try translate(
+				result = try translate(
 					enumDeclaration: subTree,
 					withIndentation: indentation)
 			case "Extension Declaration":
-				return translate(
+				result = translate(
 					subTrees: subTree.subTrees,
 					withIndentation: indentation)
 			case "For Each Statement":
-				return translate(
+				result = try translate(
 					forEachStatement: subTree,
 					withIndentation: indentation)
 			case "Function Declaration":
-				return try translate(
+				result = try translate(
 					functionDeclaration: subTree,
 					withIndentation: indentation)
 			case "Protocol":
-				return translate(
+				result = try translate(
 					protocolDeclaration: subTree,
 					withIndentation: indentation)
 			case "Top Level Code Declaration":
@@ -239,53 +248,71 @@ public class GRYKotlinTranslator {
 					topLevelCode: subTree,
 					withIndentation: indentation)
 			case "Throw Statement":
-				return try translate(
+				result = try translate(
 					throwStatement: subTree,
 					withIndentation: indentation)
 			case "Variable Declaration":
-				return translate(
+				result = try translate(
 					variableDeclaration: subTree,
 					withIndentation: indentation)
 			case "Assign Expression":
-				return translate(
+				result = try translate(
 					assignExpression: subTree,
 					withIndentation: indentation)
 			case "Guard Statement":
-				return try translate(
+				result = try translate(
 					ifStatement: subTree,
 					asGuard: true,
 					withIndentation: indentation)
 			case "If Statement":
-				return try translate(
+				result = try translate(
 					ifStatement: subTree,
 					withIndentation: indentation)
 			case "Pattern Binding Declaration":
 				try process(patternBindingDeclaration: subTree)
-				return ""
+				shouldCountAsSuccessfulTranslation = false
+				result = ""
 			case "Return Statement":
-				return try translate(
+				result = try translate(
 					returnStatement: subTree,
 					withIndentation: indentation)
 			case "Call Expression":
-				let string = try translate(callExpression: subTree)
-				diagnostics?.logSuccessfulTranslation(string)
-				if !string.isEmpty {
-					return checkmark + indentation + string + "\n"
+				let translation = try translate(callExpression: subTree)
+
+				if !translation.isEmpty {
+					result = indentation + translation + "\n"
 				}
 				else {
-					return ""
+					result = ""
 				}
 			default:
 				if subTree.name.hasSuffix("Expression") {
-					return try indentation + translate(expression: subTree) + "\n"
+					result = try indentation + translate(expression: subTree) + "\n"
 				}
 				else {
 					throw TranslationError.unknown
 				}
 			}
+
+			if result.isEmpty {
+				if shouldCountAsSuccessfulTranslation {
+					diagnostics?.logSuccessfulTranslation(
+						"[\(subTree.name)] \(checkmark)",
+						forAST: subTree)
+				}
+				return result
+			}
+			else {
+				if shouldCountAsSuccessfulTranslation {
+					diagnostics?.logSuccessfulTranslation(
+						"[\(subTree.name)] \(result)",
+					forAST: subTree)
+				}
+				return checkmark + result
+			}
 		}
 		catch let error {
-			diagnostics?.logError(error)
+			diagnostics?.logError(error, forAST: subTree)
 			return code(for: error, inASTNamed: subTree.name)
 		}
 	}
@@ -392,26 +419,18 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translate(protocolDeclaration: GRYAst, withIndentation indentation: String)
-		-> String
+		throws -> String
 	{
 		precondition(protocolDeclaration.name == "Protocol")
 
-		do {
-			let protocolName = try unwrapOrThrow(protocolDeclaration.standaloneAttributes.first)
+		let protocolName = try unwrapOrThrow(protocolDeclaration.standaloneAttributes.first)
 
-			if protocolName == "GRYIgnore" {
-				diagnostics?.logSuccessfulTranslation(checkmark + "Ignored protocol")
-				return ""
-			}
-			else {
-				// Add actual protocol translation here
-				diagnostics?.logError(TranslationError.unknown)
-				return code(for: TranslationError.unknown, inASTNamed: protocolDeclaration.name)
-			}
+		if protocolName == "GRYIgnore" {
+			return ""
 		}
-		catch let error {
-			diagnostics?.logError(error)
-			return code(for: error, inASTNamed: protocolDeclaration.name)
+		else {
+			// Add actual protocol translation here
+			return code(for: TranslationError.unknown, inASTNamed: protocolDeclaration.name)
 		}
 	}
 
@@ -427,7 +446,6 @@ public class GRYKotlinTranslator {
 			let rawInheritanceArray = inheritanceList.split(withStringSeparator: ", ")
 
 			if rawInheritanceArray.contains("GRYIgnore") {
-				diagnostics?.logSuccessfulTranslation(checkmark + "Ignored class")
 				return ""
 			}
 
@@ -570,45 +588,38 @@ public class GRYKotlinTranslator {
 		return result
 	}
 
-	private func translate(forEachStatement: GRYAst, withIndentation indentation: String) -> String
+	private func translate(forEachStatement: GRYAst, withIndentation indentation: String)
+		throws -> String
 	{
 		precondition(forEachStatement.name == "For Each Statement")
 
-		do {
-			guard let braceStatement = forEachStatement.subTrees.last,
-				braceStatement.name == "Brace Statement",
-				let variableName = forEachStatement
-					.subTree(named: "Pattern Named")?
-					.standaloneAttributes.first,
-				let collectionExpression = forEachStatement.subTree(at: 2) else
-			{
-				throw TranslationError.unknown
-			}
-
-			let collectionString = try translate(expression: collectionExpression)
-
-			let forEachHeader = "\(indentation)for (\(variableName) in \(collectionString))"
-
-			diagnostics?.logSuccessfulTranslation(forEachHeader)
-
-			let increasedIndentation = increaseIndentation(indentation)
-			let statements = translate(
-				subTrees: braceStatement.subTrees,
-				withIndentation: increasedIndentation)
-
-			let result = """
-			\(forEachHeader) {
-			\(statements)\
-			\(indentation)}
-
-			"""
-
-			return checkmark + result
+		guard let braceStatement = forEachStatement.subTrees.last,
+			braceStatement.name == "Brace Statement",
+			let variableName = forEachStatement
+				.subTree(named: "Pattern Named")?
+				.standaloneAttributes.first,
+			let collectionExpression = forEachStatement.subTree(at: 2) else
+		{
+			throw TranslationError.unknown
 		}
-		catch let error {
-			diagnostics?.logError(error)
-			return code(for: error, inASTNamed: forEachStatement.name)
-		}
+
+		let collectionString = try translate(expression: collectionExpression)
+
+		let forEachHeader = "\(indentation)for (\(variableName) in \(collectionString))"
+
+		let increasedIndentation = increaseIndentation(indentation)
+		let statements = translate(
+			subTrees: braceStatement.subTrees,
+			withIndentation: increasedIndentation)
+
+		let result = """
+		\(forEachHeader) {
+		\(statements)\
+		\(indentation)}
+
+		"""
+
+		return result
 	}
 
 	private func translate(
@@ -783,79 +794,73 @@ public class GRYKotlinTranslator {
 	*/
 	private func translate(
 		variableDeclaration: GRYAst,
-		withIndentation indentation: String) -> String
+		withIndentation indentation: String)
+		throws -> String
 	{
 		precondition(variableDeclaration.name == "Variable Declaration")
 
-		do {
-			var result = indentation
+		var result = indentation
 
-			let identifier = try unwrapOrThrow(variableDeclaration.standaloneAttributes.first)
+		let identifier = try unwrapOrThrow(variableDeclaration.standaloneAttributes.first)
 
-			let rawType = try unwrapOrThrow(variableDeclaration["interface type"])
+		let rawType = try unwrapOrThrow(variableDeclaration["interface type"])
 
-			let type = translateType(rawType)
+		let type = translateType(rawType)
 
-			let hasGetter = variableDeclaration.subTrees.contains(where:
-			{ (subTree: GRYAst) -> Bool in
-				return subTree.name == "Function Declaration" &&
-					!subTree.standaloneAttributes.contains("implicit") &&
-					subTree.keyValueAttributes["getter_for"] != nil
-			})
-			let hasSetter = variableDeclaration.subTrees.contains(where:
-			{ (subTree: GRYAst) -> Bool in
-				return subTree.name == "Function Declaration" &&
-					!subTree.standaloneAttributes.contains("implicit") &&
-					subTree.keyValueAttributes["setter_for"] != nil
-			})
+		let hasGetter = variableDeclaration.subTrees.contains(where:
+		{ (subTree: GRYAst) -> Bool in
+			return subTree.name == "Function Declaration" &&
+				!subTree.standaloneAttributes.contains("implicit") &&
+				subTree.keyValueAttributes["getter_for"] != nil
+		})
+		let hasSetter = variableDeclaration.subTrees.contains(where:
+		{ (subTree: GRYAst) -> Bool in
+			return subTree.name == "Function Declaration" &&
+				!subTree.standaloneAttributes.contains("implicit") &&
+				subTree.keyValueAttributes["setter_for"] != nil
+		})
 
-			let keyword: String
-			if hasGetter && hasSetter {
-				keyword = "var"
-			}
-			else if hasGetter && !hasSetter {
+		let keyword: String
+		if hasGetter && hasSetter {
+			keyword = "var"
+		}
+		else if hasGetter && !hasSetter {
+			keyword = "val"
+		}
+		else {
+			if variableDeclaration.standaloneAttributes.contains("let") {
 				keyword = "val"
 			}
 			else {
-				if variableDeclaration.standaloneAttributes.contains("let") {
-					keyword = "val"
-				}
-				else {
-					keyword = "var"
-				}
+				keyword = "var"
 			}
-
-			let extensionPrefix: String
-			if let extensionType = variableDeclaration["extends_type"] {
-				extensionPrefix = "\(extensionType)."
-			}
-			else {
-				extensionPrefix = ""
-			}
-
-			result += "\(keyword) \(extensionPrefix)\(identifier): \(type)"
-
-			if let patternBindingExpression = danglingPatternBinding,
-				patternBindingExpression.identifier == identifier,
-				patternBindingExpression.type == type
-			{
-				result += " = " + patternBindingExpression.translatedExpression
-				danglingPatternBinding = nil
-			}
-
-			result += "\n"
-
-			result += try translateGetterAndSetter(
-				forVariableDeclaration: variableDeclaration,
-				withIndentation: indentation)
-
-			diagnostics?.logSuccessfulTranslation(result)
-			return checkmark + result
 		}
-		catch let error {
-			diagnostics?.logError(error)
-			return code(for: error, inASTNamed: variableDeclaration.name)
+
+		let extensionPrefix: String
+		if let extensionType = variableDeclaration["extends_type"] {
+			extensionPrefix = "\(extensionType)."
 		}
+		else {
+			extensionPrefix = ""
+		}
+
+		result += "\(keyword) \(extensionPrefix)\(identifier): \(type)"
+
+		if let patternBindingExpression = danglingPatternBinding,
+			patternBindingExpression.identifier == identifier,
+			patternBindingExpression.type == type
+		{
+			result += " = " + patternBindingExpression.translatedExpression
+			danglingPatternBinding = nil
+		}
+
+		result += "\n"
+
+		result += try translateGetterAndSetter(
+			forVariableDeclaration: variableDeclaration,
+			withIndentation: indentation)
+
+		return result
 	}
 
 	private func translateGetterAndSetter(
@@ -895,25 +900,19 @@ public class GRYKotlinTranslator {
 		return result
 	}
 
-	private func translate(assignExpression: GRYAst, withIndentation indentation: String) -> String
+	private func translate(assignExpression: GRYAst, withIndentation indentation: String)
+		throws -> String
 	{
 		precondition(assignExpression.name == "Assign Expression")
 
-		do {
-			let leftExpression = try unwrapOrThrow(assignExpression.subTree(at: 0))
-			let rightExpression = try unwrapOrThrow(assignExpression.subTree(at: 1))
-			let leftString = try translate(expression: leftExpression)
-			let rightString = try translate(expression: rightExpression)
+		let leftExpression = try unwrapOrThrow(assignExpression.subTree(at: 0))
+		let rightExpression = try unwrapOrThrow(assignExpression.subTree(at: 1))
+		let leftString = try translate(expression: leftExpression)
+		let rightString = try translate(expression: rightExpression)
 
-			let result = "\(indentation)\(leftString) = \(rightString)\n"
+		let result = "\(indentation)\(leftString) = \(rightString)\n"
 
-			diagnostics?.logSuccessfulTranslation(result)
-			return checkmark + result
-		}
-		catch let error {
-			diagnostics?.logError(error)
-			return code(for: error, inASTNamed: assignExpression.name)
-		}
+		return result
 	}
 
 	private func translate(expression: GRYAst) throws -> String {
