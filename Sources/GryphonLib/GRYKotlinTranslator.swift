@@ -37,16 +37,6 @@ private func unwrapOrThrow<T>(
 	}
 }
 
-extension Int {
-	func times(_ string: String) -> String {
-		var result = ""
-		for _ in 0..<self {
-			result += string
-		}
-		return result
-	}
-}
-
 public class GRYKotlinTranslator {
 	public class Diagnostics: CustomStringConvertible {
         private(set) var translatedSubtrees = GRYHistogram<String>()

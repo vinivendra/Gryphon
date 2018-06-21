@@ -174,6 +174,7 @@ internal extension RandomAccessCollection where Element: Equatable, Index == Int
 	}
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 public class GRYHistogram<T>: CustomStringConvertible
 	where T: Hashable
 {
@@ -219,6 +220,16 @@ public class GRYHistogram<T>: CustomStringConvertible
 			}
 
 			result += " |\n"
+		}
+		return result
+	}
+}
+
+fileprivate extension Int {
+	func times(_ string: String) -> String {
+		var result = ""
+		for _ in 0..<self {
+			result += string
 		}
 		return result
 	}
