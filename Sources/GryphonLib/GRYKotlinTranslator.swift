@@ -37,48 +37,98 @@ private func unwrapOrThrow<T>(
 	}
 }
 
+extension Int {
+	func times(_ string: String) -> String {
+		var result = ""
+		for _ in 0..<self {
+			result += string
+		}
+		return result
+	}
+}
+
+public class GRYHistogram<T>: CustomStringConvertible
+where T: Hashable
+{
+    private var buffer = [T: Int]()
+
+    public func increaseOccurence(of element: T) {
+        if let count = buffer[element] {
+            buffer[element] = count + 1
+        }
+        else {
+            buffer[element] = 1
+        }
+    }
+
+	public var description: String {
+		if buffer.isEmpty {
+			return ""
+		}
+
+		var longestNameLength = "SubTree Name".count
+		var longestNumberLength = "#".count
+		for (key, value) in buffer {
+			longestNameLength = max("\(key)".count, longestNameLength)
+			longestNumberLength = max("\(value)".count, longestNumberLength)
+		}
+
+		let keyHeaderSpaces = longestNameLength - "SubTree Name".count
+		let valueHeaderSpaces = longestNumberLength - "#".count
+		var result = "| SubTree Name" + keyHeaderSpaces.times(" ") + " | #" + valueHeaderSpaces.times(" ") + " |\n"
+		result += "|" + (longestNameLength + 2).times("-") + "|" + (longestNumberLength + 2).times("-") + "|\n"
+
+		for (key, value) in buffer {
+			let nameSpaces = longestNameLength - "\(key)".count
+			result += "| \(key)"
+			for _ in 0..<nameSpaces {
+				result += " "
+			}
+
+			let numberSpaces = longestNumberLength - "\(value)".count
+			result += " | \(value)"
+			for _ in 0..<numberSpaces {
+				result += " "
+			}
+
+			result += " |\n"
+		}
+		return result
+	}
+}
+
 public class GRYKotlinTranslator {
-
-	/// Records the amount of translations that have been successfully translated;
-	/// that can be refactored into translatable code; or that can't be translated.
 	public class Diagnostics: CustomStringConvertible {
-		/// The number of successfully translated subtrees
-		private(set) var translatedSubtrees = 0
-		/// The number of subtrees that can be refactored into translatable subtrees
-		private(set) var refactorableSubtrees = 0
-		/// The number of subtrees that can't be translated
-		private(set) var unknownSubtrees = 0
+        private(set) var translatedSubtrees = GRYHistogram<String>()
+		private(set) var refactorableSubtrees = GRYHistogram<String>()
+        private(set) var unknownSubtrees = GRYHistogram<String>()
 
-		fileprivate func logSuccessfulTranslation(_ translation: String, forAST ast: GRYAst) {
-			translatedSubtrees += 1
-			let firstLineOfTranslation = translation.prefix(while: { $0 != "\n" })
-			ast.translationStatus = .translated
-			print("Translated: \(firstLineOfTranslation)")
+		fileprivate func logSuccessfulTranslation(_ subTreeName: String) {
+			translatedSubtrees.increaseOccurence(of: subTreeName)
 		}
 
-		fileprivate func logError(_ error: Error, forAST ast: GRYAst) {
-			guard let translationError = error as? TranslationError else {
-				// Methods in this class should only throw `TranslationError`s.
-				// If the thrown error isn't a `TranslationError`, something unexpected happened.
-				fatalError("Unkown error!")
-			}
+        fileprivate func logRefactorableTranslation(_ subTreeName: String) {
+            refactorableSubtrees.increaseOccurence(of: subTreeName)
+        }
 
-			switch translationError {
-			case .refactorable:
-				refactorableSubtrees += 1
-				ast.translationStatus = .refactorable
-			case .unknown:
-				unknownSubtrees += 1
-				ast.translationStatus = .unknown
-			}
-		}
+        fileprivate func logUnknownTranslation(_ subTreeName: String) {
+            unknownSubtrees.increaseOccurence(of: subTreeName)
+        }
 
 		public var description: String {
 			return """
-			Kotlin translation diagnostics:
-			\(translatedSubtrees) translated subtrees
-			\(refactorableSubtrees) refactorable subtrees
-			\(unknownSubtrees) unknown subtrees
+			-----
+			# Kotlin translation diagnostics:
+
+			## Translated subtrees
+
+			\(translatedSubtrees)
+			## Refactorable subtrees
+
+			\(refactorableSubtrees)
+			## Unknown subtrees
+
+			\(unknownSubtrees)
 			"""
 		}
 	}
@@ -86,8 +136,6 @@ public class GRYKotlinTranslator {
 	/// Records the amount of translations that have been successfully translated;
 	/// that can be refactored into translatable code; or that can't be translated.
 	var diagnostics: Diagnostics?
-
-	private let checkmark = "✅ "
 
 	fileprivate enum TranslationError: Error {
 		case refactorable
@@ -291,23 +339,13 @@ public class GRYKotlinTranslator {
 			}
 
 			if !result.isEmpty {
-				diagnostics?.logSuccessfulTranslation(
-					"[\(subTree.name)] \(result)",
-					forAST: subTree)
+				diagnostics?.logSuccessfulTranslation(subTree.name)
+			}
 
-				if !result.hasPrefix(checkmark) {
-					return checkmark + result
-				}
-				else {
-					return checkmark + "/*\(subTree.name)*/\n" + result
-				}
-			}
-			else {
-				return result
-			}
+            return result
 		}
 		catch let error {
-			diagnostics?.logError(error, forAST: subTree)
+			diagnostics?.logUnknownTranslation(subTree.name)
 			return code(for: error, inASTNamed: subTree.name)
 		}
 	}
@@ -408,11 +446,9 @@ public class GRYKotlinTranslator {
 			let subResult =
 				"\(increasedIndentation)class \(capitalizedElementName): \(enumName)()\n"
 
-			diagnostics?.logSuccessfulTranslation(
-				"[Enum Element Declaration] \(subResult)",
-				forAST: enumElementDeclaration)
+			diagnostics?.logSuccessfulTranslation("[Enum Element Declaration]")
 
-			result += checkmark + subResult
+			result += subResult
 		}
 
 		result += "\(indentation)}\n"
@@ -901,10 +937,8 @@ public class GRYKotlinTranslator {
 
 			subResult += "\(getSetIndentation)}\n"
 
-			diagnostics?.logSuccessfulTranslation(
-				"[Getter/Setter] \(subResult)",
-				forAST: subtree)
-			result += checkmark + subResult
+			diagnostics?.logSuccessfulTranslation("Getter/Setter")
+			result += subResult
 		}
 
 		return result

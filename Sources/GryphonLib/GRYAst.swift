@@ -22,8 +22,6 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 	let keyValueAttributes: [String: String]
 	let subTrees: [GRYAst]
 
-	private var status: String = TranslationStatus.none.rawValue
-
 	//
 	static public var horizontalLimitWhenPrinting = Int.max
 
@@ -170,22 +168,6 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 		return subTree
 	}
 
-	var translationStatus: TranslationStatus {
-		get {
-			return TranslationStatus(rawValue: status)!
-		}
-		set {
-			status = newValue.rawValue
-		}
-	}
-
-	enum TranslationStatus: String {
-		case translated = "✅"
-		case refactorable = "⚠️"
-		case unknown = "🚨"
-		case none = ""
-	}
-
 	//
 	public func writeAsJSON(toFile filePath: String) {
 		log?("Building AST JSON...")
@@ -203,12 +185,7 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 
 	//
 	public var treeDescription: String {
-		switch translationStatus {
-		case .none:
-			return name
-		default:
-			return "\(translationStatus.rawValue) \(name)"
-		}
+		return name
 	}
 
 	public var printableSubTrees: [GRYPrintableAsTree] {
