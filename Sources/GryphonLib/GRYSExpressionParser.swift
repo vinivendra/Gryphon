@@ -156,7 +156,7 @@ internal class GRYSExpressionParser {
 	/**
 	Reads a list of identifiers. This is used to read a list of classes and/or protocols in
 	inheritance clauses, as in `class MyClass: A, B, C, D, E { }`.
-	This algorithm assumes an identifier list is always the last attribute in a subTree, and thus
+	This algorithm assumes an identifier list is always the last attribute in a subtree, and thus
 	always ends in whitespace. This may well not be true, and in that case this will have to change.
 	*/
 	func readIdentifierList() -> String {

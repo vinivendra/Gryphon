@@ -16,25 +16,25 @@
 
 public class GRYPrintableTree: GRYPrintableAsTree {
 	public var treeDescription: String
-	public var printableSubTrees = [GRYPrintableAsTree]()
+	public var printableSubtrees = [GRYPrintableAsTree]()
 
 	init(description: String) {
 		self.treeDescription = description
 	}
 
-	init(description: String, subTrees: [GRYPrintableAsTree]) {
+	init(description: String, subtrees: [GRYPrintableAsTree]) {
 		self.treeDescription = description
-		self.printableSubTrees = subTrees
+		self.printableSubtrees = subtrees
 	}
 
 	func addChild(_ child: GRYPrintableAsTree) {
-		printableSubTrees.append(child)
+		printableSubtrees.append(child)
 	}
 }
 
 public protocol GRYPrintableAsTree {
 	var treeDescription: String { get }
-	var printableSubTrees: [GRYPrintableAsTree] { get }
+	var printableSubtrees: [GRYPrintableAsTree] { get }
 }
 
 public extension GRYPrintableAsTree {
@@ -68,10 +68,10 @@ public extension GRYPrintableAsTree {
 			}
 		}
 
-		for subTree in printableSubTrees.dropLast() {
+		for subtree in printableSubtrees.dropLast() {
 			var newIndentation = indentation
 			newIndentation.append(" ├─")
-			subTree.prettyPrint(
+			subtree.prettyPrint(
 				indentation: newIndentation,
 				isLast: false,
 				horizontalLimit: horizontalLimit,
@@ -79,7 +79,7 @@ public extension GRYPrintableAsTree {
 		}
 		var newIndentation = indentation
 		newIndentation.append(" └─")
-		printableSubTrees.last?.prettyPrint(
+		printableSubtrees.last?.prettyPrint(
 			indentation: newIndentation,
 			isLast: true,
 			horizontalLimit: horizontalLimit,
@@ -91,10 +91,10 @@ public extension GRYPrintableAsTree {
 
 extension String: GRYPrintableAsTree {
 	public var treeDescription: String { return self }
-	public var printableSubTrees: [GRYPrintableAsTree] { return [] }
+	public var printableSubtrees: [GRYPrintableAsTree] { return [] }
 }
 
 extension Array: GRYPrintableAsTree where Element: GRYPrintableAsTree {
 	public var treeDescription: String { return "Array" }
-	public var printableSubTrees: [GRYPrintableAsTree] { return self }
+	public var printableSubtrees: [GRYPrintableAsTree] { return self }
 }

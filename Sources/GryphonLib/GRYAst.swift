@@ -20,7 +20,7 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 	let name: String
 	let standaloneAttributes: [String]
 	let keyValueAttributes: [String: String]
-	let subTrees: [GRYAst]
+	let subtrees: [GRYAst]
 
 	//
 	static public var horizontalLimitWhenPrinting = Int.max
@@ -66,7 +66,7 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 	internal init(parser: GRYSExpressionParser, extraKeyValues: [String: String] = [:]) {
 		var standaloneAttributes = [String]()
 		var keyValueAttributes = [String: String]()
-		var subTrees = [GRYAst]()
+		var subtrees = [GRYAst]()
 
 		parser.readOpenParentheses()
 		let name = parser.readIdentifier()
@@ -79,17 +79,17 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 			if parser.canReadOpenParentheses() {
 
 				// Check if there's info to pass on to subtrees
-				let extraKeyValuesForSubTrees: [String: String]
+				let extraKeyValuesForSubtrees: [String: String]
 				if self.name == "Extension Declaration" {
-					extraKeyValuesForSubTrees = ["extends_type": standaloneAttributes.first!]
+					extraKeyValuesForSubtrees = ["extends_type": standaloneAttributes.first!]
 				}
 				else {
-					extraKeyValuesForSubTrees = [:]
+					extraKeyValuesForSubtrees = [:]
 				}
 
 				// Parse subtrees
-				let subTree = GRYAst(parser: parser, extraKeyValues: extraKeyValuesForSubTrees)
-				subTrees.append(subTree)
+				let subtree = GRYAst(parser: parser, extraKeyValues: extraKeyValuesForSubtrees)
+				subtrees.append(subtree)
 			}
 				// Finish this branch
 			else if parser.canReadCloseParentheses() {
@@ -121,29 +121,29 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 			}
 		}
 
-		self.subTrees = subTrees
+		self.subtrees = subtrees
 		self.standaloneAttributes = standaloneAttributes
 		self.keyValueAttributes =
 			keyValueAttributes.merging(extraKeyValues, uniquingKeysWith: { a, _ in a })
 	}
 
-	internal init(_ name: String, _ subTrees: [GRYAst] = []) {
+	internal init(_ name: String, _ subtrees: [GRYAst] = []) {
 		self.name = name
 		self.standaloneAttributes = []
 		self.keyValueAttributes = [:]
-		self.subTrees = subTrees
+		self.subtrees = subtrees
 	}
 
 	internal init(
 		_ name: String,
 		_ standaloneAttributes: [String],
 		_ keyValueAttributes: [String: String],
-		_ subTrees: [GRYAst] = [])
+		_ subtrees: [GRYAst] = [])
 	{
 		self.name = name
 		self.standaloneAttributes = standaloneAttributes
 		self.keyValueAttributes = keyValueAttributes
-		self.subTrees = subTrees
+		self.subtrees = subtrees
 	}
 
 	//
@@ -151,21 +151,21 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 		return keyValueAttributes[key]
 	}
 
-	func subTree(named name: String) -> GRYAst? {
-		return subTrees.first { $0.name == name }
+	func subtree(named name: String) -> GRYAst? {
+		return subtrees.first { $0.name == name }
 	}
 
-	func subTree(at index: Int) -> GRYAst? {
-		return subTrees[safe: index]
+	func subtree(at index: Int) -> GRYAst? {
+		return subtrees[safe: index]
 	}
 
-	func subTree(at index: Int, named name: String) -> GRYAst? {
-		guard let subTree = subTrees[safe: index],
-			subTree.name == name else
+	func subtree(at index: Int, named name: String) -> GRYAst? {
+		guard let subtree = subtrees[safe: index],
+			subtree.name == name else
 		{
 			return nil
 		}
-		return subTree
+		return subtree
 	}
 
 	//
@@ -188,13 +188,13 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 		return name
 	}
 
-	public var printableSubTrees: [GRYPrintableAsTree] {
+	public var printableSubtrees: [GRYPrintableAsTree] {
 		let keyValueStrings = keyValueAttributes.map { "\($0.key) → \($0.value)" }
 			.sorted() as [GRYPrintableAsTree]
 
 		let standaloneStrings = standaloneAttributes as [GRYPrintableAsTree]
 
-		let result: [GRYPrintableAsTree] = standaloneStrings + keyValueStrings + subTrees
+		let result: [GRYPrintableAsTree] = standaloneStrings + keyValueStrings + subtrees
 		return result
 	}
 
@@ -215,6 +215,6 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 		return lhs.name == rhs.name &&
 			lhs.standaloneAttributes == rhs.standaloneAttributes &&
 			lhs.keyValueAttributes == rhs.keyValueAttributes &&
-			lhs.subTrees == rhs.subTrees
+			lhs.subtrees == rhs.subtrees
 	}
 }
