@@ -284,9 +284,9 @@ public class GRYKotlinTranslator {
 
             return result
 		}
-		catch let error {
+		catch _ {
 			diagnostics?.logUnknownTranslation(subtree.name)
-			return code(for: error, inASTNamed: subtree.name)
+			return codeForUnkownTranslation(of: subtree)
 		}
 	}
 
@@ -408,7 +408,7 @@ public class GRYKotlinTranslator {
 		}
 		else {
 			// Add actual protocol translation here
-			return code(for: TranslationError.unknown, inASTNamed: protocolDeclaration.name)
+			return codeForUnkownTranslation(of: protocolDeclaration)
 		}
 	}
 
@@ -912,7 +912,7 @@ public class GRYKotlinTranslator {
 		case "Dot Syntax Call Expression":
 			return try translate(dotSyntaxCallExpression: expression)
 		case "String Literal Expression":
-			return try translate(stringLiteralExpression: expression)
+			return translate(stringLiteralExpression: expression).stringValue!
 		case "Interpolated String Literal Expression":
 			return try translate(interpolatedStringLiteralExpression: expression)
 		case "Erasure Expression":
@@ -1265,7 +1265,7 @@ public class GRYKotlinTranslator {
 		}
 
 		let stringExpression = try unwrapOrThrow(parameterExpression.subtrees.last)
-		let string = try translate(stringLiteralExpression: stringExpression)
+		let string = translate(stringLiteralExpression: stringExpression).stringValue!
 
 		let unquotedString = String(string.dropLast().dropFirst())
 		let unescapedString = removeBackslashEscapes(unquotedString)
@@ -1372,9 +1372,15 @@ public class GRYKotlinTranslator {
 		return "(" + result.joined(separator: ", ") + ")"
 	}
 
-	private func translate(stringLiteralExpression: GRYAst) throws -> String {
-		let value = try unwrapOrThrow(stringLiteralExpression["value"])
-		return "\"\(value)\""
+	private func translate(stringLiteralExpression: GRYAst) -> TranslationResult {
+		if let value = stringLiteralExpression["value"] {
+			diagnostics?.logSuccessfulTranslation(stringLiteralExpression.name)
+			return .translation("\"\(value)\"")
+		}
+		else {
+			diagnostics?.logUnknownTranslation(stringLiteralExpression.name)
+			return .failed
+		}
 	}
 
 	private func translate(interpolatedStringLiteralExpression: GRYAst) throws -> String {
@@ -1385,7 +1391,11 @@ public class GRYKotlinTranslator {
 
 		for expression in interpolatedStringLiteralExpression.subtrees {
 			if expression.name == "String Literal Expression" {
-				let quotedString = try translate(stringLiteralExpression: expression)
+				guard let quotedString = translate(stringLiteralExpression: expression).stringValue
+					else
+				{
+					continue
+				}
 
 				let unquotedString = quotedString.dropLast().dropFirst()
 
@@ -1402,9 +1412,12 @@ public class GRYKotlinTranslator {
 		}
 
 		result += "\""
+
+		diagnostics?.logSuccessfulTranslation(interpolatedStringLiteralExpression.name)
 		return result
 	}
 
+	//
 	private func removeBackslashEscapes(_ string: String) -> String {
 		var result = ""
 
@@ -1440,18 +1453,41 @@ public class GRYKotlinTranslator {
 		return String(indentation.dropLast())
 	}
 
-	func code(for error: Error, inASTNamed astName: String) -> String {
-		guard let translationError = error as? TranslationError else {
-			// Methods in this class should only throw `TranslationError`s.
-			// If the thrown error isn't a `TranslationError`, something unexpected happened.
-			fatalError("Unkown error!")
+	func codeForUnkownTranslation(of ast: GRYAst) -> String {
+		return "/* 🚨 \(ast.name) */"
+	}
+
+	func codeForRefactorableTranslation(of ast: GRYAst) -> String {
+		return "/* ⚠️ \(ast.name) */"
+	}
+
+	//
+	enum TranslationResult: ExpressibleByStringLiteral {
+		typealias StringLiteralType = String
+
+		case translation(String)
+		case failed
+
+		init(stringLiteral value: StringLiteralType) {
+			self = .translation(value)
 		}
 
-		switch translationError {
-		case .refactorable:
-			return "<⚠️ Refactorable: \(astName)>"
-		case .unknown:
-			return "<🚨 Unknown: \(astName)>"
+		mutating func append(_ newValue: String) {
+			switch self {
+			case .translation(let oldValue):
+				self = .translation(oldValue + newValue)
+			case .failed:
+				break
+			}
+		}
+
+		var stringValue: String? {
+			switch self {
+			case .translation(let value):
+				return value
+			case .failed:
+				return nil
+			}
 		}
 	}
 }

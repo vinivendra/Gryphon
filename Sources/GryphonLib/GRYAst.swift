@@ -57,9 +57,12 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 			let astData = Data(processedJSON.utf8)
 			return try JSONDecoder().decode(GRYAst.self, from: astData)
 		}
-		catch {
-			fatalError("Error decoding \(jsonFilePath)." +
-				" If the file doesn't exist, please run `updateJsonTestFiles()` to generate it.")
+		catch let error {
+			fatalError("""
+				Error decoding \(jsonFilePath).
+				If the file doesn't exist, please run `updateJsonTestFiles()` to generate it.
+				Error: \(error)
+				""")
 		}
 	}
 

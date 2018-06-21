@@ -47,6 +47,8 @@ func updateFiles(
 }
 
 func updateFiles(inFolder folder: String) {
+	print("Updating files in \(folder)...")
+
     updateFiles(in: folder, from: "swift", to: "ast")
     { (_: String, astFilePath: String) in
         fatalError("Please update ast file \(astFilePath) with the `dump-ast.pl` perl script.")
@@ -64,6 +66,8 @@ func updateFiles(inFolder folder: String) {
         let expectedJsonURL = URL(fileURLWithPath: expectedJsonFilePath)
         try! jsonContents.write(to: expectedJsonURL, atomically: false, encoding: .utf8)
     }
+
+	print("Done!")
 }
 
 func main() {
