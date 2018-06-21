@@ -47,56 +47,6 @@ extension Int {
 	}
 }
 
-public class GRYHistogram<T>: CustomStringConvertible
-where T: Hashable
-{
-    private var buffer = [T: Int]()
-
-    public func increaseOccurence(of element: T) {
-        if let count = buffer[element] {
-            buffer[element] = count + 1
-        }
-        else {
-            buffer[element] = 1
-        }
-    }
-
-	public var description: String {
-		if buffer.isEmpty {
-			return ""
-		}
-
-		var longestNameLength = "Subtree Name".count
-		var longestNumberLength = "#".count
-		for (key, value) in buffer {
-			longestNameLength = max("\(key)".count, longestNameLength)
-			longestNumberLength = max("\(value)".count, longestNumberLength)
-		}
-
-		let keyHeaderSpaces = longestNameLength - "Subtree Name".count
-		let valueHeaderSpaces = longestNumberLength - "#".count
-		var result = "| Subtree Name" + keyHeaderSpaces.times(" ") + " | #" + valueHeaderSpaces.times(" ") + " |\n"
-		result += "|" + (longestNameLength + 2).times("-") + "|" + (longestNumberLength + 2).times("-") + "|\n"
-
-		for (key, value) in buffer {
-			let nameSpaces = longestNameLength - "\(key)".count
-			result += "| \(key)"
-			for _ in 0..<nameSpaces {
-				result += " "
-			}
-
-			let numberSpaces = longestNumberLength - "\(value)".count
-			result += " | \(value)"
-			for _ in 0..<numberSpaces {
-				result += " "
-			}
-
-			result += " |\n"
-		}
-		return result
-	}
-}
-
 public class GRYKotlinTranslator {
 	public class Diagnostics: CustomStringConvertible {
         private(set) var translatedSubtrees = GRYHistogram<String>()

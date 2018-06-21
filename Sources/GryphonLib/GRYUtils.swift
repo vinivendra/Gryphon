@@ -22,7 +22,7 @@ let log: ((Any) -> Void)? = { (item: Any) in print(item) }
 let log: ((Any) -> Void)? = nil
 #endif
 
-/////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
 public enum GRYUtils {
 	internal static func expandSwiftAbbreviation(_ name: String) -> String {
 		// Separate snake case and capitalize
@@ -57,7 +57,8 @@ extension GRYUtils {
 		return newURL.path
 	}
 
-	public static func file(_ filePath: String, wasModifiedLaterThan otherFilePath: String) -> Bool {
+	public static func file(_ filePath: String, wasModifiedLaterThan otherFilePath: String) -> Bool
+	{
 		let fileManager = FileManager.default
 		let fileAttributes = try! fileManager.attributesOfItem(atPath: filePath)
 		let otherFileAttributes = try! fileManager.attributesOfItem(atPath: otherFilePath)
@@ -128,7 +129,7 @@ extension GRYUtils {
 	}
 }
 
-/////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 extension GRYUtils {
 	internal static var rng: RandomGenerator = Xoroshiro()
@@ -152,7 +153,7 @@ internal extension RandomGenerator {
 	}
 }
 
-/////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
 internal extension RandomAccessCollection where Index == Int {
 	func randomElement() -> Element {
 		let index = GRYUtils.rng.random(0..<count)
@@ -170,5 +171,55 @@ internal extension RandomAccessCollection where Element: Equatable, Index == Int
 				return (first, second)
 			}
 		}
+	}
+}
+
+public class GRYHistogram<T>: CustomStringConvertible
+	where T: Hashable
+{
+	private var buffer = [T: Int]()
+
+	public func increaseOccurence(of element: T) {
+		if let count = buffer[element] {
+			buffer[element] = count + 1
+		}
+		else {
+			buffer[element] = 1
+		}
+	}
+
+	public var description: String {
+		if buffer.isEmpty {
+			return ""
+		}
+
+		var longestNameLength = "Subtree Name".count
+		var longestNumberLength = "#".count
+		for (key, value) in buffer {
+			longestNameLength = max("\(key)".count, longestNameLength)
+			longestNumberLength = max("\(value)".count, longestNumberLength)
+		}
+
+		let keyHeaderSpaces = longestNameLength - "Subtree Name".count
+		let valueHeaderSpaces = longestNumberLength - "#".count
+		var result = "| Subtree Name" + keyHeaderSpaces.times(" ") + " | #" + valueHeaderSpaces.times(" ") + " |\n"
+		result += "|" + (longestNameLength + 2).times("-") + "|" + (longestNumberLength + 2).times("-") + "|\n"
+
+		for (key, value) in buffer {
+			let nameSpaces = longestNameLength - "\(key)".count
+			result += "| \(key)"
+			for _ in 0..<nameSpaces {
+				result += " "
+			}
+
+			let numberSpaces = longestNumberLength - "\(value)".count
+			result += " | \(value)"
+			for _ in 0..<numberSpaces {
+				result += " "
+			}
+
+			result += " |\n"
+		}
+		return result
 	}
 }
