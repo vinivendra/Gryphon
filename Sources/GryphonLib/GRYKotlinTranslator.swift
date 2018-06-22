@@ -261,7 +261,7 @@ public class GRYKotlinTranslator {
 					returnStatement: subtree,
 					withIndentation: indentation)
 			case "Call Expression":
-				let translation = try translate(callExpression: subtree)
+				let translation = translate(callExpression: subtree).stringValue!
 
 				if !translation.isEmpty {
 					result = indentation + translation + "\n"
@@ -906,7 +906,7 @@ public class GRYKotlinTranslator {
 		case "Binary Expression":
 			return try translate(binaryExpression: expression)
 		case "Call Expression":
-			return try translate(callExpression: expression)
+			return translate(callExpression: expression).stringValue!
 		case "Declaration Reference Expression":
 			return translate(declarationReferenceExpression: expression).stringValue!
 		case "Dot Syntax Call Expression":
@@ -1061,30 +1061,29 @@ public class GRYKotlinTranslator {
 	- Note: If conditions include an "empty" call expression wrapping its real expression. This
 	function handles the unwrapping then delegates the translation.
 	*/
-	private func translate(callExpression: GRYAst) throws -> String {
+	private func translate(callExpression: GRYAst) -> TranslationResult {
 		precondition(callExpression.name == "Call Expression")
 
 		// If the call expression corresponds to an integer literal
 		if let argumentLabels = callExpression["arg_labels"],
 			argumentLabels == "_builtinIntegerLiteral:"
 		{
-			return translate(asNumericLiteral: callExpression).stringValue!
+			return translate(asNumericLiteral: callExpression)
 		}
 			// If the call expression corresponds to an boolean literal
 		else if let argumentLabels = callExpression["arg_labels"],
 			argumentLabels == "_builtinBooleanLiteral:"
 		{
-			return translate(asBooleanLiteral: callExpression).stringValue!
+			return translate(asBooleanLiteral: callExpression)
 		}
 			// If the call expression corresponds to `nil`
 		else if let argumentLabels = callExpression["arg_labels"],
 			argumentLabels == "nilLiteral:"
 		{
-			return "null"
+			return .translation("null")
 		}
 		else {
-			let functionName: String
-
+			// If it's an empty expression used in an "if" condition
 			if callExpression.standaloneAttributes.contains("implicit"),
 				callExpression["arg_labels"] == "",
 				callExpression["type"] == "Int1",
@@ -1092,14 +1091,29 @@ public class GRYKotlinTranslator {
 					.subtree(named: "Dot Syntax Call Expression")?
 					.subtrees.last
 			{
-				// If it's an empty expression used in an "if" condition
-				return try translate(expression: containedExpression)
+				if let result = try? translate(expression: containedExpression) {
+					return .translation(result)
+				}
+				else {
+					return .failed
+				}
 			}
+
+			let functionName: String
+			var result = TranslationResult.translation("")
+
 			if let declarationReferenceExpression = callExpression
 				.subtree(named: "Declaration Reference Expression")
 			{
-				functionName = translate(
-					declarationReferenceExpression: declarationReferenceExpression).stringValue!
+				if let string = translate(
+					declarationReferenceExpression: declarationReferenceExpression).stringValue
+				{
+					functionName = string
+				}
+				else {
+					result = .failed
+					functionName = ""
+				}
 			}
 			else if let dotSyntaxCallExpression = callExpression
 					.subtree(named: "Dot Syntax Call Expression"),
@@ -1107,44 +1121,63 @@ public class GRYKotlinTranslator {
 					.subtree(at: 0, named: "Declaration Reference Expression"),
 				let methodOwner = dotSyntaxCallExpression.subtree(at: 1)
 			{
-				let methodNameString =
-					translate(declarationReferenceExpression: methodName).stringValue!
-				let methodOwnerString = try translate(expression: methodOwner)
-				functionName = "\(methodOwnerString).\(methodNameString)"
+				if let methodNameString =
+						translate(declarationReferenceExpression: methodName).stringValue,
+					let methodOwnerString = try? translate(expression: methodOwner)
+				{
+					functionName = "\(methodOwnerString).\(methodNameString)"
+				}
+				else {
+					result = .failed
+					functionName = ""
+				}
 			}
 			else if let typeExpression = callExpression
 				.subtree(named: "Constructor Reference Call Expression")?
 				.subtree(named: "Type Expression")
 			{
-				functionName = try translate(typeExpression: typeExpression)
+				if let string = try? translate(typeExpression: typeExpression) {
+					functionName = string
+				}
+				else {
+					result = .failed
+					functionName = ""
+				}
 			}
 			else if let declaration = callExpression["decl"] {
 				functionName = getIdentifierFromDeclaration(declaration)
 			}
 			else {
-				throw TranslationError.unknown
+				result = .failed
+				functionName = ""
 			}
 
-			// If we're here, then the call expression corresponds to an explicit function call
 			let functionNamePrefix = functionName.prefix(while: { $0 != "(" })
 
+			// If it's a special Gryphon directive
 			guard functionNamePrefix != "GRYInsert" &&
 				functionNamePrefix != "GRYAlternative" else
 			{
 				return translate(
 					asKotlinLiteral: callExpression,
-					withFunctionNamePrefix: functionNamePrefix).stringValue!
+					withFunctionNamePrefix: functionNamePrefix)
 			}
 
-			// A call to `GRYIgnoreNext()` can be used to ignore the next swift statement.
 			guard functionNamePrefix != "GRYIgnoreNext" else {
 				shouldIgnoreNext = true
 				return ""
 			}
 
-			return try translate(
+			// Otherwise, translate it as an explicit function call
+			guard let translation = translate(
 				asExplicitFunctionCall: callExpression,
-				withFunctionNamePrefix: functionNamePrefix)
+				withFunctionNamePrefix: functionNamePrefix).stringValue else
+			{
+				return .failed
+			}
+
+			result.append(translation)
+			return result
 		}
 	}
 
@@ -1152,38 +1185,45 @@ public class GRYKotlinTranslator {
 	/// only because it has already been calculated by translate(callExpression:).
 	private func translate(
 		asExplicitFunctionCall callExpression: GRYAst,
-		withFunctionNamePrefix functionNamePrefix: Substring) throws -> String
+		withFunctionNamePrefix functionNamePrefix: Substring) -> TranslationResult
 	{
 		let functionNamePrefix = (functionNamePrefix == "print") ?
 			"println" : String(functionNamePrefix)
 
 		let parameters: String
-		if let parenthesesExpression = callExpression.subtree(named: "Parentheses Expression") {
-			parameters = try translate(expression: parenthesesExpression)
+		if let parenthesesExpression = callExpression.subtree(named: "Parentheses Expression"),
+			let parametersString = try? translate(expression: parenthesesExpression)
+		{
+			parameters = parametersString
 		}
-		else if let tupleExpression = callExpression.subtree(named: "Tuple Expression") {
-			parameters = translate(tupleExpression: tupleExpression).stringValue!
+		else if let tupleExpression = callExpression.subtree(named: "Tuple Expression"),
+			let parametersString = translate(tupleExpression: tupleExpression).stringValue
+		{
+			parameters = parametersString
 		}
 		else if let tupleShuffleExpression = callExpression
 			.subtree(named: "Tuple Shuffle Expression")
 		{
-			if let tupleExpression = tupleShuffleExpression.subtree(named: "Tuple Expression") {
-				parameters = translate(tupleExpression: tupleExpression).stringValue!
+			if let tupleExpression = tupleShuffleExpression.subtree(named: "Tuple Expression"),
+				let parametersString = translate(tupleExpression: tupleExpression).stringValue
+			{
+				parameters = parametersString
 			}
 			else if let parenthesesExpression = tupleShuffleExpression
-				.subtree(named: "Parentheses Expression")
+				.subtree(named: "Parentheses Expression"),
+				let parametersString = try? translate(expression: parenthesesExpression)
 			{
-				parameters = try translate(expression: parenthesesExpression)
+				parameters = parametersString
 			}
 			else {
-				throw TranslationError.unknown
+				return .failed
 			}
 		}
 		else {
-			throw TranslationError.unknown
+			return .failed
 		}
 
-		return "\(functionNamePrefix)\(parameters)"
+		return .translation("\(functionNamePrefix)\(parameters)")
 	}
 
 	/// Translates boolean literals, which in swift are modeled as calls to specific builtin
