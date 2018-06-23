@@ -16,13 +16,6 @@
 
 import Foundation
 
-#if DEBUG
-let log: ((Any) -> Void)? = { (item: Any) in print(item) }
-#else
-let log: ((Any) -> Void)? = nil
-#endif
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
 public enum GRYUtils {
 	internal static func expandSwiftAbbreviation(_ name: String) -> String {
 		// Separate snake case and capitalize
