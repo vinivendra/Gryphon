@@ -271,7 +271,7 @@ public class GRYKotlinTranslator {
 				}
 			default:
 				if subtree.name.hasSuffix("Expression") {
-					result = try indentation + translate(expression: subtree) + "\n"
+					result = indentation + translate(expression: subtree).stringValue! + "\n"
 				}
 				else {
 					throw TranslationError.unknown
@@ -332,10 +332,10 @@ public class GRYKotlinTranslator {
 		let rawType = try unwrapOrThrow(binding.keyValueAttributes["type"])
 		let type = translateType(rawType)
 
-		danglingPatternBinding = try
+		danglingPatternBinding =
 			(identifier: identifier,
 			 type: type,
-			 translatedExpression: translate(expression: expression))
+			 translatedExpression: translate(expression: expression).stringValue!)
 	}
 
 	private func translate(topLevelCode: GRYAst, withIndentation indentation: String)
@@ -582,7 +582,7 @@ public class GRYKotlinTranslator {
 			throw TranslationError.unknown
 		}
 
-		let collectionString = try translate(expression: collectionExpression)
+		let collectionString = translate(expression: collectionExpression).stringValue!
 
 		let forEachHeader = "\(indentation)for (\(variableName) in \(collectionString))"
 
@@ -719,14 +719,14 @@ public class GRYKotlinTranslator {
 				let name = try unwrapOrThrow(patternNamed.standaloneAttributes.first)
 
 				let lastCondition = try unwrapOrThrow(condition.subtrees.last)
-				let expressionString = try translate(expression: lastCondition)
+				let expressionString = translate(expression: lastCondition).stringValue!
 
 				letDeclarations.append(
 					"\(indentation)\(varOrValKeyword) \(name)\(typeString) = \(expressionString)\n")
 				conditionStrings.append("\(name) != null")
 			}
 			else {
-				try conditionStrings.append(translate(expression: condition))
+				conditionStrings.append(translate(expression: condition).stringValue!)
 			}
 		}
 		let letDeclarationsString = letDeclarations.joined()
@@ -744,7 +744,7 @@ public class GRYKotlinTranslator {
 		guard let expression = throwStatement.subtrees.last else {
 			throw TranslationError.unknown
 		}
-		let expressionString = try translate(expression: expression)
+		let expressionString = translate(expression: expression).stringValue!
 		return "\(indentation)throw \(expressionString)\n"
 	}
 
@@ -755,7 +755,7 @@ public class GRYKotlinTranslator {
 		precondition(returnStatement.name == "Return Statement")
 
 		if let expression = returnStatement.subtrees.last {
-			let expressionString = try translate(expression: expression)
+			let expressionString = translate(expression: expression).stringValue!
 			return "\(indentation)return \(expressionString)\n"
 		}
 		else {
@@ -891,55 +891,75 @@ public class GRYKotlinTranslator {
 
 		let leftExpression = try unwrapOrThrow(assignExpression.subtree(at: 0))
 		let rightExpression = try unwrapOrThrow(assignExpression.subtree(at: 1))
-		let leftString = try translate(expression: leftExpression)
-		let rightString = try translate(expression: rightExpression)
+		let leftString = translate(expression: leftExpression).stringValue!
+		let rightString = translate(expression: rightExpression).stringValue!
 
 		let result = "\(indentation)\(leftString) = \(rightString)\n"
 
 		return result
 	}
 
-	private func translate(expression: GRYAst) throws -> String {
+	private func translate(expression: GRYAst) -> TranslationResult {
 		switch expression.name {
 		case "Array Expression":
-			return translate(arrayExpression: expression).stringValue!
+			return translate(arrayExpression: expression)
 		case "Binary Expression":
-			return translate(binaryExpression: expression).stringValue!
+			return translate(binaryExpression: expression)
 		case "Call Expression":
-			return translate(callExpression: expression).stringValue!
+			return translate(callExpression: expression)
 		case "Declaration Reference Expression":
-			return translate(declarationReferenceExpression: expression).stringValue!
+			return translate(declarationReferenceExpression: expression)
 		case "Dot Syntax Call Expression":
-			return translate(dotSyntaxCallExpression: expression).stringValue!
+			return translate(dotSyntaxCallExpression: expression)
 		case "String Literal Expression":
-			return translate(stringLiteralExpression: expression).stringValue!
+			return translate(stringLiteralExpression: expression)
 		case "Interpolated String Literal Expression":
-			return translate(interpolatedStringLiteralExpression: expression).stringValue!
+			return translate(interpolatedStringLiteralExpression: expression)
 		case "Erasure Expression":
-			let lastExpression = try unwrapOrThrow(expression.subtrees.last)
-			return try translate(expression: lastExpression)
+			if let lastExpression = expression.subtrees.last {
+				return translate(expression: lastExpression)
+			}
+			else {
+				return .failed
+			}
 		case "Prefix Unary Expression":
-			return translate(prefixUnaryExpression: expression).stringValue!
+			return translate(prefixUnaryExpression: expression)
 		case "Type Expression":
-			return translate(typeExpression: expression).stringValue!
+			return translate(typeExpression: expression)
 		case "Member Reference Expression":
-			return translate(memberReferenceExpression: expression).stringValue!
+			return translate(memberReferenceExpression: expression)
 		case "Subscript Expression":
-			return translate(subscriptExpression: expression).stringValue!
+			return translate(subscriptExpression: expression)
 		case "Parentheses Expression":
-			let firstExpression = try unwrapOrThrow(expression.subtree(at: 0))
-			return try "(" + translate(expression: firstExpression) + ")"
+			if let firstExpression = expression.subtree(at: 0),
+				let expressionString = translate(expression: firstExpression).stringValue
+			{
+				return .translation("(" + expressionString + ")")
+			}
+			else {
+				return .failed
+			}
 		case "Force Value Expression":
-			let firstExpression = try unwrapOrThrow(expression.subtree(at: 0))
-			return try translate(expression: firstExpression) + "!!"
+			if let firstExpression = expression.subtree(at: 0),
+				let expressionString = translate(expression: firstExpression).stringValue
+			{
+				return .translation(expressionString  + "!!")
+			}
+			else {
+				return .failed
+			}
 		case "Autoclosure Expression",
 			 "Inject Into Optional",
 			 "Inout Expression",
 			 "Load Expression":
-			let lastExpression = try unwrapOrThrow(expression.subtrees.last)
-			return try translate(expression: lastExpression)
+			if let lastExpression = expression.subtrees.last {
+				return translate(expression: lastExpression)
+			}
+			else {
+				return .failed
+			}
 		default:
-			throw TranslationError.unknown
+			return .failed
 		}
 	}
 
@@ -961,9 +981,9 @@ public class GRYKotlinTranslator {
 			at: 1,
 			named: "Parentheses Expression"),
 			let subscriptContents = parenthesesExpression.subtree(at: 0),
-			let subscriptContentsString = try? translate(expression: subscriptContents),
+			let subscriptContentsString = translate(expression: subscriptContents).stringValue,
 			let subscriptedExpression = subscriptExpression.subtree(at: 0),
-			let subscriptedExpressionString = try? translate(expression: subscriptedExpression)
+			let subscriptedExpressionString = translate(expression: subscriptedExpression).stringValue
 		{
 			return .translation("\(subscriptedExpressionString)[\(subscriptContentsString)]")
 		}
@@ -975,7 +995,10 @@ public class GRYKotlinTranslator {
 	private func translate(arrayExpression: GRYAst) -> TranslationResult {
 		precondition(arrayExpression.name == "Array Expression")
 
-		let expressionsArray = arrayExpression.subtrees.map { try? translate(expression: $0) }
+		let expressionsArray = arrayExpression.subtrees.map {
+			translate(expression: $0).stringValue
+		}
+
 		if let expressionsArray = expressionsArray as? [String] {
 			let expressionsString = expressionsArray.joined(separator: ", ")
 			return .translation("mutableListOf(\(expressionsString))")
@@ -990,7 +1013,7 @@ public class GRYKotlinTranslator {
 
 		if let leftHandTree = dotSyntaxCallExpression.subtree(at: 1),
 			let rightHandExpression = dotSyntaxCallExpression.subtree(at: 0),
-			let rightHandSide = try? translate(expression: rightHandExpression),
+			let rightHandSide = translate(expression: rightHandExpression).stringValue,
 			let leftHandString = translate(typeExpression: leftHandTree).stringValue
 		{
 			if leftHandTree.name == "Type Expression" {
@@ -1022,8 +1045,8 @@ public class GRYKotlinTranslator {
 			let tupleExpression = binaryExpression.subtree(named: "Tuple Expression"),
 			let leftHandExpression = tupleExpression.subtree(at: 0),
 			let rightHandExpression = tupleExpression.subtree(at: 1),
-			let leftHandString = try? translate(expression: leftHandExpression),
-			let rightHandString = try? translate(expression: rightHandExpression)
+			let leftHandString = translate(expression: leftHandExpression).stringValue,
+			let rightHandString = translate(expression: rightHandExpression).stringValue
 		{
 			operatorIdentifier = getIdentifierFromDeclaration(declaration)
 
@@ -1041,7 +1064,7 @@ public class GRYKotlinTranslator {
 				.subtree(named: "Dot Syntax Call Expression")?
 				.subtree(named: "Declaration Reference Expression")?["decl"],
 			let expression = prefixUnaryExpression.subtree(at: 1),
-			let expressionString = try? translate(expression: expression)
+			let expressionString = translate(expression: expression).stringValue
 		{
 			let operatorIdentifier = getIdentifierFromDeclaration(declaration)
 			return .translation("\(operatorIdentifier)\(expressionString)")
@@ -1098,7 +1121,7 @@ public class GRYKotlinTranslator {
 					.subtree(named: "Dot Syntax Call Expression")?
 					.subtrees.last
 			{
-				if let result = try? translate(expression: containedExpression) {
+				if let result = translate(expression: containedExpression).stringValue {
 					return .translation(result)
 				}
 				else {
@@ -1130,7 +1153,7 @@ public class GRYKotlinTranslator {
 			{
 				if let methodNameString =
 						translate(declarationReferenceExpression: methodName).stringValue,
-					let methodOwnerString = try? translate(expression: methodOwner)
+					let methodOwnerString = translate(expression: methodOwner).stringValue
 				{
 					functionName = "\(methodOwnerString).\(methodNameString)"
 				}
@@ -1198,7 +1221,7 @@ public class GRYKotlinTranslator {
 
 		let parameters: String
 		if let parenthesesExpression = callExpression.subtree(named: "Parentheses Expression"),
-			let parametersString = try? translate(expression: parenthesesExpression)
+			let parametersString = translate(expression: parenthesesExpression).stringValue
 		{
 			parameters = parametersString
 		}
@@ -1217,7 +1240,7 @@ public class GRYKotlinTranslator {
 			}
 			else if let parenthesesExpression = tupleShuffleExpression
 				.subtree(named: "Parentheses Expression"),
-				let parametersString = try? translate(expression: parenthesesExpression)
+				let parametersString = translate(expression: parenthesesExpression).stringValue
 			{
 				parameters = parametersString
 			}
@@ -1343,7 +1366,7 @@ public class GRYKotlinTranslator {
 
 		if let declaration = memberReferenceExpression["decl"],
 			let memberOwner = memberReferenceExpression.subtree(at: 0),
-			let memberOwnerString = try? translate(expression: memberOwner)
+			let memberOwnerString = translate(expression: memberOwner).stringValue
 		{
 			let member = getIdentifierFromDeclaration(declaration)
 			return .translation("\(memberOwnerString).\(member)")
@@ -1408,14 +1431,14 @@ public class GRYKotlinTranslator {
 		var elements = [TranslationResult]()
 
 		for (name, expression) in zip(namesArray, tupleExpression.subtrees) {
-			guard let expressionString = try? translate(expression: expression) else {
+			guard let expressionString = translate(expression: expression).stringValue else {
 				elements.append(.failed)
 				continue
 			}
 
 			// Empty names (like the underscore in "foo(_:)") are represented by ''
 			if name == "_" {
-				elements.append(.translation("\(expressionString)"))
+				elements.append(.translation(expressionString))
 			}
 			else {
 				elements.append(.translation("\(name) = \(expressionString)"))
@@ -1468,7 +1491,7 @@ public class GRYKotlinTranslator {
 				result.append(unquotedString)
 			}
 			else {
-				guard let expressionString = try? translate(expression: expression) else {
+				guard let expressionString = translate(expression: expression).stringValue else {
 					result = .failed
 					continue
 				}
