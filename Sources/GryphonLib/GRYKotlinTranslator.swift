@@ -658,16 +658,15 @@ public class GRYKotlinTranslator {
 
 		let keyword = isElseIf ? "else if" : "if"
 		let parenthesizedCondition = isGuard ?
-			TranslationResult.translation("(!(").appending(conditions).appending("))") :
-			TranslationResult.translation("(").appending(conditions).appending(")")
+			TranslationResult.translation("(!(") + conditions + "))" :
+			TranslationResult.translation("(") + conditions + ")"
 
 		let ifTranslation = letDeclarations
-			.appending(indentation).appending(keyword).appending(" ")
-			.appending(parenthesizedCondition).appending(" {\n")
-			.appending(statementsString)
-			.appending(indentation).appending("}\n")
+			+ indentation + keyword + " " + parenthesizedCondition + " {\n"
+			+ statementsString
+			+ indentation + "}\n"
 
-		return ifTranslation.appending(elseIfTranslation).appending(elseTranslation)
+		return ifTranslation + elseIfTranslation + elseTranslation
 	}
 
 	/// Failures in translating if-let conditions get counted as failures in conditions
@@ -902,7 +901,7 @@ public class GRYKotlinTranslator {
 			subResult += "\(getSetIndentation)}\n"
 
 			diagnostics?.logSuccessfulTranslation("Getter/Setter")
-			result.append(subResult)
+			result += subResult
 		}
 
 		return result
@@ -1231,7 +1230,7 @@ public class GRYKotlinTranslator {
 				return .failed
 			}
 
-			result.append(translation)
+			result += translation
 			return result
 		}
 	}
@@ -1514,18 +1513,18 @@ public class GRYKotlinTranslator {
 				// as two double quotes with nothing between them, instead of an actual empty string
 				guard unquotedString != "\"\"" else { continue }
 
-				result.append(unquotedString)
+				result += unquotedString
 			}
 			else {
 				guard let expressionString = translate(expression: expression).stringValue else {
 					result = .failed
 					continue
 				}
-				result.append("${\(expressionString)}")
+				result += "${\(expressionString)}"
 			}
 		}
 
-		result.append("\"")
+		result += "\""
 
 		diagnostics?.logSuccessfulTranslation(interpolatedStringLiteralExpression.name)
 		return result
@@ -1586,44 +1585,33 @@ public class GRYKotlinTranslator {
 			self = .translation(value)
 		}
 
-		mutating func append(_ newValue: TranslationResult) {
-			switch (self, newValue) {
-			case (.translation(let left), .translation(let right)):
-				self = .translation(left + right)
+		static func +(left: TranslationResult, right: TranslationResult) -> TranslationResult {
+			switch (left, right) {
+			case (.translation(let leftTranslation), .translation(let rightTranslation)):
+				return .translation(leftTranslation + rightTranslation)
 			default:
-				self = .failed
+				return .failed
 			}
 		}
 
-		mutating func append(_ newValue: String) {
-			switch self {
-			case .translation(let oldValue):
-				self = .translation(oldValue + newValue)
-			case .failed:
-				break
-			}
+		static func +(left: TranslationResult, right: String) -> TranslationResult {
+			return left + .translation(right)
 		}
 
-		mutating func append(_ newValue: Substring) {
-			append(String(newValue))
+		static func +(left: TranslationResult, right: Substring) -> TranslationResult {
+			return left + String(right)
 		}
 
-		func appending(_ newValue: TranslationResult) -> TranslationResult {
-			var copy = self
-			copy.append(newValue)
-			return copy
+		static func +=(left: inout TranslationResult, right: TranslationResult) {
+			left = left + right
 		}
 
-		func appending(_ newValue: String) -> TranslationResult {
-			var copy = self
-			copy.append(newValue)
-			return copy
+		static func +=(left: inout TranslationResult, right: String) {
+			left = left + right
 		}
 
-		func appending(_ newValue: Substring) -> TranslationResult {
-			var copy = self
-			copy.append(newValue)
-			return copy
+		static func +=(left: inout TranslationResult, right: Substring) {
+			left = left + right
 		}
 
 		var stringValue: String? {
