@@ -902,15 +902,15 @@ public class GRYKotlinTranslator {
 	private func translate(expression: GRYAst) throws -> String {
 		switch expression.name {
 		case "Array Expression":
-			return try translate(arrayExpression: expression)
+			return translate(arrayExpression: expression).stringValue!
 		case "Binary Expression":
-			return try translate(binaryExpression: expression)
+			return translate(binaryExpression: expression).stringValue!
 		case "Call Expression":
 			return translate(callExpression: expression).stringValue!
 		case "Declaration Reference Expression":
 			return translate(declarationReferenceExpression: expression).stringValue!
 		case "Dot Syntax Call Expression":
-			return try translate(dotSyntaxCallExpression: expression)
+			return translate(dotSyntaxCallExpression: expression).stringValue!
 		case "String Literal Expression":
 			return translate(stringLiteralExpression: expression).stringValue!
 		case "Interpolated String Literal Expression":
@@ -919,13 +919,13 @@ public class GRYKotlinTranslator {
 			let lastExpression = try unwrapOrThrow(expression.subtrees.last)
 			return try translate(expression: lastExpression)
 		case "Prefix Unary Expression":
-			return try translate(prefixUnaryExpression: expression)
+			return translate(prefixUnaryExpression: expression).stringValue!
 		case "Type Expression":
-			return try translate(typeExpression: expression)
+			return translate(typeExpression: expression).stringValue!
 		case "Member Reference Expression":
 			return translate(memberReferenceExpression: expression).stringValue!
 		case "Subscript Expression":
-			return try translate(subscriptExpression: expression)
+			return translate(subscriptExpression: expression).stringValue!
 		case "Parentheses Expression":
 			let firstExpression = try unwrapOrThrow(expression.subtree(at: 0))
 			return try "(" + translate(expression: firstExpression) + ")"
@@ -943,67 +943,75 @@ public class GRYKotlinTranslator {
 		}
 	}
 
-	private func translate(typeExpression: GRYAst) throws -> String {
+	private func translate(typeExpression: GRYAst) -> TranslationResult {
 		precondition(typeExpression.name == "Type Expression")
-		let rawType = try unwrapOrThrow(typeExpression.keyValueAttributes["typerepr"])
-		return translateType(rawType)
+
+		if let rawType = typeExpression.keyValueAttributes["typerepr"] {
+			return .translation(translateType(rawType))
+		}
+		else {
+			return .failed
+		}
 	}
 
-	private func translate(subscriptExpression: GRYAst) throws -> String {
+	private func translate(subscriptExpression: GRYAst) -> TranslationResult {
 		precondition(subscriptExpression.name == "Subscript Expression")
 
 		if let parenthesesExpression = subscriptExpression.subtree(
 			at: 1,
 			named: "Parentheses Expression"),
 			let subscriptContents = parenthesesExpression.subtree(at: 0),
-			let subscriptedExpression = subscriptExpression.subtree(at: 0)
+			let subscriptContentsString = try? translate(expression: subscriptContents),
+			let subscriptedExpression = subscriptExpression.subtree(at: 0),
+			let subscriptedExpressionString = try? translate(expression: subscriptedExpression)
 		{
-			let subscriptedString = try translate(expression: subscriptedExpression)
-			let subscriptContentsString = try translate(expression: subscriptContents)
-			return "\(subscriptedString)[\(subscriptContentsString)]"
+			return .translation("\(subscriptedExpressionString)[\(subscriptContentsString)]")
 		}
 		else {
-			throw TranslationError.unknown
+			return .failed
 		}
 	}
 
-	private func translate(arrayExpression: GRYAst) throws -> String {
+	private func translate(arrayExpression: GRYAst) -> TranslationResult {
 		precondition(arrayExpression.name == "Array Expression")
 
-		let expressionsArray = try arrayExpression.subtrees.map { try translate(expression: $0) }
-		let expressionsString = expressionsArray.joined(separator: ", ")
-
-		return "mutableListOf(\(expressionsString))"
-	}
-
-	private func translate(dotSyntaxCallExpression: GRYAst) throws -> String {
-		precondition(dotSyntaxCallExpression.name == "Dot Syntax Call Expression")
-
-		let rightHandExpression = try unwrapOrThrow(dotSyntaxCallExpression.subtree(at: 0))
-		let rightHandSide = try translate(expression: rightHandExpression)
-
-		let leftHandTree = try unwrapOrThrow(dotSyntaxCallExpression.subtree(at: 1))
-		if leftHandTree.name == "Type Expression" {
-
-			let leftHandSide = try translate(typeExpression: leftHandTree)
-
-			// Enums become sealed classes, which need parentheses at the end
-			if GRYKotlinTranslator.enums.contains(leftHandSide) {
-				let capitalizedEnumCase = rightHandSide.capitalizedAsCamelCase
-				return "\(leftHandSide).\(capitalizedEnumCase)()"
-			}
-			else {
-				return "\(leftHandSide).\(rightHandSide)"
-			}
+		let expressionsArray = arrayExpression.subtrees.map { try? translate(expression: $0) }
+		if let expressionsArray = expressionsArray as? [String] {
+			let expressionsString = expressionsArray.joined(separator: ", ")
+			return .translation("mutableListOf(\(expressionsString))")
 		}
 		else {
-			let leftHandSide = try translate(typeExpression: leftHandTree)
-
-			return "\(leftHandSide).\(rightHandSide)"
+			return .failed
 		}
 	}
 
-	private func translate(binaryExpression: GRYAst) throws -> String {
+	private func translate(dotSyntaxCallExpression: GRYAst) -> TranslationResult {
+		precondition(dotSyntaxCallExpression.name == "Dot Syntax Call Expression")
+
+		if let leftHandTree = dotSyntaxCallExpression.subtree(at: 1),
+			let rightHandExpression = dotSyntaxCallExpression.subtree(at: 0),
+			let rightHandSide = try? translate(expression: rightHandExpression),
+			let leftHandString = translate(typeExpression: leftHandTree).stringValue
+		{
+			if leftHandTree.name == "Type Expression" {
+				// Enums become sealed classes, which need parentheses at the end
+				if GRYKotlinTranslator.enums.contains(leftHandString) {
+					let capitalizedEnumCase = rightHandSide.capitalizedAsCamelCase
+					return .translation("\(leftHandString).\(capitalizedEnumCase)()")
+				}
+				else {
+					return .translation("\(leftHandString).\(rightHandSide)")
+				}
+			}
+			else if let leftHandString = translate(typeExpression: leftHandTree).stringValue {
+				return .translation("\(leftHandString).\(rightHandSide)")
+			}
+		}
+
+		return .failed
+	}
+
+	private func translate(binaryExpression: GRYAst) -> TranslationResult {
 		precondition(binaryExpression.name == "Binary Expression")
 
 		let operatorIdentifier: String
@@ -1013,34 +1021,33 @@ public class GRYKotlinTranslator {
 				.subtree(named: "Declaration Reference Expression")?["decl"],
 			let tupleExpression = binaryExpression.subtree(named: "Tuple Expression"),
 			let leftHandExpression = tupleExpression.subtree(at: 0),
-			let rightHandExpression = tupleExpression.subtree(at: 1)
+			let rightHandExpression = tupleExpression.subtree(at: 1),
+			let leftHandString = try? translate(expression: leftHandExpression),
+			let rightHandString = try? translate(expression: rightHandExpression)
 		{
 			operatorIdentifier = getIdentifierFromDeclaration(declaration)
 
-			let leftHandSide = try translate(expression: leftHandExpression)
-			let rightHandSide = try translate(expression: rightHandExpression)
-
-			return "\(leftHandSide) \(operatorIdentifier) \(rightHandSide)"
+			return .translation("\(leftHandString) \(operatorIdentifier) \(rightHandString)")
 		}
 		else {
-			throw TranslationError.unknown
+			return .failed
 		}
 	}
 
-	private func translate(prefixUnaryExpression: GRYAst) throws -> String {
+	private func translate(prefixUnaryExpression: GRYAst) -> TranslationResult {
 		precondition(prefixUnaryExpression.name == "Prefix Unary Expression")
 
 		if let declaration = prefixUnaryExpression
 				.subtree(named: "Dot Syntax Call Expression")?
 				.subtree(named: "Declaration Reference Expression")?["decl"],
-			let expression = prefixUnaryExpression.subtree(at: 1)
+			let expression = prefixUnaryExpression.subtree(at: 1),
+			let expressionString = try? translate(expression: expression)
 		{
 			let operatorIdentifier = getIdentifierFromDeclaration(declaration)
-			let expressionString = try translate(expression: expression)
-			return "\(operatorIdentifier)\(expressionString)"
+			return .translation("\(operatorIdentifier)\(expressionString)")
 		}
 		else {
-			throw TranslationError.unknown
+			return .failed
 		}
 	}
 
@@ -1136,7 +1143,7 @@ public class GRYKotlinTranslator {
 				.subtree(named: "Constructor Reference Call Expression")?
 				.subtree(named: "Type Expression")
 			{
-				if let string = try? translate(typeExpression: typeExpression) {
+				if let string = translate(typeExpression: typeExpression).stringValue {
 					functionName = string
 				}
 				else {
