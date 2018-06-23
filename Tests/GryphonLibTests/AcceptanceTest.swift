@@ -22,7 +22,7 @@ class AcceptanceTest: XCTestCase {
 		let tests = TestUtils.acceptanceTestCases
 
 		for testName in tests {
-			print("\t Testing \(testName)...", terminator: "")
+			print("- Testing \(testName)...")
 
 			// Translate the swift code to kotlin, compile the resulting kotlin code, run it, and
 			// get its output
@@ -48,7 +48,7 @@ class AcceptanceTest: XCTestCase {
 					"Test \(testName): parser failed to produce expected result. Diff:" +
 						TestUtils.diff(compilerResult.standardOutput, expectedOutput))
 
-				print(" Done!")
+				print("\t- Done!")
 			}
 		}
 	}

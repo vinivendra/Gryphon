@@ -22,7 +22,7 @@ class GRYKotlinTranslatorTest: XCTestCase {
 		let tests = TestUtils.allTestCases
 
 		for testName in tests {
-			print("\t Testing \(testName)...", terminator: "")
+			print("- Testing \(testName)...")
 
 			// Create the Kotlin code using the mock AST
 			let testFilePath = TestUtils.testFilesPath + testName
@@ -37,7 +37,7 @@ class GRYKotlinTranslatorTest: XCTestCase {
 				"Test \(testName): translator failed to produce expected result. Diff:" +
 					TestUtils.diff(createdKotlinCode, expectedKotlinCode))
 
-			print(" Done!")
+			print("\t- Done!")
 		}
 	}
 

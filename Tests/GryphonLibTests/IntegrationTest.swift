@@ -22,7 +22,7 @@ class IntegrationTest: XCTestCase {
 		let tests = TestUtils.allTestCases
 
 		for testName in tests {
-			print("\t Testing \(testName)...", terminator: "")
+			print("- Testing \(testName)...")
 
 			// Generate kotlin code using the whole compiler
 			let testFilePath = TestUtils.testFilesPath + testName
@@ -37,7 +37,7 @@ class IntegrationTest: XCTestCase {
 				"Test \(testName): parser failed to produce expected result. Diff:" +
 					TestUtils.diff(generatedKotlinCode, expectedKotlinCode))
 
-			print(" Done!")
+			print("\t- Done!")
 		}
 	}
 

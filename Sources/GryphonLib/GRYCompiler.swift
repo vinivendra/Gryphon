@@ -35,12 +35,12 @@ public enum GRYCompiler {
 			return compilationResult
 		}
 
-		print("Running Kotlin...")
+		print("\t- Running Kotlin...")
 		let arguments = ["java", "-jar", "kotlin.jar"]
 		let commandResult = GRYShell.runShellCommand(arguments, fromFolder: GRYUtils.buildFolder)
 
 		guard let result = commandResult else {
-			return .failure(errorMessage: "Java running timed out.")
+			return .failure(errorMessage: "\t\t- Java running timed out.")
 		}
 
 		return .success(commandOutput: result)
@@ -49,7 +49,7 @@ public enum GRYCompiler {
 	public static func compile(fileAt filePath: String) -> KotlinCompilationResult {
 		let kotlinCode = generateKotlinCode(forFileAt: filePath)
 
-		print("Compiling Kotlin...")
+		print("\t- Compiling Kotlin...")
 		let fileName = URL(fileURLWithPath: filePath).deletingPathExtension().lastPathComponent
 		let kotlinFilePath = GRYUtils.createFile(
 			named: fileName + ".kt",
@@ -63,11 +63,11 @@ public enum GRYCompiler {
 
 		// Ensure the compiler terminated successfully
 		guard let result = commandResult else {
-			return .failure(errorMessage: "Kotlin compiler timed out.")
+			return .failure(errorMessage: "\t\t- Kotlin compiler timed out.")
 		}
 		guard result.status == 0 else {
 			return .failure(errorMessage:
-				"Error compiling kotlin files. Kotlin compiler says:\n\(result.standardError)")
+				"\t\t- Error compiling kotlin files. Kotlin compiler says:\n\(result.standardError)")
 		}
 
 		return .success(commandOutput: result)
@@ -80,7 +80,7 @@ public enum GRYCompiler {
 		let jsonFile = GRYUtils.changeExtension(of: filePath, to: "json")
 		let ast = GRYAst.initialize(fromJsonInFile: jsonFile)
 
-		print("Translating AST to Kotlin...")
+		print("\t- Translating AST to Kotlin...")
 		let kotlinTranslator = GRYKotlinTranslator()
 		let kotlinDiagnostics = GRYKotlinTranslator.Diagnostics()
 		kotlinTranslator.diagnostics = kotlinDiagnostics
@@ -92,7 +92,7 @@ public enum GRYCompiler {
 		let jsonFile = GRYUtils.changeExtension(of: filePath, to: "json")
 		let ast = GRYAst.initialize(fromJsonInFile: jsonFile)
 
-		print("Translating AST to Kotlin...")
+		print("\t- Translating AST to Kotlin...")
 		let kotlinTranslator = GRYKotlinTranslator()
 		let kotlinCode = kotlinTranslator.translateAST(ast)
 		return kotlinCode
@@ -101,7 +101,7 @@ public enum GRYCompiler {
 	public static func processExternalAST(_ filePath: String) -> GRYAst {
 		let astFilePath = GRYUtils.changeExtension(of: filePath, to: "ast")
 
-		print("Building GRYAst from external AST...")
+		print("\t- Building GRYAst from external AST...")
 		let ast = GRYAst(astFile: astFilePath)
 
 		let jsonFilePath = GRYUtils.changeExtension(of: filePath, to: "json")
@@ -109,7 +109,7 @@ public enum GRYCompiler {
 		let jsonIsOutdated =
 			jsonFileWasJustCreated || GRYUtils.file(astFilePath, wasModifiedLaterThan: jsonFilePath)
 		if jsonIsOutdated {
-			print("\tUpdating \(jsonFilePath)...")
+			print("\t\t- Updating \(jsonFilePath)...")
 			ast.writeAsJSON(toFile: jsonFilePath)
 		}
 
@@ -119,13 +119,13 @@ public enum GRYCompiler {
 	public static func generateAST(forFileAt filePath: String) -> GRYAst {
 		let astDumpFilePath = GRYUtils.changeExtension(of: filePath, to: "ast")
 
-		print("Building GRYAst...")
+		print("\t- Building GRYAst...")
 		let ast = GRYAst(astFile: astDumpFilePath)
 		return ast
 	}
 
 	public static func getSwiftASTDump(forFileAt filePath: String) -> String {
-		print("Getting swift AST dump...")
+		print("\t- Getting swift AST dump...")
 		let astDumpFilePath = GRYUtils.changeExtension(of: filePath, to: "ast")
 		return try! String(contentsOfFile: astDumpFilePath)
 	}

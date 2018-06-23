@@ -118,7 +118,7 @@ class GRYSExpressionParserTest: XCTestCase {
 		let tests = TestUtils.allTestCases
 
 		for testName in tests {
-			print("\t Testing \(testName)...", terminator: "")
+			print("- Testing \(testName)...")
 
 			// Create an AST using the parser
 			let testFilePath = TestUtils.testFilesPath + testName
@@ -132,7 +132,7 @@ class GRYSExpressionParserTest: XCTestCase {
 				"Test \(testName): parser failed to produce expected result. Diff:" +
 					TestUtils.diff(createdAST.description, expectedAST.description))
 
-			print(" Done!")
+			print("\t- Done!")
 		}
 	}
 
