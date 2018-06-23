@@ -1155,17 +1155,16 @@ public class GRYKotlinTranslator {
 			let functionNamePrefix = functionName.prefix(while: { $0 != "(" })
 
 			// If it's a special Gryphon directive
-			guard functionNamePrefix != "GRYInsert" &&
-				functionNamePrefix != "GRYAlternative" else
-			{
-				return translate(
-					asKotlinLiteral: callExpression,
-					withFunctionNamePrefix: functionNamePrefix)
-			}
-
-			guard functionNamePrefix != "GRYIgnoreNext" else {
-				shouldIgnoreNext = true
-				return ""
+			if result != .failed {
+				if functionNamePrefix == "GRYInsert" || functionNamePrefix == "GRYAlternative" {
+					return translate(
+						asKotlinLiteral: callExpression,
+						withFunctionNamePrefix: functionNamePrefix)
+				}
+				else if functionNamePrefix == "GRYIgnoreNext" {
+					shouldIgnoreNext = true
+					return ""
+				}
 			}
 
 			// Otherwise, translate it as an explicit function call
