@@ -221,13 +221,13 @@ public class GRYKotlinTranslator {
 					forEachStatement: subtree,
 					withIndentation: indentation).stringValue!
 			case "Function Declaration":
-				result = try translate(
+				result = translate(
 					functionDeclaration: subtree,
-					withIndentation: indentation)
+					withIndentation: indentation).stringValue!
 			case "Protocol":
-				result = try translate(
+				result = translate(
 					protocolDeclaration: subtree,
-					withIndentation: indentation)
+					withIndentation: indentation).stringValue!
 			case "Top Level Code Declaration":
 				return try translate(
 					topLevelCode: subtree,
@@ -397,18 +397,20 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translate(protocolDeclaration: GRYAst, withIndentation indentation: String)
-		throws -> String
+		-> TranslationResult
 	{
 		precondition(protocolDeclaration.name == "Protocol")
 
-		let protocolName = try unwrapOrThrow(protocolDeclaration.standaloneAttributes.first)
+		guard let protocolName = protocolDeclaration.standaloneAttributes.first else {
+			return .failed
+		}
 
 		if protocolName == "GRYIgnore" {
-			return ""
+			return .translation("")
 		}
 		else {
 			// Add actual protocol translation here
-			return codeForUnkownTranslation(of: protocolDeclaration)
+			return .failed
 		}
 	}
 
@@ -478,7 +480,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translate(functionDeclaration: GRYAst, withIndentation indentation: String)
-		throws -> String
+		-> TranslationResult
 	{
 		precondition(functionDeclaration.name == "Function Declaration")
 
@@ -487,27 +489,29 @@ public class GRYKotlinTranslator {
 			(functionDeclaration["getter_for"] != nil) || (functionDeclaration["setter_for"] != nil)
 		let isImplicit = functionDeclaration.standaloneAttributes.contains("implicit")
 		guard !isImplicit && !isGetterOrSetter else {
-			return ""
+			return .translation("")
 		}
 
-		let functionName = try unwrapOrThrow(functionDeclaration.standaloneAttributes.first)
+		let functionName = functionDeclaration.standaloneAttributes.first ?? ""
 
+		// If this function should be ignored
 		guard !functionName.hasPrefix("GRYInsert(") &&
 			!functionName.hasPrefix("GRYAlternative(") &&
 			!functionName.hasPrefix("GRYIgnoreNext(") else { return "" }
 
+		// If it's GRYDeclarations, we want to add its contents as top-level statements
 		guard !functionName.hasPrefix("GRYDeclarations(") else {
-			let braceStatement = try unwrapOrThrow(
-				functionDeclaration.subtree(named: "Brace Statement"))
-			return translate(subtrees: braceStatement.subtrees, withIndentation: indentation)
-		}
-
-		guard functionDeclaration.standaloneAttributes.count <= 1 else {
-			throw TranslationError.unknown
+			if let braceStatement = functionDeclaration.subtree(named: "Brace Statement") {
+				return .translation(
+					translate(subtrees: braceStatement.subtrees, withIndentation: indentation))
+			}
+			else {
+				return .failed
+			}
 		}
 
 		var indentation = indentation
-		var result = ""
+		var result = TranslationResult.translation("")
 
 		result += indentation
 
@@ -521,9 +525,11 @@ public class GRYKotlinTranslator {
 
 		result += functionNamePrefix + "("
 
-		var parameterStrings = [String]()
-
+		// Get the function parameters.
+		var parameterStrings = [String?]()
 		let parameterList: GRYAst?
+
+		// If it's a method, it includes an extra Parameter List with only `self`
 		if let list = functionDeclaration.subtree(named: "Parameter List"),
 			let name = list.subtree(at: 0, named: "Parameter")?.standaloneAttributes.first,
 			name != "self"
@@ -537,42 +543,62 @@ public class GRYKotlinTranslator {
 			parameterList = nil
 		}
 
+		// Translate the parameters
 		if let parameterList = parameterList {
 			for parameter in parameterList.subtrees {
-				let name = try unwrapOrThrow(parameter.standaloneAttributes.first)
-				guard name != "self" else { continue }
+				if let name = parameter.standaloneAttributes.first,
+					let rawType = parameter["interface type"]
+				{
+					guard name != "self" else { continue }
 
-				let rawType = try unwrapOrThrow(parameter["interface type"])
-
-				let type = translateType(rawType)
-				parameterStrings.append(name + ": " + type)
+					let type = translateType(rawType)
+					parameterStrings.append(name + ": " + type)
+				}
+				else {
+					parameterStrings.append(nil)
+				}
 			}
 		}
 
-		result += parameterStrings.joined(separator: ", ")
+		let parameters: [String]
+		if let parameterStrings = parameterStrings as? [String] {
+			parameters = parameterStrings
+		}
+		else {
+			parameters = []
+			result = .failed
+		}
+
+		result += parameters.joined(separator: ", ")
 
 		result += ")"
 
+		// Translate the return type
 		// TODO: Doesn't allow to return function types
-		let rawType = try unwrapOrThrow(
-			(functionDeclaration["interface type"]?.split(withStringSeparator: " -> ").last))
-
-		let returnType = translateType(rawType)
-		if returnType != "()" {
-			result += ": " + returnType
+		if let rawType = functionDeclaration["interface type"]?
+			.split(withStringSeparator: " -> ").last
+		{
+			let returnType = translateType(rawType)
+			if returnType != "()" {
+				result += ": " + returnType
+			}
+		}
+		else {
+			result = .failed
 		}
 
 		result += " {\n"
 
+		// Translate the function body
 		indentation = increaseIndentation(indentation)
-
-		let braceStatement = try unwrapOrThrow(
-			functionDeclaration.subtree(named: "Brace Statement"))
-
-		result += translate(subtrees: braceStatement.subtrees, withIndentation: indentation)
+		if let braceStatement = functionDeclaration.subtree(named: "Brace Statement") {
+			result += translate(subtrees: braceStatement.subtrees, withIndentation: indentation)
+		}
+		else {
+			result += .failed
+		}
 
 		indentation = decreaseIndentation(indentation)
-
 		result += indentation + "}\n"
 
 		return result
