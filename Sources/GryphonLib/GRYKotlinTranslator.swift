@@ -197,17 +197,17 @@ public class GRYKotlinTranslator {
 			case "Import Declaration":
 				result = ""
 			case "Class Declaration":
-				result = try translate(
+				result = translate(
 					classDeclaration: subtree,
-					withIndentation: indentation)
+					withIndentation: indentation).stringValue!
 			case "Constructor Declaration":
-				result = try translate(
+				result = translate(
 					constructorDeclaration: subtree,
-					withIndentation: indentation)
+					withIndentation: indentation).stringValue!
 			case "Destructor Declaration":
-				result = try translate(
+				result = translate(
 					destructorDeclaration: subtree,
-					withIndentation: indentation)
+					withIndentation: indentation).stringValue!
 			case "Enum Declaration":
 				result = try translate(
 					enumDeclaration: subtree,
@@ -217,9 +217,9 @@ public class GRYKotlinTranslator {
 					subtrees: subtree.subtrees,
 					withIndentation: indentation)
 			case "For Each Statement":
-				result = try translate(
+				result = translate(
 					forEachStatement: subtree,
-					withIndentation: indentation)
+					withIndentation: indentation).stringValue!
 			case "Function Declaration":
 				result = try translate(
 					functionDeclaration: subtree,
@@ -413,18 +413,27 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translate(classDeclaration: GRYAst, withIndentation indentation: String)
-		throws -> String
+		-> TranslationResult
 	{
 		precondition(classDeclaration.name == "Class Declaration")
 
-		let className = try unwrapOrThrow(classDeclaration.standaloneAttributes.first)
+		// Get the class name
+		let classNameTranslation: TranslationResult
+		if let className = classDeclaration.standaloneAttributes.first {
+			classNameTranslation = .translation(className)
+		}
+		else {
+			classNameTranslation = .failed
+		}
 
+		// Check for inheritance
 		let inheritanceString: String
 		if let inheritanceList = classDeclaration.keyValueAttributes["inherits"] {
 			let rawInheritanceArray = inheritanceList.split(withStringSeparator: ", ")
 
+			// If it inherits from GRYIgnore, we ignore it.
 			if rawInheritanceArray.contains("GRYIgnore") {
-				return ""
+				return .translation("")
 			}
 
 			let inheritanceArray = rawInheritanceArray.map { translateType($0) }
@@ -435,35 +444,37 @@ public class GRYKotlinTranslator {
 		}
 
 		let increasedIndentation = increaseIndentation(indentation)
+
+		// Translate the contents
 		let classContents = translate(
 			subtrees: classDeclaration.subtrees,
 			withIndentation: increasedIndentation)
 
-		return "class \(className)\(inheritanceString) {\n\(classContents)}\n"
+		return "class " + classNameTranslation + inheritanceString + " {\n" + classContents + "}\n"
 	}
 
 	private func translate(constructorDeclaration: GRYAst, withIndentation indentation: String)
-		throws -> String
+		-> TranslationResult
 	{
 		precondition(constructorDeclaration.name == "Constructor Declaration")
 
 		guard !constructorDeclaration.standaloneAttributes.contains("implicit") else {
-			return ""
+			return .translation("")
 		}
 
-		throw TranslationError.unknown
+		return .failed
 	}
 
 	private func translate(destructorDeclaration: GRYAst, withIndentation indentation: String)
-		throws -> String
+		-> TranslationResult
 	{
 		precondition(destructorDeclaration.name == "Destructor Declaration")
 
 		guard !destructorDeclaration.standaloneAttributes.contains("implicit") else {
-			return ""
+			return .translation("")
 		}
 
-		throw TranslationError.unknown
+		return .failed
 	}
 
 	private func translate(functionDeclaration: GRYAst, withIndentation indentation: String)
@@ -568,35 +579,35 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translate(forEachStatement: GRYAst, withIndentation indentation: String)
-		throws -> String
+		-> TranslationResult
 	{
 		precondition(forEachStatement.name == "For Each Statement")
 
+		var result = TranslationResult.translation("")
+
 		guard let braceStatement = forEachStatement.subtrees.last,
-			braceStatement.name == "Brace Statement",
-			let variableName = forEachStatement
-				.subtree(named: "Pattern Named")?
-				.standaloneAttributes.first,
-			let collectionExpression = forEachStatement.subtree(at: 2) else
-		{
-			throw TranslationError.unknown
+			braceStatement.name == "Brace Statement" else {
+				return .failed
 		}
 
-		let collectionString = translate(expression: collectionExpression).stringValue!
-
-		let forEachHeader = "\(indentation)for (\(variableName) in \(collectionString))"
+		if let variableName = forEachStatement
+				.subtree(named: "Pattern Named")?
+				.standaloneAttributes.first,
+			let collectionExpression = forEachStatement.subtree(at: 2),
+			let collectionString = translate(expression: collectionExpression).stringValue
+		{
+			result += .translation("\(indentation)for (\(variableName) in \(collectionString))")
+		}
+		else {
+			result = .failed
+		}
 
 		let increasedIndentation = increaseIndentation(indentation)
 		let statements = translate(
 			subtrees: braceStatement.subtrees,
 			withIndentation: increasedIndentation)
 
-		let result = """
-		\(forEachHeader) {
-		\(statements)\
-		\(indentation)}
-
-		"""
+		result += " {\n" + statements + indentation + "}\n"
 
 		return result
 	}
@@ -1600,6 +1611,14 @@ public class GRYKotlinTranslator {
 
 		static func +(left: TranslationResult, right: Substring) -> TranslationResult {
 			return left + String(right)
+		}
+
+		static func +(left: String, right: TranslationResult) -> TranslationResult {
+			return .translation(left) + right
+		}
+
+		static func +(left: Substring, right: TranslationResult) -> TranslationResult {
+			return String(left) + right
 		}
 
 		static func +=(left: inout TranslationResult, right: TranslationResult) {
