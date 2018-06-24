@@ -209,9 +209,9 @@ public class GRYKotlinTranslator {
 					destructorDeclaration: subtree,
 					withIndentation: indentation).stringValue!
 			case "Enum Declaration":
-				result = try translate(
+				result = translate(
 					enumDeclaration: subtree,
-					withIndentation: indentation)
+					withIndentation: indentation).stringValue!
 			case "Extension Declaration":
 				result = translate(
 					subtrees: subtree.subtrees,
@@ -229,9 +229,9 @@ public class GRYKotlinTranslator {
 					protocolDeclaration: subtree,
 					withIndentation: indentation).stringValue!
 			case "Top Level Code Declaration":
-				return try translate(
+				return translate(
 					topLevelCode: subtree,
-					withIndentation: indentation)
+					withIndentation: indentation).stringValue!
 			case "Throw Statement":
 				result = translate(
 					throwStatement: subtree,
@@ -254,7 +254,7 @@ public class GRYKotlinTranslator {
 					ifStatement: subtree,
 					withIndentation: indentation).stringValue!
 			case "Pattern Binding Declaration":
-				try process(patternBindingDeclaration: subtree)
+				process(patternBindingDeclaration: subtree) // !
 				result = ""
 			case "Return Statement":
 				result = translate(
@@ -305,13 +305,13 @@ public class GRYKotlinTranslator {
 		return result
 	}
 
-	private func process(patternBindingDeclaration: GRYAst) throws {
+	private func process(patternBindingDeclaration: GRYAst) -> Bool {
 		precondition(patternBindingDeclaration.name == "Pattern Binding Declaration")
 
 		// Some patternBindingDeclarations are empty, and that's ok. See the classes.swift test
 		// case.
 		guard let expression = patternBindingDeclaration.subtrees.last,
-			ASTIsExpression(expression) else { return }
+			ASTIsExpression(expression) else { return true }
 
 		let binding: GRYAst
 
@@ -325,70 +325,84 @@ public class GRYKotlinTranslator {
 			binding = unwrappedBinding
 		}
 		else {
-			throw TranslationError.unknown
+			return false
 		}
 
-		let identifier = try unwrapOrThrow(binding.standaloneAttributes.first)
-		let rawType = try unwrapOrThrow(binding.keyValueAttributes["type"])
+		guard let identifier = binding.standaloneAttributes.first,
+			let rawType = binding.keyValueAttributes["type"] else
+		{
+			return false
+		}
+
 		let type = translateType(rawType)
 
 		danglingPatternBinding =
 			(identifier: identifier,
 			 type: type,
 			 translatedExpression: translate(expression: expression).stringValue!)
+
+		return true
 	}
 
 	private func translate(topLevelCode: GRYAst, withIndentation indentation: String)
-		throws -> String
+		-> TranslationResult
 	{
 		precondition(topLevelCode.name == "Top Level Code Declaration")
 
-		let braceStatement = try unwrapOrThrow(topLevelCode.subtree(named: "Brace Statement"))
-		return translate(subtrees: braceStatement.subtrees, withIndentation: indentation)
+		guard let braceStatement = topLevelCode.subtree(named: "Brace Statement") else {
+			return .failed
+		}
+
+		return .translation(
+			translate(subtrees: braceStatement.subtrees, withIndentation: indentation))
 	}
 
 	private func translate(enumDeclaration: GRYAst, withIndentation indentation: String)
-		throws -> String
+		-> TranslationResult
 	{
 		precondition(enumDeclaration.name == "Enum Declaration")
 
-		let enumName = try unwrapOrThrow(enumDeclaration.standaloneAttributes.first)
+		guard let enumName = enumDeclaration.standaloneAttributes.first else {
+			return .failed
+		}
 
 		GRYKotlinTranslator.enums.append(enumName)
 
-		let inheritanceList = try unwrapOrThrow(enumDeclaration.keyValueAttributes["inherits"])
-		let access = try unwrapOrThrow(enumDeclaration.keyValueAttributes["access"])
+		var result = TranslationResult.translation("")
 
-		let rawInheritanceArray = inheritanceList.split(withStringSeparator: ", ")
+		if let inheritanceList = enumDeclaration.keyValueAttributes["inherits"],
+			let access = enumDeclaration.keyValueAttributes["access"]
+		{
+			let rawInheritanceArray = inheritanceList.split(withStringSeparator: ", ")
 
-		if rawInheritanceArray.contains("GRYIgnore") {
-			return ""
+			if rawInheritanceArray.contains("GRYIgnore") {
+				return ""
+			}
+
+			var inheritanceArray = rawInheritanceArray.map { translateType($0) }
+
+			// The inheritanceArray isn't empty because the inheritanceList isn't empty.
+			inheritanceArray[0] = inheritanceArray[0] + "()"
+
+			let inheritanceString = inheritanceArray.joined(separator: ", ")
+
+			result += "\(indentation)\(access) sealed class \(enumName): \(inheritanceString) {\n"
 		}
-
-		var inheritanceArray = rawInheritanceArray.map { translateType($0) }
-
-		// The inheritanceArray isn't empty because the inheritanceList isn't empty.
-		inheritanceArray[0] = inheritanceArray[0] + "()"
-
-		let inheritanceString = inheritanceArray.joined(separator: ", ")
-
-		var result = "\(indentation)\(access) sealed class \(enumName): \(inheritanceString) {\n"
 
 		let increasedIndentation = increaseIndentation(indentation)
 
 		let enumElementDeclarations =
 			enumDeclaration.subtrees.filter { $0.name == "Enum Element Declaration" }
 		for enumElementDeclaration in enumElementDeclarations {
-			let elementName = try unwrapOrThrow(enumElementDeclaration.standaloneAttributes.first)
+			guard let elementName = enumElementDeclaration.standaloneAttributes.first else {
+				result = .failed
+				continue
+			}
 
 			let capitalizedElementName = elementName.capitalizedAsCamelCase
 
-			let subResult =
-				"\(increasedIndentation)class \(capitalizedElementName): \(enumName)()\n"
-
 			diagnostics?.logSuccessfulTranslation("[Enum Element Declaration]")
-
-			result += subResult
+			result += "\(increasedIndentation)class \(capitalizedElementName): \(enumName)()\n"
 		}
 
 		result += "\(indentation)}\n"
