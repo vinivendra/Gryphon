@@ -153,7 +153,7 @@ public class GRYKotlinTranslator {
 	- Parameter ast: The AST, obtained from swift, containing a "Source File" node at the root.
 	- Returns: A kotlin translation of the contents of the AST.
 	*/
-	public func translateAST(_ ast: GRYAst) -> String {
+	public func translateAST(_ ast: GRYAst) -> String? {
 		// First, translate declarations that shouldn't be inside the main function
 		let declarationNames = [
 			"Class Declaration",
@@ -164,26 +164,32 @@ public class GRYKotlinTranslator {
 		let isDeclaration = { (ast: GRYAst) -> Bool in declarationNames.contains(ast.name) }
 
 		let declarations = ast.subtrees.filter(isDeclaration)
-
-		var result = translate(subtrees: declarations, withIndentation: "")
+		let declarationsTranslation = translate(subtrees: declarations, withIndentation: "")
 
 		// Then, translate the remaining statements (if there are any) and wrap them in the main
 		// function
 		let indentation = increaseIndentation("")
 		let statements = ast.subtrees.filter({ !isDeclaration($0) })
-		let statementsString = translate(subtrees: statements, withIndentation: indentation)
-		guard !statementsString.isEmpty else {
-			return result
+		let statementsTranslation = translate(subtrees: statements, withIndentation: indentation)
+
+		guard case .translation(let statementsString) = statementsTranslation,
+			case .translation(var declarationsString) = declarationsTranslation else
+		{
+			return nil
+		}
+
+		if statementsString.isEmpty {
+			return declarationsString
 		}
 
 		// Add newline between declarations and the main function, if needed
-		if !result.isEmpty {
-			result += "\n"
+		if !declarationsString.isEmpty {
+			declarationsString += "\n"
 		}
 
-		result += "fun main(args: Array<String>) {\n\(statementsString)}\n"
+		declarationsString += "fun main(args: Array<String>) {\n\(statementsString)}\n"
 
-		return result
+		return declarationsString
 	}
 
 	// MARK: - Implementation
@@ -214,9 +220,9 @@ public class GRYKotlinTranslator {
 				enumDeclaration: subtree,
 				withIndentation: indentation)
 		case "Extension Declaration":
-			result = .translation(translate(
+			result = translate(
 				subtrees: subtree.subtrees,
-				withIndentation: indentation))
+				withIndentation: indentation)
 		case "For Each Statement":
 			result = translate(
 				forEachStatement: subtree,
@@ -290,8 +296,10 @@ public class GRYKotlinTranslator {
 		return result
 	}
 
-	private func translate(subtrees: [GRYAst], withIndentation indentation: String) -> String {
-		var result = ""
+	private func translate(subtrees: [GRYAst], withIndentation indentation: String)
+		-> TranslationResult
+	{
+		var result = TranslationResult.translation("")
 
 		for subtree in subtrees {
 			if shouldIgnoreNext {
@@ -299,7 +307,7 @@ public class GRYKotlinTranslator {
 				continue
 			}
 
-			result += translate(subtree: subtree, withIndentation: indentation).stringValue!
+			result += translate(subtree: subtree, withIndentation: indentation)
 		}
 
 		return result
@@ -353,8 +361,7 @@ public class GRYKotlinTranslator {
 			return .failed
 		}
 
-		return .translation(
-			translate(subtrees: braceStatement.subtrees, withIndentation: indentation))
+		return translate(subtrees: braceStatement.subtrees, withIndentation: indentation)
 	}
 
 	private func translate(enumDeclaration: GRYAst, withIndentation indentation: String)
@@ -516,8 +523,7 @@ public class GRYKotlinTranslator {
 		// If it's GRYDeclarations, we want to add its contents as top-level statements
 		guard !functionName.hasPrefix("GRYDeclarations(") else {
 			if let braceStatement = functionDeclaration.subtree(named: "Brace Statement") {
-				return .translation(
-					translate(subtrees: braceStatement.subtrees, withIndentation: indentation))
+				return translate(subtrees: braceStatement.subtrees, withIndentation: indentation)
 			}
 			else {
 				return .failed
@@ -692,7 +698,7 @@ public class GRYKotlinTranslator {
 			let statementsString =
 				translate(subtrees: elseAST.subtrees, withIndentation: increasedIndentation)
 			elseTranslation =
-				.translation("\(indentation)else {\n\(statementsString)\(indentation)}\n")
+				.translation("\(indentation)else {\n") + statementsString + "\(indentation)}\n"
 		}
 		else if let unwrappedBraceStatement = ifStatement.subtrees.last,
 			unwrappedBraceStatement.name == "Brace Statement"
@@ -925,7 +931,7 @@ public class GRYKotlinTranslator {
 		{
 			assert(subtree.name == "Function Declaration")
 
-			var subResult = ""
+			var subResult = TranslationResult.translation("")
 
 			let keyword: String
 
@@ -1617,16 +1623,8 @@ public class GRYKotlinTranslator {
 		return String(indentation.dropLast())
 	}
 
-	func codeForUnkownTranslation(of ast: GRYAst) -> String {
-		return "/* 🚨 \(ast.name) */"
-	}
-
-	func codeForRefactorableTranslation(of ast: GRYAst) -> String {
-		return "/* ⚠️ \(ast.name) */"
-	}
-
 	//
-	enum TranslationResult: ExpressibleByStringLiteral, Equatable {
+	enum TranslationResult: ExpressibleByStringLiteral, Equatable, CustomStringConvertible {
 		typealias StringLiteralType = String
 
 		case translation(String)
@@ -1680,6 +1678,13 @@ public class GRYKotlinTranslator {
 			case .failed:
 				return nil
 			}
+		}
+
+		var description: String {
+			// The translator must turn TranslationResults into Strings explicitly, so as to force
+			// the programmers to consider the possibilities and make their choices clearer.
+			// This has already helped catch a few bugs.
+			fatalError()
 		}
 	}
 }

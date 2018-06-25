@@ -47,7 +47,9 @@ public enum GRYCompiler {
 	}
 
 	public static func compile(fileAt filePath: String) -> KotlinCompilationResult {
-		let kotlinCode = generateKotlinCode(forFileAt: filePath)
+		guard let kotlinCode = generateKotlinCode(forFileAt: filePath) else {
+			return .failure(errorMessage: "\t\t- Translator failed.")
+		}
 
 		print("\t- Compiling Kotlin...")
 		let fileName = URL(fileURLWithPath: filePath).deletingPathExtension().lastPathComponent
@@ -67,7 +69,8 @@ public enum GRYCompiler {
 		}
 		guard result.status == 0 else {
 			return .failure(errorMessage:
-				"\t\t- Error compiling kotlin files. Kotlin compiler says:\n\(result.standardError)")
+				"\t\t- Error compiling kotlin files. Kotlin compiler says:\n" +
+				"\(result.standardError)")
 		}
 
 		return .success(commandOutput: result)
@@ -75,7 +78,7 @@ public enum GRYCompiler {
 
 	public static func generateKotlinCodeWithDiagnostics(
 		forFileAt filePath: String)
-		-> (code: String, diagnostics: GRYKotlinTranslator.Diagnostics, ast: GRYAst)
+		-> (code: String?, diagnostics: GRYKotlinTranslator.Diagnostics, ast: GRYAst)
 	{
 		let jsonFile = GRYUtils.changeExtension(of: filePath, to: "json")
 		let ast = GRYAst.initialize(fromJsonInFile: jsonFile)
@@ -88,13 +91,18 @@ public enum GRYCompiler {
 		return (code: kotlinCode, diagnostics: kotlinDiagnostics, ast: ast)
 	}
 
-	public static func generateKotlinCode(forFileAt filePath: String) -> String {
+	public static func generateKotlinCode(forFileAt filePath: String) -> String? {
 		let jsonFile = GRYUtils.changeExtension(of: filePath, to: "json")
 		let ast = GRYAst.initialize(fromJsonInFile: jsonFile)
 
 		print("\t- Translating AST to Kotlin...")
 		let kotlinTranslator = GRYKotlinTranslator()
 		let kotlinCode = kotlinTranslator.translateAST(ast)
+
+		if kotlinCode == nil {
+			print("\t- Failed to translate AST to Kotlin.")
+		}
+
 		return kotlinCode
 	}
 
