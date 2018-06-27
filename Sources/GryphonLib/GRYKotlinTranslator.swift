@@ -772,6 +772,7 @@ public class GRYKotlinTranslator {
 					varOrValKeyword = "var"
 				}
 				else {
+					diagnostics?.logUnknownTranslation("If-let")
 					conditionStrings.append(nil)
 					continue
 				}
@@ -789,10 +790,12 @@ public class GRYKotlinTranslator {
 					let lastCondition = condition.subtrees.last,
 					let expressionString = translate(expression: lastCondition).stringValue else
 				{
+					diagnostics?.logUnknownTranslation("If-let")
 					conditionStrings.append(nil)
 					continue
 				}
 
+				diagnostics?.logSuccessfulTranslation("If-let")
 				letDeclarations.append(
 					"\(indentation)\(varOrValKeyword) \(name)\(typeString) = \(expressionString)\n")
 				conditionStrings.append("\(name) != null")
@@ -819,11 +822,13 @@ public class GRYKotlinTranslator {
 		precondition(throwStatement.name == "Throw Statement")
 
 		guard let expression = throwStatement.subtrees.last,
-		let expressionString = translate(expression: expression).stringValue else
+			let expressionString = translate(expression: expression).stringValue else
 		{
+			diagnostics?.logUnknownTranslation(throwStatement.name)
 			return .failed
 		}
 
+		diagnostics?.logSuccessfulTranslation(throwStatement.name)
 		return .translation("\(indentation)throw \(expressionString)\n")
 	}
 
@@ -835,13 +840,16 @@ public class GRYKotlinTranslator {
 
 		if let expression = returnStatement.subtrees.last {
 			if let expressionString = translate(expression: expression).stringValue {
+				diagnostics?.logSuccessfulTranslation(returnStatement.name)
 				return .translation("\(indentation)return \(expressionString)\n")
 			}
 			else {
+				diagnostics?.logUnknownTranslation(returnStatement.name)
 				return .failed
 			}
 		}
 		else {
+			diagnostics?.logSuccessfulTranslation(returnStatement.name)
 			return .translation("\(indentation)return\n")
 		}
 	}
@@ -861,7 +869,7 @@ public class GRYKotlinTranslator {
 	{
 		precondition(variableDeclaration.name == "Variable Declaration")
 
-		var result = indentation
+		var result = TranslationResult.translation(indentation)
 
 		if let identifier = variableDeclaration.standaloneAttributes.first,
 			let rawType = variableDeclaration["interface type"]
@@ -919,11 +927,13 @@ public class GRYKotlinTranslator {
 
 			result += translateGetterAndSetter(
 				forVariableDeclaration: variableDeclaration,
-				withIndentation: indentation).stringValue!
+				withIndentation: indentation)
 
-			return .translation(result)
+			diagnostics?.logResult(result, subtreeName: variableDeclaration.name)
+			return result
 		}
 		else {
+			diagnostics?.logUnknownTranslation(variableDeclaration.name)
 			return .failed
 		}
 	}
@@ -966,7 +976,7 @@ public class GRYKotlinTranslator {
 
 			subResult += "\(getSetIndentation)}\n"
 
-			diagnostics?.logSuccessfulTranslation("Getter/Setter")
+			diagnostics?.logResult(subResult, subtreeName: "Getter/Setter")
 			result += subResult
 		}
 
@@ -979,13 +989,23 @@ public class GRYKotlinTranslator {
 		precondition(assignExpression.name == "Assign Expression")
 
 		if let leftExpression = assignExpression.subtree(at: 0),
-			let rightExpression = assignExpression.subtree(at: 1),
-			let leftString = translate(expression: leftExpression).stringValue,
-			let rightString = translate(expression: rightExpression).stringValue
+			let rightExpression = assignExpression.subtree(at: 1)
 		{
+			let leftTranslation = translate(expression: leftExpression)
+			let rightTranslation = translate(expression: rightExpression)
+
+			guard let leftString = leftTranslation.stringValue,
+				let rightString = rightTranslation.stringValue else
+			{
+				diagnostics?.logUnknownTranslation(assignExpression.name)
+				return .failed
+			}
+
+			diagnostics?.logSuccessfulTranslation(assignExpression.name)
 			return .translation("\(indentation)\(leftString) = \(rightString)\n")
 		}
 		else {
+			diagnostics?.logUnknownTranslation(assignExpression.name)
 			return.failed
 		}
 	}
