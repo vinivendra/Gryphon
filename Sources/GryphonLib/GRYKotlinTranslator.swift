@@ -1072,13 +1072,23 @@ public class GRYKotlinTranslator {
 			at: 1,
 			named: "Parentheses Expression"),
 			let subscriptContents = parenthesesExpression.subtree(at: 0),
-			let subscriptContentsString = translate(expression: subscriptContents).stringValue,
-			let subscriptedExpression = subscriptExpression.subtree(at: 0),
-			let subscriptedExpressionString = translate(expression: subscriptedExpression).stringValue
+			let subscriptedExpression = subscriptExpression.subtree(at: 0)
 		{
+			let subscriptContentsTranslation = translate(expression: subscriptContents)
+			let subscriptedExpressionTranslation = translate(expression: subscriptedExpression)
+
+			guard let subscriptContentsString = subscriptContentsTranslation.stringValue,
+				let subscriptedExpressionString = subscriptedExpressionTranslation.stringValue else
+			{
+				diagnostics?.logUnknownTranslation(subscriptExpression.name)
+				return .failed
+			}
+
+			diagnostics?.logSuccessfulTranslation(subscriptExpression.name)
 			return .translation("\(subscriptedExpressionString)[\(subscriptContentsString)]")
 		}
 		else {
+			diagnostics?.logUnknownTranslation(subscriptExpression.name)
 			return .failed
 		}
 	}
@@ -1092,9 +1102,12 @@ public class GRYKotlinTranslator {
 
 		if let expressionsArray = expressionsArray as? [String] {
 			let expressionsString = expressionsArray.joined(separator: ", ")
+
+			diagnostics?.logSuccessfulTranslation(arrayExpression.name)
 			return .translation("mutableListOf(\(expressionsString))")
 		}
 		else {
+			diagnostics?.logUnknownTranslation(arrayExpression.name)
 			return .failed
 		}
 	}
@@ -1103,25 +1116,32 @@ public class GRYKotlinTranslator {
 		precondition(dotSyntaxCallExpression.name == "Dot Syntax Call Expression")
 
 		if let leftHandTree = dotSyntaxCallExpression.subtree(at: 1),
-			let rightHandExpression = dotSyntaxCallExpression.subtree(at: 0),
-			let rightHandSide = translate(expression: rightHandExpression).stringValue,
-			let leftHandString = translate(typeExpression: leftHandTree).stringValue
+			let rightHandExpression = dotSyntaxCallExpression.subtree(at: 0)
 		{
-			if leftHandTree.name == "Type Expression" {
-				// Enums become sealed classes, which need parentheses at the end
-				if GRYKotlinTranslator.enums.contains(leftHandString) {
-					let capitalizedEnumCase = rightHandSide.capitalizedAsCamelCase
-					return .translation("\(leftHandString).\(capitalizedEnumCase)()")
-				}
-				else {
-					return .translation("\(leftHandString).\(rightHandSide)")
-				}
+			let rightHandTranslation = translate(expression: rightHandExpression)
+			let leftHandTranslation = translate(typeExpression: leftHandTree)
+
+			guard let leftHandString = leftHandTranslation.stringValue,
+				let rightHandString = rightHandTranslation.stringValue else
+			{
+				diagnostics?.logUnknownTranslation(dotSyntaxCallExpression.name)
+				return .failed
 			}
-			else if let leftHandString = translate(typeExpression: leftHandTree).stringValue {
-				return .translation("\(leftHandString).\(rightHandSide)")
+
+			// Enums become sealed classes, which need parentheses at the end
+			if GRYKotlinTranslator.enums.contains(leftHandString) {
+				let capitalizedEnumCase = rightHandString.capitalizedAsCamelCase
+
+				diagnostics?.logSuccessfulTranslation(dotSyntaxCallExpression.name)
+				return .translation("\(leftHandString).\(capitalizedEnumCase)()")
+			}
+			else {
+				diagnostics?.logSuccessfulTranslation(dotSyntaxCallExpression.name)
+				return .translation("\(leftHandString).\(rightHandString)")
 			}
 		}
 
+		diagnostics?.logUnknownTranslation(dotSyntaxCallExpression.name)
 		return .failed
 	}
 
@@ -1135,15 +1155,21 @@ public class GRYKotlinTranslator {
 				.subtree(named: "Declaration Reference Expression")?["decl"],
 			let tupleExpression = binaryExpression.subtree(named: "Tuple Expression"),
 			let leftHandExpression = tupleExpression.subtree(at: 0),
-			let rightHandExpression = tupleExpression.subtree(at: 1),
-			let leftHandString = translate(expression: leftHandExpression).stringValue,
-			let rightHandString = translate(expression: rightHandExpression).stringValue
+			let rightHandExpression = tupleExpression.subtree(at: 1)
 		{
 			operatorIdentifier = getIdentifierFromDeclaration(declaration)
+			let leftHandTranslation = translate(expression: leftHandExpression)
+			let rightHandTranslation = translate(expression: rightHandExpression)
 
-			return .translation("\(leftHandString) \(operatorIdentifier) \(rightHandString)")
+			var result = leftHandTranslation
+			result += " \(operatorIdentifier) "
+			result += rightHandTranslation
+
+			diagnostics?.logResult(result, subtreeName: binaryExpression.name)
+			return result
 		}
 		else {
+			diagnostics?.logUnknownTranslation(binaryExpression.name)
 			return .failed
 		}
 	}
@@ -1158,9 +1184,12 @@ public class GRYKotlinTranslator {
 			let expressionString = translate(expression: expression).stringValue
 		{
 			let operatorIdentifier = getIdentifierFromDeclaration(declaration)
+
+			diagnostics?.logSuccessfulTranslation(prefixUnaryExpression.name)
 			return .translation("\(operatorIdentifier)\(expressionString)")
 		}
 		else {
+			diagnostics?.logUnknownTranslation(prefixUnaryExpression.name)
 			return .failed
 		}
 	}
