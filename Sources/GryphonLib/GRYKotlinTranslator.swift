@@ -991,6 +991,9 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translate(expression: GRYAst) -> TranslationResult {
+		// Most diagnostics are logged by the child subTrees; others represent wrapper expressions
+		// with little value in logging. There are a few expections.
+
 		switch expression.name {
 		case "Array Expression":
 			return translate(arrayExpression: expression)
@@ -1025,18 +1028,22 @@ public class GRYKotlinTranslator {
 			if let firstExpression = expression.subtree(at: 0),
 				let expressionString = translate(expression: firstExpression).stringValue
 			{
+				diagnostics?.logSuccessfulTranslation(expression.name)
 				return .translation("(" + expressionString + ")")
 			}
 			else {
+				diagnostics?.logUnknownTranslation(expression.name)
 				return .failed
 			}
 		case "Force Value Expression":
 			if let firstExpression = expression.subtree(at: 0),
 				let expressionString = translate(expression: firstExpression).stringValue
 			{
+				diagnostics?.logSuccessfulTranslation(expression.name)
 				return .translation(expressionString  + "!!")
 			}
 			else {
+				diagnostics?.logUnknownTranslation(expression.name)
 				return .failed
 			}
 		case "Autoclosure Expression",
@@ -1058,9 +1065,11 @@ public class GRYKotlinTranslator {
 		precondition(typeExpression.name == "Type Expression")
 
 		if let rawType = typeExpression.keyValueAttributes["typerepr"] {
+			diagnostics?.logSuccessfulTranslation(typeExpression.name)
 			return .translation(translateType(rawType))
 		}
 		else {
+			diagnostics?.logUnknownTranslation(typeExpression.name)
 			return .failed
 		}
 	}
