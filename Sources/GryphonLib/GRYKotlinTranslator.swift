@@ -14,28 +14,6 @@
 * limitations under the License.
 */
 
-/// Unwraps a given value and returns it. If the value is nil, throws the given error.
-///
-/// - Note: Inspired by
-/// 	https://lists.swift.org/pipermail/swift-evolution/Week-of-Mon-20160404/014272.html
-///
-/// - Parameters:
-/// 	- value: The value to be unwrapped.
-/// 	- error: The error to be thrown if the value is nil. If no error is given,
-/// 		throws `GRYKotlinTranslator.TranslationError.unknown`.
-/// - Returns: The unwrapped value, if present.
-private func unwrapOrThrow<T>(
-	_ value: T?,
-	error: @autoclosure () -> Error = GRYKotlinTranslator.TranslationError.unknown)
-	throws -> T
-{
-	if value == nil {
-		throw error()
-	}
-	else {
-		return value!
-	}
-}
 
 public class GRYKotlinTranslator {
 	public class Diagnostics: CustomStringConvertible {
@@ -331,7 +309,10 @@ public class GRYKotlinTranslator {
 		// Some patternBindingDeclarations are empty, and that's ok. See the classes.swift test
 		// case.
 		guard let expression = patternBindingDeclaration.subtrees.last,
-			ASTIsExpression(expression) else { return .translation("") }
+			ASTIsExpression(expression) else
+		{
+			return .translation("")
+		}
 
 		let binding: GRYAst
 
@@ -358,10 +339,14 @@ public class GRYKotlinTranslator {
 
 		let type = translateType(rawType)
 
+		guard let translatedExpression = translate(expression: expression).stringValue else {
+			return .failed
+		}
+
 		danglingPatternBinding =
 			(identifier: identifier,
 			 type: type,
-			 translatedExpression: translate(expression: expression).stringValue!)
+			 translatedExpression: translatedExpression)
 
 		return .translation("")
 	}
@@ -546,7 +531,10 @@ public class GRYKotlinTranslator {
 		// If this function should be ignored
 		guard !functionName.hasPrefix("GRYInsert(") &&
 			!functionName.hasPrefix("GRYAlternative(") &&
-			!functionName.hasPrefix("GRYIgnoreNext(") else { return .translation("") }
+			!functionName.hasPrefix("GRYIgnoreNext(") else
+		{
+			return .translation("")
+		}
 
 		// If it's GRYDeclarations, we want to add its contents as top-level statements
 		guard !functionName.hasPrefix("GRYDeclarations(") else {
@@ -1628,30 +1616,29 @@ public class GRYKotlinTranslator {
 
 		let namesArray = names.split(separator: ",")
 
-		var elements = [TranslationResult]()
+		var elements = [String?]()
 
 		for (name, expression) in zip(namesArray, tupleExpression.subtrees) {
 			guard let expressionString = translate(expression: expression).stringValue else {
-				elements.append(.failed)
+				elements.append(nil)
 				continue
 			}
 
 			// Empty names (like the underscore in "foo(_:)") are represented by ''
 			if name == "_" {
-				elements.append(.translation(expressionString))
+				elements.append(expressionString)
 			}
 			else {
-				elements.append(.translation("\(name) = \(expressionString)"))
+				elements.append("\(name) = \(expressionString)")
 			}
 		}
 
-		guard !elements.contains(.failed) else {
+		guard let elementStrings = elements as? [String] else {
 			diagnostics?.logUnknownTranslation(tupleExpression.name)
 			return .failed
 		}
 
-		// The stringValue's are always available, as guard statement above guarantees
-		let contents = elements.map { $0.stringValue! }.joined(separator: ", ")
+		let contents = elementStrings.joined(separator: ", ")
 
 		diagnostics?.logSuccessfulTranslation(tupleExpression.name)
 		return .translation("(" + contents + ")")
