@@ -55,6 +55,15 @@ public class GRYKotlinTranslator {
             unknownSubtrees.increaseOccurence(of: subtreeName)
         }
 
+		fileprivate func logResult(_ translationResult: TranslationResult, subtreeName: String) {
+			if case .translation(_) = translationResult {
+				logSuccessfulTranslation(subtreeName)
+			}
+			else {
+				logUnknownTranslation(subtreeName)
+			}
+		}
+
 		public var description: String {
 			return """
 			-----
@@ -383,7 +392,7 @@ public class GRYKotlinTranslator {
 			let rawInheritanceArray = inheritanceList.split(withStringSeparator: ", ")
 
 			if rawInheritanceArray.contains("GRYIgnore") {
-				return ""
+				return .translation("")
 			}
 
 			var inheritanceArray = rawInheritanceArray.map { translateType($0) }
@@ -518,7 +527,7 @@ public class GRYKotlinTranslator {
 		// If this function should be ignored
 		guard !functionName.hasPrefix("GRYInsert(") &&
 			!functionName.hasPrefix("GRYAlternative(") &&
-			!functionName.hasPrefix("GRYIgnoreNext(") else { return "" }
+			!functionName.hasPrefix("GRYIgnoreNext(") else { return .translation("") }
 
 		// If it's GRYDeclarations, we want to add its contents as top-level statements
 		guard !functionName.hasPrefix("GRYDeclarations(") else {
@@ -1180,18 +1189,21 @@ public class GRYKotlinTranslator {
 		if let argumentLabels = callExpression["arg_labels"],
 			argumentLabels == "_builtinIntegerLiteral:"
 		{
+			diagnostics?.logSuccessfulTranslation(callExpression.name)
 			return translate(asNumericLiteral: callExpression)
 		}
-			// If the call expression corresponds to an boolean literal
+		// If the call expression corresponds to an boolean literal
 		else if let argumentLabels = callExpression["arg_labels"],
 			argumentLabels == "_builtinBooleanLiteral:"
 		{
+			diagnostics?.logSuccessfulTranslation(callExpression.name)
 			return translate(asBooleanLiteral: callExpression)
 		}
-			// If the call expression corresponds to `nil`
+		// If the call expression corresponds to `nil`
 		else if let argumentLabels = callExpression["arg_labels"],
 			argumentLabels == "nilLiteral:"
 		{
+			diagnostics?.logSuccessfulTranslation(callExpression.name)
 			return .translation("null")
 		}
 		else {
@@ -1207,6 +1219,7 @@ public class GRYKotlinTranslator {
 					return .translation(result)
 				}
 				else {
+					diagnostics?.logUnknownTranslation(callExpression.name)
 					return .failed
 				}
 			}
@@ -1269,13 +1282,15 @@ public class GRYKotlinTranslator {
 			// If it's a special Gryphon directive
 			if result != .failed {
 				if functionNamePrefix == "GRYInsert" || functionNamePrefix == "GRYAlternative" {
+					diagnostics?.logSuccessfulTranslation(callExpression.name)
 					return translate(
 						asKotlinLiteral: callExpression,
 						withFunctionNamePrefix: functionNamePrefix)
 				}
 				else if functionNamePrefix == "GRYIgnoreNext" {
 					shouldIgnoreNext = true
-					return ""
+					diagnostics?.logSuccessfulTranslation(callExpression.name)
+					return .translation("")
 				}
 			}
 
@@ -1284,16 +1299,21 @@ public class GRYKotlinTranslator {
 				asExplicitFunctionCall: callExpression,
 				withFunctionNamePrefix: functionNamePrefix).stringValue else
 			{
+				diagnostics?.logUnknownTranslation(callExpression.name)
 				return .failed
 			}
 
 			result += translation
+
+			diagnostics?.logSuccessfulTranslation(callExpression.name)
 			return result
 		}
 	}
 
 	/// Translates typical call expressions. The functionNamePrefix is passed as an argument here
 	/// only because it has already been calculated by translate(callExpression:).
+	///
+	/// Diagnostics get logged at caller (`translate(callExpression:)`).
 	private func translate(
 		asExplicitFunctionCall callExpression: GRYAst,
 		withFunctionNamePrefix functionNamePrefix: Substring) -> TranslationResult
@@ -1339,6 +1359,8 @@ public class GRYKotlinTranslator {
 
 	/// Translates boolean literals, which in swift are modeled as calls to specific builtin
 	/// functions.
+	///
+	/// Diagnostics get logged at caller (`translate(callExpression:)`).
 	private func translate(asBooleanLiteral callExpression: GRYAst) -> TranslationResult {
 		precondition(callExpression.name == "Call Expression")
 
@@ -1356,6 +1378,8 @@ public class GRYKotlinTranslator {
 
 	/// Translates numeric literals, which in swift are modeled as calls to specific builtin
 	/// functions.
+	///
+	/// Diagnostics get logged at caller (`translate(callExpression:)`).
 	private func translate(asNumericLiteral callExpression: GRYAst) -> TranslationResult {
 		precondition(callExpression.name == "Call Expression")
 
@@ -1393,6 +1417,8 @@ public class GRYKotlinTranslator {
 	
 	The second one can be used to provide a manual translation of a swift value, as in
 	`let three = GRYAlternative(swift: sqrt(9), kotlin: "Math.sqrt(9.0)")`.
+
+	Diagnostics get logged at caller (`translate(callExpression:)`).
 	*/
 	private func translate(
 		asKotlinLiteral callExpression: GRYAst,
@@ -1424,6 +1450,7 @@ public class GRYKotlinTranslator {
 
 		let unquotedString = String(string.dropLast().dropFirst())
 		let unescapedString = removeBackslashEscapes(unquotedString)
+
 		return .translation(unescapedString)
 	}
 
@@ -1433,12 +1460,15 @@ public class GRYKotlinTranslator {
 		if let codeDeclaration = declarationReferenceExpression.standaloneAttributes.first,
 			codeDeclaration.hasPrefix("code.")
 		{
+			diagnostics?.logSuccessfulTranslation(declarationReferenceExpression.name)
 			return .translation(getIdentifierFromDeclaration(codeDeclaration))
 		}
 		else if let declaration = declarationReferenceExpression["decl"] {
+			diagnostics?.logSuccessfulTranslation(declarationReferenceExpression.name)
 			return .translation(getIdentifierFromDeclaration(declaration))
 		}
 		else {
+			diagnostics?.logUnknownTranslation(declarationReferenceExpression.name)
 			return .failed
 		}
 	}
@@ -1451,9 +1481,11 @@ public class GRYKotlinTranslator {
 			let memberOwnerString = translate(expression: memberOwner).stringValue
 		{
 			let member = getIdentifierFromDeclaration(declaration)
+			diagnostics?.logSuccessfulTranslation(memberReferenceExpression.name)
 			return .translation("\(memberOwnerString).\(member)")
 		}
 		else {
+			diagnostics?.logUnknownTranslation(memberReferenceExpression.name)
 			return .failed
 		}
 	}
@@ -1505,7 +1537,8 @@ public class GRYKotlinTranslator {
 
 		// Only empty tuples don't have a list of names
 		guard let names = tupleExpression["names"] else {
-			return "()"
+			diagnostics?.logSuccessfulTranslation(tupleExpression.name)
+			return .translation("()")
 		}
 
 		let namesArray = names.split(separator: ",")
@@ -1528,12 +1561,14 @@ public class GRYKotlinTranslator {
 		}
 
 		guard !elements.contains(.failed) else {
+			diagnostics?.logUnknownTranslation(tupleExpression.name)
 			return .failed
 		}
 
 		// The stringValue's are always available, as guard statement above guarantees
 		let contents = elements.map { $0.stringValue! }.joined(separator: ", ")
 
+		diagnostics?.logSuccessfulTranslation(tupleExpression.name)
 		return .translation("(" + contents + ")")
 	}
 
@@ -1573,7 +1608,8 @@ public class GRYKotlinTranslator {
 				result += unquotedString
 			}
 			else {
-				guard let expressionString = translate(expression: expression).stringValue else {
+				let expressionTranslation = translate(expression: expression)
+				guard let expressionString = expressionTranslation.stringValue else {
 					result = .failed
 					continue
 				}
@@ -1583,7 +1619,7 @@ public class GRYKotlinTranslator {
 
 		result += "\""
 
-		diagnostics?.logSuccessfulTranslation(interpolatedStringLiteralExpression.name)
+		diagnostics?.logResult(result, subtreeName: interpolatedStringLiteralExpression.name)
 		return result
 	}
 
@@ -1624,9 +1660,7 @@ public class GRYKotlinTranslator {
 	}
 
 	//
-	enum TranslationResult: ExpressibleByStringLiteral, Equatable, CustomStringConvertible {
-		typealias StringLiteralType = String
-
+	enum TranslationResult: Equatable, CustomStringConvertible {
 		case translation(String)
 		case failed
 
