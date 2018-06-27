@@ -211,6 +211,7 @@ public class GRYKotlinTranslator {
 
 		switch subtree.name {
 		case "Import Declaration":
+			diagnostics?.logSuccessfulTranslation(subtree.name)
 			result = .translation("")
 		case "Class Declaration":
 			result = translate(
@@ -229,6 +230,7 @@ public class GRYKotlinTranslator {
 				enumDeclaration: subtree,
 				withIndentation: indentation)
 		case "Extension Declaration":
+			diagnostics?.logSuccessfulTranslation(subtree.name)
 			result = translate(
 				subtrees: subtree.subtrees,
 				withIndentation: indentation)
@@ -276,7 +278,7 @@ public class GRYKotlinTranslator {
 				returnStatement: subtree,
 				withIndentation: indentation)
 		case "Call Expression":
-			if case .translation(let string) = translate(callExpression: subtree) {
+			if let string = translate(callExpression: subtree).stringValue {
 				if !string.isEmpty {
 					result = .translation(indentation + string + "\n")
 				}
@@ -290,7 +292,7 @@ public class GRYKotlinTranslator {
 			}
 		default:
 			if subtree.name.hasSuffix("Expression") {
-				if case .translation(let string) = translate(expression: subtree) {
+				if let string = translate(expression: subtree).stringValue {
 					result = .translation(indentation + string + "\n")
 				}
 				else {
@@ -298,6 +300,7 @@ public class GRYKotlinTranslator {
 				}
 			}
 			else {
+				diagnostics?.logUnknownTranslation(subtree.name)
 				result = .failed
 			}
 		}
@@ -342,12 +345,14 @@ public class GRYKotlinTranslator {
 			binding = unwrappedBinding
 		}
 		else {
+			assertionFailure("Expected to always work")
 			return .failed
 		}
 
 		guard let identifier = binding.standaloneAttributes.first,
 			let rawType = binding.keyValueAttributes["type"] else
 		{
+			assertionFailure("Expected to always work")
 			return .failed
 		}
 
@@ -361,12 +366,14 @@ public class GRYKotlinTranslator {
 		return .translation("")
 	}
 
+	/// This can be reasonably expected to always work, and is also not very useful for diagnostics.
 	private func translate(topLevelCode: GRYAst, withIndentation indentation: String)
 		-> TranslationResult
 	{
 		precondition(topLevelCode.name == "Top Level Code Declaration")
 
 		guard let braceStatement = topLevelCode.subtree(named: "Brace Statement") else {
+			assertionFailure("Expected to always work")
 			return .failed
 		}
 
@@ -379,6 +386,7 @@ public class GRYKotlinTranslator {
 		precondition(enumDeclaration.name == "Enum Declaration")
 
 		guard let enumName = enumDeclaration.standaloneAttributes.first else {
+			diagnostics?.logUnknownTranslation(enumDeclaration.name)
 			return .failed
 		}
 
@@ -411,6 +419,7 @@ public class GRYKotlinTranslator {
 			enumDeclaration.subtrees.filter { $0.name == "Enum Element Declaration" }
 		for enumElementDeclaration in enumElementDeclarations {
 			guard let elementName = enumElementDeclaration.standaloneAttributes.first else {
+				diagnostics?.logUnknownTranslation("[Enum Element Declaration]")
 				result = .failed
 				continue
 			}
@@ -423,6 +432,7 @@ public class GRYKotlinTranslator {
 
 		result += "\(indentation)}\n"
 
+		diagnostics?.logResult(result, subtreeName: enumDeclaration.name)
 		return result
 	}
 
@@ -432,14 +442,17 @@ public class GRYKotlinTranslator {
 		precondition(protocolDeclaration.name == "Protocol")
 
 		guard let protocolName = protocolDeclaration.standaloneAttributes.first else {
+			diagnostics?.logUnknownTranslation(protocolDeclaration.name)
 			return .failed
 		}
 
 		if protocolName == "GRYIgnore" {
+			diagnostics?.logSuccessfulTranslation(protocolDeclaration.name)
 			return .translation("")
 		}
 		else {
 			// Add actual protocol translation here
+			diagnostics?.logUnknownTranslation(protocolDeclaration.name)
 			return .failed
 		}
 	}
@@ -482,7 +495,9 @@ public class GRYKotlinTranslator {
 			subtrees: classDeclaration.subtrees,
 			withIndentation: increasedIndentation)
 
-		return "class " + classNameTranslation + inheritanceString + " {\n" + classContents + "}\n"
+		let result = "class " + classNameTranslation + inheritanceString + " {\n" + classContents + "}\n"
+		diagnostics?.logResult(result, subtreeName: classDeclaration.name)
+		return result
 	}
 
 	private func translate(constructorDeclaration: GRYAst, withIndentation indentation: String)
@@ -491,9 +506,11 @@ public class GRYKotlinTranslator {
 		precondition(constructorDeclaration.name == "Constructor Declaration")
 
 		guard !constructorDeclaration.standaloneAttributes.contains("implicit") else {
+			diagnostics?.logSuccessfulTranslation(constructorDeclaration.name)
 			return .translation("")
 		}
 
+		diagnostics?.logUnknownTranslation(constructorDeclaration.name)
 		return .failed
 	}
 
@@ -503,9 +520,11 @@ public class GRYKotlinTranslator {
 		precondition(destructorDeclaration.name == "Destructor Declaration")
 
 		guard !destructorDeclaration.standaloneAttributes.contains("implicit") else {
+			diagnostics?.logSuccessfulTranslation(destructorDeclaration.name)
 			return .translation("")
 		}
 
+		diagnostics?.logUnknownTranslation(destructorDeclaration.name)
 		return .failed
 	}
 
@@ -532,9 +551,11 @@ public class GRYKotlinTranslator {
 		// If it's GRYDeclarations, we want to add its contents as top-level statements
 		guard !functionName.hasPrefix("GRYDeclarations(") else {
 			if let braceStatement = functionDeclaration.subtree(named: "Brace Statement") {
+				diagnostics?.logSuccessfulTranslation(functionDeclaration.name)
 				return translate(subtrees: braceStatement.subtrees, withIndentation: indentation)
 			}
 			else {
+				diagnostics?.logUnknownTranslation(functionDeclaration.name)
 				return .failed
 			}
 		}
@@ -630,6 +651,7 @@ public class GRYKotlinTranslator {
 		indentation = decreaseIndentation(indentation)
 		result += indentation + "}\n"
 
+		diagnostics?.logResult(result, subtreeName: functionDeclaration.name)
 		return result
 	}
 
@@ -641,8 +663,10 @@ public class GRYKotlinTranslator {
 		var result = TranslationResult.translation("")
 
 		guard let braceStatement = forEachStatement.subtrees.last,
-			braceStatement.name == "Brace Statement" else {
-				return .failed
+			braceStatement.name == "Brace Statement" else
+		{
+			diagnostics?.logUnknownTranslation(forEachStatement.name)
+			return .failed
 		}
 
 		if let variableName = forEachStatement
@@ -663,7 +687,7 @@ public class GRYKotlinTranslator {
 			withIndentation: increasedIndentation)
 
 		result += " {\n" + statements + indentation + "}\n"
-
+		diagnostics?.logResult(result, subtreeName: forEachStatement.name)
 		return result
 	}
 
@@ -715,6 +739,7 @@ public class GRYKotlinTranslator {
 			braceStatement = unwrappedBraceStatement
 		}
 		else {
+			diagnostics?.logUnknownTranslation(ifStatement.name)
 			return .failed
 		}
 
@@ -732,7 +757,9 @@ public class GRYKotlinTranslator {
 			+ statementsString
 			+ indentation + "}\n"
 
-		return ifTranslation + elseIfTranslation + elseTranslation
+		let result = ifTranslation + elseIfTranslation + elseTranslation
+		diagnostics?.logResult(result, subtreeName: ifStatement.name)
+		return result
 	}
 
 	/// Failures in translating if-let conditions get counted as failures in conditions
