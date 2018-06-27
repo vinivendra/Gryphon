@@ -14,7 +14,6 @@
 * limitations under the License.
 */
 
-
 public class GRYKotlinTranslator {
 	public class Diagnostics: CustomStringConvertible {
         private(set) var translatedSubtrees = GRYHistogram<String>()
@@ -314,6 +313,10 @@ public class GRYKotlinTranslator {
 			return .translation("")
 		}
 
+		guard let translatedExpression = translate(expression: expression).stringValue else {
+			return .failed
+		}
+
 		let binding: GRYAst
 
 		if let unwrappedBinding = patternBindingDeclaration
@@ -338,10 +341,6 @@ public class GRYKotlinTranslator {
 		}
 
 		let type = translateType(rawType)
-
-		guard let translatedExpression = translate(expression: expression).stringValue else {
-			return .failed
-		}
 
 		danglingPatternBinding =
 			(identifier: identifier,
@@ -370,18 +369,24 @@ public class GRYKotlinTranslator {
 	{
 		precondition(enumDeclaration.name == "Enum Declaration")
 
-		guard let enumName = enumDeclaration.standaloneAttributes.first else {
-			diagnostics?.logUnknownTranslation(enumDeclaration.name)
-			return .failed
+		var result = TranslationResult.translation(indentation)
+
+		if let access = enumDeclaration.keyValueAttributes["access"] {
+			result += access + " "
 		}
 
-		GRYKotlinTranslator.enums.append(enumName)
+		let enumName: TranslationResult
+		if let name = enumDeclaration.standaloneAttributes.first {
+			enumName = .translation(name)
+			GRYKotlinTranslator.enums.append(name)
+		}
+		else {
+			enumName = .failed
+		}
 
-		var result = TranslationResult.translation("")
+		result += "sealed class " + enumName
 
-		if let inheritanceList = enumDeclaration.keyValueAttributes["inherits"],
-			let access = enumDeclaration.keyValueAttributes["access"]
-		{
+		if let inheritanceList = enumDeclaration.keyValueAttributes["inherits"] {
 			let rawInheritanceArray = inheritanceList.split(withStringSeparator: ", ")
 
 			if rawInheritanceArray.contains("GRYIgnore") {
@@ -395,8 +400,10 @@ public class GRYKotlinTranslator {
 
 			let inheritanceString = inheritanceArray.joined(separator: ", ")
 
-			result += "\(indentation)\(access) sealed class \(enumName): \(inheritanceString) {\n"
+			result += ": \(inheritanceString)"
 		}
+
+		result += " {\n"
 
 		let increasedIndentation = increaseIndentation(indentation)
 
@@ -412,7 +419,7 @@ public class GRYKotlinTranslator {
 			let capitalizedElementName = elementName.capitalizedAsCamelCase
 
 			diagnostics?.logSuccessfulTranslation("[Enum Element Declaration]")
-			result += "\(increasedIndentation)class \(capitalizedElementName): \(enumName)()\n"
+			result += "\(increasedIndentation)class \(capitalizedElementName): " + enumName + "()\n"
 		}
 
 		result += "\(indentation)}\n"
@@ -480,7 +487,9 @@ public class GRYKotlinTranslator {
 			subtrees: classDeclaration.subtrees,
 			withIndentation: increasedIndentation)
 
-		let result = "class " + classNameTranslation + inheritanceString + " {\n" + classContents + "}\n"
+		let result = "class " + classNameTranslation + inheritanceString + " {\n" + classContents +
+			"}\n"
+
 		diagnostics?.logResult(result, subtreeName: classDeclaration.name)
 		return result
 	}
@@ -587,7 +596,9 @@ public class GRYKotlinTranslator {
 				if let name = parameter.standaloneAttributes.first,
 					let rawType = parameter["interface type"]
 				{
-					guard name != "self" else { continue }
+					guard name != "self" else {
+						continue
+					}
 
 					let type = translateType(rawType)
 					parameterStrings.append(name + ": " + type)
@@ -629,6 +640,7 @@ public class GRYKotlinTranslator {
 
 		// Translate the function body
 		indentation = increaseIndentation(indentation)
+
 		if let braceStatement = functionDeclaration.subtree(named: "Brace Statement") {
 			result += translate(subtrees: braceStatement.subtrees, withIndentation: indentation)
 		}
@@ -650,13 +662,6 @@ public class GRYKotlinTranslator {
 
 		var result = TranslationResult.translation("")
 
-		guard let braceStatement = forEachStatement.subtrees.last,
-			braceStatement.name == "Brace Statement" else
-		{
-			diagnostics?.logUnknownTranslation(forEachStatement.name)
-			return .failed
-		}
-
 		if let variableName = forEachStatement
 				.subtree(named: "Pattern Named")?
 				.standaloneAttributes.first,
@@ -670,11 +675,20 @@ public class GRYKotlinTranslator {
 		}
 
 		let increasedIndentation = increaseIndentation(indentation)
-		let statements = translate(
-			subtrees: braceStatement.subtrees,
-			withIndentation: increasedIndentation)
 
-		result += " {\n" + statements + indentation + "}\n"
+		if let braceStatement = forEachStatement.subtrees.last,
+			braceStatement.name == "Brace Statement"
+		{
+			let statements = translate(
+				subtrees: braceStatement.subtrees,
+				withIndentation: increasedIndentation)
+
+			result += " {\n" + statements + indentation + "}\n"
+		}
+		else {
+			result = .failed
+		}
+
 		diagnostics?.logResult(result, subtreeName: forEachStatement.name)
 		return result
 	}
@@ -692,6 +706,14 @@ public class GRYKotlinTranslator {
 			withIndentation: indentation)
 
 		let increasedIndentation = increaseIndentation(indentation)
+
+		let keyword = isElseIf ? "else if" : "if"
+
+		let parenthesizedCondition = isGuard ?
+			TranslationResult.translation("(!(") + conditions + "))" :
+			TranslationResult.translation("(") + conditions + ")"
+
+		var result = letDeclarations + indentation + keyword + " " + parenthesizedCondition + " {\n"
 
 		var elseIfTranslation = TranslationResult.translation("")
 		var elseTranslation = TranslationResult.translation("")
@@ -735,17 +757,8 @@ public class GRYKotlinTranslator {
 		let statementsString =
 			translate(subtrees: statements, withIndentation: increasedIndentation)
 
-		let keyword = isElseIf ? "else if" : "if"
-		let parenthesizedCondition = isGuard ?
-			TranslationResult.translation("(!(") + conditions + "))" :
-			TranslationResult.translation("(") + conditions + ")"
+		result += statementsString + indentation + "}\n" + elseIfTranslation + elseTranslation
 
-		let ifTranslation = letDeclarations
-			+ indentation + keyword + " " + parenthesizedCondition + " {\n"
-			+ statementsString
-			+ indentation + "}\n"
-
-		let result = ifTranslation + elseIfTranslation + elseTranslation
 		diagnostics?.logResult(result, subtreeName: ifStatement.name)
 		return result
 	}
@@ -836,15 +849,16 @@ public class GRYKotlinTranslator {
 	{
 		precondition(throwStatement.name == "Throw Statement")
 
-		guard let expression = throwStatement.subtrees.last,
-			let expressionString = translate(expression: expression).stringValue else
+		if let expression = throwStatement.subtrees.last,
+			let expressionString = translate(expression: expression).stringValue
 		{
+			diagnostics?.logSuccessfulTranslation(throwStatement.name)
+			return .translation("\(indentation)throw \(expressionString)\n")
+		}
+		else {
 			diagnostics?.logUnknownTranslation(throwStatement.name)
 			return .failed
 		}
-
-		diagnostics?.logSuccessfulTranslation(throwStatement.name)
-		return .translation("\(indentation)throw \(expressionString)\n")
 	}
 
 	private func translate(
@@ -981,6 +995,7 @@ public class GRYKotlinTranslator {
 			let contentsIndentation = increaseIndentation(getSetIndentation)
 
 			guard let statements = subtree.subtree(named: "Brace Statement")?.subtrees else {
+				diagnostics?.logUnknownTranslation("Getter/Setter")
 				result = .failed
 				continue
 			}
@@ -1009,15 +1024,16 @@ public class GRYKotlinTranslator {
 			let leftTranslation = translate(expression: leftExpression)
 			let rightTranslation = translate(expression: rightExpression)
 
-			guard let leftString = leftTranslation.stringValue,
-				let rightString = rightTranslation.stringValue else
+			if let leftString = leftTranslation.stringValue,
+				let rightString = rightTranslation.stringValue
 			{
+				diagnostics?.logSuccessfulTranslation(assignExpression.name)
+				return .translation("\(indentation)\(leftString) = \(rightString)\n")
+			}
+			else {
 				diagnostics?.logUnknownTranslation(assignExpression.name)
 				return .failed
 			}
-
-			diagnostics?.logSuccessfulTranslation(assignExpression.name)
-			return .translation("\(indentation)\(leftString) = \(rightString)\n")
 		}
 		else {
 			diagnostics?.logUnknownTranslation(assignExpression.name)
@@ -1121,15 +1137,16 @@ public class GRYKotlinTranslator {
 			let subscriptContentsTranslation = translate(expression: subscriptContents)
 			let subscriptedExpressionTranslation = translate(expression: subscriptedExpression)
 
-			guard let subscriptContentsString = subscriptContentsTranslation.stringValue,
-				let subscriptedExpressionString = subscriptedExpressionTranslation.stringValue else
+			if let subscriptContentsString = subscriptContentsTranslation.stringValue,
+				let subscriptedExpressionString = subscriptedExpressionTranslation.stringValue
 			{
+				diagnostics?.logSuccessfulTranslation(subscriptExpression.name)
+				return .translation("\(subscriptedExpressionString)[\(subscriptContentsString)]")
+			}
+			else {
 				diagnostics?.logUnknownTranslation(subscriptExpression.name)
 				return .failed
 			}
-
-			diagnostics?.logSuccessfulTranslation(subscriptExpression.name)
-			return .translation("\(subscriptedExpressionString)[\(subscriptContentsString)]")
 		}
 		else {
 			diagnostics?.logUnknownTranslation(subscriptExpression.name)
@@ -1280,6 +1297,9 @@ public class GRYKotlinTranslator {
 			return .translation("null")
 		}
 		else {
+			let functionName: String
+			var result = TranslationResult.translation("")
+
 			// If it's an empty expression used in an "if" condition
 			if callExpression.standaloneAttributes.contains("implicit"),
 				callExpression["arg_labels"] == "",
@@ -1292,13 +1312,9 @@ public class GRYKotlinTranslator {
 					return .translation(result)
 				}
 				else {
-					diagnostics?.logUnknownTranslation(callExpression.name)
-					return .failed
+					result = .failed
 				}
 			}
-
-			let functionName: String
-			var result = TranslationResult.translation("")
 
 			if let declarationReferenceExpression = callExpression
 				.subtree(named: "Declaration Reference Expression")
@@ -1675,17 +1691,14 @@ public class GRYKotlinTranslator {
 
 				// Empty strings, as a special case, are represented by the swift ast dump
 				// as two double quotes with nothing between them, instead of an actual empty string
-				guard unquotedString != "\"\"" else { continue }
+				guard unquotedString != "\"\"" else {
+					continue
+				}
 
 				result += unquotedString
 			}
 			else {
-				let expressionTranslation = translate(expression: expression)
-				guard let expressionString = expressionTranslation.stringValue else {
-					result = .failed
-					continue
-				}
-				result += "${\(expressionString)}"
+				result += "${" + translate(expression: expression) + "}"
 			}
 		}
 
