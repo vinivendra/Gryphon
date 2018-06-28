@@ -80,8 +80,8 @@ public enum GRYCompiler {
 		forFileAt filePath: String)
 		-> (code: String?, diagnostics: GRYKotlinTranslator.Diagnostics, ast: GRYAst)
 	{
-		let jsonFile = GRYUtils.changeExtension(of: filePath, to: "json")
-		let ast = GRYAst.initialize(fromJsonInFile: jsonFile)
+		let astFile = GRYUtils.changeExtension(of: filePath, to: "ast")
+		let ast = GRYAst(astFile: astFile)
 
 		print("\t- Translating AST to Kotlin...")
 		let kotlinTranslator = GRYKotlinTranslator()
@@ -92,8 +92,8 @@ public enum GRYCompiler {
 	}
 
 	public static func generateKotlinCode(forFileAt filePath: String) -> String? {
-		let jsonFile = GRYUtils.changeExtension(of: filePath, to: "json")
-		let ast = GRYAst.initialize(fromJsonInFile: jsonFile)
+		let astFile = GRYUtils.changeExtension(of: filePath, to: "ast")
+		let ast = GRYAst(astFile: astFile)
 
 		print("\t- Translating AST to Kotlin...")
 		let kotlinTranslator = GRYKotlinTranslator()

@@ -163,7 +163,7 @@ internal class GRYSExpressionParser {
 		defer { cleanLeadingWhitespace() }
 
 		var index = currentIndex
-		loop: while true {
+		while true {
 			let character = buffer[index]
 
 			if character == "\n" || character == ")" {

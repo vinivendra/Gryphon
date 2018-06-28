@@ -104,9 +104,14 @@ public class GRYAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvert
 				if key == "location" && parser.canReadLocation() {
 					keyValueAttributes[key] = parser.readLocation()
 				}
-				else if (key == "decl" || key == "bind"),
+				else if key == "decl",
 					let string = parser.readDeclarationLocation()
 				{
+					keyValueAttributes[key] = string
+				}
+				else if key == "bind"
+				{
+					let string = parser.readDeclarationLocation() ?? parser.readIdentifier()
 					keyValueAttributes[key] = string
 				}
 				else if key == "inherits" {
