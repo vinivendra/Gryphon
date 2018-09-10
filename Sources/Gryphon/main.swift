@@ -27,7 +27,10 @@ func updateFiles(
     let fileURLs = try! FileManager.default.contentsOfDirectory(
         at: currentURL,
         includingPropertiesForKeys: nil)
-    let testFiles = fileURLs.filter { $0.pathExtension == originExtension }
+	let testFiles = fileURLs.filter { $0.pathExtension == originExtension }.sorted
+	{ (url1: URL, url2: URL) -> Bool in
+		url1.absoluteString < url2.absoluteString
+	}
 
     for originFile in testFiles {
         let originFilePath = originFile.path
