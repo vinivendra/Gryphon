@@ -148,6 +148,77 @@ public class GRYSwift4_1Translator {
 		return result
 	}
 
+	private func translate(expression: GRYSwiftAST) -> GRYExpression? {
+		// Most diagnostics are logged by the child subTrees; others represent wrapper expressions
+		// with little value in logging. There are a few expections.
+
+		switch expression.name {
+//		case "Array Expression":
+//			return translate(arrayExpression: expression)
+//		case "Binary Expression":
+//			return translate(binaryExpression: expression)
+		case "Call Expression":
+			return translate(callExpression: expression)
+//		case "Declaration Reference Expression":
+//			return translate(declarationReferenceExpression: expression)
+//		case "Dot Syntax Call Expression":
+//			return translate(dotSyntaxCallExpression: expression)
+//		case "String Literal Expression":
+//			return translate(stringLiteralExpression: expression)
+//		case "Interpolated String Literal Expression":
+//			return translate(interpolatedStringLiteralExpression: expression)
+//		case "Erasure Expression":
+//			if let lastExpression = expression.subtrees.last {
+//				return translate(expression: lastExpression)
+//			}
+//			else {
+//				return .failed
+//			}
+//		case "Prefix Unary Expression":
+//			return translate(prefixUnaryExpression: expression)
+//		case "Type Expression":
+//			return translate(typeExpression: expression)
+//		case "Member Reference Expression":
+//			return translate(memberReferenceExpression: expression)
+//		case "Subscript Expression":
+//			return translate(subscriptExpression: expression)
+//		case "Parentheses Expression":
+//			if let firstExpression = expression.subtree(at: 0),
+//				let expressionString = translate(expression: firstExpression).stringValue
+//			{
+//				diagnostics?.logSuccessfulTranslation(expression.name)
+//				return .translation("(" + expressionString + ")")
+//			}
+//			else {
+//				diagnostics?.logUnknownTranslation(expression.name)
+//				return .failed
+//			}
+//		case "Force Value Expression":
+//			if let firstExpression = expression.subtree(at: 0),
+//				let expressionString = translate(expression: firstExpression).stringValue
+//			{
+//				diagnostics?.logSuccessfulTranslation(expression.name)
+//				return .translation(expressionString  + "!!")
+//			}
+//			else {
+//				diagnostics?.logUnknownTranslation(expression.name)
+//				return .failed
+//			}
+//		case "Autoclosure Expression",
+//			 "Inject Into Optional",
+//			 "Inout Expression",
+//			 "Load Expression":
+//			if let lastExpression = expression.subtrees.last {
+//				return translate(expression: lastExpression)
+//			}
+//			else {
+//				return .failed
+//			}
+		default:
+			return nil
+		}
+	}
+
 	private func process(patternBindingDeclaration: GRYSwiftAST) -> GRYAst? {
 		precondition(patternBindingDeclaration.name == "Pattern Binding Declaration")
 
@@ -159,9 +230,7 @@ public class GRYSwift4_1Translator {
 			return nil
 		}
 
-//		guard let translatedExpression = translate(expression: expression).stringValue else {
-//			return .failed
-//		}
+		let translatedExpression = translate(expression: expression)
 
 		let binding: GRYSwiftAST
 
@@ -191,7 +260,7 @@ public class GRYSwift4_1Translator {
 		danglingPatternBinding =
 			(identifier: identifier,
 			 type: type,
-			 expression: nil)
+			 expression: translatedExpression)
 
 		return nil
 	}
@@ -263,6 +332,45 @@ public class GRYSwift4_1Translator {
 				setter: setter,
 				isLet: isLet,
 				extendsType: extendsType)
+		}
+		else {
+			return nil
+		}
+	}
+
+	private func translate(callExpression: GRYSwiftAST) -> GRYExpression? {
+		precondition(callExpression.name == "Call Expression")
+
+		// If the call expression corresponds to an integer literal
+		if let argumentLabels = callExpression["arg_labels"],
+			argumentLabels == "_builtinIntegerLiteral:"
+		{
+			return translate(asNumericLiteral: callExpression)
+		}
+
+		return nil
+	}
+
+	private func translate(asNumericLiteral callExpression: GRYSwiftAST) -> GRYExpression? {
+		precondition(callExpression.name == "Call Expression")
+
+		if let tupleExpression = callExpression.subtree(named: "Tuple Expression"),
+			let integerLiteralExpression = tupleExpression
+				.subtree(named: "Integer Literal Expression"),
+			let value = integerLiteralExpression["value"],
+
+			let constructorReferenceCallExpression = callExpression
+				.subtree(named: "Constructor Reference Call Expression"),
+			let typeExpression = constructorReferenceCallExpression
+				.subtree(named: "Type Expression"),
+			let type = typeExpression["typerepr"]
+		{
+			if type == "Double" {
+				return GRYLiteralExpression(value: Double(value)!)
+			}
+			else {
+				return GRYLiteralExpression(value: Int(value)!)
+			}
 		}
 		else {
 			return nil

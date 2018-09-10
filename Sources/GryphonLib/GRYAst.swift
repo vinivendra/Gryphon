@@ -550,7 +550,7 @@ public class GRYLiteralExpression<T>: GRYExpression {
 	}
 
 	//
-	override public var treeDescription: String { return "Literal <\(T.self)> \(value)" }
+	override public var treeDescription: String { return "Literal \(T.self) \(value)" }
 }
 
 public class GRYInterpolatedStringLiteralExpression: GRYExpression {
