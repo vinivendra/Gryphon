@@ -37,7 +37,7 @@ class ArrayReference<Element>: GRYIgnore,
 		self.array = elements
 	}
 	
-	//
+	// ...
 	subscript (_ index: Int) -> Element {
 		get {
 			return array[index]

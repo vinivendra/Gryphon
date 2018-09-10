@@ -56,7 +56,7 @@ enum TestUtils {
 
 	static func diff(_ string1: String, _ string2: String) -> String {
 		return withTemporaryFile(named: "file1.txt", containing: string1) { file1Path in
-			return withTemporaryFile(named: "file2.txt", containing: string2) { file2Path in
+			withTemporaryFile(named: "file2.txt", containing: string2) { file2Path in
 				let command = ["diff", file1Path, file2Path]
 				let commandResult = GRYShell.runShellCommand(command)
 				if let commandResult = commandResult {
