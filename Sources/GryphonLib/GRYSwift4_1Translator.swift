@@ -352,6 +352,11 @@ public class GRYSwift4_1Translator {
 		{
 			return translate(asBooleanLiteral: callExpression)
 		}
+		else if let argumentLabels = callExpression["arg_labels"],
+			argumentLabels == "nilLiteral:"
+		{
+			return GRYNilLiteralExpression()
+		}
 
 		return nil
 	}

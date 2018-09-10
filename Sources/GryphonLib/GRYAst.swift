@@ -553,6 +553,14 @@ public class GRYLiteralExpression<T>: GRYExpression {
 	override public var treeDescription: String { return "Literal \(T.self) \(value)" }
 }
 
+public class GRYNilLiteralExpression: GRYExpression {
+	override init() {
+	}
+
+	//
+	override public var treeDescription: String { return "Nil Literal" }
+}
+
 public class GRYInterpolatedStringLiteralExpression: GRYExpression {
 	let expressions: [GRYExpression]
 
