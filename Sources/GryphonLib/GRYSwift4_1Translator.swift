@@ -347,6 +347,11 @@ public class GRYSwift4_1Translator {
 		{
 			return translate(asNumericLiteral: callExpression)
 		}
+		else if let argumentLabels = callExpression["arg_labels"],
+			argumentLabels == "_builtinBooleanLiteral:"
+		{
+			return translate(asBooleanLiteral: callExpression)
+		}
 
 		return nil
 	}
@@ -371,6 +376,21 @@ public class GRYSwift4_1Translator {
 			else {
 				return GRYLiteralExpression(value: Int(value)!)
 			}
+		}
+		else {
+			return nil
+		}
+	}
+
+	private func translate(asBooleanLiteral callExpression: GRYSwiftAST) -> GRYExpression? {
+		precondition(callExpression.name == "Call Expression")
+
+		if let tupleExpression = callExpression.subtree(named: "Tuple Expression"),
+			let booleanLiteralExpression = tupleExpression
+				.subtree(named: "Boolean Literal Expression"),
+			let value = booleanLiteralExpression["value"]
+		{
+			return GRYLiteralExpression<Bool>(value: (value == "true"))
 		}
 		else {
 			return nil
