@@ -139,7 +139,7 @@ public class GRYKotlinTranslator {
 	- Parameter ast: The AST, obtained from swift, containing a "Source File" node at the root.
 	- Returns: A kotlin translation of the contents of the AST.
 	*/
-	public func translateAST(_ ast: GRYAst) -> String? {
+	public func translateAST(_ ast: GRYSwiftAST) -> String? {
 		// First, translate declarations that shouldn't be inside the main function
 		let declarationNames = [
 			"Class Declaration",
@@ -147,7 +147,7 @@ public class GRYKotlinTranslator {
 			"Function Declaration",
 			"Enum Declaration",
 		]
-		let isDeclaration = { (ast: GRYAst) -> Bool in declarationNames.contains(ast.name) }
+		let isDeclaration = { (ast: GRYSwiftAST) -> Bool in declarationNames.contains(ast.name) }
 
 		let declarations = ast.subtrees.filter(isDeclaration)
 		let declarationsTranslation = translate(subtrees: declarations, withIndentation: "")
@@ -181,7 +181,7 @@ public class GRYKotlinTranslator {
 	// MARK: - Implementation
 
 	// TODO: Make sure these methods only throw when they themselves can't be translated.
-	private func translate(subtree: GRYAst, withIndentation indentation: String)
+	private func translate(subtree: GRYSwiftAST, withIndentation indentation: String)
 		-> TranslationResult
 	{
 		let result: TranslationResult
@@ -230,6 +230,10 @@ public class GRYKotlinTranslator {
 		case "Throw Statement":
 			result = translate(
 				throwStatement: subtree,
+				withIndentation: indentation)
+		case "Struct Declaration":
+			result = translate(
+				structDeclaration: subtree,
 				withIndentation: indentation)
 		case "Variable Declaration":
 			result = translate(
@@ -285,7 +289,7 @@ public class GRYKotlinTranslator {
 		return result
 	}
 
-	private func translate(subtrees: [GRYAst], withIndentation indentation: String)
+	private func translate(subtrees: [GRYSwiftAST], withIndentation indentation: String)
 		-> TranslationResult
 	{
 		var result = TranslationResult.translation("")
@@ -302,7 +306,7 @@ public class GRYKotlinTranslator {
 		return result
 	}
 
-	private func process(patternBindingDeclaration: GRYAst) -> TranslationResult {
+	private func process(patternBindingDeclaration: GRYSwiftAST) -> TranslationResult {
 		precondition(patternBindingDeclaration.name == "Pattern Binding Declaration")
 
 		// Some patternBindingDeclarations are empty, and that's ok. See the classes.swift test
@@ -317,7 +321,7 @@ public class GRYKotlinTranslator {
 			return .failed
 		}
 
-		let binding: GRYAst
+		let binding: GRYSwiftAST
 
 		if let unwrappedBinding = patternBindingDeclaration
 			.subtree(named: "Pattern Typed")?
@@ -351,7 +355,7 @@ public class GRYKotlinTranslator {
 	}
 
 	/// This can be reasonably expected to always work, and is also not very useful for diagnostics.
-	private func translate(topLevelCode: GRYAst, withIndentation indentation: String)
+	private func translate(topLevelCode: GRYSwiftAST, withIndentation indentation: String)
 		-> TranslationResult
 	{
 		precondition(topLevelCode.name == "Top Level Code Declaration")
@@ -364,7 +368,7 @@ public class GRYKotlinTranslator {
 		return translate(subtrees: braceStatement.subtrees, withIndentation: indentation)
 	}
 
-	private func translate(enumDeclaration: GRYAst, withIndentation indentation: String)
+	private func translate(enumDeclaration: GRYSwiftAST, withIndentation indentation: String)
 		-> TranslationResult
 	{
 		precondition(enumDeclaration.name == "Enum Declaration")
@@ -428,7 +432,7 @@ public class GRYKotlinTranslator {
 		return result
 	}
 
-	private func translate(protocolDeclaration: GRYAst, withIndentation indentation: String)
+	private func translate(protocolDeclaration: GRYSwiftAST, withIndentation indentation: String)
 		-> TranslationResult
 	{
 		precondition(protocolDeclaration.name == "Protocol")
@@ -449,7 +453,20 @@ public class GRYKotlinTranslator {
 		}
 	}
 
-	private func translate(classDeclaration: GRYAst, withIndentation indentation: String)
+	private func translate(structDeclaration: GRYSwiftAST, withIndentation indentation: String)
+		-> TranslationResult
+	{
+		precondition(structDeclaration.name == "Struct Declaration")
+
+		let result = .refactorable + translate(
+			subtrees: structDeclaration.subtrees,
+			withIndentation: "")
+
+		diagnostics?.logResult(result, subtreeName: structDeclaration.name)
+		return result
+	}
+
+	private func translate(classDeclaration: GRYSwiftAST, withIndentation indentation: String)
 		-> TranslationResult
 	{
 		precondition(classDeclaration.name == "Class Declaration")
@@ -494,7 +511,7 @@ public class GRYKotlinTranslator {
 		return result
 	}
 
-	private func translate(constructorDeclaration: GRYAst, withIndentation indentation: String)
+	private func translate(constructorDeclaration: GRYSwiftAST, withIndentation indentation: String)
 		-> TranslationResult
 	{
 		precondition(constructorDeclaration.name == "Constructor Declaration")
@@ -508,7 +525,7 @@ public class GRYKotlinTranslator {
 		return .failed
 	}
 
-	private func translate(destructorDeclaration: GRYAst, withIndentation indentation: String)
+	private func translate(destructorDeclaration: GRYSwiftAST, withIndentation indentation: String)
 		-> TranslationResult
 	{
 		precondition(destructorDeclaration.name == "Destructor Declaration")
@@ -522,7 +539,7 @@ public class GRYKotlinTranslator {
 		return .failed
 	}
 
-	private func translate(functionDeclaration: GRYAst, withIndentation indentation: String)
+	private func translate(functionDeclaration: GRYSwiftAST, withIndentation indentation: String)
 		-> TranslationResult
 	{
 		precondition(functionDeclaration.name == "Function Declaration")
@@ -574,7 +591,7 @@ public class GRYKotlinTranslator {
 
 		// Get the function parameters.
 		var parameterStrings = [String?]()
-		let parameterList: GRYAst?
+		let parameterList: GRYSwiftAST?
 
 		// If it's a method, it includes an extra Parameter List with only `self`
 		if let list = functionDeclaration.subtree(named: "Parameter List"),
@@ -655,7 +672,7 @@ public class GRYKotlinTranslator {
 		return result
 	}
 
-	private func translate(forEachStatement: GRYAst, withIndentation indentation: String)
+	private func translate(forEachStatement: GRYSwiftAST, withIndentation indentation: String)
 		-> TranslationResult
 	{
 		precondition(forEachStatement.name == "For Each Statement")
@@ -694,7 +711,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translate(
-		ifStatement: GRYAst,
+		ifStatement: GRYSwiftAST,
 		asElseIf isElseIf: Bool = false,
 		asGuard isGuard: Bool = false,
 		withIndentation indentation: String) -> TranslationResult
@@ -717,7 +734,7 @@ public class GRYKotlinTranslator {
 
 		var elseIfTranslation = TranslationResult.translation("")
 		var elseTranslation = TranslationResult.translation("")
-		let braceStatement: GRYAst
+		let braceStatement: GRYSwiftAST
 
 		if ifStatement.subtrees.count > 2,
 			let unwrappedBraceStatement = ifStatement.subtrees.secondToLast,
@@ -766,7 +783,7 @@ public class GRYKotlinTranslator {
 	/// Failures in translating if-let conditions get counted as failures in conditions
 	/// and their corresponding let declaration never gets created
 	private func translateDeclarationsAndConditions(
-		forIfStatement ifStatement: GRYAst,
+		forIfStatement ifStatement: GRYSwiftAST,
 		withIndentation indentation: String)
 		-> (letDeclarationsString: TranslationResult, conditionString: TranslationResult)
 	{
@@ -784,7 +801,7 @@ public class GRYKotlinTranslator {
 			if condition.name == "Pattern",
 				let optionalSomeElement = condition.subtree(named: "Optional Some Element")
 			{
-				let patternNamed: GRYAst
+				let patternNamed: GRYSwiftAST
 				let varOrValKeyword: String
 				if let patternLet = optionalSomeElement.subtree(named: "Pattern Let"),
 					let unwrapped = patternLet.subtree(named: "Pattern Named")
@@ -844,7 +861,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translate(
-		throwStatement: GRYAst,
+		throwStatement: GRYSwiftAST,
 		withIndentation indentation: String) -> TranslationResult
 	{
 		precondition(throwStatement.name == "Throw Statement")
@@ -862,7 +879,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translate(
-		returnStatement: GRYAst,
+		returnStatement: GRYSwiftAST,
 		withIndentation indentation: String) -> TranslationResult
 	{
 		precondition(returnStatement.name == "Return Statement")
@@ -892,7 +909,7 @@ public class GRYKotlinTranslator {
 	`nil`). Otherwise, the variable is declared without an initial value.
 	*/
 	private func translate(
-		variableDeclaration: GRYAst,
+		variableDeclaration: GRYSwiftAST,
 		withIndentation indentation: String)
 		-> TranslationResult
 	{
@@ -906,14 +923,14 @@ public class GRYKotlinTranslator {
 			let type = translateType(rawType)
 
 			let hasGetter = variableDeclaration.subtrees.contains(where:
-			{ (subtree: GRYAst) -> Bool in
-				return subtree.name == "Function Declaration" &&
+			{ (subtree: GRYSwiftAST) -> Bool in
+				subtree.name == "Function Declaration" &&
 					!subtree.standaloneAttributes.contains("implicit") &&
 					subtree.keyValueAttributes["getter_for"] != nil
 			})
 			let hasSetter = variableDeclaration.subtrees.contains(where:
-			{ (subtree: GRYAst) -> Bool in
-				return subtree.name == "Function Declaration" &&
+			{ (subtree: GRYSwiftAST) -> Bool in
+				subtree.name == "Function Declaration" &&
 					!subtree.standaloneAttributes.contains("implicit") &&
 					subtree.keyValueAttributes["setter_for"] != nil
 			})
@@ -968,7 +985,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateGetterAndSetter(
-		forVariableDeclaration variableDeclaration: GRYAst,
+		forVariableDeclaration variableDeclaration: GRYSwiftAST,
 		withIndentation indentation: String) -> TranslationResult
 	{
 		var result = TranslationResult.translation("")
@@ -1013,7 +1030,7 @@ public class GRYKotlinTranslator {
 		return result
 	}
 
-	private func translate(assignExpression: GRYAst, withIndentation indentation: String)
+	private func translate(assignExpression: GRYSwiftAST, withIndentation indentation: String)
 		-> TranslationResult
 	{
 		precondition(assignExpression.name == "Assign Expression")
@@ -1041,7 +1058,7 @@ public class GRYKotlinTranslator {
 		}
 	}
 
-	private func translate(expression: GRYAst) -> TranslationResult {
+	private func translate(expression: GRYSwiftAST) -> TranslationResult {
 		// Most diagnostics are logged by the child subTrees; others represent wrapper expressions
 		// with little value in logging. There are a few expections.
 
@@ -1112,7 +1129,7 @@ public class GRYKotlinTranslator {
 		}
 	}
 
-	private func translate(typeExpression: GRYAst) -> TranslationResult {
+	private func translate(typeExpression: GRYSwiftAST) -> TranslationResult {
 		precondition(typeExpression.name == "Type Expression")
 
 		if let rawType = typeExpression.keyValueAttributes["typerepr"] {
@@ -1125,7 +1142,7 @@ public class GRYKotlinTranslator {
 		}
 	}
 
-	private func translate(subscriptExpression: GRYAst) -> TranslationResult {
+	private func translate(subscriptExpression: GRYSwiftAST) -> TranslationResult {
 		precondition(subscriptExpression.name == "Subscript Expression")
 
 		if let parenthesesExpression = subscriptExpression.subtree(
@@ -1154,7 +1171,7 @@ public class GRYKotlinTranslator {
 		}
 	}
 
-	private func translate(arrayExpression: GRYAst) -> TranslationResult {
+	private func translate(arrayExpression: GRYSwiftAST) -> TranslationResult {
 		precondition(arrayExpression.name == "Array Expression")
 
 		let expressionsArray = arrayExpression.subtrees.map {
@@ -1173,7 +1190,7 @@ public class GRYKotlinTranslator {
 		}
 	}
 
-	private func translate(dotSyntaxCallExpression: GRYAst) -> TranslationResult {
+	private func translate(dotSyntaxCallExpression: GRYSwiftAST) -> TranslationResult {
 		precondition(dotSyntaxCallExpression.name == "Dot Syntax Call Expression")
 
 		if let leftHandTree = dotSyntaxCallExpression.subtree(at: 1),
@@ -1206,7 +1223,7 @@ public class GRYKotlinTranslator {
 		return .failed
 	}
 
-	private func translate(binaryExpression: GRYAst) -> TranslationResult {
+	private func translate(binaryExpression: GRYSwiftAST) -> TranslationResult {
 		precondition(binaryExpression.name == "Binary Expression")
 
 		let operatorIdentifier: String
@@ -1235,7 +1252,7 @@ public class GRYKotlinTranslator {
 		}
 	}
 
-	private func translate(prefixUnaryExpression: GRYAst) -> TranslationResult {
+	private func translate(prefixUnaryExpression: GRYSwiftAST) -> TranslationResult {
 		precondition(prefixUnaryExpression.name == "Prefix Unary Expression")
 
 		if let declaration = prefixUnaryExpression
@@ -1272,7 +1289,7 @@ public class GRYKotlinTranslator {
 	- Note: If conditions include an "empty" call expression wrapping its real expression. This
 	function handles the unwrapping then delegates the translation.
 	*/
-	private func translate(callExpression: GRYAst) -> TranslationResult {
+	private func translate(callExpression: GRYSwiftAST) -> TranslationResult {
 		precondition(callExpression.name == "Call Expression")
 
 		// If the call expression corresponds to an integer literal
@@ -1404,7 +1421,7 @@ public class GRYKotlinTranslator {
 	///
 	/// Diagnostics get logged at caller (`translate(callExpression:)`).
 	private func translate(
-		asExplicitFunctionCall callExpression: GRYAst,
+		asExplicitFunctionCall callExpression: GRYSwiftAST,
 		withFunctionNamePrefix functionNamePrefix: Substring) -> TranslationResult
 	{
 		let functionNamePrefix = (functionNamePrefix == "print") ?
@@ -1450,7 +1467,7 @@ public class GRYKotlinTranslator {
 	/// functions.
 	///
 	/// Diagnostics get logged at caller (`translate(callExpression:)`).
-	private func translate(asBooleanLiteral callExpression: GRYAst) -> TranslationResult {
+	private func translate(asBooleanLiteral callExpression: GRYSwiftAST) -> TranslationResult {
 		precondition(callExpression.name == "Call Expression")
 
 		if let tupleExpression = callExpression.subtree(named: "Tuple Expression"),
@@ -1469,7 +1486,7 @@ public class GRYKotlinTranslator {
 	/// functions.
 	///
 	/// Diagnostics get logged at caller (`translate(callExpression:)`).
-	private func translate(asNumericLiteral callExpression: GRYAst) -> TranslationResult {
+	private func translate(asNumericLiteral callExpression: GRYSwiftAST) -> TranslationResult {
 		precondition(callExpression.name == "Call Expression")
 
 		if let tupleExpression = callExpression.subtree(named: "Tuple Expression"),
@@ -1510,12 +1527,12 @@ public class GRYKotlinTranslator {
 	Diagnostics get logged at caller (`translate(callExpression:)`).
 	*/
 	private func translate(
-		asKotlinLiteral callExpression: GRYAst,
+		asKotlinLiteral callExpression: GRYSwiftAST,
 		withFunctionNamePrefix functionNamePrefix: Substring) -> TranslationResult
 	{
 		precondition(callExpression.name == "Call Expression")
 
-		let parameterExpression: GRYAst
+		let parameterExpression: GRYSwiftAST
 
 		if functionNamePrefix == "GRYAlternative",
 			let unwrappedExpression = callExpression.subtree(named: "Tuple Expression")
@@ -1543,7 +1560,7 @@ public class GRYKotlinTranslator {
 		return .translation(unescapedString)
 	}
 
-	private func translate(declarationReferenceExpression: GRYAst) -> TranslationResult {
+	private func translate(declarationReferenceExpression: GRYSwiftAST) -> TranslationResult {
 		precondition(declarationReferenceExpression.name == "Declaration Reference Expression")
 
 		if let codeDeclaration = declarationReferenceExpression.standaloneAttributes.first,
@@ -1562,7 +1579,7 @@ public class GRYKotlinTranslator {
 		}
 	}
 
-	private func translate(memberReferenceExpression: GRYAst) -> TranslationResult {
+	private func translate(memberReferenceExpression: GRYSwiftAST) -> TranslationResult {
 		precondition(memberReferenceExpression.name == "Member Reference Expression")
 
 		if let declaration = memberReferenceExpression["decl"],
@@ -1621,7 +1638,7 @@ public class GRYKotlinTranslator {
 		}
 	}
 
-	private func translate(tupleExpression: GRYAst) -> TranslationResult {
+	private func translate(tupleExpression: GRYSwiftAST) -> TranslationResult {
 		precondition(tupleExpression.name == "Tuple Expression")
 
 		// Only empty tuples don't have a list of names
@@ -1660,7 +1677,7 @@ public class GRYKotlinTranslator {
 		return .translation("(" + contents + ")")
 	}
 
-	private func translate(stringLiteralExpression: GRYAst) -> TranslationResult {
+	private func translate(stringLiteralExpression: GRYSwiftAST) -> TranslationResult {
 		if let value = stringLiteralExpression["value"] {
 			diagnostics?.logSuccessfulTranslation(stringLiteralExpression.name)
 			return .translation("\"\(value)\"")
@@ -1671,7 +1688,7 @@ public class GRYKotlinTranslator {
 		}
 	}
 
-	private func translate(interpolatedStringLiteralExpression: GRYAst) -> TranslationResult
+	private func translate(interpolatedStringLiteralExpression: GRYSwiftAST) -> TranslationResult
 	{
 		precondition(
 			interpolatedStringLiteralExpression.name == "Interpolated String Literal Expression")
@@ -1732,7 +1749,7 @@ public class GRYKotlinTranslator {
 		return result
 	}
 
-	private func ASTIsExpression(_ ast: GRYAst) -> Bool {
+	private func ASTIsExpression(_ ast: GRYSwiftAST) -> Bool {
 		return ast.name.hasSuffix("Expression") || ast.name == "Inject Into Optional"
 	}
 
@@ -1747,6 +1764,7 @@ public class GRYKotlinTranslator {
 	//
 	enum TranslationResult: Equatable, CustomStringConvertible {
 		case translation(String)
+		case refactorable
 		case failed
 
 		init(stringLiteral value: StringLiteralType) {
@@ -1755,10 +1773,12 @@ public class GRYKotlinTranslator {
 
 		static func +(left: TranslationResult, right: TranslationResult) -> TranslationResult {
 			switch (left, right) {
+			case (.failed, _), (_, .failed):
+				return .failed
+			case (.refactorable, _), (_, .refactorable):
+				return .refactorable
 			case (.translation(let leftTranslation), .translation(let rightTranslation)):
 				return .translation(leftTranslation + rightTranslation)
-			default:
-				return .failed
 			}
 		}
 
@@ -1794,7 +1814,7 @@ public class GRYKotlinTranslator {
 			switch self {
 			case .translation(let value):
 				return value
-			case .failed:
+			case .failed, .refactorable:
 				return nil
 			}
 		}

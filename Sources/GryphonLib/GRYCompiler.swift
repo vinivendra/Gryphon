@@ -78,10 +78,10 @@ public enum GRYCompiler {
 
 	public static func generateKotlinCodeWithDiagnostics(
 		forFileAt filePath: String)
-		-> (code: String?, diagnostics: GRYKotlinTranslator.Diagnostics, ast: GRYAst)
+		-> (code: String?, diagnostics: GRYKotlinTranslator.Diagnostics, ast: GRYSwiftAST)
 	{
 		let astFile = GRYUtils.changeExtension(of: filePath, to: "ast")
-		let ast = GRYAst(astFile: astFile)
+		let ast = GRYSwiftAST(astFile: astFile)
 
 		print("\t- Translating AST to Kotlin...")
 		let kotlinTranslator = GRYKotlinTranslator()
@@ -93,7 +93,7 @@ public enum GRYCompiler {
 
 	public static func generateKotlinCode(forFileAt filePath: String) -> String? {
 		let astFile = GRYUtils.changeExtension(of: filePath, to: "ast")
-		let ast = GRYAst(astFile: astFile)
+		let ast = GRYSwiftAST(astFile: astFile)
 
 		print("\t- Translating AST to Kotlin...")
 		let kotlinTranslator = GRYKotlinTranslator()
@@ -106,11 +106,11 @@ public enum GRYCompiler {
 		return kotlinCode
 	}
 
-	public static func processExternalAST(_ filePath: String) -> GRYAst {
+	public static func processExternalAST(_ filePath: String) -> GRYSwiftAST {
 		let astFilePath = GRYUtils.changeExtension(of: filePath, to: "ast")
 
-		print("\t- Building GRYAst from external AST...")
-		let ast = GRYAst(astFile: astFilePath)
+		print("\t- Building GRYSwiftAst from external AST...")
+		let ast = GRYSwiftAST(astFile: astFilePath)
 
 		let jsonFilePath = GRYUtils.changeExtension(of: filePath, to: "json")
 		let jsonFileWasJustCreated = GRYUtils.createFileIfNeeded(at: jsonFilePath, containing: "")
@@ -124,11 +124,11 @@ public enum GRYCompiler {
 		return ast
 	}
 
-	public static func generateAST(forFileAt filePath: String) -> GRYAst {
+	public static func generateAST(forFileAt filePath: String) -> GRYSwiftAST {
 		let astDumpFilePath = GRYUtils.changeExtension(of: filePath, to: "ast")
 
-		print("\t- Building GRYAst...")
-		let ast = GRYAst(astFile: astDumpFilePath)
+		print("\t- Building GRYSwiftAst...")
+		let ast = GRYSwiftAST(astFile: astDumpFilePath)
 		return ast
 	}
 

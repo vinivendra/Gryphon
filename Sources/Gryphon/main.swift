@@ -59,7 +59,7 @@ func updateFiles(inFolder folder: String) {
 
     updateFiles(in: folder, from: "ast", to: "json")
     { (astFilePath: String, jsonFilePath: String) in
-        let ast = GRYAst(astFile: astFilePath)
+        let ast = GRYSwiftAST(astFile: astFilePath)
         ast.writeAsJSON(toFile: jsonFilePath)
     }
 
@@ -77,17 +77,23 @@ func main() {
     updateFiles(inFolder: "Test Files")
     updateFiles(inFolder: "Example ASTs")
 
-//	let filePath = Process().currentDirectoryPath + "/Test Files/<#testFile#>.swift"
-    let filePath = Process().currentDirectoryPath + "/Example ASTs/<#testFile#>"
+//    let filePath = Process().currentDirectoryPath + "/Test Files/assignments.swift"
+    let filePath = Process().currentDirectoryPath + "/Example ASTs/test.swift"
+
+	let swiftAst = GRYCompiler.generateAST(forFileAt: filePath)
+	let ast = GRYSwift4_1Translator().translateAST(swiftAst)
+	print(swiftAst.description(withHorizontalLimit: 60))
+	print("--")
+	ast!.prettyPrint()
 
 //	print(GRYCompiler.getSwiftASTDump(forFileAt: filePath))
-//	print(GRYCompiler.generateAST(forFileAt: filePath).description(withHorizontalLimit: 100))
+//    print(GRYCompiler.generateAST(forFileAt: filePath).description(withHorizontalLimit: 100))
 //    print(GRYCompiler.processExternalAST(filePath))
-	let (code, diagnostics, ast) =
-		GRYCompiler.generateKotlinCodeWithDiagnostics(forFileAt: filePath)
-	print(ast.description(withHorizontalLimit: 100))
-	print(code)
-	print(diagnostics)
+//    let (code, _, _) =
+//        GRYCompiler.generateKotlinCodeWithDiagnostics(forFileAt: filePath)
+//	print(ast.description(withHorizontalLimit: 100))
+//  print(code ?? "Failed to translate Kotlin code.")
+//	print(diagnostics)
 //	print(GRYCompiler.compileAndRun(fileAt: filePath))
 }
 
