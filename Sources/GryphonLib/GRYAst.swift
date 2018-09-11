@@ -15,10 +15,10 @@
 */
 
 public class GRYSourceFile: GRYPrintableAsTree {
-	let declarations: [GRYAst]?
-	let statements: [GRYAst]?
+	let declarations: [GRYTopLevelNode]?
+	let statements: [GRYTopLevelNode]?
 
-	init(declarations: [GRYAst]?, statements: [GRYAst]?) {
+	init(declarations: [GRYTopLevelNode]?, statements: [GRYTopLevelNode]?) {
 		self.declarations = declarations
 		self.statements = statements
 	}
@@ -32,7 +32,7 @@ public class GRYSourceFile: GRYPrintableAsTree {
 	}
 }
 
-public class GRYAst: GRYPrintableAsTree {
+public class GRYTopLevelNode: GRYPrintableAsTree {
 	fileprivate init() {
 	}
 
@@ -40,7 +40,7 @@ public class GRYAst: GRYPrintableAsTree {
 	public var printableSubtrees: [GRYPrintableAsTree] { return [] }
 }
 
-public class GRYDeclaration: GRYAst {
+public class GRYDeclaration: GRYTopLevelNode {
 }
 
 public class GRYImportDeclaration: GRYDeclaration {
@@ -170,7 +170,7 @@ public class GRYFunctionDeclaration: GRYDeclaration {
 	let parameterTypes: [String]
 	let returnType: String
 	let isImplicit: Bool
-	let statements: [GRYStatement]
+	let statements: [GRYTopLevelNode]
 	let access: String
 
 	init(
@@ -179,7 +179,7 @@ public class GRYFunctionDeclaration: GRYDeclaration {
 		parameterTypes: [String],
 		returnType: String,
 		isImplicit: Bool,
-		statements: [GRYStatement],
+		statements: [GRYTopLevelNode],
 		access: String)
 	{
 		self.prefix = prefix
@@ -194,7 +194,8 @@ public class GRYFunctionDeclaration: GRYDeclaration {
 
 	//
 	override public var treeDescription: String {
-		return "Function \(prefix)(\(parameterNames.joined(separator: ": "))"
+		let parametersString = parameterNames.map { "\($0):" }.joined(separator: ", ")
+		return "Function \(prefix)(\(parametersString))"
 	}
 
 	override public var printableSubtrees: [GRYPrintableAsTree] {
@@ -261,7 +262,7 @@ public class GRYVariableDeclaration: GRYDeclaration {
 }
 
 //
-public class GRYStatement: GRYAst {
+public class GRYStatement: GRYTopLevelNode {
 }
 
 public class GRYForEachStatement: GRYStatement {
@@ -411,7 +412,7 @@ public class GRYAssignmentStatement: GRYStatement {
 }
 
 //
-public class GRYExpression: GRYAst {
+public class GRYExpression: GRYTopLevelNode {
 }
 
 public class GRYDeclarationReferenceExpression: GRYExpression {

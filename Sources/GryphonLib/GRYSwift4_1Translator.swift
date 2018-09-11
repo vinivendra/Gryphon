@@ -41,12 +41,12 @@ public class GRYSwift4_1Translator {
 		return GRYSourceFile(declarations: declarations, statements: statements)
 	}
 
-	private func translate(subtrees: [GRYSwiftAST]) -> [GRYAst] {
+	private func translate(subtrees: [GRYSwiftAST]) -> [GRYTopLevelNode] {
 		return subtrees.compactMap { translate(subtree: $0) }
 	}
 
-	private func translate(subtree: GRYSwiftAST) -> GRYAst? {
-		var result: GRYAst?
+	private func translate(subtree: GRYSwiftAST) -> GRYTopLevelNode? {
+		var result: GRYTopLevelNode?
 
 		switch subtree.name {
 		case "Top Level Code Declaration":
@@ -79,10 +79,8 @@ public class GRYSwift4_1Translator {
 //			result = translate(
 //				forEachStatement: subtree,
 //				withIndentation: indentation)
-//		case "Function Declaration":
-//			result = translate(
-//				functionDeclaration: subtree,
-//				withIndentation: indentation)
+		case "Function Declaration":
+			result = translate(functionDeclaration: subtree)
 //		case "Protocol":
 //			result = translate(
 //				protocolDeclaration: subtree,
@@ -112,10 +110,8 @@ public class GRYSwift4_1Translator {
 //				withIndentation: indentation)
 		case "Pattern Binding Declaration":
 			result = process(patternBindingDeclaration: subtree)
-//		case "Return Statement":
-//			result = translate(
-//				returnStatement: subtree,
-//				withIndentation: indentation)
+		case "Return Statement":
+			result = translate(returnStatement: subtree)
 //		case "Call Expression":
 //			if let string = translate(callExpression: subtree).stringValue {
 //				if !string.isEmpty {
@@ -154,14 +150,14 @@ public class GRYSwift4_1Translator {
 //			return translate(binaryExpression: expression)
 		case "Call Expression":
 			return translate(callExpression: expression)
-//		case "Declaration Reference Expression":
-//			return translate(declarationReferenceExpression: expression)
+		case "Declaration Reference Expression":
+			return translate(declarationReferenceExpression: expression)
 //		case "Dot Syntax Call Expression":
 //			return translate(dotSyntaxCallExpression: expression)
 		case "String Literal Expression":
 			return translate(stringLiteralExpression: expression)
-//		case "Interpolated String Literal Expression":
-//			return translate(interpolatedStringLiteralExpression: expression)
+		case "Interpolated String Literal Expression":
+			return translate(interpolatedStringLiteralExpression: expression)
 		case "Erasure Expression":
 			if let lastExpression = expression.subtrees.last {
 				return translate(expression: lastExpression)
@@ -195,22 +191,152 @@ public class GRYSwift4_1Translator {
 //				diagnostics?.logUnknownTranslation(expression.name)
 //				return .failed
 //			}
-//		case "Autoclosure Expression",
-//			 "Inject Into Optional",
-//			 "Inout Expression",
-//			 "Load Expression":
-//			if let lastExpression = expression.subtrees.last {
-//				return translate(expression: lastExpression)
-//			}
-//			else {
-//				return .failed
-//			}
+		case "Autoclosure Expression",
+			 "Inject Into Optional",
+			 "Inout Expression",
+			 "Load Expression":
+			if let lastExpression = expression.subtrees.last {
+				return translate(expression: lastExpression)
+			}
+			else {
+				return nil
+			}
 		default:
 			return nil
 		}
 	}
 
-	private func process(patternBindingDeclaration: GRYSwiftAST) -> GRYAst? {
+	private func translate(returnStatement: GRYSwiftAST) -> GRYReturnStatement? {
+		precondition(returnStatement.name == "Return Statement")
+
+		if let expression = returnStatement.subtrees.last {
+			if let expression = translate(expression: expression) {
+				return GRYReturnStatement(expression: expression)
+			}
+			else {
+				return nil
+			}
+		}
+		else {
+			return GRYReturnStatement(expression: nil)
+		}
+	}
+
+	private func translate(functionDeclaration: GRYSwiftAST) -> GRYFunctionDeclaration? {
+		precondition(functionDeclaration.name == "Function Declaration")
+
+		// Getters and setters will appear again in the Variable Declaration AST and get translated
+		let isGetterOrSetter =
+			(functionDeclaration["getter_for"] != nil) || (functionDeclaration["setter_for"] != nil)
+		let isImplicit = functionDeclaration.standaloneAttributes.contains("implicit")
+		guard !isImplicit && !isGetterOrSetter else {
+			return nil
+		}
+
+		let functionName = functionDeclaration.standaloneAttributes.first ?? ""
+
+		// If this function should be ignored
+//		guard !functionName.hasPrefix("GRYInsert(") &&
+//			!functionName.hasPrefix("GRYAlternative(") &&
+//			!functionName.hasPrefix("GRYIgnoreNext(") else
+//		{
+//			return .translation("")
+//		}
+
+		// If it's GRYDeclarations, we want to add its contents as top-level statements
+//		guard !functionName.hasPrefix("GRYDeclarations(") else {
+//			if let braceStatement = functionDeclaration.subtree(named: "Brace Statement") {
+//				diagnostics?.logSuccessfulTranslation(functionDeclaration.name)
+//				return translate(subtrees: braceStatement.subtrees, withIndentation: indentation)
+//			}
+//			else {
+//				diagnostics?.logUnknownTranslation(functionDeclaration.name)
+//				return .failed
+//			}
+//		}
+
+//		var indentation = indentation
+//		var result = TranslationResult.translation("")
+//
+//		result += indentation
+
+		let access = functionDeclaration["access"]
+
+		let functionNamePrefix = functionName.prefix { $0 != "(" }
+
+		// Get the function parameters.
+		let parameterList: GRYSwiftAST?
+
+		// If it's a method, it includes an extra Parameter List with only `self`
+		if let list = functionDeclaration.subtree(named: "Parameter List"),
+			let name = list.subtree(at: 0, named: "Parameter")?.standaloneAttributes.first,
+			name != "self"
+		{
+			parameterList = list
+		}
+		else if let unwrapped = functionDeclaration.subtree(at: 1, named: "Parameter List") {
+			parameterList = unwrapped
+		}
+		else {
+			parameterList = nil
+		}
+
+		var parameterNames = [String]()
+		var parameterTypes = [String]()
+
+		// Translate the parameters
+		if let parameterList = parameterList {
+			for parameter in parameterList.subtrees {
+				if let name = parameter.standaloneAttributes.first,
+					let rawType = parameter["interface type"]
+				{
+					guard name != "self" else {
+						continue
+					}
+
+					let type = translateType(rawType)
+					parameterNames.append(name)
+					parameterTypes.append(type)
+				}
+				else {
+					return nil
+				}
+			}
+		}
+
+		let returnType: String
+		// Translate the return type
+		// TODO: Doesn't allow to return function types
+		if let rawType = functionDeclaration["interface type"]?
+			.split(withStringSeparator: " -> ").last
+		{
+			returnType = translateType(rawType)
+		}
+		else {
+			return nil
+		}
+
+		let statements: [GRYTopLevelNode]
+		// Translate the function body
+		if let braceStatement = functionDeclaration.subtree(named: "Brace Statement") {
+			statements = translate(subtrees: braceStatement.subtrees)
+		}
+		else {
+			return nil
+		}
+
+		// FIXME: Not sure if access defaults to internal
+		return GRYFunctionDeclaration(
+			prefix: String(functionNamePrefix),
+			parameterNames: parameterNames,
+			parameterTypes: parameterTypes,
+			returnType: returnType,
+			isImplicit: isImplicit,
+			statements: statements,
+			access: access ?? "internal")
+	}
+
+	private func process(patternBindingDeclaration: GRYSwiftAST) -> GRYTopLevelNode? {
 		precondition(patternBindingDeclaration.name == "Pattern Binding Declaration")
 
 		// Some patternBindingDeclarations are empty, and that's ok. See the classes.swift test
@@ -256,7 +382,7 @@ public class GRYSwift4_1Translator {
 		return nil
 	}
 
-	private func translate(topLevelCode: GRYSwiftAST) -> GRYAst? {
+	private func translate(topLevelCode: GRYSwiftAST) -> GRYTopLevelNode? {
 		precondition(topLevelCode.name == "Top Level Code Declaration")
 
 		guard let braceStatement = topLevelCode.subtree(named: "Brace Statement") else {
@@ -268,7 +394,7 @@ public class GRYSwift4_1Translator {
 		return subtrees.first
 	}
 
-	private func translate(variableDeclaration: GRYSwiftAST) -> GRYAst? {
+	private func translate(variableDeclaration: GRYSwiftAST) -> GRYTopLevelNode? {
 		precondition(variableDeclaration.name == "Variable Declaration")
 
 		let expression: GRYExpression?
@@ -520,13 +646,46 @@ public class GRYSwift4_1Translator {
 		}
 	}
 
-	private func translate(stringLiteralExpression: GRYSwiftAST) -> GRYExpression? {
+	private func translate(stringLiteralExpression: GRYSwiftAST) -> GRYLiteralExpression<String>? {
 		if let value = stringLiteralExpression["value"] {
 			return GRYLiteralExpression(value: value)
 		}
 		else {
 			return nil
 		}
+	}
+
+	private func translate(interpolatedStringLiteralExpression: GRYSwiftAST)
+		-> GRYInterpolatedStringLiteralExpression?
+	{
+		precondition(
+			interpolatedStringLiteralExpression.name == "Interpolated String Literal Expression")
+
+		var expressions = [GRYExpression]()
+
+		for expression in interpolatedStringLiteralExpression.subtrees {
+			if expression.name == "String Literal Expression" {
+				guard let quotedString = translate(stringLiteralExpression: expression)?.value else
+				{
+					return nil
+				}
+
+				let unquotedString = quotedString.dropLast().dropFirst()
+
+				// Empty strings, as a special case, are represented by the swift ast dump
+				// as two double quotes with nothing between them, instead of an actual empty string
+				guard unquotedString != "\"\"" else {
+					continue
+				}
+
+				expressions.append(GRYLiteralExpression(value: String(unquotedString)))
+			}
+			else {
+				expressions.append(translate(expression: expression)!)
+			}
+		}
+
+		return GRYInterpolatedStringLiteralExpression(expressions: expressions)
 	}
 
 	private func translate(declarationReferenceExpression: GRYSwiftAST)
