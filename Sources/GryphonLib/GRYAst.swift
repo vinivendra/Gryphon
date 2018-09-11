@@ -411,9 +411,18 @@ public class GRYAssignmentStatement: GRYStatement {
 }
 
 //
-public class GRYExpression: GRYPrintableAsTree {
-	public var treeDescription: String { fatalError("Expressions should provide their own names") }
-	public var printableSubtrees: [GRYPrintableAsTree] { return [] }
+public class GRYExpression: GRYAst {
+}
+
+public class GRYDeclarationReferenceExpression: GRYExpression {
+	let identifier: String
+
+	init(identifier: String) {
+		self.identifier = identifier
+	}
+
+	//
+	override public var treeDescription: String { return "Declaration Reference \(identifier)" }
 }
 
 public class GRYTypeExpression: GRYExpression {
@@ -522,23 +531,20 @@ public class GRYUnaryOperatorExpression: GRYExpression {
 }
 
 public class GRYCallExpression: GRYExpression {
-	let functionPrefix: String
-	let parameters: [GRYExpression]
-	let parameterNames: [String]
+	let function: GRYExpression
+	let parameters: GRYTupleExpression
 
-	init(functionPrefix: String, parameters: [GRYExpression], parameterNames: [String]) {
-		self.functionPrefix = functionPrefix
+	init(function: GRYExpression, parameters: GRYTupleExpression) {
+		self.function = function
 		self.parameters = parameters
-		self.parameterNames = parameterNames
 	}
 
 	//
-	override public var treeDescription: String { return "Call \(functionPrefix)" }
+	override public var treeDescription: String { return "Call" }
 
 	override public var printableSubtrees: [GRYPrintableAsTree] {
-		return zip(parameterNames, parameters).map {
-			GRYPrintableTree(description: $0.0 + ":", subtrees: [$0.1])
-		}
+		return [GRYPrintableTree(description: "Function", subtrees: [function]),
+				GRYPrintableTree(description: "Parameters", subtrees: [parameters]), ]
 	}
 }
 
@@ -573,5 +579,26 @@ public class GRYInterpolatedStringLiteralExpression: GRYExpression {
 
 	override public var printableSubtrees: [GRYPrintableAsTree] {
 		return expressions
+	}
+}
+
+public class GRYTupleExpression: GRYExpression, ExpressibleByArrayLiteral {
+	public typealias Pair = (name: String?, expression: GRYExpression)
+
+	let pairs: [Pair]
+
+	init(pairs: [Pair]) {
+		self.pairs = pairs
+	}
+
+	public required init(arrayLiteral elements: Pair...) {
+		self.pairs = elements
+	}
+
+	//
+	override public var treeDescription: String { return "Tuple Expression" }
+
+	override public var printableSubtrees: [GRYPrintableAsTree] {
+		return pairs.map { GRYPrintableTree(description: $0.0 ?? " _:", subtrees: [$0.1]) }
 	}
 }

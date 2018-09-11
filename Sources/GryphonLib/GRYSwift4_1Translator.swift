@@ -130,19 +130,14 @@ public class GRYSwift4_1Translator {
 //				result = .failed
 //			}
 		default:
-			result = nil
-//			if subtree.name.hasSuffix("Expression") {
-//				if let string = translate(expression: subtree).stringValue {
-//					result = .translation(indentation + string + "\n")
-//				}
-//				else {
-//					result = .failed
-//				}
-//			}
-//			else {
-//				diagnostics?.logUnknownTranslation(subtree.name)
-//				result = .failed
-//			}
+			if subtree.name.hasSuffix("Expression"),
+				let expression = translate(expression: subtree)
+			{
+				result = expression
+			}
+			else {
+				result = nil
+			}
 		}
 
 		return result
@@ -167,13 +162,13 @@ public class GRYSwift4_1Translator {
 //			return translate(stringLiteralExpression: expression)
 //		case "Interpolated String Literal Expression":
 //			return translate(interpolatedStringLiteralExpression: expression)
-//		case "Erasure Expression":
-//			if let lastExpression = expression.subtrees.last {
-//				return translate(expression: lastExpression)
-//			}
-//			else {
-//				return .failed
-//			}
+		case "Erasure Expression":
+			if let lastExpression = expression.subtrees.last {
+				return translate(expression: lastExpression)
+			}
+			else {
+				return nil
+			}
 //		case "Prefix Unary Expression":
 //			return translate(prefixUnaryExpression: expression)
 //		case "Type Expression":
@@ -182,17 +177,13 @@ public class GRYSwift4_1Translator {
 //			return translate(memberReferenceExpression: expression)
 //		case "Subscript Expression":
 //			return translate(subscriptExpression: expression)
-//		case "Parentheses Expression":
-//			if let firstExpression = expression.subtree(at: 0),
-//				let expressionString = translate(expression: firstExpression).stringValue
-//			{
-//				diagnostics?.logSuccessfulTranslation(expression.name)
-//				return .translation("(" + expressionString + ")")
-//			}
-//			else {
-//				diagnostics?.logUnknownTranslation(expression.name)
-//				return .failed
-//			}
+		case "Parentheses Expression":
+			if let firstExpression = expression.subtree(at: 0) {
+				return translate(expression: firstExpression)
+			}
+			else {
+				return nil
+			}
 //		case "Force Value Expression":
 //			if let firstExpression = expression.subtree(at: 0),
 //				let expressionString = translate(expression: firstExpression).stringValue
@@ -357,8 +348,135 @@ public class GRYSwift4_1Translator {
 		{
 			return GRYNilLiteralExpression()
 		}
+		else {
+			let function: GRYExpression
 
-		return nil
+			// If it's an empty expression used in an "if" condition
+			if callExpression.standaloneAttributes.contains("implicit"),
+				callExpression["arg_labels"] == "",
+				callExpression["type"] == "Int1",
+				let containedExpression = callExpression
+					.subtree(named: "Dot Syntax Call Expression")?
+					.subtrees.last
+			{
+				return translate(expression: containedExpression)
+			}
+
+			if let declarationReferenceExpression = callExpression
+				.subtree(named: "Declaration Reference Expression")
+			{
+				if let expression = translate(
+					declarationReferenceExpression: declarationReferenceExpression)
+				{
+					function = expression
+				}
+				else {
+					return nil
+				}
+			}
+			else if let dotSyntaxCallExpression = callExpression
+					.subtree(named: "Dot Syntax Call Expression"),
+				let methodName = dotSyntaxCallExpression
+					.subtree(at: 0, named: "Declaration Reference Expression"),
+				let methodOwner = dotSyntaxCallExpression.subtree(at: 1)
+			{
+				if let methodName =
+					translate(declarationReferenceExpression: methodName),
+					let methodOwner = translate(expression: methodOwner)
+				{
+					function = GRYDotExpression(
+						leftExpression: methodOwner, rightExpression: methodName)
+				}
+				else {
+					return nil
+				}
+			}
+//			else if let typeExpression = callExpression
+//				.subtree(named: "Constructor Reference Call Expression")?
+//				.subtree(named: "Type Expression")
+//			{
+//				if let expression = translate(typeExpression: typeExpression) {
+//					function = expression
+//				}
+//				else {
+//					return nil
+//				}
+//			}
+			else if let declaration = callExpression["decl"] {
+				function = GRYDeclarationReferenceExpression(
+					identifier: getIdentifierFromDeclaration(declaration))
+			}
+			else {
+				return nil
+			}
+
+//			let functionNamePrefix = functionName.prefix(while: { $0 != "(" })
+
+			let parameters = translate(callExpressionParameters: callExpression)
+
+			return GRYCallExpression(function: function, parameters: parameters!)
+		}
+	}
+
+	private func translate(callExpressionParameters callExpression: GRYSwiftAST)
+		-> GRYTupleExpression?
+	{
+		let parameters: GRYTupleExpression
+		if let parenthesesExpression = callExpression.subtree(named: "Parentheses Expression") {
+			let expression = translate(expression: parenthesesExpression)!
+			parameters = [(name: nil, expression: expression)]
+		}
+		else if let tupleExpression = callExpression.subtree(named: "Tuple Expression") {
+			parameters = translate(tupleExpression: tupleExpression)!
+		}
+		else if let tupleShuffleExpression = callExpression
+			.subtree(named: "Tuple Shuffle Expression")
+		{
+			if let tupleExpression = tupleShuffleExpression.subtree(named: "Tuple Expression") {
+				parameters = translate(tupleExpression: tupleExpression)!
+			}
+			else if let parenthesesExpression = tupleShuffleExpression
+				.subtree(named: "Parentheses Expression")
+			{
+				let expression = translate(expression: parenthesesExpression)!
+				parameters = [(name: nil, expression: expression)]
+			}
+			else {
+				return nil
+			}
+		}
+		else {
+			return nil
+		}
+
+		return parameters
+	}
+
+	private func translate(tupleExpression: GRYSwiftAST) -> GRYTupleExpression? {
+		precondition(tupleExpression.name == "Tuple Expression")
+
+		// Only empty tuples don't have a list of names
+		guard let names = tupleExpression["names"] else {
+			return GRYTupleExpression(pairs: [])
+		}
+
+		let namesArray = names.split(separator: ",")
+
+		var tuplePairs = [GRYTupleExpression.Pair]()
+
+		for (name, expression) in zip(namesArray, tupleExpression.subtrees) {
+			let expression = translate(expression: expression)!
+
+			// Empty names (like the underscore in "foo(_:)") are represented by ''
+			if name == "_" {
+				tuplePairs.append((name: nil, expression: expression))
+			}
+			else {
+				tuplePairs.append((name: String(name), expression: expression))
+			}
+		}
+
+		return GRYTupleExpression(pairs: tuplePairs)
 	}
 
 	private func translate(asNumericLiteral callExpression: GRYSwiftAST) -> GRYExpression? {
@@ -399,6 +517,54 @@ public class GRYSwift4_1Translator {
 		}
 		else {
 			return nil
+		}
+	}
+
+	private func translate(declarationReferenceExpression: GRYSwiftAST)
+		-> GRYDeclarationReferenceExpression?
+	{
+		precondition(declarationReferenceExpression.name == "Declaration Reference Expression")
+
+		if let codeDeclaration = declarationReferenceExpression.standaloneAttributes.first,
+			codeDeclaration.hasPrefix("code.")
+		{
+			let identifier = getIdentifierFromDeclaration(codeDeclaration)
+			return GRYDeclarationReferenceExpression(identifier: identifier)
+		}
+		else if let declaration = declarationReferenceExpression["decl"] {
+			let identifier = getIdentifierFromDeclaration(declaration)
+			return GRYDeclarationReferenceExpression(identifier: identifier)
+		}
+		else {
+			return nil
+		}
+	}
+
+	private func getIdentifierFromDeclaration(_ declaration: String) -> String {
+		var index = declaration.startIndex
+		var lastPeriodIndex = declaration.startIndex
+		while index != declaration.endIndex {
+			let character = declaration[index]
+
+			if character == "." {
+				lastPeriodIndex = index
+			}
+			if character == "@" {
+				break
+			}
+
+			index = declaration.index(after: index)
+		}
+
+		let identifierStartIndex = declaration.index(after: lastPeriodIndex)
+
+		let identifier = declaration[identifierStartIndex..<index]
+
+		if identifier == "self" {
+			return "this"
+		}
+		else {
+			return String(identifier)
 		}
 	}
 
