@@ -158,8 +158,8 @@ public class GRYSwift4_1Translator {
 //			return translate(declarationReferenceExpression: expression)
 //		case "Dot Syntax Call Expression":
 //			return translate(dotSyntaxCallExpression: expression)
-//		case "String Literal Expression":
-//			return translate(stringLiteralExpression: expression)
+		case "String Literal Expression":
+			return translate(stringLiteralExpression: expression)
 //		case "Interpolated String Literal Expression":
 //			return translate(interpolatedStringLiteralExpression: expression)
 		case "Erasure Expression":
@@ -514,6 +514,15 @@ public class GRYSwift4_1Translator {
 			let value = booleanLiteralExpression["value"]
 		{
 			return GRYLiteralExpression<Bool>(value: (value == "true"))
+		}
+		else {
+			return nil
+		}
+	}
+
+	private func translate(stringLiteralExpression: GRYSwiftAST) -> GRYExpression? {
+		if let value = stringLiteralExpression["value"] {
+			return GRYLiteralExpression(value: value)
 		}
 		else {
 			return nil
