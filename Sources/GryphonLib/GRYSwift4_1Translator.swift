@@ -128,8 +128,8 @@ public class GRYSwift4_1Translator {
 		switch expression.name {
 //		case "Array Expression":
 //			return translate(arrayExpression: expression)
-//		case "Binary Expression":
-//			return translate(binaryExpression: expression)
+		case "Binary Expression":
+			return translate(binaryExpression: expression)
 		case "Call Expression":
 			return translate(callExpression: expression)
 		case "Declaration Reference Expression":
@@ -147,8 +147,8 @@ public class GRYSwift4_1Translator {
 			else {
 				return nil
 			}
-//		case "Prefix Unary Expression":
-//			return translate(prefixUnaryExpression: expression)
+		case "Prefix Unary Expression":
+			return translate(prefixUnaryExpression: expression)
 //		case "Type Expression":
 //			return translate(typeExpression: expression)
 //		case "Member Reference Expression":
@@ -182,6 +182,52 @@ public class GRYSwift4_1Translator {
 				return nil
 			}
 		default:
+			return nil
+		}
+	}
+
+	private func translate(prefixUnaryExpression: GRYSwiftAST) -> GRYUnaryOperatorExpression? {
+		precondition(prefixUnaryExpression.name == "Prefix Unary Expression")
+
+		if let declaration = prefixUnaryExpression
+			.subtree(named: "Dot Syntax Call Expression")?
+			.subtree(named: "Declaration Reference Expression")?["decl"],
+			let expression = prefixUnaryExpression.subtree(at: 1),
+			let expressionTranslation = translate(expression: expression)
+		{
+			let operatorIdentifier = getIdentifierFromDeclaration(declaration)
+
+			return GRYUnaryOperatorExpression(
+				expression: expressionTranslation,
+				operatorSymbol: operatorIdentifier)
+		}
+		else {
+			return nil
+		}
+	}
+
+	private func translate(binaryExpression: GRYSwiftAST) -> GRYBinaryOperatorExpression? {
+		precondition(binaryExpression.name == "Binary Expression")
+
+		let operatorIdentifier: String
+
+		if let declaration = binaryExpression
+			.subtree(named: "Dot Syntax Call Expression")?
+			.subtree(named: "Declaration Reference Expression")?["decl"],
+			let tupleExpression = binaryExpression.subtree(named: "Tuple Expression"),
+			let leftHandExpression = tupleExpression.subtree(at: 0),
+			let rightHandExpression = tupleExpression.subtree(at: 1)
+		{
+			operatorIdentifier = getIdentifierFromDeclaration(declaration)
+			let leftHandTranslation = translate(expression: leftHandExpression)!
+			let rightHandTranslation = translate(expression: rightHandExpression)!
+
+			return GRYBinaryOperatorExpression(
+				leftExpression: leftHandTranslation,
+				rightExpression: rightHandTranslation,
+				operatorSymbol: operatorIdentifier)
+		}
+		else {
 			return nil
 		}
 	}
