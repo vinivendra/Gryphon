@@ -578,64 +578,60 @@ public class GRYSwift4_1Translator {
 		precondition(callExpression.name == "Call Expression")
 
 		// If the call expression corresponds to an integer literal
-		if let argumentLabels = callExpression["arg_labels"],
-			argumentLabels == "_builtinIntegerLiteral:"
-		{
-			return translate(asNumericLiteral: callExpression)
+		if let argumentLabels = callExpression["arg_labels"] {
+			if argumentLabels == "_builtinIntegerLiteral:" {
+				return translate(asNumericLiteral: callExpression)
+			}
+			else if argumentLabels == "_builtinBooleanLiteral:" {
+				return translate(asBooleanLiteral: callExpression)
+			}
+			else if argumentLabels == "nilLiteral:" {
+				return GRYNilLiteralExpression()
+			}
 		}
-		else if let argumentLabels = callExpression["arg_labels"],
-			argumentLabels == "_builtinBooleanLiteral:"
-		{
-			return translate(asBooleanLiteral: callExpression)
-		}
-		else if let argumentLabels = callExpression["arg_labels"],
-			argumentLabels == "nilLiteral:"
-		{
-			return GRYNilLiteralExpression()
-		}
-		else {
-			let function: GRYExpression
 
-			// If it's an empty expression used in an "if" condition
-			if callExpression.standaloneAttributes.contains("implicit"),
-				callExpression["arg_labels"] == "",
-				callExpression["type"] == "Int1",
-				let containedExpression = callExpression
-					.subtree(named: "Dot Syntax Call Expression")?
-					.subtrees.last
-			{
-				return translate(expression: containedExpression)
-			}
+		let function: GRYExpression
 
-			if let declarationReferenceExpression = callExpression
-				.subtree(named: "Declaration Reference Expression")
+		// If it's an empty expression used in an "if" condition
+		if callExpression.standaloneAttributes.contains("implicit"),
+			callExpression["arg_labels"] == "",
+			callExpression["type"] == "Int1",
+			let containedExpression = callExpression
+				.subtree(named: "Dot Syntax Call Expression")?
+				.subtrees.last
+		{
+			return translate(expression: containedExpression)
+		}
+
+		if let declarationReferenceExpression = callExpression
+			.subtree(named: "Declaration Reference Expression")
+		{
+			if let expression = translate(
+				declarationReferenceExpression: declarationReferenceExpression)
 			{
-				if let expression = translate(
-					declarationReferenceExpression: declarationReferenceExpression)
-				{
-					function = expression
-				}
-				else {
-					return nil
-				}
+				function = expression
 			}
-			else if let dotSyntaxCallExpression = callExpression
-					.subtree(named: "Dot Syntax Call Expression"),
-				let methodName = dotSyntaxCallExpression
-					.subtree(at: 0, named: "Declaration Reference Expression"),
-				let methodOwner = dotSyntaxCallExpression.subtree(at: 1)
+			else {
+				return nil
+			}
+		}
+		else if let dotSyntaxCallExpression = callExpression
+				.subtree(named: "Dot Syntax Call Expression"),
+			let methodName = dotSyntaxCallExpression
+				.subtree(at: 0, named: "Declaration Reference Expression"),
+			let methodOwner = dotSyntaxCallExpression.subtree(at: 1)
+		{
+			if let methodName =
+				translate(declarationReferenceExpression: methodName),
+				let methodOwner = translate(expression: methodOwner)
 			{
-				if let methodName =
-					translate(declarationReferenceExpression: methodName),
-					let methodOwner = translate(expression: methodOwner)
-				{
-					function = GRYDotExpression(
-						leftExpression: methodOwner, rightExpression: methodName)
-				}
-				else {
-					return nil
-				}
+				function = GRYDotExpression(
+					leftExpression: methodOwner, rightExpression: methodName)
 			}
+			else {
+				return nil
+			}
+		}
 //			else if let typeExpression = callExpression
 //				.subtree(named: "Constructor Reference Call Expression")?
 //				.subtree(named: "Type Expression")
@@ -647,20 +643,19 @@ public class GRYSwift4_1Translator {
 //					return nil
 //				}
 //			}
-			else if let declaration = callExpression["decl"] {
-				function = GRYDeclarationReferenceExpression(
-					identifier: getIdentifierFromDeclaration(declaration))
-			}
-			else {
-				return nil
-			}
+		else if let declaration = callExpression["decl"] {
+			function = GRYDeclarationReferenceExpression(
+				identifier: getIdentifierFromDeclaration(declaration))
+		}
+		else {
+			return nil
+		}
 
 //			let functionNamePrefix = functionName.prefix(while: { $0 != "(" })
 
-			let parameters = translate(callExpressionParameters: callExpression)
+		let parameters = translate(callExpressionParameters: callExpression)
 
-			return GRYCallExpression(function: function, parameters: parameters!)
-		}
+		return GRYCallExpression(function: function, parameters: parameters!)
 	}
 
 	private func translate(callExpressionParameters callExpression: GRYSwiftAST)
