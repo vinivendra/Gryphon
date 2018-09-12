@@ -390,26 +390,21 @@ public class GRYVariableDeclarationStatement: GRYStatement {
 }
 
 public class GRYAssignmentStatement: GRYStatement {
-	let identifier: String
-	let expression: GRYExpression?
+	let leftHand: GRYExpression
+	let rightHand: GRYExpression
 
-	init(expression: GRYExpression?, identifier: String) {
-		self.expression = expression
-		self.identifier = identifier
+	init(leftHand: GRYExpression, rightHand: GRYExpression) {
+		self.leftHand = leftHand
+		self.rightHand = rightHand
 	}
 
 	//
 	override public var treeDescription: String { return "Assignment" }
 
 	override public var printableSubtrees: [GRYPrintableAsTree] {
-		let expressionTree = expression.map {
-			GRYPrintableTree(description: "Expression", subtrees: [$0])
-		}
-		let result: [GRYPrintableAsTree?] =
-			[identifier,
-			 expressionTree, ]
-
-		return result.compactMap { $0 }
+		return [
+			GRYPrintableTree(description: "Left hand", subtrees: [leftHand]),
+			GRYPrintableTree(description: "Right hand", subtrees: [rightHand]), ]
 	}
 }
 

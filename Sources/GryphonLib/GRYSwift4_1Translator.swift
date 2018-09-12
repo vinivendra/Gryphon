@@ -98,10 +98,8 @@ public class GRYSwift4_1Translator {
 //				withIndentation: indentation)
 		case "Variable Declaration":
 			result = translate(variableDeclaration: subtree)
-//		case "Assign Expression":
-//			result = translate(
-//				assignExpression: subtree,
-//				withIndentation: indentation)
+		case "Assign Expression":
+			result = translate(assignExpression: subtree)
 		case "If Statement", "Guard Statement":
 			result = translate(ifStatement: subtree)
 		case "Pattern Binding Declaration":
@@ -190,6 +188,22 @@ public class GRYSwift4_1Translator {
 	}
 
 	// MARK: - Leaf translations
+	private func translate(assignExpression: GRYSwiftAST) -> GRYAssignmentStatement? {
+		precondition(assignExpression.name == "Assign Expression")
+
+		if let leftExpression = assignExpression.subtree(at: 0),
+			let rightExpression = assignExpression.subtree(at: 1)
+		{
+			let leftTranslation = translate(expression: leftExpression)!
+			let rightTranslation = translate(expression: rightExpression)!
+
+			return GRYAssignmentStatement(leftHand: leftTranslation, rightHand: rightTranslation)
+		}
+		else {
+			return nil
+		}
+	}
+
 	private func translate(classDeclaration: GRYSwiftAST) -> GRYClassDeclaration? {
 		precondition(classDeclaration.name == "Class Declaration")
 
