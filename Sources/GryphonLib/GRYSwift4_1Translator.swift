@@ -63,10 +63,8 @@ public class GRYSwift4_1Translator {
 //		case "Import Declaration":
 //			diagnostics?.logSuccessfulTranslation(subtree.name)
 //			result = .translation("")
-//		case "Class Declaration":
-//			result = translate(
-//				classDeclaration: subtree,
-//				withIndentation: indentation)
+		case "Class Declaration":
+			result = translate(classDeclaration: subtree)
 //		case "Constructor Declaration":
 //			result = translate(
 //				constructorDeclaration: subtree,
@@ -192,6 +190,27 @@ public class GRYSwift4_1Translator {
 	}
 
 	// MARK: - Leaf translations
+	private func translate(classDeclaration: GRYSwiftAST) -> GRYClassDeclaration? {
+		precondition(classDeclaration.name == "Class Declaration")
+
+		// Get the class name
+		let name = classDeclaration.standaloneAttributes.first!
+
+		// Check for inheritance
+		let inheritanceArray: [String]
+		if let inheritanceList = classDeclaration.keyValueAttributes["inherits"] {
+			inheritanceArray = inheritanceList.split(withStringSeparator: ", ")
+		}
+		else {
+			inheritanceArray = []
+		}
+
+		// Translate the contents
+		let classContents = translate(subtrees: classDeclaration.subtrees)
+
+		return GRYClassDeclaration(name: name, inherits: inheritanceArray, members: classContents)
+	}
+
 	private func translate(throwStatement: GRYSwiftAST) -> GRYThrowStatement? {
 		precondition(throwStatement.name == "Throw Statement")
 
@@ -723,17 +742,17 @@ public class GRYSwift4_1Translator {
 				return nil
 			}
 		}
-//			else if let typeExpression = callExpression
-//				.subtree(named: "Constructor Reference Call Expression")?
-//				.subtree(named: "Type Expression")
-//			{
-//				if let expression = translate(typeExpression: typeExpression) {
-//					function = expression
-//				}
-//				else {
-//					return nil
-//				}
-//			}
+		else if let typeExpression = callExpression
+			.subtree(named: "Constructor Reference Call Expression")?
+			.subtree(named: "Type Expression")
+		{
+			if let expression = translate(typeExpression: typeExpression) {
+				function = expression
+			}
+			else {
+				return nil
+			}
+		}
 		else if let declaration = callExpression["decl"] {
 			function = GRYDeclarationReferenceExpression(
 				identifier: getIdentifierFromDeclaration(declaration))

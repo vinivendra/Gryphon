@@ -58,9 +58,9 @@ public class GRYImportDeclaration: GRYDeclaration {
 public class GRYClassDeclaration: GRYDeclaration {
 	let name: String
 	let inherits: [String]
-	let members: [GRYDeclaration]
+	let members: [GRYTopLevelNode]
 
-	init(name: String, inherits: [String], members: [GRYDeclaration]) {
+	init(name: String, inherits: [String], members: [GRYTopLevelNode]) {
 		self.name = name
 		self.inherits = inherits
 		self.members = members
