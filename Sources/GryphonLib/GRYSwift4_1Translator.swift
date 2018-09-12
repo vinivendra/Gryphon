@@ -99,15 +99,8 @@ public class GRYSwift4_1Translator {
 //			result = translate(
 //				assignExpression: subtree,
 //				withIndentation: indentation)
-//		case "Guard Statement":
-//			result = translate(
-//				ifStatement: subtree,
-//				asGuard: true,
-//				withIndentation: indentation)
-//		case "If Statement":
-//			result = translate(
-//				ifStatement: subtree,
-//				withIndentation: indentation)
+		case "If Statement", "Guard Statement":
+			result = translate(ifStatement: subtree)
 		case "Pattern Binding Declaration":
 			result = process(patternBindingDeclaration: subtree)
 		case "Return Statement":
@@ -180,17 +173,15 @@ public class GRYSwift4_1Translator {
 			else {
 				return nil
 			}
-//		case "Force Value Expression":
-//			if let firstExpression = expression.subtree(at: 0),
-//				let expressionString = translate(expression: firstExpression).stringValue
-//			{
-//				diagnostics?.logSuccessfulTranslation(expression.name)
-//				return .translation(expressionString  + "!!")
-//			}
-//			else {
-//				diagnostics?.logUnknownTranslation(expression.name)
-//				return .failed
-//			}
+		case "Force Value Expression":
+			if let firstExpression = expression.subtree(at: 0),
+				let expression = translate(expression: firstExpression)
+			{
+				return GRYForceValueExpression(expression: expression)
+			}
+			else {
+				return nil
+			}
 		case "Autoclosure Expression",
 			 "Inject Into Optional",
 			 "Inout Expression",
@@ -220,6 +211,134 @@ public class GRYSwift4_1Translator {
 		else {
 			return GRYReturnStatement(expression: nil)
 		}
+	}
+
+	private func translate(ifStatement: GRYSwiftAST) -> GRYIfStatement? {
+		precondition(ifStatement.name == "If Statement" || ifStatement.name == "Guard Statement")
+
+		let isGuard = (ifStatement.name == "Guard Statement")
+
+		let (letDeclarations, conditions) = translateDeclarationsAndConditions(
+			forIfStatement: ifStatement)!
+
+		let braceStatement: GRYSwiftAST
+		let elseIfStatement: GRYIfStatement?
+		let elseStatement: GRYIfStatement?
+
+		if ifStatement.subtrees.count > 2,
+			let unwrappedBraceStatement = ifStatement.subtrees.secondToLast,
+			unwrappedBraceStatement.name == "Brace Statement",
+			let elseIfAST = ifStatement.subtrees.last,
+			elseIfAST.name == "If Statement"
+		{
+			braceStatement = unwrappedBraceStatement
+			elseIfStatement = translate(ifStatement: elseIfAST)
+			elseStatement = nil
+		}
+		else if ifStatement.subtrees.count > 2,
+			let unwrappedBraceStatement = ifStatement.subtrees.secondToLast,
+			unwrappedBraceStatement.name == "Brace Statement",
+			let elseAST = ifStatement.subtrees.last,
+			elseAST.name == "Brace Statement"
+		{
+			braceStatement = unwrappedBraceStatement
+			elseIfStatement = nil
+
+			let statements = translate(subtrees: elseAST.subtrees)
+			elseStatement = GRYIfStatement(
+				conditions: [], declarations: [],
+				statements: statements,
+				elseStatement: nil,
+				isGuard: false)
+		}
+		else if let unwrappedBraceStatement = ifStatement.subtrees.last,
+			unwrappedBraceStatement.name == "Brace Statement"
+		{
+			braceStatement = unwrappedBraceStatement
+			elseIfStatement = nil
+			elseStatement = nil
+		}
+		else {
+			return nil
+		}
+
+		let statements = braceStatement.subtrees
+		let statementsResult = translate(subtrees: statements)
+
+		return GRYIfStatement(
+			conditions: conditions,
+			declarations: letDeclarations,
+			statements: statementsResult,
+			elseStatement: elseIfStatement ?? elseStatement,
+			isGuard: isGuard)
+	}
+
+	private func translateDeclarationsAndConditions(
+		forIfStatement ifStatement: GRYSwiftAST)
+		-> (declarations: [GRYDeclaration], conditions: [GRYExpression])?
+	{
+		precondition(ifStatement.name == "If Statement" || ifStatement.name == "Guard Statement")
+
+		var conditionsResult = [GRYExpression]()
+		var declarationsResult = [GRYDeclaration]()
+
+		let conditions = ifStatement.subtrees.filter {
+			$0.name != "If Statement" && $0.name != "Brace Statement"
+		}
+
+		for condition in conditions {
+			// If it's an if-let
+			if condition.name == "Pattern",
+				let optionalSomeElement = condition.subtree(named: "Optional Some Element")
+			{
+				let patternNamed: GRYSwiftAST
+				let isLet: Bool
+				if let patternLet = optionalSomeElement.subtree(named: "Pattern Let"),
+					let unwrapped = patternLet.subtree(named: "Pattern Named")
+				{
+					patternNamed = unwrapped
+					isLet = true
+				}
+				else if let unwrapped = optionalSomeElement
+					.subtree(named: "Pattern Variable")?
+					.subtree(named: "Pattern Named")
+				{
+					patternNamed = unwrapped
+					isLet = false
+				}
+				else {
+					return nil
+				}
+
+				let type: String
+				if let rawType = optionalSomeElement["type"] {
+					type = translateType(rawType)
+				}
+				else {
+					return nil
+				}
+
+				guard let name = patternNamed.standaloneAttributes.first,
+					let lastCondition = condition.subtrees.last,
+					let expression = translate(expression: lastCondition) else
+				{
+					return nil
+				}
+
+				declarationsResult.append(GRYVariableDeclaration(
+					expression: expression,
+					identifier: name,
+					type: type,
+					getter: nil, setter: nil,
+					isLet: isLet,
+					extendsType: nil))
+			}
+			else {
+				conditionsResult.append(translate(expression: condition)!)
+			}
+		}
+
+		return (declarations: declarationsResult, conditions: conditionsResult)
 	}
 
 	private func translate(functionDeclaration: GRYSwiftAST) -> GRYFunctionDeclaration? {

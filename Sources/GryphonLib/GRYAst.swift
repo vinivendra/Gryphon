@@ -288,36 +288,38 @@ public class GRYForEachStatement: GRYStatement {
 }
 
 public class GRYIfStatement: GRYStatement {
-	let condition: GRYExpression?
+	let conditions: [GRYExpression]
 	let declarations: [GRYDeclaration]
-	let statements: [GRYStatement]
+	let statements: [GRYTopLevelNode]
 	let elseStatement: GRYIfStatement?
+	let isGuard: Bool
 
-	init(condition: GRYExpression?,
+	init(conditions: [GRYExpression],
 		 declarations: [GRYDeclaration],
-		 statements: [GRYStatement],
-		 elseStatement: GRYIfStatement?)
+		 statements: [GRYTopLevelNode],
+		 elseStatement: GRYIfStatement?,
+		 isGuard: Bool)
 	{
-		self.condition = condition
+		self.conditions = conditions
 		self.declarations = declarations
 		self.statements = statements
 		self.elseStatement = elseStatement
+		self.isGuard = isGuard
 	}
 
 	//
 	override public var treeDescription: String { return "If" }
 
 	override public var printableSubtrees: [GRYPrintableAsTree] {
-		let conditionTree = condition.map {
-			GRYPrintableTree(description: "Condition", subtrees: [$0])
-		}
-		let elseTree = condition.map {
+		let elseTree = elseStatement.map {
 			GRYPrintableTree(description: "Else", subtrees: [$0])
 		}
-		let result = [conditionTree,
-				GRYPrintableTree(description: "Declarations", subtrees: declarations),
-				GRYPrintableTree(description: "Statements", subtrees: statements),
-				elseTree, ]
+		let result: [GRYPrintableAsTree?] = [
+			"Is guard: \(isGuard)",
+			GRYPrintableTree(description: "Conditions", subtrees: conditions),
+			GRYPrintableTree(description: "Declarations", subtrees: declarations),
+			GRYPrintableTree(description: "Statements", subtrees: statements),
+			elseTree, ]
 
 		return result.compactMap { $0 }
 	}
@@ -413,6 +415,21 @@ public class GRYAssignmentStatement: GRYStatement {
 
 //
 public class GRYExpression: GRYTopLevelNode {
+}
+
+public class GRYForceValueExpression: GRYExpression {
+	let expression: GRYExpression
+
+	init(expression: GRYExpression) {
+		self.expression = expression
+	}
+
+	//
+	override public var treeDescription: String { return "Force Value" }
+
+	override public var printableSubtrees: [GRYPrintableAsTree] {
+		return [GRYPrintableTree(description: "Expression", subtrees: [expression]), ]
+	}
 }
 
 public class GRYDeclarationReferenceExpression: GRYExpression {
@@ -557,7 +574,7 @@ public class GRYLiteralExpression<T>: GRYExpression {
 	}
 
 	//
-	override public var treeDescription: String { return "Literal \(T.self) \(value)" }
+	override public var treeDescription: String { return "Literal \(T.self) \"\(value)\"" }
 }
 
 public class GRYNilLiteralExpression: GRYExpression {
