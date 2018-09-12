@@ -125,6 +125,23 @@ public class GRYSwift4_1Translator {
 		return [result]
 	}
 
+	private func translate(memberReferenceExpression: GRYSwiftAST) -> GRYDotExpression? {
+		precondition(memberReferenceExpression.name == "Member Reference Expression")
+
+		if let declaration = memberReferenceExpression["decl"],
+			let memberOwner = memberReferenceExpression.subtree(at: 0),
+			let leftHand = translate(expression: memberOwner)
+		{
+			let member = getIdentifierFromDeclaration(declaration)
+			let rightHand = GRYDeclarationReferenceExpression(identifier: member)
+			return GRYDotExpression(leftExpression: leftHand,
+									rightExpression: rightHand)
+		}
+		else {
+			return nil
+		}
+	}
+
 	private func translate(expression: GRYSwiftAST) -> GRYExpression? {
 		// Most diagnostics are logged by the child subTrees; others represent wrapper expressions
 		// with little value in logging. There are a few expections.
@@ -155,8 +172,8 @@ public class GRYSwift4_1Translator {
 			return translate(prefixUnaryExpression: expression)
 		case "Type Expression":
 			return translate(typeExpression: expression)
-//		case "Member Reference Expression":
-//			return translate(memberReferenceExpression: expression)
+		case "Member Reference Expression":
+			return translate(memberReferenceExpression: expression)
 //		case "Subscript Expression":
 //			return translate(subscriptExpression: expression)
 		case "Parentheses Expression":
