@@ -16,12 +16,14 @@
 
 public class GRYSwift4_1Translator {
 
+	// MARK: - Properties
 	static var enums = [String]()
 
 	var danglingPatternBinding: (identifier: String, type: String, expression: GRYExpression?)?
 
 	var extendingType: String?
 
+	// MARK: - Interface
 	public init() { }
 
 	public func translateAST(_ ast: GRYSwiftAST) -> GRYSourceFile? {
@@ -45,6 +47,7 @@ public class GRYSwift4_1Translator {
 		return GRYSourceFile(declarations: declarations, statements: statements)
 	}
 
+	// MARK: - Top-level translations
 	private func translate(subtrees: [GRYSwiftAST]) -> [GRYTopLevelNode] {
 		return subtrees.reduce([], { (result, subtree) -> [GRYTopLevelNode] in
 			result + translate(subtree: subtree).compactMap { $0 }
@@ -188,6 +191,7 @@ public class GRYSwift4_1Translator {
 		}
 	}
 
+	// MARK: - Leaf translations
 	private func translate(throwStatement: GRYSwiftAST) -> GRYThrowStatement? {
 		precondition(throwStatement.name == "Throw Statement")
 
@@ -582,50 +586,6 @@ public class GRYSwift4_1Translator {
 			access: access ?? "internal")
 	}
 
-	private func process(patternBindingDeclaration: GRYSwiftAST) -> GRYTopLevelNode? {
-		precondition(patternBindingDeclaration.name == "Pattern Binding Declaration")
-
-		// Some patternBindingDeclarations are empty, and that's ok. See the classes.swift test
-		// case.
-		guard let expression = patternBindingDeclaration.subtrees.last,
-			ASTIsExpression(expression) else
-		{
-			return nil
-		}
-
-		let translatedExpression = translate(expression: expression)
-
-		let binding: GRYSwiftAST
-
-		if let unwrappedBinding = patternBindingDeclaration
-			.subtree(named: "Pattern Typed")?
-			.subtree(named: "Pattern Named")
-		{
-			binding = unwrappedBinding
-		}
-		else if let unwrappedBinding = patternBindingDeclaration.subtree(named: "Pattern Named") {
-			binding = unwrappedBinding
-		}
-		else {
-			assertionFailure("Expected to always work")
-			return nil
-		}
-
-		guard let identifier = binding.standaloneAttributes.first,
-			let type = binding.keyValueAttributes["type"] else
-		{
-			assertionFailure("Expected to always work")
-			return nil
-		}
-
-		danglingPatternBinding =
-			(identifier: identifier,
-			 type: type,
-			 expression: translatedExpression)
-
-		return nil
-	}
-
 	private func translate(topLevelCode: GRYSwiftAST) -> GRYTopLevelNode? {
 		precondition(topLevelCode.name == "Top Level Code Declaration")
 
@@ -951,6 +911,51 @@ public class GRYSwift4_1Translator {
 		else {
 			return nil
 		}
+	}
+
+	// MARK: - Supporting methods
+	private func process(patternBindingDeclaration: GRYSwiftAST) -> GRYTopLevelNode? {
+		precondition(patternBindingDeclaration.name == "Pattern Binding Declaration")
+
+		// Some patternBindingDeclarations are empty, and that's ok. See the classes.swift test
+		// case.
+		guard let expression = patternBindingDeclaration.subtrees.last,
+			ASTIsExpression(expression) else
+		{
+			return nil
+		}
+
+		let translatedExpression = translate(expression: expression)
+
+		let binding: GRYSwiftAST
+
+		if let unwrappedBinding = patternBindingDeclaration
+			.subtree(named: "Pattern Typed")?
+			.subtree(named: "Pattern Named")
+		{
+			binding = unwrappedBinding
+		}
+		else if let unwrappedBinding = patternBindingDeclaration.subtree(named: "Pattern Named") {
+			binding = unwrappedBinding
+		}
+		else {
+			assertionFailure("Expected to always work")
+			return nil
+		}
+
+		guard let identifier = binding.standaloneAttributes.first,
+			let type = binding.keyValueAttributes["type"] else
+		{
+			assertionFailure("Expected to always work")
+			return nil
+		}
+
+		danglingPatternBinding =
+			(identifier: identifier,
+			 type: type,
+			 expression: translatedExpression)
+
+		return nil
 	}
 
 	private func getIdentifierFromDeclaration(_ declaration: String) -> String {
