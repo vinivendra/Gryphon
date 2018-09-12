@@ -16,6 +16,8 @@
 
 public class GRYSwift4_1Translator {
 
+	static var enums = [String]()
+
 	var danglingPatternBinding: (identifier: String, type: String, expression: GRYExpression?)?
 
 	var extendingType: String?
@@ -70,10 +72,8 @@ public class GRYSwift4_1Translator {
 //			result = translate(
 //				destructorDeclaration: subtree,
 //				withIndentation: indentation)
-//		case "Enum Declaration":
-//			result = translate(
-//				enumDeclaration: subtree,
-//				withIndentation: indentation)
+		case "Enum Declaration":
+			result = translate(enumDeclaration: subtree)
 		case "Extension Declaration":
 			self.extendingType = subtree.standaloneAttributes[0]
 			let result = translate(subtrees: subtree.subtrees)
@@ -190,6 +190,41 @@ public class GRYSwift4_1Translator {
 		}
 	}
 
+	private func translate(enumDeclaration: GRYSwiftAST) -> GRYEnumDeclaration? {
+		precondition(enumDeclaration.name == "Enum Declaration")
+
+		// FIXME:
+		let access = enumDeclaration.keyValueAttributes["access"] ?? "internal"
+
+		let name = enumDeclaration.standaloneAttributes.first!
+		GRYSwift4_1Translator.enums.append(name)
+
+		let inherits: [String]
+		if let inheritanceList = enumDeclaration.keyValueAttributes["inherits"] {
+			inherits = inheritanceList.split(withStringSeparator: ", ")
+		}
+		else {
+			inherits = []
+		}
+
+		var elements = [String]()
+		let enumElementDeclarations =
+			enumDeclaration.subtrees.filter { $0.name == "Enum Element Declaration" }
+		for enumElementDeclaration in enumElementDeclarations {
+			guard let elementName = enumElementDeclaration.standaloneAttributes.first else {
+				return nil
+			}
+
+			elements.append(elementName)
+		}
+
+		return GRYEnumDeclaration(
+			access: access,
+			name: name,
+			inherits: inherits,
+			elements: elements)
+	}
+
 	private func translate(memberReferenceExpression: GRYSwiftAST) -> GRYDotExpression? {
 		precondition(memberReferenceExpression.name == "Member Reference Expression")
 
@@ -256,12 +291,11 @@ public class GRYSwift4_1Translator {
 	private func translate(typeExpression: GRYSwiftAST) -> GRYTypeExpression? {
 		precondition(typeExpression.name == "Type Expression")
 
-		if let rawType = typeExpression.keyValueAttributes["typerepr"] {
-			return GRYTypeExpression(type: translateType(rawType))
-		}
-		else {
+		guard let type = typeExpression.keyValueAttributes["typerepr"] else {
 			return nil
 		}
+
+		return GRYTypeExpression(type: type)
 	}
 
 	private func translate(dotSyntaxCallExpression: GRYSwiftAST) -> GRYDotExpression? {
@@ -401,11 +435,7 @@ public class GRYSwift4_1Translator {
 					return nil
 				}
 
-				let type: String
-				if let rawType = optionalSomeElement["type"] {
-					type = translateType(rawType)
-				}
-				else {
+				guard let type = optionalSomeElement["type"] else {
 					return nil
 				}
 
@@ -498,13 +528,12 @@ public class GRYSwift4_1Translator {
 		if let parameterList = parameterList {
 			for parameter in parameterList.subtrees {
 				if let name = parameter.standaloneAttributes.first,
-					let rawType = parameter["interface type"]
+					let type = parameter["interface type"]
 				{
 					guard name != "self" else {
 						continue
 					}
 
-					let type = translateType(rawType)
 					parameterNames.append(name)
 					parameterTypes.append(type)
 				}
@@ -514,15 +543,11 @@ public class GRYSwift4_1Translator {
 			}
 		}
 
-		let returnType: String
 		// Translate the return type
 		// TODO: Doesn't allow to return function types
-		if let rawType = functionDeclaration["interface type"]?
-			.split(withStringSeparator: " -> ").last
+		guard let returnType = functionDeclaration["interface type"]?
+			.split(withStringSeparator: " -> ").last else
 		{
-			returnType = translateType(rawType)
-		}
-		else {
 			return nil
 		}
 
@@ -576,13 +601,11 @@ public class GRYSwift4_1Translator {
 		}
 
 		guard let identifier = binding.standaloneAttributes.first,
-			let rawType = binding.keyValueAttributes["type"] else
+			let type = binding.keyValueAttributes["type"] else
 		{
 			assertionFailure("Expected to always work")
 			return nil
 		}
-
-		let type = translateType(rawType)
 
 		danglingPatternBinding =
 			(identifier: identifier,
@@ -608,10 +631,8 @@ public class GRYSwift4_1Translator {
 		precondition(variableDeclaration.name == "Variable Declaration")
 
 		if let identifier = variableDeclaration.standaloneAttributes.first,
-			let rawType = variableDeclaration["interface type"]
+			let type = variableDeclaration["interface type"]
 		{
-			let type = translateType(rawType)
-
 			let isLet = variableDeclaration.standaloneAttributes.contains("let")
 
 			let expression: GRYExpression?
@@ -951,21 +972,5 @@ public class GRYSwift4_1Translator {
 
 	private func ASTIsExpression(_ ast: GRYSwiftAST) -> Bool {
 		return ast.name.hasSuffix("Expression") || ast.name == "Inject Into Optional"
-	}
-
-	private func translateType(_ type: String) -> String {
-		if type.hasPrefix("[") {
-			let innerType = String(type.dropLast().dropFirst())
-			let translatedInnerType = translateType(innerType)
-			return "MutableList<\(translatedInnerType)>"
-		}
-		else if type.hasPrefix("ArrayReference<") {
-			let innerType = String(type.dropLast().dropFirst("ArrayReference<".count))
-			let translatedInnerType = translateType(innerType)
-			return "MutableList<\(translatedInnerType)>"
-		}
-		else {
-			return GRYKotlinTranslator.typeMappings[type] ?? type
-		}
 	}
 }
