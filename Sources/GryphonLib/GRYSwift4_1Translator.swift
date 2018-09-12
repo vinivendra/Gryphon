@@ -89,10 +89,8 @@ public class GRYSwift4_1Translator {
 //			result = translate(
 //				protocolDeclaration: subtree,
 //				withIndentation: indentation)
-//		case "Throw Statement":
-//			result = translate(
-//				throwStatement: subtree,
-//				withIndentation: indentation)
+		case "Throw Statement":
+			result = translate(throwStatement: subtree)
 //		case "Struct Declaration":
 //			result = translate(
 //				structDeclaration: subtree,
@@ -186,6 +184,19 @@ public class GRYSwift4_1Translator {
 				return nil
 			}
 		default:
+			return nil
+		}
+	}
+
+	private func translate(throwStatement: GRYSwiftAST) -> GRYThrowStatement? {
+		precondition(throwStatement.name == "Throw Statement")
+
+		if let expression = throwStatement.subtrees.last,
+			let expressionTranslation = translate(expression: expression)
+		{
+			return GRYThrowStatement(expression: expressionTranslation)
+		}
+		else {
 			return nil
 		}
 	}
