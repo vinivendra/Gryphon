@@ -18,6 +18,8 @@ public class GRYSwift4_1Translator {
 
 	var danglingPatternBinding: (identifier: String, type: String, expression: GRYExpression?)?
 
+	var extendingType: String?
+
 	public init() { }
 
 	public func translateAST(_ ast: GRYSwiftAST) -> GRYSourceFile? {
@@ -42,10 +44,12 @@ public class GRYSwift4_1Translator {
 	}
 
 	private func translate(subtrees: [GRYSwiftAST]) -> [GRYTopLevelNode] {
-		return subtrees.compactMap { translate(subtree: $0) }
+		return subtrees.reduce([], { (result, subtree) -> [GRYTopLevelNode] in
+			result + translate(subtree: subtree).compactMap { $0 }
+		})
 	}
 
-	private func translate(subtree: GRYSwiftAST) -> GRYTopLevelNode? {
+	private func translate(subtree: GRYSwiftAST) -> [GRYTopLevelNode?] {
 		var result: GRYTopLevelNode?
 
 		switch subtree.name {
@@ -70,11 +74,11 @@ public class GRYSwift4_1Translator {
 //			result = translate(
 //				enumDeclaration: subtree,
 //				withIndentation: indentation)
-//		case "Extension Declaration":
-//			diagnostics?.logSuccessfulTranslation(subtree.name)
-//			result = translate(
-//				subtrees: subtree.subtrees,
-//				withIndentation: indentation)
+		case "Extension Declaration":
+			self.extendingType = subtree.standaloneAttributes[0]
+			let result = translate(subtrees: subtree.subtrees)
+			self.extendingType = nil
+			return result
 //		case "For Each Statement":
 //			result = translate(
 //				forEachStatement: subtree,
@@ -118,7 +122,7 @@ public class GRYSwift4_1Translator {
 			}
 		}
 
-		return result
+		return [result]
 	}
 
 	private func translate(expression: GRYSwiftAST) -> GRYExpression? {
@@ -149,8 +153,8 @@ public class GRYSwift4_1Translator {
 			}
 		case "Prefix Unary Expression":
 			return translate(prefixUnaryExpression: expression)
-//		case "Type Expression":
-//			return translate(typeExpression: expression)
+		case "Type Expression":
+			return translate(typeExpression: expression)
 //		case "Member Reference Expression":
 //			return translate(memberReferenceExpression: expression)
 //		case "Subscript Expression":
@@ -590,7 +594,6 @@ public class GRYSwift4_1Translator {
 		let getter: GRYFunctionDeclaration?
 		let setter: GRYFunctionDeclaration?
 		let isLet: Bool
-		let extendsType: String?
 
 		if let identifier = variableDeclaration.standaloneAttributes.first,
 			let rawType = variableDeclaration["interface type"]
@@ -611,7 +614,6 @@ public class GRYSwift4_1Translator {
 //			})
 
 			isLet = variableDeclaration.standaloneAttributes.contains("let")
-			extendsType = variableDeclaration["extends_type"]
 
 			if let patternBindingExpression = danglingPatternBinding,
 				patternBindingExpression.identifier == identifier,
@@ -637,7 +639,7 @@ public class GRYSwift4_1Translator {
 				getter: getter,
 				setter: setter,
 				isLet: isLet,
-				extendsType: extendsType)
+				extendsType: self.extendingType)
 		}
 		else {
 			return nil
