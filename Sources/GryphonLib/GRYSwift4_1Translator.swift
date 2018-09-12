@@ -590,31 +590,14 @@ public class GRYSwift4_1Translator {
 	private func translate(variableDeclaration: GRYSwiftAST) -> GRYTopLevelNode? {
 		precondition(variableDeclaration.name == "Variable Declaration")
 
-		let expression: GRYExpression?
-		let getter: GRYFunctionDeclaration?
-		let setter: GRYFunctionDeclaration?
-		let isLet: Bool
-
 		if let identifier = variableDeclaration.standaloneAttributes.first,
 			let rawType = variableDeclaration["interface type"]
 		{
 			let type = translateType(rawType)
 
-//			let hasGetter = variableDeclaration.subtrees.contains(where:
-//			{ (subtree: GRYSwiftAST) -> Bool in
-//				subtree.name == "Function Declaration" &&
-//					!subtree.standaloneAttributes.contains("implicit") &&
-//					subtree.keyValueAttributes["getter_for"] != nil
-//			})
-//			let hasSetter = variableDeclaration.subtrees.contains(where:
-//			{ (subtree: GRYSwiftAST) -> Bool in
-//				subtree.name == "Function Declaration" &&
-//					!subtree.standaloneAttributes.contains("implicit") &&
-//					subtree.keyValueAttributes["setter_for"] != nil
-//			})
+			let isLet = variableDeclaration.standaloneAttributes.contains("let")
 
-			isLet = variableDeclaration.standaloneAttributes.contains("let")
-
+			let expression: GRYExpression?
 			if let patternBindingExpression = danglingPatternBinding,
 				patternBindingExpression.identifier == identifier,
 				patternBindingExpression.type == type
@@ -626,11 +609,38 @@ public class GRYSwift4_1Translator {
 				expression = nil
 			}
 
-//			result += translateGetterAndSetter(
-//				forVariableDeclaration: variableDeclaration,
-//				withIndentation: indentation)
-			getter = nil
-			setter = nil
+			var getter: GRYFunctionDeclaration?
+			var setter: GRYFunctionDeclaration?
+			for subtree in variableDeclaration.subtrees
+				where !subtree.standaloneAttributes.contains("implicit")
+			{
+				guard let statements = subtree.subtree(named: "Brace Statement")?.subtrees else {
+					return nil
+				}
+
+				let statementsTranslation = translate(subtrees: statements)
+
+				// FIXME: Unsure access defaults to internal
+				if subtree["getter_for"] != nil {
+					getter = GRYFunctionDeclaration(
+						prefix: "get",
+						parameterNames: [], parameterTypes: [],
+						returnType: type,
+						isImplicit: false,
+						statements: statementsTranslation,
+						access: "internal")
+				}
+				else {
+					setter = GRYFunctionDeclaration(
+						prefix: "set",
+						parameterNames: ["newValue"],
+						parameterTypes: [type],
+						returnType: "()",
+						isImplicit: false,
+						statements: statementsTranslation,
+						access: "internal")
+				}
+			}
 
 			return GRYVariableDeclaration(
 				expression: expression,
@@ -851,20 +861,18 @@ public class GRYSwift4_1Translator {
 
 		for expression in interpolatedStringLiteralExpression.subtrees {
 			if expression.name == "String Literal Expression" {
-				guard let quotedString = translate(stringLiteralExpression: expression)?.value else
+				guard let string = translate(stringLiteralExpression: expression)?.value else
 				{
 					return nil
 				}
 
-				let unquotedString = quotedString.dropLast().dropFirst()
-
 				// Empty strings, as a special case, are represented by the swift ast dump
 				// as two double quotes with nothing between them, instead of an actual empty string
-				guard unquotedString != "\"\"" else {
+				guard string != "\"\"" else {
 					continue
 				}
 
-				expressions.append(GRYLiteralExpression(value: String(unquotedString)))
+				expressions.append(GRYLiteralExpression(value: string))
 			}
 			else {
 				expressions.append(translate(expression: expression)!)
