@@ -50,7 +50,7 @@ public class GRYSwift4_1Translator {
 
 		switch subtree.name {
 		case "Top Level Code Declaration":
-			return translate(topLevelCode: subtree)
+			result = translate(topLevelCode: subtree)
 //		case "Import Declaration":
 //			diagnostics?.logSuccessfulTranslation(subtree.name)
 //			result = .translation("")
@@ -105,19 +105,8 @@ public class GRYSwift4_1Translator {
 			result = process(patternBindingDeclaration: subtree)
 		case "Return Statement":
 			result = translate(returnStatement: subtree)
-//		case "Call Expression":
-//			if let string = translate(callExpression: subtree).stringValue {
-//				if !string.isEmpty {
-//					result = .translation(indentation + string + "\n")
-//				}
-//				else {
-//					// GRYIgnoreNext() results in an empty translation
-//					result = .translation("")
-//				}
-//			}
-//			else {
-//				result = .failed
-//			}
+		case "Call Expression":
+			result = translate(callExpression: subtree)
 		default:
 			if subtree.name.hasSuffix("Expression"),
 				let expression = translate(expression: subtree)
@@ -145,8 +134,8 @@ public class GRYSwift4_1Translator {
 			return translate(callExpression: expression)
 		case "Declaration Reference Expression":
 			return translate(declarationReferenceExpression: expression)
-//		case "Dot Syntax Call Expression":
-//			return translate(dotSyntaxCallExpression: expression)
+		case "Dot Syntax Call Expression":
+			return translate(dotSyntaxCallExpression: expression)
 		case "String Literal Expression":
 			return translate(stringLiteralExpression: expression)
 		case "Interpolated String Literal Expression":
@@ -195,6 +184,41 @@ public class GRYSwift4_1Translator {
 		default:
 			return nil
 		}
+	}
+
+	private func translate(typeExpression: GRYSwiftAST) -> GRYTypeExpression? {
+		precondition(typeExpression.name == "Type Expression")
+
+		if let rawType = typeExpression.keyValueAttributes["typerepr"] {
+			return GRYTypeExpression(type: translateType(rawType))
+		}
+		else {
+			return nil
+		}
+	}
+
+	private func translate(dotSyntaxCallExpression: GRYSwiftAST) -> GRYDotExpression? {
+		precondition(dotSyntaxCallExpression.name == "Dot Syntax Call Expression")
+
+		if let leftHandTree = dotSyntaxCallExpression.subtree(at: 1),
+			let rightHandExpression = dotSyntaxCallExpression.subtree(at: 0)
+		{
+			let rightHand = translate(expression: rightHandExpression)!
+			let leftHand = translate(typeExpression: leftHandTree)!
+
+			// Enums become sealed classes, which need parentheses at the end
+//			if GRYKotlinTranslator.enums.contains(leftHandString) {
+//				let capitalizedEnumCase = rightHandString.capitalizedAsCamelCase
+//
+//				diagnostics?.logSuccessfulTranslation(dotSyntaxCallExpression.name)
+//				return .translation("\(leftHandString).\(capitalizedEnumCase)()")
+//			}
+//			else {
+			return GRYDotExpression(leftExpression: leftHand, rightExpression: rightHand)
+//			}
+		}
+
+		return nil
 	}
 
 	private func translate(returnStatement: GRYSwiftAST) -> GRYReturnStatement? {
