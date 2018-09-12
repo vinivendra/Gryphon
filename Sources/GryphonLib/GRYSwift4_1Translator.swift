@@ -125,23 +125,6 @@ public class GRYSwift4_1Translator {
 		return [result]
 	}
 
-	private func translate(memberReferenceExpression: GRYSwiftAST) -> GRYDotExpression? {
-		precondition(memberReferenceExpression.name == "Member Reference Expression")
-
-		if let declaration = memberReferenceExpression["decl"],
-			let memberOwner = memberReferenceExpression.subtree(at: 0),
-			let leftHand = translate(expression: memberOwner)
-		{
-			let member = getIdentifierFromDeclaration(declaration)
-			let rightHand = GRYDeclarationReferenceExpression(identifier: member)
-			return GRYDotExpression(leftExpression: leftHand,
-									rightExpression: rightHand)
-		}
-		else {
-			return nil
-		}
-	}
-
 	private func translate(expression: GRYSwiftAST) -> GRYExpression? {
 		// Most diagnostics are logged by the child subTrees; others represent wrapper expressions
 		// with little value in logging. There are a few expections.
@@ -203,6 +186,23 @@ public class GRYSwift4_1Translator {
 				return nil
 			}
 		default:
+			return nil
+		}
+	}
+
+	private func translate(memberReferenceExpression: GRYSwiftAST) -> GRYDotExpression? {
+		precondition(memberReferenceExpression.name == "Member Reference Expression")
+
+		if let declaration = memberReferenceExpression["decl"],
+			let memberOwner = memberReferenceExpression.subtree(at: 0),
+			let leftHand = translate(expression: memberOwner)
+		{
+			let member = getIdentifierFromDeclaration(declaration)
+			let rightHand = GRYDeclarationReferenceExpression(identifier: member)
+			return GRYDotExpression(leftExpression: leftHand,
+									rightExpression: rightHand)
+		}
+		else {
 			return nil
 		}
 	}
@@ -844,7 +844,9 @@ public class GRYSwift4_1Translator {
 		}
 	}
 
-	private func translate(asBooleanLiteral callExpression: GRYSwiftAST) -> GRYExpression? {
+	private func translate(asBooleanLiteral callExpression: GRYSwiftAST)
+		-> GRYLiteralExpression<Bool>?
+	{
 		precondition(callExpression.name == "Call Expression")
 
 		if let tupleExpression = callExpression.subtree(named: "Tuple Expression"),
