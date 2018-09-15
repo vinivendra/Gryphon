@@ -19,15 +19,15 @@ import GryphonLib
 
 func updateFiles(
     in folder: String,
-    from originExtension: String,
-    to destinationExtension: String,
+    from originExtension: GRYFileExtension,
+    to destinationExtension: GRYFileExtension,
     with closure: (String, String) -> ())
 {
     let currentURL = URL(fileURLWithPath: Process().currentDirectoryPath + "/" + folder)
     let fileURLs = try! FileManager.default.contentsOfDirectory(
         at: currentURL,
         includingPropertiesForKeys: nil)
-	let testFiles = fileURLs.filter { $0.pathExtension == originExtension }.sorted
+	let testFiles = fileURLs.filter { $0.pathExtension == originExtension.rawValue }.sorted
 	{ (url1: URL, url2: URL) -> Bool in
 		url1.absoluteString < url2.absoluteString
 	}
@@ -52,18 +52,18 @@ func updateFiles(
 func updateFiles(inFolder folder: String) {
 	print("Updating files in \(folder)...")
 
-    updateFiles(in: folder, from: "swift", to: "ast")
+    updateFiles(in: folder, from: .swift, to: .ast)
     { (_: String, astFilePath: String) in
         fatalError("Please update ast file \(astFilePath) with the `dump-ast.pl` perl script.")
     }
 
-    updateFiles(in: folder, from: "ast", to: "json")
+    updateFiles(in: folder, from: .ast, to: .json)
     { (astFilePath: String, jsonFilePath: String) in
         let ast = GRYSwiftAST(astFile: astFilePath)
         ast.writeAsJSON(toFile: jsonFilePath)
     }
 
-    updateFiles(in: folder, from: "json", to: "expectedJson")
+    updateFiles(in: folder, from: .json, to: .expectedJson)
     { (jsonFilePath: String, expectedJsonFilePath: String) in
         let jsonContents = try! String(contentsOfFile: jsonFilePath)
         let expectedJsonURL = URL(fileURLWithPath: expectedJsonFilePath)

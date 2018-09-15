@@ -54,7 +54,7 @@ public enum GRYCompiler {
 		print("\t- Compiling Kotlin...")
 		let fileName = URL(fileURLWithPath: filePath).deletingPathExtension().lastPathComponent
 		let kotlinFilePath = GRYUtils.createFile(
-			named: fileName + ".kt",
+			named: fileName + .kt,
 			inDirectory: GRYUtils.buildFolder,
 			containing: kotlinCode)
 
@@ -80,7 +80,7 @@ public enum GRYCompiler {
 		forFileAt filePath: String)
 		-> (code: String?, diagnostics: GRYKotlinTranslator.Diagnostics, ast: GRYSwiftAST)
 	{
-		let astFile = GRYUtils.changeExtension(of: filePath, to: "ast")
+		let astFile = GRYUtils.changeExtension(of: filePath, to: .ast)
 		let ast = GRYSwiftAST(astFile: astFile)
 
 		print("\t- Translating AST to Kotlin...")
@@ -92,7 +92,7 @@ public enum GRYCompiler {
 	}
 
 	public static func generateKotlinCode(forFileAt filePath: String) -> String? {
-		let astFile = GRYUtils.changeExtension(of: filePath, to: "ast")
+		let astFile = GRYUtils.changeExtension(of: filePath, to: .ast)
 		let ast = GRYSwiftAST(astFile: astFile)
 
 		print("\t- Translating AST to Kotlin...")
@@ -107,12 +107,12 @@ public enum GRYCompiler {
 	}
 
 	public static func processExternalAST(_ filePath: String) -> GRYSwiftAST {
-		let astFilePath = GRYUtils.changeExtension(of: filePath, to: "ast")
+		let astFilePath = GRYUtils.changeExtension(of: filePath, to: .ast)
 
 		print("\t- Building GRYSwiftAst from external AST...")
 		let ast = GRYSwiftAST(astFile: astFilePath)
 
-		let jsonFilePath = GRYUtils.changeExtension(of: filePath, to: "json")
+		let jsonFilePath = GRYUtils.changeExtension(of: filePath, to: .json)
 		let jsonFileWasJustCreated = GRYUtils.createFileIfNeeded(at: jsonFilePath, containing: "")
 		let jsonIsOutdated =
 			jsonFileWasJustCreated || GRYUtils.file(astFilePath, wasModifiedLaterThan: jsonFilePath)
@@ -125,7 +125,7 @@ public enum GRYCompiler {
 	}
 
 	public static func generateAST(forFileAt filePath: String) -> GRYSwiftAST {
-		let astDumpFilePath = GRYUtils.changeExtension(of: filePath, to: "ast")
+		let astDumpFilePath = GRYUtils.changeExtension(of: filePath, to: .ast)
 
 		print("\t- Building GRYSwiftAst...")
 		let ast = GRYSwiftAST(astFile: astDumpFilePath)
@@ -134,7 +134,7 @@ public enum GRYCompiler {
 
 	public static func getSwiftASTDump(forFileAt filePath: String) -> String {
 		print("\t- Getting swift AST dump...")
-		let astDumpFilePath = GRYUtils.changeExtension(of: filePath, to: "ast")
+		let astDumpFilePath = GRYUtils.changeExtension(of: filePath, to: .ast)
 		return try! String(contentsOfFile: astDumpFilePath)
 	}
 }

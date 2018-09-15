@@ -42,11 +42,29 @@ public enum GRYUtils {
 	}
 }
 
+public enum GRYFileExtension: String {
+	case ast
+	case json
+
+	case expectedJson
+	case output
+
+	case kt
+	case swift
+
+	//
+	static func +(string: String, fileExtension: GRYFileExtension) -> String {
+		return string + "." + fileExtension.rawValue
+	}
+}
+
 extension GRYUtils {
-	public static func changeExtension(of filePath: String, to newExtension: String) -> String {
+	public static func changeExtension(of filePath: String, to newExtension: GRYFileExtension)
+		-> String
+	{
 		let url = URL(fileURLWithPath: filePath)
 		let urlWithoutExtension = url.deletingPathExtension()
-		let newURL = urlWithoutExtension.appendingPathExtension(newExtension)
+		let newURL = urlWithoutExtension.appendingPathExtension(newExtension.rawValue)
 		return newURL.path
 	}
 

@@ -31,7 +31,7 @@ public class GRYSwiftAST: GRYPrintableAsTree, Equatable, Codable, CustomStringCo
 			let rawAstDump = try String(contentsOfFile: astFilePath)
 
 			// Information in stored files has placeholders for file paths that must be replaced
-			let swiftFilePath = GRYUtils.changeExtension(of: astFilePath, to: "swift")
+			let swiftFilePath = GRYUtils.changeExtension(of: astFilePath, to: .swift)
 			let processedAstDump =
 				rawAstDump.replacingOccurrences(of: "<<testFilePath>>", with: swiftFilePath)
 
@@ -49,7 +49,7 @@ public class GRYSwiftAST: GRYPrintableAsTree, Equatable, Codable, CustomStringCo
 			let rawJSON = try String(contentsOfFile: jsonFilePath)
 
 			// Information in stored files has placeholders for file paths that must be replaced
-			let swiftFilePath = GRYUtils.changeExtension(of: jsonFilePath, to: "swift")
+			let swiftFilePath = GRYUtils.changeExtension(of: jsonFilePath, to: .swift)
 			let escapedFilePath = swiftFilePath.replacingOccurrences(of: "/", with: "\\/")
 			let processedJSON =
 				rawJSON.replacingOccurrences(of: "<<testFilePath>>", with: escapedFilePath)
@@ -183,7 +183,7 @@ public class GRYSwiftAST: GRYPrintableAsTree, Equatable, Codable, CustomStringCo
 		let rawJsonString = String(data: jsonData, encoding: .utf8)!
 
 		// Absolute file paths must be replaced with placeholders before writing to file.
-		let swiftFilePath = GRYUtils.changeExtension(of: filePath, to: "swift")
+		let swiftFilePath = GRYUtils.changeExtension(of: filePath, to: .swift)
 		let escapedFilePath = swiftFilePath.replacingOccurrences(of: "/", with: "\\/")
 		let processedJsonString =
 			rawJsonString.replacingOccurrences(of: escapedFilePath, with: "<<testFilePath>>")

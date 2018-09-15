@@ -27,10 +27,10 @@ class IntegrationTest: XCTestCase {
 			// Generate kotlin code using the whole compiler
 			let testFilePath = TestUtils.testFilesPath + testName
 			let generatedKotlinCode =
-				GRYCompiler.generateKotlinCode(forFileAt: testFilePath + ".swift")!
+				GRYCompiler.generateKotlinCode(forFileAt: testFilePath + .swift)!
 
 			// Load the previously stored kotlin code from file
-			let expectedKotlinCode = try! String(contentsOfFile: testFilePath + ".kt")
+			let expectedKotlinCode = try! String(contentsOfFile: testFilePath + .kt)
 
 			XCTAssert(
 				generatedKotlinCode == expectedKotlinCode,
