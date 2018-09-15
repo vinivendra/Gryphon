@@ -57,13 +57,13 @@ func updateFiles(inFolder folder: String) {
         fatalError("Please update ast file \(astFilePath) with the `dump-ast.pl` perl script.")
     }
 
-    updateFiles(in: folder, from: .swiftASTDump, to: .json)
+    updateFiles(in: folder, from: .swiftASTDump, to: .grySwiftASTJson)
     { (astFilePath: String, jsonFilePath: String) in
         let ast = GRYSwiftAST(astFile: astFilePath)
         ast.writeAsJSON(toFile: jsonFilePath)
     }
 
-    updateFiles(in: folder, from: .json, to: .expectedJson)
+    updateFiles(in: folder, from: .grySwiftASTJson, to: .expectedJson)
     { (jsonFilePath: String, expectedJsonFilePath: String) in
         let jsonContents = try! String(contentsOfFile: jsonFilePath)
         let expectedJsonURL = URL(fileURLWithPath: expectedJsonFilePath)

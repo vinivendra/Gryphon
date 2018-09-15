@@ -112,7 +112,7 @@ public enum GRYCompiler {
 		print("\t- Building GRYSwiftAst from external AST...")
 		let ast = GRYSwiftAST(astFile: astFilePath)
 
-		let jsonFilePath = GRYUtils.changeExtension(of: filePath, to: .json)
+		let jsonFilePath = GRYUtils.changeExtension(of: filePath, to: .grySwiftASTJson)
 		let jsonFileWasJustCreated = GRYUtils.createFileIfNeeded(at: jsonFilePath, containing: "")
 		let jsonIsOutdated =
 			jsonFileWasJustCreated || GRYUtils.file(astFilePath, wasModifiedLaterThan: jsonFilePath)

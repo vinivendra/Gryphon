@@ -45,7 +45,7 @@ public enum GRYUtils {
 public enum GRYFileExtension: String {
 	// This should be the same as the extension in the dump-ast.pl and separateASTs.pl files
 	case swiftASTDump
-	case json
+	case grySwiftASTJson
 
 	case expectedJson
 	case output
