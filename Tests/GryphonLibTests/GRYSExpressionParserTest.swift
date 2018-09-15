@@ -125,7 +125,8 @@ class GRYSExpressionParserTest: XCTestCase {
 			let createdAST = GRYSwiftAST(astFile: testFilePath + .swiftASTDump)
 
 			// Load the previously stored AST from file
-			let expectedAST = GRYSwiftAST.initialize(fromJsonInFile: testFilePath + .expectedJson)
+			let expectedAST = GRYSwiftAST.initialize(
+				fromJsonInFile: testFilePath + .expectedGrySwiftASTJson)
 
 			XCTAssert(
 				createdAST == expectedAST,

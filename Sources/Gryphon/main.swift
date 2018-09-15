@@ -63,7 +63,7 @@ func updateFiles(inFolder folder: String) {
         ast.writeAsJSON(toFile: jsonFilePath)
     }
 
-    updateFiles(in: folder, from: .grySwiftASTJson, to: .expectedJson)
+    updateFiles(in: folder, from: .grySwiftASTJson, to: .expectedGrySwiftASTJson)
     { (jsonFilePath: String, expectedJsonFilePath: String) in
         let jsonContents = try! String(contentsOfFile: jsonFilePath)
         let expectedJsonURL = URL(fileURLWithPath: expectedJsonFilePath)

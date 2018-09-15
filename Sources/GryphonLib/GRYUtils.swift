@@ -47,7 +47,7 @@ public enum GRYFileExtension: String {
 	case swiftASTDump
 	case grySwiftASTJson
 
-	case expectedJson
+	case expectedGrySwiftASTJson
 	case output
 
 	case kt
