@@ -29,6 +29,7 @@ public class GRYSwift4_1Translator {
 	public func translateAST(_ ast: GRYSwiftAST) -> GRYSourceFile? {
 		// First, translate declarations that shouldn't be inside the main function
 		let declarationNames = [
+			"Protocol",
 			"Class Declaration",
 			"Extension Declaration",
 			"Function Declaration",
