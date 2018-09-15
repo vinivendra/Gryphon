@@ -60,9 +60,8 @@ public class GRYSwift4_1Translator {
 		switch subtree.name {
 		case "Top Level Code Declaration":
 			result = translate(topLevelCode: subtree)
-//		case "Import Declaration":
-//			diagnostics?.logSuccessfulTranslation(subtree.name)
-//			result = .translation("")
+		case "Import Declaration":
+			result = GRYImportDeclaration(subtree.standaloneAttributes[0])
 		case "Class Declaration":
 			result = translate(classDeclaration: subtree)
 //		case "Constructor Declaration":
@@ -86,10 +85,8 @@ public class GRYSwift4_1Translator {
 //				withIndentation: indentation)
 		case "Function Declaration":
 			result = translate(functionDeclaration: subtree)
-//		case "Protocol":
-//			result = translate(
-//				protocolDeclaration: subtree,
-//				withIndentation: indentation)
+		case "Protocol":
+			result = translate(protocolDeclaration: subtree)
 		case "Throw Statement":
 			result = translate(throwStatement: subtree)
 //		case "Struct Declaration":
@@ -188,6 +185,16 @@ public class GRYSwift4_1Translator {
 	}
 
 	// MARK: - Leaf translations
+	private func translate(protocolDeclaration: GRYSwiftAST) -> GRYProtocolDeclaration? {
+		precondition(protocolDeclaration.name == "Protocol")
+
+		guard let protocolName = protocolDeclaration.standaloneAttributes.first else {
+			return nil
+		}
+
+		return GRYProtocolDeclaration(name: protocolName)
+	}
+
 	private func translate(assignExpression: GRYSwiftAST) -> GRYAssignmentStatement? {
 		precondition(assignExpression.name == "Assign Expression")
 
