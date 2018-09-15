@@ -39,7 +39,8 @@ class AcceptanceTest: XCTestCase {
 
 				XCTAssert(
 					compilerResult.standardError == "",
-					"Test \(testName): the compiler encountered an error: \(compilerResult.standardError).")
+					"Test \(testName): the compiler encountered an error: "
+						+ "\(compilerResult.standardError).")
 				XCTAssert(
 					compilerResult.status == 0,
 					"Test \(testName): the compiler exited with value \(compilerResult.status).")
