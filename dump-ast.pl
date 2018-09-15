@@ -6,7 +6,7 @@ foreach (@ARGV) {
 	$swiftFilePath = $_;
 	
 	$astFilePath = $swiftFilePath;
-	$astFilePath =~ s/(.*).swift/$1.swiftASTDump/;
+	$astFilePath =~ s/(.*).swift/$1.swiftAstDump/;
 	
 	# If the ast file already exists, check if it's up to date
 	if (-e $astFilePath) {

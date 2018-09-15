@@ -16,11 +16,11 @@
 
 import Foundation
 
-public class GRYSwiftAST: GRYPrintableAsTree, Equatable, Codable, CustomStringConvertible {
+public class GRYSwiftAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvertible {
 	let name: String
 	let standaloneAttributes: [String]
 	let keyValueAttributes: [String: String]
-	let subtrees: [GRYSwiftAST]
+	let subtrees: [GRYSwiftAst]
 
 	//
 	static public var horizontalLimitWhenPrinting = Int.max
@@ -44,7 +44,7 @@ public class GRYSwiftAST: GRYPrintableAsTree, Equatable, Codable, CustomStringCo
 		}
 	}
 
-	public static func initialize(fromJsonInFile jsonFilePath: String) -> GRYSwiftAST {
+	public static func initialize(fromJsonInFile jsonFilePath: String) -> GRYSwiftAst {
 		do {
 			let rawJSON = try String(contentsOfFile: jsonFilePath)
 
@@ -55,7 +55,7 @@ public class GRYSwiftAST: GRYPrintableAsTree, Equatable, Codable, CustomStringCo
 				rawJSON.replacingOccurrences(of: "<<testFilePath>>", with: escapedFilePath)
 
 			let astData = Data(processedJSON.utf8)
-			return try JSONDecoder().decode(GRYSwiftAST.self, from: astData)
+			return try JSONDecoder().decode(GRYSwiftAst.self, from: astData)
 		}
 		catch let error {
 			fatalError("""
@@ -69,7 +69,7 @@ public class GRYSwiftAST: GRYPrintableAsTree, Equatable, Codable, CustomStringCo
 	internal init(parser: GRYSExpressionParser, extraKeyValues: [String: String] = [:]) {
 		var standaloneAttributes = [String]()
 		var keyValueAttributes = [String: String]()
-		var subtrees = [GRYSwiftAST]()
+		var subtrees = [GRYSwiftAst]()
 
 		parser.readOpenParentheses()
 		let name = parser.readIdentifier()
@@ -91,7 +91,7 @@ public class GRYSwiftAST: GRYPrintableAsTree, Equatable, Codable, CustomStringCo
 				}
 
 				// Parse subtrees
-				let subtree = GRYSwiftAST(parser: parser, extraKeyValues: extraKeyValuesForSubtrees)
+				let subtree = GRYSwiftAst(parser: parser, extraKeyValues: extraKeyValuesForSubtrees)
 				subtrees.append(subtree)
 			}
 				// Finish this branch
@@ -135,7 +135,7 @@ public class GRYSwiftAST: GRYPrintableAsTree, Equatable, Codable, CustomStringCo
 			keyValueAttributes.merging(extraKeyValues, uniquingKeysWith: { a, _ in a })
 	}
 
-	internal init(_ name: String, _ subtrees: [GRYSwiftAST] = []) {
+	internal init(_ name: String, _ subtrees: [GRYSwiftAst] = []) {
 		self.name = name
 		self.standaloneAttributes = []
 		self.keyValueAttributes = [:]
@@ -146,7 +146,7 @@ public class GRYSwiftAST: GRYPrintableAsTree, Equatable, Codable, CustomStringCo
 		_ name: String,
 		_ standaloneAttributes: [String],
 		_ keyValueAttributes: [String: String],
-		_ subtrees: [GRYSwiftAST] = [])
+		_ subtrees: [GRYSwiftAst] = [])
 	{
 		self.name = name
 		self.standaloneAttributes = standaloneAttributes
@@ -159,15 +159,15 @@ public class GRYSwiftAST: GRYPrintableAsTree, Equatable, Codable, CustomStringCo
 		return keyValueAttributes[key]
 	}
 
-	func subtree(named name: String) -> GRYSwiftAST? {
+	func subtree(named name: String) -> GRYSwiftAst? {
 		return subtrees.first { $0.name == name }
 	}
 
-	func subtree(at index: Int) -> GRYSwiftAST? {
+	func subtree(at index: Int) -> GRYSwiftAst? {
 		return subtrees[safe: index]
 	}
 
-	func subtree(at index: Int, named name: String) -> GRYSwiftAST? {
+	func subtree(at index: Int, named name: String) -> GRYSwiftAst? {
 		guard let subtree = subtrees[safe: index],
 			subtree.name == name else
 		{
@@ -219,7 +219,7 @@ public class GRYSwiftAST: GRYPrintableAsTree, Equatable, Codable, CustomStringCo
 		return result
 	}
 
-	public static func == (lhs: GRYSwiftAST, rhs: GRYSwiftAST) -> Bool {
+	public static func == (lhs: GRYSwiftAst, rhs: GRYSwiftAst) -> Bool {
 		return lhs.name == rhs.name &&
 			lhs.standaloneAttributes == rhs.standaloneAttributes &&
 			lhs.keyValueAttributes == rhs.keyValueAttributes &&

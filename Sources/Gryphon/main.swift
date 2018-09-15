@@ -52,18 +52,18 @@ func updateFiles(
 func updateFiles(inFolder folder: String) {
 	print("Updating files in \(folder)...")
 
-    updateFiles(in: folder, from: .swift, to: .swiftASTDump)
+    updateFiles(in: folder, from: .swift, to: .swiftAstDump)
     { (_: String, astFilePath: String) in
         fatalError("Please update ast file \(astFilePath) with the `dump-ast.pl` perl script.")
     }
 
-    updateFiles(in: folder, from: .swiftASTDump, to: .grySwiftASTJson)
+    updateFiles(in: folder, from: .swiftAstDump, to: .grySwiftAstJson)
     { (astFilePath: String, jsonFilePath: String) in
-        let ast = GRYSwiftAST(astFile: astFilePath)
+        let ast = GRYSwiftAst(astFile: astFilePath)
         ast.writeAsJSON(toFile: jsonFilePath)
     }
 
-    updateFiles(in: folder, from: .grySwiftASTJson, to: .expectedGrySwiftASTJson)
+    updateFiles(in: folder, from: .grySwiftAstJson, to: .expectedGrySwiftAstJson)
     { (jsonFilePath: String, expectedJsonFilePath: String) in
         let jsonContents = try! String(contentsOfFile: jsonFilePath)
         let expectedJsonURL = URL(fileURLWithPath: expectedJsonFilePath)

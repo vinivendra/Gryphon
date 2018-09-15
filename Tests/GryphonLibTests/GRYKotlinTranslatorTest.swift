@@ -26,7 +26,7 @@ class GRYKotlinTranslatorTest: XCTestCase {
 
 			// Create the Kotlin code using the mock AST
 			let testFilePath = TestUtils.testFilesPath + testName
-			let ast = GRYSwiftAST.initialize(fromJsonInFile: testFilePath + .grySwiftASTJson)
+			let ast = GRYSwiftAst.initialize(fromJsonInFile: testFilePath + .grySwiftAstJson)
 			let createdKotlinCode = GRYKotlinTranslator().translateAST(ast)!
 
 			// Load the previously stored Kotlin code from file

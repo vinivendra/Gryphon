@@ -1,5 +1,5 @@
 
-$astDumpExtension = "swiftASTDump"
+$astDumpExtension = "swiftAstDump"
 
 foreach (@ARGV) {
     $astDumpFilePath = $_;
