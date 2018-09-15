@@ -1,37 +1,39 @@
 
+$astDumpExtension = "swiftASTDump"
+
 foreach (@ARGV) {
-    $astFilePath = $_;
+    $astDumpFilePath = $_;
 
     # Grab the filename without the extension
-    if ($astFilePath =~ /(.*)\.ast/) {
+    if ($astDumpFilePath =~ /(.*)\.swiftASTDump/) {
         $pathWithoutExtension = $1;
 
         # Open the ast file
-        open(my $astFileHandle, "$astFilePath") or die "Could not read from ast file '$astFilePath' $!";
+        open(my $astDumpFileHandle, "$astDumpFilePath") or die "Could not read from ast file '$astDumpFilePath' $!";
 
         # Tell perl to read it as binary
-        binmode($astFileHandle);
+        binmode($astDumpFileHandle);
         # And tell it not to stop reading at a newline
         undef $/;
         # Read the file into memory
-        my $astDump = <$astFileHandle>;
+        my $astDump = <$astDumpFileHandle>;
 
         # Start a counter for the output file names
         $i = 0;
 
         # OK to start
-        print "Separating $astFilePath\n";
+        print "Separating $astDumpFilePath\n";
         while ($astDump =~ s/(\(source_file[\s\S]+?)(!?\(source_file)/(source_file/) {
 
             # Increase the filename counter
             $i = $i + 1;
 
             # Form the output file name
-            $partFileName = "$pathWithoutExtension$i.ast";
+            $partFileName = "$pathWithoutExtension$i.$astDumpExtension";
 
             print "Processing $partFileName...\n";
             # Open or create the output file
-            open(my $fileHandle, '>', "$partFileName") or die "Could not open file '$pathWithoutExtension$i.ast' $!";
+            open(my $fileHandle, '>', "$partFileName") or die "Could not open file '$pathWithoutExtension$i.$astDumpExtension' $!";
             # Overwrite it with the new ast dump
             print $fileHandle $1;
             # Close the output file
@@ -42,10 +44,10 @@ foreach (@ARGV) {
         # Increase the filename counter
         $i = $i + 1;
         # Form the output file name
-        $partFileName = "$pathWithoutExtension$i.ast";
+        $partFileName = "$pathWithoutExtension$i.$astDumpExtension";
         print "Processing $partFileName...\n";
         # Open or create the output file
-        open(my $fileHandle, '>', "$partFileName") or die "Could not open file '$pathWithoutExtension$i.ast' $!";
+        open(my $fileHandle, '>', "$partFileName") or die "Could not open file '$pathWithoutExtension$i.$astDumpExtension' $!";
         # Overwrite it with the remainder of the ast dump
         print $fileHandle $astDump;
         # Close the output file
