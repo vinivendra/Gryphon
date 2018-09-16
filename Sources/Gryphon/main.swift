@@ -54,12 +54,14 @@ func updateFiles(inFolder folder: String) {
 
     updateFiles(in: folder, from: .swift, to: .swiftAstDump)
     { (_: String, astFilePath: String) in
+		// The swiftAstDump files must be updated externally by the perl script. If any files are
+		// out of date, this closure gets called and informs the user how to update them.
         fatalError("Please update ast file \(astFilePath) with the `dump-ast.pl` perl script.")
     }
 
     updateFiles(in: folder, from: .swiftAstDump, to: .grySwiftAstJson)
-    { (astFilePath: String, jsonFilePath: String) in
-        let ast = GRYSwiftAst(astFile: astFilePath)
+    { (dumpFilePath: String, jsonFilePath: String) in
+        let ast = GRYSwiftAst(astFile: dumpFilePath)
         ast.writeAsJSON(toFile: jsonFilePath)
     }
 
@@ -69,6 +71,18 @@ func updateFiles(inFolder folder: String) {
         let expectedJsonURL = URL(fileURLWithPath: expectedJsonFilePath)
         try! jsonContents.write(to: expectedJsonURL, atomically: false, encoding: .utf8)
     }
+
+	updateFiles(in: folder, from: .grySwiftAstJson, to: .gryAstJson)
+	{ (swiftAstFilePath: String, gryphonAstFilePath: String) in
+		let swiftAst = GRYSwiftAst.initialize(fromJsonInFile: swiftAstFilePath)
+		let gryphonAst = GRYSwift4_1Translator().translateAST(swiftAst)!
+		gryphonAst.writeAsJSON(toFile: gryphonAstFilePath)
+
+		let jsonContents = try! String(contentsOfFile: gryphonAstFilePath)
+		let astData = Data(jsonContents.utf8)
+		let decodedAst = try! JSONDecoder().decode(GRYSourceFile.self, from: astData)
+		decodedAst.prettyPrint(horizontalLimit: 100)
+	}
 
 	print("Done!")
 }

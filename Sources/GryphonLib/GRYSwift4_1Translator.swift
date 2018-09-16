@@ -796,7 +796,7 @@ public class GRYSwift4_1Translator {
 		let parameters: GRYTupleExpression
 		if let parenthesesExpression = callExpression.subtree(named: "Parentheses Expression") {
 			let expression = translate(expression: parenthesesExpression)!
-			parameters = [(name: nil, expression: expression)]
+			parameters = [GRYTupleExpression.Pair(name: nil, expression: expression)]
 		}
 		else if let tupleExpression = callExpression.subtree(named: "Tuple Expression") {
 			parameters = translate(tupleExpression: tupleExpression)!
@@ -811,7 +811,7 @@ public class GRYSwift4_1Translator {
 				.subtree(named: "Parentheses Expression")
 			{
 				let expression = translate(expression: parenthesesExpression)!
-				parameters = [(name: nil, expression: expression)]
+				parameters = [GRYTupleExpression.Pair(name: nil, expression: expression)]
 			}
 			else {
 				return nil
@@ -841,10 +841,11 @@ public class GRYSwift4_1Translator {
 
 			// Empty names (like the underscore in "foo(_:)") are represented by ''
 			if name == "_" {
-				tuplePairs.append((name: nil, expression: expression))
+				tuplePairs.append(GRYTupleExpression.Pair(name: nil, expression: expression))
 			}
 			else {
-				tuplePairs.append((name: String(name), expression: expression))
+				tuplePairs.append(
+					GRYTupleExpression.Pair(name: String(name), expression: expression))
 			}
 		}
 

@@ -178,7 +178,7 @@ public class GRYSwiftAst: GRYPrintableAsTree, Equatable, Codable, CustomStringCo
 
 	//
 	public func writeAsJSON(toFile filePath: String) {
-		print("Building AST JSON...")
+		print("Building Swift AST JSON...")
 		let jsonData = try! JSONEncoder().encode(self)
 		let rawJsonString = String(data: jsonData, encoding: .utf8)!
 

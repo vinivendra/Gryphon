@@ -1,0 +1,1 @@
+{"declarations":[],"statements":[{"node":{"value":"Foundation"},"nodeType":"GRYImportDeclaration"},{"node":{"extendsType":null,"setter":null,"expression":{"node":{},"nodeType":"GRYNilLiteralExpression"},"getter":null,"identifier":"x","typeName":"Int?","isLet":false},"nodeType":"GRYVariableDeclaration"}]}

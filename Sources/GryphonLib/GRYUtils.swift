@@ -46,6 +46,7 @@ public enum GRYFileExtension: String {
 	// This should be the same as the extension in the dump-ast.pl and separateASTs.pl files
 	case swiftAstDump
 	case grySwiftAstJson
+	case gryAstJson
 
 	case expectedGrySwiftAstJson
 	case output
@@ -215,8 +216,10 @@ public class GRYHistogram<T>: CustomStringConvertible
 
 		let keyHeaderSpaces = longestNameLength - "Subtree Name".count
 		let valueHeaderSpaces = longestNumberLength - "#".count
-		var result = "| Subtree Name" + keyHeaderSpaces.times(" ") + " | #" + valueHeaderSpaces.times(" ") + " |\n"
-		result += "|" + (longestNameLength + 2).times("-") + "|" + (longestNumberLength + 2).times("-") + "|\n"
+		var result = "| Subtree Name" + keyHeaderSpaces.times(" ") + " | #" +
+			valueHeaderSpaces.times(" ") + " |\n"
+		result += "|" + (longestNameLength + 2).times("-") + "|" +
+			(longestNumberLength + 2).times("-") + "|\n"
 
 		for (key, value) in buffer {
 			let nameSpaces = longestNameLength - "\(key)".count
