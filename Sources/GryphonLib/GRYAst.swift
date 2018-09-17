@@ -231,12 +231,9 @@ public class GRYAstNode: GRYPrintableAsTree, Codable {
 public class GRYTopLevelNode: GRYAstNode {
 }
 
-public class GRYDeclaration: GRYTopLevelNode {
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // MARK: - Declarations
-public class GRYImportDeclaration: GRYDeclaration {
+public class GRYImportDeclaration: GRYTopLevelNode {
 	let value: String
 
 	init(_ value: String) {
@@ -264,7 +261,7 @@ public class GRYImportDeclaration: GRYDeclaration {
 	override public var treeDescription: String { return "Import \(value)" }
 }
 
-public class GRYClassDeclaration: GRYDeclaration {
+public class GRYClassDeclaration: GRYTopLevelNode {
 	let name: String
 	let inherits: [String]
 	let members: [GRYTopLevelNode]
@@ -307,7 +304,7 @@ public class GRYClassDeclaration: GRYDeclaration {
 	}
 }
 
-public class GRYConstructorDeclaration: GRYDeclaration {
+public class GRYConstructorDeclaration: GRYTopLevelNode {
 	let isImplicit: Bool
 
 	init(isImplicit: Bool) {
@@ -342,7 +339,7 @@ public class GRYConstructorDeclaration: GRYDeclaration {
 	}
 }
 
-public class GRYDestructorDeclaration: GRYDeclaration {
+public class GRYDestructorDeclaration: GRYTopLevelNode {
 	let isImplicit: Bool
 
 	init(isImplicit: Bool) {
@@ -377,7 +374,7 @@ public class GRYDestructorDeclaration: GRYDeclaration {
 	}
 }
 
-public class GRYEnumDeclaration: GRYDeclaration {
+public class GRYEnumDeclaration: GRYTopLevelNode {
 	let access: String
 	let name: String
 	let inherits: [String]
@@ -428,7 +425,7 @@ public class GRYEnumDeclaration: GRYDeclaration {
 	}
 }
 
-public class GRYProtocolDeclaration: GRYDeclaration {
+public class GRYProtocolDeclaration: GRYTopLevelNode {
 	let name: String
 
 	init(name: String) {
@@ -456,7 +453,7 @@ public class GRYProtocolDeclaration: GRYDeclaration {
 	override public var treeDescription: String { return "Protocol \(name)" }
 }
 
-public class GRYStructDeclaration: GRYDeclaration {
+public class GRYStructDeclaration: GRYTopLevelNode {
 	let name: String
 
 	init(name: String) {
@@ -484,7 +481,7 @@ public class GRYStructDeclaration: GRYDeclaration {
 	override public var treeDescription: String { return "Struct \(name)" }
 }
 
-public class GRYFunctionDeclaration: GRYDeclaration {
+public class GRYFunctionDeclaration: GRYTopLevelNode {
 	let prefix: String
 	let parameterNames: [String]
 	let parameterTypes: [String]
@@ -564,7 +561,7 @@ public class GRYFunctionDeclaration: GRYDeclaration {
 	}
 }
 
-public class GRYVariableDeclaration: GRYDeclaration {
+public class GRYVariableDeclaration: GRYTopLevelNode {
 	let identifier: String
 	let typeName: String
 	let expression: GRYExpression?
@@ -655,10 +652,7 @@ public class GRYVariableDeclaration: GRYDeclaration {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // MARK: - Statements
-public class GRYStatement: GRYTopLevelNode {
-}
-
-public class GRYForEachStatement: GRYStatement {
+public class GRYForEachStatement: GRYTopLevelNode {
 	let collection: GRYExpression
 	let variable: GRYExpression
 	let statements: [GRYTopLevelNode]
@@ -703,15 +697,15 @@ public class GRYForEachStatement: GRYStatement {
 	}
 }
 
-public class GRYIfStatement: GRYStatement {
+public class GRYIfStatement: GRYTopLevelNode {
 	let conditions: [GRYExpression]
-	let declarations: [GRYDeclaration]
+	let declarations: [GRYTopLevelNode]
 	let statements: [GRYTopLevelNode]
 	let elseStatement: GRYIfStatement?
 	let isGuard: Bool
 
 	init(conditions: [GRYExpression],
-		 declarations: [GRYDeclaration],
+		 declarations: [GRYTopLevelNode],
 		 statements: [GRYTopLevelNode],
 		 elseStatement: GRYIfStatement?,
 		 isGuard: Bool)
@@ -737,7 +731,7 @@ public class GRYIfStatement: GRYStatement {
 		let container = try! decoder.container(keyedBy: CodingKeys.self)
 		self.conditions = try! container.decodeNodesArray([GRYExpression].self, forKey: .conditions)
 		self.declarations =
-			try! container.decodeNodesArray([GRYDeclaration].self, forKey: .declarations)
+			try! container.decodeNodesArray([GRYTopLevelNode].self, forKey: .declarations)
 		self.statements =
 			try! container.decodeNodesArray([GRYTopLevelNode].self, forKey: .statements)
 		self.elseStatement =
@@ -773,7 +767,7 @@ public class GRYIfStatement: GRYStatement {
 	}
 }
 
-public class GRYThrowStatement: GRYStatement {
+public class GRYThrowStatement: GRYTopLevelNode {
 	let expression: GRYExpression
 
 	init(expression: GRYExpression) {
@@ -805,7 +799,7 @@ public class GRYThrowStatement: GRYStatement {
 	}
 }
 
-public class GRYReturnStatement: GRYStatement {
+public class GRYReturnStatement: GRYTopLevelNode {
 	let expression: GRYExpression?
 
 	init(expression: GRYExpression?) {
@@ -842,7 +836,7 @@ public class GRYReturnStatement: GRYStatement {
 	}
 }
 
-public class GRYVariableDeclarationStatement: GRYStatement {
+public class GRYVariableDeclarationStatement: GRYTopLevelNode {
 	let variableDeclaration: GRYVariableDeclaration
 
 	init(expression: GRYExpression?,
@@ -889,7 +883,7 @@ public class GRYVariableDeclarationStatement: GRYStatement {
 	}
 }
 
-public class GRYAssignmentStatement: GRYStatement {
+public class GRYAssignmentStatement: GRYTopLevelNode {
 	let leftHand: GRYExpression
 	let rightHand: GRYExpression
 

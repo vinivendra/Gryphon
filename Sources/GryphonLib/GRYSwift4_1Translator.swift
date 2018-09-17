@@ -17,8 +17,6 @@
 public class GRYSwift4_1Translator {
 
 	// MARK: - Properties
-	static var enums = [String]()
-
 	var danglingPatternBinding: (identifier: String, type: String, expression: GRYExpression?)?
 
 	var extendingType: String?
@@ -255,7 +253,6 @@ public class GRYSwift4_1Translator {
 		let access = enumDeclaration.keyValueAttributes["access"] ?? "internal"
 
 		let name = enumDeclaration.standaloneAttributes.first!
-		GRYSwift4_1Translator.enums.append(name)
 
 		let inheritanceArray: [String]
 		if let inheritanceList = enumDeclaration.keyValueAttributes["inherits"] {
@@ -373,16 +370,7 @@ public class GRYSwift4_1Translator {
 			let rightHand = translate(expression: rightHandExpression)!
 			let leftHand = translate(typeExpression: leftHandTree)!
 
-			// Enums become sealed classes, which need parentheses at the end
-//			if GRYKotlinTranslator.enums.contains(leftHandString) {
-//				let capitalizedEnumCase = rightHandString.capitalizedAsCamelCase
-//
-//				diagnostics?.logSuccessfulTranslation(dotSyntaxCallExpression.name)
-//				return .translation("\(leftHandString).\(capitalizedEnumCase)()")
-//			}
-//			else {
 			return GRYDotExpression(leftExpression: leftHand, rightExpression: rightHand)
-//			}
 		}
 
 		return nil
@@ -493,12 +481,12 @@ public class GRYSwift4_1Translator {
 
 	private func translateDeclarationsAndConditions(
 		forIfStatement ifStatement: GRYSwiftAst)
-		-> (declarations: [GRYDeclaration], conditions: [GRYExpression])?
+		-> (declarations: [GRYTopLevelNode], conditions: [GRYExpression])?
 	{
 		precondition(ifStatement.name == "If Statement" || ifStatement.name == "Guard Statement")
 
 		var conditionsResult = [GRYExpression]()
-		var declarationsResult = [GRYDeclaration]()
+		var declarationsResult = [GRYTopLevelNode]()
 
 		let conditions = ifStatement.subtrees.filter {
 			$0.name != "If Statement" && $0.name != "Brace Statement"
