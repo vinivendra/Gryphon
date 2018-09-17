@@ -15,7 +15,7 @@ It's structured as a swift package, so running `swift test` or `swift run` in th
 
 Here's how I set up my environment (you might want to do something similar):
 
-- I use macOS and Xcode as my standard IDE, with the default Xcode project created by `swift package generate-xcodeproj`. I use Xcode to change code, run the app and run the macOS tests.  In Xcode, I change the current working directory (`⌘<` → Run → Options → Use Custom Working Directory → "$SRCROOT") add two run scripts before *Compile Sources* to make life easier, one to automatically get the ASTs from the Swift compiler and one to run Swiftlint:
+- I use macOS and Xcode as my standard IDE, with the default Xcode project created by `swift package generate-xcodeproj`. I use Xcode to change code, run the app and run the macOS tests.  In Xcode, I change the current working directory (`⌘<` → Run → Options → Use Custom Working Directory → "$SRCROOT") and add two run scripts before *Compile Sources* to make life easier, one to automatically update the ASTs from the Swift compiler and one to run Swiftlint:
 
 ````
 cd "$SRCROOT"
