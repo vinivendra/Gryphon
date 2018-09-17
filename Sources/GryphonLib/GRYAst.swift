@@ -661,9 +661,9 @@ public class GRYStatement: GRYTopLevelNode {
 public class GRYForEachStatement: GRYStatement {
 	let collection: GRYExpression
 	let variable: GRYExpression
-	let statements: [GRYStatement]
+	let statements: [GRYTopLevelNode]
 
-	init(collection: GRYExpression, variable: GRYExpression, statements: [GRYStatement]) {
+	init(collection: GRYExpression, variable: GRYExpression, statements: [GRYTopLevelNode]) {
 		self.collection = collection
 		self.variable = variable
 		self.statements = statements
@@ -681,7 +681,8 @@ public class GRYForEachStatement: GRYStatement {
 		let container = try! decoder.container(keyedBy: CodingKeys.self)
 		self.collection = try! container.decodeNode(GRYExpression.self, forKey: .collection)
 		self.variable = try! container.decodeNode(GRYExpression.self, forKey: .variable)
-		self.statements = try! container.decodeNodesArray([GRYStatement].self, forKey: .statements)
+		self.statements =
+			try! container.decodeNodesArray([GRYTopLevelNode].self, forKey: .statements)
 		super.init()
 	}
 
@@ -696,8 +697,8 @@ public class GRYForEachStatement: GRYStatement {
 	override public var treeDescription: String { return "For Each" }
 
 	override public var printableSubtrees: [GRYPrintableAsTree] {
-		return [GRYPrintableTree(description: "Collection", subtrees: [collection]),
-				GRYPrintableTree(description: "Variable", subtrees: [variable]),
+		return [GRYPrintableTree(description: "Variable", subtrees: [variable]),
+				GRYPrintableTree(description: "Collection", subtrees: [collection]),
 				GRYPrintableTree(description: "Statements", subtrees: statements), ]
 	}
 }

@@ -80,10 +80,8 @@ public class GRYSwift4_1Translator {
 			let result = translate(subtrees: subtree.subtrees)
 			self.extendingType = nil
 			return result
-//		case "For Each Statement":
-//			result = translate(
-//				forEachStatement: subtree,
-//				withIndentation: indentation)
+		case "For Each Statement":
+			result = translate(forEachStatement: subtree)
 		case "Function Declaration":
 			result = translate(functionDeclaration: subtree)
 		case "Protocol":
@@ -404,6 +402,33 @@ public class GRYSwift4_1Translator {
 		else {
 			return GRYReturnStatement(expression: nil)
 		}
+	}
+
+	private func translate(forEachStatement: GRYSwiftAst) -> GRYForEachStatement? {
+		precondition(forEachStatement.name == "For Each Statement")
+
+		guard let variableName = forEachStatement
+			.subtree(named: "Pattern Named")?
+			.standaloneAttributes.first,
+			let collectionExpression = forEachStatement.subtree(at: 2),
+			let collectionTranslation = translate(expression: collectionExpression) else
+		{
+			return nil
+		}
+
+		guard let braceStatement = forEachStatement.subtrees.last,
+			braceStatement.name == "Brace Statement" else
+		{
+			return nil
+		}
+
+		let statements = translate(subtrees: braceStatement.subtrees)
+		let variable = GRYDeclarationReferenceExpression(identifier: variableName)
+
+		return GRYForEachStatement(
+			collection: collectionTranslation,
+			variable: variable,
+			statements: statements)
 	}
 
 	private func translate(ifStatement: GRYSwiftAst) -> GRYIfStatement? {
