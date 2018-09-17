@@ -16,7 +16,7 @@
 
 import Foundation
 
-public class GRYSourceFile: GRYPrintableAsTree, Codable {
+public class GRYSourceFile: GRYPrintableAsTree, Codable, Equatable, CustomStringConvertible {
 	let declarations: [GRYTopLevelNode]
 	let statements: [GRYTopLevelNode]
 
@@ -60,11 +60,24 @@ public class GRYSourceFile: GRYPrintableAsTree, Codable {
 	}
 
 	//
+	public static func == (lhs: GRYSourceFile, rhs: GRYSourceFile) -> Bool {
+		return lhs.declarations == rhs.declarations &&
+			lhs.statements == rhs.statements
+	}
+
+	//
 	public var treeDescription: String { return "Source File" }
 
 	public var printableSubtrees: [GRYPrintableAsTree] {
 		return [GRYPrintableTree(description: "Declarations", subtrees: declarations),
 				GRYPrintableTree(description: "Statements", subtrees: statements), ]
+	}
+
+	//
+	public var description: String {
+		var result = ""
+		prettyPrint { result += $0 }
+		return result
 	}
 }
 
@@ -221,11 +234,175 @@ fileprivate extension KeyedDecodingContainer {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // MARK: - Root AST nodes
-public class GRYAstNode: GRYPrintableAsTree, Codable {
+public class GRYAstNode: GRYPrintableAsTree, Codable, Equatable {
 	fileprivate init() { }
 
 	public var treeDescription: String { fatalError("AST nodes should provide their own names") }
 	public var printableSubtrees: [GRYPrintableAsTree] { return [] }
+
+	//
+	public static func == (lhs: GRYAstNode, rhs: GRYAstNode) -> Bool {
+		if type(of: lhs) != type(of: rhs) {
+			return false
+		}
+		else if let lhs = lhs as? GRYImportDeclaration,
+			let rhs = rhs as? GRYImportDeclaration
+		{
+			return lhs == rhs
+		}
+		else if let lhs = lhs as? GRYClassDeclaration,
+			let rhs = rhs as? GRYClassDeclaration
+		{
+			return lhs == rhs
+		}
+		else if let lhs = lhs as? GRYConstructorDeclaration,
+			let rhs = rhs as? GRYConstructorDeclaration
+		{
+			return lhs == rhs
+		}
+		else if let lhs = lhs as? GRYDestructorDeclaration,
+			let rhs = rhs as? GRYDestructorDeclaration
+		{
+			return lhs == rhs
+		}
+		else if let lhs = lhs as? GRYEnumDeclaration,
+			let rhs = rhs as? GRYEnumDeclaration
+		{
+			return lhs == rhs
+		}
+		else if let lhs = lhs as? GRYProtocolDeclaration,
+			let rhs = rhs as? GRYProtocolDeclaration
+		{
+			return lhs == rhs
+		}
+		else if let lhs = lhs as? GRYStructDeclaration,
+			let rhs = rhs as? GRYStructDeclaration
+		{
+			return lhs == rhs
+		}
+		else if let lhs = lhs as? GRYFunctionDeclaration,
+			let rhs = rhs as? GRYFunctionDeclaration
+		{
+			return lhs == rhs
+		}
+		else if let lhs = lhs as? GRYVariableDeclaration,
+			let rhs = rhs as? GRYVariableDeclaration
+		{
+			return lhs == rhs
+		}
+		else if let lhs = lhs as? GRYForEachStatement,
+			let rhs = rhs as? GRYForEachStatement
+		{
+			return lhs == rhs
+		}
+		else if let lhs = lhs as? GRYIfStatement,
+			let rhs = rhs as? GRYIfStatement
+		{
+			return lhs == rhs
+		}
+		else if let lhs = lhs as? GRYThrowStatement,
+			let rhs = rhs as? GRYThrowStatement
+		{
+			return lhs == rhs
+		}
+		else if let lhs = lhs as? GRYReturnStatement,
+			let rhs = rhs as? GRYReturnStatement
+		{
+			return lhs == rhs
+		}
+		else if let lhs = lhs as? GRYVariableDeclarationStatement,
+			let rhs = rhs as? GRYVariableDeclarationStatement
+		{
+			return lhs == rhs
+		}
+		else if let lhs = lhs as? GRYAssignmentStatement,
+			let rhs = rhs as? GRYAssignmentStatement
+		{
+			return lhs == rhs
+		}
+		else if let lhs = lhs as? GRYForceValueExpression,
+			let rhs = rhs as? GRYForceValueExpression
+		{
+			return lhs == rhs
+		}
+		else if let lhs = lhs as? GRYDeclarationReferenceExpression,
+			let rhs = rhs as? GRYDeclarationReferenceExpression
+		{
+			return lhs == rhs
+		}
+		else if let lhs = lhs as? GRYTypeExpression,
+			let rhs = rhs as? GRYTypeExpression
+		{
+			return lhs == rhs
+		}
+		else if let lhs = lhs as? GRYSubscriptExpression,
+			let rhs = rhs as? GRYSubscriptExpression
+		{
+			return lhs == rhs
+		}
+		else if let lhs = lhs as? GRYArrayExpression,
+			let rhs = rhs as? GRYArrayExpression
+		{
+			return lhs == rhs
+		}
+		else if let lhs = lhs as? GRYDotExpression,
+			let rhs = rhs as? GRYDotExpression
+		{
+			return lhs == rhs
+		}
+		else if let lhs = lhs as? GRYBinaryOperatorExpression,
+			let rhs = rhs as? GRYBinaryOperatorExpression
+		{
+			return lhs == rhs
+		}
+		else if let lhs = lhs as? GRYUnaryOperatorExpression,
+			let rhs = rhs as? GRYUnaryOperatorExpression
+		{
+			return lhs == rhs
+		}
+		else if let lhs = lhs as? GRYCallExpression,
+			let rhs = rhs as? GRYCallExpression
+		{
+			return lhs == rhs
+		}
+		else if let lhs = lhs as? GRYLiteralExpression<Int>,
+			let rhs = rhs as? GRYLiteralExpression<Int>
+		{
+			return lhs.value == rhs.value
+		}
+		else if let lhs = lhs as? GRYLiteralExpression<Double>,
+			let rhs = rhs as? GRYLiteralExpression<Double>
+		{
+			return lhs.value == rhs.value
+		}
+		else if let lhs = lhs as? GRYLiteralExpression<Bool>,
+			let rhs = rhs as? GRYLiteralExpression<Bool>
+		{
+			return lhs.value == rhs.value
+		}
+		else if let lhs = lhs as? GRYLiteralExpression<String>,
+			let rhs = rhs as? GRYLiteralExpression<String>
+		{
+			return lhs.value == rhs.value
+		}
+		else if let lhs = lhs as? GRYNilLiteralExpression,
+			let rhs = rhs as? GRYNilLiteralExpression
+		{
+			return lhs == rhs
+		}
+		else if let lhs = lhs as? GRYInterpolatedStringLiteralExpression, let rhs = rhs as? GRYInterpolatedStringLiteralExpression
+		{
+			return lhs == rhs
+		}
+		else if let lhs = lhs as? GRYTupleExpression,
+			let rhs = rhs as? GRYTupleExpression
+		{
+			return lhs == rhs
+		}
+		else {
+			return false
+		}
+	}
 }
 
 public class GRYTopLevelNode: GRYAstNode {
@@ -259,6 +436,11 @@ public class GRYImportDeclaration: GRYTopLevelNode {
 
 	//
 	override public var treeDescription: String { return "Import \(value)" }
+
+	//
+	public static func == (lhs: GRYImportDeclaration, rhs: GRYImportDeclaration) -> Bool {
+		return lhs.value == rhs.value
+	}
 }
 
 public class GRYClassDeclaration: GRYTopLevelNode {
@@ -302,6 +484,13 @@ public class GRYClassDeclaration: GRYTopLevelNode {
 		return [GRYPrintableTree(description: "Inherits", subtrees: inherits),
 				GRYPrintableTree(description: "Members", subtrees: members), ]
 	}
+
+	//
+	public static func == (lhs: GRYClassDeclaration, rhs: GRYClassDeclaration) -> Bool {
+		return lhs.name == rhs.name &&
+			lhs.inherits == rhs.inherits &&
+			lhs.members == rhs.members
+	}
 }
 
 public class GRYConstructorDeclaration: GRYTopLevelNode {
@@ -337,6 +526,11 @@ public class GRYConstructorDeclaration: GRYTopLevelNode {
 			return "Constructor"
 		}
 	}
+
+	//
+	public static func == (lhs: GRYConstructorDeclaration, rhs: GRYConstructorDeclaration) -> Bool {
+		return lhs.isImplicit == rhs.isImplicit
+	}
 }
 
 public class GRYDestructorDeclaration: GRYTopLevelNode {
@@ -371,6 +565,11 @@ public class GRYDestructorDeclaration: GRYTopLevelNode {
 		else {
 			return "Destructor"
 		}
+	}
+
+	//
+	public static func == (lhs: GRYDestructorDeclaration, rhs: GRYDestructorDeclaration) -> Bool {
+		return lhs.isImplicit == rhs.isImplicit
 	}
 }
 
@@ -423,6 +622,14 @@ public class GRYEnumDeclaration: GRYTopLevelNode {
 				GRYPrintableTree(description: "Elements",
 								 subtrees: elements), ]
 	}
+
+	//
+	public static func == (lhs: GRYEnumDeclaration, rhs: GRYEnumDeclaration) -> Bool {
+		return lhs.access == rhs.access &&
+			lhs.name == rhs.name &&
+			lhs.inherits == rhs.inherits &&
+			lhs.elements == rhs.elements
+	}
 }
 
 public class GRYProtocolDeclaration: GRYTopLevelNode {
@@ -451,6 +658,11 @@ public class GRYProtocolDeclaration: GRYTopLevelNode {
 
 	//
 	override public var treeDescription: String { return "Protocol \(name)" }
+
+	//
+	public static func == (lhs: GRYProtocolDeclaration, rhs: GRYProtocolDeclaration) -> Bool {
+		return lhs.name == rhs.name
+	}
 }
 
 public class GRYStructDeclaration: GRYTopLevelNode {
@@ -479,6 +691,11 @@ public class GRYStructDeclaration: GRYTopLevelNode {
 
 	//
 	override public var treeDescription: String { return "Struct \(name)" }
+
+	//
+	public static func == (lhs: GRYStructDeclaration, rhs: GRYStructDeclaration) -> Bool {
+		return lhs.name == rhs.name
+	}
 }
 
 public class GRYFunctionDeclaration: GRYTopLevelNode {
@@ -558,6 +775,18 @@ public class GRYFunctionDeclaration: GRYTopLevelNode {
 			 GRYPrintableTree(description: "Statements", subtrees: statements), ]
 
 		return result.compactMap { $0 }
+	}
+
+	//
+	public static func == (lhs: GRYFunctionDeclaration, rhs: GRYFunctionDeclaration) -> Bool {
+		let result = lhs.prefix == rhs.prefix &&
+			lhs.parameterNames == rhs.parameterNames &&
+			lhs.parameterTypes == rhs.parameterTypes &&
+			lhs.returnType == rhs.returnType &&
+			lhs.isImplicit == rhs.isImplicit &&
+			lhs.statements == rhs.statements &&
+			lhs.access == rhs.access
+		return result
 	}
 }
 
@@ -648,6 +877,17 @@ public class GRYVariableDeclaration: GRYTopLevelNode {
 
 		return result.compactMap { $0 }
 	}
+
+	//
+	public static func == (lhs: GRYVariableDeclaration, rhs: GRYVariableDeclaration) -> Bool {
+		return lhs.identifier == rhs.identifier &&
+		lhs.typeName == rhs.typeName &&
+		lhs.expression == rhs.expression &&
+		lhs.getter == rhs.getter &&
+		lhs.setter == rhs.setter &&
+		lhs.isLet == rhs.isLet &&
+		lhs.extendsType == rhs.extendsType
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -694,6 +934,13 @@ public class GRYForEachStatement: GRYTopLevelNode {
 		return [GRYPrintableTree(description: "Variable", subtrees: [variable]),
 				GRYPrintableTree(description: "Collection", subtrees: [collection]),
 				GRYPrintableTree(description: "Statements", subtrees: statements), ]
+	}
+
+	//
+	public static func == (lhs: GRYForEachStatement, rhs: GRYForEachStatement) -> Bool {
+		return lhs.collection == rhs.collection &&
+			lhs.variable == rhs.variable &&
+			lhs.statements == rhs.statements
 	}
 }
 
@@ -765,6 +1012,15 @@ public class GRYIfStatement: GRYTopLevelNode {
 
 		return result.compactMap { $0 }
 	}
+
+	//
+	public static func == (lhs: GRYIfStatement, rhs: GRYIfStatement) -> Bool {
+		return lhs.conditions == rhs.conditions &&
+		lhs.declarations == rhs.declarations &&
+		lhs.statements == rhs.statements &&
+		lhs.elseStatement == rhs.elseStatement &&
+		lhs.isGuard == rhs.isGuard
+	}
 }
 
 public class GRYThrowStatement: GRYTopLevelNode {
@@ -796,6 +1052,11 @@ public class GRYThrowStatement: GRYTopLevelNode {
 
 	override public var printableSubtrees: [GRYPrintableAsTree] {
 		return [expression]
+	}
+
+	//
+	public static func == (lhs: GRYThrowStatement, rhs: GRYThrowStatement) -> Bool {
+		return lhs.expression == rhs.expression
 	}
 }
 
@@ -833,6 +1094,11 @@ public class GRYReturnStatement: GRYTopLevelNode {
 		else {
 			return []
 		}
+	}
+
+	//
+	public static func == (lhs: GRYReturnStatement, rhs: GRYReturnStatement) -> Bool {
+		return lhs.expression == rhs.expression
 	}
 }
 
@@ -881,6 +1147,13 @@ public class GRYVariableDeclarationStatement: GRYTopLevelNode {
 	override public var printableSubtrees: [GRYPrintableAsTree] {
 		return variableDeclaration.printableSubtrees
 	}
+
+	//
+	public static func == (
+		lhs: GRYVariableDeclarationStatement, rhs: GRYVariableDeclarationStatement) -> Bool
+	{
+		return lhs.variableDeclaration == rhs.variableDeclaration
+	}
 }
 
 public class GRYAssignmentStatement: GRYTopLevelNode {
@@ -920,6 +1193,12 @@ public class GRYAssignmentStatement: GRYTopLevelNode {
 			GRYPrintableTree(description: "Left hand", subtrees: [leftHand]),
 			GRYPrintableTree(description: "Right hand", subtrees: [rightHand]), ]
 	}
+
+	//
+	public static func == (lhs: GRYAssignmentStatement, rhs: GRYAssignmentStatement) -> Bool {
+		return lhs.leftHand == rhs.leftHand &&
+			lhs.rightHand == rhs.rightHand
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -957,6 +1236,11 @@ public class GRYForceValueExpression: GRYExpression {
 	override public var printableSubtrees: [GRYPrintableAsTree] {
 		return [GRYPrintableTree(description: "Expression", subtrees: [expression]), ]
 	}
+
+	//
+	public static func == (lhs: GRYForceValueExpression, rhs: GRYForceValueExpression) -> Bool {
+		return lhs.expression == rhs.expression
+	}
 }
 
 public class GRYDeclarationReferenceExpression: GRYExpression {
@@ -985,6 +1269,12 @@ public class GRYDeclarationReferenceExpression: GRYExpression {
 
 	//
 	override public var treeDescription: String { return "Declaration Reference \(identifier)" }
+
+	//
+	public static func == (
+		lhs: GRYDeclarationReferenceExpression, rhs: GRYDeclarationReferenceExpression) -> Bool {
+		return lhs.identifier == rhs.identifier
+	}
 }
 
 public class GRYTypeExpression: GRYExpression {
@@ -1013,6 +1303,11 @@ public class GRYTypeExpression: GRYExpression {
 
 	//
 	override public var treeDescription: String { return "Type \(type)" }
+
+	//
+	public static func == (lhs: GRYTypeExpression, rhs: GRYTypeExpression) -> Bool {
+		return lhs.type == rhs.type
+	}
 }
 
 public class GRYSubscriptExpression: GRYExpression {
@@ -1054,6 +1349,12 @@ public class GRYSubscriptExpression: GRYExpression {
 			GRYPrintableTree(description: "Subscripted", subtrees: [subscriptedExpression]),
 			GRYPrintableTree(description: "Index", subtrees: [indexExpression]), ]
 	}
+
+	//
+	public static func == (lhs: GRYSubscriptExpression, rhs: GRYSubscriptExpression) -> Bool {
+		return lhs.subscriptedExpression == rhs.subscriptedExpression &&
+			lhs.indexExpression == rhs.indexExpression
+	}
 }
 
 public class GRYArrayExpression: GRYExpression {
@@ -1085,6 +1386,11 @@ public class GRYArrayExpression: GRYExpression {
 
 	override public var printableSubtrees: [GRYPrintableAsTree] {
 		return elements
+	}
+
+	//
+	public static func == (lhs: GRYArrayExpression, rhs: GRYArrayExpression) -> Bool {
+		return lhs.elements == rhs.elements
 	}
 }
 
@@ -1125,6 +1431,12 @@ public class GRYDotExpression: GRYExpression {
 		return [
 			GRYPrintableTree(description: "Left", subtrees: [leftExpression]),
 			GRYPrintableTree(description: "Right", subtrees: [rightExpression]), ]
+	}
+
+	//
+	public static func == (lhs: GRYDotExpression, rhs: GRYDotExpression) -> Bool {
+		return lhs.leftExpression == rhs.leftExpression &&
+			lhs.rightExpression == rhs.rightExpression
 	}
 }
 
@@ -1172,6 +1484,15 @@ public class GRYBinaryOperatorExpression: GRYExpression {
 			"Operator \(operatorSymbol)",
 			GRYPrintableTree(description: "Right", subtrees: [rightExpression]), ]
 	}
+
+	//
+	public static func == (
+		lhs: GRYBinaryOperatorExpression, rhs: GRYBinaryOperatorExpression) -> Bool
+	{
+		return lhs.leftExpression == rhs.leftExpression &&
+			lhs.rightExpression == rhs.rightExpression &&
+			lhs.operatorSymbol == rhs.operatorSymbol
+	}
 }
 
 public class GRYUnaryOperatorExpression: GRYExpression {
@@ -1211,6 +1532,14 @@ public class GRYUnaryOperatorExpression: GRYExpression {
 			"Operator \(operatorSymbol)",
 			GRYPrintableTree(description: "Expression", subtrees: [expression]), ]
 	}
+
+	//
+	public static func == (
+		lhs: GRYUnaryOperatorExpression, rhs: GRYUnaryOperatorExpression) -> Bool
+	{
+		return lhs.expression == rhs.expression &&
+			lhs.operatorSymbol == rhs.operatorSymbol
+	}
 }
 
 public class GRYCallExpression: GRYExpression {
@@ -1249,9 +1578,15 @@ public class GRYCallExpression: GRYExpression {
 		return [GRYPrintableTree(description: "Function", subtrees: [function]),
 				GRYPrintableTree(description: "Parameters", subtrees: [parameters]), ]
 	}
+
+	//
+	public static func == (lhs: GRYCallExpression, rhs: GRYCallExpression) -> Bool {
+		return lhs.function == rhs.function &&
+			lhs.parameters == rhs.parameters
+	}
 }
 
-public class GRYLiteralExpression<T: Codable>: GRYExpression {
+public class GRYLiteralExpression<T: Codable & Equatable>: GRYExpression {
 	let value: T
 
 	init(value: T) {
@@ -1291,6 +1626,11 @@ public class GRYNilLiteralExpression: GRYExpression {
 
 	//
 	override public var treeDescription: String { return "Nil Literal" }
+
+	//
+	public static func == (lhs: GRYNilLiteralExpression, rhs: GRYNilLiteralExpression) -> Bool {
+		return true
+	}
 }
 
 public class GRYInterpolatedStringLiteralExpression: GRYExpression {
@@ -1324,16 +1664,26 @@ public class GRYInterpolatedStringLiteralExpression: GRYExpression {
 	override public var printableSubtrees: [GRYPrintableAsTree] {
 		return expressions
 	}
+
+	//
+	public static func == (
+		lhs: GRYInterpolatedStringLiteralExpression,
+		rhs: GRYInterpolatedStringLiteralExpression) -> Bool
+	{
+		return lhs.expressions == rhs.expressions
+	}
 }
 
 public class GRYTupleExpression: GRYExpression, ExpressibleByArrayLiteral {
-	public struct Pair: Codable {
+	let pairs: [Pair]
+
+	//
+	public struct Pair: Codable, Equatable {
 		let name: String?
 		let expression: GRYExpression
 	}
 
-	let pairs: [Pair]
-
+	//
 	init(pairs: [Pair]) {
 		self.pairs = pairs
 		super.init()
@@ -1373,5 +1723,10 @@ public class GRYTupleExpression: GRYExpression, ExpressibleByArrayLiteral {
 		return pairs.map {
 			GRYPrintableTree(description: $0.name ?? " _:", subtrees: [$0.expression])
 		}
+	}
+
+	//
+	public static func == (lhs: GRYTupleExpression, rhs: GRYTupleExpression) -> Bool {
+		return lhs.pairs == rhs.pairs
 	}
 }

@@ -58,7 +58,7 @@ internal extension String {
 }
 
 extension Array {
-	/// TODO: Test this.
+	// TODO: Test this.
 	subscript (safe index: Int) -> Element? {
 		if index >= 0 && index < count {
 			return self[index]
@@ -70,5 +70,25 @@ extension Array {
 
 	var secondToLast: Element? {
 		return self.dropLast().last
+	}
+
+	// TODO: Test this.
+	/// Returns the same array, but with the first element moved to the end.
+	func rotated() -> Array<Element> {
+		guard let first = first else {
+			return self
+		}
+
+		var newArray: Array<Element> = Array<Element>()
+		newArray.reserveCapacity(self.count)
+		newArray.append(contentsOf: self.dropFirst())
+		newArray.append(first)
+
+		return newArray
+	}
+
+	/// Moves the first element of the array to the end.
+	mutating func rotate() {
+		self = self.rotated()
 	}
 }
