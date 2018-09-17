@@ -227,6 +227,10 @@ public class GRYSwift4_1Translator {
 			inheritanceArray = []
 		}
 
+		guard !inheritanceArray.contains("GRYIgnore") else {
+			return GRYClassDeclaration(name: name, inherits: inheritanceArray, members: [])
+		}
+
 		// Translate the contents
 		let classContents = translate(subtrees: classDeclaration.subtrees)
 
@@ -255,12 +259,20 @@ public class GRYSwift4_1Translator {
 		let name = enumDeclaration.standaloneAttributes.first!
 		GRYSwift4_1Translator.enums.append(name)
 
-		let inherits: [String]
+		let inheritanceArray: [String]
 		if let inheritanceList = enumDeclaration.keyValueAttributes["inherits"] {
-			inherits = inheritanceList.split(withStringSeparator: ", ")
+			inheritanceArray = inheritanceList.split(withStringSeparator: ", ")
 		}
 		else {
-			inherits = []
+			inheritanceArray = []
+		}
+
+		guard !inheritanceArray.contains("GRYIgnore") else {
+			return GRYEnumDeclaration(
+				access: access,
+				name: name,
+				inherits: inheritanceArray,
+				elements: [])
 		}
 
 		var elements = [String]()
@@ -277,7 +289,7 @@ public class GRYSwift4_1Translator {
 		return GRYEnumDeclaration(
 			access: access,
 			name: name,
-			inherits: inherits,
+			inherits: inheritanceArray,
 			elements: elements)
 	}
 
