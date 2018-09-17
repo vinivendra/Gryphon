@@ -125,8 +125,8 @@ public class GRYSwift4_1Translator {
 		// with little value in logging. There are a few expections.
 
 		switch expression.name {
-//		case "Array Expression":
-//			return translate(arrayExpression: expression)
+		case "Array Expression":
+			return translate(arrayExpression: expression)
 		case "Binary Expression":
 			return translate(binaryExpression: expression)
 		case "Call Expression":
@@ -152,8 +152,8 @@ public class GRYSwift4_1Translator {
 			return translate(typeExpression: expression)
 		case "Member Reference Expression":
 			return translate(memberReferenceExpression: expression)
-//		case "Subscript Expression":
-//			return translate(subscriptExpression: expression)
+		case "Subscript Expression":
+			return translate(subscriptExpression: expression)
 		case "Parentheses Expression":
 			if let firstExpression = expression.subtree(at: 0) {
 				return translate(expression: firstExpression)
@@ -961,6 +961,40 @@ public class GRYSwift4_1Translator {
 		else if let declaration = declarationReferenceExpression["decl"] {
 			let identifier = getIdentifierFromDeclaration(declaration)
 			return GRYDeclarationReferenceExpression(identifier: identifier)
+		}
+		else {
+			return nil
+		}
+	}
+
+	private func translate(subscriptExpression: GRYSwiftAst) -> GRYSubscriptExpression? {
+		precondition(subscriptExpression.name == "Subscript Expression")
+
+		if let parenthesesExpression = subscriptExpression.subtree(
+			at: 1,
+			named: "Parentheses Expression"),
+			let subscriptContents = parenthesesExpression.subtree(at: 0),
+			let subscriptedExpression = subscriptExpression.subtree(at: 0)
+		{
+			let subscriptContentsTranslation = translate(expression: subscriptContents)!
+			let subscriptedExpressionTranslation = translate(expression: subscriptedExpression)!
+
+			return GRYSubscriptExpression(
+				subscriptedExpression: subscriptedExpressionTranslation,
+				indexExpression: subscriptContentsTranslation)
+		}
+		else {
+			return nil
+		}
+	}
+
+	private func translate(arrayExpression: GRYSwiftAst) -> GRYArrayExpression? {
+		precondition(arrayExpression.name == "Array Expression")
+
+		let expressionsArray = arrayExpression.subtrees.map(translate(expression:))
+
+		if let expressionsArray = expressionsArray as? [GRYExpression] {
+			return GRYArrayExpression(elements: expressionsArray)
 		}
 		else {
 			return nil
