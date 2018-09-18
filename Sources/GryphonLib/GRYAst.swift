@@ -16,6 +16,8 @@
 
 import Foundation
 
+// TODO: Try to change this into an enum in the future, i.e. if immutable values really are like
+// references
 public class GRYSourceFile: GRYPrintableAsTree, Codable, Equatable, CustomStringConvertible {
 	let declarations: [GRYTopLevelNode]
 	let statements: [GRYTopLevelNode]
@@ -383,7 +385,8 @@ public class GRYAstNode: GRYPrintableAsTree, Codable, Equatable, CustomStringCon
 		{
 			return lhs == rhs
 		}
-		else if let lhs = lhs as? GRYInterpolatedStringLiteralExpression, let rhs = rhs as? GRYInterpolatedStringLiteralExpression
+		else if let lhs = lhs as? GRYInterpolatedStringLiteralExpression,
+			let rhs = rhs as? GRYInterpolatedStringLiteralExpression
 		{
 			return lhs == rhs
 		}
@@ -1649,7 +1652,8 @@ public class GRYTupleExpression: GRYExpression, ExpressibleByArrayLiteral {
 	required public init(from decoder: Decoder) throws {
 		let container = try! decoder.container(keyedBy: CodingKeys.self)
 		let names = try! container.decode([String?].self, forKey: .names)
-		let expressions = try! container.decodeNodesArray([GRYExpression].self, forKey: .expressions)
+		let expressions =
+			try! container.decodeNodesArray([GRYExpression].self, forKey: .expressions)
 		self.pairs = zip(names, expressions).map { Pair(name: $0, expression: $1) }
 		super.init()
 	}
