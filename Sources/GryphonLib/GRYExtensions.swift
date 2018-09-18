@@ -58,7 +58,7 @@ internal extension String {
 }
 
 extension Array {
-	// TODO: Test this.
+	/// Returns nil if index is out of bounds.
 	subscript (safe index: Int) -> Element? {
 		if index >= 0 && index < count {
 			return self[index]
@@ -72,7 +72,6 @@ extension Array {
 		return self.dropLast().last
 	}
 
-	// TODO: Test this.
 	/// Returns the same array, but with the first element moved to the end.
 	func rotated() -> Array<Element> {
 		guard let first = first else {

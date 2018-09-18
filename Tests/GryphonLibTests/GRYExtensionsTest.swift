@@ -118,6 +118,32 @@ class GRYExtensionTest: XCTestCase {
 		}
 	}
 
+	func testSafeIndex() {
+		let array = [1, 2, 3]
+		XCTAssert(array[safe: 0] == 1)
+		XCTAssert(array[safe: 1] == 2)
+		XCTAssert(array[safe: 2] == 3)
+		XCTAssert(array[safe: 3] == nil)
+		XCTAssert(array[safe: -1] == nil)
+	}
+
+	func testRotate() {
+		var array = [1, 2, 3]
+		var array1 = array.rotated()
+		var array2 = array1.rotated()
+		let array3 = array2.rotated()
+		XCTAssertEqual(array1, [2, 3, 1])
+		XCTAssertEqual(array2, [3, 1, 2])
+		XCTAssertEqual(array3, [1, 2, 3])
+
+		array.rotate()
+		array1.rotate()
+		array2.rotate()
+		XCTAssertEqual(array, [2, 3, 1])
+		XCTAssertEqual(array1, [3, 1, 2])
+		XCTAssertEqual(array2, [1, 2, 3])
+	}
+
 	static var allTests = [
 		("testStringSplit", testStringSplit),
 		("testOccurrencesOfSubstring", testOccurrencesOfSubstring),
