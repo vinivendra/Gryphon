@@ -131,8 +131,6 @@ private class GRYAstJsonNode: Codable {
 			node = try! container.decode(GRYThrowStatement.self, forKey: .node)
 		case String(describing: GRYReturnStatement.self):
 			node = try! container.decode(GRYReturnStatement.self, forKey: .node)
-		case String(describing: GRYVariableDeclarationStatement.self):
-			node = try! container.decode(GRYVariableDeclarationStatement.self, forKey: .node)
 		case String(describing: GRYAssignmentStatement.self):
 			node = try! container.decode(GRYAssignmentStatement.self, forKey: .node)
 
@@ -234,7 +232,7 @@ fileprivate extension KeyedDecodingContainer {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // MARK: - Root AST nodes
-public class GRYAstNode: GRYPrintableAsTree, Codable, Equatable {
+public class GRYAstNode: GRYPrintableAsTree, Codable, Equatable, CustomStringConvertible {
 	fileprivate init() { }
 
 	public var treeDescription: String { fatalError("AST nodes should provide their own names") }
@@ -307,11 +305,6 @@ public class GRYAstNode: GRYPrintableAsTree, Codable, Equatable {
 		}
 		else if let lhs = lhs as? GRYReturnStatement,
 			let rhs = rhs as? GRYReturnStatement
-		{
-			return lhs == rhs
-		}
-		else if let lhs = lhs as? GRYVariableDeclarationStatement,
-			let rhs = rhs as? GRYVariableDeclarationStatement
 		{
 			return lhs == rhs
 		}
@@ -402,6 +395,13 @@ public class GRYAstNode: GRYPrintableAsTree, Codable, Equatable {
 		else {
 			return false
 		}
+	}
+
+	//
+	public var description: String {
+		var result = ""
+		prettyPrint { result += $0 }
+		return result
 	}
 }
 
@@ -1099,60 +1099,6 @@ public class GRYReturnStatement: GRYTopLevelNode {
 	//
 	public static func == (lhs: GRYReturnStatement, rhs: GRYReturnStatement) -> Bool {
 		return lhs.expression == rhs.expression
-	}
-}
-
-public class GRYVariableDeclarationStatement: GRYTopLevelNode {
-	let variableDeclaration: GRYVariableDeclaration
-
-	init(expression: GRYExpression?,
-		 identifier: String,
-		 type: String,
-		 getter: GRYFunctionDeclaration?,
-		 setter: GRYFunctionDeclaration?,
-		 isLet: Bool,
-		 extendsType: String?)
-	{
-		self.variableDeclaration = GRYVariableDeclaration(
-			expression: expression,
-			identifier: identifier,
-			type: type,
-			getter: getter,
-			setter: setter,
-			isLet: isLet,
-			extendsType: extendsType)
-		super.init()
-	}
-
-	//
-	enum CodingKeys: String, CodingKey {
-		case variableDeclaration
-	}
-
-	required public init(from decoder: Decoder) throws {
-		let container = try! decoder.container(keyedBy: CodingKeys.self)
-		self.variableDeclaration =
-			try! container.decodeNode(GRYVariableDeclaration.self, forKey: .variableDeclaration)
-		super.init()
-	}
-
-	override public func encode(to encoder: Encoder) throws {
-		var container = encoder.container(keyedBy: CodingKeys.self)
-		try! container.encode(variableDeclaration.withJsonWrapper, forKey: .variableDeclaration)
-	}
-
-	//
-	override public var treeDescription: String { return "Variable Declaration Statement" }
-
-	override public var printableSubtrees: [GRYPrintableAsTree] {
-		return variableDeclaration.printableSubtrees
-	}
-
-	//
-	public static func == (
-		lhs: GRYVariableDeclarationStatement, rhs: GRYVariableDeclarationStatement) -> Bool
-	{
-		return lhs.variableDeclaration == rhs.variableDeclaration
 	}
 }
 

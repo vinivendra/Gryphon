@@ -44,40 +44,7 @@ class GRYSwiftTranslatorTest: XCTestCase {
 		}
 	}
 
-	// TODO: Improve this test (early failures probably mean almost nothing is getting tested)
-	func testEquatable() {
-		let tests = TestUtils.allTestCases
-
-		let swiftAsts = tests.map { testName -> GRYSwiftAst in
-			let testFilePath = TestUtils.testFilesPath + testName
-			return GRYSwiftAst.initialize(fromJsonInFile: testFilePath + .grySwiftAstJson)
-		}
-
-		//
-		let gryphonAsts = swiftAsts.map {
-			GRYSwift4_1Translator().translateAST($0)!
-		}
-
-		let equalGryphonAsts = swiftAsts.map {
-			GRYSwift4_1Translator().translateAST($0)!
-		}
-
-		let differentGryphonAsts = equalGryphonAsts.rotated()
-
-		// If the count is 1, rotating the array won't make it different
-		XCTAssert(differentGryphonAsts.count > 1)
-
-		for (ast1, ast2) in zip(gryphonAsts, equalGryphonAsts) {
-			XCTAssert(ast1 == ast2)
-		}
-
-		for (ast1, ast2) in zip(gryphonAsts, differentGryphonAsts) {
-			XCTAssert(ast1 != ast2)
-		}
-	}
-
 	static var allTests = [
 		("testTranslator", testTranslator),
-		("testEquatable", testEquatable),
 	]
 }
