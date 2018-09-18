@@ -574,12 +574,12 @@ public class GRYDestructorDeclaration: GRYTopLevelNode {
 }
 
 public class GRYEnumDeclaration: GRYTopLevelNode {
-	let access: String
+	let access: String?
 	let name: String
 	let inherits: [String]
 	let elements: [String]
 
-	init(access: String, name: String, inherits: [String], elements: [String]) {
+	init(access: String?, name: String, inherits: [String], elements: [String]) {
 		self.access = access
 		self.name = name
 		self.inherits = inherits
@@ -616,7 +616,7 @@ public class GRYEnumDeclaration: GRYTopLevelNode {
 	override public var treeDescription: String { return "Enum \(name)" }
 
 	override public var printableSubtrees: [GRYPrintableAsTree] {
-		return [access,
+		return [access ?? "",
 				GRYPrintableTree(description: "Inherits",
 								 subtrees: inherits),
 				GRYPrintableTree(description: "Elements",
@@ -705,7 +705,7 @@ public class GRYFunctionDeclaration: GRYTopLevelNode {
 	let returnType: String
 	let isImplicit: Bool
 	let statements: [GRYTopLevelNode]
-	let access: String
+	let access: String?
 
 	init(
 		prefix: String,
@@ -714,7 +714,7 @@ public class GRYFunctionDeclaration: GRYTopLevelNode {
 		returnType: String,
 		isImplicit: Bool,
 		statements: [GRYTopLevelNode],
-		access: String)
+		access: String?)
 	{
 		self.prefix = prefix
 		self.parameterNames = parameterNames

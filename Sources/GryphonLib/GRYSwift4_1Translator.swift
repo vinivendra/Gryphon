@@ -249,8 +249,7 @@ public class GRYSwift4_1Translator {
 	private func translate(enumDeclaration: GRYSwiftAst) -> GRYEnumDeclaration? {
 		precondition(enumDeclaration.name == "Enum Declaration")
 
-		// FIXME:
-		let access = enumDeclaration.keyValueAttributes["access"] ?? "internal"
+		let access = enumDeclaration.keyValueAttributes["access"]
 
 		let name = enumDeclaration.standaloneAttributes.first!
 
@@ -641,7 +640,6 @@ public class GRYSwift4_1Translator {
 			return nil
 		}
 
-		// FIXME: Not sure if access defaults to internal
 		return GRYFunctionDeclaration(
 			prefix: String(functionNamePrefix),
 			parameterNames: parameterNames,
@@ -649,7 +647,7 @@ public class GRYSwift4_1Translator {
 			returnType: returnType,
 			isImplicit: isImplicit,
 			statements: statements,
-			access: access ?? "internal")
+			access: access)
 	}
 
 	private func translate(topLevelCode: GRYSwiftAst) -> GRYTopLevelNode? {
@@ -693,9 +691,9 @@ public class GRYSwift4_1Translator {
 					return nil
 				}
 
+				let access = subtree["access"]
 				let statementsTranslation = translate(subtrees: statements)
 
-				// FIXME: Unsure access defaults to internal
 				if subtree["getter_for"] != nil {
 					getter = GRYFunctionDeclaration(
 						prefix: "get",
@@ -703,7 +701,7 @@ public class GRYSwift4_1Translator {
 						returnType: type,
 						isImplicit: false,
 						statements: statementsTranslation,
-						access: "internal")
+						access: access)
 				}
 				else {
 					setter = GRYFunctionDeclaration(
@@ -713,7 +711,7 @@ public class GRYSwift4_1Translator {
 						returnType: "()",
 						isImplicit: false,
 						statements: statementsTranslation,
-						access: "internal")
+						access: access)
 				}
 			}
 
