@@ -83,6 +83,7 @@ public class GRYSwiftAst: GRYPrintableAsTree, Equatable, Codable, CustomStringCo
 
 				// Check if there's info to pass on to subtrees
 				let extraKeyValuesForSubtrees: [String: String]
+				// TODO: GRYAst should make this unnecessary
 				if self.name == "Extension Declaration" {
 					extraKeyValuesForSubtrees = ["extends_type": standaloneAttributes.first!]
 				}
