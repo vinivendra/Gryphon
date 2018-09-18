@@ -151,17 +151,15 @@ class GRYExtensionTest: XCTestCase {
 }
 
 private enum Fuzzer {
-	// swiftlint:disable trailing_comma
 	static private let characterSets: [[Character]]
 		= [["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "A", "S", "D", "F", "G", "H", "J",
-			"K", "L", "Z", "X", "C", "V", "B", "N", "M"],
+			"K", "L", "Z", "X", "C", "V", "B", "N", "M", ],
 		   ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "a", "s", "d", "f", "g", "h", "j",
-			"k", "l", "z", "x", "c", "v", "b", "n", "m"],
+			"k", "l", "z", "x", "c", "v", "b", "n", "m", ],
 		   ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"],
 		   ["~", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "+", "`", "-", "=", "[",
-			"]", "{", "}", "\\", "|", ";", ":", "'", "\"", ",", "<", ".", ">", "/", "?"],
-		   ["\n", " ", "\t"]]
-	// swiftlint:enable trailing_comma
+			"]", "{", "}", "\\", "|", ";", ":", "'", "\"", ",", "<", ".", ">", "/", "?", ],
+		   ["\n", " ", "\t"], ]
 
 	static func randomTest()
 		-> (string: String, separator: String, occurrences: [TestableRange], components: [String])
