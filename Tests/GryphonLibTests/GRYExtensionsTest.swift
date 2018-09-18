@@ -147,6 +147,8 @@ class GRYExtensionTest: XCTestCase {
 	static var allTests = [
 		("testStringSplit", testStringSplit),
 		("testOccurrencesOfSubstring", testOccurrencesOfSubstring),
+		("testSafeIndex", testSafeIndex),
+		("testRotate", testRotate),
 	]
 }
 
