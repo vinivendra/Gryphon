@@ -3,6 +3,7 @@
 /Packages
 /*.xcodeproj
 **/xcuserdata
+gyb.pyc
 test.*
 test
 /.tmp

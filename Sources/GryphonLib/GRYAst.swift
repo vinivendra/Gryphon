@@ -94,28 +94,10 @@ indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree {
 	case enumDeclaration(access: String?, name: String, inherits: [String], elements: [String])
 	case protocolDeclaration(name: String)
 	case structDeclaration(name: String)
-	case functionDeclaration(prefix: String,
-		parameterNames: [String],
-		parameterTypes: [String],
-		returnType: String,
-		isImplicit: Bool,
-		statements: [GRYTopLevelNode],
-		access: String?)
-	case variableDeclaration(identifier: String,
-		typeName: String,
-		expression: GRYExpression?,
-		getter: GRYTopLevelNode?,
-		setter: GRYTopLevelNode?,
-		isLet: Bool,
-		extendsType: String?)
-	case forEachStatement(collection: GRYExpression,
-		variable: GRYExpression,
-		statements: [GRYTopLevelNode])
-	case ifStatement(conditions: [GRYExpression],
-		declarations: [GRYTopLevelNode],
-		statements: [GRYTopLevelNode],
-		elseStatement: GRYTopLevelNode?,
-		isGuard: Bool)
+	case functionDeclaration(prefix: String, parameterNames: [String], parameterTypes: [String], returnType: String, isImplicit: Bool, statements: [GRYTopLevelNode], access: String?)
+	case variableDeclaration(identifier: String, typeName: String, expression: GRYExpression?, getter: GRYTopLevelNode?, setter: GRYTopLevelNode?, isLet: Bool, extendsType: String?)
+	case forEachStatement(collection: GRYExpression, variable: GRYExpression, statements: [GRYTopLevelNode])
+	case ifStatement(conditions: [GRYExpression], declarations: [GRYTopLevelNode], statements: [GRYTopLevelNode], elseStatement: GRYTopLevelNode?, isGuard: Bool)
 	case throwStatement(expression: GRYExpression)
 	case returnStatement(expression: GRYExpression?)
 	case assignmentStatement(leftHand: GRYExpression, rightHand: GRYExpression)
@@ -139,12 +121,7 @@ indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree {
 			try! container.encode(implicit, forKey: "implicit")
 		case let .destructorDeclaration(implicit: implicit):
 			try! container.encode(implicit, forKey: "implicit")
-		case let .enumDeclaration(
-			access: access,
-			name: name,
-			inherits: inherits,
-			elements: elements):
-
+		case let .enumDeclaration(access: access, name: name, inherits: inherits, elements: elements):
 			try! container.encode(access, forKey: "access")
 			try! container.encode(name, forKey: "name")
 			try! container.encode(inherits, forKey: "inherits")
@@ -153,15 +130,7 @@ indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree {
 			try! container.encode(name, forKey: "name")
 		case let .structDeclaration(name: name):
 			try! container.encode(name, forKey: "name")
-		case let .functionDeclaration(
-			prefix: prefix,
-			parameterNames: parameterNames,
-			parameterTypes: parameterTypes,
-			returnType: returnType,
-			isImplicit: isImplicit,
-			statements: statements,
-			access: access):
-
+		case let .functionDeclaration(prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes, returnType: returnType, isImplicit: isImplicit, statements: statements, access: access):
 			try! container.encode(prefix, forKey: "prefix")
 			try! container.encode(parameterNames, forKey: "parameterNames")
 			try! container.encode(parameterTypes, forKey: "parameterTypes")
@@ -169,15 +138,7 @@ indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree {
 			try! container.encode(isImplicit, forKey: "isImplicit")
 			try! container.encode(statements, forKey: "statements")
 			try! container.encode(access, forKey: "access")
-		case let .variableDeclaration(
-			identifier: identifier,
-			typeName: typeName,
-			expression: expression,
-			getter: getter,
-			setter: setter,
-			isLet: isLet,
-			extendsType: extendsType):
-
+		case let .variableDeclaration(identifier: identifier, typeName: typeName, expression: expression, getter: getter, setter: setter, isLet: isLet, extendsType: extendsType):
 			try! container.encode(identifier, forKey: "identifier")
 			try! container.encode(typeName, forKey: "typeName")
 			try! container.encode(expression, forKey: "expression")
@@ -185,21 +146,11 @@ indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree {
 			try! container.encode(setter, forKey: "setter")
 			try! container.encode(isLet, forKey: "isLet")
 			try! container.encode(extendsType, forKey: "extendsType")
-		case let .forEachStatement(
-			collection: collection,
-			variable: variable,
-			statements: statements):
-
+		case let .forEachStatement(collection: collection, variable: variable, statements: statements):
 			try! container.encode(collection, forKey: "collection")
 			try! container.encode(variable, forKey: "variable")
 			try! container.encode(statements, forKey: "statements")
-		case let .ifStatement(
-			conditions: conditions,
-			declarations: declarations,
-			statements: statements,
-			elseStatement: elseStatement,
-			isGuard: isGuard):
-
+		case let .ifStatement(conditions: conditions, declarations: declarations, statements: statements, elseStatement: elseStatement, isGuard: isGuard):
 			try! container.encode(conditions, forKey: "conditions")
 			try! container.encode(declarations, forKey: "declarations")
 			try! container.encode(statements, forKey: "statements")
@@ -244,8 +195,7 @@ indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree {
 			let name = try! container.decode(String.self, forKey: "name")
 			let inherits = try! container.decode([String].self, forKey: "inherits")
 			let elements = try! container.decode([String].self, forKey: "elements")
-			self = .enumDeclaration(
-				access: access, name: name, inherits: inherits, elements: elements)
+			self = .enumDeclaration(access: access, name: name, inherits: inherits, elements: elements)
 		case "protocolDeclaration":
 			let name = try! container.decode(String.self, forKey: "name")
 			self = .protocolDeclaration(name: name)
@@ -260,14 +210,7 @@ indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree {
 			let isImplicit = try! container.decode(Bool.self, forKey: "isImplicit")
 			let statements = try! container.decode([GRYTopLevelNode].self, forKey: "statements")
 			let access = try! container.decode(String?.self, forKey: "access")
-			self = .functionDeclaration(
-				prefix: prefix,
-				parameterNames: parameterNames,
-				parameterTypes: parameterTypes,
-				returnType: returnType,
-				isImplicit: isImplicit,
-				statements: statements,
-				access: access)
+			self = .functionDeclaration(prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes, returnType: returnType, isImplicit: isImplicit, statements: statements, access: access)
 		case "variableDeclaration":
 			let identifier = try! container.decode(String.self, forKey: "identifier")
 			let typeName = try! container.decode(String.self, forKey: "typeName")
@@ -276,35 +219,19 @@ indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree {
 			let setter = try! container.decode(GRYTopLevelNode?.self, forKey: "setter")
 			let isLet = try! container.decode(Bool.self, forKey: "isLet")
 			let extendsType = try! container.decode(String?.self, forKey: "extendsType")
-			self = .variableDeclaration(
-				identifier: identifier,
-				typeName: typeName,
-				expression: expression,
-				getter: getter,
-				setter: setter,
-				isLet: isLet,
-				extendsType: extendsType)
+			self = .variableDeclaration(identifier: identifier, typeName: typeName, expression: expression, getter: getter, setter: setter, isLet: isLet, extendsType: extendsType)
 		case "forEachStatement":
 			let collection = try! container.decode(GRYExpression.self, forKey: "collection")
 			let variable = try! container.decode(GRYExpression.self, forKey: "variable")
 			let statements = try! container.decode([GRYTopLevelNode].self, forKey: "statements")
-			self = .forEachStatement(
-				collection: collection,
-				variable: variable,
-				statements: statements)
+			self = .forEachStatement(collection: collection, variable: variable, statements: statements)
 		case "ifStatement":
 			let conditions = try! container.decode([GRYExpression].self, forKey: "conditions")
 			let declarations = try! container.decode([GRYTopLevelNode].self, forKey: "declarations")
 			let statements = try! container.decode([GRYTopLevelNode].self, forKey: "statements")
-			let elseStatement =
-				try! container.decode(GRYTopLevelNode?.self, forKey: "elseStatement")
+			let elseStatement = try! container.decode(GRYTopLevelNode?.self, forKey: "elseStatement")
 			let isGuard = try! container.decode(Bool.self, forKey: "isGuard")
-			self = .ifStatement(
-				conditions: conditions,
-				declarations: declarations,
-				statements: statements,
-				elseStatement: elseStatement,
-				isGuard: isGuard)
+			self = .ifStatement(conditions: conditions, declarations: declarations, statements: statements, elseStatement: elseStatement, isGuard: isGuard)
 		case "throwStatement":
 			let expression = try! container.decode(GRYExpression.self, forKey: "expression")
 			self = .throwStatement(expression: expression)
@@ -437,10 +364,7 @@ indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
 	case subscriptExpression(subscriptedExpression: GRYExpression, indexExpression: GRYExpression)
 	case arrayExpression(elements: [GRYExpression])
 	case dotExpression(leftExpression: GRYExpression, rightExpression: GRYExpression)
-	case binaryOperatorExpression(
-		leftExpression: GRYExpression,
-		rightExpression: GRYExpression,
-		operatorSymbol: String)
+	case binaryOperatorExpression(leftExpression: GRYExpression, rightExpression: GRYExpression, operatorSymbol: String)
 	case unaryOperatorExpression(expression: GRYExpression, operatorSymbol: String)
 	case callExpression(function: GRYExpression, parameters: GRYExpression)
 	case literalIntExpression(value: Int)
@@ -464,10 +388,7 @@ indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
 			try! container.encode(identifier, forKey: "identifier")
 		case let .typeExpression(type: type):
 			try! container.encode(type, forKey: "type")
-		case let .subscriptExpression(
-			subscriptedExpression: subscriptedExpression,
-			indexExpression: indexExpression):
-
+		case let .subscriptExpression(subscriptedExpression: subscriptedExpression, indexExpression: indexExpression):
 			try! container.encode(subscriptedExpression, forKey: "subscriptedExpression")
 			try! container.encode(indexExpression, forKey: "indexExpression")
 		case let .arrayExpression(elements: elements):
@@ -475,11 +396,7 @@ indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
 		case let .dotExpression(leftExpression: leftExpression, rightExpression: rightExpression):
 			try! container.encode(leftExpression, forKey: "leftExpression")
 			try! container.encode(rightExpression, forKey: "rightExpression")
-		case let .binaryOperatorExpression(
-			leftExpression: leftExpression,
-			rightExpression: rightExpression,
-			operatorSymbol: operatorSymbol):
-
+		case let .binaryOperatorExpression(leftExpression: leftExpression, rightExpression: rightExpression, operatorSymbol: operatorSymbol):
 			try! container.encode(leftExpression, forKey: "leftExpression")
 			try! container.encode(rightExpression, forKey: "rightExpression")
 			try! container.encode(operatorSymbol, forKey: "operatorSymbol")
@@ -522,30 +439,21 @@ indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
 			let type = try! container.decode(String.self, forKey: "type")
 			self = .typeExpression(type: type)
 		case "subscriptExpression":
-			let subscriptedExpression =
-				try! container.decode(GRYExpression.self, forKey: "subscriptedExpression")
-			let indexExpression =
-				try! container.decode(GRYExpression.self, forKey: "indexExpression")
-			self = .subscriptExpression(
-				subscriptedExpression: subscriptedExpression, indexExpression: indexExpression)
+			let subscriptedExpression = try! container.decode(GRYExpression.self, forKey: "subscriptedExpression")
+			let indexExpression = try! container.decode(GRYExpression.self, forKey: "indexExpression")
+			self = .subscriptExpression(subscriptedExpression: subscriptedExpression, indexExpression: indexExpression)
 		case "arrayExpression":
 			let elements = try! container.decode([GRYExpression].self, forKey: "elements")
 			self = .arrayExpression(elements: elements)
 		case "dotExpression":
-			let leftExpression =
-				try! container.decode(GRYExpression.self, forKey: "leftExpression")
-			let rightExpression =
-				try! container.decode(GRYExpression.self, forKey: "rightExpression")
+			let leftExpression = try! container.decode(GRYExpression.self, forKey: "leftExpression")
+			let rightExpression = try! container.decode(GRYExpression.self, forKey: "rightExpression")
 			self = .dotExpression(leftExpression: leftExpression, rightExpression: rightExpression)
 		case "binaryOperatorExpression":
 			let leftExpression = try! container.decode(GRYExpression.self, forKey: "leftExpression")
-			let rightExpression =
-				try! container.decode(GRYExpression.self, forKey: "rightExpression")
+			let rightExpression = try! container.decode(GRYExpression.self, forKey: "rightExpression")
 			let operatorSymbol = try! container.decode(String.self, forKey: "operatorSymbol")
-			self = .binaryOperatorExpression(
-				leftExpression: leftExpression,
-				rightExpression: rightExpression,
-				operatorSymbol: operatorSymbol)
+			self = .binaryOperatorExpression(leftExpression: leftExpression, rightExpression: rightExpression, operatorSymbol: operatorSymbol)
 		case "unaryOperatorExpression":
 			let expression = try! container.decode(GRYExpression.self, forKey: "expression")
 			let operatorSymbol = try! container.decode(String.self, forKey: "operatorSymbol")
@@ -660,47 +568,6 @@ indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-private func encodeAny(
-	_ value: Any,
-	forKey key: StringCodingKey,
-	into container: inout KeyedEncodingContainer<StringCodingKey>) throws
-{
-	if case .none = value as Optional<Any> {
-		try container.encode(nil as Int?, forKey: key)
-	}
-	else if let value = value as? Int {
-		try container.encode(value, forKey: key)
-	}
-	else if let value = value as? Double {
-		try container.encode(value, forKey: key)
-	}
-	else if let value = value as? String {
-		try container.encode(value, forKey: key)
-	}
-	else if let value = value as? Bool {
-		try container.encode(value, forKey: key)
-	}
-	else if let value = value as? GRYTopLevelNode {
-		try container.encode(value, forKey: key)
-	}
-	else if let value = value as? GRYExpression {
-		try container.encode(value, forKey: key)
-	}
-	else if let value = value as? [String] {
-		try container.encode(value, forKey: key)
-	}
-	else if let value = value as? [GRYTopLevelNode] {
-		try container.encode(value, forKey: key)
-	}
-	else if let value = value as? [GRYExpression] {
-		try container.encode(value, forKey: key)
-	}
-	else {
-		throw AstDecodingError(
-			message: "Failed to encode value \(value) of unsupported type \(type(of: value)).")
-	}
-}
 
 private struct AstDecodingError: Error {
 	let message: String

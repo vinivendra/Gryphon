@@ -1,0 +1,510 @@
+/*
+* Copyright 2018 Vinícius Jorge Vendramini
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
+import Foundation
+
+// TODO: Try to change this into an enum in the future, i.e. if immutable values really are like
+// references
+public class GRYSourceFile: GRYPrintableAsTree, Codable, Equatable, CustomStringConvertible {
+	let declarations: [GRYTopLevelNode]
+	let statements: [GRYTopLevelNode]
+
+	init(declarations: [GRYTopLevelNode], statements: [GRYTopLevelNode]) {
+		self.declarations = declarations
+		self.statements = statements
+	}
+
+	//
+	public func writeAsJSON(toFile filePath: String) {
+		print("Building AST JSON...")
+		let jsonData = try! JSONEncoder().encode(self)
+		let rawJsonString = String(data: jsonData, encoding: .utf8)!
+
+		// Absolute file paths must be replaced with placeholders before writing to file.
+		let swiftFilePath = GRYUtils.changeExtension(of: filePath, to: .swift)
+		let escapedFilePath = swiftFilePath.replacingOccurrences(of: "/", with: "\\/")
+		let processedJsonString =
+			rawJsonString.replacingOccurrences(of: escapedFilePath, with: "<<testFilePath>>")
+
+		try! processedJsonString.write(toFile: filePath, atomically: true, encoding: .utf8)
+	}
+
+	enum SourceFileCodingKeys: String, CodingKey {
+		case declarations
+		case statements
+	}
+
+	required public init(from decoder: Decoder) throws {
+		let container = try! decoder.container(keyedBy: SourceFileCodingKeys.self)
+		self.declarations = try! container.decode([GRYTopLevelNode].self, forKey: .declarations)
+		self.statements = try! container.decode([GRYTopLevelNode].self, forKey: .statements)
+	}
+
+	public func encode(to encoder: Encoder) throws {
+		var container = encoder.container(keyedBy: SourceFileCodingKeys.self)
+		try! container.encode(declarations, forKey: .declarations)
+		try! container.encode(statements, forKey: .statements)
+	}
+
+	//
+	public static func == (lhs: GRYSourceFile, rhs: GRYSourceFile) -> Bool {
+		return lhs.declarations == rhs.declarations &&
+			lhs.statements == rhs.statements
+	}
+
+	//
+	public var treeDescription: String { return "Source File" }
+
+	public var printableSubtrees: [GRYPrintableAsTree?] {
+		return [GRYPrintableTree(description: "Declarations", subtrees: declarations),
+				GRYPrintableTree(description: "Statements", subtrees: statements), ]
+	}
+
+	//
+	public var description: String {
+		var result = ""
+		prettyPrint { result += $0 }
+		return result
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+%{
+astNodes = [
+	['expression', [['expression', 'GRYExpression']]],
+	['importDeclaration', [['name', 'String']]],
+	['classDeclaration',
+		[['name', 'String'], ['inherits', '[String]'], ['members', '[GRYTopLevelNode]']]],
+	['constructorDeclaration', [['implicit', 'Bool']]],
+	['destructorDeclaration', [['implicit', 'Bool']]],
+	['enumDeclaration',
+		[['access', 'String?'], ['name', 'String'], ['inherits', '[String]'],
+		['elements', '[String]']]],
+	['protocolDeclaration', [['name', 'String']]],
+	['structDeclaration', [['name', 'String']]],
+	['functionDeclaration',
+		[['prefix', 'String'], ['parameterNames', '[String]'], ['parameterTypes', '[String]'],
+		['returnType', 'String'], ['isImplicit', 'Bool'], ['statements', '[GRYTopLevelNode]'],
+		['access', 'String?']]],
+	['variableDeclaration',
+		[['identifier', 'String'], ['typeName', 'String'], ['expression', 'GRYExpression?'],
+		['getter', 'GRYTopLevelNode?'], ['setter', 'GRYTopLevelNode?'], ['isLet', 'Bool'],
+		['extendsType', 'String?']]],
+	['forEachStatement',
+		[['collection', 'GRYExpression'], ['variable', 'GRYExpression'],
+		['statements', '[GRYTopLevelNode]']]],
+	['ifStatement',
+		[['conditions', '[GRYExpression]'], ['declarations', '[GRYTopLevelNode]'],
+		['statements', '[GRYTopLevelNode]'], ['elseStatement', 'GRYTopLevelNode?'],
+		['isGuard', 'Bool']]],
+	['throwStatement', [['expression', 'GRYExpression']]],
+	['returnStatement', [['expression', 'GRYExpression?']]],
+	['assignmentStatement', [['leftHand', 'GRYExpression'], ['rightHand', 'GRYExpression']]]
+	]
+}%
+
+// TODO: Separate into declarations and statements?
+indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree {
+
+%for astNode in astNodes:
+%	name = astNode[0]
+%
+%	if len(astNode) > 1:
+%		pairs = astNode[1]
+%		parameters = []
+%		for pair in pairs:
+%			parameters.append(pair[0] + ": " + pair[1])
+%		end
+%		parametersString = ", ".join(parameters)
+	case ${name}(${parametersString})
+%
+%	else:
+	case ${name}
+%	end
+%end
+
+	//
+	public func encode(to encoder: Encoder) throws {
+		var container = encoder.container(keyedBy: StringCodingKey.self)
+
+		try! container.encode(enumName, forKey: "astName")
+
+		switch self {
+%for astNode in astNodes:
+%	name = astNode[0]
+%
+%	if len(astNode) > 1:
+%		pairs = astNode[1]
+%		parameters = []
+%		for pair in pairs:
+%			parameters.append(pair[0] + ": " + pair[0])
+%		end
+%		parametersString = ", ".join(parameters)
+		case let .${name}(${parametersString}):
+%		for pair in pairs:
+			try! container.encode(${pair[0]}, forKey: "${pair[0]}")
+%		end
+%
+%	else:
+		case .${name}:
+			break
+%	end
+%end
+		}
+	}
+
+	// TODO: Can this be done with gyb?
+	public init(from decoder: Decoder) throws {
+		let container = try! decoder.container(keyedBy: StringCodingKey.self)
+
+		let astName = try! container.decode(String.self, forKey: "astName")
+
+		switch astName {
+%for astNode in astNodes:
+%	name = astNode[0]
+%
+		case "${name}":
+%
+%	if len(astNode) > 1:
+%		pairs = astNode[1]
+%		parameters = []
+%		for pair in pairs:
+%			parameters.append(pair[0] + ": " + pair[0])
+			let ${pair[0]} = try! container.decode(${pair[1]}.self, forKey: "${pair[0]}")
+%		end
+%		parametersString = ", ".join(parameters)
+			self = .${name}(${parametersString})
+%
+%	else:
+			self = .${name}
+%	end
+%end
+		default:
+			throw AstDecodingError(message: "Unknown ast node \(astName).")
+		}
+	}
+
+	private var enumName: String {
+		if let name = Mirror(reflecting: self).children.first?.label {
+			return name
+		}
+		else {
+			return String(describing: self)
+		}
+	}
+
+	//
+	public var treeDescription: String {
+		return enumName.capitalizedAsCamelCase
+	}
+
+	public var printableSubtrees: [GRYPrintableAsTree?] {
+		switch self {
+		case let .expression(expression: expression):
+			return [expression]
+		case let .importDeclaration(name: name):
+			return [name]
+		case let .classDeclaration(name: name, inherits: inherits, members: members):
+			return [
+				name,
+				GRYPrintableTree(description: "inherits", subtreesOrNil: inherits),
+				GRYPrintableTree(description: "members", subtreesOrNil: members), ]
+		case let .constructorDeclaration(implicit: implicit):
+			return implicit ? ["implicit"] : []
+		case let .destructorDeclaration(implicit: implicit):
+			return implicit ? ["implicit"] : []
+		case let .enumDeclaration(
+			access: access,
+			name: name,
+			inherits: inherits,
+			elements: elements):
+
+			return [
+				access, name,
+				GRYPrintableTree(description: "inherits", subtreesOrNil: inherits),
+				GRYPrintableTree(description: "elements", subtreesOrNil: elements), ]
+		case let .protocolDeclaration(name: name):
+			return [name]
+		case let .structDeclaration(name: name):
+			return [name]
+		case let .functionDeclaration(
+			prefix: prefix,
+			parameterNames: parameterNames,
+			parameterTypes: parameterTypes,
+			returnType: returnType,
+			isImplicit: isImplicit,
+			statements: statements,
+			access: access):
+
+			let name = prefix + "(" + parameterNames.map { $0 + ":" }.joined(separator: ", ") + ")"
+			let type = "(" + parameterTypes.joined(separator: ", ") + ") -> " + returnType
+			return [
+				isImplicit ? "implicit" : nil,
+				access,
+				name,
+				type,
+				GRYPrintableTree(description: "statements", subtreesOrNil: statements), ]
+		case let .variableDeclaration(
+			identifier: identifier,
+			typeName: typeName,
+			expression: expression,
+			getter: getter,
+			setter: setter,
+			isLet: isLet,
+			extendsType: extendsType):
+
+			return [
+				GRYPrintableTree(description: "extendsType", subtreesOrNil: [extendsType]),
+				isLet ? "let" : "var",
+				identifier,
+				typeName,
+				expression,
+				GRYPrintableTree(description: "getter", subtreesOrNil: [getter]),
+				GRYPrintableTree(description: "setter", subtreesOrNil: [setter]), ]
+		case let .forEachStatement(
+			collection: collection,
+			variable: variable,
+			statements: statements):
+			return [
+				GRYPrintableTree(description: "variable", subtrees: [variable]),
+				GRYPrintableTree(description: "collection", subtrees: [collection]),
+				GRYPrintableTree(description: "statements", subtreesOrNil: [statements]), ]
+		case let .ifStatement(
+			conditions: conditions,
+			declarations: declarations,
+			statements: statements,
+			elseStatement: elseStatement,
+			isGuard: isGuard):
+
+			return [
+				isGuard ? "guard" : nil,
+				GRYPrintableTree(description: "declarations", subtreesOrNil: [declarations]),
+				GRYPrintableTree(description: "conditions", subtreesOrNil: [conditions]),
+				GRYPrintableTree(description: "statements", subtreesOrNil: [statements]),
+				GRYPrintableTree(description: "else", subtreesOrNil: [elseStatement]), ]
+		case let .throwStatement(expression: expression):
+			return [expression]
+		case let .returnStatement(expression: expression):
+			return [expression]
+		case let .assignmentStatement(leftHand: leftHand, rightHand: rightHand):
+			return [leftHand, rightHand]
+		}
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+%{
+expressionNodes = [
+		['forceValueExpression', [['expression', 'GRYExpression']]],
+		['declarationReferenceExpression', [['identifier', 'String']]],
+		['typeExpression', [['type', 'String']]],
+		['subscriptExpression',
+			[['subscriptedExpression', 'GRYExpression'], ['indexExpression', 'GRYExpression']]],
+		['arrayExpression', [['elements', '[GRYExpression]']]],
+		['dotExpression',
+			[['leftExpression', 'GRYExpression'], ['rightExpression', 'GRYExpression']]],
+		['binaryOperatorExpression',
+			[['leftExpression', 'GRYExpression'], ['rightExpression', 'GRYExpression'],
+			['operatorSymbol', 'String']]],
+		['unaryOperatorExpression',
+			[['expression', 'GRYExpression'], ['operatorSymbol', 'String']]],
+		['callExpression', [['function', 'GRYExpression'], ['parameters', 'GRYExpression']]],
+		['literalIntExpression', [['value', 'Int']]],
+		['literalDoubleExpression', [['value', 'Double']]],
+		['literalBoolExpression', [['value', 'Bool']]],
+		['literalStringExpression', [['value', 'String']]],
+		['nilLiteralExpression'],
+		['interpolatedStringLiteralExpression', [['expressions', '[GRYExpression]']]],
+		['tupleExpression', [['pairs', '[TuplePair]']]]
+	]
+}%
+
+indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
+%for expressionNode in expressionNodes:
+%	name = expressionNode[0]
+%
+%	if len(expressionNode) > 1:
+%		pairs = expressionNode[1]
+%		parameters = []
+%		for pair in pairs:
+%			parameters.append(pair[0] + ": " + pair[1])
+%		end
+%		parametersString = ", ".join(parameters)
+	case ${name}(${parametersString})
+%
+%	else:
+	case ${name}
+%	end
+%end
+
+	//
+	public func encode(to encoder: Encoder) throws {
+		var container = encoder.container(keyedBy: StringCodingKey.self)
+
+		try! container.encode(enumName, forKey: "astName")
+
+		switch self {
+%for expressionNode in expressionNodes:
+%	name = expressionNode[0]
+%
+%	if len(expressionNode) > 1:
+%		pairs = expressionNode[1]
+%		parameters = []
+%		for pair in pairs:
+%			parameters.append(pair[0] + ": " + pair[0])
+%		end
+%		parametersString = ", ".join(parameters)
+		case let .${name}(${parametersString}):
+%		for pair in pairs:
+			try! container.encode(${pair[0]}, forKey: "${pair[0]}")
+%		end
+%
+%	else:
+		case .${name}:
+			break
+%	end
+%end
+		}
+	}
+
+	public init(from decoder: Decoder) throws {
+		let container = try! decoder.container(keyedBy: StringCodingKey.self)
+
+		let astName = try! container.decode(String.self, forKey: "astName")
+
+		switch astName {
+%for expressionNode in expressionNodes:
+%	name = expressionNode[0]
+		case "${name}":
+%
+%	if len(expressionNode) > 1:
+%		pairs = expressionNode[1]
+%		parameters = []
+%		for pair in pairs:
+%			parameters.append(pair[0] + ": " + pair[0])
+			let ${pair[0]} = try! container.decode(${pair[1]}.self, forKey: "${pair[0]}")
+%		end
+%		parametersString = ", ".join(parameters)
+			self = .${name}(${parametersString})
+%
+%	else:
+			self = .${name}
+%	end
+%end
+		default:
+			throw AstDecodingError(message: "Unknown ast node \(astName).")
+		}
+	}
+
+	private var enumName: String {
+		if let name = Mirror(reflecting: self).children.first?.label {
+			return name
+		}
+		else {
+			return String(describing: self)
+		}
+	}
+
+	//
+	public var treeDescription: String {
+		return enumName
+	}
+
+	public var printableSubtrees: [GRYPrintableAsTree?] {
+		switch self {
+		case let .forceValueExpression(expression: expression):
+			return [expression]
+		case let .declarationReferenceExpression(identifier: identifier):
+			return [identifier]
+		case let .typeExpression(type: type):
+			return [type]
+		case let .subscriptExpression(
+			subscriptedExpression: subscriptedExpression,
+			indexExpression: indexExpression):
+
+			return [
+				GRYPrintableTree(
+					description: "subscriptedExpression", subtrees: [subscriptedExpression]),
+				GRYPrintableTree(description: "indexExpression", subtrees: [indexExpression]), ]
+		case let .arrayExpression(elements: elements):
+			return [elements]
+		case let .dotExpression(leftExpression: leftExpression, rightExpression: rightExpression):
+			return [
+				GRYPrintableTree(description: "left", subtrees: [leftExpression]),
+				GRYPrintableTree(description: "right", subtrees: [rightExpression]), ]
+
+		case let .binaryOperatorExpression(
+			leftExpression: leftExpression,
+			rightExpression: rightExpression,
+			operatorSymbol: operatorSymbol):
+
+			return [
+				GRYPrintableTree(description: "left", subtrees: [leftExpression]),
+				GRYPrintableTree(description: "operator \(operatorSymbol)"),
+				GRYPrintableTree(description: "right", subtrees: [rightExpression]), ]
+		case let .unaryOperatorExpression(expression: expression, operatorSymbol: operatorSymbol):
+			return [
+				GRYPrintableTree(description: "operator \(operatorSymbol)"),
+				GRYPrintableTree(description: "expression", subtrees: [expression]), ]
+		case let .callExpression(function: function, parameters: parameters):
+			return [
+				GRYPrintableTree(description: "function", subtrees: [function]),
+				GRYPrintableTree(description: "parameters", subtrees: [parameters]), ]
+		case let .literalIntExpression(value: value):
+			return [String(value)]
+		case let .literalDoubleExpression(value: value):
+			return [String(value)]
+		case let .literalBoolExpression(value: value):
+			return [String(value)]
+		case let .literalStringExpression(value: value):
+			return ["\"\(value)\""]
+		case .nilLiteralExpression:
+			return []
+		case let .interpolatedStringLiteralExpression(expressions: expressions):
+			return [expressions]
+		case let .tupleExpression(pairs: pairs):
+			return pairs.map {
+				GRYPrintableTree(description: ($0.name ?? "_") + ":", subtrees: [$0.expression])
+			}
+		}
+	}
+
+	//
+	struct TuplePair: Equatable, Codable {
+		let name: String?
+		let expression: GRYExpression
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+private struct AstDecodingError: Error {
+	let message: String
+}
+
+private struct StringCodingKey: CodingKey, ExpressibleByStringLiteral {
+	public var stringValue: String
+
+	public init(stringLiteral value: String) {
+		self.stringValue = value
+	}
+
+	public init(stringValue: String) {
+		self.stringValue = stringValue
+	}
+	public var intValue: Int?
+	public init?(intValue: Int) { return nil }
+}
