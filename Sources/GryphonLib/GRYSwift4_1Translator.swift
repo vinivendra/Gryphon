@@ -60,7 +60,7 @@ public class GRYSwift4_1Translator {
 		case "Top Level Code Declaration":
 			result = translate(topLevelCode: subtree)
 		case "Import Declaration":
-			result = GRYImportDeclaration(subtree.standaloneAttributes[0])
+			result = .importDeclaration(name: subtree.standaloneAttributes[0])
 		case "Class Declaration":
 			result = translate(classDeclaration: subtree)
 //		case "Constructor Declaration":
@@ -100,13 +100,11 @@ public class GRYSwift4_1Translator {
 			result = process(patternBindingDeclaration: subtree)
 		case "Return Statement":
 			result = translate(returnStatement: subtree)
-		case "Call Expression":
-			result = translate(callExpression: subtree)
 		default:
 			if subtree.name.hasSuffix("Expression"),
 				let expression = translate(expression: subtree)
 			{
-				result = expression
+				result = .expression(expression: expression)
 			}
 			else {
 				result = nil
@@ -161,7 +159,7 @@ public class GRYSwift4_1Translator {
 			if let firstExpression = expression.subtree(at: 0),
 				let expression = translate(expression: firstExpression)
 			{
-				return GRYForceValueExpression(expression: expression)
+				return .forceValueExpression(expression: expression)
 			}
 			else {
 				return nil
@@ -182,17 +180,17 @@ public class GRYSwift4_1Translator {
 	}
 
 	// MARK: - Leaf translations
-	private func translate(protocolDeclaration: GRYSwiftAst) -> GRYProtocolDeclaration? {
+	private func translate(protocolDeclaration: GRYSwiftAst) -> GRYTopLevelNode? {
 		precondition(protocolDeclaration.name == "Protocol")
 
 		guard let protocolName = protocolDeclaration.standaloneAttributes.first else {
 			return nil
 		}
 
-		return GRYProtocolDeclaration(name: protocolName)
+		return .protocolDeclaration(name: protocolName)
 	}
 
-	private func translate(assignExpression: GRYSwiftAst) -> GRYAssignmentStatement? {
+	private func translate(assignExpression: GRYSwiftAst) -> GRYTopLevelNode? {
 		precondition(assignExpression.name == "Assign Expression")
 
 		if let leftExpression = assignExpression.subtree(at: 0),
@@ -201,14 +199,14 @@ public class GRYSwift4_1Translator {
 			let leftTranslation = translate(expression: leftExpression)!
 			let rightTranslation = translate(expression: rightExpression)!
 
-			return GRYAssignmentStatement(leftHand: leftTranslation, rightHand: rightTranslation)
+			return .assignmentStatement(leftHand: leftTranslation, rightHand: rightTranslation)
 		}
 		else {
 			return nil
 		}
 	}
 
-	private func translate(classDeclaration: GRYSwiftAst) -> GRYClassDeclaration? {
+	private func translate(classDeclaration: GRYSwiftAst) -> GRYTopLevelNode? {
 		precondition(classDeclaration.name == "Class Declaration")
 
 		// Get the class name
@@ -224,29 +222,29 @@ public class GRYSwift4_1Translator {
 		}
 
 		guard !inheritanceArray.contains("GRYIgnore") else {
-			return GRYClassDeclaration(name: name, inherits: inheritanceArray, members: [])
+			return .classDeclaration(name: name, inherits: inheritanceArray, members: [])
 		}
 
 		// Translate the contents
 		let classContents = translate(subtrees: classDeclaration.subtrees)
 
-		return GRYClassDeclaration(name: name, inherits: inheritanceArray, members: classContents)
+		return .classDeclaration(name: name, inherits: inheritanceArray, members: classContents)
 	}
 
-	private func translate(throwStatement: GRYSwiftAst) -> GRYThrowStatement? {
+	private func translate(throwStatement: GRYSwiftAst) -> GRYTopLevelNode? {
 		precondition(throwStatement.name == "Throw Statement")
 
 		if let expression = throwStatement.subtrees.last,
 			let expressionTranslation = translate(expression: expression)
 		{
-			return GRYThrowStatement(expression: expressionTranslation)
+			return .throwStatement(expression: expressionTranslation)
 		}
 		else {
 			return nil
 		}
 	}
 
-	private func translate(enumDeclaration: GRYSwiftAst) -> GRYEnumDeclaration? {
+	private func translate(enumDeclaration: GRYSwiftAst) -> GRYTopLevelNode? {
 		precondition(enumDeclaration.name == "Enum Declaration")
 
 		let access = enumDeclaration.keyValueAttributes["access"]
@@ -262,7 +260,7 @@ public class GRYSwift4_1Translator {
 		}
 
 		guard !inheritanceArray.contains("GRYIgnore") else {
-			return GRYEnumDeclaration(
+			return .enumDeclaration(
 				access: access,
 				name: name,
 				inherits: inheritanceArray,
@@ -280,14 +278,14 @@ public class GRYSwift4_1Translator {
 			elements.append(elementName)
 		}
 
-		return GRYEnumDeclaration(
+		return .enumDeclaration(
 			access: access,
 			name: name,
 			inherits: inheritanceArray,
 			elements: elements)
 	}
 
-	private func translate(memberReferenceExpression: GRYSwiftAst) -> GRYDotExpression? {
+	private func translate(memberReferenceExpression: GRYSwiftAst) -> GRYExpression? {
 		precondition(memberReferenceExpression.name == "Member Reference Expression")
 
 		if let declaration = memberReferenceExpression["decl"],
@@ -295,16 +293,16 @@ public class GRYSwift4_1Translator {
 			let leftHand = translate(expression: memberOwner)
 		{
 			let member = getIdentifierFromDeclaration(declaration)
-			let rightHand = GRYDeclarationReferenceExpression(identifier: member)
-			return GRYDotExpression(leftExpression: leftHand,
-									rightExpression: rightHand)
+			let rightHand = GRYExpression.declarationReferenceExpression(identifier: member)
+			return .dotExpression(leftExpression: leftHand,
+								  rightExpression: rightHand)
 		}
 		else {
 			return nil
 		}
 	}
 
-	private func translate(prefixUnaryExpression: GRYSwiftAst) -> GRYUnaryOperatorExpression? {
+	private func translate(prefixUnaryExpression: GRYSwiftAst) -> GRYExpression? {
 		precondition(prefixUnaryExpression.name == "Prefix Unary Expression")
 
 		if let declaration = prefixUnaryExpression
@@ -315,7 +313,7 @@ public class GRYSwift4_1Translator {
 		{
 			let operatorIdentifier = getIdentifierFromDeclaration(declaration)
 
-			return GRYUnaryOperatorExpression(
+			return .unaryOperatorExpression(
 				expression: expressionTranslation,
 				operatorSymbol: operatorIdentifier)
 		}
@@ -324,7 +322,7 @@ public class GRYSwift4_1Translator {
 		}
 	}
 
-	private func translate(binaryExpression: GRYSwiftAst) -> GRYBinaryOperatorExpression? {
+	private func translate(binaryExpression: GRYSwiftAst) -> GRYExpression? {
 		precondition(binaryExpression.name == "Binary Expression")
 
 		let operatorIdentifier: String
@@ -340,7 +338,7 @@ public class GRYSwift4_1Translator {
 			let leftHandTranslation = translate(expression: leftHandExpression)!
 			let rightHandTranslation = translate(expression: rightHandExpression)!
 
-			return GRYBinaryOperatorExpression(
+			return .binaryOperatorExpression(
 				leftExpression: leftHandTranslation,
 				rightExpression: rightHandTranslation,
 				operatorSymbol: operatorIdentifier)
@@ -350,17 +348,17 @@ public class GRYSwift4_1Translator {
 		}
 	}
 
-	private func translate(typeExpression: GRYSwiftAst) -> GRYTypeExpression? {
+	private func translate(typeExpression: GRYSwiftAst) -> GRYExpression? {
 		precondition(typeExpression.name == "Type Expression")
 
 		guard let type = typeExpression.keyValueAttributes["typerepr"] else {
 			return nil
 		}
 
-		return GRYTypeExpression(type: type)
+		return .typeExpression(type: type)
 	}
 
-	private func translate(dotSyntaxCallExpression: GRYSwiftAst) -> GRYDotExpression? {
+	private func translate(dotSyntaxCallExpression: GRYSwiftAst) -> GRYExpression? {
 		precondition(dotSyntaxCallExpression.name == "Dot Syntax Call Expression")
 
 		if let leftHandTree = dotSyntaxCallExpression.subtree(at: 1),
@@ -369,29 +367,29 @@ public class GRYSwift4_1Translator {
 			let rightHand = translate(expression: rightHandExpression)!
 			let leftHand = translate(typeExpression: leftHandTree)!
 
-			return GRYDotExpression(leftExpression: leftHand, rightExpression: rightHand)
+			return .dotExpression(leftExpression: leftHand, rightExpression: rightHand)
 		}
 
 		return nil
 	}
 
-	private func translate(returnStatement: GRYSwiftAst) -> GRYReturnStatement? {
+	private func translate(returnStatement: GRYSwiftAst) -> GRYTopLevelNode? {
 		precondition(returnStatement.name == "Return Statement")
 
 		if let expression = returnStatement.subtrees.last {
 			if let expression = translate(expression: expression) {
-				return GRYReturnStatement(expression: expression)
+				return .returnStatement(expression: expression)
 			}
 			else {
 				return nil
 			}
 		}
 		else {
-			return GRYReturnStatement(expression: nil)
+			return .returnStatement(expression: nil)
 		}
 	}
 
-	private func translate(forEachStatement: GRYSwiftAst) -> GRYForEachStatement? {
+	private func translate(forEachStatement: GRYSwiftAst) -> GRYTopLevelNode? {
 		precondition(forEachStatement.name == "For Each Statement")
 
 		guard let variableName = forEachStatement
@@ -410,15 +408,15 @@ public class GRYSwift4_1Translator {
 		}
 
 		let statements = translate(subtrees: braceStatement.subtrees)
-		let variable = GRYDeclarationReferenceExpression(identifier: variableName)
+		let variable = GRYExpression.declarationReferenceExpression(identifier: variableName)
 
-		return GRYForEachStatement(
+		return .forEachStatement(
 			collection: collectionTranslation,
 			variable: variable,
 			statements: statements)
 	}
 
-	private func translate(ifStatement: GRYSwiftAst) -> GRYIfStatement? {
+	private func translate(ifStatement: GRYSwiftAst) -> GRYTopLevelNode? {
 		precondition(ifStatement.name == "If Statement" || ifStatement.name == "Guard Statement")
 
 		let isGuard = (ifStatement.name == "Guard Statement")
@@ -427,8 +425,8 @@ public class GRYSwift4_1Translator {
 			forIfStatement: ifStatement)!
 
 		let braceStatement: GRYSwiftAst
-		let elseIfStatement: GRYIfStatement?
-		let elseStatement: GRYIfStatement?
+		let elseIfStatement: GRYTopLevelNode?
+		let elseStatement: GRYTopLevelNode?
 
 		if ifStatement.subtrees.count > 2,
 			let unwrappedBraceStatement = ifStatement.subtrees.secondToLast,
@@ -450,7 +448,7 @@ public class GRYSwift4_1Translator {
 			elseIfStatement = nil
 
 			let statements = translate(subtrees: elseAST.subtrees)
-			elseStatement = GRYIfStatement(
+			elseStatement = .ifStatement(
 				conditions: [], declarations: [],
 				statements: statements,
 				elseStatement: nil,
@@ -470,7 +468,7 @@ public class GRYSwift4_1Translator {
 		let statements = braceStatement.subtrees
 		let statementsResult = translate(subtrees: statements)
 
-		return GRYIfStatement(
+		return .ifStatement(
 			conditions: conditions,
 			declarations: letDeclarations,
 			statements: statementsResult,
@@ -526,10 +524,10 @@ public class GRYSwift4_1Translator {
 					return nil
 				}
 
-				declarationsResult.append(GRYVariableDeclaration(
-					expression: expression,
+				declarationsResult.append(.variableDeclaration(
 					identifier: name,
-					type: type,
+					typeName: type,
+					expression: expression,
 					getter: nil, setter: nil,
 					isLet: isLet,
 					extendsType: nil))
@@ -542,7 +540,7 @@ public class GRYSwift4_1Translator {
 		return (declarations: declarationsResult, conditions: conditionsResult)
 	}
 
-	private func translate(functionDeclaration: GRYSwiftAst) -> GRYFunctionDeclaration? {
+	private func translate(functionDeclaration: GRYSwiftAst) -> GRYTopLevelNode? {
 		precondition(functionDeclaration.name == "Function Declaration")
 
 		// Getters and setters will appear again in the Variable Declaration AST and get translated
@@ -640,7 +638,7 @@ public class GRYSwift4_1Translator {
 			return nil
 		}
 
-		return GRYFunctionDeclaration(
+		return .functionDeclaration(
 			prefix: String(functionNamePrefix),
 			parameterNames: parameterNames,
 			parameterTypes: parameterTypes,
@@ -682,8 +680,8 @@ public class GRYSwift4_1Translator {
 				expression = nil
 			}
 
-			var getter: GRYFunctionDeclaration?
-			var setter: GRYFunctionDeclaration?
+			var getter: GRYTopLevelNode?
+			var setter: GRYTopLevelNode?
 			for subtree in variableDeclaration.subtrees
 				where !subtree.standaloneAttributes.contains("implicit")
 			{
@@ -695,7 +693,7 @@ public class GRYSwift4_1Translator {
 				let statementsTranslation = translate(subtrees: statements)
 
 				if subtree["getter_for"] != nil {
-					getter = GRYFunctionDeclaration(
+					getter = .functionDeclaration(
 						prefix: "get",
 						parameterNames: [], parameterTypes: [],
 						returnType: type,
@@ -704,7 +702,7 @@ public class GRYSwift4_1Translator {
 						access: access)
 				}
 				else {
-					setter = GRYFunctionDeclaration(
+					setter = .functionDeclaration(
 						prefix: "set",
 						parameterNames: ["newValue"],
 						parameterTypes: [type],
@@ -715,10 +713,10 @@ public class GRYSwift4_1Translator {
 				}
 			}
 
-			return GRYVariableDeclaration(
-				expression: expression,
+			return .variableDeclaration(
 				identifier: identifier,
-				type: type,
+				typeName: type,
+				expression: expression,
 				getter: getter,
 				setter: setter,
 				isLet: isLet,
@@ -741,7 +739,7 @@ public class GRYSwift4_1Translator {
 				return translate(asBooleanLiteral: callExpression)
 			}
 			else if argumentLabels == "nilLiteral:" {
-				return GRYNilLiteralExpression()
+				return .nilLiteralExpression
 			}
 		}
 
@@ -780,7 +778,7 @@ public class GRYSwift4_1Translator {
 				translate(declarationReferenceExpression: methodName),
 				let methodOwner = translate(expression: methodOwner)
 			{
-				function = GRYDotExpression(
+				function = .dotExpression(
 					leftExpression: methodOwner, rightExpression: methodName)
 			}
 			else {
@@ -799,7 +797,7 @@ public class GRYSwift4_1Translator {
 			}
 		}
 		else if let declaration = callExpression["decl"] {
-			function = GRYDeclarationReferenceExpression(
+			function = .declarationReferenceExpression(
 				identifier: getIdentifierFromDeclaration(declaration))
 		}
 		else {
@@ -810,16 +808,17 @@ public class GRYSwift4_1Translator {
 
 		let parameters = translate(callExpressionParameters: callExpression)
 
-		return GRYCallExpression(function: function, parameters: parameters!)
+		return .callExpression(function: function, parameters: parameters!)
 	}
 
 	private func translate(callExpressionParameters callExpression: GRYSwiftAst)
-		-> GRYTupleExpression?
+		-> GRYExpression?
 	{
-		let parameters: GRYTupleExpression
+		let parameters: GRYExpression
 		if let parenthesesExpression = callExpression.subtree(named: "Parentheses Expression") {
 			let expression = translate(expression: parenthesesExpression)!
-			parameters = [GRYTupleExpression.Pair(name: nil, expression: expression)]
+			parameters = .tupleExpression(
+				pairs: [GRYExpression.TuplePair(name: nil, expression: expression)])
 		}
 		else if let tupleExpression = callExpression.subtree(named: "Tuple Expression") {
 			parameters = translate(tupleExpression: tupleExpression)!
@@ -834,7 +833,8 @@ public class GRYSwift4_1Translator {
 				.subtree(named: "Parentheses Expression")
 			{
 				let expression = translate(expression: parenthesesExpression)!
-				parameters = [GRYTupleExpression.Pair(name: nil, expression: expression)]
+				parameters = .tupleExpression(
+					pairs: [GRYExpression.TuplePair(name: nil, expression: expression)])
 			}
 			else {
 				return nil
@@ -847,32 +847,32 @@ public class GRYSwift4_1Translator {
 		return parameters
 	}
 
-	private func translate(tupleExpression: GRYSwiftAst) -> GRYTupleExpression? {
+	private func translate(tupleExpression: GRYSwiftAst) -> GRYExpression? {
 		precondition(tupleExpression.name == "Tuple Expression")
 
 		// Only empty tuples don't have a list of names
 		guard let names = tupleExpression["names"] else {
-			return GRYTupleExpression(pairs: [])
+			return .tupleExpression(pairs: [])
 		}
 
 		let namesArray = names.split(separator: ",")
 
-		var tuplePairs = [GRYTupleExpression.Pair]()
+		var tuplePairs = [GRYExpression.TuplePair]()
 
 		for (name, expression) in zip(namesArray, tupleExpression.subtrees) {
 			let expression = translate(expression: expression)!
 
 			// Empty names (like the underscore in "foo(_:)") are represented by ''
 			if name == "_" {
-				tuplePairs.append(GRYTupleExpression.Pair(name: nil, expression: expression))
+				tuplePairs.append(GRYExpression.TuplePair(name: nil, expression: expression))
 			}
 			else {
 				tuplePairs.append(
-					GRYTupleExpression.Pair(name: String(name), expression: expression))
+					GRYExpression.TuplePair(name: String(name), expression: expression))
 			}
 		}
 
-		return GRYTupleExpression(pairs: tuplePairs)
+		return .tupleExpression(pairs: tuplePairs)
 	}
 
 	private func translate(asNumericLiteral callExpression: GRYSwiftAst) -> GRYExpression? {
@@ -890,10 +890,10 @@ public class GRYSwift4_1Translator {
 			let type = typeExpression["typerepr"]
 		{
 			if type == "Double" {
-				return GRYLiteralExpression(value: Double(value)!)
+				return .literalDoubleExpression(value: Double(value)!)
 			}
 			else {
-				return GRYLiteralExpression(value: Int(value)!)
+				return .literalIntExpression(value: Int(value)!)
 			}
 		}
 		else {
@@ -902,7 +902,7 @@ public class GRYSwift4_1Translator {
 	}
 
 	private func translate(asBooleanLiteral callExpression: GRYSwiftAst)
-		-> GRYLiteralExpression<Bool>?
+		-> GRYExpression?
 	{
 		precondition(callExpression.name == "Call Expression")
 
@@ -911,16 +911,16 @@ public class GRYSwift4_1Translator {
 				.subtree(named: "Boolean Literal Expression"),
 			let value = booleanLiteralExpression["value"]
 		{
-			return GRYLiteralExpression<Bool>(value: (value == "true"))
+			return .literalBoolExpression(value: (value == "true"))
 		}
 		else {
 			return nil
 		}
 	}
 
-	private func translate(stringLiteralExpression: GRYSwiftAst) -> GRYLiteralExpression<String>? {
+	private func translate(stringLiteralExpression: GRYSwiftAst) -> GRYExpression? {
 		if let value = stringLiteralExpression["value"] {
-			return GRYLiteralExpression(value: value)
+			return .literalStringExpression(value: value)
 		}
 		else {
 			return nil
@@ -928,7 +928,7 @@ public class GRYSwift4_1Translator {
 	}
 
 	private func translate(interpolatedStringLiteralExpression: GRYSwiftAst)
-		-> GRYInterpolatedStringLiteralExpression?
+		-> GRYExpression?
 	{
 		precondition(
 			interpolatedStringLiteralExpression.name == "Interpolated String Literal Expression")
@@ -937,7 +937,8 @@ public class GRYSwift4_1Translator {
 
 		for expression in interpolatedStringLiteralExpression.subtrees {
 			if expression.name == "String Literal Expression" {
-				guard let string = translate(stringLiteralExpression: expression)?.value else
+				guard let expression = translate(stringLiteralExpression: expression),
+					case let .literalStringExpression(value: string) = expression else
 				{
 					return nil
 				}
@@ -948,18 +949,18 @@ public class GRYSwift4_1Translator {
 					continue
 				}
 
-				expressions.append(GRYLiteralExpression(value: string))
+				expressions.append(.literalStringExpression(value: string))
 			}
 			else {
 				expressions.append(translate(expression: expression)!)
 			}
 		}
 
-		return GRYInterpolatedStringLiteralExpression(expressions: expressions)
+		return .interpolatedStringLiteralExpression(expressions: expressions)
 	}
 
 	private func translate(declarationReferenceExpression: GRYSwiftAst)
-		-> GRYDeclarationReferenceExpression?
+		-> GRYExpression?
 	{
 		precondition(declarationReferenceExpression.name == "Declaration Reference Expression")
 
@@ -967,18 +968,18 @@ public class GRYSwift4_1Translator {
 			codeDeclaration.hasPrefix("code.")
 		{
 			let identifier = getIdentifierFromDeclaration(codeDeclaration)
-			return GRYDeclarationReferenceExpression(identifier: identifier)
+			return .declarationReferenceExpression(identifier: identifier)
 		}
 		else if let declaration = declarationReferenceExpression["decl"] {
 			let identifier = getIdentifierFromDeclaration(declaration)
-			return GRYDeclarationReferenceExpression(identifier: identifier)
+			return .declarationReferenceExpression(identifier: identifier)
 		}
 		else {
 			return nil
 		}
 	}
 
-	private func translate(subscriptExpression: GRYSwiftAst) -> GRYSubscriptExpression? {
+	private func translate(subscriptExpression: GRYSwiftAst) -> GRYExpression? {
 		precondition(subscriptExpression.name == "Subscript Expression")
 
 		if let parenthesesExpression = subscriptExpression.subtree(
@@ -990,7 +991,7 @@ public class GRYSwift4_1Translator {
 			let subscriptContentsTranslation = translate(expression: subscriptContents)!
 			let subscriptedExpressionTranslation = translate(expression: subscriptedExpression)!
 
-			return GRYSubscriptExpression(
+			return .subscriptExpression(
 				subscriptedExpression: subscriptedExpressionTranslation,
 				indexExpression: subscriptContentsTranslation)
 		}
@@ -999,13 +1000,13 @@ public class GRYSwift4_1Translator {
 		}
 	}
 
-	private func translate(arrayExpression: GRYSwiftAst) -> GRYArrayExpression? {
+	private func translate(arrayExpression: GRYSwiftAst) -> GRYExpression? {
 		precondition(arrayExpression.name == "Array Expression")
 
 		let expressionsArray = arrayExpression.subtrees.map(translate(expression:))
 
 		if let expressionsArray = expressionsArray as? [GRYExpression] {
-			return GRYArrayExpression(elements: expressionsArray)
+			return .arrayExpression(elements: expressionsArray)
 		}
 		else {
 			return nil

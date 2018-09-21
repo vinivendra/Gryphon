@@ -197,7 +197,7 @@ public class GRYSwiftAst: GRYPrintableAsTree, Equatable, Codable, CustomStringCo
 		return name
 	}
 
-	public var printableSubtrees: [GRYPrintableAsTree] {
+	public var printableSubtrees: [GRYPrintableAsTree?] {
 		let keyValueStrings = keyValueAttributes.map { "\($0.key) → \($0.value)" }
 			.sorted() as [GRYPrintableAsTree]
 
