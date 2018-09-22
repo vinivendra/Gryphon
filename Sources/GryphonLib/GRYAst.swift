@@ -84,7 +84,7 @@ public class GRYSourceFile: GRYPrintableAsTree, Codable, Equatable, CustomString
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // TODO: Separate into declarations and statements?
-indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree {
+public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree {
 
 	case expression(expression: GRYExpression)
 	case importDeclaration(name: String)
@@ -357,7 +357,7 @@ indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
+public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
 	case forceValueExpression(expression: GRYExpression)
 	case declarationReferenceExpression(identifier: String)
 	case typeExpression(type: String)
@@ -561,7 +561,7 @@ indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
 	}
 
 	//
-	struct TuplePair: Equatable, Codable {
+	public struct TuplePair: Equatable, Codable {
 		let name: String?
 		let expression: GRYExpression
 	}
@@ -569,11 +569,11 @@ indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-private struct AstDecodingError: Error {
+public struct AstDecodingError: Error {
 	let message: String
 }
 
-private struct StringCodingKey: CodingKey, ExpressibleByStringLiteral {
+public struct StringCodingKey: CodingKey, ExpressibleByStringLiteral {
 	public var stringValue: String
 
 	public init(stringLiteral value: String) {

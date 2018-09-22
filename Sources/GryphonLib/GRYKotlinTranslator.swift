@@ -1070,11 +1070,14 @@ public class GRYKotlinTranslator {
 		case "Call Expression":
 			return translate(callExpression: expression)
 		case "Declaration Reference Expression":
-			return translate(declarationReferenceExpression: expression)
+			let expression = GRYSwift4_1Translator().translate(declarationReferenceExpression: expression)!
+			guard case let .declarationReferenceExpression(identifier: string) = expression else { return .failed }
+			return .translation(string)
 		case "Dot Syntax Call Expression":
 			return translate(dotSyntaxCallExpression: expression)
 		case "String Literal Expression":
-			return translate(stringLiteralExpression: expression)
+			let value = expression["value"]!
+			return .translation(translateStringLiteral(value: value))
 		case "Interpolated String Literal Expression":
 			return translate(interpolatedStringLiteralExpression: expression)
 		case "Erasure Expression":
@@ -1087,7 +1090,10 @@ public class GRYKotlinTranslator {
 		case "Prefix Unary Expression":
 			return translate(prefixUnaryExpression: expression)
 		case "Type Expression":
-			return translate(typeExpression: expression)
+			guard case let .typeExpression(type: type) = GRYSwift4_1Translator().translate(typeExpression: expression)! else {
+				return .failed
+			}
+			return .translation(type)
 		case "Member Reference Expression":
 			return translate(memberReferenceExpression: expression)
 		case "Subscript Expression":
@@ -1125,19 +1131,6 @@ public class GRYKotlinTranslator {
 				return .failed
 			}
 		default:
-			return .failed
-		}
-	}
-
-	private func translate(typeExpression: GRYSwiftAst) -> TranslationResult {
-		precondition(typeExpression.name == "Type Expression")
-
-		if let rawType = typeExpression.keyValueAttributes["typerepr"] {
-			diagnostics?.logSuccessfulTranslation(typeExpression.name)
-			return .translation(translateType(rawType))
-		}
-		else {
-			diagnostics?.logUnknownTranslation(typeExpression.name)
 			return .failed
 		}
 	}
@@ -1197,11 +1190,13 @@ public class GRYKotlinTranslator {
 			let rightHandExpression = dotSyntaxCallExpression.subtree(at: 0)
 		{
 			let rightHandTranslation = translate(expression: rightHandExpression)
-			let leftHandTranslation = translate(typeExpression: leftHandTree)
 
-			guard let leftHandString = leftHandTranslation.stringValue,
-				let rightHandString = rightHandTranslation.stringValue else
-			{
+			guard case let .typeExpression(type: type) = GRYSwift4_1Translator().translate(typeExpression: leftHandTree)! else {
+				return .failed
+			}
+			let leftHandString = type
+
+			guard let rightHandString = rightHandTranslation.stringValue else {
 				diagnostics?.logUnknownTranslation(dotSyntaxCallExpression.name)
 				return .failed
 			}
@@ -1336,15 +1331,9 @@ public class GRYKotlinTranslator {
 			if let declarationReferenceExpression = callExpression
 				.subtree(named: "Declaration Reference Expression")
 			{
-				if let string = translate(
-					declarationReferenceExpression: declarationReferenceExpression).stringValue
-				{
-					functionName = string
-				}
-				else {
-					result = .failed
-					functionName = ""
-				}
+				let expression = GRYSwift4_1Translator().translate(declarationReferenceExpression: declarationReferenceExpression)!
+				guard case let .declarationReferenceExpression(identifier: string) = expression else { return .failed }
+				functionName = string
 			}
 			else if let dotSyntaxCallExpression = callExpression
 					.subtree(named: "Dot Syntax Call Expression"),
@@ -1352,9 +1341,9 @@ public class GRYKotlinTranslator {
 					.subtree(at: 0, named: "Declaration Reference Expression"),
 				let methodOwner = dotSyntaxCallExpression.subtree(at: 1)
 			{
-				if let methodNameString =
-						translate(declarationReferenceExpression: methodName).stringValue,
-					let methodOwnerString = translate(expression: methodOwner).stringValue
+				let expression = GRYSwift4_1Translator().translate(declarationReferenceExpression: methodName)!
+				guard case let .declarationReferenceExpression(identifier: methodNameString) = expression else { return .failed }
+				if let methodOwnerString = translate(expression: methodOwner).stringValue
 				{
 					functionName = "\(methodOwnerString).\(methodNameString)"
 				}
@@ -1367,13 +1356,10 @@ public class GRYKotlinTranslator {
 				.subtree(named: "Constructor Reference Call Expression")?
 				.subtree(named: "Type Expression")
 			{
-				if let string = translate(typeExpression: typeExpression).stringValue {
-					functionName = string
+				guard case let .typeExpression(type: type) = GRYSwift4_1Translator().translate(typeExpression: typeExpression)! else {
+					return .failed
 				}
-				else {
-					result = .failed
-					functionName = ""
-				}
+				functionName = type
 			}
 			else if let declaration = callExpression["decl"] {
 				functionName = getIdentifierFromDeclaration(declaration)
@@ -1548,35 +1534,17 @@ public class GRYKotlinTranslator {
 			return .failed
 		}
 
-		guard let stringExpression = parameterExpression.subtrees.last,
-			let string = translate(stringLiteralExpression: stringExpression).stringValue else
-		{
+		guard let stringExpression = parameterExpression.subtrees.last else {
 			return .failed
 		}
+
+		let value = stringExpression["value"]!
+		let string = translateStringLiteral(value: value)
 
 		let unquotedString = String(string.dropLast().dropFirst())
 		let unescapedString = removeBackslashEscapes(unquotedString)
 
 		return .translation(unescapedString)
-	}
-
-	private func translate(declarationReferenceExpression: GRYSwiftAst) -> TranslationResult {
-		precondition(declarationReferenceExpression.name == "Declaration Reference Expression")
-
-		if let codeDeclaration = declarationReferenceExpression.standaloneAttributes.first,
-			codeDeclaration.hasPrefix("code.")
-		{
-			diagnostics?.logSuccessfulTranslation(declarationReferenceExpression.name)
-			return .translation(getIdentifierFromDeclaration(codeDeclaration))
-		}
-		else if let declaration = declarationReferenceExpression["decl"] {
-			diagnostics?.logSuccessfulTranslation(declarationReferenceExpression.name)
-			return .translation(getIdentifierFromDeclaration(declaration))
-		}
-		else {
-			diagnostics?.logUnknownTranslation(declarationReferenceExpression.name)
-			return .failed
-		}
 	}
 
 	private func translate(memberReferenceExpression: GRYSwiftAst) -> TranslationResult {
@@ -1677,15 +1645,8 @@ public class GRYKotlinTranslator {
 		return .translation("(" + contents + ")")
 	}
 
-	private func translate(stringLiteralExpression: GRYSwiftAst) -> TranslationResult {
-		if let value = stringLiteralExpression["value"] {
-			diagnostics?.logSuccessfulTranslation(stringLiteralExpression.name)
-			return .translation("\"\(value)\"")
-		}
-		else {
-			diagnostics?.logUnknownTranslation(stringLiteralExpression.name)
-			return .failed
-		}
+	private func translateStringLiteral(value: String) -> String {
+		return "\"\(value)\""
 	}
 
 	private func translate(interpolatedStringLiteralExpression: GRYSwiftAst) -> TranslationResult
@@ -1697,12 +1658,8 @@ public class GRYKotlinTranslator {
 
 		for expression in interpolatedStringLiteralExpression.subtrees {
 			if expression.name == "String Literal Expression" {
-				guard let quotedString = translate(stringLiteralExpression: expression).stringValue
-					else
-				{
-					result = .failed
-					continue
-				}
+				let value = expression["value"]!
+				let quotedString = translateStringLiteral(value: value)
 
 				let unquotedString = quotedString.dropLast().dropFirst()
 
