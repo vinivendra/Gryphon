@@ -195,17 +195,19 @@ public class GRYKotlinTranslator {
 				classDeclaration: subtree,
 				withIndentation: indentation)
 		case "Constructor Declaration":
-			result = translate(
-				constructorDeclaration: subtree,
-				withIndentation: indentation)
+			result = .translation("")
 		case "Destructor Declaration":
-			result = translate(
-				destructorDeclaration: subtree,
-				withIndentation: indentation)
+			result = .translation("")
 		case "Enum Declaration":
-			result = translate(
-				enumDeclaration: subtree,
-				withIndentation: indentation)
+			guard case let .enumDeclaration(
+				access: access, name: name, inherits: inherits, elements: elements) =
+				GRYSwift4_1Translator().translate(enumDeclaration: subtree)! else
+			{
+				return .failed
+			}
+			result = .translation(translateEnumDeclaration(
+				access: access, name: name, inherits: inherits, elements: elements,
+				withIndentation: indentation))
 		case "Extension Declaration":
 			diagnostics?.logSuccessfulTranslation(subtree.name)
 			result = translate(
@@ -220,9 +222,13 @@ public class GRYKotlinTranslator {
 				functionDeclaration: subtree,
 				withIndentation: indentation)
 		case "Protocol":
-			result = translate(
-				protocolDeclaration: subtree,
-				withIndentation: indentation)
+			guard case let .protocolDeclaration(name: name) =
+				GRYSwift4_1Translator().translate(protocolDeclaration: subtree)! else
+			{
+				return .failed
+			}
+			result = .translation(translateProtocolDeclaration(
+				name: name, withIndentation: indentation))
 		case "Top Level Code Declaration":
 			return translate(
 				topLevelCode: subtree,
@@ -236,9 +242,7 @@ public class GRYKotlinTranslator {
 			result = .translation(translateThrowStatement(
 				expression: expression, withIndentation: indentation))
 		case "Struct Declaration":
-			result = translate(
-				structDeclaration: subtree,
-				withIndentation: indentation)
+			return .translation("")
 		case "Variable Declaration":
 			result = translate(
 				variableDeclaration: subtree,
@@ -375,102 +379,52 @@ public class GRYKotlinTranslator {
 		return translate(subtrees: braceStatement.subtrees, withIndentation: indentation)
 	}
 
-	private func translate(enumDeclaration: GRYSwiftAst, withIndentation indentation: String)
-		-> TranslationResult
+	private func translateEnumDeclaration(
+		access: String?, name: String, inherits: [String], elements: [String],
+		withIndentation indentation: String) -> String
 	{
-		precondition(enumDeclaration.name == "Enum Declaration")
-
-		var result = TranslationResult.translation(indentation)
-
-		if let access = enumDeclaration.keyValueAttributes["access"] {
-			result += access + " "
+		guard !inherits.contains("GRYIgnore") else {
+			return ""
 		}
 
-		let enumName: TranslationResult
-		if let name = enumDeclaration.standaloneAttributes.first {
-			enumName = .translation(name)
-			GRYKotlinTranslator.enums.append(name)
+		// TODO: Turn this into a pass
+		GRYKotlinTranslator.enums.append(name)
+
+		var result: String
+
+		if let access = access {
+			result = "\(indentation)\(access) sealed class " + name
 		}
 		else {
-			enumName = .failed
+			result = "\(indentation)sealed class " + name
 		}
 
-		result += "sealed class " + enumName
-
-		if let inheritanceList = enumDeclaration.keyValueAttributes["inherits"] {
-			let rawInheritanceArray = inheritanceList.split(withStringSeparator: ", ")
-
-			if rawInheritanceArray.contains("GRYIgnore") {
-				return .translation("")
-			}
-
-			var inheritanceArray = rawInheritanceArray.map { translateType($0) }
-
-			// The inheritanceArray isn't empty because the inheritanceList isn't empty.
-			inheritanceArray[0] = inheritanceArray[0] + "()"
-
-			let inheritanceString = inheritanceArray.joined(separator: ", ")
-
-			result += ": \(inheritanceString)"
+		if !inherits.isEmpty {
+			var translatedInheritedTypes = inherits.map(translateType)
+			translatedInheritedTypes[0] = translatedInheritedTypes[0] + "()"
+			result += ": \(translatedInheritedTypes.joined(separator: ", "))"
 		}
 
 		result += " {\n"
 
 		let increasedIndentation = increaseIndentation(indentation)
 
-		let enumElementDeclarations =
-			enumDeclaration.subtrees.filter { $0.name == "Enum Element Declaration" }
-		for enumElementDeclaration in enumElementDeclarations {
-			guard let elementName = enumElementDeclaration.standaloneAttributes.first else {
-				diagnostics?.logUnknownTranslation("[Enum Element Declaration]")
-				result = .failed
-				continue
-			}
+		for element in elements {
+			let capitalizedElementName = element.capitalizedAsCamelCase
 
-			let capitalizedElementName = elementName.capitalizedAsCamelCase
-
-			diagnostics?.logSuccessfulTranslation("[Enum Element Declaration]")
-			result += "\(increasedIndentation)class \(capitalizedElementName): " + enumName + "()\n"
+			result += "\(increasedIndentation)class \(capitalizedElementName): \(name)()\n"
 		}
 
 		result += "\(indentation)}\n"
 
-		diagnostics?.logResult(result, subtreeName: enumDeclaration.name)
 		return result
 	}
 
-	private func translate(protocolDeclaration: GRYSwiftAst, withIndentation indentation: String)
-		-> TranslationResult
+	private func translateProtocolDeclaration(name: String, withIndentation indentation: String)
+		-> String
 	{
-		precondition(protocolDeclaration.name == "Protocol")
-
-		guard let protocolName = protocolDeclaration.standaloneAttributes.first else {
-			diagnostics?.logUnknownTranslation(protocolDeclaration.name)
-			return .failed
-		}
-
-		if protocolName == "GRYIgnore" {
-			diagnostics?.logSuccessfulTranslation(protocolDeclaration.name)
-			return .translation("")
-		}
-		else {
-			// Add actual protocol translation here
-			diagnostics?.logUnknownTranslation(protocolDeclaration.name)
-			return .failed
-		}
-	}
-
-	private func translate(structDeclaration: GRYSwiftAst, withIndentation indentation: String)
-		-> TranslationResult
-	{
-		precondition(structDeclaration.name == "Struct Declaration")
-
-		let result = .refactorable + translate(
-			subtrees: structDeclaration.subtrees,
-			withIndentation: "")
-
-		diagnostics?.logResult(result, subtreeName: structDeclaration.name)
-		return result
+		precondition(name == "GRYIgnore")
+		return ""
 	}
 
 	private func translate(classDeclaration: GRYSwiftAst, withIndentation indentation: String)
@@ -516,34 +470,6 @@ public class GRYKotlinTranslator {
 
 		diagnostics?.logResult(result, subtreeName: classDeclaration.name)
 		return result
-	}
-
-	private func translate(constructorDeclaration: GRYSwiftAst, withIndentation indentation: String)
-		-> TranslationResult
-	{
-		precondition(constructorDeclaration.name == "Constructor Declaration")
-
-		guard !constructorDeclaration.standaloneAttributes.contains("implicit") else {
-			diagnostics?.logSuccessfulTranslation(constructorDeclaration.name)
-			return .translation("")
-		}
-
-		diagnostics?.logUnknownTranslation(constructorDeclaration.name)
-		return .failed
-	}
-
-	private func translate(destructorDeclaration: GRYSwiftAst, withIndentation indentation: String)
-		-> TranslationResult
-	{
-		precondition(destructorDeclaration.name == "Destructor Declaration")
-
-		guard !destructorDeclaration.standaloneAttributes.contains("implicit") else {
-			diagnostics?.logSuccessfulTranslation(destructorDeclaration.name)
-			return .translation("")
-		}
-
-		diagnostics?.logUnknownTranslation(destructorDeclaration.name)
-		return .failed
 	}
 
 	private func translate(functionDeclaration: GRYSwiftAst, withIndentation indentation: String)

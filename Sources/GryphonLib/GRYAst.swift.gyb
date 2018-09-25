@@ -88,8 +88,6 @@ astNodes = [
 	['importDeclaration', [['name', 'String']]],
 	['classDeclaration',
 		[['name', 'String'], ['inherits', '[String]'], ['members', '[GRYTopLevelNode]']]],
-	['constructorDeclaration', [['implicit', 'Bool']]],
-	['destructorDeclaration', [['implicit', 'Bool']]],
 	['enumDeclaration',
 		[['access', 'String?'], ['name', 'String'], ['inherits', '[String]'],
 		['elements', '[String]']]],
@@ -222,10 +220,6 @@ public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree {
 				name,
 				GRYPrintableTree(description: "inherits", subtreesOrNil: inherits),
 				GRYPrintableTree(description: "members", subtreesOrNil: members), ]
-		case let .constructorDeclaration(implicit: implicit):
-			return implicit ? ["implicit"] : []
-		case let .destructorDeclaration(implicit: implicit):
-			return implicit ? ["implicit"] : []
 		case let .enumDeclaration(
 			access: access,
 			name: name,

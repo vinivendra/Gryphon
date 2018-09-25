@@ -89,8 +89,6 @@ public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree {
 	case expression(expression: GRYExpression)
 	case importDeclaration(name: String)
 	case classDeclaration(name: String, inherits: [String], members: [GRYTopLevelNode])
-	case constructorDeclaration(implicit: Bool)
-	case destructorDeclaration(implicit: Bool)
 	case enumDeclaration(access: String?, name: String, inherits: [String], elements: [String])
 	case protocolDeclaration(name: String)
 	case structDeclaration(name: String)
@@ -117,10 +115,6 @@ public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree {
 			try! container.encode(name, forKey: "name")
 			try! container.encode(inherits, forKey: "inherits")
 			try! container.encode(members, forKey: "members")
-		case let .constructorDeclaration(implicit: implicit):
-			try! container.encode(implicit, forKey: "implicit")
-		case let .destructorDeclaration(implicit: implicit):
-			try! container.encode(implicit, forKey: "implicit")
 		case let .enumDeclaration(access: access, name: name, inherits: inherits, elements: elements):
 			try! container.encode(access, forKey: "access")
 			try! container.encode(name, forKey: "name")
@@ -184,12 +178,6 @@ public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree {
 			let inherits = try! container.decode([String].self, forKey: "inherits")
 			let members = try! container.decode([GRYTopLevelNode].self, forKey: "members")
 			self = .classDeclaration(name: name, inherits: inherits, members: members)
-		case "constructorDeclaration":
-			let implicit = try! container.decode(Bool.self, forKey: "implicit")
-			self = .constructorDeclaration(implicit: implicit)
-		case "destructorDeclaration":
-			let implicit = try! container.decode(Bool.self, forKey: "implicit")
-			self = .destructorDeclaration(implicit: implicit)
 		case "enumDeclaration":
 			let access = try! container.decode(String?.self, forKey: "access")
 			let name = try! container.decode(String.self, forKey: "name")
@@ -272,10 +260,6 @@ public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree {
 				name,
 				GRYPrintableTree(description: "inherits", subtreesOrNil: inherits),
 				GRYPrintableTree(description: "members", subtreesOrNil: members), ]
-		case let .constructorDeclaration(implicit: implicit):
-			return implicit ? ["implicit"] : []
-		case let .destructorDeclaration(implicit: implicit):
-			return implicit ? ["implicit"] : []
 		case let .enumDeclaration(
 			access: access,
 			name: name,

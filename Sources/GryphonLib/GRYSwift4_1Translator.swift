@@ -63,14 +63,6 @@ public class GRYSwift4_1Translator {
 			result = .importDeclaration(name: subtree.standaloneAttributes[0])
 		case "Class Declaration":
 			result = translate(classDeclaration: subtree)
-//		case "Constructor Declaration":
-//			result = translate(
-//				constructorDeclaration: subtree,
-//				withIndentation: indentation)
-//		case "Destructor Declaration":
-//			result = translate(
-//				destructorDeclaration: subtree,
-//				withIndentation: indentation)
 		case "Enum Declaration":
 			result = translate(enumDeclaration: subtree)
 		case "Extension Declaration":
