@@ -150,7 +150,7 @@ public class GRYSwift4_1Translator {
 			return translate(subscriptExpression: expression)
 		case "Parentheses Expression":
 			if let firstExpression = expression.subtree(at: 0) {
-				return translate(expression: firstExpression)
+				return .parenthesesExpression(expression: translate(expression: firstExpression)!)
 			}
 			else {
 				return nil

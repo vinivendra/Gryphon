@@ -358,6 +358,7 @@ public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
+	case parenthesesExpression(expression: GRYExpression)
 	case forceValueExpression(expression: GRYExpression)
 	case declarationReferenceExpression(identifier: String)
 	case typeExpression(type: String)
@@ -382,6 +383,8 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
 		try! container.encode(enumName, forKey: "astName")
 
 		switch self {
+		case let .parenthesesExpression(expression: expression):
+			try! container.encode(expression, forKey: "expression")
 		case let .forceValueExpression(expression: expression):
 			try! container.encode(expression, forKey: "expression")
 		case let .declarationReferenceExpression(identifier: identifier):
@@ -429,6 +432,9 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
 		let astName = try! container.decode(String.self, forKey: "astName")
 
 		switch astName {
+		case "parenthesesExpression":
+			let expression = try! container.decode(GRYExpression.self, forKey: "expression")
+			self = .parenthesesExpression(expression: expression)
 		case "forceValueExpression":
 			let expression = try! container.decode(GRYExpression.self, forKey: "expression")
 			self = .forceValueExpression(expression: expression)
@@ -503,6 +509,8 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
 
 	public var printableSubtrees: [GRYPrintableAsTree?] {
 		switch self {
+		case let .parenthesesExpression(expression: expression):
+			return [expression]
 		case let .forceValueExpression(expression: expression):
 			return [expression]
 		case let .declarationReferenceExpression(identifier: identifier):
