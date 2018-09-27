@@ -15,59 +15,6 @@
 */
 
 public class GRYKotlinTranslator {
-	public class Diagnostics: CustomStringConvertible {
-        private(set) var translatedSubtrees = GRYHistogram<String>()
-		private(set) var refactorableSubtrees = GRYHistogram<String>()
-        private(set) var unknownSubtrees = GRYHistogram<String>()
-
-		fileprivate func logSuccessfulTranslation(_ subtreeName: String) {
-			translatedSubtrees.increaseOccurence(of: subtreeName)
-		}
-
-        fileprivate func logRefactorableTranslation(_ subtreeName: String) {
-            refactorableSubtrees.increaseOccurence(of: subtreeName)
-        }
-
-        fileprivate func logUnknownTranslation(_ subtreeName: String) {
-            unknownSubtrees.increaseOccurence(of: subtreeName)
-        }
-
-		fileprivate func logResult(_ translationResult: TranslationResult, subtreeName: String) {
-			if case .translation(_) = translationResult {
-				logSuccessfulTranslation(subtreeName)
-			}
-			else {
-				logUnknownTranslation(subtreeName)
-			}
-		}
-
-		public var description: String {
-			return """
-			-----
-			# Kotlin translation diagnostics:
-
-			## Translated subtrees
-
-			\(translatedSubtrees)
-			## Refactorable subtrees
-
-			\(refactorableSubtrees)
-			## Unknown subtrees
-
-			\(unknownSubtrees)
-			"""
-		}
-	}
-
-	/// Records the amount of translations that have been successfully translated;
-	/// that can be refactored into translatable code; or that can't be translated.
-	var diagnostics: Diagnostics?
-
-	fileprivate enum TranslationError: Error {
-		case refactorable
-		case unknown
-	}
-
 	/// Used for the translation of Swift types into Kotlin types.
 	static let typeMappings = ["Bool": "Boolean", "Error": "Exception"]
 
@@ -101,25 +48,6 @@ public class GRYKotlinTranslator {
 	translation.
 	*/
 	private var shouldIgnoreNext = false
-
-	/**
-	Swift variables declared with a value, such as `var x = 0`, are represented in a weird way in
-	the AST: first comes a `Pattern Binding Declaration` containing the variable's name, its type,
-	and its initial value; then comes the actual `Variable Declaration`, but in a different branch
-	of the AST and with no information on the previously mentioned initial value.
-	
-	Since both of them have essential information, we need both at the same time to translate a
-	variable declaration. However, since they are in unpredictably different branches, it's hard to
-	find the Variable Declaration when we first read the Pattern Binding Declaration.
-	
-	The solution then is to temporarily save the Pattern Binding Declaration's information on this
-	variable. Then, once we find the Variable Declaration, we check to see if the stored value is
-	appropriate and then use all the information available to complete the translation process. This
-	variable is then reset to nil.
-	
-	- SeeAlso: translate(variableDeclaration:, withIndentation:)
-	*/
-	var danglingPatternBinding: (identifier: String, type: String, translatedExpression: String)?
 
 	// MARK: - Interface
 
@@ -784,48 +712,6 @@ public class GRYKotlinTranslator {
 		return String(identifier.prefix { $0 != "(" })
 	}
 
-	/**
-	Recovers an identifier formatted as a swift AST declaration.
-	
-	Declaration references are represented in the swift AST Dump in a rather complex format, so a
-	few operations are used to extract only the relevant identifier.
-	
-	For instance: a declaration reference expression referring to the variable `x`, inside the `foo`
-	function, in the /Users/Me/Documents/myFile.swift file, will be something like
-	`myFile.(file).foo().x@/Users/Me/Documents/MyFile.swift:2:6`, but a declaration reference for
-	the print function doesn't have the '@' or anything after it.
-	
-	Note that this function's job (in the example above) is to extract only the actual `x`
-	identifier.
-	*/
-	private func getIdentifierFromDeclaration(_ declaration: String) -> String {
-		var index = declaration.startIndex
-		var lastPeriodIndex = declaration.startIndex
-		while index != declaration.endIndex {
-			let character = declaration[index]
-
-			if character == "." {
-				lastPeriodIndex = index
-			}
-			if character == "@" {
-				break
-			}
-
-			index = declaration.index(after: index)
-		}
-
-		let identifierStartIndex = declaration.index(after: lastPeriodIndex)
-
-		let identifier = declaration[identifierStartIndex..<index]
-
-		if identifier == "self" {
-			return "this"
-		}
-		else {
-			return String(identifier)
-		}
-	}
-
 	private func translateTupleExpression(pairs: [GRYExpression.TuplePair]) -> String {
 		guard !pairs.isEmpty else {
 			return "()"
@@ -906,82 +792,12 @@ public class GRYKotlinTranslator {
 		return result
 	}
 
-	private func ASTIsExpression(_ ast: GRYSwiftAst) -> Bool {
-		return ast.name.hasSuffix("Expression") || ast.name == "Inject Into Optional"
-	}
-
 	func increaseIndentation(_ indentation: String) -> String {
 		return indentation + "\t"
 	}
 
 	func decreaseIndentation(_ indentation: String) -> String {
 		return String(indentation.dropLast())
-	}
-
-	//
-	enum TranslationResult: Equatable, CustomStringConvertible {
-		case translation(String)
-		case refactorable
-		case failed
-
-		init(stringLiteral value: StringLiteralType) {
-			self = .translation(value)
-		}
-
-		static func +(left: TranslationResult, right: TranslationResult) -> TranslationResult {
-			switch (left, right) {
-			case (.failed, _), (_, .failed):
-				return .failed
-			case (.refactorable, _), (_, .refactorable):
-				return .refactorable
-			case (.translation(let leftTranslation), .translation(let rightTranslation)):
-				return .translation(leftTranslation + rightTranslation)
-			}
-		}
-
-		static func +(left: TranslationResult, right: String) -> TranslationResult {
-			return left + .translation(right)
-		}
-
-		static func +(left: TranslationResult, right: Substring) -> TranslationResult {
-			return left + String(right)
-		}
-
-		static func +(left: String, right: TranslationResult) -> TranslationResult {
-			return .translation(left) + right
-		}
-
-		static func +(left: Substring, right: TranslationResult) -> TranslationResult {
-			return String(left) + right
-		}
-
-		static func +=(left: inout TranslationResult, right: TranslationResult) {
-			left = left + right
-		}
-
-		static func +=(left: inout TranslationResult, right: String) {
-			left = left + right
-		}
-
-		static func +=(left: inout TranslationResult, right: Substring) {
-			left = left + right
-		}
-
-		var stringValue: String? {
-			switch self {
-			case .translation(let value):
-				return value
-			case .failed, .refactorable:
-				return nil
-			}
-		}
-
-		var description: String {
-			// The translator must turn TranslationResults into Strings explicitly, so as to force
-			// the programmers to consider the possibilities and make their choices clearer.
-			// This has already helped catch a few bugs.
-			fatalError()
-		}
 	}
 }
 

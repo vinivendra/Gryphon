@@ -27,7 +27,7 @@ class GRYSwiftTranslatorTest: XCTestCase {
 			// Create the Gryphon AST using the mock Swift AST
 			let testFilePath = TestUtils.testFilesPath + testName
 			let swiftAst = GRYSwiftAst.initialize(fromJsonInFile: testFilePath + .grySwiftAstJson)
-			let createdGryphonAst = GRYSwift4_1Translator().translateAST(swiftAst)!
+			let createdGryphonAst = GRYSwift4_1Translator().translateAST(swiftAst)
 
 			// Load the previously stored Gryphon AST from file
 			let expectedGryphonAstJson = try! String(contentsOfFile: testFilePath + .gryAstJson)

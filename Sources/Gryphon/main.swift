@@ -75,7 +75,7 @@ func updateFiles(inFolder folder: String) {
 	updateFiles(in: folder, from: .grySwiftAstJson, to: .gryAstJson)
 	{ (swiftAstFilePath: String, gryphonAstFilePath: String) in
 		let swiftAst = GRYSwiftAst.initialize(fromJsonInFile: swiftAstFilePath)
-		let gryphonAst = GRYSwift4_1Translator().translateAST(swiftAst)!
+		let gryphonAst = GRYSwift4_1Translator().translateAST(swiftAst)
 		gryphonAst.writeAsJSON(toFile: gryphonAstFilePath)
 
 		let jsonContents = try! String(contentsOfFile: gryphonAstFilePath)

@@ -76,31 +76,13 @@ public enum GRYCompiler {
 		return .success(commandOutput: result)
 	}
 
-	public static func generateKotlinCodeWithDiagnostics(
-		forFileAt filePath: String)
-		-> (code: String?, diagnostics: GRYKotlinTranslator.Diagnostics, ast: GRYSourceFile)
-	{
-		let astFile = GRYUtils.changeExtension(of: filePath, to: .swiftAstDump)
-		let swiftAst = GRYSwiftAst(astFile: astFile)
-		let ast = GRYSwift4_1Translator().translateAST(swiftAst)!
-
-		print("\t- Translating AST to Kotlin...")
-		let kotlinTranslator = GRYKotlinTranslator()
-		let kotlinDiagnostics = GRYKotlinTranslator.Diagnostics()
-		kotlinTranslator.diagnostics = kotlinDiagnostics
-		let kotlinCode = kotlinTranslator.translateAST(ast)
-		return (code: kotlinCode, diagnostics: kotlinDiagnostics, ast: ast)
-	}
-
 	public static func generateKotlinCode(forFileAt filePath: String) -> String? {
-		let astFile = GRYUtils.changeExtension(of: filePath, to: .swiftAstDump)
-		let swiftAst = GRYSwiftAst(astFile: astFile)
-		let ast = GRYSwift4_1Translator().translateAST(swiftAst)!
+		let ast = generateGryphonAst(forFileAt: filePath)
 
 		print("\t- Translating AST to Kotlin...")
-		let kotlinTranslator = GRYKotlinTranslator()
-		let kotlinCode = kotlinTranslator.translateAST(ast)
+		let kotlinCode = GRYKotlinTranslator().translateAST(ast)
 
+		// TODO: is this still needed?
 		if kotlinCode == nil {
 			print("\t- Failed to translate AST to Kotlin.")
 		}
@@ -108,7 +90,14 @@ public enum GRYCompiler {
 		return kotlinCode
 	}
 
-	public static func processExternalAST(_ filePath: String) -> GRYSwiftAst {
+	public static func generateGryphonAst(forFileAt filePath: String) -> GRYSourceFile {
+		let swiftAst = generateSwiftAST(forFileAt: filePath)
+		print("\t- Translating Swift Ast to Gryphon Ast...")
+		let ast = GRYSwift4_1Translator().translateAST(swiftAst)
+		return ast
+	}
+
+	public static func processExternalSwiftAST(_ filePath: String) -> GRYSwiftAst {
 		let astFilePath = GRYUtils.changeExtension(of: filePath, to: .swiftAstDump)
 
 		print("\t- Building GRYSwiftAst from external AST...")
@@ -126,7 +115,7 @@ public enum GRYCompiler {
 		return ast
 	}
 
-	public static func generateAST(forFileAt filePath: String) -> GRYSwiftAst {
+	public static func generateSwiftAST(forFileAt filePath: String) -> GRYSwiftAst {
 		let astDumpFilePath = GRYUtils.changeExtension(of: filePath, to: .swiftAstDump)
 
 		print("\t- Building GRYSwiftAst...")
