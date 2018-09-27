@@ -42,6 +42,28 @@ public class GRYSourceFile: GRYPrintableAsTree, Codable, Equatable, CustomString
 		try! processedJsonString.write(toFile: filePath, atomically: true, encoding: .utf8)
 	}
 
+	public static func initialize(fromJsonInFile jsonFilePath: String) -> GRYSourceFile {
+		do {
+			let rawJSON = try String(contentsOfFile: jsonFilePath)
+
+			// Information in stored files has placeholders for file paths that must be replaced
+			let swiftFilePath = GRYUtils.changeExtension(of: jsonFilePath, to: .swift)
+			let escapedFilePath = swiftFilePath.replacingOccurrences(of: "/", with: "\\/")
+			let processedJSON =
+				rawJSON.replacingOccurrences(of: "<<testFilePath>>", with: escapedFilePath)
+
+			let astData = Data(processedJSON.utf8)
+			return try JSONDecoder().decode(GRYSourceFile.self, from: astData)
+		}
+		catch let error {
+			fatalError("""
+				Error decoding \(jsonFilePath).
+				If the file doesn't exist, please run `updateJsonTestFiles()` to generate it.
+				Error: \(error)
+				""")
+}
+	}
+
 	enum SourceFileCodingKeys: String, CodingKey {
 		case declarations
 		case statements

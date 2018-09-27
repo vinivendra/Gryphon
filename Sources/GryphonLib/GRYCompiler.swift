@@ -78,10 +78,11 @@ public enum GRYCompiler {
 
 	public static func generateKotlinCodeWithDiagnostics(
 		forFileAt filePath: String)
-		-> (code: String?, diagnostics: GRYKotlinTranslator.Diagnostics, ast: GRYSwiftAst)
+		-> (code: String?, diagnostics: GRYKotlinTranslator.Diagnostics, ast: GRYSourceFile)
 	{
 		let astFile = GRYUtils.changeExtension(of: filePath, to: .swiftAstDump)
-		let ast = GRYSwiftAst(astFile: astFile)
+		let swiftAst = GRYSwiftAst(astFile: astFile)
+		let ast = GRYSwift4_1Translator().translateAST(swiftAst)!
 
 		print("\t- Translating AST to Kotlin...")
 		let kotlinTranslator = GRYKotlinTranslator()
@@ -93,7 +94,8 @@ public enum GRYCompiler {
 
 	public static func generateKotlinCode(forFileAt filePath: String) -> String? {
 		let astFile = GRYUtils.changeExtension(of: filePath, to: .swiftAstDump)
-		let ast = GRYSwiftAst(astFile: astFile)
+		let swiftAst = GRYSwiftAst(astFile: astFile)
+		let ast = GRYSwift4_1Translator().translateAST(swiftAst)!
 
 		print("\t- Translating AST to Kotlin...")
 		let kotlinTranslator = GRYKotlinTranslator()
