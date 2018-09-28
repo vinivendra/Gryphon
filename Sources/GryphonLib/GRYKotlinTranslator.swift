@@ -629,10 +629,6 @@ public class GRYKotlinTranslator {
 	As a special case, functions called GRYInsert, GRYAlternative and GRYIgnoreNext are used to
 	directly manipulate the resulting kotlin code, and are treated separately below.
 	
-	As another special case, a call to the `print` function gets renamed to `println` for
-	compatibility with kotlin. In the future, this will be done by a more complex system, but for
-	now it allows integration tests to exist.
-	
 	- Note: If conditions include an "empty" call expression wrapping its real expression. This
 	function handles the unwrapping then delegates the translation.
 	*/
@@ -657,13 +653,7 @@ public class GRYKotlinTranslator {
 
 		let parametersTranslation = translateTupleExpression(pairs: pairs)
 
-		// TODO: This should be replaced with a better system
-		if functionTranslation == "print" {
-			return "println" + parametersTranslation
-		}
-		else {
-			return functionTranslation + parametersTranslation
-		}
+		return functionTranslation + parametersTranslation
 	}
 
 	/**

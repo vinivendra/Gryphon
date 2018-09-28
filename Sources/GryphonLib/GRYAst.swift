@@ -16,8 +16,6 @@
 
 import Foundation
 
-// TODO: Try to change this into an enum in the future, i.e. if immutable values really are like
-// references
 public class GRYSourceFile: GRYPrintableAsTree, Codable, Equatable, CustomStringConvertible {
 	let declarations: [GRYTopLevelNode]
 	let statements: [GRYTopLevelNode]
@@ -105,7 +103,6 @@ public class GRYSourceFile: GRYPrintableAsTree, Codable, Equatable, CustomString
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// TODO: Separate into declarations and statements?
 public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree {
 
 	case expression(expression: GRYExpression)
@@ -182,7 +179,6 @@ public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree {
 		}
 	}
 
-	// TODO: Can this be done with gyb?
 	public init(from decoder: Decoder) throws {
 		let container = try! decoder.container(keyedBy: StringCodingKey.self)
 

@@ -75,10 +75,20 @@ public enum GRYCompiler {
 	}
 
 	public static func generateKotlinCode(forFileAt filePath: String) throws -> String {
-		let ast = try generateGryphonAst(forFileAt: filePath)
+		let ast = try generateGryphonAstAndRunPasses(forFileAt: filePath)
 
 		print("\t- Translating AST to Kotlin...")
 		return GRYKotlinTranslator().translateAST(ast)
+	}
+
+	public static func generateGryphonAstAndRunPasses(forFileAt filePath: String) throws
+		-> GRYSourceFile
+	{
+		let swiftAst = generateSwiftAST(forFileAt: filePath)
+		print("\t- Translating Swift Ast to Gryphon Ast...")
+		let ast = try GRYSwift4Translator().translateAST(swiftAst)
+		let astAfterPasses = GRYTranspilationPass.runAllPasses(on: ast)
+		return astAfterPasses
 	}
 
 	public static func generateGryphonAst(forFileAt filePath: String) throws -> GRYSourceFile {
