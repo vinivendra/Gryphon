@@ -437,12 +437,9 @@
         (pattern_typed type='Int?'
           (pattern_named type='Int?' 'z')
 )
-        (call_expr implicit type='Int?' location=<<testFilePath>>:119:15 range=[<<testFilePath>>:119:15 - line:119:15] nothrow arg_labels=nilLiteral:
-          (constructor_ref_call_expr implicit type='(()) -> Int?' location=<<testFilePath>>:119:15 range=[<<testFilePath>>:119:15 - line:119:15] nothrow
-            (declref_expr implicit type='(Optional<Int>.Type) -> (()) -> Optional<Int>' location=<<testFilePath>>:119:15 range=[<<testFilePath>>:119:15 - line:119:15] decl=Swift.(file).Optional.init(nilLiteral:) [with Int] function_ref=single)
-            (type_expr implicit type='Int?.Type' location=<<testFilePath>>:119:15 range=[<<testFilePath>>:119:15 - line:119:15] typerepr='Int?'))
-          (tuple_expr implicit type='(nilLiteral: ())' location=<<testFilePath>>:119:15 range=[<<testFilePath>>:119:15 - line:119:15] names=nilLiteral
-            (tuple_expr type='()' location=<<testFilePath>>:119:15 range=[<<testFilePath>>:119:15 - line:119:15]))))
+        (dot_syntax_call_expr implicit type='Int?' location=<<testFilePath>>:119:15 range=[<<testFilePath>>:119:15 - line:119:15] nothrow
+          (declref_expr implicit type='(Int?.Type) -> Int?' location=<<testFilePath>>:119:15 range=[<<testFilePath>>:119:15 - line:119:15] decl=Swift.(file).Optional.none [with Int] function_ref=unapplied)
+          (type_expr implicit type='Int?.Type' location=<<testFilePath>>:119:15 range=[<<testFilePath>>:119:15 - line:119:15] typerepr='Int?')))
 ))
   (var_decl "z" type='Int?' interface type='Int?' access=internal let storage_kind=stored)
   (func_decl "bla()" interface type='() -> Int?' access=internal
@@ -462,7 +459,7 @@
     (brace_stmt
       (if_stmt
         (pattern
-          (optional_some_element implicit type='Int?'
+          (pattern_optional_some implicit type='Int?'
             (pattern_let implicit type='Int'
               (pattern_named type='Int' 'a')))
           (declref_expr type='Int?' location=<<testFilePath>>:123:12 range=[<<testFilePath>>:123:12 - line:123:12] decl=ifStatement.(file).x@<<testFilePath>>:117:5 direct_to_storage function_ref=unapplied))
@@ -487,7 +484,7 @@
     (brace_stmt
       (if_stmt
         (pattern
-          (optional_some_element implicit type='Int?'
+          (pattern_optional_some implicit type='Int?'
             (pattern_let implicit type='Int'
               (pattern_named type='Int' 'b')))
           (declref_expr type='Int?' location=<<testFilePath>>:128:12 range=[<<testFilePath>>:128:12 - line:128:12] decl=ifStatement.(file).x@<<testFilePath>>:117:5 direct_to_storage function_ref=unapplied))
@@ -544,7 +541,7 @@
     (brace_stmt
       (if_stmt
         (pattern
-          (optional_some_element implicit type='Int?'
+          (pattern_optional_some implicit type='Int?'
             (pattern_let implicit type='Int'
               (pattern_named type='Int' 'c')))
           (declref_expr type='Int?' location=<<testFilePath>>:139:12 range=[<<testFilePath>>:139:12 - line:139:12] decl=ifStatement.(file).z@<<testFilePath>>:119:5 direct_to_storage function_ref=unapplied))
@@ -576,15 +573,15 @@
     (brace_stmt
       (if_stmt
         (pattern
-          (optional_some_element implicit type='Int?'
+          (pattern_optional_some implicit type='Int?'
             (pattern_var implicit type='Int'
               (pattern_named type='Int' 'd')))
           (declref_expr type='Int?' location=<<testFilePath>>:147:12 range=[<<testFilePath>>:147:12 - line:147:12] decl=ifStatement.(file).x@<<testFilePath>>:117:5 direct_to_storage function_ref=unapplied))        (pattern
-          (optional_some_element implicit type='Int?'
+          (pattern_optional_some implicit type='Int?'
             (pattern_let implicit type='Int'
               (pattern_named type='Int' 'e')))
           (declref_expr type='Int?' location=<<testFilePath>>:147:23 range=[<<testFilePath>>:147:23 - line:147:23] decl=ifStatement.(file).y@<<testFilePath>>:118:5 direct_to_storage function_ref=unapplied))        (pattern
-          (optional_some_element implicit type='Int?'
+          (pattern_optional_some implicit type='Int?'
             (pattern_let implicit type='Int'
               (pattern_named type='Int' 'f')))
           (call_expr type='Int?' location=<<testFilePath>>:147:34 range=[<<testFilePath>>:147:34 - line:147:38] nothrow arg_labels=

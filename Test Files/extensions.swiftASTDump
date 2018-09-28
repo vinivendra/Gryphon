@@ -6,7 +6,7 @@
         (type_ident
           (component id='Bool' bind=Swift.(file).Bool))))
     (var_decl "isString" type='Bool' interface type='Bool' access=internal storage_kind=computed
-      (func_decl 'anonname=<<memory address>>' interface type='(String) -> () -> Bool' access=internal getter_for=isString
+      (accessor_decl 'anonname=<<memory address>>' interface type='(String) -> () -> Bool' access=internal getter_for=isString
         (parameter_list
           (parameter "self" type='String' interface type='String'))
         (parameter_list)
@@ -18,7 +18,7 @@
                 (type_expr implicit type='Bool.Type' location=<<testFilePath>>:19:10 range=[<<testFilePath>>:19:10 - line:19:10] typerepr='Bool'))
               (tuple_expr implicit type='(_builtinBooleanLiteral: Builtin.Int1)' location=<<testFilePath>>:19:10 range=[<<testFilePath>>:19:10 - line:19:10] names=_builtinBooleanLiteral
                 (boolean_literal_expr type='Builtin.Int1' location=<<testFilePath>>:19:10 range=[<<testFilePath>>:19:10 - line:19:10] value=true)))))))
-    (func_decl 'anonname=<<memory address>>' interface type='(String) -> () -> Bool' access=internal getter_for=isString
+    (accessor_decl 'anonname=<<memory address>>' interface type='(String) -> () -> Bool' access=internal getter_for=isString
       (parameter_list
         (parameter "self" type='String' interface type='String'))
       (parameter_list)
@@ -36,14 +36,14 @@
         (type_ident
           (component id='String' bind=Swift.(file).String))))
     (var_decl "world" type='String' interface type='String' access=internal storage_kind=computed
-      (func_decl 'anonname=<<memory address>>' interface type='(String) -> () -> String' access=internal getter_for=world
+      (accessor_decl 'anonname=<<memory address>>' interface type='(String) -> () -> String' access=internal getter_for=world
         (parameter_list
           (parameter "self" type='String' interface type='String'))
         (parameter_list)
         (brace_stmt
           (return_stmt
             (string_literal_expr type='String' location=<<testFilePath>>:23:10 range=[<<testFilePath>>:23:10 - line:23:10] encoding=utf8 value="World!" builtin_initializer=Swift.(file).String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:) initializer=**NULL**)))))
-    (func_decl 'anonname=<<memory address>>' interface type='(String) -> () -> String' access=internal getter_for=world
+    (accessor_decl 'anonname=<<memory address>>' interface type='(String) -> () -> String' access=internal getter_for=world
       (parameter_list
         (parameter "self" type='String' interface type='String'))
       (parameter_list)

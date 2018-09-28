@@ -84,7 +84,7 @@ public enum GRYCompiler {
 	public static func generateGryphonAst(forFileAt filePath: String) throws -> GRYSourceFile {
 		let swiftAst = generateSwiftAST(forFileAt: filePath)
 		print("\t- Translating Swift Ast to Gryphon Ast...")
-		let ast = try GRYSwift4_1Translator().translateAST(swiftAst)
+		let ast = try GRYSwift4Translator().translateAST(swiftAst)
 		return ast
 	}
 

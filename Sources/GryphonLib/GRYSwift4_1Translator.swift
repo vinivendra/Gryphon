@@ -14,7 +14,7 @@
 * limitations under the License.
 */
 
-public class GRYSwift4_1Translator {
+public class GRYSwift4Translator {
 	enum GRYSwiftTranslatorError: GRYPrintableError {
 		case unexpectedAstStructure(
 			file: String,
@@ -421,6 +421,14 @@ public class GRYSwift4_1Translator {
 			let rightHand = try translate(expression: rightHandExpression)
 			let leftHand = try translate(typeExpression: leftHandTree)
 
+			// Swift 4.2
+			if case .typeExpression(type: _) = leftHand,
+				case let .declarationReferenceExpression(identifier: identifier) = rightHand,
+				identifier == "none"
+			{
+				return .nilLiteralExpression
+			}
+
 			return .dotExpression(leftExpression: leftHand, rightExpression: rightHand)
 		}
 		else {
@@ -559,7 +567,9 @@ public class GRYSwift4_1Translator {
 		for condition in conditions {
 			// If it's an if-let
 			if condition.name == "Pattern",
-				let optionalSomeElement = condition.subtree(named: "Optional Some Element")
+				let optionalSomeElement =
+					condition.subtree(named: "Optional Some Element") ?? // Swift 4.1
+					condition.subtree(named: "Pattern Optional Some") // Swift 4.2
 			{
 				let patternNamed: GRYSwiftAst
 				let isLet: Bool

@@ -82,12 +82,9 @@
         (pattern_typed type='Int?'
           (pattern_named type='Int?' 'a')
 )
-        (call_expr implicit type='Int?' location=<<testFilePath>>:27:15 range=[<<testFilePath>>:27:15 - line:27:15] nothrow arg_labels=nilLiteral:
-          (constructor_ref_call_expr implicit type='(()) -> Int?' location=<<testFilePath>>:27:15 range=[<<testFilePath>>:27:15 - line:27:15] nothrow
-            (declref_expr implicit type='(Optional<Int>.Type) -> (()) -> Optional<Int>' location=<<testFilePath>>:27:15 range=[<<testFilePath>>:27:15 - line:27:15] decl=Swift.(file).Optional.init(nilLiteral:) [with Int] function_ref=single)
-            (type_expr implicit type='Int?.Type' location=<<testFilePath>>:27:15 range=[<<testFilePath>>:27:15 - line:27:15] typerepr='Int?'))
-          (tuple_expr implicit type='(nilLiteral: ())' location=<<testFilePath>>:27:15 range=[<<testFilePath>>:27:15 - line:27:15] names=nilLiteral
-            (tuple_expr type='()' location=<<testFilePath>>:27:15 range=[<<testFilePath>>:27:15 - line:27:15]))))
+        (dot_syntax_call_expr implicit type='Int?' location=<<testFilePath>>:27:15 range=[<<testFilePath>>:27:15 - line:27:15] nothrow
+          (declref_expr implicit type='(Int?.Type) -> Int?' location=<<testFilePath>>:27:15 range=[<<testFilePath>>:27:15 - line:27:15] decl=Swift.(file).Optional.none [with Int] function_ref=unapplied)
+          (type_expr implicit type='Int?.Type' location=<<testFilePath>>:27:15 range=[<<testFilePath>>:27:15 - line:27:15] typerepr='Int?')))
 ))
   (var_decl "a" type='Int?' interface type='Int?' access=internal let storage_kind=stored)
   (top_level_code_decl

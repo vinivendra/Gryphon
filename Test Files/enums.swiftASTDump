@@ -1,5 +1,5 @@
 (source_file
-  (enum_decl "CalculatorError" interface type='CalculatorError.Type' access=internal @_fixed_layout inherits: Error
+  (enum_decl "CalculatorError" interface type='CalculatorError.Type' access=internal non-resilient inherits: Error
     (enum_case_decl
       (enum_element_decl "invalidCharacter" interface type='(CalculatorError.Type) -> CalculatorError' access=internal))
     (enum_element_decl "invalidCharacter" interface type='(CalculatorError.Type) -> CalculatorError' access=internal)
@@ -110,23 +110,48 @@
                 (declref_expr implicit type='@lvalue Int' accessKind=read decl=enums.(file).CalculatorError.__derived_enum_equals(_:_:).index_a function_ref=unapplied))
               (load_expr implicit type='Int'
                 (declref_expr implicit type='@lvalue Int' accessKind=read decl=enums.(file).CalculatorError.__derived_enum_equals(_:_:).index_b function_ref=unapplied)))))))
-    (func_decl implicit 'anonname=<<memory address>>' interface type='(CalculatorError) -> () -> Int' access=internal getter_for=hashValue
+    (accessor_decl implicit 'anonname=<<memory address>>' interface type='(CalculatorError) -> () -> Int' access=internal getter_for=hashValue
       (parameter_list
         (parameter "self" type='CalculatorError' interface type='CalculatorError'))
       (parameter_list)
       (brace_stmt
+        (return_stmt implicit
+          (call_expr implicit type='Int' nothrow arg_labels=for:
+            (declref_expr implicit type='(CalculatorError) -> Int' decl=Swift.(file)._hashValue(for:) [with CalculatorError[CalculatorError: Hashable module enums]] function_ref=single)
+            (tuple_expr implicit type='(for: CalculatorError)' names=for
+              (declref_expr implicit type='CalculatorError' decl=enums.(file).CalculatorError.<anonymous>.self function_ref=unapplied))))))
+    (var_decl implicit "hashValue" type='Int' interface type='Int' access=internal storage_kind=computed
+      (accessor_decl implicit 'anonname=<<memory address>>' interface type='(CalculatorError) -> () -> Int' access=internal getter_for=hashValue
+        (parameter_list
+          (parameter "self" type='CalculatorError' interface type='CalculatorError'))
+        (parameter_list)
+        (brace_stmt
+          (return_stmt implicit
+            (call_expr implicit type='Int' nothrow arg_labels=for:
+              (declref_expr implicit type='(CalculatorError) -> Int' decl=Swift.(file)._hashValue(for:) [with CalculatorError[CalculatorError: Hashable module enums]] function_ref=single)
+              (tuple_expr implicit type='(for: CalculatorError)' names=for
+                (declref_expr implicit type='CalculatorError' decl=enums.(file).CalculatorError.<anonymous>.self function_ref=unapplied)))))))
+    (pattern_binding_decl implicit
+      (pattern_typed implicit type='Int'
+        (pattern_named implicit type='Int' 'hashValue')))
+    (func_decl implicit "hash(into:)" interface type='(CalculatorError) -> (inout Hasher) -> ()' access=internal
+      (parameter_list
+        (parameter "self" type='CalculatorError' interface type='CalculatorError'))
+      (parameter_list
+        (parameter "hasher" apiName=into type='inout Hasher' interface type='inout Hasher' inout))
+      (brace_stmt
         (pattern_binding_decl
           (pattern_typed implicit type='Int'
-            (pattern_named implicit type='Int' 'result')))
+            (pattern_named implicit type='Int' 'discriminator')))
 
         (switch_stmt implicit
-          (declref_expr implicit type='CalculatorError' decl=enums.(file).CalculatorError.<anonymous>.self function_ref=unapplied)
+          (declref_expr implicit type='CalculatorError' decl=enums.(file).CalculatorError.hash(into:).self function_ref=unapplied)
           (case_stmt implicit
             (case_label_item
-            (pattern_enum_element implicit type='CalculatorError' CalculatorError.invalidCharacter))
+            (pattern_enum_element implicit type='CalculatorError' CalculatorError._))
             (brace_stmt
               (assign_expr
-                (declref_expr implicit type='@lvalue Int' accessKind=write decl=enums.(file).CalculatorError.<anonymous>.result function_ref=unapplied)
+                (declref_expr implicit type='@lvalue Int' accessKind=write decl=enums.(file).CalculatorError.hash(into:).discriminator function_ref=unapplied)
                 (call_expr implicit type='Int' nothrow arg_labels=_builtinIntegerLiteral:
                   (constructor_ref_call_expr implicit type='(_MaxBuiltinIntegerType) -> Int' nothrow
                     (declref_expr implicit type='(Int.Type) -> (_MaxBuiltinIntegerType) -> Int' decl=Swift.(file).Int.init(_builtinIntegerLiteral:) function_ref=single)
@@ -135,10 +160,10 @@
                     (integer_literal_expr implicit type='Int2048' value=0))))))
           (case_stmt implicit
             (case_label_item
-            (pattern_enum_element implicit type='CalculatorError' CalculatorError.multipleCharacters))
+            (pattern_enum_element implicit type='CalculatorError' CalculatorError._))
             (brace_stmt
               (assign_expr
-                (declref_expr implicit type='@lvalue Int' accessKind=write decl=enums.(file).CalculatorError.<anonymous>.result function_ref=unapplied)
+                (declref_expr implicit type='@lvalue Int' accessKind=write decl=enums.(file).CalculatorError.hash(into:).discriminator function_ref=unapplied)
                 (call_expr implicit type='Int' nothrow arg_labels=_builtinIntegerLiteral:
                   (constructor_ref_call_expr implicit type='(_MaxBuiltinIntegerType) -> Int' nothrow
                     (declref_expr implicit type='(Int.Type) -> (_MaxBuiltinIntegerType) -> Int' decl=Swift.(file).Int.init(_builtinIntegerLiteral:) function_ref=single)
@@ -147,73 +172,24 @@
                     (integer_literal_expr implicit type='Int2048' value=1))))))
           (case_stmt implicit
             (case_label_item
-            (pattern_enum_element implicit type='CalculatorError' CalculatorError.nilInput))
+            (pattern_enum_element implicit type='CalculatorError' CalculatorError._))
             (brace_stmt
               (assign_expr
-                (declref_expr implicit type='@lvalue Int' accessKind=write decl=enums.(file).CalculatorError.<anonymous>.result function_ref=unapplied)
+                (declref_expr implicit type='@lvalue Int' accessKind=write decl=enums.(file).CalculatorError.hash(into:).discriminator function_ref=unapplied)
                 (call_expr implicit type='Int' nothrow arg_labels=_builtinIntegerLiteral:
                   (constructor_ref_call_expr implicit type='(_MaxBuiltinIntegerType) -> Int' nothrow
                     (declref_expr implicit type='(Int.Type) -> (_MaxBuiltinIntegerType) -> Int' decl=Swift.(file).Int.init(_builtinIntegerLiteral:) function_ref=single)
                     (type_expr implicit type='Int.Type' typerepr='<<NULL>>'))
                   (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' names=_builtinIntegerLiteral
                     (integer_literal_expr implicit type='Int2048' value=2)))))))
-        (return_stmt implicit
-          (load_expr implicit type='Int'
-            (declref_expr implicit type='@lvalue Int' accessKind=read decl=enums.(file).CalculatorError.<anonymous>.result function_ref=unapplied)))))
-    (var_decl implicit "hashValue" type='Int' interface type='Int' access=internal storage_kind=computed
-      (func_decl implicit 'anonname=<<memory address>>' interface type='(CalculatorError) -> () -> Int' access=internal getter_for=hashValue
-        (parameter_list
-          (parameter "self" type='CalculatorError' interface type='CalculatorError'))
-        (parameter_list)
-        (brace_stmt
-          (pattern_binding_decl
-            (pattern_typed implicit type='Int'
-              (pattern_named implicit type='Int' 'result')))
-
-          (switch_stmt implicit
-            (declref_expr implicit type='CalculatorError' decl=enums.(file).CalculatorError.<anonymous>.self function_ref=unapplied)
-            (case_stmt implicit
-              (case_label_item
-              (pattern_enum_element implicit type='CalculatorError' CalculatorError.invalidCharacter))
-              (brace_stmt
-                (assign_expr
-                  (declref_expr implicit type='@lvalue Int' accessKind=write decl=enums.(file).CalculatorError.<anonymous>.result function_ref=unapplied)
-                  (call_expr implicit type='Int' nothrow arg_labels=_builtinIntegerLiteral:
-                    (constructor_ref_call_expr implicit type='(_MaxBuiltinIntegerType) -> Int' nothrow
-                      (declref_expr implicit type='(Int.Type) -> (_MaxBuiltinIntegerType) -> Int' decl=Swift.(file).Int.init(_builtinIntegerLiteral:) function_ref=single)
-                      (type_expr implicit type='Int.Type' typerepr='<<NULL>>'))
-                    (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' names=_builtinIntegerLiteral
-                      (integer_literal_expr implicit type='Int2048' value=0))))))
-            (case_stmt implicit
-              (case_label_item
-              (pattern_enum_element implicit type='CalculatorError' CalculatorError.multipleCharacters))
-              (brace_stmt
-                (assign_expr
-                  (declref_expr implicit type='@lvalue Int' accessKind=write decl=enums.(file).CalculatorError.<anonymous>.result function_ref=unapplied)
-                  (call_expr implicit type='Int' nothrow arg_labels=_builtinIntegerLiteral:
-                    (constructor_ref_call_expr implicit type='(_MaxBuiltinIntegerType) -> Int' nothrow
-                      (declref_expr implicit type='(Int.Type) -> (_MaxBuiltinIntegerType) -> Int' decl=Swift.(file).Int.init(_builtinIntegerLiteral:) function_ref=single)
-                      (type_expr implicit type='Int.Type' typerepr='<<NULL>>'))
-                    (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' names=_builtinIntegerLiteral
-                      (integer_literal_expr implicit type='Int2048' value=1))))))
-            (case_stmt implicit
-              (case_label_item
-              (pattern_enum_element implicit type='CalculatorError' CalculatorError.nilInput))
-              (brace_stmt
-                (assign_expr
-                  (declref_expr implicit type='@lvalue Int' accessKind=write decl=enums.(file).CalculatorError.<anonymous>.result function_ref=unapplied)
-                  (call_expr implicit type='Int' nothrow arg_labels=_builtinIntegerLiteral:
-                    (constructor_ref_call_expr implicit type='(_MaxBuiltinIntegerType) -> Int' nothrow
-                      (declref_expr implicit type='(Int.Type) -> (_MaxBuiltinIntegerType) -> Int' decl=Swift.(file).Int.init(_builtinIntegerLiteral:) function_ref=single)
-                      (type_expr implicit type='Int.Type' typerepr='<<NULL>>'))
-                    (tuple_expr implicit type='(_builtinIntegerLiteral: Int2048)' names=_builtinIntegerLiteral
-                      (integer_literal_expr implicit type='Int2048' value=2)))))))
-          (return_stmt implicit
+        (call_expr implicit type='()' nothrow arg_labels=_:
+          (dot_syntax_call_expr implicit type='(Int) -> ()' nothrow
+            (declref_expr implicit type='(inout Hasher) -> (Int) -> ()' decl=Swift.(file).Hasher.combine [with Int[Int: Hashable module Swift]] function_ref=single)
+            (inout_expr implicit type='inout Hasher'
+              (declref_expr implicit type='@lvalue Hasher' accessKind=readwrite decl=enums.(file).CalculatorError.hash(into:).hasher function_ref=unapplied)))
+          (paren_expr implicit type='Int'
             (load_expr implicit type='Int'
-              (declref_expr implicit type='@lvalue Int' accessKind=read decl=enums.(file).CalculatorError.<anonymous>.result function_ref=unapplied))))))
-    (pattern_binding_decl implicit
-      (pattern_typed implicit type='Int'
-        (pattern_named implicit type='Int' 'hashValue'))))
+              (declref_expr implicit type='@lvalue Int' accessKind=read decl=enums.(file).CalculatorError.hash(into:).discriminator function_ref=unapplied)))))))
   (func_decl "throwingFunc()" interface type='() throws -> ()' access=internal
     (parameter_list)
     (brace_stmt

@@ -16,7 +16,7 @@
     (brace_stmt
       (return_stmt
         (declref_expr type='T' location=<<testFilePath>>:22:9 range=[<<testFilePath>>:22:9 - line:22:9] decl=kotlinLiterals.(file).GRYAlternative(swift:kotlin:).swiftExpression@<<testFilePath>>:21:30 function_ref=unapplied))))
-  (protocol "GRYIgnore" <Self : GRYIgnore> interface type='GRYIgnore.Protocol' access=internal @_fixed_layout requirement signature=<Self>)
+  (protocol "GRYIgnore" <Self : GRYIgnore> interface type='GRYIgnore.Protocol' access=internal non-resilient requirement signature=<Self>)
   (import_decl 'Foundation')
   (func_decl "GRYDeclarations()" interface type='() -> ()' access=private
     (parameter_list)
@@ -129,15 +129,15 @@
           (paren_expr type='Any' location=<<testFilePath>>:51:7 range=[<<testFilePath>>:51:6 - line:51:17]
             (erasure_expr implicit type='Any' location=<<testFilePath>>:51:7 range=[<<testFilePath>>:51:7 - line:51:7]
               (declref_expr type='Double' location=<<testFilePath>>:51:7 range=[<<testFilePath>>:51:7 - line:51:7] decl=kotlinLiterals.(file).squareRoot@<<testFilePath>>:50:5 direct_to_storage function_ref=unapplied)))))))
-  (class_decl "IgnoredClass" interface type='IgnoredClass.Type' access=internal @_fixed_layout inherits: GRYIgnore
-    (destructor_decl implicit "deinit" interface type='(IgnoredClass) -> () -> ()' access=internal @objc
-      (parameter_list
-        (parameter "self" interface type='IgnoredClass'))
-      (brace_stmt))
+  (class_decl "IgnoredClass" interface type='IgnoredClass.Type' access=internal non-resilient inherits: GRYIgnore
     (constructor_decl implicit "init()" interface type='(IgnoredClass.Type) -> () -> IgnoredClass' access=internal designated
       (parameter_list
         (parameter "self" type='IgnoredClass' interface type='IgnoredClass'))
       (parameter_list)
       (brace_stmt
-        (return_stmt implicit))))
-  (enum_decl "IgnoredEnum" interface type='IgnoredEnum.Type' access=internal @_fixed_layout inherits: GRYIgnore))
+        (return_stmt implicit)))
+    (destructor_decl implicit "deinit" interface type='(IgnoredClass) -> () -> ()' access=internal @objc
+      (parameter_list
+        (parameter "self" interface type='IgnoredClass'))
+      (brace_stmt)))
+  (enum_decl "IgnoredEnum" interface type='IgnoredEnum.Type' access=internal non-resilient inherits: GRYIgnore))

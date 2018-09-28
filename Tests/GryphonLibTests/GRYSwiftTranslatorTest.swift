@@ -29,7 +29,7 @@ class GRYSwiftTranslatorTest: XCTestCase {
 				let testFilePath = TestUtils.testFilesPath + testName
 				let swiftAst = GRYSwiftAst.initialize(
 					fromJsonInFile: testFilePath + .grySwiftAstJson)
-				let createdGryphonAst = try GRYSwift4_1Translator().translateAST(swiftAst)
+				let createdGryphonAst = try GRYSwift4Translator().translateAST(swiftAst)
 
 				// Load the previously stored Gryphon AST from file
 				let expectedGryphonAstJson = try! String(contentsOfFile: testFilePath + .gryAstJson)

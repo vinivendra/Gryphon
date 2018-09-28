@@ -1,7 +1,7 @@
 (source_file
-  (protocol "GRYIgnore" <Self : GRYIgnore> interface type='GRYIgnore.Protocol' access=internal @_fixed_layout requirement signature=<Self>)
-  (class_decl "ArrayReference" <Element> interface type='ArrayReference<Element>.Type' access=internal @_fixed_layout inherits: GRYIgnore, ExpressibleByArrayLiteral, CustomStringConvertible, CustomDebugStringConvertible, RandomAccessCollection, MutableCollection, RangeReplaceableCollection
-    (typealias "ArrayLiteralElement" interface type='ArrayReference.ArrayLiteralElement.Type' access=internal type='Element')
+  (protocol "GRYIgnore" <Self : GRYIgnore> interface type='GRYIgnore.Protocol' access=internal non-resilient requirement signature=<Self>)
+  (class_decl "ArrayReference" <Element> interface type='ArrayReference<Element>.Type' access=internal non-resilient inherits: GRYIgnore, ExpressibleByArrayLiteral, CustomStringConvertible, CustomDebugStringConvertible, RandomAccessCollection, MutableCollection, RangeReplaceableCollection
+    (typealias "ArrayLiteralElement" interface type='Element.Type' access=internal type='Element')
     (pattern_binding_decl
       (pattern_typed type='Array<Element>'
         (pattern_named type='Array<Element>' 'array')
@@ -10,7 +10,7 @@
             (type_ident
               (component id='Element' bind=arrays.(file).ArrayReference.Element@<<testFilePath>>:24:22)))))
     (var_decl "array" type='Array<Element>' interface type='Array<Element>' access=internal storage_kind=stored_with_trivial_accessors
-      (func_decl implicit 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> () -> Array<Element>' access=internal getter_for=array
+      (accessor_decl implicit 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> () -> Array<Element>' access=internal getter_for=array
         (parameter_list
           (parameter "self" type='ArrayReference<Element>' interface type='ArrayReference<Element>'))
         (parameter_list)
@@ -19,7 +19,7 @@
             (load_expr implicit type='Array<Element>'
               (member_ref_expr implicit type='@lvalue Array<Element>' accessKind=read decl=arrays.(file).ArrayReference.array@<<testFilePath>>:30:6 [with Element] direct_to_storage
                 (declref_expr implicit type='ArrayReference<Element>' decl=arrays.(file).ArrayReference.<anonymous>.self@<<testFilePath>>:30:6 function_ref=unapplied))))))
-      (func_decl implicit 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> (Array<Element>) -> ()' access=internal setter_for=array
+      (accessor_decl implicit 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> (Array<Element>) -> ()' access=internal setter_for=array
         (parameter_list
           (parameter "self" type='ArrayReference<Element>' interface type='ArrayReference<Element>'))
         (parameter_list
@@ -29,13 +29,13 @@
             (member_ref_expr implicit type='@lvalue Array<Element>' accessKind=write decl=arrays.(file).ArrayReference.array@<<testFilePath>>:30:6 [with Element] direct_to_storage
               (declref_expr implicit type='ArrayReference<Element>' decl=arrays.(file).ArrayReference.<anonymous>.self@<<testFilePath>>:30:6 function_ref=unapplied))
             (declref_expr implicit type='Array<Element>' decl=arrays.(file).ArrayReference.<anonymous>.value@<<testFilePath>>:30:6 function_ref=unapplied))))
-      (func_decl implicit 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> (Builtin.RawPointer, inout Builtin.UnsafeValueBuffer) -> (Builtin.RawPointer, Builtin.RawPointer?)' access=internal materializeForSet_for=array
+      (accessor_decl implicit 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> (Builtin.RawPointer, inout Builtin.UnsafeValueBuffer) -> (Builtin.RawPointer, Builtin.RawPointer?)' access=internal materializeForSet_for=array
         (parameter_list
           (parameter "self" type='ArrayReference<Element>' interface type='ArrayReference<Element>'))
         (parameter_list
           (parameter "buffer" type='Builtin.RawPointer' interface type='Builtin.RawPointer')
           (parameter "callbackStorage" type='inout Builtin.UnsafeValueBuffer' interface type='inout Builtin.UnsafeValueBuffer' inout))))
-    (func_decl implicit 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> () -> Array<Element>' access=internal getter_for=array
+    (accessor_decl implicit 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> () -> Array<Element>' access=internal getter_for=array
       (parameter_list
         (parameter "self" type='ArrayReference<Element>' interface type='ArrayReference<Element>'))
       (parameter_list)
@@ -44,7 +44,7 @@
           (load_expr implicit type='Array<Element>'
             (member_ref_expr implicit type='@lvalue Array<Element>' accessKind=read decl=arrays.(file).ArrayReference.array@<<testFilePath>>:30:6 [with Element] direct_to_storage
               (declref_expr implicit type='ArrayReference<Element>' decl=arrays.(file).ArrayReference.<anonymous>.self@<<testFilePath>>:30:6 function_ref=unapplied))))))
-    (func_decl implicit 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> (Array<Element>) -> ()' access=internal setter_for=array
+    (accessor_decl implicit 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> (Array<Element>) -> ()' access=internal setter_for=array
       (parameter_list
         (parameter "self" type='ArrayReference<Element>' interface type='ArrayReference<Element>'))
       (parameter_list
@@ -54,7 +54,7 @@
           (member_ref_expr implicit type='@lvalue Array<Element>' accessKind=write decl=arrays.(file).ArrayReference.array@<<testFilePath>>:30:6 [with Element] direct_to_storage
             (declref_expr implicit type='ArrayReference<Element>' decl=arrays.(file).ArrayReference.<anonymous>.self@<<testFilePath>>:30:6 function_ref=unapplied))
           (declref_expr implicit type='Array<Element>' decl=arrays.(file).ArrayReference.<anonymous>.value@<<testFilePath>>:30:6 function_ref=unapplied))))
-    (func_decl implicit 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> (Builtin.RawPointer, inout Builtin.UnsafeValueBuffer) -> (Builtin.RawPointer, Builtin.RawPointer?)' access=internal materializeForSet_for=array
+    (accessor_decl implicit 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> (Builtin.RawPointer, inout Builtin.UnsafeValueBuffer) -> (Builtin.RawPointer, Builtin.RawPointer?)' access=internal materializeForSet_for=array
       (parameter_list
         (parameter "self" type='ArrayReference<Element>' interface type='ArrayReference<Element>'))
       (parameter_list
@@ -83,7 +83,7 @@
           (declref_expr type='[Element]' location=<<testFilePath>>:38:16 range=[<<testFilePath>>:38:16 - line:38:16] decl=arrays.(file).ArrayReference.init(arrayLiteral:).elements@<<testFilePath>>:37:29 function_ref=unapplied))
         (return_stmt implicit)))
     (subscript_decl "subscript(_:)" interface type='<Element> (Int) -> Element' access=internal storage_kind=computed
-      (func_decl 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> (Int) -> Element' access=internal getter_for=subscript(_:)
+      (accessor_decl 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> (Int) -> Element' access=internal getter_for=subscript(_:)
         (parameter_list
           (parameter "self" type='ArrayReference<Element>' interface type='ArrayReference<Element>'))
         (parameter_list
@@ -97,7 +97,7 @@
                     (declref_expr implicit type='ArrayReference<Element>' location=<<testFilePath>>:44:11 range=[<<testFilePath>>:44:11 - line:44:11] decl=arrays.(file).ArrayReference.<anonymous>.self@<<testFilePath>>:43:3 function_ref=unapplied)))
                 (paren_expr type='(Int)' location=<<testFilePath>>:44:17 range=[<<testFilePath>>:44:16 - line:44:22]
                   (declref_expr type='Int' location=<<testFilePath>>:44:17 range=[<<testFilePath>>:44:17 - line:44:17] decl=arrays.(file).ArrayReference.<anonymous>.index@<<testFilePath>>:42:15 function_ref=unapplied)))))))
-      (func_decl 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> (Element, Int) -> ()' access=internal setter_for=subscript(_:)
+      (accessor_decl 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> (Element, Int) -> ()' access=internal setter_for=subscript(_:)
         (parameter_list
           (parameter "self" type='ArrayReference<Element>' interface type='ArrayReference<Element>'))
         (parameter_list
@@ -112,14 +112,14 @@
               (paren_expr type='(Int)' location=<<testFilePath>>:47:10 range=[<<testFilePath>>:47:9 - line:47:15]
                 (declref_expr type='Int' location=<<testFilePath>>:47:10 range=[<<testFilePath>>:47:10 - line:47:10] decl=arrays.(file).ArrayReference.<anonymous>.index@<<testFilePath>>:42:15 function_ref=unapplied)))
             (declref_expr type='Element' location=<<testFilePath>>:47:19 range=[<<testFilePath>>:47:19 - line:47:19] decl=arrays.(file).ArrayReference.<anonymous>.newValue@<<testFilePath>>:46:3 function_ref=unapplied))))
-      (func_decl implicit 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> (Builtin.RawPointer, inout Builtin.UnsafeValueBuffer, Int) -> (Builtin.RawPointer, Builtin.RawPointer?)' access=internal materializeForSet_for=subscript(_:)
+      (accessor_decl implicit 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> (Builtin.RawPointer, inout Builtin.UnsafeValueBuffer, Int) -> (Builtin.RawPointer, Builtin.RawPointer?)' access=internal materializeForSet_for=subscript(_:)
         (parameter_list
           (parameter "self" type='ArrayReference<Element>' interface type='ArrayReference<Element>'))
         (parameter_list
           (parameter "buffer" type='Builtin.RawPointer' interface type='Builtin.RawPointer')
           (parameter "callbackStorage" type='inout Builtin.UnsafeValueBuffer' interface type='inout Builtin.UnsafeValueBuffer' inout)
           (parameter "index" type='Int' interface type='Int'))))
-    (func_decl 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> (Int) -> Element' access=internal getter_for=subscript(_:)
+    (accessor_decl 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> (Int) -> Element' access=internal getter_for=subscript(_:)
       (parameter_list
         (parameter "self" type='ArrayReference<Element>' interface type='ArrayReference<Element>'))
       (parameter_list
@@ -133,7 +133,7 @@
                   (declref_expr implicit type='ArrayReference<Element>' location=<<testFilePath>>:44:11 range=[<<testFilePath>>:44:11 - line:44:11] decl=arrays.(file).ArrayReference.<anonymous>.self@<<testFilePath>>:43:3 function_ref=unapplied)))
               (paren_expr type='(Int)' location=<<testFilePath>>:44:17 range=[<<testFilePath>>:44:16 - line:44:22]
                 (declref_expr type='Int' location=<<testFilePath>>:44:17 range=[<<testFilePath>>:44:17 - line:44:17] decl=arrays.(file).ArrayReference.<anonymous>.index@<<testFilePath>>:42:15 function_ref=unapplied)))))))
-    (func_decl 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> (Element, Int) -> ()' access=internal setter_for=subscript(_:)
+    (accessor_decl 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> (Element, Int) -> ()' access=internal setter_for=subscript(_:)
       (parameter_list
         (parameter "self" type='ArrayReference<Element>' interface type='ArrayReference<Element>'))
       (parameter_list
@@ -148,7 +148,7 @@
             (paren_expr type='(Int)' location=<<testFilePath>>:47:10 range=[<<testFilePath>>:47:9 - line:47:15]
               (declref_expr type='Int' location=<<testFilePath>>:47:10 range=[<<testFilePath>>:47:10 - line:47:10] decl=arrays.(file).ArrayReference.<anonymous>.index@<<testFilePath>>:42:15 function_ref=unapplied)))
           (declref_expr type='Element' location=<<testFilePath>>:47:19 range=[<<testFilePath>>:47:19 - line:47:19] decl=arrays.(file).ArrayReference.<anonymous>.newValue@<<testFilePath>>:46:3 function_ref=unapplied))))
-    (func_decl implicit 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> (Builtin.RawPointer, inout Builtin.UnsafeValueBuffer, Int) -> (Builtin.RawPointer, Builtin.RawPointer?)' access=internal materializeForSet_for=subscript(_:)
+    (accessor_decl implicit 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> (Builtin.RawPointer, inout Builtin.UnsafeValueBuffer, Int) -> (Builtin.RawPointer, Builtin.RawPointer?)' access=internal materializeForSet_for=subscript(_:)
       (parameter_list
         (parameter "self" type='ArrayReference<Element>' interface type='ArrayReference<Element>'))
       (parameter_list
@@ -161,7 +161,7 @@
         (type_ident
           (component id='String' bind=Swift.(file).String))))
     (var_decl "description" type='String' interface type='String' access=internal storage_kind=computed
-      (func_decl 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> () -> String' access=internal getter_for=description
+      (accessor_decl 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> () -> String' access=internal getter_for=description
         (parameter_list
           (parameter "self" type='ArrayReference<Element>' interface type='ArrayReference<Element>'))
         (parameter_list)
@@ -171,7 +171,7 @@
               (load_expr implicit type='Array<Element>' location=<<testFilePath>>:53:10 range=[<<testFilePath>>:53:10 - line:53:10]
                 (member_ref_expr type='@lvalue Array<Element>' accessKind=read location=<<testFilePath>>:53:10 range=[<<testFilePath>>:53:10 - line:53:10] decl=arrays.(file).ArrayReference.array@<<testFilePath>>:30:6 [with Element]
                   (declref_expr implicit type='ArrayReference<Element>' location=<<testFilePath>>:53:10 range=[<<testFilePath>>:53:10 - line:53:10] decl=arrays.(file).ArrayReference.<anonymous>.self@<<testFilePath>>:52:26 function_ref=unapplied))))))))
-    (func_decl 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> () -> String' access=internal getter_for=description
+    (accessor_decl 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> () -> String' access=internal getter_for=description
       (parameter_list
         (parameter "self" type='ArrayReference<Element>' interface type='ArrayReference<Element>'))
       (parameter_list)
@@ -187,7 +187,7 @@
         (type_ident
           (component id='String' bind=Swift.(file).String))))
     (var_decl "debugDescription" type='String' interface type='String' access=internal storage_kind=computed
-      (func_decl 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> () -> String' access=internal getter_for=debugDescription
+      (accessor_decl 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> () -> String' access=internal getter_for=debugDescription
         (parameter_list
           (parameter "self" type='ArrayReference<Element>' interface type='ArrayReference<Element>'))
         (parameter_list)
@@ -197,7 +197,7 @@
               (load_expr implicit type='Array<Element>' location=<<testFilePath>>:57:10 range=[<<testFilePath>>:57:10 - line:57:10]
                 (member_ref_expr type='@lvalue Array<Element>' accessKind=read location=<<testFilePath>>:57:10 range=[<<testFilePath>>:57:10 - line:57:10] decl=arrays.(file).ArrayReference.array@<<testFilePath>>:30:6 [with Element]
                   (declref_expr implicit type='ArrayReference<Element>' location=<<testFilePath>>:57:10 range=[<<testFilePath>>:57:10 - line:57:10] decl=arrays.(file).ArrayReference.<anonymous>.self@<<testFilePath>>:56:31 function_ref=unapplied))))))))
-    (func_decl 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> () -> String' access=internal getter_for=debugDescription
+    (accessor_decl 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> () -> String' access=internal getter_for=debugDescription
       (parameter_list
         (parameter "self" type='ArrayReference<Element>' interface type='ArrayReference<Element>'))
       (parameter_list)
@@ -213,7 +213,7 @@
         (type_ident
           (component id='Int' bind=Swift.(file).Int))))
     (var_decl "startIndex" type='Int' interface type='Int' access=internal storage_kind=computed
-      (func_decl 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> () -> Int' access=internal getter_for=startIndex
+      (accessor_decl 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> () -> Int' access=internal getter_for=startIndex
         (parameter_list
           (parameter "self" type='ArrayReference<Element>' interface type='ArrayReference<Element>'))
         (parameter_list)
@@ -223,7 +223,7 @@
               (load_expr implicit type='Array<Element>' location=<<testFilePath>>:62:10 range=[<<testFilePath>>:62:10 - line:62:10]
                 (member_ref_expr type='@lvalue Array<Element>' accessKind=read location=<<testFilePath>>:62:10 range=[<<testFilePath>>:62:10 - line:62:10] decl=arrays.(file).ArrayReference.array@<<testFilePath>>:30:6 [with Element]
                   (declref_expr implicit type='ArrayReference<Element>' location=<<testFilePath>>:62:10 range=[<<testFilePath>>:62:10 - line:62:10] decl=arrays.(file).ArrayReference.<anonymous>.self@<<testFilePath>>:61:22 function_ref=unapplied))))))))
-    (func_decl 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> () -> Int' access=internal getter_for=startIndex
+    (accessor_decl 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> () -> Int' access=internal getter_for=startIndex
       (parameter_list
         (parameter "self" type='ArrayReference<Element>' interface type='ArrayReference<Element>'))
       (parameter_list)
@@ -239,7 +239,7 @@
         (type_ident
           (component id='Int' bind=Swift.(file).Int))))
     (var_decl "endIndex" type='Int' interface type='Int' access=internal storage_kind=computed
-      (func_decl 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> () -> Int' access=internal getter_for=endIndex
+      (accessor_decl 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> () -> Int' access=internal getter_for=endIndex
         (parameter_list
           (parameter "self" type='ArrayReference<Element>' interface type='ArrayReference<Element>'))
         (parameter_list)
@@ -249,7 +249,7 @@
               (load_expr implicit type='Array<Element>' location=<<testFilePath>>:66:10 range=[<<testFilePath>>:66:10 - line:66:10]
                 (member_ref_expr type='@lvalue Array<Element>' accessKind=read location=<<testFilePath>>:66:10 range=[<<testFilePath>>:66:10 - line:66:10] decl=arrays.(file).ArrayReference.array@<<testFilePath>>:30:6 [with Element]
                   (declref_expr implicit type='ArrayReference<Element>' location=<<testFilePath>>:66:10 range=[<<testFilePath>>:66:10 - line:66:10] decl=arrays.(file).ArrayReference.<anonymous>.self@<<testFilePath>>:65:20 function_ref=unapplied))))))))
-    (func_decl 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> () -> Int' access=internal getter_for=endIndex
+    (accessor_decl 'anonname=<<memory address>>' interface type='<Element> (ArrayReference<Element>) -> () -> Int' access=internal getter_for=endIndex
       (parameter_list
         (parameter "self" type='ArrayReference<Element>' interface type='ArrayReference<Element>'))
       (parameter_list)
@@ -326,10 +326,10 @@
         (assign_expr
           (member_ref_expr type='@lvalue Array<Element>' accessKind=write location=<<testFilePath>>:84:8 range=[<<testFilePath>>:84:3 - line:84:8] decl=arrays.(file).ArrayReference.array@<<testFilePath>>:30:6 [with Element] direct_to_storage
             (declref_expr type='ArrayReference<Element>' location=<<testFilePath>>:84:3 range=[<<testFilePath>>:84:3 - line:84:3] decl=arrays.(file).ArrayReference.init(_:).self@<<testFilePath>>:83:11 function_ref=unapplied))
-          (call_expr type='Array<Element>' location=<<testFilePath>>:84:29 range=[<<testFilePath>>:84:16 - line:84:39] nothrow arg_labels=_:
-            (constructor_ref_call_expr type='(S) -> Array<Element>' location=<<testFilePath>>:84:29 range=[<<testFilePath>>:84:16 - line:84:29] nothrow
-              (declref_expr implicit type='(Array<Element>.Type) -> (S) -> Array<Element>' location=<<testFilePath>>:84:29 range=[<<testFilePath>>:84:29 - line:84:29] decl=Swift.(file).Array.init [with Element, S[abstract:Sequence]] function_ref=single)
-              (type_expr type='Array<Element>.Type' location=<<testFilePath>>:84:16 range=[<<testFilePath>>:84:16 - line:84:29] typerepr='Array<Element>'))
+          (call_expr type='Array<ArrayReference<Element>.Element>' location=<<testFilePath>>:84:29 range=[<<testFilePath>>:84:16 - line:84:39] nothrow arg_labels=_:
+            (constructor_ref_call_expr type='(S) -> Array<ArrayReference<Element>.Element>' location=<<testFilePath>>:84:29 range=[<<testFilePath>>:84:16 - line:84:29] nothrow
+              (declref_expr implicit type='(Array<ArrayReference<Element>.Element>.Type) -> (S) -> Array<Element>' location=<<testFilePath>>:84:29 range=[<<testFilePath>>:84:29 - line:84:29] decl=Swift.(file).Array.init [with ArrayReference<Element>.Element, S[abstract:Sequence]] function_ref=single)
+              (type_expr type='Array<ArrayReference<Element>.Element>.Type' location=<<testFilePath>>:84:16 range=[<<testFilePath>>:84:16 - line:84:29] typerepr='Array<Element>'))
             (paren_expr type='(S)' location=<<testFilePath>>:84:31 range=[<<testFilePath>>:84:30 - line:84:39]
               (declref_expr type='S' location=<<testFilePath>>:84:31 range=[<<testFilePath>>:84:31 - line:84:31] decl=arrays.(file).ArrayReference.init(_:).elements@<<testFilePath>>:83:21 function_ref=unapplied))))
         (return_stmt implicit)))
@@ -341,21 +341,21 @@
         (assign_expr
           (member_ref_expr type='@lvalue Array<Element>' accessKind=write location=<<testFilePath>>:88:8 range=[<<testFilePath>>:88:3 - line:88:8] decl=arrays.(file).ArrayReference.array@<<testFilePath>>:30:6 [with Element] direct_to_storage
             (declref_expr type='ArrayReference<Element>' location=<<testFilePath>>:88:3 range=[<<testFilePath>>:88:3 - line:88:3] decl=arrays.(file).ArrayReference.init().self@<<testFilePath>>:87:11 function_ref=unapplied))
-          (call_expr type='Array<Element>' location=<<testFilePath>>:88:29 range=[<<testFilePath>>:88:16 - line:88:31] nothrow arg_labels=
-            (constructor_ref_call_expr type='() -> Array<Element>' location=<<testFilePath>>:88:29 range=[<<testFilePath>>:88:16 - line:88:29] nothrow
-              (declref_expr implicit type='(Array<Element>.Type) -> () -> Array<Element>' location=<<testFilePath>>:88:29 range=[<<testFilePath>>:88:29 - line:88:29] decl=Swift.(file).Array.init() [with Element] function_ref=single)
-              (type_expr type='Array<Element>.Type' location=<<testFilePath>>:88:16 range=[<<testFilePath>>:88:16 - line:88:29] typerepr='Array<Element>'))
+          (call_expr type='Array<ArrayReference<Element>.Element>' location=<<testFilePath>>:88:29 range=[<<testFilePath>>:88:16 - line:88:31] nothrow arg_labels=
+            (constructor_ref_call_expr type='() -> Array<ArrayReference<Element>.Element>' location=<<testFilePath>>:88:29 range=[<<testFilePath>>:88:16 - line:88:29] nothrow
+              (declref_expr implicit type='(Array<ArrayReference<Element>.Element>.Type) -> () -> Array<Element>' location=<<testFilePath>>:88:29 range=[<<testFilePath>>:88:29 - line:88:29] decl=Swift.(file).Array.init() [with ArrayReference<Element>.Element] function_ref=single)
+              (type_expr type='Array<ArrayReference<Element>.Element>.Type' location=<<testFilePath>>:88:16 range=[<<testFilePath>>:88:16 - line:88:29] typerepr='Array<Element>'))
             (tuple_expr type='()' location=<<testFilePath>>:88:30 range=[<<testFilePath>>:88:30 - line:88:31])))
         (return_stmt implicit)))
     (destructor_decl implicit "deinit" interface type='<Element> (ArrayReference<Element>) -> () -> ()' access=internal @objc
       (parameter_list
         (parameter "self" interface type='ArrayReference<Element>'))
       (brace_stmt))
-    (typealias implicit "Element" interface type='ArrayReference.Element.Type' access=internal type='Element')
-    (typealias implicit "Index" interface type='ArrayReference.Index.Type' access=internal type='Int')
-    (typealias implicit "SubSequence" interface type='ArrayReference.SubSequence.Type' access=internal type='Slice<ArrayReference<Element>>')
-    (typealias implicit "Iterator" interface type='ArrayReference.Iterator.Type' access=internal type='IndexingIterator<ArrayReference<Element>>')
-    (typealias implicit "Indices" interface type='ArrayReference.Indices.Type' access=internal type='CountableRange<Int>'))
+    (typealias implicit "Element" interface type='Element.Type' access=internal type='Element')
+    (typealias implicit "Index" interface type='Int.Type' access=internal type='Int')
+    (typealias implicit "SubSequence" interface type='Slice<ArrayReference<Element>>.Type' access=internal type='Slice<ArrayReference<Element>>')
+    (typealias implicit "Iterator" interface type='IndexingIterator<ArrayReference<Element>>.Type' access=internal type='IndexingIterator<ArrayReference<Element>>')
+    (typealias implicit "Indices" interface type='Range<Int>.Type' access=internal type='Range<Int>'))
   (top_level_code_decl
     (brace_stmt
       (pattern_binding_decl
