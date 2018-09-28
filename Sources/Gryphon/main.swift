@@ -77,13 +77,6 @@ func updateFiles(inFolder folder: String) throws {
 		let swiftAst = GRYSwiftAst.initialize(fromJsonInFile: swiftAstFilePath)
 		let gryphonAst = try GRYSwift4_1Translator().translateAST(swiftAst)
 		gryphonAst.writeAsJSON(toFile: gryphonAstFilePath)
-
-		let jsonContents = try! String(contentsOfFile: gryphonAstFilePath)
-		let astData = Data(jsonContents.utf8)
-		let decodedAst = try! JSONDecoder().decode(GRYSourceFile.self, from: astData)
-		let otherAst = try! JSONDecoder().decode(GRYSourceFile.self, from: astData)
-
-		assert(decodedAst == otherAst)
 	}
 
 	print("Done!")
@@ -119,7 +112,7 @@ func main() {
 //		try GRYCompiler.generateGryphonAst(forFileAt: filePath).prettyPrint(horizontalLimit: 100)
 
 		// 4: Swiftc's Ast dump -> Swift Ast -> Gryphon Ast -> Kotlin code
-//		try print(GRYCompiler.generateKotlinCode(forFileAt: filePath)!)
+//		try print(GRYCompiler.generateKotlinCode(forFileAt: filePath))
 
 		// 5: Ast dump -> Swift Ast -> GRY Ast -> Kotlin code -> Output of running the Kotlin code
 		try print(GRYCompiler.compileAndRun(fileAt: filePath))

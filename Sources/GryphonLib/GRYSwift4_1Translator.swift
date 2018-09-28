@@ -146,8 +146,6 @@ public class GRYSwift4_1Translator {
 	}
 
 	private func translate(expression: GRYSwiftAst) throws -> GRYExpression {
-		// Most diagnostics are logged by the child subTrees; others represent wrapper expressions
-		// with little value in logging. There are a few expections.
 
 		switch expression.name {
 		case "Array Expression":
