@@ -24,20 +24,33 @@ class IntegrationTest: XCTestCase {
 		for testName in tests {
 			print("- Testing \(testName)...")
 
-			// Generate kotlin code using the whole compiler
-			let testFilePath = TestUtils.testFilesPath + testName
-			let generatedKotlinCode =
-				GRYCompiler.generateKotlinCode(forFileAt: testFilePath + .swift)!
+			do {
+				// Generate kotlin code using the whole compiler
+				let testFilePath = TestUtils.testFilesPath + testName
+				let generatedKotlinCode =
+					try GRYCompiler.generateKotlinCode(forFileAt: testFilePath + .swift)
 
-			// Load the previously stored kotlin code from file
-			let expectedKotlinCode = try! String(contentsOfFile: testFilePath + .kt)
+				// Load the previously stored kotlin code from file
+				let expectedKotlinCode = try! String(contentsOfFile: testFilePath + .kt)
 
-			XCTAssert(
-				generatedKotlinCode == expectedKotlinCode,
-				"Test \(testName): parser failed to produce expected result. Diff:" +
-					TestUtils.diff(generatedKotlinCode, expectedKotlinCode))
+				XCTAssert(
+					generatedKotlinCode == expectedKotlinCode,
+					"Test \(testName): parser failed to produce expected result. Diff:" +
+						TestUtils.diff(generatedKotlinCode, expectedKotlinCode))
 
-			print("\t- Done!")
+				print("\t- Done!")
+			}
+			catch let error {
+				if let error = error as? GRYPrintableError {
+					error.print()
+					XCTFail()
+					continue
+				}
+				else {
+					print("Unexpected error: \(error)")
+					fatalError()
+				}
+			}
 		}
 	}
 

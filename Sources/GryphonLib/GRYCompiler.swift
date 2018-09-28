@@ -29,8 +29,8 @@ public enum GRYCompiler {
 		case failure(errorMessage: String)
 	}
 
-	public static func compileAndRun(fileAt filePath: String) -> KotlinCompilationResult {
-		let compilationResult = compile(fileAt: filePath)
+	public static func compileAndRun(fileAt filePath: String) throws -> KotlinCompilationResult {
+		let compilationResult = try compile(fileAt: filePath)
 		guard case .success(_) = compilationResult else {
 			return compilationResult
 		}
@@ -46,10 +46,8 @@ public enum GRYCompiler {
 		return .success(commandOutput: result)
 	}
 
-	public static func compile(fileAt filePath: String) -> KotlinCompilationResult {
-		guard let kotlinCode = generateKotlinCode(forFileAt: filePath) else {
-			return .failure(errorMessage: "\t\t- Translator failed.")
-		}
+	public static func compile(fileAt filePath: String) throws -> KotlinCompilationResult {
+		let kotlinCode = try generateKotlinCode(forFileAt: filePath)
 
 		print("\t- Compiling Kotlin...")
 		let fileName = URL(fileURLWithPath: filePath).deletingPathExtension().lastPathComponent
@@ -76,24 +74,17 @@ public enum GRYCompiler {
 		return .success(commandOutput: result)
 	}
 
-	public static func generateKotlinCode(forFileAt filePath: String) -> String? {
-		let ast = generateGryphonAst(forFileAt: filePath)
+	public static func generateKotlinCode(forFileAt filePath: String) throws -> String {
+		let ast = try generateGryphonAst(forFileAt: filePath)
 
 		print("\t- Translating AST to Kotlin...")
-		let kotlinCode = GRYKotlinTranslator().translateAST(ast)
-
-		// TODO: is this still needed?
-		if kotlinCode == nil {
-			print("\t- Failed to translate AST to Kotlin.")
-		}
-
-		return kotlinCode
+		return GRYKotlinTranslator().translateAST(ast)
 	}
 
-	public static func generateGryphonAst(forFileAt filePath: String) -> GRYSourceFile {
+	public static func generateGryphonAst(forFileAt filePath: String) throws -> GRYSourceFile {
 		let swiftAst = generateSwiftAST(forFileAt: filePath)
 		print("\t- Translating Swift Ast to Gryphon Ast...")
-		let ast = GRYSwift4_1Translator().translateAST(swiftAst)
+		let ast = try GRYSwift4_1Translator().translateAST(swiftAst)
 		return ast
 	}
 

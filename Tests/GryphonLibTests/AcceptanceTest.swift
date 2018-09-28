@@ -24,32 +24,46 @@ class AcceptanceTest: XCTestCase {
 		for testName in tests {
 			print("- Testing \(testName)...")
 
-			// Translate the swift code to kotlin, compile the resulting kotlin code, run it, and
-			// get its output
-			let testFilePath = TestUtils.testFilesPath + testName
-			let compilationResult = GRYCompiler.compileAndRun(fileAt: testFilePath + .swift)
+			do {
+				// Translate the swift code to kotlin, compile the resulting kotlin code, run it,
+				// and get its output
+				let testFilePath = TestUtils.testFilesPath + testName
+				let compilationResult = try GRYCompiler.compileAndRun(fileAt: testFilePath + .swift)
 
-			switch compilationResult {
-			case let .failure(errorMessage: errorMessage):
-				XCTFail("Test \(testName) - compilation error. \(errorMessage)")
-				continue
-			case let .success(commandOutput: compilerResult):
-				// Load the previously stored kotlin code from file
-				let expectedOutput = try! String(contentsOfFile: testFilePath + .output)
+				switch compilationResult {
+				case let .failure(errorMessage: errorMessage):
+					XCTFail("Test \(testName) - compilation error. \(errorMessage)")
+					continue
+				case let .success(commandOutput: compilerResult):
+					// Load the previously stored kotlin code from file
+					let expectedOutput = try! String(contentsOfFile: testFilePath + .output)
 
-				XCTAssert(
-					compilerResult.standardError == "",
-					"Test \(testName): the compiler encountered an error: "
-						+ "\(compilerResult.standardError).")
-				XCTAssert(
-					compilerResult.status == 0,
-					"Test \(testName): the compiler exited with value \(compilerResult.status).")
-				XCTAssert(
-					compilerResult.standardOutput == expectedOutput,
-					"Test \(testName): parser failed to produce expected result. Diff:" +
-						TestUtils.diff(compilerResult.standardOutput, expectedOutput))
+					XCTAssert(
+						compilerResult.standardError == "",
+						"Test \(testName): the compiler encountered an error: " +
+						"\(compilerResult.standardError).")
+					XCTAssert(
+						compilerResult.status == 0,
+						"Test \(testName): the compiler exited with value " +
+						"\(compilerResult.status).")
+					XCTAssert(
+						compilerResult.standardOutput == expectedOutput,
+						"Test \(testName): parser failed to produce expected result. Diff:" +
+							TestUtils.diff(compilerResult.standardOutput, expectedOutput))
 
-				print("\t- Done!")
+					print("\t- Done!")
+				}
+			}
+			catch let error {
+				if let error = error as? GRYPrintableError {
+					error.print()
+					XCTFail()
+					continue
+				}
+				else {
+					print("Unexpected error: \(error)")
+					fatalError()
+				}
 			}
 		}
 	}

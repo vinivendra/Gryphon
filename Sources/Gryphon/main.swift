@@ -18,97 +18,121 @@ import Foundation
 import GryphonLib
 
 func updateFiles(
-    in folder: String,
-    from originExtension: GRYFileExtension,
-    to destinationExtension: GRYFileExtension,
-    with closure: (String, String) -> ())
+	in folder: String,
+	from originExtension: GRYFileExtension,
+	to destinationExtension: GRYFileExtension,
+	with closure: (String, String) throws -> ()) rethrows
 {
-    let currentURL = URL(fileURLWithPath: Process().currentDirectoryPath + "/" + folder)
-    let fileURLs = try! FileManager.default.contentsOfDirectory(
-        at: currentURL,
-        includingPropertiesForKeys: nil)
+	let currentURL = URL(fileURLWithPath: Process().currentDirectoryPath + "/" + folder)
+	let fileURLs = try! FileManager.default.contentsOfDirectory(
+		at: currentURL,
+		includingPropertiesForKeys: nil)
 	let testFiles = fileURLs.filter { $0.pathExtension == originExtension.rawValue }.sorted
 	{ (url1: URL, url2: URL) -> Bool in
 		url1.absoluteString < url2.absoluteString
 	}
 
-    for originFile in testFiles {
-        let originFilePath = originFile.path
-        let destinationFilePath =
-            GRYUtils.changeExtension(of: originFilePath, to: destinationExtension)
+	for originFile in testFiles {
+		let originFilePath = originFile.path
+		let destinationFilePath =
+			GRYUtils.changeExtension(of: originFilePath, to: destinationExtension)
 
-        let destinationFileWasJustCreated =
-            GRYUtils.createFileIfNeeded(at: destinationFilePath, containing: "")
-        let destinationFileIsOutdated = destinationFileWasJustCreated ||
-            GRYUtils.file(originFilePath, wasModifiedLaterThan: destinationFilePath)
+		let destinationFileWasJustCreated =
+			GRYUtils.createFileIfNeeded(at: destinationFilePath, containing: "")
+		let destinationFileIsOutdated = destinationFileWasJustCreated ||
+			GRYUtils.file(originFilePath, wasModifiedLaterThan: destinationFilePath)
 
-        if destinationFileIsOutdated {
-            print("\tUpdating \(destinationFilePath)...")
-            closure(originFilePath, destinationFilePath)
-        }
-    }
+		if destinationFileIsOutdated {
+			print("\tUpdating \(destinationFilePath)...")
+			try closure(originFilePath, destinationFilePath)
+		}
+	}
 }
 
-func updateFiles(inFolder folder: String) {
+func updateFiles(inFolder folder: String) throws {
 	print("Updating files in \(folder)...")
 
-    updateFiles(in: folder, from: .swift, to: .swiftAstDump)
-    { (_: String, astFilePath: String) in
+	updateFiles(in: folder, from: .swift, to: .swiftAstDump)
+	{ (_: String, astFilePath: String) in
 		// The swiftAstDump files must be updated externally by the perl script. If any files are
 		// out of date, this closure gets called and informs the user how to update them.
-        fatalError("Please update ast file \(astFilePath) with the `dump-ast.pl` perl script.")
-    }
+		fatalError("Please update ast file \(astFilePath) with the `dump-ast.pl` perl script.")
+	}
 
-    updateFiles(in: folder, from: .swiftAstDump, to: .grySwiftAstJson)
-    { (dumpFilePath: String, jsonFilePath: String) in
-        let ast = GRYSwiftAst(astFile: dumpFilePath)
-        ast.writeAsJSON(toFile: jsonFilePath)
-    }
+	updateFiles(in: folder, from: .swiftAstDump, to: .grySwiftAstJson)
+	{ (dumpFilePath: String, jsonFilePath: String) in
+		let ast = GRYSwiftAst(astFile: dumpFilePath)
+		ast.writeAsJSON(toFile: jsonFilePath)
+	}
 
-    updateFiles(in: folder, from: .grySwiftAstJson, to: .expectedGrySwiftAstJson)
-    { (jsonFilePath: String, expectedJsonFilePath: String) in
-        let jsonContents = try! String(contentsOfFile: jsonFilePath)
-        let expectedJsonURL = URL(fileURLWithPath: expectedJsonFilePath)
-        try! jsonContents.write(to: expectedJsonURL, atomically: false, encoding: .utf8)
-    }
+	updateFiles(in: folder, from: .grySwiftAstJson, to: .expectedGrySwiftAstJson)
+	{ (jsonFilePath: String, expectedJsonFilePath: String) in
+		let jsonContents = try! String(contentsOfFile: jsonFilePath)
+		let expectedJsonURL = URL(fileURLWithPath: expectedJsonFilePath)
+		try! jsonContents.write(to: expectedJsonURL, atomically: false, encoding: .utf8)
+	}
 
-	updateFiles(in: folder, from: .grySwiftAstJson, to: .gryAstJson)
-	{ (swiftAstFilePath: String, gryphonAstFilePath: String) in
+	try updateFiles(in: folder, from: .grySwiftAstJson, to: .gryAstJson)
+	{ (swiftAstFilePath: String, gryphonAstFilePath: String) throws in
 		let swiftAst = GRYSwiftAst.initialize(fromJsonInFile: swiftAstFilePath)
-		let gryphonAst = GRYSwift4_1Translator().translateAST(swiftAst)
+		let gryphonAst = try GRYSwift4_1Translator().translateAST(swiftAst)
 		gryphonAst.writeAsJSON(toFile: gryphonAstFilePath)
 
 		let jsonContents = try! String(contentsOfFile: gryphonAstFilePath)
 		let astData = Data(jsonContents.utf8)
 		let decodedAst = try! JSONDecoder().decode(GRYSourceFile.self, from: astData)
-		decodedAst.prettyPrint(horizontalLimit: 100)
+		let otherAst = try! JSONDecoder().decode(GRYSourceFile.self, from: astData)
+
+		assert(decodedAst == otherAst)
 	}
 
 	print("Done!")
 }
 
 func main() {
-    updateFiles(inFolder: "Test Files")
-    updateFiles(inFolder: "Example ASTs")
+	do {
+		try updateFiles(inFolder: "Test Files")
+		try updateFiles(inFolder: "Example ASTs")
 
-//    let filePath = Process().currentDirectoryPath + "/Test Files/assignments.swift"
-    let filePath = Process().currentDirectoryPath + "/Example ASTs/test.swift"
+		////////////////////////////////////////////////////////////////////////////////////////////
+		// Set the path to the desired input file as the `filePath`.
 
-	let swiftAst = GRYCompiler.generateAST(forFileAt: filePath)
-	let ast = GRYSwift4_1Translator().translateAST(swiftAst)
-	print(swiftAst.description(withHorizontalLimit: 60))
-	print("--")
-	ast!.prettyPrint()
+//		let filePath = Process().currentDirectoryPath + "/Test Files/kotlinLiterals.swift"
+		let filePath = Process().currentDirectoryPath + "/Example ASTs/test.swift"
 
-//	print(GRYCompiler.getSwiftASTDump(forFileAt: filePath))
-//    print(GRYCompiler.generateAST(forFileAt: filePath).description(withHorizontalLimit: 100))
-//    print(GRYCompiler.processExternalAST(filePath))
-//    let (code, _, _) =
-//        GRYCompiler.generateKotlinCodeWithDiagnostics(forFileAt: filePath)
-//	print(ast.description(withHorizontalLimit: 100))
-//  print(code ?? "Failed to translate Kotlin code.")
-//	print(diagnostics)
-//	print(GRYCompiler.compileAndRun(fileAt: filePath))
+		////////////////////////////////////////////////////////////////////////////////////////////
+		// The following (possibly commented) lines of code execute the transpilation process up to
+		// a specific step, then print the result. The first line only runs the first step, the
+		// second runs the first two steps, and so forth. Commenting and un-commenting specific
+		// lines allows you to visualize the compilation steps seprately.
+		//
+		// Note that if the input file is a .swiftAstDump file instead of a .swift file the
+		// transpiler should still work normally.
+
+		// 1: Run the swift compiler and get its Ast dump
+//		print(GRYCompiler.getSwiftASTDump(forFileAt: filePath))
+
+		// 2: Swiftc's Ast dump -> Gryphon's version of the Swift Ast
+//		GRYCompiler.generateSwiftAST(forFileAt: filePath).prettyPrint(horizontalLimit: 100)
+
+		// 3: Swiftc's Ast dump -> Swift Ast -> Gryphon's internal Ast
+//		try GRYCompiler.generateGryphonAst(forFileAt: filePath).prettyPrint(horizontalLimit: 100)
+
+		// 4: Swiftc's Ast dump -> Swift Ast -> Gryphon Ast -> Kotlin code
+//		try print(GRYCompiler.generateKotlinCode(forFileAt: filePath)!)
+
+		// 5: Ast dump -> Swift Ast -> GRY Ast -> Kotlin code -> Output of running the Kotlin code
+		try print(GRYCompiler.compileAndRun(fileAt: filePath))
+	}
+	catch let error {
+		if let error = error as? GRYPrintableError {
+			error.print()
+		}
+		else {
+			print("Unexpected error: \(error)")
+			fatalError()
+		}
+	}
 }
 
 main()

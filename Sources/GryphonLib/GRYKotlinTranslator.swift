@@ -67,7 +67,7 @@ public class GRYKotlinTranslator {
 	- Parameter ast: The AST, obtained from swift, containing a "Source File" node at the root.
 	- Returns: A kotlin translation of the contents of the AST.
 	*/
-	public func translateAST(_ sourceFile: GRYSourceFile) -> String? {
+	public func translateAST(_ sourceFile: GRYSourceFile) -> String {
 		let declarationsTranslation =
 			translate(subtrees: sourceFile.declarations, withIndentation: "")
 

@@ -24,23 +24,38 @@ class GRYSwiftTranslatorTest: XCTestCase {
 		for testName in tests {
 			print("- Testing \(testName)...")
 
-			// Create the Gryphon AST using the mock Swift AST
-			let testFilePath = TestUtils.testFilesPath + testName
-			let swiftAst = GRYSwiftAst.initialize(fromJsonInFile: testFilePath + .grySwiftAstJson)
-			let createdGryphonAst = GRYSwift4_1Translator().translateAST(swiftAst)
+			do {
+				// Create the Gryphon AST using the mock Swift AST
+				let testFilePath = TestUtils.testFilesPath + testName
+				let swiftAst = GRYSwiftAst.initialize(
+					fromJsonInFile: testFilePath + .grySwiftAstJson)
+				let createdGryphonAst = try GRYSwift4_1Translator().translateAST(swiftAst)
 
-			// Load the previously stored Gryphon AST from file
-			let expectedGryphonAstJson = try! String(contentsOfFile: testFilePath + .gryAstJson)
-			let expectedGryphonAstData = Data(expectedGryphonAstJson.utf8)
-			let expectedGryphonAst =
-				try! JSONDecoder().decode(GRYSourceFile.self, from: expectedGryphonAstData)
+				// Load the previously stored Gryphon AST from file
+				let expectedGryphonAstJson = try! String(contentsOfFile: testFilePath + .gryAstJson)
+				let expectedGryphonAstData = Data(expectedGryphonAstJson.utf8)
+				let expectedGryphonAst =
+					try! JSONDecoder().decode(GRYSourceFile.self, from: expectedGryphonAstData)
 
-			XCTAssert(
-				createdGryphonAst == expectedGryphonAst,
-				"Test \(testName): translator failed to produce expected result. Diff:" +
-					TestUtils.diff(createdGryphonAst.description, expectedGryphonAst.description))
+				XCTAssert(
+					createdGryphonAst == expectedGryphonAst,
+					"Test \(testName): translator failed to produce expected result. Diff:" +
+						TestUtils.diff(
+							createdGryphonAst.description, expectedGryphonAst.description))
 
-			print("\t- Done!")
+				print("\t- Done!")
+			}
+			catch let error {
+				if let error = error as? GRYPrintableError {
+					error.print()
+					XCTFail()
+					continue
+				}
+				else {
+					print("Unexpected error: \(error)")
+					fatalError()
+				}
+			}
 		}
 	}
 
