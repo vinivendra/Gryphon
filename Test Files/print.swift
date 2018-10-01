@@ -24,5 +24,5 @@ print(message)
 let number = 13
 print(number)
 
-print("Here's a bool literal: \(true)\nAnd here's a number: \(17).")
+print("Here's a bool literal: \(true).\nAnd here's a number: \(17).")
 print("The stored message is: \(message)\nAnd the stored number is: \(number).")

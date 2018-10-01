@@ -2,7 +2,7 @@ Hello, world!
 42
 A message in a variable.
 13
-Here's a string literal: String Literal.
+Here's a bool literal: true.
 And here's a number: 17.
 The stored message is: A message in a variable.
 And the stored number is: 13.
