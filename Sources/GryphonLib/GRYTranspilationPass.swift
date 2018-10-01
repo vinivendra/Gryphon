@@ -356,11 +356,21 @@ public class GRYRemoveParenthesesTranspilationPass: GRYTranspilationPass {
 	}
 }
 
+public class GRYRecordEnumsTranspilationPass: GRYTranspilationPass {
+	override func replaceEnumDeclaration(
+		access: String?, name: String, inherits: [String], elements: [String]) -> GRYTopLevelNode
+	{
+		GRYKotlinTranslator.addEnum(name)
+		return .enumDeclaration(access: access, name: name, inherits: inherits, elements: elements)
+	}
+}
+
 public extension GRYTranspilationPass {
 	static func runAllPasses(on sourceFile: GRYAst) -> GRYAst {
 		var result = sourceFile
-		result = GRYStandardLibraryTranspilationPass().run(on: result)
 		result = GRYRemoveParenthesesTranspilationPass().run(on: result)
+		result = GRYStandardLibraryTranspilationPass().run(on: result)
+		result = GRYRecordEnumsTranspilationPass().run(on: result)
 		return result
 	}
 

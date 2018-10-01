@@ -40,6 +40,10 @@ public class GRYKotlinTranslator {
 	*/
 	private static var enums = [String]()
 
+	public static func addEnum(_ enumName: String) {
+		enums.append(enumName)
+	}
+
 	/**
 	This variable is used to allow calls to the `GRYIgnoreNext` function to ignore
 	the next swift statement. When a call to that function is detected, this variable is set
@@ -172,9 +176,6 @@ public class GRYKotlinTranslator {
 		guard !inherits.contains("GRYIgnore") else {
 			return ""
 		}
-
-		// TODO: Turn this into a pass
-		GRYKotlinTranslator.enums.append(name)
 
 		var result: String
 
