@@ -85,7 +85,6 @@ func updateFiles(inFolder folder: String) throws {
 func main() {
 	do {
 		try updateFiles(inFolder: "Test Files")
-		try updateFiles(inFolder: "Example ASTs")
 
 		////////////////////////////////////////////////////////////////////////////////////////////
 		// Set the path to the desired input file as the `filePath`.
