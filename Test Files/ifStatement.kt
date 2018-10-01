@@ -89,12 +89,12 @@ fun main(args: Array<String>) {
 	val z: Int? = null
 	val a: Int? = x
 	if (a != null) {
-		println("${(a)}")
+		println("${a}")
 		println("If let")
 	}
 	val b: Int? = x
 	if (b != null) {
-		println("${(b)}")
+		println("${b}")
 		println("If let #2")
 	}
 	else if (x == 0) {
@@ -108,14 +108,14 @@ fun main(args: Array<String>) {
 		println("--")
 	}
 	else {
-		println("${(z)}")
+		println("${z}")
 		println("If let #3")
 	}
 	var d: Int? = x
 	val e: Int? = y
 	val f: Int? = bla()
 	if (d != null && e != null && f != null && x == 0) {
-		println("${(d)}, ${(e)}, ${(f)}, ${(x!!)}")
+		println("${d}, ${e}, ${f}, ${x!!}")
 		println("If let #4")
 	}
 	else if (x == 1) {

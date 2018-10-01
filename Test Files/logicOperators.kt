@@ -3,22 +3,22 @@ fun main(args: Array<String>) {
 	val f: Boolean = false
 	var x: Boolean = t || f
 	var y: Boolean = t && f
-	println("${(x)}")
-	println("${(y)}")
+	println("${x}")
+	println("${y}")
 	x = f || f
 	y = f && f
-	println("${(x)}")
-	println("${(y)}")
-	println("${(t || t)}")
-	println("${(t && t)}")
-	println("${(true || false)}")
-	println("${(true && false)}")
+	println("${x}")
+	println("${y}")
+	println("${t || t}")
+	println("${t && t}")
+	println("${true || false}")
+	println("${true && false}")
 	x = true || false
-	println("${(x)}")
+	println("${x}")
 	var z: Boolean = !x
-	println("${(z)}")
+	println("${z}")
 	z = !y
-	println("${(z)}")
+	println("${z}")
 	if (x) {
 		println("true")
 	}

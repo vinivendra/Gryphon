@@ -15,6 +15,11 @@
 */
 
 public class GRYTranspilationPass {
+	fileprivate var parents = [Either<GRYTopLevelNode, GRYExpression>]()
+	fileprivate var parent: Either<GRYTopLevelNode, GRYExpression> {
+		return parents.secondToLast!
+	}
+
 	func run(on sourceFile: GRYAst) -> GRYAst {
 		var replacedStatements = [GRYTopLevelNode]()
 		for statement in sourceFile.statements {
@@ -32,6 +37,9 @@ public class GRYTranspilationPass {
 	}
 
 	func replaceTopLevelNode(_ node: GRYTopLevelNode) -> GRYTopLevelNode {
+		parents.append(.left(node))
+		defer { parents.removeLast() }
+
 		switch node {
 		case let .expression(expression: expression):
 			return replaceExpression(expression: expression)
@@ -173,6 +181,9 @@ public class GRYTranspilationPass {
 	}
 
 	func replaceExpression(_ expression: GRYExpression) -> GRYExpression {
+		parents.append(.right(expression))
+		defer { parents.removeLast() }
+
 		switch expression {
 		case let .parenthesesExpression(expression: expression):
 			return replaceParenthesesExpression(expression: expression)
@@ -329,10 +340,45 @@ public class GRYStandardLibraryTranspilationPass: GRYTranspilationPass {
 	}
 }
 
+public class GRYRemoveParenthesesTranspilationPass: GRYTranspilationPass {
+	override func replaceParenthesesExpression(expression: GRYExpression) -> GRYExpression {
+
+		if case let .right(parentExpression) = parent {
+			switch parentExpression {
+			case .tupleExpression, .interpolatedStringLiteralExpression:
+				return replaceExpression(expression)
+			default:
+				break
+			}
+		}
+
+		return .parenthesesExpression(expression: replaceExpression(expression))
+	}
+}
+
 public extension GRYTranspilationPass {
 	static func runAllPasses(on sourceFile: GRYAst) -> GRYAst {
 		var result = sourceFile
 		result = GRYStandardLibraryTranspilationPass().run(on: result)
+		result = GRYRemoveParenthesesTranspilationPass().run(on: result)
 		return result
 	}
+
+	func printParents() {
+		print("[")
+		for parent in parents {
+			switch parent {
+			case let .left(node):
+				print("\t\(node.name),")
+			case let .right(expression):
+				print("\t\(expression.name),")
+			}
+		}
+		print("]")
+	}
+}
+
+private enum Either<Left, Right> {
+	case left(_ value: Left)
+	case right(_ value: Right)
 }

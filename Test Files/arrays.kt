@@ -13,7 +13,7 @@ fun main(args: Array<String>) {
 	}
 	for (i in array1) {
 		for (j in array2) {
-			println("${(i)}, ${(j)}")
+			println("${i}, ${j}")
 		}
 	}
 }

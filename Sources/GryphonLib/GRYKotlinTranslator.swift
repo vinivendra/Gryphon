@@ -620,13 +620,7 @@ public class GRYKotlinTranslator {
 		if case let .tupleExpression(pairs: pairs) = parameters,
 			let lastPair = pairs.last
 		{
-			// TODO: Remove this extra parentheses expression with an Ast pass
 			if case let .literalStringExpression(value: value) = lastPair.expression {
-				string = value
-			}
-			else if case let .parenthesesExpression(expression: expression) = lastPair.expression,
-				case let .literalStringExpression(value: value) = expression
-			{
 				string = value
 			}
 			else {
