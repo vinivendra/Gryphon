@@ -311,7 +311,6 @@ public class GRYTranspilationPass {
 	}
 }
 
-// TODO: Add a test for this
 public class GRYStandardLibraryTranspilationPass: GRYTranspilationPass {
 	override func replaceCallExpression(function: GRYExpression, parameters: GRYExpression)
 		-> GRYExpression
