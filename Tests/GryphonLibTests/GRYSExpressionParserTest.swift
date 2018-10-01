@@ -143,4 +143,8 @@ class GRYSExpressionParserTest: XCTestCase {
 		("testRead", testRead),
 		("testParser", testParser),
 	]
+
+	static override func setUp() {
+		try! TestUtils.updateFiles()
+	}
 }

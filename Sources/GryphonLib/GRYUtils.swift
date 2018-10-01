@@ -144,6 +144,7 @@ extension GRYUtils {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// TODO: Can these be replaced with Swift 4.2 RNGs?
 extension GRYUtils {
 	internal static var rng: RandomGenerator = Xoroshiro()
 }
@@ -188,6 +189,8 @@ internal extension RandomAccessCollection where Element: Equatable, Index == Int
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// TODO: Is this dead code?
 public class GRYHistogram<T>: CustomStringConvertible
 	where T: Hashable
 {

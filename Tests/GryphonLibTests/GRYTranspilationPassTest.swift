@@ -44,4 +44,8 @@ class GRYTranspilationPassTest: XCTestCase {
 	static var allTests = [
 		("testPasses", testPasses),
 	]
+
+	static override func setUp() {
+		try! TestUtils.updateFiles()
+	}
 }

@@ -45,4 +45,8 @@ class GRYKotlinTranslatorTest: XCTestCase {
 	static var allTests = [
 		("testTranslator", testTranslator),
 	]
+
+	static override func setUp() {
+		try! TestUtils.updateFiles()
+	}
 }

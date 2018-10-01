@@ -57,4 +57,8 @@ class IntegrationTest: XCTestCase {
 	static var allTests = [
 		("test", test),
 	]
+
+	static override func setUp() {
+		try! TestUtils.updateFiles()
+	}
 }
