@@ -9,4 +9,8 @@ perl dump-ast.pl Example\ ASTs/*.swift
 perl dump-ast.pl Test\ Files/*.swift
 
 # Lint swift files
-swiftlint autocorrect
+if which swiftlint >/dev/null; then
+  swiftlint autocorrect
+else
+  echo "warning: SwiftLint not installed."
+fi
