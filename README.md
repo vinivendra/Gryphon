@@ -24,6 +24,8 @@ bash preBuildScript.sh
 
 - I use Docker to run the app and the tests on a linux container before commiting, just to make sure everything works on linux as well. The docker container can be built with `docker build -t swift_ubuntu .` and run with `docker run -it --rm --privileged -v /path/to/local/Gryphon:/app/Gryphon swift_ubuntu`, replacing `/path/to/local/Gryphon` with the path to the cloned git repo in your computer. Once inside docker, I can run the app with `swift run` and test it with `swift test` as appropriate.
 
+	- *Note:* Sometimes running `swift test` in Docker results in an unknown error. I believe this is an issue with the swift version used by the container. If this happens, juts run `swift test` again and it should work fine.
+
 ### Contributing
 
 Any issues and pull requests via github are welcome!
