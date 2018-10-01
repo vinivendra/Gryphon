@@ -20,12 +20,12 @@ import XCTest
 public func allTests() -> [XCTestCaseEntry] {
 	return [
 		testCase(GRYExtensionTest.allTests),
-//		testCase(GRYAstTest.allTests),
 		testCase(GRYSwiftTranslatorTest.allTests),
 		testCase(GRYKotlinTranslatorTest.allTests),
 		testCase(GRYPrintableAsTreeTest.allTests),
 		testCase(GRYSExpressionParserTest.allTests),
 		testCase(GRYShellTest.allTests),
+		testCase(GRYTranspilationPassTest.allTests),
 		testCase(GRYUtilsTest.allTests),
 		testCase(IntegrationTest.allTests),
 		testCase(AcceptanceTest.allTests),

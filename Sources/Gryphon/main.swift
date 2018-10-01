@@ -65,19 +65,18 @@ func updateFiles(inFolder folder: String) throws {
 		ast.writeAsJSON(toFile: jsonFilePath)
 	}
 
-	updateFiles(in: folder, from: .grySwiftAstJson, to: .expectedGrySwiftAstJson)
-	{ (jsonFilePath: String, expectedJsonFilePath: String) in
-		let jsonContents = try! String(contentsOfFile: jsonFilePath)
-		let expectedJsonURL = URL(fileURLWithPath: expectedJsonFilePath)
-		try! jsonContents.write(to: expectedJsonURL, atomically: false, encoding: .utf8)
-	}
-
-	try updateFiles(in: folder, from: .grySwiftAstJson, to: .gryAstJson)
-	{ (swiftAstFilePath: String, gryphonAstFilePath: String) throws in
+	try updateFiles(in: folder, from: .grySwiftAstJson, to: .gryRawAstJson)
+	{ (swiftAstFilePath: String, gryphonAstRawFilePath: String) in
 		let swiftAst = GRYSwiftAst.initialize(fromJsonInFile: swiftAstFilePath)
 		let gryphonAst = try GRYSwift4Translator().translateAST(swiftAst)
-		let gryphonAstAfterPasses = GRYTranspilationPass.runAllPasses(on: gryphonAst)
-		gryphonAstAfterPasses.writeAsJSON(toFile: gryphonAstFilePath)
+		gryphonAst.writeAsJSON(toFile: gryphonAstRawFilePath)
+	}
+
+	try updateFiles(in: folder, from: .gryRawAstJson, to: .gryAstJson)
+	{ (gryphonAstRawFilePath: String, gryphonAstFilePath: String) throws in
+		let gryphonAstRaw = GRYAst.initialize(fromJsonInFile: gryphonAstRawFilePath)
+		let gryphonAst = GRYTranspilationPass.runAllPasses(on: gryphonAstRaw)
+		gryphonAst.writeAsJSON(toFile: gryphonAstFilePath)
 	}
 
 	print("Done!")
@@ -109,13 +108,17 @@ func main() {
 		// 2: Swiftc's Ast dump -> Gryphon's version of the Swift Ast
 //		GRYCompiler.generateSwiftAST(forFileAt: filePath).prettyPrint(horizontalLimit: 100)
 
-		// 3: Swiftc's Ast dump -> Swift Ast -> Gryphon's internal Ast
+		// 3: Swiftc's Ast dump -> Swift Ast -> Gryphon's internal Ast (raw, before passes)
 //		try GRYCompiler.generateGryphonAst(forFileAt: filePath).prettyPrint(horizontalLimit: 100)
 
-		// 4: Swiftc's Ast dump -> Swift Ast -> Gryphon Ast -> Kotlin code
+		// 3.1: Swiftc's Ast dump -> Swift Ast -> Gryphon Ast (raw) + Gryphon Ast (after passes)
+//		try GRYCompiler.generateGryphonAstAndRunPasses(forFileAt: filePath)
+//			.prettyPrint(horizontalLimit: 100)
+
+		// 4: Swiftc's Ast dump -> Swift Ast -> Gryphon Ast (raw) + Gryphon Ast -> Kotlin code
 //		try print(GRYCompiler.generateKotlinCode(forFileAt: filePath))
 
-		// 5: Ast dump -> Swift Ast -> GRY Ast -> Kotlin code -> Output of running the Kotlin code
+		// 5: Ast dump -> Swift Ast -> GRYAst (raw) -> GRYAst -> Kotlin -> Output of running Kotlin
 		try print(GRYCompiler.compileAndRun(fileAt: filePath))
 	}
 	catch let error {

@@ -46,9 +46,9 @@ public enum GRYFileExtension: String {
 	// This should be the same as the extension in the dump-ast.pl and separateASTs.pl files
 	case swiftAstDump
 	case grySwiftAstJson
+	case gryRawAstJson
 	case gryAstJson
 
-	case expectedGrySwiftAstJson
 	case output
 
 	case kt
@@ -253,4 +253,25 @@ fileprivate extension Int {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 public protocol GRYPrintableError: Error {
 	func print()
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+public enum GRYJSONEncoder {
+	static func encode<T>(_ value: T) -> String where T: Encodable {
+		let encoder = JSONEncoder()
+
+		#if os(macOS)
+		if #available(OSX 10.13, *) {
+			encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+		} else {
+			encoder.outputFormatting = [.prettyPrinted]
+		}
+		#else
+		encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+		#endif
+
+		let jsonData = try! encoder.encode(value)
+		return String(data: jsonData, encoding: .utf8)!
+	}
 }

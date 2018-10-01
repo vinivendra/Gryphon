@@ -16,7 +16,7 @@
 
 import Foundation
 
-public class GRYSourceFile: GRYPrintableAsTree, Codable, Equatable, CustomStringConvertible {
+public class GRYAst: GRYPrintableAsTree, Codable, Equatable, CustomStringConvertible {
 	let declarations: [GRYTopLevelNode]
 	let statements: [GRYTopLevelNode]
 
@@ -28,8 +28,7 @@ public class GRYSourceFile: GRYPrintableAsTree, Codable, Equatable, CustomString
 	//
 	public func writeAsJSON(toFile filePath: String) {
 		print("Building AST JSON...")
-		let jsonData = try! JSONEncoder().encode(self)
-		let rawJsonString = String(data: jsonData, encoding: .utf8)!
+		let rawJsonString = GRYJSONEncoder.encode(self)
 
 		// Absolute file paths must be replaced with placeholders before writing to file.
 		let swiftFilePath = GRYUtils.changeExtension(of: filePath, to: .swift)
@@ -40,7 +39,7 @@ public class GRYSourceFile: GRYPrintableAsTree, Codable, Equatable, CustomString
 		try! processedJsonString.write(toFile: filePath, atomically: true, encoding: .utf8)
 	}
 
-	public static func initialize(fromJsonInFile jsonFilePath: String) -> GRYSourceFile {
+	public static func initialize(fromJsonInFile jsonFilePath: String) -> GRYAst {
 		do {
 			let rawJSON = try String(contentsOfFile: jsonFilePath)
 
@@ -51,7 +50,7 @@ public class GRYSourceFile: GRYPrintableAsTree, Codable, Equatable, CustomString
 				rawJSON.replacingOccurrences(of: "<<testFilePath>>", with: escapedFilePath)
 
 			let astData = Data(processedJSON.utf8)
-			return try JSONDecoder().decode(GRYSourceFile.self, from: astData)
+			return try JSONDecoder().decode(GRYAst.self, from: astData)
 		}
 		catch let error {
 			fatalError("""
@@ -80,7 +79,7 @@ public class GRYSourceFile: GRYPrintableAsTree, Codable, Equatable, CustomString
 	}
 
 	//
-	public static func == (lhs: GRYSourceFile, rhs: GRYSourceFile) -> Bool {
+	public static func == (lhs: GRYAst, rhs: GRYAst) -> Bool {
 		return lhs.declarations == rhs.declarations &&
 			lhs.statements == rhs.statements
 	}

@@ -15,7 +15,7 @@
 */
 
 public class GRYTranspilationPass {
-	func run(on sourceFile: GRYSourceFile) -> GRYSourceFile {
+	func run(on sourceFile: GRYAst) -> GRYAst {
 		var replacedStatements = [GRYTopLevelNode]()
 		for statement in sourceFile.statements {
 			let replacedStatement = replaceTopLevelNode(statement)
@@ -28,7 +28,7 @@ public class GRYTranspilationPass {
 			replacedDeclarations.append(replacedDeclaration)
 		}
 
-		return GRYSourceFile(declarations: replacedDeclarations, statements: replacedStatements)
+		return GRYAst(declarations: replacedDeclarations, statements: replacedStatements)
 	}
 
 	func replaceTopLevelNode(_ node: GRYTopLevelNode) -> GRYTopLevelNode {
@@ -331,7 +331,7 @@ public class GRYStandardLibraryTranspilationPass: GRYTranspilationPass {
 }
 
 public extension GRYTranspilationPass {
-	static func runAllPasses(on sourceFile: GRYSourceFile) -> GRYSourceFile {
+	static func runAllPasses(on sourceFile: GRYAst) -> GRYAst {
 		var result = sourceFile
 		result = GRYStandardLibraryTranspilationPass().run(on: result)
 		return result

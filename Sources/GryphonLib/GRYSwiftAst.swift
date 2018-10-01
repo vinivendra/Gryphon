@@ -180,8 +180,7 @@ public class GRYSwiftAst: GRYPrintableAsTree, Equatable, Codable, CustomStringCo
 	//
 	public func writeAsJSON(toFile filePath: String) {
 		print("Building Swift AST JSON...")
-		let jsonData = try! JSONEncoder().encode(self)
-		let rawJsonString = String(data: jsonData, encoding: .utf8)!
+		let rawJsonString = GRYJSONEncoder.encode(self)
 
 		// Absolute file paths must be replaced with placeholders before writing to file.
 		let swiftFilePath = GRYUtils.changeExtension(of: filePath, to: .swift)

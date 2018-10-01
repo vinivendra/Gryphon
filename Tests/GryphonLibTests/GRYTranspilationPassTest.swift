@@ -17,32 +17,31 @@
 @testable import GryphonLib
 import XCTest
 
-class GRYKotlinTranslatorTest: XCTestCase {
-	func testTranslator() {
+class GRYTranspilationPassTest: XCTestCase {
+	func testPasses() {
 		let tests = TestUtils.allTestCases
 
 		for testName in tests {
 			print("- Testing \(testName)...")
 
-			// Create the new Kotlin code from the cached Gryphon AST using the GRYKotlinTranslator
+			// Fetch the cached Gryphon Ast (without passes) and run the passes on it
 			let testFilePath = TestUtils.testFilesPath + testName
-			let ast = GRYAst.initialize(fromJsonInFile: testFilePath + .gryAstJson)
-			let createdKotlinCode = GRYKotlinTranslator().translateAST(ast)
+			let rawAst = GRYAst.initialize(fromJsonInFile: testFilePath + .gryRawAstJson)
+			let createdGryphonAst = GRYTranspilationPass.runAllPasses(on: rawAst)
 
-			// Load the cached Kotlin code from file
-			let expectedKotlinCode = try! String(contentsOfFile: testFilePath + .kt)
+			// Load a cached Gryphon Ast (with passes)
+			let expectedGryphonAst = GRYAst.initialize(fromJsonInFile: testFilePath + .gryAstJson)
 
-			// Compare the two
 			XCTAssert(
-				createdKotlinCode == expectedKotlinCode,
+				createdGryphonAst == expectedGryphonAst,
 				"Test \(testName): translator failed to produce expected result. Diff:" +
-					TestUtils.diff(createdKotlinCode, expectedKotlinCode))
+					TestUtils.diff(expectedGryphonAst.description, expectedGryphonAst.description))
 
 			print("\t- Done!")
 		}
 	}
 
 	static var allTests = [
-		("testTranslator", testTranslator),
+		("testPasses", testPasses),
 	]
 }

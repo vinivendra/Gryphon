@@ -120,14 +120,15 @@ class GRYSExpressionParserTest: XCTestCase {
 		for testName in tests {
 			print("- Testing \(testName)...")
 
-			// Create an AST using the parser
+			// Create a new AST using the parser
 			let testFilePath = TestUtils.testFilesPath + testName
 			let createdAST = GRYSwiftAst(astFile: testFilePath + .swiftAstDump)
 
-			// Load the previously stored AST from file
+			// Load a cached AST from file
 			let expectedAST = GRYSwiftAst.initialize(
-				fromJsonInFile: testFilePath + .expectedGrySwiftAstJson)
+				fromJsonInFile: testFilePath + .grySwiftAstJson)
 
+			// Compare the two
 			XCTAssert(
 				createdAST == expectedAST,
 				"Test \(testName): parser failed to produce expected result. Diff:" +

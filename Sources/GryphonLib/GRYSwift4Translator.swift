@@ -67,7 +67,7 @@ public class GRYSwift4Translator {
 	// MARK: - Interface
 	public init() { }
 
-	public func translateAST(_ ast: GRYSwiftAst) throws -> GRYSourceFile {
+	public func translateAST(_ ast: GRYSwiftAst) throws -> GRYAst {
 		// First, translate declarations that shouldn't be inside the main function
 		let declarationNames = [
 			"Protocol",
@@ -86,7 +86,7 @@ public class GRYSwift4Translator {
 		let swiftStatements = ast.subtrees.filter({ !isDeclaration($0) })
 		let statements = try translate(subtrees: swiftStatements)
 
-		return GRYSourceFile(declarations: declarations, statements: statements)
+		return GRYAst(declarations: declarations, statements: statements)
 	}
 
 	// MARK: - Top-level translations

@@ -25,23 +25,25 @@ class GRYSwiftTranslatorTest: XCTestCase {
 			print("- Testing \(testName)...")
 
 			do {
-				// Create the Gryphon AST using the mock Swift AST
+				// Create a new Gryphon AST from the cached Swift AST using the GRYSwiftTranslator
 				let testFilePath = TestUtils.testFilesPath + testName
 				let swiftAst = GRYSwiftAst.initialize(
 					fromJsonInFile: testFilePath + .grySwiftAstJson)
-				let createdGryphonAst = try GRYSwift4Translator().translateAST(swiftAst)
+				let createdGryphonRawAst = try GRYSwift4Translator().translateAST(swiftAst)
 
-				// Load the previously stored Gryphon AST from file
-				let expectedGryphonAstJson = try! String(contentsOfFile: testFilePath + .gryAstJson)
-				let expectedGryphonAstData = Data(expectedGryphonAstJson.utf8)
-				let expectedGryphonAst =
-					try! JSONDecoder().decode(GRYSourceFile.self, from: expectedGryphonAstData)
+				// Load a cached Gryphon AST from file
+				let expectedGryphonRawAstJson = try! String(
+					contentsOfFile: testFilePath + .gryRawAstJson)
+				let expectedGryphonRawAstData = Data(expectedGryphonRawAstJson.utf8)
+				let expectedGryphonRawAst =
+					try! JSONDecoder().decode(GRYAst.self, from: expectedGryphonRawAstData)
 
+				// Compare the two
 				XCTAssert(
-					createdGryphonAst == expectedGryphonAst,
+					createdGryphonRawAst == expectedGryphonRawAst,
 					"Test \(testName): translator failed to produce expected result. Diff:" +
 						TestUtils.diff(
-							createdGryphonAst.description, expectedGryphonAst.description))
+							createdGryphonRawAst.description, expectedGryphonRawAst.description))
 
 				print("\t- Done!")
 			}
