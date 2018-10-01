@@ -51,28 +51,10 @@ public class GRYKotlinTranslator {
 
 	// MARK: - Interface
 
-	/**
-	Translates the swift statements in the `ast` into kotlin code.
-	
-	The swift AST may contain either top-level statements (such as in a "main" file), declarations
-	(i.e. function or class declarations), or both. Any declarations will be translated at the
-	beggining of the file, and any top-level statements will be wrapped in a `main` function and
-	added to the end of the file.
-	
-	If no top-level statements are found, the main function is ommited.
-	
-	This function should be given the AST of a single source file, and should provide a translation
-	of that source file's contents.
-	
-	- Parameter ast: The AST, obtained from swift, containing a "Source File" node at the root.
-	- Returns: A kotlin translation of the contents of the AST.
-	*/
 	public func translateAST(_ sourceFile: GRYAst) -> String {
 		let declarationsTranslation =
 			translate(subtrees: sourceFile.declarations, withIndentation: "")
 
-		// Then, translate the remaining statements (if there are any) and wrap them in the main
-		// function
 		let indentation = increaseIndentation("")
 		let statementsTranslation =
 			translate(subtrees: sourceFile.statements, withIndentation: indentation)
@@ -251,7 +233,6 @@ public class GRYKotlinTranslator {
 
 		let increasedIndentation = increaseIndentation(indentation)
 
-		// Translate the contents
 		let classContents = translate(
 			subtrees: members,
 			withIndentation: increasedIndentation)
@@ -306,7 +287,6 @@ public class GRYKotlinTranslator {
 
 		result += " {\n"
 
-		// Translate the function body
 		indentation = increaseIndentation(indentation)
 
 		result += translate(subtrees: statements, withIndentation: indentation)
@@ -424,14 +404,6 @@ public class GRYKotlinTranslator {
 		}
 	}
 
-	/**
-	Translates a swift variable declaration into kotlin code.
-	
-	This function checks the value stored in `danglingPatternBinding`. If a value is present and
-	it's consistent with this variable declaration (same identifier and type), we use the expression
-	inside it as the initial value for the variable (and the `danglingPatternBinding` is reset to
-	`nil`). Otherwise, the variable is declared without an initial value.
-	*/
 	private func translateVariableDeclaration(
 		identifier: String, typeName: String, expression: GRYExpression?, getter: GRYTopLevelNode?,
 		setter: GRYTopLevelNode?, isLet: Bool, extendsType: String?,
@@ -519,9 +491,6 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateExpression(_ expression: GRYExpression) -> String {
-		// Most diagnostics are logged by the child subTrees; others represent wrapper expressions
-		// with little value in logging. There are a few expections.
-
 		switch expression {
 		case let .arrayExpression(elements: elements):
 			return translateArrayExpression(elements: elements)
@@ -619,19 +588,6 @@ public class GRYKotlinTranslator {
 		return operatorSymbol + expressionTranslation
 	}
 
-	/**
-	Translates a swift call expression into kotlin code.
-	
-	A call expression is a function call, but it can be explicit (as usual) or implicit
-	(i.e. integer literals). Currently, the only implicit calls supported are integer, boolean and
-	nil literals.
-	
-	As a special case, functions called GRYInsert, GRYAlternative and GRYIgnoreNext are used to
-	directly manipulate the resulting kotlin code, and are treated separately below.
-	
-	- Note: If conditions include an "empty" call expression wrapping its real expression. This
-	function handles the unwrapping then delegates the translation.
-	*/
 	private func translateCallExpression(function: GRYExpression, parameters: GRYExpression)
 		-> String
 	{
@@ -656,20 +612,6 @@ public class GRYKotlinTranslator {
 		return functionTranslation + parametersTranslation
 	}
 
-	/**
-	Translates functions that provide kotlin literals. There are two functions that
-	can be declared in swift, `GRYInsert(_: String)` and
-	`GRYAlternative<T>(swift: T, kotlin: String) -> T`, that allow a user to add
-	literal kotlin code to the translation.
-	
-	The first one can be used to insert arbitrary kotlin statements in the middle
-	of translated code, as in `GRYInsert("println(\"Hello, kotlin!\")")`.
-	
-	The second one can be used to provide a manual translation of a swift value, as in
-	`let three = GRYAlternative(swift: sqrt(9), kotlin: "Math.sqrt(9.0)")`.
-
-	Diagnostics get logged at caller (`translate(callExpression:)`).
-	*/
 	private func translateAsKotlinLiteral(
 		functionTranslation: String,
 		parameters: GRYExpression) -> String
@@ -678,7 +620,7 @@ public class GRYKotlinTranslator {
 		if case let .tupleExpression(pairs: pairs) = parameters,
 			let lastPair = pairs.last
 		{
-			// Remove this extra parentheses expression with an Ast pass
+			// TODO: Remove this extra parentheses expression with an Ast pass
 			if case let .literalStringExpression(value: value) = lastPair.expression {
 				string = value
 			}
@@ -758,7 +700,7 @@ public class GRYKotlinTranslator {
 		return result
 	}
 
-	//
+	// MARK: - Supporting methods
 	private func removeBackslashEscapes(_ string: String) -> String {
 		var result = ""
 
