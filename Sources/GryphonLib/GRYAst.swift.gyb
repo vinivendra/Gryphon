@@ -27,7 +27,6 @@ public class GRYAst: GRYPrintableAsTree, Codable, Equatable, CustomStringConvert
 
 	//
 	public func writeAsJSON(toFile filePath: String) {
-		print("Building AST JSON...")
 		let rawJsonString = GRYJSONEncoder.encode(self)
 
 		// Absolute file paths must be replaced with placeholders before writing to file.
