@@ -11,11 +11,11 @@ This is a highly unstable program for now, and anything can change at a moment's
 
 To try Gryphon out and/or contribute to it, just clone this repo :)
 
-The pre-build script should be run before building the project as it generates important files for the build phase. After that, since the project structured as a swift package, running `swift test` or `swift run` in the root directory is already a good place to start. If you want to try out different things, just comment and uncomment the desired lines in the main.swift file (it's pretty simple, I swear) since the program doesn't yet accept command line input.
+The pre-build script (`preBuildScript.sh`) should be run before building the project as it generates important files for the build phase. After that, since the project structured as a swift package, running `swift test` or `swift run` in the root directory is already a good place to start. If you want to try out different things, just comment and uncomment the desired lines in the main.swift file (it's pretty simple, I swear) since the program doesn't yet accept command line input.
 
 Here's how I set up my environment (you might want to do something similar):
 
-- I use macOS and Xcode as my standard IDE, with the default Xcode project created by `swift package generate-xcodeproj`. I use Xcode to change code, run the app and run the macOS tests.  In Xcode, I change the current working directory (`⌘<` → Run → Options → Use Custom Working Directory → "$SRCROOT") and add a pre-build run script before *Compile Sources* to make life easier:
+- I use macOS and Xcode as my standard IDE, with the default Xcode project created by `swift package generate-xcodeproj`. I use Xcode to change code, run the app and run the macOS tests.  In Xcode, I change the current working directory (`⌘<` → Run → Options → Use Custom Working Directory → "$SRCROOT") and add a new **Run Script** build phase (just before *Compile Sources*) to make life easier:
 
 ````
 cd "$SRCROOT"
