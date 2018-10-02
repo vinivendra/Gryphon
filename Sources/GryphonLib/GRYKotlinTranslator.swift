@@ -493,6 +493,8 @@ public class GRYKotlinTranslator {
 
 	private func translateExpression(_ expression: GRYExpression) -> String {
 		switch expression {
+		case let .literalCodeExpression(string: string):
+			return translateLiteralCodeExpression(string: string)
 		case let .arrayExpression(elements: elements, type: type):
 			return translateArrayExpression(elements: elements, type: type)
 		case let .binaryOperatorExpression(
@@ -617,6 +619,10 @@ public class GRYKotlinTranslator {
 		let parametersTranslation = translateTupleExpression(pairs: pairs)
 
 		return functionTranslation + parametersTranslation
+	}
+
+	private func translateLiteralCodeExpression(string: String) -> String {
+		return removeBackslashEscapes(string)
 	}
 
 	private func translateAsKotlinLiteral(

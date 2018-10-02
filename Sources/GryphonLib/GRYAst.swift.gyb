@@ -318,6 +318,7 @@ public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 %{
 expressionNodes = [
+		['literalCodeExpression', [['string', 'String']]],
 		['parenthesesExpression', [['expression', 'GRYExpression']]],
 		['forceValueExpression', [['expression', 'GRYExpression']]],
 		['declarationReferenceExpression', [['identifier', 'String'], ['type', 'String']]],
@@ -424,6 +425,8 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
 
 	public var type: String? {
 		switch self {
+		case .literalCodeExpression(string: _):
+			return nil
 		case let .parenthesesExpression(expression: expression):
 			return expression.type
 		case let .forceValueExpression(expression: expression):
@@ -485,6 +488,8 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
 
 	public var printableSubtrees: [GRYPrintableAsTree?] {
 		switch self {
+		case let .literalCodeExpression(string: string):
+			return [string]
 		case let .parenthesesExpression(expression: expression):
 			return [expression]
 		case let .forceValueExpression(expression: expression):

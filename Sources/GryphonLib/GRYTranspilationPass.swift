@@ -185,6 +185,8 @@ public class GRYTranspilationPass {
 		defer { parents.removeLast() }
 
 		switch expression {
+		case let .literalCodeExpression(string: string):
+			return replaceLiteralCodeExpression(string: string)
 		case let .parenthesesExpression(expression: expression):
 			return replaceParenthesesExpression(expression: expression)
 		case let .forceValueExpression(expression: expression):
@@ -233,6 +235,10 @@ public class GRYTranspilationPass {
 		case let .tupleExpression(pairs: pairs):
 			return replaceTupleExpression(pairs: pairs)
 		}
+	}
+
+	func replaceLiteralCodeExpression(string: String) -> GRYExpression {
+		return .literalCodeExpression(string: string)
 	}
 
 	func replaceParenthesesExpression(expression: GRYExpression) -> GRYExpression {
@@ -364,6 +370,24 @@ public class GRYRemoveParenthesesTranspilationPass: GRYTranspilationPass {
 	}
 }
 
+public class GRYCodeLiteralsTranspilationPass: GRYTranspilationPass {
+	override func replaceCallExpression(
+		function: GRYExpression, parameters: GRYExpression, type: String) -> GRYExpression
+	{
+		if case let .declarationReferenceExpression(identifier: identifier, type: _) = function,
+			identifier.hasPrefix("GRYInsert") ||
+				identifier.hasPrefix("GRYAlternative"),
+			case let .tupleExpression(pairs: pairs) = parameters,
+			let lastPair = pairs.last,
+			case let .literalStringExpression(value: value) = lastPair.expression
+		{
+			return .literalCodeExpression(string: value)
+		}
+
+		return .callExpression(function: function, parameters: parameters, type: type)
+	}
+}
+
 public class GRYRecordEnumsTranspilationPass: GRYTranspilationPass {
 	override func replaceEnumDeclaration(
 		access: String?, name: String, inherits: [String], elements: [String]) -> GRYTopLevelNode
@@ -377,6 +401,7 @@ public extension GRYTranspilationPass {
 	static func runAllPasses(on sourceFile: GRYAst) -> GRYAst {
 		var result = sourceFile
 		result = GRYRemoveParenthesesTranspilationPass().run(on: result)
+		result = GRYCodeLiteralsTranspilationPass().run(on: result)
 		result = GRYStandardLibraryTranspilationPass().run(on: result)
 		result = GRYRecordEnumsTranspilationPass().run(on: result)
 		return result
