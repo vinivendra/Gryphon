@@ -7,6 +7,7 @@ done
 # Update AST dumps
 perl dump-ast.pl Example\ ASTs/*.swift
 perl dump-ast.pl Test\ Files/*.swift
+perl dump-ast.pl Library\ Templates/*.swift
 
 # Lint swift files
 if which swiftlint >/dev/null; then

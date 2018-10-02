@@ -73,6 +73,6 @@ class AcceptanceTest: XCTestCase {
 	]
 
 	static override func setUp() {
-		try! TestUtils.updateFiles()
+		try! GRYUtils.updateTestFiles()
 	}
 }

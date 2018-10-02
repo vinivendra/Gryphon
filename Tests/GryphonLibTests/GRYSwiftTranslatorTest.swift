@@ -66,6 +66,6 @@ class GRYSwiftTranslatorTest: XCTestCase {
 	]
 
 	static override func setUp() {
-		try! TestUtils.updateFiles()
+		try! GRYUtils.updateTestFiles()
 	}
 }

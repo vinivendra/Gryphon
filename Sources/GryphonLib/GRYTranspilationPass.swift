@@ -514,6 +514,7 @@ public extension GRYTranspilationPass {
 		result = GRYIgnoreNextTranspilationPass().run(on: result)
 		result = GRYInsertCodeLiteralsTranspilationPass().run(on: result)
 		result = GRYStandardLibraryTranspilationPass().run(on: result)
+		result = GRYLibraryTranspilationPass().run(on: result)
 		result = GRYDeclarationsTranspilationPass().run(on: result)
 		result = GRYRecordEnumsTranspilationPass().run(on: result)
 		return result

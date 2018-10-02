@@ -46,6 +46,6 @@ class GRYTranspilationPassTest: XCTestCase {
 	]
 
 	static override func setUp() {
-		try! TestUtils.updateFiles()
+		try! GRYUtils.updateTestFiles()
 	}
 }
