@@ -232,13 +232,6 @@ public class GRYKotlinTranslator {
 			return ""
 		}
 
-		guard prefix != "GRYInsert",
-			prefix != "GRYAlternative",
-			prefix != "GRYIgnoreNext" else
-		{
-			return ""
-		}
-
 		var indentation = indentation
 		var result = indentation
 

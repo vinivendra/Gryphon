@@ -443,6 +443,25 @@ public class GRYDeclarationsTranspilationPass: GRYTranspilationPass {
 	}
 }
 
+public class GRYRemoveGryphonDeclarationsTranspilationPass: GRYTranspilationPass {
+	override func replaceFunctionDeclaration(
+		prefix: String, parameterNames: [String], parameterTypes: [String], returnType: String,
+		isImplicit: Bool, statements: [GRYTopLevelNode], access: String?) -> GRYTopLevelNode
+	{
+		if prefix.hasPrefix("GRYInsert") || prefix.hasPrefix("GRYAlternative") ||
+			prefix.hasPrefix("GRYIgnoreNext")
+		{
+			return .expression(expression: .literalCodeExpression(string: ""))
+		}
+		else {
+			return super.replaceFunctionDeclaration(
+				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
+				returnType: returnType, isImplicit: isImplicit, statements: statements,
+				access: access)
+		}
+	}
+}
+
 public class GRYRecordEnumsTranspilationPass: GRYTranspilationPass {
 	override func replaceEnumDeclaration(
 		access: String?, name: String, inherits: [String], elements: [String]) -> GRYTopLevelNode
@@ -455,6 +474,7 @@ public class GRYRecordEnumsTranspilationPass: GRYTranspilationPass {
 public extension GRYTranspilationPass {
 	static func runAllPasses(on sourceFile: GRYAst) -> GRYAst {
 		var result = sourceFile
+		result = GRYRemoveGryphonDeclarationsTranspilationPass().run(on: result)
 		result = GRYRemoveParenthesesTranspilationPass().run(on: result)
 		result = GRYIgnoreNextTranspilationPass().run(on: result)
 		result = GRYInsertCodeLiteralsTranspilationPass().run(on: result)
