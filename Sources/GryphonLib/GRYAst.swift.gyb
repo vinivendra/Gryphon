@@ -421,6 +421,57 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
 		}
 	}
 
+	public var type: String? {
+		switch self {
+		case let .parenthesesExpression(expression: expression):
+			return expression.type
+		case let .forceValueExpression(expression: expression):
+			let subtype = expression.type
+			if let subtype = subtype, subtype.hasSuffix("?") {
+				return String(subtype.dropLast())
+			}
+			else {
+				return expression.type
+			}
+		case let .declarationReferenceExpression(identifier: _, type: type):
+			return type
+		case .typeExpression:
+			return nil
+		case .subscriptExpression(subscriptedExpression: _, indexExpression: _):
+
+			// TODO: subscript expressions have specific types
+			return nil
+		case .arrayExpression(elements: _):
+
+			// TODO: array expressions have specific types
+			return nil
+		case let .dotExpression(leftExpression: _, rightExpression: rightExpression):
+			return rightExpression.type
+		case let .binaryOperatorExpression(
+			leftExpression: _, rightExpression: _, operatorSymbol: _, type: type):
+
+			return type
+		case let .unaryOperatorExpression(expression: _, operatorSymbol: _, type: type):
+			return type
+		case let .callExpression(function: _, parameters: _, type: type):
+			return type
+		case .literalIntExpression:
+			return "Int"
+		case .literalDoubleExpression:
+			return "Double"
+		case .literalBoolExpression:
+			return "Bool"
+		case .literalStringExpression:
+			return "String"
+		case .nilLiteralExpression:
+			return nil
+		case .interpolatedStringLiteralExpression:
+			return "String"
+		case .tupleExpression:
+			return nil
+		}
+	}
+
 	public var name: String {
 		if let name = Mirror(reflecting: self).children.first?.label {
 			return name
