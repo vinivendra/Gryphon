@@ -370,7 +370,7 @@ public class GRYRemoveParenthesesTranspilationPass: GRYTranspilationPass {
 	}
 }
 
-public class GRYCodeLiteralsTranspilationPass: GRYTranspilationPass {
+public class GRYInsertCodeLiteralsTranspilationPass: GRYTranspilationPass {
 	override func replaceCallExpression(
 		function: GRYExpression, parameters: GRYExpression, type: String) -> GRYExpression
 	{
@@ -388,6 +388,33 @@ public class GRYCodeLiteralsTranspilationPass: GRYTranspilationPass {
 	}
 }
 
+public class GRYIgnoreNextTranspilationPass: GRYTranspilationPass {
+	var shouldIgnoreNext = false
+
+	override func replaceCallExpression(
+		function: GRYExpression, parameters: GRYExpression, type: String) -> GRYExpression
+	{
+		if case let .declarationReferenceExpression(identifier: identifier, type: _) = function,
+			identifier.hasPrefix("GRYIgnoreNext")
+		{
+			shouldIgnoreNext = true
+			return .literalCodeExpression(string: "")
+		}
+
+		return .callExpression(function: function, parameters: parameters, type: type)
+	}
+
+	override func replaceTopLevelNode(_ node: GRYTopLevelNode) -> GRYTopLevelNode {
+		if shouldIgnoreNext {
+			shouldIgnoreNext = false
+			return .expression(expression: .literalCodeExpression(string: ""))
+		}
+		else {
+			return super.replaceTopLevelNode(node)
+		}
+	}
+}
+
 public class GRYRecordEnumsTranspilationPass: GRYTranspilationPass {
 	override func replaceEnumDeclaration(
 		access: String?, name: String, inherits: [String], elements: [String]) -> GRYTopLevelNode
@@ -401,7 +428,8 @@ public extension GRYTranspilationPass {
 	static func runAllPasses(on sourceFile: GRYAst) -> GRYAst {
 		var result = sourceFile
 		result = GRYRemoveParenthesesTranspilationPass().run(on: result)
-		result = GRYCodeLiteralsTranspilationPass().run(on: result)
+		result = GRYIgnoreNextTranspilationPass().run(on: result)
+		result = GRYInsertCodeLiteralsTranspilationPass().run(on: result)
 		result = GRYStandardLibraryTranspilationPass().run(on: result)
 		result = GRYRecordEnumsTranspilationPass().run(on: result)
 		return result
