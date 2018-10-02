@@ -517,9 +517,11 @@ public class GRYKotlinTranslator {
 			return translateStringLiteral(value: value)
 		case let .interpolatedStringLiteralExpression(expressions: expressions):
 			return translateInterpolatedStringLiteralExpression(expressions: expressions)
-		case let .unaryOperatorExpression(expression: expression, operatorSymbol: operatorSymbol):
+		case let .unaryOperatorExpression(
+			expression: expression, operatorSymbol: operatorSymbol, type: type):
+
 			return translatePrefixUnaryExpression(
-				expression: expression, operatorSymbol: operatorSymbol)
+				expression: expression, operatorSymbol: operatorSymbol, type: type)
 		case let .typeExpression(type: type):
 			return translateType(type)
 		case let .subscriptExpression(
@@ -584,7 +586,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translatePrefixUnaryExpression(
-		expression: GRYExpression, operatorSymbol: String) -> String
+		expression: GRYExpression, operatorSymbol: String, type: String) -> String
 	{
 		let expressionTranslation = translateExpression(expression)
 		return operatorSymbol + expressionTranslation

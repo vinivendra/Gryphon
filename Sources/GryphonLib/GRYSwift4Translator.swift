@@ -356,17 +356,18 @@ public class GRYSwift4Translator {
 	private func translate(prefixUnaryExpression: GRYSwiftAst) throws -> GRYExpression {
 		try ensure(ast: prefixUnaryExpression, isNamed: "Prefix Unary Expression")
 
-		if let declaration = prefixUnaryExpression
+		if let rawType = prefixUnaryExpression["type"],
+			let declaration = prefixUnaryExpression
 			.subtree(named: "Dot Syntax Call Expression")?
 			.subtree(named: "Declaration Reference Expression")?["decl"],
 			let expression = prefixUnaryExpression.subtree(at: 1)
 		{
+			let type = cleanUpType(rawType)
 			let expressionTranslation = try translate(expression: expression)
 			let operatorIdentifier = getIdentifierFromDeclaration(declaration)
 
 			return .unaryOperatorExpression(
-				expression: expressionTranslation,
-				operatorSymbol: operatorIdentifier)
+				expression: expressionTranslation, operatorSymbol: operatorIdentifier, type: type)
 		}
 		else {
 			throw unexpectedAstStructureError(

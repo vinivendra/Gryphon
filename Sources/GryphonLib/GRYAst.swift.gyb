@@ -331,7 +331,7 @@ expressionNodes = [
 			[['leftExpression', 'GRYExpression'], ['rightExpression', 'GRYExpression'],
 			['operatorSymbol', 'String'], ['type', 'String']]],
 		['unaryOperatorExpression',
-			[['expression', 'GRYExpression'], ['operatorSymbol', 'String']]],
+			[['expression', 'GRYExpression'], ['operatorSymbol', 'String'], ['type', 'String']]],
 		['callExpression', [['function', 'GRYExpression'], ['parameters', 'GRYExpression']]],
 		['literalIntExpression', [['value', 'Int']]],
 		['literalDoubleExpression', [['value', 'Double']]],
@@ -441,7 +441,7 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
 		case let .forceValueExpression(expression: expression):
 			return [expression]
 		case let .declarationReferenceExpression(identifier: identifier, type: type):
-			return [identifier, type]
+			return [type, identifier]
 		case let .typeExpression(type: type):
 			return [type]
 		case let .subscriptExpression(
@@ -466,13 +466,15 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
 			type: type):
 
 			return [
+				"type \(type)",
 				GRYPrintableTree(description: "left", subtrees: [leftExpression]),
 				"operator \(operatorSymbol)",
-				GRYPrintableTree(description: "right", subtrees: [rightExpression]),
-				"type \(type)", ]
-		case let .unaryOperatorExpression(expression: expression, operatorSymbol: operatorSymbol):
+				GRYPrintableTree(description: "right", subtrees: [rightExpression]), ]
+		case let .unaryOperatorExpression(
+		expression: expression, operatorSymbol: operatorSymbol, type: type):
 			return [
-				GRYPrintableTree(description: "operator \(operatorSymbol)"),
+				"type \(type)",
+				"operator \(operatorSymbol)",
 				GRYPrintableTree(description: "expression", subtrees: [expression]), ]
 		case let .callExpression(function: function, parameters: parameters):
 			return [
