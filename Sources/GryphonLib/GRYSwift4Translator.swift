@@ -836,6 +836,12 @@ public class GRYSwift4Translator {
 			return try translate(expression: containedExpression)
 		}
 
+		guard let rawType = callExpression["type"] else {
+			throw unexpectedAstStructureError(
+				"Failed to recognize type", ast: callExpression)
+		}
+		let type = cleanUpType(rawType)
+
 		if let declarationReferenceExpression = callExpression
 			.subtree(named: "Declaration Reference Expression")
 		{
@@ -865,7 +871,7 @@ public class GRYSwift4Translator {
 
 		let parameters = try translate(callExpressionParameters: callExpression)
 
-		return .callExpression(function: function, parameters: parameters)
+		return .callExpression(function: function, parameters: parameters, type: type)
 	}
 
 	private func translate(callExpressionParameters callExpression: GRYSwiftAst) throws

@@ -214,8 +214,8 @@ public class GRYTranspilationPass {
 			expression: expression, operatorSymbol: operatorSymbol, type: type):
 			return replaceUnaryOperatorExpression(
 				expression: expression, operatorSymbol: operatorSymbol, type: type)
-		case let .callExpression(function: function, parameters: parameters):
-			return replaceCallExpression(function: function, parameters: parameters)
+		case let .callExpression(function: function, parameters: parameters, type: type):
+			return replaceCallExpression(function: function, parameters: parameters, type: type)
 		case let .literalIntExpression(value: value):
 			return replaceLiteralIntExpression(value: value)
 		case let .literalDoubleExpression(value: value):
@@ -287,10 +287,12 @@ public class GRYTranspilationPass {
 			expression: replaceExpression(expression), operatorSymbol: operatorSymbol, type: type)
 	}
 
-	func replaceCallExpression(function: GRYExpression, parameters: GRYExpression) -> GRYExpression
+	func replaceCallExpression(function: GRYExpression, parameters: GRYExpression, type: String)
+		-> GRYExpression
 	{
 		return .callExpression(
-			function: replaceExpression(function), parameters: replaceExpression(parameters))
+			function: replaceExpression(function), parameters: replaceExpression(parameters),
+			type: type)
 	}
 
 	func replaceLiteralIntExpression(value: Int) -> GRYExpression {
@@ -325,19 +327,20 @@ public class GRYTranspilationPass {
 }
 
 public class GRYStandardLibraryTranspilationPass: GRYTranspilationPass {
-	override func replaceCallExpression(function: GRYExpression, parameters: GRYExpression)
-		-> GRYExpression
+	override func replaceCallExpression(
+		function: GRYExpression, parameters: GRYExpression, type: String) -> GRYExpression
 	{
 		if case let .declarationReferenceExpression(identifier: identifier, type: _) = function,
 			identifier == "print(_:separator:terminator:)"
 		{
 			return .callExpression(
 				function: .declarationReferenceExpression(identifier: "println()", type: ""),
-				parameters: replaceExpression(parameters))
+				parameters: replaceExpression(parameters), type: type)
 		}
 		else {
 			return .callExpression(
-				function: replaceExpression(function), parameters: replaceExpression(parameters))
+				function: replaceExpression(function), parameters: replaceExpression(parameters),
+				type: type)
 		}
 	}
 }

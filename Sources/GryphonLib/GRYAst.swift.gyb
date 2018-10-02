@@ -332,7 +332,8 @@ expressionNodes = [
 			['operatorSymbol', 'String'], ['type', 'String']]],
 		['unaryOperatorExpression',
 			[['expression', 'GRYExpression'], ['operatorSymbol', 'String'], ['type', 'String']]],
-		['callExpression', [['function', 'GRYExpression'], ['parameters', 'GRYExpression']]],
+		['callExpression',
+			[['function', 'GRYExpression'], ['parameters', 'GRYExpression'], ['type', 'String']]],
 		['literalIntExpression', [['value', 'Int']]],
 		['literalDoubleExpression', [['value', 'Double']]],
 		['literalBoolExpression', [['value', 'Bool']]],
@@ -476,8 +477,9 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
 				"type \(type)",
 				"operator \(operatorSymbol)",
 				GRYPrintableTree(description: "expression", subtrees: [expression]), ]
-		case let .callExpression(function: function, parameters: parameters):
+		case let .callExpression(function: function, parameters: parameters, type: type):
 			return [
+				"type \(type)",
 				GRYPrintableTree(description: "function", subtrees: [function]),
 				GRYPrintableTree(description: "parameters", subtrees: [parameters]), ]
 		case let .literalIntExpression(value: value):

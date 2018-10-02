@@ -506,8 +506,8 @@ public class GRYKotlinTranslator {
 				rightExpression: rightExpression,
 				operatorSymbol: operatorSymbol,
 				type: type)
-		case let .callExpression(function: function, parameters: parameters):
-			return translateCallExpression(function: function, parameters: parameters)
+		case let .callExpression(function: function, parameters: parameters, type: type):
+			return translateCallExpression(function: function, parameters: parameters, type: type)
 		case let .declarationReferenceExpression(identifier: identifier, type: type):
 			return translateDeclarationReferenceExpression(identifier: identifier, type: type)
 		case let .dotExpression(leftExpression: leftExpression, rightExpression: rightExpression):
@@ -592,8 +592,8 @@ public class GRYKotlinTranslator {
 		return operatorSymbol + expressionTranslation
 	}
 
-	private func translateCallExpression(function: GRYExpression, parameters: GRYExpression)
-		-> String
+	private func translateCallExpression(
+		function: GRYExpression, parameters: GRYExpression, type: String) -> String
 	{
 		guard case let .tupleExpression(pairs: pairs) = parameters else {
 			preconditionFailure()
