@@ -380,13 +380,15 @@ public class GRYSwift4Translator {
 
 		let operatorIdentifier: String
 
-		if let declaration = binaryExpression
+		if let rawType = binaryExpression["type"],
+			let declaration = binaryExpression
 			.subtree(named: "Dot Syntax Call Expression")?
 			.subtree(named: "Declaration Reference Expression")?["decl"],
 			let tupleExpression = binaryExpression.subtree(named: "Tuple Expression"),
 			let leftHandExpression = tupleExpression.subtree(at: 0),
 			let rightHandExpression = tupleExpression.subtree(at: 1)
 		{
+			let type = cleanUpType(rawType)
 			operatorIdentifier = getIdentifierFromDeclaration(declaration)
 			let leftHandTranslation = try translate(expression: leftHandExpression)
 			let rightHandTranslation = try translate(expression: rightHandExpression)
@@ -394,7 +396,8 @@ public class GRYSwift4Translator {
 			return .binaryOperatorExpression(
 				leftExpression: leftHandTranslation,
 				rightExpression: rightHandTranslation,
-				operatorSymbol: operatorIdentifier)
+				operatorSymbol: operatorIdentifier,
+				type: type)
 		}
 		else {
 			throw unexpectedAstStructureError(

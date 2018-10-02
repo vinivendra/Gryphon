@@ -498,12 +498,14 @@ public class GRYKotlinTranslator {
 		case let .binaryOperatorExpression(
 			leftExpression: leftExpression,
 			rightExpression: rightExpression,
-			operatorSymbol: operatorSymbol):
+			operatorSymbol: operatorSymbol,
+			type: type):
 
 			return translateBinaryOperatorExpression(
 				leftExpression: leftExpression,
 				rightExpression: rightExpression,
-				operatorSymbol: operatorSymbol)
+				operatorSymbol: operatorSymbol,
+				type: type)
 		case let .callExpression(function: function, parameters: parameters):
 			return translateCallExpression(function: function, parameters: parameters)
 		case let .declarationReferenceExpression(identifier: identifier, type: type):
@@ -573,9 +575,8 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateBinaryOperatorExpression(
-		leftExpression: GRYExpression,
-		rightExpression: GRYExpression,
-		operatorSymbol: String) -> String
+		leftExpression: GRYExpression, rightExpression: GRYExpression, operatorSymbol: String,
+		type: String) -> String
 	{
 		let leftTranslation = translateExpression(leftExpression)
 		let rightTranslation = translateExpression(rightExpression)

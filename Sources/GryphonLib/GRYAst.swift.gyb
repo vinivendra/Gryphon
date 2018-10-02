@@ -329,7 +329,7 @@ expressionNodes = [
 			[['leftExpression', 'GRYExpression'], ['rightExpression', 'GRYExpression']]],
 		['binaryOperatorExpression',
 			[['leftExpression', 'GRYExpression'], ['rightExpression', 'GRYExpression'],
-			['operatorSymbol', 'String']]],
+			['operatorSymbol', 'String'], ['type', 'String']]],
 		['unaryOperatorExpression',
 			[['expression', 'GRYExpression'], ['operatorSymbol', 'String']]],
 		['callExpression', [['function', 'GRYExpression'], ['parameters', 'GRYExpression']]],
@@ -462,12 +462,14 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
 		case let .binaryOperatorExpression(
 			leftExpression: leftExpression,
 			rightExpression: rightExpression,
-			operatorSymbol: operatorSymbol):
+			operatorSymbol: operatorSymbol,
+			type: type):
 
 			return [
 				GRYPrintableTree(description: "left", subtrees: [leftExpression]),
-				GRYPrintableTree(description: "operator \(operatorSymbol)"),
-				GRYPrintableTree(description: "right", subtrees: [rightExpression]), ]
+				"operator \(operatorSymbol)",
+				GRYPrintableTree(description: "right", subtrees: [rightExpression]),
+				"type \(type)", ]
 		case let .unaryOperatorExpression(expression: expression, operatorSymbol: operatorSymbol):
 			return [
 				GRYPrintableTree(description: "operator \(operatorSymbol)"),

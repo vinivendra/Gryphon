@@ -205,11 +205,11 @@ public class GRYTranspilationPass {
 				leftExpression: leftExpression, rightExpression: rightExpression)
 		case let .binaryOperatorExpression(
 			leftExpression: leftExpression, rightExpression: rightExpression,
-			operatorSymbol: operatorSymbol):
+			operatorSymbol: operatorSymbol, type: type):
 
 			return replaceBinaryOperatorExpression(
 				leftExpression: leftExpression, rightExpression: rightExpression,
-				operatorSymbol: operatorSymbol)
+				operatorSymbol: operatorSymbol, type: type)
 		case let .unaryOperatorExpression(expression: expression, operatorSymbol: operatorSymbol):
 			return replaceUnaryOperatorExpression(
 				expression: expression, operatorSymbol: operatorSymbol)
@@ -269,13 +269,14 @@ public class GRYTranspilationPass {
 	}
 
 	func replaceBinaryOperatorExpression(
-		leftExpression: GRYExpression, rightExpression: GRYExpression, operatorSymbol: String)
-		-> GRYExpression
+		leftExpression: GRYExpression, rightExpression: GRYExpression, operatorSymbol: String,
+		type: String) -> GRYExpression
 	{
 		return .binaryOperatorExpression(
 			leftExpression: replaceExpression(leftExpression),
 			rightExpression: replaceExpression(rightExpression),
-			operatorSymbol: operatorSymbol)
+			operatorSymbol: operatorSymbol,
+			type: type)
 	}
 
 	func replaceUnaryOperatorExpression(expression: GRYExpression, operatorSymbol: String)
