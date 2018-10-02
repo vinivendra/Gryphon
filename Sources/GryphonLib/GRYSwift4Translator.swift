@@ -335,11 +335,14 @@ public class GRYSwift4Translator {
 		try ensure(ast: memberReferenceExpression, isNamed: "Member Reference Expression")
 
 		if let declaration = memberReferenceExpression["decl"],
-			let memberOwner = memberReferenceExpression.subtree(at: 0)
+			let memberOwner = memberReferenceExpression.subtree(at: 0),
+			let rawType = memberReferenceExpression["type"]
 		{
+			let type = cleanUpType(rawType)
 			let leftHand = try translate(expression: memberOwner)
 			let member = getIdentifierFromDeclaration(declaration)
-			let rightHand = GRYExpression.declarationReferenceExpression(identifier: member)
+			let rightHand = GRYExpression.declarationReferenceExpression(
+				identifier: member, type: type)
 			return .dotExpression(leftExpression: leftHand,
 								  rightExpression: rightHand)
 		}
@@ -423,7 +426,7 @@ public class GRYSwift4Translator {
 
 			// Swift 4.2
 			if case .typeExpression(type: _) = leftHand,
-				case let .declarationReferenceExpression(identifier: identifier) = rightHand,
+			case let .declarationReferenceExpression(identifier: identifier, type: _) = rightHand,
 				identifier == "none"
 			{
 				return .nilLiteralExpression
@@ -453,15 +456,17 @@ public class GRYSwift4Translator {
 	private func translate(forEachStatement: GRYSwiftAst) throws -> GRYTopLevelNode {
 		try ensure(ast: forEachStatement, isNamed: "For Each Statement")
 
-		guard let variableName = forEachStatement
-			.subtree(named: "Pattern Named")?
-			.standaloneAttributes.first,
+		guard let variableSubtree = forEachStatement.subtree(named: "Pattern Named"),
+			let variableName = variableSubtree.standaloneAttributes.first,
+			let rawType = variableSubtree["type"],
 			let collectionExpression = forEachStatement.subtree(at: 2) else
 		{
 			throw unexpectedAstStructureError(
 				"Unable to detect variable or collection",
 				ast: forEachStatement)
 		}
+
+		let variableType = cleanUpType(rawType)
 
 		guard let braceStatement = forEachStatement.subtrees.last,
 			braceStatement.name == "Brace Statement" else
@@ -471,7 +476,8 @@ public class GRYSwift4Translator {
 				ast: forEachStatement)
 		}
 
-		let variable = GRYExpression.declarationReferenceExpression(identifier: variableName)
+		let variable = GRYExpression.declarationReferenceExpression(
+			identifier: variableName, type: variableType)
 		let collectionTranslation = try translate(expression: collectionExpression)
 		let statements = try translate(subtrees: braceStatement.subtrees)
 
@@ -592,11 +598,13 @@ public class GRYSwift4Translator {
 						ast: ifStatement)
 				}
 
-				guard let type = optionalSomeElement["type"] else {
+				guard let rawType = optionalSomeElement["type"] else {
 					throw unexpectedAstStructureError(
 						"Unable to detect type in let declaration",
 						ast: ifStatement)
 				}
+
+				let type = cleanUpType(rawType)
 
 				guard let name = patternNamed.standaloneAttributes.first,
 					let lastCondition = condition.subtrees.last else
@@ -846,10 +854,6 @@ public class GRYSwift4Translator {
 		{
 			function = try translate(typeExpression: typeExpression)
 		}
-		else if let declaration = callExpression["decl"] {
-			function = .declarationReferenceExpression(
-				identifier: getIdentifierFromDeclaration(declaration))
-		}
 		else {
 			throw unexpectedAstStructureError(
 				"Failed to recognize function name", ast: callExpression)
@@ -1023,15 +1027,21 @@ public class GRYSwift4Translator {
 	{
 		try ensure(ast: declarationReferenceExpression, isNamed: "Declaration Reference Expression")
 
+		guard let rawType = declarationReferenceExpression["type"] else {
+			throw unexpectedAstStructureError(
+				"Failed to recognize type", ast: declarationReferenceExpression)
+		}
+		let type = cleanUpType(rawType)
+
 		if let codeDeclaration = declarationReferenceExpression.standaloneAttributes.first,
 			codeDeclaration.hasPrefix("code.")
 		{
 			let identifier = getIdentifierFromDeclaration(codeDeclaration)
-			return .declarationReferenceExpression(identifier: identifier)
+			return .declarationReferenceExpression(identifier: identifier, type: type)
 		}
 		else if let declaration = declarationReferenceExpression["decl"] {
 			let identifier = getIdentifierFromDeclaration(declaration)
-			return .declarationReferenceExpression(identifier: identifier)
+			return .declarationReferenceExpression(identifier: identifier, type: type)
 		}
 		else {
 			throw unexpectedAstStructureError(
@@ -1100,11 +1110,13 @@ public class GRYSwift4Translator {
 		}
 
 		guard let identifier = binding.standaloneAttributes.first,
-			let type = binding.keyValueAttributes["type"] else
+			let rawType = binding.keyValueAttributes["type"] else
 		{
 			throw unexpectedAstStructureError(
 				"Type not recognized", ast: patternBindingDeclaration)
 		}
+
+		let type = cleanUpType(rawType)
 
 		danglingPatternBinding =
 			(identifier: identifier,
@@ -1139,6 +1151,15 @@ public class GRYSwift4Translator {
 		}
 		else {
 			return String(identifier)
+		}
+	}
+
+	private func cleanUpType(_ type: String) -> String {
+		if type.hasPrefix("@lvalue ") {
+			return String(type.suffix(from: "@lvalue ".endIndex))
+		}
+		else {
+			return type
 		}
 	}
 

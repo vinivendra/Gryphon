@@ -189,8 +189,8 @@ public class GRYTranspilationPass {
 			return replaceParenthesesExpression(expression: expression)
 		case let .forceValueExpression(expression: expression):
 			return replaceForcevalueExpression(expression: expression)
-		case let .declarationReferenceExpression(identifier: identifier):
-			return replaceDeclarationreferenceExpression(identifier: identifier)
+		case let .declarationReferenceExpression(identifier: identifier, type: type):
+			return replaceDeclarationreferenceExpression(identifier: identifier, type: type)
 		case let .typeExpression(type: type):
 			return replaceTypeExpression(type: type)
 		case let .subscriptExpression(
@@ -240,8 +240,8 @@ public class GRYTranspilationPass {
 		return .forceValueExpression(expression: replaceExpression(expression))
 	}
 
-	func replaceDeclarationreferenceExpression(identifier: String) -> GRYExpression {
-		return .declarationReferenceExpression(identifier: identifier)
+	func replaceDeclarationreferenceExpression(identifier: String, type: String) -> GRYExpression {
+		return .declarationReferenceExpression(identifier: identifier, type: type)
 	}
 
 	func replaceTypeExpression(type: String) -> GRYExpression {
@@ -326,11 +326,11 @@ public class GRYStandardLibraryTranspilationPass: GRYTranspilationPass {
 	override func replaceCallExpression(function: GRYExpression, parameters: GRYExpression)
 		-> GRYExpression
 	{
-		if case let .declarationReferenceExpression(identifier: identifier) = function,
+		if case let .declarationReferenceExpression(identifier: identifier, type: _) = function,
 			identifier == "print(_:separator:terminator:)"
 		{
 			return .callExpression(
-				function: .declarationReferenceExpression(identifier: "println()"),
+				function: .declarationReferenceExpression(identifier: "println()", type: ""),
 				parameters: replaceExpression(parameters))
 		}
 		else {
