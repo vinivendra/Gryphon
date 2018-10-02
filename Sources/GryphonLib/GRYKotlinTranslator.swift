@@ -44,15 +44,6 @@ public class GRYKotlinTranslator {
 		enums.append(enumName)
 	}
 
-	/**
-	This variable is used to allow calls to the `GRYIgnoreNext` function to ignore
-	the next swift statement. When a call to that function is detected, this variable is set
-	to true. Then, when the next statement comes along, the translator will see that this
-	variable is set to true, ignore that statement, and then reset it to false to continue
-	translation.
-	*/
-	private var shouldIgnoreNext = false
-
 	// MARK: - Interface
 
 	public func translateAST(_ sourceFile: GRYAst) -> String {
@@ -155,18 +146,7 @@ public class GRYKotlinTranslator {
 	private func translate(subtrees: [GRYTopLevelNode], withIndentation indentation: String)
 		-> String
 	{
-		var result = ""
-
-		for subtree in subtrees {
-			if shouldIgnoreNext {
-				shouldIgnoreNext = false
-				continue
-			}
-
-			result += translate(subtree: subtree, withIndentation: indentation)
-		}
-
-		return result
+		return subtrees.map { translate(subtree: $0, withIndentation: indentation) }.reduce("", +)
 	}
 
 	private func translateEnumDeclaration(
@@ -257,11 +237,6 @@ public class GRYKotlinTranslator {
 			prefix != "GRYIgnoreNext" else
 		{
 			return ""
-		}
-
-		// If it's GRYDeclarations, we want to add its contents as top-level statements
-		guard prefix != "GRYDeclarations" else {
-			return translate(subtrees: statements, withIndentation: indentation)
 		}
 
 		var indentation = indentation
@@ -605,17 +580,6 @@ public class GRYKotlinTranslator {
 		}
 
 		let functionTranslation = translateExpression(function)
-
-		if functionTranslation == "GRYInsert" || functionTranslation == "GRYAlternative" {
-			return translateAsKotlinLiteral(
-				functionTranslation: functionTranslation,
-				parameters: parameters)
-		}
-		else if functionTranslation == "GRYIgnoreNext" {
-			shouldIgnoreNext = true
-			return ""
-		}
-
 		let parametersTranslation = translateTupleExpression(pairs: pairs)
 
 		return functionTranslation + parametersTranslation
