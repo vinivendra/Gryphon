@@ -460,6 +460,40 @@ public class GRYRemoveGryphonDeclarationsTranspilationPass: GRYTranspilationPass
 				access: access)
 		}
 	}
+
+	override func replaceProtocolDeclaration(name: String) -> GRYTopLevelNode {
+		if name == "GRYIgnore" {
+			return .expression(expression: .literalCodeExpression(string: ""))
+		}
+		else {
+			return super.replaceProtocolDeclaration(name: name)
+		}
+	}
+}
+
+public class GRYRemoveIgnoredDeclarationsTranspilationPass: GRYTranspilationPass {
+	override func replaceClassDeclaration(
+		name: String, inherits: [String], members: [GRYTopLevelNode]) -> GRYTopLevelNode
+	{
+		if inherits.contains("GRYIgnore") {
+			return .expression(expression: .literalCodeExpression(string: ""))
+		}
+		else {
+			return super.replaceClassDeclaration(name: name, inherits: inherits, members: members)
+		}
+	}
+
+	override func replaceEnumDeclaration(
+		access: String?, name: String, inherits: [String], elements: [String]) -> GRYTopLevelNode
+	{
+		if inherits.contains("GRYIgnore") {
+			return .expression(expression: .literalCodeExpression(string: ""))
+		}
+		else {
+			return super.replaceEnumDeclaration(
+				access: access, name: name, inherits: inherits, elements: elements)
+		}
+	}
 }
 
 public class GRYRecordEnumsTranspilationPass: GRYTranspilationPass {
@@ -475,6 +509,7 @@ public extension GRYTranspilationPass {
 	static func runAllPasses(on sourceFile: GRYAst) -> GRYAst {
 		var result = sourceFile
 		result = GRYRemoveGryphonDeclarationsTranspilationPass().run(on: result)
+		result = GRYRemoveIgnoredDeclarationsTranspilationPass().run(on: result)
 		result = GRYRemoveParenthesesTranspilationPass().run(on: result)
 		result = GRYIgnoreNextTranspilationPass().run(on: result)
 		result = GRYInsertCodeLiteralsTranspilationPass().run(on: result)

@@ -153,10 +153,6 @@ public class GRYKotlinTranslator {
 		access: String?, name: String, inherits: [String], elements: [String],
 		withIndentation indentation: String) -> String
 	{
-		guard !inherits.contains("GRYIgnore") else {
-			return ""
-		}
-
 		var result: String
 
 		if let access = access {
@@ -190,7 +186,6 @@ public class GRYKotlinTranslator {
 	private func translateProtocolDeclaration(name: String, withIndentation indentation: String)
 		-> String
 	{
-		precondition(name == "GRYIgnore")
 		return ""
 	}
 
@@ -198,11 +193,6 @@ public class GRYKotlinTranslator {
 		name: String, inherits: [String], members: [GRYTopLevelNode],
 		withIndentation indentation: String) -> String
 	{
-
-		guard !inherits.contains("GRYIgnore") else {
-			return ""
-		}
-
 		var result = "\(indentation)class \(name)"
 
 		if !inherits.isEmpty {
