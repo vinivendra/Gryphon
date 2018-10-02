@@ -415,6 +415,34 @@ public class GRYIgnoreNextTranspilationPass: GRYTranspilationPass {
 	}
 }
 
+public class GRYDeclarationsTranspilationPass: GRYTranspilationPass {
+	override func run(on sourceFile: GRYAst) -> GRYAst {
+		var replacedStatements = [GRYTopLevelNode]()
+		for statement in sourceFile.statements {
+			let replacedStatement = replaceTopLevelNode(statement)
+			replacedStatements.append(replacedStatement)
+		}
+
+		var replacedDeclarations = [GRYTopLevelNode]()
+		for declaration in sourceFile.declarations {
+
+			if case let .functionDeclaration(
+				prefix: prefix, parameterNames: _, parameterTypes: _, returnType: _, isImplicit: _,
+				statements: statements, access: _) = declaration,
+				prefix.hasPrefix("GRYDeclarations")
+			{
+				replacedDeclarations += statements
+			}
+			else {
+				let replacedDeclaration = replaceTopLevelNode(declaration)
+				replacedDeclarations.append(replacedDeclaration)
+			}
+		}
+
+		return GRYAst(declarations: replacedDeclarations, statements: replacedStatements)
+	}
+}
+
 public class GRYRecordEnumsTranspilationPass: GRYTranspilationPass {
 	override func replaceEnumDeclaration(
 		access: String?, name: String, inherits: [String], elements: [String]) -> GRYTopLevelNode
@@ -431,6 +459,7 @@ public extension GRYTranspilationPass {
 		result = GRYIgnoreNextTranspilationPass().run(on: result)
 		result = GRYInsertCodeLiteralsTranspilationPass().run(on: result)
 		result = GRYStandardLibraryTranspilationPass().run(on: result)
+		result = GRYDeclarationsTranspilationPass().run(on: result)
 		result = GRYRecordEnumsTranspilationPass().run(on: result)
 		return result
 	}
