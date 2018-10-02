@@ -323,8 +323,9 @@ expressionNodes = [
 		['declarationReferenceExpression', [['identifier', 'String'], ['type', 'String']]],
 		['typeExpression', [['type', 'String']]],
 		['subscriptExpression',
-			[['subscriptedExpression', 'GRYExpression'], ['indexExpression', 'GRYExpression']]],
-		['arrayExpression', [['elements', '[GRYExpression]']]],
+			[['subscriptedExpression', 'GRYExpression'], ['indexExpression', 'GRYExpression'],
+			['type', 'String']]],
+		['arrayExpression', [['elements', '[GRYExpression]'], ['type', 'String']]],
 		['dotExpression',
 			[['leftExpression', 'GRYExpression'], ['rightExpression', 'GRYExpression']]],
 		['binaryOperatorExpression',
@@ -437,14 +438,10 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
 			return type
 		case .typeExpression:
 			return nil
-		case .subscriptExpression(subscriptedExpression: _, indexExpression: _):
-
-			// TODO: subscript expressions have specific types
-			return nil
-		case .arrayExpression(elements: _):
-
-			// TODO: array expressions have specific types
-			return nil
+		case let .subscriptExpression(subscriptedExpression: _, indexExpression: _, type: type):
+			return type
+		case let .arrayExpression(elements: _, type: type):
+			return type
 		case let .dotExpression(leftExpression: _, rightExpression: rightExpression):
 			return rightExpression.type
 		case let .binaryOperatorExpression(
@@ -497,15 +494,16 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
 		case let .typeExpression(type: type):
 			return [type]
 		case let .subscriptExpression(
-			subscriptedExpression: subscriptedExpression,
-			indexExpression: indexExpression):
+			subscriptedExpression: subscriptedExpression, indexExpression: indexExpression,
+			type: type):
 
 			return [
+				"type \(type)",
 				GRYPrintableTree(
 					description: "subscriptedExpression", subtrees: [subscriptedExpression]),
 				GRYPrintableTree(description: "indexExpression", subtrees: [indexExpression]), ]
-		case let .arrayExpression(elements: elements):
-			return [elements]
+		case let .arrayExpression(elements: elements, type: type):
+			return ["type \(type)", elements]
 		case let .dotExpression(leftExpression: leftExpression, rightExpression: rightExpression):
 			return [
 				GRYPrintableTree(description: "left", subtrees: [leftExpression]),

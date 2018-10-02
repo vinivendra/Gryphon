@@ -493,8 +493,8 @@ public class GRYKotlinTranslator {
 
 	private func translateExpression(_ expression: GRYExpression) -> String {
 		switch expression {
-		case let .arrayExpression(elements: elements):
-			return translateArrayExpression(elements: elements)
+		case let .arrayExpression(elements: elements, type: type):
+			return translateArrayExpression(elements: elements, type: type)
 		case let .binaryOperatorExpression(
 			leftExpression: leftExpression,
 			rightExpression: rightExpression,
@@ -525,10 +525,12 @@ public class GRYKotlinTranslator {
 		case let .typeExpression(type: type):
 			return translateType(type)
 		case let .subscriptExpression(
-			subscriptedExpression: subscriptedExpression, indexExpression: indexExpression):
+			subscriptedExpression: subscriptedExpression, indexExpression: indexExpression,
+			type: type):
 
 			return translateSubscriptExpression(
-				subscriptedExpression: subscriptedExpression, indexExpression: indexExpression)
+				subscriptedExpression: subscriptedExpression, indexExpression: indexExpression,
+				type: type)
 		case let .parenthesesExpression(expression: expression):
 			return "(" + translateExpression(expression) + ")"
 		case let .forceValueExpression(expression: expression):
@@ -547,13 +549,14 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateSubscriptExpression(
-		subscriptedExpression: GRYExpression, indexExpression: GRYExpression) -> String
+		subscriptedExpression: GRYExpression, indexExpression: GRYExpression, type: String)
+		-> String
 	{
 		return translateExpression(subscriptedExpression) +
 			"[\(translateExpression(indexExpression))]"
 	}
 
-	private func translateArrayExpression(elements: [GRYExpression]) -> String {
+	private func translateArrayExpression(elements: [GRYExpression], type: String) -> String {
 		let expressionsString = elements.map {
 			translateExpression($0)
 		}.joined(separator: ", ")

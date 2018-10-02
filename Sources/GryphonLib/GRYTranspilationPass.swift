@@ -194,12 +194,14 @@ public class GRYTranspilationPass {
 		case let .typeExpression(type: type):
 			return replaceTypeExpression(type: type)
 		case let .subscriptExpression(
-			subscriptedExpression: subscriptedExpression, indexExpression: indexExpression):
+			subscriptedExpression: subscriptedExpression, indexExpression: indexExpression,
+			type: type):
 
 			return replaceSubscriptExpression(
-				subscriptedExpression: subscriptedExpression, indexExpression: indexExpression)
-		case let .arrayExpression(elements: elements):
-			return replaceArrayExpression(elements: elements)
+				subscriptedExpression: subscriptedExpression, indexExpression: indexExpression,
+				type: type)
+		case let .arrayExpression(elements: elements, type: type):
+			return replaceArrayExpression(elements: elements, type: type)
 		case let .dotExpression(leftExpression: leftExpression, rightExpression: rightExpression):
 			return replaceDotExpression(
 				leftExpression: leftExpression, rightExpression: rightExpression)
@@ -250,15 +252,16 @@ public class GRYTranspilationPass {
 	}
 
 	func replaceSubscriptExpression(
-		subscriptedExpression: GRYExpression, indexExpression: GRYExpression) -> GRYExpression
+		subscriptedExpression: GRYExpression, indexExpression: GRYExpression, type: String)
+		-> GRYExpression
 	{
 		return .subscriptExpression(
 			subscriptedExpression: replaceExpression(subscriptedExpression),
-			indexExpression: replaceExpression(indexExpression))
+			indexExpression: replaceExpression(indexExpression), type: type)
 	}
 
-	func replaceArrayExpression(elements: [GRYExpression]) -> GRYExpression {
-		return .arrayExpression(elements: elements.map(replaceExpression))
+	func replaceArrayExpression(elements: [GRYExpression], type: String) -> GRYExpression {
+		return .arrayExpression(elements: elements.map(replaceExpression), type: type)
 	}
 
 	func replaceDotExpression(leftExpression: GRYExpression, rightExpression: GRYExpression)

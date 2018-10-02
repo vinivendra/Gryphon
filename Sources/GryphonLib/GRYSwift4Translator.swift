@@ -1062,18 +1062,20 @@ public class GRYSwift4Translator {
 	private func translate(subscriptExpression: GRYSwiftAst) throws -> GRYExpression {
 		try ensure(ast: subscriptExpression, isNamed: "Subscript Expression")
 
-		if let parenthesesExpression = subscriptExpression.subtree(
+		if let rawType = subscriptExpression["type"],
+			let parenthesesExpression = subscriptExpression.subtree(
 			at: 1,
 			named: "Parentheses Expression"),
 			let subscriptContents = parenthesesExpression.subtree(at: 0),
 			let subscriptedExpression = subscriptExpression.subtree(at: 0)
 		{
+			let type = cleanUpType(rawType)
 			let subscriptContentsTranslation = try translate(expression: subscriptContents)
 			let subscriptedExpressionTranslation = try translate(expression: subscriptedExpression)
 
 			return .subscriptExpression(
 				subscriptedExpression: subscriptedExpressionTranslation,
-				indexExpression: subscriptContentsTranslation)
+				indexExpression: subscriptContentsTranslation, type: type)
 		}
 		else {
 			throw unexpectedAstStructureError(
@@ -1086,7 +1088,13 @@ public class GRYSwift4Translator {
 
 		let expressionsArray = try arrayExpression.subtrees.map(translate(expression:))
 
-		return .arrayExpression(elements: expressionsArray)
+		guard let rawType = arrayExpression["type"] else {
+			throw unexpectedAstStructureError(
+				"Failed to get type", ast: arrayExpression)
+		}
+		let type = cleanUpType(rawType)
+
+		return .arrayExpression(elements: expressionsArray, type: type)
 	}
 
 	// MARK: - Supporting methods
