@@ -451,6 +451,8 @@ public class GRYKotlinTranslator {
 
 	private func translateExpression(_ expression: GRYExpression) -> String {
 		switch expression {
+		case let .templateExpression(pattern: pattern, matches: matches):
+			return translateTemplateExpression(pattern: pattern, matches: matches)
 		case let .literalCodeExpression(string: string):
 			return translateLiteralCodeExpression(string: string)
 		case let .arrayExpression(elements: elements, type: type):
@@ -570,6 +572,18 @@ public class GRYKotlinTranslator {
 
 	private func translateLiteralCodeExpression(string: String) -> String {
 		return removeBackslashEscapes(string)
+	}
+
+	private func translateTemplateExpression(pattern: String, matches: [String: GRYExpression])
+		-> String
+	{
+		var result = pattern
+		for (string, expression) in matches {
+			while let range = result.range(of: string) {
+				result.replaceSubrange(range, with: translateExpression(expression))
+			}
+		}
+		return result
 	}
 
 	private func translateAsKotlinLiteral(

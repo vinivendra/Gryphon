@@ -318,32 +318,33 @@ public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 %{
 expressionNodes = [
-		['literalCodeExpression', [['string', 'String']]],
-		['parenthesesExpression', [['expression', 'GRYExpression']]],
-		['forceValueExpression', [['expression', 'GRYExpression']]],
-		['declarationReferenceExpression', [['identifier', 'String'], ['type', 'String']]],
-		['typeExpression', [['type', 'String']]],
-		['subscriptExpression',
-			[['subscriptedExpression', 'GRYExpression'], ['indexExpression', 'GRYExpression'],
-			['type', 'String']]],
-		['arrayExpression', [['elements', '[GRYExpression]'], ['type', 'String']]],
-		['dotExpression',
-			[['leftExpression', 'GRYExpression'], ['rightExpression', 'GRYExpression']]],
-		['binaryOperatorExpression',
-			[['leftExpression', 'GRYExpression'], ['rightExpression', 'GRYExpression'],
-			['operatorSymbol', 'String'], ['type', 'String']]],
-		['unaryOperatorExpression',
-			[['expression', 'GRYExpression'], ['operatorSymbol', 'String'], ['type', 'String']]],
-		['callExpression',
-			[['function', 'GRYExpression'], ['parameters', 'GRYExpression'], ['type', 'String']]],
-		['literalIntExpression', [['value', 'Int']]],
-		['literalDoubleExpression', [['value', 'Double']]],
-		['literalBoolExpression', [['value', 'Bool']]],
-		['literalStringExpression', [['value', 'String']]],
-		['nilLiteralExpression'],
-		['interpolatedStringLiteralExpression', [['expressions', '[GRYExpression]']]],
-		['tupleExpression', [['pairs', '[TuplePair]']]]
-	]
+	['literalCodeExpression', [['string', 'String']]],
+	['templateExpression', [['pattern', 'String'], ['matches', '[String: GRYExpression]']]],
+	['parenthesesExpression', [['expression', 'GRYExpression']]],
+	['forceValueExpression', [['expression', 'GRYExpression']]],
+	['declarationReferenceExpression', [['identifier', 'String'], ['type', 'String']]],
+	['typeExpression', [['type', 'String']]],
+	['subscriptExpression',
+		[['subscriptedExpression', 'GRYExpression'], ['indexExpression', 'GRYExpression'],
+		['type', 'String']]],
+	['arrayExpression', [['elements', '[GRYExpression]'], ['type', 'String']]],
+	['dotExpression',
+		[['leftExpression', 'GRYExpression'], ['rightExpression', 'GRYExpression']]],
+	['binaryOperatorExpression',
+		[['leftExpression', 'GRYExpression'], ['rightExpression', 'GRYExpression'],
+		['operatorSymbol', 'String'], ['type', 'String']]],
+	['unaryOperatorExpression',
+		[['expression', 'GRYExpression'], ['operatorSymbol', 'String'], ['type', 'String']]],
+	['callExpression',
+		[['function', 'GRYExpression'], ['parameters', 'GRYExpression'], ['type', 'String']]],
+	['literalIntExpression', [['value', 'Int']]],
+	['literalDoubleExpression', [['value', 'Double']]],
+	['literalBoolExpression', [['value', 'Bool']]],
+	['literalStringExpression', [['value', 'String']]],
+	['nilLiteralExpression'],
+	['interpolatedStringLiteralExpression', [['expressions', '[GRYExpression]']]],
+	['tupleExpression', [['pairs', '[TuplePair]']]]
+]
 }%
 
 public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
@@ -425,6 +426,8 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
 
 	public var type: String? {
 		switch self {
+		case .templateExpression(pattern: _, matches: _):
+			return nil
 		case .literalCodeExpression(string: _):
 			return nil
 		case let .parenthesesExpression(expression: expression):
@@ -488,6 +491,10 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
 
 	public var printableSubtrees: [GRYPrintableAsTree?] {
 		switch self {
+		case let .templateExpression(pattern: pattern, matches: matches):
+			return [
+				"pattern \"\(pattern)\"",
+				GRYPrintableTree(description: "matches", subtrees: [matches]), ]
 		case let .literalCodeExpression(string: string):
 			return [string]
 		case let .parenthesesExpression(expression: expression):

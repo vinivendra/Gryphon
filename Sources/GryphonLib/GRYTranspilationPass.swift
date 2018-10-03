@@ -185,6 +185,8 @@ public class GRYTranspilationPass {
 		defer { parents.removeLast() }
 
 		switch expression {
+		case let .templateExpression(pattern: pattern, matches: matches):
+			return replaceTemplateExpression(pattern: pattern, matches: matches)
 		case let .literalCodeExpression(string: string):
 			return replaceLiteralCodeExpression(string: string)
 		case let .parenthesesExpression(expression: expression):
@@ -235,6 +237,12 @@ public class GRYTranspilationPass {
 		case let .tupleExpression(pairs: pairs):
 			return replaceTupleExpression(pairs: pairs)
 		}
+	}
+
+	func replaceTemplateExpression(pattern: String, matches: [String: GRYExpression])
+		-> GRYExpression
+	{
+		return .templateExpression(pattern: pattern, matches: matches.mapValues(replaceExpression))
 	}
 
 	func replaceLiteralCodeExpression(string: String) -> GRYExpression {
@@ -508,13 +516,13 @@ public class GRYRecordEnumsTranspilationPass: GRYTranspilationPass {
 public extension GRYTranspilationPass {
 	static func runAllPasses(on sourceFile: GRYAst) -> GRYAst {
 		var result = sourceFile
+		result = GRYLibraryTranspilationPass().run(on: result)
 		result = GRYRemoveGryphonDeclarationsTranspilationPass().run(on: result)
 		result = GRYRemoveIgnoredDeclarationsTranspilationPass().run(on: result)
 		result = GRYRemoveParenthesesTranspilationPass().run(on: result)
 		result = GRYIgnoreNextTranspilationPass().run(on: result)
 		result = GRYInsertCodeLiteralsTranspilationPass().run(on: result)
 		result = GRYStandardLibraryTranspilationPass().run(on: result)
-		result = GRYLibraryTranspilationPass().run(on: result)
 		result = GRYDeclarationsTranspilationPass().run(on: result)
 		result = GRYRecordEnumsTranspilationPass().run(on: result)
 		return result

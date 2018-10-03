@@ -1,8 +1,6 @@
 
 let _string = ""
 
-func GRYTemplates() { }
-
 //
 _string.isEmpty
 "_string.isEmpty()"
