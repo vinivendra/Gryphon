@@ -257,7 +257,7 @@ public class GRYSwift4Translator {
 
 		// Check for inheritance
 		let inheritanceArray: [String]
-		if let inheritanceList = classDeclaration.keyValueAttributes["inherits"] {
+		if let inheritanceList = classDeclaration["inherits"] {
 			inheritanceArray = inheritanceList.split(withStringSeparator: ", ")
 		}
 		else {
@@ -291,12 +291,12 @@ public class GRYSwift4Translator {
 	private func translate(enumDeclaration: GRYSwiftAst) throws -> GRYTopLevelNode {
 		try ensure(ast: enumDeclaration, isNamed: "Enum Declaration")
 
-		let access = enumDeclaration.keyValueAttributes["access"]
+		let access = enumDeclaration["access"]
 
 		let name = enumDeclaration.standaloneAttributes.first!
 
 		let inheritanceArray: [String]
-		if let inheritanceList = enumDeclaration.keyValueAttributes["inherits"] {
+		if let inheritanceList = enumDeclaration["inherits"] {
 			inheritanceArray = inheritanceList.split(withStringSeparator: ", ")
 		}
 		else {
@@ -341,8 +341,10 @@ public class GRYSwift4Translator {
 			let type = cleanUpType(rawType)
 			let leftHand = try translate(expression: memberOwner)
 			let (member, isStandardLibrary) = getIdentifierFromDeclaration(declaration)
+			let isImplicit = memberReferenceExpression.standaloneAttributes.contains("implicit")
 			let rightHand = GRYExpression.declarationReferenceExpression(
-				identifier: member, type: type, isStandardLibrary: isStandardLibrary)
+				identifier: member, type: type, isStandardLibrary: isStandardLibrary,
+				isImplicit: isImplicit)
 			return .dotExpression(leftExpression: leftHand,
 								  rightExpression: rightHand)
 		}
@@ -410,7 +412,7 @@ public class GRYSwift4Translator {
 	private func translate(typeExpression: GRYSwiftAst) throws -> GRYExpression {
 		try ensure(ast: typeExpression, isNamed: "Type Expression")
 
-		guard let type = typeExpression.keyValueAttributes["typerepr"] else {
+		guard let type = typeExpression["typerepr"] else {
 			throw unexpectedAstStructureError(
 				"Unrecognized structure",
 				ast: typeExpression)
@@ -431,7 +433,8 @@ public class GRYSwift4Translator {
 			// Swift 4.2
 			if case .typeExpression(type: _) = leftHand,
 				case let .declarationReferenceExpression(
-					identifier: identifier, type: _, isStandardLibrary: _) = rightHand,
+					identifier: identifier, type: _, isStandardLibrary: _,
+					isImplicit: _) = rightHand,
 				identifier == "none"
 			{
 				return .nilLiteralExpression
@@ -482,7 +485,8 @@ public class GRYSwift4Translator {
 		}
 
 		let variable = GRYExpression.declarationReferenceExpression(
-			identifier: variableName, type: variableType, isStandardLibrary: false)
+			identifier: variableName, type: variableType, isStandardLibrary: false,
+			isImplicit: false)
 		let collectionTranslation = try translate(expression: collectionExpression)
 		let statements = try translate(subtrees: braceStatement.subtrees)
 
@@ -1044,17 +1048,21 @@ public class GRYSwift4Translator {
 		}
 		let type = cleanUpType(rawType)
 
+		let isImplicit = declarationReferenceExpression.standaloneAttributes.contains("implicit")
+
 		if let codeDeclaration = declarationReferenceExpression.standaloneAttributes.first,
 			codeDeclaration.hasPrefix("code.")
 		{
 			let (identifier, isStandardLibrary) = getIdentifierFromDeclaration(codeDeclaration)
 			return .declarationReferenceExpression(
-				identifier: identifier, type: type, isStandardLibrary: isStandardLibrary)
+				identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
+				isImplicit: isImplicit)
 		}
 		else if let declaration = declarationReferenceExpression["decl"] {
 			let (identifier, isStandardLibrary) = getIdentifierFromDeclaration(declaration)
 			return .declarationReferenceExpression(
-				identifier: identifier, type: type, isStandardLibrary: isStandardLibrary)
+				identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
+				isImplicit: isImplicit)
 		}
 		else {
 			throw unexpectedAstStructureError(
@@ -1131,7 +1139,7 @@ public class GRYSwift4Translator {
 		}
 
 		guard let identifier = binding.standaloneAttributes.first,
-			let rawType = binding.keyValueAttributes["type"] else
+			let rawType = binding["type"] else
 		{
 			throw unexpectedAstStructureError(
 				"Type not recognized", ast: patternBindingDeclaration)
@@ -1171,13 +1179,7 @@ public class GRYSwift4Translator {
 
 		let identifier = declaration[identifierStartIndex..<index]
 
-		if identifier == "self" {
-			// TODO: This "this" translation should be on the KotlinTranslator
-			return (declaration: "this", isStandardLibrary: isStandardLibrary)
-		}
-		else {
-			return (declaration: String(identifier), isStandardLibrary: isStandardLibrary)
-		}
+		return (declaration: String(identifier), isStandardLibrary: isStandardLibrary)
 	}
 
 	private func cleanUpType(_ type: String) -> String {

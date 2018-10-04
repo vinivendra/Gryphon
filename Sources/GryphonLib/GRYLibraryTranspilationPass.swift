@@ -100,7 +100,8 @@ extension GRYExpression {
 		_ template: GRYExpression, _ matches: inout [String: GRYExpression]) -> Bool
 	{
 		if case let .declarationReferenceExpression(
-				identifier: identifier, type: templateType, isStandardLibrary: _) = template,
+				identifier: identifier, type: templateType, isStandardLibrary: _,
+				isImplicit: _) = template,
 			identifier.hasPrefix("_"),
 			self.isOfType(templateType)
 		{
@@ -127,13 +128,14 @@ extension GRYExpression {
 			case let
 				(.declarationReferenceExpression(
 					identifier: leftIdentifier, type: leftType,
-					isStandardLibrary: leftIsStandardLibrary),
+					isStandardLibrary: leftIsStandardLibrary, isImplicit: leftIsImplicit),
 				 .declarationReferenceExpression(
 					identifier: rightIdentifier, type: rightType,
-					isStandardLibrary: rightIsStandardLibrary)):
+					isStandardLibrary: rightIsStandardLibrary, isImplicit: rightIsImplicit)):
 
 				return leftIdentifier == rightIdentifier && leftType.isSubtype(of: rightType) &&
-					leftIsStandardLibrary == rightIsStandardLibrary
+					leftIsStandardLibrary == rightIsStandardLibrary &&
+					leftIsImplicit == rightIsImplicit
 			case let
 				(.typeExpression(type: leftType),
 				 .typeExpression(type: rightType)):

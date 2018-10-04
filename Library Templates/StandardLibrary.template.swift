@@ -1,10 +1,17 @@
 
+import Foundation
+
 let _string = ""
 let _any: Any = ""
+let _double: Double = 0
 
 // Print
 print(_any)
 "println(_any)"
+
+// Darwin
+sqrt(_double)
+"Math.sqrt(_double)"
 
 // String
 _string.isEmpty

@@ -9,7 +9,7 @@ class Box {
 		}
 	var c: Int? = null
 	internal fun returnFive(): Int {
-		return this.a
+		return a
 	}
 	internal fun returnInt(a: Int): Int {
 		return a

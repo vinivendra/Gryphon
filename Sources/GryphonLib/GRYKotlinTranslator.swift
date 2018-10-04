@@ -471,10 +471,12 @@ public class GRYKotlinTranslator {
 		case let .callExpression(function: function, parameters: parameters, type: type):
 			return translateCallExpression(function: function, parameters: parameters, type: type)
 		case let .declarationReferenceExpression(
-			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary):
+			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
+			isImplicit: isImplicit):
 
 			return translateDeclarationReferenceExpression(
-				identifier: identifier, type: type, isStandardLibrary: isStandardLibrary)
+				identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
+				isImplicit: isImplicit)
 		case let .dotExpression(leftExpression: leftExpression, rightExpression: rightExpression):
 			return translateDotSyntaxCallExpression(
 				leftExpression: leftExpression, rightExpression: rightExpression)
@@ -612,7 +614,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateDeclarationReferenceExpression(
-		identifier: String, type: String, isStandardLibrary: Bool) -> String
+		identifier: String, type: String, isStandardLibrary: Bool, isImplicit: Bool) -> String
 	{
 		return String(identifier.prefix { $0 != "(" })
 	}

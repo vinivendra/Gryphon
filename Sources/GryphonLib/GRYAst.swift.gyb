@@ -323,7 +323,7 @@ expressionNodes = [
 	['parenthesesExpression', [['expression', 'GRYExpression']]],
 	['forceValueExpression', [['expression', 'GRYExpression']]],
 	['declarationReferenceExpression', [['identifier', 'String'], ['type', 'String'],
-		['isStandardLibrary', 'Bool']]],
+		['isStandardLibrary', 'Bool'], ['isImplicit', 'Bool']]],
 	['typeExpression', [['type', 'String']]],
 	['subscriptExpression',
 		[['subscriptedExpression', 'GRYExpression'], ['indexExpression', 'GRYExpression'],
@@ -441,7 +441,9 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
 			else {
 				return expression.type
 			}
-		case let .declarationReferenceExpression(identifier: _, type: type, isStandardLibrary: _):
+		case let .declarationReferenceExpression(
+			identifier: _, type: type, isStandardLibrary: _, isImplicit: _):
+
 			return type
 		case .typeExpression:
 			return nil
@@ -503,9 +505,11 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
 		case let .forceValueExpression(expression: expression):
 			return [expression]
 		case let .declarationReferenceExpression(
-			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary):
+			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
+			isImplicit: isImplicit):
 
-			return [type, identifier, (isStandardLibrary != nil) ? "isStandardLibrary" : nil]
+			return [type, identifier, isStandardLibrary ? "isStandardLibrary" : nil,
+				isImplicit ? "implicit" : nil]
 		case let .typeExpression(type: type):
 			return [type]
 		case let .subscriptExpression(

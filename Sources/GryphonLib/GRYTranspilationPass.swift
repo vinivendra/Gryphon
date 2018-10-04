@@ -194,10 +194,12 @@ public class GRYTranspilationPass {
 		case let .forceValueExpression(expression: expression):
 			return replaceForcevalueExpression(expression: expression)
 		case let .declarationReferenceExpression(
-			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary):
+			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
+			isImplicit: isImplicit):
 
 			return replaceDeclarationreferenceExpression(
-				identifier: identifier, type: type, isStandardLibrary: isStandardLibrary)
+				identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
+				isImplicit: isImplicit)
 		case let .typeExpression(type: type):
 			return replaceTypeExpression(type: type)
 		case let .subscriptExpression(
@@ -261,10 +263,12 @@ public class GRYTranspilationPass {
 	}
 
 	func replaceDeclarationreferenceExpression(
-		identifier: String, type: String, isStandardLibrary: Bool) -> GRYExpression
+		identifier: String, type: String, isStandardLibrary: Bool, isImplicit: Bool)
+		-> GRYExpression
 	{
 		return .declarationReferenceExpression(
-			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary)
+			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
+			isImplicit: isImplicit)
 	}
 
 	func replaceTypeExpression(type: String) -> GRYExpression {
@@ -370,7 +374,7 @@ public class GRYInsertCodeLiteralsTranspilationPass: GRYTranspilationPass {
 		function: GRYExpression, parameters: GRYExpression, type: String) -> GRYExpression
 	{
 		if case let .declarationReferenceExpression(
-				identifier: identifier, type: _, isStandardLibrary: false) = function,
+				identifier: identifier, type: _, isStandardLibrary: _, isImplicit: _) = function,
 			identifier.hasPrefix("GRYInsert") ||
 				identifier.hasPrefix("GRYAlternative"),
 			case let .tupleExpression(pairs: pairs) = parameters,
@@ -391,7 +395,7 @@ public class GRYIgnoreNextTranspilationPass: GRYTranspilationPass {
 		function: GRYExpression, parameters: GRYExpression, type: String) -> GRYExpression
 	{
 		if case let .declarationReferenceExpression(
-				identifier: identifier, type: _, isStandardLibrary: false) = function,
+				identifier: identifier, type: _, isStandardLibrary: _, isImplicit: _) = function,
 			identifier.hasPrefix("GRYIgnoreNext")
 		{
 			shouldIgnoreNext = true
@@ -493,6 +497,38 @@ public class GRYRemoveIgnoredDeclarationsTranspilationPass: GRYTranspilationPass
 	}
 }
 
+public class GRYSelfToThisTranspilationPass: GRYTranspilationPass {
+	override func replaceDotExpression(
+		leftExpression: GRYExpression, rightExpression: GRYExpression) -> GRYExpression
+	{
+		if case .declarationReferenceExpression(
+			identifier: "self", type: _, isStandardLibrary: _, isImplicit: true) = leftExpression
+		{
+			return replaceExpression(rightExpression)
+		}
+		else {
+			return .dotExpression(
+				leftExpression: replaceExpression(leftExpression),
+				rightExpression: replaceExpression(rightExpression))
+		}
+	}
+
+	override func replaceDeclarationreferenceExpression(
+		identifier: String, type: String, isStandardLibrary: Bool, isImplicit: Bool)
+		-> GRYExpression
+	{
+		if identifier == "self" {
+			assert(!isImplicit)
+			return .declarationReferenceExpression(
+				identifier: "this", type: type, isStandardLibrary: isStandardLibrary,
+				isImplicit: isImplicit)
+		}
+		return super.replaceDeclarationreferenceExpression(
+			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
+			isImplicit: isImplicit)
+	}
+}
+
 public class GRYRecordEnumsTranspilationPass: GRYTranspilationPass {
 	override func replaceEnumDeclaration(
 		access: String?, name: String, inherits: [String], elements: [String]) -> GRYTopLevelNode
@@ -504,14 +540,16 @@ public class GRYRecordEnumsTranspilationPass: GRYTranspilationPass {
 
 public class GRYRaiseStandardLibraryWarningsTranspilationPass: GRYTranspilationPass {
 	override func replaceDeclarationreferenceExpression(
-		identifier: String, type: String, isStandardLibrary: Bool) -> GRYExpression
+		identifier: String, type: String, isStandardLibrary: Bool, isImplicit: Bool)
+		-> GRYExpression
 	{
 		if isStandardLibrary {
 			GRYTranspilationPass.recordWarning(
 				"Reference to standard library \"\(identifier)\" was not translated.")
 		}
 		return super.replaceDeclarationreferenceExpression(
-			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary)
+			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
+			isImplicit: isImplicit)
 	}
 }
 
@@ -525,6 +563,7 @@ public extension GRYTranspilationPass {
 		result = GRYIgnoreNextTranspilationPass().run(on: result)
 		result = GRYInsertCodeLiteralsTranspilationPass().run(on: result)
 		result = GRYDeclarationsTranspilationPass().run(on: result)
+		result = GRYSelfToThisTranspilationPass().run(on: result)
 		result = GRYRecordEnumsTranspilationPass().run(on: result)
 		result = GRYRaiseStandardLibraryWarningsTranspilationPass().run(on: result)
 		return result
