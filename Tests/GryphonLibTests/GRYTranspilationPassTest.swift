@@ -39,6 +39,10 @@ class GRYTranspilationPassTest: XCTestCase {
 
 			print("\t- Done!")
 		}
+
+		for warning in GRYTranspilationPass.warnings {
+			XCTFail(warning)
+		}
 	}
 
 	static var allTests = [

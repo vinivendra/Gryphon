@@ -193,8 +193,11 @@ public class GRYTranspilationPass {
 			return replaceParenthesesExpression(expression: expression)
 		case let .forceValueExpression(expression: expression):
 			return replaceForcevalueExpression(expression: expression)
-		case let .declarationReferenceExpression(identifier: identifier, type: type):
-			return replaceDeclarationreferenceExpression(identifier: identifier, type: type)
+		case let .declarationReferenceExpression(
+			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary):
+
+			return replaceDeclarationreferenceExpression(
+				identifier: identifier, type: type, isStandardLibrary: isStandardLibrary)
 		case let .typeExpression(type: type):
 			return replaceTypeExpression(type: type)
 		case let .subscriptExpression(
@@ -257,8 +260,11 @@ public class GRYTranspilationPass {
 		return .forceValueExpression(expression: replaceExpression(expression))
 	}
 
-	func replaceDeclarationreferenceExpression(identifier: String, type: String) -> GRYExpression {
-		return .declarationReferenceExpression(identifier: identifier, type: type)
+	func replaceDeclarationreferenceExpression(
+		identifier: String, type: String, isStandardLibrary: Bool) -> GRYExpression
+	{
+		return .declarationReferenceExpression(
+			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary)
 	}
 
 	func replaceTypeExpression(type: String) -> GRYExpression {
@@ -363,7 +369,8 @@ public class GRYInsertCodeLiteralsTranspilationPass: GRYTranspilationPass {
 	override func replaceCallExpression(
 		function: GRYExpression, parameters: GRYExpression, type: String) -> GRYExpression
 	{
-		if case let .declarationReferenceExpression(identifier: identifier, type: _) = function,
+		if case let .declarationReferenceExpression(
+				identifier: identifier, type: _, isStandardLibrary: false) = function,
 			identifier.hasPrefix("GRYInsert") ||
 				identifier.hasPrefix("GRYAlternative"),
 			case let .tupleExpression(pairs: pairs) = parameters,
@@ -383,7 +390,8 @@ public class GRYIgnoreNextTranspilationPass: GRYTranspilationPass {
 	override func replaceCallExpression(
 		function: GRYExpression, parameters: GRYExpression, type: String) -> GRYExpression
 	{
-		if case let .declarationReferenceExpression(identifier: identifier, type: _) = function,
+		if case let .declarationReferenceExpression(
+				identifier: identifier, type: _, isStandardLibrary: false) = function,
 			identifier.hasPrefix("GRYIgnoreNext")
 		{
 			shouldIgnoreNext = true
@@ -494,6 +502,19 @@ public class GRYRecordEnumsTranspilationPass: GRYTranspilationPass {
 	}
 }
 
+public class GRYRaiseStandardLibraryWarningsTranspilationPass: GRYTranspilationPass {
+	override func replaceDeclarationreferenceExpression(
+		identifier: String, type: String, isStandardLibrary: Bool) -> GRYExpression
+	{
+		if isStandardLibrary {
+			GRYTranspilationPass.recordWarning(
+				"Reference to standard library \"\(identifier)\" was not translated.")
+		}
+		return super.replaceDeclarationreferenceExpression(
+			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary)
+	}
+}
+
 public extension GRYTranspilationPass {
 	static func runAllPasses(on sourceFile: GRYAst) -> GRYAst {
 		var result = sourceFile
@@ -505,7 +526,14 @@ public extension GRYTranspilationPass {
 		result = GRYInsertCodeLiteralsTranspilationPass().run(on: result)
 		result = GRYDeclarationsTranspilationPass().run(on: result)
 		result = GRYRecordEnumsTranspilationPass().run(on: result)
+		result = GRYRaiseStandardLibraryWarningsTranspilationPass().run(on: result)
 		return result
+	}
+
+	static private(set) var warnings = [String]()
+
+	static func recordWarning(_ warning: String) {
+		warnings.append(warning)
 	}
 
 	func printParents() {

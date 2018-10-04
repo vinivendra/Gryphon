@@ -50,6 +50,10 @@ do {
 
 	// 5: Ast dump -> Swift Ast -> GRYAst (raw) -> GRYAst -> Kotlin -> Output of running Kotlin
 	try print(GRYCompiler.compileAndRun(fileAt: filePath))
+
+	for warning in GRYTranspilationPass.warnings {
+		print("warning: \(warning)")
+}
 }
 catch let error {
 	if let error = error as? GRYPrintableError {

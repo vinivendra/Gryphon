@@ -340,9 +340,9 @@ public class GRYSwift4Translator {
 		{
 			let type = cleanUpType(rawType)
 			let leftHand = try translate(expression: memberOwner)
-			let member = getIdentifierFromDeclaration(declaration)
+			let (member, isStandardLibrary) = getIdentifierFromDeclaration(declaration)
 			let rightHand = GRYExpression.declarationReferenceExpression(
-				identifier: member, type: type)
+				identifier: member, type: type, isStandardLibrary: isStandardLibrary)
 			return .dotExpression(leftExpression: leftHand,
 								  rightExpression: rightHand)
 		}
@@ -364,7 +364,7 @@ public class GRYSwift4Translator {
 		{
 			let type = cleanUpType(rawType)
 			let expressionTranslation = try translate(expression: expression)
-			let operatorIdentifier = getIdentifierFromDeclaration(declaration)
+			let (operatorIdentifier, _) = getIdentifierFromDeclaration(declaration)
 
 			return .unaryOperatorExpression(
 				expression: expressionTranslation, operatorSymbol: operatorIdentifier, type: type)
@@ -390,7 +390,7 @@ public class GRYSwift4Translator {
 			let rightHandExpression = tupleExpression.subtree(at: 1)
 		{
 			let type = cleanUpType(rawType)
-			operatorIdentifier = getIdentifierFromDeclaration(declaration)
+			(operatorIdentifier, _) = getIdentifierFromDeclaration(declaration)
 			let leftHandTranslation = try translate(expression: leftHandExpression)
 			let rightHandTranslation = try translate(expression: rightHandExpression)
 
@@ -430,7 +430,8 @@ public class GRYSwift4Translator {
 
 			// Swift 4.2
 			if case .typeExpression(type: _) = leftHand,
-			case let .declarationReferenceExpression(identifier: identifier, type: _) = rightHand,
+				case let .declarationReferenceExpression(
+					identifier: identifier, type: _, isStandardLibrary: _) = rightHand,
 				identifier == "none"
 			{
 				return .nilLiteralExpression
@@ -481,7 +482,7 @@ public class GRYSwift4Translator {
 		}
 
 		let variable = GRYExpression.declarationReferenceExpression(
-			identifier: variableName, type: variableType)
+			identifier: variableName, type: variableType, isStandardLibrary: false)
 		let collectionTranslation = try translate(expression: collectionExpression)
 		let statements = try translate(subtrees: braceStatement.subtrees)
 
@@ -1046,12 +1047,14 @@ public class GRYSwift4Translator {
 		if let codeDeclaration = declarationReferenceExpression.standaloneAttributes.first,
 			codeDeclaration.hasPrefix("code.")
 		{
-			let identifier = getIdentifierFromDeclaration(codeDeclaration)
-			return .declarationReferenceExpression(identifier: identifier, type: type)
+			let (identifier, isStandardLibrary) = getIdentifierFromDeclaration(codeDeclaration)
+			return .declarationReferenceExpression(
+				identifier: identifier, type: type, isStandardLibrary: isStandardLibrary)
 		}
 		else if let declaration = declarationReferenceExpression["decl"] {
-			let identifier = getIdentifierFromDeclaration(declaration)
-			return .declarationReferenceExpression(identifier: identifier, type: type)
+			let (identifier, isStandardLibrary) = getIdentifierFromDeclaration(declaration)
+			return .declarationReferenceExpression(
+				identifier: identifier, type: type, isStandardLibrary: isStandardLibrary)
 		}
 		else {
 			throw unexpectedAstStructureError(
@@ -1144,7 +1147,11 @@ public class GRYSwift4Translator {
 		return
 	}
 
-	private func getIdentifierFromDeclaration(_ declaration: String) -> String {
+	private func getIdentifierFromDeclaration(_ declaration: String)
+		-> (declaration: String, isStandardLibrary: Bool)
+	{
+		let isStandardLibrary = declaration.hasPrefix("Swift")
+
 		var index = declaration.startIndex
 		var lastPeriodIndex = declaration.startIndex
 		while index != declaration.endIndex {
@@ -1165,10 +1172,11 @@ public class GRYSwift4Translator {
 		let identifier = declaration[identifierStartIndex..<index]
 
 		if identifier == "self" {
-			return "this"
+			// TODO: This "this" translation should be on the KotlinTranslator
+			return (declaration: "this", isStandardLibrary: isStandardLibrary)
 		}
 		else {
-			return String(identifier)
+			return (declaration: String(identifier), isStandardLibrary: isStandardLibrary)
 		}
 	}
 
