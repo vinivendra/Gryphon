@@ -343,25 +343,6 @@ public class GRYTranspilationPass {
 	}
 }
 
-public class GRYStandardLibraryTranspilationPass: GRYTranspilationPass {
-	override func replaceCallExpression(
-		function: GRYExpression, parameters: GRYExpression, type: String) -> GRYExpression
-	{
-		if case let .declarationReferenceExpression(identifier: identifier, type: _) = function,
-			identifier == "print(_:separator:terminator:)"
-		{
-			return .callExpression(
-				function: .declarationReferenceExpression(identifier: "println()", type: ""),
-				parameters: replaceExpression(parameters), type: type)
-		}
-		else {
-			return .callExpression(
-				function: replaceExpression(function), parameters: replaceExpression(parameters),
-				type: type)
-		}
-	}
-}
-
 public class GRYRemoveParenthesesTranspilationPass: GRYTranspilationPass {
 	override func replaceParenthesesExpression(expression: GRYExpression) -> GRYExpression {
 
@@ -522,7 +503,6 @@ public extension GRYTranspilationPass {
 		result = GRYRemoveParenthesesTranspilationPass().run(on: result)
 		result = GRYIgnoreNextTranspilationPass().run(on: result)
 		result = GRYInsertCodeLiteralsTranspilationPass().run(on: result)
-		result = GRYStandardLibraryTranspilationPass().run(on: result)
 		result = GRYDeclarationsTranspilationPass().run(on: result)
 		result = GRYRecordEnumsTranspilationPass().run(on: result)
 		return result

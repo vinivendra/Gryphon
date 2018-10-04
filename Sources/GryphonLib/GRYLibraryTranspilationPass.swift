@@ -102,7 +102,7 @@ extension GRYExpression {
 		if case let .declarationReferenceExpression(
 			identifier: identifier, type: templateType) = template,
 			identifier.hasPrefix("_"),
-			self.type == templateType
+			self.isOfType(templateType)
 		{
 			matches[identifier] = self
 			return true
@@ -128,12 +128,12 @@ extension GRYExpression {
 				(.declarationReferenceExpression(identifier: leftIdentifier, type: leftType),
 				 .declarationReferenceExpression(identifier: rightIdentifier, type: rightType)):
 
-				return leftIdentifier == rightIdentifier && leftType == rightType
+				return leftIdentifier == rightIdentifier && leftType.isSubtype(of: rightType)
 			case let
 				(.typeExpression(type: leftType),
 				 .typeExpression(type: rightType)):
 
-				return leftType == rightType
+				return leftType.isSubtype(of: rightType)
 			case let
 				(.subscriptExpression(
 					subscriptedExpression: leftSubscriptedExpression,
@@ -144,7 +144,7 @@ extension GRYExpression {
 
 					return leftSubscriptedExpression.matches(rightSubscriptedExpression, &matches)
 						&& leftIndexExpression.matches(rightIndexExpression, &matches)
-						&& leftType == rightType
+						&& leftType.isSubtype(of: rightType)
 			case let
 				(.arrayExpression(elements: leftElements, type: leftType),
 				 .arrayExpression(elements: rightElements, type: rightType)):
@@ -153,7 +153,7 @@ extension GRYExpression {
 				for (leftElement, rightElement) in zip(leftElements, rightElements) {
 					result = result && leftElement.matches(rightElement, &matches)
 				}
-				return result && (leftType == rightType)
+				return result && (leftType.isSubtype(of: rightType))
 			case let
 				(.dotExpression(
 					leftExpression: leftLeftExpression, rightExpression: leftRightExpression),
@@ -172,7 +172,8 @@ extension GRYExpression {
 
 				return leftLeftExpression.matches(rightLeftExpression, &matches) &&
 					leftRightExpression.matches(rightRightExpression, &matches) &&
-					(leftOperatorSymbol == rightOperatorSymbol) && (leftType == rightType)
+					(leftOperatorSymbol == rightOperatorSymbol) &&
+					(leftType.isSubtype(of: rightType))
 			case let
 				(.unaryOperatorExpression(
 					expression: leftExpression, operatorSymbol: leftOperatorSymbol, type: leftType),
@@ -181,7 +182,8 @@ extension GRYExpression {
 					type: rightType)):
 
 				return leftExpression.matches(rightExpression, &matches) &&
-					(leftOperatorSymbol == rightOperatorSymbol) && (leftType == rightType)
+					(leftOperatorSymbol == rightOperatorSymbol)
+					&& (leftType.isSubtype(of: rightType))
 			case let
 				(.callExpression(
 					function: leftFunction, parameters: leftParameters, type: leftType),
@@ -189,7 +191,8 @@ extension GRYExpression {
 					function: rightFunction, parameters: rightParameters, type: rightType)):
 
 				return leftFunction.matches(rightFunction, &matches) &&
-					leftParameters.matches(rightParameters, &matches) && (leftType == rightType)
+					leftParameters.matches(rightParameters, &matches) &&
+					(leftType.isSubtype(of: rightType))
 			case let
 				(.literalIntExpression(value: leftValue),
 				 .literalIntExpression(value: rightValue)):
@@ -234,6 +237,36 @@ extension GRYExpression {
 			default:
 				return false
 			}
+		}
+	}
+
+	func isOfType(_ superType: String) -> Bool {
+		guard let type = self.type else {
+			return false
+		}
+
+		if superType == "Any" {
+			return true
+		}
+		else if type == superType {
+			return true
+		}
+		else {
+			return false
+		}
+	}
+}
+
+fileprivate extension String {
+	func isSubtype(of superType: String) -> Bool {
+		if superType == "Any" {
+			return true
+		}
+		else if self == superType {
+			return true
+		}
+		else {
+			return false
 		}
 	}
 }
