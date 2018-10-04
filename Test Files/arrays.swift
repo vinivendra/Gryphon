@@ -22,7 +22,8 @@ protocol GRYIgnore { }
 /// the Array type in Swift conforms exactly to these protocols,
 /// plus CustomReflectable (which is beyond Gryphon's scope for now).
 class ArrayReference<Element>: GRYIgnore,
-	ExpressibleByArrayLiteral, CustomStringConvertible, CustomDebugStringConvertible, RandomAccessCollection, MutableCollection, RangeReplaceableCollection
+	ExpressibleByArrayLiteral, CustomStringConvertible, CustomDebugStringConvertible,
+	RandomAccessCollection, MutableCollection, RangeReplaceableCollection
 {
 	typealias ArrayLiteralElement = Element
 
