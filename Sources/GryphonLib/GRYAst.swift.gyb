@@ -509,7 +509,7 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
 			isImplicit: isImplicit):
 
 			return [type, identifier, isStandardLibrary ? "isStandardLibrary" : nil,
-				isImplicit ? "implicit" : nil]
+				isImplicit ? "implicit" : nil, ]
 		case let .typeExpression(type: type):
 			return [type]
 		case let .subscriptExpression(
