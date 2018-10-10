@@ -60,8 +60,6 @@ public class GRYSwift4Translator {
 	// MARK: - Properties
 	var danglingPatternBinding: (identifier: String, type: String, expression: GRYExpression?)?
 
-	var extendingType: String?
-
 	var errors = [String]()
 
 	// MARK: - Interface
@@ -109,10 +107,7 @@ public class GRYSwift4Translator {
 		case "Enum Declaration":
 			result = try translate(enumDeclaration: subtree)
 		case "Extension Declaration":
-			self.extendingType = subtree.standaloneAttributes[0]
-			let result = try translate(subtrees: subtree.subtrees)
-			self.extendingType = nil
-			return result
+			result = try translate(extensionDeclaration: subtree)
 		case "For Each Statement":
 			result = try translate(forEachStatement: subtree)
 		case "Function Declaration":
@@ -286,6 +281,12 @@ public class GRYSwift4Translator {
 				"Unrecognized structure",
 				ast: throwStatement)
 		}
+	}
+
+	private func translate(extensionDeclaration: GRYSwiftAst) throws -> GRYTopLevelNode {
+		let type = extensionDeclaration.standaloneAttributes[0]
+		let members = try translate(subtrees: extensionDeclaration.subtrees)
+		return .extensionDeclaration(type: type, members: members)
 	}
 
 	private func translate(enumDeclaration: GRYSwiftAst) throws -> GRYTopLevelNode {
@@ -804,7 +805,7 @@ public class GRYSwift4Translator {
 				getter: getter,
 				setter: setter,
 				isLet: isLet,
-				extendsType: self.extendingType)
+				extendsType: nil)
 		}
 		else {
 			throw unexpectedAstStructureError(

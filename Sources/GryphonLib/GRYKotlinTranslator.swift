@@ -80,6 +80,8 @@ public class GRYKotlinTranslator {
 		switch subtree {
 		case .importDeclaration(name: _):
 			result = ""
+		case .extensionDeclaration(type: _, members: _):
+			result = ""
 		case let .classDeclaration(name: name, inherits: inherits, members: members):
 			result = translateClassDeclaration(
 				name: name, inherits: inherits, members: members, withIndentation: indentation)

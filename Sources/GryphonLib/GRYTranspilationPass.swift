@@ -43,6 +43,8 @@ public class GRYTranspilationPass {
 		switch node {
 		case let .expression(expression: expression):
 			return replaceExpression(expression: expression)
+		case let .extensionDeclaration(type: type, members: members):
+			return replaceExtension(type: type, members: members)
 		case let .importDeclaration(name: name):
 			return replaceImportDeclaration(name: name)
 		case let .classDeclaration(name: name, inherits: inherits, members: members):
@@ -96,6 +98,10 @@ public class GRYTranspilationPass {
 		return [.expression(expression: replaceExpression(expression))]
 	}
 
+	func replaceExtension(type: String, members: [GRYTopLevelNode]) -> [GRYTopLevelNode] {
+		return [.extensionDeclaration(type: type, members: members)]
+	}
+
 	func replaceImportDeclaration(name: String) -> [GRYTopLevelNode] {
 		return [.importDeclaration(name: name)]
 	}
@@ -110,7 +116,8 @@ public class GRYTranspilationPass {
 	func replaceEnumDeclaration(
 		access: String?, name: String, inherits: [String], elements: [String]) -> [GRYTopLevelNode]
 	{
-		return [.enumDeclaration(access: access, name: name, inherits: inherits, elements: elements)]
+		return [
+			.enumDeclaration(access: access, name: name, inherits: inherits, elements: elements), ]
 	}
 
 	func replaceProtocolDeclaration(name: String) -> [GRYTopLevelNode] {
@@ -518,6 +525,26 @@ public class GRYSelfToThisTranspilationPass: GRYTranspilationPass {
 	}
 }
 
+public class GRYRemoveExtensionsTranspilationPass: GRYTranspilationPass {
+	var extendingType: String?
+
+	override func replaceExtension(type: String, members: [GRYTopLevelNode]) -> [GRYTopLevelNode] {
+		extendingType = type
+		let members = members.flatMap(replaceTopLevelNode)
+		extendingType = nil
+		return members
+	}
+
+	override func replaceVariableDeclaration(
+		identifier: String, typeName: String, expression: GRYExpression?, getter: GRYTopLevelNode?,
+		setter: GRYTopLevelNode?, isLet: Bool, extendsType: String?) -> [GRYTopLevelNode]
+	{
+		return [GRYTopLevelNode.variableDeclaration(
+			identifier: identifier, typeName: typeName, expression: expression, getter: getter,
+			setter: setter, isLet: isLet, extendsType: self.extendingType), ]
+	}
+}
+
 public class GRYRecordEnumsTranspilationPass: GRYTranspilationPass {
 	override func replaceEnumDeclaration(
 		access: String?, name: String, inherits: [String], elements: [String]) -> [GRYTopLevelNode]
@@ -588,6 +615,7 @@ public extension GRYTranspilationPass {
 		result = GRYInsertCodeLiteralsTranspilationPass().run(on: result)
 		result = GRYDeclarationsTranspilationPass().run(on: result)
 		result = GRYSelfToThisTranspilationPass().run(on: result)
+		result = GRYRemoveExtensionsTranspilationPass().run(on: result)
 		result = GRYRearrangeIfLetsTranspilationPass().run(on: result)
 		result = GRYRecordEnumsTranspilationPass().run(on: result)
 		result = GRYRaiseStandardLibraryWarningsTranspilationPass().run(on: result)

@@ -66,7 +66,7 @@ public class GRYSwiftAst: GRYPrintableAsTree, Equatable, Codable, CustomStringCo
 		}
 	}
 
-	internal init(parser: GRYSExpressionParser, extraKeyValues: [String: String] = [:]) {
+	internal init(parser: GRYSExpressionParser) {
 		var standaloneAttributes = [String]()
 		var keyValueAttributes = [String: String]()
 		var subtrees = [GRYSwiftAst]()
@@ -80,22 +80,14 @@ public class GRYSwiftAst: GRYPrintableAsTree, Equatable, Codable, CustomStringCo
 		while true {
 			// Add subtree
 			if parser.canReadOpenParentheses() {
-
-				// Check if there's info to pass on to subtrees
-				let extraKeyValuesForSubtrees: [String: String]
-				// TODO: GRYAst should make this unnecessary
 				if self.name == "Extension Declaration" {
-					extraKeyValuesForSubtrees = ["extends_type": standaloneAttributes.first!]
+					print("")
 				}
-				else {
-					extraKeyValuesForSubtrees = [:]
-				}
-
 				// Parse subtrees
-				let subtree = GRYSwiftAst(parser: parser, extraKeyValues: extraKeyValuesForSubtrees)
+				let subtree = GRYSwiftAst(parser: parser)
 				subtrees.append(subtree)
 			}
-				// Finish this branch
+			// Finish this branch
 			else if parser.canReadCloseParentheses() {
 				parser.readCloseParentheses()
 				break
@@ -132,8 +124,7 @@ public class GRYSwiftAst: GRYPrintableAsTree, Equatable, Codable, CustomStringCo
 
 		self.subtrees = subtrees
 		self.standaloneAttributes = standaloneAttributes
-		self.keyValueAttributes =
-			keyValueAttributes.merging(extraKeyValues, uniquingKeysWith: { a, _ in a })
+		self.keyValueAttributes = keyValueAttributes
 	}
 
 	internal init(_ name: String, _ subtrees: [GRYSwiftAst] = []) {

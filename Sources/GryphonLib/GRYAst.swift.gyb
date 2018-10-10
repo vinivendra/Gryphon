@@ -57,7 +57,7 @@ public class GRYAst: GRYPrintableAsTree, Codable, Equatable, CustomStringConvert
 				If the file doesn't exist, please run `updateJsonTestFiles()` to generate it.
 				Error: \(error)
 				""")
-}
+		}
 	}
 
 	enum SourceFileCodingKeys: String, CodingKey {
@@ -103,6 +103,7 @@ public class GRYAst: GRYPrintableAsTree, Codable, Equatable, CustomStringConvert
 %{
 astNodes = [
 	['expression', [['expression', 'GRYExpression']]],
+	['extensionDeclaration', [['type', 'String'], ['members', '[GRYTopLevelNode]']]],
 	['importDeclaration', [['name', 'String']]],
 	['classDeclaration',
 		[['name', 'String'], ['inherits', '[String]'], ['members', '[GRYTopLevelNode]']]],
@@ -229,6 +230,8 @@ public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree {
 		switch self {
 		case let .expression(expression: expression):
 			return [expression]
+		case let .extensionDeclaration(type: type, members: members):
+			return [type, GRYPrintableTree(description: "members", subtreesOrNil: members), ]
 		case let .importDeclaration(name: name):
 			return [name]
 		case let .classDeclaration(name: name, inherits: inherits, members: members):
