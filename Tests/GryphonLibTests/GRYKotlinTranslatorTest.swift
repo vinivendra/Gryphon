@@ -22,24 +22,38 @@ class GRYKotlinTranslatorTest: XCTestCase {
 		let tests = TestUtils.allTestCases
 
 		for testName in tests {
-			print("- Testing \(testName)...")
 
-			// Create the new Kotlin code from the cached Gryphon AST using the GRYKotlinTranslator
-			let testFilePath = TestUtils.testFilesPath + testName
-			let ast = GRYAst.initialize(fromJsonInFile: testFilePath + .gryAstJson)
-			_ = GRYRecordEnumsTranspilationPass().run(on: ast)
-			let createdKotlinCode = GRYKotlinTranslator().translateAST(ast)
+			do {
+				print("- Testing \(testName)...")
 
-			// Load the cached Kotlin code from file
-			let expectedKotlinCode = try! String(contentsOfFile: testFilePath + .kt)
+				// Create the new Kotlin code from the cached Gryphon AST using the GRYKotlinTranslator
+				let testFilePath = TestUtils.testFilesPath + testName
+				let ast = GRYAst.initialize(fromJsonInFile: testFilePath + .gryAstJson)
+				_ = GRYRecordEnumsTranspilationPass().run(on: ast)
+				let createdKotlinCode = try GRYKotlinTranslator().translateAST(ast)
 
-			// Compare the two
-			XCTAssert(
-				createdKotlinCode == expectedKotlinCode,
-				"Test \(testName): translator failed to produce expected result. Diff:" +
-					TestUtils.diff(createdKotlinCode, expectedKotlinCode))
+				// Load the cached Kotlin code from file
+				let expectedKotlinCode = try! String(contentsOfFile: testFilePath + .kt)
 
-			print("\t- Done!")
+				// Compare the two
+				XCTAssert(
+					createdKotlinCode == expectedKotlinCode,
+					"Test \(testName): translator failed to produce expected result. Diff:" +
+						TestUtils.diff(createdKotlinCode, expectedKotlinCode))
+
+				print("\t- Done!")
+			}
+			catch let error {
+				if let error = error as? GRYPrintableError {
+					error.print()
+					XCTFail()
+					continue
+				}
+				else {
+					print("Unexpected error: \(error)")
+					fatalError()
+				}
+			}
 		}
 	}
 

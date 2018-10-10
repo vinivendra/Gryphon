@@ -78,7 +78,7 @@ public enum GRYCompiler {
 		let ast = try generateGryphonAstAndRunPasses(forFileAt: filePath)
 
 		print("\t- Translating AST to Kotlin...")
-		return GRYKotlinTranslator().translateAST(ast)
+		return try GRYKotlinTranslator().translateAST(ast)
 	}
 
 	public static func generateGryphonAstAndRunPasses(forFileAt filePath: String) throws

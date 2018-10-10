@@ -15,6 +15,37 @@
 */
 
 public class GRYKotlinTranslator {
+	enum GRYKotlinTranslatorError: GRYPrintableError {
+		case unexpectedAstStructure(
+			file: String,
+			line: Int,
+			function: String,
+			message: String,
+			ast: GRYTopLevelNode)
+
+		func print() {
+			switch self {
+			case let .unexpectedAstStructure(
+				file: file, line: line, function: function, message: message, ast: ast):
+
+				Swift.print(
+					"Error: failed to translate Gryphon Ast into Kotlin.\n" +
+						"On file \(file), line \(line), function \(function).\n" +
+						message + ".\n" +
+					"Thrown when translating the following ast node:\n")
+				ast.prettyPrint(horizontalLimit: 100)
+			}
+		}
+	}
+
+	func unexpectedAstStructureError(
+		file: String = #file, line: Int = #line, function: String = #function, _ message: String,
+		ast: GRYTopLevelNode) -> GRYKotlinTranslatorError
+	{
+		return GRYKotlinTranslatorError.unexpectedAstStructure(
+			file: file, line: line, function: function, message: message, ast: ast)
+	}
+
 	/// Used for the translation of Swift types into Kotlin types.
 	static let typeMappings = ["Bool": "Boolean", "Error": "Exception"]
 
@@ -46,13 +77,13 @@ public class GRYKotlinTranslator {
 
 	// MARK: - Interface
 
-	public func translateAST(_ sourceFile: GRYAst) -> String {
+	public func translateAST(_ sourceFile: GRYAst) throws -> String {
 		let declarationsTranslation =
-			translate(subtrees: sourceFile.declarations, withIndentation: "")
+			try translate(subtrees: sourceFile.declarations, withIndentation: "")
 
 		let indentation = increaseIndentation("")
 		let statementsTranslation =
-			translate(subtrees: sourceFile.statements, withIndentation: indentation)
+			try translate(subtrees: sourceFile.statements, withIndentation: indentation)
 
 		var result = declarationsTranslation
 
@@ -72,7 +103,7 @@ public class GRYKotlinTranslator {
 
 	// MARK: - Implementation
 
-	private func translate(subtree: GRYTopLevelNode, withIndentation indentation: String)
+	private func translate(subtree: GRYTopLevelNode, withIndentation indentation: String) throws
 		-> String
 	{
 		let result: String
@@ -81,9 +112,11 @@ public class GRYKotlinTranslator {
 		case .importDeclaration(name: _):
 			result = ""
 		case .extensionDeclaration(type: _, members: _):
-			result = ""
+			throw unexpectedAstStructureError(
+				"Extension structure should have been removed in a transpilation pass",
+				ast: subtree)
 		case let .classDeclaration(name: name, inherits: inherits, members: members):
-			result = translateClassDeclaration(
+			result = try translateClassDeclaration(
 				name: name, inherits: inherits, members: members, withIndentation: indentation)
 		case let .enumDeclaration(
 			access: access, name: name, inherits: inherits, elements: elements):
@@ -94,14 +127,14 @@ public class GRYKotlinTranslator {
 		case let .forEachStatement(
 			collection: collection, variable: variable, statements: statements):
 
-			result = translateForEachStatement(
+			result = try translateForEachStatement(
 				collection: collection, variable: variable, statements: statements,
 				withIndentation: indentation)
 		case let .functionDeclaration(
 			prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
 			returnType: returnType, isImplicit: isImplicit, statements: statements, access: access):
 
-			result = translateFunctionDeclaration(
+			result = try translateFunctionDeclaration(
 				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
 				returnType: returnType, isImplicit: isImplicit, statements: statements,
 				access: access, withIndentation: indentation)
@@ -115,7 +148,7 @@ public class GRYKotlinTranslator {
 			identifier: identifier, typeName: typeName, expression: expression, getter: getter,
 			setter: setter, isLet: isLet, extendsType: extendsType):
 
-			result = translateVariableDeclaration(
+			result = try translateVariableDeclaration(
 				identifier: identifier, typeName: typeName, expression: expression, getter: getter,
 				setter: setter, isLet: isLet, extendsType: extendsType,
 				withIndentation: indentation)
@@ -126,7 +159,7 @@ public class GRYKotlinTranslator {
 			conditions: conditions, declarations: declarations, statements: statements,
 			elseStatement: elseStatement, isGuard: isGuard):
 
-			result = translateIfStatement(
+			result = try translateIfStatement(
 				conditions: conditions, declarations: declarations, statements: statements,
 				elseStatement: elseStatement, isGuard: isGuard, isElseIf: false,
 				withIndentation: indentation)
@@ -145,10 +178,13 @@ public class GRYKotlinTranslator {
 		return result
 	}
 
-	private func translate(subtrees: [GRYTopLevelNode], withIndentation indentation: String)
+	private func translate(subtrees: [GRYTopLevelNode], withIndentation indentation: String) throws
 		-> String
 	{
-		return subtrees.map { translate(subtree: $0, withIndentation: indentation) }.reduce("", +)
+		return try subtrees.map
+			{
+				try translate(subtree: $0, withIndentation: indentation)
+		}.reduce("", +)
 	}
 
 	private func translateEnumDeclaration(
@@ -193,7 +229,7 @@ public class GRYKotlinTranslator {
 
 	private func translateClassDeclaration(
 		name: String, inherits: [String], members: [GRYTopLevelNode],
-		withIndentation indentation: String) -> String
+		withIndentation indentation: String) throws -> String
 	{
 		var result = "\(indentation)class \(name)"
 
@@ -206,7 +242,7 @@ public class GRYKotlinTranslator {
 
 		let increasedIndentation = increaseIndentation(indentation)
 
-		let classContents = translate(
+		let classContents = try translate(
 			subtrees: members,
 			withIndentation: increasedIndentation)
 
@@ -218,7 +254,7 @@ public class GRYKotlinTranslator {
 	private func translateFunctionDeclaration(
 		prefix: String, parameterNames: [String], parameterTypes: [String], returnType: String,
 		isImplicit: Bool, statements: [GRYTopLevelNode], access: String?,
-		withIndentation indentation: String) -> String
+		withIndentation indentation: String) throws -> String
 	{
 		guard !isImplicit else {
 			return ""
@@ -250,7 +286,7 @@ public class GRYKotlinTranslator {
 
 		indentation = increaseIndentation(indentation)
 
-		result += translate(subtrees: statements, withIndentation: indentation)
+		result += try translate(subtrees: statements, withIndentation: indentation)
 
 		indentation = decreaseIndentation(indentation)
 		result += indentation + "}\n"
@@ -260,7 +296,7 @@ public class GRYKotlinTranslator {
 
 	private func translateForEachStatement(
 		collection: GRYExpression, variable: GRYExpression, statements: [GRYTopLevelNode],
-		withIndentation indentation: String) -> String
+		withIndentation indentation: String) throws -> String
 	{
 		var result = "\(indentation)for ("
 
@@ -273,7 +309,7 @@ public class GRYKotlinTranslator {
 		result += collectionTranslation + ") {\n"
 
 		let increasedIndentation = increaseIndentation(indentation)
-		let statementsTranslation = translate(
+		let statementsTranslation = try translate(
 			subtrees: statements, withIndentation: increasedIndentation)
 
 		result += statementsTranslation
@@ -285,7 +321,7 @@ public class GRYKotlinTranslator {
 	private func translateIfStatement(
 		conditions: [GRYExpression], declarations: [GRYTopLevelNode], statements: [GRYTopLevelNode],
 		elseStatement: GRYTopLevelNode?, isGuard: Bool, isElseIf: Bool,
-		withIndentation indentation: String) -> String
+		withIndentation indentation: String) throws -> String
 	{
 		let keyword = (conditions.isEmpty && declarations.isEmpty) ?
 			"else" :
@@ -308,7 +344,7 @@ public class GRYKotlinTranslator {
 		result += "{\n"
 
 		let statementsString =
-			translate(subtrees: statements, withIndentation: increasedIndentation)
+			try translate(subtrees: statements, withIndentation: increasedIndentation)
 
 		result += statementsString + indentation + "}\n"
 
@@ -319,7 +355,7 @@ public class GRYKotlinTranslator {
 			{
 				preconditionFailure()
 			}
-			result += translateIfStatement(
+			result += try translateIfStatement(
 				conditions: conditions, declarations: declarations, statements: statements,
 				elseStatement: elseStatement, isGuard: isGuard, isElseIf: true,
 				withIndentation: indentation)
@@ -350,7 +386,7 @@ public class GRYKotlinTranslator {
 	private func translateVariableDeclaration(
 		identifier: String, typeName: String, expression: GRYExpression?, getter: GRYTopLevelNode?,
 		setter: GRYTopLevelNode?, isLet: Bool, extendsType: String?,
-		withIndentation indentation: String) -> String
+		withIndentation indentation: String) throws -> String
 	{
 		var result = indentation
 
@@ -404,7 +440,7 @@ public class GRYKotlinTranslator {
 			}
 
 			result += indentation1 + "get() {\n"
-			result += translate(subtrees: statements, withIndentation: indentation2)
+			result += try translate(subtrees: statements, withIndentation: indentation2)
 			result += indentation1 + "}\n"
 		}
 
@@ -417,7 +453,7 @@ public class GRYKotlinTranslator {
 			}
 
 			result += indentation1 + "set(newValue) {\n"
-			result += translate(subtrees: statements, withIndentation: indentation2)
+			result += try translate(subtrees: statements, withIndentation: indentation2)
 			result += indentation1 + "}\n"
 		}
 
