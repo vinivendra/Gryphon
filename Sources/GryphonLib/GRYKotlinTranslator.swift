@@ -285,33 +285,15 @@ public class GRYKotlinTranslator {
 		elseStatement: GRYTopLevelNode?, isGuard: Bool, isElseIf: Bool,
 		withIndentation indentation: String) -> String
 	{
-		let declarationsTranslation =
-			translate(subtrees: declarations, withIndentation: indentation)
-
-		var result = declarationsTranslation + indentation
-
 		let keyword = (conditions.isEmpty && declarations.isEmpty) ?
 			"else" :
 			(isElseIf ? "else if" : "if")
 
-		result += keyword + " "
+		var result = indentation + keyword + " "
 
 		let increasedIndentation = increaseIndentation(indentation)
 
-		// TODO: Turn this into an ast pass
-		let explicitConditionsTranslations = conditions.map(translateExpression)
-		let declarationConditionsTranslations = declarations.map
-		{ (declaration: GRYTopLevelNode) -> String in
-			guard case let .variableDeclaration(
-				identifier: identifier, typeName: _, expression: _, getter: _, setter: _, isLet: _,
-				extendsType: _) = declaration else
-			{
-				preconditionFailure()
-			}
-			return identifier + " != null"
-		}
-		let allConditions = declarationConditionsTranslations + explicitConditionsTranslations
-		let conditionsTranslation = allConditions.joined(separator: " && ")
+		let conditionsTranslation = conditions.map(translateExpression).joined(separator: " && ")
 
 		if keyword != "else" {
 			let parenthesizedCondition = isGuard ?
