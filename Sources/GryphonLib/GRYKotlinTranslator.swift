@@ -607,15 +607,7 @@ public class GRYKotlinTranslator {
 		}
 
 		let contents = pairs.map { (pair: GRYExpression.TuplePair) -> String in
-
-			// TODO: Turn this into an Ast pass
-			let expression: String
-			if case let .parenthesesExpression(expression: innerExpression) = pair.expression {
-				expression = translateExpression(innerExpression)
-			}
-			else {
-				expression = translateExpression(pair.expression)
-			}
+			let expression = translateExpression(pair.expression)
 
 			if let name = pair.name {
 				return "\(name) = \(expression)"
