@@ -1,11 +1,18 @@
 
-$astDumpExtension = "swiftAstDump"
+# Call as `perl separateASTs.pl myAst.swiftAstDump`.
+# Creates many myAst1.swiftAstDump, myAst2.swiftAstDump, etc. files
+
+$astDumpExtension = "swiftAstDump";
 
 foreach (@ARGV) {
+    print "Processing $_...\n";
+
     $astDumpFilePath = $_;
 
     # Grab the filename without the extension
-    if ($astDumpFilePath =~ /(.*)\.swiftASTDump/) {
+    if ($astDumpFilePath =~ /(.*)\.swiftAstDump/) {
+        print "Got filename\n";
+
         $pathWithoutExtension = $1;
 
         # Open the ast file
