@@ -80,9 +80,6 @@ public class GRYSwiftAst: GRYPrintableAsTree, Equatable, Codable, CustomStringCo
 		while true {
 			// Add subtree
 			if parser.canReadOpenParentheses() {
-				if self.name == "Extension Declaration" {
-					print("")
-				}
 				// Parse subtrees
 				let subtree = GRYSwiftAst(parser: parser)
 				subtrees.append(subtree)
