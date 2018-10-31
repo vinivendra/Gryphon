@@ -83,6 +83,12 @@ public class GRYSwiftAst: GRYPrintableAsTree, Equatable, Codable, CustomStringCo
 				// Parse subtrees
 				let subtree = GRYSwiftAst(parser: parser)
 				subtrees.append(subtree)
+
+				// FIXME: This is a hack to fix Swift 4's unbalanced parentheses when dumping the
+				// AST for a literal dictionary expression
+				if self.name == "Dictionary Expression" {
+					break
+				}
 			}
 			// Finish this branch
 			else if parser.canReadCloseParentheses() {
