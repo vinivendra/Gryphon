@@ -110,11 +110,11 @@ astNodes = [
 	['enumDeclaration',
 		[['access', 'String?'], ['name', 'String'], ['inherits', '[String]'],
 		['elements', '[String]']]],
-	['protocolDeclaration', [['name', 'String']]],
+	['protocolDeclaration', [['name', 'String'], ['members', '[GRYTopLevelNode]']]],
 	['structDeclaration', [['name', 'String']]],
 	['functionDeclaration',
 		[['prefix', 'String'], ['parameterNames', '[String]'], ['parameterTypes', '[String]'],
-		['returnType', 'String'], ['isImplicit', 'Bool'], ['statements', '[GRYTopLevelNode]'],
+		['returnType', 'String'], ['isImplicit', 'Bool'], ['statements', '[GRYTopLevelNode]?'],
 		['access', 'String?']]],
 	['variableDeclaration',
 		[['identifier', 'String'], ['typeName', 'String'], ['expression', 'GRYExpression?'],
@@ -249,8 +249,10 @@ public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree {
 				access, name,
 				GRYPrintableTree(description: "inherits", subtreesOrNil: inherits),
 				GRYPrintableTree(description: "elements", subtreesOrNil: elements), ]
-		case let .protocolDeclaration(name: name):
-			return [name]
+		case let .protocolDeclaration(name: name, members: members):
+			return [
+				name,
+				GRYPrintableTree(description: "members", subtreesOrNil: members)]
 		case let .structDeclaration(name: name):
 			return [name]
 		case let .functionDeclaration(
@@ -269,7 +271,7 @@ public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree {
 				access,
 				name,
 				type,
-				GRYPrintableTree(description: "statements", subtreesOrNil: statements), ]
+				GRYPrintableTree(description: "statements", subtreesOrNil: statements ?? []), ]
 		case let .variableDeclaration(
 			identifier: identifier,
 			typeName: typeName,

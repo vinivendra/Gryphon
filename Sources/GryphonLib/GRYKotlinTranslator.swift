@@ -138,8 +138,9 @@ public class GRYKotlinTranslator {
 				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
 				returnType: returnType, isImplicit: isImplicit, statements: statements,
 				access: access, withIndentation: indentation)
-		case let .protocolDeclaration(name: name):
-			result = translateProtocolDeclaration(name: name, withIndentation: indentation)
+		case let .protocolDeclaration(name: name, members: members):
+			result = try translateProtocolDeclaration(
+				name: name, members: members, withIndentation: indentation)
 		case let .throwStatement(expression: expression):
 			result = translateThrowStatement(expression: expression, withIndentation: indentation)
 		case .structDeclaration(name: _):
@@ -221,10 +222,16 @@ public class GRYKotlinTranslator {
 		return result
 	}
 
-	private func translateProtocolDeclaration(name: String, withIndentation indentation: String)
+	private func translateProtocolDeclaration(
+		name: String, members: [GRYTopLevelNode], withIndentation indentation: String) throws
 		-> String
 	{
-		return ""
+		var result = "\(indentation)interface \(name) {\n"
+		let contents = try translate(
+			subtrees: members, withIndentation: increaseIndentation(indentation))
+		result += contents
+		result += "\(indentation)}\n"
+		return result
 	}
 
 	private func translateClassDeclaration(
@@ -253,7 +260,7 @@ public class GRYKotlinTranslator {
 
 	private func translateFunctionDeclaration(
 		prefix: String, parameterNames: [String], parameterTypes: [String], returnType: String,
-		isImplicit: Bool, statements: [GRYTopLevelNode], access: String?,
+		isImplicit: Bool, statements: [GRYTopLevelNode]?, access: String?,
 		withIndentation indentation: String) throws -> String
 	{
 		guard !isImplicit else {
@@ -282,12 +289,13 @@ public class GRYKotlinTranslator {
 			result += ": \(translatedReturnType)"
 		}
 
+		guard let statements = statements else {
+			return result + "\n"
+		}
+
 		result += " {\n"
-
 		indentation = increaseIndentation(indentation)
-
 		result += try translate(subtrees: statements, withIndentation: indentation)
-
 		indentation = decreaseIndentation(indentation)
 		result += indentation + "}\n"
 
@@ -439,9 +447,11 @@ public class GRYKotlinTranslator {
 				preconditionFailure()
 			}
 
-			result += indentation1 + "get() {\n"
-			result += try translate(subtrees: statements, withIndentation: indentation2)
-			result += indentation1 + "}\n"
+			if let statements = statements {
+				result += indentation1 + "get() {\n"
+				result += try translate(subtrees: statements, withIndentation: indentation2)
+				result += indentation1 + "}\n"
+			}
 		}
 
 		if let setter = setter {
@@ -452,9 +462,11 @@ public class GRYKotlinTranslator {
 				preconditionFailure()
 			}
 
-			result += indentation1 + "set(newValue) {\n"
-			result += try translate(subtrees: statements, withIndentation: indentation2)
-			result += indentation1 + "}\n"
+			if let statements = statements {
+				result += indentation1 + "set(newValue) {\n"
+				result += try translate(subtrees: statements, withIndentation: indentation2)
+				result += indentation1 + "}\n"
+			}
 		}
 
 		return result

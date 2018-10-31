@@ -54,8 +54,8 @@ public class GRYTranspilationPass {
 
 			return replaceEnumDeclaration(
 				access: access, name: name, inherits: inherits, elements: elements)
-		case let .protocolDeclaration(name: name):
-			return replaceProtocolDeclaration(name: name)
+		case let .protocolDeclaration(name: name, members: members):
+			return replaceProtocolDeclaration(name: name, members: members)
 		case let .structDeclaration(name: name):
 			return replaceStructDeclaration(name: name)
 		case let .functionDeclaration(
@@ -120,8 +120,8 @@ public class GRYTranspilationPass {
 			.enumDeclaration(access: access, name: name, inherits: inherits, elements: elements), ]
 	}
 
-	func replaceProtocolDeclaration(name: String) -> [GRYTopLevelNode] {
-		return [.protocolDeclaration(name: name)]
+	func replaceProtocolDeclaration(name: String, members: [GRYTopLevelNode]) -> [GRYTopLevelNode] {
+		return [.protocolDeclaration(name: name, members: members.flatMap(replaceTopLevelNode))]
 	}
 
 	func replaceStructDeclaration(name: String) -> [GRYTopLevelNode] {
@@ -130,12 +130,12 @@ public class GRYTranspilationPass {
 
 	func replaceFunctionDeclaration(
 		prefix: String, parameterNames: [String], parameterTypes: [String], returnType: String,
-		isImplicit: Bool, statements: [GRYTopLevelNode], access: String?) -> [GRYTopLevelNode]
+		isImplicit: Bool, statements: [GRYTopLevelNode]?, access: String?) -> [GRYTopLevelNode]
 	{
 		return [.functionDeclaration(
 			prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
 			returnType: returnType, isImplicit: isImplicit,
-			statements: statements.flatMap(replaceTopLevelNode), access: access), ]
+			statements: statements.map { $0.flatMap(replaceTopLevelNode) }, access: access), ]
 	}
 
 	func replaceVariableDeclaration(
@@ -426,9 +426,9 @@ public class GRYIgnoreNextTranspilationPass: GRYTranspilationPass {
 public class GRYDeclarationsTranspilationPass: GRYTranspilationPass {
 	override func replaceFunctionDeclaration(
 		prefix: String, parameterNames: [String], parameterTypes: [String], returnType: String,
-		isImplicit: Bool, statements: [GRYTopLevelNode], access: String?) -> [GRYTopLevelNode]
+		isImplicit: Bool, statements: [GRYTopLevelNode]?, access: String?) -> [GRYTopLevelNode]
 	{
-		if prefix.hasPrefix("GRYDeclarations") {
+		if prefix.hasPrefix("GRYDeclarations"), let statements = statements {
 			return statements
 		}
 		else {
@@ -443,7 +443,7 @@ public class GRYDeclarationsTranspilationPass: GRYTranspilationPass {
 public class GRYRemoveGryphonDeclarationsTranspilationPass: GRYTranspilationPass {
 	override func replaceFunctionDeclaration(
 		prefix: String, parameterNames: [String], parameterTypes: [String], returnType: String,
-		isImplicit: Bool, statements: [GRYTopLevelNode], access: String?) -> [GRYTopLevelNode]
+		isImplicit: Bool, statements: [GRYTopLevelNode]?, access: String?) -> [GRYTopLevelNode]
 	{
 		if prefix.hasPrefix("GRYInsert") || prefix.hasPrefix("GRYAlternative") ||
 			prefix.hasPrefix("GRYIgnoreNext")
@@ -458,12 +458,14 @@ public class GRYRemoveGryphonDeclarationsTranspilationPass: GRYTranspilationPass
 		}
 	}
 
-	override func replaceProtocolDeclaration(name: String) -> [GRYTopLevelNode] {
+	override func replaceProtocolDeclaration(name: String, members: [GRYTopLevelNode])
+		-> [GRYTopLevelNode]
+	{
 		if name == "GRYIgnore" {
 			return []
 		}
 		else {
-			return super.replaceProtocolDeclaration(name: name)
+			return super.replaceProtocolDeclaration(name: name, members: members)
 		}
 	}
 }
@@ -604,6 +606,37 @@ public class GRYRearrangeIfLetsTranspilationPass: GRYTranspilationPass {
 	}
 }
 
+public class GRYFixProtocolContentsTranspilationPass: GRYTranspilationPass {
+	var isInProtocol = false
+
+	override func replaceProtocolDeclaration(
+		name: String, members: [GRYTopLevelNode]) -> [GRYTopLevelNode]
+	{
+		isInProtocol = true
+		let result = super.replaceProtocolDeclaration(name: name, members: members)
+		isInProtocol = false
+
+		return result
+	}
+
+	override func replaceFunctionDeclaration(
+		prefix: String, parameterNames: [String], parameterTypes: [String], returnType: String,
+		isImplicit: Bool, statements: [GRYTopLevelNode]?, access: String?) -> [GRYTopLevelNode]
+	{
+		if isInProtocol {
+			return super.replaceFunctionDeclaration(
+				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
+				returnType: returnType, isImplicit: isImplicit, statements: nil, access: access)
+		}
+		else {
+			return super.replaceFunctionDeclaration(
+				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
+				returnType: returnType, isImplicit: isImplicit, statements: statements,
+				access: access)
+		}
+	}
+}
+
 public extension GRYTranspilationPass {
 	static func runAllPasses(on sourceFile: GRYAst) -> GRYAst {
 		var result = sourceFile
@@ -614,9 +647,12 @@ public extension GRYTranspilationPass {
 		result = GRYIgnoreNextTranspilationPass().run(on: result)
 		result = GRYInsertCodeLiteralsTranspilationPass().run(on: result)
 		result = GRYDeclarationsTranspilationPass().run(on: result)
+
+		result = GRYFixProtocolContentsTranspilationPass().run(on: result)
 		result = GRYSelfToThisTranspilationPass().run(on: result)
 		result = GRYRemoveExtensionsTranspilationPass().run(on: result)
 		result = GRYRearrangeIfLetsTranspilationPass().run(on: result)
+
 		result = GRYRecordEnumsTranspilationPass().run(on: result)
 		result = GRYRaiseStandardLibraryWarningsTranspilationPass().run(on: result)
 		return result

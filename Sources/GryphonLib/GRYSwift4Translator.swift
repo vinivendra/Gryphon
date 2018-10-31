@@ -223,7 +223,9 @@ public class GRYSwift4Translator {
 				ast: protocolDeclaration)
 		}
 
-		return .protocolDeclaration(name: protocolName)
+		let members = try translate(subtrees: protocolDeclaration.subtrees)
+
+		return .protocolDeclaration(name: protocolName, members: members)
 	}
 
 	private func translate(assignExpression: GRYSwiftAst) throws -> GRYTopLevelNode {
@@ -709,14 +711,13 @@ public class GRYSwift4Translator {
 				"Unable to get return type", ast: functionDeclaration)
 		}
 
-		let statements: [GRYTopLevelNode]
 		// Translate the function body
+		let statements: [GRYTopLevelNode]
 		if let braceStatement = functionDeclaration.subtree(named: "Brace Statement") {
 			statements = try translate(subtrees: braceStatement.subtrees)
 		}
 		else {
-			throw unexpectedAstStructureError(
-				"Unable to get function body", ast: functionDeclaration)
+			statements = []
 		}
 
 		return .functionDeclaration(
@@ -769,12 +770,10 @@ public class GRYSwift4Translator {
 			for subtree in variableDeclaration.subtrees
 				where !subtree.standaloneAttributes.contains("implicit")
 			{
-				guard let statements = subtree.subtree(named: "Brace Statement")?.subtrees else {
-					throw unexpectedAstStructureError(
-						"Unrecognized subtree", ast: variableDeclaration)
-				}
-
 				let access = subtree["access"]
+
+				let statements: [GRYSwiftAst] = subtree.subtree(named: "Brace Statement")?.subtrees
+					?? []
 				let statementsTranslation = try translate(subtrees: statements)
 
 				if subtree["getter_for"] != nil {
@@ -786,7 +785,7 @@ public class GRYSwift4Translator {
 						statements: statementsTranslation,
 						access: access)
 				}
-				else {
+				else if subtree["materializeForSet_for"] != nil || subtree["setter_for"] != nil {
 					setter = .functionDeclaration(
 						prefix: "set",
 						parameterNames: ["newValue"],
@@ -795,6 +794,10 @@ public class GRYSwift4Translator {
 						isImplicit: false,
 						statements: statementsTranslation,
 						access: access)
+				}
+				else {
+					throw unexpectedAstStructureError(
+						"Unrecognized subtree", ast: variableDeclaration)
 				}
 			}
 
