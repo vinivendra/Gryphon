@@ -36,11 +36,11 @@ foreach (@ARGV) {
             $i = $i + 1;
 
             # Form the output file name
-            $partFileName = "$pathWithoutExtension$i.$astDumpExtension";
+            $partFileName = "$pathWithoutExtension-$i.$astDumpExtension";
 
             print "Processing $partFileName...\n";
             # Open or create the output file
-            open(my $fileHandle, '>', "$partFileName") or die "Could not open file '$pathWithoutExtension$i.$astDumpExtension' $!";
+            open(my $fileHandle, '>', "$partFileName") or die "Could not open file '$partFileName' $!";
             # Overwrite it with the new ast dump
             print $fileHandle $1;
             # Close the output file
@@ -51,10 +51,10 @@ foreach (@ARGV) {
         # Increase the filename counter
         $i = $i + 1;
         # Form the output file name
-        $partFileName = "$pathWithoutExtension$i.$astDumpExtension";
+        $partFileName = "$pathWithoutExtension-$i.$astDumpExtension";
         print "Processing $partFileName...\n";
         # Open or create the output file
-        open(my $fileHandle, '>', "$partFileName") or die "Could not open file '$pathWithoutExtension$i.$astDumpExtension' $!";
+        open(my $fileHandle, '>', "$partFileName") or die "Could not open file '$partFileName' $!";
         # Overwrite it with the remainder of the ast dump
         print $fileHandle $astDump;
         # Close the output file
