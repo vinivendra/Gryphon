@@ -68,8 +68,8 @@ public extension GRYPrintableAsTree {
 			if isLast {
 				indentation[indentation.count - 1] = "   "
 			}
-				// If there are more branches after me, keep printing the line
-				// so my siblings can be correctly printed later.
+			// If there are more branches after me, keep printing the line
+			// so my siblings can be correctly printed later.
 			else {
 				indentation[indentation.count - 1] = " │ "
 			}

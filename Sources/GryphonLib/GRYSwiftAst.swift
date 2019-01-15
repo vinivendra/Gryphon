@@ -130,6 +130,63 @@ public class GRYSwiftAst: GRYPrintableAsTree, Equatable, Codable, CustomStringCo
 		self.keyValueAttributes = keyValueAttributes
 	}
 
+	public convenience init(sExpressionFile sExpressionFilePath: String) {
+		do {
+			let rawSExpressionDump = try String(contentsOfFile: sExpressionFilePath)
+
+			// Information in stored files has placeholders for file paths that must be replaced
+			let swiftFilePath = GRYUtils.changeExtension(of: sExpressionFilePath, to: .swift)
+			let processedSExpressionDump =
+				rawSExpressionDump.replacingOccurrences(of: "<<testFilePath>>", with: swiftFilePath)
+
+			let decoder = GRYSExpressionParser(sExpression: processedSExpressionDump)
+			self.init(decoder: decoder)
+		}
+		catch {
+			fatalError("Error opening \(sExpressionFilePath)." +
+				" If the file doesn't exist, please use dump-ast.pl to generate it.")
+		}
+	}
+
+	internal init(decoder: GRYSExpressionParser) {
+		var standaloneAttributes = [String]()
+		var keyValueAttributes = [String: String]()
+		var subtrees = [GRYSwiftAst]()
+
+		decoder.readOpenParentheses()
+		self.name = decoder.readDoubleQuotedString()
+
+		// The loop stops: all branches tell the parser to read, therefore the input string must end
+		// eventually
+		while true {
+			// Add subtree
+			if decoder.canReadOpenParentheses() {
+				// Parse subtrees
+				let subtree = GRYSwiftAst(decoder: decoder)
+				subtrees.append(subtree)
+			}
+			// Finish this branch
+			else if decoder.canReadCloseParentheses() {
+				decoder.readCloseParentheses()
+				break
+			}
+			// Add key-value attributes
+			else if let key = decoder.readKey() {
+				keyValueAttributes[key] = GRYSExpressionEncoder.decode(
+					decoder.readDoubleQuotedString())
+			}
+			// Add standalone attributes
+			else {
+				let attribute = GRYSExpressionEncoder.decode(decoder.readDoubleQuotedString())
+				standaloneAttributes.append(attribute)
+			}
+		}
+
+		self.subtrees = subtrees
+		self.standaloneAttributes = standaloneAttributes
+		self.keyValueAttributes = keyValueAttributes
+	}
+
 	internal init(_ name: String, _ subtrees: [GRYSwiftAst] = []) {
 		self.name = name
 		self.standaloneAttributes = []
@@ -182,6 +239,37 @@ public class GRYSwiftAst: GRYPrintableAsTree, Equatable, Codable, CustomStringCo
 			rawJsonString.replacingOccurrences(of: escapedFilePath, with: "<<testFilePath>>")
 
 		try! processedJsonString.write(toFile: filePath, atomically: true, encoding: .utf8)
+	}
+
+	public func writeAsSExpression(
+		toFile filePath: String,
+		withEncoder encoder: GRYSExpressionEncoder = GRYSExpressionEncoder())
+	{
+		let encoder = GRYSExpressionEncoder()
+		self.encodeToSExpression(using: encoder)
+		let rawSExpressionString = encoder.result
+
+		// Absolute file paths must be replaced with placeholders before writing to file.
+		let swiftFilePath = GRYUtils.changeExtension(of: filePath, to: .swift)
+		let escapedFilePath = swiftFilePath.replacingOccurrences(of: "/", with: "\\/")
+		let processedSExpressionString =
+			rawSExpressionString.replacingOccurrences(of: escapedFilePath, with: "<<testFilePath>>")
+
+		try! processedSExpressionString.write(toFile: filePath, atomically: true, encoding: .utf8)
+	}
+
+	func encodeToSExpression(using encoder: GRYSExpressionEncoder) {
+		encoder.startNewObject(named: name)
+		for attribute in standaloneAttributes {
+			encoder.addAttribute(attribute)
+		}
+		for (key, value) in keyValueAttributes {
+			encoder.addKey(key, withValue: value)
+		}
+		for subtree in subtrees {
+			subtree.encodeToSExpression(using: encoder)
+		}
+		encoder.endObject()
 	}
 
 	//

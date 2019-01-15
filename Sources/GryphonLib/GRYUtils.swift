@@ -46,6 +46,7 @@ public enum GRYFileExtension: String {
 	// This should be the same as the extension in the dump-ast.pl and separateASTs.pl files
 	case swiftAstDump
 	case grySwiftAstJson
+	case grySwiftAstSExpression
 	case gryRawAstJson
 	case gryAstJson
 

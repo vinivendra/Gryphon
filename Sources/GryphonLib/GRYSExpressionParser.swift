@@ -83,12 +83,14 @@ internal class GRYSExpressionParser {
 		currentIndex = nextIndex()
 	}
 
+	// TODO: Replace these fatal errors with something more testable
 	func readCloseParentheses() {
 		guard canReadCloseParentheses() else { fatalError("Parsing error") }
 		currentIndex = nextIndex()
 		cleanLeadingWhitespace()
 	}
 
+	// TODO: Can't this just be `return string`?
 	func readStandaloneAttribute() -> String {
 		if canReadOpenParentheses() {
 			return ""
@@ -475,5 +477,59 @@ private extension Character {
 			self == "7" ||
 			self == "8" ||
 			self == "9"
+	}
+}
+
+public class GRYSExpressionEncoder {
+	private var indentation = ""
+	public var result = ""
+
+	public init() { }
+
+	public func startNewObject(named name: String) {
+		let name = "\"\(name)\""
+
+		if result.isEmpty {
+			result += "(" + name
+			increaseIndentation()
+		}
+		else {
+			result += "\n" + indentation + "(" + name
+			increaseIndentation()
+		}
+	}
+
+	public func endObject() {
+		result += ")"
+		decreaseIndentation()
+	}
+
+	public func addKey(_ key: String, withValue value: String) {
+		result += " " + key + "=" + GRYSExpressionEncoder.encode(value)
+	}
+
+	public func addAttribute(_ attribute: String) {
+		result += " " + GRYSExpressionEncoder.encode(attribute)
+	}
+
+	public func increaseIndentation() {
+		indentation += "  "
+	}
+
+	public func decreaseIndentation() {
+		indentation = String(indentation.dropLast(2))
+	}
+
+	//
+	internal static func encode(_ identifier: String) -> String {
+		var escapedIdentifier = identifier.replacingOccurrences(of: "\\", with: "\\\\")
+		escapedIdentifier = identifier.replacingOccurrences(of: "\"", with: "\\\"")
+		return "\"\(escapedIdentifier)\""
+	}
+
+	internal static func decode(_ identifier: String) -> String {
+		var unescapedIdentifier = identifier.replacingOccurrences(of: "\\\\", with: "\\")
+		unescapedIdentifier = identifier.replacingOccurrences(of: "\\\"", with: "\"")
+		return unescapedIdentifier
 	}
 }
