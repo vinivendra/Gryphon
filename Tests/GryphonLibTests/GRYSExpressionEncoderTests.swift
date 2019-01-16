@@ -18,7 +18,7 @@
 import XCTest
 
 class GRYSExpressionEncoderTest: XCTestCase {
-	func testEncoder() {
+	func testSwiftAST() {
 		let tests = TestUtils.allTestCases
 
 		for testName in tests {
@@ -43,8 +43,33 @@ class GRYSExpressionEncoderTest: XCTestCase {
 		}
 	}
 
+	func testGRYAst() {
+		let tests = TestUtils.allTestCases
+
+		for testName in tests {
+			print("- Testing \(testName)...")
+
+			// Load a cached AST from file
+			let testFilePath = TestUtils.testFilesPath + testName
+			let expectedAST = GRYAst.initialize(fromJsonInFile: testFilePath + .gryAstJson)
+
+			// Write cached AST to file and parse it back
+			expectedAST.writeAsSExpression(toFile: testFilePath + .grySwiftAstSExpression)
+			let createdAST = GRYAst.initialize(fromSExpressionInFile: testFilePath + .grySwiftAstSExpression)
+
+			// Compare the two
+			XCTAssert(
+				createdAST == expectedAST,
+				"Test \(testName): parser failed to produce expected result. Diff:" +
+					TestUtils.diff(createdAST.description, expectedAST.description))
+
+			print("\t- Done!")
+		}
+	}
+
 	static var allTests = [
-		("testEncoder", testEncoder),
+		("testSwiftAST", testSwiftAST),
+		("testGRYAst", testGRYAst),
 	]
 
 	override static func setUp() {

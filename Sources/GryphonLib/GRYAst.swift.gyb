@@ -16,7 +16,9 @@
 
 import Foundation
 
-public class GRYAst: GRYPrintableAsTree, Codable, Equatable, CustomStringConvertible {
+public final class GRYAst: GRYPrintableAsTree, Codable, Equatable, CustomStringConvertible,
+	GRYSExpressionDecodable, GRYSExpressionEncodable
+{
 	let declarations: [GRYTopLevelNode]
 	let statements: [GRYTopLevelNode]
 
@@ -36,6 +38,20 @@ public class GRYAst: GRYPrintableAsTree, Codable, Equatable, CustomStringConvert
 			rawJsonString.replacingOccurrences(of: escapedFilePath, with: "<<testFilePath>>")
 
 		try! processedJsonString.write(toFile: filePath, atomically: true, encoding: .utf8)
+	}
+
+	public func writeAsSExpression(toFile filePath: String) {
+		let encoder = GRYSExpressionEncoder()
+		try! self.encode(into: encoder)
+		let rawSExpressionString = encoder.result
+
+		// Absolute file paths must be replaced with placeholders before writing to file.
+		let swiftFilePath = GRYUtils.changeExtension(of: filePath, to: .swift)
+		let escapedFilePath = swiftFilePath.replacingOccurrences(of: "/", with: "\\/")
+		let processedSExpressionString =
+			rawSExpressionString.replacingOccurrences(of: escapedFilePath, with: "<<testFilePath>>")
+
+		try! processedSExpressionString.write(toFile: filePath, atomically: true, encoding: .utf8)
 	}
 
 	public static func initialize(fromJsonInFile jsonFilePath: String) -> GRYAst {
@@ -58,6 +74,45 @@ public class GRYAst: GRYPrintableAsTree, Codable, Equatable, CustomStringConvert
 				Error: \(error)
 				""")
 		}
+	}
+
+	public static func initialize(fromSExpressionInFile sExpressionFilePath: String) -> GRYAst {
+		do {
+			let rawSExpressionDump = try String(contentsOfFile: sExpressionFilePath)
+
+			// Information in stored files has placeholders for file paths that must be replaced
+			let swiftFilePath = GRYUtils.changeExtension(of: sExpressionFilePath, to: .swift)
+			let escapedFilePath = swiftFilePath.replacingOccurrences(of: "/", with: "\\/")
+			let processedSExpressionDump =
+				rawSExpressionDump.replacingOccurrences(
+					of: "<<testFilePath>>", with: escapedFilePath)
+
+			let parser = GRYSExpressionParser(sExpression: processedSExpressionDump)
+			return try! decode(withParser: parser)
+		}
+		catch let error {
+			fatalError("""
+				Error decoding \(sExpressionFilePath).
+				If the file doesn't exist, please run `updateJsonTestFiles()` to generate it.
+				Error: \(error)
+				""")
+		}
+	}
+
+	internal static func decode(withParser parser: GRYSExpressionParser) throws -> GRYAst {
+		parser.readOpenParentheses()
+		_ = parser.readIdentifier()
+		let declarations = try [GRYTopLevelNode].decode(withParser: parser)
+		let statements = try [GRYTopLevelNode].decode(withParser: parser)
+		parser.readCloseParentheses()
+		return GRYAst(declarations: declarations, statements: statements)
+	}
+
+	func encode(into encoder: GRYSExpressionEncoder) throws {
+		encoder.startNewObject(named: "GRYAst")
+		try declarations.encode(into: encoder)
+		try statements.encode(into: encoder)
+		encoder.endObject()
 	}
 
 	enum SourceFileCodingKeys: String, CodingKey {
@@ -184,7 +239,9 @@ public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree, GR
 
 	static func decode(withParser parser: GRYSExpressionParser) throws -> GRYTopLevelNode {
 		parser.readOpenParentheses()
-		let name = parser.readIdentifier()
+		let name = parser.readDoubleQuotedString()
+
+		let result: GRYTopLevelNode
 
 		switch name {
 %for astNode in astNodes:
@@ -200,15 +257,18 @@ public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree, GR
 		let ${pair[0]} = try ${pair[1]}.decode(withParser: parser)
 %		end
 %		parametersString = ", ".join(parameters)
-			return .${name}(${parametersString})
+			result = .${name}(${parametersString})
 %
 %	else:
-			return .${name}
+			result = .${name}
 %	end
 %end
 		default:
 			throw AstDecodingError(message: "Unknown ast node \(name).")
 		}
+
+		parser.readCloseParentheses()
+		return result
 	}
 
 	public func encode(to encoder: Encoder) throws {
@@ -462,7 +522,9 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree, GRYS
 
 	static func decode(withParser parser: GRYSExpressionParser) throws -> GRYExpression {
 		parser.readOpenParentheses()
-		let name = parser.readIdentifier()
+		let name = parser.readDoubleQuotedString()
+
+		let result: GRYExpression
 
 		switch name {
 %for expressionNode in expressionNodes:
@@ -478,15 +540,18 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree, GRYS
 		let ${pair[0]} = try ${pair[1]}.decode(withParser: parser)
 %		end
 %		parametersString = ", ".join(parameters)
-			return .${name}(${parametersString})
+			result = .${name}(${parametersString})
 %
 %	else:
-			return .${name}
+			result = .${name}
 %	end
 %end
 		default:
-			throw AstDecodingError(message: "Unknown ast node \(name).")
+			throw AstDecodingError(message: "Unknown expression \(name).")
 		}
+
+		parser.readCloseParentheses()
+		return result
 	}
 
 	public func encode(to encoder: Encoder) throws {
@@ -543,7 +608,7 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree, GRYS
 %	end
 %end
 		default:
-			throw AstDecodingError(message: "Unknown ast node \(astName).")
+			throw AstDecodingError(message: "Unknown expression \(astName).")
 		}
 	}
 
