@@ -172,12 +172,11 @@ public class GRYSwiftAst: GRYPrintableAsTree, Equatable, Codable, CustomStringCo
 			}
 			// Add key-value attributes
 			else if let key = decoder.readKey() {
-				keyValueAttributes[key] = GRYSExpressionEncoder.decode(
-					decoder.readDoubleQuotedString())
+				keyValueAttributes[key] = decoder.readDoubleQuotedString()
 			}
 			// Add standalone attributes
 			else {
-				let attribute = GRYSExpressionEncoder.decode(decoder.readDoubleQuotedString())
+				let attribute = decoder.readDoubleQuotedString()
 				standaloneAttributes.append(attribute)
 			}
 		}
@@ -246,7 +245,7 @@ public class GRYSwiftAst: GRYPrintableAsTree, Equatable, Codable, CustomStringCo
 		withEncoder encoder: GRYSExpressionEncoder = GRYSExpressionEncoder())
 	{
 		let encoder = GRYSExpressionEncoder()
-		self.encodeToSExpression(using: encoder)
+		try! self.encode(into: encoder)
 		let rawSExpressionString = encoder.result
 
 		// Absolute file paths must be replaced with placeholders before writing to file.
@@ -258,16 +257,17 @@ public class GRYSwiftAst: GRYPrintableAsTree, Equatable, Codable, CustomStringCo
 		try! processedSExpressionString.write(toFile: filePath, atomically: true, encoding: .utf8)
 	}
 
-	func encodeToSExpression(using encoder: GRYSExpressionEncoder) {
+	func encode(into encoder: GRYSExpressionEncoder) throws {
 		encoder.startNewObject(named: name)
 		for attribute in standaloneAttributes {
-			encoder.addAttribute(attribute)
+			try attribute.encode(into: encoder)
 		}
 		for (key, value) in keyValueAttributes {
-			encoder.addKey(key, withValue: value)
+			encoder.addKey(key)
+			try value.encode(into: encoder)
 		}
 		for subtree in subtrees {
-			subtree.encodeToSExpression(using: encoder)
+			try subtree.encode(into: encoder)
 		}
 		encoder.endObject()
 	}

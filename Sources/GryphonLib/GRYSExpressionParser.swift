@@ -69,6 +69,26 @@ internal class GRYSExpressionParser {
 		return buffer[currentIndex] == "["
 	}
 
+	// TODO: test
+	func canReadOpenBrackets() -> Bool {
+		return buffer[currentIndex] == "["
+	}
+
+	// TODO: test
+	func canReadCloseBrackets() -> Bool {
+		return buffer[currentIndex] == "]"
+	}
+
+	// TODO: test
+	func canReadOpenCurlyBrackets() -> Bool {
+		return buffer[currentIndex] == "{"
+	}
+
+	// TODO: test
+	func canReadCloseCurlyBrackets() -> Bool {
+		return buffer[currentIndex] == "}"
+	}
+
 	func canReadStringInAngleBrackets() -> Bool {
 		return buffer[currentIndex] == "<"
 	}
@@ -86,6 +106,28 @@ internal class GRYSExpressionParser {
 	// TODO: Replace these fatal errors with something more testable
 	func readCloseParentheses() {
 		guard canReadCloseParentheses() else { fatalError("Parsing error") }
+		currentIndex = nextIndex()
+		cleanLeadingWhitespace()
+	}
+
+	func readOpenBrackets() {
+		guard canReadOpenBrackets() else { fatalError("Parsing error") }
+		currentIndex = nextIndex()
+	}
+
+	func readCloseBrackets() {
+		guard canReadCloseBrackets() else { fatalError("Parsing error") }
+		currentIndex = nextIndex()
+		cleanLeadingWhitespace()
+	}
+
+	func readOpenCurlyBrackets() {
+		guard canReadOpenCurlyBrackets() else { fatalError("Parsing error") }
+		currentIndex = nextIndex()
+	}
+
+	func readCloseCurlyBrackets() {
+		guard canReadCloseCurlyBrackets() else { fatalError("Parsing error") }
 		currentIndex = nextIndex()
 		cleanLeadingWhitespace()
 	}
@@ -480,6 +522,7 @@ private extension Character {
 	}
 }
 
+// TODO: test
 public class GRYSExpressionEncoder {
 	private var indentation = ""
 	public var result = ""
@@ -504,12 +547,16 @@ public class GRYSExpressionEncoder {
 		decreaseIndentation()
 	}
 
-	public func addKey(_ key: String, withValue value: String) {
-		result += " " + key + "=" + GRYSExpressionEncoder.encode(value)
+	public func addKey(_ key: String) {
+		result += " " + key + "="
 	}
 
-	public func addAttribute(_ attribute: String) {
-		result += " " + GRYSExpressionEncoder.encode(attribute)
+	public func add(_ literal: String) {
+		let lastCharacter = result.last
+		if lastCharacter != "(", lastCharacter != "[", lastCharacter != "{", lastCharacter != "=" {
+			result += " "
+		}
+		result += literal
 	}
 
 	public func increaseIndentation() {
@@ -519,17 +566,158 @@ public class GRYSExpressionEncoder {
 	public func decreaseIndentation() {
 		indentation = String(indentation.dropLast(2))
 	}
+}
 
-	//
-	internal static func encode(_ identifier: String) -> String {
-		var escapedIdentifier = identifier.replacingOccurrences(of: "\\", with: "\\\\")
-		escapedIdentifier = identifier.replacingOccurrences(of: "\"", with: "\\\"")
-		return "\"\(escapedIdentifier)\""
+//
+protocol GRYSExpressionEncodable {
+	func encode(into encoder: GRYSExpressionEncoder) throws
+}
+
+extension Array: GRYSExpressionEncodable where Element: GRYSExpressionEncodable {
+	func encode(into encoder: GRYSExpressionEncoder) throws {
+		encoder.add("[")
+		for element in self {
+			try element.encode(into: encoder)
+		}
+		encoder.add("]")
 	}
+}
 
-	internal static func decode(_ identifier: String) -> String {
-		var unescapedIdentifier = identifier.replacingOccurrences(of: "\\\\", with: "\\")
-		unescapedIdentifier = identifier.replacingOccurrences(of: "\\\"", with: "\"")
-		return unescapedIdentifier
+extension Dictionary: GRYSExpressionEncodable where
+	Key: GRYSExpressionEncodable, Value: GRYSExpressionEncodable
+{
+	func encode(into encoder: GRYSExpressionEncoder) throws {
+		encoder.add("{")
+		for (key, value) in self {
+			try key.encode(into: encoder)
+			try value.encode(into: encoder)
+		}
+		encoder.add("}")
+	}
+}
+
+extension String: GRYSExpressionEncodable {
+	func encode(into encoder: GRYSExpressionEncoder) throws {
+		encoder.add("\"\(self)\"")
+	}
+}
+
+extension Int: GRYSExpressionEncodable {
+	func encode(into encoder: GRYSExpressionEncoder) throws {
+		encoder.add(String(self))
+	}
+}
+
+extension Double: GRYSExpressionEncodable {
+	func encode(into encoder: GRYSExpressionEncoder) throws {
+		encoder.add(String(self))
+	}
+}
+
+extension Bool: GRYSExpressionEncodable {
+	func encode(into encoder: GRYSExpressionEncoder) throws {
+		if self {
+			encoder.add("true")
+		}
+		else {
+			encoder.add("false")
+		}
+	}
+}
+
+extension Optional: GRYSExpressionEncodable where Wrapped: GRYSExpressionEncodable {
+	func encode(into encoder: GRYSExpressionEncoder) throws {
+		if let unwrapped = self {
+			try unwrapped.encode(into: encoder)
+		}
+		else {
+			encoder.add("nil")
+		}
+	}
+}
+
+//
+enum GRYSExpressionDecodingError: Error {
+	case conversionFailure(String)
+}
+
+protocol GRYSExpressionDecodable {
+	static func decode(withParser: GRYSExpressionParser) throws -> Self
+}
+
+extension Array: GRYSExpressionDecodable where Element: GRYSExpressionDecodable {
+	static func decode(withParser parser: GRYSExpressionParser) throws -> [Element] {
+		var result = [Element]()
+		parser.readOpenBrackets()
+		defer { parser.readCloseBrackets() }
+		while !parser.canReadCloseBrackets() {
+			let newElement = try Element.decode(withParser: parser)
+			result.append(newElement)
+		}
+		return result
+	}
+}
+
+extension Dictionary: GRYSExpressionDecodable where
+	Key: GRYSExpressionDecodable, Value: GRYSExpressionDecodable
+{
+	static func decode(withParser parser: GRYSExpressionParser) throws -> [Key: Value] {
+		var result = [Key: Value]()
+		parser.readOpenCurlyBrackets()
+		defer { parser.readCloseCurlyBrackets() }
+		while !parser.canReadCloseCurlyBrackets() {
+			let newKey = try Key.decode(withParser: parser)
+			let newValue = try Value.decode(withParser: parser)
+			result[newKey] = newValue
+		}
+		return result
+	}
+}
+
+extension String: GRYSExpressionDecodable {
+	static func decode(withParser parser: GRYSExpressionParser) throws -> String {
+		return parser.readDoubleQuotedString()
+	}
+}
+
+extension Int: GRYSExpressionDecodable {
+	static func decode(withParser parser: GRYSExpressionParser) throws -> Int {
+		let expectedInt = parser.readDoubleQuotedString()
+		guard let result = Int(expectedInt) else {
+			throw GRYSExpressionDecodingError.conversionFailure(
+				"Failed to convert \(expectedInt) to Int.")
+		}
+		return result
+	}
+}
+
+extension Double: GRYSExpressionDecodable {
+	static func decode(withParser parser: GRYSExpressionParser) throws -> Double {
+		let expectedDouble = parser.readDoubleQuotedString()
+		guard let result = Double(expectedDouble) else {
+			throw GRYSExpressionDecodingError.conversionFailure(
+				"Failed to convert \(expectedDouble) to Double.")
+		}
+		return result
+	}
+}
+
+extension Bool: GRYSExpressionDecodable {
+	static func decode(withParser parser: GRYSExpressionParser) throws -> Bool {
+		let expectedBool = parser.readDoubleQuotedString()
+		guard let result = Bool(expectedBool) else {
+			throw GRYSExpressionDecodingError.conversionFailure(
+				"Failed to convert \(expectedBool) to Bool.")
+		}
+		return result
+	}
+}
+
+extension Optional: GRYSExpressionDecodable where Wrapped: GRYSExpressionDecodable {
+	static func decode(withParser parser: GRYSExpressionParser) throws -> Wrapped? {
+		if parser.buffer[parser.currentIndex...].hasPrefix("nil") {
+			return nil
+		}
+		return try Wrapped.decode(withParser: parser)
 	}
 }

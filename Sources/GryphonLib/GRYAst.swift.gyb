@@ -133,7 +133,7 @@ astNodes = [
 	]
 }%
 
-public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree {
+public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree, GRYSExpressionDecodable, GRYSExpressionEncodable {
 
 %for astNode in astNodes:
 %	name = astNode[0]
@@ -153,6 +153,64 @@ public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree {
 %end
 
 	//
+	func encode(into encoder: GRYSExpressionEncoder) throws {
+		encoder.startNewObject(named: self.name)
+
+		switch self {
+%for astNode in astNodes:
+%	name = astNode[0]
+%
+%	if len(astNode) > 1:
+%		pairs = astNode[1]
+%		parameters = []
+%		for pair in pairs:
+%			parameters.append(pair[0] + ": " + pair[0])
+%		end
+%		parametersString = ", ".join(parameters)
+		case let .${name}(${parametersString}):
+%		for pair in pairs:
+			try ${pair[0]}.encode(into: encoder)
+%		end
+%
+%	else:
+		case .${name}:
+			break
+%	end
+%end
+		}
+
+		encoder.endObject()
+	}
+
+	static func decode(withParser parser: GRYSExpressionParser) throws -> GRYTopLevelNode {
+		parser.readOpenParentheses()
+		let name = parser.readIdentifier()
+
+		switch name {
+%for astNode in astNodes:
+%	name = astNode[0]
+%
+		case "${name}":
+%
+%	if len(astNode) > 1:
+%		pairs = astNode[1]
+%		parameters = []
+%		for pair in pairs:
+%			parameters.append(pair[0] + ": " + pair[0])
+		let ${pair[0]} = try ${pair[1]}.decode(withParser: parser)
+%		end
+%		parametersString = ", ".join(parameters)
+			return .${name}(${parametersString})
+%
+%	else:
+			return .${name}
+%	end
+%end
+		default:
+			throw AstDecodingError(message: "Unknown ast node \(name).")
+		}
+	}
+
 	public func encode(to encoder: Encoder) throws {
 		var container = encoder.container(keyedBy: StringCodingKey.self)
 
@@ -353,7 +411,7 @@ expressionNodes = [
 ]
 }%
 
-public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
+public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree, GRYSExpressionDecodable, GRYSExpressionEncodable {
 %for expressionNode in expressionNodes:
 %	name = expressionNode[0]
 %
@@ -372,6 +430,65 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
 %end
 
 	//
+
+	func encode(into encoder: GRYSExpressionEncoder) throws {
+		encoder.startNewObject(named: self.name)
+
+		switch self {
+%for expressionNode in expressionNodes:
+%	name = expressionNode[0]
+%
+%	if len(expressionNode) > 1:
+%		pairs = expressionNode[1]
+%		parameters = []
+%		for pair in pairs:
+%			parameters.append(pair[0] + ": " + pair[0])
+%		end
+%		parametersString = ", ".join(parameters)
+		case let .${name}(${parametersString}):
+%		for pair in pairs:
+			try ${pair[0]}.encode(into: encoder)
+%		end
+%
+%	else:
+		case .${name}:
+			break
+%	end
+%end
+		}
+
+		encoder.endObject()
+	}
+
+	static func decode(withParser parser: GRYSExpressionParser) throws -> GRYExpression {
+		parser.readOpenParentheses()
+		let name = parser.readIdentifier()
+
+		switch name {
+%for expressionNode in expressionNodes:
+%	name = expressionNode[0]
+%
+		case "${name}":
+%
+%	if len(expressionNode) > 1:
+%		pairs = expressionNode[1]
+%		parameters = []
+%		for pair in pairs:
+%			parameters.append(pair[0] + ": " + pair[0])
+		let ${pair[0]} = try ${pair[1]}.decode(withParser: parser)
+%		end
+%		parametersString = ", ".join(parameters)
+			return .${name}(${parametersString})
+%
+%	else:
+			return .${name}
+%	end
+%end
+		default:
+			throw AstDecodingError(message: "Unknown ast node \(name).")
+		}
+	}
+
 	public func encode(to encoder: Encoder) throws {
 		var container = encoder.container(keyedBy: StringCodingKey.self)
 
@@ -575,9 +692,20 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree {
 	}
 
 	//
-	public struct TuplePair: Equatable, Codable {
+	public struct TuplePair: Equatable, Codable, GRYSExpressionEncodable, GRYSExpressionDecodable {
 		let name: String?
 		let expression: GRYExpression
+
+		func encode(into encoder: GRYSExpressionEncoder) throws {
+			try name.encode(into: encoder)
+			try expression.encode(into: encoder)
+		}
+
+		static func decode(withParser parser: GRYSExpressionParser) throws -> TuplePair {
+			let name = try String?.decode(withParser: parser)
+			let expression = try GRYExpression.decode(withParser: parser)
+			return TuplePair(name: name, expression: expression)
+		}
 	}
 }
 
