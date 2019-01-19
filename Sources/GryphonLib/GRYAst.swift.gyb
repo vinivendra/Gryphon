@@ -17,7 +17,7 @@
 import Foundation
 
 public final class GRYAst: GRYPrintableAsTree, Codable, Equatable, CustomStringConvertible,
-	GRYSExpressionDecodable, GRYSExpressionEncodable
+	GRYCodable
 {
 	let declarations: [GRYTopLevelNode]
 	let statements: [GRYTopLevelNode]
@@ -41,7 +41,7 @@ public final class GRYAst: GRYPrintableAsTree, Codable, Equatable, CustomStringC
 	}
 
 	public func writeAsSExpression(toFile filePath: String) {
-		let encoder = GRYSExpressionEncoder()
+		let encoder = GRYEncoder()
 		try! self.encode(into: encoder)
 		let rawSExpressionString = encoder.result
 
@@ -87,8 +87,8 @@ public final class GRYAst: GRYPrintableAsTree, Codable, Equatable, CustomStringC
 				rawSExpressionDump.replacingOccurrences(
 					of: "<<testFilePath>>", with: escapedFilePath)
 
-			let parser = GRYSExpressionParser(sExpression: processedSExpressionDump)
-			return try! decode(withParser: parser)
+			let decoder = GRYDecoder(sExpression: processedSExpressionDump)
+			return try! decode(from: decoder)
 		}
 		catch let error {
 			fatalError("""
@@ -99,16 +99,16 @@ public final class GRYAst: GRYPrintableAsTree, Codable, Equatable, CustomStringC
 		}
 	}
 
-	internal static func decode(withParser parser: GRYSExpressionParser) throws -> GRYAst {
-		parser.readOpenParentheses()
-		_ = parser.readIdentifier()
-		let declarations = try [GRYTopLevelNode].decode(withParser: parser)
-		let statements = try [GRYTopLevelNode].decode(withParser: parser)
-		parser.readCloseParentheses()
+	internal static func decode(from decoder: GRYDecoder) throws -> GRYAst {
+		decoder.readOpenParentheses()
+		_ = decoder.readIdentifier()
+		let declarations = try [GRYTopLevelNode].decode(from: decoder)
+		let statements = try [GRYTopLevelNode].decode(from: decoder)
+		decoder.readCloseParentheses()
 		return GRYAst(declarations: declarations, statements: statements)
 	}
 
-	func encode(into encoder: GRYSExpressionEncoder) throws {
+	func encode(into encoder: GRYEncoder) throws {
 		encoder.startNewObject(named: "GRYAst")
 		try declarations.encode(into: encoder)
 		try statements.encode(into: encoder)
@@ -188,7 +188,7 @@ astNodes = [
 	]
 }%
 
-public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree, GRYSExpressionDecodable, GRYSExpressionEncodable {
+public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree, GRYCodable {
 
 %for astNode in astNodes:
 %	name = astNode[0]
@@ -208,7 +208,7 @@ public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree, GR
 %end
 
 	//
-	func encode(into encoder: GRYSExpressionEncoder) throws {
+	func encode(into encoder: GRYEncoder) throws {
 		encoder.startNewObject(named: self.name)
 
 		switch self {
@@ -237,9 +237,9 @@ public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree, GR
 		encoder.endObject()
 	}
 
-	static func decode(withParser parser: GRYSExpressionParser) throws -> GRYTopLevelNode {
-		parser.readOpenParentheses()
-		let name = parser.readDoubleQuotedString()
+	static func decode(from decoder: GRYDecoder) throws -> GRYTopLevelNode {
+		decoder.readOpenParentheses()
+		let name = decoder.readDoubleQuotedString()
 
 		let result: GRYTopLevelNode
 
@@ -254,7 +254,7 @@ public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree, GR
 %		parameters = []
 %		for pair in pairs:
 %			parameters.append(pair[0] + ": " + pair[0])
-		let ${pair[0]} = try ${pair[1]}.decode(withParser: parser)
+		let ${pair[0]} = try ${pair[1]}.decode(from: decoder)
 %		end
 %		parametersString = ", ".join(parameters)
 			result = .${name}(${parametersString})
@@ -267,7 +267,7 @@ public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree, GR
 			throw AstDecodingError(message: "Unknown ast node \(name).")
 		}
 
-		parser.readCloseParentheses()
+		decoder.readCloseParentheses()
 		return result
 	}
 
@@ -471,7 +471,7 @@ expressionNodes = [
 ]
 }%
 
-public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree, GRYSExpressionDecodable, GRYSExpressionEncodable {
+public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree, GRYCodable {
 %for expressionNode in expressionNodes:
 %	name = expressionNode[0]
 %
@@ -491,7 +491,7 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree, GRYS
 
 	//
 
-	func encode(into encoder: GRYSExpressionEncoder) throws {
+	func encode(into encoder: GRYEncoder) throws {
 		encoder.startNewObject(named: self.name)
 
 		switch self {
@@ -520,9 +520,9 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree, GRYS
 		encoder.endObject()
 	}
 
-	static func decode(withParser parser: GRYSExpressionParser) throws -> GRYExpression {
-		parser.readOpenParentheses()
-		let name = parser.readDoubleQuotedString()
+	static func decode(from decoder: GRYDecoder) throws -> GRYExpression {
+		decoder.readOpenParentheses()
+		let name = decoder.readDoubleQuotedString()
 
 		let result: GRYExpression
 
@@ -537,7 +537,7 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree, GRYS
 %		parameters = []
 %		for pair in pairs:
 %			parameters.append(pair[0] + ": " + pair[0])
-		let ${pair[0]} = try ${pair[1]}.decode(withParser: parser)
+		let ${pair[0]} = try ${pair[1]}.decode(from: decoder)
 %		end
 %		parametersString = ", ".join(parameters)
 			result = .${name}(${parametersString})
@@ -550,7 +550,7 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree, GRYS
 			throw AstDecodingError(message: "Unknown expression \(name).")
 		}
 
-		parser.readCloseParentheses()
+		decoder.readCloseParentheses()
 		return result
 	}
 
@@ -757,18 +757,18 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree, GRYS
 	}
 
 	//
-	public struct TuplePair: Equatable, Codable, GRYSExpressionEncodable, GRYSExpressionDecodable {
+	public struct TuplePair: Equatable, Codable, GRYCodable {
 		let name: String?
 		let expression: GRYExpression
 
-		func encode(into encoder: GRYSExpressionEncoder) throws {
+		func encode(into encoder: GRYEncoder) throws {
 			try name.encode(into: encoder)
 			try expression.encode(into: encoder)
 		}
 
-		static func decode(withParser parser: GRYSExpressionParser) throws -> TuplePair {
-			let name = try String?.decode(withParser: parser)
-			let expression = try GRYExpression.decode(withParser: parser)
+		static func decode(from decoder: GRYDecoder) throws -> TuplePair {
+			let name = try String?.decode(from: decoder)
+			let expression = try GRYExpression.decode(from: decoder)
 			return TuplePair(name: name, expression: expression)
 		}
 	}

@@ -24,6 +24,7 @@ public func allTests() -> [XCTestCaseEntry] {
 		testCase(GRYKotlinTranslatorTest.allTests),
 		testCase(GRYPrintableAsTreeTest.allTests),
 		testCase(GRYSExpressionParserTest.allTests),
+		testCase(GRYSExpressionEncoderTest.allTests),
 		testCase(GRYShellTest.allTests),
 		testCase(GRYTranspilationPassTest.allTests),
 		testCase(GRYUtilsTest.allTests),

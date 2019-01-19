@@ -153,32 +153,18 @@ class GRYExtensionTest: XCTestCase {
 }
 
 private enum Fuzzer {
-	static private let characterSets: [[Character]]
-		= [["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "A", "S", "D", "F", "G", "H", "J",
-			"K", "L", "Z", "X", "C", "V", "B", "N", "M", ],
-		   ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "a", "s", "d", "f", "g", "h", "j",
-			"k", "l", "z", "x", "c", "v", "b", "n", "m", ],
-		   ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"],
-		   ["~", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "+", "`", "-", "=", "[",
-			"]", "{", "}", "\\", "|", ";", ":", "'", "\"", ",", "<", ".", ">", "/", "?", ],
-		   ["\n", " ", "\t"], ]
-
 	static func randomTest()
 		-> (string: String, separator: String, occurrences: [TestableRange], components: [String])
 	{
 		var string = ""
-		var separator = ""
 		var occurrences = [TestableRange]()
 		var components = [String]()
 
 		let (separatorCharacterSet, componentCharacterSet) =
-			characterSets.distinctRandomElements()
-
+			TestUtils.characterSets.distinctRandomElements()
 		let separatorSize = TestUtils.rng.random(1...5)
-
-		for _ in 0..<separatorSize {
-			separator.append(separatorCharacterSet.randomElement())
-		}
+		let separator = TestUtils.rng.randomString(
+			fromCharacterSet: separatorCharacterSet, withLength: separatorSize)
 
 		let count = TestUtils.rng.random(0...10)
 		let startsWithSeparator = TestUtils.rng.randomBool()
@@ -200,9 +186,8 @@ private enum Fuzzer {
 				// Allow separators to be glued together
 				guard componentSize > 0 else { continue }
 
-				let newComponent = String((0..<componentSize).map { _ in
-					componentCharacterSet.randomElement()
-				})
+				let newComponent = TestUtils.rng.randomString(
+					fromCharacterSet: componentCharacterSet, withLength: componentSize)
 				string += newComponent
 				components.append(newComponent)
 				currentIndex += componentSize

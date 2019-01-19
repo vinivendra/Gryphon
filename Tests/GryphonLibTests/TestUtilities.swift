@@ -49,7 +49,29 @@ func seedFromLastHour() -> (UInt64, UInt64) {
 	return (UInt64(int1), UInt64(int2))
 }
 
+extension RandomGenerator {
+	func randomString(fromCharacterSet characterSet: [Character], withLength length: Int)
+		-> String
+	{
+		var result = ""
+		for _ in 0..<length {
+			result.append(characterSet.randomElement())
+		}
+		return result
+	}
+}
+
 enum TestUtils {
+	static let characterSets: [[Character]]
+		= [["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "A", "S", "D", "F", "G", "H", "J",
+			"K", "L", "Z", "X", "C", "V", "B", "N", "M", ],
+		   ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "a", "s", "d", "f", "g", "h", "j",
+			"k", "l", "z", "x", "c", "v", "b", "n", "m", ],
+		   ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"],
+		   ["~", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "+", "`", "-", "=", "[",
+			"]", "{", "}", "\\", "|", ";", ":", "'", "\"", ",", "<", ".", ">", "/", "?", ],
+		   ["\n", " ", "\t"], ]
+
 	static var rng: RandomGenerator = Xoroshiro(seed: seedFromCurrentHour())
 
 	static let testFilesPath: String = Process().currentDirectoryPath + "/Test Files/"
