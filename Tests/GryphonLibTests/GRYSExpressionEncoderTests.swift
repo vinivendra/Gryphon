@@ -17,6 +17,8 @@
 @testable import GryphonLib
 import XCTest
 
+// TODO: Improve error messages for thrown errors
+// TODO: Change all `Ast`s into `AST`s
 class GRYSExpressionEncoderTest: XCTestCase {
 	struct TestObject: GRYCodable {
 		let x: Int
@@ -37,8 +39,6 @@ class GRYSExpressionEncoderTest: XCTestCase {
 		let intMin = Int(Int32.min)
 		let intMax = Int(Int32.max)
 
-		// Note: the random string can't use the separator character set because strings are assumed
-		// to have all backslashes and double quotes escaped.
 		let tests: [GRYCodable] = [
 			0, 1, 2, -3,
 			0.0, 0.5, 1.0, -3.2,
@@ -61,9 +61,11 @@ class GRYSExpressionEncoderTest: XCTestCase {
 				fromCharacterSet: TestUtils.characterSets[TestUtils.rng.random(0..<3)],
 				withLength: TestUtils.rng.random(1...10)),
 		]
+		// Note: the random string created above mustn't use the separator character set because
+		// then we'd have to manually escape its backslashes and double quotes.
 
 		do {
-			// Encode into String
+			// Encode instances into a String
 			let encoder = GRYEncoder()
 			encoder.startNewObject(named: "test name")
 			for testObject in tests {
@@ -72,88 +74,100 @@ class GRYSExpressionEncoderTest: XCTestCase {
 			encoder.endObject()
 			let encodingResult = encoder.result
 
-			// Decode back into objects
+			// Decode String back into instances
 			let decoder = GRYDecoder(sExpression: encodingResult)
 			decoder.readOpenParentheses()
 			XCTAssertEqual(decoder.readDoubleQuotedString(), "test name")
-			for testObject in tests {
-				let createdObject = try type(of: testObject).decode(from: decoder)
-				// Can't compare the objects themselves because we can't be sure they're the same
-				// type here, so we can't use the `==` operator. Compare their types and
-				// descriptions instead.
+			for testInstance in tests {
+				let createdInstance = try type(of: testInstance).decode(from: decoder)
+				// We can't compare the instances themselves directly because we can't be sure
+				// they're the same type here, so there's no way to use the `==` operator. We
+				// compare their types and descriptions instead.
 				XCTAssert(
-					type(of: createdObject) == type(of: testObject),
-					"Expected the type of the decoded object \(createdObject) " +
-					"to be equal to the type of the original object \(testObject)")
+					type(of: createdInstance) == type(of: testInstance),
+					"Expected the type of the decoded object \(createdInstance) " +
+					"to be equal to the type of the original object \(testInstance)")
 				XCTAssert(
-					String(describing: createdObject) == String(describing: testObject),
-					"Expected the description of the decoded object \(createdObject) " +
-					"to be equal to the description of the original object \(testObject)")
+					String(describing: createdInstance) == String(describing: testInstance),
+					"Expected the description of the decoded object \(createdInstance) " +
+					"to be equal to the description of the original object \(testInstance)")
 			}
 			decoder.readCloseParentheses()
 
 		}
 		catch let error {
-			XCTFail("Error thrown in tests: \(error)")
+			XCTFail("🚨 Test failed with error:\n\(error)")
 		}
 	}
 
-	// TODO: Handle these throws better
-	func testSwiftAST() {
+	// TODO: Test SwiftAst equality
+	func testSwiftAst() {
 		let tests = TestUtils.allTestCases
 
-		for testName in tests {
-			print("- Testing \(testName)...")
+		do {
+			for testName in tests {
+				print("- Testing \(testName)...")
 
-			// Load a cached AST from file
-			let testFilePath = TestUtils.testFilesPath + testName
-			let expectedAST = GRYSwiftAst(astFile: testFilePath + .swiftAstDump)
+				// Parse an AST from the dump file
+				let testFilePath = TestUtils.testFilesPath + testName
+				let expectedAST = GRYSwiftAst(astFile: testFilePath + .swiftAstDump)
 
-			// Encode the cached AST into a String and then decode it back
-			let encoder = GRYEncoder()
-			try! expectedAST.encode(into: encoder)
-			let decoder = GRYDecoder(sExpression: encoder.result)
-			let createdAST = try! GRYSwiftAst.decode(from: decoder)
+				// Encode the parsed AST into a String and then decode it back
+				let encoder = GRYEncoder()
+				try expectedAST.encode(into: encoder)
+				let decoder = GRYDecoder(sExpression: encoder.result)
+				let createdAST = try GRYSwiftAst.decode(from: decoder)
 
-			// Compare the two
-			XCTAssert(
-				createdAST == expectedAST,
-				"Test \(testName): parser failed to produce expected result. Diff:" +
-					TestUtils.diff(createdAST.description, expectedAST.description))
+				// Compare the two
+				XCTAssert(
+					createdAST == expectedAST,
+					"Test \(testName): parser failed to produce expected result. Diff:" +
+						TestUtils.diff(createdAST.description, expectedAST.description))
 
-			print("\t- Done!")
+				print("\t- Done!")
+			}
+		}
+		catch let error {
+			XCTFail("🚨 Test failed with error:\n\(error)")
 		}
 	}
 
+	// TODO: Test GRYAst equality
 	func testGRYAst() {
 		let tests = TestUtils.allTestCases
 
-		for testName in tests {
-			print("- Testing \(testName)...")
+		do {
+			for testName in tests {
+				print("- Testing \(testName)...")
 
-			// TODO: ⚠️ If we remove JSON, how do we get a reliable AST? Run the whole compiler?
-			// Load a cached AST from file
-			let testFilePath = TestUtils.testFilesPath + testName
-			let expectedAST = GRYAst.initialize(fromJsonInFile: testFilePath + .gryAstJson)
+				// Create an AST from scratch
+				let testFilePath = TestUtils.testFilesPath + testName
+				let expectedAST =
+					try GRYCompiler.generateGryphonAst(forFileAt: testFilePath + .swift)
 
-			// Write cached AST to file and parse it back
-			expectedAST.writeAsSExpression(toFile: testFilePath + .grySwiftAstSExpression)
-			let createdAST = GRYAst.initialize(
-				fromSExpressionInFile: testFilePath + .grySwiftAstSExpression)
+				// Write cached AST to file and parse it back
+				let encoder = GRYEncoder()
+				try expectedAST.encode(into: encoder)
+				let decoder = GRYDecoder(sExpression: encoder.result)
+				let createdAST = try GRYAst.decode(from: decoder)
 
-			// Compare the two
-			XCTAssert(
-				createdAST == expectedAST,
-				"Test \(testName): parser failed to produce expected result. Diff:" +
-					TestUtils.diff(createdAST.description, expectedAST.description))
+				// Compare the two
+				XCTAssert(
+					createdAST == expectedAST,
+					"Test \(testName): parser failed to produce expected result. Diff:" +
+						TestUtils.diff(createdAST.description, expectedAST.description))
 
-			print("\t- Done!")
+				print("\t- Done!")
+			}
+		}
+		catch let error {
+			XCTFail("🚨 Test failed with error:\n\(error)")
 		}
 	}
 
 	static var allTests = [
 		("testSimpleTypes", testSimpleTypes),
-		("testSwiftAST", testSwiftAST),
+		("testSwiftAst", testSwiftAst),
 		("testGRYAst", testGRYAst),
 	]
 
