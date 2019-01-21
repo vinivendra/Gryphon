@@ -15,8 +15,16 @@
 */
 
 //
-enum GRYDecodingError: Error {
-	case conversionFailure(String)
+enum GRYDecodingError: CustomStringConvertible, Error {
+	case conversionFailure(GRYDecoder, String)
+
+	var description: String {
+		switch self {
+		case let .conversionFailure(decoder, message):
+			return "Decoding error: \(message)\n" +
+				"Remaining buffer in decoder: \"\(decoder.remainingBuffer(upTo: 30))\""
+		}
+	}
 }
 
 protocol GRYDecodable {
@@ -663,8 +671,7 @@ extension Int: GRYCodable {
 		let expectedInt = decoder.readIdentifier()
 		guard let result = Int(expectedInt) else {
 			throw GRYDecodingError.conversionFailure(
-				"Failed to convert \(expectedInt) to Int. " +
-				"Remaining buffer: \(decoder.remainingBuffer(upTo: 30))")
+				decoder, "Failed to convert \(expectedInt) to Int.")
 		}
 		return result
 	}
@@ -679,8 +686,7 @@ extension Double: GRYCodable {
 		let expectedDouble = decoder.readIdentifier()
 		guard let result = Double(expectedDouble) else {
 			throw GRYDecodingError.conversionFailure(
-				"Failed to convert \(expectedDouble) to Double. " +
-				"Remaining buffer: \(decoder.remainingBuffer(upTo: 30))")
+				decoder, "Failed to convert \(expectedDouble) to Double.")
 		}
 		return result
 	}
@@ -700,8 +706,7 @@ extension Bool: GRYCodable {
 		let expectedBool = decoder.readIdentifier()
 		guard let result = Bool(expectedBool) else {
 			throw GRYDecodingError.conversionFailure(
-				"Failed to convert \(expectedBool) to Bool. " +
-				"Remaining buffer: \(decoder.remainingBuffer(upTo: 30))")
+				decoder, "Failed to convert \(expectedBool) to Bool.")
 		}
 		return result
 	}

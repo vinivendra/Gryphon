@@ -17,7 +17,6 @@
 @testable import GryphonLib
 import XCTest
 
-// TODO: Improve error messages for thrown errors
 // TODO: Change all `Ast`s into `AST`s
 class GRYSExpressionEncoderTest: XCTestCase {
 	struct TestObject: GRYCodable {
