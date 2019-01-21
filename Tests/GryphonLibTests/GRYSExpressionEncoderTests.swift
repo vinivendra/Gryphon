@@ -99,7 +99,6 @@ class GRYSExpressionEncoderTest: XCTestCase {
 		}
 	}
 
-	// TODO: Test SwiftAst equality
 	func testSwiftAst() {
 		let tests = TestUtils.allTestCases
 
@@ -131,7 +130,6 @@ class GRYSExpressionEncoderTest: XCTestCase {
 		}
 	}
 
-	// TODO: Test GRYAst equality
 	func testGRYAst() {
 		let tests = TestUtils.allTestCases
 
