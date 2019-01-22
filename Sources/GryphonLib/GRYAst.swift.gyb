@@ -28,18 +28,6 @@ public final class GRYAst: GRYPrintableAsTree, Codable, Equatable, CustomStringC
 	}
 
 	//
-	public func writeAsJSON(toFile filePath: String) {
-		let rawJsonString = GRYJSONEncoder.encode(self)
-
-		// Absolute file paths must be replaced with placeholders before writing to file.
-		let swiftFilePath = GRYUtils.changeExtension(of: filePath, to: .swift)
-		let escapedFilePath = swiftFilePath.replacingOccurrences(of: "/", with: "\\/")
-		let processedJsonString =
-			rawJsonString.replacingOccurrences(of: escapedFilePath, with: "<<testFilePath>>")
-
-		try! processedJsonString.write(toFile: filePath, atomically: true, encoding: .utf8)
-	}
-
 	public func writeAsSExpression(toFile filePath: String) {
 		let encoder = GRYEncoder()
 		try! self.encode(into: encoder)
@@ -52,28 +40,6 @@ public final class GRYAst: GRYPrintableAsTree, Codable, Equatable, CustomStringC
 			rawSExpressionString.replacingOccurrences(of: escapedFilePath, with: "<<testFilePath>>")
 
 		try! processedSExpressionString.write(toFile: filePath, atomically: true, encoding: .utf8)
-	}
-
-	public static func initialize(fromJsonInFile jsonFilePath: String) -> GRYAst {
-		do {
-			let rawJSON = try String(contentsOfFile: jsonFilePath)
-
-			// Information in stored files has placeholders for file paths that must be replaced
-			let swiftFilePath = GRYUtils.changeExtension(of: jsonFilePath, to: .swift)
-			let escapedFilePath = swiftFilePath.replacingOccurrences(of: "/", with: "\\/")
-			let processedJSON =
-				rawJSON.replacingOccurrences(of: "<<testFilePath>>", with: escapedFilePath)
-
-			let astData = Data(processedJSON.utf8)
-			return try JSONDecoder().decode(GRYAst.self, from: astData)
-		}
-		catch let error {
-			fatalError("""
-				Error decoding \(jsonFilePath).
-				If the file doesn't exist, please run `updateJsonTestFiles()` to generate it.
-				Error: \(error)
-				""")
-		}
 	}
 
 	public static func initialize(fromSExpressionInFile sExpressionFilePath: String) -> GRYAst {

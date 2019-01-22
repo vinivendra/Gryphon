@@ -57,6 +57,7 @@ internal class GRYDecoder {
 	}
 
 	//
+	// TODO: Change this init
 	init(sExpression: String) {
 		self.buffer = sExpression
 		self.currentIndex = buffer.startIndex

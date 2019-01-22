@@ -17,6 +17,7 @@
 @testable import GryphonLib
 import XCTest
 
+// TODO: Change parser naming
 class GRYSExpressionParserTest: XCTestCase {
 	func testCanRead() {
 		XCTAssert(GRYDecoder(sExpression:
@@ -117,24 +118,28 @@ class GRYSExpressionParserTest: XCTestCase {
 	func testParser() {
 		let tests = TestUtils.allTestCases
 
-		for testName in tests {
-			print("- Testing \(testName)...")
+		do {
+			for testName in tests {
+				print("- Testing \(testName)...")
 
-			// Create a new AST using the parser
-			let testFilePath = TestUtils.testFilesPath + testName
-			let createdAST = GRYSwiftAst(astFile: testFilePath + .swiftAstDump)
+				// Create a new AST using the parser
+				let testFilePath = TestUtils.testFilesPath + testName
+				let createdAST = GRYSwiftAst(astFile: testFilePath + .swiftAstDump)
 
-			// Load a cached AST from file
-			let expectedAST = GRYSwiftAst.initialize(
-				fromJsonInFile: testFilePath + .grySwiftAstJson)
+				// Load a cached AST from file
+				let expectedAST = try GRYSwiftAst.initialize(decodingFile: testFilePath + .grySwiftAst)
 
-			// Compare the two
-			XCTAssert(
-				createdAST == expectedAST,
-				"Test \(testName): parser failed to produce expected result. Diff:" +
-					TestUtils.diff(createdAST.description, expectedAST.description))
+				// Compare the two
+				XCTAssert(
+					createdAST == expectedAST,
+					"Test \(testName): parser failed to produce expected result. Diff:" +
+						TestUtils.diff(createdAST.description, expectedAST.description))
 
-			print("\t- Done!")
+				print("\t- Done!")
+			}
+		}
+		catch let error {
+			XCTFail("🚨 Test failed with error:\n\(error)")
 		}
 	}
 

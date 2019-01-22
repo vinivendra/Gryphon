@@ -33,7 +33,7 @@ public class GRYLibraryTranspilationPass: GRYTranspilationPass {
 			at: currentURL,
 			includingPropertiesForKeys: nil)
 		let templateFiles = fileURLs.filter {
-				$0.pathExtension == GRYFileExtension.gryRawAstJson.rawValue
+				$0.pathExtension == GRYFileExtension.gryRawAst.rawValue
 		}.sorted { (url1: URL, url2: URL) -> Bool in
 					url1.absoluteString < url2.absoluteString
 		}
@@ -41,7 +41,7 @@ public class GRYLibraryTranspilationPass: GRYTranspilationPass {
 		var previousExpression: GRYExpression?
 		for file in templateFiles {
 			let filePath = file.path
-			let ast = GRYAst.initialize(fromJsonInFile: filePath)
+			let ast = GRYAst.initialize(fromSExpressionInFile: filePath)
 			let expressions = ast.statements.compactMap
 			{ (node: GRYTopLevelNode) -> GRYExpression? in
 				if case let .expression(expression: expression) = node {

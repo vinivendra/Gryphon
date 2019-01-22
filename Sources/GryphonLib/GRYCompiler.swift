@@ -104,13 +104,13 @@ public enum GRYCompiler {
 		print("\t- Building GRYSwiftAst from external AST...")
 		let ast = GRYSwiftAst(astFile: astFilePath)
 
-		let jsonFilePath = GRYUtils.changeExtension(of: filePath, to: .grySwiftAstJson)
-		let jsonFileWasJustCreated = GRYUtils.createFileIfNeeded(at: jsonFilePath, containing: "")
-		let jsonIsOutdated =
-			jsonFileWasJustCreated || GRYUtils.file(astFilePath, wasModifiedLaterThan: jsonFilePath)
-		if jsonIsOutdated {
-			print("\t\t- Updating \(jsonFilePath)...")
-			ast.writeAsJSON(toFile: jsonFilePath)
+		let cacheFilePath = GRYUtils.changeExtension(of: filePath, to: .grySwiftAst)
+		let cacheFileWasJustCreated = GRYUtils.createFileIfNeeded(at: cacheFilePath, containing: "")
+		let cacheIsOutdated =
+			cacheFileWasJustCreated || GRYUtils.file(astFilePath, wasModifiedLaterThan: cacheFilePath)
+		if cacheIsOutdated {
+			print("\t\t- Updating \(cacheFilePath)...")
+			ast.writeAsSExpression(toFile: cacheFilePath)
 		}
 
 		return ast

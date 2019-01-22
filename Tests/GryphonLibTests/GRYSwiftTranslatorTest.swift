@@ -25,18 +25,14 @@ class GRYSwiftTranslatorTest: XCTestCase {
 			print("- Testing \(testName)...")
 
 			do {
-				// Create a new Gryphon AST from the cached Swift AST using the GRYSwiftTranslator
-				let testFilePath = TestUtils.testFilesPath + testName
-				let swiftAst = GRYSwiftAst.initialize(
-					fromJsonInFile: testFilePath + .grySwiftAstJson)
-				let createdGryphonRawAst = try GRYSwift4Translator().translateAST(swiftAst)
-
 				// Load a cached Gryphon AST from file
-				let expectedGryphonRawAstJson = try! String(
-					contentsOfFile: testFilePath + .gryRawAstJson)
-				let expectedGryphonRawAstData = Data(expectedGryphonRawAstJson.utf8)
-				let expectedGryphonRawAst =
-					try! JSONDecoder().decode(GRYAst.self, from: expectedGryphonRawAstData)
+				let testFilePath = TestUtils.testFilesPath + testName
+				let expectedGryphonRawAst = GRYAst.initialize(
+					fromSExpressionInFile: testFilePath + .gryRawAst)
+
+				// Create a new Gryphon AST from the cached Swift AST using the GRYSwiftTranslator
+				let swiftAst = try GRYSwiftAst.initialize(decodingFile: testFilePath + .grySwiftAst)
+				let createdGryphonRawAst = try GRYSwift4Translator().translateAST(swiftAst)
 
 				// Compare the two
 				XCTAssert(

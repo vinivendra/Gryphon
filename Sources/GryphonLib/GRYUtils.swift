@@ -45,10 +45,9 @@ public enum GRYUtils {
 public enum GRYFileExtension: String {
 	// This should be the same as the extension in the dump-ast.pl and separateASTs.pl files
 	case swiftAstDump
-	case grySwiftAstJson
-	case grySwiftAstSExpression
-	case gryRawAstJson
-	case gryAstJson
+	case grySwiftAst
+	case gryRawAst
+	case gryAst
 
 	case output
 
@@ -163,17 +162,17 @@ extension GRYUtils {
 			fatalError("Please update ast file \(astFilePath) with the `dump-ast.pl` perl script.")
 		}
 
-		updateFiles(in: folder, from: .swiftAstDump, to: .grySwiftAstJson)
-		{ (dumpFilePath: String, jsonFilePath: String) in
+		updateFiles(in: folder, from: .swiftAstDump, to: .grySwiftAst)
+		{ (dumpFilePath: String, cacheFilePath: String) in
 			let ast = GRYSwiftAst(astFile: dumpFilePath)
-			ast.writeAsJSON(toFile: jsonFilePath)
+			ast.writeAsSExpression(toFile: cacheFilePath)
 		}
 
-		try updateFiles(in: folder, from: .grySwiftAstJson, to: .gryRawAstJson)
+		try updateFiles(in: folder, from: .grySwiftAst, to: .gryRawAst)
 		{ (swiftAstFilePath: String, gryphonAstRawFilePath: String) in
-			let swiftAst = GRYSwiftAst.initialize(fromJsonInFile: swiftAstFilePath)
+			let swiftAst = try GRYSwiftAst.initialize(decodingFile: swiftAstFilePath)
 			let gryphonAst = try GRYSwift4Translator().translateAST(swiftAst)
-			gryphonAst.writeAsJSON(toFile: gryphonAstRawFilePath)
+			gryphonAst.writeAsSExpression(toFile: gryphonAstRawFilePath)
 		}
 
 		libraryFilesHaveBeenUpdated = true
@@ -200,24 +199,24 @@ extension GRYUtils {
 			fatalError("Please update ast file \(astFilePath) with the `dump-ast.pl` perl script.")
 		}
 
-		updateFiles(in: folder, from: .swiftAstDump, to: .grySwiftAstJson)
-		{ (dumpFilePath: String, jsonFilePath: String) in
+		updateFiles(in: folder, from: .swiftAstDump, to: .grySwiftAst)
+		{ (dumpFilePath: String, cacheFilePath: String) in
 			let ast = GRYSwiftAst(astFile: dumpFilePath)
-			ast.writeAsJSON(toFile: jsonFilePath)
+			ast.writeAsSExpression(toFile: cacheFilePath)
 		}
 
-		try updateFiles(in: folder, from: .grySwiftAstJson, to: .gryRawAstJson)
+		try updateFiles(in: folder, from: .grySwiftAst, to: .gryRawAst)
 		{ (swiftAstFilePath: String, gryphonAstRawFilePath: String) in
-			let swiftAst = GRYSwiftAst.initialize(fromJsonInFile: swiftAstFilePath)
+			let swiftAst = try GRYSwiftAst.initialize(decodingFile: swiftAstFilePath)
 			let gryphonAst = try GRYSwift4Translator().translateAST(swiftAst)
-			gryphonAst.writeAsJSON(toFile: gryphonAstRawFilePath)
+			gryphonAst.writeAsSExpression(toFile: gryphonAstRawFilePath)
 		}
 
-		try updateFiles(in: folder, from: .gryRawAstJson, to: .gryAstJson)
+		try updateFiles(in: folder, from: .gryRawAst, to: .gryAst)
 		{ (gryphonAstRawFilePath: String, gryphonAstFilePath: String) throws in
-			let gryphonAstRaw = GRYAst.initialize(fromJsonInFile: gryphonAstRawFilePath)
+			let gryphonAstRaw = GRYAst.initialize(fromSExpressionInFile: gryphonAstRawFilePath)
 			let gryphonAst = GRYTranspilationPass.runAllPasses(on: gryphonAstRaw)
-			gryphonAst.writeAsJSON(toFile: gryphonAstFilePath)
+			gryphonAst.writeAsSExpression(toFile: gryphonAstFilePath)
 		}
 
 		testFilesHaveBeenUpdated = true
@@ -305,25 +304,4 @@ internal extension RandomAccessCollection where Element: Equatable, Index == Int
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 public protocol GRYPrintableError: Error {
 	func print()
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-public enum GRYJSONEncoder {
-	static func encode<T>(_ value: T) -> String where T: Encodable {
-		let encoder = JSONEncoder()
-
-		#if os(macOS)
-		if #available(OSX 10.13, *) {
-			encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-		} else {
-			encoder.outputFormatting = [.prettyPrinted]
-		}
-		#else
-		encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-		#endif
-
-		let jsonData = try! encoder.encode(value)
-		return String(data: jsonData, encoding: .utf8)!
-	}
 }
