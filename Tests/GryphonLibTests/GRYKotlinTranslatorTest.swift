@@ -26,9 +26,10 @@ class GRYKotlinTranslatorTest: XCTestCase {
 			do {
 				print("- Testing \(testName)...")
 
-				// Create the new Kotlin code from the cached Gryphon AST using the GRYKotlinTranslator
+				// Create the new Kotlin code from the cached Gryphon AST using the
+				// GRYKotlinTranslator
 				let testFilePath = TestUtils.testFilesPath + testName
-				let ast = GRYAst.initialize(fromSExpressionInFile: testFilePath + .gryAst)
+				let ast = try GRYAst.decode(fromFile: testFilePath + .gryAst)
 				_ = GRYRecordEnumsTranspilationPass().run(on: ast)
 				let createdKotlinCode = try GRYKotlinTranslator().translateAST(ast)
 

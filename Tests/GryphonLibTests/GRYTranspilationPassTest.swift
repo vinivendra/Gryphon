@@ -21,28 +21,33 @@ class GRYTranspilationPassTest: XCTestCase {
 	func testPasses() {
 		let tests = TestUtils.allTestCases
 
-		for testName in tests {
-			print("- Testing \(testName)...")
+		do {
+			for testName in tests {
+				print("- Testing \(testName)...")
 
-			// Fetch the cached Gryphon Ast (without passes) and run the passes on it
-			let testFilePath = TestUtils.testFilesPath + testName
-			let rawAst = GRYAst.initialize(fromSExpressionInFile: testFilePath + .gryRawAst)
-			let createdGryphonAst = GRYTranspilationPass.runAllPasses(on: rawAst)
+				// Fetch the cached Gryphon Ast (without passes) and run the passes on it
+				let testFilePath = TestUtils.testFilesPath + testName
+				let rawAst = try GRYAst.decode(fromFile: testFilePath + .gryRawAst)
+				let createdGryphonAst = GRYTranspilationPass.runAllPasses(on: rawAst)
 
-			// Load a cached Gryphon Ast (with passes)
-			let expectedGryphonAst = GRYAst.initialize(
-				fromSExpressionInFile: testFilePath + .gryAst)
+				// Load a cached Gryphon Ast (with passes)
+				let expectedGryphonAst = try GRYAst.decode(fromFile: testFilePath + .gryAst)
 
-			XCTAssert(
-				createdGryphonAst == expectedGryphonAst,
-				"Test \(testName): translator failed to produce expected result. Diff:" +
-					TestUtils.diff(expectedGryphonAst.description, expectedGryphonAst.description))
+				XCTAssert(
+					createdGryphonAst == expectedGryphonAst,
+					"Test \(testName): translator failed to produce expected result. Diff:" +
+						TestUtils.diff(
+							expectedGryphonAst.description, expectedGryphonAst.description))
 
-			print("\t- Done!")
+				print("\t- Done!")
+			}
+
+			for warning in GRYTranspilationPass.warnings {
+				XCTFail(warning)
+			}
 		}
-
-		for warning in GRYTranspilationPass.warnings {
-			XCTFail(warning)
+		catch let error {
+			XCTFail("🚨 Test failed with error:\n\(error)")
 		}
 	}
 

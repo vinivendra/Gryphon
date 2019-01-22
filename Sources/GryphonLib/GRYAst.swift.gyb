@@ -16,9 +16,7 @@
 
 import Foundation
 
-public final class GRYAst: GRYPrintableAsTree, Codable, Equatable, CustomStringConvertible,
-	GRYCodable
-{
+public final class GRYAst: GRYPrintableAsTree, GRYCodable, Equatable, CustomStringConvertible {
 	let declarations: [GRYTopLevelNode]
 	let statements: [GRYTopLevelNode]
 
@@ -28,38 +26,41 @@ public final class GRYAst: GRYPrintableAsTree, Codable, Equatable, CustomStringC
 	}
 
 	//
-	public func writeAsSExpression(toFile filePath: String) {
+	public func encode(intoFile filePath: String) throws {
 		let encoder = GRYEncoder()
-		try! self.encode(into: encoder)
-		let rawSExpressionString = encoder.result
+		try self.encode(into: encoder)
+		let rawString = encoder.result
 
 		// Absolute file paths must be replaced with placeholders before writing to file.
 		let swiftFilePath = GRYUtils.changeExtension(of: filePath, to: .swift)
 		let escapedFilePath = swiftFilePath.replacingOccurrences(of: "/", with: "\\/")
-		let processedSExpressionString =
-			rawSExpressionString.replacingOccurrences(of: escapedFilePath, with: "<<testFilePath>>")
+		let processedString =
+			rawString.replacingOccurrences(of: escapedFilePath, with: "<<testFilePath>>")
 
-		try! processedSExpressionString.write(toFile: filePath, atomically: true, encoding: .utf8)
+		try processedString.write(toFile: filePath, atomically: true, encoding: .utf8)
 	}
 
-	public static func initialize(fromSExpressionInFile sExpressionFilePath: String) -> GRYAst {
+	public static func decode(fromFile filePath: String) throws -> GRYAst {
 		do {
-			let rawSExpressionDump = try String(contentsOfFile: sExpressionFilePath)
+			let rawString = try String(contentsOfFile: filePath)
 
 			// Information in stored files has placeholders for file paths that must be replaced
-			let swiftFilePath = GRYUtils.changeExtension(of: sExpressionFilePath, to: .swift)
+			let swiftFilePath = GRYUtils.changeExtension(of: filePath, to: .swift)
 			let escapedFilePath = swiftFilePath.replacingOccurrences(of: "/", with: "\\/")
-			let processedSExpressionDump =
-				rawSExpressionDump.replacingOccurrences(
+			let processedString =
+				rawString.replacingOccurrences(
 					of: "<<testFilePath>>", with: escapedFilePath)
 
-			let decoder = GRYDecoder(sExpression: processedSExpressionDump)
-			return try! decode(from: decoder)
+			let decoder = GRYDecoder(sExpression: processedString)
+			return try decode(from: decoder)
+		}
+		catch let GRYDecodingError.conversionFailure(decoder, message) {
+			throw GRYDecodingError.conversionFailure(decoder, message)
 		}
 		catch let error {
 			fatalError("""
-				Error decoding \(sExpressionFilePath).
-				If the file doesn't exist, please run `updateJsonTestFiles()` to generate it.
+				Error decoding \(filePath).
+				If the file doesn't exist, please run `updateTestFiles()` to generate it.
 				Error: \(error)
 				""")
 		}
@@ -79,23 +80,6 @@ public final class GRYAst: GRYPrintableAsTree, Codable, Equatable, CustomStringC
 		try declarations.encode(into: encoder)
 		try statements.encode(into: encoder)
 		encoder.endObject()
-	}
-
-	enum SourceFileCodingKeys: String, CodingKey {
-		case declarations
-		case statements
-	}
-
-	required public init(from decoder: Decoder) throws {
-		let container = try! decoder.container(keyedBy: SourceFileCodingKeys.self)
-		self.declarations = try! container.decode([GRYTopLevelNode].self, forKey: .declarations)
-		self.statements = try! container.decode([GRYTopLevelNode].self, forKey: .statements)
-	}
-
-	public func encode(to encoder: Encoder) throws {
-		var container = encoder.container(keyedBy: SourceFileCodingKeys.self)
-		try! container.encode(declarations, forKey: .declarations)
-		try! container.encode(statements, forKey: .statements)
 	}
 
 	//
