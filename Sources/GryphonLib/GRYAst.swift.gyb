@@ -138,7 +138,7 @@ astNodes = [
 	]
 }%
 
-public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree, GRYCodable {
+public indirect enum GRYTopLevelNode: Equatable, GRYPrintableAsTree, GRYCodable {
 
 %for astNode in astNodes:
 %	name = astNode[0]
@@ -222,68 +222,6 @@ public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree, GR
 
 		decoder.readCloseParentheses()
 		return result
-	}
-
-	// TODO: Remove all force try's in this file
-	public func encode(to encoder: Encoder) throws {
-		var container = encoder.container(keyedBy: StringCodingKey.self)
-
-		try! container.encode(name, forKey: "astName")
-
-		switch self {
-%for astNode in astNodes:
-%	name = astNode[0]
-%
-%	if len(astNode) > 1:
-%		pairs = astNode[1]
-%		parameters = []
-%		for pair in pairs:
-%			parameters.append(pair[0] + ": " + pair[0])
-%		end
-%		parametersString = ",\n\t\t\t\t".join(parameters)
-		case let .${name}(
-				${parametersString}):
-%		for pair in pairs:
-			try! container.encode(${pair[0]}, forKey: "${pair[0]}")
-%		end
-%
-%	else:
-		case .${name}:
-			break
-%	end
-%end
-		}
-	}
-
-	public init(from decoder: Decoder) throws {
-		let container = try! decoder.container(keyedBy: StringCodingKey.self)
-
-		let astName = try! container.decode(String.self, forKey: "astName")
-
-		switch astName {
-%for astNode in astNodes:
-%	name = astNode[0]
-%
-		case "${name}":
-%
-%	if len(astNode) > 1:
-%		pairs = astNode[1]
-%		parameters = []
-%		for pair in pairs:
-%			parameters.append(pair[0] + ": " + pair[0])
-			let ${pair[0]} = try! container.decode(${pair[1]}.self, forKey: "${pair[0]}")
-%		end
-%		parametersString = ",\n\t\t\t\t".join(parameters)
-			self = .${name}(
-				${parametersString})
-%
-%	else:
-			self = .${name}
-%	end
-%end
-		default:
-			throw AstDecodingError(message: "Unknown ast node \(astName).")
-		}
 	}
 
 	public var name: String {
@@ -427,7 +365,7 @@ expressionNodes = [
 ]
 }%
 
-public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree, GRYCodable {
+public indirect enum GRYExpression: Equatable, GRYPrintableAsTree, GRYCodable {
 %for expressionNode in expressionNodes:
 %	name = expressionNode[0]
 %
@@ -510,67 +448,6 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree, GRYC
 
 		decoder.readCloseParentheses()
 		return result
-	}
-
-	public func encode(to encoder: Encoder) throws {
-		var container = encoder.container(keyedBy: StringCodingKey.self)
-
-		try! container.encode(name, forKey: "astName")
-
-		switch self {
-%for expressionNode in expressionNodes:
-%	name = expressionNode[0]
-%
-%	if len(expressionNode) > 1:
-%		pairs = expressionNode[1]
-%		parameters = []
-%		for pair in pairs:
-%			parameters.append(pair[0] + ": " + pair[0])
-%		end
-%		parametersString = ",\n\t\t\t\t".join(parameters)
-		case let .${name}(
-				${parametersString}):
-%		for pair in pairs:
-			try! container.encode(${pair[0]}, forKey: "${pair[0]}")
-%		end
-%
-%	else:
-		case .${name}:
-			break
-%	end
-%end
-		}
-	}
-
-	public init(from decoder: Decoder) throws {
-		let container = try! decoder.container(keyedBy: StringCodingKey.self)
-
-		let astName = try! container.decode(String.self, forKey: "astName")
-
-		switch astName {
-%for expressionNode in expressionNodes:
-%	name = expressionNode[0]
-		case "${name}":
-%
-%	if len(expressionNode) > 1:
-%		pairs = expressionNode[1]
-%		parameters = []
-%		for pair in pairs:
-%			parameters.append(pair[0] + ": " + pair[0])
-			let ${pair[0]} =
-				try! container.decode(${pair[1]}.self, forKey: "${pair[0]}")
-%		end
-%		parametersString = ",\n\t\t\t\t".join(parameters)
-			self = .${name}(
-				${parametersString})
-%
-%	else:
-			self = .${name}
-%	end
-%end
-		default:
-			throw AstDecodingError(message: "Unknown expression \(astName).")
-		}
 	}
 
 	public var type: String? {
@@ -718,7 +595,7 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree, GRYC
 	}
 
 	//
-	public struct TuplePair: Equatable, Codable, GRYCodable {
+	public struct TuplePair: Equatable, GRYCodable {
 		let name: String?
 		let expression: GRYExpression
 
