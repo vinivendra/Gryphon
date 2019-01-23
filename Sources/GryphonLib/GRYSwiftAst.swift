@@ -26,7 +26,7 @@ public class GRYSwiftAst: GRYPrintableAsTree, Equatable, CustomStringConvertible
 	static public var horizontalLimitWhenPrinting = Int.max
 
 	//
-	public convenience init(astFile astFilePath: String) {
+	public convenience init(astFile astFilePath: String) throws {
 		do {
 			let rawAstDump = try String(contentsOfFile: astFilePath)
 
@@ -35,8 +35,8 @@ public class GRYSwiftAst: GRYPrintableAsTree, Equatable, CustomStringConvertible
 			let processedAstDump =
 				rawAstDump.replacingOccurrences(of: "<<testFilePath>>", with: swiftFilePath)
 
-			let parser = GRYDecoder(sExpression: processedAstDump)
-			self.init(decodingFromAstDumpWith: parser)
+			let parser = GRYDecoder(encodedString: processedAstDump)
+			try self.init(decodingFromAstDumpWith: parser)
 		}
 		catch {
 			fatalError("Error opening \(astFilePath)." +
@@ -44,12 +44,12 @@ public class GRYSwiftAst: GRYPrintableAsTree, Equatable, CustomStringConvertible
 		}
 	}
 
-	internal init(decodingFromAstDumpWith decoder: GRYDecoder) {
+	internal init(decodingFromAstDumpWith decoder: GRYDecoder) throws {
 		var standaloneAttributes = [String]()
 		var keyValueAttributes = [String: String]()
 		var subtrees = [GRYSwiftAst]()
 
-		decoder.readOpenParentheses()
+		try decoder.readOpenParentheses()
 		let name = decoder.readIdentifier()
 		self.name = GRYUtils.expandSwiftAbbreviation(name)
 
@@ -59,7 +59,7 @@ public class GRYSwiftAst: GRYPrintableAsTree, Equatable, CustomStringConvertible
 			// Add subtree
 			if decoder.canReadOpenParentheses() {
 				// Parse subtrees
-				let subtree = GRYSwiftAst(decodingFromAstDumpWith: decoder)
+				let subtree = try GRYSwiftAst(decodingFromAstDumpWith: decoder)
 				subtrees.append(subtree)
 
 				// FIXME: This is a hack to fix Swift 4's unbalanced parentheses when dumping the
@@ -70,7 +70,7 @@ public class GRYSwiftAst: GRYPrintableAsTree, Equatable, CustomStringConvertible
 			}
 			// Finish this branch
 			else if decoder.canReadCloseParentheses() {
-				decoder.readCloseParentheses()
+				try decoder.readCloseParentheses()
 				break
 			}
 				// Add key-value attributes
@@ -117,7 +117,7 @@ public class GRYSwiftAst: GRYPrintableAsTree, Equatable, CustomStringConvertible
 			let processedSExpressionDump =
 				rawSExpressionDump.replacingOccurrences(of: "<<testFilePath>>", with: swiftFilePath)
 
-			let decoder = GRYDecoder(sExpression: processedSExpressionDump)
+			let decoder = GRYDecoder(encodedString: processedSExpressionDump)
 			return try GRYSwiftAst.decode(from: decoder)
 		}
 		catch {
@@ -131,7 +131,7 @@ public class GRYSwiftAst: GRYPrintableAsTree, Equatable, CustomStringConvertible
 		var keyValueAttributes = [String: String]()
 		var subtrees = [GRYSwiftAst]()
 
-		decoder.readOpenParentheses()
+		try decoder.readOpenParentheses()
 		let name = decoder.readDoubleQuotedString()
 
 		// The loop stops: all branches tell the parser to read, therefore the input string must end
@@ -145,7 +145,7 @@ public class GRYSwiftAst: GRYPrintableAsTree, Equatable, CustomStringConvertible
 			}
 			// Finish this branch
 			else if decoder.canReadCloseParentheses() {
-				decoder.readCloseParentheses()
+				try decoder.readCloseParentheses()
 				break
 			}
 			// Add key-value attributes

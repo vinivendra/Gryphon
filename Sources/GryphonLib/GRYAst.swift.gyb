@@ -51,7 +51,7 @@ public final class GRYAst: GRYPrintableAsTree, GRYCodable, Equatable, CustomStri
 				rawString.replacingOccurrences(
 					of: "<<testFilePath>>", with: escapedFilePath)
 
-			let decoder = GRYDecoder(sExpression: processedString)
+			let decoder = GRYDecoder(encodedString: processedString)
 			return try decode(from: decoder)
 		}
 		catch let GRYDecodingError.unexpectedContent(decoder, message) {
@@ -67,11 +67,11 @@ public final class GRYAst: GRYPrintableAsTree, GRYCodable, Equatable, CustomStri
 	}
 
 	internal static func decode(from decoder: GRYDecoder) throws -> GRYAst {
-		decoder.readOpenParentheses()
+		try decoder.readOpenParentheses()
 		_ = decoder.readIdentifier()
 		let declarations = try [GRYTopLevelNode].decode(from: decoder)
 		let statements = try [GRYTopLevelNode].decode(from: decoder)
-		decoder.readCloseParentheses()
+		try decoder.readCloseParentheses()
 		return GRYAst(declarations: declarations, statements: statements)
 	}
 
@@ -190,7 +190,7 @@ public indirect enum GRYTopLevelNode: Equatable, GRYPrintableAsTree, GRYCodable 
 	}
 
 	static func decode(from decoder: GRYDecoder) throws -> GRYTopLevelNode {
-		decoder.readOpenParentheses()
+		try decoder.readOpenParentheses()
 		let name = decoder.readDoubleQuotedString()
 
 		let result: GRYTopLevelNode
@@ -221,7 +221,7 @@ public indirect enum GRYTopLevelNode: Equatable, GRYPrintableAsTree, GRYCodable 
 				decoder, "Unknown GRYTopLevelNode \"\(name)\".")
 		}
 
-		decoder.readCloseParentheses()
+		try decoder.readCloseParentheses()
 		return result
 	}
 
@@ -417,7 +417,7 @@ public indirect enum GRYExpression: Equatable, GRYPrintableAsTree, GRYCodable {
 	}
 
 	static func decode(from decoder: GRYDecoder) throws -> GRYExpression {
-		decoder.readOpenParentheses()
+		try decoder.readOpenParentheses()
 		let name = decoder.readDoubleQuotedString()
 
 		let result: GRYExpression
@@ -447,7 +447,7 @@ public indirect enum GRYExpression: Equatable, GRYPrintableAsTree, GRYCodable {
 			throw GRYDecodingError.unexpectedContent(decoder, "Unknown GRYExpression \"\(name)\".")
 		}
 
-		decoder.readCloseParentheses()
+		try decoder.readCloseParentheses()
 		return result
 	}
 

@@ -57,9 +57,8 @@ internal class GRYDecoder {
 	}
 
 	//
-	// TODO: Change this init
-	init(sExpression: String) {
-		self.buffer = sExpression
+	init(encodedString: String) {
+		self.buffer = encodedString
 		self.currentIndex = buffer.startIndex
 	}
 
@@ -134,65 +133,75 @@ internal class GRYDecoder {
 	}
 
 	// MARK: Read information
-	func readOpenParentheses() {
-		guard canReadOpenParentheses() else { fatalError("Parsing error") }
+	func readOpenParentheses() throws {
+		guard canReadOpenParentheses() else {
+			throw GRYDecodingError.unexpectedContent(self, "Expected '('.")
+		}
 		currentIndex = nextIndex()
 	}
 
-	// TODO: Replace these fatal errors with something more testable
-	func readCloseParentheses() {
-		guard canReadCloseParentheses() else { fatalError("Parsing error") }
-		currentIndex = nextIndex()
-		cleanLeadingWhitespace()
-	}
-
-	func readOpenBrackets() {
-		guard canReadOpenBrackets() else { fatalError("Parsing error") }
+	func readCloseParentheses() throws {
+		guard canReadCloseParentheses() else {
+			throw GRYDecodingError.unexpectedContent(self, "Expected ')'.")
+		}
 		currentIndex = nextIndex()
 		cleanLeadingWhitespace()
 	}
 
-	func readCloseBrackets() {
-		guard canReadCloseBrackets() else { fatalError("Parsing error") }
+	func readOpenBrackets() throws {
+		guard canReadOpenBrackets() else {
+			throw GRYDecodingError.unexpectedContent(self, "Expected '['.")
+		}
 		currentIndex = nextIndex()
 		cleanLeadingWhitespace()
 	}
 
-	func readOpenCurlyBrackets() {
-		guard canReadOpenCurlyBrackets() else { fatalError("Parsing error") }
+	func readCloseBrackets() throws {
+		guard canReadCloseBrackets() else {
+			throw GRYDecodingError.unexpectedContent(self, "Expected ']'.")
+		}
 		currentIndex = nextIndex()
 		cleanLeadingWhitespace()
 	}
 
-	func readCloseCurlyBrackets() {
-		guard canReadCloseCurlyBrackets() else { fatalError("Parsing error") }
+	func readOpenCurlyBrackets() throws {
+		guard canReadOpenCurlyBrackets() else {
+			throw GRYDecodingError.unexpectedContent(self, "Expected '{'.")
+		}
 		currentIndex = nextIndex()
 		cleanLeadingWhitespace()
 	}
 
-	// TODO: Can't this just be `return string`?
+	func readCloseCurlyBrackets() throws {
+		guard canReadCloseCurlyBrackets() else {
+			throw GRYDecodingError.unexpectedContent(self, "Expected '}'.")
+		}
+		currentIndex = nextIndex()
+		cleanLeadingWhitespace()
+	}
+
 	func readStandaloneAttribute() -> String {
 		if canReadOpenParentheses() {
 			return ""
 		}
 		else if canReadDoubleQuotedString() {
 			let string = readDoubleQuotedString()
-			return "\(string)"
+			return string
 		}
 		else if canReadSingleQuotedString() {
 			let string = readSingleQuotedString()
-			return "\(string)"
+			return string
 		}
 		else if canReadStringInBrackets() {
 			let string = readStringInBrackets()
-			return "\(string)"
+			return string
 		}
 		else if canReadStringInAngleBrackets() {
 			let string = readStringInAngleBrackets()
-			return "\(string)"
+			return string
 		}
 		else if let string = readDeclarationLocation() {
-			return "\(string)"
+			return string
 		}
 		else {
 			return readIdentifier()
@@ -617,14 +626,19 @@ extension Array: GRYCodable where Element: GRYCodable {
 	}
 
 	static func decode(from decoder: GRYDecoder) throws -> [Element] {
-		var result = [Element]()
-		decoder.readOpenBrackets()
-		while !decoder.canReadCloseBrackets() {
-			let newElement = try Element.decode(from: decoder)
-			result.append(newElement)
+		do {
+			var result = [Element]()
+			try decoder.readOpenBrackets()
+			while !decoder.canReadCloseBrackets() {
+				let newElement = try Element.decode(from: decoder)
+				result.append(newElement)
+			}
+			try decoder.readCloseBrackets()
+			return result
 		}
-		decoder.readCloseBrackets()
-		return result
+		catch GRYDecodingError.unexpectedContent(_, let message) {
+			throw GRYDecodingError.unexpectedContent(decoder, "Failed to decode Array: \(message)")
+		}
 	}
 }
 
@@ -641,15 +655,21 @@ extension Dictionary: GRYCodable where
 	}
 
 	static func decode(from decoder: GRYDecoder) throws -> [Key: Value] {
-		var result = [Key: Value]()
-		decoder.readOpenCurlyBrackets()
-		defer { decoder.readCloseCurlyBrackets() }
-		while !decoder.canReadCloseCurlyBrackets() {
-			let newKey = try Key.decode(from: decoder)
-			let newValue = try Value.decode(from: decoder)
-			result[newKey] = newValue
+		do {
+			var result = [Key: Value]()
+			try decoder.readOpenCurlyBrackets()
+			while !decoder.canReadCloseCurlyBrackets() {
+				let newKey = try Key.decode(from: decoder)
+				let newValue = try Value.decode(from: decoder)
+				result[newKey] = newValue
+			}
+			try decoder.readCloseCurlyBrackets()
+			return result
 		}
-		return result
+		catch GRYDecodingError.unexpectedContent(_, let message) {
+			throw GRYDecodingError.unexpectedContent(
+				decoder, "Failed to decode Dictionary: \(message)")
+		}
 	}
 }
 

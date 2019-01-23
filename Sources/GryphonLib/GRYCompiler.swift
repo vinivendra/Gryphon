@@ -84,7 +84,7 @@ public enum GRYCompiler {
 	public static func generateGryphonAstAndRunPasses(forFileAt filePath: String) throws
 		-> GRYAst
 	{
-		let swiftAst = generateSwiftAST(forFileAt: filePath)
+		let swiftAst = try generateSwiftAST(forFileAt: filePath)
 		print("\t- Translating Swift Ast to Gryphon Ast...")
 		let ast = try GRYSwift4Translator().translateAST(swiftAst)
 		let astAfterPasses = GRYTranspilationPass.runAllPasses(on: ast)
@@ -92,22 +92,23 @@ public enum GRYCompiler {
 	}
 
 	public static func generateGryphonAst(forFileAt filePath: String) throws -> GRYAst {
-		let swiftAst = generateSwiftAST(forFileAt: filePath)
+		let swiftAst = try generateSwiftAST(forFileAt: filePath)
 		print("\t- Translating Swift Ast to Gryphon Ast...")
 		let ast = try GRYSwift4Translator().translateAST(swiftAst)
 		return ast
 	}
 
-	public static func processExternalSwiftAST(_ filePath: String) -> GRYSwiftAst {
+	public static func processExternalSwiftAST(_ filePath: String) throws -> GRYSwiftAst {
 		let astFilePath = GRYUtils.changeExtension(of: filePath, to: .swiftAstDump)
 
 		print("\t- Building GRYSwiftAst from external AST...")
-		let ast = GRYSwiftAst(astFile: astFilePath)
+		let ast = try GRYSwiftAst(astFile: astFilePath)
 
 		let cacheFilePath = GRYUtils.changeExtension(of: filePath, to: .grySwiftAst)
 		let cacheFileWasJustCreated = GRYUtils.createFileIfNeeded(at: cacheFilePath, containing: "")
 		let cacheIsOutdated =
-			cacheFileWasJustCreated || GRYUtils.file(astFilePath, wasModifiedLaterThan: cacheFilePath)
+			cacheFileWasJustCreated ||
+				GRYUtils.file(astFilePath, wasModifiedLaterThan: cacheFilePath)
 		if cacheIsOutdated {
 			print("\t\t- Updating \(cacheFilePath)...")
 			ast.writeAsSExpression(toFile: cacheFilePath)
@@ -116,17 +117,17 @@ public enum GRYCompiler {
 		return ast
 	}
 
-	public static func generateSwiftAST(forFileAt filePath: String) -> GRYSwiftAst {
+	public static func generateSwiftAST(forFileAt filePath: String) throws -> GRYSwiftAst {
 		let astDumpFilePath = GRYUtils.changeExtension(of: filePath, to: .swiftAstDump)
 
 		print("\t- Building GRYSwiftAst...")
-		let ast = GRYSwiftAst(astFile: astDumpFilePath)
+		let ast = try GRYSwiftAst(astFile: astDumpFilePath)
 		return ast
 	}
 
-	public static func getSwiftASTDump(forFileAt filePath: String) -> String {
+	public static func getSwiftASTDump(forFileAt filePath: String) throws -> String {
 		print("\t- Getting swift AST dump...")
 		let astDumpFilePath = GRYUtils.changeExtension(of: filePath, to: .swiftAstDump)
-		return try! String(contentsOfFile: astDumpFilePath)
+		return try String(contentsOfFile: astDumpFilePath)
 	}
 }

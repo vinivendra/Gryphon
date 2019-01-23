@@ -164,7 +164,7 @@ extension GRYUtils {
 
 		updateFiles(in: folder, from: .swiftAstDump, to: .grySwiftAst)
 		{ (dumpFilePath: String, cacheFilePath: String) in
-			let ast = GRYSwiftAst(astFile: dumpFilePath)
+			let ast = try! GRYSwiftAst(astFile: dumpFilePath)
 			ast.writeAsSExpression(toFile: cacheFilePath)
 		}
 
@@ -201,7 +201,7 @@ extension GRYUtils {
 
 		updateFiles(in: folder, from: .swiftAstDump, to: .grySwiftAst)
 		{ (dumpFilePath: String, cacheFilePath: String) in
-			let ast = GRYSwiftAst(astFile: dumpFilePath)
+			let ast = try! GRYSwiftAst(astFile: dumpFilePath)
 			ast.writeAsSExpression(toFile: cacheFilePath)
 		}
 

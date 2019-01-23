@@ -74,8 +74,8 @@ class GRYSExpressionEncoderTest: XCTestCase {
 			let encodingResult = encoder.result
 
 			// Decode String back into instances
-			let decoder = GRYDecoder(sExpression: encodingResult)
-			decoder.readOpenParentheses()
+			let decoder = GRYDecoder(encodedString: encodingResult)
+			try decoder.readOpenParentheses()
 			XCTAssertEqual(decoder.readDoubleQuotedString(), "test name")
 			for testInstance in tests {
 				let createdInstance = try type(of: testInstance).decode(from: decoder)
@@ -91,7 +91,7 @@ class GRYSExpressionEncoderTest: XCTestCase {
 					"Expected the description of the decoded object \(createdInstance) " +
 					"to be equal to the description of the original object \(testInstance)")
 			}
-			decoder.readCloseParentheses()
+			try decoder.readCloseParentheses()
 
 		}
 		catch let error {
@@ -109,12 +109,12 @@ class GRYSExpressionEncoderTest: XCTestCase {
 
 				// Parse an AST from the dump file
 				let testFilePath = TestUtils.testFilesPath + testName
-				let expectedAST = GRYSwiftAst(astFile: testFilePath + .swiftAstDump)
+				let expectedAST = try GRYSwiftAst(astFile: testFilePath + .swiftAstDump)
 
 				// Encode the parsed AST into a String and then decode it back
 				let encoder = GRYEncoder()
 				try expectedAST.encode(into: encoder)
-				let decoder = GRYDecoder(sExpression: encoder.result)
+				let decoder = GRYDecoder(encodedString: encoder.result)
 				let createdAST = try GRYSwiftAst.decode(from: decoder)
 
 				// Compare the two
@@ -146,7 +146,7 @@ class GRYSExpressionEncoderTest: XCTestCase {
 				// Write cached AST to file and parse it back
 				let encoder = GRYEncoder()
 				try expectedAST.encode(into: encoder)
-				let decoder = GRYDecoder(sExpression: encoder.result)
+				let decoder = GRYDecoder(encodedString: encoder.result)
 				let createdAST = try GRYAst.decode(from: decoder)
 
 				// Compare the two

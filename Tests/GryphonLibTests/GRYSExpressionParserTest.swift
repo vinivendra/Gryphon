@@ -20,34 +20,34 @@ import XCTest
 // TODO: Change parser naming
 class GRYSExpressionParserTest: XCTestCase {
 	func testCanRead() {
-		XCTAssert(GRYDecoder(sExpression:
+		XCTAssert(GRYDecoder(encodedString:
 			"(foo)").canReadOpenParentheses())
-		XCTAssertFalse(GRYDecoder(sExpression:
+		XCTAssertFalse(GRYDecoder(encodedString:
 			"foo)").canReadOpenParentheses())
 
-		XCTAssert(GRYDecoder(sExpression:
+		XCTAssert(GRYDecoder(encodedString:
 			") foo").canReadCloseParentheses())
-		XCTAssertFalse(GRYDecoder(sExpression:
+		XCTAssertFalse(GRYDecoder(encodedString:
 			"(foo)").canReadCloseParentheses())
 
-		XCTAssert(GRYDecoder(sExpression:
+		XCTAssert(GRYDecoder(encodedString:
 			"\"foo\")").canReadDoubleQuotedString())
-		XCTAssertFalse(GRYDecoder(sExpression:
+		XCTAssertFalse(GRYDecoder(encodedString:
 			"(\"foo\")").canReadDoubleQuotedString())
 
-		XCTAssert(GRYDecoder(sExpression:
+		XCTAssert(GRYDecoder(encodedString:
 			"'foo')").canReadSingleQuotedString())
-		XCTAssertFalse(GRYDecoder(sExpression:
+		XCTAssertFalse(GRYDecoder(encodedString:
 			"('foo')").canReadSingleQuotedString())
 
-		XCTAssert(GRYDecoder(sExpression:
+		XCTAssert(GRYDecoder(encodedString:
 			"[foo])").canReadStringInBrackets())
-		XCTAssertFalse(GRYDecoder(sExpression:
+		XCTAssertFalse(GRYDecoder(encodedString:
 			"([foo])").canReadStringInBrackets())
 
-		XCTAssert(GRYDecoder(sExpression:
+		XCTAssert(GRYDecoder(encodedString:
 			"/foo/bar baz/test.swift:5:16)").canReadLocation())
-		XCTAssertFalse(GRYDecoder(sExpression:
+		XCTAssertFalse(GRYDecoder(encodedString:
 			"(/foo/bar baz/test.swift:5:16))").canReadLocation())
 	}
 
@@ -57,59 +57,59 @@ class GRYSExpressionParserTest: XCTestCase {
 		var optionalString: String?
 
 		// Open parentheses
-		parser = GRYDecoder(sExpression: "(foo")
-		parser.readOpenParentheses()
+		parser = GRYDecoder(encodedString: "(foo")
+		XCTAssertNoThrow(try parser.readOpenParentheses())
 		XCTAssertEqual(parser.remainingBuffer, "foo")
 
 		// Close parentheses
-		parser = GRYDecoder(sExpression: ") foo")
-		parser.readCloseParentheses()
+		parser = GRYDecoder(encodedString: ") foo")
+		XCTAssertNoThrow(try parser.readCloseParentheses())
 		XCTAssertEqual(parser.remainingBuffer, "foo")
 
 		// Identifier
-		parser = GRYDecoder(sExpression: "foo bla)")
+		parser = GRYDecoder(encodedString: "foo bla)")
 		string = parser.readIdentifier()
 		XCTAssertEqual(string, "foo")
 		XCTAssertEqual(parser.remainingBuffer, "bla)")
 
-		parser = GRYDecoder(sExpression: "foo(baz)bar)")
+		parser = GRYDecoder(encodedString: "foo(baz)bar)")
 		string = parser.readIdentifier()
 		XCTAssertEqual(string, "foo(baz)bar")
 		XCTAssertEqual(parser.remainingBuffer, ")")
 
 		// Location
-		parser = GRYDecoder(sExpression: "/foo/bar baz/test.swift:5:16 )")
+		parser = GRYDecoder(encodedString: "/foo/bar baz/test.swift:5:16 )")
 		string = parser.readLocation()
 		XCTAssertEqual(string, "/foo/bar baz/test.swift:5:16")
 		XCTAssertEqual(parser.remainingBuffer, ")")
 
 		// Declaration location
 		parser = GRYDecoder(
-			sExpression: "test.(file).Bla.foo(bar:baz:).x@/foo/bar baz/test.swift:5:16  )")
+			encodedString: "test.(file).Bla.foo(bar:baz:).x@/foo/bar baz/test.swift:5:16  )")
 		optionalString = parser.readDeclarationLocation()
 		XCTAssertEqual(
 			optionalString, "test.(file).Bla.foo(bar:baz:).x@/foo/bar baz/test.swift:5:16")
 		XCTAssertEqual(parser.remainingBuffer, ")")
 
 		parser = GRYDecoder(
-			sExpression: "(test.(file).Bla.foo(bar:baz:).x@/blah/blah blah/test.swift 4:13)")
+			encodedString: "(test.(file).Bla.foo(bar:baz:).x@/blah/blah blah/test.swift 4:13)")
 		optionalString = parser.readDeclarationLocation()
 		XCTAssertNil(optionalString)
 
 		// Double quoted string
-		parser = GRYDecoder(sExpression: "\"bla\" foo)")
+		parser = GRYDecoder(encodedString: "\"bla\" foo)")
 		string = parser.readDoubleQuotedString()
 		XCTAssertEqual(string, "bla")
 		XCTAssertEqual(parser.remainingBuffer, "foo)")
 
 		// Single quoted string
-		parser = GRYDecoder(sExpression: "'bla' foo)")
+		parser = GRYDecoder(encodedString: "'bla' foo)")
 		string = parser.readSingleQuotedString()
 		XCTAssertEqual(string, "bla")
 		XCTAssertEqual(parser.remainingBuffer, "foo)")
 
 		// String in brackets
-		parser = GRYDecoder(sExpression: "[bla] foo)")
+		parser = GRYDecoder(encodedString: "[bla] foo)")
 		string = parser.readStringInBrackets()
 		XCTAssertEqual(string, "bla")
 		XCTAssertEqual(parser.remainingBuffer, "foo)")
@@ -124,7 +124,7 @@ class GRYSExpressionParserTest: XCTestCase {
 
 				// Create a new AST using the parser
 				let testFilePath = TestUtils.testFilesPath + testName
-				let createdAST = GRYSwiftAst(astFile: testFilePath + .swiftAstDump)
+				let createdAST = try GRYSwiftAst(astFile: testFilePath + .swiftAstDump)
 
 				// Load a cached AST from file
 				let expectedAST = try GRYSwiftAst.initialize(decodingFile: testFilePath + .grySwiftAst)

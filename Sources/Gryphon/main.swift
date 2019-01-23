@@ -33,10 +33,10 @@ do {
 	// transpiler should still work normally.
 
 	// 1: Run the swift compiler and get its Ast dump
-//	print(GRYCompiler.getSwiftASTDump(forFileAt: filePath))
+//	try print(GRYCompiler.getSwiftASTDump(forFileAt: filePath))
 
 	// 2: Swiftc's Ast dump -> Gryphon's version of the Swift Ast
-//	GRYCompiler.generateSwiftAST(forFileAt: filePath).prettyPrint(horizontalLimit: 100)
+//	try GRYCompiler.generateSwiftAST(forFileAt: filePath).prettyPrint(horizontalLimit: 100)
 
 	// 3: Swiftc's Ast dump -> Swift Ast -> Gryphon's internal Ast (raw, before passes)
 //	try GRYCompiler.generateGryphonAst(forFileAt: filePath).prettyPrint(horizontalLimit: 100)
