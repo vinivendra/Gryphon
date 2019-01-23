@@ -15,7 +15,7 @@
 */
 
 public class GRYKotlinTranslator {
-	enum GRYKotlinTranslatorError: GRYPrintableError {
+	enum GRYKotlinTranslatorError: Error, CustomStringConvertible {
 		case unexpectedAstStructure(
 			file: String,
 			line: Int,
@@ -23,17 +23,21 @@ public class GRYKotlinTranslator {
 			message: String,
 			ast: GRYTopLevelNode)
 
-		func print() {
+		var description: String {
 			switch self {
 			case let .unexpectedAstStructure(
 				file: file, line: line, function: function, message: message, ast: ast):
 
-				Swift.print(
-					"Error: failed to translate Gryphon Ast into Kotlin.\n" +
+				var nodeDescription = ""
+				ast.prettyPrint(horizontalLimit: 100) {
+					nodeDescription += $0
+				}
+
+				return "Error: failed to translate Gryphon Ast into Kotlin.\n" +
 						"On file \(file), line \(line), function \(function).\n" +
 						message + ".\n" +
-					"Thrown when translating the following ast node:\n")
-				ast.prettyPrint(horizontalLimit: 100)
+					"Thrown when translating the following ast node:\n\(nodeDescription)"
+
 			}
 		}
 	}

@@ -56,11 +56,5 @@ do {
 }
 }
 catch let error {
-	if let error = error as? GRYPrintableError {
-		error.print()
-	}
-	else {
-		print("Unexpected error: \(error)")
-		fatalError()
-	}
+	print("🚨 Error:\n\(error)")
 }

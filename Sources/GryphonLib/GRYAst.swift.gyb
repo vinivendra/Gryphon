@@ -149,8 +149,9 @@ public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree, GR
 %		for pair in pairs:
 %			parameters.append(pair[0] + ": " + pair[1])
 %		end
-%		parametersString = ", ".join(parameters)
-	case ${name}(${parametersString})
+%		parametersString = ",\n\t\t".join(parameters)
+	case ${name}(
+		${parametersString})
 %
 %	else:
 	case ${name}
@@ -171,8 +172,9 @@ public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree, GR
 %		for pair in pairs:
 %			parameters.append(pair[0] + ": " + pair[0])
 %		end
-%		parametersString = ", ".join(parameters)
-		case let .${name}(${parametersString}):
+%		parametersString = ",\n\t\t\t\t".join(parameters)
+		case let .${name}(
+				${parametersString}):
 %		for pair in pairs:
 			try ${pair[0]}.encode(into: encoder)
 %		end
@@ -204,10 +206,11 @@ public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree, GR
 %		parameters = []
 %		for pair in pairs:
 %			parameters.append(pair[0] + ": " + pair[0])
-		let ${pair[0]} = try ${pair[1]}.decode(from: decoder)
+			let ${pair[0]} = try ${pair[1]}.decode(from: decoder)
 %		end
-%		parametersString = ", ".join(parameters)
-			result = .${name}(${parametersString})
+%		parametersString = ",\n\t\t\t\t".join(parameters)
+			result = .${name}(
+				${parametersString})
 %
 %	else:
 			result = .${name}
@@ -221,6 +224,7 @@ public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree, GR
 		return result
 	}
 
+	// TODO: Remove all force try's in this file
 	public func encode(to encoder: Encoder) throws {
 		var container = encoder.container(keyedBy: StringCodingKey.self)
 
@@ -236,8 +240,9 @@ public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree, GR
 %		for pair in pairs:
 %			parameters.append(pair[0] + ": " + pair[0])
 %		end
-%		parametersString = ", ".join(parameters)
-		case let .${name}(${parametersString}):
+%		parametersString = ",\n\t\t\t\t".join(parameters)
+		case let .${name}(
+				${parametersString}):
 %		for pair in pairs:
 			try! container.encode(${pair[0]}, forKey: "${pair[0]}")
 %		end
@@ -268,8 +273,9 @@ public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree, GR
 %			parameters.append(pair[0] + ": " + pair[0])
 			let ${pair[0]} = try! container.decode(${pair[1]}.self, forKey: "${pair[0]}")
 %		end
-%		parametersString = ", ".join(parameters)
-			self = .${name}(${parametersString})
+%		parametersString = ",\n\t\t\t\t".join(parameters)
+			self = .${name}(
+				${parametersString})
 %
 %	else:
 			self = .${name}
@@ -320,7 +326,7 @@ public indirect enum GRYTopLevelNode: Equatable, Codable, GRYPrintableAsTree, GR
 		case let .protocolDeclaration(name: name, members: members):
 			return [
 				name,
-				GRYPrintableTree(description: "members", subtreesOrNil: members)]
+				GRYPrintableTree(description: "members", subtreesOrNil: members), ]
 		case let .structDeclaration(name: name):
 			return [name]
 		case let .functionDeclaration(
@@ -431,8 +437,9 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree, GRYC
 %		for pair in pairs:
 %			parameters.append(pair[0] + ": " + pair[1])
 %		end
-%		parametersString = ", ".join(parameters)
-	case ${name}(${parametersString})
+%		parametersString = ",\n\t\t".join(parameters)
+	case ${name}(
+		${parametersString})
 %
 %	else:
 	case ${name}
@@ -440,7 +447,6 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree, GRYC
 %end
 
 	//
-
 	func encode(into encoder: GRYEncoder) throws {
 		encoder.startNewObject(named: self.name)
 
@@ -454,8 +460,9 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree, GRYC
 %		for pair in pairs:
 %			parameters.append(pair[0] + ": " + pair[0])
 %		end
-%		parametersString = ", ".join(parameters)
-		case let .${name}(${parametersString}):
+%		parametersString = ",\n\t\t\t\t".join(parameters)
+		case let .${name}(
+				${parametersString}):
 %		for pair in pairs:
 			try ${pair[0]}.encode(into: encoder)
 %		end
@@ -487,10 +494,11 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree, GRYC
 %		parameters = []
 %		for pair in pairs:
 %			parameters.append(pair[0] + ": " + pair[0])
-		let ${pair[0]} = try ${pair[1]}.decode(from: decoder)
+			let ${pair[0]} = try ${pair[1]}.decode(from: decoder)
 %		end
-%		parametersString = ", ".join(parameters)
-			result = .${name}(${parametersString})
+%		parametersString = ",\n\t\t\t\t".join(parameters)
+			result = .${name}(
+				${parametersString})
 %
 %	else:
 			result = .${name}
@@ -519,8 +527,9 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree, GRYC
 %		for pair in pairs:
 %			parameters.append(pair[0] + ": " + pair[0])
 %		end
-%		parametersString = ", ".join(parameters)
-		case let .${name}(${parametersString}):
+%		parametersString = ",\n\t\t\t\t".join(parameters)
+		case let .${name}(
+				${parametersString}):
 %		for pair in pairs:
 			try! container.encode(${pair[0]}, forKey: "${pair[0]}")
 %		end
@@ -548,10 +557,12 @@ public indirect enum GRYExpression: Equatable, Codable, GRYPrintableAsTree, GRYC
 %		parameters = []
 %		for pair in pairs:
 %			parameters.append(pair[0] + ": " + pair[0])
-			let ${pair[0]} = try! container.decode(${pair[1]}.self, forKey: "${pair[0]}")
+			let ${pair[0]} =
+				try! container.decode(${pair[1]}.self, forKey: "${pair[0]}")
 %		end
-%		parametersString = ", ".join(parameters)
-			self = .${name}(${parametersString})
+%		parametersString = ",\n\t\t\t\t".join(parameters)
+			self = .${name}(
+				${parametersString})
 %
 %	else:
 			self = .${name}

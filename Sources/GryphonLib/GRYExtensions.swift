@@ -73,12 +73,12 @@ extension Array {
 	}
 
 	/// Returns the same array, but with the first element moved to the end.
-	func rotated() -> Array<Element> {
+	func rotated() -> [Element] {
 		guard let first = first else {
 			return self
 		}
 
-		var newArray: Array<Element> = Array<Element>()
+		var newArray: [Element] = [Element]()
 		newArray.reserveCapacity(self.count)
 		newArray.append(contentsOf: self.dropFirst())
 		newArray.append(first)

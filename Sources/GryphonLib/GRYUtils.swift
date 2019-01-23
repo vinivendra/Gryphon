@@ -55,7 +55,7 @@ public enum GRYFileExtension: String {
 	case swift
 
 	//
-	static func +(string: String, fileExtension: GRYFileExtension) -> String {
+	static func + (string: String, fileExtension: GRYFileExtension) -> String {
 		return string + "." + fileExtension.rawValue
 	}
 }
@@ -299,9 +299,4 @@ internal extension RandomAccessCollection where Element: Equatable, Index == Int
 			}
 		}
 	}
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-public protocol GRYPrintableError: Error {
-	func print()
 }

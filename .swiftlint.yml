@@ -13,6 +13,9 @@ disabled_rules:
   - type_body_length
   - void_return
   - modifier_order
+  - multiline_parameters
+  - multiline_arguments
+  - type_name
 opt_in_rules:
   - attributes
   - closure_end_indentation

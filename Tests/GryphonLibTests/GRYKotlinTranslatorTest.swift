@@ -45,15 +45,8 @@ class GRYKotlinTranslatorTest: XCTestCase {
 				print("\t- Done!")
 			}
 			catch let error {
-				if let error = error as? GRYPrintableError {
-					error.print()
-					XCTFail()
-					continue
-				}
-				else {
-					print("Unexpected error: \(error)")
-					fatalError()
-				}
+				XCTFail("🚨 Test failed with error:\n\(error)")
+				continue
 			}
 		}
 	}

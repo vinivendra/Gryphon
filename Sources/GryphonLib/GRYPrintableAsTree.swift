@@ -29,7 +29,9 @@ public class GRYPrintableTree: GRYPrintableAsTree {
 
 	init?(description: String, subtreesOrNil: [GRYPrintableAsTree?]) {
 		let subtrees: [GRYPrintableAsTree?] = subtreesOrNil.compactMap { $0 }
-		guard !subtrees.isEmpty else { return nil }
+		guard !subtrees.isEmpty else {
+			return nil
+		}
 		self.treeDescription = description
 		self.printableSubtrees = subtrees
 	}

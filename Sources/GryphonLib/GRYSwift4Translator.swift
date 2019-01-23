@@ -15,7 +15,7 @@
 */
 
 public class GRYSwift4Translator {
-	enum GRYSwiftTranslatorError: GRYPrintableError {
+	enum GRYSwiftTranslatorError: Error, CustomStringConvertible {
 		case unexpectedAstStructure(
 			file: String,
 			line: Int,
@@ -23,17 +23,21 @@ public class GRYSwift4Translator {
 			message: String,
 			ast: GRYSwiftAst)
 
-		func print() {
+		var description: String {
 			switch self {
 			case let .unexpectedAstStructure(
 				file: file, line: line, function: function, message: message, ast: ast):
 
-				Swift.print(
-					"Error: failed to translate Swift Ast into Gryphon Ast.\n" +
+				var nodeDescription = ""
+				ast.prettyPrint(horizontalLimit: 100) {
+					nodeDescription += $0
+				}
+
+				return "Translation error: failed to translate Swift Ast into Gryphon Ast.\n" +
 					"On file \(file), line \(line), function \(function).\n" +
 					message + ".\n" +
-					"Thrown when translating the following ast node:\n")
-				ast.prettyPrint(horizontalLimit: 100)
+					"Thrown when translating the following ast node:\n\(nodeDescription)"
+
 			}
 		}
 	}
