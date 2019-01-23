@@ -44,7 +44,6 @@ class GRYSwiftTranslatorTest: XCTestCase {
 			}
 			catch let error {
 				XCTFail("🚨 Test failed with error:\n\(error)")
-				continue
 			}
 		}
 	}

@@ -56,8 +56,6 @@ class AcceptanceTest: XCTestCase {
 			}
 			catch let error {
 				XCTFail("🚨 Test failed with error:\n\(error)")
-				// TODO: Make sure all errors continue when possible
-				continue
 			}
 		}
 	}

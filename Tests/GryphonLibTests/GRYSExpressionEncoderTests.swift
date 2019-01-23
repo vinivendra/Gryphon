@@ -102,8 +102,9 @@ class GRYSExpressionEncoderTest: XCTestCase {
 	func testSwiftAst() {
 		let tests = TestUtils.allTestCases
 
-		do {
-			for testName in tests {
+		for testName in tests {
+
+			do {
 				print("- Testing \(testName)...")
 
 				// Parse an AST from the dump file
@@ -124,17 +125,17 @@ class GRYSExpressionEncoderTest: XCTestCase {
 
 				print("\t- Done!")
 			}
-		}
-		catch let error {
-			XCTFail("🚨 Test failed with error:\n\(error)")
+			catch let error {
+				XCTFail("🚨 Test failed with error:\n\(error)")
+			}
 		}
 	}
 
 	func testGRYAst() {
 		let tests = TestUtils.allTestCases
 
-		do {
-			for testName in tests {
+		for testName in tests {
+			do {
 				print("- Testing \(testName)...")
 
 				// Create an AST from scratch
@@ -156,9 +157,9 @@ class GRYSExpressionEncoderTest: XCTestCase {
 
 				print("\t- Done!")
 			}
-		}
-		catch let error {
-			XCTFail("🚨 Test failed with error:\n\(error)")
+			catch let error {
+				XCTFail("🚨 Test failed with error:\n\(error)")
+			}
 		}
 	}
 
