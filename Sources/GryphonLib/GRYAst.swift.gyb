@@ -54,8 +54,8 @@ public final class GRYAst: GRYPrintableAsTree, GRYCodable, Equatable, CustomStri
 			let decoder = GRYDecoder(sExpression: processedString)
 			return try decode(from: decoder)
 		}
-		catch let GRYDecodingError.conversionFailure(decoder, message) {
-			throw GRYDecodingError.conversionFailure(decoder, message)
+		catch let GRYDecodingError.unexpectedContent(decoder, message) {
+			throw GRYDecodingError.unexpectedContent(decoder, message)
 		}
 		catch let error {
 			fatalError("""
@@ -217,7 +217,8 @@ public indirect enum GRYTopLevelNode: Equatable, GRYPrintableAsTree, GRYCodable 
 %	end
 %end
 		default:
-			throw AstDecodingError(message: "Unknown ast node \(name).")
+			throw GRYDecodingError.unexpectedContent(
+				decoder, "Unknown GRYTopLevelNode \"\(name)\".")
 		}
 
 		decoder.readCloseParentheses()
@@ -443,7 +444,7 @@ public indirect enum GRYExpression: Equatable, GRYPrintableAsTree, GRYCodable {
 %	end
 %end
 		default:
-			throw AstDecodingError(message: "Unknown expression \(name).")
+			throw GRYDecodingError.unexpectedContent(decoder, "Unknown GRYExpression \"\(name)\".")
 		}
 
 		decoder.readCloseParentheses()
@@ -610,11 +611,4 @@ public indirect enum GRYExpression: Equatable, GRYPrintableAsTree, GRYCodable {
 			return TuplePair(name: name, expression: expression)
 		}
 	}
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// TODO: Replace this with GRYCodable error
-public struct AstDecodingError: Error {
-	let message: String
 }

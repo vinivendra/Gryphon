@@ -16,11 +16,11 @@
 
 //
 enum GRYDecodingError: CustomStringConvertible, Error {
-	case conversionFailure(GRYDecoder, String)
+	case unexpectedContent(GRYDecoder, String)
 
 	var description: String {
 		switch self {
-		case let .conversionFailure(decoder, message):
+		case let .unexpectedContent(decoder, message):
 			return "Decoding error: \(message)\n" +
 				"Remaining buffer in decoder: \"\(decoder.remainingBuffer(upTo: 30))\""
 		}
@@ -671,8 +671,8 @@ extension Int: GRYCodable {
 	static func decode(from decoder: GRYDecoder) throws -> Int {
 		let expectedInt = decoder.readIdentifier()
 		guard let result = Int(expectedInt) else {
-			throw GRYDecodingError.conversionFailure(
-				decoder, "Failed to convert \(expectedInt) to Int.")
+			throw GRYDecodingError.unexpectedContent(
+				decoder, "Got \(expectedInt), expected an Int.")
 		}
 		return result
 	}
@@ -686,8 +686,8 @@ extension Double: GRYCodable {
 	static func decode(from decoder: GRYDecoder) throws -> Double {
 		let expectedDouble = decoder.readIdentifier()
 		guard let result = Double(expectedDouble) else {
-			throw GRYDecodingError.conversionFailure(
-				decoder, "Failed to convert \(expectedDouble) to Double.")
+			throw GRYDecodingError.unexpectedContent(
+				decoder, "Got \(expectedDouble), expected a Double.")
 		}
 		return result
 	}
@@ -706,8 +706,8 @@ extension Bool: GRYCodable {
 	static func decode(from decoder: GRYDecoder) throws -> Bool {
 		let expectedBool = decoder.readIdentifier()
 		guard let result = Bool(expectedBool) else {
-			throw GRYDecodingError.conversionFailure(
-				decoder, "Failed to convert \(expectedBool) to Bool.")
+			throw GRYDecodingError.unexpectedContent(
+				decoder, "Got \(expectedBool), expected a Bool.")
 		}
 		return result
 	}
