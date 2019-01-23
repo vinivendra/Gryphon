@@ -16,7 +16,7 @@
 
 import Foundation
 
-public class GRYSwiftAst: GRYPrintableAsTree, Equatable, Codable, CustomStringConvertible {
+public class GRYSwiftAst: GRYPrintableAsTree, Equatable, CustomStringConvertible {
 	let name: String
 	let standaloneAttributes: [String]
 	let keyValueAttributes: [String: String]
@@ -204,6 +204,7 @@ public class GRYSwiftAst: GRYPrintableAsTree, Equatable, Codable, CustomStringCo
 	}
 
 	//
+	// TODO: Rename these methods
 	public func writeAsSExpression(
 		toFile filePath: String,
 		withEncoder encoder: GRYEncoder = GRYEncoder())

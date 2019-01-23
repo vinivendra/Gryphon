@@ -614,20 +614,7 @@ public indirect enum GRYExpression: Equatable, GRYPrintableAsTree, GRYCodable {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// TODO: Replace this with GRYCodable error
 public struct AstDecodingError: Error {
 	let message: String
-}
-
-public struct StringCodingKey: CodingKey, ExpressibleByStringLiteral {
-	public var stringValue: String
-
-	public init(stringLiteral value: String) {
-		self.stringValue = value
-	}
-
-	public init(stringValue: String) {
-		self.stringValue = stringValue
-	}
-	public var intValue: Int?
-	public init?(intValue: Int) { return nil }
 }
