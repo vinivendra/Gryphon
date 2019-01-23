@@ -707,7 +707,7 @@ public class GRYSwift4Translator {
 		}
 
 		// Translate the return type
-		// TODO: Doesn't allow to return function types
+		// FIXME: Doesn't allow to return function types
 		guard let returnType = functionDeclaration["interface type"]?
 			.split(withStringSeparator: " -> ").last else
 		{

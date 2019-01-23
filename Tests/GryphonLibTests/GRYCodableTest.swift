@@ -18,7 +18,7 @@
 import XCTest
 
 // TODO: Change all `Ast`s into `AST`s
-class GRYSExpressionEncoderTest: XCTestCase {
+class GRYCodableTest: XCTestCase {
 	struct TestObject: GRYCodable {
 		let x: Int
 		let y: Int
@@ -34,7 +34,138 @@ class GRYSExpressionEncoderTest: XCTestCase {
 		}
 	}
 
-	func testSimpleTypes() {
+	// MARK: - Decoder tests
+	func testDecoderCanRead() {
+		XCTAssert(GRYDecoder(encodedString:
+			"(foo)").canReadOpenParentheses())
+		XCTAssertFalse(GRYDecoder(encodedString:
+			"foo)").canReadOpenParentheses())
+
+		XCTAssert(GRYDecoder(encodedString:
+			") foo").canReadCloseParentheses())
+		XCTAssertFalse(GRYDecoder(encodedString:
+			"(foo)").canReadCloseParentheses())
+
+		XCTAssert(GRYDecoder(encodedString:
+			"\"foo\")").canReadDoubleQuotedString())
+		XCTAssertFalse(GRYDecoder(encodedString:
+			"(\"foo\")").canReadDoubleQuotedString())
+
+		XCTAssert(GRYDecoder(encodedString:
+			"'foo')").canReadSingleQuotedString())
+		XCTAssertFalse(GRYDecoder(encodedString:
+			"('foo')").canReadSingleQuotedString())
+
+		XCTAssert(GRYDecoder(encodedString:
+			"[foo])").canReadStringInBrackets())
+		XCTAssertFalse(GRYDecoder(encodedString:
+			"([foo])").canReadStringInBrackets())
+
+		XCTAssert(GRYDecoder(encodedString:
+			"/foo/bar baz/test.swift:5:16)").canReadLocation())
+		XCTAssertFalse(GRYDecoder(encodedString:
+			"(/foo/bar baz/test.swift:5:16))").canReadLocation())
+	}
+
+	func testDecoderRead() {
+		var parser: GRYDecoder
+		var string: String
+		var optionalString: String?
+
+		// Open parentheses
+		parser = GRYDecoder(encodedString: "(foo")
+		XCTAssertNoThrow(try parser.readOpenParentheses())
+		XCTAssertEqual(parser.remainingBuffer, "foo")
+
+		// Close parentheses
+		parser = GRYDecoder(encodedString: ") foo")
+		XCTAssertNoThrow(try parser.readCloseParentheses())
+		XCTAssertEqual(parser.remainingBuffer, "foo")
+
+		// Identifier
+		parser = GRYDecoder(encodedString: "foo bla)")
+		string = parser.readIdentifier()
+		XCTAssertEqual(string, "foo")
+		XCTAssertEqual(parser.remainingBuffer, "bla)")
+
+		parser = GRYDecoder(encodedString: "foo(baz)bar)")
+		string = parser.readIdentifier()
+		XCTAssertEqual(string, "foo(baz)bar")
+		XCTAssertEqual(parser.remainingBuffer, ")")
+
+		// Location
+		parser = GRYDecoder(encodedString: "/foo/bar baz/test.swift:5:16 )")
+		string = parser.readLocation()
+		XCTAssertEqual(string, "/foo/bar baz/test.swift:5:16")
+		XCTAssertEqual(parser.remainingBuffer, ")")
+
+		// Declaration location
+		parser = GRYDecoder(
+			encodedString: "test.(file).Bla.foo(bar:baz:).x@/foo/bar baz/test.swift:5:16  )")
+		optionalString = parser.readDeclarationLocation()
+		XCTAssertEqual(
+			optionalString, "test.(file).Bla.foo(bar:baz:).x@/foo/bar baz/test.swift:5:16")
+		XCTAssertEqual(parser.remainingBuffer, ")")
+
+		parser = GRYDecoder(
+			encodedString: "(test.(file).Bla.foo(bar:baz:).x@/blah/blah blah/test.swift 4:13)")
+		optionalString = parser.readDeclarationLocation()
+		XCTAssertNil(optionalString)
+
+		// Double quoted string
+		parser = GRYDecoder(encodedString: "\"bla\" foo)")
+		string = parser.readDoubleQuotedString()
+		XCTAssertEqual(string, "bla")
+		XCTAssertEqual(parser.remainingBuffer, "foo)")
+
+		// Single quoted string
+		parser = GRYDecoder(encodedString: "'bla' foo)")
+		string = parser.readSingleQuotedString()
+		XCTAssertEqual(string, "bla")
+		XCTAssertEqual(parser.remainingBuffer, "foo)")
+
+		// String in brackets
+		parser = GRYDecoder(encodedString: "[bla] foo)")
+		string = parser.readStringInBrackets()
+		XCTAssertEqual(string, "bla")
+		XCTAssertEqual(parser.remainingBuffer, "foo)")
+	}
+
+	// MARK: - Encoding and decoding tests
+	// Tests that check if the encoding and the decoding processes aren't corrupting the data.
+
+	/// Ensure the GRYSwiftAST produced by reading Swift's AST dump is the same as the one produced
+	/// from decoding the Gryphon cache file.
+	func testSwiftASTDumpVersusGryphonEncoding() {
+		let tests = TestUtils.allTestCases
+
+		do {
+			for testName in tests {
+				print("- Testing \(testName)...")
+
+				// Decode the AST from Swift's AST dump
+				let testFilePath = TestUtils.testFilesPath + testName
+				let swiftDumpAST = try GRYSwiftAst(astFile: testFilePath + .swiftAstDump)
+
+				// Decode the AST from a Gryphon encoding
+				let gryphonEncodingAST =
+					try GRYSwiftAst.initialize(decodingFile: testFilePath + .grySwiftAst)
+
+				// Compare the two
+				XCTAssert(
+					swiftDumpAST == gryphonEncodingAST,
+					"Test \(testName): parser failed to produce expected result. Diff:" +
+						TestUtils.diff(swiftDumpAST.description, gryphonEncodingAST.description))
+
+				print("\t- Done!")
+			}
+		}
+		catch let error {
+			XCTFail("🚨 Test failed with error:\n\(error)")
+		}
+	}
+
+	func testSimpleTypesConformance() {
 		let intMin = Int(Int32.min)
 		let intMax = Int(Int32.max)
 
@@ -99,7 +230,7 @@ class GRYSExpressionEncoderTest: XCTestCase {
 		}
 	}
 
-	func testSwiftAst() {
+	func testGRYSwiftAstConformance() {
 		let tests = TestUtils.allTestCases
 
 		for testName in tests {
@@ -131,7 +262,7 @@ class GRYSExpressionEncoderTest: XCTestCase {
 		}
 	}
 
-	func testGRYAst() {
+	func testGRYAstConformance() {
 		let tests = TestUtils.allTestCases
 
 		for testName in tests {
@@ -164,9 +295,12 @@ class GRYSExpressionEncoderTest: XCTestCase {
 	}
 
 	static var allTests = [
-		("testSimpleTypes", testSimpleTypes),
-		("testSwiftAst", testSwiftAst),
-		("testGRYAst", testGRYAst),
+		("testDecoderCanRead", testDecoderCanRead),
+		("testDecoderRead", testDecoderRead),
+		("testSwiftASTDumpVersusGryphonEncoding", testSwiftASTDumpVersusGryphonEncoding),
+		("testSimpleTypesConformance", testSimpleTypesConformance),
+		("testGRYSwiftAstConformance", testGRYSwiftAstConformance),
+		("testGRYAstConformance", testGRYAstConformance),
 	]
 
 	override static func setUp() {
