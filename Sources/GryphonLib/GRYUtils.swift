@@ -145,6 +145,19 @@ extension GRYUtils {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 extension GRYUtils {
+	enum GRYFileError: Error, CustomStringConvertible {
+		case outdatedFile(filePath: String)
+
+		var description: String {
+			switch self {
+			case let .outdatedFile(filePath: filePath):
+				return "Outdated file: \(filePath)\n" +
+					"Try running the preBuildScript.sh and the test suite to update compilation " +
+					"files."
+			}
+		}
+	}
+
 	static private var libraryFilesHaveBeenUpdated = false
 
 	static public func updateLibraryFiles() throws {
@@ -155,11 +168,11 @@ extension GRYUtils {
 		let folder = "Library Templates"
 		print("Updating files...")
 
-		updateFiles(in: folder, from: .swift, to: .swiftAstDump)
+		try updateFiles(in: folder, from: .swift, to: .swiftAstDump)
 		{ (_: String, astFilePath: String) in
 			// The swiftAstDump files must be updated externally by the perl script. If any files
 			// are out of date, this closure gets called and informs the user how to update them.
-			fatalError("Please update ast file \(astFilePath) with the `dump-ast.pl` perl script.")
+			throw GRYFileError.outdatedFile(filePath: astFilePath)
 		}
 
 		try updateFiles(in: folder, from: .swiftAstDump, to: .grySwiftAst)
@@ -192,12 +205,11 @@ extension GRYUtils {
 		let folder = "Test Files"
 		print("Updating files...")
 
-		// TODO: Make these names more uniform
-		updateFiles(in: folder, from: .swift, to: .swiftAstDump)
+		try updateFiles(in: folder, from: .swift, to: .swiftAstDump)
 		{ (_: String, astFilePath: String) in
 			// The swiftAstDump files must be updated externally by the perl script. If any files
 			// are out of date, this closure gets called and informs the user how to update them.
-			fatalError("Please update ast file \(astFilePath) with the `dump-ast.pl` perl script.")
+			throw GRYFileError.outdatedFile(filePath: astFilePath)
 		}
 
 		try updateFiles(in: folder, from: .swiftAstDump, to: .grySwiftAst)
