@@ -41,7 +41,7 @@ public class GRYLibraryTranspilationPass: GRYTranspilationPass {
 		var previousExpression: GRYExpression?
 		for file in templateFiles {
 			let filePath = file.path
-			let ast = try! GRYAst.decode(fromFile: filePath)
+			let ast = try! GRYAst(decodeFromFile: filePath)
 			let expressions = ast.statements.compactMap
 			{ (node: GRYTopLevelNode) -> GRYExpression? in
 				if case let .expression(expression: expression) = node {

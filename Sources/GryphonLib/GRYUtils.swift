@@ -162,15 +162,15 @@ extension GRYUtils {
 			fatalError("Please update ast file \(astFilePath) with the `dump-ast.pl` perl script.")
 		}
 
-		updateFiles(in: folder, from: .swiftAstDump, to: .grySwiftAst)
+		try updateFiles(in: folder, from: .swiftAstDump, to: .grySwiftAst)
 		{ (dumpFilePath: String, cacheFilePath: String) in
-			let ast = try! GRYSwiftAst(astFile: dumpFilePath)
-			ast.writeAsSExpression(toFile: cacheFilePath)
+			let ast = try GRYSwiftAst(decodeFromSwiftASTDumpInFile: dumpFilePath)
+			try ast.encode(intoFile: cacheFilePath)
 		}
 
 		try updateFiles(in: folder, from: .grySwiftAst, to: .gryRawAst)
 		{ (swiftAstFilePath: String, gryphonAstRawFilePath: String) in
-			let swiftAst = try GRYSwiftAst.initialize(decodingFile: swiftAstFilePath)
+			let swiftAst = try GRYSwiftAst(decodeFromFile: swiftAstFilePath)
 			let gryphonAst = try GRYSwift4Translator().translateAST(swiftAst)
 			try gryphonAst.encode(intoFile: gryphonAstRawFilePath)
 		}
@@ -192,6 +192,7 @@ extension GRYUtils {
 		let folder = "Test Files"
 		print("Updating files...")
 
+		// TODO: Make these names more uniform
 		updateFiles(in: folder, from: .swift, to: .swiftAstDump)
 		{ (_: String, astFilePath: String) in
 			// The swiftAstDump files must be updated externally by the perl script. If any files
@@ -199,22 +200,22 @@ extension GRYUtils {
 			fatalError("Please update ast file \(astFilePath) with the `dump-ast.pl` perl script.")
 		}
 
-		updateFiles(in: folder, from: .swiftAstDump, to: .grySwiftAst)
+		try updateFiles(in: folder, from: .swiftAstDump, to: .grySwiftAst)
 		{ (dumpFilePath: String, cacheFilePath: String) in
-			let ast = try! GRYSwiftAst(astFile: dumpFilePath)
-			ast.writeAsSExpression(toFile: cacheFilePath)
+			let ast = try GRYSwiftAst(decodeFromSwiftASTDumpInFile: dumpFilePath)
+			try ast.encode(intoFile: cacheFilePath)
 		}
 
 		try updateFiles(in: folder, from: .grySwiftAst, to: .gryRawAst)
 		{ (swiftAstFilePath: String, gryphonAstRawFilePath: String) in
-			let swiftAst = try GRYSwiftAst.initialize(decodingFile: swiftAstFilePath)
+			let swiftAst = try GRYSwiftAst(decodeFromFile: swiftAstFilePath)
 			let gryphonAst = try GRYSwift4Translator().translateAST(swiftAst)
 			try gryphonAst.encode(intoFile: gryphonAstRawFilePath)
 		}
 
 		try updateFiles(in: folder, from: .gryRawAst, to: .gryAst)
 		{ (gryphonAstRawFilePath: String, gryphonAstFilePath: String) throws in
-			let gryphonAstRaw = try GRYAst.decode(fromFile: gryphonAstRawFilePath)
+			let gryphonAstRaw = try GRYAst(decodeFromFile: gryphonAstRawFilePath)
 			let gryphonAst = GRYTranspilationPass.runAllPasses(on: gryphonAstRaw)
 			try gryphonAst.encode(intoFile: gryphonAstFilePath)
 		}

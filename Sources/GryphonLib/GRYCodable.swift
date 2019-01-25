@@ -27,6 +27,8 @@ enum GRYDecodingError: CustomStringConvertible, Error {
 	}
 }
 
+typealias GRYCodable = GRYEncodable & GRYDecodable
+
 protocol GRYDecodable {
 	static func decode(from: GRYDecoder) throws -> Self
 }
@@ -35,7 +37,35 @@ protocol GRYEncodable {
 	func encode(into encoder: GRYEncoder) throws
 }
 
-typealias GRYCodable = GRYEncodable & GRYDecodable
+extension GRYDecodable {
+	init(decodeFromFile filePath: String) throws {
+		let rawEncodedString = try String(contentsOfFile: filePath)
+
+		// Information in stored files has placeholders for file paths that must be replaced
+		let swiftFilePath = GRYUtils.changeExtension(of: filePath, to: .swift)
+		let processedEncodedString =
+			rawEncodedString.replacingOccurrences(of: "<<testFilePath>>", with: swiftFilePath)
+
+		let decoder = GRYDecoder(encodedString: processedEncodedString)
+		self = try Self.decode(from: decoder)
+	}
+}
+
+extension GRYEncodable {
+	public func encode(intoFile filePath: String) throws {
+		let encoder = GRYEncoder()
+		try self.encode(into: encoder)
+		let rawEncodedString = encoder.result
+
+		// Absolute file paths must be replaced with placeholders before writing to file.
+		let swiftFilePath = GRYUtils.changeExtension(of: filePath, to: .swift)
+		let escapedFilePath = swiftFilePath.replacingOccurrences(of: "/", with: "\\/")
+		let processedEncodedString =
+			rawEncodedString.replacingOccurrences(of: escapedFilePath, with: "<<testFilePath>>")
+
+		try processedEncodedString.write(toFile: filePath, atomically: true, encoding: .utf8)
+	}
+}
 
 // MARK: - Decoder
 internal class GRYDecoder {
@@ -569,6 +599,7 @@ private extension Character {
 	}
 }
 
+// MARK: - Encoder
 // TODO: test
 public class GRYEncoder {
 	private var indentation = ""

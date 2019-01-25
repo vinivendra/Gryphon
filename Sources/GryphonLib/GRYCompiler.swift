@@ -102,7 +102,7 @@ public enum GRYCompiler {
 		let astFilePath = GRYUtils.changeExtension(of: filePath, to: .swiftAstDump)
 
 		print("\t- Building GRYSwiftAst from external AST...")
-		let ast = try GRYSwiftAst(astFile: astFilePath)
+		let ast = try GRYSwiftAst(decodeFromSwiftASTDumpInFile: astFilePath)
 
 		let cacheFilePath = GRYUtils.changeExtension(of: filePath, to: .grySwiftAst)
 		let cacheFileWasJustCreated = GRYUtils.createFileIfNeeded(at: cacheFilePath, containing: "")
@@ -111,7 +111,7 @@ public enum GRYCompiler {
 				GRYUtils.file(astFilePath, wasModifiedLaterThan: cacheFilePath)
 		if cacheIsOutdated {
 			print("\t\t- Updating \(cacheFilePath)...")
-			ast.writeAsSExpression(toFile: cacheFilePath)
+			try ast.encode(intoFile: cacheFilePath)
 		}
 
 		return ast
@@ -121,7 +121,7 @@ public enum GRYCompiler {
 		let astDumpFilePath = GRYUtils.changeExtension(of: filePath, to: .swiftAstDump)
 
 		print("\t- Building GRYSwiftAst...")
-		let ast = try GRYSwiftAst(astFile: astDumpFilePath)
+		let ast = try GRYSwiftAst(decodeFromSwiftASTDumpInFile: astDumpFilePath)
 		return ast
 	}
 
