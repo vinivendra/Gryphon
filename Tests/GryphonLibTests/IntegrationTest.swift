@@ -35,7 +35,7 @@ class IntegrationTest: XCTestCase {
 
 				XCTAssert(
 					generatedKotlinCode == expectedKotlinCode,
-					"Test \(testName): parser failed to produce expected result. Diff:" +
+					"Test \(testName): the transpiler failed to produce expected result. Diff:" +
 						TestUtils.diff(generatedKotlinCode, expectedKotlinCode))
 
 				print("\t- Done!")

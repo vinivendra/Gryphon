@@ -68,67 +68,67 @@ class GRYCodableTest: XCTestCase {
 	}
 
 	func testDecoderRead() {
-		var parser: GRYDecoder
+		var decoder: GRYDecoder
 		var string: String
 		var optionalString: String?
 
 		// Open parentheses
-		parser = GRYDecoder(encodedString: "(foo")
-		XCTAssertNoThrow(try parser.readOpenParentheses())
-		XCTAssertEqual(parser.remainingBuffer, "foo")
+		decoder = GRYDecoder(encodedString: "(foo")
+		XCTAssertNoThrow(try decoder.readOpenParentheses())
+		XCTAssertEqual(decoder.remainingBuffer, "foo")
 
 		// Close parentheses
-		parser = GRYDecoder(encodedString: ") foo")
-		XCTAssertNoThrow(try parser.readCloseParentheses())
-		XCTAssertEqual(parser.remainingBuffer, "foo")
+		decoder = GRYDecoder(encodedString: ") foo")
+		XCTAssertNoThrow(try decoder.readCloseParentheses())
+		XCTAssertEqual(decoder.remainingBuffer, "foo")
 
 		// Identifier
-		parser = GRYDecoder(encodedString: "foo bla)")
-		string = parser.readIdentifier()
+		decoder = GRYDecoder(encodedString: "foo bla)")
+		string = decoder.readIdentifier()
 		XCTAssertEqual(string, "foo")
-		XCTAssertEqual(parser.remainingBuffer, "bla)")
+		XCTAssertEqual(decoder.remainingBuffer, "bla)")
 
-		parser = GRYDecoder(encodedString: "foo(baz)bar)")
-		string = parser.readIdentifier()
+		decoder = GRYDecoder(encodedString: "foo(baz)bar)")
+		string = decoder.readIdentifier()
 		XCTAssertEqual(string, "foo(baz)bar")
-		XCTAssertEqual(parser.remainingBuffer, ")")
+		XCTAssertEqual(decoder.remainingBuffer, ")")
 
 		// Location
-		parser = GRYDecoder(encodedString: "/foo/bar baz/test.swift:5:16 )")
-		string = parser.readLocation()
+		decoder = GRYDecoder(encodedString: "/foo/bar baz/test.swift:5:16 )")
+		string = decoder.readLocation()
 		XCTAssertEqual(string, "/foo/bar baz/test.swift:5:16")
-		XCTAssertEqual(parser.remainingBuffer, ")")
+		XCTAssertEqual(decoder.remainingBuffer, ")")
 
 		// Declaration location
-		parser = GRYDecoder(
+		decoder = GRYDecoder(
 			encodedString: "test.(file).Bla.foo(bar:baz:).x@/foo/bar baz/test.swift:5:16  )")
-		optionalString = parser.readDeclarationLocation()
+		optionalString = decoder.readDeclarationLocation()
 		XCTAssertEqual(
 			optionalString, "test.(file).Bla.foo(bar:baz:).x@/foo/bar baz/test.swift:5:16")
-		XCTAssertEqual(parser.remainingBuffer, ")")
+		XCTAssertEqual(decoder.remainingBuffer, ")")
 
-		parser = GRYDecoder(
+		decoder = GRYDecoder(
 			encodedString: "(test.(file).Bla.foo(bar:baz:).x@/blah/blah blah/test.swift 4:13)")
-		optionalString = parser.readDeclarationLocation()
+		optionalString = decoder.readDeclarationLocation()
 		XCTAssertNil(optionalString)
 
 		// Double quoted string
-		parser = GRYDecoder(encodedString: "\"bla\" foo)")
-		string = parser.readDoubleQuotedString()
+		decoder = GRYDecoder(encodedString: "\"bla\" foo)")
+		string = decoder.readDoubleQuotedString()
 		XCTAssertEqual(string, "bla")
-		XCTAssertEqual(parser.remainingBuffer, "foo)")
+		XCTAssertEqual(decoder.remainingBuffer, "foo)")
 
 		// Single quoted string
-		parser = GRYDecoder(encodedString: "'bla' foo)")
-		string = parser.readSingleQuotedString()
+		decoder = GRYDecoder(encodedString: "'bla' foo)")
+		string = decoder.readSingleQuotedString()
 		XCTAssertEqual(string, "bla")
-		XCTAssertEqual(parser.remainingBuffer, "foo)")
+		XCTAssertEqual(decoder.remainingBuffer, "foo)")
 
 		// String in brackets
-		parser = GRYDecoder(encodedString: "[bla] foo)")
-		string = parser.readStringInBrackets()
+		decoder = GRYDecoder(encodedString: "[bla] foo)")
+		string = decoder.readStringInBrackets()
 		XCTAssertEqual(string, "bla")
-		XCTAssertEqual(parser.remainingBuffer, "foo)")
+		XCTAssertEqual(decoder.remainingBuffer, "foo)")
 	}
 
 	// MARK: - Encoding and decoding tests
@@ -155,8 +155,8 @@ class GRYCodableTest: XCTestCase {
 				// Compare the two
 				XCTAssert(
 					swiftDumpAST == gryphonEncodingAST,
-					"Test \(testName): parser failed to produce expected result. Diff:" +
-						TestUtils.diff(swiftDumpAST.description, gryphonEncodingAST.description))
+					"Test \(testName): the coding process failed to produce expected result. Diff:"
+						+ TestUtils.diff(swiftDumpAST.description, gryphonEncodingAST.description))
 
 				print("\t- Done!")
 			}
@@ -253,8 +253,8 @@ class GRYCodableTest: XCTestCase {
 				// Compare the two
 				XCTAssert(
 					createdAST == expectedAST,
-					"Test \(testName): parser failed to produce expected result. Diff:" +
-						TestUtils.diff(createdAST.description, expectedAST.description))
+					"Test \(testName): the coding process failed to produce expected result. Diff:"
+						+ TestUtils.diff(createdAST.description, expectedAST.description))
 
 				print("\t- Done!")
 			}
@@ -285,8 +285,8 @@ class GRYCodableTest: XCTestCase {
 				// Compare the two
 				XCTAssert(
 					createdAST == expectedAST,
-					"Test \(testName): parser failed to produce expected result. Diff:" +
-						TestUtils.diff(createdAST.description, expectedAST.description))
+					"Test \(testName): the coding process failed to produce expected result. Diff:"
+						+ TestUtils.diff(createdAST.description, expectedAST.description))
 
 				print("\t- Done!")
 			}

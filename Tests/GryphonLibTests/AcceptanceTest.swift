@@ -48,7 +48,7 @@ class AcceptanceTest: XCTestCase {
 						"\(compilerResult.status).")
 					XCTAssert(
 						compilerResult.standardOutput == expectedOutput,
-						"Test \(testName): parser failed to produce expected result. Diff:" +
+						"Test \(testName): program failed to produce expected result. Diff:" +
 							TestUtils.diff(compilerResult.standardOutput, expectedOutput))
 
 					print("\t- Done!")

@@ -69,8 +69,8 @@ public final class GRYSwiftAst: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 		try decoder.readOpenParentheses()
 		let name = decoder.readDoubleQuotedString()
 
-		// The loop stops: all branches tell the parser to read, therefore the input string must end
-		// eventually
+		// The loop stops: all branches tell the decoder to read, therefore the input string must
+		// end eventually
 		while true {
 			// Add subtree
 			if decoder.canReadOpenParentheses() {
@@ -125,8 +125,8 @@ public final class GRYSwiftAst: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 		let name = decoder.readIdentifier()
 		self.name = GRYUtils.expandSwiftAbbreviation(name)
 
-		// The loop stops: all branches tell the parser to read, therefore the input string must end
-		// eventually
+		// The loop stops: all branches tell the decoder to read, therefore the input string must
+		// end eventually
 		while true {
 			// Add subtree
 			if decoder.canReadOpenParentheses() {
