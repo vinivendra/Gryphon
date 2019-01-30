@@ -264,7 +264,7 @@ class GRYCodableTest: XCTestCase {
 		}
 	}
 
-	func testGRYAstConformance() {
+	func testGRYASTConformance() {
 		let tests = TestUtils.allTestCases
 
 		for testName in tests {
@@ -274,7 +274,7 @@ class GRYCodableTest: XCTestCase {
 				// Create an AST from scratch
 				let testFilePath = TestUtils.testFilesPath + testName
 				let expectedAST =
-					try GRYCompiler.generateGryphonAst(forFileAt: testFilePath + .swift)
+					try GRYCompiler.generateGryphonAST(forFileAt: testFilePath + .swift)
 
 				// Write cached AST to file and parse it back
 				let encoder = GRYEncoder()
@@ -302,7 +302,7 @@ class GRYCodableTest: XCTestCase {
 		("testSwiftASTDumpVersusGryphonEncoding", testSwiftASTDumpVersusGryphonEncoding),
 		("testSimpleTypesConformance", testSimpleTypesConformance),
 		("testGRYSwiftASTConformance", testGRYSwiftASTConformance),
-		("testGRYAstConformance", testGRYAstConformance),
+		("testGRYASTConformance", testGRYASTConformance),
 	]
 
 	override static func setUp() {

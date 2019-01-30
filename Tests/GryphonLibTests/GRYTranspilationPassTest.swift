@@ -25,19 +25,19 @@ class GRYTranspilationPassTest: XCTestCase {
 			for testName in tests {
 				print("- Testing \(testName)...")
 
-				// Fetch the cached Gryphon Ast (without passes) and run the passes on it
+				// Fetch the cached Gryphon AST (without passes) and run the passes on it
 				let testFilePath = TestUtils.testFilesPath + testName
-				let rawAst = try GRYAST.decode(fromFile: testFilePath + .gryRawAst)
-				let createdGryphonAst = GRYTranspilationPass.runAllPasses(on: rawAst)
+				let rawAST = try GRYAST.decode(fromFile: testFilePath + .gryRawAst)
+				let createdGryphonAST = GRYTranspilationPass.runAllPasses(on: rawAST)
 
-				// Load a cached Gryphon Ast (with passes)
-				let expectedGryphonAst = try GRYAST.decode(fromFile: testFilePath + .gryAst)
+				// Load a cached Gryphon AST (with passes)
+				let expectedGryphonAST = try GRYAST.decode(fromFile: testFilePath + .gryAst)
 
 				XCTAssert(
-					createdGryphonAst == expectedGryphonAst,
+					createdGryphonAST == expectedGryphonAST,
 					"Test \(testName): translator failed to produce expected result. Diff:" +
 						TestUtils.diff(
-							expectedGryphonAst.description, expectedGryphonAst.description))
+							expectedGryphonAST.description, expectedGryphonAST.description))
 
 				print("\t- Done!")
 			}

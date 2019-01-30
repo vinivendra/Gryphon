@@ -16,7 +16,7 @@
 
 public class GRYKotlinTranslator {
 	enum GRYKotlinTranslatorError: Error, CustomStringConvertible {
-		case unexpectedAstStructure(
+		case unexpectedASTStructure(
 			file: String,
 			line: Int,
 			function: String,
@@ -25,7 +25,7 @@ public class GRYKotlinTranslator {
 
 		var description: String {
 			switch self {
-			case let .unexpectedAstStructure(
+			case let .unexpectedASTStructure(
 				file: file, line: line, function: function, message: message, ast: ast):
 
 				var nodeDescription = ""
@@ -33,7 +33,7 @@ public class GRYKotlinTranslator {
 					nodeDescription += $0
 				}
 
-				return "Error: failed to translate Gryphon Ast into Kotlin.\n" +
+				return "Error: failed to translate Gryphon AST into Kotlin.\n" +
 						"On file \(file), line \(line), function \(function).\n" +
 						message + ".\n" +
 					"Thrown when translating the following ast node:\n\(nodeDescription)"
@@ -42,11 +42,11 @@ public class GRYKotlinTranslator {
 		}
 	}
 
-	func unexpectedAstStructureError(
+	func unexpectedASTStructureError(
 		file: String = #file, line: Int = #line, function: String = #function, _ message: String,
-		ast: GRYTopLevelNode) -> GRYKotlinTranslatorError
+		AST ast: GRYTopLevelNode) -> GRYKotlinTranslatorError
 	{
-		return GRYKotlinTranslatorError.unexpectedAstStructure(
+		return GRYKotlinTranslatorError.unexpectedASTStructure(
 			file: file, line: line, function: function, message: message, ast: ast)
 	}
 
@@ -116,9 +116,9 @@ public class GRYKotlinTranslator {
 		case .importDeclaration(name: _):
 			result = ""
 		case .extensionDeclaration(type: _, members: _):
-			throw unexpectedAstStructureError(
+			throw unexpectedASTStructureError(
 				"Extension structure should have been removed in a transpilation pass",
-				ast: subtree)
+				AST: subtree)
 		case let .classDeclaration(name: name, inherits: inherits, members: members):
 			result = try translateClassDeclaration(
 				name: name, inherits: inherits, members: members, withIndentation: indentation)

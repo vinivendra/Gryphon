@@ -75,26 +75,26 @@ public enum GRYCompiler {
 	}
 
 	public static func generateKotlinCode(forFileAt filePath: String) throws -> String {
-		let ast = try generateGryphonAstAndRunPasses(forFileAt: filePath)
+		let ast = try generateGryphonASTAndRunPasses(forFileAt: filePath)
 
 		print("\t- Translating AST to Kotlin...")
 		return try GRYKotlinTranslator().translateAST(ast)
 	}
 
-	public static func generateGryphonAstAndRunPasses(forFileAt filePath: String) throws
+	public static func generateGryphonASTAndRunPasses(forFileAt filePath: String) throws
 		-> GRYAST
 	{
-		let swiftAst = try generateSwiftAST(forFileAt: filePath)
-		print("\t- Translating Swift Ast to Gryphon Ast...")
-		let ast = try GRYSwift4Translator().translateAST(swiftAst)
+		let swiftAST = try generateSwiftAST(forFileAt: filePath)
+		print("\t- Translating Swift AST to Gryphon AST...")
+		let ast = try GRYSwift4Translator().translateAST(swiftAST)
 		let astAfterPasses = GRYTranspilationPass.runAllPasses(on: ast)
 		return astAfterPasses
 	}
 
-	public static func generateGryphonAst(forFileAt filePath: String) throws -> GRYAST {
-		let swiftAst = try generateSwiftAST(forFileAt: filePath)
-		print("\t- Translating Swift Ast to Gryphon Ast...")
-		let ast = try GRYSwift4Translator().translateAST(swiftAst)
+	public static func generateGryphonAST(forFileAt filePath: String) throws -> GRYAST {
+		let swiftAST = try generateSwiftAST(forFileAt: filePath)
+		print("\t- Translating Swift AST to Gryphon AST...")
+		let ast = try GRYSwift4Translator().translateAST(swiftAST)
 		return ast
 	}
 

@@ -32,23 +32,23 @@ do {
 	// Note that if the input file is a .swiftAstDump file instead of a .swift file the
 	// transpiler should still work normally.
 
-	// 1: Run the swift compiler and get its Ast dump
+	// 1: Run the swift compiler and get its AST dump
 //	try print(GRYCompiler.getSwiftASTDump(forFileAt: filePath))
 
-	// 2: Swiftc's Ast dump -> Gryphon's version of the Swift Ast
+	// 2: Swiftc's AST dump -> Gryphon's version of the Swift AST
 //	try GRYCompiler.generateSwiftAST(forFileAt: filePath).prettyPrint(horizontalLimit: 100)
 
-	// 3: Swiftc's Ast dump -> Swift Ast -> Gryphon's internal Ast (raw, before passes)
-//	try GRYCompiler.generateGryphonAst(forFileAt: filePath).prettyPrint(horizontalLimit: 100)
+	// 3: Swiftc's AST dump -> Swift AST -> Gryphon's internal AST (raw, before passes)
+//	try GRYCompiler.generateGryphonAST(forFileAt: filePath).prettyPrint(horizontalLimit: 100)
 
-	// 3.1: Swiftc's Ast dump -> Swift Ast -> Gryphon Ast (raw) + Gryphon Ast (after passes)
-//	try GRYCompiler.generateGryphonAstAndRunPasses(forFileAt: filePath)
+	// 3.1: Swiftc's AST dump -> Swift AST -> Gryphon AST (raw) + Gryphon AST (after passes)
+//	try GRYCompiler.generateGryphonASTAndRunPasses(forFileAt: filePath)
 //		.prettyPrint(horizontalLimit: 100)
 
-	// 4: Swiftc's Ast dump -> Swift Ast -> Gryphon Ast (raw) + Gryphon Ast -> Kotlin code
+	// 4: Swiftc's AST dump -> Swift AST -> Gryphon AST (raw) + Gryphon AST -> Kotlin code
 //	try print(GRYCompiler.generateKotlinCode(forFileAt: filePath))
 
-	// 5: Ast dump -> Swift Ast -> GRYAst (raw) -> GRYAst -> Kotlin -> Output of running Kotlin
+	// 5: AST dump -> Swift AST -> GRYAST (raw) -> GRYAST -> Kotlin -> Output of running Kotlin
 	try print(GRYCompiler.compileAndRun(fileAt: filePath))
 
 	for warning in GRYTranspilationPass.warnings {

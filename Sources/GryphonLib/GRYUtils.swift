@@ -182,10 +182,10 @@ extension GRYUtils {
 		}
 
 		try updateFiles(in: folder, from: .grySwiftAst, to: .gryRawAst)
-		{ (swiftAstFilePath: String, gryphonAstRawFilePath: String) in
-			let swiftAst = try GRYSwiftAST(decodeFromFile: swiftAstFilePath)
-			let gryphonAst = try GRYSwift4Translator().translateAST(swiftAst)
-			try gryphonAst.encode(intoFile: gryphonAstRawFilePath)
+		{ (swiftASTFilePath: String, gryphonASTRawFilePath: String) in
+			let swiftAST = try GRYSwiftAST(decodeFromFile: swiftASTFilePath)
+			let gryphonAST = try GRYSwift4Translator().translateAST(swiftAST)
+			try gryphonAST.encode(intoFile: gryphonASTRawFilePath)
 		}
 
 		libraryFilesHaveBeenUpdated = true
@@ -219,17 +219,17 @@ extension GRYUtils {
 		}
 
 		try updateFiles(in: folder, from: .grySwiftAst, to: .gryRawAst)
-		{ (swiftAstFilePath: String, gryphonAstRawFilePath: String) in
-			let swiftAst = try GRYSwiftAST(decodeFromFile: swiftAstFilePath)
-			let gryphonAst = try GRYSwift4Translator().translateAST(swiftAst)
-			try gryphonAst.encode(intoFile: gryphonAstRawFilePath)
+		{ (swiftASTFilePath: String, gryphonASTRawFilePath: String) in
+			let swiftAST = try GRYSwiftAST(decodeFromFile: swiftASTFilePath)
+			let gryphonAST = try GRYSwift4Translator().translateAST(swiftAST)
+			try gryphonAST.encode(intoFile: gryphonASTRawFilePath)
 		}
 
 		try updateFiles(in: folder, from: .gryRawAst, to: .gryAst)
-		{ (gryphonAstRawFilePath: String, gryphonAstFilePath: String) throws in
-			let gryphonAstRaw = try GRYAST(decodeFromFile: gryphonAstRawFilePath)
-			let gryphonAst = GRYTranspilationPass.runAllPasses(on: gryphonAstRaw)
-			try gryphonAst.encode(intoFile: gryphonAstFilePath)
+		{ (gryphonASTRawFilePath: String, gryphonASTFilePath: String) throws in
+			let gryphonASTRaw = try GRYAST(decodeFromFile: gryphonASTRawFilePath)
+			let gryphonAST = GRYTranspilationPass.runAllPasses(on: gryphonASTRaw)
+			try gryphonAST.encode(intoFile: gryphonASTFilePath)
 		}
 
 		testFilesHaveBeenUpdated = true
