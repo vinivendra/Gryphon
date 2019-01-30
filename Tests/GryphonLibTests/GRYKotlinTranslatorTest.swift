@@ -29,7 +29,7 @@ class GRYKotlinTranslatorTest: XCTestCase {
 				// Create the new Kotlin code from the cached Gryphon AST using the
 				// GRYKotlinTranslator
 				let testFilePath = TestUtils.testFilesPath + testName
-				let ast = try GRYAst.decode(fromFile: testFilePath + .gryAst)
+				let ast = try GRYAST.decode(fromFile: testFilePath + .gryAst)
 				_ = GRYRecordEnumsTranspilationPass().run(on: ast)
 				let createdKotlinCode = try GRYKotlinTranslator().translateAST(ast)
 

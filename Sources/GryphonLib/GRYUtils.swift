@@ -227,7 +227,7 @@ extension GRYUtils {
 
 		try updateFiles(in: folder, from: .gryRawAst, to: .gryAst)
 		{ (gryphonAstRawFilePath: String, gryphonAstFilePath: String) throws in
-			let gryphonAstRaw = try GRYAst(decodeFromFile: gryphonAstRawFilePath)
+			let gryphonAstRaw = try GRYAST(decodeFromFile: gryphonAstRawFilePath)
 			let gryphonAst = GRYTranspilationPass.runAllPasses(on: gryphonAstRaw)
 			try gryphonAst.encode(intoFile: gryphonAstFilePath)
 		}

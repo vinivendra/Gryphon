@@ -81,7 +81,7 @@ public class GRYKotlinTranslator {
 
 	// MARK: - Interface
 
-	public func translateAST(_ sourceFile: GRYAst) throws -> String {
+	public func translateAST(_ sourceFile: GRYAST) throws -> String {
 		let declarationsTranslation =
 			try translate(subtrees: sourceFile.declarations, withIndentation: "")
 

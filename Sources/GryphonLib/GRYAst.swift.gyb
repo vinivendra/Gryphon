@@ -16,7 +16,7 @@
 
 import Foundation
 
-public final class GRYAst: GRYPrintableAsTree, GRYCodable, Equatable, CustomStringConvertible {
+public final class GRYAST: GRYPrintableAsTree, GRYCodable, Equatable, CustomStringConvertible {
 	let declarations: [GRYTopLevelNode]
 	let statements: [GRYTopLevelNode]
 
@@ -40,7 +40,7 @@ public final class GRYAst: GRYPrintableAsTree, GRYCodable, Equatable, CustomStri
 		try processedString.write(toFile: filePath, atomically: true, encoding: .utf8)
 	}
 
-	public static func decode(fromFile filePath: String) throws -> GRYAst {
+	public static func decode(fromFile filePath: String) throws -> GRYAST {
 		do {
 			let rawString = try String(contentsOfFile: filePath)
 
@@ -66,24 +66,24 @@ public final class GRYAst: GRYPrintableAsTree, GRYCodable, Equatable, CustomStri
 		}
 	}
 
-	internal static func decode(from decoder: GRYDecoder) throws -> GRYAst {
+	internal static func decode(from decoder: GRYDecoder) throws -> GRYAST {
 		try decoder.readOpenParentheses()
 		_ = decoder.readIdentifier()
 		let declarations = try [GRYTopLevelNode].decode(from: decoder)
 		let statements = try [GRYTopLevelNode].decode(from: decoder)
 		try decoder.readCloseParentheses()
-		return GRYAst(declarations: declarations, statements: statements)
+		return GRYAST(declarations: declarations, statements: statements)
 	}
 
 	func encode(into encoder: GRYEncoder) throws {
-		encoder.startNewObject(named: "GRYAst")
+		encoder.startNewObject(named: "GRYAST")
 		try declarations.encode(into: encoder)
 		try statements.encode(into: encoder)
 		encoder.endObject()
 	}
 
 	//
-	public static func == (lhs: GRYAst, rhs: GRYAst) -> Bool {
+	public static func == (lhs: GRYAST, rhs: GRYAST) -> Bool {
 		return lhs.declarations == rhs.declarations &&
 			lhs.statements == rhs.statements
 	}

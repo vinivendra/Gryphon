@@ -41,7 +41,7 @@ public class GRYLibraryTranspilationPass: GRYTranspilationPass {
 		var previousExpression: GRYExpression?
 		for file in templateFiles {
 			let filePath = file.path
-			let ast = try! GRYAst(decodeFromFile: filePath)
+			let ast = try! GRYAST(decodeFromFile: filePath)
 			let expressions = ast.statements.compactMap
 			{ (node: GRYTopLevelNode) -> GRYExpression? in
 				if case let .expression(expression: expression) = node {
@@ -67,7 +67,7 @@ public class GRYLibraryTranspilationPass: GRYTranspilationPass {
 		}
 	}
 
-	override func run(on sourceFile: GRYAst) -> GRYAst {
+	override func run(on sourceFile: GRYAST) -> GRYAST {
 		if GRYLibraryTranspilationPass.templates.isEmpty {
 			GRYLibraryTranspilationPass.loadTemplates()
 		}

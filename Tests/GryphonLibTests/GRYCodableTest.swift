@@ -280,7 +280,7 @@ class GRYCodableTest: XCTestCase {
 				let encoder = GRYEncoder()
 				try expectedAST.encode(into: encoder)
 				let decoder = GRYDecoder(encodedString: encoder.result)
-				let createdAST = try GRYAst.decode(from: decoder)
+				let createdAST = try GRYAST.decode(from: decoder)
 
 				// Compare the two
 				XCTAssert(

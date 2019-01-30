@@ -20,7 +20,7 @@ public class GRYTranspilationPass {
 		return parents.secondToLast!
 	}
 
-	func run(on sourceFile: GRYAst) -> GRYAst {
+	func run(on sourceFile: GRYAST) -> GRYAST {
 		var replacedStatements = [GRYTopLevelNode]()
 		for statement in sourceFile.statements {
 			let replacedStatement = replaceTopLevelNode(statement)
@@ -33,7 +33,7 @@ public class GRYTranspilationPass {
 			replacedDeclarations.append(contentsOf: replacedDeclaration)
 		}
 
-		return GRYAst(declarations: replacedDeclarations, statements: replacedStatements)
+		return GRYAST(declarations: replacedDeclarations, statements: replacedStatements)
 	}
 
 	func replaceTopLevelNode(_ node: GRYTopLevelNode) -> [GRYTopLevelNode] {
@@ -638,7 +638,7 @@ public class GRYFixProtocolContentsTranspilationPass: GRYTranspilationPass {
 }
 
 public extension GRYTranspilationPass {
-	static func runAllPasses(on sourceFile: GRYAst) -> GRYAst {
+	static func runAllPasses(on sourceFile: GRYAST) -> GRYAST {
 		var result = sourceFile
 		result = GRYLibraryTranspilationPass().run(on: result)
 		result = GRYRemoveGryphonDeclarationsTranspilationPass().run(on: result)
