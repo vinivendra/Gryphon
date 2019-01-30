@@ -36,14 +36,34 @@ class GRYCodableTest: XCTestCase {
 	// MARK: - Decoder tests
 	func testDecoderCanRead() {
 		XCTAssert(GRYDecoder(encodedString:
-			"(foo)").canReadOpenParentheses())
+			"(foo)").canReadOpeningParenthesis())
 		XCTAssertFalse(GRYDecoder(encodedString:
-			"foo)").canReadOpenParentheses())
+			"foo)").canReadOpeningParenthesis())
 
 		XCTAssert(GRYDecoder(encodedString:
-			") foo").canReadCloseParentheses())
+			") foo").canReadClosingParenthesis())
 		XCTAssertFalse(GRYDecoder(encodedString:
-			"(foo)").canReadCloseParentheses())
+			"(foo)").canReadClosingParenthesis())
+
+		XCTAssert(GRYDecoder(encodedString:
+			"[0]").canReadOpeningBracket())
+		XCTAssertFalse(GRYDecoder(encodedString:
+			"0]").canReadOpeningBracket())
+
+		XCTAssert(GRYDecoder(encodedString:
+			"] foo").canReadClosingBracket())
+		XCTAssertFalse(GRYDecoder(encodedString:
+			"[foo]").canReadClosingBracket())
+
+		XCTAssert(GRYDecoder(encodedString:
+			"{0 1}").canReadOpeningBrace())
+		XCTAssertFalse(GRYDecoder(encodedString:
+			"0 1}").canReadOpeningBrace())
+
+		XCTAssert(GRYDecoder(encodedString:
+			"} 0 1").canReadClosingBrace())
+		XCTAssertFalse(GRYDecoder(encodedString:
+			"{0 1}").canReadClosingBrace())
 
 		XCTAssert(GRYDecoder(encodedString:
 			"\"foo\")").canReadDoubleQuotedString())
@@ -71,14 +91,31 @@ class GRYCodableTest: XCTestCase {
 		var string: String
 		var optionalString: String?
 
-		// Open parentheses
+		// Parentheses
 		decoder = GRYDecoder(encodedString: "(foo")
-		XCTAssertNoThrow(try decoder.readOpenParentheses())
+		XCTAssertNoThrow(try decoder.readOpeningParenthesis())
 		XCTAssertEqual(decoder.remainingBuffer, "foo")
 
-		// Close parentheses
 		decoder = GRYDecoder(encodedString: ") foo")
-		XCTAssertNoThrow(try decoder.readCloseParentheses())
+		XCTAssertNoThrow(try decoder.readClosingParenthesis())
+		XCTAssertEqual(decoder.remainingBuffer, "foo")
+
+		// Brackets
+		decoder = GRYDecoder(encodedString: "[foo")
+		XCTAssertNoThrow(try decoder.readOpeningBracket())
+		XCTAssertEqual(decoder.remainingBuffer, "foo")
+
+		decoder = GRYDecoder(encodedString: "] foo")
+		XCTAssertNoThrow(try decoder.readClosingBracket())
+		XCTAssertEqual(decoder.remainingBuffer, "foo")
+
+		// Braces
+		decoder = GRYDecoder(encodedString: "{foo")
+		XCTAssertNoThrow(try decoder.readOpeningBrace())
+		XCTAssertEqual(decoder.remainingBuffer, "foo")
+
+		decoder = GRYDecoder(encodedString: "} foo")
+		XCTAssertNoThrow(try decoder.readClosingBrace())
 		XCTAssertEqual(decoder.remainingBuffer, "foo")
 
 		// Identifier
@@ -206,7 +243,7 @@ class GRYCodableTest: XCTestCase {
 
 			// Decode String back into instances
 			let decoder = GRYDecoder(encodedString: encodingResult)
-			try decoder.readOpenParentheses()
+			try decoder.readOpeningParenthesis()
 			XCTAssertEqual(decoder.readDoubleQuotedString(), "test name")
 			for testInstance in tests {
 				let createdInstance = try type(of: testInstance).decode(from: decoder)
@@ -222,7 +259,7 @@ class GRYCodableTest: XCTestCase {
 					"Expected the description of the decoded object \(createdInstance) " +
 					"to be equal to the description of the original object \(testInstance)")
 			}
-			try decoder.readCloseParentheses()
+			try decoder.readClosingParenthesis()
 
 		}
 		catch let error {

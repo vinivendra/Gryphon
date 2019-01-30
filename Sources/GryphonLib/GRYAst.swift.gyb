@@ -55,11 +55,11 @@ public final class GRYAST: GRYPrintableAsTree, GRYCodable, Equatable, CustomStri
 	}
 
 	internal static func decode(from decoder: GRYDecoder) throws -> GRYAST {
-		try decoder.readOpenParentheses()
+		try decoder.readOpeningParenthesis()
 		_ = decoder.readIdentifier()
 		let declarations = try [GRYTopLevelNode].decode(from: decoder)
 		let statements = try [GRYTopLevelNode].decode(from: decoder)
-		try decoder.readCloseParentheses()
+		try decoder.readClosingParenthesis()
 		return GRYAST(declarations: declarations, statements: statements)
 	}
 
@@ -178,7 +178,7 @@ public indirect enum GRYTopLevelNode: Equatable, GRYPrintableAsTree, GRYCodable 
 	}
 
 	static func decode(from decoder: GRYDecoder) throws -> GRYTopLevelNode {
-		try decoder.readOpenParentheses()
+		try decoder.readOpeningParenthesis()
 		let name = decoder.readDoubleQuotedString()
 
 		let result: GRYTopLevelNode
@@ -209,7 +209,7 @@ public indirect enum GRYTopLevelNode: Equatable, GRYPrintableAsTree, GRYCodable 
 				decoder, "Unknown GRYTopLevelNode \"\(name)\".")
 		}
 
-		try decoder.readCloseParentheses()
+		try decoder.readClosingParenthesis()
 		return result
 	}
 
@@ -405,7 +405,7 @@ public indirect enum GRYExpression: Equatable, GRYPrintableAsTree, GRYCodable {
 	}
 
 	static func decode(from decoder: GRYDecoder) throws -> GRYExpression {
-		try decoder.readOpenParentheses()
+		try decoder.readOpeningParenthesis()
 		let name = decoder.readDoubleQuotedString()
 
 		let result: GRYExpression
@@ -435,7 +435,7 @@ public indirect enum GRYExpression: Equatable, GRYPrintableAsTree, GRYCodable {
 			throw GRYDecodingError.unexpectedContent(decoder, "Unknown GRYExpression \"\(name)\".")
 		}
 
-		try decoder.readCloseParentheses()
+		try decoder.readClosingParenthesis()
 		return result
 	}
 

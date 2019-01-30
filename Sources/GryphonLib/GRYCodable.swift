@@ -114,12 +114,28 @@ internal class GRYDecoder {
 	}
 
 	// MARK: Can read information
-	func canReadOpenParentheses() -> Bool {
+	func canReadOpeningParenthesis() -> Bool {
 		return buffer[currentIndex] == "("
 	}
 
-	func canReadCloseParentheses() -> Bool {
+	func canReadClosingParenthesis() -> Bool {
 		return buffer[currentIndex] == ")"
+	}
+
+	func canReadOpeningBracket() -> Bool {
+		return buffer[currentIndex] == "["
+	}
+
+	func canReadClosingBracket() -> Bool {
+		return buffer[currentIndex] == "]"
+	}
+
+	func canReadOpeningBrace() -> Bool {
+		return buffer[currentIndex] == "{"
+	}
+
+	func canReadClosingBrace() -> Bool {
+		return buffer[currentIndex] == "}"
 	}
 
 	func canReadDoubleQuotedString() -> Bool {
@@ -134,26 +150,6 @@ internal class GRYDecoder {
 		return buffer[currentIndex] == "["
 	}
 
-	// TODO: test
-	func canReadOpenBrackets() -> Bool {
-		return buffer[currentIndex] == "["
-	}
-
-	// TODO: test
-	func canReadCloseBrackets() -> Bool {
-		return buffer[currentIndex] == "]"
-	}
-
-	// TODO: test
-	func canReadOpenCurlyBrackets() -> Bool {
-		return buffer[currentIndex] == "{"
-	}
-
-	// TODO: test
-	func canReadCloseCurlyBrackets() -> Bool {
-		return buffer[currentIndex] == "}"
-	}
-
 	func canReadStringInAngleBrackets() -> Bool {
 		return buffer[currentIndex] == "<"
 	}
@@ -163,47 +159,47 @@ internal class GRYDecoder {
 	}
 
 	// MARK: Read information
-	func readOpenParentheses() throws {
-		guard canReadOpenParentheses() else {
+	func readOpeningParenthesis() throws {
+		guard canReadOpeningParenthesis() else {
 			throw GRYDecodingError.unexpectedContent(self, "Expected '('.")
 		}
 		currentIndex = nextIndex()
 	}
 
-	func readCloseParentheses() throws {
-		guard canReadCloseParentheses() else {
+	func readClosingParenthesis() throws {
+		guard canReadClosingParenthesis() else {
 			throw GRYDecodingError.unexpectedContent(self, "Expected ')'.")
 		}
 		currentIndex = nextIndex()
 		cleanLeadingWhitespace()
 	}
 
-	func readOpenBrackets() throws {
-		guard canReadOpenBrackets() else {
+	func readOpeningBracket() throws {
+		guard canReadOpeningBracket() else {
 			throw GRYDecodingError.unexpectedContent(self, "Expected '['.")
 		}
 		currentIndex = nextIndex()
 		cleanLeadingWhitespace()
 	}
 
-	func readCloseBrackets() throws {
-		guard canReadCloseBrackets() else {
+	func readClosingBracket() throws {
+		guard canReadClosingBracket() else {
 			throw GRYDecodingError.unexpectedContent(self, "Expected ']'.")
 		}
 		currentIndex = nextIndex()
 		cleanLeadingWhitespace()
 	}
 
-	func readOpenCurlyBrackets() throws {
-		guard canReadOpenCurlyBrackets() else {
+	func readOpeningBrace() throws {
+		guard canReadOpeningBrace() else {
 			throw GRYDecodingError.unexpectedContent(self, "Expected '{'.")
 		}
 		currentIndex = nextIndex()
 		cleanLeadingWhitespace()
 	}
 
-	func readCloseCurlyBrackets() throws {
-		guard canReadCloseCurlyBrackets() else {
+	func readClosingBrace() throws {
+		guard canReadClosingBrace() else {
 			throw GRYDecodingError.unexpectedContent(self, "Expected '}'.")
 		}
 		currentIndex = nextIndex()
@@ -211,7 +207,7 @@ internal class GRYDecoder {
 	}
 
 	func readStandaloneAttribute() -> String {
-		if canReadOpenParentheses() {
+		if canReadOpeningParenthesis() {
 			return ""
 		}
 		else if canReadDoubleQuotedString() {
@@ -600,7 +596,6 @@ private extension Character {
 }
 
 // MARK: - Encoder
-// TODO: test
 public class GRYEncoder {
 	private var indentation = ""
 	public var result = ""
@@ -659,12 +654,12 @@ extension Array: GRYCodable where Element: GRYCodable {
 	static func decode(from decoder: GRYDecoder) throws -> [Element] {
 		do {
 			var result = [Element]()
-			try decoder.readOpenBrackets()
-			while !decoder.canReadCloseBrackets() {
+			try decoder.readOpeningBracket()
+			while !decoder.canReadClosingBracket() {
 				let newElement = try Element.decode(from: decoder)
 				result.append(newElement)
 			}
-			try decoder.readCloseBrackets()
+			try decoder.readClosingBracket()
 			return result
 		}
 		catch GRYDecodingError.unexpectedContent(_, let message) {
@@ -688,13 +683,13 @@ extension Dictionary: GRYCodable where
 	static func decode(from decoder: GRYDecoder) throws -> [Key: Value] {
 		do {
 			var result = [Key: Value]()
-			try decoder.readOpenCurlyBrackets()
-			while !decoder.canReadCloseCurlyBrackets() {
+			try decoder.readOpeningBrace()
+			while !decoder.canReadClosingBrace() {
 				let newKey = try Key.decode(from: decoder)
 				let newValue = try Value.decode(from: decoder)
 				result[newKey] = newValue
 			}
-			try decoder.readCloseCurlyBrackets()
+			try decoder.readClosingBrace()
 			return result
 		}
 		catch GRYDecodingError.unexpectedContent(_, let message) {

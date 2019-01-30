@@ -66,21 +66,21 @@ public final class GRYSwiftAST: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 		var keyValueAttributes = [String: String]()
 		var subtrees = [GRYSwiftAST]()
 
-		try decoder.readOpenParentheses()
+		try decoder.readOpeningParenthesis()
 		let name = decoder.readDoubleQuotedString()
 
 		// The loop stops: all branches tell the decoder to read, therefore the input string must
 		// end eventually
 		while true {
 			// Add subtree
-			if decoder.canReadOpenParentheses() {
+			if decoder.canReadOpeningParenthesis() {
 				// Parse subtrees
 				let subtree = try GRYSwiftAST.decode(from: decoder)
 				subtrees.append(subtree)
 			}
 			// Finish this branch
-			else if decoder.canReadCloseParentheses() {
-				try decoder.readCloseParentheses()
+			else if decoder.canReadClosingParenthesis() {
+				try decoder.readClosingParenthesis()
 				break
 			}
 			// Add key-value attributes
@@ -115,7 +115,7 @@ public final class GRYSwiftAST: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 		var keyValueAttributes = [String: String]()
 		var subtrees = [GRYSwiftAST]()
 
-		try decoder.readOpenParentheses()
+		try decoder.readOpeningParenthesis()
 		let name = decoder.readIdentifier()
 		self.name = GRYUtils.expandSwiftAbbreviation(name)
 
@@ -123,7 +123,7 @@ public final class GRYSwiftAST: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 		// end eventually
 		while true {
 			// Add subtree
-			if decoder.canReadOpenParentheses() {
+			if decoder.canReadOpeningParenthesis() {
 				// Parse subtrees
 				let subtree = try GRYSwiftAST(decodingFromASTDumpWith: decoder)
 				subtrees.append(subtree)
@@ -135,8 +135,8 @@ public final class GRYSwiftAST: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 				}
 			}
 			// Finish this branch
-			else if decoder.canReadCloseParentheses() {
-				try decoder.readCloseParentheses()
+			else if decoder.canReadClosingParenthesis() {
+				try decoder.readClosingParenthesis()
 				break
 			}
 			// Add key-value attributes
