@@ -29,7 +29,7 @@ do {
 	// second runs the first two steps, and so forth. Commenting and un-commenting specific
 	// lines allows you to visualize the compilation steps seprately.
 	//
-	// Note that if the input file is a .swiftAstDump file instead of a .swift file the
+	// Note that if the input file is a .swiftASTDump file instead of a .swift file the
 	// transpiler should still work normally.
 
 	// 1: Run the swift compiler and get its AST dump

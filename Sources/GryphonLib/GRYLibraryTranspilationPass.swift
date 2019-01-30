@@ -33,7 +33,7 @@ public class GRYLibraryTranspilationPass: GRYTranspilationPass {
 			at: currentURL,
 			includingPropertiesForKeys: nil)
 		let templateFiles = fileURLs.filter {
-				$0.pathExtension == GRYFileExtension.gryRawAst.rawValue
+				$0.pathExtension == GRYFileExtension.gryRawAST.rawValue
 		}.sorted { (url1: URL, url2: URL) -> Bool in
 					url1.absoluteString < url2.absoluteString
 		}

@@ -146,11 +146,11 @@ class GRYCodableTest: XCTestCase {
 				// Decode the AST from Swift's AST dump
 				let testFilePath = TestUtils.testFilesPath + testName
 				let swiftDumpAST =
-					try GRYSwiftAST(decodeFromSwiftASTDumpInFile: testFilePath + .swiftAstDump)
+					try GRYSwiftAST(decodeFromSwiftASTDumpInFile: testFilePath + .swiftASTDump)
 
 				// Decode the AST from a Gryphon encoding
 				let gryphonEncodingAST =
-					try GRYSwiftAST(decodeFromFile: testFilePath + .grySwiftAst)
+					try GRYSwiftAST(decodeFromFile: testFilePath + .grySwiftAST)
 
 				// Compare the two
 				XCTAssert(
@@ -242,7 +242,7 @@ class GRYCodableTest: XCTestCase {
 				// Parse an AST from the dump file
 				let testFilePath = TestUtils.testFilesPath + testName
 				let expectedAST =
-					try GRYSwiftAST(decodeFromSwiftASTDumpInFile: testFilePath + .swiftAstDump)
+					try GRYSwiftAST(decodeFromSwiftASTDumpInFile: testFilePath + .swiftASTDump)
 
 				// Encode the parsed AST into a String and then decode it back
 				let encoder = GRYEncoder()

@@ -44,10 +44,10 @@ public enum GRYUtils {
 
 public enum GRYFileExtension: String {
 	// This should be the same as the extension in the dump-ast.pl and separateASTs.pl files
-	case swiftAstDump
-	case grySwiftAst
-	case gryRawAst
-	case gryAst
+	case swiftASTDump
+	case grySwiftAST
+	case gryRawAST
+	case gryAST
 
 	case output
 
@@ -168,20 +168,20 @@ extension GRYUtils {
 		let folder = "Library Templates"
 		print("Updating files...")
 
-		try updateFiles(in: folder, from: .swift, to: .swiftAstDump)
+		try updateFiles(in: folder, from: .swift, to: .swiftASTDump)
 		{ (_: String, astFilePath: String) in
-			// The swiftAstDump files must be updated externally by the perl script. If any files
+			// The .swiftASTDump files must be updated externally by the perl script. If any files
 			// are out of date, this closure gets called and informs the user how to update them.
 			throw GRYFileError.outdatedFile(filePath: astFilePath)
 		}
 
-		try updateFiles(in: folder, from: .swiftAstDump, to: .grySwiftAst)
+		try updateFiles(in: folder, from: .swiftASTDump, to: .grySwiftAST)
 		{ (dumpFilePath: String, cacheFilePath: String) in
 			let ast = try GRYSwiftAST(decodeFromSwiftASTDumpInFile: dumpFilePath)
 			try ast.encode(intoFile: cacheFilePath)
 		}
 
-		try updateFiles(in: folder, from: .grySwiftAst, to: .gryRawAst)
+		try updateFiles(in: folder, from: .grySwiftAST, to: .gryRawAST)
 		{ (swiftASTFilePath: String, gryphonASTRawFilePath: String) in
 			let swiftAST = try GRYSwiftAST(decodeFromFile: swiftASTFilePath)
 			let gryphonAST = try GRYSwift4Translator().translateAST(swiftAST)
@@ -205,27 +205,27 @@ extension GRYUtils {
 		let folder = "Test Files"
 		print("Updating files...")
 
-		try updateFiles(in: folder, from: .swift, to: .swiftAstDump)
+		try updateFiles(in: folder, from: .swift, to: .swiftASTDump)
 		{ (_: String, astFilePath: String) in
-			// The swiftAstDump files must be updated externally by the perl script. If any files
+			// The .swiftASTDump files must be updated externally by the perl script. If any files
 			// are out of date, this closure gets called and informs the user how to update them.
 			throw GRYFileError.outdatedFile(filePath: astFilePath)
 		}
 
-		try updateFiles(in: folder, from: .swiftAstDump, to: .grySwiftAst)
+		try updateFiles(in: folder, from: .swiftASTDump, to: .grySwiftAST)
 		{ (dumpFilePath: String, cacheFilePath: String) in
 			let ast = try GRYSwiftAST(decodeFromSwiftASTDumpInFile: dumpFilePath)
 			try ast.encode(intoFile: cacheFilePath)
 		}
 
-		try updateFiles(in: folder, from: .grySwiftAst, to: .gryRawAst)
+		try updateFiles(in: folder, from: .grySwiftAST, to: .gryRawAST)
 		{ (swiftASTFilePath: String, gryphonASTRawFilePath: String) in
 			let swiftAST = try GRYSwiftAST(decodeFromFile: swiftASTFilePath)
 			let gryphonAST = try GRYSwift4Translator().translateAST(swiftAST)
 			try gryphonAST.encode(intoFile: gryphonASTRawFilePath)
 		}
 
-		try updateFiles(in: folder, from: .gryRawAst, to: .gryAst)
+		try updateFiles(in: folder, from: .gryRawAST, to: .gryAST)
 		{ (gryphonASTRawFilePath: String, gryphonASTFilePath: String) throws in
 			let gryphonASTRaw = try GRYAST(decodeFromFile: gryphonASTRawFilePath)
 			let gryphonAST = GRYTranspilationPass.runAllPasses(on: gryphonASTRaw)
