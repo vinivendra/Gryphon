@@ -98,11 +98,11 @@ public enum GRYCompiler {
 		return ast
 	}
 
-	public static func processExternalSwiftAST(_ filePath: String) throws -> GRYSwiftAst {
+	public static func processExternalSwiftAST(_ filePath: String) throws -> GRYSwiftAST {
 		let astFilePath = GRYUtils.changeExtension(of: filePath, to: .swiftAstDump)
 
-		print("\t- Building GRYSwiftAst from external AST...")
-		let ast = try GRYSwiftAst(decodeFromSwiftASTDumpInFile: astFilePath)
+		print("\t- Building GRYSwiftAST from external AST...")
+		let ast = try GRYSwiftAST(decodeFromSwiftASTDumpInFile: astFilePath)
 
 		let cacheFilePath = GRYUtils.changeExtension(of: filePath, to: .grySwiftAst)
 		let cacheFileWasJustCreated = GRYUtils.createFileIfNeeded(at: cacheFilePath, containing: "")
@@ -117,11 +117,11 @@ public enum GRYCompiler {
 		return ast
 	}
 
-	public static func generateSwiftAST(forFileAt filePath: String) throws -> GRYSwiftAst {
+	public static func generateSwiftAST(forFileAt filePath: String) throws -> GRYSwiftAST {
 		let astDumpFilePath = GRYUtils.changeExtension(of: filePath, to: .swiftAstDump)
 
-		print("\t- Building GRYSwiftAst...")
-		let ast = try GRYSwiftAst(decodeFromSwiftASTDumpInFile: astDumpFilePath)
+		print("\t- Building GRYSwiftAST...")
+		let ast = try GRYSwiftAST(decodeFromSwiftASTDumpInFile: astDumpFilePath)
 		return ast
 	}
 

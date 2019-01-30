@@ -16,17 +16,17 @@
 
 import Foundation
 
-public final class GRYSwiftAst: GRYPrintableAsTree, GRYCodable, Equatable, CustomStringConvertible {
+public final class GRYSwiftAST: GRYPrintableAsTree, GRYCodable, Equatable, CustomStringConvertible {
 	let name: String
 	let standaloneAttributes: [String]
 	let keyValueAttributes: [String: String]
-	let subtrees: [GRYSwiftAst]
+	let subtrees: [GRYSwiftAST]
 
 	//
 	static public var horizontalLimitWhenPrinting = Int.max
 
 	//
-	internal init(_ name: String, _ subtrees: [GRYSwiftAst] = []) {
+	internal init(_ name: String, _ subtrees: [GRYSwiftAST] = []) {
 		self.name = name
 		self.standaloneAttributes = []
 		self.keyValueAttributes = [:]
@@ -37,7 +37,7 @@ public final class GRYSwiftAst: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 		_ name: String,
 		_ standaloneAttributes: [String],
 		_ keyValueAttributes: [String: String],
-		_ subtrees: [GRYSwiftAst] = [])
+		_ subtrees: [GRYSwiftAST] = [])
 	{
 		self.name = name
 		self.standaloneAttributes = standaloneAttributes
@@ -61,10 +61,10 @@ public final class GRYSwiftAst: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 		encoder.endObject()
 	}
 
-	static func decode(from decoder: GRYDecoder) throws -> GRYSwiftAst {
+	static func decode(from decoder: GRYDecoder) throws -> GRYSwiftAST {
 		var standaloneAttributes = [String]()
 		var keyValueAttributes = [String: String]()
-		var subtrees = [GRYSwiftAst]()
+		var subtrees = [GRYSwiftAST]()
 
 		try decoder.readOpenParentheses()
 		let name = decoder.readDoubleQuotedString()
@@ -75,7 +75,7 @@ public final class GRYSwiftAst: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 			// Add subtree
 			if decoder.canReadOpenParentheses() {
 				// Parse subtrees
-				let subtree = try GRYSwiftAst.decode(from: decoder)
+				let subtree = try GRYSwiftAST.decode(from: decoder)
 				subtrees.append(subtree)
 			}
 			// Finish this branch
@@ -94,7 +94,7 @@ public final class GRYSwiftAst: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 			}
 		}
 
-		return GRYSwiftAst(name, standaloneAttributes, keyValueAttributes, subtrees)
+		return GRYSwiftAST(name, standaloneAttributes, keyValueAttributes, subtrees)
 	}
 
 	// MARK: - Init from Swift AST dump
@@ -119,7 +119,7 @@ public final class GRYSwiftAst: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 	internal init(decodingFromAstDumpWith decoder: GRYDecoder) throws {
 		var standaloneAttributes = [String]()
 		var keyValueAttributes = [String: String]()
-		var subtrees = [GRYSwiftAst]()
+		var subtrees = [GRYSwiftAST]()
 
 		try decoder.readOpenParentheses()
 		let name = decoder.readIdentifier()
@@ -131,7 +131,7 @@ public final class GRYSwiftAst: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 			// Add subtree
 			if decoder.canReadOpenParentheses() {
 				// Parse subtrees
-				let subtree = try GRYSwiftAst(decodingFromAstDumpWith: decoder)
+				let subtree = try GRYSwiftAST(decodingFromAstDumpWith: decoder)
 				subtrees.append(subtree)
 
 				// FIXME: This is a hack to fix Swift 4's unbalanced parentheses when dumping the
@@ -185,15 +185,15 @@ public final class GRYSwiftAst: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 		return keyValueAttributes[key]
 	}
 
-	func subtree(named name: String) -> GRYSwiftAst? {
+	func subtree(named name: String) -> GRYSwiftAST? {
 		return subtrees.first { $0.name == name }
 	}
 
-	func subtree(at index: Int) -> GRYSwiftAst? {
+	func subtree(at index: Int) -> GRYSwiftAST? {
 		return subtrees[safe: index]
 	}
 
-	func subtree(at index: Int, named name: String) -> GRYSwiftAst? {
+	func subtree(at index: Int, named name: String) -> GRYSwiftAST? {
 		guard let subtree = subtrees[safe: index],
 			subtree.name == name else
 		{
@@ -231,7 +231,7 @@ public final class GRYSwiftAst: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 	}
 
 	// MARK: - Equatable
-	public static func == (lhs: GRYSwiftAst, rhs: GRYSwiftAst) -> Bool {
+	public static func == (lhs: GRYSwiftAST, rhs: GRYSwiftAST) -> Bool {
 		return lhs.name == rhs.name &&
 			lhs.standaloneAttributes == rhs.standaloneAttributes &&
 			lhs.keyValueAttributes == rhs.keyValueAttributes &&

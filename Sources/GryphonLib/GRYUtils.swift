@@ -177,13 +177,13 @@ extension GRYUtils {
 
 		try updateFiles(in: folder, from: .swiftAstDump, to: .grySwiftAst)
 		{ (dumpFilePath: String, cacheFilePath: String) in
-			let ast = try GRYSwiftAst(decodeFromSwiftASTDumpInFile: dumpFilePath)
+			let ast = try GRYSwiftAST(decodeFromSwiftASTDumpInFile: dumpFilePath)
 			try ast.encode(intoFile: cacheFilePath)
 		}
 
 		try updateFiles(in: folder, from: .grySwiftAst, to: .gryRawAst)
 		{ (swiftAstFilePath: String, gryphonAstRawFilePath: String) in
-			let swiftAst = try GRYSwiftAst(decodeFromFile: swiftAstFilePath)
+			let swiftAst = try GRYSwiftAST(decodeFromFile: swiftAstFilePath)
 			let gryphonAst = try GRYSwift4Translator().translateAST(swiftAst)
 			try gryphonAst.encode(intoFile: gryphonAstRawFilePath)
 		}
@@ -214,13 +214,13 @@ extension GRYUtils {
 
 		try updateFiles(in: folder, from: .swiftAstDump, to: .grySwiftAst)
 		{ (dumpFilePath: String, cacheFilePath: String) in
-			let ast = try GRYSwiftAst(decodeFromSwiftASTDumpInFile: dumpFilePath)
+			let ast = try GRYSwiftAST(decodeFromSwiftASTDumpInFile: dumpFilePath)
 			try ast.encode(intoFile: cacheFilePath)
 		}
 
 		try updateFiles(in: folder, from: .grySwiftAst, to: .gryRawAst)
 		{ (swiftAstFilePath: String, gryphonAstRawFilePath: String) in
-			let swiftAst = try GRYSwiftAst(decodeFromFile: swiftAstFilePath)
+			let swiftAst = try GRYSwiftAST(decodeFromFile: swiftAstFilePath)
 			let gryphonAst = try GRYSwift4Translator().translateAST(swiftAst)
 			try gryphonAst.encode(intoFile: gryphonAstRawFilePath)
 		}
