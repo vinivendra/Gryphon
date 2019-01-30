@@ -17,7 +17,6 @@
 @testable import GryphonLib
 import XCTest
 
-// TODO: Change all `Ast`s into `AST`s
 class GRYCodableTest: XCTestCase {
 	struct TestObject: GRYCodable {
 		let x: Int

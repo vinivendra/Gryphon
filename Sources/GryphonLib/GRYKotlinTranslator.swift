@@ -21,12 +21,12 @@ public class GRYKotlinTranslator {
 			line: Int,
 			function: String,
 			message: String,
-			ast: GRYTopLevelNode)
+			AST: GRYTopLevelNode)
 
 		var description: String {
 			switch self {
 			case let .unexpectedASTStructure(
-				file: file, line: line, function: function, message: message, ast: ast):
+				file: file, line: line, function: function, message: message, AST: ast):
 
 				var nodeDescription = ""
 				ast.prettyPrint(horizontalLimit: 100) {
@@ -36,7 +36,7 @@ public class GRYKotlinTranslator {
 				return "Error: failed to translate Gryphon AST into Kotlin.\n" +
 						"On file \(file), line \(line), function \(function).\n" +
 						message + ".\n" +
-					"Thrown when translating the following ast node:\n\(nodeDescription)"
+					"Thrown when translating the following AST node:\n\(nodeDescription)"
 
 			}
 		}
@@ -47,7 +47,7 @@ public class GRYKotlinTranslator {
 		AST ast: GRYTopLevelNode) -> GRYKotlinTranslatorError
 	{
 		return GRYKotlinTranslatorError.unexpectedASTStructure(
-			file: file, line: line, function: function, message: message, ast: ast)
+			file: file, line: line, function: function, message: message, AST: ast)
 	}
 
 	/// Used for the translation of Swift types into Kotlin types.

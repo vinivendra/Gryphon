@@ -98,6 +98,7 @@ public final class GRYSwiftAST: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 	}
 
 	// MARK: - Init from Swift AST dump
+	// TODO: Remove all fatalErrors that can be turned into thrown errors
 	public convenience init(decodeFromSwiftASTDumpInFile astFilePath: String) throws {
 		do {
 			let rawASTDump = try String(contentsOfFile: astFilePath)
@@ -112,7 +113,7 @@ public final class GRYSwiftAST: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 		}
 		catch {
 			fatalError("Error opening \(astFilePath)." +
-				" If the file doesn't exist, please use dump-ast.pl to generate it.")
+				" If the file doesn't exist, please use dumpAST.pl to generate it.")
 		}
 	}
 

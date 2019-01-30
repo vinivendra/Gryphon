@@ -10,9 +10,9 @@ done
 # Update AST dumps
 echo " ➡️  Updating AST dumps..."
 
-perl dump-ast.pl Example\ ASTs/*.swift
-perl dump-ast.pl Test\ Files/*.swift
-perl dump-ast.pl Library\ Templates/*.swift
+perl dumpAST.pl Example\ ASTs/*.swift
+perl dumpAST.pl Test\ Files/*.swift
+perl dumpAST.pl Library\ Templates/*.swift
 
 
 # Lint swift files

@@ -15,8 +15,8 @@ foreach (@ARGV) {
 
         $pathWithoutExtension = $1;
 
-        # Open the ast file
-        open(my $astDumpFileHandle, "$astDumpFilePath") or die "Could not read from ast file '$astDumpFilePath' $!";
+        # Open the AST file
+        open(my $astDumpFileHandle, "$astDumpFilePath") or die "Could not read from AST file '$astDumpFilePath' $!";
 
         # Tell perl to read it as binary
         binmode($astDumpFileHandle);
@@ -41,7 +41,7 @@ foreach (@ARGV) {
             print "Processing $partFileName...\n";
             # Open or create the output file
             open(my $fileHandle, '>', "$partFileName") or die "Could not open file '$partFileName' $!";
-            # Overwrite it with the new ast dump
+            # Overwrite it with the new AST dump
             print $fileHandle $1;
             # Close the output file
             close $fileHandle;
@@ -55,7 +55,7 @@ foreach (@ARGV) {
         print "Processing $partFileName...\n";
         # Open or create the output file
         open(my $fileHandle, '>', "$partFileName") or die "Could not open file '$partFileName' $!";
-        # Overwrite it with the remainder of the ast dump
+        # Overwrite it with the remainder of the AST dump
         print $fileHandle $astDump;
         # Close the output file
         close $fileHandle;

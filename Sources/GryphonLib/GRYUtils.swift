@@ -43,7 +43,7 @@ public enum GRYUtils {
 }
 
 public enum GRYFileExtension: String {
-	// This should be the same as the extension in the dump-ast.pl and separateASTs.pl files
+	// This should be the same as the extension in the dumpAST.pl and separateASTs.pl files
 	case swiftASTDump
 	case grySwiftAST
 	case gryRawAST
