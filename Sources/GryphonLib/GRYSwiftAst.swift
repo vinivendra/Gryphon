@@ -98,23 +98,16 @@ public final class GRYSwiftAST: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 	}
 
 	// MARK: - Init from Swift AST dump
-	// TODO: Remove all fatalErrors that can be turned into thrown errors
 	public convenience init(decodeFromSwiftASTDumpInFile astFilePath: String) throws {
-		do {
-			let rawASTDump = try String(contentsOfFile: astFilePath)
+		let rawASTDump = try String(contentsOfFile: astFilePath)
 
-			// Information in stored files has placeholders for file paths that must be replaced
-			let swiftFilePath = GRYUtils.changeExtension(of: astFilePath, to: .swift)
-			let processedASTDump =
-				rawASTDump.replacingOccurrences(of: "<<testFilePath>>", with: swiftFilePath)
+		// Information in stored files has placeholders for file paths that must be replaced
+		let swiftFilePath = GRYUtils.changeExtension(of: astFilePath, to: .swift)
+		let processedASTDump =
+			rawASTDump.replacingOccurrences(of: "<<testFilePath>>", with: swiftFilePath)
 
-			let decoder = GRYDecoder(encodedString: processedASTDump)
-			try self.init(decodingFromASTDumpWith: decoder)
-		}
-		catch {
-			fatalError("Error opening \(astFilePath)." +
-				" If the file doesn't exist, please use dumpAST.pl to generate it.")
-		}
+		let decoder = GRYDecoder(encodedString: processedASTDump)
+		try self.init(decodingFromASTDumpWith: decoder)
 	}
 
 	internal init(decodingFromASTDumpWith decoder: GRYDecoder) throws {

@@ -41,29 +41,17 @@ public final class GRYAST: GRYPrintableAsTree, GRYCodable, Equatable, CustomStri
 	}
 
 	public static func decode(fromFile filePath: String) throws -> GRYAST {
-		do {
-			let rawString = try String(contentsOfFile: filePath)
+		let rawString = try String(contentsOfFile: filePath)
 
-			// Information in stored files has placeholders for file paths that must be replaced
-			let swiftFilePath = GRYUtils.changeExtension(of: filePath, to: .swift)
-			let escapedFilePath = swiftFilePath.replacingOccurrences(of: "/", with: "\\/")
-			let processedString =
-				rawString.replacingOccurrences(
-					of: "<<testFilePath>>", with: escapedFilePath)
+		// Information in stored files has placeholders for file paths that must be replaced
+		let swiftFilePath = GRYUtils.changeExtension(of: filePath, to: .swift)
+		let escapedFilePath = swiftFilePath.replacingOccurrences(of: "/", with: "\\/")
+		let processedString =
+			rawString.replacingOccurrences(
+				of: "<<testFilePath>>", with: escapedFilePath)
 
-			let decoder = GRYDecoder(encodedString: processedString)
-			return try decode(from: decoder)
-		}
-		catch let GRYDecodingError.unexpectedContent(decoder, message) {
-			throw GRYDecodingError.unexpectedContent(decoder, message)
-		}
-		catch let error {
-			fatalError("""
-				Error decoding \(filePath).
-				If the file doesn't exist, please run `updateTestFiles()` to generate it.
-				Error: \(error)
-				""")
-		}
+		let decoder = GRYDecoder(encodedString: processedString)
+		return try decode(from: decoder)
 	}
 
 	internal static func decode(from decoder: GRYDecoder) throws -> GRYAST {
