@@ -663,6 +663,16 @@ public class GRYSwift4Translator {
 
 		let access = functionDeclaration["access"]
 
+		// Find out if it's static
+		guard let interfaceTypeComponents = functionDeclaration["interface type"]?
+				.split(withStringSeparator: " -> "),
+			let firstInterfaceTypeComponent = interfaceTypeComponents.first else
+		{
+			throw unexpectedASTStructureError(
+				"Unable to find out if function is static", AST: functionDeclaration)
+		}
+		let isStatic = firstInterfaceTypeComponent.contains(".Type")
+
 		let functionNamePrefix = functionName.prefix { $0 != "(" }
 
 		// Get the function parameters.
@@ -708,8 +718,7 @@ public class GRYSwift4Translator {
 
 		// Translate the return type
 		// FIXME: Doesn't allow to return function types
-		guard let returnType = functionDeclaration["interface type"]?
-			.split(withStringSeparator: " -> ").last else
+		guard let returnType = interfaceTypeComponents.last else
 		{
 			throw unexpectedASTStructureError(
 				"Unable to get return type", AST: functionDeclaration)
@@ -730,6 +739,7 @@ public class GRYSwift4Translator {
 			parameterTypes: parameterTypes,
 			returnType: returnType,
 			isImplicit: isImplicit,
+			isStatic: isStatic,
 			statements: statements,
 			access: access)
 	}
@@ -786,6 +796,7 @@ public class GRYSwift4Translator {
 						parameterNames: [], parameterTypes: [],
 						returnType: type,
 						isImplicit: false,
+						isStatic: false,
 						statements: statementsTranslation,
 						access: access)
 				}
@@ -796,6 +807,7 @@ public class GRYSwift4Translator {
 						parameterTypes: [type],
 						returnType: "()",
 						isImplicit: false,
+						isStatic: false,
 						statements: statementsTranslation,
 						access: access)
 				}

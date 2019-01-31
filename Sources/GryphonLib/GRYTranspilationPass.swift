@@ -60,12 +60,13 @@ public class GRYTranspilationPass {
 			return replaceStructDeclaration(name: name)
 		case let .functionDeclaration(
 			prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-			returnType: returnType, isImplicit: isImplicit, statements: statements, access: access):
+			returnType: returnType, isImplicit: isImplicit, isStatic: isStatic,
+			statements: statements, access: access):
 
 			return replaceFunctionDeclaration(
 				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-				returnType: returnType, isImplicit: isImplicit, statements: statements,
-				access: access)
+				returnType: returnType, isImplicit: isImplicit, isStatic: isStatic,
+				statements: statements, access: access)
 		case let .variableDeclaration(
 			identifier: identifier, typeName: typeName, expression: expression, getter: getter,
 			setter: setter, isLet: isLet, extendsType: extendsType):
@@ -130,11 +131,12 @@ public class GRYTranspilationPass {
 
 	func replaceFunctionDeclaration(
 		prefix: String, parameterNames: [String], parameterTypes: [String], returnType: String,
-		isImplicit: Bool, statements: [GRYTopLevelNode]?, access: String?) -> [GRYTopLevelNode]
+		isImplicit: Bool, isStatic: Bool, statements: [GRYTopLevelNode]?, access: String?)
+		-> [GRYTopLevelNode]
 	{
 		return [.functionDeclaration(
 			prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-			returnType: returnType, isImplicit: isImplicit,
+			returnType: returnType, isImplicit: isImplicit, isStatic: isStatic,
 			statements: statements.map { $0.flatMap(replaceTopLevelNode) }, access: access), ]
 	}
 
@@ -426,7 +428,8 @@ public class GRYIgnoreNextTranspilationPass: GRYTranspilationPass {
 public class GRYDeclarationsTranspilationPass: GRYTranspilationPass {
 	override func replaceFunctionDeclaration(
 		prefix: String, parameterNames: [String], parameterTypes: [String], returnType: String,
-		isImplicit: Bool, statements: [GRYTopLevelNode]?, access: String?) -> [GRYTopLevelNode]
+		isImplicit: Bool, isStatic: Bool, statements: [GRYTopLevelNode]?, access: String?)
+		-> [GRYTopLevelNode]
 	{
 		if prefix.hasPrefix("GRYDeclarations"), let statements = statements {
 			return statements
@@ -434,8 +437,8 @@ public class GRYDeclarationsTranspilationPass: GRYTranspilationPass {
 		else {
 			return super.replaceFunctionDeclaration(
 				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-				returnType: returnType, isImplicit: isImplicit, statements: statements,
-				access: access)
+				returnType: returnType, isImplicit: isImplicit, isStatic: isStatic,
+				statements: statements, access: access)
 		}
 	}
 }
@@ -443,7 +446,8 @@ public class GRYDeclarationsTranspilationPass: GRYTranspilationPass {
 public class GRYRemoveGryphonDeclarationsTranspilationPass: GRYTranspilationPass {
 	override func replaceFunctionDeclaration(
 		prefix: String, parameterNames: [String], parameterTypes: [String], returnType: String,
-		isImplicit: Bool, statements: [GRYTopLevelNode]?, access: String?) -> [GRYTopLevelNode]
+		isImplicit: Bool, isStatic: Bool, statements: [GRYTopLevelNode]?, access: String?)
+		-> [GRYTopLevelNode]
 	{
 		if prefix.hasPrefix("GRYInsert") || prefix.hasPrefix("GRYAlternative") ||
 			prefix.hasPrefix("GRYIgnoreNext")
@@ -453,8 +457,8 @@ public class GRYRemoveGryphonDeclarationsTranspilationPass: GRYTranspilationPass
 		else {
 			return super.replaceFunctionDeclaration(
 				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-				returnType: returnType, isImplicit: isImplicit, statements: statements,
-				access: access)
+				returnType: returnType, isImplicit: isImplicit, isStatic: isStatic,
+				statements: statements, access: access)
 		}
 	}
 
@@ -621,18 +625,20 @@ public class GRYFixProtocolContentsTranspilationPass: GRYTranspilationPass {
 
 	override func replaceFunctionDeclaration(
 		prefix: String, parameterNames: [String], parameterTypes: [String], returnType: String,
-		isImplicit: Bool, statements: [GRYTopLevelNode]?, access: String?) -> [GRYTopLevelNode]
+		isImplicit: Bool, isStatic: Bool, statements: [GRYTopLevelNode]?, access: String?)
+		-> [GRYTopLevelNode]
 	{
 		if isInProtocol {
 			return super.replaceFunctionDeclaration(
 				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-				returnType: returnType, isImplicit: isImplicit, statements: nil, access: access)
+				returnType: returnType, isImplicit: isImplicit, isStatic: isStatic,
+				statements: nil, access: access)
 		}
 		else {
 			return super.replaceFunctionDeclaration(
 				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-				returnType: returnType, isImplicit: isImplicit, statements: statements,
-				access: access)
+				returnType: returnType, isImplicit: isImplicit, isStatic: isStatic,
+				statements: statements, access: access)
 		}
 	}
 }

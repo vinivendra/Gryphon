@@ -121,6 +121,7 @@ extension TestUtils {
 		"numericLiterals",
 		"operators",
 		"print",
+		"staticMembers",
 	]
 	static let allTestCases = acceptanceTestCases + [
 		"enums",

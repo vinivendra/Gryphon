@@ -136,12 +136,13 @@ public class GRYKotlinTranslator {
 				withIndentation: indentation)
 		case let .functionDeclaration(
 			prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-			returnType: returnType, isImplicit: isImplicit, statements: statements, access: access):
+			returnType: returnType, isImplicit: isImplicit, isStatic: isStatic,
+			statements: statements, access: access):
 
 			result = try translateFunctionDeclaration(
 				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-				returnType: returnType, isImplicit: isImplicit, statements: statements,
-				access: access, withIndentation: indentation)
+				returnType: returnType, isImplicit: isImplicit, isStatic: isStatic,
+				statements: statements, access: access, withIndentation: indentation)
 		case let .protocolDeclaration(name: name, members: members):
 			result = try translateProtocolDeclaration(
 				name: name, members: members, withIndentation: indentation)
@@ -264,7 +265,7 @@ public class GRYKotlinTranslator {
 
 	private func translateFunctionDeclaration(
 		prefix: String, parameterNames: [String], parameterTypes: [String], returnType: String,
-		isImplicit: Bool, statements: [GRYTopLevelNode]?, access: String?,
+		isImplicit: Bool, isStatic: Bool, statements: [GRYTopLevelNode]?, access: String?,
 		withIndentation indentation: String) throws -> String
 	{
 		guard !isImplicit else {
@@ -446,7 +447,7 @@ public class GRYKotlinTranslator {
 		if let getter = getter {
 			guard case let .functionDeclaration(
 				prefix: _, parameterNames: _, parameterTypes: _, returnType: _, isImplicit: _,
-				statements: statements, access: _) = getter else
+				isStatic: _, statements: statements, access: _) = getter else
 			{
 				preconditionFailure()
 			}
@@ -461,7 +462,7 @@ public class GRYKotlinTranslator {
 		if let setter = setter {
 			guard case let .functionDeclaration(
 				prefix: _, parameterNames: _, parameterTypes: _, returnType: _, isImplicit: _,
-				statements: statements, access: _) = setter else
+				isStatic: _, statements: statements, access: _) = setter else
 			{
 				preconditionFailure()
 			}
