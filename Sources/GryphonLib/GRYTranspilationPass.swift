@@ -505,6 +505,36 @@ public class GRYRemoveIgnoredDeclarationsTranspilationPass: GRYTranspilationPass
 	}
 }
 
+/// The static functions in a class must all be placed inside a single companion object.
+public class GRYStaticFunctionsTranspilationPass: GRYTranspilationPass {
+	override func replaceClassDeclaration(
+		name: String, inherits: [String], members: [GRYTopLevelNode]) -> [GRYTopLevelNode]
+	{
+		var staticFunctions = [GRYTopLevelNode]()
+		var otherMembers = [GRYTopLevelNode]()
+
+		for member in members {
+			if case .functionDeclaration(
+				prefix: _, parameterNames: _, parameterTypes: _, returnType: _, isImplicit: _,
+				isStatic: true, statements: _, access: _) = member
+			{
+				staticFunctions.append(member)
+			}
+			else {
+				otherMembers.append(member)
+			}
+		}
+
+		guard !staticFunctions.isEmpty else {
+			return [.classDeclaration(name: name, inherits: inherits, members: members)]
+		}
+
+		let newMembers = [.companionObject(members: staticFunctions)] + otherMembers
+
+		return [.classDeclaration(name: name, inherits: inherits, members: newMembers)]
+	}
+}
+
 public class GRYSelfToThisTranspilationPass: GRYTranspilationPass {
 	override func replaceDotExpression(
 		leftExpression: GRYExpression, rightExpression: GRYExpression) -> GRYExpression
@@ -660,6 +690,7 @@ public extension GRYTranspilationPass {
 		result = GRYInsertCodeLiteralsTranspilationPass().run(on: result)
 		result = GRYDeclarationsTranspilationPass().run(on: result)
 
+		result = GRYStaticFunctionsTranspilationPass().run(on: result)
 		result = GRYFixProtocolContentsTranspilationPass().run(on: result)
 		result = GRYSelfToThisTranspilationPass().run(on: result)
 		result = GRYRemoveExtensionsTranspilationPass().run(on: result)
