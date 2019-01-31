@@ -232,14 +232,15 @@ public indirect enum GRYTopLevelNode: Equatable, GRYPrintableAsTree, GRYCodable 
 		case let .expression(expression: expression):
 			return [expression]
 		case let .extensionDeclaration(type: type, members: members):
-			return [type, GRYPrintableTree(description: "members", subtreesOrNil: members), ]
+			return [
+				type, GRYPrintableTree.initialize(description: "members", subtreesOrNil: members), ]
 		case let .importDeclaration(name: name):
 			return [name]
 		case let .classDeclaration(name: name, inherits: inherits, members: members):
 			return [
 				name,
-				GRYPrintableTree(description: "inherits", subtreesOrNil: inherits),
-				GRYPrintableTree(description: "members", subtreesOrNil: members), ]
+				GRYPrintableTree.initialize(description: "inherits", subtreesOrNil: inherits),
+				GRYPrintableTree.initialize(description: "members", subtreesOrNil: members), ]
 		case let .enumDeclaration(
 			access: access,
 			name: name,
@@ -248,12 +249,12 @@ public indirect enum GRYTopLevelNode: Equatable, GRYPrintableAsTree, GRYCodable 
 
 			return [
 				access, name,
-				GRYPrintableTree(description: "inherits", subtreesOrNil: inherits),
-				GRYPrintableTree(description: "elements", subtreesOrNil: elements), ]
+				GRYPrintableTree.initialize(description: "inherits", subtreesOrNil: inherits),
+				GRYPrintableTree.initialize(description: "elements", subtreesOrNil: elements), ]
 		case let .protocolDeclaration(name: name, members: members):
 			return [
 				name,
-				GRYPrintableTree(description: "members", subtreesOrNil: members), ]
+				GRYPrintableTree.initialize(description: "members", subtreesOrNil: members), ]
 		case let .structDeclaration(name: name):
 			return [name]
 		case let .functionDeclaration(
@@ -272,7 +273,8 @@ public indirect enum GRYTopLevelNode: Equatable, GRYPrintableAsTree, GRYCodable 
 				access,
 				name,
 				type,
-				GRYPrintableTree(description: "statements", subtreesOrNil: statements ?? []), ]
+				GRYPrintableTree.initialize(
+					description: "statements", subtreesOrNil: statements ?? []), ]
 		case let .variableDeclaration(
 			identifier: identifier,
 			typeName: typeName,
@@ -283,13 +285,14 @@ public indirect enum GRYTopLevelNode: Equatable, GRYPrintableAsTree, GRYCodable 
 			extendsType: extendsType):
 
 			return [
-				GRYPrintableTree(description: "extendsType", subtreesOrNil: [extendsType]),
+				GRYPrintableTree.initialize(
+					description: "extendsType", subtreesOrNil: [extendsType]),
 				isLet ? "let" : "var",
 				identifier,
 				typeName,
 				expression,
-				GRYPrintableTree(description: "getter", subtreesOrNil: [getter]),
-				GRYPrintableTree(description: "setter", subtreesOrNil: [setter]), ]
+				GRYPrintableTree.initialize(description: "getter", subtreesOrNil: [getter]),
+				GRYPrintableTree.initialize(description: "setter", subtreesOrNil: [setter]), ]
 		case let .forEachStatement(
 			collection: collection,
 			variable: variable,
@@ -297,7 +300,8 @@ public indirect enum GRYTopLevelNode: Equatable, GRYPrintableAsTree, GRYCodable 
 			return [
 				GRYPrintableTree(description: "variable", subtrees: [variable]),
 				GRYPrintableTree(description: "collection", subtrees: [collection]),
-				GRYPrintableTree(description: "statements", subtreesOrNil: [statements]), ]
+				GRYPrintableTree.initialize(
+					description: "statements", subtreesOrNil: [statements]), ]
 		case let .ifStatement(
 			conditions: conditions,
 			declarations: declarations,
@@ -307,10 +311,11 @@ public indirect enum GRYTopLevelNode: Equatable, GRYPrintableAsTree, GRYCodable 
 
 			return [
 				isGuard ? "guard" : nil,
-				GRYPrintableTree(description: "declarations", subtreesOrNil: [declarations]),
-				GRYPrintableTree(description: "conditions", subtreesOrNil: [conditions]),
-				GRYPrintableTree(description: "statements", subtreesOrNil: [statements]),
-				GRYPrintableTree(description: "else", subtreesOrNil: [elseStatement]), ]
+				GRYPrintableTree.initialize(
+					description: "declarations", subtreesOrNil: [declarations]),
+				GRYPrintableTree.initialize(description: "conditions", subtreesOrNil: [conditions]),
+				GRYPrintableTree.initialize(description: "statements", subtreesOrNil: [statements]),
+				GRYPrintableTree.initialize(description: "else", subtreesOrNil: [elseStatement]), ]
 		case let .throwStatement(expression: expression):
 			return [expression]
 		case let .returnStatement(expression: expression):

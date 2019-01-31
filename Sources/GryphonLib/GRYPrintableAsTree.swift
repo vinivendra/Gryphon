@@ -27,13 +27,21 @@ public class GRYPrintableTree: GRYPrintableAsTree {
 		self.printableSubtrees = subtrees
 	}
 
-	init?(description: String, subtreesOrNil: [GRYPrintableAsTree?]) {
-		let subtrees: [GRYPrintableAsTree?] = subtreesOrNil.compactMap { $0 }
+	static func initialize(description: String, subtreesOrNil: [GRYPrintableAsTree?])
+		-> GRYPrintableTree?
+	{
+		var subtrees = [GRYPrintableAsTree]()
+		for subtree in subtreesOrNil {
+			if let unwrapped = subtree {
+				subtrees.append(unwrapped)
+			}
+		}
+
 		guard !subtrees.isEmpty else {
 			return nil
 		}
-		self.treeDescription = description
-		self.printableSubtrees = subtrees
+
+		return GRYPrintableTree(description: description, subtrees: subtrees)
 	}
 
 	func addChild(_ child: GRYPrintableAsTree?) {
