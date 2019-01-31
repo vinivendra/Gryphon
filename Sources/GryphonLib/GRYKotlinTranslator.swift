@@ -122,6 +122,8 @@ public class GRYKotlinTranslator {
 		case let .classDeclaration(name: name, inherits: inherits, members: members):
 			result = try translateClassDeclaration(
 				name: name, inherits: inherits, members: members, withIndentation: indentation)
+		case let .companionObject(members: members):
+			result = try translateCompanionObject(members: members, withIndentation: indentation)
 		case let .enumDeclaration(
 			access: access, name: name, inherits: inherits, elements: elements):
 
@@ -259,6 +261,22 @@ public class GRYKotlinTranslator {
 			withIndentation: increasedIndentation)
 
 		result += classContents + "\(indentation)}\n"
+
+		return result
+	}
+
+	private func translateCompanionObject(
+		members: [GRYTopLevelNode], withIndentation indentation: String) throws -> String
+	{
+		var result = "\(indentation)companion object {\n"
+
+		let increasedIndentation = increaseIndentation(indentation)
+
+		let contents = try translate(
+			subtrees: members,
+			withIndentation: increasedIndentation)
+
+		result += contents + "\(indentation)}\n"
 
 		return result
 	}

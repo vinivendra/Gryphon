@@ -49,6 +49,8 @@ public class GRYTranspilationPass {
 			return replaceImportDeclaration(name: name)
 		case let .classDeclaration(name: name, inherits: inherits, members: members):
 			return replaceClassDeclaration(name: name, inherits: inherits, members: members)
+		case let .companionObject(members: members):
+			return replaceCompanionObject(members: members)
 		case let .enumDeclaration(
 			access: access, name: name, inherits: inherits, elements: elements):
 
@@ -112,6 +114,10 @@ public class GRYTranspilationPass {
 	{
 		return [.classDeclaration(
 			name: name, inherits: inherits, members: members.flatMap(replaceTopLevelNode)), ]
+	}
+
+	func replaceCompanionObject(members: [GRYTopLevelNode]) -> [GRYTopLevelNode] {
+		return [.companionObject(members: members.flatMap(replaceTopLevelNode))]
 	}
 
 	func replaceEnumDeclaration(

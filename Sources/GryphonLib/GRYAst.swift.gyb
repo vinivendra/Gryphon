@@ -100,6 +100,7 @@ astNodes = [
 	['importDeclaration', [['name', 'String']]],
 	['classDeclaration',
 		[['name', 'String'], ['inherits', '[String]'], ['members', '[GRYTopLevelNode]']]],
+	['companionObject', [['members', '[GRYTopLevelNode]']]],
 	['enumDeclaration',
 		[['access', 'String?'], ['name', 'String'], ['inherits', '[String]'],
 		['elements', '[String]']]],
@@ -241,6 +242,8 @@ public indirect enum GRYTopLevelNode: Equatable, GRYPrintableAsTree, GRYCodable 
 				name,
 				GRYPrintableTree.initialize(description: "inherits", subtreesOrNil: inherits),
 				GRYPrintableTree.initialize(description: "members", subtreesOrNil: members), ]
+		case let .companionObject(members: members):
+			return members
 		case let .enumDeclaration(
 			access: access,
 			name: name,
