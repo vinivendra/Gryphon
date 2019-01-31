@@ -212,7 +212,7 @@ public class GRYTranspilationPass {
 			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
 			isImplicit: isImplicit):
 
-			return replaceDeclarationreferenceExpression(
+			return replaceDeclarationReferenceExpression(
 				identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
 				isImplicit: isImplicit)
 		case let .typeExpression(type: type):
@@ -277,7 +277,7 @@ public class GRYTranspilationPass {
 		return .forceValueExpression(expression: replaceExpression(expression))
 	}
 
-	func replaceDeclarationreferenceExpression(
+	func replaceDeclarationReferenceExpression(
 		identifier: String, type: String, isStandardLibrary: Bool, isImplicit: Bool)
 		-> GRYExpression
 	{
@@ -521,7 +521,7 @@ public class GRYSelfToThisTranspilationPass: GRYTranspilationPass {
 		}
 	}
 
-	override func replaceDeclarationreferenceExpression(
+	override func replaceDeclarationReferenceExpression(
 		identifier: String, type: String, isStandardLibrary: Bool, isImplicit: Bool)
 		-> GRYExpression
 	{
@@ -531,7 +531,7 @@ public class GRYSelfToThisTranspilationPass: GRYTranspilationPass {
 				identifier: "this", type: type, isStandardLibrary: isStandardLibrary,
 				isImplicit: isImplicit)
 		}
-		return super.replaceDeclarationreferenceExpression(
+		return super.replaceDeclarationReferenceExpression(
 			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
 			isImplicit: isImplicit)
 	}
@@ -568,7 +568,7 @@ public class GRYRecordEnumsTranspilationPass: GRYTranspilationPass {
 }
 
 public class GRYRaiseStandardLibraryWarningsTranspilationPass: GRYTranspilationPass {
-	override func replaceDeclarationreferenceExpression(
+	override func replaceDeclarationReferenceExpression(
 		identifier: String, type: String, isStandardLibrary: Bool, isImplicit: Bool)
 		-> GRYExpression
 	{
@@ -576,7 +576,7 @@ public class GRYRaiseStandardLibraryWarningsTranspilationPass: GRYTranspilationP
 			GRYTranspilationPass.recordWarning(
 				"Reference to standard library \"\(identifier)\" was not translated.")
 		}
-		return super.replaceDeclarationreferenceExpression(
+		return super.replaceDeclarationReferenceExpression(
 			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
 			isImplicit: isImplicit)
 	}
