@@ -71,11 +71,11 @@ public class GRYTranspilationPass {
 				statements: statements, access: access)
 		case let .variableDeclaration(
 			identifier: identifier, typeName: typeName, expression: expression, getter: getter,
-			setter: setter, isLet: isLet, extendsType: extendsType):
+			setter: setter, isLet: isLet, extendsType: extendsType, annotations: annotations):
 
 			return replaceVariableDeclaration(
 				identifier: identifier, typeName: typeName, expression: expression, getter: getter,
-				setter: setter, isLet: isLet, extendsType: extendsType)
+				setter: setter, isLet: isLet, extendsType: extendsType, annotations: annotations)
 		case let .forEachStatement(
 			collection: collection, variable: variable, statements: statements):
 
@@ -148,14 +148,15 @@ public class GRYTranspilationPass {
 
 	func replaceVariableDeclaration(
 		identifier: String, typeName: String, expression: GRYExpression?, getter: GRYTopLevelNode?,
-		setter: GRYTopLevelNode?, isLet: Bool, extendsType: String?) -> [GRYTopLevelNode]
+		setter: GRYTopLevelNode?, isLet: Bool, extendsType: String?, annotations: String?)
+		-> [GRYTopLevelNode]
 	{
 		return [.variableDeclaration(
 			identifier: identifier, typeName: typeName,
 			expression: expression.map(replaceExpression),
 			getter: getter.map(replaceTopLevelNode)?.first,
 			setter: setter.map(replaceTopLevelNode)?.first,
-			isLet: isLet, extendsType: extendsType), ]
+			isLet: isLet, extendsType: extendsType, annotations: annotations), ]
 	}
 
 	func replaceForEachStatement(
@@ -579,11 +580,13 @@ public class GRYRemoveExtensionsTranspilationPass: GRYTranspilationPass {
 
 	override func replaceVariableDeclaration(
 		identifier: String, typeName: String, expression: GRYExpression?, getter: GRYTopLevelNode?,
-		setter: GRYTopLevelNode?, isLet: Bool, extendsType: String?) -> [GRYTopLevelNode]
+		setter: GRYTopLevelNode?, isLet: Bool, extendsType: String?, annotations: String?)
+		-> [GRYTopLevelNode]
 	{
 		return [GRYTopLevelNode.variableDeclaration(
 			identifier: identifier, typeName: typeName, expression: expression, getter: getter,
-			setter: setter, isLet: isLet, extendsType: self.extendingType), ]
+			setter: setter, isLet: isLet, extendsType: self.extendingType,
+			annotations: annotations), ]
 	}
 }
 
@@ -624,7 +627,7 @@ public class GRYRearrangeIfLetsTranspilationPass: GRYTranspilationPass {
 		for declaration in declarations {
 			if case let .variableDeclaration(
 				identifier: identifier, typeName: typeName, expression: _, getter: _, setter: _,
-				isLet: _, extendsType: _) = declaration
+				isLet: _, extendsType: _, annotations: _) = declaration
 			{
 				letDeclarations.append(declaration)
 				letConditions.append(

@@ -638,7 +638,8 @@ public class GRYSwift4Translator {
 					expression: expression,
 					getter: nil, setter: nil,
 					isLet: isLet,
-					extendsType: nil))
+					extendsType: nil,
+					annotations: nil))
 			}
 			else {
 				conditionsResult.append(try translate(expression: condition))
@@ -824,7 +825,8 @@ public class GRYSwift4Translator {
 				getter: getter,
 				setter: setter,
 				isLet: isLet,
-				extendsType: nil)
+				extendsType: nil,
+				annotations: nil)
 		}
 		else {
 			throw unexpectedASTStructureError(

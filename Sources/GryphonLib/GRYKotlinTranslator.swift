@@ -154,11 +154,11 @@ public class GRYKotlinTranslator {
 			return ""
 		case let .variableDeclaration(
 			identifier: identifier, typeName: typeName, expression: expression, getter: getter,
-			setter: setter, isLet: isLet, extendsType: extendsType):
+			setter: setter, isLet: isLet, extendsType: extendsType, annotations: annotations):
 
 			result = try translateVariableDeclaration(
 				identifier: identifier, typeName: typeName, expression: expression, getter: getter,
-				setter: setter, isLet: isLet, extendsType: extendsType,
+				setter: setter, isLet: isLet, extendsType: extendsType, annotations: annotations,
 				withIndentation: indentation)
 		case let .assignmentStatement(leftHand: leftHand, rightHand: rightHand):
 			result = translateAssignmentStatement(
@@ -416,10 +416,14 @@ public class GRYKotlinTranslator {
 
 	private func translateVariableDeclaration(
 		identifier: String, typeName: String, expression: GRYExpression?, getter: GRYTopLevelNode?,
-		setter: GRYTopLevelNode?, isLet: Bool, extendsType: String?,
+		setter: GRYTopLevelNode?, isLet: Bool, extendsType: String?, annotations: String?,
 		withIndentation indentation: String) throws -> String
 	{
 		var result = indentation
+
+		if let annotations = annotations {
+			result += "\(annotations) "
+		}
 
 		var keyword: String
 		if getter != nil && setter != nil {

@@ -85,7 +85,7 @@ astNodes = [
 	['variableDeclaration',
 		[['identifier', 'String'], ['typeName', 'String'], ['expression', 'GRYExpression?'],
 		['getter', 'GRYTopLevelNode?'], ['setter', 'GRYTopLevelNode?'], ['isLet', 'Bool'],
-		['extendsType', 'String?']]],
+		['extendsType', 'String?'], ['annotations', 'String?']]],
 	['forEachStatement',
 		[['collection', 'GRYExpression'], ['variable', 'GRYExpression'],
 		['statements', '[GRYTopLevelNode]']]],
@@ -259,7 +259,8 @@ public indirect enum GRYTopLevelNode: Equatable, GRYPrintableAsTree, GRYCodable 
 			getter: getter,
 			setter: setter,
 			isLet: isLet,
-			extendsType: extendsType):
+			extendsType: extendsType,
+			annotations: annotations):
 
 			return [
 				GRYPrintableTree.initialize(
@@ -269,7 +270,9 @@ public indirect enum GRYTopLevelNode: Equatable, GRYPrintableAsTree, GRYCodable 
 				typeName,
 				expression,
 				GRYPrintableTree.initialize(description: "getter", subtreesOrNil: [getter]),
-				GRYPrintableTree.initialize(description: "setter", subtreesOrNil: [setter]), ]
+				GRYPrintableTree.initialize(description: "setter", subtreesOrNil: [setter]),
+				GRYPrintableTree.initialize(
+					description: "annotations", subtreesOrNil: [annotations]), ]
 		case let .forEachStatement(
 			collection: collection,
 			variable: variable,
