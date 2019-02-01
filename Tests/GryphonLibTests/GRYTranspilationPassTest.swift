@@ -27,11 +27,11 @@ class GRYTranspilationPassTest: XCTestCase {
 
 				// Fetch the cached Gryphon AST (without passes) and run the passes on it
 				let testFilePath = TestUtils.testFilesPath + testName
-				let rawAST = try GRYAST.decode(fromFile: testFilePath + .gryRawAST)
+				let rawAST = try GRYAST(decodeFromFile: testFilePath + .gryRawAST)
 				let createdGryphonAST = GRYTranspilationPass.runAllPasses(on: rawAST)
 
 				// Load a cached Gryphon AST (with passes)
-				let expectedGryphonAST = try GRYAST.decode(fromFile: testFilePath + .gryAST)
+				let expectedGryphonAST = try GRYAST(decodeFromFile: testFilePath + .gryAST)
 
 				XCTAssert(
 					createdGryphonAST == expectedGryphonAST,

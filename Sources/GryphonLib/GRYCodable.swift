@@ -59,9 +59,8 @@ extension GRYEncodable {
 
 		// Absolute file paths must be replaced with placeholders before writing to file.
 		let swiftFilePath = GRYUtils.changeExtension(of: filePath, to: .swift)
-		let escapedFilePath = swiftFilePath.replacingOccurrences(of: "/", with: "\\/")
 		let processedEncodedString =
-			rawEncodedString.replacingOccurrences(of: escapedFilePath, with: "<<testFilePath>>")
+			rawEncodedString.replacingOccurrences(of: swiftFilePath, with: "<<testFilePath>>")
 
 		try processedEncodedString.write(toFile: filePath, atomically: true, encoding: .utf8)
 	}
