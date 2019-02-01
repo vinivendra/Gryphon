@@ -1,4 +1,11 @@
 import java.util.*
+interface A {
+	val x: Int
+}
+class B: A {
+	override var x: Int = 1
+	var y: Int = 2
+}
 
 fun main(args: Array<String>) {
 	val languageName: String = "kotlin"
@@ -8,4 +15,6 @@ fun main(args: Array<String>) {
 	println("This will be ignored by swift, but not by kotlin.")
 	val squareRoot: Double = Math.sqrt(9.0)
 	println(squareRoot)
+	println(B().x)
+	println(B().y)
 }

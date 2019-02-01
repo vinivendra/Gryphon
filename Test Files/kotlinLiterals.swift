@@ -22,6 +22,10 @@ func GRYAlternative<T>(swift swiftExpression: T, kotlin kotlinExpression: String
 	return swiftExpression
 }
 
+func GRYAnnotations<T>(_: String, _ value:T) -> T {
+	return value
+}
+
 protocol GRYIgnore { }
 
 //
@@ -54,3 +58,15 @@ print(squareRoot)
 class IgnoredClass: GRYIgnore { }
 enum IgnoredEnum: GRYIgnore { }
 
+// Add annotations to a property
+protocol A {
+	var x: Int { get }
+}
+
+class B: A {
+	var x: Int = GRYAnnotations("override", 1)
+	var y: Int = 2
+}
+
+print(B().x)
+print(B().y)

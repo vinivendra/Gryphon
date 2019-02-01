@@ -457,7 +457,7 @@ public class GRYRemoveGryphonDeclarationsTranspilationPass: GRYTranspilationPass
 		-> [GRYTopLevelNode]
 	{
 		if prefix.hasPrefix("GRYInsert") || prefix.hasPrefix("GRYAlternative") ||
-			prefix.hasPrefix("GRYIgnoreNext")
+			prefix.hasPrefix("GRYIgnoreNext") || prefix.hasPrefix("GRYAnnotations")
 		{
 			return []
 		}
@@ -503,6 +503,38 @@ public class GRYRemoveIgnoredDeclarationsTranspilationPass: GRYTranspilationPass
 			return super.replaceEnumDeclaration(
 				access: access, name: name, inherits: inherits, elements: elements)
 		}
+	}
+}
+
+/// Annotations added manually via a call to GRYAnnotations must be sent into their proper place
+/// in the data structure, and the function call must be removed.
+public class GRYAddAnnotationsTranspilationPass: GRYTranspilationPass {
+	override func replaceVariableDeclaration(
+		identifier: String, typeName: String, expression: GRYExpression?, getter: GRYTopLevelNode?,
+		setter: GRYTopLevelNode?, isLet: Bool, extendsType: String?, annotations: String?)
+		-> [GRYTopLevelNode]
+	{
+		if let expression = expression,
+			case let .callExpression(
+				function: function, parameters: parameters, type: _) = expression,
+			case let .declarationReferenceExpression(
+				identifier: gryAnnotationsIdentifier, type: _, isStandardLibrary: false,
+				isImplicit: false) = function,
+			gryAnnotationsIdentifier == "GRYAnnotations",
+			case let .tupleExpression(pairs: pairs) = parameters,
+			let annotationsExpression = pairs.first?.expression,
+			case let .literalStringExpression(value: newAnnotations) = annotationsExpression,
+			let newExpression = pairs.last?.expression
+		{
+			return [.variableDeclaration(
+				identifier: identifier, typeName: typeName, expression: newExpression,
+				getter: getter, setter: setter, isLet: isLet, extendsType: extendsType,
+				annotations: newAnnotations), ]
+		}
+
+		return [.variableDeclaration(
+			identifier: identifier, typeName: typeName, expression: expression, getter: getter,
+			setter: setter, isLet: isLet, extendsType: extendsType, annotations: annotations), ]
 	}
 }
 
@@ -688,6 +720,7 @@ public extension GRYTranspilationPass {
 		result = GRYLibraryTranspilationPass().run(on: result)
 		result = GRYRemoveGryphonDeclarationsTranspilationPass().run(on: result)
 		result = GRYRemoveIgnoredDeclarationsTranspilationPass().run(on: result)
+		result = GRYAddAnnotationsTranspilationPass().run(on: result)
 		result = GRYRemoveParenthesesTranspilationPass().run(on: result)
 		result = GRYIgnoreNextTranspilationPass().run(on: result)
 		result = GRYInsertCodeLiteralsTranspilationPass().run(on: result)
