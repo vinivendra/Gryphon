@@ -536,13 +536,23 @@ internal class GRYDecoder {
 
 		// Skip the opening [
 		let firstContentsIndex = buffer.index(after: currentIndex)
-
 		var index = firstContentsIndex
+
+		var bracketLevel = 1
+
 		while true {
 			let character = buffer[index]
+
 			if character == "]" {
-				break
+				bracketLevel -= 1
+				if bracketLevel == 0 {
+					break
+				}
 			}
+			else if character == "[" {
+				bracketLevel += 1
+			}
+
 			index = buffer.index(after: index)
 		}
 

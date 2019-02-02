@@ -547,9 +547,10 @@ public class GRYStaticFunctionsTranspilationPass: GRYTranspilationPass {
 		var otherMembers = [GRYTopLevelNode]()
 
 		for member in members {
-			if case .functionDeclaration(
-				prefix: _, parameterNames: _, parameterTypes: _, returnType: _, isImplicit: _,
-				isStatic: true, statements: _, access: _) = member
+			if case let .functionDeclaration(
+				prefix: prefix, parameterNames: _, parameterTypes: _, returnType: _, isImplicit: _,
+				isStatic: true, statements: _, access: _) = member,
+				prefix != "init"
 			{
 				staticFunctions.append(member)
 			}

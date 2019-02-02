@@ -17,6 +17,7 @@ disabled_rules:
   - multiline_arguments
   - type_name
   - literal_expression_end_indentation
+  - for_where
 opt_in_rules:
   - attributes
   - closure_end_indentation

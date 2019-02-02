@@ -293,13 +293,16 @@ public class GRYKotlinTranslator {
 		var indentation = indentation
 		var result = indentation
 
-		if let access = access {
-			result += access + " "
+		let isInit = (prefix == "init")
+		if isInit {
+			result += "constructor("
 		}
-
-		result += "fun "
-
-		result += prefix + "("
+		else {
+			if let access = access {
+				result += access + " "
+			}
+			result += "fun " + prefix + "("
+		}
 
 		let parameters = zip(parameterNames, parameterTypes).map { $0.0 + ": " + $0.1 }
 
@@ -307,7 +310,7 @@ public class GRYKotlinTranslator {
 
 		result += ")"
 
-		if returnType != "()" {
+		if returnType != "()", !isInit {
 			let translatedReturnType = translateType(returnType)
 			result += ": \(translatedReturnType)"
 		}

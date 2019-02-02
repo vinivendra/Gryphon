@@ -61,6 +61,24 @@ public class GRYSwift4Translator {
 		}
 	}
 
+	func ensure(
+		file: String = #file, line: Int = #line, function: String = #function,
+		AST ast: GRYSwiftAST, isNamed expectedASTNames: [String]) throws
+	{
+		var isValidName = false
+		for expectedASTName in expectedASTNames {
+			if ast.name == expectedASTName {
+				isValidName = true
+			}
+		}
+
+		if !isValidName {
+			throw GRYSwiftTranslatorError.unexpectedASTStructure(
+				file: file, line: line, function: function,
+				message: "Trying to translate \(ast.name) as '\(expectedASTNames[0])'", AST: ast)
+		}
+	}
+
 	// MARK: - Properties
 	var danglingPatternBinding: (identifier: String, type: String, expression: GRYExpression?)?
 
@@ -114,7 +132,7 @@ public class GRYSwift4Translator {
 			result = try translate(extensionDeclaration: subtree)
 		case "For Each Statement":
 			result = try translate(forEachStatement: subtree)
-		case "Function Declaration":
+		case "Function Declaration", "Constructor Declaration":
 			result = try translate(functionDeclaration: subtree)
 		case "Protocol":
 			result = try translate(protocolDeclaration: subtree)
@@ -204,6 +222,15 @@ public class GRYSwift4Translator {
 			 "Load Expression":
 			if let lastExpression = expression.subtrees.last {
 				return try translate(expression: lastExpression)
+			}
+			else {
+				throw unexpectedASTStructureError(
+					"Unrecognized structure in automatic expression",
+					AST: expression)
+			}
+		case "Collection Upcast Expression":
+			if let firstExpression = expression.subtrees.first {
+				return try translate(expression: firstExpression)
 			}
 			else {
 				throw unexpectedASTStructureError(
@@ -650,7 +677,8 @@ public class GRYSwift4Translator {
 	}
 
 	private func translate(functionDeclaration: GRYSwiftAST) throws -> GRYTopLevelNode? {
-		try ensure(AST: functionDeclaration, isNamed: "Function Declaration")
+		try ensure(
+			AST: functionDeclaration, isNamed: ["Function Declaration", "Constructor Declaration"])
 
 		// Getters and setters will appear again in the Variable Declaration AST and get translated
 		let isGetterOrSetter =
