@@ -659,7 +659,9 @@ public class GRYKotlinTranslator {
 		let parametersString = zip(parameterNames, parameterTypes)
 			.map { "\($0): \($1)" }.joined(separator: ", ")
 
-		result += parametersString + " -> "
+		if !parametersString.isEmpty {
+			result += parametersString + " -> "
+		}
 
 		guard let firstStatement = statements.first,
 			case let GRYTopLevelNode.expression(expression: expression) = firstStatement else

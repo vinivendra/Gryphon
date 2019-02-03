@@ -644,7 +644,7 @@ public class GRYAnonymousParametersTranspilationPass: GRYTranspilationPass {
 			parameterNames[0] == "$0"
 		{
 			return super.replaceClosureExpression(
-				parameterNames: ["it"], parameterTypes: parameterTypes,
+				parameterNames: [], parameterTypes: [],
 				statements: statements, type: type)
 		}
 		else {
