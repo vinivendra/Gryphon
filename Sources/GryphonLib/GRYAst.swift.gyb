@@ -329,6 +329,9 @@ expressionNodes = [
 		[['expression', 'GRYExpression'], ['operatorSymbol', 'String'], ['type', 'String']]],
 	['callExpression',
 		[['function', 'GRYExpression'], ['parameters', 'GRYExpression'], ['type', 'String']]],
+	['closureExpression',
+		[['parameterNames', '[String]'], ['parameterTypes', '[String]'],
+		['statements', '[GRYTopLevelNode]'], ['type', 'String']]],
 	['literalIntExpression', [['value', 'Int']]],
 	['literalDoubleExpression', [['value', 'Double']]],
 	['literalBoolExpression', [['value', 'Bool']]],
@@ -460,6 +463,10 @@ public indirect enum GRYExpression: Equatable, GRYPrintableAsTree, GRYCodable {
 			return type
 		case let .callExpression(function: _, parameters: _, type: type):
 			return type
+		case let .closureExpression(parameterNames:
+			_, parameterTypes: _, statements: _, type: type):
+
+			return type
 		case .literalIntExpression:
 			return "Int"
 		case .literalDoubleExpression:
@@ -549,6 +556,15 @@ public indirect enum GRYExpression: Equatable, GRYPrintableAsTree, GRYCodable {
 				"type \(type)",
 				GRYPrintableTree(description: "function", subtrees: [function]),
 				GRYPrintableTree(description: "parameters", subtrees: [parameters]), ]
+		case let .closureExpression(
+			parameterNames: parameterNames, parameterTypes: _, statements: statements, type: type):
+
+			let parameters = "(" + parameterNames.map { $0 + ":" }.joined(separator: ", ") + ")"
+
+			return [
+				type,
+				parameters,
+				GRYPrintableTree(description: "statements", subtrees: statements), ]
 		case let .literalIntExpression(value: value):
 			return [String(value)]
 		case let .literalDoubleExpression(value: value):

@@ -252,15 +252,7 @@ extension GRYExpression {
 			return false
 		}
 
-		if superType == "Any" {
-			return true
-		}
-		else if type == superType {
-			return true
-		}
-		else {
-			return false
-		}
+		return type.isSubtype(of: superType)
 	}
 }
 

@@ -243,6 +243,13 @@ public class GRYTranspilationPass {
 				expression: expression, operatorSymbol: operatorSymbol, type: type)
 		case let .callExpression(function: function, parameters: parameters, type: type):
 			return replaceCallExpression(function: function, parameters: parameters, type: type)
+		case let .closureExpression(
+			parameterNames: parameterNames, parameterTypes: parameterTypes, statements: statements,
+			type: type):
+
+			return replaceClosureExpression(
+				parameterNames: parameterNames, parameterTypes: parameterTypes,
+				statements: statements, type: type)
 		case let .literalIntExpression(value: value):
 			return replaceLiteralIntExpression(value: value)
 		case let .literalDoubleExpression(value: value):
@@ -336,6 +343,16 @@ public class GRYTranspilationPass {
 		return .callExpression(
 			function: replaceExpression(function), parameters: replaceExpression(parameters),
 			type: type)
+	}
+
+	func replaceClosureExpression(
+		parameterNames: [String], parameterTypes: [String], statements: [GRYTopLevelNode],
+		type: String)
+		-> GRYExpression
+	{
+		return .closureExpression(
+			parameterNames: parameterNames, parameterTypes: parameterTypes,
+			statements: statements.flatMap(replaceTopLevelNode), type: type)
 	}
 
 	func replaceLiteralIntExpression(value: Int) -> GRYExpression {
@@ -601,6 +618,43 @@ public class GRYSelfToThisTranspilationPass: GRYTranspilationPass {
 	}
 }
 
+/// The "anonymous parameter" `$0` has to be replaced by `it`
+public class GRYAnonymousParametersTranspilationPass: GRYTranspilationPass {
+	override func replaceDeclarationReferenceExpression(
+		identifier: String, type: String, isStandardLibrary: Bool, isImplicit: Bool)
+		-> GRYExpression
+	{
+		if identifier == "$0" {
+			return .declarationReferenceExpression(
+				identifier: "it", type: type, isStandardLibrary: isStandardLibrary,
+				isImplicit: isImplicit)
+		}
+		else {
+			return super.replaceDeclarationReferenceExpression(
+				identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
+				isImplicit: isImplicit)
+		}
+	}
+
+	override func replaceClosureExpression(
+		parameterNames: [String], parameterTypes: [String], statements: [GRYTopLevelNode],
+		type: String) -> GRYExpression
+	{
+		if parameterNames.count == 1,
+			parameterNames[0] == "$0"
+		{
+			return super.replaceClosureExpression(
+				parameterNames: ["it"], parameterTypes: parameterTypes,
+				statements: statements, type: type)
+		}
+		else {
+			return super.replaceClosureExpression(
+				parameterNames: parameterNames, parameterTypes: parameterTypes,
+				statements: statements, type: type)
+		}
+	}
+}
+
 public class GRYRemoveExtensionsTranspilationPass: GRYTranspilationPass {
 	var extendingType: String?
 
@@ -729,6 +783,7 @@ public extension GRYTranspilationPass {
 
 		result = GRYStaticFunctionsTranspilationPass().run(on: result)
 		result = GRYFixProtocolContentsTranspilationPass().run(on: result)
+		result = GRYAnonymousParametersTranspilationPass().run(on: result)
 		result = GRYSelfToThisTranspilationPass().run(on: result)
 		result = GRYRemoveExtensionsTranspilationPass().run(on: result)
 		result = GRYRearrangeIfLetsTranspilationPass().run(on: result)

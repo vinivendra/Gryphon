@@ -54,6 +54,8 @@ public class GRYKotlinTranslator {
 	static let typeMappings = ["Bool": "Boolean", "Error": "Exception"]
 
 	private func translateType(_ type: String) -> String {
+		let type = type.replacingOccurrences(of: "()", with: "Unit")
+
 		if type.hasPrefix("[") {
 			let innerType = String(type.dropLast().dropFirst())
 			let translatedInnerType = translateType(innerType)
@@ -149,7 +151,8 @@ public class GRYKotlinTranslator {
 			result = try translateProtocolDeclaration(
 				name: name, members: members, withIndentation: indentation)
 		case let .throwStatement(expression: expression):
-			result = translateThrowStatement(expression: expression, withIndentation: indentation)
+			result = try translateThrowStatement(
+				expression: expression, withIndentation: indentation)
 		case .structDeclaration(name: _):
 			return ""
 		case let .variableDeclaration(
@@ -161,7 +164,7 @@ public class GRYKotlinTranslator {
 				setter: setter, isLet: isLet, extendsType: extendsType, annotations: annotations,
 				withIndentation: indentation)
 		case let .assignmentStatement(leftHand: leftHand, rightHand: rightHand):
-			result = translateAssignmentStatement(
+			result = try translateAssignmentStatement(
 				leftHand: leftHand, rightHand: rightHand, withIndentation: indentation)
 		case let .ifStatement(
 			conditions: conditions, declarations: declarations, statements: statements,
@@ -172,9 +175,10 @@ public class GRYKotlinTranslator {
 				elseStatement: elseStatement, isGuard: isGuard, isElseIf: false,
 				withIndentation: indentation)
 		case let .returnStatement(expression: expression):
-			result = translateReturnStatement(expression: expression, withIndentation: indentation)
+			result = try translateReturnStatement(
+				expression: expression, withIndentation: indentation)
 		case let .expression(expression: expression):
-			let expressionTranslation = translateExpression(expression)
+			let expressionTranslation = try translateExpression(expression)
 			if !expressionTranslation.isEmpty {
 				return indentation + expressionTranslation + "\n"
 			}
@@ -334,11 +338,11 @@ public class GRYKotlinTranslator {
 	{
 		var result = "\(indentation)for ("
 
-		let variableTranslation = translateExpression(variable)
+		let variableTranslation = try translateExpression(variable)
 
 		result += variableTranslation + " in "
 
-		let collectionTranslation = translateExpression(collection)
+		let collectionTranslation = try translateExpression(collection)
 
 		result += collectionTranslation + ") {\n"
 
@@ -365,7 +369,8 @@ public class GRYKotlinTranslator {
 
 		let increasedIndentation = increaseIndentation(indentation)
 
-		let conditionsTranslation = conditions.map(translateExpression).joined(separator: " && ")
+		let conditionsTranslation =
+			try conditions.map(translateExpression).joined(separator: " && ")
 
 		if keyword != "else" {
 			let parenthesizedCondition = isGuard ?
@@ -399,17 +404,17 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateThrowStatement(
-		expression: GRYExpression, withIndentation indentation: String) -> String
+		expression: GRYExpression, withIndentation indentation: String) throws -> String
 	{
-		let expressionString = translateExpression(expression)
+		let expressionString = try translateExpression(expression)
 		return "\(indentation)throw \(expressionString)\n"
 	}
 
 	private func translateReturnStatement(
-		expression: GRYExpression?, withIndentation indentation: String) -> String
+		expression: GRYExpression?, withIndentation indentation: String) throws -> String
 	{
 		if let expression = expression {
-			let expressionString = translateExpression(expression)
+			let expressionString = try translateExpression(expression)
 			return "\(indentation)return \(expressionString)\n"
 		}
 		else {
@@ -461,7 +466,7 @@ public class GRYKotlinTranslator {
 		result += translatedType
 
 		if let expression = expression {
-			let expressionTranslation = translateExpression(expression)
+			let expressionTranslation = try translateExpression(expression)
 			result += " = " + expressionTranslation
 		}
 
@@ -504,34 +509,42 @@ public class GRYKotlinTranslator {
 
 	private func translateAssignmentStatement(
 		leftHand: GRYExpression, rightHand: GRYExpression, withIndentation indentation: String)
-		-> String
+		throws -> String
 	{
-		let leftTranslation = translateExpression(leftHand)
-		let rightTranslation = translateExpression(rightHand)
+		let leftTranslation = try translateExpression(leftHand)
+		let rightTranslation = try translateExpression(rightHand)
 		return "\(indentation)\(leftTranslation) = \(rightTranslation)\n"
 	}
 
-	private func translateExpression(_ expression: GRYExpression) -> String {
+	private func translateExpression(_ expression: GRYExpression) throws -> String {
 		switch expression {
 		case let .templateExpression(pattern: pattern, matches: matches):
-			return translateTemplateExpression(pattern: pattern, matches: matches)
+			return try translateTemplateExpression(pattern: pattern, matches: matches)
 		case let .literalCodeExpression(string: string):
 			return translateLiteralCodeExpression(string: string)
 		case let .arrayExpression(elements: elements, type: type):
-			return translateArrayExpression(elements: elements, type: type)
+			return try translateArrayExpression(elements: elements, type: type)
 		case let .binaryOperatorExpression(
 			leftExpression: leftExpression,
 			rightExpression: rightExpression,
 			operatorSymbol: operatorSymbol,
 			type: type):
 
-			return translateBinaryOperatorExpression(
+			return try translateBinaryOperatorExpression(
 				leftExpression: leftExpression,
 				rightExpression: rightExpression,
 				operatorSymbol: operatorSymbol,
 				type: type)
 		case let .callExpression(function: function, parameters: parameters, type: type):
-			return translateCallExpression(function: function, parameters: parameters, type: type)
+			return try translateCallExpression(
+				function: function, parameters: parameters, type: type)
+		case let .closureExpression(
+			parameterNames: parameterNames, parameterTypes: parameterTypes, statements: statements,
+			type: type):
+
+			return try translateClosureExpression(
+				parameterNames: parameterNames, parameterTypes: parameterTypes,
+				statements: statements, type: type)
 		case let .declarationReferenceExpression(
 			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
 			isImplicit: isImplicit):
@@ -540,16 +553,16 @@ public class GRYKotlinTranslator {
 				identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
 				isImplicit: isImplicit)
 		case let .dotExpression(leftExpression: leftExpression, rightExpression: rightExpression):
-			return translateDotSyntaxCallExpression(
+			return try translateDotSyntaxCallExpression(
 				leftExpression: leftExpression, rightExpression: rightExpression)
 		case let .literalStringExpression(value: value):
 			return translateStringLiteral(value: value)
 		case let .interpolatedStringLiteralExpression(expressions: expressions):
-			return translateInterpolatedStringLiteralExpression(expressions: expressions)
+			return try translateInterpolatedStringLiteralExpression(expressions: expressions)
 		case let .unaryOperatorExpression(
 			expression: expression, operatorSymbol: operatorSymbol, type: type):
 
-			return translatePrefixUnaryExpression(
+			return try translatePrefixUnaryExpression(
 				expression: expression, operatorSymbol: operatorSymbol, type: type)
 		case let .typeExpression(type: type):
 			return translateType(type)
@@ -557,13 +570,13 @@ public class GRYKotlinTranslator {
 			subscriptedExpression: subscriptedExpression, indexExpression: indexExpression,
 			type: type):
 
-			return translateSubscriptExpression(
+			return try translateSubscriptExpression(
 				subscriptedExpression: subscriptedExpression, indexExpression: indexExpression,
 				type: type)
 		case let .parenthesesExpression(expression: expression):
-			return "(" + translateExpression(expression) + ")"
+			return try "(" + translateExpression(expression) + ")"
 		case let .forceValueExpression(expression: expression):
-			return translateExpression(expression) + "!!"
+			return try translateExpression(expression) + "!!"
 		case let .literalIntExpression(value: value):
 			return String(value)
 		case let .literalDoubleExpression(value: value):
@@ -573,31 +586,31 @@ public class GRYKotlinTranslator {
 		case .nilLiteralExpression:
 			return "null"
 		case let .tupleExpression(pairs: pairs):
-			return translateTupleExpression(pairs: pairs)
+			return try translateTupleExpression(pairs: pairs)
 		}
 	}
 
 	private func translateSubscriptExpression(
 		subscriptedExpression: GRYExpression, indexExpression: GRYExpression, type: String)
-		-> String
+		throws -> String
 	{
-		return translateExpression(subscriptedExpression) +
-			"[\(translateExpression(indexExpression))]"
+		return try translateExpression(subscriptedExpression) +
+			"[\(try translateExpression(indexExpression))]"
 	}
 
-	private func translateArrayExpression(elements: [GRYExpression], type: String) -> String {
-		let expressionsString = elements.map {
-			translateExpression($0)
-		}.joined(separator: ", ")
+	private func translateArrayExpression(elements: [GRYExpression], type: String) throws
+		-> String
+	{
+		let expressionsString = try elements.map(translateExpression).joined(separator: ", ")
 
 		return "mutableListOf(\(expressionsString))"
 	}
 
 	private func translateDotSyntaxCallExpression(
-		leftExpression: GRYExpression, rightExpression: GRYExpression) -> String
+		leftExpression: GRYExpression, rightExpression: GRYExpression) throws -> String
 	{
-		let leftHandString = translateExpression(leftExpression)
-		let rightHandString = translateExpression(rightExpression)
+		let leftHandString = try translateExpression(leftExpression)
+		let rightHandString = try translateExpression(rightExpression)
 
 		if GRYKotlinTranslator.enums.contains(leftHandString) {
 			let capitalizedEnumCase = rightHandString.capitalizedAsCamelCase
@@ -610,31 +623,56 @@ public class GRYKotlinTranslator {
 
 	private func translateBinaryOperatorExpression(
 		leftExpression: GRYExpression, rightExpression: GRYExpression, operatorSymbol: String,
-		type: String) -> String
+		type: String) throws -> String
 	{
-		let leftTranslation = translateExpression(leftExpression)
-		let rightTranslation = translateExpression(rightExpression)
+		let leftTranslation = try translateExpression(leftExpression)
+		let rightTranslation = try translateExpression(rightExpression)
 		return "\(leftTranslation) \(operatorSymbol) \(rightTranslation)"
 	}
 
 	private func translatePrefixUnaryExpression(
-		expression: GRYExpression, operatorSymbol: String, type: String) -> String
+		expression: GRYExpression, operatorSymbol: String, type: String) throws -> String
 	{
-		let expressionTranslation = translateExpression(expression)
+		let expressionTranslation = try translateExpression(expression)
 		return operatorSymbol + expressionTranslation
 	}
 
 	private func translateCallExpression(
-		function: GRYExpression, parameters: GRYExpression, type: String) -> String
+		function: GRYExpression, parameters: GRYExpression, type: String) throws -> String
 	{
 		guard case let .tupleExpression(pairs: pairs) = parameters else {
 			preconditionFailure()
 		}
 
-		let functionTranslation = translateExpression(function)
-		let parametersTranslation = translateTupleExpression(pairs: pairs)
+		let functionTranslation = try translateExpression(function)
+		let parametersTranslation = try translateTupleExpression(pairs: pairs)
 
 		return functionTranslation + parametersTranslation
+	}
+
+	private func translateClosureExpression(
+		parameterNames: [String], parameterTypes: [String], statements: [GRYTopLevelNode],
+		type: String) throws -> String
+	{
+		var result = "{ "
+
+		let parametersString = zip(parameterNames, parameterTypes)
+			.map { "\($0): \($1)" }.joined(separator: ", ")
+
+		result += parametersString + " -> "
+
+		guard let firstStatement = statements.first,
+			case let GRYTopLevelNode.expression(expression: expression) = firstStatement else
+		{
+			throw unexpectedASTStructureError(
+				"Only single-expression closures are supported.",
+				AST: .expression(expression: .closureExpression(
+					parameterNames: parameterNames, parameterTypes: parameterTypes,
+					statements: statements, type: type)))
+		}
+
+		result += try translateExpression(expression) + " }"
+		return result
 	}
 
 	private func translateLiteralCodeExpression(string: String) -> String {
@@ -642,12 +680,12 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateTemplateExpression(pattern: String, matches: [String: GRYExpression])
-		-> String
+		throws -> String
 	{
 		var result = pattern
 		for (string, expression) in matches {
 			while let range = result.range(of: string) {
-				result.replaceSubrange(range, with: translateExpression(expression))
+				result.replaceSubrange(range, with: try translateExpression(expression))
 			}
 		}
 		return result
@@ -681,13 +719,13 @@ public class GRYKotlinTranslator {
 		return String(identifier.prefix { $0 != "(" })
 	}
 
-	private func translateTupleExpression(pairs: [GRYExpression.TuplePair]) -> String {
+	private func translateTupleExpression(pairs: [GRYExpression.TuplePair]) throws -> String {
 		guard !pairs.isEmpty else {
 			return "()"
 		}
 
-		let contents = pairs.map { (pair: GRYExpression.TuplePair) -> String in
-			let expression = translateExpression(pair.expression)
+		let contents = try pairs.map { (pair: GRYExpression.TuplePair) -> String in
+			let expression = try translateExpression(pair.expression)
 
 			if let name = pair.name {
 				return "\(name) = \(expression)"
@@ -705,7 +743,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateInterpolatedStringLiteralExpression(expressions: [GRYExpression])
-		-> String
+		throws -> String
 	{
 		var result = "\""
 
@@ -720,7 +758,7 @@ public class GRYKotlinTranslator {
 				result += string
 			}
 			else {
-				result += "${" + translateExpression(expression) + "}"
+				result += try "${" + translateExpression(expression) + "}"
 			}
 		}
 

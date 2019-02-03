@@ -171,6 +171,8 @@ public class GRYSwift4Translator {
 			return try translate(binaryExpression: expression)
 		case "Call Expression":
 			return try translate(callExpression: expression)
+		case "Closure Expression":
+			return try translate(closureExpression: expression)
 		case "Declaration Reference Expression":
 			return try translate(declarationReferenceExpression: expression)
 		case "Dot Syntax Call Expression":
@@ -317,7 +319,7 @@ public class GRYSwift4Translator {
 	}
 
 	private func translate(extensionDeclaration: GRYSwiftAST) throws -> GRYTopLevelNode {
-		let type = extensionDeclaration.standaloneAttributes[0]
+		let type = cleanUpType(extensionDeclaration.standaloneAttributes[0])
 		let members = try translate(subtrees: extensionDeclaration.subtrees)
 		return .extensionDeclaration(type: type, members: members)
 	}
@@ -452,7 +454,7 @@ public class GRYSwift4Translator {
 				AST: typeExpression)
 		}
 
-		return .typeExpression(type: type)
+		return .typeExpression(type: cleanUpType(type))
 	}
 
 	private func translate(dotSyntaxCallExpression: GRYSwiftAST) throws -> GRYExpression {
@@ -735,7 +737,7 @@ public class GRYSwift4Translator {
 					}
 
 					parameterNames.append(name)
-					parameterTypes.append(type)
+					parameterTypes.append(cleanUpType(type))
 				}
 				else {
 					throw unexpectedASTStructureError(
@@ -792,9 +794,10 @@ public class GRYSwift4Translator {
 		try ensure(AST: variableDeclaration, isNamed: "Variable Declaration")
 
 		if let identifier = variableDeclaration.standaloneAttributes.first,
-			let type = variableDeclaration["interface type"]
+			let rawType = variableDeclaration["interface type"]
 		{
 			let isLet = variableDeclaration.standaloneAttributes.contains("let")
+			let type = cleanUpType(rawType)
 
 			let expression: GRYExpression?
 			if let patternBindingExpression = danglingPatternBinding,
@@ -929,6 +932,62 @@ public class GRYSwift4Translator {
 		return .callExpression(function: function, parameters: parameters, type: type)
 	}
 
+	private func translate(closureExpression: GRYSwiftAST) throws -> GRYExpression {
+		try ensure(AST: closureExpression, isNamed: "Closure Expression")
+
+		// Get the parameters.
+		let parameterList: GRYSwiftAST?
+
+		if let unwrapped = closureExpression.subtree(at: 0, named: "Parameter List") {
+			parameterList = unwrapped
+		}
+		else {
+			parameterList = nil
+		}
+
+		var parameterNames = [String]()
+		var parameterTypes = [String]()
+
+		// Translate the parameters
+		if let parameterList = parameterList {
+			for parameter in parameterList.subtrees {
+				if let name = parameter.standaloneAttributes.first,
+					let type = parameter["interface type"]
+				{
+					parameterNames.append(name)
+					parameterTypes.append(cleanUpType(type))
+				}
+				else {
+					throw unexpectedASTStructureError(
+						"Unable to detect name or attribute for a parameter",
+						AST: closureExpression)
+				}
+			}
+		}
+
+		// Translate the return type
+		// FIXME: Doesn't allow to return function types
+		guard let type = closureExpression["type"] else
+		{
+			throw unexpectedASTStructureError(
+				"Unable to get type or return type", AST: closureExpression)
+		}
+
+		// Translate the closure body
+		guard let lastSubtree = closureExpression.subtrees.last else {
+			throw unexpectedASTStructureError(
+				"Unable to get closure body", AST: closureExpression)
+		}
+		let expression = try translate(expression: lastSubtree)
+		let statement = GRYTopLevelNode.expression(expression: expression)
+
+		return .closureExpression(
+				parameterNames: parameterNames,
+				parameterTypes: parameterTypes,
+				statements: [statement],
+				type: cleanUpType(type))
+	}
+
 	private func translate(callExpressionParameters callExpression: GRYSwiftAST) throws
 		-> GRYExpression
 	{
@@ -1009,8 +1068,9 @@ public class GRYSwift4Translator {
 				.subtree(named: "Constructor Reference Call Expression"),
 			let typeExpression = constructorReferenceCallExpression
 				.subtree(named: "Type Expression"),
-			let type = typeExpression["typerepr"]
+			let rawType = typeExpression["typerepr"]
 		{
+			let type = cleanUpType(rawType)
 			if type == "Double" {
 				return .literalDoubleExpression(value: Double(value)!)
 			}
@@ -1100,7 +1160,13 @@ public class GRYSwift4Translator {
 
 		let isImplicit = declarationReferenceExpression.standaloneAttributes.contains("implicit")
 
-		if let codeDeclaration = declarationReferenceExpression.standaloneAttributes.first,
+		if let discriminator = declarationReferenceExpression["discriminator"] {
+			let (identifier, isStandardLibrary) = getIdentifierFromDeclaration(discriminator)
+			return .declarationReferenceExpression(
+				identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
+				isImplicit: isImplicit)
+		}
+		else if let codeDeclaration = declarationReferenceExpression.standaloneAttributes.first,
 			codeDeclaration.hasPrefix("code.")
 		{
 			let (identifier, isStandardLibrary) = getIdentifierFromDeclaration(codeDeclaration)
@@ -1235,6 +1301,9 @@ public class GRYSwift4Translator {
 	private func cleanUpType(_ type: String) -> String {
 		if type.hasPrefix("@lvalue ") {
 			return String(type.suffix(from: "@lvalue ".endIndex))
+		}
+		else if type.hasPrefix("("), type.hasSuffix(")"), !type.contains("->") {
+			return String(type.dropFirst().dropLast())
 		}
 		else {
 			return type
