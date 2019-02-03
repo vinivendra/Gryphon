@@ -217,7 +217,7 @@ class GRYCodableTest: XCTestCase {
 			[1, 2, 3],
 			[] as [String],
 			[1: 2],
-			["1": 2, "3": 4],
+			["1": 2],
 			[:] as [String: String],
 			TestObject(x: 0, y: 1),
 			TestUtils.rng.random(intMin..<intMax),
