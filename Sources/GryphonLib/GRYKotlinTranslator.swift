@@ -308,7 +308,8 @@ public class GRYKotlinTranslator {
 			result += "fun " + prefix + "("
 		}
 
-		let parameters = zip(parameterNames, parameterTypes).map { $0.0 + ": " + $0.1 }
+		let translatedParameterTypes = parameterTypes.map(translateType)
+		let parameters = zip(parameterNames, translatedParameterTypes).map { $0.0 + ": " + $0.1 }
 
 		result += parameters.joined(separator: ", ")
 
