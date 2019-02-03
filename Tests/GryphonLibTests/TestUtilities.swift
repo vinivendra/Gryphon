@@ -116,6 +116,7 @@ extension TestUtils {
 		"extensions",
 		"functionCalls",
 		"ifStatement",
+		"inits",
 		"kotlinLiterals",
 		"logicOperators",
 		"numericLiterals",
