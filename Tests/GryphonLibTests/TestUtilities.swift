@@ -113,6 +113,7 @@ extension TestUtils {
 		"assignments",
 		"bhaskara",
 		"classes",
+		"closures",
 		"extensions",
 		"functionCalls",
 		"ifStatement",
