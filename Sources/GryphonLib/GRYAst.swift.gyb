@@ -80,8 +80,8 @@ astNodes = [
 	['structDeclaration', [['name', 'String']]],
 	['functionDeclaration',
 		[['prefix', 'String'], ['parameterNames', '[String]'], ['parameterTypes', '[String]'],
-		['returnType', 'String'], ['isImplicit', 'Bool'], ['isStatic', 'Bool'],
-		['statements', '[GRYTopLevelNode]?'], ['access', 'String?']]],
+		['defaultValues', '[GRYExpression?]'], ['returnType', 'String'], ['isImplicit', 'Bool'],
+		['isStatic', 'Bool'], ['statements', '[GRYTopLevelNode]?'], ['access', 'String?']]],
 	['variableDeclaration',
 		[['identifier', 'String'], ['typeName', 'String'], ['expression', 'GRYExpression?'],
 		['getter', 'GRYTopLevelNode?'], ['setter', 'GRYTopLevelNode?'], ['isLet', 'Bool'],
@@ -236,6 +236,7 @@ public indirect enum GRYTopLevelNode: Equatable, GRYPrintableAsTree, GRYCodable 
 			prefix: prefix,
 			parameterNames: parameterNames,
 			parameterTypes: parameterTypes,
+			defaultValues: defaultValues,
 			returnType: returnType,
 			isImplicit: isImplicit,
 			isStatic: isStatic,
@@ -244,12 +245,26 @@ public indirect enum GRYTopLevelNode: Equatable, GRYPrintableAsTree, GRYCodable 
 
 			let name = prefix + "(" + parameterNames.map { $0 + ":" }.joined(separator: ", ") + ")"
 			let type = "(" + parameterTypes.joined(separator: ", ") + ") -> " + returnType
+
+			let defaultValueStrings: [GRYPrintableAsTree]
+			if defaultValues.contains(where: { $0 != nil }) {
+				defaultValueStrings = defaultValues.map
+					{ (expression: GRYExpression?) -> GRYPrintableAsTree in
+						expression ?? "_"
+				}
+			}
+			else {
+				defaultValueStrings = []
+			}
+
 			return [
 				isImplicit ? "implicit" : nil,
 				isStatic ? "static" : nil,
 				access,
 				name,
-				type,
+				GRYPrintableTree.initialize(
+					description: "Default Values", subtreesOrNil: defaultValueStrings),
+				"type: \(type)",
 				GRYPrintableTree.initialize(
 					description: "statements", subtreesOrNil: statements ?? []), ]
 		case let .variableDeclaration(

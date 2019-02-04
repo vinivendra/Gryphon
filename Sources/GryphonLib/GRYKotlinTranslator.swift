@@ -140,13 +140,14 @@ public class GRYKotlinTranslator {
 				withIndentation: indentation)
 		case let .functionDeclaration(
 			prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-			returnType: returnType, isImplicit: isImplicit, isStatic: isStatic,
-			statements: statements, access: access):
+			defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
+			isStatic: isStatic, statements: statements, access: access):
 
 			result = try translateFunctionDeclaration(
 				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-				returnType: returnType, isImplicit: isImplicit, isStatic: isStatic,
-				statements: statements, access: access, withIndentation: indentation)
+				defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
+				isStatic: isStatic, statements: statements, access: access,
+				withIndentation: indentation)
 		case let .protocolDeclaration(name: name, members: members):
 			result = try translateProtocolDeclaration(
 				name: name, members: members, withIndentation: indentation)
@@ -286,9 +287,10 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateFunctionDeclaration(
-		prefix: String, parameterNames: [String], parameterTypes: [String], returnType: String,
-		isImplicit: Bool, isStatic: Bool, statements: [GRYTopLevelNode]?, access: String?,
-		withIndentation indentation: String) throws -> String
+		prefix: String, parameterNames: [String], parameterTypes: [String],
+		defaultValues: [GRYExpression?], returnType: String, isImplicit: Bool, isStatic: Bool,
+		statements: [GRYTopLevelNode]?, access: String?, withIndentation indentation: String)
+		throws -> String
 	{
 		guard !isImplicit else {
 			return ""
@@ -309,9 +311,18 @@ public class GRYKotlinTranslator {
 		}
 
 		let translatedParameterTypes = parameterTypes.map(translateType)
+		let valueStrings = try defaultValues.map { (defaultValue: GRYExpression?) -> String in
+			if let defaultValue = defaultValue {
+				return try " = " + translateExpression(defaultValue)
+			}
+			else {
+				return ""
+			}
+		}
 		let parameters = zip(parameterNames, translatedParameterTypes).map { $0.0 + ": " + $0.1 }
+		let parameterStrings = zip(parameters, valueStrings).map { $0.0 + $0.1 }
 
-		result += parameters.joined(separator: ", ")
+		result += parameterStrings.joined(separator: ", ")
 
 		result += ")"
 
@@ -477,8 +488,8 @@ public class GRYKotlinTranslator {
 		let indentation2 = increaseIndentation(indentation1)
 		if let getter = getter {
 			guard case let .functionDeclaration(
-				prefix: _, parameterNames: _, parameterTypes: _, returnType: _, isImplicit: _,
-				isStatic: _, statements: statements, access: _) = getter else
+				prefix: _, parameterNames: _, parameterTypes: _, defaultValues: _, returnType: _,
+				isImplicit: _, isStatic: _, statements: statements, access: _) = getter else
 			{
 				preconditionFailure()
 			}
@@ -492,8 +503,8 @@ public class GRYKotlinTranslator {
 
 		if let setter = setter {
 			guard case let .functionDeclaration(
-				prefix: _, parameterNames: _, parameterTypes: _, returnType: _, isImplicit: _,
-				isStatic: _, statements: statements, access: _) = setter else
+				prefix: _, parameterNames: _, parameterTypes: _, defaultValues: _, returnType: _,
+				isImplicit: _, isStatic: _, statements: statements, access: _) = setter else
 			{
 				preconditionFailure()
 			}

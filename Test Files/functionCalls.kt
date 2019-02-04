@@ -28,6 +28,14 @@ internal fun bla4(bar: Int, baz: Int): Int {
 internal fun bla6(bar: Int, baz: Int): Int {
 	return 6
 }
+internal fun bar1(a: Int = 1) {
+}
+internal fun bar2(a: Int = 1, b: Int = 2) {
+}
+internal fun bar3(a: Int = 1, b: Int) {
+}
+internal fun bar4(a: Int, b: Int = 2) {
+}
 
 fun main(args: Array<String>) {
 	foo()
@@ -42,4 +50,14 @@ fun main(args: Array<String>) {
 	println("${bla3(bar = 0, baz = 0)}")
 	println("${bla4(0, baz = 0)}")
 	println("${bla6(0, 0)}")
+	bar1()
+	bar1(a = 0)
+	bar2()
+	bar2(a = 0)
+	bar2(b = 0)
+	bar2(a = 0, b = 0)
+	bar3(b = 0)
+	bar3(a = 0, b = 0)
+	bar4(a = 0)
+	bar4(a = 0, b = 0)
 }

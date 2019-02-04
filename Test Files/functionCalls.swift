@@ -49,3 +49,23 @@ print("\(bla3(bar: 0, baz: 0))")
 print("\(bla4(0, baz: 0))")
 // print("\(bla5(bar: 0, 0))") // Results in Kotlin error: mixing named and positioned arguments is not allowed
 print("\(bla6(0, 0))")
+
+// Function calls with parameters with default values
+func bar1(a: Int = 1) { }
+func bar2(a: Int = 1, b: Int = 2) { }
+func bar3(a: Int = 1, b: Int) { }
+func bar4(a: Int, b: Int = 2) { }
+
+bar1()
+bar1(a: 0)
+
+bar2()
+bar2(a: 0)
+bar2(b: 0)
+bar2(a: 0, b: 0)
+
+bar3(b: 0)
+bar3(a: 0, b: 0)
+
+bar4(a: 0)
+bar4(a: 0, b: 0)

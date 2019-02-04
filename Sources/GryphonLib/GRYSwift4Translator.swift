@@ -725,6 +725,7 @@ public class GRYSwift4Translator {
 
 		var parameterNames = [String]()
 		var parameterTypes = [String]()
+		var defaultValues = [GRYExpression?]()
 
 		// Translate the parameters
 		if let parameterList = parameterList {
@@ -738,6 +739,13 @@ public class GRYSwift4Translator {
 
 					parameterNames.append(name)
 					parameterTypes.append(cleanUpType(type))
+
+					if let defaultValueTree = parameter.subtrees.first {
+						try defaultValues.append(translate(expression: defaultValueTree))
+					}
+					else {
+						defaultValues.append(nil)
+					}
 				}
 				else {
 					throw unexpectedASTStructureError(
@@ -768,6 +776,7 @@ public class GRYSwift4Translator {
 			prefix: String(functionNamePrefix),
 			parameterNames: parameterNames,
 			parameterTypes: parameterTypes,
+			defaultValues: defaultValues,
 			returnType: returnType,
 			isImplicit: isImplicit,
 			isStatic: isStatic,
@@ -826,6 +835,7 @@ public class GRYSwift4Translator {
 					getter = .functionDeclaration(
 						prefix: "get",
 						parameterNames: [], parameterTypes: [],
+						defaultValues: [],
 						returnType: type,
 						isImplicit: false,
 						isStatic: false,
@@ -837,6 +847,7 @@ public class GRYSwift4Translator {
 						prefix: "set",
 						parameterNames: ["newValue"],
 						parameterTypes: [type],
+						defaultValues: [],
 						returnType: "()",
 						isImplicit: false,
 						isStatic: false,

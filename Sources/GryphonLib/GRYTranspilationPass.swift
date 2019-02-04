@@ -62,13 +62,13 @@ public class GRYTranspilationPass {
 			return replaceStructDeclaration(name: name)
 		case let .functionDeclaration(
 			prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-			returnType: returnType, isImplicit: isImplicit, isStatic: isStatic,
-			statements: statements, access: access):
+			defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
+			isStatic: isStatic, statements: statements, access: access):
 
 			return replaceFunctionDeclaration(
 				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-				returnType: returnType, isImplicit: isImplicit, isStatic: isStatic,
-				statements: statements, access: access)
+				defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
+				isStatic: isStatic, statements: statements, access: access)
 		case let .variableDeclaration(
 			identifier: identifier, typeName: typeName, expression: expression, getter: getter,
 			setter: setter, isLet: isLet, extendsType: extendsType, annotations: annotations):
@@ -136,14 +136,16 @@ public class GRYTranspilationPass {
 	}
 
 	func replaceFunctionDeclaration(
-		prefix: String, parameterNames: [String], parameterTypes: [String], returnType: String,
-		isImplicit: Bool, isStatic: Bool, statements: [GRYTopLevelNode]?, access: String?)
+		prefix: String, parameterNames: [String], parameterTypes: [String],
+		defaultValues: [GRYExpression?], returnType: String, isImplicit: Bool, isStatic: Bool,
+		statements: [GRYTopLevelNode]?, access: String?)
 		-> [GRYTopLevelNode]
 	{
 		return [.functionDeclaration(
 			prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-			returnType: returnType, isImplicit: isImplicit, isStatic: isStatic,
-			statements: statements.map { $0.flatMap(replaceTopLevelNode) }, access: access), ]
+			defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
+			isStatic: isStatic, statements: statements.map { $0.flatMap(replaceTopLevelNode) },
+			access: access), ]
 	}
 
 	func replaceVariableDeclaration(
@@ -451,8 +453,9 @@ public class GRYIgnoreNextTranspilationPass: GRYTranspilationPass {
 
 public class GRYDeclarationsTranspilationPass: GRYTranspilationPass {
 	override func replaceFunctionDeclaration(
-		prefix: String, parameterNames: [String], parameterTypes: [String], returnType: String,
-		isImplicit: Bool, isStatic: Bool, statements: [GRYTopLevelNode]?, access: String?)
+		prefix: String, parameterNames: [String], parameterTypes: [String],
+		defaultValues: [GRYExpression?], returnType: String, isImplicit: Bool, isStatic: Bool,
+		statements: [GRYTopLevelNode]?, access: String?)
 		-> [GRYTopLevelNode]
 	{
 		if prefix.hasPrefix("GRYDeclarations"), let statements = statements {
@@ -461,16 +464,17 @@ public class GRYDeclarationsTranspilationPass: GRYTranspilationPass {
 		else {
 			return super.replaceFunctionDeclaration(
 				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-				returnType: returnType, isImplicit: isImplicit, isStatic: isStatic,
-				statements: statements, access: access)
+				defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
+				isStatic: isStatic, statements: statements, access: access)
 		}
 	}
 }
 
 public class GRYRemoveGryphonDeclarationsTranspilationPass: GRYTranspilationPass {
 	override func replaceFunctionDeclaration(
-		prefix: String, parameterNames: [String], parameterTypes: [String], returnType: String,
-		isImplicit: Bool, isStatic: Bool, statements: [GRYTopLevelNode]?, access: String?)
+		prefix: String, parameterNames: [String], parameterTypes: [String],
+		defaultValues: [GRYExpression?], returnType: String, isImplicit: Bool, isStatic: Bool,
+		statements: [GRYTopLevelNode]?, access: String?)
 		-> [GRYTopLevelNode]
 	{
 		if prefix.hasPrefix("GRYInsert") || prefix.hasPrefix("GRYAlternative") ||
@@ -481,8 +485,8 @@ public class GRYRemoveGryphonDeclarationsTranspilationPass: GRYTranspilationPass
 		else {
 			return super.replaceFunctionDeclaration(
 				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-				returnType: returnType, isImplicit: isImplicit, isStatic: isStatic,
-				statements: statements, access: access)
+				defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
+				isStatic: isStatic, statements: statements, access: access)
 		}
 	}
 
@@ -565,8 +569,8 @@ public class GRYStaticFunctionsTranspilationPass: GRYTranspilationPass {
 
 		for member in members {
 			if case let .functionDeclaration(
-				prefix: prefix, parameterNames: _, parameterTypes: _, returnType: _, isImplicit: _,
-				isStatic: true, statements: _, access: _) = member,
+				prefix: prefix, parameterNames: _, parameterTypes: _, defaultValues: _,
+				returnType: _, isImplicit: _, isStatic: true, statements: _, access: _) = member,
 				prefix != "init"
 			{
 				staticFunctions.append(member)
@@ -750,21 +754,22 @@ public class GRYFixProtocolContentsTranspilationPass: GRYTranspilationPass {
 	}
 
 	override func replaceFunctionDeclaration(
-		prefix: String, parameterNames: [String], parameterTypes: [String], returnType: String,
-		isImplicit: Bool, isStatic: Bool, statements: [GRYTopLevelNode]?, access: String?)
+		prefix: String, parameterNames: [String], parameterTypes: [String],
+		defaultValues: [GRYExpression?], returnType: String, isImplicit: Bool, isStatic: Bool,
+		statements: [GRYTopLevelNode]?, access: String?)
 		-> [GRYTopLevelNode]
 	{
 		if isInProtocol {
 			return super.replaceFunctionDeclaration(
 				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-				returnType: returnType, isImplicit: isImplicit, isStatic: isStatic,
-				statements: nil, access: access)
+				defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
+				isStatic: isStatic, statements: nil, access: access)
 		}
 		else {
 			return super.replaceFunctionDeclaration(
 				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-				returnType: returnType, isImplicit: isImplicit, isStatic: isStatic,
-				statements: statements, access: access)
+				defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
+				isStatic: isStatic, statements: statements, access: access)
 		}
 	}
 }
