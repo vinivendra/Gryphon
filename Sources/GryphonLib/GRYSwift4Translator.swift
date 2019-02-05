@@ -29,7 +29,7 @@ public class GRYSwift4Translator {
 				file: file, line: line, function: function, message: message, AST: ast):
 
 				var nodeDescription = ""
-				ast.prettyPrint(horizontalLimit: 100) {
+				ast.prettyPrint {
 					nodeDescription += $0
 				}
 
@@ -198,6 +198,9 @@ public class GRYSwift4Translator {
 			return try translate(memberReferenceExpression: expression)
 		case "Subscript Expression":
 			return try translate(subscriptExpression: expression)
+		case "Open Existential Expression":
+			let processedExpression = try process(openExistentialExpression: expression)
+			return try translate(expression: processedExpression)
 		case "Parentheses Expression":
 			if let firstExpression = expression.subtree(at: 0) {
 				return .parenthesesExpression(
@@ -221,7 +224,8 @@ public class GRYSwift4Translator {
 		case "Autoclosure Expression",
 			 "Inject Into Optional",
 			 "Inout Expression",
-			 "Load Expression":
+			 "Load Expression",
+			 "Function Conversion Expression":
 			if let lastExpression = expression.subtrees.last {
 				return try translate(expression: lastExpression)
 			}
@@ -1236,6 +1240,37 @@ public class GRYSwift4Translator {
 	}
 
 	// MARK: - Supporting methods
+	private func process(openExistentialExpression: GRYSwiftAST) throws -> GRYSwiftAST {
+		try ensure(AST: openExistentialExpression, isNamed: "Open Existential Expression")
+
+		guard let replacementSubtree = openExistentialExpression.subtrees[safe: 1],
+			let resultSubtree = openExistentialExpression.subtrees.last else
+		{
+			throw unexpectedASTStructureError(
+				"Expected the AST to contain 3 subtrees: an Opaque Value Expression, an " +
+				"expression to replace the opaque value, and an expression containing opaque " +
+				"values to be replaced.",
+				AST: openExistentialExpression)
+		}
+
+		return astReplacingOpaqueValues(in: resultSubtree, with: replacementSubtree)
+	}
+
+	private func astReplacingOpaqueValues(in ast: GRYSwiftAST, with replacementAST: GRYSwiftAST)
+		-> GRYSwiftAST
+	{
+		if ast.name == "Opaque Value Expression" {
+			return replacementAST
+		}
+
+		var newSubtrees = [GRYSwiftAST]()
+		for subtree in ast.subtrees {
+			newSubtrees.append(astReplacingOpaqueValues(in: subtree, with: replacementAST))
+		}
+
+		return GRYSwiftAST(ast.name, ast.standaloneAttributes, ast.keyValueAttributes, newSubtrees)
+	}
+
 	private func process(patternBindingDeclaration: GRYSwiftAST) throws {
 		try ensure(AST: patternBindingDeclaration, isNamed: "Pattern Binding Declaration")
 
