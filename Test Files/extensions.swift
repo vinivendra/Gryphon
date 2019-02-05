@@ -24,5 +24,18 @@ extension String {
 	}
 }
 
+extension String {
+	func appendWorld() -> String {
+		return self + ", world!"
+	}
+
+	func functionWithVariable() {
+		var string = ", world!!"
+		print("Hello\(string)")
+	}
+}
+
 print("\("Hello!".isString)")
 print("\("Hello!".world)")
+print("\("Hello".appendWorld())")
+"bla".functionWithVariable()

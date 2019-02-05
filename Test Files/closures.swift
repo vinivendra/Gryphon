@@ -24,3 +24,8 @@ func useClosure(closure: (String) -> ()) {
 	closure("Calling from function!")
 }
 useClosure(printClosure)
+
+func defaultClosure(closure: (String) -> () = { print($0) }) {
+	closure("Calling from default closure!")
+}
+defaultClosure()

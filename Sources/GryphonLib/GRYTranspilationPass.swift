@@ -142,7 +142,6 @@ public class GRYTranspilationPass {
 		extendsType: String?, statements: [GRYTopLevelNode]?, access: String?)
 		-> [GRYTopLevelNode]
 	{
-		// TODO: Add a regression test for this.
 		let replacedDefaultValues = defaultValues.map
 			{ (expression: GRYExpression?) -> GRYExpression? in
 				if let expression = expression {
@@ -689,7 +688,6 @@ public class GRYRemoveExtensionsTranspilationPass: GRYTranspilationPass {
 		return members
 	}
 
-	// TODO: Add a regression test for this.
 	override func replaceTopLevelNode(_ node: GRYTopLevelNode) -> [GRYTopLevelNode] {
 		switch node {
 		case let .extensionDeclaration(type: type, members: members):
