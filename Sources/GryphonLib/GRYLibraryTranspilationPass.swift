@@ -258,14 +258,89 @@ extension GRYExpression {
 
 fileprivate extension String {
 	func isSubtype(of superType: String) -> Bool {
-		if superType == "Any" {
+		// Check common cases
+		if self == superType {
 			return true
 		}
-		else if self == superType {
+		else if superType == "Any" {
 			return true
 		}
-		else {
-			return false
+
+		// Analyze components of function types
+		if superType.contains(" -> ") {
+			guard self.contains(" -> ") else {
+				return false
+			}
+
+			let superTypeComponents = superType.split(withStringSeparator: " -> ")
+			let selfTypeComponents = self.split(withStringSeparator: " -> ")
+
+			guard superTypeComponents.count == selfTypeComponents.count else {
+				return false
+			}
+
+			for (selfTypeComponent, superTypeComponent) in
+				zip(selfTypeComponents, superTypeComponents)
+			{
+				if !selfTypeComponent.isSubtype(of: superTypeComponent) {
+					return false
+				}
+			}
+
+			return true
 		}
+
+		// Remove parentheses
+		if self.first == "(", self.last == ")" {
+			return String(self.dropFirst().dropLast()).isSubtype(of: superType)
+		}
+		if superType.first == "(", superType.last == ")" {
+			return self.isSubtype(of: String(superType.dropFirst().dropLast()))
+		}
+
+		// Handle arrays
+		if self.first == "[", self.last == "]", superType.first == "[", superType.last == "]" {
+			let selfElement = String(self.dropFirst().dropLast())
+			let superTypeElement = String(superType.dropFirst().dropLast())
+			return selfElement.isSubtype(of: superTypeElement)
+		}
+
+		// Handle inout types
+		if self.hasPrefix("inout "), superType.hasPrefix("inout ") {
+			let selfWithoutInout = String(self.dropFirst(6))
+			let superTypeWithoutInout = String(superType.dropFirst(6))
+			return selfWithoutInout.isSubtype(of: superTypeWithoutInout)
+		}
+
+		// Handle generics
+		if self.contains("<"), self.last == ">", superType.contains("<"), superType.last == ">" {
+			let selfStartGenericsIndex = self.firstIndex(of: "<")!
+			let superTypeStartGenericsIndex = superType.firstIndex(of: "<")!
+
+			let selfGenericArguments =
+				String(self[selfStartGenericsIndex...].dropFirst().dropLast())
+			let superTypeGenericArguments =
+				String(superType[superTypeStartGenericsIndex...].dropFirst().dropLast())
+
+			let selfTypeComponents = selfGenericArguments.split(withStringSeparator: ", ")
+			let superTypeComponents = superTypeGenericArguments.split(withStringSeparator: ", ")
+
+			guard superTypeComponents.count == selfTypeComponents.count else {
+				return false
+			}
+
+			for (selfTypeComponent, superTypeComponent) in
+				zip(selfTypeComponents, superTypeComponents)
+			{
+				if !selfTypeComponent.isSubtype(of: superTypeComponent) {
+					return false
+				}
+			}
+
+			return true
+		}
+
+		// If no subtype cases were met, say it's not a subtype
+		return false
 	}
 }

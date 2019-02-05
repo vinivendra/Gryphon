@@ -4,6 +4,7 @@ import Foundation
 let _string = ""
 let _any: Any = ""
 let _double: Double = 0
+var _array: [Any] = []
 
 // Print
 print(_any)
@@ -25,3 +26,10 @@ Double(_string)
 
 _string.dropLast()
 "_string.dropLast(1)"
+
+// Array
+_array.append(_any)
+"_array.add(_any)"
+
+_array.isEmpty
+"_array.isEmpty()"
