@@ -795,6 +795,7 @@ public class GRYSwift4Translator {
 			returnType: returnType,
 			isImplicit: isImplicit,
 			isStatic: isStatic,
+			extendsType: nil,
 			statements: statements,
 			access: access)
 	}
@@ -854,6 +855,7 @@ public class GRYSwift4Translator {
 						returnType: type,
 						isImplicit: false,
 						isStatic: false,
+						extendsType: nil,
 						statements: statementsTranslation,
 						access: access)
 				}
@@ -866,6 +868,7 @@ public class GRYSwift4Translator {
 						returnType: "()",
 						isImplicit: false,
 						isStatic: false,
+						extendsType: nil,
 						statements: statementsTranslation,
 						access: access)
 				}

@@ -141,13 +141,13 @@ public class GRYKotlinTranslator {
 		case let .functionDeclaration(
 			prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
 			defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
-			isStatic: isStatic, statements: statements, access: access):
+			isStatic: isStatic, extendsType: extendsType, statements: statements, access: access):
 
 			result = try translateFunctionDeclaration(
 				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
 				defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
-				isStatic: isStatic, statements: statements, access: access,
-				withIndentation: indentation)
+				isStatic: isStatic, extendsType: extendsType, statements: statements,
+				access: access, withIndentation: indentation)
 		case let .protocolDeclaration(name: name, members: members):
 			result = try translateProtocolDeclaration(
 				name: name, members: members, withIndentation: indentation)
@@ -289,8 +289,8 @@ public class GRYKotlinTranslator {
 	private func translateFunctionDeclaration(
 		prefix: String, parameterNames: [String], parameterTypes: [String],
 		defaultValues: [GRYExpression?], returnType: String, isImplicit: Bool, isStatic: Bool,
-		statements: [GRYTopLevelNode]?, access: String?, withIndentation indentation: String)
-		throws -> String
+		extendsType: String?, statements: [GRYTopLevelNode]?, access: String?,
+		withIndentation indentation: String) throws -> String
 	{
 		guard !isImplicit else {
 			return ""
@@ -307,7 +307,11 @@ public class GRYKotlinTranslator {
 			if let access = access {
 				result += access + " "
 			}
-			result += "fun " + prefix + "("
+			result += "fun "
+			if let extensionType = extendsType {
+				result += extensionType + "."
+			}
+			result += prefix + "("
 		}
 
 		let translatedParameterTypes = parameterTypes.map(translateType)
@@ -489,7 +493,8 @@ public class GRYKotlinTranslator {
 		if let getter = getter {
 			guard case let .functionDeclaration(
 				prefix: _, parameterNames: _, parameterTypes: _, defaultValues: _, returnType: _,
-				isImplicit: _, isStatic: _, statements: statements, access: _) = getter else
+				isImplicit: _, isStatic: _, extendsType: _, statements: statements,
+				access: _) = getter else
 			{
 				preconditionFailure()
 			}
@@ -504,7 +509,8 @@ public class GRYKotlinTranslator {
 		if let setter = setter {
 			guard case let .functionDeclaration(
 				prefix: _, parameterNames: _, parameterTypes: _, defaultValues: _, returnType: _,
-				isImplicit: _, isStatic: _, statements: statements, access: _) = setter else
+				isImplicit: _, isStatic: _, extendsType: _, statements: statements,
+				access: _) = setter else
 			{
 				preconditionFailure()
 			}

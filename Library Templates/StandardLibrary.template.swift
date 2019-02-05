@@ -1,14 +1,18 @@
 
 import Foundation
 
+var _strArray: [String] = []
+var _array: [Any] = []
 let _string = ""
 let _any: Any = ""
 let _double: Double = 0
-var _array: [Any] = []
 
 // Print
 print(_any)
 "println(_any)"
+
+print(_any, terminator: "")
+"print(_any)"
 
 // Darwin
 sqrt(_double)
@@ -33,3 +37,10 @@ _array.append(_any)
 
 _array.isEmpty
 "_array.isEmpty()"
+
+_strArray.joined(separator: _string)
+"_strArray.joinToString(separator = _string)"
+
+// Int
+Int.max
+"Int.MAX_VALUE"

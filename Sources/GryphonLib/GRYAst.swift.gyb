@@ -81,7 +81,8 @@ astNodes = [
 	['functionDeclaration',
 		[['prefix', 'String'], ['parameterNames', '[String]'], ['parameterTypes', '[String]'],
 		['defaultValues', '[GRYExpression?]'], ['returnType', 'String'], ['isImplicit', 'Bool'],
-		['isStatic', 'Bool'], ['statements', '[GRYTopLevelNode]?'], ['access', 'String?']]],
+		['isStatic', 'Bool'], ['extendsType', 'String?'], ['statements', '[GRYTopLevelNode]?'],
+		['access', 'String?']]],
 	['variableDeclaration',
 		[['identifier', 'String'], ['typeName', 'String'], ['expression', 'GRYExpression?'],
 		['getter', 'GRYTopLevelNode?'], ['setter', 'GRYTopLevelNode?'], ['isLet', 'Bool'],
@@ -240,6 +241,7 @@ public indirect enum GRYTopLevelNode: Equatable, GRYPrintableAsTree, GRYCodable 
 			returnType: returnType,
 			isImplicit: isImplicit,
 			isStatic: isStatic,
+			extendsType: extendsType,
 			statements: statements,
 			access: access):
 
@@ -258,6 +260,7 @@ public indirect enum GRYTopLevelNode: Equatable, GRYPrintableAsTree, GRYCodable 
 			}
 
 			return [
+				extendsType.map { "Extends type \($0)" },
 				isImplicit ? "implicit" : nil,
 				isStatic ? "static" : nil,
 				access,

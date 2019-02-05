@@ -63,12 +63,13 @@ public class GRYTranspilationPass {
 		case let .functionDeclaration(
 			prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
 			defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
-			isStatic: isStatic, statements: statements, access: access):
+			isStatic: isStatic, extendsType: extendsType, statements: statements, access: access):
 
 			return replaceFunctionDeclaration(
 				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
 				defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
-				isStatic: isStatic, statements: statements, access: access)
+				isStatic: isStatic, extendsType: extendsType, statements: statements,
+				access: access)
 		case let .variableDeclaration(
 			identifier: identifier, typeName: typeName, expression: expression, getter: getter,
 			setter: setter, isLet: isLet, extendsType: extendsType, annotations: annotations):
@@ -102,7 +103,7 @@ public class GRYTranspilationPass {
 	}
 
 	func replaceExtension(type: String, members: [GRYTopLevelNode]) -> [GRYTopLevelNode] {
-		return [.extensionDeclaration(type: type, members: members)]
+		return [.extensionDeclaration(type: type, members: members.flatMap(replaceTopLevelNode))]
 	}
 
 	func replaceImportDeclaration(name: String) -> [GRYTopLevelNode] {
@@ -138,14 +139,24 @@ public class GRYTranspilationPass {
 	func replaceFunctionDeclaration(
 		prefix: String, parameterNames: [String], parameterTypes: [String],
 		defaultValues: [GRYExpression?], returnType: String, isImplicit: Bool, isStatic: Bool,
-		statements: [GRYTopLevelNode]?, access: String?)
+		extendsType: String?, statements: [GRYTopLevelNode]?, access: String?)
 		-> [GRYTopLevelNode]
 	{
+		// TODO: Add a regression test for this.
+		let replacedDefaultValues = defaultValues.map
+			{ (expression: GRYExpression?) -> GRYExpression? in
+				if let expression = expression {
+					return replaceExpression(expression)
+				}
+				else {
+					return nil
+				}
+			}
 		return [.functionDeclaration(
 			prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-			defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
-			isStatic: isStatic, statements: statements.map { $0.flatMap(replaceTopLevelNode) },
-			access: access), ]
+			defaultValues: replacedDefaultValues, returnType: returnType, isImplicit: isImplicit,
+			isStatic: isStatic, extendsType: extendsType,
+			statements: statements.map { $0.flatMap(replaceTopLevelNode) }, access: access), ]
 	}
 
 	func replaceVariableDeclaration(
@@ -461,7 +472,7 @@ public class GRYDeclarationsTranspilationPass: GRYTranspilationPass {
 	override func replaceFunctionDeclaration(
 		prefix: String, parameterNames: [String], parameterTypes: [String],
 		defaultValues: [GRYExpression?], returnType: String, isImplicit: Bool, isStatic: Bool,
-		statements: [GRYTopLevelNode]?, access: String?)
+		extendsType: String?, statements: [GRYTopLevelNode]?, access: String?)
 		-> [GRYTopLevelNode]
 	{
 		if prefix.hasPrefix("GRYDeclarations"), let statements = statements {
@@ -471,7 +482,8 @@ public class GRYDeclarationsTranspilationPass: GRYTranspilationPass {
 			return super.replaceFunctionDeclaration(
 				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
 				defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
-				isStatic: isStatic, statements: statements, access: access)
+				isStatic: isStatic, extendsType: extendsType, statements: statements,
+				access: access)
 		}
 	}
 }
@@ -480,7 +492,7 @@ public class GRYRemoveGryphonDeclarationsTranspilationPass: GRYTranspilationPass
 	override func replaceFunctionDeclaration(
 		prefix: String, parameterNames: [String], parameterTypes: [String],
 		defaultValues: [GRYExpression?], returnType: String, isImplicit: Bool, isStatic: Bool,
-		statements: [GRYTopLevelNode]?, access: String?)
+		extendsType: String?, statements: [GRYTopLevelNode]?, access: String?)
 		-> [GRYTopLevelNode]
 	{
 		if prefix.hasPrefix("GRYInsert") || prefix.hasPrefix("GRYAlternative") ||
@@ -492,7 +504,8 @@ public class GRYRemoveGryphonDeclarationsTranspilationPass: GRYTranspilationPass
 			return super.replaceFunctionDeclaration(
 				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
 				defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
-				isStatic: isStatic, statements: statements, access: access)
+				isStatic: isStatic, extendsType: extendsType, statements: statements,
+				access: access)
 		}
 	}
 
@@ -576,7 +589,8 @@ public class GRYStaticFunctionsTranspilationPass: GRYTranspilationPass {
 		for member in members {
 			if case let .functionDeclaration(
 				prefix: prefix, parameterNames: _, parameterTypes: _, defaultValues: _,
-				returnType: _, isImplicit: _, isStatic: true, statements: _, access: _) = member,
+				returnType: _, isImplicit: _, isStatic: true, extendsType: nil, statements: _,
+				access: _) = member,
 				prefix != "init"
 			{
 				staticFunctions.append(member)
@@ -675,6 +689,45 @@ public class GRYRemoveExtensionsTranspilationPass: GRYTranspilationPass {
 		return members
 	}
 
+	// TODO: Add a regression test for this.
+	override func replaceTopLevelNode(_ node: GRYTopLevelNode) -> [GRYTopLevelNode] {
+		switch node {
+		case let .extensionDeclaration(type: type, members: members):
+			return replaceExtension(type: type, members: members)
+		case let .functionDeclaration(
+			prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
+			defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
+			isStatic: isStatic, extendsType: extendsType, statements: statements, access: access):
+
+			return replaceFunctionDeclaration(
+				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
+				defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
+				isStatic: isStatic, extendsType: extendsType, statements: statements,
+				access: access)
+		case let .variableDeclaration(
+			identifier: identifier, typeName: typeName, expression: expression, getter: getter,
+			setter: setter, isLet: isLet, extendsType: extendsType, annotations: annotations):
+
+			return replaceVariableDeclaration(
+				identifier: identifier, typeName: typeName, expression: expression, getter: getter,
+				setter: setter, isLet: isLet, extendsType: extendsType, annotations: annotations)
+		default:
+			return [node]
+		}
+	}
+
+	override func replaceFunctionDeclaration(
+		prefix: String, parameterNames: [String], parameterTypes: [String],
+		defaultValues: [GRYExpression?], returnType: String, isImplicit: Bool, isStatic: Bool,
+		extendsType: String?, statements: [GRYTopLevelNode]?, access: String?) -> [GRYTopLevelNode]
+	{
+		return [GRYTopLevelNode.functionDeclaration(
+			prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
+			defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
+			isStatic: isStatic, extendsType: self.extendingType, statements: statements,
+			access: access), ]
+	}
+
 	override func replaceVariableDeclaration(
 		identifier: String, typeName: String, expression: GRYExpression?, getter: GRYTopLevelNode?,
 		setter: GRYTopLevelNode?, isLet: Bool, extendsType: String?, annotations: String?)
@@ -762,20 +815,21 @@ public class GRYFixProtocolContentsTranspilationPass: GRYTranspilationPass {
 	override func replaceFunctionDeclaration(
 		prefix: String, parameterNames: [String], parameterTypes: [String],
 		defaultValues: [GRYExpression?], returnType: String, isImplicit: Bool, isStatic: Bool,
-		statements: [GRYTopLevelNode]?, access: String?)
+		extendsType: String?, statements: [GRYTopLevelNode]?, access: String?)
 		-> [GRYTopLevelNode]
 	{
 		if isInProtocol {
 			return super.replaceFunctionDeclaration(
 				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
 				defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
-				isStatic: isStatic, statements: nil, access: access)
+				isStatic: isStatic, extendsType: extendsType, statements: nil, access: access)
 		}
 		else {
 			return super.replaceFunctionDeclaration(
 				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
 				defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
-				isStatic: isStatic, statements: statements, access: access)
+				isStatic: isStatic, extendsType: extendsType, statements: statements,
+				access: access)
 		}
 	}
 }
