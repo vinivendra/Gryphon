@@ -589,6 +589,8 @@ public class GRYKotlinTranslator {
 			return try "(" + translateExpression(expression) + ")"
 		case let .forceValueExpression(expression: expression):
 			return try translateExpression(expression) + "!!"
+		case let .optionalExpression(expression: expression):
+			return try translateExpression(expression) + "?"
 		case let .literalIntExpression(value: value):
 			return String(value)
 		case let .literalDoubleExpression(value: value):

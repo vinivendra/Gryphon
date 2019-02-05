@@ -208,7 +208,7 @@ public class GRYSwift4Translator {
 			}
 			else {
 				throw unexpectedASTStructureError(
-					"Unrecognized structure in automatic expression",
+					"Expected parentheses expression to have at least one subtree",
 					AST: expression)
 			}
 		case "Force Value Expression":
@@ -218,11 +218,22 @@ public class GRYSwift4Translator {
 			}
 			else {
 				throw unexpectedASTStructureError(
-					"Unrecognized structure in automatic expression",
+					"Expected force value expression to have at least one subtree",
+					AST: expression)
+			}
+		case "Bind Optional Expression":
+			if let firstExpression = expression.subtree(at: 0) {
+				let expression = try translate(expression: firstExpression)
+				return .optionalExpression(expression: expression)
+			}
+			else {
+				throw unexpectedASTStructureError(
+					"Expected optional expression to have at least one subtree",
 					AST: expression)
 			}
 		case "Autoclosure Expression",
 			 "Inject Into Optional",
+			 "Optional Evaluation Expression",
 			 "Inout Expression",
 			 "Load Expression",
 			 "Function Conversion Expression":
@@ -1243,7 +1254,7 @@ public class GRYSwift4Translator {
 	private func process(openExistentialExpression: GRYSwiftAST) throws -> GRYSwiftAST {
 		try ensure(AST: openExistentialExpression, isNamed: "Open Existential Expression")
 
-		guard let replacementSubtree = openExistentialExpression.subtrees[safe: 1],
+		guard let replacementSubtree = openExistentialExpression.subtree(at: 1),
 			let resultSubtree = openExistentialExpression.subtrees.last else
 		{
 			throw unexpectedASTStructureError(

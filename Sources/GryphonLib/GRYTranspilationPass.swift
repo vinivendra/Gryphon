@@ -210,7 +210,9 @@ public class GRYTranspilationPass {
 		case let .parenthesesExpression(expression: expression):
 			return replaceParenthesesExpression(expression: expression)
 		case let .forceValueExpression(expression: expression):
-			return replaceForcevalueExpression(expression: expression)
+			return replaceForceValueExpression(expression: expression)
+		case let .optionalExpression(expression: expression):
+			return replaceOptionalExpression(expression: expression)
 		case let .declarationReferenceExpression(
 			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
 			isImplicit: isImplicit):
@@ -283,8 +285,12 @@ public class GRYTranspilationPass {
 		return .parenthesesExpression(expression: replaceExpression(expression))
 	}
 
-	func replaceForcevalueExpression(expression: GRYExpression) -> GRYExpression {
+	func replaceForceValueExpression(expression: GRYExpression) -> GRYExpression {
 		return .forceValueExpression(expression: replaceExpression(expression))
+	}
+
+	func replaceOptionalExpression(expression: GRYExpression) -> GRYExpression {
+		return .optionalExpression(expression: replaceExpression(expression))
 	}
 
 	func replaceDeclarationReferenceExpression(
