@@ -93,24 +93,43 @@ extension Array {
 }
 
 // MARK: Common types conforming to GRYPrintableAsTree
-
 extension String: GRYPrintableAsTree {
 	public var treeDescription: String { return self }
-	public var printableSubtrees: [GRYPrintableAsTree?] { return [] }
+	public var printableSubtrees: ArrayReference<GRYPrintableAsTree?> { return [] }
 }
 
 extension Array: GRYPrintableAsTree where Element: GRYPrintableAsTree {
 	public var treeDescription: String { return "Array" }
-	public var printableSubtrees: [GRYPrintableAsTree?] { return self }
+	public var printableSubtrees: ArrayReference<GRYPrintableAsTree?> {
+		return ArrayReference(array: self)
+	}
 }
 
 extension Dictionary: GRYPrintableAsTree where Value: GRYPrintableAsTree, Key == String {
 	public var treeDescription: String { return "Dictionary" }
-	public var printableSubtrees: [GRYPrintableAsTree?] {
-		var result = [GRYPrintableTree]()
+	public var printableSubtrees: ArrayReference<GRYPrintableAsTree?> {
+		var result: ArrayReference<GRYPrintableAsTree?> = []
 		for (key, value) in self {
 			result.append(GRYPrintableTree(description: key, subtrees: [value]))
 		}
 		return result
+	}
+}
+
+// MARK: GRYPrintableTree compatibility with Array
+// Only needed temporarily, while the conversion of the codebase (from using Array to using
+// ArrayReference) isn't done.
+extension GRYPrintableTree {
+	convenience init(description: String, subtrees: [GRYPrintableAsTree?]) {
+		self.init(
+			description: description,
+			subtrees: ArrayReference<GRYPrintableAsTree?>(array: subtrees))
+	}
+
+	static func initialize(description: String, subtreesOrNil: [GRYPrintableAsTree?])
+		-> GRYPrintableTree?
+	{
+		let arrayReference = ArrayReference<GRYPrintableAsTree?>(array: subtreesOrNil)
+		return initialize(description: description, subtreesOrNil: arrayReference)
 	}
 }

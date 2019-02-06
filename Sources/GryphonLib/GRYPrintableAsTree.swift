@@ -14,25 +14,36 @@
 * limitations under the License.
 */
 
-private func GRYAnnotations<T>(_: String, _ t: T) -> T { return t }
+public func GRYAnnotations<T>(_: String, _ t: T) -> T { return t }
+
+public func GRYInsert(_: String) { }
+
+private func GRYDeclarations() {
+	GRYInsert("""
+fun <T> MutableList<T>.copy(): MutableList<T> {
+	return this.toMutableList()
+}
+""")
+}
 
 public class GRYPrintableTree: GRYPrintableAsTree {
 	public var treeDescription: String = GRYAnnotations("override", "")
-	public var printableSubtrees: [GRYPrintableAsTree?] = GRYAnnotations("override", [])
+	public var printableSubtrees: ArrayReference<GRYPrintableAsTree?> =
+		GRYAnnotations("override", [])
 
 	init(description: String) {
 		self.treeDescription = description
 	}
 
-	init(description: String, subtrees: [GRYPrintableAsTree?]) {
+	init(description: String, subtrees: ArrayReference<GRYPrintableAsTree?>) {
 		self.treeDescription = description
 		self.printableSubtrees = subtrees
 	}
 
-	static func initialize(description: String, subtreesOrNil: [GRYPrintableAsTree?])
+	static func initialize(description: String, subtreesOrNil: ArrayReference<GRYPrintableAsTree?>)
 		-> GRYPrintableTree?
 	{
-		var subtrees: [GRYPrintableAsTree?] = []
+		let subtrees: ArrayReference<GRYPrintableAsTree?> = []
 		for subtree in subtreesOrNil {
 			if let unwrapped = subtree {
 				subtrees.append(unwrapped)
@@ -53,18 +64,16 @@ public class GRYPrintableTree: GRYPrintableAsTree {
 
 public protocol GRYPrintableAsTree {
 	var treeDescription: String { get }
-	var printableSubtrees: [GRYPrintableAsTree?] { get }
+	var printableSubtrees: ArrayReference<GRYPrintableAsTree?> { get }
 }
 
 public extension GRYPrintableAsTree {
 	func prettyPrint(
-		indentation: [String] = [],
+		indentation: ArrayReference<String> = [],
 		isLast: Bool = true,
 		horizontalLimit: Int = Int.max,
 		printFunction: (String) -> () = { print($0, terminator: "") })
 	{
-		var indentation = indentation
-
 		// Print the indentation
 		let indentationString = indentation.joined(separator: "")
 
@@ -92,7 +101,7 @@ public extension GRYPrintableAsTree {
 			}
 		}
 
-		var subtrees: [GRYPrintableAsTree] = []
+		let subtrees: ArrayReference<GRYPrintableAsTree> = []
 		for element in printableSubtrees {
 			if let unwrapped = element {
 				subtrees.append(unwrapped)
@@ -100,7 +109,7 @@ public extension GRYPrintableAsTree {
 		}
 
 		for subtree in subtrees.dropLast() {
-			var newIndentation = indentation
+			let newIndentation = indentation.copy()
 			newIndentation.append(" ├─")
 			subtree.prettyPrint(
 				indentation: newIndentation,
@@ -108,7 +117,7 @@ public extension GRYPrintableAsTree {
 				horizontalLimit: horizontalLimit,
 				printFunction: printFunction)
 		}
-		var newIndentation = indentation
+		let newIndentation = indentation.copy()
 		newIndentation.append(" └─")
 		subtrees.last?.prettyPrint(
 			indentation: newIndentation,

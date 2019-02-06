@@ -51,7 +51,7 @@ public final class GRYAST: GRYPrintableAsTree, GRYCodable, Equatable, CustomStri
 	//
 	public var treeDescription: String { return "Source File" }
 
-	public var printableSubtrees: [GRYPrintableAsTree?] {
+	public var printableSubtrees: ArrayReference<GRYPrintableAsTree?> {
 		return [GRYPrintableTree(description: "Declarations", subtrees: declarations),
 				GRYPrintableTree(description: "Statements", subtrees: statements), ]
 	}
@@ -201,7 +201,7 @@ public indirect enum GRYTopLevelNode: Equatable, GRYPrintableAsTree, GRYCodable 
 		return name.capitalizedAsCamelCase
 	}
 
-	public var printableSubtrees: [GRYPrintableAsTree?] {
+	public var printableSubtrees: ArrayReference<GRYPrintableAsTree?> {
 		switch self {
 		case let .expression(expression: expression):
 			return [expression]
@@ -216,7 +216,7 @@ public indirect enum GRYTopLevelNode: Equatable, GRYPrintableAsTree, GRYCodable 
 				GRYPrintableTree.initialize(description: "inherits", subtreesOrNil: inherits),
 				GRYPrintableTree.initialize(description: "members", subtreesOrNil: members), ]
 		case let .companionObject(members: members):
-			return members
+			return ArrayReference<GRYPrintableAsTree?>(array: members)
 		case let .enumDeclaration(
 			access: access,
 			name: name,
@@ -519,7 +519,7 @@ public indirect enum GRYExpression: Equatable, GRYPrintableAsTree, GRYCodable {
 		return name
 	}
 
-	public var printableSubtrees: [GRYPrintableAsTree?] {
+	public var printableSubtrees: ArrayReference<GRYPrintableAsTree?> {
 		switch self {
 		case let .templateExpression(pattern: pattern, matches: matches):
 			return [
@@ -601,9 +601,9 @@ public indirect enum GRYExpression: Equatable, GRYPrintableAsTree, GRYCodable {
 		case let .interpolatedStringLiteralExpression(expressions: expressions):
 			return [expressions]
 		case let .tupleExpression(pairs: pairs):
-			return pairs.map {
+			return ArrayReference<GRYPrintableAsTree?>(array: pairs.map {
 				GRYPrintableTree(description: ($0.name ?? "_") + ":", subtrees: [$0.expression])
-			}
+			})
 		}
 	}
 
