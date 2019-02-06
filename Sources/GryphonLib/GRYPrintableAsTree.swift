@@ -19,6 +19,7 @@ public func GRYAnnotations<T>(_: String, _ t: T) -> T { return t }
 public func GRYInsert(_: String) { }
 
 private func GRYDeclarations() {
+	// TODO: Whitespaces here aren't being processed correctly in the kotlin translation
 	GRYInsert("""
 fun <T> MutableList<T>.copy(): MutableList<T> {
 	return this.toMutableList()

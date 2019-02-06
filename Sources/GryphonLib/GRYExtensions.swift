@@ -108,7 +108,7 @@ extension Array: GRYPrintableAsTree where Element: GRYPrintableAsTree {
 extension Dictionary: GRYPrintableAsTree where Value: GRYPrintableAsTree, Key == String {
 	public var treeDescription: String { return "Dictionary" }
 	public var printableSubtrees: ArrayReference<GRYPrintableAsTree?> {
-		var result: ArrayReference<GRYPrintableAsTree?> = []
+		let result: ArrayReference<GRYPrintableAsTree?> = []
 		for (key, value) in self {
 			result.append(GRYPrintableTree(description: key, subtrees: [value]))
 		}

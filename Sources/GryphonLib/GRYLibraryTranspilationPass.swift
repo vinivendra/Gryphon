@@ -128,13 +128,12 @@ extension GRYExpression {
 			case let
 				(.declarationReferenceExpression(
 					identifier: leftIdentifier, type: leftType,
-					isStandardLibrary: leftIsStandardLibrary, isImplicit: leftIsImplicit),
+					isStandardLibrary: _, isImplicit: leftIsImplicit),
 				 .declarationReferenceExpression(
 					identifier: rightIdentifier, type: rightType,
-					isStandardLibrary: rightIsStandardLibrary, isImplicit: rightIsImplicit)):
+					isStandardLibrary: _, isImplicit: rightIsImplicit)):
 
 				return leftIdentifier == rightIdentifier && leftType.isSubtype(of: rightType) &&
-					leftIsStandardLibrary == rightIsStandardLibrary &&
 					leftIsImplicit == rightIsImplicit
 			case let
 				(.typeExpression(type: leftType),
@@ -266,6 +265,32 @@ fileprivate extension String {
 			return true
 		}
 
+		// Handle optionals
+		if self.last == "?", superType.last == "?" {
+			let newSelf = String(self.dropLast())
+			let newSuperType = String(superType.dropLast())
+			return newSelf.isSubtype(of: newSuperType)
+		}
+
+		// Treat ArrayReference as Array
+		if self.hasPrefix("ArrayReference<"), self.last == ">" {
+			let elementType = String(self.dropFirst("ArrayReference<".count).dropLast())
+			let newSelf = "[\(elementType)]"
+			return newSelf.isSubtype(of: superType)
+		}
+
+		// Convert Array<T> into [T]
+		if self.hasPrefix("Array<"), self.last == ">" {
+			let elementType = String(self.dropFirst("Reference<".count).dropLast())
+			let newSelf = "[\(elementType)]"
+			return newSelf.isSubtype(of: superType)
+		}
+		else if superType.hasPrefix("Array<"), superType.last == ">" {
+			let elementType = String(superType.dropFirst("Array<".count).dropLast())
+			let newSuperType = "[\(elementType)]"
+			return self.isSubtype(of: newSuperType)
+		}
+
 		// Analyze components of function types
 		if superType.contains(" -> ") {
 			guard self.contains(" -> ") else {
@@ -306,10 +331,13 @@ fileprivate extension String {
 		}
 
 		// Handle inout types
-		if self.hasPrefix("inout "), superType.hasPrefix("inout ") {
-			let selfWithoutInout = String(self.dropFirst(6))
-			let superTypeWithoutInout = String(superType.dropFirst(6))
-			return selfWithoutInout.isSubtype(of: superTypeWithoutInout)
+		if self.hasPrefix("inout ") {
+			let selfWithoutInout = String(self.dropFirst("inout ".count))
+			return selfWithoutInout.isSubtype(of: superType)
+		}
+		else if superType.hasPrefix("inout ") {
+			let superTypeWithoutInout = String(superType.dropFirst("inout ".count))
+			return self.isSubtype(of: superTypeWithoutInout)
 		}
 
 		// Handle generics

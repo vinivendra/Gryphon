@@ -45,6 +45,15 @@ _array.isEmpty
 _strArray.joined(separator: _string)
 "_strArray.joinToString(separator = _string)"
 
+_array.count
+"_array.size"
+
+_array.last
+"_array.lastOrNull()"
+
+_array.dropLast()
+"_array.dropLast(1)"
+
 // Int
 Int.max
 "Int.MAX_VALUE"
