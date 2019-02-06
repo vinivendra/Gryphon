@@ -14,9 +14,11 @@
 * limitations under the License.
 */
 
+private func GRYAnnotations<T>(_: String, _ t: T) -> T { return t }
+
 public class GRYPrintableTree: GRYPrintableAsTree {
-	public var treeDescription: String
-	public var printableSubtrees = [GRYPrintableAsTree?]()
+	public var treeDescription: String = GRYAnnotations("override", "")
+	public var printableSubtrees: [GRYPrintableAsTree?] = GRYAnnotations("override", [])
 
 	init(description: String) {
 		self.treeDescription = description
@@ -30,7 +32,7 @@ public class GRYPrintableTree: GRYPrintableAsTree {
 	static func initialize(description: String, subtreesOrNil: [GRYPrintableAsTree?])
 		-> GRYPrintableTree?
 	{
-		var subtrees = [GRYPrintableAsTree]()
+		var subtrees: [GRYPrintableAsTree?] = []
 		for subtree in subtreesOrNil {
 			if let unwrapped = subtree {
 				subtrees.append(unwrapped)
@@ -67,8 +69,13 @@ public extension GRYPrintableAsTree {
 		let indentationString = indentation.joined(separator: "")
 
 		let rawLine = "\(indentationString) \(treeDescription)"
-		let line = (rawLine.count > horizontalLimit) ?
-			(rawLine.prefix(horizontalLimit - 1) + "…") : rawLine
+		let line: String
+		if rawLine.count > horizontalLimit {
+			line = rawLine.prefix(horizontalLimit - 1) + "…"
+		}
+		else {
+			line = rawLine
+		}
 
 		printFunction(line + "\n")
 
@@ -85,7 +92,12 @@ public extension GRYPrintableAsTree {
 			}
 		}
 
-		let subtrees = printableSubtrees.compactMap { $0 }
+		var subtrees: [GRYPrintableAsTree] = []
+		for element in printableSubtrees {
+			if let unwrapped = element {
+				subtrees.append(unwrapped)
+			}
+		}
 
 		for subtree in subtrees.dropLast() {
 			var newIndentation = indentation
@@ -103,28 +115,5 @@ public extension GRYPrintableAsTree {
 			isLast: true,
 			horizontalLimit: horizontalLimit,
 			printFunction: printFunction)
-	}
-}
-
-// MARK: Common Types
-
-extension String: GRYPrintableAsTree {
-	public var treeDescription: String { return self }
-	public var printableSubtrees: [GRYPrintableAsTree?] { return [] }
-}
-
-extension Array: GRYPrintableAsTree where Element: GRYPrintableAsTree {
-	public var treeDescription: String { return "Array" }
-	public var printableSubtrees: [GRYPrintableAsTree?] { return self }
-}
-
-extension Dictionary: GRYPrintableAsTree where Value: GRYPrintableAsTree, Key == String {
-	public var treeDescription: String { return "Dictionary" }
-	public var printableSubtrees: [GRYPrintableAsTree?] {
-		var result = [GRYPrintableTree]()
-		for (key, value) in self {
-			result.append(GRYPrintableTree(description: key, subtrees: [value]))
-		}
-		return result
 	}
 }

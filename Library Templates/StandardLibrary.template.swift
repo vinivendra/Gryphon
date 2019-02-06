@@ -6,6 +6,7 @@ var _array: [Any] = []
 let _string = ""
 let _any: Any = ""
 let _double: Double = 0
+let _int: Int = 0
 
 // Print
 print(_any)
@@ -30,6 +31,9 @@ Double(_string)
 
 _string.dropLast()
 "_string.dropLast(1)"
+
+_string.prefix(_int)
+"_string.substring(0, _int)"
 
 // Array
 _array.append(_any)

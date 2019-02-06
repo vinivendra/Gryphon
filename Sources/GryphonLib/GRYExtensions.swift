@@ -91,3 +91,26 @@ extension Array {
 		self = self.rotated()
 	}
 }
+
+// MARK: Common types conforming to GRYPrintableAsTree
+
+extension String: GRYPrintableAsTree {
+	public var treeDescription: String { return self }
+	public var printableSubtrees: [GRYPrintableAsTree?] { return [] }
+}
+
+extension Array: GRYPrintableAsTree where Element: GRYPrintableAsTree {
+	public var treeDescription: String { return "Array" }
+	public var printableSubtrees: [GRYPrintableAsTree?] { return self }
+}
+
+extension Dictionary: GRYPrintableAsTree where Value: GRYPrintableAsTree, Key == String {
+	public var treeDescription: String { return "Dictionary" }
+	public var printableSubtrees: [GRYPrintableAsTree?] {
+		var result = [GRYPrintableTree]()
+		for (key, value) in self {
+			result.append(GRYPrintableTree(description: key, subtrees: [value]))
+		}
+		return result
+	}
+}
