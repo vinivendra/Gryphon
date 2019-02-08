@@ -92,6 +92,41 @@ extension Array {
 	}
 }
 
+extension ArrayReference {
+	/// Returns nil if index is out of bounds.
+	subscript (safe index: Int) -> Element? {
+		if index >= 0 && index < count {
+			return self[index]
+		}
+		else {
+			return nil
+		}
+	}
+
+	var secondToLast: Element? {
+		return self.dropLast().last
+	}
+
+	/// Returns the same array, but with the first element moved to the end.
+	func rotated() -> ArrayReference<Element> {
+		guard let first = first else {
+			return self
+		}
+
+		var newArray: [Element] = [Element]()
+		newArray.reserveCapacity(self.count)
+		newArray.append(contentsOf: self.dropFirst())
+		newArray.append(first)
+
+		return ArrayReference(array: newArray)
+	}
+
+	/// Moves the first element of the array to the end.
+	func rotate() {
+		self.array = self.rotated().array
+	}
+}
+
 // MARK: Common types conforming to GRYPrintableAsTree
 extension String: GRYPrintableAsTree {
 	public var treeDescription: String { return self }

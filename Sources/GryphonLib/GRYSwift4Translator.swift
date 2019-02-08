@@ -99,12 +99,12 @@ public class GRYSwift4Translator {
 		let isDeclaration = { (ast: GRYSwiftAST) -> Bool in declarationNames.contains(ast.name) }
 
 		let swiftDeclarations = ast.subtrees.filter(isDeclaration)
-		let declarations = try translate(subtrees: swiftDeclarations)
+		let declarations = try translate(subtrees: swiftDeclarations.array)
 
 		// Then, translate the remaining statements (if there are any) and wrap them in the main
 		// function
 		let swiftStatements = ast.subtrees.filter({ !isDeclaration($0) })
-		let statements = try translate(subtrees: swiftStatements)
+		let statements = try translate(subtrees: swiftStatements.array)
 
 		return GRYAST(declarations: declarations, statements: statements)
 	}
@@ -271,7 +271,7 @@ public class GRYSwift4Translator {
 				AST: protocolDeclaration)
 		}
 
-		let members = try translate(subtrees: protocolDeclaration.subtrees)
+		let members = try translate(subtrees: protocolDeclaration.subtrees.array)
 
 		return .protocolDeclaration(name: protocolName, members: members)
 	}
@@ -314,7 +314,7 @@ public class GRYSwift4Translator {
 		}
 
 		// Translate the contents
-		let classContents = try translate(subtrees: classDeclaration.subtrees)
+		let classContents = try translate(subtrees: classDeclaration.subtrees.array)
 
 		return .classDeclaration(name: name, inherits: inheritanceArray, members: classContents)
 	}
@@ -335,7 +335,7 @@ public class GRYSwift4Translator {
 
 	private func translate(extensionDeclaration: GRYSwiftAST) throws -> GRYTopLevelNode {
 		let type = cleanUpType(extensionDeclaration.standaloneAttributes[0])
-		let members = try translate(subtrees: extensionDeclaration.subtrees)
+		let members = try translate(subtrees: extensionDeclaration.subtrees.array)
 		return .extensionDeclaration(type: type, members: members)
 	}
 
@@ -539,7 +539,7 @@ public class GRYSwift4Translator {
 			identifier: variableName, type: variableType, isStandardLibrary: false,
 			isImplicit: false)
 		let collectionTranslation = try translate(expression: collectionExpression)
-		let statements = try translate(subtrees: braceStatement.subtrees)
+		let statements = try translate(subtrees: braceStatement.subtrees.array)
 
 		return .forEachStatement(
 			collection: collectionTranslation,
@@ -582,7 +582,7 @@ public class GRYSwift4Translator {
 			braceStatement = unwrappedBraceStatement
 			elseIfStatement = nil
 
-			let statements = try translate(subtrees: elseAST.subtrees)
+			let statements = try translate(subtrees: elseAST.subtrees.array)
 			elseStatement = .ifStatement(
 				conditions: [], declarations: [],
 				statements: statements,
@@ -603,7 +603,7 @@ public class GRYSwift4Translator {
 		}
 
 		let statements = braceStatement.subtrees
-		let statementsResult = try translate(subtrees: statements)
+		let statementsResult = try translate(subtrees: statements.array)
 
 		return .ifStatement(
 			conditions: conditions,
@@ -781,7 +781,7 @@ public class GRYSwift4Translator {
 		// Translate the function body
 		let statements: [GRYTopLevelNode]
 		if let braceStatement = functionDeclaration.subtree(named: "Brace Statement") {
-			statements = try translate(subtrees: braceStatement.subtrees)
+			statements = try translate(subtrees: braceStatement.subtrees.array)
 		}
 		else {
 			statements = []
@@ -810,7 +810,7 @@ public class GRYSwift4Translator {
 				"Unrecognized structure", AST: topLevelCodeDeclaration)
 		}
 
-		let subtrees = try translate(subtrees: braceStatement.subtrees)
+		let subtrees = try translate(subtrees: braceStatement.subtrees.array)
 
 		return subtrees.first
 	}
@@ -843,8 +843,8 @@ public class GRYSwift4Translator {
 			{
 				let access = subtree["access"]
 
-				let statements: [GRYSwiftAST] = subtree.subtree(named: "Brace Statement")?.subtrees
-					?? []
+				let statements: [GRYSwiftAST] =
+					subtree.subtree(named: "Brace Statement")?.subtrees.array ?? []
 				let statementsTranslation = try translate(subtrees: statements)
 
 				if subtree["getter_for"] != nil {
@@ -1250,7 +1250,7 @@ public class GRYSwift4Translator {
 		}
 		let type = cleanUpType(rawType)
 
-		return .arrayExpression(elements: expressionsArray, type: type)
+		return .arrayExpression(elements: expressionsArray.array, type: type)
 	}
 
 	// MARK: - Supporting methods
@@ -1282,7 +1282,9 @@ public class GRYSwift4Translator {
 			newSubtrees.append(astReplacingOpaqueValues(in: subtree, with: replacementAST))
 		}
 
-		return GRYSwiftAST(ast.name, ast.standaloneAttributes, ast.keyValueAttributes, newSubtrees)
+		return GRYSwiftAST(
+			ast.name, ast.standaloneAttributes, ast.keyValueAttributes,
+			ArrayReference(array: newSubtrees))
 	}
 
 	private func process(patternBindingDeclaration: GRYSwiftAST) throws {

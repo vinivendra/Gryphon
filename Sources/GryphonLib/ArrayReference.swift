@@ -26,6 +26,10 @@ public class ArrayReference<Element>: GRYIgnore,
 		self.array = array
 	}
 
+	public init<T>(_ arrayReference: ArrayReference<T>) {
+		self.array = arrayReference.array as! [Element]
+	}
+
 	public func copy() -> ArrayReference<Element> {
 		return ArrayReference(array: array)
 	}
@@ -90,6 +94,14 @@ public class ArrayReference<Element>: GRYIgnore,
 	//
 	public func append(_ newElement: Element) {
 		array.append(newElement)
+	}
+
+	public func filter(_ isIncluded: (Element) throws -> Bool) rethrows -> ArrayReference<Element> {
+		return try ArrayReference(array: self.array.filter(isIncluded))
+	}
+
+	public func map<T>(_ transform: (Element) throws -> T) rethrows -> ArrayReference<T> {
+		return try ArrayReference<T>(array: self.array.map(transform))
 	}
 }
 

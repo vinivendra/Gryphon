@@ -18,15 +18,15 @@ import Foundation
 
 public final class GRYSwiftAST: GRYPrintableAsTree, GRYCodable, Equatable, CustomStringConvertible {
 	let name: String
-	let standaloneAttributes: [String]
+	let standaloneAttributes: ArrayReference<String>
 	let keyValueAttributes: [String: String]
-	let subtrees: [GRYSwiftAST]
+	let subtrees: ArrayReference<GRYSwiftAST>
 
 	//
 	static public var horizontalLimitWhenPrinting = Int.max
 
 	//
-	internal init(_ name: String, _ subtrees: [GRYSwiftAST] = []) {
+	internal init(_ name: String, _ subtrees: ArrayReference<GRYSwiftAST> = []) {
 		self.name = name
 		self.standaloneAttributes = []
 		self.keyValueAttributes = [:]
@@ -35,9 +35,9 @@ public final class GRYSwiftAST: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 
 	internal init(
 		_ name: String,
-		_ standaloneAttributes: [String],
+		_ standaloneAttributes: ArrayReference<String>,
 		_ keyValueAttributes: [String: String],
-		_ subtrees: [GRYSwiftAST] = [])
+		_ subtrees: ArrayReference<GRYSwiftAST> = [])
 	{
 		self.name = name
 		self.standaloneAttributes = standaloneAttributes
@@ -62,9 +62,9 @@ public final class GRYSwiftAST: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 	}
 
 	static func decode(from decoder: GRYDecoder) throws -> GRYSwiftAST {
-		var standaloneAttributes = [String]()
+		let standaloneAttributes: ArrayReference<String> = []
 		var keyValueAttributes = [String: String]()
-		var subtrees = [GRYSwiftAST]()
+		let subtrees: ArrayReference<GRYSwiftAST> = []
 
 		try decoder.readOpeningParenthesis()
 		let name = decoder.readDoubleQuotedString()
@@ -111,9 +111,9 @@ public final class GRYSwiftAST: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 	}
 
 	internal init(decodingFromASTDumpWith decoder: GRYDecoder) throws {
-		var standaloneAttributes = [String]()
+		let standaloneAttributes: ArrayReference<String> = []
 		var keyValueAttributes = [String: String]()
-		var subtrees = [GRYSwiftAST]()
+		let subtrees: ArrayReference<GRYSwiftAST> = []
 
 		try decoder.readOpeningParenthesis()
 		let name = decoder.readIdentifier()
@@ -184,15 +184,22 @@ public final class GRYSwiftAST: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 	}
 
 	func subtree(at index: Int) -> GRYSwiftAST? {
-		return subtrees[safe: index]
+		guard index >= 0, index < subtrees.count else {
+			return nil
+		}
+		return subtrees[index]
 	}
 
 	func subtree(at index: Int, named name: String) -> GRYSwiftAST? {
-		guard let subtree = subtrees[safe: index],
-			subtree.name == name else
-		{
+		guard index >= 0, index < subtrees.count else {
 			return nil
 		}
+
+		let subtree = subtrees[index]
+		guard subtree.name == name else {
+			return nil
+		}
+
 		return subtree
 	}
 
@@ -204,11 +211,8 @@ public final class GRYSwiftAST: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 	public var printableSubtrees: ArrayReference<GRYPrintableAsTree?> {
 		let keyValueStrings = keyValueAttributes.map { "\($0.key) → \($0.value)" }.sorted()
 		let keyValueArray = ArrayReference<GRYPrintableAsTree?>(array: keyValueStrings)
-
-		let standaloneAttributesArray =
-			ArrayReference<GRYPrintableAsTree?>(array: standaloneAttributes)
-
-		let subtreesArray = ArrayReference<GRYPrintableAsTree?>(array: subtrees)
+		let standaloneAttributesArray = ArrayReference<GRYPrintableAsTree?>(standaloneAttributes)
+		let subtreesArray = ArrayReference<GRYPrintableAsTree?>(subtrees)
 
 		let result: ArrayReference<GRYPrintableAsTree?> =
 			standaloneAttributesArray + keyValueArray + subtreesArray
