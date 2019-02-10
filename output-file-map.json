@@ -1,0 +1,44 @@
+{
+  "Sources/GryphonLib/ArrayReference.swift": {
+    "ast-dump": "Sources AST Dumps/ArrayReference.swiftASTDump",
+  },
+  "Sources/GryphonLib/CwlRandom.swift": {
+    "ast-dump": "Sources AST Dumps/CwlRandom.swiftASTDump",
+  },
+  "Sources/GryphonLib/GRYAST.swift": {
+    "ast-dump": "Sources AST Dumps/GRYAST.swiftASTDump",
+  },
+  "Sources/GryphonLib/GRYCodable.swift": {
+    "ast-dump": "Sources AST Dumps/GRYCodable.swiftASTDump",
+  },
+  "Sources/GryphonLib/GRYCompiler.swift": {
+    "ast-dump": "Sources AST Dumps/GRYCompiler.swiftASTDump",
+  },
+  "Sources/GryphonLib/GRYExtensions.swift": {
+    "ast-dump": "Sources AST Dumps/GRYExtensions.swiftASTDump",
+  },
+  "Sources/GryphonLib/GRYKotlinTranslator.swift": {
+    "ast-dump": "Sources AST Dumps/GRYKotlinTranslator.swiftASTDump",
+  },
+  "Sources/GryphonLib/GRYLibraryTranspilationPass.swift": {
+    "ast-dump": "Sources AST Dumps/GRYLibraryTranspilationPass.swiftASTDump",
+  },
+  "Sources/GryphonLib/GRYPrintableAsTree.swift": {
+    "ast-dump": "Sources AST Dumps/GRYPrintableAsTree.swiftASTDump",
+  },
+  "Sources/GryphonLib/GRYShell.swift": {
+    "ast-dump": "Sources AST Dumps/GRYShell.swiftASTDump",
+  },
+  "Sources/GryphonLib/GRYSwift4Translator.swift": {
+    "ast-dump": "Sources AST Dumps/GRYSwift4Translator.swiftASTDump",
+  },
+  "Sources/GryphonLib/GRYSwiftAst.swift": {
+    "ast-dump": "Sources AST Dumps/GRYSwiftAst.swiftASTDump",
+  },
+  "Sources/GryphonLib/GRYTranspilationPass.swift": {
+    "ast-dump": "Sources AST Dumps/GRYTranspilationPass.swiftASTDump",
+  },
+  "Sources/GryphonLib/GRYUtils.swift": {
+    "ast-dump": "Sources AST Dumps/GRYUtils.swiftASTDump",
+  },
+}

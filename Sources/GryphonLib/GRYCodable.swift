@@ -22,7 +22,7 @@ enum GRYDecodingError: CustomStringConvertible, Error {
 		switch self {
 		case let .unexpectedContent(decoder, message):
 			return "Decoding error: \(message)\n" +
-				"Remaining buffer in decoder: \"\(decoder.remainingBuffer(upTo: 30))\""
+				"Remaining buffer in decoder: \"\(decoder.remainingBuffer(upTo: 1_000))\""
 		}
 	}
 }
@@ -410,9 +410,9 @@ internal class GRYDecoder {
 		// If whitespace is found, return nil early.
 		var index = buffer.index(after: currentIndex)
 
-		while true {
+		while index != buffer.endIndex {
 			let character = buffer[index]
-			guard character != " " &&
+			guard character != " ",
 				character != "\n" else
 			{
 				// Unexpected, this isn't a declaration location
@@ -423,6 +423,10 @@ internal class GRYDecoder {
 				break
 			}
 			index = buffer.index(after: index)
+		}
+
+		guard index != buffer.endIndex else {
+			return nil
 		}
 
 		// Skip the @ sign

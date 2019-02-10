@@ -2,6 +2,8 @@ use File::Basename;
 use File::stat;
 use Time::localtime;
 
+$swift5Toolchain = "org.swift.4220190203a";
+
 foreach (@ARGV) {
 	$swiftFilePath = $_;
 	
@@ -18,12 +20,12 @@ foreach (@ARGV) {
 	}
 	
 	print "Processing $swiftFilePath...\n";
-	
+
 	# Get the AST dump from the swift compiler
-	$swiftASTDump = `swiftc -dump-ast \"$swiftFilePath\" 2>&1`;
+	$swiftASTDump = `xcrun -toolchain $swift5Toolchain swiftc -dump-ast -module-name=ModuleName -output-file-map=output-file-map.json \"$swiftFilePath\" 2>&1`;
 
 	# Remove possible warnings printed before the AST dump
-	$swiftASTDump =~ s/^((.*)\n)*\(source\_file\n/\(source\_file\n/;
+	$swiftASTDump =~ s/^((.*)\n)*\(source\_file/\(source\_file/;
 	
 	# Replace file paths with placeholders
 	while ($swiftASTDump =~ s/$swiftFilePath/\<<testFilePath>>/) { }

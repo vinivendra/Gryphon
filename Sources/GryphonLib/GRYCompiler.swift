@@ -86,7 +86,7 @@ public enum GRYCompiler {
 	{
 		let swiftAST = try generateSwiftAST(forFileAt: filePath)
 		print("\t- Translating Swift AST to Gryphon AST...")
-		let ast = try GRYSwift4Translator().translateAST(swiftAST)
+		let ast = try GRYSwift5Translator().translateAST(swiftAST)
 		let astAfterPasses = GRYTranspilationPass.runAllPasses(on: ast)
 		return astAfterPasses
 	}
@@ -94,7 +94,7 @@ public enum GRYCompiler {
 	public static func generateGryphonAST(forFileAt filePath: String) throws -> GRYAST {
 		let swiftAST = try generateSwiftAST(forFileAt: filePath)
 		print("\t- Translating Swift AST to Gryphon AST...")
-		let ast = try GRYSwift4Translator().translateAST(swiftAST)
+		let ast = try GRYSwift5Translator().translateAST(swiftAST)
 		return ast
 	}
 
