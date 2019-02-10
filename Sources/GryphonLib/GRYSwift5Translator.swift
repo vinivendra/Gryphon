@@ -68,4 +68,21 @@ public class GRYSwift5Translator: GRYSwift4Translator {
 
 		return .interpolatedStringLiteralExpression(expressions: expressions)
 	}
+
+	override func translate(arrayExpression: GRYSwiftAST) throws -> GRYExpression {
+		try ensure(AST: arrayExpression, isNamed: "Array Expression")
+
+		// Drop the "Semantic Expression" at the end
+		let expressionsToTranslate = arrayExpression.subtrees.dropLast()
+
+		let expressionsArray = try expressionsToTranslate.map(translate(expression:))
+
+		guard let rawType = arrayExpression["type"] else {
+			throw unexpectedASTStructureError(
+				"Failed to get type", AST: arrayExpression)
+		}
+		let type = cleanUpType(rawType)
+
+		return .arrayExpression(elements: expressionsArray, type: type)
+	}
 }

@@ -116,7 +116,15 @@ public final class GRYSwiftAST: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 		let subtrees: ArrayReference<GRYSwiftAST> = []
 
 		try decoder.readOpeningParenthesis()
-		let name = decoder.readIdentifier()
+		var name = decoder.readIdentifier()
+
+		// FIXME: This is a hack to fix a hard-to-replicate bug that sometimes causes tuple shuffle
+		// expressions to be split in the AST dump as "(tu ple_shuffle_expr"
+		if name == "tu" {
+			name = "tuple_shuffle_expr"
+			_ = decoder.readIdentifier()
+		}
+
 		self.name = GRYUtils.expandSwiftAbbreviation(name)
 
 		// The loop stops: all branches tell the decoder to read, therefore the input string must
