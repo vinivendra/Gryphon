@@ -228,6 +228,9 @@ internal class GRYDecoder {
 		else if let string = readDeclarationLocation() {
 			return string
 		}
+		else if let string = readDeclaration() {
+			return string
+		}
 		else {
 			return readIdentifier()
 		}
@@ -444,6 +447,62 @@ internal class GRYDecoder {
 		let location = readLocation()
 
 		return string + location
+	}
+
+	/**
+	Reads a declaration without a location after. A declaration normally contains periods indicating
+	the parts of the declaration. We use this fact to try to distinguish declarations from normal
+	identifiers.
+	A declaration may also contain a type followed by " extension.", as in
+	"Swift.(file).Int extension.+". In that case, the space before extension is included in the
+	declaration.
+	*/
+	func readDeclaration() -> String? {
+		defer { cleanLeadingWhitespace() }
+
+		var parenthesesLevel = 0
+
+		var hasPeriod = false
+
+		var index = currentIndex
+		loop: while true {
+			let character = buffer[index]
+
+			switch character {
+			case ".":
+				hasPeriod = true
+			case "(":
+				parenthesesLevel += 1
+			case ")":
+				parenthesesLevel -= 1
+				if parenthesesLevel < 0 {
+					break loop
+				}
+			case " ":
+				if buffer[index...].hasPrefix(" extension.") {
+					index = buffer.index(after: index)
+					continue loop
+				}
+				else {
+					break loop
+				}
+			case "\n":
+				break loop
+			default: break
+			}
+
+			index = buffer.index(after: index)
+		}
+
+		guard hasPeriod else {
+			return nil
+		}
+
+		let string = String(buffer[currentIndex..<index])
+
+		currentIndex = index
+
+		return string
 	}
 
 	/**

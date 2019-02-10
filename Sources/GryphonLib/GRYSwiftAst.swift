@@ -153,7 +153,7 @@ public final class GRYSwiftAST: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 					keyValueAttributes[key] = decoder.readLocation()
 				}
 				else if key == "decl",
-					let string = decoder.readDeclarationLocation()
+					let string = decoder.readDeclarationLocation() ?? decoder.readDeclaration()
 				{
 					keyValueAttributes[key] = string
 				}
