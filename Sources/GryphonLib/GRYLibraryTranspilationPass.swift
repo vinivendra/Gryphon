@@ -279,6 +279,14 @@ fileprivate extension String {
 			return newSelf.isSubtype(of: superType)
 		}
 
+		// Treat Slice<ArrayReference<T>> as ArraySlice<T>
+		if self.hasPrefix("Slice<ArrayReference<"), self.hasSuffix(">>") {
+			let elementType =
+				String(self.dropFirst("Slice<ArrayReference<".count).dropLast(">>".count))
+			let newSelf = "ArraySlice<\(elementType)>"
+			return newSelf.isSubtype(of: superType)
+		}
+
 		// Convert Array<T> into [T]
 		if self.hasPrefix("Array<"), self.last == ">" {
 			let elementType = String(self.dropFirst("Reference<".count).dropLast())
@@ -338,6 +346,16 @@ fileprivate extension String {
 		else if superType.hasPrefix("inout ") {
 			let superTypeWithoutInout = String(superType.dropFirst("inout ".count))
 			return self.isSubtype(of: superTypeWithoutInout)
+		}
+
+		// Handle `__owned` types
+		if self.hasPrefix("__owned ") {
+			let selfWithoutOwned = String(self.dropFirst("__owned ".count))
+			return selfWithoutOwned.isSubtype(of: superType)
+		}
+		else if superType.hasPrefix("__owned ") {
+			let superTypeWithoutOwned = String(superType.dropFirst("__owned ".count))
+			return self.isSubtype(of: superTypeWithoutOwned)
 		}
 
 		// Handle generics
