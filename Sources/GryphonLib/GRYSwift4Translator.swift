@@ -139,7 +139,7 @@ public class GRYSwift4Translator {
 			return try translate(expression: processedExpression)
 		case "Parentheses Expression":
 			if let innerExpression = expression.subtree(at: 0) {
-				// Swift 5 may contain parentheses expressions marked with "implicit"
+				// Swift 5: Compiler-created parentheses expressions may be marked with "implicit"
 				if expression.standaloneAttributes.contains("implicit") {
 					return try translate(expression: innerExpression)
 				}
@@ -787,7 +787,8 @@ public class GRYSwift4Translator {
 					subtree.subtree(named: "Brace Statement")?.subtrees.array ?? []
 				let statementsTranslation = try translate(subtrees: statements)
 
-				if subtree["getter_for"] != nil {
+				// Swift 5: "get_for" and "set_for" are the terms used in the Swift 5 AST
+				if subtree["getter_for"] != nil || subtree["get_for"] != nil {
 					getter = .functionDeclaration(
 						prefix: "get",
 						parameterNames: [], parameterTypes: [],
@@ -799,7 +800,10 @@ public class GRYSwift4Translator {
 						statements: statementsTranslation,
 						access: access)
 				}
-				else if subtree["materializeForSet_for"] != nil || subtree["setter_for"] != nil {
+				else if subtree["materializeForSet_for"] != nil ||
+					subtree["setter_for"] != nil ||
+					subtree["set_for"] != nil
+				{
 					setter = .functionDeclaration(
 						prefix: "set",
 						parameterNames: ["newValue"],
@@ -1044,7 +1048,8 @@ public class GRYSwift4Translator {
 				expression = .literalIntExpression(value: Int(value)!)
 			}
 
-			// Negative literals on Swift 5
+			// Swift 5: Negative literals are done this way instead of being wrapped in a unary
+			// expression
 			if integerLiteralExpression.standaloneAttributes.contains("negative") {
 				return .unaryOperatorExpression(
 					expression: expression, operatorSymbol: "-", type: type)
