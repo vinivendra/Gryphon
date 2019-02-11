@@ -19,6 +19,7 @@ import XCTest
 #if !os(macOS)
 public func allTests() -> [XCTestCaseEntry] {
 	return [
+		testCase(ArrayReferenceTest.allTests),
 		testCase(GRYExtensionTest.allTests),
 		testCase(GRYSwiftTranslatorTest.allTests),
 		testCase(GRYKotlinTranslatorTest.allTests),

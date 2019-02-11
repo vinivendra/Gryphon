@@ -31,4 +31,9 @@ class ArrayReferenceTest: XCTestCase {
 		array1[0] = 10
 		XCTAssertNotEqual(array1, array2)
 	}
+
+	static var allTests = [
+		("testReference", testReference),
+		("testCopy", testCopy),
+		]
 }

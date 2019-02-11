@@ -50,7 +50,13 @@ class IntegrationTest: XCTestCase {
 		("test", test),
 	]
 
-	static override func setUp() {
-		try! GRYUtils.updateTestFiles()
+	override static func setUp() {
+		do {
+			try GRYUtils.updateTestFiles()
+		}
+		catch let error {
+			print(error)
+			fatalError("Failed to update test files.")
+		}
 	}
 }

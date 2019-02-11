@@ -16,29 +16,22 @@
 
 public class GRYSwift5Translator: GRYSwift4Translator {
 	override internal func translate(expression: GRYSwiftAST) throws -> GRYExpression {
-		do {
-			return try super.translate(expression: expression)
-		}
-		catch _ {
-			switch expression.name {
-			case "Interpolated String Literal Expression":
-				if let tapExpression = expression.subtree(named: "Tap Expression"),
-					let braceStatement = tapExpression.subtree(named: "Brace Statement")
-				{
-					return try translate(interpolatedStringLiteralExpression: braceStatement)
-				}
-				else {
-					throw unexpectedASTStructureError(
-						"Expected the Interpolated String Literal Expression to contain a Tap" +
-						"Expression containing a Brace Statement containing the String " +
-						"interpolation contents",
-						AST: expression)
-				}
-			default:
+		switch expression.name {
+		case "Interpolated String Literal Expression":
+			if let tapExpression = expression.subtree(named: "Tap Expression"),
+				let braceStatement = tapExpression.subtree(named: "Brace Statement")
+			{
+				return try translate(interpolatedStringLiteralExpression: braceStatement)
+			}
+			else {
 				throw unexpectedASTStructureError(
-					"Unrecognized subtree",
+					"Expected the Interpolated String Literal Expression to contain a Tap" +
+						"Expression containing a Brace Statement containing the String " +
+					"interpolation contents",
 					AST: expression)
 			}
+		default:
+			return try super.translate(expression: expression)
 		}
 	}
 

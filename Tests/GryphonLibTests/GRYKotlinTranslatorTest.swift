@@ -54,7 +54,13 @@ class GRYKotlinTranslatorTest: XCTestCase {
 		("testTranslator", testTranslator),
 	]
 
-	static override func setUp() {
-		try! GRYUtils.updateTestFiles()
+	override static func setUp() {
+		do {
+			try GRYUtils.updateTestFiles()
+		}
+		catch let error {
+			print(error)
+			fatalError("Failed to update test files.")
+		}
 	}
 }

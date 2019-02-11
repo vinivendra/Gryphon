@@ -15,70 +15,6 @@
 */
 
 public class GRYSwift4Translator {
-	enum GRYSwiftTranslatorError: Error, CustomStringConvertible {
-		case unexpectedASTStructure(
-			file: String,
-			line: Int,
-			function: String,
-			message: String,
-			AST: GRYSwiftAST)
-
-		var description: String {
-			switch self {
-			case let .unexpectedASTStructure(
-				file: file, line: line, function: function, message: message, AST: ast):
-
-				var nodeDescription = ""
-				ast.prettyPrint {
-					nodeDescription += $0
-				}
-
-				return "Translation error: failed to translate Swift AST into Gryphon AST.\n" +
-					"On file \(file), line \(line), function \(function).\n" +
-					message + ".\n" +
-					"Thrown when translating the following AST node:\n\(nodeDescription)"
-
-			}
-		}
-	}
-
-	func unexpectedASTStructureError(
-		file: String = #file, line: Int = #line, function: String = #function, _ message: String,
-		AST ast: GRYSwiftAST) -> GRYSwiftTranslatorError
-	{
-		return GRYSwiftTranslatorError.unexpectedASTStructure(
-			file: file, line: line, function: function, message: message, AST: ast)
-	}
-
-	func ensure(
-		file: String = #file, line: Int = #line, function: String = #function,
-		AST ast: GRYSwiftAST, isNamed expectedASTName: String) throws
-	{
-		if ast.name != expectedASTName {
-			throw GRYSwiftTranslatorError.unexpectedASTStructure(
-				file: file, line: line, function: function,
-				message: "Trying to translate \(ast.name) as '\(expectedASTName)'", AST: ast)
-		}
-	}
-
-	func ensure(
-		file: String = #file, line: Int = #line, function: String = #function,
-		AST ast: GRYSwiftAST, isNamed expectedASTNames: [String]) throws
-	{
-		var isValidName = false
-		for expectedASTName in expectedASTNames {
-			if ast.name == expectedASTName {
-				isValidName = true
-			}
-		}
-
-		if !isValidName {
-			throw GRYSwiftTranslatorError.unexpectedASTStructure(
-				file: file, line: line, function: function,
-				message: "Trying to translate \(ast.name) as '\(expectedASTNames[0])'", AST: ast)
-		}
-	}
-
 	// MARK: - Properties
 	var danglingPatternBinding: (identifier: String, type: String, expression: GRYExpression?)?
 
@@ -202,9 +138,14 @@ public class GRYSwift4Translator {
 			let processedExpression = try process(openExistentialExpression: expression)
 			return try translate(expression: processedExpression)
 		case "Parentheses Expression":
-			if let firstExpression = expression.subtree(at: 0) {
-				return .parenthesesExpression(
-					expression: try translate(expression: firstExpression))
+			if let innerExpression = expression.subtree(at: 0) {
+				if expression.standaloneAttributes.contains("implicit") {
+					return try translate(expression: innerExpression)
+				}
+				else {
+					return .parenthesesExpression(
+						expression: try translate(expression: innerExpression))
+				}
 			}
 			else {
 				throw unexpectedASTStructureError(
@@ -255,9 +196,7 @@ public class GRYSwift4Translator {
 					AST: expression)
 			}
 		default:
-			throw unexpectedASTStructureError(
-				"Unrecognized subtree",
-				AST: expression)
+			throw unexpectedASTStructureError("Unknown expression", AST: expression)
 		}
 	}
 
@@ -1371,5 +1310,68 @@ public class GRYSwift4Translator {
 
 	internal func ASTIsExpression(_ ast: GRYSwiftAST) -> Bool {
 		return ast.name.hasSuffix("Expression") || ast.name == "Inject Into Optional"
+	}
+}
+
+enum GRYSwiftTranslatorError: Error, CustomStringConvertible {
+	case unexpectedASTStructure(
+		file: String,
+		line: Int,
+		function: String,
+		message: String,
+		AST: GRYSwiftAST)
+
+	var description: String {
+		switch self {
+		case let .unexpectedASTStructure(
+			file: file, line: line, function: function, message: message, AST: ast):
+
+			var nodeDescription = ""
+			ast.prettyPrint {
+				nodeDescription += $0
+			}
+
+			return "Translation error: failed to translate Swift AST into Gryphon AST.\n" +
+				"On file \(file), line \(line), function \(function).\n" +
+				message + ".\n" +
+			"Thrown when translating the following AST node:\n\(nodeDescription)"
+		}
+	}
+}
+
+func unexpectedASTStructureError(
+	file: String = #file, line: Int = #line, function: String = #function, _ message: String,
+	AST ast: GRYSwiftAST) -> GRYSwiftTranslatorError
+{
+	return GRYSwiftTranslatorError.unexpectedASTStructure(
+		file: file, line: line, function: function, message: message, AST: ast)
+}
+
+func ensure(
+	file: String = #file, line: Int = #line, function: String = #function,
+	AST ast: GRYSwiftAST, isNamed expectedASTName: String) throws
+{
+	if ast.name != expectedASTName {
+		throw GRYSwiftTranslatorError.unexpectedASTStructure(
+			file: file, line: line, function: function,
+			message: "Trying to translate \(ast.name) as '\(expectedASTName)'", AST: ast)
+	}
+}
+
+func ensure(
+	file: String = #file, line: Int = #line, function: String = #function,
+	AST ast: GRYSwiftAST, isNamed expectedASTNames: [String]) throws
+{
+	var isValidName = false
+	for expectedASTName in expectedASTNames {
+		if ast.name == expectedASTName {
+			isValidName = true
+		}
+	}
+
+	if !isValidName {
+		throw GRYSwiftTranslatorError.unexpectedASTStructure(
+			file: file, line: line, function: function,
+			message: "Trying to translate \(ast.name) as '\(expectedASTNames[0])'", AST: ast)
 	}
 }

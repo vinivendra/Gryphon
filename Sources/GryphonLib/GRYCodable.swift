@@ -273,6 +273,36 @@ internal class GRYDecoder {
 	}
 
 	/**
+	Reads the name of the AST node. For some reason (a bug in the compiler) the name can sometimes
+	be split in two by a newline. So if the character following the name is a newline, we assume
+	that's what happened and keep reading the rest of the name.
+	*/
+	// TODO: Test
+	func readName() -> String {
+		defer { cleanLeadingWhitespace() }
+
+		var index = currentIndex
+		loop: while true {
+			let character = buffer[index]
+
+			switch character {
+			case " ", "(", ")", "[", "]", "\"", "'":
+				break loop
+			default: break
+			}
+
+			index = buffer.index(after: index)
+		}
+
+		let string = String(buffer[currentIndex..<index])
+		let cleanString = string.replacingOccurrences(of: "\n", with: "")
+
+		currentIndex = index
+
+		return cleanString
+	}
+
+	/**
 	Reads a list of identifiers. This is used to read a list of classes and/or protocols in
 	inheritance clauses, as in `class MyClass: A, B, C, D, E { }`.
 	This algorithm assumes an identifier list is always the last attribute in a subtree, and thus

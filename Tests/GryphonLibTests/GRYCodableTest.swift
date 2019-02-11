@@ -342,6 +342,12 @@ class GRYCodableTest: XCTestCase {
 	]
 
 	override static func setUp() {
-		try! GRYUtils.updateTestFiles()
+		do {
+			try GRYUtils.updateTestFiles()
+		}
+		catch let error {
+			print(error)
+			fatalError("Failed to update test files.")
+		}
 	}
 }
