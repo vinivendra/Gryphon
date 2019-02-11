@@ -78,4 +78,30 @@ public class GRYSwift5Translator: GRYSwift4Translator {
 
 		return .arrayExpression(elements: expressionsArray, type: type)
 	}
+
+	override func translate(asNumericLiteral callExpression: GRYSwiftAST) throws -> GRYExpression {
+		let expression = try super.translate(asNumericLiteral: callExpression)
+
+		guard let tupleExpression = callExpression.subtree(named: "Tuple Expression"),
+			let integerLiteralExpression = tupleExpression
+				.subtree(named: "Integer Literal Expression") else
+		{
+			throw unexpectedASTStructureError(
+				"Expected numeric literal to have a Tuple Expression containing an Integer " +
+				"Literal Expression", AST: callExpression)
+		}
+
+		// Negative literals in Swift 5 aren't wrapped by a unary operator, so we have do wrap them
+		// manually. Swift 4 integer literals also (redundantly) contain "negative".
+		if integerLiteralExpression.standaloneAttributes.contains("negative") {
+
+			// Assumes numeric literal expressions always know their types, which they do at the
+			// moment of writing this code
+			return .unaryOperatorExpression(
+				expression: expression, operatorSymbol: "-", type: expression.type!)
+		}
+		else {
+			return expression
+		}
+	}
 }

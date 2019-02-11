@@ -1039,23 +1039,12 @@ public class GRYSwift4Translator {
 				.subtree(named: "Type Expression"),
 			let rawType = typeExpression["typerepr"]
 		{
-			let expression: GRYExpression
 			let type = cleanUpType(rawType)
 			if type == "Double" {
-				expression = .literalDoubleExpression(value: Double(value)!)
+				return .literalDoubleExpression(value: Double(value)!)
 			}
 			else {
-				expression = .literalIntExpression(value: Int(value)!)
-			}
-
-			// Swift 5: Negative literals are done this way instead of being wrapped in a unary
-			// expression
-			if integerLiteralExpression.standaloneAttributes.contains("negative") {
-				return .unaryOperatorExpression(
-					expression: expression, operatorSymbol: "-", type: type)
-			}
-			else {
-				return expression
+				return .literalIntExpression(value: Int(value)!)
 			}
 		}
 		else {
