@@ -22,7 +22,8 @@ do {
 
 //	let filePath = Process().currentDirectoryPath + "/Test Files/bhaskara.swift"
 	let filePath = Process().currentDirectoryPath + "/Example ASTs/test.swift"
-//	let filePath = Process().currentDirectoryPath + "/Sources AST Dumps/GRYPrintableAsTree.swiftASTDump"
+//	let filePath =
+//		Process().currentDirectoryPath + "/Sources AST Dumps/GRYPrintableAsTree.swiftASTDump"
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	// The following (possibly commented) lines of code execute the transpilation process up to
@@ -37,14 +38,14 @@ do {
 //	try print(GRYCompiler.getSwiftASTDump(forFileAt: filePath))
 
 	// 2: Swiftc's AST dump -> Gryphon's version of the Swift AST
-	try GRYCompiler.generateSwiftAST(forFileAt: filePath).prettyPrint()
+//	try GRYCompiler.generateSwiftAST(forFileAt: filePath).prettyPrint()
 
 	// 3: Swiftc's AST dump -> Swift AST -> Gryphon's internal AST (raw, before passes)
-	try GRYCompiler.generateGryphonAST(forFileAt: filePath).prettyPrint()
+//	try GRYCompiler.generateGryphonAST(forFileAt: filePath).prettyPrint()
 
 	// 3.1: Swiftc's AST dump -> Swift AST -> Gryphon AST (raw) + Gryphon AST (after passes)
-	try GRYCompiler.generateGryphonASTAndRunPasses(forFileAt: filePath)
-		.prettyPrint()
+//	try GRYCompiler.generateGryphonASTAndRunPasses(forFileAt: filePath)
+//		.prettyPrint()
 
 	// 4: Swiftc's AST dump -> Swift AST -> Gryphon AST (raw) + Gryphon AST -> Kotlin code
 	 try print(GRYCompiler.generateKotlinCode(forFileAt: filePath))

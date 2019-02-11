@@ -32,6 +32,9 @@
   "Sources/GryphonLib/GRYSwift4Translator.swift": {
     "ast-dump": "Sources AST Dumps/GRYSwift4Translator.swiftASTDump",
   },
+  "Sources/GryphonLib/GRYSwift5Translator.swift": {
+    "ast-dump": "Sources AST Dumps/GRYSwift5Translator.swiftASTDump",
+  },
   "Sources/GryphonLib/GRYSwiftAst.swift": {
     "ast-dump": "Sources AST Dumps/GRYSwiftAst.swiftASTDump",
   },

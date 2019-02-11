@@ -8,12 +8,13 @@ done
 
 
 # Update AST dumps
-echo " ➡️  Updating AST dumps..."
-
+echo " ➡️  Updating AST dumps for tests and library templates..."
 perl dumpAST.pl Example\ ASTs/*.swift
 perl dumpAST.pl Test\ Files/*.swift
 perl dumpAST.pl Library\ Templates/*.swift
 
+echo " ➡️  Updating AST dumps for the transpiler..."
+perl dumpTranspilerAST.pl
 
 # Lint swift files
 echo " ➡️  Linting swift files..."
