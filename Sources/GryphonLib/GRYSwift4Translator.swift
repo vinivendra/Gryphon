@@ -139,6 +139,7 @@ public class GRYSwift4Translator {
 			return try translate(expression: processedExpression)
 		case "Parentheses Expression":
 			if let innerExpression = expression.subtree(at: 0) {
+				// Swift 5 may contain parentheses expressions marked with "implicit"
 				if expression.standaloneAttributes.contains("implicit") {
 					return try translate(expression: innerExpression)
 				}
@@ -1034,12 +1035,22 @@ public class GRYSwift4Translator {
 				.subtree(named: "Type Expression"),
 			let rawType = typeExpression["typerepr"]
 		{
+			let expression: GRYExpression
 			let type = cleanUpType(rawType)
 			if type == "Double" {
-				return .literalDoubleExpression(value: Double(value)!)
+				expression = .literalDoubleExpression(value: Double(value)!)
 			}
 			else {
-				return .literalIntExpression(value: Int(value)!)
+				expression = .literalIntExpression(value: Int(value)!)
+			}
+
+			// Negative literals on Swift 5
+			if integerLiteralExpression.standaloneAttributes.contains("negative") {
+				return .unaryOperatorExpression(
+					expression: expression, operatorSymbol: "-", type: type)
+			}
+			else {
+				return expression
 			}
 		}
 		else {
