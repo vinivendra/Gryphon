@@ -713,28 +713,6 @@ public class GRYKotlinTranslator {
 		return result
 	}
 
-	private func translateAsKotlinLiteral(
-		functionTranslation: String,
-		parameters: GRYExpression) -> String
-	{
-		let string: String
-		if case let .tupleExpression(pairs: pairs) = parameters,
-			let lastPair = pairs.last
-		{
-			if case let .literalStringExpression(value: value) = lastPair.expression {
-				string = value
-			}
-			else {
-				preconditionFailure()
-			}
-
-			let unescapedString = removeBackslashEscapes(string)
-			return unescapedString
-		}
-
-		preconditionFailure()
-	}
-
 	private func translateDeclarationReferenceExpression(
 		identifier: String, type: String, isStandardLibrary: Bool, isImplicit: Bool) -> String
 	{
@@ -790,22 +768,33 @@ public class GRYKotlinTranslator {
 	}
 
 	// MARK: - Supporting methods
+	// TODO: test
 	private func removeBackslashEscapes(_ string: String) -> String {
 		var result = ""
-
 		var isEscaping = false
+
 		for character in string {
-			switch character {
-			case "\\":
-				if isEscaping {
+			if !isEscaping {
+				if character == "\\" {
+					isEscaping = true
+				}
+				else {
+					result.append(character)
+				}
+			}
+			else {
+				switch character {
+				case "\\":
+					result.append("\\")
+				case "n":
+					result.append("\n")
+				case "t":
+					result.append("\t")
+				default:
 					result.append(character)
 					isEscaping = false
 				}
-				else {
-					isEscaping = true
-				}
-			default:
-				result.append(character)
+
 				isEscaping = false
 			}
 		}

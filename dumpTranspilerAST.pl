@@ -5,7 +5,7 @@ use Time::localtime;
 $needsToUpdate = 0; # false
 
 $swiftFolder = "Sources/GryphonLib";
-$astDumpFolder = "Sources AST Dumps";
+$astDumpFolder = "Bootstrap";
 
 # Check if any file is outdated
 opendir my $dir, $swiftFolder or die "🚨 Cannot open directory: $!";

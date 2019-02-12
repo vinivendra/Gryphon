@@ -202,34 +202,41 @@ extension GRYUtils {
 
 		try updateLibraryFiles()
 
-		let folder = "Test Files"
+		let testFilesFolder = "Test Files"
 		print("Updating files...")
 
-		try updateFiles(in: folder, from: .swift, to: .swiftASTDump)
+		try updateFiles(in: testFilesFolder, from: .swift, to: .swiftASTDump)
 		{ (_: String, astFilePath: String) in
 			// The .swiftASTDump files must be updated externally by the perl script. If any files
 			// are out of date, this closure gets called and informs the user how to update them.
 			throw GRYFileError.outdatedFile(filePath: astFilePath)
 		}
 
-		try updateFiles(in: folder, from: .swiftASTDump, to: .grySwiftAST)
+		try updateFiles(in: testFilesFolder, from: .swiftASTDump, to: .grySwiftAST)
 		{ (dumpFilePath: String, cacheFilePath: String) in
 			let ast = try GRYSwiftAST(decodeFromSwiftASTDumpInFile: dumpFilePath)
 			try ast.encode(intoFile: cacheFilePath)
 		}
 
-		try updateFiles(in: folder, from: .grySwiftAST, to: .gryRawAST)
+		try updateFiles(in: testFilesFolder, from: .grySwiftAST, to: .gryRawAST)
 		{ (swiftASTFilePath: String, gryphonASTRawFilePath: String) in
 			let swiftAST = try GRYSwiftAST(decodeFromFile: swiftASTFilePath)
 			let gryphonAST = try GRYSwift5Translator().translateAST(swiftAST)
 			try gryphonAST.encode(intoFile: gryphonASTRawFilePath)
 		}
 
-		try updateFiles(in: folder, from: .gryRawAST, to: .gryAST)
+		try updateFiles(in: testFilesFolder, from: .gryRawAST, to: .gryAST)
 		{ (gryphonASTRawFilePath: String, gryphonASTFilePath: String) throws in
 			let gryphonASTRaw = try GRYAST(decodeFromFile: gryphonASTRawFilePath)
 			let gryphonAST = GRYTranspilationPass.runAllPasses(on: gryphonASTRaw)
 			try gryphonAST.encode(intoFile: gryphonASTFilePath)
+		}
+
+		//
+		try updateFiles(["GRYPrintableAsTree"], in: "Bootstrap", from: .swiftASTDump, to: .kt)
+		{ (astDumpFilePath: String, kotlinFilePath: String) throws in
+			let kotlinCode = try GRYCompiler.generateKotlinCode(forFileAt: astDumpFilePath)
+			try kotlinCode.write(toFile: kotlinFilePath, atomically: true, encoding: .utf8)
 		}
 
 		testFilesHaveBeenUpdated = true
@@ -238,6 +245,7 @@ extension GRYUtils {
 	}
 
 	static private func updateFiles(
+		_ files: [String]? = nil,
 		in folder: String,
 		from originExtension: GRYFileExtension,
 		to destinationExtension: GRYFileExtension,
@@ -247,9 +255,15 @@ extension GRYUtils {
 		let fileURLs = try! FileManager.default.contentsOfDirectory(
 			at: currentURL,
 			includingPropertiesForKeys: nil)
-		let testFiles = fileURLs.filter { $0.pathExtension == originExtension.rawValue }.sorted
-		{ (url1: URL, url2: URL) -> Bool in
-			url1.absoluteString < url2.absoluteString
+		var testFiles = fileURLs.filter { $0.pathExtension == originExtension.rawValue }.sorted
+			{ (url1: URL, url2: URL) -> Bool in
+				url1.absoluteString < url2.absoluteString
+			}
+
+		if let files = files {
+			testFiles = testFiles.filter {
+					files.contains($0.deletingPathExtension().lastPathComponent)
+				}
 		}
 
 		for originFile in testFiles {

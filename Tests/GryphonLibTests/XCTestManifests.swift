@@ -29,6 +29,7 @@ public func allTests() -> [XCTestCaseEntry] {
 		testCase(GRYTranspilationPassTest.allTests),
 		testCase(GRYUtilsTest.allTests),
 		testCase(IntegrationTest.allTests),
+		testCase(BootstrappingTest.allTests),
 		testCase(AcceptanceTest.allTests),
 	]
 }
