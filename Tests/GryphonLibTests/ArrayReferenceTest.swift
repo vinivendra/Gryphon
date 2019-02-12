@@ -32,8 +32,61 @@ class ArrayReferenceTest: XCTestCase {
 		XCTAssertNotEqual(array1, array2)
 	}
 
+	func testAppend() {
+		let array1: ArrayReference = [1, 2, 3]
+		array1.append(4)
+		XCTAssertEqual(array1, [1, 2, 3, 4])
+	}
+
+	func testFilter() {
+		var array1: ArrayReference = [1, 2, 3]
+		array1 = array1.filter { $0 > 1 }
+		XCTAssertEqual(array1, [2, 3])
+	}
+
+	func testMap() {
+		var array1: ArrayReference = [1, 2, 3]
+		array1 = array1.map { $0 * 2 }
+		XCTAssertEqual(array1, [2, 4, 6])
+	}
+
+	func testEquatable() {
+		let array1: ArrayReference = [1, 2, 3]
+		let array2: ArrayReference = [1, 2, 3]
+		let array3: ArrayReference = [4, 5, 6]
+
+		XCTAssert(array1 == array2)
+		XCTAssertFalse(array2 == array3)
+	}
+
+	func testAppendingContentsOf() {
+		let arrayRef1: ArrayReference = [1, 2, 3]
+		let arrayRef2: ArrayReference = [4, 5, 6]
+		let array: [Int] = [7, 8, 9]
+
+		XCTAssertEqual(arrayRef1.appending(contentsOf: arrayRef2), [1, 2, 3, 4, 5, 6])
+		XCTAssertEqual(arrayRef1, [1, 2, 3])
+		XCTAssertEqual(arrayRef2, [4, 5, 6])
+
+		XCTAssertEqual(arrayRef1.appending(contentsOf: array), [1, 2, 3, 7, 8, 9])
+		XCTAssertEqual(arrayRef1, [1, 2, 3])
+		XCTAssertEqual(array, [7, 8, 9])
+	}
+
+	func testAppending() {
+		let array1: ArrayReference = [1, 2, 3]
+		XCTAssertEqual(array1.appending(4), [1, 2, 3, 4])
+		XCTAssertEqual(array1, [1, 2, 3])
+	}
+
 	static var allTests = [
 		("testReference", testReference),
 		("testCopy", testCopy),
+		("testAppend", testAppend),
+		("testFilter", testFilter),
+		("testMap", testMap),
+		("testEquatable", testEquatable),
+		("testAppendingContentsOf", testAppendingContentsOf),
+		("testAppending", testAppending),
 		]
 }

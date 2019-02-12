@@ -92,38 +92,31 @@ public class ArrayReference<Element>: GRYIgnore,
 	}
 
 	//
-	// TODO: test
 	public func append(_ newElement: Element) {
 		array.append(newElement)
 	}
 
-	// TODO: test
+	public func appending(_ newElement: Element) -> ArrayReference<Element> {
+		return ArrayReference<Element>(array: self.array + [newElement])
+	}
+
 	public func filter(_ isIncluded: (Element) throws -> Bool) rethrows -> ArrayReference<Element> {
 		return try ArrayReference(array: self.array.filter(isIncluded))
 	}
 
-	// TODO: test
 	public func map<T>(_ transform: (Element) throws -> T) rethrows -> ArrayReference<T> {
 		return try ArrayReference<T>(array: self.array.map(transform))
+	}
+
+	public func appending<S>(contentsOf newElements: S) -> ArrayReference<Element>
+		where S: Sequence, Element == S.Element
+	{
+		return ArrayReference<Element>(array: self.array + newElements)
 	}
 }
 
 extension ArrayReference: Equatable where Element: Equatable {
 	public static func == (lhs: ArrayReference, rhs: ArrayReference) -> Bool {
 		return lhs.array == rhs.array
-	}
-}
-
-extension ArrayReference {
-	public static func + <T>(lhs: ArrayReference<T>, rhs: ArrayReference<T>) -> ArrayReference<T> {
-		return ArrayReference<T>(array: lhs.array + rhs.array)
-	}
-
-	public static func + <T>(lhs: ArrayReference<T>, rhs: [T]) -> ArrayReference<T> {
-		return ArrayReference<T>(array: lhs.array + rhs)
-	}
-
-	public static func + <T>(lhs: [T], rhs: ArrayReference<T>) -> ArrayReference<T> {
-		return ArrayReference<T>(array: lhs + rhs.array)
 	}
 }
