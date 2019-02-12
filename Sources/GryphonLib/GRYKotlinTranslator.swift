@@ -768,7 +768,6 @@ public class GRYKotlinTranslator {
 	}
 
 	// MARK: - Supporting methods
-	// TODO: test
 	private func removeBackslashEscapes(_ string: String) -> String {
 		var result = ""
 		var isEscaping = false

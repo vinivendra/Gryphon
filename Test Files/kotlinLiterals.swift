@@ -32,8 +32,15 @@ protocol GRYIgnore { }
 import Foundation
 
 private func GRYDeclarations() {
-	// Just to test imports in kotlin
+	// Test imports in kotlin
 	GRYInsert("import java.util.*")
+
+	// Test \n's, \t's and \\'s
+	GRYInsert("""
+fun myFunction(): String {
+	return "Calling myFunction()" // \\n \\t \\
+}
+""")
 }
 
 // Kotlin literals as expressions
@@ -45,6 +52,7 @@ print(magicNumber)
 
 // Kotlin literals as statements
 GRYInsert("println(\"This will be ignored by swift, but not by kotlin.\")")
+GRYInsert("myFunction()")
 
 // Ignore swift statements
 GRYIgnoreNext()
