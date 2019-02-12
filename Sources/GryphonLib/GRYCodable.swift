@@ -277,7 +277,6 @@ internal class GRYDecoder {
 	be split in two by a newline. So if the character following the name is a newline, we assume
 	that's what happened and keep reading the rest of the name.
 	*/
-	// TODO: Test
 	func readName() -> String {
 		defer { cleanLeadingWhitespace() }
 

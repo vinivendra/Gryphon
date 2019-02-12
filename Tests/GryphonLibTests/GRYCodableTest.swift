@@ -118,6 +118,22 @@ class GRYCodableTest: XCTestCase {
 		XCTAssertNoThrow(try decoder.readClosingBrace())
 		XCTAssertEqual(decoder.remainingBuffer, "foo")
 
+		// Name
+		decoder = GRYDecoder(encodedString: "foo bla)")
+		string = decoder.readName()
+		XCTAssertEqual(string, "foo")
+		XCTAssertEqual(decoder.remainingBuffer, "bla)")
+
+		decoder = GRYDecoder(encodedString: "foo\nbla)")
+		string = decoder.readName()
+		XCTAssertEqual(string, "foobla")
+		XCTAssertEqual(decoder.remainingBuffer, ")")
+
+		decoder = GRYDecoder(encodedString: "foo(baz)bar)")
+		string = decoder.readName()
+		XCTAssertEqual(string, "foo")
+		XCTAssertEqual(decoder.remainingBuffer, "(baz)bar)")
+
 		// Identifier
 		decoder = GRYDecoder(encodedString: "foo bla)")
 		string = decoder.readIdentifier()
