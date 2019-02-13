@@ -948,22 +948,19 @@ public class GRYSwift4Translator {
 				"Unable to get closure body", AST: closureExpression)
 		}
 
-		// FIXME: Multi-line closures not yet supported.
+		let statements: [GRYTopLevelNode]
 		if lastSubtree.name == "Brace Statement" {
-			return .closureExpression(
-				parameterNames: parameterNames,
-				parameterTypes: parameterTypes,
-				statements: [],
-				type: cleanUpType(type))
+			statements = try translate(subtrees: lastSubtree.subtrees.array)
 		}
-
-		let expression = try translate(expression: lastSubtree)
-		let statement = GRYTopLevelNode.expression(expression: expression)
+		else {
+			let expression = try translate(expression: lastSubtree)
+			statements = [GRYTopLevelNode.expression(expression: expression)]
+		}
 
 		return .closureExpression(
 				parameterNames: parameterNames,
 				parameterTypes: parameterTypes,
-				statements: [statement],
+				statements: statements,
 				type: cleanUpType(type))
 	}
 

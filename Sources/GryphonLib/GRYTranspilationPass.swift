@@ -678,6 +678,34 @@ public class GRYAnonymousParametersTranspilationPass: GRYTranspilationPass {
 	}
 }
 
+// TODO: test
+/// Closures in kotlin can't have normal "return" statements. Instead, they must have return@f
+/// statements (not yet implemented) or just standalone expressions (easier to implement but more
+/// error-prone). This pass turns return statements in closures into standalone expressions
+public class GRYReturnsInLambdasTranspilationPass: GRYTranspilationPass {
+	var isInClosure = false
+
+	override func replaceClosureExpression(
+		parameterNames: [String], parameterTypes: [String], statements: [GRYTopLevelNode],
+		type: String) -> GRYExpression
+	{
+		isInClosure = true
+		defer { isInClosure = false }
+		return super.replaceClosureExpression(
+			parameterNames: parameterNames, parameterTypes: parameterTypes, statements: statements,
+			type: type)
+	}
+
+	override func replaceReturnStatement(expression: GRYExpression?) -> [GRYTopLevelNode] {
+		if isInClosure, let expression = expression {
+			return [.expression(expression: expression)]
+		}
+		else {
+			return [.returnStatement(expression: expression)]
+		}
+	}
+}
+
 public class GRYRemoveExtensionsTranspilationPass: GRYTranspilationPass {
 	var extendingType: String?
 
@@ -847,6 +875,7 @@ public extension GRYTranspilationPass {
 		result = GRYStaticFunctionsTranspilationPass().run(on: result)
 		result = GRYFixProtocolContentsTranspilationPass().run(on: result)
 		result = GRYAnonymousParametersTranspilationPass().run(on: result)
+		result = GRYReturnsInLambdasTranspilationPass().run(on: result)
 		result = GRYSelfToThisTranspilationPass().run(on: result)
 		result = GRYRemoveExtensionsTranspilationPass().run(on: result)
 		result = GRYRearrangeIfLetsTranspilationPass().run(on: result)

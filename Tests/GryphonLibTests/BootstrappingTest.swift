@@ -31,10 +31,7 @@ class BootstrappingTest: XCTestCase {
 			XCTFail("Timed out.")
 			return
 		}
-		guard compilationResult.standardOutput == "",
-			compilationResult.standardError == "",
-			compilationResult.status == 0 else
-		{
+		guard compilationResult.status == 0 else {
 			XCTFail("Failed to compile Kotlin bootstrap tests.\n" +
 				"Output:\n\(compilationResult.standardOutput)\n" +
 				"Error:\n\(compilationResult.standardError)\n" +

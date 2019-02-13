@@ -40,18 +40,6 @@ public class GRYPrintableTree: GRYPrintableAsTree {
 		self.printableSubtrees = subtrees
 	}
 
-	init(_ description: String, _ subtrees: ArrayReference<String?>) {
-		self.treeDescription = description
-		self.printableSubtrees = subtrees.map { string in
-			if let string = string {
-				return GRYPrintableTree(string)
-			}
-			else {
-				return nil
-			}
-		}
-	}
-
 	init(_ array: ArrayReference<GRYPrintableAsTree?>) {
 		self.treeDescription = "Array"
 		self.printableSubtrees = array

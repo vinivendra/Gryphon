@@ -37,11 +37,6 @@ class GRYPrintableTree: GRYPrintableAsTree {
 		this.printableSubtrees = subtrees
 		return
 	}
-	constructor(description: String, subtrees: MutableList<String?>) {
-		this.treeDescription = description
-		this.printableSubtrees = subtrees.map({ string: String? ->  })
-		return
-	}
 	constructor(array: MutableList<GRYPrintableAsTree?>) {
 		this.treeDescription = "Array"
 		this.printableSubtrees = array
