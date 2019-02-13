@@ -181,9 +181,19 @@ extension GRYExpression {
 					(leftOperatorSymbol == rightOperatorSymbol) &&
 					(leftType.isSubtype(of: rightType))
 			case let
-				(.unaryOperatorExpression(
+				(.prefixUnaryExpression(
 					expression: leftExpression, operatorSymbol: leftOperatorSymbol, type: leftType),
-				 .unaryOperatorExpression(
+				 .prefixUnaryExpression(
+					expression: rightExpression, operatorSymbol: rightOperatorSymbol,
+					type: rightType)):
+
+				return leftExpression.matches(rightExpression, &matches) &&
+					(leftOperatorSymbol == rightOperatorSymbol)
+					&& (leftType.isSubtype(of: rightType))
+			case let
+				(.postfixUnaryExpression(
+					expression: leftExpression, operatorSymbol: leftOperatorSymbol, type: leftType),
+				 .postfixUnaryExpression(
 					expression: rightExpression, operatorSymbol: rightOperatorSymbol,
 					type: rightType)):
 

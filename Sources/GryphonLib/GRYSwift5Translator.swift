@@ -97,7 +97,7 @@ public class GRYSwift5Translator: GRYSwift4Translator {
 
 			// Assumes numeric literal expressions always know their types, which they do at the
 			// moment of writing this code
-			return .unaryOperatorExpression(
+			return .prefixUnaryExpression(
 				expression: expression, operatorSymbol: "-", type: expression.type!)
 		}
 		else {

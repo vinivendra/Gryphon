@@ -340,7 +340,9 @@ expressionNodes = [
 	['binaryOperatorExpression',
 		[['leftExpression', 'GRYExpression'], ['rightExpression', 'GRYExpression'],
 		['operatorSymbol', 'String'], ['type', 'String']]],
-	['unaryOperatorExpression',
+	['prefixUnaryExpression',
+		[['expression', 'GRYExpression'], ['operatorSymbol', 'String'], ['type', 'String']]],
+	['postfixUnaryExpression',
 		[['expression', 'GRYExpression'], ['operatorSymbol', 'String'], ['type', 'String']]],
 	['callExpression',
 		[['function', 'GRYExpression'], ['parameters', 'GRYExpression'], ['type', 'String']]],
@@ -476,7 +478,9 @@ public indirect enum GRYExpression: Equatable, GRYPrintableAsTree, GRYCodable {
 			leftExpression: _, rightExpression: _, operatorSymbol: _, type: type):
 
 			return type
-		case let .unaryOperatorExpression(expression: _, operatorSymbol: _, type: type):
+		case let .prefixUnaryExpression(expression: _, operatorSymbol: _, type: type):
+			return type
+		case let .postfixUnaryExpression(expression: _, operatorSymbol: _, type: type):
 			return type
 		case let .callExpression(function: _, parameters: _, type: type):
 			return type
@@ -566,7 +570,13 @@ public indirect enum GRYExpression: Equatable, GRYPrintableAsTree, GRYCodable {
 				GRYPrintableTree("left", [leftExpression]),
 				GRYPrintableTree("operator \(operatorSymbol)"),
 				GRYPrintableTree("right", [rightExpression]), ]
-		case let .unaryOperatorExpression(
+		case let .prefixUnaryExpression(
+		expression: expression, operatorSymbol: operatorSymbol, type: type):
+			return [
+				GRYPrintableTree("type \(type)"),
+				GRYPrintableTree("operator \(operatorSymbol)"),
+				GRYPrintableTree("expression", [expression]), ]
+		case let .postfixUnaryExpression(
 		expression: expression, operatorSymbol: operatorSymbol, type: type):
 			return [
 				GRYPrintableTree("type \(type)"),

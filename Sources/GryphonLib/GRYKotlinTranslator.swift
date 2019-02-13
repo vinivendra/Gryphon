@@ -590,10 +590,16 @@ public class GRYKotlinTranslator {
 		case let .interpolatedStringLiteralExpression(expressions: expressions):
 			return try translateInterpolatedStringLiteralExpression(
 				expressions: expressions, withIndentation: indentation)
-		case let .unaryOperatorExpression(
+		case let .prefixUnaryExpression(
 			expression: expression, operatorSymbol: operatorSymbol, type: type):
 
 			return try translatePrefixUnaryExpression(
+				expression: expression, operatorSymbol: operatorSymbol, type: type,
+				withIndentation: indentation)
+		case let .postfixUnaryExpression(
+			expression: expression, operatorSymbol: operatorSymbol, type: type):
+
+			return try translatePostfixUnaryExpression(
 				expression: expression, operatorSymbol: operatorSymbol, type: type,
 				withIndentation: indentation)
 		case let .typeExpression(type: type):
@@ -677,6 +683,15 @@ public class GRYKotlinTranslator {
 		let expressionTranslation =
 			try translateExpression(expression, withIndentation: indentation)
 		return operatorSymbol + expressionTranslation
+	}
+
+	private func translatePostfixUnaryExpression(
+		expression: GRYExpression, operatorSymbol: String, type: String,
+		withIndentation indentation: String) throws -> String
+	{
+		let expressionTranslation =
+			try translateExpression(expression, withIndentation: indentation)
+		return expressionTranslation + operatorSymbol
 	}
 
 	private func translateCallExpression(

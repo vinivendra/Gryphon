@@ -128,6 +128,8 @@ public class GRYSwift4Translator {
 			}
 		case "Prefix Unary Expression":
 			return try translate(prefixUnaryExpression: expression)
+		case "Postfix Unary Expression":
+			return try translate(postfixUnaryExpression: expression)
 		case "Type Expression":
 			return try translate(typeExpression: expression)
 		case "Member Reference Expression":
@@ -178,7 +180,8 @@ public class GRYSwift4Translator {
 			 "Optional Evaluation Expression",
 			 "Inout Expression",
 			 "Load Expression",
-			 "Function Conversion Expression":
+			 "Function Conversion Expression",
+			 "Try Expression": // TODO: Test try's and throw's and catch's
 			if let lastExpression = expression.subtrees.last {
 				return try translate(expression: lastExpression)
 			}
@@ -359,13 +362,40 @@ public class GRYSwift4Translator {
 			let expressionTranslation = try translate(expression: expression)
 			let (operatorIdentifier, _) = getIdentifierFromDeclaration(declaration)
 
-			return .unaryOperatorExpression(
+			return .prefixUnaryExpression(
 				expression: expressionTranslation, operatorSymbol: operatorIdentifier, type: type)
 		}
 		else {
 			throw unexpectedASTStructureError(
-				"Unrecognized structure",
+				"Expected Prefix Unary Expression to have a Dot Syntax Call Expression with a " +
+				"Declaration Reference Expression, for the operator, and expected it to have " +
+				"a second expression as the operand.",
 				AST: prefixUnaryExpression)
+		}
+	}
+
+	internal func translate(postfixUnaryExpression: GRYSwiftAST) throws -> GRYExpression {
+		try ensure(AST: postfixUnaryExpression, isNamed: "Postfix Unary Expression")
+
+		if let rawType = postfixUnaryExpression["type"],
+			let declaration = postfixUnaryExpression
+				.subtree(named: "Dot Syntax Call Expression")?
+				.subtree(named: "Declaration Reference Expression")?["decl"],
+			let expression = postfixUnaryExpression.subtree(at: 1)
+		{
+			let type = cleanUpType(rawType)
+			let expressionTranslation = try translate(expression: expression)
+			let (operatorIdentifier, _) = getIdentifierFromDeclaration(declaration)
+
+			return .postfixUnaryExpression(
+				expression: expressionTranslation, operatorSymbol: operatorIdentifier, type: type)
+		}
+		else {
+			throw unexpectedASTStructureError(
+				"Expected Postfix Unary Expression to have a Dot Syntax Call Expression with a " +
+				"Declaration Reference Expression, for the operator, and expected it to have " +
+				"a second expression as the operand.",
+				AST: postfixUnaryExpression)
 		}
 	}
 

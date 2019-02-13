@@ -602,9 +602,13 @@ internal class GRYDecoder {
 			index = buffer.index(after: index)
 		}
 
-		let string = (firstContentsIndex == index) ?
-			"_" :
-			String(buffer[firstContentsIndex..<index])
+		let string: String
+		if firstContentsIndex == index {
+			string = "_"
+		}
+		else {
+			string = String(buffer[firstContentsIndex..<index])
+		}
 
 		// Skip the closing '
 		index = buffer.index(after: index)

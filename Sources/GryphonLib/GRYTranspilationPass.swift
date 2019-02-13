@@ -251,9 +251,13 @@ public class GRYTranspilationPass {
 			return replaceBinaryOperatorExpression(
 				leftExpression: leftExpression, rightExpression: rightExpression,
 				operatorSymbol: operatorSymbol, type: type)
-		case let .unaryOperatorExpression(
+		case let .prefixUnaryExpression(
 			expression: expression, operatorSymbol: operatorSymbol, type: type):
-			return replaceUnaryOperatorExpression(
+			return replacePrefixUnaryExpression(
+				expression: expression, operatorSymbol: operatorSymbol, type: type)
+		case let .postfixUnaryExpression(
+			expression: expression, operatorSymbol: operatorSymbol, type: type):
+			return replacePostfixUnaryExpression(
 				expression: expression, operatorSymbol: operatorSymbol, type: type)
 		case let .callExpression(function: function, parameters: parameters, type: type):
 			return replaceCallExpression(function: function, parameters: parameters, type: type)
@@ -348,10 +352,17 @@ public class GRYTranspilationPass {
 			type: type)
 	}
 
-	func replaceUnaryOperatorExpression(
+	func replacePrefixUnaryExpression(
 		expression: GRYExpression, operatorSymbol: String, type: String) -> GRYExpression
 	{
-		return .unaryOperatorExpression(
+		return .prefixUnaryExpression(
+			expression: replaceExpression(expression), operatorSymbol: operatorSymbol, type: type)
+	}
+
+	func replacePostfixUnaryExpression(
+		expression: GRYExpression, operatorSymbol: String, type: String) -> GRYExpression
+	{
+		return .postfixUnaryExpression(
 			expression: replaceExpression(expression), operatorSymbol: operatorSymbol, type: type)
 	}
 
