@@ -169,17 +169,4 @@ extension GRYPrintableTree {
 		}
 		self.init(description, convertedSubtrees)
 	}
-
-	convenience init(_ description: String, _ subtrees: ArrayReference<String?>) {
-		let stringToTree: (String?) -> (GRYPrintableAsTree?) = { string in
-			if let string = string {
-				return GRYPrintableTree(string)
-			}
-			else {
-				return nil
-			}
-		}
-
-		self.init(description, subtrees.map(stringToTree))
-	}
 }

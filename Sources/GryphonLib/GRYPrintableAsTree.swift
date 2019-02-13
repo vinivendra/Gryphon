@@ -18,6 +18,8 @@ public func GRYAnnotations<T>(_: String, _ t: T) -> T { return t }
 
 public func GRYInsert(_: String) { }
 
+public func GRYIgnoreThisFunction() { }
+
 private func GRYDeclarations() {
 	GRYInsert("""
 fun <T> MutableList<T>.copy(): MutableList<T> {
@@ -38,6 +40,22 @@ public class GRYPrintableTree: GRYPrintableAsTree {
 	init(_ description: String, _ subtrees: ArrayReference<GRYPrintableAsTree?>) {
 		self.treeDescription = description
 		self.printableSubtrees = subtrees
+	}
+
+	init(_ description: String, _ subtrees: ArrayReference<String?>) {
+		GRYIgnoreThisFunction()
+
+		let stringToTree: (String?) -> (GRYPrintableAsTree?) = { string in
+			if let string = string {
+				return GRYPrintableTree(string)
+			}
+			else {
+				return nil
+			}
+		}
+
+		self.treeDescription = description
+		self.printableSubtrees = subtrees.map(stringToTree)
 	}
 
 	init(_ array: ArrayReference<GRYPrintableAsTree?>) {

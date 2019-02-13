@@ -495,7 +495,8 @@ public class GRYRemoveGryphonDeclarationsTranspilationPass: GRYTranspilationPass
 		-> [GRYTopLevelNode]
 	{
 		if prefix.hasPrefix("GRYInsert") || prefix.hasPrefix("GRYAlternative") ||
-			prefix.hasPrefix("GRYIgnoreNext") || prefix.hasPrefix("GRYAnnotations")
+			prefix.hasPrefix("GRYIgnoreNext") || prefix.hasPrefix("GRYAnnotations") ||
+			prefix.hasPrefix("GRYIgnoreThisFunction")
 		{
 			return []
 		}
@@ -541,6 +542,32 @@ public class GRYRemoveIgnoredDeclarationsTranspilationPass: GRYTranspilationPass
 		else {
 			return super.replaceEnumDeclaration(
 				access: access, name: name, inherits: inherits, elements: elements)
+		}
+	}
+
+	override func replaceFunctionDeclaration(
+		prefix: String, parameterNames: [String], parameterTypes: [String],
+		defaultValues: [GRYExpression?], returnType: String, isImplicit: Bool, isStatic: Bool,
+		extendsType: String?, statements: [GRYTopLevelNode]?, access: String?) -> [GRYTopLevelNode]
+	{
+		if let statements = statements,
+			let firstStatement = statements.first,
+			case let .expression(expression: callExpression) = firstStatement,
+			case let .callExpression(
+				function: functionExpression, parameters: _, type: _) = callExpression,
+			case let .declarationReferenceExpression(
+				identifier: identifier, type: _, isStandardLibrary: _,
+				isImplicit: _) = functionExpression,
+			identifier.hasPrefix("GRYIgnoreThisFunction")
+		{
+			return []
+		}
+		else {
+			return super.replaceFunctionDeclaration(
+				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
+				defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
+				isStatic: isStatic, extendsType: extendsType, statements: statements,
+				access: access)
 		}
 	}
 }
