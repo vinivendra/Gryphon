@@ -19,11 +19,11 @@ import XCTest
 
 class GRYPrintableAsTreeTest: XCTestCase {
 	func testPrinting() {
-		let root = GRYPrintableTree(description: "root")
-		let a = GRYPrintableTree(description: "a")
-		let b = GRYPrintableTree(description: "b")
-		let c = GRYPrintableTree(description: "c")
-		let d = GRYPrintableTree(description: "d")
+		let root = GRYPrintableTree("root")
+		let a = GRYPrintableTree("a")
+		let b = GRYPrintableTree("b")
+		let c = GRYPrintableTree("c")
+		let d = GRYPrintableTree("d")
 
 		root.addChild(a)
 		a.addChild(b)
@@ -43,57 +43,12 @@ class GRYPrintableAsTreeTest: XCTestCase {
 			""")
 	}
 
-	func testStrings() {
-		let root = GRYPrintableTree(description: "root")
-		let a = GRYPrintableTree(description: "a")
-		let b = GRYPrintableTree(description: "b")
-
-		root.addChild(a)
-		a.addChild(b)
-		b.addChild("c")
-		root.addChild("d")
-
-		var result = ""
-		root.prettyPrint {
-			result += $0
-		}
-		XCTAssertEqual(result, """
-			 root
-			 ├─ a
-			 │  └─ b
-			 │     └─ c
-			 └─ d\n
-			""")
-	}
-
-	func testArrays() {
-		let root = GRYPrintableTree(description: "root")
-		let a = GRYPrintableTree(description: "a")
-
-		root.addChild(a)
-		root.addChild("d")
-		a.addChild(["b", "c"])
-
-		var result = ""
-		root.prettyPrint {
-			result += $0
-		}
-		XCTAssertEqual(result, """
-			 root
-			 ├─ a
-			 │  └─ Array
-			 │     ├─ b
-			 │     └─ c
-			 └─ d\n
-			""")
-	}
-
 	func testHorizontalLimit() {
-		let root = GRYPrintableTree(description: "root")
-		let a = GRYPrintableTree(description: "aaaaaaaaaaaaaaaaaa")
-		let b = GRYPrintableTree(description: "bbbbbbbbbbbbbbbbbb")
-		let c = GRYPrintableTree(description: "cccccccccccccccccc")
-		let d = GRYPrintableTree(description: "dddddddddddddddddd")
+		let root = GRYPrintableTree("root")
+		let a = GRYPrintableTree("aaaaaaaaaaaaaaaaaa")
+		let b = GRYPrintableTree("bbbbbbbbbbbbbbbbbb")
+		let c = GRYPrintableTree("cccccccccccccccccc")
+		let d = GRYPrintableTree("dddddddddddddddddd")
 
 		root.addChild(a)
 		a.addChild(b)
@@ -115,8 +70,6 @@ class GRYPrintableAsTreeTest: XCTestCase {
 
 	static var allTests = [
 		("testPrinting", testPrinting),
-		("testStrings", testStrings),
-		("testArrays", testArrays),
 		("testHorizontalLimit", testHorizontalLimit),
 	]
 }

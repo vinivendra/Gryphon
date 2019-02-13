@@ -31,16 +31,34 @@ public class GRYPrintableTree: GRYPrintableAsTree {
 	public var printableSubtrees: ArrayReference<GRYPrintableAsTree?> =
 		GRYAnnotations("override", [])
 
-	init(description: String) {
+	init(_ description: String) {
 		self.treeDescription = description
 	}
 
-	init(description: String, subtrees: ArrayReference<GRYPrintableAsTree?>) {
+	init(_ description: String, _ subtrees: ArrayReference<GRYPrintableAsTree?>) {
 		self.treeDescription = description
 		self.printableSubtrees = subtrees
 	}
 
-	static func initialize(description: String, subtreesOrNil: ArrayReference<GRYPrintableAsTree?>)
+	init(_ description: String, _ subtrees: ArrayReference<String?>) {
+		self.treeDescription = description
+		self.printableSubtrees = subtrees.map { string in
+			if let string = string {
+				return GRYPrintableTree(string)
+			}
+			else {
+				return nil
+			}
+		}
+	}
+
+	init(_ array: ArrayReference<GRYPrintableAsTree?>) {
+		self.treeDescription = "Array"
+		self.printableSubtrees = array
+	}
+
+	static func initOrNil(
+		_ description: String, _ subtreesOrNil: ArrayReference<GRYPrintableAsTree?>)
 		-> GRYPrintableTree?
 	{
 		let subtrees: ArrayReference<GRYPrintableAsTree?> = []
@@ -54,7 +72,16 @@ public class GRYPrintableTree: GRYPrintableAsTree {
 			return nil
 		}
 
-		return GRYPrintableTree(description: description, subtrees: subtrees)
+		return GRYPrintableTree(description, subtrees)
+	}
+
+	static func initOrNil(_ description: String?) -> GRYPrintableTree? {
+		if let description = description {
+			return GRYPrintableTree(description)
+		}
+		else {
+			return nil
+		}
 	}
 
 	func addChild(_ child: GRYPrintableAsTree?) {

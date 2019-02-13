@@ -128,24 +128,12 @@ extension ArrayReference {
 }
 
 // MARK: Common types conforming to GRYPrintableAsTree
-extension String: GRYPrintableAsTree {
-	public var treeDescription: String { return self }
-	public var printableSubtrees: ArrayReference<GRYPrintableAsTree?> { return [] }
-}
-
-extension Array: GRYPrintableAsTree where Element: GRYPrintableAsTree {
-	public var treeDescription: String { return "Array" }
-	public var printableSubtrees: ArrayReference<GRYPrintableAsTree?> {
-		return ArrayReference(array: self)
-	}
-}
-
 extension Dictionary: GRYPrintableAsTree where Value: GRYPrintableAsTree, Key == String {
 	public var treeDescription: String { return "Dictionary" }
 	public var printableSubtrees: ArrayReference<GRYPrintableAsTree?> {
 		let result: ArrayReference<GRYPrintableAsTree?> = []
 		for (key, value) in self {
-			result.append(GRYPrintableTree(description: key, subtrees: [value]))
+			result.append(GRYPrintableTree(key, [value]))
 		}
 		return result
 	}
@@ -155,16 +143,30 @@ extension Dictionary: GRYPrintableAsTree where Value: GRYPrintableAsTree, Key ==
 // Only needed temporarily, while the conversion of the codebase (from using Array to using
 // ArrayReference) isn't done.
 extension GRYPrintableTree {
-	convenience init(description: String, subtrees: [GRYPrintableAsTree?]) {
-		self.init(
-			description: description,
-			subtrees: ArrayReference<GRYPrintableAsTree?>(array: subtrees))
+	convenience init(_ description: String, _ subtrees: [GRYPrintableAsTree?]) {
+		self.init(description, ArrayReference<GRYPrintableAsTree?>(array: subtrees))
 	}
 
-	static func initialize(description: String, subtreesOrNil: [GRYPrintableAsTree?])
+	convenience init(_ subtrees: [GRYPrintableAsTree?]) {
+		self.init("Array", ArrayReference<GRYPrintableAsTree?>(array: subtrees))
+	}
+
+	static func initOrNil(_ description: String, _ subtreesOrNil: [GRYPrintableAsTree?])
 		-> GRYPrintableTree?
 	{
 		let arrayReference = ArrayReference<GRYPrintableAsTree?>(array: subtreesOrNil)
-		return initialize(description: description, subtreesOrNil: arrayReference)
+		return GRYPrintableTree.initOrNil(description, arrayReference)
+	}
+
+	convenience init(_ description: String, _ subtrees: [String?]) {
+		let convertedSubtrees = subtrees.map { (string: String?) -> GRYPrintableAsTree? in
+			if let string = string {
+				return GRYPrintableTree(string)
+			}
+			else {
+				return nil
+			}
+		}
+		self.init(description, convertedSubtrees)
 	}
 }

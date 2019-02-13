@@ -683,6 +683,11 @@ public class GRYKotlinTranslator {
 			result += parametersString + " -> "
 		}
 
+		// FIXME: Multi-line closures not yet supported.
+		if statements.isEmpty {
+			return result + " }"
+		}
+
 		guard let firstStatement = statements.first,
 			case let GRYTopLevelNode.expression(expression: expression) = firstStatement else
 		{

@@ -947,6 +947,16 @@ public class GRYSwift4Translator {
 			throw unexpectedASTStructureError(
 				"Unable to get closure body", AST: closureExpression)
 		}
+
+		// FIXME: Multi-line closures not yet supported.
+		if lastSubtree.name == "Brace Statement" {
+			return .closureExpression(
+				parameterNames: parameterNames,
+				parameterTypes: parameterTypes,
+				statements: [],
+				type: cleanUpType(type))
+		}
+
 		let expression = try translate(expression: lastSubtree)
 		let statement = GRYTopLevelNode.expression(expression: expression)
 

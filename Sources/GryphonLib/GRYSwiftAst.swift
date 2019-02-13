@@ -209,9 +209,11 @@ public final class GRYSwiftAST: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 	}
 
 	public var printableSubtrees: ArrayReference<GRYPrintableAsTree?> {
-		let keyValueStrings = keyValueAttributes.map { "\($0.key) → \($0.value)" }.sorted()
+		let keyValueStrings = keyValueAttributes
+			.map { "\($0.key) → \($0.value)" }.sorted().map(GRYPrintableTree.init)
 		let keyValueArray = ArrayReference<GRYPrintableAsTree?>(array: keyValueStrings)
-		let standaloneAttributesArray = ArrayReference<GRYPrintableAsTree?>(standaloneAttributes)
+		let standaloneAttributesArray =
+			ArrayReference<GRYPrintableAsTree?>(standaloneAttributes.map(GRYPrintableTree.init))
 		let subtreesArray = ArrayReference<GRYPrintableAsTree?>(subtrees)
 
 		let result: ArrayReference<GRYPrintableAsTree?> =
