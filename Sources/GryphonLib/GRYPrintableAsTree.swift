@@ -14,20 +14,6 @@
 * limitations under the License.
 */
 
-public func GRYAnnotations<T>(_: String, _ t: T) -> T { return t }
-
-public func GRYInsert(_: String) { }
-
-public func GRYIgnoreThisFunction() { }
-
-private func GRYDeclarations() {
-	GRYInsert("""
-fun <T> MutableList<T>.copy(): MutableList<T> {
-	return this.toMutableList()
-}
-""")
-}
-
 public class GRYPrintableTree: GRYPrintableAsTree {
 	public var treeDescription: String = GRYAnnotations("override", "")
 	public var printableSubtrees: ArrayReference<GRYPrintableAsTree?> =

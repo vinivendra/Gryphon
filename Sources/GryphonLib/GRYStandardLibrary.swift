@@ -14,7 +14,17 @@
 * limitations under the License.
 */
 
-public protocol GRYIgnore { }
+// MARK: Literal source code manipulation
+
+func GRYAnnotations<T>(_: String, _ t: T) -> T { return t }
+
+func GRYInsert(_: String) { }
+
+func GRYIgnoreThisFunction() { }
+
+protocol GRYIgnore { }
+
+// MARK: - Swift standard library
 
 public class ArrayReference<Element>: GRYIgnore,
 	ExpressibleByArrayLiteral, CustomStringConvertible, CustomDebugStringConvertible,
@@ -117,6 +127,17 @@ public class ArrayReference<Element>: GRYIgnore,
 
 extension ArrayReference: Equatable where Element: Equatable {
 	public static func == (lhs: ArrayReference, rhs: ArrayReference) -> Bool {
+		GRYIgnoreThisFunction()
 		return lhs.array == rhs.array
 	}
+}
+
+// MARK: - Kotlin standard library
+
+private func GRYDeclarations() {
+	GRYInsert("""
+fun <T> MutableList<T>.copy(): MutableList<T> {
+	return this.toMutableList()
+}
+""")
 }

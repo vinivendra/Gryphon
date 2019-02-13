@@ -1,6 +1,3 @@
-fun <T> MutableList<T>.copy(): MutableList<T> {
-	return this.toMutableList()
-}
 class GRYPrintableTree: GRYPrintableAsTree {
 	companion object {
 		internal fun initOrNil(description: String, subtreesOrNil: MutableList<GRYPrintableAsTree?>): GRYPrintableTree? {

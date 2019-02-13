@@ -24,7 +24,7 @@ class BootstrappingTest: XCTestCase {
 			GRYCompiler.kotlinCompilerPath,
 			"-include-runtime", "-d", "kotlin.jar",
 			"GRYPrintableAsTree.kt", "GRYPrintableAsTreeTests.kt",
-			"GRYKotlinTests.kt", "main.kt", ]
+			"GRYKotlinTests.kt", "GRYStandardLibrary.kt", "main.kt", ]
 		guard let compilationResult =
 			GRYShell.runShellCommand(compilationCommand, fromFolder: "Bootstrap") else
 		{

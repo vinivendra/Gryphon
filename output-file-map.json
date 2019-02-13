@@ -1,7 +1,4 @@
 {
-  "Sources/GryphonLib/ArrayReference.swift": {
-    "ast-dump": "Bootstrap/ArrayReference.swiftASTDump",
-  },
   "Sources/GryphonLib/CwlRandom.swift": {
     "ast-dump": "Bootstrap/CwlRandom.swiftASTDump",
   },
@@ -28,6 +25,9 @@
   },
   "Sources/GryphonLib/GRYShell.swift": {
     "ast-dump": "Bootstrap/GRYShell.swiftASTDump",
+  },
+  "Sources/GryphonLib/GRYStandardLibrary.swift": {
+	  "ast-dump": "Bootstrap/GRYStandardLibrary.swiftASTDump",
   },
   "Sources/GryphonLib/GRYSwift4Translator.swift": {
     "ast-dump": "Bootstrap/GRYSwift4Translator.swiftASTDump",

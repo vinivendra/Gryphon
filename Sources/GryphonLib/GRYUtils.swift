@@ -233,7 +233,9 @@ extension GRYUtils {
 		}
 
 		//
-		try updateFiles(["GRYPrintableAsTree"], in: "Bootstrap", from: .swiftASTDump, to: .kt)
+		try updateFiles(
+			["GRYPrintableAsTree", "GRYStandardLibrary"],
+			in: "Bootstrap", from: .swiftASTDump, to: .kt)
 		{ (astDumpFilePath: String, kotlinFilePath: String) throws in
 			let kotlinCode = try GRYCompiler.generateKotlinCode(forFileAt: astDumpFilePath)
 			try kotlinCode.write(toFile: kotlinFilePath, atomically: true, encoding: .utf8)
