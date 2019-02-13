@@ -12,4 +12,14 @@ fun main(args: Array<String>) {
 	println(plusClosure(2, 3))
 	useClosure(printClosure)
 	defaultClosure()
+	val multiLineClosure: (Int) -> Unit = { a: Int ->
+			if (a == 10) {
+				println("It's ten!")
+			}
+			else {
+				println("It's not ten.")
+			}
+		}
+	multiLineClosure(10)
+	multiLineClosure(20)
 }

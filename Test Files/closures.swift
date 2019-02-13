@@ -29,3 +29,15 @@ func defaultClosure(closure: (String) -> () = { print($0) }) {
 	closure("Calling from default closure!")
 }
 defaultClosure()
+
+let multiLineClosure: (Int) -> () = { a in
+	if a == 10 {
+		print("It's ten!")
+	}
+	else {
+		print("It's not ten.")
+	}
+}
+multiLineClosure(10)
+multiLineClosure(20)
+

@@ -705,7 +705,6 @@ public class GRYAnonymousParametersTranspilationPass: GRYTranspilationPass {
 	}
 }
 
-// TODO: test
 /// Closures in kotlin can't have normal "return" statements. Instead, they must have return@f
 /// statements (not yet implemented) or just standalone expressions (easier to implement but more
 /// error-prone). This pass turns return statements in closures into standalone expressions

@@ -694,7 +694,6 @@ public class GRYKotlinTranslator {
 		return functionTranslation + parametersTranslation
 	}
 
-	// TODO: test multi-line closures
 	private func translateClosureExpression(
 		parameterNames: [String], parameterTypes: [String], statements: [GRYTopLevelNode],
 		type: String, withIndentation indentation: String) throws -> String
