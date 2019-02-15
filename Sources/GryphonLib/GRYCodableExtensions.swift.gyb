@@ -80,8 +80,9 @@ extension Array where Element == ${type} {
 			try decoder.readClosingBracket()
 			return result
 		}
-		catch GRYDecodingError.unexpectedContent(_, let message) {
-			throw GRYDecodingError.unexpectedContent(decoder, "Failed to decode Array: \(message)")
+		catch GRYDecodingError.unexpectedContent(_, let errorMessage) {
+			throw GRYDecodingError.unexpectedContent(
+				decoder: decoder, errorMessage: "Failed to decode Array: \(errorMessage)")
 		}
 	}
 }
@@ -113,9 +114,9 @@ extension Dictionary where Key == String, Value == ${type} {
 			try decoder.readClosingBrace()
 			return result
 		}
-		catch GRYDecodingError.unexpectedContent(_, let message) {
+		catch GRYDecodingError.unexpectedContent(_, let errorMessage) {
 			throw GRYDecodingError.unexpectedContent(
-				decoder, "Failed to decode Dictionary: \(message)")
+				decoder: decoder, errorMessage: "Failed to decode Dictionary: \(errorMessage)")
 		}
 	}
 }

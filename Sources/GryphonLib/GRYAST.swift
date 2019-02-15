@@ -105,6 +105,15 @@ extension GRYTopLevelNode {
 				GRYPrintableTree(name),
 				GRYPrintableTree("inherits", inherits),
 				GRYPrintableTree("elements", elements), ]
+		case let .enumElementDeclaration(
+			name: name,
+			associatedValueLabels: associatedValueLabels,
+			associatedValueTypes: associatedValueTypes):
+
+			return [
+				GRYPrintableTree(name),
+				GRYPrintableTree("values", associatedValueLabels),
+				GRYPrintableTree("types", associatedValueTypes), ]
 		case let .protocolDeclaration(name: name, members: members):
 			return [
 				GRYPrintableTree(name),

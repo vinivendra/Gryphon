@@ -305,17 +305,42 @@ public class GRYSwift4Translator {
 				elements: [])
 		}
 
-		var elements = [String]()
+		var elements = [GRYTopLevelNode]()
 		let enumElementDeclarations =
 			enumDeclaration.subtrees.filter { $0.name == "Enum Element Declaration" }
 		for enumElementDeclaration in enumElementDeclarations {
 			guard let elementName = enumElementDeclaration.standaloneAttributes.first else {
 				throw unexpectedASTStructureError(
-					"Unrecognized enum element",
+					"Expected the element name to be the first standalone attribute in an Enum" +
+					"Declaration",
 					AST: enumDeclaration)
 			}
 
-			elements.append(elementName)
+			if !elementName.contains("(") {
+				elements.append(.enumElementDeclaration(
+					name: elementName, associatedValueLabels: [], associatedValueTypes: []))
+			}
+			else {
+				let parenthesisIndex = elementName.firstIndex(of: "(")!
+				let prefix = String(elementName[elementName.startIndex..<parenthesisIndex])
+				let suffix = elementName[parenthesisIndex...]
+				let valuesString = suffix.dropFirst().dropLast(2)
+				let valueLabels = valuesString.split(separator: ":").map(String.init)
+
+				guard let enumType = enumElementDeclaration["interface type"] else {
+					throw unexpectedASTStructureError(
+						"Expected an enum element with associated values to have an interface type",
+						AST: enumDeclaration)
+				}
+				let enumTypeComponents = enumType.split(withStringSeparator: " -> ")
+				let valuesComponent = enumTypeComponents[1]
+				let valueTypesString = String(valuesComponent.dropFirst().dropLast())
+				let valueTypes = valueTypesString.split(withStringSeparator: ", ")
+
+				elements.append(.enumElementDeclaration(
+					name: prefix, associatedValueLabels: valueLabels,
+					associatedValueTypes: valueTypes))
+			}
 		}
 
 		return .enumDeclaration(

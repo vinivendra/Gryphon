@@ -15,13 +15,13 @@
 */
 
 //
-enum GRYDecodingError: CustomStringConvertible, Error {
-	case unexpectedContent(GRYDecoder, String)
+enum GRYDecodingError: Error, CustomStringConvertible {
+	case unexpectedContent(decoder: GRYDecoder, errorMessage: String)
 
 	var description: String {
 		switch self {
-		case let .unexpectedContent(decoder, message):
-			return "Decoding error: \(message)\n" +
+		case let .unexpectedContent(decoder, errorMessage):
+			return "Decoding error: \(errorMessage)\n" +
 				"Remaining buffer in decoder: \"\(decoder.remainingBuffer(upTo: 1_000))\""
 		}
 	}
@@ -160,14 +160,14 @@ internal class GRYDecoder {
 	// MARK: Read information
 	func readOpeningParenthesis() throws {
 		guard canReadOpeningParenthesis() else {
-			throw GRYDecodingError.unexpectedContent(self, "Expected '('.")
+			throw GRYDecodingError.unexpectedContent(decoder: self, errorMessage: "Expected '('.")
 		}
 		currentIndex = nextIndex()
 	}
 
 	func readClosingParenthesis() throws {
 		guard canReadClosingParenthesis() else {
-			throw GRYDecodingError.unexpectedContent(self, "Expected ')'.")
+			throw GRYDecodingError.unexpectedContent(decoder: self, errorMessage: "Expected ')'.")
 		}
 		currentIndex = nextIndex()
 		cleanLeadingWhitespace()
@@ -175,7 +175,7 @@ internal class GRYDecoder {
 
 	func readOpeningBracket() throws {
 		guard canReadOpeningBracket() else {
-			throw GRYDecodingError.unexpectedContent(self, "Expected '['.")
+			throw GRYDecodingError.unexpectedContent(decoder: self, errorMessage: "Expected '['.")
 		}
 		currentIndex = nextIndex()
 		cleanLeadingWhitespace()
@@ -183,7 +183,7 @@ internal class GRYDecoder {
 
 	func readClosingBracket() throws {
 		guard canReadClosingBracket() else {
-			throw GRYDecodingError.unexpectedContent(self, "Expected ']'.")
+			throw GRYDecodingError.unexpectedContent(decoder: self, errorMessage: "Expected ']'.")
 		}
 		currentIndex = nextIndex()
 		cleanLeadingWhitespace()
@@ -191,7 +191,7 @@ internal class GRYDecoder {
 
 	func readOpeningBrace() throws {
 		guard canReadOpeningBrace() else {
-			throw GRYDecodingError.unexpectedContent(self, "Expected '{'.")
+			throw GRYDecodingError.unexpectedContent(decoder: self, errorMessage: "Expected '{'.")
 		}
 		currentIndex = nextIndex()
 		cleanLeadingWhitespace()
@@ -199,7 +199,7 @@ internal class GRYDecoder {
 
 	func readClosingBrace() throws {
 		guard canReadClosingBrace() else {
-			throw GRYDecodingError.unexpectedContent(self, "Expected '}'.")
+			throw GRYDecodingError.unexpectedContent(decoder: self, errorMessage: "Expected '}'.")
 		}
 		currentIndex = nextIndex()
 		cleanLeadingWhitespace()
@@ -755,7 +755,7 @@ extension Int {
 		let expectedInt = decoder.readIdentifier()
 		guard let result = Int(expectedInt) else {
 			throw GRYDecodingError.unexpectedContent(
-				decoder, "Got \(expectedInt), expected an Int.")
+				decoder: decoder, errorMessage: "Got \(expectedInt), expected an Int.")
 		}
 		return result
 	}
@@ -770,7 +770,7 @@ extension Double {
 		let expectedDouble = decoder.readIdentifier()
 		guard let result = Double(expectedDouble) else {
 			throw GRYDecodingError.unexpectedContent(
-				decoder, "Got \(expectedDouble), expected a Double.")
+				decoder: decoder, errorMessage: "Got \(expectedDouble), expected a Double.")
 		}
 		return result
 	}
@@ -790,7 +790,7 @@ extension Bool {
 		let expectedBool = decoder.readIdentifier()
 		guard let result = Bool(expectedBool) else {
 			throw GRYDecodingError.unexpectedContent(
-				decoder, "Got \(expectedBool), expected a Bool.")
+				decoder: decoder, errorMessage: "Got \(expectedBool), expected a Bool.")
 		}
 		return result
 	}

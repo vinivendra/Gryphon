@@ -23,7 +23,10 @@ astNodes = [
 	['companionObject', [['members', '[GRYTopLevelNode]']]],
 	['enumDeclaration',
 		[['access', 'String?'], ['name', 'String'], ['inherits', '[String]'],
-		['elements', '[String]']]],
+		['elements', '[GRYTopLevelNode]']]],
+	['enumElementDeclaration',
+		[['name', 'String'], ['associatedValueLabels', '[String]'],
+		['associatedValueTypes', '[String]']]],
 	['protocolDeclaration', [['name', 'String'], ['members', '[GRYTopLevelNode]']]],
 	['structDeclaration', [['name', 'String']]],
 	['functionDeclaration',
@@ -128,7 +131,7 @@ public indirect enum GRYTopLevelNode: Equatable, GRYPrintableAsTree {
 %end
 		default:
 			throw GRYDecodingError.unexpectedContent(
-				decoder, "Unknown GRYTopLevelNode \"\(name)\".")
+				decoder: decoder, errorMessage: "Unknown GRYTopLevelNode \"\(name)\".")
 		}
 
 		try decoder.readClosingParenthesis()
@@ -253,7 +256,8 @@ public indirect enum GRYExpression: Equatable, GRYPrintableAsTree {
 %	end
 %end
 		default:
-			throw GRYDecodingError.unexpectedContent(decoder, "Unknown GRYExpression \"\(name)\".")
+			throw GRYDecodingError.unexpectedContent(
+				decoder: decoder, errorMessage: "Unknown GRYExpression \"\(name)\".")
 		}
 
 		try decoder.readClosingParenthesis()

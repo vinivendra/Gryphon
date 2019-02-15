@@ -56,6 +56,13 @@ public class GRYTranspilationPass {
 
 			return replaceEnumDeclaration(
 				access: access, name: name, inherits: inherits, elements: elements)
+		case let .enumElementDeclaration(
+			name: name, associatedValueLabels: associatedValueLabels,
+			associatedValueTypes: associatedValueTypes):
+
+			return replaceEnumElementDeclaration(
+				name: name, associatedValueLabels: associatedValueLabels,
+				associatedValueTypes: associatedValueTypes)
 		case let .protocolDeclaration(name: name, members: members):
 			return replaceProtocolDeclaration(name: name, members: members)
 		case let .structDeclaration(name: name):
@@ -122,10 +129,20 @@ public class GRYTranspilationPass {
 	}
 
 	func replaceEnumDeclaration(
-		access: String?, name: String, inherits: [String], elements: [String]) -> [GRYTopLevelNode]
+		access: String?, name: String, inherits: [String], elements: [GRYTopLevelNode])
+		-> [GRYTopLevelNode]
 	{
 		return [
 			.enumDeclaration(access: access, name: name, inherits: inherits, elements: elements), ]
+	}
+
+	func replaceEnumElementDeclaration(
+		name: String, associatedValueLabels: [String], associatedValueTypes: [String])
+		-> [GRYTopLevelNode]
+	{
+		return [.enumElementDeclaration(
+			name: name, associatedValueLabels: associatedValueLabels,
+			associatedValueTypes: associatedValueTypes)]
 	}
 
 	func replaceProtocolDeclaration(name: String, members: [GRYTopLevelNode]) -> [GRYTopLevelNode] {
@@ -545,7 +562,8 @@ public class GRYRemoveIgnoredDeclarationsTranspilationPass: GRYTranspilationPass
 	}
 
 	override func replaceEnumDeclaration(
-		access: String?, name: String, inherits: [String], elements: [String]) -> [GRYTopLevelNode]
+		access: String?, name: String, inherits: [String], elements: [GRYTopLevelNode])
+		-> [GRYTopLevelNode]
 	{
 		if inherits.contains("GRYIgnore") {
 			return []
@@ -805,7 +823,8 @@ public class GRYRemoveExtensionsTranspilationPass: GRYTranspilationPass {
 
 public class GRYRecordEnumsTranspilationPass: GRYTranspilationPass {
 	override func replaceEnumDeclaration(
-		access: String?, name: String, inherits: [String], elements: [String]) -> [GRYTopLevelNode]
+		access: String?, name: String, inherits: [String], elements: [GRYTopLevelNode])
+		-> [GRYTopLevelNode]
 	{
 		GRYKotlinTranslator.addEnum(name)
 		return [.enumDeclaration(

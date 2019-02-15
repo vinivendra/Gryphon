@@ -129,9 +129,16 @@ public class GRYKotlinTranslator {
 		case let .enumDeclaration(
 			access: access, name: name, inherits: inherits, elements: elements):
 
-			result = translateEnumDeclaration(
+			result = try translateEnumDeclaration(
 				access: access, name: name, inherits: inherits, elements: elements,
 				withIndentation: indentation)
+		case .enumElementDeclaration(
+			name: _, associatedValueLabels: _, associatedValueTypes: _):
+
+			throw unexpectedASTStructureError(
+				"Enum element translation should only be called from within the translation of " +
+				"its wrapping Enum Declaration, since it needs to know the Enum's name.",
+				AST: subtree)
 		case let .forEachStatement(
 			collection: collection, variable: variable, statements: statements):
 
@@ -202,16 +209,16 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateEnumDeclaration(
-		access: String?, name: String, inherits: [String], elements: [String],
-		withIndentation indentation: String) -> String
+		access: String?, name enumName: String, inherits: [String], elements: [GRYTopLevelNode],
+		withIndentation indentation: String) throws -> String
 	{
 		var result: String
 
 		if let access = access {
-			result = "\(indentation)\(access) sealed class " + name
+			result = "\(indentation)\(access) sealed class " + enumName
 		}
 		else {
-			result = "\(indentation)sealed class " + name
+			result = "\(indentation)sealed class " + enumName
 		}
 
 		if !inherits.isEmpty {
@@ -225,14 +232,44 @@ public class GRYKotlinTranslator {
 		let increasedIndentation = increaseIndentation(indentation)
 
 		for element in elements {
-			let capitalizedElementName = element.capitalizedAsCamelCase
-
-			result += "\(increasedIndentation)class \(capitalizedElementName): \(name)()\n"
+			if case let .enumElementDeclaration(
+				name: elementName, associatedValueLabels: associatedValueLabels,
+				associatedValueTypes: associatedValueTypes) = element
+			{
+				result += translateEnumElementDeclaration(
+					enumName: enumName, elementName: elementName,
+					associatedValueLabels: associatedValueLabels,
+					associatedValueTypes: associatedValueTypes,
+					withIndentation: increasedIndentation)
+			}
+			else {
+				throw unexpectedASTStructureError(
+					"Expected enum element to be an .enumElementDeclaration",
+					AST: .enumDeclaration(
+						access: access, name: enumName, inherits: inherits, elements: elements))
+			}
 		}
 
 		result += "\(indentation)}\n"
 
 		return result
+	}
+
+	private func translateEnumElementDeclaration(
+		enumName: String, elementName: String, associatedValueLabels: [String],
+		associatedValueTypes: [String], withIndentation indentation: String) -> String
+	{
+		let capitalizedElementName = elementName.capitalizedAsCamelCase
+
+		if associatedValueLabels.isEmpty {
+			return "\(indentation)class \(capitalizedElementName): \(enumName)()\n"
+		}
+		else {
+			let associatedValuesString = zip(associatedValueLabels, associatedValueTypes)
+				.map { "val \($0): \($1)" }.joined(separator: ", ")
+			return "\(indentation)class \(capitalizedElementName)(\(associatedValuesString)): " +
+				"\(enumName)()\n"
+		}
 	}
 
 	private func translateProtocolDeclaration(
