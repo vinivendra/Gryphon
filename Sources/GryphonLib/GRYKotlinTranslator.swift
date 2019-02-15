@@ -418,7 +418,9 @@ public class GRYKotlinTranslator {
 			}
 			else {
 				throw unexpectedASTStructureError(
-					"Expected the else statement to be an .ifStatement",
+					"Expected the else statement to be an ifStatement." +
+					"If it's a variableDeclaration, this might come from an `else if let`, which" +
+					"is not supported.",
 					AST: .ifStatement(
 						conditions: conditions, declarations: declarations, statements: statements,
 						elseStatement: elseStatement, isGuard: isGuard))

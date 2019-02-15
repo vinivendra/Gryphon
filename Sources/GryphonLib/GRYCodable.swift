@@ -209,27 +209,27 @@ internal class GRYDecoder {
 		if canReadOpeningParenthesis() {
 			return ""
 		}
-		else if canReadDoubleQuotedString() {
+		if canReadDoubleQuotedString() {
 			let string = readDoubleQuotedString()
 			return string
 		}
-		else if canReadSingleQuotedString() {
+		if canReadSingleQuotedString() {
 			let string = readSingleQuotedString()
 			return string
 		}
-		else if canReadStringInBrackets() {
+		if canReadStringInBrackets() {
 			let string = readStringInBrackets()
 			return string
 		}
-		else if canReadStringInAngleBrackets() {
+		if canReadStringInAngleBrackets() {
 			let string = readStringInAngleBrackets()
 			return string
 		}
-		else if let string = readDeclarationLocation() {
-			return string
+		if let declarationLocation = readDeclarationLocation() {
+			return declarationLocation
 		}
-		else if let string = readDeclaration() {
-			return string
+		if let declaration = readDeclaration() {
+			return declaration
 		}
 		else {
 			return readIdentifier()
