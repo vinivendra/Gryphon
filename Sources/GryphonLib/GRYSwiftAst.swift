@@ -116,7 +116,7 @@ public final class GRYSwiftAST: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 		let subtrees: ArrayReference<GRYSwiftAST> = []
 
 		try decoder.readOpeningParenthesis()
-		let name = decoder.readName()
+		let name = decoder.readIdentifier()
 		self.name = GRYUtils.expandSwiftAbbreviation(name)
 
 		// The loop stops: all branches tell the decoder to read, therefore the input string must

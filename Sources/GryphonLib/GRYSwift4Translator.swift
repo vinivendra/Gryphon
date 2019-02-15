@@ -181,7 +181,7 @@ public class GRYSwift4Translator {
 			 "Inout Expression",
 			 "Load Expression",
 			 "Function Conversion Expression",
-			 "Try Expression": // TODO: Test try's and throw's and catch's
+			 "Try Expression":
 			if let lastExpression = expression.subtrees.last {
 				return try translate(expression: lastExpression)
 			}

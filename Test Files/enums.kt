@@ -6,3 +6,6 @@ internal sealed class CalculatorError: Exception() {
 internal fun throwingFunc() {
 	throw CalculatorError.InvalidCharacter()
 }
+internal fun otherThrowingFunc() {
+	throwingFunc()
+}

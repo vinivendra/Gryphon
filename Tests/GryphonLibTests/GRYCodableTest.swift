@@ -118,22 +118,6 @@ class GRYCodableTest: XCTestCase {
 		XCTAssertNoThrow(try decoder.readClosingBrace())
 		XCTAssertEqual(decoder.remainingBuffer, "foo")
 
-		// Name
-		decoder = GRYDecoder(encodedString: "foo bla)")
-		string = decoder.readName()
-		XCTAssertEqual(string, "foo")
-		XCTAssertEqual(decoder.remainingBuffer, "bla)")
-
-		decoder = GRYDecoder(encodedString: "foo\nbla)")
-		string = decoder.readName()
-		XCTAssertEqual(string, "foobla")
-		XCTAssertEqual(decoder.remainingBuffer, ")")
-
-		decoder = GRYDecoder(encodedString: "foo(baz)bar)")
-		string = decoder.readName()
-		XCTAssertEqual(string, "foo")
-		XCTAssertEqual(decoder.remainingBuffer, "(baz)bar)")
-
 		// Identifier
 		decoder = GRYDecoder(encodedString: "foo bla)")
 		string = decoder.readIdentifier()
@@ -181,6 +165,32 @@ class GRYCodableTest: XCTestCase {
 		string = decoder.readStringInBrackets()
 		XCTAssertEqual(string, "bla")
 		XCTAssertEqual(decoder.remainingBuffer, "foo)")
+
+		//
+		// Test that a Swift compiler bug is being handled correctly. See `readIdentifier`'s docs.
+		decoder = GRYDecoder(encodedString: "foo\nbar)")
+		string = decoder.readIdentifier()
+		XCTAssertEqual(string, "foobar")
+		XCTAssertEqual(decoder.remainingBuffer, ")")
+
+		decoder = GRYDecoder(encodedString: "foo\n  bar)")
+		string = decoder.readIdentifier()
+		XCTAssertEqual(string, "foo")
+		XCTAssertEqual(decoder.remainingBuffer, "bar)")
+
+		decoder = GRYDecoder(
+			encodedString: "test.(file).Bl\na.foo(bar:baz:).x)")
+		optionalString = decoder.readDeclaration()
+		XCTAssertEqual(
+			optionalString, "test.(file).Bla.foo(bar:baz:).x")
+		XCTAssertEqual(decoder.remainingBuffer, ")")
+
+		decoder = GRYDecoder(
+			encodedString: "test.(file).Bla.foo(bar:baz:).x\n  )")
+		optionalString = decoder.readDeclaration()
+		XCTAssertEqual(
+			optionalString, "test.(file).Bla.foo(bar:baz:).x")
+		XCTAssertEqual(decoder.remainingBuffer, ")")
 	}
 
 	// MARK: - Encoding and decoding tests

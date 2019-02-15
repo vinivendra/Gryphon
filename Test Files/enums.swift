@@ -23,3 +23,7 @@ enum CalculatorError: Error {
 func throwingFunc() throws {
 	throw CalculatorError.invalidCharacter
 }
+
+func otherThrowingFunc() throws {
+	try throwingFunc()
+}

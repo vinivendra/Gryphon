@@ -239,6 +239,11 @@ internal class GRYDecoder {
 	/**
 	Reads an identifier. An identifier may have parentheses in it, so this function also
 	checks to see if they're balanced and only exits when the last open parethesis has been closed.
+
+	For some reason (a bug in the compiler) the identifier can sometimes be split in two by a
+	newline. Newlines that seem to occur normally are followed by a series of spaces, but these
+	buggy newlines are just followed by the rest of the identifier. So if the character following
+	newline is not a space, we assume that's what happened and keep reading the rest.
 	*/
 	func readIdentifier() -> String {
 		defer { cleanLeadingWhitespace() }
@@ -257,35 +262,12 @@ internal class GRYDecoder {
 				if parenthesesLevel < 0 {
 					break loop
 				}
-			case " ", "\n":
-				break loop
-			default: break
-			}
-
-			index = buffer.index(after: index)
-		}
-
-		let string = String(buffer[currentIndex..<index])
-
-		currentIndex = index
-
-		return string
-	}
-
-	/**
-	Reads the name of the AST node. For some reason (a bug in the compiler) the name can sometimes
-	be split in two by a newline. So if the character following the name is a newline, we assume
-	that's what happened and keep reading the rest of the name.
-	*/
-	func readName() -> String {
-		defer { cleanLeadingWhitespace() }
-
-		var index = currentIndex
-		loop: while true {
-			let character = buffer[index]
-
-			switch character {
-			case " ", "(", ")", "[", "]", "\"", "'":
+			case "\n":
+				let nextCharacter = buffer[buffer.index(after: index)]
+				if nextCharacter == " " {
+					break loop
+				}
+			case " ":
 				break loop
 			default: break
 			}
@@ -482,9 +464,12 @@ internal class GRYDecoder {
 	Reads a declaration without a location after. A declaration normally contains periods indicating
 	the parts of the declaration. We use this fact to try to distinguish declarations from normal
 	identifiers.
+
 	A declaration may also contain a type followed by " extension.", as in
 	"Swift.(file).Int extension.+". In that case, the space before extension is included in the
 	declaration.
+
+	It seems the newline bug (see the documentation for readIdentifier) can also happen here.
 	*/
 	func readDeclaration() -> String? {
 		defer { cleanLeadingWhitespace() }
@@ -516,7 +501,10 @@ internal class GRYDecoder {
 					break loop
 				}
 			case "\n":
-				break loop
+				let nextCharacter = buffer[buffer.index(after: index)]
+				if nextCharacter == " " {
+					break loop
+				}
 			default: break
 			}
 
@@ -528,10 +516,11 @@ internal class GRYDecoder {
 		}
 
 		let string = String(buffer[currentIndex..<index])
+		let cleanString = string.replacingOccurrences(of: "\n", with: "")
 
 		currentIndex = index
 
-		return string
+		return cleanString
 	}
 
 	/**
