@@ -407,16 +407,22 @@ public class GRYKotlinTranslator {
 		result += statementsString + indentation + "}\n"
 
 		if let unwrappedElse = elseStatement {
-			guard case let .ifStatement(
+			if case let .ifStatement(
 				conditions: conditions, declarations: declarations, statements: statements,
-				elseStatement: elseStatement, isGuard: isGuard) = unwrappedElse else
+				elseStatement: elseStatement, isGuard: isGuard) = unwrappedElse
 			{
-				preconditionFailure()
+				result += try translateIfStatement(
+					conditions: conditions, declarations: declarations, statements: statements,
+					elseStatement: elseStatement, isGuard: isGuard, isElseIf: true,
+					withIndentation: indentation)
 			}
-			result += try translateIfStatement(
-				conditions: conditions, declarations: declarations, statements: statements,
-				elseStatement: elseStatement, isGuard: isGuard, isElseIf: true,
-				withIndentation: indentation)
+			else {
+				throw unexpectedASTStructureError(
+					"Expected the else statement to be an .ifStatement",
+					AST: .ifStatement(
+						conditions: conditions, declarations: declarations, statements: statements,
+						elseStatement: elseStatement, isGuard: isGuard))
+			}
 		}
 
 		return result
@@ -500,7 +506,12 @@ public class GRYKotlinTranslator {
 				isImplicit: _, isStatic: _, extendsType: _, statements: statements,
 				access: _) = getter else
 			{
-				preconditionFailure()
+				throw unexpectedASTStructureError(
+					"Expected the getter to be a .functionDeclaration",
+					AST: .variableDeclaration(
+						identifier: identifier, typeName: typeName, expression: expression,
+						getter: getter, setter: setter, isLet: isLet, extendsType: extendsType,
+						annotations: annotations))
 			}
 
 			if let statements = statements {
@@ -516,7 +527,12 @@ public class GRYKotlinTranslator {
 				isImplicit: _, isStatic: _, extendsType: _, statements: statements,
 				access: _) = setter else
 			{
-				preconditionFailure()
+				throw unexpectedASTStructureError(
+					"Expected the setter to be a .functionDeclaration",
+					AST: .variableDeclaration(
+						identifier: identifier, typeName: typeName, expression: expression,
+						getter: getter, setter: setter, isLet: isLet, extendsType: extendsType,
+						annotations: annotations))
 			}
 
 			if let statements = statements {
@@ -699,7 +715,10 @@ public class GRYKotlinTranslator {
 		withIndentation indentation: String) throws -> String
 	{
 		guard case let .tupleExpression(pairs: pairs) = parameters else {
-			preconditionFailure()
+			throw unexpectedASTStructureError(
+				"Expected the parameters to be a .tupleExpression",
+				AST: .expression(expression:
+					.callExpression(function: function, parameters: parameters, type: type)))
 		}
 
 		let functionTranslation = try translateExpression(function, withIndentation: indentation)
