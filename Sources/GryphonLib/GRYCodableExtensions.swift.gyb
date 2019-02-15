@@ -1,0 +1,122 @@
+/*
+* Copyright 2018 Vinícius Jorge Vendramini
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+%{
+optionalTypes = [
+	'String', 'Int', 'Double', 'Bool', 'GRYTopLevelNode', 'GRYExpression',
+	'GRYExpression.TuplePair',
+	'[GRYTopLevelNode]'
+	]
+arrayTypes = [
+	'String', 'Int', 'Double', 'Bool', 'GRYTopLevelNode', 'GRYExpression',
+	'GRYExpression.TuplePair',
+	'GRYExpression?'
+	]
+dictionaryTypes = [
+	'String', 'Int', 'Double', 'Bool', 'GRYTopLevelNode', 'GRYExpression',
+	'GRYExpression.TuplePair',
+	]
+}%
+
+// MARK: - Optional extensions
+%for type in optionalTypes:
+
+// MARK: ${type}
+extension Optional where Wrapped == ${type} {
+	func encode(into encoder: GRYEncoder) throws {
+		if let unwrapped = self {
+			try unwrapped.encode(into: encoder)
+		}
+		else {
+			encoder.add("nil")
+		}
+	}
+
+	static func decode(from decoder: GRYDecoder) throws -> ${type}? {
+		if decoder.buffer[decoder.currentIndex...].hasPrefix("nil") {
+			_ = decoder.readIdentifier()
+			return nil
+		}
+		else {
+			return try ${type}.decode(from: decoder)
+		}
+	}
+}
+%end
+
+// MARK: - Array extensions
+%for type in arrayTypes:
+
+// MARK: ${type}
+extension Array where Element == ${type} {
+	func encode(into encoder: GRYEncoder) throws {
+		encoder.add("[")
+		for element in self {
+			try element.encode(into: encoder)
+		}
+		encoder.add("]")
+	}
+
+	static func decode(from decoder: GRYDecoder) throws -> [${type}] {
+		do {
+			var result = [${type}]()
+			try decoder.readOpeningBracket()
+			while !decoder.canReadClosingBracket() {
+				let newElement = try ${type}.decode(from: decoder)
+				result.append(newElement)
+			}
+			try decoder.readClosingBracket()
+			return result
+		}
+		catch GRYDecodingError.unexpectedContent(_, let message) {
+			throw GRYDecodingError.unexpectedContent(decoder, "Failed to decode Array: \(message)")
+		}
+	}
+}
+%end
+
+// MARK: - Dictioinary extensions
+%for type in dictionaryTypes:
+
+// MARK: ${type}
+extension Dictionary where Key == String, Value == ${type} {
+	func encode(into encoder: GRYEncoder) throws {
+		encoder.add("{")
+		for (key, value) in self {
+			try key.encode(into: encoder)
+			try value.encode(into: encoder)
+		}
+		encoder.add("}")
+	}
+
+	static func decode(from decoder: GRYDecoder) throws -> [Key: ${type}] {
+		do {
+			var result = [Key: ${type}]()
+			try decoder.readOpeningBrace()
+			while !decoder.canReadClosingBrace() {
+				let newKey = try String.decode(from: decoder)
+				let newValue = try ${type}.decode(from: decoder)
+				result[newKey] = newValue
+			}
+			try decoder.readClosingBrace()
+			return result
+		}
+		catch GRYDecodingError.unexpectedContent(_, let message) {
+			throw GRYDecodingError.unexpectedContent(
+				decoder, "Failed to decode Dictionary: \(message)")
+		}
+	}
+}
+%end

@@ -100,7 +100,7 @@ astNodes = [
 	]
 }%
 
-public indirect enum GRYTopLevelNode: Equatable, GRYPrintableAsTree, GRYCodable {
+public indirect enum GRYTopLevelNode: Equatable, GRYPrintableAsTree {
 
 %for astNode in astNodes:
 %	name = astNode[0]
@@ -359,7 +359,7 @@ expressionNodes = [
 ]
 }%
 
-public indirect enum GRYExpression: Equatable, GRYPrintableAsTree, GRYCodable {
+public indirect enum GRYExpression: Equatable, GRYPrintableAsTree {
 %for expressionNode in expressionNodes:
 %	name = expressionNode[0]
 %
@@ -616,7 +616,7 @@ public indirect enum GRYExpression: Equatable, GRYPrintableAsTree, GRYCodable {
 	}
 
 	//
-	public struct TuplePair: Equatable, GRYCodable {
+	public struct TuplePair: Equatable {
 		let name: String?
 		let expression: GRYExpression
 

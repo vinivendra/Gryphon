@@ -18,7 +18,7 @@
 import XCTest
 
 class GRYCodableTest: XCTestCase {
-	struct TestObject: GRYCodable {
+	struct TestObject: Equatable {
 		let x: Int
 		let y: Int
 
@@ -221,29 +221,11 @@ class GRYCodableTest: XCTestCase {
 	func testSimpleTypesConformance() {
 		let intMin = Int(Int32.min)
 		let intMax = Int(Int32.max)
-
-		let tests: [GRYCodable] = [
-			0, 1, 2, -3,
-			0.0, 0.5, 1.0, -3.2,
-			true, false,
-			"hello, world!", "escaped \\\" quotes and \\\\ backslashes", "",
-			"1" as String?, nil as String?,
-			1 as Int?, nil as Int?,
-			1.0 as Double?, nil as Double?,
-			[1, 2, 3],
-			[] as [String],
-			[1: 2],
-			["1": 2],
-			[:] as [String: String],
-			TestObject(x: 0, y: 1),
-			TestUtils.rng.random(intMin..<intMax),
-			TestUtils.rng.random(intMin..<intMax),
-			TestUtils.rng.randomClosed(), TestUtils.rng.randomClosed(),
-			TestUtils.rng.randomBool(),
-			TestUtils.rng.randomString(
-				fromCharacterSet: TestUtils.characterSets[TestUtils.rng.random(0..<3)],
-				withLength: TestUtils.rng.random(1...10)),
-		]
+		let randomInt = TestUtils.rng.random(intMin..<intMax)
+		let randomDouble = TestUtils.rng.randomClosed()
+		let randomString = TestUtils.rng.randomString(
+			fromCharacterSet: TestUtils.characterSets[TestUtils.rng.random(0..<3)],
+			withLength: TestUtils.rng.random(1...10))
 		// Note: the random string created above mustn't use the separator character set because
 		// then we'd have to manually escape its backslashes and double quotes.
 
@@ -251,30 +233,67 @@ class GRYCodableTest: XCTestCase {
 			// Encode instances into a String
 			let encoder = GRYEncoder()
 			encoder.startNewObject(named: "test name")
-			for testObject in tests {
-				try testObject.encode(into: encoder)
-			}
+
+			try 0.encode(into: encoder)
+			try 1.encode(into: encoder)
+			try randomInt.encode(into: encoder)
+
+			try (0.0).encode(into: encoder)
+			try (0.5).encode(into: encoder)
+			try (-3.2).encode(into: encoder)
+			try randomDouble.encode(into: encoder)
+
+			try true.encode(into: encoder)
+			try false.encode(into: encoder)
+
+			try "hello, world!".encode(into: encoder)
+			try "escaped \\\" quotes and \\\\ backslashes".encode(into: encoder)
+			try randomString.encode(into: encoder)
+
+			try ("1" as String?).encode(into: encoder)
+			try (nil as String?).encode(into: encoder)
+
+			try [1, 2, 3].encode(into: encoder)
+			try ([] as [String]).encode(into: encoder)
+
+			try ["1": 2].encode(into: encoder)
+
+			try TestObject(x: 0, y: 1).encode(into: encoder)
+
 			encoder.endObject()
 			let encodingResult = encoder.result
-
 			// Decode String back into instances
 			let decoder = GRYDecoder(encodedString: encodingResult)
 			try decoder.readOpeningParenthesis()
 			XCTAssertEqual(decoder.readDoubleQuotedString(), "test name")
-			for testInstance in tests {
-				let createdInstance = try type(of: testInstance).decode(from: decoder)
-				// We can't compare the instances themselves directly because we can't be sure
-				// they're the same type here, so there's no way to use the `==` operator. We
-				// compare their types and descriptions instead.
-				XCTAssert(
-					type(of: createdInstance) == type(of: testInstance),
-					"Expected the type of the decoded object \(createdInstance) " +
-					"to be equal to the type of the original object \(testInstance)")
-				XCTAssert(
-					String(describing: createdInstance) == String(describing: testInstance),
-					"Expected the description of the decoded object \(createdInstance) " +
-					"to be equal to the description of the original object \(testInstance)")
-			}
+
+			XCTAssertEqual(0, try Int.decode(from: decoder))
+			XCTAssertEqual(1, try Int.decode(from: decoder))
+			XCTAssertEqual(randomInt, try Int.decode(from: decoder))
+
+			XCTAssertEqual((0.0), try Double.decode(from: decoder))
+			XCTAssertEqual((0.5), try Double.decode(from: decoder))
+			XCTAssertEqual((-3.2), try Double.decode(from: decoder))
+			XCTAssertEqual(randomDouble, try Double.decode(from: decoder))
+
+			XCTAssertEqual(true, try Bool.decode(from: decoder))
+			XCTAssertEqual(false, try Bool.decode(from: decoder))
+
+			XCTAssertEqual("hello, world!", try String.decode(from: decoder))
+			XCTAssertEqual(
+				"escaped \\\" quotes and \\\\ backslashes", try String.decode(from: decoder))
+			XCTAssertEqual(randomString, try String.decode(from: decoder))
+
+			XCTAssertEqual(("1" as String?), try String?.decode(from: decoder))
+			XCTAssertEqual((nil as String?), try String?.decode(from: decoder))
+
+			XCTAssertEqual([1, 2, 3], try [Int].decode(from: decoder))
+			XCTAssertEqual(([] as [String]), try [String].decode(from: decoder))
+
+			XCTAssertEqual(["1": 2], try [String: Int].decode(from: decoder))
+
+			XCTAssertEqual(TestObject(x: 0, y: 1), try TestObject.decode(from: decoder))
+
 			try decoder.readClosingParenthesis()
 
 		}

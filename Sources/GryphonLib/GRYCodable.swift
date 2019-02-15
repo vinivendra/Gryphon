@@ -746,65 +746,8 @@ public class GRYEncoder {
 	}
 }
 
-// MARK: - Common type conformances
-extension Array: GRYCodable where Element: GRYCodable {
-	func encode(into encoder: GRYEncoder) throws {
-		encoder.add("[")
-		for element in self {
-			try element.encode(into: encoder)
-		}
-		encoder.add("]")
-	}
-
-	static func decode(from decoder: GRYDecoder) throws -> [Element] {
-		do {
-			var result = [Element]()
-			try decoder.readOpeningBracket()
-			while !decoder.canReadClosingBracket() {
-				let newElement = try Element.decode(from: decoder)
-				result.append(newElement)
-			}
-			try decoder.readClosingBracket()
-			return result
-		}
-		catch GRYDecodingError.unexpectedContent(_, let message) {
-			throw GRYDecodingError.unexpectedContent(decoder, "Failed to decode Array: \(message)")
-		}
-	}
-}
-
-extension Dictionary: GRYCodable where
-	Key: GRYCodable, Value: GRYCodable
-{
-	func encode(into encoder: GRYEncoder) throws {
-		encoder.add("{")
-		for (key, value) in self {
-			try key.encode(into: encoder)
-			try value.encode(into: encoder)
-		}
-		encoder.add("}")
-	}
-
-	static func decode(from decoder: GRYDecoder) throws -> [Key: Value] {
-		do {
-			var result = [Key: Value]()
-			try decoder.readOpeningBrace()
-			while !decoder.canReadClosingBrace() {
-				let newKey = try Key.decode(from: decoder)
-				let newValue = try Value.decode(from: decoder)
-				result[newKey] = newValue
-			}
-			try decoder.readClosingBrace()
-			return result
-		}
-		catch GRYDecodingError.unexpectedContent(_, let message) {
-			throw GRYDecodingError.unexpectedContent(
-				decoder, "Failed to decode Dictionary: \(message)")
-		}
-	}
-}
-
-extension String: GRYCodable {
+// MARK: - Common types
+extension String {
 	func encode(into encoder: GRYEncoder) throws {
 		encoder.add("\"\(self)\"")
 	}
@@ -814,7 +757,7 @@ extension String: GRYCodable {
 	}
 }
 
-extension Int: GRYCodable {
+extension Int {
 	func encode(into encoder: GRYEncoder) throws {
 		encoder.add(String(self))
 	}
@@ -829,7 +772,7 @@ extension Int: GRYCodable {
 	}
 }
 
-extension Double: GRYCodable {
+extension Double {
 	func encode(into encoder: GRYEncoder) throws {
 		encoder.add(String(self))
 	}
@@ -844,7 +787,7 @@ extension Double: GRYCodable {
 	}
 }
 
-extension Bool: GRYCodable {
+extension Bool {
 	func encode(into encoder: GRYEncoder) throws {
 		if self {
 			encoder.add("true")
@@ -861,24 +804,5 @@ extension Bool: GRYCodable {
 				decoder, "Got \(expectedBool), expected a Bool.")
 		}
 		return result
-	}
-}
-
-extension Optional: GRYCodable where Wrapped: GRYCodable {
-	func encode(into encoder: GRYEncoder) throws {
-		if let unwrapped = self {
-			try unwrapped.encode(into: encoder)
-		}
-		else {
-			encoder.add("nil")
-		}
-	}
-
-	static func decode(from decoder: GRYDecoder) throws -> Wrapped? {
-		if decoder.buffer[decoder.currentIndex...].hasPrefix("nil") {
-			_ = decoder.readIdentifier()
-			return nil
-		}
-		return try Wrapped.decode(from: decoder)
 	}
 }
