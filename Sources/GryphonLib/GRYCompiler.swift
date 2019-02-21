@@ -135,8 +135,8 @@ public enum GRYCompiler {
 	static var shouldStopAtFirstError = false
 
 	// TODO: Refactor current warnings into these arrays.
-	private(set) static var errors = [Error]()
-	private(set) static var warnings = [String]()
+	public private(set) static var errors = [Error]()
+	public private(set) static var warnings = [String]()
 
 	public static func handleError(_ error: Error) throws {
 		if GRYCompiler.shouldStopAtFirstError {

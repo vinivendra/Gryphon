@@ -17,6 +17,9 @@
 public class GRYSwift4Translator {
 	// MARK: - Properties
 	var danglingPatternBinding: (identifier: String, type: String, expression: GRYExpression?)?
+	let errorDanglingPatternDeclaration:
+		(identifier: String, type: String, expression: GRYExpression?) =
+		(identifier: "<<Error>>", type: "<<Error>>", expression: GRYExpression.error)
 
 	var errors = [String]()
 
@@ -206,7 +209,11 @@ public class GRYSwift4Translator {
 
 	// MARK: - Leaf translations
 	internal func translate(protocolDeclaration: GRYSwiftAST) throws -> GRYTopLevelNode {
-		try ensure(AST: protocolDeclaration, isNamed: "Protocol")
+		guard protocolDeclaration.name == "Protocol" else {
+			return try unexpectedASTStructureError(
+				"Trying to translate \(protocolDeclaration.name) as 'Protocol'",
+				AST: protocolDeclaration)
+		}
 
 		guard let protocolName = protocolDeclaration.standaloneAttributes.first else {
 			return try unexpectedASTStructureError(
@@ -220,7 +227,11 @@ public class GRYSwift4Translator {
 	}
 
 	internal func translate(assignExpression: GRYSwiftAST) throws -> GRYTopLevelNode {
-		try ensure(AST: assignExpression, isNamed: "Assign Expression")
+		guard assignExpression.name == "Assign Expression" else {
+			return try unexpectedASTStructureError(
+				"Trying to translate \(assignExpression.name) as 'Assign Expression'",
+				AST: assignExpression)
+		}
 
 		if let leftExpression = assignExpression.subtree(at: 0),
 			let rightExpression = assignExpression.subtree(at: 1)
@@ -238,7 +249,11 @@ public class GRYSwift4Translator {
 	}
 
 	internal func translate(classDeclaration: GRYSwiftAST) throws -> GRYTopLevelNode {
-		try ensure(AST: classDeclaration, isNamed: "Class Declaration")
+		guard classDeclaration.name == "Class Declaration" else {
+			return try unexpectedASTStructureError(
+				"Trying to translate \(classDeclaration.name) as 'Class Declaration'",
+				AST: classDeclaration)
+		}
 
 		// Get the class name
 		let name = classDeclaration.standaloneAttributes.first!
@@ -263,7 +278,11 @@ public class GRYSwift4Translator {
 	}
 
 	internal func translate(throwStatement: GRYSwiftAST) throws -> GRYTopLevelNode {
-		try ensure(AST: throwStatement, isNamed: "Throw Statement")
+		guard throwStatement.name == "Throw Statement" else {
+			return try unexpectedASTStructureError(
+				"Trying to translate \(throwStatement.name) as 'Throw Statement'",
+				AST: throwStatement)
+		}
 
 		if let expression = throwStatement.subtrees.last {
 			let expressionTranslation = try translate(expression: expression)
@@ -283,7 +302,11 @@ public class GRYSwift4Translator {
 	}
 
 	internal func translate(enumDeclaration: GRYSwiftAST) throws -> GRYTopLevelNode {
-		try ensure(AST: enumDeclaration, isNamed: "Enum Declaration")
+		guard enumDeclaration.name == "Enum Declaration" else {
+			return try unexpectedASTStructureError(
+				"Trying to translate \(enumDeclaration.name) as 'Enum Declaration'",
+				AST: enumDeclaration)
+		}
 
 		let access = enumDeclaration["access"]
 
@@ -351,7 +374,12 @@ public class GRYSwift4Translator {
 	}
 
 	internal func translate(memberReferenceExpression: GRYSwiftAST) throws -> GRYExpression {
-		try ensure(AST: memberReferenceExpression, isNamed: "Member Reference Expression")
+		guard memberReferenceExpression.name == "Member Reference Expression" else {
+			return try unexpectedExpressionStructureError(
+				"Trying to translate \(memberReferenceExpression.name) as " +
+				"'Member Reference Expression'",
+				AST: memberReferenceExpression)
+		}
 
 		if let declaration = memberReferenceExpression["decl"],
 			let memberOwner = memberReferenceExpression.subtree(at: 0),
@@ -375,7 +403,11 @@ public class GRYSwift4Translator {
 	}
 
 	internal func translate(prefixUnaryExpression: GRYSwiftAST) throws -> GRYExpression {
-		try ensure(AST: prefixUnaryExpression, isNamed: "Prefix Unary Expression")
+		guard prefixUnaryExpression.name == "Prefix Unary Expression" else {
+			return try unexpectedExpressionStructureError(
+				"Trying to translate \(prefixUnaryExpression.name) as 'Prefix Unary Expression'",
+				AST: prefixUnaryExpression)
+		}
 
 		if let rawType = prefixUnaryExpression["type"],
 			let declaration = prefixUnaryExpression
@@ -400,7 +432,11 @@ public class GRYSwift4Translator {
 	}
 
 	internal func translate(postfixUnaryExpression: GRYSwiftAST) throws -> GRYExpression {
-		try ensure(AST: postfixUnaryExpression, isNamed: "Postfix Unary Expression")
+		guard postfixUnaryExpression.name == "Postfix Unary Expression" else {
+			return try unexpectedExpressionStructureError(
+				"Trying to translate \(postfixUnaryExpression.name) as 'Postfix Unary Expression'",
+				AST: postfixUnaryExpression)
+		}
 
 		if let rawType = postfixUnaryExpression["type"],
 			let declaration = postfixUnaryExpression
@@ -425,7 +461,11 @@ public class GRYSwift4Translator {
 	}
 
 	internal func translate(binaryExpression: GRYSwiftAST) throws -> GRYExpression {
-		try ensure(AST: binaryExpression, isNamed: "Binary Expression")
+		guard binaryExpression.name == "Binary Expression" else {
+			return try unexpectedExpressionStructureError(
+				"Trying to translate \(binaryExpression.name) as 'Binary Expression'",
+				AST: binaryExpression)
+		}
 
 		let operatorIdentifier: String
 
@@ -456,7 +496,11 @@ public class GRYSwift4Translator {
 	}
 
 	internal func translate(typeExpression: GRYSwiftAST) throws -> GRYExpression {
-		try ensure(AST: typeExpression, isNamed: "Type Expression")
+		guard typeExpression.name == "Type Expression" else {
+			return try unexpectedExpressionStructureError(
+				"Trying to translate \(typeExpression.name) as 'Type Expression'",
+				AST: typeExpression)
+		}
 
 		guard let type = typeExpression["typerepr"] else {
 			return try unexpectedExpressionStructureError(
@@ -468,7 +512,12 @@ public class GRYSwift4Translator {
 	}
 
 	internal func translate(dotSyntaxCallExpression: GRYSwiftAST) throws -> GRYExpression {
-		try ensure(AST: dotSyntaxCallExpression, isNamed: "Dot Syntax Call Expression")
+		guard dotSyntaxCallExpression.name == "Dot Syntax Call Expression" else {
+			return try unexpectedExpressionStructureError(
+				"Trying to translate \(dotSyntaxCallExpression.name) as " +
+				"'Dot Syntax Call Expression'",
+				AST: dotSyntaxCallExpression)
+		}
 
 		if let leftHandTree = dotSyntaxCallExpression.subtree(at: 1),
 			let rightHandExpression = dotSyntaxCallExpression.subtree(at: 0)
@@ -496,7 +545,11 @@ public class GRYSwift4Translator {
 	}
 
 	internal func translate(returnStatement: GRYSwiftAST) throws -> GRYTopLevelNode {
-		try ensure(AST: returnStatement, isNamed: "Return Statement")
+		guard returnStatement.name == "Return Statement" else {
+			return try unexpectedASTStructureError(
+				"Trying to translate \(returnStatement.name) as 'Return Statement'",
+				AST: returnStatement)
+		}
 
 		if let expression = returnStatement.subtrees.last {
 			let expression = try translate(expression: expression)
@@ -508,7 +561,11 @@ public class GRYSwift4Translator {
 	}
 
 	internal func translate(forEachStatement: GRYSwiftAST) throws -> GRYTopLevelNode {
-		try ensure(AST: forEachStatement, isNamed: "For Each Statement")
+		guard forEachStatement.name == "For Each Statement" else {
+			return try unexpectedASTStructureError(
+				"Trying to translate \(forEachStatement.name) as 'For Each Statement'",
+				AST: forEachStatement)
+		}
 
 		guard let variableSubtree = forEachStatement.subtree(named: "Pattern Named"),
 			let variableName = variableSubtree.standaloneAttributes.first,
@@ -698,8 +755,13 @@ public class GRYSwift4Translator {
 	}
 
 	internal func translate(functionDeclaration: GRYSwiftAST) throws -> GRYTopLevelNode? {
-		try ensure(
-			AST: functionDeclaration, isNamed: ["Function Declaration", "Constructor Declaration"])
+		guard ["Function Declaration", "Constructor Declaration"].contains(functionDeclaration.name)
+			else
+		{
+			return try unexpectedASTStructureError(
+				"Trying to translate \(functionDeclaration.name) as 'Function Declaration'",
+				AST: functionDeclaration)
+		}
 
 		// Getters and setters will appear again in the Variable Declaration AST and get translated
 		let isGetterOrSetter =
@@ -807,7 +869,12 @@ public class GRYSwift4Translator {
 	internal func translate(topLevelCode topLevelCodeDeclaration: GRYSwiftAST) throws
 		-> GRYTopLevelNode?
 	{
-		try ensure(AST: topLevelCodeDeclaration, isNamed: "Top Level Code Declaration")
+		guard topLevelCodeDeclaration.name == "Top Level Code Declaration" else {
+			return try unexpectedASTStructureError(
+				"Trying to translate \(topLevelCodeDeclaration.name) as " +
+				"'Top Level Code Declaration'",
+				AST: topLevelCodeDeclaration)
+		}
 
 		guard let braceStatement = topLevelCodeDeclaration.subtree(named: "Brace Statement") else {
 			return try unexpectedASTStructureError(
@@ -820,7 +887,11 @@ public class GRYSwift4Translator {
 	}
 
 	internal func translate(variableDeclaration: GRYSwiftAST) throws -> GRYTopLevelNode {
-		try ensure(AST: variableDeclaration, isNamed: "Variable Declaration")
+		guard variableDeclaration.name == "Variable Declaration" else {
+			return try unexpectedASTStructureError(
+				"Trying to translate \(variableDeclaration.name) as 'Variable Declaration'",
+				AST: variableDeclaration)
+		}
 
 		if let identifier = variableDeclaration.standaloneAttributes.first,
 			let rawType = variableDeclaration["interface type"]
@@ -829,11 +900,11 @@ public class GRYSwift4Translator {
 			let type = cleanUpType(rawType)
 
 			let expression: GRYExpression?
-			if let patternBindingExpression = danglingPatternBinding,
-				patternBindingExpression.identifier == identifier,
-				patternBindingExpression.type == type
+			if let bindingExpression = danglingPatternBinding,
+				(bindingExpression.identifier == identifier && bindingExpression.type == type) ||
+					(bindingExpression == errorDanglingPatternDeclaration)
 			{
-				expression = patternBindingExpression.expression
+				expression = bindingExpression.expression
 				danglingPatternBinding = nil
 			}
 			else {
@@ -899,7 +970,11 @@ public class GRYSwift4Translator {
 	}
 
 	internal func translate(callExpression: GRYSwiftAST) throws -> GRYExpression {
-		try ensure(AST: callExpression, isNamed: "Call Expression")
+		guard callExpression.name == "Call Expression" else {
+			return try unexpectedExpressionStructureError(
+				"Trying to translate \(callExpression.name) as 'Call Expression'",
+				AST: callExpression)
+		}
 
 		// If the call expression corresponds to an integer literal
 		if let argumentLabels = callExpression["arg_labels"] {
@@ -966,7 +1041,11 @@ public class GRYSwift4Translator {
 	}
 
 	internal func translate(closureExpression: GRYSwiftAST) throws -> GRYExpression {
-		try ensure(AST: closureExpression, isNamed: "Closure Expression")
+		guard closureExpression.name == "Closure Expression" else {
+			return try unexpectedExpressionStructureError(
+				"Trying to translate \(closureExpression.name) as 'Closure Expression'",
+				AST: closureExpression)
+		}
 
 		// Get the parameters.
 		let parameterList: GRYSwiftAST?
@@ -1031,7 +1110,11 @@ public class GRYSwift4Translator {
 	internal func translate(callExpressionParameters callExpression: GRYSwiftAST) throws
 		-> GRYExpression
 	{
-		try ensure(AST: callExpression, isNamed: "Call Expression")
+		guard callExpression.name == "Call Expression" else {
+			return try unexpectedExpressionStructureError(
+				"Trying to translate \(callExpression.name) as 'Call Expression'",
+				AST: callExpression)
+		}
 
 		let parameters: GRYExpression
 		if let parenthesesExpression = callExpression.subtree(named: "Parentheses Expression") {
@@ -1069,7 +1152,11 @@ public class GRYSwift4Translator {
 	}
 
 	internal func translate(tupleExpression: GRYSwiftAST) throws -> GRYExpression {
-		try ensure(AST: tupleExpression, isNamed: "Tuple Expression")
+		guard tupleExpression.name == "Tuple Expression" else {
+			return try unexpectedExpressionStructureError(
+				"Trying to translate \(tupleExpression.name) as 'Tuple Expression'",
+				AST: tupleExpression)
+		}
 
 		// Only empty tuples don't have a list of names
 		guard let names = tupleExpression["names"] else {
@@ -1097,7 +1184,11 @@ public class GRYSwift4Translator {
 	}
 
 	internal func translate(asNumericLiteral callExpression: GRYSwiftAST) throws -> GRYExpression {
-		try ensure(AST: callExpression, isNamed: "Call Expression")
+		guard callExpression.name == "Call Expression" else {
+			return try unexpectedExpressionStructureError(
+				"Trying to translate \(callExpression.name) as 'Call Expression'",
+				AST: callExpression)
+		}
 
 		if let tupleExpression = callExpression.subtree(named: "Tuple Expression"),
 			let integerLiteralExpression = tupleExpression
@@ -1127,7 +1218,11 @@ public class GRYSwift4Translator {
 	internal func translate(asBooleanLiteral callExpression: GRYSwiftAST) throws
 		-> GRYExpression
 	{
-		try ensure(AST: callExpression, isNamed: "Call Expression")
+		guard callExpression.name == "Call Expression" else {
+			return try unexpectedExpressionStructureError(
+				"Trying to translate \(callExpression.name) as 'Call Expression'",
+				AST: callExpression)
+		}
 
 		if let tupleExpression = callExpression.subtree(named: "Tuple Expression"),
 			let booleanLiteralExpression = tupleExpression
@@ -1143,7 +1238,12 @@ public class GRYSwift4Translator {
 	}
 
 	internal func translate(stringLiteralExpression: GRYSwiftAST) throws -> GRYExpression {
-		try ensure(AST: stringLiteralExpression, isNamed: "String Literal Expression")
+		guard stringLiteralExpression.name == "String Literal Expression" else {
+			return try unexpectedExpressionStructureError(
+				"Trying to translate \(stringLiteralExpression.name) as " +
+				"'String Literal Expression'",
+				AST: stringLiteralExpression)
+		}
 
 		if let value = stringLiteralExpression["value"] {
 			return .literalStringExpression(value: value)
@@ -1157,9 +1257,14 @@ public class GRYSwift4Translator {
 	internal func translate(interpolatedStringLiteralExpression: GRYSwiftAST) throws
 		-> GRYExpression
 	{
-		try ensure(
-			AST: interpolatedStringLiteralExpression,
-			isNamed: "Interpolated String Literal Expression")
+		guard interpolatedStringLiteralExpression.name == "Interpolated String Literal Expression"
+			else
+		{
+			return try unexpectedExpressionStructureError(
+				"Trying to translate \(interpolatedStringLiteralExpression.name) as " +
+				"'Interpolated String Literal Expression'",
+				AST: interpolatedStringLiteralExpression)
+		}
 
 		var expressions = [GRYExpression]()
 
@@ -1191,7 +1296,12 @@ public class GRYSwift4Translator {
 	internal func translate(declarationReferenceExpression: GRYSwiftAST) throws
 		-> GRYExpression
 	{
-		try ensure(AST: declarationReferenceExpression, isNamed: "Declaration Reference Expression")
+		guard declarationReferenceExpression.name == "Declaration Reference Expression" else {
+			return try unexpectedExpressionStructureError(
+				"Trying to translate \(declarationReferenceExpression.name) as " +
+				"'Declaration Reference Expression'",
+				AST: declarationReferenceExpression)
+		}
 
 		guard let rawType = declarationReferenceExpression["type"] else {
 			return try unexpectedExpressionStructureError(
@@ -1228,7 +1338,11 @@ public class GRYSwift4Translator {
 	}
 
 	internal func translate(subscriptExpression: GRYSwiftAST) throws -> GRYExpression {
-		try ensure(AST: subscriptExpression, isNamed: "Subscript Expression")
+		guard subscriptExpression.name == "Subscript Expression" else {
+			return try unexpectedExpressionStructureError(
+				"Trying to translate \(subscriptExpression.name) as 'Subscript Expression'",
+				AST: subscriptExpression)
+		}
 
 		if let rawType = subscriptExpression["type"],
 			let parenthesesExpression = subscriptExpression.subtree(
@@ -1252,7 +1366,11 @@ public class GRYSwift4Translator {
 	}
 
 	internal func translate(arrayExpression: GRYSwiftAST) throws -> GRYExpression {
-		try ensure(AST: arrayExpression, isNamed: "Array Expression")
+		guard arrayExpression.name == "Array Expression" else {
+			return try unexpectedExpressionStructureError(
+				"Trying to translate \(arrayExpression.name) as 'Array Expression'",
+				AST: arrayExpression)
+		}
 
 		let expressionsArray = try arrayExpression.subtrees.map(translate(expression:))
 
@@ -1267,7 +1385,13 @@ public class GRYSwift4Translator {
 
 	// MARK: - Supporting methods
 	internal func process(openExistentialExpression: GRYSwiftAST) throws -> GRYSwiftAST {
-		try ensure(AST: openExistentialExpression, isNamed: "Open Existential Expression")
+		guard openExistentialExpression.name == "Open Existential Expression" else {
+			_ = try unexpectedExpressionStructureError(
+				"Trying to translate \(openExistentialExpression.name) as " +
+				"'Open Existential Expression'",
+				AST: openExistentialExpression)
+			return GRYSwiftAST("Error", [], [:], [])
+		}
 
 		guard let replacementSubtree = openExistentialExpression.subtree(at: 1),
 			let resultSubtree = openExistentialExpression.subtrees.last else
@@ -1301,7 +1425,14 @@ public class GRYSwift4Translator {
 	}
 
 	internal func process(patternBindingDeclaration: GRYSwiftAST) throws {
-		try ensure(AST: patternBindingDeclaration, isNamed: "Pattern Binding Declaration")
+		guard patternBindingDeclaration.name == "Pattern Binding Declaration" else {
+			_ = try unexpectedExpressionStructureError(
+				"Trying to translate \(patternBindingDeclaration.name) as " +
+				"'Pattern Binding Declaration'",
+				AST: patternBindingDeclaration)
+			danglingPatternBinding = errorDanglingPatternDeclaration
+			return
+		}
 
 		// Some patternBindingDeclarations are empty, and that's ok. See the classes.swift test
 		// case.
@@ -1327,6 +1458,7 @@ public class GRYSwift4Translator {
 		else {
 			_ = try unexpectedExpressionStructureError(
 				"Pattern not recognized", AST: patternBindingDeclaration)
+			danglingPatternBinding = errorDanglingPatternDeclaration
 			return
 		}
 
@@ -1335,6 +1467,7 @@ public class GRYSwift4Translator {
 		{
 			_ = try unexpectedExpressionStructureError(
 				"Type not recognized", AST: patternBindingDeclaration)
+			danglingPatternBinding = errorDanglingPatternDeclaration
 			return
 		}
 
@@ -1413,7 +1546,7 @@ enum GRYSwiftTranslatorError: Error, CustomStringConvertible {
 			return "Translation error: failed to translate Swift AST into Gryphon AST.\n" +
 				"On file \(file), line \(line), function \(function).\n" +
 				message + ".\n" +
-			"Thrown when translating the following AST node:\n\(nodeDescription)"
+				"Thrown when translating the following AST node:\n\(nodeDescription)"
 		}
 	}
 }
@@ -1436,33 +1569,4 @@ func unexpectedExpressionStructureError(
 		file: file, line: line, function: function, message: message, AST: ast)
 	try GRYCompiler.handleError(error)
 	return .error
-}
-
-func ensure(
-	file: String = #file, line: Int = #line, function: String = #function,
-	AST ast: GRYSwiftAST, isNamed expectedASTName: String) throws
-{
-	if ast.name != expectedASTName {
-		throw GRYSwiftTranslatorError.unexpectedASTStructure(
-			file: file, line: line, function: function,
-			message: "Trying to translate \(ast.name) as '\(expectedASTName)'", AST: ast)
-	}
-}
-
-func ensure(
-	file: String = #file, line: Int = #line, function: String = #function,
-	AST ast: GRYSwiftAST, isNamed expectedASTNames: [String]) throws
-{
-	var isValidName = false
-	for expectedASTName in expectedASTNames {
-		if ast.name == expectedASTName {
-			isValidName = true
-		}
-	}
-
-	if !isValidName {
-		throw GRYSwiftTranslatorError.unexpectedASTStructure(
-			file: file, line: line, function: function,
-			message: "Trying to translate \(ast.name) as '\(expectedASTNames[0])'", AST: ast)
-	}
 }

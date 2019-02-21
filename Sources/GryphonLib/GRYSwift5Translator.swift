@@ -38,9 +38,12 @@ public class GRYSwift5Translator: GRYSwift4Translator {
 	override func translate(interpolatedStringLiteralExpression: GRYSwiftAST)
 		throws -> GRYExpression
 	{
-		try ensure(
-			AST: interpolatedStringLiteralExpression,
-			isNamed: "Brace Statement")
+		guard interpolatedStringLiteralExpression.name == "Brace Statement" else {
+			return try unexpectedExpressionStructureError(
+				"Trying to translate \(interpolatedStringLiteralExpression.name) as " +
+				"'Brace Statement'",
+				AST: interpolatedStringLiteralExpression)
+		}
 
 		var expressions = [GRYExpression]()
 
@@ -63,7 +66,11 @@ public class GRYSwift5Translator: GRYSwift4Translator {
 	}
 
 	override func translate(arrayExpression: GRYSwiftAST) throws -> GRYExpression {
-		try ensure(AST: arrayExpression, isNamed: "Array Expression")
+		guard arrayExpression.name == "Array Expression" else {
+			return try unexpectedExpressionStructureError(
+				"Trying to translate \(arrayExpression.name) as 'Array Expression'",
+				AST: arrayExpression)
+		}
 
 		// Drop the "Semantic Expression" at the end
 		let expressionsToTranslate = arrayExpression.subtrees.dropLast()
