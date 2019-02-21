@@ -314,6 +314,8 @@ internal class GRYDecoder {
 	Reads a key. A key can't have parentheses, single or double quotes, or whitespace in it
 	(expect for composed keys, as a special case below) and it must end with an '='. If the
 	string in the beginning of the buffer isn't a key, this function returns nil.
+
+	It seems the newline bug (see the documentation for readIdentifier) can also happen here.
 	*/
 	func readKey() -> String? {
 		defer { cleanLeadingWhitespace() }
@@ -322,8 +324,14 @@ internal class GRYDecoder {
 		while true {
 			let character = buffer[index]
 
-			guard character != "\n",
-				character != "(",
+			if character == "\n" {
+				let nextCharacter = buffer[buffer.index(after: index)]
+				if nextCharacter == " " {
+					return nil
+				}
+			}
+
+			guard character != "(",
 				character != ")",
 				character != "'",
 				character != "\"" else
@@ -343,9 +351,7 @@ internal class GRYDecoder {
 				}
 			}
 
-			if character == "=" ||
-				character == ":"
-			{
+			if character == "=" || character == ":" {
 				break
 			}
 
@@ -353,11 +359,12 @@ internal class GRYDecoder {
 		}
 
 		let string = String(buffer[currentIndex..<index])
+		let cleanString = string.replacingOccurrences(of: "\n", with: "")
 
 		// Skip the =
 		currentIndex = buffer.index(after: index)
 
-		return string
+		return cleanString
 	}
 
 	/**

@@ -20,6 +20,12 @@ enum CalculatorError: Error {
 	case nilInput
 }
 
+enum OtherError: Error {
+	case oneInt(int: Int)
+	case twoInts(int: Int, int2: Int)
+	case intAndString(int: Int, string: String)
+}
+
 func throwingFunc() throws {
 	throw CalculatorError.invalidCharacter
 }
