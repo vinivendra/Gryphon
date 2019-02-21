@@ -35,7 +35,7 @@ public enum GRYCompiler {
 			return compilationResult
 		}
 
-		print("\t- Running Kotlin...")
+		log?("\t- Running Kotlin...")
 		let arguments = ["java", "-jar", "kotlin.jar"]
 		let commandResult = GRYShell.runShellCommand(arguments, fromFolder: GRYUtils.buildFolder)
 
@@ -49,7 +49,7 @@ public enum GRYCompiler {
 	public static func compile(fileAt filePath: String) throws -> KotlinCompilationResult {
 		let kotlinCode = try generateKotlinCode(forFileAt: filePath)
 
-		print("\t- Compiling Kotlin...")
+		log?("\t- Compiling Kotlin...")
 		let fileName = URL(fileURLWithPath: filePath).deletingPathExtension().lastPathComponent
 		let kotlinFilePath = GRYUtils.createFile(
 			named: fileName + .kt,
@@ -77,7 +77,7 @@ public enum GRYCompiler {
 	public static func generateKotlinCode(forFileAt filePath: String) throws -> String {
 		let ast = try generateGryphonASTAndRunPasses(forFileAt: filePath)
 
-		print("\t- Translating AST to Kotlin...")
+		log?("\t- Translating AST to Kotlin...")
 		return try GRYKotlinTranslator().translateAST(ast)
 	}
 
@@ -85,7 +85,7 @@ public enum GRYCompiler {
 		-> GRYAST
 	{
 		let swiftAST = try generateSwiftAST(forFileAt: filePath)
-		print("\t- Translating Swift AST to Gryphon AST...")
+		log?("\t- Translating Swift AST to Gryphon AST...")
 		let ast = try GRYSwift5Translator().translateAST(swiftAST)
 		let astAfterPasses = GRYTranspilationPass.runAllPasses(on: ast)
 		return astAfterPasses
@@ -93,7 +93,7 @@ public enum GRYCompiler {
 
 	public static func generateGryphonAST(forFileAt filePath: String) throws -> GRYAST {
 		let swiftAST = try generateSwiftAST(forFileAt: filePath)
-		print("\t- Translating Swift AST to Gryphon AST...")
+		log?("\t- Translating Swift AST to Gryphon AST...")
 		let ast = try GRYSwift5Translator().translateAST(swiftAST)
 		return ast
 	}
@@ -101,7 +101,7 @@ public enum GRYCompiler {
 	public static func processExternalSwiftAST(_ filePath: String) throws -> GRYSwiftAST {
 		let astFilePath = GRYUtils.changeExtension(of: filePath, to: .swiftASTDump)
 
-		print("\t- Building GRYSwiftAST from external AST...")
+		log?("\t- Building GRYSwiftAST from external AST...")
 		let ast = try GRYSwiftAST(decodeFromSwiftASTDumpInFile: astFilePath)
 
 		let cacheFilePath = GRYUtils.changeExtension(of: filePath, to: .grySwiftAST)
@@ -110,7 +110,7 @@ public enum GRYCompiler {
 			cacheFileWasJustCreated ||
 				GRYUtils.file(astFilePath, wasModifiedLaterThan: cacheFilePath)
 		if cacheIsOutdated {
-			print("\t\t- Updating \(cacheFilePath)...")
+			log?("\t\t- Updating \(cacheFilePath)...")
 			try ast.encode(intoFile: cacheFilePath)
 		}
 
@@ -120,21 +120,20 @@ public enum GRYCompiler {
 	public static func generateSwiftAST(forFileAt filePath: String) throws -> GRYSwiftAST {
 		let astDumpFilePath = GRYUtils.changeExtension(of: filePath, to: .swiftASTDump)
 
-		print("\t- Building GRYSwiftAST...")
+		log?("\t- Building GRYSwiftAST...")
 		let ast = try GRYSwiftAST(decodeFromSwiftASTDumpInFile: astDumpFilePath)
 		return ast
 	}
 
 	public static func getSwiftASTDump(forFileAt filePath: String) throws -> String {
-		print("\t- Getting swift AST dump...")
+		log?("\t- Getting swift AST dump...")
 		let astDumpFilePath = GRYUtils.changeExtension(of: filePath, to: .swiftASTDump)
 		return try String(contentsOfFile: astDumpFilePath)
 	}
 
 	//
-	static var shouldStopAtFirstError = false
+	public static var shouldStopAtFirstError = false
 
-	// TODO: Refactor current warnings into these arrays.
 	public private(set) static var errors = [Error]()
 	public private(set) static var warnings = [String]()
 
@@ -147,18 +146,11 @@ public enum GRYCompiler {
 		}
 	}
 
-	public static func logWarning(_ warning: String) {
+	public static func printWarning(_ warning: String) {
 		GRYCompiler.warnings.append(warning)
 	}
 
 	public static func printErrorsAndWarnings() {
-		if hasErrorsOrWarnings() {
-			print( // 80 ='s
-				"========================================" +
-				"========================================")
-			print("Compilation finished.")
-		}
-
 		if !errors.isEmpty {
 			print("Errors:")
 			for error in errors {
@@ -185,5 +177,19 @@ public enum GRYCompiler {
 	public static func clearErrorsAndWarnings() {
 		errors = []
 		warnings = []
+	}
+
+	//
+	private static var log: ((String) -> ())? = { print($0) }
+
+	public static var shouldLogProgress = false {
+		didSet {
+			if shouldLogProgress {
+				log = { print($0) }
+			}
+			else {
+				log = nil
+			}
+		}
 	}
 }

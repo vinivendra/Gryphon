@@ -842,7 +842,7 @@ public class GRYRaiseStandardLibraryWarningsTranspilationPass: GRYTranspilationP
 		-> GRYExpression
 	{
 		if isStandardLibrary {
-			GRYCompiler.logWarning(
+			GRYCompiler.printWarning(
 				"Reference to standard library \"\(identifier)\" was not translated.")
 		}
 		return super.replaceDeclarationReferenceExpression(

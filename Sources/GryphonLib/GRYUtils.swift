@@ -166,7 +166,7 @@ extension GRYUtils {
 		}
 
 		let folder = "Library Templates"
-		print("Updating files...")
+		print("\t* Updating files...")
 
 		try updateFiles(in: folder, from: .swift, to: .swiftASTDump)
 		{ (_: String, astFilePath: String) in
@@ -190,7 +190,7 @@ extension GRYUtils {
 
 		libraryFilesHaveBeenUpdated = true
 
-		print("Done!")
+		print("\t* Done!")
 	}
 
 	static private var testFilesHaveBeenUpdated = false
@@ -203,7 +203,7 @@ extension GRYUtils {
 		try updateLibraryFiles()
 
 		let testFilesFolder = "Test Files"
-		print("Updating files...")
+		print("\t* Updating files...")
 
 		try updateFiles(in: testFilesFolder, from: .swift, to: .swiftASTDump)
 		{ (_: String, astFilePath: String) in
@@ -243,7 +243,7 @@ extension GRYUtils {
 
 		testFilesHaveBeenUpdated = true
 
-		print("Done!")
+		print("\t* Done!")
 	}
 
 	static private func updateFiles(
@@ -253,14 +253,8 @@ extension GRYUtils {
 		to destinationExtension: GRYFileExtension,
 		withUpdateClosure update: (String, String) throws -> ()) rethrows
 	{
-		let currentURL = URL(fileURLWithPath: Process().currentDirectoryPath + "/" + folder)
-		let fileURLs = try! FileManager.default.contentsOfDirectory(
-			at: currentURL,
-			includingPropertiesForKeys: nil)
-		var testFiles = fileURLs.filter { $0.pathExtension == originExtension.rawValue }.sorted
-			{ (url1: URL, url2: URL) -> Bool in
-				url1.absoluteString < url2.absoluteString
-			}
+		var testFiles = getFilesInFolder(folder)
+		testFiles = testFiles.filter { $0.pathExtension == originExtension.rawValue }
 
 		if let files = files {
 			testFiles = testFiles.filter {
@@ -279,9 +273,19 @@ extension GRYUtils {
 				GRYUtils.file(originFilePath, wasModifiedLaterThan: destinationFilePath)
 
 			if destinationFileIsOutdated {
-				print("\tUpdating \(destinationFilePath)...")
+				print("\t\t* Updating \(destinationFilePath)...")
 				try update(originFilePath, destinationFilePath)
 			}
+		}
+	}
+
+	static public func getFilesInFolder(_ folder: String) -> [URL] {
+		let currentURL = URL(fileURLWithPath: Process().currentDirectoryPath + "/" + folder)
+		let fileURLs = try! FileManager.default.contentsOfDirectory(
+			at: currentURL,
+			includingPropertiesForKeys: nil)
+		return fileURLs.sorted { (url1: URL, url2: URL) -> Bool in
+			url1.path < url2.path
 		}
 	}
 }
