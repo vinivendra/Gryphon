@@ -24,9 +24,9 @@ public class GRYSwift5Translator: GRYSwift4Translator {
 				return try translate(interpolatedStringLiteralExpression: braceStatement)
 			}
 			else {
-				throw unexpectedASTStructureError(
+				return try unexpectedExpressionStructureError(
 					"Expected the Interpolated String Literal Expression to contain a Tap" +
-						"Expression containing a Brace Statement containing the String " +
+					"Expression containing a Brace Statement containing the String " +
 					"interpolation contents",
 					AST: expression)
 			}
@@ -49,7 +49,7 @@ public class GRYSwift5Translator: GRYSwift4Translator {
 				let parenthesesExpression = callExpression.subtree(named: "Parentheses Expression"),
 				let expression = parenthesesExpression.subtrees.first else
 			{
-				throw unexpectedASTStructureError(
+				return try unexpectedExpressionStructureError(
 					"Expected the brace statement to contain only Call Expressions containing " +
 					"Parentheses Expressions containing the relevant expressions.",
 					AST: interpolatedStringLiteralExpression)
@@ -71,7 +71,7 @@ public class GRYSwift5Translator: GRYSwift4Translator {
 		let expressionsArray = try expressionsToTranslate.map(translate(expression:))
 
 		guard let rawType = arrayExpression["type"] else {
-			throw unexpectedASTStructureError(
+			return try unexpectedExpressionStructureError(
 				"Failed to get type", AST: arrayExpression)
 		}
 		let type = cleanUpType(rawType)
@@ -86,7 +86,7 @@ public class GRYSwift5Translator: GRYSwift4Translator {
 			let integerLiteralExpression = tupleExpression
 				.subtree(named: "Integer Literal Expression") else
 		{
-			throw unexpectedASTStructureError(
+			return try unexpectedExpressionStructureError(
 				"Expected numeric literal to have a Tuple Expression containing an Integer " +
 				"Literal Expression", AST: callExpression)
 		}

@@ -47,7 +47,8 @@ astNodes = [
 		['isGuard', 'Bool']]],
 	['throwStatement', [['expression', 'GRYExpression']]],
 	['returnStatement', [['expression', 'GRYExpression?']]],
-	['assignmentStatement', [['leftHand', 'GRYExpression'], ['rightHand', 'GRYExpression']]]
+	['assignmentStatement', [['leftHand', 'GRYExpression'], ['rightHand', 'GRYExpression']]],
+	['error'],
 	]
 }%
 
@@ -174,7 +175,8 @@ expressionNodes = [
 	['literalStringExpression', [['value', 'String']]],
 	['nilLiteralExpression'],
 	['interpolatedStringLiteralExpression', [['expressions', '[GRYExpression]']]],
-	['tupleExpression', [['pairs', '[TuplePair]']]]
+	['tupleExpression', [['pairs', '[TuplePair]']]],
+	['error'],
 ]
 }%
 

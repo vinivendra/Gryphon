@@ -102,6 +102,8 @@ public class GRYTranspilationPass {
 			return replaceReturnStatement(expression: expression)
 		case let .assignmentStatement(leftHand: leftHand, rightHand: rightHand):
 			return replaceAssignmentStatement(leftHand: leftHand, rightHand: rightHand)
+		case .error:
+			return [.error]
 		}
 	}
 
@@ -142,7 +144,7 @@ public class GRYTranspilationPass {
 	{
 		return [.enumElementDeclaration(
 			name: name, associatedValueLabels: associatedValueLabels,
-			associatedValueTypes: associatedValueTypes)]
+			associatedValueTypes: associatedValueTypes), ]
 	}
 
 	func replaceProtocolDeclaration(name: String, members: [GRYTopLevelNode]) -> [GRYTopLevelNode] {
@@ -299,6 +301,8 @@ public class GRYTranspilationPass {
 			return replaceInterpolatedStringLiteralExpression(expressions: expressions)
 		case let .tupleExpression(pairs: pairs):
 			return replaceTupleExpression(pairs: pairs)
+		case .error:
+			return .error
 		}
 	}
 
@@ -838,7 +842,7 @@ public class GRYRaiseStandardLibraryWarningsTranspilationPass: GRYTranspilationP
 		-> GRYExpression
 	{
 		if isStandardLibrary {
-			GRYTranspilationPass.recordWarning(
+			GRYCompiler.logWarning(
 				"Reference to standard library \"\(identifier)\" was not translated.")
 		}
 		return super.replaceDeclarationReferenceExpression(
@@ -939,12 +943,6 @@ public extension GRYTranspilationPass {
 		result = GRYRecordEnumsTranspilationPass().run(on: result)
 		result = GRYRaiseStandardLibraryWarningsTranspilationPass().run(on: result)
 		return result
-	}
-
-	static private(set) var warnings = [String]()
-
-	static func recordWarning(_ warning: String) {
-		warnings.append(warning)
 	}
 
 	func printParents() {

@@ -53,9 +53,7 @@ do {
 	// 5: AST dump -> Swift AST -> GRYAST (raw) -> GRYAST -> Kotlin -> Output of running Kotlin
 //	try print(GRYCompiler.compileAndRun(fileAt: filePath))
 
-	for warning in GRYTranspilationPass.warnings {
-		print("warning: \(warning)")
-}
+	GRYCompiler.printErrorsAndWarnings()
 }
 catch let error {
 	print("🚨 Error:\n\(error)")

@@ -44,11 +44,15 @@ public class GRYKotlinTranslator {
 
 	func unexpectedASTStructureError(
 		file: String = #file, line: Int = #line, function: String = #function, _ message: String,
-		AST ast: GRYTopLevelNode) -> GRYKotlinTranslatorError
+		AST ast: GRYTopLevelNode) throws -> String
 	{
-		return GRYKotlinTranslatorError.unexpectedASTStructure(
+		let error = GRYKotlinTranslatorError.unexpectedASTStructure(
 			file: file, line: line, function: function, message: message, AST: ast)
+		try GRYCompiler.handleError(error)
+		return GRYKotlinTranslator.errorTranslation
 	}
+
+	static let errorTranslation = "<<Error>>"
 
 	/// Used for the translation of Swift types into Kotlin types.
 	static let typeMappings = ["Bool": "Boolean", "Error": "Exception"]
@@ -118,7 +122,7 @@ public class GRYKotlinTranslator {
 		case .importDeclaration(name: _):
 			result = ""
 		case .extensionDeclaration(type: _, members: _):
-			throw unexpectedASTStructureError(
+			return try unexpectedASTStructureError(
 				"Extension structure should have been removed in a transpilation pass",
 				AST: subtree)
 		case let .classDeclaration(name: name, inherits: inherits, members: members):
@@ -135,7 +139,7 @@ public class GRYKotlinTranslator {
 		case .enumElementDeclaration(
 			name: _, associatedValueLabels: _, associatedValueTypes: _):
 
-			throw unexpectedASTStructureError(
+			return try unexpectedASTStructureError(
 				"Enum element translation should only be called from within the translation of " +
 				"its wrapping Enum Declaration, since it needs to know the Enum's name.",
 				AST: subtree)
@@ -194,6 +198,8 @@ public class GRYKotlinTranslator {
 			else {
 				return ""
 			}
+		case .error:
+			return GRYKotlinTranslator.errorTranslation
 		}
 
 		return result
@@ -243,7 +249,7 @@ public class GRYKotlinTranslator {
 					withIndentation: increasedIndentation)
 			}
 			else {
-				throw unexpectedASTStructureError(
+				return try unexpectedASTStructureError(
 					"Expected enum element to be an .enumElementDeclaration",
 					AST: .enumDeclaration(
 						access: access, name: enumName, inherits: inherits, elements: elements))
@@ -454,7 +460,7 @@ public class GRYKotlinTranslator {
 					withIndentation: indentation)
 			}
 			else {
-				throw unexpectedASTStructureError(
+				return try unexpectedASTStructureError(
 					"Expected the else statement to be an ifStatement." +
 					"If it's a variableDeclaration, this might come from an `else if let`, which" +
 					"is not supported.",
@@ -545,7 +551,7 @@ public class GRYKotlinTranslator {
 				isImplicit: _, isStatic: _, extendsType: _, statements: statements,
 				access: _) = getter else
 			{
-				throw unexpectedASTStructureError(
+				return try unexpectedASTStructureError(
 					"Expected the getter to be a .functionDeclaration",
 					AST: .variableDeclaration(
 						identifier: identifier, typeName: typeName, expression: expression,
@@ -566,7 +572,7 @@ public class GRYKotlinTranslator {
 				isImplicit: _, isStatic: _, extendsType: _, statements: statements,
 				access: _) = setter else
 			{
-				throw unexpectedASTStructureError(
+				return try unexpectedASTStructureError(
 					"Expected the setter to be a .functionDeclaration",
 					AST: .variableDeclaration(
 						identifier: identifier, typeName: typeName, expression: expression,
@@ -682,6 +688,8 @@ public class GRYKotlinTranslator {
 			return "null"
 		case let .tupleExpression(pairs: pairs):
 			return try translateTupleExpression(pairs: pairs, withIndentation: indentation)
+		case .error:
+			return GRYKotlinTranslator.errorTranslation
 		}
 	}
 
@@ -754,7 +762,7 @@ public class GRYKotlinTranslator {
 		withIndentation indentation: String) throws -> String
 	{
 		guard case let .tupleExpression(pairs: pairs) = parameters else {
-			throw unexpectedASTStructureError(
+			return try unexpectedASTStructureError(
 				"Expected the parameters to be a .tupleExpression",
 				AST: .expression(expression:
 					.callExpression(function: function, parameters: parameters, type: type)))

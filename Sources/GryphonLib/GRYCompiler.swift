@@ -130,4 +130,60 @@ public enum GRYCompiler {
 		let astDumpFilePath = GRYUtils.changeExtension(of: filePath, to: .swiftASTDump)
 		return try String(contentsOfFile: astDumpFilePath)
 	}
+
+	//
+	static var shouldStopAtFirstError = false
+
+	// TODO: Refactor current warnings into these arrays.
+	private(set) static var errors = [Error]()
+	private(set) static var warnings = [String]()
+
+	public static func handleError(_ error: Error) throws {
+		if GRYCompiler.shouldStopAtFirstError {
+			throw error
+		}
+		else {
+			GRYCompiler.errors.append(error)
+		}
+	}
+
+	public static func logWarning(_ warning: String) {
+		GRYCompiler.warnings.append(warning)
+	}
+
+	public static func printErrorsAndWarnings() {
+		if hasErrorsOrWarnings() {
+			print( // 80 ='s
+				"========================================" +
+				"========================================")
+			print("Compilation finished.")
+		}
+
+		if !errors.isEmpty {
+			print("Errors:")
+			for error in errors {
+				print("🚨 \(error)")
+			}
+		}
+
+		if !warnings.isEmpty {
+			print("Warnings:")
+			for warning in warnings {
+				print("⚠️ \(warning)")
+			}
+		}
+
+		if hasErrorsOrWarnings() {
+			print("Total: \(errors.count) errors and \(warnings.count) warnings.")
+		}
+	}
+
+	public static func hasErrorsOrWarnings() -> Bool {
+		return !errors.isEmpty || !warnings.isEmpty
+	}
+
+	public static func clearErrorsAndWarnings() {
+		errors = []
+		warnings = []
+	}
 }

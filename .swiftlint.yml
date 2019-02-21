@@ -19,6 +19,7 @@ disabled_rules:
   - literal_expression_end_indentation
   - for_where
   - closure_end_indentation
+  - vertical_parameter_alignment_on_call
 opt_in_rules:
   - attributes
   - closure_end_indentation

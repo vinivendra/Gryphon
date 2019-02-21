@@ -41,10 +41,6 @@ class GRYTranspilationPassTest: XCTestCase {
 
 				print("\t- Done!")
 			}
-
-			for warning in GRYTranspilationPass.warnings {
-				XCTFail(warning)
-			}
 		}
 		catch let error {
 			XCTFail("🚨 Test failed with error:\n\(error)")
@@ -62,6 +58,14 @@ class GRYTranspilationPassTest: XCTestCase {
 		catch let error {
 			print(error)
 			fatalError("Failed to update test files.")
+		}
+	}
+
+	override static func tearDown() {
+		XCTAssertFalse(GRYCompiler.hasErrorsOrWarnings())
+		if GRYCompiler.hasErrorsOrWarnings() {
+			GRYCompiler.printErrorsAndWarnings()
+			GRYCompiler.clearErrorsAndWarnings()
 		}
 	}
 }

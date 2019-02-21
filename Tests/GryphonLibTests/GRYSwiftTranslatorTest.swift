@@ -61,4 +61,12 @@ class GRYSwiftTranslatorTest: XCTestCase {
 			fatalError("Failed to update test files.")
 		}
 	}
+
+	override static func tearDown() {
+		XCTAssertFalse(GRYCompiler.hasErrorsOrWarnings())
+		if GRYCompiler.hasErrorsOrWarnings() {
+			GRYCompiler.printErrorsAndWarnings()
+			GRYCompiler.clearErrorsAndWarnings()
+		}
+	}
 }

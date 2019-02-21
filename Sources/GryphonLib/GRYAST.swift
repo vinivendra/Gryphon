@@ -203,6 +203,8 @@ extension GRYTopLevelNode {
 			return [expression]
 		case let .assignmentStatement(leftHand: leftHand, rightHand: rightHand):
 			return [leftHand, rightHand]
+		case .error:
+			return []
 		}
 	}
 }
@@ -268,6 +270,8 @@ extension GRYExpression {
 			return "String"
 		case .tupleExpression:
 			return nil
+		case .error:
+			return "<<Error>>"
 		}
 	}
 
@@ -378,6 +382,8 @@ extension GRYExpression {
 			return ArrayReference<GRYPrintableAsTree?>(array: pairs.map {
 				GRYPrintableTree(($0.name ?? "_") + ":", [$0.expression])
 			})
+		case .error:
+			return []
 		}
 	}
 
