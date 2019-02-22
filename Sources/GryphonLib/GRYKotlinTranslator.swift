@@ -15,43 +15,6 @@
 */
 
 public class GRYKotlinTranslator {
-	enum GRYKotlinTranslatorError: Error, CustomStringConvertible {
-		case unexpectedASTStructure(
-			file: String,
-			line: Int,
-			function: String,
-			message: String,
-			AST: GRYTopLevelNode)
-
-		var description: String {
-			switch self {
-			case let .unexpectedASTStructure(
-				file: file, line: line, function: function, message: message, AST: ast):
-
-				var nodeDescription = ""
-				ast.prettyPrint(horizontalLimit: 100) {
-					nodeDescription += $0
-				}
-
-				return "Error: failed to translate Gryphon AST into Kotlin.\n" +
-						"On file \(file), line \(line), function \(function).\n" +
-						message + ".\n" +
-					"Thrown when translating the following AST node:\n\(nodeDescription)"
-
-			}
-		}
-	}
-
-	func unexpectedASTStructureError(
-		file: String = #file, line: Int = #line, function: String = #function, _ message: String,
-		AST ast: GRYTopLevelNode) throws -> String
-	{
-		let error = GRYKotlinTranslatorError.unexpectedASTStructure(
-			file: file, line: line, function: function, message: message, AST: ast)
-		try GRYCompiler.handleError(error)
-		return GRYKotlinTranslator.errorTranslation
-	}
-
 	static let errorTranslation = "<<Error>>"
 
 	/// Used for the translation of Swift types into Kotlin types.
@@ -929,4 +892,48 @@ extension String {
 		let capitalizedFirstCharacter = String(firstCharacter).uppercased()
 		return String(capitalizedFirstCharacter + self.dropFirst())
 	}
+}
+
+public enum GRYKotlinTranslatorError: Error, CustomStringConvertible {
+	case unexpectedASTStructure(
+		file: String,
+		line: Int,
+		function: String,
+		message: String,
+		AST: GRYTopLevelNode)
+
+	public var description: String {
+		switch self {
+		case let .unexpectedASTStructure(
+			file: file, line: line, function: function, message: message, AST: ast):
+
+			var nodeDescription = ""
+			ast.prettyPrint(horizontalLimit: 100) {
+				nodeDescription += $0
+			}
+
+			return "Error: failed to translate Gryphon AST into Kotlin.\n" +
+				"On file \(file), line \(line), function \(function).\n" +
+				message + ".\n" +
+			"Thrown when translating the following AST node:\n\(nodeDescription)"
+
+		}
+	}
+
+	public var astName: String {
+		switch self {
+		case let .unexpectedASTStructure(file: _, line: _, function: _, message: _, AST: ast):
+			return ast.name
+		}
+	}
+}
+
+func unexpectedASTStructureError(
+	file: String = #file, line: Int = #line, function: String = #function, _ message: String,
+	AST ast: GRYTopLevelNode) throws -> String
+{
+	let error = GRYKotlinTranslatorError.unexpectedASTStructure(
+		file: file, line: line, function: function, message: message, AST: ast)
+	try GRYCompiler.handleError(error)
+	return GRYKotlinTranslator.errorTranslation
 }

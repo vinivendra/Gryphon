@@ -1549,6 +1549,13 @@ enum GRYSwiftTranslatorError: Error, CustomStringConvertible {
 				"Thrown when translating the following AST node:\n\(nodeDescription)"
 		}
 	}
+
+	var astName: String {
+		switch self {
+		case let .unexpectedASTStructure(file: _, line: _, function: _, message: _, AST: ast):
+			return ast.name
+		}
+	}
 }
 
 func unexpectedASTStructureError(

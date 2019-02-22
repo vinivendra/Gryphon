@@ -69,6 +69,7 @@ do {
 //	GRYCompiler.printErrorsAndWarnings()
 	// ...or just a summary
 	print("Errors: \(GRYCompiler.errors.count). Warnings: \(GRYCompiler.warnings.count).")
+	GRYCompiler.printErrorStatistics()
 }
 catch let error {
 	print("🚨 Error:\n\(error)")
