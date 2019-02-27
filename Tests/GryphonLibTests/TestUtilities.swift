@@ -124,6 +124,7 @@ extension TestUtils {
 		"operators",
 		"print",
 		"staticMembers",
+		"structs",
 	]
 	static let allTestCases = acceptanceTestCases + [
 		"enums",

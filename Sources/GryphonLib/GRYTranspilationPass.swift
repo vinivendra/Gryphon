@@ -65,8 +65,8 @@ public class GRYTranspilationPass {
 				associatedValueTypes: associatedValueTypes)
 		case let .protocolDeclaration(name: name, members: members):
 			return replaceProtocolDeclaration(name: name, members: members)
-		case let .structDeclaration(name: name):
-			return replaceStructDeclaration(name: name)
+		case let .structDeclaration(name: name, inherits: inherits, members: members):
+			return replaceStructDeclaration(name: name, inherits: inherits, members: members)
 		case let .functionDeclaration(
 			prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
 			defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
@@ -151,8 +151,12 @@ public class GRYTranspilationPass {
 		return [.protocolDeclaration(name: name, members: members.flatMap(replaceTopLevelNode))]
 	}
 
-	func replaceStructDeclaration(name: String) -> [GRYTopLevelNode] {
-		return [.structDeclaration(name: name)]
+	func replaceStructDeclaration(name: String, inherits: [String], members: [GRYTopLevelNode])
+		-> [GRYTopLevelNode]
+	{
+		return [.structDeclaration(
+			name: name, inherits: inherits, members: members.flatMap(replaceTopLevelNode)),
+		]
 	}
 
 	func replaceFunctionDeclaration(
@@ -842,12 +846,53 @@ public class GRYRaiseStandardLibraryWarningsTranspilationPass: GRYTranspilationP
 		-> GRYExpression
 	{
 		if isStandardLibrary {
-			GRYCompiler.printWarning(
+			GRYCompiler.handleWarning(
 				"Reference to standard library \"\(identifier)\" was not translated.")
 		}
 		return super.replaceDeclarationReferenceExpression(
 			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
 			isImplicit: isImplicit)
+	}
+}
+
+/// If a value type's members are all immutable, that value type can safely be translated as a
+/// class. Otherwise, the translation can cause inconsistencies, so this pass raises warnings.
+/// Source: https://forums.swift.org/t/are-immutable-structs-like-classes/16270
+public class GRYRaiseMutableValueTypesWarningsTranspilationPass: GRYTranspilationPass {
+	var inStructOrEnumNamed: String?
+
+	override func replaceStructDeclaration(
+		name: String, inherits: [String], members: [GRYTopLevelNode]) -> [GRYTopLevelNode]
+	{
+		inStructOrEnumNamed = name
+		defer { inStructOrEnumNamed = nil }
+		return super.replaceStructDeclaration(name: name, inherits: inherits, members: members)
+	}
+
+	override func replaceEnumDeclaration(
+		access: String?, name: String, inherits: [String], elements: [GRYTopLevelNode])
+		-> [GRYTopLevelNode]
+	{
+		inStructOrEnumNamed = name
+		defer { inStructOrEnumNamed = nil }
+		return super.replaceEnumDeclaration(
+			access: access, name: name, inherits: inherits, elements: elements)
+	}
+
+	override func replaceVariableDeclaration(
+		identifier: String, typeName: String, expression: GRYExpression?, getter: GRYTopLevelNode?,
+		setter: GRYTopLevelNode?, isLet: Bool, extendsType: String?, annotations: String?)
+		-> [GRYTopLevelNode]
+	{
+		if let inStructOrEnumNamed = inStructOrEnumNamed, !isLet {
+			GRYCompiler.handleWarning(
+				"No support for mutable variables: found variable \(identifier) inside " +
+				"\(inStructOrEnumNamed)")
+		}
+
+		return super.replaceVariableDeclaration(
+			identifier: identifier, typeName: typeName, expression: expression, getter: getter,
+			setter: setter, isLet: isLet, extendsType: extendsType, annotations: annotations)
 	}
 }
 
@@ -942,6 +987,8 @@ public extension GRYTranspilationPass {
 
 		result = GRYRecordEnumsTranspilationPass().run(on: result)
 		result = GRYRaiseStandardLibraryWarningsTranspilationPass().run(on: result)
+		result = GRYRaiseMutableValueTypesWarningsTranspilationPass().run(on: result)
+
 		return result
 	}
 

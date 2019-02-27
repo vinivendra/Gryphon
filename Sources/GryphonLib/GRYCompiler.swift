@@ -81,9 +81,7 @@ public enum GRYCompiler {
 		return try GRYKotlinTranslator().translateAST(ast)
 	}
 
-	public static func generateGryphonASTAndRunPasses(forFileAt filePath: String) throws
-		-> GRYAST
-	{
+	public static func generateGryphonASTAndRunPasses(forFileAt filePath: String) throws -> GRYAST {
 		let swiftAST = try generateSwiftAST(forFileAt: filePath)
 		log?("\t- Translating Swift AST to Gryphon AST...")
 		let ast = try GRYSwift5Translator().translateAST(swiftAST)
@@ -146,7 +144,7 @@ public enum GRYCompiler {
 		}
 	}
 
-	public static func printWarning(_ warning: String) {
+	public static func handleWarning(_ warning: String) {
 		GRYCompiler.warnings.append(warning)
 	}
 

@@ -20,6 +20,7 @@ import XCTest
 class GRYTranspilationPassTest: XCTestCase {
 	func testPasses() {
 		let tests = TestUtils.allTestCases
+		GRYCompiler.clearErrorsAndWarnings()
 
 		do {
 			for testName in tests {
@@ -41,6 +42,11 @@ class GRYTranspilationPassTest: XCTestCase {
 
 				print("\t- Done!")
 			}
+
+			XCTAssertEqual(GRYCompiler.warnings, [
+				"No support for mutable variables: found variable mutableVariable inside " +
+					"UnsupportedStruct",
+				])
 		}
 		catch let error {
 			XCTFail("🚨 Test failed with error:\n\(error)")
@@ -58,14 +64,6 @@ class GRYTranspilationPassTest: XCTestCase {
 		catch let error {
 			print(error)
 			fatalError("Failed to update test files.")
-		}
-	}
-
-	override static func tearDown() {
-		XCTAssertFalse(GRYCompiler.hasErrorsOrWarnings())
-		if GRYCompiler.hasErrorsOrWarnings() {
-			GRYCompiler.printErrorsAndWarnings()
-			GRYCompiler.clearErrorsAndWarnings()
 		}
 	}
 }

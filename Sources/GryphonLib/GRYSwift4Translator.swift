@@ -31,6 +31,7 @@ public class GRYSwift4Translator {
 		let declarationNames = [
 			"Protocol",
 			"Class Declaration",
+			"Struct Declaration",
 			"Extension Declaration",
 			"Function Declaration",
 			"Enum Declaration",
@@ -65,6 +66,8 @@ public class GRYSwift4Translator {
 			result = .importDeclaration(name: subtree.standaloneAttributes[0])
 		case "Class Declaration":
 			result = try translate(classDeclaration: subtree)
+		case "Struct Declaration":
+			result = try translate(structDeclaration: subtree)
 		case "Enum Declaration":
 			result = try translate(enumDeclaration: subtree)
 		case "Extension Declaration":
@@ -94,6 +97,7 @@ public class GRYSwift4Translator {
 				result = .expression(expression: expression)
 			}
 			else {
+				// TODO: should this throw an error?
 				result = nil
 			}
 		}
@@ -275,6 +279,35 @@ public class GRYSwift4Translator {
 		let classContents = try translate(subtrees: classDeclaration.subtrees.array)
 
 		return .classDeclaration(name: name, inherits: inheritanceArray, members: classContents)
+	}
+
+	internal func translate(structDeclaration: GRYSwiftAST) throws -> GRYTopLevelNode {
+		guard structDeclaration.name == "Struct Declaration" else {
+			return try unexpectedASTStructureError(
+				"Trying to translate \(structDeclaration.name) as 'Struct Declaration'",
+				AST: structDeclaration)
+		}
+
+		// Get the struct name
+		let name = structDeclaration.standaloneAttributes.first!
+
+		// Check for inheritance
+		let inheritanceArray: [String]
+		if let inheritanceList = structDeclaration["inherits"] {
+			inheritanceArray = inheritanceList.split(withStringSeparator: ", ")
+		}
+		else {
+			inheritanceArray = []
+		}
+
+		guard !inheritanceArray.contains("GRYIgnore") else {
+			return .structDeclaration(name: name, inherits: inheritanceArray, members: [])
+		}
+
+		// Translate the contents
+		let structContents = try translate(subtrees: structDeclaration.subtrees.array)
+
+		return .structDeclaration(name: name, inherits: inheritanceArray, members: structContents)
 	}
 
 	internal func translate(throwStatement: GRYSwiftAST) throws -> GRYTopLevelNode {

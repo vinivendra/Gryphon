@@ -288,6 +288,8 @@ internal class GRYDecoder {
 	inheritance clauses, as in `class MyClass: A, B, C, D, E { }`.
 	This algorithm assumes an identifier list is always the last attribute in a subtree, and thus
 	always ends in whitespace. This may well not be true, and in that case this will have to change.
+
+	Also prevents the newline bug (see the documentation for readIdentifier).
 	*/
 	func readIdentifierList() -> String {
 		defer { cleanLeadingWhitespace() }
@@ -296,18 +298,26 @@ internal class GRYDecoder {
 		while true {
 			let character = buffer[index]
 
-			if character == "\n" || character == ")" {
+			if character == ")" {
 				break
+			}
+
+			if character == "\n" {
+				let nextCharacter = buffer[buffer.index(after: index)]
+				if nextCharacter == " " {
+					break
+				}
 			}
 
 			index = buffer.index(after: index)
 		}
 
 		let string = String(buffer[currentIndex..<index])
+		let cleanString = string.replacingOccurrences(of: "\n", with: "")
 
 		currentIndex = index
 
-		return string
+		return cleanString
 	}
 
 	/**
@@ -315,7 +325,7 @@ internal class GRYDecoder {
 	(expect for composed keys, as a special case below) and it must end with an '='. If the
 	string in the beginning of the buffer isn't a key, this function returns nil.
 
-	It seems the newline bug (see the documentation for readIdentifier) can also happen here.
+	Also prevents the newline bug (see the documentation for readIdentifier).
 	*/
 	func readKey() -> String? {
 		defer { cleanLeadingWhitespace() }
@@ -370,6 +380,8 @@ internal class GRYDecoder {
 	/**
 	Reads a location. A location is a series of characters that can't be colons or parentheses
 	(usually it's a file path), followed by a colon, a number, another colon and another number.
+
+	Also prevents the newline bug (see the documentation for readIdentifier).
 	*/
 	func readLocation() -> String {
 		defer { cleanLeadingWhitespace() }
@@ -412,13 +424,17 @@ internal class GRYDecoder {
 
 		//
 		let string = String(buffer[currentIndex..<index])
+		let cleanString = string.replacingOccurrences(of: "\n", with: "")
+
 		currentIndex = index
-		return string
+		return cleanString
 	}
 
 	/**
 	Reads a declaration location. A declaration location is a series of characters defining a swift
 	declaration, up to an '@'. After that comes a location, read by the `readLocation` function.
+
+	Also prevents the newline bug (see the documentation for readIdentifier).
 	*/
 	func readDeclarationLocation() -> String? {
 		defer { cleanLeadingWhitespace() }
@@ -433,9 +449,16 @@ internal class GRYDecoder {
 
 		while index != buffer.endIndex {
 			let character = buffer[index]
-			guard character != " ",
-				character != "\n" else
-			{
+
+			if character == "\n" {
+				let nextCharacter = buffer[buffer.index(after: index)]
+				if nextCharacter == " " {
+					// Unexpected, this isn't a declaration location
+					return nil
+				}
+			}
+
+			guard character != " " else {
 				// Unexpected, this isn't a declaration location
 				return nil
 			}
@@ -460,11 +483,13 @@ internal class GRYDecoder {
 
 		//
 		let string = buffer[currentIndex..<index]
+		let cleanString = string.replacingOccurrences(of: "\n", with: "")
+
 		currentIndex = index
 
 		let location = readLocation()
 
-		return string + location
+		return cleanString + location
 	}
 
 	/**
@@ -476,7 +501,7 @@ internal class GRYDecoder {
 	"Swift.(file).Int extension.+". In that case, the space before extension is included in the
 	declaration.
 
-	It seems the newline bug (see the documentation for readIdentifier) can also happen here.
+	Also prevents the newline bug (see the documentation for readIdentifier).
 	*/
 	func readDeclaration() -> String? {
 		defer { cleanLeadingWhitespace() }
@@ -533,6 +558,8 @@ internal class GRYDecoder {
 	/**
 	Reads a double quoted string, taking care not to count double quotes that have been escaped by a
 	backslash.
+
+	Also prevents the newline bug (see the documentation for readIdentifier).
 	*/
 	func readDoubleQuotedString() -> String {
 		defer { cleanLeadingWhitespace() }
@@ -569,12 +596,13 @@ internal class GRYDecoder {
 		}
 
 		let string = String(buffer[firstContentsIndex..<index])
+		let cleanString = string.replacingOccurrences(of: "\n", with: "")
 
 		// Skip the closing "
 		index = buffer.index(after: index)
 		currentIndex = index
 
-		return string
+		return cleanString
 	}
 
 	/**
@@ -582,6 +610,8 @@ internal class GRYDecoder {
 	such as `'',foo,'','',bar`. In this case, we want to parse the whole thing, not just the initial
 	empty single-quoted string, so this function calls `readStandaloneAttribute` if it finds a comma
 	in order to parse the rest of the list.
+
+	Also prevents the newline bug (see the documentation for readIdentifier).
 	*/
 	func readSingleQuotedString() -> String {
 		defer { cleanLeadingWhitespace() }
@@ -605,6 +635,7 @@ internal class GRYDecoder {
 		else {
 			string = String(buffer[firstContentsIndex..<index])
 		}
+		let cleanString = string.replacingOccurrences(of: "\n", with: "")
 
 		// Skip the closing '
 		index = buffer.index(after: index)
@@ -616,13 +647,18 @@ internal class GRYDecoder {
 		if buffer[currentIndex] == "," {
 			currentIndex = nextIndex()
 			otherString = readStandaloneAttribute()
-			return string + "," + otherString
+			return cleanString + "," + otherString
 		}
 		else {
-			return string
+			return cleanString
 		}
 	}
 
+	/**
+	Reads a string inside brackets and returns the string (without the brackets).
+
+	Also prevents the newline bug (see the documentation for readIdentifier).
+	*/
 	func readStringInBrackets() -> String {
 		defer { cleanLeadingWhitespace() }
 
@@ -649,14 +685,20 @@ internal class GRYDecoder {
 		}
 
 		let string = String(buffer[firstContentsIndex..<index])
+		let cleanString = string.replacingOccurrences(of: "\n", with: "")
 
 		// Skip the closing ]
 		index = buffer.index(after: index)
 		currentIndex = index
 
-		return string
+		return cleanString
 	}
 
+	/**
+	Reads a string inside angle brackets and returns the string (without the brackets).
+
+	Also prevents the newline bug (see the documentation for readIdentifier).
+	*/
 	func readStringInAngleBrackets() -> String {
 		defer { cleanLeadingWhitespace() }
 
@@ -674,10 +716,11 @@ internal class GRYDecoder {
 		index = buffer.index(after: index)
 
 		let string = String(buffer[currentIndex..<index])
+		let cleanString = string.replacingOccurrences(of: "\n", with: "")
 
 		currentIndex = index
 
-		return string
+		return cleanString
 	}
 }
 

@@ -91,6 +91,9 @@ public class GRYKotlinTranslator {
 		case let .classDeclaration(name: name, inherits: inherits, members: members):
 			result = try translateClassDeclaration(
 				name: name, inherits: inherits, members: members, withIndentation: indentation)
+		case let .structDeclaration(name: name, inherits: inherits, members: members):
+			result = try translateStructDeclaration(
+				name: name, inherits: inherits, members: members, withIndentation: indentation)
 		case let .companionObject(members: members):
 			result = try translateCompanionObject(members: members, withIndentation: indentation)
 		case let .enumDeclaration(
@@ -128,8 +131,6 @@ public class GRYKotlinTranslator {
 		case let .throwStatement(expression: expression):
 			result = try translateThrowStatement(
 				expression: expression, withIndentation: indentation)
-		case .structDeclaration(name: _):
-			return ""
 		case let .variableDeclaration(
 			identifier: identifier, typeName: typeName, expression: expression, getter: getter,
 			setter: setter, isLet: isLet, extendsType: extendsType, annotations: annotations):
@@ -273,6 +274,49 @@ public class GRYKotlinTranslator {
 			withIndentation: increasedIndentation)
 
 		result += classContents + "\(indentation)}\n"
+
+		return result
+	}
+
+	/// If a value type's members are all immutable, that value type can safely be translated as a
+	/// class. Source: https://forums.swift.org/t/are-immutable-structs-like-classes/16270
+	private func translateStructDeclaration(
+		name: String, inherits: [String], members: [GRYTopLevelNode],
+		withIndentation indentation: String) throws -> String
+	{
+		let increasedIndentation = increaseIndentation(indentation)
+
+		var result = "\(indentation)data class \(name)(\n"
+
+		let isProperty = { (member: GRYTopLevelNode) -> Bool in
+			if case .variableDeclaration = member {
+				return true
+			}
+			else {
+				return false
+			}
+		}
+		let properties = members.filter(isProperty)
+		let otherMembers = members.filter { !isProperty($0) }
+
+		// Translate properties individually, dropping the newlines at the end
+		let propertyTranslations = try properties.map {
+			try String(translate(subtree: $0, withIndentation: increasedIndentation).dropLast())
+		}
+		let propertiesTranslation = propertyTranslations.joined(separator: ",\n")
+
+		result += propertiesTranslation + ")\n\(indentation){\n"
+
+		if !inherits.isEmpty {
+			let translatedInheritances = inherits.map(translateType)
+			result += ": " + translatedInheritances.joined(separator: ", ")
+		}
+
+		let otherMembersTranslation = try translate(
+			subtrees: otherMembers,
+			withIndentation: increasedIndentation)
+
+		result += otherMembersTranslation + "\(indentation)}\n"
 
 		return result
 	}

@@ -118,8 +118,11 @@ extension GRYTopLevelNode {
 			return [
 				GRYPrintableTree(name),
 				GRYPrintableTree.initOrNil("members", members), ]
-		case let .structDeclaration(name: name):
-			return [GRYPrintableTree(name)]
+		case let .structDeclaration(name: name, inherits: inherits, members: members):
+			return [
+				GRYPrintableTree(name),
+				GRYPrintableTree("inherits", inherits),
+				GRYPrintableTree("members", members), ]
 		case let .functionDeclaration(
 			prefix: prefix,
 			parameterNames: parameterNames,
