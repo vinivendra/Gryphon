@@ -2,6 +2,10 @@ data class UnsupportedStruct(
 	val immutableVariable: Int = 0,
 	var mutableVariable: Int = 0)
 {
+	internal fun pureFunction() {
+	}
+	internal fun mutatingFunction() {
+	}
 }
 data class SupportedStruct(
 	val x: Int = 0,

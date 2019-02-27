@@ -808,7 +808,7 @@ public class GRYSwift4Translator {
 
 		let access = functionDeclaration["access"]
 
-		// Find out if it's static
+		// Find out if it's static and if it's mutating
 		guard let interfaceTypeComponents = functionDeclaration["interface type"]?
 				.split(withStringSeparator: " -> "),
 			let firstInterfaceTypeComponent = interfaceTypeComponents.first else
@@ -817,6 +817,7 @@ public class GRYSwift4Translator {
 				"Unable to find out if function is static", AST: functionDeclaration)
 		}
 		let isStatic = firstInterfaceTypeComponent.contains(".Type")
+		let isMutating = firstInterfaceTypeComponent.contains("inout")
 
 		let functionNamePrefix = functionName.prefix { $0 != "(" }
 
@@ -894,6 +895,7 @@ public class GRYSwift4Translator {
 			returnType: returnType,
 			isImplicit: isImplicit,
 			isStatic: isStatic,
+			isMutating: isMutating,
 			extendsType: nil,
 			statements: statements,
 			access: access)
@@ -964,6 +966,7 @@ public class GRYSwift4Translator {
 						returnType: type,
 						isImplicit: false,
 						isStatic: false,
+						isMutating: false,
 						extendsType: nil,
 						statements: statementsTranslation,
 						access: access)
@@ -980,6 +983,7 @@ public class GRYSwift4Translator {
 						returnType: "()",
 						isImplicit: false,
 						isStatic: false,
+						isMutating: false,
 						extendsType: nil,
 						statements: statementsTranslation,
 						access: access)

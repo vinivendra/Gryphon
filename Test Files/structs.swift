@@ -18,6 +18,9 @@
 struct UnsupportedStruct {
 	let immutableVariable = 0
 	var mutableVariable = 0
+
+	func pureFunction() { }
+	mutating func mutatingFunction() { }
 }
 
 struct SupportedStruct {

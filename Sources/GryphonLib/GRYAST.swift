@@ -131,6 +131,7 @@ extension GRYTopLevelNode {
 			returnType: returnType,
 			isImplicit: isImplicit,
 			isStatic: isStatic,
+			isMutating: isMutating,
 			extendsType: extendsType,
 			statements: statements,
 			access: access):
@@ -153,6 +154,7 @@ extension GRYTopLevelNode {
 				extendsType.map { GRYPrintableTree("Extends type \($0)") },
 				isImplicit ? GRYPrintableTree("implicit") : nil,
 				isStatic ? GRYPrintableTree("static") : nil,
+				isMutating ? GRYPrintableTree("mutating") : nil,
 				GRYPrintableTree.initOrNil(access),
 				GRYPrintableTree(name),
 				GRYPrintableTree("Default Values", defaultValueStrings),

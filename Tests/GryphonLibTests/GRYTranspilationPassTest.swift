@@ -46,6 +46,8 @@ class GRYTranspilationPassTest: XCTestCase {
 			XCTAssertEqual(GRYCompiler.warnings, [
 				"No support for mutable variables: found variable mutableVariable inside " +
 					"UnsupportedStruct",
+				"No support for mutating methods: found method mutatingFunction() inside " +
+					"mutatingFunction()",
 				])
 		}
 		catch let error {
