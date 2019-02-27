@@ -182,7 +182,7 @@ public enum GRYCompiler {
 		if !swiftASTDumpErrors.isEmpty {
 			print("Swift AST translator failed to translate:")
 
-			let swiftASTDumpHistogram = swiftASTDumpErrors.makeHistogram { $0.astName }
+			let swiftASTDumpHistogram = swiftASTDumpErrors.group { $0.astName }
 			for (astName, errorArray) in
 				swiftASTDumpHistogram.sorted(by: { $0.value.count > $1.value.count })
 			{
@@ -194,7 +194,7 @@ public enum GRYCompiler {
 		if !kotlinTranslatorErrors.isEmpty {
 			print("Kotlin translator failed to translate:")
 
-			let kotlinTranslatorHistogram = kotlinTranslatorErrors.makeHistogram { $0.astName }
+			let kotlinTranslatorHistogram = kotlinTranslatorErrors.group { $0.astName }
 			for (astName, errorArray) in
 				kotlinTranslatorHistogram.sorted(by: { $0.value.count > $1.value.count })
 			{
@@ -215,18 +215,5 @@ public enum GRYCompiler {
 				log = nil
 			}
 		}
-	}
-}
-
-extension Array {
-	func makeHistogram<Key>(_ getKey: (Element) -> Key) -> [Key: [Element]] {
-		var result = [Key: [Element]]()
-		for element in self {
-			let key = getKey(element)
-			var array = result[key] ?? []
-			array.append(element)
-			result[key] = array
-		}
-		return result
 	}
 }

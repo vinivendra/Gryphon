@@ -90,6 +90,19 @@ extension Array {
 	mutating func rotate() {
 		self = self.rotated()
 	}
+
+	/// Groups the array's elements into a dictionary according to the keys provided by the given
+	/// closure, forming a sort of histogram.
+	func group<Key>(by getKey: (Element) -> Key) -> [Key: [Element]] {
+		var result = [Key: [Element]]()
+		for element in self {
+			let key = getKey(element)
+			var array = result[key] ?? []
+			array.append(element)
+			result[key] = array
+		}
+		return result
+	}
 }
 
 extension ArrayReference {
