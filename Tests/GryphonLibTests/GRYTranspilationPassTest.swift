@@ -19,7 +19,7 @@ import XCTest
 
 class GRYTranspilationPassTest: XCTestCase {
 	func testPasses() {
-		let tests = TestUtils.allTestCases
+		let tests = TestUtils.testCasesForTranspilationPassTest
 		GRYCompiler.clearErrorsAndWarnings()
 
 		do {
@@ -44,10 +44,12 @@ class GRYTranspilationPassTest: XCTestCase {
 			}
 
 			XCTAssertEqual(GRYCompiler.warnings, [
-				"No support for mutable variables: found variable mutableVariable inside " +
-					"UnsupportedStruct",
-				"No support for mutating methods: found method mutatingFunction() inside " +
-					"mutatingFunction()",
+				"No support for mutable variables in value types: found variable mutableVariable " +
+					"inside struct UnsupportedStruct",
+				"No support for mutating methods in value types: found method mutatingFunction() " +
+					"inside struct UnsupportedStruct",
+				"No support for mutating methods in value types: found method mutatingFunction() " +
+					"inside enum UnsupportedEnum",
 				])
 		}
 		catch let error {

@@ -14,20 +14,20 @@
 * limitations under the License.
 */
 
-struct SupportedStruct {
-	let x = 0
-	let y = 1
+struct UnsupportedStruct {
+	let immutableVariable = 0
+	var mutableVariable = 0
+
+	func pureFunction() { }
+	mutating func mutatingFunction() { }
 }
 
-struct OtherSupportedStruct {
-	let x: Int
-	let y: Int
+enum UnsupportedEnum {
+	case a(int: Int)
+
+	mutating func mutatingFunction() { }
+
+	var computedVarIsOK: Int {
+		return 0
+	}
 }
-
-let a = SupportedStruct()
-let b = OtherSupportedStruct(x: 10, y: 20)
-
-print(a.x)
-print(a.y)
-print(b.x)
-print(b.y)

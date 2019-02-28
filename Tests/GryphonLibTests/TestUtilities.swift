@@ -108,7 +108,7 @@ enum TestUtils {
 }
 
 extension TestUtils {
-	static let acceptanceTestCases: [String] = [
+	static let testCasesForAcceptanceTest: [String] = [
 		"arrays",
 		"assignments",
 		"bhaskara",
@@ -126,9 +126,12 @@ extension TestUtils {
 		"staticMembers",
 		"structs",
 	]
-	static let allTestCases = acceptanceTestCases + [
+	static let testCasesForAllTests = testCasesForAcceptanceTest + [
 		"enums",
 		"functionDefinitions",
 		"strings",
+	]
+	static let testCasesForTranspilationPassTest = testCasesForAllTests + [
+		"warnings",
 	]
 }

@@ -19,7 +19,7 @@ import XCTest
 
 class GRYKotlinTranslatorTest: XCTestCase {
 	func testTranslator() {
-		let tests = TestUtils.allTestCases
+		let tests = TestUtils.testCasesForAllTests
 
 		for testName in tests {
 

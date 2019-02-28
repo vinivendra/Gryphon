@@ -97,11 +97,11 @@ public class GRYKotlinTranslator {
 		case let .companionObject(members: members):
 			result = try translateCompanionObject(members: members, withIndentation: indentation)
 		case let .enumDeclaration(
-			access: access, name: name, inherits: inherits, elements: elements):
+			access: access, name: name, inherits: inherits, elements: elements, members: members):
 
 			result = try translateEnumDeclaration(
 				access: access, name: name, inherits: inherits, elements: elements,
-				withIndentation: indentation)
+				members: members, withIndentation: indentation)
 		case .enumElementDeclaration(
 			name: _, associatedValueLabels: _, associatedValueTypes: _):
 
@@ -134,12 +134,13 @@ public class GRYKotlinTranslator {
 				expression: expression, withIndentation: indentation)
 		case let .variableDeclaration(
 			identifier: identifier, typeName: typeName, expression: expression, getter: getter,
-			setter: setter, isLet: isLet, extendsType: extendsType, annotations: annotations):
+			setter: setter, isLet: isLet, isImplicit: isImplicit, extendsType: extendsType,
+			annotations: annotations):
 
 			result = try translateVariableDeclaration(
 				identifier: identifier, typeName: typeName, expression: expression, getter: getter,
-				setter: setter, isLet: isLet, extendsType: extendsType, annotations: annotations,
-				withIndentation: indentation)
+				setter: setter, isLet: isLet, isImplicit: isImplicit, extendsType: extendsType,
+				annotations: annotations, withIndentation: indentation)
 		case let .assignmentStatement(leftHand: leftHand, rightHand: rightHand):
 			result = try translateAssignmentStatement(
 				leftHand: leftHand, rightHand: rightHand, withIndentation: indentation)
@@ -181,7 +182,7 @@ public class GRYKotlinTranslator {
 
 	private func translateEnumDeclaration(
 		access: String?, name enumName: String, inherits: [String], elements: [GRYTopLevelNode],
-		withIndentation indentation: String) throws -> String
+		members: [GRYTopLevelNode], withIndentation indentation: String) throws -> String
 	{
 		var result: String
 
@@ -217,9 +218,12 @@ public class GRYKotlinTranslator {
 				return try unexpectedASTStructureError(
 					"Expected enum element to be an .enumElementDeclaration",
 					AST: .enumDeclaration(
-						access: access, name: enumName, inherits: inherits, elements: elements))
+						access: access, name: enumName, inherits: inherits, elements: elements,
+						members: members))
 			}
 		}
+
+		result += try translate(subtrees: members, withIndentation: increasedIndentation)
 
 		result += "\(indentation)}\n"
 
@@ -502,9 +506,13 @@ public class GRYKotlinTranslator {
 
 	private func translateVariableDeclaration(
 		identifier: String, typeName: String, expression: GRYExpression?, getter: GRYTopLevelNode?,
-		setter: GRYTopLevelNode?, isLet: Bool, extendsType: String?, annotations: String?,
-		withIndentation indentation: String) throws -> String
+		setter: GRYTopLevelNode?, isLet: Bool, isImplicit: Bool, extendsType: String?,
+		annotations: String?, withIndentation indentation: String) throws -> String
 	{
+		guard !isImplicit else {
+			return ""
+		}
+
 		var result = indentation
 
 		if let annotations = annotations {
@@ -563,8 +571,8 @@ public class GRYKotlinTranslator {
 					"Expected the getter to be a .functionDeclaration",
 					AST: .variableDeclaration(
 						identifier: identifier, typeName: typeName, expression: expression,
-						getter: getter, setter: setter, isLet: isLet, extendsType: extendsType,
-						annotations: annotations))
+						getter: getter, setter: setter, isLet: isLet, isImplicit: isImplicit,
+						extendsType: extendsType, annotations: annotations))
 			}
 
 			if let statements = statements {
@@ -584,8 +592,8 @@ public class GRYKotlinTranslator {
 					"Expected the setter to be a .functionDeclaration",
 					AST: .variableDeclaration(
 						identifier: identifier, typeName: typeName, expression: expression,
-						getter: getter, setter: setter, isLet: isLet, extendsType: extendsType,
-						annotations: annotations))
+						getter: getter, setter: setter, isLet: isLet, isImplicit: isImplicit,
+						extendsType: extendsType, annotations: annotations))
 			}
 
 			if let statements = statements {

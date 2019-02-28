@@ -98,13 +98,15 @@ extension GRYTopLevelNode {
 			access: access,
 			name: name,
 			inherits: inherits,
-			elements: elements):
+			elements: elements,
+			members: members):
 
 			return [
 				GRYPrintableTree.initOrNil(access),
 				GRYPrintableTree(name),
 				GRYPrintableTree("inherits", inherits),
-				GRYPrintableTree("elements", elements), ]
+				GRYPrintableTree("elements", elements),
+				GRYPrintableTree("members", members), ]
 		case let .enumElementDeclaration(
 			name: name,
 			associatedValueLabels: associatedValueLabels,
@@ -167,12 +169,14 @@ extension GRYTopLevelNode {
 			getter: getter,
 			setter: setter,
 			isLet: isLet,
+			isImplicit: isImplicit,
 			extendsType: extendsType,
 			annotations: annotations):
 
 			return [
 				GRYPrintableTree.initOrNil(
 					"extendsType", [GRYPrintableTree.initOrNil(extendsType)]),
+				isImplicit ? GRYPrintableTree("implicit") : nil,
 				isLet ? GRYPrintableTree("let") : GRYPrintableTree("var"),
 				GRYPrintableTree(identifier),
 				GRYPrintableTree(typeName),

@@ -358,7 +358,8 @@ public class GRYSwift4Translator {
 				access: access,
 				name: name,
 				inherits: inheritanceArray,
-				elements: [])
+				elements: [],
+				members: [])
 		}
 
 		var elements = [GRYTopLevelNode]()
@@ -399,11 +400,17 @@ public class GRYSwift4Translator {
 			}
 		}
 
+		let members = enumDeclaration.subtrees.filter {
+			$0.name != "Enum Element Declaration" && $0.name != "Enum Case Declaration"
+		}
+		let translatedMembers = try translate(subtrees: members.array)
+
 		return .enumDeclaration(
 			access: access,
 			name: name,
 			inherits: inheritanceArray,
-			elements: elements)
+			elements: elements,
+			members: translatedMembers)
 	}
 
 	internal func translate(memberReferenceExpression: GRYSwiftAST) throws -> GRYExpression {
@@ -776,6 +783,7 @@ public class GRYSwift4Translator {
 					expression: expression,
 					getter: nil, setter: nil,
 					isLet: isLet,
+					isImplicit: false,
 					extendsType: nil,
 					annotations: nil))
 			}
@@ -928,7 +936,10 @@ public class GRYSwift4Translator {
 				AST: variableDeclaration)
 		}
 
-		if let identifier = variableDeclaration.standaloneAttributes.first,
+		let isImplicit = variableDeclaration.standaloneAttributes.contains("implicit")
+
+		if let identifier =
+				variableDeclaration.standaloneAttributes.first(where: { $0 != "implicit" }),
 			let rawType = variableDeclaration["interface type"]
 		{
 			let isLet = variableDeclaration.standaloneAttributes.contains("let")
@@ -997,6 +1008,7 @@ public class GRYSwift4Translator {
 				getter: getter,
 				setter: setter,
 				isLet: isLet,
+				isImplicit: isImplicit,
 				extendsType: nil,
 				annotations: nil)
 		}

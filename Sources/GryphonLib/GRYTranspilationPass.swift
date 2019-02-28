@@ -52,10 +52,11 @@ public class GRYTranspilationPass {
 		case let .companionObject(members: members):
 			return replaceCompanionObject(members: members)
 		case let .enumDeclaration(
-			access: access, name: name, inherits: inherits, elements: elements):
+			access: access, name: name, inherits: inherits, elements: elements, members: members):
 
 			return replaceEnumDeclaration(
-				access: access, name: name, inherits: inherits, elements: elements)
+				access: access, name: name, inherits: inherits, elements: elements,
+				members: members)
 		case let .enumElementDeclaration(
 			name: name, associatedValueLabels: associatedValueLabels,
 			associatedValueTypes: associatedValueTypes):
@@ -80,11 +81,13 @@ public class GRYTranspilationPass {
 				access: access)
 		case let .variableDeclaration(
 			identifier: identifier, typeName: typeName, expression: expression, getter: getter,
-			setter: setter, isLet: isLet, extendsType: extendsType, annotations: annotations):
+			setter: setter, isLet: isLet, isImplicit: isImplicit, extendsType: extendsType,
+			annotations: annotations):
 
 			return replaceVariableDeclaration(
 				identifier: identifier, typeName: typeName, expression: expression, getter: getter,
-				setter: setter, isLet: isLet, extendsType: extendsType, annotations: annotations)
+				setter: setter, isLet: isLet, isImplicit: isImplicit, extendsType: extendsType,
+				annotations: annotations)
 		case let .forEachStatement(
 			collection: collection, variable: variable, statements: statements):
 
@@ -132,11 +135,13 @@ public class GRYTranspilationPass {
 	}
 
 	func replaceEnumDeclaration(
-		access: String?, name: String, inherits: [String], elements: [GRYTopLevelNode])
-		-> [GRYTopLevelNode]
+		access: String?, name: String, inherits: [String], elements: [GRYTopLevelNode],
+		members: [GRYTopLevelNode]) -> [GRYTopLevelNode]
 	{
 		return [
-			.enumDeclaration(access: access, name: name, inherits: inherits, elements: elements), ]
+			.enumDeclaration(
+				access: access, name: name, inherits: inherits, elements: elements,
+				members: members.flatMap(replaceTopLevelNode)), ]
 	}
 
 	func replaceEnumElementDeclaration(
@@ -184,15 +189,16 @@ public class GRYTranspilationPass {
 
 	func replaceVariableDeclaration(
 		identifier: String, typeName: String, expression: GRYExpression?, getter: GRYTopLevelNode?,
-		setter: GRYTopLevelNode?, isLet: Bool, extendsType: String?, annotations: String?)
-		-> [GRYTopLevelNode]
+		setter: GRYTopLevelNode?, isLet: Bool, isImplicit: Bool, extendsType: String?,
+		annotations: String?) -> [GRYTopLevelNode]
 	{
 		return [.variableDeclaration(
 			identifier: identifier, typeName: typeName,
 			expression: expression.map(replaceExpression),
 			getter: getter.map(replaceTopLevelNode)?.first,
 			setter: setter.map(replaceTopLevelNode)?.first,
-			isLet: isLet, extendsType: extendsType, annotations: annotations), ]
+			isLet: isLet, isImplicit: isImplicit, extendsType: extendsType,
+			annotations: annotations), ]
 	}
 
 	func replaceForEachStatement(
@@ -571,15 +577,16 @@ public class GRYRemoveIgnoredDeclarationsTranspilationPass: GRYTranspilationPass
 	}
 
 	override func replaceEnumDeclaration(
-		access: String?, name: String, inherits: [String], elements: [GRYTopLevelNode])
-		-> [GRYTopLevelNode]
+		access: String?, name: String, inherits: [String], elements: [GRYTopLevelNode],
+		members: [GRYTopLevelNode]) -> [GRYTopLevelNode]
 	{
 		if inherits.contains("GRYIgnore") {
 			return []
 		}
 		else {
 			return super.replaceEnumDeclaration(
-				access: access, name: name, inherits: inherits, elements: elements)
+				access: access, name: name, inherits: inherits, elements: elements,
+				members: members)
 		}
 	}
 
@@ -616,8 +623,8 @@ public class GRYRemoveIgnoredDeclarationsTranspilationPass: GRYTranspilationPass
 public class GRYAddAnnotationsTranspilationPass: GRYTranspilationPass {
 	override func replaceVariableDeclaration(
 		identifier: String, typeName: String, expression: GRYExpression?, getter: GRYTopLevelNode?,
-		setter: GRYTopLevelNode?, isLet: Bool, extendsType: String?, annotations: String?)
-		-> [GRYTopLevelNode]
+		setter: GRYTopLevelNode?, isLet: Bool, isImplicit: Bool, extendsType: String?,
+		annotations: String?) -> [GRYTopLevelNode]
 	{
 		if let expression = expression,
 			case let .callExpression(
@@ -633,13 +640,14 @@ public class GRYAddAnnotationsTranspilationPass: GRYTranspilationPass {
 		{
 			return [.variableDeclaration(
 				identifier: identifier, typeName: typeName, expression: newExpression,
-				getter: getter, setter: setter, isLet: isLet, extendsType: extendsType,
-				annotations: newAnnotations), ]
+				getter: getter, setter: setter, isLet: isLet, isImplicit: isImplicit,
+				extendsType: extendsType, annotations: newAnnotations), ]
 		}
 
 		return [.variableDeclaration(
 			identifier: identifier, typeName: typeName, expression: expression, getter: getter,
-			setter: setter, isLet: isLet, extendsType: extendsType, annotations: annotations), ]
+			setter: setter, isLet: isLet, isImplicit: isImplicit, extendsType: extendsType,
+			annotations: annotations), ]
 	}
 }
 
@@ -798,11 +806,13 @@ public class GRYRemoveExtensionsTranspilationPass: GRYTranspilationPass {
 				statements: statements, access: access)
 		case let .variableDeclaration(
 			identifier: identifier, typeName: typeName, expression: expression, getter: getter,
-			setter: setter, isLet: isLet, extendsType: extendsType, annotations: annotations):
+			setter: setter, isLet: isLet, isImplicit: isImplicit, extendsType: extendsType,
+			annotations: annotations):
 
 			return replaceVariableDeclaration(
 				identifier: identifier, typeName: typeName, expression: expression, getter: getter,
-				setter: setter, isLet: isLet, extendsType: extendsType, annotations: annotations)
+				setter: setter, isLet: isLet, isImplicit: isImplicit, extendsType: extendsType,
+				annotations: annotations)
 		default:
 			return [node]
 		}
@@ -823,24 +833,24 @@ public class GRYRemoveExtensionsTranspilationPass: GRYTranspilationPass {
 
 	override func replaceVariableDeclaration(
 		identifier: String, typeName: String, expression: GRYExpression?, getter: GRYTopLevelNode?,
-		setter: GRYTopLevelNode?, isLet: Bool, extendsType: String?, annotations: String?)
-		-> [GRYTopLevelNode]
+		setter: GRYTopLevelNode?, isLet: Bool, isImplicit: Bool, extendsType: String?,
+		annotations: String?) -> [GRYTopLevelNode]
 	{
 		return [GRYTopLevelNode.variableDeclaration(
 			identifier: identifier, typeName: typeName, expression: expression, getter: getter,
-			setter: setter, isLet: isLet, extendsType: self.extendingType,
+			setter: setter, isLet: isLet, isImplicit: isImplicit, extendsType: self.extendingType,
 			annotations: annotations), ]
 	}
 }
 
 public class GRYRecordEnumsTranspilationPass: GRYTranspilationPass {
 	override func replaceEnumDeclaration(
-		access: String?, name: String, inherits: [String], elements: [GRYTopLevelNode])
-		-> [GRYTopLevelNode]
+		access: String?, name: String, inherits: [String], elements: [GRYTopLevelNode],
+		members: [GRYTopLevelNode]) -> [GRYTopLevelNode]
 	{
 		GRYKotlinTranslator.addEnum(name)
 		return [.enumDeclaration(
-			access: access, name: name, inherits: inherits, elements: elements), ]
+			access: access, name: name, inherits: inherits, elements: elements, members: members), ]
 	}
 }
 
@@ -863,20 +873,19 @@ public class GRYRaiseStandardLibraryWarningsTranspilationPass: GRYTranspilationP
 /// class. Otherwise, the translation can cause inconsistencies, so this pass raises warnings.
 /// Source: https://forums.swift.org/t/are-immutable-structs-like-classes/16270
 public class GRYRaiseMutableValueTypesWarningsTranspilationPass: GRYTranspilationPass {
-	// TODO: Add support for enum members, then perform this check on them.
-
 	override func replaceStructDeclaration(
 		name: String, inherits: [String], members: [GRYTopLevelNode]) -> [GRYTopLevelNode]
 	{
 		for member in members {
+			// TODO: Computed variables are OK
 			if case let .variableDeclaration(
 				identifier: identifier, typeName: _, expression: _, getter: _, setter: _,
-				isLet: isLet, extendsType: _, annotations: _) = member
+				isLet: isLet, isImplicit: false, extendsType: _, annotations: _) = member
 			{
 				if !isLet {
 					GRYCompiler.handleWarning(
-						"No support for mutable variables: found variable \(identifier) inside " +
-						"\(name)")
+						"No support for mutable variables in value types: found variable " +
+						"\(identifier) inside struct \(name)")
 				}
 			}
 			else if case let .functionDeclaration(
@@ -885,16 +894,40 @@ public class GRYRaiseMutableValueTypesWarningsTranspilationPass: GRYTranspilatio
 				statements: _, access: _) = member
 			{
 				if isMutating {
-					let name =
+					let methodName =
 						prefix + "(" + parameterNames.map { $0 + ":" }.joined(separator: ", ") + ")"
 					GRYCompiler.handleWarning(
-						"No support for mutating methods: found method \(name) inside " +
-						"\(name)")
+						"No support for mutating methods in value types: found method " +
+						"\(methodName) inside struct \(name)")
 				}
 			}
 		}
 
 		return [.structDeclaration(name: name, inherits: inherits, members: members)]
+	}
+
+	override func replaceEnumDeclaration(
+		access: String?, name: String, inherits: [String], elements: [GRYTopLevelNode],
+		members: [GRYTopLevelNode]) -> [GRYTopLevelNode]
+	{
+		for member in members {
+			if case let .functionDeclaration(
+				prefix: prefix, parameterNames: parameterNames, parameterTypes: _, defaultValues: _,
+				returnType: _, isImplicit: _, isStatic: _, isMutating: isMutating, extendsType: _,
+				statements: _, access: _) = member
+			{
+				if isMutating {
+					let methodName =
+						prefix + "(" + parameterNames.map { $0 + ":" }.joined(separator: ", ") + ")"
+					GRYCompiler.handleWarning(
+						"No support for mutating methods in value types: found method " +
+						"\(methodName) inside enum \(name)")
+				}
+			}
+		}
+
+		return [.enumDeclaration(
+			access: access, name: name, inherits: inherits, elements: elements, members: members), ]
 	}
 }
 
@@ -910,7 +943,7 @@ public class GRYRearrangeIfLetsTranspilationPass: GRYTranspilationPass {
 		for declaration in declarations {
 			if case let .variableDeclaration(
 				identifier: identifier, typeName: typeName, expression: _, getter: _, setter: _,
-				isLet: _, extendsType: _, annotations: _) = declaration
+				isLet: _, isImplicit: _, extendsType: _, annotations: _) = declaration
 			{
 				letDeclarations.append(declaration)
 				letConditions.append(

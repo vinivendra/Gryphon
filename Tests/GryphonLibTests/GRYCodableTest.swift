@@ -199,7 +199,7 @@ class GRYCodableTest: XCTestCase {
 	/// Ensure the GRYSwiftAST produced by reading Swift's AST dump is the same as the one produced
 	/// from decoding the Gryphon cache file.
 	func testSwiftASTDumpVersusGryphonEncoding() {
-		let tests = TestUtils.allTestCases
+		let tests = TestUtils.testCasesForAllTests
 
 		do {
 			for testName in tests {
@@ -313,7 +313,7 @@ class GRYCodableTest: XCTestCase {
 	}
 
 	func testGRYSwiftASTConformance() {
-		let tests = TestUtils.allTestCases
+		let tests = TestUtils.testCasesForAllTests
 
 		for testName in tests {
 
@@ -346,7 +346,7 @@ class GRYCodableTest: XCTestCase {
 	}
 
 	func testGRYASTConformance() {
-		let tests = TestUtils.allTestCases
+		let tests = TestUtils.testCasesForAllTests
 
 		for testName in tests {
 			do {

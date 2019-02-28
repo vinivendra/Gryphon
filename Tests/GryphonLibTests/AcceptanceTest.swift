@@ -19,7 +19,7 @@ import XCTest
 
 class AcceptanceTest: XCTestCase {
 	func test() {
-		let tests = TestUtils.acceptanceTestCases
+		let tests = TestUtils.testCasesForAcceptanceTest
 
 		for testName in tests {
 			print("- Testing \(testName)...")
