@@ -20,12 +20,11 @@ import XCTest
 class GRYTranspilationPassTest: XCTestCase {
 	func testPasses() {
 		let tests = TestUtils.testCasesForTranspilationPassTest
-		GRYCompiler.clearErrorsAndWarnings()
 
-		do {
-			for testName in tests {
-				print("- Testing \(testName)...")
+		for testName in tests {
+			print("- Testing \(testName)...")
 
+			do {
 				// Fetch the cached Gryphon AST (without passes) and run the passes on it
 				let testFilePath = TestUtils.testFilesPath + testName
 				let rawAST = try GRYAST(decodeFromFile: testFilePath + .gryRawAST)
@@ -42,19 +41,19 @@ class GRYTranspilationPassTest: XCTestCase {
 
 				print("\t- Done!")
 			}
+			catch let error {
+				XCTFail("🚨 Test failed with error:\n\(error)")
+			}
+		}
 
-			XCTAssertEqual(GRYCompiler.warnings, [
-				"No support for mutable variables in value types: found variable mutableVariable " +
-					"inside struct UnsupportedStruct",
-				"No support for mutating methods in value types: found method mutatingFunction() " +
-					"inside struct UnsupportedStruct",
-				"No support for mutating methods in value types: found method mutatingFunction() " +
-					"inside enum UnsupportedEnum",
-				])
-		}
-		catch let error {
-			XCTFail("🚨 Test failed with error:\n\(error)")
-		}
+		XCTAssertEqual(GRYCompiler.warnings, [
+			"No support for mutable variables in value types: found variable " +
+				"mutableVariable inside struct UnsupportedStruct",
+			"No support for mutating methods in value types: found method " +
+				"mutatingFunction() inside struct UnsupportedStruct",
+			"No support for mutating methods in value types: found method " +
+				"mutatingFunction() inside enum UnsupportedEnum",
+			])
 	}
 
 	static var allTests = [
@@ -69,5 +68,9 @@ class GRYTranspilationPassTest: XCTestCase {
 			print(error)
 			fatalError("Failed to update test files.")
 		}
+	}
+
+	override func setUp() {
+		GRYCompiler.clearErrorsAndWarnings()
 	}
 }

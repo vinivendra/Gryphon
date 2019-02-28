@@ -19,6 +19,12 @@ import XCTest
 
 class BootstrappingTest: XCTestCase {
 	func test() {
+		GRYCompiler.clearErrorsAndWarnings()
+		defer {
+			XCTAssertFalse(GRYCompiler.hasErrorsOrWarnings())
+			GRYCompiler.printErrorsAndWarnings()
+		}
+
 		// Compile the Kotlin version of the transpiler
 		let compilationCommand = [
 			GRYCompiler.kotlinCompilerPath,
@@ -76,14 +82,6 @@ class BootstrappingTest: XCTestCase {
 		catch let error {
 			print(error)
 			fatalError("Failed to update test files.")
-		}
-	}
-
-	override static func tearDown() {
-		XCTAssertFalse(GRYCompiler.hasErrorsOrWarnings())
-		if GRYCompiler.hasErrorsOrWarnings() {
-			GRYCompiler.printErrorsAndWarnings()
-			GRYCompiler.clearErrorsAndWarnings()
 		}
 	}
 }

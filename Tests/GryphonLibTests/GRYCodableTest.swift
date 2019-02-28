@@ -201,10 +201,10 @@ class GRYCodableTest: XCTestCase {
 	func testSwiftASTDumpVersusGryphonEncoding() {
 		let tests = TestUtils.testCasesForAllTests
 
-		do {
-			for testName in tests {
-				print("- Testing \(testName)...")
+		for testName in tests {
+			print("- Testing \(testName)...")
 
+			do {
 				// Decode the AST from Swift's AST dump
 				let testFilePath = TestUtils.testFilesPath + testName
 				let swiftDumpAST =
@@ -222,10 +222,13 @@ class GRYCodableTest: XCTestCase {
 
 				print("\t- Done!")
 			}
+			catch let error {
+				XCTFail("🚨 Test failed with error:\n\(error)")
+			}
 		}
-		catch let error {
-			XCTFail("🚨 Test failed with error:\n\(error)")
-		}
+
+		XCTAssertFalse(GRYCompiler.hasErrorsOrWarnings())
+		GRYCompiler.printErrorsAndWarnings()
 	}
 
 	func testSimpleTypesConformance() {
@@ -316,10 +319,9 @@ class GRYCodableTest: XCTestCase {
 		let tests = TestUtils.testCasesForAllTests
 
 		for testName in tests {
+			print("- Testing \(testName)...")
 
 			do {
-				print("- Testing \(testName)...")
-
 				// Parse an AST from the dump file
 				let testFilePath = TestUtils.testFilesPath + testName
 				let expectedAST =
@@ -343,15 +345,18 @@ class GRYCodableTest: XCTestCase {
 				XCTFail("🚨 Test failed with error:\n\(error)")
 			}
 		}
+
+		XCTAssertFalse(GRYCompiler.hasErrorsOrWarnings())
+		GRYCompiler.printErrorsAndWarnings()
 	}
 
 	func testGRYASTConformance() {
 		let tests = TestUtils.testCasesForAllTests
 
 		for testName in tests {
-			do {
-				print("- Testing \(testName)...")
+			print("- Testing \(testName)...")
 
+			do {
 				// Create an AST from scratch
 				let testFilePath = TestUtils.testFilesPath + testName
 				let expectedAST =
@@ -375,6 +380,9 @@ class GRYCodableTest: XCTestCase {
 				XCTFail("🚨 Test failed with error:\n\(error)")
 			}
 		}
+
+		XCTAssertFalse(GRYCompiler.hasErrorsOrWarnings())
+		GRYCompiler.printErrorsAndWarnings()
 	}
 
 	static var allTests = [
@@ -396,11 +404,7 @@ class GRYCodableTest: XCTestCase {
 		}
 	}
 
-	override static func tearDown() {
-		XCTAssertFalse(GRYCompiler.hasErrorsOrWarnings())
-		if GRYCompiler.hasErrorsOrWarnings() {
-			GRYCompiler.printErrorsAndWarnings()
-			GRYCompiler.clearErrorsAndWarnings()
-		}
+	override func setUp() {
+		GRYCompiler.clearErrorsAndWarnings()
 	}
 }

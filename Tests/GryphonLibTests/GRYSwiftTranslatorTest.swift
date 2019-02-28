@@ -46,6 +46,9 @@ class GRYSwiftTranslatorTest: XCTestCase {
 				XCTFail("🚨 Test failed with error:\n\(error)")
 			}
 		}
+
+		XCTAssertFalse(GRYCompiler.hasErrorsOrWarnings())
+		GRYCompiler.printErrorsAndWarnings()
 	}
 
 	static var allTests = [
@@ -62,11 +65,7 @@ class GRYSwiftTranslatorTest: XCTestCase {
 		}
 	}
 
-	override static func tearDown() {
-		XCTAssertFalse(GRYCompiler.hasErrorsOrWarnings())
-		if GRYCompiler.hasErrorsOrWarnings() {
-			GRYCompiler.printErrorsAndWarnings()
-			GRYCompiler.clearErrorsAndWarnings()
-		}
+	override func setUp() {
+		GRYCompiler.clearErrorsAndWarnings()
 	}
 }
