@@ -16,9 +16,10 @@
 
 public class GRYSwift4Translator {
 	// MARK: - Properties
-	var danglingPatternBinding: (identifier: String, type: String, expression: GRYExpression?)?
-	let errorDanglingPatternDeclaration:
-		(identifier: String, type: String, expression: GRYExpression?) =
+	typealias PatternBindingDeclaration =
+		(identifier: String, type: String, expression: GRYExpression?)?
+	var danglingPatternBindings = [PatternBindingDeclaration?]()
+	let errorDanglingPatternDeclaration: PatternBindingDeclaration =
 		(identifier: "<<Error>>", type: "<<Error>>", expression: GRYExpression.error)
 
 	var errors = [String]()
@@ -946,12 +947,20 @@ public class GRYSwift4Translator {
 			let type = cleanUpType(rawType)
 
 			let expression: GRYExpression?
-			if let bindingExpression = danglingPatternBinding,
-				(bindingExpression.identifier == identifier && bindingExpression.type == type) ||
-					(bindingExpression == errorDanglingPatternDeclaration)
-			{
-				expression = bindingExpression.expression
-				danglingPatternBinding = nil
+			if let firstBindingExpression = danglingPatternBindings.first {
+				if let maybeBindingExpression = firstBindingExpression,
+					let bindingExpression = maybeBindingExpression,
+					(bindingExpression.identifier == identifier &&
+							bindingExpression.type == type) ||
+						(bindingExpression.identifier == "<<Error>>")
+				{
+					expression = bindingExpression.expression
+				}
+				else {
+					expression = nil
+				}
+
+				_ = danglingPatternBindings.removeFirst()
 			}
 			else {
 				expression = nil
@@ -1479,55 +1488,48 @@ public class GRYSwift4Translator {
 				"Trying to translate \(patternBindingDeclaration.name) as " +
 				"'Pattern Binding Declaration'",
 				AST: patternBindingDeclaration)
-			danglingPatternBinding = errorDanglingPatternDeclaration
+			danglingPatternBindings = [errorDanglingPatternDeclaration]
 			return
 		}
 
-		// Some patternBindingDeclarations are empty, and that's ok. See the classes.swift test
-		// case.
-		guard let expression = patternBindingDeclaration.subtrees.last,
-			ASTIsExpression(expression) else
-		{
-			return
+		var result = [PatternBindingDeclaration]()
+
+		let subtrees = patternBindingDeclaration.subtrees
+		while !subtrees.isEmpty {
+			var pattern = subtrees.removeFirst()
+			if pattern.name == "Pattern Typed",
+				let newPattern = pattern.subtree(named: "Pattern Named")
+			{
+				pattern = newPattern
+			}
+
+			if let expression = subtrees.first, ASTIsExpression(expression) {
+				_ = subtrees.removeFirst()
+
+				let translatedExpression = try translate(expression: expression)
+
+				guard let identifier = pattern.standaloneAttributes.first,
+					let rawType = pattern["type"] else
+				{
+					_ = try unexpectedExpressionStructureError(
+						"Type not recognized", AST: patternBindingDeclaration)
+					result.append(errorDanglingPatternDeclaration)
+					continue
+				}
+
+				let type = cleanUpType(rawType)
+
+				result.append(
+					(identifier: identifier,
+					 type: type,
+					 expression: translatedExpression))
+			}
+			else {
+				result.append(nil)
+			}
 		}
 
-		let translatedExpression = try translate(expression: expression)
-
-		let binding: GRYSwiftAST
-
-		if let unwrappedBinding = patternBindingDeclaration
-			.subtree(named: "Pattern Typed")?
-			.subtree(named: "Pattern Named")
-		{
-			binding = unwrappedBinding
-		}
-		else if let unwrappedBinding = patternBindingDeclaration.subtree(named: "Pattern Named") {
-			binding = unwrappedBinding
-		}
-		else {
-			_ = try unexpectedExpressionStructureError(
-				"Pattern not recognized", AST: patternBindingDeclaration)
-			danglingPatternBinding = errorDanglingPatternDeclaration
-			return
-		}
-
-		guard let identifier = binding.standaloneAttributes.first,
-			let rawType = binding["type"] else
-		{
-			_ = try unexpectedExpressionStructureError(
-				"Type not recognized", AST: patternBindingDeclaration)
-			danglingPatternBinding = errorDanglingPatternDeclaration
-			return
-		}
-
-		let type = cleanUpType(rawType)
-
-		danglingPatternBinding =
-			(identifier: identifier,
-			 type: type,
-			 expression: translatedExpression)
-
-		return
+		danglingPatternBindings = result
 	}
 
 	internal func getIdentifierFromDeclaration(_ declaration: String)

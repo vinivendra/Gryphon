@@ -123,6 +123,10 @@ public class ArrayReference<Element>: GRYIgnore,
 	{
 		return ArrayReference<Element>(array: self.array + newElements)
 	}
+
+	public func removeFirst() -> Element {
+		return array.removeFirst()
+	}
 }
 
 extension ArrayReference: Equatable where Element: Equatable {

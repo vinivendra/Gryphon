@@ -27,3 +27,17 @@ print("\(z)")
 let a: Int? = nil
 
 print("\(a)")
+
+//
+let i: Int
+i = 0
+
+let r, g, b: Double
+r = 10
+g = 10
+b = 10
+
+let red = 1, green = 2, blue = 3
+
+let v = 0, w: Double
+let v2: Double, w2 = 0
