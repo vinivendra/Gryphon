@@ -1036,7 +1036,9 @@ public class GRYSwift4Translator {
 
 		// If the call expression corresponds to an integer literal
 		if let argumentLabels = callExpression["arg_labels"] {
-			if argumentLabels == "_builtinIntegerLiteral:" {
+			if argumentLabels == "_builtinIntegerLiteral:" ||
+				argumentLabels == "_builtinFloatLiteral:"
+			{
 				return try translate(asNumericLiteral: callExpression)
 			}
 			else if argumentLabels == "_builtinBooleanLiteral:" {
@@ -1248,10 +1250,12 @@ public class GRYSwift4Translator {
 				AST: callExpression)
 		}
 
+		// TODO: Negative float literals are translated as positive becuase the AST dump doesn't
+		// seemd to include any info showing they're negative.
 		if let tupleExpression = callExpression.subtree(named: "Tuple Expression"),
-			let integerLiteralExpression = tupleExpression
-				.subtree(named: "Integer Literal Expression"),
-			let value = integerLiteralExpression["value"],
+			let literalExpression = tupleExpression.subtree(named: "Integer Literal Expression") ??
+				tupleExpression.subtree(named: "Float Literal Expression"),
+			let value = literalExpression["value"],
 
 			let constructorReferenceCallExpression = callExpression
 				.subtree(named: "Constructor Reference Call Expression"),
@@ -1259,12 +1263,45 @@ public class GRYSwift4Translator {
 				.subtree(named: "Type Expression"),
 			let rawType = typeExpression["typerepr"]
 		{
-			let type = cleanUpType(rawType)
-			if type == "Double" {
-				return .literalDoubleExpression(value: Double(value)!)
+			if value.hasPrefix("0b") || value.hasPrefix("0o") ||
+				value.hasPrefix("<<memory address>")
+			{
+				// Fixable
+				return try unexpectedExpressionStructureError(
+					"No support yet for alternative integer formats", AST: callExpression)
+			}
+
+			let signedValue: String
+			if literalExpression.standaloneAttributes.contains("negative") {
+				signedValue = "-" + value
 			}
 			else {
-				return .literalIntExpression(value: Int(value)!)
+				signedValue = value
+			}
+
+			let type = cleanUpType(rawType)
+			if type == "Double" || type == "Float64" {
+				return .literalDoubleExpression(value: Double(signedValue)!)
+			}
+			else if type == "Float" || type == "Float32" {
+				return .literalFloatExpression(value: Float(signedValue)!)
+			}
+			else if type == "Float80" {
+				return try unexpectedExpressionStructureError(
+					"No support for 80-bit Floats", AST: callExpression)
+			}
+			else if type.hasPrefix("U") {
+				return .literalUIntExpression(value: UInt64(signedValue)!)
+			}
+			else {
+				if signedValue == "-9223372036854775808" {
+					return try unexpectedExpressionStructureError(
+						"Kotlin's Long (equivalent to Int64) only goes down to " +
+							"-9223372036854775807", AST: callExpression)
+				}
+				else {
+					return .literalIntExpression(value: Int64(signedValue)!)
+				}
 			}
 		}
 		else {

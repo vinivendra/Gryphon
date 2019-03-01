@@ -300,8 +300,12 @@ public class GRYTranspilationPass {
 				statements: statements, type: type)
 		case let .literalIntExpression(value: value):
 			return replaceLiteralIntExpression(value: value)
+		case let .literalUIntExpression(value: value):
+			return replaceLiteralUIntExpression(value: value)
 		case let .literalDoubleExpression(value: value):
 			return replaceLiteralDoubleExpression(value: value)
+		case let .literalFloatExpression(value: value):
+			return replaceLiteralFloatExpression(value: value)
 		case let .literalBoolExpression(value: value):
 			return replaceLiteralBoolExpression(value: value)
 		case let .literalStringExpression(value: value):
@@ -416,12 +420,20 @@ public class GRYTranspilationPass {
 			statements: statements.flatMap(replaceTopLevelNode), type: type)
 	}
 
-	func replaceLiteralIntExpression(value: Int) -> GRYExpression {
+	func replaceLiteralIntExpression(value: Int64) -> GRYExpression {
 		return .literalIntExpression(value: value)
+	}
+
+	func replaceLiteralUIntExpression(value: UInt64) -> GRYExpression {
+		return .literalUIntExpression(value: value)
 	}
 
 	func replaceLiteralDoubleExpression(value: Double) -> GRYExpression {
 		return .literalDoubleExpression(value: value)
+	}
+
+	func replaceLiteralFloatExpression(value: Float) -> GRYExpression {
+		return .literalFloatExpression(value: value)
 	}
 
 	func replaceLiteralBoolExpression(value: Bool) -> GRYExpression {

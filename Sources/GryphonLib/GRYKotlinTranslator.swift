@@ -18,7 +18,20 @@ public class GRYKotlinTranslator {
 	static let errorTranslation = "<<Error>>"
 
 	/// Used for the translation of Swift types into Kotlin types.
-	static let typeMappings = ["Bool": "Boolean", "Error": "Exception"]
+	static let typeMappings = [
+		"Bool": "Boolean",
+		"Error": "Exception",
+		"UInt8": "UByte",
+		"UInt16": "UShort",
+		"UInt32": "UInt",
+		"UInt64": "ULong",
+		"Int8": "Byte",
+		"Int16": "Short",
+		"Int32": "Int",
+		"Int64": "Long",
+		"Float32": "Float",
+		"Float64": "Double",
+	]
 
 	private func translateType(_ type: String) -> String {
 		let type = type.replacingOccurrences(of: "()", with: "Unit")
@@ -696,8 +709,12 @@ public class GRYKotlinTranslator {
 			return try translateExpression(expression, withIndentation: indentation) + "?"
 		case let .literalIntExpression(value: value):
 			return String(value)
+		case let .literalUIntExpression(value: value):
+			return String(value) + "u"
 		case let .literalDoubleExpression(value: value):
 			return String(value)
+		case let .literalFloatExpression(value: value):
+			return String(value) + "f"
 		case let .literalBoolExpression(value: value):
 			return String(value)
 		case .nilLiteralExpression:

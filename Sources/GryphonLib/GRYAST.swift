@@ -267,8 +267,12 @@ extension GRYExpression {
 			return type
 		case .literalIntExpression:
 			return "Int"
+		case .literalUIntExpression:
+			return "UInt"
 		case .literalDoubleExpression:
 			return "Double"
+		case .literalFloatExpression:
+			return "Float"
 		case .literalBoolExpression:
 			return "Bool"
 		case .literalStringExpression:
@@ -350,13 +354,15 @@ extension GRYExpression {
 				GRYPrintableTree("operator \(operatorSymbol)"),
 				GRYPrintableTree("right", [rightExpression]), ]
 		case let .prefixUnaryExpression(
-		expression: expression, operatorSymbol: operatorSymbol, type: type):
+			expression: expression, operatorSymbol: operatorSymbol, type: type):
+
 			return [
 				GRYPrintableTree("type \(type)"),
 				GRYPrintableTree("operator \(operatorSymbol)"),
 				GRYPrintableTree("expression", [expression]), ]
 		case let .postfixUnaryExpression(
-		expression: expression, operatorSymbol: operatorSymbol, type: type):
+			expression: expression, operatorSymbol: operatorSymbol, type: type):
+
 			return [
 				GRYPrintableTree("type \(type)"),
 				GRYPrintableTree("operator \(operatorSymbol)"),
@@ -377,7 +383,11 @@ extension GRYExpression {
 				GRYPrintableTree("statements", statements), ]
 		case let .literalIntExpression(value: value):
 			return [GRYPrintableTree(String(value))]
+		case let .literalUIntExpression(value: value):
+			return [GRYPrintableTree(String(value))]
 		case let .literalDoubleExpression(value: value):
+			return [GRYPrintableTree(String(value))]
+		case let .literalFloatExpression(value: value):
 			return [GRYPrintableTree(String(value))]
 		case let .literalBoolExpression(value: value):
 			return [GRYPrintableTree(String(value))]

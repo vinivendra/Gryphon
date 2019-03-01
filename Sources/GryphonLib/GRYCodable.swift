@@ -811,6 +811,36 @@ extension Int {
 	}
 }
 
+extension Int64 {
+	func encode(into encoder: GRYEncoder) throws {
+		encoder.add(String(self))
+	}
+
+	static func decode(from decoder: GRYDecoder) throws -> Int64 {
+		let expectedInt = decoder.readIdentifier()
+		guard let result = Int64(expectedInt) else {
+			throw GRYDecodingError.unexpectedContent(
+				decoder: decoder, errorMessage: "Got \(expectedInt), expected an Int.")
+		}
+		return result
+	}
+}
+
+extension UInt64 {
+	func encode(into encoder: GRYEncoder) throws {
+		encoder.add(String(self))
+	}
+
+	static func decode(from decoder: GRYDecoder) throws -> UInt64 {
+		let expectedUInt = decoder.readIdentifier()
+		guard let result = UInt64(expectedUInt) else {
+			throw GRYDecodingError.unexpectedContent(
+				decoder: decoder, errorMessage: "Got \(expectedUInt), expected an UInt.")
+		}
+		return result
+	}
+}
+
 extension Double {
 	func encode(into encoder: GRYEncoder) throws {
 		encoder.add(String(self))
@@ -821,6 +851,21 @@ extension Double {
 		guard let result = Double(expectedDouble) else {
 			throw GRYDecodingError.unexpectedContent(
 				decoder: decoder, errorMessage: "Got \(expectedDouble), expected a Double.")
+		}
+		return result
+	}
+}
+
+extension Float {
+	func encode(into encoder: GRYEncoder) throws {
+		encoder.add(String(self))
+	}
+
+	static func decode(from decoder: GRYDecoder) throws -> Float {
+		let expectedFloat = decoder.readIdentifier()
+		guard let result = Float(expectedFloat) else {
+			throw GRYDecodingError.unexpectedContent(
+				decoder: decoder, errorMessage: "Got \(expectedFloat), expected a Float.")
 		}
 		return result
 	}

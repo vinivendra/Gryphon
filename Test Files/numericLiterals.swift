@@ -14,9 +14,10 @@
 * limitations under the License.
 */
 
-func foo(int: Int, double: Double) {
+func foo(int: Int, double: Double, float: Float) {
 	print(int)
 	print(double)
+	print(float)
 }
 
 let int1 = 0
@@ -34,4 +35,34 @@ print(double1)
 print(double2)
 print(double3)
 
-foo(int: 5, double: 5)
+foo(int: 5, double: 5, float: 5)
+
+// Translate types and limits
+var a: UInt8 = 255
+var b: UInt16 = 65535
+var c: UInt32 = 4294967295
+var d: UInt64 = 18446744073709551615
+
+var e: Int8 = 127
+var f: Int16 = 32767
+var g: Int32 = 2147483647
+var h: Int64 = 9223372036854775807
+e = -128
+f = -32768
+g = -2147483648
+h = -9223372036854775807
+
+var i: Float = 0
+var j: Float32 = 0
+
+var k: Float64 = 0
+var l: Double = 0
+
+// Number formats
+var m: Double = 1.21875e1
+m = 0xC.3p0
+m = 0xFp2
+m = 000123.456
+m = 1_000_000.000_000_1
+
+var n: Int = 1_000_000
