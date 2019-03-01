@@ -87,6 +87,10 @@ extension GRYTopLevelNode {
 			return [GRYPrintableTree(type), GRYPrintableTree.initOrNil("members", members), ]
 		case let .importDeclaration(name: name):
 			return [GRYPrintableTree(name)]
+		case let .typealiasDeclaration(identifier: identifier, type: type):
+			return [
+				GRYPrintableTree("identifier: \(identifier)"),
+				GRYPrintableTree("type: \(type)"), ]
 		case let .classDeclaration(name: name, inherits: inherits, members: members):
 			return  [
 				GRYPrintableTree(name),

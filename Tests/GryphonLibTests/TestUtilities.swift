@@ -130,6 +130,7 @@ extension TestUtils {
 		"enums",
 		"functionDefinitions",
 		"strings",
+		"misc",
 	]
 	static let testCasesForTranspilationPassTest = testCasesForAllTests + [
 		"warnings",

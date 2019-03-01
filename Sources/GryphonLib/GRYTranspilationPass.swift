@@ -47,6 +47,8 @@ public class GRYTranspilationPass {
 			return replaceExtension(type: type, members: members)
 		case let .importDeclaration(name: name):
 			return replaceImportDeclaration(name: name)
+		case let .typealiasDeclaration(identifier: identifier, type: type):
+			return replaceTypealiasDeclaration(identifier: identifier, type: type)
 		case let .classDeclaration(name: name, inherits: inherits, members: members):
 			return replaceClassDeclaration(name: name, inherits: inherits, members: members)
 		case let .companionObject(members: members):
@@ -121,6 +123,10 @@ public class GRYTranspilationPass {
 
 	func replaceImportDeclaration(name: String) -> [GRYTopLevelNode] {
 		return [.importDeclaration(name: name)]
+	}
+
+	func replaceTypealiasDeclaration(identifier: String, type: String) -> [GRYTopLevelNode] {
+		return [.typealiasDeclaration(identifier: identifier, type: type)]
 	}
 
 	func replaceClassDeclaration(name: String, inherits: [String], members: [GRYTopLevelNode])

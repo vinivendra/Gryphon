@@ -16,6 +16,7 @@
 %{
 astNodes = [
 	['expression', [['expression', 'GRYExpression']]],
+	['typealiasDeclaration', [['identifier', 'String'], ['type', 'String']]],
 	['extensionDeclaration', [['type', 'String'], ['members', '[GRYTopLevelNode]']]],
 	['importDeclaration', [['name', 'String']]],
 	['classDeclaration',

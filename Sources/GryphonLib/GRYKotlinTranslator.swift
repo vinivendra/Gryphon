@@ -101,6 +101,9 @@ public class GRYKotlinTranslator {
 			return try unexpectedASTStructureError(
 				"Extension structure should have been removed in a transpilation pass",
 				AST: subtree)
+		case let .typealiasDeclaration(identifier: identifier, type: type):
+			result = try translateTypealias(
+				identifier: identifier, type: type, withIndentation: indentation)
 		case let .classDeclaration(name: name, inherits: inherits, members: members):
 			result = try translateClassDeclaration(
 				name: name, inherits: inherits, members: members, withIndentation: indentation)
@@ -270,6 +273,13 @@ public class GRYKotlinTranslator {
 		result += contents
 		result += "\(indentation)}\n"
 		return result
+	}
+
+	private func translateTypealias(
+		identifier: String, type: String, withIndentation indentation: String) throws -> String
+	{
+		let translatedType = translateType(type)
+		return "\(indentation)typealias \(identifier) = \(translatedType)\n"
 	}
 
 	private func translateClassDeclaration(

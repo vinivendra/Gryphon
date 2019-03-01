@@ -36,6 +36,7 @@ public class GRYSwift4Translator {
 			"Extension Declaration",
 			"Function Declaration",
 			"Enum Declaration",
+			"Typealias",
 		]
 		let isDeclaration = { (ast: GRYSwiftAST) -> Bool in declarationNames.contains(ast.name) }
 
@@ -65,6 +66,9 @@ public class GRYSwift4Translator {
 			result = try translate(topLevelCode: subtree)
 		case "Import Declaration":
 			result = .importDeclaration(name: subtree.standaloneAttributes[0])
+		case "Typealias":
+			result = .typealiasDeclaration(
+				identifier: subtree.standaloneAttributes[0], type: subtree["type"]!)
 		case "Class Declaration":
 			result = try translate(classDeclaration: subtree)
 		case "Struct Declaration":
