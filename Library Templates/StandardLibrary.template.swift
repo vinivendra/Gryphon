@@ -9,6 +9,8 @@ let _string = ""
 let _any: Any = ""
 let _double: Double = 0
 let _int: Int = 0
+let _int1: Int = 0
+let _int2: Int = 0
 let _dictionary: [Hash: Any] = [:]
 let _closure: (Any, Any) -> Any = { a, b in a }
 
@@ -65,3 +67,6 @@ _dictionary.reduce(_any, _closure)
 // Int
 Int.max
 "Int.MAX_VALUE"
+
+min(_int1, _int2)
+"Math.min(_int1, _int2)"
