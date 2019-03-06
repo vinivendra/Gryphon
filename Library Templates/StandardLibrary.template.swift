@@ -1,12 +1,16 @@
 
 import Foundation
 
+struct Hash: Hashable { }
+
 var _strArray: [String] = []
 var _array: [Any] = []
 let _string = ""
 let _any: Any = ""
 let _double: Double = 0
 let _int: Int = 0
+let _dictionary: [Hash: Any] = [:]
+let _closure: (Any, Any) -> Any = { a, b in a }
 
 // Print
 print(_any)
@@ -53,6 +57,10 @@ _array.last
 
 _array.dropLast()
 "_array.dropLast(1)"
+
+// Dictionary
+_dictionary.reduce(_any, _closure)
+"_dictionary.entries.fold(initial = _any, operation = _closure)"
 
 // Int
 Int.max

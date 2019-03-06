@@ -16,6 +16,7 @@
 
 import Foundation
 
+// TODO: Add tests for all standard library translations
 public class GRYLibraryTranspilationPass: GRYTranspilationPass {
 	struct Template {
 		let expression: GRYExpression
@@ -271,7 +272,7 @@ fileprivate extension String {
 		if self == superType {
 			return true
 		}
-		else if superType == "Any" {
+		else if superType == "Any" || superType == "Hash" {
 			return true
 		}
 
@@ -315,21 +316,6 @@ fileprivate extension String {
 				return false
 			}
 
-			let superTypeComponents = superType.split(withStringSeparator: " -> ")
-			let selfTypeComponents = self.split(withStringSeparator: " -> ")
-
-			guard superTypeComponents.count == selfTypeComponents.count else {
-				return false
-			}
-
-			for (selfTypeComponent, superTypeComponent) in
-				zip(selfTypeComponents, superTypeComponents)
-			{
-				if !selfTypeComponent.isSubtype(of: superTypeComponent) {
-					return false
-				}
-			}
-
 			return true
 		}
 
@@ -343,9 +329,22 @@ fileprivate extension String {
 
 		// Handle arrays
 		if self.first == "[", self.last == "]", superType.first == "[", superType.last == "]" {
-			let selfElement = String(self.dropFirst().dropLast())
-			let superTypeElement = String(superType.dropFirst().dropLast())
-			return selfElement.isSubtype(of: superTypeElement)
+			if self.contains(":") && superType.contains(":") {
+				let selfKeyValue =
+					String(self.dropFirst().dropLast()).split(withStringSeparator: " : ")
+				let superKeyValue =
+					String(superType.dropFirst().dropLast()).split(withStringSeparator: " : ")
+				let selfKey = selfKeyValue[0]
+				let selfValue = selfKeyValue[1]
+				let superKey = superKeyValue[0]
+				let superValue = superKeyValue[1]
+				return selfKey.isSubtype(of: superKey) && selfValue.isSubtype(of: superValue)
+			}
+			else if !self.contains(":") && !superType.contains(":") {
+				let selfElement = String(self.dropFirst().dropLast())
+				let superTypeElement = String(superType.dropFirst().dropLast())
+				return selfElement.isSubtype(of: superTypeElement)
+			}
 		}
 
 		// Handle inout types
