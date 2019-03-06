@@ -22,7 +22,8 @@ optionalTypes = [
 arrayTypes = [
 	'String', 'Int', 'Double', 'Bool', 'GRYTopLevelNode', 'GRYExpression',
 	'GRYExpression.TuplePair',
-	'GRYExpression?'
+	'GRYExpression?',
+	'[GRYTopLevelNode]'
 	]
 dictionaryTypes = [
 	'String', 'Int', 'Double', 'Bool', 'GRYTopLevelNode', 'GRYExpression',

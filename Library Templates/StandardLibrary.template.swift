@@ -70,3 +70,9 @@ Int.max
 
 min(_int1, _int2)
 "Math.min(_int1, _int2)"
+
+_int1..._int2
+"_int1.._int2"
+
+_int1..<_int2
+"_int1 until _int2"

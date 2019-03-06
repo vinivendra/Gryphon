@@ -179,6 +179,13 @@ public class GRYKotlinTranslator {
 				conditions: conditions, declarations: declarations, statements: statements,
 				elseStatement: elseStatement, isGuard: isGuard, isElseIf: false,
 				withIndentation: indentation)
+		case let .switchStatement(
+			expression: expression, caseExpressions: caseExpressions,
+			caseStatements: caseStatements):
+
+			result = try translateSwitchStatement(
+				expression: expression, caseExpressions: caseExpressions,
+				caseStatements: caseStatements, withIndentation: indentation)
 		case let .returnStatement(expression: expression):
 			result = try translateReturnStatement(
 				expression: expression, withIndentation: indentation)
@@ -515,6 +522,57 @@ public class GRYKotlinTranslator {
 						elseStatement: elseStatement, isGuard: isGuard))
 			}
 		}
+
+		return result
+	}
+
+	// TODO: test
+	private func translateSwitchStatement(
+		expression: GRYExpression, caseExpressions: [GRYExpression?],
+		caseStatements: [[GRYTopLevelNode]], withIndentation indentation: String) throws -> String
+	{
+		var result = "\(indentation)when ("
+
+		let expressionTranslation =
+			try translateExpression(expression, withIndentation: indentation)
+		let increasedIndentation = increaseIndentation(indentation)
+
+		result += "\(expressionTranslation)) {\n"
+
+		for (caseExpression, caseStatements) in zip(caseExpressions, caseStatements) {
+			if let caseExpression = caseExpression {
+				if case let GRYExpression.binaryOperatorExpression(
+					leftExpression: leftExpression, rightExpression: _,
+					operatorSymbol: operatorSymbol, type: _) = caseExpression
+				{
+					let translatedExpression = try translateExpression(
+						leftExpression, withIndentation: increasedIndentation)
+					if operatorSymbol == "~=" {
+						result += "\(increasedIndentation)in \(translatedExpression) -> "
+					}
+				}
+			}
+			else {
+				result += "\(increasedIndentation)else -> "
+			}
+
+			if caseStatements.count == 1,
+				let onlyStatement = caseStatements.first
+			{
+				let statementTranslation =
+					try translate(subtree: onlyStatement, withIndentation: "")
+				result += statementTranslation
+			}
+			else {
+				result += "{\n"
+				let statementsIndentation = increaseIndentation(increasedIndentation)
+				let statementsTranslation =
+					try translate(subtrees: caseStatements, withIndentation: statementsIndentation)
+				result += "\(statementsTranslation)\(increasedIndentation)}\n"
+			}
+		}
+
+		result += "\(indentation)}\n"
 
 		return result
 	}

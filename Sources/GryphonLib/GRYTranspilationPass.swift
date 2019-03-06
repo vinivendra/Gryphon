@@ -102,6 +102,13 @@ public class GRYTranspilationPass {
 			return replaceIfStatement(
 				conditions: conditions, declarations: declarations, statements: statements,
 				elseStatement: elseStatement, isGuard: isGuard)
+		case let .switchStatement(
+			expression: expression, caseExpressions: caseExpressions,
+			caseStatements: caseStatements):
+
+			return replaceSwitchStatement(
+				expression: expression, caseExpressions: caseExpressions,
+				caseStatements: caseStatements)
 		case let .throwStatement(expression: expression):
 			return replaceThrowStatement(expression: expression)
 		case let .returnStatement(expression: expression):
@@ -227,6 +234,25 @@ public class GRYTranspilationPass {
 			statements: statements.flatMap(replaceTopLevelNode),
 			elseStatement: elseStatement.map(replaceTopLevelNode)?.first,
 			isGuard: isGuard), ]
+	}
+
+	func replaceSwitchStatement(
+		expression: GRYExpression, caseExpressions: [GRYExpression?],
+		caseStatements: [[GRYTopLevelNode]]) -> [GRYTopLevelNode]
+	{
+		let replacedCaseExpressions = caseExpressions.map
+		{ (expression: GRYExpression?) -> GRYExpression? in
+			if let expression = expression {
+				return replaceExpression(expression)
+			}
+			else {
+				return nil
+			}
+		}
+
+		return [.switchStatement(
+			expression: expression, caseExpressions: replacedCaseExpressions,
+			caseStatements: caseStatements.map { $0.flatMap(replaceTopLevelNode) }), ]
 	}
 
 	func replaceThrowStatement(expression: GRYExpression) -> [GRYTopLevelNode] {

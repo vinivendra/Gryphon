@@ -91,6 +91,8 @@ public class GRYSwift4Translator {
 			result = try translate(assignExpression: subtree)
 		case "If Statement", "Guard Statement":
 			result = try translate(ifStatement: subtree)
+		case "Switch Statement":
+			result = try translate(switchStatement: subtree)
 		case "Pattern Binding Declaration":
 			try process(patternBindingDeclaration: subtree)
 			return []
@@ -752,6 +754,50 @@ public class GRYSwift4Translator {
 			statements: statementsResult,
 			elseStatement: elseIfStatement ?? elseStatement,
 			isGuard: isGuard)
+	}
+
+	internal func translate(switchStatement: GRYSwiftAST) throws -> GRYTopLevelNode {
+		guard switchStatement.name == "Switch Statement" else {
+			return try unexpectedASTStructureError(
+				"Trying to translate \(switchStatement.name) as 'Switch Statement'",
+				AST: switchStatement)
+		}
+
+		guard let expression = switchStatement.subtrees.first else {
+			return try unexpectedASTStructureError(
+				"Unable to detect primary expression for switch statement",
+				AST: switchStatement)
+		}
+
+		let translatedExpression = try translate(expression: expression)
+
+		var caseExpressions = [GRYExpression?]()
+		var caseStatements = [[GRYTopLevelNode]]()
+		let caseSubtrees = switchStatement.subtrees.dropFirst()
+		for caseSubtree in caseSubtrees {
+			if let caseLabelItem = caseSubtree.subtree(named: "Case Label Item"),
+				let expression = caseLabelItem.subtrees.first?.subtrees.first
+			{
+				let translateExpression = try translate(expression: expression)
+				caseExpressions.append(translateExpression)
+			}
+			else {
+				caseExpressions.append(nil)
+			}
+
+			guard let statements = caseSubtree.subtree(named: "Brace Statement") else {
+				return try unexpectedASTStructureError(
+					"Unable to find a case's statements",
+					AST: switchStatement)
+			}
+
+			let translatedStatements = try translate(subtrees: statements.subtrees.array)
+			caseStatements.append(translatedStatements)
+		}
+
+		return .switchStatement(
+			expression: translatedExpression, caseExpressions: caseExpressions,
+			caseStatements: caseStatements)
 	}
 
 	internal func translateDeclarationsAndConditions(
@@ -1672,6 +1718,13 @@ public class GRYSwift4Translator {
 			}
 
 			index = declaration.index(after: index)
+		}
+
+		// If it's an identifier that contains periods, like the range operators `..<` etc
+		var beforeLastPeriodIndex = declaration.index(before: lastPeriodIndex)
+		while declaration[beforeLastPeriodIndex] == "." {
+			lastPeriodIndex = beforeLastPeriodIndex
+			beforeLastPeriodIndex = declaration.index(before: lastPeriodIndex)
 		}
 
 		let identifierStartIndex = declaration.index(after: lastPeriodIndex)
