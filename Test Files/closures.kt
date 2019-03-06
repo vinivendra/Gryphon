@@ -8,11 +8,11 @@ internal fun defaultClosure(closure: (String) -> Unit = { println(it) }) {
 fun main(args: Array<String>) {
 	val printClosure: (String) -> Unit = { println(it) }
 	printClosure("Hello, world!")
-	val plusClosure: (Int, Int) -> Int = { a: Int, b: Int -> a + b }
+	val plusClosure: (Int, Int) -> Int = { a, b -> a + b }
 	println(plusClosure(2, 3))
 	useClosure(printClosure)
 	defaultClosure()
-	val multiLineClosure: (Int) -> Unit = { a: Int ->
+	val multiLineClosure: (Int) -> Unit = { a ->
 			if (a == 10) {
 				println("It's ten!")
 			}

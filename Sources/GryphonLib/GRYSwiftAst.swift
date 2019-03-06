@@ -127,12 +127,6 @@ public final class GRYSwiftAST: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 				// Parse subtrees
 				let subtree = try GRYSwiftAST(decodingFromASTDumpWith: decoder)
 				subtrees.append(subtree)
-
-				// FIXME: This is a hack to fix Swift 4's unbalanced parentheses when dumping the
-				// AST for a literal dictionary expression
-				if self.name == "Dictionary Expression" {
-					break
-				}
 			}
 			// Finish this branch
 			else if decoder.canReadClosingParenthesis() {

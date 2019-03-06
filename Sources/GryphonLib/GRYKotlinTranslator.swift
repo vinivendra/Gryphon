@@ -37,9 +37,20 @@ public class GRYKotlinTranslator {
 		let type = type.replacingOccurrences(of: "()", with: "Unit")
 
 		if type.hasPrefix("[") {
-			let innerType = String(type.dropLast().dropFirst())
-			let translatedInnerType = translateType(innerType)
-			return "MutableList<\(translatedInnerType)>"
+			if type.contains(":") {
+				let innerTypes =
+					String(type.dropLast().dropFirst()).split(withStringSeparator: " : ")
+				let keyType = innerTypes[0]
+				let valueType = innerTypes[1]
+				let translatedKey = translateType(keyType)
+				let translatedValue = translateType(valueType)
+				return "MutableMap<\(translatedKey), \(translatedValue)>"
+			}
+			else {
+				let innerType = String(type.dropLast().dropFirst())
+				let translatedInnerType = translateType(innerType)
+				return "MutableList<\(translatedInnerType)>"
+			}
 		}
 		else if type.hasPrefix("ArrayReference<") {
 			let innerType = String(type.dropLast().dropFirst("ArrayReference<".count))
@@ -650,6 +661,9 @@ public class GRYKotlinTranslator {
 		case let .arrayExpression(elements: elements, type: type):
 			return try translateArrayExpression(
 				elements: elements, type: type, withIndentation: indentation)
+		case let .dictionaryExpression(keys: keys, values: values, type: type):
+			return try translateDictionaryExpression(
+				keys: keys, values: values, type: type, withIndentation: indentation)
 		case let .binaryOperatorExpression(
 			leftExpression: leftExpression,
 			rightExpression: rightExpression,
@@ -756,6 +770,20 @@ public class GRYKotlinTranslator {
 		return "mutableListOf(\(expressionsString))"
 	}
 
+	private func translateDictionaryExpression(
+		keys: [GRYExpression], values: [GRYExpression], type: String,
+		withIndentation indentation: String) throws -> String
+	{
+		let keyExpressions =
+			try keys.map { try translateExpression($0, withIndentation: indentation) }
+		let valueExpressions =
+			try values.map { try translateExpression($0, withIndentation: indentation) }
+		let expressionsString =
+			zip(keyExpressions, valueExpressions).map { "\($0) to \($1)" }.joined(separator: ", ")
+
+		return "mutableMapOf(\(expressionsString))"
+	}
+
 	private func translateDotSyntaxCallExpression(
 		leftExpression: GRYExpression, rightExpression: GRYExpression,
 		withIndentation indentation: String) throws -> String
@@ -824,8 +852,7 @@ public class GRYKotlinTranslator {
 	{
 		var result = "{"
 
-		let parametersString = zip(parameterNames, parameterTypes)
-			.map { "\($0): \($1)" }.joined(separator: ", ")
+		let parametersString = parameterNames.joined(separator: ", ")
 
 		if !parametersString.isEmpty {
 			result += " " + parametersString + " ->"

@@ -14,6 +14,7 @@
 * limitations under the License.
 */
 
+// TODO: Merge this with the Swift 4 translator
 public class GRYSwift5Translator: GRYSwift4Translator {
 	override internal func translate(expression: GRYSwiftAST) throws -> GRYExpression {
 		switch expression.name {

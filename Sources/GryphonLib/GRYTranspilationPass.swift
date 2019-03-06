@@ -277,6 +277,8 @@ public class GRYTranspilationPass {
 				type: type)
 		case let .arrayExpression(elements: elements, type: type):
 			return replaceArrayExpression(elements: elements, type: type)
+		case let .dictionaryExpression(keys: keys, values: values, type: type):
+			return replaceDictionaryExpression(keys: keys, values: values, type: type)
 		case let .dotExpression(leftExpression: leftExpression, rightExpression: rightExpression):
 			return replaceDotExpression(
 				leftExpression: leftExpression, rightExpression: rightExpression)
@@ -373,6 +375,12 @@ public class GRYTranspilationPass {
 
 	func replaceArrayExpression(elements: [GRYExpression], type: String) -> GRYExpression {
 		return .arrayExpression(elements: elements.map(replaceExpression), type: type)
+	}
+
+	func replaceDictionaryExpression(keys: [GRYExpression], values: [GRYExpression], type: String)
+		-> GRYExpression
+	{
+		return .dictionaryExpression(keys: keys, values: values, type: type)
 	}
 
 	func replaceDotExpression(leftExpression: GRYExpression, rightExpression: GRYExpression)

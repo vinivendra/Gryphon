@@ -253,6 +253,8 @@ extension GRYExpression {
 			return type
 		case let .arrayExpression(elements: _, type: type):
 			return type
+		case let .dictionaryExpression(keys: _, values: _, type: type):
+			return type
 		case let .dotExpression(leftExpression: _, rightExpression: rightExpression):
 			return rightExpression.type
 		case let .binaryOperatorExpression(
@@ -341,11 +343,15 @@ extension GRYExpression {
 				GRYPrintableTree("indexExpression", [indexExpression]), ]
 		case let .arrayExpression(elements: elements, type: type):
 			return [GRYPrintableTree("type \(type)"), GRYPrintableTree(elements)]
+		case let .dictionaryExpression(keys: keys, values: values, type: type):
+			let keyValueStrings = zip(keys, values).map { "\($0): \($1)" }
+			return [
+				GRYPrintableTree("type \(type)"),
+				GRYPrintableTree("key value pairs", keyValueStrings), ]
 		case let .dotExpression(leftExpression: leftExpression, rightExpression: rightExpression):
 			return [
 				GRYPrintableTree("left", [leftExpression]),
 				GRYPrintableTree("right", [rightExpression]), ]
-
 		case let .binaryOperatorExpression(
 			leftExpression: leftExpression,
 			rightExpression: rightExpression,

@@ -115,6 +115,8 @@ public class GRYSwift4Translator {
 		switch expression.name {
 		case "Array Expression":
 			return try translate(arrayExpression: expression)
+		case "Dictionary Expression":
+			return try translate(dictionaryExpression: expression)
 		case "Binary Expression":
 			return try translate(binaryExpression: expression)
 		case "Call Expression":
@@ -146,6 +148,8 @@ public class GRYSwift4Translator {
 			return try translate(typeExpression: expression)
 		case "Member Reference Expression":
 			return try translate(memberReferenceExpression: expression)
+		case "Tuple Element Expression":
+			return try translate(tupleElementExpression: expression)
 		case "Subscript Expression":
 			return try translate(subscriptExpression: expression)
 		case "Open Existential Expression":
@@ -447,6 +451,45 @@ public class GRYSwift4Translator {
 		}
 	}
 
+	internal func translate(tupleElementExpression: GRYSwiftAST) throws -> GRYExpression {
+		guard tupleElementExpression.name == "Tuple Element Expression" else {
+			return try unexpectedExpressionStructureError(
+				"Trying to translate \(tupleElementExpression.name) as " +
+				"'Tuple Element Expression'",
+				AST: tupleElementExpression)
+		}
+
+		if let numberString =
+				tupleElementExpression.standaloneAttributes.first(where: { $0.hasPrefix("#") }),
+			let number = Int(numberString.dropFirst()),
+			let declarationReference =
+				tupleElementExpression.subtree(named: "Declaration Reference Expression"),
+			let tuple = declarationReference["type"]
+		{
+			let leftHand = try translate(declarationReferenceExpression: declarationReference)
+			let tupleComponents =
+				String(tuple.dropFirst().dropLast()).split(withStringSeparator: ", ")
+			let tupleComponent = tupleComponents[safe: number]
+			if let labelAndType = tupleComponent?.split(withStringSeparator: ": "),
+				let label = labelAndType[safe: 0],
+				let type = labelAndType[safe: 1],
+				case let .declarationReferenceExpression(
+					identifier: _, type: _, isStandardLibrary: isStandardLibrary,
+					isImplicit: _) = leftHand
+			{
+				return .dotExpression(
+					leftExpression: leftHand,
+					rightExpression: .declarationReferenceExpression(
+						identifier: label, type: type, isStandardLibrary: isStandardLibrary,
+						isImplicit: false))
+			}
+		}
+
+		return try unexpectedExpressionStructureError(
+			"Unable to get the wither tuple element's number or its label.",
+			AST: tupleElementExpression)
+	}
+
 	internal func translate(prefixUnaryExpression: GRYSwiftAST) throws -> GRYExpression {
 		guard prefixUnaryExpression.name == "Prefix Unary Expression" else {
 			return try unexpectedExpressionStructureError(
@@ -516,8 +559,9 @@ public class GRYSwift4Translator {
 
 		if let rawType = binaryExpression["type"],
 			let declaration = binaryExpression
-			.subtree(named: "Dot Syntax Call Expression")?
-			.subtree(named: "Declaration Reference Expression")?["decl"],
+				.subtree(named: "Dot Syntax Call Expression")?
+				.subtree(named: "Declaration Reference Expression")?["decl"] ??
+					binaryExpression.subtree(named: "Declaration Reference Expression")?["decl"],
 			let tupleExpression = binaryExpression.subtree(named: "Tuple Expression"),
 			let leftHandExpression = tupleExpression.subtree(at: 0),
 			let rightHandExpression = tupleExpression.subtree(at: 1)
@@ -1482,6 +1526,43 @@ public class GRYSwift4Translator {
 		return .arrayExpression(elements: expressionsArray.array, type: type)
 	}
 
+	// TODO: Add tests for dictionaries
+	internal func translate(dictionaryExpression: GRYSwiftAST) throws -> GRYExpression {
+		guard dictionaryExpression.name == "Dictionary Expression" else {
+			return try unexpectedExpressionStructureError(
+				"Trying to translate \(dictionaryExpression.name) as 'Dictionary Expression'",
+				AST: dictionaryExpression)
+		}
+
+		var keys = [GRYExpression]()
+		var values = [GRYExpression]()
+		for tupleExpression in dictionaryExpression.subtrees {
+			guard tupleExpression.name == "Tuple Expression" else {
+				continue
+			}
+			guard let keyAST = tupleExpression.subtree(at: 0),
+				let valueAST = tupleExpression.subtree(at: 1) else
+			{
+				return try unexpectedExpressionStructureError(
+					"Unable to get either key or value for one of the tuple expressions",
+					AST: dictionaryExpression)
+			}
+
+			let keyTranslation = try translate(expression: keyAST)
+			let valueTranslation = try translate(expression: valueAST)
+			keys.append(keyTranslation)
+			values.append(valueTranslation)
+		}
+
+		guard let type = dictionaryExpression["type"] else {
+			return try unexpectedExpressionStructureError(
+				"Unable to get type",
+				AST: dictionaryExpression)
+		}
+
+		return .dictionaryExpression(keys: keys, values: values, type: type)
+	}
+
 	// MARK: - Supporting methods
 	internal func process(openExistentialExpression: GRYSwiftAST) throws -> GRYSwiftAST {
 		guard openExistentialExpression.name == "Open Existential Expression" else {
@@ -1604,7 +1685,8 @@ public class GRYSwift4Translator {
 		if type.hasPrefix("@lvalue ") {
 			return String(type.suffix(from: "@lvalue ".endIndex))
 		}
-		else if type.hasPrefix("("), type.hasSuffix(")"), !type.contains("->") {
+		else if type.hasPrefix("("), type.hasSuffix(")"), !type.contains("->"), !type.contains(",")
+		{
 			return String(type.dropFirst().dropLast())
 		}
 		else {

@@ -157,6 +157,8 @@ expressionNodes = [
 		[['subscriptedExpression', 'GRYExpression'], ['indexExpression', 'GRYExpression'],
 		['type', 'String']]],
 	['arrayExpression', [['elements', '[GRYExpression]'], ['type', 'String']]],
+	['dictionaryExpression', [['keys', '[GRYExpression]'], ['values', '[GRYExpression]'],
+		['type', 'String']]],
 	['dotExpression',
 		[['leftExpression', 'GRYExpression'], ['rightExpression', 'GRYExpression']]],
 	['binaryOperatorExpression',
