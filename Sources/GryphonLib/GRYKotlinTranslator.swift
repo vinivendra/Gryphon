@@ -363,13 +363,16 @@ public class GRYKotlinTranslator {
 			result += ": " + translatedInheritances.joined(separator: ", ")
 		}
 
-		result += " {\n"
-
 		let otherMembersTranslation = try translate(
 			subtrees: otherMembers,
 			withIndentation: increasedIndentation)
 
-		result += otherMembersTranslation + "\(indentation)}\n"
+		if !otherMembersTranslation.isEmpty {
+			result += " {\n\(otherMembersTranslation)\(indentation)}\n"
+		}
+		else {
+			result += " { }\n"
+		}
 
 		return result
 	}
