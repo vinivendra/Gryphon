@@ -78,7 +78,10 @@ public class GRYLibraryTranspilationPass: GRYTranspilationPass {
 	override func replaceExpression(_ expression: GRYExpression) -> GRYExpression {
 		for template in GRYLibraryTranspilationPass.templates {
 			if let matches = expression.matches(template.expression) {
-				return .templateExpression(pattern: template.string, matches: matches)
+				let replacedMatches = matches.mapValues {
+					self.replaceExpression($0)
+				}
+				return .templateExpression(pattern: template.string, matches: replacedMatches)
 			}
 		}
 		return super.replaceExpression(expression)
