@@ -1288,6 +1288,51 @@ public class GRYRearrangeIfLetsTranspilationPass: GRYTranspilationPass {
 	}
 }
 
+// TODO: test
+/// Guards are translated as if statements with a ! at the start of the condition. Sometimes, the
+/// ! combines with a != or even another !, causing a double negative in the condition that can
+/// be removed (or turned into a single ==). This pass performs that transformation.
+public class GRYDoubleNegativesInGuardsTranspilationPass: GRYTranspilationPass {
+	override func replaceIfStatement(
+		conditions: [GRYExpression], declarations: [GRYTopLevelNode], statements: [GRYTopLevelNode],
+		elseStatement: GRYTopLevelNode?, isGuard: Bool) -> [GRYTopLevelNode]
+	{
+		if isGuard, conditions.count == 1 {
+			let condition = conditions[0]
+			let shouldStillBeGuard: Bool
+			let newCondition: GRYExpression
+			if case let .prefixUnaryExpression(
+				expression: innerExpression, operatorSymbol: "!", type: _) = condition
+			{
+				newCondition = innerExpression
+				shouldStillBeGuard = false
+			}
+			else if case let .binaryOperatorExpression(
+				leftExpression: leftExpression, rightExpression: rightExpression,
+				operatorSymbol: "!=", type: type) = condition
+			{
+				newCondition = .binaryOperatorExpression(
+					leftExpression: leftExpression, rightExpression: rightExpression,
+					operatorSymbol: "==", type: type)
+				shouldStillBeGuard = false
+			}
+			else {
+				newCondition = condition
+				shouldStillBeGuard = true
+			}
+
+			return super.replaceIfStatement(
+				conditions: [newCondition], declarations: declarations, statements: statements,
+				elseStatement: elseStatement, isGuard: shouldStillBeGuard)
+		}
+		else {
+			return super.replaceIfStatement(
+				conditions: conditions, declarations: declarations, statements: statements,
+				elseStatement: elseStatement, isGuard: isGuard)
+		}
+	}
+}
+
 public class GRYFixProtocolContentsTranspilationPass: GRYTranspilationPass {
 	var isInProtocol = false
 
@@ -1346,7 +1391,9 @@ public extension GRYTranspilationPass {
 		result = GRYInnerTypePrefixesTranspilationPass().run(on: result)
 		result = GRYSelfToThisTranspilationPass().run(on: result)
 		result = GRYRemoveExtensionsTranspilationPass().run(on: result)
+
 		result = GRYRearrangeIfLetsTranspilationPass().run(on: result)
+		result = GRYDoubleNegativesInGuardsTranspilationPass().run(on: result)
 
 		result = GRYRecordEnumsTranspilationPass().run(on: result)
 		result = GRYRaiseStandardLibraryWarningsTranspilationPass().run(on: result)
