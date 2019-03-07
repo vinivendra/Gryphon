@@ -16,7 +16,8 @@
 %{
 astNodes = [
 	['expression', [['expression', 'GRYExpression']]],
-	['typealiasDeclaration', [['identifier', 'String'], ['type', 'String']]],
+	['typealiasDeclaration',
+		[['identifier', 'String'], ['type', 'String'], ['isImplicit', 'Bool']]],
 	['extensionDeclaration', [['type', 'String'], ['members', '[GRYTopLevelNode]']]],
 	['importDeclaration', [['name', 'String']]],
 	['classDeclaration',
@@ -24,7 +25,8 @@ astNodes = [
 	['companionObject', [['members', '[GRYTopLevelNode]']]],
 	['enumDeclaration',
 		[['access', 'String?'], ['name', 'String'], ['inherits', '[String]'],
-		['elements', '[GRYTopLevelNode]'], ['members', '[GRYTopLevelNode]']]],
+		['elements', '[GRYTopLevelNode]'], ['members', '[GRYTopLevelNode]'],
+		['isImplicit', 'Bool']]],
 	['enumElementDeclaration',
 		[['name', 'String'], ['associatedValueLabels', '[String]'],
 		['associatedValueTypes', '[String]']]],

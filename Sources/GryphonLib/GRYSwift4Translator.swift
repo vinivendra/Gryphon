@@ -67,8 +67,7 @@ public class GRYSwift4Translator {
 		case "Import Declaration":
 			result = .importDeclaration(name: subtree.standaloneAttributes[0])
 		case "Typealias":
-			result = .typealiasDeclaration(
-				identifier: subtree.standaloneAttributes[0], type: subtree["type"]!)
+			result = try translate(typealiasDeclaration: subtree)
 		case "Class Declaration":
 			result = try translate(classDeclaration: subtree)
 		case "Struct Declaration":
@@ -263,6 +262,22 @@ public class GRYSwift4Translator {
 		}
 	}
 
+	internal func translate(typealiasDeclaration: GRYSwiftAST) throws -> GRYTopLevelNode {
+		let isImplicit: Bool
+		let identifier: String
+		if typealiasDeclaration.standaloneAttributes[0] == "implicit" {
+			isImplicit = true
+			identifier = typealiasDeclaration.standaloneAttributes[1]
+		}
+		else {
+			isImplicit = false
+			identifier = typealiasDeclaration.standaloneAttributes[0]
+		}
+
+		return .typealiasDeclaration(
+			identifier: identifier, type: typealiasDeclaration["type"]!, isImplicit: isImplicit)
+	}
+
 	internal func translate(classDeclaration: GRYSwiftAST) throws -> GRYTopLevelNode {
 		guard classDeclaration.name == "Class Declaration" else {
 			return try unexpectedASTStructureError(
@@ -354,7 +369,16 @@ public class GRYSwift4Translator {
 
 		let access = enumDeclaration["access"]
 
-		let name = enumDeclaration.standaloneAttributes.first!
+		let name: String
+		let isImplicit: Bool
+		if enumDeclaration.standaloneAttributes[0] == "implicit" {
+			isImplicit = true
+			name = enumDeclaration.standaloneAttributes[1]
+		}
+		else {
+			isImplicit = false
+			name = enumDeclaration.standaloneAttributes[0]
+		}
 
 		let inheritanceArray: [String]
 		if let inheritanceList = enumDeclaration["inherits"] {
@@ -370,7 +394,8 @@ public class GRYSwift4Translator {
 				name: name,
 				inherits: inheritanceArray,
 				elements: [],
-				members: [])
+				members: [],
+				isImplicit: false)
 		}
 
 		var elements = [GRYTopLevelNode]()
@@ -421,7 +446,8 @@ public class GRYSwift4Translator {
 			name: name,
 			inherits: inheritanceArray,
 			elements: elements,
-			members: translatedMembers)
+			members: translatedMembers,
+			isImplicit: isImplicit)
 	}
 
 	internal func translate(memberReferenceExpression: GRYSwiftAST) throws -> GRYExpression {

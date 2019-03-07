@@ -112,9 +112,10 @@ public class GRYKotlinTranslator {
 			return try unexpectedASTStructureError(
 				"Extension structure should have been removed in a transpilation pass",
 				AST: subtree)
-		case let .typealiasDeclaration(identifier: identifier, type: type):
+		case let .typealiasDeclaration(identifier: identifier, type: type, isImplicit: isImplicit):
 			result = try translateTypealias(
-				identifier: identifier, type: type, withIndentation: indentation)
+				identifier: identifier, type: type, isImplicit: isImplicit,
+				withIndentation: indentation)
 		case let .classDeclaration(name: name, inherits: inherits, members: members):
 			result = try translateClassDeclaration(
 				name: name, inherits: inherits, members: members, withIndentation: indentation)
@@ -124,11 +125,12 @@ public class GRYKotlinTranslator {
 		case let .companionObject(members: members):
 			result = try translateCompanionObject(members: members, withIndentation: indentation)
 		case let .enumDeclaration(
-			access: access, name: name, inherits: inherits, elements: elements, members: members):
+			access: access, name: name, inherits: inherits, elements: elements, members: members,
+			isImplicit: isImplicit):
 
 			result = try translateEnumDeclaration(
 				access: access, name: name, inherits: inherits, elements: elements,
-				members: members, withIndentation: indentation)
+				members: members, isImplicit: isImplicit, withIndentation: indentation)
 		case .enumElementDeclaration(
 			name: _, associatedValueLabels: _, associatedValueTypes: _):
 
@@ -217,7 +219,8 @@ public class GRYKotlinTranslator {
 
 	private func translateEnumDeclaration(
 		access: String?, name enumName: String, inherits: [String], elements: [GRYTopLevelNode],
-		members: [GRYTopLevelNode], withIndentation indentation: String) throws -> String
+		members: [GRYTopLevelNode], isImplicit: Bool, withIndentation indentation: String)
+		throws -> String
 	{
 		var result: String
 
@@ -254,7 +257,7 @@ public class GRYKotlinTranslator {
 					"Expected enum element to be an .enumElementDeclaration",
 					AST: .enumDeclaration(
 						access: access, name: enumName, inherits: inherits, elements: elements,
-						members: members))
+						members: members, isImplicit: isImplicit))
 			}
 		}
 
@@ -295,7 +298,8 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateTypealias(
-		identifier: String, type: String, withIndentation indentation: String) throws -> String
+		identifier: String, type: String, isImplicit: Bool, withIndentation indentation: String)
+		throws -> String
 	{
 		let translatedType = translateType(type)
 		return "\(indentation)typealias \(identifier) = \(translatedType)\n"

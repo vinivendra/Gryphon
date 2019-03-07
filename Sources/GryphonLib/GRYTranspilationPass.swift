@@ -51,18 +51,20 @@ public class GRYTranspilationPass {
 			return replaceExtension(type: type, members: members)
 		case let .importDeclaration(name: name):
 			return replaceImportDeclaration(name: name)
-		case let .typealiasDeclaration(identifier: identifier, type: type):
-			return replaceTypealiasDeclaration(identifier: identifier, type: type)
+		case let .typealiasDeclaration(identifier: identifier, type: type, isImplicit: isImplicit):
+			return replaceTypealiasDeclaration(
+				identifier: identifier, type: type, isImplicit: isImplicit)
 		case let .classDeclaration(name: name, inherits: inherits, members: members):
 			return replaceClassDeclaration(name: name, inherits: inherits, members: members)
 		case let .companionObject(members: members):
 			return replaceCompanionObject(members: members)
 		case let .enumDeclaration(
-			access: access, name: name, inherits: inherits, elements: elements, members: members):
+			access: access, name: name, inherits: inherits, elements: elements, members: members,
+			isImplicit: isImplicit):
 
 			return replaceEnumDeclaration(
 				access: access, name: name, inherits: inherits, elements: elements,
-				members: members)
+				members: members, isImplicit: isImplicit)
 		case let .enumElementDeclaration(
 			name: name, associatedValueLabels: associatedValueLabels,
 			associatedValueTypes: associatedValueTypes):
@@ -136,8 +138,10 @@ public class GRYTranspilationPass {
 		return [.importDeclaration(name: name)]
 	}
 
-	func replaceTypealiasDeclaration(identifier: String, type: String) -> [GRYTopLevelNode] {
-		return [.typealiasDeclaration(identifier: identifier, type: type)]
+	func replaceTypealiasDeclaration(identifier: String, type: String, isImplicit: Bool)
+		-> [GRYTopLevelNode]
+	{
+		return [.typealiasDeclaration(identifier: identifier, type: type, isImplicit: isImplicit)]
 	}
 
 	func replaceClassDeclaration(name: String, inherits: [String], members: [GRYTopLevelNode])
@@ -153,12 +157,12 @@ public class GRYTranspilationPass {
 
 	func replaceEnumDeclaration(
 		access: String?, name: String, inherits: [String], elements: [GRYTopLevelNode],
-		members: [GRYTopLevelNode]) -> [GRYTopLevelNode]
+		members: [GRYTopLevelNode], isImplicit: Bool) -> [GRYTopLevelNode]
 	{
 		return [
 			.enumDeclaration(
 				access: access, name: name, inherits: inherits, elements: elements,
-				members: replaceTopLevelNodes(members)), ]
+				members: replaceTopLevelNodes(members), isImplicit: isImplicit), ]
 	}
 
 	func replaceEnumElementDeclaration(
@@ -645,7 +649,7 @@ public class GRYRemoveIgnoredDeclarationsTranspilationPass: GRYTranspilationPass
 
 	override func replaceEnumDeclaration(
 		access: String?, name: String, inherits: [String], elements: [GRYTopLevelNode],
-		members: [GRYTopLevelNode]) -> [GRYTopLevelNode]
+		members: [GRYTopLevelNode], isImplicit: Bool) -> [GRYTopLevelNode]
 	{
 		if inherits.contains("GRYIgnore") {
 			return []
@@ -653,7 +657,7 @@ public class GRYRemoveIgnoredDeclarationsTranspilationPass: GRYTranspilationPass
 		else {
 			return super.replaceEnumDeclaration(
 				access: access, name: name, inherits: inherits, elements: elements,
-				members: members)
+				members: members, isImplicit: isImplicit)
 		}
 	}
 
@@ -681,6 +685,35 @@ public class GRYRemoveIgnoredDeclarationsTranspilationPass: GRYTranspilationPass
 				defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
 				isStatic: isStatic, isMutating: isMutating, extendsType: extendsType,
 				statements: statements, access: access)
+		}
+	}
+}
+
+/// Removes implicit declarations so that they don't show up on the translation
+public class GRYRemoveImplicitDeclarationsTranspilationPass: GRYTranspilationPass {
+	override func replaceEnumDeclaration(
+		access: String?, name: String, inherits: [String], elements: [GRYTopLevelNode],
+		members: [GRYTopLevelNode], isImplicit: Bool) -> [GRYTopLevelNode]
+	{
+		if isImplicit {
+			return []
+		}
+		else {
+			return super.replaceEnumDeclaration(
+				access: access, name: name, inherits: inherits, elements: elements,
+				members: members, isImplicit: isImplicit)
+		}
+	}
+
+	override func replaceTypealiasDeclaration(
+		identifier: String, type: String, isImplicit: Bool) -> [GRYTopLevelNode]
+	{
+		if isImplicit {
+			return []
+		}
+		else {
+			return super.replaceTypealiasDeclaration(
+				identifier: identifier, type: type, isImplicit: isImplicit)
 		}
 	}
 }
@@ -803,13 +836,13 @@ public class GRYCleanInheritancesTranspilationPass: GRYTranspilationPass {
 
 	override func replaceEnumDeclaration(
 		access: String?, name: String, inherits: [String], elements: [GRYTopLevelNode],
-		members: [GRYTopLevelNode]) -> [GRYTopLevelNode]
+		members: [GRYTopLevelNode], isImplicit: Bool) -> [GRYTopLevelNode]
 	{
 		return [.enumDeclaration(
 			access: access, name: name,
 			inherits: inherits.filter {
 				isNotASwiftProtocol($0) && isNotASwiftRawRepresentableType($0)
-			}, elements: elements, members: members), ]
+		}, elements: elements, members: members, isImplicit: isImplicit), ]
 	}
 
 	override func replaceStructDeclaration(
@@ -1085,11 +1118,12 @@ public class GRYRemoveExtensionsTranspilationPass: GRYTranspilationPass {
 public class GRYRecordEnumsTranspilationPass: GRYTranspilationPass {
 	override func replaceEnumDeclaration(
 		access: String?, name: String, inherits: [String], elements: [GRYTopLevelNode],
-		members: [GRYTopLevelNode]) -> [GRYTopLevelNode]
+		members: [GRYTopLevelNode], isImplicit: Bool) -> [GRYTopLevelNode]
 	{
 		GRYKotlinTranslator.addEnum(name)
 		return [.enumDeclaration(
-			access: access, name: name, inherits: inherits, elements: elements, members: members), ]
+			access: access, name: name, inherits: inherits, elements: elements, members: members,
+			isImplicit: isImplicit), ]
 	}
 }
 
@@ -1147,7 +1181,7 @@ public class GRYRaiseMutableValueTypesWarningsTranspilationPass: GRYTranspilatio
 
 	override func replaceEnumDeclaration(
 		access: String?, name: String, inherits: [String], elements: [GRYTopLevelNode],
-		members: [GRYTopLevelNode]) -> [GRYTopLevelNode]
+		members: [GRYTopLevelNode], isImplicit: Bool) -> [GRYTopLevelNode]
 	{
 		for member in members {
 			if case let .functionDeclaration(
@@ -1166,7 +1200,8 @@ public class GRYRaiseMutableValueTypesWarningsTranspilationPass: GRYTranspilatio
 		}
 
 		return [.enumDeclaration(
-			access: access, name: name, inherits: inherits, elements: elements, members: members), ]
+			access: access, name: name, inherits: inherits, elements: elements, members: members,
+			isImplicit: isImplicit), ]
 	}
 }
 
@@ -1246,6 +1281,7 @@ public extension GRYTranspilationPass {
 		result = GRYLibraryTranspilationPass().run(on: result)
 		result = GRYRemoveGryphonDeclarationsTranspilationPass().run(on: result)
 		result = GRYRemoveIgnoredDeclarationsTranspilationPass().run(on: result)
+		result = GRYRemoveImplicitDeclarationsTranspilationPass().run(on: result)
 		result = GRYAddAnnotationsTranspilationPass().run(on: result)
 		result = GRYRemoveParenthesesTranspilationPass().run(on: result)
 		result = GRYIgnoreNextTranspilationPass().run(on: result)
