@@ -830,6 +830,10 @@ public class GRYInnerTypePrefixesTranspilationPass: GRYTranspilationPass {
 			getter: getter, setter: setter, isLet: isLet, isImplicit: isImplicit,
 			extendsType: extendsType, annotations: annotations)
 	}
+
+	override func replaceTypeExpression(type: String) -> GRYExpression {
+		return .typeExpression(type: removePrefixes(type))
+	}
 }
 
 public class GRYSelfToThisTranspilationPass: GRYTranspilationPass {
