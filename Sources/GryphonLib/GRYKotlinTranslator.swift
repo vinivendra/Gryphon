@@ -180,12 +180,13 @@ public class GRYKotlinTranslator {
 				elseStatement: elseStatement, isGuard: isGuard, isElseIf: false,
 				withIndentation: indentation)
 		case let .switchStatement(
-			expression: expression, caseExpressions: caseExpressions,
-			caseStatements: caseStatements):
+			convertsToExpression: convertsToExpression, expression: expression,
+			caseExpressions: caseExpressions, caseStatements: caseStatements):
 
 			result = try translateSwitchStatement(
-				expression: expression, caseExpressions: caseExpressions,
-				caseStatements: caseStatements, withIndentation: indentation)
+				convertsToExpression: convertsToExpression, expression: expression,
+				caseExpressions: caseExpressions, caseStatements: caseStatements,
+				withIndentation: indentation)
 		case let .returnStatement(expression: expression):
 			result = try translateReturnStatement(
 				expression: expression, withIndentation: indentation)
@@ -528,10 +529,40 @@ public class GRYKotlinTranslator {
 
 	// TODO: test
 	private func translateSwitchStatement(
-		expression: GRYExpression, caseExpressions: [GRYExpression?],
-		caseStatements: [[GRYTopLevelNode]], withIndentation indentation: String) throws -> String
+		convertsToExpression: GRYTopLevelNode?, expression: GRYExpression,
+		caseExpressions: [GRYExpression?], caseStatements: [[GRYTopLevelNode]],
+		withIndentation indentation: String) throws -> String
 	{
-		var result = "\(indentation)when ("
+		var result: String = ""
+
+		if let convertsToExpression = convertsToExpression {
+			if case .returnStatement(expression: _) = convertsToExpression {
+				result = "\(indentation)return when ("
+			}
+			else if case let .assignmentStatement(
+				leftHand: leftHand, rightHand: _) = convertsToExpression
+			{
+				let translatedLeftHand =
+					try translateExpression(leftHand, withIndentation: indentation)
+				result = "\(indentation)\(translatedLeftHand) = when ("
+			}
+			else if case let .variableDeclaration(
+				identifier: identifier, typeName: typeName, expression: _, getter: _, setter: _,
+				isLet: isLet, isImplicit: _, extendsType: _,
+				annotations: annotations) = convertsToExpression
+			{
+				let translatedVariableDeclaration = try translateVariableDeclaration(
+					identifier: identifier, typeName: typeName, expression: .nilLiteralExpression,
+					getter: nil, setter: nil, isLet: isLet, isImplicit: false, extendsType: nil,
+					annotations: annotations, withIndentation: indentation)
+				let cleanTranslation = translatedVariableDeclaration.dropLast("null\n".count)
+				result = "\(cleanTranslation)when ("
+			}
+		}
+
+		if result.isEmpty {
+			result = "\(indentation)when ("
+		}
 
 		let expressionTranslation =
 			try translateExpression(expression, withIndentation: indentation)

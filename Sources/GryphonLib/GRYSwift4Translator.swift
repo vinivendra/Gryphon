@@ -796,8 +796,8 @@ public class GRYSwift4Translator {
 		}
 
 		return .switchStatement(
-			expression: translatedExpression, caseExpressions: caseExpressions,
-			caseStatements: caseStatements)
+			convertsToExpression: nil, expression: translatedExpression,
+			caseExpressions: caseExpressions, caseStatements: caseStatements)
 	}
 
 	internal func translateDeclarationsAndConditions(

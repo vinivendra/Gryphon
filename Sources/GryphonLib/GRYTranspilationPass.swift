@@ -36,6 +36,10 @@ public class GRYTranspilationPass {
 		return GRYAST(declarations: replacedDeclarations, statements: replacedStatements)
 	}
 
+	func replaceTopLevelNodes(_ nodes: [GRYTopLevelNode]) -> [GRYTopLevelNode] {
+		return nodes.flatMap(replaceTopLevelNode)
+	}
+
 	func replaceTopLevelNode(_ node: GRYTopLevelNode) -> [GRYTopLevelNode] {
 		parents.append(.left(node))
 		defer { parents.removeLast() }
@@ -79,8 +83,8 @@ public class GRYTranspilationPass {
 			return replaceFunctionDeclaration(
 				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
 				defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
-				isStatic: isStatic, isMutating: isMutating, extendsType: extendsType, statements: statements,
-				access: access)
+				isStatic: isStatic, isMutating: isMutating, extendsType: extendsType,
+				statements: statements, access: access)
 		case let .variableDeclaration(
 			identifier: identifier, typeName: typeName, expression: expression, getter: getter,
 			setter: setter, isLet: isLet, isImplicit: isImplicit, extendsType: extendsType,
@@ -103,12 +107,12 @@ public class GRYTranspilationPass {
 				conditions: conditions, declarations: declarations, statements: statements,
 				elseStatement: elseStatement, isGuard: isGuard)
 		case let .switchStatement(
-			expression: expression, caseExpressions: caseExpressions,
-			caseStatements: caseStatements):
+			convertsToExpression: convertsToExpression, expression: expression,
+			caseExpressions: caseExpressions, caseStatements: caseStatements):
 
 			return replaceSwitchStatement(
-				expression: expression, caseExpressions: caseExpressions,
-				caseStatements: caseStatements)
+				convertsToExpression: convertsToExpression, expression: expression,
+				caseExpressions: caseExpressions, caseStatements: caseStatements)
 		case let .throwStatement(expression: expression):
 			return replaceThrowStatement(expression: expression)
 		case let .returnStatement(expression: expression):
@@ -125,7 +129,7 @@ public class GRYTranspilationPass {
 	}
 
 	func replaceExtension(type: String, members: [GRYTopLevelNode]) -> [GRYTopLevelNode] {
-		return [.extensionDeclaration(type: type, members: members.flatMap(replaceTopLevelNode))]
+		return [.extensionDeclaration(type: type, members: replaceTopLevelNodes(members))]
 	}
 
 	func replaceImportDeclaration(name: String) -> [GRYTopLevelNode] {
@@ -140,11 +144,11 @@ public class GRYTranspilationPass {
 		-> [GRYTopLevelNode]
 	{
 		return [.classDeclaration(
-			name: name, inherits: inherits, members: members.flatMap(replaceTopLevelNode)), ]
+			name: name, inherits: inherits, members: replaceTopLevelNodes(members)), ]
 	}
 
 	func replaceCompanionObject(members: [GRYTopLevelNode]) -> [GRYTopLevelNode] {
-		return [.companionObject(members: members.flatMap(replaceTopLevelNode))]
+		return [.companionObject(members: replaceTopLevelNodes(members))]
 	}
 
 	func replaceEnumDeclaration(
@@ -154,7 +158,7 @@ public class GRYTranspilationPass {
 		return [
 			.enumDeclaration(
 				access: access, name: name, inherits: inherits, elements: elements,
-				members: members.flatMap(replaceTopLevelNode)), ]
+				members: replaceTopLevelNodes(members)), ]
 	}
 
 	func replaceEnumElementDeclaration(
@@ -167,14 +171,14 @@ public class GRYTranspilationPass {
 	}
 
 	func replaceProtocolDeclaration(name: String, members: [GRYTopLevelNode]) -> [GRYTopLevelNode] {
-		return [.protocolDeclaration(name: name, members: members.flatMap(replaceTopLevelNode))]
+		return [.protocolDeclaration(name: name, members: replaceTopLevelNodes(members))]
 	}
 
 	func replaceStructDeclaration(name: String, inherits: [String], members: [GRYTopLevelNode])
 		-> [GRYTopLevelNode]
 	{
 		return [.structDeclaration(
-			name: name, inherits: inherits, members: members.flatMap(replaceTopLevelNode)),
+			name: name, inherits: inherits, members: replaceTopLevelNodes(members)),
 		]
 	}
 
@@ -197,7 +201,7 @@ public class GRYTranspilationPass {
 			prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
 			defaultValues: replacedDefaultValues, returnType: returnType, isImplicit: isImplicit,
 			isStatic: isStatic, isMutating: isMutating, extendsType: extendsType,
-			statements: statements.map { $0.flatMap(replaceTopLevelNode) }, access: access), ]
+			statements: statements.map(replaceTopLevelNodes), access: access), ]
 	}
 
 	func replaceVariableDeclaration(
@@ -221,7 +225,7 @@ public class GRYTranspilationPass {
 		return [.forEachStatement(
 			collection: replaceExpression(collection),
 			variable: replaceExpression(variable),
-			statements: statements.flatMap(replaceTopLevelNode)), ]
+			statements: replaceTopLevelNodes(statements)), ]
 	}
 
 	func replaceIfStatement(
@@ -230,16 +234,26 @@ public class GRYTranspilationPass {
 	{
 		return [.ifStatement(
 			conditions: conditions.map(replaceExpression),
-			declarations: declarations.flatMap(replaceTopLevelNode),
-			statements: statements.flatMap(replaceTopLevelNode),
+			declarations: replaceTopLevelNodes(declarations),
+			statements: replaceTopLevelNodes(statements),
 			elseStatement: elseStatement.map(replaceTopLevelNode)?.first,
 			isGuard: isGuard), ]
 	}
 
 	func replaceSwitchStatement(
-		expression: GRYExpression, caseExpressions: [GRYExpression?],
-		caseStatements: [[GRYTopLevelNode]]) -> [GRYTopLevelNode]
+		convertsToExpression: GRYTopLevelNode?, expression: GRYExpression,
+		caseExpressions: [GRYExpression?], caseStatements: [[GRYTopLevelNode]]) -> [GRYTopLevelNode]
 	{
+		let replacedConvertsToExpression: GRYTopLevelNode?
+		if let convertsToExpression = convertsToExpression,
+			let replacedExpression = replaceTopLevelNode(convertsToExpression).first
+		{
+			replacedConvertsToExpression = replacedExpression
+		}
+		else {
+			replacedConvertsToExpression = nil
+		}
+
 		let replacedCaseExpressions = caseExpressions.map
 		{ (expression: GRYExpression?) -> GRYExpression? in
 			if let expression = expression {
@@ -251,8 +265,9 @@ public class GRYTranspilationPass {
 		}
 
 		return [.switchStatement(
-			expression: expression, caseExpressions: replacedCaseExpressions,
-			caseStatements: caseStatements.map { $0.flatMap(replaceTopLevelNode) }), ]
+			convertsToExpression: replacedConvertsToExpression, expression: expression,
+			caseExpressions: replacedCaseExpressions,
+			caseStatements: caseStatements.map(replaceTopLevelNodes)), ]
 	}
 
 	func replaceThrowStatement(expression: GRYExpression) -> [GRYTopLevelNode] {
@@ -457,7 +472,7 @@ public class GRYTranspilationPass {
 	{
 		return .closureExpression(
 			parameterNames: parameterNames, parameterTypes: parameterTypes,
-			statements: statements.flatMap(replaceTopLevelNode), type: type)
+			statements: replaceTopLevelNodes(statements), type: type)
 	}
 
 	func replaceLiteralIntExpression(value: Int64) -> GRYExpression {
@@ -831,12 +846,146 @@ public class GRYReturnsInLambdasTranspilationPass: GRYTranspilationPass {
 	}
 }
 
+/// When statements in Kotlin can be used as expressions, for instance in return statements or in
+/// assignments. This pass turns switch statements whose bodies all end in the same return or
+/// assignment into those expressions. It also turns a variable declaration followed by a switch
+/// statement that assigns to that variable into a single variable declaration with the switch
+/// statement as its expression.
+///
+/// An ideal conversion would somehow check if the last expressions in a switch were similar in a
+/// more generic way, thus allowing this conversion to happen (for instance) inside the parameter of
+/// a function call. However, that would be much more complicated and it's not clear that it would
+/// be desirable.
+public class GRYSwitchesToExpressionsTranspilationPass: GRYTranspilationPass {
+	/// Detect switches whose bodies all end in the same returns or assignments
+	override func replaceSwitchStatement(
+		convertsToExpression: GRYTopLevelNode?, expression: GRYExpression,
+		caseExpressions: [GRYExpression?], caseStatements: [[GRYTopLevelNode]]) -> [GRYTopLevelNode]
+	{
+		var hasAllReturnCases = true
+		var hasAllAssignmentCases = true
+		var assignmentExpression: GRYExpression?
+
+		for statements in caseStatements {
+			// Swift switches must have at least one statement
+			let lastStatement = statements.last!
+			if case let .returnStatement(expression: expression) = lastStatement,
+				expression != nil
+			{
+				hasAllAssignmentCases = false
+			}
+			else if case let .assignmentStatement(leftHand: leftHand, rightHand: _) = lastStatement,
+				assignmentExpression == nil || assignmentExpression == leftHand
+			{
+				hasAllReturnCases = false
+				assignmentExpression = leftHand
+			}
+			else {
+				hasAllReturnCases = false
+				hasAllAssignmentCases = false
+			}
+		}
+
+		if hasAllReturnCases {
+			var newCaseStatements = [[GRYTopLevelNode]]()
+			for statements in caseStatements {
+				// Swift switches must have at least one statement
+				let lastStatement = statements.last!
+				if case let .returnStatement(expression: maybeExpression) = lastStatement,
+					let returnExpression = maybeExpression
+				{
+					var newStatements = Array(statements.dropLast())
+					newStatements.append(.expression(expression: returnExpression))
+					newCaseStatements.append(newStatements)
+				}
+			}
+			let conversionExpression =
+				GRYTopLevelNode.returnStatement(expression: .nilLiteralExpression)
+			return [.switchStatement(
+				convertsToExpression: conversionExpression, expression: expression,
+				caseExpressions: caseExpressions, caseStatements: newCaseStatements), ]
+		}
+		else if hasAllAssignmentCases, let assignmentExpression = assignmentExpression {
+			var newCaseStatements = [[GRYTopLevelNode]]()
+			for statements in caseStatements {
+				// Swift switches must have at least one statement
+				let lastStatement = statements.last!
+				if case let .assignmentStatement(leftHand: _, rightHand: rightHand) = lastStatement
+				{
+					var newStatements = Array(statements.dropLast())
+					newStatements.append(.expression(expression: rightHand))
+					newCaseStatements.append(newStatements)
+				}
+			}
+			let conversionExpression = GRYTopLevelNode.assignmentStatement(
+				leftHand: assignmentExpression, rightHand: .nilLiteralExpression)
+			return [.switchStatement(
+				convertsToExpression: conversionExpression, expression: expression,
+				caseExpressions: caseExpressions, caseStatements: newCaseStatements), ]
+		}
+		else {
+			return super.replaceSwitchStatement(
+				convertsToExpression: nil, expression: expression, caseExpressions: caseExpressions,
+				caseStatements: caseStatements)
+		}
+	}
+
+	/// Replace variable declarations followed by switch statements assignments
+	override func replaceTopLevelNodes(_ oldNodes: [GRYTopLevelNode]) -> [GRYTopLevelNode] {
+		var nodes = super.replaceTopLevelNodes(oldNodes)
+
+		var result = [GRYTopLevelNode]()
+
+		var i = 0
+		while i < (nodes.count - 1) {
+			let currentNode = nodes[i]
+			let nextNode = nodes[i + 1]
+			if case let .variableDeclaration(
+					identifier: declarationIdentifier, typeName: typeName, expression: _, getter: _,
+					setter: _, isLet: isLet, isImplicit: false, extendsType: nil,
+					annotations: annotations) = currentNode,
+				case let .switchStatement(
+					convertsToExpression: maybeConversion, expression: switchExpression,
+					caseExpressions: caseExpressions, caseStatements: caseStatements) = nextNode,
+				let switchConversion = maybeConversion,
+				case let .assignmentStatement(leftHand: leftHand, rightHand: _) = switchConversion,
+				case let .declarationReferenceExpression(
+					identifier: assignmentIdentifier, type: _, isStandardLibrary: false,
+					isImplicit: false) = leftHand,
+				assignmentIdentifier == declarationIdentifier
+			{
+				let variableDeclaration = GRYTopLevelNode.variableDeclaration(
+					identifier: declarationIdentifier, typeName: typeName,
+					expression: .nilLiteralExpression, getter: nil, setter: nil, isLet: isLet,
+					isImplicit: false, extendsType: nil, annotations: annotations)
+				result.append(.switchStatement(
+					convertsToExpression: variableDeclaration, expression: switchExpression,
+					caseExpressions: caseExpressions, caseStatements: caseStatements))
+
+				// Skip appending variable declaration and the switch declaration, thus replacing
+				// both with the new switch declaration
+				i += 2
+			}
+			else {
+				result.append(currentNode)
+				i += 1
+			}
+		}
+
+		if let lastStatement = nodes.last {
+			result.append(lastStatement)
+		}
+
+		return result
+	}
+}
+
 public class GRYRemoveExtensionsTranspilationPass: GRYTranspilationPass {
 	var extendingType: String?
 
 	override func replaceExtension(type: String, members: [GRYTopLevelNode]) -> [GRYTopLevelNode] {
 		extendingType = type
-		let members = members.flatMap(replaceTopLevelNode)
+		let members = replaceTopLevelNodes(members)
 		extendingType = nil
 		return members
 	}
@@ -1068,6 +1217,7 @@ public extension GRYTranspilationPass {
 		result = GRYStaticFunctionsTranspilationPass().run(on: result)
 		result = GRYFixProtocolContentsTranspilationPass().run(on: result)
 		result = GRYAnonymousParametersTranspilationPass().run(on: result)
+		result = GRYSwitchesToExpressionsTranspilationPass().run(on: result)
 		result = GRYReturnsInLambdasTranspilationPass().run(on: result)
 		result = GRYSelfToThisTranspilationPass().run(on: result)
 		result = GRYRemoveExtensionsTranspilationPass().run(on: result)
