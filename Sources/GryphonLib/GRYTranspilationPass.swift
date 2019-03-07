@@ -783,6 +783,55 @@ public class GRYStaticFunctionsTranspilationPass: GRYTranspilationPass {
 	}
 }
 
+// TODO: test
+/// Removes the unnecessary prefixes for inner types.
+///
+/// For instance:
+/// ````
+/// class A {
+/// 	class B { }
+/// 	let x = A.B() // This becomes just B()
+/// }
+/// ````
+public class GRYInnerTypePrefixesTranspilationPass: GRYTranspilationPass {
+	var typeNamesStack = [String]()
+
+	func removePrefixes(_ typeName: String) -> String {
+		var result = typeName
+		for type in typeNamesStack {
+			let prefix = type + "."
+			if result.hasPrefix(prefix) {
+				result.removeFirst(prefix.count)
+			}
+			else {
+				return result
+			}
+		}
+
+		return result
+	}
+
+	override func replaceClassDeclaration(
+		name: String, inherits: [String], members: [GRYTopLevelNode]) -> [GRYTopLevelNode]
+	{
+		typeNamesStack.append(name)
+		let result = super.replaceClassDeclaration(name: name, inherits: inherits, members: members)
+		typeNamesStack.removeLast()
+		return result
+	}
+
+	override func replaceVariableDeclaration(
+		identifier: String, typeName: String, expression: GRYExpression?, getter: GRYTopLevelNode?,
+		setter: GRYTopLevelNode?, isLet: Bool, isImplicit: Bool, extendsType: String?,
+		annotations: String?) -> [GRYTopLevelNode]
+	{
+		return super.replaceVariableDeclaration(
+			identifier: identifier, typeName: removePrefixes(typeName), expression: expression,
+			getter: getter, setter: setter, isLet: isLet, isImplicit: isImplicit,
+			extendsType: extendsType, annotations: annotations)
+	}
+}
+
 public class GRYSelfToThisTranspilationPass: GRYTranspilationPass {
 	override func replaceDotExpression(
 		leftExpression: GRYExpression, rightExpression: GRYExpression) -> GRYExpression
@@ -1294,6 +1343,7 @@ public extension GRYTranspilationPass {
 		result = GRYAnonymousParametersTranspilationPass().run(on: result)
 		result = GRYSwitchesToExpressionsTranspilationPass().run(on: result)
 		result = GRYReturnsInLambdasTranspilationPass().run(on: result)
+		result = GRYInnerTypePrefixesTranspilationPass().run(on: result)
 		result = GRYSelfToThisTranspilationPass().run(on: result)
 		result = GRYRemoveExtensionsTranspilationPass().run(on: result)
 		result = GRYRearrangeIfLetsTranspilationPass().run(on: result)
