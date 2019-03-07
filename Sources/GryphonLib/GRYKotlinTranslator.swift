@@ -352,12 +352,14 @@ public class GRYKotlinTranslator {
 		}
 		let propertiesTranslation = propertyTranslations.joined(separator: ",\n")
 
-		result += propertiesTranslation + ")\n\(indentation){\n"
+		result += propertiesTranslation + "\n\(indentation))"
 
 		if !inherits.isEmpty {
 			let translatedInheritances = inherits.map(translateType)
 			result += ": " + translatedInheritances.joined(separator: ", ")
 		}
+
+		result += " {\n"
 
 		let otherMembersTranslation = try translate(
 			subtrees: otherMembers,
@@ -1073,11 +1075,12 @@ public class GRYKotlinTranslator {
 		return result
 	}
 
-	func increaseIndentation(_ indentation: String) -> String {
+	//
+	private func increaseIndentation(_ indentation: String) -> String {
 		return indentation + "\t"
 	}
 
-	func decreaseIndentation(_ indentation: String) -> String {
+	private func decreaseIndentation(_ indentation: String) -> String {
 		return String(indentation.dropLast())
 	}
 }

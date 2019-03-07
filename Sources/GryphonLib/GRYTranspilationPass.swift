@@ -782,6 +782,44 @@ public class GRYSelfToThisTranspilationPass: GRYTranspilationPass {
 	}
 }
 
+// TODO: test
+/// Declarations can't conform to Swift-only protocols like Codable and Equatable, and enums can't
+/// inherit from types Strings and Ints.
+public class GRYCleanInheritancesTranspilationPass: GRYTranspilationPass {
+	private func isNotASwiftProtocol(_ protocolName: String) -> Bool {
+		return ![
+			"Equatable", "Codable",
+			].contains(protocolName)
+	}
+
+	private func isNotASwiftRawRepresentableType(_ typeName: String) -> Bool {
+		return ![
+			"String",
+			"Int", "Int8", "Int16", "Int32", "Int64",
+			"UInt", "UInt8", "UInt16", "UInt32", "UInt64",
+			"Float", "Float32", "Float64", "Float80", "Double",
+			].contains(typeName)
+	}
+
+	override func replaceEnumDeclaration(
+		access: String?, name: String, inherits: [String], elements: [GRYTopLevelNode],
+		members: [GRYTopLevelNode]) -> [GRYTopLevelNode]
+	{
+		return [.enumDeclaration(
+			access: access, name: name,
+			inherits: inherits.filter {
+				isNotASwiftProtocol($0) && isNotASwiftRawRepresentableType($0)
+			}, elements: elements, members: members), ]
+	}
+
+	override func replaceStructDeclaration(
+		name: String, inherits: [String], members: [GRYTopLevelNode]) -> [GRYTopLevelNode]
+	{
+		return [.structDeclaration(
+			name: name, inherits: inherits.filter(isNotASwiftProtocol), members: members), ]
+	}
+}
+
 /// The "anonymous parameter" `$0` has to be replaced by `it`
 public class GRYAnonymousParametersTranspilationPass: GRYTranspilationPass {
 	override func replaceDeclarationReferenceExpression(
@@ -1216,6 +1254,7 @@ public extension GRYTranspilationPass {
 
 		result = GRYStaticFunctionsTranspilationPass().run(on: result)
 		result = GRYFixProtocolContentsTranspilationPass().run(on: result)
+		result = GRYCleanInheritancesTranspilationPass().run(on: result)
 		result = GRYAnonymousParametersTranspilationPass().run(on: result)
 		result = GRYSwitchesToExpressionsTranspilationPass().run(on: result)
 		result = GRYReturnsInLambdasTranspilationPass().run(on: result)
