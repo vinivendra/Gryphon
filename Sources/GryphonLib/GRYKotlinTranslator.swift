@@ -938,8 +938,9 @@ public class GRYKotlinTranslator {
 		}
 
 		let functionTranslation = try translateExpression(function, withIndentation: indentation)
-		let parametersTranslation =
-			try translateTupleExpression(pairs: pairs, withIndentation: indentation)
+		let parametersTranslation = try translateTupleExpression(
+			pairs: pairs, withIndentation: increaseIndentation(indentation),
+			limitOfPairsForOneLine: 3)
 
 		return functionTranslation + parametersTranslation
 	}
@@ -998,14 +999,20 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateTupleExpression(
-		pairs: [GRYExpression.TuplePair], withIndentation indentation: String) throws -> String
+		pairs: [GRYExpression.TuplePair], withIndentation indentation: String,
+		limitOfPairsForOneLine pairLimit: Int = Int.max) throws -> String
 	{
 		guard !pairs.isEmpty else {
 			return "()"
 		}
 
-		let contents = try pairs.map { (pair: GRYExpression.TuplePair) -> String in
-			let expression = try translateExpression(pair.expression, withIndentation: indentation)
+		// TODO: test
+		let isInOneLine = pairs.count <= pairLimit
+		let expressionIndentation = isInOneLine ? indentation : increaseIndentation(indentation)
+
+		let translations = try pairs.map { (pair: GRYExpression.TuplePair) -> String in
+			let expression =
+				try translateExpression(pair.expression, withIndentation: expressionIndentation)
 
 			if let name = pair.name {
 				return "\(name) = \(expression)"
@@ -1013,9 +1020,16 @@ public class GRYKotlinTranslator {
 			else {
 				return expression
 			}
-		}.joined(separator: ", ")
+		}
 
-		return "(\(contents))"
+		if isInOneLine {
+			let contents = translations.joined(separator: ", ")
+			return "(\(contents))"
+		}
+		else {
+			let contents = translations.joined(separator: ",\n\(indentation)")
+			return "(\n\(indentation)\(contents))"
+		}
 	}
 
 	private func translateStringLiteral(value: String) -> String {
