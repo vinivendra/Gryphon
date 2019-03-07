@@ -68,6 +68,9 @@ _dictionary.reduce(_any, _closure)
 Int.max
 "Int.MAX_VALUE"
 
+Int.min
+"Int.MIN_VALUE"
+
 min(_int1, _int2)
 "Math.min(_int1, _int2)"
 
