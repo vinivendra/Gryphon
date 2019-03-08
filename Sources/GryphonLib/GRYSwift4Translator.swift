@@ -1230,7 +1230,7 @@ public class GRYSwift4Translator {
 		// Get the parameters.
 		let parameterList: GRYSwiftAST?
 
-		if let unwrapped = closureExpression.subtree(at: 0, named: "Parameter List") {
+		if let unwrapped = closureExpression.subtree(named: "Parameter List") {
 			parameterList = unwrapped
 		}
 		else {
