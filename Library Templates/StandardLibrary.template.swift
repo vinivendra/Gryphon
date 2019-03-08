@@ -8,6 +8,8 @@ var _array: [Any] = []
 let _string = ""
 let _any: Any = ""
 let _double: Double = 0
+let _double1: Double = 0
+let _double2: Double = 0
 let _int: Int = 0
 let _int1: Int = 0
 let _int2: Int = 0
@@ -79,3 +81,10 @@ _int1..._int2
 
 _int1..<_int2
 "_int1 until _int2"
+
+// Double
+_double1..._double2
+"_double1.._double2"
+
+_double1..<_double2
+"_double1 until _double2"
