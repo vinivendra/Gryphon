@@ -124,6 +124,7 @@ extension TestUtils {
 		"numericLiterals",
 		"operators",
 		"print",
+		"standardLibrary",
 		"staticMembers",
 		"structs",
 	]
