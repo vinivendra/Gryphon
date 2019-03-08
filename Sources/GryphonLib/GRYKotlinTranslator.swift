@@ -430,7 +430,7 @@ public class GRYKotlinTranslator {
 			result += " {\n\(otherMembersTranslation)\(indentation)}\n"
 		}
 		else {
-			result += " { }\n"
+			result += "\n"
 		}
 
 		return result
