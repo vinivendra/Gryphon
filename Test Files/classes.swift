@@ -45,3 +45,11 @@ print(box1.returnInt(a: 10))
 print(box1.b)
 box1.b = "whatever"
 print(box1.c)
+
+// Removes inner types: it should be `B()` and not `A.B()`
+class A {
+	class B {
+	}
+
+	let b = B()
+}

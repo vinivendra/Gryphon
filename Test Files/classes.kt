@@ -15,6 +15,11 @@ class Box {
 		return a
 	}
 }
+class A {
+	class B {
+	}
+	val b: B = B()
+}
 
 fun main(args: Array<String>) {
 	val box1: Box = Box()
