@@ -1,9 +1,13 @@
 internal fun trueFunction(): Boolean {
 	return true
 }
-internal fun testGuard() {
+internal fun testGuards() {
 	val x: Int = 0
-	if (!(x == 0)) {
+	if (x != 0) {
+		println("--")
+		return
+	}
+	if (x == 1) {
 		println("--")
 		return
 	}
@@ -83,7 +87,7 @@ fun main(args: Array<String>) {
 	else {
 		println("Else if and else with contents that get executed #2")
 	}
-	testGuard()
+	testGuards()
 	val x: Int? = 0
 	val y: Int? = 0
 	val z: Int? = null

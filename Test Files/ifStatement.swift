@@ -103,15 +103,19 @@ else {
 }
 
 //
-func testGuard() {
+func testGuards() {
 	let x = 0
 	guard x == 0 else {
 		print("--")
 		return
 	}
+	guard x != 1 else {
+		print("--")
+		return
+	}
 	print("Guard")
 }
-testGuard()
+testGuards()
 
 //
 let x: Int? = 0

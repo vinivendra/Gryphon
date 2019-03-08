@@ -1311,6 +1311,15 @@ public class GRYDoubleNegativesInGuardsTranspilationPass: GRYTranspilationPass {
 					operatorSymbol: "==", type: type)
 				shouldStillBeGuard = false
 			}
+			else if case let .binaryOperatorExpression(
+				leftExpression: leftExpression, rightExpression: rightExpression,
+				operatorSymbol: "==", type: type) = condition
+			{
+				newCondition = .binaryOperatorExpression(
+					leftExpression: leftExpression, rightExpression: rightExpression,
+					operatorSymbol: "!=", type: type)
+				shouldStillBeGuard = false
+			}
 			else {
 				newCondition = condition
 				shouldStillBeGuard = true
