@@ -582,13 +582,20 @@ public class GRYKotlinTranslator {
 		for (caseExpression, caseStatements) in zip(caseExpressions, caseStatements) {
 			if let caseExpression = caseExpression {
 				if case let GRYExpression.binaryOperatorExpression(
-					leftExpression: leftExpression, rightExpression: _,
-					operatorSymbol: operatorSymbol, type: _) = caseExpression
+					leftExpression: leftExpression, rightExpression: _, operatorSymbol: _,
+					type: _) = caseExpression
 				{
 					let translatedExpression = try translateExpression(
 						leftExpression, withIndentation: increasedIndentation)
-					if operatorSymbol == "~=" {
+
+					// If it's a range
+					if case let .templateExpression(pattern: pattern, matches: _) = leftExpression,
+						pattern.contains("..") || pattern.contains("until")
+					{
 						result += "\(increasedIndentation)in \(translatedExpression) -> "
+					}
+					else {
+						result += "\(increasedIndentation)\(translatedExpression) -> "
 					}
 				}
 			}

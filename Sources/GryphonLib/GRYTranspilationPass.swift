@@ -21,18 +21,8 @@ public class GRYTranspilationPass {
 	}
 
 	func run(on sourceFile: GRYAST) -> GRYAST {
-		var replacedStatements = [GRYTopLevelNode]()
-		for statement in sourceFile.statements {
-			let replacedStatement = replaceTopLevelNode(statement)
-			replacedStatements.append(contentsOf: replacedStatement)
-		}
-
-		var replacedDeclarations = [GRYTopLevelNode]()
-		for declaration in sourceFile.declarations {
-			let replacedDeclaration = replaceTopLevelNode(declaration)
-			replacedDeclarations.append(contentsOf: replacedDeclaration)
-		}
-
+		let replacedStatements = replaceTopLevelNodes(sourceFile.statements)
+		let replacedDeclarations = replaceTopLevelNodes(sourceFile.declarations)
 		return GRYAST(declarations: replacedDeclarations, statements: replacedStatements)
 	}
 
@@ -1074,6 +1064,7 @@ public class GRYSwitchesToExpressionsTranspilationPass: GRYTranspilationPass {
 				let switchConversion = maybeConversion,
 				case let .assignmentStatement(leftHand: leftHand, rightHand: _) = switchConversion,
 				case let .declarationReferenceExpression(
+
 					identifier: assignmentIdentifier, type: _, isStandardLibrary: false,
 					isImplicit: false) = leftHand,
 				assignmentIdentifier == declarationIdentifier

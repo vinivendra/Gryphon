@@ -127,6 +127,7 @@ extension TestUtils {
 		"standardLibrary",
 		"staticMembers",
 		"structs",
+		"switches",
 	]
 	static let testCasesForAllTests = testCasesForAcceptanceTest + [
 		"enums",
