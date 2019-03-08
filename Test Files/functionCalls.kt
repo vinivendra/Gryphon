@@ -36,6 +36,8 @@ internal fun bar3(a: Int = 1, b: Int) {
 }
 internal fun bar4(a: Int, b: Int = 2) {
 }
+internal fun fooBarBaz(a: Int, b: Int, c: Int, d: Int) {
+}
 
 fun main(args: Array<String>) {
 	foo()
@@ -60,4 +62,9 @@ fun main(args: Array<String>) {
 	bar3(a = 0, b = 0)
 	bar4(a = 0)
 	bar4(a = 0, b = 0)
+	fooBarBaz(
+		a = 0,
+		b = 0,
+		c = 0,
+		d = 0)
 }

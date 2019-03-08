@@ -69,3 +69,7 @@ bar3(a: 0, b: 0)
 
 bar4(a: 0)
 bar4(a: 0, b: 0)
+
+// Function calls with many parameters
+func fooBarBaz(a: Int, b: Int, c: Int, d: Int)
+fooBarBaz(a: 0, b: 0, c: 0, d: 0)
