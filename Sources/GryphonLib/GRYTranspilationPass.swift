@@ -1260,15 +1260,27 @@ public class GRYRearrangeIfLetsTranspilationPass: GRYTranspilationPass {
 
 		for declaration in declarations {
 			if case let .variableDeclaration(
-				identifier: identifier, typeName: typeName, expression: _, getter: _, setter: _,
-				isLet: _, isImplicit: _, extendsType: _, annotations: _) = declaration
+				identifier: declarationIdentifier, typeName: typeName,
+				expression: declarationExpression, getter: _, setter: _, isLet: _, isImplicit: _,
+				extendsType: _, annotations: _) = declaration
 			{
-				letDeclarations.append(declaration)
+				// If it's a shadowing identifier there's no need to declare it in Kotlin
+				// (i.e. `if let x = x { }`)
+				if let declarationExpression = declarationExpression,
+					case .declarationReferenceExpression(
+						identifier: declarationIdentifier, type: _, isStandardLibrary: _,
+						isImplicit: _) = declarationExpression
+				{
+				}
+				else {
+					letDeclarations.append(declaration)
+				}
+
 				letConditions.append(
 					.binaryOperatorExpression(
 						leftExpression: .declarationReferenceExpression(
-							identifier: identifier, type: typeName, isStandardLibrary: false,
-							isImplicit: false),
+							identifier: declarationIdentifier, type: typeName,
+							isStandardLibrary: false, isImplicit: false),
 						rightExpression: .nilLiteralExpression, operatorSymbol: "!=",
 						type: "Boolean"))
 			}

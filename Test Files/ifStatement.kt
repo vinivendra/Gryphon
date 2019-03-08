@@ -151,4 +151,8 @@ fun main(args: Array<String>) {
 	else {
 		println("--")
 	}
+
+	if (x != null) {
+		println("If let #5")
+	}
 }

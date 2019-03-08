@@ -158,3 +158,7 @@ else if x == 1 {
 else {
 	print("--")
 }
+
+if let x = x {
+	print("If let #5")
+}
