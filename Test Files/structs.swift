@@ -24,6 +24,11 @@ struct OtherSupportedStruct {
 	let y: Int
 }
 
+struct NoInheritance: Equatable, Codable {
+	let x: Int
+	let y: Int
+}
+
 let a = SupportedStruct()
 let b = OtherSupportedStruct(x: 10, y: 20)
 

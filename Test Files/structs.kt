@@ -6,6 +6,10 @@ data class OtherSupportedStruct(
 	val x: Int,
 	val y: Int
 ) { }
+data class NoInheritance(
+	val x: Int,
+	val y: Int
+) { }
 
 fun main(args: Array<String>) {
 	val a: SupportedStruct = SupportedStruct()

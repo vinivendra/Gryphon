@@ -26,6 +26,11 @@ enum OtherError: Error {
 	case intAndString(int: Int, string: String)
 }
 
+enum NoInheritances: String, Equatable, Codable {
+	case foo
+	case bar
+}
+
 func throwingFunc() throws {
 	throw CalculatorError.invalidCharacter
 }
