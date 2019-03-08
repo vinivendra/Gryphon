@@ -71,5 +71,32 @@ bar4(a: 0)
 bar4(a: 0, b: 0)
 
 // Function calls with many parameters
-func fooBarBaz(a: Int, b: Int, c: Int, d: Int)
-fooBarBaz(a: 0, b: 0, c: 0, d: 0)
+class AClassWithABigName { }
+
+func fooBarBaz(
+	someBigName: AClassWithABigName,
+	anotherBigName: AClassWithABigName,
+	yetAnEvenBiggerName: AClassWithABigName,
+	aSmallerName: AClassWithABigName)
+{
+}
+fooBarBaz(
+	someBigName: AClassWithABigName(),
+	anotherBigName: AClassWithABigName(),
+	yetAnEvenBiggerName: AClassWithABigName(),
+	aSmallerName: AClassWithABigName())
+
+func fooFooBarBaz(
+	someBigName: AClassWithABigName,
+	anotherBigName: AClassWithABigName,
+	yetAnEvenBiggerName: AClassWithABigName,
+	aSmallerName: AClassWithABigName)
+	-> AClassWithABigName
+{
+	return AClassWithABigName()
+}
+fooFooBarBaz(
+	someBigName: AClassWithABigName(),
+	anotherBigName: AClassWithABigName(),
+	yetAnEvenBiggerName: AClassWithABigName(),
+	aSmallerName: AClassWithABigName())

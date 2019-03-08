@@ -31,6 +31,14 @@ enum NoInheritances: String, Equatable, Codable {
 	case bar
 }
 
+enum WithMembers {
+	case foo
+	case bar
+
+	func a() { }
+	func b() { }
+}
+
 func throwingFunc() throws {
 	throw CalculatorError.invalidCharacter
 }

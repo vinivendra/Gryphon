@@ -9,6 +9,7 @@ internal fun printNumberName(x: Int) {
 		else -> println("Dunno!")
 	}
 }
+
 internal fun getNumberName(x: Int): String {
 	return when (x) {
 		0 -> "Zero"
@@ -27,20 +28,26 @@ fun main(args: Array<String>) {
 	printNumberName(4)
 	printNumberName(7)
 	printNumberName(10)
+
 	println(getNumberName(0))
 	println(getNumberName(1))
 	println(getNumberName(2))
 	println(getNumberName(3))
 	println(getNumberName(4))
+
 	var y: Int = 0
+
 	var x: Int = when (y) {
 		0 -> 10
 		else -> 20
 	}
+
 	println(x)
+
 	x = when (y) {
 		0 -> 100
 		else -> 200
 	}
+
 	println(x)
 }

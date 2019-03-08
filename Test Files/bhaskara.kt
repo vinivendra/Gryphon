@@ -2,6 +2,7 @@ internal fun bhaskara(a: Double, b: Double, c: Double): Double {
 	val delta: Double = b * b - 4.0 * a * c
 	val deltaRoot: Double = Math.sqrt(delta)
 	val root1: Double = (-b + deltaRoot) / (2.0 * a)
+
 	return root1
 }
 

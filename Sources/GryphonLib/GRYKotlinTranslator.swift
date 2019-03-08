@@ -17,6 +17,8 @@
 public class GRYKotlinTranslator {
 	static let errorTranslation = "<<Error>>"
 
+	static let lineLimit = 100
+
 	/// Used for the translation of Swift types into Kotlin types.
 	static let typeMappings = [
 		"Bool": "Boolean",
@@ -208,13 +210,62 @@ public class GRYKotlinTranslator {
 		return result
 	}
 
-	private func translate(subtrees: [GRYTopLevelNode], withIndentation indentation: String) throws
-		-> String
+	private func translate(
+		subtrees: [GRYTopLevelNode], withIndentation indentation: String,
+		limitForAddingNewlines: Int = 0) throws -> String
 	{
-		return try subtrees.map
+		let treesAndTranslations = try subtrees.map {
+				(subtree: $0, translation: try translate(subtree: $0, withIndentation: indentation))
+			}.filter {
+				!$0.translation.isEmpty
+			}
+
+		if treesAndTranslations.count <= limitForAddingNewlines {
+			return treesAndTranslations.map { $0.translation }.joined()
+		}
+
+		var result = ""
+
+		for (currentSubtree, nextSubtree)
+			in zip(treesAndTranslations, treesAndTranslations.dropFirst())
+		{
+			result += currentSubtree.translation
+
+			// Cases that should go together
+			if case .variableDeclaration = currentSubtree.subtree,
+				case .variableDeclaration = nextSubtree.subtree
 			{
-				try translate(subtree: $0, withIndentation: indentation)
-		}.reduce("", +)
+				continue
+			}
+			else if case .expression(expression: .callExpression) = currentSubtree.subtree,
+				case .expression(expression: .callExpression) = nextSubtree.subtree
+			{
+				continue
+			}
+			else if case .expression(expression: .templateExpression) = currentSubtree.subtree,
+				case .expression(expression: .templateExpression) = nextSubtree.subtree
+			{
+				continue
+			}
+			else if case .assignmentStatement = currentSubtree.subtree,
+				case .assignmentStatement = nextSubtree.subtree
+			{
+				continue
+			}
+			else if case .typealiasDeclaration = currentSubtree.subtree,
+				case .typealiasDeclaration = nextSubtree.subtree
+			{
+				continue
+			}
+
+			result += "\n"
+		}
+
+		if let lastSubtree = treesAndTranslations.last {
+			result += lastSubtree.translation
+		}
+
+		return result
 	}
 
 	private func translateEnumDeclaration(
@@ -241,12 +292,13 @@ public class GRYKotlinTranslator {
 
 		let increasedIndentation = increaseIndentation(indentation)
 
+		var casesTranslation = ""
 		for element in elements {
 			if case let .enumElementDeclaration(
 				name: elementName, associatedValueLabels: associatedValueLabels,
 				associatedValueTypes: associatedValueTypes) = element
 			{
-				result += translateEnumElementDeclaration(
+				casesTranslation += translateEnumElementDeclaration(
 					enumName: enumName, elementName: elementName,
 					associatedValueLabels: associatedValueLabels,
 					associatedValueTypes: associatedValueTypes,
@@ -260,10 +312,17 @@ public class GRYKotlinTranslator {
 						members: members, isImplicit: isImplicit))
 			}
 		}
+		result += casesTranslation
 
-		result += try translate(subtrees: members, withIndentation: increasedIndentation)
+		let membersTranslation =
+			try translate(subtrees: members, withIndentation: increasedIndentation)
 
-		result += "\(indentation)}\n"
+		// Add a newline between cases and members if needed
+		if !casesTranslation.isEmpty && !membersTranslation.isEmpty {
+			result += "\n"
+		}
+
+		result += "\(membersTranslation)\(indentation)}\n"
 
 		return result
 	}
@@ -397,7 +456,7 @@ public class GRYKotlinTranslator {
 		prefix: String, parameterNames: [String], parameterTypes: [String],
 		defaultValues: [GRYExpression?], returnType: String, isImplicit: Bool, isStatic: Bool,
 		isMutating: Bool, extendsType: String?, statements: [GRYTopLevelNode]?, access: String?,
-		withIndentation indentation: String) throws -> String
+		withIndentation indentation: String, shouldAddNewlines: Bool = false) throws -> String
 	{
 		guard !isImplicit else {
 			return ""
@@ -421,6 +480,15 @@ public class GRYKotlinTranslator {
 			result += prefix + "("
 		}
 
+		let returnString: String
+		if returnType != "()", !isInit {
+			let translatedReturnType = translateType(returnType)
+			returnString = ": \(translatedReturnType)"
+		}
+		else {
+			returnString = ""
+		}
+
 		let translatedParameterTypes = parameterTypes.map(translateType)
 		let valueStrings = try defaultValues.map { (defaultValue: GRYExpression?) -> String in
 			if let defaultValue = defaultValue {
@@ -433,22 +501,36 @@ public class GRYKotlinTranslator {
 		let parameters = zip(parameterNames, translatedParameterTypes).map { $0.0 + ": " + $0.1 }
 		let parameterStrings = zip(parameters, valueStrings).map { $0.0 + $0.1 }
 
-		result += parameterStrings.joined(separator: ", ")
+		if !shouldAddNewlines {
+			result += parameterStrings.joined(separator: ", ") + ")" + returnString + " {\n"
+			if result.count >= GRYKotlinTranslator.lineLimit {
+				return try translateFunctionDeclaration(
+					prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
+					defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
+					isStatic: isStatic, isMutating: isMutating, extendsType: extendsType,
+					statements: statements, access: access, withIndentation: indentation,
+					shouldAddNewlines: true)
+			}
+		}
+		else {
+			let parameterIndentation = increaseIndentation(indentation)
+			let parametersString = parameterStrings.joined(separator: ",\n\(parameterIndentation)")
+			result += "\n\(parameterIndentation)" + parametersString + ")\n"
 
-		result += ")"
+			if !returnString.isEmpty {
+				result += "\(parameterIndentation)\(returnString)\n"
+			}
 
-		if returnType != "()", !isInit {
-			let translatedReturnType = translateType(returnType)
-			result += ": \(translatedReturnType)"
+			result += "\(indentation){\n"
 		}
 
 		guard let statements = statements else {
 			return result + "\n"
 		}
 
-		result += " {\n"
 		indentation = increaseIndentation(indentation)
-		result += try translate(subtrees: statements, withIndentation: indentation)
+		result += try translate(
+			subtrees: statements, withIndentation: indentation, limitForAddingNewlines: 3)
 		indentation = decreaseIndentation(indentation)
 		result += indentation + "}\n"
 
@@ -472,7 +554,7 @@ public class GRYKotlinTranslator {
 
 		let increasedIndentation = increaseIndentation(indentation)
 		let statementsTranslation = try translate(
-			subtrees: statements, withIndentation: increasedIndentation)
+			subtrees: statements, withIndentation: increasedIndentation, limitForAddingNewlines: 3)
 
 		result += statementsTranslation
 
@@ -507,8 +589,8 @@ public class GRYKotlinTranslator {
 
 		result += "{\n"
 
-		let statementsString =
-			try translate(subtrees: statements, withIndentation: increasedIndentation)
+		let statementsString = try translate(
+			subtrees: statements, withIndentation: increasedIndentation, limitForAddingNewlines: 3)
 
 		result += statementsString + indentation + "}\n"
 
@@ -613,8 +695,9 @@ public class GRYKotlinTranslator {
 			else {
 				result += "{\n"
 				let statementsIndentation = increaseIndentation(increasedIndentation)
-				let statementsTranslation =
-					try translate(subtrees: caseStatements, withIndentation: statementsIndentation)
+				let statementsTranslation = try translate(
+					subtrees: caseStatements, withIndentation: statementsIndentation,
+					limitForAddingNewlines: 3)
 				result += "\(statementsTranslation)\(increasedIndentation)}\n"
 			}
 		}
@@ -716,7 +799,8 @@ public class GRYKotlinTranslator {
 
 			if let statements = statements {
 				result += indentation1 + "get() {\n"
-				result += try translate(subtrees: statements, withIndentation: indentation2)
+				result += try translate(
+					subtrees: statements, withIndentation: indentation2, limitForAddingNewlines: 3)
 				result += indentation1 + "}\n"
 			}
 		}
@@ -737,7 +821,8 @@ public class GRYKotlinTranslator {
 
 			if let statements = statements {
 				result += indentation1 + "set(newValue) {\n"
-				result += try translate(subtrees: statements, withIndentation: indentation2)
+				result += try translate(
+					subtrees: statements, withIndentation: indentation2, limitForAddingNewlines: 3)
 				result += indentation1 + "}\n"
 			}
 		}
@@ -935,7 +1020,7 @@ public class GRYKotlinTranslator {
 
 	private func translateCallExpression(
 		function: GRYExpression, parameters: GRYExpression, type: String,
-		withIndentation indentation: String) throws -> String
+		withIndentation indentation: String, shouldAddNewlines: Bool = false) throws -> String
 	{
 		guard case let .tupleExpression(pairs: pairs) = parameters else {
 			return try unexpectedASTStructureError(
@@ -944,12 +1029,21 @@ public class GRYKotlinTranslator {
 					.callExpression(function: function, parameters: parameters, type: type)))
 		}
 
-		let functionTranslation = try translateExpression(function, withIndentation: indentation)
+		let functionTranslation =
+			try translateExpression(function, withIndentation: indentation)
 		let parametersTranslation = try translateTupleExpression(
 			pairs: pairs, withIndentation: increaseIndentation(indentation),
-			limitOfPairsForOneLine: 3)
+			shouldAddNewlines: shouldAddNewlines)
+		let result = functionTranslation + parametersTranslation
 
-		return functionTranslation + parametersTranslation
+		if !shouldAddNewlines, result.count >= GRYKotlinTranslator.lineLimit {
+			return try translateCallExpression(
+				function: function, parameters: parameters, type: type,
+				withIndentation: indentation, shouldAddNewlines: true)
+		}
+		else {
+			return result
+		}
 	}
 
 	private func translateClosureExpression(
@@ -1007,15 +1101,15 @@ public class GRYKotlinTranslator {
 
 	private func translateTupleExpression(
 		pairs: [GRYExpression.TuplePair], withIndentation indentation: String,
-		limitOfPairsForOneLine pairLimit: Int = Int.max) throws -> String
+		shouldAddNewlines: Bool = false) throws -> String
 	{
 		guard !pairs.isEmpty else {
 			return "()"
 		}
 
 		// TODO: test
-		let isInOneLine = pairs.count <= pairLimit
-		let expressionIndentation = isInOneLine ? indentation : increaseIndentation(indentation)
+		let expressionIndentation =
+			shouldAddNewlines ? increaseIndentation(indentation) : indentation
 
 		let translations = try pairs.map { (pair: GRYExpression.TuplePair) -> String in
 			let expression =
@@ -1029,7 +1123,7 @@ public class GRYKotlinTranslator {
 			}
 		}
 
-		if isInOneLine {
+		if !shouldAddNewlines {
 			let contents = translations.joined(separator: ", ")
 			return "(\(contents))"
 		}

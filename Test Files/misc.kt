@@ -1,8 +1,10 @@
 typealias A = Int
+
 class B {
 	class C {
 	}
 }
+
 typealias BC = B.C
 typealias DInt = D<Int>
 
