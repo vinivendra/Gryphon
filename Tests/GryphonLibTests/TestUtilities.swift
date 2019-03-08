@@ -114,6 +114,7 @@ extension TestUtils {
 		"bhaskara",
 		"classes",
 		"closures",
+		"dictionaries",
 		"extensions",
 		"functionCalls",
 		"ifStatement",

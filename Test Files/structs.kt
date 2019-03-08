@@ -1,13 +1,11 @@
 data class SupportedStruct(
 	val x: Int = 0,
-	val y: Int = 1)
-{
-}
+	val y: Int = 1
+) { }
 data class OtherSupportedStruct(
 	val x: Int,
-	val y: Int)
-{
-}
+	val y: Int
+) { }
 
 fun main(args: Array<String>) {
 	val a: SupportedStruct = SupportedStruct()
