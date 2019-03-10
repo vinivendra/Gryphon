@@ -905,6 +905,7 @@ public class GRYSwift4Translator {
 					getter: nil, setter: nil,
 					isLet: isLet,
 					isImplicit: false,
+					isStatic: false,
 					extendsType: nil,
 					annotations: nil))
 			}
@@ -1059,92 +1060,104 @@ public class GRYSwift4Translator {
 
 		let isImplicit = variableDeclaration.standaloneAttributes.contains("implicit")
 
-		if let identifier =
-				variableDeclaration.standaloneAttributes.first(where: { $0 != "implicit" }),
-			let rawType = variableDeclaration["interface type"]
+		let isStatic: Bool
+		if let accessorDeclaration = variableDeclaration.subtree(named: "Accessor Declaration"),
+			let interfaceType = accessorDeclaration["interface type"],
+			let firstTypeComponent = interfaceType.split(withStringSeparator: " -> ").first,
+			firstTypeComponent.contains(".Type")
 		{
-			let isLet = variableDeclaration.standaloneAttributes.contains("let")
-			let type = cleanUpType(rawType)
+			isStatic = true
+		}
+		else {
+			isStatic = false
+		}
 
-			let expression: GRYExpression?
-			if let firstBindingExpression = danglingPatternBindings.first {
-				if let maybeBindingExpression = firstBindingExpression,
-					let bindingExpression = maybeBindingExpression,
-					(bindingExpression.identifier == identifier &&
-							bindingExpression.type == type) ||
-						(bindingExpression.identifier == "<<Error>>")
-				{
-					expression = bindingExpression.expression
-				}
-				else {
-					expression = nil
-				}
+		guard let identifier =
+				variableDeclaration.standaloneAttributes.first(where: { $0 != "implicit" }),
+			let rawType = variableDeclaration["interface type"] else
+		{
+			return try unexpectedASTStructureError(
+				"Failed to get identifier and type", AST: variableDeclaration)
+		}
 
-				_ = danglingPatternBindings.removeFirst()
+		let isLet = variableDeclaration.standaloneAttributes.contains("let")
+		let type = cleanUpType(rawType)
+
+		let expression: GRYExpression?
+		if let firstBindingExpression = danglingPatternBindings.first {
+			if let maybeBindingExpression = firstBindingExpression,
+				let bindingExpression = maybeBindingExpression,
+				(bindingExpression.identifier == identifier &&
+						bindingExpression.type == type) ||
+					(bindingExpression.identifier == "<<Error>>")
+			{
+				expression = bindingExpression.expression
 			}
 			else {
 				expression = nil
 			}
 
-			var getter: GRYTopLevelNode?
-			var setter: GRYTopLevelNode?
-			for subtree in variableDeclaration.subtrees
-				where !subtree.standaloneAttributes.contains("implicit")
-			{
-				let access = subtree["access"]
-
-				let statements: [GRYSwiftAST] =
-					subtree.subtree(named: "Brace Statement")?.subtrees.array ?? []
-				let statementsTranslation = try translate(subtrees: statements)
-
-				// Swift 5: "get_for" and "set_for" are the terms used in the Swift 5 AST
-				if subtree["getter_for"] != nil || subtree["get_for"] != nil {
-					getter = .functionDeclaration(
-						prefix: "get",
-						parameterNames: [], parameterTypes: [],
-						defaultValues: [],
-						returnType: type,
-						isImplicit: false,
-						isStatic: false,
-						isMutating: false,
-						extendsType: nil,
-						statements: statementsTranslation,
-						access: access)
-				}
-				else if subtree["materializeForSet_for"] != nil ||
-					subtree["setter_for"] != nil ||
-					subtree["set_for"] != nil
-				{
-					setter = .functionDeclaration(
-						prefix: "set",
-						parameterNames: ["newValue"],
-						parameterTypes: [type],
-						defaultValues: [],
-						returnType: "()",
-						isImplicit: false,
-						isStatic: false,
-						isMutating: false,
-						extendsType: nil,
-						statements: statementsTranslation,
-						access: access)
-				}
-			}
-
-			return .variableDeclaration(
-				identifier: identifier,
-				typeName: type,
-				expression: expression,
-				getter: getter,
-				setter: setter,
-				isLet: isLet,
-				isImplicit: isImplicit,
-				extendsType: nil,
-				annotations: nil)
+			_ = danglingPatternBindings.removeFirst()
 		}
 		else {
-			return try unexpectedASTStructureError(
-				"Failed to get identifier and type", AST: variableDeclaration)
+			expression = nil
 		}
+
+		var getter: GRYTopLevelNode?
+		var setter: GRYTopLevelNode?
+		for subtree in variableDeclaration.subtrees
+			where !subtree.standaloneAttributes.contains("implicit")
+		{
+			let access = subtree["access"]
+
+			let statements: [GRYSwiftAST] =
+				subtree.subtree(named: "Brace Statement")?.subtrees.array ?? []
+			let statementsTranslation = try translate(subtrees: statements)
+
+			// Swift 5: "get_for" and "set_for" are the terms used in the Swift 5 AST
+			if subtree["getter_for"] != nil || subtree["get_for"] != nil {
+				getter = .functionDeclaration(
+					prefix: "get",
+					parameterNames: [], parameterTypes: [],
+					defaultValues: [],
+					returnType: type,
+					isImplicit: false,
+					isStatic: false,
+					isMutating: false,
+					extendsType: nil,
+					statements: statementsTranslation,
+					access: access)
+			}
+			else if subtree["materializeForSet_for"] != nil ||
+				subtree["setter_for"] != nil ||
+				subtree["set_for"] != nil
+			{
+				setter = .functionDeclaration(
+					prefix: "set",
+					parameterNames: ["newValue"],
+					parameterTypes: [type],
+					defaultValues: [],
+					returnType: "()",
+					isImplicit: false,
+					isStatic: false,
+					isMutating: false,
+					extendsType: nil,
+					statements: statementsTranslation,
+					access: access)
+			}
+		}
+
+		return .variableDeclaration(
+			identifier: identifier,
+			typeName: type,
+			expression: expression,
+			getter: getter,
+			setter: setter,
+			isLet: isLet,
+			isImplicit: isImplicit,
+			isStatic: isStatic,
+			extendsType: nil,
+			annotations: nil)
 	}
 
 	internal func translate(callExpression: GRYSwiftAST) throws -> GRYExpression {

@@ -165,13 +165,13 @@ public class GRYKotlinTranslator {
 				expression: expression, withIndentation: indentation)
 		case let .variableDeclaration(
 			identifier: identifier, typeName: typeName, expression: expression, getter: getter,
-			setter: setter, isLet: isLet, isImplicit: isImplicit, extendsType: extendsType,
-			annotations: annotations):
+			setter: setter, isLet: isLet, isImplicit: isImplicit, isStatic: isStatic,
+			extendsType: extendsType, annotations: annotations):
 
 			result = try translateVariableDeclaration(
 				identifier: identifier, typeName: typeName, expression: expression, getter: getter,
-				setter: setter, isLet: isLet, isImplicit: isImplicit, extendsType: extendsType,
-				annotations: annotations, withIndentation: indentation)
+				setter: setter, isLet: isLet, isImplicit: isImplicit, isStatic: isStatic,
+				extendsType: extendsType, annotations: annotations, withIndentation: indentation)
 		case let .assignmentStatement(leftHand: leftHand, rightHand: rightHand):
 			result = try translateAssignmentStatement(
 				leftHand: leftHand, rightHand: rightHand, withIndentation: indentation)
@@ -639,13 +639,13 @@ public class GRYKotlinTranslator {
 			}
 			else if case let .variableDeclaration(
 				identifier: identifier, typeName: typeName, expression: _, getter: _, setter: _,
-				isLet: isLet, isImplicit: _, extendsType: _,
+				isLet: isLet, isImplicit: _, isStatic: _, extendsType: _,
 				annotations: annotations) = convertsToExpression
 			{
 				let translatedVariableDeclaration = try translateVariableDeclaration(
 					identifier: identifier, typeName: typeName, expression: .nilLiteralExpression,
-					getter: nil, setter: nil, isLet: isLet, isImplicit: false, extendsType: nil,
-					annotations: annotations, withIndentation: indentation)
+					getter: nil, setter: nil, isLet: isLet, isImplicit: false, isStatic: false,
+					extendsType: nil, annotations: annotations, withIndentation: indentation)
 				let cleanTranslation = translatedVariableDeclaration.dropLast("null\n".count)
 				result = "\(cleanTranslation)when ("
 			}
@@ -728,8 +728,9 @@ public class GRYKotlinTranslator {
 
 	private func translateVariableDeclaration(
 		identifier: String, typeName: String, expression: GRYExpression?, getter: GRYTopLevelNode?,
-		setter: GRYTopLevelNode?, isLet: Bool, isImplicit: Bool, extendsType: String?,
-		annotations: String?, withIndentation indentation: String) throws -> String
+		setter: GRYTopLevelNode?, isLet: Bool, isImplicit: Bool, isStatic: Bool,
+		extendsType: String?, annotations: String?, withIndentation indentation: String)
+		throws -> String
 	{
 		guard !isImplicit else {
 			return ""
@@ -794,7 +795,7 @@ public class GRYKotlinTranslator {
 					AST: .variableDeclaration(
 						identifier: identifier, typeName: typeName, expression: expression,
 						getter: getter, setter: setter, isLet: isLet, isImplicit: isImplicit,
-						extendsType: extendsType, annotations: annotations))
+						isStatic: isStatic, extendsType: extendsType, annotations: annotations))
 			}
 
 			if let statements = statements {
@@ -816,7 +817,7 @@ public class GRYKotlinTranslator {
 					AST: .variableDeclaration(
 						identifier: identifier, typeName: typeName, expression: expression,
 						getter: getter, setter: setter, isLet: isLet, isImplicit: isImplicit,
-						extendsType: extendsType, annotations: annotations))
+						isStatic: isStatic, extendsType: extendsType, annotations: annotations))
 			}
 
 			if let statements = statements {

@@ -177,6 +177,7 @@ extension GRYTopLevelNode {
 			setter: setter,
 			isLet: isLet,
 			isImplicit: isImplicit,
+			isStatic: isStatic,
 			extendsType: extendsType,
 			annotations: annotations):
 
@@ -184,6 +185,7 @@ extension GRYTopLevelNode {
 				GRYPrintableTree.initOrNil(
 					"extendsType", [GRYPrintableTree.initOrNil(extendsType)]),
 				isImplicit ? GRYPrintableTree("implicit") : nil,
+				isStatic ? GRYPrintableTree("static") : nil,
 				isLet ? GRYPrintableTree("let") : GRYPrintableTree("var"),
 				GRYPrintableTree(identifier),
 				GRYPrintableTree(typeName),
