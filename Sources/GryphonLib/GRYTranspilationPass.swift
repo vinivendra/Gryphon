@@ -833,6 +833,24 @@ public class GRYInnerTypePrefixesTranspilationPass: GRYTranspilationPass {
 	}
 }
 
+public class GRYRenameOperatorsTranspilationPass: GRYTranspilationPass {
+	override func replaceBinaryOperatorExpression(
+		leftExpression: GRYExpression, rightExpression: GRYExpression, operatorSymbol: String,
+		type: String) -> GRYExpression
+	{
+		if operatorSymbol == "??" {
+			return .binaryOperatorExpression(
+				leftExpression: leftExpression, rightExpression: rightExpression,
+				operatorSymbol: "?:", type: type)
+		}
+		else {
+			return .binaryOperatorExpression(
+				leftExpression: leftExpression, rightExpression: rightExpression,
+				operatorSymbol: operatorSymbol, type: type)
+		}
+	}
+}
+
 public class GRYSelfToThisTranspilationPass: GRYTranspilationPass {
 	override func replaceDotExpression(
 		leftExpression: GRYExpression, rightExpression: GRYExpression) -> GRYExpression
@@ -1413,6 +1431,7 @@ public extension GRYTranspilationPass {
 		result = GRYSwitchesToExpressionsTranspilationPass().run(on: result)
 		result = GRYReturnsInLambdasTranspilationPass().run(on: result)
 		result = GRYInnerTypePrefixesTranspilationPass().run(on: result)
+		result = GRYRenameOperatorsTranspilationPass().run(on: result)
 		result = GRYSelfToThisTranspilationPass().run(on: result)
 		result = GRYRemoveExtensionsTranspilationPass().run(on: result)
 
