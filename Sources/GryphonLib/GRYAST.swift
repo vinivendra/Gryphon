@@ -169,31 +169,20 @@ extension GRYTopLevelNode {
 				GRYPrintableTree("Default Values", defaultValueStrings),
 				GRYPrintableTree("type: \(type)"),
 				GRYPrintableTree("statements", statements ?? []), ]
-		case let .variableDeclaration(
-			identifier: identifier,
-			typeName: typeName,
-			expression: expression,
-			getter: getter,
-			setter: setter,
-			isLet: isLet,
-			isImplicit: isImplicit,
-			isStatic: isStatic,
-			extendsType: extendsType,
-			annotations: annotations):
-
+		case let .variableDeclaration(value: variableDeclaration):
 			return [
 				GRYPrintableTree.initOrNil(
-					"extendsType", [GRYPrintableTree.initOrNil(extendsType)]),
-				isImplicit ? GRYPrintableTree("implicit") : nil,
-				isStatic ? GRYPrintableTree("static") : nil,
-				isLet ? GRYPrintableTree("let") : GRYPrintableTree("var"),
-				GRYPrintableTree(identifier),
-				GRYPrintableTree(typeName),
-				expression,
-				GRYPrintableTree.initOrNil("getter", [getter]),
-				GRYPrintableTree.initOrNil("setter", [setter]),
+					"extendsType", [GRYPrintableTree.initOrNil(variableDeclaration.extendsType)]),
+				variableDeclaration.isImplicit ? GRYPrintableTree("implicit") : nil,
+				variableDeclaration.isStatic ? GRYPrintableTree("static") : nil,
+				variableDeclaration.isLet ? GRYPrintableTree("let") : GRYPrintableTree("var"),
+				GRYPrintableTree(variableDeclaration.identifier),
+				GRYPrintableTree(variableDeclaration.typeName),
+				variableDeclaration.expression,
+				GRYPrintableTree.initOrNil("getter", [variableDeclaration.getter]),
+				GRYPrintableTree.initOrNil("setter", [variableDeclaration.setter]),
 				GRYPrintableTree.initOrNil(
-					"annotations", [GRYPrintableTree.initOrNil(annotations)]), ]
+					"annotations", [GRYPrintableTree.initOrNil(variableDeclaration.annotations)]), ]
 		case let .forEachStatement(
 			collection: collection,
 			variable: variable,

@@ -77,15 +77,9 @@ public class GRYTranspilationPass {
 				defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
 				isStatic: isStatic, isMutating: isMutating, extendsType: extendsType,
 				statements: statements, access: access)
-		case let .variableDeclaration(
-			identifier: identifier, typeName: typeName, expression: expression, getter: getter,
-			setter: setter, isLet: isLet, isImplicit: isImplicit, isStatic: isStatic,
-			extendsType: extendsType, annotations: annotations):
+		case let .variableDeclaration(value: variableDeclaration):
 
-			return replaceVariableDeclaration(
-				identifier: identifier, typeName: typeName, expression: expression, getter: getter,
-				setter: setter, isLet: isLet, isImplicit: isImplicit, isStatic: isStatic,
-				extendsType: extendsType, annotations: annotations)
+			return replaceVariableDeclaration(variableDeclaration)
 		case let .forEachStatement(
 			collection: collection, variable: variable, statements: statements):
 
@@ -198,18 +192,14 @@ public class GRYTranspilationPass {
 			statements: statements.map(replaceTopLevelNodes), access: access), ]
 	}
 
-	func replaceVariableDeclaration(
-		identifier: String, typeName: String, expression: GRYExpression?, getter: GRYTopLevelNode?,
-		setter: GRYTopLevelNode?, isLet: Bool, isImplicit: Bool, isStatic: Bool,
-		extendsType: String?, annotations: String?) -> [GRYTopLevelNode]
+	func replaceVariableDeclaration(_ variableDeclaration: GRYASTVariableDeclaration)
+		-> [GRYTopLevelNode]
 	{
-		return [.variableDeclaration(
-			identifier: identifier, typeName: typeName,
-			expression: expression.map(replaceExpression),
-			getter: getter.map(replaceTopLevelNode)?.first,
-			setter: setter.map(replaceTopLevelNode)?.first,
-			isLet: isLet, isImplicit: isImplicit, isStatic: isStatic, extendsType: extendsType,
-			annotations: annotations), ]
+		var variableDeclaration = variableDeclaration
+		variableDeclaration.expression = variableDeclaration.expression.map(replaceExpression)
+		variableDeclaration.getter = variableDeclaration.getter.map(replaceTopLevelNode)?.first
+		variableDeclaration.setter = variableDeclaration.setter.map(replaceTopLevelNode)?.first
+		return [.variableDeclaration(value: variableDeclaration), ]
 	}
 
 	func replaceForEachStatement(
@@ -585,8 +575,8 @@ public class GRYDeclarationsTranspilationPass: GRYTranspilationPass {
 			return super.replaceFunctionDeclaration(
 				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
 				defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
-				isStatic: isStatic, isMutating: isMutating, extendsType: extendsType, statements: statements,
-				access: access)
+				isStatic: isStatic, isMutating: isMutating, extendsType: extendsType,
+				statements: statements, access: access)
 		}
 	}
 }
@@ -711,12 +701,10 @@ public class GRYRemoveImplicitDeclarationsTranspilationPass: GRYTranspilationPas
 /// Annotations added manually via a call to GRYAnnotations must be sent into their proper place
 /// in the data structure, and the function call must be removed.
 public class GRYAddAnnotationsTranspilationPass: GRYTranspilationPass {
-	override func replaceVariableDeclaration(
-		identifier: String, typeName: String, expression: GRYExpression?, getter: GRYTopLevelNode?,
-		setter: GRYTopLevelNode?, isLet: Bool, isImplicit: Bool, isStatic: Bool,
-		extendsType: String?, annotations: String?) -> [GRYTopLevelNode]
+	override func replaceVariableDeclaration(_ variableDeclaration: GRYASTVariableDeclaration)
+		-> [GRYTopLevelNode]
 	{
-		if let expression = expression,
+		if let expression = variableDeclaration.expression,
 			case let .callExpression(
 				function: function, parameters: parameters, type: _) = expression,
 			case let .declarationReferenceExpression(
@@ -728,16 +716,13 @@ public class GRYAddAnnotationsTranspilationPass: GRYTranspilationPass {
 			case let .literalStringExpression(value: newAnnotations) = annotationsExpression,
 			let newExpression = pairs.last?.expression
 		{
-			return [.variableDeclaration(
-				identifier: identifier, typeName: typeName, expression: newExpression,
-				getter: getter, setter: setter, isLet: isLet, isImplicit: isImplicit,
-				isStatic: isStatic, extendsType: extendsType, annotations: newAnnotations), ]
+			var variableDeclaration = variableDeclaration
+			variableDeclaration.expression = newExpression
+			variableDeclaration.annotations = newAnnotations
+			return [.variableDeclaration(value: variableDeclaration)]
 		}
 
-		return [.variableDeclaration(
-			identifier: identifier, typeName: typeName, expression: expression, getter: getter,
-			setter: setter, isLet: isLet, isImplicit: isImplicit, isStatic: isStatic,
-			extendsType: extendsType, annotations: annotations), ]
+		return [.variableDeclaration(value: variableDeclaration)]
 	}
 }
 
@@ -759,9 +744,8 @@ public class GRYStaticMembersTranspilationPass: GRYTranspilationPass {
 			{
 				staticMembers.append(member)
 			}
-			else if case .variableDeclaration(
-				identifier: _, typeName: _, expression: _, getter: _, setter: _, isLet: _,
-				isImplicit: _, isStatic: true, extendsType: _, annotations: _) = member
+			else if case let .variableDeclaration(value: variableDeclaration) = member,
+				variableDeclaration.isStatic
 			{
 				staticMembers.append(member)
 			}
@@ -817,15 +801,12 @@ public class GRYInnerTypePrefixesTranspilationPass: GRYTranspilationPass {
 		return result
 	}
 
-	override func replaceVariableDeclaration(
-		identifier: String, typeName: String, expression: GRYExpression?, getter: GRYTopLevelNode?,
-		setter: GRYTopLevelNode?, isLet: Bool, isImplicit: Bool, isStatic: Bool,
-		extendsType: String?, annotations: String?) -> [GRYTopLevelNode]
+	override func replaceVariableDeclaration(_ variableDeclaration: GRYASTVariableDeclaration)
+		-> [GRYTopLevelNode]
 	{
-		return super.replaceVariableDeclaration(
-			identifier: identifier, typeName: removePrefixes(typeName), expression: expression,
-			getter: getter, setter: setter, isLet: isLet, isImplicit: isImplicit,
-			isStatic: isStatic, extendsType: extendsType, annotations: annotations)
+		var variableDeclaration = variableDeclaration
+		variableDeclaration.typeName = removePrefixes(variableDeclaration.typeName)
+		return super.replaceVariableDeclaration(variableDeclaration)
 	}
 
 	override func replaceTypeExpression(type: String) -> GRYExpression {
@@ -1079,10 +1060,9 @@ public class GRYSwitchesToExpressionsTranspilationPass: GRYTranspilationPass {
 		while i < (nodes.count - 1) {
 			let currentNode = nodes[i]
 			let nextNode = nodes[i + 1]
-			if case let .variableDeclaration(
-					identifier: declarationIdentifier, typeName: typeName, expression: _, getter: _,
-					setter: _, isLet: isLet, isImplicit: false, isStatic: _, extendsType: nil,
-					annotations: annotations) = currentNode,
+			if case var .variableDeclaration(value: variableDeclaration) = currentNode,
+				variableDeclaration.isImplicit == false,
+				variableDeclaration.extendsType == nil,
 				case let .switchStatement(
 					convertsToExpression: maybeConversion, expression: switchExpression,
 					caseExpressions: caseExpressions, caseStatements: caseStatements) = nextNode,
@@ -1092,14 +1072,16 @@ public class GRYSwitchesToExpressionsTranspilationPass: GRYTranspilationPass {
 
 					identifier: assignmentIdentifier, type: _, isStandardLibrary: false,
 					isImplicit: false) = leftHand,
-				assignmentIdentifier == declarationIdentifier
+				assignmentIdentifier == variableDeclaration.identifier
 			{
-				let variableDeclaration = GRYTopLevelNode.variableDeclaration(
-					identifier: declarationIdentifier, typeName: typeName,
-					expression: .nilLiteralExpression, getter: nil, setter: nil, isLet: isLet,
-					isImplicit: false, isStatic: false, extendsType: nil, annotations: annotations)
+				variableDeclaration.expression = .nilLiteralExpression
+				variableDeclaration.getter = nil
+				variableDeclaration.setter = nil
+				variableDeclaration.isStatic = false
+				let newConversionExpression =
+					GRYTopLevelNode.variableDeclaration(value: variableDeclaration)
 				result.append(.switchStatement(
-					convertsToExpression: variableDeclaration, expression: switchExpression,
+					convertsToExpression: newConversionExpression, expression: switchExpression,
 					caseExpressions: caseExpressions, caseStatements: caseStatements))
 
 				// Skip appending variable declaration and the switch declaration, thus replacing
@@ -1145,15 +1127,8 @@ public class GRYRemoveExtensionsTranspilationPass: GRYTranspilationPass {
 				defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
 				isStatic: isStatic, isMutating: isMutating, extendsType: extendsType,
 				statements: statements, access: access)
-		case let .variableDeclaration(
-			identifier: identifier, typeName: typeName, expression: expression, getter: getter,
-			setter: setter, isLet: isLet, isImplicit: isImplicit, isStatic: isStatic,
-			extendsType: extendsType, annotations: annotations):
-
-			return replaceVariableDeclaration(
-				identifier: identifier, typeName: typeName, expression: expression, getter: getter,
-				setter: setter, isLet: isLet, isImplicit: isImplicit, isStatic: isStatic,
-				extendsType: extendsType, annotations: annotations)
+		case let .variableDeclaration(value: variableDeclaration):
+			return replaceVariableDeclaration(variableDeclaration)
 		default:
 			return [node]
 		}
@@ -1172,15 +1147,12 @@ public class GRYRemoveExtensionsTranspilationPass: GRYTranspilationPass {
 			statements: statements, access: access), ]
 	}
 
-	override func replaceVariableDeclaration(
-		identifier: String, typeName: String, expression: GRYExpression?, getter: GRYTopLevelNode?,
-		setter: GRYTopLevelNode?, isLet: Bool, isImplicit: Bool, isStatic: Bool,
-		extendsType: String?, annotations: String?) -> [GRYTopLevelNode]
+	override func replaceVariableDeclaration(_ variableDeclaration: GRYASTVariableDeclaration)
+		-> [GRYTopLevelNode]
 	{
-		return [GRYTopLevelNode.variableDeclaration(
-			identifier: identifier, typeName: typeName, expression: expression, getter: getter,
-			setter: setter, isLet: isLet, isImplicit: isImplicit, isStatic: isStatic,
-			extendsType: self.extendingType, annotations: annotations), ]
+		var variableDeclaration = variableDeclaration
+		variableDeclaration.extendsType = self.extendingType
+		return [GRYTopLevelNode.variableDeclaration(value: variableDeclaration)]
 	}
 }
 
@@ -1220,15 +1192,14 @@ public class GRYRaiseMutableValueTypesWarningsTranspilationPass: GRYTranspilatio
 	{
 		for member in members {
 			// TODO: Computed variables are OK
-			if case let .variableDeclaration(
-				identifier: identifier, typeName: _, expression: _, getter: _, setter: _,
-				isLet: isLet, isImplicit: false, isStatic: false, extendsType: _,
-				annotations: _) = member
+			if case let .variableDeclaration(value: variableDeclaration) = member,
+				!variableDeclaration.isImplicit,
+				!variableDeclaration.isStatic
 			{
-				if !isLet {
+				if !variableDeclaration.isLet {
 					GRYCompiler.handleWarning(
 						"No support for mutable variables in value types: found variable " +
-						"\(identifier) inside struct \(name)")
+						"\(variableDeclaration.identifier) inside struct \(name)")
 				}
 			}
 			else if case let .functionDeclaration(
@@ -1285,16 +1256,15 @@ public class GRYRearrangeIfLetsTranspilationPass: GRYTranspilationPass {
 		var remainingDeclarations = [GRYTopLevelNode]()
 
 		for declaration in declarations {
-			if case let .variableDeclaration(
-				identifier: declarationIdentifier, typeName: typeName,
-				expression: declarationExpression, getter: _, setter: _, isLet: _, isImplicit: _,
-				isStatic: _, extendsType: _, annotations: _) = declaration
+			if case let .variableDeclaration(value: variableDeclaration) = declaration
 			{
 				// If it's a shadowing identifier there's no need to declare it in Kotlin
 				// (i.e. `if let x = x { }`)
-				if let declarationExpression = declarationExpression,
+				if let declarationExpression = variableDeclaration.expression,
 					case .declarationReferenceExpression(
-						identifier: declarationIdentifier, type: _, isStandardLibrary: _,
+						identifier: variableDeclaration.identifier,
+						type: _,
+						isStandardLibrary: _,
 						isImplicit: _) = declarationExpression
 				{
 				}
@@ -1305,7 +1275,8 @@ public class GRYRearrangeIfLetsTranspilationPass: GRYTranspilationPass {
 				letConditions.append(
 					.binaryOperatorExpression(
 						leftExpression: .declarationReferenceExpression(
-							identifier: declarationIdentifier, type: typeName,
+							identifier: variableDeclaration.identifier,
+							type: variableDeclaration.typeName,
 							isStandardLibrary: false, isImplicit: false),
 						rightExpression: .nilLiteralExpression, operatorSymbol: "!=",
 						type: "Boolean"))

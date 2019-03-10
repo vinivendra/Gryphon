@@ -39,10 +39,7 @@ astNodes = [
 		['isStatic', 'Bool'], ['isMutating', 'Bool'], ['extendsType', 'String?'],
 		['statements', '[GRYTopLevelNode]?'], ['access', 'String?']]],
 	['variableDeclaration',
-		[['identifier', 'String'], ['typeName', 'String'], ['expression', 'GRYExpression?'],
-		['getter', 'GRYTopLevelNode?'], ['setter', 'GRYTopLevelNode?'], ['isLet', 'Bool'],
-		['isImplicit', 'Bool'], ['isStatic', 'Bool'], ['extendsType', 'String?'],
-		['annotations', 'String?']]],
+		[['value', 'GRYASTVariableDeclaration']]],
 	['forEachStatement',
 		[['collection', 'GRYExpression'], ['variable', 'GRYExpression'],
 		['statements', '[GRYTopLevelNode]']]],
@@ -278,3 +275,54 @@ public indirect enum GRYExpression: Equatable, GRYPrintableAsTree {
 		return result
 	}
 }
+
+%{
+astStructs = [
+	['GRYASTVariableDeclaration',
+		[['identifier', 'String'], ['typeName', 'String'], ['expression', 'GRYExpression?'],
+		['getter', 'GRYTopLevelNode?'], ['setter', 'GRYTopLevelNode?'], ['isLet', 'Bool'],
+		['isImplicit', 'Bool'], ['isStatic', 'Bool'], ['extendsType', 'String?'],
+		['annotations', 'String?']]],
+	]
+}%
+%for astStruct in astStructs:
+%	name = astStruct[0]
+%	pairs = astStruct[1]
+public struct ${name}: Equatable {
+%	for pair in pairs:
+	var ${pair[0]}: ${pair[1]}
+%	end
+
+	func encode(into encoder: GRYEncoder) throws {
+		encoder.startNewObject(named: "${name}")
+%	for pair in pairs:
+		try ${pair[0]}.encode(into: encoder)
+%	end
+		encoder.endObject()
+	}
+
+	static func decode(from decoder: GRYDecoder) throws -> ${name} {
+		try decoder.readOpeningParenthesis()
+		let name = decoder.readDoubleQuotedString()
+		guard name == "${name}" else {
+			throw GRYDecodingError.unexpectedContent(
+				decoder: decoder,
+				errorMessage: "Attempted to decode a \(name) as a '${name}'.")
+		}
+
+%		for pair in pairs:
+		let ${pair[0]} = try ${pair[1]}.decode(from: decoder)
+%		end
+
+		try decoder.readClosingParenthesis()
+
+		return ${name}(
+%		parameters = []
+%		for pair in pairs:
+%			parameters.append(pair[0] + ": " + pair[0])
+%		end
+%		parametersString = ",\n\t\t\t".join(parameters)
+			${parametersString})
+	}
+}
+%end

@@ -898,7 +898,7 @@ public class GRYSwift4Translator {
 
 				let expression = try translate(expression: lastCondition)
 
-				declarationsResult.append(.variableDeclaration(
+				declarationsResult.append(.variableDeclaration(value: GRYASTVariableDeclaration(
 					identifier: name,
 					typeName: type,
 					expression: expression,
@@ -907,7 +907,7 @@ public class GRYSwift4Translator {
 					isImplicit: false,
 					isStatic: false,
 					extendsType: nil,
-					annotations: nil))
+					annotations: nil)))
 			}
 			else {
 				conditionsResult.append(try translate(expression: condition))
@@ -1147,7 +1147,7 @@ public class GRYSwift4Translator {
 			}
 		}
 
-		return .variableDeclaration(
+		return .variableDeclaration(value: GRYASTVariableDeclaration(
 			identifier: identifier,
 			typeName: type,
 			expression: expression,
@@ -1157,7 +1157,7 @@ public class GRYSwift4Translator {
 			isImplicit: isImplicit,
 			isStatic: isStatic,
 			extendsType: nil,
-			annotations: nil)
+			annotations: nil))
 	}
 
 	internal func translate(callExpression: GRYSwiftAST) throws -> GRYExpression {

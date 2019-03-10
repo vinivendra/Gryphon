@@ -163,15 +163,10 @@ public class GRYKotlinTranslator {
 		case let .throwStatement(expression: expression):
 			result = try translateThrowStatement(
 				expression: expression, withIndentation: indentation)
-		case let .variableDeclaration(
-			identifier: identifier, typeName: typeName, expression: expression, getter: getter,
-			setter: setter, isLet: isLet, isImplicit: isImplicit, isStatic: isStatic,
-			extendsType: extendsType, annotations: annotations):
+		case let .variableDeclaration(value: variableDeclaration):
 
 			result = try translateVariableDeclaration(
-				identifier: identifier, typeName: typeName, expression: expression, getter: getter,
-				setter: setter, isLet: isLet, isImplicit: isImplicit, isStatic: isStatic,
-				extendsType: extendsType, annotations: annotations, withIndentation: indentation)
+				variableDeclaration: variableDeclaration, withIndentation: indentation)
 		case let .assignmentStatement(leftHand: leftHand, rightHand: rightHand):
 			result = try translateAssignmentStatement(
 				leftHand: leftHand, rightHand: rightHand, withIndentation: indentation)
@@ -637,15 +632,15 @@ public class GRYKotlinTranslator {
 					try translateExpression(leftHand, withIndentation: indentation)
 				result = "\(indentation)\(translatedLeftHand) = when ("
 			}
-			else if case let .variableDeclaration(
-				identifier: identifier, typeName: typeName, expression: _, getter: _, setter: _,
-				isLet: isLet, isImplicit: _, isStatic: _, extendsType: _,
-				annotations: annotations) = convertsToExpression
+			else if case let .variableDeclaration(value: variableDeclaration) = convertsToExpression
 			{
+				let newVariableDeclaration = GRYASTVariableDeclaration(
+					identifier: variableDeclaration.identifier,
+					typeName: variableDeclaration.typeName, expression: .nilLiteralExpression,
+					getter: nil, setter: nil, isLet: variableDeclaration.isLet, isImplicit: false,
+					isStatic: false, extendsType: nil, annotations: variableDeclaration.annotations)
 				let translatedVariableDeclaration = try translateVariableDeclaration(
-					identifier: identifier, typeName: typeName, expression: .nilLiteralExpression,
-					getter: nil, setter: nil, isLet: isLet, isImplicit: false, isStatic: false,
-					extendsType: nil, annotations: annotations, withIndentation: indentation)
+					variableDeclaration: newVariableDeclaration, withIndentation: indentation)
 				let cleanTranslation = translatedVariableDeclaration.dropLast("null\n".count)
 				result = "\(cleanTranslation)when ("
 			}
@@ -727,30 +722,28 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateVariableDeclaration(
-		identifier: String, typeName: String, expression: GRYExpression?, getter: GRYTopLevelNode?,
-		setter: GRYTopLevelNode?, isLet: Bool, isImplicit: Bool, isStatic: Bool,
-		extendsType: String?, annotations: String?, withIndentation indentation: String)
+		variableDeclaration: GRYASTVariableDeclaration, withIndentation indentation: String)
 		throws -> String
 	{
-		guard !isImplicit else {
+		guard !variableDeclaration.isImplicit else {
 			return ""
 		}
 
 		var result = indentation
 
-		if let annotations = annotations {
+		if let annotations = variableDeclaration.annotations {
 			result += "\(annotations) "
 		}
 
 		var keyword: String
-		if getter != nil && setter != nil {
+		if variableDeclaration.getter != nil && variableDeclaration.setter != nil {
 			keyword = "var"
 		}
-		else if getter != nil && setter == nil {
+		else if variableDeclaration.getter != nil && variableDeclaration.setter == nil {
 			keyword = "val"
 		}
 		else {
-			if isLet {
+			if variableDeclaration.isLet {
 				keyword = "val"
 			}
 			else {
@@ -761,7 +754,7 @@ public class GRYKotlinTranslator {
 		result += "\(keyword) "
 
 		let extensionPrefix: String
-		if let extendsType = extendsType {
+		if let extendsType = variableDeclaration.extendsType {
 			let translatedExtendedType = translateType(extendsType)
 			extensionPrefix = "\(translatedExtendedType)."
 		}
@@ -769,12 +762,12 @@ public class GRYKotlinTranslator {
 			extensionPrefix = ""
 		}
 
-		result += "\(extensionPrefix)\(identifier): "
+		result += "\(extensionPrefix)\(variableDeclaration.identifier): "
 
-		let translatedType = translateType(typeName)
+		let translatedType = translateType(variableDeclaration.typeName)
 		result += translatedType
 
-		if let expression = expression {
+		if let expression = variableDeclaration.expression {
 			let expressionTranslation =
 				try translateExpression(expression, withIndentation: indentation)
 			result += " = " + expressionTranslation
@@ -784,7 +777,7 @@ public class GRYKotlinTranslator {
 
 		let indentation1 = increaseIndentation(indentation)
 		let indentation2 = increaseIndentation(indentation1)
-		if let getter = getter {
+		if let getter = variableDeclaration.getter {
 			guard case let .functionDeclaration(
 				prefix: _, parameterNames: _, parameterTypes: _, defaultValues: _, returnType: _,
 				isImplicit: _, isStatic: _, isMutating: _, extendsType: _, statements: statements,
@@ -792,10 +785,7 @@ public class GRYKotlinTranslator {
 			{
 				return try unexpectedASTStructureError(
 					"Expected the getter to be a .functionDeclaration",
-					AST: .variableDeclaration(
-						identifier: identifier, typeName: typeName, expression: expression,
-						getter: getter, setter: setter, isLet: isLet, isImplicit: isImplicit,
-						isStatic: isStatic, extendsType: extendsType, annotations: annotations))
+					AST: .variableDeclaration(value: variableDeclaration))
 			}
 
 			if let statements = statements {
@@ -806,7 +796,7 @@ public class GRYKotlinTranslator {
 			}
 		}
 
-		if let setter = setter {
+		if let setter = variableDeclaration.setter {
 			guard case let .functionDeclaration(
 				prefix: _, parameterNames: _, parameterTypes: _, defaultValues: _, returnType: _,
 				isImplicit: _, isStatic: _, isMutating: _, extendsType: _, statements: statements,
@@ -814,10 +804,7 @@ public class GRYKotlinTranslator {
 			{
 				return try unexpectedASTStructureError(
 					"Expected the setter to be a .functionDeclaration",
-					AST: .variableDeclaration(
-						identifier: identifier, typeName: typeName, expression: expression,
-						getter: getter, setter: setter, isLet: isLet, isImplicit: isImplicit,
-						isStatic: isStatic, extendsType: extendsType, annotations: annotations))
+					AST: .variableDeclaration(value: variableDeclaration))
 			}
 
 			if let statements = statements {
