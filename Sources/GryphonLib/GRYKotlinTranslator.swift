@@ -607,7 +607,8 @@ public class GRYKotlinTranslator {
 
 					// If it's a range
 					if case let .templateExpression(pattern: pattern, matches: _) = leftExpression,
-						pattern.contains("..") || pattern.contains("until")
+						pattern.contains("..") || pattern.contains("until") ||
+							pattern.contains("rangeTo")
 					{
 						result += "\(increasedIndentation)in \(translatedExpression) -> "
 					}

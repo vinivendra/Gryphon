@@ -84,7 +84,4 @@ _int1..<_int2
 
 // Double
 _double1..._double2
-"_double1.._double2"
-
-_double1..<_double2
-"_double1 until _double2"
+"(_double1).rangeTo(_double2)"
