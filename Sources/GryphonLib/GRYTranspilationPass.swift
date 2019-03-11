@@ -84,12 +84,10 @@ public class GRYTranspilationPass {
 				conditions: conditions, declarations: declarations, statements: statements,
 				elseStatement: elseStatement, isGuard: isGuard)
 		case let .switchStatement(
-			convertsToExpression: convertsToExpression, expression: expression,
-			caseExpressions: caseExpressions, caseStatements: caseStatements):
+			convertsToExpression: convertsToExpression, expression: expression, cases: cases):
 
 			return replaceSwitchStatement(
-				convertsToExpression: convertsToExpression, expression: expression,
-				caseExpressions: caseExpressions, caseStatements: caseStatements)
+				convertsToExpression: convertsToExpression, expression: expression, cases: cases)
 		case let .throwStatement(expression: expression):
 			return replaceThrowStatement(expression: expression)
 		case let .returnStatement(expression: expression):
@@ -213,7 +211,7 @@ public class GRYTranspilationPass {
 
 	func replaceSwitchStatement(
 		convertsToExpression: GRYTopLevelNode?, expression: GRYExpression,
-		caseExpressions: [GRYExpression?], caseStatements: [[GRYTopLevelNode]]) -> [GRYTopLevelNode]
+		cases: [GRYASTSwitchCase]) -> [GRYTopLevelNode]
 	{
 		let replacedConvertsToExpression: GRYTopLevelNode?
 		if let convertsToExpression = convertsToExpression,
@@ -225,20 +223,18 @@ public class GRYTranspilationPass {
 			replacedConvertsToExpression = nil
 		}
 
-		let replacedCaseExpressions = caseExpressions.map
-		{ (expression: GRYExpression?) -> GRYExpression? in
-			if let expression = expression {
-				return replaceExpression(expression)
-			}
-			else {
-				return nil
-			}
+		let replacedCases = cases.map
+		{ (switchCase: GRYASTSwitchCase) -> GRYASTSwitchCase in
+			let newExpression = (switchCase.expression != nil) ?
+				replaceExpression(switchCase.expression!) :
+				nil
+			return GRYASTSwitchCase(
+				expression: newExpression, statements: replaceTopLevelNodes(switchCase.statements))
 		}
 
 		return [.switchStatement(
 			convertsToExpression: replacedConvertsToExpression, expression: expression,
-			caseExpressions: replacedCaseExpressions,
-			caseStatements: caseStatements.map(replaceTopLevelNodes)), ]
+			cases: replacedCases), ]
 	}
 
 	func replaceThrowStatement(expression: GRYExpression) -> [GRYTopLevelNode] {
@@ -948,13 +944,13 @@ public class GRYSwitchesToExpressionsTranspilationPass: GRYTranspilationPass {
 	/// Detect switches whose bodies all end in the same returns or assignments
 	override func replaceSwitchStatement(
 		convertsToExpression: GRYTopLevelNode?, expression: GRYExpression,
-		caseExpressions: [GRYExpression?], caseStatements: [[GRYTopLevelNode]]) -> [GRYTopLevelNode]
+		cases: [GRYASTSwitchCase]) -> [GRYTopLevelNode]
 	{
 		var hasAllReturnCases = true
 		var hasAllAssignmentCases = true
 		var assignmentExpression: GRYExpression?
 
-		for statements in caseStatements {
+		for statements in cases.map({ $0.statements }) {
 			// Swift switches must have at least one statement
 			let lastStatement = statements.last!
 			if case let .returnStatement(expression: expression) = lastStatement,
@@ -975,46 +971,47 @@ public class GRYSwitchesToExpressionsTranspilationPass: GRYTranspilationPass {
 		}
 
 		if hasAllReturnCases {
-			var newCaseStatements = [[GRYTopLevelNode]]()
-			for statements in caseStatements {
+			var newCases = [GRYASTSwitchCase]()
+			for switchCase in cases {
 				// Swift switches must have at least one statement
-				let lastStatement = statements.last!
+				let lastStatement = switchCase.statements.last!
 				if case let .returnStatement(expression: maybeExpression) = lastStatement,
 					let returnExpression = maybeExpression
 				{
-					var newStatements = Array(statements.dropLast())
+					var newStatements = Array(switchCase.statements.dropLast())
 					newStatements.append(.expression(expression: returnExpression))
-					newCaseStatements.append(newStatements)
+					newCases.append(GRYASTSwitchCase(
+						expression: switchCase.expression, statements: newStatements))
 				}
 			}
 			let conversionExpression =
 				GRYTopLevelNode.returnStatement(expression: .nilLiteralExpression)
 			return [.switchStatement(
 				convertsToExpression: conversionExpression, expression: expression,
-				caseExpressions: caseExpressions, caseStatements: newCaseStatements), ]
+				cases: newCases), ]
 		}
 		else if hasAllAssignmentCases, let assignmentExpression = assignmentExpression {
-			var newCaseStatements = [[GRYTopLevelNode]]()
-			for statements in caseStatements {
+			var newCases = [GRYASTSwitchCase]()
+			for switchCase in cases {
 				// Swift switches must have at least one statement
-				let lastStatement = statements.last!
+				let lastStatement = switchCase.statements.last!
 				if case let .assignmentStatement(leftHand: _, rightHand: rightHand) = lastStatement
 				{
-					var newStatements = Array(statements.dropLast())
+					var newStatements = Array(switchCase.statements.dropLast())
 					newStatements.append(.expression(expression: rightHand))
-					newCaseStatements.append(newStatements)
+					newCases.append(GRYASTSwitchCase(
+						expression: switchCase.expression, statements: newStatements))
 				}
 			}
 			let conversionExpression = GRYTopLevelNode.assignmentStatement(
 				leftHand: assignmentExpression, rightHand: .nilLiteralExpression)
 			return [.switchStatement(
 				convertsToExpression: conversionExpression, expression: expression,
-				caseExpressions: caseExpressions, caseStatements: newCaseStatements), ]
+				cases: newCases), ]
 		}
 		else {
 			return super.replaceSwitchStatement(
-				convertsToExpression: nil, expression: expression, caseExpressions: caseExpressions,
-				caseStatements: caseStatements)
+				convertsToExpression: nil, expression: expression, cases: cases)
 		}
 	}
 
@@ -1033,7 +1030,7 @@ public class GRYSwitchesToExpressionsTranspilationPass: GRYTranspilationPass {
 				variableDeclaration.extendsType == nil,
 				case let .switchStatement(
 					convertsToExpression: maybeConversion, expression: switchExpression,
-					caseExpressions: caseExpressions, caseStatements: caseStatements) = nextNode,
+					cases: cases) = nextNode,
 				let switchConversion = maybeConversion,
 				case let .assignmentStatement(leftHand: leftHand, rightHand: _) = switchConversion,
 				case let .declarationReferenceExpression(
@@ -1050,7 +1047,7 @@ public class GRYSwitchesToExpressionsTranspilationPass: GRYTranspilationPass {
 					GRYTopLevelNode.variableDeclaration(value: variableDeclaration)
 				result.append(.switchStatement(
 					convertsToExpression: newConversionExpression, expression: switchExpression,
-					caseExpressions: caseExpressions, caseStatements: caseStatements))
+					cases: cases))
 
 				// Skip appending variable declaration and the switch declaration, thus replacing
 				// both with the new switch declaration

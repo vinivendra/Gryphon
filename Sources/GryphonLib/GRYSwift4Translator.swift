@@ -797,18 +797,18 @@ public class GRYSwift4Translator {
 
 		let translatedExpression = try translate(expression: expression)
 
-		var caseExpressions = [GRYExpression?]()
-		var caseStatements = [[GRYTopLevelNode]]()
+		var cases = [GRYASTSwitchCase]()
 		let caseSubtrees = switchStatement.subtrees.dropFirst()
 		for caseSubtree in caseSubtrees {
+			let caseExpression: GRYExpression?
 			if let caseLabelItem = caseSubtree.subtree(named: "Case Label Item"),
 				let expression = caseLabelItem.subtrees.first?.subtrees.first
 			{
 				let translateExpression = try translate(expression: expression)
-				caseExpressions.append(translateExpression)
+				caseExpression = translateExpression
 			}
 			else {
-				caseExpressions.append(nil)
+				caseExpression = nil
 			}
 
 			guard let statements = caseSubtree.subtree(named: "Brace Statement") else {
@@ -818,12 +818,13 @@ public class GRYSwift4Translator {
 			}
 
 			let translatedStatements = try translate(subtrees: statements.subtrees.array)
-			caseStatements.append(translatedStatements)
+
+			cases.append(GRYASTSwitchCase(
+				expression: caseExpression, statements: translatedStatements))
 		}
 
 		return .switchStatement(
-			convertsToExpression: nil, expression: translatedExpression,
-			caseExpressions: caseExpressions, caseStatements: caseStatements)
+			convertsToExpression: nil, expression: translatedExpression, cases: cases)
 	}
 
 	internal func translateDeclarationsAndConditions(

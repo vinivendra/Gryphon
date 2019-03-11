@@ -23,7 +23,7 @@ arrayTypes = [
 	'String', 'Int', 'Double', 'Bool', 'GRYTopLevelNode', 'GRYExpression',
 	'GRYExpression.TuplePair',
 	'GRYExpression?',
-	'[GRYTopLevelNode]'
+	'GRYASTSwitchCase'
 	]
 dictionaryTypes = [
 	'String', 'Int', 'Double', 'Bool', 'GRYTopLevelNode', 'GRYExpression',

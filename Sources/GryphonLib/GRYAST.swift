@@ -197,12 +197,12 @@ extension GRYTopLevelNode {
 				GRYPrintableTree.initOrNil("else", [elseStatement]), ]
 		case let .switchStatement(
 			convertsToExpression: convertsToExpression, expression: expression,
-			caseExpressions: caseExpressions, caseStatements: caseStatements):
+			cases: cases):
 
-			let caseItems = zip(caseExpressions, caseStatements).map {
+			let caseItems = cases.map {
 				GRYPrintableTree("case item", [
-					GRYPrintableTree("expression", [$0]),
-					GRYPrintableTree("statements", $1),
+					GRYPrintableTree("expression", [$0.expression]),
+					GRYPrintableTree("statements", $0.statements),
 					])
 			}
 

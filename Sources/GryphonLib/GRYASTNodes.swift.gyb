@@ -46,7 +46,7 @@ astNodes = [
 		['isGuard', 'Bool']]],
 	['switchStatement',
 		[['convertsToExpression', 'GRYTopLevelNode?'], ['expression', 'GRYExpression'],
-		['caseExpressions', '[GRYExpression?]'], ['caseStatements', '[[GRYTopLevelNode]]']]],
+		['cases', '[GRYASTSwitchCase]']]],
 	['throwStatement', [['expression', 'GRYExpression']]],
 	['returnStatement', [['expression', 'GRYExpression?']]],
 	['assignmentStatement', [['leftHand', 'GRYExpression'], ['rightHand', 'GRYExpression']]],
@@ -284,7 +284,9 @@ astStructs = [
 		[['prefix', 'String'], ['parameterNames', '[String]'], ['parameterTypes', '[String]'],
 		['defaultValues', '[GRYExpression?]'], ['returnType', 'String'], ['isImplicit', 'Bool'],
 		['isStatic', 'Bool'], ['isMutating', 'Bool'], ['extendsType', 'String?'],
-		['statements', '[GRYTopLevelNode]?'], ['access', 'String?']]]
+		['statements', '[GRYTopLevelNode]?'], ['access', 'String?']]],
+	['GRYASTSwitchCase',
+		[['expression', 'GRYExpression?'], ['statements', '[GRYTopLevelNode]']]],
 	]
 }%
 %for astStruct in astStructs:
