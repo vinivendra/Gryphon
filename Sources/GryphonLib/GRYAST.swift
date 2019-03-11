@@ -109,8 +109,8 @@ extension GRYTopLevelNode {
 
 			let elementTrees = elements.map {
 				GRYPrintableTree(".\($0.name)", [
-					GRYPrintableTree("values", $0.associatedValueLabels),
-					GRYPrintableTree("types", $0.associatedValueTypes), ])
+					GRYPrintableTree(
+						"values", $0.associatedValues.map { "\($0.label): \($0.type)" }), ])
 			}
 
 			return [
@@ -132,16 +132,16 @@ extension GRYTopLevelNode {
 		case let .functionDeclaration(value: functionDeclaration):
 
 			let name = functionDeclaration.prefix + "(" +
-				functionDeclaration.parameterNames.map { $0 + ":" }.joined(separator: ", ") + ")"
-			let type = "(" + functionDeclaration.parameterTypes.joined(separator: ", ") + ") -> " +
-				functionDeclaration.returnType
+				functionDeclaration.parameters.map { $0.label + ":" }.joined(separator: ", ") + ")"
+			let type = "(" + functionDeclaration.parameters.map { $0.type }
+				.joined(separator: ", ") + ") -> " + functionDeclaration.returnType
 
 			let defaultValueStrings: [GRYPrintableAsTree]
-			if functionDeclaration.defaultValues.contains(where: { $0 != nil }) {
-				defaultValueStrings = functionDeclaration.defaultValues.map
-					{ (expression: GRYExpression?) -> GRYPrintableAsTree in
-						expression ?? GRYPrintableTree("_")
-				}
+			if functionDeclaration.parameters.contains(where: { $0.value != nil }) {
+				defaultValueStrings = functionDeclaration.parameters.map
+					{ (parameter: GRYASTLabeledTypeWithValue) -> GRYPrintableAsTree in
+						parameter.value ?? GRYPrintableTree("_")
+					}
 			}
 			else {
 				defaultValueStrings = []
@@ -264,9 +264,7 @@ extension GRYExpression {
 			return type
 		case let .callExpression(function: _, parameters: _, type: type):
 			return type
-		case let .closureExpression(parameterNames:
-			_, parameterTypes: _, statements: _, type: type):
-
+		case let .closureExpression(parameters: _, statements: _, type: type):
 			return type
 		case .literalIntExpression:
 			return "Int"
@@ -379,11 +377,8 @@ extension GRYExpression {
 				GRYPrintableTree("type \(type)"),
 				GRYPrintableTree("function", [function]),
 				GRYPrintableTree("parameters", [parameters]), ]
-		case let .closureExpression(
-			parameterNames: parameterNames, parameterTypes: _, statements: statements, type: type):
-
-			let parameters = "(" + parameterNames.map { $0 + ":" }.joined(separator: ", ") + ")"
-
+		case let .closureExpression(parameters: parameters, statements: statements, type: type):
+			let parameters = "(" + parameters.map { $0.label + ":" }.joined(separator: ", ") + ")"
 			return [
 				GRYPrintableTree(type),
 				GRYPrintableTree(parameters),
@@ -406,27 +401,10 @@ extension GRYExpression {
 			return [GRYPrintableTree(expressions)]
 		case let .tupleExpression(pairs: pairs):
 			return ArrayReference<GRYPrintableAsTree?>(array: pairs.map {
-				GRYPrintableTree(($0.name ?? "_") + ":", [$0.expression])
+				GRYPrintableTree(($0.label ?? "_") + ":", [$0.expression])
 			})
 		case .error:
 			return []
-		}
-	}
-
-	//
-	public struct TuplePair: Equatable {
-		let name: String?
-		let expression: GRYExpression
-
-		func encode(into encoder: GRYEncoder) throws {
-			try name.encode(into: encoder)
-			try expression.encode(into: encoder)
-		}
-
-		static func decode(from decoder: GRYDecoder) throws -> TuplePair {
-			let name = try String?.decode(from: decoder)
-			let expression = try GRYExpression.decode(from: decoder)
-			return TuplePair(name: name, expression: expression)
 		}
 	}
 }

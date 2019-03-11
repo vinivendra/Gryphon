@@ -13,21 +13,23 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+// TODO: Try to do some of these automatically, especially for internal types (that can conform to
+// GRYCodable)
 %{
 optionalTypes = [
 	'String', 'Int', 'Double', 'Bool', 'GRYTopLevelNode', 'GRYExpression',
-	'GRYExpression.TuplePair',
+	'GRYASTLabeledExpression',
 	'[GRYTopLevelNode]',
 	]
 arrayTypes = [
 	'String', 'Int', 'Double', 'Bool', 'GRYTopLevelNode', 'GRYExpression',
-	'GRYExpression.TuplePair',
+	'GRYASTLabeledExpression',
 	'GRYExpression?',
-	'GRYASTSwitchCase', 'GRYASTEnumElement',
+	'GRYASTSwitchCase', 'GRYASTEnumElement', 'GRYASTLabeledType', 'GRYASTLabeledTypeWithValue',
 	]
 dictionaryTypes = [
 	'String', 'Int', 'Double', 'Bool', 'GRYTopLevelNode', 'GRYExpression',
-	'GRYExpression.TuplePair',
+	'GRYASTLabeledExpression',
 	]
 }%
 

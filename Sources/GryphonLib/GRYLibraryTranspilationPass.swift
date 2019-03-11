@@ -251,7 +251,7 @@ extension GRYExpression {
 				var result = true
 				for (leftPair, rightPair) in zip(leftPairs, rightPairs) {
 					result = result && leftPair.expression.matches(rightPair.expression, &matches)
-						&& leftPair.name == rightPair.name
+						&& leftPair.label == rightPair.label
 				}
 				return result
 			default:

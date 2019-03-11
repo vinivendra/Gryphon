@@ -295,13 +295,13 @@ public class GRYKotlinTranslator {
 	{
 		let capitalizedElementName = element.name.capitalizedAsCamelCase
 
-		if element.associatedValueLabels.isEmpty {
+		if element.associatedValues.isEmpty {
 			return "\(indentation)class \(capitalizedElementName): \(enumName)()\n"
 		}
 		else {
 			let associatedValuesString =
-				zip(element.associatedValueLabels, element.associatedValueTypes)
-				.map { "val \($0): \($1)" }.joined(separator: ", ")
+				element.associatedValues
+					.map { "val \($0.label): \($0.type)" }.joined(separator: ", ")
 			return "\(indentation)class \(capitalizedElementName)(\(associatedValuesString)): " +
 				"\(enumName)()\n"
 		}
@@ -450,20 +450,17 @@ public class GRYKotlinTranslator {
 			returnString = ""
 		}
 
-		let translatedParameterTypes = functionDeclaration.parameterTypes.map(translateType)
-		let valueStrings = try functionDeclaration.defaultValues
-			.map { (defaultValue: GRYExpression?) -> String in
-				if let defaultValue = defaultValue {
-					return try " = " + translateExpression(
-						defaultValue, withIndentation: indentation)
+		let parameterStrings = try functionDeclaration.parameters.map
+			{ (parameter: GRYASTLabeledTypeWithValue) -> String in
+				let labelAndTypeString = parameter.label + ": " + translateType(parameter.type)
+				if let defaultValue = parameter.value {
+					return try labelAndTypeString + " = "
+						+ translateExpression(defaultValue, withIndentation: indentation)
 				}
 				else {
-					return ""
+					return labelAndTypeString
 				}
 			}
-		let parameters = zip(functionDeclaration.parameterNames, translatedParameterTypes)
-			.map { $0.0 + ": " + $0.1 }
-		let parameterStrings = zip(parameters, valueStrings).map { $0.0 + $0.1 }
 
 		if !shouldAddNewlines {
 			result += parameterStrings.joined(separator: ", ") + ")" + returnString + " {\n"
@@ -815,13 +812,10 @@ public class GRYKotlinTranslator {
 			return try translateCallExpression(
 				function: function, parameters: parameters, type: type,
 				withIndentation: indentation)
-		case let .closureExpression(
-			parameterNames: parameterNames, parameterTypes: parameterTypes, statements: statements,
-			type: type):
-
+		case let .closureExpression(parameters: parameters, statements: statements, type: type):
 			return try translateClosureExpression(
-				parameterNames: parameterNames, parameterTypes: parameterTypes,
-				statements: statements, type: type, withIndentation: indentation)
+				parameters: parameters, statements: statements, type: type,
+				withIndentation: indentation)
 		case let .declarationReferenceExpression(
 			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
 			isImplicit: isImplicit):
@@ -992,12 +986,12 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateClosureExpression(
-		parameterNames: [String], parameterTypes: [String], statements: [GRYTopLevelNode],
-		type: String, withIndentation indentation: String) throws -> String
+		parameters: [GRYASTLabeledType], statements: [GRYTopLevelNode], type: String,
+		withIndentation indentation: String) throws -> String
 	{
 		var result = "{"
 
-		let parametersString = parameterNames.joined(separator: ", ")
+		let parametersString = parameters.map{ $0.label }.joined(separator: ", ")
 
 		if !parametersString.isEmpty {
 			result += " " + parametersString + " ->"
@@ -1045,7 +1039,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateTupleExpression(
-		pairs: [GRYExpression.TuplePair], withIndentation indentation: String,
+		pairs: [GRYASTLabeledExpression], withIndentation indentation: String,
 		shouldAddNewlines: Bool = false) throws -> String
 	{
 		guard !pairs.isEmpty else {
@@ -1056,12 +1050,12 @@ public class GRYKotlinTranslator {
 		let expressionIndentation =
 			shouldAddNewlines ? increaseIndentation(indentation) : indentation
 
-		let translations = try pairs.map { (pair: GRYExpression.TuplePair) -> String in
+		let translations = try pairs.map { (pair: GRYASTLabeledExpression) -> String in
 			let expression =
 				try translateExpression(pair.expression, withIndentation: expressionIndentation)
 
-			if let name = pair.name {
-				return "\(name) = \(expression)"
+			if let label = pair.label {
+				return "\(label) = \(expression)"
 			}
 			else {
 				return expression

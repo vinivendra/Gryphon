@@ -410,8 +410,7 @@ public class GRYSwift4Translator {
 			}
 
 			if !elementName.contains("(") {
-				elements.append(GRYASTEnumElement(
-					name: elementName, associatedValueLabels: [], associatedValueTypes: []))
+				elements.append(GRYASTEnumElement(name: elementName, associatedValues: []))
 			}
 			else {
 				let parenthesisIndex = elementName.firstIndex(of: "(")!
@@ -430,9 +429,9 @@ public class GRYSwift4Translator {
 				let valueTypesString = String(valuesComponent.dropFirst().dropLast())
 				let valueTypes = valueTypesString.split(withStringSeparator: ", ")
 
-				elements.append(GRYASTEnumElement(
-					name: prefix, associatedValueLabels: valueLabels,
-					associatedValueTypes: valueTypes))
+				let associatedValues = zip(valueLabels, valueTypes).map(GRYASTLabeledType.init)
+
+				elements.append(GRYASTEnumElement(name: prefix, associatedValues: associatedValues))
 			}
 		}
 
@@ -969,11 +968,8 @@ public class GRYSwift4Translator {
 			parameterList = nil
 		}
 
-		var parameterNames = [String]()
-		var parameterTypes = [String]()
-		var defaultValues = [GRYExpression?]()
-
 		// Translate the parameters
+		var parameters = [GRYASTLabeledTypeWithValue]()
 		if let parameterList = parameterList {
 			for parameter in parameterList.subtrees {
 				if let name = parameter.standaloneAttributes.first,
@@ -983,15 +979,19 @@ public class GRYSwift4Translator {
 						continue
 					}
 
-					parameterNames.append(name)
-					parameterTypes.append(cleanUpType(type))
+					let parameterName = name
+					let parameterType = cleanUpType(type)
 
+					let defaultValue: GRYExpression?
 					if let defaultValueTree = parameter.subtrees.first {
-						try defaultValues.append(translate(expression: defaultValueTree))
+						defaultValue = try translate(expression: defaultValueTree)
 					}
 					else {
-						defaultValues.append(nil)
+						defaultValue = nil
 					}
+
+					parameters.append(GRYASTLabeledTypeWithValue(
+						label: parameterName, type: parameterType, value: defaultValue))
 				}
 				else {
 					return try unexpectedASTStructureError(
@@ -1020,9 +1020,7 @@ public class GRYSwift4Translator {
 
 		return .functionDeclaration(value: GRYASTFunctionDeclaration(
 			prefix: String(functionNamePrefix),
-			parameterNames: parameterNames,
-			parameterTypes: parameterTypes,
-			defaultValues: defaultValues,
+			parameters: parameters,
 			returnType: returnType,
 			isImplicit: isImplicit,
 			isStatic: isStatic,
@@ -1119,8 +1117,7 @@ public class GRYSwift4Translator {
 			if subtree["getter_for"] != nil || subtree["get_for"] != nil {
 				getter = .functionDeclaration(value: GRYASTFunctionDeclaration(
 					prefix: "get",
-					parameterNames: [], parameterTypes: [],
-					defaultValues: [],
+					parameters: [],
 					returnType: type,
 					isImplicit: false,
 					isStatic: false,
@@ -1135,9 +1132,8 @@ public class GRYSwift4Translator {
 			{
 				setter = .functionDeclaration(value: GRYASTFunctionDeclaration(
 					prefix: "set",
-					parameterNames: ["newValue"],
-					parameterTypes: [type],
-					defaultValues: [],
+					parameters: [GRYASTLabeledTypeWithValue(
+						label: "newValue", type: type, value: nil), ],
 					returnType: "()",
 					isImplicit: false,
 					isStatic: false,
@@ -1251,17 +1247,14 @@ public class GRYSwift4Translator {
 			parameterList = nil
 		}
 
-		var parameterNames = [String]()
-		var parameterTypes = [String]()
-
 		// Translate the parameters
+		var parameters = [GRYASTLabeledType]()
 		if let parameterList = parameterList {
 			for parameter in parameterList.subtrees {
 				if let name = parameter.standaloneAttributes.first,
 					let type = parameter["interface type"]
 				{
-					parameterNames.append(name)
-					parameterTypes.append(cleanUpType(type))
+					parameters.append(GRYASTLabeledType(label: name, type: cleanUpType(type)))
 				}
 				else {
 					return try unexpectedExpressionStructureError(
@@ -1295,10 +1288,9 @@ public class GRYSwift4Translator {
 		}
 
 		return .closureExpression(
-				parameterNames: parameterNames,
-				parameterTypes: parameterTypes,
-				statements: statements,
-				type: cleanUpType(type))
+			parameters: parameters,
+			statements: statements,
+			type: cleanUpType(type))
 	}
 
 	internal func translate(callExpressionParameters callExpression: GRYSwiftAST) throws
@@ -1314,7 +1306,7 @@ public class GRYSwift4Translator {
 		if let parenthesesExpression = callExpression.subtree(named: "Parentheses Expression") {
 			let expression = try translate(expression: parenthesesExpression)
 			parameters = .tupleExpression(
-				pairs: [GRYExpression.TuplePair(name: nil, expression: expression)])
+				pairs: [GRYASTLabeledExpression(label: nil, expression: expression)])
 		}
 		else if let tupleExpression = callExpression.subtree(named: "Tuple Expression") {
 			parameters = try translate(tupleExpression: tupleExpression)
@@ -1330,7 +1322,7 @@ public class GRYSwift4Translator {
 			{
 				let expression = try translate(expression: parenthesesExpression)
 				parameters = .tupleExpression(
-					pairs: [GRYExpression.TuplePair(name: nil, expression: expression)])
+					pairs: [GRYASTLabeledExpression(label: nil, expression: expression)])
 			}
 			else {
 				return try unexpectedExpressionStructureError(
@@ -1359,18 +1351,18 @@ public class GRYSwift4Translator {
 
 		let namesArray = names.split(separator: ",")
 
-		var tuplePairs = [GRYExpression.TuplePair]()
+		var tuplePairs = [GRYASTLabeledExpression]()
 
 		for (name, expression) in zip(namesArray, tupleExpression.subtrees) {
 			let expression = try translate(expression: expression)
 
 			// Empty names (like the underscore in "foo(_:)") are represented by ''
 			if name == "_" {
-				tuplePairs.append(GRYExpression.TuplePair(name: nil, expression: expression))
+				tuplePairs.append(GRYASTLabeledExpression(label: nil, expression: expression))
 			}
 			else {
 				tuplePairs.append(
-					GRYExpression.TuplePair(name: String(name), expression: expression))
+					GRYASTLabeledExpression(label: String(name), expression: expression))
 			}
 		}
 

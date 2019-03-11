@@ -132,12 +132,9 @@ public class GRYTranspilationPass {
 	}
 
 	func replaceEnumElementDeclaration(
-		name: String, associatedValueLabels: [String], associatedValueTypes: [String])
-		-> [GRYASTEnumElement]
+		name: String, associatedValues: [GRYASTLabeledType]) -> [GRYASTEnumElement]
 	{
-		return [GRYASTEnumElement(
-			name: name, associatedValueLabels: associatedValueLabels,
-			associatedValueTypes: associatedValueTypes), ]
+		return [GRYASTEnumElement(name: name, associatedValues: associatedValues)]
 	}
 
 	func replaceProtocolDeclaration(name: String, members: [GRYTopLevelNode]) -> [GRYTopLevelNode] {
@@ -155,17 +152,14 @@ public class GRYTranspilationPass {
 	func replaceFunctionDeclaration(_ functionDeclaration: GRYASTFunctionDeclaration)
 		-> [GRYTopLevelNode]
 	{
-		let replacedDefaultValues = functionDeclaration.defaultValues.map
-			{ (expression: GRYExpression?) -> GRYExpression? in
-				if let expression = expression {
-					return replaceExpression(expression)
-				}
-				else {
-					return nil
-				}
+		let replacedParameters = functionDeclaration.parameters
+			.map {
+				GRYASTLabeledTypeWithValue(
+					label: $0.label, type: $0.type, value: $0.value.map(replaceExpression))
 			}
+
 		var functionDeclaration = functionDeclaration
-		functionDeclaration.defaultValues = replacedDefaultValues
+		functionDeclaration.parameters = replacedParameters
 		functionDeclaration.statements = functionDeclaration.statements.map(replaceTopLevelNodes)
 		return [.functionDeclaration(value: functionDeclaration)]
 	}
@@ -300,13 +294,9 @@ public class GRYTranspilationPass {
 				expression: expression, operatorSymbol: operatorSymbol, type: type)
 		case let .callExpression(function: function, parameters: parameters, type: type):
 			return replaceCallExpression(function: function, parameters: parameters, type: type)
-		case let .closureExpression(
-			parameterNames: parameterNames, parameterTypes: parameterTypes, statements: statements,
-			type: type):
-
+		case let .closureExpression(parameters: parameters, statements: statements, type: type):
 			return replaceClosureExpression(
-				parameterNames: parameterNames, parameterTypes: parameterTypes,
-				statements: statements, type: type)
+				parameters: parameters, statements: statements, type: type)
 		case let .literalIntExpression(value: value):
 			return replaceLiteralIntExpression(value: value)
 		case let .literalUIntExpression(value: value):
@@ -426,13 +416,11 @@ public class GRYTranspilationPass {
 	}
 
 	func replaceClosureExpression(
-		parameterNames: [String], parameterTypes: [String], statements: [GRYTopLevelNode],
-		type: String)
+		parameters: [GRYASTLabeledType], statements: [GRYTopLevelNode], type: String)
 		-> GRYExpression
 	{
 		return .closureExpression(
-			parameterNames: parameterNames, parameterTypes: parameterTypes,
-			statements: replaceTopLevelNodes(statements), type: type)
+			parameters: parameters, statements: replaceTopLevelNodes(statements), type: type)
 	}
 
 	func replaceLiteralIntExpression(value: Int64) -> GRYExpression {
@@ -467,9 +455,9 @@ public class GRYTranspilationPass {
 		return .interpolatedStringLiteralExpression(expressions: expressions.map(replaceExpression))
 	}
 
-	func replaceTupleExpression(pairs: [GRYExpression.TuplePair]) -> GRYExpression {
+	func replaceTupleExpression(pairs: [GRYASTLabeledExpression]) -> GRYExpression {
 		return .tupleExpression( pairs: pairs.map {
-			GRYExpression.TuplePair(name: $0.name, expression: replaceExpression($0.expression))
+			GRYASTLabeledExpression(label: $0.label, expression: replaceExpression($0.expression))
 		})
 	}
 }
@@ -878,20 +866,18 @@ public class GRYAnonymousParametersTranspilationPass: GRYTranspilationPass {
 	}
 
 	override func replaceClosureExpression(
-		parameterNames: [String], parameterTypes: [String], statements: [GRYTopLevelNode],
-		type: String) -> GRYExpression
+		parameters: [GRYASTLabeledType], statements: [GRYTopLevelNode], type: String)
+		-> GRYExpression
 	{
-		if parameterNames.count == 1,
-			parameterNames[0] == "$0"
+		if parameters.count == 1,
+			parameters[0].label == "$0"
 		{
 			return super.replaceClosureExpression(
-				parameterNames: [], parameterTypes: [],
-				statements: statements, type: type)
+				parameters: [], statements: statements, type: type)
 		}
 		else {
 			return super.replaceClosureExpression(
-				parameterNames: parameterNames, parameterTypes: parameterTypes,
-				statements: statements, type: type)
+				parameters: parameters, statements: statements, type: type)
 		}
 	}
 }
@@ -903,14 +889,13 @@ public class GRYReturnsInLambdasTranspilationPass: GRYTranspilationPass {
 	var isInClosure = false
 
 	override func replaceClosureExpression(
-		parameterNames: [String], parameterTypes: [String], statements: [GRYTopLevelNode],
-		type: String) -> GRYExpression
+		parameters: [GRYASTLabeledType], statements: [GRYTopLevelNode], type: String)
+		-> GRYExpression
 	{
 		isInClosure = true
 		defer { isInClosure = false }
 		return super.replaceClosureExpression(
-			parameterNames: parameterNames, parameterTypes: parameterTypes, statements: statements,
-			type: type)
+			parameters: parameters, statements: statements, type: type)
 	}
 
 	override func replaceReturnStatement(expression: GRYExpression?) -> [GRYTopLevelNode] {
@@ -1150,8 +1135,8 @@ public class GRYRaiseMutableValueTypesWarningsTranspilationPass: GRYTranspilatio
 			{
 				if functionDeclaration.isMutating {
 					let methodName = functionDeclaration.prefix + "(" +
-						functionDeclaration.parameterNames.map { $0 + ":" }.joined(separator: ", ")
-						+ ")"
+						functionDeclaration.parameters.map { $0.label + ":" }
+							.joined(separator: ", ") + ")"
 					GRYCompiler.handleWarning(
 						"No support for mutating methods in value types: found method " +
 						"\(methodName) inside struct \(name)")
@@ -1171,8 +1156,8 @@ public class GRYRaiseMutableValueTypesWarningsTranspilationPass: GRYTranspilatio
 			{
 				if functionDeclaration.isMutating {
 					let methodName = functionDeclaration.prefix + "(" +
-						functionDeclaration.parameterNames.map { $0 + ":" }.joined(separator: ", ")
-						+ ")"
+						functionDeclaration.parameters.map { $0.label + ":" }
+							.joined(separator: ", ") + ")"
 					GRYCompiler.handleWarning(
 						"No support for mutating methods in value types: found method " +
 						"\(methodName) inside enum \(name)")
