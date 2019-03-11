@@ -333,3 +333,9 @@ internal extension RandomAccessCollection where Element: Equatable, Index == Int
 		}
 	}
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+internal enum Either<Left, Right> {
+	case left(_ value: Left)
+	case right(_ value: Right)
+}

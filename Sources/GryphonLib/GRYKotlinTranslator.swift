@@ -150,18 +150,12 @@ public class GRYKotlinTranslator {
 				expression: expression, withIndentation: indentation)
 		case let .variableDeclaration(value: variableDeclaration):
 			result = try translateVariableDeclaration(
-				variableDeclaration: variableDeclaration, withIndentation: indentation)
+				variableDeclaration, withIndentation: indentation)
 		case let .assignmentStatement(leftHand: leftHand, rightHand: rightHand):
 			result = try translateAssignmentStatement(
 				leftHand: leftHand, rightHand: rightHand, withIndentation: indentation)
-		case let .ifStatement(
-			conditions: conditions, declarations: declarations, statements: statements,
-			elseStatement: elseStatement, isGuard: isGuard):
-
-			result = try translateIfStatement(
-				conditions: conditions, declarations: declarations, statements: statements,
-				elseStatement: elseStatement, isGuard: isGuard, isElseIf: false,
-				withIndentation: indentation)
+		case let .ifStatement(value: ifStatement):
+			result = try translateIfStatement(ifStatement, withIndentation: indentation)
 		case let .switchStatement(
 			convertsToExpression: convertsToExpression, expression: expression,
 			cases: cases):
@@ -521,11 +515,10 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateIfStatement(
-		conditions: [GRYExpression], declarations: [GRYASTVariableDeclaration],
-		statements: [GRYTopLevelNode], elseStatement: GRYTopLevelNode?, isGuard: Bool,
-		isElseIf: Bool, withIndentation indentation: String) throws -> String
+		_ ifStatement: GRYASTIfStatement, isElseIf: Bool = false,
+		withIndentation indentation: String) throws -> String
 	{
-		let keyword = (conditions.isEmpty && declarations.isEmpty) ?
+		let keyword = (ifStatement.conditions.isEmpty && ifStatement.declarations.isEmpty) ?
 			"else" :
 			(isElseIf ? "else if" : "if")
 
@@ -533,12 +526,12 @@ public class GRYKotlinTranslator {
 
 		let increasedIndentation = increaseIndentation(indentation)
 
-		let conditionsTranslation = try conditions.map {
+		let conditionsTranslation = try ifStatement.conditions.map {
 				try translateExpression($0, withIndentation: indentation)
 			}.joined(separator: " && ")
 
 		if keyword != "else" {
-			let parenthesizedCondition = isGuard ?
+			let parenthesizedCondition = ifStatement.isGuard ?
 				("(!(" + conditionsTranslation + ")) ") :
 				("(" + conditionsTranslation + ") ")
 
@@ -548,29 +541,14 @@ public class GRYKotlinTranslator {
 		result += "{\n"
 
 		let statementsString = try translate(
-			subtrees: statements, withIndentation: increasedIndentation, limitForAddingNewlines: 3)
+			subtrees: ifStatement.statements, withIndentation: increasedIndentation,
+			limitForAddingNewlines: 3)
 
 		result += statementsString + indentation + "}\n"
 
-		if let unwrappedElse = elseStatement {
-			if case let .ifStatement(
-				conditions: conditions, declarations: declarations, statements: statements,
-				elseStatement: elseStatement, isGuard: isGuard) = unwrappedElse
-			{
-				result += try translateIfStatement(
-					conditions: conditions, declarations: declarations, statements: statements,
-					elseStatement: elseStatement, isGuard: isGuard, isElseIf: true,
-					withIndentation: indentation)
-			}
-			else {
-				return try unexpectedASTStructureError(
-					"Expected the else statement to be an ifStatement." +
-					"If it's a variableDeclaration, this might come from an `else if let`, which" +
-					"is not supported.",
-					AST: .ifStatement(
-						conditions: conditions, declarations: declarations, statements: statements,
-						elseStatement: elseStatement, isGuard: isGuard))
-			}
+		if let unwrappedElse = ifStatement.elseStatement {
+			result += try translateIfStatement(
+				unwrappedElse, isElseIf: true, withIndentation: indentation)
 		}
 
 		return result
@@ -602,7 +580,7 @@ public class GRYKotlinTranslator {
 					getter: nil, setter: nil, isLet: variableDeclaration.isLet, isImplicit: false,
 					isStatic: false, extendsType: nil, annotations: variableDeclaration.annotations)
 				let translatedVariableDeclaration = try translateVariableDeclaration(
-					variableDeclaration: newVariableDeclaration, withIndentation: indentation)
+					newVariableDeclaration, withIndentation: indentation)
 				let cleanTranslation = translatedVariableDeclaration.dropLast("null\n".count)
 				result = "\(cleanTranslation)when ("
 			}
@@ -684,7 +662,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateVariableDeclaration(
-		variableDeclaration: GRYASTVariableDeclaration, withIndentation indentation: String)
+		_ variableDeclaration: GRYASTVariableDeclaration, withIndentation indentation: String)
 		throws -> String
 	{
 		guard !variableDeclaration.isImplicit else {

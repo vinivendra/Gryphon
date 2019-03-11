@@ -69,13 +69,8 @@ public class GRYTranspilationPass {
 
 			return replaceForEachStatement(
 				collection: collection, variable: variable, statements: statements)
-		case let .ifStatement(
-			conditions: conditions, declarations: declarations, statements: statements,
-			elseStatement: elseStatement, isGuard: isGuard):
-
-			return replaceIfStatement(
-				conditions: conditions, declarations: declarations, statements: statements,
-				elseStatement: elseStatement, isGuard: isGuard)
+		case let .ifStatement(value: ifStatement):
+			return replaceIfStatement(ifStatement)
 		case let .switchStatement(
 			convertsToExpression: convertsToExpression, expression: expression, cases: cases):
 
@@ -184,17 +179,17 @@ public class GRYTranspilationPass {
 			statements: replaceTopLevelNodes(statements)), ]
 	}
 
-	func replaceIfStatement(
-		conditions: [GRYExpression], declarations: [GRYASTVariableDeclaration],
-		statements: [GRYTopLevelNode], elseStatement: GRYTopLevelNode?, isGuard: Bool)
-		-> [GRYTopLevelNode]
-	{
-		return [.ifStatement(
-			conditions: conditions.map(replaceExpression),
-			declarations: declarations.map(replaceVariableDeclaration),
-			statements: replaceTopLevelNodes(statements),
-			elseStatement: elseStatement.map(replaceTopLevelNode)?.first,
-			isGuard: isGuard), ]
+	func replaceIfStatement(_ ifStatement: GRYASTIfStatement) -> [GRYTopLevelNode] {
+		return [GRYTopLevelNode.ifStatement(value: replaceIfStatement(ifStatement))]
+	}
+
+	func replaceIfStatement(_ ifStatement: GRYASTIfStatement) -> GRYASTIfStatement {
+		let ifStatement = ifStatement.copy()
+		ifStatement.conditions = ifStatement.conditions.map(replaceExpression)
+		ifStatement.declarations = ifStatement.declarations.map(replaceVariableDeclaration)
+		ifStatement.statements = replaceTopLevelNodes(ifStatement.statements)
+		ifStatement.elseStatement = ifStatement.elseStatement.map(replaceIfStatement)
+		return ifStatement
 	}
 
 	func replaceSwitchStatement(
@@ -1173,15 +1168,11 @@ public class GRYRaiseMutableValueTypesWarningsTranspilationPass: GRYTranspilatio
 }
 
 public class GRYRearrangeIfLetsTranspilationPass: GRYTranspilationPass {
-	override func replaceIfStatement(
-		conditions: [GRYExpression], declarations: [GRYASTVariableDeclaration],
-		statements: [GRYTopLevelNode], elseStatement: GRYTopLevelNode?, isGuard: Bool)
-		-> [GRYTopLevelNode]
-	{
+	override func replaceIfStatement(_ ifStatement: GRYASTIfStatement) -> [GRYTopLevelNode] {
 		var letConditions = [GRYExpression]()
 		var letDeclarations = [GRYTopLevelNode]()
 
-		for declaration in declarations {
+		for declaration in ifStatement.declarations {
 			// If it's a shadowing identifier there's no need to declare it in Kotlin
 			// (i.e. `if let x = x { }`)
 			if let declarationExpression = declaration.expression,
@@ -1206,9 +1197,10 @@ public class GRYRearrangeIfLetsTranspilationPass: GRYTranspilationPass {
 					type: "Boolean"))
 		}
 
-		return letDeclarations + super.replaceIfStatement(
-			conditions: letConditions + conditions, declarations: [],
-			statements: statements, elseStatement: elseStatement, isGuard: isGuard)
+		let ifStatement = ifStatement.copy()
+		ifStatement.conditions = letConditions + ifStatement.conditions
+		ifStatement.declarations = []
+		return letDeclarations + super.replaceIfStatement(ifStatement)
 	}
 }
 
@@ -1217,13 +1209,9 @@ public class GRYRearrangeIfLetsTranspilationPass: GRYTranspilationPass {
 /// ! combines with a != or even another !, causing a double negative in the condition that can
 /// be removed (or turned into a single ==). This pass performs that transformation.
 public class GRYDoubleNegativesInGuardsTranspilationPass: GRYTranspilationPass {
-	override func replaceIfStatement(
-		conditions: [GRYExpression], declarations: [GRYASTVariableDeclaration],
-		statements: [GRYTopLevelNode], elseStatement: GRYTopLevelNode?, isGuard: Bool)
-		-> [GRYTopLevelNode]
-	{
-		if isGuard, conditions.count == 1 {
-			let condition = conditions[0]
+	override func replaceIfStatement(_ ifStatement: GRYASTIfStatement) -> GRYASTIfStatement {
+		if ifStatement.isGuard, ifStatement.conditions.count == 1 {
+			let condition = ifStatement.conditions[0]
 			let shouldStillBeGuard: Bool
 			let newCondition: GRYExpression
 			if case let .prefixUnaryExpression(
@@ -1255,14 +1243,13 @@ public class GRYDoubleNegativesInGuardsTranspilationPass: GRYTranspilationPass {
 				shouldStillBeGuard = true
 			}
 
-			return super.replaceIfStatement(
-				conditions: [newCondition], declarations: declarations, statements: statements,
-				elseStatement: elseStatement, isGuard: shouldStillBeGuard)
+			let ifStatement = ifStatement.copy()
+			ifStatement.conditions = [newCondition]
+			ifStatement.isGuard = shouldStillBeGuard
+			return super.replaceIfStatement(ifStatement)
 		}
 		else {
-			return super.replaceIfStatement(
-				conditions: conditions, declarations: declarations, statements: statements,
-				elseStatement: elseStatement, isGuard: isGuard)
+			return super.replaceIfStatement(ifStatement)
 		}
 	}
 }
@@ -1340,9 +1327,4 @@ public extension GRYTranspilationPass {
 		}
 		print("]")
 	}
-}
-
-private enum Either<Left, Right> {
-	case left(_ value: Left)
-	case right(_ value: Right)
 }

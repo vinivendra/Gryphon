@@ -716,8 +716,18 @@ public class GRYSwift4Translator {
 	}
 
 	internal func translate(ifStatement: GRYSwiftAST) throws -> GRYTopLevelNode {
+		do {
+			let result: GRYASTIfStatement = try translate(ifStatement: ifStatement)
+			return .ifStatement(value: result)
+		}
+		catch let error {
+			return try handleUnexpectedASTStructureError(error)
+		}
+	}
+
+	internal func translate(ifStatement: GRYSwiftAST) throws -> GRYASTIfStatement {
 		guard ifStatement.name == "If Statement" || ifStatement.name == "Guard Statement" else {
-			return try unexpectedASTStructureError(
+			throw createUnexpectedASTStructureError(
 				"Trying to translate \(ifStatement.name) as an if or guard statement",
 				AST: ifStatement)
 		}
@@ -728,8 +738,7 @@ public class GRYSwift4Translator {
 			forIfStatement: ifStatement)
 
 		let braceStatement: GRYSwiftAST
-		let elseIfStatement: GRYTopLevelNode?
-		let elseStatement: GRYTopLevelNode?
+		let elseStatement: GRYASTIfStatement?
 
 		if ifStatement.subtrees.count > 2,
 			let unwrappedBraceStatement = ifStatement.subtrees.secondToLast,
@@ -738,8 +747,7 @@ public class GRYSwift4Translator {
 			elseIfAST.name == "If Statement"
 		{
 			braceStatement = unwrappedBraceStatement
-			elseIfStatement = try translate(ifStatement: elseIfAST)
-			elseStatement = nil
+			elseStatement = try translate(ifStatement: elseIfAST)
 		}
 		else if ifStatement.subtrees.count > 2,
 			let unwrappedBraceStatement = ifStatement.subtrees.secondToLast,
@@ -748,10 +756,8 @@ public class GRYSwift4Translator {
 			elseAST.name == "Brace Statement"
 		{
 			braceStatement = unwrappedBraceStatement
-			elseIfStatement = nil
-
 			let statements = try translate(subtrees: elseAST.subtrees.array)
-			elseStatement = .ifStatement(
+			elseStatement = GRYASTIfStatement(
 				conditions: [], declarations: [],
 				statements: statements,
 				elseStatement: nil,
@@ -761,11 +767,10 @@ public class GRYSwift4Translator {
 			unwrappedBraceStatement.name == "Brace Statement"
 		{
 			braceStatement = unwrappedBraceStatement
-			elseIfStatement = nil
 			elseStatement = nil
 		}
 		else {
-			return try unexpectedASTStructureError(
+			throw createUnexpectedASTStructureError(
 				"Unable to detect body of statements",
 				AST: ifStatement)
 		}
@@ -773,11 +778,11 @@ public class GRYSwift4Translator {
 		let statements = braceStatement.subtrees
 		let statementsResult = try translate(subtrees: statements.array)
 
-		return .ifStatement(
+		return GRYASTIfStatement(
 			conditions: conditions,
 			declarations: letDeclarations,
 			statements: statementsResult,
-			elseStatement: elseIfStatement ?? elseStatement,
+			elseStatement: elseStatement,
 			isGuard: isGuard)
 	}
 
@@ -1817,14 +1822,26 @@ enum GRYSwiftTranslatorError: Error, CustomStringConvertible {
 	}
 }
 
+func createUnexpectedASTStructureError(
+	file: String = #file, line: Int = #line, function: String = #function, _ message: String,
+	AST ast: GRYSwiftAST) -> GRYSwiftTranslatorError
+{
+	return GRYSwiftTranslatorError.unexpectedASTStructure(
+		file: file, line: line, function: function, message: message, AST: ast)
+}
+
+func handleUnexpectedASTStructureError(_ error: Error) throws -> GRYTopLevelNode {
+	try GRYCompiler.handleError(error)
+	return .error
+}
+
 func unexpectedASTStructureError(
 	file: String = #file, line: Int = #line, function: String = #function, _ message: String,
 	AST ast: GRYSwiftAST) throws -> GRYTopLevelNode
 {
-	let error = GRYSwiftTranslatorError.unexpectedASTStructure(
-		file: file, line: line, function: function, message: message, AST: ast)
-	try GRYCompiler.handleError(error)
-	return .error
+	let error = createUnexpectedASTStructureError(
+		file: file, line: line, function: function, message, AST: ast)
+	return try handleUnexpectedASTStructureError(error)
 }
 
 func unexpectedExpressionStructureError(

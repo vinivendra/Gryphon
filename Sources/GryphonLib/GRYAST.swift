@@ -179,21 +179,17 @@ extension GRYTopLevelNode {
 				GRYPrintableTree("variable", [variable]),
 				GRYPrintableTree("collection", [collection]),
 				GRYPrintableTree.initOrNil("statements", statements), ]
-		case let .ifStatement(
-			conditions: conditions,
-			declarations: declarations,
-			statements: statements,
-			elseStatement: elseStatement,
-			isGuard: isGuard):
-
+		case let .ifStatement(value: ifStatement):
 			let declarationTrees =
-				declarations.map { GRYTopLevelNode.variableDeclaration(value: $0) }
+				ifStatement.declarations.map { GRYTopLevelNode.variableDeclaration(value: $0) }
+			let elseStatementTrees = ifStatement.elseStatement
+				.map({ GRYTopLevelNode.ifStatement(value: $0) })?.printableSubtrees ?? []
 			return [
-				isGuard ? GRYPrintableTree("guard") : nil,
+				ifStatement.isGuard ? GRYPrintableTree("guard") : nil,
 				GRYPrintableTree.initOrNil("declarations", declarationTrees),
-				GRYPrintableTree.initOrNil("conditions", conditions),
-				GRYPrintableTree.initOrNil("statements", statements),
-				GRYPrintableTree.initOrNil("else", [elseStatement]), ]
+				GRYPrintableTree.initOrNil("conditions", ifStatement.conditions),
+				GRYPrintableTree.initOrNil("statements", ifStatement.statements),
+				GRYPrintableTree.initOrNil("else", elseStatementTrees), ]
 		case let .switchStatement(
 			convertsToExpression: convertsToExpression, expression: expression,
 			cases: cases):

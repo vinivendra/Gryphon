@@ -14,7 +14,6 @@
 * limitations under the License.
 */
 
-// TODO: ifStatement.declarations should be [GRYASTVariableDeclaration]
 // TODO: ifStatement.elseStatement should be GRYASTIfStatement
 %{
 astNodes = [
@@ -41,9 +40,7 @@ astNodes = [
 		[['collection', 'GRYExpression'], ['variable', 'GRYExpression'],
 		['statements', '[GRYTopLevelNode]']]],
 	['ifStatement',
-		[['conditions', '[GRYExpression]'], ['declarations', '[GRYASTVariableDeclaration]'],
-		['statements', '[GRYTopLevelNode]'], ['elseStatement', 'GRYTopLevelNode?'],
-		['isGuard', 'Bool']]],
+		[['value', 'GRYASTIfStatement']]],
 	['switchStatement',
 		[['convertsToExpression', 'GRYTopLevelNode?'], ['expression', 'GRYExpression'],
 		['cases', '[GRYASTSwitchCase]']]],
@@ -275,38 +272,77 @@ public indirect enum GRYExpression: Equatable, GRYPrintableAsTree {
 	}
 }
 %{
-astStructs = [
-	['GRYASTLabeledExpression',
+astElements = [
+	['struct', 'GRYASTLabeledExpression',
 		[['label', 'String?'], ['expression', 'GRYExpression']]],
-	['GRYASTLabeledType',
+	['struct', 'GRYASTLabeledType',
 		[['label', 'String'], ['type', 'String']]],
-	['GRYASTLabeledTypeWithValue',
+	['struct', 'GRYASTLabeledTypeWithValue',
 		[['label', 'String'], ['type', 'String'], ['value', 'GRYExpression?']]],
-	['GRYASTVariableDeclaration',
+	['struct', 'GRYASTVariableDeclaration',
 		[['identifier', 'String'], ['typeName', 'String'], ['expression', 'GRYExpression?'],
 		['getter', 'GRYTopLevelNode?'], ['setter', 'GRYTopLevelNode?'], ['isLet', 'Bool'],
 		['isImplicit', 'Bool'], ['isStatic', 'Bool'], ['extendsType', 'String?'],
 		['annotations', 'String?']]],
-	['GRYASTFunctionDeclaration',
+	['struct', 'GRYASTFunctionDeclaration',
 		[['prefix', 'String'], ['parameters', '[GRYASTLabeledTypeWithValue]'],
 		['returnType', 'String'], ['isImplicit', 'Bool'], ['isStatic', 'Bool'],
 		['isMutating', 'Bool'], ['extendsType', 'String?'], ['statements', '[GRYTopLevelNode]?'],
 		['access', 'String?']]],
-	['GRYASTSwitchCase',
+	['class', 'GRYASTIfStatement',
+		[['conditions', '[GRYExpression]'], ['declarations', '[GRYASTVariableDeclaration]'],
+		['statements', '[GRYTopLevelNode]'], ['elseStatement', 'GRYASTIfStatement?'],
+		['isGuard', 'Bool']]],
+	['struct', 'GRYASTSwitchCase',
 		[['expression', 'GRYExpression?'], ['statements', '[GRYTopLevelNode]']]],
-	['GRYASTEnumElement',
+	['struct', 'GRYASTEnumElement',
 		[['name', 'String'], ['associatedValues', '[GRYASTLabeledType]']]],
 	]
 }%
-%for astStruct in astStructs:
-%	name = astStruct[0]
-%	pairs = astStruct[1]
+%for astElement in astElements:
+%	keyword = astElement[0]
+%	name = astElement[1]
+%	pairs = astElement[2]
 
-public struct ${name}: Equatable {
+public ${keyword} ${name}: Equatable {
 %	for pair in pairs:
 	var ${pair[0]}: ${pair[1]}
 %	end
 
+%	if keyword == 'class':
+%		parameters = []
+%		for pair in pairs:
+%			parameters.append(pair[0] + ": " + pair[1])
+%		end
+%		parametersString = ",\n\t\t".join(parameters)
+	public init(
+		${parametersString})
+	{
+%		for pair in pairs:
+		self.${pair[0]} = ${pair[0]}
+%		end
+	}
+
+	public static func == (lhs: GRYASTIfStatement, rhs: GRYASTIfStatement) -> Bool {
+%		equalityChecks = []
+%		for pair in pairs:
+%			equalityChecks.append("lhs." + pair[0] + " == " + "rhs." + pair[0])
+%		end
+%		equalityChecksString = " &&\n\t\t\t".join(equalityChecks)
+		return ${equalityChecksString}
+	}
+
+	public func copy() -> GRYASTIfStatement {
+%		parameters = []
+%		for pair in pairs:
+%			parameters.append(pair[0] + ": " + pair[0])
+%		end
+%		parametersString = ",\n\t\t\t".join(parameters)
+		return GRYASTIfStatement(
+			${parametersString})
+	}
+
+%	end
 	func encode(into encoder: GRYEncoder) throws {
 		encoder.startNewObject(named: "${name}")
 %	for pair in pairs:
