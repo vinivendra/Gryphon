@@ -107,22 +107,19 @@ extension GRYTopLevelNode {
 			members: members,
 			isImplicit: isImplicit):
 
+			let elementTrees = elements.map {
+				GRYPrintableTree(".\($0.name)", [
+					GRYPrintableTree("values", $0.associatedValueLabels),
+					GRYPrintableTree("types", $0.associatedValueTypes), ])
+			}
+
 			return [
 				isImplicit ? GRYPrintableTree("implicit") : nil,
 				GRYPrintableTree.initOrNil(access),
 				GRYPrintableTree(name),
 				GRYPrintableTree("inherits", inherits),
-				GRYPrintableTree("elements", elements),
+				GRYPrintableTree("elements", elementTrees),
 				GRYPrintableTree("members", members), ]
-		case let .enumElementDeclaration(
-			name: name,
-			associatedValueLabels: associatedValueLabels,
-			associatedValueTypes: associatedValueTypes):
-
-			return [
-				GRYPrintableTree(name),
-				GRYPrintableTree("values", associatedValueLabels),
-				GRYPrintableTree("types", associatedValueTypes), ]
 		case let .protocolDeclaration(name: name, members: members):
 			return [
 				GRYPrintableTree(name),

@@ -55,13 +55,6 @@ public class GRYTranspilationPass {
 			return replaceEnumDeclaration(
 				access: access, name: name, inherits: inherits, elements: elements,
 				members: members, isImplicit: isImplicit)
-		case let .enumElementDeclaration(
-			name: name, associatedValueLabels: associatedValueLabels,
-			associatedValueTypes: associatedValueTypes):
-
-			return replaceEnumElementDeclaration(
-				name: name, associatedValueLabels: associatedValueLabels,
-				associatedValueTypes: associatedValueTypes)
 		case let .protocolDeclaration(name: name, members: members):
 			return replaceProtocolDeclaration(name: name, members: members)
 		case let .structDeclaration(name: name, inherits: inherits, members: members):
@@ -129,7 +122,7 @@ public class GRYTranspilationPass {
 	}
 
 	func replaceEnumDeclaration(
-		access: String?, name: String, inherits: [String], elements: [GRYTopLevelNode],
+		access: String?, name: String, inherits: [String], elements: [GRYASTEnumElement],
 		members: [GRYTopLevelNode], isImplicit: Bool) -> [GRYTopLevelNode]
 	{
 		return [
@@ -140,9 +133,9 @@ public class GRYTranspilationPass {
 
 	func replaceEnumElementDeclaration(
 		name: String, associatedValueLabels: [String], associatedValueTypes: [String])
-		-> [GRYTopLevelNode]
+		-> [GRYASTEnumElement]
 	{
-		return [.enumElementDeclaration(
+		return [GRYASTEnumElement(
 			name: name, associatedValueLabels: associatedValueLabels,
 			associatedValueTypes: associatedValueTypes), ]
 	}
@@ -600,7 +593,7 @@ public class GRYRemoveIgnoredDeclarationsTranspilationPass: GRYTranspilationPass
 	}
 
 	override func replaceEnumDeclaration(
-		access: String?, name: String, inherits: [String], elements: [GRYTopLevelNode],
+		access: String?, name: String, inherits: [String], elements: [GRYASTEnumElement],
 		members: [GRYTopLevelNode], isImplicit: Bool) -> [GRYTopLevelNode]
 	{
 		if inherits.contains("GRYIgnore") {
@@ -637,7 +630,7 @@ public class GRYRemoveIgnoredDeclarationsTranspilationPass: GRYTranspilationPass
 /// Removes implicit declarations so that they don't show up on the translation
 public class GRYRemoveImplicitDeclarationsTranspilationPass: GRYTranspilationPass {
 	override func replaceEnumDeclaration(
-		access: String?, name: String, inherits: [String], elements: [GRYTopLevelNode],
+		access: String?, name: String, inherits: [String], elements: [GRYASTEnumElement],
 		members: [GRYTopLevelNode], isImplicit: Bool) -> [GRYTopLevelNode]
 	{
 		if isImplicit {
@@ -848,14 +841,14 @@ public class GRYCleanInheritancesTranspilationPass: GRYTranspilationPass {
 	}
 
 	override func replaceEnumDeclaration(
-		access: String?, name: String, inherits: [String], elements: [GRYTopLevelNode],
+		access: String?, name: String, inherits: [String], elements: [GRYASTEnumElement],
 		members: [GRYTopLevelNode], isImplicit: Bool) -> [GRYTopLevelNode]
 	{
 		return [.enumDeclaration(
 			access: access, name: name,
 			inherits: inherits.filter {
 				isNotASwiftProtocol($0) && isNotASwiftRawRepresentableType($0)
-		}, elements: elements, members: members, isImplicit: isImplicit), ]
+			}, elements: elements, members: members, isImplicit: isImplicit), ]
 	}
 
 	override func replaceStructDeclaration(
@@ -1109,7 +1102,7 @@ public class GRYRemoveExtensionsTranspilationPass: GRYTranspilationPass {
 
 public class GRYRecordEnumsTranspilationPass: GRYTranspilationPass {
 	override func replaceEnumDeclaration(
-		access: String?, name: String, inherits: [String], elements: [GRYTopLevelNode],
+		access: String?, name: String, inherits: [String], elements: [GRYASTEnumElement],
 		members: [GRYTopLevelNode], isImplicit: Bool) -> [GRYTopLevelNode]
 	{
 		GRYKotlinTranslator.addEnum(name)
@@ -1170,7 +1163,7 @@ public class GRYRaiseMutableValueTypesWarningsTranspilationPass: GRYTranspilatio
 	}
 
 	override func replaceEnumDeclaration(
-		access: String?, name: String, inherits: [String], elements: [GRYTopLevelNode],
+		access: String?, name: String, inherits: [String], elements: [GRYASTEnumElement],
 		members: [GRYTopLevelNode], isImplicit: Bool) -> [GRYTopLevelNode]
 	{
 		for member in members {

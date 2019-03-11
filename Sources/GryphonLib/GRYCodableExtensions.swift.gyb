@@ -17,13 +17,13 @@
 optionalTypes = [
 	'String', 'Int', 'Double', 'Bool', 'GRYTopLevelNode', 'GRYExpression',
 	'GRYExpression.TuplePair',
-	'[GRYTopLevelNode]'
+	'[GRYTopLevelNode]',
 	]
 arrayTypes = [
 	'String', 'Int', 'Double', 'Bool', 'GRYTopLevelNode', 'GRYExpression',
 	'GRYExpression.TuplePair',
 	'GRYExpression?',
-	'GRYASTSwitchCase'
+	'GRYASTSwitchCase', 'GRYASTEnumElement',
 	]
 dictionaryTypes = [
 	'String', 'Int', 'Double', 'Bool', 'GRYTopLevelNode', 'GRYExpression',

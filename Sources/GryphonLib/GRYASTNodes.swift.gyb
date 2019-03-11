@@ -25,11 +25,8 @@ astNodes = [
 	['companionObject', [['members', '[GRYTopLevelNode]']]],
 	['enumDeclaration',
 		[['access', 'String?'], ['name', 'String'], ['inherits', '[String]'],
-		['elements', '[GRYTopLevelNode]'], ['members', '[GRYTopLevelNode]'],
+		['elements', '[GRYASTEnumElement]'], ['members', '[GRYTopLevelNode]'],
 		['isImplicit', 'Bool']]],
-	['enumElementDeclaration',
-		[['name', 'String'], ['associatedValueLabels', '[String]'],
-		['associatedValueTypes', '[String]']]],
 	['protocolDeclaration', [['name', 'String'], ['members', '[GRYTopLevelNode]']]],
 	['structDeclaration',
 		[['name', 'String'], ['inherits', '[String]'], ['members', '[GRYTopLevelNode]']]],
@@ -272,7 +269,6 @@ public indirect enum GRYExpression: Equatable, GRYPrintableAsTree {
 		return result
 	}
 }
-
 %{
 astStructs = [
 	['GRYASTVariableDeclaration',
@@ -287,11 +283,15 @@ astStructs = [
 		['statements', '[GRYTopLevelNode]?'], ['access', 'String?']]],
 	['GRYASTSwitchCase',
 		[['expression', 'GRYExpression?'], ['statements', '[GRYTopLevelNode]']]],
+	['GRYASTEnumElement',
+		[['name', 'String'], ['associatedValueLabels', '[String]'],
+		['associatedValueTypes', '[String]']]],
 	]
 }%
 %for astStruct in astStructs:
 %	name = astStruct[0]
 %	pairs = astStruct[1]
+
 public struct ${name}: Equatable {
 %	for pair in pairs:
 	var ${pair[0]}: ${pair[1]}
@@ -307,11 +307,11 @@ public struct ${name}: Equatable {
 
 	static func decode(from decoder: GRYDecoder) throws -> ${name} {
 		try decoder.readOpeningParenthesis()
-		let name = decoder.readDoubleQuotedString()
-		guard name == "${name}" else {
+		let objectName = decoder.readDoubleQuotedString()
+		guard objectName == "${name}" else {
 			throw GRYDecodingError.unexpectedContent(
 				decoder: decoder,
-				errorMessage: "Attempted to decode a \(name) as a '${name}'.")
+				errorMessage: "Attempted to decode a \(objectName) as a '${name}'.")
 		}
 
 %		for pair in pairs:

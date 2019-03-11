@@ -398,7 +398,7 @@ public class GRYSwift4Translator {
 				isImplicit: false)
 		}
 
-		var elements = [GRYTopLevelNode]()
+		var elements = [GRYASTEnumElement]()
 		let enumElementDeclarations =
 			enumDeclaration.subtrees.filter { $0.name == "Enum Element Declaration" }
 		for enumElementDeclaration in enumElementDeclarations {
@@ -410,7 +410,7 @@ public class GRYSwift4Translator {
 			}
 
 			if !elementName.contains("(") {
-				elements.append(.enumElementDeclaration(
+				elements.append(GRYASTEnumElement(
 					name: elementName, associatedValueLabels: [], associatedValueTypes: []))
 			}
 			else {
@@ -430,7 +430,7 @@ public class GRYSwift4Translator {
 				let valueTypesString = String(valuesComponent.dropFirst().dropLast())
 				let valueTypes = valueTypesString.split(withStringSeparator: ", ")
 
-				elements.append(.enumElementDeclaration(
+				elements.append(GRYASTEnumElement(
 					name: prefix, associatedValueLabels: valueLabels,
 					associatedValueTypes: valueTypes))
 			}

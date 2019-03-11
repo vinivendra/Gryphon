@@ -133,13 +133,6 @@ public class GRYKotlinTranslator {
 			result = try translateEnumDeclaration(
 				access: access, name: name, inherits: inherits, elements: elements,
 				members: members, isImplicit: isImplicit, withIndentation: indentation)
-		case .enumElementDeclaration(
-			name: _, associatedValueLabels: _, associatedValueTypes: _):
-
-			return try unexpectedASTStructureError(
-				"Enum element translation should only be called from within the translation of " +
-				"its wrapping Enum Declaration, since it needs to know the Enum's name.",
-				AST: subtree)
 		case let .forEachStatement(
 			collection: collection, variable: variable, statements: statements):
 
@@ -254,7 +247,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateEnumDeclaration(
-		access: String?, name enumName: String, inherits: [String], elements: [GRYTopLevelNode],
+		access: String?, name enumName: String, inherits: [String], elements: [GRYASTEnumElement],
 		members: [GRYTopLevelNode], isImplicit: Bool, withIndentation indentation: String)
 		throws -> String
 	{
@@ -279,23 +272,8 @@ public class GRYKotlinTranslator {
 
 		var casesTranslation = ""
 		for element in elements {
-			if case let .enumElementDeclaration(
-				name: elementName, associatedValueLabels: associatedValueLabels,
-				associatedValueTypes: associatedValueTypes) = element
-			{
-				casesTranslation += translateEnumElementDeclaration(
-					enumName: enumName, elementName: elementName,
-					associatedValueLabels: associatedValueLabels,
-					associatedValueTypes: associatedValueTypes,
-					withIndentation: increasedIndentation)
-			}
-			else {
-				return try unexpectedASTStructureError(
-					"Expected enum element to be an .enumElementDeclaration",
-					AST: .enumDeclaration(
-						access: access, name: enumName, inherits: inherits, elements: elements,
-						members: members, isImplicit: isImplicit))
-			}
+			casesTranslation += translateEnumElementDeclaration(
+				enumName: enumName, element: element, withIndentation: increasedIndentation)
 		}
 		result += casesTranslation
 
@@ -313,16 +291,16 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateEnumElementDeclaration(
-		enumName: String, elementName: String, associatedValueLabels: [String],
-		associatedValueTypes: [String], withIndentation indentation: String) -> String
+		enumName: String, element: GRYASTEnumElement, withIndentation indentation: String) -> String
 	{
-		let capitalizedElementName = elementName.capitalizedAsCamelCase
+		let capitalizedElementName = element.name.capitalizedAsCamelCase
 
-		if associatedValueLabels.isEmpty {
+		if element.associatedValueLabels.isEmpty {
 			return "\(indentation)class \(capitalizedElementName): \(enumName)()\n"
 		}
 		else {
-			let associatedValuesString = zip(associatedValueLabels, associatedValueTypes)
+			let associatedValuesString =
+				zip(element.associatedValueLabels, element.associatedValueTypes)
 				.map { "val \($0): \($1)" }.joined(separator: ", ")
 			return "\(indentation)class \(capitalizedElementName)(\(associatedValuesString)): " +
 				"\(enumName)()\n"
