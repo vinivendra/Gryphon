@@ -63,7 +63,7 @@ public class GRYTranspilationPass {
 			return replaceFunctionDeclaration(functionDeclaration)
 		case let .variableDeclaration(value: variableDeclaration):
 
-			return replaceVariableDeclaration(variableDeclaration)
+			return [.variableDeclaration(value: replaceVariableDeclaration(variableDeclaration))]
 		case let .forEachStatement(
 			collection: collection, variable: variable, statements: statements):
 
@@ -165,13 +165,13 @@ public class GRYTranspilationPass {
 	}
 
 	func replaceVariableDeclaration(_ variableDeclaration: GRYASTVariableDeclaration)
-		-> [GRYTopLevelNode]
+		-> GRYASTVariableDeclaration
 	{
 		var variableDeclaration = variableDeclaration
 		variableDeclaration.expression = variableDeclaration.expression.map(replaceExpression)
 		variableDeclaration.getter = variableDeclaration.getter.map(replaceTopLevelNode)?.first
 		variableDeclaration.setter = variableDeclaration.setter.map(replaceTopLevelNode)?.first
-		return [.variableDeclaration(value: variableDeclaration), ]
+		return variableDeclaration
 	}
 
 	func replaceForEachStatement(
@@ -185,12 +185,13 @@ public class GRYTranspilationPass {
 	}
 
 	func replaceIfStatement(
-		conditions: [GRYExpression], declarations: [GRYTopLevelNode], statements: [GRYTopLevelNode],
-		elseStatement: GRYTopLevelNode?, isGuard: Bool) -> [GRYTopLevelNode]
+		conditions: [GRYExpression], declarations: [GRYASTVariableDeclaration],
+		statements: [GRYTopLevelNode], elseStatement: GRYTopLevelNode?, isGuard: Bool)
+		-> [GRYTopLevelNode]
 	{
 		return [.ifStatement(
 			conditions: conditions.map(replaceExpression),
-			declarations: replaceTopLevelNodes(declarations),
+			declarations: declarations.map(replaceVariableDeclaration),
 			statements: replaceTopLevelNodes(statements),
 			elseStatement: elseStatement.map(replaceTopLevelNode)?.first,
 			isGuard: isGuard), ]
@@ -648,7 +649,7 @@ public class GRYRemoveImplicitDeclarationsTranspilationPass: GRYTranspilationPas
 /// in the data structure, and the function call must be removed.
 public class GRYAddAnnotationsTranspilationPass: GRYTranspilationPass {
 	override func replaceVariableDeclaration(_ variableDeclaration: GRYASTVariableDeclaration)
-		-> [GRYTopLevelNode]
+		-> GRYASTVariableDeclaration
 	{
 		if let expression = variableDeclaration.expression,
 			case let .callExpression(
@@ -665,10 +666,10 @@ public class GRYAddAnnotationsTranspilationPass: GRYTranspilationPass {
 			var variableDeclaration = variableDeclaration
 			variableDeclaration.expression = newExpression
 			variableDeclaration.annotations = newAnnotations
-			return [.variableDeclaration(value: variableDeclaration)]
+			return variableDeclaration
 		}
 
-		return [.variableDeclaration(value: variableDeclaration)]
+		return variableDeclaration
 	}
 }
 
@@ -747,7 +748,7 @@ public class GRYInnerTypePrefixesTranspilationPass: GRYTranspilationPass {
 	}
 
 	override func replaceVariableDeclaration(_ variableDeclaration: GRYASTVariableDeclaration)
-		-> [GRYTopLevelNode]
+		-> GRYASTVariableDeclaration
 	{
 		var variableDeclaration = variableDeclaration
 		variableDeclaration.typeName = removePrefixes(variableDeclaration.typeName)
@@ -1062,7 +1063,7 @@ public class GRYRemoveExtensionsTranspilationPass: GRYTranspilationPass {
 		case let .functionDeclaration(value: functionDeclaration):
 			return replaceFunctionDeclaration(functionDeclaration)
 		case let .variableDeclaration(value: variableDeclaration):
-			return replaceVariableDeclaration(variableDeclaration)
+			return [.variableDeclaration(value: replaceVariableDeclaration(variableDeclaration))]
 		default:
 			return [node]
 		}
@@ -1077,11 +1078,11 @@ public class GRYRemoveExtensionsTranspilationPass: GRYTranspilationPass {
 	}
 
 	override func replaceVariableDeclaration(_ variableDeclaration: GRYASTVariableDeclaration)
-		-> [GRYTopLevelNode]
+		-> GRYASTVariableDeclaration
 	{
 		var variableDeclaration = variableDeclaration
 		variableDeclaration.extendsType = self.extendingType
-		return [GRYTopLevelNode.variableDeclaration(value: variableDeclaration)]
+		return variableDeclaration
 	}
 }
 
@@ -1173,46 +1174,40 @@ public class GRYRaiseMutableValueTypesWarningsTranspilationPass: GRYTranspilatio
 
 public class GRYRearrangeIfLetsTranspilationPass: GRYTranspilationPass {
 	override func replaceIfStatement(
-		conditions: [GRYExpression], declarations: [GRYTopLevelNode], statements: [GRYTopLevelNode],
-		elseStatement: GRYTopLevelNode?, isGuard: Bool) -> [GRYTopLevelNode]
+		conditions: [GRYExpression], declarations: [GRYASTVariableDeclaration],
+		statements: [GRYTopLevelNode], elseStatement: GRYTopLevelNode?, isGuard: Bool)
+		-> [GRYTopLevelNode]
 	{
 		var letConditions = [GRYExpression]()
 		var letDeclarations = [GRYTopLevelNode]()
-		var remainingDeclarations = [GRYTopLevelNode]()
 
 		for declaration in declarations {
-			if case let .variableDeclaration(value: variableDeclaration) = declaration
+			// If it's a shadowing identifier there's no need to declare it in Kotlin
+			// (i.e. `if let x = x { }`)
+			if let declarationExpression = declaration.expression,
+				case .declarationReferenceExpression(
+					identifier: declaration.identifier,
+					type: _,
+					isStandardLibrary: _,
+					isImplicit: _) = declarationExpression
 			{
-				// If it's a shadowing identifier there's no need to declare it in Kotlin
-				// (i.e. `if let x = x { }`)
-				if let declarationExpression = variableDeclaration.expression,
-					case .declarationReferenceExpression(
-						identifier: variableDeclaration.identifier,
-						type: _,
-						isStandardLibrary: _,
-						isImplicit: _) = declarationExpression
-				{
-				}
-				else {
-					letDeclarations.append(declaration)
-				}
-
-				letConditions.append(
-					.binaryOperatorExpression(
-						leftExpression: .declarationReferenceExpression(
-							identifier: variableDeclaration.identifier,
-							type: variableDeclaration.typeName,
-							isStandardLibrary: false, isImplicit: false),
-						rightExpression: .nilLiteralExpression, operatorSymbol: "!=",
-						type: "Boolean"))
 			}
 			else {
-				remainingDeclarations.append(declaration)
+				letDeclarations.append(.variableDeclaration(value: declaration))
 			}
+
+			letConditions.append(
+				.binaryOperatorExpression(
+					leftExpression: .declarationReferenceExpression(
+						identifier: declaration.identifier,
+						type: declaration.typeName,
+						isStandardLibrary: false, isImplicit: false),
+					rightExpression: .nilLiteralExpression, operatorSymbol: "!=",
+					type: "Boolean"))
 		}
 
 		return letDeclarations + super.replaceIfStatement(
-			conditions: letConditions + conditions, declarations: remainingDeclarations,
+			conditions: letConditions + conditions, declarations: [],
 			statements: statements, elseStatement: elseStatement, isGuard: isGuard)
 	}
 }
@@ -1223,8 +1218,9 @@ public class GRYRearrangeIfLetsTranspilationPass: GRYTranspilationPass {
 /// be removed (or turned into a single ==). This pass performs that transformation.
 public class GRYDoubleNegativesInGuardsTranspilationPass: GRYTranspilationPass {
 	override func replaceIfStatement(
-		conditions: [GRYExpression], declarations: [GRYTopLevelNode], statements: [GRYTopLevelNode],
-		elseStatement: GRYTopLevelNode?, isGuard: Bool) -> [GRYTopLevelNode]
+		conditions: [GRYExpression], declarations: [GRYASTVariableDeclaration],
+		statements: [GRYTopLevelNode], elseStatement: GRYTopLevelNode?, isGuard: Bool)
+		-> [GRYTopLevelNode]
 	{
 		if isGuard, conditions.count == 1 {
 			let condition = conditions[0]

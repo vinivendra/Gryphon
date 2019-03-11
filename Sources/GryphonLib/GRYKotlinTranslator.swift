@@ -521,9 +521,9 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateIfStatement(
-		conditions: [GRYExpression], declarations: [GRYTopLevelNode], statements: [GRYTopLevelNode],
-		elseStatement: GRYTopLevelNode?, isGuard: Bool, isElseIf: Bool,
-		withIndentation indentation: String) throws -> String
+		conditions: [GRYExpression], declarations: [GRYASTVariableDeclaration],
+		statements: [GRYTopLevelNode], elseStatement: GRYTopLevelNode?, isGuard: Bool,
+		isElseIf: Bool, withIndentation indentation: String) throws -> String
 	{
 		let keyword = (conditions.isEmpty && declarations.isEmpty) ?
 			"else" :

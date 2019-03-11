@@ -41,7 +41,7 @@ astNodes = [
 		[['collection', 'GRYExpression'], ['variable', 'GRYExpression'],
 		['statements', '[GRYTopLevelNode]']]],
 	['ifStatement',
-		[['conditions', '[GRYExpression]'], ['declarations', '[GRYTopLevelNode]'],
+		[['conditions', '[GRYExpression]'], ['declarations', '[GRYASTVariableDeclaration]'],
 		['statements', '[GRYTopLevelNode]'], ['elseStatement', 'GRYTopLevelNode?'],
 		['isGuard', 'Bool']]],
 	['switchStatement',

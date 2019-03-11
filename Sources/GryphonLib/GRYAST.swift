@@ -186,9 +186,11 @@ extension GRYTopLevelNode {
 			elseStatement: elseStatement,
 			isGuard: isGuard):
 
+			let declarationTrees =
+				declarations.map { GRYTopLevelNode.variableDeclaration(value: $0) }
 			return [
 				isGuard ? GRYPrintableTree("guard") : nil,
-				GRYPrintableTree.initOrNil("declarations", declarations),
+				GRYPrintableTree.initOrNil("declarations", declarationTrees),
 				GRYPrintableTree.initOrNil("conditions", conditions),
 				GRYPrintableTree.initOrNil("statements", statements),
 				GRYPrintableTree.initOrNil("else", [elseStatement]), ]

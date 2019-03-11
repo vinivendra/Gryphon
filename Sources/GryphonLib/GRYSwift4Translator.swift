@@ -828,18 +828,18 @@ public class GRYSwift4Translator {
 
 	internal func translateDeclarationsAndConditions(
 		forIfStatement ifStatement: GRYSwiftAST) throws
-		-> (declarations: [GRYTopLevelNode], conditions: [GRYExpression])
+		-> (declarations: [GRYASTVariableDeclaration], conditions: [GRYExpression])
 	{
 		guard ifStatement.name == "If Statement" || ifStatement.name == "Guard Statement" else {
 			return try (
-				declarations: [unexpectedASTStructureError(
+				declarations: [],
+				conditions: [unexpectedExpressionStructureError(
 					"Trying to translate \(ifStatement.name) as an if or guard statement",
-					AST: ifStatement), ],
-				conditions: [])
+					AST: ifStatement), ])
 		}
 
 		var conditionsResult = [GRYExpression]()
-		var declarationsResult = [GRYTopLevelNode]()
+		var declarationsResult = [GRYASTVariableDeclaration]()
 
 		let conditions = ifStatement.subtrees.filter {
 			$0.name != "If Statement" && $0.name != "Brace Statement"
@@ -869,19 +869,19 @@ public class GRYSwift4Translator {
 				}
 				else {
 					return try (
-					declarations: [unexpectedASTStructureError(
+					declarations: [],
+					conditions: [unexpectedExpressionStructureError(
 						"Unable to detect pattern in let declaration",
-						AST: ifStatement), ],
-					conditions: [])
+						AST: ifStatement), ])
 
 				}
 
 				guard let rawType = optionalSomeElement["type"] else {
 					return try (
-						declarations: [unexpectedASTStructureError(
+						declarations: [],
+						conditions: [unexpectedExpressionStructureError(
 							"Unable to detect type in let declaration",
-							AST: ifStatement), ],
-						conditions: [])
+							AST: ifStatement), ])
 				}
 
 				let type = cleanUpType(rawType)
@@ -890,15 +890,15 @@ public class GRYSwift4Translator {
 					let lastCondition = condition.subtrees.last else
 				{
 					return try (
-						declarations: [unexpectedASTStructureError(
+						declarations: [],
+						conditions: [unexpectedExpressionStructureError(
 							"Unable to get expression in let declaration",
-							AST: ifStatement), ],
-						conditions: [])
+							AST: ifStatement), ])
 				}
 
 				let expression = try translate(expression: lastCondition)
 
-				declarationsResult.append(.variableDeclaration(value: GRYASTVariableDeclaration(
+				declarationsResult.append(GRYASTVariableDeclaration(
 					identifier: name,
 					typeName: type,
 					expression: expression,
@@ -907,7 +907,7 @@ public class GRYSwift4Translator {
 					isImplicit: false,
 					isStatic: false,
 					extendsType: nil,
-					annotations: nil)))
+					annotations: nil))
 			}
 			else {
 				conditionsResult.append(try translate(expression: condition))
