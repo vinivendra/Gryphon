@@ -1017,7 +1017,7 @@ public class GRYSwift4Translator {
 			statements = []
 		}
 
-		return .functionDeclaration(
+		return .functionDeclaration(value: GRYASTFunctionDeclaration(
 			prefix: String(functionNamePrefix),
 			parameterNames: parameterNames,
 			parameterTypes: parameterTypes,
@@ -1028,7 +1028,7 @@ public class GRYSwift4Translator {
 			isMutating: isMutating,
 			extendsType: nil,
 			statements: statements,
-			access: access)
+			access: access))
 	}
 
 	internal func translate(topLevelCode topLevelCodeDeclaration: GRYSwiftAST) throws
@@ -1116,7 +1116,7 @@ public class GRYSwift4Translator {
 
 			// Swift 5: "get_for" and "set_for" are the terms used in the Swift 5 AST
 			if subtree["getter_for"] != nil || subtree["get_for"] != nil {
-				getter = .functionDeclaration(
+				getter = .functionDeclaration(value: GRYASTFunctionDeclaration(
 					prefix: "get",
 					parameterNames: [], parameterTypes: [],
 					defaultValues: [],
@@ -1126,13 +1126,13 @@ public class GRYSwift4Translator {
 					isMutating: false,
 					extendsType: nil,
 					statements: statementsTranslation,
-					access: access)
+					access: access))
 			}
 			else if subtree["materializeForSet_for"] != nil ||
 				subtree["setter_for"] != nil ||
 				subtree["set_for"] != nil
 			{
-				setter = .functionDeclaration(
+				setter = .functionDeclaration(value: GRYASTFunctionDeclaration(
 					prefix: "set",
 					parameterNames: ["newValue"],
 					parameterTypes: [type],
@@ -1143,7 +1143,7 @@ public class GRYSwift4Translator {
 					isMutating: false,
 					extendsType: nil,
 					statements: statementsTranslation,
-					access: access)
+					access: access))
 			}
 		}
 

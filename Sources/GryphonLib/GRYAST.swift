@@ -132,25 +132,16 @@ extension GRYTopLevelNode {
 				GRYPrintableTree(name),
 				GRYPrintableTree("inherits", inherits),
 				GRYPrintableTree("members", members), ]
-		case let .functionDeclaration(
-			prefix: prefix,
-			parameterNames: parameterNames,
-			parameterTypes: parameterTypes,
-			defaultValues: defaultValues,
-			returnType: returnType,
-			isImplicit: isImplicit,
-			isStatic: isStatic,
-			isMutating: isMutating,
-			extendsType: extendsType,
-			statements: statements,
-			access: access):
+		case let .functionDeclaration(value: functionDeclaration):
 
-			let name = prefix + "(" + parameterNames.map { $0 + ":" }.joined(separator: ", ") + ")"
-			let type = "(" + parameterTypes.joined(separator: ", ") + ") -> " + returnType
+			let name = functionDeclaration.prefix + "(" +
+				functionDeclaration.parameterNames.map { $0 + ":" }.joined(separator: ", ") + ")"
+			let type = "(" + functionDeclaration.parameterTypes.joined(separator: ", ") + ") -> " +
+				functionDeclaration.returnType
 
 			let defaultValueStrings: [GRYPrintableAsTree]
-			if defaultValues.contains(where: { $0 != nil }) {
-				defaultValueStrings = defaultValues.map
+			if functionDeclaration.defaultValues.contains(where: { $0 != nil }) {
+				defaultValueStrings = functionDeclaration.defaultValues.map
 					{ (expression: GRYExpression?) -> GRYPrintableAsTree in
 						expression ?? GRYPrintableTree("_")
 				}
@@ -160,15 +151,15 @@ extension GRYTopLevelNode {
 			}
 
 			return [
-				extendsType.map { GRYPrintableTree("Extends type \($0)") },
-				isImplicit ? GRYPrintableTree("implicit") : nil,
-				isStatic ? GRYPrintableTree("static") : nil,
-				isMutating ? GRYPrintableTree("mutating") : nil,
-				GRYPrintableTree.initOrNil(access),
+				functionDeclaration.extendsType.map { GRYPrintableTree("Extends type \($0)") },
+				functionDeclaration.isImplicit ? GRYPrintableTree("implicit") : nil,
+				functionDeclaration.isStatic ? GRYPrintableTree("static") : nil,
+				functionDeclaration.isMutating ? GRYPrintableTree("mutating") : nil,
+				GRYPrintableTree.initOrNil(functionDeclaration.access),
 				GRYPrintableTree(name),
 				GRYPrintableTree("Default Values", defaultValueStrings),
 				GRYPrintableTree("type: \(type)"),
-				GRYPrintableTree("statements", statements ?? []), ]
+				GRYPrintableTree("statements", functionDeclaration.statements ?? []), ]
 		case let .variableDeclaration(value: variableDeclaration):
 			return [
 				GRYPrintableTree.initOrNil(

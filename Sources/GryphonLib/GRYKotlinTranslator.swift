@@ -146,17 +146,9 @@ public class GRYKotlinTranslator {
 			result = try translateForEachStatement(
 				collection: collection, variable: variable, statements: statements,
 				withIndentation: indentation)
-		case let .functionDeclaration(
-			prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-			defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
-			isStatic: isStatic, isMutating: isMutating, extendsType: extendsType,
-			statements: statements, access: access):
-
+		case let .functionDeclaration(value: functionDeclaration):
 			result = try translateFunctionDeclaration(
-				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-				defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
-				isStatic: isStatic, isMutating: isMutating, extendsType: extendsType,
-				statements: statements, access: access, withIndentation: indentation)
+				functionDeclaration: functionDeclaration, withIndentation: indentation)
 		case let .protocolDeclaration(name: name, members: members):
 			result = try translateProtocolDeclaration(
 				name: name, members: members, withIndentation: indentation)
@@ -164,7 +156,6 @@ public class GRYKotlinTranslator {
 			result = try translateThrowStatement(
 				expression: expression, withIndentation: indentation)
 		case let .variableDeclaration(value: variableDeclaration):
-
 			result = try translateVariableDeclaration(
 				variableDeclaration: variableDeclaration, withIndentation: indentation)
 		case let .assignmentStatement(leftHand: leftHand, rightHand: rightHand):
@@ -448,62 +439,60 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateFunctionDeclaration(
-		prefix: String, parameterNames: [String], parameterTypes: [String],
-		defaultValues: [GRYExpression?], returnType: String, isImplicit: Bool, isStatic: Bool,
-		isMutating: Bool, extendsType: String?, statements: [GRYTopLevelNode]?, access: String?,
-		withIndentation indentation: String, shouldAddNewlines: Bool = false) throws -> String
+		functionDeclaration: GRYASTFunctionDeclaration, withIndentation indentation: String,
+		shouldAddNewlines: Bool = false) throws -> String
 	{
-		guard !isImplicit else {
+		guard !functionDeclaration.isImplicit else {
 			return ""
 		}
 
 		var indentation = indentation
 		var result = indentation
 
-		let isInit = (prefix == "init")
+		let isInit = (functionDeclaration.prefix == "init")
 		if isInit {
 			result += "constructor("
 		}
 		else {
-			if let access = access {
+			if let access = functionDeclaration.access {
 				result += access + " "
 			}
 			result += "fun "
-			if let extensionType = extendsType {
+			if let extensionType = functionDeclaration.extendsType {
 				result += extensionType + "."
 			}
-			result += prefix + "("
+			result += functionDeclaration.prefix + "("
 		}
 
 		let returnString: String
-		if returnType != "()", !isInit {
-			let translatedReturnType = translateType(returnType)
+		if functionDeclaration.returnType != "()", !isInit {
+			let translatedReturnType = translateType(functionDeclaration.returnType)
 			returnString = ": \(translatedReturnType)"
 		}
 		else {
 			returnString = ""
 		}
 
-		let translatedParameterTypes = parameterTypes.map(translateType)
-		let valueStrings = try defaultValues.map { (defaultValue: GRYExpression?) -> String in
-			if let defaultValue = defaultValue {
-				return try " = " + translateExpression(defaultValue, withIndentation: indentation)
+		let translatedParameterTypes = functionDeclaration.parameterTypes.map(translateType)
+		let valueStrings = try functionDeclaration.defaultValues
+			.map { (defaultValue: GRYExpression?) -> String in
+				if let defaultValue = defaultValue {
+					return try " = " + translateExpression(
+						defaultValue, withIndentation: indentation)
+				}
+				else {
+					return ""
+				}
 			}
-			else {
-				return ""
-			}
-		}
-		let parameters = zip(parameterNames, translatedParameterTypes).map { $0.0 + ": " + $0.1 }
+		let parameters = zip(functionDeclaration.parameterNames, translatedParameterTypes)
+			.map { $0.0 + ": " + $0.1 }
 		let parameterStrings = zip(parameters, valueStrings).map { $0.0 + $0.1 }
 
 		if !shouldAddNewlines {
 			result += parameterStrings.joined(separator: ", ") + ")" + returnString + " {\n"
 			if result.count >= GRYKotlinTranslator.lineLimit {
 				return try translateFunctionDeclaration(
-					prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-					defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
-					isStatic: isStatic, isMutating: isMutating, extendsType: extendsType,
-					statements: statements, access: access, withIndentation: indentation,
+					functionDeclaration: functionDeclaration, withIndentation: indentation,
 					shouldAddNewlines: true)
 			}
 		}
@@ -519,7 +508,7 @@ public class GRYKotlinTranslator {
 			result += "\(indentation){\n"
 		}
 
-		guard let statements = statements else {
+		guard let statements = functionDeclaration.statements else {
 			return result + "\n"
 		}
 
@@ -778,17 +767,13 @@ public class GRYKotlinTranslator {
 		let indentation1 = increaseIndentation(indentation)
 		let indentation2 = increaseIndentation(indentation1)
 		if let getter = variableDeclaration.getter {
-			guard case let .functionDeclaration(
-				prefix: _, parameterNames: _, parameterTypes: _, defaultValues: _, returnType: _,
-				isImplicit: _, isStatic: _, isMutating: _, extendsType: _, statements: statements,
-				access: _) = getter else
-			{
+			guard case let .functionDeclaration(value: functionDeclaration) = getter else {
 				return try unexpectedASTStructureError(
 					"Expected the getter to be a .functionDeclaration",
 					AST: .variableDeclaration(value: variableDeclaration))
 			}
 
-			if let statements = statements {
+			if let statements = functionDeclaration.statements {
 				result += indentation1 + "get() {\n"
 				result += try translate(
 					subtrees: statements, withIndentation: indentation2, limitForAddingNewlines: 3)
@@ -797,17 +782,13 @@ public class GRYKotlinTranslator {
 		}
 
 		if let setter = variableDeclaration.setter {
-			guard case let .functionDeclaration(
-				prefix: _, parameterNames: _, parameterTypes: _, defaultValues: _, returnType: _,
-				isImplicit: _, isStatic: _, isMutating: _, extendsType: _, statements: statements,
-				access: _) = setter else
-			{
+			guard case let .functionDeclaration(value: functionDeclaration) = setter else {
 				return try unexpectedASTStructureError(
 					"Expected the setter to be a .functionDeclaration",
 					AST: .variableDeclaration(value: variableDeclaration))
 			}
 
-			if let statements = statements {
+			if let statements = functionDeclaration.statements {
 				result += indentation1 + "set(newValue) {\n"
 				result += try translate(
 					subtrees: statements, withIndentation: indentation2, limitForAddingNewlines: 3)

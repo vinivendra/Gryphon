@@ -34,10 +34,7 @@ astNodes = [
 	['structDeclaration',
 		[['name', 'String'], ['inherits', '[String]'], ['members', '[GRYTopLevelNode]']]],
 	['functionDeclaration',
-		[['prefix', 'String'], ['parameterNames', '[String]'], ['parameterTypes', '[String]'],
-		['defaultValues', '[GRYExpression?]'], ['returnType', 'String'], ['isImplicit', 'Bool'],
-		['isStatic', 'Bool'], ['isMutating', 'Bool'], ['extendsType', 'String?'],
-		['statements', '[GRYTopLevelNode]?'], ['access', 'String?']]],
+		[['value', 'GRYASTFunctionDeclaration']]],
 	['variableDeclaration',
 		[['value', 'GRYASTVariableDeclaration']]],
 	['forEachStatement',
@@ -283,6 +280,11 @@ astStructs = [
 		['getter', 'GRYTopLevelNode?'], ['setter', 'GRYTopLevelNode?'], ['isLet', 'Bool'],
 		['isImplicit', 'Bool'], ['isStatic', 'Bool'], ['extendsType', 'String?'],
 		['annotations', 'String?']]],
+	['GRYASTFunctionDeclaration',
+		[['prefix', 'String'], ['parameterNames', '[String]'], ['parameterTypes', '[String]'],
+		['defaultValues', '[GRYExpression?]'], ['returnType', 'String'], ['isImplicit', 'Bool'],
+		['isStatic', 'Bool'], ['isMutating', 'Bool'], ['extendsType', 'String?'],
+		['statements', '[GRYTopLevelNode]?'], ['access', 'String?']]]
 	]
 }%
 %for astStruct in astStructs:

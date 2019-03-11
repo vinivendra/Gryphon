@@ -66,17 +66,8 @@ public class GRYTranspilationPass {
 			return replaceProtocolDeclaration(name: name, members: members)
 		case let .structDeclaration(name: name, inherits: inherits, members: members):
 			return replaceStructDeclaration(name: name, inherits: inherits, members: members)
-		case let .functionDeclaration(
-			prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-			defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
-			isStatic: isStatic, isMutating: isMutating, extendsType: extendsType,
-			statements: statements, access: access):
-
-			return replaceFunctionDeclaration(
-				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-				defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
-				isStatic: isStatic, isMutating: isMutating, extendsType: extendsType,
-				statements: statements, access: access)
+		case let .functionDeclaration(value: functionDeclaration):
+			return replaceFunctionDeclaration(functionDeclaration)
 		case let .variableDeclaration(value: variableDeclaration):
 
 			return replaceVariableDeclaration(variableDeclaration)
@@ -170,13 +161,10 @@ public class GRYTranspilationPass {
 		]
 	}
 
-	func replaceFunctionDeclaration(
-		prefix: String, parameterNames: [String], parameterTypes: [String],
-		defaultValues: [GRYExpression?], returnType: String, isImplicit: Bool, isStatic: Bool,
-		isMutating: Bool, extendsType: String?, statements: [GRYTopLevelNode]?, access: String?)
+	func replaceFunctionDeclaration(_ functionDeclaration: GRYASTFunctionDeclaration)
 		-> [GRYTopLevelNode]
 	{
-		let replacedDefaultValues = defaultValues.map
+		let replacedDefaultValues = functionDeclaration.defaultValues.map
 			{ (expression: GRYExpression?) -> GRYExpression? in
 				if let expression = expression {
 					return replaceExpression(expression)
@@ -185,11 +173,10 @@ public class GRYTranspilationPass {
 					return nil
 				}
 			}
-		return [.functionDeclaration(
-			prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-			defaultValues: replacedDefaultValues, returnType: returnType, isImplicit: isImplicit,
-			isStatic: isStatic, isMutating: isMutating, extendsType: extendsType,
-			statements: statements.map(replaceTopLevelNodes), access: access), ]
+		var functionDeclaration = functionDeclaration
+		functionDeclaration.defaultValues = replacedDefaultValues
+		functionDeclaration.statements = functionDeclaration.statements.map(replaceTopLevelNodes)
+		return [.functionDeclaration(value: functionDeclaration)]
 	}
 
 	func replaceVariableDeclaration(_ variableDeclaration: GRYASTVariableDeclaration)
@@ -562,32 +549,25 @@ public class GRYIgnoreNextTranspilationPass: GRYTranspilationPass {
 }
 
 public class GRYDeclarationsTranspilationPass: GRYTranspilationPass {
-	override func replaceFunctionDeclaration(
-		prefix: String, parameterNames: [String], parameterTypes: [String],
-		defaultValues: [GRYExpression?], returnType: String, isImplicit: Bool, isStatic: Bool,
-		isMutating: Bool, extendsType: String?, statements: [GRYTopLevelNode]?, access: String?)
+	override func replaceFunctionDeclaration(_ functionDeclaration: GRYASTFunctionDeclaration)
 		-> [GRYTopLevelNode]
 	{
-		if prefix.hasPrefix("GRYDeclarations"), let statements = statements {
+		if functionDeclaration.prefix.hasPrefix("GRYDeclarations"),
+			let statements = functionDeclaration.statements
+		{
 			return statements
 		}
 		else {
-			return super.replaceFunctionDeclaration(
-				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-				defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
-				isStatic: isStatic, isMutating: isMutating, extendsType: extendsType,
-				statements: statements, access: access)
+			return super.replaceFunctionDeclaration(functionDeclaration)
 		}
 	}
 }
 
 public class GRYRemoveGryphonDeclarationsTranspilationPass: GRYTranspilationPass {
-	override func replaceFunctionDeclaration(
-		prefix: String, parameterNames: [String], parameterTypes: [String],
-		defaultValues: [GRYExpression?], returnType: String, isImplicit: Bool, isStatic: Bool,
-		isMutating: Bool, extendsType: String?, statements: [GRYTopLevelNode]?, access: String?)
+	override func replaceFunctionDeclaration(_ functionDeclaration: GRYASTFunctionDeclaration)
 		-> [GRYTopLevelNode]
 	{
+		let prefix = functionDeclaration.prefix
 		if prefix.hasPrefix("GRYInsert") || prefix.hasPrefix("GRYAlternative") ||
 			prefix.hasPrefix("GRYIgnoreNext") || prefix.hasPrefix("GRYAnnotations") ||
 			prefix.hasPrefix("GRYIgnoreThisFunction")
@@ -595,11 +575,7 @@ public class GRYRemoveGryphonDeclarationsTranspilationPass: GRYTranspilationPass
 			return []
 		}
 		else {
-			return super.replaceFunctionDeclaration(
-				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-				defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
-				isStatic: isStatic, isMutating: isMutating, extendsType: extendsType,
-				statements: statements, access: access)
+			return super.replaceFunctionDeclaration(functionDeclaration)
 		}
 	}
 
@@ -641,13 +617,10 @@ public class GRYRemoveIgnoredDeclarationsTranspilationPass: GRYTranspilationPass
 		}
 	}
 
-	override func replaceFunctionDeclaration(
-		prefix: String, parameterNames: [String], parameterTypes: [String],
-		defaultValues: [GRYExpression?], returnType: String, isImplicit: Bool, isStatic: Bool,
-		isMutating: Bool, extendsType: String?, statements: [GRYTopLevelNode]?, access: String?)
+	override func replaceFunctionDeclaration(_ functionDeclaration: GRYASTFunctionDeclaration)
 		-> [GRYTopLevelNode]
 	{
-		if let statements = statements,
+		if let statements = functionDeclaration.statements,
 			let firstStatement = statements.first,
 			case let .expression(expression: callExpression) = firstStatement,
 			case let .callExpression(
@@ -660,11 +633,7 @@ public class GRYRemoveIgnoredDeclarationsTranspilationPass: GRYTranspilationPass
 			return []
 		}
 		else {
-			return super.replaceFunctionDeclaration(
-				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-				defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
-				isStatic: isStatic, isMutating: isMutating, extendsType: extendsType,
-				statements: statements, access: access)
+			return super.replaceFunctionDeclaration(functionDeclaration)
 		}
 	}
 }
@@ -736,11 +705,10 @@ public class GRYStaticMembersTranspilationPass: GRYTranspilationPass {
 		var otherMembers = [GRYTopLevelNode]()
 
 		for member in members {
-			if case let .functionDeclaration(
-				prefix: prefix, parameterNames: _, parameterTypes: _, defaultValues: _,
-				returnType: _, isImplicit: _, isStatic: true, isMutating: _, extendsType: nil,
-				statements: _, access: _) = member,
-				prefix != "init"
+			if case let .functionDeclaration(value: functionDeclaration) = member,
+				functionDeclaration.isStatic == true,
+				functionDeclaration.extendsType == nil,
+				functionDeclaration.prefix != "init"
 			{
 				staticMembers.append(member)
 			}
@@ -1116,17 +1084,8 @@ public class GRYRemoveExtensionsTranspilationPass: GRYTranspilationPass {
 		switch node {
 		case let .extensionDeclaration(type: type, members: members):
 			return replaceExtension(type: type, members: members)
-		case let .functionDeclaration(
-			prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-			defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
-			isStatic: isStatic, isMutating: isMutating, extendsType: extendsType,
-			statements: statements, access: access):
-
-			return replaceFunctionDeclaration(
-				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-				defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
-				isStatic: isStatic, isMutating: isMutating, extendsType: extendsType,
-				statements: statements, access: access)
+		case let .functionDeclaration(value: functionDeclaration):
+			return replaceFunctionDeclaration(functionDeclaration)
 		case let .variableDeclaration(value: variableDeclaration):
 			return replaceVariableDeclaration(variableDeclaration)
 		default:
@@ -1134,17 +1093,12 @@ public class GRYRemoveExtensionsTranspilationPass: GRYTranspilationPass {
 		}
 	}
 
-	override func replaceFunctionDeclaration(
-		prefix: String, parameterNames: [String], parameterTypes: [String],
-		defaultValues: [GRYExpression?], returnType: String, isImplicit: Bool, isStatic: Bool,
-		isMutating: Bool, extendsType: String?, statements: [GRYTopLevelNode]?, access: String?)
+	override func replaceFunctionDeclaration(_ functionDeclaration: GRYASTFunctionDeclaration)
 		-> [GRYTopLevelNode]
 	{
-		return [GRYTopLevelNode.functionDeclaration(
-			prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-			defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
-			isStatic: isStatic, isMutating: isMutating, extendsType: self.extendingType,
-			statements: statements, access: access), ]
+		var functionDeclaration = functionDeclaration
+		functionDeclaration.extendsType = self.extendingType
+		return [GRYTopLevelNode.functionDeclaration(value: functionDeclaration)]
 	}
 
 	override func replaceVariableDeclaration(_ variableDeclaration: GRYASTVariableDeclaration)
@@ -1202,14 +1156,12 @@ public class GRYRaiseMutableValueTypesWarningsTranspilationPass: GRYTranspilatio
 						"\(variableDeclaration.identifier) inside struct \(name)")
 				}
 			}
-			else if case let .functionDeclaration(
-				prefix: prefix, parameterNames: parameterNames, parameterTypes: _, defaultValues: _,
-				returnType: _, isImplicit: _, isStatic: _, isMutating: isMutating, extendsType: _,
-				statements: _, access: _) = member
+			else if case let .functionDeclaration(value: functionDeclaration) = member
 			{
-				if isMutating {
-					let methodName =
-						prefix + "(" + parameterNames.map { $0 + ":" }.joined(separator: ", ") + ")"
+				if functionDeclaration.isMutating {
+					let methodName = functionDeclaration.prefix + "(" +
+						functionDeclaration.parameterNames.map { $0 + ":" }.joined(separator: ", ")
+						+ ")"
 					GRYCompiler.handleWarning(
 						"No support for mutating methods in value types: found method " +
 						"\(methodName) inside struct \(name)")
@@ -1225,14 +1177,12 @@ public class GRYRaiseMutableValueTypesWarningsTranspilationPass: GRYTranspilatio
 		members: [GRYTopLevelNode], isImplicit: Bool) -> [GRYTopLevelNode]
 	{
 		for member in members {
-			if case let .functionDeclaration(
-				prefix: prefix, parameterNames: parameterNames, parameterTypes: _, defaultValues: _,
-				returnType: _, isImplicit: _, isStatic: _, isMutating: isMutating, extendsType: _,
-				statements: _, access: _) = member
+			if case let .functionDeclaration(value: functionDeclaration) = member
 			{
-				if isMutating {
-					let methodName =
-						prefix + "(" + parameterNames.map { $0 + ":" }.joined(separator: ", ") + ")"
+				if functionDeclaration.isMutating {
+					let methodName = functionDeclaration.prefix + "(" +
+						functionDeclaration.parameterNames.map { $0 + ":" }.joined(separator: ", ")
+						+ ")"
 					GRYCompiler.handleWarning(
 						"No support for mutating methods in value types: found method " +
 						"\(methodName) inside enum \(name)")
@@ -1359,25 +1309,16 @@ public class GRYFixProtocolContentsTranspilationPass: GRYTranspilationPass {
 		return result
 	}
 
-	override func replaceFunctionDeclaration(
-		prefix: String, parameterNames: [String], parameterTypes: [String],
-		defaultValues: [GRYExpression?], returnType: String, isImplicit: Bool, isStatic: Bool,
-		isMutating: Bool, extendsType: String?, statements: [GRYTopLevelNode]?, access: String?)
+	override func replaceFunctionDeclaration(_ functionDeclaration: GRYASTFunctionDeclaration)
 		-> [GRYTopLevelNode]
 	{
 		if isInProtocol {
-			return super.replaceFunctionDeclaration(
-				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-				defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
-				isStatic: isStatic, isMutating: isMutating, extendsType: extendsType,
-				statements: nil, access: access)
+			var functionDeclaration = functionDeclaration
+			functionDeclaration.statements = nil
+			return super.replaceFunctionDeclaration(functionDeclaration)
 		}
 		else {
-			return super.replaceFunctionDeclaration(
-				prefix: prefix, parameterNames: parameterNames, parameterTypes: parameterTypes,
-				defaultValues: defaultValues, returnType: returnType, isImplicit: isImplicit,
-				isStatic: isStatic, isMutating: isMutating, extendsType: extendsType,
-				statements: statements, access: access)
+			return super.replaceFunctionDeclaration(functionDeclaration)
 		}
 	}
 }
