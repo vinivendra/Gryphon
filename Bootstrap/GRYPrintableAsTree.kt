@@ -22,7 +22,6 @@ class GRYPrintableTree: GRYPrintableAsTree {
 		}
 
 		internal fun initOrNil(description: String?): GRYPrintableTree? {
-			val description: String? = description
 			if (description != null) {
 				return GRYPrintableTree(description)
 			}
