@@ -141,7 +141,6 @@ public indirect enum GRYTopLevelNode: Equatable, GRYPrintableAsTree {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // TODO: dictionaryExpression should have key-value pairs
-// TODO: callExpression should use GRYASTFunctionDeclaration
 %{
 expressionNodes = [
 	['literalCodeExpression', [['string', 'String']]],
@@ -181,6 +180,9 @@ expressionNodes = [
 	['nilLiteralExpression'],
 	['interpolatedStringLiteralExpression', [['expressions', '[GRYExpression]']]],
 	['tupleExpression', [['pairs', '[GRYASTLabeledExpression]']]],
+	['tupleShuffleExpression',
+		[['labels', '[String]'], ['indices', '[GRYTupleShuffleIndex]'],
+		['expressions', '[GRYExpression]']]],
 	['error'],
 ]
 }%
@@ -277,18 +279,19 @@ astElements = [
 		[['label', 'String?'], ['expression', 'GRYExpression']]],
 	['struct', 'GRYASTLabeledType',
 		[['label', 'String'], ['type', 'String']]],
-	['struct', 'GRYASTLabeledTypeWithValue',
-		[['label', 'String'], ['type', 'String'], ['value', 'GRYExpression?']]],
+	['struct', 'GRYASTFunctionParameter',
+		[['label', 'String'], ['apiLabel', 'String?'], ['type', 'String'],
+		['value', 'GRYExpression?']]],
 	['struct', 'GRYASTVariableDeclaration',
 		[['identifier', 'String'], ['typeName', 'String'], ['expression', 'GRYExpression?'],
 		['getter', 'GRYTopLevelNode?'], ['setter', 'GRYTopLevelNode?'], ['isLet', 'Bool'],
 		['isImplicit', 'Bool'], ['isStatic', 'Bool'], ['extendsType', 'String?'],
 		['annotations', 'String?']]],
 	['struct', 'GRYASTFunctionDeclaration',
-		[['prefix', 'String'], ['parameters', '[GRYASTLabeledTypeWithValue]'],
-		['returnType', 'String'], ['isImplicit', 'Bool'], ['isStatic', 'Bool'],
-		['isMutating', 'Bool'], ['extendsType', 'String?'], ['statements', '[GRYTopLevelNode]?'],
-		['access', 'String?']]],
+		[['prefix', 'String'], ['parameters', '[GRYASTFunctionParameter]'],
+		['returnType', 'String'], ['functionType', 'String'], ['isImplicit', 'Bool'],
+		['isStatic', 'Bool'], ['isMutating', 'Bool'], ['extendsType', 'String?'],
+		['statements', '[GRYTopLevelNode]?'], ['access', 'String?']]],
 	['class', 'GRYASTIfStatement',
 		[['conditions', '[GRYExpression]'], ['declarations', '[GRYASTVariableDeclaration]'],
 		['statements', '[GRYTopLevelNode]'], ['elseStatement', 'GRYASTIfStatement?'],

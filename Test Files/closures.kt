@@ -15,7 +15,7 @@ fun main(args: Array<String>) {
 
 	println(plusClosure(2, 3))
 
-	useClosure(printClosure)
+	useClosure(closure = printClosure)
 	defaultClosure()
 
 	val multiLineClosure: (Int) -> Unit = { a ->

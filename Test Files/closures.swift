@@ -23,7 +23,7 @@ print(plusClosure(2, 3))
 func useClosure(closure: (String) -> ()) {
 	closure("Calling from function!")
 }
-useClosure(printClosure)
+useClosure(closure: printClosure)
 
 func defaultClosure(closure: (String) -> () = { print($0) }) {
 	closure("Calling from default closure!")

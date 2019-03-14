@@ -149,8 +149,11 @@ public class GRYTranspilationPass {
 	{
 		let replacedParameters = functionDeclaration.parameters
 			.map {
-				GRYASTLabeledTypeWithValue(
-					label: $0.label, type: $0.type, value: $0.value.map(replaceExpression))
+				GRYASTFunctionParameter(
+					label: $0.label,
+					apiLabel: $0.apiLabel,
+					type: $0.type,
+					value: $0.value.map(replaceExpression))
 			}
 
 		var functionDeclaration = functionDeclaration
@@ -311,6 +314,11 @@ public class GRYTranspilationPass {
 			return replaceInterpolatedStringLiteralExpression(expressions: expressions)
 		case let .tupleExpression(pairs: pairs):
 			return replaceTupleExpression(pairs: pairs)
+		case let .tupleShuffleExpression(
+			labels: labels, indices: indices, expressions: expressions):
+
+			return replaceTupleShuffleExpression(
+				labels: labels, indices: indices, expressions: expressions)
 		case .error:
 			return .error
 		}
@@ -455,6 +463,14 @@ public class GRYTranspilationPass {
 		return .tupleExpression( pairs: pairs.map {
 			GRYASTLabeledExpression(label: $0.label, expression: replaceExpression($0.expression))
 		})
+	}
+
+	func replaceTupleShuffleExpression(
+		labels: [String], indices: [GRYTupleShuffleIndex], expressions: [GRYExpression])
+		-> GRYExpression
+	{
+		return .tupleShuffleExpression(
+			labels: labels, indices: indices, expressions: expressions.map(replaceExpression))
 	}
 }
 
@@ -1081,6 +1097,23 @@ public class GRYRemoveExtensionsTranspilationPass: GRYTranspilationPass {
 	}
 }
 
+// TODO: docs
+public class GRYRecordFunctionTranslationsTranspilationPass: GRYTranspilationPass {
+	override func replaceFunctionDeclaration(
+		_ functionDeclaration: GRYASTFunctionDeclaration) -> [GRYTopLevelNode]
+	{
+		let swiftAPIName = functionDeclaration.prefix + "(" +
+			functionDeclaration.parameters.map { ($0.apiLabel ?? $0.label) + ":" }.joined() + ")"
+
+		GRYKotlinTranslator.addFunctionTranslation(GRYKotlinTranslator.FunctionTranslation(
+			swiftAPIName: swiftAPIName,
+			type: functionDeclaration.functionType,
+			prefix: functionDeclaration.prefix,
+			parameters: functionDeclaration.parameters.map { $0.label }))
+		return super.replaceFunctionDeclaration(functionDeclaration)
+	}
+}
+
 public class GRYRecordEnumsTranspilationPass: GRYTranspilationPass {
 	override func replaceEnumDeclaration(
 		access: String?, name: String, inherits: [String], elements: [GRYASTEnumElement],
@@ -1308,6 +1341,7 @@ public extension GRYTranspilationPass {
 		result = GRYRearrangeIfLetsTranspilationPass().run(on: result)
 		result = GRYDoubleNegativesInGuardsTranspilationPass().run(on: result)
 
+		result = GRYRecordFunctionTranslationsTranspilationPass().run(on: result)
 		result = GRYRecordEnumsTranspilationPass().run(on: result)
 		result = GRYRaiseStandardLibraryWarningsTranspilationPass().run(on: result)
 		result = GRYRaiseMutableValueTypesWarningsTranspilationPass().run(on: result)

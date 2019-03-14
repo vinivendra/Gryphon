@@ -74,6 +74,34 @@ public class GRYKotlinTranslator {
 		enums.append(enumName)
 	}
 
+	// TODO: Docs
+	public struct FunctionTranslation {
+		let swiftAPIName: String
+		let type: String
+		let prefix: String
+		let parameters: [String]
+	}
+
+	private static var functionTranslations = [FunctionTranslation]()
+
+	public static func addFunctionTranslation(_ newValue: FunctionTranslation) {
+		functionTranslations.append(newValue)
+	}
+
+	public static func getFunctionTranslation(forName name: String, type: String)
+		-> FunctionTranslation?
+	{
+		// Functions with unnamed parameters here are identified only by their prefix. For instance
+		// `f(_:_:)` here is named `f` but has been stored earlier as `f(_:_:)`.
+		for functionTranslation in functionTranslations {
+			if functionTranslation.swiftAPIName.hasPrefix(name), functionTranslation.type == type {
+				return functionTranslation
+			}
+		}
+
+		return nil
+	}
+
 	// MARK: - Interface
 
 	public func translateAST(_ sourceFile: GRYAST) throws -> String {
@@ -445,7 +473,7 @@ public class GRYKotlinTranslator {
 		}
 
 		let parameterStrings = try functionDeclaration.parameters.map
-			{ (parameter: GRYASTLabeledTypeWithValue) -> String in
+			{ (parameter: GRYASTFunctionParameter) -> String in
 				let labelAndTypeString = parameter.label + ": " + translateType(parameter.type)
 				if let defaultValue = parameter.value {
 					return try labelAndTypeString + " = "
@@ -853,6 +881,12 @@ public class GRYKotlinTranslator {
 			return "null"
 		case let .tupleExpression(pairs: pairs):
 			return try translateTupleExpression(pairs: pairs, withIndentation: indentation)
+		case let .tupleShuffleExpression(
+			labels: labels, indices: indices, expressions: expressions):
+
+			return try translateTupleShuffleExpression(
+				labels: labels, indices: indices, expressions: expressions,
+				withIndentation: indentation)
 		case .error:
 			return GRYKotlinTranslator.errorTranslation
 		}
@@ -940,19 +974,61 @@ public class GRYKotlinTranslator {
 		function: GRYExpression, parameters: GRYExpression, type: String,
 		withIndentation indentation: String, shouldAddNewlines: Bool = false) throws -> String
 	{
-		guard case let .tupleExpression(pairs: pairs) = parameters else {
+		var result = ""
+
+		var functionExpression = function
+		while case let .dotExpression(
+			leftExpression: leftExpression, rightExpression: rightExpression) = functionExpression
+		{
+			result += try translateExpression(leftExpression, withIndentation: indentation) + "."
+			functionExpression = rightExpression
+		}
+
+		let functionTranslation: FunctionTranslation?
+		if case let .declarationReferenceExpression(
+				identifier: identifier,
+				type: type,
+				isStandardLibrary: _,
+				isImplicit: _) = functionExpression
+		{
+			functionTranslation =
+				GRYKotlinTranslator.getFunctionTranslation(forName: identifier, type: type)
+		}
+		else {
+			functionTranslation = nil
+		}
+
+		let parametersTranslation: String
+		if case let .tupleExpression(pairs: pairs) = parameters {
+			parametersTranslation = try translateTupleExpression(
+				pairs: pairs,
+				translation: functionTranslation,
+				withIndentation: increaseIndentation(indentation),
+				shouldAddNewlines: shouldAddNewlines)
+		}
+		else if case let .tupleShuffleExpression(
+			labels: labels, indices: indices, expressions: expressions) = parameters
+		{
+			parametersTranslation = try translateTupleShuffleExpression(
+				labels: labels,
+				indices: indices,
+				expressions: expressions,
+				translation: functionTranslation,
+				withIndentation: increaseIndentation(indentation),
+				shouldAddNewlines: shouldAddNewlines)
+		}
+		else {
 			return try unexpectedASTStructureError(
-				"Expected the parameters to be a .tupleExpression",
+				"Expected the parameters to be either a .tupleExpression or a " +
+					".tupleShuffleExpression",
 				AST: .expression(expression:
 					.callExpression(function: function, parameters: parameters, type: type)))
 		}
 
-		let functionTranslation =
-			try translateExpression(function, withIndentation: indentation)
-		let parametersTranslation = try translateTupleExpression(
-			pairs: pairs, withIndentation: increaseIndentation(indentation),
-			shouldAddNewlines: shouldAddNewlines)
-		let result = functionTranslation + parametersTranslation
+		let prefix = try functionTranslation?.prefix ??
+			translateExpression(functionExpression, withIndentation: indentation)
+
+		result += "\(prefix)\(parametersTranslation)"
 
 		if !shouldAddNewlines, result.count >= GRYKotlinTranslator.lineLimit {
 			return try translateCallExpression(
@@ -1018,28 +1094,49 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateTupleExpression(
-		pairs: [GRYASTLabeledExpression], withIndentation indentation: String,
-		shouldAddNewlines: Bool = false) throws -> String
+		pairs: [GRYASTLabeledExpression], translation: FunctionTranslation? = nil,
+		withIndentation indentation: String, shouldAddNewlines: Bool = false) throws -> String
 	{
 		guard !pairs.isEmpty else {
 			return "()"
 		}
 
+		// In tuple expressions (when used as parameters for call expressions) there seems to be
+		// little risk of triggering errors in Kotlin. Therefore, we can try to omit some parameter
+		// labels in the call when they've also been omitted in Swift.
+		let parameters: [String?]
+		if let translationParameters = translation?.parameters {
+			parameters = zip(translationParameters, pairs).map { (translationParameter, pair) in
+				if pair.label == nil {
+					return nil
+				}
+				else {
+					return translationParameter
+				}
+			}
+		}
+		else {
+			parameters = pairs.map { $0.label }
+		}
+
+		let expressions = pairs.map { $0.expression }
+
 		// TODO: test
 		let expressionIndentation =
 			shouldAddNewlines ? increaseIndentation(indentation) : indentation
 
-		let translations = try pairs.map { (pair: GRYASTLabeledExpression) -> String in
-			let expression =
-				try translateExpression(pair.expression, withIndentation: expressionIndentation)
+		let translations = try zip(parameters, expressions)
+			.map { (parameter: String?, expression: GRYExpression) -> String in
+				let expression =
+					try translateExpression(expression, withIndentation: expressionIndentation)
 
-			if let label = pair.label {
-				return "\(label) = \(expression)"
+				if let label = parameter {
+					return "\(label) = \(expression)"
+				}
+				else {
+					return expression
+				}
 			}
-			else {
-				return expression
-			}
-		}
 
 		if !shouldAddNewlines {
 			let contents = translations.joined(separator: ", ")
@@ -1049,6 +1146,80 @@ public class GRYKotlinTranslator {
 			let contents = translations.joined(separator: ",\n\(indentation)")
 			return "(\n\(indentation)\(contents))"
 		}
+	}
+
+	// TODO: test
+	// TODO: newline support
+	private func translateTupleShuffleExpression(
+		labels: [String], indices: [GRYTupleShuffleIndex], expressions: [GRYExpression],
+		translation: FunctionTranslation? = nil, withIndentation indentation: String,
+		shouldAddNewlines: Bool = false) throws -> String
+	{
+		let parameters = translation?.parameters ?? labels
+
+		let increasedIndentation = increaseIndentation(indentation)
+
+		var translations = [String]()
+		var expressionIndex = 0
+
+		// Variadic arguments can't be named, which means all arguments before them can't be named
+		// either.
+		let containsVariadics = indices.contains { index in
+			if case .variadic = index {
+				return true
+			}
+			return false
+		}
+		var isBeforeVariadic = containsVariadics
+
+		guard parameters.count == indices.count else {
+			return try unexpectedASTStructureError(
+				"Different number of labels and indices in a tuple shuffle expression. " +
+					"Labels: \(labels), indices: \(indices)",
+				AST: .expression(expression: .tupleShuffleExpression(
+					labels: labels, indices: indices, expressions: expressions)))
+		}
+
+		for (label, index) in zip(parameters, indices) {
+			switch index {
+			case .absent:
+				break
+			case .present:
+				let expression = expressions[expressionIndex]
+
+				var result = ""
+
+				if !isBeforeVariadic {
+					result += "\(label) = "
+				}
+
+				result += try translateExpression(expression, withIndentation: increasedIndentation)
+
+				translations.append(result)
+
+				expressionIndex += 1
+			case let .variadic(count: variadicCount):
+				isBeforeVariadic = false
+				for _ in 0..<variadicCount {
+					let expression = expressions[expressionIndex]
+					let result = try translateExpression(
+						expression, withIndentation: increasedIndentation)
+					translations.append(result)
+					expressionIndex += 1
+				}
+			}
+		}
+
+		var result = "("
+
+		if shouldAddNewlines {
+			result += "\n\(indentation)"
+		}
+		let separator = shouldAddNewlines ? ",\n\(indentation)" : ", "
+
+		result += translations.joined(separator: separator) + ")"
+
+		return result
 	}
 
 	private func translateStringLiteral(value: String) -> String {

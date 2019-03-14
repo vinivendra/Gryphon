@@ -130,32 +130,16 @@ extension GRYTopLevelNode {
 				GRYPrintableTree("inherits", inherits),
 				GRYPrintableTree("members", members), ]
 		case let .functionDeclaration(value: functionDeclaration):
-
-			let name = functionDeclaration.prefix + "(" +
-				functionDeclaration.parameters.map { $0.label + ":" }.joined(separator: ", ") + ")"
-			let type = "(" + functionDeclaration.parameters.map { $0.type }
-				.joined(separator: ", ") + ") -> " + functionDeclaration.returnType
-
-			let defaultValueStrings: [GRYPrintableAsTree]
-			if functionDeclaration.parameters.contains(where: { $0.value != nil }) {
-				defaultValueStrings = functionDeclaration.parameters.map
-					{ (parameter: GRYASTLabeledTypeWithValue) -> GRYPrintableAsTree in
-						parameter.value ?? GRYPrintableTree("_")
-					}
-			}
-			else {
-				defaultValueStrings = []
-			}
-
 			return [
-				functionDeclaration.extendsType.map { GRYPrintableTree("Extends type \($0)") },
+				functionDeclaration.extendsType.map { GRYPrintableTree("extends type \($0)") },
 				functionDeclaration.isImplicit ? GRYPrintableTree("implicit") : nil,
 				functionDeclaration.isStatic ? GRYPrintableTree("static") : nil,
 				functionDeclaration.isMutating ? GRYPrintableTree("mutating") : nil,
 				GRYPrintableTree.initOrNil(functionDeclaration.access),
-				GRYPrintableTree(name),
-				GRYPrintableTree("Default Values", defaultValueStrings),
-				GRYPrintableTree("type: \(type)"),
+				GRYPrintableTree("type: \(functionDeclaration.functionType)"),
+				GRYPrintableTree("prefix: \(functionDeclaration.prefix)"),
+				GRYPrintableTree("parameters", functionDeclaration.parameters),
+				GRYPrintableTree("return type: \(functionDeclaration.returnType)"),
 				GRYPrintableTree("statements", functionDeclaration.statements ?? []), ]
 		case let .variableDeclaration(value: variableDeclaration):
 			return [
@@ -282,6 +266,8 @@ extension GRYExpression {
 			return "String"
 		case .tupleExpression:
 			return nil
+		case .tupleShuffleExpression:
+			return nil
 		case .error:
 			return "<<Error>>"
 		}
@@ -401,8 +387,76 @@ extension GRYExpression {
 			return ArrayReference<GRYPrintableAsTree?>(array: pairs.map {
 				GRYPrintableTree(($0.label ?? "_") + ":", [$0.expression])
 			})
+		case let .tupleShuffleExpression(
+			labels: labels, indices: indices, expressions: expressions):
+
+			return [
+				GRYPrintableTree("labels", labels),
+				GRYPrintableTree("indices", indices.map { $0.description }),
+				GRYPrintableTree("expressions", expressions), ]
 		case .error:
 			return []
 		}
+	}
+}
+
+public enum GRYTupleShuffleIndex: Equatable, CustomStringConvertible {
+	case variadic(count: Int)
+	case absent
+	case present
+
+	public var description: String {
+		switch self {
+		case let .variadic(count: count):
+			return "variadics: \(count)"
+		case .absent:
+			return "absent"
+		case .present:
+			return "present"
+		}
+	}
+
+	func encode(into encoder: GRYEncoder) throws {
+		switch self {
+		case let .variadic(count: count):
+			try "variadic".encode(into: encoder)
+			try count.encode(into: encoder)
+		case .absent:
+			try "absent".encode(into: encoder)
+		case .present:
+			try "present".encode(into: encoder)
+		}
+	}
+
+	static func decode(from decoder: GRYDecoder) throws -> GRYTupleShuffleIndex {
+		let caseName = try String.decode(from: decoder)
+		switch caseName {
+		case "variadic":
+			let count = try Int.decode(from: decoder)
+			return .variadic(count: count)
+		case "absent":
+			return .absent
+		case "present":
+			return .present
+		default:
+			throw GRYDecodingError.unexpectedContent(
+				decoder: decoder, errorMessage: "Expected a GRYParameterIndex")
+		}
+	}
+}
+
+//
+extension GRYASTFunctionParameter: GRYPrintableAsTree {
+	public var treeDescription: String {
+		return "parameter"
+	}
+
+	public var printableSubtrees: ArrayReference<GRYPrintableAsTree?> {
+		return [
+			self.apiLabel.map { GRYPrintableTree("api label: \($0)") },
+			GRYPrintableTree("label: \(self.label)"),
+			GRYPrintableTree("type: \(self.type)"),
+			GRYPrintableTree.initOrNil("value", [self.value]),
+		]
 	}
 }

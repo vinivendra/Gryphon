@@ -25,8 +25,8 @@ arrayTypes = [
 	'String', 'Int', 'Double', 'Bool', 'GRYTopLevelNode', 'GRYExpression',
 	'GRYASTLabeledExpression',
 	'GRYExpression?',
-	'GRYASTSwitchCase', 'GRYASTEnumElement', 'GRYASTLabeledType', 'GRYASTLabeledTypeWithValue',
-	'GRYASTVariableDeclaration',
+	'GRYASTSwitchCase', 'GRYASTEnumElement', 'GRYASTLabeledType', 'GRYASTFunctionParameter',
+	'GRYASTVariableDeclaration', 'GRYTupleShuffleIndex',
 	]
 dictionaryTypes = [
 	'String', 'Int', 'Double', 'Bool', 'GRYTopLevelNode', 'GRYExpression',

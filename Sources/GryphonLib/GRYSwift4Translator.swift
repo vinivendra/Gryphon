@@ -944,7 +944,8 @@ public class GRYSwift4Translator {
 		let access = functionDeclaration["access"]
 
 		// Find out if it's static and if it's mutating
-		guard let interfaceTypeComponents = functionDeclaration["interface type"]?
+		guard let interfaceType = functionDeclaration["interface type"],
+			let interfaceTypeComponents = functionDeclaration["interface type"]?
 				.split(withStringSeparator: " -> "),
 			let firstInterfaceTypeComponent = interfaceTypeComponents.first else
 		{
@@ -974,7 +975,7 @@ public class GRYSwift4Translator {
 		}
 
 		// Translate the parameters
-		var parameters = [GRYASTLabeledTypeWithValue]()
+		var parameters = [GRYASTFunctionParameter]()
 		if let parameterList = parameterList {
 			for parameter in parameterList.subtrees {
 				if let name = parameter.standaloneAttributes.first,
@@ -985,6 +986,7 @@ public class GRYSwift4Translator {
 					}
 
 					let parameterName = name
+					let parameterApiLabel = parameter["apiName"]
 					let parameterType = cleanUpType(type)
 
 					let defaultValue: GRYExpression?
@@ -995,8 +997,11 @@ public class GRYSwift4Translator {
 						defaultValue = nil
 					}
 
-					parameters.append(GRYASTLabeledTypeWithValue(
-						label: parameterName, type: parameterType, value: defaultValue))
+					parameters.append(GRYASTFunctionParameter(
+						label: parameterName,
+						apiLabel: parameterApiLabel,
+						type: parameterType,
+						value: defaultValue))
 				}
 				else {
 					return try unexpectedASTStructureError(
@@ -1027,6 +1032,7 @@ public class GRYSwift4Translator {
 			prefix: String(functionNamePrefix),
 			parameters: parameters,
 			returnType: returnType,
+			functionType: interfaceType,
 			isImplicit: isImplicit,
 			isStatic: isStatic,
 			isMutating: isMutating,
@@ -1124,6 +1130,7 @@ public class GRYSwift4Translator {
 					prefix: "get",
 					parameters: [],
 					returnType: type,
+					functionType: "() -> (\(type))",
 					isImplicit: false,
 					isStatic: false,
 					isMutating: false,
@@ -1137,9 +1144,10 @@ public class GRYSwift4Translator {
 			{
 				setter = .functionDeclaration(value: GRYASTFunctionDeclaration(
 					prefix: "set",
-					parameters: [GRYASTLabeledTypeWithValue(
-						label: "newValue", type: type, value: nil), ],
+					parameters: [GRYASTFunctionParameter(
+						label: "newValue", apiLabel: nil, type: type, value: nil), ],
 					returnType: "()",
+					functionType: "(\(type)) -> ()",
 					isImplicit: false,
 					isStatic: false,
 					isMutating: false,
@@ -1319,15 +1327,48 @@ public class GRYSwift4Translator {
 		else if let tupleShuffleExpression = callExpression
 			.subtree(named: "Tuple Shuffle Expression")
 		{
-			if let tupleExpression = tupleShuffleExpression.subtree(named: "Tuple Expression") {
-				parameters = try translate(tupleExpression: tupleExpression)
-			}
-			else if let parenthesesExpression = tupleShuffleExpression
+			if let parenthesesExpression = tupleShuffleExpression
 				.subtree(named: "Parentheses Expression")
 			{
 				let expression = try translate(expression: parenthesesExpression)
 				parameters = .tupleExpression(
 					pairs: [GRYASTLabeledExpression(label: nil, expression: expression)])
+			}
+			else if let tupleExpression = tupleShuffleExpression.subtree(named: "Tuple Expression"),
+				let type = tupleShuffleExpression["type"],
+				let elements = tupleShuffleExpression["elements"],
+				let rawIndices = elements.split(withStringSeparator: ", ").map(Int.init) as? [Int]
+			{
+				var indices = [GRYTupleShuffleIndex]()
+				for rawIndex in rawIndices {
+					if rawIndex == -2 {
+						guard let variadicCount = tupleShuffleExpression["variadic_sources"]?
+							.split(withStringSeparator: ", ").count else
+						{
+							return try unexpectedExpressionStructureError(
+								"Failed to read variadic sources", AST: callExpression)
+						}
+						indices.append(.variadic(count: variadicCount))
+					}
+					else if rawIndex == -1 {
+						indices.append(.absent)
+					}
+					else if rawIndex >= 0 {
+						indices.append(.present)
+					}
+					else {
+						return try unexpectedExpressionStructureError(
+							"Unknown tuple shuffle index: \(rawIndex)", AST: callExpression)
+					}
+				}
+
+				let labels = String(type.dropFirst().dropLast())
+					.split(withStringSeparator: ", ")
+					.map { $0.prefix(while: { $0 != ":" }) }
+					.map(String.init)
+				let expressions = try tupleExpression.subtrees.map(translate(expression:))
+				parameters = .tupleShuffleExpression(
+					labels: labels, indices: indices, expressions: expressions.array)
 			}
 			else {
 				return try unexpectedExpressionStructureError(

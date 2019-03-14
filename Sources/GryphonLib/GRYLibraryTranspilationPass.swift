@@ -254,6 +254,17 @@ extension GRYExpression {
 						&& leftPair.label == rightPair.label
 				}
 				return result
+			case let
+				(.tupleShuffleExpression(
+					labels: leftLabels, indices: leftIndices, expressions: leftExpressions),
+				 .tupleShuffleExpression(
+					labels: rightLabels, indices: rightIndices, expressions: rightExpressions)):
+
+				var result = (leftLabels == rightLabels) && (leftIndices == rightIndices)
+				for (leftExpression, rightExpression) in zip(leftExpressions, rightExpressions) {
+					result = result && leftExpression.matches(rightExpression, &matches)
+				}
+				return result
 			default:
 				return false
 			}
