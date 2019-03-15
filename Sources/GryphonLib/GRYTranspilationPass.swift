@@ -504,8 +504,7 @@ public class GRYInsertCodeLiteralsTranspilationPass: GRYTranspilationPass {
 	{
 		if case let .declarationReferenceExpression(
 				identifier: identifier, type: _, isStandardLibrary: _, isImplicit: _) = function,
-			identifier.hasPrefix("GRYInsert") ||
-				identifier.hasPrefix("GRYAlternative"),
+			identifier.hasPrefix("GRYInsert"),
 			case let .tupleExpression(pairs: pairs) = parameters,
 			let lastPair = pairs.last,
 			case let .literalStringExpression(value: value) = lastPair.expression
@@ -565,7 +564,7 @@ public class GRYRemoveGryphonDeclarationsTranspilationPass: GRYTranspilationPass
 		-> [GRYTopLevelNode]
 	{
 		let prefix = functionDeclaration.prefix
-		if prefix.hasPrefix("GRYInsert") || prefix.hasPrefix("GRYAlternative") ||
+		if prefix.hasPrefix("GRYInsert") ||
 			prefix.hasPrefix("GRYIgnoreNext") ||
 			prefix.hasPrefix("GRYIgnoreThisFunction")
 		{

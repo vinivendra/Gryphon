@@ -14,6 +14,8 @@
 * limitations under the License.
 */
 
+import Foundation
+
 public struct GRYFile {
 	private var lines: [Substring]
 
@@ -21,24 +23,36 @@ public struct GRYFile {
 		self.lines = contents.split(separator: "\n", omittingEmptySubsequences: false)
 	}
 
-	public func getLine(_ lineNumber: Int) -> Substring? {
-		return lines[safe: lineNumber - 1]
+	public func getLine(_ lineNumber: Int) -> String? {
+		if let line = lines[safe: lineNumber - 1] {
+			return String(line)
+		}
+		else {
+			return nil
+		}
 	}
 
-	public func getCommentFromLine(_ lineNumber: Int) -> String? {
+	public func getCommentsFromLine(_ lineNumber: Int) -> [String: String]? {
 		guard let line = getLine(lineNumber) else {
 			return nil
 		}
 
-		let wholeStringRange = Range<String.Index>(uncheckedBounds:
-			(lower: line.startIndex, upper: line.endIndex))
-		if let commentRange = line.range(of: "// gryphon: ", range: wholeStringRange) {
-			let commentSuffix = line[commentRange.upperBound...]
-			if !commentSuffix.isEmpty {
-				return String(commentSuffix)
+		let commentComponents = line.split(withStringSeparator: "// ").dropFirst()
+		var result = [String: String]()
+		for component in commentComponents {
+			let keyAndValue = component.split(withStringSeparator: ": ")
+			if let key = keyAndValue.first {
+				let value = keyAndValue.dropFirst().joined()
+					.trimmingCharacters(in: CharacterSet.whitespaces)
+				result[key] = value
 			}
 		}
 
-		return nil
+		if result.isEmpty {
+			return nil
+		}
+		else {
+			return result
+		}
 	}
 }

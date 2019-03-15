@@ -18,10 +18,6 @@ func GRYIgnoreNext() { }
 
 func GRYInsert(_ kotlinExpression: String) { }
 
-func GRYAlternative<T>(swift swiftExpression: T, kotlin kotlinExpression: String) -> T {
-	return swiftExpression
-}
-
 protocol GRYIgnore { }
 
 //
@@ -40,11 +36,22 @@ fun myFunction(): String {
 }
 
 // Kotlin literals as expressions
-let languageName = GRYAlternative(swift: "swift", kotlin: "\"kotlin\"")
+let languageName = "swift" // value: \"kotlin\"
 print("Hello from \(languageName)!")
 
-let magicNumber = 40 + GRYAlternative(swift: 2, kotlin: "5-3")
+let magicNumber: Int = 40 + // value: this will be ignored
+2 // value: 40 + 5-3
 print(magicNumber)
+
+func f(a: Int = 0,
+	   b: Int = 0 // value: 1
+	) {
+	print(a + b)
+}
+
+f(a: 0,
+  b: 0 // value: 1
+)
 
 // Kotlin literals as statements
 GRYInsert("println(\"This will be ignored by swift, but not by kotlin.\")")
@@ -55,7 +62,7 @@ GRYIgnoreNext()
 print("This will be ignored by kotlin, but not by swift.")
 
 // Call something swift can't parse
-let squareRoot = GRYAlternative(swift: sqrt(9), kotlin: "Math.sqrt(9.0)")
+let squareRoot = sqrt(9) // value: Math.sqrt(9.0)
 print(squareRoot)
 
 // Ignore a swift class or an enum
@@ -65,11 +72,13 @@ enum IgnoredEnum: GRYIgnore { }
 // Add annotations to a property
 protocol A {
 	var x: Int { get }
+	var y: Int { get }
 }
 
 class B: A {
-	var x: Int = 1 // gryphon: override
-	var y: Int = 2
+	var x: Int = 1 // annotation: override
+	var y: Int = 2 // annotation: override // value: 3
+	var z: Int = 0
 }
 
 print(B().x)

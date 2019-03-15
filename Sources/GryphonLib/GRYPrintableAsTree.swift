@@ -15,11 +15,12 @@
 */
 
 public class GRYPrintableTree: GRYPrintableAsTree {
-	public var treeDescription: String // gryphon: override
-	public var printableSubtrees: ArrayReference<GRYPrintableAsTree?> = [] // gryphon: override
+	public var treeDescription: String // annotation: override
+	public var printableSubtrees: ArrayReference<GRYPrintableAsTree?> // annotation: override
 
 	init(_ description: String) {
 		self.treeDescription = description
+		self.printableSubtrees = []
 	}
 
 	init(_ description: String, _ subtrees: ArrayReference<GRYPrintableAsTree?>) {

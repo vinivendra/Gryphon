@@ -118,6 +118,10 @@ public class GRYSwift4Translator {
 
 	internal func translate(expression: GRYSwiftAST) throws -> GRYExpression {
 
+		if let valueReplacement = getCommentsForNode(expression)?["value"] {
+			return GRYExpression.literalCodeExpression(string: valueReplacement)
+		}
+
 		switch expression.name {
 		case "Array Expression":
 			return try translate(arrayExpression: expression)
@@ -414,7 +418,7 @@ public class GRYSwift4Translator {
 					AST: enumDeclaration)
 			}
 
-			let annotations = getCommentForNode(enumElementDeclaration)
+			let annotations = getCommentsForNode(enumElementDeclaration)?["annotation"]
 
 			if !elementName.contains("(") {
 				elements.append(GRYASTEnumElement(
@@ -1079,7 +1083,7 @@ public class GRYSwift4Translator {
 
 		let isImplicit = variableDeclaration.standaloneAttributes.contains("implicit")
 
-		let annotations = getCommentForNode(variableDeclaration)
+		let annotations = getCommentsForNode(variableDeclaration)?["annotation"]
 
 		let isStatic: Bool
 		if let accessorDeclaration = variableDeclaration.subtree(named: "Accessor Declaration"),
@@ -1823,7 +1827,7 @@ public class GRYSwift4Translator {
 		return (declaration: String(identifier), isStandardLibrary: isStandardLibrary)
 	}
 
-	internal func getCommentForNode(_ ast: GRYSwiftAST) -> String? {
+	internal func getCommentsForNode(_ ast: GRYSwiftAST) -> [String: String]? {
 		if let rangeString = ast["range"] {
 			let wholeStringRange = Range<String.Index>(uncheckedBounds:
 				(lower: rangeString.startIndex, upper: rangeString.endIndex))
@@ -1831,7 +1835,7 @@ public class GRYSwift4Translator {
 				let lineNumberSuffix = rangeString[lineRange.upperBound...]
 				let lineDigits = lineNumberSuffix.prefix(while: { $0.isNumber })
 				if let lineNumber = Int(lineDigits) {
-					return sourceFile?.getCommentFromLine(lineNumber)
+					return sourceFile?.getCommentsFromLine(lineNumber)
 				}
 			}
 		}
