@@ -414,15 +414,7 @@ public class GRYSwift4Translator {
 					AST: enumDeclaration)
 			}
 
-			let annotations: String?
-			if let rangeString = enumElementDeclaration["range"],
-				let comment = getCommentFromLineInRange(rangeString)
-			{
-				annotations = comment
-			}
-			else {
-				annotations = nil
-			}
+			let annotations = getCommentForNode(enumElementDeclaration)
 
 			if !elementName.contains("(") {
 				elements.append(GRYASTEnumElement(
@@ -1087,15 +1079,7 @@ public class GRYSwift4Translator {
 
 		let isImplicit = variableDeclaration.standaloneAttributes.contains("implicit")
 
-		let annotations: String?
-		if let rangeString = variableDeclaration["range"],
-			let comment = getCommentFromLineInRange(rangeString)
-		{
-			annotations = comment
-		}
-		else {
-			annotations = nil
-		}
+		let annotations = getCommentForNode(variableDeclaration)
 
 		let isStatic: Bool
 		if let accessorDeclaration = variableDeclaration.subtree(named: "Accessor Declaration"),
@@ -1839,14 +1823,16 @@ public class GRYSwift4Translator {
 		return (declaration: String(identifier), isStandardLibrary: isStandardLibrary)
 	}
 
-	internal func getCommentFromLineInRange(_ rangeString: String) -> String? {
-		let wholeStringRange = Range<String.Index>(uncheckedBounds:
-			(lower: rangeString.startIndex, upper: rangeString.endIndex))
-		if let lineRange = rangeString.range(of: "line:", range: wholeStringRange) {
-			let lineNumberSuffix = rangeString[lineRange.upperBound...]
-			let lineDigits = lineNumberSuffix.prefix(while: { $0.isNumber })
-			if let lineNumber = Int(lineDigits) {
-				return sourceFile?.getCommentFromLine(lineNumber)
+	internal func getCommentForNode(_ ast: GRYSwiftAST) -> String? {
+		if let rangeString = ast["range"] {
+			let wholeStringRange = Range<String.Index>(uncheckedBounds:
+				(lower: rangeString.startIndex, upper: rangeString.endIndex))
+			if let lineRange = rangeString.range(of: "line:", range: wholeStringRange) {
+				let lineNumberSuffix = rangeString[lineRange.upperBound...]
+				let lineDigits = lineNumberSuffix.prefix(while: { $0.isNumber })
+				if let lineNumber = Int(lineDigits) {
+					return sourceFile?.getCommentFromLine(lineNumber)
+				}
 			}
 		}
 
