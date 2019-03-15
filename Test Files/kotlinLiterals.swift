@@ -60,7 +60,7 @@ print("This will be ignored by kotlin, but not by swift.") // kotlin: ignore
 let squareRoot = sqrt(9) // value: Math.sqrt(9.0)
 print(squareRoot)
 
-// Ignore a swift class or an enum
+// Ignore a swift declaration
 class IgnoredClass // kotlin: ignore
 {
 }
@@ -69,6 +69,9 @@ enum IgnoredEnum // kotlin: ignore
 }
 enum IgnoredStruct // kotlin: ignore
 {
+}
+
+func a() { // kotlin: ignore
 }
 
 // Add annotations to a property

@@ -28,9 +28,7 @@ public class GRYPrintableTree: GRYPrintableAsTree {
 		self.printableSubtrees = subtrees
 	}
 
-	init(_ description: String, _ subtrees: ArrayReference<String?>) {
-		GRYIgnoreThisFunction()
-
+	init(_ description: String, _ subtrees: ArrayReference<String?>) { // kotlin: ignore
 		let stringToTree: (String?) -> (GRYPrintableAsTree?) = { string in
 			if let string = string {
 				return GRYPrintableTree(string)

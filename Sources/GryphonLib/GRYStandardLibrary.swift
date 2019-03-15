@@ -18,8 +18,6 @@
 
 func GRYInsert(_: String) { }
 
-func GRYIgnoreThisFunction() { }
-
 // MARK: - Swift standard library
 
 public class ArrayReference<Element>: // kotlin: ignore
@@ -126,8 +124,7 @@ public class ArrayReference<Element>: // kotlin: ignore
 }
 
 extension ArrayReference: Equatable where Element: Equatable {
-	public static func == (lhs: ArrayReference, rhs: ArrayReference) -> Bool {
-		GRYIgnoreThisFunction()
+	public static func == (lhs: ArrayReference, rhs: ArrayReference) -> Bool { // kotlin: ignore
 		return lhs.array == rhs.array
 	}
 }

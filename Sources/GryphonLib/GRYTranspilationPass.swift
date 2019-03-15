@@ -536,31 +536,7 @@ public class GRYRemoveGryphonDeclarationsTranspilationPass: GRYTranspilationPass
 		-> [GRYTopLevelNode]
 	{
 		let prefix = functionDeclaration.prefix
-		if prefix.hasPrefix("GRYInsert") ||
-			prefix.hasPrefix("GRYIgnoreThisFunction")
-		{
-			return []
-		}
-		else {
-			return super.replaceFunctionDeclaration(functionDeclaration)
-		}
-	}
-}
-
-public class GRYRemoveIgnoredDeclarationsTranspilationPass: GRYTranspilationPass {
-	override func replaceFunctionDeclaration(_ functionDeclaration: GRYASTFunctionDeclaration)
-		-> [GRYTopLevelNode]
-	{
-		if let statements = functionDeclaration.statements,
-			let firstStatement = statements.first,
-			case let .expression(expression: callExpression) = firstStatement,
-			case let .callExpression(
-				function: functionExpression, parameters: _, type: _) = callExpression,
-			case let .declarationReferenceExpression(
-				identifier: identifier, type: _, isStandardLibrary: _,
-				isImplicit: _) = functionExpression,
-			identifier.hasPrefix("GRYIgnoreThisFunction")
-		{
+		if prefix.hasPrefix("GRYInsert") {
 			return []
 		}
 		else {
@@ -1233,7 +1209,6 @@ public extension GRYTranspilationPass {
 		var result = sourceFile
 		result = GRYLibraryTranspilationPass().run(on: result)
 		result = GRYRemoveGryphonDeclarationsTranspilationPass().run(on: result)
-		result = GRYRemoveIgnoredDeclarationsTranspilationPass().run(on: result)
 		result = GRYRemoveImplicitDeclarationsTranspilationPass().run(on: result)
 		result = GRYRemoveParenthesesTranspilationPass().run(on: result)
 		result = GRYInsertCodeLiteralsTranspilationPass().run(on: result)
