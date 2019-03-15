@@ -516,34 +516,6 @@ public class GRYInsertCodeLiteralsTranspilationPass: GRYTranspilationPass {
 	}
 }
 
-public class GRYIgnoreNextTranspilationPass: GRYTranspilationPass {
-	var shouldIgnoreNext = false
-
-	override func replaceCallExpression(
-		function: GRYExpression, parameters: GRYExpression, type: String) -> GRYExpression
-	{
-		if case let .declarationReferenceExpression(
-				identifier: identifier, type: _, isStandardLibrary: _, isImplicit: _) = function,
-			identifier.hasPrefix("GRYIgnoreNext")
-		{
-			shouldIgnoreNext = true
-			return .literalCodeExpression(string: "")
-		}
-
-		return .callExpression(function: function, parameters: parameters, type: type)
-	}
-
-	override func replaceTopLevelNode(_ node: GRYTopLevelNode) -> [GRYTopLevelNode] {
-		if shouldIgnoreNext {
-			shouldIgnoreNext = false
-			return []
-		}
-		else {
-			return super.replaceTopLevelNode(node)
-		}
-	}
-}
-
 public class GRYDeclarationsTranspilationPass: GRYTranspilationPass {
 	override func replaceFunctionDeclaration(_ functionDeclaration: GRYASTFunctionDeclaration)
 		-> [GRYTopLevelNode]
@@ -565,7 +537,6 @@ public class GRYRemoveGryphonDeclarationsTranspilationPass: GRYTranspilationPass
 	{
 		let prefix = functionDeclaration.prefix
 		if prefix.hasPrefix("GRYInsert") ||
-			prefix.hasPrefix("GRYIgnoreNext") ||
 			prefix.hasPrefix("GRYIgnoreThisFunction")
 		{
 			return []
@@ -1301,7 +1272,6 @@ public extension GRYTranspilationPass {
 		result = GRYRemoveIgnoredDeclarationsTranspilationPass().run(on: result)
 		result = GRYRemoveImplicitDeclarationsTranspilationPass().run(on: result)
 		result = GRYRemoveParenthesesTranspilationPass().run(on: result)
-		result = GRYIgnoreNextTranspilationPass().run(on: result)
 		result = GRYInsertCodeLiteralsTranspilationPass().run(on: result)
 		result = GRYDeclarationsTranspilationPass().run(on: result)
 

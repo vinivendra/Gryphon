@@ -64,6 +64,11 @@ public class GRYSwift4Translator {
 	}
 
 	internal func translate(subtree: GRYSwiftAST) throws -> [GRYTopLevelNode?] {
+
+		if getCommentsForNode(subtree)?["kotlin"] == "ignore" {
+			return []
+		}
+
 		var result: GRYTopLevelNode?
 
 		switch subtree.name {

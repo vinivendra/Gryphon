@@ -14,8 +14,6 @@
 * limitations under the License.
 */
 
-func GRYIgnoreNext() { }
-
 func GRYInsert(_ kotlinExpression: String) { }
 
 protocol GRYIgnore { }
@@ -58,8 +56,7 @@ GRYInsert("println(\"This will be ignored by swift, but not by kotlin.\")")
 GRYInsert("myFunction()")
 
 // Ignore swift statements
-GRYIgnoreNext()
-print("This will be ignored by kotlin, but not by swift.")
+print("This will be ignored by kotlin, but not by swift.") // kotlin: ignore
 
 // Call something swift can't parse
 let squareRoot = sqrt(9) // value: Math.sqrt(9.0)
