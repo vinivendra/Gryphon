@@ -566,7 +566,7 @@ public class GRYRemoveGryphonDeclarationsTranspilationPass: GRYTranspilationPass
 	{
 		let prefix = functionDeclaration.prefix
 		if prefix.hasPrefix("GRYInsert") || prefix.hasPrefix("GRYAlternative") ||
-			prefix.hasPrefix("GRYIgnoreNext") || prefix.hasPrefix("GRYAnnotations") ||
+			prefix.hasPrefix("GRYIgnoreNext") ||
 			prefix.hasPrefix("GRYIgnoreThisFunction")
 		{
 			return []
@@ -661,34 +661,6 @@ public class GRYRemoveImplicitDeclarationsTranspilationPass: GRYTranspilationPas
 			return super.replaceTypealiasDeclaration(
 				identifier: identifier, type: type, isImplicit: isImplicit)
 		}
-	}
-}
-
-/// Annotations added manually via a call to GRYAnnotations must be sent into their proper place
-/// in the data structure, and the function call must be removed.
-public class GRYAddAnnotationsTranspilationPass: GRYTranspilationPass {
-	override func replaceVariableDeclaration(_ variableDeclaration: GRYASTVariableDeclaration)
-		-> GRYASTVariableDeclaration
-	{
-		if let expression = variableDeclaration.expression,
-			case let .callExpression(
-				function: function, parameters: parameters, type: _) = expression,
-			case let .declarationReferenceExpression(
-				identifier: gryAnnotationsIdentifier, type: _, isStandardLibrary: false,
-				isImplicit: false) = function,
-			gryAnnotationsIdentifier == "GRYAnnotations",
-			case let .tupleExpression(pairs: pairs) = parameters,
-			let annotationsExpression = pairs.first?.expression,
-			case let .literalStringExpression(value: newAnnotations) = annotationsExpression,
-			let newExpression = pairs.last?.expression
-		{
-			var variableDeclaration = variableDeclaration
-			variableDeclaration.expression = newExpression
-			variableDeclaration.annotations = newAnnotations
-			return variableDeclaration
-		}
-
-		return variableDeclaration
 	}
 }
 
@@ -1329,7 +1301,6 @@ public extension GRYTranspilationPass {
 		result = GRYRemoveGryphonDeclarationsTranspilationPass().run(on: result)
 		result = GRYRemoveIgnoredDeclarationsTranspilationPass().run(on: result)
 		result = GRYRemoveImplicitDeclarationsTranspilationPass().run(on: result)
-		result = GRYAddAnnotationsTranspilationPass().run(on: result)
 		result = GRYRemoveParenthesesTranspilationPass().run(on: result)
 		result = GRYIgnoreNextTranspilationPass().run(on: result)
 		result = GRYInsertCodeLiteralsTranspilationPass().run(on: result)

@@ -16,8 +16,6 @@
 
 // MARK: Literal source code manipulation
 
-func GRYAnnotations<T>(_: String, _ t: T) -> T { return t }
-
 func GRYInsert(_: String) { }
 
 func GRYIgnoreThisFunction() { }

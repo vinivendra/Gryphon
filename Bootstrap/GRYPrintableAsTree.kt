@@ -31,7 +31,7 @@ class GRYPrintableTree: GRYPrintableAsTree {
 		}
 	}
 
-	override var treeDescription: String = ""
+	override var treeDescription: String
 	override var printableSubtrees: MutableList<GRYPrintableAsTree?> = mutableListOf()
 
 	constructor(description: String) {

@@ -1087,6 +1087,16 @@ public class GRYSwift4Translator {
 
 		let isImplicit = variableDeclaration.standaloneAttributes.contains("implicit")
 
+		let annotations: String?
+		if let rangeString = variableDeclaration["range"],
+			let comment = getCommentFromLineInRange(rangeString)
+		{
+			annotations = comment
+		}
+		else {
+			annotations = nil
+		}
+
 		let isStatic: Bool
 		if let accessorDeclaration = variableDeclaration.subtree(named: "Accessor Declaration"),
 			let interfaceType = accessorDeclaration["interface type"],
@@ -1184,7 +1194,7 @@ public class GRYSwift4Translator {
 			isImplicit: isImplicit,
 			isStatic: isStatic,
 			extendsType: nil,
-			annotations: nil))
+			annotations: annotations))
 	}
 
 	internal func translate(callExpression: GRYSwiftAST) throws -> GRYExpression {

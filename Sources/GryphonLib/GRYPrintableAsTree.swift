@@ -15,9 +15,8 @@
 */
 
 public class GRYPrintableTree: GRYPrintableAsTree {
-	public var treeDescription: String = GRYAnnotations("override", "")
-	public var printableSubtrees: ArrayReference<GRYPrintableAsTree?> =
-		GRYAnnotations("override", [])
+	public var treeDescription: String // gryphon: override
+	public var printableSubtrees: ArrayReference<GRYPrintableAsTree?> = [] // gryphon: override
 
 	init(_ description: String) {
 		self.treeDescription = description

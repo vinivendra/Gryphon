@@ -22,10 +22,6 @@ func GRYAlternative<T>(swift swiftExpression: T, kotlin kotlinExpression: String
 	return swiftExpression
 }
 
-func GRYAnnotations<T>(_: String, _ value:T) -> T {
-	return value
-}
-
 protocol GRYIgnore { }
 
 //
@@ -72,7 +68,7 @@ protocol A {
 }
 
 class B: A {
-	var x: Int = GRYAnnotations("override", 1)
+	var x: Int = 1 // gryphon: override
 	var y: Int = 2
 }
 
