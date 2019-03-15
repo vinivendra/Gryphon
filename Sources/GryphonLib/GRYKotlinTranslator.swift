@@ -104,6 +104,8 @@ public class GRYKotlinTranslator {
 
 	// MARK: - Interface
 
+	public init() { }
+
 	public func translateAST(_ sourceFile: GRYAST) throws -> String {
 		let declarationsTranslation =
 			try translate(subtrees: sourceFile.declarations, withIndentation: "")
@@ -316,16 +318,18 @@ public class GRYKotlinTranslator {
 		enumName: String, element: GRYASTEnumElement, withIndentation indentation: String) -> String
 	{
 		let capitalizedElementName = element.name.capitalizedAsCamelCase
+		let annotationsString = (element.annotations == nil) ? "": "\(element.annotations!) "
+
+		let result = "\(indentation)\(annotationsString)class \(capitalizedElementName)"
 
 		if element.associatedValues.isEmpty {
-			return "\(indentation)class \(capitalizedElementName): \(enumName)()\n"
+			return result + ": \(enumName)()\n"
 		}
 		else {
 			let associatedValuesString =
 				element.associatedValues
 					.map { "val \($0.label): \($0.type)" }.joined(separator: ", ")
-			return "\(indentation)class \(capitalizedElementName)(\(associatedValuesString)): " +
-				"\(enumName)()\n"
+			return result + "(\(associatedValuesString)): \(enumName)()\n"
 		}
 	}
 

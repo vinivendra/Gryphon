@@ -57,6 +57,23 @@ internal extension String {
 	}
 }
 
+//
+extension Character {
+	var isNumber: Bool {
+		return self == "0" ||
+			self == "1" ||
+			self == "2" ||
+			self == "3" ||
+			self == "4" ||
+			self == "5" ||
+			self == "6" ||
+			self == "7" ||
+			self == "8" ||
+			self == "9"
+	}
+}
+
+//
 extension Array {
 	/// Returns nil if index is out of bounds.
 	subscript (safe index: Int) -> Element? {

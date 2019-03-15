@@ -107,10 +107,15 @@ extension GRYTopLevelNode {
 			members: members,
 			isImplicit: isImplicit):
 
-			let elementTrees = elements.map {
-				GRYPrintableTree(".\($0.name)", [
-					GRYPrintableTree(
-						"values", $0.associatedValues.map { "\($0.label): \($0.type)" }), ])
+			let elementTrees = elements.map { (element: GRYASTEnumElement) -> GRYPrintableTree in
+				let associatedValues = element.associatedValues
+					.map { "\($0.label): \($0.type)" }
+					.joined(separator: ", ")
+				let associatedValuesString = (associatedValues.isEmpty) ? nil :
+					"values: \(associatedValues)"
+				return GRYPrintableTree(".\(element.name)", [
+					GRYPrintableTree.initOrNil(associatedValuesString),
+					GRYPrintableTree.initOrNil(element.annotations), ])
 			}
 
 			return [

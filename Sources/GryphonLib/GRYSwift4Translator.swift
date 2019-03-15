@@ -22,7 +22,7 @@ public class GRYSwift4Translator {
 	let errorDanglingPatternDeclaration: PatternBindingDeclaration =
 		(identifier: "<<Error>>", type: "<<Error>>", expression: GRYExpression.error)
 
-	var errors = [String]()
+	public var sourceFile: GRYFile?
 
 	// MARK: - Interface
 	public init() { }
@@ -409,8 +409,19 @@ public class GRYSwift4Translator {
 					AST: enumDeclaration)
 			}
 
+			let annotations: String?
+			if let rangeString = enumElementDeclaration["range"],
+				let comment = getCommentFromLineInRange(rangeString)
+			{
+				annotations = comment
+			}
+			else {
+				annotations = nil
+			}
+
 			if !elementName.contains("(") {
-				elements.append(GRYASTEnumElement(name: elementName, associatedValues: []))
+				elements.append(GRYASTEnumElement(
+					name: elementName, associatedValues: [], annotations: annotations))
 			}
 			else {
 				let parenthesisIndex = elementName.firstIndex(of: "(")!
@@ -431,7 +442,8 @@ public class GRYSwift4Translator {
 
 				let associatedValues = zip(valueLabels, valueTypes).map(GRYASTLabeledType.init)
 
-				elements.append(GRYASTEnumElement(name: prefix, associatedValues: associatedValues))
+				elements.append(GRYASTEnumElement(
+					name: prefix, associatedValues: associatedValues, annotations: annotations))
 			}
 		}
 
@@ -1810,6 +1822,20 @@ public class GRYSwift4Translator {
 		let identifier = declaration[identifierStartIndex..<index]
 
 		return (declaration: String(identifier), isStandardLibrary: isStandardLibrary)
+	}
+
+	internal func getCommentFromLineInRange(_ rangeString: String) -> String? {
+		let wholeStringRange = Range<String.Index>(uncheckedBounds:
+			(lower: rangeString.startIndex, upper: rangeString.endIndex))
+		if let lineRange = rangeString.range(of: "line:", range: wholeStringRange) {
+			let lineNumberSuffix = rangeString[lineRange.upperBound...]
+			let lineDigits = lineNumberSuffix.prefix(while: { $0.isNumber })
+			if let lineNumber = Int(lineDigits) {
+				return sourceFile?.getCommentFromLine(lineNumber)
+			}
+		}
+
+		return nil
 	}
 
 	internal func cleanUpType(_ type: String) -> String {

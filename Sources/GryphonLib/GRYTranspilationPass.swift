@@ -122,14 +122,22 @@ public class GRYTranspilationPass {
 	{
 		return [
 			.enumDeclaration(
-				access: access, name: name, inherits: inherits, elements: elements,
+				access: access, name: name, inherits: inherits,
+				elements: elements.flatMap {
+						replaceEnumElementDeclaration(
+							name: $0.name,
+							associatedValues: $0.associatedValues,
+							annotations: $0.annotations)
+					},
 				members: replaceTopLevelNodes(members), isImplicit: isImplicit), ]
 	}
 
 	func replaceEnumElementDeclaration(
-		name: String, associatedValues: [GRYASTLabeledType]) -> [GRYASTEnumElement]
+		name: String, associatedValues: [GRYASTLabeledType], annotations: String?)
+		-> [GRYASTEnumElement]
 	{
-		return [GRYASTEnumElement(name: name, associatedValues: associatedValues)]
+		return [GRYASTEnumElement(
+			name: name, associatedValues: associatedValues, annotations: annotations), ]
 	}
 
 	func replaceProtocolDeclaration(name: String, members: [GRYTopLevelNode]) -> [GRYTopLevelNode] {

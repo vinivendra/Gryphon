@@ -724,21 +724,6 @@ internal class GRYDecoder {
 	}
 }
 
-private extension Character {
-	var isNumber: Bool {
-		return self == "0" ||
-			self == "1" ||
-			self == "2" ||
-			self == "3" ||
-			self == "4" ||
-			self == "5" ||
-			self == "6" ||
-			self == "7" ||
-			self == "8" ||
-			self == "9"
-	}
-}
-
 // MARK: - Encoder
 public class GRYEncoder {
 	private var indentation = ""

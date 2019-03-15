@@ -299,7 +299,8 @@ astElements = [
 	['struct', 'GRYASTSwitchCase',
 		[['expression', 'GRYExpression?'], ['statements', '[GRYTopLevelNode]']]],
 	['struct', 'GRYASTEnumElement',
-		[['name', 'String'], ['associatedValues', '[GRYASTLabeledType]']]],
+		[['name', 'String'], ['associatedValues', '[GRYASTLabeledType]'],
+		['annotations', 'String?']]],
 	]
 }%
 %for astElement in astElements:
