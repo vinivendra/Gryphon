@@ -22,12 +22,17 @@ public class GRYSwift4Translator {
 	let errorDanglingPatternDeclaration: PatternBindingDeclaration =
 		(identifier: "<<Error>>", type: "<<Error>>", expression: GRYExpression.error)
 
-	public var sourceFile: GRYFile?
+	private var sourceFile: GRYFile?
 
 	// MARK: - Interface
 	public init() { }
 
 	public func translateAST(_ ast: GRYSwiftAST) throws -> GRYAST {
+		let filePath = ast.standaloneAttributes[0]
+		if let contents = try? String(contentsOfFile: filePath) {
+			sourceFile = GRYFile(contents: contents)
+		}
+
 		// First, translate declarations that shouldn't be inside the main function
 		let declarationNames = [
 			"Protocol",
