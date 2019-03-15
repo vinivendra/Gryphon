@@ -292,11 +292,15 @@ public class GRYSwift4Translator {
 			identifier: identifier, type: typealiasDeclaration["type"]!, isImplicit: isImplicit)
 	}
 
-	internal func translate(classDeclaration: GRYSwiftAST) throws -> GRYTopLevelNode {
+	internal func translate(classDeclaration: GRYSwiftAST) throws -> GRYTopLevelNode? {
 		guard classDeclaration.name == "Class Declaration" else {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(classDeclaration.name) as 'Class Declaration'",
 				AST: classDeclaration)
+		}
+
+		if getCommentsForNode(classDeclaration)?["kotlin"] == "ignore" {
+			return nil
 		}
 
 		// Get the class name
@@ -311,21 +315,21 @@ public class GRYSwift4Translator {
 			inheritanceArray = []
 		}
 
-		guard !inheritanceArray.contains("GRYIgnore") else {
-			return .classDeclaration(name: name, inherits: inheritanceArray, members: [])
-		}
-
 		// Translate the contents
 		let classContents = try translate(subtrees: classDeclaration.subtrees.array)
 
 		return .classDeclaration(name: name, inherits: inheritanceArray, members: classContents)
 	}
 
-	internal func translate(structDeclaration: GRYSwiftAST) throws -> GRYTopLevelNode {
+	internal func translate(structDeclaration: GRYSwiftAST) throws -> GRYTopLevelNode? {
 		guard structDeclaration.name == "Struct Declaration" else {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(structDeclaration.name) as 'Struct Declaration'",
 				AST: structDeclaration)
+		}
+
+		if getCommentsForNode(structDeclaration)?["kotlin"] == "ignore" {
+			return nil
 		}
 
 		// Get the struct name
@@ -338,10 +342,6 @@ public class GRYSwift4Translator {
 		}
 		else {
 			inheritanceArray = []
-		}
-
-		guard !inheritanceArray.contains("GRYIgnore") else {
-			return .structDeclaration(name: name, inherits: inheritanceArray, members: [])
 		}
 
 		// Translate the contents
@@ -374,11 +374,15 @@ public class GRYSwift4Translator {
 		return .extensionDeclaration(type: type, members: members)
 	}
 
-	internal func translate(enumDeclaration: GRYSwiftAST) throws -> GRYTopLevelNode {
+	internal func translate(enumDeclaration: GRYSwiftAST) throws -> GRYTopLevelNode? {
 		guard enumDeclaration.name == "Enum Declaration" else {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(enumDeclaration.name) as 'Enum Declaration'",
 				AST: enumDeclaration)
+		}
+
+		if getCommentsForNode(enumDeclaration)?["kotlin"] == "ignore" {
+			return nil
 		}
 
 		let access = enumDeclaration["access"]
@@ -400,16 +404,6 @@ public class GRYSwift4Translator {
 		}
 		else {
 			inheritanceArray = []
-		}
-
-		guard !inheritanceArray.contains("GRYIgnore") else {
-			return .enumDeclaration(
-				access: access,
-				name: name,
-				inherits: inheritanceArray,
-				elements: [],
-				members: [],
-				isImplicit: false)
 		}
 
 		var elements = [GRYASTEnumElement]()
@@ -1836,7 +1830,7 @@ public class GRYSwift4Translator {
 		if let rangeString = ast["range"] {
 			let wholeStringRange = Range<String.Index>(uncheckedBounds:
 				(lower: rangeString.startIndex, upper: rangeString.endIndex))
-			if let lineRange = rangeString.range(of: "line:", range: wholeStringRange) {
+			if let lineRange = rangeString.range(of: "swift:", range: wholeStringRange) {
 				let lineNumberSuffix = rangeString[lineRange.upperBound...]
 				let lineDigits = lineNumberSuffix.prefix(while: { $0.isNumber })
 				if let lineNumber = Int(lineDigits) {

@@ -20,11 +20,9 @@ func GRYInsert(_: String) { }
 
 func GRYIgnoreThisFunction() { }
 
-protocol GRYIgnore { }
-
 // MARK: - Swift standard library
 
-public class ArrayReference<Element>: GRYIgnore,
+public class ArrayReference<Element>: // kotlin: ignore
 	ExpressibleByArrayLiteral, CustomStringConvertible, CustomDebugStringConvertible,
 	RandomAccessCollection, MutableCollection, RangeReplaceableCollection
 {

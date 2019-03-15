@@ -545,45 +545,9 @@ public class GRYRemoveGryphonDeclarationsTranspilationPass: GRYTranspilationPass
 			return super.replaceFunctionDeclaration(functionDeclaration)
 		}
 	}
-
-	override func replaceProtocolDeclaration(name: String, members: [GRYTopLevelNode])
-		-> [GRYTopLevelNode]
-	{
-		if name == "GRYIgnore" {
-			return []
-		}
-		else {
-			return super.replaceProtocolDeclaration(name: name, members: members)
-		}
-	}
 }
 
 public class GRYRemoveIgnoredDeclarationsTranspilationPass: GRYTranspilationPass {
-	override func replaceClassDeclaration(
-		name: String, inherits: [String], members: [GRYTopLevelNode]) -> [GRYTopLevelNode]
-	{
-		if inherits.contains("GRYIgnore") {
-			return []
-		}
-		else {
-			return super.replaceClassDeclaration(name: name, inherits: inherits, members: members)
-		}
-	}
-
-	override func replaceEnumDeclaration(
-		access: String?, name: String, inherits: [String], elements: [GRYASTEnumElement],
-		members: [GRYTopLevelNode], isImplicit: Bool) -> [GRYTopLevelNode]
-	{
-		if inherits.contains("GRYIgnore") {
-			return []
-		}
-		else {
-			return super.replaceEnumDeclaration(
-				access: access, name: name, inherits: inherits, elements: elements,
-				members: members, isImplicit: isImplicit)
-		}
-	}
-
 	override func replaceFunctionDeclaration(_ functionDeclaration: GRYASTFunctionDeclaration)
 		-> [GRYTopLevelNode]
 	{

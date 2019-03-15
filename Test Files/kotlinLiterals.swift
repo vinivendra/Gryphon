@@ -16,8 +16,6 @@
 
 func GRYInsert(_ kotlinExpression: String) { }
 
-protocol GRYIgnore { }
-
 //
 import Foundation
 
@@ -37,8 +35,8 @@ fun myFunction(): String {
 let languageName = "swift" // value: \"kotlin\"
 print("Hello from \(languageName)!")
 
-let magicNumber: Int = 40 + // value: this will be ignored
-2 // value: 40 + 5-3
+let magicNumber: Int = 40 + // value: 40 + 5-3
+	2 // value: this will be ignored
 print(magicNumber)
 
 func f(a: Int = 0,
@@ -63,8 +61,15 @@ let squareRoot = sqrt(9) // value: Math.sqrt(9.0)
 print(squareRoot)
 
 // Ignore a swift class or an enum
-class IgnoredClass: GRYIgnore { }
-enum IgnoredEnum: GRYIgnore { }
+class IgnoredClass // kotlin: ignore
+{
+}
+enum IgnoredEnum // kotlin: ignore
+{
+}
+enum IgnoredStruct // kotlin: ignore
+{
+}
 
 // Add annotations to a property
 protocol A {

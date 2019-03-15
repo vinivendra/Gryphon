@@ -14,14 +14,12 @@
 //* limitations under the License.
 //*/
 
-
-protocol GRYIgnore { }
-
 /// According to http://swiftdoc.org/v3.0/type/Array/hierarchy/
 /// (link found via https://www.raywenderlich.com/139591/building-custom-collection-swift)
 /// the Array type in Swift conforms exactly to these protocols,
 /// plus CustomReflectable (which is beyond Gryphon's scope for now).
-class ArrayReference<Element>: GRYIgnore,
+
+class ArrayReference<Element>: // kotlin: ignore
 	ExpressibleByArrayLiteral, CustomStringConvertible, CustomDebugStringConvertible,
 	RandomAccessCollection, MutableCollection, RangeReplaceableCollection
 {

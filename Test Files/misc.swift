@@ -14,8 +14,6 @@
 * limitations under the License.
 */
 
-protocol GRYIgnore {}
-
 // Typealias
 typealias A = Int
 
@@ -29,7 +27,7 @@ class B {
 typealias BC = B.C
 
 //
-class D<T>: GRYIgnore { }
+class D<T> { } // kotlin: ignore
 
 typealias DInt = D<Int>
 
