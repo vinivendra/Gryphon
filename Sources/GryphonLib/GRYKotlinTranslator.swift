@@ -203,7 +203,7 @@ public class GRYKotlinTranslator {
 				return indentation + expressionTranslation + "\n"
 			}
 			else {
-				return ""
+				return "\n"
 			}
 		case .error:
 			return GRYKotlinTranslator.errorTranslation
@@ -246,6 +246,11 @@ public class GRYKotlinTranslator {
 			}
 			else if case .expression(expression: .templateExpression) = currentSubtree.subtree,
 				case .expression(expression: .templateExpression) = nextSubtree.subtree
+			{
+				continue
+			}
+			else if case .expression(expression: .literalCodeExpression) = currentSubtree.subtree,
+				case .expression(expression: .literalCodeExpression) = nextSubtree.subtree
 			{
 				continue
 			}

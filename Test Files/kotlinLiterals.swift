@@ -14,22 +14,19 @@
 * limitations under the License.
 */
 
-func GRYInsert(_ kotlinExpression: String) { }
-
 //
 import Foundation
 
-private func GRYDeclarations() {
-	// Test imports in kotlin
-	GRYInsert("import java.util.*")
+// Test imports in kotlin
 
-	// Test \n's, \t's and \\'s
-	GRYInsert("""
-fun myFunction(): String {
-	return "Calling myFunction()" // \\n \\t \\
-}
-""")
-}
+// declaration: import java.util.*
+
+// Test \n's, \t's and \\'s
+
+// declaration:
+// declaration: fun myFunction(): String {
+// declaration: 	return \"Calling myFunction()\" // \\n \\t \\
+// declaration: }
 
 // Kotlin literals as expressions
 let languageName = "swift" // value: \"kotlin\"
@@ -50,8 +47,9 @@ f(a: 0,
 )
 
 // Kotlin literals as statements
-GRYInsert("println(\"This will be ignored by swift, but not by kotlin.\")")
-GRYInsert("myFunction()")
+// insert: println(\"This will be ignored by swift, but not by kotlin.\")
+// insert:
+// insert: myFunction()
 
 // Ignore swift statements
 print("This will be ignored by kotlin, but not by swift.") // kotlin: ignore
@@ -82,9 +80,13 @@ protocol A {
 
 class B: A {
 	var x: Int = 1 // annotation: override
-	var y: Int = 2 // annotation: override // value: 3
+	var y: Int = // annotation: override
+		2 // value: 3
 	var z: Int = 0
 }
 
 print(B().x)
 print(B().y)
+
+// Insert some code at the end of a file
+// insert: println(\"Code at the end of file.\")

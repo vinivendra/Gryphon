@@ -39,4 +39,6 @@ fun main(args: Array<String>) {
 	println(squareRoot)
 	println(B().x)
 	println(B().y)
+
+	println("Code at the end of file.")
 }

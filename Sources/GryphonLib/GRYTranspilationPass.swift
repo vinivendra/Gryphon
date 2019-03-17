@@ -498,53 +498,6 @@ public class GRYRemoveParenthesesTranspilationPass: GRYTranspilationPass {
 	}
 }
 
-public class GRYInsertCodeLiteralsTranspilationPass: GRYTranspilationPass {
-	override func replaceCallExpression(
-		function: GRYExpression, parameters: GRYExpression, type: String) -> GRYExpression
-	{
-		if case let .declarationReferenceExpression(
-				identifier: identifier, type: _, isStandardLibrary: _, isImplicit: _) = function,
-			identifier.hasPrefix("GRYInsert"),
-			case let .tupleExpression(pairs: pairs) = parameters,
-			let lastPair = pairs.last,
-			case let .literalStringExpression(value: value) = lastPair.expression
-		{
-			return .literalCodeExpression(string: value)
-		}
-
-		return .callExpression(function: function, parameters: parameters, type: type)
-	}
-}
-
-public class GRYDeclarationsTranspilationPass: GRYTranspilationPass {
-	override func replaceFunctionDeclaration(_ functionDeclaration: GRYASTFunctionDeclaration)
-		-> [GRYTopLevelNode]
-	{
-		if functionDeclaration.prefix.hasPrefix("GRYDeclarations"),
-			let statements = functionDeclaration.statements
-		{
-			return statements
-		}
-		else {
-			return super.replaceFunctionDeclaration(functionDeclaration)
-		}
-	}
-}
-
-public class GRYRemoveGryphonDeclarationsTranspilationPass: GRYTranspilationPass {
-	override func replaceFunctionDeclaration(_ functionDeclaration: GRYASTFunctionDeclaration)
-		-> [GRYTopLevelNode]
-	{
-		let prefix = functionDeclaration.prefix
-		if prefix.hasPrefix("GRYInsert") {
-			return []
-		}
-		else {
-			return super.replaceFunctionDeclaration(functionDeclaration)
-		}
-	}
-}
-
 /// Removes implicit declarations so that they don't show up on the translation
 public class GRYRemoveImplicitDeclarationsTranspilationPass: GRYTranspilationPass {
 	override func replaceEnumDeclaration(
@@ -1208,11 +1161,8 @@ public extension GRYTranspilationPass {
 	static func runAllPasses(on sourceFile: GRYAST) -> GRYAST {
 		var result = sourceFile
 		result = GRYLibraryTranspilationPass().run(on: result)
-		result = GRYRemoveGryphonDeclarationsTranspilationPass().run(on: result)
 		result = GRYRemoveImplicitDeclarationsTranspilationPass().run(on: result)
 		result = GRYRemoveParenthesesTranspilationPass().run(on: result)
-		result = GRYInsertCodeLiteralsTranspilationPass().run(on: result)
-		result = GRYDeclarationsTranspilationPass().run(on: result)
 
 		result = GRYStaticMembersTranspilationPass().run(on: result)
 		result = GRYFixProtocolContentsTranspilationPass().run(on: result)

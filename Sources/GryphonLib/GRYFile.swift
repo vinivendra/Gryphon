@@ -23,6 +23,10 @@ public struct GRYFile {
 		self.lines = contents.split(separator: "\n", omittingEmptySubsequences: false)
 	}
 
+	public var numberOfLines: Int {
+		return lines.count
+	}
+
 	public func getLine(_ lineNumber: Int) -> String? {
 		if let line = lines[safe: lineNumber - 1] {
 			return String(line)
@@ -32,27 +36,37 @@ public struct GRYFile {
 		}
 	}
 
-	public func getCommentsFromLine(_ lineNumber: Int) -> [String: String]? {
+	// TODO: test inserts and decls on edges of file; test inserts on brace statements
+	// (ifs, fors, etc)
+	public func getCommentFromLine(_ lineNumber: Int) -> (key: String, value: String)? {
 		guard let line = getLine(lineNumber) else {
 			return nil
 		}
 
-		let commentComponents = line.split(withStringSeparator: "// ").dropFirst()
-		var result = [String: String]()
-		for component in commentComponents {
-			let keyAndValue = component.split(withStringSeparator: ": ")
-			if let key = keyAndValue.first {
-				let value = keyAndValue.dropFirst().joined()
-					.trimmingCharacters(in: CharacterSet.whitespaces)
-				result[key] = value
-			}
-		}
-
-		if result.isEmpty {
+		let lineComponents = line
+			.split(withStringSeparator: "// ", maxSplits: 1, omittingEmptySubsequences: false)
+		guard lineComponents.count == 2 else {
 			return nil
 		}
-		else {
-			return result
+
+		let comment = lineComponents[1]
+		let commentComponents =
+			comment.split(withStringSeparator: ": ", maxSplits: 1, omittingEmptySubsequences: false)
+		guard commentComponents.count == 2 else {
+			// Allow the insertion of newlines even if the IDE trims the trailing spaces
+			if let key = commentComponents.first, key == "declaration:" || key == "insert:" {
+				return (key: String(key.dropLast()), value: "")
+			}
+
+			return nil
 		}
+
+		let key = commentComponents[0]
+		guard ["annotation", "value", "insert", "declaration", "kotlin"].contains(key) else {
+			return nil
+		}
+
+		let value = commentComponents[1]
+		return (key: key, value: value)
 	}
 }

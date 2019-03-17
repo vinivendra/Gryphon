@@ -44,28 +44,25 @@ public class GRYSwift4Translator {
 			"Typealias",
 		]
 		let isDeclaration = { (ast: GRYSwiftAST) -> Bool in declarationNames.contains(ast.name) }
+		let fileRange = sourceFile.map { 0..<$0.numberOfLines }
 
 		let swiftDeclarations = ast.subtrees.filter(isDeclaration)
-		let declarations = try translate(subtrees: swiftDeclarations.array)
+		let declarations = try translate(
+			subtrees: swiftDeclarations.array, inScope: fileRange, asDeclarations: true)
 
 		// Then, translate the remaining statements (if there are any) and wrap them in the main
 		// function
 		let swiftStatements = ast.subtrees.filter({ !isDeclaration($0) })
-		let statements = try translate(subtrees: swiftStatements.array)
+		let statements = try translate(
+			subtrees: swiftStatements.array, inScope: fileRange, asDeclarations: false)
 
 		return GRYAST(declarations: declarations, statements: statements)
 	}
 
 	// MARK: - Top-level translations
-	internal func translate(subtrees: [GRYSwiftAST]) throws -> [GRYTopLevelNode] {
-		return try subtrees.reduce([], { (result, subtree) -> [GRYTopLevelNode] in
-			try result + translate(subtree: subtree).compactMap { $0 }
-		})
-	}
-
 	internal func translate(subtree: GRYSwiftAST) throws -> [GRYTopLevelNode?] {
 
-		if getCommentsForNode(subtree)?["kotlin"] == "ignore" {
+		if getComment(forNode: subtree, key: "kotlin") == "ignore" {
 			return []
 		}
 
@@ -123,7 +120,7 @@ public class GRYSwift4Translator {
 
 	internal func translate(expression: GRYSwiftAST) throws -> GRYExpression {
 
-		if let valueReplacement = getCommentsForNode(expression)?["value"] {
+		if let valueReplacement = getComment(forNode: expression, key: "value") {
 			return GRYExpression.literalCodeExpression(string: valueReplacement)
 		}
 
@@ -235,7 +232,80 @@ public class GRYSwift4Translator {
 		}
 	}
 
+	internal func translate(
+		subtrees: [GRYSwiftAST],
+		inScope scope: GRYSwiftAST,
+		asDeclarations: Bool = false) throws -> [GRYTopLevelNode]
+	{
+		let scopeRange = getRangeOfNode(scope)
+		return try translate(
+			subtrees: subtrees, inScope: scopeRange, asDeclarations: asDeclarations)
+	}
+
+	internal func translate(
+		subtrees: [GRYSwiftAST],
+		inScope scopeRange: Range<Int>?,
+		asDeclarations: Bool = false) throws -> [GRYTopLevelNode]
+	{
+		let insertString = asDeclarations ? "declaration" : "insert"
+
+		var result = [GRYTopLevelNode]()
+
+		var lastRange: Range<Int>
+		// I we have a scope, start at its lower bound
+		if let scopeRange = scopeRange {
+			lastRange = -1..<scopeRange.lowerBound
+		}
+			// If we don't, start at the first statement with a range
+		else if let subtree = subtrees.first(where: { getRangeOfNode($0) != nil }) {
+			lastRange = getRangeOfNode(subtree)!
+		}
+			// If there is no info on ranges, then just translate the subtrees normally
+		else {
+			return try subtrees
+				.reduce([]) { acc, subtree in try acc + translate(subtree: subtree) }
+				.compactMap { $0 }
+		}
+
+		for subtree in subtrees {
+			if let currentRange = getRangeOfNode(subtree),
+				lastRange.upperBound < currentRange.lowerBound
+			{
+				result += insertedCode(
+					inRange: lastRange.upperBound..<currentRange.lowerBound, forKey: insertString)
+
+				lastRange = currentRange
+			}
+
+			try result += translate(subtree: subtree).compactMap { $0 }
+		}
+
+		// Insert code in comments after the last translated node
+		if let scopeRange = scopeRange,
+			lastRange.upperBound < scopeRange.upperBound
+		{
+			result += insertedCode(
+				inRange: lastRange.upperBound..<scopeRange.upperBound, forKey: insertString)
+		}
+
+		return result
+	}
+
 	// MARK: - Leaf translations
+	internal func translate(subtreesOf ast: GRYSwiftAST) throws -> [GRYTopLevelNode] {
+		return try translate(subtrees: ast.subtrees.array, inScope: ast)
+	}
+
+	internal func translate(braceStatement: GRYSwiftAST) throws -> [GRYTopLevelNode] {
+		guard braceStatement.name == "Brace Statement" else {
+			throw createUnexpectedASTStructureError(
+				"Trying to translate \(braceStatement.name) as a brace statement",
+				AST: braceStatement)
+		}
+
+		return try translate(subtrees: braceStatement.subtrees.array, inScope: braceStatement)
+	}
+
 	internal func translate(protocolDeclaration: GRYSwiftAST) throws -> GRYTopLevelNode {
 		guard protocolDeclaration.name == "Protocol" else {
 			return try unexpectedASTStructureError(
@@ -249,7 +319,7 @@ public class GRYSwift4Translator {
 				AST: protocolDeclaration)
 		}
 
-		let members = try translate(subtrees: protocolDeclaration.subtrees.array)
+		let members = try translate(subtreesOf: protocolDeclaration)
 
 		return .protocolDeclaration(name: protocolName, members: members)
 	}
@@ -299,7 +369,7 @@ public class GRYSwift4Translator {
 				AST: classDeclaration)
 		}
 
-		if getCommentsForNode(classDeclaration)?["kotlin"] == "ignore" {
+		if getComment(forNode: classDeclaration, key: "kotlin") == "ignore" {
 			return nil
 		}
 
@@ -316,7 +386,7 @@ public class GRYSwift4Translator {
 		}
 
 		// Translate the contents
-		let classContents = try translate(subtrees: classDeclaration.subtrees.array)
+		let classContents = try translate(subtreesOf: classDeclaration)
 
 		return .classDeclaration(name: name, inherits: inheritanceArray, members: classContents)
 	}
@@ -328,7 +398,7 @@ public class GRYSwift4Translator {
 				AST: structDeclaration)
 		}
 
-		if getCommentsForNode(structDeclaration)?["kotlin"] == "ignore" {
+		if getComment(forNode: structDeclaration, key: "kotlin") == "ignore" {
 			return nil
 		}
 
@@ -345,7 +415,7 @@ public class GRYSwift4Translator {
 		}
 
 		// Translate the contents
-		let structContents = try translate(subtrees: structDeclaration.subtrees.array)
+		let structContents = try translate(subtreesOf: structDeclaration)
 
 		return .structDeclaration(name: name, inherits: inheritanceArray, members: structContents)
 	}
@@ -370,7 +440,7 @@ public class GRYSwift4Translator {
 
 	internal func translate(extensionDeclaration: GRYSwiftAST) throws -> GRYTopLevelNode {
 		let type = cleanUpType(extensionDeclaration.standaloneAttributes[0])
-		let members = try translate(subtrees: extensionDeclaration.subtrees.array)
+		let members = try translate(subtreesOf: extensionDeclaration)
 		return .extensionDeclaration(type: type, members: members)
 	}
 
@@ -381,7 +451,7 @@ public class GRYSwift4Translator {
 				AST: enumDeclaration)
 		}
 
-		if getCommentsForNode(enumDeclaration)?["kotlin"] == "ignore" {
+		if getComment(forNode: enumDeclaration, key: "kotlin") == "ignore" {
 			return nil
 		}
 
@@ -417,7 +487,7 @@ public class GRYSwift4Translator {
 					AST: enumDeclaration)
 			}
 
-			let annotations = getCommentsForNode(enumElementDeclaration)?["annotation"]
+			let annotations = getComment(forNode: enumElementDeclaration, key: "annotation")
 
 			if !elementName.contains("(") {
 				elements.append(GRYASTEnumElement(
@@ -450,7 +520,7 @@ public class GRYSwift4Translator {
 		let members = enumDeclaration.subtrees.filter {
 			$0.name != "Enum Element Declaration" && $0.name != "Enum Case Declaration"
 		}
-		let translatedMembers = try translate(subtrees: members.array)
+		let translatedMembers = try translate(subtrees: members.array, inScope: enumDeclaration)
 
 		return .enumDeclaration(
 			access: access,
@@ -719,7 +789,7 @@ public class GRYSwift4Translator {
 			identifier: variableName, type: variableType, isStandardLibrary: false,
 			isImplicit: false)
 		let collectionTranslation = try translate(expression: collectionExpression)
-		let statements = try translate(subtrees: braceStatement.subtrees.array)
+		let statements = try translate(braceStatement: braceStatement)
 
 		return .forEachStatement(
 			collection: collectionTranslation,
@@ -768,7 +838,7 @@ public class GRYSwift4Translator {
 			elseAST.name == "Brace Statement"
 		{
 			braceStatement = unwrappedBraceStatement
-			let statements = try translate(subtrees: elseAST.subtrees.array)
+			let statements = try translate(braceStatement: elseAST)
 			elseStatement = GRYASTIfStatement(
 				conditions: [], declarations: [],
 				statements: statements,
@@ -787,13 +857,12 @@ public class GRYSwift4Translator {
 				AST: ifStatement)
 		}
 
-		let statements = braceStatement.subtrees
-		let statementsResult = try translate(subtrees: statements.array)
+		let statements = try translate(braceStatement: braceStatement)
 
 		return GRYASTIfStatement(
 			conditions: conditions,
 			declarations: letDeclarations,
-			statements: statementsResult,
+			statements: statements,
 			elseStatement: elseStatement,
 			isGuard: isGuard)
 	}
@@ -827,13 +896,13 @@ public class GRYSwift4Translator {
 				caseExpression = nil
 			}
 
-			guard let statements = caseSubtree.subtree(named: "Brace Statement") else {
+			guard let braceStatement = caseSubtree.subtree(named: "Brace Statement") else {
 				return try unexpectedASTStructureError(
 					"Unable to find a case's statements",
 					AST: switchStatement)
 			}
 
-			let translatedStatements = try translate(subtrees: statements.subtrees.array)
+			let translatedStatements = try translate(braceStatement: braceStatement)
 
 			cases.append(GRYASTSwitchCase(
 				expression: caseExpression, statements: translatedStatements))
@@ -1034,7 +1103,7 @@ public class GRYSwift4Translator {
 		// Translate the function body
 		let statements: [GRYTopLevelNode]
 		if let braceStatement = functionDeclaration.subtree(named: "Brace Statement") {
-			statements = try translate(subtrees: braceStatement.subtrees.array)
+			statements = try translate(braceStatement: braceStatement)
 		}
 		else {
 			statements = []
@@ -1068,7 +1137,7 @@ public class GRYSwift4Translator {
 				"Unrecognized structure", AST: topLevelCodeDeclaration)
 		}
 
-		let subtrees = try translate(subtrees: braceStatement.subtrees.array)
+		let subtrees = try translate(braceStatement: braceStatement)
 
 		return subtrees.first
 	}
@@ -1082,7 +1151,7 @@ public class GRYSwift4Translator {
 
 		let isImplicit = variableDeclaration.standaloneAttributes.contains("implicit")
 
-		let annotations = getCommentsForNode(variableDeclaration)?["annotation"]
+		let annotations = getComment(forNode: variableDeclaration, key: "annotation")
 
 		let isStatic: Bool
 		if let accessorDeclaration = variableDeclaration.subtree(named: "Accessor Declaration"),
@@ -1134,9 +1203,13 @@ public class GRYSwift4Translator {
 		{
 			let access = subtree["access"]
 
-			let statements: [GRYSwiftAST] =
-				subtree.subtree(named: "Brace Statement")?.subtrees.array ?? []
-			let statementsTranslation = try translate(subtrees: statements)
+			let statements: [GRYTopLevelNode]
+			if let braceStatement = subtree.subtree(named: "Brace Statement") {
+				statements = try translate(braceStatement: braceStatement)
+			}
+			else {
+				statements = []
+			}
 
 			// Swift 5: "get_for" and "set_for" are the terms used in the Swift 5 AST
 			if subtree["getter_for"] != nil || subtree["get_for"] != nil {
@@ -1149,7 +1222,7 @@ public class GRYSwift4Translator {
 					isStatic: false,
 					isMutating: false,
 					extendsType: nil,
-					statements: statementsTranslation,
+					statements: statements,
 					access: access))
 			}
 			else if subtree["materializeForSet_for"] != nil ||
@@ -1166,7 +1239,7 @@ public class GRYSwift4Translator {
 					isStatic: false,
 					isMutating: false,
 					extendsType: nil,
-					statements: statementsTranslation,
+					statements: statements,
 					access: access))
 			}
 		}
@@ -1307,7 +1380,7 @@ public class GRYSwift4Translator {
 
 		let statements: [GRYTopLevelNode]
 		if lastSubtree.name == "Brace Statement" {
-			statements = try translate(subtrees: lastSubtree.subtrees.array)
+			statements = try translate(braceStatement: lastSubtree)
 		}
 		else {
 			let expression = try translate(expression: lastSubtree)
@@ -1826,7 +1899,36 @@ public class GRYSwift4Translator {
 		return (declaration: String(identifier), isStandardLibrary: isStandardLibrary)
 	}
 
-	internal func getCommentsForNode(_ ast: GRYSwiftAST) -> [String: String]? {
+	internal func getRangeOfNode(_ ast: GRYSwiftAST) -> Range<Int>? {
+		if let rangeString = ast["range"] {
+			let wholeStringRange = Range<String.Index>(uncheckedBounds:
+				(lower: rangeString.startIndex, upper: rangeString.endIndex))
+			if let startRange = rangeString.range(of: "swift:", range: wholeStringRange) {
+				let startNumberSuffix = rangeString[startRange.upperBound...]
+				let startDigits = startNumberSuffix.prefix(while: { $0.isNumber })
+				if let startNumber = Int(startDigits),
+					let endRange = rangeString.range(of: "line:", range: wholeStringRange)
+				{
+					let endNumberSuffix = rangeString[endRange.upperBound...]
+					let endDigits = endNumberSuffix.prefix(while: { $0.isNumber })
+					if let endNumber = Int(endDigits) {
+						return startNumber..<(endNumber + 1)
+					}
+				}
+			}
+		}
+
+		return nil
+	}
+
+	internal func getComment(forNode ast: GRYSwiftAST, key: String) -> String? {
+		if let comment = getComment(forNode: ast), comment.key == key {
+			return comment.value
+		}
+		return nil
+	}
+
+	internal func getComment(forNode ast: GRYSwiftAST) -> (key: String, value: String)? {
 		if let rangeString = ast["range"] {
 			let wholeStringRange = Range<String.Index>(uncheckedBounds:
 				(lower: rangeString.startIndex, upper: rangeString.endIndex))
@@ -1834,12 +1936,25 @@ public class GRYSwift4Translator {
 				let lineNumberSuffix = rangeString[lineRange.upperBound...]
 				let lineDigits = lineNumberSuffix.prefix(while: { $0.isNumber })
 				if let lineNumber = Int(lineDigits) {
-					return sourceFile?.getCommentsFromLine(lineNumber)
+					return sourceFile?.getCommentFromLine(lineNumber)
 				}
 			}
 		}
 
 		return nil
+	}
+
+	internal func insertedCode(inRange range: Range<Int>, forKey key: String) -> [GRYTopLevelNode] {
+		var result = [GRYTopLevelNode]()
+		for lineNumber in range {
+			if let insertComment = sourceFile?.getCommentFromLine(lineNumber),
+				insertComment.key == key
+			{
+				result.append(
+					.expression(expression: .literalCodeExpression(string: insertComment.value)))
+			}
+		}
+		return result
 	}
 
 	internal func cleanUpType(_ type: String) -> String {

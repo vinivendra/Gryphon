@@ -15,26 +15,44 @@
 */
 
 internal extension String {
-	/// Ignores empty substrings
-	func split(withStringSeparator separator: String) -> [String] {
+	// TODO: test maxSplits, omittingEmptySubsequences
+	func split(
+		withStringSeparator separator: String,
+		maxSplits: Int = Int.max,
+		omittingEmptySubsequences: Bool = true) -> [String]
+	{
 		var result = [String]()
 
+		var splits = 0
 		var previousIndex = startIndex
 		let separators = self.occurrences(of: separator)
 
 		// Add all substrings immediately before each separator
 		for separator in separators {
-			defer { previousIndex = separator.upperBound }
+			defer {
+				splits += 1
+			}
+
+			if splits >= maxSplits {
+				break
+			}
+
+			defer {
+				previousIndex = separator.upperBound
+			}
 
 			let substring = self[previousIndex..<separator.lowerBound]
-			guard !substring.isEmpty else { continue }
+
+			if omittingEmptySubsequences {
+				guard !substring.isEmpty else { continue }
+			}
 
 			result.append(String(substring))
 		}
 
 		// Add the last substring (which the loop above ignores)
 		let substring = self[previousIndex..<endIndex]
-		if !substring.isEmpty {
+		if !(substring.isEmpty && omittingEmptySubsequences) {
 			result.append(String(substring))
 		}
 
@@ -54,6 +72,23 @@ internal extension String {
 				(lower: foundRange.upperBound, upper: endIndex))
 		}
 		return result
+	}
+
+	// TODO: test
+	func removeTrailingWhitespace() -> String {
+		guard !isEmpty else {
+			return ""
+		}
+
+		var lastValidIndex = index(before: endIndex)
+		while lastValidIndex != startIndex {
+			let character = self[lastValidIndex]
+			if character != " " && character != "\t" {
+				break
+			}
+			self.formIndex(before: &lastValidIndex)
+		}
+		return String(self[startIndex...lastValidIndex])
 	}
 }
 

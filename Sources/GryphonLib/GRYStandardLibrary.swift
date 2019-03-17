@@ -14,10 +14,6 @@
 * limitations under the License.
 */
 
-// MARK: Literal source code manipulation
-
-func GRYInsert(_: String) { }
-
 // MARK: - Swift standard library
 
 public class ArrayReference<Element>: // kotlin: ignore
@@ -131,10 +127,6 @@ extension ArrayReference: Equatable where Element: Equatable {
 
 // MARK: - Kotlin standard library
 
-private func GRYDeclarations() {
-	GRYInsert("""
-fun <T> MutableList<T>.copy(): MutableList<T> {
-	return this.toMutableList()
-}
-""")
-}
+// declaration: fun <T> MutableList<T>.copy(): MutableList<T> {
+// declaration: 	return this.toMutableList()
+// declaration: }
