@@ -68,10 +68,20 @@ public class GRYKotlinTranslator {
 	This variable is used to store enum definitions in order to allow the translator
 	to translate them as sealed classes (see the `translate(dotSyntaxCallExpression)` method).
 	*/
-	private static var enums = [String]()
+	private static var sealedClasses = [String]()
 
-	public static func addEnum(_ enumName: String) {
-		enums.append(enumName)
+	public static func addSealedClass(_ className: String) {
+		sealedClasses.append(className)
+	}
+
+	/**
+	This variable is used to store enum definitions in order to allow the translator
+	to translate them as enum classes (see the `translate(dotSyntaxCallExpression)` method).
+	*/
+	private static var enumClasses = [String]()
+
+	public static func addEnumClass(_ className: String) {
+		enumClasses.append(className)
 	}
 
 	// TODO: Docs
@@ -280,14 +290,12 @@ public class GRYKotlinTranslator {
 		members: [GRYTopLevelNode], isImplicit: Bool, withIndentation indentation: String)
 		throws -> String
 	{
-		var result: String
+		let isEnumClass = GRYKotlinTranslator.enumClasses.contains(enumName)
 
-		if let access = access {
-			result = "\(indentation)\(access) sealed class " + enumName
-		}
-		else {
-			result = "\(indentation)sealed class " + enumName
-		}
+		let accessString = access ?? ""
+		let enumString = isEnumClass ? "enum" : "sealed"
+
+		var result = "\(indentation)\(accessString) \(enumString) class " + enumName
 
 		if !inherits.isEmpty {
 			var translatedInheritedTypes = inherits.map(translateType)
@@ -302,7 +310,8 @@ public class GRYKotlinTranslator {
 		var casesTranslation = ""
 		for element in elements {
 			casesTranslation += translateEnumElementDeclaration(
-				enumName: enumName, element: element, withIndentation: increasedIndentation)
+				enumName: enumName, element: element, isEnumClass: isEnumClass,
+				withIndentation: increasedIndentation)
 		}
 		result += casesTranslation
 
@@ -320,21 +329,29 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateEnumElementDeclaration(
-		enumName: String, element: GRYASTEnumElement, withIndentation indentation: String) -> String
+		enumName: String,
+		element: GRYASTEnumElement,
+		isEnumClass: Bool,
+		withIndentation indentation: String) -> String
 	{
 		let capitalizedElementName = element.name.capitalizedAsCamelCase
-		let annotationsString = (element.annotations == nil) ? "": "\(element.annotations!) "
+		let annotationsString = (element.annotations == nil) ? "" : "\(element.annotations!) "
 
-		let result = "\(indentation)\(annotationsString)class \(capitalizedElementName)"
-
-		if element.associatedValues.isEmpty {
-			return result + ": \(enumName)()\n"
+		if isEnumClass {
+			return "\(indentation)\(annotationsString)\(capitalizedElementName),\n"
 		}
 		else {
-			let associatedValuesString =
-				element.associatedValues
-					.map { "val \($0.label): \($0.type)" }.joined(separator: ", ")
-			return result + "(\(associatedValuesString)): \(enumName)()\n"
+			let result = "\(indentation)\(annotationsString)class \(capitalizedElementName)"
+
+			if element.associatedValues.isEmpty {
+				return result + ": \(enumName)()\n"
+			}
+			else {
+				let associatedValuesString =
+					element.associatedValues
+						.map { "val \($0.label): \($0.type)" }.joined(separator: ", ")
+				return result + "(\(associatedValuesString)): \(enumName)()\n"
+			}
 		}
 	}
 
@@ -942,9 +959,13 @@ public class GRYKotlinTranslator {
 		let leftHandString = try translateExpression(leftExpression, withIndentation: indentation)
 		let rightHandString = try translateExpression(rightExpression, withIndentation: indentation)
 
-		if GRYKotlinTranslator.enums.contains(leftHandString) {
+		if GRYKotlinTranslator.sealedClasses.contains(leftHandString) {
 			let capitalizedEnumCase = rightHandString.capitalizedAsCamelCase
 			return "\(leftHandString).\(capitalizedEnumCase)()"
+		}
+		else if GRYKotlinTranslator.enumClasses.contains(leftHandString) {
+			let capitalizedEnumCase = rightHandString.capitalizedAsCamelCase
+			return capitalizedEnumCase
 		}
 		else {
 			return "\(leftHandString).\(rightHandString)"

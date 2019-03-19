@@ -63,7 +63,7 @@ public class GRYTranspilationPass {
 			return replaceFunctionDeclaration(functionDeclaration)
 		case let .variableDeclaration(value: variableDeclaration):
 
-			return [.variableDeclaration(value: replaceVariableDeclaration(variableDeclaration))]
+			return replaceVariableDeclaration(variableDeclaration)
 		case let .forEachStatement(
 			collection: collection, variable: variable, statements: statements):
 
@@ -168,6 +168,12 @@ public class GRYTranspilationPass {
 		functionDeclaration.parameters = replacedParameters
 		functionDeclaration.statements = functionDeclaration.statements.map(replaceTopLevelNodes)
 		return [.functionDeclaration(value: functionDeclaration)]
+	}
+
+	func replaceVariableDeclaration(_ variableDeclaration: GRYASTVariableDeclaration)
+		-> [GRYTopLevelNode]
+	{
+		return [.variableDeclaration(value: replaceVariableDeclaration(variableDeclaration))]
 	}
 
 	func replaceVariableDeclaration(_ variableDeclaration: GRYASTVariableDeclaration)
@@ -523,6 +529,17 @@ public class GRYRemoveImplicitDeclarationsTranspilationPass: GRYTranspilationPas
 		else {
 			return super.replaceTypealiasDeclaration(
 				identifier: identifier, type: type, isImplicit: isImplicit)
+		}
+	}
+
+	override func replaceVariableDeclaration(_ variableDeclaration: GRYASTVariableDeclaration)
+		-> [GRYTopLevelNode]
+	{
+		if variableDeclaration.isImplicit {
+			return []
+		}
+		else {
+			return super.replaceVariableDeclaration(variableDeclaration)
 		}
 	}
 }
@@ -917,7 +934,7 @@ public class GRYRemoveExtensionsTranspilationPass: GRYTranspilationPass {
 		case let .functionDeclaration(value: functionDeclaration):
 			return replaceFunctionDeclaration(functionDeclaration)
 		case let .variableDeclaration(value: variableDeclaration):
-			return [.variableDeclaration(value: replaceVariableDeclaration(variableDeclaration))]
+			return replaceVariableDeclaration(variableDeclaration)
 		default:
 			return [node]
 		}
@@ -962,7 +979,18 @@ public class GRYRecordEnumsTranspilationPass: GRYTranspilationPass {
 		access: String?, name: String, inherits: [String], elements: [GRYASTEnumElement],
 		members: [GRYTopLevelNode], isImplicit: Bool) -> [GRYTopLevelNode]
 	{
-		GRYKotlinTranslator.addEnum(name)
+		let isEnumClass = members.isEmpty && inherits.isEmpty && elements.reduce(true)
+		{ (acc: Bool, element: GRYASTEnumElement) -> Bool in
+			acc && element.associatedValues.isEmpty
+		}
+
+		if isEnumClass {
+			GRYKotlinTranslator.addEnumClass(name)
+		}
+		else {
+			GRYKotlinTranslator.addSealedClass(name)
+		}
+
 		return [.enumDeclaration(
 			access: access, name: name, inherits: inherits, elements: elements, members: members,
 			isImplicit: isImplicit), ]

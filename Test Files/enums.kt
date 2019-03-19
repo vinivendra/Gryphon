@@ -10,9 +10,9 @@ internal sealed class OtherError: Exception() {
 	class IntAndString(val int: Int, val string: String): OtherError()
 }
 
-internal sealed class NoInheritances {
-	class Foo: NoInheritances()
-	class Bar: NoInheritances()
+internal enum class NoInheritances {
+	Foo,
+	Bar,
 }
 
 internal sealed class WithMembers {
