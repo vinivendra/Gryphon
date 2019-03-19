@@ -36,8 +36,6 @@ public struct GRYFile {
 		}
 	}
 
-	// TODO: test inserts and decls on edges of file; test inserts on brace statements
-	// (ifs, fors, etc)
 	public func getCommentFromLine(_ lineNumber: Int) -> (key: String, value: String)? {
 		guard let line = getLine(lineNumber) else {
 			return nil
