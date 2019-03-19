@@ -16,22 +16,24 @@
 
 // MARK: - Swift standard library
 
-/// According to http://swiftdoc.org/v3.0/type/Array/hierarchy/
+/// According to http://swiftdoc.org/v4.2/type/Array/hierarchy/
 /// (link found via https://www.raywenderlich.com/139591/building-custom-collection-swift)
 /// the Array type in Swift conforms exactly to these protocols,
 /// plus CustomReflectable (which is beyond Gryphon's scope for now).
-public class ArrayReference<Element>: // kotlin: ignore
+public final class ArrayReference<Element>: // kotlin: ignore
 	ExpressibleByArrayLiteral, CustomStringConvertible, CustomDebugStringConvertible,
 	RandomAccessCollection, MutableCollection, RangeReplaceableCollection
 {
-	public var array: [Element]
+	public typealias Buffer = [Element]
 
-	public init(array: [Element]) {
+	public var array: Buffer
+
+	public init(array: Buffer) {
 		self.array = array
 	}
 
 	public init<T>(_ arrayReference: ArrayReference<T>) {
-		self.array = arrayReference.array as! [Element]
+		self.array = arrayReference.array as! Buffer
 	}
 
 	public func copy() -> ArrayReference<Element> {
@@ -126,6 +128,22 @@ public class ArrayReference<Element>: // kotlin: ignore
 extension ArrayReference: Equatable where Element: Equatable { // kotlin: ignore
 	public static func == (lhs: ArrayReference, rhs: ArrayReference) -> Bool {
 		return lhs.array == rhs.array
+	}
+}
+
+extension ArrayReference: Hashable where Element: Hashable { // kotlin: ignore
+	public func hash(into hasher: inout Hasher) {
+		array.hash(into: &hasher)
+	}
+}
+
+extension ArrayReference: Codable where Element: Codable { // kotlin: ignore
+	public func encode(to encoder: Encoder) throws {
+		try array.encode(to: encoder)
+	}
+
+	public convenience init(from decoder: Decoder) throws {
+		try self.init(array: Buffer(from: decoder))
 	}
 }
 
