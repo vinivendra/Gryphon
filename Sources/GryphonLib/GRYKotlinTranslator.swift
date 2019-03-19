@@ -93,7 +93,14 @@ public class GRYKotlinTranslator {
 		enumClasses.append(className)
 	}
 
-	// TODO: Docs
+	/// Stores information on how a Swift function should be translated into Kotlin, including what
+	/// its prefix should be and what its parameters should be named. The `swiftAPIName` and the
+	/// `type` properties are used to look up the right function translation, and they should match
+	/// declarationReferences that reference this function.
+	/// This is used, for instance, to translate a function to Kotlin using the internal parameter
+	/// names instead of Swift's API label names, improving correctness and readability of the
+	/// translation. The information has to be stored because declaration references don't include
+	/// the internal parameter names, only the API names.
 	public struct FunctionTranslation {
 		let swiftAPIName: String
 		let type: String
