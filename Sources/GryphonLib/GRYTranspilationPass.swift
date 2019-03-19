@@ -1130,6 +1130,42 @@ public class GRYDoubleNegativesInGuardsTranspilationPass: GRYTranspilationPass {
 	}
 }
 
+// TODO: test
+/// Statements of the type `if (a == null) { return }` in Swift can be translated as `a ?: return`
+/// in Kotlin.
+public class GRYReturnIfNilTranspilationPass: GRYTranspilationPass {
+	override func replaceTopLevelNode(_ node: GRYTopLevelNode) -> [GRYTopLevelNode] {
+		if case let .ifStatement(value: ifStatement) = node,
+			ifStatement.declarations.isEmpty,
+			ifStatement.conditions.count == 1,
+			let onlyCondition = ifStatement.conditions.first,
+			case let .binaryOperatorExpression(
+				leftExpression: declarationReference,
+				rightExpression: GRYExpression.nilLiteralExpression,
+				operatorSymbol: "==",
+				type: _) = onlyCondition,
+			case let .declarationReferenceExpression(
+				identifier: _,
+				type: type,
+				isStandardLibrary: _,
+				isImplicit: _) = declarationReference,
+			ifStatement.statements.count == 1,
+			let onlyStatement = ifStatement.statements.first,
+			case .returnStatement(expression: nil) = onlyStatement
+		{
+			return [.expression(expression:
+				.binaryOperatorExpression(
+					leftExpression: declarationReference,
+					rightExpression: .literalCodeExpression(string: "return"),
+					operatorSymbol: "?:",
+					type: type)), ]
+		}
+		else {
+			return super.replaceTopLevelNode(node)
+		}
+	}
+}
+
 public class GRYFixProtocolContentsTranspilationPass: GRYTranspilationPass {
 	var isInProtocol = false
 
@@ -1177,6 +1213,7 @@ public extension GRYTranspilationPass {
 
 		result = GRYRearrangeIfLetsTranspilationPass().run(on: result)
 		result = GRYDoubleNegativesInGuardsTranspilationPass().run(on: result)
+		result = GRYReturnIfNilTranspilationPass().run(on: result)
 
 		result = GRYRecordFunctionTranslationsTranspilationPass().run(on: result)
 		result = GRYRecordEnumsTranspilationPass().run(on: result)
