@@ -59,6 +59,15 @@ public class GRYKotlinTranslator {
 			let translatedInnerType = translateType(innerType)
 			return "MutableList<\(translatedInnerType)>"
 		}
+		else if type.hasPrefix("DictionaryReference<") {
+			let innerTypes = String(type.dropLast().dropFirst("DictionaryReference<".count))
+			let keyValue = innerTypes.split(withStringSeparator: ", ")
+			let key = keyValue[0]
+			let value = keyValue[1]
+			let translatedKey = translateType(key)
+			let translatedValue = translateType(value)
+			return "MutableMap<\(translatedKey), \(translatedValue)>"
+		}
 		else {
 			return GRYKotlinTranslator.typeMappings[type] ?? type
 		}

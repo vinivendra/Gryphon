@@ -16,6 +16,10 @@
 
 // MARK: - Swift standard library
 
+/// According to http://swiftdoc.org/v3.0/type/Array/hierarchy/
+/// (link found via https://www.raywenderlich.com/139591/building-custom-collection-swift)
+/// the Array type in Swift conforms exactly to these protocols,
+/// plus CustomReflectable (which is beyond Gryphon's scope for now).
 public class ArrayReference<Element>: // kotlin: ignore
 	ExpressibleByArrayLiteral, CustomStringConvertible, CustomDebugStringConvertible,
 	RandomAccessCollection, MutableCollection, RangeReplaceableCollection
@@ -119,9 +123,122 @@ public class ArrayReference<Element>: // kotlin: ignore
 	}
 }
 
-extension ArrayReference: Equatable where Element: Equatable {
-	public static func == (lhs: ArrayReference, rhs: ArrayReference) -> Bool { // kotlin: ignore
+extension ArrayReference: Equatable where Element: Equatable { // kotlin: ignore
+	public static func == (lhs: ArrayReference, rhs: ArrayReference) -> Bool {
 		return lhs.array == rhs.array
+	}
+}
+
+/// According to https://swiftdoc.org/v4.2/type/dictionary/hierarchy/
+/// the Dictionary type in Swift conforms exactly to these protocols,
+/// plus CustomReflectable (which is beyond Gryphon's scope for now).
+public final class DictionaryReference<Key, Value>: // kotlin: ignore
+	ExpressibleByDictionaryLiteral, CustomStringConvertible, CustomDebugStringConvertible,
+	Collection
+	where Key: Hashable
+{
+	public typealias Buffer = [Key: Value]
+
+	public var dictionary: Buffer
+
+	public init(dictionary: Buffer) {
+		self.dictionary = dictionary
+	}
+
+	public init<K, V>(_ dictionaryReference: DictionaryReference<K, V>) {
+		self.dictionary = dictionaryReference.dictionary as! Buffer
+	}
+
+	public func copy() -> DictionaryReference<Key, Value> {
+		return DictionaryReference(dictionary: dictionary)
+	}
+
+	// Expressible By Dictionary Literal
+	public required init(dictionaryLiteral elements: (Key, Value)...) {
+		self.dictionary = Buffer(uniqueKeysWithValues: elements)
+	}
+
+	// ...
+	public subscript (_ key: Key) -> Value? {
+		get {
+			return dictionary[key]
+		}
+		set {
+			dictionary[key] = newValue
+		}
+	}
+
+	// Custom (Debug) String Convertible
+	public var description: String {
+		return dictionary.description
+	}
+
+	public var debugDescription: String {
+		return dictionary.debugDescription
+	}
+
+	// Collection
+	public typealias SubSequence = Slice<[Key: Value]>
+
+	@inlinable public var startIndex: Buffer.Index {
+		return dictionary.startIndex
+	}
+
+	@inlinable public var endIndex: Buffer.Index {
+		return dictionary.endIndex
+	}
+
+	@inlinable
+	public func index(after i: Buffer.Index) -> Buffer.Index
+	{
+		return dictionary.index(after: i)
+	}
+
+	@inlinable
+	public func formIndex(after i: inout Buffer.Index) {
+		dictionary.formIndex(after: &i)
+	}
+
+	@inlinable
+	public func index(forKey key: Key) -> Buffer.Index? {
+		return dictionary.index(forKey: key)
+	}
+
+	@inlinable
+	public subscript(position: Buffer.Index) -> Buffer.Element {
+		return dictionary[position]
+	}
+
+	@inlinable public var count: Int {
+		return dictionary.count
+	}
+
+	@inlinable public var isEmpty: Bool {
+		return dictionary.isEmpty
+	}
+}
+
+extension DictionaryReference: Equatable where Value: Equatable { // kotlin: ignore
+	public static func == (
+		lhs: DictionaryReference, rhs: DictionaryReference) -> Bool
+	{
+		return lhs.dictionary == rhs.dictionary
+	}
+}
+
+extension DictionaryReference: Hashable where Value: Hashable { // kotlin: ignore
+	public func hash(into hasher: inout Hasher) {
+		dictionary.hash(into: &hasher)
+	}
+}
+
+extension DictionaryReference: Codable where Key: Codable, Value: Codable { // kotlin: ignore
+	public func encode(to encoder: Encoder) throws {
+		try dictionary.encode(to: encoder)
+	}
+
+	public convenience init(from decoder: Decoder) throws {
+		try self.init(dictionary: Buffer(from: decoder))
 	}
 }
 
