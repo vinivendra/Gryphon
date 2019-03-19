@@ -59,6 +59,9 @@ print(min(15, -30))
 print(0...3)
 print(-1..<3)
 
+// Double
+print(1.0...3.0)
+
 //
 // Recursive matches
 print(Int.min..<0)

@@ -41,5 +41,6 @@ fun main(args: Array<String>) {
 	println(Math.min(15, -30))
 	println(0..3)
 	println(-1 until 3)
+	println((1.0).rangeTo(3.0))
 	println(Int.MIN_VALUE until 0)
 }

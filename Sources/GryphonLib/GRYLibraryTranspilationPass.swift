@@ -16,7 +16,6 @@
 
 import Foundation
 
-// TODO: Add tests for all standard library translations
 public class GRYLibraryTranspilationPass: GRYTranspilationPass {
 	struct Template {
 		let expression: GRYExpression
