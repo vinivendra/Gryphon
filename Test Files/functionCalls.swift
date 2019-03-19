@@ -70,6 +70,38 @@ bar3(a: 0, b: 0)
 bar4(a: 0)
 bar4(a: 0, b: 0)
 
+// Tuple Shuffles
+func f(a: Int = 0, b: Int = 0, c: Int = 0) {
+	print("\(a) \(b) \(c)")
+}
+
+f(a: 1)
+f(b: 1)
+f(a: 1, b: 1)
+f(c: 1)
+f(a: 1, c: 1)
+f(b: 1, c: 1)
+f(a: 1, b: 1, c: 1)
+
+func variadics(a: Int, b: Int..., c: Int = 0) { // kotlin: ignore
+	print(a, terminator: "")
+	for element in b {
+		print(element, terminator: "")
+	}
+	print(c)
+}
+
+// declaration: fun variadics(a: Int, vararg b: Int, c: Int = 0) {
+// declaration: 	print(a)
+// declaration: 	for (element in b) {
+// declaration: 		print(element)
+// declaration: 	}
+// declaration: 	println(c)
+// declaration: }
+
+variadics(a: 1, b: 1, 2, 3, c: 1)
+variadics(a: 1, b: 1, 2, 3)
+
 // Function calls with many parameters
 class AClassWithABigName { }
 
@@ -99,4 +131,26 @@ fooFooBarBaz(
 	someBigName: AClassWithABigName(),
 	anotherBigName: AClassWithABigName(),
 	yetAnEvenBiggerName: AClassWithABigName(),
+	aSmallerName: AClassWithABigName())
+
+func fooFooBarBazFoo(
+	someBigName: AClassWithABigName,
+	anotherBigName: AClassWithABigName,
+	yetAnEvenBiggerName: AClassWithABigName,
+	aParameterWithADefaultValue: Int = 0,
+	aSmallerName: AClassWithABigName)
+	-> AClassWithABigName
+{
+	return AClassWithABigName()
+}
+fooFooBarBazFoo(
+	someBigName: AClassWithABigName(),
+	anotherBigName: AClassWithABigName(),
+	yetAnEvenBiggerName: AClassWithABigName(),
+	aSmallerName: AClassWithABigName())
+fooFooBarBazFoo(
+	someBigName: AClassWithABigName(),
+	anotherBigName: AClassWithABigName(),
+	yetAnEvenBiggerName: AClassWithABigName(),
+	aParameterWithADefaultValue: 1,
 	aSmallerName: AClassWithABigName())

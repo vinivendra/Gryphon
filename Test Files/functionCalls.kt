@@ -52,6 +52,18 @@ internal fun bar3(a: Int = 1, b: Int) {
 internal fun bar4(a: Int, b: Int = 2) {
 }
 
+internal fun f(a: Int = 0, b: Int = 0, c: Int = 0) {
+	println("${a} ${b} ${c}")
+}
+
+fun variadics(a: Int, vararg b: Int, c: Int = 0) {
+	print(a)
+	for (element in b) {
+		print(element)
+	}
+	println(c)
+}
+
 class AClassWithABigName {
 }
 
@@ -67,6 +79,17 @@ internal fun fooFooBarBaz(
 	someBigName: AClassWithABigName,
 	anotherBigName: AClassWithABigName,
 	yetAnEvenBiggerName: AClassWithABigName,
+	aSmallerName: AClassWithABigName)
+	: AClassWithABigName
+{
+	return AClassWithABigName()
+}
+
+internal fun fooFooBarBazFoo(
+	someBigName: AClassWithABigName,
+	anotherBigName: AClassWithABigName,
+	yetAnEvenBiggerName: AClassWithABigName,
+	aParameterWithADefaultValue: Int = 0,
 	aSmallerName: AClassWithABigName)
 	: AClassWithABigName
 {
@@ -98,6 +121,15 @@ fun main(args: Array<String>) {
 	bar3(a = 0, b = 0)
 	bar4(a = 0)
 	bar4(a = 0, b = 0)
+	f(a = 1)
+	f(b = 1)
+	f(a = 1, b = 1)
+	f(c = 1)
+	f(a = 1, c = 1)
+	f(b = 1, c = 1)
+	f(a = 1, b = 1, c = 1)
+	variadics(1, 1, 2, 3, c = 1)
+	variadics(1, 1, 2, 3)
 	fooBarBaz(
 		someBigName = AClassWithABigName(),
 		anotherBigName = AClassWithABigName(),
@@ -107,5 +139,16 @@ fun main(args: Array<String>) {
 		someBigName = AClassWithABigName(),
 		anotherBigName = AClassWithABigName(),
 		yetAnEvenBiggerName = AClassWithABigName(),
+		aSmallerName = AClassWithABigName())
+	fooFooBarBazFoo(
+		someBigName = AClassWithABigName(),
+		anotherBigName = AClassWithABigName(),
+		yetAnEvenBiggerName = AClassWithABigName(),
+		aSmallerName = AClassWithABigName())
+	fooFooBarBazFoo(
+		someBigName = AClassWithABigName(),
+		anotherBigName = AClassWithABigName(),
+		yetAnEvenBiggerName = AClassWithABigName(),
+		aParameterWithADefaultValue = 1,
 		aSmallerName = AClassWithABigName())
 }

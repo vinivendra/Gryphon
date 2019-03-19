@@ -617,7 +617,6 @@ public class GRYKotlinTranslator {
 		return result
 	}
 
-	// TODO: test
 	private func translateSwitchStatement(
 		convertsToExpression: GRYTopLevelNode?, expression: GRYExpression,
 		cases: [GRYASTSwitchCase], withIndentation indentation: String) throws -> String
@@ -1162,7 +1161,6 @@ public class GRYKotlinTranslator {
 
 		let expressions = pairs.map { $0.expression }
 
-		// TODO: test
 		let expressionIndentation =
 			shouldAddNewlines ? increaseIndentation(indentation) : indentation
 
@@ -1189,8 +1187,6 @@ public class GRYKotlinTranslator {
 		}
 	}
 
-	// TODO: test
-	// TODO: newline support
 	private func translateTupleShuffleExpression(
 		labels: [String], indices: [GRYTupleShuffleIndex], expressions: [GRYExpression],
 		translation: FunctionTranslation? = nil, withIndentation indentation: String,
