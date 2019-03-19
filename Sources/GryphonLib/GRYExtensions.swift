@@ -15,7 +15,7 @@
 */
 
 internal extension String {
-	// TODO: test maxSplits, omittingEmptySubsequences
+	// Result should have at most maxSplits + 1 elements.
 	func split(
 		withStringSeparator separator: String,
 		maxSplits: Int = Int.max,
@@ -74,7 +74,6 @@ internal extension String {
 		return result
 	}
 
-	// TODO: test
 	func removeTrailingWhitespace() -> String {
 		guard !isEmpty else {
 			return ""
@@ -160,35 +159,27 @@ extension Array {
 extension ArrayReference {
 	/// Returns nil if index is out of bounds.
 	subscript (safe index: Int) -> Element? {
-		if index >= 0 && index < count {
-			return self[index]
-		}
-		else {
-			return nil
-		}
+		return array[safe: index]
 	}
 
 	var secondToLast: Element? {
-		return self.dropLast().last
+		return self.array.secondToLast
 	}
 
 	/// Returns the same array, but with the first element moved to the end.
 	func rotated() -> ArrayReference<Element> {
-		guard let first = first else {
-			return self
-		}
-
-		var newArray: [Element] = [Element]()
-		newArray.reserveCapacity(self.count)
-		newArray.append(contentsOf: self.dropFirst())
-		newArray.append(first)
-
-		return ArrayReference(array: newArray)
+		return ArrayReference(array: self.array.rotated())
 	}
 
 	/// Moves the first element of the array to the end.
 	func rotate() {
-		self.array = self.rotated().array
+		self.array.rotate()
+	}
+
+	/// Groups the array's elements into a dictionary according to the keys provided by the given
+	/// closure, forming a sort of histogram.
+	func group<Key>(by getKey: (Element) -> Key) -> [Key: [Element]] {
+		return self.array.group(by: getKey)
 	}
 }
 

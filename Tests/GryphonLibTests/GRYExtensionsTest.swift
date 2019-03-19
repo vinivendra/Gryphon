@@ -38,6 +38,9 @@ class GRYExtensionTest: XCTestCase {
 			"->".split(withStringSeparator: "->"),
 			[])
 		XCTAssertEqual(
+			"->->".split(withStringSeparator: "->"),
+			[])
+		XCTAssertEqual(
 			"a->b".split(withStringSeparator: "->"),
 			["a", "b"])
 		XCTAssertEqual(
@@ -66,11 +69,93 @@ class GRYExtensionTest: XCTestCase {
 				.split(withStringSeparator: "->"),
 			["(Int, (String) ", " Int) ", " Int "])
 
-		for _ in 0..<1_000 {
-			let (string, separator, _, components) =
-				Fuzzer.randomTest()
-			XCTAssertEqual(string.split(withStringSeparator: separator), components)
-		}
+		// Omit empty subsequences
+		XCTAssertEqual(
+			"->".split(withStringSeparator: "->", omittingEmptySubsequences: false),
+			["", ""])
+		XCTAssertEqual(
+			"->->".split(withStringSeparator: "->", omittingEmptySubsequences: false),
+			["", "", ""])
+		XCTAssertEqual(
+			"a->b".split(withStringSeparator: "->", omittingEmptySubsequences: false),
+			["a", "b"])
+		XCTAssertEqual(
+			"a->b->c".split(withStringSeparator: "->", omittingEmptySubsequences: false),
+			["a", "b", "c"])
+		XCTAssertEqual(
+			"->b->c".split(withStringSeparator: "->", omittingEmptySubsequences: false),
+			["", "b", "c"])
+		XCTAssertEqual(
+			"->->c".split(withStringSeparator: "->", omittingEmptySubsequences: false),
+			["", "", "c"])
+		XCTAssertEqual(
+			"a->b->".split(withStringSeparator: "->", omittingEmptySubsequences: false),
+			["a", "b", ""])
+		XCTAssertEqual(
+			"a->->".split(withStringSeparator: "->", omittingEmptySubsequences: false),
+			["a", "", ""])
+		XCTAssertEqual(
+			"a->->b".split(withStringSeparator: "->", omittingEmptySubsequences: false),
+			["a", "", "b"])
+		XCTAssertEqual(
+			"abc".split(withStringSeparator: "->", omittingEmptySubsequences: false),
+			["abc"])
+		XCTAssertEqual(
+			"->(Int, (String) -> Int) ->-> Int ->"
+				.split(withStringSeparator: "->", omittingEmptySubsequences: false),
+			["", "(Int, (String) ", " Int) ", "", " Int ", ""])
+
+		// Max splits
+		XCTAssertEqual(
+			"->".split(withStringSeparator: "->", maxSplits: 3, omittingEmptySubsequences: false),
+			["", ""])
+		XCTAssertEqual(
+			"->->".split(withStringSeparator: "->", maxSplits: 1, omittingEmptySubsequences: false),
+			["", "->"])
+		XCTAssertEqual(
+			"a->b".split(withStringSeparator: "->", maxSplits: 0, omittingEmptySubsequences: false),
+			["a->b"])
+		XCTAssertEqual(
+			"a->b->c".split(
+				withStringSeparator: "->", maxSplits: 2, omittingEmptySubsequences: false),
+			["a", "b", "c"])
+		XCTAssertEqual(
+			"a->b->c->d".split(
+				withStringSeparator: "->", maxSplits: 2, omittingEmptySubsequences: false),
+			["a", "b", "c->d"])
+		XCTAssertEqual(
+			"a->b->c->d".split(
+				withStringSeparator: "->", maxSplits: 1, omittingEmptySubsequences: false),
+			["a", "b->c->d"])
+		XCTAssertEqual(
+			"->b->c".split(withStringSeparator: "->", maxSplits: 1),
+			["b->c"])
+		XCTAssertEqual(
+			"->->c".split(withStringSeparator: "->", maxSplits: 1),
+			["->c"])
+		XCTAssertEqual(
+			"a->b->".split(withStringSeparator: "->", maxSplits: 1),
+			["a", "b->"])
+		XCTAssertEqual(
+			"a->->".split(withStringSeparator: "->", maxSplits: 1),
+			["a", "->"])
+		XCTAssertEqual(
+			"a->->b".split(withStringSeparator: "->", maxSplits: 1),
+			["a", "->b"])
+		XCTAssertEqual(
+			"abc".split(withStringSeparator: "->", maxSplits: 0),
+			["abc"])
+		XCTAssertEqual(
+			"abc".split(withStringSeparator: "->", maxSplits: 1),
+			["abc"])
+		XCTAssertEqual(
+			"->(Int, (String) -> Int) ->-> Int ->"
+				.split(withStringSeparator: "->", maxSplits: 3, omittingEmptySubsequences: false),
+			["", "(Int, (String) ", " Int) ", "-> Int ->"])
+		XCTAssertEqual(
+			"->(Int, (String) -> Int) ->-> Int ->"
+				.split(withStringSeparator: "->", maxSplits: 3),
+			["(Int, (String) ", " Int) ", "-> Int ->"])
 	}
 
 	func testOccurrencesOfSubstring() {
@@ -110,12 +195,17 @@ class GRYExtensionTest: XCTestCase {
 			 TestableRange(27, 29),
 			 TestableRange(34, 36),
 			 ])
+	}
 
-		for _ in 0..<1_000 {
-			let (string, separator, occurrences, _) =
-				Fuzzer.randomTest()
-			XCTAssertEqual(string.occurrences(of: separator).map(TestableRange.init), occurrences)
-		}
+	func testRemoveTrailingWhitespace() {
+		XCTAssertEqual("", "".removeTrailingWhitespace())
+		XCTAssertEqual("a", "a".removeTrailingWhitespace())
+		XCTAssertEqual("abcde", "abcde".removeTrailingWhitespace())
+		XCTAssertEqual("abcde", "abcde".removeTrailingWhitespace())
+		XCTAssertEqual("abcde", "abcde  \t\t  ".removeTrailingWhitespace())
+		XCTAssertEqual("abcde  \t\t  abcde", "abcde  \t\t  abcde".removeTrailingWhitespace())
+		XCTAssertEqual("abcde  \t\t  abcde", "abcde  \t\t  abcde  ".removeTrailingWhitespace())
+		XCTAssertEqual("abcde  \t\t  abcde", "abcde  \t\t  abcde \t ".removeTrailingWhitespace())
 	}
 
 	func testSafeIndex() {
@@ -144,59 +234,68 @@ class GRYExtensionTest: XCTestCase {
 		XCTAssertEqual(array2, [1, 2, 3])
 	}
 
+	func testGroupBy() {
+		let array = [1, 2, 3, 2, 3, 1, 2, 3]
+		let histogram = array.group(by: { "\($0)" })
+		XCTAssertEqual(
+			histogram,
+			["1": [1, 1],
+			"2": [2, 2, 2],
+			"3": [3, 3, 3], ])
+
+		let isEvenHistogram = array.group(by: { $0 % 2 == 0 })
+		XCTAssertEqual(
+			isEvenHistogram,
+			[true: [2, 2, 2],
+			 false: [1, 3, 3, 1, 3], ])
+	}
+
+	func testArrayReferenceSafeIndex() {
+		let array: ArrayReference = [1, 2, 3]
+		XCTAssert(array[safe: 0] == 1)
+		XCTAssert(array[safe: 1] == 2)
+		XCTAssert(array[safe: 2] == 3)
+		XCTAssert(array[safe: 3] == nil)
+		XCTAssert(array[safe: -1] == nil)
+	}
+
+	func testArrayReferenceRotate() {
+		let array: ArrayReference = [1, 2, 3]
+		let array1 = array.rotated()
+		let array2 = array1.rotated()
+		let array3 = array2.rotated()
+		XCTAssertEqual(array1, [2, 3, 1])
+		XCTAssertEqual(array2, [3, 1, 2])
+		XCTAssertEqual(array3, [1, 2, 3])
+
+		array.rotate()
+		array1.rotate()
+		array2.rotate()
+		XCTAssertEqual(array, [2, 3, 1])
+		XCTAssertEqual(array1, [3, 1, 2])
+		XCTAssertEqual(array2, [1, 2, 3])
+	}
+
+	func testArrayReferenceGroupBy() {
+		let array: ArrayReference = [1, 2, 3, 2, 3, 1, 2, 3]
+		let histogram = array.group(by: { "\($0)" })
+		XCTAssertEqual(
+			histogram,
+			["1": [1, 1],
+			 "2": [2, 2, 2],
+			 "3": [3, 3, 3], ])
+
+		let isEvenHistogram = array.group(by: { $0 % 2 == 0 })
+		XCTAssertEqual(
+			isEvenHistogram,
+			[true: [2, 2, 2],
+			 false: [1, 3, 3, 1, 3], ])
+	}
+
 	static var allTests = [
 		("testStringSplit", testStringSplit),
 		("testOccurrencesOfSubstring", testOccurrencesOfSubstring),
 		("testSafeIndex", testSafeIndex),
 		("testRotate", testRotate),
 	]
-}
-
-private enum Fuzzer {
-	static func randomTest()
-		-> (string: String, separator: String, occurrences: [TestableRange], components: [String])
-	{
-		var string = ""
-		var occurrences = [TestableRange]()
-		var components = [String]()
-
-		let (separatorCharacterSet, componentCharacterSet) =
-			TestUtils.characterSets.distinctRandomElements()
-		let separatorSize = TestUtils.rng.random(1...5)
-		let separator = TestUtils.rng.randomString(
-			fromCharacterSet: separatorCharacterSet, withLength: separatorSize)
-
-		let count = TestUtils.rng.random(0...10)
-		let startsWithSeparator = TestUtils.rng.randomBool()
-
-		var isSeparator = startsWithSeparator
-		var currentIndex = 0
-
-		for _ in 0..<count {
-			defer { isSeparator = !isSeparator }
-
-			if isSeparator {
-				string += separator
-				occurrences.append(TestableRange(currentIndex, currentIndex + separator.count))
-				currentIndex += separator.count
-			}
-			else {
-				let componentSize = TestUtils.rng.random(0...10)
-
-				// Allow separators to be glued together
-				guard componentSize > 0 else { continue }
-
-				let newComponent = TestUtils.rng.randomString(
-					fromCharacterSet: componentCharacterSet, withLength: componentSize)
-				string += newComponent
-				components.append(newComponent)
-				currentIndex += componentSize
-			}
-		}
-
-		return (string: string,
-				separator: separator,
-				occurrences: occurrences,
-				components: components)
-	}
 }
