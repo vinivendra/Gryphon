@@ -15,6 +15,11 @@ internal fun testGuards() {
 		return
 	}
 
+	if (false) {
+		println("--")
+		return
+	}
+
 	println("Guard")
 }
 

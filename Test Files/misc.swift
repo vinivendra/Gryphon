@@ -17,7 +17,7 @@
 // Typealias
 typealias A = Int
 
-//
+// Typealias with inner types
 class B {
 	class C {
 
@@ -26,11 +26,24 @@ class B {
 
 typealias BC = B.C
 
-//
-class D<T> { } // kotlin: ignore
+// Typealias with generics
+class List<T> { } // kotlin: ignore
 
-typealias DInt = D<Int>
+typealias ListInt = List<Int>
 
 //
 var a: A = 0
 var bc: BC
+
+// `a ?: return`
+func f(a: Int?) {
+	if a == nil {
+		return
+	}
+	print(a)
+}
+
+f(a: 10)
+print("==")
+f(a: nil)
+print("==")

@@ -583,7 +583,6 @@ public class GRYStaticMembersTranspilationPass: GRYTranspilationPass {
 	}
 }
 
-// TODO: test
 /// Removes the unnecessary prefixes for inner types.
 ///
 /// For instance:
@@ -683,7 +682,6 @@ public class GRYSelfToThisTranspilationPass: GRYTranspilationPass {
 	}
 }
 
-// TODO: test
 /// Declarations can't conform to Swift-only protocols like Codable and Equatable, and enums can't
 /// inherit from types Strings and Ints.
 public class GRYCleanInheritancesTranspilationPass: GRYTranspilationPass {
@@ -1110,7 +1108,6 @@ public class GRYRearrangeIfLetsTranspilationPass: GRYTranspilationPass {
 	}
 }
 
-// TODO: test
 /// Guards are translated as if statements with a ! at the start of the condition. Sometimes, the
 /// ! combines with a != or even another !, causing a double negative in the condition that can
 /// be removed (or turned into a single ==). This pass performs that transformation.
@@ -1160,7 +1157,6 @@ public class GRYDoubleNegativesInGuardsTranspilationPass: GRYTranspilationPass {
 	}
 }
 
-// TODO: test
 /// Statements of the type `if (a == null) { return }` in Swift can be translated as `a ?: return`
 /// in Kotlin.
 public class GRYReturnIfNilTranspilationPass: GRYTranspilationPass {

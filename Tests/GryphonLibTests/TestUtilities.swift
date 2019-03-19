@@ -121,6 +121,7 @@ extension TestUtils {
 		"inits",
 		"kotlinLiterals",
 		"logicOperators",
+		"misc",
 		"numericLiterals",
 		"operators",
 		"print",
@@ -133,7 +134,6 @@ extension TestUtils {
 		"enums",
 		"functionDefinitions",
 		"strings",
-		"misc",
 	]
 	static let testCasesForTranspilationPassTest = testCasesForAllTests + [
 		"warnings",

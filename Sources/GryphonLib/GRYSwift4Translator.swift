@@ -165,6 +165,8 @@ public class GRYSwift4Translator {
 			return try translate(tupleElementExpression: expression)
 		case "Subscript Expression":
 			return try translate(subscriptExpression: expression)
+		case "Nil Literal Expression":
+			return .nilLiteralExpression
 		case "Open Existential Expression":
 			let processedExpression = try process(openExistentialExpression: expression)
 			return try translate(expression: processedExpression)

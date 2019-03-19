@@ -113,6 +113,10 @@ func testGuards() {
 		print("--")
 		return
 	}
+	guard !false else {
+		print("--")
+		return
+	}
 	print("Guard")
 }
 testGuards()
