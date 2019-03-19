@@ -957,7 +957,14 @@ public class GRYRemoveExtensionsTranspilationPass: GRYTranspilationPass {
 	}
 }
 
-// TODO: docs
+/// Swift functions (both declarations and calls) have to be translated using their internal
+/// parameter names, not their API names. This is both for correctness and readability. Since calls
+/// only contain the API names, we need a way to use the API names to retrieve the internal names.
+/// GRYKotlinTranslator has an array of "translations" exactly for this purpose: it uses the Swift
+/// name (with API labels) and the type to look up the "translation" and stores the prefix and the
+/// internal names it should return.
+/// This pass goes through all the function declarations it finds and stores the information needed
+/// to translate these functions correctly later.
 public class GRYRecordFunctionTranslationsTranspilationPass: GRYTranspilationPass {
 	override func replaceFunctionDeclaration(
 		_ functionDeclaration: GRYASTFunctionDeclaration) -> [GRYTopLevelNode]
