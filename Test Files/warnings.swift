@@ -20,6 +20,10 @@ struct UnsupportedStruct {
 
 	func pureFunction() { }
 	mutating func mutatingFunction() { }
+
+	var computedVarIsOK: Int {
+		return 0
+	}
 }
 
 enum UnsupportedEnum {

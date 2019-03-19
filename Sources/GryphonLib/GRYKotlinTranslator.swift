@@ -426,7 +426,10 @@ public class GRYKotlinTranslator {
 		var result = "\(indentation)data class \(name)(\n"
 
 		let isProperty = { (member: GRYTopLevelNode) -> Bool in
-			if case .variableDeclaration = member {
+			if case let .variableDeclaration(value: variableDeclaration) = member,
+				variableDeclaration.getter == nil,
+				variableDeclaration.setter == nil
+			{
 				return true
 			}
 			else {

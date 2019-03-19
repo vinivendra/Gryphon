@@ -7,6 +7,11 @@ data class UnsupportedStruct(
 
 	internal fun mutatingFunction() {
 	}
+
+	val computedVarIsOK: Int
+		get() {
+			return 0
+		}
 }
 
 internal sealed class UnsupportedEnum {

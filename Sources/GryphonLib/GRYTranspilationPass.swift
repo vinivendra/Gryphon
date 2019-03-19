@@ -1027,27 +1027,25 @@ public class GRYRaiseMutableValueTypesWarningsTranspilationPass: GRYTranspilatio
 		name: String, inherits: [String], members: [GRYTopLevelNode]) -> [GRYTopLevelNode]
 	{
 		for member in members {
-			// TODO: Computed variables are OK
 			if case let .variableDeclaration(value: variableDeclaration) = member,
 				!variableDeclaration.isImplicit,
-				!variableDeclaration.isStatic
+				!variableDeclaration.isStatic,
+				!variableDeclaration.isLet,
+				variableDeclaration.getter == nil
 			{
-				if !variableDeclaration.isLet {
-					GRYCompiler.handleWarning(
-						"No support for mutable variables in value types: found variable " +
-						"\(variableDeclaration.identifier) inside struct \(name)")
-				}
+				GRYCompiler.handleWarning(
+					"No support for mutable variables in value types: found variable " +
+					"\(variableDeclaration.identifier) inside struct \(name)")
 			}
-			else if case let .functionDeclaration(value: functionDeclaration) = member
+			else if case let .functionDeclaration(value: functionDeclaration) = member,
+				functionDeclaration.isMutating
 			{
-				if functionDeclaration.isMutating {
-					let methodName = functionDeclaration.prefix + "(" +
-						functionDeclaration.parameters.map { $0.label + ":" }
-							.joined(separator: ", ") + ")"
-					GRYCompiler.handleWarning(
-						"No support for mutating methods in value types: found method " +
-						"\(methodName) inside struct \(name)")
-				}
+				let methodName = functionDeclaration.prefix + "(" +
+					functionDeclaration.parameters.map { $0.label + ":" }
+						.joined(separator: ", ") + ")"
+				GRYCompiler.handleWarning(
+					"No support for mutating methods in value types: found method " +
+					"\(methodName) inside struct \(name)")
 			}
 		}
 
@@ -1059,16 +1057,15 @@ public class GRYRaiseMutableValueTypesWarningsTranspilationPass: GRYTranspilatio
 		members: [GRYTopLevelNode], isImplicit: Bool) -> [GRYTopLevelNode]
 	{
 		for member in members {
-			if case let .functionDeclaration(value: functionDeclaration) = member
+			if case let .functionDeclaration(value: functionDeclaration) = member,
+				functionDeclaration.isMutating
 			{
-				if functionDeclaration.isMutating {
-					let methodName = functionDeclaration.prefix + "(" +
-						functionDeclaration.parameters.map { $0.label + ":" }
-							.joined(separator: ", ") + ")"
-					GRYCompiler.handleWarning(
-						"No support for mutating methods in value types: found method " +
-						"\(methodName) inside enum \(name)")
-				}
+				let methodName = functionDeclaration.prefix + "(" +
+					functionDeclaration.parameters.map { $0.label + ":" }
+						.joined(separator: ", ") + ")"
+				GRYCompiler.handleWarning(
+					"No support for mutating methods in value types: found method " +
+					"\(methodName) inside enum \(name)")
 			}
 		}
 
