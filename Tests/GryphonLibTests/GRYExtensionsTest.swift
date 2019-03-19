@@ -297,5 +297,12 @@ class GRYExtensionTest: XCTestCase {
 		("testOccurrencesOfSubstring", testOccurrencesOfSubstring),
 		("testSafeIndex", testSafeIndex),
 		("testRotate", testRotate),
+		("testRemoveTrailingWhitespace", testRemoveTrailingWhitespace),
+		("testSafeIndex", testSafeIndex),
+		("testRotate", testRotate),
+		("testGroupBy", testGroupBy),
+		("testArrayReferenceSafeIndex", testArrayReferenceSafeIndex),
+		("testArrayReferenceRotate", testArrayReferenceRotate),
+		("testArrayReferenceGroupBy", testArrayReferenceGroupBy),
 	]
 }
