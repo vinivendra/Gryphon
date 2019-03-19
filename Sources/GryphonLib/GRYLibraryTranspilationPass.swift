@@ -312,6 +312,16 @@ fileprivate extension String {
 			return newSelf.isSubtype(of: superType)
 		}
 
+		// Treat DictionaryReference as Dictionary
+		if self.hasPrefix("DictionaryReference<"), self.last == ">" {
+			let keyValue = String(self.dropFirst("DictionaryReference<".count).dropLast())
+				.split(withStringSeparator: ", ")
+			let key = keyValue[0]
+			let value = keyValue[1]
+			let newSelf = "[\(key) : \(value)]"
+			return newSelf.isSubtype(of: superType)
+		}
+
 		// Convert Array<T> into [T]
 		if self.hasPrefix("Array<"), self.last == ">" {
 			let elementType = String(self.dropFirst("Reference<".count).dropLast())
