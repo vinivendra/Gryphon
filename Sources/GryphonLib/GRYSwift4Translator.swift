@@ -112,7 +112,6 @@ public class GRYSwift4Translator {
 				result = .expression(expression: expression)
 			}
 			else {
-				// TODO: should this throw an error?
 				result = nil
 			}
 		}
@@ -1525,8 +1524,9 @@ public class GRYSwift4Translator {
 				AST: callExpression)
 		}
 
-		// TODO: Negative float literals are translated as positive becuase the AST dump doesn't
+		// FIXME: Negative float literals are translated as positive becuase the AST dump doesn't
 		// seemd to include any info showing they're negative.
+		// Bug filed at https://bugs.swift.org/browse/SR-10131
 		if let tupleExpression = callExpression.subtree(named: "Tuple Expression"),
 			let literalExpression = tupleExpression.subtree(named: "Integer Literal Expression") ??
 				tupleExpression.subtree(named: "Float Literal Expression"),
@@ -1753,7 +1753,6 @@ public class GRYSwift4Translator {
 		return .arrayExpression(elements: expressionsArray.array, type: type)
 	}
 
-	// TODO: Add tests for dictionaries
 	internal func translate(dictionaryExpression: GRYSwiftAST) throws -> GRYExpression {
 		guard dictionaryExpression.name == "Dictionary Expression" else {
 			return try unexpectedExpressionStructureError(
