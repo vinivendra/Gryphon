@@ -830,7 +830,9 @@ public class GRYKotlinTranslator {
 		case let .templateExpression(pattern: pattern, matches: matches):
 			return try translateTemplateExpression(
 				pattern: pattern, matches: matches, withIndentation: indentation)
-		case let .literalCodeExpression(string: string):
+		case .literalCodeExpression(string: let string),
+			.literalDeclarationExpression(string: let string):
+
 			return translateLiteralCodeExpression(string: string)
 		case let .arrayExpression(elements: elements, type: type):
 			return try translateArrayExpression(

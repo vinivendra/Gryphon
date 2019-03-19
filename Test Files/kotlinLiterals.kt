@@ -19,7 +19,49 @@ class B: A {
 	var z: Int = 0
 }
 
+internal fun insertFunction() {
+	println("func 1")
+
+	println("func 2")
+
+	println("func 3")
+
+	println("func 4")
+
+	println("func 5")
+}
+
+class InsertClass {
+	var a: String = "class a"
+
+	var b: String = "class b"
+
+	var c: String = "class c"
+
+	var d: String = "class d"
+
+	var e: String = "class e"
+
+	internal fun insertMethod() {
+		println("method 1")
+
+		println("method 2")
+
+		println("method 3")
+
+		println("method 4")
+
+		println("method 5")
+	}
+}
+
+fun myOtherFunction(): String {
+	return "Calling myOtherFunction()" // \n \t \
+}
+
 fun main(args: Array<String>) {
+	println("Inserting at the beginning of the file")
+
 	val languageName: String = "kotlin"
 
 	println("Hello from ${languageName}!")
@@ -32,13 +74,50 @@ fun main(args: Array<String>) {
 
 	println("This will be ignored by swift, but not by kotlin.")
 
-	myFunction()
+	println(myFunction())
+	println(myOtherFunction())
 
 	val squareRoot: Double = Math.sqrt(9.0)
 
 	println(squareRoot)
 	println(B().x)
 	println(B().y)
+
+	if (true) {
+		println("if 1")
+
+		println("if 2")
+
+		println("if 3")
+
+		println("if 4")
+
+		println("if 5")
+	}
+
+	for (i in mutableListOf(1)) {
+		println("for 1")
+
+		println("for 2")
+
+		println("for 3")
+
+		println("for 4")
+
+		println("for 5")
+	}
+
+	insertFunction()
+
+	val insertClass: InsertClass = InsertClass()
+
+	println(insertClass.a)
+	println(insertClass.b)
+	println(insertClass.c)
+	println(insertClass.d)
+	println(insertClass.e)
+
+	insertClass.insertMethod()
 
 	println("Code at the end of file.")
 }

@@ -33,28 +33,30 @@ public class GRYSwift4Translator {
 			sourceFile = GRYFile(contents: contents)
 		}
 
-		// First, translate declarations that shouldn't be inside the main function
-		let declarationNames = [
-			"Protocol",
-			"Class Declaration",
-			"Struct Declaration",
-			"Extension Declaration",
-			"Function Declaration",
-			"Enum Declaration",
-			"Typealias",
-		]
-		let isDeclaration = { (ast: GRYSwiftAST) -> Bool in declarationNames.contains(ast.name) }
 		let fileRange = sourceFile.map { 0..<$0.numberOfLines }
+		let translatedSubtrees = try translate(
+			subtrees: ast.subtrees.array,
+			inScope: fileRange)
 
-		let swiftDeclarations = ast.subtrees.filter(isDeclaration)
-		let declarations = try translate(
-			subtrees: swiftDeclarations.array, inScope: fileRange, asDeclarations: true)
+		let isDeclaration = { (ast: GRYTopLevelNode) -> Bool in
+			switch ast {
+			case .expression(expression: .literalDeclarationExpression),
+				.protocolDeclaration,
+				.classDeclaration,
+				.structDeclaration,
+				.extensionDeclaration,
+				.functionDeclaration,
+				.enumDeclaration,
+				.typealiasDeclaration:
 
-		// Then, translate the remaining statements (if there are any) and wrap them in the main
-		// function
-		let swiftStatements = ast.subtrees.filter({ !isDeclaration($0) })
-		let statements = try translate(
-			subtrees: swiftStatements.array, inScope: fileRange, asDeclarations: false)
+				return true
+			default:
+				return false
+			}
+		}
+
+		let declarations = translatedSubtrees.filter(isDeclaration)
+		let statements = translatedSubtrees.filter({ !isDeclaration($0) })
 
 		return GRYAST(declarations: declarations, statements: statements)
 	}
@@ -239,15 +241,14 @@ public class GRYSwift4Translator {
 	{
 		let scopeRange = getRangeOfNode(scope)
 		return try translate(
-			subtrees: subtrees, inScope: scopeRange, asDeclarations: asDeclarations)
+			subtrees: subtrees, inScope: scopeRange)
 	}
 
 	internal func translate(
 		subtrees: [GRYSwiftAST],
-		inScope scopeRange: Range<Int>?,
-		asDeclarations: Bool = false) throws -> [GRYTopLevelNode]
+		inScope scopeRange: Range<Int>?) throws -> [GRYTopLevelNode]
 	{
-		let insertString = asDeclarations ? "declaration" : "insert"
+//		let insertString = asDeclarations ? "declaration" : "insert"
 
 		var result = [GRYTopLevelNode]()
 
@@ -267,12 +268,26 @@ public class GRYSwift4Translator {
 				.compactMap { $0 }
 		}
 
+		let commentToAST = { (comment: (key: String, value: String)) -> GRYTopLevelNode? in
+				if comment.key == "insert" {
+					return GRYTopLevelNode.expression(expression:
+						.literalCodeExpression(string: comment.value))
+				}
+				else if comment.key == "declaration" {
+					return GRYTopLevelNode.expression(expression:
+						.literalDeclarationExpression(string: comment.value))
+				}
+				else {
+					return nil
+				}
+			}
+
 		for subtree in subtrees {
 			if let currentRange = getRangeOfNode(subtree),
 				lastRange.upperBound < currentRange.lowerBound
 			{
-				result += insertedCode(
-					inRange: lastRange.upperBound..<currentRange.lowerBound, forKey: insertString)
+				let comments = insertedCode(inRange: lastRange.upperBound..<currentRange.lowerBound)
+				result += comments.compactMap(commentToAST)
 
 				lastRange = currentRange
 			}
@@ -284,8 +299,9 @@ public class GRYSwift4Translator {
 		if let scopeRange = scopeRange,
 			lastRange.upperBound < scopeRange.upperBound
 		{
-			result += insertedCode(
-				inRange: lastRange.upperBound..<scopeRange.upperBound, forKey: insertString)
+			let comments = insertedCode(
+				inRange: lastRange.upperBound..<scopeRange.upperBound)
+			result += comments.compactMap(commentToAST)
 		}
 
 		return result
@@ -1945,13 +1961,16 @@ public class GRYSwift4Translator {
 	}
 
 	internal func insertedCode(inRange range: Range<Int>, forKey key: String) -> [GRYTopLevelNode] {
-		var result = [GRYTopLevelNode]()
+		return insertedCode(inRange: range).filter { $0.key == key }.map {
+			GRYTopLevelNode.expression(expression: .literalCodeExpression(string: $0.value))
+		}
+	}
+
+	internal func insertedCode(inRange range: Range<Int>) -> [(key: String, value: String)] {
+		var result = [(key: String, value: String)]()
 		for lineNumber in range {
-			if let insertComment = sourceFile?.getCommentFromLine(lineNumber),
-				insertComment.key == key
-			{
-				result.append(
-					.expression(expression: .literalCodeExpression(string: insertComment.value)))
+			if let insertComment = sourceFile?.getCommentFromLine(lineNumber) {
+				result.append(insertComment)
 			}
 		}
 		return result

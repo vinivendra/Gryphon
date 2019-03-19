@@ -144,6 +144,7 @@ public indirect enum GRYTopLevelNode: Equatable, GRYPrintableAsTree {
 %{
 expressionNodes = [
 	['literalCodeExpression', [['string', 'String']]],
+	['literalDeclarationExpression', [['string', 'String']]],
 	['templateExpression', [['pattern', 'String'], ['matches', '[String: GRYExpression]']]],
 	['parenthesesExpression', [['expression', 'GRYExpression']]],
 	['forceValueExpression', [['expression', 'GRYExpression']]],

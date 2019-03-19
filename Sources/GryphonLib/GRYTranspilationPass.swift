@@ -259,7 +259,9 @@ public class GRYTranspilationPass {
 		switch expression {
 		case let .templateExpression(pattern: pattern, matches: matches):
 			return replaceTemplateExpression(pattern: pattern, matches: matches)
-		case let .literalCodeExpression(string: string):
+		case .literalCodeExpression(string: let string),
+			.literalDeclarationExpression(string: let string):
+
 			return replaceLiteralCodeExpression(string: string)
 		case let .parenthesesExpression(expression: expression):
 			return replaceParenthesesExpression(expression: expression)

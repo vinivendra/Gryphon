@@ -211,9 +211,9 @@ extension GRYTopLevelNode {
 extension GRYExpression {
 	public var type: String? {
 		switch self {
-		case .templateExpression(pattern: _, matches: _):
+		case .templateExpression:
 			return nil
-		case .literalCodeExpression(string: _):
+		case .literalCodeExpression, .literalDeclarationExpression:
 			return nil
 		case let .parenthesesExpression(expression: expression):
 			return expression.type
@@ -298,7 +298,9 @@ extension GRYExpression {
 			return [
 				GRYPrintableTree("pattern \"\(pattern)\""),
 				GRYPrintableTree("matches", [matches]), ]
-		case let .literalCodeExpression(string: string):
+		case .literalCodeExpression(string: let string),
+			.literalDeclarationExpression(string: let string):
+
 			return [GRYPrintableTree(string)]
 		case let .parenthesesExpression(expression: expression):
 			return [expression]
