@@ -14,7 +14,7 @@
 * limitations under the License.
 */
 
-public class GRYSwift4Translator {
+public class GRYSwiftTranslator {
 	// MARK: - Properties
 	typealias PatternBindingDeclaration =
 		(identifier: String, type: String, expression: GRYExpression?)?
@@ -1638,28 +1638,32 @@ public class GRYSwift4Translator {
 				AST: interpolatedStringLiteralExpression)
 		}
 
+		guard let tapExpression =
+			interpolatedStringLiteralExpression.subtree(named: "Tap Expression"),
+			let braceStatement = tapExpression.subtree(named: "Brace Statement") else
+		{
+			return try unexpectedExpressionStructureError(
+				"Expected the Interpolated String Literal Expression to contain a Tap" +
+					"Expression containing a Brace Statement containing the String " +
+				"interpolation contents",
+				AST: interpolatedStringLiteralExpression)
+		}
+
 		var expressions = [GRYExpression]()
 
-		for expression in interpolatedStringLiteralExpression.subtrees {
-			if expression.name == "String Literal Expression" {
-				let expression = try translate(stringLiteralExpression: expression)
-				guard case let .literalStringExpression(value: string) = expression else {
-					return try unexpectedExpressionStructureError(
-						"Failed to translate string literal",
-						AST: interpolatedStringLiteralExpression)
-				}
-
-				// Empty strings, as a special case, are represented by the swift ast dump
-				// as two double quotes with nothing between them, instead of an actual empty string
-				guard string != "\"\"" else {
-					continue
-				}
-
-				expressions.append(.literalStringExpression(value: string))
+		for callExpression in braceStatement.subtrees.dropFirst() {
+			guard callExpression.name == "Call Expression",
+				let parenthesesExpression = callExpression.subtree(named: "Parentheses Expression"),
+				let expression = parenthesesExpression.subtrees.first else
+			{
+				return try unexpectedExpressionStructureError(
+					"Expected the brace statement to contain only Call Expressions containing " +
+					"Parentheses Expressions containing the relevant expressions.",
+					AST: interpolatedStringLiteralExpression)
 			}
-			else {
-				expressions.append(try translate(expression: expression))
-			}
+
+			let translatedExpression = try translate(expression: expression)
+			expressions.append(translatedExpression)
 		}
 
 		return .interpolatedStringLiteralExpression(expressions: expressions)
@@ -1744,7 +1748,10 @@ public class GRYSwift4Translator {
 				AST: arrayExpression)
 		}
 
-		let expressionsArray = try arrayExpression.subtrees.map(translate(expression:))
+		// Drop the "Semantic Expression" at the end
+		let expressionsToTranslate = arrayExpression.subtrees.dropLast()
+
+		let expressionsArray = try expressionsToTranslate.map(translate(expression:))
 
 		guard let rawType = arrayExpression["type"] else {
 			return try unexpectedExpressionStructureError(
@@ -1752,7 +1759,7 @@ public class GRYSwift4Translator {
 		}
 		let type = cleanUpType(rawType)
 
-		return .arrayExpression(elements: expressionsArray.array, type: type)
+		return .arrayExpression(elements: expressionsArray, type: type)
 	}
 
 	internal func translate(dictionaryExpression: GRYSwiftAST) throws -> GRYExpression {

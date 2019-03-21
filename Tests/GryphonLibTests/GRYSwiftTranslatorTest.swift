@@ -31,7 +31,7 @@ class GRYSwiftTranslatorTest: XCTestCase {
 
 				// Create a new Gryphon AST from the cached Swift AST using the GRYSwiftTranslator
 				let swiftAST = try GRYSwiftAST(decodeFromFile: testFilePath + .grySwiftAST)
-				let createdGryphonRawAST = try GRYSwift5Translator().translateAST(swiftAST)
+				let createdGryphonRawAST = try GRYSwiftTranslator().translateAST(swiftAST)
 
 				// Compare the two
 				XCTAssert(
