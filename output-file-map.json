@@ -5,14 +5,23 @@
   "Sources/GryphonLib/GRYAST.swift": {
     "ast-dump": "Bootstrap/GRYAST.swiftASTDump",
   },
+  "Sources/GryphonLib/GRYASTNodes.swift": {
+	  "ast-dump": "Bootstrap/GRYASTNodes.swiftASTDump",
+  },
   "Sources/GryphonLib/GRYCodable.swift": {
     "ast-dump": "Bootstrap/GRYCodable.swiftASTDump",
+  },
+  "Sources/GryphonLib/GRYCodableExtensions.swift": {
+	  "ast-dump": "Bootstrap/GRYCodableExtensions.swiftASTDump",
   },
   "Sources/GryphonLib/GRYCompiler.swift": {
     "ast-dump": "Bootstrap/GRYCompiler.swiftASTDump",
   },
   "Sources/GryphonLib/GRYExtensions.swift": {
     "ast-dump": "Bootstrap/GRYExtensions.swiftASTDump",
+  },
+  "Sources/GryphonLib/GRYFile.swift": {
+	  "ast-dump": "Bootstrap/GRYFile.swiftASTDump",
   },
   "Sources/GryphonLib/GRYKotlinTranslator.swift": {
     "ast-dump": "Bootstrap/GRYKotlinTranslator.swiftASTDump",
@@ -29,14 +38,11 @@
   "Sources/GryphonLib/GRYStandardLibrary.swift": {
 	  "ast-dump": "Bootstrap/GRYStandardLibrary.swiftASTDump",
   },
-  "Sources/GryphonLib/GRYSwift4Translator.swift": {
-    "ast-dump": "Bootstrap/GRYSwift4Translator.swiftASTDump",
-  },
-  "Sources/GryphonLib/GRYSwift5Translator.swift": {
-    "ast-dump": "Bootstrap/GRYSwift5Translator.swiftASTDump",
-  },
   "Sources/GryphonLib/GRYSwiftAst.swift": {
-    "ast-dump": "Bootstrap/GRYSwiftAst.swiftASTDump",
+	  "ast-dump": "Bootstrap/GRYSwiftAst.swiftASTDump",
+  },
+  "Sources/GryphonLib/GRYSwiftTranslator.swift": {
+    "ast-dump": "Bootstrap/GRYSwiftTranslator.swiftASTDump",
   },
   "Sources/GryphonLib/GRYTranspilationPass.swift": {
     "ast-dump": "Bootstrap/GRYTranspilationPass.swiftASTDump",
