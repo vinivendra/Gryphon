@@ -15,8 +15,8 @@
 */
 
 public class GRYTranspilationPass {
-	fileprivate var parents = [Either<GRYTopLevelNode, GRYExpression>]()
-	fileprivate var parent: Either<GRYTopLevelNode, GRYExpression> {
+	fileprivate var parents = [Either<GRYStatement, GRYExpression>]()
+	fileprivate var parent: Either<GRYStatement, GRYExpression> {
 		return parents.secondToLast!
 	}
 
@@ -26,11 +26,11 @@ public class GRYTranspilationPass {
 		return GRYAST(declarations: replacedDeclarations, statements: replacedStatements)
 	}
 
-	func replaceTopLevelNodes(_ nodes: [GRYTopLevelNode]) -> [GRYTopLevelNode] {
+	func replaceTopLevelNodes(_ nodes: [GRYStatement]) -> [GRYStatement] {
 		return nodes.flatMap(replaceTopLevelNode)
 	}
 
-	func replaceTopLevelNode(_ node: GRYTopLevelNode) -> [GRYTopLevelNode] {
+	func replaceTopLevelNode(_ node: GRYStatement) -> [GRYStatement] {
 		parents.append(.left(node))
 		defer { parents.removeLast() }
 
@@ -87,38 +87,38 @@ public class GRYTranspilationPass {
 		}
 	}
 
-	func replaceExpression(expression: GRYExpression) -> [GRYTopLevelNode] {
+	func replaceExpression(expression: GRYExpression) -> [GRYStatement] {
 		return [.expression(expression: replaceExpression(expression))]
 	}
 
-	func replaceExtension(type: String, members: [GRYTopLevelNode]) -> [GRYTopLevelNode] {
+	func replaceExtension(type: String, members: [GRYStatement]) -> [GRYStatement] {
 		return [.extensionDeclaration(type: type, members: replaceTopLevelNodes(members))]
 	}
 
-	func replaceImportDeclaration(name: String) -> [GRYTopLevelNode] {
+	func replaceImportDeclaration(name: String) -> [GRYStatement] {
 		return [.importDeclaration(name: name)]
 	}
 
 	func replaceTypealiasDeclaration(identifier: String, type: String, isImplicit: Bool)
-		-> [GRYTopLevelNode]
+		-> [GRYStatement]
 	{
 		return [.typealiasDeclaration(identifier: identifier, type: type, isImplicit: isImplicit)]
 	}
 
-	func replaceClassDeclaration(name: String, inherits: [String], members: [GRYTopLevelNode])
-		-> [GRYTopLevelNode]
+	func replaceClassDeclaration(name: String, inherits: [String], members: [GRYStatement])
+		-> [GRYStatement]
 	{
 		return [.classDeclaration(
 			name: name, inherits: inherits, members: replaceTopLevelNodes(members)), ]
 	}
 
-	func replaceCompanionObject(members: [GRYTopLevelNode]) -> [GRYTopLevelNode] {
+	func replaceCompanionObject(members: [GRYStatement]) -> [GRYStatement] {
 		return [.companionObject(members: replaceTopLevelNodes(members))]
 	}
 
 	func replaceEnumDeclaration(
 		access: String?, name: String, inherits: [String], elements: [GRYASTEnumElement],
-		members: [GRYTopLevelNode], isImplicit: Bool) -> [GRYTopLevelNode]
+		members: [GRYStatement], isImplicit: Bool) -> [GRYStatement]
 	{
 		return [
 			.enumDeclaration(
@@ -140,12 +140,12 @@ public class GRYTranspilationPass {
 			name: name, associatedValues: associatedValues, annotations: annotations), ]
 	}
 
-	func replaceProtocolDeclaration(name: String, members: [GRYTopLevelNode]) -> [GRYTopLevelNode] {
+	func replaceProtocolDeclaration(name: String, members: [GRYStatement]) -> [GRYStatement] {
 		return [.protocolDeclaration(name: name, members: replaceTopLevelNodes(members))]
 	}
 
-	func replaceStructDeclaration(name: String, inherits: [String], members: [GRYTopLevelNode])
-		-> [GRYTopLevelNode]
+	func replaceStructDeclaration(name: String, inherits: [String], members: [GRYStatement])
+		-> [GRYStatement]
 	{
 		return [.structDeclaration(
 			name: name, inherits: inherits, members: replaceTopLevelNodes(members)),
@@ -153,7 +153,7 @@ public class GRYTranspilationPass {
 	}
 
 	func replaceFunctionDeclaration(_ functionDeclaration: GRYASTFunctionDeclaration)
-		-> [GRYTopLevelNode]
+		-> [GRYStatement]
 	{
 		let replacedParameters = functionDeclaration.parameters
 			.map {
@@ -171,7 +171,7 @@ public class GRYTranspilationPass {
 	}
 
 	func replaceVariableDeclaration(_ variableDeclaration: GRYASTVariableDeclaration)
-		-> [GRYTopLevelNode]
+		-> [GRYStatement]
 	{
 		return [.variableDeclaration(value: replaceVariableDeclaration(variableDeclaration))]
 	}
@@ -187,8 +187,8 @@ public class GRYTranspilationPass {
 	}
 
 	func replaceForEachStatement(
-		collection: GRYExpression, variable: GRYExpression, statements: [GRYTopLevelNode])
-		-> [GRYTopLevelNode]
+		collection: GRYExpression, variable: GRYExpression, statements: [GRYStatement])
+		-> [GRYStatement]
 	{
 		return [.forEachStatement(
 			collection: replaceExpression(collection),
@@ -196,8 +196,8 @@ public class GRYTranspilationPass {
 			statements: replaceTopLevelNodes(statements)), ]
 	}
 
-	func replaceIfStatement(_ ifStatement: GRYASTIfStatement) -> [GRYTopLevelNode] {
-		return [GRYTopLevelNode.ifStatement(value: replaceIfStatement(ifStatement))]
+	func replaceIfStatement(_ ifStatement: GRYASTIfStatement) -> [GRYStatement] {
+		return [GRYStatement.ifStatement(value: replaceIfStatement(ifStatement))]
 	}
 
 	func replaceIfStatement(_ ifStatement: GRYASTIfStatement) -> GRYASTIfStatement {
@@ -210,10 +210,10 @@ public class GRYTranspilationPass {
 	}
 
 	func replaceSwitchStatement(
-		convertsToExpression: GRYTopLevelNode?, expression: GRYExpression,
-		cases: [GRYASTSwitchCase]) -> [GRYTopLevelNode]
+		convertsToExpression: GRYStatement?, expression: GRYExpression,
+		cases: [GRYASTSwitchCase]) -> [GRYStatement]
 	{
-		let replacedConvertsToExpression: GRYTopLevelNode?
+		let replacedConvertsToExpression: GRYStatement?
 		if let convertsToExpression = convertsToExpression,
 			let replacedExpression = replaceTopLevelNode(convertsToExpression).first
 		{
@@ -237,16 +237,16 @@ public class GRYTranspilationPass {
 			cases: replacedCases), ]
 	}
 
-	func replaceThrowStatement(expression: GRYExpression) -> [GRYTopLevelNode] {
+	func replaceThrowStatement(expression: GRYExpression) -> [GRYStatement] {
 		return [.throwStatement(expression: replaceExpression(expression))]
 	}
 
-	func replaceReturnStatement(expression: GRYExpression?) -> [GRYTopLevelNode] {
+	func replaceReturnStatement(expression: GRYExpression?) -> [GRYStatement] {
 		return [.returnStatement(expression: expression.map(replaceExpression))]
 	}
 
 	func replaceAssignmentStatement(leftHand: GRYExpression, rightHand: GRYExpression)
-		-> [GRYTopLevelNode]
+		-> [GRYStatement]
 	{
 		return [.assignmentStatement(
 			leftHand: replaceExpression(leftHand), rightHand: replaceExpression(rightHand)), ]
@@ -436,7 +436,7 @@ public class GRYTranspilationPass {
 	}
 
 	func replaceClosureExpression(
-		parameters: [GRYASTLabeledType], statements: [GRYTopLevelNode], type: String)
+		parameters: [GRYASTLabeledType], statements: [GRYStatement], type: String)
 		-> GRYExpression
 	{
 		return .closureExpression(
@@ -510,7 +510,7 @@ public class GRYRemoveParenthesesTranspilationPass: GRYTranspilationPass {
 public class GRYRemoveImplicitDeclarationsTranspilationPass: GRYTranspilationPass {
 	override func replaceEnumDeclaration(
 		access: String?, name: String, inherits: [String], elements: [GRYASTEnumElement],
-		members: [GRYTopLevelNode], isImplicit: Bool) -> [GRYTopLevelNode]
+		members: [GRYStatement], isImplicit: Bool) -> [GRYStatement]
 	{
 		if isImplicit {
 			return []
@@ -523,7 +523,7 @@ public class GRYRemoveImplicitDeclarationsTranspilationPass: GRYTranspilationPas
 	}
 
 	override func replaceTypealiasDeclaration(
-		identifier: String, type: String, isImplicit: Bool) -> [GRYTopLevelNode]
+		identifier: String, type: String, isImplicit: Bool) -> [GRYStatement]
 	{
 		if isImplicit {
 			return []
@@ -535,7 +535,7 @@ public class GRYRemoveImplicitDeclarationsTranspilationPass: GRYTranspilationPas
 	}
 
 	override func replaceVariableDeclaration(_ variableDeclaration: GRYASTVariableDeclaration)
-		-> [GRYTopLevelNode]
+		-> [GRYStatement]
 	{
 		if variableDeclaration.isImplicit {
 			return []
@@ -550,10 +550,10 @@ public class GRYRemoveImplicitDeclarationsTranspilationPass: GRYTranspilationPas
 /// object.
 public class GRYStaticMembersTranspilationPass: GRYTranspilationPass {
 	override func replaceClassDeclaration(
-		name: String, inherits: [String], members: [GRYTopLevelNode]) -> [GRYTopLevelNode]
+		name: String, inherits: [String], members: [GRYStatement]) -> [GRYStatement]
 	{
-		var staticMembers = [GRYTopLevelNode]()
-		var otherMembers = [GRYTopLevelNode]()
+		var staticMembers = [GRYStatement]()
+		var otherMembers = [GRYStatement]()
 
 		for member in members {
 			if case let .functionDeclaration(value: functionDeclaration) = member,
@@ -611,7 +611,7 @@ public class GRYInnerTypePrefixesTranspilationPass: GRYTranspilationPass {
 	}
 
 	override func replaceClassDeclaration(
-		name: String, inherits: [String], members: [GRYTopLevelNode]) -> [GRYTopLevelNode]
+		name: String, inherits: [String], members: [GRYStatement]) -> [GRYStatement]
 	{
 		typeNamesStack.append(name)
 		let result = super.replaceClassDeclaration(name: name, inherits: inherits, members: members)
@@ -702,7 +702,7 @@ public class GRYCleanInheritancesTranspilationPass: GRYTranspilationPass {
 
 	override func replaceEnumDeclaration(
 		access: String?, name: String, inherits: [String], elements: [GRYASTEnumElement],
-		members: [GRYTopLevelNode], isImplicit: Bool) -> [GRYTopLevelNode]
+		members: [GRYStatement], isImplicit: Bool) -> [GRYStatement]
 	{
 		return [.enumDeclaration(
 			access: access, name: name,
@@ -712,7 +712,7 @@ public class GRYCleanInheritancesTranspilationPass: GRYTranspilationPass {
 	}
 
 	override func replaceStructDeclaration(
-		name: String, inherits: [String], members: [GRYTopLevelNode]) -> [GRYTopLevelNode]
+		name: String, inherits: [String], members: [GRYStatement]) -> [GRYStatement]
 	{
 		return [.structDeclaration(
 			name: name, inherits: inherits.filter(isNotASwiftProtocol), members: members), ]
@@ -738,7 +738,7 @@ public class GRYAnonymousParametersTranspilationPass: GRYTranspilationPass {
 	}
 
 	override func replaceClosureExpression(
-		parameters: [GRYASTLabeledType], statements: [GRYTopLevelNode], type: String)
+		parameters: [GRYASTLabeledType], statements: [GRYStatement], type: String)
 		-> GRYExpression
 	{
 		if parameters.count == 1,
@@ -761,7 +761,7 @@ public class GRYReturnsInLambdasTranspilationPass: GRYTranspilationPass {
 	var isInClosure = false
 
 	override func replaceClosureExpression(
-		parameters: [GRYASTLabeledType], statements: [GRYTopLevelNode], type: String)
+		parameters: [GRYASTLabeledType], statements: [GRYStatement], type: String)
 		-> GRYExpression
 	{
 		isInClosure = true
@@ -770,7 +770,7 @@ public class GRYReturnsInLambdasTranspilationPass: GRYTranspilationPass {
 			parameters: parameters, statements: statements, type: type)
 	}
 
-	override func replaceReturnStatement(expression: GRYExpression?) -> [GRYTopLevelNode] {
+	override func replaceReturnStatement(expression: GRYExpression?) -> [GRYStatement] {
 		if isInClosure, let expression = expression {
 			return [.expression(expression: expression)]
 		}
@@ -793,8 +793,8 @@ public class GRYReturnsInLambdasTranspilationPass: GRYTranspilationPass {
 public class GRYSwitchesToExpressionsTranspilationPass: GRYTranspilationPass {
 	/// Detect switches whose bodies all end in the same returns or assignments
 	override func replaceSwitchStatement(
-		convertsToExpression: GRYTopLevelNode?, expression: GRYExpression,
-		cases: [GRYASTSwitchCase]) -> [GRYTopLevelNode]
+		convertsToExpression: GRYStatement?, expression: GRYExpression,
+		cases: [GRYASTSwitchCase]) -> [GRYStatement]
 	{
 		var hasAllReturnCases = true
 		var hasAllAssignmentCases = true
@@ -835,7 +835,7 @@ public class GRYSwitchesToExpressionsTranspilationPass: GRYTranspilationPass {
 				}
 			}
 			let conversionExpression =
-				GRYTopLevelNode.returnStatement(expression: .nilLiteralExpression)
+				GRYStatement.returnStatement(expression: .nilLiteralExpression)
 			return [.switchStatement(
 				convertsToExpression: conversionExpression, expression: expression,
 				cases: newCases), ]
@@ -853,7 +853,7 @@ public class GRYSwitchesToExpressionsTranspilationPass: GRYTranspilationPass {
 						expression: switchCase.expression, statements: newStatements))
 				}
 			}
-			let conversionExpression = GRYTopLevelNode.assignmentStatement(
+			let conversionExpression = GRYStatement.assignmentStatement(
 				leftHand: assignmentExpression, rightHand: .nilLiteralExpression)
 			return [.switchStatement(
 				convertsToExpression: conversionExpression, expression: expression,
@@ -866,10 +866,10 @@ public class GRYSwitchesToExpressionsTranspilationPass: GRYTranspilationPass {
 	}
 
 	/// Replace variable declarations followed by switch statements assignments
-	override func replaceTopLevelNodes(_ oldNodes: [GRYTopLevelNode]) -> [GRYTopLevelNode] {
+	override func replaceTopLevelNodes(_ oldNodes: [GRYStatement]) -> [GRYStatement] {
 		var nodes = super.replaceTopLevelNodes(oldNodes)
 
-		var result = [GRYTopLevelNode]()
+		var result = [GRYStatement]()
 
 		var i = 0
 		while i < (nodes.count - 1) {
@@ -894,7 +894,7 @@ public class GRYSwitchesToExpressionsTranspilationPass: GRYTranspilationPass {
 				variableDeclaration.setter = nil
 				variableDeclaration.isStatic = false
 				let newConversionExpression =
-					GRYTopLevelNode.variableDeclaration(value: variableDeclaration)
+					GRYStatement.variableDeclaration(value: variableDeclaration)
 				result.append(.switchStatement(
 					convertsToExpression: newConversionExpression, expression: switchExpression,
 					cases: cases))
@@ -920,14 +920,14 @@ public class GRYSwitchesToExpressionsTranspilationPass: GRYTranspilationPass {
 public class GRYRemoveExtensionsTranspilationPass: GRYTranspilationPass {
 	var extendingType: String?
 
-	override func replaceExtension(type: String, members: [GRYTopLevelNode]) -> [GRYTopLevelNode] {
+	override func replaceExtension(type: String, members: [GRYStatement]) -> [GRYStatement] {
 		extendingType = type
 		let members = replaceTopLevelNodes(members)
 		extendingType = nil
 		return members
 	}
 
-	override func replaceTopLevelNode(_ node: GRYTopLevelNode) -> [GRYTopLevelNode] {
+	override func replaceTopLevelNode(_ node: GRYStatement) -> [GRYStatement] {
 		switch node {
 		case let .extensionDeclaration(type: type, members: members):
 			return replaceExtension(type: type, members: members)
@@ -941,11 +941,11 @@ public class GRYRemoveExtensionsTranspilationPass: GRYTranspilationPass {
 	}
 
 	override func replaceFunctionDeclaration(_ functionDeclaration: GRYASTFunctionDeclaration)
-		-> [GRYTopLevelNode]
+		-> [GRYStatement]
 	{
 		var functionDeclaration = functionDeclaration
 		functionDeclaration.extendsType = self.extendingType
-		return [GRYTopLevelNode.functionDeclaration(value: functionDeclaration)]
+		return [GRYStatement.functionDeclaration(value: functionDeclaration)]
 	}
 
 	override func replaceVariableDeclaration(_ variableDeclaration: GRYASTVariableDeclaration)
@@ -967,7 +967,7 @@ public class GRYRemoveExtensionsTranspilationPass: GRYTranspilationPass {
 /// to translate these functions correctly later.
 public class GRYRecordFunctionTranslationsTranspilationPass: GRYTranspilationPass {
 	override func replaceFunctionDeclaration(
-		_ functionDeclaration: GRYASTFunctionDeclaration) -> [GRYTopLevelNode]
+		_ functionDeclaration: GRYASTFunctionDeclaration) -> [GRYStatement]
 	{
 		let swiftAPIName = functionDeclaration.prefix + "(" +
 			functionDeclaration.parameters.map { ($0.apiLabel ?? $0.label) + ":" }.joined() + ")"
@@ -984,7 +984,7 @@ public class GRYRecordFunctionTranslationsTranspilationPass: GRYTranspilationPas
 public class GRYRecordEnumsTranspilationPass: GRYTranspilationPass {
 	override func replaceEnumDeclaration(
 		access: String?, name: String, inherits: [String], elements: [GRYASTEnumElement],
-		members: [GRYTopLevelNode], isImplicit: Bool) -> [GRYTopLevelNode]
+		members: [GRYStatement], isImplicit: Bool) -> [GRYStatement]
 	{
 		let isEnumClass = members.isEmpty && inherits.isEmpty && elements.reduce(true)
 		{ (acc: Bool, element: GRYASTEnumElement) -> Bool in
@@ -1024,7 +1024,7 @@ public class GRYRaiseStandardLibraryWarningsTranspilationPass: GRYTranspilationP
 /// Source: https://forums.swift.org/t/are-immutable-structs-like-classes/16270
 public class GRYRaiseMutableValueTypesWarningsTranspilationPass: GRYTranspilationPass {
 	override func replaceStructDeclaration(
-		name: String, inherits: [String], members: [GRYTopLevelNode]) -> [GRYTopLevelNode]
+		name: String, inherits: [String], members: [GRYStatement]) -> [GRYStatement]
 	{
 		for member in members {
 			if case let .variableDeclaration(value: variableDeclaration) = member,
@@ -1054,7 +1054,7 @@ public class GRYRaiseMutableValueTypesWarningsTranspilationPass: GRYTranspilatio
 
 	override func replaceEnumDeclaration(
 		access: String?, name: String, inherits: [String], elements: [GRYASTEnumElement],
-		members: [GRYTopLevelNode], isImplicit: Bool) -> [GRYTopLevelNode]
+		members: [GRYStatement], isImplicit: Bool) -> [GRYStatement]
 	{
 		for member in members {
 			if case let .functionDeclaration(value: functionDeclaration) = member,
@@ -1076,9 +1076,9 @@ public class GRYRaiseMutableValueTypesWarningsTranspilationPass: GRYTranspilatio
 }
 
 public class GRYRearrangeIfLetsTranspilationPass: GRYTranspilationPass {
-	override func replaceIfStatement(_ ifStatement: GRYASTIfStatement) -> [GRYTopLevelNode] {
+	override func replaceIfStatement(_ ifStatement: GRYASTIfStatement) -> [GRYStatement] {
 		var letConditions = [GRYExpression]()
-		var letDeclarations = [GRYTopLevelNode]()
+		var letDeclarations = [GRYStatement]()
 
 		for declaration in ifStatement.declarations {
 			// If it's a shadowing identifier there's no need to declare it in Kotlin
@@ -1164,7 +1164,7 @@ public class GRYDoubleNegativesInGuardsTranspilationPass: GRYTranspilationPass {
 /// Statements of the type `if (a == null) { return }` in Swift can be translated as `a ?: return`
 /// in Kotlin.
 public class GRYReturnIfNilTranspilationPass: GRYTranspilationPass {
-	override func replaceTopLevelNode(_ node: GRYTopLevelNode) -> [GRYTopLevelNode] {
+	override func replaceTopLevelNode(_ node: GRYStatement) -> [GRYStatement] {
 		if case let .ifStatement(value: ifStatement) = node,
 			ifStatement.declarations.isEmpty,
 			ifStatement.conditions.count == 1,
@@ -1200,7 +1200,7 @@ public class GRYFixProtocolContentsTranspilationPass: GRYTranspilationPass {
 	var isInProtocol = false
 
 	override func replaceProtocolDeclaration(
-		name: String, members: [GRYTopLevelNode]) -> [GRYTopLevelNode]
+		name: String, members: [GRYStatement]) -> [GRYStatement]
 	{
 		isInProtocol = true
 		let result = super.replaceProtocolDeclaration(name: name, members: members)
@@ -1210,7 +1210,7 @@ public class GRYFixProtocolContentsTranspilationPass: GRYTranspilationPass {
 	}
 
 	override func replaceFunctionDeclaration(_ functionDeclaration: GRYASTFunctionDeclaration)
-		-> [GRYTopLevelNode]
+		-> [GRYStatement]
 	{
 		if isInProtocol {
 			var functionDeclaration = functionDeclaration

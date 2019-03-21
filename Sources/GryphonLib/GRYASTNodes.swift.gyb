@@ -20,29 +20,29 @@ astNodes = [
 	['expression', [['expression', 'GRYExpression']]],
 	['typealiasDeclaration',
 		[['identifier', 'String'], ['type', 'String'], ['isImplicit', 'Bool']]],
-	['extensionDeclaration', [['type', 'String'], ['members', '[GRYTopLevelNode]']]],
+	['extensionDeclaration', [['type', 'String'], ['members', '[GRYStatement]']]],
 	['importDeclaration', [['name', 'String']]],
 	['classDeclaration',
-		[['name', 'String'], ['inherits', '[String]'], ['members', '[GRYTopLevelNode]']]],
-	['companionObject', [['members', '[GRYTopLevelNode]']]],
+		[['name', 'String'], ['inherits', '[String]'], ['members', '[GRYStatement]']]],
+	['companionObject', [['members', '[GRYStatement]']]],
 	['enumDeclaration',
 		[['access', 'String?'], ['name', 'String'], ['inherits', '[String]'],
-		['elements', '[GRYASTEnumElement]'], ['members', '[GRYTopLevelNode]'],
+		['elements', '[GRYASTEnumElement]'], ['members', '[GRYStatement]'],
 		['isImplicit', 'Bool']]],
-	['protocolDeclaration', [['name', 'String'], ['members', '[GRYTopLevelNode]']]],
+	['protocolDeclaration', [['name', 'String'], ['members', '[GRYStatement]']]],
 	['structDeclaration',
-		[['name', 'String'], ['inherits', '[String]'], ['members', '[GRYTopLevelNode]']]],
+		[['name', 'String'], ['inherits', '[String]'], ['members', '[GRYStatement]']]],
 	['functionDeclaration',
 		[['value', 'GRYASTFunctionDeclaration']]],
 	['variableDeclaration',
 		[['value', 'GRYASTVariableDeclaration']]],
 	['forEachStatement',
 		[['collection', 'GRYExpression'], ['variable', 'GRYExpression'],
-		['statements', '[GRYTopLevelNode]']]],
+		['statements', '[GRYStatement]']]],
 	['ifStatement',
 		[['value', 'GRYASTIfStatement']]],
 	['switchStatement',
-		[['convertsToExpression', 'GRYTopLevelNode?'], ['expression', 'GRYExpression'],
+		[['convertsToExpression', 'GRYStatement?'], ['expression', 'GRYExpression'],
 		['cases', '[GRYASTSwitchCase]']]],
 	['throwStatement', [['expression', 'GRYExpression']]],
 	['returnStatement', [['expression', 'GRYExpression?']]],
@@ -51,7 +51,7 @@ astNodes = [
 	]
 }%
 
-public indirect enum GRYTopLevelNode: Equatable, GRYPrintableAsTree {
+public indirect enum GRYStatement: Equatable, GRYPrintableAsTree {
 
 %for astNode in astNodes:
 %	name = astNode[0]
@@ -102,11 +102,11 @@ public indirect enum GRYTopLevelNode: Equatable, GRYPrintableAsTree {
 		encoder.endObject()
 	}
 
-	static func decode(from decoder: GRYDecoder) throws -> GRYTopLevelNode {
+	static func decode(from decoder: GRYDecoder) throws -> GRYStatement {
 		try decoder.readOpeningParenthesis()
 		let name = decoder.readDoubleQuotedString()
 
-		let result: GRYTopLevelNode
+		let result: GRYStatement
 
 		switch name {
 %for astNode in astNodes:
@@ -131,7 +131,7 @@ public indirect enum GRYTopLevelNode: Equatable, GRYPrintableAsTree {
 %end
 		default:
 			throw GRYDecodingError.unexpectedContent(
-				decoder: decoder, errorMessage: "Unknown GRYTopLevelNode \"\(name)\".")
+				decoder: decoder, errorMessage: "Unknown GRYStatement \"\(name)\".")
 		}
 
 		try decoder.readClosingParenthesis()
@@ -170,7 +170,7 @@ expressionNodes = [
 	['callExpression',
 		[['function', 'GRYExpression'], ['parameters', 'GRYExpression'], ['type', 'String']]],
 	['closureExpression',
-		[['parameters', '[GRYASTLabeledType]'], ['statements', '[GRYTopLevelNode]'],
+		[['parameters', '[GRYASTLabeledType]'], ['statements', '[GRYStatement]'],
 		['type', 'String']]],
 	['literalIntExpression', [['value', 'Int64']]],
 	['literalUIntExpression', [['value', 'UInt64']]],
@@ -285,20 +285,20 @@ astElements = [
 		['value', 'GRYExpression?']]],
 	['struct', 'GRYASTVariableDeclaration',
 		[['identifier', 'String'], ['typeName', 'String'], ['expression', 'GRYExpression?'],
-		['getter', 'GRYTopLevelNode?'], ['setter', 'GRYTopLevelNode?'], ['isLet', 'Bool'],
+		['getter', 'GRYStatement?'], ['setter', 'GRYStatement?'], ['isLet', 'Bool'],
 		['isImplicit', 'Bool'], ['isStatic', 'Bool'], ['extendsType', 'String?'],
 		['annotations', 'String?']]],
 	['struct', 'GRYASTFunctionDeclaration',
 		[['prefix', 'String'], ['parameters', '[GRYASTFunctionParameter]'],
 		['returnType', 'String'], ['functionType', 'String'], ['isImplicit', 'Bool'],
 		['isStatic', 'Bool'], ['isMutating', 'Bool'], ['extendsType', 'String?'],
-		['statements', '[GRYTopLevelNode]?'], ['access', 'String?']]],
+		['statements', '[GRYStatement]?'], ['access', 'String?']]],
 	['class', 'GRYASTIfStatement',
 		[['conditions', '[GRYExpression]'], ['declarations', '[GRYASTVariableDeclaration]'],
-		['statements', '[GRYTopLevelNode]'], ['elseStatement', 'GRYASTIfStatement?'],
+		['statements', '[GRYStatement]'], ['elseStatement', 'GRYASTIfStatement?'],
 		['isGuard', 'Bool']]],
 	['struct', 'GRYASTSwitchCase',
-		[['expression', 'GRYExpression?'], ['statements', '[GRYTopLevelNode]']]],
+		[['expression', 'GRYExpression?'], ['statements', '[GRYStatement]']]],
 	['struct', 'GRYASTEnumElement',
 		[['name', 'String'], ['associatedValues', '[GRYASTLabeledType]'],
 		['annotations', 'String?']]],

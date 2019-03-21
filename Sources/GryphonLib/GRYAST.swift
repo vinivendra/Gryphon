@@ -15,10 +15,10 @@
 */
 
 public final class GRYAST: GRYPrintableAsTree, GRYCodable, Equatable, CustomStringConvertible {
-	let declarations: [GRYTopLevelNode]
-	let statements: [GRYTopLevelNode]
+	let declarations: [GRYStatement]
+	let statements: [GRYStatement]
 
-	init(declarations: [GRYTopLevelNode], statements: [GRYTopLevelNode]) {
+	init(declarations: [GRYStatement], statements: [GRYStatement]) {
 		self.declarations = declarations
 		self.statements = statements
 	}
@@ -27,8 +27,8 @@ public final class GRYAST: GRYPrintableAsTree, GRYCodable, Equatable, CustomStri
 	internal static func decode(from decoder: GRYDecoder) throws -> GRYAST {
 		try decoder.readOpeningParenthesis()
 		_ = decoder.readIdentifier()
-		let declarations = try [GRYTopLevelNode].decode(from: decoder)
-		let statements = try [GRYTopLevelNode].decode(from: decoder)
+		let declarations = try [GRYStatement].decode(from: decoder)
+		let statements = try [GRYStatement].decode(from: decoder)
 		try decoder.readClosingParenthesis()
 		return GRYAST(declarations: declarations, statements: statements)
 	}
@@ -64,7 +64,7 @@ public final class GRYAST: GRYPrintableAsTree, GRYCodable, Equatable, CustomStri
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-extension GRYTopLevelNode {
+extension GRYStatement {
 	public var name: String {
 		if let name = Mirror(reflecting: self).children.first?.label {
 			return name
@@ -170,9 +170,9 @@ extension GRYTopLevelNode {
 				GRYPrintableTree.initOrNil("statements", statements), ]
 		case let .ifStatement(value: ifStatement):
 			let declarationTrees =
-				ifStatement.declarations.map { GRYTopLevelNode.variableDeclaration(value: $0) }
+				ifStatement.declarations.map { GRYStatement.variableDeclaration(value: $0) }
 			let elseStatementTrees = ifStatement.elseStatement
-				.map({ GRYTopLevelNode.ifStatement(value: $0) })?.printableSubtrees ?? []
+				.map({ GRYStatement.ifStatement(value: $0) })?.printableSubtrees ?? []
 			return [
 				ifStatement.isGuard ? GRYPrintableTree("guard") : nil,
 				GRYPrintableTree.initOrNil("declarations", declarationTrees),

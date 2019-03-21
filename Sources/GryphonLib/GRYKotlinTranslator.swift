@@ -158,7 +158,7 @@ public class GRYKotlinTranslator {
 
 	// MARK: - Implementation
 
-	private func translate(subtree: GRYTopLevelNode, withIndentation indentation: String) throws
+	private func translate(subtree: GRYStatement, withIndentation indentation: String) throws
 		-> String
 	{
 		let result: String
@@ -239,7 +239,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translate(
-		subtrees: [GRYTopLevelNode], withIndentation indentation: String,
+		subtrees: [GRYStatement], withIndentation indentation: String,
 		limitForAddingNewlines: Int = 0) throws -> String
 	{
 		let treesAndTranslations = try subtrees.map {
@@ -303,7 +303,7 @@ public class GRYKotlinTranslator {
 
 	private func translateEnumDeclaration(
 		access: String?, name enumName: String, inherits: [String], elements: [GRYASTEnumElement],
-		members: [GRYTopLevelNode], isImplicit: Bool, withIndentation indentation: String)
+		members: [GRYStatement], isImplicit: Bool, withIndentation indentation: String)
 		throws -> String
 	{
 		let isEnumClass = GRYKotlinTranslator.enumClasses.contains(enumName)
@@ -372,7 +372,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateProtocolDeclaration(
-		name: String, members: [GRYTopLevelNode], withIndentation indentation: String) throws
+		name: String, members: [GRYStatement], withIndentation indentation: String) throws
 		-> String
 	{
 		var result = "\(indentation)interface \(name) {\n"
@@ -392,7 +392,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateClassDeclaration(
-		name: String, inherits: [String], members: [GRYTopLevelNode],
+		name: String, inherits: [String], members: [GRYStatement],
 		withIndentation indentation: String) throws -> String
 	{
 		var result = "\(indentation)class \(name)"
@@ -418,14 +418,14 @@ public class GRYKotlinTranslator {
 	/// If a value type's members are all immutable, that value type can safely be translated as a
 	/// class. Source: https://forums.swift.org/t/are-immutable-structs-like-classes/16270
 	private func translateStructDeclaration(
-		name: String, inherits: [String], members: [GRYTopLevelNode],
+		name: String, inherits: [String], members: [GRYStatement],
 		withIndentation indentation: String) throws -> String
 	{
 		let increasedIndentation = increaseIndentation(indentation)
 
 		var result = "\(indentation)data class \(name)(\n"
 
-		let isProperty = { (member: GRYTopLevelNode) -> Bool in
+		let isProperty = { (member: GRYStatement) -> Bool in
 			if case let .variableDeclaration(value: variableDeclaration) = member,
 				variableDeclaration.getter == nil,
 				variableDeclaration.setter == nil
@@ -467,7 +467,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateCompanionObject(
-		members: [GRYTopLevelNode], withIndentation indentation: String) throws -> String
+		members: [GRYStatement], withIndentation indentation: String) throws -> String
 	{
 		var result = "\(indentation)companion object {\n"
 
@@ -563,7 +563,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateForEachStatement(
-		collection: GRYExpression, variable: GRYExpression, statements: [GRYTopLevelNode],
+		collection: GRYExpression, variable: GRYExpression, statements: [GRYStatement],
 		withIndentation indentation: String) throws -> String
 	{
 		var result = "\(indentation)for ("
@@ -628,7 +628,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateSwitchStatement(
-		convertsToExpression: GRYTopLevelNode?, expression: GRYExpression,
+		convertsToExpression: GRYStatement?, expression: GRYExpression,
 		cases: [GRYASTSwitchCase], withIndentation indentation: String) throws -> String
 	{
 		var result: String = ""
@@ -1091,7 +1091,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateClosureExpression(
-		parameters: [GRYASTLabeledType], statements: [GRYTopLevelNode], type: String,
+		parameters: [GRYASTLabeledType], statements: [GRYStatement], type: String,
 		withIndentation indentation: String) throws -> String
 	{
 		var result = "{"
@@ -1104,7 +1104,7 @@ public class GRYKotlinTranslator {
 
 		if statements.count == 1,
 			let firstStatement = statements.first,
-			case let GRYTopLevelNode.expression(expression: expression) = firstStatement
+			case let GRYStatement.expression(expression: expression) = firstStatement
 		{
 			result += try " " + translateExpression(expression, withIndentation: indentation) + " }"
 		}
@@ -1357,7 +1357,7 @@ public enum GRYKotlinTranslatorError: Error, CustomStringConvertible {
 		line: Int,
 		function: String,
 		message: String,
-		AST: GRYTopLevelNode)
+		AST: GRYStatement)
 
 	public var description: String {
 		switch self {
@@ -1387,7 +1387,7 @@ public enum GRYKotlinTranslatorError: Error, CustomStringConvertible {
 
 func unexpectedASTStructureError(
 	file: String = #file, line: Int = #line, function: String = #function, _ message: String,
-	AST ast: GRYTopLevelNode) throws -> String
+	AST ast: GRYStatement) throws -> String
 {
 	let error = GRYKotlinTranslatorError.unexpectedASTStructure(
 		file: file, line: line, function: function, message: message, AST: ast)
