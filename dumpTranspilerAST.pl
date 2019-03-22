@@ -59,47 +59,10 @@ if ($needsToUpdate) {
 		print "🚨 Error in the Swift compiler:\n";
 		print "$output\n";
 	}
-	else {
-		print "Done. Adding placeholders to AST dump files...\n";
-
-		# Open the AST dump files and replace their contents where needed
-		opendir my $dir, $astDumpFolder or die "🚨 Cannot open directory: $!";
-		@astDumpFiles = readdir $dir;
-		closedir $dir;
-		@astDumpFiles = grep { $_ =~ /.*\.swiftASTDump$/ } @astDumpFiles;
-		@astDumpFiles = sort @astDumpFiles;
-
-		for (my $i=0; $i < scalar @astDumpFiles; $i++) {
-			$swiftFilePath = $swiftFolder . "/" . @swiftFiles[$i];
-			$astDumpFilePath = $astDumpFolder . "/" . @astDumpFiles[$i];
-
-			my $contents;
-			{
-				local $/;
-				open my $fh, '<', $astDumpFilePath or die "🚨 Could not open file '$astFilePath' $!";
-				$contents = <$fh>;
-			}
-
-			print "Processing \"$astDumpFilePath\"...\n";
-
-			# Replace file paths with placeholders
-			while ($contents =~ s/$swiftFilePath/\<<testFilePath>>/) { }
-
-			# Replace random memory addresses with placeholders
-			while ($contents =~ s/0x[\da-f]+/<<memory address>>/) { }
-
-			close $fh;
-
-
-			# Write to the output file
-			open(my $fh, '>', $astDumpFilePath) or die "🚨 Could not open file '$astDumpFilePath' $!";
-			print $fh $contents;
-			close $fh;
-		}
-	}
+  else {
+    print "Done.\n";
+  }
 }
 else {
 	print "All files are up to date.\n";
 }
-
-print "Done!\n";
