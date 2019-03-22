@@ -16,7 +16,7 @@
 
 import Foundation
 
-public final class SwiftAST: PrintableAsTree, GRYCodable, Equatable, CustomStringConvertible {
+public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible {
 	let name: String
 	let standaloneAttributes: ArrayReference<String>
 	let keyValueAttributes: [String: String]
@@ -45,58 +45,6 @@ public final class SwiftAST: PrintableAsTree, GRYCodable, Equatable, CustomStrin
 		self.subtrees = subtrees
 	}
 
-	// MARK: - GRYCodable
-	func encode(into encoder: GRYEncoder) throws {
-		encoder.startNewObject(named: name)
-		for attribute in standaloneAttributes {
-			try attribute.encode(into: encoder)
-		}
-		for (key, value) in keyValueAttributes {
-			encoder.addKey(key)
-			try value.encode(into: encoder)
-		}
-		for subtree in subtrees {
-			try subtree.encode(into: encoder)
-		}
-		encoder.endObject()
-	}
-
-	static func decode(from decoder: GRYDecoder) throws -> SwiftAST {
-		let standaloneAttributes: ArrayReference<String> = []
-		var keyValueAttributes = [String: String]()
-		let subtrees: ArrayReference<SwiftAST> = []
-
-		try decoder.readOpeningParenthesis()
-		let name = decoder.readDoubleQuotedString()
-
-		// The loop stops: all branches tell the decoder to read, therefore the input string must
-		// end eventually
-		while true {
-			// Add subtree
-			if decoder.canReadOpeningParenthesis() {
-				// Parse subtrees
-				let subtree = try SwiftAST.decode(from: decoder)
-				subtrees.append(subtree)
-			}
-			// Finish this branch
-			else if decoder.canReadClosingParenthesis() {
-				try decoder.readClosingParenthesis()
-				break
-			}
-			// Add key-value attributes
-			else if let key = decoder.readKey() {
-				keyValueAttributes[key] = decoder.readDoubleQuotedString()
-			}
-			// Add standalone attributes
-			else {
-				let attribute = decoder.readDoubleQuotedString()
-				standaloneAttributes.append(attribute)
-			}
-		}
-
-		return SwiftAST(name, standaloneAttributes, keyValueAttributes, subtrees)
-	}
-
 	// MARK: - Init from Swift AST dump
 	public convenience init(decodeFromSwiftASTDumpInFile astFilePath: String) throws {
 		let rawASTDump = try String(contentsOfFile: astFilePath)
@@ -106,11 +54,12 @@ public final class SwiftAST: PrintableAsTree, GRYCodable, Equatable, CustomStrin
 		let processedASTDump =
 			rawASTDump.replacingOccurrences(of: "<<testFilePath>>", with: swiftFilePath)
 
-		let decoder = GRYDecoder(encodedString: processedASTDump)
+		let decoder = ASTDumpDecoder(encodedString: processedASTDump)
 		try self.init(decodingFromASTDumpWith: decoder)
 	}
 
-	internal init(decodingFromASTDumpWith decoder: GRYDecoder) throws {
+	// TODO: This logic should probably be in the decoder as a factory method of some sort.
+	internal init(decodingFromASTDumpWith decoder: ASTDumpDecoder) throws {
 		let standaloneAttributes: ArrayReference<String> = []
 		var keyValueAttributes = [String: String]()
 		let subtrees: ArrayReference<SwiftAST> = []

@@ -33,7 +33,7 @@ public class LibraryTranspilationPass: TranspilationPass {
 			at: currentURL,
 			includingPropertiesForKeys: nil)
 		let templateFiles = fileURLs.filter {
-				$0.pathExtension == FileExtension.gryRawAST.rawValue
+				$0.pathExtension == FileExtension.swiftASTDump.rawValue
 		}.sorted { (url1: URL, url2: URL) -> Bool in
 					url1.absoluteString < url2.absoluteString
 		}
@@ -41,7 +41,7 @@ public class LibraryTranspilationPass: TranspilationPass {
 		var previousExpression: Expression?
 		for file in templateFiles {
 			let filePath = file.path
-			let ast = try! GryphonAST(decodeFromFile: filePath)
+			let ast = try! Compiler.generateGryphonAST(forFileAt: filePath)
 			let expressions = ast.statements.compactMap
 				{ (statement: Statement) -> Expression? in
 					if case let .expression(expression: expression) = statement {

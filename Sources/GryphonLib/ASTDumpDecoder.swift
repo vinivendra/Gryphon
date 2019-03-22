@@ -14,60 +14,8 @@
 * limitations under the License.
 */
 
-//
-enum GRYDecodingError: Error, CustomStringConvertible {
-	case unexpectedContent(decoder: GRYDecoder, errorMessage: String)
-
-	var description: String {
-		switch self {
-		case let .unexpectedContent(decoder, errorMessage):
-			return "Decoding error: \(errorMessage)\n" +
-				"Remaining buffer in decoder: \"\(decoder.remainingBuffer(upTo: 1_000))\""
-		}
-	}
-}
-
-typealias GRYCodable = GRYEncodable & GRYDecodable
-
-protocol GRYDecodable {
-	static func decode(from: GRYDecoder) throws -> Self
-}
-
-protocol GRYEncodable {
-	func encode(into encoder: GRYEncoder) throws
-}
-
-extension GRYDecodable {
-	init(decodeFromFile filePath: String) throws {
-		let rawEncodedString = try String(contentsOfFile: filePath)
-
-		// Information in stored files has placeholders for file paths that must be replaced
-		let swiftFilePath = Utilities.changeExtension(of: filePath, to: .swift)
-		let processedEncodedString =
-			rawEncodedString.replacingOccurrences(of: "<<testFilePath>>", with: swiftFilePath)
-
-		let decoder = GRYDecoder(encodedString: processedEncodedString)
-		self = try Self.decode(from: decoder)
-	}
-}
-
-extension GRYEncodable {
-	public func encode(intoFile filePath: String) throws {
-		let encoder = GRYEncoder()
-		try self.encode(into: encoder)
-		let rawEncodedString = encoder.result
-
-		// Absolute file paths must be replaced with placeholders before writing to file.
-		let swiftFilePath = Utilities.changeExtension(of: filePath, to: .swift)
-		let processedEncodedString =
-			rawEncodedString.replacingOccurrences(of: swiftFilePath, with: "<<testFilePath>>")
-
-		try processedEncodedString.write(toFile: filePath, atomically: true, encoding: .utf8)
-	}
-}
-
 // MARK: - Decoder
-internal class GRYDecoder {
+internal class ASTDumpDecoder {
 	let buffer: String
 	var currentIndex: String.Index
 
@@ -82,6 +30,19 @@ internal class GRYDecoder {
 		}
 		else {
 			return remainingBuffer
+		}
+	}
+
+	//
+	enum DecodingError: Error, CustomStringConvertible {
+		case unexpectedContent(decoder: ASTDumpDecoder, errorMessage: String)
+
+		var description: String {
+			switch self {
+			case let .unexpectedContent(decoder, errorMessage):
+				return "Decoding error: \(errorMessage)\n" +
+				"Remaining buffer in decoder: \"\(decoder.remainingBuffer(upTo: 1_000))\""
+			}
 		}
 	}
 
@@ -160,14 +121,14 @@ internal class GRYDecoder {
 	// MARK: Read information
 	func readOpeningParenthesis() throws {
 		guard canReadOpeningParenthesis() else {
-			throw GRYDecodingError.unexpectedContent(decoder: self, errorMessage: "Expected '('.")
+			throw DecodingError.unexpectedContent(decoder: self, errorMessage: "Expected '('.")
 		}
 		currentIndex = nextIndex()
 	}
 
 	func readClosingParenthesis() throws {
 		guard canReadClosingParenthesis() else {
-			throw GRYDecodingError.unexpectedContent(decoder: self, errorMessage: "Expected ')'.")
+			throw DecodingError.unexpectedContent(decoder: self, errorMessage: "Expected ')'.")
 		}
 		currentIndex = nextIndex()
 		cleanLeadingWhitespace()
@@ -175,7 +136,7 @@ internal class GRYDecoder {
 
 	func readOpeningBracket() throws {
 		guard canReadOpeningBracket() else {
-			throw GRYDecodingError.unexpectedContent(decoder: self, errorMessage: "Expected '['.")
+			throw DecodingError.unexpectedContent(decoder: self, errorMessage: "Expected '['.")
 		}
 		currentIndex = nextIndex()
 		cleanLeadingWhitespace()
@@ -183,7 +144,7 @@ internal class GRYDecoder {
 
 	func readClosingBracket() throws {
 		guard canReadClosingBracket() else {
-			throw GRYDecodingError.unexpectedContent(decoder: self, errorMessage: "Expected ']'.")
+			throw DecodingError.unexpectedContent(decoder: self, errorMessage: "Expected ']'.")
 		}
 		currentIndex = nextIndex()
 		cleanLeadingWhitespace()
@@ -191,7 +152,7 @@ internal class GRYDecoder {
 
 	func readOpeningBrace() throws {
 		guard canReadOpeningBrace() else {
-			throw GRYDecodingError.unexpectedContent(decoder: self, errorMessage: "Expected '{'.")
+			throw DecodingError.unexpectedContent(decoder: self, errorMessage: "Expected '{'.")
 		}
 		currentIndex = nextIndex()
 		cleanLeadingWhitespace()
@@ -199,7 +160,7 @@ internal class GRYDecoder {
 
 	func readClosingBrace() throws {
 		guard canReadClosingBrace() else {
-			throw GRYDecodingError.unexpectedContent(decoder: self, errorMessage: "Expected '}'.")
+			throw DecodingError.unexpectedContent(decoder: self, errorMessage: "Expected '}'.")
 		}
 		currentIndex = nextIndex()
 		cleanLeadingWhitespace()
@@ -721,157 +682,5 @@ internal class GRYDecoder {
 		currentIndex = index
 
 		return cleanString
-	}
-}
-
-// MARK: - Encoder
-public class GRYEncoder {
-	private var indentation = ""
-	public var result = ""
-
-	public init() { }
-
-	public func startNewObject(named name: String) {
-		let name = "\"\(name)\""
-
-		if result.isEmpty {
-			result += "(" + name
-			increaseIndentation()
-		}
-		else {
-			result += "\n" + indentation + "(" + name
-			increaseIndentation()
-		}
-	}
-
-	public func endObject() {
-		result += ")"
-		decreaseIndentation()
-	}
-
-	public func addKey(_ key: String) {
-		result += " " + key + "="
-	}
-
-	public func add(_ literal: String) {
-		let lastCharacter = result.last
-		if lastCharacter != "(", lastCharacter != "[", lastCharacter != "{", lastCharacter != "=" {
-			result += " "
-		}
-		result += literal
-	}
-
-	public func increaseIndentation() {
-		indentation += "  "
-	}
-
-	public func decreaseIndentation() {
-		indentation = String(indentation.dropLast(2))
-	}
-}
-
-// MARK: - Common types
-extension String {
-	func encode(into encoder: GRYEncoder) throws {
-		encoder.add("\"\(self)\"")
-	}
-
-	static func decode(from decoder: GRYDecoder) throws -> String {
-		return decoder.readDoubleQuotedString()
-	}
-}
-
-extension Int {
-	func encode(into encoder: GRYEncoder) throws {
-		encoder.add(String(self))
-	}
-
-	static func decode(from decoder: GRYDecoder) throws -> Int {
-		let expectedInt = decoder.readIdentifier()
-		guard let result = Int(expectedInt) else {
-			throw GRYDecodingError.unexpectedContent(
-				decoder: decoder, errorMessage: "Got \(expectedInt), expected an Int.")
-		}
-		return result
-	}
-}
-
-extension Int64 {
-	func encode(into encoder: GRYEncoder) throws {
-		encoder.add(String(self))
-	}
-
-	static func decode(from decoder: GRYDecoder) throws -> Int64 {
-		let expectedInt = decoder.readIdentifier()
-		guard let result = Int64(expectedInt) else {
-			throw GRYDecodingError.unexpectedContent(
-				decoder: decoder, errorMessage: "Got \(expectedInt), expected an Int.")
-		}
-		return result
-	}
-}
-
-extension UInt64 {
-	func encode(into encoder: GRYEncoder) throws {
-		encoder.add(String(self))
-	}
-
-	static func decode(from decoder: GRYDecoder) throws -> UInt64 {
-		let expectedUInt = decoder.readIdentifier()
-		guard let result = UInt64(expectedUInt) else {
-			throw GRYDecodingError.unexpectedContent(
-				decoder: decoder, errorMessage: "Got \(expectedUInt), expected an UInt.")
-		}
-		return result
-	}
-}
-
-extension Double {
-	func encode(into encoder: GRYEncoder) throws {
-		encoder.add(String(self))
-	}
-
-	static func decode(from decoder: GRYDecoder) throws -> Double {
-		let expectedDouble = decoder.readIdentifier()
-		guard let result = Double(expectedDouble) else {
-			throw GRYDecodingError.unexpectedContent(
-				decoder: decoder, errorMessage: "Got \(expectedDouble), expected a Double.")
-		}
-		return result
-	}
-}
-
-extension Float {
-	func encode(into encoder: GRYEncoder) throws {
-		encoder.add(String(self))
-	}
-
-	static func decode(from decoder: GRYDecoder) throws -> Float {
-		let expectedFloat = decoder.readIdentifier()
-		guard let result = Float(expectedFloat) else {
-			throw GRYDecodingError.unexpectedContent(
-				decoder: decoder, errorMessage: "Got \(expectedFloat), expected a Float.")
-		}
-		return result
-	}
-}
-
-extension Bool {
-	func encode(into encoder: GRYEncoder) throws {
-		if self {
-			encoder.add("true")
-		}
-		else {
-			encoder.add("false")
-		}
-	}
-
-	static func decode(from decoder: GRYDecoder) throws -> Bool {
-		let expectedBool = decoder.readIdentifier()
-		guard let result = Bool(expectedBool) else {
-			throw GRYDecodingError.unexpectedContent(
-				decoder: decoder, errorMessage: "Got \(expectedBool), expected a Bool.")
-		}
-		return result
 	}
 }

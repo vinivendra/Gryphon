@@ -104,16 +104,6 @@ public enum Compiler {
 		log?("\t- Building SwiftAST from external AST...")
 		let ast = try SwiftAST(decodeFromSwiftASTDumpInFile: astFilePath)
 
-		let cacheFilePath = Utilities.changeExtension(of: filePath, to: .grySwiftAST)
-		let cacheFileWasJustCreated = Utilities.createFileIfNeeded(at: cacheFilePath, containing: "")
-		let cacheIsOutdated =
-			cacheFileWasJustCreated ||
-				Utilities.file(astFilePath, wasModifiedLaterThan: cacheFilePath)
-		if cacheIsOutdated {
-			log?("\t\t- Updating \(cacheFilePath)...")
-			try ast.encode(intoFile: cacheFilePath)
-		}
-
 		return ast
 	}
 

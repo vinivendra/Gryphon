@@ -26,7 +26,7 @@ do {
 
 //	let filePaths = [Process().currentDirectoryPath + "/Test Files/bhaskara.swift"]
 //	let filePaths = [Process().currentDirectoryPath + "/Example ASTs/test.swift"]
-//	let filePaths = [Process().currentDirectoryPath + "/Bootstrap/GRYCodable.swiftASTDump"]
+//	let filePaths = [Process().currentDirectoryPath + "/Bootstrap/PrintableAsTree.swiftASTDump"]
 
 	let filePaths = Utilities.getFilesInFolder("ASTDumps")
 		.map { $0.path }

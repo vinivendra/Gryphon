@@ -14,6 +14,7 @@
 * limitations under the License.
 */
 
+// TODO: See if this still needs to be in a separate file
 // TODO: ifStatement.elseStatement should be IfStatement
 %{
 statementNodes = [
@@ -70,73 +71,6 @@ public indirect enum Statement: Equatable, PrintableAsTree {
 	case ${name}
 %	end
 %end
-
-	//
-	func encode(into encoder: GRYEncoder) throws {
-		encoder.startNewObject(named: self.name)
-
-		switch self {
-%for statementNode in statementNodes:
-%	name = statementNode[0]
-%
-%	if len(statementNode) > 1:
-%		pairs = statementNode[1]
-%		parameters = []
-%		for pair in pairs:
-%			parameters.append(pair[0] + ": " + pair[0])
-%		end
-%		parametersString = ",\n\t\t\t\t".join(parameters)
-		case let .${name}(
-				${parametersString}):
-%		for pair in pairs:
-			try ${pair[0]}.encode(into: encoder)
-%		end
-%
-%	else:
-		case .${name}:
-			break
-%	end
-%end
-		}
-
-		encoder.endObject()
-	}
-
-	static func decode(from decoder: GRYDecoder) throws -> Statement {
-		try decoder.readOpeningParenthesis()
-		let name = decoder.readDoubleQuotedString()
-
-		let result: Statement
-
-		switch name {
-%for statementNode in statementNodes:
-%	name = statementNode[0]
-%
-		case "${name}":
-%
-%	if len(statementNode) > 1:
-%		pairs = statementNode[1]
-%		parameters = []
-%		for pair in pairs:
-%			parameters.append(pair[0] + ": " + pair[0])
-			let ${pair[0]} = try ${pair[1]}.decode(from: decoder)
-%		end
-%		parametersString = ",\n\t\t\t\t".join(parameters)
-			result = .${name}(
-				${parametersString})
-%
-%	else:
-			result = .${name}
-%	end
-%end
-		default:
-			throw GRYDecodingError.unexpectedContent(
-				decoder: decoder, errorMessage: "Unknown Statement \"\(name)\".")
-		}
-
-		try decoder.readClosingParenthesis()
-		return result
-	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -206,73 +140,6 @@ public indirect enum Expression: Equatable, PrintableAsTree {
 	case ${name}
 %	end
 %end
-
-	//
-	func encode(into encoder: GRYEncoder) throws {
-		encoder.startNewObject(named: self.name)
-
-		switch self {
-%for expressionNode in expressionNodes:
-%	name = expressionNode[0]
-%
-%	if len(expressionNode) > 1:
-%		pairs = expressionNode[1]
-%		parameters = []
-%		for pair in pairs:
-%			parameters.append(pair[0] + ": " + pair[0])
-%		end
-%		parametersString = ",\n\t\t\t\t".join(parameters)
-		case let .${name}(
-				${parametersString}):
-%		for pair in pairs:
-			try ${pair[0]}.encode(into: encoder)
-%		end
-%
-%	else:
-		case .${name}:
-			break
-%	end
-%end
-		}
-
-		encoder.endObject()
-	}
-
-	static func decode(from decoder: GRYDecoder) throws -> Expression {
-		try decoder.readOpeningParenthesis()
-		let name = decoder.readDoubleQuotedString()
-
-		let result: Expression
-
-		switch name {
-%for expressionNode in expressionNodes:
-%	name = expressionNode[0]
-%
-		case "${name}":
-%
-%	if len(expressionNode) > 1:
-%		pairs = expressionNode[1]
-%		parameters = []
-%		for pair in pairs:
-%			parameters.append(pair[0] + ": " + pair[0])
-			let ${pair[0]} = try ${pair[1]}.decode(from: decoder)
-%		end
-%		parametersString = ",\n\t\t\t\t".join(parameters)
-			result = .${name}(
-				${parametersString})
-%
-%	else:
-			result = .${name}
-%	end
-%end
-		default:
-			throw GRYDecodingError.unexpectedContent(
-				decoder: decoder, errorMessage: "Unknown Expression \"\(name)\".")
-		}
-
-		try decoder.readClosingParenthesis()
-		return result
-	}
 }
 %{
 astElements = [
@@ -313,8 +180,8 @@ public ${keyword} ${name}: Equatable {
 %	for pair in pairs:
 	var ${pair[0]}: ${pair[1]}
 %	end
-
 %	if keyword == 'class':
+
 %		parameters = []
 %		for pair in pairs:
 %			parameters.append(pair[0] + ": " + pair[1])
@@ -346,38 +213,6 @@ public ${keyword} ${name}: Equatable {
 		return IfStatement(
 			${parametersString})
 	}
-
 %	end
-	func encode(into encoder: GRYEncoder) throws {
-		encoder.startNewObject(named: "${name}")
-%	for pair in pairs:
-		try ${pair[0]}.encode(into: encoder)
-%	end
-		encoder.endObject()
-	}
-
-	static func decode(from decoder: GRYDecoder) throws -> ${name} {
-		try decoder.readOpeningParenthesis()
-		let objectName = decoder.readDoubleQuotedString()
-		guard objectName == "${name}" else {
-			throw GRYDecodingError.unexpectedContent(
-				decoder: decoder,
-				errorMessage: "Attempted to decode a \(objectName) as a '${name}'.")
-		}
-
-%		for pair in pairs:
-		let ${pair[0]} = try ${pair[1]}.decode(from: decoder)
-%		end
-
-		try decoder.readClosingParenthesis()
-
-		return ${name}(
-%		parameters = []
-%		for pair in pairs:
-%			parameters.append(pair[0] + ": " + pair[0])
-%		end
-%		parametersString = ",\n\t\t\t".join(parameters)
-			${parametersString})
-	}
 }
 %end

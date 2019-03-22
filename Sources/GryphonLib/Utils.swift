@@ -45,12 +45,7 @@ public enum Utilities {
 public enum FileExtension: String {
 	// This should be the same as the extension in the dumpAST.pl and separateASTs.pl files
 	case swiftASTDump
-	case grySwiftAST
-	case gryRawAST
-	case gryAST
-
 	case output
-
 	case kt
 	case swift
 
@@ -168,24 +163,12 @@ extension Utilities {
 		let folder = "Library Templates"
 		print("\t* Updating files...")
 
+		// TODO: This could be simpler
 		try updateFiles(in: folder, from: .swift, to: .swiftASTDump)
 		{ (_: String, astFilePath: String) in
 			// The .swiftASTDump files must be updated externally by the perl script. If any files
 			// are out of date, this closure gets called and informs the user how to update them.
 			throw FileError.outdatedFile(filePath: astFilePath)
-		}
-
-		try updateFiles(in: folder, from: .swiftASTDump, to: .grySwiftAST)
-		{ (dumpFilePath: String, cacheFilePath: String) in
-			let ast = try SwiftAST(decodeFromSwiftASTDumpInFile: dumpFilePath)
-			try ast.encode(intoFile: cacheFilePath)
-		}
-
-		try updateFiles(in: folder, from: .grySwiftAST, to: .gryRawAST)
-		{ (swiftASTFilePath: String, gryphonASTRawFilePath: String) in
-			let swiftAST = try SwiftAST(decodeFromFile: swiftASTFilePath)
-			let gryphonAST = try SwiftTranslator().translateAST(swiftAST)
-			try gryphonAST.encode(intoFile: gryphonASTRawFilePath)
 		}
 
 		libraryFilesHaveBeenUpdated = true
@@ -205,31 +188,12 @@ extension Utilities {
 		let testFilesFolder = "Test Files"
 		print("\t* Updating files...")
 
+		// TODO: This could be simpler
 		try updateFiles(in: testFilesFolder, from: .swift, to: .swiftASTDump)
 		{ (_: String, astFilePath: String) in
 			// The .swiftASTDump files must be updated externally by the perl script. If any files
 			// are out of date, this closure gets called and informs the user how to update them.
 			throw FileError.outdatedFile(filePath: astFilePath)
-		}
-
-		try updateFiles(in: testFilesFolder, from: .swiftASTDump, to: .grySwiftAST)
-		{ (dumpFilePath: String, cacheFilePath: String) in
-			let ast = try SwiftAST(decodeFromSwiftASTDumpInFile: dumpFilePath)
-			try ast.encode(intoFile: cacheFilePath)
-		}
-
-		try updateFiles(in: testFilesFolder, from: .grySwiftAST, to: .gryRawAST)
-		{ (swiftASTFilePath: String, gryphonASTRawFilePath: String) in
-			let swiftAST = try SwiftAST(decodeFromFile: swiftASTFilePath)
-			let gryphonAST = try SwiftTranslator().translateAST(swiftAST)
-			try gryphonAST.encode(intoFile: gryphonASTRawFilePath)
-		}
-
-		try updateFiles(in: testFilesFolder, from: .gryRawAST, to: .gryAST)
-		{ (gryphonASTRawFilePath: String, gryphonASTFilePath: String) throws in
-			let gryphonASTRaw = try GryphonAST(decodeFromFile: gryphonASTRawFilePath)
-			let gryphonAST = TranspilationPass.runAllPasses(on: gryphonASTRaw)
-			try gryphonAST.encode(intoFile: gryphonASTFilePath)
 		}
 
 		//
@@ -291,32 +255,9 @@ extension Utilities {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-extension Utilities {
-	internal static var rng: RandomGenerator = Xoroshiro()
-}
-
-internal extension RandomGenerator {
-	mutating func random(_ range: Range<Int>) -> Int {
-		let rangeSize = range.upperBound - range.lowerBound
-		let randomNumber = Int(random32()) % rangeSize
-		return range.lowerBound + randomNumber
-	}
-
-	mutating func random(_ range: ClosedRange<Int>) -> Int {
-		let rangeSize = range.upperBound - range.lowerBound + 1
-		let randomNumber = Int(random32()) % rangeSize
-		return range.lowerBound + randomNumber
-	}
-
-	mutating func randomBool() -> Bool {
-		return random(0...1) == 0
-	}
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
 internal extension RandomAccessCollection where Index == Int {
 	func randomElement() -> Element {
-		let index = Utilities.rng.random(0..<count)
+		let index = Int.random(in: 0..<count)
 		return self[index]
 	}
 }

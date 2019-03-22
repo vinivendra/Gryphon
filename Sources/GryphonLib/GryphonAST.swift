@@ -14,30 +14,13 @@
 * limitations under the License.
 */
 
-public final class GryphonAST: PrintableAsTree, GRYCodable, Equatable, CustomStringConvertible {
+public final class GryphonAST: PrintableAsTree, Equatable, CustomStringConvertible {
 	let declarations: [Statement]
 	let statements: [Statement]
 
 	init(declarations: [Statement], statements: [Statement]) {
 		self.declarations = declarations
 		self.statements = statements
-	}
-
-	//
-	internal static func decode(from decoder: GRYDecoder) throws -> GryphonAST {
-		try decoder.readOpeningParenthesis()
-		_ = decoder.readIdentifier()
-		let declarations = try [Statement].decode(from: decoder)
-		let statements = try [Statement].decode(from: decoder)
-		try decoder.readClosingParenthesis()
-		return GryphonAST(declarations: declarations, statements: statements)
-	}
-
-	func encode(into encoder: GRYEncoder) throws {
-		encoder.startNewObject(named: "GryphonAST")
-		try declarations.encode(into: encoder)
-		try statements.encode(into: encoder)
-		encoder.endObject()
 	}
 
 	//
@@ -420,34 +403,6 @@ public enum TupleShuffleIndex: Equatable, CustomStringConvertible {
 			return "absent"
 		case .present:
 			return "present"
-		}
-	}
-
-	func encode(into encoder: GRYEncoder) throws {
-		switch self {
-		case let .variadic(count: count):
-			try "variadic".encode(into: encoder)
-			try count.encode(into: encoder)
-		case .absent:
-			try "absent".encode(into: encoder)
-		case .present:
-			try "present".encode(into: encoder)
-		}
-	}
-
-	static func decode(from decoder: GRYDecoder) throws -> TupleShuffleIndex {
-		let caseName = try String.decode(from: decoder)
-		switch caseName {
-		case "variadic":
-			let count = try Int.decode(from: decoder)
-			return .variadic(count: count)
-		case "absent":
-			return .absent
-		case "present":
-			return .present
-		default:
-			throw GRYDecodingError.unexpectedContent(
-				decoder: decoder, errorMessage: "Expected a ParameterIndex")
 		}
 	}
 }

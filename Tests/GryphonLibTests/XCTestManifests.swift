@@ -21,12 +21,9 @@ public func allTests() -> [XCTestCaseEntry] {
 	return [
 		testCase(ArrayReferenceTest.allTests),
 		testCase(ExtensionTest.allTests),
-		testCase(SwiftTranslatorTest.allTests),
-		testCase(KotlinTranslatorTest.allTests),
 		testCase(PrintableAsTreeTest.allTests),
 		testCase(CodableTest.allTests),
 		testCase(ShellTest.allTests),
-		testCase(TranspilationPassTest.allTests),
 		testCase(UtilsTest.allTests),
 		testCase(IntegrationTest.allTests),
 		testCase(BootstrappingTest.allTests),
