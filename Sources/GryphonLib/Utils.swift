@@ -163,7 +163,6 @@ extension Utilities {
 		let folder = "Library Templates"
 		print("\t* Updating files...")
 
-		// TODO: This could be simpler
 		try updateFiles(in: folder, from: .swift, to: .swiftASTDump)
 		{ (_: String, astFilePath: String) in
 			// The .swiftASTDump files must be updated externally by the perl script. If any files
@@ -188,7 +187,6 @@ extension Utilities {
 		let testFilesFolder = "Test Files"
 		print("\t* Updating files...")
 
-		// TODO: This could be simpler
 		try updateFiles(in: testFilesFolder, from: .swift, to: .swiftASTDump)
 		{ (_: String, astFilePath: String) in
 			// The .swiftASTDump files must be updated externally by the perl script. If any files
@@ -196,7 +194,6 @@ extension Utilities {
 			throw FileError.outdatedFile(filePath: astFilePath)
 		}
 
-		//
 		try updateFiles(
 			["PrintableAsTree", "StandardLibrary"],
 			in: "Bootstrap", from: .swiftASTDump, to: .kt)
