@@ -1540,9 +1540,7 @@ public class SwiftTranslator {
 				.subtree(named: "Type Expression"),
 			let rawType = typeExpression["typerepr"]
 		{
-			if value.hasPrefix("0b") || value.hasPrefix("0o") ||
-				value.hasPrefix("<<memory address>")
-			{
+			if value.hasPrefix("0b") || value.hasPrefix("0o") || value.hasPrefix("0x") {
 				// Fixable
 				return try unexpectedExpressionStructureError(
 					"No support yet for alternative integer formats", AST: callExpression)

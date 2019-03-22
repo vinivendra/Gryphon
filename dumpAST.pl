@@ -27,12 +27,6 @@ foreach (@ARGV) {
 	# Remove possible warnings printed before the AST dump
 	$swiftASTDump =~ s/^((.*)\n)*\(source\_file/\(source\_file/;
 	
-	# Replace file paths with placeholders
-	while ($swiftASTDump =~ s/$swiftFilePath/\<<testFilePath>>/) { }
-	
-    # Replace random memory addresses with placeholders
-    while ($swiftASTDump =~ s/0x[\da-f]+/<<memory address>>/) { }
-
 	# Get the name of the output file
 	if ($swiftFilePath =~ /(.*).swift/) {
 		# Write to the output file

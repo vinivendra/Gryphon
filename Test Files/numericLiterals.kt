@@ -41,8 +41,6 @@ fun main(args: Array<String>) {
 	var l: Double = 0.0
 	var m: Double = 12.1875
 
-	m = 12.1875
-	m = 60.0
 	m = 123.456
 	m = 1000000.0000001
 

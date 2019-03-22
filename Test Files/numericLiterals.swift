@@ -60,8 +60,6 @@ var l: Double = 0
 
 // Number formats
 var m: Double = 1.21875e1
-m = 0xC.3p0
-m = 0xFp2
 m = 000123.456
 m = 1_000_000.000_000_1
 

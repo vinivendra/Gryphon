@@ -98,20 +98,11 @@ public enum Compiler {
 		return ast
 	}
 
-	public static func processExternalSwiftAST(_ filePath: String) throws -> SwiftAST {
-		let astFilePath = Utilities.changeExtension(of: filePath, to: .swiftASTDump)
-
-		log?("\t- Building SwiftAST from external AST...")
-		let ast = try SwiftAST(decodeFromSwiftASTDumpInFile: astFilePath)
-
-		return ast
-	}
-
 	public static func generateSwiftAST(forFileAt filePath: String) throws -> SwiftAST {
 		let astDumpFilePath = Utilities.changeExtension(of: filePath, to: .swiftASTDump)
 
 		log?("\t- Building SwiftAST...")
-		let ast = try SwiftAST(decodeFromSwiftASTDumpInFile: astDumpFilePath)
+		let ast = try ASTDumpDecoder.decode(file: astDumpFilePath)
 		return ast
 	}
 

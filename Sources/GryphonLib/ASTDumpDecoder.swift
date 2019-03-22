@@ -14,7 +14,6 @@
 * limitations under the License.
 */
 
-// MARK: - Decoder
 internal class ASTDumpDecoder {
 	let buffer: String
 	var currentIndex: String.Index
@@ -682,5 +681,70 @@ internal class ASTDumpDecoder {
 		currentIndex = index
 
 		return cleanString
+	}
+}
+
+// MARK: - Creating a SwiftAST
+extension ASTDumpDecoder {
+	public static func decode(file astFilePath: String) throws -> SwiftAST {
+		let astDump = try String(contentsOfFile: astFilePath)
+		let decoder = ASTDumpDecoder(encodedString: astDump)
+		return try decode(from: decoder)
+	}
+
+	private static func decode(from decoder: ASTDumpDecoder) throws -> SwiftAST {
+		let standaloneAttributes: ArrayReference<String> = []
+		var keyValueAttributes = [String: String]()
+		let subtrees: ArrayReference<SwiftAST> = []
+
+		try decoder.readOpeningParenthesis()
+		let rawName = decoder.readIdentifier()
+		let name = Utilities.expandSwiftAbbreviation(rawName)
+
+		// The loop stops: all branches tell the decoder to read, therefore the input string must
+		// end eventually
+		while true {
+			// Add subtree
+			if decoder.canReadOpeningParenthesis() {
+				// Parse subtrees
+				let subtree = try decode(from: decoder)
+				subtrees.append(subtree)
+			}
+				// Finish this branch
+			else if decoder.canReadClosingParenthesis() {
+				try decoder.readClosingParenthesis()
+				break
+			}
+				// Add key-value attributes
+			else if let key = decoder.readKey() {
+				if key == "location" && decoder.canReadLocation() {
+					keyValueAttributes[key] = decoder.readLocation()
+				}
+				else if key == "decl",
+					let string = decoder.readDeclarationLocation() ?? decoder.readDeclaration()
+				{
+					keyValueAttributes[key] = string
+				}
+				else if key == "bind"
+				{
+					let string = decoder.readDeclarationLocation() ?? decoder.readIdentifier()
+					keyValueAttributes[key] = string
+				}
+				else if key == "inherits" {
+					let string = decoder.readIdentifierList()
+					keyValueAttributes[key] = string
+				}
+				else {
+					keyValueAttributes[key] = decoder.readStandaloneAttribute()
+				}
+			}
+				// Add standalone attributes
+			else {
+				let attribute = decoder.readStandaloneAttribute()
+				standaloneAttributes.append(attribute)
+			}
+		}
+
+		return SwiftAST(name, standaloneAttributes, keyValueAttributes, subtrees)
 	}
 }
