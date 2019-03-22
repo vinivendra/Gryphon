@@ -1,12 +1,3 @@
-# Compile gyb files
-echo " ➡️  Compiling .gyb files..."
-
-find . -name '*.gyb' | \
-while read file; do \
-./gyb --line-directive '' -o "${file%.gyb}" "$file"; \
-done
-
-
 # Update AST dumps
 echo " ➡️  Updating AST dumps for tests and library templates..."
 perl dumpAST.pl Example\ ASTs/*.swift

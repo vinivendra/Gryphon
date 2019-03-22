@@ -11,9 +11,6 @@
 	"Sources/GryphonLib/GryphonAST.swift": {
 		"ast-dump": "Bootstrap/GryphonAST.swiftASTDump",
 	},
-	"Sources/GryphonLib/GryphonASTNodes.swift": {
-		"ast-dump": "Bootstrap/GryphonASTNodes.swiftASTDump",
-	},
 	"Sources/GryphonLib/KotlinTranslator.swift": {
 		"ast-dump": "Bootstrap/KotlinTranslator.swiftASTDump",
 	},

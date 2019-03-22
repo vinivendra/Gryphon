@@ -30,14 +30,6 @@ else {
 		$swiftFilePath = $swiftFolder . "/" . @swiftFiles[$i];
 		$astDumpFilePath = $astDumpFolder . "/" . @astDumpFiles[$i];
 
-		# If the Swift file comes from a .gyb file, the .gyb file is the one that should be checked
-		# for its modified date (since the Swift file it generates is modified in every compilation)
-		my $gybFileName = @swiftFiles[$i];
-		$gybFileName =~ s/(.*).swift/$1.swift.gyb/;
-		if (grep { $_ eq $gybFileName} @allSourceFiles) { # If the gyb file exists
-			$swiftFilePath = $swiftFolder . "/" . $gybFileName;
-		}
-
 		# If it's out of date
 		if (-C $swiftFilePath < -C $astDumpFilePath) {
 			print "Outdated file: $astDumpFilePath.\n";

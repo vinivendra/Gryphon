@@ -47,6 +47,255 @@ public final class GryphonAST: PrintableAsTree, Equatable, CustomStringConvertib
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// TODO: ifStatement.elseStatement should be IfStatement
+public indirect enum Statement: Equatable, PrintableAsTree {
+
+	case expression(
+		expression: Expression)
+	case typealiasDeclaration(
+		identifier: String,
+		type: String,
+		isImplicit: Bool)
+	case extensionDeclaration(
+		type: String,
+		members: [Statement])
+	case importDeclaration(
+		name: String)
+	case classDeclaration(
+		name: String,
+		inherits: [String],
+		members: [Statement])
+	case companionObject(
+		members: [Statement])
+	case enumDeclaration(
+		access: String?,
+		name: String,
+		inherits: [String],
+		elements: [EnumElement],
+		members: [Statement],
+		isImplicit: Bool)
+	case protocolDeclaration(
+		name: String,
+		members: [Statement])
+	case structDeclaration(
+		name: String,
+		inherits: [String],
+		members: [Statement])
+	case functionDeclaration(
+		value: FunctionDeclaration)
+	case variableDeclaration(
+		value: VariableDeclaration)
+	case forEachStatement(
+		collection: Expression,
+		variable: Expression,
+		statements: [Statement])
+	case ifStatement(
+		value: IfStatement)
+	case switchStatement(
+		convertsToExpression: Statement?,
+		expression: Expression,
+		cases: [SwitchCase])
+	case throwStatement(
+		expression: Expression)
+	case returnStatement(
+		expression: Expression?)
+	case assignmentStatement(
+		leftHand: Expression,
+		rightHand: Expression)
+	case error
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// TODO: dictionaryExpression should have key-value pairs
+
+public indirect enum Expression: Equatable, PrintableAsTree {
+	case literalCodeExpression(
+		string: String)
+	case literalDeclarationExpression(
+		string: String)
+	case templateExpression(
+		pattern: String,
+		matches: [String: Expression])
+	case parenthesesExpression(
+		expression: Expression)
+	case forceValueExpression(
+		expression: Expression)
+	case optionalExpression(
+		expression: Expression)
+	case declarationReferenceExpression(
+		identifier: String,
+		type: String,
+		isStandardLibrary: Bool,
+		isImplicit: Bool)
+	case typeExpression(
+		type: String)
+	case subscriptExpression(
+		subscriptedExpression: Expression,
+		indexExpression: Expression,
+		type: String)
+	case arrayExpression(
+		elements: [Expression],
+		type: String)
+	case dictionaryExpression(
+		keys: [Expression],
+		values: [Expression],
+		type: String)
+	case dotExpression(
+		leftExpression: Expression,
+		rightExpression: Expression)
+	case binaryOperatorExpression(
+		leftExpression: Expression,
+		rightExpression: Expression,
+		operatorSymbol: String,
+		type: String)
+	case prefixUnaryExpression(
+		expression: Expression,
+		operatorSymbol: String,
+		type: String)
+	case postfixUnaryExpression(
+		expression: Expression,
+		operatorSymbol: String,
+		type: String)
+	case callExpression(
+		function: Expression,
+		parameters: Expression,
+		type: String)
+	case closureExpression(
+		parameters: [LabeledType],
+		statements: [Statement],
+		type: String)
+	case literalIntExpression(
+		value: Int64)
+	case literalUIntExpression(
+		value: UInt64)
+	case literalDoubleExpression(
+		value: Double)
+	case literalFloatExpression(
+		value: Float)
+	case literalBoolExpression(
+		value: Bool)
+	case literalStringExpression(
+		value: String)
+	case nilLiteralExpression
+	case interpolatedStringLiteralExpression(
+		expressions: [Expression])
+	case tupleExpression(
+		pairs: [LabeledExpression])
+	case tupleShuffleExpression(
+		labels: [String],
+		indices: [TupleShuffleIndex],
+		expressions: [Expression])
+	case error
+}
+
+public struct LabeledExpression: Equatable {
+	var label: String?
+	var expression: Expression
+}
+
+public struct LabeledType: Equatable {
+	var label: String
+	var type: String
+}
+
+public struct FunctionParameter: Equatable, PrintableAsTree {
+	var label: String
+	var apiLabel: String?
+	var type: String
+	var value: Expression?
+
+	public var treeDescription: String {
+		return "parameter"
+	}
+
+	public var printableSubtrees: ArrayReference<PrintableAsTree?> {
+		return [
+			self.apiLabel.map { PrintableTree("api label: \($0)") },
+			PrintableTree("label: \(self.label)"),
+			PrintableTree("type: \(self.type)"),
+			PrintableTree.initOrNil("value", [self.value]),
+		]
+	}
+}
+
+public struct VariableDeclaration: Equatable {
+	var identifier: String
+	var typeName: String
+	var expression: Expression?
+	var getter: Statement?
+	var setter: Statement?
+	var isLet: Bool
+	var isImplicit: Bool
+	var isStatic: Bool
+	var extendsType: String?
+	var annotations: String?
+}
+
+public struct FunctionDeclaration: Equatable {
+	var prefix: String
+	var parameters: [FunctionParameter]
+	var returnType: String
+	var functionType: String
+	var isImplicit: Bool
+	var isStatic: Bool
+	var isMutating: Bool
+	var extendsType: String?
+	var statements: [Statement]?
+	var access: String?
+}
+
+public class IfStatement: Equatable {
+	var conditions: [Expression]
+	var declarations: [VariableDeclaration]
+	var statements: [Statement]
+	var elseStatement: IfStatement?
+	var isGuard: Bool
+
+	public init(
+		conditions: [Expression],
+		declarations: [VariableDeclaration],
+		statements: [Statement],
+		elseStatement: IfStatement?,
+		isGuard: Bool)
+	{
+		self.conditions = conditions
+		self.declarations = declarations
+		self.statements = statements
+		self.elseStatement = elseStatement
+		self.isGuard = isGuard
+	}
+
+	public static func == (lhs: IfStatement, rhs: IfStatement) -> Bool {
+		return lhs.conditions == rhs.conditions &&
+			lhs.declarations == rhs.declarations &&
+			lhs.statements == rhs.statements &&
+			lhs.elseStatement == rhs.elseStatement &&
+			lhs.isGuard == rhs.isGuard
+	}
+
+	public func copy() -> IfStatement {
+		return IfStatement(
+			conditions: conditions,
+			declarations: declarations,
+			statements: statements,
+			elseStatement: elseStatement,
+			isGuard: isGuard)
+	}
+}
+
+public struct SwitchCase: Equatable {
+	var expression: Expression?
+	var statements: [Statement]
+}
+
+public struct EnumElement: Equatable {
+	var name: String
+	var associatedValues: [LabeledType]
+	var annotations: String?
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 extension Statement {
 	public var name: String {
 		if let name = Mirror(reflecting: self).children.first?.label {
@@ -390,6 +639,7 @@ extension Expression {
 	}
 }
 
+//
 public enum TupleShuffleIndex: Equatable, CustomStringConvertible {
 	case variadic(count: Int)
 	case absent
@@ -404,21 +654,5 @@ public enum TupleShuffleIndex: Equatable, CustomStringConvertible {
 		case .present:
 			return "present"
 		}
-	}
-}
-
-//
-extension FunctionParameter: PrintableAsTree {
-	public var treeDescription: String {
-		return "parameter"
-	}
-
-	public var printableSubtrees: ArrayReference<PrintableAsTree?> {
-		return [
-			self.apiLabel.map { PrintableTree("api label: \($0)") },
-			PrintableTree("label: \(self.label)"),
-			PrintableTree("type: \(self.type)"),
-			PrintableTree.initOrNil("value", [self.value]),
-		]
 	}
 }
