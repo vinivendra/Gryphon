@@ -47,7 +47,6 @@ public final class GryphonAST: PrintableAsTree, Equatable, CustomStringConvertib
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// TODO: ifStatement.elseStatement should be IfStatement
 public indirect enum Statement: Equatable, PrintableAsTree {
 
 	case expression(
