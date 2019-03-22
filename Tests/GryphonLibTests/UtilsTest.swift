@@ -17,7 +17,7 @@
 @testable import GryphonLib
 import XCTest
 
-class GRYUtilsTest: XCTestCase {
+class UtilsTest: XCTestCase {
 	/// If coverage is too small, the test will fail. If it's too big, an indexOutOfBounds will
 	// trigger.
 	func testRandomCoverage() {

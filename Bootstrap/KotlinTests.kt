@@ -1,4 +1,4 @@
-open class GRYTest(val className: String) {
+open class Test(val className: String) {
 	var allTestsSucceeded = true
 
 	open fun runAllTests() {

@@ -17,10 +17,10 @@
 @testable import GryphonLib
 import XCTest
 
-class GRYShellTest: XCTestCase {
+class ShellTest: XCTestCase {
 	func testEcho() {
 		let command = ["echo", "foo bar baz"]
-		guard let commandResult = GRYShell.runShellCommand(command) else {
+		guard let commandResult = Shell.runShellCommand(command) else {
 			XCTFail("Timed out.")
 			return
 		}
@@ -31,7 +31,7 @@ class GRYShellTest: XCTestCase {
 
 	func testSwiftc() {
 		let command1 = ["swiftc", "-dump-ast"]
-		guard let command1Result = GRYShell.runShellCommand(command1) else {
+		guard let command1Result = Shell.runShellCommand(command1) else {
 			XCTFail("Timed out.")
 			return
 		}
@@ -40,7 +40,7 @@ class GRYShellTest: XCTestCase {
 		XCTAssertNotEqual(command1Result.status, 0)
 
 		let command2 = ["swiftc", "--help"]
-		guard let command2Result = GRYShell.runShellCommand(command2) else {
+		guard let command2Result = Shell.runShellCommand(command2) else {
 			XCTFail("Timed out.")
 			return
 		}

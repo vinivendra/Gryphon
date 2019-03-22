@@ -16,16 +16,16 @@
 
 import Foundation
 
-public class GRYLibraryTranspilationPass: GRYTranspilationPass {
+public class LibraryTranspilationPass: TranspilationPass {
 	struct Template {
-		let expression: GRYExpression
+		let expression: Expression
 		let string: String
 	}
 
 	static var templates = [Template]()
 
 	static func loadTemplates() {
-		try! GRYUtils.updateLibraryFiles()
+		try! Utilities.updateLibraryFiles()
 
 		let libraryFilesPath: String = Process().currentDirectoryPath + "/Library Templates/"
 		let currentURL = URL(fileURLWithPath: libraryFilesPath)
@@ -33,24 +33,24 @@ public class GRYLibraryTranspilationPass: GRYTranspilationPass {
 			at: currentURL,
 			includingPropertiesForKeys: nil)
 		let templateFiles = fileURLs.filter {
-				$0.pathExtension == GRYFileExtension.gryRawAST.rawValue
+				$0.pathExtension == FileExtension.gryRawAST.rawValue
 		}.sorted { (url1: URL, url2: URL) -> Bool in
 					url1.absoluteString < url2.absoluteString
 		}
 
-		var previousExpression: GRYExpression?
+		var previousExpression: Expression?
 		for file in templateFiles {
 			let filePath = file.path
-			let ast = try! GRYAST(decodeFromFile: filePath)
+			let ast = try! GryphonAST(decodeFromFile: filePath)
 			let expressions = ast.statements.compactMap
-			{ (node: GRYStatement) -> GRYExpression? in
-				if case let .expression(expression: expression) = node {
-					return expression
+				{ (statement: Statement) -> Expression? in
+					if case let .expression(expression: expression) = statement {
+						return expression
+					}
+					else {
+						return nil
+					}
 				}
-				else {
-					return nil
-				}
-			}
 
 			for expression in expressions {
 				if let templateExpression = previousExpression {
@@ -67,15 +67,15 @@ public class GRYLibraryTranspilationPass: GRYTranspilationPass {
 		}
 	}
 
-	override func run(on sourceFile: GRYAST) -> GRYAST {
-		if GRYLibraryTranspilationPass.templates.isEmpty {
-			GRYLibraryTranspilationPass.loadTemplates()
+	override func run(on sourceFile: GryphonAST) -> GryphonAST {
+		if LibraryTranspilationPass.templates.isEmpty {
+			LibraryTranspilationPass.loadTemplates()
 		}
 		return super.run(on: sourceFile)
 	}
 
-	override func replaceExpression(_ expression: GRYExpression) -> GRYExpression {
-		for template in GRYLibraryTranspilationPass.templates {
+	override func replaceExpression(_ expression: Expression) -> Expression {
+		for template in LibraryTranspilationPass.templates {
 			if let matches = expression.matches(template.expression) {
 				let replacedMatches = matches.mapValues {
 					self.replaceExpression($0)
@@ -87,9 +87,9 @@ public class GRYLibraryTranspilationPass: GRYTranspilationPass {
 	}
 }
 
-extension GRYExpression {
-	func matches(_ template: GRYExpression) -> [String: GRYExpression]? {
-		var result = [String: GRYExpression]()
+extension Expression {
+	func matches(_ template: Expression) -> [String: Expression]? {
+		var result = [String: Expression]()
 		let success = matches(template, &result)
 		if success {
 			return result
@@ -100,7 +100,7 @@ extension GRYExpression {
 	}
 
 	private func matches(
-		_ template: GRYExpression, _ matches: inout [String: GRYExpression]) -> Bool
+		_ template: Expression, _ matches: inout [String: Expression]) -> Bool
 	{
 		if case let .declarationReferenceExpression(
 				identifier: identifier, type: templateType, isStandardLibrary: _,

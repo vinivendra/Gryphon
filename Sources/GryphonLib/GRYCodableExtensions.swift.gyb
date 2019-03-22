@@ -17,20 +17,20 @@
 // GRYCodable)
 %{
 optionalTypes = [
-	'String', 'Int', 'Double', 'Bool', 'GRYStatement', 'GRYExpression',
-	'[GRYStatement]',
-	'GRYASTLabeledExpression', 'GRYASTIfStatement',
+	'String', 'Int', 'Double', 'Bool', 'Statement', 'Expression',
+	'[Statement]',
+	'LabeledExpression', 'IfStatement',
 	]
 arrayTypes = [
-	'String', 'Int', 'Double', 'Bool', 'GRYStatement', 'GRYExpression',
-	'GRYASTLabeledExpression',
-	'GRYExpression?',
-	'GRYASTSwitchCase', 'GRYASTEnumElement', 'GRYASTLabeledType', 'GRYASTFunctionParameter',
-	'GRYASTVariableDeclaration', 'GRYTupleShuffleIndex',
+	'String', 'Int', 'Double', 'Bool', 'Statement', 'Expression',
+	'LabeledExpression',
+	'Expression?',
+	'SwitchCase', 'EnumElement', 'LabeledType', 'FunctionParameter',
+	'VariableDeclaration', 'TupleShuffleIndex',
 	]
 dictionaryTypes = [
-	'String', 'Int', 'Double', 'Bool', 'GRYStatement', 'GRYExpression',
-	'GRYASTLabeledExpression',
+	'String', 'Int', 'Double', 'Bool', 'Statement', 'Expression',
+	'LabeledExpression',
 	]
 }%
 

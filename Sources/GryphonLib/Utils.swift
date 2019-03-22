@@ -16,7 +16,7 @@
 
 import Foundation
 
-public enum GRYUtils {
+public enum Utilities {
 	internal static func expandSwiftAbbreviation(_ name: String) -> String {
 		// Separate snake case and capitalize
 		var nameComponents = name.split(withStringSeparator: "_").map { $0.capitalized }
@@ -42,7 +42,7 @@ public enum GRYUtils {
 	}
 }
 
-public enum GRYFileExtension: String {
+public enum FileExtension: String {
 	// This should be the same as the extension in the dumpAST.pl and separateASTs.pl files
 	case swiftASTDump
 	case grySwiftAST
@@ -55,13 +55,13 @@ public enum GRYFileExtension: String {
 	case swift
 
 	//
-	static func + (string: String, fileExtension: GRYFileExtension) -> String {
+	static func + (string: String, fileExtension: FileExtension) -> String {
 		return string + "." + fileExtension.rawValue
 	}
 }
 
-extension GRYUtils {
-	public static func changeExtension(of filePath: String, to newExtension: GRYFileExtension)
+extension Utilities {
+	public static func changeExtension(of filePath: String, to newExtension: FileExtension)
 		-> String
 	{
 		let url = URL(fileURLWithPath: filePath)
@@ -85,7 +85,7 @@ extension GRYUtils {
 	}
 }
 
-extension GRYUtils {
+extension Utilities {
 	public static let systemIdentifier: String = {
 		#if os(macOS)
 		let osName = "macOS"
@@ -102,7 +102,7 @@ extension GRYUtils {
 		return osName + "-" + arch
 	}()
 
-	public static let buildFolder = ".kotlinBuild-\(GRYUtils.systemIdentifier)"
+	public static let buildFolder = ".kotlinBuild-\(Utilities.systemIdentifier)"
 
 	@discardableResult
 	internal static func createFile(
@@ -144,8 +144,8 @@ extension GRYUtils {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-extension GRYUtils {
-	enum GRYFileError: Error, CustomStringConvertible {
+extension Utilities {
+	enum FileError: Error, CustomStringConvertible {
 		case outdatedFile(filePath: String)
 
 		var description: String {
@@ -172,19 +172,19 @@ extension GRYUtils {
 		{ (_: String, astFilePath: String) in
 			// The .swiftASTDump files must be updated externally by the perl script. If any files
 			// are out of date, this closure gets called and informs the user how to update them.
-			throw GRYFileError.outdatedFile(filePath: astFilePath)
+			throw FileError.outdatedFile(filePath: astFilePath)
 		}
 
 		try updateFiles(in: folder, from: .swiftASTDump, to: .grySwiftAST)
 		{ (dumpFilePath: String, cacheFilePath: String) in
-			let ast = try GRYSwiftAST(decodeFromSwiftASTDumpInFile: dumpFilePath)
+			let ast = try SwiftAST(decodeFromSwiftASTDumpInFile: dumpFilePath)
 			try ast.encode(intoFile: cacheFilePath)
 		}
 
 		try updateFiles(in: folder, from: .grySwiftAST, to: .gryRawAST)
 		{ (swiftASTFilePath: String, gryphonASTRawFilePath: String) in
-			let swiftAST = try GRYSwiftAST(decodeFromFile: swiftASTFilePath)
-			let gryphonAST = try GRYSwiftTranslator().translateAST(swiftAST)
+			let swiftAST = try SwiftAST(decodeFromFile: swiftASTFilePath)
+			let gryphonAST = try SwiftTranslator().translateAST(swiftAST)
 			try gryphonAST.encode(intoFile: gryphonASTRawFilePath)
 		}
 
@@ -209,35 +209,35 @@ extension GRYUtils {
 		{ (_: String, astFilePath: String) in
 			// The .swiftASTDump files must be updated externally by the perl script. If any files
 			// are out of date, this closure gets called and informs the user how to update them.
-			throw GRYFileError.outdatedFile(filePath: astFilePath)
+			throw FileError.outdatedFile(filePath: astFilePath)
 		}
 
 		try updateFiles(in: testFilesFolder, from: .swiftASTDump, to: .grySwiftAST)
 		{ (dumpFilePath: String, cacheFilePath: String) in
-			let ast = try GRYSwiftAST(decodeFromSwiftASTDumpInFile: dumpFilePath)
+			let ast = try SwiftAST(decodeFromSwiftASTDumpInFile: dumpFilePath)
 			try ast.encode(intoFile: cacheFilePath)
 		}
 
 		try updateFiles(in: testFilesFolder, from: .grySwiftAST, to: .gryRawAST)
 		{ (swiftASTFilePath: String, gryphonASTRawFilePath: String) in
-			let swiftAST = try GRYSwiftAST(decodeFromFile: swiftASTFilePath)
-			let gryphonAST = try GRYSwiftTranslator().translateAST(swiftAST)
+			let swiftAST = try SwiftAST(decodeFromFile: swiftASTFilePath)
+			let gryphonAST = try SwiftTranslator().translateAST(swiftAST)
 			try gryphonAST.encode(intoFile: gryphonASTRawFilePath)
 		}
 
 		try updateFiles(in: testFilesFolder, from: .gryRawAST, to: .gryAST)
 		{ (gryphonASTRawFilePath: String, gryphonASTFilePath: String) throws in
-			let gryphonASTRaw = try GRYAST(decodeFromFile: gryphonASTRawFilePath)
-			let gryphonAST = GRYTranspilationPass.runAllPasses(on: gryphonASTRaw)
+			let gryphonASTRaw = try GryphonAST(decodeFromFile: gryphonASTRawFilePath)
+			let gryphonAST = TranspilationPass.runAllPasses(on: gryphonASTRaw)
 			try gryphonAST.encode(intoFile: gryphonASTFilePath)
 		}
 
 		//
 		try updateFiles(
-			["GRYPrintableAsTree", "GRYStandardLibrary"],
+			["PrintableAsTree", "StandardLibrary"],
 			in: "Bootstrap", from: .swiftASTDump, to: .kt)
 		{ (astDumpFilePath: String, kotlinFilePath: String) throws in
-			let kotlinCode = try GRYCompiler.generateKotlinCode(forFileAt: astDumpFilePath)
+			let kotlinCode = try Compiler.generateKotlinCode(forFileAt: astDumpFilePath)
 			try kotlinCode.write(toFile: kotlinFilePath, atomically: true, encoding: .utf8)
 		}
 
@@ -249,8 +249,8 @@ extension GRYUtils {
 	static private func updateFiles(
 		_ files: [String]? = nil,
 		in folder: String,
-		from originExtension: GRYFileExtension,
-		to destinationExtension: GRYFileExtension,
+		from originExtension: FileExtension,
+		to destinationExtension: FileExtension,
 		withUpdateClosure update: (String, String) throws -> ()) rethrows
 	{
 		var testFiles = getFilesInFolder(folder)
@@ -265,12 +265,12 @@ extension GRYUtils {
 		for originFile in testFiles {
 			let originFilePath = originFile.path
 			let destinationFilePath =
-				GRYUtils.changeExtension(of: originFilePath, to: destinationExtension)
+				Utilities.changeExtension(of: originFilePath, to: destinationExtension)
 
 			let destinationFileWasJustCreated =
-				GRYUtils.createFileIfNeeded(at: destinationFilePath, containing: "")
+				Utilities.createFileIfNeeded(at: destinationFilePath, containing: "")
 			let destinationFileIsOutdated = destinationFileWasJustCreated ||
-				GRYUtils.file(originFilePath, wasModifiedLaterThan: destinationFilePath)
+				Utilities.file(originFilePath, wasModifiedLaterThan: destinationFilePath)
 
 			if destinationFileIsOutdated {
 				print("\t\t* Updating \(destinationFilePath)...")
@@ -291,7 +291,7 @@ extension GRYUtils {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-extension GRYUtils {
+extension Utilities {
 	internal static var rng: RandomGenerator = Xoroshiro()
 }
 
@@ -316,7 +316,7 @@ internal extension RandomGenerator {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 internal extension RandomAccessCollection where Index == Int {
 	func randomElement() -> Element {
-		let index = GRYUtils.rng.random(0..<count)
+		let index = Utilities.rng.random(0..<count)
 		return self[index]
 	}
 }
@@ -332,10 +332,4 @@ internal extension RandomAccessCollection where Element: Equatable, Index == Int
 			}
 		}
 	}
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-internal enum Either<Left, Right> {
-	case left(_ value: Left)
-	case right(_ value: Right)
 }

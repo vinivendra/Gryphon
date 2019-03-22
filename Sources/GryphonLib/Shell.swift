@@ -24,7 +24,7 @@ func stopTask(_ task: Process) {
 }
 #endif
 
-public enum GRYShell {
+public enum Shell {
 	public typealias CommandOutput = (standardOutput: String, standardError: String, status: Int32)
 
 	static let defaultTimeout: TimeInterval = 60
@@ -35,7 +35,7 @@ public enum GRYShell {
 		_ command: String,
 		arguments: [String],
 		fromFolder currentFolder: String? = nil,
-		timeout: TimeInterval = GRYShell.defaultTimeout)
+		timeout: TimeInterval = Shell.defaultTimeout)
 		-> CommandOutput!
 	{
 		let outputPipe = Pipe()
@@ -77,7 +77,7 @@ public enum GRYShell {
 	internal static func runShellCommand(
 		_ arguments: [String],
 		fromFolder currentFolder: String? = nil,
-		timeout: TimeInterval = GRYShell.defaultTimeout) -> CommandOutput!
+		timeout: TimeInterval = Shell.defaultTimeout) -> CommandOutput!
 	{
 		return runShellCommand(
 			"/usr/bin/env",

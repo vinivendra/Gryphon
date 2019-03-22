@@ -16,7 +16,7 @@
 
 import Foundation
 
-public struct GRYFile {
+public struct SourceFile {
 	private var lines: [Substring]
 
 	public init(contents: String) {

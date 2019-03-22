@@ -16,17 +16,17 @@
 
 import Foundation
 
-public final class GRYSwiftAST: GRYPrintableAsTree, GRYCodable, Equatable, CustomStringConvertible {
+public final class SwiftAST: PrintableAsTree, GRYCodable, Equatable, CustomStringConvertible {
 	let name: String
 	let standaloneAttributes: ArrayReference<String>
 	let keyValueAttributes: [String: String]
-	let subtrees: ArrayReference<GRYSwiftAST>
+	let subtrees: ArrayReference<SwiftAST>
 
 	//
 	static public var horizontalLimitWhenPrinting = Int.max
 
 	//
-	internal init(_ name: String, _ subtrees: ArrayReference<GRYSwiftAST> = []) {
+	internal init(_ name: String, _ subtrees: ArrayReference<SwiftAST> = []) {
 		self.name = name
 		self.standaloneAttributes = []
 		self.keyValueAttributes = [:]
@@ -37,7 +37,7 @@ public final class GRYSwiftAST: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 		_ name: String,
 		_ standaloneAttributes: ArrayReference<String>,
 		_ keyValueAttributes: [String: String],
-		_ subtrees: ArrayReference<GRYSwiftAST> = [])
+		_ subtrees: ArrayReference<SwiftAST> = [])
 	{
 		self.name = name
 		self.standaloneAttributes = standaloneAttributes
@@ -61,10 +61,10 @@ public final class GRYSwiftAST: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 		encoder.endObject()
 	}
 
-	static func decode(from decoder: GRYDecoder) throws -> GRYSwiftAST {
+	static func decode(from decoder: GRYDecoder) throws -> SwiftAST {
 		let standaloneAttributes: ArrayReference<String> = []
 		var keyValueAttributes = [String: String]()
-		let subtrees: ArrayReference<GRYSwiftAST> = []
+		let subtrees: ArrayReference<SwiftAST> = []
 
 		try decoder.readOpeningParenthesis()
 		let name = decoder.readDoubleQuotedString()
@@ -75,7 +75,7 @@ public final class GRYSwiftAST: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 			// Add subtree
 			if decoder.canReadOpeningParenthesis() {
 				// Parse subtrees
-				let subtree = try GRYSwiftAST.decode(from: decoder)
+				let subtree = try SwiftAST.decode(from: decoder)
 				subtrees.append(subtree)
 			}
 			// Finish this branch
@@ -94,7 +94,7 @@ public final class GRYSwiftAST: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 			}
 		}
 
-		return GRYSwiftAST(name, standaloneAttributes, keyValueAttributes, subtrees)
+		return SwiftAST(name, standaloneAttributes, keyValueAttributes, subtrees)
 	}
 
 	// MARK: - Init from Swift AST dump
@@ -102,7 +102,7 @@ public final class GRYSwiftAST: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 		let rawASTDump = try String(contentsOfFile: astFilePath)
 
 		// Information in stored files has placeholders for file paths that must be replaced
-		let swiftFilePath = GRYUtils.changeExtension(of: astFilePath, to: .swift)
+		let swiftFilePath = Utilities.changeExtension(of: astFilePath, to: .swift)
 		let processedASTDump =
 			rawASTDump.replacingOccurrences(of: "<<testFilePath>>", with: swiftFilePath)
 
@@ -113,11 +113,11 @@ public final class GRYSwiftAST: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 	internal init(decodingFromASTDumpWith decoder: GRYDecoder) throws {
 		let standaloneAttributes: ArrayReference<String> = []
 		var keyValueAttributes = [String: String]()
-		let subtrees: ArrayReference<GRYSwiftAST> = []
+		let subtrees: ArrayReference<SwiftAST> = []
 
 		try decoder.readOpeningParenthesis()
 		let name = decoder.readIdentifier()
-		self.name = GRYUtils.expandSwiftAbbreviation(name)
+		self.name = Utilities.expandSwiftAbbreviation(name)
 
 		// The loop stops: all branches tell the decoder to read, therefore the input string must
 		// end eventually
@@ -125,7 +125,7 @@ public final class GRYSwiftAST: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 			// Add subtree
 			if decoder.canReadOpeningParenthesis() {
 				// Parse subtrees
-				let subtree = try GRYSwiftAST(decodingFromASTDumpWith: decoder)
+				let subtree = try SwiftAST(decodingFromASTDumpWith: decoder)
 				subtrees.append(subtree)
 			}
 			// Finish this branch
@@ -173,18 +173,18 @@ public final class GRYSwiftAST: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 		return keyValueAttributes[key]
 	}
 
-	func subtree(named name: String) -> GRYSwiftAST? {
+	func subtree(named name: String) -> SwiftAST? {
 		return subtrees.first { $0.name == name }
 	}
 
-	func subtree(at index: Int) -> GRYSwiftAST? {
+	func subtree(at index: Int) -> SwiftAST? {
 		guard index >= 0, index < subtrees.count else {
 			return nil
 		}
 		return subtrees[index]
 	}
 
-	func subtree(at index: Int, named name: String) -> GRYSwiftAST? {
+	func subtree(at index: Int, named name: String) -> SwiftAST? {
 		guard index >= 0, index < subtrees.count else {
 			return nil
 		}
@@ -197,20 +197,20 @@ public final class GRYSwiftAST: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 		return subtree
 	}
 
-	// MARK: - GRYPrintableAsTree
+	// MARK: - PrintableAsTree
 	public var treeDescription: String {
 		return name
 	}
 
-	public var printableSubtrees: ArrayReference<GRYPrintableAsTree?> {
+	public var printableSubtrees: ArrayReference<PrintableAsTree?> {
 		let keyValueStrings = keyValueAttributes
-			.map { "\($0.key) → \($0.value)" }.sorted().map(GRYPrintableTree.init)
-		let keyValueArray = ArrayReference<GRYPrintableAsTree?>(array: keyValueStrings)
+			.map { "\($0.key) → \($0.value)" }.sorted().map(PrintableTree.init)
+		let keyValueArray = ArrayReference<PrintableAsTree?>(array: keyValueStrings)
 		let standaloneAttributesArray =
-			ArrayReference<GRYPrintableAsTree?>(standaloneAttributes.map(GRYPrintableTree.init))
-		let subtreesArray = ArrayReference<GRYPrintableAsTree?>(subtrees)
+			ArrayReference<PrintableAsTree?>(standaloneAttributes.map(PrintableTree.init))
+		let subtreesArray = ArrayReference<PrintableAsTree?>(subtrees)
 
-		let result: ArrayReference<GRYPrintableAsTree?> =
+		let result: ArrayReference<PrintableAsTree?> =
 			standaloneAttributesArray + keyValueArray + subtreesArray
 		return result
 	}
@@ -229,7 +229,7 @@ public final class GRYSwiftAST: GRYPrintableAsTree, GRYCodable, Equatable, Custo
 	}
 
 	// MARK: - Equatable
-	public static func == (lhs: GRYSwiftAST, rhs: GRYSwiftAST) -> Bool {
+	public static func == (lhs: SwiftAST, rhs: SwiftAST) -> Bool {
 		return lhs.name == rhs.name &&
 			lhs.standaloneAttributes == rhs.standaloneAttributes &&
 			lhs.keyValueAttributes == rhs.keyValueAttributes &&

@@ -1,4 +1,4 @@
-class GRYPrintableAsTreeTests(): GRYTest("GRYPrintableAsTreeTests") {
+class PrintableAsTreeTests(): Test("PrintableAsTreeTests") {
 	override fun runAllTests() {
 		testPrinting()
 		testHorizontalLimit()
@@ -6,11 +6,11 @@ class GRYPrintableAsTreeTests(): GRYTest("GRYPrintableAsTreeTests") {
 	}
 
 	fun testPrinting() {
-		val root = GRYPrintableTree(description = "root")
-		val a = GRYPrintableTree(description = "a")
-		val b = GRYPrintableTree(description = "b")
-		val c = GRYPrintableTree(description = "c")
-		val d = GRYPrintableTree(description = "d")
+		val root = PrintableTree(description = "root")
+		val a = PrintableTree(description = "a")
+		val b = PrintableTree(description = "b")
+		val c = PrintableTree(description = "c")
+		val d = PrintableTree(description = "d")
 
 		root.addChild(a)
 		a.addChild(b)
@@ -31,11 +31,11 @@ class GRYPrintableAsTreeTests(): GRYTest("GRYPrintableAsTreeTests") {
 	}
 
 	fun testHorizontalLimit() {
-		val root = GRYPrintableTree(description = "root")
-		val a = GRYPrintableTree(description = "aaaaaaaaaaaaaaaaaa")
-		val b = GRYPrintableTree(description = "bbbbbbbbbbbbbbbbbb")
-		val c = GRYPrintableTree(description = "cccccccccccccccccc")
-		val d = GRYPrintableTree(description = "dddddddddddddddddd")
+		val root = PrintableTree(description = "root")
+		val a = PrintableTree(description = "aaaaaaaaaaaaaaaaaa")
+		val b = PrintableTree(description = "bbbbbbbbbbbbbbbbbb")
+		val c = PrintableTree(description = "cccccccccccccccccc")
+		val d = PrintableTree(description = "dddddddddddddddddd")
 
 		root.addChild(a)
 		a.addChild(b)

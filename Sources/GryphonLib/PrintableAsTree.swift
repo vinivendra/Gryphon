@@ -14,24 +14,24 @@
 * limitations under the License.
 */
 
-public class GRYPrintableTree: GRYPrintableAsTree {
+public class PrintableTree: PrintableAsTree {
 	public var treeDescription: String // annotation: override
-	public var printableSubtrees: ArrayReference<GRYPrintableAsTree?> // annotation: override
+	public var printableSubtrees: ArrayReference<PrintableAsTree?> // annotation: override
 
 	init(_ description: String) {
 		self.treeDescription = description
 		self.printableSubtrees = []
 	}
 
-	init(_ description: String, _ subtrees: ArrayReference<GRYPrintableAsTree?>) {
+	init(_ description: String, _ subtrees: ArrayReference<PrintableAsTree?>) {
 		self.treeDescription = description
 		self.printableSubtrees = subtrees
 	}
 
 	init(_ description: String, _ subtrees: ArrayReference<String?>) { // kotlin: ignore
-		let stringToTree: (String?) -> (GRYPrintableAsTree?) = { string in
+		let stringToTree: (String?) -> (PrintableAsTree?) = { string in
 			if let string = string {
-				return GRYPrintableTree(string)
+				return PrintableTree(string)
 			}
 			else {
 				return nil
@@ -42,16 +42,16 @@ public class GRYPrintableTree: GRYPrintableAsTree {
 		self.printableSubtrees = subtrees.map(stringToTree)
 	}
 
-	init(_ array: ArrayReference<GRYPrintableAsTree?>) {
+	init(_ array: ArrayReference<PrintableAsTree?>) {
 		self.treeDescription = "Array"
 		self.printableSubtrees = array
 	}
 
 	static func initOrNil(
-		_ description: String, _ subtreesOrNil: ArrayReference<GRYPrintableAsTree?>)
-		-> GRYPrintableTree?
+		_ description: String, _ subtreesOrNil: ArrayReference<PrintableAsTree?>)
+		-> PrintableTree?
 	{
-		let subtrees: ArrayReference<GRYPrintableAsTree?> = []
+		let subtrees: ArrayReference<PrintableAsTree?> = []
 		for subtree in subtreesOrNil {
 			if let unwrapped = subtree {
 				subtrees.append(unwrapped)
@@ -62,29 +62,29 @@ public class GRYPrintableTree: GRYPrintableAsTree {
 			return nil
 		}
 
-		return GRYPrintableTree(description, subtrees)
+		return PrintableTree(description, subtrees)
 	}
 
-	static func initOrNil(_ description: String?) -> GRYPrintableTree? {
+	static func initOrNil(_ description: String?) -> PrintableTree? {
 		if let description = description {
-			return GRYPrintableTree(description)
+			return PrintableTree(description)
 		}
 		else {
 			return nil
 		}
 	}
 
-	func addChild(_ child: GRYPrintableAsTree?) {
+	func addChild(_ child: PrintableAsTree?) {
 		printableSubtrees.append(child)
 	}
 }
 
-public protocol GRYPrintableAsTree {
+public protocol PrintableAsTree {
 	var treeDescription: String { get }
-	var printableSubtrees: ArrayReference<GRYPrintableAsTree?> { get }
+	var printableSubtrees: ArrayReference<PrintableAsTree?> { get }
 }
 
-public extension GRYPrintableAsTree {
+public extension PrintableAsTree {
 	func prettyPrint(
 		indentation: ArrayReference<String> = [],
 		isLast: Bool = true,
@@ -118,7 +118,7 @@ public extension GRYPrintableAsTree {
 			}
 		}
 
-		let subtrees: ArrayReference<GRYPrintableAsTree> = []
+		let subtrees: ArrayReference<PrintableAsTree> = []
 		for element in printableSubtrees {
 			if let unwrapped = element {
 				subtrees.append(unwrapped)

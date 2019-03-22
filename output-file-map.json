@@ -2,11 +2,11 @@
   "Sources/GryphonLib/CwlRandom.swift": {
     "ast-dump": "Bootstrap/CwlRandom.swiftASTDump",
   },
-  "Sources/GryphonLib/GRYAST.swift": {
-    "ast-dump": "Bootstrap/GRYAST.swiftASTDump",
+  "Sources/GryphonLib/GryphonAST.swift": {
+    "ast-dump": "Bootstrap/GryphonAST.swiftASTDump",
   },
-  "Sources/GryphonLib/GRYASTNodes.swift": {
-	  "ast-dump": "Bootstrap/GRYASTNodes.swiftASTDump",
+  "Sources/GryphonLib/GryphonASTNodes.swift": {
+	  "ast-dump": "Bootstrap/GryphonASTNodes.swiftASTDump",
   },
   "Sources/GryphonLib/GRYCodable.swift": {
     "ast-dump": "Bootstrap/GRYCodable.swiftASTDump",
@@ -14,40 +14,40 @@
   "Sources/GryphonLib/GRYCodableExtensions.swift": {
 	  "ast-dump": "Bootstrap/GRYCodableExtensions.swiftASTDump",
   },
-  "Sources/GryphonLib/GRYCompiler.swift": {
-    "ast-dump": "Bootstrap/GRYCompiler.swiftASTDump",
+  "Sources/GryphonLib/Compiler.swift": {
+    "ast-dump": "Bootstrap/Compiler.swiftASTDump",
   },
-  "Sources/GryphonLib/GRYExtensions.swift": {
-    "ast-dump": "Bootstrap/GRYExtensions.swiftASTDump",
+  "Sources/GryphonLib/Extensions.swift": {
+    "ast-dump": "Bootstrap/Extensions.swiftASTDump",
   },
-  "Sources/GryphonLib/GRYFile.swift": {
-	  "ast-dump": "Bootstrap/GRYFile.swiftASTDump",
+  "Sources/GryphonLib/SourceFile.swift": {
+	  "ast-dump": "Bootstrap/SourceFile.swiftASTDump",
   },
-  "Sources/GryphonLib/GRYKotlinTranslator.swift": {
-    "ast-dump": "Bootstrap/GRYKotlinTranslator.swiftASTDump",
+  "Sources/GryphonLib/KotlinTranslator.swift": {
+    "ast-dump": "Bootstrap/KotlinTranslator.swiftASTDump",
   },
-  "Sources/GryphonLib/GRYLibraryTranspilationPass.swift": {
-    "ast-dump": "Bootstrap/GRYLibraryTranspilationPass.swiftASTDump",
+  "Sources/GryphonLib/LibraryTranspilationPass.swift": {
+    "ast-dump": "Bootstrap/LibraryTranspilationPass.swiftASTDump",
   },
-  "Sources/GryphonLib/GRYPrintableAsTree.swift": {
-    "ast-dump": "Bootstrap/GRYPrintableAsTree.swiftASTDump",
+  "Sources/GryphonLib/PrintableAsTree.swift": {
+    "ast-dump": "Bootstrap/PrintableAsTree.swiftASTDump",
   },
-  "Sources/GryphonLib/GRYShell.swift": {
-    "ast-dump": "Bootstrap/GRYShell.swiftASTDump",
+  "Sources/GryphonLib/Shell.swift": {
+    "ast-dump": "Bootstrap/Shell.swiftASTDump",
   },
-  "Sources/GryphonLib/GRYStandardLibrary.swift": {
-	  "ast-dump": "Bootstrap/GRYStandardLibrary.swiftASTDump",
+  "Sources/GryphonLib/StandardLibrary.swift": {
+	  "ast-dump": "Bootstrap/StandardLibrary.swiftASTDump",
   },
-  "Sources/GryphonLib/GRYSwiftAst.swift": {
-	  "ast-dump": "Bootstrap/GRYSwiftAst.swiftASTDump",
+  "Sources/GryphonLib/SwiftAST.swift": {
+	  "ast-dump": "Bootstrap/SwiftAST.swiftASTDump",
   },
-  "Sources/GryphonLib/GRYSwiftTranslator.swift": {
-    "ast-dump": "Bootstrap/GRYSwiftTranslator.swiftASTDump",
+  "Sources/GryphonLib/SwiftTranslator.swift": {
+    "ast-dump": "Bootstrap/SwiftTranslator.swiftASTDump",
   },
-  "Sources/GryphonLib/GRYTranspilationPass.swift": {
-    "ast-dump": "Bootstrap/GRYTranspilationPass.swiftASTDump",
+  "Sources/GryphonLib/TranspilationPass.swift": {
+    "ast-dump": "Bootstrap/TranspilationPass.swiftASTDump",
   },
-  "Sources/GryphonLib/GRYUtils.swift": {
-    "ast-dump": "Bootstrap/GRYUtils.swiftASTDump",
+  "Sources/GryphonLib/Utils.swift": {
+    "ast-dump": "Bootstrap/Utils.swiftASTDump",
   },
 }

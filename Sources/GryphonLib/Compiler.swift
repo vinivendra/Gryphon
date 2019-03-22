@@ -16,7 +16,7 @@
 
 import Foundation
 
-public enum GRYCompiler {
+public enum Compiler {
 
 	#if os(Linux) || os(FreeBSD)
 	static let kotlinCompilerPath = "/opt/kotlinc/bin/kotlinc"
@@ -25,7 +25,7 @@ public enum GRYCompiler {
 	#endif
 
 	public enum KotlinCompilationResult {
-		case success(commandOutput: GRYShell.CommandOutput)
+		case success(commandOutput: Shell.CommandOutput)
 		case failure(errorMessage: String)
 	}
 
@@ -37,7 +37,7 @@ public enum GRYCompiler {
 
 		log?("\t- Running Kotlin...")
 		let arguments = ["java", "-jar", "kotlin.jar"]
-		let commandResult = GRYShell.runShellCommand(arguments, fromFolder: GRYUtils.buildFolder)
+		let commandResult = Shell.runShellCommand(arguments, fromFolder: Utilities.buildFolder)
 
 		guard let result = commandResult else {
 			return .failure(errorMessage: "\t\t- Java running timed out.")
@@ -51,15 +51,15 @@ public enum GRYCompiler {
 
 		log?("\t- Compiling Kotlin...")
 		let fileName = URL(fileURLWithPath: filePath).deletingPathExtension().lastPathComponent
-		let kotlinFilePath = GRYUtils.createFile(
+		let kotlinFilePath = Utilities.createFile(
 			named: fileName + .kt,
-			inDirectory: GRYUtils.buildFolder,
+			inDirectory: Utilities.buildFolder,
 			containing: kotlinCode)
 
 		// Call the kotlin compiler
 		let arguments =
-			["-include-runtime", "-d", GRYUtils.buildFolder + "/kotlin.jar", kotlinFilePath]
-		let commandResult = GRYShell.runShellCommand(kotlinCompilerPath, arguments: arguments)
+			["-include-runtime", "-d", Utilities.buildFolder + "/kotlin.jar", kotlinFilePath]
+		let commandResult = Shell.runShellCommand(kotlinCompilerPath, arguments: arguments)
 
 		// Ensure the compiler terminated successfully
 		guard let result = commandResult else {
@@ -78,35 +78,37 @@ public enum GRYCompiler {
 		let ast = try generateGryphonASTAndRunPasses(forFileAt: filePath)
 
 		log?("\t- Translating AST to Kotlin...")
-		return try GRYKotlinTranslator().translateAST(ast)
+		return try KotlinTranslator().translateAST(ast)
 	}
 
-	public static func generateGryphonASTAndRunPasses(forFileAt filePath: String) throws -> GRYAST {
+	public static func generateGryphonASTAndRunPasses(forFileAt filePath: String) throws
+		-> GryphonAST
+	{
 		let swiftAST = try generateSwiftAST(forFileAt: filePath)
 		log?("\t- Translating Swift AST to Gryphon AST...")
-		let ast = try GRYSwiftTranslator().translateAST(swiftAST)
-		let astAfterPasses = GRYTranspilationPass.runAllPasses(on: ast)
+		let ast = try SwiftTranslator().translateAST(swiftAST)
+		let astAfterPasses = TranspilationPass.runAllPasses(on: ast)
 		return astAfterPasses
 	}
 
-	public static func generateGryphonAST(forFileAt filePath: String) throws -> GRYAST {
+	public static func generateGryphonAST(forFileAt filePath: String) throws -> GryphonAST {
 		let swiftAST = try generateSwiftAST(forFileAt: filePath)
 		log?("\t- Translating Swift AST to Gryphon AST...")
-		let ast = try GRYSwiftTranslator().translateAST(swiftAST)
+		let ast = try SwiftTranslator().translateAST(swiftAST)
 		return ast
 	}
 
-	public static func processExternalSwiftAST(_ filePath: String) throws -> GRYSwiftAST {
-		let astFilePath = GRYUtils.changeExtension(of: filePath, to: .swiftASTDump)
+	public static func processExternalSwiftAST(_ filePath: String) throws -> SwiftAST {
+		let astFilePath = Utilities.changeExtension(of: filePath, to: .swiftASTDump)
 
-		log?("\t- Building GRYSwiftAST from external AST...")
-		let ast = try GRYSwiftAST(decodeFromSwiftASTDumpInFile: astFilePath)
+		log?("\t- Building SwiftAST from external AST...")
+		let ast = try SwiftAST(decodeFromSwiftASTDumpInFile: astFilePath)
 
-		let cacheFilePath = GRYUtils.changeExtension(of: filePath, to: .grySwiftAST)
-		let cacheFileWasJustCreated = GRYUtils.createFileIfNeeded(at: cacheFilePath, containing: "")
+		let cacheFilePath = Utilities.changeExtension(of: filePath, to: .grySwiftAST)
+		let cacheFileWasJustCreated = Utilities.createFileIfNeeded(at: cacheFilePath, containing: "")
 		let cacheIsOutdated =
 			cacheFileWasJustCreated ||
-				GRYUtils.file(astFilePath, wasModifiedLaterThan: cacheFilePath)
+				Utilities.file(astFilePath, wasModifiedLaterThan: cacheFilePath)
 		if cacheIsOutdated {
 			log?("\t\t- Updating \(cacheFilePath)...")
 			try ast.encode(intoFile: cacheFilePath)
@@ -115,17 +117,17 @@ public enum GRYCompiler {
 		return ast
 	}
 
-	public static func generateSwiftAST(forFileAt filePath: String) throws -> GRYSwiftAST {
-		let astDumpFilePath = GRYUtils.changeExtension(of: filePath, to: .swiftASTDump)
+	public static func generateSwiftAST(forFileAt filePath: String) throws -> SwiftAST {
+		let astDumpFilePath = Utilities.changeExtension(of: filePath, to: .swiftASTDump)
 
-		log?("\t- Building GRYSwiftAST...")
-		let ast = try GRYSwiftAST(decodeFromSwiftASTDumpInFile: astDumpFilePath)
+		log?("\t- Building SwiftAST...")
+		let ast = try SwiftAST(decodeFromSwiftASTDumpInFile: astDumpFilePath)
 		return ast
 	}
 
 	public static func getSwiftASTDump(forFileAt filePath: String) throws -> String {
 		log?("\t- Getting swift AST dump...")
-		let astDumpFilePath = GRYUtils.changeExtension(of: filePath, to: .swiftASTDump)
+		let astDumpFilePath = Utilities.changeExtension(of: filePath, to: .swiftASTDump)
 		return try String(contentsOfFile: astDumpFilePath)
 	}
 
@@ -136,16 +138,16 @@ public enum GRYCompiler {
 	public private(set) static var warnings = [String]()
 
 	public static func handleError(_ error: Error) throws {
-		if GRYCompiler.shouldStopAtFirstError {
+		if Compiler.shouldStopAtFirstError {
 			throw error
 		}
 		else {
-			GRYCompiler.errors.append(error)
+			Compiler.errors.append(error)
 		}
 	}
 
 	public static func handleWarning(_ warning: String) {
-		GRYCompiler.warnings.append(warning)
+		Compiler.warnings.append(warning)
 	}
 
 	public static func printErrorsAndWarnings() {
@@ -178,7 +180,7 @@ public enum GRYCompiler {
 	}
 
 	public static func printErrorStatistics() {
-		let swiftASTDumpErrors = errors.compactMap { $0 as? GRYSwiftTranslatorError }
+		let swiftASTDumpErrors = errors.compactMap { $0 as? SwiftTranslatorError }
 		if !swiftASTDumpErrors.isEmpty {
 			print("Swift AST translator failed to translate:")
 
@@ -190,7 +192,7 @@ public enum GRYCompiler {
 			}
 		}
 
-		let kotlinTranslatorErrors = errors.compactMap { $0 as? GRYKotlinTranslatorError }
+		let kotlinTranslatorErrors = errors.compactMap { $0 as? KotlinTranslatorError }
 		if !kotlinTranslatorErrors.isEmpty {
 			print("Kotlin translator failed to translate:")
 

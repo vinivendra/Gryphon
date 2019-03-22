@@ -19,8 +19,8 @@ import GryphonLib
 
 do {
 	// Compiler settings
-	GRYCompiler.shouldLogProgress = false
-	GRYCompiler.shouldStopAtFirstError = false
+	Compiler.shouldLogProgress = false
+	Compiler.shouldStopAtFirstError = false
 
 	// Set the path to the desired input file as the `filePath`.
 
@@ -28,7 +28,7 @@ do {
 //	let filePaths = [Process().currentDirectoryPath + "/Example ASTs/test.swift"]
 //	let filePaths = [Process().currentDirectoryPath + "/Bootstrap/GRYCodable.swiftASTDump"]
 
-	let filePaths = GRYUtils.getFilesInFolder("ASTDumps")
+	let filePaths = Utilities.getFilesInFolder("ASTDumps")
 		.map { $0.path }
 
 	print("Compiling...")
@@ -44,32 +44,32 @@ do {
 		// transpiler should still work normally.
 
 		// 1: Run the swift compiler and get its AST dump
-//		try print(GRYCompiler.getSwiftASTDump(forFileAt: filePath))
+//		try print(Compiler.getSwiftASTDump(forFileAt: filePath))
 
 		// 2: Swiftc's AST dump -> Gryphon's version of the Swift AST
-//		try GRYCompiler.generateSwiftAST(forFileAt: filePath).prettyPrint()
+//		try Compiler.generateSwiftAST(forFileAt: filePath).prettyPrint()
 
 		// 3: Swiftc's AST dump -> Swift AST -> Gryphon's internal AST (raw, before passes)
-//		try GRYCompiler.generateGryphonAST(forFileAt: filePath).prettyPrint()
+//		try Compiler.generateGryphonAST(forFileAt: filePath).prettyPrint()
 
-		// 3.1: Swiftc's AST dump -> Swift AST -> Gryphon AST (raw) + Gryphon AST (after passes)
-//		try GRYCompiler.generateGryphonASTAndRunPasses(forFileAt: filePath).prettyPrint()
+		// 3.1: Swiftc's AST dump -> Swift AST -> Gryphon AST (raw) -> Gryphon AST (after passes)
+//		try Compiler.generateGryphonASTAndRunPasses(forFileAt: filePath).prettyPrint()
 
-		// 4: Swiftc's AST dump -> Swift AST -> Gryphon AST (raw) + Gryphon AST -> Kotlin code
-		_ = try GRYCompiler.generateKotlinCode(forFileAt: filePath)
+		// 4: Swiftc's AST dump -> Swift AST -> Gryphon AST (raw) -> Gryphon AST -> Kotlin code
+		print(try Compiler.generateKotlinCode(forFileAt: filePath))
 
-		// 5: AST dump -> Swift AST -> GRYAST (raw) -> GRYAST -> Kotlin -> Output of running Kotlin
-//		try print(GRYCompiler.compileAndRun(fileAt: filePath))
+		// 5: AST dump -> Swift AST -> AST (raw) -> AST -> Kotlin -> Output of running Kotlin
+//		try print(Compiler.compileAndRun(fileAt: filePath))
 	}
 
 	print("================================================================================")
 	print("Compilation finished.")
 
 	// Print all errors and warnings...
-//	GRYCompiler.printErrorsAndWarnings()
+//	Compiler.printErrorsAndWarnings()
 	// ...or just a summary
-	print("Errors: \(GRYCompiler.errors.count). Warnings: \(GRYCompiler.warnings.count).")
-	GRYCompiler.printErrorStatistics()
+	print("Errors: \(Compiler.errors.count). Warnings: \(Compiler.warnings.count).")
+	Compiler.printErrorStatistics()
 }
 catch let error {
 	print("🚨 Error:\n\(error)")

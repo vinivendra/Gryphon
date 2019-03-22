@@ -28,7 +28,7 @@ class AcceptanceTest: XCTestCase {
 				// Translate the swift code to kotlin, compile the resulting kotlin code, run it,
 				// and get its output
 				let testFilePath = TestUtils.testFilesPath + testName
-				let compilationResult = try GRYCompiler.compileAndRun(fileAt: testFilePath + .swift)
+				let compilationResult = try Compiler.compileAndRun(fileAt: testFilePath + .swift)
 
 				switch compilationResult {
 				case let .failure(errorMessage: errorMessage):
@@ -59,8 +59,8 @@ class AcceptanceTest: XCTestCase {
 			}
 		}
 
-		XCTAssertFalse(GRYCompiler.hasErrorsOrWarnings())
-		GRYCompiler.printErrorsAndWarnings()
+		XCTAssertFalse(Compiler.hasErrorsOrWarnings())
+		Compiler.printErrorsAndWarnings()
 	}
 
 	static var allTests = [
@@ -69,7 +69,7 @@ class AcceptanceTest: XCTestCase {
 
 	override static func setUp() {
 		do {
-			try GRYUtils.updateTestFiles()
+			try Utilities.updateTestFiles()
 		}
 		catch let error {
 			print(error)
@@ -78,6 +78,6 @@ class AcceptanceTest: XCTestCase {
 	}
 
 	override func setUp() {
-		GRYCompiler.clearErrorsAndWarnings()
+		Compiler.clearErrorsAndWarnings()
 	}
 }

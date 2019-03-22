@@ -17,7 +17,7 @@
 @testable import GryphonLib
 import XCTest
 
-class GRYKotlinTranslatorTest: XCTestCase {
+class KotlinTranslatorTest: XCTestCase {
 	func testTranslator() {
 		let tests = TestUtils.testCasesForAllTests
 
@@ -26,11 +26,11 @@ class GRYKotlinTranslatorTest: XCTestCase {
 
 			do {
 				// Create the new Kotlin code from the cached Gryphon AST using the
-				// GRYKotlinTranslator
+				// KotlinTranslator
 				let testFilePath = TestUtils.testFilesPath + testName
-				let ast = try GRYAST(decodeFromFile: testFilePath + .gryAST)
-				_ = GRYRecordEnumsTranspilationPass().run(on: ast)
-				let createdKotlinCode = try GRYKotlinTranslator().translateAST(ast)
+				let ast = try GryphonAST(decodeFromFile: testFilePath + .gryAST)
+				_ = RecordEnumsTranspilationPass().run(on: ast)
+				let createdKotlinCode = try KotlinTranslator().translateAST(ast)
 
 				// Load the cached Kotlin code from file
 				let expectedKotlinCode = try! String(contentsOfFile: testFilePath + .kt)
@@ -48,8 +48,8 @@ class GRYKotlinTranslatorTest: XCTestCase {
 			}
 		}
 
-		XCTAssertFalse(GRYCompiler.hasErrorsOrWarnings())
-		GRYCompiler.printErrorsAndWarnings()
+		XCTAssertFalse(Compiler.hasErrorsOrWarnings())
+		Compiler.printErrorsAndWarnings()
 	}
 
 	static var allTests = [
@@ -58,7 +58,7 @@ class GRYKotlinTranslatorTest: XCTestCase {
 
 	override static func setUp() {
 		do {
-			try GRYUtils.updateTestFiles()
+			try Utilities.updateTestFiles()
 		}
 		catch let error {
 			print(error)
@@ -67,6 +67,6 @@ class GRYKotlinTranslatorTest: XCTestCase {
 	}
 
 	override func setUp() {
-		GRYCompiler.clearErrorsAndWarnings()
+		Compiler.clearErrorsAndWarnings()
 	}
 }

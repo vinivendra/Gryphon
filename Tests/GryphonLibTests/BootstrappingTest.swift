@@ -19,20 +19,20 @@ import XCTest
 
 class BootstrappingTest: XCTestCase {
 	func test() {
-		GRYCompiler.clearErrorsAndWarnings()
+		Compiler.clearErrorsAndWarnings()
 		defer {
-			XCTAssertFalse(GRYCompiler.hasErrorsOrWarnings())
-			GRYCompiler.printErrorsAndWarnings()
+			XCTAssertFalse(Compiler.hasErrorsOrWarnings())
+			Compiler.printErrorsAndWarnings()
 		}
 
 		// Compile the Kotlin version of the transpiler
 		let compilationCommand = [
-			GRYCompiler.kotlinCompilerPath,
+			Compiler.kotlinCompilerPath,
 			"-include-runtime", "-d", "kotlin.jar",
-			"GRYPrintableAsTree.kt", "GRYPrintableAsTreeTests.kt",
-			"GRYKotlinTests.kt", "GRYStandardLibrary.kt", "main.kt", ]
+			"PrintableAsTree.kt", "PrintableAsTreeTests.kt",
+			"KotlinTests.kt", "StandardLibrary.kt", "main.kt", ]
 		guard let compilationResult =
-			GRYShell.runShellCommand(compilationCommand, fromFolder: "Bootstrap") else
+			Shell.runShellCommand(compilationCommand, fromFolder: "Bootstrap") else
 		{
 			XCTFail("Timed out.")
 			return
@@ -48,7 +48,7 @@ class BootstrappingTest: XCTestCase {
 		// Run the Kotlin version's tests
 		let runCommand = ["java", "-jar", "kotlin.jar", ]
 		guard let runResult =
-			GRYShell.runShellCommand(runCommand, fromFolder: "Bootstrap") else
+			Shell.runShellCommand(runCommand, fromFolder: "Bootstrap") else
 		{
 			XCTFail("Timed out.")
 			return
@@ -77,7 +77,7 @@ class BootstrappingTest: XCTestCase {
 
 	override static func setUp() {
 		do {
-			try GRYUtils.updateTestFiles()
+			try Utilities.updateTestFiles()
 		}
 		catch let error {
 			print(error)

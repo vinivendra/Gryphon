@@ -80,7 +80,7 @@ enum TestUtils {
 		return withTemporaryFile(named: "file1.txt", containing: string1) { file1Path in
 			withTemporaryFile(named: "file2.txt", containing: string2) { file2Path in
 				let command = ["diff", file1Path, file2Path]
-				let commandResult = GRYShell.runShellCommand(command)
+				let commandResult = Shell.runShellCommand(command)
 				if let commandResult = commandResult {
 					return "\n\n===\n\(commandResult.standardOutput)===\n"
 				}
@@ -99,7 +99,7 @@ enum TestUtils {
 	{
 		let temporaryDirectory = ".tmp"
 
-		let filePath = GRYUtils.createFile(
+		let filePath = Utilities.createFile(
 			named: fileName,
 			inDirectory: temporaryDirectory,
 			containing: contents)

@@ -17,13 +17,13 @@
 @testable import GryphonLib
 import XCTest
 
-class GRYPrintableAsTreeTest: XCTestCase {
+class PrintableAsTreeTest: XCTestCase {
 	func testPrinting() {
-		let root = GRYPrintableTree("root")
-		let a = GRYPrintableTree("a")
-		let b = GRYPrintableTree("b")
-		let c = GRYPrintableTree("c")
-		let d = GRYPrintableTree("d")
+		let root = PrintableTree("root")
+		let a = PrintableTree("a")
+		let b = PrintableTree("b")
+		let c = PrintableTree("c")
+		let d = PrintableTree("d")
 
 		root.addChild(a)
 		a.addChild(b)
@@ -44,11 +44,11 @@ class GRYPrintableAsTreeTest: XCTestCase {
 	}
 
 	func testHorizontalLimit() {
-		let root = GRYPrintableTree("root")
-		let a = GRYPrintableTree("aaaaaaaaaaaaaaaaaa")
-		let b = GRYPrintableTree("bbbbbbbbbbbbbbbbbb")
-		let c = GRYPrintableTree("cccccccccccccccccc")
-		let d = GRYPrintableTree("dddddddddddddddddd")
+		let root = PrintableTree("root")
+		let a = PrintableTree("aaaaaaaaaaaaaaaaaa")
+		let b = PrintableTree("bbbbbbbbbbbbbbbbbb")
+		let c = PrintableTree("cccccccccccccccccc")
+		let d = PrintableTree("dddddddddddddddddd")
 
 		root.addChild(a)
 		a.addChild(b)

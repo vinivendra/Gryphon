@@ -1,14 +1,14 @@
-class GRYPrintableTree: GRYPrintableAsTree {
+class PrintableTree: PrintableAsTree {
 	companion object {
 		internal fun initOrNil(
 			description: String,
-			subtreesOrNil: MutableList<GRYPrintableAsTree?>)
-			: GRYPrintableTree?
+			subtreesOrNil: MutableList<PrintableAsTree?>)
+			: PrintableTree?
 		{
-			val subtrees: MutableList<GRYPrintableAsTree?> = mutableListOf()
+			val subtrees: MutableList<PrintableAsTree?> = mutableListOf()
 
 			for (subtree in subtreesOrNil) {
-				val unwrapped: GRYPrintableAsTree? = subtree
+				val unwrapped: PrintableAsTree? = subtree
 				if (unwrapped != null) {
 					subtrees.add(unwrapped)
 				}
@@ -18,12 +18,12 @@ class GRYPrintableTree: GRYPrintableAsTree {
 				return null
 			}
 
-			return GRYPrintableTree(description, subtrees)
+			return PrintableTree(description, subtrees)
 		}
 
-		internal fun initOrNil(description: String?): GRYPrintableTree? {
+		internal fun initOrNil(description: String?): PrintableTree? {
 			if (description != null) {
-				return GRYPrintableTree(description)
+				return PrintableTree(description)
 			}
 			else {
 				return null
@@ -32,7 +32,7 @@ class GRYPrintableTree: GRYPrintableAsTree {
 	}
 
 	override var treeDescription: String
-	override var printableSubtrees: MutableList<GRYPrintableAsTree?>
+	override var printableSubtrees: MutableList<PrintableAsTree?>
 
 	constructor(description: String) {
 		this.treeDescription = description
@@ -40,29 +40,29 @@ class GRYPrintableTree: GRYPrintableAsTree {
 		return
 	}
 
-	constructor(description: String, subtrees: MutableList<GRYPrintableAsTree?>) {
+	constructor(description: String, subtrees: MutableList<PrintableAsTree?>) {
 		this.treeDescription = description
 		this.printableSubtrees = subtrees
 		return
 	}
 
-	constructor(array: MutableList<GRYPrintableAsTree?>) {
+	constructor(array: MutableList<PrintableAsTree?>) {
 		this.treeDescription = "Array"
 		this.printableSubtrees = array
 		return
 	}
 
-	internal fun addChild(child: GRYPrintableAsTree?) {
+	internal fun addChild(child: PrintableAsTree?) {
 		printableSubtrees.add(child)
 	}
 }
 
-interface GRYPrintableAsTree {
+interface PrintableAsTree {
 	val treeDescription: String
-	val printableSubtrees: MutableList<GRYPrintableAsTree?>
+	val printableSubtrees: MutableList<PrintableAsTree?>
 }
 
-public fun GRYPrintableAsTree.prettyPrint(
+public fun PrintableAsTree.prettyPrint(
 	indentation: MutableList<String> = mutableListOf(),
 	isLast: Boolean = true,
 	horizontalLimit: Int = Int.MAX_VALUE,
@@ -90,10 +90,10 @@ public fun GRYPrintableAsTree.prettyPrint(
 		}
 	}
 
-	val subtrees: MutableList<GRYPrintableAsTree> = mutableListOf()
+	val subtrees: MutableList<PrintableAsTree> = mutableListOf()
 
 	for (element in printableSubtrees) {
-		val unwrapped: GRYPrintableAsTree? = element
+		val unwrapped: PrintableAsTree? = element
 		if (unwrapped != null) {
 			subtrees.add(unwrapped)
 		}

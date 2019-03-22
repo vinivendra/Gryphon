@@ -28,7 +28,7 @@ class IntegrationTest: XCTestCase {
 				// Generate kotlin code using the whole compiler
 				let testFilePath = TestUtils.testFilesPath + testName
 				let generatedKotlinCode =
-					try GRYCompiler.generateKotlinCode(forFileAt: testFilePath + .swift)
+					try Compiler.generateKotlinCode(forFileAt: testFilePath + .swift)
 
 				// Load the previously stored kotlin code from file
 				let expectedKotlinCode = try! String(contentsOfFile: testFilePath + .kt)
@@ -45,8 +45,8 @@ class IntegrationTest: XCTestCase {
 			}
 		}
 
-		XCTAssertFalse(GRYCompiler.hasErrorsOrWarnings())
-		GRYCompiler.printErrorsAndWarnings()
+		XCTAssertFalse(Compiler.hasErrorsOrWarnings())
+		Compiler.printErrorsAndWarnings()
 	}
 
 	static var allTests = [
@@ -55,7 +55,7 @@ class IntegrationTest: XCTestCase {
 
 	override static func setUp() {
 		do {
-			try GRYUtils.updateTestFiles()
+			try Utilities.updateTestFiles()
 		}
 		catch let error {
 			print(error)
@@ -64,6 +64,6 @@ class IntegrationTest: XCTestCase {
 	}
 
 	override func setUp() {
-		GRYCompiler.clearErrorsAndWarnings()
+		Compiler.clearErrorsAndWarnings()
 	}
 }

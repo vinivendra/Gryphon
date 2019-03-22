@@ -14,7 +14,7 @@
 * limitations under the License.
 */
 
-public class GRYKotlinTranslator {
+public class KotlinTranslator {
 	static let errorTranslation = "<<Error>>"
 
 	static let lineLimit = 100
@@ -69,7 +69,7 @@ public class GRYKotlinTranslator {
 			return "MutableMap<\(translatedKey), \(translatedValue)>"
 		}
 		else {
-			return GRYKotlinTranslator.typeMappings[type] ?? type
+			return KotlinTranslator.typeMappings[type] ?? type
 		}
 	}
 
@@ -132,7 +132,7 @@ public class GRYKotlinTranslator {
 
 	public init() { }
 
-	public func translateAST(_ sourceFile: GRYAST) throws -> String {
+	public func translateAST(_ sourceFile: GryphonAST) throws -> String {
 		let declarationsTranslation =
 			try translate(subtrees: sourceFile.declarations, withIndentation: "")
 
@@ -158,7 +158,7 @@ public class GRYKotlinTranslator {
 
 	// MARK: - Implementation
 
-	private func translate(subtree: GRYStatement, withIndentation indentation: String) throws
+	private func translate(subtree: Statement, withIndentation indentation: String) throws
 		-> String
 	{
 		let result: String
@@ -232,14 +232,14 @@ public class GRYKotlinTranslator {
 				return "\n"
 			}
 		case .error:
-			return GRYKotlinTranslator.errorTranslation
+			return KotlinTranslator.errorTranslation
 		}
 
 		return result
 	}
 
 	private func translate(
-		subtrees: [GRYStatement], withIndentation indentation: String,
+		subtrees: [Statement], withIndentation indentation: String,
 		limitForAddingNewlines: Int = 0) throws -> String
 	{
 		let treesAndTranslations = try subtrees.map {
@@ -302,11 +302,11 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateEnumDeclaration(
-		access: String?, name enumName: String, inherits: [String], elements: [GRYASTEnumElement],
-		members: [GRYStatement], isImplicit: Bool, withIndentation indentation: String)
+		access: String?, name enumName: String, inherits: [String], elements: [EnumElement],
+		members: [Statement], isImplicit: Bool, withIndentation indentation: String)
 		throws -> String
 	{
-		let isEnumClass = GRYKotlinTranslator.enumClasses.contains(enumName)
+		let isEnumClass = KotlinTranslator.enumClasses.contains(enumName)
 
 		let accessString = access ?? ""
 		let enumString = isEnumClass ? "enum" : "sealed"
@@ -346,7 +346,7 @@ public class GRYKotlinTranslator {
 
 	private func translateEnumElementDeclaration(
 		enumName: String,
-		element: GRYASTEnumElement,
+		element: EnumElement,
 		isEnumClass: Bool,
 		withIndentation indentation: String) -> String
 	{
@@ -372,7 +372,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateProtocolDeclaration(
-		name: String, members: [GRYStatement], withIndentation indentation: String) throws
+		name: String, members: [Statement], withIndentation indentation: String) throws
 		-> String
 	{
 		var result = "\(indentation)interface \(name) {\n"
@@ -392,7 +392,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateClassDeclaration(
-		name: String, inherits: [String], members: [GRYStatement],
+		name: String, inherits: [String], members: [Statement],
 		withIndentation indentation: String) throws -> String
 	{
 		var result = "\(indentation)class \(name)"
@@ -418,14 +418,14 @@ public class GRYKotlinTranslator {
 	/// If a value type's members are all immutable, that value type can safely be translated as a
 	/// class. Source: https://forums.swift.org/t/are-immutable-structs-like-classes/16270
 	private func translateStructDeclaration(
-		name: String, inherits: [String], members: [GRYStatement],
+		name: String, inherits: [String], members: [Statement],
 		withIndentation indentation: String) throws -> String
 	{
 		let increasedIndentation = increaseIndentation(indentation)
 
 		var result = "\(indentation)data class \(name)(\n"
 
-		let isProperty = { (member: GRYStatement) -> Bool in
+		let isProperty = { (member: Statement) -> Bool in
 			if case let .variableDeclaration(value: variableDeclaration) = member,
 				variableDeclaration.getter == nil,
 				variableDeclaration.setter == nil
@@ -467,7 +467,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateCompanionObject(
-		members: [GRYStatement], withIndentation indentation: String) throws -> String
+		members: [Statement], withIndentation indentation: String) throws -> String
 	{
 		var result = "\(indentation)companion object {\n"
 
@@ -483,7 +483,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateFunctionDeclaration(
-		functionDeclaration: GRYASTFunctionDeclaration, withIndentation indentation: String,
+		functionDeclaration: FunctionDeclaration, withIndentation indentation: String,
 		shouldAddNewlines: Bool = false) throws -> String
 	{
 		guard !functionDeclaration.isImplicit else {
@@ -518,7 +518,7 @@ public class GRYKotlinTranslator {
 		}
 
 		let parameterStrings = try functionDeclaration.parameters.map
-			{ (parameter: GRYASTFunctionParameter) -> String in
+			{ (parameter: FunctionParameter) -> String in
 				let labelAndTypeString = parameter.label + ": " + translateType(parameter.type)
 				if let defaultValue = parameter.value {
 					return try labelAndTypeString + " = "
@@ -531,7 +531,7 @@ public class GRYKotlinTranslator {
 
 		if !shouldAddNewlines {
 			result += parameterStrings.joined(separator: ", ") + ")" + returnString + " {\n"
-			if result.count >= GRYKotlinTranslator.lineLimit {
+			if result.count >= KotlinTranslator.lineLimit {
 				return try translateFunctionDeclaration(
 					functionDeclaration: functionDeclaration, withIndentation: indentation,
 					shouldAddNewlines: true)
@@ -563,7 +563,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateForEachStatement(
-		collection: GRYExpression, variable: GRYExpression, statements: [GRYStatement],
+		collection: Expression, variable: Expression, statements: [Statement],
 		withIndentation indentation: String) throws -> String
 	{
 		var result = "\(indentation)for ("
@@ -588,7 +588,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateIfStatement(
-		_ ifStatement: GRYASTIfStatement, isElseIf: Bool = false,
+		_ ifStatement: IfStatement, isElseIf: Bool = false,
 		withIndentation indentation: String) throws -> String
 	{
 		let keyword = (ifStatement.conditions.isEmpty && ifStatement.declarations.isEmpty) ?
@@ -628,8 +628,8 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateSwitchStatement(
-		convertsToExpression: GRYStatement?, expression: GRYExpression,
-		cases: [GRYASTSwitchCase], withIndentation indentation: String) throws -> String
+		convertsToExpression: Statement?, expression: Expression,
+		cases: [SwitchCase], withIndentation indentation: String) throws -> String
 	{
 		var result: String = ""
 
@@ -646,7 +646,7 @@ public class GRYKotlinTranslator {
 			}
 			else if case let .variableDeclaration(value: variableDeclaration) = convertsToExpression
 			{
-				let newVariableDeclaration = GRYASTVariableDeclaration(
+				let newVariableDeclaration = VariableDeclaration(
 					identifier: variableDeclaration.identifier,
 					typeName: variableDeclaration.typeName, expression: .nilLiteralExpression,
 					getter: nil, setter: nil, isLet: variableDeclaration.isLet, isImplicit: false,
@@ -670,7 +670,7 @@ public class GRYKotlinTranslator {
 
 		for switchCase in cases {
 			if let caseExpression = switchCase.expression {
-				if case let GRYExpression.binaryOperatorExpression(
+				if case let Expression.binaryOperatorExpression(
 					leftExpression: leftExpression, rightExpression: _, operatorSymbol: _,
 					type: _) = caseExpression
 				{
@@ -716,14 +716,14 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateThrowStatement(
-		expression: GRYExpression, withIndentation indentation: String) throws -> String
+		expression: Expression, withIndentation indentation: String) throws -> String
 	{
 		let expressionString = try translateExpression(expression, withIndentation: indentation)
 		return "\(indentation)throw \(expressionString)\n"
 	}
 
 	private func translateReturnStatement(
-		expression: GRYExpression?, withIndentation indentation: String) throws -> String
+		expression: Expression?, withIndentation indentation: String) throws -> String
 	{
 		if let expression = expression {
 			let expressionString = try translateExpression(expression, withIndentation: indentation)
@@ -735,7 +735,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateVariableDeclaration(
-		_ variableDeclaration: GRYASTVariableDeclaration, withIndentation indentation: String)
+		_ variableDeclaration: VariableDeclaration, withIndentation indentation: String)
 		throws -> String
 	{
 		guard !variableDeclaration.isImplicit else {
@@ -824,7 +824,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateAssignmentStatement(
-		leftHand: GRYExpression, rightHand: GRYExpression, withIndentation indentation: String)
+		leftHand: Expression, rightHand: Expression, withIndentation indentation: String)
 		throws -> String
 	{
 		let leftTranslation = try translateExpression(leftHand, withIndentation: indentation)
@@ -833,7 +833,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateExpression(
-		_ expression: GRYExpression, withIndentation indentation: String) throws -> String
+		_ expression: Expression, withIndentation indentation: String) throws -> String
 	{
 		switch expression {
 		case let .templateExpression(pattern: pattern, matches: matches):
@@ -934,12 +934,12 @@ public class GRYKotlinTranslator {
 				labels: labels, indices: indices, expressions: expressions,
 				withIndentation: indentation)
 		case .error:
-			return GRYKotlinTranslator.errorTranslation
+			return KotlinTranslator.errorTranslation
 		}
 	}
 
 	private func translateSubscriptExpression(
-		subscriptedExpression: GRYExpression, indexExpression: GRYExpression, type: String,
+		subscriptedExpression: Expression, indexExpression: Expression, type: String,
 		withIndentation indentation: String)
 		throws -> String
 	{
@@ -948,7 +948,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateArrayExpression(
-		elements: [GRYExpression], type: String, withIndentation indentation: String) throws
+		elements: [Expression], type: String, withIndentation indentation: String) throws
 		-> String
 	{
 		let expressionsString = try elements.map {
@@ -959,7 +959,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateDictionaryExpression(
-		keys: [GRYExpression], values: [GRYExpression], type: String,
+		keys: [Expression], values: [Expression], type: String,
 		withIndentation indentation: String) throws -> String
 	{
 		let keyExpressions =
@@ -973,17 +973,17 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateDotSyntaxCallExpression(
-		leftExpression: GRYExpression, rightExpression: GRYExpression,
+		leftExpression: Expression, rightExpression: Expression,
 		withIndentation indentation: String) throws -> String
 	{
 		let leftHandString = try translateExpression(leftExpression, withIndentation: indentation)
 		let rightHandString = try translateExpression(rightExpression, withIndentation: indentation)
 
-		if GRYKotlinTranslator.sealedClasses.contains(leftHandString) {
+		if KotlinTranslator.sealedClasses.contains(leftHandString) {
 			let capitalizedEnumCase = rightHandString.capitalizedAsCamelCase
 			return "\(leftHandString).\(capitalizedEnumCase)()"
 		}
-		else if GRYKotlinTranslator.enumClasses.contains(leftHandString) {
+		else if KotlinTranslator.enumClasses.contains(leftHandString) {
 			let capitalizedEnumCase = rightHandString.capitalizedAsCamelCase
 			return capitalizedEnumCase
 		}
@@ -993,7 +993,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateBinaryOperatorExpression(
-		leftExpression: GRYExpression, rightExpression: GRYExpression, operatorSymbol: String,
+		leftExpression: Expression, rightExpression: Expression, operatorSymbol: String,
 		type: String, withIndentation indentation: String) throws -> String
 	{
 		let leftTranslation = try translateExpression(leftExpression, withIndentation: indentation)
@@ -1003,7 +1003,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translatePrefixUnaryExpression(
-		expression: GRYExpression, operatorSymbol: String, type: String,
+		expression: Expression, operatorSymbol: String, type: String,
 		withIndentation indentation: String) throws -> String
 	{
 		let expressionTranslation =
@@ -1012,7 +1012,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translatePostfixUnaryExpression(
-		expression: GRYExpression, operatorSymbol: String, type: String,
+		expression: Expression, operatorSymbol: String, type: String,
 		withIndentation indentation: String) throws -> String
 	{
 		let expressionTranslation =
@@ -1021,7 +1021,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateCallExpression(
-		function: GRYExpression, parameters: GRYExpression, type: String,
+		function: Expression, parameters: Expression, type: String,
 		withIndentation indentation: String, shouldAddNewlines: Bool = false) throws -> String
 	{
 		var result = ""
@@ -1042,7 +1042,7 @@ public class GRYKotlinTranslator {
 				isImplicit: _) = functionExpression
 		{
 			functionTranslation =
-				GRYKotlinTranslator.getFunctionTranslation(forName: identifier, type: type)
+				KotlinTranslator.getFunctionTranslation(forName: identifier, type: type)
 		}
 		else {
 			functionTranslation = nil
@@ -1080,7 +1080,7 @@ public class GRYKotlinTranslator {
 
 		result += "\(prefix)\(parametersTranslation)"
 
-		if !shouldAddNewlines, result.count >= GRYKotlinTranslator.lineLimit {
+		if !shouldAddNewlines, result.count >= KotlinTranslator.lineLimit {
 			return try translateCallExpression(
 				function: function, parameters: parameters, type: type,
 				withIndentation: indentation, shouldAddNewlines: true)
@@ -1091,7 +1091,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateClosureExpression(
-		parameters: [GRYASTLabeledType], statements: [GRYStatement], type: String,
+		parameters: [LabeledType], statements: [Statement], type: String,
 		withIndentation indentation: String) throws -> String
 	{
 		var result = "{"
@@ -1104,7 +1104,7 @@ public class GRYKotlinTranslator {
 
 		if statements.count == 1,
 			let firstStatement = statements.first,
-			case let GRYStatement.expression(expression: expression) = firstStatement
+			case let Statement.expression(expression: expression) = firstStatement
 		{
 			result += try " " + translateExpression(expression, withIndentation: indentation) + " }"
 		}
@@ -1124,7 +1124,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateTemplateExpression(
-		pattern: String, matches: [String: GRYExpression], withIndentation indentation: String)
+		pattern: String, matches: [String: Expression], withIndentation indentation: String)
 		throws -> String
 	{
 		var result = pattern
@@ -1144,7 +1144,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateTupleExpression(
-		pairs: [GRYASTLabeledExpression], translation: FunctionTranslation? = nil,
+		pairs: [LabeledExpression], translation: FunctionTranslation? = nil,
 		withIndentation indentation: String, shouldAddNewlines: Bool = false) throws -> String
 	{
 		guard !pairs.isEmpty else {
@@ -1175,7 +1175,7 @@ public class GRYKotlinTranslator {
 			shouldAddNewlines ? increaseIndentation(indentation) : indentation
 
 		let translations = try zip(parameters, expressions)
-			.map { (parameter: String?, expression: GRYExpression) -> String in
+			.map { (parameter: String?, expression: Expression) -> String in
 				let expression =
 					try translateExpression(expression, withIndentation: expressionIndentation)
 
@@ -1198,7 +1198,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateTupleShuffleExpression(
-		labels: [String], indices: [GRYTupleShuffleIndex], expressions: [GRYExpression],
+		labels: [String], indices: [TupleShuffleIndex], expressions: [Expression],
 		translation: FunctionTranslation? = nil, withIndentation indentation: String,
 		shouldAddNewlines: Bool = false) throws -> String
 	{
@@ -1274,7 +1274,7 @@ public class GRYKotlinTranslator {
 	}
 
 	private func translateInterpolatedStringLiteralExpression(
-		expressions: [GRYExpression], withIndentation indentation: String) throws -> String
+		expressions: [Expression], withIndentation indentation: String) throws -> String
 	{
 		var result = "\""
 
@@ -1351,13 +1351,13 @@ extension String {
 	}
 }
 
-public enum GRYKotlinTranslatorError: Error, CustomStringConvertible {
+public enum KotlinTranslatorError: Error, CustomStringConvertible {
 	case unexpectedASTStructure(
 		file: String,
 		line: Int,
 		function: String,
 		message: String,
-		AST: GRYStatement)
+		AST: Statement)
 
 	public var description: String {
 		switch self {
@@ -1387,10 +1387,10 @@ public enum GRYKotlinTranslatorError: Error, CustomStringConvertible {
 
 func unexpectedASTStructureError(
 	file: String = #file, line: Int = #line, function: String = #function, _ message: String,
-	AST ast: GRYStatement) throws -> String
+	AST ast: Statement) throws -> String
 {
-	let error = GRYKotlinTranslatorError.unexpectedASTStructure(
+	let error = KotlinTranslatorError.unexpectedASTStructure(
 		file: file, line: line, function: function, message: message, AST: ast)
-	try GRYCompiler.handleError(error)
-	return GRYKotlinTranslator.errorTranslation
+	try Compiler.handleError(error)
+	return KotlinTranslator.errorTranslation
 }

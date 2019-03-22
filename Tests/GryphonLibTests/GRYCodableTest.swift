@@ -196,7 +196,7 @@ class GRYCodableTest: XCTestCase {
 	// MARK: - Encoding and decoding tests
 	// Tests that check if the encoding and the decoding processes aren't corrupting the data.
 
-	/// Ensure the GRYSwiftAST produced by reading Swift's AST dump is the same as the one produced
+	/// Ensure the SwiftAST produced by reading Swift's AST dump is the same as the one produced
 	/// from decoding the Gryphon cache file.
 	func testSwiftASTDumpVersusGryphonEncoding() {
 		let tests = TestUtils.testCasesForAllTests
@@ -208,11 +208,11 @@ class GRYCodableTest: XCTestCase {
 				// Decode the AST from Swift's AST dump
 				let testFilePath = TestUtils.testFilesPath + testName
 				let swiftDumpAST =
-					try GRYSwiftAST(decodeFromSwiftASTDumpInFile: testFilePath + .swiftASTDump)
+					try SwiftAST(decodeFromSwiftASTDumpInFile: testFilePath + .swiftASTDump)
 
 				// Decode the AST from a Gryphon encoding
 				let gryphonEncodingAST =
-					try GRYSwiftAST(decodeFromFile: testFilePath + .grySwiftAST)
+					try SwiftAST(decodeFromFile: testFilePath + .grySwiftAST)
 
 				// Compare the two
 				XCTAssert(
@@ -227,8 +227,8 @@ class GRYCodableTest: XCTestCase {
 			}
 		}
 
-		XCTAssertFalse(GRYCompiler.hasErrorsOrWarnings())
-		GRYCompiler.printErrorsAndWarnings()
+		XCTAssertFalse(Compiler.hasErrorsOrWarnings())
+		Compiler.printErrorsAndWarnings()
 	}
 
 	func testSimpleTypesConformance() {
@@ -325,13 +325,13 @@ class GRYCodableTest: XCTestCase {
 				// Parse an AST from the dump file
 				let testFilePath = TestUtils.testFilesPath + testName
 				let expectedAST =
-					try GRYSwiftAST(decodeFromSwiftASTDumpInFile: testFilePath + .swiftASTDump)
+					try SwiftAST(decodeFromSwiftASTDumpInFile: testFilePath + .swiftASTDump)
 
 				// Encode the parsed AST into a String and then decode it back
 				let encoder = GRYEncoder()
 				try expectedAST.encode(into: encoder)
 				let decoder = GRYDecoder(encodedString: encoder.result)
-				let createdAST = try GRYSwiftAST.decode(from: decoder)
+				let createdAST = try SwiftAST.decode(from: decoder)
 
 				// Compare the two
 				XCTAssert(
@@ -346,8 +346,8 @@ class GRYCodableTest: XCTestCase {
 			}
 		}
 
-		XCTAssertFalse(GRYCompiler.hasErrorsOrWarnings())
-		GRYCompiler.printErrorsAndWarnings()
+		XCTAssertFalse(Compiler.hasErrorsOrWarnings())
+		Compiler.printErrorsAndWarnings()
 	}
 
 	func testGRYASTConformance() {
@@ -360,13 +360,13 @@ class GRYCodableTest: XCTestCase {
 				// Create an AST from scratch
 				let testFilePath = TestUtils.testFilesPath + testName
 				let expectedAST =
-					try GRYCompiler.generateGryphonAST(forFileAt: testFilePath + .swift)
+					try Compiler.generateGryphonAST(forFileAt: testFilePath + .swift)
 
 				// Write cached AST to file and parse it back
 				let encoder = GRYEncoder()
 				try expectedAST.encode(into: encoder)
 				let decoder = GRYDecoder(encodedString: encoder.result)
-				let createdAST = try GRYAST.decode(from: decoder)
+				let createdAST = try GryphonAST.decode(from: decoder)
 
 				// Compare the two
 				XCTAssert(
@@ -381,8 +381,8 @@ class GRYCodableTest: XCTestCase {
 			}
 		}
 
-		XCTAssertFalse(GRYCompiler.hasErrorsOrWarnings())
-		GRYCompiler.printErrorsAndWarnings()
+		XCTAssertFalse(Compiler.hasErrorsOrWarnings())
+		Compiler.printErrorsAndWarnings()
 	}
 
 	static var allTests = [
@@ -396,7 +396,7 @@ class GRYCodableTest: XCTestCase {
 
 	override static func setUp() {
 		do {
-			try GRYUtils.updateTestFiles()
+			try Utilities.updateTestFiles()
 		}
 		catch let error {
 			print(error)
@@ -405,6 +405,6 @@ class GRYCodableTest: XCTestCase {
 	}
 
 	override func setUp() {
-		GRYCompiler.clearErrorsAndWarnings()
+		Compiler.clearErrorsAndWarnings()
 	}
 }

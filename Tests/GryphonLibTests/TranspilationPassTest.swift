@@ -17,28 +17,27 @@
 @testable import GryphonLib
 import XCTest
 
-class GRYSwiftTranslatorTest: XCTestCase {
-	func testTranslator() {
-		let tests = TestUtils.testCasesForAllTests
+class TranspilationPassTest: XCTestCase {
+	func testPasses() {
+		let tests = TestUtils.testCasesForTranspilationPassTest
 
 		for testName in tests {
 			print("- Testing \(testName)...")
 
 			do {
-				// Load a cached Gryphon AST from file
+				// Fetch the cached Gryphon AST (without passes) and run the passes on it
 				let testFilePath = TestUtils.testFilesPath + testName
-				let expectedGryphonRawAST = try GRYAST(decodeFromFile: testFilePath + .gryRawAST)
+				let rawAST = try GryphonAST(decodeFromFile: testFilePath + .gryRawAST)
+				let createdGryphonAST = TranspilationPass.runAllPasses(on: rawAST)
 
-				// Create a new Gryphon AST from the cached Swift AST using the GRYSwiftTranslator
-				let swiftAST = try GRYSwiftAST(decodeFromFile: testFilePath + .grySwiftAST)
-				let createdGryphonRawAST = try GRYSwiftTranslator().translateAST(swiftAST)
+				// Load a cached Gryphon AST (with passes)
+				let expectedGryphonAST = try GryphonAST(decodeFromFile: testFilePath + .gryAST)
 
-				// Compare the two
 				XCTAssert(
-					createdGryphonRawAST == expectedGryphonRawAST,
+					createdGryphonAST == expectedGryphonAST,
 					"Test \(testName): translator failed to produce expected result. Diff:" +
 						TestUtils.diff(
-							createdGryphonRawAST.description, expectedGryphonRawAST.description))
+							expectedGryphonAST.description, expectedGryphonAST.description))
 
 				print("\t- Done!")
 			}
@@ -47,17 +46,23 @@ class GRYSwiftTranslatorTest: XCTestCase {
 			}
 		}
 
-		XCTAssertFalse(GRYCompiler.hasErrorsOrWarnings())
-		GRYCompiler.printErrorsAndWarnings()
+		XCTAssertEqual(Compiler.warnings, [
+			"No support for mutable variables in value types: found variable " +
+				"mutableVariable inside struct UnsupportedStruct",
+			"No support for mutating methods in value types: found method " +
+				"mutatingFunction() inside struct UnsupportedStruct",
+			"No support for mutating methods in value types: found method " +
+				"mutatingFunction() inside enum UnsupportedEnum",
+			])
 	}
 
 	static var allTests = [
-		("testTranslator", testTranslator),
+		("testPasses", testPasses),
 	]
 
 	override static func setUp() {
 		do {
-			try GRYUtils.updateTestFiles()
+			try Utilities.updateTestFiles()
 		}
 		catch let error {
 			print(error)
@@ -66,6 +71,6 @@ class GRYSwiftTranslatorTest: XCTestCase {
 	}
 
 	override func setUp() {
-		GRYCompiler.clearErrorsAndWarnings()
+		Compiler.clearErrorsAndWarnings()
 	}
 }

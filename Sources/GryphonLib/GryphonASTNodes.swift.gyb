@@ -14,50 +14,50 @@
 * limitations under the License.
 */
 
-// TODO: ifStatement.elseStatement should be GRYASTIfStatement
+// TODO: ifStatement.elseStatement should be IfStatement
 %{
-astNodes = [
-	['expression', [['expression', 'GRYExpression']]],
+statementNodes = [
+	['expression', [['expression', 'Expression']]],
 	['typealiasDeclaration',
 		[['identifier', 'String'], ['type', 'String'], ['isImplicit', 'Bool']]],
-	['extensionDeclaration', [['type', 'String'], ['members', '[GRYStatement]']]],
+	['extensionDeclaration', [['type', 'String'], ['members', '[Statement]']]],
 	['importDeclaration', [['name', 'String']]],
 	['classDeclaration',
-		[['name', 'String'], ['inherits', '[String]'], ['members', '[GRYStatement]']]],
-	['companionObject', [['members', '[GRYStatement]']]],
+		[['name', 'String'], ['inherits', '[String]'], ['members', '[Statement]']]],
+	['companionObject', [['members', '[Statement]']]],
 	['enumDeclaration',
 		[['access', 'String?'], ['name', 'String'], ['inherits', '[String]'],
-		['elements', '[GRYASTEnumElement]'], ['members', '[GRYStatement]'],
+		['elements', '[EnumElement]'], ['members', '[Statement]'],
 		['isImplicit', 'Bool']]],
-	['protocolDeclaration', [['name', 'String'], ['members', '[GRYStatement]']]],
+	['protocolDeclaration', [['name', 'String'], ['members', '[Statement]']]],
 	['structDeclaration',
-		[['name', 'String'], ['inherits', '[String]'], ['members', '[GRYStatement]']]],
+		[['name', 'String'], ['inherits', '[String]'], ['members', '[Statement]']]],
 	['functionDeclaration',
-		[['value', 'GRYASTFunctionDeclaration']]],
+		[['value', 'FunctionDeclaration']]],
 	['variableDeclaration',
-		[['value', 'GRYASTVariableDeclaration']]],
+		[['value', 'VariableDeclaration']]],
 	['forEachStatement',
-		[['collection', 'GRYExpression'], ['variable', 'GRYExpression'],
-		['statements', '[GRYStatement]']]],
+		[['collection', 'Expression'], ['variable', 'Expression'],
+		['statements', '[Statement]']]],
 	['ifStatement',
-		[['value', 'GRYASTIfStatement']]],
+		[['value', 'IfStatement']]],
 	['switchStatement',
-		[['convertsToExpression', 'GRYStatement?'], ['expression', 'GRYExpression'],
-		['cases', '[GRYASTSwitchCase]']]],
-	['throwStatement', [['expression', 'GRYExpression']]],
-	['returnStatement', [['expression', 'GRYExpression?']]],
-	['assignmentStatement', [['leftHand', 'GRYExpression'], ['rightHand', 'GRYExpression']]],
+		[['convertsToExpression', 'Statement?'], ['expression', 'Expression'],
+		['cases', '[SwitchCase]']]],
+	['throwStatement', [['expression', 'Expression']]],
+	['returnStatement', [['expression', 'Expression?']]],
+	['assignmentStatement', [['leftHand', 'Expression'], ['rightHand', 'Expression']]],
 	['error'],
 	]
 }%
 
-public indirect enum GRYStatement: Equatable, GRYPrintableAsTree {
+public indirect enum Statement: Equatable, PrintableAsTree {
 
-%for astNode in astNodes:
-%	name = astNode[0]
+%for statementNode in statementNodes:
+%	name = statementNode[0]
 %
-%	if len(astNode) > 1:
-%		pairs = astNode[1]
+%	if len(statementNode) > 1:
+%		pairs = statementNode[1]
 %		parameters = []
 %		for pair in pairs:
 %			parameters.append(pair[0] + ": " + pair[1])
@@ -76,11 +76,11 @@ public indirect enum GRYStatement: Equatable, GRYPrintableAsTree {
 		encoder.startNewObject(named: self.name)
 
 		switch self {
-%for astNode in astNodes:
-%	name = astNode[0]
+%for statementNode in statementNodes:
+%	name = statementNode[0]
 %
-%	if len(astNode) > 1:
-%		pairs = astNode[1]
+%	if len(statementNode) > 1:
+%		pairs = statementNode[1]
 %		parameters = []
 %		for pair in pairs:
 %			parameters.append(pair[0] + ": " + pair[0])
@@ -102,20 +102,20 @@ public indirect enum GRYStatement: Equatable, GRYPrintableAsTree {
 		encoder.endObject()
 	}
 
-	static func decode(from decoder: GRYDecoder) throws -> GRYStatement {
+	static func decode(from decoder: GRYDecoder) throws -> Statement {
 		try decoder.readOpeningParenthesis()
 		let name = decoder.readDoubleQuotedString()
 
-		let result: GRYStatement
+		let result: Statement
 
 		switch name {
-%for astNode in astNodes:
-%	name = astNode[0]
+%for statementNode in statementNodes:
+%	name = statementNode[0]
 %
 		case "${name}":
 %
-%	if len(astNode) > 1:
-%		pairs = astNode[1]
+%	if len(statementNode) > 1:
+%		pairs = statementNode[1]
 %		parameters = []
 %		for pair in pairs:
 %			parameters.append(pair[0] + ": " + pair[0])
@@ -131,7 +131,7 @@ public indirect enum GRYStatement: Equatable, GRYPrintableAsTree {
 %end
 		default:
 			throw GRYDecodingError.unexpectedContent(
-				decoder: decoder, errorMessage: "Unknown GRYStatement \"\(name)\".")
+				decoder: decoder, errorMessage: "Unknown Statement \"\(name)\".")
 		}
 
 		try decoder.readClosingParenthesis()
@@ -145,32 +145,32 @@ public indirect enum GRYStatement: Equatable, GRYPrintableAsTree {
 expressionNodes = [
 	['literalCodeExpression', [['string', 'String']]],
 	['literalDeclarationExpression', [['string', 'String']]],
-	['templateExpression', [['pattern', 'String'], ['matches', '[String: GRYExpression]']]],
-	['parenthesesExpression', [['expression', 'GRYExpression']]],
-	['forceValueExpression', [['expression', 'GRYExpression']]],
-	['optionalExpression', [['expression', 'GRYExpression']]],
+	['templateExpression', [['pattern', 'String'], ['matches', '[String: Expression]']]],
+	['parenthesesExpression', [['expression', 'Expression']]],
+	['forceValueExpression', [['expression', 'Expression']]],
+	['optionalExpression', [['expression', 'Expression']]],
 	['declarationReferenceExpression', [['identifier', 'String'], ['type', 'String'],
 		['isStandardLibrary', 'Bool'], ['isImplicit', 'Bool']]],
 	['typeExpression', [['type', 'String']]],
 	['subscriptExpression',
-		[['subscriptedExpression', 'GRYExpression'], ['indexExpression', 'GRYExpression'],
+		[['subscriptedExpression', 'Expression'], ['indexExpression', 'Expression'],
 		['type', 'String']]],
-	['arrayExpression', [['elements', '[GRYExpression]'], ['type', 'String']]],
-	['dictionaryExpression', [['keys', '[GRYExpression]'], ['values', '[GRYExpression]'],
+	['arrayExpression', [['elements', '[Expression]'], ['type', 'String']]],
+	['dictionaryExpression', [['keys', '[Expression]'], ['values', '[Expression]'],
 		['type', 'String']]],
 	['dotExpression',
-		[['leftExpression', 'GRYExpression'], ['rightExpression', 'GRYExpression']]],
+		[['leftExpression', 'Expression'], ['rightExpression', 'Expression']]],
 	['binaryOperatorExpression',
-		[['leftExpression', 'GRYExpression'], ['rightExpression', 'GRYExpression'],
+		[['leftExpression', 'Expression'], ['rightExpression', 'Expression'],
 		['operatorSymbol', 'String'], ['type', 'String']]],
 	['prefixUnaryExpression',
-		[['expression', 'GRYExpression'], ['operatorSymbol', 'String'], ['type', 'String']]],
+		[['expression', 'Expression'], ['operatorSymbol', 'String'], ['type', 'String']]],
 	['postfixUnaryExpression',
-		[['expression', 'GRYExpression'], ['operatorSymbol', 'String'], ['type', 'String']]],
+		[['expression', 'Expression'], ['operatorSymbol', 'String'], ['type', 'String']]],
 	['callExpression',
-		[['function', 'GRYExpression'], ['parameters', 'GRYExpression'], ['type', 'String']]],
+		[['function', 'Expression'], ['parameters', 'Expression'], ['type', 'String']]],
 	['closureExpression',
-		[['parameters', '[GRYASTLabeledType]'], ['statements', '[GRYStatement]'],
+		[['parameters', '[LabeledType]'], ['statements', '[Statement]'],
 		['type', 'String']]],
 	['literalIntExpression', [['value', 'Int64']]],
 	['literalUIntExpression', [['value', 'UInt64']]],
@@ -179,16 +179,16 @@ expressionNodes = [
 	['literalBoolExpression', [['value', 'Bool']]],
 	['literalStringExpression', [['value', 'String']]],
 	['nilLiteralExpression'],
-	['interpolatedStringLiteralExpression', [['expressions', '[GRYExpression]']]],
-	['tupleExpression', [['pairs', '[GRYASTLabeledExpression]']]],
+	['interpolatedStringLiteralExpression', [['expressions', '[Expression]']]],
+	['tupleExpression', [['pairs', '[LabeledExpression]']]],
 	['tupleShuffleExpression',
-		[['labels', '[String]'], ['indices', '[GRYTupleShuffleIndex]'],
-		['expressions', '[GRYExpression]']]],
+		[['labels', '[String]'], ['indices', '[TupleShuffleIndex]'],
+		['expressions', '[Expression]']]],
 	['error'],
 ]
 }%
 
-public indirect enum GRYExpression: Equatable, GRYPrintableAsTree {
+public indirect enum Expression: Equatable, PrintableAsTree {
 %for expressionNode in expressionNodes:
 %	name = expressionNode[0]
 %
@@ -238,11 +238,11 @@ public indirect enum GRYExpression: Equatable, GRYPrintableAsTree {
 		encoder.endObject()
 	}
 
-	static func decode(from decoder: GRYDecoder) throws -> GRYExpression {
+	static func decode(from decoder: GRYDecoder) throws -> Expression {
 		try decoder.readOpeningParenthesis()
 		let name = decoder.readDoubleQuotedString()
 
-		let result: GRYExpression
+		let result: Expression
 
 		switch name {
 %for expressionNode in expressionNodes:
@@ -267,7 +267,7 @@ public indirect enum GRYExpression: Equatable, GRYPrintableAsTree {
 %end
 		default:
 			throw GRYDecodingError.unexpectedContent(
-				decoder: decoder, errorMessage: "Unknown GRYExpression \"\(name)\".")
+				decoder: decoder, errorMessage: "Unknown Expression \"\(name)\".")
 		}
 
 		try decoder.readClosingParenthesis()
@@ -276,31 +276,31 @@ public indirect enum GRYExpression: Equatable, GRYPrintableAsTree {
 }
 %{
 astElements = [
-	['struct', 'GRYASTLabeledExpression',
-		[['label', 'String?'], ['expression', 'GRYExpression']]],
-	['struct', 'GRYASTLabeledType',
+	['struct', 'LabeledExpression',
+		[['label', 'String?'], ['expression', 'Expression']]],
+	['struct', 'LabeledType',
 		[['label', 'String'], ['type', 'String']]],
-	['struct', 'GRYASTFunctionParameter',
+	['struct', 'FunctionParameter',
 		[['label', 'String'], ['apiLabel', 'String?'], ['type', 'String'],
-		['value', 'GRYExpression?']]],
-	['struct', 'GRYASTVariableDeclaration',
-		[['identifier', 'String'], ['typeName', 'String'], ['expression', 'GRYExpression?'],
-		['getter', 'GRYStatement?'], ['setter', 'GRYStatement?'], ['isLet', 'Bool'],
+		['value', 'Expression?']]],
+	['struct', 'VariableDeclaration',
+		[['identifier', 'String'], ['typeName', 'String'], ['expression', 'Expression?'],
+		['getter', 'Statement?'], ['setter', 'Statement?'], ['isLet', 'Bool'],
 		['isImplicit', 'Bool'], ['isStatic', 'Bool'], ['extendsType', 'String?'],
 		['annotations', 'String?']]],
-	['struct', 'GRYASTFunctionDeclaration',
-		[['prefix', 'String'], ['parameters', '[GRYASTFunctionParameter]'],
+	['struct', 'FunctionDeclaration',
+		[['prefix', 'String'], ['parameters', '[FunctionParameter]'],
 		['returnType', 'String'], ['functionType', 'String'], ['isImplicit', 'Bool'],
 		['isStatic', 'Bool'], ['isMutating', 'Bool'], ['extendsType', 'String?'],
-		['statements', '[GRYStatement]?'], ['access', 'String?']]],
-	['class', 'GRYASTIfStatement',
-		[['conditions', '[GRYExpression]'], ['declarations', '[GRYASTVariableDeclaration]'],
-		['statements', '[GRYStatement]'], ['elseStatement', 'GRYASTIfStatement?'],
+		['statements', '[Statement]?'], ['access', 'String?']]],
+	['class', 'IfStatement',
+		[['conditions', '[Expression]'], ['declarations', '[VariableDeclaration]'],
+		['statements', '[Statement]'], ['elseStatement', 'IfStatement?'],
 		['isGuard', 'Bool']]],
-	['struct', 'GRYASTSwitchCase',
-		[['expression', 'GRYExpression?'], ['statements', '[GRYStatement]']]],
-	['struct', 'GRYASTEnumElement',
-		[['name', 'String'], ['associatedValues', '[GRYASTLabeledType]'],
+	['struct', 'SwitchCase',
+		[['expression', 'Expression?'], ['statements', '[Statement]']]],
+	['struct', 'EnumElement',
+		[['name', 'String'], ['associatedValues', '[LabeledType]'],
 		['annotations', 'String?']]],
 	]
 }%
@@ -328,7 +328,7 @@ public ${keyword} ${name}: Equatable {
 %		end
 	}
 
-	public static func == (lhs: GRYASTIfStatement, rhs: GRYASTIfStatement) -> Bool {
+	public static func == (lhs: IfStatement, rhs: IfStatement) -> Bool {
 %		equalityChecks = []
 %		for pair in pairs:
 %			equalityChecks.append("lhs." + pair[0] + " == " + "rhs." + pair[0])
@@ -337,13 +337,13 @@ public ${keyword} ${name}: Equatable {
 		return ${equalityChecksString}
 	}
 
-	public func copy() -> GRYASTIfStatement {
+	public func copy() -> IfStatement {
 %		parameters = []
 %		for pair in pairs:
 %			parameters.append(pair[0] + ": " + pair[0])
 %		end
 %		parametersString = ",\n\t\t\t".join(parameters)
-		return GRYASTIfStatement(
+		return IfStatement(
 			${parametersString})
 	}
 

@@ -42,7 +42,7 @@ extension GRYDecodable {
 		let rawEncodedString = try String(contentsOfFile: filePath)
 
 		// Information in stored files has placeholders for file paths that must be replaced
-		let swiftFilePath = GRYUtils.changeExtension(of: filePath, to: .swift)
+		let swiftFilePath = Utilities.changeExtension(of: filePath, to: .swift)
 		let processedEncodedString =
 			rawEncodedString.replacingOccurrences(of: "<<testFilePath>>", with: swiftFilePath)
 
@@ -58,7 +58,7 @@ extension GRYEncodable {
 		let rawEncodedString = encoder.result
 
 		// Absolute file paths must be replaced with placeholders before writing to file.
-		let swiftFilePath = GRYUtils.changeExtension(of: filePath, to: .swift)
+		let swiftFilePath = Utilities.changeExtension(of: filePath, to: .swift)
 		let processedEncodedString =
 			rawEncodedString.replacingOccurrences(of: swiftFilePath, with: "<<testFilePath>>")
 

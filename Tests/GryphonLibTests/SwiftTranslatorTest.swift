@@ -17,27 +17,28 @@
 @testable import GryphonLib
 import XCTest
 
-class GRYTranspilationPassTest: XCTestCase {
-	func testPasses() {
-		let tests = TestUtils.testCasesForTranspilationPassTest
+class SwiftTranslatorTest: XCTestCase {
+	func testTranslator() {
+		let tests = TestUtils.testCasesForAllTests
 
 		for testName in tests {
 			print("- Testing \(testName)...")
 
 			do {
-				// Fetch the cached Gryphon AST (without passes) and run the passes on it
+				// Load a cached Gryphon AST from file
 				let testFilePath = TestUtils.testFilesPath + testName
-				let rawAST = try GRYAST(decodeFromFile: testFilePath + .gryRawAST)
-				let createdGryphonAST = GRYTranspilationPass.runAllPasses(on: rawAST)
+				let expectedGryphonRawAST = try GryphonAST(decodeFromFile: testFilePath + .gryRawAST)
 
-				// Load a cached Gryphon AST (with passes)
-				let expectedGryphonAST = try GRYAST(decodeFromFile: testFilePath + .gryAST)
+				// Create a new Gryphon AST from the cached Swift AST using the SwiftTranslator
+				let swiftAST = try SwiftAST(decodeFromFile: testFilePath + .grySwiftAST)
+				let createdGryphonRawAST = try SwiftTranslator().translateAST(swiftAST)
 
+				// Compare the two
 				XCTAssert(
-					createdGryphonAST == expectedGryphonAST,
+					createdGryphonRawAST == expectedGryphonRawAST,
 					"Test \(testName): translator failed to produce expected result. Diff:" +
 						TestUtils.diff(
-							expectedGryphonAST.description, expectedGryphonAST.description))
+							createdGryphonRawAST.description, expectedGryphonRawAST.description))
 
 				print("\t- Done!")
 			}
@@ -46,23 +47,17 @@ class GRYTranspilationPassTest: XCTestCase {
 			}
 		}
 
-		XCTAssertEqual(GRYCompiler.warnings, [
-			"No support for mutable variables in value types: found variable " +
-				"mutableVariable inside struct UnsupportedStruct",
-			"No support for mutating methods in value types: found method " +
-				"mutatingFunction() inside struct UnsupportedStruct",
-			"No support for mutating methods in value types: found method " +
-				"mutatingFunction() inside enum UnsupportedEnum",
-			])
+		XCTAssertFalse(Compiler.hasErrorsOrWarnings())
+		Compiler.printErrorsAndWarnings()
 	}
 
 	static var allTests = [
-		("testPasses", testPasses),
+		("testTranslator", testTranslator),
 	]
 
 	override static func setUp() {
 		do {
-			try GRYUtils.updateTestFiles()
+			try Utilities.updateTestFiles()
 		}
 		catch let error {
 			print(error)
@@ -71,6 +66,6 @@ class GRYTranspilationPassTest: XCTestCase {
 	}
 
 	override func setUp() {
-		GRYCompiler.clearErrorsAndWarnings()
+		Compiler.clearErrorsAndWarnings()
 	}
 }
