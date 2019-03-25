@@ -177,9 +177,14 @@ public class KotlinTranslator {
 		case let .classDeclaration(name: name, inherits: inherits, members: members):
 			result = try translateClassDeclaration(
 				name: name, inherits: inherits, members: members, withIndentation: indentation)
-		case let .structDeclaration(name: name, inherits: inherits, members: members):
+		case let .structDeclaration(
+			annotations: annotations, name: name, inherits: inherits, members: members):
+
 			result = try translateStructDeclaration(
-				name: name, inherits: inherits, members: members, withIndentation: indentation)
+				annotations: annotations,
+				name: name, inherits: inherits,
+				members: members,
+				withIndentation: indentation)
 		case let .companionObject(members: members):
 			result = try translateCompanionObject(members: members, withIndentation: indentation)
 		case let .enumDeclaration(
@@ -418,12 +423,14 @@ public class KotlinTranslator {
 	/// If a value type's members are all immutable, that value type can safely be translated as a
 	/// class. Source: https://forums.swift.org/t/are-immutable-structs-like-classes/16270
 	private func translateStructDeclaration(
-		name: String, inherits: [String], members: [Statement],
+		annotations: String?, name: String, inherits: [String], members: [Statement],
 		withIndentation indentation: String) throws -> String
 	{
 		let increasedIndentation = increaseIndentation(indentation)
 
-		var result = "\(indentation)data class \(name)(\n"
+		let annotationsString = annotations.map { "\(indentation)\($0)\n" } ?? ""
+
+		var result = "\(annotationsString)\(indentation)data class \(name)(\n"
 
 		let isProperty = { (member: Statement) -> Bool in
 			if case let .variableDeclaration(value: variableDeclaration) = member,

@@ -77,6 +77,7 @@ public indirect enum Statement: Equatable, PrintableAsTree {
 		name: String,
 		members: [Statement])
 	case structDeclaration(
+		annotations: String?,
 		name: String,
 		inherits: [String],
 		members: [Statement])
@@ -360,8 +361,12 @@ extension Statement {
 			return [
 				PrintableTree(name),
 				PrintableTree.initOrNil("members", members), ]
-		case let .structDeclaration(name: name, inherits: inherits, members: members):
+		case let .structDeclaration(
+			annotations: annotations, name: name, inherits: inherits, members: members):
+
 			return [
+				PrintableTree.initOrNil(
+					"annotations", [PrintableTree.initOrNil(annotations)]),
 				PrintableTree(name),
 				PrintableTree("inherits", inherits),
 				PrintableTree("members", members), ]

@@ -419,6 +419,8 @@ public class SwiftTranslator {
 			return nil
 		}
 
+		let annotations = getComment(forNode: structDeclaration, key: "annotation")
+
 		// Get the struct name
 		let name = structDeclaration.standaloneAttributes.first!
 
@@ -434,7 +436,11 @@ public class SwiftTranslator {
 		// Translate the contents
 		let structContents = try translate(subtreesOf: structDeclaration)
 
-		return .structDeclaration(name: name, inherits: inheritanceArray, members: structContents)
+		return .structDeclaration(
+			annotations: annotations,
+			name: name,
+			inherits: inheritanceArray,
+			members: structContents)
 	}
 
 	internal func translate(throwStatement: SwiftAST) throws -> Statement {

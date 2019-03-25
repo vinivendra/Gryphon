@@ -57,8 +57,11 @@ public class TranspilationPass {
 				members: members, isImplicit: isImplicit)
 		case let .protocolDeclaration(name: name, members: members):
 			return replaceProtocolDeclaration(name: name, members: members)
-		case let .structDeclaration(name: name, inherits: inherits, members: members):
-			return replaceStructDeclaration(name: name, inherits: inherits, members: members)
+		case let .structDeclaration(
+			annotations: annotations, name: name, inherits: inherits, members: members):
+
+			return replaceStructDeclaration(
+				annotations: annotations, name: name, inherits: inherits, members: members)
 		case let .functionDeclaration(value: functionDeclaration):
 			return replaceFunctionDeclaration(functionDeclaration)
 		case let .variableDeclaration(value: variableDeclaration):
@@ -144,12 +147,14 @@ public class TranspilationPass {
 		return [.protocolDeclaration(name: name, members: replaceStatements(members))]
 	}
 
-	func replaceStructDeclaration(name: String, inherits: [String], members: [Statement])
-		-> [Statement]
+	func replaceStructDeclaration(
+		annotations: String?, name: String, inherits: [String], members: [Statement]) -> [Statement]
 	{
 		return [.structDeclaration(
-			name: name, inherits: inherits, members: replaceStatements(members)),
-		]
+			annotations: annotations,
+			name: name,
+			inherits: inherits,
+			members: replaceStatements(members)), ]
 	}
 
 	func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclaration)
@@ -587,11 +592,15 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 		return [.classDeclaration(name: name, inherits: inherits, members: newMembers)]
 	}
 
-	override func replaceStructDeclaration(name: String, inherits: [String], members: [Statement])
-		-> [Statement]
+	override func replaceStructDeclaration(
+		annotations: String?, name: String, inherits: [String], members: [Statement]) -> [Statement]
 	{
 		let newMembers = sendStaticMembersToCompanionObject(members)
-		return [.structDeclaration(name: name, inherits: inherits, members: newMembers)]
+		return [.structDeclaration(
+			annotations: annotations,
+			name: name,
+			inherits: inherits,
+			members: newMembers ), ]
 	}
 }
 
@@ -724,10 +733,13 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceStructDeclaration(
-		name: String, inherits: [String], members: [Statement]) -> [Statement]
+		annotations: String?, name: String, inherits: [String], members: [Statement]) -> [Statement]
 	{
 		return [.structDeclaration(
-			name: name, inherits: inherits.filter(isNotASwiftProtocol), members: members), ]
+			annotations: annotations,
+			name: name,
+			inherits: inherits.filter(isNotASwiftProtocol),
+			members: members), ]
 	}
 }
 
@@ -1036,7 +1048,7 @@ public class RaiseStandardLibraryWarningsTranspilationPass: TranspilationPass {
 /// Source: https://forums.swift.org/t/are-immutable-structs-like-classes/16270
 public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass {
 	override func replaceStructDeclaration(
-		name: String, inherits: [String], members: [Statement]) -> [Statement]
+		annotations: String?, name: String, inherits: [String], members: [Statement]) -> [Statement]
 	{
 		for member in members {
 			if case let .variableDeclaration(value: variableDeclaration) = member,
@@ -1061,7 +1073,8 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 			}
 		}
 
-		return [.structDeclaration(name: name, inherits: inherits, members: members)]
+		return super.replaceStructDeclaration(
+			annotations: annotations, name: name, inherits: inherits, members: members)
 	}
 
 	override func replaceEnumDeclaration(
@@ -1081,9 +1094,9 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 			}
 		}
 
-		return [.enumDeclaration(
+		return super.replaceEnumDeclaration(
 			access: access, name: name, inherits: inherits, elements: elements, members: members,
-			isImplicit: isImplicit), ]
+			isImplicit: isImplicit)
 	}
 }
 
