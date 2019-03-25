@@ -113,10 +113,6 @@ internal class ASTDumpDecoder {
 		return buffer[currentIndex] == "<"
 	}
 
-	func canReadLocation() -> Bool {
-		return buffer[currentIndex] == "/"
-	}
-
 	// MARK: Read information
 	func readOpeningParenthesis() throws {
 		guard canReadOpeningParenthesis() else {
@@ -437,7 +433,7 @@ internal class ASTDumpDecoder {
 		index = buffer.index(after: index)
 
 		// Ensure a location comes after
-		guard buffer[index] == "/" else {
+		guard buffer[index] != " ", buffer[index] != "\n", buffer[index] != ")" else {
 			return nil
 		}
 
@@ -715,9 +711,9 @@ extension ASTDumpDecoder {
 				try decoder.readClosingParenthesis()
 				break
 			}
-				// Add key-value attributes
+			// Add key-value attributes
 			else if let key = decoder.readKey() {
-				if key == "location" && decoder.canReadLocation() {
+				if key == "location" {
 					keyValueAttributes[key] = decoder.readLocation()
 				}
 				else if key == "decl",
@@ -738,7 +734,7 @@ extension ASTDumpDecoder {
 					keyValueAttributes[key] = decoder.readStandaloneAttribute()
 				}
 			}
-				// Add standalone attributes
+			// Add standalone attributes
 			else {
 				let attribute = decoder.readStandaloneAttribute()
 				standaloneAttributes.append(attribute)

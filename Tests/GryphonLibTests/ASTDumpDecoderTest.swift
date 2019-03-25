@@ -63,11 +63,6 @@ class ASTDumpDecoderTest: XCTestCase {
 			"[foo])").canReadStringInBrackets())
 		XCTAssertFalse(ASTDumpDecoder(encodedString:
 			"([foo])").canReadStringInBrackets())
-
-		XCTAssert(ASTDumpDecoder(encodedString:
-			"/foo/bar baz/test.swift:5:16)").canReadLocation())
-		XCTAssertFalse(ASTDumpDecoder(encodedString:
-			"(/foo/bar baz/test.swift:5:16))").canReadLocation())
 	}
 
 	func testDecoderRead() {
