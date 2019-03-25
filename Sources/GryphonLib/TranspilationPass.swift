@@ -549,37 +549,49 @@ public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
 /// The static functions and variables in a class must all be placed inside a single companion
 /// object.
 public class StaticMembersTranspilationPass: TranspilationPass {
-	override func replaceClassDeclaration(
-		name: String, inherits: [String], members: [Statement]) -> [Statement]
-	{
-		var staticMembers = [Statement]()
-		var otherMembers = [Statement]()
-
-		for member in members {
+	private func sendStaticMembersToCompanionObject(_ members: [Statement]) -> [Statement] {
+		let isStaticMember = { (member: Statement) -> Bool in
 			if case let .functionDeclaration(value: functionDeclaration) = member,
 				functionDeclaration.isStatic == true,
 				functionDeclaration.extendsType == nil,
 				functionDeclaration.prefix != "init"
 			{
-				staticMembers.append(member)
+				return true
 			}
 			else if case let .variableDeclaration(value: variableDeclaration) = member,
 				variableDeclaration.isStatic
 			{
-				staticMembers.append(member)
+				return true
 			}
 			else {
-				otherMembers.append(member)
+				return false
 			}
 		}
 
+		let staticMembers = members.filter(isStaticMember)
+
 		guard !staticMembers.isEmpty else {
-			return [.classDeclaration(name: name, inherits: inherits, members: members)]
+			return members
 		}
 
-		let newMembers = [.companionObject(members: staticMembers)] + otherMembers
+		let nonStaticMembers = members.filter { !isStaticMember($0) }
 
+		let newMembers = [.companionObject(members: staticMembers)] + nonStaticMembers
+		return newMembers
+	}
+
+	override func replaceClassDeclaration(
+		name: String, inherits: [String], members: [Statement]) -> [Statement]
+	{
+		let newMembers = sendStaticMembersToCompanionObject(members)
 		return [.classDeclaration(name: name, inherits: inherits, members: newMembers)]
+	}
+
+	override func replaceStructDeclaration(name: String, inherits: [String], members: [Statement])
+		-> [Statement]
+	{
+		let newMembers = sendStaticMembersToCompanionObject(members)
+		return [.structDeclaration(name: name, inherits: inherits, members: newMembers)]
 	}
 }
 

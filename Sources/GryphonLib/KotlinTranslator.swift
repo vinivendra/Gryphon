@@ -428,7 +428,8 @@ public class KotlinTranslator {
 		let isProperty = { (member: Statement) -> Bool in
 			if case let .variableDeclaration(value: variableDeclaration) = member,
 				variableDeclaration.getter == nil,
-				variableDeclaration.setter == nil
+				variableDeclaration.setter == nil,
+				!variableDeclaration.isStatic
 			{
 				return true
 			}
