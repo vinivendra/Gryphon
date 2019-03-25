@@ -699,7 +699,7 @@ public class SelfToThisTranspilationPass: TranspilationPass {
 public class CleanInheritancesTranspilationPass: TranspilationPass {
 	private func isNotASwiftProtocol(_ protocolName: String) -> Bool {
 		return ![
-			"Equatable", "Codable",
+			"Equatable", "Codable", "Decodable", "Encodable",
 			].contains(protocolName)
 	}
 
