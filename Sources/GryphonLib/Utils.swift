@@ -250,24 +250,3 @@ extension Utilities {
 		}
 	}
 }
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-internal extension RandomAccessCollection where Index == Int {
-	func randomElement() -> Element {
-		let index = Int.random(in: 0..<count)
-		return self[index]
-	}
-}
-
-internal extension RandomAccessCollection where Element: Equatable, Index == Int {
-	func distinctRandomElements() -> (Element, Element) {
-		precondition(count > 1)
-		let first = randomElement()
-		while true {
-			let second = randomElement()
-			if second != first {
-				return (first, second)
-			}
-		}
-	}
-}

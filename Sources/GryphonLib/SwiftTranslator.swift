@@ -1966,12 +1966,6 @@ public class SwiftTranslator {
 		return nil
 	}
 
-	internal func insertedCode(inRange range: Range<Int>, forKey key: String) -> [Statement] {
-		return insertedCode(inRange: range).filter { $0.key == key }.map {
-			Statement.expression(expression: .literalCodeExpression(string: $0.value))
-		}
-	}
-
 	internal func insertedCode(inRange range: Range<Int>) -> [(key: String, value: String)] {
 		var result = [(key: String, value: String)]()
 		for lineNumber in range {
