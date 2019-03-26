@@ -909,11 +909,44 @@ public class SwiftTranslator {
 		let caseSubtrees = switchStatement.subtrees.dropFirst()
 		for caseSubtree in caseSubtrees {
 			let caseExpression: Expression?
-			if let caseLabelItem = caseSubtree.subtree(named: "Case Label Item"),
-				let expression = caseLabelItem.subtrees.first?.subtrees.first
-			{
-				let translateExpression = try translate(expression: expression)
-				caseExpression = translateExpression
+			if let caseLabelItem = caseSubtree.subtree(named: "Case Label Item") {
+				if let expression = caseLabelItem.subtrees.first?.subtrees.first {
+					let translateExpression = try translate(expression: expression)
+					caseExpression = translateExpression
+				}
+				else if let enumElement = caseLabelItem.subtree(named: "Pattern Enum Element"),
+					let enumReference = enumElement.standaloneAttributes.first,
+					let type = enumElement["type"]
+				{
+					var enumElements = enumReference.split(separator: ".")
+
+					guard let lastEnumElement = enumElements.last else {
+						return try unexpectedASTStructureError(
+							"Expected a Pattern Enum Element to have a period " +
+								"(i.e. `MyEnum.myEnumCase`)",
+							AST: switchStatement)
+					}
+
+					let lastExpression = Expression.declarationReferenceExpression(
+						identifier: String(lastEnumElement),
+						type: type,
+						isStandardLibrary: false,
+						isImplicit: false)
+
+					enumElements.removeLast()
+					if !enumElements.isEmpty {
+						caseExpression = .dotExpression(
+							leftExpression: .typeExpression(type:
+								enumElements.joined(separator: ".")),
+							rightExpression: lastExpression)
+					}
+					else {
+						caseExpression = lastExpression
+					}
+				}
+				else {
+					caseExpression = nil
+				}
 			}
 			else {
 				caseExpression = nil
@@ -1199,7 +1232,7 @@ public class SwiftTranslator {
 		let isLet = variableDeclaration.standaloneAttributes.contains("let")
 		let type = cleanUpType(rawType)
 
-		let expression: Expression?
+		var expression: Expression?
 		if let firstBindingExpression = danglingPatternBindings.first {
 			if let maybeBindingExpression = firstBindingExpression,
 				let bindingExpression = maybeBindingExpression,
@@ -1209,14 +1242,14 @@ public class SwiftTranslator {
 			{
 				expression = bindingExpression.expression
 			}
-			else {
-				expression = nil
-			}
 
 			_ = danglingPatternBindings.removeFirst()
 		}
-		else {
-			expression = nil
+
+		if expression == nil,
+			let valueReplacement = getComment(forNode: variableDeclaration, key: "value")
+		{
+			expression = .literalCodeExpression(string: valueReplacement)
 		}
 
 		var getter: Statement?

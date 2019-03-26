@@ -14,6 +14,8 @@
 * limitations under the License.
 */
 
+import Foundation
+
 internal extension String {
 	// Result should have at most maxSplits + 1 elements.
 	func split(
@@ -88,6 +90,28 @@ internal extension String {
 			self.formIndex(before: &lastValidIndex)
 		}
 		return String(self[startIndex...lastValidIndex])
+	}
+
+	// TODO: test
+	func upperSnakeCase() -> String {
+		guard self.contains(where: { $0.isLowercase }) else {
+			return self
+		}
+
+		var newString: String = ""
+
+		let upperCase = CharacterSet.uppercaseLetters
+		var range = self.startIndex..<self.endIndex
+		while let foundRange = self.rangeOfCharacter(from: upperCase, range: range) {
+			newString += self[range.lowerBound..<foundRange.lowerBound].uppercased()
+			newString += "_"
+			newString += self[foundRange]
+
+			range = foundRange.upperBound..<self.endIndex
+		}
+		newString += self[range].uppercased()
+
+		return newString
 	}
 }
 

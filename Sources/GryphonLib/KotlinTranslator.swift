@@ -77,7 +77,7 @@ public class KotlinTranslator {
 	This variable is used to store enum definitions in order to allow the translator
 	to translate them as sealed classes (see the `translate(dotSyntaxCallExpression)` method).
 	*/
-	private static var sealedClasses = [String]()
+	private(set) static var sealedClasses = [String]()
 
 	public static func addSealedClass(_ className: String) {
 		sealedClasses.append(className)
@@ -87,7 +87,7 @@ public class KotlinTranslator {
 	This variable is used to store enum definitions in order to allow the translator
 	to translate them as enum classes (see the `translate(dotSyntaxCallExpression)` method).
 	*/
-	private static var enumClasses = [String]()
+	private(set) static var enumClasses = [String]()
 
 	public static func addEnumClass(_ className: String) {
 		enumClasses.append(className)
@@ -329,10 +329,19 @@ public class KotlinTranslator {
 		let increasedIndentation = increaseIndentation(indentation)
 
 		var casesTranslation = ""
-		for element in elements {
-			casesTranslation += translateEnumElementDeclaration(
-				enumName: enumName, element: element, isEnumClass: isEnumClass,
-				withIndentation: increasedIndentation)
+		if isEnumClass {
+			casesTranslation += elements.map { element in
+				let capitalizedElementName = element.name.capitalizedAsCamelCase
+				let annotationsString = (element.annotations == nil) ? "" :
+					"\(element.annotations!) "
+				return "\(increasedIndentation)\(annotationsString)\(capitalizedElementName)"
+				}.joined(separator: ",\n") + ";\n"
+		}
+		else {
+			for element in elements {
+				casesTranslation += translateEnumElementDeclaration(
+					enumName: enumName, element: element, withIndentation: increasedIndentation)
+			}
 		}
 		result += casesTranslation
 
@@ -352,27 +361,21 @@ public class KotlinTranslator {
 	private func translateEnumElementDeclaration(
 		enumName: String,
 		element: EnumElement,
-		isEnumClass: Bool,
 		withIndentation indentation: String) -> String
 	{
 		let capitalizedElementName = element.name.capitalizedAsCamelCase
 		let annotationsString = (element.annotations == nil) ? "" : "\(element.annotations!) "
 
-		if isEnumClass {
-			return "\(indentation)\(annotationsString)\(capitalizedElementName),\n"
+		let result = "\(indentation)\(annotationsString)class \(capitalizedElementName)"
+
+		if element.associatedValues.isEmpty {
+			return result + ": \(enumName)()\n"
 		}
 		else {
-			let result = "\(indentation)\(annotationsString)class \(capitalizedElementName)"
-
-			if element.associatedValues.isEmpty {
-				return result + ": \(enumName)()\n"
-			}
-			else {
-				let associatedValuesString =
-					element.associatedValues
-						.map { "val \($0.label): \($0.type)" }.joined(separator: ", ")
-				return result + "(\(associatedValuesString)): \(enumName)()\n"
-			}
+			let associatedValuesString =
+				element.associatedValues
+					.map { "val \($0.label): \($0.type)" }.joined(separator: ", ")
+			return result + "(\(associatedValuesString)): \(enumName)()\n"
 		}
 	}
 
@@ -677,6 +680,10 @@ public class KotlinTranslator {
 		result += "\(expressionTranslation)) {\n"
 
 		for switchCase in cases {
+			guard !switchCase.statements.isEmpty else {
+				continue
+			}
+
 			if let caseExpression = switchCase.expression {
 				if case let Expression.binaryOperatorExpression(
 					leftExpression: leftExpression, rightExpression: _, operatorSymbol: _,
@@ -695,6 +702,11 @@ public class KotlinTranslator {
 					else {
 						result += "\(increasedIndentation)\(translatedExpression) -> "
 					}
+				}
+				else {
+					let translatedExpression = try translateExpression(
+						caseExpression, withIndentation: increasedIndentation)
+					result += "\(increasedIndentation)\(translatedExpression) -> "
 				}
 			}
 			else {
@@ -988,15 +1000,18 @@ public class KotlinTranslator {
 		let rightHandString = try translateExpression(rightExpression, withIndentation: indentation)
 
 		if KotlinTranslator.sealedClasses.contains(leftHandString) {
-			let capitalizedEnumCase = rightHandString.capitalizedAsCamelCase
-			return "\(leftHandString).\(capitalizedEnumCase)()"
-		}
-		else if KotlinTranslator.enumClasses.contains(leftHandString) {
-			let capitalizedEnumCase = rightHandString.capitalizedAsCamelCase
-			return capitalizedEnumCase
+			let translatedEnumCase = rightHandString.capitalizedAsCamelCase
+			return "\(leftHandString).\(translatedEnumCase)()"
 		}
 		else {
-			return "\(leftHandString).\(rightHandString)"
+			let enumName = leftHandString.split(withStringSeparator: ".").last!
+			if KotlinTranslator.enumClasses.contains(enumName) {
+				let translatedEnumCase = rightHandString.upperSnakeCase()
+				return "\(leftHandString).\(translatedEnumCase)"
+			}
+			else {
+				return "\(leftHandString).\(rightHandString)"
+			}
 		}
 	}
 

@@ -12,12 +12,12 @@ internal sealed class OtherError: Exception() {
 
 internal enum class NoInheritances {
 	Foo,
-	Bar,
+	Bar;
 }
 
-internal sealed class WithMembers {
-	class Foo: WithMembers()
-	class Bar: WithMembers()
+internal enum class WithMembers {
+	Foo,
+	Bar;
 
 	internal fun a() {
 	}

@@ -69,3 +69,16 @@ default:
 }
 
 print(x)
+
+// Switch on enum
+enum MyEnum {
+	case a, b, c, d, e
+}
+
+let myEnum = MyEnum.a
+switch myEnum {
+case .a:
+	print("It's a!")
+default:
+	print("It's not a.")
+}

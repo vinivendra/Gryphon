@@ -640,6 +640,17 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass {
 		return result
 	}
 
+	override func replaceStructDeclaration(
+		annotations: String?, name: String, inherits: [String], members: [Statement])
+		-> [Statement]
+	{
+		typeNamesStack.append(name)
+		let result = super.replaceStructDeclaration(
+			annotations: annotations, name: name, inherits: inherits, members: members)
+		typeNamesStack.removeLast()
+		return result
+	}
+
 	override func replaceVariableDeclaration(_ variableDeclaration: VariableDeclaration)
 		-> VariableDeclaration
 	{
@@ -650,6 +661,126 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass {
 
 	override func replaceTypeExpression(type: String) -> Expression {
 		return .typeExpression(type: removePrefixes(type))
+	}
+}
+
+/// Capitalizes references to all enums (even ones whose declarations weren't processed by Gryphon).
+/// Assumes subtrees like the one below are references to enums (see also
+/// OmitImplicitEnumPrefixesTranspilationPass).
+///
+///	    ...
+///        └─ dotExpression
+///          ├─ left
+///          │  └─ typeExpression
+///          │     └─ MyEnum
+///          └─ right
+///             └─ declarationReferenceExpression
+///                ├─ (MyEnum.Type) -> MyEnum
+///                └─ myEnum
+// TODO: test
+public class CapitalizeAllEnumsTranspilationPass: TranspilationPass {
+	override func replaceDotExpression(
+		leftExpression: Expression, rightExpression: Expression) -> Expression
+	{
+		if case let .typeExpression(type: enumType) = leftExpression,
+			case let .declarationReferenceExpression(
+				identifier: enumCase,
+				type: enumFunctionType,
+				isStandardLibrary: isStandardLibrary,
+				isImplicit: isImplicit) = rightExpression,
+			enumFunctionType == "(\(enumType).Type) -> \(enumType)",
+			!KotlinTranslator.sealedClasses.contains(enumType)
+		{
+			return .dotExpression(
+				leftExpression: .typeExpression(type: enumType),
+				rightExpression: .declarationReferenceExpression(
+					identifier: enumCase.upperSnakeCase(),
+					type: enumFunctionType,
+					isStandardLibrary: isStandardLibrary,
+					isImplicit: isImplicit))
+		}
+		else {
+			return super.replaceDotExpression(
+				leftExpression: leftExpression, rightExpression: rightExpression)
+		}
+	}
+}
+
+/// Some enum prefixes can be omitted. For instance, there's no need to include `MyEnum.` before
+/// `ENUM_CASE` in the variable declarations or function returns below:
+///
+/// enum class MyEnum {
+/// 	ENUM_CASE
+/// }
+/// var x: MyEnum = ENUM_CASE
+/// fun f(): MyEnum {
+/// 	ENUM_CASE
+/// }
+///
+/// Assumes subtrees like the one below are references to enums (see also
+/// CapitalizeAllEnumsTranspilationPass).
+///
+///	    ...
+///        └─ dotExpression
+///          ├─ left
+///          │  └─ typeExpression
+///          │     └─ MyEnum
+///          └─ right
+///             └─ declarationReferenceExpression
+///                ├─ (MyEnum.Type) -> MyEnum
+///                └─ myEnum
+// TODO: test
+// TODO: add support for return whens (maybe put this before the when pass)
+public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
+	private var returnTypesStack: [String] = []
+
+	private func removePrefixFromPossibleEnumReference(
+		leftExpression: Expression, rightExpression: Expression) -> Expression
+	{
+		if case let .typeExpression(type: enumType) = leftExpression,
+			case let .declarationReferenceExpression(
+				identifier: enumCase,
+				type: enumFunctionType,
+				isStandardLibrary: isStandardLibrary,
+				isImplicit: isImplicit) = rightExpression,
+			enumFunctionType == "(\(enumType).Type) -> \(enumType)",
+			!KotlinTranslator.sealedClasses.contains(enumType)
+		{
+			return .declarationReferenceExpression(
+				identifier: enumCase,
+				type: enumFunctionType,
+				isStandardLibrary: isStandardLibrary,
+				isImplicit: isImplicit)
+		}
+		else {
+			return super.replaceDotExpression(
+				leftExpression: leftExpression, rightExpression: rightExpression)
+		}
+	}
+
+	override func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclaration)
+		-> [Statement]
+	{
+		returnTypesStack.append(functionDeclaration.returnType)
+		defer { returnTypesStack.removeLast() }
+		return super.replaceFunctionDeclaration(functionDeclaration)
+	}
+
+	override func replaceReturnStatement(expression: Expression?) -> [Statement] {
+		if let returnType = returnTypesStack.last,
+			let expression = expression,
+			case let .dotExpression(
+				leftExpression: leftExpression,
+				rightExpression: rightExpression) = expression,
+			case .typeExpression(type: returnType) = leftExpression
+		{
+			let newExpression = removePrefixFromPossibleEnumReference(
+				leftExpression: leftExpression, rightExpression: rightExpression)
+			return [.returnStatement(expression: newExpression)]
+		}
+		else {
+			return [.returnStatement(expression: expression)]
+		}
 	}
 }
 
@@ -729,7 +860,10 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 			access: access, name: name,
 			inherits: inherits.filter {
 				isNotASwiftProtocol($0) && isNotASwiftRawRepresentableType($0)
-			}, elements: elements, members: members, isImplicit: isImplicit), ]
+			},
+			elements: elements,
+			members: super.replaceStatements(members),
+			isImplicit: isImplicit), ]
 	}
 
 	override func replaceStructDeclaration(
@@ -739,7 +873,7 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 			annotations: annotations,
 			name: name,
 			inherits: inherits.filter(isNotASwiftProtocol),
-			members: members), ]
+			members: super.replaceStatements(members)), ]
 	}
 }
 
@@ -825,8 +959,14 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 		var assignmentExpression: Expression?
 
 		for statements in cases.map({ $0.statements }) {
-			// Swift switches must have at least one statement
-			let lastStatement = statements.last!
+			// TODO: breaks in switches are ignored, which will be incorrect if there's code after
+			// the break. Throw a warning.
+			guard let lastStatement = statements.last else {
+				hasAllReturnCases = false
+				hasAllAssignmentCases = false
+				break
+			}
+
 			if case let .returnStatement(expression: expression) = lastStatement,
 				expression != nil
 			{
@@ -841,6 +981,7 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 			else {
 				hasAllReturnCases = false
 				hasAllAssignmentCases = false
+				break
 			}
 		}
 
@@ -1010,7 +1151,7 @@ public class RecordEnumsTranspilationPass: TranspilationPass {
 		access: String?, name: String, inherits: [String], elements: [EnumElement],
 		members: [Statement], isImplicit: Bool) -> [Statement]
 	{
-		let isEnumClass = members.isEmpty && inherits.isEmpty && elements.reduce(true)
+		let isEnumClass = inherits.isEmpty && elements.reduce(true)
 		{ (acc: Bool, element: EnumElement) -> Bool in
 			acc && element.associatedValues.isEmpty
 		}
@@ -1272,6 +1413,9 @@ public extension TranspilationPass {
 
 		result = RecordFunctionTranslationsTranspilationPass().run(on: result)
 		result = RecordEnumsTranspilationPass().run(on: result)
+		result = CapitalizeAllEnumsTranspilationPass().run(on: result)
+		result = OmitImplicitEnumPrefixesTranspilationPass().run(on: result)
+
 		result = RaiseStandardLibraryWarningsTranspilationPass().run(on: result)
 		result = RaiseMutableValueTypesWarningsTranspilationPass().run(on: result)
 

@@ -20,6 +20,14 @@ internal fun getNumberName(x: Int): String {
 	}
 }
 
+internal enum class MyEnum {
+	A,
+	B,
+	C,
+	D,
+	E;
+}
+
 fun main(args: Array<String>) {
 	printNumberName(0)
 	printNumberName(1)
@@ -50,4 +58,11 @@ fun main(args: Array<String>) {
 	}
 
 	println(x)
+
+	val myEnum: MyEnum = MyEnum.A
+
+	when (myEnum) {
+		MyEnum.A -> println("It's a!")
+		else -> println("It's not a.")
+	}
 }
