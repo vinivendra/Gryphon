@@ -140,6 +140,8 @@ public indirect enum Expression: Equatable, PrintableAsTree {
 		keys: [Expression],
 		values: [Expression],
 		type: String)
+	case returnExpression(
+		expression: Expression?)
 	case dotExpression(
 		leftExpression: Expression,
 		rightExpression: Expression)
@@ -475,6 +477,8 @@ extension Expression {
 			return type
 		case let .dictionaryExpression(keys: _, values: _, type: type):
 			return type
+		case let .returnExpression(expression: expression):
+			return expression?.type
 		case let .dotExpression(leftExpression: _, rightExpression: rightExpression):
 			return rightExpression.type
 		case let .binaryOperatorExpression(
@@ -570,6 +574,8 @@ extension Expression {
 			return [
 				PrintableTree("type \(type)"),
 				PrintableTree("key value pairs", keyValueStrings), ]
+		case let .returnExpression(expression: expression):
+			return [expression]
 		case let .dotExpression(leftExpression: leftExpression, rightExpression: rightExpression):
 			return [
 				PrintableTree("left", [leftExpression]),

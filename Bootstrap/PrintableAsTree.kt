@@ -37,19 +37,16 @@ class PrintableTree: PrintableAsTree {
 	constructor(description: String) {
 		this.treeDescription = description
 		this.printableSubtrees = mutableListOf()
-		return
 	}
 
 	constructor(description: String, subtrees: MutableList<PrintableAsTree?>) {
 		this.treeDescription = description
 		this.printableSubtrees = subtrees
-		return
 	}
 
 	constructor(array: MutableList<PrintableAsTree?>) {
 		this.treeDescription = "Array"
 		this.printableSubtrees = array
-		return
 	}
 
 	internal fun addChild(child: PrintableAsTree?) {

@@ -106,6 +106,8 @@ public class SwiftTranslator {
 			return []
 		case "Return Statement":
 			result = try translate(returnStatement: subtree)
+		case "Fail Statement":
+			result = .returnStatement(expression: .nilLiteralExpression)
 		default:
 			if subtree.name.hasSuffix("Expression") {
 				let expression = try translate(expression: subtree)

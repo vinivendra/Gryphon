@@ -6,33 +6,27 @@ class A {
 	constructor() {
 		x = 0
 		y = 1
-		return
 	}
 
 	constructor(uniform: Int) {
 		x = uniform
 		y = uniform
-		return
 	}
 
 	constructor(a: Int, b: Int) {
 		x = a
 		y = b
-		return
 	}
 
 	constructor(f: String) {
 		x = 2
 		y = 3
-		return
 	}
 
 	constructor(g: Int, h: Int, i: Int) {
 		x = g
 		y = h
 		z = i
-
-		return
 	}
 }
 

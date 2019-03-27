@@ -294,6 +294,8 @@ public class TranspilationPass {
 			return replaceArrayExpression(elements: elements, type: type)
 		case let .dictionaryExpression(keys: keys, values: values, type: type):
 			return replaceDictionaryExpression(keys: keys, values: values, type: type)
+		case let .returnExpression(expression: innerExpression):
+			return replaceReturnExpression(innerExpression: innerExpression)
 		case let .dotExpression(leftExpression: leftExpression, rightExpression: rightExpression):
 			return replaceDotExpression(
 				leftExpression: leftExpression, rightExpression: rightExpression)
@@ -397,6 +399,10 @@ public class TranspilationPass {
 		-> Expression
 	{
 		return .dictionaryExpression(keys: keys, values: values, type: type)
+	}
+
+	func replaceReturnExpression(innerExpression: Expression?) -> Expression {
+		return .returnExpression(expression: innerExpression.map(replaceExpression))
 	}
 
 	func replaceDotExpression(leftExpression: Expression, rightExpression: Expression)
@@ -551,6 +557,69 @@ public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
 	}
 }
 
+/// Optional initializers can be translated as `invoke` operators to have similar syntax and
+/// funcitonality.
+public class OptionalInitsTranspilationPass: TranspilationPass {
+	private var isFailableInitializer: Bool = false
+
+	override func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclaration)
+		-> [Statement]
+	{
+		if functionDeclaration.isStatic == true,
+			functionDeclaration.extendsType == nil,
+			functionDeclaration.prefix == "init"
+		{
+			if functionDeclaration.returnType.hasSuffix("?") {
+				var functionDeclaration = functionDeclaration
+
+				isFailableInitializer = true
+				let newStatements = replaceStatements(functionDeclaration.statements ?? [])
+				isFailableInitializer = false
+
+				functionDeclaration.prefix = "invoke"
+				functionDeclaration.statements = newStatements
+				return [.functionDeclaration(value: functionDeclaration)]
+			}
+		}
+
+		return super.replaceFunctionDeclaration(functionDeclaration)
+	}
+
+	override func replaceAssignmentStatement(leftHand: Expression, rightHand: Expression)
+		-> [Statement]
+	{
+		if isFailableInitializer,
+			case .declarationReferenceExpression(
+			identifier: "self",
+			type: _, isStandardLibrary: _, isImplicit: _) = leftHand
+		{
+			return [.returnStatement(expression: rightHand)]
+		}
+		else {
+			return super.replaceAssignmentStatement(leftHand: leftHand, rightHand: rightHand)
+		}
+	}
+}
+
+public class RemoveExtraReturnsInInitsTranspilationPass: TranspilationPass {
+	override func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclaration)
+		-> [Statement]
+	{
+		if functionDeclaration.isStatic == true,
+			functionDeclaration.extendsType == nil,
+			functionDeclaration.prefix == "init",
+			let lastStatement = functionDeclaration.statements?.last,
+			case .returnStatement(expression: nil) = lastStatement
+		{
+			var functionDeclaration = functionDeclaration
+			functionDeclaration.statements?.removeLast()
+			return [.functionDeclaration(value: functionDeclaration)]
+		}
+
+		return [.functionDeclaration(value: functionDeclaration)]
+	}
+}
+
 /// The static functions and variables in a class must all be placed inside a single companion
 /// object.
 public class StaticMembersTranspilationPass: TranspilationPass {
@@ -589,18 +658,32 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 		name: String, inherits: [String], members: [Statement]) -> [Statement]
 	{
 		let newMembers = sendStaticMembersToCompanionObject(members)
-		return [.classDeclaration(name: name, inherits: inherits, members: newMembers)]
+		return super.replaceClassDeclaration(name: name, inherits: inherits, members: newMembers)
 	}
 
 	override func replaceStructDeclaration(
 		annotations: String?, name: String, inherits: [String], members: [Statement]) -> [Statement]
 	{
 		let newMembers = sendStaticMembersToCompanionObject(members)
-		return [.structDeclaration(
+		return super.replaceStructDeclaration(
 			annotations: annotations,
 			name: name,
 			inherits: inherits,
-			members: newMembers ), ]
+			members: newMembers)
+	}
+
+	override func replaceEnumDeclaration(
+		access: String?, name: String, inherits: [String], elements: [EnumElement],
+		members: [Statement], isImplicit: Bool) -> [Statement]
+	{
+		let newMembers = sendStaticMembersToCompanionObject(members)
+		return super.replaceEnumDeclaration(
+			access: access,
+			name: name,
+			inherits: inherits,
+			elements: elements,
+			members: newMembers,
+			isImplicit: isImplicit)
 	}
 }
 
@@ -772,15 +855,22 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
 			case let .dotExpression(
 				leftExpression: leftExpression,
 				rightExpression: rightExpression) = expression,
-			case .typeExpression(type: returnType) = leftExpression
+			case let .typeExpression(type: typeExpression) = leftExpression
 		{
-			let newExpression = removePrefixFromPossibleEnumReference(
-				leftExpression: leftExpression, rightExpression: rightExpression)
-			return [.returnStatement(expression: newExpression)]
+			// It's ok to omit if the return type is an optional enum too
+			var returnType = returnType
+			if returnType.hasSuffix("?") {
+				returnType.removeLast("?".count)
+			}
+
+			if typeExpression == returnType {
+				let newExpression = removePrefixFromPossibleEnumReference(
+					leftExpression: leftExpression, rightExpression: rightExpression)
+				return [.returnStatement(expression: newExpression)]
+			}
 		}
-		else {
-			return [.returnStatement(expression: expression)]
-		}
+
+		return [.returnStatement(expression: expression)]
 	}
 }
 
@@ -1347,12 +1437,12 @@ public class ReturnIfNilTranspilationPass: TranspilationPass {
 				isImplicit: _) = declarationReference,
 			ifStatement.statements.count == 1,
 			let onlyStatement = ifStatement.statements.first,
-			case .returnStatement(expression: nil) = onlyStatement
+			case let .returnStatement(expression: returnExpression) = onlyStatement
 		{
 			return [.expression(expression:
 				.binaryOperatorExpression(
 					leftExpression: declarationReference,
-					rightExpression: .literalCodeExpression(string: "return"),
+					rightExpression: .returnExpression(expression: returnExpression),
 					operatorSymbol: "?:",
 					type: type)), ]
 		}
@@ -1396,11 +1486,19 @@ public extension TranspilationPass {
 		result = RemoveImplicitDeclarationsTranspilationPass().run(on: result)
 		result = RemoveParenthesesTranspilationPass().run(on: result)
 
+		result = RemoveExtraReturnsInInitsTranspilationPass().run(on: result)
+		result = OptionalInitsTranspilationPass().run(on: result)
 		result = StaticMembersTranspilationPass().run(on: result)
 		result = FixProtocolContentsTranspilationPass().run(on: result)
 		result = CleanInheritancesTranspilationPass().run(on: result)
 		result = AnonymousParametersTranspilationPass().run(on: result)
+
+		result = RecordFunctionTranslationsTranspilationPass().run(on: result)
+		result = RecordEnumsTranspilationPass().run(on: result)
+		result = CapitalizeAllEnumsTranspilationPass().run(on: result)
+		result = OmitImplicitEnumPrefixesTranspilationPass().run(on: result)
 		result = SwitchesToExpressionsTranspilationPass().run(on: result)
+
 		result = ReturnsInLambdasTranspilationPass().run(on: result)
 		result = InnerTypePrefixesTranspilationPass().run(on: result)
 		result = RenameOperatorsTranspilationPass().run(on: result)
@@ -1410,11 +1508,6 @@ public extension TranspilationPass {
 		result = RearrangeIfLetsTranspilationPass().run(on: result)
 		result = DoubleNegativesInGuardsTranspilationPass().run(on: result)
 		result = ReturnIfNilTranspilationPass().run(on: result)
-
-		result = RecordFunctionTranslationsTranspilationPass().run(on: result)
-		result = RecordEnumsTranspilationPass().run(on: result)
-		result = CapitalizeAllEnumsTranspilationPass().run(on: result)
-		result = OmitImplicitEnumPrefixesTranspilationPass().run(on: result)
 
 		result = RaiseStandardLibraryWarningsTranspilationPass().run(on: result)
 		result = RaiseMutableValueTypesWarningsTranspilationPass().run(on: result)

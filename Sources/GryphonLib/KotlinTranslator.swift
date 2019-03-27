@@ -508,6 +508,9 @@ public class KotlinTranslator {
 		if isInit {
 			result += "constructor("
 		}
+		else if functionDeclaration.prefix == "invoke" {
+			result += "operator fun invoke("
+		}
 		else {
 			if let access = functionDeclaration.access {
 				result += access + " "
@@ -896,6 +899,9 @@ public class KotlinTranslator {
 			return translateDeclarationReferenceExpression(
 				identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
 				isImplicit: isImplicit)
+		case let .returnExpression(expression: expression):
+			return try translateReturnExpression(
+				expression: expression, withIndentation: indentation)
 		case let .dotExpression(leftExpression: leftExpression, rightExpression: rightExpression):
 			return try translateDotSyntaxCallExpression(
 				leftExpression: leftExpression,
@@ -990,6 +996,18 @@ public class KotlinTranslator {
 			zip(keyExpressions, valueExpressions).map { "\($0) to \($1)" }.joined(separator: ", ")
 
 		return "mutableMapOf(\(expressionsString))"
+	}
+
+	private func translateReturnExpression(
+		expression: Expression?, withIndentation indentation: String) throws -> String
+	{
+		if let expression = expression {
+			let expressionString = try translateExpression(expression, withIndentation: indentation)
+			return "return \(expressionString)"
+		}
+		else {
+			return "return"
+		}
 	}
 
 	private func translateDotSyntaxCallExpression(
