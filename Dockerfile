@@ -1,4 +1,4 @@
-FROM ibmcom/swift-ubuntu:latest
+FROM swift:latest
 
 
 # Update, upgrade and install a few useful tools
@@ -8,6 +8,7 @@ RUN apt-get upgrade -y
 RUN apt-get install unzip -y
 RUN apt-get install zip -y
 RUN apt-get install curl -y
+RUN apt-get install wget -y
 
 
 # Install Kotlin 1.2.31

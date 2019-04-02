@@ -1,4 +1,4 @@
-class PrintableAsTreeTests(): Test("PrintableAsTreeTests") {
+class PrintableAsTreeTest(): Test("PrintableAsTreeTest") {
 	override fun runAllTests() {
 		testPrinting()
 		testHorizontalLimit()

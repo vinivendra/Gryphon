@@ -87,6 +87,8 @@ public class SwiftTranslator {
 			result = try translate(extensionDeclaration: subtree)
 		case "For Each Statement":
 			result = try translate(forEachStatement: subtree)
+		case "While Statement":
+			result = try translate(whileStatement: subtree)
 		case "Function Declaration", "Constructor Declaration":
 			result = try translate(functionDeclaration: subtree)
 		case "Protocol":
@@ -822,6 +824,33 @@ public class SwiftTranslator {
 			statements: statements)
 	}
 
+	internal func translate(whileStatement: SwiftAST) throws -> Statement {
+		guard whileStatement.name == "While Statement" else {
+			return try unexpectedASTStructureError(
+				"Trying to translate \(whileStatement.name) as 'While Statement'",
+				AST: whileStatement)
+		}
+
+		guard let expressionSubtree = whileStatement.subtrees.first else {
+			return try unexpectedASTStructureError(
+				"Unable to detect expression",
+				AST: whileStatement)
+		}
+
+		guard let braceStatement = whileStatement.subtrees.last,
+			braceStatement.name == "Brace Statement" else
+		{
+			return try unexpectedASTStructureError(
+				"Unable to detect body of statements",
+				AST: whileStatement)
+		}
+
+		let expression = try translate(expression: expressionSubtree)
+		let statements = try translate(braceStatement: braceStatement)
+
+		return .whileStatement(expression: expression, statements: statements)
+	}
+
 	internal func translate(ifStatement: SwiftAST) throws -> Statement {
 		do {
 			let result: IfStatement = try translate(ifStatement: ifStatement)
@@ -841,8 +870,8 @@ public class SwiftTranslator {
 
 		let isGuard = (ifStatement.name == "Guard Statement")
 
-		let (letDeclarations, conditions) = try translateDeclarationsAndConditions(
-			forIfStatement: ifStatement)
+		let (letDeclarations, conditions, extraStatements) =
+			try translateDeclarationsAndConditions(forIfStatement: ifStatement)
 
 		let braceStatement: SwiftAST
 		let elseStatement: IfStatement?
@@ -887,7 +916,7 @@ public class SwiftTranslator {
 		return IfStatement(
 			conditions: conditions,
 			declarations: letDeclarations,
-			statements: statements,
+			statements: extraStatements + statements,
 			elseStatement: elseStatement,
 			isGuard: isGuard)
 	}
@@ -911,47 +940,60 @@ public class SwiftTranslator {
 		let caseSubtrees = switchStatement.subtrees.dropFirst()
 		for caseSubtree in caseSubtrees {
 			let caseExpression: Expression?
+			var extraStatements: [Statement]
+
 			if let caseLabelItem = caseSubtree.subtree(named: "Case Label Item") {
-				if let expression = caseLabelItem.subtrees.first?.subtrees.first {
+				if let patternLet = caseLabelItem.subtree(named: "Pattern Let"),
+					let patternLetResult = try translate(enumPatternLet: patternLet)
+				{
+					let enumType = patternLetResult.enumType
+					let enumCase = patternLetResult.enumCase
+					let declarations = patternLetResult.declarations
+					let enumClassName = enumType + "." + enumCase.capitalizedAsCamelCase
+
+					caseExpression = .isExpression(
+						declarationReference: translatedExpression,
+						typeName: enumClassName)
+
+					extraStatements = declarations.map {
+						Statement.variableDeclaration(value: VariableDeclaration(
+							identifier: $0.newVariable,
+							typeName: $0.associatedValueType,
+							expression: .dotExpression(
+								leftExpression: translatedExpression,
+								rightExpression: .declarationReferenceExpression(
+									identifier: $0.associatedValueName,
+									type: $0.associatedValueType,
+									isStandardLibrary: false,
+									isImplicit: false)),
+							getter: nil,
+							setter: nil,
+							isLet: true,
+							isImplicit: false,
+							isStatic: false,
+							extendsType: nil,
+							annotations: nil))
+					}
+				}
+				else if let expression = caseLabelItem.subtrees.first?.subtrees.first {
 					let translateExpression = try translate(expression: expression)
 					caseExpression = translateExpression
+					extraStatements = []
 				}
-				else if let enumElement = caseLabelItem.subtree(named: "Pattern Enum Element"),
-					let enumReference = enumElement.standaloneAttributes.first,
-					let type = enumElement["type"]
+				else if let patternEnumElement =
+					caseLabelItem.subtree(named: "Pattern Enum Element")
 				{
-					var enumElements = enumReference.split(separator: ".")
-
-					guard let lastEnumElement = enumElements.last else {
-						return try unexpectedASTStructureError(
-							"Expected a Pattern Enum Element to have a period " +
-								"(i.e. `MyEnum.myEnumCase`)",
-							AST: switchStatement)
-					}
-
-					let lastExpression = Expression.declarationReferenceExpression(
-						identifier: String(lastEnumElement),
-						type: type,
-						isStandardLibrary: false,
-						isImplicit: false)
-
-					enumElements.removeLast()
-					if !enumElements.isEmpty {
-						caseExpression = .dotExpression(
-							leftExpression: .typeExpression(type:
-								enumElements.joined(separator: ".")),
-							rightExpression: lastExpression)
-					}
-					else {
-						caseExpression = lastExpression
-					}
+					caseExpression = try translate(simplePatternEnumElement: patternEnumElement)
+					extraStatements = []
 				}
 				else {
 					caseExpression = nil
+					extraStatements = []
 				}
 			}
 			else {
 				caseExpression = nil
+				extraStatements = []
 			}
 
 			guard let braceStatement = caseSubtree.subtree(named: "Brace Statement") else {
@@ -963,34 +1005,77 @@ public class SwiftTranslator {
 			let translatedStatements = try translate(braceStatement: braceStatement)
 
 			cases.append(SwitchCase(
-				expression: caseExpression, statements: translatedStatements))
+				expression: caseExpression, statements: extraStatements + translatedStatements))
 		}
 
 		return .switchStatement(
 			convertsToExpression: nil, expression: translatedExpression, cases: cases)
 	}
 
+	internal func translate(simplePatternEnumElement: SwiftAST) throws -> Expression {
+		guard simplePatternEnumElement.name == "Pattern Enum Element" else {
+			return try unexpectedExpressionStructureError(
+				"Trying to translate \(simplePatternEnumElement.name) as 'Pattern Enum Element'",
+				AST: simplePatternEnumElement)
+		}
+
+		guard let enumReference = simplePatternEnumElement.standaloneAttributes.first,
+			let type = simplePatternEnumElement["type"] else
+		{
+			return try unexpectedExpressionStructureError(
+				"Expected a Pattern Enum Element to have a reference to the enum case and a type.",
+				AST: simplePatternEnumElement)
+		}
+
+		var enumElements = enumReference.split(separator: ".")
+
+		guard let lastEnumElement = enumElements.last else {
+			return try unexpectedExpressionStructureError(
+				"Expected a Pattern Enum Element to have a period (i.e. `MyEnum.myEnumCase`)",
+				AST: simplePatternEnumElement)
+		}
+
+		let lastExpression = Expression.declarationReferenceExpression(
+			identifier: String(lastEnumElement),
+			type: type,
+			isStandardLibrary: false,
+			isImplicit: false)
+
+		enumElements.removeLast()
+		if !enumElements.isEmpty {
+			return .dotExpression(
+				leftExpression: .typeExpression(type:
+					enumElements.joined(separator: ".")),
+				rightExpression: lastExpression)
+		}
+		else {
+			return lastExpression
+		}
+	}
+
 	internal func translateDeclarationsAndConditions(
 		forIfStatement ifStatement: SwiftAST) throws
-		-> (declarations: [VariableDeclaration], conditions: [Expression])
+		-> (declarations: [VariableDeclaration], conditions: [Expression], statements: [Statement])
 	{
 		guard ifStatement.name == "If Statement" || ifStatement.name == "Guard Statement" else {
 			return try (
 				declarations: [],
-				conditions: [unexpectedExpressionStructureError(
+				conditions: [],
+				statements: [unexpectedASTStructureError(
 					"Trying to translate \(ifStatement.name) as an if or guard statement",
 					AST: ifStatement), ])
 		}
 
 		var conditionsResult = [Expression]()
 		var declarationsResult = [VariableDeclaration]()
+		var statementsResult = [Statement]()
 
 		let conditions = ifStatement.subtrees.filter {
 			$0.name != "If Statement" && $0.name != "Brace Statement"
 		}
 
 		for condition in conditions {
-			// If it's an if-let
+			// If it's an `if let`
 			if condition.name == "Pattern",
 				let optionalSomeElement =
 					condition.subtree(named: "Optional Some Element") ?? // Swift 4.1
@@ -1013,17 +1098,18 @@ public class SwiftTranslator {
 				}
 				else {
 					return try (
-					declarations: [],
-					conditions: [unexpectedExpressionStructureError(
-						"Unable to detect pattern in let declaration",
-						AST: ifStatement), ])
-
+						declarations: [],
+						conditions: [],
+						statements: [unexpectedASTStructureError(
+							"Unable to detect pattern in let declaration",
+							AST: ifStatement), ])
 				}
 
 				guard let rawType = optionalSomeElement["type"] else {
 					return try (
 						declarations: [],
-						conditions: [unexpectedExpressionStructureError(
+						conditions: [],
+						statements: [unexpectedASTStructureError(
 							"Unable to detect type in let declaration",
 							AST: ifStatement), ])
 				}
@@ -1035,7 +1121,8 @@ public class SwiftTranslator {
 				{
 					return try (
 						declarations: [],
-						conditions: [unexpectedExpressionStructureError(
+						conditions: [],
+						statements: [unexpectedASTStructureError(
 							"Unable to get expression in let declaration",
 							AST: ifStatement), ])
 				}
@@ -1053,12 +1140,105 @@ public class SwiftTranslator {
 					extendsType: nil,
 					annotations: nil))
 			}
+			// If it's an `if case let`
+			else if condition.name == "Pattern",
+				let patternLet = condition.subtree(named: "Pattern Let"),
+				condition.subtrees.count >= 2,
+				let declarationReferenceAST = condition.subtrees.last
+			{
+				// TODO: test
+				guard let patternLetResult = try translate(enumPatternLet: patternLet) else {
+					return try (
+						declarations: [],
+						conditions: [],
+						statements: [unexpectedASTStructureError(
+							"Unable to translate Pattern Let",
+							AST: ifStatement), ])
+				}
+
+				let enumType = patternLetResult.enumType
+				let enumCase = patternLetResult.enumCase
+				let declarations = patternLetResult.declarations
+				let enumClassName = enumType + "." + enumCase.capitalizedAsCamelCase
+
+				let declarationReference = try translate(expression: declarationReferenceAST)
+
+				conditionsResult.append(.isExpression(
+					declarationReference: declarationReference,
+					typeName: enumClassName))
+
+				for declaration in declarations {
+					statementsResult.append(.variableDeclaration(value: VariableDeclaration(
+						identifier: declaration.newVariable,
+						typeName: declaration.associatedValueType,
+						expression: .dotExpression(
+							leftExpression: declarationReference,
+							rightExpression: .declarationReferenceExpression(
+								identifier: String(declaration.associatedValueName),
+								type: declaration.associatedValueType,
+								isStandardLibrary: false,
+								isImplicit: false)),
+						getter: nil,
+						setter: nil,
+						isLet: true,
+						isImplicit: false,
+						isStatic: false,
+						extendsType: nil,
+						annotations: nil)))
+				}
+			}
 			else {
 				conditionsResult.append(try translate(expression: condition))
 			}
 		}
 
-		return (declarations: declarationsResult, conditions: conditionsResult)
+		return (declarations: declarationsResult,
+				conditions: conditionsResult,
+				statements: statementsResult)
+	}
+
+	private func translate(enumPatternLet: SwiftAST) throws
+		-> (enumType: String,
+		enumCase: String,
+		declarations: [(
+			associatedValueName: String,
+			associatedValueType: String,
+			newVariable: String)])?
+	{
+		guard enumPatternLet.name == "Pattern Let",
+			let enumType = enumPatternLet["type"],
+			let patternEnumElement = enumPatternLet.subtree(named: "Pattern Enum Element"),
+			let patternTuple = patternEnumElement.subtree(named: "Pattern Tuple"),
+			let associatedValueNames = patternTuple["names"]?.split(separator: ",") else
+		{
+			return nil
+		}
+
+		var declarations =
+			[(associatedValueName: String, associatedValueType: String, newVariable: String)]()
+
+		let caseName =
+			String(patternEnumElement.standaloneAttributes[0].split(separator: ".").last!)
+
+		let patternsNamed = patternTuple.subtrees.filter { $0.name == "Pattern Named" }
+		guard associatedValueNames.count == patternsNamed.count else {
+			return nil
+		}
+
+		for (associatedValueName, patternNamed)
+			in zip(associatedValueNames, patternsNamed)
+		{
+			guard let associatedValueType = patternNamed["type"] else {
+				return nil
+			}
+
+			declarations.append((
+				associatedValueName: String(associatedValueName),
+				associatedValueType: associatedValueType,
+				newVariable: patternNamed.standaloneAttributes[0]))
+		}
+
+		return (enumType: enumType, enumCase: caseName, declarations: declarations)
 	}
 
 	internal func translate(functionDeclaration: SwiftAST) throws -> Statement? {
@@ -1657,7 +1837,17 @@ public class SwiftTranslator {
 		}
 
 		if let value = stringLiteralExpression["value"] {
-			return .literalStringExpression(value: value)
+			if stringLiteralExpression["type"] == "Character" {
+				if value == "\'" {
+					return .literalCharacterExpression(value: "\\\'")
+				}
+				else {
+					return .literalCharacterExpression(value: value)
+				}
+			}
+			else {
+				return .literalStringExpression(value: value)
+			}
 		}
 		else {
 			return try unexpectedExpressionStructureError(

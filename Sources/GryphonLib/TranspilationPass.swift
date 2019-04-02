@@ -72,6 +72,8 @@ public class TranspilationPass {
 
 			return replaceForEachStatement(
 				collection: collection, variable: variable, statements: statements)
+		case let .whileStatement(expression: expression, statements: statements):
+			return replaceWhileStatement(expression: expression, statements: statements)
 		case let .ifStatement(value: ifStatement):
 			return replaceIfStatement(ifStatement)
 		case let .switchStatement(
@@ -201,6 +203,12 @@ public class TranspilationPass {
 			statements: replaceStatements(statements)), ]
 	}
 
+	func replaceWhileStatement(expression: Expression, statements: [Statement]) -> [Statement] {
+		return [.whileStatement(
+			expression: replaceExpression(expression),
+			statements: replaceStatements(statements)), ]
+	}
+
 	func replaceIfStatement(_ ifStatement: IfStatement) -> [Statement] {
 		return [Statement.ifStatement(value: replaceIfStatement(ifStatement))]
 	}
@@ -238,7 +246,8 @@ public class TranspilationPass {
 		}
 
 		return [.switchStatement(
-			convertsToExpression: replacedConvertsToExpression, expression: expression,
+			convertsToExpression: replacedConvertsToExpression,
+			expression: replaceExpression(expression),
 			cases: replacedCases), ]
 	}
 
@@ -281,6 +290,14 @@ public class TranspilationPass {
 			return replaceDeclarationReferenceExpression(
 				identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
 				isImplicit: isImplicit)
+		case let .conditionalCastExpression(
+			declarationReference: declarationReference, castedToType: castedToType):
+
+			return replaceConditionalCastExpression(
+				declarationReference: declarationReference, castedToType: castedToType)
+		case let .isExpression(declarationReference: declarationReference, typeName: typeName):
+			return replaceIsExpression(
+				declarationReference: declarationReference, typeName: typeName)
 		case let .typeExpression(type: type):
 			return replaceTypeExpression(type: type)
 		case let .subscriptExpression(
@@ -331,6 +348,8 @@ public class TranspilationPass {
 			return replaceLiteralBoolExpression(value: value)
 		case let .literalStringExpression(value: value):
 			return replaceLiteralStringExpression(value: value)
+		case let .literalCharacterExpression(value: value):
+			return replaceLiteralCharacterExpression(value: value)
 		case .nilLiteralExpression:
 			return replaceNilLiteralExpression()
 		case let .interpolatedStringLiteralExpression(expressions: expressions):
@@ -376,6 +395,21 @@ public class TranspilationPass {
 		return .declarationReferenceExpression(
 			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
 			isImplicit: isImplicit)
+	}
+
+	func replaceConditionalCastExpression(
+		declarationReference: Expression, castedToType: String) -> Expression
+	{
+		return .conditionalCastExpression(
+			declarationReference: replaceExpression(declarationReference),
+			castedToType: castedToType)
+	}
+
+	func replaceIsExpression(
+		declarationReference: Expression, typeName: String) -> Expression
+	{
+		return .isExpression(
+			declarationReference: replaceExpression(declarationReference), typeName: typeName)
 	}
 
 	func replaceTypeExpression(type: String) -> Expression {
@@ -476,6 +510,10 @@ public class TranspilationPass {
 
 	func replaceLiteralStringExpression(value: String) -> Expression {
 		return .literalStringExpression(value: value)
+	}
+
+	func replaceLiteralCharacterExpression(value: String) -> Expression {
+		return .literalCharacterExpression(value: value)
 	}
 
 	func replaceNilLiteralExpression() -> Expression {
@@ -771,16 +809,27 @@ public class CapitalizeAllEnumsTranspilationPass: TranspilationPass {
 				type: enumFunctionType,
 				isStandardLibrary: isStandardLibrary,
 				isImplicit: isImplicit) = rightExpression,
-			enumFunctionType == "(\(enumType).Type) -> \(enumType)",
-			!KotlinTranslator.sealedClasses.contains(enumType)
+			enumFunctionType.hasPrefix("(\(enumType).Type) -> "),
+			enumFunctionType.hasSuffix(" -> \(enumType)")
 		{
-			return .dotExpression(
-				leftExpression: .typeExpression(type: enumType),
-				rightExpression: .declarationReferenceExpression(
-					identifier: enumCase.upperSnakeCase(),
-					type: enumFunctionType,
-					isStandardLibrary: isStandardLibrary,
-					isImplicit: isImplicit))
+			if KotlinTranslator.sealedClasses.contains(enumType) {
+				return .dotExpression(
+					leftExpression: .typeExpression(type: enumType),
+					rightExpression: .declarationReferenceExpression(
+						identifier: enumCase.capitalizedAsCamelCase,
+						type: enumFunctionType,
+						isStandardLibrary: isStandardLibrary,
+						isImplicit: isImplicit))
+			}
+			else {
+				return .dotExpression(
+					leftExpression: .typeExpression(type: enumType),
+					rightExpression: .declarationReferenceExpression(
+						identifier: enumCase.upperSnakeCase(),
+						type: enumFunctionType,
+						isStandardLibrary: isStandardLibrary,
+						isImplicit: isImplicit))
+			}
 		}
 		else {
 			return super.replaceDotExpression(
@@ -929,7 +978,7 @@ public class SelfToThisTranspilationPass: TranspilationPass {
 public class CleanInheritancesTranspilationPass: TranspilationPass {
 	private func isNotASwiftProtocol(_ protocolName: String) -> Bool {
 		return ![
-			"Equatable", "Codable", "Decodable", "Encodable",
+			"Equatable", "Codable", "Decodable", "Encodable", "CustomStringConvertible",
 			].contains(protocolName)
 	}
 
@@ -1332,25 +1381,12 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 }
 
 public class RearrangeIfLetsTranspilationPass: TranspilationPass {
-	override func replaceIfStatement(_ ifStatement: IfStatement) -> [Statement] {
+
+	/// Add conditions (`x != null`) for all let declarations
+	override func replaceIfStatement(_ ifStatement: IfStatement) -> IfStatement {
 		var letConditions = [Expression]()
-		var letDeclarations = [Statement]()
 
 		for declaration in ifStatement.declarations {
-			// If it's a shadowing identifier there's no need to declare it in Kotlin
-			// (i.e. `if let x = x { }`)
-			if let declarationExpression = declaration.expression,
-				case .declarationReferenceExpression(
-					identifier: declaration.identifier,
-					type: _,
-					isStandardLibrary: _,
-					isImplicit: _) = declarationExpression
-			{
-			}
-			else {
-				letDeclarations.append(.variableDeclaration(value: declaration))
-			}
-
 			letConditions.append(
 				.binaryOperatorExpression(
 					leftExpression: .declarationReferenceExpression(
@@ -1363,7 +1399,41 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 
 		let ifStatement = ifStatement.copy()
 		ifStatement.conditions = letConditions + ifStatement.conditions
-		ifStatement.declarations = []
+		return super.replaceIfStatement(ifStatement)
+	}
+
+	/// Gather the let declarations from the if statement and its else( if)s into a single array
+	private func gatherLetDeclarations(_ ifStatement: IfStatement?) -> [VariableDeclaration] {
+		guard let ifStatement = ifStatement else {
+			return []
+		}
+
+		let letDeclarations = ifStatement.declarations.filter { declaration in
+			// If it's a shadowing identifier there's no need to declare it in Kotlin
+			// (i.e. `if let x = x { }`)
+			if let declarationExpression = declaration.expression,
+				case .declarationReferenceExpression(
+					identifier: declaration.identifier,
+					type: _,
+					isStandardLibrary: _,
+					isImplicit: _) = declarationExpression
+			{
+				return false
+			}
+			else {
+				return true
+			}
+		}
+
+		let elseLetDeclarations = gatherLetDeclarations(ifStatement.elseStatement)
+
+		return letDeclarations + elseLetDeclarations
+	}
+
+	/// Send the let declarations to before the if statement
+	override func replaceIfStatement(_ ifStatement: IfStatement) -> [Statement] {
+		let letDeclarations = gatherLetDeclarations(ifStatement)
+			.map { Statement.variableDeclaration(value: $0) }
 		return letDeclarations + super.replaceIfStatement(ifStatement)
 	}
 }
@@ -1492,6 +1562,7 @@ public extension TranspilationPass {
 		result = FixProtocolContentsTranspilationPass().run(on: result)
 		result = CleanInheritancesTranspilationPass().run(on: result)
 		result = AnonymousParametersTranspilationPass().run(on: result)
+		result = SelfToThisTranspilationPass().run(on: result)
 
 		result = RecordFunctionTranslationsTranspilationPass().run(on: result)
 		result = RecordEnumsTranspilationPass().run(on: result)
@@ -1502,7 +1573,6 @@ public extension TranspilationPass {
 		result = ReturnsInLambdasTranspilationPass().run(on: result)
 		result = InnerTypePrefixesTranspilationPass().run(on: result)
 		result = RenameOperatorsTranspilationPass().run(on: result)
-		result = SelfToThisTranspilationPass().run(on: result)
 		result = RemoveExtensionsTranspilationPass().run(on: result)
 
 		result = RearrangeIfLetsTranspilationPass().run(on: result)

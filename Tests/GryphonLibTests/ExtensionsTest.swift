@@ -32,7 +32,7 @@ struct TestableRange: Equatable {
 	}
 }
 
-class ExtensionTest: XCTestCase {
+class ExtensionsTest: XCTestCase {
 	func testStringSplit() {
 		XCTAssertEqual(
 			"->".split(withStringSeparator: "->"),

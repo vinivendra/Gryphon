@@ -296,6 +296,20 @@ fileprivate extension String {
 			return newSelf.isSubtype(of: newSuperType)
 		}
 
+		// Deal with standard library types that can be handled as other types
+		let standardLibraryTypeMappings = [
+			"Substring": "String",
+			"Substring.SubSequence": "String",
+			"String.SubSequence": "String",
+			"String.Index": "Int",
+		]
+		if let newSelf = standardLibraryTypeMappings[self] {
+			return newSelf.isSubtype(of: superType)
+		}
+		else if let newSuperType = standardLibraryTypeMappings[superType] {
+			return self.isSubtype(of: newSuperType)
+		}
+
 		// Treat ArrayReference as Array
 		if self.hasPrefix("ArrayReference<"), self.last == ">" {
 			let elementType = String(self.dropFirst("ArrayReference<".count).dropLast())

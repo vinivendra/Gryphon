@@ -1,3 +1,4 @@
 fun main(args: Array<String>) {
-	PrintableAsTreeTests().runAllTests()
+	PrintableAsTreeTest().runAllTests()
+	ASTDumpDecoderTest().runAllTests()
 }

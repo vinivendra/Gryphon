@@ -19,15 +19,14 @@ import XCTest
 #if !os(macOS)
 public func allTests() -> [XCTestCaseEntry] {
 	return [
-		testCase(ArrayReferenceTest.allTests),
-		testCase(ExtensionTest.allTests),
-		testCase(PrintableAsTreeTest.allTests),
-		testCase(CodableTest.allTests),
-		testCase(ShellTest.allTests),
-		testCase(UtilsTest.allTests),
-		testCase(IntegrationTest.allTests),
-		testCase(BootstrappingTest.allTests),
 		testCase(AcceptanceTest.allTests),
+		testCase(ArrayReferenceTest.allTests),
+		testCase(ASTDumpDecoderTest.allTests),
+		testCase(BootstrappingTest.allTests),
+		testCase(ExtensionsTest.allTests),
+		testCase(IntegrationTest.allTests),
+		testCase(PrintableAsTreeTest.allTests),
+		testCase(ShellTest.allTests),
 	]
 }
 #endif

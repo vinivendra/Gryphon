@@ -89,6 +89,9 @@ public indirect enum Statement: Equatable, PrintableAsTree {
 		collection: Expression,
 		variable: Expression,
 		statements: [Statement])
+	case whileStatement(
+		expression: Expression,
+		statements: [Statement])
 	case ifStatement(
 		value: IfStatement)
 	case switchStatement(
@@ -122,6 +125,12 @@ public indirect enum Expression: Equatable, PrintableAsTree {
 		expression: Expression)
 	case optionalExpression(
 		expression: Expression)
+	case conditionalCastExpression(
+		declarationReference: Expression,
+		castedToType: String)
+	case isExpression(
+		declarationReference: Expression,
+		typeName: String) // TODO: This could be a TypeExpression
 	case declarationReferenceExpression(
 		identifier: String,
 		type: String,
@@ -177,6 +186,8 @@ public indirect enum Expression: Equatable, PrintableAsTree {
 	case literalBoolExpression(
 		value: Bool)
 	case literalStringExpression(
+		value: String)
+	case literalCharacterExpression(
 		value: String)
 	case nilLiteralExpression
 	case interpolatedStringLiteralExpression(
@@ -406,6 +417,10 @@ extension Statement {
 				PrintableTree("variable", [variable]),
 				PrintableTree("collection", [collection]),
 				PrintableTree.initOrNil("statements", statements), ]
+		case let .whileStatement(expression: expression, statements: statements):
+			return [
+				PrintableTree("expression", [expression]),
+				PrintableTree.initOrNil("statements", statements), ]
 		case let .ifStatement(value: ifStatement):
 			let declarationTrees =
 				ifStatement.declarations.map { Statement.variableDeclaration(value: $0) }
@@ -465,6 +480,10 @@ extension Expression {
 			}
 		case let .optionalExpression(expression: expression):
 			return expression.type
+		case let .conditionalCastExpression(declarationReference: _, castedToType: typeName):
+			return typeName + "?"
+		case .isExpression:
+			return "Boolean"
 		case let .declarationReferenceExpression(
 			identifier: _, type: type, isStandardLibrary: _, isImplicit: _):
 
@@ -505,6 +524,8 @@ extension Expression {
 			return "Bool"
 		case .literalStringExpression:
 			return "String"
+		case .literalCharacterExpression:
+			return "Character"
 		case .nilLiteralExpression:
 			return nil
 		case .interpolatedStringLiteralExpression:
@@ -548,6 +569,16 @@ extension Expression {
 			return [expression]
 		case let .optionalExpression(expression: expression):
 			return [expression]
+		case let .conditionalCastExpression(
+			declarationReference: declarationReference, castedToType: typeName):
+
+			return [
+				PrintableTree("declaration reference", [declarationReference]),
+				PrintableTree("casted to \(typeName)"), ]
+		case let .isExpression(declarationReference: declarationReference, typeName: typeName):
+			return [
+				PrintableTree("declaration reference", [declarationReference]),
+				PrintableTree("is of type \(typeName)"), ]
 		case let .declarationReferenceExpression(
 			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
 			isImplicit: isImplicit):
@@ -628,6 +659,8 @@ extension Expression {
 			return [PrintableTree(String(value))]
 		case let .literalStringExpression(value: value):
 			return [PrintableTree("\"\(value)\"")]
+		case let .literalCharacterExpression(value: value):
+			return [PrintableTree("'\(value)'")]
 		case .nilLiteralExpression:
 			return []
 		case let .interpolatedStringLiteralExpression(expressions: expressions):

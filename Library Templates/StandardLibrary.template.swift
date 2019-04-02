@@ -5,7 +5,8 @@ struct Hash: Hashable { }
 
 var _strArray: [String] = []
 var _array: [Any] = []
-let _string = ""
+let _index: String.Index = "".startIndex
+let _string: String = ""
 let _any: Any = ""
 let _double: Double = 0
 let _double1: Double = 0
@@ -42,6 +43,18 @@ _string.dropLast()
 
 _string.prefix(_int)
 "_string.substring(0, _int)"
+
+_string[_index...]
+"_string.substring(_index)"
+
+_string.endIndex
+"_string.length"
+
+_string.startIndex
+"0"
+
+_string.index(after: _index)
+"_index + 1"
 
 // Array
 _array.append(_any)

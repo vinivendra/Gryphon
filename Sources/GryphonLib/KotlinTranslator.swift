@@ -33,6 +33,11 @@ public class KotlinTranslator {
 		"Int64": "Long",
 		"Float32": "Float",
 		"Float64": "Double",
+		"Character": "Char",
+
+		"String.Index": "Int",
+		"Substring": "String",
+		"String.SubSequence": "String",
 	]
 
 	private func translateType(_ type: String) -> String {
@@ -200,6 +205,9 @@ public class KotlinTranslator {
 			result = try translateForEachStatement(
 				collection: collection, variable: variable, statements: statements,
 				withIndentation: indentation)
+		case let .whileStatement(expression: expression, statements: statements):
+			result = try translateWhileStatement(
+				expression: expression, statements: statements, withIndentation: indentation)
 		case let .functionDeclaration(value: functionDeclaration):
 			result = try translateFunctionDeclaration(
 				functionDeclaration: functionDeclaration, withIndentation: indentation)
@@ -601,6 +609,28 @@ public class KotlinTranslator {
 		return result
 	}
 
+	// TODO: Update stdlib tests
+	// TODO: Test whiles
+	private func translateWhileStatement(
+		expression: Expression, statements: [Statement], withIndentation indentation: String)
+		throws -> String
+	{
+		var result = "\(indentation)while ("
+
+		let expressionTranslation =
+			try translateExpression(expression, withIndentation: indentation)
+		result += expressionTranslation + ") {\n"
+
+		let increasedIndentation = increaseIndentation(indentation)
+		let statementsTranslation = try translate(
+			subtrees: statements, withIndentation: increasedIndentation, limitForAddingNewlines: 3)
+
+		result += statementsTranslation
+
+		result += indentation + "}\n"
+		return result
+	}
+
 	private func translateIfStatement(
 		_ ifStatement: IfStatement, isElseIf: Bool = false,
 		withIndentation indentation: String) throws -> String
@@ -687,6 +717,8 @@ public class KotlinTranslator {
 				continue
 			}
 
+			result += increasedIndentation
+
 			if let caseExpression = switchCase.expression {
 				if case let Expression.binaryOperatorExpression(
 					leftExpression: leftExpression, rightExpression: _, operatorSymbol: _,
@@ -700,20 +732,28 @@ public class KotlinTranslator {
 						pattern.contains("..") || pattern.contains("until") ||
 							pattern.contains("rangeTo")
 					{
-						result += "\(increasedIndentation)in \(translatedExpression) -> "
+						result += "in \(translatedExpression) -> "
 					}
 					else {
-						result += "\(increasedIndentation)\(translatedExpression) -> "
+						result += "\(translatedExpression) -> "
 					}
+				}
+				else if case let Expression.isExpression(
+						declarationReference: declarationReference,
+						typeName: typeName) = caseExpression,
+					declarationReference == expression
+				{
+					// TODO: test
+					result += "is \(typeName) -> "
 				}
 				else {
 					let translatedExpression = try translateExpression(
 						caseExpression, withIndentation: increasedIndentation)
-					result += "\(increasedIndentation)\(translatedExpression) -> "
+					result += "\(translatedExpression) -> "
 				}
 			}
 			else {
-				result += "\(increasedIndentation)else -> "
+				result += "else -> "
 			}
 
 			if switchCase.statements.count == 1,
@@ -909,6 +949,8 @@ public class KotlinTranslator {
 				withIndentation: indentation)
 		case let .literalStringExpression(value: value):
 			return translateStringLiteral(value: value)
+		case let .literalCharacterExpression(value: value):
+			return translateCharacterLiteral(value: value)
 		case let .interpolatedStringLiteralExpression(expressions: expressions):
 			return try translateInterpolatedStringLiteralExpression(
 				expressions: expressions, withIndentation: indentation)
@@ -939,6 +981,14 @@ public class KotlinTranslator {
 			return try translateExpression(expression, withIndentation: indentation) + "!!"
 		case let .optionalExpression(expression: expression):
 			return try translateExpression(expression, withIndentation: indentation) + "?"
+		case let .conditionalCastExpression(
+			declarationReference: declarationReference, castedToType: castedToType):
+
+			return try translateExpression(declarationReference, withIndentation: indentation) +
+				" as? \(castedToType)"
+		case let .isExpression(declarationReference: declarationReference, typeName: typeName):
+			return try translateExpression(declarationReference, withIndentation: indentation) +
+			" is \(typeName)"
 		case let .literalIntExpression(value: value):
 			return String(value)
 		case let .literalUIntExpression(value: value):
@@ -1312,6 +1362,11 @@ public class KotlinTranslator {
 
 	private func translateStringLiteral(value: String) -> String {
 		return "\"\(value)\""
+	}
+
+	// TODO: Test chars
+	private func translateCharacterLiteral(value: String) -> String {
+		return "'\(value)'"
 	}
 
 	private func translateInterpolatedStringLiteralExpression(
