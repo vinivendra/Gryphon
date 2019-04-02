@@ -539,6 +539,32 @@ public class TranspilationPass {
 	}
 }
 
+public class DescriptionAsToStringTranspilationPass: TranspilationPass {
+	override func replaceVariableDeclaration(_ variableDeclaration: VariableDeclaration)
+		-> [Statement]
+	{
+		if variableDeclaration.identifier == "description",
+			variableDeclaration.typeName == "String",
+			let unwrappedGetter = variableDeclaration.getter,
+			case let Statement.functionDeclaration(value: getter) = unwrappedGetter
+		{
+			return [.functionDeclaration(value: FunctionDeclaration(
+				prefix: "toString",
+				parameters: [],
+				returnType: "String",
+				functionType: "() -> String",
+				isImplicit: false,
+				isStatic: false,
+				isMutating: false,
+				extendsType: variableDeclaration.extendsType,
+				statements: getter.statements,
+				access: variableDeclaration.annotations)), ]
+		}
+
+		return super.replaceVariableDeclaration(variableDeclaration)
+	}
+}
+
 public class RemoveParenthesesTranspilationPass: TranspilationPass {
 	override func replaceParenthesesExpression(expression: Expression) -> Expression {
 
@@ -1538,6 +1564,8 @@ public extension TranspilationPass {
 	static func runAllPasses(on sourceFile: GryphonAST) -> GryphonAST {
 		var result = sourceFile
 		result = LibraryTranspilationPass().run(on: result)
+		result = DescriptionAsToStringTranspilationPass().run(on: result)
+
 		result = RemoveImplicitDeclarationsTranspilationPass().run(on: result)
 		result = RemoveParenthesesTranspilationPass().run(on: result)
 

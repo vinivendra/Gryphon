@@ -36,7 +36,7 @@ internal class ASTDumpDecoder {
 	enum DecodingError: Error, CustomStringConvertible {
 		case unexpectedContent(decoder: ASTDumpDecoder, errorMessage: String)
 
-		var description: String {
+		var description: String { // annotation: override
 			switch self {
 			case let .unexpectedContent(decoder, errorMessage):
 				return "Decoding error: \(errorMessage)\n" +
