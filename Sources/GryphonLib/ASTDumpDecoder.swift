@@ -438,7 +438,10 @@ internal class ASTDumpDecoder {
 					break loop
 				}
 			case " ":
-				if buffer[index...].hasPrefix(" extension.") {
+				let nextPart = buffer[index...].prefix(" extension.".count + 1)
+					.replacingOccurrences(of: "\n", with: "")
+
+				if nextPart.hasPrefix(" extension.") {
 					index = buffer.index(after: index)
 					continue loop
 				}
