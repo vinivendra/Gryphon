@@ -1,17 +1,19 @@
+### MacOS files
 .DS_Store
+
+### Build products
+# Gryphon build folder
 /.build
-/Packages
-/*.xcodeproj
-**/xcuserdata
-gyb.pyc
-test.*
-test
+# AST Dumps for translated files
+*.swiftAstDump
+# Used by the test suite to print diffs when tests fail
 /.tmp
+# Used by the acceptance tests to build the translated programs
 /.kotlinBuild*
+# Result of building the translated programs
 *.jar
 
-*.gryAst
-*.gryRawAst
-*.grySwiftAst
-*.swiftAstDump
+### Xcode files
+/*.xcodeproj
+**/xcuserdata
 
