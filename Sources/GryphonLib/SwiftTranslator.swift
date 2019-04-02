@@ -62,10 +62,10 @@ public class SwiftTranslator {
 	}
 
 	// MARK: - Top-level translations
-	internal func translate(subtree: SwiftAST) throws -> [Statement?] {
+	internal func translate(subtree: SwiftAST) throws -> Statement? {
 
 		if getComment(forNode: subtree, key: "kotlin") == "ignore" {
-			return []
+			return nil
 		}
 
 		var result: Statement?
@@ -107,9 +107,11 @@ public class SwiftTranslator {
 			result = try translate(deferStatement: subtree)
 		case "Pattern Binding Declaration":
 			try process(patternBindingDeclaration: subtree)
-			return []
+			return nil
 		case "Return Statement":
 			result = try translate(returnStatement: subtree)
+		case "Break Statement":
+			result = .breakStatement
 		case "Fail Statement":
 			result = .returnStatement(expression: .nilLiteralExpression)
 		default:
@@ -122,7 +124,7 @@ public class SwiftTranslator {
 			}
 		}
 
-		return [result]
+		return result
 	}
 
 	internal func translate(expression: SwiftAST) throws -> Expression {
@@ -270,9 +272,7 @@ public class SwiftTranslator {
 		}
 			// If there is no info on ranges, then just translate the subtrees normally
 		else {
-			return try subtrees
-				.reduce([]) { acc, subtree in try acc + translate(subtree: subtree) }
-				.compactMap { $0 }
+			return try subtrees.compactMap(translate(subtree:))
 		}
 
 		let commentToAST = { (comment: (key: String, value: String)) -> Statement? in
@@ -299,7 +299,9 @@ public class SwiftTranslator {
 				lastRange = currentRange
 			}
 
-			try result += translate(subtree: subtree).compactMap { $0 }
+			if let translatedSubtree = try translate(subtree: subtree) {
+				result.append(translatedSubtree)
+			}
 		}
 
 		// Insert code in comments after the last translated node

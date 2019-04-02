@@ -87,6 +87,8 @@ public class TranspilationPass {
 			return replaceThrowStatement(expression: expression)
 		case let .returnStatement(expression: expression):
 			return replaceReturnStatement(expression: expression)
+		case .breakStatement:
+			return [.breakStatement]
 		case let .assignmentStatement(leftHand: leftHand, rightHand: rightHand):
 			return replaceAssignmentStatement(leftHand: leftHand, rightHand: rightHand)
 		case .error:
@@ -1239,6 +1241,32 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 	}
 }
 
+/// Breaks are not allowed in Kotlin `when` statements, but the `when` statements don't have to be
+/// exhaustive. Just remove the cases that only have breaks.
+public class RemoveBreaksInSwitchesTranspilationPass: TranspilationPass {
+	override func replaceSwitchStatement(
+		convertsToExpression: Statement?, expression: Expression, cases: [SwitchCase])
+		-> [Statement]
+	{
+		let newCases = cases.compactMap { (switchCase: SwitchCase) -> SwitchCase? in
+			if switchCase.statements.count == 1,
+				let onlyStatement = switchCase.statements.first,
+				case .breakStatement = onlyStatement
+			{
+				return nil
+			}
+			else {
+				return switchCase
+			}
+		}
+
+		return super.replaceSwitchStatement(
+			convertsToExpression: convertsToExpression,
+			expression: expression,
+			cases: newCases)
+	}
+}
+
 public class RemoveExtensionsTranspilationPass: TranspilationPass {
 	var extendingType: String?
 
@@ -1587,6 +1615,7 @@ public extension TranspilationPass {
 		result = RecordEnumsTranspilationPass().run(on: result)
 		result = CapitalizeEnumsTranspilationPass().run(on: result)
 		result = OmitImplicitEnumPrefixesTranspilationPass().run(on: result)
+		result = RemoveBreaksInSwitchesTranspilationPass().run(on: result)
 		result = SwitchesToExpressionsTranspilationPass().run(on: result)
 
 		result = ReturnsInLambdasTranspilationPass().run(on: result)

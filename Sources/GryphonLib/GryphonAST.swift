@@ -104,6 +104,7 @@ public indirect enum Statement: Equatable, PrintableAsTree {
 		expression: Expression)
 	case returnStatement(
 		expression: Expression?)
+	case breakStatement
 	case assignmentStatement(
 		leftHand: Expression,
 		rightHand: Expression)
@@ -455,6 +456,8 @@ extension Statement {
 			return [expression]
 		case let .returnStatement(expression: expression):
 			return [expression]
+		case .breakStatement:
+			return []
 		case let .assignmentStatement(leftHand: leftHand, rightHand: rightHand):
 			return [leftHand, rightHand]
 		case .error:

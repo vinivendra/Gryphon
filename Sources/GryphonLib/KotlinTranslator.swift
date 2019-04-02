@@ -239,6 +239,8 @@ public class KotlinTranslator {
 		case let .returnStatement(expression: expression):
 			result = try translateReturnStatement(
 				expression: expression, withIndentation: indentation)
+		case .breakStatement:
+			result = "\(indentation)break\n"
 		case let .expression(expression: expression):
 			let expressionTranslation =
 				try translateExpression(expression, withIndentation: indentation)
