@@ -1209,10 +1209,16 @@ public class SwiftTranslator {
 			let enumType = enumPatternLet["type"],
 			let patternEnumElement = enumPatternLet.subtree(named: "Pattern Enum Element"),
 			let patternTuple = patternEnumElement.subtree(named: "Pattern Tuple"),
-			let associatedValueNames = patternTuple["names"]?.split(separator: ",") else
+			let associatedValueTuple = patternTuple["type"] else
 		{
 			return nil
 		}
+
+		// Process a string like `(label1: Type1, label2: Type2)` to get the labels
+		let valuesTupleWithoutParentheses = String(associatedValueTuple.dropFirst().dropLast())
+		let valueTuplesComponents = valuesTupleWithoutParentheses.split(withStringSeparator: ", ")
+		let associatedValueNames =
+			valueTuplesComponents.map { $0.split(withStringSeparator: ": ")[0] }
 
 		var declarations =
 			[(associatedValueName: String, associatedValueType: String, newVariable: String)]()
