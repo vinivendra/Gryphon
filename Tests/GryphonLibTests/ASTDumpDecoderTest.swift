@@ -30,26 +30,6 @@ class ASTDumpDecoderTest: XCTestCase {
 			"(foo)").canReadClosingParenthesis())
 
 		XCTAssert(ASTDumpDecoder(encodedString:
-			"[0]").canReadOpeningBracket())
-		XCTAssertFalse(ASTDumpDecoder(encodedString:
-			"0]").canReadOpeningBracket())
-
-		XCTAssert(ASTDumpDecoder(encodedString:
-			"] foo").canReadClosingBracket())
-		XCTAssertFalse(ASTDumpDecoder(encodedString:
-			"[foo]").canReadClosingBracket())
-
-		XCTAssert(ASTDumpDecoder(encodedString:
-			"{0 1}").canReadOpeningBrace())
-		XCTAssertFalse(ASTDumpDecoder(encodedString:
-			"0 1}").canReadOpeningBrace())
-
-		XCTAssert(ASTDumpDecoder(encodedString:
-			"} 0 1").canReadClosingBrace())
-		XCTAssertFalse(ASTDumpDecoder(encodedString:
-			"{0 1}").canReadClosingBrace())
-
-		XCTAssert(ASTDumpDecoder(encodedString:
 			"\"foo\")").canReadDoubleQuotedString())
 		XCTAssertFalse(ASTDumpDecoder(encodedString:
 			"(\"foo\")").canReadDoubleQuotedString())
@@ -77,24 +57,6 @@ class ASTDumpDecoderTest: XCTestCase {
 
 		decoder = ASTDumpDecoder(encodedString: ") foo")
 		XCTAssertNoThrow(try decoder.readClosingParenthesis())
-		XCTAssertEqual(decoder.remainingBuffer, "foo")
-
-		// Brackets
-		decoder = ASTDumpDecoder(encodedString: "[foo")
-		XCTAssertNoThrow(try decoder.readOpeningBracket())
-		XCTAssertEqual(decoder.remainingBuffer, "foo")
-
-		decoder = ASTDumpDecoder(encodedString: "] foo")
-		XCTAssertNoThrow(try decoder.readClosingBracket())
-		XCTAssertEqual(decoder.remainingBuffer, "foo")
-
-		// Braces
-		decoder = ASTDumpDecoder(encodedString: "{foo")
-		XCTAssertNoThrow(try decoder.readOpeningBrace())
-		XCTAssertEqual(decoder.remainingBuffer, "foo")
-
-		decoder = ASTDumpDecoder(encodedString: "} foo")
-		XCTAssertNoThrow(try decoder.readClosingBrace())
 		XCTAssertEqual(decoder.remainingBuffer, "foo")
 
 		// Identifier

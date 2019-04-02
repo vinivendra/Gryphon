@@ -81,22 +81,6 @@ internal class ASTDumpDecoder {
 		return buffer[currentIndex] == ")"
 	}
 
-	func canReadOpeningBracket() -> Bool {
-		return buffer[currentIndex] == "["
-	}
-
-	func canReadClosingBracket() -> Bool {
-		return buffer[currentIndex] == "]"
-	}
-
-	func canReadOpeningBrace() -> Bool {
-		return buffer[currentIndex] == "{"
-	}
-
-	func canReadClosingBrace() -> Bool {
-		return buffer[currentIndex] == "}"
-	}
-
 	func canReadDoubleQuotedString() -> Bool {
 		return buffer[currentIndex] == "\""
 	}
@@ -124,38 +108,6 @@ internal class ASTDumpDecoder {
 	func readClosingParenthesis() throws {
 		guard canReadClosingParenthesis() else {
 			throw DecodingError.unexpectedContent(decoder: self, errorMessage: "Expected ')'.")
-		}
-		currentIndex = nextIndex()
-		cleanLeadingWhitespace()
-	}
-
-	func readOpeningBracket() throws {
-		guard canReadOpeningBracket() else {
-			throw DecodingError.unexpectedContent(decoder: self, errorMessage: "Expected '['.")
-		}
-		currentIndex = nextIndex()
-		cleanLeadingWhitespace()
-	}
-
-	func readClosingBracket() throws {
-		guard canReadClosingBracket() else {
-			throw DecodingError.unexpectedContent(decoder: self, errorMessage: "Expected ']'.")
-		}
-		currentIndex = nextIndex()
-		cleanLeadingWhitespace()
-	}
-
-	func readOpeningBrace() throws {
-		guard canReadOpeningBrace() else {
-			throw DecodingError.unexpectedContent(decoder: self, errorMessage: "Expected '{'.")
-		}
-		currentIndex = nextIndex()
-		cleanLeadingWhitespace()
-	}
-
-	func readClosingBrace() throws {
-		guard canReadClosingBrace() else {
-			throw DecodingError.unexpectedContent(decoder: self, errorMessage: "Expected '}'.")
 		}
 		currentIndex = nextIndex()
 		cleanLeadingWhitespace()
