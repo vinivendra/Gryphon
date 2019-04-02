@@ -785,21 +785,10 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass {
 	}
 }
 
-/// Capitalizes references to all enums (even ones whose declarations weren't processed by Gryphon).
-/// Assumes subtrees like the one below are references to enums (see also
-/// OmitImplicitEnumPrefixesTranspilationPass).
-///
-///	    ...
-///        └─ dotExpression
-///          ├─ left
-///          │  └─ typeExpression
-///          │     └─ MyEnum
-///          └─ right
-///             └─ declarationReferenceExpression
-///                ├─ (MyEnum.Type) -> MyEnum
-///                └─ myEnum
 // TODO: test
-public class CapitalizeAllEnumsTranspilationPass: TranspilationPass {
+/// Capitalizes references to enums (since enum cases in Kotlin are conventionally written in
+/// capitalized forms)
+public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 	override func replaceDotExpression(
 		leftExpression: Expression, rightExpression: Expression) -> Expression
 	{
@@ -808,9 +797,7 @@ public class CapitalizeAllEnumsTranspilationPass: TranspilationPass {
 				identifier: enumCase,
 				type: enumFunctionType,
 				isStandardLibrary: isStandardLibrary,
-				isImplicit: isImplicit) = rightExpression,
-			enumFunctionType.hasPrefix("(\(enumType).Type) -> "),
-			enumFunctionType.hasSuffix(" -> \(enumType)")
+				isImplicit: isImplicit) = rightExpression
 		{
 			if KotlinTranslator.sealedClasses.contains(enumType) {
 				return .dotExpression(
@@ -821,7 +808,7 @@ public class CapitalizeAllEnumsTranspilationPass: TranspilationPass {
 						isStandardLibrary: isStandardLibrary,
 						isImplicit: isImplicit))
 			}
-			else {
+			else if KotlinTranslator.enumClasses.contains(enumType) {
 				return .dotExpression(
 					leftExpression: .typeExpression(type: enumType),
 					rightExpression: .declarationReferenceExpression(
@@ -831,10 +818,9 @@ public class CapitalizeAllEnumsTranspilationPass: TranspilationPass {
 						isImplicit: isImplicit))
 			}
 		}
-		else {
-			return super.replaceDotExpression(
-				leftExpression: leftExpression, rightExpression: rightExpression)
-		}
+
+		return super.replaceDotExpression(
+			leftExpression: leftExpression, rightExpression: rightExpression)
 	}
 }
 
@@ -1492,7 +1478,6 @@ public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
 public class ReturnIfNilTranspilationPass: TranspilationPass {
 	override func replaceStatement(_ statement: Statement) -> [Statement] {
 		if case let .ifStatement(value: ifStatement) = statement,
-			ifStatement.declarations.isEmpty,
 			ifStatement.conditions.count == 1,
 			let onlyCondition = ifStatement.conditions.first,
 			case let .binaryOperatorExpression(
@@ -1566,7 +1551,7 @@ public extension TranspilationPass {
 
 		result = RecordFunctionTranslationsTranspilationPass().run(on: result)
 		result = RecordEnumsTranspilationPass().run(on: result)
-		result = CapitalizeAllEnumsTranspilationPass().run(on: result)
+		result = CapitalizeEnumsTranspilationPass().run(on: result)
 		result = OmitImplicitEnumPrefixesTranspilationPass().run(on: result)
 		result = SwitchesToExpressionsTranspilationPass().run(on: result)
 
