@@ -175,6 +175,10 @@ public class KotlinTranslator {
 			return try unexpectedASTStructureError(
 				"Extension structure should have been removed in a transpilation pass",
 				AST: subtree)
+		case .deferStatement(statements: _):
+			return try unexpectedASTStructureError(
+				"Defer statements are only supported as top-level statements in function bodies",
+				AST: subtree)
 		case let .typealiasDeclaration(identifier: identifier, type: type, isImplicit: isImplicit):
 			result = try translateTypealias(
 				identifier: identifier, type: type, isImplicit: isImplicit,
@@ -575,9 +579,48 @@ public class KotlinTranslator {
 			return result + "\n"
 		}
 
+		// Get all statements that have been deferred
+		let innerDeferStatements = statements.flatMap { (statement: Statement) -> [Statement] in
+			if case let .deferStatement(statements: innerStatements) = statement {
+				return innerStatements
+			}
+			else {
+				return []
+			}
+		}
+
+		// Get all other statements
+		let nonDeferStatements = statements.filter { statement in
+			if case .deferStatement = statement {
+				return false
+			}
+			else {
+				return true
+			}
+		}
+
 		indentation = increaseIndentation(indentation)
-		result += try translate(
-			subtrees: statements, withIndentation: indentation, limitForAddingNewlines: 3)
+
+		if !innerDeferStatements.isEmpty {
+			let increasedIndentation = increaseIndentation(indentation)
+			result += "\(indentation)try {\n"
+			result += try translate(
+				subtrees: nonDeferStatements,
+				withIndentation: increasedIndentation,
+				limitForAddingNewlines: 3)
+			result += "\(indentation)}\n"
+			result += "\(indentation)finally {\n"
+			result += try translate(
+				subtrees: innerDeferStatements,
+				withIndentation: increasedIndentation,
+				limitForAddingNewlines: 3)
+			result += "\(indentation)}\n"
+		}
+		else {
+			result += try translate(
+				subtrees: statements, withIndentation: indentation, limitForAddingNewlines: 3)
+		}
+
 		indentation = decreaseIndentation(indentation)
 		result += indentation + "}\n"
 

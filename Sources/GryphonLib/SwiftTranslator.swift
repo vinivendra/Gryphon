@@ -103,6 +103,8 @@ public class SwiftTranslator {
 			result = try translate(ifStatement: subtree)
 		case "Switch Statement":
 			result = try translate(switchStatement: subtree)
+		case "Defer Statement":
+			result = try translate(deferStatement: subtree)
 		case "Pattern Binding Declaration":
 			try process(patternBindingDeclaration: subtree)
 			return []
@@ -849,6 +851,25 @@ public class SwiftTranslator {
 		let statements = try translate(braceStatement: braceStatement)
 
 		return .whileStatement(expression: expression, statements: statements)
+	}
+
+	internal func translate(deferStatement: SwiftAST) throws -> Statement {
+		guard deferStatement.name == "Defer Statement" else {
+			return try unexpectedASTStructureError(
+				"Trying to translate \(deferStatement.name) as a 'Defer Statement'",
+				AST: deferStatement)
+		}
+
+		guard let functionDeclaration = deferStatement.subtree(named: "Function Declaration"),
+			let braceStatement = functionDeclaration.subtree(named: "Brace Statement") else
+		{
+			return try unexpectedASTStructureError(
+				"Expected defer statement to have a function declaration with a brace statement " +
+					"containing the deferred statements.",
+				AST: deferStatement)
+		}
+
+		return .deferStatement(statements: try translate(braceStatement: braceStatement))
 	}
 
 	internal func translate(ifStatement: SwiftAST) throws -> Statement {

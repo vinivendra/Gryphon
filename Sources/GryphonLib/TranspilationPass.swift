@@ -81,6 +81,8 @@ public class TranspilationPass {
 
 			return replaceSwitchStatement(
 				convertsToExpression: convertsToExpression, expression: expression, cases: cases)
+		case let .deferStatement(statements: statements):
+			return replaceDeferStatement(statements: statements)
 		case let .throwStatement(expression: expression):
 			return replaceThrowStatement(expression: expression)
 		case let .returnStatement(expression: expression):
@@ -249,6 +251,10 @@ public class TranspilationPass {
 			convertsToExpression: replacedConvertsToExpression,
 			expression: replaceExpression(expression),
 			cases: replacedCases), ]
+	}
+
+	func replaceDeferStatement(statements: [Statement]) -> [Statement] {
+		return [.deferStatement(statements: replaceStatements(statements))]
 	}
 
 	func replaceThrowStatement(expression: Expression) -> [Statement] {

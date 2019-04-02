@@ -98,6 +98,8 @@ public indirect enum Statement: Equatable, PrintableAsTree {
 		convertsToExpression: Statement?,
 		expression: Expression,
 		cases: [SwitchCase])
+	case deferStatement(
+		statements: [Statement])
 	case throwStatement(
 		expression: Expression)
 	case returnStatement(
@@ -447,6 +449,8 @@ extension Statement {
 				PrintableTree.initOrNil("converts to expression", [convertsToExpression]),
 				PrintableTree("expression", [expression]),
 				PrintableTree("case items", caseItems), ]
+		case let .deferStatement(statements: statements):
+			return ArrayReference(array: statements)
 		case let .throwStatement(expression: expression):
 			return [expression]
 		case let .returnStatement(expression: expression):
