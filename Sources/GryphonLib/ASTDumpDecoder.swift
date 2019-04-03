@@ -263,7 +263,8 @@ internal class ASTDumpDecoder {
 			}
 
 			guard character != " " else {
-				let composedKeyEndIndex = buffer.index(currentIndex, offsetBy: 15)
+				let composedKeyEndIndex =
+					buffer.index(currentIndex, offsetBy: "interface type=".count)
 
 				if buffer[currentIndex..<composedKeyEndIndex] == "interface type=" {
 					currentIndex = composedKeyEndIndex
@@ -424,36 +425,38 @@ internal class ASTDumpDecoder {
 		var hasPeriod = false
 
 		var index = currentIndex
-		loop: while true {
+		while true {
 			let character = buffer[index]
 
-			switch character {
-			case ".":
+			if character == "." {
 				hasPeriod = true
-			case "(":
+			}
+			else if character == "(" {
 				parenthesesLevel += 1
-			case ")":
+			}
+			else if character == ")" {
 				parenthesesLevel -= 1
 				if parenthesesLevel < 0 {
-					break loop
+					break
 				}
-			case " ":
+			}
+			else if character == " " {
 				let nextPart = buffer[index...].prefix(" extension.".count + 1)
 					.replacingOccurrences(of: "\n", with: "")
 
 				if nextPart.hasPrefix(" extension.") {
 					index = buffer.index(after: index)
-					continue loop
+					continue
 				}
 				else {
-					break loop
+					break
 				}
-			case "\n":
+			}
+			else if character == "\n" {
 				let nextCharacter = buffer[buffer.index(after: index)]
 				if nextCharacter == " " {
-					break loop
+					break
 				}
-			default: break
 			}
 
 			index = buffer.index(after: index)
@@ -486,25 +489,26 @@ internal class ASTDumpDecoder {
 		let firstContentsIndex = buffer.index(after: currentIndex)
 
 		var index = firstContentsIndex
-		loop: while true {
+		while true {
 			let character = buffer[index]
 
-			switch character {
-			case "\\":
+			if character == "\\" {
 				if isEscaping {
 					isEscaping = false
 				}
 				else {
 					isEscaping = true
 				}
-			case "\"":
+			}
+			else if character == "\"" {
 				if isEscaping {
 					isEscaping = false
 				}
 				else {
-					break loop
+					break
 				}
-			default:
+			}
+			else {
 				isEscaping = false
 			}
 
