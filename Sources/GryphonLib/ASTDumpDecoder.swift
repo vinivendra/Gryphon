@@ -154,19 +154,6 @@ internal class ASTDumpDecoder {
 	newline is not a space, we assume that's what happened and keep reading the rest.
 	*/
 	func readIdentifier() -> String {
-		let endIndex = indexOfEndOfIdentifier()
-
-		let string = String(buffer[currentIndex..<endIndex])
-		let cleanString = string.replacingOccurrences(of: "\n", with: "")
-
-		currentIndex = endIndex
-
-		cleanLeadingWhitespace()
-
-		return cleanString
-	}
-
-	private func indexOfEndOfIdentifier() -> String.Index {
 		var parenthesesLevel = 0
 
 		var index = currentIndex
@@ -174,26 +161,36 @@ internal class ASTDumpDecoder {
 		while true {
 			let character = buffer[index]
 
-			switch character {
-			case "(":
+			if character == "(" {
 				parenthesesLevel += 1
-			case ")":
+			}
+			else if character == ")" {
 				parenthesesLevel -= 1
 				if parenthesesLevel < 0 {
-					return index
+					break
 				}
-			case "\n":
+			}
+			else if character == "\n" {
 				let nextCharacter = buffer[buffer.index(after: index)]
 				if nextCharacter == " " {
-					return index
+					break
 				}
-			case " ":
-				return index
-			default: break
+			}
+			else if character == " " {
+				break
 			}
 
 			index = buffer.index(after: index)
 		}
+
+		let string = String(buffer[currentIndex..<index])
+		let cleanString = string.replacingOccurrences(of: "\n", with: "")
+
+		currentIndex = index
+
+		cleanLeadingWhitespace()
+
+		return cleanString
 	}
 
 	/**
