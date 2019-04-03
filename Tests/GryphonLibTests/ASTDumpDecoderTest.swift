@@ -70,6 +70,22 @@ class ASTDumpDecoderTest: XCTestCase {
 		XCTAssertEqual(string, "foo(baz)bar")
 		XCTAssertEqual(decoder.remainingBuffer, ")")
 
+		decoder = ASTDumpDecoder(encodedString: "foo\nbar)")
+		string = decoder.readIdentifier()
+		XCTAssertEqual(string, "foobar")
+		XCTAssertEqual(decoder.remainingBuffer, ")")
+
+		decoder = ASTDumpDecoder(encodedString: "foo\n  bar)")
+		string = decoder.readIdentifier()
+		XCTAssertEqual(string, "foo")
+		XCTAssertEqual(decoder.remainingBuffer, "bar)")
+
+		// Identifier list
+		decoder = ASTDumpDecoder(encodedString: "foo,bla bar)")
+		string = decoder.readIdentifier()
+		XCTAssertEqual(string, "foo,bla")
+		XCTAssertEqual(decoder.remainingBuffer, "bar)")
+
 		// Location
 		decoder = ASTDumpDecoder(encodedString: "/foo/bar baz/test.swift:5:16 )")
 		string = decoder.readLocation()
@@ -89,6 +105,42 @@ class ASTDumpDecoderTest: XCTestCase {
 		optionalString = decoder.readDeclarationLocation()
 		XCTAssertNil(optionalString)
 
+		// Declaration
+		decoder = ASTDumpDecoder(
+			encodedString: "test.(file).Bla.foo(bar:baz:).x)")
+		optionalString = decoder.readDeclaration()
+		XCTAssertEqual(
+			optionalString, "test.(file).Bla.foo(bar:baz:).x")
+		XCTAssertEqual(decoder.remainingBuffer, ")")
+
+		decoder = ASTDumpDecoder(
+			encodedString: "test.(file).Bl\na.foo(bar:baz:).x)")
+		optionalString = decoder.readDeclaration()
+		XCTAssertEqual(
+			optionalString, "test.(file).Bla.foo(bar:baz:).x")
+		XCTAssertEqual(decoder.remainingBuffer, ")")
+
+		decoder = ASTDumpDecoder(
+			encodedString: "test.(file).Bla.foo(bar:baz:).x\n  )")
+		optionalString = decoder.readDeclaration()
+		XCTAssertEqual(
+			optionalString, "test.(file).Bla.foo(bar:baz:).x")
+		XCTAssertEqual(decoder.remainingBuffer, ")")
+
+		decoder = ASTDumpDecoder(
+			encodedString: "Swift.(file).Collection extension.dropLast foobarbazfoobarbaz")
+		optionalString = decoder.readDeclaration()
+		XCTAssertEqual(
+			optionalString, "Swift.(file).Collection extension.dropLast")
+		XCTAssertEqual(decoder.remainingBuffer, "foobarbazfoobarbaz")
+
+		decoder = ASTDumpDecoder(
+			encodedString: "Swift.(file).Collection exte\nnsion.dropLast foobarbazfoobarbaz")
+		optionalString = decoder.readDeclaration()
+		XCTAssertEqual(
+			optionalString, "Swift.(file).Collection extension.dropLast")
+		XCTAssertEqual(decoder.remainingBuffer, "foobarbazfoobarbaz")
+
 		// Double quoted string
 		decoder = ASTDumpDecoder(encodedString: "\"bla\" foo)")
 		string = decoder.readDoubleQuotedString()
@@ -107,49 +159,15 @@ class ASTDumpDecoderTest: XCTestCase {
 		XCTAssertEqual(string, "bla")
 		XCTAssertEqual(decoder.remainingBuffer, "foo)")
 
-		//
-		// Test that a Swift compiler bug is being handled correctly. See `readIdentifier`'s docs.
-		decoder = ASTDumpDecoder(encodedString: "foo\nbar)")
-		string = decoder.readIdentifier()
-		XCTAssertEqual(string, "foobar")
-		XCTAssertEqual(decoder.remainingBuffer, ")")
-
-		decoder = ASTDumpDecoder(encodedString: "foo\n  bar)")
-		string = decoder.readIdentifier()
-		XCTAssertEqual(string, "foo")
-		XCTAssertEqual(decoder.remainingBuffer, "bar)")
-
-		decoder = ASTDumpDecoder(
-			encodedString: "test.(file).Bl\na.foo(bar:baz:).x)")
-		optionalString = decoder.readDeclaration()
-		XCTAssertEqual(
-			optionalString, "test.(file).Bla.foo(bar:baz:).x")
-		XCTAssertEqual(decoder.remainingBuffer, ")")
-
-		decoder = ASTDumpDecoder(
-			encodedString: "test.(file).Bla.foo(bar:baz:).x\n  )")
-		optionalString = decoder.readDeclaration()
-		XCTAssertEqual(
-			optionalString, "test.(file).Bla.foo(bar:baz:).x")
-		XCTAssertEqual(decoder.remainingBuffer, ")")
+		// String in angle brackets
+		decoder = ASTDumpDecoder(encodedString: "<bla> foo)")
+		string = decoder.readStringInAngleBrackets()
+		XCTAssertEqual(string, "<bla>")
+		XCTAssertEqual(decoder.remainingBuffer, "foo)")
 	}
 
 	static var allTests = [
 		("testDecoderCanRead", testDecoderCanRead),
 		("testDecoderRead", testDecoderRead),
 	]
-
-	override static func setUp() {
-		do {
-			try Utilities.updateTestFiles()
-		}
-		catch let error {
-			print(error)
-			fatalError("Failed to update test files.")
-		}
-	}
-
-	override func setUp() {
-		Compiler.clearErrorsAndWarnings()
-	}
 }
