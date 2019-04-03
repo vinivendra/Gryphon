@@ -23,7 +23,7 @@ internal extension String {
 		maxSplits: Int = Int.max,
 		omittingEmptySubsequences: Bool = true) -> [String]
 	{
-		var result = [String]()
+		var result: [String] = []
 
 		var splits = 0
 		var previousIndex = startIndex
@@ -31,25 +31,25 @@ internal extension String {
 
 		// Add all substrings immediately before each separator
 		for separator in separators {
-			defer {
-				splits += 1
-			}
-
 			if splits >= maxSplits {
+				splits += 1
 				break
-			}
-
-			defer {
-				previousIndex = separator.upperBound
 			}
 
 			let substring = self[previousIndex..<separator.lowerBound]
 
 			if omittingEmptySubsequences {
-				guard !substring.isEmpty else { continue }
+				guard !substring.isEmpty else {
+					splits += 1
+					previousIndex = separator.upperBound
+					continue
+				}
 			}
 
 			result.append(String(substring))
+
+			splits += 1
+			previousIndex = separator.upperBound
 		}
 
 		// Add the last substring (which the loop above ignores)
