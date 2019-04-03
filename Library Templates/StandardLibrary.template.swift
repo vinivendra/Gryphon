@@ -68,8 +68,14 @@ _string.startIndex
 _string.index(after: _index)
 "_index + 1"
 
+_string.index(_index, offsetBy: _int)
+"_index + _int"
+
 _string1.replacingOccurrences(of: _string2, with: _string3)
 "_string1.replace(_string2, _string3)"
+
+_string1.hasPrefix(_string2)
+"_string1.startsWith(_string2)"
 
 // Array
 _array.append(_any)
