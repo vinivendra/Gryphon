@@ -14,8 +14,6 @@
 * limitations under the License.
 */
 
-import Foundation
-
 public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible {
 	let name: String
 	let standaloneAttributes: ArrayReference<String>
