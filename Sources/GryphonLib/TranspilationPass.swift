@@ -89,6 +89,8 @@ public class TranspilationPass {
 			return replaceReturnStatement(expression: expression)
 		case .breakStatement:
 			return [.breakStatement]
+		case .continueStatement:
+			return [.continueStatement]
 		case let .assignmentStatement(leftHand: leftHand, rightHand: rightHand):
 			return replaceAssignmentStatement(leftHand: leftHand, rightHand: rightHand)
 		case .error:

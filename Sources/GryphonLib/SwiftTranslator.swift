@@ -112,6 +112,8 @@ public class SwiftTranslator {
 			result = try translate(returnStatement: subtree)
 		case "Break Statement":
 			result = .breakStatement
+		case "Continue Statement":
+			result = .continueStatement
 		case "Fail Statement":
 			result = .returnStatement(expression: .nilLiteralExpression)
 		default:
