@@ -984,7 +984,6 @@ public class SelfToThisTranspilationPass: TranspilationPass {
 		-> Expression
 	{
 		if identifier == "self" {
-			assert(!isImplicit)
 			return .declarationReferenceExpression(
 				identifier: "this", type: type, isStandardLibrary: isStandardLibrary,
 				isImplicit: isImplicit)
