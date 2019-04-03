@@ -529,6 +529,9 @@ public class KotlinTranslator {
 			result += "operator fun invoke("
 		}
 		else {
+			if let annotations = functionDeclaration.annotations {
+				result += annotations + " "
+			}
 			if let access = functionDeclaration.access {
 				result += access + " "
 			}

@@ -259,6 +259,7 @@ public struct FunctionDeclaration: Equatable {
 	var extendsType: String?
 	var statements: [Statement]?
 	var access: String?
+	var annotations: String?
 }
 
 public class IfStatement: Equatable {

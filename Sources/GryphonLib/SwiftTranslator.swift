@@ -62,71 +62,70 @@ public class SwiftTranslator {
 	}
 
 	// MARK: - Top-level translations
-	internal func translate(subtree: SwiftAST) throws -> Statement? {
+	internal func translate(subtree: SwiftAST) throws -> [Statement?] {
 
 		if getComment(forNode: subtree, key: "kotlin") == "ignore" {
-			return nil
+			return []
 		}
-
-		var result: Statement?
 
 		switch subtree.name {
 		case "Top Level Code Declaration":
-			result = try translate(topLevelCode: subtree)
+			return [try translate(topLevelCode: subtree)]
 		case "Import Declaration":
-			result = .importDeclaration(name: subtree.standaloneAttributes[0])
+			return [.importDeclaration(name: subtree.standaloneAttributes[0])]
 		case "Typealias":
-			result = try translate(typealiasDeclaration: subtree)
+			return [try translate(typealiasDeclaration: subtree)]
 		case "Class Declaration":
-			result = try translate(classDeclaration: subtree)
+			return [try translate(classDeclaration: subtree)]
 		case "Struct Declaration":
-			result = try translate(structDeclaration: subtree)
+			return [try translate(structDeclaration: subtree)]
 		case "Enum Declaration":
-			result = try translate(enumDeclaration: subtree)
+			return [try translate(enumDeclaration: subtree)]
 		case "Extension Declaration":
-			result = try translate(extensionDeclaration: subtree)
+			return [try translate(extensionDeclaration: subtree)]
 		case "For Each Statement":
-			result = try translate(forEachStatement: subtree)
+			return [try translate(forEachStatement: subtree)]
 		case "While Statement":
-			result = try translate(whileStatement: subtree)
+			return [try translate(whileStatement: subtree)]
 		case "Function Declaration", "Constructor Declaration":
-			result = try translate(functionDeclaration: subtree)
+			return [try translate(functionDeclaration: subtree)]
+		case "Subscript Declaration":
+			return try subtree.subtrees.filter { $0.name == "Accessor Declaration" }
+				.map { try translate(functionDeclaration: $0) }
 		case "Protocol":
-			result = try translate(protocolDeclaration: subtree)
+			return [try translate(protocolDeclaration: subtree)]
 		case "Throw Statement":
-			result = try translate(throwStatement: subtree)
+			return [try translate(throwStatement: subtree)]
 		case "Variable Declaration":
-			result = try translate(variableDeclaration: subtree)
+			return [try translate(variableDeclaration: subtree)]
 		case "Assign Expression":
-			result = try translate(assignExpression: subtree)
+			return [try translate(assignExpression: subtree)]
 		case "If Statement", "Guard Statement":
-			result = try translate(ifStatement: subtree)
+			return [try translate(ifStatement: subtree)]
 		case "Switch Statement":
-			result = try translate(switchStatement: subtree)
+			return [try translate(switchStatement: subtree)]
 		case "Defer Statement":
-			result = try translate(deferStatement: subtree)
+			return [try translate(deferStatement: subtree)]
 		case "Pattern Binding Declaration":
 			try process(patternBindingDeclaration: subtree)
-			return nil
+			return []
 		case "Return Statement":
-			result = try translate(returnStatement: subtree)
+			return [try translate(returnStatement: subtree)]
 		case "Break Statement":
-			result = .breakStatement
+			return [.breakStatement]
 		case "Continue Statement":
-			result = .continueStatement
+			return [.continueStatement]
 		case "Fail Statement":
-			result = .returnStatement(expression: .nilLiteralExpression)
+			return [.returnStatement(expression: .nilLiteralExpression)]
 		default:
 			if subtree.name.hasSuffix("Expression") {
 				let expression = try translate(expression: subtree)
-				result = .expression(expression: expression)
+				return [.expression(expression: expression)]
 			}
 			else {
-				result = nil
+				return []
 			}
 		}
-
-		return result
 	}
 
 	internal func translate(expression: SwiftAST) throws -> Expression {
@@ -274,7 +273,7 @@ public class SwiftTranslator {
 		}
 			// If there is no info on ranges, then just translate the subtrees normally
 		else {
-			return try subtrees.compactMap(translate(subtree:))
+			return try subtrees.flatMap(translate(subtree:)).compactMap { $0 }
 		}
 
 		let commentToAST = { (comment: (key: String, value: String)) -> Statement? in
@@ -301,9 +300,7 @@ public class SwiftTranslator {
 				lastRange = currentRange
 			}
 
-			if let translatedSubtree = try translate(subtree: subtree) {
-				result.append(translatedSubtree)
-			}
+			result.append(contentsOf: try translate(subtree: subtree).compactMap { $0 })
 		}
 
 		// Insert code in comments after the last translated node
@@ -1273,13 +1270,16 @@ public class SwiftTranslator {
 	}
 
 	internal func translate(functionDeclaration: SwiftAST) throws -> Statement? {
-		guard ["Function Declaration", "Constructor Declaration"].contains(functionDeclaration.name)
-			else
-		{
+		let compatibleASTNodes =
+			["Function Declaration", "Constructor Declaration", "Accessor Declaration"]
+		guard compatibleASTNodes.contains(functionDeclaration.name) else {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(functionDeclaration.name) as 'Function Declaration'",
 				AST: functionDeclaration)
 		}
+
+		// Subscripts get translated as `get(i)` or `set(i, a)` functions
+		let isSubscript = (functionDeclaration.name == "Accessor Declaration")
 
 		// Getters and setters will appear again in the Variable Declaration AST and get translated
 		let isGetterOrSetter =
@@ -1289,7 +1289,24 @@ public class SwiftTranslator {
 			return nil
 		}
 
-		let functionName = functionDeclaration.standaloneAttributes.first ?? ""
+		// TODO: test subscripts
+		let functionName: String
+		if isSubscript {
+			if functionDeclaration["get_for"] != nil {
+				functionName = "get"
+			}
+			else if functionDeclaration["set_for"] != nil {
+				functionName = "set"
+			}
+			else {
+				return try unexpectedASTStructureError(
+					"Trying to translate subscript declaration that isn't getter or setter",
+					AST: functionDeclaration)
+			}
+		}
+		else {
+			functionName = functionDeclaration.standaloneAttributes.first ?? ""
+		}
 
 		let access = functionDeclaration["access"]
 
@@ -1361,6 +1378,12 @@ public class SwiftTranslator {
 			}
 		}
 
+		// Subscript setters in Kotlin must be (index, newValue) instead of Swift's
+		// (newValue, index)
+		if isSubscript {
+			parameters.reverse()
+		}
+
 		// Translate the return type
 		// FIXME: Doesn't allow to return function types
 		guard let returnType = interfaceTypeComponents.last else
@@ -1378,6 +1401,15 @@ public class SwiftTranslator {
 			statements = []
 		}
 
+		// TODO: test annotations in functions
+		var annotations: [String?] = []
+		annotations.append(getComment(forNode: functionDeclaration, key: "annotation"))
+		if isSubscript {
+			annotations.append("operator")
+		}
+		let joinedAnnotations = annotations.compactMap { $0 }.joined(separator: " ")
+		let annotationsResult = joinedAnnotations.isEmpty ? nil : joinedAnnotations
+
 		return .functionDeclaration(value: FunctionDeclaration(
 			prefix: String(functionNamePrefix),
 			parameters: parameters,
@@ -1388,7 +1420,8 @@ public class SwiftTranslator {
 			isMutating: isMutating,
 			extendsType: nil,
 			statements: statements,
-			access: access))
+			access: access,
+			annotations: annotationsResult))
 	}
 
 	internal func translate(topLevelCode topLevelCodeDeclaration: SwiftAST) throws
@@ -1482,6 +1515,7 @@ public class SwiftTranslator {
 
 			// Swift 5: "get_for" and "set_for" are the terms used in the Swift 5 AST
 			if subtree["getter_for"] != nil || subtree["get_for"] != nil {
+				let annotations = getComment(forNode: subtree, key: "annotation")
 				getter = .functionDeclaration(value: FunctionDeclaration(
 					prefix: "get",
 					parameters: [],
@@ -1492,12 +1526,14 @@ public class SwiftTranslator {
 					isMutating: false,
 					extendsType: nil,
 					statements: statements,
-					access: access))
+					access: access,
+					annotations: annotations))
 			}
 			else if subtree["materializeForSet_for"] != nil ||
 				subtree["setter_for"] != nil ||
 				subtree["set_for"] != nil
 			{
+				let annotations = getComment(forNode: subtree, key: "annotation")
 				setter = .functionDeclaration(value: FunctionDeclaration(
 					prefix: "set",
 					parameters: [FunctionParameter(
@@ -1509,7 +1545,8 @@ public class SwiftTranslator {
 					isMutating: false,
 					extendsType: nil,
 					statements: statements,
-					access: access))
+					access: access,
+					annotations: annotations))
 			}
 		}
 

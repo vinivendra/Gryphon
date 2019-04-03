@@ -568,7 +568,8 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 				isMutating: false,
 				extendsType: variableDeclaration.extendsType,
 				statements: getter.statements,
-				access: variableDeclaration.annotations)), ]
+				access: nil,
+				annotations: variableDeclaration.annotations)), ]
 		}
 
 		return super.replaceVariableDeclaration(variableDeclaration)
