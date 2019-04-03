@@ -5,15 +5,16 @@ struct Hash: Hashable { }
 
 var _strArray: [String] = []
 var _array: [Any] = []
-let _index: String.Index = "".startIndex
-let _index1: String.Index = "".startIndex
-let _index2: String.Index = "".startIndex
-let _string: String = ""
-let _string1: String = ""
-let _string2: String = ""
-let _string3: String = ""
-let _substring: Substring = " ".dropLast()
-let _any: Any = ""
+var _index: String.Index = "abc".endIndex
+let _index1: String.Index = "abc".startIndex
+let _index2: String.Index = "abc".startIndex
+let _string: String = "abc"
+let _string1: String = "abc"
+let _string2: String = "abc"
+let _string3: String = "abc"
+let _substring: Substring = "abc".dropLast()
+let _range: Range<String.Index> = _string.startIndex..<_string.endIndex
+let _any: Any = "abc"
 let _double: Double = 0
 let _double1: Double = 0
 let _double2: Double = 0
@@ -56,6 +57,9 @@ _string[_index...]
 _string[_index1..<_index2]
 "_string.substring(_index1, _index2)"
 
+_string[_index1..._index2]
+"_string.substring(_index1, _index2 + 1)"
+
 String(_substring)
 "_substring"
 
@@ -65,8 +69,14 @@ _string.endIndex
 _string.startIndex
 "0"
 
+_string.formIndex(before: &_index)
+"_index -= 1"
+
 _string.index(after: _index)
 "_index + 1"
+
+_string.index(before: _index)
+"_index - 1"
 
 _string.index(_index, offsetBy: _int)
 "_index + _int"
@@ -76,6 +86,12 @@ _string1.replacingOccurrences(of: _string2, with: _string3)
 
 _string1.hasPrefix(_string2)
 "_string1.startsWith(_string2)"
+
+_range.lowerBound
+"_range.start"
+
+_range.upperBound
+"_range.endInclusive"
 
 // Array
 _array.append(_any)
