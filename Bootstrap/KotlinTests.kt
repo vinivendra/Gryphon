@@ -38,4 +38,17 @@ open class Test(val className: String) {
     		Exception().printStackTrace()
     	}
 	}
+
+	fun XCTAssertNoThrow(closure: () -> Unit, test: String = "No message") {
+		try {
+			closure()
+    	}
+    	catch (error: Exception) {
+    		allTestsSucceeded = false
+    		println("${className} - XCTAssertNoThrow failed: ${test}.")
+    		Exception().printStackTrace()
+    		println("Error thrown:")
+    		println(error)
+    	}
+	}
 }
