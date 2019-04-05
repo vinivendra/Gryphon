@@ -160,11 +160,26 @@ extension Utilities {
 			return
 		}
 
+		let libraryTemplatesFolder = "Library Templates"
+		if needsToUpdateFiles(in: libraryTemplatesFolder, from: .swift, to: .swiftASTDump) {
+			throw FileError.outdatedFile(inFolder: libraryTemplatesFolder)
+		}
+
 		print("\t* Updating library files...")
 
-		let folder = "Library Templates"
-		if needsToUpdateFiles(in: folder, from: .swift, to: .swiftASTDump) {
-			throw FileError.outdatedFile(inFolder: folder)
+		let libraryFilesPath = Process().currentDirectoryPath + "/\(libraryTemplatesFolder)/"
+		let currentURL = URL(fileURLWithPath: libraryFilesPath)
+		let fileURLs = try! FileManager.default.contentsOfDirectory(
+			at: currentURL,
+			includingPropertiesForKeys: nil)
+		let templateFiles = fileURLs.filter {
+			$0.pathExtension == FileExtension.swiftASTDump.rawValue
+			}.sorted { (url1: URL, url2: URL) -> Bool in
+				url1.absoluteString < url2.absoluteString
+		}
+		for templateFile in templateFiles {
+			let ast = try Compiler.generateGryphonAST(forFileAt: templateFile.path)
+			_ = RecordTemplatesTranspilationPass().run(on: ast)
 		}
 
 		libraryFilesHaveBeenUpdated = true

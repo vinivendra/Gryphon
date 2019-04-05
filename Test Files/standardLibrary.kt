@@ -1,3 +1,7 @@
+fun f(a: Int) {
+	println(a)
+}
+
 fun main(args: Array<String>) {
 	println(0)
 	print(0)
@@ -43,4 +47,5 @@ fun main(args: Array<String>) {
 	println(-1 until 3)
 	println((1.0).rangeTo(3.0))
 	println(Int.MIN_VALUE until 0)
+	f(a = 10)
 }

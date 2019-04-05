@@ -55,8 +55,8 @@ do {
 //	}
 
 	// 3.1: Swiftc's AST dump -> Swift AST -> Gryphon AST (raw) -> Gryphon AST (after passes)
-//	for inputFilePath in inputFilePaths {
-//		try Compiler.generateGryphonASTAndRunPasses(forFileAt: inputFilePath).prettyPrint()
+//	for ast in try Compiler.generateGryphonASTAndRunPasses(forFilesAt: inputFilePaths) {
+//		ast.prettyPrint()
 //	}
 
 	// 4: Swiftc's AST dump -> Swift AST -> Gryphon AST (raw) -> Gryphon AST -> Kotlin code

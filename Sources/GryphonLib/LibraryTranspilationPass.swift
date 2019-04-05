@@ -16,66 +16,56 @@
 
 import Foundation
 
-public class LibraryTranspilationPass: TranspilationPass {
-	struct Template {
-		let expression: Expression
-		let string: String
-	}
+public struct TranspilationTemplate {
+	let expression: Expression
+	let string: String
 
-	static var templates = [Template]()
+	static var templates = [TranspilationTemplate]()
+}
 
-	static func loadTemplates() {
-		try! Utilities.updateLibraryFiles()
-
-		let libraryFilesPath: String = Process().currentDirectoryPath + "/Library Templates/"
-		let currentURL = URL(fileURLWithPath: libraryFilesPath)
-		let fileURLs = try! FileManager.default.contentsOfDirectory(
-			at: currentURL,
-			includingPropertiesForKeys: nil)
-		let templateFiles = fileURLs.filter {
-				$0.pathExtension == FileExtension.swiftASTDump.rawValue
-		}.sorted { (url1: URL, url2: URL) -> Bool in
-					url1.absoluteString < url2.absoluteString
-		}
-
-		var previousExpression: Expression?
-		for file in templateFiles {
-			let filePath = file.path
-			let ast = try! Compiler.generateGryphonAST(forFileAt: filePath)
-			let expressions = ast.statements.compactMap
-				{ (statement: Statement) -> Expression? in
-					if case let .expression(expression: expression) = statement {
-						return expression
-					}
-					else {
-						return nil
-					}
+public class RecordTemplatesTranspilationPass: TranspilationPass {
+	override func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclaration)
+		-> [Statement]
+	{
+		if functionDeclaration.prefix == "gryphonTemplates",
+			functionDeclaration.parameters.isEmpty,
+			let statements = functionDeclaration.statements
+		{
+			let expressions = statements.compactMap
+			{ (statement: Statement) -> Expression? in
+				if case let .expression(expression: expression) = statement {
+					return expression
 				}
+				else {
+					return nil
+				}
+			}
 
+			var previousExpression: Expression?
 			for expression in expressions {
 				if let templateExpression = previousExpression {
 					guard case let .literalStringExpression(value: value) = expression else {
 						continue
 					}
-					templates.append(Template(expression: templateExpression, string: value))
+					TranspilationTemplate.templates.append(
+						TranspilationTemplate(expression: templateExpression, string: value))
 					previousExpression = nil
 				}
 				else {
 					previousExpression = expression
 				}
 			}
-		}
-	}
 
-	override func run(on sourceFile: GryphonAST) -> GryphonAST {
-		if LibraryTranspilationPass.templates.isEmpty {
-			LibraryTranspilationPass.loadTemplates()
+			return []
 		}
-		return super.run(on: sourceFile)
-	}
 
+		return super.replaceFunctionDeclaration(functionDeclaration)
+	}
+}
+
+public class ReplaceTemplatesTranspilationPass: TranspilationPass {
 	override func replaceExpression(_ expression: Expression) -> Expression {
-		for template in LibraryTranspilationPass.templates {
+		for template in TranspilationTemplate.templates {
 			if let matches = expression.matches(template.expression) {
 				let replacedMatches = matches.mapValues {
 					self.replaceExpression($0)

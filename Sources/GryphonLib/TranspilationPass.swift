@@ -1597,38 +1597,63 @@ public class FixProtocolContentsTranspilationPass: TranspilationPass {
 }
 
 public extension TranspilationPass {
-	static func runAllPasses(on sourceFile: GryphonAST) -> GryphonAST {
+	/// Runs transpilation passes that have to be run on all files before the other passes can
+	/// run. For instance, we need to record all enums declared on all files before we can
+	/// translate references to them correctly.
+	static func runFirstRoundOfPasses(on sourceFile: GryphonAST) -> GryphonAST {
 		var result = sourceFile
-		result = LibraryTranspilationPass().run(on: result)
-		result = DescriptionAsToStringTranspilationPass().run(on: result)
 
+		// Remove declarations that shouldn't even be considered in the passes
 		result = RemoveImplicitDeclarationsTranspilationPass().run(on: result)
-		result = RemoveParenthesesTranspilationPass().run(on: result)
 
+		// Clean inheritances (needed for recording enums below)
+		result = CleanInheritancesTranspilationPass().run(on: result)
+
+		// Record information on enum and function translations
+		result = RecordTemplatesTranspilationPass().run(on: result)
+		result = RecordEnumsTranspilationPass().run(on: result)
+		result = RecordFunctionTranslationsTranspilationPass().run(on: result)
+
+		return result
+	}
+
+	/// Runs transpilation passes that can be run independently on any files, provided they happen
+	/// after the `runFirstRoundOfPasses`.
+	static func runSecondRoundOfPasses(on sourceFile: GryphonAST) -> GryphonAST {
+		var result = sourceFile
+
+		// Replace templates (must go before other passes since templates are recorded before
+		// running any passes)
+		result = ReplaceTemplatesTranspilationPass().run(on: result)
+
+		// Cleanup
+		result = RemoveParenthesesTranspilationPass().run(on: result)
 		result = RemoveExtraReturnsInInitsTranspilationPass().run(on: result)
+
+		// Transform structures that need to be significantly different in Kotlin
+		result = DescriptionAsToStringTranspilationPass().run(on: result)
 		result = OptionalInitsTranspilationPass().run(on: result)
 		result = StaticMembersTranspilationPass().run(on: result)
 		result = FixProtocolContentsTranspilationPass().run(on: result)
-		result = CleanInheritancesTranspilationPass().run(on: result)
-		result = AnonymousParametersTranspilationPass().run(on: result)
-		result = SelfToThisTranspilationPass().run(on: result)
+		result = RemoveExtensionsTranspilationPass().run(on: result)
+		result = RearrangeIfLetsTranspilationPass().run(on: result)
 
-		result = RecordFunctionTranslationsTranspilationPass().run(on: result)
-		result = RecordEnumsTranspilationPass().run(on: result)
+		// Transform structures that need to be slightly different in Kotlin
+		result = SelfToThisTranspilationPass().run(on: result)
+		result = AnonymousParametersTranspilationPass().run(on: result)
+		result = RemoveBreaksInSwitchesTranspilationPass().run(on: result)
+		result = ReturnsInLambdasTranspilationPass().run(on: result)
+		result = RenameOperatorsTranspilationPass().run(on: result)
+
+		// Improve Kotlin readability
 		result = CapitalizeEnumsTranspilationPass().run(on: result)
 		result = OmitImplicitEnumPrefixesTranspilationPass().run(on: result)
-		result = RemoveBreaksInSwitchesTranspilationPass().run(on: result)
-		result = SwitchesToExpressionsTranspilationPass().run(on: result)
-
-		result = ReturnsInLambdasTranspilationPass().run(on: result)
 		result = InnerTypePrefixesTranspilationPass().run(on: result)
-		result = RenameOperatorsTranspilationPass().run(on: result)
-		result = RemoveExtensionsTranspilationPass().run(on: result)
-
-		result = RearrangeIfLetsTranspilationPass().run(on: result)
 		result = DoubleNegativesInGuardsTranspilationPass().run(on: result)
+		result = SwitchesToExpressionsTranspilationPass().run(on: result)
 		result = ReturnIfNilTranspilationPass().run(on: result)
 
+		// Raise any warnings that may be left
 		result = RaiseStandardLibraryWarningsTranspilationPass().run(on: result)
 		result = RaiseMutableValueTypesWarningsTranspilationPass().run(on: result)
 

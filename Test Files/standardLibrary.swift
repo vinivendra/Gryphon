@@ -65,3 +65,22 @@ print(1.0...3.0)
 //
 // Recursive matches
 print(Int.min..<0)
+
+//
+// User-defined templates
+func f(of a: Int) { // kotlin: ignore
+	print(a)
+}
+
+// declaration: fun f(a: Int) {
+// declaration: 	println(a)
+// declaration: }
+
+f(of: 10)
+
+func gryphonTemplates() {
+	var _int = 0
+
+	f(of: _int)
+	"f(a = _int)"
+}
