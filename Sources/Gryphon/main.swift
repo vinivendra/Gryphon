@@ -24,52 +24,57 @@ do {
 
 	// Set the path to the desired input file as the `filePath`.
 
-//	let filePaths = [Process().currentDirectoryPath + "/Test Files/bhaskara.swift"]
-//	let filePaths = [Process().currentDirectoryPath + "/Example ASTs/test.swift"]
-//	let filePaths = [Process().currentDirectoryPath + "/Bootstrap/PrintableAsTree.swiftASTDump"]
-
-	let filePaths = Utilities.getFilesInFolder("ASTDumps")
-		.map { $0.path }
+//	let inputFilePaths = [Process().currentDirectoryPath + "/Test Files/bhaskara.swift"]
+	let inputFilePaths = [Process().currentDirectoryPath + "/Example ASTs/test.swift"]
+//	let inputFilePaths = [Process().currentDirectoryPath + "/Bootstrap/ASTDumpDecoder.swiftASTDump"]
 
 	print("Compiling...")
 
-	for filePath in filePaths {
-		////////////////////////////////////////////////////////////////////////////////////////////
-		// The following (possibly commented) lines of code execute the transpilation process up to
-		// a specific step, then print the result. The first line only runs the first step, the
-		// second runs the first two steps, and so forth. Commenting and un-commenting specific
-		// lines allows you to visualize the compilation steps seprately.
-		//
-		// Note that if the input file is a .swiftASTDump file instead of a .swift file the
-		// transpiler should still work normally.
+	////////////////////////////////////////////////////////////////////////////////////////////
+	// The following (possibly commented) lines of code execute the transpilation process up to
+	// a specific step, then print the result. The first line only runs the first step, the
+	// second runs the first two steps, and so forth. Commenting and un-commenting specific
+	// lines allows you to visualize the compilation steps seprately.
+	//
+	// Note that if the input file is a .swiftASTDump file instead of a .swift file the
+	// transpiler should still work normally.
 
-		// 1: Run the swift compiler and get its AST dump
-//		try print(Compiler.getSwiftASTDump(forFileAt: filePath))
+	// 1: Run the swift compiler and get its AST dump
+//	for inputFilePath in inputFilePaths {
+//		try print(Compiler.getSwiftASTDump(forFileAt: inputFilePath))
+//	}
 
-		// 2: Swiftc's AST dump -> Gryphon's version of the Swift AST
-//		try Compiler.generateSwiftAST(forFileAt: filePath).prettyPrint()
+	// 2: Swiftc's AST dump -> Gryphon's version of the Swift AST
+//	for inputFilePath in inputFilePaths {
+//		try Compiler.generateSwiftAST(forFileAt: inputFilePath).prettyPrint()
+//	}
 
-		// 3: Swiftc's AST dump -> Swift AST -> Gryphon's internal AST (raw, before passes)
-//		try Compiler.generateGryphonAST(forFileAt: filePath).prettyPrint()
+	// 3: Swiftc's AST dump -> Swift AST -> Gryphon's internal AST (raw, before passes)
+//	for inputFilePath in inputFilePaths {
+//		try Compiler.generateGryphonAST(forFileAt: inputFilePath).prettyPrint()
+//	}
 
-		// 3.1: Swiftc's AST dump -> Swift AST -> Gryphon AST (raw) -> Gryphon AST (after passes)
-//		try Compiler.generateGryphonASTAndRunPasses(forFileAt: filePath).prettyPrint()
+	// 3.1: Swiftc's AST dump -> Swift AST -> Gryphon AST (raw) -> Gryphon AST (after passes)
+//	for inputFilePath in inputFilePaths {
+//		try Compiler.generateGryphonASTAndRunPasses(forFileAt: inputFilePath).prettyPrint()
+//	}
 
-		// 4: Swiftc's AST dump -> Swift AST -> Gryphon AST (raw) -> Gryphon AST -> Kotlin code
-		print(try Compiler.generateKotlinCode(forFileAt: filePath))
-
-		// 5: AST dump -> Swift AST -> AST (raw) -> AST -> Kotlin -> Output of running Kotlin
-//		try print(Compiler.compileAndRun(fileAt: filePath))
+	// 4: Swiftc's AST dump -> Swift AST -> Gryphon AST (raw) -> Gryphon AST -> Kotlin code
+	for kotlinCode in try Compiler.generateKotlinCode(forFilesAt: inputFilePaths) {
+		print(kotlinCode)
 	}
+
+	// 5: AST dump -> Swift AST -> AST (raw) -> AST -> Kotlin -> Output of running Kotlin
+//	try print(Compiler.compileAndRun(filesAt: inputFilePaths))
 
 	print("================================================================================")
 	print("Compilation finished.")
 
 	// Print all errors and warnings...
-//	Compiler.printErrorsAndWarnings()
+	Compiler.printErrorsAndWarnings()
 	// ...or just a summary
-	print("Errors: \(Compiler.errors.count). Warnings: \(Compiler.warnings.count).")
-	Compiler.printErrorStatistics()
+//	print("Errors: \(Compiler.errors.count). Warnings: \(Compiler.warnings.count).")
+//	Compiler.printErrorStatistics()
 }
 catch let error {
 	print("🚨 Error:\n\(error)")
