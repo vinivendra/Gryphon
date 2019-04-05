@@ -14,6 +14,8 @@
 * limitations under the License.
 */
 
+import Foundation
+
 public class SwiftTranslator {
 	// MARK: - Properties
 	typealias PatternBindingDeclaration =
@@ -22,7 +24,7 @@ public class SwiftTranslator {
 	let errorDanglingPatternDeclaration: PatternBindingDeclaration =
 		(identifier: "<<Error>>", type: "<<Error>>", expression: Expression.error)
 
-	private var sourceFile: SourceFile?
+	fileprivate var sourceFile: SourceFile?
 
 	// MARK: - Interface
 	public init() { }
@@ -30,7 +32,7 @@ public class SwiftTranslator {
 	public func translateAST(_ ast: SwiftAST) throws -> GryphonAST {
 		let filePath = ast.standaloneAttributes[0]
 		if let contents = try? String(contentsOfFile: filePath) {
-			sourceFile = SourceFile(contents: contents)
+			sourceFile = SourceFile(path: filePath, contents: contents)
 		}
 
 		let fileRange = sourceFile.map { 0..<$0.numberOfLines }
@@ -160,7 +162,7 @@ public class SwiftTranslator {
 			else {
 				return try unexpectedExpressionStructureError(
 					"Unrecognized structure in automatic expression",
-					AST: expression)
+					AST: expression, translator: self)
 			}
 		case "Prefix Unary Expression":
 			return try translate(prefixUnaryExpression: expression)
@@ -193,7 +195,7 @@ public class SwiftTranslator {
 			else {
 				return try unexpectedExpressionStructureError(
 					"Expected parentheses expression to have at least one subtree",
-					AST: expression)
+					AST: expression, translator: self)
 			}
 		case "Force Value Expression":
 			if let firstExpression = expression.subtree(at: 0) {
@@ -203,7 +205,7 @@ public class SwiftTranslator {
 			else {
 				return try unexpectedExpressionStructureError(
 					"Expected force value expression to have at least one subtree",
-					AST: expression)
+					AST: expression, translator: self)
 			}
 		case "Bind Optional Expression":
 			if let firstExpression = expression.subtree(at: 0) {
@@ -213,7 +215,7 @@ public class SwiftTranslator {
 			else {
 				return try unexpectedExpressionStructureError(
 					"Expected optional expression to have at least one subtree",
-					AST: expression)
+					AST: expression, translator: self)
 			}
 		case "Autoclosure Expression",
 			 "Inject Into Optional",
@@ -228,7 +230,7 @@ public class SwiftTranslator {
 			else {
 				return try unexpectedExpressionStructureError(
 					"Unrecognized structure in automatic expression",
-					AST: expression)
+					AST: expression, translator: self)
 			}
 		case "Collection Upcast Expression":
 			if let firstExpression = expression.subtrees.first {
@@ -237,10 +239,11 @@ public class SwiftTranslator {
 			else {
 				return try unexpectedExpressionStructureError(
 					"Unrecognized structure in automatic expression",
-					AST: expression)
+					AST: expression, translator: self)
 			}
 		default:
-			return try unexpectedExpressionStructureError("Unknown expression", AST: expression)
+			return try unexpectedExpressionStructureError(
+				"Unknown expression", AST: expression, translator: self)
 		}
 	}
 
@@ -249,7 +252,7 @@ public class SwiftTranslator {
 		inScope scope: SwiftAST,
 		asDeclarations: Bool = false) throws -> [Statement]
 	{
-		let scopeRange = getRangeOfNode(scope)
+		let scopeRange = getLineRange(ofNode: scope)
 		return try translate(
 			subtrees: subtrees, inScope: scopeRange)
 	}
@@ -268,8 +271,8 @@ public class SwiftTranslator {
 			lastRange = -1..<scopeRange.lowerBound
 		}
 			// If we don't, start at the first statement with a range
-		else if let subtree = subtrees.first(where: { getRangeOfNode($0) != nil }) {
-			lastRange = getRangeOfNode(subtree)!
+		else if let subtree = subtrees.first(where: { getLineRange(ofNode: $0) != nil }) {
+			lastRange = getLineRange(ofNode: subtree)!
 		}
 			// If there is no info on ranges, then just translate the subtrees normally
 		else {
@@ -291,7 +294,7 @@ public class SwiftTranslator {
 			}
 
 		for subtree in subtrees {
-			if let currentRange = getRangeOfNode(subtree),
+			if let currentRange = getLineRange(ofNode: subtree),
 				lastRange.upperBound < currentRange.lowerBound
 			{
 				let comments = insertedCode(inRange: lastRange.upperBound..<currentRange.lowerBound)
@@ -324,7 +327,7 @@ public class SwiftTranslator {
 		guard braceStatement.name == "Brace Statement" else {
 			throw createUnexpectedASTStructureError(
 				"Trying to translate \(braceStatement.name) as a brace statement",
-				AST: braceStatement)
+				AST: braceStatement, translator: self)
 		}
 
 		return try translate(subtrees: braceStatement.subtrees.array, inScope: braceStatement)
@@ -334,13 +337,13 @@ public class SwiftTranslator {
 		guard protocolDeclaration.name == "Protocol" else {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(protocolDeclaration.name) as 'Protocol'",
-				AST: protocolDeclaration)
+				AST: protocolDeclaration, translator: self)
 		}
 
 		guard let protocolName = protocolDeclaration.standaloneAttributes.first else {
 			return try unexpectedASTStructureError(
 				"Unrecognized structure",
-				AST: protocolDeclaration)
+				AST: protocolDeclaration, translator: self)
 		}
 
 		let members = try translate(subtreesOf: protocolDeclaration)
@@ -352,7 +355,7 @@ public class SwiftTranslator {
 		guard assignExpression.name == "Assign Expression" else {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(assignExpression.name) as 'Assign Expression'",
-				AST: assignExpression)
+				AST: assignExpression, translator: self)
 		}
 
 		if let leftExpression = assignExpression.subtree(at: 0),
@@ -366,7 +369,7 @@ public class SwiftTranslator {
 		else {
 			return try unexpectedASTStructureError(
 				"Unrecognized structure",
-				AST: assignExpression)
+				AST: assignExpression, translator: self)
 		}
 	}
 
@@ -390,7 +393,7 @@ public class SwiftTranslator {
 		guard classDeclaration.name == "Class Declaration" else {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(classDeclaration.name) as 'Class Declaration'",
-				AST: classDeclaration)
+				AST: classDeclaration, translator: self)
 		}
 
 		if getComment(forNode: classDeclaration, key: "kotlin") == "ignore" {
@@ -419,7 +422,7 @@ public class SwiftTranslator {
 		guard structDeclaration.name == "Struct Declaration" else {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(structDeclaration.name) as 'Struct Declaration'",
-				AST: structDeclaration)
+				AST: structDeclaration, translator: self)
 		}
 
 		if getComment(forNode: structDeclaration, key: "kotlin") == "ignore" {
@@ -454,7 +457,7 @@ public class SwiftTranslator {
 		guard throwStatement.name == "Throw Statement" else {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(throwStatement.name) as 'Throw Statement'",
-				AST: throwStatement)
+				AST: throwStatement, translator: self)
 		}
 
 		if let expression = throwStatement.subtrees.last {
@@ -464,7 +467,7 @@ public class SwiftTranslator {
 		else {
 			return try unexpectedASTStructureError(
 				"Unrecognized structure",
-				AST: throwStatement)
+				AST: throwStatement, translator: self)
 		}
 	}
 
@@ -478,7 +481,7 @@ public class SwiftTranslator {
 		guard enumDeclaration.name == "Enum Declaration" else {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(enumDeclaration.name) as 'Enum Declaration'",
-				AST: enumDeclaration)
+				AST: enumDeclaration, translator: self)
 		}
 
 		if getComment(forNode: enumDeclaration, key: "kotlin") == "ignore" {
@@ -514,7 +517,7 @@ public class SwiftTranslator {
 				return try unexpectedASTStructureError(
 					"Expected the element name to be the first standalone attribute in an Enum" +
 					"Declaration",
-					AST: enumDeclaration)
+					AST: enumDeclaration, translator: self)
 			}
 
 			let annotations = getComment(forNode: enumElementDeclaration, key: "annotation")
@@ -533,7 +536,7 @@ public class SwiftTranslator {
 				guard let enumType = enumElementDeclaration["interface type"] else {
 					return try unexpectedASTStructureError(
 						"Expected an enum element with associated values to have an interface type",
-						AST: enumDeclaration)
+						AST: enumDeclaration, translator: self)
 				}
 				let enumTypeComponents = enumType.split(withStringSeparator: " -> ")
 				let valuesComponent = enumTypeComponents[1]
@@ -566,7 +569,7 @@ public class SwiftTranslator {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(memberReferenceExpression.name) as " +
 				"'Member Reference Expression'",
-				AST: memberReferenceExpression)
+				AST: memberReferenceExpression, translator: self)
 		}
 
 		if let declaration = memberReferenceExpression["decl"],
@@ -586,7 +589,7 @@ public class SwiftTranslator {
 		else {
 			return try unexpectedExpressionStructureError(
 				"Unrecognized structure",
-				AST: memberReferenceExpression)
+				AST: memberReferenceExpression, translator: self)
 		}
 	}
 
@@ -595,7 +598,7 @@ public class SwiftTranslator {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(tupleElementExpression.name) as " +
 				"'Tuple Element Expression'",
-				AST: tupleElementExpression)
+				AST: tupleElementExpression, translator: self)
 		}
 
 		if let numberString =
@@ -626,14 +629,14 @@ public class SwiftTranslator {
 
 		return try unexpectedExpressionStructureError(
 			"Unable to get the wither tuple element's number or its label.",
-			AST: tupleElementExpression)
+			AST: tupleElementExpression, translator: self)
 	}
 
 	internal func translate(prefixUnaryExpression: SwiftAST) throws -> Expression {
 		guard prefixUnaryExpression.name == "Prefix Unary Expression" else {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(prefixUnaryExpression.name) as 'Prefix Unary Expression'",
-				AST: prefixUnaryExpression)
+				AST: prefixUnaryExpression, translator: self)
 		}
 
 		if let rawType = prefixUnaryExpression["type"],
@@ -654,7 +657,7 @@ public class SwiftTranslator {
 				"Expected Prefix Unary Expression to have a Dot Syntax Call Expression with a " +
 				"Declaration Reference Expression, for the operator, and expected it to have " +
 				"a second expression as the operand.",
-				AST: prefixUnaryExpression)
+				AST: prefixUnaryExpression, translator: self)
 		}
 	}
 
@@ -662,7 +665,7 @@ public class SwiftTranslator {
 		guard postfixUnaryExpression.name == "Postfix Unary Expression" else {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(postfixUnaryExpression.name) as 'Postfix Unary Expression'",
-				AST: postfixUnaryExpression)
+				AST: postfixUnaryExpression, translator: self)
 		}
 
 		if let rawType = postfixUnaryExpression["type"],
@@ -683,7 +686,7 @@ public class SwiftTranslator {
 				"Expected Postfix Unary Expression to have a Dot Syntax Call Expression with a " +
 				"Declaration Reference Expression, for the operator, and expected it to have " +
 				"a second expression as the operand.",
-				AST: postfixUnaryExpression)
+				AST: postfixUnaryExpression, translator: self)
 		}
 	}
 
@@ -691,7 +694,7 @@ public class SwiftTranslator {
 		guard binaryExpression.name == "Binary Expression" else {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(binaryExpression.name) as 'Binary Expression'",
-				AST: binaryExpression)
+				AST: binaryExpression, translator: self)
 		}
 
 		let operatorIdentifier: String
@@ -719,7 +722,7 @@ public class SwiftTranslator {
 		else {
 			return try unexpectedExpressionStructureError(
 				"Unrecognized structure",
-				AST: binaryExpression)
+				AST: binaryExpression, translator: self)
 		}
 	}
 
@@ -727,13 +730,13 @@ public class SwiftTranslator {
 		guard typeExpression.name == "Type Expression" else {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(typeExpression.name) as 'Type Expression'",
-				AST: typeExpression)
+				AST: typeExpression, translator: self)
 		}
 
 		guard let type = typeExpression["typerepr"] else {
 			return try unexpectedExpressionStructureError(
 				"Unrecognized structure",
-				AST: typeExpression)
+				AST: typeExpression, translator: self)
 		}
 
 		return .typeExpression(type: cleanUpType(type))
@@ -744,7 +747,7 @@ public class SwiftTranslator {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(dotSyntaxCallExpression.name) as " +
 				"'Dot Syntax Call Expression'",
-				AST: dotSyntaxCallExpression)
+				AST: dotSyntaxCallExpression, translator: self)
 		}
 
 		if let leftHandTree = dotSyntaxCallExpression.subtree(at: 1),
@@ -768,7 +771,7 @@ public class SwiftTranslator {
 		else {
 			return try unexpectedExpressionStructureError(
 				"Unrecognized structure",
-				AST: dotSyntaxCallExpression)
+				AST: dotSyntaxCallExpression, translator: self)
 		}
 	}
 
@@ -776,7 +779,7 @@ public class SwiftTranslator {
 		guard returnStatement.name == "Return Statement" else {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(returnStatement.name) as 'Return Statement'",
-				AST: returnStatement)
+				AST: returnStatement, translator: self)
 		}
 
 		if let expression = returnStatement.subtrees.last {
@@ -792,7 +795,7 @@ public class SwiftTranslator {
 		guard forEachStatement.name == "For Each Statement" else {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(forEachStatement.name) as 'For Each Statement'",
-				AST: forEachStatement)
+				AST: forEachStatement, translator: self)
 		}
 
 		guard let variableSubtree = forEachStatement.subtree(named: "Pattern Named"),
@@ -802,7 +805,7 @@ public class SwiftTranslator {
 		{
 			return try unexpectedASTStructureError(
 				"Unable to detect variable or collection",
-				AST: forEachStatement)
+				AST: forEachStatement, translator: self)
 		}
 
 		let variableType = cleanUpType(rawType)
@@ -812,7 +815,7 @@ public class SwiftTranslator {
 		{
 			return try unexpectedASTStructureError(
 				"Unable to detect body of statements",
-				AST: forEachStatement)
+				AST: forEachStatement, translator: self)
 		}
 
 		let variable = Expression.declarationReferenceExpression(
@@ -831,13 +834,13 @@ public class SwiftTranslator {
 		guard whileStatement.name == "While Statement" else {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(whileStatement.name) as 'While Statement'",
-				AST: whileStatement)
+				AST: whileStatement, translator: self)
 		}
 
 		guard let expressionSubtree = whileStatement.subtrees.first else {
 			return try unexpectedASTStructureError(
 				"Unable to detect expression",
-				AST: whileStatement)
+				AST: whileStatement, translator: self)
 		}
 
 		guard let braceStatement = whileStatement.subtrees.last,
@@ -845,7 +848,7 @@ public class SwiftTranslator {
 		{
 			return try unexpectedASTStructureError(
 				"Unable to detect body of statements",
-				AST: whileStatement)
+				AST: whileStatement, translator: self)
 		}
 
 		let expression = try translate(expression: expressionSubtree)
@@ -858,7 +861,7 @@ public class SwiftTranslator {
 		guard deferStatement.name == "Defer Statement" else {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(deferStatement.name) as a 'Defer Statement'",
-				AST: deferStatement)
+				AST: deferStatement, translator: self)
 		}
 
 		guard let functionDeclaration = deferStatement.subtree(named: "Function Declaration"),
@@ -867,7 +870,7 @@ public class SwiftTranslator {
 			return try unexpectedASTStructureError(
 				"Expected defer statement to have a function declaration with a brace statement " +
 					"containing the deferred statements.",
-				AST: deferStatement)
+				AST: deferStatement, translator: self)
 		}
 
 		return .deferStatement(statements: try translate(braceStatement: braceStatement))
@@ -887,7 +890,7 @@ public class SwiftTranslator {
 		guard ifStatement.name == "If Statement" || ifStatement.name == "Guard Statement" else {
 			throw createUnexpectedASTStructureError(
 				"Trying to translate \(ifStatement.name) as an if or guard statement",
-				AST: ifStatement)
+				AST: ifStatement, translator: self)
 		}
 
 		let isGuard = (ifStatement.name == "Guard Statement")
@@ -930,7 +933,7 @@ public class SwiftTranslator {
 		else {
 			throw createUnexpectedASTStructureError(
 				"Unable to detect body of statements",
-				AST: ifStatement)
+				AST: ifStatement, translator: self)
 		}
 
 		let statements = try translate(braceStatement: braceStatement)
@@ -947,13 +950,13 @@ public class SwiftTranslator {
 		guard switchStatement.name == "Switch Statement" else {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(switchStatement.name) as 'Switch Statement'",
-				AST: switchStatement)
+				AST: switchStatement, translator: self)
 		}
 
 		guard let expression = switchStatement.subtrees.first else {
 			return try unexpectedASTStructureError(
 				"Unable to detect primary expression for switch statement",
-				AST: switchStatement)
+				AST: switchStatement, translator: self)
 		}
 
 		let translatedExpression = try translate(expression: expression)
@@ -1021,7 +1024,7 @@ public class SwiftTranslator {
 			guard let braceStatement = caseSubtree.subtree(named: "Brace Statement") else {
 				return try unexpectedASTStructureError(
 					"Unable to find a case's statements",
-					AST: switchStatement)
+					AST: switchStatement, translator: self)
 			}
 
 			let translatedStatements = try translate(braceStatement: braceStatement)
@@ -1038,7 +1041,7 @@ public class SwiftTranslator {
 		guard simplePatternEnumElement.name == "Pattern Enum Element" else {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(simplePatternEnumElement.name) as 'Pattern Enum Element'",
-				AST: simplePatternEnumElement)
+				AST: simplePatternEnumElement, translator: self)
 		}
 
 		guard let enumReference = simplePatternEnumElement.standaloneAttributes.first,
@@ -1046,7 +1049,7 @@ public class SwiftTranslator {
 		{
 			return try unexpectedExpressionStructureError(
 				"Expected a Pattern Enum Element to have a reference to the enum case and a type.",
-				AST: simplePatternEnumElement)
+				AST: simplePatternEnumElement, translator: self)
 		}
 
 		var enumElements = enumReference.split(separator: ".")
@@ -1054,7 +1057,7 @@ public class SwiftTranslator {
 		guard let lastEnumElement = enumElements.last else {
 			return try unexpectedExpressionStructureError(
 				"Expected a Pattern Enum Element to have a period (i.e. `MyEnum.myEnumCase`)",
-				AST: simplePatternEnumElement)
+				AST: simplePatternEnumElement, translator: self)
 		}
 
 		let lastExpression = Expression.declarationReferenceExpression(
@@ -1085,7 +1088,7 @@ public class SwiftTranslator {
 				conditions: [],
 				statements: [unexpectedASTStructureError(
 					"Trying to translate \(ifStatement.name) as an if or guard statement",
-					AST: ifStatement), ])
+					AST: ifStatement, translator: self), ])
 		}
 
 		var conditionsResult = [Expression]()
@@ -1124,7 +1127,7 @@ public class SwiftTranslator {
 						conditions: [],
 						statements: [unexpectedASTStructureError(
 							"Unable to detect pattern in let declaration",
-							AST: ifStatement), ])
+							AST: ifStatement, translator: self), ])
 				}
 
 				guard let rawType = optionalSomeElement["type"] else {
@@ -1133,7 +1136,7 @@ public class SwiftTranslator {
 						conditions: [],
 						statements: [unexpectedASTStructureError(
 							"Unable to detect type in let declaration",
-							AST: ifStatement), ])
+							AST: ifStatement, translator: self), ])
 				}
 
 				let type = cleanUpType(rawType)
@@ -1146,7 +1149,7 @@ public class SwiftTranslator {
 						conditions: [],
 						statements: [unexpectedASTStructureError(
 							"Unable to get expression in let declaration",
-							AST: ifStatement), ])
+							AST: ifStatement, translator: self), ])
 				}
 
 				let expression = try translate(expression: lastCondition)
@@ -1175,7 +1178,7 @@ public class SwiftTranslator {
 						conditions: [],
 						statements: [unexpectedASTStructureError(
 							"Unable to translate Pattern Let",
-							AST: ifStatement), ])
+							AST: ifStatement, translator: self), ])
 				}
 
 				let enumType = patternLetResult.enumType
@@ -1275,7 +1278,7 @@ public class SwiftTranslator {
 		guard compatibleASTNodes.contains(functionDeclaration.name) else {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(functionDeclaration.name) as 'Function Declaration'",
-				AST: functionDeclaration)
+				AST: functionDeclaration, translator: self)
 		}
 
 		// Subscripts get translated as `get(i)` or `set(i, a)` functions
@@ -1301,7 +1304,7 @@ public class SwiftTranslator {
 			else {
 				return try unexpectedASTStructureError(
 					"Trying to translate subscript declaration that isn't getter or setter",
-					AST: functionDeclaration)
+					AST: functionDeclaration, translator: self)
 			}
 		}
 		else {
@@ -1317,7 +1320,9 @@ public class SwiftTranslator {
 			let firstInterfaceTypeComponent = interfaceTypeComponents.first else
 		{
 			return try unexpectedASTStructureError(
-				"Unable to find out if function is static", AST: functionDeclaration)
+				"Unable to find out if function is static",
+				AST: functionDeclaration,
+				translator: self)
 		}
 		let isStatic = firstInterfaceTypeComponent.contains(".Type")
 		let isMutating = firstInterfaceTypeComponent.contains("inout")
@@ -1373,7 +1378,7 @@ public class SwiftTranslator {
 				else {
 					return try unexpectedASTStructureError(
 						"Unable to detect name or attribute for a parameter",
-						AST: functionDeclaration)
+						AST: functionDeclaration, translator: self)
 				}
 			}
 		}
@@ -1389,7 +1394,7 @@ public class SwiftTranslator {
 		guard let returnType = interfaceTypeComponents.last else
 		{
 			return try unexpectedASTStructureError(
-				"Unable to get return type", AST: functionDeclaration)
+				"Unable to get return type", AST: functionDeclaration, translator: self)
 		}
 
 		// Translate the function body
@@ -1431,12 +1436,12 @@ public class SwiftTranslator {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(topLevelCodeDeclaration.name) as " +
 				"'Top Level Code Declaration'",
-				AST: topLevelCodeDeclaration)
+				AST: topLevelCodeDeclaration, translator: self)
 		}
 
 		guard let braceStatement = topLevelCodeDeclaration.subtree(named: "Brace Statement") else {
 			return try unexpectedASTStructureError(
-				"Unrecognized structure", AST: topLevelCodeDeclaration)
+				"Unrecognized structure", AST: topLevelCodeDeclaration, translator: self)
 		}
 
 		let subtrees = try translate(braceStatement: braceStatement)
@@ -1448,7 +1453,7 @@ public class SwiftTranslator {
 		guard variableDeclaration.name == "Variable Declaration" else {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(variableDeclaration.name) as 'Variable Declaration'",
-				AST: variableDeclaration)
+				AST: variableDeclaration, translator: self)
 		}
 
 		let isImplicit = variableDeclaration.standaloneAttributes.contains("implicit")
@@ -1472,7 +1477,7 @@ public class SwiftTranslator {
 			let rawType = variableDeclaration["interface type"] else
 		{
 			return try unexpectedASTStructureError(
-				"Failed to get identifier and type", AST: variableDeclaration)
+				"Failed to get identifier and type", AST: variableDeclaration, translator: self)
 		}
 
 		let isLet = variableDeclaration.standaloneAttributes.contains("let")
@@ -1567,7 +1572,7 @@ public class SwiftTranslator {
 		guard callExpression.name == "Call Expression" else {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(callExpression.name) as 'Call Expression'",
-				AST: callExpression)
+				AST: callExpression, translator: self)
 		}
 
 		// If the call expression corresponds to an integer literal
@@ -1600,7 +1605,7 @@ public class SwiftTranslator {
 
 		guard let rawType = callExpression["type"] else {
 			return try unexpectedExpressionStructureError(
-				"Failed to recognize type", AST: callExpression)
+				"Failed to recognize type", AST: callExpression, translator: self)
 		}
 		let type = cleanUpType(rawType)
 
@@ -1628,7 +1633,7 @@ public class SwiftTranslator {
 		}
 		else {
 			return try unexpectedExpressionStructureError(
-				"Failed to recognize function name", AST: callExpression)
+				"Failed to recognize function name", AST: callExpression, translator: self)
 		}
 
 		let parameters = try translate(callExpressionParameters: callExpression)
@@ -1640,7 +1645,7 @@ public class SwiftTranslator {
 		guard closureExpression.name == "Closure Expression" else {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(closureExpression.name) as 'Closure Expression'",
-				AST: closureExpression)
+				AST: closureExpression, translator: self)
 		}
 
 		// Get the parameters.
@@ -1665,7 +1670,7 @@ public class SwiftTranslator {
 				else {
 					return try unexpectedExpressionStructureError(
 						"Unable to detect name or attribute for a parameter",
-						AST: closureExpression)
+						AST: closureExpression, translator: self)
 				}
 			}
 		}
@@ -1675,13 +1680,13 @@ public class SwiftTranslator {
 		guard let type = closureExpression["type"] else
 		{
 			return try unexpectedExpressionStructureError(
-				"Unable to get type or return type", AST: closureExpression)
+				"Unable to get type or return type", AST: closureExpression, translator: self)
 		}
 
 		// Translate the closure body
 		guard let lastSubtree = closureExpression.subtrees.last else {
 			return try unexpectedExpressionStructureError(
-				"Unable to get closure body", AST: closureExpression)
+				"Unable to get closure body", AST: closureExpression, translator: self)
 		}
 
 		let statements: [Statement]
@@ -1705,7 +1710,7 @@ public class SwiftTranslator {
 		guard callExpression.name == "Call Expression" else {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(callExpression.name) as 'Call Expression'",
-				AST: callExpression)
+				AST: callExpression, translator: self)
 		}
 
 		let parameters: Expression
@@ -1739,7 +1744,9 @@ public class SwiftTranslator {
 							.split(withStringSeparator: ", ").count else
 						{
 							return try unexpectedExpressionStructureError(
-								"Failed to read variadic sources", AST: callExpression)
+								"Failed to read variadic sources",
+								AST: callExpression,
+								translator: self)
 						}
 						indices.append(.variadic(count: variadicCount))
 					}
@@ -1751,7 +1758,9 @@ public class SwiftTranslator {
 					}
 					else {
 						return try unexpectedExpressionStructureError(
-							"Unknown tuple shuffle index: \(rawIndex)", AST: callExpression)
+							"Unknown tuple shuffle index: \(rawIndex)",
+							AST: callExpression,
+							translator: self)
 					}
 				}
 
@@ -1765,12 +1774,12 @@ public class SwiftTranslator {
 			}
 			else {
 				return try unexpectedExpressionStructureError(
-					"Unrecognized structure in parameters", AST: callExpression)
+					"Unrecognized structure in parameters", AST: callExpression, translator: self)
 			}
 		}
 		else {
 			return try unexpectedExpressionStructureError(
-				"Unrecognized structure in parameters", AST: callExpression)
+				"Unrecognized structure in parameters", AST: callExpression, translator: self)
 		}
 
 		return parameters
@@ -1780,7 +1789,7 @@ public class SwiftTranslator {
 		guard tupleExpression.name == "Tuple Expression" else {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(tupleExpression.name) as 'Tuple Expression'",
-				AST: tupleExpression)
+				AST: tupleExpression, translator: self)
 		}
 
 		// Only empty tuples don't have a list of names
@@ -1812,7 +1821,7 @@ public class SwiftTranslator {
 		guard callExpression.name == "Call Expression" else {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(callExpression.name) as 'Call Expression'",
-				AST: callExpression)
+				AST: callExpression, translator: self)
 		}
 
 		// FIXME: Negative float literals are translated as positive becuase the AST dump doesn't
@@ -1832,7 +1841,9 @@ public class SwiftTranslator {
 			if value.hasPrefix("0b") || value.hasPrefix("0o") || value.hasPrefix("0x") {
 				// Fixable
 				return try unexpectedExpressionStructureError(
-					"No support yet for alternative integer formats", AST: callExpression)
+					"No support yet for alternative integer formats",
+					AST: callExpression,
+					translator: self)
 			}
 
 			let signedValue: String
@@ -1852,7 +1863,7 @@ public class SwiftTranslator {
 			}
 			else if type == "Float80" {
 				return try unexpectedExpressionStructureError(
-					"No support for 80-bit Floats", AST: callExpression)
+					"No support for 80-bit Floats", AST: callExpression, translator: self)
 			}
 			else if type.hasPrefix("U") {
 				return .literalUIntExpression(value: UInt64(signedValue)!)
@@ -1861,7 +1872,7 @@ public class SwiftTranslator {
 				if signedValue == "-9223372036854775808" {
 					return try unexpectedExpressionStructureError(
 						"Kotlin's Long (equivalent to Int64) only goes down to " +
-							"-9223372036854775807", AST: callExpression)
+							"-9223372036854775807", AST: callExpression, translator: self)
 				}
 				else {
 					return .literalIntExpression(value: Int64(signedValue)!)
@@ -1870,7 +1881,7 @@ public class SwiftTranslator {
 		}
 		else {
 			return try unexpectedExpressionStructureError(
-				"Unrecognized structure for numeric literal", AST: callExpression)
+				"Unrecognized structure for numeric literal", AST: callExpression, translator: self)
 		}
 	}
 
@@ -1880,7 +1891,7 @@ public class SwiftTranslator {
 		guard callExpression.name == "Call Expression" else {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(callExpression.name) as 'Call Expression'",
-				AST: callExpression)
+				AST: callExpression, translator: self)
 		}
 
 		if let tupleExpression = callExpression.subtree(named: "Tuple Expression"),
@@ -1892,7 +1903,7 @@ public class SwiftTranslator {
 		}
 		else {
 			return try unexpectedExpressionStructureError(
-				"Unrecognized structure for boolean literal", AST: callExpression)
+				"Unrecognized structure for boolean literal", AST: callExpression, translator: self)
 		}
 	}
 
@@ -1901,7 +1912,7 @@ public class SwiftTranslator {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(stringLiteralExpression.name) as " +
 				"'String Literal Expression'",
-				AST: stringLiteralExpression)
+				AST: stringLiteralExpression, translator: self)
 		}
 
 		if let value = stringLiteralExpression["value"] {
@@ -1919,7 +1930,7 @@ public class SwiftTranslator {
 		}
 		else {
 			return try unexpectedExpressionStructureError(
-				"Unrecognized structure", AST: stringLiteralExpression)
+				"Unrecognized structure", AST: stringLiteralExpression, translator: self)
 		}
 	}
 
@@ -1932,7 +1943,7 @@ public class SwiftTranslator {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(interpolatedStringLiteralExpression.name) as " +
 				"'Interpolated String Literal Expression'",
-				AST: interpolatedStringLiteralExpression)
+				AST: interpolatedStringLiteralExpression, translator: self)
 		}
 
 		guard let tapExpression =
@@ -1943,7 +1954,7 @@ public class SwiftTranslator {
 				"Expected the Interpolated String Literal Expression to contain a Tap" +
 					"Expression containing a Brace Statement containing the String " +
 				"interpolation contents",
-				AST: interpolatedStringLiteralExpression)
+				AST: interpolatedStringLiteralExpression, translator: self)
 		}
 
 		var expressions = [Expression]()
@@ -1956,7 +1967,7 @@ public class SwiftTranslator {
 				return try unexpectedExpressionStructureError(
 					"Expected the brace statement to contain only Call Expressions containing " +
 					"Parentheses Expressions containing the relevant expressions.",
-					AST: interpolatedStringLiteralExpression)
+					AST: interpolatedStringLiteralExpression, translator: self)
 			}
 
 			let translatedExpression = try translate(expression: expression)
@@ -1973,12 +1984,12 @@ public class SwiftTranslator {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(declarationReferenceExpression.name) as " +
 				"'Declaration Reference Expression'",
-				AST: declarationReferenceExpression)
+				AST: declarationReferenceExpression, translator: self)
 		}
 
 		guard let rawType = declarationReferenceExpression["type"] else {
 			return try unexpectedExpressionStructureError(
-				"Failed to recognize type", AST: declarationReferenceExpression)
+				"Failed to recognize type", AST: declarationReferenceExpression, translator: self)
 		}
 		let type = cleanUpType(rawType)
 
@@ -2006,7 +2017,7 @@ public class SwiftTranslator {
 		}
 		else {
 			return try unexpectedExpressionStructureError(
-				"Unrecognized structure", AST: declarationReferenceExpression)
+				"Unrecognized structure", AST: declarationReferenceExpression, translator: self)
 		}
 	}
 
@@ -2014,7 +2025,7 @@ public class SwiftTranslator {
 		guard subscriptExpression.name == "Subscript Expression" else {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(subscriptExpression.name) as 'Subscript Expression'",
-				AST: subscriptExpression)
+				AST: subscriptExpression, translator: self)
 		}
 
 		if let rawType = subscriptExpression["type"],
@@ -2034,7 +2045,7 @@ public class SwiftTranslator {
 		}
 		else {
 			return try unexpectedExpressionStructureError(
-				"Unrecognized structure", AST: subscriptExpression)
+				"Unrecognized structure", AST: subscriptExpression, translator: self)
 		}
 	}
 
@@ -2042,7 +2053,7 @@ public class SwiftTranslator {
 		guard arrayExpression.name == "Array Expression" else {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(arrayExpression.name) as 'Array Expression'",
-				AST: arrayExpression)
+				AST: arrayExpression, translator: self)
 		}
 
 		// Drop the "Semantic Expression" at the end
@@ -2052,7 +2063,7 @@ public class SwiftTranslator {
 
 		guard let rawType = arrayExpression["type"] else {
 			return try unexpectedExpressionStructureError(
-				"Failed to get type", AST: arrayExpression)
+				"Failed to get type", AST: arrayExpression, translator: self)
 		}
 		let type = cleanUpType(rawType)
 
@@ -2063,7 +2074,7 @@ public class SwiftTranslator {
 		guard dictionaryExpression.name == "Dictionary Expression" else {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(dictionaryExpression.name) as 'Dictionary Expression'",
-				AST: dictionaryExpression)
+				AST: dictionaryExpression, translator: self)
 		}
 
 		var keys = [Expression]()
@@ -2077,7 +2088,7 @@ public class SwiftTranslator {
 			{
 				return try unexpectedExpressionStructureError(
 					"Unable to get either key or value for one of the tuple expressions",
-					AST: dictionaryExpression)
+					AST: dictionaryExpression, translator: self)
 			}
 
 			let keyTranslation = try translate(expression: keyAST)
@@ -2089,7 +2100,7 @@ public class SwiftTranslator {
 		guard let type = dictionaryExpression["type"] else {
 			return try unexpectedExpressionStructureError(
 				"Unable to get type",
-				AST: dictionaryExpression)
+				AST: dictionaryExpression, translator: self)
 		}
 
 		return .dictionaryExpression(keys: keys, values: values, type: type)
@@ -2101,7 +2112,7 @@ public class SwiftTranslator {
 			_ = try unexpectedExpressionStructureError(
 				"Trying to translate \(openExistentialExpression.name) as " +
 				"'Open Existential Expression'",
-				AST: openExistentialExpression)
+				AST: openExistentialExpression, translator: self)
 			return SwiftAST("Error", [], [:], [])
 		}
 
@@ -2112,7 +2123,7 @@ public class SwiftTranslator {
 				"Expected the AST to contain 3 subtrees: an Opaque Value Expression, an " +
 				"expression to replace the opaque value, and an expression containing " +
 				"opaque values to be replaced.",
-				AST: openExistentialExpression)
+				AST: openExistentialExpression, translator: self)
 			return SwiftAST("Error", [], [:], [])
 		}
 
@@ -2141,7 +2152,7 @@ public class SwiftTranslator {
 			_ = try unexpectedExpressionStructureError(
 				"Trying to translate \(patternBindingDeclaration.name) as " +
 				"'Pattern Binding Declaration'",
-				AST: patternBindingDeclaration)
+				AST: patternBindingDeclaration, translator: self)
 			danglingPatternBindings = [errorDanglingPatternDeclaration]
 			return
 		}
@@ -2166,7 +2177,7 @@ public class SwiftTranslator {
 					let rawType = pattern["type"] else
 				{
 					_ = try unexpectedExpressionStructureError(
-						"Type not recognized", AST: patternBindingDeclaration)
+						"Type not recognized", AST: patternBindingDeclaration, translator: self)
 					result.append(errorDanglingPatternDeclaration)
 					continue
 				}
@@ -2220,7 +2231,7 @@ public class SwiftTranslator {
 		return (declaration: String(identifier), isStandardLibrary: isStandardLibrary)
 	}
 
-	internal func getRangeOfNode(_ ast: SwiftAST) -> Range<Int>? {
+	internal func getLineRange(ofNode ast: SwiftAST) -> Range<Int>? {
 		if let rangeString = ast["range"] {
 			let wholeStringRange = Range<String.Index>(uncheckedBounds:
 				(lower: rangeString.startIndex, upper: rangeString.endIndex))
@@ -2242,6 +2253,97 @@ public class SwiftTranslator {
 		return nil
 	}
 
+	internal func getColumnRange(ofNode ast: SwiftAST) -> Range<Int>? {
+		if let rangeString = ast["range"] {
+			let wholeStringRange = Range<String.Index>(uncheckedBounds:
+				(lower: rangeString.startIndex, upper: rangeString.endIndex))
+			if let startRange = rangeString.range(of: "swift:", range: wholeStringRange),
+				let startColumnColonIndex =
+					rangeString[startRange.upperBound...].firstIndex(of: ":")
+			{
+				let startColumnNumberIndex =
+					rangeString[startRange.upperBound...].index(after: startColumnColonIndex)
+				let startColumnNumberSuffix = rangeString[startColumnNumberIndex...]
+				let startColumnDigits = startColumnNumberSuffix.prefix(while: { $0.isNumber })
+
+				if let startNumber = Int(startColumnDigits),
+					let endRange = rangeString.range(of: "line:", range: wholeStringRange),
+					let endColumnColonIndex =
+						rangeString[endRange.upperBound...].firstIndex(of: ":")
+				{
+					let endColumnNumberIndex =
+						rangeString[endRange.upperBound...].index(after: endColumnColonIndex)
+					let endColumnNumberSuffix = rangeString[endColumnNumberIndex...]
+					let endColumnDigits = endColumnNumberSuffix.prefix(while: { $0.isNumber })
+
+					if let endNumber = Int(endColumnDigits) {
+						return startNumber..<(endNumber + 1)
+					}
+				}
+			}
+		}
+
+		return nil
+	}
+
+	internal func getLine(ofNode ast: SwiftAST) -> Int? {
+		if let rangeString = ast["range"] {
+			let wholeStringRange = Range<String.Index>(uncheckedBounds:
+				(lower: rangeString.startIndex, upper: rangeString.endIndex))
+			if let lineRange = rangeString.range(of: "swift:", range: wholeStringRange) {
+				let lineNumberSuffix = rangeString[lineRange.upperBound...]
+				let lineDigits = lineNumberSuffix.prefix(while: { $0.isNumber })
+				if let lineNumber = Int(lineDigits) {
+					return lineNumber
+				}
+			}
+		}
+
+		return nil
+	}
+
+	internal func getLineRangeOfNodeOrSubtree(_ ast: SwiftAST) -> Range<Int>? {
+		if let range = getLineRange(ofNode: ast) {
+			return range
+		}
+
+		for subtree in ast.subtrees {
+			if let range = getLineRangeOfNodeOrSubtree(subtree) {
+				return range
+			}
+		}
+
+		return nil
+	}
+
+	internal func getColumnRangeOfNodeOrSubtree(_ ast: SwiftAST) -> Range<Int>? {
+		if let range = getColumnRange(ofNode: ast) {
+			return range
+		}
+
+		for subtree in ast.subtrees {
+			if let range = getColumnRangeOfNodeOrSubtree(subtree) {
+				return range
+			}
+		}
+
+		return nil
+	}
+
+	internal func getLineOfNodeOrSubtree(_ ast: SwiftAST) -> Int? {
+		if let line = getLine(ofNode: ast) {
+			return line
+		}
+
+		for subtree in ast.subtrees {
+			if let line = getLineOfNodeOrSubtree(subtree) {
+				return line
+			}
+		}
+
+		return nil
+	}
+
 	internal func getComment(forNode ast: SwiftAST, key: String) -> String? {
 		if let comment = getComment(forNode: ast), comment.key == key {
 			return comment.value
@@ -2250,19 +2352,12 @@ public class SwiftTranslator {
 	}
 
 	internal func getComment(forNode ast: SwiftAST) -> (key: String, value: String)? {
-		if let rangeString = ast["range"] {
-			let wholeStringRange = Range<String.Index>(uncheckedBounds:
-				(lower: rangeString.startIndex, upper: rangeString.endIndex))
-			if let lineRange = rangeString.range(of: "swift:", range: wholeStringRange) {
-				let lineNumberSuffix = rangeString[lineRange.upperBound...]
-				let lineDigits = lineNumberSuffix.prefix(while: { $0.isNumber })
-				if let lineNumber = Int(lineDigits) {
-					return sourceFile?.getCommentFromLine(lineNumber)
-				}
-			}
+		if let lineNumber = getLine(ofNode: ast) {
+			return sourceFile?.getCommentFromLine(lineNumber)
 		}
-
-		return nil
+		else {
+			return nil
+		}
 	}
 
 	internal func insertedCode(inRange range: Range<Int>) -> [(key: String, value: String)] {
@@ -2291,6 +2386,49 @@ public class SwiftTranslator {
 	internal func ASTIsExpression(_ ast: SwiftAST) -> Bool {
 		return ast.name.hasSuffix("Expression") || ast.name == "Inject Into Optional"
 	}
+
+	// MARK: Error handling
+	func createUnexpectedASTStructureError(
+		file: String = #file, line: Int = #line, function: String = #function, _ message: String,
+		AST ast: SwiftAST, translator: SwiftTranslator) -> SwiftTranslatorError
+	{
+		return SwiftTranslatorError.unexpectedASTStructure(
+			file: file,
+			line: line,
+			function: function,
+			message: message,
+			AST: ast,
+			translator: translator)
+	}
+
+	func handleUnexpectedASTStructureError(_ error: Error) throws -> Statement {
+		try Compiler.handleError(error)
+		return .error
+	}
+
+	func unexpectedASTStructureError(
+		file: String = #file, line: Int = #line, function: String = #function, _ message: String,
+		AST ast: SwiftAST, translator: SwiftTranslator) throws -> Statement
+	{
+		let error = createUnexpectedASTStructureError(
+			file: file, line: line, function: function, message, AST: ast, translator: translator)
+		return try handleUnexpectedASTStructureError(error)
+	}
+
+	func unexpectedExpressionStructureError(
+		file: String = #file, line: Int = #line, function: String = #function, _ message: String,
+		AST ast: SwiftAST, translator: SwiftTranslator) throws -> Expression
+	{
+		let error = SwiftTranslatorError.unexpectedASTStructure(
+			file: file,
+			line: line,
+			function: function,
+			message: message,
+			AST: ast,
+			translator: translator)
+		try Compiler.handleError(error)
+		return .error
+	}
 }
 
 enum SwiftTranslatorError: Error, CustomStringConvertible {
@@ -2299,61 +2437,76 @@ enum SwiftTranslatorError: Error, CustomStringConvertible {
 		line: Int,
 		function: String,
 		message: String,
-		AST: SwiftAST)
+		AST: SwiftAST,
+		translator: SwiftTranslator)
 
 	var description: String {
 		switch self {
 		case let .unexpectedASTStructure(
-			file: file, line: line, function: function, message: message, AST: ast):
+			file: file,
+			line: line,
+			function: function,
+			message: message,
+			AST: ast,
+			translator: translator):
 
 			var nodeDescription = ""
 			ast.prettyPrint {
 				nodeDescription += $0
 			}
 
-			return "Translation error: failed to translate Swift AST into Gryphon AST.\n" +
-				"On file \(file), line \(line), function \(function).\n" +
-				message + ".\n" +
-				"Thrown when translating the following AST node:\n\(nodeDescription)"
+			let throwingFileName = file.split(separator: "/").last!.split(separator: ".").first!
+
+			if let sourceFile = translator.sourceFile,
+				let sourceFileLineRange = translator.getLineRangeOfNodeOrSubtree(ast),
+				let sourceFileColumnRange = translator.getColumnRangeOfNodeOrSubtree(ast)
+			{
+				let sourceFilePath = sourceFile.path
+				let sourceFileURL = URL(fileURLWithPath: sourceFilePath)
+				let relativePath = sourceFileURL.relativePath
+
+				let sourceFileString = sourceFileLineRange
+					.map { sourceFile.getLine($0) }
+					.compactMap { $0 }
+					.joined(separator: "\n")
+
+				var underlineString = ""
+				for i in 1..<sourceFileColumnRange.lowerBound {
+					let sourceFileCharacter =
+						sourceFileString[String.Index(utf16Offset: i - 1, in: sourceFileString)]
+					if sourceFileCharacter == "\t" {
+						underlineString += "\t"
+					}
+					else {
+						underlineString += " "
+					}
+				}
+				underlineString += "^"
+				for _ in (sourceFileColumnRange.lowerBound + 1)..<sourceFileColumnRange.upperBound {
+					underlineString += "~"
+				}
+
+				return "\(relativePath):\(sourceFileLineRange.lowerBound):" +
+						"\(sourceFileColumnRange.lowerBound): error: \(message)\n" +
+					"\(sourceFileString)\n" +
+					"\(underlineString)\n" +
+					"Thrown by \(throwingFileName):\(line) - \(function)\n" +
+					"when translating the following AST node:\n\(nodeDescription)"
+			}
+			else {
+				return "error: \(message)\n" +
+					"Thrown by \(throwingFileName):\(line) - \(function)\n" +
+					"when translating the following AST node:\n\(nodeDescription)"
+			}
 		}
 	}
 
 	var astName: String {
 		switch self {
-		case let .unexpectedASTStructure(file: _, line: _, function: _, message: _, AST: ast):
+		case let .unexpectedASTStructure(
+			file: _, line: _, function: _, message: _, AST: ast, translator: _):
+
 			return ast.name
 		}
 	}
-}
-
-func createUnexpectedASTStructureError(
-	file: String = #file, line: Int = #line, function: String = #function, _ message: String,
-	AST ast: SwiftAST) -> SwiftTranslatorError
-{
-	return SwiftTranslatorError.unexpectedASTStructure(
-		file: file, line: line, function: function, message: message, AST: ast)
-}
-
-func handleUnexpectedASTStructureError(_ error: Error) throws -> Statement {
-	try Compiler.handleError(error)
-	return .error
-}
-
-func unexpectedASTStructureError(
-	file: String = #file, line: Int = #line, function: String = #function, _ message: String,
-	AST ast: SwiftAST) throws -> Statement
-{
-	let error = createUnexpectedASTStructureError(
-		file: file, line: line, function: function, message, AST: ast)
-	return try handleUnexpectedASTStructureError(error)
-}
-
-func unexpectedExpressionStructureError(
-	file: String = #file, line: Int = #line, function: String = #function, _ message: String,
-	AST ast: SwiftAST) throws -> Expression
-{
-	let error = SwiftTranslatorError.unexpectedASTStructure(
-		file: file, line: line, function: function, message: message, AST: ast)
-	try Compiler.handleError(error)
-	return .error
 }

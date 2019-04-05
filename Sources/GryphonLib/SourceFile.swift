@@ -17,9 +17,11 @@
 import Foundation
 
 public struct SourceFile {
+	public var path: String
 	private var lines: [Substring]
 
-	public init(contents: String) {
+	public init(path: String, contents: String) {
+		self.path = path
 		self.lines = contents.split(separator: "\n", omittingEmptySubsequences: false)
 	}
 
