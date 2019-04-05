@@ -141,12 +141,12 @@ extension Utilities {
 
 extension Utilities {
 	enum FileError: Error, CustomStringConvertible {
-		case outdatedFile(filePath: String)
+		case outdatedFile(inFolder: String)
 
 		var description: String {
 			switch self {
-			case let .outdatedFile(filePath: filePath):
-				return "Outdated file: \(filePath)\n" +
+			case let .outdatedFile(inFolder: folder):
+				return "One of the files in the \(folder) folder is outdated.\n" +
 					"Try running the preBuildScript.sh and the test suite to update compilation " +
 					"files."
 			}
@@ -160,14 +160,11 @@ extension Utilities {
 			return
 		}
 
-		let folder = "Library Templates"
-		print("\t* Updating files...")
+		print("\t* Updating library files...")
 
-		try updateFiles(in: folder, from: .swift, to: .swiftASTDump)
-		{ (_: String, astFilePath: String) in
-			// The .swiftASTDump files must be updated externally by the perl script. If any files
-			// are out of date, this closure gets called and informs the user how to update them.
-			throw FileError.outdatedFile(filePath: astFilePath)
+		let folder = "Library Templates"
+		if needsToUpdateFiles(in: folder, from: .swift, to: .swiftASTDump) {
+			throw FileError.outdatedFile(inFolder: folder)
 		}
 
 		libraryFilesHaveBeenUpdated = true
@@ -184,22 +181,27 @@ extension Utilities {
 
 		try updateLibraryFiles()
 
-		let testFilesFolder = "Test Files"
-		print("\t* Updating files...")
+		print("\t* Updating unit test files...")
 
-		try updateFiles(in: testFilesFolder, from: .swift, to: .swiftASTDump)
-		{ (_: String, astFilePath: String) in
-			// The .swiftASTDump files must be updated externally by the perl script. If any files
-			// are out of date, this closure gets called and informs the user how to update them.
-			throw FileError.outdatedFile(filePath: astFilePath)
+		let testFilesFolder = "Test Files"
+		if needsToUpdateFiles(in: testFilesFolder, from: .swift, to: .swiftASTDump) {
+			throw FileError.outdatedFile(inFolder: testFilesFolder)
 		}
 
-		try updateFiles(
-			["PrintableAsTree", "StandardLibrary"],
-			in: "Bootstrap", from: .swiftASTDump, to: .kt)
-		{ (astDumpFilePath: String, kotlinFilePath: String) throws in
-			let kotlinCode = try Compiler.generateKotlinCode(forFileAt: astDumpFilePath)
-			try kotlinCode.write(toFile: kotlinFilePath, atomically: true, encoding: .utf8)
+		print("\t* Done!")
+		print("\t* Updating bootstrap test files...")
+
+		let bootstrapFolderName = "Bootstrap"
+		let bootstrappedFiles = ["StandardLibrary", "PrintableAsTree", "ASTDumpDecoder"]
+		let bootstrappedFilesPaths = bootstrappedFiles.map { bootstrapFolderName + "/" + $0 }
+		if needsToUpdateFiles(
+			bootstrappedFiles,
+			in: bootstrapFolderName,
+			from: .swiftASTDump,
+			to: .kt)
+		{
+			try Compiler.generateKotlinCode(
+				forFilesAt: bootstrappedFilesPaths, outputFolder: bootstrapFolderName)
 		}
 
 		testFilesHaveBeenUpdated = true
@@ -207,12 +209,11 @@ extension Utilities {
 		print("\t* Done!")
 	}
 
-	static private func updateFiles(
+	static private func needsToUpdateFiles(
 		_ files: [String]? = nil,
 		in folder: String,
 		from originExtension: FileExtension,
-		to destinationExtension: FileExtension,
-		withUpdateClosure update: (String, String) throws -> ()) rethrows
+		to destinationExtension: FileExtension) -> Bool
 	{
 		var testFiles = getFilesInFolder(folder)
 		testFiles = testFiles.filter { $0.pathExtension == originExtension.rawValue }
@@ -234,10 +235,11 @@ extension Utilities {
 				Utilities.file(originFilePath, wasModifiedLaterThan: destinationFilePath)
 
 			if destinationFileIsOutdated {
-				print("\t\t* Updating \(destinationFilePath)...")
-				try update(originFilePath, destinationFilePath)
+				return true
 			}
 		}
+
+		return false
 	}
 
 	static public func getFilesInFolder(_ folder: String) -> [URL] {

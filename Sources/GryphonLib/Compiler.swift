@@ -24,14 +24,30 @@ public enum Compiler {
 	static let kotlinCompilerPath = "/usr/local/bin/kotlinc"
 	#endif
 
-	public enum KotlinCompilationResult {
+	public enum KotlinCompilationResult: CustomStringConvertible {
 		case success(commandOutput: Shell.CommandOutput)
 		case failure(errorMessage: String)
+
+		public var description: String {
+			switch self {
+			case let .success(commandOutput: commandOutput):
+				return "Kotlin compilation result:\n" +
+					"- Output:\n" +
+					commandOutput.standardOutput +
+					"- Error:\n" +
+					commandOutput.standardError +
+					"- Status: \(commandOutput.status)\n"
+			case let .failure(errorMessage: errorMessage):
+				return "Kotlin compilation failed: \(errorMessage)"
+			}
+		}
 	}
 
-	public static func compileAndRun(fileAt filePath: String) throws -> KotlinCompilationResult {
-		let compilationResult = try compile(fileAt: filePath)
-		guard case .success(_) = compilationResult else {
+	public static func compileAndRun(filesAt filePaths: [String]) throws -> KotlinCompilationResult
+	{
+		let compilationResult = try compile(filesAt: filePaths)
+
+		guard case .success = compilationResult else {
 			return compilationResult
 		}
 
@@ -46,19 +62,15 @@ public enum Compiler {
 		return .success(commandOutput: result)
 	}
 
-	public static func compile(fileAt filePath: String) throws -> KotlinCompilationResult {
-		let kotlinCode = try generateKotlinCode(forFileAt: filePath)
+	public static func compile(filesAt filePaths: [String]) throws -> KotlinCompilationResult {
+		let kotlinFilePaths =
+			try generateKotlinCode(forFilesAt: filePaths, outputFolder: Utilities.buildFolder)
 
 		log?("\t- Compiling Kotlin...")
-		let fileName = URL(fileURLWithPath: filePath).deletingPathExtension().lastPathComponent
-		let kotlinFilePath = Utilities.createFile(
-			named: fileName + .kt,
-			inDirectory: Utilities.buildFolder,
-			containing: kotlinCode)
 
 		// Call the kotlin compiler
 		let arguments =
-			["-include-runtime", "-d", Utilities.buildFolder + "/kotlin.jar", kotlinFilePath]
+			["-include-runtime", "-d", Utilities.buildFolder + "/kotlin.jar"] + kotlinFilePaths
 		let commandResult = Shell.runShellCommand(kotlinCompilerPath, arguments: arguments)
 
 		// Ensure the compiler terminated successfully
@@ -74,11 +86,34 @@ public enum Compiler {
 		return .success(commandOutput: result)
 	}
 
-	public static func generateKotlinCode(forFileAt filePath: String) throws -> String {
-		let ast = try generateGryphonASTAndRunPasses(forFileAt: filePath)
+	/// Transpiles the given files and writes the output to files in the given outputFolder. Returns
+	/// the paths to the output files.
+	@discardableResult
+	public static func generateKotlinCode(
+		forFilesAt filePaths: [String], outputFolder: String) throws -> [String]
+	{
+		let kotlinCodes = try generateKotlinCode(forFilesAt: filePaths)
 
-		log?("\t- Translating AST to Kotlin...")
-		return try KotlinTranslator().translateAST(ast)
+		var outputFiles: [String] = []
+		for (filePath, kotlinCode) in zip(filePaths, kotlinCodes) {
+			let fileName = URL(fileURLWithPath: filePath).deletingPathExtension().lastPathComponent
+			let outputFile = Utilities.createFile(
+				named: fileName + .kt,
+				inDirectory: outputFolder,
+				containing: kotlinCode)
+			outputFiles.append(outputFile)
+		}
+
+		return outputFiles
+	}
+
+	public static func generateKotlinCode(forFilesAt filePaths: [String]) throws -> [String] {
+		return try filePaths.map { filePath in
+			let ast = try generateGryphonASTAndRunPasses(forFileAt: filePath)
+
+			log?("\t- Translating AST to Kotlin...")
+			return try KotlinTranslator().translateAST(ast)
+		}
 	}
 
 	public static func generateGryphonASTAndRunPasses(forFileAt filePath: String) throws
