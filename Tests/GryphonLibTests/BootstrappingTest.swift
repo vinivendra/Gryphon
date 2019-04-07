@@ -25,6 +25,20 @@ class BootstrappingTest: XCTestCase {
 			Compiler.printErrorsAndWarnings()
 		}
 
+		// Dump the ASTs
+		let dumpCommand = ["perl", "dumpTranspilerAST.pl" ]
+		guard let dumpResult = Shell.runShellCommand(dumpCommand) else {
+			XCTFail("Timed out.")
+			return
+		}
+		guard dumpResult.status == 0 else {
+			XCTFail("Failed to dump ASTs.\n" +
+				"Output:\n\(dumpResult.standardOutput)\n" +
+				"Error:\n\(dumpResult.standardError)\n" +
+				"Exit status: \(dumpResult.status)\n")
+			return
+		}
+
 		// Compile the Kotlin version of the transpiler
 		let compilationCommand = [
 			Compiler.kotlinCompilerPath,
