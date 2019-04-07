@@ -82,6 +82,9 @@ func gryphonTemplates() {
 	_string.index(_index, offsetBy: _int)
 	"_index + _int"
 
+	_substring.index(_index, offsetBy: _int)
+	"_index + _int"
+
 	_string1.replacingOccurrences(of: _string2, with: _string3)
 	"_string1.replace(_string2, _string3)"
 
@@ -93,6 +96,9 @@ func gryphonTemplates() {
 
 	_range.upperBound
 	"_range.endInclusive"
+
+	Range<String.Index>(uncheckedBounds: (lower: _index1, upper: _index2))
+	"IntRange(_index1, _index2)"
 
 	// Array
 	_array.append(_any)

@@ -290,6 +290,7 @@ fileprivate extension String {
 		let standardLibraryTypeMappings = [
 			"Substring": "String",
 			"Substring.SubSequence": "String",
+			"Substring.Index": "Int",
 			"String.SubSequence": "String",
 			"String.Index": "Int",
 		]

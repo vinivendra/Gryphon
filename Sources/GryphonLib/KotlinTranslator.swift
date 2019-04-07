@@ -36,6 +36,7 @@ public class KotlinTranslator {
 		"Character": "Char",
 
 		"String.Index": "Int",
+		"Substring.Index": "Int",
 		"Substring": "String",
 		"String.SubSequence": "String",
 		"Range<String.Index>": "IntRange",
@@ -73,6 +74,9 @@ public class KotlinTranslator {
 			let translatedKey = translateType(key)
 			let translatedValue = translateType(value)
 			return "MutableMap<\(translatedKey), \(translatedValue)>"
+		}
+		else if type.hasSuffix("?") {
+			return translateType(String(type.dropLast())) + "?"
 		}
 		else {
 			return KotlinTranslator.typeMappings[type] ?? type

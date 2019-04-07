@@ -16,14 +16,6 @@
 
 import Foundation
 
-private func gryphonTemplates() {
-	let _string1 = ""
-	let _string2 = ""
-
-	_string1.occurrences(of: _string2)
-	"_string1.occurrences(substring = _string2)"
-}
-
 internal extension String {
 	// Result should have at most maxSplits + 1 elements.
 	func split(
@@ -70,42 +62,35 @@ internal extension String {
 	}
 
 	/// Non-overlapping
-	func occurrences(of substring: String) -> [Range<String.Index>] { // kotlin: ignore
-		var result = [Range<String.Index>]()
+	func occurrences(of searchedSubstring: String) -> [Range<String.Index>] {
+		var result: [Range<String.Index>] = []
 
-		var currentRange = Range<String.Index>(uncheckedBounds:
-			(lower: startIndex, upper: endIndex))
+		var currentSubstring = Substring(self)
+		var substringOffset = self.startIndex
 
-		while let foundRange = self.range(of: substring, range: currentRange) {
-			result.append(foundRange)
-			currentRange = Range<String.Index>(uncheckedBounds:
-				(lower: foundRange.upperBound, upper: endIndex))
+		while substringOffset < self.endIndex {
+			let maybeIndex = // kotlin: ignore
+				currentSubstring.range(of: searchedSubstring)?.lowerBound
+			// insert: var maybeIndex: Int? = currentSubstring.indexOf(searchedSubstring)
+			// insert: maybeIndex = if (maybeIndex == -1) { null } else { maybeIndex }
+
+			guard let foundIndex = maybeIndex else {
+				break
+			}
+
+			// In Kotlin the foundIndex is counted from the substring's start, but in Swift it's
+			// from the string's start. This compensates for that difference.
+			let occurenceStartIndex = foundIndex // value: foundIndex + substringOffset
+
+			let occurenceEndIndex =
+				currentSubstring.index(occurenceStartIndex, offsetBy: searchedSubstring.count)
+			result.append(Range<String.Index>(uncheckedBounds:
+				(lower: occurenceStartIndex, upper: occurenceEndIndex)))
+			substringOffset = occurenceEndIndex
+			currentSubstring = self[substringOffset...]
 		}
 		return result
 	}
-
-// declaration: fun String.occurrences(substring: String): MutableList<IntRange> {
-// declaration: 	var result: MutableList<IntRange> = mutableListOf()
-// declaration:
-// declaration: 	var currentString = this
-// declaration: 	var currentOffset = 0
-// declaration:
-// declaration: 	while (currentOffset < this.length) {
-// declaration: 		val foundIndex = currentString.indexOf(substring)
-// declaration: 		if (foundIndex == -1) {
-// declaration: 			break
-// declaration: 		}
-// declaration: 		else {
-// declaration: 			val occurenceStartIndex = foundIndex + currentOffset
-// declaration: 			val occurenceEndIndex = occurenceStartIndex + substring.length
-// declaration: 			result.add(IntRange(occurenceStartIndex, occurenceEndIndex))
-// declaration: 			currentOffset = occurenceEndIndex
-// declaration: 			currentString = this.substring(currentOffset)
-// declaration: 		}
-// declaration: 	}
-// declaration:
-// declaration: 	return result
-// declaration: }
 
 	func removeTrailingWhitespace() -> String {
 		guard !isEmpty else {

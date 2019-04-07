@@ -174,6 +174,8 @@ public class SwiftTranslator {
 			return try translate(memberReferenceExpression: expression)
 		case "Tuple Element Expression":
 			return try translate(tupleElementExpression: expression)
+		case "Tuple Expression":
+			return try translate(tupleExpression: expression)
 		case "Subscript Expression":
 			return try translate(subscriptExpression: expression)
 		case "Nil Literal Expression":

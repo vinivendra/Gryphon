@@ -7,7 +7,7 @@ internal fun String.split(
 	var result: MutableList<String> = mutableListOf()
 	var splits: Int = 0
 	var previousIndex: Int = 0
-	val separators: MutableList<IntRange> = this.occurrences(substring = separator)
+	val separators: MutableList<IntRange> = this.occurrences(searchedSubstring = separator)
 
 	for (separator in separators) {
 		if (splits >= maxSplits) {
@@ -41,24 +41,28 @@ internal fun String.split(
 	return result
 }
 
-fun String.occurrences(substring: String): MutableList<IntRange> {
+internal fun String.occurrences(searchedSubstring: String): MutableList<IntRange> {
 	var result: MutableList<IntRange> = mutableListOf()
+	var currentSubstring: String = this
+	var substringOffset: Int = 0
 
-	var currentString = this
-	var currentOffset = 0
+	while (substringOffset < this.length) {
+		var maybeIndex: Int? = currentSubstring.indexOf(searchedSubstring)
+		maybeIndex = if (maybeIndex == -1) { null } else { maybeIndex }
 
-	while (currentOffset < this.length) {
-		val foundIndex = currentString.indexOf(substring)
-		if (foundIndex == -1) {
+		val foundIndex: Int? = maybeIndex
+
+		if (foundIndex == null) {
 			break
 		}
-		else {
-			val occurenceStartIndex = foundIndex + currentOffset
-			val occurenceEndIndex = occurenceStartIndex + substring.length
-			result.add(IntRange(occurenceStartIndex, occurenceEndIndex))
-			currentOffset = occurenceEndIndex
-			currentString = this.substring(currentOffset)
-		}
+
+		val occurenceStartIndex: Int = foundIndex + substringOffset
+		val occurenceEndIndex: Int = occurenceStartIndex + searchedSubstring.length
+
+		result.add(IntRange(occurenceStartIndex, occurenceEndIndex))
+
+		substringOffset = occurenceEndIndex
+		currentSubstring = this.substring(substringOffset)
 	}
 
 	return result
