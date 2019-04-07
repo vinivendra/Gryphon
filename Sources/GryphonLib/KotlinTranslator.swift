@@ -352,7 +352,7 @@ public class KotlinTranslator {
 		var casesTranslation = ""
 		if isEnumClass {
 			casesTranslation += elements.map { element in
-				let capitalizedElementName = element.name.capitalizedAsCamelCase
+				let capitalizedElementName = element.name
 				let annotationsString = (element.annotations == nil) ? "" :
 					"\(element.annotations!) "
 				return "\(increasedIndentation)\(annotationsString)\(capitalizedElementName)"

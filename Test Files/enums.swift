@@ -27,13 +27,13 @@ enum OtherError: Error {
 }
 
 enum NoInheritances: String, Equatable, Codable {
-	case foo
-	case bar
+	case fooBar
+	case barBaz
 }
 
 enum WithMembers {
-	case foo
-	case bar
+	case fooBar
+	case baz
 
 	func a() { }
 	func b() { }

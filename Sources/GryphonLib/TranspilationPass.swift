@@ -859,6 +859,45 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 		return super.replaceDotExpression(
 			leftExpression: leftExpression, rightExpression: rightExpression)
 	}
+
+	override func replaceEnumDeclaration(
+		access: String?,
+		name: String,
+		inherits: [String],
+		elements: [EnumElement],
+		members: [Statement],
+		isImplicit: Bool)
+		-> [Statement]
+	{
+		let isSealedClass = KotlinTranslator.sealedClasses.contains(name)
+		let isEnumClass = KotlinTranslator.enumClasses.contains(name)
+
+		let newElements = elements.map { (element: EnumElement) -> EnumElement in
+			if isSealedClass {
+				return EnumElement(
+					name: element.name.capitalizedAsCamelCase,
+					associatedValues: element.associatedValues,
+					annotations: element.annotations)
+			}
+			else if isEnumClass {
+				return EnumElement(
+					name: element.name.upperSnakeCase(),
+					associatedValues: element.associatedValues,
+					annotations: element.annotations)
+			}
+			else {
+				return element
+			}
+		}
+
+		return super.replaceEnumDeclaration(
+			access: access,
+			name: name,
+			inherits: inherits,
+			elements: newElements,
+			members: members,
+			isImplicit: isImplicit)
+	}
 }
 
 /// Some enum prefixes can be omitted. For instance, there's no need to include `MyEnum.` before

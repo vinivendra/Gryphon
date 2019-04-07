@@ -11,13 +11,13 @@ internal sealed class OtherError: Exception() {
 }
 
 internal enum class NoInheritances {
-	Foo,
-	Bar;
+	FOO_BAR,
+	BAR_BAZ;
 }
 
 internal enum class WithMembers {
-	Foo,
-	Bar;
+	FOO_BAR,
+	BAZ;
 
 	internal fun a() {
 	}
