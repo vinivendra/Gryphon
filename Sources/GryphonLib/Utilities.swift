@@ -207,7 +207,11 @@ extension Utilities {
 		print("\t* Updating bootstrap test files...")
 
 		let bootstrapFolderName = "Bootstrap"
-		let bootstrappedFiles = ["StandardLibrary", "PrintableAsTree", "ASTDumpDecoder"]
+		let bootstrappedFiles = [
+			"StandardLibrary",
+			"PrintableAsTree",
+			"ASTDumpDecoder",
+			"Extensions", ]
 		let bootstrappedFilesPaths = bootstrappedFiles.map { bootstrapFolderName + "/" + $0 }
 		if needsToUpdateFiles(
 			bootstrappedFiles,

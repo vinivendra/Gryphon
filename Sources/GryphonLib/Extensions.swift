@@ -16,6 +16,14 @@
 
 import Foundation
 
+private func gryphonTemplates() {
+	let _string1 = ""
+	let _string2 = ""
+
+	_string1.occurrences(of: _string2)
+	"_string1.occurrences(substring = _string2)"
+}
+
 internal extension String {
 	// Result should have at most maxSplits + 1 elements.
 	func split(
@@ -62,7 +70,7 @@ internal extension String {
 	}
 
 	/// Non-overlapping
-	func occurrences(of substring: String) -> [Range<String.Index>] {
+	func occurrences(of substring: String) -> [Range<String.Index>] { // kotlin: ignore
 		var result = [Range<String.Index>]()
 
 		var currentRange = Range<String.Index>(uncheckedBounds:
@@ -75,6 +83,29 @@ internal extension String {
 		}
 		return result
 	}
+
+// declaration: fun String.occurrences(substring: String): MutableList<IntRange> {
+// declaration: 	var result: MutableList<IntRange> = mutableListOf()
+// declaration:
+// declaration: 	var currentString = this
+// declaration: 	var currentOffset = 0
+// declaration:
+// declaration: 	while (currentOffset < this.length) {
+// declaration: 		val foundIndex = currentString.indexOf(substring)
+// declaration: 		if (foundIndex == -1) {
+// declaration: 			break
+// declaration: 		}
+// declaration: 		else {
+// declaration: 			val occurenceStartIndex = foundIndex + currentOffset
+// declaration: 			val occurenceEndIndex = occurenceStartIndex + substring.length
+// declaration: 			result.add(IntRange(occurenceStartIndex, occurenceEndIndex))
+// declaration: 			currentOffset = occurenceEndIndex
+// declaration: 			currentString = this.substring(currentOffset)
+// declaration: 		}
+// declaration: 	}
+// declaration:
+// declaration: 	return result
+// declaration: }
 
 	func removeTrailingWhitespace() -> String {
 		guard !isEmpty else {
@@ -93,7 +124,7 @@ internal extension String {
 	}
 
 	// TODO: test
-	func upperSnakeCase() -> String {
+	func upperSnakeCase() -> String { // kotlin: ignore
 		guard self.contains(where: { $0.isLowercase }) else {
 			return self
 		}
@@ -132,7 +163,7 @@ extension Character {
 }
 
 //
-extension Array {
+extension Array { // kotlin: ignore
 	/// Returns nil if index is out of bounds.
 	subscript (safe index: Int) -> Element? {
 		if index >= 0 && index < count {
@@ -180,7 +211,7 @@ extension Array {
 	}
 }
 
-extension ArrayReference {
+extension ArrayReference { // kotlin: ignore
 	/// Returns nil if index is out of bounds.
 	subscript (safe index: Int) -> Element? {
 		return array[safe: index]
@@ -208,7 +239,9 @@ extension ArrayReference {
 }
 
 // MARK: Common types conforming to PrintableAsTree
-extension Dictionary: PrintableAsTree where Value: PrintableAsTree, Key == String {
+extension Dictionary: // kotlin: ignore
+	PrintableAsTree where Value: PrintableAsTree, Key == String
+{
 	public var treeDescription: String { return "Dictionary" }
 	public var printableSubtrees: ArrayReference<PrintableAsTree?> {
 		let result: ArrayReference<PrintableAsTree?> = []
@@ -222,7 +255,7 @@ extension Dictionary: PrintableAsTree where Value: PrintableAsTree, Key == Strin
 // MARK: PrintableTree compatibility with Array
 // Only needed temporarily, while the conversion of the codebase (from using Array to using
 // ArrayReference) isn't done.
-extension PrintableTree {
+extension PrintableTree { // kotlin: ignore
 	convenience init(_ description: String, _ subtrees: [PrintableAsTree?]) {
 		self.init(description, ArrayReference<PrintableAsTree?>(array: subtrees))
 	}

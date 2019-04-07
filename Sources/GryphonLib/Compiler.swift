@@ -119,6 +119,7 @@ public enum Compiler {
 	{
 		var asts = try filePaths.map { try generateGryphonAST(forFileAt: $0) }
 		log?("\t- Translating Swift AST to Gryphon AST...")
+		try Utilities.updateLibraryFiles()
 		asts = asts.map { TranspilationPass.runFirstRoundOfPasses(on: $0) }
 		asts = asts.map { TranspilationPass.runSecondRoundOfPasses(on: $0) }
 		return asts

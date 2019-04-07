@@ -642,7 +642,7 @@ internal class ASTDumpDecoder {
 }
 
 // MARK: - Creating a SwiftAST
-extension ASTDumpDecoder {
+extension ASTDumpDecoder { // kotlin: ignore
 	public static func decode(file astFilePath: String) throws -> SwiftAST {
 		let astDump = try String(contentsOfFile: astFilePath)
 		let decoder = ASTDumpDecoder(encodedString: astDump)

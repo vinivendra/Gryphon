@@ -29,7 +29,9 @@ class BootstrappingTest: XCTestCase {
 		let compilationCommand = [
 			Compiler.kotlinCompilerPath,
 			"-include-runtime", "-d", "kotlin.jar",
-			"PrintableAsTree.kt", "PrintableAsTreeTests.kt",
+			"PrintableAsTree.kt", "PrintableAsTreeTest.kt",
+			"ASTDumpDecoder.kt", "ASTDumpDecoderTest.kt",
+			"Extensions.kt", "ExtensionsTest.kt",
 			"KotlinTests.kt", "StandardLibrary.kt", "main.kt", ]
 		guard let compilationResult =
 			Shell.runShellCommand(compilationCommand, fromFolder: "Bootstrap") else

@@ -361,10 +361,15 @@ public class SwiftTranslator {
 		if let leftExpression = assignExpression.subtree(at: 0),
 			let rightExpression = assignExpression.subtree(at: 1)
 		{
-			let leftTranslation = try translate(expression: leftExpression)
-			let rightTranslation = try translate(expression: rightExpression)
+			if leftExpression.name == "Discard Assignment Expression" {
+				return try .expression(expression: translate(expression: rightExpression))
+			}
+			else {
+				let leftTranslation = try translate(expression: leftExpression)
+				let rightTranslation = try translate(expression: rightExpression)
 
-			return .assignmentStatement(leftHand: leftTranslation, rightHand: rightTranslation)
+				return .assignmentStatement(leftHand: leftTranslation, rightHand: rightTranslation)
+			}
 		}
 		else {
 			return try unexpectedASTStructureError(
@@ -2472,8 +2477,8 @@ enum SwiftTranslatorError: Error, CustomStringConvertible {
 
 				var underlineString = ""
 				for i in 1..<sourceFileColumnRange.lowerBound {
-					let sourceFileCharacter =
-						sourceFileString[String.Index(utf16Offset: i - 1, in: sourceFileString)]
+					let sourceFileCharacter = sourceFileString[
+							sourceFileString.index(sourceFileString.startIndex, offsetBy: i - 1)]
 					if sourceFileCharacter == "\t" {
 						underlineString += "\t"
 					}

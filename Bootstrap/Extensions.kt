@@ -7,7 +7,7 @@ internal fun String.split(
 	var result: MutableList<String> = mutableListOf()
 	var splits: Int = 0
 	var previousIndex: Int = 0
-	val separators: MutableList<IntRange> = this.occurrences(separator)
+	val separators: MutableList<IntRange> = this.occurrences(substring = separator)
 
 	for (separator in separators) {
 		if (splits >= maxSplits) {
@@ -81,3 +81,8 @@ internal fun String.removeTrailingWhitespace(): String {
 
 	return this.substring(0, lastValidIndex + 1)
 }
+
+val Char.isNumber: Boolean
+	get() {
+		return this == '0' || this == '1' || this == '2' || this == '3' || this == '4' || this == '5' || this == '6' || this == '7' || this == '8' || this == '9'
+	}
