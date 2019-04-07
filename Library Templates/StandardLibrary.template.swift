@@ -9,10 +9,11 @@ func gryphonTemplates() {
 	var _index: String.Index = "abc".endIndex
 	let _index1: String.Index = "abc".startIndex
 	let _index2: String.Index = "abc".startIndex
-	let _string: String = "abc"
-	let _string1: String = "abc"
+	var _string: String = "abc"
+	var _string1: String = "abc"
 	let _string2: String = "abc"
 	let _string3: String = "abc"
+	let _character: Character = "a"
 	let _substring: Substring = "abc".dropLast()
 	let _range: Range<String.Index> = _string.startIndex..<_string.endIndex
 	let _any: Any = "abc"
@@ -48,6 +49,9 @@ func gryphonTemplates() {
 
 	_string.dropLast()
 	"_string.dropLast(1)"
+
+	_string.indices
+	"_string.indices"
 
 	_string.prefix(_int)
 	"_string.substring(0, _int)"
@@ -99,6 +103,17 @@ func gryphonTemplates() {
 
 	Range<String.Index>(uncheckedBounds: (lower: _index1, upper: _index2))
 	"IntRange(_index1, _index2)"
+
+	_string1.append(_string2)
+	"_string1 += _string2"
+
+	_string.append(_character)
+	"_string += _character"
+
+	// Character
+
+	_character.uppercased()
+	"_character.toUpperCase()"
 
 	// Array
 	_array.append(_any)

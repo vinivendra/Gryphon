@@ -11,6 +11,7 @@ class ExtensionsTest(): Test("ExtensionsTest") {
 		testStringSplit()
 		testOccurrencesOfSubstring()
 		testRemoveTrailingWhitespace()
+		testUpperSnakeCase()
 		super.runAllTests()
 	}
 
@@ -187,5 +188,12 @@ class ExtensionsTest(): Test("ExtensionsTest") {
 		XCTAssertEqual("abcde  \t\t  abcde", "abcde  \t\t  abcde".removeTrailingWhitespace())
 		XCTAssertEqual("abcde  \t\t  abcde", "abcde  \t\t  abcde  ".removeTrailingWhitespace())
 		XCTAssertEqual("abcde  \t\t  abcde", "abcde  \t\t  abcde \t ".removeTrailingWhitespace())
+	}
+
+	fun testUpperSnakeCase() {
+		XCTAssertEqual("ABC", "abc".upperSnakeCase())
+		XCTAssertEqual("FOO_BAR", "fooBar".upperSnakeCase())
+		XCTAssertEqual("FOO_BAR", "FooBar".upperSnakeCase())
+		XCTAssertEqual("HTTPS_BAR", "HTTPSBar".upperSnakeCase())
 	}
 }

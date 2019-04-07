@@ -39,6 +39,14 @@ class BootstrappingTest: XCTestCase {
 			return
 		}
 
+		// Turn the ASTs into Kotlin files
+		do {
+			try Utilities.updateTestFiles()
+		}
+		catch let error {
+			XCTFail("Error transpiling bootstrap files.\n\(error)")
+		}
+
 		// Compile the Kotlin version of the transpiler
 		let compilationCommand = [
 			Compiler.kotlinCompilerPath,
@@ -90,14 +98,4 @@ class BootstrappingTest: XCTestCase {
 	static var allTests = [
 		("test", test),
 	]
-
-	override static func setUp() {
-		do {
-			try Utilities.updateTestFiles()
-		}
-		catch let error {
-			print(error)
-			fatalError("Failed to update test files.")
-		}
-	}
 }

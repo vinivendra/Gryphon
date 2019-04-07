@@ -86,7 +86,39 @@ internal fun String.removeTrailingWhitespace(): String {
 	return this.substring(0, lastValidIndex + 1)
 }
 
+internal fun String.upperSnakeCase(): String {
+	if (this.isEmpty()) {
+		return this
+	}
+
+	var result: String = ""
+
+	result += this[0].toUpperCase()
+
+	val indicesWithoutTheFirstOne = this.indices.drop(1)
+
+	for (index in indicesWithoutTheFirstOne) {
+		val currentCharacter: Char = this[index]
+		if (currentCharacter.isUppercase) {
+			val nextIndex: Int = index + 1
+			if (nextIndex != this.length && !this[nextIndex].isUppercase) {
+				result += "_"
+			}
+			result += currentCharacter
+		}
+		else {
+			result += currentCharacter.toUpperCase()
+		}
+	}
+
+	return result
+}
+
 val Char.isNumber: Boolean
 	get() {
 		return this == '0' || this == '1' || this == '2' || this == '3' || this == '4' || this == '5' || this == '6' || this == '7' || this == '8' || this == '9'
+	}
+val Char.isUppercase: Boolean
+	get() {
+		return this == 'A' || this == 'B' || this == 'C' || this == 'D' || this == 'E' || this == 'F' || this == 'G' || this == 'H' || this == 'I' || this == 'J' || this == 'K' || this == 'L' || this == 'M' || this == 'N' || this == 'O' || this == 'P' || this == 'Q' || this == 'R' || this == 'S' || this == 'T' || this == 'U' || this == 'V' || this == 'W' || this == 'X' || this == 'Y' || this == 'Z'
 	}

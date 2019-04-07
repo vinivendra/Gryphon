@@ -109,25 +109,32 @@ internal extension String {
 	}
 
 	// TODO: test
-	func upperSnakeCase() -> String { // kotlin: ignore
-		guard self.contains(where: { $0.isLowercase }) else {
+	func upperSnakeCase() -> String {
+		guard !self.isEmpty else {
 			return self
 		}
 
-		var newString: String = ""
+		var result: String = ""
+		result.append(self[self.startIndex].uppercased())
 
-		let upperCase = CharacterSet.uppercaseLetters
-		var range = self.startIndex..<self.endIndex
-		while let foundRange = self.rangeOfCharacter(from: upperCase, range: range) {
-			newString += self[range.lowerBound..<foundRange.lowerBound].uppercased()
-			newString += "_"
-			newString += self[foundRange]
+		let indicesWithoutTheFirstOne = self.indices.dropFirst() // kotlin: ignore
+		// insert: val indicesWithoutTheFirstOne = this.indices.drop(1)
 
-			range = foundRange.upperBound..<self.endIndex
+		for index in indicesWithoutTheFirstOne {
+			let currentCharacter = self[index]
+			if currentCharacter.isUppercase {
+				let nextIndex = self.index(after: index)
+				if nextIndex != endIndex && !self[nextIndex].isUppercase {
+					result.append("_")
+				}
+				result.append(currentCharacter)
+			}
+			else {
+				result.append(currentCharacter.uppercased())
+			}
 		}
-		newString += self[range].uppercased()
 
-		return newString
+		return result
 	}
 }
 
@@ -144,6 +151,35 @@ extension Character {
 			self == "7" ||
 			self == "8" ||
 			self == "9"
+	}
+
+	var isUppercase: Bool {
+		return self == "A" ||
+			self == "B" ||
+			self == "C" ||
+			self == "D" ||
+			self == "E" ||
+			self == "F" ||
+			self == "G" ||
+			self == "H" ||
+			self == "I" ||
+			self == "J" ||
+			self == "K" ||
+			self == "L" ||
+			self == "M" ||
+			self == "N" ||
+			self == "O" ||
+			self == "P" ||
+			self == "Q" ||
+			self == "R" ||
+			self == "S" ||
+			self == "T" ||
+			self == "U" ||
+			self == "V" ||
+			self == "W" ||
+			self == "X" ||
+			self == "Y" ||
+			self == "Z"
 	}
 }
 

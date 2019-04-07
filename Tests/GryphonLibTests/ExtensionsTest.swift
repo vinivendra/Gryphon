@@ -208,6 +208,13 @@ class ExtensionsTest: XCTestCase {
 		XCTAssertEqual("abcde  \t\t  abcde", "abcde  \t\t  abcde \t ".removeTrailingWhitespace())
 	}
 
+	func testUpperSnakeCase() {
+		XCTAssertEqual("ABC", "abc".upperSnakeCase())
+		XCTAssertEqual("FOO_BAR", "fooBar".upperSnakeCase())
+		XCTAssertEqual("FOO_BAR", "FooBar".upperSnakeCase())
+		XCTAssertEqual("HTTPS_BAR", "HTTPSBar".upperSnakeCase())
+	}
+
 	func testSafeIndex() {
 		let array = [1, 2, 3]
 		XCTAssert(array[safe: 0] == 1)
