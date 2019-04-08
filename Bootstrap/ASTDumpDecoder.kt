@@ -141,10 +141,10 @@ class ASTDumpDecoder {
 
 		while (true) {
 			val character: Char = buffer[index]
-			if (character == '(') {
+			if (character == '(' || character == '<') {
 				parenthesesLevel += 1
 			}
-			else if (character == ')') {
+			else if (character == ')' || character == '>') {
 				parenthesesLevel -= 1
 				if (parenthesesLevel < 0) {
 					break
@@ -156,7 +156,7 @@ class ASTDumpDecoder {
 					break
 				}
 			}
-			else if (character == ' ') {
+			else if (character == ' ' && parenthesesLevel <= 0) {
 				break
 			}
 			index = index + 1

@@ -1020,13 +1020,8 @@ public class KotlinTranslator {
 			return try translateClosureExpression(
 				parameters: parameters, statements: statements, type: type,
 				withIndentation: indentation)
-		case let .declarationReferenceExpression(
-			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
-			isImplicit: isImplicit):
-
-			return translateDeclarationReferenceExpression(
-				identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
-				isImplicit: isImplicit)
+		case let .declarationReferenceExpression(value: declarationReferenceExpression):
+			return translateDeclarationReferenceExpression(declarationReferenceExpression)
 		case let .returnExpression(expression: expression):
 			return try translateReturnExpression(
 				expression: expression, withIndentation: indentation)
@@ -1206,14 +1201,10 @@ public class KotlinTranslator {
 		}
 
 		let functionTranslation: FunctionTranslation?
-		if case let .declarationReferenceExpression(
-				identifier: identifier,
-				type: type,
-				isStandardLibrary: _,
-				isImplicit: _) = functionExpression
-		{
-			functionTranslation =
-				KotlinTranslator.getFunctionTranslation(forName: identifier, type: type)
+		if case let .declarationReferenceExpression(value: expression) = functionExpression {
+			functionTranslation = KotlinTranslator.getFunctionTranslation(
+				forName: expression.identifier,
+				type: expression.type)
 		}
 		else {
 			functionTranslation = nil
@@ -1309,9 +1300,9 @@ public class KotlinTranslator {
 	}
 
 	private func translateDeclarationReferenceExpression(
-		identifier: String, type: String, isStandardLibrary: Bool, isImplicit: Bool) -> String
+		_ declarationReferenceExpression: DeclarationReferenceExpression) -> String
 	{
-		return String(identifier.prefix { $0 != "(" })
+		return String(declarationReferenceExpression.identifier.prefix { $0 != "(" })
 	}
 
 	private func translateTupleExpression(

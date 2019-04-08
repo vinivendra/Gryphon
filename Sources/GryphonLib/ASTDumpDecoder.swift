@@ -145,8 +145,9 @@ internal class ASTDumpDecoder {
 	}
 
 	/**
-	Reads an identifier. An identifier may have parentheses in it, so this function also
-	checks to see if they're balanced and only exits when the last open parethesis has been closed.
+	Reads an identifier. An identifier may have parentheses (or angle brackets) in it, so this
+	function also checks to see if they're balanced and only exits when the last open parethesis
+	has been closed.
 
 	For some reason (a bug in the compiler) the identifier can sometimes be split in two by a
 	newline. Newlines that seem to occur normally are followed by a series of spaces, but these
@@ -161,10 +162,10 @@ internal class ASTDumpDecoder {
 		while true {
 			let character = buffer[index]
 
-			if character == "(" {
+			if character == "(" || character == "<" {
 				parenthesesLevel += 1
 			}
-			else if character == ")" {
+			else if character == ")" || character == ">" {
 				parenthesesLevel -= 1
 				if parenthesesLevel < 0 {
 					break
@@ -176,7 +177,7 @@ internal class ASTDumpDecoder {
 					break
 				}
 			}
-			else if character == " " {
+			else if character == " ", parenthesesLevel <= 0 {
 				break
 			}
 

@@ -93,12 +93,11 @@ extension Expression {
 		_ template: Expression, _ matches: inout [String: Expression]) -> Bool
 	{
 		if case let .declarationReferenceExpression(
-				identifier: identifier, type: templateType, isStandardLibrary: _,
-				isImplicit: _) = template,
-			identifier.hasPrefix("_"),
-			self.isOfType(templateType)
+				value: templateExpression) = template,
+			templateExpression.identifier.hasPrefix("_"),
+			self.isOfType(templateExpression.type)
 		{
-			matches[identifier] = self
+			matches[templateExpression.identifier] = self
 			return true
 		}
 		else {
@@ -119,15 +118,12 @@ extension Expression {
 
 				return leftExpression.matches(rightExpression, &matches)
 			case let
-				(.declarationReferenceExpression(
-					identifier: leftIdentifier, type: leftType,
-					isStandardLibrary: _, isImplicit: leftIsImplicit),
-				 .declarationReferenceExpression(
-					identifier: rightIdentifier, type: rightType,
-					isStandardLibrary: _, isImplicit: rightIsImplicit)):
+				(.declarationReferenceExpression(value: leftExpression),
+				 .declarationReferenceExpression(value: rightExpression)):
 
-				return leftIdentifier == rightIdentifier && leftType.isSubtype(of: rightType) &&
-					leftIsImplicit == rightIsImplicit
+				return leftExpression.identifier == rightExpression.identifier &&
+					leftExpression.type.isSubtype(of: rightExpression.type) &&
+					leftExpression.isImplicit == rightExpression.isImplicit
 			case let
 				(.typeExpression(type: leftType),
 				 .typeExpression(type: rightType)):

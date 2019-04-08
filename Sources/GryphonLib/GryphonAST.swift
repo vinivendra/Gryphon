@@ -130,10 +130,7 @@ public indirect enum Expression: Equatable, PrintableAsTree {
 	case optionalExpression(
 		expression: Expression)
 	case declarationReferenceExpression(
-		identifier: String,
-		type: String,
-		isStandardLibrary: Bool,
-		isImplicit: Bool)
+		value: DeclarationReferenceExpression)
 	case typeExpression(
 		type: String)
 	case subscriptExpression(
@@ -240,6 +237,13 @@ public struct VariableDeclaration: Equatable {
 	var isStatic: Bool
 	var extendsType: String?
 	var annotations: String?
+}
+
+public struct DeclarationReferenceExpression: Equatable {
+	var identifier: String
+	var type: String
+	var isStandardLibrary: Bool
+	var isImplicit: Bool
 }
 
 public struct FunctionDeclaration: Equatable {
@@ -486,10 +490,8 @@ extension Expression {
 			}
 		case let .optionalExpression(expression: expression):
 			return expression.type
-		case let .declarationReferenceExpression(
-			identifier: _, type: type, isStandardLibrary: _, isImplicit: _):
-
-			return type
+		case let .declarationReferenceExpression(value: declarationReferenceExpression):
+			return declarationReferenceExpression.type
 		case .typeExpression:
 			return nil
 		case let .subscriptExpression(subscriptedExpression: _, indexExpression: _, type: type):
@@ -571,15 +573,12 @@ extension Expression {
 			return [expression]
 		case let .optionalExpression(expression: expression):
 			return [expression]
-		case let .declarationReferenceExpression(
-			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
-			isImplicit: isImplicit):
-
+		case let .declarationReferenceExpression(value: expression):
 			return [
-				PrintableTree(type),
-				PrintableTree(identifier),
-				isStandardLibrary ? PrintableTree("isStandardLibrary") : nil,
-				isImplicit ? PrintableTree("implicit") : nil, ]
+				PrintableTree(expression.type),
+				PrintableTree(expression.identifier),
+				expression.isStandardLibrary ? PrintableTree("isStandardLibrary") : nil,
+				expression.isImplicit ? PrintableTree("implicit") : nil, ]
 		case let .typeExpression(type: type):
 			return [PrintableTree(type)]
 		case let .subscriptExpression(

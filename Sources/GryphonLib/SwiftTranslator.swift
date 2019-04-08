@@ -35,7 +35,9 @@ public class SwiftTranslator {
 			sourceFile = SourceFile(path: filePath, contents: contents)
 		}
 
-		let fileRange = sourceFile.map { 0..<$0.numberOfLines }
+		let fileRange = sourceFile.map {
+			SourceFileRange(lineStart: 0, lineEnd: $0.numberOfLines, columnStart: 0, columnEnd: 0)
+		}
 		let translatedSubtrees = try translate(
 			subtrees: ast.subtrees.array,
 			inScope: fileRange)
@@ -254,29 +256,31 @@ public class SwiftTranslator {
 		inScope scope: SwiftAST,
 		asDeclarations: Bool = false) throws -> [Statement]
 	{
-		let scopeRange = getLineRange(ofNode: scope)
+		let scopeRange = getRange(ofNode: scope)
 		return try translate(
 			subtrees: subtrees, inScope: scopeRange)
 	}
 
 	internal func translate(
 		subtrees: [SwiftAST],
-		inScope scopeRange: Range<Int>?) throws -> [Statement]
+		inScope scopeRange: SourceFileRange?) throws -> [Statement]
 	{
-//		let insertString = asDeclarations ? "declaration" : "insert"
-
 		var result = [Statement]()
 
-		var lastRange: Range<Int>
+		var lastRange: SourceFileRange
 		// I we have a scope, start at its lower bound
 		if let scopeRange = scopeRange {
-			lastRange = -1..<scopeRange.lowerBound
+			lastRange = SourceFileRange(
+				lineStart: -1,
+				lineEnd: scopeRange.lineStart,
+				columnStart: 0,
+				columnEnd: 0)
 		}
-			// If we don't, start at the first statement with a range
-		else if let subtree = subtrees.first(where: { getLineRange(ofNode: $0) != nil }) {
-			lastRange = getLineRange(ofNode: subtree)!
+		// If we don't, start at the first statement with a range
+		else if let subtree = subtrees.first(where: { getRange(ofNode: $0) != nil }) {
+			lastRange = getRange(ofNode: subtree)!
 		}
-			// If there is no info on ranges, then just translate the subtrees normally
+		// If there is no info on ranges, then just translate the subtrees normally
 		else {
 			return try subtrees.flatMap(translate(subtree:)).compactMap { $0 }
 		}
@@ -296,10 +300,10 @@ public class SwiftTranslator {
 			}
 
 		for subtree in subtrees {
-			if let currentRange = getLineRange(ofNode: subtree),
-				lastRange.upperBound < currentRange.lowerBound
+			if let currentRange = getRange(ofNode: subtree),
+				lastRange.lineEnd < currentRange.lineStart
 			{
-				let comments = insertedCode(inRange: lastRange.upperBound..<currentRange.lowerBound)
+				let comments = insertedCode(inRange: lastRange.lineEnd..<currentRange.lineStart)
 				result += comments.compactMap(commentToAST)
 
 				lastRange = currentRange
@@ -310,10 +314,10 @@ public class SwiftTranslator {
 
 		// Insert code in comments after the last translated node
 		if let scopeRange = scopeRange,
-			lastRange.upperBound < scopeRange.upperBound
+			lastRange.lineEnd < scopeRange.lineEnd
 		{
 			let comments = insertedCode(
-				inRange: lastRange.upperBound..<scopeRange.upperBound)
+				inRange: lastRange.lineEnd..<scopeRange.lineEnd)
 			result += comments.compactMap(commentToAST)
 		}
 
@@ -587,9 +591,12 @@ public class SwiftTranslator {
 			let leftHand = try translate(expression: memberOwner)
 			let (member, isStandardLibrary) = getIdentifierFromDeclaration(declaration)
 			let isImplicit = memberReferenceExpression.standaloneAttributes.contains("implicit")
-			let rightHand = Expression.declarationReferenceExpression(
-				identifier: member, type: type, isStandardLibrary: isStandardLibrary,
-				isImplicit: isImplicit)
+			let rightHand = Expression.declarationReferenceExpression(value:
+				DeclarationReferenceExpression(
+					identifier: member,
+					type: type,
+					isStandardLibrary: isStandardLibrary,
+					isImplicit: isImplicit))
 			return .dotExpression(leftExpression: leftHand,
 								  rightExpression: rightHand)
 		}
@@ -622,15 +629,16 @@ public class SwiftTranslator {
 			if let labelAndType = tupleComponent?.split(withStringSeparator: ": "),
 				let label = labelAndType[safe: 0],
 				let type = labelAndType[safe: 1],
-				case let .declarationReferenceExpression(
-					identifier: _, type: _, isStandardLibrary: isStandardLibrary,
-					isImplicit: _) = leftHand
+				case let .declarationReferenceExpression(value: leftExpression) = leftHand
 			{
 				return .dotExpression(
 					leftExpression: leftHand,
-					rightExpression: .declarationReferenceExpression(
-						identifier: label, type: type, isStandardLibrary: isStandardLibrary,
-						isImplicit: false))
+					rightExpression: .declarationReferenceExpression(value:
+						DeclarationReferenceExpression(
+							identifier: label,
+							type: type,
+							isStandardLibrary: leftExpression.isStandardLibrary,
+							isImplicit: false)))
 			}
 		}
 
@@ -765,10 +773,8 @@ public class SwiftTranslator {
 
 			// Swift 4.2
 			if case .typeExpression(type: _) = leftHand,
-				case let .declarationReferenceExpression(
-					identifier: identifier, type: _, isStandardLibrary: _,
-					isImplicit: _) = rightHand,
-				identifier == "none"
+				case let .declarationReferenceExpression(value: rightExpression) = rightHand,
+				rightExpression.identifier == "none"
 			{
 				return .nilLiteralExpression
 			}
@@ -825,9 +831,12 @@ public class SwiftTranslator {
 				AST: forEachStatement, translator: self)
 		}
 
-		let variable = Expression.declarationReferenceExpression(
-			identifier: variableName, type: variableType, isStandardLibrary: false,
-			isImplicit: false)
+		let variable = Expression.declarationReferenceExpression(value:
+			DeclarationReferenceExpression(
+				identifier: variableName,
+				type: variableType,
+				isStandardLibrary: false,
+				isImplicit: false))
 		let collectionTranslation = try translate(expression: collectionExpression)
 		let statements = try translate(braceStatement: braceStatement)
 
@@ -995,11 +1004,12 @@ public class SwiftTranslator {
 							typeName: $0.associatedValueType,
 							expression: .dotExpression(
 								leftExpression: translatedExpression,
-								rightExpression: .declarationReferenceExpression(
-									identifier: $0.associatedValueName,
-									type: $0.associatedValueType,
-									isStandardLibrary: false,
-									isImplicit: false)),
+								rightExpression: .declarationReferenceExpression(value:
+									DeclarationReferenceExpression(
+										identifier: $0.associatedValueName,
+										type: $0.associatedValueType,
+										isStandardLibrary: false,
+										isImplicit: false))),
 							getter: nil,
 							setter: nil,
 							isLet: true,
@@ -1069,11 +1079,12 @@ public class SwiftTranslator {
 				AST: simplePatternEnumElement, translator: self)
 		}
 
-		let lastExpression = Expression.declarationReferenceExpression(
-			identifier: String(lastEnumElement),
-			type: type,
-			isStandardLibrary: false,
-			isImplicit: false)
+		let lastExpression = Expression.declarationReferenceExpression(value:
+			DeclarationReferenceExpression(
+				identifier: String(lastEnumElement),
+				type: type,
+				isStandardLibrary: false,
+				isImplicit: false))
 
 		enumElements.removeLast()
 		if !enumElements.isEmpty {
@@ -1209,11 +1220,12 @@ public class SwiftTranslator {
 						typeName: declaration.associatedValueType,
 						expression: .dotExpression(
 							leftExpression: declarationReference,
-							rightExpression: .declarationReferenceExpression(
-								identifier: String(declaration.associatedValueName),
-								type: declaration.associatedValueType,
-								isStandardLibrary: false,
-								isImplicit: false)),
+							rightExpression: .declarationReferenceExpression(value:
+								DeclarationReferenceExpression(
+									identifier: String(declaration.associatedValueName),
+									type: declaration.associatedValueType,
+									isStandardLibrary: false,
+									isImplicit: false))),
 						getter: nil,
 						setter: nil,
 						isLet: true,
@@ -2018,23 +2030,25 @@ public class SwiftTranslator {
 
 		if let discriminator = declarationReferenceExpression["discriminator"] {
 			let (identifier, isStandardLibrary) = getIdentifierFromDeclaration(discriminator)
-			return .declarationReferenceExpression(
-				identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
-				isImplicit: isImplicit)
+			return .declarationReferenceExpression(value: DeclarationReferenceExpression(
+					identifier: identifier,
+					type: type,
+					isStandardLibrary: isStandardLibrary,
+					isImplicit: isImplicit))
 		}
 		else if let codeDeclaration = declarationReferenceExpression.standaloneAttributes.first,
 			codeDeclaration.hasPrefix("code.")
 		{
 			let (identifier, isStandardLibrary) = getIdentifierFromDeclaration(codeDeclaration)
-			return .declarationReferenceExpression(
+			return .declarationReferenceExpression(value: DeclarationReferenceExpression(
 				identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
-				isImplicit: isImplicit)
+				isImplicit: isImplicit))
 		}
 		else if let declaration = declarationReferenceExpression["decl"] {
 			let (identifier, isStandardLibrary) = getIdentifierFromDeclaration(declaration)
-			return .declarationReferenceExpression(
+			return .declarationReferenceExpression(value: DeclarationReferenceExpression(
 				identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
-				isImplicit: isImplicit)
+				isImplicit: isImplicit))
 		}
 		else {
 			return try unexpectedExpressionStructureError(
@@ -2253,113 +2267,72 @@ public class SwiftTranslator {
 		return (declaration: String(identifier), isStandardLibrary: isStandardLibrary)
 	}
 
-	internal func getLineRange(ofNode ast: SwiftAST) -> Range<Int>? {
-		if let rangeString = ast["range"] {
-			let wholeStringRange = Range<String.Index>(uncheckedBounds:
-				(lower: rangeString.startIndex, upper: rangeString.endIndex))
-			if let startRange = rangeString.range(of: "swift:", range: wholeStringRange) {
-				let startNumberSuffix = rangeString[startRange.upperBound...]
-				let startDigits = startNumberSuffix.prefix(while: { $0.isNumber })
-				if let startNumber = Int(startDigits),
-					let endRange = rangeString.range(of: "line:", range: wholeStringRange)
-				{
-					let endNumberSuffix = rangeString[endRange.upperBound...]
-					let endDigits = endNumberSuffix.prefix(while: { $0.isNumber })
-					if let endNumber = Int(endDigits) {
-						return startNumber..<(endNumber + 1)
-					}
-				}
-			}
-		}
-
-		return nil
+	struct SourceFileRange {
+		let lineStart: Int
+		let lineEnd: Int
+		let columnStart: Int
+		let columnEnd: Int
 	}
 
-	internal func getColumnRange(ofNode ast: SwiftAST) -> Range<Int>? {
-		if let rangeString = ast["range"] {
-			let wholeStringRange = Range<String.Index>(uncheckedBounds:
-				(lower: rangeString.startIndex, upper: rangeString.endIndex))
-			if let startRange = rangeString.range(of: "swift:", range: wholeStringRange),
-				let startColumnColonIndex =
-					rangeString[startRange.upperBound...].firstIndex(of: ":")
-			{
-				let startColumnNumberIndex =
-					rangeString[startRange.upperBound...].index(after: startColumnColonIndex)
-				let startColumnNumberSuffix = rangeString[startColumnNumberIndex...]
-				let startColumnDigits = startColumnNumberSuffix.prefix(while: { $0.isNumber })
-
-				if let startNumber = Int(startColumnDigits),
-					let endRange = rangeString.range(of: "line:", range: wholeStringRange),
-					let endColumnColonIndex =
-						rangeString[endRange.upperBound...].firstIndex(of: ":")
-				{
-					let endColumnNumberIndex =
-						rangeString[endRange.upperBound...].index(after: endColumnColonIndex)
-					let endColumnNumberSuffix = rangeString[endColumnNumberIndex...]
-					let endColumnDigits = endColumnNumberSuffix.prefix(while: { $0.isNumber })
-
-					if let endNumber = Int(endColumnDigits) {
-						return startNumber..<(endNumber + 1)
-					}
-				}
-			}
+	/// Extracts the range numbers from a string in the form
+	/// `Path/to/file.swift:1:2 - line:3:4`, where the numbers 1, 2, 3 and 4 represent (in order)
+	/// the lineStart, columnStart, lineEnd and columndEnd.
+	internal func getRange(ofNode ast: SwiftAST) -> SourceFileRange? {
+		guard let rangeString = ast["range"],
+			let maybeSwiftIndex = rangeString.range(of: ".swift:")?.upperBound else
+		{
+			return nil
 		}
 
-		return nil
-	}
+		var currentSubstring: Substring
 
-	internal func getLine(ofNode ast: SwiftAST) -> Int? {
-		if let rangeString = ast["range"] {
-			let wholeStringRange = Range<String.Index>(uncheckedBounds:
-				(lower: rangeString.startIndex, upper: rangeString.endIndex))
-			if let lineRange = rangeString.range(of: "swift:", range: wholeStringRange) {
-				let lineNumberSuffix = rangeString[lineRange.upperBound...]
-				let lineDigits = lineNumberSuffix.prefix(while: { $0.isNumber })
-				if let lineNumber = Int(lineDigits) {
-					return lineNumber
-				}
-			}
+		let lineStartIndex = maybeSwiftIndex
+		currentSubstring = rangeString[lineStartIndex...]
+		let lineStartString = currentSubstring.prefix(while: { $0.isNumber })
+		guard let lineStart = Int(lineStartString) else {
+			return nil
 		}
 
-		return nil
+		// skip the ":"
+		let columnStartIndex = rangeString.index(after: lineStartString.endIndex)
+		currentSubstring = rangeString[columnStartIndex...]
+		let columnStartString = currentSubstring.prefix(while: { $0.isNumber })
+		guard let columnStart = Int(columnStartString) else {
+			return nil
+		}
+
+		// skip the " - line:"
+		let lineEndIndex =
+			rangeString.index(columnStartString.endIndex, offsetBy: " - line:".count)
+		currentSubstring = rangeString[lineEndIndex...]
+		let lineEndString = currentSubstring.prefix(while: { $0.isNumber })
+		guard let lineEnd = Int(lineEndString) else {
+			return nil
+		}
+
+		// skip the ":"
+		let columnEndIndex = rangeString.index(after: lineEndString.endIndex)
+		currentSubstring = rangeString[columnEndIndex...]
+		let columnEndString = currentSubstring.prefix(while: { $0.isNumber })
+		guard let columnEnd = Int(columnEndString) else {
+			return nil
+		}
+
+		return SourceFileRange(
+			lineStart: lineStart,
+			lineEnd: lineEnd,
+			columnStart: columnStart,
+			columnEnd: columnEnd)
 	}
 
-	internal func getLineRangeOfNodeOrSubtree(_ ast: SwiftAST) -> Range<Int>? {
-		if let range = getLineRange(ofNode: ast) {
+	internal func getRangeOfNodeOrSubtree(_ ast: SwiftAST) -> SourceFileRange? {
+		if let range = getRange(ofNode: ast) {
 			return range
 		}
 
 		for subtree in ast.subtrees {
-			if let range = getLineRangeOfNodeOrSubtree(subtree) {
+			if let range = getRange(ofNode: subtree) {
 				return range
-			}
-		}
-
-		return nil
-	}
-
-	internal func getColumnRangeOfNodeOrSubtree(_ ast: SwiftAST) -> Range<Int>? {
-		if let range = getColumnRange(ofNode: ast) {
-			return range
-		}
-
-		for subtree in ast.subtrees {
-			if let range = getColumnRangeOfNodeOrSubtree(subtree) {
-				return range
-			}
-		}
-
-		return nil
-	}
-
-	internal func getLineOfNodeOrSubtree(_ ast: SwiftAST) -> Int? {
-		if let line = getLine(ofNode: ast) {
-			return line
-		}
-
-		for subtree in ast.subtrees {
-			if let line = getLineOfNodeOrSubtree(subtree) {
-				return line
 			}
 		}
 
@@ -2374,7 +2347,7 @@ public class SwiftTranslator {
 	}
 
 	internal func getComment(forNode ast: SwiftAST) -> (key: String, value: String)? {
-		if let lineNumber = getLine(ofNode: ast) {
+		if let lineNumber = getRange(ofNode: ast)?.lineStart {
 			return sourceFile?.getCommentFromLine(lineNumber)
 		}
 		else {
@@ -2480,20 +2453,17 @@ enum SwiftTranslatorError: Error, CustomStringConvertible {
 			let throwingFileName = file.split(separator: "/").last!.split(separator: ".").first!
 
 			if let sourceFile = translator.sourceFile,
-				let sourceFileLineRange = translator.getLineRangeOfNodeOrSubtree(ast),
-				let sourceFileColumnRange = translator.getColumnRangeOfNodeOrSubtree(ast)
+				let sourceFileRange = translator.getRange(ofNode: ast)
 			{
 				let sourceFilePath = sourceFile.path
 				let sourceFileURL = URL(fileURLWithPath: sourceFilePath)
 				let relativePath = sourceFileURL.relativePath
 
-				let sourceFileString = sourceFileLineRange
-					.map { sourceFile.getLine($0) }
-					.compactMap { $0 }
-					.joined(separator: "\n")
+				let sourceFileString = sourceFile.getLine(sourceFileRange.lineStart) ??
+					"<<Unable to get line \(sourceFileRange.lineStart) in file \(relativePath)>>"
 
 				var underlineString = ""
-				for i in 1..<sourceFileColumnRange.lowerBound {
+				for i in 1..<sourceFileRange.columnStart {
 					let sourceFileCharacter = sourceFileString[
 							sourceFileString.index(sourceFileString.startIndex, offsetBy: i - 1)]
 					if sourceFileCharacter == "\t" {
@@ -2504,12 +2474,14 @@ enum SwiftTranslatorError: Error, CustomStringConvertible {
 					}
 				}
 				underlineString += "^"
-				for _ in (sourceFileColumnRange.lowerBound + 1)..<sourceFileColumnRange.upperBound {
-					underlineString += "~"
+				if sourceFileRange.columnStart < sourceFileRange.columnEnd {
+					for _ in (sourceFileRange.columnStart + 1)..<sourceFileRange.columnEnd {
+						underlineString += "~"
+					}
 				}
 
-				return "\(relativePath):\(sourceFileLineRange.lowerBound):" +
-						"\(sourceFileColumnRange.lowerBound): error: \(message)\n" +
+				return "\(relativePath):\(sourceFileRange.lineStart):" +
+						"\(sourceFileRange.columnStart): error: \(message)\n" +
 					"\(sourceFileString)\n" +
 					"\(underlineString)\n" +
 					"Thrown by \(throwingFileName):\(line) - \(function)\n" +

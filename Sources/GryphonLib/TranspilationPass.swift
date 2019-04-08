@@ -293,13 +293,8 @@ public class TranspilationPass {
 			return replaceForceValueExpression(expression: expression)
 		case let .optionalExpression(expression: expression):
 			return replaceOptionalExpression(expression: expression)
-		case let .declarationReferenceExpression(
-			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
-			isImplicit: isImplicit):
-
-			return replaceDeclarationReferenceExpression(
-				identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
-				isImplicit: isImplicit)
+		case let .declarationReferenceExpression(value: declarationReferenceExpression):
+			return replaceDeclarationReferenceExpression(declarationReferenceExpression)
 		case let .typeExpression(type: type):
 			return replaceTypeExpression(type: type)
 		case let .subscriptExpression(
@@ -391,12 +386,17 @@ public class TranspilationPass {
 	}
 
 	func replaceDeclarationReferenceExpression(
-		identifier: String, type: String, isStandardLibrary: Bool, isImplicit: Bool)
-		-> Expression
+		_ declarationReferenceExpression: DeclarationReferenceExpression) -> Expression
 	{
 		return .declarationReferenceExpression(
-			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
-			isImplicit: isImplicit)
+			value: replaceDeclarationReferenceExpression(declarationReferenceExpression))
+	}
+
+	func replaceDeclarationReferenceExpression(
+		_ declarationReferenceExpression: DeclarationReferenceExpression)
+		-> DeclarationReferenceExpression
+	{
+		return declarationReferenceExpression
 	}
 
 	func replaceTypeExpression(type: String) -> Expression {
@@ -658,9 +658,8 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 		-> [Statement]
 	{
 		if isFailableInitializer,
-			case .declarationReferenceExpression(
-			identifier: "self",
-			type: _, isStandardLibrary: _, isImplicit: _) = leftHand
+			case let .declarationReferenceExpression(value: expression) = leftHand,
+			expression.identifier == "self"
 		{
 			return [.returnStatement(expression: rightHand)]
 		}
@@ -824,29 +823,21 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 		leftExpression: Expression, rightExpression: Expression) -> Expression
 	{
 		if case let .typeExpression(type: enumType) = leftExpression,
-			case let .declarationReferenceExpression(
-				identifier: enumCase,
-				type: enumFunctionType,
-				isStandardLibrary: isStandardLibrary,
-				isImplicit: isImplicit) = rightExpression
+			case let .declarationReferenceExpression(value: enumExpression) = rightExpression
 		{
 			if KotlinTranslator.sealedClasses.contains(enumType) {
+				var enumExpression = enumExpression
+				enumExpression.identifier = enumExpression.identifier.capitalizedAsCamelCase
 				return .dotExpression(
 					leftExpression: .typeExpression(type: enumType),
-					rightExpression: .declarationReferenceExpression(
-						identifier: enumCase.capitalizedAsCamelCase,
-						type: enumFunctionType,
-						isStandardLibrary: isStandardLibrary,
-						isImplicit: isImplicit))
+					rightExpression: .declarationReferenceExpression(value: enumExpression))
 			}
 			else if KotlinTranslator.enumClasses.contains(enumType) {
+				var enumExpression = enumExpression
+				enumExpression.identifier = enumExpression.identifier.upperSnakeCase()
 				return .dotExpression(
 					leftExpression: .typeExpression(type: enumType),
-					rightExpression: .declarationReferenceExpression(
-						identifier: enumCase.upperSnakeCase(),
-						type: enumFunctionType,
-						isStandardLibrary: isStandardLibrary,
-						isImplicit: isImplicit))
+					rightExpression: .declarationReferenceExpression(value: enumExpression))
 			}
 		}
 
@@ -926,19 +917,11 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
 		leftExpression: Expression, rightExpression: Expression) -> Expression
 	{
 		if case let .typeExpression(type: enumType) = leftExpression,
-			case let .declarationReferenceExpression(
-				identifier: enumCase,
-				type: enumFunctionType,
-				isStandardLibrary: isStandardLibrary,
-				isImplicit: isImplicit) = rightExpression,
-			enumFunctionType == "(\(enumType).Type) -> \(enumType)",
+			case let .declarationReferenceExpression(value: enumExpression) = rightExpression,
+			enumExpression.type == "(\(enumType).Type) -> \(enumType)",
 			!KotlinTranslator.sealedClasses.contains(enumType)
 		{
-			return .declarationReferenceExpression(
-				identifier: enumCase,
-				type: enumFunctionType,
-				isStandardLibrary: isStandardLibrary,
-				isImplicit: isImplicit)
+			return .declarationReferenceExpression(value: enumExpression)
 		}
 		else {
 			return super.replaceDotExpression(
@@ -1001,8 +984,9 @@ public class SelfToThisTranspilationPass: TranspilationPass {
 	override func replaceDotExpression(
 		leftExpression: Expression, rightExpression: Expression) -> Expression
 	{
-		if case .declarationReferenceExpression(
-			identifier: "self", type: _, isStandardLibrary: _, isImplicit: true) = leftExpression
+		if case let .declarationReferenceExpression(value: expression) = leftExpression,
+			expression.identifier == "self",
+			expression.isImplicit
 		{
 			return replaceExpression(rightExpression)
 		}
@@ -1014,17 +998,14 @@ public class SelfToThisTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceDeclarationReferenceExpression(
-		identifier: String, type: String, isStandardLibrary: Bool, isImplicit: Bool)
-		-> Expression
+		_ expression: DeclarationReferenceExpression) -> DeclarationReferenceExpression
 	{
-		if identifier == "self" {
-			return .declarationReferenceExpression(
-				identifier: "this", type: type, isStandardLibrary: isStandardLibrary,
-				isImplicit: isImplicit)
+		if expression.identifier == "self" {
+			var expression = expression
+			expression.identifier = "this"
+			return expression
 		}
-		return super.replaceDeclarationReferenceExpression(
-			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
-			isImplicit: isImplicit)
+		return super.replaceDeclarationReferenceExpression(expression)
 	}
 }
 
@@ -1084,18 +1065,15 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 /// The "anonymous parameter" `$0` has to be replaced by `it`
 public class AnonymousParametersTranspilationPass: TranspilationPass {
 	override func replaceDeclarationReferenceExpression(
-		identifier: String, type: String, isStandardLibrary: Bool, isImplicit: Bool)
-		-> Expression
+		_ expression: DeclarationReferenceExpression) -> DeclarationReferenceExpression
 	{
-		if identifier == "$0" {
-			return .declarationReferenceExpression(
-				identifier: "it", type: type, isStandardLibrary: isStandardLibrary,
-				isImplicit: isImplicit)
+		if expression.identifier == "$0" {
+			var expression = expression
+			expression.identifier = "it"
+			return expression
 		}
 		else {
-			return super.replaceDeclarationReferenceExpression(
-				identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
-				isImplicit: isImplicit)
+			return super.replaceDeclarationReferenceExpression(expression)
 		}
 	}
 
@@ -1289,11 +1267,10 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 					cases: cases) = nextStatement,
 				let switchConversion = maybeConversion,
 				case let .assignmentStatement(leftHand: leftHand, rightHand: _) = switchConversion,
-				case let .declarationReferenceExpression(
-
-					identifier: assignmentIdentifier, type: _, isStandardLibrary: false,
-					isImplicit: false) = leftHand,
-				assignmentIdentifier == variableDeclaration.identifier
+				case let .declarationReferenceExpression(value: assignmentExpression) = leftHand,
+				assignmentExpression.identifier == variableDeclaration.identifier,
+				!assignmentExpression.isStandardLibrary,
+				!assignmentExpression.isImplicit
 			{
 				variableDeclaration.expression = .nilLiteralExpression
 				variableDeclaration.getter = nil
@@ -1438,16 +1415,13 @@ public class RecordEnumsTranspilationPass: TranspilationPass {
 
 public class RaiseStandardLibraryWarningsTranspilationPass: TranspilationPass {
 	override func replaceDeclarationReferenceExpression(
-		identifier: String, type: String, isStandardLibrary: Bool, isImplicit: Bool)
-		-> Expression
+		_ expression: DeclarationReferenceExpression) -> DeclarationReferenceExpression
 	{
-		if isStandardLibrary {
+		if expression.isStandardLibrary {
 			Compiler.handleWarning(
-				"Reference to standard library \"\(identifier)\" was not translated.")
+				"Reference to standard library \"\(expression.identifier)\" was not translated.")
 		}
-		return super.replaceDeclarationReferenceExpression(
-			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
-			isImplicit: isImplicit)
+		return super.replaceDeclarationReferenceExpression(expression)
 	}
 }
 
@@ -1517,10 +1491,12 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 		for declaration in ifStatement.declarations {
 			letConditions.append(
 				.binaryOperatorExpression(
-					leftExpression: .declarationReferenceExpression(
-						identifier: declaration.identifier,
-						type: declaration.typeName,
-						isStandardLibrary: false, isImplicit: false),
+					leftExpression: .declarationReferenceExpression(value:
+						DeclarationReferenceExpression(
+							identifier: declaration.identifier,
+							type: declaration.typeName,
+							isStandardLibrary: false,
+							isImplicit: false)),
 					rightExpression: .nilLiteralExpression, operatorSymbol: "!=",
 					type: "Boolean"))
 		}
@@ -1536,15 +1512,13 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 			return []
 		}
 
-		let letDeclarations = ifStatement.declarations.filter { declaration in
+		let letDeclarations = ifStatement.declarations.filter { variableDeclaration in
 			// If it's a shadowing identifier there's no need to declare it in Kotlin
 			// (i.e. `if let x = x { }`)
-			if let declarationExpression = declaration.expression,
-				case .declarationReferenceExpression(
-					identifier: declaration.identifier,
-					type: _,
-					isStandardLibrary: _,
-					isImplicit: _) = declarationExpression
+			if let declarationExpression = variableDeclaration.expression,
+				case let .declarationReferenceExpression(
+						value: expression) = declarationExpression,
+					expression.identifier == variableDeclaration.identifier
 			{
 				return false
 			}
@@ -1628,10 +1602,7 @@ public class ReturnIfNilTranspilationPass: TranspilationPass {
 				operatorSymbol: "==",
 				type: _) = onlyCondition,
 			case let .declarationReferenceExpression(
-				identifier: _,
-				type: type,
-				isStandardLibrary: _,
-				isImplicit: _) = declarationReference,
+				value: declarationExpression) = declarationReference,
 			ifStatement.statements.count == 1,
 			let onlyStatement = ifStatement.statements.first,
 			case let .returnStatement(expression: returnExpression) = onlyStatement
@@ -1641,7 +1612,7 @@ public class ReturnIfNilTranspilationPass: TranspilationPass {
 					leftExpression: declarationReference,
 					rightExpression: .returnExpression(expression: returnExpression),
 					operatorSymbol: "?:",
-					type: type)), ]
+					type: declarationExpression.type)), ]
 		}
 		else {
 			return super.replaceStatement(statement)
