@@ -286,58 +286,6 @@ fileprivate extension String {
 			return newSelf.isSubtype(of: newSuperType)
 		}
 
-		// Deal with standard library types that can be handled as other types
-		let standardLibraryTypeMappings = [
-			"Substring": "String",
-			"Substring.SubSequence": "String",
-			"Substring.Index": "Int",
-			"String.SubSequence": "String",
-			"String.Index": "Int",
-		]
-		if let newSelf = standardLibraryTypeMappings[self] {
-			return newSelf.isSubtype(of: superType)
-		}
-		else if let newSuperType = standardLibraryTypeMappings[superType] {
-			return self.isSubtype(of: newSuperType)
-		}
-
-		// Treat ArrayReference as Array
-		if self.hasPrefix("ArrayReference<"), self.last == ">" {
-			let elementType = String(self.dropFirst("ArrayReference<".count).dropLast())
-			let newSelf = "[\(elementType)]"
-			return newSelf.isSubtype(of: superType)
-		}
-
-		// Treat Slice<ArrayReference<T>> as ArraySlice<T>
-		if self.hasPrefix("Slice<ArrayReference<"), self.hasSuffix(">>") {
-			let elementType =
-				String(self.dropFirst("Slice<ArrayReference<".count).dropLast(">>".count))
-			let newSelf = "ArraySlice<\(elementType)>"
-			return newSelf.isSubtype(of: superType)
-		}
-
-		// Treat DictionaryReference as Dictionary
-		if self.hasPrefix("DictionaryReference<"), self.last == ">" {
-			let keyValue = String(self.dropFirst("DictionaryReference<".count).dropLast())
-				.split(withStringSeparator: ", ")
-			let key = keyValue[0]
-			let value = keyValue[1]
-			let newSelf = "[\(key) : \(value)]"
-			return newSelf.isSubtype(of: superType)
-		}
-
-		// Convert Array<T> into [T]
-		if self.hasPrefix("Array<"), self.last == ">" {
-			let elementType = String(self.dropFirst("Reference<".count).dropLast())
-			let newSelf = "[\(elementType)]"
-			return newSelf.isSubtype(of: superType)
-		}
-		else if superType.hasPrefix("Array<"), superType.last == ">" {
-			let elementType = String(superType.dropFirst("Array<".count).dropLast())
-			let newSuperType = "[\(elementType)]"
-			return self.isSubtype(of: newSuperType)
-		}
-
 		// Analyze components of function types
 		if superType.contains(" -> ") {
 			guard self.contains(" -> ") else {
@@ -347,15 +295,7 @@ fileprivate extension String {
 			return true
 		}
 
-		// Remove parentheses
-		if self.first == "(", self.last == ")" {
-			return String(self.dropFirst().dropLast()).isSubtype(of: superType)
-		}
-		if superType.first == "(", superType.last == ")" {
-			return self.isSubtype(of: String(superType.dropFirst().dropLast()))
-		}
-
-		// Handle arrays
+		// Handle arrays and dictionaries
 		if self.first == "[", self.last == "]", superType.first == "[", superType.last == "]" {
 			if self.contains(":") && superType.contains(":") {
 				let selfKeyValue =
@@ -373,26 +313,6 @@ fileprivate extension String {
 				let superTypeElement = String(superType.dropFirst().dropLast())
 				return selfElement.isSubtype(of: superTypeElement)
 			}
-		}
-
-		// Handle inout types
-		if self.hasPrefix("inout ") {
-			let selfWithoutInout = String(self.dropFirst("inout ".count))
-			return selfWithoutInout.isSubtype(of: superType)
-		}
-		else if superType.hasPrefix("inout ") {
-			let superTypeWithoutInout = String(superType.dropFirst("inout ".count))
-			return self.isSubtype(of: superTypeWithoutInout)
-		}
-
-		// Handle `__owned` types
-		if self.hasPrefix("__owned ") {
-			let selfWithoutOwned = String(self.dropFirst("__owned ".count))
-			return selfWithoutOwned.isSubtype(of: superType)
-		}
-		else if superType.hasPrefix("__owned ") {
-			let superTypeWithoutOwned = String(superType.dropFirst("__owned ".count))
-			return self.isSubtype(of: superTypeWithoutOwned)
 		}
 
 		// Handle generics
@@ -423,7 +343,76 @@ fileprivate extension String {
 			return true
 		}
 
+		let simpleSelf = simplifyType(string: self)
+		let simpleSuperType = simplifyType(string: superType)
+		if simpleSelf != self || simpleSuperType != superType {
+			return simpleSelf.isSubtype(of: simpleSuperType)
+		}
+
 		// If no subtype cases were met, say it's not a subtype
 		return false
 	}
+}
+
+private func simplifyType(string: String) -> String {
+	// Deal with standard library types that can be handled as other types
+	let standardLibraryTypeMappings = [
+		"Substring": "String",
+		"Substring.SubSequence": "String",
+		"Substring.Index": "Int",
+		"String.SubSequence": "String",
+		"String.Index": "Int",
+	]
+	if let result = standardLibraryTypeMappings[string] {
+		return result
+	}
+
+	// Treat ArrayReference as Array
+	if string.hasPrefix("ArrayReference<"), string.last == ">" {
+		let elementType = String(string.dropFirst("ArrayReference<".count).dropLast())
+		return "[\(elementType)]"
+	}
+
+	// Treat Slice as Array
+	if string.hasPrefix("Slice<ArrayReference<"), string.hasSuffix(">>") {
+		let elementType =
+			String(string.dropFirst("Slice<ArrayReference<".count).dropLast(">>".count))
+		return "[\(elementType)]"
+	}
+	else if string.hasPrefix("ArraySlice<"), string.hasSuffix(">") {
+		let elementType = String(string.dropFirst("ArraySlice<".count).dropLast())
+		return "[\(elementType)]"
+	}
+
+	// Treat DictionaryReference as Dictionary
+	if string.hasPrefix("DictionaryReference<"), string.last == ">" {
+		let keyValue = String(string.dropFirst("DictionaryReference<".count).dropLast())
+			.split(withStringSeparator: ", ")
+		let key = keyValue[0]
+		let value = keyValue[1]
+		return "[\(key) : \(value)]"
+	}
+
+	// Convert Array<T> into [T]
+	if string.hasPrefix("Array<"), string.last == ">" {
+		let elementType = String(string.dropFirst("Reference<".count).dropLast())
+		return "[\(elementType)]"
+	}
+
+	// Remove parentheses
+	if string.first == "(", string.last == ")" {
+		return String(string.dropFirst().dropLast())
+	}
+
+	// Handle inout types
+	if string.hasPrefix("inout ") {
+		return String(string.dropFirst("inout ".count))
+	}
+
+	// Handle `__owned` types
+	if string.hasPrefix("__owned ") {
+		return String(string.dropFirst("__owned ".count))
+	}
+
+	return string
 }

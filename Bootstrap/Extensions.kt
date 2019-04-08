@@ -122,3 +122,46 @@ val Char.isUppercase: Boolean
 	get() {
 		return this == 'A' || this == 'B' || this == 'C' || this == 'D' || this == 'E' || this == 'F' || this == 'G' || this == 'H' || this == 'I' || this == 'J' || this == 'K' || this == 'L' || this == 'M' || this == 'N' || this == 'O' || this == 'P' || this == 'Q' || this == 'R' || this == 'S' || this == 'T' || this == 'U' || this == 'V' || this == 'W' || this == 'X' || this == 'Y' || this == 'Z'
 	}
+
+internal fun <Element> MutableList<Element>.getSafe(index: Int): Element? {
+	if (index >= 0 && index < this.size) {
+		return this[index]
+	}
+	else {
+		return null
+	}
+}
+
+val <Element> MutableList<Element>.secondToLast: Element?
+	get() {
+		return this.dropLast(1).lastOrNull()
+	}
+
+internal fun <Element> MutableList<Element>.rotated(): MutableList<Element> {
+	val first: Element? = this.firstOrNull()
+
+	first ?: return this
+
+	var newArray: MutableList<Element> = mutableListOf()
+
+	newArray.addAll(this.drop(1))
+	newArray.add(first)
+
+	return newArray
+}
+
+internal fun <Element, Key> MutableList<Element>.group(
+	getKey: (Element) -> Key)
+	: MutableMap<Key, MutableList<Element>>
+{
+	val result: MutableMap<Key, MutableList<Element>> = mutableMapOf()
+	for (element in this) {
+		val key: Key = getKey(element)
+		val array: MutableList<Element> = result[key] ?: mutableListOf()
+
+		array.add(element)
+
+		result[key] = array
+	}
+	return result
+}

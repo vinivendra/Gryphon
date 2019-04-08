@@ -563,6 +563,7 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 				parameters: [],
 				returnType: "String",
 				functionType: "() -> String",
+				genericTypes: [],
 				isImplicit: false,
 				isStatic: false,
 				isMutating: false,
@@ -577,6 +578,22 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 }
 
 public class RemoveParenthesesTranspilationPass: TranspilationPass {
+	override func replaceSubscriptExpression(
+		subscriptedExpression: Expression, indexExpression: Expression, type: String) -> Expression
+	{
+		if case let .parenthesesExpression(expression: innerExpression) = indexExpression {
+			return super.replaceSubscriptExpression(
+				subscriptedExpression: subscriptedExpression,
+				indexExpression: innerExpression,
+				type: type)
+		}
+
+		return super.replaceSubscriptExpression(
+			subscriptedExpression: subscriptedExpression,
+			indexExpression: indexExpression,
+			type: type)
+	}
+
 	override func replaceParenthesesExpression(expression: Expression) -> Expression {
 
 		if case let .expression(parentExpression) = parent {

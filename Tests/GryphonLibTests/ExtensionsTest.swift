@@ -224,21 +224,21 @@ class ExtensionsTest: XCTestCase {
 		XCTAssert(array[safe: -1] == nil)
 	}
 
-	func testRotate() {
-		var array = [1, 2, 3]
-		var array1 = array.rotated()
-		var array2 = array1.rotated()
+	func testSecondToLast() {
+		let array1 = [1, 2, 3]
+		let array2 = [1]
+		XCTAssert(array1.secondToLast == 2)
+		XCTAssert(array2.secondToLast == nil)
+	}
+
+	func testRotated() {
+		let array = [1, 2, 3]
+		let array1 = array.rotated()
+		let array2 = array1.rotated()
 		let array3 = array2.rotated()
 		XCTAssertEqual(array1, [2, 3, 1])
 		XCTAssertEqual(array2, [3, 1, 2])
 		XCTAssertEqual(array3, [1, 2, 3])
-
-		array.rotate()
-		array1.rotate()
-		array2.rotate()
-		XCTAssertEqual(array, [2, 3, 1])
-		XCTAssertEqual(array1, [3, 1, 2])
-		XCTAssertEqual(array2, [1, 2, 3])
 	}
 
 	func testGroupBy() {
@@ -274,13 +274,6 @@ class ExtensionsTest: XCTestCase {
 		XCTAssertEqual(array1, [2, 3, 1])
 		XCTAssertEqual(array2, [3, 1, 2])
 		XCTAssertEqual(array3, [1, 2, 3])
-
-		array.rotate()
-		array1.rotate()
-		array2.rotate()
-		XCTAssertEqual(array, [2, 3, 1])
-		XCTAssertEqual(array1, [3, 1, 2])
-		XCTAssertEqual(array2, [1, 2, 3])
 	}
 
 	func testArrayReferenceGroupBy() {
@@ -302,11 +295,11 @@ class ExtensionsTest: XCTestCase {
 	static var allTests = [
 		("testStringSplit", testStringSplit),
 		("testOccurrencesOfSubstring", testOccurrencesOfSubstring),
-		("testSafeIndex", testSafeIndex),
-		("testRotate", testRotate),
 		("testRemoveTrailingWhitespace", testRemoveTrailingWhitespace),
+		("testUpperSnakeCase", testUpperSnakeCase),
 		("testSafeIndex", testSafeIndex),
-		("testRotate", testRotate),
+		("testSecondToLast", testSecondToLast),
+		("testRotated", testRotated),
 		("testGroupBy", testGroupBy),
 		("testArrayReferenceSafeIndex", testArrayReferenceSafeIndex),
 		("testArrayReferenceRotate", testArrayReferenceRotate),

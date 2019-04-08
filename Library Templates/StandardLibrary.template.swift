@@ -6,6 +6,8 @@ struct Hash: Hashable { }
 func gryphonTemplates() {
 	var _strArray: [String] = []
 	var _array: [Any] = []
+	var _array1: [Any] = []
+	var _array2: [Any] = []
 	var _index: String.Index = "abc".endIndex
 	let _index1: String.Index = "abc".startIndex
 	let _index2: String.Index = "abc".startIndex
@@ -119,6 +121,9 @@ func gryphonTemplates() {
 	_array.append(_any)
 	"_array.add(_any)"
 
+	_array1.append(contentsOf: _array2)
+	"_array1.addAll(_array2)"
+
 	_array.isEmpty
 	"_array.isEmpty()"
 
@@ -128,8 +133,14 @@ func gryphonTemplates() {
 	_array.count
 	"_array.size"
 
+	_array.first
+	"_array.firstOrNull()"
+
 	_array.last
 	"_array.lastOrNull()"
+
+	_array.dropFirst()
+	"_array.drop(1)"
 
 	_array.dropLast()
 	"_array.dropLast(1)"

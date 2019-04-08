@@ -541,7 +541,28 @@ public class KotlinTranslator {
 			}
 			result += "fun "
 			if let extensionType = functionDeclaration.extendsType {
-				result += extensionType + "."
+				let translatedExtensionType = translateType(extensionType)
+
+				// TODO: tests
+				let genericString: String
+				if let genericExtensionIndex = translatedExtensionType.index(of: "<") {
+					let genericExtensionString =
+						translatedExtensionType.suffix(from: genericExtensionIndex)
+					var genericTypes = genericExtensionString
+						.dropFirst().dropLast()
+						.split(separator: ",")
+						.map(String.init)
+					genericTypes.append(contentsOf: functionDeclaration.genericTypes)
+					genericString = "<\(genericTypes.joined(separator: ", "))> "
+				}
+				else if !functionDeclaration.genericTypes.isEmpty {
+					genericString = "<\(functionDeclaration.genericTypes.joined(separator: ", "))> "
+				}
+				else {
+					genericString = ""
+				}
+
+				result += genericString + translatedExtensionType + "."
 			}
 			result += functionDeclaration.prefix + "("
 		}
@@ -887,7 +908,17 @@ public class KotlinTranslator {
 		let extensionPrefix: String
 		if let extendsType = variableDeclaration.extendsType {
 			let translatedExtendedType = translateType(extendsType)
-			extensionPrefix = "\(translatedExtendedType)."
+
+			let genericString: String
+			if let genericIndex = translatedExtendedType.index(of: "<") {
+				let genericContents = translatedExtendedType.suffix(from: genericIndex)
+				genericString = "\(genericContents) "
+			}
+			else {
+				genericString = ""
+			}
+
+			extensionPrefix = genericString + translatedExtendedType + "."
 		}
 		else {
 			extensionPrefix = ""

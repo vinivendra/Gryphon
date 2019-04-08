@@ -1334,6 +1334,13 @@ public class SwiftTranslator {
 		let isStatic = firstInterfaceTypeComponent.contains(".Type")
 		let isMutating = firstInterfaceTypeComponent.contains("inout")
 
+		let genericTypes: [String] = functionDeclaration.standaloneAttributes
+			.first { $0.hasPrefix("<") }?
+			.dropLast().dropFirst()
+			.split(separator: ",")
+			.map(String.init)
+			?? []
+
 		let functionNamePrefix = functionName.prefix { $0 != "(" }
 
 		// Get the function parameters.
@@ -1427,6 +1434,7 @@ public class SwiftTranslator {
 			parameters: parameters,
 			returnType: returnType,
 			functionType: interfaceType,
+			genericTypes: genericTypes,
 			isImplicit: isImplicit,
 			isStatic: isStatic,
 			isMutating: isMutating,
@@ -1533,6 +1541,7 @@ public class SwiftTranslator {
 					parameters: [],
 					returnType: type,
 					functionType: "() -> (\(type))",
+					genericTypes: [],
 					isImplicit: false,
 					isStatic: false,
 					isMutating: false,
@@ -1552,6 +1561,7 @@ public class SwiftTranslator {
 						label: "newValue", apiLabel: nil, type: type, value: nil), ],
 					returnType: "()",
 					functionType: "(\(type)) -> ()",
+					genericTypes: [],
 					isImplicit: false,
 					isStatic: false,
 					isMutating: false,
@@ -2036,10 +2046,11 @@ public class SwiftTranslator {
 		}
 
 		if let rawType = subscriptExpression["type"],
-			let parenthesesExpression = subscriptExpression.subtree(
-			at: 1,
-			named: "Parentheses Expression"),
-			let subscriptContents = parenthesesExpression.subtree(at: 0),
+			let subscriptContents = subscriptExpression.subtree(
+					at: 1,
+					named: "Parentheses Expression") ??
+				subscriptExpression.subtree(
+					at: 1, named: "Tuple Expression"),
 			let subscriptedExpression = subscriptExpression.subtree(at: 0)
 		{
 			let type = cleanUpType(rawType)

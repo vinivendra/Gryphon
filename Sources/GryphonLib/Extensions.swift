@@ -16,6 +16,14 @@
 
 import Foundation
 
+func gryphonTemplates() {
+	let _array: ArrayReference<Any> = []
+	let _index = 0
+
+	_ = _array[safe: _index]
+	_ = "_array.getSafe(_index)"
+}
+
 internal extension String {
 	// Result should have at most maxSplits + 1 elements.
 	func split(
@@ -232,34 +240,57 @@ extension Array { // kotlin: ignore
 	}
 }
 
-extension ArrayReference { // kotlin: ignore
+extension ArrayReference {
 	/// Returns nil if index is out of bounds.
-	subscript (safe index: Int) -> Element? {
-		return array[safe: index]
+	subscript (safe index: Int) -> Element? { // kotlin: ignore
+		return getSafe(index)
+	}
+
+	/// Returns nil if index is out of bounds.
+	func getSafe(_ index: Int) -> Element? {
+		if index >= 0 && index < count {
+			return self[index]
+		}
+		else {
+			return nil
+		}
 	}
 
 	var secondToLast: Element? {
-		return self.array.secondToLast
+		return self.dropLast().last
 	}
 
 	/// Returns the same array, but with the first element moved to the end.
 	func rotated() -> ArrayReference<Element> {
-		return ArrayReference(array: self.array.rotated())
-	}
+		guard let first = self.first else {
+			return self
+		}
 
-	/// Moves the first element of the array to the end.
-	func rotate() {
-		self.array.rotate()
+		var newArray: ArrayReference<Element> = []
+		newArray.reserveCapacity(self.count) // kotlin: ignore
+		newArray.append(contentsOf: self.dropFirst())
+		newArray.append(first)
+
+		return newArray
 	}
 
 	/// Groups the array's elements into a dictionary according to the keys provided by the given
 	/// closure, forming a sort of histogram.
-	func group<Key>(by getKey: (Element) -> Key) -> [Key: [Element]] {
-		return self.array.group(by: getKey)
+	func group<Key>(by getKey: (Element) -> Key)
+		-> DictionaryReference<Key, ArrayReference<Element>>
+	{
+		let result: DictionaryReference<Key, ArrayReference<Element>> = [:]
+		for element in self {
+			let key = getKey(element)
+			let array = result[key] ?? []
+			array.append(element)
+			result[key] = array
+		}
+		return result
 	}
 }
 
-// MARK: Common types conforming to PrintableAsTree
+// MARK: - Common types conforming to PrintableAsTree
 extension Dictionary: // kotlin: ignore
 	PrintableAsTree where Value: PrintableAsTree, Key == String
 {
@@ -273,7 +304,7 @@ extension Dictionary: // kotlin: ignore
 	}
 }
 
-// MARK: PrintableTree compatibility with Array
+// MARK: - PrintableTree compatibility with Array
 // Only needed temporarily, while the conversion of the codebase (from using Array to using
 // ArrayReference) isn't done.
 extension PrintableTree { // kotlin: ignore

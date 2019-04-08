@@ -253,6 +253,7 @@ public struct FunctionDeclaration: Equatable {
 	var parameters: [FunctionParameter]
 	var returnType: String
 	var functionType: String
+	var genericTypes: [String]
 	var isImplicit: Bool
 	var isStatic: Bool
 	var isMutating: Bool

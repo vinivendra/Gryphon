@@ -12,6 +12,10 @@ class ExtensionsTest(): Test("ExtensionsTest") {
 		testOccurrencesOfSubstring()
 		testRemoveTrailingWhitespace()
 		testUpperSnakeCase()
+		testSafeIndex()
+		testSecondToLast()
+		testRotated()
+		testGroupBy()
 		super.runAllTests()
 	}
 
@@ -195,5 +199,50 @@ class ExtensionsTest(): Test("ExtensionsTest") {
 		XCTAssertEqual("FOO_BAR", "fooBar".upperSnakeCase())
 		XCTAssertEqual("FOO_BAR", "FooBar".upperSnakeCase())
 		XCTAssertEqual("HTTPS_BAR", "HTTPSBar".upperSnakeCase())
+	}
+
+	fun testSafeIndex() {
+		val array = mutableListOf(1, 2, 3)
+		XCTAssert(array.getSafe(0) == 1)
+		XCTAssert(array.getSafe(1) == 2)
+		XCTAssert(array.getSafe(2) == 3)
+		XCTAssert(array.getSafe(3) == null)
+		XCTAssert(array.getSafe(-1) == null)
+	}
+
+	fun testSecondToLast() {
+		val array1 = mutableListOf(1, 2, 3)
+		val array2 = mutableListOf(1)
+		XCTAssert(array1.secondToLast == 2)
+		XCTAssert(array2.secondToLast == null)
+	}
+
+	fun testRotated() {
+		val array = mutableListOf(1, 2, 3)
+		val array1 = array.rotated()
+		val array2 = array1.rotated()
+		val array3 = array2.rotated()
+		XCTAssertEqual(array1, mutableListOf(2, 3, 1))
+		XCTAssertEqual(array2, mutableListOf(3, 1, 2))
+		XCTAssertEqual(array3, mutableListOf(1, 2, 3))
+	}
+
+	fun testGroupBy() {
+		val array = mutableListOf(1, 2, 3, 2, 3, 1, 2, 3)
+
+		val histogram = array.group(getKey = { "${it}" })
+		XCTAssertEqual(
+			histogram,
+			mutableMapOf(
+				"1" to mutableListOf(1, 1),
+				"2" to mutableListOf(2, 2, 2),
+				"3" to mutableListOf(3, 3, 3)))
+
+		val isEvenHistogram = array.group(getKey = { it % 2 == 0 })
+		XCTAssertEqual(
+			isEvenHistogram,
+			mutableMapOf(
+				true to mutableListOf(2, 2, 2),
+				false to mutableListOf(1, 3, 3, 1, 3)))
 	}
 }
