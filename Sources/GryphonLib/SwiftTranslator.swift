@@ -983,9 +983,11 @@ public class SwiftTranslator {
 					let declarations = patternLetResult.declarations
 					let enumClassName = enumType + "." + enumCase.capitalizedAsCamelCase
 
-					caseExpression = .isExpression(
-						declarationReference: translatedExpression,
-						typeName: enumClassName)
+					caseExpression = .binaryOperatorExpression(
+						leftExpression: translatedExpression,
+						rightExpression: .typeExpression(type: enumClassName),
+						operatorSymbol: "is",
+						type: "Bool")
 
 					extraStatements = declarations.map {
 						Statement.variableDeclaration(value: VariableDeclaration(
@@ -1195,9 +1197,11 @@ public class SwiftTranslator {
 
 				let declarationReference = try translate(expression: declarationReferenceAST)
 
-				conditionsResult.append(.isExpression(
-					declarationReference: declarationReference,
-					typeName: enumClassName))
+				conditionsResult.append(.binaryOperatorExpression(
+					leftExpression: declarationReference,
+					rightExpression: .typeExpression(type: enumClassName),
+					operatorSymbol: "is",
+					type: "Bool"))
 
 				for declaration in declarations {
 					statementsResult.append(.variableDeclaration(value: VariableDeclaration(

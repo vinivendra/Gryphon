@@ -275,7 +275,7 @@ fileprivate extension String {
 		if self == superType {
 			return true
 		}
-		else if superType == "Any" || superType == "Hash" {
+		else if superType == "Any" || superType == "Hash" || superType == "Compare" {
 			return true
 		}
 

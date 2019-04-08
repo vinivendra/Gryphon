@@ -16,7 +16,7 @@
 
 import Foundation
 
-func gryphonTemplates() {
+private func gryphonTemplates() {
 	let _array: ArrayReference<Any> = []
 	let _index = 0
 

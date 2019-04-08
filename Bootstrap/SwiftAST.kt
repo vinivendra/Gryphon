@@ -1,4 +1,4 @@
-class SwiftAST {
+class SwiftAST: PrintableAsTree {
 	companion object {
 		var horizontalLimitWhenPrinting: Int = Int.MAX_VALUE
 	}
@@ -15,32 +15,20 @@ class SwiftAST {
 		this.subtrees = subtrees
 	}
 
-	constructor(
-		name: String,
-		standaloneAttributes: MutableList<String>,
-		keyValueAttributes: MutableMap<String, String>,
-		subtrees: MutableList<SwiftAST> = mutableListOf())
-	{
-		this.name = name
-		this.standaloneAttributes = standaloneAttributes
-		this.keyValueAttributes = keyValueAttributes
-		this.subtrees = subtrees
-	}
+	override val treeDescription: String
+		get() {
+			return name
+		}
+	override val printableSubtrees: MutableList<PrintableAsTree?>
+		get() {
+			val keyValueStrings: MutableList<PrintableTree> = keyValueAttributes.map({ "${it.key} → ${it.value}" }).sorted().map { PrintableTree(it) }.toMutableList()
+			val keyValueArray: MutableList<PrintableAsTree?> = keyValueStrings as MutableList<PrintableAsTree?>
+			val standaloneAttributesArray: MutableList<PrintableAsTree?> = standaloneAttributes.map { PrintableTree(it) }.toMutableList() as MutableList<PrintableAsTree?>
+			val subtreesArray: MutableList<PrintableAsTree?> = subtrees as MutableList<PrintableAsTree?>
 
-	operator internal fun get(key: String): String? {
-		return keyValueAttributes[key]
-	}
+			val result = (standaloneAttributesArray + keyValueArray + subtreesArray)
+				.toMutableList()
 
-	operator internal fun set(key: String, newValue: String?) {
-		println(newValue)
-	}
-
-	fun f() {
-		val ast = SwiftAST(name = "",
-			standaloneAttributes = mutableListOf(),
-			keyValueAttributes = mutableMapOf(),
-			subtrees = mutableListOf())
-		println(ast["Bla"])
-		ast["Bla"] = "hue"
-	}
+			return result
+		}
 }

@@ -31,7 +31,7 @@ public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible
 		self.subtrees = subtrees
 	}
 
-	internal init(
+	internal init( // kotlin: ignore
 		_ name: String,
 		_ standaloneAttributes: ArrayReference<String>,
 		_ keyValueAttributes: [String: String],
@@ -44,22 +44,22 @@ public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible
 	}
 
 	// MARK: - Convenience accessors
-	subscript (key: String) -> String? {
+	subscript (key: String) -> String? { // kotlin: ignore
 		return keyValueAttributes[key]
 	}
 
-	func subtree(named name: String) -> SwiftAST? {
+	func subtree(named name: String) -> SwiftAST? { // kotlin: ignore
 		return subtrees.first { $0.name == name }
 	}
 
-	func subtree(at index: Int) -> SwiftAST? {
+	func subtree(at index: Int) -> SwiftAST? { // kotlin: ignore
 		guard index >= 0, index < subtrees.count else {
 			return nil
 		}
 		return subtrees[index]
 	}
 
-	func subtree(at index: Int, named name: String) -> SwiftAST? {
+	func subtree(at index: Int, named name: String) -> SwiftAST? { // kotlin: ignore
 		guard index >= 0, index < subtrees.count else {
 			return nil
 		}
@@ -73,38 +73,40 @@ public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible
 	}
 
 	// MARK: - PrintableAsTree
-	public var treeDescription: String {
+	public var treeDescription: String { // annotation: override
 		return name
 	}
 
-	public var printableSubtrees: ArrayReference<PrintableAsTree?> {
+	public var printableSubtrees: ArrayReference<PrintableAsTree?> { // annotation: override
 		let keyValueStrings = keyValueAttributes
-			.map { "\($0.key) → \($0.value)" }.sorted().map(PrintableTree.init)
+			.map { "\($0.key) → \($0.value)" }.sorted().map { PrintableTree($0) }
 		let keyValueArray = ArrayReference<PrintableAsTree?>(array: keyValueStrings)
 		let standaloneAttributesArray =
-			ArrayReference<PrintableAsTree?>(standaloneAttributes.map(PrintableTree.init))
+			ArrayReference<PrintableAsTree?>(standaloneAttributes.map { PrintableTree($0) })
 		let subtreesArray = ArrayReference<PrintableAsTree?>(subtrees)
 
-		let result: ArrayReference<PrintableAsTree?> =
-			standaloneAttributesArray + keyValueArray + subtreesArray
+		let result = standaloneAttributesArray + keyValueArray + subtreesArray // kotlin: ignore
+		// insert: val result = (standaloneAttributesArray + keyValueArray + subtreesArray)
+		// insert: 	.toMutableList()
+
 		return result
 	}
 
 	// MARK: - Descriptions
-	public var description: String {
+	public var description: String { // kotlin: ignore
 		var result = ""
 		self.prettyPrint { result += $0 }
 		return result
 	}
 
-	public func description(withHorizontalLimit horizontalLimit: Int) -> String {
+	public func description(withHorizontalLimit horizontalLimit: Int) -> String { // kotlin: ignore
 		var result = ""
 		self.prettyPrint(horizontalLimit: horizontalLimit) { result += $0 }
 		return result
 	}
 
 	// MARK: - Equatable
-	public static func == (lhs: SwiftAST, rhs: SwiftAST) -> Bool {
+	public static func == (lhs: SwiftAST, rhs: SwiftAST) -> Bool { // kotlin: ignore
 		return lhs.name == rhs.name &&
 			lhs.standaloneAttributes == rhs.standaloneAttributes &&
 			lhs.keyValueAttributes == rhs.keyValueAttributes &&

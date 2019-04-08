@@ -2,12 +2,18 @@
 import Foundation
 
 struct Hash: Hashable { }
+struct Compare: Comparable {
+	static func < (lhs: Compare, rhs: Compare) -> Bool {
+		return false
+	}
+}
 
 func gryphonTemplates() {
 	var _strArray: [String] = []
 	var _array: [Any] = []
 	var _array1: [Any] = []
 	var _array2: [Any] = []
+	var _comparableArray : [Compare] = []
 	var _index: String.Index = "abc".endIndex
 	let _index1: String.Index = "abc".startIndex
 	let _index2: String.Index = "abc".startIndex
@@ -27,6 +33,7 @@ func gryphonTemplates() {
 	let _int2: Int = 0
 	let _dictionary: [Hash: Any] = [:]
 	let _closure: (Any, Any) -> Any = { a, b in a }
+	let _closure2: (Any) -> Any = { a in a }
 
 	// Print
 	print(_any)
@@ -144,6 +151,12 @@ func gryphonTemplates() {
 
 	_array.dropLast()
 	"_array.dropLast(1)"
+
+	_array.map(_closure2)
+	"_array.map _closure2.toMutableList()"
+
+	_comparableArray.sorted()
+	"_comparableArray.sorted()"
 
 	// Dictionary
 	_dictionary.reduce(_any, _closure)

@@ -797,6 +797,16 @@ public class KotlinTranslator {
 
 			if let caseExpression = switchCase.expression {
 				if case let Expression.binaryOperatorExpression(
+					leftExpression: declarationReference,
+					rightExpression: .typeExpression(type: typeName),
+					operatorSymbol: "is",
+					type: "Bool") = caseExpression,
+					declarationReference == expression
+				{
+					// TODO: test
+					result += "is \(typeName) -> "
+				}
+				else if case let Expression.binaryOperatorExpression(
 					leftExpression: leftExpression, rightExpression: _, operatorSymbol: _,
 					type: _) = caseExpression
 				{
@@ -813,14 +823,6 @@ public class KotlinTranslator {
 					else {
 						result += "\(translatedExpression) -> "
 					}
-				}
-				else if case let Expression.isExpression(
-						declarationReference: declarationReference,
-						typeName: typeName) = caseExpression,
-					declarationReference == expression
-				{
-					// TODO: test
-					result += "is \(typeName) -> "
 				}
 				else {
 					let translatedExpression = try translateExpression(
@@ -1067,14 +1069,6 @@ public class KotlinTranslator {
 			return try translateExpression(expression, withIndentation: indentation) + "!!"
 		case let .optionalExpression(expression: expression):
 			return try translateExpression(expression, withIndentation: indentation) + "?"
-		case let .conditionalCastExpression(
-			declarationReference: declarationReference, castedToType: castedToType):
-
-			return try translateExpression(declarationReference, withIndentation: indentation) +
-				" as? \(castedToType)"
-		case let .isExpression(declarationReference: declarationReference, typeName: typeName):
-			return try translateExpression(declarationReference, withIndentation: indentation) +
-			" is \(typeName)"
 		case let .literalIntExpression(value: value):
 			return String(value)
 		case let .literalUIntExpression(value: value):

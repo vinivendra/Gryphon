@@ -70,7 +70,7 @@ default:
 
 print(x)
 
-// Switch on enum
+// Switch on an enum class
 enum MyEnum {
 	case a, b, c, d, e
 }
@@ -81,4 +81,16 @@ case .a:
 	print("It's a!")
 default:
 	print("It's not a.")
+}
+
+// Switch on a sealed class
+
+enum MySealedClass {
+	case a(int: Int)
+}
+
+let mySealedClass = MySealedClass.a(int: 0)
+switch mySealedClass {
+case let .a(int: int):
+	print(int)
 }

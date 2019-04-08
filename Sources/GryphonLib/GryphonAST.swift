@@ -129,12 +129,6 @@ public indirect enum Expression: Equatable, PrintableAsTree {
 		expression: Expression)
 	case optionalExpression(
 		expression: Expression)
-	case conditionalCastExpression(
-		declarationReference: Expression,
-		castedToType: String)
-	case isExpression(
-		declarationReference: Expression,
-		typeName: String) // TODO: This could be a TypeExpression
 	case declarationReferenceExpression(
 		identifier: String,
 		type: String,
@@ -492,10 +486,6 @@ extension Expression {
 			}
 		case let .optionalExpression(expression: expression):
 			return expression.type
-		case let .conditionalCastExpression(declarationReference: _, castedToType: typeName):
-			return typeName + "?"
-		case .isExpression:
-			return "Boolean"
 		case let .declarationReferenceExpression(
 			identifier: _, type: type, isStandardLibrary: _, isImplicit: _):
 
@@ -581,16 +571,6 @@ extension Expression {
 			return [expression]
 		case let .optionalExpression(expression: expression):
 			return [expression]
-		case let .conditionalCastExpression(
-			declarationReference: declarationReference, castedToType: typeName):
-
-			return [
-				PrintableTree("declaration reference", [declarationReference]),
-				PrintableTree("casted to \(typeName)"), ]
-		case let .isExpression(declarationReference: declarationReference, typeName: typeName):
-			return [
-				PrintableTree("declaration reference", [declarationReference]),
-				PrintableTree("is of type \(typeName)"), ]
 		case let .declarationReferenceExpression(
 			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
 			isImplicit: isImplicit):

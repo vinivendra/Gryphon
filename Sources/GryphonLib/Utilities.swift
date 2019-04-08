@@ -203,32 +203,12 @@ extension Utilities {
 			throw FileError.outdatedFile(inFolder: testFilesFolder)
 		}
 
-		print("\t* Done!")
-		print("\t* Updating bootstrap test files...")
-
-		let bootstrapFolderName = "Bootstrap"
-		let bootstrappedFiles = [
-			"StandardLibrary",
-			"PrintableAsTree",
-			"ASTDumpDecoder",
-			"Extensions", ]
-		let bootstrappedFilesPaths = bootstrappedFiles.map { bootstrapFolderName + "/" + $0 }
-		if needsToUpdateFiles(
-			bootstrappedFiles,
-			in: bootstrapFolderName,
-			from: .swiftASTDump,
-			to: .kt)
-		{
-			try Compiler.generateKotlinCode(
-				forFilesAt: bootstrappedFilesPaths, outputFolder: bootstrapFolderName)
-		}
-
 		testFilesHaveBeenUpdated = true
 
 		print("\t* Done!")
 	}
 
-	static private func needsToUpdateFiles(
+	static internal func needsToUpdateFiles(
 		_ files: [String]? = nil,
 		in folder: String,
 		from originExtension: FileExtension,

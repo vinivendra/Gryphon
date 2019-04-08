@@ -38,7 +38,7 @@
 	"Sources/GryphonLib/TranspilationPass.swift": {
 		"ast-dump": "Bootstrap/TranspilationPass.swiftASTDump",
 	},
-	"Sources/GryphonLib/Utils.swift": {
-		"ast-dump": "Bootstrap/Utils.swiftASTDump",
+	"Sources/GryphonLib/Utilities.swift": {
+		"ast-dump": "Bootstrap/Utilities.swiftASTDump",
 	},
 }

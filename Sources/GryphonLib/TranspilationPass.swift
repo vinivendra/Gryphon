@@ -300,14 +300,6 @@ public class TranspilationPass {
 			return replaceDeclarationReferenceExpression(
 				identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
 				isImplicit: isImplicit)
-		case let .conditionalCastExpression(
-			declarationReference: declarationReference, castedToType: castedToType):
-
-			return replaceConditionalCastExpression(
-				declarationReference: declarationReference, castedToType: castedToType)
-		case let .isExpression(declarationReference: declarationReference, typeName: typeName):
-			return replaceIsExpression(
-				declarationReference: declarationReference, typeName: typeName)
 		case let .typeExpression(type: type):
 			return replaceTypeExpression(type: type)
 		case let .subscriptExpression(
@@ -405,21 +397,6 @@ public class TranspilationPass {
 		return .declarationReferenceExpression(
 			identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
 			isImplicit: isImplicit)
-	}
-
-	func replaceConditionalCastExpression(
-		declarationReference: Expression, castedToType: String) -> Expression
-	{
-		return .conditionalCastExpression(
-			declarationReference: replaceExpression(declarationReference),
-			castedToType: castedToType)
-	}
-
-	func replaceIsExpression(
-		declarationReference: Expression, typeName: String) -> Expression
-	{
-		return .isExpression(
-			declarationReference: replaceExpression(declarationReference), typeName: typeName)
 	}
 
 	func replaceTypeExpression(type: String) -> Expression {
@@ -1073,24 +1050,34 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 		access: String?, name: String, inherits: [String], elements: [EnumElement],
 		members: [Statement], isImplicit: Bool) -> [Statement]
 	{
-		return [.enumDeclaration(
-			access: access, name: name,
+		return super.replaceEnumDeclaration(
+			access: access,
+			name: name,
 			inherits: inherits.filter {
-				isNotASwiftProtocol($0) && isNotASwiftRawRepresentableType($0)
-			},
+					isNotASwiftProtocol($0) && isNotASwiftRawRepresentableType($0)
+				},
 			elements: elements,
-			members: super.replaceStatements(members),
-			isImplicit: isImplicit), ]
+			members: members,
+			isImplicit: isImplicit)
 	}
 
 	override func replaceStructDeclaration(
 		annotations: String?, name: String, inherits: [String], members: [Statement]) -> [Statement]
 	{
-		return [.structDeclaration(
+		return super.replaceStructDeclaration(
 			annotations: annotations,
 			name: name,
 			inherits: inherits.filter(isNotASwiftProtocol),
-			members: super.replaceStatements(members)), ]
+			members: members)
+	}
+
+	override func replaceClassDeclaration(name: String, inherits: [String], members: [Statement])
+		-> [Statement]
+	{
+		return super.replaceClassDeclaration(
+			name: name,
+			inherits: inherits.filter(isNotASwiftProtocol),
+			members: members)
 	}
 }
 
@@ -1125,6 +1112,43 @@ public class AnonymousParametersTranspilationPass: TranspilationPass {
 		else {
 			return super.replaceClosureExpression(
 				parameters: parameters, statements: statements, type: type)
+		}
+	}
+}
+
+/// ArrayReference needs an explicit initializer to account for the fact that it can't be implicitly
+/// cast to covariant types. For instance:
+///
+/// ````
+/// let myIntArray: ArrayReference = [1, 2, 3]
+/// let myAnyArray = myIntArray as ArrayReference<Any> // error
+/// let myAnyArray = ArrayReference<Any>(myIntArray) // OK
+/// ````
+///
+/// This transformation can't be done with the current template mode because there's no way to get
+/// the type for the cast. However, since this seems to be a specific case that only shows up in the
+/// stdlib at the moment, this pass should serve as a workaround.
+public class CovarianceInitsAsCastsTranspilationPass: TranspilationPass {
+	override func replaceCallExpression(function: Expression, parameters: Expression, type: String)
+		-> Expression
+	{
+		if case let .typeExpression(type: type) = function,
+			type.hasPrefix("ArrayReference<"),
+			case let .tupleExpression(pairs: pairs) = parameters,
+			pairs.count == 1,
+			let onlyPair = pairs.first
+		{
+			return .binaryOperatorExpression(
+				leftExpression: onlyPair.expression,
+				rightExpression: .typeExpression(type: type),
+				operatorSymbol: "as",
+				type: type)
+		}
+		else {
+			return super.replaceCallExpression(
+				function: function,
+				parameters: parameters,
+				type: type)
 		}
 	}
 }
@@ -1697,6 +1721,7 @@ public extension TranspilationPass {
 		// Transform structures that need to be slightly different in Kotlin
 		result = SelfToThisTranspilationPass().run(on: result)
 		result = AnonymousParametersTranspilationPass().run(on: result)
+		result = CovarianceInitsAsCastsTranspilationPass().run(on: result)
 		result = RemoveBreaksInSwitchesTranspilationPass().run(on: result)
 		result = ReturnsInLambdasTranspilationPass().run(on: result)
 		result = RenameOperatorsTranspilationPass().run(on: result)

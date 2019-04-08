@@ -28,6 +28,10 @@ internal enum class MyEnum {
 	E;
 }
 
+internal sealed class MySealedClass {
+	class A(val int: Int): MySealedClass()
+}
+
 fun main(args: Array<String>) {
 	printNumberName(0)
 	printNumberName(1)
@@ -64,5 +68,14 @@ fun main(args: Array<String>) {
 	when (myEnum) {
 		MyEnum.A -> println("It's a!")
 		else -> println("It's not a.")
+	}
+
+	val mySealedClass: MySealedClass = MySealedClass.A(int = 0)
+
+	when (mySealedClass) {
+		is MySealedClass.A -> {
+			val int: Int = mySealedClass.int
+			println(int)
+		}
 	}
 }

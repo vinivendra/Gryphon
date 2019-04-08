@@ -21,7 +21,7 @@ class ASTDumpDecoder {
 
 		override fun toString(): String {
 			return when (this) {
-				is ASTDumpDecoder.DecodingError.UnexpectedContent -> {
+				is DecodingError.UnexpectedContent -> {
 					val decoder: ASTDumpDecoder = this.decoder
 					val errorMessage: String = this.errorMessage
 					"Decoding error: ${errorMessage}\n" + "Remaining buffer in decoder: \"${decoder.remainingBuffer(limit = 1000)}\""

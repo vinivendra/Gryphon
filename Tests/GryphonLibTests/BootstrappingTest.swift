@@ -26,6 +26,7 @@ class BootstrappingTest: XCTestCase {
 		}
 
 		// Dump the ASTs
+		print("\t* Dumping the ASTs...")
 		let dumpCommand = ["perl", "dumpTranspilerAST.pl" ]
 		guard let dumpResult = Shell.runShellCommand(dumpCommand) else {
 			XCTFail("Timed out.")
@@ -40,18 +41,37 @@ class BootstrappingTest: XCTestCase {
 		}
 
 		// Turn the ASTs into Kotlin files
-		do {
-			try Utilities.updateTestFiles()
-		}
-		catch let error {
-			XCTFail("Error transpiling bootstrap files.\n\(error)")
+		print("\t* Transpiling files...")
+		let bootstrapFolderName = "Bootstrap"
+		let bootstrappedFiles = [
+			"StandardLibrary",
+			"PrintableAsTree",
+			"SwiftAST",
+			"ASTDumpDecoder",
+			"Extensions", ]
+		let bootstrappedFilesPaths = bootstrappedFiles.map { bootstrapFolderName + "/" + $0 }
+		if Utilities.needsToUpdateFiles(
+			bootstrappedFiles,
+			in: bootstrapFolderName,
+			from: .swiftASTDump,
+			to: .kt)
+		{
+			do {
+				try Compiler.generateKotlinCode(
+					forFilesAt: bootstrappedFilesPaths, outputFolder: bootstrapFolderName)
+			}
+			catch let error {
+				XCTFail("Failed to transpile bootstrap files.\n\(error)")
+			}
 		}
 
 		// Compile the Kotlin version of the transpiler
+		print("\t* Compiling Kotlin files...")
 		let compilationCommand = [
 			Compiler.kotlinCompilerPath,
 			"-include-runtime", "-d", "kotlin.jar",
 			"PrintableAsTree.kt", "PrintableAsTreeTest.kt",
+			"SwiftAST.kt",
 			"ASTDumpDecoder.kt", "ASTDumpDecoderTest.kt",
 			"Extensions.kt", "ExtensionsTest.kt",
 			"KotlinTests.kt", "StandardLibrary.kt", "main.kt", ]
@@ -70,6 +90,7 @@ class BootstrappingTest: XCTestCase {
 		}
 
 		// Run the Kotlin version's tests
+		print("\t* Running Kotlin tests...")
 		let runCommand = ["java", "-jar", "kotlin.jar", ]
 		guard let runResult =
 			Shell.runShellCommand(runCommand, fromFolder: "Bootstrap") else
