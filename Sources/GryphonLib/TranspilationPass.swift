@@ -15,15 +15,24 @@
 */
 
 public class TranspilationPass {
+	var ast: GryphonAST
+
 	fileprivate var parents = [ASTNode]()
 	fileprivate var parent: ASTNode {
 		return parents.secondToLast!
 	}
 
-	func run(on ast: GryphonAST) -> GryphonAST {
+	init(ast: GryphonAST) {
+		self.ast = ast
+	}
+
+	func run() -> GryphonAST {
 		let replacedStatements = replaceStatements(ast.statements)
 		let replacedDeclarations = replaceStatements(ast.declarations)
-		return GryphonAST(declarations: replacedDeclarations, statements: replacedStatements)
+		return GryphonAST(
+			sourceFile: ast.sourceFile,
+			declarations: replacedDeclarations,
+			statements: replacedStatements)
 	}
 
 	func replaceStatements(_ statements: [Statement]) -> [Statement] {
@@ -1418,8 +1427,12 @@ public class RaiseStandardLibraryWarningsTranspilationPass: TranspilationPass {
 		_ expression: DeclarationReferenceExpression) -> DeclarationReferenceExpression
 	{
 		if expression.isStandardLibrary {
+			let message = "Reference to standard library \"\(expression.identifier)\" was not " +
+				"translated."
 			Compiler.handleWarning(
-				"Reference to standard library \"\(expression.identifier)\" was not translated.")
+					message: message,
+					sourceFile: ast.sourceFile,
+					sourceFileRange: expression.range)
 		}
 		return super.replaceDeclarationReferenceExpression(expression)
 	}
@@ -1439,9 +1452,12 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 				!variableDeclaration.isLet,
 				variableDeclaration.getter == nil
 			{
+				let message = "No support for mutable variables in value types: found variable " +
+					"\(variableDeclaration.identifier) inside struct \(name)"
 				Compiler.handleWarning(
-					"No support for mutable variables in value types: found variable " +
-					"\(variableDeclaration.identifier) inside struct \(name)")
+					message: message,
+					sourceFile: ast.sourceFile,
+					sourceFileRange: nil)
 			}
 			else if case let .functionDeclaration(value: functionDeclaration) = member,
 				functionDeclaration.isMutating
@@ -1449,9 +1465,12 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 				let methodName = functionDeclaration.prefix + "(" +
 					functionDeclaration.parameters.map { $0.label + ":" }
 						.joined(separator: ", ") + ")"
+				let message = "No support for mutating methods in value types: found method " +
+					"\(methodName) inside struct \(name)"
 				Compiler.handleWarning(
-					"No support for mutating methods in value types: found method " +
-					"\(methodName) inside struct \(name)")
+					message: message,
+					sourceFile: ast.sourceFile,
+					sourceFileRange: nil)
 			}
 		}
 
@@ -1470,9 +1489,12 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 				let methodName = functionDeclaration.prefix + "(" +
 					functionDeclaration.parameters.map { $0.label + ":" }
 						.joined(separator: ", ") + ")"
+				let message = "No support for mutating methods in value types: found method " +
+					"\(methodName) inside enum \(name)"
 				Compiler.handleWarning(
-					"No support for mutating methods in value types: found method " +
-					"\(methodName) inside enum \(name)")
+					message: message,
+					sourceFile: ast.sourceFile,
+					sourceFileRange: nil)
 			}
 		}
 
@@ -1496,7 +1518,8 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 							identifier: declaration.identifier,
 							type: declaration.typeName,
 							isStandardLibrary: false,
-							isImplicit: false)),
+							isImplicit: false,
+							range: declaration.expression?.range)),
 					rightExpression: .nilLiteralExpression, operatorSymbol: "!=",
 					type: "Boolean"))
 		}
@@ -1655,15 +1678,15 @@ public extension TranspilationPass {
 		var result = sourceFile
 
 		// Remove declarations that shouldn't even be considered in the passes
-		result = RemoveImplicitDeclarationsTranspilationPass().run(on: result)
+		result = RemoveImplicitDeclarationsTranspilationPass(ast: result).run()
 
 		// Clean inheritances (needed for recording enums below)
-		result = CleanInheritancesTranspilationPass().run(on: result)
+		result = CleanInheritancesTranspilationPass(ast: result).run()
 
 		// Record information on enum and function translations
-		result = RecordTemplatesTranspilationPass().run(on: result)
-		result = RecordEnumsTranspilationPass().run(on: result)
-		result = RecordFunctionTranslationsTranspilationPass().run(on: result)
+		result = RecordTemplatesTranspilationPass(ast: result).run()
+		result = RecordEnumsTranspilationPass(ast: result).run()
+		result = RecordFunctionTranslationsTranspilationPass(ast: result).run()
 
 		return result
 	}
@@ -1675,39 +1698,39 @@ public extension TranspilationPass {
 
 		// Replace templates (must go before other passes since templates are recorded before
 		// running any passes)
-		result = ReplaceTemplatesTranspilationPass().run(on: result)
+		result = ReplaceTemplatesTranspilationPass(ast: result).run()
 
 		// Cleanup
-		result = RemoveParenthesesTranspilationPass().run(on: result)
-		result = RemoveExtraReturnsInInitsTranspilationPass().run(on: result)
+		result = RemoveParenthesesTranspilationPass(ast: result).run()
+		result = RemoveExtraReturnsInInitsTranspilationPass(ast: result).run()
 
 		// Transform structures that need to be significantly different in Kotlin
-		result = DescriptionAsToStringTranspilationPass().run(on: result)
-		result = OptionalInitsTranspilationPass().run(on: result)
-		result = StaticMembersTranspilationPass().run(on: result)
-		result = FixProtocolContentsTranspilationPass().run(on: result)
-		result = RemoveExtensionsTranspilationPass().run(on: result)
-		result = RearrangeIfLetsTranspilationPass().run(on: result)
+		result = DescriptionAsToStringTranspilationPass(ast: result).run()
+		result = OptionalInitsTranspilationPass(ast: result).run()
+		result = StaticMembersTranspilationPass(ast: result).run()
+		result = FixProtocolContentsTranspilationPass(ast: result).run()
+		result = RemoveExtensionsTranspilationPass(ast: result).run()
+		result = RearrangeIfLetsTranspilationPass(ast: result).run()
 
 		// Transform structures that need to be slightly different in Kotlin
-		result = SelfToThisTranspilationPass().run(on: result)
-		result = AnonymousParametersTranspilationPass().run(on: result)
-		result = CovarianceInitsAsCastsTranspilationPass().run(on: result)
-		result = RemoveBreaksInSwitchesTranspilationPass().run(on: result)
-		result = ReturnsInLambdasTranspilationPass().run(on: result)
-		result = RenameOperatorsTranspilationPass().run(on: result)
+		result = SelfToThisTranspilationPass(ast: result).run()
+		result = AnonymousParametersTranspilationPass(ast: result).run()
+		result = CovarianceInitsAsCastsTranspilationPass(ast: result).run()
+		result = RemoveBreaksInSwitchesTranspilationPass(ast: result).run()
+		result = ReturnsInLambdasTranspilationPass(ast: result).run()
+		result = RenameOperatorsTranspilationPass(ast: result).run()
 
 		// Improve Kotlin readability
-		result = CapitalizeEnumsTranspilationPass().run(on: result)
-		result = OmitImplicitEnumPrefixesTranspilationPass().run(on: result)
-		result = InnerTypePrefixesTranspilationPass().run(on: result)
-		result = DoubleNegativesInGuardsTranspilationPass().run(on: result)
-		result = SwitchesToExpressionsTranspilationPass().run(on: result)
-		result = ReturnIfNilTranspilationPass().run(on: result)
+		result = CapitalizeEnumsTranspilationPass(ast: result).run()
+		result = OmitImplicitEnumPrefixesTranspilationPass(ast: result).run()
+		result = InnerTypePrefixesTranspilationPass(ast: result).run()
+		result = DoubleNegativesInGuardsTranspilationPass(ast: result).run()
+		result = SwitchesToExpressionsTranspilationPass(ast: result).run()
+		result = ReturnIfNilTranspilationPass(ast: result).run()
 
 		// Raise any warnings that may be left
-		result = RaiseStandardLibraryWarningsTranspilationPass().run(on: result)
-		result = RaiseMutableValueTypesWarningsTranspilationPass().run(on: result)
+		result = RaiseStandardLibraryWarningsTranspilationPass(ast: result).run()
+		result = RaiseMutableValueTypesWarningsTranspilationPass(ast: result).run()
 
 		return result
 	}

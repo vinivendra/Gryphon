@@ -15,10 +15,12 @@
 */
 
 public final class GryphonAST: PrintableAsTree, Equatable, CustomStringConvertible {
+	let sourceFile: SourceFile?
 	let declarations: [Statement]
 	let statements: [Statement]
 
-	init(declarations: [Statement], statements: [Statement]) {
+	init(sourceFile: SourceFile?, declarations: [Statement], statements: [Statement]) {
+		self.sourceFile = sourceFile
 		self.declarations = declarations
 		self.statements = statements
 	}
@@ -244,6 +246,7 @@ public struct DeclarationReferenceExpression: Equatable {
 	var type: String
 	var isStandardLibrary: Bool
 	var isImplicit: Bool
+	var range: SourceFileRange?
 }
 
 public struct FunctionDeclaration: Equatable {
@@ -540,6 +543,15 @@ extension Expression {
 			return nil
 		case .error:
 			return "<<Error>>"
+		}
+	}
+
+	var range: SourceFileRange? {
+		switch self {
+		case let .declarationReferenceExpression(value: declarationReferenceExpression):
+			return declarationReferenceExpression.range
+		default:
+			return nil
 		}
 	}
 

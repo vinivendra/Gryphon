@@ -62,7 +62,10 @@ public class SwiftTranslator {
 		let declarations = translatedSubtrees.filter(isDeclaration)
 		let statements = translatedSubtrees.filter({ !isDeclaration($0) })
 
-		return GryphonAST(declarations: declarations, statements: statements)
+		return GryphonAST(
+			sourceFile: sourceFile,
+			declarations: declarations,
+			statements: statements)
 	}
 
 	// MARK: - Top-level translations
@@ -591,12 +594,14 @@ public class SwiftTranslator {
 			let leftHand = try translate(expression: memberOwner)
 			let (member, isStandardLibrary) = getIdentifierFromDeclaration(declaration)
 			let isImplicit = memberReferenceExpression.standaloneAttributes.contains("implicit")
+			let range = getRangeRecursively(ofNode: memberReferenceExpression)
 			let rightHand = Expression.declarationReferenceExpression(value:
 				DeclarationReferenceExpression(
 					identifier: member,
 					type: type,
 					isStandardLibrary: isStandardLibrary,
-					isImplicit: isImplicit))
+					isImplicit: isImplicit,
+					range: range))
 			return .dotExpression(leftExpression: leftHand,
 								  rightExpression: rightHand)
 		}
@@ -638,7 +643,8 @@ public class SwiftTranslator {
 							identifier: label,
 							type: type,
 							isStandardLibrary: leftExpression.isStandardLibrary,
-							isImplicit: false)))
+							isImplicit: false,
+							range: leftExpression.range)))
 			}
 		}
 
@@ -831,12 +837,14 @@ public class SwiftTranslator {
 				AST: forEachStatement, translator: self)
 		}
 
+		let range = getRangeRecursively(ofNode: variableSubtree)
 		let variable = Expression.declarationReferenceExpression(value:
 			DeclarationReferenceExpression(
 				identifier: variableName,
 				type: variableType,
 				isStandardLibrary: false,
-				isImplicit: false))
+				isImplicit: false,
+				range: range))
 		let collectionTranslation = try translate(expression: collectionExpression)
 		let statements = try translate(braceStatement: braceStatement)
 
@@ -998,6 +1006,8 @@ public class SwiftTranslator {
 						operatorSymbol: "is",
 						type: "Bool")
 
+					let range = getRangeRecursively(ofNode: patternLet)
+
 					extraStatements = declarations.map {
 						Statement.variableDeclaration(value: VariableDeclaration(
 							identifier: $0.newVariable,
@@ -1009,7 +1019,8 @@ public class SwiftTranslator {
 										identifier: $0.associatedValueName,
 										type: $0.associatedValueType,
 										isStandardLibrary: false,
-										isImplicit: false))),
+										isImplicit: false,
+										range: range))),
 							getter: nil,
 							setter: nil,
 							isLet: true,
@@ -1079,12 +1090,14 @@ public class SwiftTranslator {
 				AST: simplePatternEnumElement, translator: self)
 		}
 
+		let range = getRangeRecursively(ofNode: simplePatternEnumElement)
 		let lastExpression = Expression.declarationReferenceExpression(value:
 			DeclarationReferenceExpression(
 				identifier: String(lastEnumElement),
 				type: type,
 				isStandardLibrary: false,
-				isImplicit: false))
+				isImplicit: false,
+				range: range))
 
 		enumElements.removeLast()
 		if !enumElements.isEmpty {
@@ -1215,6 +1228,8 @@ public class SwiftTranslator {
 					type: "Bool"))
 
 				for declaration in declarations {
+					let range = getRangeRecursively(ofNode: patternLet)
+
 					statementsResult.append(.variableDeclaration(value: VariableDeclaration(
 						identifier: declaration.newVariable,
 						typeName: declaration.associatedValueType,
@@ -1225,7 +1240,8 @@ public class SwiftTranslator {
 									identifier: String(declaration.associatedValueName),
 									type: declaration.associatedValueType,
 									isStandardLibrary: false,
-									isImplicit: false))),
+									isImplicit: false,
+									range: range))),
 						getter: nil,
 						setter: nil,
 						isLet: true,
@@ -2028,27 +2044,36 @@ public class SwiftTranslator {
 
 		let isImplicit = declarationReferenceExpression.standaloneAttributes.contains("implicit")
 
+		let range = getRange(ofNode: declarationReferenceExpression)
+
 		if let discriminator = declarationReferenceExpression["discriminator"] {
 			let (identifier, isStandardLibrary) = getIdentifierFromDeclaration(discriminator)
 			return .declarationReferenceExpression(value: DeclarationReferenceExpression(
 					identifier: identifier,
 					type: type,
 					isStandardLibrary: isStandardLibrary,
-					isImplicit: isImplicit))
+					isImplicit: isImplicit,
+					range: range))
 		}
 		else if let codeDeclaration = declarationReferenceExpression.standaloneAttributes.first,
 			codeDeclaration.hasPrefix("code.")
 		{
 			let (identifier, isStandardLibrary) = getIdentifierFromDeclaration(codeDeclaration)
 			return .declarationReferenceExpression(value: DeclarationReferenceExpression(
-				identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
-				isImplicit: isImplicit))
+				identifier: identifier,
+				type: type,
+				isStandardLibrary: isStandardLibrary,
+				isImplicit: isImplicit,
+				range: range))
 		}
 		else if let declaration = declarationReferenceExpression["decl"] {
 			let (identifier, isStandardLibrary) = getIdentifierFromDeclaration(declaration)
 			return .declarationReferenceExpression(value: DeclarationReferenceExpression(
-				identifier: identifier, type: type, isStandardLibrary: isStandardLibrary,
-				isImplicit: isImplicit))
+				identifier: identifier,
+				type: type,
+				isStandardLibrary: isStandardLibrary,
+				isImplicit: isImplicit,
+				range: range))
 		}
 		else {
 			return try unexpectedExpressionStructureError(
@@ -2267,13 +2292,6 @@ public class SwiftTranslator {
 		return (declaration: String(identifier), isStandardLibrary: isStandardLibrary)
 	}
 
-	struct SourceFileRange {
-		let lineStart: Int
-		let lineEnd: Int
-		let columnStart: Int
-		let columnEnd: Int
-	}
-
 	/// Extracts the range numbers from a string in the form
 	/// `Path/to/file.swift:1:2 - line:3:4`, where the numbers 1, 2, 3 and 4 represent (in order)
 	/// the lineStart, columnStart, lineEnd and columndEnd.
@@ -2325,7 +2343,7 @@ public class SwiftTranslator {
 			columnEnd: columnEnd)
 	}
 
-	internal func getRangeOfNodeOrSubtree(_ ast: SwiftAST) -> SourceFileRange? {
+	internal func getRangeRecursively(ofNode ast: SwiftAST) -> SourceFileRange? {
 		if let range = getRange(ofNode: ast) {
 			return range
 		}
@@ -2449,49 +2467,16 @@ enum SwiftTranslatorError: Error, CustomStringConvertible {
 			ast.prettyPrint {
 				nodeDescription += $0
 			}
+			let details = "When translating the following AST node:\n\(nodeDescription)"
 
-			let throwingFileName = file.split(separator: "/").last!.split(separator: ".").first!
-
-			if let sourceFile = translator.sourceFile,
-				let sourceFileRange = translator.getRange(ofNode: ast)
-			{
-				let sourceFilePath = sourceFile.path
-				let sourceFileURL = URL(fileURLWithPath: sourceFilePath)
-				let relativePath = sourceFileURL.relativePath
-
-				let sourceFileString = sourceFile.getLine(sourceFileRange.lineStart) ??
-					"<<Unable to get line \(sourceFileRange.lineStart) in file \(relativePath)>>"
-
-				var underlineString = ""
-				for i in 1..<sourceFileRange.columnStart {
-					let sourceFileCharacter = sourceFileString[
-							sourceFileString.index(sourceFileString.startIndex, offsetBy: i - 1)]
-					if sourceFileCharacter == "\t" {
-						underlineString += "\t"
-					}
-					else {
-						underlineString += " "
-					}
-				}
-				underlineString += "^"
-				if sourceFileRange.columnStart < sourceFileRange.columnEnd {
-					for _ in (sourceFileRange.columnStart + 1)..<sourceFileRange.columnEnd {
-						underlineString += "~"
-					}
-				}
-
-				return "\(relativePath):\(sourceFileRange.lineStart):" +
-						"\(sourceFileRange.columnStart): error: \(message)\n" +
-					"\(sourceFileString)\n" +
-					"\(underlineString)\n" +
-					"Thrown by \(throwingFileName):\(line) - \(function)\n" +
-					"when translating the following AST node:\n\(nodeDescription)"
-			}
-			else {
-				return "error: \(message)\n" +
-					"Thrown by \(throwingFileName):\(line) - \(function)\n" +
-					"when translating the following AST node:\n\(nodeDescription)"
-			}
+			return Compiler.createErrorOrWarningMessage(
+				file: file,
+				line: line,
+				function: function,
+				message: message,
+				details: details,
+				sourceFile: translator.sourceFile,
+				sourceFileRange: translator.getRangeRecursively(ofNode: ast))
 		}
 	}
 

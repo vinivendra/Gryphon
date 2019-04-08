@@ -70,3 +70,17 @@ public struct SourceFile {
 		return (key: key, value: value)
 	}
 }
+
+struct SourceFileRange: Equatable {
+	let lineStart: Int
+	let lineEnd: Int
+	let columnStart: Int
+	let columnEnd: Int
+
+	/// This is technically incorrect but allows AST nodes with ranges to get an automatic Equatable
+	/// conformance that ignores ranges, which is useful since we're frequently comparing nodes
+	/// with the same practical meaning but different source file ranges.
+	static func == (lhs: SourceFileRange, rhs: SourceFileRange) -> Bool {
+		return true
+	}
+}

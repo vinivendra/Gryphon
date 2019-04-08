@@ -179,7 +179,7 @@ extension Utilities {
 		}
 		for templateFile in templateFiles {
 			let ast = try Compiler.generateGryphonAST(forFileAt: templateFile.path)
-			_ = RecordTemplatesTranspilationPass().run(on: ast)
+			_ = RecordTemplatesTranspilationPass(ast: ast).run()
 		}
 
 		libraryFilesHaveBeenUpdated = true

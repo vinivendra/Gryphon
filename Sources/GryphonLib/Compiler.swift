@@ -152,7 +152,7 @@ public enum Compiler {
 	public private(set) static var errors = [Error]()
 	public private(set) static var warnings = [String]()
 
-	public static func handleError(_ error: Error) throws {
+	internal static func handleError(_ error: Error) throws {
 		if Compiler.shouldStopAtFirstError {
 			throw error
 		}
@@ -161,8 +161,25 @@ public enum Compiler {
 		}
 	}
 
-	public static func handleWarning(_ warning: String) {
-		Compiler.warnings.append(warning)
+	internal static func handleWarning(
+		file: String = #file,
+		line: Int = #line,
+		function: String = #function,
+		message: String,
+		details: String = "",
+		sourceFile: SourceFile?,
+		sourceFileRange: SourceFileRange?)
+	{
+		Compiler.warnings.append(
+			Compiler.createErrorOrWarningMessage(
+				file: file,
+				line: line,
+				function: function,
+				message: message,
+				details: details,
+				sourceFile: sourceFile,
+				sourceFileRange: sourceFileRange,
+				isError: false))
 	}
 
 	public static func printErrorsAndWarnings() {
@@ -217,6 +234,62 @@ public enum Compiler {
 			{
 				print("- \(errorArray.count) \(astName)s")
 			}
+		}
+	}
+
+	static func createErrorOrWarningMessage(
+		file: String = #file,
+		line: Int = #line,
+		function: String = #function,
+		message: String,
+		details: String,
+		sourceFile: SourceFile?,
+		sourceFileRange: SourceFileRange?,
+		isError: Bool = true) -> String
+	{
+		let throwingFileName = file.split(separator: "/").last!.split(separator: ".").first!
+
+		let errorOrWarning = isError ? "error" : "warning"
+
+		if let sourceFile = sourceFile,
+			let sourceFileRange = sourceFileRange
+		{
+			let sourceFilePath = sourceFile.path
+			let sourceFileURL = URL(fileURLWithPath: sourceFilePath)
+			let relativePath = sourceFileURL.relativePath
+
+			let sourceFileString = sourceFile.getLine(sourceFileRange.lineStart) ??
+				"<<Unable to get line \(sourceFileRange.lineStart) in file \(relativePath)>>"
+
+			var underlineString = ""
+			for i in 1..<sourceFileRange.columnStart {
+				let sourceFileCharacter = sourceFileString[
+					sourceFileString.index(sourceFileString.startIndex, offsetBy: i - 1)]
+				if sourceFileCharacter == "\t" {
+					underlineString += "\t"
+				}
+				else {
+					underlineString += " "
+				}
+			}
+			underlineString += "^"
+			if sourceFileRange.columnStart < sourceFileRange.columnEnd {
+				for _ in (sourceFileRange.columnStart + 1)..<sourceFileRange.columnEnd {
+					underlineString += "~"
+				}
+			}
+
+			return "\(relativePath):\(sourceFileRange.lineStart):" +
+				"\(sourceFileRange.columnStart): \(errorOrWarning): \(message)\n" +
+				"\(sourceFileString)\n" +
+				"\(underlineString)\n" +
+				"Thrown by \(throwingFileName):\(line) - \(function)\n" +
+				details
+		}
+		else {
+			return "\(errorOrWarning): \(message)\n" +
+				"Thrown by \(throwingFileName):\(line) - \(function)\n" +
+				details
 		}
 	}
 
