@@ -98,7 +98,7 @@ public enum Compiler {
 		for (filePath, kotlinCode) in zip(filePaths, kotlinCodes) {
 			let fileName = URL(fileURLWithPath: filePath).deletingPathExtension().lastPathComponent
 			let outputFile = Utilities.createFile(
-				named: fileName + .kt,
+				named: fileName.withExtension(.kt),
 				inDirectory: outputFolder,
 				containing: kotlinCode)
 			outputFiles.append(outputFile)

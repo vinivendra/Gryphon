@@ -28,7 +28,8 @@ class AcceptanceTest: XCTestCase {
 				// Translate the swift code to kotlin, compile the resulting kotlin code, run it,
 				// and get its output
 				let testFilePath = TestUtils.testFilesPath + testName
-				let compilationResult = try Compiler.compileAndRun(filesAt: [testFilePath + .swift])
+				let compilationResult =
+					try Compiler.compileAndRun(filesAt: [testFilePath.withExtension(.swift)])
 
 				switch compilationResult {
 				case let .failure(errorMessage: errorMessage):
@@ -36,7 +37,8 @@ class AcceptanceTest: XCTestCase {
 					continue
 				case let .success(commandOutput: compilerResult):
 					// Load the previously stored kotlin code from file
-					let expectedOutput = try! String(contentsOfFile: testFilePath + .output)
+					let expectedOutput =
+						try! String(contentsOfFile: testFilePath.withExtension(.output))
 
 					XCTAssert(
 						compilerResult.standardError == "",

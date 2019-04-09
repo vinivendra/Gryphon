@@ -120,8 +120,10 @@ func gryphonTemplates() {
 	_string.append(_character)
 	"_string += _character"
 
-	// Character
+	_string.capitalized
+	"_string.capitalize()"
 
+	// Character
 	_character.uppercased()
 	"_character.toUpperCase()"
 

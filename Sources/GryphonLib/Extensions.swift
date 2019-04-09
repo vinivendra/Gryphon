@@ -132,8 +132,14 @@ internal extension String {
 			let currentCharacter = self[index]
 			if currentCharacter.isUppercase {
 				let nextIndex = self.index(after: index)
-				if nextIndex != endIndex && !self[nextIndex].isUppercase {
+				if nextIndex != endIndex, !self[nextIndex].isUppercase, self[nextIndex] != "_" {
 					result.append("_")
+				}
+				else if index > startIndex {
+					let previousIndex = self.index(before: index)
+					if !self[previousIndex].isUppercase, self[previousIndex] != "_" {
+						result.append("_")
+					}
 				}
 				result.append(currentCharacter)
 			}

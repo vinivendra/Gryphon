@@ -27,11 +27,12 @@ class IntegrationTest: XCTestCase {
 			do {
 				// Generate kotlin code using the whole compiler
 				let testFilePath = TestUtils.testFilesPath + testName
-				let generatedKotlinCode =
-					try Compiler.generateKotlinCode(forFilesAt: [testFilePath + .swift]).first!
+				let generatedKotlinCode = try Compiler.generateKotlinCode(
+					forFilesAt: [testFilePath.withExtension(.swift)]).first!
 
 				// Load the previously stored kotlin code from file
-				let expectedKotlinCode = try! String(contentsOfFile: testFilePath + .kt)
+				let expectedKotlinCode = try! String(
+					contentsOfFile: testFilePath.withExtension(.kt))
 
 				XCTAssert(
 					generatedKotlinCode == expectedKotlinCode,

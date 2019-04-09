@@ -101,8 +101,14 @@ internal fun String.upperSnakeCase(): String {
 		val currentCharacter: Char = this[index]
 		if (currentCharacter.isUppercase) {
 			val nextIndex: Int = index + 1
-			if (nextIndex != this.length && !this[nextIndex].isUppercase) {
+			if (nextIndex != this.length && !this[nextIndex].isUppercase && this[nextIndex] != '_') {
 				result += "_"
+			}
+			else if (index > 0) {
+				val previousIndex: Int = index - 1
+				if (!this[previousIndex].isUppercase && this[previousIndex] != '_') {
+					result += "_"
+				}
 			}
 			result += currentCharacter
 		}

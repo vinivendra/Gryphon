@@ -15,8 +15,9 @@
 */
 
 import Foundation
+// declaration: import java.io.File
 
-public enum Utilities {
+public class Utilities {
 	internal static func expandSwiftAbbreviation(_ name: String) -> String {
 		// Separate snake case and capitalize
 		var nameComponents = name.split(withStringSeparator: "_").map { $0.capitalized }
@@ -49,13 +50,24 @@ public enum FileExtension: String {
 	case kt
 	case swift
 
-	//
-	static func + (string: String, fileExtension: FileExtension) -> String {
-		return string + "." + fileExtension.rawValue
+	// TODO: Does this appear implicitly in the AST? Can it be created automatically?
+	public var rawValue: String {
+		switch self {
+		case .swiftASTDump: return "swiftASTDump"
+		case .output: return "output"
+		case .kt: return "kt"
+		case .swift: return "swift"
+		}
 	}
 }
 
-extension Utilities {
+extension String {
+	func withExtension(_ fileExtension: FileExtension) -> String {
+		return self + "." + fileExtension.rawValue
+	}
+}
+
+extension Utilities { // kotlin: ignore
 	public static func changeExtension(of filePath: String, to newExtension: FileExtension)
 		-> String
 	{
@@ -80,7 +92,7 @@ extension Utilities {
 	}
 }
 
-extension Utilities {
+extension Utilities { // kotlin: ignore
 	public static let systemIdentifier: String = {
 		#if os(macOS)
 		let osName = "macOS"
@@ -139,7 +151,7 @@ extension Utilities {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-extension Utilities {
+extension Utilities { // kotlin: ignore
 	enum FileError: Error, CustomStringConvertible {
 		case outdatedFile(inFolder: String)
 

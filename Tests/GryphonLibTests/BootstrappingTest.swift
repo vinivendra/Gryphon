@@ -48,7 +48,8 @@ class BootstrappingTest: XCTestCase {
 			"PrintableAsTree",
 			"SwiftAST",
 			"ASTDumpDecoder",
-			"Extensions", ]
+			"Extensions",
+			"Utilities", ]
 		let bootstrappedFilesPaths = bootstrappedFiles.map { bootstrapFolderName + "/" + $0 }
 		if Utilities.needsToUpdateFiles(
 			bootstrappedFiles,
@@ -74,6 +75,7 @@ class BootstrappingTest: XCTestCase {
 			"SwiftAST.kt",
 			"ASTDumpDecoder.kt", "ASTDumpDecoderTest.kt",
 			"Extensions.kt", "ExtensionsTest.kt",
+			"Utilities.kt", "UtilitiesTest.kt",
 			"KotlinTests.kt", "StandardLibrary.kt", "main.kt", ]
 		guard let compilationResult =
 			Shell.runShellCommand(compilationCommand, fromFolder: "Bootstrap") else
