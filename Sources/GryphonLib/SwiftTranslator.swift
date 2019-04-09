@@ -1550,11 +1550,15 @@ public class SwiftTranslator {
 			expression = .literalCodeExpression(string: valueReplacement)
 		}
 
-		var getter: Statement?
-		var setter: Statement?
-		for subtree in variableDeclaration.subtrees
-			where !subtree.standaloneAttributes.contains("implicit")
-		{
+		var getter: FunctionDeclaration?
+		var setter: FunctionDeclaration?
+		for subtree in variableDeclaration.subtrees {
+			guard !subtree.standaloneAttributes.contains("implicit") || identifier == "rawValue"
+				else
+			{
+				continue
+			}
+
 			let access = subtree["access"]
 
 			let statements: [Statement]
@@ -1565,10 +1569,10 @@ public class SwiftTranslator {
 				statements = []
 			}
 
-			// Swift 5: "get_for" and "set_for" are the terms used in the Swift 5 AST
-			if subtree["getter_for"] != nil || subtree["get_for"] != nil {
-				let annotations = getComment(forNode: subtree, key: "annotation")
-				getter = .functionDeclaration(value: FunctionDeclaration(
+			let annotations = getComment(forNode: subtree, key: "annotation")
+
+			if subtree["get_for"] != nil {
+				getter = FunctionDeclaration(
 					prefix: "get",
 					parameters: [],
 					returnType: type,
@@ -1580,14 +1584,10 @@ public class SwiftTranslator {
 					extendsType: nil,
 					statements: statements,
 					access: access,
-					annotations: annotations))
+					annotations: annotations)
 			}
-			else if subtree["materializeForSet_for"] != nil ||
-				subtree["setter_for"] != nil ||
-				subtree["set_for"] != nil
-			{
-				let annotations = getComment(forNode: subtree, key: "annotation")
-				setter = .functionDeclaration(value: FunctionDeclaration(
+			else if subtree["materializeForSet_for"] != nil || subtree["set_for"] != nil {
+				setter = FunctionDeclaration(
 					prefix: "set",
 					parameters: [FunctionParameter(
 						label: "newValue", apiLabel: nil, type: type, value: nil), ],
@@ -1600,7 +1600,7 @@ public class SwiftTranslator {
 					extendsType: nil,
 					statements: statements,
 					access: access,
-					annotations: annotations))
+					annotations: annotations)
 			}
 		}
 

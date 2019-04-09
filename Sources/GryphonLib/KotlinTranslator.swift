@@ -942,13 +942,7 @@ public class KotlinTranslator {
 		let indentation1 = increaseIndentation(indentation)
 		let indentation2 = increaseIndentation(indentation1)
 		if let getter = variableDeclaration.getter {
-			guard case let .functionDeclaration(value: functionDeclaration) = getter else {
-				return try unexpectedASTStructureError(
-					"Expected the getter to be a .functionDeclaration",
-					AST: .variableDeclaration(value: variableDeclaration))
-			}
-
-			if let statements = functionDeclaration.statements {
+			if let statements = getter.statements {
 				result += indentation1 + "get() {\n"
 				result += try translate(
 					subtrees: statements, withIndentation: indentation2, limitForAddingNewlines: 3)
@@ -957,13 +951,7 @@ public class KotlinTranslator {
 		}
 
 		if let setter = variableDeclaration.setter {
-			guard case let .functionDeclaration(value: functionDeclaration) = setter else {
-				return try unexpectedASTStructureError(
-					"Expected the setter to be a .functionDeclaration",
-					AST: .variableDeclaration(value: variableDeclaration))
-			}
-
-			if let statements = functionDeclaration.statements {
+			if let statements = setter.statements {
 				result += indentation1 + "set(newValue) {\n"
 				result += try translate(
 					subtrees: statements, withIndentation: indentation2, limitForAddingNewlines: 3)

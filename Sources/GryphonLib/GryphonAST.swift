@@ -232,8 +232,8 @@ public struct VariableDeclaration: Equatable {
 	var identifier: String
 	var typeName: String
 	var expression: Expression?
-	var getter: Statement?
-	var setter: Statement?
+	var getter: FunctionDeclaration?
+	var setter: FunctionDeclaration?
 	var isLet: Bool
 	var isImplicit: Bool
 	var isStatic: Bool
@@ -412,8 +412,12 @@ extension Statement {
 				PrintableTree(variableDeclaration.identifier),
 				PrintableTree(variableDeclaration.typeName),
 				variableDeclaration.expression,
-				PrintableTree.initOrNil("getter", [variableDeclaration.getter]),
-				PrintableTree.initOrNil("setter", [variableDeclaration.setter]),
+				PrintableTree.initOrNil(
+					"getter",
+					[variableDeclaration.getter.map { Statement.functionDeclaration(value: $0) }]),
+				PrintableTree.initOrNil(
+					"setter",
+					[variableDeclaration.setter.map { Statement.functionDeclaration(value: $0) }]),
 				PrintableTree.initOrNil(
 					"annotations", [PrintableTree.initOrNil(variableDeclaration.annotations)]), ]
 		case let .forEachStatement(

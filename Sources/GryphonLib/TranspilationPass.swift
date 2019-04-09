@@ -177,6 +177,17 @@ public class TranspilationPass {
 	func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclaration)
 		-> [Statement]
 	{
+		if let result = replaceFunctionDeclaration(functionDeclaration) {
+			return [.functionDeclaration(value: result)]
+		}
+		else {
+			return []
+		}
+	}
+
+	func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclaration)
+		-> FunctionDeclaration?
+	{
 		let replacedParameters = functionDeclaration.parameters
 			.map {
 				FunctionParameter(
@@ -189,7 +200,7 @@ public class TranspilationPass {
 		var functionDeclaration = functionDeclaration
 		functionDeclaration.parameters = replacedParameters
 		functionDeclaration.statements = functionDeclaration.statements.map(replaceStatements)
-		return [.functionDeclaration(value: functionDeclaration)]
+		return functionDeclaration
 	}
 
 	func replaceVariableDeclaration(_ variableDeclaration: VariableDeclaration)
@@ -203,8 +214,12 @@ public class TranspilationPass {
 	{
 		var variableDeclaration = variableDeclaration
 		variableDeclaration.expression = variableDeclaration.expression.map(replaceExpression)
-		variableDeclaration.getter = variableDeclaration.getter.map(replaceStatement)?.first
-		variableDeclaration.setter = variableDeclaration.setter.map(replaceStatement)?.first
+		if let getter = variableDeclaration.getter {
+			variableDeclaration.getter = replaceFunctionDeclaration(getter)
+		}
+		if let setter = variableDeclaration.setter {
+			variableDeclaration.setter = replaceFunctionDeclaration(setter)
+		}
 		return variableDeclaration
 	}
 
@@ -541,8 +556,7 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 	{
 		if variableDeclaration.identifier == "description",
 			variableDeclaration.typeName == "String",
-			let unwrappedGetter = variableDeclaration.getter,
-			case let Statement.functionDeclaration(value: getter) = unwrappedGetter
+			let getter = variableDeclaration.getter
 		{
 			return [.functionDeclaration(value: FunctionDeclaration(
 				prefix: "toString",
@@ -631,6 +645,17 @@ public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
 		}
 		else {
 			return super.replaceVariableDeclaration(variableDeclaration)
+		}
+	}
+
+	override func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclaration)
+		-> [Statement]
+	{
+		if functionDeclaration.isImplicit {
+			return []
+		}
+		else {
+			return super.replaceFunctionDeclaration(functionDeclaration)
 		}
 	}
 }
@@ -1666,6 +1691,22 @@ public class FixProtocolContentsTranspilationPass: TranspilationPass {
 		}
 		else {
 			return super.replaceFunctionDeclaration(functionDeclaration)
+		}
+	}
+
+	override func replaceVariableDeclaration(_ variableDeclaration: VariableDeclaration)
+		-> VariableDeclaration
+	{
+		if isInProtocol {
+			var variableDeclaration = variableDeclaration
+			variableDeclaration.getter?.isImplicit = true
+			variableDeclaration.setter?.isImplicit = true
+			variableDeclaration.getter?.statements = nil
+			variableDeclaration.setter?.statements = nil
+			return super.replaceVariableDeclaration(variableDeclaration)
+		}
+		else {
+			return super.replaceVariableDeclaration(variableDeclaration)
 		}
 	}
 }
