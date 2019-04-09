@@ -162,6 +162,9 @@ func gryphonTemplates() {
 	_dictionary.reduce(_any, _closure)
 	"_dictionary.entries.fold(initial = _any, operation = _closure)"
 
+	_dictionary.map(_closure2)
+	"_dictionary.map _closure2.toMutableList()"
+
 	// Int
 	Int.max
 	"Int.MAX_VALUE"
