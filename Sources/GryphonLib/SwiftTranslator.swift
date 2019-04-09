@@ -1553,12 +1553,6 @@ public class SwiftTranslator {
 		var getter: FunctionDeclaration?
 		var setter: FunctionDeclaration?
 		for subtree in variableDeclaration.subtrees {
-			guard !subtree.standaloneAttributes.contains("implicit") || identifier == "rawValue"
-				else
-			{
-				continue
-			}
-
 			let access = subtree["access"]
 
 			let statements: [Statement]
@@ -1569,6 +1563,7 @@ public class SwiftTranslator {
 				statements = []
 			}
 
+			let isImplicit = subtree.standaloneAttributes.contains("implicit")
 			let annotations = getComment(forNode: subtree, key: "annotation")
 
 			if subtree["get_for"] != nil {
@@ -1578,7 +1573,7 @@ public class SwiftTranslator {
 					returnType: type,
 					functionType: "() -> (\(type))",
 					genericTypes: [],
-					isImplicit: false,
+					isImplicit: isImplicit,
 					isStatic: false,
 					isMutating: false,
 					extendsType: nil,
@@ -1594,7 +1589,7 @@ public class SwiftTranslator {
 					returnType: "()",
 					functionType: "(\(type)) -> ()",
 					genericTypes: [],
-					isImplicit: false,
+					isImplicit: isImplicit,
 					isStatic: false,
 					isMutating: false,
 					extendsType: nil,
