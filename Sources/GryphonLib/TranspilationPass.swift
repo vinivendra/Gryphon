@@ -15,6 +15,16 @@
 */
 
 public class TranspilationPass {
+	internal static func isASwiftRawRepresentableType(_ typeName: String) -> Bool {
+		return [
+			"String",
+			"Int", "Int8", "Int16", "Int32", "Int64",
+			"UInt", "UInt8", "UInt16", "UInt32", "UInt64",
+			"Float", "Float32", "Float64", "Float80", "Double",
+			].contains(typeName)
+	}
+
+	//
 	var ast: GryphonAST
 
 	fileprivate var parents = [ASTNode]()
@@ -1052,15 +1062,6 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 			].contains(protocolName)
 	}
 
-	private func isNotASwiftRawRepresentableType(_ typeName: String) -> Bool {
-		return ![
-			"String",
-			"Int", "Int8", "Int16", "Int32", "Int64",
-			"UInt", "UInt8", "UInt16", "UInt32", "UInt64",
-			"Float", "Float32", "Float64", "Float80", "Double",
-			].contains(typeName)
-	}
-
 	override func replaceEnumDeclaration(
 		access: String?, name: String, inherits: [String], elements: [EnumElement],
 		members: [Statement], isImplicit: Bool) -> [Statement]
@@ -1069,7 +1070,7 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 			access: access,
 			name: name,
 			inherits: inherits.filter {
-					isNotASwiftProtocol($0) && isNotASwiftRawRepresentableType($0)
+					isNotASwiftProtocol($0) && !TranspilationPass.isASwiftRawRepresentableType($0)
 				},
 			elements: elements,
 			members: members,
@@ -1588,6 +1589,94 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 	}
 }
 
+/// Create a rawValue variable for enums that conform to rawRepresentable
+public class RawValuesTranspilationPass: TranspilationPass {
+	override func replaceEnumDeclaration(
+		access: String?,
+		name: String,
+		inherits: [String],
+		elements: [EnumElement],
+		members: [Statement],
+		isImplicit: Bool) -> [Statement]
+	{
+		if let typeName = inherits.first(where: TranspilationPass.isASwiftRawRepresentableType) {
+			let switchCases = elements.map { element in
+				SwitchCase(
+					expression: .dotExpression(
+						leftExpression: .typeExpression(type: name),
+						rightExpression: .declarationReferenceExpression(value:
+							DeclarationReferenceExpression(
+								identifier: element.name,
+								type: name,
+								isStandardLibrary: false,
+								isImplicit: false,
+								range: nil))),
+					statements: [
+						.returnStatement(
+							expression: .literalStringExpression(value: element.name)),
+					])
+			}
+
+			let switchStatement = Statement.switchStatement(
+				convertsToExpression: nil,
+				expression: .declarationReferenceExpression(value:
+					DeclarationReferenceExpression(
+						identifier: "this",
+						type: name,
+						isStandardLibrary: false,
+						isImplicit: false,
+						range: nil)),
+				cases: switchCases)
+
+			let getter = FunctionDeclaration(
+				prefix: "get",
+				parameters: [],
+				returnType: typeName,
+				functionType: "() -> \(typeName)",
+				genericTypes: [],
+				isImplicit: false,
+				isStatic: false,
+				isMutating: false,
+				extendsType: nil,
+				statements: [switchStatement],
+				access: access,
+				annotations: nil)
+
+			let rawValueDeclaration = Statement.variableDeclaration(value: VariableDeclaration(
+				identifier: "rawValue",
+				typeName: typeName,
+				expression: nil,
+				getter: getter,
+				setter: nil,
+				isLet: false,
+				isImplicit: false,
+				isStatic: false,
+				extendsType: nil,
+				annotations: nil))
+
+			var newMembers = members
+			newMembers.append(rawValueDeclaration)
+
+			return super.replaceEnumDeclaration(
+				access: access,
+				name: name,
+				inherits: inherits,
+				elements: elements,
+				members: newMembers,
+				isImplicit: isImplicit)
+		}
+		else {
+			return super.replaceEnumDeclaration(
+				access: access,
+				name: name,
+				inherits: inherits,
+				elements: elements,
+				members: members,
+				isImplicit: isImplicit)
+		}
+	}
+}
+
 /// Guards are translated as if statements with a ! at the start of the condition. Sometimes, the
 /// ! combines with a != or even another !, causing a double negative in the condition that can
 /// be removed (or turned into a single ==). This pass performs that transformation.
@@ -1721,7 +1810,11 @@ public extension TranspilationPass {
 		// Remove declarations that shouldn't even be considered in the passes
 		result = RemoveImplicitDeclarationsTranspilationPass(ast: result).run()
 
-		// Clean inheritances (needed for recording enums below)
+		// RecordEnums needs to be after CleanInheritance; RawValues needs to be before it:
+		// RawValues needs to know all the inheritances to look for one that's RawRepresentable.
+		// RecordEnums needs Swift-only inheritances removed in order to know if the enum inherits
+		// from a class or not, and therefore if it's a sealed class or an enum class.
+		result = RawValuesTranspilationPass(ast: result).run()
 		result = CleanInheritancesTranspilationPass(ast: result).run()
 
 		// Record information on enum and function translations

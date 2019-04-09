@@ -13,6 +13,14 @@ internal sealed class OtherError: Exception() {
 internal enum class NoInheritances {
 	FOO_BAR,
 	BAR_BAZ;
+
+	val rawValue: String
+		get() {
+			return when (this) {
+				NoInheritances.FOO_BAR -> "fooBar"
+				NoInheritances.BAR_BAZ -> "barBaz"
+			}
+		}
 }
 
 internal enum class WithMembers {

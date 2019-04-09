@@ -49,16 +49,6 @@ public enum FileExtension: String {
 	case output
 	case kt
 	case swift
-
-	// TODO: Does this appear implicitly in the AST? Can it be created automatically?
-	public var rawValue: String {
-		switch self {
-		case .swiftASTDump: return "swiftASTDump"
-		case .output: return "output"
-		case .kt: return "kt"
-		case .swift: return "swift"
-		}
-	}
 }
 
 extension String {
