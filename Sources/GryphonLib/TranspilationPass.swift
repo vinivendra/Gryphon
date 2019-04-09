@@ -649,10 +649,10 @@ public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclaration)
-		-> [Statement]
+		-> FunctionDeclaration?
 	{
 		if functionDeclaration.isImplicit {
-			return []
+			return nil
 		}
 		else {
 			return super.replaceFunctionDeclaration(functionDeclaration)
@@ -666,7 +666,7 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 	private var isFailableInitializer: Bool = false
 
 	override func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclaration)
-		-> [Statement]
+		-> FunctionDeclaration?
 	{
 		if functionDeclaration.isStatic == true,
 			functionDeclaration.extendsType == nil,
@@ -681,7 +681,7 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 
 				functionDeclaration.prefix = "invoke"
 				functionDeclaration.statements = newStatements
-				return [.functionDeclaration(value: functionDeclaration)]
+				return functionDeclaration
 			}
 		}
 
@@ -705,7 +705,7 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 
 public class RemoveExtraReturnsInInitsTranspilationPass: TranspilationPass {
 	override func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclaration)
-		-> [Statement]
+		-> FunctionDeclaration?
 	{
 		if functionDeclaration.isStatic == true,
 			functionDeclaration.extendsType == nil,
@@ -715,10 +715,10 @@ public class RemoveExtraReturnsInInitsTranspilationPass: TranspilationPass {
 		{
 			var functionDeclaration = functionDeclaration
 			functionDeclaration.statements?.removeLast()
-			return [.functionDeclaration(value: functionDeclaration)]
+			return functionDeclaration
 		}
 
-		return [.functionDeclaration(value: functionDeclaration)]
+		return functionDeclaration
 	}
 }
 
@@ -964,7 +964,7 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclaration)
-		-> [Statement]
+		-> FunctionDeclaration?
 	{
 		returnTypesStack.append(functionDeclaration.returnType)
 		defer { returnTypesStack.removeLast() }
@@ -1409,8 +1409,8 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 /// This pass goes through all the function declarations it finds and stores the information needed
 /// to translate these functions correctly later.
 public class RecordFunctionTranslationsTranspilationPass: TranspilationPass {
-	override func replaceFunctionDeclaration(
-		_ functionDeclaration: FunctionDeclaration) -> [Statement]
+	override func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclaration)
+		-> FunctionDeclaration?
 	{
 		let swiftAPIName = functionDeclaration.prefix + "(" +
 			functionDeclaration.parameters.map { ($0.apiLabel ?? $0.label) + ":" }.joined() + ")"
@@ -1682,7 +1682,7 @@ public class FixProtocolContentsTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclaration)
-		-> [Statement]
+		-> FunctionDeclaration?
 	{
 		if isInProtocol {
 			var functionDeclaration = functionDeclaration
