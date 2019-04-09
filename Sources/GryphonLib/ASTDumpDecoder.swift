@@ -652,7 +652,7 @@ extension ASTDumpDecoder { // kotlin: ignore
 
 	private static func decode(from decoder: ASTDumpDecoder) throws -> SwiftAST {
 		let standaloneAttributes: ArrayReference<String> = []
-		var keyValueAttributes = [String: String]()
+		let keyValueAttributes: DictionaryReference<String, String> = [:]
 		let subtrees: ArrayReference<SwiftAST> = []
 
 		try decoder.readOpeningParenthesis()

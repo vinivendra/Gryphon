@@ -17,7 +17,7 @@
 public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible {
 	let name: String
 	let standaloneAttributes: ArrayReference<String>
-	let keyValueAttributes: [String: String]
+	let keyValueAttributes: DictionaryReference<String, String>
 	let subtrees: ArrayReference<SwiftAST>
 
 	//
@@ -34,7 +34,7 @@ public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible
 	internal init(
 		_ name: String,
 		_ standaloneAttributes: ArrayReference<String>,
-		_ keyValueAttributes: [String: String],
+		_ keyValueAttributes: DictionaryReference<String, String>,
 		_ subtrees: ArrayReference<SwiftAST> = [])
 	{
 		self.name = name
