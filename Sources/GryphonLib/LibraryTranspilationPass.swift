@@ -233,12 +233,35 @@ extension Expression {
 				(.tupleExpression(pairs: leftPairs),
 				 .tupleExpression(pairs: rightPairs)):
 
-				var result = true
-				for (leftPair, rightPair) in zip(leftPairs, rightPairs) {
-					result = result && leftPair.expression.matches(rightPair.expression, &matches)
-						&& leftPair.label == rightPair.label
+				// Check manually for matches in trailing closures (that don't have labels in code
+				// but do in templates)
+				if leftPairs.count == 1,
+					let onlyLeftPair = leftPairs.first,
+					case let .parenthesesExpression(
+						expression: closureExpression) = onlyLeftPair.expression,
+					case .closureExpression = closureExpression,
+					rightPairs.count == 1,
+					let onlyRightPair = rightPairs.first
+				{
+					// Unwrap a redundand parentheses expression if needed
+					if case let .parenthesesExpression(
+						expression: templateExpression) = onlyRightPair.expression
+					{
+						return closureExpression.matches(templateExpression, &matches)
+					}
+					else {
+						return closureExpression.matches(onlyRightPair.expression, &matches)
+					}
 				}
-				return result
+				else {
+					var result = true
+					for (leftPair, rightPair) in zip(leftPairs, rightPairs) {
+						result = result &&
+							leftPair.expression.matches(rightPair.expression, &matches) &&
+							leftPair.label == rightPair.label
+					}
+					return result
+				}
 			case let
 				(.tupleShuffleExpression(
 					labels: leftLabels, indices: leftIndices, expressions: leftExpressions),

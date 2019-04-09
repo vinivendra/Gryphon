@@ -1212,11 +1212,36 @@ public class KotlinTranslator {
 
 		let parametersTranslation: String
 		if case let .tupleExpression(pairs: pairs) = parameters {
-			parametersTranslation = try translateTupleExpression(
-				pairs: pairs,
-				translation: functionTranslation,
-				withIndentation: increaseIndentation(indentation),
-				shouldAddNewlines: shouldAddNewlines)
+			if let closurePair = pairs.last,
+				case let .closureExpression(
+					parameters: parameters,
+					statements: statements,
+					type: type) = closurePair.expression
+			{
+				let closureTranslation = try translateClosureExpression(
+					parameters: parameters,
+					statements: statements,
+					type: type,
+					withIndentation: increaseIndentation(indentation))
+				if parameters.count > 1 {
+					let firstParametersTranslation = try translateTupleExpression(
+						pairs: pairs.dropLast(),
+						translation: functionTranslation,
+						withIndentation: increaseIndentation(indentation),
+						shouldAddNewlines: shouldAddNewlines)
+					parametersTranslation = "\(firstParametersTranslation) \(closureTranslation)"
+				}
+				else {
+					parametersTranslation = " \(closureTranslation)"
+				}
+			}
+			else {
+				parametersTranslation = try translateTupleExpression(
+					pairs: pairs,
+					translation: functionTranslation,
+					withIndentation: increaseIndentation(indentation),
+					shouldAddNewlines: shouldAddNewlines)
+			}
 		}
 		else if case let .tupleShuffleExpression(
 			labels: labels, indices: indices, expressions: expressions) = parameters

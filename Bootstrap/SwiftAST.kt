@@ -15,13 +15,54 @@ class SwiftAST: PrintableAsTree {
 		this.subtrees = subtrees
 	}
 
+	constructor(
+		name: String,
+		standaloneAttributes: MutableList<String>,
+		keyValueAttributes: MutableMap<String, String>,
+		subtrees: MutableList<SwiftAST> = mutableListOf())
+	{
+		this.name = name
+		this.standaloneAttributes = standaloneAttributes
+		this.keyValueAttributes = keyValueAttributes
+		this.subtrees = subtrees
+	}
+
+	operator internal fun get(key: String): String? {
+		return keyValueAttributes[key]
+	}
+
+	internal fun subtree(name: String): SwiftAST? {
+		return subtrees.find { it.name == name }
+	}
+
+	internal fun subtree(index: Int): SwiftAST? {
+		if (!(index >= 0 && index < subtrees.size)) {
+			return null
+		}
+		return subtrees[index]
+	}
+
+	internal fun subtree(index: Int, name: String): SwiftAST? {
+		if (!(index >= 0 && index < subtrees.size)) {
+			return null
+		}
+
+		val subtree: SwiftAST = subtrees[index]
+
+		if (subtree.name != name) {
+			return null
+		}
+
+		return subtree
+	}
+
 	override val treeDescription: String
 		get() {
 			return name
 		}
 	override val printableSubtrees: MutableList<PrintableAsTree?>
 		get() {
-			val keyValueStrings: MutableList<PrintableTree> = keyValueAttributes.map({ "${it.key} → ${it.value}" }).sorted().map { PrintableTree(it) }.toMutableList()
+			val keyValueStrings: MutableList<PrintableTree> = keyValueAttributes.map { "${it.key} → ${it.value}" }.toMutableList().sorted().map { PrintableTree(it) }.toMutableList()
 			val keyValueArray: MutableList<PrintableAsTree?> = keyValueStrings as MutableList<PrintableAsTree?>
 			val standaloneAttributesArray: MutableList<PrintableAsTree?> = standaloneAttributes.map { PrintableTree(it) }.toMutableList() as MutableList<PrintableAsTree?>
 			val subtreesArray: MutableList<PrintableAsTree?> = subtrees as MutableList<PrintableAsTree?>
@@ -31,4 +72,16 @@ class SwiftAST: PrintableAsTree {
 
 			return result
 		}
+
+	override fun toString(): String {
+		var result: String = ""
+		this.prettyPrint { result += it }
+		return result
+	}
+
+	public fun description(horizontalLimit: Int): String {
+		var result: String = ""
+		this.prettyPrint(horizontalLimit = horizontalLimit, printFunction = { result += it })
+		return result
+	}
 }

@@ -31,7 +31,7 @@ public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible
 		self.subtrees = subtrees
 	}
 
-	internal init( // kotlin: ignore
+	internal init(
 		_ name: String,
 		_ standaloneAttributes: ArrayReference<String>,
 		_ keyValueAttributes: [String: String],
@@ -44,22 +44,22 @@ public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible
 	}
 
 	// MARK: - Convenience accessors
-	subscript (key: String) -> String? { // kotlin: ignore
+	subscript (key: String) -> String? {
 		return keyValueAttributes[key]
 	}
 
-	func subtree(named name: String) -> SwiftAST? { // kotlin: ignore
+	func subtree(named name: String) -> SwiftAST? {
 		return subtrees.first { $0.name == name }
 	}
 
-	func subtree(at index: Int) -> SwiftAST? { // kotlin: ignore
+	func subtree(at index: Int) -> SwiftAST? {
 		guard index >= 0, index < subtrees.count else {
 			return nil
 		}
 		return subtrees[index]
 	}
 
-	func subtree(at index: Int, named name: String) -> SwiftAST? { // kotlin: ignore
+	func subtree(at index: Int, named name: String) -> SwiftAST? {
 		guard index >= 0, index < subtrees.count else {
 			return nil
 		}
@@ -93,13 +93,13 @@ public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible
 	}
 
 	// MARK: - Descriptions
-	public var description: String { // kotlin: ignore
+	public var description: String { // annotation: override
 		var result = ""
 		self.prettyPrint { result += $0 }
 		return result
 	}
 
-	public func description(withHorizontalLimit horizontalLimit: Int) -> String { // kotlin: ignore
+	public func description(withHorizontalLimit horizontalLimit: Int) -> String {
 		var result = ""
 		self.prettyPrint(horizontalLimit: horizontalLimit) { result += $0 }
 		return result

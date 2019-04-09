@@ -24,9 +24,9 @@ do {
 
 	// Set the path to the desired input file as the `filePath`.
 
-//	let inputFilePaths = [Process().currentDirectoryPath + "/Test Files/bhaskara.swift"]
+//	let inputFilePaths = [Process().currentDirectoryPath + "/Test Files/switches.swift"]
 	let inputFilePaths = [Process().currentDirectoryPath + "/Example ASTs/test.swift"]
-//	let inputFilePaths = [Process().currentDirectoryPath + "/Bootstrap/ASTDumpDecoder.swiftASTDump"]
+//	let inputFilePaths = [Process().currentDirectoryPath + "/Bootstrap/StandardLibrary.swiftASTDump"]
 
 	print("Compiling...")
 

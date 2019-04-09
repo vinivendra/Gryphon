@@ -34,6 +34,7 @@ func gryphonTemplates() {
 	let _dictionary: [Hash: Any] = [:]
 	let _closure: (Any, Any) -> Any = { a, b in a }
 	let _closure2: (Any) -> Any = { a in a }
+	let _closure3: (Any) -> Bool = { _ in true }
 
 	// Print
 	print(_any)
@@ -142,6 +143,9 @@ func gryphonTemplates() {
 
 	_array.first
 	"_array.firstOrNull()"
+
+	_array.first(where: _closure3)
+	"_array.find _closure3"
 
 	_array.last
 	"_array.lastOrNull()"
