@@ -65,3 +65,14 @@ public fun Utilities.Companion.changeExtension(
 
 	return newComponents.joinToString(separator = "/")
 }
+
+fun Utilities.Companion.fileWasModifiedLaterThan(
+	filePath: String, otherFilePath: String): Boolean
+{
+	val file = File(filePath)
+	val fileModifiedDate = file.lastModified()
+	val otherFile = File(otherFilePath)
+	val otherFileModifiedDate = otherFile.lastModified()
+	val isAfter = fileModifiedDate > otherFileModifiedDate
+	return isAfter
+}

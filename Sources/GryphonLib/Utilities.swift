@@ -17,6 +17,14 @@
 import Foundation
 // declaration: import java.io.File
 
+private func gryphonTemplates() {
+	let _string1 = ""
+	let _string2 = ""
+
+	_ = Utilities.file(_string1, wasModifiedLaterThan: _string2)
+	_ = "Utilities.fileWasModifiedLaterThan(_string1, _string2)"
+}
+
 public class Utilities {
 	internal static func expandSwiftAbbreviation(_ name: String) -> String {
 		// Separate snake case and capitalize
@@ -96,6 +104,17 @@ extension Utilities { // kotlin: ignore
 		return howMuchLater > 0
 	}
 }
+
+// declaration: fun Utilities.Companion.fileWasModifiedLaterThan(
+// declaration: 	filePath: String, otherFilePath: String): Boolean
+// declaration: {
+// declaration: 	val file = File(filePath)
+// declaration: 	val fileModifiedDate = file.lastModified()
+// declaration: 	val otherFile = File(otherFilePath)
+// declaration: 	val otherFileModifiedDate = otherFile.lastModified()
+// declaration: 	val isAfter = fileModifiedDate > otherFileModifiedDate
+// declaration: 	return isAfter
+// declaration: }
 
 extension Utilities { // kotlin: ignore
 	public static let systemIdentifier: String = {
