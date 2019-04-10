@@ -129,3 +129,16 @@ fun Utilities.Companion.createFileIfNeeded(filePath: String): Boolean {
 		return false
 	}
 }
+
+internal sealed class FileError: Exception() {
+	class OutdatedFile(val inFolder: String): FileError()
+
+	override fun toString(): String {
+		return when (this) {
+			is FileError.OutdatedFile -> {
+				val folder: String = this.inFolder
+				"One of the files in the ${folder} folder is outdated.\n" + "Try running the preBuildScript.sh and the test suite to update compilation " + "files."
+			}
+		}
+	}
+}

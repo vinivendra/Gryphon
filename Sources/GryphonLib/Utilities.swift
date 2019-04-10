@@ -241,20 +241,20 @@ extension Utilities { // kotlin: ignore
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-extension Utilities {
-	enum FileError: Error, CustomStringConvertible { // kotlin: ignore
-		case outdatedFile(inFolder: String)
+enum FileError: Error, CustomStringConvertible {
+	case outdatedFile(inFolder: String)
 
-		var description: String {
-			switch self {
-			case let .outdatedFile(inFolder: folder):
-				return "One of the files in the \(folder) folder is outdated.\n" +
-					"Try running the preBuildScript.sh and the test suite to update compilation " +
-					"files."
-			}
+	var description: String { // annotation: override
+		switch self {
+		case let .outdatedFile(inFolder: folder):
+			return "One of the files in the \(folder) folder is outdated.\n" +
+				"Try running the preBuildScript.sh and the test suite to update compilation " +
+			"files."
 		}
 	}
+}
 
+extension Utilities {
 	static private var libraryFilesHaveBeenUpdated = false // kotlin: ignore
 
 	static public func updateLibraryFiles() throws { // kotlin: ignore
