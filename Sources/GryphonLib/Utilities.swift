@@ -209,15 +209,14 @@ extension Utilities { // kotlin: ignore
 // declaration: 	return filePath
 // declaration: }
 
-extension Utilities {
+extension Utilities { // kotlin: ignore
 	/// - Returns: `true` if the file was created, `false` if it already existed.
-	public static func createFileIfNeeded( // kotlin: ignore
-		at filePath: String, containing contents: String) -> Bool
+	public static func createFileIfNeeded(at filePath: String) -> Bool
 	{
 		let fileManager = FileManager.default
 
 		if !fileManager.fileExists(atPath: filePath) {
-			let success = fileManager.createFile(atPath: filePath, contents: Data(contents.utf8))
+			let success = fileManager.createFile(atPath: filePath, contents: nil)
 			assert(success)
 			return true
 		}
@@ -227,10 +226,23 @@ extension Utilities {
 	}
 }
 
+// declaration:
+// declaration: fun Utilities.Companion.createFileIfNeeded(filePath: String): Boolean {
+// declaration: 	val file = File(filePath)
+// declaration: 	if (!file.exists()) {
+// declaration: 		val success = file.createNewFile()
+// declaration: 		assert(success)
+// declaration: 		return true
+// declaration: 	}
+// declaration: 	else {
+// declaration: 		return false
+// declaration: 	}
+// declaration: }
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-extension Utilities { // kotlin: ignore
-	enum FileError: Error, CustomStringConvertible {
+extension Utilities {
+	enum FileError: Error, CustomStringConvertible { // kotlin: ignore
 		case outdatedFile(inFolder: String)
 
 		var description: String {
@@ -243,9 +255,9 @@ extension Utilities { // kotlin: ignore
 		}
 	}
 
-	static private var libraryFilesHaveBeenUpdated = false
+	static private var libraryFilesHaveBeenUpdated = false // kotlin: ignore
 
-	static public func updateLibraryFiles() throws {
+	static public func updateLibraryFiles() throws { // kotlin: ignore
 		guard !libraryFilesHaveBeenUpdated else {
 			return
 		}
@@ -277,9 +289,9 @@ extension Utilities { // kotlin: ignore
 		print("\t* Done!")
 	}
 
-	static private var testFilesHaveBeenUpdated = false
+	static private var testFilesHaveBeenUpdated = false // kotlin: ignore
 
-	static public func updateTestFiles() throws {
+	static public func updateTestFiles() throws { // kotlin: ignore
 		guard !testFilesHaveBeenUpdated else {
 			return
 		}
@@ -298,7 +310,7 @@ extension Utilities { // kotlin: ignore
 		print("\t* Done!")
 	}
 
-	static internal func needsToUpdateFiles(
+	static internal func needsToUpdateFiles( // kotlin: ignore
 		_ files: [String]? = nil,
 		in folder: String,
 		from originExtension: FileExtension,
@@ -319,7 +331,7 @@ extension Utilities { // kotlin: ignore
 				Utilities.changeExtension(of: originFilePath, to: destinationExtension)
 
 			let destinationFileWasJustCreated =
-				Utilities.createFileIfNeeded(at: destinationFilePath, containing: "")
+				Utilities.createFileIfNeeded(at: destinationFilePath)
 			let destinationFileIsOutdated = destinationFileWasJustCreated ||
 				Utilities.file(originFilePath, wasModifiedLaterThan: destinationFilePath)
 
@@ -331,7 +343,7 @@ extension Utilities { // kotlin: ignore
 		return false
 	}
 
-	static public func getFilesInFolder(_ folder: String) -> [URL] {
+	static public func getFilesInFolder(_ folder: String) -> [URL] { // kotlin: ignore
 		let currentURL = URL(fileURLWithPath: Process().currentDirectoryPath + "/" + folder)
 		let fileURLs = try! FileManager.default.contentsOfDirectory(
 			at: currentURL,

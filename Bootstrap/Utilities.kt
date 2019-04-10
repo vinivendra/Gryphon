@@ -117,3 +117,15 @@ fun Utilities.Companion.createFileAndDirectory(
 
 	return filePath
 }
+
+fun Utilities.Companion.createFileIfNeeded(filePath: String): Boolean {
+	val file = File(filePath)
+	if (!file.exists()) {
+		val success = file.createNewFile()
+		assert(success)
+		return true
+	}
+	else {
+		return false
+	}
+}
