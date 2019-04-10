@@ -29,7 +29,9 @@ public class SwiftTranslator {
 	// MARK: - Interface
 	public init() { }
 
-	public func translateAST(_ ast: SwiftAST) throws -> GryphonAST {
+	public func translateAST(_ ast: SwiftAST, asMainFile isMainFile: Bool) throws
+		-> GryphonAST
+	{
 		let filePath = ast.standaloneAttributes[0]
 		if let contents = try? String(contentsOfFile: filePath) {
 			sourceFile = SourceFile(path: filePath, contents: contents)
@@ -59,13 +61,21 @@ public class SwiftTranslator {
 			}
 		}
 
-		let declarations = translatedSubtrees.filter(isDeclaration)
-		let statements = translatedSubtrees.filter({ !isDeclaration($0) })
+		if isMainFile {
+			let declarations = translatedSubtrees.filter(isDeclaration)
+			let statements = translatedSubtrees.filter({ !isDeclaration($0) })
 
-		return GryphonAST(
-			sourceFile: sourceFile,
-			declarations: declarations,
-			statements: statements)
+			return GryphonAST(
+				sourceFile: sourceFile,
+				declarations: declarations,
+				statements: statements)
+		}
+		else {
+			return GryphonAST(
+				sourceFile: sourceFile,
+				declarations: translatedSubtrees,
+				statements: [])
+		}
 	}
 
 	// MARK: - Top-level translations

@@ -254,9 +254,10 @@ enum FileError: Error, CustomStringConvertible {
 	}
 }
 
-extension Utilities {
-	static private var libraryFilesHaveBeenUpdated = false // kotlin: ignore
+private var libraryFilesHaveBeenUpdated = false
+private var testFilesHaveBeenUpdated = false
 
+extension Utilities {
 	static public func updateLibraryFiles() throws { // kotlin: ignore
 		guard !libraryFilesHaveBeenUpdated else {
 			return
@@ -279,8 +280,11 @@ extension Utilities {
 			}.sorted { (url1: URL, url2: URL) -> Bool in
 				url1.absoluteString < url2.absoluteString
 		}
-		for templateFile in templateFiles {
-			let ast = try Compiler.generateGryphonAST(forFileAt: templateFile.path)
+
+		let templateFilePaths = templateFiles.map { $0.path }
+		let asts = try Compiler.generateGryphonAST(forFilesAt: templateFilePaths)
+
+		for ast in asts {
 			_ = RecordTemplatesTranspilationPass(ast: ast).run()
 		}
 
@@ -288,8 +292,6 @@ extension Utilities {
 
 		print("\t* Done!")
 	}
-
-	static private var testFilesHaveBeenUpdated = false // kotlin: ignore
 
 	static public func updateTestFiles() throws { // kotlin: ignore
 		guard !testFilesHaveBeenUpdated else {

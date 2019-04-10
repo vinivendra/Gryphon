@@ -108,7 +108,7 @@ public enum Compiler {
 
 	public static func generateKotlinCode(forFilesAt filePaths: [String]) throws -> [String] {
 		let asts = try generateGryphonASTAndRunPasses(forFilesAt: filePaths)
-		log?("\t- Translating AST to Kotlin...")
+		log?("\t- Translating ASTs to Kotlin...")
 		let kotlinCodes = try asts.map { try KotlinTranslator().translateAST($0) }
 		return kotlinCodes
 	}
@@ -116,19 +116,24 @@ public enum Compiler {
 	public static func generateGryphonASTAndRunPasses(forFilesAt filePaths: [String]) throws
 		-> [GryphonAST]
 	{
-		var asts = try filePaths.map { try generateGryphonAST(forFileAt: $0) }
-		log?("\t- Translating Swift AST to Gryphon AST...")
+		var asts = try generateGryphonAST(forFilesAt: filePaths)
+		log?("\t- Translating Swift ASTs to Gryphon ASTs...")
 		try Utilities.updateLibraryFiles()
 		asts = asts.map { TranspilationPass.runFirstRoundOfPasses(on: $0) }
 		asts = asts.map { TranspilationPass.runSecondRoundOfPasses(on: $0) }
 		return asts
 	}
 
-	public static func generateGryphonAST(forFileAt filePath: String) throws -> GryphonAST {
-		let swiftAST = try generateSwiftAST(forFileAt: filePath)
-		log?("\t- Translating Swift AST to Gryphon AST...")
-		let ast = try SwiftTranslator().translateAST(swiftAST)
-		return ast
+	public static func generateGryphonAST(forFilesAt filePaths: [String]) throws -> [GryphonAST] {
+		let translateAsMainFile = (filePaths.count == 1)
+
+		let swiftASTs = try filePaths.map { try generateSwiftAST(forFileAt: $0) }
+		log?("\t- Translating Swift ASTs to Gryphon ASTs...")
+		let gryphonASTs = try swiftASTs.map {
+			try SwiftTranslator().translateAST($0, asMainFile: translateAsMainFile)
+		}
+
+		return gryphonASTs
 	}
 
 	public static func generateSwiftAST(forFileAt filePath: String) throws -> SwiftAST {

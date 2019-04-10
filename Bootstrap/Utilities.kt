@@ -142,3 +142,6 @@ internal sealed class FileError: Exception() {
 		}
 	}
 }
+
+var libraryFilesHaveBeenUpdated: Boolean = false
+var testFilesHaveBeenUpdated: Boolean = false
