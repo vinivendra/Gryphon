@@ -57,17 +57,32 @@ extension String {
 	}
 }
 
-extension Utilities { // kotlin: ignore
+extension Utilities {
 	public static func changeExtension(of filePath: String, to newExtension: FileExtension)
 		-> String
 	{
-		let url = URL(fileURLWithPath: filePath)
-		let urlWithoutExtension = url.deletingPathExtension()
-		let newURL = urlWithoutExtension.appendingPathExtension(newExtension.rawValue)
-		return newURL.path
-	}
+		let components = filePath.split(withStringSeparator: "/", omittingEmptySubsequences: false)
+		var newComponents = components.dropLast()
+			.map { String($0) } // kotlin: ignore
+		let nameComponent = components.last!
+		let nameComponents =
+			nameComponent.split(withStringSeparator: ".", omittingEmptySubsequences: false)
 
-	public static func file(_ filePath: String, wasModifiedLaterThan otherFilePath: String) -> Bool
+		// If there's no extension
+		guard nameComponents.count > 1 else {
+			return filePath.withExtension(newExtension)
+		}
+
+		let nameWithoutExtension = nameComponents.dropLast().joined(separator: ".")
+		let newName = nameWithoutExtension.withExtension(newExtension)
+		newComponents.append(newName)
+		return newComponents.joined(separator: "/")
+	}
+}
+
+extension Utilities { // kotlin: ignore
+	public static func file(
+		_ filePath: String, wasModifiedLaterThan otherFilePath: String) -> Bool
 	{
 		let fileManager = FileManager.default
 		let fileAttributes = try! fileManager.attributesOfItem(atPath: filePath)

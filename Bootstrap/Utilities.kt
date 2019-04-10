@@ -43,3 +43,25 @@ public enum class FileExtension {
 internal fun String.withExtension(fileExtension: FileExtension): String {
 	return this + "." + fileExtension.rawValue
 }
+
+public fun Utilities.Companion.changeExtension(
+	filePath: String,
+	newExtension: FileExtension)
+	: String
+{
+	val components: MutableList<String> = filePath.split(separator = "/", omittingEmptySubsequences = false)
+	var newComponents: MutableList<String> = components.dropLast(1).map { it }.toMutableList()
+	val nameComponent: String = components.lastOrNull()!!
+	val nameComponents: MutableList<String> = nameComponent.split(separator = ".", omittingEmptySubsequences = false)
+
+	if (!(nameComponents.size > 1)) {
+		return filePath.withExtension(newExtension)
+	}
+
+	val nameWithoutExtension: String = nameComponents.dropLast(1).joinToString(separator = ".")
+	val newName: String = nameWithoutExtension.withExtension(newExtension)
+
+	newComponents.add(newName)
+
+	return newComponents.joinToString(separator = "/")
+}

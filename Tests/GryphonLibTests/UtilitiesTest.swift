@@ -27,8 +27,26 @@ class UtilitiesTest: XCTestCase {
 			Utilities.expandSwiftAbbreviation("declref_expr"), "Declaration Reference Expression")
 	}
 
-	func testFileExtensions() {
+	func testFileExtension() {
 		XCTAssertEqual(FileExtension.swiftASTDump.rawValue, "swiftASTDump")
 		XCTAssertEqual("fileName".withExtension(.swiftASTDump), "fileName.swiftASTDump")
+	}
+
+	func testChangeExtension() {
+		XCTAssertEqual(
+			Utilities.changeExtension(of: "test.txt", to: .swift),
+			"test.swift")
+		XCTAssertEqual(
+			Utilities.changeExtension(of: "/path/to/test.txt", to: .swift),
+			"/path/to/test.swift")
+		XCTAssertEqual(
+			Utilities.changeExtension(of: "path/to/test.txt", to: .swift),
+			"path/to/test.swift")
+		XCTAssertEqual(
+			Utilities.changeExtension(of: "/path/to/test", to: .swift),
+			"/path/to/test.swift")
+		XCTAssertEqual(
+			Utilities.changeExtension(of: "path/to/test", to: .swift),
+			"path/to/test.swift")
 	}
 }

@@ -542,6 +542,8 @@ public class KotlinTranslator {
 			result += "fun "
 			if let extensionType = functionDeclaration.extendsType {
 				let translatedExtensionType = translateType(extensionType)
+				// TODO: test
+				let companionString = functionDeclaration.isStatic ? "Companion." : ""
 
 				// TODO: tests
 				let genericString: String
@@ -562,7 +564,7 @@ public class KotlinTranslator {
 					genericString = ""
 				}
 
-				result += genericString + translatedExtensionType + "."
+				result += genericString + translatedExtensionType + "." + companionString
 			}
 			result += functionDeclaration.prefix + "("
 		}

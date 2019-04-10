@@ -2,6 +2,7 @@ class UtilitiesTest(): Test("UtilitiesTest") {
 	override fun runAllTests() {
 		testExpandSwiftAbbreviation()
 		testFileExtensions()
+		testChangeExtension()
 		super.runAllTests()
 	}
 
@@ -17,5 +18,23 @@ class UtilitiesTest(): Test("UtilitiesTest") {
 	fun testFileExtensions() {
 		XCTAssertEqual(FileExtension.SWIFT_AST_DUMP.rawValue, "swiftASTDump")
 		XCTAssertEqual("fileName".withExtension(FileExtension.SWIFT_AST_DUMP), "fileName.swiftASTDump")
+	}
+
+	fun testChangeExtension() {
+		XCTAssertEqual(
+			Utilities.changeExtension("test.txt", FileExtension.SWIFT), 
+			"test.swift")
+		XCTAssertEqual(
+			Utilities.changeExtension("/path/to/test.txt", FileExtension.SWIFT), 
+			"/path/to/test.swift")
+		XCTAssertEqual(
+			Utilities.changeExtension("path/to/test.txt", FileExtension.SWIFT), 
+			"path/to/test.swift")
+		XCTAssertEqual(
+			Utilities.changeExtension("/path/to/test", FileExtension.SWIFT),
+			"/path/to/test.swift")
+		XCTAssertEqual(
+			Utilities.changeExtension("path/to/test", FileExtension.SWIFT),
+			"path/to/test.swift")
 	}
 }
