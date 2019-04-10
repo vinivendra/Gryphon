@@ -116,27 +116,41 @@ extension Utilities { // kotlin: ignore
 // declaration: 	return isAfter
 // declaration: }
 
-extension Utilities { // kotlin: ignore
-	public static let systemIdentifier: String = {
-		#if os(macOS)
-		let osName = "macOS"
-		#elseif os(Linux)
-		let osName = "Linux"
-		#endif
+class OS { // kotlin: ignore
+	#if os(macOS)
+	static let osName = "macOS"
+	#else
+	static let osName = "Linux"
+	#endif
 
-		#if arch(i386)
-		let arch = "i386"
-		#elseif arch(x86_64)
-		let arch = "x86_64"
-		#endif
+	#if arch(x86_64)
+	static let architecture = "x86_64"
+	#elseif arch(i386)
+	static let architecture = "i386"
+	#endif
 
-		return osName + "-" + arch
-	}()
+	public static let systemIdentifier: String = osName + "-" + architecture
 
-	public static let buildFolder = ".kotlinBuild-\(Utilities.systemIdentifier)"
+	public static let buildFolder = ".kotlinBuild-\(systemIdentifier)"
+}
 
+// declaration: class OS {
+// declaration: 	companion object {
+// declaration: 		val javaOSName = System.getProperty("os.name")
+// declaration: 		val osName = if (javaOSName == "Mac OS X") { "macOS" } else { "Linux" }
+// declaration:
+// declaration: 		val javaArchitecture = System.getProperty("os.arch")
+// declaration: 		val architecture = if (javaArchitecture == "x86_64") { "x86_64" }
+// declaration: 			else { "i386" }
+// declaration:
+// declaration: 		val systemIdentifier: String = osName + "-" + architecture
+// declaration: 		val buildFolder = ".kotlinBuild-${systemIdentifier}"
+// declaration: 	}
+// declaration: }
+
+extension Utilities {
 	@discardableResult
-	internal static func createFile(
+	internal static func createFile( // kotlin: ignore
 		named fileName: String,
 		inDirectory directory: String,
 		containing contents: String) -> String
@@ -158,7 +172,8 @@ extension Utilities { // kotlin: ignore
 	}
 
 	/// - Returns: `true` if the file was created, `false` if it already existed.
-	public static func createFileIfNeeded(at filePath: String, containing contents: String) -> Bool
+	public static func createFileIfNeeded( // kotlin: ignore
+		at filePath: String, containing contents: String) -> Bool
 	{
 		let fileManager = FileManager.default
 

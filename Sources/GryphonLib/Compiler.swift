@@ -53,7 +53,7 @@ public enum Compiler {
 
 		log?("\t- Running Kotlin...")
 		let arguments = ["java", "-jar", "kotlin.jar"]
-		let commandResult = Shell.runShellCommand(arguments, fromFolder: Utilities.buildFolder)
+		let commandResult = Shell.runShellCommand(arguments, fromFolder: OS.buildFolder)
 
 		guard let result = commandResult else {
 			return .failure(errorMessage: "\t\t- Java running timed out.")
@@ -64,13 +64,12 @@ public enum Compiler {
 
 	public static func compile(filesAt filePaths: [String]) throws -> KotlinCompilationResult {
 		let kotlinFilePaths =
-			try generateKotlinCode(forFilesAt: filePaths, outputFolder: Utilities.buildFolder)
+			try generateKotlinCode(forFilesAt: filePaths, outputFolder: OS.buildFolder)
 
 		log?("\t- Compiling Kotlin...")
 
 		// Call the kotlin compiler
-		let arguments =
-			["-include-runtime", "-d", Utilities.buildFolder + "/kotlin.jar"] + kotlinFilePaths
+		let arguments = ["-include-runtime", "-d", OS.buildFolder + "/kotlin.jar"] + kotlinFilePaths
 		let commandResult = Shell.runShellCommand(kotlinCompilerPath, arguments: arguments)
 
 		// Ensure the compiler terminated successfully

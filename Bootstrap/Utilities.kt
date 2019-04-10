@@ -76,3 +76,16 @@ fun Utilities.Companion.fileWasModifiedLaterThan(
 	val isAfter = fileModifiedDate > otherFileModifiedDate
 	return isAfter
 }
+class OS {
+	companion object {
+		val javaOSName = System.getProperty("os.name")
+		val osName = if (javaOSName == "Mac OS X") { "macOS" } else { "Linux" }
+
+		val javaArchitecture = System.getProperty("os.arch")
+		val architecture = if (javaArchitecture == "x86_64") { "x86_64" }
+			else { "i386" }
+
+		val systemIdentifier: String = osName + "-" + architecture
+		val buildFolder = ".kotlinBuild-${systemIdentifier}"
+	}
+}
