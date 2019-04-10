@@ -1,4 +1,5 @@
 import java.io.File
+import java.io.FileWriter
 
 class Utilities {
 	companion object {
@@ -76,6 +77,7 @@ fun Utilities.Companion.fileWasModifiedLaterThan(
 	val isAfter = fileModifiedDate > otherFileModifiedDate
 	return isAfter
 }
+
 class OS {
 	companion object {
 		val javaOSName = System.getProperty("os.name")
@@ -88,4 +90,30 @@ class OS {
 		val systemIdentifier: String = osName + "-" + architecture
 		val buildFolder = ".kotlinBuild-${systemIdentifier}"
 	}
+}
+
+fun Utilities.Companion.createFileAndDirectory(
+		fileName: String,
+		directory: String,
+		contents: String): String
+{
+	// Create directory (and intermediate directories if needed)
+	val directoryFile = File(directory)
+	directoryFile.mkdirs()
+
+	// Create file path
+	val filePath = directory + "/" + fileName
+
+	// Delete file if it exists, do nothing if it doesn't
+	val file = File(filePath)
+	file.delete()
+
+	// Create the file and write to it
+	val success = file.createNewFile()
+	assert(success)
+	val writer = FileWriter(file)
+	writer.write(contents)
+	writer.close()
+
+	return filePath
 }

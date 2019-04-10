@@ -16,13 +16,20 @@
 
 import Foundation
 // declaration: import java.io.File
+// declaration: import java.io.FileWriter
 
 private func gryphonTemplates() {
 	let _string1 = ""
 	let _string2 = ""
+	let _string3 = ""
 
 	_ = Utilities.file(_string1, wasModifiedLaterThan: _string2)
 	_ = "Utilities.fileWasModifiedLaterThan(_string1, _string2)"
+
+	_ = Utilities.createFile(named: _string1, inDirectory: _string2, containing: _string3)
+	_ = """
+Utilities.createFileAndDirectory(fileName = _string1, directory = _string2, contents = _string3)
+"""
 }
 
 public class Utilities {
@@ -134,6 +141,7 @@ class OS { // kotlin: ignore
 	public static let buildFolder = ".kotlinBuild-\(systemIdentifier)"
 }
 
+// declaration:
 // declaration: class OS {
 // declaration: 	companion object {
 // declaration: 		val javaOSName = System.getProperty("os.name")
@@ -148,29 +156,60 @@ class OS { // kotlin: ignore
 // declaration: 	}
 // declaration: }
 
-extension Utilities {
+extension Utilities { // kotlin: ignore
 	@discardableResult
-	internal static func createFile( // kotlin: ignore
+	internal static func createFile(
 		named fileName: String,
 		inDirectory directory: String,
 		containing contents: String) -> String
 	{
+		// Create directory (and intermediate directories if needed)
 		let fileManager = FileManager.default
-
 		try! fileManager.createDirectory(atPath: directory, withIntermediateDirectories: true)
 
+		// Create file path
 		let filePath = directory + "/" + fileName
 		let fileURL = URL(fileURLWithPath: filePath)
 
-		// Remove it if it already exists
+		// Delete file if it exists, do nothing if it doesn't
 		try? fileManager.removeItem(at: fileURL)
 
+		// Create the file and write to it
 		let success = fileManager.createFile(atPath: filePath, contents: Data(contents.utf8))
 		assert(success)
 
 		return filePath
 	}
+}
 
+// declaration:
+// declaration: fun Utilities.Companion.createFileAndDirectory(
+// declaration: 		fileName: String,
+// declaration: 		directory: String,
+// declaration: 		contents: String): String
+// declaration: {
+// declaration: 	// Create directory (and intermediate directories if needed)
+// declaration: 	val directoryFile = File(directory)
+// declaration: 	directoryFile.mkdirs()
+// declaration:
+// declaration: 	// Create file path
+// declaration: 	val filePath = directory + "/" + fileName
+// declaration:
+// declaration: 	// Delete file if it exists, do nothing if it doesn't
+// declaration: 	val file = File(filePath)
+// declaration: 	file.delete()
+// declaration:
+// declaration: 	// Create the file and write to it
+// declaration: 	val success = file.createNewFile()
+// declaration: 	assert(success)
+// declaration: 	val writer = FileWriter(file)
+// declaration: 	writer.write(contents)
+// declaration: 	writer.close()
+// declaration:
+// declaration: 	return filePath
+// declaration: }
+
+extension Utilities {
 	/// - Returns: `true` if the file was created, `false` if it already existed.
 	public static func createFileIfNeeded( // kotlin: ignore
 		at filePath: String, containing contents: String) -> Bool
