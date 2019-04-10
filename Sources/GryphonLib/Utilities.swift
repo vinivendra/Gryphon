@@ -258,6 +258,38 @@ private var libraryFilesHaveBeenUpdated = false
 private var testFilesHaveBeenUpdated = false
 
 extension Utilities {
+	static func getFiles( // kotlin: ignore
+		_ selectedFiles: [String]? = nil,
+		inDirectory directory: String,
+		withExtension fileExtension: FileExtension)
+		-> [String]
+	{
+		let libraryFilesPath = Process().currentDirectoryPath + "/\(directory)/"
+		let currentURL = URL(fileURLWithPath: libraryFilesPath)
+		let allURLs = try! FileManager.default.contentsOfDirectory(
+			at: currentURL,
+			includingPropertiesForKeys: nil)
+		let filteredURLs = allURLs.filter { $0.pathExtension == fileExtension.rawValue }
+		let sortedURLs = filteredURLs.sorted { (url1: URL, url2: URL) -> Bool in
+				url1.absoluteString < url2.absoluteString
+		}
+
+		let selectedURLs: [URL]
+		if let selectedFiles = selectedFiles {
+			selectedURLs = sortedURLs.filter { url in
+				let fileName = url.deletingPathExtension().lastPathComponent
+				return selectedFiles.contains(fileName)
+			}
+		}
+		else {
+			selectedURLs = sortedURLs
+		}
+
+		return selectedURLs.map { $0.path }
+	}
+}
+
+extension Utilities {
 	static public func updateLibraryFiles() throws { // kotlin: ignore
 		guard !libraryFilesHaveBeenUpdated else {
 			return
@@ -270,18 +302,8 @@ extension Utilities {
 
 		print("\t* Updating library files...")
 
-		let libraryFilesPath = Process().currentDirectoryPath + "/\(libraryTemplatesFolder)/"
-		let currentURL = URL(fileURLWithPath: libraryFilesPath)
-		let fileURLs = try! FileManager.default.contentsOfDirectory(
-			at: currentURL,
-			includingPropertiesForKeys: nil)
-		let templateFiles = fileURLs.filter {
-			$0.pathExtension == FileExtension.swiftASTDump.rawValue
-			}.sorted { (url1: URL, url2: URL) -> Bool in
-				url1.absoluteString < url2.absoluteString
-		}
-
-		let templateFilePaths = templateFiles.map { $0.path }
+		let templateFilePaths =
+			getFiles(inDirectory: libraryTemplatesFolder, withExtension: .swiftASTDump)
 		let asts = try Compiler.generateGryphonAST(forFilesAt: templateFilePaths)
 
 		for ast in asts {
@@ -318,24 +340,16 @@ extension Utilities {
 		from originExtension: FileExtension,
 		to destinationExtension: FileExtension) -> Bool
 	{
-		var testFiles = getFilesInFolder(folder)
-		testFiles = testFiles.filter { $0.pathExtension == originExtension.rawValue }
-
-		if let files = files {
-			testFiles = testFiles.filter {
-					files.contains($0.deletingPathExtension().lastPathComponent)
-				}
-		}
+		let testFiles = getFiles(files, inDirectory: folder, withExtension: originExtension)
 
 		for originFile in testFiles {
-			let originFilePath = originFile.path
 			let destinationFilePath =
-				Utilities.changeExtension(of: originFilePath, to: destinationExtension)
+				Utilities.changeExtension(of: originFile, to: destinationExtension)
 
 			let destinationFileWasJustCreated =
 				Utilities.createFileIfNeeded(at: destinationFilePath)
 			let destinationFileIsOutdated = destinationFileWasJustCreated ||
-				Utilities.file(originFilePath, wasModifiedLaterThan: destinationFilePath)
+				Utilities.file(originFile, wasModifiedLaterThan: destinationFilePath)
 
 			if destinationFileIsOutdated {
 				return true
@@ -343,15 +357,5 @@ extension Utilities {
 		}
 
 		return false
-	}
-
-	static public func getFilesInFolder(_ folder: String) -> [URL] { // kotlin: ignore
-		let currentURL = URL(fileURLWithPath: Process().currentDirectoryPath + "/" + folder)
-		let fileURLs = try! FileManager.default.contentsOfDirectory(
-			at: currentURL,
-			includingPropertiesForKeys: nil)
-		return fileURLs.sorted { (url1: URL, url2: URL) -> Bool in
-			url1.path < url2.path
-		}
 	}
 }
