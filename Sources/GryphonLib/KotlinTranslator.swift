@@ -45,7 +45,10 @@ public class KotlinTranslator {
 	private func translateType(_ type: String) -> String {
 		let type = type.replacingOccurrences(of: "()", with: "Unit")
 
-		if type.hasPrefix("[") {
+		if type.hasSuffix("?") {
+			return translateType(String(type.dropLast())) + "?"
+		}
+		else if type.hasPrefix("[") {
 			if type.contains(":") {
 				let innerTypes =
 					String(type.dropLast().dropFirst()).split(withStringSeparator: " : ")
@@ -74,9 +77,6 @@ public class KotlinTranslator {
 			let translatedKey = translateType(key)
 			let translatedValue = translateType(value)
 			return "MutableMap<\(translatedKey), \(translatedValue)>"
-		}
-		else if type.hasSuffix("?") {
-			return translateType(String(type.dropLast())) + "?"
 		}
 		else {
 			return KotlinTranslator.typeMappings[type] ?? type

@@ -306,6 +306,10 @@ fileprivate extension String {
 			let newSuperType = String(superType.dropLast())
 			return newSelf.isSubtype(of: newSuperType)
 		}
+		else if superType.last == "?" {
+			let newSuperType = String(superType.dropLast())
+			return self.isSubtype(of: newSuperType)
+		}
 
 		// Analyze components of function types
 		if superType.contains(" -> ") {
