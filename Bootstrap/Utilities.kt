@@ -174,3 +174,23 @@ fun Utilities.Companion.getFiles(
 
 	return selectedURLs.map { it.absolutePath }.toMutableList()
 }
+
+internal fun Utilities.Companion.needsToUpdateFiles(
+	files: MutableList<String>? = null,
+	folder: String,
+	originExtension: FileExtension,
+	destinationExtension: FileExtension)
+	: Boolean
+{
+	val testFiles: MutableList<String> = getFiles(selectedFiles = files, directory = folder, fileExtension = originExtension)
+	for (originFile in testFiles) {
+		val destinationFilePath: String = Utilities.changeExtension(filePath = originFile, newExtension = destinationExtension)
+		val destinationFileWasJustCreated: Boolean = Utilities.createFileIfNeeded(filePath = destinationFilePath)
+		val destinationFileIsOutdated: Boolean = destinationFileWasJustCreated || Utilities.fileWasModifiedLaterThan(originFile, destinationFilePath)
+
+		if (destinationFileIsOutdated) {
+			return true
+		}
+	}
+	return false
+}

@@ -132,6 +132,23 @@ extension Expression {
 
 				return leftType.isSubtype(of: rightType)
 			case let
+				(.typeExpression(type: leftType),
+				 .declarationReferenceExpression(value: rightExpression)):
+
+				guard declarationExpressionMatchesImplicitTypeExpression(rightExpression) else {
+					return false
+				}
+				let expressionType = String(rightExpression.type.dropLast(".Type".count))
+				return leftType.isSubtype(of: expressionType)
+			case let
+				(.declarationReferenceExpression(value: leftExpression),
+				 .typeExpression(type: rightType)):
+				guard declarationExpressionMatchesImplicitTypeExpression(leftExpression) else {
+					return false
+				}
+				let expressionType = String(leftExpression.type.dropLast(".Type".count))
+				return expressionType.isSubtype(of: rightType)
+			case let
 				(.subscriptExpression(
 					subscriptedExpression: leftSubscriptedExpression,
 					indexExpression: leftIndexExpression, type: leftType),
@@ -199,7 +216,7 @@ extension Expression {
 
 				return leftFunction.matches(rightFunction, &matches) &&
 					leftParameters.matches(rightParameters, &matches) &&
-					(leftType.isSubtype(of: rightType))
+					leftType.isSubtype(of: rightType)
 			case let
 				(.literalIntExpression(value: leftValue),
 				 .literalIntExpression(value: rightValue)):
@@ -278,6 +295,36 @@ extension Expression {
 			default:
 				return false
 			}
+		}
+	}
+
+	/**
+	In a static context, some type expressions can be omitted. When that happens, they get
+	translated as declaration references instead of type expressions. However, thwy should still
+	match type expressions, as they're basically the same. This method should detect those cases.
+
+	Example:
+
+	```
+	class A {
+		static func a() { }
+		static func b() {
+			a() // implicitly this is A.a(), and the implicit `A` gets dumped as a declaration
+			// reference expression instead of a type expression.
+		}
+	```
+	**/
+	private func declarationExpressionMatchesImplicitTypeExpression(
+		_ expression: DeclarationReferenceExpression) -> Bool
+	{
+		if expression.identifier == "self",
+			expression.type.hasSuffix(".Type"),
+			expression.isImplicit
+		{
+			return true
+		}
+		else {
+			return true
 		}
 	}
 

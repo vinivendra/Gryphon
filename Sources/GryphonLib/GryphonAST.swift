@@ -499,8 +499,8 @@ extension Expression {
 			return expression.type
 		case let .declarationReferenceExpression(value: declarationReferenceExpression):
 			return declarationReferenceExpression.type
-		case .typeExpression:
-			return nil
+		case let .typeExpression(type: type):
+			return type
 		case let .subscriptExpression(subscriptedExpression: _, indexExpression: _, type: type):
 			return type
 		case let .arrayExpression(elements: _, type: type):
@@ -509,7 +509,21 @@ extension Expression {
 			return type
 		case let .returnExpression(expression: expression):
 			return expression?.type
-		case let .dotExpression(leftExpression: _, rightExpression: rightExpression):
+		case let .dotExpression(leftExpression: leftExpression, rightExpression: rightExpression):
+
+			// Enum references should be considered to have the left type, as the right expression's
+			// is a function type (something like `(MyEnum.Type) -> MyEnum` or
+			// `(A.MyEnum.Type) -> A.MyEnum`).
+			if case let .typeExpression(type: enumType) = leftExpression,
+				case let .declarationReferenceExpression(
+					value: declarationReferenceExpression) = rightExpression,
+				declarationReferenceExpression.type.hasPrefix("("),
+				declarationReferenceExpression.type.contains("\(enumType).Type) -> "),
+				declarationReferenceExpression.type.hasSuffix(enumType)
+			{
+				return enumType
+			}
+
 			return rightExpression.type
 		case let .binaryOperatorExpression(
 			leftExpression: _, rightExpression: _, operatorSymbol: _, type: type):

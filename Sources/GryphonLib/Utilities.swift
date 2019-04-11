@@ -22,6 +22,8 @@ private func gryphonTemplates() {
 	let _string1 = ""
 	let _string2 = ""
 	let _string3 = ""
+	let _stringArray: [String]? = []
+	let _fileExtension = FileExtension.swift
 
 	_ = Utilities.file(_string1, wasModifiedLaterThan: _string2)
 	_ = "Utilities.fileWasModifiedLaterThan(_string1, _string2)"
@@ -30,6 +32,14 @@ private func gryphonTemplates() {
 	_ = """
 Utilities.createFileAndDirectory(fileName = _string1, directory = _string2, contents = _string3)
 """
+
+	_ = Utilities.getFiles(_stringArray, inDirectory: _string1, withExtension: _fileExtension)
+	_ = """
+getFiles(selectedFiles = _stringArray, directory = _string1, fileExtension = _fileExtension)
+"""
+	_ = Utilities.createFileIfNeeded(at: _string1)
+	_ = "Utilities.createFileIfNeeded(filePath = _string1)"
+
 }
 
 public class Utilities {
@@ -363,7 +373,7 @@ extension Utilities {
 		print("\t* Done!")
 	}
 
-	static internal func needsToUpdateFiles( // kotlin: ignore
+	static internal func needsToUpdateFiles(
 		_ files: [String]? = nil,
 		in folder: String,
 		from originExtension: FileExtension,
