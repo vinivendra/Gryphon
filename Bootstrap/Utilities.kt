@@ -93,9 +93,9 @@ class OS {
 }
 
 fun Utilities.Companion.createFileAndDirectory(
-		fileName: String,
-		directory: String,
-		contents: String): String
+	fileName: String,
+	directory: String,
+	contents: String): String
 {
 	// Create directory (and intermediate directories if needed)
 	val directoryFile = File(directory)
@@ -145,3 +145,32 @@ internal sealed class FileError: Exception() {
 
 var libraryFilesHaveBeenUpdated: Boolean = false
 var testFilesHaveBeenUpdated: Boolean = false
+
+fun Utilities.Companion.getFiles(
+	selectedFiles: MutableList<String>? = null,
+	directory: String,
+	fileExtension: FileExtension): MutableList<String>
+{
+	val contentsOfDirectory = File(directory).listFiles()
+	val allFilesInDirectory = contentsOfDirectory.filter { it.isFile() }
+	val filteredFiles = allFilesInDirectory.filter {
+		it.absolutePath.endsWith(".${fileExtension.rawValue}")
+	}
+	val sortedFiles = filteredFiles.sortedBy { it.absolutePath }
+
+	var selectedURLs: List<File>
+	if (selectedFiles != null) {
+		val selectedFilesWithExtensions = selectedFiles.map {
+			it + ".${fileExtension.rawValue}"
+		}
+
+		selectedURLs = sortedFiles.filter {
+			selectedFilesWithExtensions.contains(it.getName())
+		}
+	}
+	else {
+		selectedURLs = sortedFiles
+	}
+
+	return selectedURLs.map { it.absolutePath }.toMutableList()
+}

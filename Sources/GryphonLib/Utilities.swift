@@ -184,9 +184,9 @@ extension Utilities { // kotlin: ignore
 
 // declaration:
 // declaration: fun Utilities.Companion.createFileAndDirectory(
-// declaration: 		fileName: String,
-// declaration: 		directory: String,
-// declaration: 		contents: String): String
+// declaration: 	fileName: String,
+// declaration: 	directory: String,
+// declaration: 	contents: String): String
 // declaration: {
 // declaration: 	// Create directory (and intermediate directories if needed)
 // declaration: 	val directoryFile = File(directory)
@@ -264,8 +264,8 @@ extension Utilities {
 		withExtension fileExtension: FileExtension)
 		-> [String]
 	{
-		let libraryFilesPath = Process().currentDirectoryPath + "/\(directory)/"
-		let currentURL = URL(fileURLWithPath: libraryFilesPath)
+		let directoryPath = Process().currentDirectoryPath + "/\(directory)/"
+		let currentURL = URL(fileURLWithPath: directoryPath)
 		let allURLs = try! FileManager.default.contentsOfDirectory(
 			at: currentURL,
 			includingPropertiesForKeys: nil)
@@ -288,6 +288,35 @@ extension Utilities {
 		return selectedURLs.map { $0.path }
 	}
 }
+
+// declaration: fun Utilities.Companion.getFiles(
+// declaration: 	selectedFiles: MutableList<String>? = null,
+// declaration: 	directory: String,
+// declaration: 	fileExtension: FileExtension): MutableList<String>
+// declaration: {
+// declaration: 	val contentsOfDirectory = File(directory).listFiles()
+// declaration: 	val allFilesInDirectory = contentsOfDirectory.filter { it.isFile() }
+// declaration: 	val filteredFiles = allFilesInDirectory.filter {
+// declaration: 		it.absolutePath.endsWith(".${fileExtension.rawValue}")
+// declaration: 	}
+// declaration: 	val sortedFiles = filteredFiles.sortedBy { it.absolutePath }
+// declaration:
+// declaration: 	var selectedURLs: List<File>
+// declaration: 	if (selectedFiles != null) {
+// declaration: 		val selectedFilesWithExtensions = selectedFiles.map {
+// declaration: 			it + ".${fileExtension.rawValue}"
+// declaration: 		}
+// declaration:
+// declaration: 		selectedURLs = sortedFiles.filter {
+// declaration: 			selectedFilesWithExtensions.contains(it.getName())
+// declaration: 		}
+// declaration: 	}
+// declaration: 	else {
+// declaration: 		selectedURLs = sortedFiles
+// declaration: 	}
+// declaration:
+// declaration: 	return selectedURLs.map { it.absolutePath }.toMutableList()
+// declaration: }
 
 extension Utilities {
 	static public func updateLibraryFiles() throws { // kotlin: ignore
