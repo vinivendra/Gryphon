@@ -142,4 +142,11 @@ public extension PrintableAsTree {
 			horizontalLimit: horizontalLimit,
 			printFunction: printFunction)
 	}
+
+	// TODO: replace this in other places that use this method
+	var prettyDescription: String {
+		var result = ""
+		prettyPrint { result += $0 }
+		return result
+	}
 }

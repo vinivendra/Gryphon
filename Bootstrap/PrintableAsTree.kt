@@ -116,3 +116,10 @@ public fun PrintableAsTree.prettyPrint(
 		horizontalLimit = horizontalLimit,
 		printFunction = printFunction)
 }
+
+val PrintableAsTree.prettyDescription: String
+	get() {
+		var result: String = ""
+		prettyPrint { result += it }
+		return result
+	}

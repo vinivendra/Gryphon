@@ -47,8 +47,10 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 					guard case let .literalStringExpression(value: value) = expression else {
 						continue
 					}
-					TranspilationTemplate.templates.append(
-						TranspilationTemplate(expression: templateExpression, string: value))
+					TranspilationTemplate.templates.insert(
+						TranspilationTemplate(
+							expression: templateExpression, string: value),
+						at: 0)
 					previousExpression = nil
 				}
 				else {
