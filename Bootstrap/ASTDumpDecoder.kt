@@ -1,4 +1,12 @@
 class ASTDumpDecoder {
+	companion object {
+		public fun decode(astFilePath: String): SwiftAST {
+			val astDump: String = Utilities.readFile(astFilePath)
+			val decoder: ASTDumpDecoder = ASTDumpDecoder(encodedString = astDump)
+			return decode(decoder = decoder)
+		}
+	}
+
 	val buffer: String
 	var currentIndex: Int
 	val remainingBuffer: String
@@ -549,4 +557,53 @@ class ASTDumpDecoder {
 			cleanLeadingWhitespace()
 		}
 	}
+}
+
+private fun ASTDumpDecoder.Companion.decode(decoder: ASTDumpDecoder): SwiftAST {
+	val standaloneAttributes: MutableList<String> = mutableListOf()
+	val keyValueAttributes: MutableMap<String, String> = mutableMapOf()
+	val subtrees: MutableList<SwiftAST> = mutableListOf()
+
+	decoder.readOpeningParenthesis()
+
+	val rawName: String = decoder.readIdentifier()
+	val name: String = Utilities.expandSwiftAbbreviation(rawName)
+
+	while (true) {
+		val key: String? = decoder.readKey()
+		if (decoder.canReadOpeningParenthesis()) {
+			val subtree: SwiftAST = decode(decoder = decoder)
+			subtrees.add(subtree)
+		}
+		else if (decoder.canReadClosingParenthesis()) {
+			decoder.readClosingParenthesis()
+			break
+		}
+		else if (key != null) {
+			val string: String? = decoder.readDeclarationLocation() ?: decoder.readDeclaration()
+			if (key == "location") {
+				keyValueAttributes[key] = decoder.readLocation()
+			}
+			else if (string != null && key == "decl") {
+				keyValueAttributes[key] = string
+			}
+			else if (key == "bind") {
+				val string: String = decoder.readDeclarationLocation() ?: decoder.readIdentifier()
+				keyValueAttributes[key] = string
+			}
+			else if (key == "inherits") {
+				val string: String = decoder.readIdentifierList()
+				keyValueAttributes[key] = string
+			}
+			else {
+				keyValueAttributes[key] = decoder.readStandaloneAttribute()
+			}
+		}
+		else {
+			val attribute: String = decoder.readStandaloneAttribute()
+			standaloneAttributes.add(attribute)
+		}
+	}
+
+	return SwiftAST(name, standaloneAttributes, keyValueAttributes, subtrees)
 }

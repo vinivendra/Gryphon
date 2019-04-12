@@ -51,6 +51,12 @@ internal class ASTDumpDecoder {
 		self.currentIndex = buffer.startIndex
 	}
 
+	public static func decode(file astFilePath: String) throws -> SwiftAST {
+		let astDump = try Utilities.readFile(astFilePath)
+		let decoder = ASTDumpDecoder(encodedString: astDump)
+		return try decode(from: decoder)
+	}
+
 	//
 	func nextIndex() -> String.Index {
 		return buffer.index(after: currentIndex)
@@ -643,13 +649,7 @@ internal class ASTDumpDecoder {
 }
 
 // MARK: - Creating a SwiftAST
-extension ASTDumpDecoder { // kotlin: ignore
-	public static func decode(file astFilePath: String) throws -> SwiftAST {
-		let astDump = try String(contentsOfFile: astFilePath)
-		let decoder = ASTDumpDecoder(encodedString: astDump)
-		return try decode(from: decoder)
-	}
-
+extension ASTDumpDecoder {
 	private static func decode(from decoder: ASTDumpDecoder) throws -> SwiftAST {
 		let standaloneAttributes: ArrayReference<String> = []
 		let keyValueAttributes: DictionaryReference<String, String> = [:]

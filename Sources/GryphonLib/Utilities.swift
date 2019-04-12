@@ -181,6 +181,17 @@ class OS { // kotlin: ignore
 // declaration: }
 
 extension Utilities { // kotlin: ignore
+	internal static func readFile(_ filePath: String) throws -> String {
+		return try String(contentsOfFile: filePath)
+	}
+}
+
+// declaration:
+// declaration: fun Utilities.Companion.readFile(filePath: String): String {
+// declaration: 	return File(filePath).readText()
+// declaration: }
+
+extension Utilities { // kotlin: ignore
 	@discardableResult
 	internal static func createFile(
 		named fileName: String,

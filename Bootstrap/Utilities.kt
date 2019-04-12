@@ -92,6 +92,10 @@ class OS {
 	}
 }
 
+fun Utilities.Companion.readFile(filePath: String): String {
+	return File(filePath).readText()
+}
+
 fun Utilities.Companion.createFileAndDirectory(
 	fileName: String,
 	directory: String,
