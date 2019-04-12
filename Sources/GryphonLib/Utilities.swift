@@ -23,7 +23,8 @@ private func gryphonTemplates() {
 	let _string2 = ""
 	let _string3 = ""
 	let _stringArray: [String]? = []
-	let _fileExtension = FileExtension.swift
+	let _fileExtension1 = FileExtension.swift
+	let _fileExtension2 = FileExtension.swift
 
 	_ = Utilities.file(_string1, wasModifiedLaterThan: _string2)
 	_ = "Utilities.fileWasModifiedLaterThan(_string1, _string2)"
@@ -33,13 +34,25 @@ private func gryphonTemplates() {
 Utilities.createFileAndDirectory(fileName = _string1, directory = _string2, contents = _string3)
 """
 
-	_ = Utilities.getFiles(_stringArray, inDirectory: _string1, withExtension: _fileExtension)
+	_ = Utilities.getFiles(_stringArray, inDirectory: _string1, withExtension: _fileExtension1)
 	_ = """
-getFiles(selectedFiles = _stringArray, directory = _string1, fileExtension = _fileExtension)
+getFiles(selectedFiles = _stringArray, directory = _string1, fileExtension = _fileExtension1)
 """
+
 	_ = Utilities.createFileIfNeeded(at: _string1)
 	_ = "Utilities.createFileIfNeeded(filePath = _string1)"
 
+	_ = Utilities.needsToUpdateFiles(
+			_stringArray, in: _string1, from: _fileExtension1, to: _fileExtension2)
+	_ = """
+Utilities.needsToUpdateFiles(files = _stringArray, folder = _string1, originExtension = _fileExtension1, destinationExtension = _fileExtension2)
+"""
+
+	_ = Utilities.needsToUpdateFiles(
+			in: _string1, from: _fileExtension1, to: _fileExtension2)
+	_ = """
+Utilities.needsToUpdateFiles(folder = _string1, originExtension = _fileExtension1, destinationExtension = _fileExtension2)
+"""
 }
 
 public class Utilities {
@@ -354,12 +367,12 @@ extension Utilities {
 		print("\t* Done!")
 	}
 
-	static public func updateTestFiles() throws { // kotlin: ignore
+	static public func updateTestFiles() throws {
 		guard !testFilesHaveBeenUpdated else {
 			return
 		}
 
-		try updateLibraryFiles()
+		try updateLibraryFiles() // kotlin: ignore
 
 		print("\t* Updating unit test files...")
 

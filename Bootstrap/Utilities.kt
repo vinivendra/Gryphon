@@ -175,6 +175,24 @@ fun Utilities.Companion.getFiles(
 	return selectedURLs.map { it.absolutePath }.toMutableList()
 }
 
+public fun Utilities.Companion.updateTestFiles() {
+	if (testFilesHaveBeenUpdated) {
+		return
+	}
+
+	println("\t* Updating unit test files...")
+
+	val testFilesFolder: String = "Test Files"
+
+	if (Utilities.needsToUpdateFiles(folder = testFilesFolder, originExtension = FileExtension.SWIFT, destinationExtension = FileExtension.SWIFT_AST_DUMP)) {
+		throw FileError.OutdatedFile(inFolder = testFilesFolder)
+	}
+
+	testFilesHaveBeenUpdated = true
+
+	println("\t* Done!")
+}
+
 internal fun Utilities.Companion.needsToUpdateFiles(
 	files: MutableList<String>? = null,
 	folder: String,
