@@ -44,12 +44,12 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 			var previousExpression: Expression?
 			for expression in expressions {
 				if let templateExpression = previousExpression {
-					guard case let .literalStringExpression(value: value) = expression else {
+					guard let literalString = getStringLiteralOrSum(expression) else {
 						continue
 					}
 					TranspilationTemplate.templates.insert(
 						TranspilationTemplate(
-							expression: templateExpression, string: value),
+							expression: templateExpression, string: literalString),
 						at: 0)
 					previousExpression = nil
 				}
@@ -62,6 +62,27 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 		}
 
 		return super.replaceFunctionDeclaration(functionDeclaration)
+	}
+
+	/// Some String literals are written as sums of string literals (i.e. "a" + "b") or they'd be
+	/// too large to fit in one line. This method should detect Strings both with and without sums.
+	private func getStringLiteralOrSum(_ expression: Expression) -> String? {
+		if case let .literalStringExpression(value: value) = expression {
+			return value
+		}
+		else if case let .binaryOperatorExpression(
+			leftExpression: leftExpression,
+			rightExpression: rightExpression,
+			operatorSymbol: "+",
+			type: "String") = expression,
+			let leftString = getStringLiteralOrSum(leftExpression),
+			let rightString = getStringLiteralOrSum(rightExpression)
+		{
+			return leftString + rightString
+		}
+		else {
+			return nil
+		}
 	}
 }
 

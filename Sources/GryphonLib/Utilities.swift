@@ -30,29 +30,30 @@ private func gryphonTemplates() {
 	_ = "Utilities.fileWasModifiedLaterThan(_string1, _string2)"
 
 	_ = Utilities.createFile(named: _string1, inDirectory: _string2, containing: _string3)
-	_ = """
-Utilities.createFileAndDirectory(fileName = _string1, directory = _string2, contents = _string3)
-"""
+	_ = "Utilities.createFileAndDirectory(" +
+			"fileName = _string1, directory = _string2, contents = _string3)"
 
 	_ = Utilities.getFiles(_stringArray, inDirectory: _string1, withExtension: _fileExtension1)
-	_ = """
-getFiles(selectedFiles = _stringArray, directory = _string1, fileExtension = _fileExtension1)
-"""
+	_ = "getFiles(" +
+			"selectedFiles = _stringArray, directory = _string1, fileExtension = _fileExtension1)"
 
 	_ = Utilities.createFileIfNeeded(at: _string1)
 	_ = "Utilities.createFileIfNeeded(filePath = _string1)"
 
 	_ = Utilities.needsToUpdateFiles(
 			_stringArray, in: _string1, from: _fileExtension1, to: _fileExtension2)
-	_ = """
-Utilities.needsToUpdateFiles(files = _stringArray, folder = _string1, originExtension = _fileExtension1, destinationExtension = _fileExtension2)
-"""
+	_ = "Utilities.needsToUpdateFiles(" +
+			"files = _stringArray, " +
+			"folder = _string1, " +
+			"originExtension = _fileExtension1, " +
+			"destinationExtension = _fileExtension2)"
 
 	_ = Utilities.needsToUpdateFiles(
 			in: _string1, from: _fileExtension1, to: _fileExtension2)
-	_ = """
-Utilities.needsToUpdateFiles(folder = _string1, originExtension = _fileExtension1, destinationExtension = _fileExtension2)
-"""
+	_ = "Utilities.needsToUpdateFiles(" +
+			"folder = _string1, " +
+			"originExtension = _fileExtension1, " +
+			"destinationExtension = _fileExtension2)"
 }
 
 public class Utilities {
