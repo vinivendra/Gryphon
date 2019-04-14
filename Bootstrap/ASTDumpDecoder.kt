@@ -215,6 +215,10 @@ class ASTDumpDecoder {
 
 	internal fun readKey(): String? {
 		try {
+			if (!(!canReadOpeningParenthesis() && !canReadClosingParenthesis())) {
+				return null
+			}
+
 			var index: Int = currentIndex
 
 			while (true) {
@@ -571,20 +575,12 @@ private fun ASTDumpDecoder.Companion.decode(decoder: ASTDumpDecoder): SwiftAST {
 
 	while (true) {
 		val key: String? = decoder.readKey()
-		if (decoder.canReadOpeningParenthesis()) {
-			val subtree: SwiftAST = decode(decoder = decoder)
-			subtrees.add(subtree)
-		}
-		else if (decoder.canReadClosingParenthesis()) {
-			decoder.readClosingParenthesis()
-			break
-		}
-		else if (key != null) {
-			val string: String? = decoder.readDeclarationLocation() ?: decoder.readDeclaration()
+		if (key != null) {
 			if (key == "location") {
 				keyValueAttributes[key] = decoder.readLocation()
 			}
-			else if (string != null && key == "decl") {
+			else if (key == "decl") {
+				val string: String = (decoder.readDeclarationLocation() ?: decoder.readDeclaration())!!
 				keyValueAttributes[key] = string
 			}
 			else if (key == "bind") {
@@ -595,9 +591,21 @@ private fun ASTDumpDecoder.Companion.decode(decoder: ASTDumpDecoder): SwiftAST {
 				val string: String = decoder.readIdentifierList()
 				keyValueAttributes[key] = string
 			}
+			else if (key == "captures") {
+				val string: String = decoder.readIdentifier()
+				keyValueAttributes[key] = string
+			}
 			else {
 				keyValueAttributes[key] = decoder.readStandaloneAttribute()
 			}
+		}
+		else if (decoder.canReadOpeningParenthesis()) {
+			val subtree: SwiftAST = decode(decoder = decoder)
+			subtrees.add(subtree)
+		}
+		else if (decoder.canReadClosingParenthesis()) {
+			decoder.readClosingParenthesis()
+			break
 		}
 		else {
 			val attribute: String = decoder.readStandaloneAttribute()

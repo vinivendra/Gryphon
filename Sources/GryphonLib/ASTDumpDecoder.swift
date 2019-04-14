@@ -247,6 +247,10 @@ internal class ASTDumpDecoder {
 	func readKey() -> String? {
 		defer { cleanLeadingWhitespace() }
 
+		guard !canReadOpeningParenthesis(), !canReadClosingParenthesis() else {
+			return nil
+		}
+
 		var index = currentIndex
 		while true {
 			let character = buffer[index]
@@ -662,25 +666,14 @@ extension ASTDumpDecoder {
 		// The loop stops: all branches tell the decoder to read, therefore the input string must
 		// end eventually
 		while true {
-			// Add subtree
-			if decoder.canReadOpeningParenthesis() {
-				// Parse subtrees
-				let subtree = try decode(from: decoder)
-				subtrees.append(subtree)
-			}
-				// Finish this branch
-			else if decoder.canReadClosingParenthesis() {
-				try decoder.readClosingParenthesis()
-				break
-			}
 			// Add key-value attributes
-			else if let key = decoder.readKey() {
+			// TODO: Add warnings for potential bugs in eager evaluation of if-lets
+			if let key = decoder.readKey() {
 				if key == "location" {
 					keyValueAttributes[key] = decoder.readLocation()
 				}
-				else if key == "decl",
-					let string = decoder.readDeclarationLocation() ?? decoder.readDeclaration()
-				{
+				else if key == "decl" {
+					let string = (decoder.readDeclarationLocation() ?? decoder.readDeclaration())!
 					keyValueAttributes[key] = string
 				}
 				else if key == "bind"
@@ -692,9 +685,25 @@ extension ASTDumpDecoder {
 					let string = decoder.readIdentifierList()
 					keyValueAttributes[key] = string
 				}
+				// Capture lists are enclosed in parentheses
+				else if key == "captures" {
+					let string = decoder.readIdentifier()
+					keyValueAttributes[key] = string
+				}
 				else {
 					keyValueAttributes[key] = decoder.readStandaloneAttribute()
 				}
+			}
+			// Add subtree
+			else if decoder.canReadOpeningParenthesis() {
+				// Parse subtrees
+				let subtree = try decode(from: decoder)
+				subtrees.append(subtree)
+			}
+			// Finish this branch
+			else if decoder.canReadClosingParenthesis() {
+				try decoder.readClosingParenthesis()
+				break
 			}
 			// Add standalone attributes
 			else {
