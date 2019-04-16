@@ -381,7 +381,7 @@ extension Utilities {
 
 		let templateFilePaths =
 			getFiles(inDirectory: libraryTemplatesFolder, withExtension: .swiftASTDump)
-		let asts = try Compiler.generateGryphonRawASTs(fromASTDumpFiles: templateFilePaths)
+		let asts = try Compiler.transpileGryphonRawASTs(fromASTDumpFiles: templateFilePaths)
 
 		for ast in asts {
 			_ = RecordTemplatesTranspilationPass(ast: ast).run()

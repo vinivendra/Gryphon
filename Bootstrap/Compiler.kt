@@ -11,5 +11,16 @@ class Compiler {
 				log = { }
 			}
 		}
+
+		public fun generateSwiftAST(astDump: String): SwiftAST {
+			log("\t- Building SwiftAST...")
+			val ast: SwiftAST = ASTDumpDecoder(encodedString = astDump).decode()
+			return ast
+		}
+
+		public fun transpileSwiftAST(inputFile: String): SwiftAST {
+			val astDump: String = Utilities.readFile(inputFile)
+			return generateSwiftAST(astDump = astDump)
+		}
 	}
 }

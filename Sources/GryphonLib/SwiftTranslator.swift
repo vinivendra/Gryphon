@@ -661,7 +661,7 @@ public class SwiftTranslator {
 		}
 
 		return try unexpectedExpressionStructureError(
-			"Unable to get the wither tuple element's number or its label.",
+			"Unable to get either the tuple element's number or its label.",
 			AST: tupleElementExpression, translator: self)
 	}
 
@@ -1710,8 +1710,7 @@ public class SwiftTranslator {
 			function = try translate(typeExpression: typeExpression)
 		}
 		else {
-			return try unexpectedExpressionStructureError(
-				"Failed to recognize function name", AST: callExpression, translator: self)
+			function = try translate(expression: callExpression.subtrees[0])
 		}
 
 		let parameters = try translate(callExpressionParameters: callExpression)

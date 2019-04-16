@@ -32,6 +32,17 @@ public class Compiler {
 			log = { _ in }
 		}
 	}
+
+	public static func generateSwiftAST(fromASTDump astDump: String) throws -> SwiftAST {
+		log("\t- Building SwiftAST...")
+		let ast = try ASTDumpDecoder(encodedString: astDump).decode()
+		return ast
+	}
+
+	public static func transpileSwiftAST(fromASTDumpFile inputFile: String) throws -> SwiftAST {
+		let astDump = try Utilities.readFile(inputFile)
+		return try generateSwiftAST(fromASTDump: astDump)
+	}
 }
 
 extension Compiler { // kotlin: ignore
@@ -121,29 +132,24 @@ extension Compiler { // kotlin: ignore
 		return gryphonASTs
 	}
 
-	public static func generateSwiftAST(fromASTDump astDump: String) throws -> SwiftAST {
-		log("\t- Building SwiftAST...")
-		let ast = try ASTDumpDecoder(encodedString: astDump).decode()
-		return ast
-	}
-
 	//
-	public static func runCompiledProgram(
-		fromASTDumpFiles inputFiles: [String], fromFolder outputFolder: String = OS.buildFolder)
+	public static func transpileCompileAndRun(
+		ASTDumpFiles inputFiles: [String], fromFolder outputFolder: String = OS.buildFolder)
 		throws -> KotlinCompilationResult
 	{
-		let compilationResult = try compile(ASTDumpFiles: inputFiles, outputFolder: outputFolder)
+		let compilationResult =
+			try transpileThenCompile(ASTDumpFiles: inputFiles, outputFolder: outputFolder)
 		guard case .success = compilationResult else {
 			return compilationResult
 		}
 		return try runCompiledProgram(fromFolder: outputFolder)
 	}
 
-	public static func compile(
+	public static func transpileThenCompile(
 		ASTDumpFiles inputFiles: [String], outputFolder: String = OS.buildFolder)
 		throws -> KotlinCompilationResult
 	{
-		let kotlinCodes = try generateKotlinCode(fromASTDumpFiles: inputFiles)
+		let kotlinCodes = try transpileKotlinCode(fromASTDumpFiles: inputFiles)
 		// Write kotlin files to the output folder
 		let kotlinFilePaths = zip(inputFiles, kotlinCodes).map { tuple -> String in
 			let inputFile = tuple.0
@@ -158,29 +164,24 @@ extension Compiler { // kotlin: ignore
 		return try compile(kotlinFiles: kotlinFilePaths, outputFolder: outputFolder)
 	}
 
-	public static func generateKotlinCode(fromASTDumpFiles inputFiles: [String]) throws -> [String]
+	public static func transpileKotlinCode(fromASTDumpFiles inputFiles: [String]) throws -> [String]
 	{
-		let asts = try generateGryphonASTs(fromASTDumpFiles: inputFiles)
+		let asts = try transpileGryphonASTs(fromASTDumpFiles: inputFiles)
 		return try generateKotlinCode(fromGryphonASTs: asts)
 	}
 
-	public static func generateGryphonASTs(fromASTDumpFiles inputFiles: [String])
+	public static func transpileGryphonASTs(fromASTDumpFiles inputFiles: [String])
 		throws -> [GryphonAST]
 	{
-		let rawASTs = try generateGryphonRawASTs(fromASTDumpFiles: inputFiles)
+		let rawASTs = try transpileGryphonRawASTs(fromASTDumpFiles: inputFiles)
 		return try generateGryphonASTs(fromGryphonRawASTs: rawASTs)
 	}
 
-	public static func generateGryphonRawASTs(fromASTDumpFiles inputFiles: [String])
+	public static func transpileGryphonRawASTs(fromASTDumpFiles inputFiles: [String])
 		throws -> [GryphonAST]
 	{
-		let asts = try inputFiles.map { try generateSwiftAST(fromASTDumpFile: $0) }
+		let asts = try inputFiles.map { try transpileSwiftAST(fromASTDumpFile: $0) }
 		return try generateGryphonRawASTs(fromSwiftASTs: asts)
-	}
-
-	public static func generateSwiftAST(fromASTDumpFile inputFile: String) throws -> SwiftAST {
-		let astDump = try Utilities.readFile(inputFile)
-		return try generateSwiftAST(fromASTDump: astDump)
 	}
 
 	//
