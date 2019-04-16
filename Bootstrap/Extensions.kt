@@ -1,4 +1,15 @@
 internal fun String.split(
+	separator: Char,
+	maxSplits: Int = Int.MAX_VALUE,
+	omittingEmptySubsequences: Boolean = true)
+	: MutableList<String>
+{
+	return this.split(separator = separator.toString(),
+		maxSplits = maxSplits,
+		omittingEmptySubsequences = omittingEmptySubsequences)
+}
+
+internal fun String.split(
 	separator: String,
 	maxSplits: Int = Int.MAX_VALUE,
 	omittingEmptySubsequences: Boolean = true)
@@ -102,12 +113,12 @@ internal fun String.upperSnakeCase(): String {
 		if (currentCharacter.isUppercase) {
 			val nextIndex: Int = index + 1
 			if (nextIndex != this.length && !this[nextIndex].isUppercase && this[nextIndex] != '_') {
-				result += "_"
+				result += '_'
 			}
 			else if (index > 0) {
 				val previousIndex: Int = index - 1
 				if (!this[previousIndex].isUppercase && this[previousIndex] != '_') {
-					result += "_"
+					result += '_'
 				}
 			}
 			result += currentCharacter

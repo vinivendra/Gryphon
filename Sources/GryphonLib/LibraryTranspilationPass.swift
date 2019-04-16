@@ -258,6 +258,12 @@ extension Expression {
 				 .literalStringExpression(value: rightValue)):
 
 				return leftValue == rightValue
+			case let
+				(.literalStringExpression(value: leftValue),
+				 .declarationReferenceExpression):
+
+				let characterExpression = Expression.literalCharacterExpression(value: leftValue)
+				return characterExpression.matches(template, &matches)
 			case (.nilLiteralExpression, .nilLiteralExpression):
 				return true
 			case let
@@ -463,6 +469,7 @@ private func simplifyType(string: String) -> String {
 		"Substring.Index": "Int",
 		"String.SubSequence": "String",
 		"String.Index": "Int",
+		"String.Element": "Character",
 	]
 	if let result = standardLibraryTypeMappings[string] {
 		return result

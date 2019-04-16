@@ -30,9 +30,7 @@ public class SourceFile {
 	public var numberOfLines: Int {
 		return lines.count
 	}
-}
 
-extension SourceFile { // kotlin: ignore
 	public func getLine(_ lineNumber: Int) -> String? {
 		if let line = lines[safe: lineNumber - 1] {
 			return String(line)
@@ -41,7 +39,9 @@ extension SourceFile { // kotlin: ignore
 			return nil
 		}
 	}
+}
 
+extension SourceFile { // kotlin: ignore
 	public func getCommentFromLine(_ lineNumber: Int) -> (key: String, value: String)? {
 		guard let line = getLine(lineNumber) else {
 			return nil
