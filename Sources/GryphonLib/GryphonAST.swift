@@ -164,6 +164,10 @@ public indirect enum Expression: Equatable, PrintableAsTree {
 		expression: Expression,
 		operatorSymbol: String,
 		type: String)
+	case ifExpression(
+		condition: Expression,
+		trueExpression: Expression,
+		falseExpression: Expression)
 	case callExpression(
 		function: Expression,
 		parameters: Expression,
@@ -533,6 +537,8 @@ extension Expression {
 			return type
 		case let .postfixUnaryExpression(expression: _, operatorSymbol: _, type: type):
 			return type
+		case let .ifExpression(condition: _, trueExpression: trueExpression, falseExpression: _):
+			return trueExpression.type
 		case let .callExpression(function: _, parameters: _, type: type):
 			return type
 		case let .closureExpression(parameters: _, statements: _, type: type):
@@ -650,6 +656,13 @@ extension Expression {
 				PrintableTree("type \(type)"),
 				PrintableTree("operator \(operatorSymbol)"),
 				PrintableTree("expression", [expression]), ]
+		case let .ifExpression(
+			condition: condition, trueExpression: trueExpression, falseExpression: falseExpression):
+
+			return [
+				PrintableTree("condition", [condition]),
+				PrintableTree("trueExpression", [trueExpression]),
+				PrintableTree("falseExpression", [falseExpression]), ]
 		case let .postfixUnaryExpression(
 			expression: expression, operatorSymbol: operatorSymbol, type: type):
 

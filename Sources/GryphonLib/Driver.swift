@@ -51,7 +51,7 @@ public enum Driver {
 		let shouldGenerateRawAST = shouldGenerateAST || shouldEmitRawAST
 		let shouldGenerateSwiftAST = shouldGenerateRawAST || shouldEmitSwiftAST
 
-		Compiler.shouldLogProgress = arguments.contains("-verbose")
+		Compiler.shouldLogProgress(if: arguments.contains("-verbose"))
 		Compiler.shouldStopAtFirstError = !arguments.contains("-continue-on-error")
 
 		let horizontalLimit: Int?

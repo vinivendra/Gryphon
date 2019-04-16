@@ -1039,6 +1039,14 @@ public class KotlinTranslator {
 			return try translatePostfixUnaryExpression(
 				expression: expression, operatorSymbol: operatorSymbol, type: type,
 				withIndentation: indentation)
+		case let .ifExpression(
+			condition: condition, trueExpression: trueExpression, falseExpression: falseExpression):
+
+			return try translateIfExpression(
+				condition: condition,
+				trueExpression: trueExpression,
+				falseExpression: falseExpression,
+				withIndentation: indentation)
 		case let .typeExpression(type: type):
 			return translateType(type)
 		case let .subscriptExpression(
@@ -1176,6 +1184,23 @@ public class KotlinTranslator {
 		return expressionTranslation + operatorSymbol
 	}
 
+	private func translateIfExpression(
+		condition: Expression,
+		trueExpression: Expression,
+		falseExpression: Expression,
+		withIndentation indentation: String) throws -> String
+	{
+		let conditionTranslation =
+			try translateExpression(condition, withIndentation: indentation)
+		let trueExpressionTranslation =
+			try translateExpression(trueExpression, withIndentation: indentation)
+		let falseExpressionTranslation =
+			try translateExpression(falseExpression, withIndentation: indentation)
+
+		return "if (\(conditionTranslation)) { \(trueExpressionTranslation) } else " +
+			"{ \(falseExpressionTranslation) }"
+	}
+
 	private func translateCallExpression(
 		function: Expression, parameters: Expression, type: String,
 		withIndentation indentation: String, shouldAddNewlines: Bool = false) throws -> String
@@ -1271,6 +1296,10 @@ public class KotlinTranslator {
 		parameters: [LabeledType], statements: [Statement], type: String,
 		withIndentation indentation: String) throws -> String
 	{
+		guard !statements.isEmpty else {
+			return "{ }"
+		}
+
 		var result = "{"
 
 		let parametersString = parameters.map{ $0.label }.joined(separator: ", ")

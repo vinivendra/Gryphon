@@ -16,13 +16,25 @@
 
 import Foundation
 
-public enum Compiler {
+public class Compiler {
+	static let kotlinCompilerPath = (OS.osName == "Linux") ?
+		"/opt/kotlinc/bin/kotlinc" :
+		"/usr/local/bin/kotlinc"
 
-	#if os(Linux) || os(FreeBSD)
-	static let kotlinCompilerPath = "/opt/kotlinc/bin/kotlinc"
-	#else
-	static let kotlinCompilerPath = "/usr/local/bin/kotlinc"
-	#endif
+	//
+	public private(set) static var log: ((String) -> ()) = { print($0) }
+
+	public static func shouldLogProgress(if value: Bool) {
+		if value {
+			log = { print($0) }
+		}
+		else {
+			log = { _ in }
+		}
+	}
+}
+
+extension Compiler { // kotlin: ignore
 
 	public enum KotlinCompilationResult: CustomStringConvertible {
 		case success(commandOutput: Shell.CommandOutput)
@@ -317,20 +329,6 @@ public enum Compiler {
 			return "\(errorOrWarning): \(message)\n" +
 				"Thrown by \(throwingFileName):\(line) - \(function)\n" +
 				details
-		}
-	}
-
-	//
-	public private(set) static var log: ((String) -> ()) = { print($0) }
-
-	public static var shouldLogProgress = false {
-		didSet {
-			if shouldLogProgress {
-				log = { print($0) }
-			}
-			else {
-				log = { _ in }
-			}
 		}
 	}
 }

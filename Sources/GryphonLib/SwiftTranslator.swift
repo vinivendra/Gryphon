@@ -158,6 +158,8 @@ public class SwiftTranslator {
 			return try translate(dictionaryExpression: expression)
 		case "Binary Expression":
 			return try translate(binaryExpression: expression)
+		case "If Expression":
+			return try translate(ifExpression: expression)
 		case "Call Expression":
 			return try translate(callExpression: expression)
 		case "Closure Expression":
@@ -755,6 +757,28 @@ public class SwiftTranslator {
 				"Unrecognized structure",
 				AST: binaryExpression, translator: self)
 		}
+	}
+
+	internal func translate(ifExpression: SwiftAST) throws -> Expression {
+		guard ifExpression.name == "If Expression" else {
+			return try unexpectedExpressionStructureError(
+				"Trying to translate \(ifExpression.name) as 'If Expression'",
+				AST: ifExpression, translator: self)
+		}
+
+		guard ifExpression.subtrees.count == 3 else {
+			return try unexpectedExpressionStructureError(
+				"Expected If Expression to have three subtrees (a condition, a true expression " +
+					"and a false expression)",
+				AST: ifExpression, translator: self)
+		}
+
+		let condition = try translate(expression: ifExpression.subtrees[0])
+		let trueExpression = try translate(expression: ifExpression.subtrees[1])
+		let falseExpression = try translate(expression: ifExpression.subtrees[2])
+
+		return .ifExpression(
+			condition: condition, trueExpression: trueExpression, falseExpression: falseExpression)
 	}
 
 	internal func translate(typeExpression: SwiftAST) throws -> Expression {
@@ -1719,6 +1743,9 @@ public class SwiftTranslator {
 				if let name = parameter.standaloneAttributes.first,
 					let type = parameter["interface type"]
 				{
+					if name.hasPrefix("anonname=0x") {
+						continue
+					}
 					parameters.append(LabeledType(label: name, type: cleanUpType(type)))
 				}
 				else {

@@ -44,6 +44,7 @@ class BootstrappingTest: XCTestCase {
 			"Sources/GryphonLib/PrintableAsTree.swift",
 			"Sources/GryphonLib/SwiftAST.swift",
 			"Sources/GryphonLib/ASTDumpDecoder.swift",
+			"Sources/GryphonLib/Compiler.swift",
 			"Sources/GryphonLib/Extensions.swift",
 			"Sources/GryphonLib/Utilities.swift",
 			"Bootstrap/PrintableAsTreeTest.kt",

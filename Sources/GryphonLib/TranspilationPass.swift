@@ -356,12 +356,21 @@ public class TranspilationPass {
 				operatorSymbol: operatorSymbol, type: type)
 		case let .prefixUnaryExpression(
 			expression: expression, operatorSymbol: operatorSymbol, type: type):
+
 			return replacePrefixUnaryExpression(
 				expression: expression, operatorSymbol: operatorSymbol, type: type)
 		case let .postfixUnaryExpression(
 			expression: expression, operatorSymbol: operatorSymbol, type: type):
+
 			return replacePostfixUnaryExpression(
 				expression: expression, operatorSymbol: operatorSymbol, type: type)
+		case let .ifExpression(
+			condition: condition, trueExpression: trueExpression, falseExpression: falseExpression):
+
+			return replaceIfExpression(
+				condition: condition,
+				trueExpression: trueExpression,
+				falseExpression: falseExpression)
 		case let .callExpression(function: function, parameters: parameters, type: type):
 			return replaceCallExpression(function: function, parameters: parameters, type: type)
 		case let .closureExpression(parameters: parameters, statements: statements, type: type):
@@ -493,6 +502,16 @@ public class TranspilationPass {
 			expression: replaceExpression(expression), operatorSymbol: operatorSymbol, type: type)
 	}
 
+	func replaceIfExpression(
+		condition: Expression, trueExpression: Expression, falseExpression: Expression)
+		-> Expression
+	{
+		return .ifExpression(
+			condition: replaceExpression(condition),
+			trueExpression: replaceExpression(trueExpression),
+			falseExpression: replaceExpression(falseExpression))
+	}
+
 	func replaceCallExpression(function: Expression, parameters: Expression, type: String)
 		-> Expression
 	{
@@ -616,6 +635,40 @@ public class RemoveParenthesesTranspilationPass: TranspilationPass {
 		}
 
 		return .parenthesesExpression(expression: replaceExpression(expression))
+	}
+
+	override func replaceIfExpression(
+		condition: Expression, trueExpression: Expression, falseExpression: Expression)
+		-> Expression
+	{
+		let replacedCondition: Expression
+		if case let .parenthesesExpression(expression: innerExpression) = condition {
+			replacedCondition = innerExpression
+		}
+		else {
+			replacedCondition = condition
+		}
+
+		let replacedTrueExpression: Expression
+		if case let .parenthesesExpression(expression: innerExpression) = trueExpression {
+			replacedTrueExpression = innerExpression
+		}
+		else {
+			replacedTrueExpression = trueExpression
+		}
+
+		let replacedFalseExpression: Expression
+		if case let .parenthesesExpression(expression: innerExpression) = falseExpression {
+			replacedFalseExpression = innerExpression
+		}
+		else {
+			replacedFalseExpression = falseExpression
+		}
+
+		return .ifExpression(
+			condition: replacedCondition,
+			trueExpression: replacedTrueExpression,
+			falseExpression: replacedFalseExpression)
 	}
 }
 
