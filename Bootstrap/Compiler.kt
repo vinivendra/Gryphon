@@ -12,6 +12,19 @@ class Compiler {
 			}
 		}
 
+		var shouldStopAtFirstError: Boolean = false
+		var errors: MutableList<Exception> = mutableListOf()
+		var warnings: MutableList<String> = mutableListOf()
+
+		internal fun handleError(error: Exception) {
+			if (Compiler.shouldStopAtFirstError) {
+				throw error
+			}
+			else {
+				Compiler.errors.add(error)
+			}
+		}
+
 		public fun generateSwiftAST(astDump: String): SwiftAST {
 			log("\t- Building SwiftAST...")
 			val ast: SwiftAST = ASTDumpDecoder(encodedString = astDump).decode()

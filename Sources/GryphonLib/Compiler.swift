@@ -33,6 +33,22 @@ public class Compiler {
 		}
 	}
 
+	//
+	public static var shouldStopAtFirstError = false
+
+	public private(set) static var errors: ArrayReference<Error> = []
+	public private(set) static var warnings: ArrayReference<String> = []
+
+	internal static func handleError(_ error: Error) throws {
+		if Compiler.shouldStopAtFirstError {
+			throw error
+		}
+		else {
+			Compiler.errors.append(error)
+		}
+	}
+
+	//
 	public static func generateSwiftAST(fromASTDump astDump: String) throws -> SwiftAST {
 		log("\t- Building SwiftAST...")
 		let ast = try ASTDumpDecoder(encodedString: astDump).decode()
@@ -185,20 +201,6 @@ extension Compiler { // kotlin: ignore
 	}
 
 	//
-	public static var shouldStopAtFirstError = false
-
-	public private(set) static var errors = [Error]()
-	public private(set) static var warnings = [String]()
-
-	internal static func handleError(_ error: Error) throws {
-		if Compiler.shouldStopAtFirstError {
-			throw error
-		}
-		else {
-			Compiler.errors.append(error)
-		}
-	}
-
 	internal static func handleWarning(
 		file: String = #file,
 		line: Int = #line,

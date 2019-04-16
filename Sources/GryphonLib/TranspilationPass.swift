@@ -1199,16 +1199,36 @@ public class CovarianceInitsAsCastsTranspilationPass: TranspilationPass {
 		-> Expression
 	{
 		if case let .typeExpression(type: type) = function,
-			type.hasPrefix("ArrayReference<"),
+			type.hasPrefix("ArrayReference"),
 			case let .tupleExpression(pairs: pairs) = parameters,
 			pairs.count == 1,
 			let onlyPair = pairs.first
 		{
-			return .binaryOperatorExpression(
-				leftExpression: onlyPair.expression,
-				rightExpression: .typeExpression(type: type),
-				operatorSymbol: "as",
-				type: type)
+			if onlyPair.label == "array" {
+				// If we're initializing with an Array of a different type, we might need a cast
+				if let arrayType = onlyPair.expression.type {
+					let arrayElementType = arrayType.dropFirst().dropLast()
+					let arrayReferenceElementType =
+						type.dropFirst("ArrayReference<".count).dropLast()
+
+					if arrayElementType != arrayReferenceElementType {
+						return .binaryOperatorExpression(
+							leftExpression: replaceExpression(onlyPair.expression),
+							rightExpression: .typeExpression(type: type),
+							operatorSymbol: "as",
+							type: type)
+					}
+				}
+				// If it's an Array of the same type, just return the array itself
+				return replaceExpression(onlyPair.expression)
+			}
+			else {
+				return .binaryOperatorExpression(
+					leftExpression: replaceExpression(onlyPair.expression),
+					rightExpression: .typeExpression(type: type),
+					operatorSymbol: "as",
+					type: type)
+			}
 		}
 		else {
 			return super.replaceCallExpression(

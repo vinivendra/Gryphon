@@ -16,19 +16,23 @@
 
 import Foundation
 
-public struct SourceFile {
+public class SourceFile {
 	public var path: String
-	private var lines: [Substring]
+	private let lines: ArrayReference<Substring>
 
 	public init(path: String, contents: String) {
 		self.path = path
-		self.lines = contents.split(separator: "\n", omittingEmptySubsequences: false)
+
+		self.lines = ArrayReference<Substring>(array:
+			contents.split(separator: "\n", omittingEmptySubsequences: false))
 	}
 
 	public var numberOfLines: Int {
 		return lines.count
 	}
+}
 
+extension SourceFile { // kotlin: ignore
 	public func getLine(_ lineNumber: Int) -> String? {
 		if let line = lines[safe: lineNumber - 1] {
 			return String(line)
@@ -71,7 +75,7 @@ public struct SourceFile {
 	}
 }
 
-struct SourceFileRange: Equatable {
+struct SourceFileRange: Equatable { // kotlin: ignore
 	let lineStart: Int
 	let lineEnd: Int
 	let columnStart: Int

@@ -368,6 +368,12 @@ fileprivate extension String {
 			return true
 		}
 
+		let simpleSelf = simplifyType(string: self)
+		let simpleSuperType = simplifyType(string: superType)
+		if simpleSelf != self || simpleSuperType != superType {
+			return simpleSelf.isSubtype(of: simpleSuperType)
+		}
+
 		// Handle optionals
 		if self.last == "?", superType.last == "?" {
 			let newSelf = String(self.dropLast())
@@ -435,11 +441,13 @@ fileprivate extension String {
 
 			return true
 		}
-
-		let simpleSelf = simplifyType(string: self)
-		let simpleSuperType = simplifyType(string: superType)
-		if simpleSelf != self || simpleSuperType != superType {
-			return simpleSelf.isSubtype(of: simpleSuperType)
+		else if self.contains("<"), self.last == ">" {
+			let typeWithoutGenerics = String(self.prefix { $0 != "<" })
+			return typeWithoutGenerics.isSubtype(of: superType)
+		}
+		else if superType.contains("<"), superType.last == ">" {
+			let typeWithoutGenerics = String(superType.prefix { $0 != "<" })
+			return self.isSubtype(of: typeWithoutGenerics)
 		}
 
 		// If no subtype cases were met, say it's not a subtype

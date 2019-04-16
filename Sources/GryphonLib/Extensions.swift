@@ -19,9 +19,18 @@ import Foundation
 private func gryphonTemplates() {
 	let _array: ArrayReference<Any> = []
 	let _index = 0
+	let _string1 = ""
+	let _character: Character = " "
+	let _bool = true
 
 	_ = _array[safe: _index]
 	_ = "_array.getSafe(_index)"
+
+	_ = _string1.split(separator: _character)
+	_ = "_string1.split(separator = _character)"
+
+	_ = _string1.split(separator: _character, omittingEmptySubsequences: _bool)
+	_ = "_string1.split(separator = _character, omittingEmptySubsequences = _bool)"
 }
 
 internal extension String {

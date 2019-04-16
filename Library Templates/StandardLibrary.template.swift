@@ -14,6 +14,7 @@ func gryphonTemplates() {
 	var _array1: [Any] = []
 	var _array2: [Any] = []
 	var _comparableArray : [Compare] = []
+	let _compare = Compare()
 	var _index: String.Index = "abc".endIndex
 	let _index1: String.Index = "abc".startIndex
 	let _index2: String.Index = "abc".startIndex
@@ -163,6 +164,9 @@ func gryphonTemplates() {
 
 	_comparableArray.sorted()
 	"_comparableArray.sorted()"
+
+	_comparableArray.contains(_compare)
+	"_comparableArray.contains(_compare)"
 
 	// Dictionary
 	_dictionary.reduce(_any, _closure)
