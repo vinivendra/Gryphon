@@ -43,17 +43,12 @@ public enum Compiler {
 		}
 	}
 
-	public static func compileAndRun(filesAt filePaths: [String]) throws -> KotlinCompilationResult
+	public static func runCompiledProgram(fromFolder outputFolder: String)
+		throws -> KotlinCompilationResult
 	{
-		let compilationResult = try compile(filesAt: filePaths)
-
-		guard case .success = compilationResult else {
-			return compilationResult
-		}
-
-		log?("\t- Running Kotlin...")
+		log("\t- Running Kotlin...")
 		let arguments = ["java", "-jar", "kotlin.jar"]
-		let commandResult = Shell.runShellCommand(arguments, fromFolder: OS.buildFolder)
+		let commandResult = Shell.runShellCommand(arguments, fromFolder: outputFolder)
 
 		guard let result = commandResult else {
 			return .failure(errorMessage: "\t\t- Java running timed out.")
@@ -62,14 +57,13 @@ public enum Compiler {
 		return .success(commandOutput: result)
 	}
 
-	public static func compile(filesAt filePaths: [String]) throws -> KotlinCompilationResult {
-		let kotlinFilePaths =
-			try generateKotlinCode(forFilesAt: filePaths, outputFolder: OS.buildFolder)
-
-		log?("\t- Compiling Kotlin...")
+	public static func compile(kotlinFiles filePaths: [String], outputFolder: String)
+		throws -> KotlinCompilationResult
+	{
+		log("\t- Compiling Kotlin...")
 
 		// Call the kotlin compiler
-		let arguments = ["-include-runtime", "-d", OS.buildFolder + "/kotlin.jar"] + kotlinFilePaths
+		let arguments = ["-include-runtime", "-d", outputFolder + "/kotlin.jar"] + filePaths
 		let commandResult = Shell.runShellCommand(kotlinCompilerPath, arguments: arguments)
 
 		// Ensure the compiler terminated successfully
@@ -85,50 +79,29 @@ public enum Compiler {
 		return .success(commandOutput: result)
 	}
 
-	/// Transpiles the given files and writes the output to files in the given outputFolder. Returns
-	/// the paths to the output files.
-	@discardableResult
-	public static func generateKotlinCode(
-		forFilesAt filePaths: [String], outputFolder: String) throws -> [String]
-	{
-		let kotlinCodes = try generateKotlinCode(forFilesAt: filePaths)
-
-		var outputFiles: [String] = []
-		for (filePath, kotlinCode) in zip(filePaths, kotlinCodes) {
-			let fileName = URL(fileURLWithPath: filePath).deletingPathExtension().lastPathComponent
-			let outputFile = Utilities.createFile(
-				named: fileName.withExtension(.kt),
-				inDirectory: outputFolder,
-				containing: kotlinCode)
-			outputFiles.append(outputFile)
-		}
-
-		return outputFiles
-	}
-
-	public static func generateKotlinCode(forFilesAt filePaths: [String]) throws -> [String] {
-		let asts = try generateGryphonASTAndRunPasses(forFilesAt: filePaths)
-		log?("\t- Translating ASTs to Kotlin...")
+	public static func generateKotlinCode(fromGryphonASTs asts: [GryphonAST]) throws -> [String] {
+		log("\t- Translating ASTs to Kotlin...")
 		let kotlinCodes = try asts.map { try KotlinTranslator().translateAST($0) }
 		return kotlinCodes
 	}
 
-	public static func generateGryphonASTAndRunPasses(forFilesAt filePaths: [String]) throws
+	public static func generateGryphonASTs(fromGryphonRawASTs asts: [GryphonAST]) throws
 		-> [GryphonAST]
 	{
-		var asts = try generateGryphonAST(forFilesAt: filePaths)
-		log?("\t- Translating Swift ASTs to Gryphon ASTs...")
+		var asts = asts
+		log("\t- Translating Swift ASTs to Gryphon ASTs...")
 		try Utilities.updateLibraryFiles()
 		asts = asts.map { TranspilationPass.runFirstRoundOfPasses(on: $0) }
 		asts = asts.map { TranspilationPass.runSecondRoundOfPasses(on: $0) }
 		return asts
 	}
 
-	public static func generateGryphonAST(forFilesAt filePaths: [String]) throws -> [GryphonAST] {
-		let translateAsMainFile = (filePaths.count == 1)
+	public static func generateGryphonRawASTs(fromSwiftASTs swiftASTs: [SwiftAST])
+		throws -> [GryphonAST]
+	{
+		let translateAsMainFile = (swiftASTs.count == 1)
 
-		let swiftASTs = try filePaths.map { try generateSwiftAST(forFileAt: $0) }
-		log?("\t- Translating Swift ASTs to Gryphon ASTs...")
+		log("\t- Translating Swift ASTs to Gryphon ASTs...")
 		let gryphonASTs = try swiftASTs.map {
 			try SwiftTranslator().translateAST($0, asMainFile: translateAsMainFile)
 		}
@@ -136,18 +109,66 @@ public enum Compiler {
 		return gryphonASTs
 	}
 
-	public static func generateSwiftAST(forFileAt filePath: String) throws -> SwiftAST {
-		let astDumpFilePath = Utilities.changeExtension(of: filePath, to: .swiftASTDump)
-
-		log?("\t- Building SwiftAST...")
-		let ast = try ASTDumpDecoder.decode(file: astDumpFilePath)
+	public static func generateSwiftAST(fromASTDump astDump: String) throws -> SwiftAST {
+		log("\t- Building SwiftAST...")
+		let ast = try ASTDumpDecoder(encodedString: astDump).decode()
 		return ast
 	}
 
-	public static func getSwiftASTDump(forFileAt filePath: String) throws -> String {
-		log?("\t- Getting swift AST dump...")
-		let astDumpFilePath = Utilities.changeExtension(of: filePath, to: .swiftASTDump)
-		return try String(contentsOfFile: astDumpFilePath)
+	//
+	public static func runCompiledProgram(
+		fromASTDumpFiles inputFiles: [String], fromFolder outputFolder: String = OS.buildFolder)
+		throws -> KotlinCompilationResult
+	{
+		let compilationResult = try compile(ASTDumpFiles: inputFiles, outputFolder: outputFolder)
+		guard case .success = compilationResult else {
+			return compilationResult
+		}
+		return try runCompiledProgram(fromFolder: outputFolder)
+	}
+
+	public static func compile(
+		ASTDumpFiles inputFiles: [String], outputFolder: String = OS.buildFolder)
+		throws -> KotlinCompilationResult
+	{
+		let kotlinCodes = try generateKotlinCode(fromASTDumpFiles: inputFiles)
+		// Write kotlin files to the output folder
+		let kotlinFilePaths = zip(inputFiles, kotlinCodes).map { tuple -> String in
+			let inputFile = tuple.0
+			let kotlinCode = tuple.1
+			let inputFileName = inputFile.split(withStringSeparator: "/").last!
+			let kotlinFileName = Utilities.changeExtension(of: inputFileName, to: .kt)
+			let folderWithSlash = outputFolder.hasSuffix("/") ? outputFolder : (outputFolder + "/")
+			let kotlinFilePath = folderWithSlash + kotlinFileName
+			Utilities.createFile(atPath: kotlinFilePath, containing: kotlinCode)
+			return kotlinFilePath
+		}
+		return try compile(kotlinFiles: kotlinFilePaths, outputFolder: outputFolder)
+	}
+
+	public static func generateKotlinCode(fromASTDumpFiles inputFiles: [String]) throws -> [String]
+	{
+		let asts = try generateGryphonASTs(fromASTDumpFiles: inputFiles)
+		return try generateKotlinCode(fromGryphonASTs: asts)
+	}
+
+	public static func generateGryphonASTs(fromASTDumpFiles inputFiles: [String])
+		throws -> [GryphonAST]
+	{
+		let rawASTs = try generateGryphonRawASTs(fromASTDumpFiles: inputFiles)
+		return try generateGryphonASTs(fromGryphonRawASTs: rawASTs)
+	}
+
+	public static func generateGryphonRawASTs(fromASTDumpFiles inputFiles: [String])
+		throws -> [GryphonAST]
+	{
+		let asts = try inputFiles.map { try generateSwiftAST(fromASTDumpFile: $0) }
+		return try generateGryphonRawASTs(fromSwiftASTs: asts)
+	}
+
+	public static func generateSwiftAST(fromASTDumpFile inputFile: String) throws -> SwiftAST {
+		let astDump = try Utilities.readFile(inputFile)
+		return try generateSwiftAST(fromASTDump: astDump)
 	}
 
 	//
@@ -190,14 +211,14 @@ public enum Compiler {
 		if !errors.isEmpty {
 			print("Errors:")
 			for error in errors {
-				print("🚨 \(error)")
+				print(error)
 			}
 		}
 
 		if !warnings.isEmpty {
 			print("Warnings:")
 			for warning in warnings {
-				print("⚠️ \(warning)")
+				print(warning)
 			}
 		}
 
@@ -216,6 +237,8 @@ public enum Compiler {
 	}
 
 	public static func printErrorStatistics() {
+		print("Errors: \(Compiler.errors.count). Warnings: \(Compiler.warnings.count).")
+
 		let swiftASTDumpErrors = errors.compactMap { $0 as? SwiftTranslatorError }
 		if !swiftASTDumpErrors.isEmpty {
 			print("Swift AST translator failed to translate:")
@@ -298,7 +321,7 @@ public enum Compiler {
 	}
 
 	//
-	private static var log: ((String) -> ())? = { print($0) }
+	public private(set) static var log: ((String) -> ()) = { print($0) }
 
 	public static var shouldLogProgress = false {
 		didSet {
@@ -306,7 +329,7 @@ public enum Compiler {
 				log = { print($0) }
 			}
 			else {
-				log = nil
+				log = { _ in }
 			}
 		}
 	}

@@ -28,8 +28,8 @@ class AcceptanceTest: XCTestCase {
 				// Translate the swift code to kotlin, compile the resulting kotlin code, run it,
 				// and get its output
 				let testFilePath = TestUtils.testFilesPath + testName
-				let compilationResult =
-					try Compiler.compileAndRun(filesAt: [testFilePath.withExtension(.swift)])
+				let compilationResult = try Compiler.runCompiledProgram(
+					fromASTDumpFiles: [testFilePath.withExtension(.swiftASTDump)])
 
 				switch compilationResult {
 				case let .failure(errorMessage: errorMessage):

@@ -1,44 +1,58 @@
 {
 	"Sources/GryphonLib/ASTDumpDecoder.swift": {
 		"ast-dump": "Bootstrap/ASTDumpDecoder.swiftASTDump",
+		"kotlin": "Bootstrap/ASTDumpDecoder.kt",
 	},
 	"Sources/GryphonLib/Compiler.swift": {
 		"ast-dump": "Bootstrap/Compiler.swiftASTDump",
+		"kotlin": "Bootstrap/Compiler.kt",
 	},
 	"Sources/GryphonLib/Extensions.swift": {
 		"ast-dump": "Bootstrap/Extensions.swiftASTDump",
+		"kotlin": "Bootstrap/Extensions.kt",
 	},
 	"Sources/GryphonLib/GryphonAST.swift": {
 		"ast-dump": "Bootstrap/GryphonAST.swiftASTDump",
+		"kotlin": "Bootstrap/GryphonAST.kt",
 	},
 	"Sources/GryphonLib/KotlinTranslator.swift": {
 		"ast-dump": "Bootstrap/KotlinTranslator.swiftASTDump",
+		"kotlin": "Bootstrap/KotlinTranslator.kt",
 	},
 	"Sources/GryphonLib/LibraryTranspilationPass.swift": {
 		"ast-dump": "Bootstrap/LibraryTranspilationPass.swiftASTDump",
+		"kotlin": "Bootstrap/LibraryTranspilationPass.kt",
 	},
 	"Sources/GryphonLib/PrintableAsTree.swift": {
 		"ast-dump": "Bootstrap/PrintableAsTree.swiftASTDump",
+		"kotlin": "Bootstrap/PrintableAsTree.kt",
 	},
 	"Sources/GryphonLib/Shell.swift": {
 		"ast-dump": "Bootstrap/Shell.swiftASTDump",
+		"kotlin": "Bootstrap/Shell.kt",
 	},
 	"Sources/GryphonLib/SourceFile.swift": {
 		"ast-dump": "Bootstrap/SourceFile.swiftASTDump",
+		"kotlin": "Bootstrap/SourceFile.kt",
 	},
 	"Sources/GryphonLib/StandardLibrary.swift": {
 		"ast-dump": "Bootstrap/StandardLibrary.swiftASTDump",
+		"kotlin": "Bootstrap/StandardLibrary.kt",
 	},
 	"Sources/GryphonLib/SwiftAST.swift": {
 		"ast-dump": "Bootstrap/SwiftAST.swiftASTDump",
+		"kotlin": "Bootstrap/SwiftAST.kt",
 	},
 	"Sources/GryphonLib/SwiftTranslator.swift": {
 		"ast-dump": "Bootstrap/SwiftTranslator.swiftASTDump",
+		"kotlin": "Bootstrap/SwiftTranslator.kt",
 	},
 	"Sources/GryphonLib/TranspilationPass.swift": {
 		"ast-dump": "Bootstrap/TranspilationPass.swiftASTDump",
+		"kotlin": "Bootstrap/TranspilationPass.kt",
 	},
 	"Sources/GryphonLib/Utilities.swift": {
 		"ast-dump": "Bootstrap/Utilities.swiftASTDump",
+		"kotlin": "Bootstrap/Utilities.kt",
 	},
 }

@@ -88,9 +88,11 @@ public extension PrintableAsTree {
 	func prettyPrint(
 		indentation: ArrayReference<String> = [],
 		isLast: Bool = true,
-		horizontalLimit: Int = Int.max,
+		horizontalLimit: Int? = nil,
 		printFunction: (String) -> () = { print($0, terminator: "") })
 	{
+		let horizontalLimit = horizontalLimit ?? Int.max
+
 		// Print the indentation
 		let indentationString = indentation.joined(separator: "")
 
@@ -144,9 +146,9 @@ public extension PrintableAsTree {
 	}
 
 	// TODO: replace this in other places that use this method
-	var prettyDescription: String {
+	func prettyDescription(horizontalLimit: Int? = nil) -> String {
 		var result = ""
-		prettyPrint { result += $0 }
+		prettyPrint(horizontalLimit: horizontalLimit) { result += $0 }
 		return result
 	}
 }

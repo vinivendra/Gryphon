@@ -62,9 +62,10 @@ interface PrintableAsTree {
 public fun PrintableAsTree.prettyPrint(
 	indentation: MutableList<String> = mutableListOf(),
 	isLast: Boolean = true,
-	horizontalLimit: Int = Int.MAX_VALUE,
+	horizontalLimit: Int? = null,
 	printFunction: (String) -> Unit = { print(it) })
 {
+	val horizontalLimit: Int = horizontalLimit ?: Int.MAX_VALUE
 	val indentationString: String = indentation.joinToString(separator = "")
 	val rawLine: String = "${indentationString} ${treeDescription}"
 	val line: String
@@ -117,9 +118,8 @@ public fun PrintableAsTree.prettyPrint(
 		printFunction = printFunction)
 }
 
-val PrintableAsTree.prettyDescription: String
-	get() {
-		var result: String = ""
-		prettyPrint { result += it }
-		return result
-	}
+public fun PrintableAsTree.prettyDescription(horizontalLimit: Int? = null): String {
+	var result: String = ""
+	prettyPrint(horizontalLimit = horizontalLimit, printFunction = { result += it })
+	return result
+}

@@ -51,12 +51,6 @@ internal class ASTDumpDecoder {
 		self.currentIndex = buffer.startIndex
 	}
 
-	public static func decode(file astFilePath: String) throws -> SwiftAST {
-		let astDump = try Utilities.readFile(astFilePath)
-		let decoder = ASTDumpDecoder(encodedString: astDump)
-		return try decode(from: decoder)
-	}
-
 	//
 	func nextIndex() -> String.Index {
 		return buffer.index(after: currentIndex)
@@ -654,13 +648,13 @@ internal class ASTDumpDecoder {
 
 // MARK: - Creating a SwiftAST
 extension ASTDumpDecoder {
-	private static func decode(from decoder: ASTDumpDecoder) throws -> SwiftAST {
+	public func decode() throws -> SwiftAST {
 		let standaloneAttributes: ArrayReference<String> = []
 		let keyValueAttributes: DictionaryReference<String, String> = [:]
 		let subtrees: ArrayReference<SwiftAST> = []
 
-		try decoder.readOpeningParenthesis()
-		let rawName = decoder.readIdentifier()
+		try readOpeningParenthesis()
+		let rawName = readIdentifier()
 		let name = Utilities.expandSwiftAbbreviation(rawName)
 
 		// The loop stops: all branches tell the decoder to read, therefore the input string must
@@ -668,46 +662,46 @@ extension ASTDumpDecoder {
 		while true {
 			// Add key-value attributes
 			// TODO: Add warnings for potential bugs in eager evaluation of if-lets
-			if let key = decoder.readKey() {
+			if let key = readKey() {
 				if key == "location" {
-					keyValueAttributes[key] = decoder.readLocation()
+					keyValueAttributes[key] = readLocation()
 				}
 				else if key == "decl" {
-					let string = (decoder.readDeclarationLocation() ?? decoder.readDeclaration())!
+					let string = (readDeclarationLocation() ?? readDeclaration())!
 					keyValueAttributes[key] = string
 				}
 				else if key == "bind"
 				{
-					let string = decoder.readDeclarationLocation() ?? decoder.readIdentifier()
+					let string = readDeclarationLocation() ?? readIdentifier()
 					keyValueAttributes[key] = string
 				}
 				else if key == "inherits" {
-					let string = decoder.readIdentifierList()
+					let string = readIdentifierList()
 					keyValueAttributes[key] = string
 				}
 				// Capture lists are enclosed in parentheses
 				else if key == "captures" {
-					let string = decoder.readIdentifier()
+					let string = readIdentifier()
 					keyValueAttributes[key] = string
 				}
 				else {
-					keyValueAttributes[key] = decoder.readStandaloneAttribute()
+					keyValueAttributes[key] = readStandaloneAttribute()
 				}
 			}
 			// Add subtree
-			else if decoder.canReadOpeningParenthesis() {
+			else if canReadOpeningParenthesis() {
 				// Parse subtrees
-				let subtree = try decode(from: decoder)
+				let subtree = try decode()
 				subtrees.append(subtree)
 			}
 			// Finish this branch
-			else if decoder.canReadClosingParenthesis() {
-				try decoder.readClosingParenthesis()
+			else if canReadClosingParenthesis() {
+				try readClosingParenthesis()
 				break
 			}
 			// Add standalone attributes
 			else {
-				let attribute = decoder.readStandaloneAttribute()
+				let attribute = readStandaloneAttribute()
 				standaloneAttributes.append(attribute)
 			}
 		}

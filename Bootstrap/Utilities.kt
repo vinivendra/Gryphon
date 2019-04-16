@@ -78,7 +78,7 @@ fun Utilities.Companion.fileWasModifiedLaterThan(
 	return isAfter
 }
 
-class OS {
+public class OS {
 	companion object {
 		val javaOSName = System.getProperty("os.name")
 		val osName = if (javaOSName == "Mac OS X") { "macOS" } else { "Linux" }
@@ -120,6 +120,14 @@ fun Utilities.Companion.createFileAndDirectory(
 	writer.close()
 
 	return filePath
+}
+
+fun Utilities.Companion.createFile(filePath: String, contents: String) {
+	val file = File(filePath)
+	file.createNewFile()
+	val writer = FileWriter(file)
+	writer.write(contents)
+	writer.close()
 }
 
 fun Utilities.Companion.createFileIfNeeded(filePath: String): Boolean {

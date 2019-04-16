@@ -147,7 +147,7 @@ extension Utilities { // kotlin: ignore
 // declaration: 	return isAfter
 // declaration: }
 
-class OS { // kotlin: ignore
+public class OS { // kotlin: ignore
 	#if os(macOS)
 	static let osName = "macOS"
 	#else
@@ -166,7 +166,7 @@ class OS { // kotlin: ignore
 }
 
 // declaration:
-// declaration: class OS {
+// declaration: public class OS {
 // declaration: 	companion object {
 // declaration: 		val javaOSName = System.getProperty("os.name")
 // declaration: 		val osName = if (javaOSName == "Mac OS X") { "macOS" } else { "Linux" }
@@ -210,10 +210,14 @@ extension Utilities { // kotlin: ignore
 		try? fileManager.removeItem(at: fileURL)
 
 		// Create the file and write to it
-		let success = fileManager.createFile(atPath: filePath, contents: Data(contents.utf8))
-		assert(success)
+		createFile(atPath: filePath, containing: contents)
 
 		return filePath
+	}
+
+	internal static func createFile(atPath filePath: String, containing contents: String) {
+		let fileManager = FileManager.default
+		fileManager.createFile(atPath: filePath, contents: Data(contents.utf8))
 	}
 }
 
@@ -242,6 +246,14 @@ extension Utilities { // kotlin: ignore
 // declaration: 	writer.close()
 // declaration:
 // declaration: 	return filePath
+// declaration: }
+// declaration:
+// declaration: fun Utilities.Companion.createFile(filePath: String, contents: String) {
+// declaration: 	val file = File(filePath)
+// declaration: 	file.createNewFile()
+// declaration: 	val writer = FileWriter(file)
+// declaration: 	writer.write(contents)
+// declaration: 	writer.close()
 // declaration: }
 
 extension Utilities { // kotlin: ignore
@@ -364,11 +376,12 @@ extension Utilities {
 			throw FileError.outdatedFile(inFolder: libraryTemplatesFolder)
 		}
 
+		// TODO: Replace prints in this file with Compiler.log when the compiler gets bootstrapped
 		print("\t* Updating library files...")
 
 		let templateFilePaths =
 			getFiles(inDirectory: libraryTemplatesFolder, withExtension: .swiftASTDump)
-		let asts = try Compiler.generateGryphonAST(forFilesAt: templateFilePaths)
+		let asts = try Compiler.generateGryphonRawASTs(fromASTDumpFiles: templateFilePaths)
 
 		for ast in asts {
 			_ = RecordTemplatesTranspilationPass(ast: ast).run()
