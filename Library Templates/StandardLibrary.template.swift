@@ -58,8 +58,14 @@ func gryphonTemplates() {
 	Double(_string)
 	"_string.toDouble()"
 
+	Int(_string)
+	"_string.toIntOrNull()"
+
 	_string.dropLast()
 	"_string.dropLast(1)"
+
+	_string.dropFirst(_int)
+	"_string.drop(_int)"
 
 	_string.indices
 	"_string.indices"

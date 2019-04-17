@@ -48,6 +48,11 @@ public class Compiler {
 		}
 	}
 
+	public static func clearErrorsAndWarnings() {
+		errors = []
+		warnings = []
+	}
+
 	//
 	public static func generateSwiftAST(fromASTDump astDump: String) throws -> SwiftAST {
 		log("\t- Building SwiftAST...")
@@ -244,11 +249,6 @@ extension Compiler { // kotlin: ignore
 
 	public static func hasErrorsOrWarnings() -> Bool {
 		return !errors.isEmpty || !warnings.isEmpty
-	}
-
-	public static func clearErrorsAndWarnings() {
-		errors = []
-		warnings = []
 	}
 
 	public static func printErrorStatistics() {

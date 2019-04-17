@@ -14,11 +14,11 @@
 * limitations under the License.
 */
 
-import Foundation
 import GryphonLib
 
 do {
-	try Driver.run()
+	try Driver.run(withArguments: ArrayReference<String>(array: Array(
+		CommandLine.arguments.dropFirst())))
 }
 catch let error {
 	print(error)

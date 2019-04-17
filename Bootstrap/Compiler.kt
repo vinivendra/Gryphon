@@ -25,6 +25,11 @@ class Compiler {
 			}
 		}
 
+		public fun clearErrorsAndWarnings() {
+			errors = mutableListOf()
+			warnings = mutableListOf()
+		}
+
 		public fun generateSwiftAST(astDump: String): SwiftAST {
 			log("\t- Building SwiftAST...")
 			val ast: SwiftAST = ASTDumpDecoder(encodedString = astDump).decode()
