@@ -157,17 +157,21 @@ public class TranspilationPass {
 						replaceEnumElementDeclaration(
 							name: $0.name,
 							associatedValues: $0.associatedValues,
+							rawValue: $0.rawValue,
 							annotations: $0.annotations)
 					},
 				members: replaceStatements(members), isImplicit: isImplicit), ]
 	}
 
 	func replaceEnumElementDeclaration(
-		name: String, associatedValues: [LabeledType], annotations: String?)
+		name: String, associatedValues: [LabeledType], rawValue: Expression?, annotations: String?)
 		-> [EnumElement]
 	{
 		return [EnumElement(
-			name: name, associatedValues: associatedValues, annotations: annotations), ]
+			name: name,
+			associatedValues: associatedValues,
+			rawValue: rawValue,
+			annotations: annotations), ]
 	}
 
 	func replaceProtocolDeclaration(name: String, members: [Statement]) -> [Statement] {
@@ -959,12 +963,14 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 				return EnumElement(
 					name: element.name.capitalizedAsCamelCase,
 					associatedValues: element.associatedValues,
+					rawValue: element.rawValue,
 					annotations: element.annotations)
 			}
 			else if isEnumClass {
 				return EnumElement(
 					name: element.name.upperSnakeCase(),
 					associatedValues: element.associatedValues,
+					rawValue: element.rawValue,
 					annotations: element.annotations)
 			}
 			else {
@@ -1672,7 +1678,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 		members: [Statement],
 		isImplicit: Bool) -> [Statement]
 	{
-		if let typeName = inherits.first(where: TranspilationPass.isASwiftRawRepresentableType) {
+		if let typeName = elements.compactMap({ $0.rawValue?.type }).first {
 			let switchCases = elements.map { element in
 				SwitchCase(
 					expression: .dotExpression(
@@ -1686,7 +1692,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 								range: nil))),
 					statements: [
 						.returnStatement(
-							expression: .literalStringExpression(value: element.name)),
+							expression: element.rawValue),
 					])
 			}
 
@@ -1883,11 +1889,9 @@ public extension TranspilationPass {
 		// Remove declarations that shouldn't even be considered in the passes
 		result = RemoveImplicitDeclarationsTranspilationPass(ast: result).run()
 
-		// RecordEnums needs to be after CleanInheritance; RawValues needs to be before it:
-		// RawValues needs to know all the inheritances to look for one that's RawRepresentable.
-		// RecordEnums needs Swift-only inheritances removed in order to know if the enum inherits
-		// from a class or not, and therefore if it's a sealed class or an enum class.
-		result = RawValuesTranspilationPass(ast: result).run()
+		// RecordEnums needs to be after CleanInheritance: it needs Swift-only inheritances removed
+		// in order to know if the enum inherits from a class or not, and therefore is a sealed
+		// class or an enum class.
 		result = CleanInheritancesTranspilationPass(ast: result).run()
 
 		// Record information on enum and function translations
@@ -1912,6 +1916,7 @@ public extension TranspilationPass {
 		result = RemoveExtraReturnsInInitsTranspilationPass(ast: result).run()
 
 		// Transform structures that need to be significantly different in Kotlin
+		result = RawValuesTranspilationPass(ast: result).run()
 		result = DescriptionAsToStringTranspilationPass(ast: result).run()
 		result = OptionalInitsTranspilationPass(ast: result).run()
 		result = StaticMembersTranspilationPass(ast: result).run()

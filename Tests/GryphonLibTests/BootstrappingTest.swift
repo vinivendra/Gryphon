@@ -39,7 +39,7 @@ class BootstrappingTest: XCTestCase {
 			return
 		}
 
-		let inputFiles = [
+		let inputFiles: ArrayReference = [
 			"Sources/GryphonLib/StandardLibrary.swift",
 			"Sources/GryphonLib/PrintableAsTree.swift",
 			"Sources/GryphonLib/SwiftAST.swift",
@@ -56,7 +56,8 @@ class BootstrappingTest: XCTestCase {
 			"Bootstrap/main.kt",
 		]
 
-		let arguments = ["run", "-output-file-map=output-file-map.json"] + inputFiles
+		let arguments: ArrayReference =
+			["run", "-output-file-map=output-file-map.json"] + inputFiles
 
 		let driverResult: Any?
 		do {

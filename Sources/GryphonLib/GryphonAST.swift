@@ -315,6 +315,7 @@ public struct SwitchCase: Equatable {
 public struct EnumElement: Equatable {
 	var name: String
 	var associatedValues: [LabeledType]
+	var rawValue: Expression?
 	var annotations: String?
 }
 

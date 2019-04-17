@@ -535,10 +535,29 @@ public class SwiftTranslator {
 			inheritanceArray = []
 		}
 
+		var rawValues: [Expression]
+		if let constructorDeclaration = enumDeclaration.subtree(named: "Constructor Declaration"),
+			constructorDeclaration.standaloneAttributes.contains("init(rawValue:)"),
+			constructorDeclaration.standaloneAttributes.contains("implicit"),
+			let arrayExpression = constructorDeclaration.subtree(named: "Brace Statement")?
+				.subtree(named: "Switch Statement")?
+				.subtree(named: "Call Expression")?
+				.subtree(named: "Tuple Expression")?
+				.subtree(named: "Array Expression")
+		{
+			let rawValueASTs = Array(arrayExpression.subtrees.dropLast())
+			rawValues = try rawValueASTs.map { try translate(expression: $0) }
+		}
+		else {
+			rawValues = []
+		}
+
 		var elements = [EnumElement]()
 		let enumElementDeclarations =
 			enumDeclaration.subtrees.filter { $0.name == "Enum Element Declaration" }
-		for enumElementDeclaration in enumElementDeclarations {
+		for index in enumElementDeclarations.indices {
+			let enumElementDeclaration = enumElementDeclarations[index]
+
 			guard let elementName = enumElementDeclaration.standaloneAttributes.first else {
 				return try unexpectedASTStructureError(
 					"Expected the element name to be the first standalone attribute in an Enum" +
@@ -550,7 +569,10 @@ public class SwiftTranslator {
 
 			if !elementName.contains("(") {
 				elements.append(EnumElement(
-					name: elementName, associatedValues: [], annotations: annotations))
+					name: elementName,
+					associatedValues: [],
+					rawValue: rawValues[safe: index],
+					annotations: annotations))
 			}
 			else {
 				let parenthesisIndex = elementName.firstIndex(of: "(")!
@@ -572,7 +594,10 @@ public class SwiftTranslator {
 				let associatedValues = zip(valueLabels, valueTypes).map(LabeledType.init)
 
 				elements.append(EnumElement(
-					name: prefix, associatedValues: associatedValues, annotations: annotations))
+					name: prefix,
+					associatedValues: associatedValues,
+					rawValue: rawValues[safe: index],
+					annotations: annotations))
 			}
 		}
 
