@@ -1679,62 +1679,35 @@ public class RawValuesTranspilationPass: TranspilationPass {
 		isImplicit: Bool) -> [Statement]
 	{
 		if let typeName = elements.compactMap({ $0.rawValue?.type }).first {
-			let switchCases = elements.map { element in
-				SwitchCase(
-					expression: .dotExpression(
-						leftExpression: .typeExpression(type: name),
-						rightExpression: .declarationReferenceExpression(value:
-							DeclarationReferenceExpression(
-								identifier: element.name,
-								type: name,
-								isStandardLibrary: false,
-								isImplicit: false,
-								range: nil))),
-					statements: [
-						.returnStatement(
-							expression: element.rawValue),
-					])
+			let rawValueVariable = createRawValueVariable(
+					rawValueType: typeName,
+					access: access,
+					name: name,
+					elements: elements)
+
+			guard let rawValueInitializer = createRawValueInitializer(
+				rawValueType: typeName,
+				access: access,
+				name: name,
+				elements: elements) else
+			{
+				Compiler.handleWarning(
+					message: "Failed to create init(rawValue:)",
+					details: "Unable to get all raw values in enum declaration.",
+					sourceFile: ast.sourceFile,
+					sourceFileRange: elements.compactMap { $0.rawValue?.range }.first)
+				return super.replaceEnumDeclaration(
+					access: access,
+					name: name,
+					inherits: inherits,
+					elements: elements,
+					members: members,
+					isImplicit: isImplicit)
 			}
 
-			let switchStatement = Statement.switchStatement(
-				convertsToExpression: nil,
-				expression: .declarationReferenceExpression(value:
-					DeclarationReferenceExpression(
-						identifier: "this",
-						type: name,
-						isStandardLibrary: false,
-						isImplicit: false,
-						range: nil)),
-				cases: switchCases)
-
-			let getter = FunctionDeclaration(
-				prefix: "get",
-				parameters: [],
-				returnType: typeName,
-				functionType: "() -> \(typeName)",
-				genericTypes: [],
-				isImplicit: false,
-				isStatic: false,
-				isMutating: false,
-				extendsType: nil,
-				statements: [switchStatement],
-				access: access,
-				annotations: nil)
-
-			let rawValueDeclaration = Statement.variableDeclaration(value: VariableDeclaration(
-				identifier: "rawValue",
-				typeName: typeName,
-				expression: nil,
-				getter: getter,
-				setter: nil,
-				isLet: false,
-				isImplicit: false,
-				isStatic: false,
-				extendsType: nil,
-				annotations: nil))
-
 			var newMembers = members
-			newMembers.append(rawValueDeclaration)
+			newMembers.append(.functionDeclaration(value: rawValueInitializer))
+			newMembers.append(.variableDeclaration(value: rawValueVariable))
 
 			return super.replaceEnumDeclaration(
 				access: access,
@@ -1753,6 +1726,136 @@ public class RawValuesTranspilationPass: TranspilationPass {
 				members: members,
 				isImplicit: isImplicit)
 		}
+	}
+
+	private func createRawValueInitializer(
+		rawValueType: String,
+		access: String?,
+		name: String,
+		elements: [EnumElement])
+		-> FunctionDeclaration?
+	{
+		let maybeSwitchCases = elements.map { element -> SwitchCase? in
+			guard let rawValue = element.rawValue else {
+				return nil
+			}
+
+			return SwitchCase(
+				expression: rawValue,
+				statements: [
+					.returnStatement(
+						expression: .dotExpression(
+							leftExpression: .typeExpression(type: name),
+							rightExpression: .declarationReferenceExpression(value:
+								DeclarationReferenceExpression(
+									identifier: element.name,
+									type: name,
+									isStandardLibrary: false,
+									isImplicit: false,
+									range: nil)))),
+				])
+		}
+
+		guard var switchCases = maybeSwitchCases as? [SwitchCase] else {
+			return nil
+		}
+
+		let defaultSwitchCase = SwitchCase(
+			expression: nil,
+			statements: [.returnStatement(expression: .nilLiteralExpression)])
+
+		switchCases.append(defaultSwitchCase)
+
+		let switchStatement = Statement.switchStatement(
+			convertsToExpression: nil,
+			expression: .declarationReferenceExpression(value:
+				DeclarationReferenceExpression(
+					identifier: "rawValue",
+					type: rawValueType,
+					isStandardLibrary: false,
+					isImplicit: false,
+					range: nil)),
+			cases: switchCases)
+
+		return FunctionDeclaration(
+			prefix: "init",
+			parameters: [FunctionParameter(
+				label: "rawValue",
+				apiLabel: nil,
+				type: rawValueType,
+				value: nil), ],
+			returnType: name + "?",
+			functionType: "(\(rawValueType)) -> \(name)?",
+			genericTypes: [],
+			isImplicit: false,
+			isStatic: true,
+			isMutating: false,
+			extendsType: nil,
+			statements: [switchStatement],
+			access: access,
+			annotations: nil)
+	}
+
+	private func createRawValueVariable(
+		rawValueType: String,
+		access: String?,
+		name: String,
+		elements: [EnumElement])
+		-> VariableDeclaration
+	{
+		let switchCases = elements.map { element in
+			SwitchCase(
+				expression: .dotExpression(
+					leftExpression: .typeExpression(type: name),
+					rightExpression: .declarationReferenceExpression(value:
+						DeclarationReferenceExpression(
+							identifier: element.name,
+							type: name,
+							isStandardLibrary: false,
+							isImplicit: false,
+							range: nil))),
+				statements: [
+					.returnStatement(
+						expression: element.rawValue),
+				])
+		}
+
+		let switchStatement = Statement.switchStatement(
+			convertsToExpression: nil,
+			expression: .declarationReferenceExpression(value:
+				DeclarationReferenceExpression(
+					identifier: "this",
+					type: name,
+					isStandardLibrary: false,
+					isImplicit: false,
+					range: nil)),
+			cases: switchCases)
+
+		let getter = FunctionDeclaration(
+			prefix: "get",
+			parameters: [],
+			returnType: rawValueType,
+			functionType: "() -> \(rawValueType)",
+			genericTypes: [],
+			isImplicit: false,
+			isStatic: false,
+			isMutating: false,
+			extendsType: nil,
+			statements: [switchStatement],
+			access: access,
+			annotations: nil)
+
+		return VariableDeclaration(
+			identifier: "rawValue",
+			typeName: rawValueType,
+			expression: nil,
+			getter: getter,
+			setter: nil,
+			isLet: false,
+			isImplicit: false,
+			isStatic: false,
+			extendsType: nil,
+			annotations: nil)
 	}
 }
 

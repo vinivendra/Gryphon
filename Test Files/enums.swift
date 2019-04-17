@@ -27,7 +27,7 @@ enum OtherError: Error {
 }
 
 enum NoInheritances: String, Equatable, Codable {
-	case fooBar
+	case fooBar = "foo-bar"
 	case barBaz
 }
 

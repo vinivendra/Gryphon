@@ -30,6 +30,18 @@ public enum class FileExtension {
 	KT,
 	SWIFT;
 
+	companion object {
+		operator fun invoke(rawValue: String): FileExtension? {
+			return when (rawValue) {
+				"swiftASTDump" -> FileExtension.SWIFT_AST_DUMP
+				"output" -> FileExtension.OUTPUT
+				"kt" -> FileExtension.KT
+				"swift" -> FileExtension.SWIFT
+				else -> null
+			}
+		}
+	}
+
 	val rawValue: String
 		get() {
 			return when (this) {

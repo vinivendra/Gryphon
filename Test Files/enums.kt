@@ -14,10 +14,20 @@ internal enum class NoInheritances {
 	FOO_BAR,
 	BAR_BAZ;
 
+	companion object {
+		operator fun invoke(rawValue: String): NoInheritances? {
+			return when (rawValue) {
+				"foo-bar" -> NoInheritances.FOO_BAR
+				"barBaz" -> NoInheritances.BAR_BAZ
+				else -> null
+			}
+		}
+	}
+
 	val rawValue: String
 		get() {
 			return when (this) {
-				NoInheritances.FOO_BAR -> "fooBar"
+				NoInheritances.FOO_BAR -> "foo-bar"
 				NoInheritances.BAR_BAZ -> "barBaz"
 			}
 		}
