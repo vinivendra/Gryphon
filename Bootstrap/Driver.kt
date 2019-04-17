@@ -30,6 +30,33 @@ class Driver {
 				horizontalLimit = null
 			}
 
+			val outputFileMap: OutputFileMap?
+			val outputFileMapArgument: String? = arguments.find { it.startsWith("-output-file-map=") }
+
+			if (outputFileMapArgument != null) {
+				val outputFileMapPath: String = outputFileMapArgument.drop("-output-file-map=".length)
+				outputFileMap = OutputFileMap(outputFileMapPath)
+			}
+			else {
+				outputFileMap = null
+			}
+
+			val outputFolder: String
+			val outputFolderIndex: Int? = arguments.indexOf("-o")
+
+			if (outputFolderIndex != null) {
+				val maybeOutputFolder: String? = arguments.getSafe(outputFolderIndex + 1)
+				if (maybeOutputFolder != null) {
+					outputFolder = maybeOutputFolder
+				}
+				else {
+					outputFolder = OS.buildFolder
+				}
+			}
+			else {
+				outputFolder = OS.buildFolder
+			}
+
 			return null
 		}
 	}

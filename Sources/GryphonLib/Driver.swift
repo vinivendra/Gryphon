@@ -63,29 +63,33 @@ public class Driver {
 			horizontalLimit = nil
 		}
 
-		// insert: return null
+		let outputFileMap: OutputFileMap?
+		if let outputFileMapArgument =
+			arguments.first(where: { $0.hasPrefix("-output-file-map=") })
+		{
+			let outputFileMapPath = outputFileMapArgument.dropFirst("-output-file-map=".count)
+			outputFileMap = OutputFileMap(String(outputFileMapPath))
+		}
+		else {
+			outputFileMap = nil
+		}
 
-		if true { // kotlin: ignore
-			let outputFileMap: OutputFileMap?
-			if let outputFileMapArgument =
-				arguments.first(where: { $0.hasPrefix("-output-file-map=") })
-			{
-				let outputFileMapPath = outputFileMapArgument.dropFirst("-output-file-map=".count)
-				outputFileMap = OutputFileMap(String(outputFileMapPath))
-			}
-			else {
-				outputFileMap = nil
-			}
-
-			let outputFolder: String
-			if let outputFolderIndex = arguments.index(of: "-o"),
-				let maybeOutputFolder = arguments[safe: outputFolderIndex + 1]
-			{
+		let outputFolder: String
+		if let outputFolderIndex = arguments.index(of: "-o") {
+			if let maybeOutputFolder = arguments[safe: outputFolderIndex + 1] {
 				outputFolder = maybeOutputFolder
 			}
 			else {
 				outputFolder = OS.buildFolder
 			}
+		}
+		else {
+			outputFolder = OS.buildFolder
+		}
+
+		// insert: return null
+
+		if true { // kotlin: ignore
 
 			let inputFilePaths = arguments.filter {
 				!$0.hasPrefix("-") && $0 != "run" && $0 != "build"

@@ -129,6 +129,11 @@ extension ArrayReference: Equatable where Element: Equatable { // kotlin: ignore
 	public static func == (lhs: ArrayReference, rhs: ArrayReference) -> Bool {
 		return lhs.array == rhs.array
 	}
+
+	//
+	public func index(of element: Element) -> Int? {
+		return array.index(of: element)
+	}
 }
 
 extension ArrayReference: Hashable where Element: Hashable { // kotlin: ignore

@@ -470,6 +470,7 @@ private func simplifyType(string: String) -> String {
 		"String.SubSequence": "String",
 		"String.Index": "Int",
 		"String.Element": "Character",
+		"Array<Element>.Index": "Int",
 	]
 	if let result = standardLibraryTypeMappings[string] {
 		return result

@@ -177,6 +177,9 @@ func gryphonTemplates() {
 	_comparableArray.contains(_compare)
 	"_comparableArray.contains(_compare)"
 
+	_comparableArray.index(of: _compare)
+	"_comparableArray.indexOf(_compare)"
+
 	// Dictionary
 	_dictionary.reduce(_any, _closure)
 	"_dictionary.entries.fold(initial = _any, operation = _closure)"

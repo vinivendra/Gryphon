@@ -85,64 +85,76 @@ public class SwiftTranslator {
 			return []
 		}
 
+		let result: [Statement?]
 		switch subtree.name {
 		case "Top Level Code Declaration":
-			return [try translate(topLevelCode: subtree)]
+			result = [try translate(topLevelCode: subtree)]
 		case "Import Declaration":
-			return [.importDeclaration(name: subtree.standaloneAttributes[0])]
+			result = [.importDeclaration(name: subtree.standaloneAttributes[0])]
 		case "Typealias":
-			return [try translate(typealiasDeclaration: subtree)]
+			result = [try translate(typealiasDeclaration: subtree)]
 		case "Class Declaration":
-			return [try translate(classDeclaration: subtree)]
+			result = [try translate(classDeclaration: subtree)]
 		case "Struct Declaration":
-			return [try translate(structDeclaration: subtree)]
+			result = [try translate(structDeclaration: subtree)]
 		case "Enum Declaration":
-			return [try translate(enumDeclaration: subtree)]
+			result = [try translate(enumDeclaration: subtree)]
 		case "Extension Declaration":
-			return [try translate(extensionDeclaration: subtree)]
+			result = [try translate(extensionDeclaration: subtree)]
 		case "For Each Statement":
-			return [try translate(forEachStatement: subtree)]
+			result = [try translate(forEachStatement: subtree)]
 		case "While Statement":
-			return [try translate(whileStatement: subtree)]
+			result = [try translate(whileStatement: subtree)]
 		case "Function Declaration", "Constructor Declaration":
-			return [try translate(functionDeclaration: subtree)]
+			result = [try translate(functionDeclaration: subtree)]
 		case "Subscript Declaration":
-			return try subtree.subtrees.filter { $0.name == "Accessor Declaration" }
+			result = try subtree.subtrees.filter { $0.name == "Accessor Declaration" }
 				.map { try translate(functionDeclaration: $0) }
 		case "Protocol":
-			return [try translate(protocolDeclaration: subtree)]
+			result = [try translate(protocolDeclaration: subtree)]
 		case "Throw Statement":
-			return [try translate(throwStatement: subtree)]
+			result = [try translate(throwStatement: subtree)]
 		case "Variable Declaration":
-			return [try translate(variableDeclaration: subtree)]
+			result = [try translate(variableDeclaration: subtree)]
 		case "Assign Expression":
-			return [try translate(assignExpression: subtree)]
+			result = [try translate(assignExpression: subtree)]
 		case "If Statement", "Guard Statement":
-			return [try translate(ifStatement: subtree)]
+			result = [try translate(ifStatement: subtree)]
 		case "Switch Statement":
-			return [try translate(switchStatement: subtree)]
+			result = [try translate(switchStatement: subtree)]
 		case "Defer Statement":
-			return [try translate(deferStatement: subtree)]
+			result = [try translate(deferStatement: subtree)]
 		case "Pattern Binding Declaration":
 			try process(patternBindingDeclaration: subtree)
-			return []
+			result = []
 		case "Return Statement":
-			return [try translate(returnStatement: subtree)]
+			result = [try translate(returnStatement: subtree)]
 		case "Break Statement":
-			return [.breakStatement]
+			result = [.breakStatement]
 		case "Continue Statement":
-			return [.continueStatement]
+			result = [.continueStatement]
 		case "Fail Statement":
-			return [.returnStatement(expression: .nilLiteralExpression)]
+			result = [.returnStatement(expression: .nilLiteralExpression)]
 		default:
 			if subtree.name.hasSuffix("Expression") {
 				let expression = try translate(expression: subtree)
-				return [.expression(expression: expression)]
+				result = [.expression(expression: expression)]
 			}
 			else {
-				return []
+				result = []
 			}
 		}
+
+		let shouldInspect = (getComment(forNode: subtree, key: "gryphon") == "inspect")
+		if shouldInspect {
+			print("===\nInspecting:")
+			print(subtree)
+			for statement in result {
+				statement?.prettyPrint()
+			}
+		}
+
+		return result
 	}
 
 	internal func translate(expression: SwiftAST) throws -> Expression {
@@ -151,88 +163,89 @@ public class SwiftTranslator {
 			return Expression.literalCodeExpression(string: valueReplacement)
 		}
 
+		let result: Expression
 		switch expression.name {
 		case "Array Expression":
-			return try translate(arrayExpression: expression)
+			result = try translate(arrayExpression: expression)
 		case "Dictionary Expression":
-			return try translate(dictionaryExpression: expression)
+			result = try translate(dictionaryExpression: expression)
 		case "Binary Expression":
-			return try translate(binaryExpression: expression)
+			result = try translate(binaryExpression: expression)
 		case "If Expression":
-			return try translate(ifExpression: expression)
+			result = try translate(ifExpression: expression)
 		case "Call Expression":
-			return try translate(callExpression: expression)
+			result = try translate(callExpression: expression)
 		case "Closure Expression":
-			return try translate(closureExpression: expression)
+			result = try translate(closureExpression: expression)
 		case "Declaration Reference Expression":
-			return try translate(declarationReferenceExpression: expression)
+			result = try translate(declarationReferenceExpression: expression)
 		case "Dot Syntax Call Expression":
-			return try translate(dotSyntaxCallExpression: expression)
+			result = try translate(dotSyntaxCallExpression: expression)
 		case "String Literal Expression":
-			return try translate(stringLiteralExpression: expression)
+			result = try translate(stringLiteralExpression: expression)
 		case "Interpolated String Literal Expression":
-			return try translate(interpolatedStringLiteralExpression: expression)
+			result = try translate(interpolatedStringLiteralExpression: expression)
 		case "Erasure Expression":
 			if let lastExpression = expression.subtrees.last {
-				return try translate(expression: lastExpression)
+				result = try translate(expression: lastExpression)
 			}
 			else {
-				return try unexpectedExpressionStructureError(
+				result = try unexpectedExpressionStructureError(
 					"Unrecognized structure in automatic expression",
 					AST: expression, translator: self)
 			}
 		case "Prefix Unary Expression":
-			return try translate(prefixUnaryExpression: expression)
+			result = try translate(prefixUnaryExpression: expression)
 		case "Postfix Unary Expression":
-			return try translate(postfixUnaryExpression: expression)
+			result = try translate(postfixUnaryExpression: expression)
 		case "Type Expression":
-			return try translate(typeExpression: expression)
+			result = try translate(typeExpression: expression)
 		case "Member Reference Expression":
-			return try translate(memberReferenceExpression: expression)
+			result = try translate(memberReferenceExpression: expression)
 		case "Tuple Element Expression":
-			return try translate(tupleElementExpression: expression)
+			result = try translate(tupleElementExpression: expression)
 		case "Tuple Expression":
-			return try translate(tupleExpression: expression)
+			result = try translate(tupleExpression: expression)
 		case "Subscript Expression":
-			return try translate(subscriptExpression: expression)
+			result = try translate(subscriptExpression: expression)
 		case "Nil Literal Expression":
-			return .nilLiteralExpression
+			result = .nilLiteralExpression
 		case "Open Existential Expression":
 			let processedExpression = try process(openExistentialExpression: expression)
-			return try translate(expression: processedExpression)
+			result = try translate(expression: processedExpression)
 		case "Parentheses Expression":
 			if let innerExpression = expression.subtree(at: 0) {
 				// Swift 5: Compiler-created parentheses expressions may be marked with "implicit"
 				if expression.standaloneAttributes.contains("implicit") {
-					return try translate(expression: innerExpression)
+					result = try translate(expression: innerExpression)
 				}
 				else {
-					return .parenthesesExpression(
+					result = .parenthesesExpression(
 						expression: try translate(expression: innerExpression))
 				}
 			}
 			else {
-				return try unexpectedExpressionStructureError(
+				result = try unexpectedExpressionStructureError(
 					"Expected parentheses expression to have at least one subtree",
 					AST: expression, translator: self)
 			}
 		case "Force Value Expression":
 			if let firstExpression = expression.subtree(at: 0) {
 				let expression = try translate(expression: firstExpression)
-				return .forceValueExpression(expression: expression)
+				result = .forceValueExpression(expression: expression)
 			}
 			else {
-				return try unexpectedExpressionStructureError(
+				result = try unexpectedExpressionStructureError(
 					"Expected force value expression to have at least one subtree",
 					AST: expression, translator: self)
 			}
 		case "Bind Optional Expression":
 			if let firstExpression = expression.subtree(at: 0) {
 				let expression = try translate(expression: firstExpression)
-				return .optionalExpression(expression: expression)
+				result = .optionalExpression(expression: expression)
 			}
 			else {
-				return try unexpectedExpressionStructureError(
+				result = try unexpectedExpressionStructureError(
 					"Expected optional expression to have at least one subtree",
 					AST: expression, translator: self)
 			}
@@ -246,26 +259,35 @@ public class SwiftTranslator {
 			"Force Try Expression":
 
 			if let lastExpression = expression.subtrees.last {
-				return try translate(expression: lastExpression)
+				result = try translate(expression: lastExpression)
 			}
 			else {
-				return try unexpectedExpressionStructureError(
+				result = try unexpectedExpressionStructureError(
 					"Unrecognized structure in automatic expression",
 					AST: expression, translator: self)
 			}
 		case "Collection Upcast Expression":
 			if let firstExpression = expression.subtrees.first {
-				return try translate(expression: firstExpression)
+				result = try translate(expression: firstExpression)
 			}
 			else {
-				return try unexpectedExpressionStructureError(
+				result = try unexpectedExpressionStructureError(
 					"Unrecognized structure in automatic expression",
 					AST: expression, translator: self)
 			}
 		default:
-			return try unexpectedExpressionStructureError(
+			result = try unexpectedExpressionStructureError(
 				"Unknown expression", AST: expression, translator: self)
 		}
+
+		let shouldInspect = (getComment(forNode: expression, key: "gryphon") == "inspect")
+		if shouldInspect {
+			print("===\nInspecting:")
+			print(expression)
+			result.prettyPrint()
+		}
+
+		return result
 	}
 
 	internal func translate(

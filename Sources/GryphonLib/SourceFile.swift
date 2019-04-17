@@ -66,10 +66,6 @@ extension SourceFile { // kotlin: ignore
 		}
 
 		let key = commentComponents[0]
-		guard ["annotation", "value", "insert", "declaration", "kotlin"].contains(key) else {
-			return nil
-		}
-
 		let value = commentComponents[1]
 		return (key: key, value: value)
 	}
