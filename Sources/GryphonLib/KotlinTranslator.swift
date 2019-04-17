@@ -50,8 +50,8 @@ public class KotlinTranslator {
 		}
 		else if type.hasPrefix("[") {
 			if type.contains(":") {
-				let innerTypes =
-					String(type.dropLast().dropFirst()).split(withStringSeparator: " : ")
+				let innerType = String(type.dropLast().dropFirst())
+				let innerTypes = splitGenericsList(innerType)
 				let keyType = innerTypes[0]
 				let valueType = innerTypes[1]
 				let translatedKey = translateType(keyType)
@@ -71,7 +71,7 @@ public class KotlinTranslator {
 		}
 		else if type.hasPrefix("DictionaryReference<") {
 			let innerTypes = String(type.dropLast().dropFirst("DictionaryReference<".count))
-			let keyValue = innerTypes.split(withStringSeparator: ", ")
+			let keyValue = splitGenericsList(innerTypes)
 			let key = keyValue[0]
 			let value = keyValue[1]
 			let translatedKey = translateType(key)
@@ -81,6 +81,40 @@ public class KotlinTranslator {
 		else {
 			return KotlinTranslator.typeMappings[type] ?? type
 		}
+	}
+
+	private func splitGenericsList(_ genericsContents: String) -> [String] {
+		var bracketsLevel = 0
+		var result: [String] = []
+		var currentResult = ""
+
+		for character in genericsContents {
+			if character == "<" || character == "[" {
+				bracketsLevel += 1
+				currentResult.append(character)
+			}
+			else if character == ">" || character == "]" {
+				bracketsLevel -= 1
+				currentResult.append(character)
+			}
+			else if (character == "," || character == ":"), bracketsLevel <= 0 {
+				result.append(currentResult)
+				currentResult = ""
+			}
+			else if character == " " {
+				continue
+			}
+			else {
+				currentResult.append(character)
+			}
+		}
+
+		// Add the last result that was being built
+		if !currentResult.isEmpty {
+			result.append(currentResult)
+		}
+
+		return result
 	}
 
 	/**

@@ -45,6 +45,7 @@ class BootstrappingTest: XCTestCase {
 			"Sources/GryphonLib/SwiftAST.swift",
 			"Sources/GryphonLib/ASTDumpDecoder.swift",
 			"Sources/GryphonLib/Compiler.swift",
+			"Sources/GryphonLib/OutputFileMap.swift",
 			"Sources/GryphonLib/Driver.swift",
 			"Sources/GryphonLib/Extensions.swift",
 			"Sources/GryphonLib/Utilities.swift",

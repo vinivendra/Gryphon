@@ -1,4 +1,7 @@
-public struct OutputFileMap {
+private typealias OutputFileMapBuffer =
+	DictionaryReference<String, DictionaryReference<OutputFileMap.OutputType, String>>
+
+public class OutputFileMap {
 	public enum OutputType: String {
 		case astDump = "ast-dump"
 		case swiftAST
@@ -7,8 +10,14 @@ public struct OutputFileMap {
 		case kotlin
 	}
 
-	private var outputFileMap: DictionaryReference<String, DictionaryReference<OutputType, String>>
+	private var outputFileMap: OutputFileMapBuffer
 
+	private init(outputFileMap: OutputFileMapBuffer) {
+		self.outputFileMap = outputFileMap
+	}
+}
+
+extension OutputFileMap { // kotlin: ignore
 	public func getFileMap(forInputFile file: String) -> DictionaryReference<OutputType, String>? {
 		return outputFileMap[file]
 	}
@@ -17,7 +26,7 @@ public struct OutputFileMap {
 		return getFileMap(forInputFile: file)?[outputType]
 	}
 
-	public init(_ file: String) {
+	public convenience init(_ file: String) {
 		let contents = try! Utilities.readFile(file)
 
 		let result: DictionaryReference<String, DictionaryReference<OutputType, String>> = [:]
@@ -68,6 +77,6 @@ public struct OutputFileMap {
 			result[currentFilePath] = currentFileResult
 		}
 
-		self.outputFileMap = result
+		self.init(outputFileMap: result)
 	}
 }
