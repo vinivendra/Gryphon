@@ -75,7 +75,7 @@ extension SourceFile { // kotlin: ignore
 	}
 }
 
-struct SourceFileRange: Equatable { // kotlin: ignore
+struct SourceFileRange: Equatable {
 	let lineStart: Int
 	let lineEnd: Int
 	let columnStart: Int
@@ -84,7 +84,7 @@ struct SourceFileRange: Equatable { // kotlin: ignore
 	/// This is technically incorrect but allows AST nodes with ranges to get an automatic Equatable
 	/// conformance that ignores ranges, which is useful since we're frequently comparing nodes
 	/// with the same practical meaning but different source file ranges.
-	static func == (lhs: SourceFileRange, rhs: SourceFileRange) -> Bool {
+	static func == (lhs: SourceFileRange, rhs: SourceFileRange) -> Bool { // kotlin: ignore
 		return true
 	}
 }

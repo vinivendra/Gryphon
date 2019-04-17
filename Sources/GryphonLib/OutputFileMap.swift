@@ -26,17 +26,19 @@ public class OutputFileMap {
 		}
 		return fileMap[outputType]
 	}
-}
 
-extension OutputFileMap { // kotlin: ignore
-	public convenience init(_ file: String) {
+	public init(_ file: String) {
 		let contents = try! Utilities.readFile(file)
 
 		let result: DictionaryReference<String, DictionaryReference<OutputType, String>> = [:]
 
 		var currentFileResult: DictionaryReference<OutputType, String> = [:]
 		var currentFilePath: String?
-		for (index, line) in contents.split(separator: "\n").enumerated() {
+		let lines = contents.split(separator: "\n")
+
+		for index in lines.indices {
+			let line = lines[index]
+
 			let lineNumber = index + 1
 			let lineComponents = line.split(separator: "\"")
 
@@ -68,7 +70,7 @@ extension OutputFileMap { // kotlin: ignore
 					lineEnd: lineNumber,
 					columnStart: 1,
 					columnEnd: line.count)
-				Compiler.handleWarning(
+				Compiler.handleWarning( // kotlin: ignore
 					message: "Unable to interpret line in output file map.",
 					sourceFile: sourceFile,
 					sourceFileRange: sourceFileRange)
@@ -80,6 +82,6 @@ extension OutputFileMap { // kotlin: ignore
 			result[currentFilePath] = currentFileResult
 		}
 
-		self.init(buffer: result)
+		self.buffer = result
 	}
 }

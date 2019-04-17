@@ -168,6 +168,9 @@ func gryphonTemplates() {
 	_array.map(_closure2)
 	"_array.map _closure2.toMutableList()"
 
+	_array.indices
+	"_array.indices"
+
 	_comparableArray.sorted()
 	"_comparableArray.sorted()"
 

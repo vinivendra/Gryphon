@@ -39,6 +39,7 @@ public class KotlinTranslator {
 		"Substring.Index": "Int",
 		"Substring": "String",
 		"String.SubSequence": "String",
+		"Substring.SubSequence": "String",
 		"Range<String.Index>": "IntRange",
 	]
 

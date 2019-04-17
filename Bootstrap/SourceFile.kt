@@ -22,3 +22,10 @@ class SourceFile {
 		}
 	}
 }
+
+data class SourceFileRange(
+	val lineStart: Int,
+	val lineEnd: Int,
+	val columnStart: Int,
+	val columnEnd: Int
+)

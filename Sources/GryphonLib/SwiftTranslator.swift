@@ -237,12 +237,14 @@ public class SwiftTranslator {
 					AST: expression, translator: self)
 			}
 		case "Autoclosure Expression",
-			 "Inject Into Optional",
-			 "Optional Evaluation Expression",
-			 "Inout Expression",
-			 "Load Expression",
-			 "Function Conversion Expression",
-			 "Try Expression":
+			"Inject Into Optional",
+			"Optional Evaluation Expression",
+			"Inout Expression",
+			"Load Expression",
+			"Function Conversion Expression",
+			"Try Expression",
+			"Force Try Expression":
+
 			if let lastExpression = expression.subtrees.last {
 				return try translate(expression: lastExpression)
 			}
