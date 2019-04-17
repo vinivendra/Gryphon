@@ -112,6 +112,9 @@ func gryphonTemplates() {
 	_string1.hasPrefix(_string2)
 	"_string1.startsWith(_string2)"
 
+	_string1.hasSuffix(_string2)
+	"_string1.endsWith(_string2)"
+
 	_range.lowerBound
 	"_range.start"
 
@@ -167,6 +170,15 @@ func gryphonTemplates() {
 
 	_array.map(_closure2)
 	"_array.map _closure2.toMutableList()"
+
+	_array.compactMap(_closure2)
+	"_array.map _closure2.filterNotNull().toMutableList()"
+
+	_array.filter(_closure3)
+	"_array.filter _closure3.toMutableList()"
+
+	zip(_array1, _array2)
+	"_array1.zip(_array2)"
 
 	_array.indices
 	"_array.indices"

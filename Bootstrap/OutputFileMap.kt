@@ -60,30 +60,36 @@ class OutputFileMap {
 			val line: String = lines[index]
 			val lineNumber: Int = index + 1
 			val lineComponents: MutableList<String> = line.split(separator = '\"')
-			val outputType: OutputType? = OutputType(rawValue = lineComponents[1])
 
 			if (lineComponents.size == 1) {
 				continue
 			}
-			else if (lineComponents.size < 4) {
+
+			if (lineComponents.size < 4) {
 				if (currentFilePath != null) {
 					result[currentFilePath] = currentFileResult
 				}
+
 				currentFileResult = mutableMapOf()
 				currentFilePath = lineComponents[1]
+
+				continue
 			}
-			else if (outputType != null) {
+
+			val outputType: OutputType? = OutputType(rawValue = lineComponents[1])
+
+			if (outputType != null) {
 				val outputFilePath: String = lineComponents[3]
 				currentFileResult[outputType] = outputFilePath
+				continue
 			}
-			else {
-				val sourceFile: SourceFile = SourceFile(path = file, contents = contents)
-				val sourceFileRange: SourceFileRange = SourceFileRange(
-					lineStart = lineNumber,
-					lineEnd = lineNumber,
-					columnStart = 1,
-					columnEnd = line.length)
-			}
+
+			val sourceFile: SourceFile = SourceFile(path = file, contents = contents)
+			val sourceFileRange: SourceFileRange = SourceFileRange(
+				lineStart = lineNumber,
+				lineEnd = lineNumber,
+				columnStart = 1,
+				columnEnd = line.length)
 		}
 
 		if (currentFilePath != null) {

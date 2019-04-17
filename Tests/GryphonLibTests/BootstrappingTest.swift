@@ -55,7 +55,6 @@ class BootstrappingTest: XCTestCase {
 			"Bootstrap/ExtensionsTest.kt",
 			"Bootstrap/UtilitiesTest.kt",
 			"Bootstrap/KotlinTests.kt",
-			"Bootstrap/StandardLibrary.kt",
 			"Bootstrap/main.kt",
 		]
 

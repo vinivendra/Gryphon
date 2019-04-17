@@ -46,8 +46,9 @@ public class OutputFileMap {
 			if lineComponents.count == 1 {
 				continue
 			}
+
 			// If there's one string in this line, it's a file path
-			else if lineComponents.count < 4 {
+			if lineComponents.count < 4 {
 				// Save the results for the current file and start building new results for the new
 				// file
 				if let currentFilePath = currentFilePath {
@@ -56,25 +57,28 @@ public class OutputFileMap {
 
 				currentFileResult = [:]
 				currentFilePath = String(lineComponents[1])
+				continue
 			}
+
 			// If there are at least two strings in this line, it's an output type and an output
 			// file path
-			else if let outputType = OutputType(rawValue: String(lineComponents[1])) {
+			if let outputType = OutputType(rawValue: String(lineComponents[1])) {
 				let outputFilePath = String(lineComponents[3])
 				currentFileResult[outputType] = outputFilePath
+				continue
 			}
-			else {
-				let sourceFile = SourceFile(path: file, contents: contents)
-				let sourceFileRange = SourceFileRange(
-					lineStart: lineNumber,
-					lineEnd: lineNumber,
-					columnStart: 1,
-					columnEnd: line.count)
-				Compiler.handleWarning( // kotlin: ignore
-					message: "Unable to interpret line in output file map.",
-					sourceFile: sourceFile,
-					sourceFileRange: sourceFileRange)
-			}
+
+			// If we got here, we can't interpret this file correctly.
+			let sourceFile = SourceFile(path: file, contents: contents)
+			let sourceFileRange = SourceFileRange(
+				lineStart: lineNumber,
+				lineEnd: lineNumber,
+				columnStart: 1,
+				columnEnd: line.count)
+			Compiler.handleWarning( // kotlin: ignore
+				message: "Unable to interpret line in output file map.",
+				sourceFile: sourceFile,
+				sourceFileRange: sourceFileRange)
 		}
 
 		// Save the last file result that was being built

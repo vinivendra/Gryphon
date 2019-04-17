@@ -57,6 +57,43 @@ class Driver {
 				outputFolder = OS.buildFolder
 			}
 
+			val inputFilePaths: MutableList<String> = arguments.filter { !it.startsWith("-") && it != "run" && it != "build" }.toMutableList()
+
+			if (!(shouldGenerateSwiftAST)) {
+				return null
+			}
+
+			val astDumpFilesFromOutputFileMap: MutableList<String> = inputFilePaths.map { inputFile ->
+					if (inputFile.endsWith(".swift")) {
+						val astDumpFile: String? = outputFileMap?.getOutputFile(file = inputFile, outputType = OutputFileMap.OutputType.AST_DUMP)
+						if (astDumpFile != null) {
+							astDumpFile
+						}
+					}
+
+					if (inputFile.endsWith(".swiftASTDump")) {
+						inputFile
+					}
+
+					null
+				}.filterNotNull().toMutableList()
+			val swiftASTDumpFiles: MutableList<String> = if (!astDumpFilesFromOutputFileMap.isEmpty()) { astDumpFilesFromOutputFileMap } else { inputFilePaths.filter { it.endsWith(".swift") }.toMutableList().map { Utilities.changeExtension(filePath = it, newExtension = FileExtension.SWIFT_AST_DUMP) }.toMutableList() }
+			val swiftASTDumps: MutableList<String> = swiftASTDumpFiles.map { Utilities.readFile(it) }.toMutableList()
+			val swiftASTs: MutableList<SwiftAST> = swiftASTDumps.map { Compiler.generateSwiftAST(astDump = it) }.toMutableList()
+
+			if (shouldEmitSwiftAST) {
+				for ((swiftFilePath, swiftAST) in inputFilePaths.zip(swiftASTs)) {
+					val output: String = swiftAST.prettyDescription(horizontalLimit = horizontalLimit)
+					val outputFilePath: String? = outputFileMap?.getOutputFile(file = swiftFilePath, outputType = OutputFileMap.OutputType.SWIFT_AST)
+					if (outputFilePath != null) {
+						Utilities.createFile(filePath = outputFilePath, contents = output)
+					}
+					else {
+						println(output)
+					}
+				}
+			}
+
 			return null
 		}
 	}

@@ -40,6 +40,9 @@ private func gryphonTemplates() {
 	_ = Utilities.createFileIfNeeded(at: _string1)
 	_ = "Utilities.createFileIfNeeded(filePath = _string1)"
 
+	Utilities.createFile(atPath: _string1, containing: _string2)
+	_ = "Utilities.createFile(filePath = _string1, contents = _string2)"
+
 	_ = Utilities.needsToUpdateFiles(
 			_stringArray, in: _string1, from: _fileExtension1, to: _fileExtension2)
 	_ = "Utilities.needsToUpdateFiles(" +

@@ -87,61 +87,62 @@ public class Driver {
 			outputFolder = OS.buildFolder
 		}
 
-		// insert: return null
+		let inputFilePaths = arguments.filter {
+			!$0.hasPrefix("-") && $0 != "run" && $0 != "build"
+		}
 
-		if true { // kotlin: ignore
+		// Run compiler steps
+		guard shouldGenerateSwiftAST else {
+			return nil
+		}
 
-			let inputFilePaths = arguments.filter {
-				!$0.hasPrefix("-") && $0 != "run" && $0 != "build"
-			}
-
-			// Run compiler steps
-			guard shouldGenerateSwiftAST else {
-				return nil
-			}
-
-			let astDumpFilesFromOutputFileMap = inputFilePaths.compactMap { inputFile -> String? in
-				if inputFile.hasSuffix(".swiftASTDump") {
-					return inputFile
-				}
-				else if inputFile.hasSuffix(".swift"),
-					let astDumpFile = outputFileMap?.getOutputFile(
-						forInputFile: inputFile, outputType: .astDump)
+		let astDumpFilesFromOutputFileMap = inputFilePaths.compactMap { inputFile -> String? in
+			if inputFile.hasSuffix(".swift") {
+				if let astDumpFile = outputFileMap?.getOutputFile(
+					forInputFile: inputFile, outputType: .astDump)
 				{
 					return astDumpFile
 				}
+			}
+
+			if inputFile.hasSuffix(".swiftASTDump") {
+				return inputFile
+			}
+
+			return nil
+		}
+
+		let swiftASTDumpFiles = !astDumpFilesFromOutputFileMap.isEmpty ?
+			astDumpFilesFromOutputFileMap :
+			inputFilePaths.filter { $0.hasSuffix(".swift") }
+				.map { Utilities.changeExtension(of: $0, to: .swiftASTDump) }
+
+		let swiftASTDumps = try swiftASTDumpFiles.map { try Utilities.readFile($0) }
+
+		let swiftASTs = try swiftASTDumps.map { try Compiler.generateSwiftAST(fromASTDump: $0) }
+		if shouldEmitSwiftAST {
+			for (swiftFilePath, swiftAST) in zip(inputFilePaths, swiftASTs) {
+				let output = swiftAST.prettyDescription(horizontalLimit: horizontalLimit)
+				if let outputFilePath = outputFileMap?.getOutputFile(
+					forInputFile: swiftFilePath, outputType: .swiftAST)
+				{
+					Utilities.createFile(atPath: outputFilePath, containing: output)
+				}
 				else {
-					return nil
+					print(output)
 				}
 			}
+		}
 
-			let swiftASTDumpFiles = !astDumpFilesFromOutputFileMap.isEmpty ?
-				astDumpFilesFromOutputFileMap :
-				inputFilePaths.filter { $0.hasSuffix(".swift") }
-					.map { Utilities.changeExtension(of: $0, to: .swiftASTDump) }
+		// insert: return null
 
-			let swiftASTDumps = try swiftASTDumpFiles.map { try Utilities.readFile($0) }
-
-			let swiftASTs = try swiftASTDumps.map { try Compiler.generateSwiftAST(fromASTDump: $0) }
-			if shouldEmitSwiftAST {
-				for (swiftFilePath, swiftAST) in zip(inputFilePaths, swiftASTs) {
-					let output = swiftAST.prettyDescription(horizontalLimit: horizontalLimit)
-					if let outputFilePath = outputFileMap?.getOutputFile(
-						forInputFile: swiftFilePath, outputType: .swiftAST)
-					{
-						Utilities.createFile(atPath: outputFilePath, containing: output)
-					}
-					else {
-						print(output)
-					}
-				}
-			}
+		if true { // kotlin: ignore
 
 			guard shouldGenerateRawAST else {
 				return swiftASTs
 			}
 
-			let gryphonRawASTs = try Compiler.generateGryphonRawASTs(fromSwiftASTs: swiftASTs)
+			let gryphonRawASTs = try Compiler.generateGryphonRawASTs(fromSwiftASTs: swiftASTs.array)
 			if shouldEmitRawAST {
 				for (swiftFilePath, gryphonRawAST) in zip(inputFilePaths, gryphonRawASTs) {
 					let output = gryphonRawAST.prettyDescription(horizontalLimit: horizontalLimit)
@@ -205,7 +206,7 @@ public class Driver {
 			let kotlinFiles = generatedKotlinFiles + inputKotlinFiles
 
 			let compilationResult =
-				try Compiler.compile(kotlinFiles: kotlinFiles, outputFolder: outputFolder)
+				try Compiler.compile(kotlinFiles: kotlinFiles.array, outputFolder: outputFolder)
 
 			if case .failure = compilationResult {
 				return compilationResult

@@ -114,6 +114,10 @@ public final class ArrayReference<Element>: // kotlin: ignore
 		return try ArrayReference<T>(array: self.array.map(transform))
 	}
 
+	public func compactMap<T>(_ transform: (Element) throws -> T?) rethrows -> ArrayReference<T> {
+		return try ArrayReference<T>(array: self.array.compactMap(transform))
+	}
+
 	public func appending<S>(contentsOf newElements: S) -> ArrayReference<Element>
 		where S: Sequence, Element == S.Element
 	{

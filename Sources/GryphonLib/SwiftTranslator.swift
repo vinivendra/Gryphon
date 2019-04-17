@@ -900,17 +900,50 @@ public class SwiftTranslator {
 				AST: forEachStatement, translator: self)
 		}
 
-		guard let variableSubtree = forEachStatement.subtree(named: "Pattern Named"),
-			let variableName = variableSubtree.standaloneAttributes.first,
+		let variableRange = getRangeRecursively(ofNode: forEachStatement.subtrees[0])
+
+		let variable: Expression
+		let collectionExpression: SwiftAST
+		if let variableSubtree = forEachStatement.subtree(named: "Pattern Named"),
 			let rawType = variableSubtree["type"],
-			let collectionExpression = forEachStatement.subtree(at: 2) else
+			let maybeCollectionExpression = forEachStatement.subtree(at: 2),
+			let variableName = variableSubtree.standaloneAttributes.first
 		{
+			variable = Expression.declarationReferenceExpression(value:
+				DeclarationReferenceExpression(
+					identifier: variableName,
+					type: cleanUpType(rawType),
+					isStandardLibrary: false,
+					isImplicit: false,
+					range: variableRange))
+			collectionExpression = maybeCollectionExpression
+		}
+		else if let variableSubtree = forEachStatement.subtree(named: "Pattern Tuple"),
+			let maybeCollectionExpression = forEachStatement.subtree(at: 2)
+		{
+			let variableNames = variableSubtree.subtrees.map { $0.standaloneAttributes[0] }
+			let variableTypes = variableSubtree.subtrees.map { $0.keyValueAttributes["type"]! }
+
+			let variables = zip(variableNames, variableTypes).map {
+				LabeledExpression(
+					label: nil,
+					expression: .declarationReferenceExpression(value:
+						DeclarationReferenceExpression(
+							identifier: $0.0,
+							type: cleanUpType($0.1),
+							isStandardLibrary: false,
+							isImplicit: false,
+							range: variableRange)))
+			}
+
+			variable = .tupleExpression(pairs: variables)
+			collectionExpression = maybeCollectionExpression
+		}
+		else {
 			return try unexpectedASTStructureError(
 				"Unable to detect variable or collection",
 				AST: forEachStatement, translator: self)
 		}
-
-		let variableType = cleanUpType(rawType)
 
 		guard let braceStatement = forEachStatement.subtrees.last,
 			braceStatement.name == "Brace Statement" else
@@ -920,14 +953,6 @@ public class SwiftTranslator {
 				AST: forEachStatement, translator: self)
 		}
 
-		let range = getRangeRecursively(ofNode: variableSubtree)
-		let variable = Expression.declarationReferenceExpression(value:
-			DeclarationReferenceExpression(
-				identifier: variableName,
-				type: variableType,
-				isStandardLibrary: false,
-				isImplicit: false,
-				range: range))
 		let collectionTranslation = try translate(expression: collectionExpression)
 		let statements = try translate(braceStatement: braceStatement)
 
