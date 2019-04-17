@@ -33,9 +33,19 @@ class OutputFileMap {
 			}
 	}
 
-	var outputFileMap: OutputFileMapBuffer
+	var buffer: OutputFileMapBuffer
 
-	constructor(outputFileMap: OutputFileMapBuffer) {
-		this.outputFileMap = outputFileMap
+	constructor(buffer: OutputFileMapBuffer) {
+		this.buffer = buffer
+	}
+
+	public fun getFileMap(file: String): MutableMap<OutputFileMap.OutputType, String>? {
+		return buffer[file]
+	}
+
+	public fun getOutputFile(file: String, outputType: OutputFileMap.OutputType): String? {
+		val fileMap: MutableMap<OutputFileMap.OutputType, String>? = getFileMap(file = file)
+		fileMap ?: return null
+		return fileMap[outputType]
 	}
 }

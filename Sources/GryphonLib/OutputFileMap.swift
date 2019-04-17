@@ -10,22 +10,25 @@ public class OutputFileMap {
 		case kotlin
 	}
 
-	private var outputFileMap: OutputFileMapBuffer
+	private var buffer: OutputFileMapBuffer
 
-	private init(outputFileMap: OutputFileMapBuffer) {
-		self.outputFileMap = outputFileMap
+	private init(buffer: OutputFileMapBuffer) {
+		self.buffer = buffer
+	}
+
+	public func getFileMap(forInputFile file: String) -> DictionaryReference<OutputType, String>? {
+		return buffer[file]
+	}
+
+	public func getOutputFile(forInputFile file: String, outputType: OutputType) -> String? {
+		guard let fileMap = getFileMap(forInputFile: file) else {
+			return nil
+		}
+		return fileMap[outputType]
 	}
 }
 
 extension OutputFileMap { // kotlin: ignore
-	public func getFileMap(forInputFile file: String) -> DictionaryReference<OutputType, String>? {
-		return outputFileMap[file]
-	}
-
-	public func getOutputFile(forInputFile file: String, outputType: OutputType) -> String? {
-		return getFileMap(forInputFile: file)?[outputType]
-	}
-
 	public convenience init(_ file: String) {
 		let contents = try! Utilities.readFile(file)
 
@@ -77,6 +80,6 @@ extension OutputFileMap { // kotlin: ignore
 			result[currentFilePath] = currentFileResult
 		}
 
-		self.init(outputFileMap: result)
+		self.init(buffer: result)
 	}
 }
