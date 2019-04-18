@@ -559,21 +559,23 @@ public class SwiftTranslator {
 			inheritanceArray = []
 		}
 
-		var rawValues: [Expression]
-		if let constructorDeclaration = enumDeclaration.subtree(named: "Constructor Declaration"),
-			constructorDeclaration.standaloneAttributes.contains("init(rawValue:)"),
-			constructorDeclaration.standaloneAttributes.contains("implicit"),
-			let arrayExpression = constructorDeclaration.subtree(named: "Brace Statement")?
-				.subtree(named: "Switch Statement")?
-				.subtree(named: "Call Expression")?
-				.subtree(named: "Tuple Expression")?
-				.subtree(named: "Array Expression")
-		{
-			let rawValueASTs = Array(arrayExpression.subtrees.dropLast())
-			rawValues = try rawValueASTs.map { try translate(expression: $0) }
+		var rawValues: [Expression] = []
+		let constructorDeclarations = enumDeclaration.subtrees.filter {
+			$0.name ==  "Constructor Declaration"
 		}
-		else {
-			rawValues = []
+		for constructorDeclaration in constructorDeclarations {
+			if constructorDeclaration.standaloneAttributes.contains("init(rawValue:)"),
+				constructorDeclaration.standaloneAttributes.contains("implicit"),
+				let arrayExpression = constructorDeclaration.subtree(named: "Brace Statement")?
+					.subtree(named: "Switch Statement")?
+					.subtree(named: "Call Expression")?
+					.subtree(named: "Tuple Expression")?
+					.subtree(named: "Array Expression")
+			{
+				let rawValueASTs = Array(arrayExpression.subtrees.dropLast())
+				rawValues = try rawValueASTs.map { try translate(expression: $0) }
+				break
+			}
 		}
 
 		var elements = [EnumElement]()

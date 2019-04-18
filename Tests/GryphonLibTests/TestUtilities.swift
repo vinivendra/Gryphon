@@ -82,4 +82,5 @@ extension TestUtils {
 	static let testCasesForTranspilationPassTest = testCasesForAllTests + [
 		"warnings",
 	]
+	static let allTestCases = testCasesForTranspilationPassTest
 }

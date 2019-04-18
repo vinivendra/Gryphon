@@ -1,3 +1,6 @@
+import Foundation
+// declaration: import java.io.File
+
 private typealias OutputFileMapBuffer =
 	DictionaryReference<String, DictionaryReference<OutputFileMap.OutputType, String>>
 
@@ -8,6 +11,19 @@ public class OutputFileMap {
 		case gryphonASTRaw
 		case gryphonAST
 		case kotlin
+
+		init?(fileExtension: FileExtension) {
+			switch fileExtension {
+			case .swiftASTDump:
+				self = .astDump
+			case .swiftAST:
+				self = .swiftAST
+			case .kt:
+				self = .kotlin
+			default:
+				return nil
+			}
+		}
 	}
 
 	private var buffer: OutputFileMapBuffer
@@ -17,7 +33,7 @@ public class OutputFileMap {
 	}
 
 	public func getFileMap(forInputFile file: String) -> DictionaryReference<OutputType, String>? {
-		return buffer[file]
+		return buffer[Utilities.getAbsoultePath(forFile: file)]
 	}
 
 	public func getOutputFile(forInputFile file: String, outputType: OutputType) -> String? {
@@ -56,7 +72,7 @@ public class OutputFileMap {
 				}
 
 				currentFileResult = [:]
-				currentFilePath = String(lineComponents[1])
+				currentFilePath = Utilities.getAbsoultePath(forFile: String(lineComponents[1]))
 				continue
 			}
 

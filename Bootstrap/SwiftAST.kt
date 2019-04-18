@@ -74,9 +74,7 @@ class SwiftAST: PrintableAsTree {
 		}
 
 	override fun toString(): String {
-		var result: String = ""
-		this.prettyPrint { result += it }
-		return result
+		return this.prettyDescription()
 	}
 
 	public fun description(horizontalLimit: Int): String {

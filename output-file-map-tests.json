@@ -1,0 +1,98 @@
+{
+	"../Test Files/arrays.swift": {
+		"ast-dump": "../Test Files/arrays.swiftASTDump",
+		"swiftAST": "../Test Files/arrays.swiftAST"
+	},
+	"../Test Files/assignments.swift": {
+		"ast-dump": "../Test Files/assignments.swiftASTDump",
+		"swiftAST": "../Test Files/assignments.swiftAST"
+	},
+	"../Test Files/bhaskara.swift": {
+		"ast-dump": "../Test Files/bhaskara.swiftASTDump",
+		"swiftAST": "../Test Files/bhaskara.swiftAST"
+	},
+	"../Test Files/classes.swift": {
+		"ast-dump": "../Test Files/classes.swiftASTDump",
+		"swiftAST": "../Test Files/classes.swiftAST"
+	},
+	"../Test Files/closures.swift": {
+		"ast-dump": "../Test Files/closures.swiftASTDump",
+		"swiftAST": "../Test Files/closures.swiftAST"
+	},
+	"../Test Files/dictionaries.swift": {
+		"ast-dump": "../Test Files/dictionaries.swiftASTDump",
+		"swiftAST": "../Test Files/dictionaries.swiftAST"
+	},
+	"../Test Files/enums.swift": {
+		"ast-dump": "../Test Files/enums.swiftASTDump",
+		"swiftAST": "../Test Files/enums.swiftAST"
+	},
+	"../Test Files/extensions.swift": {
+		"ast-dump": "../Test Files/extensions.swiftASTDump",
+		"swiftAST": "../Test Files/extensions.swiftAST"
+	},
+	"../Test Files/functionCalls.swift": {
+		"ast-dump": "../Test Files/functionCalls.swiftASTDump",
+		"swiftAST": "../Test Files/functionCalls.swiftAST"
+	},
+	"../Test Files/functionDefinitions.swift": {
+		"ast-dump": "../Test Files/functionDefinitions.swiftASTDump",
+		"swiftAST": "../Test Files/functionDefinitions.swiftAST"
+	},
+	"../Test Files/ifStatement.swift": {
+		"ast-dump": "../Test Files/ifStatement.swiftASTDump",
+		"swiftAST": "../Test Files/ifStatement.swiftAST"
+	},
+	"../Test Files/inits.swift": {
+		"ast-dump": "../Test Files/inits.swiftASTDump",
+		"swiftAST": "../Test Files/inits.swiftAST"
+	},
+	"../Test Files/kotlinLiterals.swift": {
+		"ast-dump": "../Test Files/kotlinLiterals.swiftASTDump",
+		"swiftAST": "../Test Files/kotlinLiterals.swiftAST"
+	},
+	"../Test Files/logicOperators.swift": {
+		"ast-dump": "../Test Files/logicOperators.swiftASTDump",
+		"swiftAST": "../Test Files/logicOperators.swiftAST"
+	},
+	"../Test Files/misc.swift": {
+		"ast-dump": "../Test Files/misc.swiftASTDump",
+		"swiftAST": "../Test Files/misc.swiftAST"
+	},
+	"../Test Files/numericLiterals.swift": {
+		"ast-dump": "../Test Files/numericLiterals.swiftASTDump",
+		"swiftAST": "../Test Files/numericLiterals.swiftAST"
+	},
+	"../Test Files/operators.swift": {
+		"ast-dump": "../Test Files/operators.swiftASTDump",
+		"swiftAST": "../Test Files/operators.swiftAST"
+	},
+	"../Test Files/print.swift": {
+		"ast-dump": "../Test Files/print.swiftASTDump",
+		"swiftAST": "../Test Files/print.swiftAST"
+	},
+	"../Test Files/standardLibrary.swift": {
+		"ast-dump": "../Test Files/standardLibrary.swiftASTDump",
+		"swiftAST": "../Test Files/standardLibrary.swiftAST"
+	},
+	"../Test Files/staticMembers.swift": {
+		"ast-dump": "../Test Files/staticMembers.swiftASTDump",
+		"swiftAST": "../Test Files/staticMembers.swiftAST"
+	},
+	"../Test Files/strings.swift": {
+		"ast-dump": "../Test Files/strings.swiftASTDump",
+		"swiftAST": "../Test Files/strings.swiftAST"
+	},
+	"../Test Files/structs.swift": {
+		"ast-dump": "../Test Files/structs.swiftASTDump",
+		"swiftAST": "../Test Files/structs.swiftAST"
+	},
+	"../Test Files/switches.swift": {
+		"ast-dump": "../Test Files/switches.swiftASTDump",
+		"swiftAST": "../Test Files/switches.swiftAST"
+	},
+	"../Test Files/warnings.swift": {
+		"ast-dump": "../Test Files/warnings.swiftASTDump",
+		"swiftAST": "../Test Files/warnings.swiftAST"
+	},
+}

@@ -14,6 +14,8 @@ class Driver {
 			val shouldGenerateAST: Boolean = shouldGenerateKotlin || shouldEmitAST
 			val shouldGenerateRawAST: Boolean = shouldGenerateAST || shouldEmitRawAST
 			val shouldGenerateSwiftAST: Boolean = shouldGenerateRawAST || shouldEmitSwiftAST
+			val canPrintToFiles: Boolean = !arguments.contains("-Q")
+			val canPrintToOutput: Boolean = !arguments.contains("-q")
 
 			Compiler.shouldLogProgress(value = arguments.contains("-verbose"))
 
@@ -85,10 +87,10 @@ class Driver {
 				for ((swiftFilePath, swiftAST) in inputFilePaths.zip(swiftASTs)) {
 					val output: String = swiftAST.prettyDescription(horizontalLimit = horizontalLimit)
 					val outputFilePath: String? = outputFileMap?.getOutputFile(file = swiftFilePath, outputType = OutputFileMap.OutputType.SWIFT_AST)
-					if (outputFilePath != null) {
+					if (outputFilePath != null && canPrintToFiles) {
 						Utilities.createFile(filePath = outputFilePath, contents = output)
 					}
-					else {
+					else if (canPrintToOutput) {
 						println(output)
 					}
 				}

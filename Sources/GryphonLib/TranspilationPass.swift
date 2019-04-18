@@ -926,14 +926,16 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 		if case let .typeExpression(type: enumType) = leftExpression,
 			case let .declarationReferenceExpression(value: enumExpression) = rightExpression
 		{
-			if KotlinTranslator.sealedClasses.contains(enumType) {
+			let lastEnumType = String(enumType.split(separator: ".").last!)
+
+			if KotlinTranslator.sealedClasses.contains(lastEnumType) {
 				var enumExpression = enumExpression
 				enumExpression.identifier = enumExpression.identifier.capitalizedAsCamelCase
 				return .dotExpression(
 					leftExpression: .typeExpression(type: enumType),
 					rightExpression: .declarationReferenceExpression(value: enumExpression))
 			}
-			else if KotlinTranslator.enumClasses.contains(enumType) {
+			else if KotlinTranslator.enumClasses.contains(lastEnumType) {
 				var enumExpression = enumExpression
 				enumExpression.identifier = enumExpression.identifier.upperSnakeCase()
 				return .dotExpression(

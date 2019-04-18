@@ -42,7 +42,7 @@ public class Driver {
 			shouldEmitRawAST ||
 			shouldEmitAST ||
 			shouldRun ||
-		shouldBuild
+			shouldBuild
 
 		let shouldEmitKotlin = !hasChosenTask || arguments.contains("-emit-kotlin")
 
@@ -50,6 +50,9 @@ public class Driver {
 		let shouldGenerateAST = shouldGenerateKotlin || shouldEmitAST
 		let shouldGenerateRawAST = shouldGenerateAST || shouldEmitRawAST
 		let shouldGenerateSwiftAST = shouldGenerateRawAST || shouldEmitSwiftAST
+
+		let canPrintToFiles = !arguments.contains("-Q")
+		let canPrintToOutput = !arguments.contains("-q")
 
 		Compiler.shouldLogProgress(if: arguments.contains("-verbose"))
 		Compiler.shouldStopAtFirstError = !arguments.contains("-continue-on-error")
@@ -124,11 +127,12 @@ public class Driver {
 			for (swiftFilePath, swiftAST) in zip(inputFilePaths, swiftASTs) {
 				let output = swiftAST.prettyDescription(horizontalLimit: horizontalLimit)
 				if let outputFilePath = outputFileMap?.getOutputFile(
-					forInputFile: swiftFilePath, outputType: .swiftAST)
+					forInputFile: swiftFilePath, outputType: .swiftAST),
+					canPrintToFiles
 				{
 					Utilities.createFile(atPath: outputFilePath, containing: output)
 				}
-				else {
+				else if canPrintToOutput {
 					print(output)
 				}
 			}
@@ -147,11 +151,12 @@ public class Driver {
 				for (swiftFilePath, gryphonRawAST) in zip(inputFilePaths, gryphonRawASTs) {
 					let output = gryphonRawAST.prettyDescription(horizontalLimit: horizontalLimit)
 					if let outputFilePath = outputFileMap?.getOutputFile(
-						forInputFile: swiftFilePath, outputType: .gryphonASTRaw)
+						forInputFile: swiftFilePath, outputType: .gryphonASTRaw),
+						canPrintToFiles
 					{
 						Utilities.createFile(atPath: outputFilePath, containing: output)
 					}
-					else {
+					else if canPrintToOutput {
 						print(output)
 					}
 				}
@@ -166,11 +171,12 @@ public class Driver {
 				for (swiftFilePath, gryphonAST) in zip(inputFilePaths, gryphonASTs) {
 					let output = gryphonAST.prettyDescription(horizontalLimit: horizontalLimit)
 					if let outputFilePath = outputFileMap?.getOutputFile(
-						forInputFile: swiftFilePath, outputType: .gryphonAST)
+						forInputFile: swiftFilePath, outputType: .gryphonAST),
+						canPrintToFiles
 					{
 						Utilities.createFile(atPath: outputFilePath, containing: output)
 					}
-					else {
+					else if canPrintToOutput {
 						print(output)
 					}
 				}
@@ -184,11 +190,12 @@ public class Driver {
 			for (swiftFilePath, kotlinCode) in zip(inputFilePaths, kotlinCodes) {
 				let output = kotlinCode
 				if let outputFilePath = outputFileMap?.getOutputFile(
-					forInputFile: swiftFilePath, outputType: .kotlin)
+					forInputFile: swiftFilePath, outputType: .kotlin),
+					canPrintToFiles
 				{
 					Utilities.createFile(atPath: outputFilePath, containing: output)
 				}
-				else {
+				else if canPrintToOutput {
 					if shouldEmitKotlin {
 						print(output)
 					}

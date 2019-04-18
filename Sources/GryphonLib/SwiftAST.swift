@@ -94,9 +94,7 @@ public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible
 
 	// MARK: - Descriptions
 	public var description: String { // annotation: override
-		var result = ""
-		self.prettyPrint { result += $0 }
-		return result
+		return self.prettyDescription()
 	}
 
 	public func description(withHorizontalLimit horizontalLimit: Int) -> String {

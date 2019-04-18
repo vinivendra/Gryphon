@@ -26,6 +26,7 @@ class Utilities {
 
 public enum class FileExtension {
 	SWIFT_AST_DUMP,
+	SWIFT_AST,
 	OUTPUT,
 	KT,
 	SWIFT;
@@ -34,6 +35,7 @@ public enum class FileExtension {
 		operator fun invoke(rawValue: String): FileExtension? {
 			return when (rawValue) {
 				"swiftASTDump" -> FileExtension.SWIFT_AST_DUMP
+				"swiftAST" -> FileExtension.SWIFT_AST
 				"output" -> FileExtension.OUTPUT
 				"kt" -> FileExtension.KT
 				"swift" -> FileExtension.SWIFT
@@ -46,6 +48,7 @@ public enum class FileExtension {
 		get() {
 			return when (this) {
 				FileExtension.SWIFT_AST_DUMP -> "swiftASTDump"
+				FileExtension.SWIFT_AST -> "swiftAST"
 				FileExtension.OUTPUT -> "output"
 				FileExtension.KT -> "kt"
 				FileExtension.SWIFT -> "swift"
@@ -199,6 +202,10 @@ fun Utilities.Companion.getFiles(
 	return selectedURLs.map { it.absolutePath }.toMutableList()
 }
 
+public fun Utilities.Companion.getAbsoultePath(file: String): String {
+	return File(file).getAbsoluteFile().normalize().absolutePath
+}
+
 public fun Utilities.Companion.updateTestFiles() {
 	if (testFilesHaveBeenUpdated) {
 		return
@@ -221,12 +228,15 @@ internal fun Utilities.Companion.needsToUpdateFiles(
 	files: MutableList<String>? = null,
 	folder: String,
 	originExtension: FileExtension,
-	destinationExtension: FileExtension)
+	destinationExtension: FileExtension,
+	outputFileMap: OutputFileMap? = null)
 	: Boolean
 {
 	val testFiles: MutableList<String> = getFiles(selectedFiles = files, directory = folder, fileExtension = originExtension)
 	for (originFile in testFiles) {
-		val destinationFilePath: String = Utilities.changeExtension(filePath = originFile, newExtension = destinationExtension)
+		val destinationFilePath: String = outputFileMap?.getOutputFile(
+			file = originFile,
+			outputType = OutputFileMap.OutputType(fileExtension = destinationExtension)!!) ?: Utilities.changeExtension(filePath = originFile, newExtension = destinationExtension)
 		val destinationFileWasJustCreated: Boolean = Utilities.createFileIfNeeded(filePath = destinationFilePath)
 		val destinationFileIsOutdated: Boolean = destinationFileWasJustCreated || Utilities.fileWasModifiedLaterThan(originFile, destinationFilePath)
 

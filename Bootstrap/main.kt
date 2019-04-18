@@ -1,6 +1,11 @@
 fun main(args: Array<String>) {
-	PrintableAsTreeTest().runAllTests()
-	ASTDumpDecoderTest().runAllTests()
-	ExtensionsTest().runAllTests()
-	UtilitiesTest().runAllTests()
+	if (args.contains("-test")) {
+		PrintableAsTreeTest().runAllTests()
+		ASTDumpDecoderTest().runAllTests()
+		ExtensionsTest().runAllTests()
+		UtilitiesTest().runAllTests()
+	}
+	else {
+		Driver.run(arguments = args.toMutableList())
+	}
 }

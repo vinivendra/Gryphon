@@ -88,6 +88,7 @@ public class Utilities {
 public enum FileExtension: String {
 	// This should be the same as the extension in the dumpAST.pl and separateASTs.pl files
 	case swiftASTDump
+	case swiftAST
 	case output
 	case kt
 	case swift
@@ -369,6 +370,13 @@ extension Utilities {
 // declaration: }
 
 extension Utilities {
+	public static func getAbsoultePath(forFile file: String) -> String {
+		return URL(fileURLWithPath: file).absoluteString // kotlin: ignore
+		// insert: return File(file).getAbsoluteFile().normalize().absolutePath
+	}
+}
+
+extension Utilities {
 	static public func updateLibraryFiles() throws { // kotlin: ignore
 		guard !libraryFilesHaveBeenUpdated else {
 			return
@@ -418,13 +426,16 @@ extension Utilities {
 		_ files: [String]? = nil,
 		in folder: String,
 		from originExtension: FileExtension,
-		to destinationExtension: FileExtension) -> Bool
+		to destinationExtension: FileExtension,
+		outputFileMap: OutputFileMap? = nil) -> Bool
 	{
 		let testFiles = getFiles(files, inDirectory: folder, withExtension: originExtension)
 
 		for originFile in testFiles {
-			let destinationFilePath =
-				Utilities.changeExtension(of: originFile, to: destinationExtension)
+			let destinationFilePath = outputFileMap?.getOutputFile(
+					forInputFile: originFile,
+					outputType: OutputFileMap.OutputType(fileExtension: destinationExtension)!)
+				?? Utilities.changeExtension(of: originFile, to: destinationExtension)
 
 			let destinationFileWasJustCreated =
 				Utilities.createFileIfNeeded(at: destinationFilePath)

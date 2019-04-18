@@ -18,7 +18,7 @@
 import XCTest
 
 class BootstrappingTest: XCTestCase {
-	func test() {
+	func testUnitTests() {
 		guard let runOutput = runTranspiledGryphon(withArguments: ["-test"]) else {
 			return
 		}
@@ -30,6 +30,52 @@ class BootstrappingTest: XCTestCase {
 				XCTFail(String(testMessage))
 			}
 		}
+	}
+
+	func testASTDumpDecoderOutput() {
+		let tests = TestUtils.testCasesForAllTests
+
+		for testName in tests {
+			print("- Testing \(testName)...")
+
+			do {
+				let testFilePath = TestUtils.testFilesPath + testName + ".swift"
+
+				// Get Kotlin results
+				let kotlinArguments = ["-emit-swiftAST", testFilePath]
+				// FIXME: This would be ideal, but it's timing out
+//				guard let runOutput = runTranspiledGryphon(withArguments: kotlinArguments) else {
+//					return
+//				}
+//				let transpiledSwiftAST = runOutput.standardOutput
+
+				let swiftASTFilePath = Utilities.changeExtension(of: testFilePath, to: .swiftAST)
+				let transpiledSwiftAST = try Utilities.readFile(swiftASTFilePath)
+
+				// Get Swift results
+				let swiftArguments = kotlinArguments + ["-q", "-Q"]
+				let driverResult =
+					try Driver.run(withArguments: ArrayReference<String>(array: swiftArguments))
+				guard let originalSwiftAST = (driverResult as? ArrayReference<SwiftAST>)?.first else
+				{
+					XCTFail("Error generating SwiftASTs.\n" +
+						"Driver result: \(driverResult ?? "nil")")
+					return
+				}
+
+				// Compare results
+				XCTAssert(
+					transpiledSwiftAST == originalSwiftAST.description,
+					"Test \(testName): failed to produce expected result. Diff:" +
+						TestUtils.diff(transpiledSwiftAST, originalSwiftAST.description))
+			}
+			catch let error {
+				XCTFail("🚨 Test failed with error:\n\(error)")
+			}
+		}
+
+		XCTAssertFalse(Compiler.hasErrorsOrWarnings())
+		Compiler.printErrorsAndWarnings()
 	}
 
 	func runTranspiledGryphon(withArguments arguments: [String]) -> Shell.CommandOutput? {
@@ -60,71 +106,93 @@ class BootstrappingTest: XCTestCase {
 			Compiler.printErrorsAndWarnings()
 		}
 
+		let outputFileMap = OutputFileMap("output-file-map.json")
+
 		// Dump the ASTs
-		print("\t* Dumping the ASTs...")
-		let dumpCommand = ["perl", "dumpTranspilerAST.pl" ]
-		guard let dumpResult = Shell.runShellCommand(dumpCommand) else {
-			XCTFail("Timed out.")
-			return
+		if Utilities.needsToUpdateFiles(
+			in: "Sources/GryphonLib",
+			from: .swift,
+			to: .swiftASTDump,
+			outputFileMap: outputFileMap)
+		{
+			print("* Dumping the ASTs...")
+			let dumpCommand = ["perl", "dumpTranspilerAST.pl" ]
+			guard let dumpResult = Shell.runShellCommand(dumpCommand) else {
+				XCTFail("Timed out.")
+				return
+			}
+			guard dumpResult.status == 0 else {
+				XCTFail("Failed to dump ASTs.\n" +
+					"Output:\n\(dumpResult.standardOutput)\n" +
+					"Error:\n\(dumpResult.standardError)\n" +
+					"Exit status: \(dumpResult.status)\n")
+				return
+			}
 		}
-		guard dumpResult.status == 0 else {
-			XCTFail("Failed to dump ASTs.\n" +
-				"Output:\n\(dumpResult.standardOutput)\n" +
-				"Error:\n\(dumpResult.standardError)\n" +
-				"Exit status: \(dumpResult.status)\n")
-			return
-		}
+
+		let supportedFileNames = [
+			"StandardLibrary",
+			"PrintableAsTree",
+			"SwiftAST",
+			"ASTDumpDecoder",
+			"Compiler",
+			"OutputFileMap",
+			"SourceFile",
+			"Driver",
+			"Extensions",
+			"Utilities",
+		]
+		let supportedFilePaths = supportedFileNames.map { "Sources/GryphonLib/\($0).swift" }
 
 		// Transpile the transpiler
-		let inputFiles: ArrayReference = [
-			"Sources/GryphonLib/StandardLibrary.swift",
-			"Sources/GryphonLib/PrintableAsTree.swift",
-			"Sources/GryphonLib/SwiftAST.swift",
-			"Sources/GryphonLib/ASTDumpDecoder.swift",
-			"Sources/GryphonLib/Compiler.swift",
-			"Sources/GryphonLib/OutputFileMap.swift",
-			"Sources/GryphonLib/SourceFile.swift",
-			"Sources/GryphonLib/Driver.swift",
-			"Sources/GryphonLib/Extensions.swift",
-			"Sources/GryphonLib/Utilities.swift",
-			"Bootstrap/PrintableAsTreeTest.kt",
-			"Bootstrap/ASTDumpDecoderTest.kt",
-			"Bootstrap/ExtensionsTest.kt",
-			"Bootstrap/UtilitiesTest.kt",
-			"Bootstrap/KotlinTests.kt",
-			"Bootstrap/main.kt",
-		]
-
-		let arguments: ArrayReference =
-			["build", "-output-file-map=output-file-map.json"] + inputFiles
-
-		let driverResult: Any?
-		do {
-			driverResult = try Driver.run(withArguments: arguments)
-		}
-		catch let error {
-			XCTFail("Error running driver.\n\(error)")
-			return
-		}
-
-		guard let compilationResult = driverResult as? Compiler.KotlinCompilationResult,
-			case let .success(commandOutput: commandOutput) = compilationResult else
+		if Utilities.needsToUpdateFiles(
+			supportedFileNames,
+			in: "Sources/GryphonLib",
+			from: .swift,
+			to: .kt,
+			outputFileMap: outputFileMap)
 		{
-			XCTFail("Error running driver. It's possible a command timed out.\n" +
-				"Driver result: \(driverResult ?? "nil")")
-			return
-		}
+			print("* Transpiling to kotlin...")
+			let inputFiles: ArrayReference = supportedFilePaths + [
+				"Bootstrap/PrintableAsTreeTest.kt",
+				"Bootstrap/ASTDumpDecoderTest.kt",
+				"Bootstrap/ExtensionsTest.kt",
+				"Bootstrap/UtilitiesTest.kt",
+				"Bootstrap/KotlinTests.kt",
+				"Bootstrap/main.kt",
+			]
 
-		guard commandOutput.status == 0 else {
-			XCTFail("Failed to run Kotlin bootstrap tests.\n" +
-				"Output:\n\(commandOutput.standardOutput)\n" +
-				"Error:\n\(commandOutput.standardError)\n" +
-				"Exit status: \(commandOutput.status)\n")
-			return
+			let arguments: ArrayReference =
+				["build", "-output-file-map=output-file-map.json"] + inputFiles
+
+			let driverResult: Any?
+			do {
+				driverResult = try Driver.run(withArguments: arguments)
+			}
+			catch let error {
+				XCTFail("Error running driver.\n\(error)")
+				return
+			}
+
+			guard let compilationResult = driverResult as? Compiler.KotlinCompilationResult,
+				case let .success(commandOutput: commandOutput) = compilationResult else
+			{
+				XCTFail("Error running driver. It's possible a command timed out.\n" +
+					"Driver result: \(driverResult ?? "nil")")
+				return
+			}
+
+			guard commandOutput.status == 0 else {
+				XCTFail("Failed to run Kotlin bootstrap tests.\n" +
+					"Output:\n\(commandOutput.standardOutput)\n" +
+					"Error:\n\(commandOutput.standardError)\n" +
+					"Exit status: \(commandOutput.status)\n")
+				return
+			}
 		}
 	}
 
 	static var allTests = [
-		("test", test),
+		("test", testUnitTests),
 	]
 }

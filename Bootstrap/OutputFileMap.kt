@@ -1,3 +1,5 @@
+import java.io.File
+
 typealias OutputFileMapBuffer = MutableMap<String, MutableMap<OutputFileMap.OutputType, String>>
 
 class OutputFileMap {
@@ -9,6 +11,15 @@ class OutputFileMap {
 		KOTLIN;
 
 		companion object {
+			operator fun invoke(fileExtension: FileExtension): OutputFileMap.OutputType? {
+				return when (fileExtension) {
+					FileExtension.SWIFT_AST_DUMP -> AST_DUMP
+					FileExtension.SWIFT_AST -> SWIFT_AST
+					FileExtension.KT -> KOTLIN
+					else -> null
+				}
+			}
+
 			operator fun invoke(rawValue: String): OutputType? {
 				return when (rawValue) {
 					"ast-dump" -> OutputType.AST_DUMP
@@ -40,7 +51,7 @@ class OutputFileMap {
 	}
 
 	public fun getFileMap(file: String): MutableMap<OutputFileMap.OutputType, String>? {
-		return buffer[file]
+		return buffer[Utilities.getAbsoultePath(file = file)]
 	}
 
 	public fun getOutputFile(file: String, outputType: OutputFileMap.OutputType): String? {
@@ -71,7 +82,7 @@ class OutputFileMap {
 				}
 
 				currentFileResult = mutableMapOf()
-				currentFilePath = lineComponents[1]
+				currentFilePath = Utilities.getAbsoultePath(file = lineComponents[1])
 
 				continue
 			}
