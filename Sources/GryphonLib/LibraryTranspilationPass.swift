@@ -230,14 +230,14 @@ extension Expression {
 					(leftOperatorSymbol == rightOperatorSymbol)
 					&& (leftType.isSubtype(of: rightType))
 			case let
-				(.callExpression(
-					function: leftFunction, parameters: leftParameters, type: leftType),
-				 .callExpression(
-					function: rightFunction, parameters: rightParameters, type: rightType)):
+				(.callExpression(value: leftCallExpression),
+				 .callExpression(value: rightCallExpression)):
 
-				return leftFunction.matches(rightFunction, &matches) &&
-					leftParameters.matches(rightParameters, &matches) &&
-					leftType.isSubtype(of: rightType)
+				return leftCallExpression.function.matches(
+						rightCallExpression.function, &matches) &&
+					leftCallExpression.parameters.matches(
+						rightCallExpression.parameters, &matches) &&
+					leftCallExpression.type.isSubtype(of: rightCallExpression.type)
 			case let
 				(.literalIntExpression(value: leftValue),
 				 .literalIntExpression(value: rightValue)):

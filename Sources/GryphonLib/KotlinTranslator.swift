@@ -756,7 +756,14 @@ public class KotlinTranslator {
 
 		let increasedIndentation = increaseIndentation(indentation)
 
-		let conditionsTranslation = try ifStatement.conditions.map {
+		let conditionsTranslation = try ifStatement.conditions.compactMap { condition in
+				if case let .condition(expression: expression) = condition {
+					return expression
+				}
+				else {
+					return nil
+				}
+			}.map {
 				try translateExpression($0, withIndentation: indentation)
 			}.joined(separator: " && ")
 
@@ -1037,10 +1044,8 @@ public class KotlinTranslator {
 				operatorSymbol: operatorSymbol,
 				type: type,
 				withIndentation: indentation)
-		case let .callExpression(function: function, parameters: parameters, type: type):
-			return try translateCallExpression(
-				function: function, parameters: parameters, type: type,
-				withIndentation: indentation)
+		case let .callExpression(value: callExpression):
+			return try translateCallExpression(callExpression, withIndentation: indentation)
 		case let .closureExpression(parameters: parameters, statements: statements, type: type):
 			return try translateClosureExpression(
 				parameters: parameters, statements: statements, type: type,
@@ -1237,12 +1242,14 @@ public class KotlinTranslator {
 	}
 
 	private func translateCallExpression(
-		function: Expression, parameters: Expression, type: String,
-		withIndentation indentation: String, shouldAddNewlines: Bool = false) throws -> String
+		_ callExpression: CallExpression,
+		withIndentation indentation: String,
+		shouldAddNewlines: Bool = false)
+		throws -> String
 	{
 		var result = ""
 
-		var functionExpression = function
+		var functionExpression = callExpression.function
 		while case let .dotExpression(
 			leftExpression: leftExpression, rightExpression: rightExpression) = functionExpression
 		{
@@ -1261,7 +1268,7 @@ public class KotlinTranslator {
 		}
 
 		let parametersTranslation: String
-		if case let .tupleExpression(pairs: pairs) = parameters {
+		if case let .tupleExpression(pairs: pairs) = callExpression.parameters {
 			if let closurePair = pairs.last,
 				case let .closureExpression(
 					parameters: parameters,
@@ -1294,7 +1301,7 @@ public class KotlinTranslator {
 			}
 		}
 		else if case let .tupleShuffleExpression(
-			labels: labels, indices: indices, expressions: expressions) = parameters
+			labels: labels, indices: indices, expressions: expressions) = callExpression.parameters
 		{
 			parametersTranslation = try translateTupleShuffleExpression(
 				labels: labels,
@@ -1308,8 +1315,7 @@ public class KotlinTranslator {
 			return try unexpectedASTStructureError(
 				"Expected the parameters to be either a .tupleExpression or a " +
 					".tupleShuffleExpression",
-				AST: .expression(expression:
-					.callExpression(function: function, parameters: parameters, type: type)))
+				AST: .expression(expression: .callExpression(value: callExpression)))
 		}
 
 		let prefix = try functionTranslation?.prefix ??
@@ -1319,8 +1325,9 @@ public class KotlinTranslator {
 
 		if !shouldAddNewlines, result.count >= KotlinTranslator.lineLimit {
 			return try translateCallExpression(
-				function: function, parameters: parameters, type: type,
-				withIndentation: indentation, shouldAddNewlines: true)
+				callExpression,
+				withIndentation: indentation,
+				shouldAddNewlines: true)
 		}
 		else {
 			return result

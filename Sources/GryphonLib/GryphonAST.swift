@@ -169,9 +169,7 @@ public indirect enum Expression: Equatable, PrintableAsTree {
 		trueExpression: Expression,
 		falseExpression: Expression)
 	case callExpression(
-		function: Expression,
-		parameters: Expression,
-		type: String)
+		value: CallExpression)
 	case closureExpression(
 		parameters: [LabeledType],
 		statements: [Statement],
@@ -253,6 +251,13 @@ public struct DeclarationReferenceExpression: Equatable {
 	var range: SourceFileRange?
 }
 
+public struct CallExpression: Equatable {
+	var function: Expression
+	var parameters: Expression
+	var type: String
+	var range: SourceFileRange?
+}
+
 public struct FunctionDeclaration: Equatable {
 	var prefix: String
 	var parameters: [FunctionParameter]
@@ -269,14 +274,19 @@ public struct FunctionDeclaration: Equatable {
 }
 
 public class IfStatement: Equatable {
-	var conditions: [Expression]
+	var conditions: [IfCondition]
 	var declarations: [VariableDeclaration]
 	var statements: [Statement]
 	var elseStatement: IfStatement?
 	var isGuard: Bool
 
+	public enum IfCondition: Equatable {
+		case condition(expression: Expression)
+		case declaration(variableDeclaration: VariableDeclaration)
+	}
+
 	public init(
-		conditions: [Expression],
+		conditions: [IfCondition],
 		declarations: [VariableDeclaration],
 		statements: [Statement],
 		elseStatement: IfStatement?,
@@ -440,12 +450,20 @@ extension Statement {
 		case let .ifStatement(value: ifStatement):
 			let declarationTrees =
 				ifStatement.declarations.map { Statement.variableDeclaration(value: $0) }
+			let conditionTrees = ifStatement.conditions.map { condition -> Statement in
+				switch condition {
+				case let .condition(expression: expression):
+					return .expression(expression: expression)
+				case let .declaration(variableDeclaration: variableDeclaration):
+					return .variableDeclaration(value: variableDeclaration)
+				}
+			}
 			let elseStatementTrees = ifStatement.elseStatement
 				.map({ Statement.ifStatement(value: $0) })?.printableSubtrees ?? []
 			return [
 				ifStatement.isGuard ? PrintableTree("guard") : nil,
 				PrintableTree.initOrNil("declarations", declarationTrees),
-				PrintableTree.initOrNil("conditions", ifStatement.conditions),
+				PrintableTree.initOrNil("conditions", conditionTrees),
 				PrintableTree.initOrNil("statements", ifStatement.statements),
 				PrintableTree.initOrNil("else", elseStatementTrees), ]
 		case let .switchStatement(
@@ -540,8 +558,8 @@ extension Expression {
 			return type
 		case let .ifExpression(condition: _, trueExpression: trueExpression, falseExpression: _):
 			return trueExpression.type
-		case let .callExpression(function: _, parameters: _, type: type):
-			return type
+		case let .callExpression(value: callExpression):
+			return callExpression.type
 		case let .closureExpression(parameters: _, statements: _, type: type):
 			return type
 		case .literalIntExpression:
@@ -575,6 +593,8 @@ extension Expression {
 		switch self {
 		case let .declarationReferenceExpression(value: declarationReferenceExpression):
 			return declarationReferenceExpression.range
+		case let .callExpression(value: callExpression):
+			return callExpression.range
 		default:
 			return nil
 		}
@@ -671,11 +691,11 @@ extension Expression {
 				PrintableTree("type \(type)"),
 				PrintableTree("operator \(operatorSymbol)"),
 				PrintableTree("expression", [expression]), ]
-		case let .callExpression(function: function, parameters: parameters, type: type):
+		case let .callExpression(value: callExpression):
 			return [
-				PrintableTree("type \(type)"),
-				PrintableTree("function", [function]),
-				PrintableTree("parameters", [parameters]), ]
+				PrintableTree("type \(callExpression.type)"),
+				PrintableTree("function", [callExpression.function]),
+				PrintableTree("parameters", [callExpression.parameters]), ]
 		case let .closureExpression(parameters: parameters, statements: statements, type: type):
 			let parameters = "(" + parameters.map { $0.label + ":" }.joined(separator: ", ") + ")"
 			return [

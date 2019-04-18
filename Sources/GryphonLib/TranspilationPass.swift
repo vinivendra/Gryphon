@@ -259,11 +259,23 @@ public class TranspilationPass {
 
 	func replaceIfStatement(_ ifStatement: IfStatement) -> IfStatement {
 		let ifStatement = ifStatement.copy()
-		ifStatement.conditions = ifStatement.conditions.map(replaceExpression)
+		ifStatement.conditions = replaceIfConditions(ifStatement.conditions)
 		ifStatement.declarations = ifStatement.declarations.map(replaceVariableDeclaration)
 		ifStatement.statements = replaceStatements(ifStatement.statements)
 		ifStatement.elseStatement = ifStatement.elseStatement.map(replaceIfStatement)
 		return ifStatement
+	}
+
+	func replaceIfConditions(_ conditions: [IfStatement.IfCondition]) -> [IfStatement.IfCondition] {
+		return conditions.map { condition -> IfStatement.IfCondition in
+			switch condition {
+			case let .condition(expression: expression):
+				return .condition(expression: replaceExpression(expression))
+			case let .declaration(variableDeclaration: variableDeclaration):
+				return .declaration(
+					variableDeclaration: replaceVariableDeclaration(variableDeclaration))
+			}
+		}
 	}
 
 	func replaceSwitchStatement(
@@ -375,8 +387,8 @@ public class TranspilationPass {
 				condition: condition,
 				trueExpression: trueExpression,
 				falseExpression: falseExpression)
-		case let .callExpression(function: function, parameters: parameters, type: type):
-			return replaceCallExpression(function: function, parameters: parameters, type: type)
+		case let .callExpression(value: callExpression):
+			return replaceCallExpression(callExpression)
 		case let .closureExpression(parameters: parameters, statements: statements, type: type):
 			return replaceClosureExpression(
 				parameters: parameters, statements: statements, type: type)
@@ -516,12 +528,16 @@ public class TranspilationPass {
 			falseExpression: replaceExpression(falseExpression))
 	}
 
-	func replaceCallExpression(function: Expression, parameters: Expression, type: String)
-		-> Expression
-	{
-		return .callExpression(
-			function: replaceExpression(function), parameters: replaceExpression(parameters),
-			type: type)
+	func replaceCallExpression(_ callExpression: CallExpression) -> Expression {
+		return .callExpression(value: replaceCallExpression(callExpression))
+	}
+
+	func replaceCallExpression(_ callExpression: CallExpression) -> CallExpression {
+		return CallExpression(
+			function: replaceExpression(callExpression.function),
+			parameters: replaceExpression(callExpression.parameters),
+			type: callExpression.type,
+			range: callExpression.range)
 	}
 
 	func replaceClosureExpression(
@@ -1203,12 +1219,10 @@ public class AnonymousParametersTranspilationPass: TranspilationPass {
 /// the type for the cast. However, since this seems to be a specific case that only shows up in the
 /// stdlib at the moment, this pass should serve as a workaround.
 public class CovarianceInitsAsCastsTranspilationPass: TranspilationPass {
-	override func replaceCallExpression(function: Expression, parameters: Expression, type: String)
-		-> Expression
-	{
-		if case let .typeExpression(type: type) = function,
+	override func replaceCallExpression(_ callExpression: CallExpression) -> Expression {
+		if case let .typeExpression(type: type) = callExpression.function,
 			type.hasPrefix("ArrayReference"),
-			case let .tupleExpression(pairs: pairs) = parameters,
+			case let .tupleExpression(pairs: pairs) = callExpression.parameters,
 			pairs.count == 1,
 			let onlyPair = pairs.first
 		{
@@ -1239,10 +1253,7 @@ public class CovarianceInitsAsCastsTranspilationPass: TranspilationPass {
 			}
 		}
 		else {
-			return super.replaceCallExpression(
-				function: function,
-				parameters: parameters,
-				type: type)
+			return super.replaceCallExpression(callExpression)
 		}
 	}
 }
@@ -1611,28 +1622,149 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 	}
 }
 
+/// If statements with let declarations get translated to Kotlin by having their let declarations
+/// rearranged to be before the if statement. This will cause any let conditions that have side
+/// effects (i.e. `let x = sideEffects()`) to run eagerly on Kotlin but lazily on Swift, which can
+/// lead to incorrect behavior.
+public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: TranspilationPass {
+	override func replaceIfStatement(_ ifStatement: IfStatement) -> IfStatement {
+		raiseWarningsForIfStatement(ifStatement, isElse: false)
+
+		// No recursion by calling super, otherwise we'd run on the else statements twice
+		return ifStatement
+	}
+
+	private func raiseWarningsForIfStatement(_ ifStatement: IfStatement, isElse: Bool) {
+		// The first condition of an non-else if statement is the only one that can safely have side
+		// effects
+		let conditions = isElse ?
+			ifStatement.conditions :
+			Array(ifStatement.conditions.dropFirst())
+
+		let sideEffectsRanges = conditions.flatMap(mayHaveSideEffectsOnRanges)
+		for range in sideEffectsRanges {
+			Compiler.handleWarning(
+				message: "If condition may have side effects.",
+				details: "",
+				sourceFile: ast.sourceFile,
+				sourceFileRange: range)
+		}
+
+		if let elseStatement = ifStatement.elseStatement {
+			raiseWarningsForIfStatement(elseStatement, isElse: true)
+		}
+	}
+
+	private func mayHaveSideEffectsOnRanges(
+		_ condition: IfStatement.IfCondition)
+		-> [SourceFileRange]
+	{
+		if case let .declaration(variableDeclaration: variableDeclaration) = condition,
+			let expression = variableDeclaration.expression
+		{
+			return mayHaveSideEffectsOnRanges(expression)
+		}
+
+		return []
+	}
+
+	private func mayHaveSideEffectsOnRanges(_ expression: Expression) -> [SourceFileRange] {
+		switch expression {
+		case let .callExpression(value: callExpression):
+			if let range = callExpression.range {
+				return [range]
+			}
+			else {
+				return []
+			}
+		case let .parenthesesExpression(expression: expression):
+			return mayHaveSideEffectsOnRanges(expression)
+		case let .forceValueExpression(expression: expression):
+			return mayHaveSideEffectsOnRanges(expression)
+		case let .optionalExpression(expression: expression):
+			return mayHaveSideEffectsOnRanges(expression)
+		case let .subscriptExpression(
+			subscriptedExpression: subscriptedExpression,
+			indexExpression: indexExpression,
+			type: _):
+
+			return mayHaveSideEffectsOnRanges(subscriptedExpression) +
+				mayHaveSideEffectsOnRanges(indexExpression)
+
+		case let .arrayExpression(elements: elements, type: _):
+			return elements.flatMap(mayHaveSideEffectsOnRanges)
+		case let .dictionaryExpression(keys: keys, values: values, type: _):
+			return keys.flatMap(mayHaveSideEffectsOnRanges) +
+				values.flatMap(mayHaveSideEffectsOnRanges)
+		case let .dotExpression(leftExpression: leftExpression, rightExpression: rightExpression):
+			return mayHaveSideEffectsOnRanges(leftExpression) +
+				mayHaveSideEffectsOnRanges(rightExpression)
+		case let .binaryOperatorExpression(
+			leftExpression: leftExpression,
+			rightExpression: rightExpression,
+			operatorSymbol: _,
+			type: _):
+
+			return mayHaveSideEffectsOnRanges(leftExpression) +
+				mayHaveSideEffectsOnRanges(rightExpression)
+		case let .prefixUnaryExpression(expression: expression, operatorSymbol: _, type: _):
+			return mayHaveSideEffectsOnRanges(expression)
+		case let .postfixUnaryExpression(expression: expression, operatorSymbol: _, type: _):
+			return mayHaveSideEffectsOnRanges(expression)
+		case let .ifExpression(
+			condition: condition,
+			trueExpression: trueExpression,
+			falseExpression: falseExpression):
+
+			return mayHaveSideEffectsOnRanges(condition) +
+				mayHaveSideEffectsOnRanges(trueExpression) +
+				mayHaveSideEffectsOnRanges(falseExpression)
+
+		case let .interpolatedStringLiteralExpression(expressions: expressions):
+			return expressions.flatMap(mayHaveSideEffectsOnRanges)
+		case let .tupleExpression(pairs: pairs):
+			return pairs.flatMap { mayHaveSideEffectsOnRanges($0.expression) }
+		case let .tupleShuffleExpression(labels: _, indices: _, expressions: expressions):
+			return expressions.flatMap(mayHaveSideEffectsOnRanges)
+		default:
+			return []
+ 		}
+	}
+}
+
+/// Sends let declarations to before the if statement, and replaces them with `x != null` conditions
 public class RearrangeIfLetsTranspilationPass: TranspilationPass {
+
+	/// Send the let declarations to before the if statement
+	override func replaceIfStatement(_ ifStatement: IfStatement) -> [Statement] {
+		let letDeclarations = gatherLetDeclarations(ifStatement)
+			.map { Statement.variableDeclaration(value: $0) }
+
+		return letDeclarations + super.replaceIfStatement(ifStatement)
+	}
 
 	/// Add conditions (`x != null`) for all let declarations
 	override func replaceIfStatement(_ ifStatement: IfStatement) -> IfStatement {
-		var letConditions = [Expression]()
-
-		for declaration in ifStatement.declarations {
-			letConditions.append(
-				.binaryOperatorExpression(
+		let newConditions = ifStatement.conditions.map { condition -> IfStatement.IfCondition in
+			if case let .declaration(variableDeclaration: variableDeclaration) = condition {
+				return .condition(expression: .binaryOperatorExpression(
 					leftExpression: .declarationReferenceExpression(value:
 						DeclarationReferenceExpression(
-							identifier: declaration.identifier,
-							type: declaration.typeName,
+							identifier: variableDeclaration.identifier,
+							type: variableDeclaration.typeName,
 							isStandardLibrary: false,
 							isImplicit: false,
-							range: declaration.expression?.range)),
+							range: variableDeclaration.expression?.range)),
 					rightExpression: .nilLiteralExpression, operatorSymbol: "!=",
 					type: "Boolean"))
+			}
+			else {
+				return condition
+			}
 		}
 
 		let ifStatement = ifStatement.copy()
-		ifStatement.conditions = letConditions + ifStatement.conditions
+		ifStatement.conditions = newConditions
 		return super.replaceIfStatement(ifStatement)
 	}
 
@@ -1642,31 +1774,32 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 			return []
 		}
 
-		let letDeclarations = ifStatement.declarations.filter { variableDeclaration in
-			// If it's a shadowing identifier there's no need to declare it in Kotlin
-			// (i.e. `if let x = x { }`)
-			if let declarationExpression = variableDeclaration.expression,
-				case let .declarationReferenceExpression(
+		let letDeclarations =
+			ifStatement.conditions.compactMap { condition -> VariableDeclaration? in
+				if case let .declaration(variableDeclaration: variableDeclaration) = condition {
+					return variableDeclaration
+				}
+				else {
+					return nil
+				}
+			}.filter { variableDeclaration in
+				// If it's a shadowing identifier there's no need to declare it in Kotlin
+				// (i.e. `if let x = x { }`)
+				if let declarationExpression = variableDeclaration.expression,
+					case let .declarationReferenceExpression(
 						value: expression) = declarationExpression,
 					expression.identifier == variableDeclaration.identifier
-			{
-				return false
+				{
+					return false
+				}
+				else {
+					return true
+				}
 			}
-			else {
-				return true
-			}
-		}
 
 		let elseLetDeclarations = gatherLetDeclarations(ifStatement.elseStatement)
 
 		return letDeclarations + elseLetDeclarations
-	}
-
-	/// Send the let declarations to before the if statement
-	override func replaceIfStatement(_ ifStatement: IfStatement) -> [Statement] {
-		let letDeclarations = gatherLetDeclarations(ifStatement)
-			.map { Statement.variableDeclaration(value: $0) }
-		return letDeclarations + super.replaceIfStatement(ifStatement)
 	}
 }
 
@@ -1866,19 +1999,22 @@ public class RawValuesTranspilationPass: TranspilationPass {
 /// be removed (or turned into a single ==). This pass performs that transformation.
 public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
 	override func replaceIfStatement(_ ifStatement: IfStatement) -> IfStatement {
-		if ifStatement.isGuard, ifStatement.conditions.count == 1 {
-			let condition = ifStatement.conditions[0]
+		if ifStatement.isGuard,
+			ifStatement.conditions.count == 1,
+			let onlyCondition = ifStatement.conditions.first,
+			case let .condition(expression: onlyConditionExpression) = onlyCondition
+		{
 			let shouldStillBeGuard: Bool
 			let newCondition: Expression
 			if case let .prefixUnaryExpression(
-				expression: innerExpression, operatorSymbol: "!", type: _) = condition
+				expression: innerExpression, operatorSymbol: "!", type: _) = onlyConditionExpression
 			{
 				newCondition = innerExpression
 				shouldStillBeGuard = false
 			}
 			else if case let .binaryOperatorExpression(
 				leftExpression: leftExpression, rightExpression: rightExpression,
-				operatorSymbol: "!=", type: type) = condition
+				operatorSymbol: "!=", type: type) = onlyConditionExpression
 			{
 				newCondition = .binaryOperatorExpression(
 					leftExpression: leftExpression, rightExpression: rightExpression,
@@ -1887,7 +2023,7 @@ public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
 			}
 			else if case let .binaryOperatorExpression(
 				leftExpression: leftExpression, rightExpression: rightExpression,
-				operatorSymbol: "==", type: type) = condition
+				operatorSymbol: "==", type: type) = onlyConditionExpression
 			{
 				newCondition = .binaryOperatorExpression(
 					leftExpression: leftExpression, rightExpression: rightExpression,
@@ -1895,12 +2031,14 @@ public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
 				shouldStillBeGuard = false
 			}
 			else {
-				newCondition = condition
+				newCondition = onlyConditionExpression
 				shouldStillBeGuard = true
 			}
 
 			let ifStatement = ifStatement.copy()
-			ifStatement.conditions = [newCondition]
+			ifStatement.conditions = [newCondition].map {
+				IfStatement.IfCondition.condition(expression: $0)
+			}
 			ifStatement.isGuard = shouldStillBeGuard
 			return super.replaceIfStatement(ifStatement)
 		}
@@ -1917,11 +2055,12 @@ public class ReturnIfNilTranspilationPass: TranspilationPass {
 		if case let .ifStatement(value: ifStatement) = statement,
 			ifStatement.conditions.count == 1,
 			let onlyCondition = ifStatement.conditions.first,
+			case let .condition(expression: onlyConditionExpression) = onlyCondition,
 			case let .binaryOperatorExpression(
 				leftExpression: declarationReference,
 				rightExpression: Expression.nilLiteralExpression,
 				operatorSymbol: "==",
-				type: _) = onlyCondition,
+				type: _) = onlyConditionExpression,
 			case let .declarationReferenceExpression(
 				value: declarationExpression) = declarationReference,
 			ifStatement.statements.count == 1,
@@ -2027,6 +2166,9 @@ public extension TranspilationPass {
 		result = StaticMembersTranspilationPass(ast: result).run()
 		result = FixProtocolContentsTranspilationPass(ast: result).run()
 		result = RemoveExtensionsTranspilationPass(ast: result).run()
+		// Note: We have to know the order of the conditions to raise warnings here, so they must go
+		// before the conditions are rearranged
+		result = RaiseWarningsForSideEffectsInIfLetsTranspilationPass(ast: result).run()
 		result = RearrangeIfLetsTranspilationPass(ast: result).run()
 
 		// Transform structures that need to be slightly different in Kotlin
@@ -2067,7 +2209,7 @@ public extension TranspilationPass {
 }
 
 //
-internal enum ASTNode {
+public enum ASTNode: Equatable {
 	case statement(Statement)
 	case expression(Expression)
 }

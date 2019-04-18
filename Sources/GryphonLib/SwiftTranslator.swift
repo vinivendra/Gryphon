@@ -1029,8 +1029,7 @@ public class SwiftTranslator {
 
 		let isGuard = (ifStatement.name == "Guard Statement")
 
-		let (letDeclarations, conditions, extraStatements) =
-			try translateDeclarationsAndConditions(forIfStatement: ifStatement)
+		let (conditions, extraStatements) = try translateIfConditions(forIfStatement: ifStatement)
 
 		let braceStatement: SwiftAST
 		let elseStatement: IfStatement?
@@ -1074,7 +1073,7 @@ public class SwiftTranslator {
 
 		return IfStatement(
 			conditions: conditions,
-			declarations: letDeclarations,
+			declarations: [],
 			statements: extraStatements + statements,
 			elseStatement: elseStatement,
 			isGuard: isGuard)
@@ -1221,21 +1220,19 @@ public class SwiftTranslator {
 		}
 	}
 
-	internal func translateDeclarationsAndConditions(
+	internal func translateIfConditions(
 		forIfStatement ifStatement: SwiftAST) throws
-		-> (declarations: [VariableDeclaration], conditions: [Expression], statements: [Statement])
+		-> (conditions: [IfStatement.IfCondition], statements: [Statement])
 	{
 		guard ifStatement.name == "If Statement" || ifStatement.name == "Guard Statement" else {
 			return try (
-				declarations: [],
 				conditions: [],
 				statements: [unexpectedASTStructureError(
 					"Trying to translate \(ifStatement.name) as an if or guard statement",
 					AST: ifStatement, translator: self), ])
 		}
 
-		var conditionsResult = [Expression]()
-		var declarationsResult = [VariableDeclaration]()
+		var conditionsResult = [IfStatement.IfCondition]()
 		var statementsResult = [Statement]()
 
 		let conditions = ifStatement.subtrees.filter {
@@ -1266,7 +1263,6 @@ public class SwiftTranslator {
 				}
 				else {
 					return try (
-						declarations: [],
 						conditions: [],
 						statements: [unexpectedASTStructureError(
 							"Unable to detect pattern in let declaration",
@@ -1275,7 +1271,6 @@ public class SwiftTranslator {
 
 				guard let rawType = optionalSomeElement["type"] else {
 					return try (
-						declarations: [],
 						conditions: [],
 						statements: [unexpectedASTStructureError(
 							"Unable to detect type in let declaration",
@@ -1288,7 +1283,6 @@ public class SwiftTranslator {
 					let lastCondition = condition.subtrees.last else
 				{
 					return try (
-						declarations: [],
 						conditions: [],
 						statements: [unexpectedASTStructureError(
 							"Unable to get expression in let declaration",
@@ -1297,7 +1291,7 @@ public class SwiftTranslator {
 
 				let expression = try translate(expression: lastCondition)
 
-				declarationsResult.append(VariableDeclaration(
+				conditionsResult.append(.declaration(variableDeclaration: VariableDeclaration(
 					identifier: name,
 					typeName: type,
 					expression: expression,
@@ -1306,7 +1300,7 @@ public class SwiftTranslator {
 					isImplicit: false,
 					isStatic: false,
 					extendsType: nil,
-					annotations: nil))
+					annotations: nil)))
 			}
 			// If it's an `if case let`
 			else if condition.name == "Pattern",
@@ -1317,7 +1311,6 @@ public class SwiftTranslator {
 				// TODO: test
 				guard let patternLetResult = try translate(enumPatternLet: patternLet) else {
 					return try (
-						declarations: [],
 						conditions: [],
 						statements: [unexpectedASTStructureError(
 							"Unable to translate Pattern Let",
@@ -1331,11 +1324,11 @@ public class SwiftTranslator {
 
 				let declarationReference = try translate(expression: declarationReferenceAST)
 
-				conditionsResult.append(.binaryOperatorExpression(
+				conditionsResult.append(.condition(expression: .binaryOperatorExpression(
 					leftExpression: declarationReference,
 					rightExpression: .typeExpression(type: enumClassName),
 					operatorSymbol: "is",
-					type: "Bool"))
+					type: "Bool")))
 
 				for declaration in declarations {
 					let range = getRangeRecursively(ofNode: patternLet)
@@ -1362,13 +1355,12 @@ public class SwiftTranslator {
 				}
 			}
 			else {
-				conditionsResult.append(try translate(expression: condition))
+				conditionsResult.append(.condition(expression:
+					try translate(expression: condition)))
 			}
 		}
 
-		return (declarations: declarationsResult,
-				conditions: conditionsResult,
-				statements: statementsResult)
+		return (conditions: conditionsResult, statements: statementsResult)
 	}
 
 	private func translate(enumPatternLet: SwiftAST) throws
@@ -1791,7 +1783,13 @@ public class SwiftTranslator {
 
 		let parameters = try translate(callExpressionParameters: callExpression)
 
-		return .callExpression(function: function, parameters: parameters, type: type)
+		let range = getRange(ofNode: callExpression)
+
+		return .callExpression(value: CallExpression(
+			function: function,
+			parameters: parameters,
+			type: type,
+			range: range))
 	}
 
 	internal func translate(closureExpression: SwiftAST) throws -> Expression {
