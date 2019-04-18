@@ -19,6 +19,42 @@ import XCTest
 
 class BootstrappingTest: XCTestCase {
 	func test() {
+		guard let runOutput = runTranspiledGryphon(withArguments: ["-test"]) else {
+			return
+		}
+
+		let testMessages = runOutput.standardOutput.split(separator: "\n")
+		XCTAssertEqual(testMessages.count, 4)
+		for testMessage in testMessages {
+			if !testMessage.hasSuffix("All tests succeeded!") {
+				XCTFail(String(testMessage))
+			}
+		}
+	}
+
+	func runTranspiledGryphon(withArguments arguments: [String]) -> Shell.CommandOutput? {
+		let runResult: Compiler.KotlinCompilationResult
+		do {
+			runResult =
+				try Compiler.runCompiledProgram(fromFolder: "Bootstrap", withArguments: arguments)
+		}
+		catch let error {
+			XCTFail("Error running driver.\n\(error)")
+			return nil
+		}
+
+		guard case let .success(commandOutput: runOutput) = runResult else
+		{
+			XCTFail("Error running transpiled transpiler. It's possible a command timed out.\n" +
+				"Run result: \(runResult)")
+			return nil
+		}
+
+		return runOutput
+	}
+
+	override static func setUp() {
+		// Transpile the transpiler
 		defer {
 			XCTAssertFalse(Compiler.hasErrorsOrWarnings())
 			Compiler.printErrorsAndWarnings()
@@ -39,6 +75,7 @@ class BootstrappingTest: XCTestCase {
 			return
 		}
 
+		// Transpile the transpiler
 		let inputFiles: ArrayReference = [
 			"Sources/GryphonLib/StandardLibrary.swift",
 			"Sources/GryphonLib/PrintableAsTree.swift",
@@ -59,7 +96,7 @@ class BootstrappingTest: XCTestCase {
 		]
 
 		let arguments: ArrayReference =
-			["run", "-output-file-map=output-file-map.json"] + inputFiles
+			["build", "-output-file-map=output-file-map.json"] + inputFiles
 
 		let driverResult: Any?
 		do {
@@ -71,28 +108,19 @@ class BootstrappingTest: XCTestCase {
 		}
 
 		guard let compilationResult = driverResult as? Compiler.KotlinCompilationResult,
-		 	case let .success(commandOutput: commandOutput) = compilationResult else
+			case let .success(commandOutput: commandOutput) = compilationResult else
 		{
 			XCTFail("Error running driver. It's possible a command timed out.\n" +
 				"Driver result: \(driverResult ?? "nil")")
 			return
 		}
 
-		guard commandOutput.standardError == "",
-			commandOutput.status == 0 else
-		{
+		guard commandOutput.status == 0 else {
 			XCTFail("Failed to run Kotlin bootstrap tests.\n" +
 				"Output:\n\(commandOutput.standardOutput)\n" +
 				"Error:\n\(commandOutput.standardError)\n" +
 				"Exit status: \(commandOutput.status)\n")
 			return
-		}
-
-		let testMessages = commandOutput.standardOutput.split(separator: "\n")
-		for testMessage in testMessages {
-			if !testMessage.hasSuffix("All tests succeeded!") {
-				XCTFail(String(testMessage))
-			}
 		}
 	}
 

@@ -87,12 +87,14 @@ extension Compiler { // kotlin: ignore
 		}
 	}
 
-	public static func runCompiledProgram(fromFolder outputFolder: String)
+	public static func runCompiledProgram(
+		fromFolder outputFolder: String,
+		withArguments arguments: [String] = [])
 		throws -> KotlinCompilationResult
 	{
 		log("\t- Running Kotlin...")
-		let arguments = ["java", "-jar", "kotlin.jar"]
-		let commandResult = Shell.runShellCommand(arguments, fromFolder: outputFolder)
+		let commandArguments = ["java", "-jar", "kotlin.jar"] + arguments
+		let commandResult = Shell.runShellCommand(commandArguments, fromFolder: outputFolder)
 
 		guard let result = commandResult else {
 			return .failure(errorMessage: "\t\t- Java running timed out.")
