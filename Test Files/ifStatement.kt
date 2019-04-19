@@ -142,11 +142,11 @@ fun main(args: Array<String>) {
 		println("If let #3")
 	}
 
+	val f: Int? = bla()
 	var d: Int? = x
 	val e: Int? = y
-	val f: Int? = bla()
 
-	if (d != null && e != null && f != null && x == 0) {
+	if (f != null && d != null && e != null && x == 0) {
 		println("${d}, ${e}, ${f}, ${x!!}")
 		println("If let #4")
 	}

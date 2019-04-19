@@ -152,7 +152,7 @@ else {
 	print("If let #3")
 }
 
-if var d = x, let e = y, let f = bla(), x == 0 {
+if let f = bla(), var d = x, let e = y, x == 0 {
 	print("\(d), \(e), \(f), \(x!)")
 	print("If let #4")
 }
