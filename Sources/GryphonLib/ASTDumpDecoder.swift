@@ -177,6 +177,13 @@ internal class ASTDumpDecoder {
 					break
 				}
 			}
+			else if character == "-" {
+				// Allow "->" to be read without counting for the parentheses level
+				let nextCharacter = buffer[buffer.index(after: index)]
+				if nextCharacter == ">" {
+					index = buffer.index(after: index)
+				}
+			}
 			else if character == " ", parenthesesLevel <= 0 {
 				break
 			}
@@ -443,8 +450,9 @@ internal class ASTDumpDecoder {
 				}
 			}
 			else if character == " " {
-				let nextPart = buffer[index...].prefix(" extension.".count + 1)
-					.replacingOccurrences(of: "\n", with: "")
+				let endIndex = buffer.index(index, offsetBy: " extension.".count + 1)
+
+				let nextPart = buffer[index..<endIndex].replacingOccurrences(of: "\n", with: "")
 
 				if nextPart.hasPrefix(" extension.") {
 					index = buffer.index(after: index)
@@ -626,11 +634,22 @@ internal class ASTDumpDecoder {
 
 		// Skip the opening <
 		var index = buffer.index(after: currentIndex)
+
+		var bracketLevel = 1
+
 		while true {
 			let character = buffer[index]
+
 			if character == ">" {
-				break
+				bracketLevel -= 1
+				if bracketLevel == 0 {
+					break
+				}
 			}
+			else if character == "<" {
+				bracketLevel += 1
+			}
+
 			index = buffer.index(after: index)
 		}
 

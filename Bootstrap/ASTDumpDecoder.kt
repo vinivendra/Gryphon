@@ -156,6 +156,12 @@ class ASTDumpDecoder {
 					break
 				}
 			}
+			else if (character == '-') {
+				val nextCharacter: Char = buffer[index + 1]
+				if (nextCharacter == '>') {
+					index = index + 1
+				}
+			}
 			else if (character == ' ' && parenthesesLevel <= 0) {
 				break
 			}
@@ -375,7 +381,8 @@ class ASTDumpDecoder {
 					}
 				}
 				else if (character == ' ') {
-					val nextPart: String = buffer.substring(index).substring(0, " extension.".length + 1).replace("\n", "")
+					val endIndex: Int = index + " extension.".length + 1
+					val nextPart: String = buffer.substring(index, endIndex).replace("\n", "")
 					if (nextPart.startsWith(" extension.")) {
 						index = index + 1
 						continue
@@ -531,11 +538,18 @@ class ASTDumpDecoder {
 	internal fun readStringInAngleBrackets(): String {
 		try {
 			var index: Int = currentIndex + 1
+			var bracketLevel: Int = 1
 
 			while (true) {
 				val character: Char = buffer[index]
 				if (character == '>') {
-					break
+					bracketLevel -= 1
+					if (bracketLevel == 0) {
+						break
+					}
+				}
+				else if (character == '<') {
+					bracketLevel += 1
 				}
 				index = index + 1
 			}
