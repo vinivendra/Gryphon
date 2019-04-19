@@ -39,8 +39,7 @@ public class Driver {
 
 	public static func runUpToFirstPasses(
 		withSettings settings: Settings,
-		onFile inputFilePath: String)
-		throws -> Any?
+		onFile inputFilePath: String) throws -> Any?
 	{
 		guard settings.shouldGenerateSwiftAST else {
 			return [] // value: mutableListOf<Any>()
@@ -248,12 +247,28 @@ public class Driver {
 			outputFolder: outputFolder,
 			mainFilePath: mainFilePath)
 
+		let shouldRunConcurrently = !arguments.contains("-sync")
+
+		// Update libraries syncronously to guarantee it's only done once
+		if shouldGenerateAST { // kotlin: ignore
+			try Utilities.updateLibraryFiles()
+		}
+
 		// Run compiler steps
 		let filteredInputFiles = inputFilePaths.filter {
 			$0.hasSuffix(".swift") || $0.hasSuffix(".swiftASTDump")
 		}
-		let firstResult = try filteredInputFiles.map {
-			try runUpToFirstPasses(withSettings: settings, onFile: $0)
+
+		let firstResult: ArrayReference<Any?>
+		if shouldRunConcurrently {
+			firstResult = try filteredInputFiles.parallelMap {
+				try runUpToFirstPasses(withSettings: settings, onFile: $0)
+			}
+		}
+		else {
+			firstResult = try filteredInputFiles.map {
+				try runUpToFirstPasses(withSettings: settings, onFile: $0)
+			}
 		}
 
 		// insert: return firstResult
@@ -267,15 +282,29 @@ public class Driver {
 				return firstResult
 			}
 
-			let secondResult = try zip(asts, filteredInputFiles).map {
-				try runAfterFirstPasses(
-					onAST: $0.0,
-					withSettings: settings,
-					onFile: $0.1)
+			let pairsArray = ArrayReference<(GryphonAST, String)>(array:
+				Array(zip(asts, filteredInputFiles)))
+
+			let secondResult: ArrayReference<Any?>
+			if shouldRunConcurrently {
+				secondResult = try pairsArray.parallelMap {
+					try runAfterFirstPasses(
+						onAST: $0.0,
+						withSettings: settings,
+						onFile: $0.1)
+				}
+			}
+			else {
+				secondResult = try pairsArray.map {
+					try runAfterFirstPasses(
+						onAST: $0.0,
+						withSettings: settings,
+						onFile: $0.1)
+				}
 			}
 
 			guard settings.shouldBuild else {
-				return ArrayReference<Any?>(array: secondResult)
+				return secondResult
 			}
 
 			let generatedKotlinFiles = filteredInputFiles.compactMap {

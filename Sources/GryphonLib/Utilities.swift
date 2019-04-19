@@ -461,12 +461,19 @@ extension ArrayReference { // kotlin: ignore
 	/// transform.
 	/// Technically it's O(n lg(n)) since the array has to be sorted at the end, but it's expected
 	/// that the transforms will take much longer than the sorting.
-	public func parallelMap<Result>(_ transform: @escaping (Element) -> Result)
-		-> ArrayReference<Result>
+	public func parallelMap<Result>(_ transform: @escaping (Element) throws -> Result)
+		throws -> ArrayReference<Result>
 	{
 		let concurrentQueue = DispatchQueue(
 			label: "com.gryphon.ParallelMap", attributes: .concurrent)
+
+		var thrownError: Error?
+
 		let lock = NSLock()
+		let group = DispatchGroup()
+		for _ in self {
+			group.enter()
+		}
 
 		let selfEnumerated = Array(self.enumerated())
 		var unsortedResult: [(index: Int, element: Result)] = []
@@ -478,18 +485,30 @@ extension ArrayReference { // kotlin: ignore
 				let index = enumeratedItem.offset
 				let oldElement = enumeratedItem.element
 
-				// This is the line that takes a while
-				let newElement = transform(oldElement)
+				do {
+					// This is the line that takes a while
+					let newElement = try transform(oldElement)
 
-				// Avoid accessing the result array simultaneously. This should be quick and rare.
-				lock.lock()
-				unsortedResult.append((index: index, element: newElement))
-				lock.unlock()
+					// Avoid accessing the result array simultaneously. This should be quick and
+					// rare.
+					lock.lock()
+					unsortedResult.append((index: index, element: newElement))
+					lock.unlock()
+
+					group.leave()
+				}
+				catch let error {
+					thrownError = error
+				}
 			}
 		}
 
 		// Wait for all elements to finish processing
-		concurrentQueue.async (flags: .barrier) { }
+		group.wait()
+
+		if let thrownError = thrownError {
+			throw thrownError
+		}
 
 		// Elements may have been added in any order. We have to re-sort the array.
 		let result = unsortedResult.sorted { (leftIndexedElement, rightIndexedELement) -> Bool in

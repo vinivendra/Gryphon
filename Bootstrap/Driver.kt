@@ -101,8 +101,16 @@ class Driver {
 				outputFileMap = outputFileMap,
 				outputFolder = outputFolder,
 				mainFilePath = mainFilePath)
+			val shouldRunConcurrently: Boolean = !arguments.contains("-sync")
 			val filteredInputFiles: MutableList<String> = inputFilePaths.filter { it.endsWith(".swift") || it.endsWith(".swiftASTDump") }.toMutableList()
-			val firstResult: MutableList<Any?> = filteredInputFiles.map { runUpToFirstPasses(settings = settings, inputFilePath = it) }.toMutableList()
+			val firstResult: MutableList<Any?>
+
+			if (shouldRunConcurrently) {
+				firstResult = filteredInputFiles.parallelMap { runUpToFirstPasses(settings = settings, inputFilePath = it) }
+			}
+			else {
+				firstResult = filteredInputFiles.map { runUpToFirstPasses(settings = settings, inputFilePath = it) }.toMutableList()
+			}
 
 			return firstResult
 		}
