@@ -14,7 +14,9 @@
 * limitations under the License.
 */
 
-public final class GryphonAST: PrintableAsTree, Equatable, CustomStringConvertible {
+public final class GryphonAST:  // kotlin: ignore
+	PrintableAsTree, Equatable, CustomStringConvertible
+{
 	let sourceFile: SourceFile?
 	let declarations: [Statement]
 	let statements: [Statement]
@@ -49,7 +51,7 @@ public final class GryphonAST: PrintableAsTree, Equatable, CustomStringConvertib
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-public indirect enum Statement: Equatable, PrintableAsTree {
+public indirect enum Statement: Equatable, PrintableAsTree { // kotlin: ignore
 
 	case expression(
 		expression: Expression)
@@ -117,7 +119,7 @@ public indirect enum Statement: Equatable, PrintableAsTree {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // TODO: dictionaryExpression should have key-value pairs
 
-public indirect enum Expression: Equatable, PrintableAsTree {
+public indirect enum Expression: Equatable, PrintableAsTree { // kotlin: ignore
 	case literalCodeExpression(
 		string: String)
 	case literalDeclarationExpression(
@@ -200,17 +202,17 @@ public indirect enum Expression: Equatable, PrintableAsTree {
 	case error
 }
 
-public struct LabeledExpression: Equatable {
+public struct LabeledExpression: Equatable { // kotlin: ignore
 	var label: String?
 	var expression: Expression
 }
 
-public struct LabeledType: Equatable {
+public struct LabeledType: Equatable { // kotlin: ignore
 	var label: String
 	var type: String
 }
 
-public struct FunctionParameter: Equatable, PrintableAsTree {
+public struct FunctionParameter: Equatable, PrintableAsTree { // kotlin: ignore
 	var label: String
 	var apiLabel: String?
 	var type: String
@@ -230,7 +232,7 @@ public struct FunctionParameter: Equatable, PrintableAsTree {
 	}
 }
 
-public struct VariableDeclaration: Equatable {
+public struct VariableDeclaration: Equatable { // kotlin: ignore
 	var identifier: String
 	var typeName: String
 	var expression: Expression?
@@ -243,7 +245,7 @@ public struct VariableDeclaration: Equatable {
 	var annotations: String?
 }
 
-public struct DeclarationReferenceExpression: Equatable {
+public struct DeclarationReferenceExpression: Equatable { // kotlin: ignore
 	var identifier: String
 	var type: String
 	var isStandardLibrary: Bool
@@ -251,14 +253,14 @@ public struct DeclarationReferenceExpression: Equatable {
 	var range: SourceFileRange?
 }
 
-public struct CallExpression: Equatable {
+public struct CallExpression: Equatable { // kotlin: ignore
 	var function: Expression
 	var parameters: Expression
 	var type: String
 	var range: SourceFileRange?
 }
 
-public struct FunctionDeclaration: Equatable {
+public struct FunctionDeclaration: Equatable { // kotlin: ignore
 	var prefix: String
 	var parameters: [FunctionParameter]
 	var returnType: String
@@ -273,7 +275,7 @@ public struct FunctionDeclaration: Equatable {
 	var annotations: String?
 }
 
-public class IfStatement: Equatable {
+public class IfStatement: Equatable { // kotlin: ignore
 	var conditions: [IfCondition]
 	var declarations: [VariableDeclaration]
 	var statements: [Statement]
@@ -317,12 +319,12 @@ public class IfStatement: Equatable {
 	}
 }
 
-public struct SwitchCase: Equatable {
+public struct SwitchCase: Equatable { // kotlin: ignore
 	var expression: Expression?
 	var statements: [Statement]
 }
 
-public struct EnumElement: Equatable {
+public struct EnumElement: Equatable { // kotlin: ignore
 	var name: String
 	var associatedValues: [LabeledType]
 	var rawValue: Expression?
@@ -331,7 +333,7 @@ public struct EnumElement: Equatable {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-extension Statement {
+extension Statement { // kotlin: ignore
 	public var name: String {
 		if let name = Mirror(reflecting: self).children.first?.label {
 			return name
@@ -501,7 +503,7 @@ extension Statement {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-extension Expression {
+extension Expression { // kotlin: ignore
 	public var type: String? {
 		switch self {
 		case .templateExpression:
@@ -738,7 +740,7 @@ extension Expression {
 }
 
 //
-public enum TupleShuffleIndex: Equatable, CustomStringConvertible {
+public enum TupleShuffleIndex: Equatable, CustomStringConvertible { // kotlin: ignore
 	case variadic(count: Int)
 	case absent
 	case present

@@ -100,12 +100,14 @@ class BootstrappingTest: XCTestCase {
 	}
 
 	override static func setUp() {
-		// Transpile the transpiler
+		print("* Updating bootstrap files...")
+
 		defer {
 			XCTAssertFalse(Compiler.hasErrorsOrWarnings())
 			Compiler.printErrorsAndWarnings()
 		}
 
+		// Transpile the transpiler
 		let outputFileMap = OutputFileMap("output-file-map.json")
 
 		// Dump the ASTs
@@ -134,6 +136,7 @@ class BootstrappingTest: XCTestCase {
 			"StandardLibrary",
 			"PrintableAsTree",
 			"SwiftAST",
+			"GryphonAST",
 			"ASTDumpDecoder",
 			"Compiler",
 			"OutputFileMap",
@@ -190,6 +193,8 @@ class BootstrappingTest: XCTestCase {
 				return
 			}
 		}
+
+		print("* Done.")
 	}
 
 	static var allTests = [
