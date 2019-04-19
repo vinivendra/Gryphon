@@ -18,4 +18,5 @@
 ### Xcode files
 /*.xcodeproj
 **/xcuserdata
+default.profraw
 
