@@ -36,6 +36,18 @@ public final class ArrayReference<Element>: // kotlin: ignore
 		self.array = arrayReference.array as! Buffer
 	}
 
+	public func `as`<CastedType>(
+		_ type: ArrayReference<CastedType>.Type)
+		-> ArrayReference<CastedType>?
+	{
+		if let castedArray = self.array as? [CastedType] {
+			return ArrayReference<CastedType>(array: castedArray)
+		}
+		else {
+			return nil
+		}
+	}
+
 	public func copy() -> ArrayReference<Element> {
 		return ArrayReference(array: array)
 	}

@@ -67,44 +67,20 @@ public class Compiler {
 }
 
 extension Compiler { // kotlin: ignore
-
-	public enum KotlinCompilationResult: CustomStringConvertible {
-		case success(commandOutput: Shell.CommandOutput)
-		case failure(errorMessage: String)
-
-		public var description: String {
-			switch self {
-			case let .success(commandOutput: commandOutput):
-				return "Kotlin compilation result:\n" +
-					"- Output:\n" +
-					commandOutput.standardOutput +
-					"- Error:\n" +
-					commandOutput.standardError +
-					"- Status: \(commandOutput.status)\n"
-			case let .failure(errorMessage: errorMessage):
-				return "Kotlin compilation failed: \(errorMessage)"
-			}
-		}
-	}
-
 	public static func runCompiledProgram(
 		fromFolder outputFolder: String,
 		withArguments arguments: [String] = [])
-		throws -> KotlinCompilationResult
+		throws -> Shell.CommandOutput?
 	{
 		log("\t- Running Kotlin...")
 		let commandArguments = ["java", "-jar", "kotlin.jar"] + arguments
 		let commandResult = Shell.runShellCommand(commandArguments, fromFolder: outputFolder)
 
-		guard let result = commandResult else {
-			return .failure(errorMessage: "\t\t- Java running timed out.")
-		}
-
-		return .success(commandOutput: result)
+		return commandResult
 	}
 
 	public static func compile(kotlinFiles filePaths: [String], outputFolder: String)
-		throws -> KotlinCompilationResult
+		throws -> Shell.CommandOutput?
 	{
 		log("\t- Compiling Kotlin...")
 
@@ -112,57 +88,54 @@ extension Compiler { // kotlin: ignore
 		let arguments = ["-include-runtime", "-d", outputFolder + "/kotlin.jar"] + filePaths
 		let commandResult = Shell.runShellCommand(kotlinCompilerPath, arguments: arguments)
 
-		// Ensure the compiler terminated successfully
-		guard let result = commandResult else {
-			return .failure(errorMessage: "\t\t- Kotlin compiler timed out.")
-		}
-		guard result.status == 0 else {
-			return .failure(errorMessage:
-				"\t\t- Error compiling kotlin files. Kotlin compiler says:\n" +
-				"\(result.standardError)")
-		}
-
-		return .success(commandOutput: result)
+		return commandResult
 	}
 
-	public static func generateKotlinCode(fromGryphonASTs asts: [GryphonAST]) throws -> [String] {
-		log("\t- Translating ASTs to Kotlin...")
-		let kotlinCodes = try asts.map { try KotlinTranslator().translateAST($0) }
-		return kotlinCodes
+	public static func generateKotlinCode(fromGryphonAST ast: GryphonAST) throws -> String {
+		log("\t- Translating AST to Kotlin...")
+		return try KotlinTranslator().translateAST(ast)
 	}
 
-	public static func generateGryphonASTs(fromGryphonRawASTs asts: [GryphonAST]) throws
-		-> [GryphonAST]
-	{
-		var asts = asts
-		log("\t- Translating Swift ASTs to Gryphon ASTs...")
+	public static func generateGryphonAST(fromGryphonRawAST ast: GryphonAST) throws -> GryphonAST {
+		var ast = ast
+		log("\t- Running passes on Gryphon ASTs...")
 		try Utilities.updateLibraryFiles()
-		asts = asts.map { TranspilationPass.runFirstRoundOfPasses(on: $0) }
-		asts = asts.map { TranspilationPass.runSecondRoundOfPasses(on: $0) }
-		return asts
+		ast = TranspilationPass.runFirstRoundOfPasses(on: ast)
+		ast = TranspilationPass.runSecondRoundOfPasses(on: ast)
+		return ast
 	}
 
-	public static func generateGryphonRawASTs(fromSwiftASTs swiftASTs: [SwiftAST])
-		throws -> [GryphonAST]
+	public static func generateGryphonASTAfterSecondPasses(fromGryphonRawAST ast: GryphonAST)
+		throws -> GryphonAST
 	{
-		let translateAsMainFile = (swiftASTs.count == 1)
+		log("\t- Running second round of passes...")
+		try Utilities.updateLibraryFiles()
+		return TranspilationPass.runSecondRoundOfPasses(on: ast)
+	}
 
+	public static func generateGryphonASTAfterFirstPasses(fromGryphonRawAST ast: GryphonAST)
+		throws -> GryphonAST
+	{
+		log("\t- Running first round of passes...")
+		try Utilities.updateLibraryFiles()
+		return TranspilationPass.runFirstRoundOfPasses(on: ast)
+	}
+
+	public static func generateGryphonRawAST(fromSwiftAST swiftAST: SwiftAST, asMainFile: Bool)
+		throws -> GryphonAST
+	{
 		log("\t- Translating Swift ASTs to Gryphon ASTs...")
-		let gryphonASTs = try swiftASTs.map {
-			try SwiftTranslator().translateAST($0, asMainFile: translateAsMainFile)
-		}
-
-		return gryphonASTs
+		return try SwiftTranslator().translateAST(swiftAST, asMainFile: asMainFile)
 	}
 
 	//
 	public static func transpileCompileAndRun(
 		ASTDumpFiles inputFiles: [String], fromFolder outputFolder: String = OS.buildFolder)
-		throws -> KotlinCompilationResult
+		throws -> Shell.CommandOutput?
 	{
 		let compilationResult =
 			try transpileThenCompile(ASTDumpFiles: inputFiles, outputFolder: outputFolder)
-		guard case .success = compilationResult else {
+		guard compilationResult != nil, compilationResult!.status == 0 else {
 			return compilationResult
 		}
 		return try runCompiledProgram(fromFolder: outputFolder)
@@ -170,7 +143,7 @@ extension Compiler { // kotlin: ignore
 
 	public static func transpileThenCompile(
 		ASTDumpFiles inputFiles: [String], outputFolder: String = OS.buildFolder)
-		throws -> KotlinCompilationResult
+		throws -> Shell.CommandOutput?
 	{
 		let kotlinCodes = try transpileKotlinCode(fromASTDumpFiles: inputFiles)
 		// Write kotlin files to the output folder
@@ -190,21 +163,24 @@ extension Compiler { // kotlin: ignore
 	public static func transpileKotlinCode(fromASTDumpFiles inputFiles: [String]) throws -> [String]
 	{
 		let asts = try transpileGryphonASTs(fromASTDumpFiles: inputFiles)
-		return try generateKotlinCode(fromGryphonASTs: asts)
+		return try asts.map { try generateKotlinCode(fromGryphonAST: $0) }
 	}
 
 	public static func transpileGryphonASTs(fromASTDumpFiles inputFiles: [String])
 		throws -> [GryphonAST]
 	{
 		let rawASTs = try transpileGryphonRawASTs(fromASTDumpFiles: inputFiles)
-		return try generateGryphonASTs(fromGryphonRawASTs: rawASTs)
+		return try rawASTs.map { try generateGryphonAST(fromGryphonRawAST: $0) }
 	}
 
 	public static func transpileGryphonRawASTs(fromASTDumpFiles inputFiles: [String])
 		throws -> [GryphonAST]
 	{
 		let asts = try inputFiles.map { try transpileSwiftAST(fromASTDumpFile: $0) }
-		return try generateGryphonRawASTs(fromSwiftASTs: asts)
+		let translateAsMainFile = (inputFiles.count == 1)
+		return try asts.map {
+			try generateGryphonRawAST(fromSwiftAST: $0, asMainFile: translateAsMainFile)
+		}
 	}
 
 	//
@@ -306,20 +282,22 @@ extension Compiler { // kotlin: ignore
 				"<<Unable to get line \(sourceFileRange.lineStart) in file \(relativePath)>>"
 
 			var underlineString = ""
-			for i in 1..<sourceFileRange.columnStart {
-				let sourceFileCharacter = sourceFileString[
-					sourceFileString.index(sourceFileString.startIndex, offsetBy: i - 1)]
-				if sourceFileCharacter == "\t" {
-					underlineString += "\t"
+			if sourceFileRange.columnEnd < sourceFileString.count {
+				for i in 1..<sourceFileRange.columnStart {
+					let sourceFileCharacter = sourceFileString[
+						sourceFileString.index(sourceFileString.startIndex, offsetBy: i - 1)]
+					if sourceFileCharacter == "\t" {
+						underlineString += "\t"
+					}
+					else {
+						underlineString += " "
+					}
 				}
-				else {
-					underlineString += " "
-				}
-			}
-			underlineString += "^"
-			if sourceFileRange.columnStart < sourceFileRange.columnEnd {
-				for _ in (sourceFileRange.columnStart + 1)..<sourceFileRange.columnEnd {
-					underlineString += "~"
+				underlineString += "^"
+				if sourceFileRange.columnStart < sourceFileRange.columnEnd {
+					for _ in (sourceFileRange.columnStart + 1)..<sourceFileRange.columnEnd {
+						underlineString += "~"
+					}
 				}
 			}
 

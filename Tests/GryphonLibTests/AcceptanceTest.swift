@@ -28,33 +28,32 @@ class AcceptanceTest: XCTestCase {
 				// Translate the swift code to kotlin, compile the resulting kotlin code, run it,
 				// and get its output
 				let testFilePath = TestUtils.testFilesPath + testName
-				let compilationResult = try Compiler.transpileCompileAndRun(
-					ASTDumpFiles: [testFilePath.withExtension(.swiftASTDump)])
-
-				switch compilationResult {
-				case let .failure(errorMessage: errorMessage):
-					XCTFail("Test \(testName) - compilation error. \(errorMessage)")
+				guard let compilationResult = try Compiler.transpileCompileAndRun(
+					ASTDumpFiles: [testFilePath.withExtension(.swiftASTDump)]) else
+				{
+					XCTFail("Test \(testName) - compilation error. " +
+						"It's possible a command timed out.")
 					continue
-				case let .success(commandOutput: compilerResult):
-					// Load the previously stored kotlin code from file
-					let expectedOutput =
-						try! String(contentsOfFile: testFilePath.withExtension(.output))
-
-					XCTAssert(
-						compilerResult.standardError == "",
-						"Test \(testName): the compiler encountered an error: " +
-						"\(compilerResult.standardError).")
-					XCTAssert(
-						compilerResult.status == 0,
-						"Test \(testName): the compiler exited with value " +
-						"\(compilerResult.status).")
-					XCTAssert(
-						compilerResult.standardOutput == expectedOutput,
-						"Test \(testName): program failed to produce expected result. Diff:" +
-							TestUtils.diff(compilerResult.standardOutput, expectedOutput))
-
-					print("\t- Done!")
 				}
+
+				// Load the previously stored kotlin code from file
+				let expectedOutput =
+					try! String(contentsOfFile: testFilePath.withExtension(.output))
+
+				XCTAssert(
+					compilationResult.standardError == "",
+					"Test \(testName): the compiler encountered an error: " +
+					"\(compilationResult.standardError).")
+				XCTAssert(
+					compilationResult.status == 0,
+					"Test \(testName): the compiler exited with value " +
+					"\(compilationResult.status).")
+				XCTAssert(
+					compilationResult.standardOutput == expectedOutput,
+					"Test \(testName): program failed to produce expected result. Diff:" +
+						TestUtils.diff(compilationResult.standardOutput, expectedOutput))
+
+				print("\t- Done!")
 			}
 			catch let error {
 				XCTFail("🚨 Test failed with error:\n\(error)")

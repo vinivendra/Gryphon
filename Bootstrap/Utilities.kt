@@ -1,5 +1,7 @@
 import java.io.File
 import java.io.FileWriter
+import java.util.stream.Collectors
+import java.util.stream.Stream
 
 class Utilities {
 	companion object {
@@ -245,4 +247,11 @@ internal fun Utilities.Companion.needsToUpdateFiles(
 		}
 	}
 	return false
+}
+
+fun <Element, Result> MutableList<Element>.parallelMap(
+	transform: (Element) -> Result): MutableList<Result>
+{
+	return this.parallelStream().map(transform).collect(Collectors.toList())
+		.toMutableList()
 }

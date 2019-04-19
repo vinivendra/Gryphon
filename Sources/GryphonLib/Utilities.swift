@@ -15,8 +15,11 @@
 */
 
 import Foundation
+
 // declaration: import java.io.File
 // declaration: import java.io.FileWriter
+// declaration: import java.util.stream.Collectors
+// declaration: import java.util.stream.Stream
 
 private func gryphonTemplates() {
 	let _string1 = ""
@@ -450,3 +453,58 @@ extension Utilities {
 		return false
 	}
 }
+
+//
+extension ArrayReference { // kotlin: ignore
+
+	/// Meant for concurrently executing a map in an array with few elements and with an expensive
+	/// transform.
+	/// Technically it's O(n lg(n)) since the array has to be sorted at the end, but it's expected
+	/// that the transforms will take much longer than the sorting.
+	public func parallelMap<Result>(_ transform: @escaping (Element) -> Result)
+		-> ArrayReference<Result>
+	{
+		let concurrentQueue = DispatchQueue(
+			label: "com.gryphon.ParallelMap", attributes: .concurrent)
+		let lock = NSLock()
+
+		let selfEnumerated = Array(self.enumerated())
+		var unsortedResult: [(index: Int, element: Result)] = []
+
+		concurrentQueue.async {
+			DispatchQueue.concurrentPerform(iterations: selfEnumerated.count)
+			{ (threadIndex: Int) in
+				let enumeratedItem = selfEnumerated[threadIndex]
+				let index = enumeratedItem.offset
+				let oldElement = enumeratedItem.element
+
+				// This is the line that takes a while
+				let newElement = transform(oldElement)
+
+				// Avoid accessing the result array simultaneously. This should be quick and rare.
+				lock.lock()
+				unsortedResult.append((index: index, element: newElement))
+				lock.unlock()
+			}
+		}
+
+		// Wait for all elements to finish processing
+		concurrentQueue.async (flags: .barrier) { }
+
+		// Elements may have been added in any order. We have to re-sort the array.
+		let result = unsortedResult.sorted { (leftIndexedElement, rightIndexedELement) -> Bool in
+			leftIndexedElement.index < rightIndexedELement.index
+		}.map {
+			$0.element
+		}
+
+		return ArrayReference<Result>(array: result)
+	}
+}
+
+// declaration: fun <Element, Result> MutableList<Element>.parallelMap(
+// declaration: 	transform: (Element) -> Result): MutableList<Result>
+// declaration: {
+// declaration: 	return this.parallelStream().map(transform).collect(Collectors.toList())
+// declaration: 		.toMutableList()
+// declaration: }

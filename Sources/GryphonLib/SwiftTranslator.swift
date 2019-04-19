@@ -249,6 +249,23 @@ public class SwiftTranslator {
 					"Expected optional expression to have at least one subtree",
 					AST: expression, translator: self)
 			}
+		case "Conditional Checked Cast Expression":
+			if let type = expression["type"],
+				let bindOptionalExpression = expression.subtrees.first,
+				let subExpression = bindOptionalExpression.subtrees.first
+			{
+				result = .binaryOperatorExpression(
+					leftExpression: try translate(expression: subExpression),
+					rightExpression: .typeExpression(type: type),
+					operatorSymbol: "as?",
+					type: type)
+			}
+			else {
+				result = try unexpectedExpressionStructureError(
+					"Expected Conditional Checked Cast Expression to have a type and two nested " +
+						"subtrees",
+					AST: expression, translator: self)
+			}
 		case "Autoclosure Expression",
 			"Inject Into Optional",
 			"Optional Evaluation Expression",
@@ -256,7 +273,8 @@ public class SwiftTranslator {
 			"Load Expression",
 			"Function Conversion Expression",
 			"Try Expression",
-			"Force Try Expression":
+			"Force Try Expression",
+			"Dot Self Expression":
 
 			if let lastExpression = expression.subtrees.last {
 				result = try translate(expression: lastExpression)

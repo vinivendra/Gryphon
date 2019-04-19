@@ -15,6 +15,137 @@
 */
 
 public class Driver {
+	public struct Settings {
+		let shouldEmitSwiftAST: Bool
+		let shouldEmitRawAST: Bool
+		let shouldEmitAST: Bool
+		let shouldRun: Bool
+		let shouldBuild: Bool
+		let shouldEmitKotlin: Bool
+		let shouldGenerateKotlin: Bool
+		let shouldGenerateAST: Bool
+		let shouldGenerateRawAST: Bool
+		let shouldGenerateSwiftAST: Bool
+
+		let canPrintToFiles: Bool
+		let canPrintToOutput: Bool
+
+		let horizontalLimit: Int?
+		let outputFileMap: OutputFileMap?
+		let outputFolder: String
+
+		let mainFilePath: String?
+	}
+
+	public static func runUpToFirstPasses(
+		withSettings settings: Settings,
+		onFile inputFilePath: String)
+		throws -> Any?
+	{
+		guard settings.shouldGenerateSwiftAST else {
+			return [] // value: mutableListOf<Any>()
+		}
+
+		let swiftASTDumpFile = getASTDump(forFile: inputFilePath, settings: settings)!
+
+		let swiftASTDump = try Utilities.readFile(swiftASTDumpFile)
+
+		// Generate the Swift AST
+		let swiftAST = try Compiler.generateSwiftAST(fromASTDump: swiftASTDump)
+		if settings.shouldEmitSwiftAST {
+			let output = swiftAST.prettyDescription(
+				horizontalLimit: settings.horizontalLimit)
+			if let outputFilePath = settings.outputFileMap?.getOutputFile(
+					forInputFile: inputFilePath, outputType: .swiftAST),
+				settings.canPrintToFiles
+			{
+				Utilities.createFile(atPath: outputFilePath, containing: output)
+			}
+			else if settings.canPrintToOutput {
+				print(output)
+			}
+		}
+
+		// insert: return null
+
+		if true { // kotlin: ignore
+
+			guard settings.shouldGenerateRawAST else {
+				return swiftAST
+			}
+
+			let isMainFile = (inputFilePath == settings.mainFilePath)
+
+			let gryphonRawAST = try Compiler.generateGryphonRawAST(
+				fromSwiftAST: swiftAST,
+				asMainFile: isMainFile)
+			if settings.shouldEmitRawAST {
+				let output = gryphonRawAST.prettyDescription(
+					horizontalLimit: settings.horizontalLimit)
+				if let outputFilePath = settings.outputFileMap?.getOutputFile(
+						forInputFile: inputFilePath, outputType: .gryphonASTRaw),
+					settings.canPrintToFiles
+				{
+					Utilities.createFile(atPath: outputFilePath, containing: output)
+				}
+				else if settings.canPrintToOutput {
+					print(output)
+				}
+			}
+
+			guard settings.shouldGenerateAST else {
+				return gryphonRawAST
+			}
+
+			let gryphonFirstPassedAST = try Compiler.generateGryphonASTAfterFirstPasses(
+				fromGryphonRawAST: gryphonRawAST)
+
+			return gryphonFirstPassedAST
+		}
+	}
+
+	public static func runAfterFirstPasses( // kotlin: ignore
+		onAST gryphonFirstPassedAST: GryphonAST,
+		withSettings settings: Settings,
+		onFile inputFilePath: String)
+		throws -> Any?
+	{
+		let gryphonAST = try Compiler.generateGryphonASTAfterSecondPasses(
+			fromGryphonRawAST: gryphonFirstPassedAST)
+		if settings.shouldEmitAST {
+			let output = gryphonAST.prettyDescription(
+				horizontalLimit: settings.horizontalLimit)
+			if let outputFilePath = settings.outputFileMap?.getOutputFile(
+					forInputFile: inputFilePath, outputType: .gryphonAST),
+				settings.canPrintToFiles
+			{
+				Utilities.createFile(atPath: outputFilePath, containing: output)
+			}
+			else if settings.canPrintToOutput {
+				print(output)
+			}
+		}
+
+		guard settings.shouldGenerateKotlin else {
+			return gryphonAST
+		}
+
+		let kotlinCode = try Compiler.generateKotlinCode(fromGryphonAST: gryphonAST)
+		if let outputFilePath = settings.outputFileMap?.getOutputFile(
+				forInputFile: inputFilePath, outputType: .kotlin),
+			settings.canPrintToFiles
+		{
+			Utilities.createFile(atPath: outputFilePath, containing: kotlinCode)
+		}
+		else if settings.canPrintToOutput {
+			if settings.shouldEmitKotlin {
+				print(kotlinCode)
+			}
+		}
+
+		return kotlinCode
+	}
+
 	@discardableResult
 	public static func run(
 		withArguments arguments: ArrayReference<String>) throws -> Any?
@@ -31,29 +162,6 @@ public class Driver {
 		}
 
 		// Parse arguments
-		let shouldEmitSwiftAST = arguments.contains("-emit-swiftAST")
-		let shouldEmitRawAST = arguments.contains("-emit-rawAST")
-		let shouldEmitAST = arguments.contains("-emit-AST")
-
-		let shouldRun = arguments.contains("run")
-		let shouldBuild = shouldRun || arguments.contains("build")
-
-		let hasChosenTask = shouldEmitSwiftAST ||
-			shouldEmitRawAST ||
-			shouldEmitAST ||
-			shouldRun ||
-			shouldBuild
-
-		let shouldEmitKotlin = !hasChosenTask || arguments.contains("-emit-kotlin")
-
-		let shouldGenerateKotlin = shouldBuild || shouldEmitKotlin
-		let shouldGenerateAST = shouldGenerateKotlin || shouldEmitAST
-		let shouldGenerateRawAST = shouldGenerateAST || shouldEmitRawAST
-		let shouldGenerateSwiftAST = shouldGenerateRawAST || shouldEmitSwiftAST
-
-		let canPrintToFiles = !arguments.contains("-Q")
-		let canPrintToOutput = !arguments.contains("-q")
-
 		Compiler.shouldLogProgress(if: arguments.contains("-verbose"))
 		Compiler.shouldStopAtFirstError = !arguments.contains("-continue-on-error")
 
@@ -94,138 +202,121 @@ public class Driver {
 			!$0.hasPrefix("-") && $0 != "run" && $0 != "build"
 		}
 
+		let shouldEmitSwiftAST = arguments.contains("-emit-swiftAST")
+		let shouldEmitRawAST = arguments.contains("-emit-rawAST")
+		let shouldEmitAST = arguments.contains("-emit-AST")
+		let shouldRun = arguments.contains("run")
+		let shouldBuild = shouldRun || arguments.contains("build")
+
+		let hasChosenTask = shouldEmitSwiftAST ||
+			shouldEmitRawAST ||
+			shouldEmitAST ||
+			shouldRun ||
+			shouldBuild
+
+		let shouldEmitKotlin = !hasChosenTask || arguments.contains("-emit-kotlin")
+
+		let canPrintToFiles = !arguments.contains("-Q")
+		let canPrintToOutput = !arguments.contains("-q")
+
+		let shouldGenerateKotlin = shouldBuild || shouldEmitKotlin
+		let shouldGenerateAST = shouldGenerateKotlin || shouldEmitAST
+		let shouldGenerateRawAST = shouldGenerateAST || shouldEmitRawAST
+		let shouldGenerateSwiftAST = shouldGenerateRawAST || shouldEmitSwiftAST
+
+		let mainFilePath = (inputFilePaths.count == 1) ?
+			inputFilePaths[0] :
+			inputFilePaths.first {
+				$0.hasSuffix("main.swift") || $0.hasSuffix("main.swiftASTDump")
+			}
+
+		let settings = Settings(
+			shouldEmitSwiftAST: shouldEmitSwiftAST,
+			shouldEmitRawAST: shouldEmitRawAST,
+			shouldEmitAST: shouldEmitAST,
+			shouldRun: shouldRun,
+			shouldBuild: shouldBuild,
+			shouldEmitKotlin: shouldEmitKotlin,
+			shouldGenerateKotlin: shouldGenerateKotlin,
+			shouldGenerateAST: shouldGenerateAST,
+			shouldGenerateRawAST: shouldGenerateRawAST,
+			shouldGenerateSwiftAST: shouldGenerateSwiftAST,
+			canPrintToFiles: canPrintToFiles,
+			canPrintToOutput: canPrintToOutput,
+			horizontalLimit: horizontalLimit,
+			outputFileMap: outputFileMap,
+			outputFolder: outputFolder,
+			mainFilePath: mainFilePath)
+
 		// Run compiler steps
-		guard shouldGenerateSwiftAST else {
-			return nil
+		let filteredInputFiles = inputFilePaths.filter {
+			$0.hasSuffix(".swift") || $0.hasSuffix(".swiftASTDump")
+		}
+		let firstResult = try filteredInputFiles.map {
+			try runUpToFirstPasses(withSettings: settings, onFile: $0)
 		}
 
-		let astDumpFilesFromOutputFileMap = inputFilePaths.compactMap { inputFile -> String? in
-			if inputFile.hasSuffix(".swift") {
-				if let astDumpFile = outputFileMap?.getOutputFile(
-					forInputFile: inputFile, outputType: .astDump)
-				{
-					return astDumpFile
-				}
-			}
-
-			if inputFile.hasSuffix(".swiftASTDump") {
-				return inputFile
-			}
-
-			return nil
-		}
-
-		let swiftASTDumpFiles = !astDumpFilesFromOutputFileMap.isEmpty ?
-			astDumpFilesFromOutputFileMap :
-			inputFilePaths.filter { $0.hasSuffix(".swift") }
-				.map { Utilities.changeExtension(of: $0, to: .swiftASTDump) }
-
-		let swiftASTDumps = try swiftASTDumpFiles.map { try Utilities.readFile($0) }
-
-		let swiftASTs = try swiftASTDumps.map { try Compiler.generateSwiftAST(fromASTDump: $0) }
-		if shouldEmitSwiftAST {
-			for (swiftFilePath, swiftAST) in zip(inputFilePaths, swiftASTs) {
-				let output = swiftAST.prettyDescription(horizontalLimit: horizontalLimit)
-				if let outputFilePath = outputFileMap?.getOutputFile(
-					forInputFile: swiftFilePath, outputType: .swiftAST),
-					canPrintToFiles
-				{
-					Utilities.createFile(atPath: outputFilePath, containing: output)
-				}
-				else if canPrintToOutput {
-					print(output)
-				}
-			}
-		}
-
-		// insert: return null
+		// insert: return firstResult
 
 		if true { // kotlin: ignore
-
-			guard shouldGenerateRawAST else {
-				return swiftASTs
+			// If we've received a non-raw AST then we're in the middle of the transpilation passes.
+			// This means we need to at least run the second round of passes.
+			guard settings.shouldGenerateAST,
+				let asts = firstResult.as(ArrayReference<GryphonAST>.self) else
+			{
+				return firstResult
 			}
 
-			let gryphonRawASTs = try Compiler.generateGryphonRawASTs(fromSwiftASTs: swiftASTs.array)
-			if shouldEmitRawAST {
-				for (swiftFilePath, gryphonRawAST) in zip(inputFilePaths, gryphonRawASTs) {
-					let output = gryphonRawAST.prettyDescription(horizontalLimit: horizontalLimit)
-					if let outputFilePath = outputFileMap?.getOutputFile(
-						forInputFile: swiftFilePath, outputType: .gryphonASTRaw),
-						canPrintToFiles
-					{
-						Utilities.createFile(atPath: outputFilePath, containing: output)
-					}
-					else if canPrintToOutput {
-						print(output)
-					}
-				}
+			let secondResult = try zip(asts, filteredInputFiles).map {
+				try runAfterFirstPasses(
+					onAST: $0.0,
+					withSettings: settings,
+					onFile: $0.1)
 			}
 
-			guard shouldGenerateAST else {
-				return gryphonRawASTs
+			guard settings.shouldBuild else {
+				return ArrayReference<Any?>(array: secondResult)
 			}
 
-			let gryphonASTs = try Compiler.generateGryphonASTs(fromGryphonRawASTs: gryphonRawASTs)
-			if shouldEmitAST {
-				for (swiftFilePath, gryphonAST) in zip(inputFilePaths, gryphonASTs) {
-					let output = gryphonAST.prettyDescription(horizontalLimit: horizontalLimit)
-					if let outputFilePath = outputFileMap?.getOutputFile(
-						forInputFile: swiftFilePath, outputType: .gryphonAST),
-						canPrintToFiles
-					{
-						Utilities.createFile(atPath: outputFilePath, containing: output)
-					}
-					else if canPrintToOutput {
-						print(output)
-					}
-				}
-			}
-
-			guard shouldGenerateKotlin else {
-				return gryphonASTs
-			}
-
-			let kotlinCodes = try Compiler.generateKotlinCode(fromGryphonASTs: gryphonASTs)
-			for (swiftFilePath, kotlinCode) in zip(inputFilePaths, kotlinCodes) {
-				let output = kotlinCode
-				if let outputFilePath = outputFileMap?.getOutputFile(
-					forInputFile: swiftFilePath, outputType: .kotlin),
-					canPrintToFiles
-				{
-					Utilities.createFile(atPath: outputFilePath, containing: output)
-				}
-				else if canPrintToOutput {
-					if shouldEmitKotlin {
-						print(output)
-					}
-				}
-			}
-
-			guard shouldBuild else {
-				return kotlinCodes
-			}
-
-			let generatedKotlinFiles = inputFilePaths.compactMap {
-				outputFileMap?.getOutputFile(forInputFile: $0, outputType: .kotlin)
+			let generatedKotlinFiles = filteredInputFiles.compactMap {
+				settings.outputFileMap?.getOutputFile(forInputFile: $0, outputType: .kotlin)
 			}
 			let inputKotlinFiles = inputFilePaths.filter { $0.hasSuffix(".kt") }
 			let kotlinFiles = generatedKotlinFiles + inputKotlinFiles
 
-			let compilationResult =
-				try Compiler.compile(kotlinFiles: kotlinFiles.array, outputFolder: outputFolder)
+			guard let compilationResult = try Compiler.compile(
+				kotlinFiles: kotlinFiles.array,
+				outputFolder: settings.outputFolder) else
+			{
+				return nil
+			}
 
-			if case .failure = compilationResult {
+			guard settings.shouldRun else {
 				return compilationResult
 			}
 
-			guard shouldRun else {
-				return compilationResult
-			}
-
-			let runResult = try Compiler.runCompiledProgram(fromFolder: outputFolder)
+			let runResult = try Compiler.runCompiledProgram(fromFolder: settings.outputFolder)
 
 			return runResult
+		}
+	}
+
+	static func getASTDump(forFile file: String, settings: Settings) -> String? {
+		if file.hasSuffix(".swift") {
+			if let astDumpFile = settings.outputFileMap?.getOutputFile(
+				forInputFile: file, outputType: .astDump)
+			{
+				return astDumpFile
+			}
+			else {
+				return Utilities.changeExtension(of: file, to: .swiftASTDump)
+			}
+		}
+		else if file.hasSuffix(".swiftASTDump") {
+			return file
+		}
+		else {
+			return nil
 		}
 	}
 }

@@ -19,20 +19,39 @@ import XCTest
 
 class BootstrappingTest: XCTestCase {
 	func testUnitTests() {
-		guard let runOutput = runTranspiledGryphon(withArguments: ["-test"]) else {
-			return
-		}
-
-		let testMessages = runOutput.standardOutput.split(separator: "\n")
-		XCTAssertEqual(testMessages.count, 4)
-		for testMessage in testMessages {
-			if !testMessage.hasSuffix("All tests succeeded!") {
-				XCTFail(String(testMessage))
+		do {
+			guard !BootstrappingTest.hasError else {
+				XCTFail("Error during setup")
+				return
 			}
+
+			guard let runOutput = try Compiler.runCompiledProgram(
+				fromFolder: "Bootstrap",
+				withArguments: ["-test"]) else
+			{
+				XCTFail("Error running transpiled transpiler. It's possible a command timed out.")
+				return
+			}
+
+			let testMessages = runOutput.standardOutput.split(separator: "\n")
+			XCTAssertEqual(testMessages.count, 4)
+			for testMessage in testMessages {
+				if !testMessage.hasSuffix("All tests succeeded!") {
+					XCTFail(String(testMessage))
+				}
+			}
+		}
+		catch let error {
+			XCTFail(error.localizedDescription)
 		}
 	}
 
 	func testASTDumpDecoderOutput() {
+		guard !BootstrappingTest.hasError else {
+			XCTFail("Error during setup")
+			return
+		}
+
 		let tests = TestUtils.testCasesForAllTests
 
 		for testName in tests {
@@ -45,6 +64,8 @@ class BootstrappingTest: XCTestCase {
 				let kotlinArguments = ["-emit-swiftAST", testFilePath]
 				// FIXME: This would be ideal, but it's timing out
 //				guard let runOutput = runTranspiledGryphon(withArguments: kotlinArguments) else {
+//					XCTFail("Error running transpiled transpiler. " +
+//						"It's possible a command timed out.\nRun result: \(runResult)")
 //					return
 //				}
 //				let transpiledSwiftAST = runOutput.standardOutput
@@ -56,7 +77,9 @@ class BootstrappingTest: XCTestCase {
 				let swiftArguments = kotlinArguments + ["-q", "-Q"]
 				let driverResult =
 					try Driver.run(withArguments: ArrayReference<String>(array: swiftArguments))
-				guard let originalSwiftAST = (driverResult as? ArrayReference<SwiftAST>)?.first else
+				guard let resultArray = driverResult as? ArrayReference<Any?>,
+					let swiftASTs = resultArray.as(ArrayReference<SwiftAST>.self),
+					let originalSwiftAST = swiftASTs.first else
 				{
 					XCTFail("Error generating SwiftASTs.\n" +
 						"Driver result: \(driverResult ?? "nil")")
@@ -78,32 +101,13 @@ class BootstrappingTest: XCTestCase {
 		Compiler.printErrorsAndWarnings()
 	}
 
-	func runTranspiledGryphon(withArguments arguments: [String]) -> Shell.CommandOutput? {
-		let runResult: Compiler.KotlinCompilationResult
-		do {
-			runResult =
-				try Compiler.runCompiledProgram(fromFolder: "Bootstrap", withArguments: arguments)
-		}
-		catch let error {
-			XCTFail("Error running driver.\n\(error)")
-			return nil
-		}
-
-		guard case let .success(commandOutput: runOutput) = runResult else
-		{
-			XCTFail("Error running transpiled transpiler. It's possible a command timed out.\n" +
-				"Run result: \(runResult)")
-			return nil
-		}
-
-		return runOutput
-	}
-
 	override static func setUp() {
 		print("* Updating bootstrap files...")
 
 		defer {
-			XCTAssertFalse(Compiler.hasErrorsOrWarnings())
+			if Compiler.hasErrorsOrWarnings() {
+				hasError = true
+			}
 			Compiler.printErrorsAndWarnings()
 		}
 
@@ -120,11 +124,13 @@ class BootstrappingTest: XCTestCase {
 			print("* Dumping the ASTs...")
 			let dumpCommand = ["perl", "dumpTranspilerAST.pl" ]
 			guard let dumpResult = Shell.runShellCommand(dumpCommand) else {
-				XCTFail("Timed out.")
+				hasError = true
+				print("Timed out.")
 				return
 			}
 			guard dumpResult.status == 0 else {
-				XCTFail("Failed to dump ASTs.\n" +
+				hasError = true
+				print("Failed to dump ASTs.\n" +
 					"Output:\n\(dumpResult.standardOutput)\n" +
 					"Error:\n\(dumpResult.standardError)\n" +
 					"Exit status: \(dumpResult.status)\n")
@@ -173,29 +179,32 @@ class BootstrappingTest: XCTestCase {
 				driverResult = try Driver.run(withArguments: arguments)
 			}
 			catch let error {
-				XCTFail("Error running driver.\n\(error)")
+				hasError = true
+				print("Error running driver.\n\(error)")
 				return
 			}
 
-			guard let compilationResult = driverResult as? Compiler.KotlinCompilationResult,
-				case let .success(commandOutput: commandOutput) = compilationResult else
-			{
-				XCTFail("Error running driver. It's possible a command timed out.\n" +
+			guard let compilationResult = driverResult as? Shell.CommandOutput else {
+				hasError = true
+				print("Error running driver. It's possible a command timed out.\n" +
 					"Driver result: \(driverResult ?? "nil")")
 				return
 			}
 
-			guard commandOutput.status == 0 else {
-				XCTFail("Failed to run Kotlin bootstrap tests.\n" +
-					"Output:\n\(commandOutput.standardOutput)\n" +
-					"Error:\n\(commandOutput.standardError)\n" +
-					"Exit status: \(commandOutput.status)\n")
+			guard compilationResult.status == 0 else {
+				hasError = true
+				print("Failed to run Kotlin bootstrap tests.\n" +
+					"Output:\n\(compilationResult.standardOutput)\n" +
+					"Error:\n\(compilationResult.standardError)\n" +
+					"Exit status: \(compilationResult.status)\n")
 				return
 			}
 		}
 
 		print("* Done.")
 	}
+
+	static var hasError = false
 
 	static var allTests = [
 		("test", testUnitTests),

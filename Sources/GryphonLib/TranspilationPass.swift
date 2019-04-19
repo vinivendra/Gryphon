@@ -744,7 +744,7 @@ public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
 }
 
 /// Optional initializers can be translated as `invoke` operators to have similar syntax and
-/// funcitonality.
+/// functionality.
 public class OptionalInitsTranspilationPass: TranspilationPass {
 	private var isFailableInitializer: Bool = false
 
@@ -1206,7 +1206,7 @@ public class AnonymousParametersTranspilationPass: TranspilationPass {
 	}
 }
 
-/// ArrayReference needs an explicit initializer to account for the fact that it can't be implicitly
+/// ArrayReference needs explicit initializers to account for the fact that it can't be implicitly
 /// cast to covariant types. For instance:
 ///
 /// ````
@@ -1251,6 +1251,25 @@ public class CovarianceInitsAsCastsTranspilationPass: TranspilationPass {
 					operatorSymbol: "as",
 					type: type)
 			}
+		}
+		else if case let .dotExpression(
+				leftExpression: leftExpression,
+				rightExpression: rightExpression) = callExpression.function,
+			let leftType = leftExpression.type,
+			leftType.hasPrefix("ArrayReference"),
+			case let .declarationReferenceExpression(
+				value: declarationReferenceExpression) = rightExpression,
+			declarationReferenceExpression.identifier == "as",
+			case let .tupleExpression(pairs: pairs) = callExpression.parameters,
+			pairs.count == 1,
+			let onlyPair = pairs.first,
+			case let .typeExpression(type: type) = onlyPair.expression
+		{
+			return .binaryOperatorExpression(
+				leftExpression: leftExpression,
+				rightExpression: .typeExpression(type: type),
+				operatorSymbol: "as?",
+				type: type + "?")
 		}
 		else {
 			return super.replaceCallExpression(callExpression)

@@ -1,22 +1,32 @@
 class Driver {
 	companion object {
+		public fun runUpToFirstPasses(settings: Driver.Settings, inputFilePath: String): Any? {
+			if (!(settings.shouldGenerateSwiftAST)) {
+				return mutableListOf<Any>()
+			}
+
+			val swiftASTDumpFile: String = getASTDump(file = inputFilePath, settings = settings)!!
+			val swiftASTDump: String = Utilities.readFile(swiftASTDumpFile)
+			val swiftAST: SwiftAST = Compiler.generateSwiftAST(astDump = swiftASTDump)
+
+			if (settings.shouldEmitSwiftAST) {
+				val output: String = swiftAST.prettyDescription(horizontalLimit = settings.horizontalLimit)
+				val outputFilePath: String? = settings.outputFileMap?.getOutputFile(
+					file = inputFilePath,
+					outputType = OutputFileMap.OutputType.SWIFT_AST)
+				if (outputFilePath != null && settings.canPrintToFiles) {
+					Utilities.createFile(filePath = outputFilePath, contents = output)
+				}
+				else if (settings.canPrintToOutput) {
+					println(output)
+				}
+			}
+
+			return null
+		}
+
 		public fun run(arguments: MutableList<String>): Any? {
 			Compiler.clearErrorsAndWarnings()
-
-			val shouldEmitSwiftAST: Boolean = arguments.contains("-emit-swiftAST")
-			val shouldEmitRawAST: Boolean = arguments.contains("-emit-rawAST")
-			val shouldEmitAST: Boolean = arguments.contains("-emit-AST")
-			val shouldRun: Boolean = arguments.contains("run")
-			val shouldBuild: Boolean = shouldRun || arguments.contains("build")
-			val hasChosenTask: Boolean = shouldEmitSwiftAST || shouldEmitRawAST || shouldEmitAST || shouldRun || shouldBuild
-			val shouldEmitKotlin: Boolean = !hasChosenTask || arguments.contains("-emit-kotlin")
-			val shouldGenerateKotlin: Boolean = shouldBuild || shouldEmitKotlin
-			val shouldGenerateAST: Boolean = shouldGenerateKotlin || shouldEmitAST
-			val shouldGenerateRawAST: Boolean = shouldGenerateAST || shouldEmitRawAST
-			val shouldGenerateSwiftAST: Boolean = shouldGenerateRawAST || shouldEmitSwiftAST
-			val canPrintToFiles: Boolean = !arguments.contains("-Q")
-			val canPrintToOutput: Boolean = !arguments.contains("-q")
-
 			Compiler.shouldLogProgress(value = arguments.contains("-verbose"))
 
 			Compiler.shouldStopAtFirstError = !arguments.contains("-continue-on-error")
@@ -60,43 +70,78 @@ class Driver {
 			}
 
 			val inputFilePaths: MutableList<String> = arguments.filter { !it.startsWith("-") && it != "run" && it != "build" }.toMutableList()
+			val shouldEmitSwiftAST: Boolean = arguments.contains("-emit-swiftAST")
+			val shouldEmitRawAST: Boolean = arguments.contains("-emit-rawAST")
+			val shouldEmitAST: Boolean = arguments.contains("-emit-AST")
+			val shouldRun: Boolean = arguments.contains("run")
+			val shouldBuild: Boolean = shouldRun || arguments.contains("build")
+			val hasChosenTask: Boolean = shouldEmitSwiftAST || shouldEmitRawAST || shouldEmitAST || shouldRun || shouldBuild
+			val shouldEmitKotlin: Boolean = !hasChosenTask || arguments.contains("-emit-kotlin")
+			val canPrintToFiles: Boolean = !arguments.contains("-Q")
+			val canPrintToOutput: Boolean = !arguments.contains("-q")
+			val shouldGenerateKotlin: Boolean = shouldBuild || shouldEmitKotlin
+			val shouldGenerateAST: Boolean = shouldGenerateKotlin || shouldEmitAST
+			val shouldGenerateRawAST: Boolean = shouldGenerateAST || shouldEmitRawAST
+			val shouldGenerateSwiftAST: Boolean = shouldGenerateRawAST || shouldEmitSwiftAST
+			val mainFilePath: String? = if (inputFilePaths.size == 1) { inputFilePaths[(0)] } else { inputFilePaths.find { it.endsWith("main.swift") || it.endsWith("main.swiftASTDump") } }
+			val settings: Settings = Settings(
+				shouldEmitSwiftAST = shouldEmitSwiftAST,
+				shouldEmitRawAST = shouldEmitRawAST,
+				shouldEmitAST = shouldEmitAST,
+				shouldRun = shouldRun,
+				shouldBuild = shouldBuild,
+				shouldEmitKotlin = shouldEmitKotlin,
+				shouldGenerateKotlin = shouldGenerateKotlin,
+				shouldGenerateAST = shouldGenerateAST,
+				shouldGenerateRawAST = shouldGenerateRawAST,
+				shouldGenerateSwiftAST = shouldGenerateSwiftAST,
+				canPrintToFiles = canPrintToFiles,
+				canPrintToOutput = canPrintToOutput,
+				horizontalLimit = horizontalLimit,
+				outputFileMap = outputFileMap,
+				outputFolder = outputFolder,
+				mainFilePath = mainFilePath)
+			val filteredInputFiles: MutableList<String> = inputFilePaths.filter { it.endsWith(".swift") || it.endsWith(".swiftASTDump") }.toMutableList()
+			val firstResult: MutableList<Any?> = filteredInputFiles.map { runUpToFirstPasses(settings = settings, inputFilePath = it) }.toMutableList()
 
-			if (!(shouldGenerateSwiftAST)) {
-				return null
-			}
+			return firstResult
+		}
 
-			val astDumpFilesFromOutputFileMap: MutableList<String> = inputFilePaths.map { inputFile ->
-					if (inputFile.endsWith(".swift")) {
-						val astDumpFile: String? = outputFileMap?.getOutputFile(file = inputFile, outputType = OutputFileMap.OutputType.AST_DUMP)
-						if (astDumpFile != null) {
-							astDumpFile
-						}
-					}
-
-					if (inputFile.endsWith(".swiftASTDump")) {
-						inputFile
-					}
-
-					null
-				}.filterNotNull().toMutableList()
-			val swiftASTDumpFiles: MutableList<String> = if (!astDumpFilesFromOutputFileMap.isEmpty()) { astDumpFilesFromOutputFileMap } else { inputFilePaths.filter { it.endsWith(".swift") }.toMutableList().map { Utilities.changeExtension(filePath = it, newExtension = FileExtension.SWIFT_AST_DUMP) }.toMutableList() }
-			val swiftASTDumps: MutableList<String> = swiftASTDumpFiles.map { Utilities.readFile(it) }.toMutableList()
-			val swiftASTs: MutableList<SwiftAST> = swiftASTDumps.map { Compiler.generateSwiftAST(astDump = it) }.toMutableList()
-
-			if (shouldEmitSwiftAST) {
-				for ((swiftFilePath, swiftAST) in inputFilePaths.zip(swiftASTs)) {
-					val output: String = swiftAST.prettyDescription(horizontalLimit = horizontalLimit)
-					val outputFilePath: String? = outputFileMap?.getOutputFile(file = swiftFilePath, outputType = OutputFileMap.OutputType.SWIFT_AST)
-					if (outputFilePath != null && canPrintToFiles) {
-						Utilities.createFile(filePath = outputFilePath, contents = output)
-					}
-					else if (canPrintToOutput) {
-						println(output)
-					}
+		internal fun getASTDump(file: String, settings: Driver.Settings): String? {
+			if (file.endsWith(".swift")) {
+				val astDumpFile: String? = settings.outputFileMap?.getOutputFile(file = file, outputType = OutputFileMap.OutputType.AST_DUMP)
+				if (astDumpFile != null) {
+					return astDumpFile
+				}
+				else {
+					return Utilities.changeExtension(filePath = file, newExtension = FileExtension.SWIFT_AST_DUMP)
 				}
 			}
-
-			return null
+			else if (file.endsWith(".swiftASTDump")) {
+				return file
+			}
+			else {
+				return null
+			}
 		}
 	}
+
+	data class Settings(
+		val shouldEmitSwiftAST: Boolean,
+		val shouldEmitRawAST: Boolean,
+		val shouldEmitAST: Boolean,
+		val shouldRun: Boolean,
+		val shouldBuild: Boolean,
+		val shouldEmitKotlin: Boolean,
+		val shouldGenerateKotlin: Boolean,
+		val shouldGenerateAST: Boolean,
+		val shouldGenerateRawAST: Boolean,
+		val shouldGenerateSwiftAST: Boolean,
+		val canPrintToFiles: Boolean,
+		val canPrintToOutput: Boolean,
+		val horizontalLimit: Int?,
+		val outputFileMap: OutputFileMap?,
+		val outputFolder: String,
+		val mainFilePath: String?
+	)
 }
