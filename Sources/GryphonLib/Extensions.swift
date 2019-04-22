@@ -335,17 +335,17 @@ extension Dictionary: // kotlin: ignore
 // ArrayClass) isn't done.
 extension PrintableTree { // kotlin: ignore
 	convenience init(_ description: String, _ subtrees: [PrintableAsTree?]) {
-		self.init(description, ArrayClass<PrintableAsTree?>(array: subtrees))
+		self.init(description, ArrayClass(subtrees))
 	}
 
 	convenience init(_ subtrees: [PrintableAsTree?]) {
-		self.init("Array", ArrayClass<PrintableAsTree?>(array: subtrees))
+		self.init("Array", ArrayClass(subtrees))
 	}
 
 	static func initOrNil(_ description: String, _ subtreesOrNil: [PrintableAsTree?])
 		-> PrintableTree?
 	{
-		let arrayReference = ArrayClass<PrintableAsTree?>(array: subtreesOrNil)
+		let arrayReference = ArrayClass(subtreesOrNil)
 		return PrintableTree.initOrNil(description, arrayReference)
 	}
 

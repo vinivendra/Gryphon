@@ -367,7 +367,7 @@ extension Statement { // kotlin: ignore
 				PrintableTree("inherits", inherits),
 				PrintableTree("members", members), ]
 		case let .companionObject(members: members):
-			return ArrayClass<PrintableAsTree?>(array: members)
+			return ArrayClass(members)
 		case let .enumDeclaration(
 			access: access,
 			name: name,
@@ -484,7 +484,7 @@ extension Statement { // kotlin: ignore
 				PrintableTree("expression", [expression]),
 				PrintableTree("case items", caseItems), ]
 		case let .deferStatement(statements: statements):
-			return ArrayClass(array: statements)
+			return ArrayClass(statements)
 		case let .throwStatement(expression: expression):
 			return [expression]
 		case let .returnStatement(expression: expression):
@@ -723,9 +723,9 @@ extension Expression { // kotlin: ignore
 		case let .interpolatedStringLiteralExpression(expressions: expressions):
 			return [PrintableTree(expressions)]
 		case let .tupleExpression(pairs: pairs):
-			return ArrayClass<PrintableAsTree?>(array: pairs.map {
+			return ArrayClass(pairs).map {
 				PrintableTree(($0.label ?? "_") + ":", [$0.expression])
-			})
+			}
 		case let .tupleShuffleExpression(
 			labels: labels, indices: indices, expressions: expressions):
 

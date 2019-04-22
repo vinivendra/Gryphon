@@ -61,7 +61,7 @@ class BootstrappingTest: XCTestCase {
 				let testFilePath = TestUtils.testFilesPath + testName + ".swift"
 
 				// Get Kotlin results
-				let kotlinArguments = ["-emit-swiftAST", testFilePath]
+				let kotlinArguments: ArrayClass = ["-emit-swiftAST", testFilePath]
 				// FIXME: This would be ideal, but it's timing out
 //				guard let runOutput = runTranspiledGryphon(withArguments: kotlinArguments) else {
 //					XCTFail("Error running transpiled transpiler. " +
@@ -75,8 +75,7 @@ class BootstrappingTest: XCTestCase {
 
 				// Get Swift results
 				let swiftArguments = kotlinArguments + ["-q", "-Q"]
-				let driverResult =
-					try Driver.run(withArguments: ArrayClass<String>(array: swiftArguments))
+				let driverResult = try Driver.run(withArguments: swiftArguments)
 				guard let resultArray = driverResult as? ArrayClass<Any?>,
 					let swiftASTs = resultArray.as(ArrayClass<SwiftAST>.self),
 					let originalSwiftAST = swiftASTs.first else

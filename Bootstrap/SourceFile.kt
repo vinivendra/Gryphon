@@ -4,7 +4,7 @@ class SourceFile {
 
 	constructor(path: String, contents: String) {
 		this.path = path
-		this.lines = contents.split(separator = '\n', omittingEmptySubsequences = false)
+		this.lines = contents.split(separator = '\n', omittingEmptySubsequences = false) as MutableList<String>
 	}
 
 	val numberOfLines: Int

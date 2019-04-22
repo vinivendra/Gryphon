@@ -282,8 +282,7 @@ public class Driver {
 				return firstResult
 			}
 
-			let pairsArray = ArrayClass<(GryphonAST, String)>(array:
-				Array(zip(asts, filteredInputFiles)))
+			let pairsArray = zipToClass(asts, filteredInputFiles)
 
 			let secondResult: ArrayClass<Any?>
 			if shouldRunConcurrently {

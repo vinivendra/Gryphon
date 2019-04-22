@@ -80,7 +80,7 @@ public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible
 	public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		let keyValueStrings = keyValueAttributes
 			.map { "\($0.key) → \($0.value)" }.sorted().map { PrintableTree($0) }
-		let keyValueArray = ArrayClass<PrintableAsTree?>(array: keyValueStrings)
+		let keyValueArray = ArrayClass<PrintableAsTree?>(keyValueStrings)
 		let standaloneAttributesArray =
 			ArrayClass<PrintableAsTree?>(standaloneAttributes.map { PrintableTree($0) })
 		let subtreesArray = ArrayClass<PrintableAsTree?>(subtrees)

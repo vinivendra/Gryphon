@@ -23,7 +23,7 @@ public class SourceFile {
 	public init(path: String, contents: String) {
 		self.path = path
 
-		self.lines = ArrayClass<Substring>(array:
+		self.lines = ArrayClass<Substring>(
 			contents.split(separator: "\n", omittingEmptySubsequences: false))
 	}
 

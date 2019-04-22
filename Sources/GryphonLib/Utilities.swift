@@ -475,8 +475,8 @@ extension ArrayClass { // kotlin: ignore
 			group.enter()
 		}
 
-		let selfEnumerated = Array(self.enumerated())
-		var unsortedResult: [(index: Int, element: Result)] = []
+		let selfEnumerated = ArrayClass<(offset: Int, element: Element)>(self.enumerated())
+		let unsortedResult: ArrayClass<(index: Int, element: Result)> = []
 
 		concurrentQueue.async {
 			DispatchQueue.concurrentPerform(iterations: selfEnumerated.count)
@@ -517,7 +517,7 @@ extension ArrayClass { // kotlin: ignore
 			$0.element
 		}
 
-		return ArrayClass<Result>(array: result)
+		return result
 	}
 }
 

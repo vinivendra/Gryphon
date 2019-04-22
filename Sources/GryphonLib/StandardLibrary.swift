@@ -28,7 +28,7 @@ public final class ArrayClass<Element>: // kotlin: ignore
 
 	public var array: Buffer
 
-	public init(array: Buffer) {
+	public init(_ array: Buffer) {
 		self.array = array
 	}
 
@@ -41,7 +41,7 @@ public final class ArrayClass<Element>: // kotlin: ignore
 		-> ArrayClass<CastedType>?
 	{
 		if let castedArray = self.array as? [CastedType] {
-			return ArrayClass<CastedType>(array: castedArray)
+			return ArrayClass<CastedType>(castedArray)
 		}
 		else {
 			return nil
@@ -49,7 +49,7 @@ public final class ArrayClass<Element>: // kotlin: ignore
 	}
 
 	public func copy() -> ArrayClass<Element> {
-		return ArrayClass(array: array)
+		return ArrayClass(array)
 	}
 
 	// Expressible By Array Literal
@@ -101,8 +101,8 @@ public final class ArrayClass<Element>: // kotlin: ignore
 		self.array.append(contentsOf: newElements)
 	}
 
-	public required init<S>(_ elements: S) where S: Sequence, Element == S.Element {
-		self.array = []
+	public init<S>(_ sequence: S) where Element == S.Element, S: Sequence {
+		self.array = Array(sequence)
 	}
 
 	public required init() {
@@ -115,25 +115,33 @@ public final class ArrayClass<Element>: // kotlin: ignore
 	}
 
 	public func appending(_ newElement: Element) -> ArrayClass<Element> {
-		return ArrayClass<Element>(array: self.array + [newElement])
+		return ArrayClass<Element>(self.array + [newElement])
 	}
 
 	public func filter(_ isIncluded: (Element) throws -> Bool) rethrows -> ArrayClass<Element> {
-		return try ArrayClass(array: self.array.filter(isIncluded))
+		return try ArrayClass(self.array.filter(isIncluded))
 	}
 
 	public func map<T>(_ transform: (Element) throws -> T) rethrows -> ArrayClass<T> {
-		return try ArrayClass<T>(array: self.array.map(transform))
+		return try ArrayClass<T>(self.array.map(transform))
 	}
 
 	public func compactMap<T>(_ transform: (Element) throws -> T?) rethrows -> ArrayClass<T> {
-		return try ArrayClass<T>(array: self.array.compactMap(transform))
+		return try ArrayClass<T>(self.array.compactMap(transform))
+	}
+
+	@inlinable
+	public func sorted(
+		by areInIncreasingOrder: (Element, Element) throws -> Bool) rethrows
+		-> ArrayClass<Element>
+	{
+		return ArrayClass(try array.sorted(by: areInIncreasingOrder))
 	}
 
 	public func appending<S>(contentsOf newElements: S) -> ArrayClass<Element>
 		where S: Sequence, Element == S.Element
 	{
-		return ArrayClass<Element>(array: self.array + newElements)
+		return ArrayClass<Element>(self.array + newElements)
 	}
 
 	public func removeFirst() -> Element {
@@ -164,8 +172,16 @@ extension ArrayClass: Codable where Element: Codable { // kotlin: ignore
 	}
 
 	public convenience init(from decoder: Decoder) throws {
-		try self.init(array: Buffer(from: decoder))
+		try self.init(Buffer(from: decoder))
 	}
+}
+
+public func zipToClass<Element1, Element2>( // kotlin: ignore
+	_ array1: ArrayClass<Element1>,
+	_ array2: ArrayClass<Element2>)
+	-> ArrayClass<(Element1, Element2)>
+{
+	return ArrayClass(Array(zip(array1, array2)))
 }
 
 /// According to https://swiftdoc.org/v4.2/type/dictionary/hierarchy/
