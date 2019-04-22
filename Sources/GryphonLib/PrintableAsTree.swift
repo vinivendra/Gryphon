@@ -16,19 +16,19 @@
 
 public class PrintableTree: PrintableAsTree {
 	public var treeDescription: String // annotation: override
-	public var printableSubtrees: ArrayReference<PrintableAsTree?> // annotation: override
+	public var printableSubtrees: ArrayClass<PrintableAsTree?> // annotation: override
 
 	init(_ description: String) {
 		self.treeDescription = description
 		self.printableSubtrees = []
 	}
 
-	init(_ description: String, _ subtrees: ArrayReference<PrintableAsTree?>) {
+	init(_ description: String, _ subtrees: ArrayClass<PrintableAsTree?>) {
 		self.treeDescription = description
 		self.printableSubtrees = subtrees
 	}
 
-	init(_ description: String, _ subtrees: ArrayReference<String?>) { // kotlin: ignore
+	init(_ description: String, _ subtrees: ArrayClass<String?>) { // kotlin: ignore
 		let stringToTree: (String?) -> (PrintableAsTree?) = { string in
 			if let string = string {
 				return PrintableTree(string)
@@ -42,16 +42,16 @@ public class PrintableTree: PrintableAsTree {
 		self.printableSubtrees = subtrees.map(stringToTree)
 	}
 
-	init(_ array: ArrayReference<PrintableAsTree?>) {
+	init(_ array: ArrayClass<PrintableAsTree?>) {
 		self.treeDescription = "Array"
 		self.printableSubtrees = array
 	}
 
 	static func initOrNil(
-		_ description: String, _ subtreesOrNil: ArrayReference<PrintableAsTree?>)
+		_ description: String, _ subtreesOrNil: ArrayClass<PrintableAsTree?>)
 		-> PrintableTree?
 	{
-		let subtrees: ArrayReference<PrintableAsTree?> = []
+		let subtrees: ArrayClass<PrintableAsTree?> = []
 		for subtree in subtreesOrNil {
 			if let unwrapped = subtree {
 				subtrees.append(unwrapped)
@@ -81,12 +81,12 @@ public class PrintableTree: PrintableAsTree {
 
 public protocol PrintableAsTree {
 	var treeDescription: String { get }
-	var printableSubtrees: ArrayReference<PrintableAsTree?> { get }
+	var printableSubtrees: ArrayClass<PrintableAsTree?> { get }
 }
 
 public extension PrintableAsTree {
 	func prettyPrint(
-		indentation: ArrayReference<String> = [],
+		indentation: ArrayClass<String> = [],
 		isLast: Bool = true,
 		horizontalLimit: Int? = nil,
 		printFunction: (String) -> () = { print($0, terminator: "") })
@@ -120,7 +120,7 @@ public extension PrintableAsTree {
 			}
 		}
 
-		let subtrees: ArrayReference<PrintableAsTree> = []
+		let subtrees: ArrayClass<PrintableAsTree> = []
 		for element in printableSubtrees {
 			if let unwrapped = element {
 				subtrees.append(unwrapped)

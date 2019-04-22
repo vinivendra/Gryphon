@@ -476,16 +476,16 @@ private func simplifyType(string: String) -> String {
 		return result
 	}
 
-	// Treat ArrayReference as Array
-	if string.hasPrefix("ArrayReference<"), string.last == ">" {
-		let elementType = String(string.dropFirst("ArrayReference<".count).dropLast())
+	// Treat ArrayClass as Array
+	if string.hasPrefix("ArrayClass<"), string.last == ">" {
+		let elementType = String(string.dropFirst("ArrayClass<".count).dropLast())
 		return "[\(elementType)]"
 	}
 
 	// Treat Slice as Array
-	if string.hasPrefix("Slice<ArrayReference<"), string.hasSuffix(">>") {
+	if string.hasPrefix("Slice<ArrayClass<"), string.hasSuffix(">>") {
 		let elementType =
-			String(string.dropFirst("Slice<ArrayReference<".count).dropLast(">>".count))
+			String(string.dropFirst("Slice<ArrayClass<".count).dropLast(">>".count))
 		return "[\(elementType)]"
 	}
 	else if string.hasPrefix("ArraySlice<"), string.hasSuffix(">") {

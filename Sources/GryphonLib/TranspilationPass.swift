@@ -1206,13 +1206,13 @@ public class AnonymousParametersTranspilationPass: TranspilationPass {
 	}
 }
 
-/// ArrayReference needs explicit initializers to account for the fact that it can't be implicitly
+/// ArrayClass needs explicit initializers to account for the fact that it can't be implicitly
 /// cast to covariant types. For instance:
 ///
 /// ````
-/// let myIntArray: ArrayReference = [1, 2, 3]
-/// let myAnyArray = myIntArray as ArrayReference<Any> // error
-/// let myAnyArray = ArrayReference<Any>(myIntArray) // OK
+/// let myIntArray: ArrayClass = [1, 2, 3]
+/// let myAnyArray = myIntArray as ArrayClass<Any> // error
+/// let myAnyArray = ArrayClass<Any>(myIntArray) // OK
 /// ````
 ///
 /// This transformation can't be done with the current template mode because there's no way to get
@@ -1221,7 +1221,7 @@ public class AnonymousParametersTranspilationPass: TranspilationPass {
 public class CovarianceInitsAsCastsTranspilationPass: TranspilationPass {
 	override func replaceCallExpression(_ callExpression: CallExpression) -> Expression {
 		if case let .typeExpression(type: type) = callExpression.function,
-			type.hasPrefix("ArrayReference"),
+			type.hasPrefix("ArrayClass"),
 			case let .tupleExpression(pairs: pairs) = callExpression.parameters,
 			pairs.count == 1,
 			let onlyPair = pairs.first
@@ -1231,7 +1231,7 @@ public class CovarianceInitsAsCastsTranspilationPass: TranspilationPass {
 				if let arrayType = onlyPair.expression.type {
 					let arrayElementType = arrayType.dropFirst().dropLast()
 					let arrayReferenceElementType =
-						type.dropFirst("ArrayReference<".count).dropLast()
+						type.dropFirst("ArrayClass<".count).dropLast()
 
 					if arrayElementType != arrayReferenceElementType {
 						return .binaryOperatorExpression(
@@ -1256,7 +1256,7 @@ public class CovarianceInitsAsCastsTranspilationPass: TranspilationPass {
 				leftExpression: leftExpression,
 				rightExpression: rightExpression) = callExpression.function,
 			let leftType = leftExpression.type,
-			leftType.hasPrefix("ArrayReference"),
+			leftType.hasPrefix("ArrayClass"),
 			case let .declarationReferenceExpression(
 				value: declarationReferenceExpression) = rightExpression,
 			declarationReferenceExpression.identifier == "as",

@@ -668,9 +668,9 @@ internal class ASTDumpDecoder {
 // MARK: - Creating a SwiftAST
 extension ASTDumpDecoder {
 	public func decode() throws -> SwiftAST {
-		let standaloneAttributes: ArrayReference<String> = []
+		let standaloneAttributes: ArrayClass<String> = []
 		let keyValueAttributes: DictionaryReference<String, String> = [:]
-		let subtrees: ArrayReference<SwiftAST> = []
+		let subtrees: ArrayClass<SwiftAST> = []
 
 		try readOpeningParenthesis()
 		let rawName = readIdentifier()

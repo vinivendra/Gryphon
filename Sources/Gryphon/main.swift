@@ -17,7 +17,7 @@
 import GryphonLib
 
 do {
-	try Driver.run(withArguments: ArrayReference<String>(array: Array(
+	try Driver.run(withArguments: ArrayClass<String>(array: Array(
 		CommandLine.arguments.dropFirst())))
 }
 catch let error {

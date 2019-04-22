@@ -36,7 +36,7 @@ public final class GryphonAST:  // kotlin: ignore
 	//
 	public var treeDescription: String { return "Source File" }
 
-	public var printableSubtrees: ArrayReference<PrintableAsTree?> {
+	public var printableSubtrees: ArrayClass<PrintableAsTree?> {
 		return [PrintableTree("Declarations", declarations),
 				PrintableTree("Statements", statements), ]
 	}
@@ -222,7 +222,7 @@ public struct FunctionParameter: Equatable, PrintableAsTree { // kotlin: ignore
 		return "parameter"
 	}
 
-	public var printableSubtrees: ArrayReference<PrintableAsTree?> {
+	public var printableSubtrees: ArrayClass<PrintableAsTree?> {
 		return [
 			self.apiLabel.map { PrintableTree("api label: \($0)") },
 			PrintableTree("label: \(self.label)"),
@@ -348,7 +348,7 @@ extension Statement { // kotlin: ignore
 		return name.capitalizedAsCamelCase
 	}
 
-	public var printableSubtrees: ArrayReference<PrintableAsTree?> {
+	public var printableSubtrees: ArrayClass<PrintableAsTree?> {
 		switch self {
 		case let .expression(expression: expression):
 			return [expression]
@@ -367,7 +367,7 @@ extension Statement { // kotlin: ignore
 				PrintableTree("inherits", inherits),
 				PrintableTree("members", members), ]
 		case let .companionObject(members: members):
-			return ArrayReference<PrintableAsTree?>(array: members)
+			return ArrayClass<PrintableAsTree?>(array: members)
 		case let .enumDeclaration(
 			access: access,
 			name: name,
@@ -484,7 +484,7 @@ extension Statement { // kotlin: ignore
 				PrintableTree("expression", [expression]),
 				PrintableTree("case items", caseItems), ]
 		case let .deferStatement(statements: statements):
-			return ArrayReference(array: statements)
+			return ArrayClass(array: statements)
 		case let .throwStatement(expression: expression):
 			return [expression]
 		case let .returnStatement(expression: expression):
@@ -616,7 +616,7 @@ extension Expression { // kotlin: ignore
 		return name
 	}
 
-	public var printableSubtrees: ArrayReference<PrintableAsTree?> {
+	public var printableSubtrees: ArrayClass<PrintableAsTree?> {
 		switch self {
 		case let .templateExpression(pattern: pattern, matches: matches):
 			return [
@@ -723,7 +723,7 @@ extension Expression { // kotlin: ignore
 		case let .interpolatedStringLiteralExpression(expressions: expressions):
 			return [PrintableTree(expressions)]
 		case let .tupleExpression(pairs: pairs):
-			return ArrayReference<PrintableAsTree?>(array: pairs.map {
+			return ArrayClass<PrintableAsTree?>(array: pairs.map {
 				PrintableTree(($0.label ?? "_") + ":", [$0.expression])
 			})
 		case let .tupleShuffleExpression(

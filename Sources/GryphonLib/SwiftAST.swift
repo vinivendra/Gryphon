@@ -16,15 +16,15 @@
 
 public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible {
 	let name: String
-	let standaloneAttributes: ArrayReference<String>
+	let standaloneAttributes: ArrayClass<String>
 	let keyValueAttributes: DictionaryReference<String, String>
-	let subtrees: ArrayReference<SwiftAST>
+	let subtrees: ArrayClass<SwiftAST>
 
 	//
 	static public var horizontalLimitWhenPrinting = Int.max
 
 	//
-	internal init(_ name: String, _ subtrees: ArrayReference<SwiftAST> = []) {
+	internal init(_ name: String, _ subtrees: ArrayClass<SwiftAST> = []) {
 		self.name = name
 		self.standaloneAttributes = []
 		self.keyValueAttributes = [:]
@@ -33,9 +33,9 @@ public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible
 
 	internal init(
 		_ name: String,
-		_ standaloneAttributes: ArrayReference<String>,
+		_ standaloneAttributes: ArrayClass<String>,
 		_ keyValueAttributes: DictionaryReference<String, String>,
-		_ subtrees: ArrayReference<SwiftAST> = [])
+		_ subtrees: ArrayClass<SwiftAST> = [])
 	{
 		self.name = name
 		self.standaloneAttributes = standaloneAttributes
@@ -77,13 +77,13 @@ public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible
 		return name
 	}
 
-	public var printableSubtrees: ArrayReference<PrintableAsTree?> { // annotation: override
+	public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		let keyValueStrings = keyValueAttributes
 			.map { "\($0.key) → \($0.value)" }.sorted().map { PrintableTree($0) }
-		let keyValueArray = ArrayReference<PrintableAsTree?>(array: keyValueStrings)
+		let keyValueArray = ArrayClass<PrintableAsTree?>(array: keyValueStrings)
 		let standaloneAttributesArray =
-			ArrayReference<PrintableAsTree?>(standaloneAttributes.map { PrintableTree($0) })
-		let subtreesArray = ArrayReference<PrintableAsTree?>(subtrees)
+			ArrayClass<PrintableAsTree?>(standaloneAttributes.map { PrintableTree($0) })
+		let subtreesArray = ArrayClass<PrintableAsTree?>(subtrees)
 
 		let result = standaloneAttributesArray + keyValueArray + subtreesArray // kotlin: ignore
 		// insert: val result = (standaloneAttributesArray + keyValueArray + subtreesArray)

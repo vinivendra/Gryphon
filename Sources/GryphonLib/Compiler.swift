@@ -36,8 +36,8 @@ public class Compiler {
 	//
 	public static var shouldStopAtFirstError = false
 
-	public private(set) static var errors: ArrayReference<Error> = []
-	public private(set) static var warnings: ArrayReference<String> = []
+	public private(set) static var errors: ArrayClass<Error> = []
+	public private(set) static var warnings: ArrayClass<String> = []
 
 	internal static func handleError(_ error: Error) throws {
 		if Compiler.shouldStopAtFirstError {

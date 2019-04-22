@@ -65,8 +65,8 @@ public class KotlinTranslator {
 				return "MutableList<\(translatedInnerType)>"
 			}
 		}
-		else if type.hasPrefix("ArrayReference<") {
-			let innerType = String(type.dropLast().dropFirst("ArrayReference<".count))
+		else if type.hasPrefix("ArrayClass<") {
+			let innerType = String(type.dropLast().dropFirst("ArrayClass<".count))
 			let translatedInnerType = translateType(innerType)
 			return "MutableList<\(translatedInnerType)>"
 		}

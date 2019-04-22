@@ -455,14 +455,14 @@ extension Utilities {
 }
 
 //
-extension ArrayReference { // kotlin: ignore
+extension ArrayClass { // kotlin: ignore
 
 	/// Meant for concurrently executing a map in an array with few elements and with an expensive
 	/// transform.
 	/// Technically it's O(n lg(n)) since the array has to be sorted at the end, but it's expected
 	/// that the transforms will take much longer than the sorting.
 	public func parallelMap<Result>(_ transform: @escaping (Element) throws -> Result)
-		throws -> ArrayReference<Result>
+		throws -> ArrayClass<Result>
 	{
 		let concurrentQueue = DispatchQueue(
 			label: "com.gryphon.ParallelMap", attributes: .concurrent)
@@ -517,7 +517,7 @@ extension ArrayReference { // kotlin: ignore
 			$0.element
 		}
 
-		return ArrayReference<Result>(array: result)
+		return ArrayClass<Result>(array: result)
 	}
 }
 

@@ -17,7 +17,7 @@
 import Foundation
 
 private func gryphonTemplates() {
-	let _array: ArrayReference<Any> = []
+	let _array: ArrayClass<Any> = []
 	let _index = 0
 	let _string1 = ""
 	let _character: Character = " "
@@ -266,7 +266,7 @@ extension Array { // kotlin: ignore
 	}
 }
 
-extension ArrayReference {
+extension ArrayClass {
 	/// Returns nil if index is out of bounds.
 	subscript (safe index: Int) -> Element? { // kotlin: ignore
 		return getSafe(index)
@@ -287,12 +287,12 @@ extension ArrayReference {
 	}
 
 	/// Returns the same array, but with the first element moved to the end.
-	func rotated() -> ArrayReference<Element> {
+	func rotated() -> ArrayClass<Element> {
 		guard let first = self.first else {
 			return self
 		}
 
-		var newArray: ArrayReference<Element> = []
+		var newArray: ArrayClass<Element> = []
 		newArray.reserveCapacity(self.count) // kotlin: ignore
 		newArray.append(contentsOf: self.dropFirst())
 		newArray.append(first)
@@ -303,9 +303,9 @@ extension ArrayReference {
 	/// Groups the array's elements into a dictionary according to the keys provided by the given
 	/// closure, forming a sort of histogram.
 	func group<Key>(by getKey: (Element) -> Key)
-		-> DictionaryReference<Key, ArrayReference<Element>>
+		-> DictionaryReference<Key, ArrayClass<Element>>
 	{
-		let result: DictionaryReference<Key, ArrayReference<Element>> = [:]
+		let result: DictionaryReference<Key, ArrayClass<Element>> = [:]
 		for element in self {
 			let key = getKey(element)
 			let array = result[key] ?? []
@@ -321,8 +321,8 @@ extension Dictionary: // kotlin: ignore
 	PrintableAsTree where Value: PrintableAsTree, Key == String
 {
 	public var treeDescription: String { return "Dictionary" }
-	public var printableSubtrees: ArrayReference<PrintableAsTree?> {
-		let result: ArrayReference<PrintableAsTree?> = []
+	public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		let result: ArrayClass<PrintableAsTree?> = []
 		for (key, value) in self {
 			result.append(PrintableTree(key, [value]))
 		}
@@ -332,20 +332,20 @@ extension Dictionary: // kotlin: ignore
 
 // MARK: - PrintableTree compatibility with Array
 // Only needed temporarily, while the conversion of the codebase (from using Array to using
-// ArrayReference) isn't done.
+// ArrayClass) isn't done.
 extension PrintableTree { // kotlin: ignore
 	convenience init(_ description: String, _ subtrees: [PrintableAsTree?]) {
-		self.init(description, ArrayReference<PrintableAsTree?>(array: subtrees))
+		self.init(description, ArrayClass<PrintableAsTree?>(array: subtrees))
 	}
 
 	convenience init(_ subtrees: [PrintableAsTree?]) {
-		self.init("Array", ArrayReference<PrintableAsTree?>(array: subtrees))
+		self.init("Array", ArrayClass<PrintableAsTree?>(array: subtrees))
 	}
 
 	static func initOrNil(_ description: String, _ subtreesOrNil: [PrintableAsTree?])
 		-> PrintableTree?
 	{
-		let arrayReference = ArrayReference<PrintableAsTree?>(array: subtreesOrNil)
+		let arrayReference = ArrayClass<PrintableAsTree?>(array: subtreesOrNil)
 		return PrintableTree.initOrNil(description, arrayReference)
 	}
 

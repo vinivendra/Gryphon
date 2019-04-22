@@ -18,12 +18,12 @@ import Foundation
 
 public class SourceFile {
 	public var path: String
-	private let lines: ArrayReference<Substring>
+	private let lines: ArrayClass<Substring>
 
 	public init(path: String, contents: String) {
 		self.path = path
 
-		self.lines = ArrayReference<Substring>(array:
+		self.lines = ArrayClass<Substring>(array:
 			contents.split(separator: "\n", omittingEmptySubsequences: false))
 	}
 

@@ -147,7 +147,7 @@ public class Driver {
 
 	@discardableResult
 	public static func run(
-		withArguments arguments: ArrayReference<String>) throws -> Any?
+		withArguments arguments: ArrayClass<String>) throws -> Any?
 	{
 		Compiler.clearErrorsAndWarnings()
 
@@ -259,7 +259,7 @@ public class Driver {
 			$0.hasSuffix(".swift") || $0.hasSuffix(".swiftASTDump")
 		}
 
-		let firstResult: ArrayReference<Any?>
+		let firstResult: ArrayClass<Any?>
 		if shouldRunConcurrently {
 			firstResult = try filteredInputFiles.parallelMap {
 				try runUpToFirstPasses(withSettings: settings, onFile: $0)
@@ -277,15 +277,15 @@ public class Driver {
 			// If we've received a non-raw AST then we're in the middle of the transpilation passes.
 			// This means we need to at least run the second round of passes.
 			guard settings.shouldGenerateAST,
-				let asts = firstResult.as(ArrayReference<GryphonAST>.self) else
+				let asts = firstResult.as(ArrayClass<GryphonAST>.self) else
 			{
 				return firstResult
 			}
 
-			let pairsArray = ArrayReference<(GryphonAST, String)>(array:
+			let pairsArray = ArrayClass<(GryphonAST, String)>(array:
 				Array(zip(asts, filteredInputFiles)))
 
-			let secondResult: ArrayReference<Any?>
+			let secondResult: ArrayClass<Any?>
 			if shouldRunConcurrently {
 				secondResult = try pairsArray.parallelMap {
 					try runAfterFirstPasses(

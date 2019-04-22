@@ -257,8 +257,8 @@ class ExtensionsTest: XCTestCase {
 			 false: [1, 3, 3, 1, 3], ])
 	}
 
-	func testArrayReferenceSafeIndex() {
-		let array: ArrayReference = [1, 2, 3]
+	func testArrayClassSafeIndex() {
+		let array: ArrayClass = [1, 2, 3]
 		XCTAssert(array[safe: 0] == 1)
 		XCTAssert(array[safe: 1] == 2)
 		XCTAssert(array[safe: 2] == 3)
@@ -266,8 +266,8 @@ class ExtensionsTest: XCTestCase {
 		XCTAssert(array[safe: -1] == nil)
 	}
 
-	func testArrayReferenceRotate() {
-		let array: ArrayReference = [1, 2, 3]
+	func testArrayClassRotate() {
+		let array: ArrayClass = [1, 2, 3]
 		let array1 = array.rotated()
 		let array2 = array1.rotated()
 		let array3 = array2.rotated()
@@ -276,8 +276,8 @@ class ExtensionsTest: XCTestCase {
 		XCTAssertEqual(array3, [1, 2, 3])
 	}
 
-	func testArrayReferenceGroupBy() {
-		let array: ArrayReference = [1, 2, 3, 2, 3, 1, 2, 3]
+	func testArrayClassGroupBy() {
+		let array: ArrayClass = [1, 2, 3, 2, 3, 1, 2, 3]
 		let histogram = array.group(by: { "\($0)" })
 		XCTAssertEqual(
 			histogram,
@@ -301,8 +301,8 @@ class ExtensionsTest: XCTestCase {
 		("testSecondToLast", testSecondToLast),
 		("testRotated", testRotated),
 		("testGroupBy", testGroupBy),
-		("testArrayReferenceSafeIndex", testArrayReferenceSafeIndex),
-		("testArrayReferenceRotate", testArrayReferenceRotate),
-		("testArrayReferenceGroupBy", testArrayReferenceGroupBy),
+		("testArrayClassSafeIndex", testArrayClassSafeIndex),
+		("testArrayClassRotate", testArrayClassRotate),
+		("testArrayClassGroupBy", testArrayClassGroupBy),
 	]
 }

@@ -76,9 +76,9 @@ class BootstrappingTest: XCTestCase {
 				// Get Swift results
 				let swiftArguments = kotlinArguments + ["-q", "-Q"]
 				let driverResult =
-					try Driver.run(withArguments: ArrayReference<String>(array: swiftArguments))
-				guard let resultArray = driverResult as? ArrayReference<Any?>,
-					let swiftASTs = resultArray.as(ArrayReference<SwiftAST>.self),
+					try Driver.run(withArguments: ArrayClass<String>(array: swiftArguments))
+				guard let resultArray = driverResult as? ArrayClass<Any?>,
+					let swiftASTs = resultArray.as(ArrayClass<SwiftAST>.self),
 					let originalSwiftAST = swiftASTs.first else
 				{
 					XCTFail("Error generating SwiftASTs.\n" +
@@ -162,7 +162,7 @@ class BootstrappingTest: XCTestCase {
 			outputFileMap: outputFileMap)
 		{
 			print("* Transpiling to kotlin...")
-			let inputFiles: ArrayReference = supportedFilePaths + [
+			let inputFiles: ArrayClass = supportedFilePaths + [
 				"Bootstrap/PrintableAsTreeTest.kt",
 				"Bootstrap/ASTDumpDecoderTest.kt",
 				"Bootstrap/ExtensionsTest.kt",
@@ -171,7 +171,7 @@ class BootstrappingTest: XCTestCase {
 				"Bootstrap/main.kt",
 			]
 
-			let arguments: ArrayReference =
+			let arguments: ArrayClass =
 				["build", "-output-file-map=output-file-map.json"] + inputFiles
 
 			let driverResult: Any?

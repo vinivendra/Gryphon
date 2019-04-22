@@ -20,7 +20,7 @@
 /// (link found via https://www.raywenderlich.com/139591/building-custom-collection-swift)
 /// the Array type in Swift conforms exactly to these protocols,
 /// plus CustomReflectable (which is beyond Gryphon's scope for now).
-public final class ArrayReference<Element>: // kotlin: ignore
+public final class ArrayClass<Element>: // kotlin: ignore
 	ExpressibleByArrayLiteral, CustomStringConvertible, CustomDebugStringConvertible,
 	RandomAccessCollection, MutableCollection, RangeReplaceableCollection
 {
@@ -32,24 +32,24 @@ public final class ArrayReference<Element>: // kotlin: ignore
 		self.array = array
 	}
 
-	public init<T>(_ arrayReference: ArrayReference<T>) {
+	public init<T>(_ arrayReference: ArrayClass<T>) {
 		self.array = arrayReference.array as! Buffer
 	}
 
 	public func `as`<CastedType>(
-		_ type: ArrayReference<CastedType>.Type)
-		-> ArrayReference<CastedType>?
+		_ type: ArrayClass<CastedType>.Type)
+		-> ArrayClass<CastedType>?
 	{
 		if let castedArray = self.array as? [CastedType] {
-			return ArrayReference<CastedType>(array: castedArray)
+			return ArrayClass<CastedType>(array: castedArray)
 		}
 		else {
 			return nil
 		}
 	}
 
-	public func copy() -> ArrayReference<Element> {
-		return ArrayReference(array: array)
+	public func copy() -> ArrayClass<Element> {
+		return ArrayClass(array: array)
 	}
 
 	// Expressible By Array Literal
@@ -114,26 +114,26 @@ public final class ArrayReference<Element>: // kotlin: ignore
 		array.append(newElement)
 	}
 
-	public func appending(_ newElement: Element) -> ArrayReference<Element> {
-		return ArrayReference<Element>(array: self.array + [newElement])
+	public func appending(_ newElement: Element) -> ArrayClass<Element> {
+		return ArrayClass<Element>(array: self.array + [newElement])
 	}
 
-	public func filter(_ isIncluded: (Element) throws -> Bool) rethrows -> ArrayReference<Element> {
-		return try ArrayReference(array: self.array.filter(isIncluded))
+	public func filter(_ isIncluded: (Element) throws -> Bool) rethrows -> ArrayClass<Element> {
+		return try ArrayClass(array: self.array.filter(isIncluded))
 	}
 
-	public func map<T>(_ transform: (Element) throws -> T) rethrows -> ArrayReference<T> {
-		return try ArrayReference<T>(array: self.array.map(transform))
+	public func map<T>(_ transform: (Element) throws -> T) rethrows -> ArrayClass<T> {
+		return try ArrayClass<T>(array: self.array.map(transform))
 	}
 
-	public func compactMap<T>(_ transform: (Element) throws -> T?) rethrows -> ArrayReference<T> {
-		return try ArrayReference<T>(array: self.array.compactMap(transform))
+	public func compactMap<T>(_ transform: (Element) throws -> T?) rethrows -> ArrayClass<T> {
+		return try ArrayClass<T>(array: self.array.compactMap(transform))
 	}
 
-	public func appending<S>(contentsOf newElements: S) -> ArrayReference<Element>
+	public func appending<S>(contentsOf newElements: S) -> ArrayClass<Element>
 		where S: Sequence, Element == S.Element
 	{
-		return ArrayReference<Element>(array: self.array + newElements)
+		return ArrayClass<Element>(array: self.array + newElements)
 	}
 
 	public func removeFirst() -> Element {
@@ -141,8 +141,8 @@ public final class ArrayReference<Element>: // kotlin: ignore
 	}
 }
 
-extension ArrayReference: Equatable where Element: Equatable { // kotlin: ignore
-	public static func == (lhs: ArrayReference, rhs: ArrayReference) -> Bool {
+extension ArrayClass: Equatable where Element: Equatable { // kotlin: ignore
+	public static func == (lhs: ArrayClass, rhs: ArrayClass) -> Bool {
 		return lhs.array == rhs.array
 	}
 
@@ -152,13 +152,13 @@ extension ArrayReference: Equatable where Element: Equatable { // kotlin: ignore
 	}
 }
 
-extension ArrayReference: Hashable where Element: Hashable { // kotlin: ignore
+extension ArrayClass: Hashable where Element: Hashable { // kotlin: ignore
 	public func hash(into hasher: inout Hasher) {
 		array.hash(into: &hasher)
 	}
 }
 
-extension ArrayReference: Codable where Element: Codable { // kotlin: ignore
+extension ArrayClass: Codable where Element: Codable { // kotlin: ignore
 	public func encode(to encoder: Encoder) throws {
 		try array.encode(to: encoder)
 	}

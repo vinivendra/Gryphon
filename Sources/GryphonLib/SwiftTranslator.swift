@@ -2328,7 +2328,7 @@ public class SwiftTranslator {
 
 		return SwiftAST(
 			ast.name, ast.standaloneAttributes, ast.keyValueAttributes,
-			ArrayReference(array: newSubtrees))
+			ArrayClass(array: newSubtrees))
 	}
 
 	internal func process(patternBindingDeclaration: SwiftAST) throws {
