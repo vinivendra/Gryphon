@@ -207,20 +207,20 @@ public indirect enum Expression: Equatable, PrintableAsTree { // kotlin: ignore
 }
 
 public struct LabeledExpression: Equatable { // kotlin: ignore
-	var label: String?
-	var expression: Expression
+	let label: String?
+	let expression: Expression
 }
 
 public struct LabeledType: Equatable { // kotlin: ignore
-	var label: String
-	var type: String
+	let label: String
+	let type: String
 }
 
 public struct FunctionParameter: Equatable, PrintableAsTree { // kotlin: ignore
-	var label: String
-	var apiLabel: String?
-	var type: String
-	var value: Expression?
+	let label: String
+	let apiLabel: String?
+	let type: String
+	let value: Expression?
 
 	public var treeDescription: String {
 		return "parameter"
@@ -236,7 +236,7 @@ public struct FunctionParameter: Equatable, PrintableAsTree { // kotlin: ignore
 	}
 }
 
-public struct VariableDeclaration: Equatable { // kotlin: ignore
+public class VariableDeclaration: Equatable { // kotlin: ignore
 	var identifier: String
 	var typeName: String
 	var expression: Expression?
@@ -247,24 +247,104 @@ public struct VariableDeclaration: Equatable { // kotlin: ignore
 	var isStatic: Bool
 	var extendsType: String?
 	var annotations: String?
+
+	init(
+		identifier: String,
+		typeName: String,
+		expression: Expression?,
+		getter: FunctionDeclaration?,
+		setter: FunctionDeclaration?,
+		isLet: Bool,
+		isImplicit: Bool,
+		isStatic: Bool,
+		extendsType: String?,
+		annotations: String?)
+	{
+		self.identifier = identifier
+		self.typeName = typeName
+		self.expression = expression
+		self.getter = getter
+		self.setter = setter
+		self.isLet = isLet
+		self.isImplicit = isImplicit
+		self.isStatic = isStatic
+		self.extendsType = extendsType
+		self.annotations = annotations
+	}
+
+	public static func == (lhs: VariableDeclaration, rhs: VariableDeclaration) -> Bool {
+		return lhs.identifier == rhs.identifier &&
+			lhs.typeName == rhs.typeName &&
+			lhs.expression == rhs.expression &&
+			lhs.getter == rhs.getter &&
+			lhs.setter == rhs.setter &&
+			lhs.isLet == rhs.isLet &&
+			lhs.isImplicit == rhs.isImplicit &&
+			lhs.isStatic == rhs.isStatic &&
+			lhs.extendsType == rhs.extendsType &&
+			lhs.annotations == rhs.annotations
+	}
 }
 
-public struct DeclarationReferenceExpression: Equatable { // kotlin: ignore
+public class DeclarationReferenceExpression: Equatable { // kotlin: ignore
 	var identifier: String
 	var type: String
 	var isStandardLibrary: Bool
 	var isImplicit: Bool
 	var range: SourceFileRange?
+
+	init(
+		identifier: String,
+		type: String,
+		isStandardLibrary: Bool,
+		isImplicit: Bool,
+		range: SourceFileRange?)
+	{
+		self.identifier = identifier
+		self.type = type
+		self.isStandardLibrary = isStandardLibrary
+		self.isImplicit = isImplicit
+		self.range = range
+	}
+
+	public static func == (lhs: DeclarationReferenceExpression, rhs: DeclarationReferenceExpression)
+		-> Bool
+	{
+		return lhs.identifier == rhs.identifier &&
+			lhs.type == rhs.type &&
+			lhs.isStandardLibrary == rhs.isStandardLibrary &&
+			lhs.isImplicit == rhs.isImplicit &&
+			lhs.range == rhs.range
+	}
 }
 
-public struct CallExpression: Equatable { // kotlin: ignore
+public class CallExpression: Equatable { // kotlin: ignore
 	var function: Expression
 	var parameters: Expression
 	var type: String
 	var range: SourceFileRange?
+
+	init(
+		function: Expression,
+		parameters: Expression,
+		type: String,
+		range: SourceFileRange?)
+	{
+		self.function = function
+		self.parameters = parameters
+		self.type = type
+		self.range = range
+	}
+
+	public static func == (lhs: CallExpression, rhs: CallExpression) -> Bool {
+		return lhs.function == rhs.function &&
+			lhs.parameters == rhs.parameters &&
+			lhs.type == rhs.type &&
+			lhs.range == rhs.range
+	}
 }
 
-public struct FunctionDeclaration: Equatable { // kotlin: ignore
+public class FunctionDeclaration: Equatable { // kotlin: ignore
 	var prefix: String
 	var parameters: ArrayClass<FunctionParameter>
 	var returnType: String
@@ -277,6 +357,49 @@ public struct FunctionDeclaration: Equatable { // kotlin: ignore
 	var statements: ArrayClass<Statement>?
 	var access: String?
 	var annotations: String?
+
+	init(
+		prefix: String,
+		parameters: ArrayClass<FunctionParameter>,
+		returnType: String,
+		functionType: String,
+		genericTypes: ArrayClass<String>,
+		isImplicit: Bool,
+		isStatic: Bool,
+		isMutating: Bool,
+		extendsType: String?,
+		statements: ArrayClass<Statement>?,
+		access: String?,
+		annotations: String?)
+	{
+		self.prefix = prefix
+		self.parameters = parameters
+		self.returnType = returnType
+		self.functionType = functionType
+		self.genericTypes = genericTypes
+		self.isImplicit = isImplicit
+		self.isStatic = isStatic
+		self.isMutating = isMutating
+		self.extendsType = extendsType
+		self.statements = statements
+		self.access = access
+		self.annotations = annotations
+	}
+
+	public static func == (lhs: FunctionDeclaration, rhs: FunctionDeclaration) -> Bool {
+		return lhs.prefix == rhs.prefix &&
+			lhs.parameters == rhs.parameters &&
+			lhs.returnType == rhs.returnType &&
+			lhs.functionType == rhs.functionType &&
+			lhs.genericTypes == rhs.genericTypes &&
+			lhs.isImplicit == rhs.isImplicit &&
+			lhs.isStatic == rhs.isStatic &&
+			lhs.isMutating == rhs.isMutating &&
+			lhs.extendsType == rhs.extendsType &&
+			lhs.statements == rhs.statements &&
+			lhs.access == rhs.access &&
+			lhs.annotations == rhs.annotations
+	}
 }
 
 public class IfStatement: Equatable { // kotlin: ignore
@@ -312,27 +435,50 @@ public class IfStatement: Equatable { // kotlin: ignore
 			lhs.elseStatement == rhs.elseStatement &&
 			lhs.isGuard == rhs.isGuard
 	}
+}
 
-	public func copy() -> IfStatement {
-		return IfStatement(
-			conditions: conditions,
-			declarations: declarations,
-			statements: statements,
-			elseStatement: elseStatement,
-			isGuard: isGuard)
+public class SwitchCase: Equatable { // kotlin: ignore
+	var expression: Expression?
+	var statements: ArrayClass<Statement>
+
+	init(
+		expression: Expression?,
+		statements: ArrayClass<Statement>)
+	{
+		self.expression = expression
+		self.statements = statements
+	}
+
+	public static func == (lhs: SwitchCase, rhs: SwitchCase) -> Bool {
+		return lhs.expression == rhs.expression &&
+			lhs.statements == rhs.statements
 	}
 }
 
-public struct SwitchCase: Equatable { // kotlin: ignore
-	var expression: Expression?
-	var statements: ArrayClass<Statement>
-}
-
-public struct EnumElement: Equatable { // kotlin: ignore
+public class EnumElement: Equatable { // kotlin: ignore
 	var name: String
 	var associatedValues: ArrayClass<LabeledType>
 	var rawValue: Expression?
 	var annotations: String?
+
+	init(
+		name: String,
+		associatedValues: ArrayClass<LabeledType>,
+		rawValue: Expression?,
+		annotations: String?)
+	{
+		self.name = name
+		self.associatedValues = associatedValues
+		self.rawValue = rawValue
+		self.annotations = annotations
+	}
+
+	public static func == (lhs: EnumElement, rhs: EnumElement) -> Bool {
+		return lhs.name == rhs.name &&
+		lhs.associatedValues == rhs.associatedValues &&
+		lhs.rawValue == rhs.rawValue &&
+		lhs.annotations == rhs.annotations
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

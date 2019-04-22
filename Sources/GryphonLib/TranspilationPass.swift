@@ -225,7 +225,7 @@ public class TranspilationPass {
 					value: $0.value.map(replaceExpression))
 			}
 
-		var functionDeclaration = functionDeclaration
+		let functionDeclaration = functionDeclaration
 		functionDeclaration.parameters = replacedParameters
 		functionDeclaration.statements = functionDeclaration.statements.map(replaceStatements)
 		return functionDeclaration
@@ -240,7 +240,7 @@ public class TranspilationPass {
 	func replaceVariableDeclaration(_ variableDeclaration: VariableDeclaration)
 		-> VariableDeclaration
 	{
-		var variableDeclaration = variableDeclaration
+		let variableDeclaration = variableDeclaration
 		variableDeclaration.expression = variableDeclaration.expression.map(replaceExpression)
 		if let getter = variableDeclaration.getter {
 			variableDeclaration.getter = replaceFunctionDeclaration(getter)
@@ -276,7 +276,7 @@ public class TranspilationPass {
 	}
 
 	func replaceIfStatement(_ ifStatement: IfStatement) -> IfStatement {
-		let ifStatement = ifStatement.copy()
+		let ifStatement = ifStatement
 		ifStatement.conditions = replaceIfConditions(ifStatement.conditions)
 		ifStatement.declarations = ifStatement.declarations.map(replaceVariableDeclaration)
 		ifStatement.statements = replaceStatements(ifStatement.statements)
@@ -785,7 +785,7 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 			functionDeclaration.prefix == "init"
 		{
 			if functionDeclaration.returnType.hasSuffix("?") {
-				var functionDeclaration = functionDeclaration
+				let functionDeclaration = functionDeclaration
 
 				isFailableInitializer = true
 				let newStatements = replaceStatements(functionDeclaration.statements ?? [])
@@ -966,7 +966,7 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass {
 	override func replaceVariableDeclaration(_ variableDeclaration: VariableDeclaration)
 		-> VariableDeclaration
 	{
-		var variableDeclaration = variableDeclaration
+		let variableDeclaration = variableDeclaration
 		variableDeclaration.typeName = removePrefixes(variableDeclaration.typeName)
 		return super.replaceVariableDeclaration(variableDeclaration)
 	}
@@ -989,14 +989,14 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 			let lastEnumType = String(enumType.split(separator: ".").last!)
 
 			if KotlinTranslator.sealedClasses.contains(lastEnumType) {
-				var enumExpression = enumExpression
+				let enumExpression = enumExpression
 				enumExpression.identifier = enumExpression.identifier.capitalizedAsCamelCase
 				return .dotExpression(
 					leftExpression: .typeExpression(type: enumType),
 					rightExpression: .declarationReferenceExpression(value: enumExpression))
 			}
 			else if KotlinTranslator.enumClasses.contains(lastEnumType) {
-				var enumExpression = enumExpression
+				let enumExpression = enumExpression
 				enumExpression.identifier = enumExpression.identifier.upperSnakeCase()
 				return .dotExpression(
 					leftExpression: .typeExpression(type: enumType),
@@ -1166,7 +1166,7 @@ public class SelfToThisTranspilationPass: TranspilationPass {
 		_ expression: DeclarationReferenceExpression) -> DeclarationReferenceExpression
 	{
 		if expression.identifier == "self" {
-			var expression = expression
+			let expression = expression
 			expression.identifier = "this"
 			return expression
 		}
@@ -1231,7 +1231,7 @@ public class AnonymousParametersTranspilationPass: TranspilationPass {
 		_ expression: DeclarationReferenceExpression) -> DeclarationReferenceExpression
 	{
 		if expression.identifier == "$0" {
-			var expression = expression
+			let expression = expression
 			expression.identifier = "it"
 			return expression
 		}
@@ -1458,7 +1458,7 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 		while i < (statements.count - 1) {
 			let currentStatement = statements[i]
 			let nextStatement = statements[i + 1]
-			if case var .variableDeclaration(value: variableDeclaration) = currentStatement,
+			if case let .variableDeclaration(value: variableDeclaration) = currentStatement,
 				variableDeclaration.isImplicit == false,
 				variableDeclaration.extendsType == nil,
 				case let .switchStatement(
@@ -1555,7 +1555,7 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 	override func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclaration)
 		-> ArrayClass<Statement>
 	{
-		var functionDeclaration = functionDeclaration
+		let functionDeclaration = functionDeclaration
 		functionDeclaration.extendsType = self.extendingType
 		return [Statement.functionDeclaration(value: functionDeclaration)]
 	}
@@ -1563,7 +1563,7 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 	override func replaceVariableDeclaration(_ variableDeclaration: VariableDeclaration)
 		-> VariableDeclaration
 	{
-		var variableDeclaration = variableDeclaration
+		let variableDeclaration = variableDeclaration
 		variableDeclaration.extendsType = self.extendingType
 		return variableDeclaration
 	}
@@ -1843,7 +1843,7 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 			}
 		}
 
-		let ifStatement = ifStatement.copy()
+		let ifStatement = ifStatement
 		ifStatement.conditions = newConditions
 		return super.replaceIfStatement(ifStatement)
 	}
@@ -2118,7 +2118,7 @@ public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
 				shouldStillBeGuard = true
 			}
 
-			let ifStatement = ifStatement.copy()
+			let ifStatement = ifStatement
 			ifStatement.conditions = ArrayClass([newCondition]).map {
 				IfStatement.IfCondition.condition(expression: $0)
 			}
@@ -2180,7 +2180,7 @@ public class FixProtocolContentsTranspilationPass: TranspilationPass {
 		-> FunctionDeclaration?
 	{
 		if isInProtocol {
-			var functionDeclaration = functionDeclaration
+			let functionDeclaration = functionDeclaration
 			functionDeclaration.statements = nil
 			return super.replaceFunctionDeclaration(functionDeclaration)
 		}
@@ -2193,7 +2193,7 @@ public class FixProtocolContentsTranspilationPass: TranspilationPass {
 		-> VariableDeclaration
 	{
 		if isInProtocol {
-			var variableDeclaration = variableDeclaration
+			let variableDeclaration = variableDeclaration
 			variableDeclaration.getter?.isImplicit = true
 			variableDeclaration.setter?.isImplicit = true
 			variableDeclaration.getter?.statements = nil
