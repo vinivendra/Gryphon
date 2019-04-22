@@ -179,11 +179,11 @@ public class KotlinTranslator {
 
 	public func translateAST(_ sourceFile: GryphonAST) throws -> String {
 		let declarationsTranslation =
-			try translate(subtrees: sourceFile.declarations, withIndentation: "")
+			try translate(subtrees: sourceFile.declarations.array, withIndentation: "")
 
 		let indentation = increaseIndentation("")
 		let statementsTranslation =
-			try translate(subtrees: sourceFile.statements, withIndentation: indentation)
+			try translate(subtrees: sourceFile.statements.array, withIndentation: indentation)
 
 		var result = declarationsTranslation
 
@@ -225,39 +225,48 @@ public class KotlinTranslator {
 				withIndentation: indentation)
 		case let .classDeclaration(name: name, inherits: inherits, members: members):
 			result = try translateClassDeclaration(
-				name: name, inherits: inherits, members: members, withIndentation: indentation)
+				name: name,
+				inherits: inherits.array,
+				members: members.array,
+				withIndentation: indentation)
 		case let .structDeclaration(
 			annotations: annotations, name: name, inherits: inherits, members: members):
 
 			result = try translateStructDeclaration(
 				annotations: annotations,
-				name: name, inherits: inherits,
-				members: members,
+				name: name, inherits: inherits.array,
+				members: members.array,
 				withIndentation: indentation)
 		case let .companionObject(members: members):
-			result = try translateCompanionObject(members: members, withIndentation: indentation)
+			result = try translateCompanionObject(
+				members: members.array, withIndentation: indentation)
 		case let .enumDeclaration(
 			access: access, name: name, inherits: inherits, elements: elements, members: members,
 			isImplicit: isImplicit):
 
 			result = try translateEnumDeclaration(
-				access: access, name: name, inherits: inherits, elements: elements,
-				members: members, isImplicit: isImplicit, withIndentation: indentation)
+				access: access,
+				name: name,
+				inherits: inherits.array,
+				elements: elements.array,
+				members: members.array,
+				isImplicit: isImplicit,
+				withIndentation: indentation)
 		case let .forEachStatement(
 			collection: collection, variable: variable, statements: statements):
 
 			result = try translateForEachStatement(
-				collection: collection, variable: variable, statements: statements,
+				collection: collection, variable: variable, statements: statements.array,
 				withIndentation: indentation)
 		case let .whileStatement(expression: expression, statements: statements):
 			result = try translateWhileStatement(
-				expression: expression, statements: statements, withIndentation: indentation)
+				expression: expression, statements: statements.array, withIndentation: indentation)
 		case let .functionDeclaration(value: functionDeclaration):
 			result = try translateFunctionDeclaration(
 				functionDeclaration: functionDeclaration, withIndentation: indentation)
 		case let .protocolDeclaration(name: name, members: members):
 			result = try translateProtocolDeclaration(
-				name: name, members: members, withIndentation: indentation)
+				name: name, members: members.array, withIndentation: indentation)
 		case let .throwStatement(expression: expression):
 			result = try translateThrowStatement(
 				expression: expression, withIndentation: indentation)
@@ -274,7 +283,9 @@ public class KotlinTranslator {
 			cases: cases):
 
 			result = try translateSwitchStatement(
-				convertsToExpression: convertsToExpression, expression: expression, cases: cases,
+				convertsToExpression: convertsToExpression,
+				expression: expression,
+				cases: cases.array,
 				withIndentation: indentation)
 		case let .returnStatement(expression: expression):
 			result = try translateReturnStatement(
@@ -652,7 +663,7 @@ public class KotlinTranslator {
 		// Get all statements that have been deferred
 		let innerDeferStatements = statements.flatMap { (statement: Statement) -> [Statement] in
 			if case let .deferStatement(statements: innerStatements) = statement {
-				return innerStatements
+				return innerStatements.array
 			}
 			else {
 				return []
@@ -675,20 +686,22 @@ public class KotlinTranslator {
 			let increasedIndentation = increaseIndentation(indentation)
 			result += "\(indentation)try {\n"
 			result += try translate(
-				subtrees: nonDeferStatements,
+				subtrees: nonDeferStatements.array,
 				withIndentation: increasedIndentation,
 				limitForAddingNewlines: 3)
 			result += "\(indentation)}\n"
 			result += "\(indentation)finally {\n"
 			result += try translate(
-				subtrees: innerDeferStatements,
+				subtrees: innerDeferStatements.array,
 				withIndentation: increasedIndentation,
 				limitForAddingNewlines: 3)
 			result += "\(indentation)}\n"
 		}
 		else {
 			result += try translate(
-				subtrees: statements, withIndentation: indentation, limitForAddingNewlines: 3)
+				subtrees: statements.array,
+				withIndentation: indentation,
+				limitForAddingNewlines: 3)
 		}
 
 		indentation = decreaseIndentation(indentation)
@@ -778,7 +791,8 @@ public class KotlinTranslator {
 		result += "{\n"
 
 		let statementsString = try translate(
-			subtrees: ifStatement.statements, withIndentation: increasedIndentation,
+			subtrees: ifStatement.statements.array,
+			withIndentation: increasedIndentation,
 			limitForAddingNewlines: 3)
 
 		result += statementsString + indentation + "}\n"
@@ -889,7 +903,8 @@ public class KotlinTranslator {
 				result += "{\n"
 				let statementsIndentation = increaseIndentation(increasedIndentation)
 				let statementsTranslation = try translate(
-					subtrees: switchCase.statements, withIndentation: statementsIndentation,
+					subtrees: switchCase.statements.array,
+					withIndentation: statementsIndentation,
 					limitForAddingNewlines: 3)
 				result += "\(statementsTranslation)\(increasedIndentation)}\n"
 			}
@@ -989,7 +1004,9 @@ public class KotlinTranslator {
 			if let statements = getter.statements {
 				result += indentation1 + "get() {\n"
 				result += try translate(
-					subtrees: statements, withIndentation: indentation2, limitForAddingNewlines: 3)
+					subtrees: statements.array,
+					withIndentation: indentation2,
+					limitForAddingNewlines: 3)
 				result += indentation1 + "}\n"
 			}
 		}
@@ -998,7 +1015,9 @@ public class KotlinTranslator {
 			if let statements = setter.statements {
 				result += indentation1 + "set(newValue) {\n"
 				result += try translate(
-					subtrees: statements, withIndentation: indentation2, limitForAddingNewlines: 3)
+					subtrees: statements.array,
+					withIndentation: indentation2,
+					limitForAddingNewlines: 3)
 				result += indentation1 + "}\n"
 			}
 		}

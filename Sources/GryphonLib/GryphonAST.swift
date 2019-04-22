@@ -18,10 +18,14 @@ public final class GryphonAST:  // kotlin: ignore
 	PrintableAsTree, Equatable, CustomStringConvertible
 {
 	let sourceFile: SourceFile?
-	let declarations: [Statement]
-	let statements: [Statement]
+	let declarations: ArrayClass<Statement>
+	let statements: ArrayClass<Statement>
 
-	init(sourceFile: SourceFile?, declarations: [Statement], statements: [Statement]) {
+	init(
+		sourceFile: SourceFile?,
+		declarations: ArrayClass<Statement>,
+		statements: ArrayClass<Statement>)
+	{
 		self.sourceFile = sourceFile
 		self.declarations = declarations
 		self.statements = statements
@@ -37,8 +41,8 @@ public final class GryphonAST:  // kotlin: ignore
 	public var treeDescription: String { return "Source File" }
 
 	public var printableSubtrees: ArrayClass<PrintableAsTree?> {
-		return [PrintableTree("Declarations", declarations),
-				PrintableTree("Statements", statements), ]
+		return [PrintableTree("Declarations", ArrayClass<PrintableAsTree?>(declarations)),
+				PrintableTree("Statements", ArrayClass<PrintableAsTree?>(statements)), ]
 	}
 
 	//
@@ -61,30 +65,30 @@ public indirect enum Statement: Equatable, PrintableAsTree { // kotlin: ignore
 		isImplicit: Bool)
 	case extensionDeclaration(
 		type: String,
-		members: [Statement])
+		members: ArrayClass<Statement>)
 	case importDeclaration(
 		name: String)
 	case classDeclaration(
 		name: String,
-		inherits: [String],
-		members: [Statement])
+		inherits: ArrayClass<String>,
+		members: ArrayClass<Statement>)
 	case companionObject(
-		members: [Statement])
+		members: ArrayClass<Statement>)
 	case enumDeclaration(
 		access: String?,
 		name: String,
-		inherits: [String],
-		elements: [EnumElement],
-		members: [Statement],
+		inherits: ArrayClass<String>,
+		elements: ArrayClass<EnumElement>,
+		members: ArrayClass<Statement>,
 		isImplicit: Bool)
 	case protocolDeclaration(
 		name: String,
-		members: [Statement])
+		members: ArrayClass<Statement>)
 	case structDeclaration(
 		annotations: String?,
 		name: String,
-		inherits: [String],
-		members: [Statement])
+		inherits: ArrayClass<String>,
+		members: ArrayClass<Statement>)
 	case functionDeclaration(
 		value: FunctionDeclaration)
 	case variableDeclaration(
@@ -92,18 +96,18 @@ public indirect enum Statement: Equatable, PrintableAsTree { // kotlin: ignore
 	case forEachStatement(
 		collection: Expression,
 		variable: Expression,
-		statements: [Statement])
+		statements: ArrayClass<Statement>)
 	case whileStatement(
 		expression: Expression,
-		statements: [Statement])
+		statements: ArrayClass<Statement>)
 	case ifStatement(
 		value: IfStatement)
 	case switchStatement(
 		convertsToExpression: Statement?,
 		expression: Expression,
-		cases: [SwitchCase])
+		cases: ArrayClass<SwitchCase>)
 	case deferStatement(
-		statements: [Statement])
+		statements: ArrayClass<Statement>)
 	case throwStatement(
 		expression: Expression)
 	case returnStatement(
@@ -262,23 +266,23 @@ public struct CallExpression: Equatable { // kotlin: ignore
 
 public struct FunctionDeclaration: Equatable { // kotlin: ignore
 	var prefix: String
-	var parameters: [FunctionParameter]
+	var parameters: ArrayClass<FunctionParameter>
 	var returnType: String
 	var functionType: String
-	var genericTypes: [String]
+	var genericTypes: ArrayClass<String>
 	var isImplicit: Bool
 	var isStatic: Bool
 	var isMutating: Bool
 	var extendsType: String?
-	var statements: [Statement]?
+	var statements: ArrayClass<Statement>?
 	var access: String?
 	var annotations: String?
 }
 
 public class IfStatement: Equatable { // kotlin: ignore
-	var conditions: [IfCondition]
-	var declarations: [VariableDeclaration]
-	var statements: [Statement]
+	var conditions: ArrayClass<IfCondition>
+	var declarations: ArrayClass<VariableDeclaration>
+	var statements: ArrayClass<Statement>
 	var elseStatement: IfStatement?
 	var isGuard: Bool
 
@@ -288,9 +292,9 @@ public class IfStatement: Equatable { // kotlin: ignore
 	}
 
 	public init(
-		conditions: [IfCondition],
-		declarations: [VariableDeclaration],
-		statements: [Statement],
+		conditions: ArrayClass<IfCondition>,
+		declarations: ArrayClass<VariableDeclaration>,
+		statements: ArrayClass<Statement>,
 		elseStatement: IfStatement?,
 		isGuard: Bool)
 	{
@@ -321,12 +325,12 @@ public class IfStatement: Equatable { // kotlin: ignore
 
 public struct SwitchCase: Equatable { // kotlin: ignore
 	var expression: Expression?
-	var statements: [Statement]
+	var statements: ArrayClass<Statement>
 }
 
 public struct EnumElement: Equatable { // kotlin: ignore
 	var name: String
-	var associatedValues: [LabeledType]
+	var associatedValues: ArrayClass<LabeledType>
 	var rawValue: Expression?
 	var annotations: String?
 }
@@ -353,7 +357,8 @@ extension Statement { // kotlin: ignore
 		case let .expression(expression: expression):
 			return [expression]
 		case let .extensionDeclaration(type: type, members: members):
-			return [PrintableTree(type), PrintableTree.initOrNil("members", members), ]
+			return [PrintableTree(type),
+					PrintableTree.initOrNil("members", ArrayClass<PrintableAsTree?>(members)), ]
 		case let .importDeclaration(name: name):
 			return [PrintableTree(name)]
 		case let .typealiasDeclaration(identifier: identifier, type: type, isImplicit: isImplicit):
@@ -365,7 +370,7 @@ extension Statement { // kotlin: ignore
 			return  [
 				PrintableTree(name),
 				PrintableTree("inherits", inherits),
-				PrintableTree("members", members), ]
+				PrintableTree("members", ArrayClass<PrintableAsTree?>(members)), ]
 		case let .companionObject(members: members):
 			return ArrayClass(members)
 		case let .enumDeclaration(
@@ -392,12 +397,12 @@ extension Statement { // kotlin: ignore
 				PrintableTree.initOrNil(access),
 				PrintableTree(name),
 				PrintableTree("inherits", inherits),
-				PrintableTree("elements", elementTrees),
-				PrintableTree("members", members), ]
+				PrintableTree("elements", ArrayClass<PrintableAsTree?>(elementTrees)),
+				PrintableTree("members", ArrayClass<PrintableAsTree?>(members)), ]
 		case let .protocolDeclaration(name: name, members: members):
 			return [
 				PrintableTree(name),
-				PrintableTree.initOrNil("members", members), ]
+				PrintableTree.initOrNil("members", ArrayClass<PrintableAsTree?>(members)), ]
 		case let .structDeclaration(
 			annotations: annotations, name: name, inherits: inherits, members: members):
 
@@ -406,7 +411,7 @@ extension Statement { // kotlin: ignore
 					"annotations", [PrintableTree.initOrNil(annotations)]),
 				PrintableTree(name),
 				PrintableTree("inherits", inherits),
-				PrintableTree("members", members), ]
+				PrintableTree("members", ArrayClass<PrintableAsTree?>(members)), ]
 		case let .functionDeclaration(value: functionDeclaration):
 			return [
 				functionDeclaration.extendsType.map { PrintableTree("extends type \($0)") },
@@ -416,9 +421,12 @@ extension Statement { // kotlin: ignore
 				PrintableTree.initOrNil(functionDeclaration.access),
 				PrintableTree("type: \(functionDeclaration.functionType)"),
 				PrintableTree("prefix: \(functionDeclaration.prefix)"),
-				PrintableTree("parameters", functionDeclaration.parameters),
+				PrintableTree("parameters",
+							  ArrayClass<PrintableAsTree?>(functionDeclaration.parameters)),
 				PrintableTree("return type: \(functionDeclaration.returnType)"),
-				PrintableTree("statements", functionDeclaration.statements ?? []), ]
+				PrintableTree(
+					"statements",
+					ArrayClass<PrintableAsTree?>(functionDeclaration.statements ?? [])), ]
 		case let .variableDeclaration(value: variableDeclaration):
 			return [
 				PrintableTree.initOrNil(
@@ -444,11 +452,11 @@ extension Statement { // kotlin: ignore
 			return [
 				PrintableTree("variable", [variable]),
 				PrintableTree("collection", [collection]),
-				PrintableTree.initOrNil("statements", statements), ]
+				PrintableTree.initOrNil("statements", ArrayClass<PrintableAsTree?>(statements)), ]
 		case let .whileStatement(expression: expression, statements: statements):
 			return [
 				PrintableTree("expression", [expression]),
-				PrintableTree.initOrNil("statements", statements), ]
+				PrintableTree.initOrNil("statements", ArrayClass<PrintableAsTree?>(statements)), ]
 		case let .ifStatement(value: ifStatement):
 			let declarationTrees =
 				ifStatement.declarations.map { Statement.variableDeclaration(value: $0) }
@@ -464,19 +472,26 @@ extension Statement { // kotlin: ignore
 				.map({ Statement.ifStatement(value: $0) })?.printableSubtrees ?? []
 			return [
 				ifStatement.isGuard ? PrintableTree("guard") : nil,
-				PrintableTree.initOrNil("declarations", declarationTrees),
-				PrintableTree.initOrNil("conditions", conditionTrees),
-				PrintableTree.initOrNil("statements", ifStatement.statements),
-				PrintableTree.initOrNil("else", elseStatementTrees), ]
+				PrintableTree.initOrNil(
+					"declarations", ArrayClass<PrintableAsTree?>(declarationTrees)),
+				PrintableTree.initOrNil(
+					"conditions", ArrayClass<PrintableAsTree?>(conditionTrees)),
+				PrintableTree.initOrNil(
+					"statements", ArrayClass<PrintableAsTree?>(ifStatement.statements)),
+				PrintableTree.initOrNil(
+					"else", elseStatementTrees), ]
 		case let .switchStatement(
 			convertsToExpression: convertsToExpression, expression: expression,
 			cases: cases):
 
-			let caseItems = cases.map {
-				PrintableTree("case item", [
-					PrintableTree("expression", [$0.expression]),
-					PrintableTree("statements", $0.statements),
-					])
+			let caseItems = cases.map { switchCase -> PrintableAsTree? in
+				let subtrees: ArrayClass<PrintableAsTree?> = [
+					PrintableTree(
+						"expression", ArrayClass<PrintableAsTree?>([switchCase.expression])),
+					PrintableTree(
+						"statements", ArrayClass<PrintableAsTree?>(switchCase.statements)),
+				]
+				return PrintableTree("case item", subtrees)
 			}
 
 			return [

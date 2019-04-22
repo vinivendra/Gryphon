@@ -25,7 +25,7 @@ public struct TranspilationTemplate {
 
 public class RecordTemplatesTranspilationPass: TranspilationPass {
 	override func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclaration)
-		-> [Statement]
+		-> ArrayClass<Statement>
 	{
 		if functionDeclaration.prefix == "gryphonTemplates",
 			functionDeclaration.parameters.isEmpty,

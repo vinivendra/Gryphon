@@ -130,6 +130,14 @@ public final class ArrayClass<Element>: // kotlin: ignore
 		return try ArrayClass<T>(self.array.compactMap(transform))
 	}
 
+	public func flatMap<SegmentOfResult>(
+		_ transform: (Element) throws -> SegmentOfResult)
+		rethrows -> ArrayClass<SegmentOfResult.Element>
+		where SegmentOfResult: Sequence
+	{
+		return try ArrayClass<SegmentOfResult.Element>(array.flatMap(transform))
+	}
+
 	@inlinable
 	public func sorted(
 		by areInIncreasingOrder: (Element, Element) throws -> Bool) rethrows
@@ -146,6 +154,11 @@ public final class ArrayClass<Element>: // kotlin: ignore
 
 	public func removeFirst() -> Element {
 		return array.removeFirst()
+	}
+
+	@discardableResult
+	public func removeLast() -> Element {
+		return array.removeLast()
 	}
 }
 
@@ -176,12 +189,33 @@ extension ArrayClass: Codable where Element: Codable { // kotlin: ignore
 	}
 }
 
-public func zipToClass<Element1, Element2>( // kotlin: ignore
-	_ array1: ArrayClass<Element1>,
-	_ array2: ArrayClass<Element2>)
+public protocol BackedByArray { // kotlin: ignore
+	associatedtype Element
+	var arrayBacking: [Element] { get }
+}
+
+extension ArrayClass: BackedByArray { // kotlin: ignore
+	public var arrayBacking: [Element] {
+		return self.array
+	}
+}
+
+extension Array: BackedByArray { // kotlin: ignore
+	public var arrayBacking: [Element] {
+		return self
+	}
+}
+
+public func zipToClass<Array1, Element1, Array2, Element2>( // kotlin: ignore
+	_ array1: Array1,
+	_ array2: Array2)
 	-> ArrayClass<(Element1, Element2)>
+	where Array1: BackedByArray,
+	Array2: BackedByArray,
+	Element1 == Array1.Element,
+	Element2 == Array2.Element
 {
-	return ArrayClass(Array(zip(array1, array2)))
+	return ArrayClass(Array(zip(array1.arrayBacking, array2.arrayBacking)))
 }
 
 /// According to https://swiftdoc.org/v4.2/type/dictionary/hierarchy/

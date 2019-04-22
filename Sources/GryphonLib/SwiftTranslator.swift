@@ -67,13 +67,13 @@ public class SwiftTranslator {
 
 			return GryphonAST(
 				sourceFile: sourceFile,
-				declarations: declarations,
-				statements: statements)
+				declarations: ArrayClass(declarations),
+				statements: ArrayClass(statements))
 		}
 		else {
 			return GryphonAST(
 				sourceFile: sourceFile,
-				declarations: translatedSubtrees,
+				declarations: ArrayClass(translatedSubtrees),
 				statements: [])
 		}
 	}
@@ -411,7 +411,7 @@ public class SwiftTranslator {
 
 		let members = try translate(subtreesOf: protocolDeclaration)
 
-		return .protocolDeclaration(name: protocolName, members: members)
+		return .protocolDeclaration(name: protocolName, members: ArrayClass(members))
 	}
 
 	internal func translate(assignExpression: SwiftAST) throws -> Statement {
@@ -472,9 +472,9 @@ public class SwiftTranslator {
 		let name = classDeclaration.standaloneAttributes.first!
 
 		// Check for inheritance
-		let inheritanceArray: [String]
+		let inheritanceArray: ArrayClass<String>
 		if let inheritanceList = classDeclaration["inherits"] {
-			inheritanceArray = inheritanceList.split(withStringSeparator: ", ")
+			inheritanceArray = ArrayClass(inheritanceList.split(withStringSeparator: ", "))
 		}
 		else {
 			inheritanceArray = []
@@ -483,7 +483,10 @@ public class SwiftTranslator {
 		// Translate the contents
 		let classContents = try translate(subtreesOf: classDeclaration)
 
-		return .classDeclaration(name: name, inherits: inheritanceArray, members: classContents)
+		return .classDeclaration(
+			name: name,
+			inherits: inheritanceArray,
+			members: ArrayClass(classContents))
 	}
 
 	internal func translate(structDeclaration: SwiftAST) throws -> Statement? {
@@ -503,9 +506,9 @@ public class SwiftTranslator {
 		let name = structDeclaration.standaloneAttributes.first!
 
 		// Check for inheritance
-		let inheritanceArray: [String]
+		let inheritanceArray: ArrayClass<String>
 		if let inheritanceList = structDeclaration["inherits"] {
-			inheritanceArray = inheritanceList.split(withStringSeparator: ", ")
+			inheritanceArray = ArrayClass(inheritanceList.split(withStringSeparator: ", "))
 		}
 		else {
 			inheritanceArray = []
@@ -518,7 +521,7 @@ public class SwiftTranslator {
 			annotations: annotations,
 			name: name,
 			inherits: inheritanceArray,
-			members: structContents)
+			members: ArrayClass(structContents))
 	}
 
 	internal func translate(throwStatement: SwiftAST) throws -> Statement {
@@ -542,7 +545,7 @@ public class SwiftTranslator {
 	internal func translate(extensionDeclaration: SwiftAST) throws -> Statement {
 		let type = cleanUpType(extensionDeclaration.standaloneAttributes[0])
 		let members = try translate(subtreesOf: extensionDeclaration)
-		return .extensionDeclaration(type: type, members: members)
+		return .extensionDeclaration(type: type, members: ArrayClass(members))
 	}
 
 	internal func translate(enumDeclaration: SwiftAST) throws -> Statement? {
@@ -569,9 +572,9 @@ public class SwiftTranslator {
 			name = enumDeclaration.standaloneAttributes[0]
 		}
 
-		let inheritanceArray: [String]
+		let inheritanceArray: ArrayClass<String>
 		if let inheritanceList = enumDeclaration["inherits"] {
-			inheritanceArray = inheritanceList.split(withStringSeparator: ", ")
+			inheritanceArray = ArrayClass(inheritanceList.split(withStringSeparator: ", "))
 		}
 		else {
 			inheritanceArray = []
@@ -596,7 +599,7 @@ public class SwiftTranslator {
 			}
 		}
 
-		var elements = [EnumElement]()
+		let elements: ArrayClass<EnumElement> = []
 		let enumElementDeclarations =
 			enumDeclaration.subtrees.filter { $0.name == "Enum Element Declaration" }
 		for index in enumElementDeclarations.indices {
@@ -623,7 +626,7 @@ public class SwiftTranslator {
 				let prefix = String(elementName[elementName.startIndex..<parenthesisIndex])
 				let suffix = elementName[parenthesisIndex...]
 				let valuesString = suffix.dropFirst().dropLast(2)
-				let valueLabels = valuesString.split(separator: ":").map(String.init)
+				let valueLabels = ArrayClass(valuesString.split(separator: ":")).map(String.init)
 
 				guard let enumType = enumElementDeclaration["interface type"] else {
 					return try unexpectedASTStructureError(
@@ -635,7 +638,7 @@ public class SwiftTranslator {
 				let valueTypesString = String(valuesComponent.dropFirst().dropLast())
 				let valueTypes = valueTypesString.split(withStringSeparator: ", ")
 
-				let associatedValues = zip(valueLabels, valueTypes).map(LabeledType.init)
+				let associatedValues = zipToClass(valueLabels, valueTypes).map(LabeledType.init)
 
 				elements.append(EnumElement(
 					name: prefix,
@@ -655,7 +658,7 @@ public class SwiftTranslator {
 			name: name,
 			inherits: inheritanceArray,
 			elements: elements,
-			members: translatedMembers,
+			members: ArrayClass(translatedMembers),
 			isImplicit: isImplicit)
 	}
 
@@ -979,7 +982,7 @@ public class SwiftTranslator {
 		return .forEachStatement(
 			collection: collectionTranslation,
 			variable: variable,
-			statements: statements)
+			statements: ArrayClass(statements))
 	}
 
 	internal func translate(whileStatement: SwiftAST) throws -> Statement {
@@ -1006,7 +1009,7 @@ public class SwiftTranslator {
 		let expression = try translate(expression: expressionSubtree)
 		let statements = try translate(braceStatement: braceStatement)
 
-		return .whileStatement(expression: expression, statements: statements)
+		return .whileStatement(expression: expression, statements: ArrayClass(statements))
 	}
 
 	internal func translate(deferStatement: SwiftAST) throws -> Statement {
@@ -1025,7 +1028,8 @@ public class SwiftTranslator {
 				AST: deferStatement, translator: self)
 		}
 
-		return .deferStatement(statements: try translate(braceStatement: braceStatement))
+		let statements = try translate(braceStatement: braceStatement)
+		return .deferStatement(statements: ArrayClass(statements))
 	}
 
 	internal func translate(ifStatement: SwiftAST) throws -> Statement {
@@ -1071,7 +1075,7 @@ public class SwiftTranslator {
 			let statements = try translate(braceStatement: elseAST)
 			elseStatement = IfStatement(
 				conditions: [], declarations: [],
-				statements: statements,
+				statements: ArrayClass(statements),
 				elseStatement: nil,
 				isGuard: false)
 		}
@@ -1090,9 +1094,9 @@ public class SwiftTranslator {
 		let statements = try translate(braceStatement: braceStatement)
 
 		return IfStatement(
-			conditions: conditions,
+			conditions: ArrayClass(conditions),
 			declarations: [],
-			statements: extraStatements + statements,
+			statements: extraStatements + ArrayClass(statements),
 			elseStatement: elseStatement,
 			isGuard: isGuard)
 	}
@@ -1112,11 +1116,11 @@ public class SwiftTranslator {
 
 		let translatedExpression = try translate(expression: expression)
 
-		var cases = [SwitchCase]()
+		let cases: ArrayClass<SwitchCase> = []
 		let caseSubtrees = switchStatement.subtrees.dropFirst()
 		for caseSubtree in caseSubtrees {
 			let caseExpression: Expression?
-			var extraStatements: [Statement]
+			var extraStatements: ArrayClass<Statement>
 
 			if let caseLabelItem = caseSubtree.subtree(named: "Case Label Item") {
 				if let patternLet = caseLabelItem.subtree(named: "Pattern Let"),
@@ -1135,7 +1139,7 @@ public class SwiftTranslator {
 
 					let range = getRangeRecursively(ofNode: patternLet)
 
-					extraStatements = declarations.map {
+					extraStatements = ArrayClass(declarations).map {
 						Statement.variableDeclaration(value: VariableDeclaration(
 							identifier: $0.newVariable,
 							typeName: $0.associatedValueType,
@@ -1191,7 +1195,9 @@ public class SwiftTranslator {
 		}
 
 		return .switchStatement(
-			convertsToExpression: nil, expression: translatedExpression, cases: cases)
+			convertsToExpression: nil,
+			expression: translatedExpression,
+			cases: cases)
 	}
 
 	internal func translate(simplePatternEnumElement: SwiftAST) throws -> Expression {
@@ -1486,12 +1492,12 @@ public class SwiftTranslator {
 		let isStatic = firstInterfaceTypeComponent.contains(".Type")
 		let isMutating = firstInterfaceTypeComponent.contains("inout")
 
-		let genericTypes: [String] = functionDeclaration.standaloneAttributes
+		let genericTypes = ArrayClass(functionDeclaration.standaloneAttributes
 			.first { $0.hasPrefix("<") }?
 			.dropLast().dropFirst()
 			.split(separator: ",")
 			.map(String.init)
-			?? []
+			?? [])
 
 		let functionNamePrefix = functionName.prefix { $0 != "(" }
 
@@ -1513,7 +1519,7 @@ public class SwiftTranslator {
 		}
 
 		// Translate the parameters
-		var parameters = [FunctionParameter]()
+		var parameters: ArrayClass<FunctionParameter> = []
 		if let parameterList = parameterList {
 			for parameter in parameterList.subtrees {
 				if let name = parameter.standaloneAttributes.first,
@@ -1564,9 +1570,9 @@ public class SwiftTranslator {
 		}
 
 		// Translate the function body
-		let statements: [Statement]
+		let statements: ArrayClass<Statement>
 		if let braceStatement = functionDeclaration.subtree(named: "Brace Statement") {
-			statements = try translate(braceStatement: braceStatement)
+			statements = try ArrayClass(translate(braceStatement: braceStatement))
 		}
 		else {
 			statements = []
@@ -1675,9 +1681,9 @@ public class SwiftTranslator {
 		for subtree in variableDeclaration.subtrees {
 			let access = subtree["access"]
 
-			let statements: [Statement]
+			let statements: ArrayClass<Statement>
 			if let braceStatement = subtree.subtree(named: "Brace Statement") {
-				statements = try translate(braceStatement: braceStatement)
+				statements = try ArrayClass(translate(braceStatement: braceStatement))
 			}
 			else {
 				statements = []

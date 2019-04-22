@@ -27,7 +27,7 @@ public class TranspilationPass {
 	//
 	var ast: GryphonAST
 
-	fileprivate var parents = [ASTNode]()
+	fileprivate var parents = ArrayClass<ASTNode>()
 	fileprivate var parent: ASTNode {
 		return parents.secondToLast!
 	}
@@ -45,11 +45,11 @@ public class TranspilationPass {
 			statements: replacedStatements)
 	}
 
-	func replaceStatements(_ statements: [Statement]) -> [Statement] {
+	func replaceStatements(_ statements: ArrayClass<Statement>) -> ArrayClass<Statement> {
 		return statements.flatMap(replaceStatement)
 	}
 
-	func replaceStatement(_ statement: Statement) -> [Statement] {
+	func replaceStatement(_ statement: Statement) -> ArrayClass<Statement> {
 		parents.append(.statement(statement))
 		defer { parents.removeLast() }
 
@@ -117,38 +117,41 @@ public class TranspilationPass {
 		}
 	}
 
-	func replaceExpression(expression: Expression) -> [Statement] {
+	func replaceExpression(expression: Expression) -> ArrayClass<Statement> {
 		return [.expression(expression: replaceExpression(expression))]
 	}
 
-	func replaceExtension(type: String, members: [Statement]) -> [Statement] {
+	func replaceExtension(type: String, members: ArrayClass<Statement>) -> ArrayClass<Statement> {
 		return [.extensionDeclaration(type: type, members: replaceStatements(members))]
 	}
 
-	func replaceImportDeclaration(name: String) -> [Statement] {
+	func replaceImportDeclaration(name: String) -> ArrayClass<Statement> {
 		return [.importDeclaration(name: name)]
 	}
 
 	func replaceTypealiasDeclaration(identifier: String, type: String, isImplicit: Bool)
-		-> [Statement]
+		-> ArrayClass<Statement>
 	{
 		return [.typealiasDeclaration(identifier: identifier, type: type, isImplicit: isImplicit)]
 	}
 
-	func replaceClassDeclaration(name: String, inherits: [String], members: [Statement])
-		-> [Statement]
+	func replaceClassDeclaration(
+		name: String,
+		inherits: ArrayClass<String>,
+		members: ArrayClass<Statement>)
+		-> ArrayClass<Statement>
 	{
 		return [.classDeclaration(
 			name: name, inherits: inherits, members: replaceStatements(members)), ]
 	}
 
-	func replaceCompanionObject(members: [Statement]) -> [Statement] {
+	func replaceCompanionObject(members: ArrayClass<Statement>) -> ArrayClass<Statement> {
 		return [.companionObject(members: replaceStatements(members))]
 	}
 
 	func replaceEnumDeclaration(
-		access: String?, name: String, inherits: [String], elements: [EnumElement],
-		members: [Statement], isImplicit: Bool) -> [Statement]
+		access: String?, name: String, inherits: ArrayClass<String>, elements: ArrayClass<EnumElement>,
+		members: ArrayClass<Statement>, isImplicit: Bool) -> ArrayClass<Statement>
 	{
 		return [
 			.enumDeclaration(
@@ -164,8 +167,11 @@ public class TranspilationPass {
 	}
 
 	func replaceEnumElementDeclaration(
-		name: String, associatedValues: [LabeledType], rawValue: Expression?, annotations: String?)
-		-> [EnumElement]
+		name: String,
+		associatedValues: ArrayClass<LabeledType>,
+		rawValue: Expression?,
+		annotations: String?)
+		-> ArrayClass<EnumElement>
 	{
 		return [EnumElement(
 			name: name,
@@ -174,12 +180,20 @@ public class TranspilationPass {
 			annotations: annotations), ]
 	}
 
-	func replaceProtocolDeclaration(name: String, members: [Statement]) -> [Statement] {
+	func replaceProtocolDeclaration(
+		name: String,
+		members: ArrayClass<Statement>)
+		-> ArrayClass<Statement>
+	{
 		return [.protocolDeclaration(name: name, members: replaceStatements(members))]
 	}
 
 	func replaceStructDeclaration(
-		annotations: String?, name: String, inherits: [String], members: [Statement]) -> [Statement]
+		annotations: String?,
+		name: String,
+		inherits: ArrayClass<String>,
+		members: ArrayClass<Statement>)
+		-> ArrayClass<Statement>
 	{
 		return [.structDeclaration(
 			annotations: annotations,
@@ -189,7 +203,7 @@ public class TranspilationPass {
 	}
 
 	func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclaration)
-		-> [Statement]
+		-> ArrayClass<Statement>
 	{
 		if let result = replaceFunctionDeclaration(functionDeclaration) {
 			return [.functionDeclaration(value: result)]
@@ -218,7 +232,7 @@ public class TranspilationPass {
 	}
 
 	func replaceVariableDeclaration(_ variableDeclaration: VariableDeclaration)
-		-> [Statement]
+		-> ArrayClass<Statement>
 	{
 		return [.variableDeclaration(value: replaceVariableDeclaration(variableDeclaration))]
 	}
@@ -238,8 +252,8 @@ public class TranspilationPass {
 	}
 
 	func replaceForEachStatement(
-		collection: Expression, variable: Expression, statements: [Statement])
-		-> [Statement]
+		collection: Expression, variable: Expression, statements: ArrayClass<Statement>)
+		-> ArrayClass<Statement>
 	{
 		return [.forEachStatement(
 			collection: replaceExpression(collection),
@@ -247,13 +261,17 @@ public class TranspilationPass {
 			statements: replaceStatements(statements)), ]
 	}
 
-	func replaceWhileStatement(expression: Expression, statements: [Statement]) -> [Statement] {
+	func replaceWhileStatement(
+		expression: Expression,
+		statements: ArrayClass<Statement>)
+		-> ArrayClass<Statement>
+	{
 		return [.whileStatement(
 			expression: replaceExpression(expression),
 			statements: replaceStatements(statements)), ]
 	}
 
-	func replaceIfStatement(_ ifStatement: IfStatement) -> [Statement] {
+	func replaceIfStatement(_ ifStatement: IfStatement) -> ArrayClass<Statement> {
 		return [Statement.ifStatement(value: replaceIfStatement(ifStatement))]
 	}
 
@@ -266,7 +284,9 @@ public class TranspilationPass {
 		return ifStatement
 	}
 
-	func replaceIfConditions(_ conditions: [IfStatement.IfCondition]) -> [IfStatement.IfCondition] {
+	func replaceIfConditions(_ conditions: ArrayClass<IfStatement.IfCondition>)
+		-> ArrayClass<IfStatement.IfCondition>
+	{
 		return conditions.map { condition -> IfStatement.IfCondition in
 			switch condition {
 			case let .condition(expression: expression):
@@ -280,7 +300,7 @@ public class TranspilationPass {
 
 	func replaceSwitchStatement(
 		convertsToExpression: Statement?, expression: Expression,
-		cases: [SwitchCase]) -> [Statement]
+		cases: ArrayClass<SwitchCase>) -> ArrayClass<Statement>
 	{
 		let replacedConvertsToExpression: Statement?
 		if let convertsToExpression = convertsToExpression,
@@ -307,20 +327,20 @@ public class TranspilationPass {
 			cases: replacedCases), ]
 	}
 
-	func replaceDeferStatement(statements: [Statement]) -> [Statement] {
+	func replaceDeferStatement(statements: ArrayClass<Statement>) -> ArrayClass<Statement> {
 		return [.deferStatement(statements: replaceStatements(statements))]
 	}
 
-	func replaceThrowStatement(expression: Expression) -> [Statement] {
+	func replaceThrowStatement(expression: Expression) -> ArrayClass<Statement> {
 		return [.throwStatement(expression: replaceExpression(expression))]
 	}
 
-	func replaceReturnStatement(expression: Expression?) -> [Statement] {
+	func replaceReturnStatement(expression: Expression?) -> ArrayClass<Statement> {
 		return [.returnStatement(expression: expression.map(replaceExpression))]
 	}
 
 	func replaceAssignmentStatement(leftHand: Expression, rightHand: Expression)
-		-> [Statement]
+		-> ArrayClass<Statement>
 	{
 		return [.assignmentStatement(
 			leftHand: replaceExpression(leftHand), rightHand: replaceExpression(rightHand)), ]
@@ -549,7 +569,7 @@ public class TranspilationPass {
 	{
 		return .closureExpression(
 			parameters: parameters,
-			statements: ArrayClass(replaceStatements(statements.array)),
+			statements: replaceStatements(statements),
 			type: type)
 	}
 
@@ -610,7 +630,7 @@ public class TranspilationPass {
 
 public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 	override func replaceVariableDeclaration(_ variableDeclaration: VariableDeclaration)
-		-> [Statement]
+		-> ArrayClass<Statement>
 	{
 		if variableDeclaration.identifier == "description",
 			variableDeclaration.typeName == "String",
@@ -704,8 +724,8 @@ public class RemoveParenthesesTranspilationPass: TranspilationPass {
 /// Removes implicit declarations so that they don't show up on the translation
 public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
 	override func replaceEnumDeclaration(
-		access: String?, name: String, inherits: [String], elements: [EnumElement],
-		members: [Statement], isImplicit: Bool) -> [Statement]
+		access: String?, name: String, inherits: ArrayClass<String>, elements: ArrayClass<EnumElement>,
+		members: ArrayClass<Statement>, isImplicit: Bool) -> ArrayClass<Statement>
 	{
 		if isImplicit {
 			return []
@@ -718,7 +738,7 @@ public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceTypealiasDeclaration(
-		identifier: String, type: String, isImplicit: Bool) -> [Statement]
+		identifier: String, type: String, isImplicit: Bool) -> ArrayClass<Statement>
 	{
 		if isImplicit {
 			return []
@@ -730,7 +750,7 @@ public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceVariableDeclaration(_ variableDeclaration: VariableDeclaration)
-		-> [Statement]
+		-> ArrayClass<Statement>
 	{
 		if variableDeclaration.isImplicit {
 			return []
@@ -781,7 +801,7 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceAssignmentStatement(leftHand: Expression, rightHand: Expression)
-		-> [Statement]
+		-> ArrayClass<Statement>
 	{
 		if isFailableInitializer,
 			case let .declarationReferenceExpression(value: expression) = leftHand,
@@ -805,7 +825,7 @@ public class RemoveExtraReturnsInInitsTranspilationPass: TranspilationPass {
 			let lastStatement = functionDeclaration.statements?.last,
 			case .returnStatement(expression: nil) = lastStatement
 		{
-			var functionDeclaration = functionDeclaration
+			let functionDeclaration = functionDeclaration
 			functionDeclaration.statements?.removeLast()
 			return functionDeclaration
 		}
@@ -817,7 +837,9 @@ public class RemoveExtraReturnsInInitsTranspilationPass: TranspilationPass {
 /// The static functions and variables in a class must all be placed inside a single companion
 /// object.
 public class StaticMembersTranspilationPass: TranspilationPass {
-	private func sendStaticMembersToCompanionObject(_ members: [Statement]) -> [Statement] {
+	private func sendStaticMembersToCompanionObject(_ members: ArrayClass<Statement>)
+		-> ArrayClass<Statement>
+	{
 		let isStaticMember = { (member: Statement) -> Bool in
 			if case let .functionDeclaration(value: functionDeclaration) = member,
 				functionDeclaration.isStatic == true,
@@ -844,19 +866,26 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 
 		let nonStaticMembers = members.filter { !isStaticMember($0) }
 
-		let newMembers = [.companionObject(members: staticMembers)] + nonStaticMembers
+		let newMembers = ArrayClass([.companionObject(members: staticMembers)]) + nonStaticMembers
 		return newMembers
 	}
 
 	override func replaceClassDeclaration(
-		name: String, inherits: [String], members: [Statement]) -> [Statement]
+		name: String,
+		inherits: ArrayClass<String>,
+		members: ArrayClass<Statement>)
+		-> ArrayClass<Statement>
 	{
 		let newMembers = sendStaticMembersToCompanionObject(members)
 		return super.replaceClassDeclaration(name: name, inherits: inherits, members: newMembers)
 	}
 
 	override func replaceStructDeclaration(
-		annotations: String?, name: String, inherits: [String], members: [Statement]) -> [Statement]
+		annotations: String?,
+		name: String,
+		inherits: ArrayClass<String>,
+		members: ArrayClass<Statement>)
+		-> ArrayClass<Statement>
 	{
 		let newMembers = sendStaticMembersToCompanionObject(members)
 		return super.replaceStructDeclaration(
@@ -867,8 +896,8 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceEnumDeclaration(
-		access: String?, name: String, inherits: [String], elements: [EnumElement],
-		members: [Statement], isImplicit: Bool) -> [Statement]
+		access: String?, name: String, inherits: ArrayClass<String>, elements: ArrayClass<EnumElement>,
+		members: ArrayClass<Statement>, isImplicit: Bool) -> ArrayClass<Statement>
 	{
 		let newMembers = sendStaticMembersToCompanionObject(members)
 		return super.replaceEnumDeclaration(
@@ -909,7 +938,10 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceClassDeclaration(
-		name: String, inherits: [String], members: [Statement]) -> [Statement]
+		name: String,
+		inherits: ArrayClass<String>,
+		members: ArrayClass<Statement>)
+		-> ArrayClass<Statement>
 	{
 		typeNamesStack.append(name)
 		let result = super.replaceClassDeclaration(name: name, inherits: inherits, members: members)
@@ -918,8 +950,11 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceStructDeclaration(
-		annotations: String?, name: String, inherits: [String], members: [Statement])
-		-> [Statement]
+		annotations: String?,
+		name: String,
+		inherits: ArrayClass<String>,
+		members: ArrayClass<Statement>)
+		-> ArrayClass<Statement>
 	{
 		typeNamesStack.append(name)
 		let result = super.replaceStructDeclaration(
@@ -976,11 +1011,11 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 	override func replaceEnumDeclaration(
 		access: String?,
 		name: String,
-		inherits: [String],
-		elements: [EnumElement],
-		members: [Statement],
+		inherits: ArrayClass<String>,
+		elements: ArrayClass<EnumElement>,
+		members: ArrayClass<Statement>,
 		isImplicit: Bool)
-		-> [Statement]
+		-> ArrayClass<Statement>
 	{
 		let isSealedClass = KotlinTranslator.sealedClasses.contains(name)
 		let isEnumClass = KotlinTranslator.enumClasses.contains(name)
@@ -1067,7 +1102,7 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
 		return super.replaceFunctionDeclaration(functionDeclaration)
 	}
 
-	override func replaceReturnStatement(expression: Expression?) -> [Statement] {
+	override func replaceReturnStatement(expression: Expression?) -> ArrayClass<Statement> {
 		if let returnType = returnTypesStack.last,
 			let expression = expression,
 			case let .dotExpression(
@@ -1149,8 +1184,8 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceEnumDeclaration(
-		access: String?, name: String, inherits: [String], elements: [EnumElement],
-		members: [Statement], isImplicit: Bool) -> [Statement]
+		access: String?, name: String, inherits: ArrayClass<String>, elements: ArrayClass<EnumElement>,
+		members: ArrayClass<Statement>, isImplicit: Bool) -> ArrayClass<Statement>
 	{
 		return super.replaceEnumDeclaration(
 			access: access,
@@ -1164,7 +1199,11 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceStructDeclaration(
-		annotations: String?, name: String, inherits: [String], members: [Statement]) -> [Statement]
+		annotations: String?,
+		name: String,
+		inherits: ArrayClass<String>,
+		members: ArrayClass<Statement>)
+		-> ArrayClass<Statement>
 	{
 		return super.replaceStructDeclaration(
 			annotations: annotations,
@@ -1173,8 +1212,11 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 			members: members)
 	}
 
-	override func replaceClassDeclaration(name: String, inherits: [String], members: [Statement])
-		-> [Statement]
+	override func replaceClassDeclaration(
+		name: String,
+		inherits: ArrayClass<String>,
+		members: ArrayClass<Statement>)
+		-> ArrayClass<Statement>
 	{
 		return super.replaceClassDeclaration(
 			name: name,
@@ -1304,7 +1346,7 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 			parameters: parameters, statements: statements, type: type)
 	}
 
-	override func replaceReturnStatement(expression: Expression?) -> [Statement] {
+	override func replaceReturnStatement(expression: Expression?) -> ArrayClass<Statement> {
 		if isInClosure, let expression = expression {
 			return [.expression(expression: expression)]
 		}
@@ -1328,7 +1370,7 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 	/// Detect switches whose bodies all end in the same returns or assignments
 	override func replaceSwitchStatement(
 		convertsToExpression: Statement?, expression: Expression,
-		cases: [SwitchCase]) -> [Statement]
+		cases: ArrayClass<SwitchCase>) -> ArrayClass<Statement>
 	{
 		var hasAllReturnCases = true
 		var hasAllAssignmentCases = true
@@ -1362,14 +1404,14 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 		}
 
 		if hasAllReturnCases {
-			var newCases = [SwitchCase]()
+			let newCases: ArrayClass<SwitchCase> = []
 			for switchCase in cases {
 				// Swift switches must have at least one statement
 				let lastStatement = switchCase.statements.last!
 				if case let .returnStatement(expression: maybeExpression) = lastStatement,
 					let returnExpression = maybeExpression
 				{
-					var newStatements = Array(switchCase.statements.dropLast())
+					let newStatements = ArrayClass(switchCase.statements.dropLast())
 					newStatements.append(.expression(expression: returnExpression))
 					newCases.append(SwitchCase(
 						expression: switchCase.expression, statements: newStatements))
@@ -1382,13 +1424,13 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 				cases: newCases), ]
 		}
 		else if hasAllAssignmentCases, let assignmentExpression = assignmentExpression {
-			var newCases = [SwitchCase]()
+			let newCases: ArrayClass<SwitchCase> = []
 			for switchCase in cases {
 				// Swift switches must have at least one statement
 				let lastStatement = switchCase.statements.last!
 				if case let .assignmentStatement(leftHand: _, rightHand: rightHand) = lastStatement
 				{
-					var newStatements = Array(switchCase.statements.dropLast())
+					let newStatements = ArrayClass(switchCase.statements.dropLast())
 					newStatements.append(.expression(expression: rightHand))
 					newCases.append(SwitchCase(
 						expression: switchCase.expression, statements: newStatements))
@@ -1407,10 +1449,10 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 	}
 
 	/// Replace variable declarations followed by switch statements assignments
-	override func replaceStatements(_ oldStatement: [Statement]) -> [Statement] {
-		var statements = super.replaceStatements(oldStatement)
+	override func replaceStatements(_ oldStatement: ArrayClass<Statement>) -> ArrayClass<Statement> {
+		let statements = super.replaceStatements(oldStatement)
 
-		var result = [Statement]()
+		let result: ArrayClass<Statement> = []
 
 		var i = 0
 		while i < (statements.count - 1) {
@@ -1461,8 +1503,8 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 /// exhaustive. Just remove the cases that only have breaks.
 public class RemoveBreaksInSwitchesTranspilationPass: TranspilationPass {
 	override func replaceSwitchStatement(
-		convertsToExpression: Statement?, expression: Expression, cases: [SwitchCase])
-		-> [Statement]
+		convertsToExpression: Statement?, expression: Expression, cases: ArrayClass<SwitchCase>)
+		-> ArrayClass<Statement>
 	{
 		let newCases = cases.compactMap { (switchCase: SwitchCase) -> SwitchCase? in
 			if switchCase.statements.count == 1,
@@ -1486,14 +1528,18 @@ public class RemoveBreaksInSwitchesTranspilationPass: TranspilationPass {
 public class RemoveExtensionsTranspilationPass: TranspilationPass {
 	var extendingType: String?
 
-	override func replaceExtension(type: String, members: [Statement]) -> [Statement] {
+	override func replaceExtension(
+		type: String,
+		members: ArrayClass<Statement>)
+		-> ArrayClass<Statement>
+	{
 		extendingType = type
 		let members = replaceStatements(members)
 		extendingType = nil
 		return members
 	}
 
-	override func replaceStatement(_ statement: Statement) -> [Statement] {
+	override func replaceStatement(_ statement: Statement) -> ArrayClass<Statement> {
 		switch statement {
 		case let .extensionDeclaration(type: type, members: members):
 			return replaceExtension(type: type, members: members)
@@ -1507,7 +1553,7 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclaration)
-		-> [Statement]
+		-> ArrayClass<Statement>
 	{
 		var functionDeclaration = functionDeclaration
 		functionDeclaration.extendsType = self.extendingType
@@ -1549,8 +1595,8 @@ public class RecordFunctionTranslationsTranspilationPass: TranspilationPass {
 
 public class RecordEnumsTranspilationPass: TranspilationPass {
 	override func replaceEnumDeclaration(
-		access: String?, name: String, inherits: [String], elements: [EnumElement],
-		members: [Statement], isImplicit: Bool) -> [Statement]
+		access: String?, name: String, inherits: ArrayClass<String>, elements: ArrayClass<EnumElement>,
+		members: ArrayClass<Statement>, isImplicit: Bool) -> ArrayClass<Statement>
 	{
 		let isEnumClass = inherits.isEmpty && elements.reduce(true)
 		{ (acc: Bool, element: EnumElement) -> Bool in
@@ -1591,7 +1637,11 @@ public class RaiseStandardLibraryWarningsTranspilationPass: TranspilationPass {
 /// Source: https://forums.swift.org/t/are-immutable-structs-like-classes/16270
 public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass {
 	override func replaceStructDeclaration(
-		annotations: String?, name: String, inherits: [String], members: [Statement]) -> [Statement]
+		annotations: String?,
+		name: String,
+		inherits: ArrayClass<String>,
+		members: ArrayClass<Statement>)
+		-> ArrayClass<Statement>
 	{
 		for member in members {
 			if case let .variableDeclaration(value: variableDeclaration) = member,
@@ -1627,8 +1677,8 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 	}
 
 	override func replaceEnumDeclaration(
-		access: String?, name: String, inherits: [String], elements: [EnumElement],
-		members: [Statement], isImplicit: Bool) -> [Statement]
+		access: String?, name: String, inherits: ArrayClass<String>, elements: ArrayClass<EnumElement>,
+		members: ArrayClass<Statement>, isImplicit: Bool) -> ArrayClass<Statement>
 	{
 		for member in members {
 			if case let .functionDeclaration(value: functionDeclaration) = member,
@@ -1669,7 +1719,7 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 		// effects
 		let conditions = isElse ?
 			ifStatement.conditions :
-			Array(ifStatement.conditions.dropFirst())
+			ArrayClass(ifStatement.conditions.dropFirst())
 
 		let sideEffectsRanges = conditions.flatMap(mayHaveSideEffectsOnRanges)
 		for range in sideEffectsRanges {
@@ -1687,7 +1737,7 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 
 	private func mayHaveSideEffectsOnRanges(
 		_ condition: IfStatement.IfCondition)
-		-> [SourceFileRange]
+		-> ArrayClass<SourceFileRange>
 	{
 		if case let .declaration(variableDeclaration: variableDeclaration) = condition,
 			let expression = variableDeclaration.expression
@@ -1698,7 +1748,7 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 		return []
 	}
 
-	private func mayHaveSideEffectsOnRanges(_ expression: Expression) -> [SourceFileRange] {
+	private func mayHaveSideEffectsOnRanges(_ expression: Expression) -> ArrayClass<SourceFileRange> {
 		switch expression {
 		case let .callExpression(value: callExpression):
 			if let range = callExpression.range {
@@ -1766,7 +1816,7 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 
 	/// Send the let declarations to before the if statement
-	override func replaceIfStatement(_ ifStatement: IfStatement) -> [Statement] {
+	override func replaceIfStatement(_ ifStatement: IfStatement) -> ArrayClass<Statement> {
 		let letDeclarations = gatherLetDeclarations(ifStatement)
 			.map { Statement.variableDeclaration(value: $0) }
 
@@ -1799,7 +1849,10 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 	}
 
 	/// Gather the let declarations from the if statement and its else( if)s into a single array
-	private func gatherLetDeclarations(_ ifStatement: IfStatement?) -> [VariableDeclaration] {
+	private func gatherLetDeclarations(
+		_ ifStatement: IfStatement?)
+		-> ArrayClass<VariableDeclaration>
+	{
 		guard let ifStatement = ifStatement else {
 			return []
 		}
@@ -1838,10 +1891,10 @@ public class RawValuesTranspilationPass: TranspilationPass {
 	override func replaceEnumDeclaration(
 		access: String?,
 		name: String,
-		inherits: [String],
-		elements: [EnumElement],
-		members: [Statement],
-		isImplicit: Bool) -> [Statement]
+		inherits: ArrayClass<String>,
+		elements: ArrayClass<EnumElement>,
+		members: ArrayClass<Statement>,
+		isImplicit: Bool) -> ArrayClass<Statement>
 	{
 		if let typeName = elements.compactMap({ $0.rawValue?.type }).first {
 			let rawValueVariable = createRawValueVariable(
@@ -1870,7 +1923,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 					isImplicit: isImplicit)
 			}
 
-			var newMembers = members
+			let newMembers = members
 			newMembers.append(.functionDeclaration(value: rawValueInitializer))
 			newMembers.append(.variableDeclaration(value: rawValueVariable))
 
@@ -1897,7 +1950,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 		rawValueType: String,
 		access: String?,
 		name: String,
-		elements: [EnumElement])
+		elements: ArrayClass<EnumElement>)
 		-> FunctionDeclaration?
 	{
 		let maybeSwitchCases = elements.map { element -> SwitchCase? in
@@ -1921,7 +1974,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 				])
 		}
 
-		guard var switchCases = maybeSwitchCases as? [SwitchCase] else {
+		guard let switchCases = maybeSwitchCases.as(ArrayClass<SwitchCase>.self) else {
 			return nil
 		}
 
@@ -1965,7 +2018,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 		rawValueType: String,
 		access: String?,
 		name: String,
-		elements: [EnumElement])
+		elements: ArrayClass<EnumElement>)
 		-> VariableDeclaration
 	{
 		let switchCases = elements.map { element in
@@ -2066,7 +2119,7 @@ public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
 			}
 
 			let ifStatement = ifStatement.copy()
-			ifStatement.conditions = [newCondition].map {
+			ifStatement.conditions = ArrayClass([newCondition]).map {
 				IfStatement.IfCondition.condition(expression: $0)
 			}
 			ifStatement.isGuard = shouldStillBeGuard
@@ -2081,7 +2134,7 @@ public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
 /// Statements of the type `if (a == null) { return }` in Swift can be translated as `a ?: return`
 /// in Kotlin.
 public class ReturnIfNilTranspilationPass: TranspilationPass {
-	override func replaceStatement(_ statement: Statement) -> [Statement] {
+	override func replaceStatement(_ statement: Statement) -> ArrayClass<Statement> {
 		if case let .ifStatement(value: ifStatement) = statement,
 			ifStatement.conditions.count == 1,
 			let onlyCondition = ifStatement.conditions.first,
@@ -2114,7 +2167,7 @@ public class FixProtocolContentsTranspilationPass: TranspilationPass {
 	var isInProtocol = false
 
 	override func replaceProtocolDeclaration(
-		name: String, members: [Statement]) -> [Statement]
+		name: String, members: ArrayClass<Statement>) -> ArrayClass<Statement>
 	{
 		isInProtocol = true
 		let result = super.replaceProtocolDeclaration(name: name, members: members)
