@@ -211,7 +211,7 @@ public struct LabeledExpression: Equatable { // kotlin: ignore
 	let expression: Expression
 }
 
-public struct LabeledType: Equatable { // kotlin: ignore
+public struct LabeledType: Equatable {
 	let label: String
 	let type: String
 }
@@ -286,7 +286,7 @@ public class VariableDeclaration: Equatable { // kotlin: ignore
 	}
 }
 
-public class DeclarationReferenceExpression: Equatable { // kotlin: ignore
+public class DeclarationReferenceExpression: Equatable {
 	var identifier: String
 	var type: String
 	var isStandardLibrary: Bool
@@ -307,7 +307,9 @@ public class DeclarationReferenceExpression: Equatable { // kotlin: ignore
 		self.range = range
 	}
 
-	public static func == (lhs: DeclarationReferenceExpression, rhs: DeclarationReferenceExpression)
+	public static func == ( // kotlin: ignore
+		lhs: DeclarationReferenceExpression,
+		rhs: DeclarationReferenceExpression)
 		-> Bool
 	{
 		return lhs.identifier == rhs.identifier &&
@@ -906,12 +908,12 @@ extension Expression { // kotlin: ignore
 }
 
 //
-public enum TupleShuffleIndex: Equatable, CustomStringConvertible { // kotlin: ignore
+public enum TupleShuffleIndex: Equatable, CustomStringConvertible {
 	case variadic(count: Int)
 	case absent
 	case present
 
-	public var description: String {
+	public var description: String { // annotation: override
 		switch self {
 		case let .variadic(count: count):
 			return "variadics: \(count)"

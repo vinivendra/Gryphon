@@ -1525,6 +1525,55 @@ public class RemoveBreaksInSwitchesTranspilationPass: TranspilationPass {
 	}
 }
 
+/// Sealed classes should be tested for subclasses with the `is` operator. This is automatically
+/// done for enum cases with associated values, but in other cases it has to be handled here.
+public class IsOperatorsInSealedClassesTranspilationPass: TranspilationPass {
+	override func replaceSwitchStatement(
+		convertsToExpression: Statement?,
+		expression: Expression,
+		cases: ArrayClass<SwitchCase>)
+		-> ArrayClass<Statement>
+	{
+		guard case let .declarationReferenceExpression(
+				value: declarationReferenceExpression) = expression,
+			KotlinTranslator.sealedClasses.contains(declarationReferenceExpression.type) else
+		{
+			return super.replaceSwitchStatement(
+				convertsToExpression: convertsToExpression,
+				expression: expression,
+				cases: cases)
+		}
+
+		let newCases = cases.map { (switchCase: SwitchCase) -> SwitchCase in
+			if let caseExpression = switchCase.expression,
+				case let .dotExpression(
+					leftExpression: leftExpression,
+					rightExpression: rightExpression) = caseExpression,
+				case let .typeExpression(type: typeName) = leftExpression,
+				case let .declarationReferenceExpression(
+					value: declarationReferenceExpression) = rightExpression
+			{
+				return SwitchCase(
+					expression: Expression.binaryOperatorExpression(
+						leftExpression: expression,
+						rightExpression: .typeExpression(
+							type: "\(typeName).\(declarationReferenceExpression.identifier)"),
+						operatorSymbol: "is",
+						type: "Bool"),
+					statements: switchCase.statements)
+			}
+			else {
+				return switchCase
+			}
+		}
+
+		return super.replaceSwitchStatement(
+			convertsToExpression: convertsToExpression,
+			expression: expression,
+			cases: newCases)
+	}
+}
+
 public class RemoveExtensionsTranspilationPass: TranspilationPass {
 	var extendingType: String?
 
@@ -2262,8 +2311,10 @@ public extension TranspilationPass {
 		result = ReturnsInLambdasTranspilationPass(ast: result).run()
 		result = RenameOperatorsTranspilationPass(ast: result).run()
 
-		// Improve Kotlin readability
 		result = CapitalizeEnumsTranspilationPass(ast: result).run()
+		result = IsOperatorsInSealedClassesTranspilationPass(ast: result).run()
+
+		// Improve Kotlin readability
 		result = OmitImplicitEnumPrefixesTranspilationPass(ast: result).run()
 		result = InnerTypePrefixesTranspilationPass(ast: result).run()
 		result = DoubleNegativesInGuardsTranspilationPass(ast: result).run()

@@ -856,13 +856,16 @@ public class KotlinTranslator {
 			if let caseExpression = switchCase.expression {
 				if case let Expression.binaryOperatorExpression(
 					leftExpression: declarationReference,
-					rightExpression: .typeExpression(type: typeName),
+					rightExpression: typeExpression,
 					operatorSymbol: "is",
 					type: "Bool") = caseExpression,
 					declarationReference == expression
 				{
 					// TODO: test
-					result += "is \(typeName) -> "
+					let translatedType = try translateExpression(
+						typeExpression,
+						withIndentation: increasedIndentation)
+					result += "is \(translatedType) -> "
 				}
 				else if case let Expression.binaryOperatorExpression(
 					leftExpression: leftExpression, rightExpression: _, operatorSymbol: _,
