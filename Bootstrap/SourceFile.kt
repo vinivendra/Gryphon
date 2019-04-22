@@ -21,6 +21,39 @@ class SourceFile {
 			return null
 		}
 	}
+
+	data class Comment(
+		val key: String,
+		val value: String
+	)
+}
+
+public fun SourceFile.getCommentFromLine(lineNumber: Int): SourceFile.Comment? {
+	val line: String? = getLine(lineNumber)
+
+	line ?: return null
+
+	val lineComponents: MutableList<String> = line.split(separator = "// ", maxSplits = 1, omittingEmptySubsequences = false)
+
+	if (lineComponents.size != 2) {
+		return null
+	}
+
+	val comment: String = lineComponents[1]
+	val commentComponents: MutableList<String> = comment.split(separator = ": ", maxSplits = 1, omittingEmptySubsequences = false)
+
+	if (commentComponents.size != 2) {
+		val key: String? = commentComponents.firstOrNull()
+		if (key != null && key == "declaration:" || key == "insert:") {
+			return SourceFile.Comment(key = key.dropLast(1), value = "")
+		}
+		return null
+	}
+
+	val key: String = commentComponents[0]
+	val value: String = commentComponents[1]
+
+	return SourceFile.Comment(key = key, value = value)
 }
 
 data class SourceFileRange(

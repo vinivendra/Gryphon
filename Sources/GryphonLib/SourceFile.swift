@@ -39,10 +39,15 @@ public class SourceFile {
 			return nil
 		}
 	}
+
+	public struct Comment {
+		let key: String
+		let value: String
+	}
 }
 
-extension SourceFile { // kotlin: ignore
-	public func getCommentFromLine(_ lineNumber: Int) -> (key: String, value: String)? {
+extension SourceFile {
+	public func getCommentFromLine(_ lineNumber: Int) -> SourceFile.Comment? {
 		guard let line = getLine(lineNumber) else {
 			return nil
 		}
@@ -59,7 +64,7 @@ extension SourceFile { // kotlin: ignore
 		guard commentComponents.count == 2 else {
 			// Allow the insertion of newlines even if the IDE trims the trailing spaces
 			if let key = commentComponents.first, key == "declaration:" || key == "insert:" {
-				return (key: String(key.dropLast()), value: "")
+				return SourceFile.Comment(key: String(key.dropLast()), value: "")
 			}
 
 			return nil
@@ -67,7 +72,7 @@ extension SourceFile { // kotlin: ignore
 
 		let key = commentComponents[0]
 		let value = commentComponents[1]
-		return (key: key, value: value)
+		return SourceFile.Comment(key: key, value: value)
 	}
 }
 

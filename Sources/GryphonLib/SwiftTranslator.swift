@@ -342,7 +342,7 @@ public class SwiftTranslator {
 			return try subtrees.flatMap(translate(subtree:)).compactMap { $0 }
 		}
 
-		let commentToAST = { (comment: (key: String, value: String)) -> Statement? in
+		let commentToAST = { (comment: SourceFile.Comment) -> Statement? in
 				if comment.key == "insert" {
 					return Statement.expression(expression:
 						.literalCodeExpression(string: comment.value))
@@ -2499,7 +2499,7 @@ public class SwiftTranslator {
 		return nil
 	}
 
-	internal func getComment(forNode ast: SwiftAST) -> (key: String, value: String)? {
+	internal func getComment(forNode ast: SwiftAST) -> SourceFile.Comment? {
 		if let lineNumber = getRange(ofNode: ast)?.lineStart {
 			return sourceFile?.getCommentFromLine(lineNumber)
 		}
@@ -2508,8 +2508,8 @@ public class SwiftTranslator {
 		}
 	}
 
-	internal func insertedCode(inRange range: Range<Int>) -> [(key: String, value: String)] {
-		var result = [(key: String, value: String)]()
+	internal func insertedCode(inRange range: Range<Int>) -> [SourceFile.Comment] {
+		var result = [SourceFile.Comment]()
 		for lineNumber in range {
 			if let insertComment = sourceFile?.getCommentFromLine(lineNumber) {
 				result.append(insertComment)
