@@ -493,9 +493,9 @@ private func simplifyType(string: String) -> String {
 		return "[\(elementType)]"
 	}
 
-	// Treat DictionaryReference as Dictionary
-	if string.hasPrefix("DictionaryReference<"), string.last == ">" {
-		let keyValue = String(string.dropFirst("DictionaryReference<".count).dropLast())
+	// Treat DictionaryClass as Dictionary
+	if string.hasPrefix("DictionaryClass<"), string.last == ">" {
+		let keyValue = String(string.dropFirst("DictionaryClass<".count).dropLast())
 			.split(withStringSeparator: ", ")
 		let key = keyValue[0]
 		let value = keyValue[1]

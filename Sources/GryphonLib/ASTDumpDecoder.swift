@@ -669,7 +669,7 @@ internal class ASTDumpDecoder {
 extension ASTDumpDecoder {
 	public func decode() throws -> SwiftAST {
 		let standaloneAttributes: ArrayClass<String> = []
-		let keyValueAttributes: DictionaryReference<String, String> = [:]
+		let keyValueAttributes: DictionaryClass<String, String> = [:]
 		let subtrees: ArrayClass<SwiftAST> = []
 
 		try readOpeningParenthesis()

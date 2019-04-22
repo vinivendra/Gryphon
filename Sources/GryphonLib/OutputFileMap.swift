@@ -2,7 +2,7 @@ import Foundation
 // declaration: import java.io.File
 
 private typealias OutputFileMapBuffer =
-	DictionaryReference<String, DictionaryReference<OutputFileMap.OutputType, String>>
+	DictionaryClass<String, DictionaryClass<OutputFileMap.OutputType, String>>
 
 public class OutputFileMap {
 	public enum OutputType: String {
@@ -32,7 +32,7 @@ public class OutputFileMap {
 		self.buffer = buffer
 	}
 
-	public func getFileMap(forInputFile file: String) -> DictionaryReference<OutputType, String>? {
+	public func getFileMap(forInputFile file: String) -> DictionaryClass<OutputType, String>? {
 		return buffer[Utilities.getAbsoultePath(forFile: file)]
 	}
 
@@ -46,9 +46,9 @@ public class OutputFileMap {
 	public init(_ file: String) {
 		let contents = try! Utilities.readFile(file)
 
-		let result: DictionaryReference<String, DictionaryReference<OutputType, String>> = [:]
+		let result: DictionaryClass<String, DictionaryClass<OutputType, String>> = [:]
 
-		var currentFileResult: DictionaryReference<OutputType, String> = [:]
+		var currentFileResult: DictionaryClass<OutputType, String> = [:]
 		var currentFilePath: String?
 		let lines = contents.split(separator: "\n")
 

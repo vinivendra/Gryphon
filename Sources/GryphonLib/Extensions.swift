@@ -303,9 +303,9 @@ extension ArrayClass {
 	/// Groups the array's elements into a dictionary according to the keys provided by the given
 	/// closure, forming a sort of histogram.
 	func group<Key>(by getKey: (Element) -> Key)
-		-> DictionaryReference<Key, ArrayClass<Element>>
+		-> DictionaryClass<Key, ArrayClass<Element>>
 	{
-		let result: DictionaryReference<Key, ArrayClass<Element>> = [:]
+		let result: DictionaryClass<Key, ArrayClass<Element>> = [:]
 		for element in self {
 			let key = getKey(element)
 			let array = result[key] ?? []
