@@ -196,7 +196,7 @@ public final class DictionaryClass<Key, Value>: // kotlin: ignore
 
 	public var dictionary: Buffer
 
-	public init(dictionary: Buffer) {
+	public init(_ dictionary: Buffer) {
 		self.dictionary = dictionary
 	}
 
@@ -205,7 +205,7 @@ public final class DictionaryClass<Key, Value>: // kotlin: ignore
 	}
 
 	public func copy() -> DictionaryClass<Key, Value> {
-		return DictionaryClass(dictionary: dictionary)
+		return DictionaryClass(dictionary)
 	}
 
 	// Expressible By Dictionary Literal
@@ -293,7 +293,7 @@ extension DictionaryClass: Codable where Key: Codable, Value: Codable { // kotli
 	}
 
 	public convenience init(from decoder: Decoder) throws {
-		try self.init(dictionary: Buffer(from: decoder))
+		try self.init(Buffer(from: decoder))
 	}
 }
 
