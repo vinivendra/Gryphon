@@ -944,7 +944,7 @@ public class SwiftTranslator {
 			let variableNames = variableSubtree.subtrees.map { $0.standaloneAttributes[0] }
 			let variableTypes = variableSubtree.subtrees.map { $0.keyValueAttributes["type"]! }
 
-			let variables = zip(variableNames, variableTypes).map {
+			let variables = zipToClass(variableNames, variableTypes).map {
 				LabeledExpression(
 					label: nil,
 					expression: .declarationReferenceExpression(value:
@@ -1828,7 +1828,7 @@ public class SwiftTranslator {
 		}
 
 		// Translate the parameters
-		var parameters = [LabeledType]()
+		let parameters: ArrayClass<LabeledType> = []
 		if let parameterList = parameterList {
 			for parameter in parameterList.subtrees {
 				if let name = parameter.standaloneAttributes.first,
@@ -1872,7 +1872,7 @@ public class SwiftTranslator {
 
 		return .closureExpression(
 			parameters: parameters,
-			statements: statements,
+			statements: ArrayClass<Statement>(statements),
 			type: cleanUpType(type))
 	}
 
@@ -1909,7 +1909,7 @@ public class SwiftTranslator {
 				let elements = tupleShuffleExpression["elements"],
 				let rawIndices = elements.split(withStringSeparator: ", ").map(Int.init) as? [Int]
 			{
-				var indices = [TupleShuffleIndex]()
+				let indices: ArrayClass<TupleShuffleIndex> = []
 				for rawIndex in rawIndices {
 					if rawIndex == -2 {
 						guard let variadicCount = tupleShuffleExpression["variadic_sources"]?
@@ -1936,13 +1936,17 @@ public class SwiftTranslator {
 					}
 				}
 
-				let labels = String(type.dropFirst().dropLast())
-					.split(withStringSeparator: ", ")
+				let tupleComponents = ArrayClass(
+					String(type.dropFirst().dropLast())
+						.split(withStringSeparator: ", "))
+				let labels = tupleComponents
 					.map { $0.prefix(while: { $0 != ":" }) }
 					.map(String.init)
 				let expressions = try tupleExpression.subtrees.map(translate(expression:))
 				parameters = .tupleShuffleExpression(
-					labels: labels, indices: indices, expressions: expressions.array)
+					labels: labels,
+					indices: indices,
+					expressions: expressions)
 			}
 			else {
 				return try unexpectedExpressionStructureError(
@@ -1971,7 +1975,7 @@ public class SwiftTranslator {
 
 		let namesArray = names.split(separator: ",")
 
-		var tuplePairs = [LabeledExpression]()
+		let tuplePairs: ArrayClass<LabeledExpression> = []
 
 		for (name, expression) in zip(namesArray, tupleExpression.subtrees) {
 			let expression = try translate(expression: expression)
@@ -2129,7 +2133,7 @@ public class SwiftTranslator {
 				AST: interpolatedStringLiteralExpression, translator: self)
 		}
 
-		var expressions = [Expression]()
+		let expressions: ArrayClass<Expression> = []
 
 		for callExpression in braceStatement.subtrees.dropFirst() {
 			guard callExpression.name == "Call Expression",
@@ -2241,7 +2245,7 @@ public class SwiftTranslator {
 		}
 
 		// Drop the "Semantic Expression" at the end
-		let expressionsToTranslate = arrayExpression.subtrees.dropLast()
+		let expressionsToTranslate = ArrayClass(arrayExpression.subtrees.dropLast())
 
 		let expressionsArray = try expressionsToTranslate.map(translate(expression:))
 
@@ -2261,8 +2265,8 @@ public class SwiftTranslator {
 				AST: dictionaryExpression, translator: self)
 		}
 
-		var keys = [Expression]()
-		var values = [Expression]()
+		let keys: ArrayClass<Expression> = []
+		let values: ArrayClass<Expression> = []
 		for tupleExpression in dictionaryExpression.subtrees {
 			guard tupleExpression.name == "Tuple Expression" else {
 				continue

@@ -93,7 +93,9 @@ public class ReplaceTemplatesTranspilationPass: TranspilationPass {
 				let replacedMatches = matches.mapValues {
 					self.replaceExpression($0)
 				}
-				return .templateExpression(pattern: template.string, matches: replacedMatches)
+				return .templateExpression(
+					pattern: template.string,
+					matches: DictionaryClass(replacedMatches))
 			}
 		}
 		return super.replaceExpression(expression)

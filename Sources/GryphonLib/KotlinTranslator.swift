@@ -1016,22 +1016,24 @@ public class KotlinTranslator {
 	}
 
 	private func translateExpression(
-		_ expression: Expression, withIndentation indentation: String) throws -> String
+		_ expression: Expression,
+		withIndentation indentation: String)
+		throws -> String
 	{
 		switch expression {
 		case let .templateExpression(pattern: pattern, matches: matches):
 			return try translateTemplateExpression(
-				pattern: pattern, matches: matches, withIndentation: indentation)
+				pattern: pattern, matches: matches.dictionary, withIndentation: indentation)
 		case .literalCodeExpression(string: let string),
 			.literalDeclarationExpression(string: let string):
 
 			return translateLiteralCodeExpression(string: string)
 		case let .arrayExpression(elements: elements, type: type):
 			return try translateArrayExpression(
-				elements: elements, type: type, withIndentation: indentation)
+				elements: elements.array, type: type, withIndentation: indentation)
 		case let .dictionaryExpression(keys: keys, values: values, type: type):
 			return try translateDictionaryExpression(
-				keys: keys, values: values, type: type, withIndentation: indentation)
+				keys: keys.array, values: values.array, type: type, withIndentation: indentation)
 		case let .binaryOperatorExpression(
 			leftExpression: leftExpression,
 			rightExpression: rightExpression,
@@ -1048,7 +1050,7 @@ public class KotlinTranslator {
 			return try translateCallExpression(callExpression, withIndentation: indentation)
 		case let .closureExpression(parameters: parameters, statements: statements, type: type):
 			return try translateClosureExpression(
-				parameters: parameters, statements: statements, type: type,
+				parameters: parameters.array, statements: statements.array, type: type,
 				withIndentation: indentation)
 		case let .declarationReferenceExpression(value: declarationReferenceExpression):
 			return translateDeclarationReferenceExpression(declarationReferenceExpression)
@@ -1066,7 +1068,7 @@ public class KotlinTranslator {
 			return translateCharacterLiteral(value: value)
 		case let .interpolatedStringLiteralExpression(expressions: expressions):
 			return try translateInterpolatedStringLiteralExpression(
-				expressions: expressions, withIndentation: indentation)
+				expressions: expressions.array, withIndentation: indentation)
 		case let .prefixUnaryExpression(
 			expression: expression, operatorSymbol: operatorSymbol, type: type):
 
@@ -1115,12 +1117,12 @@ public class KotlinTranslator {
 		case .nilLiteralExpression:
 			return "null"
 		case let .tupleExpression(pairs: pairs):
-			return try translateTupleExpression(pairs: pairs, withIndentation: indentation)
+			return try translateTupleExpression(pairs: pairs.array, withIndentation: indentation)
 		case let .tupleShuffleExpression(
 			labels: labels, indices: indices, expressions: expressions):
 
 			return try translateTupleShuffleExpression(
-				labels: labels, indices: indices, expressions: expressions,
+				labels: labels.array, indices: indices.array, expressions: expressions.array,
 				withIndentation: indentation)
 		case .error:
 			return KotlinTranslator.errorTranslation
@@ -1276,8 +1278,8 @@ public class KotlinTranslator {
 					type: type) = closurePair.expression
 			{
 				let closureTranslation = try translateClosureExpression(
-					parameters: parameters,
-					statements: statements,
+					parameters: parameters.array,
+					statements: statements.array,
 					type: type,
 					withIndentation: increaseIndentation(indentation))
 				if parameters.count > 1 {
@@ -1294,7 +1296,7 @@ public class KotlinTranslator {
 			}
 			else {
 				parametersTranslation = try translateTupleExpression(
-					pairs: pairs,
+					pairs: pairs.array,
 					translation: functionTranslation,
 					withIndentation: increaseIndentation(indentation),
 					shouldAddNewlines: shouldAddNewlines)
@@ -1304,9 +1306,9 @@ public class KotlinTranslator {
 			labels: labels, indices: indices, expressions: expressions) = callExpression.parameters
 		{
 			parametersTranslation = try translateTupleShuffleExpression(
-				labels: labels,
-				indices: indices,
-				expressions: expressions,
+				labels: labels.array,
+				indices: indices.array,
+				expressions: expressions.array,
 				translation: functionTranslation,
 				withIndentation: increaseIndentation(indentation),
 				shouldAddNewlines: shouldAddNewlines)
@@ -1472,7 +1474,9 @@ public class KotlinTranslator {
 				"Different number of labels and indices in a tuple shuffle expression. " +
 					"Labels: \(labels), indices: \(indices)",
 				AST: .expression(expression: .tupleShuffleExpression(
-					labels: labels, indices: indices, expressions: expressions)))
+					labels: ArrayClass(labels),
+					indices: ArrayClass(indices),
+					expressions: ArrayClass(expressions))))
 		}
 
 		for (label, index) in zip(parameters, indices) {

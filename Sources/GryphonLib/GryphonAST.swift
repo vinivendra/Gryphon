@@ -126,7 +126,7 @@ public indirect enum Expression: Equatable, PrintableAsTree { // kotlin: ignore
 		string: String)
 	case templateExpression(
 		pattern: String,
-		matches: [String: Expression])
+		matches: DictionaryClass<String, Expression>)
 	case parenthesesExpression(
 		expression: Expression)
 	case forceValueExpression(
@@ -142,11 +142,11 @@ public indirect enum Expression: Equatable, PrintableAsTree { // kotlin: ignore
 		indexExpression: Expression,
 		type: String)
 	case arrayExpression(
-		elements: [Expression],
+		elements: ArrayClass<Expression>,
 		type: String)
 	case dictionaryExpression(
-		keys: [Expression],
-		values: [Expression],
+		keys: ArrayClass<Expression>,
+		values: ArrayClass<Expression>,
 		type: String)
 	case returnExpression(
 		expression: Expression?)
@@ -173,8 +173,8 @@ public indirect enum Expression: Equatable, PrintableAsTree { // kotlin: ignore
 	case callExpression(
 		value: CallExpression)
 	case closureExpression(
-		parameters: [LabeledType],
-		statements: [Statement],
+		parameters: ArrayClass<LabeledType>,
+		statements: ArrayClass<Statement>,
 		type: String)
 	case literalIntExpression(
 		value: Int64)
@@ -192,13 +192,13 @@ public indirect enum Expression: Equatable, PrintableAsTree { // kotlin: ignore
 		value: String)
 	case nilLiteralExpression
 	case interpolatedStringLiteralExpression(
-		expressions: [Expression])
+		expressions: ArrayClass<Expression>)
 	case tupleExpression(
-		pairs: [LabeledExpression])
+		pairs: ArrayClass<LabeledExpression>)
 	case tupleShuffleExpression(
-		labels: [String],
-		indices: [TupleShuffleIndex],
-		expressions: [Expression])
+		labels: ArrayClass<String>,
+		indices: ArrayClass<TupleShuffleIndex>,
+		expressions: ArrayClass<Expression>)
 	case error
 }
 
@@ -619,9 +619,12 @@ extension Expression { // kotlin: ignore
 	public var printableSubtrees: ArrayClass<PrintableAsTree?> {
 		switch self {
 		case let .templateExpression(pattern: pattern, matches: matches):
+			let matchesTrees = ArrayClass<PrintableAsTree?>(
+				matches.map { PrintableTree($0.key, [$0.value]) })
+
 			return [
 				PrintableTree("pattern \"\(pattern)\""),
-				PrintableTree("matches", [matches]), ]
+				PrintableTree("matches", matchesTrees), ]
 		case .literalCodeExpression(string: let string),
 			.literalDeclarationExpression(string: let string):
 
@@ -649,9 +652,11 @@ extension Expression { // kotlin: ignore
 				PrintableTree("subscriptedExpression", [subscriptedExpression]),
 				PrintableTree("indexExpression", [indexExpression]), ]
 		case let .arrayExpression(elements: elements, type: type):
-			return [PrintableTree("type \(type)"), PrintableTree(elements)]
+			return [
+				PrintableTree("type \(type)"),
+				PrintableTree(ArrayClass<PrintableAsTree?>(elements)), ]
 		case let .dictionaryExpression(keys: keys, values: values, type: type):
-			let keyValueStrings = zip(keys, values).map { "\($0): \($1)" }
+			let keyValueStrings = zipToClass(keys, values).map { "\($0): \($1)" }
 			return [
 				PrintableTree("type \(type)"),
 				PrintableTree("key value pairs", keyValueStrings), ]
@@ -703,7 +708,7 @@ extension Expression { // kotlin: ignore
 			return [
 				PrintableTree(type),
 				PrintableTree(parameters),
-				PrintableTree("statements", statements), ]
+				PrintableTree("statements", ArrayClass<PrintableAsTree?>(statements)), ]
 		case let .literalIntExpression(value: value):
 			return [PrintableTree(String(value))]
 		case let .literalUIntExpression(value: value):
@@ -721,7 +726,7 @@ extension Expression { // kotlin: ignore
 		case .nilLiteralExpression:
 			return []
 		case let .interpolatedStringLiteralExpression(expressions: expressions):
-			return [PrintableTree(expressions)]
+			return [PrintableTree(ArrayClass<PrintableAsTree?>(expressions))]
 		case let .tupleExpression(pairs: pairs):
 			return ArrayClass(pairs).map {
 				PrintableTree(($0.label ?? "_") + ":", [$0.expression])
@@ -732,7 +737,7 @@ extension Expression { // kotlin: ignore
 			return [
 				PrintableTree("labels", labels),
 				PrintableTree("indices", indices.map { $0.description }),
-				PrintableTree("expressions", expressions), ]
+				PrintableTree("expressions", ArrayClass<PrintableAsTree?>(expressions)), ]
 		case .error:
 			return []
 		}

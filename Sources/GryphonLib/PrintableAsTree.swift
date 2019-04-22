@@ -42,6 +42,10 @@ public class PrintableTree: PrintableAsTree {
 		self.printableSubtrees = subtrees.map(stringToTree)
 	}
 
+	convenience init(_ description: String, _ subtrees: ArrayClass<String>) { // kotlin: ignore
+		self.init(description, ArrayClass<String?>(subtrees))
+	}
+
 	init(_ array: ArrayClass<PrintableAsTree?>) {
 		self.treeDescription = "Array"
 		self.printableSubtrees = array

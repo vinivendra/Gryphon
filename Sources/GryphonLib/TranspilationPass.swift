@@ -422,7 +422,7 @@ public class TranspilationPass {
 		}
 	}
 
-	func replaceTemplateExpression(pattern: String, matches: [String: Expression])
+	func replaceTemplateExpression(pattern: String, matches: DictionaryClass<String, Expression>)
 		-> Expression
 	{
 		return .templateExpression(pattern: pattern, matches: matches.mapValues(replaceExpression))
@@ -471,11 +471,14 @@ public class TranspilationPass {
 			indexExpression: replaceExpression(indexExpression), type: type)
 	}
 
-	func replaceArrayExpression(elements: [Expression], type: String) -> Expression {
+	func replaceArrayExpression(elements: ArrayClass<Expression>, type: String) -> Expression {
 		return .arrayExpression(elements: elements.map(replaceExpression), type: type)
 	}
 
-	func replaceDictionaryExpression(keys: [Expression], values: [Expression], type: String)
+	func replaceDictionaryExpression(
+		keys: ArrayClass<Expression>,
+		values: ArrayClass<Expression>,
+		type: String)
 		-> Expression
 	{
 		return .dictionaryExpression(keys: keys, values: values, type: type)
@@ -541,11 +544,13 @@ public class TranspilationPass {
 	}
 
 	func replaceClosureExpression(
-		parameters: [LabeledType], statements: [Statement], type: String)
+		parameters: ArrayClass<LabeledType>, statements: ArrayClass<Statement>, type: String)
 		-> Expression
 	{
 		return .closureExpression(
-			parameters: parameters, statements: replaceStatements(statements), type: type)
+			parameters: parameters,
+			statements: ArrayClass(replaceStatements(statements.array)),
+			type: type)
 	}
 
 	func replaceLiteralIntExpression(value: Int64) -> Expression {
@@ -580,18 +585,22 @@ public class TranspilationPass {
 		return .nilLiteralExpression
 	}
 
-	func replaceInterpolatedStringLiteralExpression(expressions: [Expression]) -> Expression {
+	func replaceInterpolatedStringLiteralExpression(expressions: ArrayClass<Expression>)
+		-> Expression
+	{
 		return .interpolatedStringLiteralExpression(expressions: expressions.map(replaceExpression))
 	}
 
-	func replaceTupleExpression(pairs: [LabeledExpression]) -> Expression {
+	func replaceTupleExpression(pairs: ArrayClass<LabeledExpression>) -> Expression {
 		return .tupleExpression( pairs: pairs.map {
 			LabeledExpression(label: $0.label, expression: replaceExpression($0.expression))
 		})
 	}
 
 	func replaceTupleShuffleExpression(
-		labels: [String], indices: [TupleShuffleIndex], expressions: [Expression])
+		labels: ArrayClass<String>,
+		indices: ArrayClass<TupleShuffleIndex>,
+		expressions: ArrayClass<Expression>)
 		-> Expression
 	{
 		return .tupleShuffleExpression(
@@ -1190,7 +1199,7 @@ public class AnonymousParametersTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceClosureExpression(
-		parameters: [LabeledType], statements: [Statement], type: String)
+		parameters: ArrayClass<LabeledType>, statements: ArrayClass<Statement>, type: String)
 		-> Expression
 	{
 		if parameters.count == 1,
@@ -1284,7 +1293,9 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 	var isInClosure = false
 
 	override func replaceClosureExpression(
-		parameters: [LabeledType], statements: [Statement], type: String)
+		parameters: ArrayClass<LabeledType>,
+		statements: ArrayClass<Statement>,
+		type: String)
 		-> Expression
 	{
 		isInClosure = true

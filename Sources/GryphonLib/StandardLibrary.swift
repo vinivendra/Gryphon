@@ -271,6 +271,18 @@ public final class DictionaryClass<Key, Value>: // kotlin: ignore
 	@inlinable public var isEmpty: Bool {
 		return dictionary.isEmpty
 	}
+
+	//
+	public func map<T>(_ transform: ((key: Key, value: Value)) throws -> T)
+		rethrows -> ArrayClass<T>
+	{
+		return try ArrayClass<T>(self.dictionary.map(transform))
+	}
+
+	@inlinable
+	public func mapValues<T>(_ transform: (Value) throws -> T) rethrows -> DictionaryClass<Key, T> {
+		return try DictionaryClass<Key, T>(dictionary.mapValues(transform))
+	}
 }
 
 extension DictionaryClass: Equatable where Value: Equatable { // kotlin: ignore
