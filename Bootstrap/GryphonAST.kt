@@ -5,7 +5,7 @@ public sealed class Expression {
 	class ParenthesesExpression(val expression: Expression): Expression()
 	class ForceValueExpression(val expression: Expression): Expression()
 	class OptionalExpression(val expression: Expression): Expression()
-	class DeclarationReferenceExpression(val value: DeclarationReferenceExpression): Expression()
+	class DeclarationReferenceExpression(val data: DeclarationReferenceData): Expression()
 	class TypeExpression(val type: String): Expression()
 	class SubscriptExpression(val subscriptedExpression: Expression, val indexExpression: Expression, val type: String): Expression()
 	class ArrayExpression(val elements: MutableList<Expression>, val type: String): Expression()
@@ -16,7 +16,7 @@ public sealed class Expression {
 	class PrefixUnaryExpression(val expression: Expression, val operatorSymbol: String, val type: String): Expression()
 	class PostfixUnaryExpression(val expression: Expression, val operatorSymbol: String, val type: String): Expression()
 	class IfExpression(val condition: Expression, val trueExpression: Expression, val falseExpression: Expression): Expression()
-	class CallExpression(val value: CallExpression): Expression()
+	class CallExpression(val data: CallExpressionData): Expression()
 	class LiteralIntExpression(val value: Long): Expression()
 	class LiteralUIntExpression(val value: ULong): Expression()
 	class LiteralDoubleExpression(val value: Double): Expression()
@@ -41,7 +41,7 @@ data class LabeledType(
 	val type: String
 )
 
-class DeclarationReferenceExpression {
+class DeclarationReferenceData {
 	var identifier: String
 	var type: String
 	var isStandardLibrary: Boolean
@@ -63,7 +63,7 @@ class DeclarationReferenceExpression {
 	}
 }
 
-class CallExpression {
+class CallExpressionData {
 	var function: Expression
 	var parameters: Expression
 	var type: String

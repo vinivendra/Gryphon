@@ -227,7 +227,7 @@ public class KotlinTranslator {
 		case let .whileStatement(expression: expression, statements: statements):
 			result = try translateWhileStatement(
 				expression: expression, statements: statements.array, withIndentation: indentation)
-		case let .functionDeclaration(value: functionDeclaration):
+		case let .functionDeclaration(data: functionDeclaration):
 			result = try translateFunctionDeclaration(
 				functionDeclaration: functionDeclaration, withIndentation: indentation)
 		case let .protocolDeclaration(name: name, members: members):
@@ -236,13 +236,13 @@ public class KotlinTranslator {
 		case let .throwStatement(expression: expression):
 			result = try translateThrowStatement(
 				expression: expression, withIndentation: indentation)
-		case let .variableDeclaration(value: variableDeclaration):
+		case let .variableDeclaration(data: variableDeclaration):
 			result = try translateVariableDeclaration(
 				variableDeclaration, withIndentation: indentation)
 		case let .assignmentStatement(leftHand: leftHand, rightHand: rightHand):
 			result = try translateAssignmentStatement(
 				leftHand: leftHand, rightHand: rightHand, withIndentation: indentation)
-		case let .ifStatement(value: ifStatement):
+		case let .ifStatement(data: ifStatement):
 			result = try translateIfStatement(ifStatement, withIndentation: indentation)
 		case let .switchStatement(
 			convertsToExpression: convertsToExpression, expression: expression,
@@ -469,7 +469,7 @@ public class KotlinTranslator {
 		var result = "\(annotationsString)\(indentation)data class \(name)(\n"
 
 		let isProperty = { (member: Statement) -> Bool in
-			if case let .variableDeclaration(value: variableDeclaration) = member,
+			if case let .variableDeclaration(data: variableDeclaration) = member,
 				variableDeclaration.getter == nil,
 				variableDeclaration.setter == nil,
 				!variableDeclaration.isStatic
@@ -527,7 +527,7 @@ public class KotlinTranslator {
 	}
 
 	private func translateFunctionDeclaration(
-		functionDeclaration: FunctionDeclaration, withIndentation indentation: String,
+		functionDeclaration: FunctionDeclarationData, withIndentation indentation: String,
 		shouldAddNewlines: Bool = false) throws -> String
 	{
 		guard !functionDeclaration.isImplicit else {
@@ -724,7 +724,7 @@ public class KotlinTranslator {
 	}
 
 	private func translateIfStatement(
-		_ ifStatement: IfStatement, isElseIf: Bool = false,
+		_ ifStatement: IfStatementData, isElseIf: Bool = false,
 		withIndentation indentation: String) throws -> String
 	{
 		let keyword = (ifStatement.conditions.isEmpty && ifStatement.declarations.isEmpty) ?
@@ -788,9 +788,9 @@ public class KotlinTranslator {
 					try translateExpression(leftHand, withIndentation: indentation)
 				result = "\(indentation)\(translatedLeftHand) = when ("
 			}
-			else if case let .variableDeclaration(value: variableDeclaration) = convertsToExpression
+			else if case let .variableDeclaration(data: variableDeclaration) = convertsToExpression
 			{
-				let newVariableDeclaration = VariableDeclaration(
+				let newVariableDeclaration = VariableDeclarationData(
 					identifier: variableDeclaration.identifier,
 					typeName: variableDeclaration.typeName, expression: .nilLiteralExpression,
 					getter: nil, setter: nil, isLet: variableDeclaration.isLet, isImplicit: false,
@@ -904,7 +904,7 @@ public class KotlinTranslator {
 	}
 
 	private func translateVariableDeclaration(
-		_ variableDeclaration: VariableDeclaration, withIndentation indentation: String)
+		_ variableDeclaration: VariableDeclarationData, withIndentation indentation: String)
 		throws -> String
 	{
 		guard !variableDeclaration.isImplicit else {
@@ -1034,13 +1034,13 @@ public class KotlinTranslator {
 				operatorSymbol: operatorSymbol,
 				type: type,
 				withIndentation: indentation)
-		case let .callExpression(value: callExpression):
+		case let .callExpression(data: callExpression):
 			return try translateCallExpression(callExpression, withIndentation: indentation)
 		case let .closureExpression(parameters: parameters, statements: statements, type: type):
 			return try translateClosureExpression(
 				parameters: parameters.array, statements: statements.array, type: type,
 				withIndentation: indentation)
-		case let .declarationReferenceExpression(value: declarationReferenceExpression):
+		case let .declarationReferenceExpression(data: declarationReferenceExpression):
 			return translateDeclarationReferenceExpression(declarationReferenceExpression)
 		case let .returnExpression(expression: expression):
 			return try translateReturnExpression(
@@ -1232,7 +1232,7 @@ public class KotlinTranslator {
 	}
 
 	private func translateCallExpression(
-		_ callExpression: CallExpression,
+		_ callExpression: CallExpressionData,
 		withIndentation indentation: String,
 		shouldAddNewlines: Bool = false)
 		throws -> String
@@ -1248,7 +1248,7 @@ public class KotlinTranslator {
 		}
 
 		let functionTranslation: FunctionTranslation?
-		if case let .declarationReferenceExpression(value: expression) = functionExpression {
+		if case let .declarationReferenceExpression(data: expression) = functionExpression {
 			functionTranslation = KotlinTranslator.getFunctionTranslation(
 				forName: expression.identifier,
 				type: expression.type)
@@ -1305,7 +1305,7 @@ public class KotlinTranslator {
 			return try unexpectedASTStructureError(
 				"Expected the parameters to be either a .tupleExpression or a " +
 					".tupleShuffleExpression",
-				AST: .expression(expression: .callExpression(value: callExpression)))
+				AST: .expression(expression: .callExpression(data: callExpression)))
 		}
 
 		let prefix = try functionTranslation?.prefix ??
@@ -1376,7 +1376,7 @@ public class KotlinTranslator {
 	}
 
 	private func translateDeclarationReferenceExpression(
-		_ declarationReferenceExpression: DeclarationReferenceExpression) -> String
+		_ declarationReferenceExpression: DeclarationReferenceData) -> String
 	{
 		return String(declarationReferenceExpression.identifier.prefix { $0 != "(" })
 	}

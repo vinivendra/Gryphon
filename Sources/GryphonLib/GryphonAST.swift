@@ -90,9 +90,9 @@ public indirect enum Statement: Equatable, PrintableAsTree { // kotlin: ignore
 		inherits: ArrayClass<String>,
 		members: ArrayClass<Statement>)
 	case functionDeclaration(
-		value: FunctionDeclaration)
+		data: FunctionDeclarationData)
 	case variableDeclaration(
-		value: VariableDeclaration)
+		data: VariableDeclarationData)
 	case forEachStatement(
 		collection: Expression,
 		variable: Expression,
@@ -101,7 +101,7 @@ public indirect enum Statement: Equatable, PrintableAsTree { // kotlin: ignore
 		expression: Expression,
 		statements: ArrayClass<Statement>)
 	case ifStatement(
-		value: IfStatement)
+		data: IfStatementData)
 	case switchStatement(
 		convertsToExpression: Statement?,
 		expression: Expression,
@@ -138,7 +138,7 @@ public indirect enum Expression: Equatable {
 	case optionalExpression(
 		expression: Expression)
 	case declarationReferenceExpression(
-		value: DeclarationReferenceExpression)
+		data: DeclarationReferenceData)
 	case typeExpression(
 		type: String)
 	case subscriptExpression(
@@ -175,7 +175,7 @@ public indirect enum Expression: Equatable {
 		trueExpression: Expression,
 		falseExpression: Expression)
 	case callExpression(
-		value: CallExpression)
+		data: CallExpressionData)
 	case closureExpression( // kotlin: ignore
 		parameters: ArrayClass<LabeledType>,
 		statements: ArrayClass<Statement>,
@@ -236,12 +236,12 @@ public struct FunctionParameter: Equatable, PrintableAsTree { // kotlin: ignore
 	}
 }
 
-public class VariableDeclaration: Equatable { // kotlin: ignore
+public class VariableDeclarationData: Equatable { // kotlin: ignore
 	var identifier: String
 	var typeName: String
 	var expression: Expression?
-	var getter: FunctionDeclaration?
-	var setter: FunctionDeclaration?
+	var getter: FunctionDeclarationData?
+	var setter: FunctionDeclarationData?
 	var isLet: Bool
 	var isImplicit: Bool
 	var isStatic: Bool
@@ -252,8 +252,8 @@ public class VariableDeclaration: Equatable { // kotlin: ignore
 		identifier: String,
 		typeName: String,
 		expression: Expression?,
-		getter: FunctionDeclaration?,
-		setter: FunctionDeclaration?,
+		getter: FunctionDeclarationData?,
+		setter: FunctionDeclarationData?,
 		isLet: Bool,
 		isImplicit: Bool,
 		isStatic: Bool,
@@ -272,7 +272,7 @@ public class VariableDeclaration: Equatable { // kotlin: ignore
 		self.annotations = annotations
 	}
 
-	public static func == (lhs: VariableDeclaration, rhs: VariableDeclaration) -> Bool {
+	public static func == (lhs: VariableDeclarationData, rhs: VariableDeclarationData) -> Bool {
 		return lhs.identifier == rhs.identifier &&
 			lhs.typeName == rhs.typeName &&
 			lhs.expression == rhs.expression &&
@@ -286,7 +286,7 @@ public class VariableDeclaration: Equatable { // kotlin: ignore
 	}
 }
 
-public class DeclarationReferenceExpression: Equatable {
+public class DeclarationReferenceData: Equatable {
 	var identifier: String
 	var type: String
 	var isStandardLibrary: Bool
@@ -308,8 +308,8 @@ public class DeclarationReferenceExpression: Equatable {
 	}
 
 	public static func == ( // kotlin: ignore
-		lhs: DeclarationReferenceExpression,
-		rhs: DeclarationReferenceExpression)
+		lhs: DeclarationReferenceData,
+		rhs: DeclarationReferenceData)
 		-> Bool
 	{
 		return lhs.identifier == rhs.identifier &&
@@ -320,7 +320,7 @@ public class DeclarationReferenceExpression: Equatable {
 	}
 }
 
-public class CallExpression: Equatable {
+public class CallExpressionData: Equatable {
 	var function: Expression
 	var parameters: Expression
 	var type: String
@@ -338,7 +338,11 @@ public class CallExpression: Equatable {
 		self.range = range
 	}
 
-	public static func == (lhs: CallExpression, rhs: CallExpression) -> Bool { // kotlin: ignore
+	public static func == ( // kotlin: ignore
+		lhs: CallExpressionData,
+		rhs: CallExpressionData)
+		-> Bool
+	{
 		return lhs.function == rhs.function &&
 			lhs.parameters == rhs.parameters &&
 			lhs.type == rhs.type &&
@@ -346,7 +350,7 @@ public class CallExpression: Equatable {
 	}
 }
 
-public class FunctionDeclaration: Equatable { // kotlin: ignore
+public class FunctionDeclarationData: Equatable { // kotlin: ignore
 	var prefix: String
 	var parameters: ArrayClass<FunctionParameter>
 	var returnType: String
@@ -388,7 +392,7 @@ public class FunctionDeclaration: Equatable { // kotlin: ignore
 		self.annotations = annotations
 	}
 
-	public static func == (lhs: FunctionDeclaration, rhs: FunctionDeclaration) -> Bool {
+	public static func == (lhs: FunctionDeclarationData, rhs: FunctionDeclarationData) -> Bool {
 		return lhs.prefix == rhs.prefix &&
 			lhs.parameters == rhs.parameters &&
 			lhs.returnType == rhs.returnType &&
@@ -404,23 +408,23 @@ public class FunctionDeclaration: Equatable { // kotlin: ignore
 	}
 }
 
-public class IfStatement: Equatable { // kotlin: ignore
-	var conditions: ArrayClass<IfCondition>
-	var declarations: ArrayClass<VariableDeclaration>
+public class IfStatementData: Equatable { // kotlin: ignore
+	var conditions: ArrayClass<Condition>
+	var declarations: ArrayClass<VariableDeclarationData>
 	var statements: ArrayClass<Statement>
-	var elseStatement: IfStatement?
+	var elseStatement: IfStatementData?
 	var isGuard: Bool
 
-	public enum IfCondition: Equatable {
+	public enum Condition: Equatable {
 		case condition(expression: Expression)
-		case declaration(variableDeclaration: VariableDeclaration)
+		case declaration(variableDeclaration: VariableDeclarationData)
 	}
 
 	public init(
-		conditions: ArrayClass<IfCondition>,
-		declarations: ArrayClass<VariableDeclaration>,
+		conditions: ArrayClass<Condition>,
+		declarations: ArrayClass<VariableDeclarationData>,
 		statements: ArrayClass<Statement>,
-		elseStatement: IfStatement?,
+		elseStatement: IfStatementData?,
 		isGuard: Bool)
 	{
 		self.conditions = conditions
@@ -430,7 +434,7 @@ public class IfStatement: Equatable { // kotlin: ignore
 		self.isGuard = isGuard
 	}
 
-	public static func == (lhs: IfStatement, rhs: IfStatement) -> Bool {
+	public static func == (lhs: IfStatementData, rhs: IfStatementData) -> Bool {
 		return lhs.conditions == rhs.conditions &&
 			lhs.declarations == rhs.declarations &&
 			lhs.statements == rhs.statements &&
@@ -560,7 +564,7 @@ extension Statement { // kotlin: ignore
 				PrintableTree(name),
 				PrintableTree("inherits", inherits),
 				PrintableTree("members", ArrayClass<PrintableAsTree?>(members)), ]
-		case let .functionDeclaration(value: functionDeclaration):
+		case let .functionDeclaration(data: functionDeclaration):
 			return [
 				functionDeclaration.extendsType.map { PrintableTree("extends type \($0)") },
 				functionDeclaration.isImplicit ? PrintableTree("implicit") : nil,
@@ -575,7 +579,7 @@ extension Statement { // kotlin: ignore
 				PrintableTree(
 					"statements",
 					ArrayClass<PrintableAsTree?>(functionDeclaration.statements ?? [])), ]
-		case let .variableDeclaration(value: variableDeclaration):
+		case let .variableDeclaration(data: variableDeclaration):
 			return [
 				PrintableTree.initOrNil(
 					"extendsType", [PrintableTree.initOrNil(variableDeclaration.extendsType)]),
@@ -587,10 +591,10 @@ extension Statement { // kotlin: ignore
 				variableDeclaration.expression,
 				PrintableTree.initOrNil(
 					"getter",
-					[variableDeclaration.getter.map { Statement.functionDeclaration(value: $0) }]),
+					[variableDeclaration.getter.map { Statement.functionDeclaration(data: $0) }]),
 				PrintableTree.initOrNil(
 					"setter",
-					[variableDeclaration.setter.map { Statement.functionDeclaration(value: $0) }]),
+					[variableDeclaration.setter.map { Statement.functionDeclaration(data: $0) }]),
 				PrintableTree.initOrNil(
 					"annotations", [PrintableTree.initOrNil(variableDeclaration.annotations)]), ]
 		case let .forEachStatement(
@@ -605,19 +609,19 @@ extension Statement { // kotlin: ignore
 			return [
 				PrintableTree("expression", [expression]),
 				PrintableTree.initOrNil("statements", ArrayClass<PrintableAsTree?>(statements)), ]
-		case let .ifStatement(value: ifStatement):
+		case let .ifStatement(data: ifStatement):
 			let declarationTrees =
-				ifStatement.declarations.map { Statement.variableDeclaration(value: $0) }
+				ifStatement.declarations.map { Statement.variableDeclaration(data: $0) }
 			let conditionTrees = ifStatement.conditions.map { condition -> Statement in
 				switch condition {
 				case let .condition(expression: expression):
 					return .expression(expression: expression)
 				case let .declaration(variableDeclaration: variableDeclaration):
-					return .variableDeclaration(value: variableDeclaration)
+					return .variableDeclaration(data: variableDeclaration)
 				}
 			}
 			let elseStatementTrees = ifStatement.elseStatement
-				.map({ Statement.ifStatement(value: $0) })?.printableSubtrees ?? []
+				.map({ Statement.ifStatement(data: $0) })?.printableSubtrees ?? []
 			return [
 				ifStatement.isGuard ? PrintableTree("guard") : nil,
 				PrintableTree.initOrNil(
@@ -685,7 +689,7 @@ extension Expression: PrintableAsTree { // kotlin: ignore
 			}
 		case let .optionalExpression(expression: expression):
 			return expression.type
-		case let .declarationReferenceExpression(value: declarationReferenceExpression):
+		case let .declarationReferenceExpression(data: declarationReferenceExpression):
 			return declarationReferenceExpression.type
 		case let .typeExpression(type: type):
 			return type
@@ -704,7 +708,7 @@ extension Expression: PrintableAsTree { // kotlin: ignore
 			// `(A.MyEnum.Type) -> A.MyEnum`).
 			if case let .typeExpression(type: enumType) = leftExpression,
 				case let .declarationReferenceExpression(
-					value: declarationReferenceExpression) = rightExpression,
+					data: declarationReferenceExpression) = rightExpression,
 				declarationReferenceExpression.type.hasPrefix("("),
 				declarationReferenceExpression.type.contains("\(enumType).Type) -> "),
 				declarationReferenceExpression.type.hasSuffix(enumType)
@@ -723,7 +727,7 @@ extension Expression: PrintableAsTree { // kotlin: ignore
 			return type
 		case let .ifExpression(condition: _, trueExpression: trueExpression, falseExpression: _):
 			return trueExpression.type
-		case let .callExpression(value: callExpression):
+		case let .callExpression(data: callExpression):
 			return callExpression.type
 		case let .closureExpression(parameters: _, statements: _, type: type):
 			return type
@@ -756,9 +760,9 @@ extension Expression: PrintableAsTree { // kotlin: ignore
 
 	var range: SourceFileRange? {
 		switch self {
-		case let .declarationReferenceExpression(value: declarationReferenceExpression):
+		case let .declarationReferenceExpression(data: declarationReferenceExpression):
 			return declarationReferenceExpression.range
-		case let .callExpression(value: callExpression):
+		case let .callExpression(data: callExpression):
 			return callExpression.range
 		default:
 			return nil
@@ -798,7 +802,7 @@ extension Expression: PrintableAsTree { // kotlin: ignore
 			return [expression]
 		case let .optionalExpression(expression: expression):
 			return [expression]
-		case let .declarationReferenceExpression(value: expression):
+		case let .declarationReferenceExpression(data: expression):
 			return [
 				PrintableTree(expression.type),
 				PrintableTree(expression.identifier),
@@ -861,7 +865,7 @@ extension Expression: PrintableAsTree { // kotlin: ignore
 				PrintableTree("type \(type)"),
 				PrintableTree("operator \(operatorSymbol)"),
 				PrintableTree("expression", [expression]), ]
-		case let .callExpression(value: callExpression):
+		case let .callExpression(data: callExpression):
 			return [
 				PrintableTree("type \(callExpression.type)"),
 				PrintableTree("function", [callExpression.function]),

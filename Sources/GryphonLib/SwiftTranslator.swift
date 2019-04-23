@@ -683,8 +683,8 @@ public class SwiftTranslator {
 			let (member, isStandardLibrary) = getIdentifierFromDeclaration(declaration)
 			let isImplicit = memberReferenceExpression.standaloneAttributes.contains("implicit")
 			let range = getRangeRecursively(ofNode: memberReferenceExpression)
-			let rightHand = Expression.declarationReferenceExpression(value:
-				DeclarationReferenceExpression(
+			let rightHand = Expression.declarationReferenceExpression(data:
+				DeclarationReferenceData(
 					identifier: member,
 					type: type,
 					isStandardLibrary: isStandardLibrary,
@@ -722,12 +722,12 @@ public class SwiftTranslator {
 			if let labelAndType = tupleComponent?.split(withStringSeparator: ": "),
 				let label = labelAndType[safe: 0],
 				let type = labelAndType[safe: 1],
-				case let .declarationReferenceExpression(value: leftExpression) = leftHand
+				case let .declarationReferenceExpression(data: leftExpression) = leftHand
 			{
 				return .dotExpression(
 					leftExpression: leftHand,
-					rightExpression: .declarationReferenceExpression(value:
-						DeclarationReferenceExpression(
+					rightExpression: .declarationReferenceExpression(data:
+						DeclarationReferenceData(
 							identifier: label,
 							type: type,
 							isStandardLibrary: leftExpression.isStandardLibrary,
@@ -889,7 +889,7 @@ public class SwiftTranslator {
 
 			// Swift 4.2
 			if case .typeExpression(type: _) = leftHand,
-				case let .declarationReferenceExpression(value: rightExpression) = rightHand,
+				case let .declarationReferenceExpression(data: rightExpression) = rightHand,
 				rightExpression.identifier == "none"
 			{
 				return .nilLiteralExpression
@@ -936,8 +936,8 @@ public class SwiftTranslator {
 			let maybeCollectionExpression = forEachStatement.subtree(at: 2),
 			let variableName = variableSubtree.standaloneAttributes.first
 		{
-			variable = Expression.declarationReferenceExpression(value:
-				DeclarationReferenceExpression(
+			variable = Expression.declarationReferenceExpression(data:
+				DeclarationReferenceData(
 					identifier: variableName,
 					type: cleanUpType(rawType),
 					isStandardLibrary: false,
@@ -954,8 +954,8 @@ public class SwiftTranslator {
 			let variables = zipToClass(variableNames, variableTypes).map {
 				LabeledExpression(
 					label: nil,
-					expression: .declarationReferenceExpression(value:
-						DeclarationReferenceExpression(
+					expression: .declarationReferenceExpression(data:
+						DeclarationReferenceData(
 							identifier: $0.0,
 							type: cleanUpType($0.1),
 							isStandardLibrary: false,
@@ -1038,15 +1038,15 @@ public class SwiftTranslator {
 
 	internal func translate(ifStatement: SwiftAST) throws -> Statement {
 		do {
-			let result: IfStatement = try translate(ifStatement: ifStatement)
-			return .ifStatement(value: result)
+			let result: IfStatementData = try translate(ifStatement: ifStatement)
+			return .ifStatement(data: result)
 		}
 		catch let error {
 			return try handleUnexpectedASTStructureError(error)
 		}
 	}
 
-	internal func translate(ifStatement: SwiftAST) throws -> IfStatement {
+	internal func translate(ifStatement: SwiftAST) throws -> IfStatementData {
 		guard ifStatement.name == "If Statement" || ifStatement.name == "Guard Statement" else {
 			throw createUnexpectedASTStructureError(
 				"Trying to translate \(ifStatement.name) as an if or guard statement",
@@ -1058,7 +1058,7 @@ public class SwiftTranslator {
 		let (conditions, extraStatements) = try translateIfConditions(forIfStatement: ifStatement)
 
 		let braceStatement: SwiftAST
-		let elseStatement: IfStatement?
+		let elseStatement: IfStatementData?
 
 		if ifStatement.subtrees.count > 2,
 			let unwrappedBraceStatement = ifStatement.subtrees.secondToLast,
@@ -1077,7 +1077,7 @@ public class SwiftTranslator {
 		{
 			braceStatement = unwrappedBraceStatement
 			let statements = try translate(braceStatement: elseAST)
-			elseStatement = IfStatement(
+			elseStatement = IfStatementData(
 				conditions: [], declarations: [],
 				statements: ArrayClass(statements),
 				elseStatement: nil,
@@ -1097,7 +1097,7 @@ public class SwiftTranslator {
 
 		let statements = try translate(braceStatement: braceStatement)
 
-		return IfStatement(
+		return IfStatementData(
 			conditions: ArrayClass(conditions),
 			declarations: [],
 			statements: extraStatements + ArrayClass(statements),
@@ -1144,13 +1144,13 @@ public class SwiftTranslator {
 					let range = getRangeRecursively(ofNode: patternLet)
 
 					extraStatements = ArrayClass(declarations).map {
-						Statement.variableDeclaration(value: VariableDeclaration(
+						Statement.variableDeclaration(data: VariableDeclarationData(
 							identifier: $0.newVariable,
 							typeName: $0.associatedValueType,
 							expression: .dotExpression(
 								leftExpression: translatedExpression,
-								rightExpression: .declarationReferenceExpression(value:
-									DeclarationReferenceExpression(
+								rightExpression: .declarationReferenceExpression(data:
+									DeclarationReferenceData(
 										identifier: $0.associatedValueName,
 										type: $0.associatedValueType,
 										isStandardLibrary: false,
@@ -1228,8 +1228,8 @@ public class SwiftTranslator {
 		}
 
 		let range = getRangeRecursively(ofNode: simplePatternEnumElement)
-		let lastExpression = Expression.declarationReferenceExpression(value:
-			DeclarationReferenceExpression(
+		let lastExpression = Expression.declarationReferenceExpression(data:
+			DeclarationReferenceData(
 				identifier: String(lastEnumElement),
 				type: type,
 				isStandardLibrary: false,
@@ -1250,7 +1250,7 @@ public class SwiftTranslator {
 
 	internal func translateIfConditions(
 		forIfStatement ifStatement: SwiftAST) throws
-		-> (conditions: [IfStatement.IfCondition], statements: [Statement])
+		-> (conditions: [IfStatementData.Condition], statements: [Statement])
 	{
 		guard ifStatement.name == "If Statement" || ifStatement.name == "Guard Statement" else {
 			return try (
@@ -1260,7 +1260,7 @@ public class SwiftTranslator {
 					AST: ifStatement, translator: self), ])
 		}
 
-		var conditionsResult = [IfStatement.IfCondition]()
+		var conditionsResult = [IfStatementData.Condition]()
 		var statementsResult = [Statement]()
 
 		let conditions = ifStatement.subtrees.filter {
@@ -1319,7 +1319,7 @@ public class SwiftTranslator {
 
 				let expression = try translate(expression: lastCondition)
 
-				conditionsResult.append(.declaration(variableDeclaration: VariableDeclaration(
+				conditionsResult.append(.declaration(variableDeclaration: VariableDeclarationData(
 					identifier: name,
 					typeName: type,
 					expression: expression,
@@ -1361,13 +1361,13 @@ public class SwiftTranslator {
 				for declaration in declarations {
 					let range = getRangeRecursively(ofNode: patternLet)
 
-					statementsResult.append(.variableDeclaration(value: VariableDeclaration(
+					statementsResult.append(.variableDeclaration(data: VariableDeclarationData(
 						identifier: declaration.newVariable,
 						typeName: declaration.associatedValueType,
 						expression: .dotExpression(
 							leftExpression: declarationReference,
-							rightExpression: .declarationReferenceExpression(value:
-								DeclarationReferenceExpression(
+							rightExpression: .declarationReferenceExpression(data:
+								DeclarationReferenceData(
 									identifier: String(declaration.associatedValueName),
 									type: declaration.associatedValueType,
 									isStandardLibrary: false,
@@ -1591,7 +1591,7 @@ public class SwiftTranslator {
 		let joinedAnnotations = annotations.compactMap { $0 }.joined(separator: " ")
 		let annotationsResult = joinedAnnotations.isEmpty ? nil : joinedAnnotations
 
-		return .functionDeclaration(value: FunctionDeclaration(
+		return .functionDeclaration(data: FunctionDeclarationData(
 			prefix: String(functionNamePrefix),
 			parameters: parameters,
 			returnType: returnType,
@@ -1680,8 +1680,8 @@ public class SwiftTranslator {
 			expression = .literalCodeExpression(string: valueReplacement)
 		}
 
-		var getter: FunctionDeclaration?
-		var setter: FunctionDeclaration?
+		var getter: FunctionDeclarationData?
+		var setter: FunctionDeclarationData?
 		for subtree in variableDeclaration.subtrees {
 			let access = subtree["access"]
 
@@ -1697,7 +1697,7 @@ public class SwiftTranslator {
 			let annotations = getComment(forNode: subtree, key: "annotation")
 
 			if subtree["get_for"] != nil {
-				getter = FunctionDeclaration(
+				getter = FunctionDeclarationData(
 					prefix: "get",
 					parameters: [],
 					returnType: type,
@@ -1712,7 +1712,7 @@ public class SwiftTranslator {
 					annotations: annotations)
 			}
 			else if subtree["materializeForSet_for"] != nil || subtree["set_for"] != nil {
-				setter = FunctionDeclaration(
+				setter = FunctionDeclarationData(
 					prefix: "set",
 					parameters: [FunctionParameter(
 						label: "newValue", apiLabel: nil, type: type, value: nil), ],
@@ -1729,7 +1729,7 @@ public class SwiftTranslator {
 			}
 		}
 
-		return .variableDeclaration(value: VariableDeclaration(
+		return .variableDeclaration(data: VariableDeclarationData(
 			identifier: identifier,
 			typeName: type,
 			expression: expression,
@@ -1813,7 +1813,7 @@ public class SwiftTranslator {
 
 		let range = getRange(ofNode: callExpression)
 
-		return .callExpression(value: CallExpression(
+		return .callExpression(data: CallExpressionData(
 			function: function,
 			parameters: parameters,
 			type: type,
@@ -2185,7 +2185,7 @@ public class SwiftTranslator {
 
 		if let discriminator = declarationReferenceExpression["discriminator"] {
 			let (identifier, isStandardLibrary) = getIdentifierFromDeclaration(discriminator)
-			return .declarationReferenceExpression(value: DeclarationReferenceExpression(
+			return .declarationReferenceExpression(data: DeclarationReferenceData(
 					identifier: identifier,
 					type: type,
 					isStandardLibrary: isStandardLibrary,
@@ -2196,7 +2196,7 @@ public class SwiftTranslator {
 			codeDeclaration.hasPrefix("code.")
 		{
 			let (identifier, isStandardLibrary) = getIdentifierFromDeclaration(codeDeclaration)
-			return .declarationReferenceExpression(value: DeclarationReferenceExpression(
+			return .declarationReferenceExpression(data: DeclarationReferenceData(
 				identifier: identifier,
 				type: type,
 				isStandardLibrary: isStandardLibrary,
@@ -2205,7 +2205,7 @@ public class SwiftTranslator {
 		}
 		else if let declaration = declarationReferenceExpression["decl"] {
 			let (identifier, isStandardLibrary) = getIdentifierFromDeclaration(declaration)
-			return .declarationReferenceExpression(value: DeclarationReferenceExpression(
+			return .declarationReferenceExpression(data: DeclarationReferenceData(
 				identifier: identifier,
 				type: type,
 				isStandardLibrary: isStandardLibrary,

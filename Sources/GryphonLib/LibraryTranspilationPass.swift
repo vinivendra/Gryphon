@@ -24,7 +24,7 @@ public struct TranspilationTemplate {
 }
 
 public class RecordTemplatesTranspilationPass: TranspilationPass {
-	override func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclaration)
+	override func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclarationData)
 		-> ArrayClass<Statement>
 	{
 		if functionDeclaration.prefix == "gryphonTemplates",
@@ -118,7 +118,7 @@ extension Expression {
 		_ template: Expression, _ matches: inout [String: Expression]) -> Bool
 	{
 		if case let .declarationReferenceExpression(
-				value: templateExpression) = template,
+				data: templateExpression) = template,
 			templateExpression.identifier.hasPrefix("_"),
 			self.isOfType(templateExpression.type)
 		{
@@ -143,8 +143,8 @@ extension Expression {
 
 				return leftExpression.matches(rightExpression, &matches)
 			case let
-				(.declarationReferenceExpression(value: leftExpression),
-				 .declarationReferenceExpression(value: rightExpression)):
+				(.declarationReferenceExpression(data: leftExpression),
+				 .declarationReferenceExpression(data: rightExpression)):
 
 				return leftExpression.identifier == rightExpression.identifier &&
 					leftExpression.type.isSubtype(of: rightExpression.type) &&
@@ -156,7 +156,7 @@ extension Expression {
 				return leftType.isSubtype(of: rightType)
 			case let
 				(.typeExpression(type: leftType),
-				 .declarationReferenceExpression(value: rightExpression)):
+				 .declarationReferenceExpression(data: rightExpression)):
 
 				guard declarationExpressionMatchesImplicitTypeExpression(rightExpression) else {
 					return false
@@ -164,7 +164,7 @@ extension Expression {
 				let expressionType = String(rightExpression.type.dropLast(".Type".count))
 				return leftType.isSubtype(of: expressionType)
 			case let
-				(.declarationReferenceExpression(value: leftExpression),
+				(.declarationReferenceExpression(data: leftExpression),
 				 .typeExpression(type: rightType)):
 				guard declarationExpressionMatchesImplicitTypeExpression(leftExpression) else {
 					return false
@@ -232,8 +232,8 @@ extension Expression {
 					(leftOperatorSymbol == rightOperatorSymbol)
 					&& (leftType.isSubtype(of: rightType))
 			case let
-				(.callExpression(value: leftCallExpression),
-				 .callExpression(value: rightCallExpression)):
+				(.callExpression(data: leftCallExpression),
+				 .callExpression(data: rightCallExpression)):
 
 				return leftCallExpression.function.matches(
 						rightCallExpression.function, &matches) &&
@@ -344,7 +344,7 @@ extension Expression {
 	```
 	**/
 	private func declarationExpressionMatchesImplicitTypeExpression(
-		_ expression: DeclarationReferenceExpression) -> Bool
+		_ expression: DeclarationReferenceData) -> Bool
 	{
 		if expression.identifier == "self",
 			expression.type.hasSuffix(".Type"),
