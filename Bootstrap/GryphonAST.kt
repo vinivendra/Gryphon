@@ -1,3 +1,32 @@
+class GryphonAST: PrintableAsTree {
+	val sourceFile: SourceFile?
+	val declarations: MutableList<Statement>
+	val statements: MutableList<Statement>
+
+	constructor(
+		sourceFile: SourceFile?,
+		declarations: MutableList<Statement>,
+		statements: MutableList<Statement>)
+	{
+		this.sourceFile = sourceFile
+		this.declarations = declarations
+		this.statements = statements
+	}
+
+	override val treeDescription: String
+		get() {
+			return "Source File"
+		}
+	override val printableSubtrees: MutableList<PrintableAsTree?>
+		get() {
+			return mutableListOf(PrintableTree("Declarations", declarations as MutableList<PrintableAsTree?>), PrintableTree("Statements", statements as MutableList<PrintableAsTree?>))
+		}
+
+	override fun toString(): String {
+		return prettyDescription()
+	}
+}
+
 public sealed class Statement {
 	class Expression(val expression: Expression): Statement()
 	class TypealiasDeclaration(val identifier: String, val type: String, val isImplicit: Boolean): Statement()

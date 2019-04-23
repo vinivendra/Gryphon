@@ -1665,6 +1665,19 @@ public class RecordEnumsTranspilationPass: TranspilationPass {
 	}
 }
 
+/// Records all protocol declarations in the Kotlin Translator
+public class RecordProtocolsTranspilationPass: TranspilationPass {
+	override func replaceProtocolDeclaration(
+		name: String,
+		members: ArrayClass<Statement>)
+		-> ArrayClass<Statement>
+	{
+		KotlinTranslator.addProtocol(name)
+
+		return super.replaceProtocolDeclaration(name: name, members: members)
+	}
+}
+
 public class RaiseStandardLibraryWarningsTranspilationPass: TranspilationPass {
 	override func replaceDeclarationReferenceExpression(
 		_ expression: DeclarationReferenceData) -> DeclarationReferenceData
@@ -2273,6 +2286,7 @@ public extension TranspilationPass {
 		// Record information on enum and function translations
 		result = RecordTemplatesTranspilationPass(ast: result).run()
 		result = RecordEnumsTranspilationPass(ast: result).run()
+		result = RecordProtocolsTranspilationPass(ast: result).run()
 		result = RecordFunctionTranslationsTranspilationPass(ast: result).run()
 
 		return result

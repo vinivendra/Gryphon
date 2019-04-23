@@ -14,9 +14,7 @@
 * limitations under the License.
 */
 
-public final class GryphonAST:  // kotlin: ignore
-	PrintableAsTree, Equatable, CustomStringConvertible
-{
+public final class GryphonAST: PrintableAsTree, Equatable, CustomStringConvertible {
 	let sourceFile: SourceFile?
 	let declarations: ArrayClass<Statement>
 	let statements: ArrayClass<Statement>
@@ -32,24 +30,24 @@ public final class GryphonAST:  // kotlin: ignore
 	}
 
 	//
-	public static func == (lhs: GryphonAST, rhs: GryphonAST) -> Bool {
+	public static func == (lhs: GryphonAST, rhs: GryphonAST) -> Bool { // kotlin: ignore
 		return lhs.declarations == rhs.declarations &&
 			lhs.statements == rhs.statements
 	}
 
 	//
-	public var treeDescription: String { return "Source File" }
+	public var treeDescription: String { // annotation: override
+		return "Source File"
+	}
 
-	public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [PrintableTree("Declarations", ArrayClass<PrintableAsTree?>(declarations)),
 				PrintableTree("Statements", ArrayClass<PrintableAsTree?>(statements)), ]
 	}
 
 	//
-	public var description: String {
-		var result = ""
-		prettyPrint { result += $0 }
-		return result
+	public var description: String { // annotation: override
+		return prettyDescription()
 	}
 }
 

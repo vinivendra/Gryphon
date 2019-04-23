@@ -104,6 +104,16 @@ public class KotlinTranslator {
 		enumClasses.append(className)
 	}
 
+	/**
+	This variable is used to store protocol definitions in order to allow the translator
+	to translate conformances to them correctly (instead of as class inheritances).
+	*/
+	private(set) static var protocols = [String]()
+
+	public static func addProtocol(_ protocolName: String) {
+		protocols.append(protocolName)
+	}
+
 	/// Stores information on how a Swift function should be translated into Kotlin, including what
 	/// its prefix should be and what its parameters should be named. The `swiftAPIName` and the
 	/// `type` properties are used to look up the right function translation, and they should match
@@ -353,7 +363,11 @@ public class KotlinTranslator {
 
 		if !inherits.isEmpty {
 			var translatedInheritedTypes = inherits.map(translateType)
-			translatedInheritedTypes[0] = translatedInheritedTypes[0] + "()"
+			translatedInheritedTypes = translatedInheritedTypes.map {
+				KotlinTranslator.protocols.contains($0) ?
+					$0 :
+					$0 + "()"
+			}
 			result += ": \(translatedInheritedTypes.joined(separator: ", "))"
 		}
 
