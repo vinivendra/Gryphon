@@ -489,17 +489,57 @@ public class EnumElement: Equatable {
 
 extension Statement: PrintableAsTree { // kotlin: ignore
 	public var name: String {
-		if let name = Mirror(reflecting: self).children.first?.label {
-			return name
-		}
-		else {
-			return String(describing: self)
+		switch self {
+		case .expression:
+			return "expression".capitalizedAsCamelCase
+		case .extensionDeclaration:
+			return "extensionDeclaration".capitalizedAsCamelCase
+		case .importDeclaration:
+			return "importDeclaration".capitalizedAsCamelCase
+		case .typealiasDeclaration:
+			return "typealiasDeclaration".capitalizedAsCamelCase
+		case .classDeclaration:
+			return "classDeclaration".capitalizedAsCamelCase
+		case .companionObject:
+			return "companionObject".capitalizedAsCamelCase
+		case .enumDeclaration:
+			return "enumDeclaration".capitalizedAsCamelCase
+		case .protocolDeclaration:
+			return "protocolDeclaration".capitalizedAsCamelCase
+		case .structDeclaration:
+			return "structDeclaration".capitalizedAsCamelCase
+		case .functionDeclaration:
+			return "functionDeclaration".capitalizedAsCamelCase
+		case .variableDeclaration:
+			return "variableDeclaration".capitalizedAsCamelCase
+		case .forEachStatement:
+			return "forEachStatement".capitalizedAsCamelCase
+		case .whileStatement:
+			return "whileStatement".capitalizedAsCamelCase
+		case .ifStatement:
+			return "ifStatement".capitalizedAsCamelCase
+		case .switchStatement:
+			return "switchStatement".capitalizedAsCamelCase
+		case .deferStatement:
+			return "deferStatement".capitalizedAsCamelCase
+		case .throwStatement:
+			return "throwStatement".capitalizedAsCamelCase
+		case .returnStatement:
+			return "returnStatement".capitalizedAsCamelCase
+		case .breakStatement:
+			return "breakStatement".capitalizedAsCamelCase
+		case .continueStatement:
+			return "continueStatement".capitalizedAsCamelCase
+		case .assignmentStatement:
+			return "assignmentStatement".capitalizedAsCamelCase
+		case .error:
+			return "error".capitalizedAsCamelCase
 		}
 	}
 
 	//
 	public var treeDescription: String {
-		return name.capitalizedAsCamelCase
+		return name
 	}
 
 	public var printableSubtrees: ArrayClass<PrintableAsTree?> {
@@ -779,11 +819,69 @@ extension Expression: PrintableAsTree { // kotlin: ignore
 	}
 
 	public var name: String {
-		if let name = Mirror(reflecting: self).children.first?.label {
-			return name
-		}
-		else {
-			return String(describing: self)
+		switch self {
+		case .templateExpression:
+			return "templateExpression".capitalizedAsCamelCase
+		case .literalCodeExpression:
+			return "literalCodeExpression".capitalizedAsCamelCase
+		case .literalDeclarationExpression:
+			return "literalDeclarationExpression".capitalizedAsCamelCase
+		case .parenthesesExpression:
+			return "parenthesesExpression".capitalizedAsCamelCase
+		case .forceValueExpression:
+			return "forceValueExpression".capitalizedAsCamelCase
+		case .optionalExpression:
+			return "optionalExpression".capitalizedAsCamelCase
+		case .declarationReferenceExpression:
+			return "declarationReferenceExpression".capitalizedAsCamelCase
+		case .typeExpression:
+			return "typeExpression".capitalizedAsCamelCase
+		case .subscriptExpression:
+			return "subscriptExpression".capitalizedAsCamelCase
+		case .arrayExpression:
+			return "arrayExpression".capitalizedAsCamelCase
+		case .dictionaryExpression:
+			return "dictionaryExpression".capitalizedAsCamelCase
+		case .returnExpression:
+			return "returnExpression".capitalizedAsCamelCase
+		case .dotExpression:
+			return "dotExpression".capitalizedAsCamelCase
+		case .binaryOperatorExpression:
+			return "binaryOperatorExpression".capitalizedAsCamelCase
+		case .prefixUnaryExpression:
+			return "prefixUnaryExpression".capitalizedAsCamelCase
+		case .postfixUnaryExpression:
+			return "postfixUnaryExpression".capitalizedAsCamelCase
+		case .ifExpression:
+			return "ifExpression".capitalizedAsCamelCase
+		case .callExpression:
+			return "callExpression".capitalizedAsCamelCase
+		case .closureExpression:
+			return "closureExpression".capitalizedAsCamelCase
+		case .literalIntExpression:
+			return "literalIntExpression".capitalizedAsCamelCase
+		case .literalUIntExpression:
+			return "literalUIntExpression".capitalizedAsCamelCase
+		case .literalDoubleExpression:
+			return "literalDoubleExpression".capitalizedAsCamelCase
+		case .literalFloatExpression:
+			return "literalFloatExpression".capitalizedAsCamelCase
+		case .literalBoolExpression:
+			return "literalBoolExpression".capitalizedAsCamelCase
+		case .literalStringExpression:
+			return "literalStringExpression".capitalizedAsCamelCase
+		case .literalCharacterExpression:
+			return "literalCharacterExpression".capitalizedAsCamelCase
+		case .nilLiteralExpression:
+			return "nilLiteralExpression".capitalizedAsCamelCase
+		case .interpolatedStringLiteralExpression:
+			return "interpolatedStringLiteralExpression".capitalizedAsCamelCase
+		case .tupleExpression:
+			return "tupleExpression".capitalizedAsCamelCase
+		case .tupleShuffleExpression:
+			return "tupleShuffleExpression".capitalizedAsCamelCase
+		case .error:
+			return "error".capitalizedAsCamelCase
 		}
 	}
 
