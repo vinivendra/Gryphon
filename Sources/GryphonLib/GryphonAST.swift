@@ -55,7 +55,7 @@ public final class GryphonAST:  // kotlin: ignore
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-public indirect enum Statement: Equatable, PrintableAsTree { // kotlin: ignore
+public indirect enum Statement: Equatable {
 
 	case expression(
 		expression: Expression)
@@ -124,6 +124,7 @@ public indirect enum Statement: Equatable, PrintableAsTree { // kotlin: ignore
 // TODO: dictionaryExpression should have key-value pairs
 
 public indirect enum Expression: Equatable {
+
 	case literalCodeExpression(
 		string: String)
 	case literalDeclarationExpression(
@@ -176,7 +177,7 @@ public indirect enum Expression: Equatable {
 		falseExpression: Expression)
 	case callExpression(
 		data: CallExpressionData)
-	case closureExpression( // kotlin: ignore
+	case closureExpression(
 		parameters: ArrayClass<LabeledType>,
 		statements: ArrayClass<Statement>,
 		type: String)
@@ -216,27 +217,14 @@ public struct LabeledType: Equatable {
 	let type: String
 }
 
-public struct FunctionParameter: Equatable, PrintableAsTree { // kotlin: ignore
+public struct FunctionParameter: Equatable {
 	let label: String
 	let apiLabel: String?
 	let type: String
 	let value: Expression?
-
-	public var treeDescription: String { // annotation: override
-		return "parameter"
-	}
-
-	public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
-		return [
-			self.apiLabel.map { PrintableTree("api label: \($0)") },
-			PrintableTree("label: \(self.label)"),
-			PrintableTree("type: \(self.type)"),
-			PrintableTree.initOrNil("value", [self.value]),
-		]
-	}
 }
 
-public class VariableDeclarationData: Equatable { // kotlin: ignore
+public class VariableDeclarationData: Equatable {
 	var identifier: String
 	var typeName: String
 	var expression: Expression?
@@ -272,7 +260,11 @@ public class VariableDeclarationData: Equatable { // kotlin: ignore
 		self.annotations = annotations
 	}
 
-	public static func == (lhs: VariableDeclarationData, rhs: VariableDeclarationData) -> Bool {
+	public static func == ( // kotlin: ignore
+		lhs: VariableDeclarationData,
+		rhs: VariableDeclarationData)
+		-> Bool
+	{
 		return lhs.identifier == rhs.identifier &&
 			lhs.typeName == rhs.typeName &&
 			lhs.expression == rhs.expression &&
@@ -350,7 +342,7 @@ public class CallExpressionData: Equatable {
 	}
 }
 
-public class FunctionDeclarationData: Equatable { // kotlin: ignore
+public class FunctionDeclarationData: Equatable {
 	var prefix: String
 	var parameters: ArrayClass<FunctionParameter>
 	var returnType: String
@@ -392,7 +384,11 @@ public class FunctionDeclarationData: Equatable { // kotlin: ignore
 		self.annotations = annotations
 	}
 
-	public static func == (lhs: FunctionDeclarationData, rhs: FunctionDeclarationData) -> Bool {
+	public static func == ( // kotlin: ignore
+		lhs: FunctionDeclarationData,
+		rhs: FunctionDeclarationData)
+		-> Bool
+	{
 		return lhs.prefix == rhs.prefix &&
 			lhs.parameters == rhs.parameters &&
 			lhs.returnType == rhs.returnType &&
@@ -408,20 +404,20 @@ public class FunctionDeclarationData: Equatable { // kotlin: ignore
 	}
 }
 
-public class IfStatementData: Equatable { // kotlin: ignore
-	var conditions: ArrayClass<Condition>
+public class IfStatementData: Equatable {
+	var conditions: ArrayClass<IfCondition>
 	var declarations: ArrayClass<VariableDeclarationData>
 	var statements: ArrayClass<Statement>
 	var elseStatement: IfStatementData?
 	var isGuard: Bool
 
-	public enum Condition: Equatable {
+	public enum IfCondition: Equatable {
 		case condition(expression: Expression)
 		case declaration(variableDeclaration: VariableDeclarationData)
 	}
 
 	public init(
-		conditions: ArrayClass<Condition>,
+		conditions: ArrayClass<IfCondition>,
 		declarations: ArrayClass<VariableDeclarationData>,
 		statements: ArrayClass<Statement>,
 		elseStatement: IfStatementData?,
@@ -434,7 +430,11 @@ public class IfStatementData: Equatable { // kotlin: ignore
 		self.isGuard = isGuard
 	}
 
-	public static func == (lhs: IfStatementData, rhs: IfStatementData) -> Bool {
+	public static func == ( // kotlin: ignore
+		lhs: IfStatementData,
+		rhs: IfStatementData)
+		-> Bool
+	{
 		return lhs.conditions == rhs.conditions &&
 			lhs.declarations == rhs.declarations &&
 			lhs.statements == rhs.statements &&
@@ -443,7 +443,7 @@ public class IfStatementData: Equatable { // kotlin: ignore
 	}
 }
 
-public class SwitchCase: Equatable { // kotlin: ignore
+public class SwitchCase: Equatable {
 	var expression: Expression?
 	var statements: ArrayClass<Statement>
 
@@ -455,7 +455,7 @@ public class SwitchCase: Equatable { // kotlin: ignore
 		self.statements = statements
 	}
 
-	public static func == (lhs: SwitchCase, rhs: SwitchCase) -> Bool {
+	public static func == (lhs: SwitchCase, rhs: SwitchCase) -> Bool { // kotlin: ignore
 		return lhs.expression == rhs.expression &&
 			lhs.statements == rhs.statements
 	}
@@ -489,7 +489,7 @@ public class EnumElement: Equatable {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-extension Statement { // kotlin: ignore
+extension Statement: PrintableAsTree { // kotlin: ignore
 	public var name: String {
 		if let name = Mirror(reflecting: self).children.first?.label {
 			return name
@@ -565,6 +565,18 @@ extension Statement { // kotlin: ignore
 				PrintableTree("inherits", inherits),
 				PrintableTree("members", ArrayClass<PrintableAsTree?>(members)), ]
 		case let .functionDeclaration(data: functionDeclaration):
+			let parametersTrees = functionDeclaration.parameters
+				.map { parameter -> PrintableAsTree? in
+					PrintableTree(
+						"parameter",
+						[
+							parameter.apiLabel.map { PrintableTree("api label: \($0)") },
+							PrintableTree("label: \(parameter.label)"),
+							PrintableTree("type: \(parameter.type)"),
+							PrintableTree.initOrNil("value", [parameter.value]),
+						])
+				}
+
 			return [
 				functionDeclaration.extendsType.map { PrintableTree("extends type \($0)") },
 				functionDeclaration.isImplicit ? PrintableTree("implicit") : nil,
@@ -573,8 +585,7 @@ extension Statement { // kotlin: ignore
 				PrintableTree.initOrNil(functionDeclaration.access),
 				PrintableTree("type: \(functionDeclaration.functionType)"),
 				PrintableTree("prefix: \(functionDeclaration.prefix)"),
-				PrintableTree("parameters",
-							  ArrayClass<PrintableAsTree?>(functionDeclaration.parameters)),
+				PrintableTree("parameters", parametersTrees),
 				PrintableTree("return type: \(functionDeclaration.returnType)"),
 				PrintableTree(
 					"statements",

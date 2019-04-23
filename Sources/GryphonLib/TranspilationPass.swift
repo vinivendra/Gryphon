@@ -284,10 +284,10 @@ public class TranspilationPass {
 		return ifStatement
 	}
 
-	func replaceIfConditions(_ conditions: ArrayClass<IfStatementData.Condition>)
-		-> ArrayClass<IfStatementData.Condition>
+	func replaceIfConditions(_ conditions: ArrayClass<IfStatementData.IfCondition>)
+		-> ArrayClass<IfStatementData.IfCondition>
 	{
-		return conditions.map { condition -> IfStatementData.Condition in
+		return conditions.map { condition -> IfStatementData.IfCondition in
 			switch condition {
 			case let .condition(expression: expression):
 				return .condition(expression: replaceExpression(expression))
@@ -1785,7 +1785,7 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 	}
 
 	private func mayHaveSideEffectsOnRanges(
-		_ condition: IfStatementData.Condition)
+		_ condition: IfStatementData.IfCondition)
 		-> ArrayClass<SourceFileRange>
 	{
 		if case let .declaration(variableDeclaration: variableDeclaration) = condition,
@@ -1874,7 +1874,7 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 
 	/// Add conditions (`x != null`) for all let declarations
 	override func replaceIfStatement(_ ifStatement: IfStatementData) -> IfStatementData {
-		let newConditions = ifStatement.conditions.map { condition -> IfStatementData.Condition in
+		let newConditions = ifStatement.conditions.map { condition -> IfStatementData.IfCondition in
 			if case let .declaration(variableDeclaration: variableDeclaration) = condition {
 				return .condition(expression: .binaryOperatorExpression(
 					leftExpression: .declarationReferenceExpression(data:
@@ -2169,7 +2169,7 @@ public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
 
 			let ifStatement = ifStatement
 			ifStatement.conditions = ArrayClass([newCondition]).map {
-				IfStatementData.Condition.condition(expression: $0)
+				IfStatementData.IfCondition.condition(expression: $0)
 			}
 			ifStatement.isGuard = shouldStillBeGuard
 			return super.replaceIfStatement(ifStatement)

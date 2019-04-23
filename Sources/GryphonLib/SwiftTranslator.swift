@@ -1250,7 +1250,7 @@ public class SwiftTranslator {
 
 	internal func translateIfConditions(
 		forIfStatement ifStatement: SwiftAST) throws
-		-> (conditions: [IfStatementData.Condition], statements: [Statement])
+		-> (conditions: [IfStatementData.IfCondition], statements: [Statement])
 	{
 		guard ifStatement.name == "If Statement" || ifStatement.name == "Guard Statement" else {
 			return try (
@@ -1260,7 +1260,7 @@ public class SwiftTranslator {
 					AST: ifStatement, translator: self), ])
 		}
 
-		var conditionsResult = [IfStatementData.Condition]()
+		var conditionsResult = [IfStatementData.IfCondition]()
 		var statementsResult = [Statement]()
 
 		let conditions = ifStatement.subtrees.filter {
