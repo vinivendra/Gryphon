@@ -6,7 +6,7 @@ import java.util.stream.Stream
 class Utilities {
 	companion object {
 		internal fun expandSwiftAbbreviation(name: String): String {
-			var nameComponents: MutableList<String> = name.split(separator = "_").map { it.capitalize() }.toMutableList()
+			var nameComponents: MutableList<String> = name.split(separator = "_").map { it.capitalize() }
 			nameComponents = nameComponents.map { word ->
 					when (word) {
 						"Decl" -> "Declaration"
@@ -20,7 +20,7 @@ class Utilities {
 						"Var" -> "Variable"
 						else -> word
 					}
-				}.toMutableList()
+				}
 			return nameComponents.joinToString(separator = " ")
 		}
 	}
@@ -68,7 +68,7 @@ public fun Utilities.Companion.changeExtension(
 	: String
 {
 	val components: MutableList<String> = filePath.split(separator = "/", omittingEmptySubsequences = false)
-	var newComponents: MutableList<String> = components.dropLast(1).map { it }.toMutableList()
+	var newComponents: MutableList<String> = components.dropLast(1).map { it }
 	val nameComponent: String = components.lastOrNull()!!
 	val nameComponents: MutableList<String> = nameComponent.split(separator = ".", omittingEmptySubsequences = false)
 
@@ -254,4 +254,37 @@ fun <Element, Result> MutableList<Element>.parallelMap(
 {
 	return this.parallelStream().map(transform).collect(Collectors.toList())
 		.toMutableList()
+}
+
+internal fun Utilities.Companion.splitTypeList(typeList: String): MutableList<String> {
+	var bracketsLevel: Int = 0
+	var result: MutableList<String> = mutableListOf()
+	var currentResult: String = ""
+
+	for (character in typeList) {
+		if (character == '<' || character == '[') {
+			bracketsLevel += 1
+			currentResult += character
+		}
+		else if (character == '>' || character == ']') {
+			bracketsLevel -= 1
+			currentResult += character
+		}
+		else if ((character == ',' || character == ':') && bracketsLevel <= 0) {
+			result.add(currentResult)
+			currentResult = ""
+		}
+		else if (character == ' ') {
+			continue
+		}
+		else {
+			currentResult += character
+		}
+	}
+
+	if (!currentResult.isEmpty()) {
+		result.add(currentResult)
+	}
+
+	return result
 }

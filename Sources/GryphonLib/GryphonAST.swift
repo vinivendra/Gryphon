@@ -123,7 +123,7 @@ public indirect enum Statement: Equatable, PrintableAsTree { // kotlin: ignore
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // TODO: dictionaryExpression should have key-value pairs
 
-public indirect enum Expression: Equatable, PrintableAsTree { // kotlin: ignore
+public indirect enum Expression: Equatable {
 	case literalCodeExpression(
 		string: String)
 	case literalDeclarationExpression(
@@ -176,7 +176,7 @@ public indirect enum Expression: Equatable, PrintableAsTree { // kotlin: ignore
 		falseExpression: Expression)
 	case callExpression(
 		value: CallExpression)
-	case closureExpression(
+	case closureExpression( // kotlin: ignore
 		parameters: ArrayClass<LabeledType>,
 		statements: ArrayClass<Statement>,
 		type: String)
@@ -206,7 +206,7 @@ public indirect enum Expression: Equatable, PrintableAsTree { // kotlin: ignore
 	case error
 }
 
-public struct LabeledExpression: Equatable { // kotlin: ignore
+public struct LabeledExpression: Equatable {
 	let label: String?
 	let expression: Expression
 }
@@ -216,17 +216,17 @@ public struct LabeledType: Equatable {
 	let type: String
 }
 
-public struct FunctionParameter: Equatable, PrintableAsTree { // kotlin: ignore
+public struct FunctionParameter: Equatable, PrintableAsTree {
 	let label: String
 	let apiLabel: String?
 	let type: String
 	let value: Expression?
 
-	public var treeDescription: String {
+	public var treeDescription: String { // annotation: override
 		return "parameter"
 	}
 
-	public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [
 			self.apiLabel.map { PrintableTree("api label: \($0)") },
 			PrintableTree("label: \(self.label)"),
@@ -320,7 +320,7 @@ public class DeclarationReferenceExpression: Equatable {
 	}
 }
 
-public class CallExpression: Equatable { // kotlin: ignore
+public class CallExpression: Equatable {
 	var function: Expression
 	var parameters: Expression
 	var type: String
@@ -338,7 +338,7 @@ public class CallExpression: Equatable { // kotlin: ignore
 		self.range = range
 	}
 
-	public static func == (lhs: CallExpression, rhs: CallExpression) -> Bool {
+	public static func == (lhs: CallExpression, rhs: CallExpression) -> Bool { // kotlin: ignore
 		return lhs.function == rhs.function &&
 			lhs.parameters == rhs.parameters &&
 			lhs.type == rhs.type &&
@@ -457,7 +457,7 @@ public class SwitchCase: Equatable { // kotlin: ignore
 	}
 }
 
-public class EnumElement: Equatable { // kotlin: ignore
+public class EnumElement: Equatable {
 	var name: String
 	var associatedValues: ArrayClass<LabeledType>
 	var rawValue: Expression?
@@ -475,7 +475,7 @@ public class EnumElement: Equatable { // kotlin: ignore
 		self.annotations = annotations
 	}
 
-	public static func == (lhs: EnumElement, rhs: EnumElement) -> Bool {
+	public static func == (lhs: EnumElement, rhs: EnumElement) -> Bool { // kotlin: ignore
 		return lhs.name == rhs.name &&
 		lhs.associatedValues == rhs.associatedValues &&
 		lhs.rawValue == rhs.rawValue &&
@@ -666,7 +666,7 @@ extension Statement { // kotlin: ignore
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-extension Expression { // kotlin: ignore
+extension Expression: PrintableAsTree { // kotlin: ignore
 	public var type: String? {
 		switch self {
 		case .templateExpression:

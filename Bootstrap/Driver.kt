@@ -109,7 +109,7 @@ class Driver {
 				firstResult = filteredInputFiles.parallelMap { runUpToFirstPasses(settings = settings, inputFilePath = it) }
 			}
 			else {
-				firstResult = filteredInputFiles.map { runUpToFirstPasses(settings = settings, inputFilePath = it) }.toMutableList()
+				firstResult = filteredInputFiles.map { runUpToFirstPasses(settings = settings, inputFilePath = it) }
 			}
 
 			return firstResult

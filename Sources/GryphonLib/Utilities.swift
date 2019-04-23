@@ -527,3 +527,39 @@ extension ArrayClass { // kotlin: ignore
 // declaration: 	return this.parallelStream().map(transform).collect(Collectors.toList())
 // declaration: 		.toMutableList()
 // declaration: }
+
+extension Utilities {
+	static func splitTypeList(_ typeList: String) -> [String] {
+		var bracketsLevel = 0
+		var result: [String] = []
+		var currentResult = ""
+
+		for character in typeList {
+			if character == "<" || character == "[" {
+				bracketsLevel += 1
+				currentResult.append(character)
+			}
+			else if character == ">" || character == "]" {
+				bracketsLevel -= 1
+				currentResult.append(character)
+			}
+			else if (character == "," || character == ":"), bracketsLevel <= 0 {
+				result.append(currentResult)
+				currentResult = ""
+			}
+			else if character == " " {
+				continue
+			}
+			else {
+				currentResult.append(character)
+			}
+		}
+
+		// Add the last result that was being built
+		if !currentResult.isEmpty {
+			result.append(currentResult)
+		}
+
+		return result
+	}
+}

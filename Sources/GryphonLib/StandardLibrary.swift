@@ -348,3 +348,12 @@ extension DictionaryClass: Codable where Key: Codable, Value: Codable { // kotli
 // declaration: fun <T> MutableList<T>.copy(): MutableList<T> {
 // declaration: 	return this.toMutableList()
 // declaration: }
+
+// declaration: fun <T, R> T?.map(transform: (T) -> R): R? {
+// declaration: 	if (this != null) {
+// declaration: 		return transform(this)
+// declaration: 	}
+// declaration: 	else {
+// declaration: 		return null
+// declaration: 	}
+// declaration: }

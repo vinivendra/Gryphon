@@ -605,6 +605,10 @@ public class SwiftTranslator {
 		for index in enumElementDeclarations.indices {
 			let enumElementDeclaration = enumElementDeclarations[index]
 
+			guard getComment(forNode: enumElementDeclaration, key: "kotlin") != "ignore" else {
+				continue
+			}
+
 			guard let elementName = enumElementDeclaration.standaloneAttributes.first else {
 				return try unexpectedASTStructureError(
 					"Expected the element name to be the first standalone attribute in an Enum" +
@@ -636,7 +640,7 @@ public class SwiftTranslator {
 				let enumTypeComponents = enumType.split(withStringSeparator: " -> ")
 				let valuesComponent = enumTypeComponents[1]
 				let valueTypesString = String(valuesComponent.dropFirst().dropLast())
-				let valueTypes = valueTypesString.split(withStringSeparator: ", ")
+				let valueTypes = Utilities.splitTypeList(valueTypesString)
 
 				let associatedValues = zipToClass(valueLabels, valueTypes).map(LabeledType.init)
 

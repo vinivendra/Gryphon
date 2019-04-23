@@ -62,9 +62,9 @@ class SwiftAST: PrintableAsTree {
 		}
 	override val printableSubtrees: MutableList<PrintableAsTree?>
 		get() {
-			val keyValueStrings: MutableList<PrintableTree> = keyValueAttributes.map { "${it.key} → ${it.value}" }.toMutableList().sorted().map { PrintableTree(it) }.toMutableList()
+			val keyValueStrings: MutableList<PrintableTree> = keyValueAttributes.map { "${it.key} → ${it.value}" }.sorted().map { PrintableTree(it) }
 			val keyValueArray: MutableList<PrintableAsTree?> = keyValueStrings as MutableList<PrintableAsTree?>
-			val standaloneAttributesArray: MutableList<PrintableAsTree?> = standaloneAttributes.map { PrintableTree(it) }.toMutableList() as MutableList<PrintableAsTree?>
+			val standaloneAttributesArray: MutableList<PrintableAsTree?> = standaloneAttributes.map { PrintableTree(it) } as MutableList<PrintableAsTree?>
 			val subtreesArray: MutableList<PrintableAsTree?> = subtrees as MutableList<PrintableAsTree?>
 
 			val result = (standaloneAttributesArray + keyValueArray + subtreesArray)

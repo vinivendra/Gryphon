@@ -26,6 +26,7 @@ func gryphonTemplates() {
 	let _substring: Substring = "abc".dropLast()
 	let _range: Range<String.Index> = _string.startIndex..<_string.endIndex
 	let _any: Any = "abc"
+	let _optional: Any? = "abc"
 	let _double: Double = 0
 	let _double1: Double = 0
 	let _double2: Double = 0
@@ -36,6 +37,7 @@ func gryphonTemplates() {
 	let _closure: (Any, Any) -> Any = { a, b in a }
 	let _closure2: (Any) -> Any = { a in a }
 	let _closure3: (Any) -> Bool = { _ in true }
+	let _closure4: (Any) -> Any = { _ in true }
 
 	// Print
 	print(_any)
@@ -218,4 +220,8 @@ func gryphonTemplates() {
 	// Double
 	_double1..._double2
 	"(_double1).rangeTo(_double2)"
+
+	// Optional
+	_optional.map(_closure4)
+	"_optional.map _closure4"
 }
