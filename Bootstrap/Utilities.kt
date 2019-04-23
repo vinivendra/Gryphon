@@ -6,7 +6,7 @@ import java.util.stream.Stream
 class Utilities {
 	companion object {
 		internal fun expandSwiftAbbreviation(name: String): String {
-			var nameComponents: MutableList<String> = name.split(separator = "_").map { it.capitalize() }
+			var nameComponents: MutableList<String> = name.split(separator = "_").map { it.capitalize() }.toMutableList()
 			nameComponents = nameComponents.map { word ->
 					when (word) {
 						"Decl" -> "Declaration"
@@ -20,7 +20,7 @@ class Utilities {
 						"Var" -> "Variable"
 						else -> word
 					}
-				}
+				}.toMutableList()
 			return nameComponents.joinToString(separator = " ")
 		}
 	}
@@ -68,7 +68,7 @@ public fun Utilities.Companion.changeExtension(
 	: String
 {
 	val components: MutableList<String> = filePath.split(separator = "/", omittingEmptySubsequences = false)
-	var newComponents: MutableList<String> = components.dropLast(1).map { it }
+	var newComponents: MutableList<String> = components.dropLast(1).map { it }.toMutableList()
 	val nameComponent: String = components.lastOrNull()!!
 	val nameComponents: MutableList<String> = nameComponent.split(separator = ".", omittingEmptySubsequences = false)
 

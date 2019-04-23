@@ -216,7 +216,7 @@ public struct LabeledType: Equatable {
 	let type: String
 }
 
-public struct FunctionParameter: Equatable, PrintableAsTree {
+public struct FunctionParameter: Equatable, PrintableAsTree { // kotlin: ignore
 	let label: String
 	let apiLabel: String?
 	let type: String

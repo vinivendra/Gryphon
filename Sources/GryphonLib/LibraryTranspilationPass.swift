@@ -372,8 +372,15 @@ fileprivate extension String {
 		if self == superType {
 			return true
 		}
-		else if superType == "Any" || superType == "Hash" || superType == "Compare" {
+		else if superType == "Any" ||
+			superType == "Hash" ||
+			superType == "Compare" ||
+			superType == "MyOptional"
+		{
 			return true
+		}
+		else if superType == "MyOptional?" {
+			return self.hasSuffix("?")
 		}
 
 		let simpleSelf = simplifyType(string: self)

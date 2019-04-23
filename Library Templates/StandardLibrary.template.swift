@@ -7,6 +7,7 @@ struct Compare: Comparable {
 		return false
 	}
 }
+struct MyOptional { }
 
 func gryphonTemplates() {
 	var _strArray: [String] = []
@@ -26,7 +27,7 @@ func gryphonTemplates() {
 	let _substring: Substring = "abc".dropLast()
 	let _range: Range<String.Index> = _string.startIndex..<_string.endIndex
 	let _any: Any = "abc"
-	let _optional: Any? = "abc"
+	let _optional: MyOptional? = MyOptional()
 	let _double: Double = 0
 	let _double1: Double = 0
 	let _double2: Double = 0
@@ -37,7 +38,7 @@ func gryphonTemplates() {
 	let _closure: (Any, Any) -> Any = { a, b in a }
 	let _closure2: (Any) -> Any = { a in a }
 	let _closure3: (Any) -> Bool = { _ in true }
-	let _closure4: (Any) -> Any = { _ in true }
+	let _closure4: (MyOptional) -> Any = { _ in true }
 
 	// Print
 	print(_any)
@@ -223,5 +224,5 @@ func gryphonTemplates() {
 
 	// Optional
 	_optional.map(_closure4)
-	"_optional.map _closure4"
+	"_optional?.let _closure4"
 }

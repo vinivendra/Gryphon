@@ -41,22 +41,6 @@ data class LabeledType(
 	val type: String
 )
 
-data class FunctionParameter(
-	val label: String,
-	val apiLabel: String?,
-	val type: String,
-	val value: Expression?
-): PrintableAsTree {
-	override val treeDescription: String
-		get() {
-			return "parameter"
-		}
-	override val printableSubtrees: MutableList<PrintableAsTree?>
-		get() {
-			return mutableListOf(this.apiLabel.map { PrintableTree("api label: ${it}") }, PrintableTree("label: ${this.label}"), PrintableTree("type: ${this.type}"), PrintableTree.initOrNil("value", mutableListOf(this.value)))
-		}
-}
-
 class DeclarationReferenceExpression {
 	var identifier: String
 	var type: String
