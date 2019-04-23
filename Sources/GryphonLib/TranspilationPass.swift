@@ -1281,10 +1281,10 @@ public class CovarianceInitsAsCastsTranspilationPass: TranspilationPass {
 				// If we're initializing with an Array of a different type, we might need a cast
 				if let arrayType = onlyPair.expression.type {
 					let arrayElementType = arrayType.dropFirst().dropLast()
-					let arrayReferenceElementType =
+					let arrayClassElementType =
 						type.dropFirst("ArrayClass<".count).dropLast()
 
-					if arrayElementType != arrayReferenceElementType {
+					if arrayElementType != arrayClassElementType {
 						return .binaryOperatorExpression(
 							leftExpression: replaceExpression(onlyPair.expression),
 							rightExpression: .typeExpression(type: type),

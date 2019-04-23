@@ -32,8 +32,8 @@ public final class ArrayClass<Element>: // kotlin: ignore
 		self.array = array
 	}
 
-	public init<T>(_ arrayReference: ArrayClass<T>) {
-		self.array = arrayReference.array as! Buffer
+	public init<T>(_ arrayClass: ArrayClass<T>) {
+		self.array = arrayClass.array as! Buffer
 	}
 
 	public func `as`<CastedType>(
@@ -234,8 +234,8 @@ public final class DictionaryClass<Key, Value>: // kotlin: ignore
 		self.dictionary = dictionary
 	}
 
-	public init<K, V>(_ dictionaryReference: DictionaryClass<K, V>) {
-		self.dictionary = dictionaryReference.dictionary as! Buffer
+	public init<K, V>(_ dictionaryClass: DictionaryClass<K, V>) {
+		self.dictionary = dictionaryClass.dictionary as! Buffer
 	}
 
 	public func copy() -> DictionaryClass<Key, Value> {

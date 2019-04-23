@@ -345,8 +345,8 @@ extension PrintableTree { // kotlin: ignore
 	static func initOrNil(_ description: String, _ subtreesOrNil: [PrintableAsTree?])
 		-> PrintableTree?
 	{
-		let arrayReference = ArrayClass(subtreesOrNil)
-		return PrintableTree.initOrNil(description, arrayReference)
+		let arrayClass = ArrayClass(subtreesOrNil)
+		return PrintableTree.initOrNil(description, arrayClass)
 	}
 
 	convenience init(_ description: String, _ subtrees: [String?]) {
