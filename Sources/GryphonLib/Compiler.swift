@@ -271,42 +271,47 @@ extension Compiler { // kotlin: ignore
 
 		let errorOrWarning = isError ? "error" : "warning"
 
-		if let sourceFile = sourceFile,
-			let sourceFileRange = sourceFileRange
-		{
+		if let sourceFile = sourceFile {
 			let sourceFilePath = sourceFile.path
 			let sourceFileURL = URL(fileURLWithPath: sourceFilePath)
 			let relativePath = sourceFileURL.relativePath
 
-			let sourceFileString = sourceFile.getLine(sourceFileRange.lineStart) ??
-				"<<Unable to get line \(sourceFileRange.lineStart) in file \(relativePath)>>"
+			if let sourceFileRange = sourceFileRange {
+				let sourceFileString = sourceFile.getLine(sourceFileRange.lineStart) ??
+					"<<Unable to get line \(sourceFileRange.lineStart) in file \(relativePath)>>"
 
-			var underlineString = ""
-			if sourceFileRange.columnEnd < sourceFileString.count {
-				for i in 1..<sourceFileRange.columnStart {
-					let sourceFileCharacter = sourceFileString[
-						sourceFileString.index(sourceFileString.startIndex, offsetBy: i - 1)]
-					if sourceFileCharacter == "\t" {
-						underlineString += "\t"
+				var underlineString = ""
+				if sourceFileRange.columnEnd < sourceFileString.count {
+					for i in 1..<sourceFileRange.columnStart {
+						let sourceFileCharacter = sourceFileString[
+							sourceFileString.index(sourceFileString.startIndex, offsetBy: i - 1)]
+						if sourceFileCharacter == "\t" {
+							underlineString += "\t"
+						}
+						else {
+							underlineString += " "
+						}
 					}
-					else {
-						underlineString += " "
+					underlineString += "^"
+					if sourceFileRange.columnStart < sourceFileRange.columnEnd {
+						for _ in (sourceFileRange.columnStart + 1)..<sourceFileRange.columnEnd {
+							underlineString += "~"
+						}
 					}
 				}
-				underlineString += "^"
-				if sourceFileRange.columnStart < sourceFileRange.columnEnd {
-					for _ in (sourceFileRange.columnStart + 1)..<sourceFileRange.columnEnd {
-						underlineString += "~"
-					}
-				}
+
+				return "\(relativePath):\(sourceFileRange.lineStart):" +
+					"\(sourceFileRange.columnStart): \(errorOrWarning): \(message)\n" +
+					"\(sourceFileString)\n" +
+					"\(underlineString)\n" +
+					"Thrown by \(throwingFileName):\(line) - \(function)\n" +
+					details
 			}
-
-			return "\(relativePath):\(sourceFileRange.lineStart):" +
-				"\(sourceFileRange.columnStart): \(errorOrWarning): \(message)\n" +
-				"\(sourceFileString)\n" +
-				"\(underlineString)\n" +
-				"Thrown by \(throwingFileName):\(line) - \(function)\n" +
-				details
+			else {
+				return "\(relativePath): \(errorOrWarning): \(message)\n" +
+					"Thrown by \(throwingFileName):\(line) - \(function)\n" +
+					details
+			}
 		}
 		else {
 			return "\(errorOrWarning): \(message)\n" +
