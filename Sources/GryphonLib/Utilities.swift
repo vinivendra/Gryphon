@@ -494,12 +494,12 @@ extension ArrayClass { // kotlin: ignore
 					lock.lock()
 					unsortedResult.append((index: index, element: newElement))
 					lock.unlock()
-
-					group.leave()
 				}
 				catch let error {
 					thrownError = error
 				}
+
+				group.leave()
 			}
 		}
 
