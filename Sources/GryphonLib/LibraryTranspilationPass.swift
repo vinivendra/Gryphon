@@ -472,16 +472,7 @@ fileprivate extension String {
 
 private func simplifyType(string: String) -> String {
 	// Deal with standard library types that can be handled as other types
-	let standardLibraryTypeMappings = [
-		"Substring": "String",
-		"Substring.SubSequence": "String",
-		"Substring.Index": "Int",
-		"String.SubSequence": "String",
-		"String.Index": "Int",
-		"String.Element": "Character",
-		"Array<Element>.Index": "Int",
-	]
-	if let result = standardLibraryTypeMappings[string] {
+	if let result = Utilities.getTypeMapping(for: string) {
 		return result
 	}
 

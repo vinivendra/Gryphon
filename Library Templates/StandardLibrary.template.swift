@@ -58,6 +58,9 @@ func gryphonTemplates() {
 	_string.count
 	"_string.length"
 
+	_string.first
+	"_string.firstOrNull()"
+
 	Double(_string)
 	"_string.toDouble()"
 
@@ -66,6 +69,9 @@ func gryphonTemplates() {
 
 	_string.dropLast()
 	"_string.dropLast(1)"
+
+	_string.dropFirst()
+	"_string.drop(1)"
 
 	_string.dropFirst(_int)
 	"_string.drop(_int)"
@@ -136,7 +142,13 @@ func gryphonTemplates() {
 	_string.capitalized
 	"_string.capitalize()"
 
+	_string.uppercased()
+	"_string.toUpperCase()"
+
 	// Character
+	String(_character)
+	"_character.toString()"
+
 	_character.uppercased()
 	"_character.toUpperCase()"
 

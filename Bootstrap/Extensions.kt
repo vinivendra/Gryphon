@@ -131,6 +131,12 @@ internal fun String.upperSnakeCase(): String {
 	return result
 }
 
+internal fun String.capitalizedAsCamelCase(): String {
+	val firstCharacter: Char = this.firstOrNull()!!
+	val capitalizedFirstCharacter: String = firstCharacter.toString().toUpperCase()
+	return capitalizedFirstCharacter + this.drop(1)
+}
+
 val Char.isNumber: Boolean
 	get() {
 		return this == '0' || this == '1' || this == '2' || this == '3' || this == '4' || this == '5' || this == '6' || this == '7' || this == '8' || this == '9'

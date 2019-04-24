@@ -280,6 +280,34 @@ class EnumElement {
 	}
 }
 
+val Statement.name: String
+	get() {
+		return when (this) {
+			is Statement.Expression -> "expression".capitalizedAsCamelCase()
+			is Statement.ExtensionDeclaration -> "extensionDeclaration".capitalizedAsCamelCase()
+			is Statement.ImportDeclaration -> "importDeclaration".capitalizedAsCamelCase()
+			is Statement.TypealiasDeclaration -> "typealiasDeclaration".capitalizedAsCamelCase()
+			is Statement.ClassDeclaration -> "classDeclaration".capitalizedAsCamelCase()
+			is Statement.CompanionObject -> "companionObject".capitalizedAsCamelCase()
+			is Statement.EnumDeclaration -> "enumDeclaration".capitalizedAsCamelCase()
+			is Statement.ProtocolDeclaration -> "protocolDeclaration".capitalizedAsCamelCase()
+			is Statement.StructDeclaration -> "structDeclaration".capitalizedAsCamelCase()
+			is Statement.FunctionDeclaration -> "functionDeclaration".capitalizedAsCamelCase()
+			is Statement.VariableDeclaration -> "variableDeclaration".capitalizedAsCamelCase()
+			is Statement.ForEachStatement -> "forEachStatement".capitalizedAsCamelCase()
+			is Statement.WhileStatement -> "whileStatement".capitalizedAsCamelCase()
+			is Statement.IfStatement -> "ifStatement".capitalizedAsCamelCase()
+			is Statement.SwitchStatement -> "switchStatement".capitalizedAsCamelCase()
+			is Statement.DeferStatement -> "deferStatement".capitalizedAsCamelCase()
+			is Statement.ThrowStatement -> "throwStatement".capitalizedAsCamelCase()
+			is Statement.ReturnStatement -> "returnStatement".capitalizedAsCamelCase()
+			is Statement.BreakStatement -> "breakStatement".capitalizedAsCamelCase()
+			is Statement.ContinueStatement -> "continueStatement".capitalizedAsCamelCase()
+			is Statement.AssignmentStatement -> "assignmentStatement".capitalizedAsCamelCase()
+			is Statement.Error -> "error".capitalizedAsCamelCase()
+		}
+	}
+
 public sealed class TupleShuffleIndex {
 	class Variadic(val count: Int): TupleShuffleIndex()
 	class Absent: TupleShuffleIndex()

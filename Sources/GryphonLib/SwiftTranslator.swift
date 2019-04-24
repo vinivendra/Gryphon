@@ -1133,7 +1133,7 @@ public class SwiftTranslator {
 					let enumType = patternLetResult.enumType
 					let enumCase = patternLetResult.enumCase
 					let declarations = patternLetResult.declarations
-					let enumClassName = enumType + "." + enumCase.capitalizedAsCamelCase
+					let enumClassName = enumType + "." + enumCase.capitalizedAsCamelCase()
 
 					caseExpression = .binaryOperatorExpression(
 						leftExpression: translatedExpression,
@@ -1165,15 +1165,15 @@ public class SwiftTranslator {
 							annotations: nil))
 					}
 				}
-				else if let expression = caseLabelItem.subtrees.first?.subtrees.first {
-					let translateExpression = try translate(expression: expression)
-					caseExpression = translateExpression
-					extraStatements = []
-				}
 				else if let patternEnumElement =
 					caseLabelItem.subtree(named: "Pattern Enum Element")
 				{
 					caseExpression = try translate(simplePatternEnumElement: patternEnumElement)
+					extraStatements = []
+				}
+				else if let expression = caseLabelItem.subtrees.first?.subtrees.first {
+					let translateExpression = try translate(expression: expression)
+					caseExpression = translateExpression
 					extraStatements = []
 				}
 				else {
@@ -1348,7 +1348,7 @@ public class SwiftTranslator {
 				let enumType = patternLetResult.enumType
 				let enumCase = patternLetResult.enumCase
 				let declarations = patternLetResult.declarations
-				let enumClassName = enumType + "." + enumCase.capitalizedAsCamelCase
+				let enumClassName = enumType + "." + enumCase.capitalizedAsCamelCase()
 
 				let declarationReference = try translate(expression: declarationReferenceAST)
 
@@ -1392,12 +1392,13 @@ public class SwiftTranslator {
 	}
 
 	private func translate(enumPatternLet: SwiftAST) throws
-		-> (enumType: String,
-		enumCase: String,
-		declarations: [(
-			associatedValueName: String,
-			associatedValueType: String,
-			newVariable: String)])?
+		-> (
+			enumType: String,
+			enumCase: String,
+			declarations: [(
+				associatedValueName: String,
+				associatedValueType: String,
+				newVariable: String)])?
 	{
 		guard enumPatternLet.name == "Pattern Let",
 			let enumType = enumPatternLet["type"],

@@ -487,62 +487,64 @@ public class EnumElement: Equatable {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-extension Statement: PrintableAsTree { // kotlin: ignore
+extension Statement {
 	public var name: String {
 		switch self {
 		case .expression:
-			return "expression".capitalizedAsCamelCase
+			return "expression".capitalizedAsCamelCase()
 		case .extensionDeclaration:
-			return "extensionDeclaration".capitalizedAsCamelCase
+			return "extensionDeclaration".capitalizedAsCamelCase()
 		case .importDeclaration:
-			return "importDeclaration".capitalizedAsCamelCase
+			return "importDeclaration".capitalizedAsCamelCase()
 		case .typealiasDeclaration:
-			return "typealiasDeclaration".capitalizedAsCamelCase
+			return "typealiasDeclaration".capitalizedAsCamelCase()
 		case .classDeclaration:
-			return "classDeclaration".capitalizedAsCamelCase
+			return "classDeclaration".capitalizedAsCamelCase()
 		case .companionObject:
-			return "companionObject".capitalizedAsCamelCase
+			return "companionObject".capitalizedAsCamelCase()
 		case .enumDeclaration:
-			return "enumDeclaration".capitalizedAsCamelCase
+			return "enumDeclaration".capitalizedAsCamelCase()
 		case .protocolDeclaration:
-			return "protocolDeclaration".capitalizedAsCamelCase
+			return "protocolDeclaration".capitalizedAsCamelCase()
 		case .structDeclaration:
-			return "structDeclaration".capitalizedAsCamelCase
+			return "structDeclaration".capitalizedAsCamelCase()
 		case .functionDeclaration:
-			return "functionDeclaration".capitalizedAsCamelCase
+			return "functionDeclaration".capitalizedAsCamelCase()
 		case .variableDeclaration:
-			return "variableDeclaration".capitalizedAsCamelCase
+			return "variableDeclaration".capitalizedAsCamelCase()
 		case .forEachStatement:
-			return "forEachStatement".capitalizedAsCamelCase
+			return "forEachStatement".capitalizedAsCamelCase()
 		case .whileStatement:
-			return "whileStatement".capitalizedAsCamelCase
+			return "whileStatement".capitalizedAsCamelCase()
 		case .ifStatement:
-			return "ifStatement".capitalizedAsCamelCase
+			return "ifStatement".capitalizedAsCamelCase()
 		case .switchStatement:
-			return "switchStatement".capitalizedAsCamelCase
+			return "switchStatement".capitalizedAsCamelCase()
 		case .deferStatement:
-			return "deferStatement".capitalizedAsCamelCase
+			return "deferStatement".capitalizedAsCamelCase()
 		case .throwStatement:
-			return "throwStatement".capitalizedAsCamelCase
+			return "throwStatement".capitalizedAsCamelCase()
 		case .returnStatement:
-			return "returnStatement".capitalizedAsCamelCase
+			return "returnStatement".capitalizedAsCamelCase()
 		case .breakStatement:
-			return "breakStatement".capitalizedAsCamelCase
+			return "breakStatement".capitalizedAsCamelCase()
 		case .continueStatement:
-			return "continueStatement".capitalizedAsCamelCase
+			return "continueStatement".capitalizedAsCamelCase()
 		case .assignmentStatement:
-			return "assignmentStatement".capitalizedAsCamelCase
+			return "assignmentStatement".capitalizedAsCamelCase()
 		case .error:
-			return "error".capitalizedAsCamelCase
+			return "error".capitalizedAsCamelCase()
 		}
 	}
+}
 
+extension Statement: PrintableAsTree { // kotlin: ignore
 	//
-	public var treeDescription: String {
+	public var treeDescription: String { // annotation: override
 		return name
 	}
 
-	public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		switch self {
 		case let .expression(expression: expression):
 			return [expression]
@@ -650,6 +652,7 @@ extension Statement: PrintableAsTree { // kotlin: ignore
 			collection: collection,
 			variable: variable,
 			statements: statements):
+
 			return [
 				PrintableTree("variable", [variable]),
 				PrintableTree("collection", [collection]),
@@ -821,67 +824,67 @@ extension Expression: PrintableAsTree { // kotlin: ignore
 	public var name: String {
 		switch self {
 		case .templateExpression:
-			return "templateExpression".capitalizedAsCamelCase
+			return "templateExpression".capitalizedAsCamelCase()
 		case .literalCodeExpression:
-			return "literalCodeExpression".capitalizedAsCamelCase
+			return "literalCodeExpression".capitalizedAsCamelCase()
 		case .literalDeclarationExpression:
-			return "literalDeclarationExpression".capitalizedAsCamelCase
+			return "literalDeclarationExpression".capitalizedAsCamelCase()
 		case .parenthesesExpression:
-			return "parenthesesExpression".capitalizedAsCamelCase
+			return "parenthesesExpression".capitalizedAsCamelCase()
 		case .forceValueExpression:
-			return "forceValueExpression".capitalizedAsCamelCase
+			return "forceValueExpression".capitalizedAsCamelCase()
 		case .optionalExpression:
-			return "optionalExpression".capitalizedAsCamelCase
+			return "optionalExpression".capitalizedAsCamelCase()
 		case .declarationReferenceExpression:
-			return "declarationReferenceExpression".capitalizedAsCamelCase
+			return "declarationReferenceExpression".capitalizedAsCamelCase()
 		case .typeExpression:
-			return "typeExpression".capitalizedAsCamelCase
+			return "typeExpression".capitalizedAsCamelCase()
 		case .subscriptExpression:
-			return "subscriptExpression".capitalizedAsCamelCase
+			return "subscriptExpression".capitalizedAsCamelCase()
 		case .arrayExpression:
-			return "arrayExpression".capitalizedAsCamelCase
+			return "arrayExpression".capitalizedAsCamelCase()
 		case .dictionaryExpression:
-			return "dictionaryExpression".capitalizedAsCamelCase
+			return "dictionaryExpression".capitalizedAsCamelCase()
 		case .returnExpression:
-			return "returnExpression".capitalizedAsCamelCase
+			return "returnExpression".capitalizedAsCamelCase()
 		case .dotExpression:
-			return "dotExpression".capitalizedAsCamelCase
+			return "dotExpression".capitalizedAsCamelCase()
 		case .binaryOperatorExpression:
-			return "binaryOperatorExpression".capitalizedAsCamelCase
+			return "binaryOperatorExpression".capitalizedAsCamelCase()
 		case .prefixUnaryExpression:
-			return "prefixUnaryExpression".capitalizedAsCamelCase
+			return "prefixUnaryExpression".capitalizedAsCamelCase()
 		case .postfixUnaryExpression:
-			return "postfixUnaryExpression".capitalizedAsCamelCase
+			return "postfixUnaryExpression".capitalizedAsCamelCase()
 		case .ifExpression:
-			return "ifExpression".capitalizedAsCamelCase
+			return "ifExpression".capitalizedAsCamelCase()
 		case .callExpression:
-			return "callExpression".capitalizedAsCamelCase
+			return "callExpression".capitalizedAsCamelCase()
 		case .closureExpression:
-			return "closureExpression".capitalizedAsCamelCase
+			return "closureExpression".capitalizedAsCamelCase()
 		case .literalIntExpression:
-			return "literalIntExpression".capitalizedAsCamelCase
+			return "literalIntExpression".capitalizedAsCamelCase()
 		case .literalUIntExpression:
-			return "literalUIntExpression".capitalizedAsCamelCase
+			return "literalUIntExpression".capitalizedAsCamelCase()
 		case .literalDoubleExpression:
-			return "literalDoubleExpression".capitalizedAsCamelCase
+			return "literalDoubleExpression".capitalizedAsCamelCase()
 		case .literalFloatExpression:
-			return "literalFloatExpression".capitalizedAsCamelCase
+			return "literalFloatExpression".capitalizedAsCamelCase()
 		case .literalBoolExpression:
-			return "literalBoolExpression".capitalizedAsCamelCase
+			return "literalBoolExpression".capitalizedAsCamelCase()
 		case .literalStringExpression:
-			return "literalStringExpression".capitalizedAsCamelCase
+			return "literalStringExpression".capitalizedAsCamelCase()
 		case .literalCharacterExpression:
-			return "literalCharacterExpression".capitalizedAsCamelCase
+			return "literalCharacterExpression".capitalizedAsCamelCase()
 		case .nilLiteralExpression:
-			return "nilLiteralExpression".capitalizedAsCamelCase
+			return "nilLiteralExpression".capitalizedAsCamelCase()
 		case .interpolatedStringLiteralExpression:
-			return "interpolatedStringLiteralExpression".capitalizedAsCamelCase
+			return "interpolatedStringLiteralExpression".capitalizedAsCamelCase()
 		case .tupleExpression:
-			return "tupleExpression".capitalizedAsCamelCase
+			return "tupleExpression".capitalizedAsCamelCase()
 		case .tupleShuffleExpression:
-			return "tupleShuffleExpression".capitalizedAsCamelCase
+			return "tupleShuffleExpression".capitalizedAsCamelCase()
 		case .error:
-			return "error".capitalizedAsCamelCase
+			return "error".capitalizedAsCamelCase()
 		}
 	}
 

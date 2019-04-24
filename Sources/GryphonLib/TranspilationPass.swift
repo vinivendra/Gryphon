@@ -990,7 +990,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 
 			if KotlinTranslator.sealedClasses.contains(lastEnumType) {
 				let enumExpression = enumExpression
-				enumExpression.identifier = enumExpression.identifier.capitalizedAsCamelCase
+				enumExpression.identifier = enumExpression.identifier.capitalizedAsCamelCase()
 				return .dotExpression(
 					leftExpression: .typeExpression(type: enumType),
 					rightExpression: .declarationReferenceExpression(data: enumExpression))
@@ -1023,7 +1023,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 		let newElements = elements.map { (element: EnumElement) -> EnumElement in
 			if isSealedClass {
 				return EnumElement(
-					name: element.name.capitalizedAsCamelCase,
+					name: element.name.capitalizedAsCamelCase(),
 					associatedValues: element.associatedValues,
 					rawValue: element.rawValue,
 					annotations: element.annotations)

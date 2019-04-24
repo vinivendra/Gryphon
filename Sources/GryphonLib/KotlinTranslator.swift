@@ -19,30 +19,6 @@ public class KotlinTranslator {
 
 	static let lineLimit = 100
 
-	/// Used for the translation of Swift types into Kotlin types.
-	static let typeMappings = [
-		"Bool": "Boolean",
-		"Error": "Exception",
-		"UInt8": "UByte",
-		"UInt16": "UShort",
-		"UInt32": "UInt",
-		"UInt64": "ULong",
-		"Int8": "Byte",
-		"Int16": "Short",
-		"Int32": "Int",
-		"Int64": "Long",
-		"Float32": "Float",
-		"Float64": "Double",
-		"Character": "Char",
-
-		"String.Index": "Int",
-		"Substring.Index": "Int",
-		"Substring": "String",
-		"String.SubSequence": "String",
-		"Substring.SubSequence": "String",
-		"Range<String.Index>": "IntRange",
-	]
-
 	private func translateType(_ type: String) -> String {
 		let type = type.replacingOccurrences(of: "()", with: "Unit")
 
@@ -80,7 +56,7 @@ public class KotlinTranslator {
 			return "MutableMap<\(translatedKey), \(translatedValue)>"
 		}
 		else {
-			return KotlinTranslator.typeMappings[type] ?? type
+			return Utilities.getTypeMapping(for: type) ?? type
 		}
 	}
 
@@ -410,7 +386,7 @@ public class KotlinTranslator {
 		element: EnumElement,
 		withIndentation indentation: String) -> String
 	{
-		let capitalizedElementName = element.name.capitalizedAsCamelCase
+		let capitalizedElementName = element.name.capitalizedAsCamelCase()
 		let annotationsString = (element.annotations == nil) ? "" : "\(element.annotations!) "
 
 		let result = "\(indentation)\(annotationsString)class \(capitalizedElementName)"
@@ -1185,7 +1161,7 @@ public class KotlinTranslator {
 		let rightHandString = try translateExpression(rightExpression, withIndentation: indentation)
 
 		if KotlinTranslator.sealedClasses.contains(leftHandString) {
-			let translatedEnumCase = rightHandString.capitalizedAsCamelCase
+			let translatedEnumCase = rightHandString.capitalizedAsCamelCase()
 			return "\(leftHandString).\(translatedEnumCase)()"
 		}
 		else {
@@ -1599,14 +1575,6 @@ public class KotlinTranslator {
 
 	private func decreaseIndentation(_ indentation: String) -> String {
 		return String(indentation.dropLast())
-	}
-}
-
-extension String {
-	var capitalizedAsCamelCase: String {
-		let firstCharacter = self.first!
-		let capitalizedFirstCharacter = String(firstCharacter).uppercased()
-		return String(capitalizedFirstCharacter + self.dropFirst())
 	}
 }
 

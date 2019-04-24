@@ -562,4 +562,34 @@ extension Utilities {
 
 		return result
 	}
+
+	static func getTypeMapping(for typeName: String) -> String? {
+		let typeMappings: DictionaryClass = [
+			"Bool": "Boolean",
+			"Error": "Exception",
+			"UInt8": "UByte",
+			"UInt16": "UShort",
+			"UInt32": "UInt",
+			"UInt64": "ULong",
+			"Int8": "Byte",
+			"Int16": "Short",
+			"Int32": "Int",
+			"Int64": "Long",
+			"Float32": "Float",
+			"Float64": "Double",
+			"Character": "Char",
+
+			"String.Index": "Int",
+			"Substring.Index": "Int",
+			"Substring": "String",
+			"String.SubSequence": "String",
+			"Substring.SubSequence": "String",
+			"Substring.Element": "Char",
+			"String.Element": "Char",
+			"Range<String.Index>": "IntRange",
+			"Array<Element>.Index": "Int",
+		]
+
+		return typeMappings[typeName]
+	}
 }

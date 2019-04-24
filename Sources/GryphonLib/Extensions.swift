@@ -170,6 +170,12 @@ internal extension String {
 
 		return result
 	}
+
+	func capitalizedAsCamelCase() -> String {
+		let firstCharacter = self.first!
+		let capitalizedFirstCharacter = String(firstCharacter).uppercased()
+		return String(capitalizedFirstCharacter + self.dropFirst())
+	}
 }
 
 //
