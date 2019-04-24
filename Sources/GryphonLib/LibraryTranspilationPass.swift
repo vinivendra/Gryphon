@@ -33,7 +33,7 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 		{
 			let expressions = statements.compactMap
 			{ (statement: Statement) -> Expression? in
-				if case let .expression(expression: expression) = statement {
+				if case let .expressionStatement(expression: expression) = statement {
 					return expression
 				}
 				else {

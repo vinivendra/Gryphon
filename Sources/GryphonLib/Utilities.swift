@@ -533,30 +533,51 @@ extension ArrayClass { // kotlin: ignore
 // declaration: }
 
 extension Utilities {
-	static func splitTypeList(_ typeList: String) -> [String] {
+	static func splitTypeList(
+		_ typeList: String,
+		separators: [String] = [",", ":"])
+		-> [String]
+	{
 		var bracketsLevel = 0
 		var result: [String] = []
 		var currentResult = ""
+		var remainingString = Substring(typeList)
 
-		for character in typeList {
-			if character == "<" || character == "[" {
-				bracketsLevel += 1
-				currentResult.append(character)
-			}
-			else if character == ">" || character == "]" {
-				bracketsLevel -= 1
-				currentResult.append(character)
-			}
-			else if (character == "," || character == ":"), bracketsLevel <= 0 {
+		var index = typeList.startIndex
+
+		while index < typeList.endIndex {
+			let character = typeList[index]
+
+			// If we're not inside brackets and we've found a separator
+			if bracketsLevel <= 0,
+				let foundSeparator = separators.first(where: { remainingString.hasPrefix($0) })
+			{
+				// Skip the separator
+				index = typeList.index(index, offsetBy: foundSeparator.count - 1)
+
+				// Add the built result to the array
 				result.append(currentResult)
 				currentResult = ""
 			}
+			else if character == "<" || character == "[" || character == "(" {
+				bracketsLevel += 1
+				currentResult.append(character)
+			}
+			else if character == ">" || character == "]" || character == ")" {
+				bracketsLevel -= 1
+				currentResult.append(character)
+			}
 			else if character == " " {
-				continue
+				if bracketsLevel > 0 {
+					currentResult.append(character)
+				}
 			}
 			else {
 				currentResult.append(character)
 			}
+
+			remainingString = remainingString.dropFirst()
+			index = typeList.index(after: index)
 		}
 
 		// Add the last result that was being built
@@ -565,6 +586,34 @@ extension Utilities {
 		}
 
 		return result
+	}
+
+	static func isInEnvelopingParentheses(_ typeName: String) -> Bool {
+		var parenthesesLevel = 0
+
+		guard typeName.hasPrefix("("), typeName.hasSuffix(")") else {
+			return false
+		}
+
+		let lastValidIndex = typeName.index(before: typeName.endIndex)
+
+		for index in typeName.indices {
+			let character = typeName[index]
+
+			if character == "(" {
+				parenthesesLevel += 1
+			}
+			else if character == ")" {
+				parenthesesLevel -= 1
+			}
+
+			// If the first parentheses closes before the end of the string
+			if parenthesesLevel == 0, index != lastValidIndex {
+				return false
+			}
+		}
+
+		return true
 	}
 
 	static func getTypeMapping(for typeName: String) -> String? {

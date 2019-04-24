@@ -256,30 +256,45 @@ fun <Element, Result> MutableList<Element>.parallelMap(
 		.toMutableList()
 }
 
-internal fun Utilities.Companion.splitTypeList(typeList: String): MutableList<String> {
+internal fun Utilities.Companion.splitTypeList(
+	typeList: String,
+	separators: MutableList<String> = mutableListOf(",", ":"))
+	: MutableList<String>
+{
 	var bracketsLevel: Int = 0
 	var result: MutableList<String> = mutableListOf()
 	var currentResult: String = ""
+	var remainingString: String = typeList
+	var index: Int = 0
 
-	for (character in typeList) {
-		if (character == '<' || character == '[') {
-			bracketsLevel += 1
-			currentResult += character
-		}
-		else if (character == '>' || character == ']') {
-			bracketsLevel -= 1
-			currentResult += character
-		}
-		else if ((character == ',' || character == ':') && bracketsLevel <= 0) {
+	while (index < typeList.length) {
+		val character: Char = typeList[index]
+		val foundSeparator: String? = separators.find { remainingString.startsWith(it) }
+
+		if (bracketsLevel <= 0 && foundSeparator != null) {
+			index = index + foundSeparator.length - 1
 			result.add(currentResult)
 			currentResult = ""
 		}
+		else if (character == '<' || character == '[' || character == '(') {
+			bracketsLevel += 1
+			currentResult += character
+		}
+		else if (character == '>' || character == ']' || character == ')') {
+			bracketsLevel -= 1
+			currentResult += character
+		}
 		else if (character == ' ') {
-			continue
+			if (bracketsLevel > 0) {
+				currentResult += character
+			}
 		}
 		else {
 			currentResult += character
 		}
+
+		remainingString = remainingString.drop(1)
+		index = index + 1
 	}
 
 	if (!currentResult.isEmpty()) {
@@ -287,6 +302,31 @@ internal fun Utilities.Companion.splitTypeList(typeList: String): MutableList<St
 	}
 
 	return result
+}
+
+internal fun Utilities.Companion.isInEnvelopingParentheses(typeName: String): Boolean {
+	var parenthesesLevel: Int = 0
+
+	if (!(typeName.startsWith("(") && typeName.endsWith(")"))) {
+		return false
+	}
+
+	val lastValidIndex: Int = typeName.length - 1
+
+	for (index in typeName.indices) {
+		val character: Char = typeName[index]
+		if (character == '(') {
+			parenthesesLevel += 1
+		}
+		else if (character == ')') {
+			parenthesesLevel -= 1
+		}
+		if (parenthesesLevel == 0 && index != lastValidIndex) {
+			return false
+		}
+	}
+
+	return true
 }
 
 internal fun Utilities.Companion.getTypeMapping(typeName: String): String? {

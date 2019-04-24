@@ -46,7 +46,7 @@ public class SwiftTranslator {
 
 		let isDeclaration = { (ast: Statement) -> Bool in
 			switch ast {
-			case .expression(expression: .literalDeclarationExpression),
+			case .expressionStatement(expression: .literalDeclarationExpression),
 				.protocolDeclaration,
 				.classDeclaration,
 				.structDeclaration,
@@ -90,7 +90,7 @@ public class SwiftTranslator {
 		case "Top Level Code Declaration":
 			result = [try translate(topLevelCode: subtree)]
 		case "Import Declaration":
-			result = [.importDeclaration(name: subtree.standaloneAttributes[0])]
+			result = [.importDeclaration(moduleName: subtree.standaloneAttributes[0])]
 		case "Typealias":
 			result = [try translate(typealiasDeclaration: subtree)]
 		case "Class Declaration":
@@ -138,7 +138,7 @@ public class SwiftTranslator {
 		default:
 			if subtree.name.hasSuffix("Expression") {
 				let expression = try translate(expression: subtree)
-				result = [.expression(expression: expression)]
+				result = [.expressionStatement(expression: expression)]
 			}
 			else {
 				result = []
@@ -344,11 +344,11 @@ public class SwiftTranslator {
 
 		let commentToAST = { (comment: SourceFile.Comment) -> Statement? in
 				if comment.key == "insert" {
-					return Statement.expression(expression:
+					return Statement.expressionStatement(expression:
 						.literalCodeExpression(string: comment.value))
 				}
 				else if comment.key == "declaration" {
-					return Statement.expression(expression:
+					return Statement.expressionStatement(expression:
 						.literalDeclarationExpression(string: comment.value))
 				}
 				else {
@@ -411,7 +411,7 @@ public class SwiftTranslator {
 
 		let members = try translate(subtreesOf: protocolDeclaration)
 
-		return .protocolDeclaration(name: protocolName, members: ArrayClass(members))
+		return .protocolDeclaration(protocolName: protocolName, members: ArrayClass(members))
 	}
 
 	internal func translate(assignExpression: SwiftAST) throws -> Statement {
@@ -425,7 +425,7 @@ public class SwiftTranslator {
 			let rightExpression = assignExpression.subtree(at: 1)
 		{
 			if leftExpression.name == "Discard Assignment Expression" {
-				return try .expression(expression: translate(expression: rightExpression))
+				return try .expressionStatement(expression: translate(expression: rightExpression))
 			}
 			else {
 				let leftTranslation = try translate(expression: leftExpression)
@@ -484,7 +484,7 @@ public class SwiftTranslator {
 		let classContents = try translate(subtreesOf: classDeclaration)
 
 		return .classDeclaration(
-			name: name,
+			className: name,
 			inherits: inheritanceArray,
 			members: ArrayClass(classContents))
 	}
@@ -519,7 +519,7 @@ public class SwiftTranslator {
 
 		return .structDeclaration(
 			annotations: annotations,
-			name: name,
+			structName: name,
 			inherits: inheritanceArray,
 			members: ArrayClass(structContents))
 	}
@@ -659,7 +659,7 @@ public class SwiftTranslator {
 
 		return .enumDeclaration(
 			access: access,
-			name: name,
+			enumName: name,
 			inherits: inheritanceArray,
 			elements: elements,
 			members: ArrayClass(translatedMembers),
@@ -1411,9 +1411,10 @@ public class SwiftTranslator {
 
 		// Process a string like `(label1: Type1, label2: Type2)` to get the labels
 		let valuesTupleWithoutParentheses = String(associatedValueTuple.dropFirst().dropLast())
-		let valueTuplesComponents = valuesTupleWithoutParentheses.split(withStringSeparator: ", ")
+		let valueTuplesComponents =
+			Utilities.splitTypeList(valuesTupleWithoutParentheses, separators: [","])
 		let associatedValueNames =
-			valueTuplesComponents.map { $0.split(withStringSeparator: ": ")[0] }
+			valueTuplesComponents.map { $0.split(withStringSeparator: ":")[0] }
 
 		var declarations =
 			[(associatedValueName: String, associatedValueType: String, newVariable: String)]()
@@ -1878,7 +1879,7 @@ public class SwiftTranslator {
 		}
 		else {
 			let expression = try translate(expression: lastSubtree)
-			statements = [Statement.expression(expression: expression)]
+			statements = [Statement.expressionStatement(expression: expression)]
 		}
 
 		return .closureExpression(

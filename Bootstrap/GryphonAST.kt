@@ -27,16 +27,16 @@ class GryphonAST: PrintableAsTree {
 	}
 }
 
-public sealed class Statement {
-	class Expression(val expression: Expression): Statement()
+public sealed class Statement: PrintableAsTree {
+	class ExpressionStatement(val expression: Expression): Statement()
 	class TypealiasDeclaration(val identifier: String, val type: String, val isImplicit: Boolean): Statement()
 	class ExtensionDeclaration(val type: String, val members: MutableList<Statement>): Statement()
-	class ImportDeclaration(val name: String): Statement()
-	class ClassDeclaration(val name: String, val inherits: MutableList<String>, val members: MutableList<Statement>): Statement()
+	class ImportDeclaration(val moduleName: String): Statement()
+	class ClassDeclaration(val className: String, val inherits: MutableList<String>, val members: MutableList<Statement>): Statement()
 	class CompanionObject(val members: MutableList<Statement>): Statement()
-	class EnumDeclaration(val access: String?, val name: String, val inherits: MutableList<String>, val elements: MutableList<EnumElement>, val members: MutableList<Statement>, val isImplicit: Boolean): Statement()
-	class ProtocolDeclaration(val name: String, val members: MutableList<Statement>): Statement()
-	class StructDeclaration(val annotations: String?, val name: String, val inherits: MutableList<String>, val members: MutableList<Statement>): Statement()
+	class EnumDeclaration(val access: String?, val enumName: String, val inherits: MutableList<String>, val elements: MutableList<EnumElement>, val members: MutableList<Statement>, val isImplicit: Boolean): Statement()
+	class ProtocolDeclaration(val protocolName: String, val members: MutableList<Statement>): Statement()
+	class StructDeclaration(val annotations: String?, val structName: String, val inherits: MutableList<String>, val members: MutableList<Statement>): Statement()
 	class FunctionDeclaration(val data: FunctionDeclarationData): Statement()
 	class VariableDeclaration(val data: VariableDeclarationData): Statement()
 	class ForEachStatement(val collection: Expression, val variable: Expression, val statements: MutableList<Statement>): Statement()
@@ -50,9 +50,51 @@ public sealed class Statement {
 	class ContinueStatement: Statement()
 	class AssignmentStatement(val leftHand: Expression, val rightHand: Expression): Statement()
 	class Error: Statement()
+
+	val name: String
+		get() {
+			return when (this) {
+				is Statement.ExpressionStatement -> "expressionStatement".capitalizedAsCamelCase()
+				is Statement.ExtensionDeclaration -> "extensionDeclaration".capitalizedAsCamelCase()
+				is Statement.ImportDeclaration -> "importDeclaration".capitalizedAsCamelCase()
+				is Statement.TypealiasDeclaration -> "typealiasDeclaration".capitalizedAsCamelCase()
+				is Statement.ClassDeclaration -> "classDeclaration".capitalizedAsCamelCase()
+				is Statement.CompanionObject -> "companionObject".capitalizedAsCamelCase()
+				is Statement.EnumDeclaration -> "enumDeclaration".capitalizedAsCamelCase()
+				is Statement.ProtocolDeclaration -> "protocolDeclaration".capitalizedAsCamelCase()
+				is Statement.StructDeclaration -> "structDeclaration".capitalizedAsCamelCase()
+				is Statement.FunctionDeclaration -> "functionDeclaration".capitalizedAsCamelCase()
+				is Statement.VariableDeclaration -> "variableDeclaration".capitalizedAsCamelCase()
+				is Statement.ForEachStatement -> "forEachStatement".capitalizedAsCamelCase()
+				is Statement.WhileStatement -> "whileStatement".capitalizedAsCamelCase()
+				is Statement.IfStatement -> "ifStatement".capitalizedAsCamelCase()
+				is Statement.SwitchStatement -> "switchStatement".capitalizedAsCamelCase()
+				is Statement.DeferStatement -> "deferStatement".capitalizedAsCamelCase()
+				is Statement.ThrowStatement -> "throwStatement".capitalizedAsCamelCase()
+				is Statement.ReturnStatement -> "returnStatement".capitalizedAsCamelCase()
+				is Statement.BreakStatement -> "breakStatement".capitalizedAsCamelCase()
+				is Statement.ContinueStatement -> "continueStatement".capitalizedAsCamelCase()
+				is Statement.AssignmentStatement -> "assignmentStatement".capitalizedAsCamelCase()
+				is Statement.Error -> "error".capitalizedAsCamelCase()
+			}
+		}
+	override val treeDescription: String
+		get() {
+			return name
+		}
+	override val printableSubtrees: MutableList<PrintableAsTree?>
+		get() {
+			return when (this) {
+				is Statement.ExpressionStatement -> {
+					val expression: Expression = this.expression
+					mutableListOf(expression)
+				}
+				else -> mutableListOf()
+			}
+		}
 }
 
-public sealed class Expression {
+public sealed class Expression: PrintableAsTree {
 	class LiteralCodeExpression(val string: String): Expression()
 	class LiteralDeclarationExpression(val string: String): Expression()
 	class TemplateExpression(val pattern: String, val matches: MutableMap<String, Expression>): Expression()
@@ -84,6 +126,60 @@ public sealed class Expression {
 	class TupleExpression(val pairs: MutableList<LabeledExpression>): Expression()
 	class TupleShuffleExpression(val labels: MutableList<String>, val indices: MutableList<TupleShuffleIndex>, val expressions: MutableList<Expression>): Expression()
 	class Error: Expression()
+
+	val name: String
+		get() {
+			return when (this) {
+				is Expression.TemplateExpression -> "templateExpression".capitalizedAsCamelCase()
+				is Expression.LiteralCodeExpression -> "literalCodeExpression".capitalizedAsCamelCase()
+				is Expression.LiteralDeclarationExpression -> "literalDeclarationExpression".capitalizedAsCamelCase()
+				is Expression.ParenthesesExpression -> "parenthesesExpression".capitalizedAsCamelCase()
+				is Expression.ForceValueExpression -> "forceValueExpression".capitalizedAsCamelCase()
+				is Expression.OptionalExpression -> "optionalExpression".capitalizedAsCamelCase()
+				is Expression.DeclarationReferenceExpression -> "declarationReferenceExpression".capitalizedAsCamelCase()
+				is Expression.TypeExpression -> "typeExpression".capitalizedAsCamelCase()
+				is Expression.SubscriptExpression -> "subscriptExpression".capitalizedAsCamelCase()
+				is Expression.ArrayExpression -> "arrayExpression".capitalizedAsCamelCase()
+				is Expression.DictionaryExpression -> "dictionaryExpression".capitalizedAsCamelCase()
+				is Expression.ReturnExpression -> "returnExpression".capitalizedAsCamelCase()
+				is Expression.DotExpression -> "dotExpression".capitalizedAsCamelCase()
+				is Expression.BinaryOperatorExpression -> "binaryOperatorExpression".capitalizedAsCamelCase()
+				is Expression.PrefixUnaryExpression -> "prefixUnaryExpression".capitalizedAsCamelCase()
+				is Expression.PostfixUnaryExpression -> "postfixUnaryExpression".capitalizedAsCamelCase()
+				is Expression.IfExpression -> "ifExpression".capitalizedAsCamelCase()
+				is Expression.CallExpression -> "callExpression".capitalizedAsCamelCase()
+				is Expression.ClosureExpression -> "closureExpression".capitalizedAsCamelCase()
+				is Expression.LiteralIntExpression -> "literalIntExpression".capitalizedAsCamelCase()
+				is Expression.LiteralUIntExpression -> "literalUIntExpression".capitalizedAsCamelCase()
+				is Expression.LiteralDoubleExpression -> "literalDoubleExpression".capitalizedAsCamelCase()
+				is Expression.LiteralFloatExpression -> "literalFloatExpression".capitalizedAsCamelCase()
+				is Expression.LiteralBoolExpression -> "literalBoolExpression".capitalizedAsCamelCase()
+				is Expression.LiteralStringExpression -> "literalStringExpression".capitalizedAsCamelCase()
+				is Expression.LiteralCharacterExpression -> "literalCharacterExpression".capitalizedAsCamelCase()
+				is Expression.NilLiteralExpression -> "nilLiteralExpression".capitalizedAsCamelCase()
+				is Expression.InterpolatedStringLiteralExpression -> "interpolatedStringLiteralExpression".capitalizedAsCamelCase()
+				is Expression.TupleExpression -> "tupleExpression".capitalizedAsCamelCase()
+				is Expression.TupleShuffleExpression -> "tupleShuffleExpression".capitalizedAsCamelCase()
+				is Expression.Error -> "error".capitalizedAsCamelCase()
+			}
+		}
+	override val treeDescription: String
+		get() {
+			return name
+		}
+	override val printableSubtrees: MutableList<PrintableAsTree?>
+		get() {
+			return when (this) {
+				is Expression.TemplateExpression -> {
+					val pattern: String = this.pattern
+					val matches: MutableMap<String, Expression> = this.matches
+					val matchesTrees: MutableList<PrintableAsTree?> = matches.map { PrintableTree(it.key, mutableListOf(it.value)) }.toMutableList() as MutableList<PrintableAsTree?>
+
+					mutableListOf(PrintableTree("pattern \"${pattern}\""), PrintableTree("matches", matchesTrees))
+				}
+				else -> mutableListOf()
+			}
+		}
 }
 
 data class LabeledExpression(
@@ -279,34 +375,6 @@ class EnumElement {
 		this.annotations = annotations
 	}
 }
-
-val Statement.name: String
-	get() {
-		return when (this) {
-			is Statement.Expression -> "expression".capitalizedAsCamelCase()
-			is Statement.ExtensionDeclaration -> "extensionDeclaration".capitalizedAsCamelCase()
-			is Statement.ImportDeclaration -> "importDeclaration".capitalizedAsCamelCase()
-			is Statement.TypealiasDeclaration -> "typealiasDeclaration".capitalizedAsCamelCase()
-			is Statement.ClassDeclaration -> "classDeclaration".capitalizedAsCamelCase()
-			is Statement.CompanionObject -> "companionObject".capitalizedAsCamelCase()
-			is Statement.EnumDeclaration -> "enumDeclaration".capitalizedAsCamelCase()
-			is Statement.ProtocolDeclaration -> "protocolDeclaration".capitalizedAsCamelCase()
-			is Statement.StructDeclaration -> "structDeclaration".capitalizedAsCamelCase()
-			is Statement.FunctionDeclaration -> "functionDeclaration".capitalizedAsCamelCase()
-			is Statement.VariableDeclaration -> "variableDeclaration".capitalizedAsCamelCase()
-			is Statement.ForEachStatement -> "forEachStatement".capitalizedAsCamelCase()
-			is Statement.WhileStatement -> "whileStatement".capitalizedAsCamelCase()
-			is Statement.IfStatement -> "ifStatement".capitalizedAsCamelCase()
-			is Statement.SwitchStatement -> "switchStatement".capitalizedAsCamelCase()
-			is Statement.DeferStatement -> "deferStatement".capitalizedAsCamelCase()
-			is Statement.ThrowStatement -> "throwStatement".capitalizedAsCamelCase()
-			is Statement.ReturnStatement -> "returnStatement".capitalizedAsCamelCase()
-			is Statement.BreakStatement -> "breakStatement".capitalizedAsCamelCase()
-			is Statement.ContinueStatement -> "continueStatement".capitalizedAsCamelCase()
-			is Statement.AssignmentStatement -> "assignmentStatement".capitalizedAsCamelCase()
-			is Statement.Error -> "error".capitalizedAsCamelCase()
-		}
-	}
 
 public sealed class TupleShuffleIndex {
 	class Variadic(val count: Int): TupleShuffleIndex()

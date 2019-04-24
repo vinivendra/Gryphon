@@ -55,6 +55,19 @@ public class KotlinTranslator {
 			let translatedValue = translateType(value)
 			return "MutableMap<\(translatedKey), \(translatedValue)>"
 		}
+		else if Utilities.isInEnvelopingParentheses(type) {
+			return translateType(String(type.dropFirst().dropLast()))
+		}
+		else if type.contains(" -> ") {
+			let innerTypes = Utilities.splitTypeList(type, separators: [" -> "])
+			let translatedTypes = innerTypes.map(translateType)
+			let firstTypes = translatedTypes.dropLast().map { "(\($0))" }
+			let lastType = translatedTypes.last!
+
+			var allTypes = firstTypes
+			allTypes.append(lastType)
+			return allTypes.joined(separator: " -> ")
+		}
 		else {
 			return Utilities.getTypeMapping(for: type) ?? type
 		}
@@ -161,13 +174,13 @@ public class KotlinTranslator {
 		let result: String
 
 		switch subtree {
-		case .importDeclaration(name: _):
+		case .importDeclaration:
 			result = ""
-		case .extensionDeclaration(type: _, members: _):
+		case .extensionDeclaration:
 			return try unexpectedASTStructureError(
 				"Extension structure should have been removed in a transpilation pass",
 				AST: subtree)
-		case .deferStatement(statements: _):
+		case .deferStatement:
 			return try unexpectedASTStructureError(
 				"Defer statements are only supported as top-level statements in function bodies",
 				AST: subtree)
@@ -175,30 +188,35 @@ public class KotlinTranslator {
 			result = try translateTypealias(
 				identifier: identifier, type: type, isImplicit: isImplicit,
 				withIndentation: indentation)
-		case let .classDeclaration(name: name, inherits: inherits, members: members):
+		case let .classDeclaration(className: className, inherits: inherits, members: members):
 			result = try translateClassDeclaration(
-				name: name,
+				className: className,
 				inherits: inherits.array,
 				members: members.array,
 				withIndentation: indentation)
 		case let .structDeclaration(
-			annotations: annotations, name: name, inherits: inherits, members: members):
+			annotations: annotations, structName: structName, inherits: inherits, members: members):
 
 			result = try translateStructDeclaration(
 				annotations: annotations,
-				name: name, inherits: inherits.array,
+				structName: structName,
+				inherits: inherits.array,
 				members: members.array,
 				withIndentation: indentation)
 		case let .companionObject(members: members):
 			result = try translateCompanionObject(
 				members: members.array, withIndentation: indentation)
 		case let .enumDeclaration(
-			access: access, name: name, inherits: inherits, elements: elements, members: members,
+			access: access,
+			enumName: enumName,
+			inherits: inherits,
+			elements: elements,
+			members: members,
 			isImplicit: isImplicit):
 
 			result = try translateEnumDeclaration(
 				access: access,
-				name: name,
+				enumName: enumName,
 				inherits: inherits.array,
 				elements: elements.array,
 				members: members.array,
@@ -216,9 +234,9 @@ public class KotlinTranslator {
 		case let .functionDeclaration(data: functionDeclaration):
 			result = try translateFunctionDeclaration(
 				functionDeclaration: functionDeclaration, withIndentation: indentation)
-		case let .protocolDeclaration(name: name, members: members):
+		case let .protocolDeclaration(protocolName: protocolName, members: members):
 			result = try translateProtocolDeclaration(
-				name: name, members: members.array, withIndentation: indentation)
+				protocolName: protocolName, members: members.array, withIndentation: indentation)
 		case let .throwStatement(expression: expression):
 			result = try translateThrowStatement(
 				expression: expression, withIndentation: indentation)
@@ -246,7 +264,7 @@ public class KotlinTranslator {
 			result = "\(indentation)break\n"
 		case .continueStatement:
 			result = "\(indentation)continue\n"
-		case let .expression(expression: expression):
+		case let .expressionStatement(expression: expression):
 			let expressionTranslation =
 				try translateExpression(expression, withIndentation: indentation)
 			if !expressionTranslation.isEmpty {
@@ -289,18 +307,21 @@ public class KotlinTranslator {
 			{
 				continue
 			}
-			else if case .expression(expression: .callExpression) = currentSubtree.subtree,
-				case .expression(expression: .callExpression) = nextSubtree.subtree
+			else if case .expressionStatement(
+					expression: .callExpression) = currentSubtree.subtree,
+				case .expressionStatement(expression: .callExpression) = nextSubtree.subtree
 			{
 				continue
 			}
-			else if case .expression(expression: .templateExpression) = currentSubtree.subtree,
-				case .expression(expression: .templateExpression) = nextSubtree.subtree
+			else if case .expressionStatement(
+					expression: .templateExpression) = currentSubtree.subtree,
+				case .expressionStatement(expression: .templateExpression) = nextSubtree.subtree
 			{
 				continue
 			}
-			else if case .expression(expression: .literalCodeExpression) = currentSubtree.subtree,
-				case .expression(expression: .literalCodeExpression) = nextSubtree.subtree
+			else if case .expressionStatement(
+					expression: .literalCodeExpression) = currentSubtree.subtree,
+				case .expressionStatement(expression: .literalCodeExpression) = nextSubtree.subtree
 			{
 				continue
 			}
@@ -326,7 +347,7 @@ public class KotlinTranslator {
 	}
 
 	private func translateEnumDeclaration(
-		access: String?, name enumName: String, inherits: [String], elements: [EnumElement],
+		access: String?, enumName: String, inherits: [String], elements: [EnumElement],
 		members: [Statement], isImplicit: Bool, withIndentation indentation: String)
 		throws -> String
 	{
@@ -403,10 +424,10 @@ public class KotlinTranslator {
 	}
 
 	private func translateProtocolDeclaration(
-		name: String, members: [Statement], withIndentation indentation: String) throws
+		protocolName: String, members: [Statement], withIndentation indentation: String) throws
 		-> String
 	{
-		var result = "\(indentation)interface \(name) {\n"
+		var result = "\(indentation)interface \(protocolName) {\n"
 		let contents = try translate(
 			subtrees: members, withIndentation: increaseIndentation(indentation))
 		result += contents
@@ -423,10 +444,10 @@ public class KotlinTranslator {
 	}
 
 	private func translateClassDeclaration(
-		name: String, inherits: [String], members: [Statement],
+		className: String, inherits: [String], members: [Statement],
 		withIndentation indentation: String) throws -> String
 	{
-		var result = "\(indentation)class \(name)"
+		var result = "\(indentation)class \(className)"
 
 		if !inherits.isEmpty {
 			let translatedInheritances = inherits.map(translateType)
@@ -449,14 +470,14 @@ public class KotlinTranslator {
 	/// If a value type's members are all immutable, that value type can safely be translated as a
 	/// class. Source: https://forums.swift.org/t/are-immutable-structs-like-classes/16270
 	private func translateStructDeclaration(
-		annotations: String?, name: String, inherits: [String], members: [Statement],
+		annotations: String?, structName: String, inherits: [String], members: [Statement],
 		withIndentation indentation: String) throws -> String
 	{
 		let increasedIndentation = increaseIndentation(indentation)
 
 		let annotationsString = annotations.map { "\(indentation)\($0)\n" } ?? ""
 
-		var result = "\(annotationsString)\(indentation)data class \(name)(\n"
+		var result = "\(annotationsString)\(indentation)data class \(structName)(\n"
 
 		let isProperty = { (member: Statement) -> Bool in
 			if case let .variableDeclaration(data: variableDeclaration) = member,
@@ -1295,7 +1316,7 @@ public class KotlinTranslator {
 			return try unexpectedASTStructureError(
 				"Expected the parameters to be either a .tupleExpression or a " +
 					".tupleShuffleExpression",
-				AST: .expression(expression: .callExpression(data: callExpression)))
+				AST: .expressionStatement(expression: .callExpression(data: callExpression)))
 		}
 
 		let prefix = try functionTranslation?.prefix ??
@@ -1332,7 +1353,7 @@ public class KotlinTranslator {
 
 		if statements.count == 1,
 			let firstStatement = statements.first,
-			case let Statement.expression(expression: expression) = firstStatement
+			case let Statement.expressionStatement(expression: expression) = firstStatement
 		{
 			result += try " " + translateExpression(expression, withIndentation: indentation) + " }"
 		}
@@ -1451,7 +1472,7 @@ public class KotlinTranslator {
 			return try unexpectedASTStructureError(
 				"Different number of labels and indices in a tuple shuffle expression. " +
 					"Labels: \(labels), indices: \(indices)",
-				AST: .expression(expression: .tupleShuffleExpression(
+				AST: .expressionStatement(expression: .tupleShuffleExpression(
 					labels: ArrayClass(labels),
 					indices: ArrayClass(indices),
 					expressions: ArrayClass(expressions))))

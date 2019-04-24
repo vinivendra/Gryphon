@@ -54,33 +54,40 @@ public class TranspilationPass {
 		defer { parents.removeLast() }
 
 		switch statement {
-		case let .expression(expression: expression):
+		case let .expressionStatement(expression: expression):
 			return replaceExpression(expression: expression)
 		case let .extensionDeclaration(type: type, members: members):
 			return replaceExtension(type: type, members: members)
-		case let .importDeclaration(name: name):
-			return replaceImportDeclaration(name: name)
+		case let .importDeclaration(moduleName: moduleName):
+			return replaceImportDeclaration(moduleName: moduleName)
 		case let .typealiasDeclaration(identifier: identifier, type: type, isImplicit: isImplicit):
 			return replaceTypealiasDeclaration(
 				identifier: identifier, type: type, isImplicit: isImplicit)
-		case let .classDeclaration(name: name, inherits: inherits, members: members):
+		case let .classDeclaration(className: name, inherits: inherits, members: members):
 			return replaceClassDeclaration(name: name, inherits: inherits, members: members)
 		case let .companionObject(members: members):
 			return replaceCompanionObject(members: members)
 		case let .enumDeclaration(
-			access: access, name: name, inherits: inherits, elements: elements, members: members,
+			access: access,
+			enumName: enumName,
+			inherits: inherits,
+			elements: elements,
+			members: members,
 			isImplicit: isImplicit):
 
 			return replaceEnumDeclaration(
-				access: access, name: name, inherits: inherits, elements: elements,
+				access: access, enumName: enumName, inherits: inherits, elements: elements,
 				members: members, isImplicit: isImplicit)
-		case let .protocolDeclaration(name: name, members: members):
-			return replaceProtocolDeclaration(name: name, members: members)
+		case let .protocolDeclaration(protocolName: protocolName, members: members):
+			return replaceProtocolDeclaration(protocolName: protocolName, members: members)
 		case let .structDeclaration(
-			annotations: annotations, name: name, inherits: inherits, members: members):
+			annotations: annotations, structName: structName, inherits: inherits, members: members):
 
 			return replaceStructDeclaration(
-				annotations: annotations, name: name, inherits: inherits, members: members)
+				annotations: annotations,
+				structName: structName,
+				inherits: inherits,
+				members: members)
 		case let .functionDeclaration(data: functionDeclaration):
 			return replaceFunctionDeclaration(functionDeclaration)
 		case let .variableDeclaration(data: variableDeclaration):
@@ -118,15 +125,15 @@ public class TranspilationPass {
 	}
 
 	func replaceExpression(expression: Expression) -> ArrayClass<Statement> {
-		return [.expression(expression: replaceExpression(expression))]
+		return [.expressionStatement(expression: replaceExpression(expression))]
 	}
 
 	func replaceExtension(type: String, members: ArrayClass<Statement>) -> ArrayClass<Statement> {
 		return [.extensionDeclaration(type: type, members: replaceStatements(members))]
 	}
 
-	func replaceImportDeclaration(name: String) -> ArrayClass<Statement> {
-		return [.importDeclaration(name: name)]
+	func replaceImportDeclaration(moduleName: String) -> ArrayClass<Statement> {
+		return [.importDeclaration(moduleName: moduleName)]
 	}
 
 	func replaceTypealiasDeclaration(identifier: String, type: String, isImplicit: Bool)
@@ -142,7 +149,9 @@ public class TranspilationPass {
 		-> ArrayClass<Statement>
 	{
 		return [.classDeclaration(
-			name: name, inherits: inherits, members: replaceStatements(members)), ]
+			className: name,
+			inherits: inherits,
+			members: replaceStatements(members)), ]
 	}
 
 	func replaceCompanionObject(members: ArrayClass<Statement>) -> ArrayClass<Statement> {
@@ -150,15 +159,22 @@ public class TranspilationPass {
 	}
 
 	func replaceEnumDeclaration(
-		access: String?, name: String, inherits: ArrayClass<String>, elements: ArrayClass<EnumElement>,
-		members: ArrayClass<Statement>, isImplicit: Bool) -> ArrayClass<Statement>
+		access: String?,
+		enumName: String,
+		inherits: ArrayClass<String>,
+		elements: ArrayClass<EnumElement>,
+		members: ArrayClass<Statement>,
+		isImplicit: Bool)
+		-> ArrayClass<Statement>
 	{
 		return [
 			.enumDeclaration(
-				access: access, name: name, inherits: inherits,
+				access: access,
+				enumName: enumName,
+				inherits: inherits,
 				elements: elements.flatMap {
 						replaceEnumElementDeclaration(
-							name: $0.name,
+							enumName: $0.name,
 							associatedValues: $0.associatedValues,
 							rawValue: $0.rawValue,
 							annotations: $0.annotations)
@@ -167,37 +183,39 @@ public class TranspilationPass {
 	}
 
 	func replaceEnumElementDeclaration(
-		name: String,
+		enumName: String,
 		associatedValues: ArrayClass<LabeledType>,
 		rawValue: Expression?,
 		annotations: String?)
 		-> ArrayClass<EnumElement>
 	{
 		return [EnumElement(
-			name: name,
+			name: enumName,
 			associatedValues: associatedValues,
 			rawValue: rawValue,
 			annotations: annotations), ]
 	}
 
 	func replaceProtocolDeclaration(
-		name: String,
+		protocolName: String,
 		members: ArrayClass<Statement>)
 		-> ArrayClass<Statement>
 	{
-		return [.protocolDeclaration(name: name, members: replaceStatements(members))]
+		return [.protocolDeclaration(
+			protocolName: protocolName,
+			members: replaceStatements(members)), ]
 	}
 
 	func replaceStructDeclaration(
 		annotations: String?,
-		name: String,
+		structName: String,
 		inherits: ArrayClass<String>,
 		members: ArrayClass<Statement>)
 		-> ArrayClass<Statement>
 	{
 		return [.structDeclaration(
 			annotations: annotations,
-			name: name,
+			structName: structName,
 			inherits: inherits,
 			members: replaceStatements(members)), ]
 	}
@@ -724,16 +742,25 @@ public class RemoveParenthesesTranspilationPass: TranspilationPass {
 /// Removes implicit declarations so that they don't show up on the translation
 public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
 	override func replaceEnumDeclaration(
-		access: String?, name: String, inherits: ArrayClass<String>, elements: ArrayClass<EnumElement>,
-		members: ArrayClass<Statement>, isImplicit: Bool) -> ArrayClass<Statement>
+		access: String?,
+		enumName: String,
+		inherits: ArrayClass<String>,
+		elements: ArrayClass<EnumElement>,
+		members: ArrayClass<Statement>,
+		isImplicit: Bool)
+		-> ArrayClass<Statement>
 	{
 		if isImplicit {
 			return []
 		}
 		else {
 			return super.replaceEnumDeclaration(
-				access: access, name: name, inherits: inherits, elements: elements,
-				members: members, isImplicit: isImplicit)
+				access: access,
+				enumName: enumName,
+				inherits: inherits,
+				elements: elements,
+				members: members,
+				isImplicit: isImplicit)
 		}
 	}
 
@@ -882,7 +909,7 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 
 	override func replaceStructDeclaration(
 		annotations: String?,
-		name: String,
+		structName: String,
 		inherits: ArrayClass<String>,
 		members: ArrayClass<Statement>)
 		-> ArrayClass<Statement>
@@ -890,19 +917,24 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 		let newMembers = sendStaticMembersToCompanionObject(members)
 		return super.replaceStructDeclaration(
 			annotations: annotations,
-			name: name,
+			structName: structName,
 			inherits: inherits,
 			members: newMembers)
 	}
 
 	override func replaceEnumDeclaration(
-		access: String?, name: String, inherits: ArrayClass<String>, elements: ArrayClass<EnumElement>,
-		members: ArrayClass<Statement>, isImplicit: Bool) -> ArrayClass<Statement>
+		access: String?,
+		enumName: String,
+		inherits: ArrayClass<String>,
+		elements: ArrayClass<EnumElement>,
+		members: ArrayClass<Statement>,
+		isImplicit: Bool)
+		-> ArrayClass<Statement>
 	{
 		let newMembers = sendStaticMembersToCompanionObject(members)
 		return super.replaceEnumDeclaration(
 			access: access,
-			name: name,
+			enumName: enumName,
 			inherits: inherits,
 			elements: elements,
 			members: newMembers,
@@ -951,14 +983,17 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass {
 
 	override func replaceStructDeclaration(
 		annotations: String?,
-		name: String,
+		structName: String,
 		inherits: ArrayClass<String>,
 		members: ArrayClass<Statement>)
 		-> ArrayClass<Statement>
 	{
-		typeNamesStack.append(name)
+		typeNamesStack.append(structName)
 		let result = super.replaceStructDeclaration(
-			annotations: annotations, name: name, inherits: inherits, members: members)
+			annotations: annotations,
+			structName: structName,
+			inherits: inherits,
+			members: members)
 		typeNamesStack.removeLast()
 		return result
 	}
@@ -1010,15 +1045,15 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 
 	override func replaceEnumDeclaration(
 		access: String?,
-		name: String,
+		enumName: String,
 		inherits: ArrayClass<String>,
 		elements: ArrayClass<EnumElement>,
 		members: ArrayClass<Statement>,
 		isImplicit: Bool)
 		-> ArrayClass<Statement>
 	{
-		let isSealedClass = KotlinTranslator.sealedClasses.contains(name)
-		let isEnumClass = KotlinTranslator.enumClasses.contains(name)
+		let isSealedClass = KotlinTranslator.sealedClasses.contains(enumName)
+		let isEnumClass = KotlinTranslator.enumClasses.contains(enumName)
 
 		let newElements = elements.map { (element: EnumElement) -> EnumElement in
 			if isSealedClass {
@@ -1042,7 +1077,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 
 		return super.replaceEnumDeclaration(
 			access: access,
-			name: name,
+			enumName: enumName,
 			inherits: inherits,
 			elements: newElements,
 			members: members,
@@ -1184,12 +1219,17 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceEnumDeclaration(
-		access: String?, name: String, inherits: ArrayClass<String>, elements: ArrayClass<EnumElement>,
-		members: ArrayClass<Statement>, isImplicit: Bool) -> ArrayClass<Statement>
+		access: String?,
+		enumName: String,
+		inherits: ArrayClass<String>,
+		elements: ArrayClass<EnumElement>,
+		members: ArrayClass<Statement>,
+		isImplicit: Bool)
+		-> ArrayClass<Statement>
 	{
 		return super.replaceEnumDeclaration(
 			access: access,
-			name: name,
+			enumName: enumName,
 			inherits: inherits.filter {
 					isNotASwiftProtocol($0) && !TranspilationPass.isASwiftRawRepresentableType($0)
 				},
@@ -1200,14 +1240,14 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 
 	override func replaceStructDeclaration(
 		annotations: String?,
-		name: String,
+		structName: String,
 		inherits: ArrayClass<String>,
 		members: ArrayClass<Statement>)
 		-> ArrayClass<Statement>
 	{
 		return super.replaceStructDeclaration(
 			annotations: annotations,
-			name: name,
+			structName: structName,
 			inherits: inherits.filter(isNotASwiftProtocol),
 			members: members)
 	}
@@ -1348,7 +1388,7 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 
 	override func replaceReturnStatement(expression: Expression?) -> ArrayClass<Statement> {
 		if isInClosure, let expression = expression {
-			return [.expression(expression: expression)]
+			return [.expressionStatement(expression: expression)]
 		}
 		else {
 			return [.returnStatement(expression: expression)]
@@ -1412,7 +1452,7 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 					let returnExpression = maybeExpression
 				{
 					let newStatements = ArrayClass(switchCase.statements.dropLast())
-					newStatements.append(.expression(expression: returnExpression))
+					newStatements.append(.expressionStatement(expression: returnExpression))
 					newCases.append(SwitchCase(
 						expression: switchCase.expression, statements: newStatements))
 				}
@@ -1431,7 +1471,7 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 				if case let .assignmentStatement(leftHand: _, rightHand: rightHand) = lastStatement
 				{
 					let newStatements = ArrayClass(switchCase.statements.dropLast())
-					newStatements.append(.expression(expression: rightHand))
+					newStatements.append(.expressionStatement(expression: rightHand))
 					newCases.append(SwitchCase(
 						expression: switchCase.expression, statements: newStatements))
 				}
@@ -1644,8 +1684,13 @@ public class RecordFunctionTranslationsTranspilationPass: TranspilationPass {
 
 public class RecordEnumsTranspilationPass: TranspilationPass {
 	override func replaceEnumDeclaration(
-		access: String?, name: String, inherits: ArrayClass<String>, elements: ArrayClass<EnumElement>,
-		members: ArrayClass<Statement>, isImplicit: Bool) -> ArrayClass<Statement>
+		access: String?,
+		enumName: String,
+		inherits: ArrayClass<String>,
+		elements: ArrayClass<EnumElement>,
+		members: ArrayClass<Statement>,
+		isImplicit: Bool)
+		-> ArrayClass<Statement>
 	{
 		let isEnumClass = inherits.isEmpty && elements.reduce(true)
 		{ (acc: Bool, element: EnumElement) -> Bool in
@@ -1653,14 +1698,18 @@ public class RecordEnumsTranspilationPass: TranspilationPass {
 		}
 
 		if isEnumClass {
-			KotlinTranslator.addEnumClass(name)
+			KotlinTranslator.addEnumClass(enumName)
 		}
 		else {
-			KotlinTranslator.addSealedClass(name)
+			KotlinTranslator.addSealedClass(enumName)
 		}
 
 		return [.enumDeclaration(
-			access: access, name: name, inherits: inherits, elements: elements, members: members,
+			access: access,
+			enumName: enumName,
+			inherits: inherits,
+			elements: elements,
+			members: members,
 			isImplicit: isImplicit), ]
 	}
 }
@@ -1668,13 +1717,13 @@ public class RecordEnumsTranspilationPass: TranspilationPass {
 /// Records all protocol declarations in the Kotlin Translator
 public class RecordProtocolsTranspilationPass: TranspilationPass {
 	override func replaceProtocolDeclaration(
-		name: String,
+		protocolName: String,
 		members: ArrayClass<Statement>)
 		-> ArrayClass<Statement>
 	{
-		KotlinTranslator.addProtocol(name)
+		KotlinTranslator.addProtocol(protocolName)
 
-		return super.replaceProtocolDeclaration(name: name, members: members)
+		return super.replaceProtocolDeclaration(protocolName: protocolName, members: members)
 	}
 }
 
@@ -1700,7 +1749,7 @@ public class RaiseStandardLibraryWarningsTranspilationPass: TranspilationPass {
 public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass {
 	override func replaceStructDeclaration(
 		annotations: String?,
-		name: String,
+		structName: String,
 		inherits: ArrayClass<String>,
 		members: ArrayClass<Statement>)
 		-> ArrayClass<Statement>
@@ -1713,7 +1762,7 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 				variableDeclaration.getter == nil
 			{
 				let message = "No support for mutable variables in value types: found variable " +
-					"\(variableDeclaration.identifier) inside struct \(name)"
+					"\(variableDeclaration.identifier) inside struct \(structName)"
 				Compiler.handleWarning(
 					message: message,
 					sourceFile: ast.sourceFile,
@@ -1726,7 +1775,7 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 					functionDeclaration.parameters.map { $0.label + ":" }
 						.joined(separator: ", ") + ")"
 				let message = "No support for mutating methods in value types: found method " +
-					"\(methodName) inside struct \(name)"
+					"\(methodName) inside struct \(structName)"
 				Compiler.handleWarning(
 					message: message,
 					sourceFile: ast.sourceFile,
@@ -1735,12 +1784,17 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 		}
 
 		return super.replaceStructDeclaration(
-			annotations: annotations, name: name, inherits: inherits, members: members)
+			annotations: annotations, structName: structName, inherits: inherits, members: members)
 	}
 
 	override func replaceEnumDeclaration(
-		access: String?, name: String, inherits: ArrayClass<String>, elements: ArrayClass<EnumElement>,
-		members: ArrayClass<Statement>, isImplicit: Bool) -> ArrayClass<Statement>
+		access: String?,
+		enumName: String,
+		inherits: ArrayClass<String>,
+		elements: ArrayClass<EnumElement>,
+		members: ArrayClass<Statement>,
+		isImplicit: Bool)
+		-> ArrayClass<Statement>
 	{
 		for member in members {
 			if case let .functionDeclaration(data: functionDeclaration) = member,
@@ -1750,7 +1804,7 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 					functionDeclaration.parameters.map { $0.label + ":" }
 						.joined(separator: ", ") + ")"
 				let message = "No support for mutating methods in value types: found method " +
-					"\(methodName) inside enum \(name)"
+					"\(methodName) inside enum \(enumName)"
 				Compiler.handleWarning(
 					message: message,
 					sourceFile: ast.sourceFile,
@@ -1759,7 +1813,11 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 		}
 
 		return super.replaceEnumDeclaration(
-			access: access, name: name, inherits: inherits, elements: elements, members: members,
+			access: access,
+			enumName: enumName,
+			inherits: inherits,
+			elements: elements,
+			members: members,
 			isImplicit: isImplicit)
 	}
 }
@@ -1952,7 +2010,7 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 public class RawValuesTranspilationPass: TranspilationPass {
 	override func replaceEnumDeclaration(
 		access: String?,
-		name: String,
+		enumName: String,
 		inherits: ArrayClass<String>,
 		elements: ArrayClass<EnumElement>,
 		members: ArrayClass<Statement>,
@@ -1960,15 +2018,15 @@ public class RawValuesTranspilationPass: TranspilationPass {
 	{
 		if let typeName = elements.compactMap({ $0.rawValue?.type }).first {
 			let rawValueVariable = createRawValueVariable(
-					rawValueType: typeName,
-					access: access,
-					name: name,
-					elements: elements)
+				rawValueType: typeName,
+				access: access,
+				enumName: enumName,
+				elements: elements)
 
 			guard let rawValueInitializer = createRawValueInitializer(
 				rawValueType: typeName,
 				access: access,
-				name: name,
+				enumName: enumName,
 				elements: elements) else
 			{
 				Compiler.handleWarning(
@@ -1978,7 +2036,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 					sourceFileRange: elements.compactMap { $0.rawValue?.range }.first)
 				return super.replaceEnumDeclaration(
 					access: access,
-					name: name,
+					enumName: enumName,
 					inherits: inherits,
 					elements: elements,
 					members: members,
@@ -1991,7 +2049,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 
 			return super.replaceEnumDeclaration(
 				access: access,
-				name: name,
+				enumName: enumName,
 				inherits: inherits,
 				elements: elements,
 				members: newMembers,
@@ -2000,7 +2058,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 		else {
 			return super.replaceEnumDeclaration(
 				access: access,
-				name: name,
+				enumName: enumName,
 				inherits: inherits,
 				elements: elements,
 				members: members,
@@ -2011,7 +2069,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 	private func createRawValueInitializer(
 		rawValueType: String,
 		access: String?,
-		name: String,
+		enumName: String,
 		elements: ArrayClass<EnumElement>)
 		-> FunctionDeclarationData?
 	{
@@ -2025,11 +2083,11 @@ public class RawValuesTranspilationPass: TranspilationPass {
 				statements: [
 					.returnStatement(
 						expression: .dotExpression(
-							leftExpression: .typeExpression(type: name),
+							leftExpression: .typeExpression(type: enumName),
 							rightExpression: .declarationReferenceExpression(data:
 								DeclarationReferenceData(
 									identifier: element.name,
-									type: name,
+									type: enumName,
 									isStandardLibrary: false,
 									isImplicit: false,
 									range: nil)))),
@@ -2064,8 +2122,8 @@ public class RawValuesTranspilationPass: TranspilationPass {
 				apiLabel: nil,
 				type: rawValueType,
 				value: nil), ],
-			returnType: name + "?",
-			functionType: "(\(rawValueType)) -> \(name)?",
+			returnType: enumName + "?",
+			functionType: "(\(rawValueType)) -> \(enumName)?",
 			genericTypes: [],
 			isImplicit: false,
 			isStatic: true,
@@ -2079,18 +2137,18 @@ public class RawValuesTranspilationPass: TranspilationPass {
 	private func createRawValueVariable(
 		rawValueType: String,
 		access: String?,
-		name: String,
+		enumName: String,
 		elements: ArrayClass<EnumElement>)
 		-> VariableDeclarationData
 	{
 		let switchCases = elements.map { element in
 			SwitchCase(
 				expression: .dotExpression(
-					leftExpression: .typeExpression(type: name),
+					leftExpression: .typeExpression(type: enumName),
 					rightExpression: .declarationReferenceExpression(data:
 						DeclarationReferenceData(
 							identifier: element.name,
-							type: name,
+							type: enumName,
 							isStandardLibrary: false,
 							isImplicit: false,
 							range: nil))),
@@ -2105,7 +2163,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 			expression: .declarationReferenceExpression(data:
 				DeclarationReferenceData(
 					identifier: "this",
-					type: name,
+					type: enumName,
 					isStandardLibrary: false,
 					isImplicit: false,
 					range: nil)),
@@ -2212,7 +2270,7 @@ public class ReturnIfNilTranspilationPass: TranspilationPass {
 			let onlyStatement = ifStatement.statements.first,
 			case let .returnStatement(expression: returnExpression) = onlyStatement
 		{
-			return [.expression(expression:
+			return [.expressionStatement(expression:
 				.binaryOperatorExpression(
 					leftExpression: declarationReference,
 					rightExpression: .returnExpression(expression: returnExpression),
@@ -2229,10 +2287,12 @@ public class FixProtocolContentsTranspilationPass: TranspilationPass {
 	var isInProtocol = false
 
 	override func replaceProtocolDeclaration(
-		name: String, members: ArrayClass<Statement>) -> ArrayClass<Statement>
+		protocolName: String,
+		members: ArrayClass<Statement>)
+		-> ArrayClass<Statement>
 	{
 		isInProtocol = true
-		let result = super.replaceProtocolDeclaration(name: name, members: members)
+		let result = super.replaceProtocolDeclaration(protocolName: protocolName, members: members)
 		isInProtocol = false
 
 		return result

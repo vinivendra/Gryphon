@@ -198,6 +198,9 @@ func gryphonTemplates() {
 	_array.indices
 	"_array.indices"
 
+	_array.contains(where: _closure3)
+	"(_array.find _closure3 != null)"
+
 	_comparableArray.sorted()
 	"_comparableArray.sorted()"
 
