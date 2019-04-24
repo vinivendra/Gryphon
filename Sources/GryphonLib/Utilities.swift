@@ -464,6 +464,10 @@ extension ArrayClass { // kotlin: ignore
 	public func parallelMap<Result>(_ transform: @escaping (Element) throws -> Result)
 		throws -> ArrayClass<Result>
 	{
+		guard self.count > 1 else {
+			return try self.map(transform)
+		}
+
 		let concurrentQueue = DispatchQueue(
 			label: "com.gryphon.ParallelMap", attributes: .concurrent)
 
