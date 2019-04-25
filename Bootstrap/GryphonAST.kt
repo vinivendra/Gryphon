@@ -121,7 +121,104 @@ public sealed class Statement: PrintableAsTree {
 
 					mutableListOf(PrintableTree(className), PrintableTree.ofStrings("inherits", inherits), PrintableTree.ofStatements("members", members))
 				}
-				else -> mutableListOf()
+				is Statement.CompanionObject -> {
+					val members: MutableList<Statement> = this.members
+					members as MutableList<PrintableAsTree?>
+				}
+				is Statement.EnumDeclaration -> {
+					val access: String? = this.access
+					val enumName: String = this.enumName
+					val inherits: MutableList<String> = this.inherits
+					val elements: MutableList<EnumElement> = this.elements
+					val members: MutableList<Statement> = this.members
+					val isImplicit: Boolean = this.isImplicit
+
+					mutableListOf(if (isImplicit) { PrintableTree(("implicit")) } else { null }, PrintableTree.initOrNil(access), PrintableTree(enumName), PrintableTree.ofStrings("inherits", inherits), PrintableTree("elements", elements as MutableList<PrintableAsTree?>), PrintableTree.ofStatements("members", members))
+				}
+				is Statement.ProtocolDeclaration -> {
+					val protocolName: String = this.protocolName
+					val members: MutableList<Statement> = this.members
+					mutableListOf(PrintableTree(protocolName), PrintableTree.ofStatements("members", members))
+				}
+				is Statement.StructDeclaration -> {
+					val annotations: String? = this.annotations
+					val structName: String = this.structName
+					val inherits: MutableList<String> = this.inherits
+					val members: MutableList<Statement> = this.members
+
+					mutableListOf(PrintableTree.initOrNil("annotations", mutableListOf(PrintableTree.initOrNil(annotations))), PrintableTree(structName), PrintableTree.ofStrings("inherits", inherits), PrintableTree.ofStatements("members", members))
+				}
+				is Statement.FunctionDeclaration -> {
+					val functionDeclaration: FunctionDeclarationData = this.data
+					val parametersTrees: MutableList<PrintableAsTree?> = functionDeclaration.parameters.map { parameter -> PrintableTree(
+						"parameter",
+						mutableListOf(parameter.apiLabel?.let { PrintableTree("api label: ${it}") }, PrintableTree("label: ${parameter.label}"), PrintableTree("type: ${parameter.type}"), PrintableTree.initOrNil("value", mutableListOf(parameter.value)))) }.toMutableList()
+					mutableListOf(functionDeclaration.extendsType?.let { PrintableTree("extends type ${it}") }, if (functionDeclaration.isImplicit) { PrintableTree(("implicit")) } else { null }, if (functionDeclaration.isStatic) { PrintableTree(("static")) } else { null }, if (functionDeclaration.isMutating) { PrintableTree(("mutating")) } else { null }, PrintableTree.initOrNil(functionDeclaration.access), PrintableTree("type: ${functionDeclaration.functionType}"), PrintableTree("prefix: ${functionDeclaration.prefix}"), PrintableTree("parameters", parametersTrees), PrintableTree("return type: ${functionDeclaration.returnType}"), PrintableTree.ofStatements("statements", functionDeclaration.statements ?: mutableListOf()))
+				}
+				is Statement.VariableDeclaration -> {
+					val variableDeclaration: VariableDeclarationData = this.data
+					mutableListOf(PrintableTree.initOrNil(
+						"extendsType",
+						mutableListOf(PrintableTree.initOrNil(variableDeclaration.extendsType))), if (variableDeclaration.isImplicit) { PrintableTree(("implicit")) } else { null }, if (variableDeclaration.isStatic) { PrintableTree(("static")) } else { null }, if (variableDeclaration.isLet) { PrintableTree(("let")) } else { PrintableTree(("var")) }, PrintableTree(variableDeclaration.identifier), PrintableTree(variableDeclaration.typeName), variableDeclaration.expression, PrintableTree.initOrNil(
+						"getter",
+						mutableListOf(variableDeclaration.getter?.let { Statement.FunctionDeclaration(data = it) })), PrintableTree.initOrNil(
+						"setter",
+						mutableListOf(variableDeclaration.setter?.let { Statement.FunctionDeclaration(data = it) })), PrintableTree.initOrNil(
+						"annotations",
+						mutableListOf(PrintableTree.initOrNil(variableDeclaration.annotations))))
+				}
+				is Statement.ForEachStatement -> {
+					val collection: Expression = this.collection
+					val variable: Expression = this.variable
+					val statements: MutableList<Statement> = this.statements
+
+					mutableListOf(PrintableTree("variable", mutableListOf(variable)), PrintableTree("collection", mutableListOf(collection)), PrintableTree.ofStatements("statements", statements))
+				}
+				is Statement.WhileStatement -> {
+					val expression: Expression = this.expression
+					val statements: MutableList<Statement> = this.statements
+					mutableListOf(PrintableTree.ofExpressions("expression", mutableListOf(expression)), PrintableTree.ofStatements("statements", statements))
+				}
+				is Statement.IfStatement -> {
+					val ifStatement: IfStatementData = this.data
+					val declarationTrees: MutableList<Statement> = ifStatement.declarations.map { Statement.VariableDeclaration(data = it) }.toMutableList()
+					val conditionTrees: MutableList<Statement> = ifStatement.conditions.map { it.toStatement() }.toMutableList()
+					val elseStatementTrees: MutableList<PrintableAsTree?> = ifStatement.elseStatement?.let { Statement.IfStatement(data = it) }?.printableSubtrees ?: mutableListOf()
+
+					mutableListOf(if (ifStatement.isGuard) { PrintableTree(("guard")) } else { null }, PrintableTree.ofStatements("declarations", declarationTrees), PrintableTree.ofStatements("conditions", conditionTrees), PrintableTree.ofStatements("statements", ifStatement.statements), PrintableTree.initOrNil("else", elseStatementTrees))
+				}
+				is Statement.SwitchStatement -> {
+					val convertsToExpression: Statement? = this.convertsToExpression
+					val expression: Expression = this.expression
+					val cases: MutableList<SwitchCase> = this.cases
+					val caseItems: MutableList<PrintableAsTree?> = cases.map { switchCase -> PrintableTree(
+						"case item",
+						mutableListOf(PrintableTree("expression", mutableListOf(switchCase.expression) as MutableList<PrintableAsTree?>), PrintableTree("statements", switchCase.statements as MutableList<PrintableAsTree?>))) }.toMutableList()
+
+					mutableListOf(PrintableTree.ofStatements(
+						"converts to expression",
+						convertsToExpression?.let { mutableListOf(it) } ?: mutableListOf()), PrintableTree.ofExpressions("expression", mutableListOf(expression)), PrintableTree("case items", caseItems))
+				}
+				is Statement.DeferStatement -> {
+					val statements: MutableList<Statement> = this.statements
+					statements as MutableList<PrintableAsTree?>
+				}
+				is Statement.ThrowStatement -> {
+					val expression: Expression = this.expression
+					mutableListOf(expression)
+				}
+				is Statement.ReturnStatement -> {
+					val expression: Expression? = this.expression
+					mutableListOf(expression)
+				}
+				is Statement.BreakStatement -> mutableListOf()
+				is Statement.ContinueStatement -> mutableListOf()
+				is Statement.AssignmentStatement -> {
+					val leftHand: Expression = this.leftHand
+					val rightHand: Expression = this.rightHand
+					mutableListOf(leftHand, rightHand)
+				}
+				is Statement.Error -> mutableListOf()
 			}
 		}
 }
@@ -371,6 +468,19 @@ class IfStatementData {
 	public sealed class IfCondition {
 		class Condition(val expression: Expression): IfCondition()
 		class Declaration(val variableDeclaration: VariableDeclarationData): IfCondition()
+
+		internal fun toStatement(): Statement {
+			return when (this) {
+				is IfCondition.Condition -> {
+					val expression: Expression = this.expression
+					Statement.ExpressionStatement(expression = expression)
+				}
+				is IfCondition.Declaration -> {
+					val variableDeclaration: VariableDeclarationData = this.variableDeclaration
+					Statement.VariableDeclaration(data = variableDeclaration)
+				}
+			}
+		}
 	}
 
 	constructor(
@@ -398,7 +508,7 @@ class SwitchCase {
 	}
 }
 
-class EnumElement {
+class EnumElement: PrintableAsTree {
 	var name: String
 	var associatedValues: MutableList<LabeledType>
 	var rawValue: Expression? = null
@@ -415,6 +525,17 @@ class EnumElement {
 		this.rawValue = rawValue
 		this.annotations = annotations
 	}
+
+	override val treeDescription: String
+		get() {
+			return ".${this.name}"
+		}
+	override val printableSubtrees: MutableList<PrintableAsTree?>
+		get() {
+			val associatedValues: String = this.associatedValues.map { "${it.label}: ${it.type}" }.toMutableList().joinToString(separator = ", ")
+			val associatedValuesString: String? = if (associatedValues.isEmpty()) { null } else { "values: ${associatedValues}" }
+			return mutableListOf(PrintableTree.initOrNil(associatedValuesString), PrintableTree.initOrNil(this.annotations))
+		}
 }
 
 public sealed class TupleShuffleIndex {

@@ -1,5 +1,14 @@
 class PrintableTree: PrintableAsTree {
 	companion object {
+		internal fun ofTrees(
+			description: String,
+			subtrees: MutableList<PrintableTree>)
+			: PrintableAsTree?
+		{
+			val newSubtrees: MutableList<PrintableAsTree?> = subtrees as MutableList<PrintableAsTree?>
+			return PrintableTree.initOrNil(description, newSubtrees)
+		}
+
 		internal fun initOrNil(
 			description: String,
 			subtreesOrNil: MutableList<PrintableAsTree?>)

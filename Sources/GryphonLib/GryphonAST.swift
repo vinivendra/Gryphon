@@ -200,187 +200,144 @@ public indirect enum Statement: PrintableAsTree, Equatable {
 				PrintableTree(className),
 				PrintableTree.ofStrings("inherits", inherits),
 				PrintableTree.ofStatements("members", members), ]
-		default:
+		case let .companionObject(members: members):
+			return ArrayClass<PrintableAsTree?>(members)
+		case let .enumDeclaration(
+			access: access,
+			enumName: enumName,
+			inherits: inherits,
+			elements: elements,
+			members: members,
+			isImplicit: isImplicit):
+
+			return [
+				isImplicit ? PrintableTree("implicit") : nil,
+				PrintableTree.initOrNil(access),
+				PrintableTree(enumName),
+				PrintableTree.ofStrings("inherits", inherits),
+				PrintableTree("elements", ArrayClass<PrintableAsTree?>(elements)),
+				PrintableTree.ofStatements("members", members), ]
+		case let .protocolDeclaration(protocolName: protocolName, members: members):
+			return [
+				PrintableTree(protocolName),
+				PrintableTree.ofStatements("members", members), ]
+		case let .structDeclaration(
+			annotations: annotations, structName: structName, inherits: inherits, members: members):
+
+			return [
+				PrintableTree.initOrNil(
+					"annotations", [PrintableTree.initOrNil(annotations)]),
+				PrintableTree(structName),
+				PrintableTree.ofStrings("inherits", inherits),
+				PrintableTree.ofStatements("members", members), ]
+		case let .functionDeclaration(data: functionDeclaration):
+			let parametersTrees = functionDeclaration.parameters
+				.map { parameter -> PrintableAsTree? in
+					PrintableTree(
+						"parameter",
+						[
+							parameter.apiLabel.map { PrintableTree("api label: \($0)") },
+							PrintableTree("label: \(parameter.label)"),
+							PrintableTree("type: \(parameter.type)"),
+							PrintableTree.initOrNil("value", [parameter.value]),
+						])
+			}
+
+			return [
+				functionDeclaration.extendsType.map { PrintableTree("extends type \($0)") },
+				functionDeclaration.isImplicit ? PrintableTree("implicit") : nil,
+				functionDeclaration.isStatic ? PrintableTree("static") : nil,
+				functionDeclaration.isMutating ? PrintableTree("mutating") : nil,
+				PrintableTree.initOrNil(functionDeclaration.access),
+				PrintableTree("type: \(functionDeclaration.functionType)"),
+				PrintableTree("prefix: \(functionDeclaration.prefix)"),
+				PrintableTree("parameters", parametersTrees),
+				PrintableTree("return type: \(functionDeclaration.returnType)"),
+				PrintableTree.ofStatements(
+					"statements", (functionDeclaration.statements ?? [])), ]
+		case let .variableDeclaration(data: variableDeclaration):
+			return [
+				PrintableTree.initOrNil(
+					"extendsType", [PrintableTree.initOrNil(variableDeclaration.extendsType)]),
+				variableDeclaration.isImplicit ? PrintableTree("implicit") : nil,
+				variableDeclaration.isStatic ? PrintableTree("static") : nil,
+				variableDeclaration.isLet ? PrintableTree("let") : PrintableTree("var"),
+				PrintableTree(variableDeclaration.identifier),
+				PrintableTree(variableDeclaration.typeName),
+				variableDeclaration.expression,
+				PrintableTree.initOrNil(
+					"getter",
+					[variableDeclaration.getter.map { Statement.functionDeclaration(data: $0) }]),
+				PrintableTree.initOrNil(
+					"setter",
+					[variableDeclaration.setter.map { Statement.functionDeclaration(data: $0) }]),
+				PrintableTree.initOrNil(
+					"annotations", [PrintableTree.initOrNil(variableDeclaration.annotations)]), ]
+		case let .forEachStatement(
+			collection: collection,
+			variable: variable,
+			statements: statements):
+
+			return [
+				PrintableTree("variable", [variable]),
+				PrintableTree("collection", [collection]),
+				PrintableTree.ofStatements("statements", statements), ]
+		case let .whileStatement(expression: expression, statements: statements):
+			return [
+				PrintableTree.ofExpressions("expression", [expression]),
+				PrintableTree.ofStatements("statements", statements), ]
+		case let .ifStatement(data: ifStatement):
+			let declarationTrees =
+				ifStatement.declarations.map { Statement.variableDeclaration(data: $0) }
+			let conditionTrees = ifStatement.conditions.map { $0.toStatement() }
+			let elseStatementTrees = ifStatement.elseStatement
+				.map({ Statement.ifStatement(data: $0) })?.printableSubtrees ?? []
+			return [
+				ifStatement.isGuard ? PrintableTree("guard") : nil,
+				PrintableTree.ofStatements(
+					"declarations", declarationTrees),
+				PrintableTree.ofStatements(
+					"conditions", conditionTrees),
+				PrintableTree.ofStatements(
+					"statements", ifStatement.statements),
+				PrintableTree.initOrNil(
+					"else", elseStatementTrees), ]
+		case let .switchStatement(
+			convertsToExpression: convertsToExpression,
+			expression: expression,
+			cases: cases):
+
+			let caseItems = cases.map { switchCase -> PrintableAsTree? in
+				PrintableTree("case item", [
+					PrintableTree(
+						"expression", ArrayClass<PrintableAsTree?>([switchCase.expression])),
+					PrintableTree(
+						"statements", ArrayClass<PrintableAsTree?>(switchCase.statements)),
+					])
+			}
+
+			return [
+				PrintableTree.ofStatements(
+					"converts to expression",
+					convertsToExpression.map { [$0] } ?? []),
+				PrintableTree.ofExpressions("expression", [expression]),
+				PrintableTree("case items", caseItems), ]
+		case let .deferStatement(statements: statements):
+			return ArrayClass<PrintableAsTree?>(statements)
+		case let .throwStatement(expression: expression):
+			return [expression]
+		case let .returnStatement(expression: expression):
+			return [expression]
+		case .breakStatement:
+			return []
+		case .continueStatement:
+			return []
+		case let .assignmentStatement(leftHand: leftHand, rightHand: rightHand):
+			return [leftHand, rightHand]
+		case .error:
 			return []
 		}
 	}
-}
-
-extension Statement { // kotlin: ignore
-	//	public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
-	//		switch self {
-	//		case let .expressionStatement(expression: expression):
-	//			return [expression]
-	//		case let .extensionDeclaration(type: type, members: members):
-	//			return [PrintableTree(type),
-	//					PrintableTree.initOrNil("members", ArrayClass<PrintableAsTree?>(members)), ]
-	//		case let .importDeclaration(name: name):
-	//			return [PrintableTree(name)]
-	//		case let .typealiasDeclaration(identifier: identifier, type: type, isImplicit: isImplicit):
-	//			return [
-	//				isImplicit ? PrintableTree("implicit") : nil,
-	//				PrintableTree("identifier: \(identifier)"),
-	//				PrintableTree("type: \(type)"), ]
-	//		case let .classDeclaration(name: name, inherits: inherits, members: members):
-	//			return  [
-	//				PrintableTree(name),
-	//				PrintableTree("inherits", inherits),
-	//				PrintableTree("members", ArrayClass<PrintableAsTree?>(members)), ]
-	//		case let .companionObject(members: members):
-	//			return ArrayClass(members)
-	//		case let .enumDeclaration(
-	//			access: access,
-	//			name: name,
-	//			inherits: inherits,
-	//			elements: elements,
-	//			members: members,
-	//			isImplicit: isImplicit):
-	//
-	//			let elementTrees = elements.map { (element: EnumElement) -> PrintableTree in
-	//				let associatedValues = element.associatedValues
-	//					.map { "\($0.label): \($0.type)" }
-	//					.joined(separator: ", ")
-	//				let associatedValuesString = (associatedValues.isEmpty) ? nil :
-	//					"values: \(associatedValues)"
-	//				return PrintableTree(".\(element.name)", [
-	//					PrintableTree.initOrNil(associatedValuesString),
-	//					PrintableTree.initOrNil(element.annotations), ])
-	//			}
-	//
-	//			return [
-	//				isImplicit ? PrintableTree("implicit") : nil,
-	//				PrintableTree.initOrNil(access),
-	//				PrintableTree(name),
-	//				PrintableTree("inherits", inherits),
-	//				PrintableTree("elements", ArrayClass<PrintableAsTree?>(elementTrees)),
-	//				PrintableTree("members", ArrayClass<PrintableAsTree?>(members)), ]
-	//		case let .protocolDeclaration(name: name, members: members):
-	//			return [
-	//				PrintableTree(name),
-	//				PrintableTree.initOrNil("members", ArrayClass<PrintableAsTree?>(members)), ]
-	//		case let .structDeclaration(
-	//			annotations: annotations, name: name, inherits: inherits, members: members):
-	//
-	//			return [
-	//				PrintableTree.initOrNil(
-	//					"annotations", [PrintableTree.initOrNil(annotations)]),
-	//				PrintableTree(name),
-	//				PrintableTree("inherits", inherits),
-	//				PrintableTree("members", ArrayClass<PrintableAsTree?>(members)), ]
-	//		case let .functionDeclaration(data: functionDeclaration):
-	//			let parametersTrees = functionDeclaration.parameters
-	//				.map { parameter -> PrintableAsTree? in
-	//					PrintableTree(
-	//						"parameter",
-	//						[
-	//							parameter.apiLabel.map { PrintableTree("api label: \($0)") },
-	//							PrintableTree("label: \(parameter.label)"),
-	//							PrintableTree("type: \(parameter.type)"),
-	//							PrintableTree.initOrNil("value", [parameter.value]),
-	//						])
-	//				}
-	//
-	//			return [
-	//				functionDeclaration.extendsType.map { PrintableTree("extends type \($0)") },
-	//				functionDeclaration.isImplicit ? PrintableTree("implicit") : nil,
-	//				functionDeclaration.isStatic ? PrintableTree("static") : nil,
-	//				functionDeclaration.isMutating ? PrintableTree("mutating") : nil,
-	//				PrintableTree.initOrNil(functionDeclaration.access),
-	//				PrintableTree("type: \(functionDeclaration.functionType)"),
-	//				PrintableTree("prefix: \(functionDeclaration.prefix)"),
-	//				PrintableTree("parameters", parametersTrees),
-	//				PrintableTree("return type: \(functionDeclaration.returnType)"),
-	//				PrintableTree(
-	//					"statements",
-	//					ArrayClass<PrintableAsTree?>(functionDeclaration.statements ?? [])), ]
-	//		case let .variableDeclaration(data: variableDeclaration):
-	//			return [
-	//				PrintableTree.initOrNil(
-	//					"extendsType", [PrintableTree.initOrNil(variableDeclaration.extendsType)]),
-	//				variableDeclaration.isImplicit ? PrintableTree("implicit") : nil,
-	//				variableDeclaration.isStatic ? PrintableTree("static") : nil,
-	//				variableDeclaration.isLet ? PrintableTree("let") : PrintableTree("var"),
-	//				PrintableTree(variableDeclaration.identifier),
-	//				PrintableTree(variableDeclaration.typeName),
-	//				variableDeclaration.expression,
-	//				PrintableTree.initOrNil(
-	//					"getter",
-	//					[variableDeclaration.getter.map { Statement.functionDeclaration(data: $0) }]),
-	//				PrintableTree.initOrNil(
-	//					"setter",
-	//					[variableDeclaration.setter.map { Statement.functionDeclaration(data: $0) }]),
-	//				PrintableTree.initOrNil(
-	//					"annotations", [PrintableTree.initOrNil(variableDeclaration.annotations)]), ]
-	//		case let .forEachStatement(
-	//			collection: collection,
-	//			variable: variable,
-	//			statements: statements):
-	//
-	//			return [
-	//				PrintableTree("variable", [variable]),
-	//				PrintableTree("collection", [collection]),
-	//				PrintableTree.initOrNil("statements", ArrayClass<PrintableAsTree?>(statements)), ]
-	//		case let .whileStatement(expression: expression, statements: statements):
-	//			return [
-	//				PrintableTree("expression", [expression]),
-	//				PrintableTree.initOrNil("statements", ArrayClass<PrintableAsTree?>(statements)), ]
-	//		case let .ifStatement(data: ifStatement):
-	//			let declarationTrees =
-	//				ifStatement.declarations.map { Statement.variableDeclaration(data: $0) }
-	//			let conditionTrees = ifStatement.conditions.map { condition -> Statement in
-	//				switch condition {
-	//				case let .condition(expression: expression):
-	//					return .expressionStatement(expression: expression)
-	//				case let .declaration(variableDeclaration: variableDeclaration):
-	//					return .variableDeclaration(data: variableDeclaration)
-	//				}
-	//			}
-	//			let elseStatementTrees = ifStatement.elseStatement
-	//				.map({ Statement.ifStatement(data: $0) })?.printableSubtrees ?? []
-	//			return [
-	//				ifStatement.isGuard ? PrintableTree("guard") : nil,
-	//				PrintableTree.initOrNil(
-	//					"declarations", ArrayClass<PrintableAsTree?>(declarationTrees)),
-	//				PrintableTree.initOrNil(
-	//					"conditions", ArrayClass<PrintableAsTree?>(conditionTrees)),
-	//				PrintableTree.initOrNil(
-	//					"statements", ArrayClass<PrintableAsTree?>(ifStatement.statements)),
-	//				PrintableTree.initOrNil(
-	//					"else", elseStatementTrees), ]
-	//		case let .switchStatement(
-	//			convertsToExpression: convertsToExpression, expression: expression,
-	//			cases: cases):
-	//
-	//			let caseItems = cases.map { switchCase -> PrintableAsTree? in
-	//				let subtrees: ArrayClass<PrintableAsTree?> = [
-	//					PrintableTree(
-	//						"expression", ArrayClass<PrintableAsTree?>([switchCase.expression])),
-	//					PrintableTree(
-	//						"statements", ArrayClass<PrintableAsTree?>(switchCase.statements)),
-	//				]
-	//				return PrintableTree("case item", subtrees)
-	//			}
-	//
-	//			return [
-	//				PrintableTree.initOrNil("converts to expression", [convertsToExpression]),
-	//				PrintableTree("expression", [expression]),
-	//				PrintableTree("case items", caseItems), ]
-	//		case let .deferStatement(statements: statements):
-	//			return ArrayClass(statements)
-	//		case let .throwStatement(expression: expression):
-	//			return [expression]
-	//		case let .returnStatement(expression: expression):
-	//			return [expression]
-	//		case .breakStatement:
-	//			return []
-	//		case .continueStatement:
-	//			return []
-	//		case let .assignmentStatement(leftHand: leftHand, rightHand: rightHand):
-	//			return [leftHand, rightHand]
-	//		case .error:
-	//			return []
-	//		}
-	//	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1000,6 +957,15 @@ public class IfStatementData: Equatable {
 	public enum IfCondition: Equatable {
 		case condition(expression: Expression)
 		case declaration(variableDeclaration: VariableDeclarationData)
+
+		func toStatement() -> Statement {
+			switch self {
+			case let .condition(expression: expression):
+				return .expressionStatement(expression: expression)
+			case let .declaration(variableDeclaration: variableDeclaration):
+				return .variableDeclaration(data: variableDeclaration)
+			}
+		}
 	}
 
 	public init(
@@ -1047,7 +1013,7 @@ public class SwitchCase: Equatable {
 	}
 }
 
-public class EnumElement: Equatable {
+public class EnumElement: PrintableAsTree, Equatable {
 	var name: String
 	var associatedValues: ArrayClass<LabeledType>
 	var rawValue: Expression?
@@ -1070,6 +1036,22 @@ public class EnumElement: Equatable {
 		lhs.associatedValues == rhs.associatedValues &&
 		lhs.rawValue == rhs.rawValue &&
 		lhs.annotations == rhs.annotations
+	}
+
+	public var treeDescription: String { // annotation: override
+		return ".\(self.name)"
+	}
+
+	public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
+		let associatedValues = self.associatedValues
+			.map { "\($0.label): \($0.type)" }
+			.joined(separator: ", ")
+		let associatedValuesString = (associatedValues.isEmpty) ?
+			nil :
+			"values: \(associatedValues)"
+		return [
+			PrintableTree.initOrNil(associatedValuesString),
+			PrintableTree.initOrNil(self.annotations), ]
 	}
 }
 

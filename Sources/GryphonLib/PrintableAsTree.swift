@@ -33,6 +33,13 @@ public class PrintableTree: PrintableAsTree {
 		self.printableSubtrees = array
 	}
 
+	static func ofTrees(_ description: String, _ subtrees: ArrayClass<PrintableTree>)
+		-> PrintableAsTree?
+	{
+		let newSubtrees = ArrayClass<PrintableAsTree?>(subtrees)
+		return PrintableTree.initOrNil(description, newSubtrees)
+	}
+
 	static func initOrNil(
 		_ description: String, _ subtreesOrNil: ArrayClass<PrintableAsTree?>)
 		-> PrintableTree?
