@@ -383,6 +383,29 @@ fileprivate extension String {
 			return self.hasSuffix("?")
 		}
 
+		// Handle tuples
+		if Utilities.isInEnvelopingParentheses(self), Utilities.isInEnvelopingParentheses(superType)
+		{
+			let selfContents = String(self.dropFirst().dropLast())
+			let superContents = String(superType.dropFirst().dropLast())
+
+			let selfComponents = selfContents.split(withStringSeparator: ", ")
+			let superComponents = superContents.split(withStringSeparator: ", ")
+
+			guard selfComponents.count == superComponents.count else {
+				return false
+			}
+
+			for (selfComponent, superComponent) in zipToClass(selfComponents, superComponents) {
+				guard selfComponent.isSubtype(of: superComponent) else {
+					return false
+				}
+			}
+
+			return true
+		}
+
+		// Simplify the types
 		let simpleSelf = simplifyType(string: self)
 		let simpleSuperType = simplifyType(string: superType)
 		if simpleSelf != self || simpleSuperType != superType {
@@ -509,7 +532,7 @@ private func simplifyType(string: String) -> String {
 	}
 
 	// Remove parentheses
-	if string.first == "(", string.last == ")" {
+	if Utilities.isInEnvelopingParentheses(string) {
 		return String(string.dropFirst().dropLast())
 	}
 
