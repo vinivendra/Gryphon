@@ -517,7 +517,124 @@ public indirect enum Expression: PrintableAsTree, Equatable {
 			return [
 				PrintableTree("pattern \"\(pattern)\""),
 				PrintableTree("matches", matchesTrees), ]
-		default:
+		case .literalCodeExpression(string: let string):
+			return [PrintableTree(string)]
+		case .literalDeclarationExpression(string: let string):
+			return [PrintableTree(string)]
+		case let .parenthesesExpression(expression: expression):
+			return [expression]
+		case let .forceValueExpression(expression: expression):
+			return [expression]
+		case let .optionalExpression(expression: expression):
+			return [expression]
+		case let .declarationReferenceExpression(data: expression):
+			return [
+				PrintableTree(expression.type),
+				PrintableTree(expression.identifier),
+				expression.isStandardLibrary ? PrintableTree("isStandardLibrary") : nil,
+				expression.isImplicit ? PrintableTree("implicit") : nil, ]
+		case let .typeExpression(type: type):
+			return [PrintableTree(type)]
+		case let .subscriptExpression(
+			subscriptedExpression: subscriptedExpression, indexExpression: indexExpression,
+			type: type):
+
+			return [
+				PrintableTree("type \(type)"),
+				PrintableTree.ofExpressions("subscriptedExpression", [subscriptedExpression]),
+				PrintableTree.ofExpressions("indexExpression", [indexExpression]), ]
+		case let .arrayExpression(elements: elements, type: type):
+			return [
+				PrintableTree("type \(type)"),
+				PrintableTree.ofExpressions("elements", elements), ]
+		case let .dictionaryExpression(keys: keys, values: values, type: type):
+			let keyValueStrings = zipToClass(keys, values).map
+				{ (pair: (first: Expression, second: Expression)) -> String in
+					"\(pair.first): \(pair.second)"
+				}
+			return [
+				PrintableTree("type \(type)"),
+				PrintableTree.ofStrings("key value pairs", keyValueStrings), ]
+		case let .returnExpression(expression: expression):
+			return [expression]
+		case let .dotExpression(leftExpression: leftExpression, rightExpression: rightExpression):
+			return [
+				PrintableTree.ofExpressions("left", [leftExpression]),
+				PrintableTree.ofExpressions("right", [rightExpression]), ]
+		case let .binaryOperatorExpression(
+			leftExpression: leftExpression,
+			rightExpression: rightExpression,
+			operatorSymbol: operatorSymbol,
+			type: type):
+
+			return [
+				PrintableTree("type \(type)"),
+				PrintableTree.ofExpressions("left", [leftExpression]),
+				PrintableTree("operator \(operatorSymbol)"),
+				PrintableTree.ofExpressions("right", [rightExpression]), ]
+		case let .prefixUnaryExpression(
+			expression: expression, operatorSymbol: operatorSymbol, type: type):
+
+			return [
+				PrintableTree("type \(type)"),
+				PrintableTree("operator \(operatorSymbol)"),
+				PrintableTree.ofExpressions("expression", [expression]), ]
+		case let .ifExpression(
+			condition: condition, trueExpression: trueExpression, falseExpression: falseExpression):
+
+			return [
+				PrintableTree.ofExpressions("condition", [condition]),
+				PrintableTree.ofExpressions("trueExpression", [trueExpression]),
+				PrintableTree.ofExpressions("falseExpression", [falseExpression]), ]
+		case let .postfixUnaryExpression(
+			expression: expression, operatorSymbol: operatorSymbol, type: type):
+
+			return [
+				PrintableTree("type \(type)"),
+				PrintableTree("operator \(operatorSymbol)"),
+				PrintableTree.ofExpressions("expression", [expression]), ]
+		case let .callExpression(data: callExpression):
+			return [
+				PrintableTree("type \(callExpression.type)"),
+				PrintableTree.ofExpressions("function", [callExpression.function]),
+				PrintableTree.ofExpressions("parameters", [callExpression.parameters]), ]
+		case let .closureExpression(parameters: parameters, statements: statements, type: type):
+			let parametersString =
+				"(" + parameters.map { $0.label + ":" }.joined(separator: ", ") + ")"
+			return [
+				PrintableTree(type),
+				PrintableTree(parametersString),
+				PrintableTree.ofStatements("statements", statements), ]
+		case let .tupleExpression(pairs: pairs):
+			return pairs.map {
+				PrintableTree.ofExpressions(($0.label ?? "_") + ":", [$0.expression])
+			}
+		case let .tupleShuffleExpression(
+			labels: labels, indices: indices, expressions: expressions):
+
+			return [
+				PrintableTree.ofStrings("labels", labels),
+				PrintableTree.ofStrings("indices", indices.map { $0.description }),
+				PrintableTree.ofExpressions("expressions", expressions), ]
+		case let .literalIntExpression(value: value):
+			return [PrintableTree(String(value))]
+		case let .literalUIntExpression(value: value):
+			return [PrintableTree(String(value))]
+		case let .literalDoubleExpression(value: value):
+			return [PrintableTree(String(value))]
+		case let .literalFloatExpression(value: value):
+			return [PrintableTree(String(value))]
+		case let .literalBoolExpression(value: value):
+			return [PrintableTree(String(value))]
+		case let .literalStringExpression(value: value):
+			return [PrintableTree("\"\(value)\"")]
+		case let .literalCharacterExpression(value: value):
+			return [PrintableTree("'\(value)'")]
+		case .nilLiteralExpression:
+			return []
+		case let .interpolatedStringLiteralExpression(expressions: expressions):
+			return [PrintableTree.ofExpressions("expressions", expressions)]
+		case .error:
 			return []
 		}
 	}
@@ -621,133 +738,6 @@ extension Expression { // kotlin: ignore
 			return nil
 		}
 	}
-
-	//	public var printableSubtrees: ArrayClass<PrintableAsTree?> {
-	//		switch self {
-	//		case let .templateExpression(pattern: pattern, matches: matches):
-	//			let matchesTrees = ArrayClass<PrintableAsTree?>(
-	//				matches.map { PrintableTree($0.key, [$0.value]) })
-	//
-	//			return [
-	//				PrintableTree("pattern \"\(pattern)\""),
-	//				PrintableTree("matches", matchesTrees), ]
-	//		case .literalCodeExpression(string: let string),
-	//			.literalDeclarationExpression(string: let string):
-	//
-	//			return [PrintableTree(string)]
-	//		case let .parenthesesExpression(expression: expression):
-	//			return [expression]
-	//		case let .forceValueExpression(expression: expression):
-	//			return [expression]
-	//		case let .optionalExpression(expression: expression):
-	//			return [expression]
-	//		case let .declarationReferenceExpression(data: expression):
-	//			return [
-	//				PrintableTree(expression.type),
-	//				PrintableTree(expression.identifier),
-	//				expression.isStandardLibrary ? PrintableTree("isStandardLibrary") : nil,
-	//				expression.isImplicit ? PrintableTree("implicit") : nil, ]
-	//		case let .typeExpression(type: type):
-	//			return [PrintableTree(type)]
-	//		case let .subscriptExpression(
-	//			subscriptedExpression: subscriptedExpression, indexExpression: indexExpression,
-	//			type: type):
-	//
-	//			return [
-	//				PrintableTree("type \(type)"),
-	//				PrintableTree("subscriptedExpression", [subscriptedExpression]),
-	//				PrintableTree("indexExpression", [indexExpression]), ]
-	//		case let .arrayExpression(elements: elements, type: type):
-	//			return [
-	//				PrintableTree("type \(type)"),
-	//				PrintableTree(ArrayClass<PrintableAsTree?>(elements)), ]
-	//		case let .dictionaryExpression(keys: keys, values: values, type: type):
-	//			let keyValueStrings = zipToClass(keys, values).map { "\($0): \($1)" }
-	//			return [
-	//				PrintableTree("type \(type)"),
-	//				PrintableTree("key value pairs", keyValueStrings), ]
-	//		case let .returnExpression(expression: expression):
-	//			return [expression]
-	//		case let .dotExpression(leftExpression: leftExpression, rightExpression: rightExpression):
-	//			return [
-	//				PrintableTree("left", [leftExpression]),
-	//				PrintableTree("right", [rightExpression]), ]
-	//		case let .binaryOperatorExpression(
-	//			leftExpression: leftExpression,
-	//			rightExpression: rightExpression,
-	//			operatorSymbol: operatorSymbol,
-	//			type: type):
-	//
-	//			return [
-	//				PrintableTree("type \(type)"),
-	//				PrintableTree("left", [leftExpression]),
-	//				PrintableTree("operator \(operatorSymbol)"),
-	//				PrintableTree("right", [rightExpression]), ]
-	//		case let .prefixUnaryExpression(
-	//			expression: expression, operatorSymbol: operatorSymbol, type: type):
-	//
-	//			return [
-	//				PrintableTree("type \(type)"),
-	//				PrintableTree("operator \(operatorSymbol)"),
-	//				PrintableTree("expression", [expression]), ]
-	//		case let .ifExpression(
-	//			condition: condition, trueExpression: trueExpression, falseExpression: falseExpression):
-	//
-	//			return [
-	//				PrintableTree("condition", [condition]),
-	//				PrintableTree("trueExpression", [trueExpression]),
-	//				PrintableTree("falseExpression", [falseExpression]), ]
-	//		case let .postfixUnaryExpression(
-	//			expression: expression, operatorSymbol: operatorSymbol, type: type):
-	//
-	//			return [
-	//				PrintableTree("type \(type)"),
-	//				PrintableTree("operator \(operatorSymbol)"),
-	//				PrintableTree("expression", [expression]), ]
-	//		case let .callExpression(data: callExpression):
-	//			return [
-	//				PrintableTree("type \(callExpression.type)"),
-	//				PrintableTree("function", [callExpression.function]),
-	//				PrintableTree("parameters", [callExpression.parameters]), ]
-	//		case let .closureExpression(parameters: parameters, statements: statements, type: type):
-	//			let parameters = "(" + parameters.map { $0.label + ":" }.joined(separator: ", ") + ")"
-	//			return [
-	//				PrintableTree(type),
-	//				PrintableTree(parameters),
-	//				PrintableTree("statements", ArrayClass<PrintableAsTree?>(statements)), ]
-	//		case let .literalIntExpression(value: value):
-	//			return [PrintableTree(String(value))]
-	//		case let .literalUIntExpression(value: value):
-	//			return [PrintableTree(String(value))]
-	//		case let .literalDoubleExpression(value: value):
-	//			return [PrintableTree(String(value))]
-	//		case let .literalFloatExpression(value: value):
-	//			return [PrintableTree(String(value))]
-	//		case let .literalBoolExpression(value: value):
-	//			return [PrintableTree(String(value))]
-	//		case let .literalStringExpression(value: value):
-	//			return [PrintableTree("\"\(value)\"")]
-	//		case let .literalCharacterExpression(value: value):
-	//			return [PrintableTree("'\(value)'")]
-	//		case .nilLiteralExpression:
-	//			return []
-	//		case let .interpolatedStringLiteralExpression(expressions: expressions):
-	//			return [PrintableTree(ArrayClass<PrintableAsTree?>(expressions))]
-	//		case let .tupleExpression(pairs: pairs):
-	//			return ArrayClass(pairs).map {
-	//				PrintableTree(($0.label ?? "_") + ":", [$0.expression])
-	//			}
-	//		case let .tupleShuffleExpression(
-	//			labels: labels, indices: indices, expressions: expressions):
-	//
-	//			return [
-	//				PrintableTree("labels", labels),
-	//				PrintableTree("indices", indices.map { $0.description }),
-	//				PrintableTree("expressions", ArrayClass<PrintableAsTree?>(expressions)), ]
-	//		case .error:
-	//			return []
-	//		}
-	//	}
 }
 
 public struct LabeledExpression: Equatable {

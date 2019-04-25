@@ -373,6 +373,7 @@ fileprivate extension String {
 			return true
 		}
 		else if superType == "Any" ||
+			superType == "AnyType" ||
 			superType == "Hash" ||
 			superType == "Compare" ||
 			superType == "MyOptional"

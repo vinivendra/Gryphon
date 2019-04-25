@@ -315,7 +315,143 @@ public sealed class Expression: PrintableAsTree {
 
 					mutableListOf(PrintableTree("pattern \"${pattern}\""), PrintableTree("matches", matchesTrees))
 				}
-				else -> mutableListOf()
+				is Expression.LiteralCodeExpression -> mutableListOf(PrintableTree(string))
+				is Expression.LiteralDeclarationExpression -> mutableListOf(PrintableTree(string))
+				is Expression.ParenthesesExpression -> {
+					val expression: Expression = this.expression
+					mutableListOf(expression)
+				}
+				is Expression.ForceValueExpression -> {
+					val expression: Expression = this.expression
+					mutableListOf(expression)
+				}
+				is Expression.OptionalExpression -> {
+					val expression: Expression = this.expression
+					mutableListOf(expression)
+				}
+				is Expression.DeclarationReferenceExpression -> {
+					val expression: DeclarationReferenceData = this.data
+					mutableListOf(PrintableTree(expression.type), PrintableTree(expression.identifier), if (expression.isStandardLibrary) { PrintableTree(("isStandardLibrary")) } else { null }, if (expression.isImplicit) { PrintableTree(("implicit")) } else { null })
+				}
+				is Expression.TypeExpression -> {
+					val type: String = this.type
+					mutableListOf(PrintableTree(type))
+				}
+				is Expression.SubscriptExpression -> {
+					val subscriptedExpression: Expression = this.subscriptedExpression
+					val indexExpression: Expression = this.indexExpression
+					val type: String = this.type
+
+					mutableListOf(PrintableTree("type ${type}"), PrintableTree.ofExpressions("subscriptedExpression", mutableListOf(subscriptedExpression)), PrintableTree.ofExpressions("indexExpression", mutableListOf(indexExpression)))
+				}
+				is Expression.ArrayExpression -> {
+					val elements: MutableList<Expression> = this.elements
+					val type: String = this.type
+					mutableListOf(PrintableTree("type ${type}"), PrintableTree.ofExpressions("elements", elements))
+				}
+				is Expression.DictionaryExpression -> {
+					val keys: MutableList<Expression> = this.keys
+					val values: MutableList<Expression> = this.values
+					val type: String = this.type
+					val keyValueStrings: MutableList<String> = keys.zip(values).map { pair -> "${pair.first}: ${pair.second}" }.toMutableList()
+
+					mutableListOf(PrintableTree("type ${type}"), PrintableTree.ofStrings("key value pairs", keyValueStrings))
+				}
+				is Expression.ReturnExpression -> {
+					val expression: Expression? = this.expression
+					mutableListOf(expression)
+				}
+				is Expression.DotExpression -> {
+					val leftExpression: Expression = this.leftExpression
+					val rightExpression: Expression = this.rightExpression
+					mutableListOf(PrintableTree.ofExpressions("left", mutableListOf(leftExpression)), PrintableTree.ofExpressions("right", mutableListOf(rightExpression)))
+				}
+				is Expression.BinaryOperatorExpression -> {
+					val leftExpression: Expression = this.leftExpression
+					val rightExpression: Expression = this.rightExpression
+					val operatorSymbol: String = this.operatorSymbol
+					val type: String = this.type
+
+					mutableListOf(PrintableTree("type ${type}"), PrintableTree.ofExpressions("left", mutableListOf(leftExpression)), PrintableTree("operator ${operatorSymbol}"), PrintableTree.ofExpressions("right", mutableListOf(rightExpression)))
+				}
+				is Expression.PrefixUnaryExpression -> {
+					val expression: Expression = this.expression
+					val operatorSymbol: String = this.operatorSymbol
+					val type: String = this.type
+
+					mutableListOf(PrintableTree("type ${type}"), PrintableTree("operator ${operatorSymbol}"), PrintableTree.ofExpressions("expression", mutableListOf(expression)))
+				}
+				is Expression.IfExpression -> {
+					val condition: Expression = this.condition
+					val trueExpression: Expression = this.trueExpression
+					val falseExpression: Expression = this.falseExpression
+
+					mutableListOf(PrintableTree.ofExpressions("condition", mutableListOf(condition)), PrintableTree.ofExpressions("trueExpression", mutableListOf(trueExpression)), PrintableTree.ofExpressions("falseExpression", mutableListOf(falseExpression)))
+				}
+				is Expression.PostfixUnaryExpression -> {
+					val expression: Expression = this.expression
+					val operatorSymbol: String = this.operatorSymbol
+					val type: String = this.type
+
+					mutableListOf(PrintableTree("type ${type}"), PrintableTree("operator ${operatorSymbol}"), PrintableTree.ofExpressions("expression", mutableListOf(expression)))
+				}
+				is Expression.CallExpression -> {
+					val callExpression: CallExpressionData = this.data
+					mutableListOf(PrintableTree("type ${callExpression.type}"), PrintableTree.ofExpressions("function", mutableListOf(callExpression.function)), PrintableTree.ofExpressions("parameters", mutableListOf(callExpression.parameters)))
+				}
+				is Expression.ClosureExpression -> {
+					val parameters: MutableList<LabeledType> = this.parameters
+					val statements: MutableList<Statement> = this.statements
+					val type: String = this.type
+					val parametersString: String = "(" + parameters.map { it.label + ":" }.toMutableList().joinToString(separator = ", ") + ")"
+
+					mutableListOf(PrintableTree(type), PrintableTree(parametersString), PrintableTree.ofStatements("statements", statements))
+				}
+				is Expression.TupleExpression -> {
+					val pairs: MutableList<LabeledExpression> = this.pairs
+					pairs.map { PrintableTree.ofExpressions((it.label ?: "_") + ":", mutableListOf(it.expression)) }.toMutableList()
+				}
+				is Expression.TupleShuffleExpression -> {
+					val labels: MutableList<String> = this.labels
+					val indices: MutableList<TupleShuffleIndex> = this.indices
+					val expressions: MutableList<Expression> = this.expressions
+
+					mutableListOf(PrintableTree.ofStrings("labels", labels), PrintableTree.ofStrings("indices", indices.map { it.toString() }.toMutableList()), PrintableTree.ofExpressions("expressions", expressions))
+				}
+				is Expression.LiteralIntExpression -> {
+					val value: Long = this.value
+					mutableListOf(PrintableTree(value.toString()))
+				}
+				is Expression.LiteralUIntExpression -> {
+					val value: ULong = this.value
+					mutableListOf(PrintableTree(value.toString()))
+				}
+				is Expression.LiteralDoubleExpression -> {
+					val value: Double = this.value
+					mutableListOf(PrintableTree(value.toString()))
+				}
+				is Expression.LiteralFloatExpression -> {
+					val value: Float = this.value
+					mutableListOf(PrintableTree(value.toString()))
+				}
+				is Expression.LiteralBoolExpression -> {
+					val value: Boolean = this.value
+					mutableListOf(PrintableTree(value.toString()))
+				}
+				is Expression.LiteralStringExpression -> {
+					val value: String = this.value
+					mutableListOf(PrintableTree("\"${value}\""))
+				}
+				is Expression.LiteralCharacterExpression -> {
+					val value: String = this.value
+					mutableListOf(PrintableTree("'${value}'"))
+				}
+				is Expression.NilLiteralExpression -> mutableListOf()
+				is Expression.InterpolatedStringLiteralExpression -> {
+					val expressions: MutableList<Expression> = this.expressions
+					mutableListOf(PrintableTree.ofExpressions("expressions", expressions))
+				}
+				is Expression.Error -> mutableListOf()
 			}
 		}
 }

@@ -8,6 +8,15 @@ struct Compare: Comparable {
 	}
 }
 struct MyOptional { }
+struct AnyType: CustomStringConvertible, LosslessStringConvertible {
+	init() { }
+
+	var description: String = ""
+
+	init?(_ description: String) {
+		return nil
+	}
+}
 
 func gryphonTemplates() {
 	var _strArray: [String] = []
@@ -27,6 +36,7 @@ func gryphonTemplates() {
 	let _substring: Substring = "abc".dropLast()
 	let _range: Range<String.Index> = _string.startIndex..<_string.endIndex
 	let _any: Any = "abc"
+	let _anyType: AnyType = AnyType()
 	let _optional: MyOptional? = MyOptional()
 	let _double: Double = 0
 	let _double1: Double = 0
@@ -52,6 +62,12 @@ func gryphonTemplates() {
 	"Math.sqrt(_double)"
 
 	// String
+	String(_anyType)
+	"_anyType.toString()"
+
+	_anyType.description
+	"_anyType.toString()"
+
 	_string.isEmpty
 	"_string.isEmpty()"
 
@@ -146,9 +162,6 @@ func gryphonTemplates() {
 	"_string.toUpperCase()"
 
 	// Character
-	String(_character)
-	"_character.toString()"
-
 	_character.uppercased()
 	"_character.toUpperCase()"
 

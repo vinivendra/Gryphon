@@ -16,6 +16,14 @@
 
 // MARK: - Swift standard library
 
+private func gryphonTemplates() {
+	let _array1: ArrayClass<Any> = [1, 2, 3]
+	let _array2: ArrayClass<Any> = [1, 2, 3]
+
+	_ = zipToClass(_array1, _array2)
+	_ = "_array1.zip(_array2)"
+}
+
 /// According to http://swiftdoc.org/v4.2/type/Array/hierarchy/
 /// (link found via https://www.raywenderlich.com/139591/building-custom-collection-swift)
 /// the Array type in Swift conforms exactly to these protocols,

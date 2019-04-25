@@ -1168,14 +1168,18 @@ public class RenameOperatorsTranspilationPass: TranspilationPass {
 		type: String) -> Expression
 	{
 		if operatorSymbol == "??" {
-			return .binaryOperatorExpression(
-				leftExpression: leftExpression, rightExpression: rightExpression,
-				operatorSymbol: "?:", type: type)
+			return super.replaceBinaryOperatorExpression(
+				leftExpression: leftExpression,
+				rightExpression: rightExpression,
+				operatorSymbol: "?:",
+				type: type)
 		}
 		else {
-			return .binaryOperatorExpression(
-				leftExpression: leftExpression, rightExpression: rightExpression,
-				operatorSymbol: operatorSymbol, type: type)
+			return super.replaceBinaryOperatorExpression(
+				leftExpression: leftExpression,
+				rightExpression: rightExpression,
+				operatorSymbol: operatorSymbol,
+				type: type)
 		}
 	}
 }
