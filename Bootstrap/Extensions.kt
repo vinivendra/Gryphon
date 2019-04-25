@@ -188,3 +188,12 @@ internal fun <Element, Key> MutableList<Element>.group(
 	}
 	return result
 }
+
+internal fun PrintableTree.Companion.ofStrings(
+	description: String,
+	subtrees: MutableList<String>)
+	: PrintableAsTree?
+{
+	val newSubtrees: MutableList<PrintableAsTree?> = subtrees.map { string -> PrintableTree(string) }.toMutableList()
+	return PrintableTree.initOrNil(description, newSubtrees)
+}

@@ -27,6 +27,15 @@ class GryphonAST: PrintableAsTree {
 	}
 }
 
+internal fun PrintableTree.Companion.ofStatements(
+	description: String,
+	subtrees: MutableList<Statement>)
+	: PrintableAsTree?
+{
+	val newSubtrees: MutableList<PrintableAsTree?> = subtrees as MutableList<PrintableAsTree?>
+	return PrintableTree.initOrNil(description, newSubtrees)
+}
+
 public sealed class Statement: PrintableAsTree {
 	class ExpressionStatement(val expression: Expression): Statement()
 	class TypealiasDeclaration(val identifier: String, val type: String, val isImplicit: Boolean): Statement()
@@ -89,9 +98,41 @@ public sealed class Statement: PrintableAsTree {
 					val expression: Expression = this.expression
 					mutableListOf(expression)
 				}
+				is Statement.ExtensionDeclaration -> {
+					val type: String = this.type
+					val members: MutableList<Statement> = this.members
+					mutableListOf(PrintableTree(type), PrintableTree.ofStatements("members", members))
+				}
+				is Statement.ImportDeclaration -> {
+					val moduleName: String = this.moduleName
+					mutableListOf(PrintableTree(moduleName))
+				}
+				is Statement.TypealiasDeclaration -> {
+					val identifier: String = this.identifier
+					val type: String = this.type
+					val isImplicit: Boolean = this.isImplicit
+
+					mutableListOf(if (isImplicit) { PrintableTree(("implicit")) } else { null }, PrintableTree("identifier: ${identifier}"), PrintableTree("type: ${type}"))
+				}
+				is Statement.ClassDeclaration -> {
+					val className: String = this.className
+					val inherits: MutableList<String> = this.inherits
+					val members: MutableList<Statement> = this.members
+
+					mutableListOf(PrintableTree(className), PrintableTree.ofStrings("inherits", inherits), PrintableTree.ofStatements("members", members))
+				}
 				else -> mutableListOf()
 			}
 		}
+}
+
+internal fun PrintableTree.Companion.ofExpressions(
+	description: String,
+	subtrees: MutableList<Expression>)
+	: PrintableAsTree?
+{
+	val newSubtrees: MutableList<PrintableAsTree?> = subtrees as MutableList<PrintableAsTree?>
+	return PrintableTree.initOrNil(description, newSubtrees)
 }
 
 public sealed class Expression: PrintableAsTree {

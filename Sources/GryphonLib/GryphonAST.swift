@@ -53,6 +53,15 @@ public final class GryphonAST: PrintableAsTree, Equatable, CustomStringConvertib
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+extension PrintableTree {
+	static func ofStatements(_ description: String, _ subtrees: ArrayClass<Statement>)
+		-> PrintableAsTree?
+	{
+		let newSubtrees = ArrayClass<PrintableAsTree?>(subtrees)
+		return PrintableTree.initOrNil(description, newSubtrees)
+	}
+}
+
 public indirect enum Statement: PrintableAsTree, Equatable {
 
 	case expressionStatement(
@@ -176,6 +185,21 @@ public indirect enum Statement: PrintableAsTree, Equatable {
 		switch self {
 		case let .expressionStatement(expression: expression):
 			return [expression]
+		case let .extensionDeclaration(type: type, members: members):
+			return [PrintableTree(type),
+					PrintableTree.ofStatements("members", members), ]
+		case let .importDeclaration(moduleName: moduleName):
+			return [PrintableTree(moduleName)]
+		case let .typealiasDeclaration(identifier: identifier, type: type, isImplicit: isImplicit):
+			return [
+				isImplicit ? PrintableTree("implicit") : nil,
+				PrintableTree("identifier: \(identifier)"),
+				PrintableTree("type: \(type)"), ]
+		case let .classDeclaration(className: className, inherits: inherits, members: members):
+			return  [
+				PrintableTree(className),
+				PrintableTree.ofStrings("inherits", inherits),
+				PrintableTree.ofStatements("members", members), ]
 		default:
 			return []
 		}
@@ -361,6 +385,15 @@ extension Statement { // kotlin: ignore
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // TODO: dictionaryExpression should have key-value pairs
+
+extension PrintableTree {
+	static func ofExpressions(_ description: String, _ subtrees: ArrayClass<Expression>)
+		-> PrintableAsTree?
+	{
+		let newSubtrees = ArrayClass<PrintableAsTree?>(subtrees)
+		return PrintableTree.initOrNil(description, newSubtrees)
+	}
+}
 
 public indirect enum Expression: PrintableAsTree, Equatable {
 

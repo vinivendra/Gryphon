@@ -322,6 +322,7 @@ extension ArrayClass {
 	}
 }
 
+// TODO: Delete this
 // MARK: - Common types conforming to PrintableAsTree
 extension Dictionary: // kotlin: ignore
 	PrintableAsTree where Value: PrintableAsTree, Key == String
@@ -365,5 +366,15 @@ extension PrintableTree { // kotlin: ignore
 			}
 		}
 		self.init(description, convertedSubtrees)
+	}
+}
+
+//
+extension PrintableTree {
+	static func ofStrings(_ description: String, _ subtrees: ArrayClass<String>)
+		-> PrintableAsTree?
+	{
+		let newSubtrees = subtrees.map { string -> PrintableAsTree? in PrintableTree(string) }
+		return PrintableTree.initOrNil(description, newSubtrees)
 	}
 }

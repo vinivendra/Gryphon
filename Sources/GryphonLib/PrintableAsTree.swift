@@ -28,24 +28,6 @@ public class PrintableTree: PrintableAsTree {
 		self.printableSubtrees = subtrees
 	}
 
-	init(_ description: String, _ subtrees: ArrayClass<String?>) { // kotlin: ignore
-		let stringToTree: (String?) -> (PrintableAsTree?) = { string in
-			if let string = string {
-				return PrintableTree(string)
-			}
-			else {
-				return nil
-			}
-		}
-
-		self.treeDescription = description
-		self.printableSubtrees = subtrees.map(stringToTree)
-	}
-
-	convenience init(_ description: String, _ subtrees: ArrayClass<String>) { // kotlin: ignore
-		self.init(description, ArrayClass<String?>(subtrees))
-	}
-
 	init(_ array: ArrayClass<PrintableAsTree?>) {
 		self.treeDescription = "Array"
 		self.printableSubtrees = array

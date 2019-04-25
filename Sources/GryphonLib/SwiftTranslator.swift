@@ -187,7 +187,15 @@ public class SwiftTranslator {
 			result = try translate(interpolatedStringLiteralExpression: expression)
 		case "Erasure Expression":
 			if let lastExpression = expression.subtrees.last {
-				result = try translate(expression: lastExpression)
+				// If we're erasing an optional expresison, just skip it
+				if lastExpression.name == "Bind Optional Expression",
+					let innerExpression = lastExpression.subtrees.last
+				{
+					result = try translate(expression: innerExpression)
+				}
+				else {
+					result = try translate(expression: lastExpression)
+				}
 			}
 			else {
 				result = try unexpectedExpressionStructureError(
