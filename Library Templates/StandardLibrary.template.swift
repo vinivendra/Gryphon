@@ -1,13 +1,21 @@
-
 import Foundation
 
+// MARK: - Define special types as stand-ins for some protocols and other types
+
+// Replacement for Hashable
 struct Hash: Hashable { }
+
+// Replacement for Comparable
 struct Compare: Comparable {
 	static func < (lhs: Compare, rhs: Compare) -> Bool {
 		return false
 	}
 }
+
+// Replacement for Optional
 struct MyOptional { }
+
+// Replacement for Any
 struct AnyType: CustomStringConvertible, LosslessStringConvertible {
 	init() { }
 
@@ -18,7 +26,10 @@ struct AnyType: CustomStringConvertible, LosslessStringConvertible {
 	}
 }
 
+// MARK: - Define the templates
 func gryphonTemplates() {
+
+	// MARK: Declare placeholder variables to use in the templates
 	var _strArray: [String] = []
 	var _array: [Any] = []
 	var _array1: [Any] = []
@@ -50,207 +61,209 @@ func gryphonTemplates() {
 	let _closure3: (Any) -> Bool = { _ in true }
 	let _closure4: (MyOptional) -> Any = { _ in true }
 
-	// Print
-	print(_any)
-	"println(_any)"
+	// MARK: Declare the templates
 
-	print(_any, terminator: "")
-	"print(_any)"
+	// Print
+	_ = print(_any)
+	_ = "println(_any)"
+
+	_ = print(_any, terminator: "")
+	_ = "print(_any)"
 
 	// Darwin
-	sqrt(_double)
-	"Math.sqrt(_double)"
+	_ = sqrt(_double)
+	_ = "Math.sqrt(_double)"
 
 	// String
-	String(_anyType)
-	"_anyType.toString()"
+	_ = String(_anyType)
+	_ = "_anyType.toString()"
 
-	_anyType.description
-	"_anyType.toString()"
+	_ = _anyType.description
+	_ = "_anyType.toString()"
 
-	_string.isEmpty
-	"_string.isEmpty()"
+	_ = _string.isEmpty
+	_ = "_string.isEmpty()"
 
-	_string.count
-	"_string.length"
+	_ = _string.count
+	_ = "_string.length"
 
-	_string.first
-	"_string.firstOrNull()"
+	_ = _string.first
+	_ = "_string.firstOrNull()"
 
-	Double(_string)
-	"_string.toDouble()"
+	_ = Double(_string)
+	_ = "_string.toDouble()"
 
-	Int(_string)
-	"_string.toIntOrNull()"
+	_ = Int(_string)
+	_ = "_string.toIntOrNull()"
 
-	_string.dropLast()
-	"_string.dropLast(1)"
+	_ = _string.dropLast()
+	_ = "_string.dropLast(1)"
 
-	_string.dropFirst()
-	"_string.drop(1)"
+	_ = _string.dropFirst()
+	_ = "_string.drop(1)"
 
-	_string.dropFirst(_int)
-	"_string.drop(_int)"
+	_ = _string.dropFirst(_int)
+	_ = "_string.drop(_int)"
 
-	_string.indices
-	"_string.indices"
+	_ = _string.indices
+	_ = "_string.indices"
 
-	_string.prefix(_int)
-	"_string.substring(0, _int)"
+	_ = _string.prefix(_int)
+	_ = "_string.substring(0, _int)"
 
-	_string[_index...]
-	"_string.substring(_index)"
+	_ = _string[_index...]
+	_ = "_string.substring(_index)"
 
-	_string[_index1..<_index2]
-	"_string.substring(_index1, _index2)"
+	_ = _string[_index1..<_index2]
+	_ = "_string.substring(_index1, _index2)"
 
-	_string[_index1..._index2]
-	"_string.substring(_index1, _index2 + 1)"
+	_ = _string[_index1..._index2]
+	_ = "_string.substring(_index1, _index2 + 1)"
 
-	String(_substring)
-	"_substring"
+	_ = String(_substring)
+	_ = "_substring"
 
-	_string.endIndex
-	"_string.length"
+	_ = _string.endIndex
+	_ = "_string.length"
 
-	_string.startIndex
-	"0"
+	_ = _string.startIndex
+	_ = "0"
 
-	_string.formIndex(before: &_index)
-	"_index -= 1"
+	_ = _string.formIndex(before: &_index)
+	_ = "_index -= 1"
 
-	_string.index(after: _index)
-	"_index + 1"
+	_ = _string.index(after: _index)
+	_ = "_index + 1"
 
-	_string.index(before: _index)
-	"_index - 1"
+	_ = _string.index(before: _index)
+	_ = "_index - 1"
 
-	_string.index(_index, offsetBy: _int)
-	"_index + _int"
+	_ = _string.index(_index, offsetBy: _int)
+	_ = "_index + _int"
 
-	_substring.index(_index, offsetBy: _int)
-	"_index + _int"
+	_ = _substring.index(_index, offsetBy: _int)
+	_ = "_index + _int"
 
-	_string1.replacingOccurrences(of: _string2, with: _string3)
-	"_string1.replace(_string2, _string3)"
+	_ = _string1.replacingOccurrences(of: _string2, with: _string3)
+	_ = "_string1.replace(_string2, _string3)"
 
-	_string1.hasPrefix(_string2)
-	"_string1.startsWith(_string2)"
+	_ = _string1.hasPrefix(_string2)
+	_ = "_string1.startsWith(_string2)"
 
-	_string1.hasSuffix(_string2)
-	"_string1.endsWith(_string2)"
+	_ = _string1.hasSuffix(_string2)
+	_ = "_string1.endsWith(_string2)"
 
-	_range.lowerBound
-	"_range.start"
+	_ = _range.lowerBound
+	_ = "_range.start"
 
-	_range.upperBound
-	"_range.endInclusive"
+	_ = _range.upperBound
+	_ = "_range.endInclusive"
 
-	Range<String.Index>(uncheckedBounds: (lower: _index1, upper: _index2))
-	"IntRange(_index1, _index2)"
+	_ = Range<String.Index>(uncheckedBounds: (lower: _index1, upper: _index2))
+	_ = "IntRange(_index1, _index2)"
 
-	_string1.append(_string2)
-	"_string1 += _string2"
+	_ = _string1.append(_string2)
+	_ = "_string1 += _string2"
 
-	_string.append(_character)
-	"_string += _character"
+	_ = _string.append(_character)
+	_ = "_string += _character"
 
-	_string.capitalized
-	"_string.capitalize()"
+	_ = _string.capitalized
+	_ = "_string.capitalize()"
 
-	_string.uppercased()
-	"_string.toUpperCase()"
+	_ = _string.uppercased()
+	_ = "_string.toUpperCase()"
 
 	// Character
-	_character.uppercased()
-	"_character.toUpperCase()"
+	_ = _character.uppercased()
+	_ = "_character.toUpperCase()"
 
 	// Array
-	_array.append(_any)
-	"_array.add(_any)"
+	_ = _array.append(_any)
+	_ = "_array.add(_any)"
 
-	_array1.append(contentsOf: _array2)
-	"_array1.addAll(_array2)"
+	_ = _array1.append(contentsOf: _array2)
+	_ = "_array1.addAll(_array2)"
 
-	_array.isEmpty
-	"_array.isEmpty()"
+	_ = _array.isEmpty
+	_ = "_array.isEmpty()"
 
-	_strArray.joined(separator: _string)
-	"_strArray.joinToString(separator = _string)"
+	_ = _strArray.joined(separator: _string)
+	_ = "_strArray.joinToString(separator = _string)"
 
-	_array.count
-	"_array.size"
+	_ = _array.count
+	_ = "_array.size"
 
-	_array.first
-	"_array.firstOrNull()"
+	_ = _array.first
+	_ = "_array.firstOrNull()"
 
-	_array.first(where: _closure3)
-	"_array.find _closure3"
+	_ = _array.first(where: _closure3)
+	_ = "_array.find _closure3"
 
-	_array.last
-	"_array.lastOrNull()"
+	_ = _array.last
+	_ = "_array.lastOrNull()"
 
-	_array.dropFirst()
-	"_array.drop(1)"
+	_ = _array.dropFirst()
+	_ = "_array.drop(1)"
 
-	_array.dropLast()
-	"_array.dropLast(1)"
+	_ = _array.dropLast()
+	_ = "_array.dropLast(1)"
 
-	_array.map(_closure2)
-	"_array.map _closure2.toMutableList()"
+	_ = _array.map(_closure2)
+	_ = "_array.map _closure2.toMutableList()"
 
-	_array.compactMap(_closure2)
-	"_array.map _closure2.filterNotNull().toMutableList()"
+	_ = _array.compactMap(_closure2)
+	_ = "_array.map _closure2.filterNotNull().toMutableList()"
 
-	_array.filter(_closure3)
-	"_array.filter _closure3.toMutableList()"
+	_ = _array.filter(_closure3)
+	_ = "_array.filter _closure3.toMutableList()"
 
-	zip(_array1, _array2)
-	"_array1.zip(_array2)"
+	_ = zip(_array1, _array2)
+	_ = "_array1.zip(_array2)"
 
-	_array.indices
-	"_array.indices"
+	_ = _array.indices
+	_ = "_array.indices"
 
-	_array.contains(where: _closure3)
-	"(_array.find _closure3 != null)"
+	_ = _array.contains(where: _closure3)
+	_ = "(_array.find _closure3 != null)"
 
-	_comparableArray.sorted()
-	"_comparableArray.sorted()"
+	_ = _comparableArray.sorted()
+	_ = "_comparableArray.sorted()"
 
-	_comparableArray.contains(_compare)
-	"_comparableArray.contains(_compare)"
+	_ = _comparableArray.contains(_compare)
+	_ = "_comparableArray.contains(_compare)"
 
-	_comparableArray.index(of: _compare)
-	"_comparableArray.indexOf(_compare)"
+	_ = _comparableArray.index(of: _compare)
+	_ = "_comparableArray.indexOf(_compare)"
 
 	// Dictionary
-	_dictionary.reduce(_any, _closure)
-	"_dictionary.entries.fold(initial = _any, operation = _closure)"
+	_ = _dictionary.reduce(_any, _closure)
+	_ = "_dictionary.entries.fold(initial = _any, operation = _closure)"
 
-	_dictionary.map(_closure2)
-	"_dictionary.map _closure2.toMutableList()"
+	_ = _dictionary.map(_closure2)
+	_ = "_dictionary.map _closure2.toMutableList()"
 
 	// Int
-	Int.max
-	"Int.MAX_VALUE"
+	_ = Int.max
+	_ = "Int.MAX_VALUE"
 
-	Int.min
-	"Int.MIN_VALUE"
+	_ = Int.min
+	_ = "Int.MIN_VALUE"
 
-	min(_int1, _int2)
-	"Math.min(_int1, _int2)"
+	_ = min(_int1, _int2)
+	_ = "Math.min(_int1, _int2)"
 
-	_int1..._int2
-	"_int1.._int2"
+	_ = _int1..._int2
+	_ = "_int1.._int2"
 
-	_int1..<_int2
-	"_int1 until _int2"
+	_ = _int1..<_int2
+	_ = "_int1 until _int2"
 
 	// Double
-	_double1..._double2
-	"(_double1).rangeTo(_double2)"
+	_ = _double1..._double2
+	_ = "(_double1).rangeTo(_double2)"
 
 	// Optional
-	_optional.map(_closure4)
-	"_optional?.let _closure4"
+	_ = _optional.map(_closure4)
+	_ = "_optional?.let _closure4"
 }
