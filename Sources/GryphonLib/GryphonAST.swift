@@ -643,11 +643,14 @@ public indirect enum Expression: PrintableAsTree, Equatable {
 		}
 	}
 
+	// TODO: Add support for `case .a, .b:`
 	public var swiftType: String? {
 		switch self {
 		case .templateExpression:
 			return nil
-		case .literalCodeExpression, .literalDeclarationExpression:
+		case .literalCodeExpression:
+			return nil
+		case .literalDeclarationExpression:
 			return nil
 		case let .parenthesesExpression(expression: expression):
 			return expression.swiftType
@@ -732,13 +735,8 @@ public indirect enum Expression: PrintableAsTree, Equatable {
 		case .error:
 			return "<<Error>>"
 		}
-
-		// insert: return null
 	}
 
-}
-
-extension Expression { // kotlin: ignore
 	var range: SourceFileRange? {
 		switch self {
 		case let .declarationReferenceExpression(data: declarationReferenceExpression):

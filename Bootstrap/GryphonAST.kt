@@ -459,6 +459,7 @@ public sealed class Expression: PrintableAsTree {
 			when (this) {
 				is Expression.TemplateExpression -> return null
 				is Expression.LiteralCodeExpression -> return null
+				is Expression.LiteralDeclarationExpression -> return null
 				is Expression.ParenthesesExpression -> {
 					val expression: Expression = this.expression
 					return expression.swiftType
@@ -552,7 +553,20 @@ public sealed class Expression: PrintableAsTree {
 				is Expression.TupleShuffleExpression -> return null
 				is Expression.Error -> return "<<Error>>"
 			}
-			return null
+		}
+	val range: SourceFileRange?
+		get() {
+			return when (this) {
+				is Expression.DeclarationReferenceExpression -> {
+					val declarationReferenceExpression: DeclarationReferenceData = this.data
+					declarationReferenceExpression.range
+				}
+				is Expression.CallExpression -> {
+					val callExpression: CallExpressionData = this.data
+					callExpression.range
+				}
+				else -> null
+			}
 		}
 }
 
