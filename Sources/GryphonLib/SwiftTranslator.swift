@@ -17,17 +17,24 @@
 import Foundation
 
 public class SwiftTranslator {
+	struct PatternBindingDeclaration {
+		let identifier: String
+		let typeName: String
+		let expression: Expression?
+	}
+
 	// MARK: - Properties
-	typealias PatternBindingDeclaration =
-		(identifier: String, typeName: String, expression: Expression?)?
-	var danglingPatternBindings = [PatternBindingDeclaration?]()
-	let errorDanglingPatternDeclaration: PatternBindingDeclaration =
-		(identifier: "<<Error>>", typeName: "<<Error>>", expression: Expression.error)
+	var danglingPatternBindings: ArrayClass<PatternBindingDeclaration?> = []
+	let errorDanglingPatternDeclaration = PatternBindingDeclaration(
+		identifier: "<<Error>>", typeName: "<<Error>>", expression: .error)
 
 	fileprivate var sourceFile: SourceFile?
 
 	// MARK: - Interface
 	public init() { }
+}
+
+extension SwiftTranslator { // kotlin: ignore
 
 	public func translateAST(_ ast: SwiftAST, asMainFile isMainFile: Bool) throws
 		-> GryphonAST
@@ -1679,8 +1686,7 @@ public class SwiftTranslator {
 
 		var expression: Expression?
 		if let firstBindingExpression = danglingPatternBindings.first {
-			if let maybeBindingExpression = firstBindingExpression,
-				let bindingExpression = maybeBindingExpression,
+			if let bindingExpression = firstBindingExpression,
 				(bindingExpression.identifier == identifier &&
 						bindingExpression.typeName == typeName) ||
 					(bindingExpression.identifier == "<<Error>>")
@@ -2375,7 +2381,7 @@ public class SwiftTranslator {
 			return
 		}
 
-		var result = [PatternBindingDeclaration]()
+		let result: ArrayClass<PatternBindingDeclaration?> = []
 
 		let subtrees = patternBindingDeclaration.subtrees
 		while !subtrees.isEmpty {
@@ -2402,10 +2408,10 @@ public class SwiftTranslator {
 
 				let typeName = cleanUpType(rawType)
 
-				result.append(
-					(identifier: identifier,
-					 typeName: typeName,
-					 expression: translatedExpression))
+				result.append(PatternBindingDeclaration(
+					identifier: identifier,
+					typeName: typeName,
+					expression: translatedExpression))
 			}
 			else {
 				result.append(nil)
@@ -2569,7 +2575,7 @@ public class SwiftTranslator {
 			file: file,
 			line: line,
 			function: function,
-			message: message,
+			errorMessage: message,
 			AST: ast,
 			translator: translator)
 	}
@@ -2596,7 +2602,7 @@ public class SwiftTranslator {
 			file: file,
 			line: line,
 			function: function,
-			message: message,
+			errorMessage: message,
 			AST: ast,
 			translator: translator)
 		try Compiler.handleError(error)
@@ -2604,22 +2610,23 @@ public class SwiftTranslator {
 	}
 }
 
-enum SwiftTranslatorError: Error, CustomStringConvertible {
+enum SwiftTranslatorError: Error, CustomStringConvertible { // kotlin: ignore
 	case unexpectedASTStructure(
 		file: String,
 		line: Int,
 		function: String,
-		message: String,
+		errorMessage: String,
 		AST: SwiftAST,
 		translator: SwiftTranslator)
 
-	var description: String {
+	// TODO: descriptions' override annotations should be automatic
+	var description: String { // annotation: override
 		switch self {
 		case let .unexpectedASTStructure(
 			file: file,
 			line: line,
 			function: function,
-			message: message,
+			errorMessage: errorMessage,
 			AST: ast,
 			translator: translator):
 
@@ -2633,7 +2640,7 @@ enum SwiftTranslatorError: Error, CustomStringConvertible {
 				file: file,
 				line: line,
 				function: function,
-				message: message,
+				message: errorMessage,
 				details: details,
 				sourceFile: translator.sourceFile,
 				sourceFileRange: translator.getRangeRecursively(ofNode: ast))
@@ -2643,7 +2650,7 @@ enum SwiftTranslatorError: Error, CustomStringConvertible {
 	var astName: String {
 		switch self {
 		case let .unexpectedASTStructure(
-			file: _, line: _, function: _, message: _, AST: ast, translator: _):
+			file: _, line: _, function: _, errorMessage: _, AST: ast, translator: _):
 
 			return ast.name
 		}

@@ -141,6 +141,7 @@ class BootstrappingTest: XCTestCase {
 			"StandardLibrary",
 			"PrintableAsTree",
 			"SwiftAST",
+			"SwiftTranslator",
 			"GryphonAST",
 			"ASTDumpDecoder",
 			"Compiler",
