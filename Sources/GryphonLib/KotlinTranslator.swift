@@ -19,15 +19,15 @@ public class KotlinTranslator {
 
 	static let lineLimit = 100
 
-	private func translateType(_ type: String) -> String {
-		let type = type.replacingOccurrences(of: "()", with: "Unit")
+	private func translateType(_ typeName: String) -> String {
+		let typeName = typeName.replacingOccurrences(of: "()", with: "Unit")
 
-		if type.hasSuffix("?") {
-			return translateType(String(type.dropLast())) + "?"
+		if typeName.hasSuffix("?") {
+			return translateType(String(typeName.dropLast())) + "?"
 		}
-		else if type.hasPrefix("[") {
-			if type.contains(":") {
-				let innerType = String(type.dropLast().dropFirst())
+		else if typeName.hasPrefix("[") {
+			if typeName.contains(":") {
+				let innerType = String(typeName.dropLast().dropFirst())
 				let innerTypes = Utilities.splitTypeList(innerType)
 				let keyType = innerTypes[0]
 				let valueType = innerTypes[1]
@@ -36,18 +36,18 @@ public class KotlinTranslator {
 				return "MutableMap<\(translatedKey), \(translatedValue)>"
 			}
 			else {
-				let innerType = String(type.dropLast().dropFirst())
+				let innerType = String(typeName.dropLast().dropFirst())
 				let translatedInnerType = translateType(innerType)
 				return "MutableList<\(translatedInnerType)>"
 			}
 		}
-		else if type.hasPrefix("ArrayClass<") {
-			let innerType = String(type.dropLast().dropFirst("ArrayClass<".count))
+		else if typeName.hasPrefix("ArrayClass<") {
+			let innerType = String(typeName.dropLast().dropFirst("ArrayClass<".count))
 			let translatedInnerType = translateType(innerType)
 			return "MutableList<\(translatedInnerType)>"
 		}
-		else if type.hasPrefix("DictionaryClass<") {
-			let innerTypes = String(type.dropLast().dropFirst("DictionaryClass<".count))
+		else if typeName.hasPrefix("DictionaryClass<") {
+			let innerTypes = String(typeName.dropLast().dropFirst("DictionaryClass<".count))
 			let keyValue = Utilities.splitTypeList(innerTypes)
 			let key = keyValue[0]
 			let value = keyValue[1]
@@ -55,11 +55,11 @@ public class KotlinTranslator {
 			let translatedValue = translateType(value)
 			return "MutableMap<\(translatedKey), \(translatedValue)>"
 		}
-		else if Utilities.isInEnvelopingParentheses(type) {
-			return translateType(String(type.dropFirst().dropLast()))
+		else if Utilities.isInEnvelopingParentheses(typeName) {
+			return translateType(String(typeName.dropFirst().dropLast()))
 		}
-		else if type.contains(" -> ") {
-			let innerTypes = Utilities.splitTypeList(type, separators: [" -> "])
+		else if typeName.contains(" -> ") {
+			let innerTypes = Utilities.splitTypeList(typeName, separators: [" -> "])
 			let translatedTypes = innerTypes.map(translateType)
 			let firstTypes = translatedTypes.dropLast().map { "(\($0))" }
 			let lastType = translatedTypes.last!
@@ -69,7 +69,7 @@ public class KotlinTranslator {
 			return allTypes.joined(separator: " -> ")
 		}
 		else {
-			return Utilities.getTypeMapping(for: type) ?? type
+			return Utilities.getTypeMapping(for: typeName) ?? typeName
 		}
 	}
 
@@ -113,7 +113,7 @@ public class KotlinTranslator {
 	/// the internal parameter names, only the API names.
 	public struct FunctionTranslation {
 		let swiftAPIName: String
-		let type: String
+		let typeName: String
 		let prefix: String
 		let parameters: [String]
 	}
@@ -124,13 +124,15 @@ public class KotlinTranslator {
 		functionTranslations.append(newValue)
 	}
 
-	public static func getFunctionTranslation(forName name: String, type: String)
+	public static func getFunctionTranslation(forName name: String, typeName: String)
 		-> FunctionTranslation?
 	{
 		// Functions with unnamed parameters here are identified only by their prefix. For instance
 		// `f(_:_:)` here is named `f` but has been stored earlier as `f(_:_:)`.
 		for functionTranslation in functionTranslations {
-			if functionTranslation.swiftAPIName.hasPrefix(name), functionTranslation.type == type {
+			if functionTranslation.swiftAPIName.hasPrefix(name),
+				functionTranslation.typeName == typeName
+			{
 				return functionTranslation
 			}
 		}
@@ -184,9 +186,11 @@ public class KotlinTranslator {
 			return try unexpectedASTStructureError(
 				"Defer statements are only supported as top-level statements in function bodies",
 				AST: subtree)
-		case let .typealiasDeclaration(identifier: identifier, type: type, isImplicit: isImplicit):
+		case let .typealiasDeclaration(
+			identifier: identifier, typeName: typeName, isImplicit: isImplicit):
+
 			result = try translateTypealias(
-				identifier: identifier, type: type, isImplicit: isImplicit,
+				identifier: identifier, typeName: typeName, isImplicit: isImplicit,
 				withIndentation: indentation)
 		case let .classDeclaration(className: className, inherits: inherits, members: members):
 			result = try translateClassDeclaration(
@@ -418,7 +422,8 @@ public class KotlinTranslator {
 		else {
 			let associatedValuesString =
 				element.associatedValues
-					.map { "val \($0.label): \(translateType($0.type))" }.joined(separator: ", ")
+					.map { "val \($0.label): \(translateType($0.typeName))" }
+					.joined(separator: ", ")
 			return result + "(\(associatedValuesString)): \(enumName)()\n"
 		}
 	}
@@ -436,10 +441,10 @@ public class KotlinTranslator {
 	}
 
 	private func translateTypealias(
-		identifier: String, type: String, isImplicit: Bool, withIndentation indentation: String)
+		identifier: String, typeName: String, isImplicit: Bool, withIndentation indentation: String)
 		throws -> String
 	{
-		let translatedType = translateType(type)
+		let translatedType = translateType(typeName)
 		return "\(indentation)typealias \(identifier) = \(translatedType)\n"
 	}
 
@@ -603,7 +608,7 @@ public class KotlinTranslator {
 
 		let parameterStrings = try functionDeclaration.parameters.map
 			{ (parameter: FunctionParameter) -> String in
-				let labelAndTypeString = parameter.label + ": " + translateType(parameter.type)
+				let labelAndTypeString = parameter.label + ": " + translateType(parameter.typeName)
 				if let defaultValue = parameter.value {
 					return try labelAndTypeString + " = "
 						+ translateExpression(defaultValue, withIndentation: indentation)
@@ -835,7 +840,7 @@ public class KotlinTranslator {
 					leftExpression: declarationReference,
 					rightExpression: typeExpression,
 					operatorSymbol: "is",
-					type: "Bool") = caseExpression,
+					typeName: "Bool") = caseExpression,
 					declarationReference == expression
 				{
 					// TODO: test
@@ -846,7 +851,7 @@ public class KotlinTranslator {
 				}
 				else if case let Expression.binaryOperatorExpression(
 					leftExpression: leftExpression, rightExpression: _, operatorSymbol: _,
-					type: _) = caseExpression
+					typeName: _) = caseExpression
 				{
 					let translatedExpression = try translateExpression(
 						leftExpression, withIndentation: increasedIndentation)
@@ -1027,29 +1032,34 @@ public class KotlinTranslator {
 			.literalDeclarationExpression(string: let string):
 
 			return translateLiteralCodeExpression(string: string)
-		case let .arrayExpression(elements: elements, type: type):
+		case let .arrayExpression(elements: elements, typeName: typeName):
 			return try translateArrayExpression(
-				elements: elements.array, type: type, withIndentation: indentation)
-		case let .dictionaryExpression(keys: keys, values: values, type: type):
+				elements: elements.array, typeName: typeName, withIndentation: indentation)
+		case let .dictionaryExpression(keys: keys, values: values, typeName: typeName):
 			return try translateDictionaryExpression(
-				keys: keys.array, values: values.array, type: type, withIndentation: indentation)
+				keys: keys.array,
+				values: values.array,
+				typeName: typeName,
+				withIndentation: indentation)
 		case let .binaryOperatorExpression(
 			leftExpression: leftExpression,
 			rightExpression: rightExpression,
 			operatorSymbol: operatorSymbol,
-			type: type):
+			typeName: typeName):
 
 			return try translateBinaryOperatorExpression(
 				leftExpression: leftExpression,
 				rightExpression: rightExpression,
 				operatorSymbol: operatorSymbol,
-				type: type,
+				typeName: typeName,
 				withIndentation: indentation)
 		case let .callExpression(data: callExpression):
 			return try translateCallExpression(callExpression, withIndentation: indentation)
-		case let .closureExpression(parameters: parameters, statements: statements, type: type):
+		case let .closureExpression(
+			parameters: parameters, statements: statements, typeName: typeName):
+
 			return try translateClosureExpression(
-				parameters: parameters.array, statements: statements.array, type: type,
+				parameters: parameters.array, statements: statements.array, typeName: typeName,
 				withIndentation: indentation)
 		case let .declarationReferenceExpression(data: declarationReferenceExpression):
 			return translateDeclarationReferenceExpression(declarationReferenceExpression)
@@ -1069,16 +1079,16 @@ public class KotlinTranslator {
 			return try translateInterpolatedStringLiteralExpression(
 				expressions: expressions.array, withIndentation: indentation)
 		case let .prefixUnaryExpression(
-			expression: expression, operatorSymbol: operatorSymbol, type: type):
+			expression: expression, operatorSymbol: operatorSymbol, typeName: typeName):
 
 			return try translatePrefixUnaryExpression(
-				expression: expression, operatorSymbol: operatorSymbol, type: type,
+				expression: expression, operatorSymbol: operatorSymbol, typeName: typeName,
 				withIndentation: indentation)
 		case let .postfixUnaryExpression(
-			expression: expression, operatorSymbol: operatorSymbol, type: type):
+			expression: expression, operatorSymbol: operatorSymbol, typeName: typeName):
 
 			return try translatePostfixUnaryExpression(
-				expression: expression, operatorSymbol: operatorSymbol, type: type,
+				expression: expression, operatorSymbol: operatorSymbol, typeName: typeName,
 				withIndentation: indentation)
 		case let .ifExpression(
 			condition: condition, trueExpression: trueExpression, falseExpression: falseExpression):
@@ -1088,15 +1098,15 @@ public class KotlinTranslator {
 				trueExpression: trueExpression,
 				falseExpression: falseExpression,
 				withIndentation: indentation)
-		case let .typeExpression(type: type):
-			return translateType(type)
+		case let .typeExpression(typeName: typeName):
+			return translateType(typeName)
 		case let .subscriptExpression(
 			subscriptedExpression: subscriptedExpression, indexExpression: indexExpression,
-			type: type):
+			typeName: typeName):
 
 			return try translateSubscriptExpression(
 				subscriptedExpression: subscriptedExpression, indexExpression: indexExpression,
-				type: type, withIndentation: indentation)
+				typeName: typeName, withIndentation: indentation)
 		case let .parenthesesExpression(expression: expression):
 			return try "(" + translateExpression(expression, withIndentation: indentation) + ")"
 		case let .forceValueExpression(expression: expression):
@@ -1129,7 +1139,9 @@ public class KotlinTranslator {
 	}
 
 	private func translateSubscriptExpression(
-		subscriptedExpression: Expression, indexExpression: Expression, type: String,
+		subscriptedExpression: Expression,
+		indexExpression: Expression,
+		typeName: String,
 		withIndentation indentation: String)
 		throws -> String
 	{
@@ -1138,7 +1150,7 @@ public class KotlinTranslator {
 	}
 
 	private func translateArrayExpression(
-		elements: [Expression], type: String, withIndentation indentation: String) throws
+		elements: [Expression], typeName: String, withIndentation indentation: String) throws
 		-> String
 	{
 		let expressionsString = try elements.map {
@@ -1149,7 +1161,9 @@ public class KotlinTranslator {
 	}
 
 	private func translateDictionaryExpression(
-		keys: [Expression], values: [Expression], type: String,
+		keys: [Expression],
+		values: [Expression],
+		typeName: String,
 		withIndentation indentation: String) throws -> String
 	{
 		let keyExpressions =
@@ -1198,8 +1212,12 @@ public class KotlinTranslator {
 	}
 
 	private func translateBinaryOperatorExpression(
-		leftExpression: Expression, rightExpression: Expression, operatorSymbol: String,
-		type: String, withIndentation indentation: String) throws -> String
+		leftExpression: Expression,
+		rightExpression: Expression,
+		operatorSymbol: String,
+		typeName: String,
+		withIndentation indentation: String)
+		throws -> String
 	{
 		let leftTranslation = try translateExpression(leftExpression, withIndentation: indentation)
 		let rightTranslation =
@@ -1208,7 +1226,9 @@ public class KotlinTranslator {
 	}
 
 	private func translatePrefixUnaryExpression(
-		expression: Expression, operatorSymbol: String, type: String,
+		expression: Expression,
+		operatorSymbol: String,
+		typeName: String,
 		withIndentation indentation: String) throws -> String
 	{
 		let expressionTranslation =
@@ -1217,7 +1237,9 @@ public class KotlinTranslator {
 	}
 
 	private func translatePostfixUnaryExpression(
-		expression: Expression, operatorSymbol: String, type: String,
+		expression: Expression,
+		operatorSymbol: String,
+		typeName: String,
 		withIndentation indentation: String) throws -> String
 	{
 		let expressionTranslation =
@@ -1262,7 +1284,7 @@ public class KotlinTranslator {
 		if case let .declarationReferenceExpression(data: expression) = functionExpression {
 			functionTranslation = KotlinTranslator.getFunctionTranslation(
 				forName: expression.identifier,
-				type: expression.type)
+				typeName: expression.typeName)
 		}
 		else {
 			functionTranslation = nil
@@ -1274,12 +1296,12 @@ public class KotlinTranslator {
 				case let .closureExpression(
 					parameters: parameters,
 					statements: statements,
-					type: type) = closurePair.expression
+					typeName: typeName) = closurePair.expression
 			{
 				let closureTranslation = try translateClosureExpression(
 					parameters: parameters.array,
 					statements: statements.array,
-					type: type,
+					typeName: typeName,
 					withIndentation: increaseIndentation(indentation))
 				if parameters.count > 1 {
 					let firstParametersTranslation = try translateTupleExpression(
@@ -1336,8 +1358,11 @@ public class KotlinTranslator {
 	}
 
 	private func translateClosureExpression(
-		parameters: [LabeledType], statements: [Statement], type: String,
-		withIndentation indentation: String) throws -> String
+		parameters: [LabeledType],
+		statements: [Statement],
+		typeName: String,
+		withIndentation indentation: String)
+		throws -> String
 	{
 		guard !statements.isEmpty else {
 			return "{ }"

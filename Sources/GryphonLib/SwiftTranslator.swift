@@ -19,10 +19,10 @@ import Foundation
 public class SwiftTranslator {
 	// MARK: - Properties
 	typealias PatternBindingDeclaration =
-		(identifier: String, type: String, expression: Expression?)?
+		(identifier: String, typeName: String, expression: Expression?)?
 	var danglingPatternBindings = [PatternBindingDeclaration?]()
 	let errorDanglingPatternDeclaration: PatternBindingDeclaration =
-		(identifier: "<<Error>>", type: "<<Error>>", expression: Expression.error)
+		(identifier: "<<Error>>", typeName: "<<Error>>", expression: Expression.error)
 
 	fileprivate var sourceFile: SourceFile?
 
@@ -258,15 +258,15 @@ public class SwiftTranslator {
 					AST: expression, translator: self)
 			}
 		case "Conditional Checked Cast Expression":
-			if let type = expression["type"],
+			if let typeName = expression["type"],
 				let bindOptionalExpression = expression.subtrees.first,
 				let subExpression = bindOptionalExpression.subtrees.first
 			{
 				result = .binaryOperatorExpression(
 					leftExpression: try translate(expression: subExpression),
-					rightExpression: .typeExpression(type: type),
+					rightExpression: .typeExpression(typeName: typeName),
 					operatorSymbol: "as?",
-					type: type)
+					typeName: typeName)
 			}
 			else {
 				result = try unexpectedExpressionStructureError(
@@ -462,7 +462,7 @@ public class SwiftTranslator {
 		}
 
 		return .typealiasDeclaration(
-			identifier: identifier, type: typealiasDeclaration["type"]!, isImplicit: isImplicit)
+			identifier: identifier, typeName: typealiasDeclaration["type"]!, isImplicit: isImplicit)
 	}
 
 	internal func translate(classDeclaration: SwiftAST) throws -> Statement? {
@@ -551,9 +551,9 @@ public class SwiftTranslator {
 	}
 
 	internal func translate(extensionDeclaration: SwiftAST) throws -> Statement {
-		let type = cleanUpType(extensionDeclaration.standaloneAttributes[0])
+		let typeName = cleanUpType(extensionDeclaration.standaloneAttributes[0])
 		let members = try translate(subtreesOf: extensionDeclaration)
-		return .extensionDeclaration(type: type, members: ArrayClass(members))
+		return .extensionDeclaration(typeName: typeName, members: ArrayClass(members))
 	}
 
 	internal func translate(enumDeclaration: SwiftAST) throws -> Statement? {
@@ -686,7 +686,7 @@ public class SwiftTranslator {
 			let memberOwner = memberReferenceExpression.subtree(at: 0),
 			let rawType = memberReferenceExpression["type"]
 		{
-			let type = cleanUpType(rawType)
+			let typeName = cleanUpType(rawType)
 			let leftHand = try translate(expression: memberOwner)
 			let (member, isStandardLibrary) = getIdentifierFromDeclaration(declaration)
 			let isImplicit = memberReferenceExpression.standaloneAttributes.contains("implicit")
@@ -694,7 +694,7 @@ public class SwiftTranslator {
 			let rightHand = Expression.declarationReferenceExpression(data:
 				DeclarationReferenceData(
 					identifier: member,
-					type: type,
+					typeName: typeName,
 					isStandardLibrary: isStandardLibrary,
 					isImplicit: isImplicit,
 					range: range))
@@ -729,7 +729,7 @@ public class SwiftTranslator {
 			let tupleComponent = tupleComponents[safe: number]
 			if let labelAndType = tupleComponent?.split(withStringSeparator: ": "),
 				let label = labelAndType[safe: 0],
-				let type = labelAndType[safe: 1],
+				let typeName = labelAndType[safe: 1],
 				case let .declarationReferenceExpression(data: leftExpression) = leftHand
 			{
 				return .dotExpression(
@@ -737,7 +737,7 @@ public class SwiftTranslator {
 					rightExpression: .declarationReferenceExpression(data:
 						DeclarationReferenceData(
 							identifier: label,
-							type: type,
+							typeName: typeName,
 							isStandardLibrary: leftExpression.isStandardLibrary,
 							isImplicit: false,
 							range: leftExpression.range)))
@@ -762,12 +762,14 @@ public class SwiftTranslator {
 			.subtree(named: "Declaration Reference Expression")?["decl"],
 			let expression = prefixUnaryExpression.subtree(at: 1)
 		{
-			let type = cleanUpType(rawType)
+			let typeName = cleanUpType(rawType)
 			let expressionTranslation = try translate(expression: expression)
 			let (operatorIdentifier, _) = getIdentifierFromDeclaration(declaration)
 
 			return .prefixUnaryExpression(
-				expression: expressionTranslation, operatorSymbol: operatorIdentifier, type: type)
+				expression: expressionTranslation,
+				operatorSymbol: operatorIdentifier,
+				typeName: typeName)
 		}
 		else {
 			return try unexpectedExpressionStructureError(
@@ -791,12 +793,14 @@ public class SwiftTranslator {
 				.subtree(named: "Declaration Reference Expression")?["decl"],
 			let expression = postfixUnaryExpression.subtree(at: 1)
 		{
-			let type = cleanUpType(rawType)
+			let typeName = cleanUpType(rawType)
 			let expressionTranslation = try translate(expression: expression)
 			let (operatorIdentifier, _) = getIdentifierFromDeclaration(declaration)
 
 			return .postfixUnaryExpression(
-				expression: expressionTranslation, operatorSymbol: operatorIdentifier, type: type)
+				expression: expressionTranslation,
+				operatorSymbol: operatorIdentifier,
+				typeName: typeName)
 		}
 		else {
 			return try unexpectedExpressionStructureError(
@@ -825,7 +829,7 @@ public class SwiftTranslator {
 			let leftHandExpression = tupleExpression.subtree(at: 0),
 			let rightHandExpression = tupleExpression.subtree(at: 1)
 		{
-			let type = cleanUpType(rawType)
+			let typeName = cleanUpType(rawType)
 			(operatorIdentifier, _) = getIdentifierFromDeclaration(declaration)
 			let leftHandTranslation = try translate(expression: leftHandExpression)
 			let rightHandTranslation = try translate(expression: rightHandExpression)
@@ -834,7 +838,7 @@ public class SwiftTranslator {
 				leftExpression: leftHandTranslation,
 				rightExpression: rightHandTranslation,
 				operatorSymbol: operatorIdentifier,
-				type: type)
+				typeName: typeName)
 		}
 		else {
 			return try unexpectedExpressionStructureError(
@@ -872,13 +876,13 @@ public class SwiftTranslator {
 				AST: typeExpression, translator: self)
 		}
 
-		guard let type = typeExpression["typerepr"] else {
+		guard let typeName = typeExpression["typerepr"] else {
 			return try unexpectedExpressionStructureError(
 				"Unrecognized structure",
 				AST: typeExpression, translator: self)
 		}
 
-		return .typeExpression(type: cleanUpType(type))
+		return .typeExpression(typeName: cleanUpType(typeName))
 	}
 
 	internal func translate(dotSyntaxCallExpression: SwiftAST) throws -> Expression {
@@ -896,7 +900,7 @@ public class SwiftTranslator {
 			let leftHand = try translate(typeExpression: leftHandTree)
 
 			// Swift 4.2
-			if case .typeExpression(type: _) = leftHand,
+			if case .typeExpression(typeName: _) = leftHand,
 				case let .declarationReferenceExpression(data: rightExpression) = rightHand,
 				rightExpression.identifier == "none"
 			{
@@ -947,7 +951,7 @@ public class SwiftTranslator {
 			variable = Expression.declarationReferenceExpression(data:
 				DeclarationReferenceData(
 					identifier: variableName,
-					type: cleanUpType(rawType),
+					typeName: cleanUpType(rawType),
 					isStandardLibrary: false,
 					isImplicit: false,
 					range: variableRange))
@@ -965,7 +969,7 @@ public class SwiftTranslator {
 					expression: .declarationReferenceExpression(data:
 						DeclarationReferenceData(
 							identifier: $0.0,
-							type: cleanUpType($0.1),
+							typeName: cleanUpType($0.1),
 							isStandardLibrary: false,
 							isImplicit: false,
 							range: variableRange)))
@@ -1145,9 +1149,9 @@ public class SwiftTranslator {
 
 					caseExpression = .binaryOperatorExpression(
 						leftExpression: translatedExpression,
-						rightExpression: .typeExpression(type: enumClassName),
+						rightExpression: .typeExpression(typeName: enumClassName),
 						operatorSymbol: "is",
-						type: "Bool")
+						typeName: "Bool")
 
 					let range = getRangeRecursively(ofNode: patternLet)
 
@@ -1160,7 +1164,7 @@ public class SwiftTranslator {
 								rightExpression: .declarationReferenceExpression(data:
 									DeclarationReferenceData(
 										identifier: $0.associatedValueName,
-										type: $0.associatedValueType,
+										typeName: $0.associatedValueType,
 										isStandardLibrary: false,
 										isImplicit: false,
 										range: range))),
@@ -1220,7 +1224,7 @@ public class SwiftTranslator {
 		}
 
 		guard let enumReference = simplePatternEnumElement.standaloneAttributes.first,
-			let type = simplePatternEnumElement["type"] else
+			let typeName = simplePatternEnumElement["type"] else
 		{
 			return try unexpectedExpressionStructureError(
 				"Expected a Pattern Enum Element to have a reference to the enum case and a type.",
@@ -1239,7 +1243,7 @@ public class SwiftTranslator {
 		let lastExpression = Expression.declarationReferenceExpression(data:
 			DeclarationReferenceData(
 				identifier: String(lastEnumElement),
-				type: type,
+				typeName: typeName,
 				isStandardLibrary: false,
 				isImplicit: false,
 				range: range))
@@ -1247,7 +1251,7 @@ public class SwiftTranslator {
 		enumElements.removeLast()
 		if !enumElements.isEmpty {
 			return .dotExpression(
-				leftExpression: .typeExpression(type:
+				leftExpression: .typeExpression(typeName:
 					enumElements.joined(separator: ".")),
 				rightExpression: lastExpression)
 		}
@@ -1313,7 +1317,7 @@ public class SwiftTranslator {
 							AST: ifStatement, translator: self), ])
 				}
 
-				let type = cleanUpType(rawType)
+				let typeName = cleanUpType(rawType)
 
 				guard let name = patternNamed.standaloneAttributes.first,
 					let lastCondition = condition.subtrees.last else
@@ -1329,7 +1333,7 @@ public class SwiftTranslator {
 
 				conditionsResult.append(.declaration(variableDeclaration: VariableDeclarationData(
 					identifier: name,
-					typeName: type,
+					typeName: typeName,
 					expression: expression,
 					getter: nil, setter: nil,
 					isLet: isLet,
@@ -1362,9 +1366,9 @@ public class SwiftTranslator {
 
 				conditionsResult.append(.condition(expression: .binaryOperatorExpression(
 					leftExpression: declarationReference,
-					rightExpression: .typeExpression(type: enumClassName),
+					rightExpression: .typeExpression(typeName: enumClassName),
 					operatorSymbol: "is",
-					type: "Bool")))
+					typeName: "Bool")))
 
 				for declaration in declarations {
 					let range = getRangeRecursively(ofNode: patternLet)
@@ -1377,7 +1381,7 @@ public class SwiftTranslator {
 							rightExpression: .declarationReferenceExpression(data:
 								DeclarationReferenceData(
 									identifier: String(declaration.associatedValueName),
-									type: declaration.associatedValueType,
+									typeName: declaration.associatedValueType,
 									isStandardLibrary: false,
 									isImplicit: false,
 									range: range))),
@@ -1430,22 +1434,25 @@ public class SwiftTranslator {
 		let caseName =
 			String(patternEnumElement.standaloneAttributes[0].split(separator: ".").last!)
 
-		let patternsNamed = patternTuple.subtrees.filter { $0.name == "Pattern Named" }
-		guard associatedValueNames.count == patternsNamed.count else {
+		guard associatedValueNames.count == patternTuple.subtrees.count else {
 			return nil
 		}
 
-		for (associatedValueName, patternNamed)
-			in zip(associatedValueNames, patternsNamed)
-		{
-			guard let associatedValueType = patternNamed["type"] else {
+		let associatedValuesInfo = zipToClass(associatedValueNames, patternTuple.subtrees)
+		let patternsNamed = associatedValuesInfo.filter { $0.1.name == "Pattern Named" }
+
+		for patternNamed in patternsNamed {
+			let associatedValueName = patternNamed.0
+			let ast = patternNamed.1
+
+			guard let associatedValueType = ast["type"] else {
 				return nil
 			}
 
 			declarations.append((
 				associatedValueName: String(associatedValueName),
 				associatedValueType: associatedValueType,
-				newVariable: patternNamed.standaloneAttributes[0]))
+				newVariable: ast.standaloneAttributes[0]))
 		}
 
 		return (enumType: enumType, enumCase: caseName, declarations: declarations)
@@ -1537,7 +1544,7 @@ public class SwiftTranslator {
 		if let parameterList = parameterList {
 			for parameter in parameterList.subtrees {
 				if let name = parameter.standaloneAttributes.first,
-					let type = parameter["interface type"]
+					let typeName = parameter["interface type"]
 				{
 					guard name != "self" else {
 						continue
@@ -1545,7 +1552,7 @@ public class SwiftTranslator {
 
 					let parameterName = name
 					let parameterApiLabel = parameter["apiName"]
-					let parameterType = cleanUpType(type)
+					let parameterType = cleanUpType(typeName)
 
 					let defaultValue: Expression?
 					if let defaultValueTree = parameter.subtrees.first {
@@ -1558,7 +1565,7 @@ public class SwiftTranslator {
 					parameters.append(FunctionParameter(
 						label: parameterName,
 						apiLabel: parameterApiLabel,
-						type: parameterType,
+						typeName: parameterType,
 						value: defaultValue))
 				}
 				else {
@@ -1668,14 +1675,14 @@ public class SwiftTranslator {
 		}
 
 		let isLet = variableDeclaration.standaloneAttributes.contains("let")
-		let type = cleanUpType(rawType)
+		let typeName = cleanUpType(rawType)
 
 		var expression: Expression?
 		if let firstBindingExpression = danglingPatternBindings.first {
 			if let maybeBindingExpression = firstBindingExpression,
 				let bindingExpression = maybeBindingExpression,
 				(bindingExpression.identifier == identifier &&
-						bindingExpression.type == type) ||
+						bindingExpression.typeName == typeName) ||
 					(bindingExpression.identifier == "<<Error>>")
 			{
 				expression = bindingExpression.expression
@@ -1710,8 +1717,8 @@ public class SwiftTranslator {
 				getter = FunctionDeclarationData(
 					prefix: "get",
 					parameters: [],
-					returnType: type,
-					functionType: "() -> (\(type))",
+					returnType: typeName,
+					functionType: "() -> (\(typeName))",
 					genericTypes: [],
 					isImplicit: isImplicit,
 					isStatic: false,
@@ -1725,9 +1732,9 @@ public class SwiftTranslator {
 				setter = FunctionDeclarationData(
 					prefix: "set",
 					parameters: [FunctionParameter(
-						label: "newValue", apiLabel: nil, type: type, value: nil), ],
+						label: "newValue", apiLabel: nil, typeName: typeName, value: nil), ],
 					returnType: "()",
-					functionType: "(\(type)) -> ()",
+					functionType: "(\(typeName)) -> ()",
 					genericTypes: [],
 					isImplicit: isImplicit,
 					isStatic: false,
@@ -1741,7 +1748,7 @@ public class SwiftTranslator {
 
 		return .variableDeclaration(data: VariableDeclarationData(
 			identifier: identifier,
-			typeName: type,
+			typeName: typeName,
 			expression: expression,
 			getter: getter,
 			setter: setter,
@@ -1791,7 +1798,7 @@ public class SwiftTranslator {
 			return try unexpectedExpressionStructureError(
 				"Failed to recognize type", AST: callExpression, translator: self)
 		}
-		let type = cleanUpType(rawType)
+		let typeName = cleanUpType(rawType)
 
 		if let declarationReferenceExpression = callExpression
 			.subtree(named: "Declaration Reference Expression")
@@ -1826,7 +1833,7 @@ public class SwiftTranslator {
 		return .callExpression(data: CallExpressionData(
 			function: function,
 			parameters: parameters,
-			type: type,
+			typeName: typeName,
 			range: range))
 	}
 
@@ -1852,12 +1859,12 @@ public class SwiftTranslator {
 		if let parameterList = parameterList {
 			for parameter in parameterList.subtrees {
 				if let name = parameter.standaloneAttributes.first,
-					let type = parameter["interface type"]
+					let typeName = parameter["interface type"]
 				{
 					if name.hasPrefix("anonname=0x") {
 						continue
 					}
-					parameters.append(LabeledType(label: name, type: cleanUpType(type)))
+					parameters.append(LabeledType(label: name, typeName: cleanUpType(typeName)))
 				}
 				else {
 					return try unexpectedExpressionStructureError(
@@ -1869,7 +1876,7 @@ public class SwiftTranslator {
 
 		// Translate the return type
 		// FIXME: Doesn't allow to return function types
-		guard let type = closureExpression["type"] else
+		guard let typeName = closureExpression["type"] else
 		{
 			return try unexpectedExpressionStructureError(
 				"Unable to get type or return type", AST: closureExpression, translator: self)
@@ -1893,7 +1900,7 @@ public class SwiftTranslator {
 		return .closureExpression(
 			parameters: parameters,
 			statements: ArrayClass<Statement>(statements),
-			type: cleanUpType(type))
+			typeName: cleanUpType(typeName))
 	}
 
 	internal func translate(callExpressionParameters callExpression: SwiftAST) throws
@@ -1925,7 +1932,7 @@ public class SwiftTranslator {
 					pairs: [LabeledExpression(label: nil, expression: expression)])
 			}
 			else if let tupleExpression = tupleShuffleExpression.subtree(named: "Tuple Expression"),
-				let type = tupleShuffleExpression["type"],
+				let typeName = tupleShuffleExpression["type"],
 				let elements = tupleShuffleExpression["elements"],
 				let rawIndices = elements.split(withStringSeparator: ", ").map(Int.init) as? [Int]
 			{
@@ -1957,7 +1964,7 @@ public class SwiftTranslator {
 				}
 
 				let tupleComponents = ArrayClass(
-					String(type.dropFirst().dropLast())
+					String(typeName.dropFirst().dropLast())
 						.split(withStringSeparator: ", "))
 				let labels = tupleComponents
 					.map { $0.prefix(while: { $0 != ":" }) }
@@ -2050,18 +2057,18 @@ public class SwiftTranslator {
 				signedValue = value
 			}
 
-			let type = cleanUpType(rawType)
-			if type == "Double" || type == "Float64" {
+			let typeName = cleanUpType(rawType)
+			if typeName == "Double" || typeName == "Float64" {
 				return .literalDoubleExpression(value: Double(signedValue)!)
 			}
-			else if type == "Float" || type == "Float32" {
+			else if typeName == "Float" || typeName == "Float32" {
 				return .literalFloatExpression(value: Float(signedValue)!)
 			}
-			else if type == "Float80" {
+			else if typeName == "Float80" {
 				return try unexpectedExpressionStructureError(
 					"No support for 80-bit Floats", AST: callExpression, translator: self)
 			}
-			else if type.hasPrefix("U") {
+			else if typeName.hasPrefix("U") {
 				return .literalUIntExpression(value: UInt64(signedValue)!)
 			}
 			else {
@@ -2187,7 +2194,7 @@ public class SwiftTranslator {
 			return try unexpectedExpressionStructureError(
 				"Failed to recognize type", AST: declarationReferenceExpression, translator: self)
 		}
-		let type = cleanUpType(rawType)
+		let typeName = cleanUpType(rawType)
 
 		let isImplicit = declarationReferenceExpression.standaloneAttributes.contains("implicit")
 
@@ -2197,7 +2204,7 @@ public class SwiftTranslator {
 			let (identifier, isStandardLibrary) = getIdentifierFromDeclaration(discriminator)
 			return .declarationReferenceExpression(data: DeclarationReferenceData(
 					identifier: identifier,
-					type: type,
+					typeName: typeName,
 					isStandardLibrary: isStandardLibrary,
 					isImplicit: isImplicit,
 					range: range))
@@ -2208,7 +2215,7 @@ public class SwiftTranslator {
 			let (identifier, isStandardLibrary) = getIdentifierFromDeclaration(codeDeclaration)
 			return .declarationReferenceExpression(data: DeclarationReferenceData(
 				identifier: identifier,
-				type: type,
+				typeName: typeName,
 				isStandardLibrary: isStandardLibrary,
 				isImplicit: isImplicit,
 				range: range))
@@ -2217,7 +2224,7 @@ public class SwiftTranslator {
 			let (identifier, isStandardLibrary) = getIdentifierFromDeclaration(declaration)
 			return .declarationReferenceExpression(data: DeclarationReferenceData(
 				identifier: identifier,
-				type: type,
+				typeName: typeName,
 				isStandardLibrary: isStandardLibrary,
 				isImplicit: isImplicit,
 				range: range))
@@ -2243,13 +2250,14 @@ public class SwiftTranslator {
 					at: 1, named: "Tuple Expression"),
 			let subscriptedExpression = subscriptExpression.subtree(at: 0)
 		{
-			let type = cleanUpType(rawType)
+			let typeName = cleanUpType(rawType)
 			let subscriptContentsTranslation = try translate(expression: subscriptContents)
 			let subscriptedExpressionTranslation = try translate(expression: subscriptedExpression)
 
 			return .subscriptExpression(
 				subscriptedExpression: subscriptedExpressionTranslation,
-				indexExpression: subscriptContentsTranslation, type: type)
+				indexExpression: subscriptContentsTranslation,
+				typeName: typeName)
 		}
 		else {
 			return try unexpectedExpressionStructureError(
@@ -2273,9 +2281,9 @@ public class SwiftTranslator {
 			return try unexpectedExpressionStructureError(
 				"Failed to get type", AST: arrayExpression, translator: self)
 		}
-		let type = cleanUpType(rawType)
+		let typeName = cleanUpType(rawType)
 
-		return .arrayExpression(elements: expressionsArray, type: type)
+		return .arrayExpression(elements: expressionsArray, typeName: typeName)
 	}
 
 	internal func translate(dictionaryExpression: SwiftAST) throws -> Expression {
@@ -2305,13 +2313,13 @@ public class SwiftTranslator {
 			values.append(valueTranslation)
 		}
 
-		guard let type = dictionaryExpression["type"] else {
+		guard let typeName = dictionaryExpression["type"] else {
 			return try unexpectedExpressionStructureError(
 				"Unable to get type",
 				AST: dictionaryExpression, translator: self)
 		}
 
-		return .dictionaryExpression(keys: keys, values: values, type: type)
+		return .dictionaryExpression(keys: keys, values: values, typeName: typeName)
 	}
 
 	// MARK: - Supporting methods
@@ -2392,11 +2400,11 @@ public class SwiftTranslator {
 					continue
 				}
 
-				let type = cleanUpType(rawType)
+				let typeName = cleanUpType(rawType)
 
 				result.append(
 					(identifier: identifier,
-					 type: type,
+					 typeName: typeName,
 					 expression: translatedExpression))
 			}
 			else {
@@ -2532,16 +2540,19 @@ public class SwiftTranslator {
 		return result
 	}
 
-	internal func cleanUpType(_ type: String) -> String {
-		if type.hasPrefix("@lvalue ") {
-			return String(type.suffix(from: "@lvalue ".endIndex))
+	internal func cleanUpType(_ typeName: String) -> String {
+		if typeName.hasPrefix("@lvalue ") {
+			return String(typeName.suffix(from: "@lvalue ".endIndex))
 		}
-		else if type.hasPrefix("("), type.hasSuffix(")"), !type.contains("->"), !type.contains(",")
+		else if typeName.hasPrefix("("),
+			typeName.hasSuffix(")"),
+			!typeName.contains("->"),
+			!typeName.contains(",")
 		{
-			return String(type.dropFirst().dropLast())
+			return String(typeName.dropFirst().dropLast())
 		}
 		else {
-			return type
+			return typeName
 		}
 	}
 

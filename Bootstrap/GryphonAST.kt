@@ -38,8 +38,8 @@ internal fun PrintableTree.Companion.ofStatements(
 
 public sealed class Statement: PrintableAsTree {
 	class ExpressionStatement(val expression: Expression): Statement()
-	class TypealiasDeclaration(val identifier: String, val type: String, val isImplicit: Boolean): Statement()
-	class ExtensionDeclaration(val type: String, val members: MutableList<Statement>): Statement()
+	class TypealiasDeclaration(val identifier: String, val typeName: String, val isImplicit: Boolean): Statement()
+	class ExtensionDeclaration(val typeName: String, val members: MutableList<Statement>): Statement()
 	class ImportDeclaration(val moduleName: String): Statement()
 	class ClassDeclaration(val className: String, val inherits: MutableList<String>, val members: MutableList<Statement>): Statement()
 	class CompanionObject(val members: MutableList<Statement>): Statement()
@@ -99,9 +99,9 @@ public sealed class Statement: PrintableAsTree {
 					mutableListOf(expression)
 				}
 				is Statement.ExtensionDeclaration -> {
-					val type: String = this.type
+					val typeName: String = this.typeName
 					val members: MutableList<Statement> = this.members
-					mutableListOf(PrintableTree(type), PrintableTree.ofStatements("members", members))
+					mutableListOf(PrintableTree(typeName), PrintableTree.ofStatements("members", members))
 				}
 				is Statement.ImportDeclaration -> {
 					val moduleName: String = this.moduleName
@@ -109,10 +109,10 @@ public sealed class Statement: PrintableAsTree {
 				}
 				is Statement.TypealiasDeclaration -> {
 					val identifier: String = this.identifier
-					val type: String = this.type
+					val typeName: String = this.typeName
 					val isImplicit: Boolean = this.isImplicit
 
-					mutableListOf(if (isImplicit) { PrintableTree(("implicit")) } else { null }, PrintableTree("identifier: ${identifier}"), PrintableTree("type: ${type}"))
+					mutableListOf(if (isImplicit) { PrintableTree(("implicit")) } else { null }, PrintableTree("identifier: ${identifier}"), PrintableTree("typeName: ${typeName}"))
 				}
 				is Statement.ClassDeclaration -> {
 					val className: String = this.className
@@ -152,7 +152,7 @@ public sealed class Statement: PrintableAsTree {
 					val functionDeclaration: FunctionDeclarationData = this.data
 					val parametersTrees: MutableList<PrintableAsTree?> = functionDeclaration.parameters.map { parameter -> PrintableTree(
 						"parameter",
-						mutableListOf(parameter.apiLabel?.let { PrintableTree("api label: ${it}") }, PrintableTree("label: ${parameter.label}"), PrintableTree("type: ${parameter.type}"), PrintableTree.initOrNil("value", mutableListOf(parameter.value)))) }.toMutableList()
+						mutableListOf(parameter.apiLabel?.let { PrintableTree("api label: ${it}") }, PrintableTree("label: ${parameter.label}"), PrintableTree("type: ${parameter.typeName}"), PrintableTree.initOrNil("value", mutableListOf(parameter.value)))) }.toMutableList()
 					mutableListOf(functionDeclaration.extendsType?.let { PrintableTree("extends type ${it}") }, if (functionDeclaration.isImplicit) { PrintableTree(("implicit")) } else { null }, if (functionDeclaration.isStatic) { PrintableTree(("static")) } else { null }, if (functionDeclaration.isMutating) { PrintableTree(("mutating")) } else { null }, PrintableTree.initOrNil(functionDeclaration.access), PrintableTree("type: ${functionDeclaration.functionType}"), PrintableTree("prefix: ${functionDeclaration.prefix}"), PrintableTree("parameters", parametersTrees), PrintableTree("return type: ${functionDeclaration.returnType}"), PrintableTree.ofStatements("statements", functionDeclaration.statements ?: mutableListOf()))
 				}
 				is Statement.VariableDeclaration -> {
@@ -240,18 +240,18 @@ public sealed class Expression: PrintableAsTree {
 	class ForceValueExpression(val expression: Expression): Expression()
 	class OptionalExpression(val expression: Expression): Expression()
 	class DeclarationReferenceExpression(val data: DeclarationReferenceData): Expression()
-	class TypeExpression(val type: String): Expression()
-	class SubscriptExpression(val subscriptedExpression: Expression, val indexExpression: Expression, val type: String): Expression()
-	class ArrayExpression(val elements: MutableList<Expression>, val type: String): Expression()
-	class DictionaryExpression(val keys: MutableList<Expression>, val values: MutableList<Expression>, val type: String): Expression()
+	class TypeExpression(val typeName: String): Expression()
+	class SubscriptExpression(val subscriptedExpression: Expression, val indexExpression: Expression, val typeName: String): Expression()
+	class ArrayExpression(val elements: MutableList<Expression>, val typeName: String): Expression()
+	class DictionaryExpression(val keys: MutableList<Expression>, val values: MutableList<Expression>, val typeName: String): Expression()
 	class ReturnExpression(val expression: Expression?): Expression()
 	class DotExpression(val leftExpression: Expression, val rightExpression: Expression): Expression()
-	class BinaryOperatorExpression(val leftExpression: Expression, val rightExpression: Expression, val operatorSymbol: String, val type: String): Expression()
-	class PrefixUnaryExpression(val expression: Expression, val operatorSymbol: String, val type: String): Expression()
-	class PostfixUnaryExpression(val expression: Expression, val operatorSymbol: String, val type: String): Expression()
+	class BinaryOperatorExpression(val leftExpression: Expression, val rightExpression: Expression, val operatorSymbol: String, val typeName: String): Expression()
+	class PrefixUnaryExpression(val expression: Expression, val operatorSymbol: String, val typeName: String): Expression()
+	class PostfixUnaryExpression(val expression: Expression, val operatorSymbol: String, val typeName: String): Expression()
 	class IfExpression(val condition: Expression, val trueExpression: Expression, val falseExpression: Expression): Expression()
 	class CallExpression(val data: CallExpressionData): Expression()
-	class ClosureExpression(val parameters: MutableList<LabeledType>, val statements: MutableList<Statement>, val type: String): Expression()
+	class ClosureExpression(val parameters: MutableList<LabeledType>, val statements: MutableList<Statement>, val typeName: String): Expression()
 	class LiteralIntExpression(val value: Long): Expression()
 	class LiteralUIntExpression(val value: ULong): Expression()
 	class LiteralDoubleExpression(val value: Double): Expression()
@@ -331,31 +331,31 @@ public sealed class Expression: PrintableAsTree {
 				}
 				is Expression.DeclarationReferenceExpression -> {
 					val expression: DeclarationReferenceData = this.data
-					mutableListOf(PrintableTree(expression.type), PrintableTree(expression.identifier), if (expression.isStandardLibrary) { PrintableTree(("isStandardLibrary")) } else { null }, if (expression.isImplicit) { PrintableTree(("implicit")) } else { null })
+					mutableListOf(PrintableTree(expression.typeName), PrintableTree(expression.identifier), if (expression.isStandardLibrary) { PrintableTree(("isStandardLibrary")) } else { null }, if (expression.isImplicit) { PrintableTree(("implicit")) } else { null })
 				}
 				is Expression.TypeExpression -> {
-					val type: String = this.type
-					mutableListOf(PrintableTree(type))
+					val typeName: String = this.typeName
+					mutableListOf(PrintableTree(typeName))
 				}
 				is Expression.SubscriptExpression -> {
 					val subscriptedExpression: Expression = this.subscriptedExpression
 					val indexExpression: Expression = this.indexExpression
-					val type: String = this.type
+					val typeName: String = this.typeName
 
-					mutableListOf(PrintableTree("type ${type}"), PrintableTree.ofExpressions("subscriptedExpression", mutableListOf(subscriptedExpression)), PrintableTree.ofExpressions("indexExpression", mutableListOf(indexExpression)))
+					mutableListOf(PrintableTree("type ${typeName}"), PrintableTree.ofExpressions("subscriptedExpression", mutableListOf(subscriptedExpression)), PrintableTree.ofExpressions("indexExpression", mutableListOf(indexExpression)))
 				}
 				is Expression.ArrayExpression -> {
 					val elements: MutableList<Expression> = this.elements
-					val type: String = this.type
-					mutableListOf(PrintableTree("type ${type}"), PrintableTree.ofExpressions("elements", elements))
+					val typeName: String = this.typeName
+					mutableListOf(PrintableTree("type ${typeName}"), PrintableTree.ofExpressions("elements", elements))
 				}
 				is Expression.DictionaryExpression -> {
 					val keys: MutableList<Expression> = this.keys
 					val values: MutableList<Expression> = this.values
-					val type: String = this.type
+					val typeName: String = this.typeName
 					val keyValueStrings: MutableList<String> = keys.zip(values).map { pair -> "${pair.first}: ${pair.second}" }.toMutableList()
 
-					mutableListOf(PrintableTree("type ${type}"), PrintableTree.ofStrings("key value pairs", keyValueStrings))
+					mutableListOf(PrintableTree("type ${typeName}"), PrintableTree.ofStrings("key value pairs", keyValueStrings))
 				}
 				is Expression.ReturnExpression -> {
 					val expression: Expression? = this.expression
@@ -370,16 +370,16 @@ public sealed class Expression: PrintableAsTree {
 					val leftExpression: Expression = this.leftExpression
 					val rightExpression: Expression = this.rightExpression
 					val operatorSymbol: String = this.operatorSymbol
-					val type: String = this.type
+					val typeName: String = this.typeName
 
-					mutableListOf(PrintableTree("type ${type}"), PrintableTree.ofExpressions("left", mutableListOf(leftExpression)), PrintableTree("operator ${operatorSymbol}"), PrintableTree.ofExpressions("right", mutableListOf(rightExpression)))
+					mutableListOf(PrintableTree("type ${typeName}"), PrintableTree.ofExpressions("left", mutableListOf(leftExpression)), PrintableTree("operator ${operatorSymbol}"), PrintableTree.ofExpressions("right", mutableListOf(rightExpression)))
 				}
 				is Expression.PrefixUnaryExpression -> {
 					val expression: Expression = this.expression
 					val operatorSymbol: String = this.operatorSymbol
-					val type: String = this.type
+					val typeName: String = this.typeName
 
-					mutableListOf(PrintableTree("type ${type}"), PrintableTree("operator ${operatorSymbol}"), PrintableTree.ofExpressions("expression", mutableListOf(expression)))
+					mutableListOf(PrintableTree("type ${typeName}"), PrintableTree("operator ${operatorSymbol}"), PrintableTree.ofExpressions("expression", mutableListOf(expression)))
 				}
 				is Expression.IfExpression -> {
 					val condition: Expression = this.condition
@@ -391,21 +391,21 @@ public sealed class Expression: PrintableAsTree {
 				is Expression.PostfixUnaryExpression -> {
 					val expression: Expression = this.expression
 					val operatorSymbol: String = this.operatorSymbol
-					val type: String = this.type
+					val typeName: String = this.typeName
 
-					mutableListOf(PrintableTree("type ${type}"), PrintableTree("operator ${operatorSymbol}"), PrintableTree.ofExpressions("expression", mutableListOf(expression)))
+					mutableListOf(PrintableTree("type ${typeName}"), PrintableTree("operator ${operatorSymbol}"), PrintableTree.ofExpressions("expression", mutableListOf(expression)))
 				}
 				is Expression.CallExpression -> {
 					val callExpression: CallExpressionData = this.data
-					mutableListOf(PrintableTree("type ${callExpression.type}"), PrintableTree.ofExpressions("function", mutableListOf(callExpression.function)), PrintableTree.ofExpressions("parameters", mutableListOf(callExpression.parameters)))
+					mutableListOf(PrintableTree("type ${callExpression.typeName}"), PrintableTree.ofExpressions("function", mutableListOf(callExpression.function)), PrintableTree.ofExpressions("parameters", mutableListOf(callExpression.parameters)))
 				}
 				is Expression.ClosureExpression -> {
 					val parameters: MutableList<LabeledType> = this.parameters
 					val statements: MutableList<Statement> = this.statements
-					val type: String = this.type
+					val typeName: String = this.typeName
 					val parametersString: String = "(" + parameters.map { it.label + ":" }.toMutableList().joinToString(separator = ", ") + ")"
 
-					mutableListOf(PrintableTree(type), PrintableTree(parametersString), PrintableTree.ofStatements("statements", statements))
+					mutableListOf(PrintableTree(typeName), PrintableTree(parametersString), PrintableTree.ofStatements("statements", statements))
 				}
 				is Expression.TupleExpression -> {
 					val pairs: MutableList<LabeledExpression> = this.pairs
@@ -454,6 +454,106 @@ public sealed class Expression: PrintableAsTree {
 				is Expression.Error -> mutableListOf()
 			}
 		}
+	val swiftType: String?
+		get() {
+			when (this) {
+				is Expression.TemplateExpression -> return null
+				is Expression.LiteralCodeExpression -> return null
+				is Expression.ParenthesesExpression -> {
+					val expression: Expression = this.expression
+					return expression.swiftType
+				}
+				is Expression.ForceValueExpression -> {
+					val expression: Expression = this.expression
+					val subtype: String? = expression.swiftType
+					if (subtype != null && subtype.endsWith("?")) {
+						return subtype.dropLast(1)
+					}
+					else {
+						return expression.swiftType
+					}
+				}
+				is Expression.OptionalExpression -> {
+					val expression: Expression = this.expression
+					return expression.swiftType
+				}
+				is Expression.DeclarationReferenceExpression -> {
+					val declarationReferenceExpression: DeclarationReferenceData = this.data
+					return declarationReferenceExpression.typeName
+				}
+				is Expression.TypeExpression -> {
+					val typeName: String = this.typeName
+					return typeName
+				}
+				is Expression.SubscriptExpression -> {
+					val typeName: String = this.typeName
+					return typeName
+				}
+				is Expression.ArrayExpression -> {
+					val typeName: String = this.typeName
+					return typeName
+				}
+				is Expression.DictionaryExpression -> {
+					val typeName: String = this.typeName
+					return typeName
+				}
+				is Expression.ReturnExpression -> {
+					val expression: Expression? = this.expression
+					return expression?.swiftType
+				}
+				is Expression.DotExpression -> {
+					val leftExpression: Expression = this.leftExpression
+					val rightExpression: Expression = this.rightExpression
+
+					if (leftExpression is Expression.TypeExpression && rightExpression is Expression.DeclarationReferenceExpression) {
+						val enumType: String = leftExpression.typeName
+						val declarationReferenceExpression: DeclarationReferenceData = rightExpression.data
+						if (declarationReferenceExpression.typeName.startsWith("(") && declarationReferenceExpression.typeName.contains("${enumType}.Type) -> ") && declarationReferenceExpression.typeName.endsWith(enumType)) {
+							return enumType
+						}
+					}
+
+					return rightExpression.swiftType
+				}
+				is Expression.BinaryOperatorExpression -> {
+					val typeName: String = this.typeName
+					return typeName
+				}
+				is Expression.PrefixUnaryExpression -> {
+					val typeName: String = this.typeName
+					return typeName
+				}
+				is Expression.PostfixUnaryExpression -> {
+					val typeName: String = this.typeName
+					return typeName
+				}
+				is Expression.IfExpression -> {
+					val trueExpression: Expression = this.trueExpression
+					return trueExpression.swiftType
+				}
+				is Expression.CallExpression -> {
+					val callExpression: CallExpressionData = this.data
+					return callExpression.typeName
+				}
+				is Expression.ClosureExpression -> {
+					val typeName: String = this.typeName
+					return typeName
+				}
+				is Expression.LiteralIntExpression -> return "Int"
+				is Expression.LiteralUIntExpression -> return "UInt"
+				is Expression.LiteralDoubleExpression -> return "Double"
+				is Expression.LiteralFloatExpression -> return "Float"
+				is Expression.LiteralBoolExpression -> return "Bool"
+				is Expression.LiteralStringExpression -> return "String"
+				is Expression.LiteralCharacterExpression -> return "Character"
+				is Expression.NilLiteralExpression -> return null
+				is Expression.InterpolatedStringLiteralExpression -> return "String"
+				is Expression.TupleExpression -> return null
+				is Expression.TupleShuffleExpression -> return null
+				is Expression.Error -> return "<<Error>>"
+			}
+			return null
+		}
 }
 
 data class LabeledExpression(
@@ -463,13 +563,13 @@ data class LabeledExpression(
 
 data class LabeledType(
 	val label: String,
-	val type: String
+	val typeName: String
 )
 
 data class FunctionParameter(
 	val label: String,
 	val apiLabel: String?,
-	val type: String,
+	val typeName: String,
 	val value: Expression?
 )
 
@@ -512,20 +612,20 @@ class VariableDeclarationData {
 
 class DeclarationReferenceData {
 	var identifier: String
-	var type: String
+	var typeName: String
 	var isStandardLibrary: Boolean
 	var isImplicit: Boolean
 	var range: SourceFileRange? = null
 
 	constructor(
 		identifier: String,
-		type: String,
+		typeName: String,
 		isStandardLibrary: Boolean,
 		isImplicit: Boolean,
 		range: SourceFileRange?)
 	{
 		this.identifier = identifier
-		this.type = type
+		this.typeName = typeName
 		this.isStandardLibrary = isStandardLibrary
 		this.isImplicit = isImplicit
 		this.range = range
@@ -535,18 +635,18 @@ class DeclarationReferenceData {
 class CallExpressionData {
 	var function: Expression
 	var parameters: Expression
-	var type: String
+	var typeName: String
 	var range: SourceFileRange? = null
 
 	constructor(
 		function: Expression,
 		parameters: Expression,
-		type: String,
+		typeName: String,
 		range: SourceFileRange?)
 	{
 		this.function = function
 		this.parameters = parameters
-		this.type = type
+		this.typeName = typeName
 		this.range = range
 	}
 }
@@ -668,7 +768,7 @@ class EnumElement: PrintableAsTree {
 		}
 	override val printableSubtrees: MutableList<PrintableAsTree?>
 		get() {
-			val associatedValues: String = this.associatedValues.map { "${it.label}: ${it.type}" }.toMutableList().joinToString(separator = ", ")
+			val associatedValues: String = this.associatedValues.map { "${it.label}: ${it.typeName}" }.toMutableList().joinToString(separator = ", ")
 			val associatedValuesString: String? = if (associatedValues.isEmpty()) { null } else { "values: ${associatedValues}" }
 			return mutableListOf(PrintableTree.initOrNil(associatedValuesString), PrintableTree.initOrNil(this.annotations))
 		}

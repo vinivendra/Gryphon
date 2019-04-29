@@ -74,7 +74,7 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 			leftExpression: leftExpression,
 			rightExpression: rightExpression,
 			operatorSymbol: "+",
-			type: "String") = expression,
+			typeName: "String") = expression,
 			let leftString = getStringLiteralOrSum(leftExpression),
 			let rightString = getStringLiteralOrSum(rightExpression)
 		{
@@ -120,7 +120,7 @@ extension Expression {
 		if case let .declarationReferenceExpression(
 				data: templateExpression) = template,
 			templateExpression.identifier.hasPrefix("_"),
-			self.isOfType(templateExpression.type)
+			self.isOfType(templateExpression.typeName)
 		{
 			matches[templateExpression.identifier] = self
 			return true
@@ -147,44 +147,44 @@ extension Expression {
 				 .declarationReferenceExpression(data: rightExpression)):
 
 				return leftExpression.identifier == rightExpression.identifier &&
-					leftExpression.type.isSubtype(of: rightExpression.type) &&
+					leftExpression.typeName.isSubtype(of: rightExpression.typeName) &&
 					leftExpression.isImplicit == rightExpression.isImplicit
 			case let
-				(.typeExpression(type: leftType),
-				 .typeExpression(type: rightType)):
+				(.typeExpression(typeName: leftType),
+				 .typeExpression(typeName: rightType)):
 
 				return leftType.isSubtype(of: rightType)
 			case let
-				(.typeExpression(type: leftType),
+				(.typeExpression(typeName: leftType),
 				 .declarationReferenceExpression(data: rightExpression)):
 
 				guard declarationExpressionMatchesImplicitTypeExpression(rightExpression) else {
 					return false
 				}
-				let expressionType = String(rightExpression.type.dropLast(".Type".count))
+				let expressionType = String(rightExpression.typeName.dropLast(".Type".count))
 				return leftType.isSubtype(of: expressionType)
 			case let
 				(.declarationReferenceExpression(data: leftExpression),
-				 .typeExpression(type: rightType)):
+				 .typeExpression(typeName: rightType)):
 				guard declarationExpressionMatchesImplicitTypeExpression(leftExpression) else {
 					return false
 				}
-				let expressionType = String(leftExpression.type.dropLast(".Type".count))
+				let expressionType = String(leftExpression.typeName.dropLast(".Type".count))
 				return expressionType.isSubtype(of: rightType)
 			case let
 				(.subscriptExpression(
 					subscriptedExpression: leftSubscriptedExpression,
-					indexExpression: leftIndexExpression, type: leftType),
+					indexExpression: leftIndexExpression, typeName: leftType),
 				 .subscriptExpression(
 					subscriptedExpression: rightSubscriptedExpression,
-					indexExpression: rightIndexExpression, type: rightType)):
+					indexExpression: rightIndexExpression, typeName: rightType)):
 
 					return leftSubscriptedExpression.matches(rightSubscriptedExpression, &matches)
 						&& leftIndexExpression.matches(rightIndexExpression, &matches)
 						&& leftType.isSubtype(of: rightType)
 			case let
-				(.arrayExpression(elements: leftElements, type: leftType),
-				 .arrayExpression(elements: rightElements, type: rightType)):
+				(.arrayExpression(elements: leftElements, typeName: leftType),
+				 .arrayExpression(elements: rightElements, typeName: rightType)):
 
 				var result = true
 				for (leftElement, rightElement) in zip(leftElements, rightElements) {
@@ -202,10 +202,10 @@ extension Expression {
 			case let
 				(.binaryOperatorExpression(
 					leftExpression: leftLeftExpression, rightExpression: leftRightExpression,
-					operatorSymbol: leftOperatorSymbol, type: leftType),
+					operatorSymbol: leftOperatorSymbol, typeName: leftType),
 				 .binaryOperatorExpression(
 					leftExpression: rightLeftExpression, rightExpression: rightRightExpression,
-					operatorSymbol: rightOperatorSymbol, type: rightType)):
+					operatorSymbol: rightOperatorSymbol, typeName: rightType)):
 
 				return leftLeftExpression.matches(rightLeftExpression, &matches) &&
 					leftRightExpression.matches(rightRightExpression, &matches) &&
@@ -213,20 +213,22 @@ extension Expression {
 					(leftType.isSubtype(of: rightType))
 			case let
 				(.prefixUnaryExpression(
-					expression: leftExpression, operatorSymbol: leftOperatorSymbol, type: leftType),
+					expression: leftExpression, operatorSymbol: leftOperatorSymbol,
+					typeName: leftType),
 				 .prefixUnaryExpression(
 					expression: rightExpression, operatorSymbol: rightOperatorSymbol,
-					type: rightType)):
+					typeName: rightType)):
 
 				return leftExpression.matches(rightExpression, &matches) &&
 					(leftOperatorSymbol == rightOperatorSymbol)
 					&& (leftType.isSubtype(of: rightType))
 			case let
 				(.postfixUnaryExpression(
-					expression: leftExpression, operatorSymbol: leftOperatorSymbol, type: leftType),
+					expression: leftExpression, operatorSymbol: leftOperatorSymbol,
+					typeName: leftType),
 				 .postfixUnaryExpression(
 					expression: rightExpression, operatorSymbol: rightOperatorSymbol,
-					type: rightType)):
+					typeName: rightType)):
 
 				return leftExpression.matches(rightExpression, &matches) &&
 					(leftOperatorSymbol == rightOperatorSymbol)
@@ -239,7 +241,7 @@ extension Expression {
 						rightCallExpression.function, &matches) &&
 					leftCallExpression.parameters.matches(
 						rightCallExpression.parameters, &matches) &&
-					leftCallExpression.type.isSubtype(of: rightCallExpression.type)
+					leftCallExpression.typeName.isSubtype(of: rightCallExpression.typeName)
 			case let
 				(.literalIntExpression(value: leftValue),
 				 .literalIntExpression(value: rightValue)):
@@ -347,7 +349,7 @@ extension Expression {
 		_ expression: DeclarationReferenceData) -> Bool
 	{
 		if expression.identifier == "self",
-			expression.type.hasSuffix(".Type"),
+			expression.typeName.hasSuffix(".Type"),
 			expression.isImplicit
 		{
 			return true
@@ -358,11 +360,11 @@ extension Expression {
 	}
 
 	func isOfType(_ superType: String) -> Bool {
-		guard let type = self.type else {
+		guard let typeName = self.swiftType else {
 			return false
 		}
 
-		return type.isSubtype(of: superType)
+		return typeName.isSubtype(of: superType)
 	}
 }
 

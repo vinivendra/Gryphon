@@ -68,10 +68,10 @@ public indirect enum Statement: PrintableAsTree, Equatable {
 		expression: Expression)
 	case typealiasDeclaration(
 		identifier: String,
-		type: String,
+		typeName: String,
 		isImplicit: Bool)
 	case extensionDeclaration(
-		type: String,
+		typeName: String,
 		members: ArrayClass<Statement>)
 	case importDeclaration(
 		moduleName: String)
@@ -185,16 +185,18 @@ public indirect enum Statement: PrintableAsTree, Equatable {
 		switch self {
 		case let .expressionStatement(expression: expression):
 			return [expression]
-		case let .extensionDeclaration(type: type, members: members):
-			return [PrintableTree(type),
+		case let .extensionDeclaration(typeName: typeName, members: members):
+			return [PrintableTree(typeName),
 					PrintableTree.ofStatements("members", members), ]
 		case let .importDeclaration(moduleName: moduleName):
 			return [PrintableTree(moduleName)]
-		case let .typealiasDeclaration(identifier: identifier, type: type, isImplicit: isImplicit):
+		case let .typealiasDeclaration(
+			identifier: identifier, typeName: typeName, isImplicit: isImplicit):
+
 			return [
 				isImplicit ? PrintableTree("implicit") : nil,
 				PrintableTree("identifier: \(identifier)"),
-				PrintableTree("type: \(type)"), ]
+				PrintableTree("typeName: \(typeName)"), ]
 		case let .classDeclaration(className: className, inherits: inherits, members: members):
 			return  [
 				PrintableTree(className),
@@ -238,7 +240,7 @@ public indirect enum Statement: PrintableAsTree, Equatable {
 						[
 							parameter.apiLabel.map { PrintableTree("api label: \($0)") },
 							PrintableTree("label: \(parameter.label)"),
-							PrintableTree("type: \(parameter.type)"),
+							PrintableTree("type: \(parameter.typeName)"),
 							PrintableTree.initOrNil("value", [parameter.value]),
 						])
 			}
@@ -370,18 +372,18 @@ public indirect enum Expression: PrintableAsTree, Equatable {
 	case declarationReferenceExpression(
 		data: DeclarationReferenceData)
 	case typeExpression(
-		type: String)
+		typeName: String)
 	case subscriptExpression(
 		subscriptedExpression: Expression,
 		indexExpression: Expression,
-		type: String)
+		typeName: String)
 	case arrayExpression(
 		elements: ArrayClass<Expression>,
-		type: String)
+		typeName: String)
 	case dictionaryExpression(
 		keys: ArrayClass<Expression>,
 		values: ArrayClass<Expression>,
-		type: String)
+		typeName: String)
 	case returnExpression(
 		expression: Expression?)
 	case dotExpression(
@@ -391,15 +393,15 @@ public indirect enum Expression: PrintableAsTree, Equatable {
 		leftExpression: Expression,
 		rightExpression: Expression,
 		operatorSymbol: String,
-		type: String)
+		typeName: String)
 	case prefixUnaryExpression(
 		expression: Expression,
 		operatorSymbol: String,
-		type: String)
+		typeName: String)
 	case postfixUnaryExpression(
 		expression: Expression,
 		operatorSymbol: String,
-		type: String)
+		typeName: String)
 	case ifExpression(
 		condition: Expression,
 		trueExpression: Expression,
@@ -409,7 +411,7 @@ public indirect enum Expression: PrintableAsTree, Equatable {
 	case closureExpression(
 		parameters: ArrayClass<LabeledType>,
 		statements: ArrayClass<Statement>,
-		type: String)
+		typeName: String)
 	case literalIntExpression(
 		value: Int64)
 	case literalUIntExpression(
@@ -529,31 +531,31 @@ public indirect enum Expression: PrintableAsTree, Equatable {
 			return [expression]
 		case let .declarationReferenceExpression(data: expression):
 			return [
-				PrintableTree(expression.type),
+				PrintableTree(expression.typeName),
 				PrintableTree(expression.identifier),
 				expression.isStandardLibrary ? PrintableTree("isStandardLibrary") : nil,
 				expression.isImplicit ? PrintableTree("implicit") : nil, ]
-		case let .typeExpression(type: type):
-			return [PrintableTree(type)]
+		case let .typeExpression(typeName: typeName):
+			return [PrintableTree(typeName)]
 		case let .subscriptExpression(
 			subscriptedExpression: subscriptedExpression, indexExpression: indexExpression,
-			type: type):
+			typeName: typeName):
 
 			return [
-				PrintableTree("type \(type)"),
+				PrintableTree("type \(typeName)"),
 				PrintableTree.ofExpressions("subscriptedExpression", [subscriptedExpression]),
 				PrintableTree.ofExpressions("indexExpression", [indexExpression]), ]
-		case let .arrayExpression(elements: elements, type: type):
+		case let .arrayExpression(elements: elements, typeName: typeName):
 			return [
-				PrintableTree("type \(type)"),
+				PrintableTree("type \(typeName)"),
 				PrintableTree.ofExpressions("elements", elements), ]
-		case let .dictionaryExpression(keys: keys, values: values, type: type):
+		case let .dictionaryExpression(keys: keys, values: values, typeName: typeName):
 			let keyValueStrings = zipToClass(keys, values).map
 				{ (pair: (first: Expression, second: Expression)) -> String in
 					"\(pair.first): \(pair.second)"
 				}
 			return [
-				PrintableTree("type \(type)"),
+				PrintableTree("type \(typeName)"),
 				PrintableTree.ofStrings("key value pairs", keyValueStrings), ]
 		case let .returnExpression(expression: expression):
 			return [expression]
@@ -565,18 +567,18 @@ public indirect enum Expression: PrintableAsTree, Equatable {
 			leftExpression: leftExpression,
 			rightExpression: rightExpression,
 			operatorSymbol: operatorSymbol,
-			type: type):
+			typeName: typeName):
 
 			return [
-				PrintableTree("type \(type)"),
+				PrintableTree("type \(typeName)"),
 				PrintableTree.ofExpressions("left", [leftExpression]),
 				PrintableTree("operator \(operatorSymbol)"),
 				PrintableTree.ofExpressions("right", [rightExpression]), ]
 		case let .prefixUnaryExpression(
-			expression: expression, operatorSymbol: operatorSymbol, type: type):
+			expression: expression, operatorSymbol: operatorSymbol, typeName: typeName):
 
 			return [
-				PrintableTree("type \(type)"),
+				PrintableTree("type \(typeName)"),
 				PrintableTree("operator \(operatorSymbol)"),
 				PrintableTree.ofExpressions("expression", [expression]), ]
 		case let .ifExpression(
@@ -587,22 +589,24 @@ public indirect enum Expression: PrintableAsTree, Equatable {
 				PrintableTree.ofExpressions("trueExpression", [trueExpression]),
 				PrintableTree.ofExpressions("falseExpression", [falseExpression]), ]
 		case let .postfixUnaryExpression(
-			expression: expression, operatorSymbol: operatorSymbol, type: type):
+			expression: expression, operatorSymbol: operatorSymbol, typeName: typeName):
 
 			return [
-				PrintableTree("type \(type)"),
+				PrintableTree("type \(typeName)"),
 				PrintableTree("operator \(operatorSymbol)"),
 				PrintableTree.ofExpressions("expression", [expression]), ]
 		case let .callExpression(data: callExpression):
 			return [
-				PrintableTree("type \(callExpression.type)"),
+				PrintableTree("type \(callExpression.typeName)"),
 				PrintableTree.ofExpressions("function", [callExpression.function]),
 				PrintableTree.ofExpressions("parameters", [callExpression.parameters]), ]
-		case let .closureExpression(parameters: parameters, statements: statements, type: type):
+		case let .closureExpression(
+			parameters: parameters, statements: statements, typeName: typeName):
+
 			let parametersString =
 				"(" + parameters.map { $0.label + ":" }.joined(separator: ", ") + ")"
 			return [
-				PrintableTree(type),
+				PrintableTree(typeName),
 				PrintableTree(parametersString),
 				PrintableTree.ofStatements("statements", statements), ]
 		case let .tupleExpression(pairs: pairs):
@@ -638,69 +642,71 @@ public indirect enum Expression: PrintableAsTree, Equatable {
 			return []
 		}
 	}
-}
 
-extension Expression { // kotlin: ignore
-	public var type: String? {
+	public var swiftType: String? {
 		switch self {
 		case .templateExpression:
 			return nil
 		case .literalCodeExpression, .literalDeclarationExpression:
 			return nil
 		case let .parenthesesExpression(expression: expression):
-			return expression.type
+			return expression.swiftType
 		case let .forceValueExpression(expression: expression):
-			let subtype = expression.type
+			let subtype = expression.swiftType
 			if let subtype = subtype, subtype.hasSuffix("?") {
 				return String(subtype.dropLast())
 			}
 			else {
-				return expression.type
+				return expression.swiftType
 			}
 		case let .optionalExpression(expression: expression):
-			return expression.type
+			return expression.swiftType
 		case let .declarationReferenceExpression(data: declarationReferenceExpression):
-			return declarationReferenceExpression.type
-		case let .typeExpression(type: type):
-			return type
-		case let .subscriptExpression(subscriptedExpression: _, indexExpression: _, type: type):
-			return type
-		case let .arrayExpression(elements: _, type: type):
-			return type
-		case let .dictionaryExpression(keys: _, values: _, type: type):
-			return type
+			return declarationReferenceExpression.typeName
+		case let .typeExpression(typeName: typeName):
+			return typeName
+		case let .subscriptExpression(
+			subscriptedExpression: _, indexExpression: _, typeName: typeName):
+
+			return typeName
+		case let .arrayExpression(elements: _, typeName: typeName):
+			return typeName
+		case let .dictionaryExpression(keys: _, values: _, typeName: typeName):
+			return typeName
 		case let .returnExpression(expression: expression):
-			return expression?.type
+			return expression?.swiftType
 		case let .dotExpression(leftExpression: leftExpression, rightExpression: rightExpression):
 
 			// Enum references should be considered to have the left type, as the right expression's
 			// is a function type (something like `(MyEnum.Type) -> MyEnum` or
 			// `(A.MyEnum.Type) -> A.MyEnum`).
-			if case let .typeExpression(type: enumType) = leftExpression,
+			if case let .typeExpression(typeName: enumType) = leftExpression,
 				case let .declarationReferenceExpression(
-					data: declarationReferenceExpression) = rightExpression,
-				declarationReferenceExpression.type.hasPrefix("("),
-				declarationReferenceExpression.type.contains("\(enumType).Type) -> "),
-				declarationReferenceExpression.type.hasSuffix(enumType)
+					data: declarationReferenceExpression) = rightExpression
 			{
-				return enumType
+				if declarationReferenceExpression.typeName.hasPrefix("("),
+				declarationReferenceExpression.typeName.contains("\(enumType).Type) -> "),
+				declarationReferenceExpression.typeName.hasSuffix(enumType)
+				{
+					return enumType
+				}
 			}
 
-			return rightExpression.type
+			return rightExpression.swiftType
 		case let .binaryOperatorExpression(
-			leftExpression: _, rightExpression: _, operatorSymbol: _, type: type):
+			leftExpression: _, rightExpression: _, operatorSymbol: _, typeName: typeName):
 
-			return type
-		case let .prefixUnaryExpression(expression: _, operatorSymbol: _, type: type):
-			return type
-		case let .postfixUnaryExpression(expression: _, operatorSymbol: _, type: type):
-			return type
+			return typeName
+		case let .prefixUnaryExpression(expression: _, operatorSymbol: _, typeName: typeName):
+			return typeName
+		case let .postfixUnaryExpression(expression: _, operatorSymbol: _, typeName: typeName):
+			return typeName
 		case let .ifExpression(condition: _, trueExpression: trueExpression, falseExpression: _):
-			return trueExpression.type
+			return trueExpression.swiftType
 		case let .callExpression(data: callExpression):
-			return callExpression.type
-		case let .closureExpression(parameters: _, statements: _, type: type):
-			return type
+			return callExpression.typeName
+		case let .closureExpression(parameters: _, statements: _, typeName: typeName):
+			return typeName
 		case .literalIntExpression:
 			return "Int"
 		case .literalUIntExpression:
@@ -726,8 +732,13 @@ extension Expression { // kotlin: ignore
 		case .error:
 			return "<<Error>>"
 		}
+
+		// insert: return null
 	}
 
+}
+
+extension Expression { // kotlin: ignore
 	var range: SourceFileRange? {
 		switch self {
 		case let .declarationReferenceExpression(data: declarationReferenceExpression):
@@ -747,13 +758,13 @@ public struct LabeledExpression: Equatable {
 
 public struct LabeledType: Equatable {
 	let label: String
-	let type: String
+	let typeName: String
 }
 
 public struct FunctionParameter: Equatable {
 	let label: String
 	let apiLabel: String?
-	let type: String
+	let typeName: String
 	let value: Expression?
 }
 
@@ -813,20 +824,20 @@ public class VariableDeclarationData: Equatable {
 
 public class DeclarationReferenceData: Equatable {
 	var identifier: String
-	var type: String
+	var typeName: String
 	var isStandardLibrary: Bool
 	var isImplicit: Bool
 	var range: SourceFileRange?
 
 	init(
 		identifier: String,
-		type: String,
+		typeName: String,
 		isStandardLibrary: Bool,
 		isImplicit: Bool,
 		range: SourceFileRange?)
 	{
 		self.identifier = identifier
-		self.type = type
+		self.typeName = typeName
 		self.isStandardLibrary = isStandardLibrary
 		self.isImplicit = isImplicit
 		self.range = range
@@ -838,7 +849,7 @@ public class DeclarationReferenceData: Equatable {
 		-> Bool
 	{
 		return lhs.identifier == rhs.identifier &&
-			lhs.type == rhs.type &&
+			lhs.typeName == rhs.typeName &&
 			lhs.isStandardLibrary == rhs.isStandardLibrary &&
 			lhs.isImplicit == rhs.isImplicit &&
 			lhs.range == rhs.range
@@ -848,18 +859,18 @@ public class DeclarationReferenceData: Equatable {
 public class CallExpressionData: Equatable {
 	var function: Expression
 	var parameters: Expression
-	var type: String
+	var typeName: String
 	var range: SourceFileRange?
 
 	init(
 		function: Expression,
 		parameters: Expression,
-		type: String,
+		typeName: String,
 		range: SourceFileRange?)
 	{
 		self.function = function
 		self.parameters = parameters
-		self.type = type
+		self.typeName = typeName
 		self.range = range
 	}
 
@@ -870,7 +881,7 @@ public class CallExpressionData: Equatable {
 	{
 		return lhs.function == rhs.function &&
 			lhs.parameters == rhs.parameters &&
-			lhs.type == rhs.type &&
+			lhs.typeName == rhs.typeName &&
 			lhs.range == rhs.range
 	}
 }
@@ -1034,7 +1045,7 @@ public class EnumElement: PrintableAsTree, Equatable {
 
 	public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		let associatedValues = self.associatedValues
-			.map { "\($0.label): \($0.type)" }
+			.map { "\($0.label): \($0.typeName)" }
 			.joined(separator: ", ")
 		let associatedValuesString = (associatedValues.isEmpty) ?
 			nil :
