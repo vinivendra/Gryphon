@@ -17,4 +17,16 @@
 * limitations under the License.
 */
 
-print("Hello, Kotlin!")
+private func gryphonTemplates() {
+	let _string: String = ""
+	let _index = _string.startIndex
+
+	_ = _string.suffix(from: _index)
+	_ = "_string.suffix(startIndex = _index)"
+}
+
+// declaration: fun String.suffix(startIndex: Int): String {
+// declaration: 	return this.substring(startIndex, this.length)
+// declaration: }
+
+String("abc".suffix(from: "a".endIndex))

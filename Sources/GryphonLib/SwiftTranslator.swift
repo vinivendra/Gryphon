@@ -2546,26 +2546,6 @@ extension SwiftTranslator { // kotlin: ignore
 		return result
 	}
 
-	internal func cleanUpType(_ typeName: String) -> String {
-		if typeName.hasPrefix("@lvalue ") {
-			return String(typeName.suffix(from: "@lvalue ".endIndex))
-		}
-		else if typeName.hasPrefix("("),
-			typeName.hasSuffix(")"),
-			!typeName.contains("->"),
-			!typeName.contains(",")
-		{
-			return String(typeName.dropFirst().dropLast())
-		}
-		else {
-			return typeName
-		}
-	}
-
-	internal func ASTIsExpression(_ ast: SwiftAST) -> Bool {
-		return ast.name.hasSuffix("Expression") || ast.name == "Inject Into Optional"
-	}
-
 	// MARK: Error handling
 	func createUnexpectedASTStructureError(
 		file: String = #file, line: Int = #line, function: String = #function, _ message: String,
@@ -2607,6 +2587,28 @@ extension SwiftTranslator { // kotlin: ignore
 			translator: translator)
 		try Compiler.handleError(error)
 		return .error
+	}
+}
+
+extension SwiftTranslator {
+	internal func cleanUpType(_ typeName: String) -> String {
+		if typeName.hasPrefix("@lvalue ") {
+			return String(typeName.suffix(from: "@lvalue ".endIndex))
+		}
+		else if typeName.hasPrefix("("),
+			typeName.hasSuffix(")"),
+			!typeName.contains("->"),
+			!typeName.contains(",")
+		{
+			return String(typeName.dropFirst().dropLast())
+		}
+		else {
+			return typeName
+		}
+	}
+
+	internal func ASTIsExpression(_ ast: SwiftAST) -> Bool {
+		return ast.name.hasSuffix("Expression") || ast.name == "Inject Into Optional"
 	}
 }
 

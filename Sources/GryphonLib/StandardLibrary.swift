@@ -19,9 +19,14 @@
 private func gryphonTemplates() {
 	let _array1: ArrayClass<Any> = [1, 2, 3]
 	let _array2: ArrayClass<Any> = [1, 2, 3]
+	let _string: String = ""
+	let _index = _string.startIndex
 
 	_ = zipToClass(_array1, _array2)
 	_ = "_array1.zip(_array2)"
+
+	_ = _string.suffix(from: _index)
+	_ = "_string.suffix(startIndex = _index)"
 }
 
 /// According to http://swiftdoc.org/v4.2/type/Array/hierarchy/
@@ -355,4 +360,8 @@ extension DictionaryClass: Codable where Key: Codable, Value: Codable { // kotli
 
 // declaration: fun <T> MutableList<T>.copy(): MutableList<T> {
 // declaration: 	return this.toMutableList()
+// declaration: }
+
+// declaration: fun String.suffix(startIndex: Int): String {
+// declaration: 	return this.substring(startIndex, this.length)
 // declaration: }

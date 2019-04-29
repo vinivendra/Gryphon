@@ -15,3 +15,19 @@ class SwiftTranslator {
 	constructor() {
 	}
 }
+
+internal fun SwiftTranslator.cleanUpType(typeName: String): String {
+	if (typeName.startsWith("@lvalue ")) {
+		return typeName.suffix(startIndex = "@lvalue ".length)
+	}
+	else if (typeName.startsWith("(") && typeName.endsWith(")") && !typeName.contains("->") && !typeName.contains(",")) {
+		return typeName.drop(1).dropLast(1)
+	}
+	else {
+		return typeName
+	}
+}
+
+internal fun SwiftTranslator.ASTIsExpression(ast: SwiftAST): Boolean {
+	return ast.name.endsWith("Expression") || ast.name == "Inject Into Optional"
+}
