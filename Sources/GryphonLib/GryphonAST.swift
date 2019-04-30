@@ -662,8 +662,14 @@ public indirect enum Expression: PrintableAsTree, Equatable {
 			else {
 				return expression.swiftType
 			}
+
 		case let .optionalExpression(expression: expression):
-			return expression.swiftType
+			if let typeName = expression.swiftType {
+				return String(typeName.dropLast()) // Drop the "?"
+			}
+			else {
+				return nil
+			}
 		case let .declarationReferenceExpression(data: declarationReferenceExpression):
 			return declarationReferenceExpression.typeName
 		case let .typeExpression(typeName: typeName):

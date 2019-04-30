@@ -476,7 +476,13 @@ public sealed class Expression: PrintableAsTree {
 				}
 				is Expression.OptionalExpression -> {
 					val expression: Expression = this.expression
-					return expression.swiftType
+					val typeName: String? = expression.swiftType
+					if (typeName != null) {
+						return typeName.dropLast(1)
+					}
+					else {
+						return null
+					}
 				}
 				is Expression.DeclarationReferenceExpression -> {
 					val declarationReferenceExpression: DeclarationReferenceData = this.data

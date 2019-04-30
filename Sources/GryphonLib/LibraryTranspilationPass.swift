@@ -125,207 +125,211 @@ extension Expression {
 			matches[templateExpression.identifier] = self
 			return true
 		}
-		else {
-			switch (self, template) {
-			case let (
-				.literalCodeExpression(string: leftString),
-				.literalCodeExpression(string: rightString)):
 
-				return leftString == rightString
-			case let (
-				.parenthesesExpression(expression: leftExpression),
-				.parenthesesExpression(expression: rightExpression)):
+		switch (self, template) {
+		case let (
+			.literalCodeExpression(string: leftString),
+			.literalCodeExpression(string: rightString)):
 
-				return leftExpression.matches(rightExpression, &matches)
-			case let (
-				.forceValueExpression(expression: leftExpression),
-				.forceValueExpression(expression: rightExpression)):
+			return leftString == rightString
+		case let (
+			.parenthesesExpression(expression: leftExpression),
+			.parenthesesExpression(expression: rightExpression)):
 
-				return leftExpression.matches(rightExpression, &matches)
-			case let
-				(.declarationReferenceExpression(data: leftExpression),
-				 .declarationReferenceExpression(data: rightExpression)):
+			return leftExpression.matches(rightExpression, &matches)
+		case let (
+			.forceValueExpression(expression: leftExpression),
+			.forceValueExpression(expression: rightExpression)):
 
-				return leftExpression.identifier == rightExpression.identifier &&
-					leftExpression.typeName.isSubtype(of: rightExpression.typeName) &&
-					leftExpression.isImplicit == rightExpression.isImplicit
-			case let
-				(.typeExpression(typeName: leftType),
-				 .typeExpression(typeName: rightType)):
+			return leftExpression.matches(rightExpression, &matches)
+		case let
+			(.declarationReferenceExpression(data: leftExpression),
+			 .declarationReferenceExpression(data: rightExpression)):
 
-				return leftType.isSubtype(of: rightType)
-			case let
-				(.typeExpression(typeName: leftType),
-				 .declarationReferenceExpression(data: rightExpression)):
+			return leftExpression.identifier == rightExpression.identifier &&
+				leftExpression.typeName.isSubtype(of: rightExpression.typeName) &&
+				leftExpression.isImplicit == rightExpression.isImplicit
+		case let
+			(.optionalExpression(expression: leftExpression),
+			 .declarationReferenceExpression):
 
-				guard declarationExpressionMatchesImplicitTypeExpression(rightExpression) else {
-					return false
-				}
-				let expressionType = String(rightExpression.typeName.dropLast(".Type".count))
-				return leftType.isSubtype(of: expressionType)
-			case let
-				(.declarationReferenceExpression(data: leftExpression),
-				 .typeExpression(typeName: rightType)):
-				guard declarationExpressionMatchesImplicitTypeExpression(leftExpression) else {
-					return false
-				}
-				let expressionType = String(leftExpression.typeName.dropLast(".Type".count))
-				return expressionType.isSubtype(of: rightType)
-			case let
-				(.subscriptExpression(
-					subscriptedExpression: leftSubscriptedExpression,
-					indexExpression: leftIndexExpression, typeName: leftType),
-				 .subscriptExpression(
-					subscriptedExpression: rightSubscriptedExpression,
-					indexExpression: rightIndexExpression, typeName: rightType)):
+			return leftExpression.matches(template, &matches)
+		case let
+			(.typeExpression(typeName: leftType),
+			 .typeExpression(typeName: rightType)):
 
-					return leftSubscriptedExpression.matches(rightSubscriptedExpression, &matches)
-						&& leftIndexExpression.matches(rightIndexExpression, &matches)
-						&& leftType.isSubtype(of: rightType)
-			case let
-				(.arrayExpression(elements: leftElements, typeName: leftType),
-				 .arrayExpression(elements: rightElements, typeName: rightType)):
+			return leftType.isSubtype(of: rightType)
+		case let
+			(.typeExpression(typeName: leftType),
+			 .declarationReferenceExpression(data: rightExpression)):
 
-				var result = true
-				for (leftElement, rightElement) in zip(leftElements, rightElements) {
-					result = result && leftElement.matches(rightElement, &matches)
-				}
-				return result && (leftType.isSubtype(of: rightType))
-			case let
-				(.dotExpression(
-					leftExpression: leftLeftExpression, rightExpression: leftRightExpression),
-				 .dotExpression(
-					leftExpression: rightLeftExpression, rightExpression: rightRightExpression)):
-
-				return leftLeftExpression.matches(rightLeftExpression, &matches) &&
-					leftRightExpression.matches(rightRightExpression, &matches)
-			case let
-				(.binaryOperatorExpression(
-					leftExpression: leftLeftExpression, rightExpression: leftRightExpression,
-					operatorSymbol: leftOperatorSymbol, typeName: leftType),
-				 .binaryOperatorExpression(
-					leftExpression: rightLeftExpression, rightExpression: rightRightExpression,
-					operatorSymbol: rightOperatorSymbol, typeName: rightType)):
-
-				return leftLeftExpression.matches(rightLeftExpression, &matches) &&
-					leftRightExpression.matches(rightRightExpression, &matches) &&
-					(leftOperatorSymbol == rightOperatorSymbol) &&
-					(leftType.isSubtype(of: rightType))
-			case let
-				(.prefixUnaryExpression(
-					expression: leftExpression, operatorSymbol: leftOperatorSymbol,
-					typeName: leftType),
-				 .prefixUnaryExpression(
-					expression: rightExpression, operatorSymbol: rightOperatorSymbol,
-					typeName: rightType)):
-
-				return leftExpression.matches(rightExpression, &matches) &&
-					(leftOperatorSymbol == rightOperatorSymbol)
-					&& (leftType.isSubtype(of: rightType))
-			case let
-				(.postfixUnaryExpression(
-					expression: leftExpression, operatorSymbol: leftOperatorSymbol,
-					typeName: leftType),
-				 .postfixUnaryExpression(
-					expression: rightExpression, operatorSymbol: rightOperatorSymbol,
-					typeName: rightType)):
-
-				return leftExpression.matches(rightExpression, &matches) &&
-					(leftOperatorSymbol == rightOperatorSymbol)
-					&& (leftType.isSubtype(of: rightType))
-			case let
-				(.callExpression(data: leftCallExpression),
-				 .callExpression(data: rightCallExpression)):
-
-				return leftCallExpression.function.matches(
-						rightCallExpression.function, &matches) &&
-					leftCallExpression.parameters.matches(
-						rightCallExpression.parameters, &matches) &&
-					leftCallExpression.typeName.isSubtype(of: rightCallExpression.typeName)
-			case let
-				(.literalIntExpression(value: leftValue),
-				 .literalIntExpression(value: rightValue)):
-
-				return leftValue == rightValue
-			case let
-				(.literalDoubleExpression(value: leftValue),
-				 .literalDoubleExpression(value: rightValue)):
-
-				return leftValue == rightValue
-			case let
-				(.literalBoolExpression(value: leftValue),
-				 .literalBoolExpression(value: rightValue)):
-
-				return leftValue == rightValue
-			case let
-				(.literalStringExpression(value: leftValue),
-				 .literalStringExpression(value: rightValue)):
-
-				return leftValue == rightValue
-			case let
-				(.literalStringExpression(value: leftValue),
-				 .declarationReferenceExpression):
-
-				let characterExpression = Expression.literalCharacterExpression(value: leftValue)
-				return characterExpression.matches(template, &matches)
-			case (.nilLiteralExpression, .nilLiteralExpression):
-				return true
-			case let
-				(.interpolatedStringLiteralExpression(expressions: leftExpressions),
-				 .interpolatedStringLiteralExpression(expressions: rightExpressions)):
-
-				var result = true
-				for (leftExpression, rightExpression) in zip(leftExpressions, rightExpressions) {
-					result = result && leftExpression.matches(rightExpression, &matches)
-				}
-				return result
-			case let
-				(.tupleExpression(pairs: leftPairs),
-				 .tupleExpression(pairs: rightPairs)):
-
-				// Check manually for matches in trailing closures (that don't have labels in code
-				// but do in templates)
-				if leftPairs.count == 1,
-					let onlyLeftPair = leftPairs.first,
-					case let .parenthesesExpression(
-						expression: closureExpression) = onlyLeftPair.expression,
-					case .closureExpression = closureExpression,
-					rightPairs.count == 1,
-					let onlyRightPair = rightPairs.first
-				{
-					// Unwrap a redundand parentheses expression if needed
-					if case let .parenthesesExpression(
-						expression: templateExpression) = onlyRightPair.expression
-					{
-						return closureExpression.matches(templateExpression, &matches)
-					}
-					else {
-						return closureExpression.matches(onlyRightPair.expression, &matches)
-					}
-				}
-				else {
-					var result = true
-					for (leftPair, rightPair) in zip(leftPairs, rightPairs) {
-						result = result &&
-							leftPair.expression.matches(rightPair.expression, &matches) &&
-							leftPair.label == rightPair.label
-					}
-					return result
-				}
-			case let
-				(.tupleShuffleExpression(
-					labels: leftLabels, indices: leftIndices, expressions: leftExpressions),
-				 .tupleShuffleExpression(
-					labels: rightLabels, indices: rightIndices, expressions: rightExpressions)):
-
-				var result = (leftLabels == rightLabels) && (leftIndices == rightIndices)
-				for (leftExpression, rightExpression) in zip(leftExpressions, rightExpressions) {
-					result = result && leftExpression.matches(rightExpression, &matches)
-				}
-				return result
-			default:
+			guard declarationExpressionMatchesImplicitTypeExpression(rightExpression) else {
 				return false
 			}
+			let expressionType = String(rightExpression.typeName.dropLast(".Type".count))
+			return leftType.isSubtype(of: expressionType)
+		case let
+			(.declarationReferenceExpression(data: leftExpression),
+			 .typeExpression(typeName: rightType)):
+			guard declarationExpressionMatchesImplicitTypeExpression(leftExpression) else {
+				return false
+			}
+			let expressionType = String(leftExpression.typeName.dropLast(".Type".count))
+			return expressionType.isSubtype(of: rightType)
+		case let
+			(.subscriptExpression(
+				subscriptedExpression: leftSubscriptedExpression,
+				indexExpression: leftIndexExpression, typeName: leftType),
+			 .subscriptExpression(
+				subscriptedExpression: rightSubscriptedExpression,
+				indexExpression: rightIndexExpression, typeName: rightType)):
+
+				return leftSubscriptedExpression.matches(rightSubscriptedExpression, &matches)
+					&& leftIndexExpression.matches(rightIndexExpression, &matches)
+					&& leftType.isSubtype(of: rightType)
+		case let
+			(.arrayExpression(elements: leftElements, typeName: leftType),
+			 .arrayExpression(elements: rightElements, typeName: rightType)):
+
+			var result = true
+			for (leftElement, rightElement) in zip(leftElements, rightElements) {
+				result = result && leftElement.matches(rightElement, &matches)
+			}
+			return result && (leftType.isSubtype(of: rightType))
+		case let
+			(.dotExpression(
+				leftExpression: leftLeftExpression, rightExpression: leftRightExpression),
+			 .dotExpression(
+				leftExpression: rightLeftExpression, rightExpression: rightRightExpression)):
+
+			return leftLeftExpression.matches(rightLeftExpression, &matches) &&
+				leftRightExpression.matches(rightRightExpression, &matches)
+		case let
+			(.binaryOperatorExpression(
+				leftExpression: leftLeftExpression, rightExpression: leftRightExpression,
+				operatorSymbol: leftOperatorSymbol, typeName: leftType),
+			 .binaryOperatorExpression(
+				leftExpression: rightLeftExpression, rightExpression: rightRightExpression,
+				operatorSymbol: rightOperatorSymbol, typeName: rightType)):
+
+			return leftLeftExpression.matches(rightLeftExpression, &matches) &&
+				leftRightExpression.matches(rightRightExpression, &matches) &&
+				(leftOperatorSymbol == rightOperatorSymbol) &&
+				(leftType.isSubtype(of: rightType))
+		case let
+			(.prefixUnaryExpression(
+				expression: leftExpression, operatorSymbol: leftOperatorSymbol,
+				typeName: leftType),
+			 .prefixUnaryExpression(
+				expression: rightExpression, operatorSymbol: rightOperatorSymbol,
+				typeName: rightType)):
+
+			return leftExpression.matches(rightExpression, &matches) &&
+				(leftOperatorSymbol == rightOperatorSymbol)
+				&& (leftType.isSubtype(of: rightType))
+		case let
+			(.postfixUnaryExpression(
+				expression: leftExpression, operatorSymbol: leftOperatorSymbol,
+				typeName: leftType),
+			 .postfixUnaryExpression(
+				expression: rightExpression, operatorSymbol: rightOperatorSymbol,
+				typeName: rightType)):
+
+			return leftExpression.matches(rightExpression, &matches) &&
+				(leftOperatorSymbol == rightOperatorSymbol)
+				&& (leftType.isSubtype(of: rightType))
+		case let
+			(.callExpression(data: leftCallExpression),
+			 .callExpression(data: rightCallExpression)):
+
+			return leftCallExpression.function.matches(
+					rightCallExpression.function, &matches) &&
+				leftCallExpression.parameters.matches(
+					rightCallExpression.parameters, &matches) &&
+				leftCallExpression.typeName.isSubtype(of: rightCallExpression.typeName)
+		case let
+			(.literalIntExpression(value: leftValue),
+			 .literalIntExpression(value: rightValue)):
+
+			return leftValue == rightValue
+		case let
+			(.literalDoubleExpression(value: leftValue),
+			 .literalDoubleExpression(value: rightValue)):
+
+			return leftValue == rightValue
+		case let
+			(.literalBoolExpression(value: leftValue),
+			 .literalBoolExpression(value: rightValue)):
+
+			return leftValue == rightValue
+		case let
+			(.literalStringExpression(value: leftValue),
+			 .literalStringExpression(value: rightValue)):
+
+			return leftValue == rightValue
+		case let
+			(.literalStringExpression(value: leftValue),
+			 .declarationReferenceExpression):
+
+			let characterExpression = Expression.literalCharacterExpression(value: leftValue)
+			return characterExpression.matches(template, &matches)
+		case (.nilLiteralExpression, .nilLiteralExpression):
+			return true
+		case let
+			(.interpolatedStringLiteralExpression(expressions: leftExpressions),
+			 .interpolatedStringLiteralExpression(expressions: rightExpressions)):
+
+			var result = true
+			for (leftExpression, rightExpression) in zip(leftExpressions, rightExpressions) {
+				result = result && leftExpression.matches(rightExpression, &matches)
+			}
+			return result
+		case let
+			(.tupleExpression(pairs: leftPairs),
+			 .tupleExpression(pairs: rightPairs)):
+
+			// Check manually for matches in trailing closures (that don't have labels in code
+			// but do in templates)
+			if leftPairs.count == 1,
+				let onlyLeftPair = leftPairs.first,
+				case let .parenthesesExpression(
+					expression: closureExpression) = onlyLeftPair.expression,
+				case .closureExpression = closureExpression,
+				rightPairs.count == 1,
+				let onlyRightPair = rightPairs.first
+			{
+				// Unwrap a redundand parentheses expression if needed
+				if case let .parenthesesExpression(
+					expression: templateExpression) = onlyRightPair.expression
+				{
+					return closureExpression.matches(templateExpression, &matches)
+				}
+				else {
+					return closureExpression.matches(onlyRightPair.expression, &matches)
+				}
+			}
+			else {
+				var result = true
+				for (leftPair, rightPair) in zip(leftPairs, rightPairs) {
+					result = result &&
+						leftPair.expression.matches(rightPair.expression, &matches) &&
+						leftPair.label == rightPair.label
+				}
+				return result
+			}
+		case let
+			(.tupleShuffleExpression(
+				labels: leftLabels, indices: leftIndices, expressions: leftExpressions),
+			 .tupleShuffleExpression(
+				labels: rightLabels, indices: rightIndices, expressions: rightExpressions)):
+
+			var result = (leftLabels == rightLabels) && (leftIndices == rightIndices)
+			for (leftExpression, rightExpression) in zip(leftExpressions, rightExpressions) {
+				result = result && leftExpression.matches(rightExpression, &matches)
+			}
+			return result
+		default:
+			return false
 		}
 	}
 

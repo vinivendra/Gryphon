@@ -111,8 +111,14 @@ func gryphonTemplates() {
 	_ = _string.prefix(_int)
 	_ = "_string.substring(0, _int)"
 
+	_ = _string.prefix(upTo: _index)
+	_ = "_string.substring(0, _index)"
+
 	_ = _string[_index...]
 	_ = "_string.substring(_index)"
+
+	_ = _string[..._index]
+	_ = "_string.substring(0, _index)"
 
 	_ = _string[_index1..<_index2]
 	_ = "_string.substring(_index1, _index2)"
@@ -223,6 +229,9 @@ func gryphonTemplates() {
 
 	_ = _array.indices
 	_ = "_array.indices"
+
+	_ = _array.index(where: _closure3)
+	_ = "_array.indexOfFirst _closure3"
 
 	_ = _array.contains(where: _closure3)
 	_ = "(_array.find _closure3 != null)"

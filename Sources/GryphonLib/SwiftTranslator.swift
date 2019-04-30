@@ -2455,57 +2455,6 @@ extension SwiftTranslator { // kotlin: ignore
 		return (declaration: String(identifier), isStandardLibrary: isStandardLibrary)
 	}
 
-	/// Extracts the range numbers from a string in the form
-	/// `Path/to/file.swift:1:2 - line:3:4`, where the numbers 1, 2, 3 and 4 represent (in order)
-	/// the lineStart, columnStart, lineEnd and columndEnd.
-	internal func getRange(ofNode ast: SwiftAST) -> SourceFileRange? {
-		guard let rangeString = ast["range"],
-			let maybeSwiftIndex = rangeString.range(of: ".swift:")?.upperBound else
-		{
-			return nil
-		}
-
-		var currentSubstring: Substring
-
-		let lineStartIndex = maybeSwiftIndex
-		currentSubstring = rangeString[lineStartIndex...]
-		let lineStartString = currentSubstring.prefix(while: { $0.isNumber })
-		guard let lineStart = Int(lineStartString) else {
-			return nil
-		}
-
-		// skip the ":"
-		let columnStartIndex = rangeString.index(after: lineStartString.endIndex)
-		currentSubstring = rangeString[columnStartIndex...]
-		let columnStartString = currentSubstring.prefix(while: { $0.isNumber })
-		guard let columnStart = Int(columnStartString) else {
-			return nil
-		}
-
-		// skip the " - line:"
-		let lineEndIndex =
-			rangeString.index(columnStartString.endIndex, offsetBy: " - line:".count)
-		currentSubstring = rangeString[lineEndIndex...]
-		let lineEndString = currentSubstring.prefix(while: { $0.isNumber })
-		guard let lineEnd = Int(lineEndString) else {
-			return nil
-		}
-
-		// skip the ":"
-		let columnEndIndex = rangeString.index(after: lineEndString.endIndex)
-		currentSubstring = rangeString[columnEndIndex...]
-		let columnEndString = currentSubstring.prefix(while: { $0.isNumber })
-		guard let columnEnd = Int(columnEndString) else {
-			return nil
-		}
-
-		return SourceFileRange(
-			lineStart: lineStart,
-			lineEnd: lineEnd,
-			columnStart: columnStart,
-			columnEnd: columnEnd)
-	}
-
 	internal func getRangeRecursively(ofNode ast: SwiftAST) -> SourceFileRange? {
 		if let range = getRange(ofNode: ast) {
 			return range
@@ -2536,8 +2485,8 @@ extension SwiftTranslator { // kotlin: ignore
 		}
 	}
 
-	internal func insertedCode(inRange range: Range<Int>) -> [SourceFile.Comment] {
-		var result = [SourceFile.Comment]()
+	internal func insertedCode(inRange range: Range<Int>) -> ArrayClass<SourceFile.Comment> {
+		let result: ArrayClass<SourceFile.Comment> = []
 		for lineNumber in range {
 			if let insertComment = sourceFile?.getCommentFromLine(lineNumber) {
 				result.append(insertComment)
@@ -2591,6 +2540,86 @@ extension SwiftTranslator { // kotlin: ignore
 }
 
 extension SwiftTranslator {
+	// MARK: - Source file interactions
+
+	/// Extracts the range numbers from a string in the form
+	/// `Path/to/file.swift:1:2 - line:3:4`, where the numbers 1, 2, 3 and 4 represent (in order)
+	/// the lineStart, columnStart, lineEnd and columndEnd.
+	internal func getRange(ofNode ast: SwiftAST) -> SourceFileRange? {
+		guard let rangeString = ast["range"] else {
+			return nil
+		}
+
+		guard let firstSwiftExtensionEndIndex =
+			rangeString.occurrences(of: ".swift:").first?.upperBound else
+		{
+			return nil
+		}
+
+		// - Get the line start number
+		var numberStartIndex = firstSwiftExtensionEndIndex
+		// Find the end of the number
+		var numberEndIndex = numberStartIndex
+		while rangeString[numberEndIndex].isNumber {
+			numberEndIndex = rangeString.index(after: numberEndIndex)
+		}
+		// Turn the number string into an Int
+		let lineStartString = rangeString[numberStartIndex..<numberEndIndex]
+		guard let lineStart = Int(lineStartString) else {
+			return nil
+		}
+
+		// - Get the column start number
+		// Skip the ":"
+		numberStartIndex = rangeString.index(after: numberEndIndex)
+		// Find the end of the number
+		numberEndIndex = numberStartIndex
+		while rangeString[numberEndIndex].isNumber {
+			numberEndIndex = rangeString.index(after: numberEndIndex)
+		}
+		// Turn the number string into an Int
+		let columnStartString = rangeString[numberStartIndex..<numberEndIndex]
+		guard let columnStart = Int(columnStartString) else {
+			return nil
+		}
+
+		// - Get the line end number
+		// Skip the " - line:"
+		numberStartIndex = rangeString.index(numberEndIndex, offsetBy: " - line:".count)
+		// Find the end of the number
+		numberEndIndex = numberStartIndex
+		while rangeString[numberEndIndex].isNumber {
+			numberEndIndex = rangeString.index(after: numberEndIndex)
+		}
+		// Turn the number string into an Int
+		let lineEndString = rangeString[numberStartIndex..<numberEndIndex]
+		guard let lineEnd = Int(lineEndString) else {
+			return nil
+		}
+
+		// - Get the column end number
+		// Skip the ":"
+		numberStartIndex = rangeString.index(after: numberEndIndex)
+		// Find the end of the number
+		numberEndIndex = numberStartIndex
+		while numberEndIndex < rangeString.endIndex, rangeString[numberEndIndex].isNumber {
+			numberEndIndex = rangeString.index(after: numberEndIndex)
+		}
+		// Turn the number string into an Int
+		let columnEndString = rangeString[numberStartIndex..<numberEndIndex]
+		guard let columnEnd = Int(columnEndString) else {
+			return nil
+		}
+
+		return SourceFileRange(
+			lineStart: lineStart,
+			lineEnd: lineEnd,
+			columnStart: columnStart,
+			columnEnd: columnEnd)
+	}
+
+	// MARK: - Helper functions
+
 	internal func cleanUpType(_ typeName: String) -> String {
 		if typeName.hasPrefix("@lvalue ") {
 			return String(typeName.suffix(from: "@lvalue ".endIndex))
