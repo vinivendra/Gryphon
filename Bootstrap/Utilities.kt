@@ -330,6 +330,6 @@ internal fun Utilities.Companion.isInEnvelopingParentheses(typeName: String): Bo
 }
 
 internal fun Utilities.Companion.getTypeMapping(typeName: String): String? {
-	val typeMappings: MutableMap<String, String> = mutableMapOf("Bool" to "Boolean", "Error" to "Exception", "UInt8" to "UByte", "UInt16" to "UShort", "UInt32" to "UInt", "UInt64" to "ULong", "Int8" to "Byte", "Int16" to "Short", "Int32" to "Int", "Int64" to "Long", "Float32" to "Float", "Float64" to "Double", "Character" to "Char", "String.Index" to "Int", "Substring.Index" to "Int", "Substring" to "String", "String.SubSequence" to "String", "Substring.SubSequence" to "String", "Substring.Element" to "Char", "String.Element" to "Char", "Range<String.Index>" to "IntRange", "Array<Element>.Index" to "Int")
+	val typeMappings: MutableMap<String, String> = mutableMapOf("Bool" to "Boolean", "Error" to "Exception", "UInt8" to "UByte", "UInt16" to "UShort", "UInt32" to "UInt", "UInt64" to "ULong", "Int8" to "Byte", "Int16" to "Short", "Int32" to "Int", "Int64" to "Long", "Float32" to "Float", "Float64" to "Double", "Character" to "Char", "String.Index" to "Int", "Substring.Index" to "Int", "Substring" to "String", "String.SubSequence" to "String", "Substring.SubSequence" to "String", "Substring.Element" to "Char", "String.Element" to "Char", "Range<String.Index>" to "IntRange", "Range<Int>" to "IntRange", "Array<Element>.Index" to "Int")
 	return typeMappings[typeName]
 }

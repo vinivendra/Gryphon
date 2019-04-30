@@ -640,6 +640,7 @@ extension Utilities {
 			"Substring.Element": "Char",
 			"String.Element": "Char",
 			"Range<String.Index>": "IntRange",
+			"Range<Int>": "IntRange",
 			"Array<Element>.Index": "Int",
 		]
 

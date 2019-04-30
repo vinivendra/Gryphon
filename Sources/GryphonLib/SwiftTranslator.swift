@@ -23,6 +23,11 @@ public class SwiftTranslator {
 		let expression: Expression?
 	}
 
+	struct DeclarationInformation {
+		let identifier: String
+		let isStandardLibrary: Bool
+	}
+
 	// MARK: - Properties
 	var danglingPatternBindings: ArrayClass<PatternBindingDeclaration?> = []
 	let errorDanglingPatternDeclaration = PatternBindingDeclaration(
@@ -695,14 +700,14 @@ extension SwiftTranslator { // kotlin: ignore
 		{
 			let typeName = cleanUpType(rawType)
 			let leftHand = try translate(expression: memberOwner)
-			let (member, isStandardLibrary) = getIdentifierFromDeclaration(declaration)
+			let declarationInformation = getInformationFromDeclaration(declaration)
 			let isImplicit = memberReferenceExpression.standaloneAttributes.contains("implicit")
 			let range = getRangeRecursively(ofNode: memberReferenceExpression)
 			let rightHand = Expression.declarationReferenceExpression(data:
 				DeclarationReferenceData(
-					identifier: member,
+					identifier: declarationInformation.identifier,
 					typeName: typeName,
-					isStandardLibrary: isStandardLibrary,
+					isStandardLibrary: declarationInformation.isStandardLibrary,
 					isImplicit: isImplicit,
 					range: range))
 			return .dotExpression(leftExpression: leftHand,
@@ -771,11 +776,11 @@ extension SwiftTranslator { // kotlin: ignore
 		{
 			let typeName = cleanUpType(rawType)
 			let expressionTranslation = try translate(expression: expression)
-			let (operatorIdentifier, _) = getIdentifierFromDeclaration(declaration)
+			let operatorInformation = getInformationFromDeclaration(declaration)
 
 			return .prefixUnaryExpression(
 				expression: expressionTranslation,
-				operatorSymbol: operatorIdentifier,
+				operatorSymbol: operatorInformation.identifier,
 				typeName: typeName)
 		}
 		else {
@@ -802,11 +807,11 @@ extension SwiftTranslator { // kotlin: ignore
 		{
 			let typeName = cleanUpType(rawType)
 			let expressionTranslation = try translate(expression: expression)
-			let (operatorIdentifier, _) = getIdentifierFromDeclaration(declaration)
+			let operatorInformation = getInformationFromDeclaration(declaration)
 
 			return .postfixUnaryExpression(
 				expression: expressionTranslation,
-				operatorSymbol: operatorIdentifier,
+				operatorSymbol: operatorInformation.identifier,
 				typeName: typeName)
 		}
 		else {
@@ -825,8 +830,6 @@ extension SwiftTranslator { // kotlin: ignore
 				AST: binaryExpression, translator: self)
 		}
 
-		let operatorIdentifier: String
-
 		if let rawType = binaryExpression["type"],
 			let declaration = binaryExpression
 				.subtree(named: "Dot Syntax Call Expression")?
@@ -837,14 +840,14 @@ extension SwiftTranslator { // kotlin: ignore
 			let rightHandExpression = tupleExpression.subtree(at: 1)
 		{
 			let typeName = cleanUpType(rawType)
-			(operatorIdentifier, _) = getIdentifierFromDeclaration(declaration)
+			let operatorInformation = getInformationFromDeclaration(declaration)
 			let leftHandTranslation = try translate(expression: leftHandExpression)
 			let rightHandTranslation = try translate(expression: rightHandExpression)
 
 			return .binaryOperatorExpression(
 				leftExpression: leftHandTranslation,
 				rightExpression: rightHandTranslation,
-				operatorSymbol: operatorIdentifier,
+				operatorSymbol: operatorInformation.identifier,
 				typeName: typeName)
 		}
 		else {
@@ -2207,31 +2210,32 @@ extension SwiftTranslator { // kotlin: ignore
 		let range = getRange(ofNode: declarationReferenceExpression)
 
 		if let discriminator = declarationReferenceExpression["discriminator"] {
-			let (identifier, isStandardLibrary) = getIdentifierFromDeclaration(discriminator)
+			let declarationInformation = getInformationFromDeclaration(discriminator)
+
 			return .declarationReferenceExpression(data: DeclarationReferenceData(
-					identifier: identifier,
+					identifier: declarationInformation.identifier,
 					typeName: typeName,
-					isStandardLibrary: isStandardLibrary,
+					isStandardLibrary: declarationInformation.isStandardLibrary,
 					isImplicit: isImplicit,
 					range: range))
 		}
 		else if let codeDeclaration = declarationReferenceExpression.standaloneAttributes.first,
 			codeDeclaration.hasPrefix("code.")
 		{
-			let (identifier, isStandardLibrary) = getIdentifierFromDeclaration(codeDeclaration)
+			let declarationInformation = getInformationFromDeclaration(codeDeclaration)
 			return .declarationReferenceExpression(data: DeclarationReferenceData(
-				identifier: identifier,
+				identifier: declarationInformation.identifier,
 				typeName: typeName,
-				isStandardLibrary: isStandardLibrary,
+				isStandardLibrary: declarationInformation.isStandardLibrary,
 				isImplicit: isImplicit,
 				range: range))
 		}
 		else if let declaration = declarationReferenceExpression["decl"] {
-			let (identifier, isStandardLibrary) = getIdentifierFromDeclaration(declaration)
+			let declarationInformation = getInformationFromDeclaration(declaration)
 			return .declarationReferenceExpression(data: DeclarationReferenceData(
-				identifier: identifier,
+				identifier: declarationInformation.identifier,
 				typeName: typeName,
-				isStandardLibrary: isStandardLibrary,
+				isStandardLibrary: declarationInformation.isStandardLibrary,
 				isImplicit: isImplicit,
 				range: range))
 		}
@@ -2421,81 +2425,7 @@ extension SwiftTranslator { // kotlin: ignore
 		danglingPatternBindings = result
 	}
 
-	internal func getIdentifierFromDeclaration(_ declaration: String)
-		-> (declaration: String, isStandardLibrary: Bool)
-	{
-		let isStandardLibrary = declaration.hasPrefix("Swift")
-
-		var index = declaration.startIndex
-		var lastPeriodIndex = declaration.startIndex
-		while index != declaration.endIndex {
-			let character = declaration[index]
-
-			if character == "." {
-				lastPeriodIndex = index
-			}
-			if character == "@" {
-				break
-			}
-
-			index = declaration.index(after: index)
-		}
-
-		// If it's an identifier that contains periods, like the range operators `..<` etc
-		var beforeLastPeriodIndex = declaration.index(before: lastPeriodIndex)
-		while declaration[beforeLastPeriodIndex] == "." {
-			lastPeriodIndex = beforeLastPeriodIndex
-			beforeLastPeriodIndex = declaration.index(before: lastPeriodIndex)
-		}
-
-		let identifierStartIndex = declaration.index(after: lastPeriodIndex)
-
-		let identifier = declaration[identifierStartIndex..<index]
-
-		return (declaration: String(identifier), isStandardLibrary: isStandardLibrary)
-	}
-
-	internal func getRangeRecursively(ofNode ast: SwiftAST) -> SourceFileRange? {
-		if let range = getRange(ofNode: ast) {
-			return range
-		}
-
-		for subtree in ast.subtrees {
-			if let range = getRange(ofNode: subtree) {
-				return range
-			}
-		}
-
-		return nil
-	}
-
-	internal func getComment(forNode ast: SwiftAST, key: String) -> String? {
-		if let comment = getComment(forNode: ast), comment.key == key {
-			return comment.value
-		}
-		return nil
-	}
-
-	internal func getComment(forNode ast: SwiftAST) -> SourceFile.Comment? {
-		if let lineNumber = getRange(ofNode: ast)?.lineStart {
-			return sourceFile?.getCommentFromLine(lineNumber)
-		}
-		else {
-			return nil
-		}
-	}
-
-	internal func insertedCode(inRange range: Range<Int>) -> ArrayClass<SourceFile.Comment> {
-		let result: ArrayClass<SourceFile.Comment> = []
-		for lineNumber in range {
-			if let insertComment = sourceFile?.getCommentFromLine(lineNumber) {
-				result.append(insertComment)
-			}
-		}
-		return result
-	}
-
-	// MARK: Error handling
+	// MARK: - Error handling
 	func createUnexpectedASTStructureError(
 		file: String = #file, line: Int = #line, function: String = #function, _ message: String,
 		AST ast: SwiftAST, translator: SwiftTranslator) -> SwiftTranslatorError
@@ -2541,6 +2471,46 @@ extension SwiftTranslator { // kotlin: ignore
 
 extension SwiftTranslator {
 	// MARK: - Source file interactions
+
+	internal func insertedCode(inRange range: Range<Int>) -> ArrayClass<SourceFile.Comment> {
+		let result: ArrayClass<SourceFile.Comment> = []
+		for lineNumber in range {
+			if let insertComment = sourceFile?.getCommentFromLine(lineNumber) {
+				result.append(insertComment)
+			}
+		}
+		return result
+	}
+
+	internal func getRangeRecursively(ofNode ast: SwiftAST) -> SourceFileRange? {
+		if let range = getRange(ofNode: ast) {
+			return range
+		}
+
+		for subtree in ast.subtrees {
+			if let range = getRange(ofNode: subtree) {
+				return range
+			}
+		}
+
+		return nil
+	}
+
+	internal func getComment(forNode ast: SwiftAST, key: String) -> String? {
+		if let comment = getComment(forNode: ast), comment.key == key {
+			return comment.value
+		}
+		return nil
+	}
+
+	internal func getComment(forNode ast: SwiftAST) -> SourceFile.Comment? {
+		if let lineNumber = getRange(ofNode: ast)?.lineStart {
+			return sourceFile?.getCommentFromLine(lineNumber)
+		}
+		else {
+			return nil
+		}
+	}
 
 	/// Extracts the range numbers from a string in the form
 	/// `Path/to/file.swift:1:2 - line:3:4`, where the numbers 1, 2, 3 and 4 represent (in order)
@@ -2619,6 +2589,42 @@ extension SwiftTranslator {
 	}
 
 	// MARK: - Helper functions
+
+	internal func getInformationFromDeclaration(_ declaration: String)
+		-> SwiftTranslator.DeclarationInformation
+	{
+		let isStandardLibrary = declaration.hasPrefix("Swift")
+
+		var index = declaration.startIndex
+		var lastPeriodIndex = declaration.startIndex
+		while index != declaration.endIndex {
+			let character = declaration[index]
+
+			if character == "." {
+				lastPeriodIndex = index
+			}
+			if character == "@" {
+				break
+			}
+
+			index = declaration.index(after: index)
+		}
+
+		// If it's an identifier that contains periods, like the range operators `..<` etc
+		var beforeLastPeriodIndex = declaration.index(before: lastPeriodIndex)
+		while declaration[beforeLastPeriodIndex] == "." {
+			lastPeriodIndex = beforeLastPeriodIndex
+			beforeLastPeriodIndex = declaration.index(before: lastPeriodIndex)
+		}
+
+		let identifierStartIndex = declaration.index(after: lastPeriodIndex)
+
+		let identifier = declaration[identifierStartIndex..<index]
+
+		return SwiftTranslator.DeclarationInformation(
+			identifier: String(identifier),
+			isStandardLibrary: isStandardLibrary)
+	}
 
 	internal func cleanUpType(_ typeName: String) -> String {
 		if typeName.hasPrefix("@lvalue ") {
