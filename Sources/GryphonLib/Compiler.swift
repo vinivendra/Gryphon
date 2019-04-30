@@ -185,9 +185,6 @@ extension Compiler { // kotlin: ignore
 
 	//
 	internal static func handleWarning(
-		file: String = #file,
-		line: Int = #line,
-		function: String = #function,
 		message: String,
 		details: String = "",
 		sourceFile: SourceFile?,
@@ -195,9 +192,6 @@ extension Compiler { // kotlin: ignore
 	{
 		Compiler.warnings.append(
 			Compiler.createErrorOrWarningMessage(
-				file: file,
-				line: line,
-				function: function,
 				message: message,
 				details: details,
 				sourceFile: sourceFile,
@@ -236,7 +230,7 @@ extension Compiler { // kotlin: ignore
 		if !swiftASTDumpErrors.isEmpty {
 			print("Swift AST translator failed to translate:")
 
-			let swiftASTDumpHistogram = swiftASTDumpErrors.group { $0.astName }
+			let swiftASTDumpHistogram = swiftASTDumpErrors.group { $0.ast.name }
 			for (astName, errorArray) in
 				swiftASTDumpHistogram.sorted(by: { $0.value.count > $1.value.count })
 			{
@@ -256,25 +250,22 @@ extension Compiler { // kotlin: ignore
 			}
 		}
 	}
+}
 
+extension Compiler {
 	static func createErrorOrWarningMessage(
-		file: String = #file,
-		line: Int = #line,
-		function: String = #function,
 		message: String,
 		details: String,
 		sourceFile: SourceFile?,
 		sourceFileRange: SourceFileRange?,
 		isError: Bool = true) -> String
 	{
-		let throwingFileName = file.split(separator: "/").last!.split(separator: ".").first!
-
 		let errorOrWarning = isError ? "error" : "warning"
 
 		if let sourceFile = sourceFile {
 			let sourceFilePath = sourceFile.path
-			let sourceFileURL = URL(fileURLWithPath: sourceFilePath)
-			let relativePath = sourceFileURL.relativePath
+			let relativePath = URL( // value: sourceFilePath
+				fileURLWithPath: sourceFilePath).relativePath
 
 			if let sourceFileRange = sourceFileRange {
 				let sourceFileString = sourceFile.getLine(sourceFileRange.lineStart) ??
@@ -304,18 +295,15 @@ extension Compiler { // kotlin: ignore
 					"\(sourceFileRange.columnStart): \(errorOrWarning): \(message)\n" +
 					"\(sourceFileString)\n" +
 					"\(underlineString)\n" +
-					"Thrown by \(throwingFileName):\(line) - \(function)\n" +
 					details
 			}
 			else {
 				return "\(relativePath): \(errorOrWarning): \(message)\n" +
-					"Thrown by \(throwingFileName):\(line) - \(function)\n" +
 					details
 			}
 		}
 		else {
 			return "\(errorOrWarning): \(message)\n" +
-				"Thrown by \(throwingFileName):\(line) - \(function)\n" +
 				details
 		}
 	}

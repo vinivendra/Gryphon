@@ -988,6 +988,19 @@ extension SwiftTranslator { // kotlin: ignore
 			variable = .tupleExpression(pairs: variables)
 			collectionExpression = maybeCollectionExpression
 		}
+		else if let variableSubtree = forEachStatement.subtree(named: "Pattern Any"),
+			let rawType = variableSubtree["type"],
+			let maybeCollectionExpression = forEachStatement.subtree(at: 2)
+		{
+			let typeName = cleanUpType(rawType)
+			variable = .declarationReferenceExpression(data: DeclarationReferenceData(
+				identifier: "_0",
+				typeName: typeName,
+				isStandardLibrary: false,
+				isImplicit: false,
+				range: variableRange))
+			collectionExpression = maybeCollectionExpression
+		}
 		else {
 			return try unexpectedASTStructureError(
 				"Unable to detect variable or collection",
@@ -2427,15 +2440,14 @@ extension SwiftTranslator { // kotlin: ignore
 
 	// MARK: - Error handling
 	func createUnexpectedASTStructureError(
-		file: String = #file, line: Int = #line, function: String = #function, _ message: String,
-		AST ast: SwiftAST, translator: SwiftTranslator) -> SwiftTranslatorError
+		_ errorMessage: String,
+		AST ast: SwiftAST,
+		translator: SwiftTranslator)
+		-> SwiftTranslatorError
 	{
-		return SwiftTranslatorError.unexpectedASTStructure(
-			file: file,
-			line: line,
-			function: function,
-			errorMessage: message,
-			AST: ast,
+		return SwiftTranslatorError(
+			errorMessage: errorMessage,
+			ast: ast,
 			translator: translator)
 	}
 
@@ -2445,24 +2457,27 @@ extension SwiftTranslator { // kotlin: ignore
 	}
 
 	func unexpectedASTStructureError(
-		file: String = #file, line: Int = #line, function: String = #function, _ message: String,
-		AST ast: SwiftAST, translator: SwiftTranslator) throws -> Statement
+		_ errorMessage: String,
+		AST ast: SwiftAST,
+		translator: SwiftTranslator)
+		throws -> Statement
 	{
 		let error = createUnexpectedASTStructureError(
-			file: file, line: line, function: function, message, AST: ast, translator: translator)
+			errorMessage,
+			AST: ast,
+			translator: translator)
 		return try handleUnexpectedASTStructureError(error)
 	}
 
 	func unexpectedExpressionStructureError(
-		file: String = #file, line: Int = #line, function: String = #function, _ message: String,
-		AST ast: SwiftAST, translator: SwiftTranslator) throws -> Expression
+		_ errorMessage: String,
+		AST ast: SwiftAST,
+		translator: SwiftTranslator)
+		throws -> Expression
 	{
-		let error = SwiftTranslatorError.unexpectedASTStructure(
-			file: file,
-			line: line,
-			function: function,
-			errorMessage: message,
-			AST: ast,
+		let error = SwiftTranslatorError(
+			errorMessage: errorMessage,
+			ast: ast,
 			translator: translator)
 		try Compiler.handleError(error)
 		return .error
@@ -2647,49 +2662,23 @@ extension SwiftTranslator {
 	}
 }
 
-enum SwiftTranslatorError: Error, CustomStringConvertible { // kotlin: ignore
-	case unexpectedASTStructure(
-		file: String,
-		line: Int,
-		function: String,
-		errorMessage: String,
-		AST: SwiftAST,
-		translator: SwiftTranslator)
+struct SwiftTranslatorError: Error, CustomStringConvertible { // kotlin: ignore
+	let errorMessage: String
+	let ast: SwiftAST
+	let translator: SwiftTranslator
 
 	// TODO: descriptions' override annotations should be automatic
 	var description: String { // annotation: override
-		switch self {
-		case let .unexpectedASTStructure(
-			file: file,
-			line: line,
-			function: function,
-			errorMessage: errorMessage,
-			AST: ast,
-			translator: translator):
-
-			var nodeDescription = ""
-			ast.prettyPrint {
-				nodeDescription += $0
-			}
-			let details = "When translating the following AST node:\n\(nodeDescription)"
-
-			return Compiler.createErrorOrWarningMessage(
-				file: file,
-				line: line,
-				function: function,
-				message: errorMessage,
-				details: details,
-				sourceFile: translator.sourceFile,
-				sourceFileRange: translator.getRangeRecursively(ofNode: ast))
+		var nodeDescription = ""
+		ast.prettyPrint {
+			nodeDescription += $0
 		}
-	}
+		let details = "When translating the following AST node:\n\(nodeDescription)"
 
-	var astName: String {
-		switch self {
-		case let .unexpectedASTStructure(
-			file: _, line: _, function: _, errorMessage: _, AST: ast, translator: _):
-
-			return ast.name
-		}
+		return Compiler.createErrorOrWarningMessage(
+			message: errorMessage,
+			details: details,
+			sourceFile: translator.sourceFile,
+			sourceFileRange: translator.getRangeRecursively(ofNode: ast))
 	}
 }
