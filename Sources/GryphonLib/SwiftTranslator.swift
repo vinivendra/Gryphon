@@ -1793,7 +1793,7 @@ extension SwiftTranslator { // kotlin: ignore
 			if argumentLabels == "_builtinIntegerLiteral:" ||
 				argumentLabels == "_builtinFloatLiteral:"
 			{
-				return try translate(asNumericLiteral: callExpression)
+				return try translateAsNumericLiteral(callExpression)
 			}
 			else if argumentLabels == "_builtinBooleanLiteral:" {
 				return try translateAsBooleanLiteral(callExpression)
@@ -2042,74 +2042,6 @@ extension SwiftTranslator { // kotlin: ignore
 		return .tupleExpression(pairs: tuplePairs)
 	}
 
-	internal func translate(asNumericLiteral callExpression: SwiftAST) throws -> Expression {
-		guard callExpression.name == "Call Expression" else {
-			return try unexpectedExpressionStructureError(
-				"Trying to translate \(callExpression.name) as 'Call Expression'",
-				ast: callExpression, translator: self)
-		}
-
-		// FIXME: Negative float literals are translated as positive becuase the AST dump doesn't
-		// seemd to include any info showing they're negative.
-		// Bug filed at https://bugs.swift.org/browse/SR-10131
-		if let tupleExpression = callExpression.subtree(named: "Tuple Expression"),
-			let literalExpression = tupleExpression.subtree(named: "Integer Literal Expression") ??
-				tupleExpression.subtree(named: "Float Literal Expression"),
-			let value = literalExpression["value"],
-
-			let constructorReferenceCallExpression = callExpression
-				.subtree(named: "Constructor Reference Call Expression"),
-			let typeExpression = constructorReferenceCallExpression
-				.subtree(named: "Type Expression"),
-			let rawType = typeExpression["typerepr"]
-		{
-			if value.hasPrefix("0b") || value.hasPrefix("0o") || value.hasPrefix("0x") {
-				// Fixable
-				return try unexpectedExpressionStructureError(
-					"No support yet for alternative integer formats",
-					ast: callExpression,
-					translator: self)
-			}
-
-			let signedValue: String
-			if literalExpression.standaloneAttributes.contains("negative") {
-				signedValue = "-" + value
-			}
-			else {
-				signedValue = value
-			}
-
-			let typeName = cleanUpType(rawType)
-			if typeName == "Double" || typeName == "Float64" {
-				return .literalDoubleExpression(value: Double(signedValue)!)
-			}
-			else if typeName == "Float" || typeName == "Float32" {
-				return .literalFloatExpression(value: Float(signedValue)!)
-			}
-			else if typeName == "Float80" {
-				return try unexpectedExpressionStructureError(
-					"No support for 80-bit Floats", ast: callExpression, translator: self)
-			}
-			else if typeName.hasPrefix("U") {
-				return .literalUIntExpression(value: UInt64(signedValue)!)
-			}
-			else {
-				if signedValue == "-9223372036854775808" {
-					return try unexpectedExpressionStructureError(
-						"Kotlin's Long (equivalent to Int64) only goes down to " +
-							"-9223372036854775807", ast: callExpression, translator: self)
-				}
-				else {
-					return .literalIntExpression(value: Int64(signedValue)!)
-				}
-			}
-		}
-		else {
-			return try unexpectedExpressionStructureError(
-				"Unrecognized structure for numeric literal", ast: callExpression, translator: self)
-		}
-	}
-
 	internal func translate(interpolatedStringLiteralExpression: SwiftAST) throws
 		-> Expression
 	{
@@ -2294,6 +2226,74 @@ extension SwiftTranslator { // kotlin: ignore
 
 extension SwiftTranslator {
 	// MARK: - Expression translations
+
+	internal func translateAsNumericLiteral(_ callExpression: SwiftAST) throws -> Expression {
+		guard callExpression.name == "Call Expression" else {
+			return try unexpectedExpressionStructureError(
+				"Trying to translate \(callExpression.name) as 'Call Expression'",
+				ast: callExpression, translator: self)
+		}
+
+		// FIXME: Negative float literals are translated as positive becuase the AST dump doesn't
+		// seemd to include any info showing they're negative.
+		// Bug filed at https://bugs.swift.org/browse/SR-10131
+		let tupleExpression = callExpression.subtree(named: "Tuple Expression")
+		let literalExpression = tupleExpression?.subtree(named: "Integer Literal Expression") ??
+			tupleExpression?.subtree(named: "Float Literal Expression")
+		let value = literalExpression?["value"]
+
+		let constructorReferenceCallExpression = callExpression
+			.subtree(named: "Constructor Reference Call Expression")
+		let typeExpression = constructorReferenceCallExpression?.subtree(named: "Type Expression")
+		let rawType = typeExpression?["typerepr"]
+
+		if let value = value, let literalExpression = literalExpression, let rawType = rawType {
+			if value.hasPrefix("0b") || value.hasPrefix("0o") || value.hasPrefix("0x") {
+				// Fixable
+				return try unexpectedExpressionStructureError(
+					"No support yet for alternative integer formats",
+					ast: callExpression,
+					translator: self)
+			}
+
+			let signedValue: String
+			if literalExpression.standaloneAttributes.contains("negative") {
+				signedValue = "-" + value
+			}
+			else {
+				signedValue = value
+			}
+
+			let typeName = cleanUpType(rawType)
+			if typeName == "Double" || typeName == "Float64" {
+				return .literalDoubleExpression(value: Double(signedValue)!)
+			}
+			else if typeName == "Float" || typeName == "Float32" {
+				return .literalFloatExpression(value: Float(signedValue)!)
+			}
+			else if typeName == "Float80" {
+				return try unexpectedExpressionStructureError(
+					"No support for 80-bit Floats", ast: callExpression, translator: self)
+			}
+			else if typeName.hasPrefix("U") {
+				return .literalUIntExpression(value: UInt64(signedValue)!)
+			}
+			else {
+				if signedValue == "-9223372036854775808" {
+					return try unexpectedExpressionStructureError(
+						"Kotlin's Long (equivalent to Int64) only goes down to " +
+						"-9223372036854775807", ast: callExpression, translator: self)
+				}
+				else {
+					return .literalIntExpression(value: Int64(signedValue)!)
+				}
+			}
+		}
+		else {
+			return try unexpectedExpressionStructureError(
+				"Unrecognized structure for numeric literal", ast: callExpression, translator: self)
+		}
+	}
 
 	internal func translateAsBooleanLiteral(_ callExpression: SwiftAST) throws
 		-> Expression

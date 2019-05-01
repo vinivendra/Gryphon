@@ -93,6 +93,15 @@ func gryphonTemplates() {
 	_ = Double(_string)
 	_ = "_string.toDouble()"
 
+	_ = Float(_string)
+	_ = "_string.toFloat()"
+
+	_ = UInt64(_string)
+	_ = "_string.toULong()"
+
+	_ = Int64(_string)
+	_ = "_string.toLong()"
+
 	_ = Int(_string)
 	_ = "_string.toIntOrNull()"
 

@@ -21,6 +21,75 @@ class SwiftTranslator {
 	}
 }
 
+internal fun SwiftTranslator.translateAsNumericLiteral(callExpression: SwiftAST): Expression {
+	if (callExpression.name != "Call Expression") {
+		return unexpectedExpressionStructureError(
+			"Trying to translate ${callExpression.name} as 'Call Expression'",
+			ast = callExpression,
+			translator = this)
+	}
+
+	val tupleExpression: SwiftAST? = callExpression.subtree(name = "Tuple Expression")
+	val literalExpression: SwiftAST? = tupleExpression?.subtree(name = "Integer Literal Expression") ?: tupleExpression?.subtree(name = "Float Literal Expression")
+	val value: String? = literalExpression?.get("value")
+	val constructorReferenceCallExpression: SwiftAST? = callExpression.subtree(name = "Constructor Reference Call Expression")
+	val typeExpression: SwiftAST? = constructorReferenceCallExpression?.subtree(name = "Type Expression")
+	val rawType: String? = typeExpression?.get("typerepr")
+
+	if (value != null && literalExpression != null && rawType != null) {
+		if (value.startsWith("0b") || value.startsWith("0o") || value.startsWith("0x")) {
+			return unexpectedExpressionStructureError(
+				"No support yet for alternative integer formats",
+				ast = callExpression,
+				translator = this)
+		}
+
+		val signedValue: String
+
+		if (literalExpression.standaloneAttributes.contains("negative")) {
+			signedValue = "-" + value
+		}
+		else {
+			signedValue = value
+		}
+
+		val typeName: String = cleanUpType(rawType)
+
+		if (typeName == "Double" || typeName == "Float64") {
+			return Expression.LiteralDoubleExpression(value = signedValue.toDouble()!!)
+		}
+		else if (typeName == "Float" || typeName == "Float32") {
+			return Expression.LiteralFloatExpression(value = signedValue.toFloat()!!)
+		}
+		else if (typeName == "Float80") {
+			return unexpectedExpressionStructureError(
+				"No support for 80-bit Floats",
+				ast = callExpression,
+				translator = this)
+		}
+		else if (typeName.startsWith("U")) {
+			return Expression.LiteralUIntExpression(value = signedValue.toULong()!!)
+		}
+		else {
+			if (signedValue == "-9223372036854775808") {
+				return unexpectedExpressionStructureError(
+					"Kotlin's Long (equivalent to Int64) only goes down to " + "-9223372036854775807",
+					ast = callExpression,
+					translator = this)
+			}
+			else {
+				return Expression.LiteralIntExpression(value = signedValue.toLong()!!)
+			}
+		}
+	}
+	else {
+		return unexpectedExpressionStructureError(
+			"Unrecognized structure for numeric literal",
+			ast = callExpression,
+			translator = this)
+	}
+}
+
 internal fun SwiftTranslator.translateAsBooleanLiteral(callExpression: SwiftAST): Expression {
 	if (callExpression.name != "Call Expression") {
 		return unexpectedExpressionStructureError(
