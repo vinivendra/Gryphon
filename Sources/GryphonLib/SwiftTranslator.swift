@@ -137,7 +137,7 @@ extension SwiftTranslator { // kotlin: ignore
 		case "Defer Statement":
 			result = [try translate(deferStatement: subtree)]
 		case "Pattern Binding Declaration":
-			try process(patternBindingDeclaration: subtree)
+			try processPatternBindingDeclaration(subtree)
 			result = []
 		case "Return Statement":
 			result = [try translate(returnStatement: subtree)]
@@ -231,7 +231,7 @@ extension SwiftTranslator { // kotlin: ignore
 		case "Nil Literal Expression":
 			result = .nilLiteralExpression
 		case "Open Existential Expression":
-			let processedExpression = try process(openExistentialExpression: expression)
+			let processedExpression = try processOpenExistentialExpression(expression)
 			result = try translate(expression: processedExpression)
 		case "Parentheses Expression":
 			if let innerExpression = expression.subtree(at: 0) {
@@ -2171,57 +2171,6 @@ extension SwiftTranslator { // kotlin: ignore
 
 		return .dictionaryExpression(keys: keys, values: values, typeName: typeName)
 	}
-
-	// MARK: - Supporting methods
-	internal func process(patternBindingDeclaration: SwiftAST) throws {
-		guard patternBindingDeclaration.name == "Pattern Binding Declaration" else {
-			_ = try unexpectedExpressionStructureError(
-				"Trying to translate \(patternBindingDeclaration.name) as " +
-				"'Pattern Binding Declaration'",
-				ast: patternBindingDeclaration, translator: self)
-			danglingPatternBindings = [errorDanglingPatternDeclaration]
-			return
-		}
-
-		let result: ArrayClass<PatternBindingDeclaration?> = []
-
-		let subtrees = patternBindingDeclaration.subtrees
-		while !subtrees.isEmpty {
-			var pattern = subtrees.removeFirst()
-			if pattern.name == "Pattern Typed",
-				let newPattern = pattern.subtree(named: "Pattern Named")
-			{
-				pattern = newPattern
-			}
-
-			if let expression = subtrees.first, ASTIsExpression(expression) {
-				_ = subtrees.removeFirst()
-
-				let translatedExpression = try translate(expression: expression)
-
-				guard let identifier = pattern.standaloneAttributes.first,
-					let rawType = pattern["type"] else
-				{
-					_ = try unexpectedExpressionStructureError(
-						"Type not recognized", ast: patternBindingDeclaration, translator: self)
-					result.append(errorDanglingPatternDeclaration)
-					continue
-				}
-
-				let typeName = cleanUpType(rawType)
-
-				result.append(PatternBindingDeclaration(
-					identifier: identifier,
-					typeName: typeName,
-					expression: translatedExpression))
-			}
-			else {
-				result.append(nil)
-			}
-		}
-
-		danglingPatternBindings = result
-	}
 }
 
 extension SwiftTranslator {
@@ -2523,7 +2472,60 @@ extension SwiftTranslator {
 
 	// MARK: - Helper functions
 
-	internal func process(openExistentialExpression: SwiftAST) throws -> SwiftAST {
+	internal func processPatternBindingDeclaration(_ patternBindingDeclaration: SwiftAST) throws {
+		guard patternBindingDeclaration.name == "Pattern Binding Declaration" else {
+			_ = try unexpectedExpressionStructureError(
+				"Trying to translate \(patternBindingDeclaration.name) as " +
+				"'Pattern Binding Declaration'",
+				ast: patternBindingDeclaration, translator: self)
+			danglingPatternBindings = [errorDanglingPatternDeclaration]
+			return
+		}
+
+		let result: ArrayClass<PatternBindingDeclaration?> = []
+
+		let subtrees = patternBindingDeclaration.subtrees
+		while !subtrees.isEmpty {
+			var pattern = subtrees.removeFirst()
+			if let newPattern = pattern.subtree(named: "Pattern Named"),
+				pattern.name == "Pattern Typed"
+			{
+				pattern = newPattern
+			}
+
+			if let expression = subtrees.first, astIsExpression(expression) {
+				_ = subtrees.removeFirst()
+
+				let translatedExpression = try // value: Expression.NilLiteralExpression()
+					translate(expression: expression)
+
+				guard let identifier = pattern.standaloneAttributes.first,
+					let rawType = pattern["type"] else
+				{
+					_ = try unexpectedExpressionStructureError(
+						"Type not recognized", ast: patternBindingDeclaration, translator: self)
+					result.append(errorDanglingPatternDeclaration)
+					continue
+				}
+
+				let typeName = cleanUpType(rawType)
+
+				result.append(SwiftTranslator.PatternBindingDeclaration(
+					identifier: identifier,
+					typeName: typeName,
+					expression: translatedExpression))
+			}
+			else {
+				result.append(nil)
+			}
+		}
+
+		danglingPatternBindings = result
+	}
+
+	internal func processOpenExistentialExpression(_ openExistentialExpression: SwiftAST)
+		throws -> SwiftAST
+	{
 		guard openExistentialExpression.name == "Open Existential Expression" else {
 			_ = try unexpectedExpressionStructureError(
 				"Trying to translate \(openExistentialExpression.name) as " +
@@ -2617,7 +2619,7 @@ extension SwiftTranslator {
 		}
 	}
 
-	internal func ASTIsExpression(_ ast: SwiftAST) -> Bool {
+	internal func astIsExpression(_ ast: SwiftAST) -> Bool {
 		return ast.name.hasSuffix("Expression") || ast.name == "Inject Into Optional"
 	}
 

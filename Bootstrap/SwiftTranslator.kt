@@ -314,7 +314,66 @@ internal fun SwiftTranslator.getRange(ast: SwiftAST): SourceFileRange? {
 		columnEnd = columnEnd)
 }
 
-internal fun SwiftTranslator.process(openExistentialExpression: SwiftAST): SwiftAST {
+internal fun SwiftTranslator.processPatternBindingDeclaration(
+	patternBindingDeclaration: SwiftAST)
+{
+	if (patternBindingDeclaration.name != "Pattern Binding Declaration") {
+		unexpectedExpressionStructureError(
+			"Trying to translate ${patternBindingDeclaration.name} as " + "'Pattern Binding Declaration'",
+			ast = patternBindingDeclaration,
+			translator = this)
+		danglingPatternBindings = mutableListOf(errorDanglingPatternDeclaration)
+		return
+	}
+
+	val result: MutableList<SwiftTranslator.PatternBindingDeclaration?> = mutableListOf()
+	val subtrees: MutableList<SwiftAST> = patternBindingDeclaration.subtrees
+
+	while (!subtrees.isEmpty()) {
+		var pattern: SwiftAST = subtrees.removeAt(0)
+		val newPattern: SwiftAST? = pattern.subtree(name = "Pattern Named")
+
+		if (newPattern != null && pattern.name == "Pattern Typed") {
+			pattern = newPattern
+		}
+
+		val expression: SwiftAST? = subtrees.firstOrNull()
+
+		if (expression != null && astIsExpression(expression)) {
+			subtrees.removeAt(0)
+
+			val translatedExpression: Expression = Expression.NilLiteralExpression()
+			val identifier: String? = pattern.standaloneAttributes.firstOrNull()
+			val rawType: String? = pattern["type"]
+
+			if (!(identifier != null && rawType != null)) {
+				unexpectedExpressionStructureError(
+					"Type not recognized",
+					ast = patternBindingDeclaration,
+					translator = this)
+				result.add(errorDanglingPatternDeclaration)
+				continue
+			}
+
+			val typeName: String = cleanUpType(rawType)
+
+			result.add(SwiftTranslator.PatternBindingDeclaration(
+				identifier = identifier,
+				typeName = typeName,
+				expression = translatedExpression))
+		}
+		else {
+			result.add(null)
+		}
+	}
+
+	danglingPatternBindings = result
+}
+
+internal fun SwiftTranslator.processOpenExistentialExpression(
+	openExistentialExpression: SwiftAST)
+	: SwiftAST
+{
 	if (openExistentialExpression.name != "Open Existential Expression") {
 		unexpectedExpressionStructureError(
 			"Trying to translate ${openExistentialExpression.name} as " + "'Open Existential Expression'",
@@ -404,7 +463,7 @@ internal fun SwiftTranslator.cleanUpType(typeName: String): String {
 	}
 }
 
-internal fun SwiftTranslator.ASTIsExpression(ast: SwiftAST): Boolean {
+internal fun SwiftTranslator.astIsExpression(ast: SwiftAST): Boolean {
 	return ast.name.endsWith("Expression") || ast.name == "Inject Into Optional"
 }
 

@@ -34,6 +34,7 @@ func gryphonTemplates() {
 	var _array: [Any] = []
 	var _array1: [Any] = []
 	var _array2: [Any] = []
+	var _arrayOfOptionals: [Any?] = []
 	var _comparableArray : [Compare] = []
 	let _compare = Compare()
 	var _index: String.Index = "abc".endIndex
@@ -197,6 +198,9 @@ func gryphonTemplates() {
 	_ = _array.append(_any)
 	_ = "_array.add(_any)"
 
+	_ = _arrayOfOptionals.append(nil)
+	_ = "_arrayOfOptionals.add(null)"
+
 	_ = _array1.append(contentsOf: _array2)
 	_ = "_array1.addAll(_array2)"
 
@@ -217,6 +221,9 @@ func gryphonTemplates() {
 
 	_ = _array.last
 	_ = "_array.lastOrNull()"
+
+	_ = _array.removeFirst()
+	_ = "_array.removeAt(0)"
 
 	_ = _array.dropFirst()
 	_ = "_array.drop(1)"
