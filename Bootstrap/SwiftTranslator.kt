@@ -183,3 +183,58 @@ internal fun SwiftTranslator.cleanUpType(typeName: String): String {
 internal fun SwiftTranslator.ASTIsExpression(ast: SwiftAST): Boolean {
 	return ast.name.endsWith("Expression") || ast.name == "Inject Into Optional"
 }
+
+internal fun SwiftTranslator.createUnexpectedASTStructureError(
+	errorMessage: String,
+	ast: SwiftAST,
+	translator: SwiftTranslator)
+	: SwiftTranslatorError
+{
+	return SwiftTranslatorError(errorMessage = errorMessage, ast = ast, translator = translator)
+}
+
+internal fun SwiftTranslator.handleUnexpectedASTStructureError(error: Exception): Statement {
+	Compiler.handleError(error)
+	return Statement.Error()
+}
+
+internal fun SwiftTranslator.unexpectedASTStructureError(
+	errorMessage: String,
+	ast: SwiftAST,
+	translator: SwiftTranslator)
+	: Statement
+{
+	val error: SwiftTranslatorError = createUnexpectedASTStructureError(errorMessage, ast = ast, translator = translator)
+	return handleUnexpectedASTStructureError(error)
+}
+
+internal fun SwiftTranslator.unexpectedExpressionStructureError(
+	errorMessage: String,
+	ast: SwiftAST,
+	translator: SwiftTranslator)
+	: Expression
+{
+	val error: SwiftTranslatorError = SwiftTranslatorError(errorMessage = errorMessage, ast = ast, translator = translator)
+	Compiler.handleError(error)
+	return Expression.Error()
+}
+
+data class SwiftTranslatorError(
+	val errorMessage: String,
+	val ast: SwiftAST,
+	val translator: SwiftTranslator
+): Exception() {
+	override fun toString(): String {
+		var nodeDescription: String = ""
+
+		ast.prettyPrint { nodeDescription += it }
+
+		val details: String = "When translating the following AST node:\n${nodeDescription}"
+
+		return Compiler.createErrorOrWarningMessage(
+			message = errorMessage,
+			details = details,
+			sourceFile = translator.sourceFile,
+			sourceFileRange = translator.getRangeRecursively(ast = ast))
+	}
+}

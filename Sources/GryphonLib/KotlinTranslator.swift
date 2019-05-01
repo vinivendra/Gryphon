@@ -475,8 +475,12 @@ public class KotlinTranslator {
 	/// If a value type's members are all immutable, that value type can safely be translated as a
 	/// class. Source: https://forums.swift.org/t/are-immutable-structs-like-classes/16270
 	private func translateStructDeclaration(
-		annotations: String?, structName: String, inherits: [String], members: [Statement],
-		withIndentation indentation: String) throws -> String
+		annotations: String?,
+		structName: String,
+		inherits: [String],
+		members: [Statement],
+		withIndentation indentation: String)
+		throws -> String
 	{
 		let increasedIndentation = increaseIndentation(indentation)
 
@@ -508,8 +512,13 @@ public class KotlinTranslator {
 		result += propertiesTranslation + "\n\(indentation))"
 
 		if !inherits.isEmpty {
-			let translatedInheritances = inherits.map(translateType)
-			result += ": " + translatedInheritances.joined(separator: ", ")
+			var translatedInheritedTypes = inherits.map(translateType)
+			translatedInheritedTypes = translatedInheritedTypes.map {
+				KotlinTranslator.protocols.contains($0) ?
+					$0 :
+					$0 + "()"
+			}
+			result += ": \(translatedInheritedTypes.joined(separator: ", "))"
 		}
 
 		let otherMembersTranslation = try translate(
