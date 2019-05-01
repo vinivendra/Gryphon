@@ -131,6 +131,47 @@ internal fun SwiftTranslator.getRange(ast: SwiftAST): SourceFileRange? {
 		columnEnd = columnEnd)
 }
 
+internal fun SwiftTranslator.process(openExistentialExpression: SwiftAST): SwiftAST {
+	if (openExistentialExpression.name != "Open Existential Expression") {
+		unexpectedExpressionStructureError(
+			"Trying to translate ${openExistentialExpression.name} as " + "'Open Existential Expression'",
+			ast = openExistentialExpression,
+			translator = this)
+		return SwiftAST("Error", mutableListOf(), mutableMapOf(), mutableListOf())
+	}
+
+	val replacementSubtree: SwiftAST? = openExistentialExpression.subtree(index = 1)
+	val resultSubtree: SwiftAST? = openExistentialExpression.subtrees.lastOrNull()
+
+	if (!(replacementSubtree != null && resultSubtree != null)) {
+		unexpectedExpressionStructureError(
+			"Expected the AST to contain 3 subtrees: an Opaque Value Expression, an " + "expression to replace the opaque value, and an expression containing " + "opaque values to be replaced.",
+			ast = openExistentialExpression,
+			translator = this)
+		return SwiftAST("Error", mutableListOf(), mutableMapOf(), mutableListOf())
+	}
+
+	return astReplacingOpaqueValues(ast = resultSubtree, replacementAST = replacementSubtree)
+}
+
+internal fun SwiftTranslator.astReplacingOpaqueValues(
+	ast: SwiftAST,
+	replacementAST: SwiftAST)
+	: SwiftAST
+{
+	if (ast.name == "Opaque Value Expression") {
+		return replacementAST
+	}
+
+	val newSubtrees: MutableList<SwiftAST> = mutableListOf()
+
+	for (subtree in ast.subtrees) {
+		newSubtrees.add(astReplacingOpaqueValues(ast = subtree, replacementAST = replacementAST))
+	}
+
+	return SwiftAST(ast.name, ast.standaloneAttributes, ast.keyValueAttributes, newSubtrees)
+}
+
 internal fun SwiftTranslator.getInformationFromDeclaration(
 	declaration: String)
 	: SwiftTranslator.DeclarationInformation

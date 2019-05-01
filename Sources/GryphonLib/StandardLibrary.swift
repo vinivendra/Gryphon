@@ -104,6 +104,18 @@ public final class ArrayClass<Element>: // kotlin: ignore
 		return i + 1
 	}
 
+	public var isEmpty: Bool {
+		return array.isEmpty
+	}
+
+	public var first: Element? {
+		return array.first
+	}
+
+	public var last: Element? {
+		return array.last
+	}
+
 	// Bidirectional Collection
 	public func index(before i: Int) -> Int {
 		return i - 1

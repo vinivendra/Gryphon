@@ -2346,48 +2346,6 @@ extension SwiftTranslator { // kotlin: ignore
 	}
 
 	// MARK: - Supporting methods
-	internal func process(openExistentialExpression: SwiftAST) throws -> SwiftAST {
-		guard openExistentialExpression.name == "Open Existential Expression" else {
-			_ = try unexpectedExpressionStructureError(
-				"Trying to translate \(openExistentialExpression.name) as " +
-				"'Open Existential Expression'",
-				ast: openExistentialExpression, translator: self)
-			return SwiftAST("Error", [], [:], [])
-		}
-
-		guard let replacementSubtree = openExistentialExpression.subtree(at: 1),
-			let resultSubtree = openExistentialExpression.subtrees.last else
-		{
-			_ = try unexpectedExpressionStructureError(
-				"Expected the AST to contain 3 subtrees: an Opaque Value Expression, an " +
-				"expression to replace the opaque value, and an expression containing " +
-				"opaque values to be replaced.",
-				ast: openExistentialExpression, translator: self)
-			return SwiftAST("Error", [], [:], [])
-		}
-
-		return astReplacingOpaqueValues(in: resultSubtree, with: replacementSubtree)
-	}
-
-	internal func astReplacingOpaqueValues(in ast: SwiftAST, with replacementAST: SwiftAST)
-		-> SwiftAST
-	{
-		if ast.name == "Opaque Value Expression" {
-			return replacementAST
-		}
-
-		var newSubtrees = [SwiftAST]()
-		for subtree in ast.subtrees {
-			newSubtrees.append(astReplacingOpaqueValues(in: subtree, with: replacementAST))
-		}
-
-		return SwiftAST(
-			ast.name,
-			ast.standaloneAttributes,
-			ast.keyValueAttributes,
-			ArrayClass(newSubtrees))
-	}
-
 	internal func process(patternBindingDeclaration: SwiftAST) throws {
 		guard patternBindingDeclaration.name == "Pattern Binding Declaration" else {
 			_ = try unexpectedExpressionStructureError(
@@ -2559,6 +2517,48 @@ extension SwiftTranslator {
 	}
 
 	// MARK: - Helper functions
+
+	internal func process(openExistentialExpression: SwiftAST) throws -> SwiftAST {
+		guard openExistentialExpression.name == "Open Existential Expression" else {
+			_ = try unexpectedExpressionStructureError(
+				"Trying to translate \(openExistentialExpression.name) as " +
+				"'Open Existential Expression'",
+				ast: openExistentialExpression, translator: self)
+			return SwiftAST("Error", [], [:], [])
+		}
+
+		guard let replacementSubtree = openExistentialExpression.subtree(at: 1),
+			let resultSubtree = openExistentialExpression.subtrees.last else
+		{
+			_ = try unexpectedExpressionStructureError(
+				"Expected the AST to contain 3 subtrees: an Opaque Value Expression, an " +
+					"expression to replace the opaque value, and an expression containing " +
+				"opaque values to be replaced.",
+				ast: openExistentialExpression, translator: self)
+			return SwiftAST("Error", [], [:], [])
+		}
+
+		return astReplacingOpaqueValues(in: resultSubtree, with: replacementSubtree)
+	}
+
+	internal func astReplacingOpaqueValues(in ast: SwiftAST, with replacementAST: SwiftAST)
+		-> SwiftAST
+	{
+		if ast.name == "Opaque Value Expression" {
+			return replacementAST
+		}
+
+		let newSubtrees: ArrayClass<SwiftAST> = []
+		for subtree in ast.subtrees {
+			newSubtrees.append(astReplacingOpaqueValues(in: subtree, with: replacementAST))
+		}
+
+		return SwiftAST(
+			ast.name,
+			ast.standaloneAttributes,
+			ast.keyValueAttributes,
+			newSubtrees)
+	}
 
 	internal func getInformationFromDeclaration(_ declaration: String)
 		-> SwiftTranslator.DeclarationInformation
