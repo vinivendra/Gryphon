@@ -190,11 +190,11 @@ extension SwiftTranslator { // kotlin: ignore
 		case "Closure Expression":
 			result = try translate(closureExpression: expression)
 		case "Declaration Reference Expression":
-			result = try translate(declarationReferenceExpression: expression)
+			result = try translateDeclarationReferenceExpression(expression)
 		case "Dot Syntax Call Expression":
 			result = try translate(dotSyntaxCallExpression: expression)
 		case "String Literal Expression":
-			result = try translate(stringLiteralExpression: expression)
+			result = try translateStringLiteralExpression(expression)
 		case "Interpolated String Literal Expression":
 			result = try translate(interpolatedStringLiteralExpression: expression)
 		case "Erasure Expression":
@@ -735,7 +735,7 @@ extension SwiftTranslator { // kotlin: ignore
 				tupleElementExpression.subtree(named: "Declaration Reference Expression"),
 			let tuple = declarationReference["type"]
 		{
-			let leftHand = try translate(declarationReferenceExpression: declarationReference)
+			let leftHand = try translateDeclarationReferenceExpression(declarationReference)
 			let tupleComponents =
 				String(tuple.dropFirst().dropLast()).split(withStringSeparator: ", ")
 			let tupleComponent = tupleComponents[safe: number]
@@ -1796,7 +1796,7 @@ extension SwiftTranslator { // kotlin: ignore
 				return try translate(asNumericLiteral: callExpression)
 			}
 			else if argumentLabels == "_builtinBooleanLiteral:" {
-				return try translate(asBooleanLiteral: callExpression)
+				return try translateAsBooleanLiteral(callExpression)
 			}
 			else if argumentLabels == "nilLiteral:" {
 				return .nilLiteralExpression
@@ -1825,8 +1825,8 @@ extension SwiftTranslator { // kotlin: ignore
 		if let declarationReferenceExpression = callExpression
 			.subtree(named: "Declaration Reference Expression")
 		{
-			function = try translate(
-				declarationReferenceExpression: declarationReferenceExpression)
+			function = try translateDeclarationReferenceExpression(
+				declarationReferenceExpression)
 		}
 		else if let dotSyntaxCallExpression = callExpression
 				.subtree(named: "Dot Syntax Call Expression"),
@@ -1834,7 +1834,7 @@ extension SwiftTranslator { // kotlin: ignore
 				.subtree(at: 0, named: "Declaration Reference Expression"),
 			let methodOwner = dotSyntaxCallExpression.subtree(at: 1)
 		{
-			let methodName = try translate(declarationReferenceExpression: methodName)
+			let methodName = try translateDeclarationReferenceExpression(methodName)
 			let methodOwner = try translate(expression: methodOwner)
 			function = .dotExpression(leftExpression: methodOwner, rightExpression: methodName)
 		}
@@ -2110,55 +2110,6 @@ extension SwiftTranslator { // kotlin: ignore
 		}
 	}
 
-	internal func translate(asBooleanLiteral callExpression: SwiftAST) throws
-		-> Expression
-	{
-		guard callExpression.name == "Call Expression" else {
-			return try unexpectedExpressionStructureError(
-				"Trying to translate \(callExpression.name) as 'Call Expression'",
-				ast: callExpression, translator: self)
-		}
-
-		if let tupleExpression = callExpression.subtree(named: "Tuple Expression"),
-			let booleanLiteralExpression = tupleExpression
-				.subtree(named: "Boolean Literal Expression"),
-			let value = booleanLiteralExpression["value"]
-		{
-			return .literalBoolExpression(value: (value == "true"))
-		}
-		else {
-			return try unexpectedExpressionStructureError(
-				"Unrecognized structure for boolean literal", ast: callExpression, translator: self)
-		}
-	}
-
-	internal func translate(stringLiteralExpression: SwiftAST) throws -> Expression {
-		guard stringLiteralExpression.name == "String Literal Expression" else {
-			return try unexpectedExpressionStructureError(
-				"Trying to translate \(stringLiteralExpression.name) as " +
-				"'String Literal Expression'",
-				ast: stringLiteralExpression, translator: self)
-		}
-
-		if let value = stringLiteralExpression["value"] {
-			if stringLiteralExpression["type"] == "Character" {
-				if value == "\'" {
-					return .literalCharacterExpression(value: "\\\'")
-				}
-				else {
-					return .literalCharacterExpression(value: value)
-				}
-			}
-			else {
-				return .literalStringExpression(value: value)
-			}
-		}
-		else {
-			return try unexpectedExpressionStructureError(
-				"Unrecognized structure", ast: stringLiteralExpression, translator: self)
-		}
-	}
-
 	internal func translate(interpolatedStringLiteralExpression: SwiftAST) throws
 		-> Expression
 	{
@@ -2200,62 +2151,6 @@ extension SwiftTranslator { // kotlin: ignore
 		}
 
 		return .interpolatedStringLiteralExpression(expressions: expressions)
-	}
-
-	internal func translate(declarationReferenceExpression: SwiftAST) throws
-		-> Expression
-	{
-		guard declarationReferenceExpression.name == "Declaration Reference Expression" else {
-			return try unexpectedExpressionStructureError(
-				"Trying to translate \(declarationReferenceExpression.name) as " +
-				"'Declaration Reference Expression'",
-				ast: declarationReferenceExpression, translator: self)
-		}
-
-		guard let rawType = declarationReferenceExpression["type"] else {
-			return try unexpectedExpressionStructureError(
-				"Failed to recognize type", ast: declarationReferenceExpression, translator: self)
-		}
-		let typeName = cleanUpType(rawType)
-
-		let isImplicit = declarationReferenceExpression.standaloneAttributes.contains("implicit")
-
-		let range = getRange(ofNode: declarationReferenceExpression)
-
-		if let discriminator = declarationReferenceExpression["discriminator"] {
-			let declarationInformation = getInformationFromDeclaration(discriminator)
-
-			return .declarationReferenceExpression(data: DeclarationReferenceData(
-					identifier: declarationInformation.identifier,
-					typeName: typeName,
-					isStandardLibrary: declarationInformation.isStandardLibrary,
-					isImplicit: isImplicit,
-					range: range))
-		}
-		else if let codeDeclaration = declarationReferenceExpression.standaloneAttributes.first,
-			codeDeclaration.hasPrefix("code.")
-		{
-			let declarationInformation = getInformationFromDeclaration(codeDeclaration)
-			return .declarationReferenceExpression(data: DeclarationReferenceData(
-				identifier: declarationInformation.identifier,
-				typeName: typeName,
-				isStandardLibrary: declarationInformation.isStandardLibrary,
-				isImplicit: isImplicit,
-				range: range))
-		}
-		else if let declaration = declarationReferenceExpression["decl"] {
-			let declarationInformation = getInformationFromDeclaration(declaration)
-			return .declarationReferenceExpression(data: DeclarationReferenceData(
-				identifier: declarationInformation.identifier,
-				typeName: typeName,
-				isStandardLibrary: declarationInformation.isStandardLibrary,
-				isImplicit: isImplicit,
-				range: range))
-		}
-		else {
-			return try unexpectedExpressionStructureError(
-				"Unrecognized structure", ast: declarationReferenceExpression, translator: self)
-		}
 	}
 
 	internal func translate(subscriptExpression: SwiftAST) throws -> Expression {
@@ -2398,6 +2293,116 @@ extension SwiftTranslator { // kotlin: ignore
 }
 
 extension SwiftTranslator {
+	// MARK: - Expression translations
+
+	internal func translateAsBooleanLiteral(_ callExpression: SwiftAST) throws
+		-> Expression
+	{
+		guard callExpression.name == "Call Expression" else {
+			return try unexpectedExpressionStructureError(
+				"Trying to translate \(callExpression.name) as 'Call Expression'",
+				ast: callExpression, translator: self)
+		}
+
+		if let value = callExpression
+			.subtree(named: "Tuple Expression")?
+			.subtree(named: "Boolean Literal Expression")?["value"]
+		{
+			return .literalBoolExpression(value: (value == "true"))
+		}
+		else {
+			return try unexpectedExpressionStructureError(
+				"Unrecognized structure for boolean literal", ast: callExpression, translator: self)
+		}
+	}
+
+	internal func translateStringLiteralExpression(
+		_ stringLiteralExpression: SwiftAST)
+		throws -> Expression
+	{
+		guard stringLiteralExpression.name == "String Literal Expression" else {
+			return try unexpectedExpressionStructureError(
+				"Trying to translate \(stringLiteralExpression.name) as " +
+				"'String Literal Expression'",
+				ast: stringLiteralExpression, translator: self)
+		}
+
+		if let value = stringLiteralExpression["value"] {
+			if stringLiteralExpression["type"] == "Character" {
+				if value == "\'" {
+					return .literalCharacterExpression(value: "\\\'")
+				}
+				else {
+					return .literalCharacterExpression(value: value)
+				}
+			}
+			else {
+				return .literalStringExpression(value: value)
+			}
+		}
+		else {
+			return try unexpectedExpressionStructureError(
+				"Unrecognized structure", ast: stringLiteralExpression, translator: self)
+		}
+	}
+
+	internal func translateDeclarationReferenceExpression(
+		_ declarationReferenceExpression: SwiftAST)
+		throws -> Expression
+	{
+		guard declarationReferenceExpression.name == "Declaration Reference Expression" else {
+			return try unexpectedExpressionStructureError(
+				"Trying to translate \(declarationReferenceExpression.name) as " +
+				"'Declaration Reference Expression'",
+				ast: declarationReferenceExpression, translator: self)
+		}
+
+		guard let rawType = declarationReferenceExpression["type"] else {
+			return try unexpectedExpressionStructureError(
+				"Failed to recognize type", ast: declarationReferenceExpression, translator: self)
+		}
+		let typeName = cleanUpType(rawType)
+
+		let isImplicit = declarationReferenceExpression.standaloneAttributes.contains("implicit")
+
+		let range = getRange(ofNode: declarationReferenceExpression)
+
+		if let discriminator = declarationReferenceExpression["discriminator"] {
+			let declarationInformation = getInformationFromDeclaration(discriminator)
+
+			return .declarationReferenceExpression(data: DeclarationReferenceData(
+				identifier: declarationInformation.identifier,
+				typeName: typeName,
+				isStandardLibrary: declarationInformation.isStandardLibrary,
+				isImplicit: isImplicit,
+				range: range))
+		}
+		else if let codeDeclaration = declarationReferenceExpression.standaloneAttributes.first,
+			codeDeclaration.hasPrefix("code.")
+		{
+			let declarationInformation = getInformationFromDeclaration(codeDeclaration)
+			return .declarationReferenceExpression(data: DeclarationReferenceData(
+				identifier: declarationInformation.identifier,
+				typeName: typeName,
+				isStandardLibrary: declarationInformation.isStandardLibrary,
+				isImplicit: isImplicit,
+				range: range))
+		}
+		else if let declaration = declarationReferenceExpression["decl"] {
+			let declarationInformation = getInformationFromDeclaration(declaration)
+			return .declarationReferenceExpression(data: DeclarationReferenceData(
+				identifier: declarationInformation.identifier,
+				typeName: typeName,
+				isStandardLibrary: declarationInformation.isStandardLibrary,
+				isImplicit: isImplicit,
+				range: range))
+		}
+		else {
+			return try unexpectedExpressionStructureError(
+				"Unrecognized structure", ast: declarationReferenceExpression, translator: self)
+		}
+	}
+
 	// MARK: - Source file interactions
 
 	internal func insertedCode(inRange range: Range<Int>) -> ArrayClass<SourceFile.Comment> {

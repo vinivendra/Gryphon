@@ -1413,6 +1413,43 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 	}
 }
 
+/// Optional subscripts in kotlin have to be refactored as function calls:
+///
+/// ````
+/// let array: [Int]? = [1, 2, 3]
+/// array?[0] // Becomes `array?.get(0)` in Kotlin
+/// ````
+public class RefactorOptionalsInSubscriptsTranspilationPass: TranspilationPass {
+	override func replaceSubscriptExpression(
+		subscriptedExpression: Expression,
+		indexExpression: Expression,
+		typeName: String)
+		-> Expression
+	{
+		if case .optionalExpression = subscriptedExpression {
+			return replaceDotExpression(
+				leftExpression: subscriptedExpression,
+				rightExpression: .callExpression(data: CallExpressionData(
+					function: .declarationReferenceExpression(data: DeclarationReferenceData(
+						identifier: "get",
+						typeName: "(\(indexExpression.swiftType ?? "<<Error>>")) -> \(typeName)",
+						isStandardLibrary: false,
+						isImplicit: false,
+						range: subscriptedExpression.range)),
+					parameters: .tupleExpression(pairs:
+						[LabeledExpression(label: nil, expression: indexExpression)]),
+					typeName: typeName,
+					range: subscriptedExpression.range)))
+		}
+		else {
+			return super.replaceSubscriptExpression(
+				subscriptedExpression: subscriptedExpression,
+				indexExpression: indexExpression,
+				typeName: typeName)
+		}
+	}
+}
+
 /// When statements in Kotlin can be used as expressions, for instance in return statements or in
 /// assignments. This pass turns switch statements whose bodies all end in the same return or
 /// assignment into those expressions. It also turns a variable declaration followed by a switch
@@ -2400,6 +2437,7 @@ public extension TranspilationPass {
 		result = CovarianceInitsAsCastsTranspilationPass(ast: result).run()
 		result = RemoveBreaksInSwitchesTranspilationPass(ast: result).run()
 		result = ReturnsInLambdasTranspilationPass(ast: result).run()
+		result = RefactorOptionalsInSubscriptsTranspilationPass(ast: result).run()
 		result = RenameOperatorsTranspilationPass(ast: result).run()
 
 		result = CapitalizeEnumsTranspilationPass(ast: result).run()

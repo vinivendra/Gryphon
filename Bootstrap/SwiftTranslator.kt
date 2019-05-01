@@ -21,6 +21,120 @@ class SwiftTranslator {
 	}
 }
 
+internal fun SwiftTranslator.translateAsBooleanLiteral(callExpression: SwiftAST): Expression {
+	if (callExpression.name != "Call Expression") {
+		return unexpectedExpressionStructureError(
+			"Trying to translate ${callExpression.name} as 'Call Expression'",
+			ast = callExpression,
+			translator = this)
+	}
+	val value: String? = callExpression.subtree(name = "Tuple Expression")?.subtree(name = "Boolean Literal Expression")?.get("value")
+	if (value != null) {
+		return Expression.LiteralBoolExpression(value = value == "true")
+	}
+	else {
+		return unexpectedExpressionStructureError(
+			"Unrecognized structure for boolean literal",
+			ast = callExpression,
+			translator = this)
+	}
+}
+
+internal fun SwiftTranslator.translateStringLiteralExpression(
+	stringLiteralExpression: SwiftAST)
+	: Expression
+{
+	if (stringLiteralExpression.name != "String Literal Expression") {
+		return unexpectedExpressionStructureError(
+			"Trying to translate ${stringLiteralExpression.name} as " + "'String Literal Expression'",
+			ast = stringLiteralExpression,
+			translator = this)
+	}
+	val value: String? = stringLiteralExpression["value"]
+	if (value != null) {
+		if (stringLiteralExpression["type"] == "Character") {
+			if (value == "'") {
+				return Expression.LiteralCharacterExpression(value = "\\'")
+			}
+			else {
+				return Expression.LiteralCharacterExpression(value = value)
+			}
+		}
+		else {
+			return Expression.LiteralStringExpression(value = value)
+		}
+	}
+	else {
+		return unexpectedExpressionStructureError(
+			"Unrecognized structure",
+			ast = stringLiteralExpression,
+			translator = this)
+	}
+}
+
+internal fun SwiftTranslator.translateDeclarationReferenceExpression(
+	declarationReferenceExpression: SwiftAST)
+	: Expression
+{
+	if (declarationReferenceExpression.name != "Declaration Reference Expression") {
+		return unexpectedExpressionStructureError(
+			"Trying to translate ${declarationReferenceExpression.name} as " + "'Declaration Reference Expression'",
+			ast = declarationReferenceExpression,
+			translator = this)
+	}
+
+	val rawType: String? = declarationReferenceExpression["type"]
+
+	rawType ?: return unexpectedExpressionStructureError(
+		"Failed to recognize type",
+		ast = declarationReferenceExpression,
+		translator = this)
+
+	val typeName: String = cleanUpType(rawType)
+	val isImplicit: Boolean = declarationReferenceExpression.standaloneAttributes.contains("implicit")
+	val range: SourceFileRange? = getRange(ast = declarationReferenceExpression)
+	val discriminator: String? = declarationReferenceExpression["discriminator"]
+	val codeDeclaration: String? = declarationReferenceExpression.standaloneAttributes.firstOrNull()
+	val declaration: String? = declarationReferenceExpression["decl"]
+
+	if (discriminator != null) {
+		val declarationInformation: SwiftTranslator.DeclarationInformation = getInformationFromDeclaration(discriminator)
+		return Expression.DeclarationReferenceExpression(
+			data = DeclarationReferenceData(
+					identifier = declarationInformation.identifier,
+					typeName = typeName,
+					isStandardLibrary = declarationInformation.isStandardLibrary,
+					isImplicit = isImplicit,
+					range = range))
+	}
+	else if (codeDeclaration != null && codeDeclaration.startsWith("code.")) {
+		val declarationInformation: SwiftTranslator.DeclarationInformation = getInformationFromDeclaration(codeDeclaration)
+		return Expression.DeclarationReferenceExpression(
+			data = DeclarationReferenceData(
+					identifier = declarationInformation.identifier,
+					typeName = typeName,
+					isStandardLibrary = declarationInformation.isStandardLibrary,
+					isImplicit = isImplicit,
+					range = range))
+	}
+	else if (declaration != null) {
+		val declarationInformation: SwiftTranslator.DeclarationInformation = getInformationFromDeclaration(declaration)
+		return Expression.DeclarationReferenceExpression(
+			data = DeclarationReferenceData(
+					identifier = declarationInformation.identifier,
+					typeName = typeName,
+					isStandardLibrary = declarationInformation.isStandardLibrary,
+					isImplicit = isImplicit,
+					range = range))
+	}
+	else {
+		return unexpectedExpressionStructureError(
+			"Unrecognized structure",
+			ast = declarationReferenceExpression,
+			translator = this)
+	}
+}
+
 internal fun SwiftTranslator.insertedCode(range: IntRange): MutableList<SourceFile.Comment> {
 	val result: MutableList<SourceFile.Comment> = mutableListOf()
 	for (lineNumber in range) {
