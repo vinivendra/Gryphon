@@ -1451,6 +1451,85 @@ public class RefactorOptionalsInSubscriptsTranspilationPass: TranspilationPass {
 	}
 }
 
+/// Optional chaining in Kotlin must continue down the dot syntax chain.
+///
+/// ````
+/// foo?.bar.baz
+/// // Becomes
+/// foo?.bar?.baz
+/// ````
+public class AddOptionalsInDotChainsTranspilationPass: TranspilationPass {
+	override func replaceDotExpression(
+		leftExpression: Expression,
+		rightExpression: Expression)
+		-> Expression
+	{
+		if case .optionalExpression = rightExpression {
+		}
+		else if case let .dotExpression(
+			leftExpression: innerLeftExpression,
+			rightExpression: innerRightExpression) = leftExpression,
+			dotExpressionChainHasOptionals(innerLeftExpression)
+		{
+			return .dotExpression(
+				leftExpression: addOptionalsToDotExpressionChain(
+					leftExpression: innerLeftExpression,
+					rightExpression: innerRightExpression),
+				rightExpression: rightExpression)
+		}
+
+		return super.replaceDotExpression(
+			leftExpression: leftExpression,
+			rightExpression: rightExpression)
+	}
+
+	private func addOptionalsToDotExpressionChain(
+		leftExpression: Expression,
+		rightExpression: Expression)
+		-> Expression
+	{
+		if case .optionalExpression = rightExpression {
+		}
+		else if dotExpressionChainHasOptionals(leftExpression) {
+
+			let processedLeftExpression: Expression
+			if case let .dotExpression(
+				leftExpression: innerLeftExpression,
+				rightExpression: innerRightExpression) = leftExpression
+			{
+				processedLeftExpression = addOptionalsToDotExpressionChain(
+					leftExpression: innerLeftExpression,
+					rightExpression: innerRightExpression)
+			}
+			else {
+				processedLeftExpression = leftExpression
+			}
+
+			return addOptionalsToDotExpressionChain(
+				leftExpression: processedLeftExpression,
+				rightExpression: .optionalExpression(expression: rightExpression))
+		}
+
+		return super.replaceDotExpression(
+			leftExpression: leftExpression,
+			rightExpression: rightExpression)
+	}
+
+	private func dotExpressionChainHasOptionals(_ expression: Expression) -> Bool {
+		if case .optionalExpression = expression {
+			return true
+		}
+		else if case let .dotExpression(
+			leftExpression: leftExpression, rightExpression: _) = expression
+		{
+			return dotExpressionChainHasOptionals(leftExpression)
+		}
+		else {
+			return false
+		}
+	}
+}
+
 /// When statements in Kotlin can be used as expressions, for instance in return statements or in
 /// assignments. This pass turns switch statements whose bodies all end in the same return or
 /// assignment into those expressions. It also turns a variable declaration followed by a switch
@@ -2453,6 +2532,7 @@ public extension TranspilationPass {
 		result = RemoveBreaksInSwitchesTranspilationPass(ast: result).run()
 		result = ReturnsInLambdasTranspilationPass(ast: result).run()
 		result = RefactorOptionalsInSubscriptsTranspilationPass(ast: result).run()
+		result = AddOptionalsInDotChainsTranspilationPass(ast: result).run()
 		result = RenameOperatorsTranspilationPass(ast: result).run()
 
 		result = CapitalizeEnumsTranspilationPass(ast: result).run()

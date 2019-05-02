@@ -21,6 +21,47 @@ class SwiftTranslator {
 	}
 }
 
+internal fun SwiftTranslator.translateInterpolatedStringLiteralExpression(
+	interpolatedStringLiteralExpression: SwiftAST)
+	: Expression
+{
+	if (interpolatedStringLiteralExpression.name != "Interpolated String Literal Expression") {
+		return unexpectedExpressionStructureError(
+			"Trying to translate ${interpolatedStringLiteralExpression.name} as " + "'Interpolated String Literal Expression'",
+			ast = interpolatedStringLiteralExpression,
+			translator = this)
+	}
+
+	val braceStatement: SwiftAST? = interpolatedStringLiteralExpression.subtree(name = "Tap Expression")?.subtree(
+		name = "Brace Statement")
+
+	braceStatement ?: return unexpectedExpressionStructureError(
+		"Expected the Interpolated String Literal Expression to contain a Tap" + "Expression containing a Brace Statement containing the String " + "interpolation contents",
+		ast = interpolatedStringLiteralExpression,
+		translator = this)
+
+	val expressions: MutableList<Expression> = mutableListOf()
+
+	for (callExpression in braceStatement.subtrees.drop(1)) {
+		val maybeSubtrees: MutableList<SwiftAST>? = callExpression.subtree(name = "Parentheses Expression")?.subtrees
+		val maybeExpression: SwiftAST? = maybeSubtrees?.firstOrNull()
+		val expression: SwiftAST? = maybeExpression
+
+		if (!(callExpression.name == "Call Expression" && expression != null)) {
+			return unexpectedExpressionStructureError(
+				"Expected the brace statement to contain only Call Expressions containing " + "Parentheses Expressions containing the relevant expressions.",
+				ast = interpolatedStringLiteralExpression,
+				translator = this)
+		}
+
+		val translatedExpression: Expression = Expression.NilLiteralExpression()
+
+		expressions.add(translatedExpression)
+	}
+
+	return Expression.InterpolatedStringLiteralExpression(expressions = expressions)
+}
+
 internal fun SwiftTranslator.translateSubscriptExpression(
 	subscriptExpression: SwiftAST)
 	: Expression

@@ -196,7 +196,7 @@ extension SwiftTranslator { // kotlin: ignore
 		case "String Literal Expression":
 			result = try translateStringLiteralExpression(expression)
 		case "Interpolated String Literal Expression":
-			result = try translate(interpolatedStringLiteralExpression: expression)
+			result = try translateInterpolatedStringLiteralExpression(expression)
 		case "Erasure Expression":
 			if let lastExpression = expression.subtrees.last {
 				// If we're erasing an optional expresison, just skip it
@@ -2047,9 +2047,14 @@ extension SwiftTranslator { // kotlin: ignore
 
 		return .tupleExpression(pairs: tuplePairs)
 	}
+}
 
-	internal func translate(interpolatedStringLiteralExpression: SwiftAST) throws
-		-> Expression
+extension SwiftTranslator {
+	// MARK: - Expression translations
+
+	internal func translateInterpolatedStringLiteralExpression(
+		_ interpolatedStringLiteralExpression: SwiftAST)
+		throws -> Expression
 	{
 		guard interpolatedStringLiteralExpression.name == "Interpolated String Literal Expression"
 			else
@@ -2060,9 +2065,9 @@ extension SwiftTranslator { // kotlin: ignore
 				ast: interpolatedStringLiteralExpression, translator: self)
 		}
 
-		guard let tapExpression =
-			interpolatedStringLiteralExpression.subtree(named: "Tap Expression"),
-			let braceStatement = tapExpression.subtree(named: "Brace Statement") else
+		guard let braceStatement = interpolatedStringLiteralExpression
+			.subtree(named: "Tap Expression")?
+			.subtree(named: "Brace Statement") else
 		{
 			return try unexpectedExpressionStructureError(
 				"Expected the Interpolated String Literal Expression to contain a Tap" +
@@ -2074,9 +2079,10 @@ extension SwiftTranslator { // kotlin: ignore
 		let expressions: ArrayClass<Expression> = []
 
 		for callExpression in braceStatement.subtrees.dropFirst() {
+			let maybeSubtrees = callExpression.subtree(named: "Parentheses Expression")?.subtrees
+			let maybeExpression = maybeSubtrees?.first
 			guard callExpression.name == "Call Expression",
-				let parenthesesExpression = callExpression.subtree(named: "Parentheses Expression"),
-				let expression = parenthesesExpression.subtrees.first else
+				let expression = maybeExpression else
 			{
 				return try unexpectedExpressionStructureError(
 					"Expected the brace statement to contain only Call Expressions containing " +
@@ -2084,16 +2090,13 @@ extension SwiftTranslator { // kotlin: ignore
 					ast: interpolatedStringLiteralExpression, translator: self)
 			}
 
-			let translatedExpression = try translate(expression: expression)
+			let translatedExpression = try // value: Expression.NilLiteralExpression()
+				translate(expression: expression)
 			expressions.append(translatedExpression)
 		}
 
 		return .interpolatedStringLiteralExpression(expressions: expressions)
 	}
-}
-
-extension SwiftTranslator {
-	// MARK: - Expression translations
 
 	internal func translateSubscriptExpression(_ subscriptExpression: SwiftAST)
 		throws -> Expression
