@@ -178,9 +178,9 @@ extension SwiftTranslator { // kotlin: ignore
 		let result: Expression
 		switch expression.name {
 		case "Array Expression":
-			result = try translate(arrayExpression: expression)
+			result = try translateArrayExpression(expression)
 		case "Dictionary Expression":
-			result = try translate(dictionaryExpression: expression)
+			result = try translateDictionaryExpression(expression)
 		case "Binary Expression":
 			result = try translate(binaryExpression: expression)
 		case "If Expression":
@@ -227,7 +227,7 @@ extension SwiftTranslator { // kotlin: ignore
 		case "Tuple Expression":
 			result = try translate(tupleExpression: expression)
 		case "Subscript Expression":
-			result = try translate(subscriptExpression: expression)
+			result = try translateSubscriptExpression(expression)
 		case "Nil Literal Expression":
 			result = .nilLiteralExpression
 		case "Open Existential Expression":
@@ -1631,6 +1631,8 @@ extension SwiftTranslator { // kotlin: ignore
 		let joinedAnnotations = annotations.compactMap { $0 }.joined(separator: " ")
 		let annotationsResult = joinedAnnotations.isEmpty ? nil : joinedAnnotations
 
+		let isPure = (getComment(forNode: functionDeclaration, key: "gryphon") == "pure")
+
 		return .functionDeclaration(data: FunctionDeclarationData(
 			prefix: String(functionNamePrefix),
 			parameters: parameters,
@@ -1640,6 +1642,7 @@ extension SwiftTranslator { // kotlin: ignore
 			isImplicit: isImplicit,
 			isStatic: isStatic,
 			isMutating: isMutating,
+			isPure: isPure,
 			extendsType: nil,
 			statements: statements,
 			access: access,
@@ -1733,6 +1736,7 @@ extension SwiftTranslator { // kotlin: ignore
 			}
 
 			let isImplicit = subtree.standaloneAttributes.contains("implicit")
+			let isPure = (getComment(forNode: subtree, key: "gryphon") == "pure")
 			let annotations = getComment(forNode: subtree, key: "annotation")
 
 			if subtree["get_for"] != nil {
@@ -1745,6 +1749,7 @@ extension SwiftTranslator { // kotlin: ignore
 					isImplicit: isImplicit,
 					isStatic: false,
 					isMutating: false,
+					isPure: isPure,
 					extendsType: nil,
 					statements: statements,
 					access: access,
@@ -1761,6 +1766,7 @@ extension SwiftTranslator { // kotlin: ignore
 					isImplicit: isImplicit,
 					isStatic: false,
 					isMutating: false,
+					isPure: isPure,
 					extendsType: nil,
 					statements: statements,
 					access: access,
@@ -2084,25 +2090,37 @@ extension SwiftTranslator { // kotlin: ignore
 
 		return .interpolatedStringLiteralExpression(expressions: expressions)
 	}
+}
 
-	internal func translate(subscriptExpression: SwiftAST) throws -> Expression {
+extension SwiftTranslator {
+	// MARK: - Expression translations
+
+	internal func translateSubscriptExpression(_ subscriptExpression: SwiftAST)
+		throws -> Expression
+	{
 		guard subscriptExpression.name == "Subscript Expression" else {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(subscriptExpression.name) as 'Subscript Expression'",
 				ast: subscriptExpression, translator: self)
 		}
 
-		if let rawType = subscriptExpression["type"],
-			let subscriptContents = subscriptExpression.subtree(
-					at: 1,
-					named: "Parentheses Expression") ??
-				subscriptExpression.subtree(
-					at: 1, named: "Tuple Expression"),
-			let subscriptedExpression = subscriptExpression.subtree(at: 0)
+		let rawType = subscriptExpression["type"]
+		let subscriptContents = subscriptExpression.subtree(
+			at: 1,
+			named: "Parentheses Expression") ??
+			subscriptExpression.subtree(
+				at: 1, named: "Tuple Expression")
+		let subscriptedExpression = subscriptExpression.subtree(at: 0)
+
+		if let rawType = rawType,
+			let subscriptContents = subscriptContents,
+			let subscriptedExpression = subscriptedExpression
 		{
 			let typeName = cleanUpType(rawType)
-			let subscriptContentsTranslation = try translate(expression: subscriptContents)
-			let subscriptedExpressionTranslation = try translate(expression: subscriptedExpression)
+			let subscriptContentsTranslation = try // value: Expression.NilLiteralExpression()
+				translate(expression: subscriptContents)
+			let subscriptedExpressionTranslation = try // value: Expression.NilLiteralExpression()
+				translate(expression: subscriptedExpression)
 
 			return .subscriptExpression(
 				subscriptedExpression: subscriptedExpressionTranslation,
@@ -2115,7 +2133,7 @@ extension SwiftTranslator { // kotlin: ignore
 		}
 	}
 
-	internal func translate(arrayExpression: SwiftAST) throws -> Expression {
+	internal func translateArrayExpression(_ arrayExpression: SwiftAST) throws -> Expression {
 		guard arrayExpression.name == "Array Expression" else {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(arrayExpression.name) as 'Array Expression'",
@@ -2123,9 +2141,10 @@ extension SwiftTranslator { // kotlin: ignore
 		}
 
 		// Drop the "Semantic Expression" at the end
-		let expressionsToTranslate = ArrayClass(arrayExpression.subtrees.dropLast())
+		let expressionsToTranslate = ArrayClass<SwiftAST>(arrayExpression.subtrees.dropLast())
 
-		let expressionsArray = try expressionsToTranslate.map(translate(expression:))
+		let expressionsArray = try // value: mutableListOf<Expression>()
+			expressionsToTranslate.map(translate(expression:))
 
 		guard let rawType = arrayExpression["type"] else {
 			return try unexpectedExpressionStructureError(
@@ -2136,7 +2155,9 @@ extension SwiftTranslator { // kotlin: ignore
 		return .arrayExpression(elements: expressionsArray, typeName: typeName)
 	}
 
-	internal func translate(dictionaryExpression: SwiftAST) throws -> Expression {
+	internal func translateDictionaryExpression(_ dictionaryExpression: SwiftAST)
+		throws -> Expression
+	{
 		guard dictionaryExpression.name == "Dictionary Expression" else {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(dictionaryExpression.name) as 'Dictionary Expression'",
@@ -2157,8 +2178,10 @@ extension SwiftTranslator { // kotlin: ignore
 					ast: dictionaryExpression, translator: self)
 			}
 
-			let keyTranslation = try translate(expression: keyAST)
-			let valueTranslation = try translate(expression: valueAST)
+			let keyTranslation = try // value: Expression.NilLiteralExpression()
+				translate(expression: keyAST)
+			let valueTranslation = try // value: Expression.NilLiteralExpression()
+				translate(expression: valueAST)
 			keys.append(keyTranslation)
 			values.append(valueTranslation)
 		}
@@ -2171,10 +2194,6 @@ extension SwiftTranslator { // kotlin: ignore
 
 		return .dictionaryExpression(keys: keys, values: values, typeName: typeName)
 	}
-}
-
-extension SwiftTranslator {
-	// MARK: - Expression translations
 
 	internal func translateAsNumericLiteral(_ callExpression: SwiftAST) throws -> Expression {
 		guard callExpression.name == "Call Expression" else {

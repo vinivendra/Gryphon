@@ -140,6 +140,40 @@ public class KotlinTranslator {
 		return nil
 	}
 
+	// TODO: These records should probably go in a Context class of some kind
+	/// Stores pure functions so we can reference them later
+	private static var pureFunctions: ArrayClass<FunctionDeclarationData> = []
+
+	public static func recordPureFunction(_ newValue: FunctionDeclarationData) {
+		pureFunctions.append(newValue)
+	}
+
+	public static func isReferencingPureFunction(
+		_ callExpression: CallExpressionData)
+		-> Bool
+	{
+		var finalCallExpression = callExpression.function
+		while case let .dotExpression(
+			leftExpression: _, rightExpression: nextCallExpression) = finalCallExpression
+		{
+			finalCallExpression = nextCallExpression
+		}
+
+		if case let .declarationReferenceExpression(
+			data: declarationReferenceExpression) = finalCallExpression
+		{
+			for functionDeclaration in pureFunctions {
+				if declarationReferenceExpression.identifier.hasPrefix(functionDeclaration.prefix),
+					declarationReferenceExpression.typeName == functionDeclaration.functionType
+				{
+					return true
+				}
+			}
+		}
+
+		return false
+	}
+
 	// MARK: - Interface
 
 	public init() { }

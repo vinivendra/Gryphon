@@ -48,18 +48,18 @@ public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible
 		return keyValueAttributes[key]
 	}
 
-	func subtree(named name: String) -> SwiftAST? {
+	func subtree(named name: String) -> SwiftAST? { // gryphon: pure
 		return subtrees.first { $0.name == name }
 	}
 
-	func subtree(at index: Int) -> SwiftAST? {
+	func subtree(at index: Int) -> SwiftAST? { // gryphon: pure
 		guard index >= 0, index < subtrees.count else {
 			return nil
 		}
 		return subtrees[index]
 	}
 
-	func subtree(at index: Int, named name: String) -> SwiftAST? {
+	func subtree(at index: Int, named name: String) -> SwiftAST? { // gryphon: pure
 		guard index >= 0, index < subtrees.count else {
 			return nil
 		}

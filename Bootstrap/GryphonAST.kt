@@ -680,6 +680,7 @@ class FunctionDeclarationData {
 	var isImplicit: Boolean
 	var isStatic: Boolean
 	var isMutating: Boolean
+	var isPure: Boolean
 	var extendsType: String? = null
 	var statements: MutableList<Statement>? = null
 	var access: String? = null
@@ -694,6 +695,7 @@ class FunctionDeclarationData {
 		isImplicit: Boolean,
 		isStatic: Boolean,
 		isMutating: Boolean,
+		isPure: Boolean,
 		extendsType: String?,
 		statements: MutableList<Statement>?,
 		access: String?,
@@ -707,6 +709,7 @@ class FunctionDeclarationData {
 		this.isImplicit = isImplicit
 		this.isStatic = isStatic
 		this.isMutating = isMutating
+		this.isPure = isPure
 		this.extendsType = extendsType
 		this.statements = statements
 		this.access = access

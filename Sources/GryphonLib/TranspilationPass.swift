@@ -675,6 +675,7 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 				isImplicit: false,
 				isStatic: false,
 				isMutating: false,
+				isPure: false,
 				extendsType: variableDeclaration.extendsType,
 				statements: getter.statements,
 				access: nil,
@@ -1720,7 +1721,10 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 /// internal names it should return.
 /// This pass goes through all the function declarations it finds and stores the information needed
 /// to translate these functions correctly later.
-public class RecordFunctionTranslationsTranspilationPass: TranspilationPass {
+///
+/// It also records all functions that have been marked as pure so that they don't raise warnings
+/// for possible side-effects in if-lets.
+public class RecordFunctionsTranspilationPass: TranspilationPass {
 	override func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclarationData)
 		-> FunctionDeclarationData?
 	{
@@ -1732,6 +1736,12 @@ public class RecordFunctionTranslationsTranspilationPass: TranspilationPass {
 			typeName: functionDeclaration.functionType,
 			prefix: functionDeclaration.prefix,
 			parameters: functionDeclaration.parameters.map { $0.label }))
+
+		//
+		if functionDeclaration.isPure {
+			KotlinTranslator.recordPureFunction(functionDeclaration)
+		}
+
 		return super.replaceFunctionDeclaration(functionDeclaration)
 	}
 }
@@ -1922,10 +1932,13 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 		return []
 	}
 
-	private func mayHaveSideEffectsOnRanges(_ expression: Expression) -> ArrayClass<SourceFileRange> {
+	private func mayHaveSideEffectsOnRanges(_ expression: Expression) -> ArrayClass<SourceFileRange>
+	{
 		switch expression {
 		case let .callExpression(data: callExpression):
-			if let range = callExpression.range {
+			if !KotlinTranslator.isReferencingPureFunction(callExpression),
+				let range = callExpression.range
+			{
 				return [range]
 			}
 			else {
@@ -2182,6 +2195,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 			isImplicit: false,
 			isStatic: true,
 			isMutating: false,
+			isPure: true,
 			extendsType: nil,
 			statements: [switchStatement],
 			access: access,
@@ -2232,6 +2246,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 			isImplicit: false,
 			isStatic: false,
 			isMutating: false,
+			isPure: false,
 			extendsType: nil,
 			statements: [switchStatement],
 			access: access,
@@ -2401,7 +2416,7 @@ public extension TranspilationPass {
 		result = RecordTemplatesTranspilationPass(ast: result).run()
 		result = RecordEnumsTranspilationPass(ast: result).run()
 		result = RecordProtocolsTranspilationPass(ast: result).run()
-		result = RecordFunctionTranslationsTranspilationPass(ast: result).run()
+		result = RecordFunctionsTranspilationPass(ast: result).run()
 
 		return result
 	}

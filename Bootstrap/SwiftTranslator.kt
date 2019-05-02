@@ -21,6 +21,104 @@ class SwiftTranslator {
 	}
 }
 
+internal fun SwiftTranslator.translateSubscriptExpression(
+	subscriptExpression: SwiftAST)
+	: Expression
+{
+	if (subscriptExpression.name != "Subscript Expression") {
+		return unexpectedExpressionStructureError(
+			"Trying to translate ${subscriptExpression.name} as 'Subscript Expression'",
+			ast = subscriptExpression,
+			translator = this)
+	}
+
+	val rawType: String? = subscriptExpression["type"]
+	val subscriptContents: SwiftAST? = subscriptExpression.subtree(index = 1, name = "Parentheses Expression") ?: subscriptExpression.subtree(index = 1, name = "Tuple Expression")
+	val subscriptedExpression: SwiftAST? = subscriptExpression.subtree(index = 0)
+
+	if (rawType != null && subscriptContents != null && subscriptedExpression != null) {
+		val typeName: String = cleanUpType(rawType)
+		val subscriptContentsTranslation: Expression = Expression.NilLiteralExpression()
+		val subscriptedExpressionTranslation: Expression = Expression.NilLiteralExpression()
+
+		return Expression.SubscriptExpression(
+			subscriptedExpression = subscriptedExpressionTranslation,
+			indexExpression = subscriptContentsTranslation,
+			typeName = typeName)
+	}
+	else {
+		return unexpectedExpressionStructureError(
+			"Unrecognized structure",
+			ast = subscriptExpression,
+			translator = this)
+	}
+}
+
+internal fun SwiftTranslator.translateArrayExpression(arrayExpression: SwiftAST): Expression {
+	if (arrayExpression.name != "Array Expression") {
+		return unexpectedExpressionStructureError(
+			"Trying to translate ${arrayExpression.name} as 'Array Expression'",
+			ast = arrayExpression,
+			translator = this)
+	}
+
+	val expressionsToTranslate: MutableList<SwiftAST> = arrayExpression.subtrees.dropLast(1) as MutableList<SwiftAST>
+	val expressionsArray: MutableList<Expression> = mutableListOf<Expression>()
+	val rawType: String? = arrayExpression["type"]
+
+	rawType ?: return unexpectedExpressionStructureError("Failed to get type", ast = arrayExpression, translator = this)
+
+	val typeName: String = cleanUpType(rawType)
+
+	return Expression.ArrayExpression(elements = expressionsArray, typeName = typeName)
+}
+
+internal fun SwiftTranslator.translateDictionaryExpression(
+	dictionaryExpression: SwiftAST)
+	: Expression
+{
+	if (dictionaryExpression.name != "Dictionary Expression") {
+		return unexpectedExpressionStructureError(
+			"Trying to translate ${dictionaryExpression.name} as 'Dictionary Expression'",
+			ast = dictionaryExpression,
+			translator = this)
+	}
+
+	val keys: MutableList<Expression> = mutableListOf()
+	val values: MutableList<Expression> = mutableListOf()
+
+	for (tupleExpression in dictionaryExpression.subtrees) {
+		if (tupleExpression.name != "Tuple Expression") {
+			continue
+		}
+
+		val keyAST: SwiftAST? = tupleExpression.subtree(index = 0)
+		val valueAST: SwiftAST? = tupleExpression.subtree(index = 1)
+
+		if (!(keyAST != null && valueAST != null)) {
+			return unexpectedExpressionStructureError(
+				"Unable to get either key or value for one of the tuple expressions",
+				ast = dictionaryExpression,
+				translator = this)
+		}
+
+		val keyTranslation: Expression = Expression.NilLiteralExpression()
+		val valueTranslation: Expression = Expression.NilLiteralExpression()
+
+		keys.add(keyTranslation)
+		values.add(valueTranslation)
+	}
+
+	val typeName: String? = dictionaryExpression["type"]
+
+	typeName ?: return unexpectedExpressionStructureError(
+		"Unable to get type",
+		ast = dictionaryExpression,
+		translator = this)
+
+	return Expression.DictionaryExpression(keys = keys, values = values, typeName = typeName)
+}
+
 internal fun SwiftTranslator.translateAsNumericLiteral(callExpression: SwiftAST): Expression {
 	if (callExpression.name != "Call Expression") {
 		return unexpectedExpressionStructureError(

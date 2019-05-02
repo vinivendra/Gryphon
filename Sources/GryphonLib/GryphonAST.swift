@@ -899,6 +899,7 @@ public class FunctionDeclarationData: Equatable {
 	var isImplicit: Bool
 	var isStatic: Bool
 	var isMutating: Bool
+	var isPure: Bool
 	var extendsType: String?
 	var statements: ArrayClass<Statement>?
 	var access: String?
@@ -913,6 +914,7 @@ public class FunctionDeclarationData: Equatable {
 		isImplicit: Bool,
 		isStatic: Bool,
 		isMutating: Bool,
+		isPure: Bool,
 		extendsType: String?,
 		statements: ArrayClass<Statement>?,
 		access: String?,
@@ -926,6 +928,7 @@ public class FunctionDeclarationData: Equatable {
 		self.isImplicit = isImplicit
 		self.isStatic = isStatic
 		self.isMutating = isMutating
+		self.isPure = isPure
 		self.extendsType = extendsType
 		self.statements = statements
 		self.access = access
@@ -945,6 +948,7 @@ public class FunctionDeclarationData: Equatable {
 			lhs.isImplicit == rhs.isImplicit &&
 			lhs.isStatic == rhs.isStatic &&
 			lhs.isMutating == rhs.isMutating &&
+			lhs.isPure == rhs.isPure &&
 			lhs.extendsType == rhs.extendsType &&
 			lhs.statements == rhs.statements &&
 			lhs.access == rhs.access &&
