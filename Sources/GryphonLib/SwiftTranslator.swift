@@ -185,7 +185,7 @@ extension SwiftTranslator { // kotlin: ignore
 			result = try translate(binaryExpression: expression)
 		case "If Expression":
 			result = try translate(ifExpression: expression)
-		case "Call Expression":
+		case "Call Expression", "Constructor Reference Call Expression":
 			result = try translate(callExpression: expression)
 		case "Closure Expression":
 			result = try translate(closureExpression: expression)
@@ -225,7 +225,7 @@ extension SwiftTranslator { // kotlin: ignore
 		case "Tuple Element Expression":
 			result = try translate(tupleElementExpression: expression)
 		case "Tuple Expression":
-			result = try translate(tupleExpression: expression)
+			result = try translateTupleExpression(expression)
 		case "Subscript Expression":
 			result = try translateSubscriptExpression(expression)
 		case "Nil Literal Expression":
@@ -903,11 +903,11 @@ extension SwiftTranslator { // kotlin: ignore
 				ast: dotSyntaxCallExpression, translator: self)
 		}
 
-		if let leftHandTree = dotSyntaxCallExpression.subtree(at: 1),
+		if let leftHandExpression = dotSyntaxCallExpression.subtree(at: 1),
 			let rightHandExpression = dotSyntaxCallExpression.subtree(at: 0)
 		{
 			let rightHand = try translate(expression: rightHandExpression)
-			let leftHand = try translate(typeExpression: leftHandTree)
+			let leftHand = try translate(expression: leftHandExpression)
 
 			// Swift 4.2
 			if case .typeExpression(typeName: _) = leftHand,
@@ -1854,7 +1854,7 @@ extension SwiftTranslator { // kotlin: ignore
 			function = try translate(expression: callExpression.subtrees[0])
 		}
 
-		let parameters = try translate(callExpressionParameters: callExpression)
+		let parameters = try translateCallExpressionParameters(callExpression)
 
 		let range = getRange(ofNode: callExpression)
 
@@ -1930,8 +1930,16 @@ extension SwiftTranslator { // kotlin: ignore
 			statements: ArrayClass<Statement>(statements),
 			typeName: cleanUpType(typeName))
 	}
+}
 
-	internal func translate(callExpressionParameters callExpression: SwiftAST) throws
+extension SwiftTranslator {
+	// MARK: - Expression translations
+
+// declaration: internal fun translate(expression: SwiftAST): Expression {
+// declaration: 	return Expression.NilLiteralExpression()
+// declaration: }
+
+	internal func translateCallExpressionParameters(_ callExpression: SwiftAST) throws
 		-> Expression
 	{
 		guard callExpression.name == "Call Expression" else {
@@ -1947,29 +1955,43 @@ extension SwiftTranslator { // kotlin: ignore
 				pairs: [LabeledExpression(label: nil, expression: expression)])
 		}
 		else if let tupleExpression = callExpression.subtree(named: "Tuple Expression") {
-			parameters = try translate(tupleExpression: tupleExpression)
+			parameters = try translateTupleExpression(tupleExpression)
 		}
 		else if let tupleShuffleExpression = callExpression
 			.subtree(named: "Tuple Shuffle Expression")
 		{
-			if let parenthesesExpression = tupleShuffleExpression
+			let parenthesesExpression = tupleShuffleExpression
 				.subtree(named: "Parentheses Expression")
-			{
+
+			let tupleExpression = tupleShuffleExpression.subtree(named: "Tuple Expression")
+			let typeName = tupleShuffleExpression["type"]
+			let elements = tupleShuffleExpression["elements"]
+			let rawIndicesStrings = elements?.split(withStringSeparator: ", ")
+			let rawIndices = rawIndicesStrings.map({ $0.map { Int($0) } })
+
+			if let parenthesesExpression = parenthesesExpression {
 				let expression = try translate(expression: parenthesesExpression)
 				parameters = .tupleExpression(
 					pairs: [LabeledExpression(label: nil, expression: expression)])
 			}
-			else if let tupleExpression = tupleShuffleExpression.subtree(named: "Tuple Expression"),
-				let typeName = tupleShuffleExpression["type"],
-				let elements = tupleShuffleExpression["elements"],
-				let rawIndices = elements.split(withStringSeparator: ", ").map(Int.init) as? [Int]
+			else if let tupleExpression = tupleExpression,
+				let typeName = typeName,
+				let rawIndices = rawIndices
 			{
 				let indices: ArrayClass<TupleShuffleIndex> = []
 				for rawIndex in rawIndices {
+
+					guard let rawIndex = rawIndex else {
+						return try unexpectedExpressionStructureError(
+							"Expected Tuple shuffle index but found nil",
+							ast: callExpression,
+							translator: self)
+					}
+
 					if rawIndex == -2 {
-						guard let variadicCount = tupleShuffleExpression["variadic_sources"]?
-							.split(withStringSeparator: ", ").count else
-						{
+						let variadicSources = tupleShuffleExpression["variadic_sources"]?
+							.split(withStringSeparator: ", ")
+						guard let variadicCount = variadicSources?.count else {
 							return try unexpectedExpressionStructureError(
 								"Failed to read variadic sources",
 								ast: callExpression,
@@ -1991,13 +2013,18 @@ extension SwiftTranslator { // kotlin: ignore
 					}
 				}
 
-				let tupleComponents = ArrayClass(
+				let tupleComponents = ArrayClass<String>(
 					String(typeName.dropFirst().dropLast())
 						.split(withStringSeparator: ", "))
 				let labels = tupleComponents
-					.map { $0.prefix(while: { $0 != ":" }) }
-					.map(String.init)
-				let expressions = try tupleExpression.subtrees.map(translate(expression:))
+					.map { $0.prefix(while: {
+						$0 !=
+							":" // value: ':'
+					}) }
+					.map { String($0) }
+				let expressions = try tupleExpression.subtrees.map {
+					try translate(expression: $0)
+				}
 				parameters = .tupleShuffleExpression(
 					labels: labels,
 					indices: indices,
@@ -2016,7 +2043,7 @@ extension SwiftTranslator { // kotlin: ignore
 		return parameters
 	}
 
-	internal func translate(tupleExpression: SwiftAST) throws -> Expression {
+	internal func translateTupleExpression(_ tupleExpression: SwiftAST) throws -> Expression {
 		guard tupleExpression.name == "Tuple Expression" else {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(tupleExpression.name) as 'Tuple Expression'",
@@ -2047,10 +2074,6 @@ extension SwiftTranslator { // kotlin: ignore
 
 		return .tupleExpression(pairs: tuplePairs)
 	}
-}
-
-extension SwiftTranslator {
-	// MARK: - Expression translations
 
 	internal func translateInterpolatedStringLiteralExpression(
 		_ interpolatedStringLiteralExpression: SwiftAST)
@@ -2090,8 +2113,7 @@ extension SwiftTranslator {
 					ast: interpolatedStringLiteralExpression, translator: self)
 			}
 
-			let translatedExpression = try // value: Expression.NilLiteralExpression()
-				translate(expression: expression)
+			let translatedExpression = try translate(expression: expression)
 			expressions.append(translatedExpression)
 		}
 
@@ -2120,10 +2142,8 @@ extension SwiftTranslator {
 			let subscriptedExpression = subscriptedExpression
 		{
 			let typeName = cleanUpType(rawType)
-			let subscriptContentsTranslation = try // value: Expression.NilLiteralExpression()
-				translate(expression: subscriptContents)
-			let subscriptedExpressionTranslation = try // value: Expression.NilLiteralExpression()
-				translate(expression: subscriptedExpression)
+			let subscriptContentsTranslation = try translate(expression: subscriptContents)
+			let subscriptedExpressionTranslation = try translate(expression: subscriptedExpression)
 
 			return .subscriptExpression(
 				subscriptedExpression: subscriptedExpressionTranslation,
@@ -2181,10 +2201,8 @@ extension SwiftTranslator {
 					ast: dictionaryExpression, translator: self)
 			}
 
-			let keyTranslation = try // value: Expression.NilLiteralExpression()
-				translate(expression: keyAST)
-			let valueTranslation = try // value: Expression.NilLiteralExpression()
-				translate(expression: valueAST)
+			let keyTranslation = try translate(expression: keyAST)
+			let valueTranslation = try translate(expression: valueAST)
 			keys.append(keyTranslation)
 			values.append(valueTranslation)
 		}
@@ -2518,8 +2536,7 @@ extension SwiftTranslator {
 			if let expression = subtrees.first, astIsExpression(expression) {
 				_ = subtrees.removeFirst()
 
-				let translatedExpression = try // value: Expression.NilLiteralExpression()
-					translate(expression: expression)
+				let translatedExpression = try translate(expression: expression)
 
 				guard let identifier = pattern.standaloneAttributes.first,
 					let rawType = pattern["type"] else

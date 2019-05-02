@@ -61,6 +61,7 @@ func gryphonTemplates() {
 	let _closure2: (Any) -> Any = { a in a }
 	let _closure3: (Any) -> Bool = { _ in true }
 	let _closure4: (MyOptional) -> Any = { _ in true }
+	let _closure5: (Character) -> Bool = { _ in true }
 
 	// MARK: Declare the templates
 
@@ -162,6 +163,9 @@ func gryphonTemplates() {
 
 	_ = _string1.replacingOccurrences(of: _string2, with: _string3)
 	_ = "_string1.replace(_string2, _string3)"
+
+	_ = _string1.prefix(while: _closure5)
+	_ = "_string1.takeWhile _closure5"
 
 	_ = _string1.hasPrefix(_string2)
 	_ = "_string1.startsWith(_string2)"

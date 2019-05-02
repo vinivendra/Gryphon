@@ -21,6 +21,131 @@ class SwiftTranslator {
 	}
 }
 
+internal fun translate(expression: SwiftAST): Expression {
+	return Expression.NilLiteralExpression()
+}
+
+internal fun SwiftTranslator.translateCallExpressionParameters(
+	callExpression: SwiftAST)
+	: Expression
+{
+	if (callExpression.name != "Call Expression") {
+		return unexpectedExpressionStructureError(
+			"Trying to translate ${callExpression.name} as 'Call Expression'",
+			ast = callExpression,
+			translator = this)
+	}
+
+	val parameters: Expression
+	val parenthesesExpression: SwiftAST? = callExpression.subtree(name = "Parentheses Expression")
+	val tupleExpression: SwiftAST? = callExpression.subtree(name = "Tuple Expression")
+	val tupleShuffleExpression: SwiftAST? = callExpression.subtree(name = "Tuple Shuffle Expression")
+
+	if (parenthesesExpression != null) {
+		val expression: Expression = translate(expression = parenthesesExpression)
+		parameters = Expression.TupleExpression(
+			pairs = mutableListOf(LabeledExpression(label = null, expression = expression)))
+	}
+	else if (tupleExpression != null) {
+		parameters = translateTupleExpression(tupleExpression)
+	}
+	else if (tupleShuffleExpression != null) {
+		val parenthesesExpression: SwiftAST? = tupleShuffleExpression.subtree(name = "Parentheses Expression")
+		val tupleExpression: SwiftAST? = tupleShuffleExpression.subtree(name = "Tuple Expression")
+		val typeName: String? = tupleShuffleExpression["type"]
+		val elements: String? = tupleShuffleExpression["elements"]
+		val rawIndicesStrings: MutableList<String>? = elements?.split(separator = ", ")
+		val rawIndices: MutableList<Int?>? = rawIndicesStrings?.let { it.map { it.toIntOrNull() }.toMutableList() }
+
+		if (parenthesesExpression != null) {
+			val expression: Expression = translate(expression = parenthesesExpression)
+			parameters = Expression.TupleExpression(
+				pairs = mutableListOf(LabeledExpression(label = null, expression = expression)))
+		}
+		else if (tupleExpression != null && typeName != null && rawIndices != null) {
+			val indices: MutableList<TupleShuffleIndex> = mutableListOf()
+
+			for (rawIndex in rawIndices) {
+				rawIndex ?: return unexpectedExpressionStructureError(
+					"Expected Tuple shuffle index but found nil",
+					ast = callExpression,
+					translator = this)
+				if (rawIndex == -2) {
+					val variadicSources: MutableList<String>? = tupleShuffleExpression["variadic_sources"]?.split(separator = ", ")
+					val variadicCount: Int? = variadicSources?.size
+
+					variadicCount ?: return unexpectedExpressionStructureError(
+						"Failed to read variadic sources",
+						ast = callExpression,
+						translator = this)
+
+					indices.add(TupleShuffleIndex.Variadic(count = variadicCount))
+				}
+				else if (rawIndex == -1) {
+					indices.add(TupleShuffleIndex.Absent())
+				}
+				else if (rawIndex >= 0) {
+					indices.add(TupleShuffleIndex.Present())
+				}
+				else {
+					return unexpectedExpressionStructureError(
+						"Unknown tuple shuffle index: ${rawIndex}",
+						ast = callExpression,
+						translator = this)
+				}
+			}
+
+			val tupleComponents: MutableList<String> = typeName.drop(1).dropLast(1).split(separator = ", ") as MutableList<String>
+			val labels: MutableList<String> = tupleComponents.map { it.takeWhile { it != ':' } }.toMutableList().map { it }.toMutableList()
+			val expressions: MutableList<Expression> = tupleExpression.subtrees.map { translate(expression = it) }.toMutableList()
+
+			parameters = Expression.TupleShuffleExpression(labels = labels, indices = indices, expressions = expressions)
+		}
+		else {
+			return unexpectedExpressionStructureError(
+				"Unrecognized structure in parameters",
+				ast = callExpression,
+				translator = this)
+		}
+	}
+	else {
+		return unexpectedExpressionStructureError(
+			"Unrecognized structure in parameters",
+			ast = callExpression,
+			translator = this)
+	}
+
+	return parameters
+}
+
+internal fun SwiftTranslator.translateTupleExpression(tupleExpression: SwiftAST): Expression {
+	if (tupleExpression.name != "Tuple Expression") {
+		return unexpectedExpressionStructureError(
+			"Trying to translate ${tupleExpression.name} as 'Tuple Expression'",
+			ast = tupleExpression,
+			translator = this)
+	}
+
+	val names: String? = tupleExpression["names"]
+
+	names ?: return Expression.TupleExpression(pairs = mutableListOf())
+
+	val namesArray: MutableList<String> = names.split(separator = ',')
+	val tuplePairs: MutableList<LabeledExpression> = mutableListOf()
+
+	for ((name, expression) in namesArray.zip(tupleExpression.subtrees)) {
+		val expression: Expression = translate(expression = expression)
+		if (name == "_") {
+			tuplePairs.add(LabeledExpression(label = null, expression = expression))
+		}
+		else {
+			tuplePairs.add(LabeledExpression(label = name, expression = expression))
+		}
+	}
+
+	return Expression.TupleExpression(pairs = tuplePairs)
+}
+
 internal fun SwiftTranslator.translateInterpolatedStringLiteralExpression(
 	interpolatedStringLiteralExpression: SwiftAST)
 	: Expression
@@ -54,7 +179,7 @@ internal fun SwiftTranslator.translateInterpolatedStringLiteralExpression(
 				translator = this)
 		}
 
-		val translatedExpression: Expression = Expression.NilLiteralExpression()
+		val translatedExpression: Expression = translate(expression = expression)
 
 		expressions.add(translatedExpression)
 	}
@@ -79,8 +204,8 @@ internal fun SwiftTranslator.translateSubscriptExpression(
 
 	if (rawType != null && subscriptContents != null && subscriptedExpression != null) {
 		val typeName: String = cleanUpType(rawType)
-		val subscriptContentsTranslation: Expression = Expression.NilLiteralExpression()
-		val subscriptedExpressionTranslation: Expression = Expression.NilLiteralExpression()
+		val subscriptContentsTranslation: Expression = translate(expression = subscriptContents)
+		val subscriptedExpressionTranslation: Expression = translate(expression = subscriptedExpression)
 
 		return Expression.SubscriptExpression(
 			subscriptedExpression = subscriptedExpressionTranslation,
@@ -143,8 +268,8 @@ internal fun SwiftTranslator.translateDictionaryExpression(
 				translator = this)
 		}
 
-		val keyTranslation: Expression = Expression.NilLiteralExpression()
-		val valueTranslation: Expression = Expression.NilLiteralExpression()
+		val keyTranslation: Expression = translate(expression = keyAST)
+		val valueTranslation: Expression = translate(expression = valueAST)
 
 		keys.add(keyTranslation)
 		values.add(valueTranslation)
@@ -481,7 +606,7 @@ internal fun SwiftTranslator.processPatternBindingDeclaration(
 		if (expression != null && astIsExpression(expression)) {
 			subtrees.removeAt(0)
 
-			val translatedExpression: Expression = Expression.NilLiteralExpression()
+			val translatedExpression: Expression = translate(expression = expression)
 			val identifier: String? = pattern.standaloneAttributes.firstOrNull()
 			val rawType: String? = pattern["type"]
 
