@@ -1835,10 +1835,7 @@ public class RecordEnumsTranspilationPass: TranspilationPass {
 		isImplicit: Bool)
 		-> ArrayClass<Statement>
 	{
-		let isEnumClass = inherits.isEmpty && elements.reduce(true)
-		{ (acc: Bool, element: EnumElement) -> Bool in
-			acc && element.associatedValues.isEmpty
-		}
+		let isEnumClass = inherits.isEmpty && elements.allSatisfy { $0.associatedValues.isEmpty }
 
 		if isEnumClass {
 			KotlinTranslator.addEnumClass(enumName)
