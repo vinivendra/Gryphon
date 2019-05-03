@@ -149,7 +149,7 @@ extension SwiftTranslator { // kotlin: ignore
 			result = [.returnStatement(expression: .nilLiteralExpression)]
 		default:
 			if subtree.name.hasSuffix("Expression") {
-				let expression = try translate(expression: subtree)
+				let expression = try translateExpression(subtree)
 				result = [.expressionStatement(expression: expression)]
 			}
 			else {
@@ -169,7 +169,7 @@ extension SwiftTranslator { // kotlin: ignore
 		return result
 	}
 
-	internal func translate(expression: SwiftAST) throws -> Expression {
+	internal func translateExpression(_ expression: SwiftAST) throws -> Expression {
 
 		if let valueReplacement = getComment(forNode: expression, key: "value") {
 			return Expression.literalCodeExpression(string: valueReplacement)
@@ -188,7 +188,7 @@ extension SwiftTranslator { // kotlin: ignore
 		case "Call Expression", "Constructor Reference Call Expression":
 			result = try translate(callExpression: expression)
 		case "Closure Expression":
-			result = try translate(closureExpression: expression)
+			result = try translateClosureExpression(expression)
 		case "Declaration Reference Expression":
 			result = try translateDeclarationReferenceExpression(expression)
 		case "Dot Syntax Call Expression":
@@ -203,10 +203,10 @@ extension SwiftTranslator { // kotlin: ignore
 				if lastExpression.name == "Bind Optional Expression",
 					let innerExpression = lastExpression.subtrees.last
 				{
-					result = try translate(expression: innerExpression)
+					result = try translateExpression(innerExpression)
 				}
 				else {
-					result = try translate(expression: lastExpression)
+					result = try translateExpression(lastExpression)
 				}
 			}
 			else {
@@ -232,16 +232,16 @@ extension SwiftTranslator { // kotlin: ignore
 			result = .nilLiteralExpression
 		case "Open Existential Expression":
 			let processedExpression = try processOpenExistentialExpression(expression)
-			result = try translate(expression: processedExpression)
+			result = try translateExpression(processedExpression)
 		case "Parentheses Expression":
 			if let innerExpression = expression.subtree(at: 0) {
 				// Swift 5: Compiler-created parentheses expressions may be marked with "implicit"
 				if expression.standaloneAttributes.contains("implicit") {
-					result = try translate(expression: innerExpression)
+					result = try translateExpression(innerExpression)
 				}
 				else {
 					result = .parenthesesExpression(
-						expression: try translate(expression: innerExpression))
+						expression: try translateExpression(innerExpression))
 				}
 			}
 			else {
@@ -251,7 +251,7 @@ extension SwiftTranslator { // kotlin: ignore
 			}
 		case "Force Value Expression":
 			if let firstExpression = expression.subtree(at: 0) {
-				let expression = try translate(expression: firstExpression)
+				let expression = try translateExpression(firstExpression)
 				result = .forceValueExpression(expression: expression)
 			}
 			else {
@@ -261,7 +261,7 @@ extension SwiftTranslator { // kotlin: ignore
 			}
 		case "Bind Optional Expression":
 			if let firstExpression = expression.subtree(at: 0) {
-				let expression = try translate(expression: firstExpression)
+				let expression = try translateExpression(firstExpression)
 				result = .optionalExpression(expression: expression)
 			}
 			else {
@@ -275,7 +275,7 @@ extension SwiftTranslator { // kotlin: ignore
 				let subExpression = bindOptionalExpression.subtrees.first
 			{
 				result = .binaryOperatorExpression(
-					leftExpression: try translate(expression: subExpression),
+					leftExpression: try translateExpression(subExpression),
 					rightExpression: .typeExpression(typeName: typeName),
 					operatorSymbol: "as?",
 					typeName: typeName)
@@ -297,7 +297,7 @@ extension SwiftTranslator { // kotlin: ignore
 			"Dot Self Expression":
 
 			if let lastExpression = expression.subtrees.last {
-				result = try translate(expression: lastExpression)
+				result = try translateExpression(lastExpression)
 			}
 			else {
 				result = try unexpectedExpressionStructureError(
@@ -306,7 +306,7 @@ extension SwiftTranslator { // kotlin: ignore
 			}
 		case "Collection Upcast Expression":
 			if let firstExpression = expression.subtrees.first {
-				result = try translate(expression: firstExpression)
+				result = try translateExpression(firstExpression)
 			}
 			else {
 				result = try unexpectedExpressionStructureError(
@@ -406,7 +406,7 @@ extension SwiftTranslator { // kotlin: ignore
 		return try translate(subtrees: ast.subtrees.array, inScope: ast)
 	}
 
-	internal func translate(braceStatement: SwiftAST) throws -> [Statement] {
+	internal func translateBraceStatement(_ braceStatement: SwiftAST) throws -> [Statement] {
 		guard braceStatement.name == "Brace Statement" else {
 			throw createUnexpectedASTStructureError(
 				"Trying to translate \(braceStatement.name) as a brace statement",
@@ -445,11 +445,11 @@ extension SwiftTranslator { // kotlin: ignore
 			let rightExpression = assignExpression.subtree(at: 1)
 		{
 			if leftExpression.name == "Discard Assignment Expression" {
-				return try .expressionStatement(expression: translate(expression: rightExpression))
+				return try .expressionStatement(expression: translateExpression(rightExpression))
 			}
 			else {
-				let leftTranslation = try translate(expression: leftExpression)
-				let rightTranslation = try translate(expression: rightExpression)
+				let leftTranslation = try translateExpression(leftExpression)
+				let rightTranslation = try translateExpression(rightExpression)
 
 				return .assignmentStatement(leftHand: leftTranslation, rightHand: rightTranslation)
 			}
@@ -552,7 +552,7 @@ extension SwiftTranslator { // kotlin: ignore
 		}
 
 		if let expression = throwStatement.subtrees.last {
-			let expressionTranslation = try translate(expression: expression)
+			let expressionTranslation = try translateExpression(expression)
 			return .throwStatement(expression: expressionTranslation)
 		}
 		else {
@@ -614,7 +614,7 @@ extension SwiftTranslator { // kotlin: ignore
 					.subtree(named: "Array Expression")
 			{
 				let rawValueASTs = Array(arrayExpression.subtrees.dropLast())
-				rawValues = try rawValueASTs.map { try translate(expression: $0) }
+				rawValues = try rawValueASTs.map { try translateExpression($0) }
 				break
 			}
 		}
@@ -699,7 +699,7 @@ extension SwiftTranslator { // kotlin: ignore
 			let rawType = memberReferenceExpression["type"]
 		{
 			let typeName = cleanUpType(rawType)
-			let leftHand = try translate(expression: memberOwner)
+			let leftHand = try translateExpression(memberOwner)
 			let declarationInformation = getInformationFromDeclaration(declaration)
 			let isImplicit = memberReferenceExpression.standaloneAttributes.contains("implicit")
 			let range = getRangeRecursively(ofNode: memberReferenceExpression)
@@ -775,7 +775,7 @@ extension SwiftTranslator { // kotlin: ignore
 			let expression = prefixUnaryExpression.subtree(at: 1)
 		{
 			let typeName = cleanUpType(rawType)
-			let expressionTranslation = try translate(expression: expression)
+			let expressionTranslation = try translateExpression(expression)
 			let operatorInformation = getInformationFromDeclaration(declaration)
 
 			return .prefixUnaryExpression(
@@ -806,7 +806,7 @@ extension SwiftTranslator { // kotlin: ignore
 			let expression = postfixUnaryExpression.subtree(at: 1)
 		{
 			let typeName = cleanUpType(rawType)
-			let expressionTranslation = try translate(expression: expression)
+			let expressionTranslation = try translateExpression(expression)
 			let operatorInformation = getInformationFromDeclaration(declaration)
 
 			return .postfixUnaryExpression(
@@ -841,8 +841,8 @@ extension SwiftTranslator { // kotlin: ignore
 		{
 			let typeName = cleanUpType(rawType)
 			let operatorInformation = getInformationFromDeclaration(declaration)
-			let leftHandTranslation = try translate(expression: leftHandExpression)
-			let rightHandTranslation = try translate(expression: rightHandExpression)
+			let leftHandTranslation = try translateExpression(leftHandExpression)
+			let rightHandTranslation = try translateExpression(rightHandExpression)
 
 			return .binaryOperatorExpression(
 				leftExpression: leftHandTranslation,
@@ -871,9 +871,9 @@ extension SwiftTranslator { // kotlin: ignore
 				ast: ifExpression, translator: self)
 		}
 
-		let condition = try translate(expression: ifExpression.subtrees[0])
-		let trueExpression = try translate(expression: ifExpression.subtrees[1])
-		let falseExpression = try translate(expression: ifExpression.subtrees[2])
+		let condition = try translateExpression(ifExpression.subtrees[0])
+		let trueExpression = try translateExpression(ifExpression.subtrees[1])
+		let falseExpression = try translateExpression(ifExpression.subtrees[2])
 
 		return .ifExpression(
 			condition: condition, trueExpression: trueExpression, falseExpression: falseExpression)
@@ -906,8 +906,8 @@ extension SwiftTranslator { // kotlin: ignore
 		if let leftHandExpression = dotSyntaxCallExpression.subtree(at: 1),
 			let rightHandExpression = dotSyntaxCallExpression.subtree(at: 0)
 		{
-			let rightHand = try translate(expression: rightHandExpression)
-			let leftHand = try translate(expression: leftHandExpression)
+			let rightHand = try translateExpression(rightHandExpression)
+			let leftHand = try translateExpression(leftHandExpression)
 
 			// Swift 4.2
 			if case .typeExpression(typeName: _) = leftHand,
@@ -934,7 +934,7 @@ extension SwiftTranslator { // kotlin: ignore
 		}
 
 		if let expression = returnStatement.subtrees.last {
-			let expression = try translate(expression: expression)
+			let expression = try translateExpression(expression)
 			return .returnStatement(expression: expression)
 		}
 		else {
@@ -1015,8 +1015,8 @@ extension SwiftTranslator { // kotlin: ignore
 				ast: forEachStatement, translator: self)
 		}
 
-		let collectionTranslation = try translate(expression: collectionExpression)
-		let statements = try translate(braceStatement: braceStatement)
+		let collectionTranslation = try translateExpression(collectionExpression)
+		let statements = try translateBraceStatement(braceStatement)
 
 		return .forEachStatement(
 			collection: collectionTranslation,
@@ -1045,8 +1045,8 @@ extension SwiftTranslator { // kotlin: ignore
 				ast: whileStatement, translator: self)
 		}
 
-		let expression = try translate(expression: expressionSubtree)
-		let statements = try translate(braceStatement: braceStatement)
+		let expression = try translateExpression(expressionSubtree)
+		let statements = try translateBraceStatement(braceStatement)
 
 		return .whileStatement(expression: expression, statements: ArrayClass(statements))
 	}
@@ -1067,7 +1067,7 @@ extension SwiftTranslator { // kotlin: ignore
 				ast: deferStatement, translator: self)
 		}
 
-		let statements = try translate(braceStatement: braceStatement)
+		let statements = try translateBraceStatement(braceStatement)
 		return .deferStatement(statements: ArrayClass(statements))
 	}
 
@@ -1111,7 +1111,7 @@ extension SwiftTranslator { // kotlin: ignore
 			elseAST.name == "Brace Statement"
 		{
 			braceStatement = unwrappedBraceStatement
-			let statements = try translate(braceStatement: elseAST)
+			let statements = try translateBraceStatement(elseAST)
 			elseStatement = IfStatementData(
 				conditions: [], declarations: [],
 				statements: ArrayClass(statements),
@@ -1130,7 +1130,7 @@ extension SwiftTranslator { // kotlin: ignore
 				ast: ifStatement, translator: self)
 		}
 
-		let statements = try translate(braceStatement: braceStatement)
+		let statements = try translateBraceStatement(braceStatement)
 
 		return IfStatementData(
 			conditions: ArrayClass(conditions),
@@ -1153,7 +1153,7 @@ extension SwiftTranslator { // kotlin: ignore
 				ast: switchStatement, translator: self)
 		}
 
-		let translatedExpression = try translate(expression: expression)
+		let translatedExpression = try translateExpression(expression)
 
 		let cases: ArrayClass<SwitchCase> = []
 		let caseSubtrees = switchStatement.subtrees.dropFirst()
@@ -1207,8 +1207,8 @@ extension SwiftTranslator { // kotlin: ignore
 					extraStatements = []
 				}
 				else if let expression = caseLabelItem.subtrees.first?.subtrees.first {
-					let translateExpression = try translate(expression: expression)
-					caseExpression = translateExpression
+					let translatedExpression = try translateExpression(expression)
+					caseExpression = translatedExpression
 					extraStatements = []
 				}
 				else {
@@ -1227,7 +1227,7 @@ extension SwiftTranslator { // kotlin: ignore
 					ast: switchStatement, translator: self)
 			}
 
-			let translatedStatements = try translate(braceStatement: braceStatement)
+			let translatedStatements = try translateBraceStatement(braceStatement)
 
 			cases.append(SwitchCase(
 				expression: caseExpression, statements: extraStatements + translatedStatements))
@@ -1352,7 +1352,7 @@ extension SwiftTranslator { // kotlin: ignore
 							ast: ifStatement, translator: self), ])
 				}
 
-				let expression = try translate(expression: lastCondition)
+				let expression = try translateExpression(lastCondition)
 
 				conditionsResult.append(.declaration(variableDeclaration: VariableDeclarationData(
 					identifier: name,
@@ -1385,7 +1385,7 @@ extension SwiftTranslator { // kotlin: ignore
 				let declarations = patternLetResult.declarations
 				let enumClassName = enumType + "." + enumCase.capitalizedAsCamelCase()
 
-				let declarationReference = try translate(expression: declarationReferenceAST)
+				let declarationReference = try translateExpression(declarationReferenceAST)
 
 				conditionsResult.append(.condition(expression: .binaryOperatorExpression(
 					leftExpression: declarationReference,
@@ -1419,7 +1419,7 @@ extension SwiftTranslator { // kotlin: ignore
 			}
 			else {
 				conditionsResult.append(.condition(expression:
-					try translate(expression: condition)))
+					try translateExpression(condition)))
 			}
 		}
 
@@ -1579,7 +1579,7 @@ extension SwiftTranslator { // kotlin: ignore
 
 					let defaultValue: Expression?
 					if let defaultValueTree = parameter.subtrees.first {
-						defaultValue = try translate(expression: defaultValueTree)
+						defaultValue = try translateExpression(defaultValueTree)
 					}
 					else {
 						defaultValue = nil
@@ -1616,7 +1616,7 @@ extension SwiftTranslator { // kotlin: ignore
 		// Translate the function body
 		let statements: ArrayClass<Statement>
 		if let braceStatement = functionDeclaration.subtree(named: "Brace Statement") {
-			statements = try ArrayClass(translate(braceStatement: braceStatement))
+			statements = try ArrayClass(translateBraceStatement(braceStatement))
 		}
 		else {
 			statements = []
@@ -1664,7 +1664,7 @@ extension SwiftTranslator { // kotlin: ignore
 				"Unrecognized structure", ast: topLevelCodeDeclaration, translator: self)
 		}
 
-		let subtrees = try translate(braceStatement: braceStatement)
+		let subtrees = try translateBraceStatement(braceStatement)
 
 		return subtrees.first
 	}
@@ -1729,7 +1729,7 @@ extension SwiftTranslator { // kotlin: ignore
 
 			let statements: ArrayClass<Statement>
 			if let braceStatement = subtree.subtree(named: "Brace Statement") {
-				statements = try ArrayClass(translate(braceStatement: braceStatement))
+				statements = try ArrayClass(translateBraceStatement(braceStatement))
 			}
 			else {
 				statements = []
@@ -1819,7 +1819,7 @@ extension SwiftTranslator { // kotlin: ignore
 				.subtree(named: "Dot Syntax Call Expression")?
 				.subtrees.last
 		{
-			return try translate(expression: containedExpression)
+			return try translateExpression(containedExpression)
 		}
 
 		guard let rawType = callExpression["type"] else {
@@ -1841,7 +1841,7 @@ extension SwiftTranslator { // kotlin: ignore
 			let methodOwner = dotSyntaxCallExpression.subtree(at: 1)
 		{
 			let methodName = try translateDeclarationReferenceExpression(methodName)
-			let methodOwner = try translate(expression: methodOwner)
+			let methodOwner = try translateExpression(methodOwner)
 			function = .dotExpression(leftExpression: methodOwner, rightExpression: methodName)
 		}
 		else if let typeExpression = callExpression
@@ -1851,7 +1851,7 @@ extension SwiftTranslator { // kotlin: ignore
 			function = try translate(typeExpression: typeExpression)
 		}
 		else {
-			function = try translate(expression: callExpression.subtrees[0])
+			function = try translateExpression(callExpression.subtrees[0])
 		}
 
 		let parameters = try translateCallExpressionParameters(callExpression)
@@ -1864,8 +1864,22 @@ extension SwiftTranslator { // kotlin: ignore
 			typeName: typeName,
 			range: range))
 	}
+}
 
-	internal func translate(closureExpression: SwiftAST) throws -> Expression {
+extension SwiftTranslator {
+	// MARK: - Expression translations
+
+// declaration: internal fun translateExpression(expression: SwiftAST): Expression {
+// declaration: 	return Expression.NilLiteralExpression()
+// declaration: }
+
+// declaration: internal fun translateBraceStatement(braceStatement: SwiftAST):
+// declaration: 	MutableList<Statement>
+// declaration: {
+// declaration: 	return mutableListOf()
+// declaration: }
+
+	internal func translateClosureExpression(_ closureExpression: SwiftAST) throws -> Expression {
 		guard closureExpression.name == "Closure Expression" else {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(closureExpression.name) as 'Closure Expression'",
@@ -1904,8 +1918,7 @@ extension SwiftTranslator { // kotlin: ignore
 
 		// Translate the return type
 		// FIXME: Doesn't allow to return function types
-		guard let typeName = closureExpression["type"] else
-		{
+		guard let typeName = closureExpression["type"] else {
 			return try unexpectedExpressionStructureError(
 				"Unable to get type or return type", ast: closureExpression, translator: self)
 		}
@@ -1918,10 +1931,10 @@ extension SwiftTranslator { // kotlin: ignore
 
 		let statements: [Statement]
 		if lastSubtree.name == "Brace Statement" {
-			statements = try translate(braceStatement: lastSubtree)
+			statements = try translateBraceStatement(lastSubtree)
 		}
 		else {
-			let expression = try translate(expression: lastSubtree)
+			let expression = try translateExpression(lastSubtree)
 			statements = [Statement.expressionStatement(expression: expression)]
 		}
 
@@ -1930,14 +1943,6 @@ extension SwiftTranslator { // kotlin: ignore
 			statements: ArrayClass<Statement>(statements),
 			typeName: cleanUpType(typeName))
 	}
-}
-
-extension SwiftTranslator {
-	// MARK: - Expression translations
-
-// declaration: internal fun translate(expression: SwiftAST): Expression {
-// declaration: 	return Expression.NilLiteralExpression()
-// declaration: }
 
 	internal func translateCallExpressionParameters(_ callExpression: SwiftAST) throws
 		-> Expression
@@ -1950,7 +1955,7 @@ extension SwiftTranslator {
 
 		let parameters: Expression
 		if let parenthesesExpression = callExpression.subtree(named: "Parentheses Expression") {
-			let expression = try translate(expression: parenthesesExpression)
+			let expression = try translateExpression(parenthesesExpression)
 			parameters = .tupleExpression(
 				pairs: [LabeledExpression(label: nil, expression: expression)])
 		}
@@ -1970,7 +1975,7 @@ extension SwiftTranslator {
 			let rawIndices = rawIndicesStrings.map({ $0.map { Int($0) } })
 
 			if let parenthesesExpression = parenthesesExpression {
-				let expression = try translate(expression: parenthesesExpression)
+				let expression = try translateExpression(parenthesesExpression)
 				parameters = .tupleExpression(
 					pairs: [LabeledExpression(label: nil, expression: expression)])
 			}
@@ -2023,7 +2028,7 @@ extension SwiftTranslator {
 					}) }
 					.map { String($0) }
 				let expressions = try tupleExpression.subtrees.map {
-					try translate(expression: $0)
+					try translateExpression($0)
 				}
 				parameters = .tupleShuffleExpression(
 					labels: labels,
@@ -2060,7 +2065,7 @@ extension SwiftTranslator {
 		let tuplePairs: ArrayClass<LabeledExpression> = []
 
 		for (name, expression) in zip(namesArray, tupleExpression.subtrees) {
-			let expression = try translate(expression: expression)
+			let expression = try translateExpression(expression)
 
 			// Empty names (like the underscore in "foo(_:)") are represented by ''
 			if name == "_" {
@@ -2113,7 +2118,7 @@ extension SwiftTranslator {
 					ast: interpolatedStringLiteralExpression, translator: self)
 			}
 
-			let translatedExpression = try translate(expression: expression)
+			let translatedExpression = try translateExpression(expression)
 			expressions.append(translatedExpression)
 		}
 
@@ -2142,8 +2147,8 @@ extension SwiftTranslator {
 			let subscriptedExpression = subscriptedExpression
 		{
 			let typeName = cleanUpType(rawType)
-			let subscriptContentsTranslation = try translate(expression: subscriptContents)
-			let subscriptedExpressionTranslation = try translate(expression: subscriptedExpression)
+			let subscriptContentsTranslation = try translateExpression(subscriptContents)
+			let subscriptedExpressionTranslation = try translateExpression(subscriptedExpression)
 
 			return .subscriptExpression(
 				subscriptedExpression: subscriptedExpressionTranslation,
@@ -2167,7 +2172,7 @@ extension SwiftTranslator {
 		let expressionsToTranslate = ArrayClass<SwiftAST>(arrayExpression.subtrees.dropLast())
 
 		let expressionsArray = try // value: mutableListOf<Expression>()
-			expressionsToTranslate.map(translate(expression:))
+			expressionsToTranslate.map(translateExpression(_:))
 
 		guard let rawType = arrayExpression["type"] else {
 			return try unexpectedExpressionStructureError(
@@ -2201,8 +2206,8 @@ extension SwiftTranslator {
 					ast: dictionaryExpression, translator: self)
 			}
 
-			let keyTranslation = try translate(expression: keyAST)
-			let valueTranslation = try translate(expression: valueAST)
+			let keyTranslation = try translateExpression(keyAST)
+			let valueTranslation = try translateExpression(valueAST)
 			keys.append(keyTranslation)
 			values.append(valueTranslation)
 		}
@@ -2536,7 +2541,7 @@ extension SwiftTranslator {
 			if let expression = subtrees.first, astIsExpression(expression) {
 				_ = subtrees.removeFirst()
 
-				let translatedExpression = try translate(expression: expression)
+				let translatedExpression = try translateExpression(expression)
 
 				guard let identifier = pattern.standaloneAttributes.first,
 					let rawType = pattern["type"] else

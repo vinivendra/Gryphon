@@ -21,8 +21,82 @@ class SwiftTranslator {
 	}
 }
 
-internal fun translate(expression: SwiftAST): Expression {
+internal fun translateExpression(expression: SwiftAST): Expression {
 	return Expression.NilLiteralExpression()
+}
+internal fun translateBraceStatement(braceStatement: SwiftAST):
+	MutableList<Statement>
+{
+	return mutableListOf()
+}
+
+internal fun SwiftTranslator.translateClosureExpression(closureExpression: SwiftAST): Expression {
+	if (closureExpression.name != "Closure Expression") {
+		return unexpectedExpressionStructureError(
+			"Trying to translate ${closureExpression.name} as 'Closure Expression'",
+			ast = closureExpression,
+			translator = this)
+	}
+
+	val parameterList: SwiftAST?
+	val unwrapped: SwiftAST? = closureExpression.subtree(name = "Parameter List")
+
+	if (unwrapped != null) {
+		parameterList = unwrapped
+	}
+	else {
+		parameterList = null
+	}
+
+	val parameters: MutableList<LabeledType> = mutableListOf()
+
+	if (parameterList != null) {
+		for (parameter in parameterList.subtrees) {
+			val name: String? = parameter.standaloneAttributes.firstOrNull()
+			val typeName: String? = parameter["interface type"]
+			if (name != null && typeName != null) {
+				if (name.startsWith("anonname=0x")) {
+					continue
+				}
+				parameters.add(LabeledType(label = name, typeName = cleanUpType(typeName)))
+			}
+			else {
+				return unexpectedExpressionStructureError(
+					"Unable to detect name or attribute for a parameter",
+					ast = closureExpression,
+					translator = this)
+			}
+		}
+	}
+
+	val typeName: String? = closureExpression["type"]
+
+	typeName ?: return unexpectedExpressionStructureError(
+		"Unable to get type or return type",
+		ast = closureExpression,
+		translator = this)
+
+	val lastSubtree: SwiftAST? = closureExpression.subtrees.lastOrNull()
+
+	lastSubtree ?: return unexpectedExpressionStructureError(
+		"Unable to get closure body",
+		ast = closureExpression,
+		translator = this)
+
+	val statements: MutableList<Statement>
+
+	if (lastSubtree.name == "Brace Statement") {
+		statements = translateBraceStatement(lastSubtree)
+	}
+	else {
+		val expression: Expression = translateExpression(lastSubtree)
+		statements = mutableListOf(Statement.ExpressionStatement(expression = expression))
+	}
+
+	return Expression.ClosureExpression(
+		parameters = parameters,
+		statements = statements as MutableList<Statement>,
+		typeName = cleanUpType(typeName))
 }
 
 internal fun SwiftTranslator.translateCallExpressionParameters(
@@ -42,7 +116,7 @@ internal fun SwiftTranslator.translateCallExpressionParameters(
 	val tupleShuffleExpression: SwiftAST? = callExpression.subtree(name = "Tuple Shuffle Expression")
 
 	if (parenthesesExpression != null) {
-		val expression: Expression = translate(expression = parenthesesExpression)
+		val expression: Expression = translateExpression(parenthesesExpression)
 		parameters = Expression.TupleExpression(
 			pairs = mutableListOf(LabeledExpression(label = null, expression = expression)))
 	}
@@ -58,7 +132,7 @@ internal fun SwiftTranslator.translateCallExpressionParameters(
 		val rawIndices: MutableList<Int?>? = rawIndicesStrings?.let { it.map { it.toIntOrNull() }.toMutableList() }
 
 		if (parenthesesExpression != null) {
-			val expression: Expression = translate(expression = parenthesesExpression)
+			val expression: Expression = translateExpression(parenthesesExpression)
 			parameters = Expression.TupleExpression(
 				pairs = mutableListOf(LabeledExpression(label = null, expression = expression)))
 		}
@@ -97,7 +171,7 @@ internal fun SwiftTranslator.translateCallExpressionParameters(
 
 			val tupleComponents: MutableList<String> = typeName.drop(1).dropLast(1).split(separator = ", ") as MutableList<String>
 			val labels: MutableList<String> = tupleComponents.map { it.takeWhile { it != ':' } }.toMutableList().map { it }.toMutableList()
-			val expressions: MutableList<Expression> = tupleExpression.subtrees.map { translate(expression = it) }.toMutableList()
+			val expressions: MutableList<Expression> = tupleExpression.subtrees.map { translateExpression(it) }.toMutableList()
 
 			parameters = Expression.TupleShuffleExpression(labels = labels, indices = indices, expressions = expressions)
 		}
@@ -134,7 +208,7 @@ internal fun SwiftTranslator.translateTupleExpression(tupleExpression: SwiftAST)
 	val tuplePairs: MutableList<LabeledExpression> = mutableListOf()
 
 	for ((name, expression) in namesArray.zip(tupleExpression.subtrees)) {
-		val expression: Expression = translate(expression = expression)
+		val expression: Expression = translateExpression(expression)
 		if (name == "_") {
 			tuplePairs.add(LabeledExpression(label = null, expression = expression))
 		}
@@ -179,7 +253,7 @@ internal fun SwiftTranslator.translateInterpolatedStringLiteralExpression(
 				translator = this)
 		}
 
-		val translatedExpression: Expression = translate(expression = expression)
+		val translatedExpression: Expression = translateExpression(expression)
 
 		expressions.add(translatedExpression)
 	}
@@ -204,8 +278,8 @@ internal fun SwiftTranslator.translateSubscriptExpression(
 
 	if (rawType != null && subscriptContents != null && subscriptedExpression != null) {
 		val typeName: String = cleanUpType(rawType)
-		val subscriptContentsTranslation: Expression = translate(expression = subscriptContents)
-		val subscriptedExpressionTranslation: Expression = translate(expression = subscriptedExpression)
+		val subscriptContentsTranslation: Expression = translateExpression(subscriptContents)
+		val subscriptedExpressionTranslation: Expression = translateExpression(subscriptedExpression)
 
 		return Expression.SubscriptExpression(
 			subscriptedExpression = subscriptedExpressionTranslation,
@@ -268,8 +342,8 @@ internal fun SwiftTranslator.translateDictionaryExpression(
 				translator = this)
 		}
 
-		val keyTranslation: Expression = translate(expression = keyAST)
-		val valueTranslation: Expression = translate(expression = valueAST)
+		val keyTranslation: Expression = translateExpression(keyAST)
+		val valueTranslation: Expression = translateExpression(valueAST)
 
 		keys.add(keyTranslation)
 		values.add(valueTranslation)
@@ -606,7 +680,7 @@ internal fun SwiftTranslator.processPatternBindingDeclaration(
 		if (expression != null && astIsExpression(expression)) {
 			subtrees.removeAt(0)
 
-			val translatedExpression: Expression = translate(expression = expression)
+			val translatedExpression: Expression = translateExpression(expression)
 			val identifier: String? = pattern.standaloneAttributes.firstOrNull()
 			val rawType: String? = pattern["type"]
 
