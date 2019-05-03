@@ -96,7 +96,7 @@ internal fun SwiftTranslator.translateVariableDeclaration(
 		val braceStatement: SwiftAST? = subtree.subtree(name = "Brace Statement")
 
 		if (braceStatement != null) {
-			statements = translateBraceStatement(braceStatement) as MutableList<Statement>
+			statements = translateBraceStatement(braceStatement)
 		}
 		else {
 			statements = mutableListOf()
@@ -308,7 +308,7 @@ internal fun SwiftTranslator.translateClosureExpression(closureExpression: Swift
 
 	return Expression.ClosureExpression(
 		parameters = parameters,
-		statements = statements as MutableList<Statement>,
+		statements = statements,
 		typeName = cleanUpType(typeName))
 }
 

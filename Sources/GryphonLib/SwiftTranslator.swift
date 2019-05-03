@@ -53,7 +53,7 @@ extension SwiftTranslator { // kotlin: ignore
 			SourceFileRange(lineStart: 0, lineEnd: $0.numberOfLines, columnStart: 0, columnEnd: 0)
 		}
 		let translatedSubtrees = try translate(
-			subtrees: ast.subtrees.array,
+			subtrees: ast.subtrees,
 			inScope: fileRange)
 
 		let isDeclaration = { (ast: Statement) -> Bool in
@@ -79,13 +79,13 @@ extension SwiftTranslator { // kotlin: ignore
 
 			return GryphonAST(
 				sourceFile: sourceFile,
-				declarations: ArrayClass(declarations),
-				statements: ArrayClass(statements))
+				declarations: declarations,
+				statements: statements)
 		}
 		else {
 			return GryphonAST(
 				sourceFile: sourceFile,
-				declarations: ArrayClass(translatedSubtrees),
+				declarations: translatedSubtrees,
 				statements: [])
 		}
 	}
@@ -329,9 +329,10 @@ extension SwiftTranslator { // kotlin: ignore
 	}
 
 	internal func translate(
-		subtrees: [SwiftAST],
+		subtrees: ArrayClass<SwiftAST>,
 		inScope scope: SwiftAST,
-		asDeclarations: Bool = false) throws -> [Statement]
+		asDeclarations: Bool = false)
+		throws -> ArrayClass<Statement>
 	{
 		let scopeRange = getRange(ofNode: scope)
 		return try translate(
@@ -339,10 +340,11 @@ extension SwiftTranslator { // kotlin: ignore
 	}
 
 	internal func translate(
-		subtrees: [SwiftAST],
-		inScope scopeRange: SourceFileRange?) throws -> [Statement]
+		subtrees: ArrayClass<SwiftAST>,
+		inScope scopeRange: SourceFileRange?)
+		throws -> ArrayClass<Statement>
 	{
-		var result = [Statement]()
+		var result: ArrayClass<Statement> = []
 
 		var lastRange: SourceFileRange
 		// I we have a scope, start at its lower bound
@@ -402,18 +404,23 @@ extension SwiftTranslator { // kotlin: ignore
 	}
 
 	// MARK: - Leaf translations
-	internal func translate(subtreesOf ast: SwiftAST) throws -> [Statement] {
-		return try translate(subtrees: ast.subtrees.array, inScope: ast)
+	internal func translate(subtreesOf ast: SwiftAST)
+		throws -> ArrayClass<Statement>
+	{
+		return try translate(subtrees: ast.subtrees, inScope: ast)
 	}
 
-	internal func translateBraceStatement(_ braceStatement: SwiftAST) throws -> [Statement] {
+	internal func translateBraceStatement(
+		_ braceStatement: SwiftAST)
+		throws -> ArrayClass<Statement>
+	{
 		guard braceStatement.name == "Brace Statement" else {
 			throw createUnexpectedASTStructureError(
 				"Trying to translate \(braceStatement.name) as a brace statement",
 				ast: braceStatement, translator: self)
 		}
 
-		return try translate(subtrees: braceStatement.subtrees.array, inScope: braceStatement)
+		return try translate(subtrees: braceStatement.subtrees, inScope: braceStatement)
 	}
 
 	internal func translate(protocolDeclaration: SwiftAST) throws -> Statement {
@@ -431,7 +438,7 @@ extension SwiftTranslator { // kotlin: ignore
 
 		let members = try translate(subtreesOf: protocolDeclaration)
 
-		return .protocolDeclaration(protocolName: protocolName, members: ArrayClass(members))
+		return .protocolDeclaration(protocolName: protocolName, members: members)
 	}
 
 	internal func translate(assignExpression: SwiftAST) throws -> Statement {
@@ -506,7 +513,7 @@ extension SwiftTranslator { // kotlin: ignore
 		return .classDeclaration(
 			className: name,
 			inherits: inheritanceArray,
-			members: ArrayClass(classContents))
+			members: classContents)
 	}
 
 	internal func translate(structDeclaration: SwiftAST) throws -> Statement? {
@@ -541,7 +548,7 @@ extension SwiftTranslator { // kotlin: ignore
 			annotations: annotations,
 			structName: name,
 			inherits: inheritanceArray,
-			members: ArrayClass(structContents))
+			members: structContents)
 	}
 
 	internal func translate(throwStatement: SwiftAST) throws -> Statement {
@@ -565,7 +572,7 @@ extension SwiftTranslator { // kotlin: ignore
 	internal func translate(extensionDeclaration: SwiftAST) throws -> Statement {
 		let typeName = cleanUpType(extensionDeclaration.standaloneAttributes[0])
 		let members = try translate(subtreesOf: extensionDeclaration)
-		return .extensionDeclaration(typeName: typeName, members: ArrayClass(members))
+		return .extensionDeclaration(typeName: typeName, members: members)
 	}
 
 	internal func translate(enumDeclaration: SwiftAST) throws -> Statement? {
@@ -675,14 +682,14 @@ extension SwiftTranslator { // kotlin: ignore
 		let members = enumDeclaration.subtrees.filter {
 			$0.name != "Enum Element Declaration" && $0.name != "Enum Case Declaration"
 		}
-		let translatedMembers = try translate(subtrees: members.array, inScope: enumDeclaration)
+		let translatedMembers = try translate(subtrees: members, inScope: enumDeclaration)
 
 		return .enumDeclaration(
 			access: access,
 			enumName: name,
 			inherits: inheritanceArray,
 			elements: elements,
-			members: ArrayClass(translatedMembers),
+			members: translatedMembers,
 			isImplicit: isImplicit)
 	}
 
@@ -1005,7 +1012,7 @@ extension SwiftTranslator { // kotlin: ignore
 		return .forEachStatement(
 			collection: collectionTranslation,
 			variable: variable,
-			statements: ArrayClass(statements))
+			statements: statements)
 	}
 
 	internal func translate(whileStatement: SwiftAST) throws -> Statement {
@@ -1032,7 +1039,7 @@ extension SwiftTranslator { // kotlin: ignore
 		let expression = try translateExpression(expressionSubtree)
 		let statements = try translateBraceStatement(braceStatement)
 
-		return .whileStatement(expression: expression, statements: ArrayClass(statements))
+		return .whileStatement(expression: expression, statements: statements)
 	}
 
 	internal func translate(deferStatement: SwiftAST) throws -> Statement {
@@ -1052,7 +1059,7 @@ extension SwiftTranslator { // kotlin: ignore
 		}
 
 		let statements = try translateBraceStatement(braceStatement)
-		return .deferStatement(statements: ArrayClass(statements))
+		return .deferStatement(statements: statements)
 	}
 
 	internal func translate(ifStatement: SwiftAST) throws -> Statement {
@@ -1098,7 +1105,7 @@ extension SwiftTranslator { // kotlin: ignore
 			let statements = try translateBraceStatement(elseAST)
 			elseStatement = IfStatementData(
 				conditions: [], declarations: [],
-				statements: ArrayClass(statements),
+				statements: statements,
 				elseStatement: nil,
 				isGuard: false)
 		}
@@ -1119,7 +1126,7 @@ extension SwiftTranslator { // kotlin: ignore
 		return IfStatementData(
 			conditions: ArrayClass(conditions),
 			declarations: [],
-			statements: extraStatements + ArrayClass(statements),
+			statements: extraStatements + statements,
 			elseStatement: elseStatement,
 			isGuard: isGuard)
 	}
@@ -1600,7 +1607,7 @@ extension SwiftTranslator { // kotlin: ignore
 		// Translate the function body
 		let statements: ArrayClass<Statement>
 		if let braceStatement = functionDeclaration.subtree(named: "Brace Statement") {
-			statements = try ArrayClass(translateBraceStatement(braceStatement))
+			statements = try translateBraceStatement(braceStatement)
 		}
 		else {
 			statements = []
@@ -1732,7 +1739,7 @@ extension SwiftTranslator {
 
 			let statements: ArrayClass<Statement>
 			if let braceStatement = subtree.subtree(named: "Brace Statement") {
-				statements = try ArrayClass<Statement>(translateBraceStatement(braceStatement))
+				statements = try translateBraceStatement(braceStatement)
 			}
 			else {
 				statements = []
@@ -1937,7 +1944,7 @@ extension SwiftTranslator {
 				"Unable to get closure body", ast: closureExpression, translator: self)
 		}
 
-		let statements: [Statement]
+		let statements: ArrayClass<Statement>
 		if lastSubtree.name == "Brace Statement" {
 			statements = try translateBraceStatement(lastSubtree)
 		}
@@ -1948,7 +1955,7 @@ extension SwiftTranslator {
 
 		return .closureExpression(
 			parameters: parameters,
-			statements: ArrayClass<Statement>(statements),
+			statements: statements,
 			typeName: cleanUpType(typeName))
 	}
 
