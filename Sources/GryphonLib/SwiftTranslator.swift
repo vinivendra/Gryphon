@@ -186,7 +186,7 @@ extension SwiftTranslator { // kotlin: ignore
 		case "If Expression":
 			result = try translate(ifExpression: expression)
 		case "Call Expression", "Constructor Reference Call Expression":
-			result = try translate(callExpression: expression)
+			result = try translateCallExpression(expression)
 		case "Closure Expression":
 			result = try translateClosureExpression(expression)
 		case "Declaration Reference Expression":
@@ -219,7 +219,7 @@ extension SwiftTranslator { // kotlin: ignore
 		case "Postfix Unary Expression":
 			result = try translate(postfixUnaryExpression: expression)
 		case "Type Expression":
-			result = try translate(typeExpression: expression)
+			result = try translateTypeExpression(expression)
 		case "Member Reference Expression":
 			result = try translate(memberReferenceExpression: expression)
 		case "Tuple Element Expression":
@@ -877,22 +877,6 @@ extension SwiftTranslator { // kotlin: ignore
 
 		return .ifExpression(
 			condition: condition, trueExpression: trueExpression, falseExpression: falseExpression)
-	}
-
-	internal func translate(typeExpression: SwiftAST) throws -> Expression {
-		guard typeExpression.name == "Type Expression" else {
-			return try unexpectedExpressionStructureError(
-				"Trying to translate \(typeExpression.name) as 'Type Expression'",
-				ast: typeExpression, translator: self)
-		}
-
-		guard let typeName = typeExpression["typerepr"] else {
-			return try unexpectedExpressionStructureError(
-				"Unrecognized structure",
-				ast: typeExpression, translator: self)
-		}
-
-		return .typeExpression(typeName: cleanUpType(typeName))
 	}
 
 	internal func translate(dotSyntaxCallExpression: SwiftAST) throws -> Expression {
@@ -1786,8 +1770,38 @@ extension SwiftTranslator { // kotlin: ignore
 			extendsType: nil,
 			annotations: annotations))
 	}
+}
 
-	internal func translate(callExpression: SwiftAST) throws -> Expression {
+extension SwiftTranslator {
+	// MARK: - Expression translations
+
+// declaration: internal fun translateExpression(expression: SwiftAST): Expression {
+// declaration: 	return Expression.NilLiteralExpression()
+// declaration: }
+
+// declaration: internal fun translateBraceStatement(braceStatement: SwiftAST):
+// declaration: 	MutableList<Statement>
+// declaration: {
+// declaration: 	return mutableListOf()
+// declaration: }
+
+	internal func translateTypeExpression(_ typeExpression: SwiftAST) throws -> Expression {
+		guard typeExpression.name == "Type Expression" else {
+			return try unexpectedExpressionStructureError(
+				"Trying to translate \(typeExpression.name) as 'Type Expression'",
+				ast: typeExpression, translator: self)
+		}
+
+		guard let typeName = typeExpression["typerepr"] else {
+			return try unexpectedExpressionStructureError(
+				"Unrecognized structure",
+				ast: typeExpression, translator: self)
+		}
+
+		return .typeExpression(typeName: cleanUpType(typeName))
+	}
+
+	internal func translateCallExpression(_ callExpression: SwiftAST) throws -> Expression {
 		guard callExpression.name == "Call Expression" else {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(callExpression.name) as 'Call Expression'",
@@ -1812,12 +1826,14 @@ extension SwiftTranslator { // kotlin: ignore
 		let function: Expression
 
 		// If it's an empty expression used in an "if" condition
-		if callExpression.standaloneAttributes.contains("implicit"),
+		let dotSyntaxSubtrees = callExpression
+			.subtree(named: "Dot Syntax Call Expression")?.subtrees
+		let containedExpression = dotSyntaxSubtrees?.last
+
+		if let containedExpression = containedExpression,
+			callExpression.standaloneAttributes.contains("implicit"),
 			callExpression["arg_labels"] == "",
-			callExpression["type"] == "Int1",
-			let containedExpression = callExpression
-				.subtree(named: "Dot Syntax Call Expression")?
-				.subtrees.last
+			callExpression["type"] == "Int1"
 		{
 			return try translateExpression(containedExpression)
 		}
@@ -1828,27 +1844,28 @@ extension SwiftTranslator { // kotlin: ignore
 		}
 		let typeName = cleanUpType(rawType)
 
-		if let declarationReferenceExpression = callExpression
+		let dotSyntaxCallExpression = callExpression
+			.subtree(named: "Dot Syntax Call Expression")
+		let methodName = dotSyntaxCallExpression?
+			.subtree(at: 0, named: "Declaration Reference Expression")
+		let methodOwner = dotSyntaxCallExpression?.subtree(at: 1)
+
+		if let methodName = methodName, let methodOwner = methodOwner {
+			let methodName = try translateDeclarationReferenceExpression(methodName)
+			let methodOwner = try translateExpression(methodOwner)
+			function = .dotExpression(leftExpression: methodOwner, rightExpression: methodName)
+		}
+		else if let declarationReferenceExpression = callExpression
 			.subtree(named: "Declaration Reference Expression")
 		{
 			function = try translateDeclarationReferenceExpression(
 				declarationReferenceExpression)
 		}
-		else if let dotSyntaxCallExpression = callExpression
-				.subtree(named: "Dot Syntax Call Expression"),
-			let methodName = dotSyntaxCallExpression
-				.subtree(at: 0, named: "Declaration Reference Expression"),
-			let methodOwner = dotSyntaxCallExpression.subtree(at: 1)
-		{
-			let methodName = try translateDeclarationReferenceExpression(methodName)
-			let methodOwner = try translateExpression(methodOwner)
-			function = .dotExpression(leftExpression: methodOwner, rightExpression: methodName)
-		}
 		else if let typeExpression = callExpression
 			.subtree(named: "Constructor Reference Call Expression")?
 			.subtree(named: "Type Expression")
 		{
-			function = try translate(typeExpression: typeExpression)
+			function = try translateTypeExpression(typeExpression)
 		}
 		else {
 			function = try translateExpression(callExpression.subtrees[0])
@@ -1864,20 +1881,6 @@ extension SwiftTranslator { // kotlin: ignore
 			typeName: typeName,
 			range: range))
 	}
-}
-
-extension SwiftTranslator {
-	// MARK: - Expression translations
-
-// declaration: internal fun translateExpression(expression: SwiftAST): Expression {
-// declaration: 	return Expression.NilLiteralExpression()
-// declaration: }
-
-// declaration: internal fun translateBraceStatement(braceStatement: SwiftAST):
-// declaration: 	MutableList<Statement>
-// declaration: {
-// declaration: 	return mutableListOf()
-// declaration: }
 
 	internal func translateClosureExpression(_ closureExpression: SwiftAST) throws -> Expression {
 		guard closureExpression.name == "Closure Expression" else {
