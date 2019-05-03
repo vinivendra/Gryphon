@@ -127,7 +127,7 @@ extension SwiftTranslator { // kotlin: ignore
 		case "Throw Statement":
 			result = [try translate(throwStatement: subtree)]
 		case "Variable Declaration":
-			result = [try translate(variableDeclaration: subtree)]
+			result = [try translateVariableDeclaration(subtree)]
 		case "Assign Expression":
 			result = [try translate(assignExpression: subtree)]
 		case "If Statement", "Guard Statement":
@@ -1652,8 +1652,25 @@ extension SwiftTranslator { // kotlin: ignore
 
 		return subtrees.first
 	}
+}
 
-	internal func translate(variableDeclaration: SwiftAST) throws -> Statement {
+extension SwiftTranslator {
+	// MARK: - Expression translations
+
+// declaration: internal fun translateExpression(expression: SwiftAST): Expression {
+// declaration: 	return Expression.NilLiteralExpression()
+// declaration: }
+
+// declaration: internal fun translateBraceStatement(braceStatement: SwiftAST):
+// declaration: 	MutableList<Statement>
+// declaration: {
+// declaration: 	return mutableListOf()
+// declaration: }
+
+	internal func translateVariableDeclaration(
+		_ variableDeclaration: SwiftAST)
+		throws -> Statement
+	{
 		guard variableDeclaration.name == "Variable Declaration" else {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(variableDeclaration.name) as 'Variable Declaration'",
@@ -1665,11 +1682,12 @@ extension SwiftTranslator { // kotlin: ignore
 		let annotations = getComment(forNode: variableDeclaration, key: "annotation")
 
 		let isStatic: Bool
-		if let accessorDeclaration = variableDeclaration.subtree(named: "Accessor Declaration"),
-			let interfaceType = accessorDeclaration["interface type"],
-			let firstTypeComponent = interfaceType.split(withStringSeparator: " -> ").first,
-			firstTypeComponent.contains(".Type")
-		{
+
+		let accessorDeclaration = variableDeclaration.subtree(named: "Accessor Declaration")
+		let interfaceType = accessorDeclaration?["interface type"]
+		let typeComponents = interfaceType?.split(withStringSeparator: " -> ")
+		let firstTypeComponent = typeComponents?.first
+		if let firstTypeComponent = firstTypeComponent, firstTypeComponent.contains(".Type") {
 			isStatic = true
 		}
 		else {
@@ -1677,7 +1695,7 @@ extension SwiftTranslator { // kotlin: ignore
 		}
 
 		guard let identifier =
-				variableDeclaration.standaloneAttributes.first(where: { $0 != "implicit" }),
+			variableDeclaration.standaloneAttributes.first(where: { $0 != "implicit" }),
 			let rawType = variableDeclaration["interface type"] else
 		{
 			return try unexpectedASTStructureError(
@@ -1689,19 +1707,20 @@ extension SwiftTranslator { // kotlin: ignore
 
 		var expression: Expression?
 		if let firstBindingExpression = danglingPatternBindings.first {
-			if let bindingExpression = firstBindingExpression,
-				(bindingExpression.identifier == identifier &&
-						bindingExpression.typeName == typeName) ||
+			if let bindingExpression = firstBindingExpression {
+				if (bindingExpression.identifier == identifier &&
+					bindingExpression.typeName == typeName) ||
 					(bindingExpression.identifier == "<<Error>>")
-			{
-				expression = bindingExpression.expression
+				{
+					expression = bindingExpression.expression
+				}
 			}
 
 			_ = danglingPatternBindings.removeFirst()
 		}
 
-		if expression == nil,
-			let valueReplacement = getComment(forNode: variableDeclaration, key: "value")
+		if let valueReplacement = getComment(forNode: variableDeclaration, key: "value"),
+			expression == nil
 		{
 			expression = .literalCodeExpression(string: valueReplacement)
 		}
@@ -1713,7 +1732,7 @@ extension SwiftTranslator { // kotlin: ignore
 
 			let statements: ArrayClass<Statement>
 			if let braceStatement = subtree.subtree(named: "Brace Statement") {
-				statements = try ArrayClass(translateBraceStatement(braceStatement))
+				statements = try ArrayClass<Statement>(translateBraceStatement(braceStatement))
 			}
 			else {
 				statements = []
@@ -1770,20 +1789,6 @@ extension SwiftTranslator { // kotlin: ignore
 			extendsType: nil,
 			annotations: annotations))
 	}
-}
-
-extension SwiftTranslator {
-	// MARK: - Expression translations
-
-// declaration: internal fun translateExpression(expression: SwiftAST): Expression {
-// declaration: 	return Expression.NilLiteralExpression()
-// declaration: }
-
-// declaration: internal fun translateBraceStatement(braceStatement: SwiftAST):
-// declaration: 	MutableList<Statement>
-// declaration: {
-// declaration: 	return mutableListOf()
-// declaration: }
 
 	internal func translateTypeExpression(_ typeExpression: SwiftAST) throws -> Expression {
 		guard typeExpression.name == "Type Expression" else {

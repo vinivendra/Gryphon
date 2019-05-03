@@ -30,6 +30,130 @@ internal fun translateBraceStatement(braceStatement: SwiftAST):
 	return mutableListOf()
 }
 
+internal fun SwiftTranslator.translateVariableDeclaration(
+	variableDeclaration: SwiftAST)
+	: Statement
+{
+	if (variableDeclaration.name != "Variable Declaration") {
+		return unexpectedASTStructureError(
+			"Trying to translate ${variableDeclaration.name} as 'Variable Declaration'",
+			ast = variableDeclaration,
+			translator = this)
+	}
+
+	val isImplicit: Boolean = variableDeclaration.standaloneAttributes.contains("implicit")
+	val annotations: String? = getComment(ast = variableDeclaration, key = "annotation")
+	val isStatic: Boolean
+	val accessorDeclaration: SwiftAST? = variableDeclaration.subtree(name = "Accessor Declaration")
+	val interfaceType: String? = accessorDeclaration?.get("interface type")
+	val typeComponents: MutableList<String>? = interfaceType?.split(separator = " -> ")
+	val firstTypeComponent: String? = typeComponents?.firstOrNull()
+
+	if (firstTypeComponent != null && firstTypeComponent.contains(".Type")) {
+		isStatic = true
+	}
+	else {
+		isStatic = false
+	}
+
+	val identifier: String? = variableDeclaration.standaloneAttributes.find { it != "implicit" }
+	val rawType: String? = variableDeclaration["interface type"]
+
+	if (!(identifier != null && rawType != null)) {
+		return unexpectedASTStructureError(
+			"Failed to get identifier and type",
+			ast = variableDeclaration,
+			translator = this)
+	}
+
+	val isLet: Boolean = variableDeclaration.standaloneAttributes.contains("let")
+	val typeName: String = cleanUpType(rawType)
+	var expression: Expression? = null
+	val firstBindingExpression: SwiftTranslator.PatternBindingDeclaration?? = danglingPatternBindings.firstOrNull()
+
+	if (firstBindingExpression != null) {
+		val bindingExpression: SwiftTranslator.PatternBindingDeclaration? = firstBindingExpression
+		if (bindingExpression != null) {
+			if ((bindingExpression.identifier == identifier && bindingExpression.typeName == typeName) || (bindingExpression.identifier == "<<Error>>")) {
+				expression = bindingExpression.expression
+			}
+		}
+		danglingPatternBindings.removeAt(0)
+	}
+
+	val valueReplacement: String? = getComment(ast = variableDeclaration, key = "value")
+
+	if (valueReplacement != null && expression == null) {
+		expression = Expression.LiteralCodeExpression(string = valueReplacement)
+	}
+
+	var getter: FunctionDeclarationData? = null
+	var setter: FunctionDeclarationData? = null
+
+	for (subtree in variableDeclaration.subtrees) {
+		val access: String? = subtree["access"]
+		val statements: MutableList<Statement>
+		val braceStatement: SwiftAST? = subtree.subtree(name = "Brace Statement")
+
+		if (braceStatement != null) {
+			statements = translateBraceStatement(braceStatement) as MutableList<Statement>
+		}
+		else {
+			statements = mutableListOf()
+		}
+
+		val isImplicit: Boolean = subtree.standaloneAttributes.contains("implicit")
+		val isPure: Boolean = (getComment(ast = subtree, key = "gryphon") == "pure")
+		val annotations: String? = getComment(ast = subtree, key = "annotation")
+
+		if (subtree["get_for"] != null) {
+			getter = FunctionDeclarationData(
+				prefix = "get",
+				parameters = mutableListOf(),
+				returnType = typeName,
+				functionType = "() -> (${typeName})",
+				genericTypes = mutableListOf(),
+				isImplicit = isImplicit,
+				isStatic = false,
+				isMutating = false,
+				isPure = isPure,
+				extendsType = null,
+				statements = statements,
+				access = access,
+				annotations = annotations)
+		}
+		else if (subtree["materializeForSet_for"] != null || subtree["set_for"] != null) {
+			setter = FunctionDeclarationData(
+				prefix = "set",
+				parameters = mutableListOf(FunctionParameter(label = "newValue", apiLabel = null, typeName = typeName, value = null)),
+				returnType = "()",
+				functionType = "(${typeName}) -> ()",
+				genericTypes = mutableListOf(),
+				isImplicit = isImplicit,
+				isStatic = false,
+				isMutating = false,
+				isPure = isPure,
+				extendsType = null,
+				statements = statements,
+				access = access,
+				annotations = annotations)
+		}
+	}
+
+	return Statement.VariableDeclaration(
+		data = VariableDeclarationData(
+				identifier = identifier,
+				typeName = typeName,
+				expression = expression,
+				getter = getter,
+				setter = setter,
+				isLet = isLet,
+				isImplicit = isImplicit,
+				isStatic = isStatic,
+				extendsType = null,
+				annotations = annotations))
+}
+
 internal fun SwiftTranslator.translateTypeExpression(typeExpression: SwiftAST): Expression {
 	if (typeExpression.name != "Type Expression") {
 		return unexpectedExpressionStructureError(
