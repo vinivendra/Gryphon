@@ -30,6 +30,58 @@ internal fun translateBraceStatement(braceStatement: SwiftAST):
 	return mutableListOf()
 }
 
+private fun SwiftTranslator.translateEnumPatternLet(
+	enumPatternLet: SwiftAST)
+	: EnumPatternLetTranslation?
+{
+	if (enumPatternLet.name != "Pattern Let") {
+		return null
+	}
+
+	val maybeEnumType: String? = enumPatternLet["type"]
+	val maybePatternEnumElement: SwiftAST? = enumPatternLet.subtree(name = "Pattern Enum Element")
+	val maybePatternTuple: SwiftAST? = maybePatternEnumElement?.subtree(name = "Pattern Tuple")
+	val maybeAssociatedValueTuple: String? = maybePatternTuple?.get("type")
+	val enumType: String? = maybeEnumType
+	val patternEnumElement: SwiftAST? = maybePatternEnumElement
+	val patternTuple: SwiftAST? = maybePatternTuple
+	val associatedValueTuple: String? = maybeAssociatedValueTuple
+
+	if (!(enumType != null && patternEnumElement != null && patternTuple != null && associatedValueTuple != null)) {
+		return null
+	}
+
+	val valuesTupleWithoutParentheses: String = associatedValueTuple.drop(1).dropLast(1)
+	val valueTuplesComponents: MutableList<String> = Utilities.splitTypeList(valuesTupleWithoutParentheses, separators = mutableListOf(","))
+	val associatedValueNames: MutableList<String> = valueTuplesComponents.map { it.split(separator = ":")[0] }.toMutableList()
+	val declarations: MutableList<AssociatedValueDeclaration> = mutableListOf()
+	val caseName: String = patternEnumElement.standaloneAttributes[0].split(separator = '.').lastOrNull()!!
+
+	if (associatedValueNames.size != patternTuple.subtrees.size) {
+		return null
+	}
+
+	val associatedValuesInfo: List<Pair<String, SwiftAST>> =
+		associatedValueNames.zip(patternTuple.subtrees)
+
+	val patternsNamed: MutableList<Pair<String, SwiftAST>> = associatedValuesInfo.filter { it.second.name == "Pattern Named" }.toMutableList()
+
+	for (patternNamed in patternsNamed) {
+		val associatedValueName: String = patternNamed.first
+		val ast: SwiftAST = patternNamed.second
+		val associatedValueType: String? = ast["type"]
+
+		associatedValueType ?: return null
+
+		declarations.add(AssociatedValueDeclaration(
+			associatedValueName = associatedValueName,
+			associatedValueType = associatedValueType,
+			newVariable = ast.standaloneAttributes[0]))
+	}
+
+	return EnumPatternLetTranslation(enumType = enumType, enumCase = caseName, declarations = declarations)
+}
+
 internal fun SwiftTranslator.translateFunctionDeclaration(
 	functionDeclaration: SwiftAST)
 	: Statement?
@@ -1249,6 +1301,18 @@ internal fun SwiftTranslator.unexpectedExpressionStructureError(
 	Compiler.handleError(error)
 	return Expression.Error()
 }
+
+data class EnumPatternLetTranslation(
+	val enumType: String,
+	val enumCase: String,
+	val declarations: MutableList<AssociatedValueDeclaration>
+)
+
+data class AssociatedValueDeclaration(
+	val associatedValueName: String,
+	val associatedValueType: String,
+	val newVariable: String
+)
 
 data class SwiftTranslatorError(
 	val errorMessage: String,

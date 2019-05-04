@@ -1168,7 +1168,7 @@ extension SwiftTranslator { // kotlin: ignore
 
 			if let caseLabelItem = caseSubtree.subtree(named: "Case Label Item") {
 				if let patternLet = caseLabelItem.subtree(named: "Pattern Let"),
-					let patternLetResult = try translate(enumPatternLet: patternLet)
+					let patternLetResult = try translateEnumPatternLet(patternLet)
 				{
 					let enumType = patternLetResult.enumType
 					let enumCase = patternLetResult.enumCase
@@ -1377,7 +1377,7 @@ extension SwiftTranslator { // kotlin: ignore
 				let declarationReferenceAST = condition.subtrees.last
 			{
 				// TODO: test
-				guard let patternLetResult = try translate(enumPatternLet: patternLet) else {
+				guard let patternLetResult = try translateEnumPatternLet(patternLet) else {
 					return try (
 						conditions: [],
 						statements: [unexpectedASTStructureError(
@@ -1430,61 +1430,6 @@ extension SwiftTranslator { // kotlin: ignore
 
 		return (conditions: conditionsResult, statements: statementsResult)
 	}
-
-	private func translate(enumPatternLet: SwiftAST) throws
-		-> (
-			enumType: String,
-			enumCase: String,
-			declarations: [(
-				associatedValueName: String,
-				associatedValueType: String,
-				newVariable: String)])?
-	{
-		guard enumPatternLet.name == "Pattern Let",
-			let enumType = enumPatternLet["type"],
-			let patternEnumElement = enumPatternLet.subtree(named: "Pattern Enum Element"),
-			let patternTuple = patternEnumElement.subtree(named: "Pattern Tuple"),
-			let associatedValueTuple = patternTuple["type"] else
-		{
-			return nil
-		}
-
-		// Process a string like `(label1: Type1, label2: Type2)` to get the labels
-		let valuesTupleWithoutParentheses = String(associatedValueTuple.dropFirst().dropLast())
-		let valueTuplesComponents =
-			Utilities.splitTypeList(valuesTupleWithoutParentheses, separators: [","])
-		let associatedValueNames =
-			valueTuplesComponents.map { $0.split(withStringSeparator: ":")[0] }
-
-		var declarations =
-			[(associatedValueName: String, associatedValueType: String, newVariable: String)]()
-
-		let caseName =
-			String(patternEnumElement.standaloneAttributes[0].split(separator: ".").last!)
-
-		guard associatedValueNames.count == patternTuple.subtrees.count else {
-			return nil
-		}
-
-		let associatedValuesInfo = zipToClass(associatedValueNames, patternTuple.subtrees)
-		let patternsNamed = associatedValuesInfo.filter { $0.1.name == "Pattern Named" }
-
-		for patternNamed in patternsNamed {
-			let associatedValueName = patternNamed.0
-			let ast = patternNamed.1
-
-			guard let associatedValueType = ast["type"] else {
-				return nil
-			}
-
-			declarations.append((
-				associatedValueName: String(associatedValueName),
-				associatedValueType: associatedValueType,
-				newVariable: ast.standaloneAttributes[0]))
-		}
-
-		return (enumType: enumType, enumCase: caseName, declarations: declarations)
-	}
 }
 
 extension SwiftTranslator {
@@ -1499,6 +1444,69 @@ extension SwiftTranslator {
 // declaration: {
 // declaration: 	return mutableListOf()
 // declaration: }
+
+	private func translateEnumPatternLet(_ enumPatternLet: SwiftAST)
+		throws -> EnumPatternLetTranslation?
+	{
+		guard enumPatternLet.name == "Pattern Let" else {
+			return nil
+		}
+
+		let maybeEnumType = enumPatternLet["type"]
+		let maybePatternEnumElement = enumPatternLet.subtree(named: "Pattern Enum Element")
+		let maybePatternTuple = maybePatternEnumElement?.subtree(named: "Pattern Tuple")
+		let maybeAssociatedValueTuple = maybePatternTuple?["type"]
+
+		guard let enumType = maybeEnumType,
+			let patternEnumElement = maybePatternEnumElement,
+			let patternTuple = maybePatternTuple,
+			let associatedValueTuple = maybeAssociatedValueTuple else
+		{
+			return nil
+		}
+
+		// Process a string like `(label1: Type1, label2: Type2)` to get the labels
+		let valuesTupleWithoutParentheses = String(associatedValueTuple.dropFirst().dropLast())
+		let valueTuplesComponents =
+			Utilities.splitTypeList(valuesTupleWithoutParentheses, separators: [","])
+		let associatedValueNames =
+			valueTuplesComponents.map { $0.split(withStringSeparator: ":")[0] }
+
+		let declarations: ArrayClass<AssociatedValueDeclaration> = []
+
+		let caseName =
+			String(patternEnumElement.standaloneAttributes[0].split(separator: ".").last!)
+
+		guard associatedValueNames.count == patternTuple.subtrees.count else {
+			return nil
+		}
+
+		let associatedValuesInfo = // kotlin: ignore
+			zipToClass(associatedValueNames, patternTuple.subtrees)
+// insert: val associatedValuesInfo: List<Pair<String, SwiftAST>> =
+// insert: 	associatedValueNames.zip(patternTuple.subtrees)
+
+		let patternsNamed = associatedValuesInfo.filter { $0.1.name == "Pattern Named" }
+
+		for patternNamed in patternsNamed {
+			let associatedValueName = patternNamed.0
+			let ast = patternNamed.1
+
+			guard let associatedValueType = ast["type"] else {
+				return nil
+			}
+
+			declarations.append(AssociatedValueDeclaration(
+				associatedValueName: String(associatedValueName),
+				associatedValueType: associatedValueType,
+				newVariable: ast.standaloneAttributes[0]))
+		}
+
+		return EnumPatternLetTranslation(
+			enumType: enumType,
+			enumCase: caseName,
+			declarations: declarations)
+	}
 
 	internal func translateFunctionDeclaration(_ functionDeclaration: SwiftAST)
 		throws -> Statement?
@@ -2762,6 +2770,18 @@ extension SwiftTranslator {
 		try Compiler.handleError(error)
 		return .error
 	}
+}
+
+private struct EnumPatternLetTranslation {
+	let enumType: String
+	let enumCase: String
+	let declarations: ArrayClass<AssociatedValueDeclaration>
+}
+
+private struct AssociatedValueDeclaration {
+	let associatedValueName: String
+	let associatedValueType: String
+	let newVariable: String
 }
 
 struct SwiftTranslatorError: Error, CustomStringConvertible {
