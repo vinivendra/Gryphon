@@ -1676,12 +1676,14 @@ public class KotlinTranslator {
 	}
 
 	//
+	internal static var indentationString = "\t"
+
 	private func increaseIndentation(_ indentation: String) -> String {
-		return indentation + "\t"
+		return indentation + KotlinTranslator.indentationString
 	}
 
 	private func decreaseIndentation(_ indentation: String) -> String {
-		return String(indentation.dropLast())
+		return String(indentation.dropLast(KotlinTranslator.indentationString.count))
 	}
 }
 

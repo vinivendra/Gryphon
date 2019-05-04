@@ -164,6 +164,13 @@ public class Driver {
 		Compiler.shouldLogProgress(if: arguments.contains("-verbose"))
 		Compiler.shouldStopAtFirstError = !arguments.contains("-continue-on-error")
 
+		if let indentationArgument = arguments.first(where: { $0.hasPrefix("-indentation=\"") }) {
+			let indentationString = indentationArgument
+				.dropFirst("-indentation=\"".count)
+				.dropLast()
+			KotlinTranslator.indentationString = String(indentationString) // kotlin: ignore
+		}
+
 		let horizontalLimit: Int?
 		if let lineLimitArgument = arguments.first(where: { $0.hasPrefix("-line-limit=") }) {
 			let lineLimitString = lineLimitArgument.dropFirst("-line-limit=".count)

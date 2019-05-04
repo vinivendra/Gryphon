@@ -171,8 +171,11 @@ class BootstrappingTest: XCTestCase {
 				"Bootstrap/main.kt",
 			]
 
-			let arguments: ArrayClass =
-				["build", "-output-file-map=output-file-map.json"] + inputFiles
+			let arguments: ArrayClass<String> = [
+				"build",
+				"-output-file-map=output-file-map.json",
+				"-indentation=\"    \"",
+				] + inputFiles
 
 			let driverResult: Any?
 			do {

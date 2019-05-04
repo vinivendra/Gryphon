@@ -1,134 +1,134 @@
 class PrintableTree: PrintableAsTree {
-	companion object {
-		internal fun ofTrees(
-			description: String,
-			subtrees: MutableList<PrintableTree>)
-			: PrintableAsTree?
-		{
-			val newSubtrees: MutableList<PrintableAsTree?> = subtrees as MutableList<PrintableAsTree?>
-			return PrintableTree.initOrNil(description, newSubtrees)
-		}
+    companion object {
+        internal fun ofTrees(
+            description: String,
+            subtrees: MutableList<PrintableTree>)
+            : PrintableAsTree?
+        {
+            val newSubtrees: MutableList<PrintableAsTree?> = subtrees as MutableList<PrintableAsTree?>
+            return PrintableTree.initOrNil(description, newSubtrees)
+        }
 
-		internal fun initOrNil(
-			description: String,
-			subtreesOrNil: MutableList<PrintableAsTree?>)
-			: PrintableTree?
-		{
-			val subtrees: MutableList<PrintableAsTree?> = mutableListOf()
+        internal fun initOrNil(
+            description: String,
+            subtreesOrNil: MutableList<PrintableAsTree?>)
+            : PrintableTree?
+        {
+            val subtrees: MutableList<PrintableAsTree?> = mutableListOf()
 
-			for (subtree in subtreesOrNil) {
-				val unwrapped: PrintableAsTree? = subtree
-				if (unwrapped != null) {
-					subtrees.add(unwrapped)
-				}
-			}
+            for (subtree in subtreesOrNil) {
+                val unwrapped: PrintableAsTree? = subtree
+                if (unwrapped != null) {
+                    subtrees.add(unwrapped)
+                }
+            }
 
-			if (subtrees.isEmpty()) {
-				return null
-			}
+            if (subtrees.isEmpty()) {
+                return null
+            }
 
-			return PrintableTree(description, subtrees)
-		}
+            return PrintableTree(description, subtrees)
+        }
 
-		internal fun initOrNil(description: String?): PrintableTree? {
-			if (description != null) {
-				return PrintableTree(description)
-			}
-			else {
-				return null
-			}
-		}
-	}
+        internal fun initOrNil(description: String?): PrintableTree? {
+            if (description != null) {
+                return PrintableTree(description)
+            }
+            else {
+                return null
+            }
+        }
+    }
 
-	override var treeDescription: String
-	override var printableSubtrees: MutableList<PrintableAsTree?>
+    override var treeDescription: String
+    override var printableSubtrees: MutableList<PrintableAsTree?>
 
-	constructor(description: String) {
-		this.treeDescription = description
-		this.printableSubtrees = mutableListOf()
-	}
+    constructor(description: String) {
+        this.treeDescription = description
+        this.printableSubtrees = mutableListOf()
+    }
 
-	constructor(description: String, subtrees: MutableList<PrintableAsTree?>) {
-		this.treeDescription = description
-		this.printableSubtrees = subtrees
-	}
+    constructor(description: String, subtrees: MutableList<PrintableAsTree?>) {
+        this.treeDescription = description
+        this.printableSubtrees = subtrees
+    }
 
-	constructor(array: MutableList<PrintableAsTree?>) {
-		this.treeDescription = "Array"
-		this.printableSubtrees = array
-	}
+    constructor(array: MutableList<PrintableAsTree?>) {
+        this.treeDescription = "Array"
+        this.printableSubtrees = array
+    }
 
-	internal fun addChild(child: PrintableAsTree?) {
-		printableSubtrees.add(child)
-	}
+    internal fun addChild(child: PrintableAsTree?) {
+        printableSubtrees.add(child)
+    }
 }
 
 interface PrintableAsTree {
-	val treeDescription: String
-	val printableSubtrees: MutableList<PrintableAsTree?>
+    val treeDescription: String
+    val printableSubtrees: MutableList<PrintableAsTree?>
 }
 
 public fun PrintableAsTree.prettyPrint(
-	indentation: MutableList<String> = mutableListOf(),
-	isLast: Boolean = true,
-	horizontalLimit: Int? = null,
-	printFunction: (String) -> Unit = { print(it) })
+    indentation: MutableList<String> = mutableListOf(),
+    isLast: Boolean = true,
+    horizontalLimit: Int? = null,
+    printFunction: (String) -> Unit = { print(it) })
 {
-	val horizontalLimit: Int = horizontalLimit ?: Int.MAX_VALUE
-	val indentationString: String = indentation.joinToString(separator = "")
-	val rawLine: String = "${indentationString} ${treeDescription}"
-	val line: String
+    val horizontalLimit: Int = horizontalLimit ?: Int.MAX_VALUE
+    val indentationString: String = indentation.joinToString(separator = "")
+    val rawLine: String = "${indentationString} ${treeDescription}"
+    val line: String
 
-	if (rawLine.length > horizontalLimit) {
-		line = rawLine.substring(0, horizontalLimit - 1) + "…"
-	}
-	else {
-		line = rawLine
-	}
+    if (rawLine.length > horizontalLimit) {
+        line = rawLine.substring(0, horizontalLimit - 1) + "…"
+    }
+    else {
+        line = rawLine
+    }
 
-	printFunction(line + "\n")
+    printFunction(line + "\n")
 
-	if (!indentation.isEmpty()) {
-		if (isLast) {
-			indentation[indentation.size - 1] = "   "
-		}
-		else {
-			indentation[indentation.size - 1] = " │ "
-		}
-	}
+    if (!indentation.isEmpty()) {
+        if (isLast) {
+            indentation[indentation.size - 1] = "   "
+        }
+        else {
+            indentation[indentation.size - 1] = " │ "
+        }
+    }
 
-	val subtrees: MutableList<PrintableAsTree> = mutableListOf()
+    val subtrees: MutableList<PrintableAsTree> = mutableListOf()
 
-	for (element in printableSubtrees) {
-		val unwrapped: PrintableAsTree? = element
-		if (unwrapped != null) {
-			subtrees.add(unwrapped)
-		}
-	}
+    for (element in printableSubtrees) {
+        val unwrapped: PrintableAsTree? = element
+        if (unwrapped != null) {
+            subtrees.add(unwrapped)
+        }
+    }
 
-	for (subtree in subtrees.dropLast(1)) {
-		val newIndentation: MutableList<String> = indentation.copy()
-		newIndentation.add(" ├─")
-		subtree.prettyPrint(
-			indentation = newIndentation,
-			isLast = false,
-			horizontalLimit = horizontalLimit,
-			printFunction = printFunction)
-	}
+    for (subtree in subtrees.dropLast(1)) {
+        val newIndentation: MutableList<String> = indentation.copy()
+        newIndentation.add(" ├─")
+        subtree.prettyPrint(
+            indentation = newIndentation,
+            isLast = false,
+            horizontalLimit = horizontalLimit,
+            printFunction = printFunction)
+    }
 
-	val newIndentation: MutableList<String> = indentation.copy()
+    val newIndentation: MutableList<String> = indentation.copy()
 
-	newIndentation.add(" └─")
+    newIndentation.add(" └─")
 
-	subtrees.lastOrNull()?.prettyPrint(
-		indentation = newIndentation,
-		isLast = true,
-		horizontalLimit = horizontalLimit,
-		printFunction = printFunction)
+    subtrees.lastOrNull()?.prettyPrint(
+        indentation = newIndentation,
+        isLast = true,
+        horizontalLimit = horizontalLimit,
+        printFunction = printFunction)
 }
 
 public fun PrintableAsTree.prettyDescription(horizontalLimit: Int? = null): String {
-	var result: String = ""
-	prettyPrint(horizontalLimit = horizontalLimit, printFunction = { result += it })
-	return result
+    var result: String = ""
+    prettyPrint(horizontalLimit = horizontalLimit, printFunction = { result += it })
+    return result
 }
