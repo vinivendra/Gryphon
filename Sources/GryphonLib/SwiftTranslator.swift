@@ -761,6 +761,20 @@ extension SwiftTranslator { // kotlin: ignore
 							isImplicit: false,
 							range: leftExpression.range)))
 			}
+			else if case let .declarationReferenceExpression(data: leftExpression) = leftHand,
+				let tupleComponent = tupleComponent
+			{
+				let memberName = (number == 0) ? "first" : "second"
+				return .dotExpression(
+					leftExpression: leftHand,
+					rightExpression: .declarationReferenceExpression(data:
+						DeclarationReferenceData(
+							identifier: memberName,
+							typeName: tupleComponent,
+							isStandardLibrary: leftExpression.isStandardLibrary,
+							isImplicit: false,
+							range: leftExpression.range)))
+			}
 		}
 
 		return try unexpectedExpressionStructureError(

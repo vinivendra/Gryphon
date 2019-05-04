@@ -56,13 +56,31 @@ public class KotlinTranslator {
 			return "MutableMap<\(translatedKey), \(translatedValue)>"
 		}
 		else if Utilities.isInEnvelopingParentheses(typeName) {
-			return translateType(String(typeName.dropFirst().dropLast()))
+			let innerTypeString = String(typeName.dropFirst().dropLast())
+			let innerTypes = Utilities.splitTypeList(innerTypeString, separators: [", "])
+			if innerTypes.count == 2 {
+				return "Pair<\(innerTypes.joined(separator: ", "))>"
+			}
+			else {
+				return translateType(String(typeName.dropFirst().dropLast()))
+			}
 		}
 		else if typeName.contains(" -> ") {
-			let innerTypes = Utilities.splitTypeList(typeName, separators: [" -> "])
-			let translatedTypes = innerTypes.map(translateType)
-			let firstTypes = translatedTypes.dropLast().map { "(\($0))" }
-			let lastType = translatedTypes.last!
+			let functionComponents = Utilities.splitTypeList(typeName, separators: [" -> "])
+			let translatedComponents = functionComponents.map { (component: String) -> String in
+				if Utilities.isInEnvelopingParentheses(component) {
+					let openComponent = String(component.dropFirst().dropLast())
+					let componentParts = Utilities.splitTypeList(openComponent, separators: [", "])
+					let translatedParts = componentParts.map(translateType)
+					return translatedParts.joined(separator: ", ")
+				}
+				else {
+					return translateType(component)
+				}
+			}
+
+			let firstTypes = translatedComponents.dropLast().map { "(\($0))" }
+			let lastType = translatedComponents.last!
 
 			var allTypes = firstTypes
 			allTypes.append(lastType)
