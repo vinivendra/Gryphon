@@ -185,6 +185,10 @@ public final class ArrayClass<Element>: // kotlin: ignore
 	public func removeLast() -> Element {
 		return array.removeLast()
 	}
+
+	public func reverse() {
+		array.reverse()
+	}
 }
 
 extension ArrayClass: Equatable where Element: Equatable { // kotlin: ignore

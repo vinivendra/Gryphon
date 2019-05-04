@@ -30,6 +30,203 @@ internal fun translateBraceStatement(braceStatement: SwiftAST):
 	return mutableListOf()
 }
 
+internal fun SwiftTranslator.translateFunctionDeclaration(
+	functionDeclaration: SwiftAST)
+	: Statement?
+{
+	val compatibleASTNodes: MutableList<String> = mutableListOf("Function Declaration", "Constructor Declaration", "Accessor Declaration")
+
+	if (!(compatibleASTNodes.contains(functionDeclaration.name))) {
+		return unexpectedASTStructureError(
+			"Trying to translate ${functionDeclaration.name} as 'Function Declaration'",
+			ast = functionDeclaration,
+			translator = this)
+	}
+
+	val isSubscript: Boolean = (functionDeclaration.name == "Accessor Declaration")
+	val isGetterOrSetter: Boolean = (functionDeclaration["getter_for"] != null) || (functionDeclaration["setter_for"] != null)
+	val isImplicit: Boolean = functionDeclaration.standaloneAttributes.contains("implicit")
+
+	if (!(!isImplicit && !isGetterOrSetter)) {
+		return null
+	}
+
+	val functionName: String
+
+	if (isSubscript) {
+		if (functionDeclaration["get_for"] != null) {
+			functionName = "get"
+		}
+		else if (functionDeclaration["set_for"] != null) {
+			functionName = "set"
+		}
+		else {
+			return unexpectedASTStructureError(
+				"Trying to translate subscript declaration that isn't getter or setter",
+				ast = functionDeclaration,
+				translator = this)
+		}
+	}
+	else {
+		functionName = functionDeclaration.standaloneAttributes.firstOrNull() ?: ""
+	}
+
+	val access: String? = functionDeclaration["access"]
+	val maybeInterfaceType: String? = functionDeclaration["interface type"]
+	val maybeInterfaceTypeComponents: MutableList<String>? = functionDeclaration["interface type"]?.split(separator = " -> ")
+	val maybeFirstInterfaceTypeComponent: String? = maybeInterfaceTypeComponents?.firstOrNull()
+	val interfaceType: String? = maybeInterfaceType
+	val interfaceTypeComponents: MutableList<String>? = maybeInterfaceTypeComponents
+	val firstInterfaceTypeComponent: String? = maybeFirstInterfaceTypeComponent
+
+	if (!(interfaceType != null && interfaceTypeComponents != null && firstInterfaceTypeComponent != null)) {
+		return unexpectedASTStructureError(
+			"Unable to find out if function is static",
+			ast = functionDeclaration,
+			translator = this)
+	}
+
+	val isStatic: Boolean = firstInterfaceTypeComponent.contains(".Type")
+	val isMutating: Boolean = firstInterfaceTypeComponent.contains("inout")
+	val genericTypes: MutableList<String>
+	val firstGenericString: String? = functionDeclaration.standaloneAttributes.find { it.startsWith("<") }
+
+	if (firstGenericString != null) {
+		genericTypes = firstGenericString.dropLast(1).drop(1).split(separator = ',').map { it }.toMutableList() as MutableList<String>
+	}
+	else {
+		genericTypes = mutableListOf()
+	}
+
+	val functionNamePrefix: String = functionName.takeWhile { it != '(' }
+	val parameterList: SwiftAST?
+	val list: SwiftAST? = functionDeclaration.subtree(name = "Parameter List")
+	val listStandaloneAttributes: MutableList<String>? = list?.subtree(index = 0, name = "Parameter")?.standaloneAttributes
+	val name: String? = listStandaloneAttributes?.firstOrNull()
+	val unwrapped: SwiftAST? = functionDeclaration.subtree(index = 1, name = "Parameter List")
+
+	if (list != null && name != null && name != "self") {
+		parameterList = list
+	}
+	else if (unwrapped != null) {
+		parameterList = unwrapped
+	}
+	else {
+		parameterList = null
+	}
+
+	val parameters: MutableList<FunctionParameter> = mutableListOf()
+
+	if (parameterList != null) {
+		for (parameter in parameterList.subtrees) {
+			val name: String? = parameter.standaloneAttributes.firstOrNull()
+			val typeName: String? = parameter["interface type"]
+			if (name != null && typeName != null) {
+				if (name == "self") {
+					continue
+				}
+
+				val parameterName: String = name
+				val parameterApiLabel: String? = parameter["apiName"]
+				val parameterType: String = cleanUpType(typeName)
+				val defaultValue: Expression?
+				val defaultValueTree: SwiftAST? = parameter.subtrees.firstOrNull()
+
+				if (defaultValueTree != null) {
+					defaultValue = translateExpression(defaultValueTree)
+				}
+				else {
+					defaultValue = null
+				}
+
+				parameters.add(FunctionParameter(
+					label = parameterName,
+					apiLabel = parameterApiLabel,
+					typeName = parameterType,
+					value = defaultValue))
+			}
+			else {
+				return unexpectedASTStructureError(
+					"Unable to detect name or attribute for a parameter",
+					ast = functionDeclaration,
+					translator = this)
+			}
+		}
+	}
+
+	if (isSubscript) {
+		parameters.reverse()
+	}
+
+	val returnType: String? = interfaceTypeComponents.lastOrNull()
+
+	returnType ?: return unexpectedASTStructureError(
+		"Unable to get return type",
+		ast = functionDeclaration,
+		translator = this)
+
+	val statements: MutableList<Statement>
+	val braceStatement: SwiftAST? = functionDeclaration.subtree(name = "Brace Statement")
+
+	if (braceStatement != null) {
+		statements = translateBraceStatement(braceStatement)
+	}
+	else {
+		statements = mutableListOf()
+	}
+
+	var annotations: MutableList<String?> = mutableListOf()
+
+	annotations.add(getComment(ast = functionDeclaration, key = "annotation"))
+
+	if (isSubscript) {
+		annotations.add("operator")
+	}
+
+	val joinedAnnotations: String = annotations.map { it }.filterNotNull().toMutableList().joinToString(separator = " ")
+	val annotationsResult: String? = if (joinedAnnotations.isEmpty()) { null } else { joinedAnnotations }
+	val isPure: Boolean = (getComment(ast = functionDeclaration, key = "gryphon") == "pure")
+
+	return Statement.FunctionDeclaration(
+		data = FunctionDeclarationData(
+				prefix = functionNamePrefix,
+				parameters = parameters,
+				returnType = returnType,
+				functionType = interfaceType,
+				genericTypes = genericTypes,
+				isImplicit = isImplicit,
+				isStatic = isStatic,
+				isMutating = isMutating,
+				isPure = isPure,
+				extendsType = null,
+				statements = statements,
+				access = access,
+				annotations = annotationsResult))
+}
+
+internal fun SwiftTranslator.translateTopLevelCode(
+	topLevelCodeDeclaration: SwiftAST)
+	: Statement?
+{
+	if (topLevelCodeDeclaration.name != "Top Level Code Declaration") {
+		return unexpectedASTStructureError(
+			"Trying to translate ${topLevelCodeDeclaration.name} as " + "'Top Level Code Declaration'",
+			ast = topLevelCodeDeclaration,
+			translator = this)
+	}
+
+	val braceStatement: SwiftAST? = topLevelCodeDeclaration.subtree(name = "Brace Statement")
+
+	braceStatement ?: return unexpectedASTStructureError(
+		"Unrecognized structure",
+		ast = topLevelCodeDeclaration,
+		translator = this)
+
+	val subtrees: MutableList<Statement> = translateBraceStatement(braceStatement)
+
+	return subtrees.firstOrNull()
+}
+
 internal fun SwiftTranslator.translateVariableDeclaration(
 	variableDeclaration: SwiftAST)
 	: Statement

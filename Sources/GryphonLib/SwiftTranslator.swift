@@ -100,7 +100,7 @@ extension SwiftTranslator { // kotlin: ignore
 		let result: [Statement?]
 		switch subtree.name {
 		case "Top Level Code Declaration":
-			result = [try translate(topLevelCode: subtree)]
+			result = [try translateTopLevelCode(subtree)]
 		case "Import Declaration":
 			result = [.importDeclaration(moduleName: subtree.standaloneAttributes[0])]
 		case "Typealias":
@@ -118,10 +118,10 @@ extension SwiftTranslator { // kotlin: ignore
 		case "While Statement":
 			result = [try translate(whileStatement: subtree)]
 		case "Function Declaration", "Constructor Declaration":
-			result = [try translate(functionDeclaration: subtree)]
+			result = [try translateFunctionDeclaration(subtree)]
 		case "Subscript Declaration":
 			result = try subtree.subtrees.filter { $0.name == "Accessor Declaration" }
-				.map { try translate(functionDeclaration: $0) }
+				.map { try translateFunctionDeclaration($0) }
 		case "Protocol":
 			result = [try translate(protocolDeclaration: subtree)]
 		case "Throw Statement":
@@ -1471,8 +1471,24 @@ extension SwiftTranslator { // kotlin: ignore
 
 		return (enumType: enumType, enumCase: caseName, declarations: declarations)
 	}
+}
 
-	internal func translate(functionDeclaration: SwiftAST) throws -> Statement? {
+extension SwiftTranslator {
+	// MARK: - Expression translations
+
+// declaration: internal fun translateExpression(expression: SwiftAST): Expression {
+// declaration: 	return Expression.NilLiteralExpression()
+// declaration: }
+
+// declaration: internal fun translateBraceStatement(braceStatement: SwiftAST):
+// declaration: 	MutableList<Statement>
+// declaration: {
+// declaration: 	return mutableListOf()
+// declaration: }
+
+	internal func translateFunctionDeclaration(_ functionDeclaration: SwiftAST)
+		throws -> Statement?
+	{
 		let compatibleASTNodes =
 			["Function Declaration", "Constructor Declaration", "Accessor Declaration"]
 		guard compatibleASTNodes.contains(functionDeclaration.name) else {
@@ -1514,10 +1530,14 @@ extension SwiftTranslator { // kotlin: ignore
 		let access = functionDeclaration["access"]
 
 		// Find out if it's static and if it's mutating
-		guard let interfaceType = functionDeclaration["interface type"],
-			let interfaceTypeComponents = functionDeclaration["interface type"]?
-				.split(withStringSeparator: " -> "),
-			let firstInterfaceTypeComponent = interfaceTypeComponents.first else
+		let maybeInterfaceType = functionDeclaration["interface type"]
+		let maybeInterfaceTypeComponents = functionDeclaration["interface type"]?
+			.split(withStringSeparator: " -> ")
+		let maybeFirstInterfaceTypeComponent = maybeInterfaceTypeComponents?.first
+
+		guard let interfaceType = maybeInterfaceType,
+			let interfaceTypeComponents = maybeInterfaceTypeComponents,
+			let firstInterfaceTypeComponent = maybeFirstInterfaceTypeComponent else
 		{
 			return try unexpectedASTStructureError(
 				"Unable to find out if function is static",
@@ -1527,21 +1547,36 @@ extension SwiftTranslator { // kotlin: ignore
 		let isStatic = firstInterfaceTypeComponent.contains(".Type")
 		let isMutating = firstInterfaceTypeComponent.contains("inout")
 
-		let genericTypes = ArrayClass(functionDeclaration.standaloneAttributes
-			.first { $0.hasPrefix("<") }?
-			.dropLast().dropFirst()
-			.split(separator: ",")
-			.map(String.init)
-			?? [])
+		let genericTypes: ArrayClass<String>
+		if let firstGenericString = functionDeclaration.standaloneAttributes
+			.first(where: { $0.hasPrefix("<") })
+		{
+			genericTypes = ArrayClass<String>(
+				firstGenericString
+					.dropLast()
+					.dropFirst()
+					.split(separator: ",")
+					.map { String($0) })
+		}
+		else {
+			genericTypes = []
+		}
 
-		let functionNamePrefix = functionName.prefix { $0 != "(" }
+		let functionNamePrefix = functionName.prefix {
+			$0 !=
+				"(" // value: '('
+		}
 
 		// Get the function parameters.
 		let parameterList: SwiftAST?
 
 		// If it's a method, it includes an extra Parameter List with only `self`
-		if let list = functionDeclaration.subtree(named: "Parameter List"),
-			let name = list.subtree(at: 0, named: "Parameter")?.standaloneAttributes.first,
+		let list = functionDeclaration.subtree(named: "Parameter List")
+		let listStandaloneAttributes = list?.subtree(at: 0, named: "Parameter")?
+			.standaloneAttributes
+
+		if let list = list,
+			let name = listStandaloneAttributes?.first,
 			name != "self"
 		{
 			parameterList = list
@@ -1554,7 +1589,7 @@ extension SwiftTranslator { // kotlin: ignore
 		}
 
 		// Translate the parameters
-		var parameters: ArrayClass<FunctionParameter> = []
+		let parameters: ArrayClass<FunctionParameter> = []
 		if let parameterList = parameterList {
 			for parameter in parameterList.subtrees {
 				if let name = parameter.standaloneAttributes.first,
@@ -1640,7 +1675,7 @@ extension SwiftTranslator { // kotlin: ignore
 			annotations: annotationsResult))
 	}
 
-	internal func translate(topLevelCode topLevelCodeDeclaration: SwiftAST) throws
+	internal func translateTopLevelCode(_ topLevelCodeDeclaration: SwiftAST) throws
 		-> Statement?
 	{
 		guard topLevelCodeDeclaration.name == "Top Level Code Declaration" else {
@@ -1659,20 +1694,6 @@ extension SwiftTranslator { // kotlin: ignore
 
 		return subtrees.first
 	}
-}
-
-extension SwiftTranslator {
-	// MARK: - Expression translations
-
-// declaration: internal fun translateExpression(expression: SwiftAST): Expression {
-// declaration: 	return Expression.NilLiteralExpression()
-// declaration: }
-
-// declaration: internal fun translateBraceStatement(braceStatement: SwiftAST):
-// declaration: 	MutableList<Statement>
-// declaration: {
-// declaration: 	return mutableListOf()
-// declaration: }
 
 	internal func translateVariableDeclaration(
 		_ variableDeclaration: SwiftAST)
