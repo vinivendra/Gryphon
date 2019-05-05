@@ -21,13 +21,60 @@ class SwiftTranslator {
     }
 }
 
-internal fun translateExpression(expression: SwiftAST): Expression {
-	return Expression.NilLiteralExpression()
-}
 internal fun translateBraceStatement(braceStatement: SwiftAST):
 	MutableList<Statement>
 {
 	return mutableListOf()
+}
+
+internal fun SwiftTranslator.translateSimplePatternEnumElement(
+    simplePatternEnumElement: SwiftAST)
+    : Expression
+{
+    if (simplePatternEnumElement.name != "Pattern Enum Element") {
+        return unexpectedExpressionStructureError(
+            "Trying to translate ${simplePatternEnumElement.name} as 'Pattern Enum Element'",
+            ast = simplePatternEnumElement,
+            translator = this)
+    }
+
+    val enumReference: String? = simplePatternEnumElement.standaloneAttributes.firstOrNull()
+    val typeName: String? = simplePatternEnumElement["type"]
+
+    if (!(enumReference != null && typeName != null)) {
+        return unexpectedExpressionStructureError(
+            "Expected a Pattern Enum Element to have a reference to the enum case and a type.",
+            ast = simplePatternEnumElement,
+            translator = this)
+    }
+
+    var enumElements: MutableList<String> = enumReference.split(separator = '.')
+    val lastEnumElement: String? = enumElements.lastOrNull()
+
+    lastEnumElement ?: return unexpectedExpressionStructureError(
+        "Expected a Pattern Enum Element to have a period (i.e. `MyEnum.myEnumCase`)",
+        ast = simplePatternEnumElement,
+        translator = this)
+
+    val range: SourceFileRange? = getRangeRecursively(ast = simplePatternEnumElement)
+    val lastExpression: Expression = Expression.DeclarationReferenceExpression(
+        data = DeclarationReferenceData(
+                identifier = lastEnumElement,
+                typeName = typeName,
+                isStandardLibrary = false,
+                isImplicit = false,
+                range = range))
+
+    enumElements.removeLast()
+
+    if (!enumElements.isEmpty()) {
+        return Expression.DotExpression(
+            leftExpression = Expression.TypeExpression(typeName = enumElements.joinToString(separator = ".")),
+            rightExpression = lastExpression)
+    }
+    else {
+        return lastExpression
+    }
 }
 
 private fun SwiftTranslator.translateIfConditions(
@@ -538,6 +585,10 @@ internal fun SwiftTranslator.translateVariableDeclaration(
                 isStatic = isStatic,
                 extendsType = null,
                 annotations = annotations))
+}
+
+internal fun translateExpression(expression: SwiftAST): Expression {
+	return Expression.NilLiteralExpression()
 }
 
 internal fun SwiftTranslator.translateTypeExpression(typeExpression: SwiftAST): Expression {

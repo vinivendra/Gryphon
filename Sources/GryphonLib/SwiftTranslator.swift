@@ -1269,6 +1269,16 @@ extension SwiftTranslator { // kotlin: ignore
 			expression: translatedExpression,
 			cases: cases)
 	}
+}
+
+extension SwiftTranslator {
+	// MARK: - Statement translation
+
+// declaration: internal fun translateBraceStatement(braceStatement: SwiftAST):
+// declaration: 	MutableList<Statement>
+// declaration: {
+// declaration: 	return mutableListOf()
+// declaration: }
 
 	internal func translateSimplePatternEnumElement(
 		_ simplePatternEnumElement: SwiftAST)
@@ -1316,20 +1326,6 @@ extension SwiftTranslator { // kotlin: ignore
 			return lastExpression
 		}
 	}
-}
-
-extension SwiftTranslator {
-	// MARK: - Expression translations
-
-// declaration: internal fun translateExpression(expression: SwiftAST): Expression {
-// declaration: 	return Expression.NilLiteralExpression()
-// declaration: }
-
-// declaration: internal fun translateBraceStatement(braceStatement: SwiftAST):
-// declaration: 	MutableList<Statement>
-// declaration: {
-// declaration: 	return mutableListOf()
-// declaration: }
 
 	private func translateIfConditions(
 		forIfStatement ifStatement: SwiftAST)
@@ -1869,6 +1865,12 @@ extension SwiftTranslator {
 			extendsType: nil,
 			annotations: annotations))
 	}
+
+	// MARK: - Expression translations
+
+	// declaration: internal fun translateExpression(expression: SwiftAST): Expression {
+	// declaration: 	return Expression.NilLiteralExpression()
+	// declaration: }
 
 	internal func translateTypeExpression(_ typeExpression: SwiftAST) throws -> Expression {
 		guard typeExpression.name == "Type Expression" else {
