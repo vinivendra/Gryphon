@@ -17,37 +17,28 @@
 import Foundation
 
 public class SwiftTranslator {
-	struct PatternBindingDeclaration {
-		let identifier: String
-		let typeName: String
-		let expression: Expression?
-	}
-
-	struct DeclarationInformation {
-		let identifier: String
-		let isStandardLibrary: Bool
-	}
-
 	// MARK: - Properties
+
 	var danglingPatternBindings: ArrayClass<PatternBindingDeclaration?> = []
+
 	let errorDanglingPatternDeclaration = PatternBindingDeclaration(
 		identifier: "<<Error>>", typeName: "<<Error>>", expression: .error)
 
 	fileprivate var sourceFile: SourceFile?
 
 	// MARK: - Interface
+
 	public init() { }
-}
 
-extension SwiftTranslator { // kotlin: ignore
-
-	public func translateAST(_ ast: SwiftAST, asMainFile isMainFile: Bool) throws
-		-> GryphonAST
+	public func translateAST(
+		_ ast: SwiftAST,
+		asMainFile isMainFile: Bool)
+		throws -> GryphonAST
 	{
 		let filePath = ast.standaloneAttributes[0]
-		if let contents = try? String(contentsOfFile: filePath) {
-			sourceFile = SourceFile(path: filePath, contents: contents)
-		}
+
+		let contents = try Utilities.readFile(filePath)
+		sourceFile = SourceFile(path: filePath, contents: contents)
 
 		let fileRange = sourceFile.map {
 			SourceFileRange(lineStart: 0, lineEnd: $0.numberOfLines, columnStart: 0, columnEnd: 0)
@@ -59,13 +50,13 @@ extension SwiftTranslator { // kotlin: ignore
 		let isDeclaration = { (ast: Statement) -> Bool in
 			switch ast {
 			case .expressionStatement(expression: .literalDeclarationExpression),
-				.protocolDeclaration,
-				.classDeclaration,
-				.structDeclaration,
-				.extensionDeclaration,
-				.functionDeclaration,
-				.enumDeclaration,
-				.typealiasDeclaration:
+				 .protocolDeclaration,
+				 .classDeclaration,
+				 .structDeclaration,
+				 .extensionDeclaration,
+				 .functionDeclaration,
+				 .enumDeclaration,
+				 .typealiasDeclaration:
 
 				return true
 			default:
@@ -74,7 +65,7 @@ extension SwiftTranslator { // kotlin: ignore
 		}
 
 		if isMainFile {
-			let declarations = translatedSubtrees.filter(isDeclaration)
+			let declarations = translatedSubtrees.filter { isDeclaration($0) }
 			let statements = translatedSubtrees.filter({ !isDeclaration($0) })
 
 			return GryphonAST(
@@ -89,9 +80,6 @@ extension SwiftTranslator { // kotlin: ignore
 				statements: [])
 		}
 	}
-}
-
-extension SwiftTranslator {
 
 	// MARK: - Top-level translations
 
@@ -171,7 +159,7 @@ extension SwiftTranslator {
 		return result
 	}
 
-	// MARK: - Statement translation
+	// MARK: - Statement translations
 
 	internal func translateSubtreesOf(_ ast: SwiftAST)
 		throws -> ArrayClass<Statement>
@@ -2784,7 +2772,7 @@ extension SwiftTranslator {
 
 				let typeName = cleanUpType(rawType)
 
-				result.append(SwiftTranslator.PatternBindingDeclaration(
+				result.append(PatternBindingDeclaration(
 					identifier: identifier,
 					typeName: typeName,
 					expression: translatedExpression))
@@ -2842,7 +2830,7 @@ extension SwiftTranslator {
 	}
 
 	internal func getInformationFromDeclaration(_ declaration: String)
-		-> SwiftTranslator.DeclarationInformation
+		-> DeclarationInformation
 	{
 		let isStandardLibrary = declaration.hasPrefix("Swift")
 
@@ -2872,7 +2860,7 @@ extension SwiftTranslator {
 
 		let identifier = declaration[identifierStartIndex..<index]
 
-		return SwiftTranslator.DeclarationInformation(
+		return DeclarationInformation(
 			identifier: String(identifier),
 			isStandardLibrary: isStandardLibrary)
 	}
@@ -2942,6 +2930,19 @@ extension SwiftTranslator {
 		try Compiler.handleError(error)
 		return .error
 	}
+}
+
+// MARK: - Supporting structs
+
+struct PatternBindingDeclaration {
+	let identifier: String
+	let typeName: String
+	let expression: Expression?
+}
+
+struct DeclarationInformation {
+	let identifier: String
+	let isStandardLibrary: Bool
 }
 
 private struct IfConditionsTranslation {
