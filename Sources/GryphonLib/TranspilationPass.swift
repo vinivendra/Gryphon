@@ -97,6 +97,13 @@ public class TranspilationPass {
 		case let .variableDeclaration(data: variableDeclaration):
 
 			return replaceVariableDeclaration(variableDeclaration)
+
+		case let .doStatement(statements: statements):
+			return replaceDoStatement(statements: statements)
+		case let .catchStatement(variableDeclaration: variableDeclaration, statements: statements):
+			return replaceCatchStatement(
+				variableDeclaration: variableDeclaration,
+				statements: statements)
 		case let .forEachStatement(
 			collection: collection, variable: variable, statements: statements):
 
@@ -261,6 +268,21 @@ public class TranspilationPass {
 		-> ArrayClass<Statement>
 	{
 		return [.variableDeclaration(data: replaceVariableDeclaration(variableDeclaration))]
+	}
+
+	func replaceDoStatement(statements: ArrayClass<Statement>) -> ArrayClass<Statement> {
+		return [.doStatement(statements: replaceStatements(statements))]
+	}
+
+	func replaceCatchStatement(
+		variableDeclaration: VariableDeclarationData?,
+		statements: ArrayClass<Statement>)
+		-> ArrayClass<Statement>
+	{
+		return [.catchStatement(
+			variableDeclaration: variableDeclaration.map(replaceVariableDeclaration),
+			statements: replaceStatements(statements)),
+		]
 	}
 
 	func replaceVariableDeclaration(_ variableDeclaration: VariableDeclarationData)

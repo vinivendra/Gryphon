@@ -27,7 +27,17 @@ internal fun translateBraceStatement(braceStatement: SwiftAST):
 	return mutableListOf()
 }
 
-internal fun SwiftTranslator.translateIfStatement(ifStatement: SwiftAST): IfStatementData {
+internal fun SwiftTranslator.translateIfStatement(ifStatement: SwiftAST): Statement {
+    try {
+        val result: IfStatementData = translateIfStatementData(ifStatement)
+        return Statement.IfStatement(data = result)
+    }
+    catch (error: Exception) {
+        return handleUnexpectedASTStructureError(error)
+    }
+}
+
+internal fun SwiftTranslator.translateIfStatementData(ifStatement: SwiftAST): IfStatementData {
     if (!(ifStatement.name == "If Statement" || ifStatement.name == "Guard Statement")) {
         throw createUnexpectedASTStructureError(
             "Trying to translate ${ifStatement.name} as an if or guard statement",
@@ -46,7 +56,7 @@ internal fun SwiftTranslator.translateIfStatement(ifStatement: SwiftAST): IfStat
 
     if (ifStatement.subtrees.size > 2 && secondToLastTree != null && secondToLastTree.name == "Brace Statement" && lastTree != null && lastTree.name == "If Statement") {
         braceStatement = secondToLastTree
-        elseStatement = translateIfStatement(lastTree)
+        elseStatement = translateIfStatementData(lastTree)
     }
     else if (ifStatement.subtrees.size > 2 && secondToLastTree != null && secondToLastTree.name == "Brace Statement" && lastTree != null && lastTree.name == "Brace Statement") {
         braceStatement = secondToLastTree
@@ -603,25 +613,25 @@ internal fun SwiftTranslator.translateFunctionDeclaration(
 
 internal fun SwiftTranslator.translateTopLevelCode(
     topLevelCodeDeclaration: SwiftAST)
-    : Statement?
+    : MutableList<Statement?>
 {
     if (topLevelCodeDeclaration.name != "Top Level Code Declaration") {
-        return unexpectedASTStructureError(
+        return mutableListOf(unexpectedASTStructureError(
             "Trying to translate ${topLevelCodeDeclaration.name} as " + "'Top Level Code Declaration'",
             ast = topLevelCodeDeclaration,
-            translator = this)
+            translator = this))
     }
 
     val braceStatement: SwiftAST? = topLevelCodeDeclaration.subtree(name = "Brace Statement")
 
-    braceStatement ?: return unexpectedASTStructureError(
+    braceStatement ?: return mutableListOf(unexpectedASTStructureError(
         "Unrecognized structure",
         ast = topLevelCodeDeclaration,
-        translator = this)
+        translator = this))
 
     val subtrees: MutableList<Statement> = translateBraceStatement(braceStatement)
 
-    return subtrees.firstOrNull()
+    return subtrees as MutableList<Statement?>
 }
 
 internal fun SwiftTranslator.translateVariableDeclaration(

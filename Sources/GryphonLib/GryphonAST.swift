@@ -100,6 +100,11 @@ public indirect enum Statement: PrintableAsTree, Equatable {
 		data: FunctionDeclarationData)
 	case variableDeclaration(
 		data: VariableDeclarationData)
+	case doStatement(
+		statements: ArrayClass<Statement>)
+	case catchStatement(
+		variableDeclaration: VariableDeclarationData?,
+		statements: ArrayClass<Statement>)
 	case forEachStatement(
 		collection: Expression,
 		variable: Expression,
@@ -151,6 +156,10 @@ public indirect enum Statement: PrintableAsTree, Equatable {
 			return "functionDeclaration".capitalizedAsCamelCase()
 		case .variableDeclaration:
 			return "variableDeclaration".capitalizedAsCamelCase()
+		case .doStatement:
+			return "doStatement".capitalizedAsCamelCase()
+		case .catchStatement:
+			return "catchStatement".capitalizedAsCamelCase()
 		case .forEachStatement:
 			return "forEachStatement".capitalizedAsCamelCase()
 		case .whileStatement:
@@ -275,6 +284,19 @@ public indirect enum Statement: PrintableAsTree, Equatable {
 					[variableDeclaration.setter.map { Statement.functionDeclaration(data: $0) }]),
 				PrintableTree.initOrNil(
 					"annotations", [PrintableTree.initOrNil(variableDeclaration.annotations)]), ]
+		case let .doStatement(statements: statements):
+			return ArrayClass<PrintableAsTree?>(statements)
+
+		case let .catchStatement(variableDeclaration: variableDeclaration, statements: statements):
+			return [
+				PrintableTree(
+					"variableDeclaration", ArrayClass<PrintableAsTree?>([
+							variableDeclaration.map { Statement.variableDeclaration(data: $0) },
+						])),
+				PrintableTree.ofStatements(
+					"statements", statements),
+			]
+
 		case let .forEachStatement(
 			collection: collection,
 			variable: variable,

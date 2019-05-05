@@ -278,6 +278,15 @@ public class KotlinTranslator {
 				members: members.array,
 				isImplicit: isImplicit,
 				withIndentation: indentation)
+		case let .doStatement(statements: statements):
+			result = try translateDoStatement(
+				statements: statements.array,
+				withIndentation: indentation)
+		case let .catchStatement(variableDeclaration: variableDeclaration, statements: statements):
+			result = try translateCatchStatement(
+				variableDeclaration: variableDeclaration,
+				statements: statements.array,
+				withIndentation: indentation)
 		case let .forEachStatement(
 			collection: collection, variable: variable, statements: statements):
 
@@ -388,6 +397,16 @@ public class KotlinTranslator {
 			}
 			else if case .typealiasDeclaration = currentSubtree.subtree,
 				case .typealiasDeclaration = nextSubtree.subtree
+			{
+				continue
+			}
+			else if case .doStatement = currentSubtree.subtree,
+				case .catchStatement = nextSubtree.subtree
+			{
+				continue
+			}
+			else if case .catchStatement = currentSubtree.subtree,
+				case .catchStatement = nextSubtree.subtree
 			{
 				continue
 			}
@@ -753,9 +772,52 @@ public class KotlinTranslator {
 		return result
 	}
 
+	private func translateDoStatement(
+		statements: [Statement],
+		withIndentation indentation: String)
+		throws -> String
+	{
+		let translatedStatements = try translate(
+			subtrees: statements,
+			withIndentation: increaseIndentation(indentation),
+			limitForAddingNewlines: 3)
+		return "\(indentation)try {\n\(translatedStatements)\(indentation)}\n"
+	}
+
+	private func translateCatchStatement(
+		variableDeclaration: VariableDeclarationData?,
+		statements: [Statement],
+		withIndentation indentation: String)
+		throws -> String
+	{
+		var result = ""
+
+		if let variableDeclaration = variableDeclaration {
+			let translatedType = translateType(variableDeclaration.typeName)
+			result = "\(indentation)catch " +
+				"(\(variableDeclaration.identifier): \(translatedType)) {\n"
+		}
+		else {
+			result = "\(indentation)catch {\n"
+		}
+
+		let translatedStatements = try translate(
+			subtrees: statements,
+			withIndentation: increaseIndentation(indentation),
+			limitForAddingNewlines: 3)
+
+		result += "\(translatedStatements)"
+		result += "\(indentation)}\n"
+
+		return result
+	}
+
 	private func translateForEachStatement(
-		collection: Expression, variable: Expression, statements: [Statement],
-		withIndentation indentation: String) throws -> String
+		collection: Expression,
+		variable: Expression,
+		statements: [Statement],
+		withIndentation indentation: String)
+		throws -> String
 	{
 		var result = "\(indentation)for ("
 

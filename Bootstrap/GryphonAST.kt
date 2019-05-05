@@ -48,6 +48,8 @@ public sealed class Statement: PrintableAsTree {
     class StructDeclaration(val annotations: String?, val structName: String, val inherits: MutableList<String>, val members: MutableList<Statement>): Statement()
     class FunctionDeclaration(val data: FunctionDeclarationData): Statement()
     class VariableDeclaration(val data: VariableDeclarationData): Statement()
+    class DoStatement(val statements: MutableList<Statement>): Statement()
+    class CatchStatement(val variableDeclaration: VariableDeclarationData?, val statements: MutableList<Statement>): Statement()
     class ForEachStatement(val collection: Expression, val variable: Expression, val statements: MutableList<Statement>): Statement()
     class WhileStatement(val expression: Expression, val statements: MutableList<Statement>): Statement()
     class IfStatement(val data: IfStatementData): Statement()
@@ -74,6 +76,8 @@ public sealed class Statement: PrintableAsTree {
                 is Statement.StructDeclaration -> "structDeclaration".capitalizedAsCamelCase()
                 is Statement.FunctionDeclaration -> "functionDeclaration".capitalizedAsCamelCase()
                 is Statement.VariableDeclaration -> "variableDeclaration".capitalizedAsCamelCase()
+                is Statement.DoStatement -> "doStatement".capitalizedAsCamelCase()
+                is Statement.CatchStatement -> "catchStatement".capitalizedAsCamelCase()
                 is Statement.ForEachStatement -> "forEachStatement".capitalizedAsCamelCase()
                 is Statement.WhileStatement -> "whileStatement".capitalizedAsCamelCase()
                 is Statement.IfStatement -> "ifStatement".capitalizedAsCamelCase()
@@ -166,6 +170,17 @@ public sealed class Statement: PrintableAsTree {
                         mutableListOf(variableDeclaration.setter?.let { Statement.FunctionDeclaration(data = it) })), PrintableTree.initOrNil(
                         "annotations",
                         mutableListOf(PrintableTree.initOrNil(variableDeclaration.annotations))))
+                }
+                is Statement.DoStatement -> {
+                    val statements: MutableList<Statement> = this.statements
+                    statements as MutableList<PrintableAsTree?>
+                }
+                is Statement.CatchStatement -> {
+                    val variableDeclaration: VariableDeclarationData? = this.variableDeclaration
+                    val statements: MutableList<Statement> = this.statements
+                    mutableListOf(PrintableTree(
+                        "variableDeclaration",
+                        mutableListOf(variableDeclaration?.let { Statement.VariableDeclaration(data = it) }) as MutableList<PrintableAsTree?>), PrintableTree.ofStatements("statements", statements))
                 }
                 is Statement.ForEachStatement -> {
                     val collection: Expression = this.collection

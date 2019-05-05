@@ -91,16 +91,16 @@ extension SwiftTranslator { // kotlin: ignore
 	}
 
 	// MARK: - Top-level translations
-	internal func translateSubtree(_ subtree: SwiftAST) throws -> [Statement?] {
+	internal func translateSubtree(_ subtree: SwiftAST) throws -> ArrayClass<Statement?> {
 
 		if getComment(forNode: subtree, key: "kotlin") == "ignore" {
 			return []
 		}
 
-		let result: [Statement?]
+		let result: ArrayClass<Statement?>
 		switch subtree.name {
 		case "Top Level Code Declaration":
-			result = [try translateTopLevelCode(subtree)]
+			result = try translateTopLevelCode(subtree)
 		case "Import Declaration":
 			result = [.importDeclaration(moduleName: subtree.standaloneAttributes[0])]
 		case "Typealias":
@@ -113,6 +113,8 @@ extension SwiftTranslator { // kotlin: ignore
 			result = [try translateEnumDeclaration(subtree)]
 		case "Extension Declaration":
 			result = [try translateExtensionDeclaration(subtree)]
+		case "Do Catch Statement":
+			result = try translateDoCatchStatement(subtree)
 		case "For Each Statement":
 			result = [try translateForEachStatement(subtree)]
 		case "While Statement":
@@ -380,7 +382,7 @@ extension SwiftTranslator { // kotlin: ignore
 
 		for subtree in subtrees {
 			if let currentRange = getRange(ofNode: subtree),
-				lastRange.lineEnd < currentRange.lineStart
+				lastRange.lineEnd <= currentRange.lineStart
 			{
 				let comments = insertedCode(inRange: lastRange.lineEnd..<currentRange.lineStart)
 				result += comments.compactMap(commentToAST)
@@ -971,6 +973,79 @@ extension SwiftTranslator { // kotlin: ignore
 		}
 	}
 
+	internal func translateDoCatchStatement(
+		_ doCatchStatement: SwiftAST)
+		throws -> ArrayClass<Statement?>
+	{
+		guard doCatchStatement.name == "Do Catch Statement" else {
+			return try [unexpectedASTStructureError(
+				"Trying to translate \(doCatchStatement.name) as 'Do Catch Statement'",
+				ast: doCatchStatement, translator: self), ]
+		}
+
+		guard let braceStatement = doCatchStatement.subtrees.first,
+			braceStatement.name == "Brace Statement" else
+		{
+			return try [unexpectedASTStructureError(
+				"Unable to find do statement's inner statements. Expected there to be a Brace " +
+					"Statement as the first subtree.",
+				ast: doCatchStatement, translator: self), ]
+		}
+
+		let translatedInnerDoStatements = try translateBraceStatement(braceStatement)
+		let translatedDoStatement = Statement.doStatement(statements: translatedInnerDoStatements)
+
+		var catchStatements: [Statement] = []
+		for catchStatement in doCatchStatement.subtrees.dropFirst() {
+			guard catchStatement.name == "Catch" else {
+				continue
+			}
+
+			let variableDeclaration: VariableDeclarationData?
+
+			let patternNamed = catchStatement
+				.subtree(named: "Pattern Let")?
+				.subtree(named: "Pattern Named")
+			let patternAttributes = patternNamed?.standaloneAttributes
+			let variableName = patternAttributes?.first
+			let variableType = patternNamed?["type"]
+
+			if let variableName = variableName, let variableType = variableType {
+				variableDeclaration = VariableDeclarationData(
+					identifier: variableName,
+					typeName: variableType,
+					expression: nil,
+					getter: nil,
+					setter: nil,
+					isLet: true,
+					isImplicit: false,
+					isStatic: false,
+					extendsType: nil,
+					annotations: nil)
+			}
+			else {
+				variableDeclaration = nil
+			}
+
+			guard let braceStatement = catchStatement.subtree(named: "Brace Statement") else {
+				return try [unexpectedASTStructureError(
+					"Unable to find catch statement's inner statements. Expected there to be a " +
+						"Brace Statement.",
+					ast: doCatchStatement, translator: self), ]
+			}
+
+			let translatedStatements = try translateBraceStatement(braceStatement)
+
+			catchStatements.append(.catchStatement(
+				variableDeclaration: variableDeclaration,
+				statements: translatedStatements))
+		}
+
+		let resultingStatements = ArrayClass<Statement?>([translatedDoStatement] + catchStatements)
+
+		return resultingStatements
+	}
+
 	internal func translateForEachStatement(_ forEachStatement: SwiftAST) throws -> Statement {
 		guard forEachStatement.name == "For Each Statement" else {
 			return try unexpectedASTStructureError(
@@ -1099,16 +1174,6 @@ extension SwiftTranslator { // kotlin: ignore
 		let statements = try translateBraceStatement(braceStatement)
 		return .deferStatement(statements: statements)
 	}
-
-	internal func translateIfStatement(_ ifStatement: SwiftAST) throws -> Statement {
-		do {
-			let result: IfStatementData = try translateIfStatement(ifStatement)
-			return .ifStatement(data: result)
-		}
-		catch let error {
-			return try handleUnexpectedASTStructureError(error)
-		}
-	}
 }
 
 extension SwiftTranslator {
@@ -1120,7 +1185,17 @@ extension SwiftTranslator {
 // declaration: 	return mutableListOf()
 // declaration: }
 
-	internal func translateIfStatement(_ ifStatement: SwiftAST) throws -> IfStatementData {
+	internal func translateIfStatement(_ ifStatement: SwiftAST) throws -> Statement {
+		do {
+			let result: IfStatementData = try translateIfStatementData(ifStatement)
+			return .ifStatement(data: result)
+		}
+		catch let error {
+			return try handleUnexpectedASTStructureError(error)
+		}
+	}
+
+	internal func translateIfStatementData(_ ifStatement: SwiftAST) throws -> IfStatementData {
 		guard ifStatement.name == "If Statement" || ifStatement.name == "Guard Statement" else {
 			throw createUnexpectedASTStructureError(
 				"Trying to translate \(ifStatement.name) as an if or guard statement",
@@ -1146,7 +1221,7 @@ extension SwiftTranslator {
 			lastTree.name == "If Statement"
 		{
 			braceStatement = secondToLastTree
-			elseStatement = try translateIfStatement(lastTree)
+			elseStatement = try translateIfStatementData(lastTree)
 		}
 		else if ifStatement.subtrees.count > 2,
 			let secondToLastTree = secondToLastTree,
@@ -1738,23 +1813,23 @@ extension SwiftTranslator {
 	}
 
 	internal func translateTopLevelCode(_ topLevelCodeDeclaration: SwiftAST) throws
-		-> Statement?
+		-> ArrayClass<Statement?>
 	{
 		guard topLevelCodeDeclaration.name == "Top Level Code Declaration" else {
-			return try unexpectedASTStructureError(
+			return try [unexpectedASTStructureError(
 				"Trying to translate \(topLevelCodeDeclaration.name) as " +
 				"'Top Level Code Declaration'",
-				ast: topLevelCodeDeclaration, translator: self)
+				ast: topLevelCodeDeclaration, translator: self), ]
 		}
 
 		guard let braceStatement = topLevelCodeDeclaration.subtree(named: "Brace Statement") else {
-			return try unexpectedASTStructureError(
-				"Unrecognized structure", ast: topLevelCodeDeclaration, translator: self)
+			return try [unexpectedASTStructureError(
+				"Unrecognized structure", ast: topLevelCodeDeclaration, translator: self), ]
 		}
 
 		let subtrees = try translateBraceStatement(braceStatement)
 
-		return subtrees.first
+		return ArrayClass<Statement?>(subtrees)
 	}
 
 	internal func translateVariableDeclaration(
