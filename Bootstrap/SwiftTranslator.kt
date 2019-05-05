@@ -27,6 +27,348 @@ internal fun translateBraceStatement(braceStatement: SwiftAST):
 	return mutableListOf()
 }
 
+internal fun SwiftTranslator.translateEnumDeclaration(enumDeclaration: SwiftAST): Statement? {
+    if (enumDeclaration.name != "Enum Declaration") {
+        return unexpectedASTStructureError(
+            "Trying to translate ${enumDeclaration.name} as 'Enum Declaration'",
+            ast = enumDeclaration,
+            translator = this)
+    }
+
+    if (getComment(ast = enumDeclaration, key = "kotlin") == "ignore") {
+        return null
+    }
+
+    val access: String? = enumDeclaration["access"]
+    val name: String
+    val isImplicit: Boolean
+
+    if (enumDeclaration.standaloneAttributes[0] == "implicit") {
+        isImplicit = true
+        name = enumDeclaration.standaloneAttributes[1]
+    }
+    else {
+        isImplicit = false
+        name = enumDeclaration.standaloneAttributes[0]
+    }
+
+    val inheritanceArray: MutableList<String>
+    val inheritanceList: String? = enumDeclaration["inherits"]
+
+    if (inheritanceList != null) {
+        inheritanceArray = inheritanceList.split(separator = ", ") as MutableList<String>
+    }
+    else {
+        inheritanceArray = mutableListOf()
+    }
+
+    var rawValues: MutableList<Expression> = mutableListOf()
+    val constructorDeclarations: MutableList<SwiftAST> = enumDeclaration.subtrees.filter { it.name == "Constructor Declaration" }.toMutableList()
+
+    for (constructorDeclaration in constructorDeclarations) {
+        val arrayExpression: SwiftAST? = constructorDeclaration.subtree(name = "Brace Statement")?.subtree(name = "Switch Statement")?.subtree(
+            name = "Call Expression")?.subtree(
+            name = "Tuple Expression")?.subtree(
+            name = "Array Expression")
+        if (constructorDeclaration.standaloneAttributes.contains("init(rawValue:)") && constructorDeclaration.standaloneAttributes.contains("implicit") && arrayExpression != null) {
+            val rawValueASTs: MutableList<SwiftAST> = arrayExpression.subtrees.dropLast(1) as MutableList<SwiftAST>
+            rawValues = rawValueASTs.map { translateExpression(it) }.toMutableList()
+            break
+        }
+    }
+
+    val elements: MutableList<EnumElement> = mutableListOf()
+    val enumElementDeclarations: MutableList<SwiftAST> = enumDeclaration.subtrees.filter { it.name == "Enum Element Declaration" }.toMutableList()
+
+    for (index in enumElementDeclarations.indices) {
+        val enumElementDeclaration: SwiftAST = enumElementDeclarations[index]
+
+        if (getComment(ast = enumElementDeclaration, key = "kotlin") == "ignore") {
+            continue
+        }
+
+        val elementName: String? = enumElementDeclaration.standaloneAttributes.firstOrNull()
+
+        elementName ?: return unexpectedASTStructureError(
+            "Expected the element name to be the first standalone attribute in an Enum" + "Declaration",
+            ast = enumDeclaration,
+            translator = this)
+
+        val annotations: String? = getComment(ast = enumElementDeclaration, key = "annotation")
+
+        if (!elementName.contains("(")) {
+            elements.add(EnumElement(
+                name = elementName,
+                associatedValues = mutableListOf(),
+                rawValue = rawValues.getSafe(index),
+                annotations = annotations))
+        }
+        else {
+            val parenthesisIndex: Int = elementName.indexOf('(')
+            val prefix: String = elementName.substring(0, parenthesisIndex)
+            val suffix: String = elementName.substring(parenthesisIndex)
+            val valuesString: String = suffix.drop(1).dropLast(2)
+            val valueLabels: MutableList<String> = valuesString.split(separator = ':').map { it }.toMutableList() as MutableList<String>
+            val enumType: String? = enumElementDeclaration["interface type"]
+
+            enumType ?: return unexpectedASTStructureError(
+                "Expected an enum element with associated values to have an interface type",
+                ast = enumDeclaration,
+                translator = this)
+
+            val enumTypeComponents: MutableList<String> = enumType.split(separator = " -> ")
+            val valuesComponent: String = enumTypeComponents[1]
+            val valueTypesString: String = valuesComponent.drop(1).dropLast(1)
+            val valueTypes: MutableList<String> = Utilities.splitTypeList(valueTypesString)
+            val associatedValues: MutableList<LabeledType> = valueLabels.zip(valueTypes).map { LabeledType(label = it.first, typeName = it.second) }.toMutableList()
+
+            elements.add(EnumElement(
+                name = prefix,
+                associatedValues = associatedValues,
+                rawValue = rawValues.getSafe(index),
+                annotations = annotations))
+        }
+    }
+
+    val members: MutableList<SwiftAST> = enumDeclaration.subtrees.filter { it.name != "Enum Element Declaration" && it.name != "Enum Case Declaration" }.toMutableList()
+
+    val translatedMembers = mutableListOf<Statement>()
+
+    return Statement.EnumDeclaration(
+        access = access,
+        enumName = name,
+        inherits = inheritanceArray,
+        elements = elements,
+        members = translatedMembers,
+        isImplicit = isImplicit)
+}
+
+internal fun SwiftTranslator.translateMemberReferenceExpression(
+    memberReferenceExpression: SwiftAST)
+    : Expression
+{
+    if (memberReferenceExpression.name != "Member Reference Expression") {
+        return unexpectedExpressionStructureError(
+            "Trying to translate ${memberReferenceExpression.name} as " + "'Member Reference Expression'",
+            ast = memberReferenceExpression,
+            translator = this)
+    }
+
+    val declaration: String? = memberReferenceExpression["decl"]
+    val memberOwner: SwiftAST? = memberReferenceExpression.subtree(index = 0)
+    val rawType: String? = memberReferenceExpression["type"]
+
+    if (declaration != null && memberOwner != null && rawType != null) {
+        val typeName: String = cleanUpType(rawType)
+        val leftHand: Expression = translateExpression(memberOwner)
+        val declarationInformation: SwiftTranslator.DeclarationInformation = getInformationFromDeclaration(declaration)
+        val isImplicit: Boolean = memberReferenceExpression.standaloneAttributes.contains("implicit")
+        val range: SourceFileRange? = getRangeRecursively(ast = memberReferenceExpression)
+        val rightHand: Expression = Expression.DeclarationReferenceExpression(
+            data = DeclarationReferenceData(
+                    identifier = declarationInformation.identifier,
+                    typeName = typeName,
+                    isStandardLibrary = declarationInformation.isStandardLibrary,
+                    isImplicit = isImplicit,
+                    range = range))
+
+        return Expression.DotExpression(leftExpression = leftHand, rightExpression = rightHand)
+    }
+    else {
+        return unexpectedExpressionStructureError(
+            "Unrecognized structure",
+            ast = memberReferenceExpression,
+            translator = this)
+    }
+}
+
+internal fun SwiftTranslator.translateTupleElementExpression(
+    tupleElementExpression: SwiftAST)
+    : Expression
+{
+    if (tupleElementExpression.name != "Tuple Element Expression") {
+        return unexpectedExpressionStructureError(
+            "Trying to translate ${tupleElementExpression.name} as " + "'Tuple Element Expression'",
+            ast = tupleElementExpression,
+            translator = this)
+    }
+
+    val numberString: String? = tupleElementExpression.standaloneAttributes.find { it.startsWith("#") }?.drop(1)
+    val number: Int? = numberString?.let { it.toIntOrNull() } ?: null
+    val declarationReference: SwiftAST? = tupleElementExpression.subtree(name = "Declaration Reference Expression")
+    val tuple: String? = declarationReference?.get("type")
+
+    if (number != null && declarationReference != null && tuple != null) {
+        val leftHand: Expression = translateDeclarationReferenceExpression(declarationReference)
+        val tupleComponents: MutableList<String> = tuple.drop(1).dropLast(1).split(separator = ", ")
+        val tupleComponent: String? = tupleComponents.getSafe(number)
+        val labelAndType: MutableList<String>? = tupleComponent?.split(separator = ": ")
+        val label: String? = labelAndType?.getSafe(0)
+        val typeName: String? = labelAndType?.getSafe(1)
+
+        if (label != null && typeName != null && leftHand is Expression.DeclarationReferenceExpression) {
+            val leftExpression: DeclarationReferenceData = leftHand.data
+            return Expression.DotExpression(
+                leftExpression = leftHand,
+                rightExpression = Expression.DeclarationReferenceExpression(
+                        data = DeclarationReferenceData(
+                                identifier = label,
+                                typeName = typeName,
+                                isStandardLibrary = leftExpression.isStandardLibrary,
+                                isImplicit = false,
+                                range = leftExpression.range)))
+        }
+        else if (leftHand is Expression.DeclarationReferenceExpression && tupleComponent != null) {
+            val leftExpression: DeclarationReferenceData = leftHand.data
+            val memberName: String = if (number == 0) { "first" } else { "second" }
+            return Expression.DotExpression(
+                leftExpression = leftHand,
+                rightExpression = Expression.DeclarationReferenceExpression(
+                        data = DeclarationReferenceData(
+                                identifier = memberName,
+                                typeName = tupleComponent,
+                                isStandardLibrary = leftExpression.isStandardLibrary,
+                                isImplicit = false,
+                                range = leftExpression.range)))
+        }
+    }
+
+    return unexpectedExpressionStructureError(
+        "Unable to get either the tuple element's number or its label.",
+        ast = tupleElementExpression,
+        translator = this)
+}
+
+internal fun SwiftTranslator.translatePrefixUnaryExpression(
+    prefixUnaryExpression: SwiftAST)
+    : Expression
+{
+    if (prefixUnaryExpression.name != "Prefix Unary Expression") {
+        return unexpectedExpressionStructureError(
+            "Trying to translate ${prefixUnaryExpression.name} as 'Prefix Unary Expression'",
+            ast = prefixUnaryExpression,
+            translator = this)
+    }
+
+    val rawType: String? = prefixUnaryExpression["type"]
+    val declaration: String? = prefixUnaryExpression.subtree(name = "Dot Syntax Call Expression")?.subtree(
+        name = "Declaration Reference Expression")?.get("decl")
+    val expression: SwiftAST? = prefixUnaryExpression.subtree(index = 1)
+
+    if (rawType != null && declaration != null && expression != null) {
+        val typeName: String = cleanUpType(rawType)
+        val expressionTranslation: Expression = translateExpression(expression)
+        val operatorInformation: SwiftTranslator.DeclarationInformation = getInformationFromDeclaration(declaration)
+
+        return Expression.PrefixUnaryExpression(
+            expression = expressionTranslation,
+            operatorSymbol = operatorInformation.identifier,
+            typeName = typeName)
+    }
+    else {
+        return unexpectedExpressionStructureError(
+            "Expected Prefix Unary Expression to have a Dot Syntax Call Expression with a " + "Declaration Reference Expression, for the operator, and expected it to have " + "a second expression as the operand.",
+            ast = prefixUnaryExpression,
+            translator = this)
+    }
+}
+
+internal fun SwiftTranslator.translatePostfixUnaryExpression(
+    postfixUnaryExpression: SwiftAST)
+    : Expression
+{
+    if (postfixUnaryExpression.name != "Postfix Unary Expression") {
+        return unexpectedExpressionStructureError(
+            "Trying to translate ${postfixUnaryExpression.name} as 'Postfix Unary Expression'",
+            ast = postfixUnaryExpression,
+            translator = this)
+    }
+
+    val rawType: String? = postfixUnaryExpression["type"]
+    val declaration: String? = postfixUnaryExpression.subtree(name = "Dot Syntax Call Expression")?.subtree(
+        name = "Declaration Reference Expression")?.get("decl")
+    val expression: SwiftAST? = postfixUnaryExpression.subtree(index = 1)
+
+    if (rawType != null && declaration != null && expression != null) {
+        val typeName: String = cleanUpType(rawType)
+        val expressionTranslation: Expression = translateExpression(expression)
+        val operatorInformation: SwiftTranslator.DeclarationInformation = getInformationFromDeclaration(declaration)
+
+        return Expression.PostfixUnaryExpression(
+            expression = expressionTranslation,
+            operatorSymbol = operatorInformation.identifier,
+            typeName = typeName)
+    }
+    else {
+        return unexpectedExpressionStructureError(
+            "Expected Postfix Unary Expression to have a Dot Syntax Call Expression with a " + "Declaration Reference Expression, for the operator, and expected it to have " + "a second expression as the operand.",
+            ast = postfixUnaryExpression,
+            translator = this)
+    }
+}
+
+internal fun SwiftTranslator.translateBinaryExpression(binaryExpression: SwiftAST): Expression {
+    if (binaryExpression.name != "Binary Expression") {
+        return unexpectedExpressionStructureError(
+            "Trying to translate ${binaryExpression.name} as 'Binary Expression'",
+            ast = binaryExpression,
+            translator = this)
+    }
+
+    val declarationFromDotSyntax: SwiftAST? = binaryExpression.subtree(name = "Dot Syntax Call Expression")?.subtree(
+        name = "Declaration Reference Expression")
+    val directDeclaration: SwiftAST? = binaryExpression.subtree(name = "Declaration Reference Expression")
+    val declaration: String? = declarationFromDotSyntax?.get("decl") ?: directDeclaration?.get("decl")
+    val tupleExpression: SwiftAST? = binaryExpression.subtree(name = "Tuple Expression")
+    val leftHandExpression: SwiftAST? = tupleExpression?.subtree(index = 0)
+    val rightHandExpression: SwiftAST? = tupleExpression?.subtree(index = 1)
+    val rawType: String? = binaryExpression["type"]
+
+    if (rawType != null && declaration != null && leftHandExpression != null && rightHandExpression != null) {
+        val typeName: String = cleanUpType(rawType)
+        val operatorInformation: SwiftTranslator.DeclarationInformation = getInformationFromDeclaration(declaration)
+        val leftHandTranslation: Expression = translateExpression(leftHandExpression)
+        val rightHandTranslation: Expression = translateExpression(rightHandExpression)
+
+        return Expression.BinaryOperatorExpression(
+            leftExpression = leftHandTranslation,
+            rightExpression = rightHandTranslation,
+            operatorSymbol = operatorInformation.identifier,
+            typeName = typeName)
+    }
+    else {
+        return unexpectedExpressionStructureError(
+            "Unrecognized structure",
+            ast = binaryExpression,
+            translator = this)
+    }
+}
+
+internal fun SwiftTranslator.translateIfExpression(ifExpression: SwiftAST): Expression {
+    if (ifExpression.name != "If Expression") {
+        return unexpectedExpressionStructureError(
+            "Trying to translate ${ifExpression.name} as 'If Expression'",
+            ast = ifExpression,
+            translator = this)
+    }
+
+    if (ifExpression.subtrees.size != 3) {
+        return unexpectedExpressionStructureError(
+            "Expected If Expression to have three subtrees (a condition, a true expression " + "and a false expression)",
+            ast = ifExpression,
+            translator = this)
+    }
+
+    val condition: Expression = translateExpression(ifExpression.subtrees[0])
+    val trueExpression: Expression = translateExpression(ifExpression.subtrees[1])
+    val falseExpression: Expression = translateExpression(ifExpression.subtrees[2])
+
+    return Expression.IfExpression(
+        condition = condition,
+        trueExpression = trueExpression,
+        falseExpression = falseExpression)
+}
+
 internal fun SwiftTranslator.translateDotSyntaxCallExpression(
     dotSyntaxCallExpression: SwiftAST)
     : Expression

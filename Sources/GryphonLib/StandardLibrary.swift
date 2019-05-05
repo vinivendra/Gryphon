@@ -189,6 +189,10 @@ public final class ArrayClass<Element>: // kotlin: ignore
 	public func reverse() {
 		array.reverse()
 	}
+
+	public var indices: Range<Int> {
+		return array.indices
+	}
 }
 
 extension ArrayClass: Equatable where Element: Equatable { // kotlin: ignore
@@ -377,7 +381,7 @@ extension DictionaryClass: Codable where Key: Codable, Value: Codable { // kotli
 // declaration: fun <T> MutableList<T>.copy(): MutableList<T> {
 // declaration: 	return this.toMutableList()
 // declaration: }
-// declaration: 
+// declaration:
 // declaration: fun String.suffix(startIndex: Int): String {
 // declaration: 	return this.substring(startIndex, this.length)
 // declaration: }

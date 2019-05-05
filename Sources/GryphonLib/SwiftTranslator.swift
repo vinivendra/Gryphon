@@ -585,6 +585,16 @@ extension SwiftTranslator { // kotlin: ignore
 		let members = try translateSubtreesOf(extensionDeclaration)
 		return .extensionDeclaration(typeName: typeName, members: members)
 	}
+}
+
+extension SwiftTranslator {
+	// MARK: - Statement translation
+
+// declaration: internal fun translateBraceStatement(braceStatement: SwiftAST):
+// declaration: 	MutableList<Statement>
+// declaration: {
+// declaration: 	return mutableListOf()
+// declaration: }
 
 	internal func translateEnumDeclaration(_ enumDeclaration: SwiftAST) throws -> Statement? {
 		guard enumDeclaration.name == "Enum Declaration" else {
@@ -612,7 +622,7 @@ extension SwiftTranslator { // kotlin: ignore
 
 		let inheritanceArray: ArrayClass<String>
 		if let inheritanceList = enumDeclaration["inherits"] {
-			inheritanceArray = ArrayClass(inheritanceList.split(withStringSeparator: ", "))
+			inheritanceArray = ArrayClass<String>(inheritanceList.split(withStringSeparator: ", "))
 		}
 		else {
 			inheritanceArray = []
@@ -631,7 +641,7 @@ extension SwiftTranslator { // kotlin: ignore
 					.subtree(named: "Tuple Expression")?
 					.subtree(named: "Array Expression")
 			{
-				let rawValueASTs = Array(arrayExpression.subtrees.dropLast())
+				let rawValueASTs = ArrayClass<SwiftAST>(arrayExpression.subtrees.dropLast())
 				rawValues = try rawValueASTs.map { try translateExpression($0) }
 				break
 			}
@@ -668,7 +678,9 @@ extension SwiftTranslator { // kotlin: ignore
 				let prefix = String(elementName[elementName.startIndex..<parenthesisIndex])
 				let suffix = elementName[parenthesisIndex...]
 				let valuesString = suffix.dropFirst().dropLast(2)
-				let valueLabels = ArrayClass(valuesString.split(separator: ":")).map(String.init)
+				let valueLabels = ArrayClass<String>(
+					valuesString.split(separator: ":")
+						.map { String($0) })
 
 				guard let enumType = enumElementDeclaration["interface type"] else {
 					return try unexpectedASTStructureError(
@@ -680,7 +692,8 @@ extension SwiftTranslator { // kotlin: ignore
 				let valueTypesString = String(valuesComponent.dropFirst().dropLast())
 				let valueTypes = Utilities.splitTypeList(valueTypesString)
 
-				let associatedValues = zipToClass(valueLabels, valueTypes).map(LabeledType.init)
+				let associatedValues = zipToClass(valueLabels, valueTypes)
+					.map { LabeledType(label: $0.0, typeName: $0.1) }
 
 				elements.append(EnumElement(
 					name: prefix,
@@ -693,7 +706,10 @@ extension SwiftTranslator { // kotlin: ignore
 		let members = enumDeclaration.subtrees.filter {
 			$0.name != "Enum Element Declaration" && $0.name != "Enum Case Declaration"
 		}
-		let translatedMembers = try translateSubtrees(members, inScope: enumDeclaration)
+
+		let translatedMembers = // kotlin: ignore
+			try translateSubtrees(members, inScope: enumDeclaration)
+		// insert: val translatedMembers = mutableListOf<Statement>()
 
 		return .enumDeclaration(
 			access: access,
@@ -752,20 +768,29 @@ extension SwiftTranslator { // kotlin: ignore
 				ast: tupleElementExpression, translator: self)
 		}
 
-		if let numberString =
-				tupleElementExpression.standaloneAttributes.first(where: { $0.hasPrefix("#") }),
-			let number = Int(numberString.dropFirst()),
-			let declarationReference =
-				tupleElementExpression.subtree(named: "Declaration Reference Expression"),
-			let tuple = declarationReference["type"]
+		let numberString = tupleElementExpression.standaloneAttributes
+			.first(where: { $0.hasPrefix("#") })?
+			.dropFirst()
+		let number = numberString.map { Int($0) } ?? nil
+		let declarationReference = tupleElementExpression
+			.subtree(named: "Declaration Reference Expression")
+		let tuple = declarationReference?["type"]
+
+		if let number = number,
+			let declarationReference = declarationReference,
+			let tuple = tuple
 		{
 			let leftHand = try translateDeclarationReferenceExpression(declarationReference)
 			let tupleComponents =
 				String(tuple.dropFirst().dropLast()).split(withStringSeparator: ", ")
 			let tupleComponent = tupleComponents[safe: number]
-			if let labelAndType = tupleComponent?.split(withStringSeparator: ": "),
-				let label = labelAndType[safe: 0],
-				let typeName = labelAndType[safe: 1],
+
+			let labelAndType = tupleComponent?.split(withStringSeparator: ": ")
+			let label = labelAndType?[safe: 0]
+			let typeName = labelAndType?[safe: 1]
+
+			if let label = label,
+				let typeName = typeName,
 				case let .declarationReferenceExpression(data: leftExpression) = leftHand
 			{
 				return .dotExpression(
@@ -811,8 +836,8 @@ extension SwiftTranslator { // kotlin: ignore
 
 		if let rawType = prefixUnaryExpression["type"],
 			let declaration = prefixUnaryExpression
-			.subtree(named: "Dot Syntax Call Expression")?
-			.subtree(named: "Declaration Reference Expression")?["decl"],
+				.subtree(named: "Dot Syntax Call Expression")?
+				.subtree(named: "Declaration Reference Expression")?["decl"],
 			let expression = prefixUnaryExpression.subtree(at: 1)
 		{
 			let typeName = cleanUpType(rawType)
@@ -827,7 +852,7 @@ extension SwiftTranslator { // kotlin: ignore
 		else {
 			return try unexpectedExpressionStructureError(
 				"Expected Prefix Unary Expression to have a Dot Syntax Call Expression with a " +
-				"Declaration Reference Expression, for the operator, and expected it to have " +
+					"Declaration Reference Expression, for the operator, and expected it to have " +
 				"a second expression as the operand.",
 				ast: prefixUnaryExpression, translator: self)
 		}
@@ -861,7 +886,7 @@ extension SwiftTranslator { // kotlin: ignore
 		else {
 			return try unexpectedExpressionStructureError(
 				"Expected Postfix Unary Expression to have a Dot Syntax Call Expression with a " +
-				"Declaration Reference Expression, for the operator, and expected it to have " +
+					"Declaration Reference Expression, for the operator, and expected it to have " +
 				"a second expression as the operand.",
 				ast: postfixUnaryExpression, translator: self)
 		}
@@ -874,14 +899,21 @@ extension SwiftTranslator { // kotlin: ignore
 				ast: binaryExpression, translator: self)
 		}
 
+		let declarationFromDotSyntax = binaryExpression
+			.subtree(named: "Dot Syntax Call Expression")?
+			.subtree(named: "Declaration Reference Expression")
+		let directDeclaration = binaryExpression
+			.subtree(named: "Declaration Reference Expression")
+		let declaration = declarationFromDotSyntax?["decl"] ??
+			directDeclaration?["decl"]
+		let tupleExpression = binaryExpression.subtree(named: "Tuple Expression")
+		let leftHandExpression = tupleExpression?.subtree(at: 0)
+		let rightHandExpression = tupleExpression?.subtree(at: 1)
+
 		if let rawType = binaryExpression["type"],
-			let declaration = binaryExpression
-				.subtree(named: "Dot Syntax Call Expression")?
-				.subtree(named: "Declaration Reference Expression")?["decl"] ??
-					binaryExpression.subtree(named: "Declaration Reference Expression")?["decl"],
-			let tupleExpression = binaryExpression.subtree(named: "Tuple Expression"),
-			let leftHandExpression = tupleExpression.subtree(at: 0),
-			let rightHandExpression = tupleExpression.subtree(at: 1)
+			let declaration = declaration,
+			let leftHandExpression = leftHandExpression,
+			let rightHandExpression = rightHandExpression
 		{
 			let typeName = cleanUpType(rawType)
 			let operatorInformation = getInformationFromDeclaration(declaration)
@@ -911,7 +943,7 @@ extension SwiftTranslator { // kotlin: ignore
 		guard ifExpression.subtrees.count == 3 else {
 			return try unexpectedExpressionStructureError(
 				"Expected If Expression to have three subtrees (a condition, a true expression " +
-					"and a false expression)",
+				"and a false expression)",
 				ast: ifExpression, translator: self)
 		}
 
@@ -941,11 +973,12 @@ extension SwiftTranslator { // kotlin: ignore
 			let leftHand = try translateExpression(leftHandExpression)
 
 			// Swift 4.2
-			if case .typeExpression(typeName: _) = leftHand,
-				case let .declarationReferenceExpression(data: rightExpression) = rightHand,
-				rightExpression.identifier == "none"
+			if case .typeExpression = leftHand,
+				case let .declarationReferenceExpression(data: rightExpression) = rightHand
 			{
-				return .nilLiteralExpression
+				if rightExpression.identifier == "none" {
+					return .nilLiteralExpression
+				}
 			}
 
 			return .dotExpression(leftExpression: leftHand, rightExpression: rightHand)
@@ -965,8 +998,8 @@ extension SwiftTranslator { // kotlin: ignore
 		}
 
 		if let expression = returnStatement.subtrees.last {
-			let expression = try translateExpression(expression)
-			return .returnStatement(expression: expression)
+			let translatedExpression = try translateExpression(expression)
+			return .returnStatement(expression: translatedExpression)
 		}
 		else {
 			return .returnStatement(expression: nil)
@@ -988,14 +1021,14 @@ extension SwiftTranslator { // kotlin: ignore
 		{
 			return try [unexpectedASTStructureError(
 				"Unable to find do statement's inner statements. Expected there to be a Brace " +
-					"Statement as the first subtree.",
+				"Statement as the first subtree.",
 				ast: doCatchStatement, translator: self), ]
 		}
 
 		let translatedInnerDoStatements = try translateBraceStatement(braceStatement)
 		let translatedDoStatement = Statement.doStatement(statements: translatedInnerDoStatements)
 
-		var catchStatements: [Statement] = []
+		let catchStatements: ArrayClass<Statement> = []
 		for catchStatement in doCatchStatement.subtrees.dropFirst() {
 			guard catchStatement.name == "Catch" else {
 				continue
@@ -1030,7 +1063,7 @@ extension SwiftTranslator { // kotlin: ignore
 			guard let braceStatement = catchStatement.subtree(named: "Brace Statement") else {
 				return try [unexpectedASTStructureError(
 					"Unable to find catch statement's inner statements. Expected there to be a " +
-						"Brace Statement.",
+					"Brace Statement.",
 					ast: doCatchStatement, translator: self), ]
 			}
 
@@ -1041,7 +1074,10 @@ extension SwiftTranslator { // kotlin: ignore
 				statements: translatedStatements))
 		}
 
-		let resultingStatements = ArrayClass<Statement?>([translatedDoStatement] + catchStatements)
+		let resultingStatements = // kotlin: ignore
+			ArrayClass<Statement?>([translatedDoStatement] + catchStatements)
+		// insert: val resultingStatements = (listOf(translatedDoStatement) + catchStatements)
+		// insert: 	.toMutableList<Statement?>()
 
 		return resultingStatements
 	}
@@ -1057,25 +1093,35 @@ extension SwiftTranslator { // kotlin: ignore
 
 		let variable: Expression
 		let collectionExpression: SwiftAST
-		if let variableSubtree = forEachStatement.subtree(named: "Pattern Named"),
-			let rawType = variableSubtree["type"],
-			let maybeCollectionExpression = forEachStatement.subtree(at: 2),
-			let variableName = variableSubtree.standaloneAttributes.first
+
+		let maybeCollectionExpression = forEachStatement.subtree(at: 2)
+
+		let variableSubtreeTuple = forEachStatement.subtree(named: "Pattern Tuple")
+		let variableSubtreeNamed = forEachStatement.subtree(named: "Pattern Named")
+		let variableSubtreeAny = forEachStatement.subtree(named: "Pattern Any")
+		let rawTypeNamed = variableSubtreeNamed?["type"]
+		let rawTypeAny = variableSubtreeAny?["type"]
+		let variableAttributes = variableSubtreeNamed?.standaloneAttributes
+		let variableName = variableAttributes?.first
+
+		if let rawTypeNamed = rawTypeNamed,
+			let maybeCollectionExpression = maybeCollectionExpression,
+			let variableName = variableName
 		{
 			variable = Expression.declarationReferenceExpression(data:
 				DeclarationReferenceData(
 					identifier: variableName,
-					typeName: cleanUpType(rawType),
+					typeName: cleanUpType(rawTypeNamed),
 					isStandardLibrary: false,
 					isImplicit: false,
 					range: variableRange))
 			collectionExpression = maybeCollectionExpression
 		}
-		else if let variableSubtree = forEachStatement.subtree(named: "Pattern Tuple"),
-			let maybeCollectionExpression = forEachStatement.subtree(at: 2)
+		else if let variableSubtreeTuple = variableSubtreeTuple,
+			let maybeCollectionExpression = maybeCollectionExpression
 		{
-			let variableNames = variableSubtree.subtrees.map { $0.standaloneAttributes[0] }
-			let variableTypes = variableSubtree.subtrees.map { $0.keyValueAttributes["type"]! }
+			let variableNames = variableSubtreeTuple.subtrees.map { $0.standaloneAttributes[0] }
+			let variableTypes = variableSubtreeTuple.subtrees.map { $0.keyValueAttributes["type"]! }
 
 			let variables = zipToClass(variableNames, variableTypes).map {
 				LabeledExpression(
@@ -1092,11 +1138,10 @@ extension SwiftTranslator { // kotlin: ignore
 			variable = .tupleExpression(pairs: variables)
 			collectionExpression = maybeCollectionExpression
 		}
-		else if let variableSubtree = forEachStatement.subtree(named: "Pattern Any"),
-			let rawType = variableSubtree["type"],
-			let maybeCollectionExpression = forEachStatement.subtree(at: 2)
+		else if let rawTypeAny = rawTypeAny,
+			let maybeCollectionExpression = maybeCollectionExpression
 		{
-			let typeName = cleanUpType(rawType)
+			let typeName = cleanUpType(rawTypeAny)
 			variable = .declarationReferenceExpression(data: DeclarationReferenceData(
 				identifier: "_0",
 				typeName: typeName,
@@ -1162,28 +1207,19 @@ extension SwiftTranslator { // kotlin: ignore
 				ast: deferStatement, translator: self)
 		}
 
-		guard let functionDeclaration = deferStatement.subtree(named: "Function Declaration"),
-			let braceStatement = functionDeclaration.subtree(named: "Brace Statement") else
+		guard let braceStatement = deferStatement
+			.subtree(named: "Function Declaration")?
+			.subtree(named: "Brace Statement") else
 		{
 			return try unexpectedASTStructureError(
 				"Expected defer statement to have a function declaration with a brace statement " +
-					"containing the deferred statements.",
+				"containing the deferred statements.",
 				ast: deferStatement, translator: self)
 		}
 
 		let statements = try translateBraceStatement(braceStatement)
 		return .deferStatement(statements: statements)
 	}
-}
-
-extension SwiftTranslator {
-	// MARK: - Statement translation
-
-// declaration: internal fun translateBraceStatement(braceStatement: SwiftAST):
-// declaration: 	MutableList<Statement>
-// declaration: {
-// declaration: 	return mutableListOf()
-// declaration: }
 
 	internal func translateIfStatement(_ ifStatement: SwiftAST) throws -> Statement {
 		do {
@@ -1288,7 +1324,7 @@ extension SwiftTranslator {
 				let maybeExpression = firstSubtreeSubtrees?.first
 
 				let patternLet = caseLabelItem.subtree(named: "Pattern Let")
-				let patternLetResult = try translateEnumPatternLet(patternLet)
+				let patternLetResult = try translateEnumPattern(patternLet)
 
 				if let patternLetResult = patternLetResult, let patternLet = patternLet {
 					let enumType = patternLetResult.enumType
@@ -1436,11 +1472,14 @@ extension SwiftTranslator {
 		}
 
 		for condition in conditions {
+			let patternEnumElement = condition.subtree(named: "Pattern Enum Element")
+			let enumElementType = patternEnumElement?["type"]
+
 			// If it's an `if let`
 			if condition.name == "Pattern",
 				let optionalSomeElement =
-				condition.subtree(named: "Optional Some Element") ?? // Swift 4.1
-					condition.subtree(named: "Pattern Optional Some") // Swift 4.2
+					condition.subtree(named: "Optional Some Element") ?? // Swift 4.1
+						condition.subtree(named: "Pattern Optional Some") // Swift 4.2
 			{
 				let patternNamed: SwiftAST
 				let isLet: Bool
@@ -1506,7 +1545,7 @@ extension SwiftTranslator {
 				let declarationReferenceAST = condition.subtrees.last
 			{
 				// TODO: test
-				guard let patternLetResult = try translateEnumPatternLet(patternLet) else {
+				guard let patternLetResult = try translateEnumPattern(patternLet) else {
 					return try IfConditionsTranslation(
 						conditions: [],
 						statements: [unexpectedASTStructureError(
@@ -1551,6 +1590,22 @@ extension SwiftTranslator {
 						annotations: nil)))
 				}
 			}
+			// If it's an `if case`
+			else if condition.name == "Pattern",
+				let enumElementType = enumElementType,
+				let declarationReference =
+					condition.subtree(named: "Declaration Reference Expression")
+			{
+				let translatedDeclarationReference =
+					try translateDeclarationReferenceExpression(declarationReference)
+				let translatedType = cleanUpType(enumElementType)
+
+				conditionsResult.append(.condition(expression: .binaryOperatorExpression(
+					leftExpression: translatedDeclarationReference,
+					rightExpression: .typeExpression(typeName: translatedType),
+					operatorSymbol: "is",
+					typeName: "Bool")))
+			}
 			else {
 				conditionsResult.append(.condition(expression:
 					try translateExpression(condition)))
@@ -1560,15 +1615,17 @@ extension SwiftTranslator {
 		return IfConditionsTranslation(conditions: conditionsResult, statements: statementsResult)
 	}
 
-	private func translateEnumPatternLet(_ enumPatternLet: SwiftAST?)
-		throws -> EnumPatternLetTranslation?
+	private func translateEnumPattern(_ enumPattern: SwiftAST?)
+		throws -> EnumPatternTranslation?
 	{
-		guard let enumPatternLet = enumPatternLet, enumPatternLet.name == "Pattern Let" else {
+		guard let enumPattern = enumPattern,
+			(enumPattern.name == "Pattern Let" || enumPattern.name == "Pattern") else
+		{
 			return nil
 		}
 
-		let maybeEnumType = enumPatternLet["type"]
-		let maybePatternEnumElement = enumPatternLet.subtree(named: "Pattern Enum Element")
+		let maybeEnumType = enumPattern["type"]
+		let maybePatternEnumElement = enumPattern.subtree(named: "Pattern Enum Element")
 		let maybePatternTuple = maybePatternEnumElement?.subtree(named: "Pattern Tuple")
 		let maybeAssociatedValueTuple = maybePatternTuple?["type"]
 
@@ -1617,7 +1674,7 @@ extension SwiftTranslator {
 				newVariable: ast.standaloneAttributes[0]))
 		}
 
-		return EnumPatternLetTranslation(
+		return EnumPatternTranslation(
 			enumType: enumType,
 			enumCase: caseName,
 			declarations: declarations)
@@ -2898,7 +2955,7 @@ private struct IfConditionsTranslation {
 	let statements: ArrayClass<Statement>
 }
 
-private struct EnumPatternLetTranslation {
+private struct EnumPatternTranslation {
 	let enumType: String
 	let enumCase: String
 	let declarations: ArrayClass<AssociatedValueDeclaration>

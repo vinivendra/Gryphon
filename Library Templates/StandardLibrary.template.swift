@@ -110,6 +110,9 @@ func gryphonTemplates() {
 	_ = _string.dropLast()
 	_ = "_string.dropLast(1)"
 
+	_ = _string.dropLast(_int)
+	_ = "_string.dropLast(_int)"
+
 	_ = _string.dropFirst()
 	_ = "_string.drop(1)"
 
@@ -118,6 +121,9 @@ func gryphonTemplates() {
 
 	_ = _string.indices
 	_ = "_string.indices"
+
+	_ = _string.firstIndex(of: _character)!
+	_ = "_string.indexOf(_character)"
 
 	_ = _string.prefix(_int)
 	_ = "_string.substring(0, _int)"
@@ -216,6 +222,9 @@ func gryphonTemplates() {
 
 	_ = _array.count
 	_ = "_array.size"
+
+	_ = _array.indices
+	_ = "_array.indices"
 
 	_ = _array.first
 	_ = "_array.firstOrNull()"
