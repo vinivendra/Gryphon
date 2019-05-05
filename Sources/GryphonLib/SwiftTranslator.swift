@@ -1517,8 +1517,8 @@ extension SwiftTranslator {
 
 		let associatedValuesInfo = // kotlin: ignore
 			zipToClass(associatedValueNames, patternTuple.subtrees)
-// insert: val associatedValuesInfo: List<Pair<String, SwiftAST>> =
-// insert: 	associatedValueNames.zip(patternTuple.subtrees)
+		// insert: val associatedValuesInfo: List<Pair<String, SwiftAST>> =
+		// insert: 	associatedValueNames.zip(patternTuple.subtrees)
 
 		let patternsNamed = associatedValuesInfo.filter { $0.1.name == "Pattern Named" }
 
