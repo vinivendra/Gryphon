@@ -363,7 +363,7 @@ extension SwiftTranslator { // kotlin: ignore
 		}
 		// If there is no info on ranges, then just translate the subtrees normally
 		else {
-			return try subtrees.flatMap(translateSubtree(_:)).compactMap { $0 }
+			return try subtrees.flatMap{ try translateSubtree($0) }.compactMap { $0 }
 		}
 
 		let commentToAST = { (comment: SourceFile.Comment) -> Statement? in
@@ -424,6 +424,16 @@ extension SwiftTranslator { // kotlin: ignore
 
 		return try translateSubtrees(braceStatement.subtrees, inScope: braceStatement)
 	}
+}
+
+extension SwiftTranslator {
+	// MARK: - Statement translation
+
+// declaration: internal fun translateBraceStatement(braceStatement: SwiftAST):
+// declaration: 	MutableList<Statement>
+// declaration: {
+// declaration: 	return mutableListOf()
+// declaration: }
 
 	internal func translateProtocolDeclaration(
 		_ protocolDeclaration: SwiftAST)
@@ -441,7 +451,8 @@ extension SwiftTranslator { // kotlin: ignore
 				ast: protocolDeclaration, translator: self)
 		}
 
-		let members = try translateSubtreesOf(protocolDeclaration)
+		let members = try // value: mutableListOf<Statement>()
+			translateSubtreesOf(protocolDeclaration)
 
 		return .protocolDeclaration(protocolName: protocolName, members: members)
 	}
@@ -489,7 +500,9 @@ extension SwiftTranslator { // kotlin: ignore
 		}
 
 		return .typealiasDeclaration(
-			identifier: identifier, typeName: typealiasDeclaration["type"]!, isImplicit: isImplicit)
+			identifier: identifier,
+			typeName: typealiasDeclaration["type"]!,
+			isImplicit: isImplicit)
 	}
 
 	internal func translateClassDeclaration(_ classDeclaration: SwiftAST) throws -> Statement? {
@@ -509,14 +522,15 @@ extension SwiftTranslator { // kotlin: ignore
 		// Check for inheritance
 		let inheritanceArray: ArrayClass<String>
 		if let inheritanceList = classDeclaration["inherits"] {
-			inheritanceArray = ArrayClass(inheritanceList.split(withStringSeparator: ", "))
+			inheritanceArray = ArrayClass<String>(inheritanceList.split(withStringSeparator: ", "))
 		}
 		else {
 			inheritanceArray = []
 		}
 
 		// Translate the contents
-		let classContents = try translateSubtreesOf(classDeclaration)
+		let classContents = try // value: mutableListOf<Statement>()
+			translateSubtreesOf(classDeclaration)
 
 		return .classDeclaration(
 			className: name,
@@ -543,14 +557,15 @@ extension SwiftTranslator { // kotlin: ignore
 		// Check for inheritance
 		let inheritanceArray: ArrayClass<String>
 		if let inheritanceList = structDeclaration["inherits"] {
-			inheritanceArray = ArrayClass(inheritanceList.split(withStringSeparator: ", "))
+			inheritanceArray = ArrayClass<String>(inheritanceList.split(withStringSeparator: ", "))
 		}
 		else {
 			inheritanceArray = []
 		}
 
 		// Translate the contents
-		let structContents = try translateSubtreesOf(structDeclaration)
+		let structContents = try // value: mutableListOf<Statement>()
+			translateSubtreesOf(structDeclaration)
 
 		return .structDeclaration(
 			annotations: annotations,
@@ -582,19 +597,12 @@ extension SwiftTranslator { // kotlin: ignore
 		throws -> Statement
 	{
 		let typeName = cleanUpType(extensionDeclaration.standaloneAttributes[0])
-		let members = try translateSubtreesOf(extensionDeclaration)
+
+		let members = try // value: mutableListOf<Statement>()
+			translateSubtreesOf(extensionDeclaration)
+
 		return .extensionDeclaration(typeName: typeName, members: members)
 	}
-}
-
-extension SwiftTranslator {
-	// MARK: - Statement translation
-
-// declaration: internal fun translateBraceStatement(braceStatement: SwiftAST):
-// declaration: 	MutableList<Statement>
-// declaration: {
-// declaration: 	return mutableListOf()
-// declaration: }
 
 	internal func translateEnumDeclaration(_ enumDeclaration: SwiftAST) throws -> Statement? {
 		guard enumDeclaration.name == "Enum Declaration" else {

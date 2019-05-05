@@ -27,6 +27,161 @@ internal fun translateBraceStatement(braceStatement: SwiftAST):
 	return mutableListOf()
 }
 
+internal fun SwiftTranslator.translateProtocolDeclaration(
+    protocolDeclaration: SwiftAST)
+    : Statement
+{
+    if (protocolDeclaration.name != "Protocol") {
+        return unexpectedASTStructureError(
+            "Trying to translate ${protocolDeclaration.name} as 'Protocol'",
+            ast = protocolDeclaration,
+            translator = this)
+    }
+
+    val protocolName: String? = protocolDeclaration.standaloneAttributes.firstOrNull()
+
+    protocolName ?: return unexpectedASTStructureError("Unrecognized structure", ast = protocolDeclaration, translator = this)
+
+    val members: MutableList<Statement> = mutableListOf<Statement>()
+
+    return Statement.ProtocolDeclaration(protocolName = protocolName, members = members)
+}
+
+internal fun SwiftTranslator.translateAssignExpression(assignExpression: SwiftAST): Statement {
+    if (assignExpression.name != "Assign Expression") {
+        return unexpectedASTStructureError(
+            "Trying to translate ${assignExpression.name} as 'Assign Expression'",
+            ast = assignExpression,
+            translator = this)
+    }
+
+    val leftExpression: SwiftAST? = assignExpression.subtree(index = 0)
+    val rightExpression: SwiftAST? = assignExpression.subtree(index = 1)
+
+    if (leftExpression != null && rightExpression != null) {
+        if (leftExpression.name == "Discard Assignment Expression") {
+            return Statement.ExpressionStatement(expression = translateExpression(rightExpression))
+        }
+        else {
+            val leftTranslation: Expression = translateExpression(leftExpression)
+            val rightTranslation: Expression = translateExpression(rightExpression)
+            return Statement.AssignmentStatement(leftHand = leftTranslation, rightHand = rightTranslation)
+        }
+    }
+    else {
+        return unexpectedASTStructureError("Unrecognized structure", ast = assignExpression, translator = this)
+    }
+}
+
+internal fun SwiftTranslator.translateTypealiasDeclaration(
+    typealiasDeclaration: SwiftAST)
+    : Statement
+{
+    val isImplicit: Boolean
+    val identifier: String
+
+    if (typealiasDeclaration.standaloneAttributes[0] == "implicit") {
+        isImplicit = true
+        identifier = typealiasDeclaration.standaloneAttributes[1]
+    }
+    else {
+        isImplicit = false
+        identifier = typealiasDeclaration.standaloneAttributes[0]
+    }
+
+    return Statement.TypealiasDeclaration(
+        identifier = identifier,
+        typeName = typealiasDeclaration["type"]!!,
+        isImplicit = isImplicit)
+}
+
+internal fun SwiftTranslator.translateClassDeclaration(classDeclaration: SwiftAST): Statement? {
+    if (classDeclaration.name != "Class Declaration") {
+        return unexpectedASTStructureError(
+            "Trying to translate ${classDeclaration.name} as 'Class Declaration'",
+            ast = classDeclaration,
+            translator = this)
+    }
+
+    if (getComment(ast = classDeclaration, key = "kotlin") == "ignore") {
+        return null
+    }
+
+    val name: String = classDeclaration.standaloneAttributes.firstOrNull()!!
+    val inheritanceArray: MutableList<String>
+    val inheritanceList: String? = classDeclaration["inherits"]
+
+    if (inheritanceList != null) {
+        inheritanceArray = inheritanceList.split(separator = ", ") as MutableList<String>
+    }
+    else {
+        inheritanceArray = mutableListOf()
+    }
+
+    val classContents: MutableList<Statement> = mutableListOf<Statement>()
+
+    return Statement.ClassDeclaration(className = name, inherits = inheritanceArray, members = classContents)
+}
+
+internal fun SwiftTranslator.translateStructDeclaration(structDeclaration: SwiftAST): Statement? {
+    if (structDeclaration.name != "Struct Declaration") {
+        return unexpectedASTStructureError(
+            "Trying to translate ${structDeclaration.name} as 'Struct Declaration'",
+            ast = structDeclaration,
+            translator = this)
+    }
+
+    if (getComment(ast = structDeclaration, key = "kotlin") == "ignore") {
+        return null
+    }
+
+    val annotations: String? = getComment(ast = structDeclaration, key = "annotation")
+    val name: String = structDeclaration.standaloneAttributes.firstOrNull()!!
+    val inheritanceArray: MutableList<String>
+    val inheritanceList: String? = structDeclaration["inherits"]
+
+    if (inheritanceList != null) {
+        inheritanceArray = inheritanceList.split(separator = ", ") as MutableList<String>
+    }
+    else {
+        inheritanceArray = mutableListOf()
+    }
+
+    val structContents: MutableList<Statement> = mutableListOf<Statement>()
+
+    return Statement.StructDeclaration(
+        annotations = annotations,
+        structName = name,
+        inherits = inheritanceArray,
+        members = structContents)
+}
+
+internal fun SwiftTranslator.translateThrowStatement(throwStatement: SwiftAST): Statement {
+    if (throwStatement.name != "Throw Statement") {
+        return unexpectedASTStructureError(
+            "Trying to translate ${throwStatement.name} as 'Throw Statement'",
+            ast = throwStatement,
+            translator = this)
+    }
+    val expression: SwiftAST? = throwStatement.subtrees.lastOrNull()
+    if (expression != null) {
+        val expressionTranslation: Expression = translateExpression(expression)
+        return Statement.ThrowStatement(expression = expressionTranslation)
+    }
+    else {
+        return unexpectedASTStructureError("Unrecognized structure", ast = throwStatement, translator = this)
+    }
+}
+
+internal fun SwiftTranslator.translateExtensionDeclaration(
+    extensionDeclaration: SwiftAST)
+    : Statement
+{
+    val typeName: String = cleanUpType(extensionDeclaration.standaloneAttributes[0])
+    val members: MutableList<Statement> = mutableListOf<Statement>()
+    return Statement.ExtensionDeclaration(typeName = typeName, members = members)
+}
+
 internal fun SwiftTranslator.translateEnumDeclaration(enumDeclaration: SwiftAST): Statement? {
     if (enumDeclaration.name != "Enum Declaration") {
         return unexpectedASTStructureError(
