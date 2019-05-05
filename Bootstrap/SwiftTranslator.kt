@@ -30,6 +30,143 @@ internal fun translateBraceStatement(braceStatement: SwiftAST):
 	return mutableListOf()
 }
 
+private fun SwiftTranslator.translateIfConditions(
+    ifStatement: SwiftAST)
+    : IfConditionsTranslation
+{
+    if (!(ifStatement.name == "If Statement" || ifStatement.name == "Guard Statement")) {
+        return IfConditionsTranslation(
+            conditions = mutableListOf(),
+            statements = mutableListOf(unexpectedASTStructureError(
+                    "Trying to translate ${ifStatement.name} as an if or guard statement",
+                    ast = ifStatement,
+                    translator = this)))
+    }
+
+    val conditionsResult: MutableList<IfStatementData.IfCondition> = mutableListOf()
+    val statementsResult: MutableList<Statement> = mutableListOf()
+    val conditions: MutableList<SwiftAST> = ifStatement.subtrees.filter { it.name != "If Statement" && it.name != "Brace Statement" }.toMutableList()
+
+    for (condition in conditions) {
+        val optionalSomeElement: SwiftAST? = condition.subtree(name = "Optional Some Element") ?: condition.subtree(name = "Pattern Optional Some")
+        val patternLet: SwiftAST? = condition.subtree(name = "Pattern Let")
+        val declarationReferenceAST: SwiftAST? = condition.subtrees.lastOrNull()
+
+        if (condition.name == "Pattern" && optionalSomeElement != null) {
+            val patternNamed: SwiftAST
+            val isLet: Boolean
+            val unwrappedPatternLetNamed: SwiftAST? = optionalSomeElement.subtree(name = "Pattern Let")?.subtree(name = "Pattern Named")
+            val unwrappedPatternVariableNamed: SwiftAST? = optionalSomeElement.subtree(name = "Pattern Variable")?.subtree(name = "Pattern Named")
+
+            if (unwrappedPatternLetNamed != null) {
+                patternNamed = unwrappedPatternLetNamed
+                isLet = true
+            }
+            else if (unwrappedPatternVariableNamed != null) {
+                patternNamed = unwrappedPatternVariableNamed
+                isLet = false
+            }
+            else {
+                return IfConditionsTranslation(
+                    conditions = mutableListOf(),
+                    statements = mutableListOf(unexpectedASTStructureError(
+                            "Unable to detect pattern in let declaration",
+                            ast = ifStatement,
+                            translator = this)))
+            }
+
+            val rawType: String? = optionalSomeElement["type"]
+
+            rawType ?: return IfConditionsTranslation(
+                conditions = mutableListOf(),
+                statements = mutableListOf(unexpectedASTStructureError(
+                        "Unable to detect type in let declaration",
+                        ast = ifStatement,
+                        translator = this)))
+
+            val typeName: String = cleanUpType(rawType)
+            val name: String? = patternNamed.standaloneAttributes.firstOrNull()
+            val lastCondition: SwiftAST? = condition.subtrees.lastOrNull()
+
+            if (!(name != null && lastCondition != null)) {
+                return IfConditionsTranslation(
+                    conditions = mutableListOf(),
+                    statements = mutableListOf(unexpectedASTStructureError(
+                            "Unable to get expression in let declaration",
+                            ast = ifStatement,
+                            translator = this)))
+            }
+
+            val expression: Expression = translateExpression(lastCondition)
+
+            conditionsResult.add(IfStatementData.IfCondition.Declaration(
+                variableDeclaration = VariableDeclarationData(
+                        identifier = name,
+                        typeName = typeName,
+                        expression = expression,
+                        getter = null,
+                        setter = null,
+                        isLet = isLet,
+                        isImplicit = false,
+                        isStatic = false,
+                        extendsType = null,
+                        annotations = null)))
+        }
+        else if (condition.name == "Pattern" && patternLet != null && condition.subtrees.size >= 2 && declarationReferenceAST != null) {
+            val patternLetResult: EnumPatternLetTranslation? = translateEnumPatternLet(patternLet)
+
+            patternLetResult ?: return IfConditionsTranslation(
+                conditions = mutableListOf(),
+                statements = mutableListOf(unexpectedASTStructureError(
+                        "Unable to translate Pattern Let",
+                        ast = ifStatement,
+                        translator = this)))
+
+            val enumType: String = patternLetResult.enumType
+            val enumCase: String = patternLetResult.enumCase
+            val declarations: MutableList<AssociatedValueDeclaration> = patternLetResult.declarations
+            val enumClassName: String = enumType + "." + enumCase.capitalizedAsCamelCase()
+            val declarationReference: Expression = translateExpression(declarationReferenceAST)
+
+            conditionsResult.add(IfStatementData.IfCondition.Condition(
+                expression = Expression.BinaryOperatorExpression(
+                        leftExpression = declarationReference,
+                        rightExpression = Expression.TypeExpression(typeName = enumClassName),
+                        operatorSymbol = "is",
+                        typeName = "Bool")))
+
+            for (declaration in declarations) {
+                val range: SourceFileRange? = getRangeRecursively(ast = patternLet)
+                statementsResult.add(Statement.VariableDeclaration(
+                    data = VariableDeclarationData(
+                            identifier = declaration.newVariable,
+                            typeName = declaration.associatedValueType,
+                            expression = Expression.DotExpression(
+                                    leftExpression = declarationReference,
+                                    rightExpression = Expression.DeclarationReferenceExpression(
+                                            data = DeclarationReferenceData(
+                                                    identifier = declaration.associatedValueName,
+                                                    typeName = declaration.associatedValueType,
+                                                    isStandardLibrary = false,
+                                                    isImplicit = false,
+                                                    range = range))),
+                            getter = null,
+                            setter = null,
+                            isLet = true,
+                            isImplicit = false,
+                            isStatic = false,
+                            extendsType = null,
+                            annotations = null)))
+            }
+        }
+        else {
+            conditionsResult.add(IfStatementData.IfCondition.Condition(expression = translateExpression(condition)))
+        }
+    }
+
+    return IfConditionsTranslation(conditions = conditionsResult, statements = statementsResult)
+}
+
 private fun SwiftTranslator.translateEnumPatternLet(
     enumPatternLet: SwiftAST)
     : EnumPatternLetTranslation?
@@ -1301,6 +1438,11 @@ internal fun SwiftTranslator.unexpectedExpressionStructureError(
     Compiler.handleError(error)
     return Expression.Error()
 }
+
+data class IfConditionsTranslation(
+    val conditions: MutableList<IfStatementData.IfCondition>,
+    val statements: MutableList<Statement>
+)
 
 data class EnumPatternLetTranslation(
     val enumType: String,

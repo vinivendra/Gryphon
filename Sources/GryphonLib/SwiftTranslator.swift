@@ -1095,7 +1095,9 @@ extension SwiftTranslator { // kotlin: ignore
 
 		let isGuard = (ifStatement.name == "Guard Statement")
 
-		let (conditions, extraStatements) = try translateIfConditions(forIfStatement: ifStatement)
+		let ifConditions = try translateIfConditions(forIfStatement: ifStatement)
+		let conditions = ifConditions.conditions
+		let extraStatements = ifConditions.statements
 
 		let braceStatement: SwiftAST
 		let elseStatement: IfStatementData?
@@ -1138,7 +1140,7 @@ extension SwiftTranslator { // kotlin: ignore
 		let statements = try translateBraceStatement(braceStatement)
 
 		return IfStatementData(
-			conditions: ArrayClass(conditions),
+			conditions: conditions,
 			declarations: [],
 			statements: extraStatements + statements,
 			elseStatement: elseStatement,
@@ -1287,21 +1289,35 @@ extension SwiftTranslator { // kotlin: ignore
 			return lastExpression
 		}
 	}
+}
 
-	internal func translateIfConditions(
-		forIfStatement ifStatement: SwiftAST) throws
-		-> (conditions: [IfStatementData.IfCondition], statements: [Statement])
+extension SwiftTranslator {
+	// MARK: - Expression translations
+
+// declaration: internal fun translateExpression(expression: SwiftAST): Expression {
+// declaration: 	return Expression.NilLiteralExpression()
+// declaration: }
+
+// declaration: internal fun translateBraceStatement(braceStatement: SwiftAST):
+// declaration: 	MutableList<Statement>
+// declaration: {
+// declaration: 	return mutableListOf()
+// declaration: }
+
+	private func translateIfConditions(
+		forIfStatement ifStatement: SwiftAST)
+		throws -> IfConditionsTranslation
 	{
 		guard ifStatement.name == "If Statement" || ifStatement.name == "Guard Statement" else {
-			return try (
+			return try IfConditionsTranslation(
 				conditions: [],
 				statements: [unexpectedASTStructureError(
 					"Trying to translate \(ifStatement.name) as an if or guard statement",
 					ast: ifStatement, translator: self), ])
 		}
 
-		var conditionsResult = [IfStatementData.IfCondition]()
-		var statementsResult = [Statement]()
+		let conditionsResult: ArrayClass<IfStatementData.IfCondition> = []
+		let statementsResult: ArrayClass<Statement> = []
 
 		let conditions = ifStatement.subtrees.filter {
 			$0.name != "If Statement" && $0.name != "Brace Statement"
@@ -1311,26 +1327,27 @@ extension SwiftTranslator { // kotlin: ignore
 			// If it's an `if let`
 			if condition.name == "Pattern",
 				let optionalSomeElement =
-					condition.subtree(named: "Optional Some Element") ?? // Swift 4.1
+				condition.subtree(named: "Optional Some Element") ?? // Swift 4.1
 					condition.subtree(named: "Pattern Optional Some") // Swift 4.2
 			{
 				let patternNamed: SwiftAST
 				let isLet: Bool
-				if let patternLet = optionalSomeElement.subtree(named: "Pattern Let"),
-					let unwrapped = patternLet.subtree(named: "Pattern Named")
+				if let unwrappedPatternLetNamed = optionalSomeElement
+					.subtree(named: "Pattern Let")?
+					.subtree(named: "Pattern Named")
 				{
-					patternNamed = unwrapped
+					patternNamed = unwrappedPatternLetNamed
 					isLet = true
 				}
-				else if let unwrapped = optionalSomeElement
+				else if let unwrappedPatternVariableNamed = optionalSomeElement
 					.subtree(named: "Pattern Variable")?
 					.subtree(named: "Pattern Named")
 				{
-					patternNamed = unwrapped
+					patternNamed = unwrappedPatternVariableNamed
 					isLet = false
 				}
 				else {
-					return try (
+					return try IfConditionsTranslation(
 						conditions: [],
 						statements: [unexpectedASTStructureError(
 							"Unable to detect pattern in let declaration",
@@ -1338,7 +1355,7 @@ extension SwiftTranslator { // kotlin: ignore
 				}
 
 				guard let rawType = optionalSomeElement["type"] else {
-					return try (
+					return try IfConditionsTranslation(
 						conditions: [],
 						statements: [unexpectedASTStructureError(
 							"Unable to detect type in let declaration",
@@ -1350,7 +1367,7 @@ extension SwiftTranslator { // kotlin: ignore
 				guard let name = patternNamed.standaloneAttributes.first,
 					let lastCondition = condition.subtrees.last else
 				{
-					return try (
+					return try IfConditionsTranslation(
 						conditions: [],
 						statements: [unexpectedASTStructureError(
 							"Unable to get expression in let declaration",
@@ -1378,7 +1395,7 @@ extension SwiftTranslator { // kotlin: ignore
 			{
 				// TODO: test
 				guard let patternLetResult = try translateEnumPatternLet(patternLet) else {
-					return try (
+					return try IfConditionsTranslation(
 						conditions: [],
 						statements: [unexpectedASTStructureError(
 							"Unable to translate Pattern Let",
@@ -1428,22 +1445,8 @@ extension SwiftTranslator { // kotlin: ignore
 			}
 		}
 
-		return (conditions: conditionsResult, statements: statementsResult)
+		return IfConditionsTranslation(conditions: conditionsResult, statements: statementsResult)
 	}
-}
-
-extension SwiftTranslator {
-	// MARK: - Expression translations
-
-// declaration: internal fun translateExpression(expression: SwiftAST): Expression {
-// declaration: 	return Expression.NilLiteralExpression()
-// declaration: }
-
-// declaration: internal fun translateBraceStatement(braceStatement: SwiftAST):
-// declaration: 	MutableList<Statement>
-// declaration: {
-// declaration: 	return mutableListOf()
-// declaration: }
 
 	private func translateEnumPatternLet(_ enumPatternLet: SwiftAST)
 		throws -> EnumPatternLetTranslation?
@@ -2770,6 +2773,11 @@ extension SwiftTranslator {
 		try Compiler.handleError(error)
 		return .error
 	}
+}
+
+private struct IfConditionsTranslation {
+	let conditions: ArrayClass<IfStatementData.IfCondition>
+	let statements: ArrayClass<Statement>
 }
 
 private struct EnumPatternLetTranslation {
