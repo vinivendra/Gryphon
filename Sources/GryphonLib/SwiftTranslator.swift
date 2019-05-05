@@ -54,7 +54,7 @@ extension SwiftTranslator { // kotlin: ignore
 		}
 		let translatedSubtrees = try translateSubtrees(
 			ast.subtrees,
-			inScope: fileRange)
+			scopeRange: fileRange)
 
 		let isDeclaration = { (ast: Statement) -> Bool in
 			switch ast {
@@ -89,26 +89,28 @@ extension SwiftTranslator { // kotlin: ignore
 				statements: [])
 		}
 	}
+}
+
+extension SwiftTranslator {
 
 	// MARK: - Top-level translations
 
-	internal func translateSubtrees(
+	internal func translateSubtreesInScope(
 		_ subtrees: ArrayClass<SwiftAST>,
-		inScope scope: SwiftAST,
-		asDeclarations: Bool = false)
+		scope: SwiftAST)
 		throws -> ArrayClass<Statement>
 	{
 		let scopeRange = getRange(ofNode: scope)
 		return try translateSubtrees(
-			subtrees, inScope: scopeRange)
+			subtrees, scopeRange: scopeRange)
 	}
 
 	internal func translateSubtrees(
 		_ subtrees: ArrayClass<SwiftAST>,
-		inScope scopeRange: SourceFileRange?)
+		scopeRange: SourceFileRange?)
 		throws -> ArrayClass<Statement>
 	{
-		var result: ArrayClass<Statement> = []
+		let result: ArrayClass<Statement> = []
 
 		var lastRange: SourceFileRange
 		// I we have a scope, start at its lower bound
@@ -129,25 +131,26 @@ extension SwiftTranslator { // kotlin: ignore
 		}
 
 		let commentToAST = { (comment: SourceFile.Comment) -> Statement? in
-				if comment.key == "insert" {
-					return Statement.expressionStatement(expression:
-						.literalCodeExpression(string: comment.value))
-				}
-				else if comment.key == "declaration" {
-					return Statement.expressionStatement(expression:
-						.literalDeclarationExpression(string: comment.value))
-				}
-				else {
-					return nil
-				}
+			if comment.key == "insert" {
+				return Statement.expressionStatement(expression:
+					.literalCodeExpression(string: comment.value))
 			}
+			else if comment.key == "declaration" {
+				return Statement.expressionStatement(expression:
+					.literalDeclarationExpression(string: comment.value))
+			}
+			else {
+				return nil
+			}
+		}
 
 		for subtree in subtrees {
 			if let currentRange = getRange(ofNode: subtree),
 				lastRange.lineEnd <= currentRange.lineStart
 			{
 				let comments = insertedCode(inRange: lastRange.lineEnd..<currentRange.lineStart)
-				result += comments.compactMap(commentToAST)
+				let newASTs = comments.compactMap { commentToAST($0) }
+				result.append(contentsOf: newASTs)
 
 				lastRange = currentRange
 			}
@@ -161,17 +164,19 @@ extension SwiftTranslator { // kotlin: ignore
 		{
 			let comments = insertedCode(
 				inRange: lastRange.lineEnd..<scopeRange.lineEnd)
-			result += comments.compactMap(commentToAST)
+			let newASTs = comments.compactMap { commentToAST($0) }
+			result.append(contentsOf: newASTs)
 		}
 
 		return result
 	}
 
-	// MARK: - Leaf translations
+	// MARK: - Statement translation
+
 	internal func translateSubtreesOf(_ ast: SwiftAST)
 		throws -> ArrayClass<Statement>
 	{
-		return try translateSubtrees(ast.subtrees, inScope: ast)
+		return try translateSubtreesInScope(ast.subtrees, scope: ast)
 	}
 
 	internal func translateBraceStatement(
@@ -184,18 +189,8 @@ extension SwiftTranslator { // kotlin: ignore
 				ast: braceStatement, translator: self)
 		}
 
-		return try translateSubtrees(braceStatement.subtrees, inScope: braceStatement)
+		return try translateSubtreesInScope(braceStatement.subtrees, scope: braceStatement)
 	}
-}
-
-extension SwiftTranslator {
-	// MARK: - Statement translation
-
-// declaration: internal fun translateBraceStatement(braceStatement: SwiftAST):
-// declaration: 	MutableList<Statement>
-// declaration: {
-// declaration: 	return mutableListOf()
-// declaration: }
 
 	internal func translateSubtree(_ subtree: SwiftAST) throws -> ArrayClass<Statement?> {
 
@@ -293,8 +288,7 @@ extension SwiftTranslator {
 				ast: protocolDeclaration, translator: self)
 		}
 
-		let members = try // value: mutableListOf<Statement>()
-			translateSubtreesOf(protocolDeclaration)
+		let members = try translateSubtreesOf(protocolDeclaration)
 
 		return .protocolDeclaration(protocolName: protocolName, members: members)
 	}
@@ -371,8 +365,7 @@ extension SwiftTranslator {
 		}
 
 		// Translate the contents
-		let classContents = try // value: mutableListOf<Statement>()
-			translateSubtreesOf(classDeclaration)
+		let classContents = try translateSubtreesOf(classDeclaration)
 
 		return .classDeclaration(
 			className: name,
@@ -406,8 +399,7 @@ extension SwiftTranslator {
 		}
 
 		// Translate the contents
-		let structContents = try // value: mutableListOf<Statement>()
-			translateSubtreesOf(structDeclaration)
+		let structContents = try translateSubtreesOf(structDeclaration)
 
 		return .structDeclaration(
 			annotations: annotations,
@@ -440,8 +432,7 @@ extension SwiftTranslator {
 	{
 		let typeName = cleanUpType(extensionDeclaration.standaloneAttributes[0])
 
-		let members = try // value: mutableListOf<Statement>()
-			translateSubtreesOf(extensionDeclaration)
+		let members = try translateSubtreesOf(extensionDeclaration)
 
 		return .extensionDeclaration(typeName: typeName, members: members)
 	}
@@ -557,9 +548,7 @@ extension SwiftTranslator {
 			$0.name != "Enum Element Declaration" && $0.name != "Enum Case Declaration"
 		}
 
-		let translatedMembers = // kotlin: ignore
-			try translateSubtrees(members, inScope: enumDeclaration)
-		// insert: val translatedMembers = mutableListOf<Statement>()
+		let translatedMembers = try translateSubtreesInScope(members, scope: enumDeclaration)
 
 		return .enumDeclaration(
 			access: access,
@@ -2413,8 +2402,7 @@ extension SwiftTranslator {
 		// Drop the "Semantic Expression" at the end
 		let expressionsToTranslate = ArrayClass<SwiftAST>(arrayExpression.subtrees.dropLast())
 
-		let expressionsArray = try // value: mutableListOf<Expression>()
-			expressionsToTranslate.map(translateExpression(_:))
+		let expressionsArray = try expressionsToTranslate.map { try translateExpression($0) }
 
 		guard let rawType = arrayExpression["type"] else {
 			return try unexpectedExpressionStructureError(

@@ -21,10 +21,85 @@ class SwiftTranslator {
     }
 }
 
-internal fun translateBraceStatement(braceStatement: SwiftAST):
-	MutableList<Statement>
+internal fun SwiftTranslator.translateSubtreesInScope(
+    subtrees: MutableList<SwiftAST>,
+    scope: SwiftAST)
+    : MutableList<Statement>
 {
-	return mutableListOf()
+    val scopeRange: SourceFileRange? = getRange(ast = scope)
+    return translateSubtrees(subtrees, scopeRange = scopeRange)
+}
+
+internal fun SwiftTranslator.translateSubtrees(
+    subtrees: MutableList<SwiftAST>,
+    scopeRange: SourceFileRange?)
+    : MutableList<Statement>
+{
+    val result: MutableList<Statement> = mutableListOf()
+    var lastRange: SourceFileRange
+    val subtree: SwiftAST? = subtrees.find { getRange(ast = it) != null }
+
+    if (scopeRange != null) {
+        lastRange = SourceFileRange(lineStart = -1, lineEnd = scopeRange.lineStart, columnStart = 0, columnEnd = 0)
+    }
+    else if (subtree != null) {
+        lastRange = getRange(ast = subtree)!!
+    }
+    else {
+        return subtrees.flatMap { translateSubtree(it) }.map { it }.filterNotNull().toMutableList()
+    }
+
+    val commentToAST: (SourceFile.Comment) -> Statement? = { comment ->
+            if (comment.key == "insert") {
+                Statement.ExpressionStatement(
+                    expression = Expression.LiteralCodeExpression(string = comment.value))
+            }
+            else if (comment.key == "declaration") {
+                Statement.ExpressionStatement(
+                    expression = Expression.LiteralDeclarationExpression(string = comment.value))
+            }
+            else {
+                null
+            }
+        }
+
+    for (subtree in subtrees) {
+        val currentRange: SourceFileRange? = getRange(ast = subtree)
+        if (currentRange != null && lastRange.lineEnd <= currentRange.lineStart) {
+            val comments: MutableList<SourceFile.Comment> = insertedCode(range = lastRange.lineEnd until currentRange.lineStart)
+            val newASTs: MutableList<Statement> = comments.map { commentToAST(it) }.filterNotNull().toMutableList()
+
+            result.addAll(newASTs)
+
+            lastRange = currentRange
+        }
+        result.addAll(translateSubtree(subtree).map { it }.filterNotNull().toMutableList())
+    }
+
+    if (scopeRange != null && lastRange.lineEnd < scopeRange.lineEnd) {
+        val comments: MutableList<SourceFile.Comment> = insertedCode(range = lastRange.lineEnd until scopeRange.lineEnd)
+        val newASTs: MutableList<Statement> = comments.map { commentToAST(it) }.filterNotNull().toMutableList()
+        result.addAll(newASTs)
+    }
+
+    return result
+}
+
+internal fun SwiftTranslator.translateSubtreesOf(ast: SwiftAST): MutableList<Statement> {
+    return translateSubtreesInScope(ast.subtrees, scope = ast)
+}
+
+internal fun SwiftTranslator.translateBraceStatement(
+    braceStatement: SwiftAST)
+    : MutableList<Statement>
+{
+    if (braceStatement.name != "Brace Statement") {
+        throw createUnexpectedASTStructureError(
+            "Trying to translate ${braceStatement.name} as a brace statement",
+            ast = braceStatement,
+            translator = this)
+    }
+    return translateSubtreesInScope(braceStatement.subtrees, scope = braceStatement)
 }
 
 internal fun SwiftTranslator.translateSubtree(subtree: SwiftAST): MutableList<Statement?> {
@@ -99,7 +174,7 @@ internal fun SwiftTranslator.translateProtocolDeclaration(
 
     protocolName ?: return unexpectedASTStructureError("Unrecognized structure", ast = protocolDeclaration, translator = this)
 
-    val members: MutableList<Statement> = mutableListOf<Statement>()
+    val members: MutableList<Statement> = translateSubtreesOf(protocolDeclaration)
 
     return Statement.ProtocolDeclaration(protocolName = protocolName, members = members)
 }
@@ -175,7 +250,7 @@ internal fun SwiftTranslator.translateClassDeclaration(classDeclaration: SwiftAS
         inheritanceArray = mutableListOf()
     }
 
-    val classContents: MutableList<Statement> = mutableListOf<Statement>()
+    val classContents: MutableList<Statement> = translateSubtreesOf(classDeclaration)
 
     return Statement.ClassDeclaration(className = name, inherits = inheritanceArray, members = classContents)
 }
@@ -204,7 +279,7 @@ internal fun SwiftTranslator.translateStructDeclaration(structDeclaration: Swift
         inheritanceArray = mutableListOf()
     }
 
-    val structContents: MutableList<Statement> = mutableListOf<Statement>()
+    val structContents: MutableList<Statement> = translateSubtreesOf(structDeclaration)
 
     return Statement.StructDeclaration(
         annotations = annotations,
@@ -235,7 +310,7 @@ internal fun SwiftTranslator.translateExtensionDeclaration(
     : Statement
 {
     val typeName: String = cleanUpType(extensionDeclaration.standaloneAttributes[0])
-    val members: MutableList<Statement> = mutableListOf<Statement>()
+    val members: MutableList<Statement> = translateSubtreesOf(extensionDeclaration)
     return Statement.ExtensionDeclaration(typeName = typeName, members = members)
 }
 
@@ -343,8 +418,7 @@ internal fun SwiftTranslator.translateEnumDeclaration(enumDeclaration: SwiftAST)
     }
 
     val members: MutableList<SwiftAST> = enumDeclaration.subtrees.filter { it.name != "Enum Element Declaration" && it.name != "Enum Case Declaration" }.toMutableList()
-
-    val translatedMembers = mutableListOf<Statement>()
+    val translatedMembers: MutableList<Statement> = translateSubtreesInScope(members, scope = enumDeclaration)
 
     return Statement.EnumDeclaration(
         access = access,
@@ -2091,7 +2165,7 @@ internal fun SwiftTranslator.translateArrayExpression(arrayExpression: SwiftAST)
     }
 
     val expressionsToTranslate: MutableList<SwiftAST> = arrayExpression.subtrees.dropLast(1) as MutableList<SwiftAST>
-    val expressionsArray: MutableList<Expression> = mutableListOf<Expression>()
+    val expressionsArray: MutableList<Expression> = expressionsToTranslate.map { translateExpression(it) }.toMutableList()
     val rawType: String? = arrayExpression["type"]
 
     rawType ?: return unexpectedExpressionStructureError("Failed to get type", ast = arrayExpression, translator = this)
