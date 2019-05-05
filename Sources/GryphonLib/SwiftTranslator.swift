@@ -91,85 +91,6 @@ extension SwiftTranslator { // kotlin: ignore
 	}
 
 	// MARK: - Top-level translations
-	internal func translateSubtree(_ subtree: SwiftAST) throws -> ArrayClass<Statement?> {
-
-		if getComment(forNode: subtree, key: "kotlin") == "ignore" {
-			return []
-		}
-
-		let result: ArrayClass<Statement?>
-		switch subtree.name {
-		case "Top Level Code Declaration":
-			result = try translateTopLevelCode(subtree)
-		case "Import Declaration":
-			result = [.importDeclaration(moduleName: subtree.standaloneAttributes[0])]
-		case "Typealias":
-			result = [try translateTypealiasDeclaration(subtree)]
-		case "Class Declaration":
-			result = [try translateClassDeclaration(subtree)]
-		case "Struct Declaration":
-			result = [try translateStructDeclaration(subtree)]
-		case "Enum Declaration":
-			result = [try translateEnumDeclaration(subtree)]
-		case "Extension Declaration":
-			result = [try translateExtensionDeclaration(subtree)]
-		case "Do Catch Statement":
-			result = try translateDoCatchStatement(subtree)
-		case "For Each Statement":
-			result = [try translateForEachStatement(subtree)]
-		case "While Statement":
-			result = [try translateWhileStatement(subtree)]
-		case "Function Declaration", "Constructor Declaration":
-			result = [try translateFunctionDeclaration(subtree)]
-		case "Subscript Declaration":
-			result = try subtree.subtrees.filter { $0.name == "Accessor Declaration" }
-				.map { try translateFunctionDeclaration($0) }
-		case "Protocol":
-			result = [try translateProtocolDeclaration(subtree)]
-		case "Throw Statement":
-			result = [try translateThrowStatement(subtree)]
-		case "Variable Declaration":
-			result = [try translateVariableDeclaration(subtree)]
-		case "Assign Expression":
-			result = [try translateAssignExpression(subtree)]
-		case "If Statement", "Guard Statement":
-			result = [try translateIfStatement(subtree)]
-		case "Switch Statement":
-			result = [try translateSwitchStatement(subtree)]
-		case "Defer Statement":
-			result = [try translateDeferStatement(subtree)]
-		case "Pattern Binding Declaration":
-			try processPatternBindingDeclaration(subtree)
-			result = []
-		case "Return Statement":
-			result = [try translateReturnStatement(subtree)]
-		case "Break Statement":
-			result = [.breakStatement]
-		case "Continue Statement":
-			result = [.continueStatement]
-		case "Fail Statement":
-			result = [.returnStatement(expression: .nilLiteralExpression)]
-		default:
-			if subtree.name.hasSuffix("Expression") {
-				let expression = try translateExpression(subtree)
-				result = [.expressionStatement(expression: expression)]
-			}
-			else {
-				result = []
-			}
-		}
-
-		let shouldInspect = (getComment(forNode: subtree, key: "gryphon") == "inspect")
-		if shouldInspect {
-			print("===\nInspecting:")
-			print(subtree)
-			for statement in result {
-				statement?.prettyPrint()
-			}
-		}
-
-		return result
-	}
 
 	internal func translateSubtrees(
 		_ subtrees: ArrayClass<SwiftAST>,
@@ -275,6 +196,86 @@ extension SwiftTranslator {
 // declaration: {
 // declaration: 	return mutableListOf()
 // declaration: }
+
+	internal func translateSubtree(_ subtree: SwiftAST) throws -> ArrayClass<Statement?> {
+
+		if getComment(forNode: subtree, key: "kotlin") == "ignore" {
+			return []
+		}
+
+		let result: ArrayClass<Statement?>
+		switch subtree.name {
+		case "Top Level Code Declaration":
+			result = try translateTopLevelCode(subtree)
+		case "Import Declaration":
+			result = [.importDeclaration(moduleName: subtree.standaloneAttributes[0])]
+		case "Typealias":
+			result = [try translateTypealiasDeclaration(subtree)]
+		case "Class Declaration":
+			result = [try translateClassDeclaration(subtree)]
+		case "Struct Declaration":
+			result = [try translateStructDeclaration(subtree)]
+		case "Enum Declaration":
+			result = [try translateEnumDeclaration(subtree)]
+		case "Extension Declaration":
+			result = [try translateExtensionDeclaration(subtree)]
+		case "Do Catch Statement":
+			result = try translateDoCatchStatement(subtree)
+		case "For Each Statement":
+			result = [try translateForEachStatement(subtree)]
+		case "While Statement":
+			result = [try translateWhileStatement(subtree)]
+		case "Function Declaration", "Constructor Declaration":
+			result = [try translateFunctionDeclaration(subtree)]
+		case "Subscript Declaration":
+			result = try subtree.subtrees.filter { $0.name == "Accessor Declaration" }
+				.map { try translateFunctionDeclaration($0) }
+		case "Protocol":
+			result = [try translateProtocolDeclaration(subtree)]
+		case "Throw Statement":
+			result = [try translateThrowStatement(subtree)]
+		case "Variable Declaration":
+			result = [try translateVariableDeclaration(subtree)]
+		case "Assign Expression":
+			result = [try translateAssignExpression(subtree)]
+		case "If Statement", "Guard Statement":
+			result = [try translateIfStatement(subtree)]
+		case "Switch Statement":
+			result = [try translateSwitchStatement(subtree)]
+		case "Defer Statement":
+			result = [try translateDeferStatement(subtree)]
+		case "Pattern Binding Declaration":
+			try processPatternBindingDeclaration(subtree)
+			result = []
+		case "Return Statement":
+			result = [try translateReturnStatement(subtree)]
+		case "Break Statement":
+			result = [.breakStatement]
+		case "Continue Statement":
+			result = [.continueStatement]
+		case "Fail Statement":
+			result = [.returnStatement(expression: .nilLiteralExpression)]
+		default:
+			if subtree.name.hasSuffix("Expression") {
+				let expression = try translateExpression(subtree)
+				result = [.expressionStatement(expression: expression)]
+			}
+			else {
+				result = []
+			}
+		}
+
+		let shouldInspect = (getComment(forNode: subtree, key: "gryphon") == "inspect")
+		if shouldInspect {
+			print("===\nInspecting:")
+			print(subtree)
+			for statement in result {
+				statement?.prettyPrint()
+			}
+		}
+
+		return result
+	}
 
 	internal func translateProtocolDeclaration(
 		_ protocolDeclaration: SwiftAST)

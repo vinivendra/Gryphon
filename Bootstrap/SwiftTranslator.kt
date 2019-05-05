@@ -27,6 +27,63 @@ internal fun translateBraceStatement(braceStatement: SwiftAST):
 	return mutableListOf()
 }
 
+internal fun SwiftTranslator.translateSubtree(subtree: SwiftAST): MutableList<Statement?> {
+    if (getComment(ast = subtree, key = "kotlin") == "ignore") {
+        return mutableListOf()
+    }
+
+    val result: MutableList<Statement?>
+
+    when (subtree.name) {
+        "Top Level Code Declaration" -> result = translateTopLevelCode(subtree)
+        "Import Declaration" -> result = mutableListOf(Statement.ImportDeclaration(moduleName = subtree.standaloneAttributes[0]))
+        "Typealias" -> result = mutableListOf(translateTypealiasDeclaration(subtree))
+        "Class Declaration" -> result = mutableListOf(translateClassDeclaration(subtree))
+        "Struct Declaration" -> result = mutableListOf(translateStructDeclaration(subtree))
+        "Enum Declaration" -> result = mutableListOf(translateEnumDeclaration(subtree))
+        "Extension Declaration" -> result = mutableListOf(translateExtensionDeclaration(subtree))
+        "Do Catch Statement" -> result = translateDoCatchStatement(subtree)
+        "For Each Statement" -> result = mutableListOf(translateForEachStatement(subtree))
+        "While Statement" -> result = mutableListOf(translateWhileStatement(subtree))
+        "Function Declaration" -> result = mutableListOf(translateFunctionDeclaration(subtree))
+        "Subscript Declaration" -> result = subtree.subtrees.filter { it.name == "Accessor Declaration" }.toMutableList().map { translateFunctionDeclaration(it) }.toMutableList()
+        "Protocol" -> result = mutableListOf(translateProtocolDeclaration(subtree))
+        "Throw Statement" -> result = mutableListOf(translateThrowStatement(subtree))
+        "Variable Declaration" -> result = mutableListOf(translateVariableDeclaration(subtree))
+        "Assign Expression" -> result = mutableListOf(translateAssignExpression(subtree))
+        "If Statement" -> result = mutableListOf(translateIfStatement(subtree))
+        "Switch Statement" -> result = mutableListOf(translateSwitchStatement(subtree))
+        "Defer Statement" -> result = mutableListOf(translateDeferStatement(subtree))
+        "Pattern Binding Declaration" -> {
+            processPatternBindingDeclaration(subtree)
+            result = mutableListOf()
+        }
+        "Return Statement" -> result = mutableListOf(translateReturnStatement(subtree))
+        "Break Statement" -> result = mutableListOf(Statement.BreakStatement())
+        "Continue Statement" -> result = mutableListOf(Statement.ContinueStatement())
+        "Fail Statement" -> result = mutableListOf(Statement.ReturnStatement(expression = Expression.NilLiteralExpression()))
+        else -> if (subtree.name.endsWith("Expression")) {
+    val expression: Expression = translateExpression(subtree)
+    result = mutableListOf(Statement.ExpressionStatement(expression = expression))
+}
+else {
+    result = mutableListOf()
+}
+    }
+
+    val shouldInspect: Boolean = (getComment(ast = subtree, key = "gryphon") == "inspect")
+
+    if (shouldInspect) {
+        println("===\nInspecting:")
+        println(subtree)
+        for (statement in result) {
+            statement?.prettyPrint()
+        }
+    }
+
+    return result
+}
+
 internal fun SwiftTranslator.translateProtocolDeclaration(
     protocolDeclaration: SwiftAST)
     : Statement
