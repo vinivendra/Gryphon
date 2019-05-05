@@ -1170,6 +1170,16 @@ extension SwiftTranslator { // kotlin: ignore
 			elseStatement: elseStatement,
 			isGuard: isGuard)
 	}
+}
+
+extension SwiftTranslator {
+	// MARK: - Statement translation
+
+// declaration: internal fun translateBraceStatement(braceStatement: SwiftAST):
+// declaration: 	MutableList<Statement>
+// declaration: {
+// declaration: 	return mutableListOf()
+// declaration: }
 
 	internal func translateSwitchStatement(_ switchStatement: SwiftAST) throws -> Statement {
 		guard switchStatement.name == "Switch Statement" else {
@@ -1187,15 +1197,19 @@ extension SwiftTranslator { // kotlin: ignore
 		let translatedExpression = try translateExpression(expression)
 
 		let cases: ArrayClass<SwitchCase> = []
-		let caseSubtrees = switchStatement.subtrees.dropFirst()
+		let caseSubtrees = ArrayClass<SwiftAST>(switchStatement.subtrees.dropFirst())
 		for caseSubtree in caseSubtrees {
 			let caseExpression: Expression?
 			var extraStatements: ArrayClass<Statement>
 
 			if let caseLabelItem = caseSubtree.subtree(named: "Case Label Item") {
-				if let patternLet = caseLabelItem.subtree(named: "Pattern Let"),
-					let patternLetResult = try translateEnumPatternLet(patternLet)
-				{
+				let firstSubtreeSubtrees = caseLabelItem.subtrees.first?.subtrees
+				let maybeExpression = firstSubtreeSubtrees?.first
+
+				let patternLet = caseLabelItem.subtree(named: "Pattern Let")
+				let patternLetResult = try translateEnumPatternLet(patternLet)
+
+				if let patternLetResult = patternLetResult, let patternLet = patternLet {
 					let enumType = patternLetResult.enumType
 					let enumCase = patternLetResult.enumCase
 					let declarations = patternLetResult.declarations
@@ -1209,7 +1223,7 @@ extension SwiftTranslator { // kotlin: ignore
 
 					let range = getRangeRecursively(ofNode: patternLet)
 
-					extraStatements = ArrayClass(declarations).map {
+					extraStatements = declarations.map {
 						Statement.variableDeclaration(data: VariableDeclarationData(
 							identifier: $0.newVariable,
 							typeName: $0.associatedValueType,
@@ -1237,7 +1251,7 @@ extension SwiftTranslator { // kotlin: ignore
 					caseExpression = try translateSimplePatternEnumElement(patternEnumElement)
 					extraStatements = []
 				}
-				else if let expression = caseLabelItem.subtrees.first?.subtrees.first {
+				else if let expression = maybeExpression {
 					let translatedExpression = try translateExpression(expression)
 					caseExpression = translatedExpression
 					extraStatements = []
@@ -1260,8 +1274,12 @@ extension SwiftTranslator { // kotlin: ignore
 
 			let translatedStatements = try translateBraceStatement(braceStatement)
 
+			let resultingStatements = extraStatements + translatedStatements // kotlin: ignore
+			// insert: val resultingStatements =
+			// insert: 	(extraStatements + translatedStatements).toMutableList()
+
 			cases.append(SwitchCase(
-				expression: caseExpression, statements: extraStatements + translatedStatements))
+				expression: caseExpression, statements: resultingStatements))
 		}
 
 		return .switchStatement(
@@ -1269,16 +1287,6 @@ extension SwiftTranslator { // kotlin: ignore
 			expression: translatedExpression,
 			cases: cases)
 	}
-}
-
-extension SwiftTranslator {
-	// MARK: - Statement translation
-
-// declaration: internal fun translateBraceStatement(braceStatement: SwiftAST):
-// declaration: 	MutableList<Statement>
-// declaration: {
-// declaration: 	return mutableListOf()
-// declaration: }
 
 	internal func translateSimplePatternEnumElement(
 		_ simplePatternEnumElement: SwiftAST)
@@ -1471,10 +1479,10 @@ extension SwiftTranslator {
 		return IfConditionsTranslation(conditions: conditionsResult, statements: statementsResult)
 	}
 
-	private func translateEnumPatternLet(_ enumPatternLet: SwiftAST)
+	private func translateEnumPatternLet(_ enumPatternLet: SwiftAST?)
 		throws -> EnumPatternLetTranslation?
 	{
-		guard enumPatternLet.name == "Pattern Let" else {
+		guard let enumPatternLet = enumPatternLet, enumPatternLet.name == "Pattern Let" else {
 			return nil
 		}
 

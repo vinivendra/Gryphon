@@ -27,6 +27,113 @@ internal fun translateBraceStatement(braceStatement: SwiftAST):
 	return mutableListOf()
 }
 
+internal fun SwiftTranslator.translateSwitchStatement(switchStatement: SwiftAST): Statement {
+    if (switchStatement.name != "Switch Statement") {
+        return unexpectedASTStructureError(
+            "Trying to translate ${switchStatement.name} as 'Switch Statement'",
+            ast = switchStatement,
+            translator = this)
+    }
+
+    val expression: SwiftAST? = switchStatement.subtrees.firstOrNull()
+
+    expression ?: return unexpectedASTStructureError(
+        "Unable to detect primary expression for switch statement",
+        ast = switchStatement,
+        translator = this)
+
+    val translatedExpression: Expression = translateExpression(expression)
+    val cases: MutableList<SwitchCase> = mutableListOf()
+    val caseSubtrees: MutableList<SwiftAST> = switchStatement.subtrees.drop(1) as MutableList<SwiftAST>
+
+    for (caseSubtree in caseSubtrees) {
+        val caseExpression: Expression?
+        var extraStatements: MutableList<Statement>
+        val caseLabelItem: SwiftAST? = caseSubtree.subtree(name = "Case Label Item")
+
+        if (caseLabelItem != null) {
+            val firstSubtreeSubtrees: MutableList<SwiftAST>? = caseLabelItem.subtrees.firstOrNull()?.subtrees
+            val maybeExpression: SwiftAST? = firstSubtreeSubtrees?.firstOrNull()
+            val patternLet: SwiftAST? = caseLabelItem.subtree(name = "Pattern Let")
+            val patternLetResult: EnumPatternLetTranslation? = translateEnumPatternLet(patternLet)
+            val patternEnumElement: SwiftAST? = caseLabelItem.subtree(name = "Pattern Enum Element")
+            val expression: SwiftAST? = maybeExpression
+
+            if (patternLetResult != null && patternLet != null) {
+                val enumType: String = patternLetResult.enumType
+                val enumCase: String = patternLetResult.enumCase
+                val declarations: MutableList<AssociatedValueDeclaration> = patternLetResult.declarations
+                val enumClassName: String = enumType + "." + enumCase.capitalizedAsCamelCase()
+
+                caseExpression = Expression.BinaryOperatorExpression(
+                    leftExpression = translatedExpression,
+                    rightExpression = Expression.TypeExpression(typeName = enumClassName),
+                    operatorSymbol = "is",
+                    typeName = "Bool")
+
+                val range: SourceFileRange? = getRangeRecursively(ast = patternLet)
+
+                extraStatements = declarations.map { Statement.VariableDeclaration(
+                    data = VariableDeclarationData(
+                            identifier = it.newVariable,
+                            typeName = it.associatedValueType,
+                            expression = Expression.DotExpression(
+                                    leftExpression = translatedExpression,
+                                    rightExpression = Expression.DeclarationReferenceExpression(
+                                            data = DeclarationReferenceData(
+                                                    identifier = it.associatedValueName,
+                                                    typeName = it.associatedValueType,
+                                                    isStandardLibrary = false,
+                                                    isImplicit = false,
+                                                    range = range))),
+                            getter = null,
+                            setter = null,
+                            isLet = true,
+                            isImplicit = false,
+                            isStatic = false,
+                            extendsType = null,
+                            annotations = null)) }.toMutableList()
+            }
+            else if (patternEnumElement != null) {
+                caseExpression = translateSimplePatternEnumElement(patternEnumElement)
+                extraStatements = mutableListOf()
+            }
+            else if (expression != null) {
+                val translatedExpression: Expression = translateExpression(expression)
+                caseExpression = translatedExpression
+                extraStatements = mutableListOf()
+            }
+            else {
+                caseExpression = null
+                extraStatements = mutableListOf()
+            }
+        }
+        else {
+            caseExpression = null
+            extraStatements = mutableListOf()
+        }
+
+        val braceStatement: SwiftAST? = caseSubtree.subtree(name = "Brace Statement")
+
+        braceStatement ?: return unexpectedASTStructureError(
+            "Unable to find a case's statements",
+            ast = switchStatement,
+            translator = this)
+
+        val translatedStatements: MutableList<Statement> = translateBraceStatement(braceStatement)
+
+        val resultingStatements =
+        	(extraStatements + translatedStatements).toMutableList()
+
+        cases.add(SwitchCase(expression = caseExpression, statements = resultingStatements))
+    }
+
+    return Statement.SwitchStatement(
+        convertsToExpression = null,
+        expression = translatedExpression,
+        cases = cases)
+}
+
 internal fun SwiftTranslator.translateSimplePatternEnumElement(
     simplePatternEnumElement: SwiftAST)
     : Expression
@@ -215,10 +322,10 @@ private fun SwiftTranslator.translateIfConditions(
 }
 
 private fun SwiftTranslator.translateEnumPatternLet(
-    enumPatternLet: SwiftAST)
+    enumPatternLet: SwiftAST?)
     : EnumPatternLetTranslation?
 {
-    if (enumPatternLet.name != "Pattern Let") {
+    if (!(enumPatternLet != null && enumPatternLet.name == "Pattern Let")) {
         return null
     }
 
