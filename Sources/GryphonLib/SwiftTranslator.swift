@@ -52,8 +52,8 @@ extension SwiftTranslator { // kotlin: ignore
 		let fileRange = sourceFile.map {
 			SourceFileRange(lineStart: 0, lineEnd: $0.numberOfLines, columnStart: 0, columnEnd: 0)
 		}
-		let translatedSubtrees = try translate(
-			subtrees: ast.subtrees,
+		let translatedSubtrees = try translateSubtrees(
+			ast.subtrees,
 			inScope: fileRange)
 
 		let isDeclaration = { (ast: Statement) -> Bool in
@@ -91,7 +91,7 @@ extension SwiftTranslator { // kotlin: ignore
 	}
 
 	// MARK: - Top-level translations
-	internal func translate(subtree: SwiftAST) throws -> [Statement?] {
+	internal func translateSubtree(_ subtree: SwiftAST) throws -> [Statement?] {
 
 		if getComment(forNode: subtree, key: "kotlin") == "ignore" {
 			return []
@@ -104,43 +104,43 @@ extension SwiftTranslator { // kotlin: ignore
 		case "Import Declaration":
 			result = [.importDeclaration(moduleName: subtree.standaloneAttributes[0])]
 		case "Typealias":
-			result = [try translate(typealiasDeclaration: subtree)]
+			result = [try translateTypealiasDeclaration(subtree)]
 		case "Class Declaration":
-			result = [try translate(classDeclaration: subtree)]
+			result = [try translateClassDeclaration(subtree)]
 		case "Struct Declaration":
-			result = [try translate(structDeclaration: subtree)]
+			result = [try translateStructDeclaration(subtree)]
 		case "Enum Declaration":
-			result = [try translate(enumDeclaration: subtree)]
+			result = [try translateEnumDeclaration(subtree)]
 		case "Extension Declaration":
-			result = [try translate(extensionDeclaration: subtree)]
+			result = [try translateExtensionDeclaration(subtree)]
 		case "For Each Statement":
-			result = [try translate(forEachStatement: subtree)]
+			result = [try translateForEachStatement(subtree)]
 		case "While Statement":
-			result = [try translate(whileStatement: subtree)]
+			result = [try translateWhileStatement(subtree)]
 		case "Function Declaration", "Constructor Declaration":
 			result = [try translateFunctionDeclaration(subtree)]
 		case "Subscript Declaration":
 			result = try subtree.subtrees.filter { $0.name == "Accessor Declaration" }
 				.map { try translateFunctionDeclaration($0) }
 		case "Protocol":
-			result = [try translate(protocolDeclaration: subtree)]
+			result = [try translateProtocolDeclaration(subtree)]
 		case "Throw Statement":
-			result = [try translate(throwStatement: subtree)]
+			result = [try translateThrowStatement(subtree)]
 		case "Variable Declaration":
 			result = [try translateVariableDeclaration(subtree)]
 		case "Assign Expression":
-			result = [try translate(assignExpression: subtree)]
+			result = [try translateAssignExpression(subtree)]
 		case "If Statement", "Guard Statement":
-			result = [try translate(ifStatement: subtree)]
+			result = [try translateIfStatement(subtree)]
 		case "Switch Statement":
-			result = [try translate(switchStatement: subtree)]
+			result = [try translateSwitchStatement(subtree)]
 		case "Defer Statement":
-			result = [try translate(deferStatement: subtree)]
+			result = [try translateDeferStatement(subtree)]
 		case "Pattern Binding Declaration":
 			try processPatternBindingDeclaration(subtree)
 			result = []
 		case "Return Statement":
-			result = [try translate(returnStatement: subtree)]
+			result = [try translateReturnStatement(subtree)]
 		case "Break Statement":
 			result = [.breakStatement]
 		case "Continue Statement":
@@ -182,9 +182,9 @@ extension SwiftTranslator { // kotlin: ignore
 		case "Dictionary Expression":
 			result = try translateDictionaryExpression(expression)
 		case "Binary Expression":
-			result = try translate(binaryExpression: expression)
+			result = try translateBinaryExpression(expression)
 		case "If Expression":
-			result = try translate(ifExpression: expression)
+			result = try translateIfExpression(expression)
 		case "Call Expression", "Constructor Reference Call Expression":
 			result = try translateCallExpression(expression)
 		case "Closure Expression":
@@ -192,7 +192,7 @@ extension SwiftTranslator { // kotlin: ignore
 		case "Declaration Reference Expression":
 			result = try translateDeclarationReferenceExpression(expression)
 		case "Dot Syntax Call Expression":
-			result = try translate(dotSyntaxCallExpression: expression)
+			result = try translateDotSyntaxCallExpression(expression)
 		case "String Literal Expression":
 			result = try translateStringLiteralExpression(expression)
 		case "Interpolated String Literal Expression":
@@ -215,15 +215,15 @@ extension SwiftTranslator { // kotlin: ignore
 					ast: expression, translator: self)
 			}
 		case "Prefix Unary Expression":
-			result = try translate(prefixUnaryExpression: expression)
+			result = try translatePrefixUnaryExpression(expression)
 		case "Postfix Unary Expression":
-			result = try translate(postfixUnaryExpression: expression)
+			result = try translatePostfixUnaryExpression(expression)
 		case "Type Expression":
 			result = try translateTypeExpression(expression)
 		case "Member Reference Expression":
-			result = try translate(memberReferenceExpression: expression)
+			result = try translateMemberReferenceExpression(expression)
 		case "Tuple Element Expression":
-			result = try translate(tupleElementExpression: expression)
+			result = try translateTupleElementExpression(expression)
 		case "Tuple Expression":
 			result = try translateTupleExpression(expression)
 		case "Subscript Expression":
@@ -328,19 +328,19 @@ extension SwiftTranslator { // kotlin: ignore
 		return result
 	}
 
-	internal func translate(
-		subtrees: ArrayClass<SwiftAST>,
+	internal func translateSubtrees(
+		_ subtrees: ArrayClass<SwiftAST>,
 		inScope scope: SwiftAST,
 		asDeclarations: Bool = false)
 		throws -> ArrayClass<Statement>
 	{
 		let scopeRange = getRange(ofNode: scope)
-		return try translate(
-			subtrees: subtrees, inScope: scopeRange)
+		return try translateSubtrees(
+			subtrees, inScope: scopeRange)
 	}
 
-	internal func translate(
-		subtrees: ArrayClass<SwiftAST>,
+	internal func translateSubtrees(
+		_ subtrees: ArrayClass<SwiftAST>,
 		inScope scopeRange: SourceFileRange?)
 		throws -> ArrayClass<Statement>
 	{
@@ -361,7 +361,7 @@ extension SwiftTranslator { // kotlin: ignore
 		}
 		// If there is no info on ranges, then just translate the subtrees normally
 		else {
-			return try subtrees.flatMap(translate(subtree:)).compactMap { $0 }
+			return try subtrees.flatMap(translateSubtree(_:)).compactMap { $0 }
 		}
 
 		let commentToAST = { (comment: SourceFile.Comment) -> Statement? in
@@ -388,7 +388,7 @@ extension SwiftTranslator { // kotlin: ignore
 				lastRange = currentRange
 			}
 
-			result.append(contentsOf: try translate(subtree: subtree).compactMap { $0 })
+			result.append(contentsOf: try translateSubtree(subtree).compactMap { $0 })
 		}
 
 		// Insert code in comments after the last translated node
@@ -404,10 +404,10 @@ extension SwiftTranslator { // kotlin: ignore
 	}
 
 	// MARK: - Leaf translations
-	internal func translate(subtreesOf ast: SwiftAST)
+	internal func translateSubtreesOf(_ ast: SwiftAST)
 		throws -> ArrayClass<Statement>
 	{
-		return try translate(subtrees: ast.subtrees, inScope: ast)
+		return try translateSubtrees(ast.subtrees, inScope: ast)
 	}
 
 	internal func translateBraceStatement(
@@ -420,10 +420,13 @@ extension SwiftTranslator { // kotlin: ignore
 				ast: braceStatement, translator: self)
 		}
 
-		return try translate(subtrees: braceStatement.subtrees, inScope: braceStatement)
+		return try translateSubtrees(braceStatement.subtrees, inScope: braceStatement)
 	}
 
-	internal func translate(protocolDeclaration: SwiftAST) throws -> Statement {
+	internal func translateProtocolDeclaration(
+		_ protocolDeclaration: SwiftAST)
+		throws -> Statement
+	{
 		guard protocolDeclaration.name == "Protocol" else {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(protocolDeclaration.name) as 'Protocol'",
@@ -436,12 +439,12 @@ extension SwiftTranslator { // kotlin: ignore
 				ast: protocolDeclaration, translator: self)
 		}
 
-		let members = try translate(subtreesOf: protocolDeclaration)
+		let members = try translateSubtreesOf(protocolDeclaration)
 
 		return .protocolDeclaration(protocolName: protocolName, members: members)
 	}
 
-	internal func translate(assignExpression: SwiftAST) throws -> Statement {
+	internal func translateAssignExpression(_ assignExpression: SwiftAST) throws -> Statement {
 		guard assignExpression.name == "Assign Expression" else {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(assignExpression.name) as 'Assign Expression'",
@@ -468,7 +471,10 @@ extension SwiftTranslator { // kotlin: ignore
 		}
 	}
 
-	internal func translate(typealiasDeclaration: SwiftAST) throws -> Statement {
+	internal func translateTypealiasDeclaration(
+		_ typealiasDeclaration: SwiftAST)
+		throws -> Statement
+	{
 		let isImplicit: Bool
 		let identifier: String
 		if typealiasDeclaration.standaloneAttributes[0] == "implicit" {
@@ -484,7 +490,7 @@ extension SwiftTranslator { // kotlin: ignore
 			identifier: identifier, typeName: typealiasDeclaration["type"]!, isImplicit: isImplicit)
 	}
 
-	internal func translate(classDeclaration: SwiftAST) throws -> Statement? {
+	internal func translateClassDeclaration(_ classDeclaration: SwiftAST) throws -> Statement? {
 		guard classDeclaration.name == "Class Declaration" else {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(classDeclaration.name) as 'Class Declaration'",
@@ -508,7 +514,7 @@ extension SwiftTranslator { // kotlin: ignore
 		}
 
 		// Translate the contents
-		let classContents = try translate(subtreesOf: classDeclaration)
+		let classContents = try translateSubtreesOf(classDeclaration)
 
 		return .classDeclaration(
 			className: name,
@@ -516,7 +522,7 @@ extension SwiftTranslator { // kotlin: ignore
 			members: classContents)
 	}
 
-	internal func translate(structDeclaration: SwiftAST) throws -> Statement? {
+	internal func translateStructDeclaration(_ structDeclaration: SwiftAST) throws -> Statement? {
 		guard structDeclaration.name == "Struct Declaration" else {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(structDeclaration.name) as 'Struct Declaration'",
@@ -542,7 +548,7 @@ extension SwiftTranslator { // kotlin: ignore
 		}
 
 		// Translate the contents
-		let structContents = try translate(subtreesOf: structDeclaration)
+		let structContents = try translateSubtreesOf(structDeclaration)
 
 		return .structDeclaration(
 			annotations: annotations,
@@ -551,7 +557,7 @@ extension SwiftTranslator { // kotlin: ignore
 			members: structContents)
 	}
 
-	internal func translate(throwStatement: SwiftAST) throws -> Statement {
+	internal func translateThrowStatement(_ throwStatement: SwiftAST) throws -> Statement {
 		guard throwStatement.name == "Throw Statement" else {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(throwStatement.name) as 'Throw Statement'",
@@ -569,13 +575,16 @@ extension SwiftTranslator { // kotlin: ignore
 		}
 	}
 
-	internal func translate(extensionDeclaration: SwiftAST) throws -> Statement {
+	internal func translateExtensionDeclaration(
+		_ extensionDeclaration: SwiftAST)
+		throws -> Statement
+	{
 		let typeName = cleanUpType(extensionDeclaration.standaloneAttributes[0])
-		let members = try translate(subtreesOf: extensionDeclaration)
+		let members = try translateSubtreesOf(extensionDeclaration)
 		return .extensionDeclaration(typeName: typeName, members: members)
 	}
 
-	internal func translate(enumDeclaration: SwiftAST) throws -> Statement? {
+	internal func translateEnumDeclaration(_ enumDeclaration: SwiftAST) throws -> Statement? {
 		guard enumDeclaration.name == "Enum Declaration" else {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(enumDeclaration.name) as 'Enum Declaration'",
@@ -682,7 +691,7 @@ extension SwiftTranslator { // kotlin: ignore
 		let members = enumDeclaration.subtrees.filter {
 			$0.name != "Enum Element Declaration" && $0.name != "Enum Case Declaration"
 		}
-		let translatedMembers = try translate(subtrees: members, inScope: enumDeclaration)
+		let translatedMembers = try translateSubtrees(members, inScope: enumDeclaration)
 
 		return .enumDeclaration(
 			access: access,
@@ -693,7 +702,10 @@ extension SwiftTranslator { // kotlin: ignore
 			isImplicit: isImplicit)
 	}
 
-	internal func translate(memberReferenceExpression: SwiftAST) throws -> Expression {
+	internal func translateMemberReferenceExpression(
+		_ memberReferenceExpression: SwiftAST)
+		throws -> Expression
+	{
 		guard memberReferenceExpression.name == "Member Reference Expression" else {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(memberReferenceExpression.name) as " +
@@ -727,7 +739,10 @@ extension SwiftTranslator { // kotlin: ignore
 		}
 	}
 
-	internal func translate(tupleElementExpression: SwiftAST) throws -> Expression {
+	internal func translateTupleElementExpression(
+		_ tupleElementExpression: SwiftAST)
+		throws -> Expression
+	{
 		guard tupleElementExpression.name == "Tuple Element Expression" else {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(tupleElementExpression.name) as " +
@@ -782,7 +797,10 @@ extension SwiftTranslator { // kotlin: ignore
 			ast: tupleElementExpression, translator: self)
 	}
 
-	internal func translate(prefixUnaryExpression: SwiftAST) throws -> Expression {
+	internal func translatePrefixUnaryExpression(
+		_ prefixUnaryExpression: SwiftAST)
+		throws -> Expression
+	{
 		guard prefixUnaryExpression.name == "Prefix Unary Expression" else {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(prefixUnaryExpression.name) as 'Prefix Unary Expression'",
@@ -813,7 +831,10 @@ extension SwiftTranslator { // kotlin: ignore
 		}
 	}
 
-	internal func translate(postfixUnaryExpression: SwiftAST) throws -> Expression {
+	internal func translatePostfixUnaryExpression(
+		_ postfixUnaryExpression: SwiftAST)
+		throws -> Expression
+	{
 		guard postfixUnaryExpression.name == "Postfix Unary Expression" else {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(postfixUnaryExpression.name) as 'Postfix Unary Expression'",
@@ -844,7 +865,7 @@ extension SwiftTranslator { // kotlin: ignore
 		}
 	}
 
-	internal func translate(binaryExpression: SwiftAST) throws -> Expression {
+	internal func translateBinaryExpression(_ binaryExpression: SwiftAST) throws -> Expression {
 		guard binaryExpression.name == "Binary Expression" else {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(binaryExpression.name) as 'Binary Expression'",
@@ -878,7 +899,7 @@ extension SwiftTranslator { // kotlin: ignore
 		}
 	}
 
-	internal func translate(ifExpression: SwiftAST) throws -> Expression {
+	internal func translateIfExpression(_ ifExpression: SwiftAST) throws -> Expression {
 		guard ifExpression.name == "If Expression" else {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(ifExpression.name) as 'If Expression'",
@@ -900,7 +921,10 @@ extension SwiftTranslator { // kotlin: ignore
 			condition: condition, trueExpression: trueExpression, falseExpression: falseExpression)
 	}
 
-	internal func translate(dotSyntaxCallExpression: SwiftAST) throws -> Expression {
+	internal func translateDotSyntaxCallExpression(
+		_ dotSyntaxCallExpression: SwiftAST)
+		throws -> Expression
+	{
 		guard dotSyntaxCallExpression.name == "Dot Syntax Call Expression" else {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(dotSyntaxCallExpression.name) as " +
@@ -931,7 +955,7 @@ extension SwiftTranslator { // kotlin: ignore
 		}
 	}
 
-	internal func translate(returnStatement: SwiftAST) throws -> Statement {
+	internal func translateReturnStatement(_ returnStatement: SwiftAST) throws -> Statement {
 		guard returnStatement.name == "Return Statement" else {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(returnStatement.name) as 'Return Statement'",
@@ -947,7 +971,7 @@ extension SwiftTranslator { // kotlin: ignore
 		}
 	}
 
-	internal func translate(forEachStatement: SwiftAST) throws -> Statement {
+	internal func translateForEachStatement(_ forEachStatement: SwiftAST) throws -> Statement {
 		guard forEachStatement.name == "For Each Statement" else {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(forEachStatement.name) as 'For Each Statement'",
@@ -1029,7 +1053,7 @@ extension SwiftTranslator { // kotlin: ignore
 			statements: statements)
 	}
 
-	internal func translate(whileStatement: SwiftAST) throws -> Statement {
+	internal func translateWhileStatement(_ whileStatement: SwiftAST) throws -> Statement {
 		guard whileStatement.name == "While Statement" else {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(whileStatement.name) as 'While Statement'",
@@ -1056,7 +1080,7 @@ extension SwiftTranslator { // kotlin: ignore
 		return .whileStatement(expression: expression, statements: statements)
 	}
 
-	internal func translate(deferStatement: SwiftAST) throws -> Statement {
+	internal func translateDeferStatement(_ deferStatement: SwiftAST) throws -> Statement {
 		guard deferStatement.name == "Defer Statement" else {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(deferStatement.name) as a 'Defer Statement'",
@@ -1076,9 +1100,9 @@ extension SwiftTranslator { // kotlin: ignore
 		return .deferStatement(statements: statements)
 	}
 
-	internal func translate(ifStatement: SwiftAST) throws -> Statement {
+	internal func translateIfStatement(_ ifStatement: SwiftAST) throws -> Statement {
 		do {
-			let result: IfStatementData = try translate(ifStatement: ifStatement)
+			let result: IfStatementData = try translateIfStatement(ifStatement)
 			return .ifStatement(data: result)
 		}
 		catch let error {
@@ -1086,7 +1110,7 @@ extension SwiftTranslator { // kotlin: ignore
 		}
 	}
 
-	internal func translate(ifStatement: SwiftAST) throws -> IfStatementData {
+	internal func translateIfStatement(_ ifStatement: SwiftAST) throws -> IfStatementData {
 		guard ifStatement.name == "If Statement" || ifStatement.name == "Guard Statement" else {
 			throw createUnexpectedASTStructureError(
 				"Trying to translate \(ifStatement.name) as an if or guard statement",
@@ -1109,7 +1133,7 @@ extension SwiftTranslator { // kotlin: ignore
 			elseIfAST.name == "If Statement"
 		{
 			braceStatement = unwrappedBraceStatement
-			elseStatement = try translate(ifStatement: elseIfAST)
+			elseStatement = try translateIfStatement(elseIfAST)
 		}
 		else if ifStatement.subtrees.count > 2,
 			let unwrappedBraceStatement = ifStatement.subtrees.secondToLast,
@@ -1147,7 +1171,7 @@ extension SwiftTranslator { // kotlin: ignore
 			isGuard: isGuard)
 	}
 
-	internal func translate(switchStatement: SwiftAST) throws -> Statement {
+	internal func translateSwitchStatement(_ switchStatement: SwiftAST) throws -> Statement {
 		guard switchStatement.name == "Switch Statement" else {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(switchStatement.name) as 'Switch Statement'",
@@ -1210,7 +1234,7 @@ extension SwiftTranslator { // kotlin: ignore
 				else if let patternEnumElement =
 					caseLabelItem.subtree(named: "Pattern Enum Element")
 				{
-					caseExpression = try translate(simplePatternEnumElement: patternEnumElement)
+					caseExpression = try translateSimplePatternEnumElement(patternEnumElement)
 					extraStatements = []
 				}
 				else if let expression = caseLabelItem.subtrees.first?.subtrees.first {
@@ -1246,7 +1270,10 @@ extension SwiftTranslator { // kotlin: ignore
 			cases: cases)
 	}
 
-	internal func translate(simplePatternEnumElement: SwiftAST) throws -> Expression {
+	internal func translateSimplePatternEnumElement(
+		_ simplePatternEnumElement: SwiftAST)
+		throws -> Expression
+	{
 		guard simplePatternEnumElement.name == "Pattern Enum Element" else {
 			return try unexpectedExpressionStructureError(
 				"Trying to translate \(simplePatternEnumElement.name) as 'Pattern Enum Element'",
