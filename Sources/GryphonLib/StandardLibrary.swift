@@ -377,7 +377,11 @@ extension DictionaryClass: Codable where Key: Codable, Value: Codable { // kotli
 // declaration: fun <T> MutableList<T>.copy(): MutableList<T> {
 // declaration: 	return this.toMutableList()
 // declaration: }
-
+// declaration: 
 // declaration: fun String.suffix(startIndex: Int): String {
 // declaration: 	return this.substring(startIndex, this.length)
+// declaration: }
+// declaration:
+// declaration: fun <T> MutableList<T>.removeLast() {
+// declaration: 	this.removeAt(this.size - 1)
 // declaration: }
