@@ -1521,8 +1521,155 @@ internal fun SwiftTranslator.translateVariableDeclaration(
                 annotations = annotations))
 }
 
-internal fun translateExpression(expression: SwiftAST): Expression {
-	return Expression.NilLiteralExpression()
+internal fun SwiftTranslator.translateExpression(expression: SwiftAST): Expression {
+    val valueReplacement: String? = getComment(ast = expression, key = "value")
+
+    if (valueReplacement != null) {
+        return Expression.LiteralCodeExpression(string = valueReplacement)
+    }
+
+    val result: Expression
+
+    when (expression.name) {
+        "Array Expression" -> result = translateArrayExpression(expression)
+        "Dictionary Expression" -> result = translateDictionaryExpression(expression)
+        "Binary Expression" -> result = translateBinaryExpression(expression)
+        "If Expression" -> result = translateIfExpression(expression)
+        "Call Expression" -> result = translateCallExpression(expression)
+        "Closure Expression" -> result = translateClosureExpression(expression)
+        "Declaration Reference Expression" -> result = translateDeclarationReferenceExpression(expression)
+        "Dot Syntax Call Expression" -> result = translateDotSyntaxCallExpression(expression)
+        "String Literal Expression" -> result = translateStringLiteralExpression(expression)
+        "Interpolated String Literal Expression" -> result = translateInterpolatedStringLiteralExpression(expression)
+        "Erasure Expression" -> {
+            val lastExpression: SwiftAST? = expression.subtrees.lastOrNull()
+            if (lastExpression != null) {
+                val innerExpression: SwiftAST? = lastExpression.subtrees.lastOrNull()
+                if (lastExpression.name == "Bind Optional Expression" && innerExpression != null) {
+                    result = translateExpression(innerExpression)
+                }
+                else {
+                    result = translateExpression(lastExpression)
+                }
+            }
+            else {
+                result = unexpectedExpressionStructureError(
+                    "Unrecognized structure in automatic expression",
+                    ast = expression,
+                    translator = this)
+            }
+        }
+        "Prefix Unary Expression" -> result = translatePrefixUnaryExpression(expression)
+        "Postfix Unary Expression" -> result = translatePostfixUnaryExpression(expression)
+        "Type Expression" -> result = translateTypeExpression(expression)
+        "Member Reference Expression" -> result = translateMemberReferenceExpression(expression)
+        "Tuple Element Expression" -> result = translateTupleElementExpression(expression)
+        "Tuple Expression" -> result = translateTupleExpression(expression)
+        "Subscript Expression" -> result = translateSubscriptExpression(expression)
+        "Nil Literal Expression" -> result = Expression.NilLiteralExpression()
+        "Open Existential Expression" -> {
+            val processedExpression: SwiftAST = processOpenExistentialExpression(expression)
+            result = translateExpression(processedExpression)
+        }
+        "Parentheses Expression" -> {
+            val innerExpression: SwiftAST? = expression.subtree(index = 0)
+            if (innerExpression != null) {
+                if (expression.standaloneAttributes.contains("implicit")) {
+                    result = translateExpression(innerExpression)
+                }
+                else {
+                    result = Expression.ParenthesesExpression(expression = translateExpression(innerExpression))
+                }
+            }
+            else {
+                result = unexpectedExpressionStructureError(
+                    "Expected parentheses expression to have at least one subtree",
+                    ast = expression,
+                    translator = this)
+            }
+        }
+        "Force Value Expression" -> {
+            val firstExpression: SwiftAST? = expression.subtree(index = 0)
+            if (firstExpression != null) {
+                val expression: Expression = translateExpression(firstExpression)
+                result = Expression.ForceValueExpression(expression = expression)
+            }
+            else {
+                result = unexpectedExpressionStructureError(
+                    "Expected force value expression to have at least one subtree",
+                    ast = expression,
+                    translator = this)
+            }
+        }
+        "Bind Optional Expression" -> {
+            val firstExpression: SwiftAST? = expression.subtree(index = 0)
+            if (firstExpression != null) {
+                val expression: Expression = translateExpression(firstExpression)
+                result = Expression.OptionalExpression(expression = expression)
+            }
+            else {
+                result = unexpectedExpressionStructureError(
+                    "Expected optional expression to have at least one subtree",
+                    ast = expression,
+                    translator = this)
+            }
+        }
+        "Conditional Checked Cast Expression" -> {
+            val bindOptionalExpression: SwiftAST? = expression.subtrees.firstOrNull()
+            val bindOptionalSubtrees: MutableList<SwiftAST>? = bindOptionalExpression?.subtrees
+            val subExpression: SwiftAST? = bindOptionalSubtrees?.firstOrNull()
+            val typeName: String? = expression["type"]
+
+            if (typeName != null && subExpression != null) {
+                result = Expression.BinaryOperatorExpression(
+                    leftExpression = translateExpression(subExpression),
+                    rightExpression = Expression.TypeExpression(typeName = typeName),
+                    operatorSymbol = "as?",
+                    typeName = typeName)
+            }
+            else {
+                result = unexpectedExpressionStructureError(
+                    "Expected Conditional Checked Cast Expression to have a type and two nested " + "subtrees",
+                    ast = expression,
+                    translator = this)
+            }
+        }
+        "Autoclosure Expression" -> {
+            val lastExpression: SwiftAST? = expression.subtrees.lastOrNull()
+            if (lastExpression != null) {
+                result = translateExpression(lastExpression)
+            }
+            else {
+                result = unexpectedExpressionStructureError(
+                    "Unrecognized structure in automatic expression",
+                    ast = expression,
+                    translator = this)
+            }
+        }
+        "Collection Upcast Expression" -> {
+            val firstExpression: SwiftAST? = expression.subtrees.firstOrNull()
+            if (firstExpression != null) {
+                result = translateExpression(firstExpression)
+            }
+            else {
+                result = unexpectedExpressionStructureError(
+                    "Unrecognized structure in automatic expression",
+                    ast = expression,
+                    translator = this)
+            }
+        }
+        else -> result = unexpectedExpressionStructureError("Unknown expression", ast = expression, translator = this)
+    }
+
+    val shouldInspect: Boolean = (getComment(ast = expression, key = "gryphon") == "inspect")
+
+    if (shouldInspect) {
+        println("===\nInspecting:")
+        println(expression)
+        result.prettyPrint()
+    }
+
+    return result
 }
 
 internal fun SwiftTranslator.translateTypeExpression(typeExpression: SwiftAST): Expression {
