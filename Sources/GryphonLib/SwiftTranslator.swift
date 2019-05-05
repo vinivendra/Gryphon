@@ -1109,6 +1109,16 @@ extension SwiftTranslator { // kotlin: ignore
 			return try handleUnexpectedASTStructureError(error)
 		}
 	}
+}
+
+extension SwiftTranslator {
+	// MARK: - Statement translation
+
+// declaration: internal fun translateBraceStatement(braceStatement: SwiftAST):
+// declaration: 	MutableList<Statement>
+// declaration: {
+// declaration: 	return mutableListOf()
+// declaration: }
 
 	internal func translateIfStatement(_ ifStatement: SwiftAST) throws -> IfStatementData {
 		guard ifStatement.name == "If Statement" || ifStatement.name == "Guard Statement" else {
@@ -1126,33 +1136,36 @@ extension SwiftTranslator { // kotlin: ignore
 		let braceStatement: SwiftAST
 		let elseStatement: IfStatementData?
 
+		let secondToLastTree = ifStatement.subtrees.secondToLast
+		let lastTree = ifStatement.subtrees.last
+
 		if ifStatement.subtrees.count > 2,
-			let unwrappedBraceStatement = ifStatement.subtrees.secondToLast,
-			unwrappedBraceStatement.name == "Brace Statement",
-			let elseIfAST = ifStatement.subtrees.last,
-			elseIfAST.name == "If Statement"
+			let secondToLastTree = secondToLastTree,
+			secondToLastTree.name == "Brace Statement",
+			let lastTree = lastTree,
+			lastTree.name == "If Statement"
 		{
-			braceStatement = unwrappedBraceStatement
-			elseStatement = try translateIfStatement(elseIfAST)
+			braceStatement = secondToLastTree
+			elseStatement = try translateIfStatement(lastTree)
 		}
 		else if ifStatement.subtrees.count > 2,
-			let unwrappedBraceStatement = ifStatement.subtrees.secondToLast,
-			unwrappedBraceStatement.name == "Brace Statement",
-			let elseAST = ifStatement.subtrees.last,
-			elseAST.name == "Brace Statement"
+			let secondToLastTree = secondToLastTree,
+			secondToLastTree.name == "Brace Statement",
+			let lastTree = lastTree,
+			lastTree.name == "Brace Statement"
 		{
-			braceStatement = unwrappedBraceStatement
-			let statements = try translateBraceStatement(elseAST)
+			braceStatement = secondToLastTree
+			let statements = try translateBraceStatement(lastTree)
 			elseStatement = IfStatementData(
 				conditions: [], declarations: [],
 				statements: statements,
 				elseStatement: nil,
 				isGuard: false)
 		}
-		else if let unwrappedBraceStatement = ifStatement.subtrees.last,
-			unwrappedBraceStatement.name == "Brace Statement"
+		else if let lastTree = lastTree,
+			lastTree.name == "Brace Statement"
 		{
-			braceStatement = unwrappedBraceStatement
+			braceStatement = lastTree
 			elseStatement = nil
 		}
 		else {
@@ -1163,23 +1176,16 @@ extension SwiftTranslator { // kotlin: ignore
 
 		let statements = try translateBraceStatement(braceStatement)
 
+		let resultingStatements = extraStatements + statements // kotlin: ignore
+		// insert: val resultingStatements = (extraStatements + statements).toMutableList()
+
 		return IfStatementData(
 			conditions: conditions,
 			declarations: [],
-			statements: extraStatements + statements,
+			statements: resultingStatements,
 			elseStatement: elseStatement,
 			isGuard: isGuard)
 	}
-}
-
-extension SwiftTranslator {
-	// MARK: - Statement translation
-
-// declaration: internal fun translateBraceStatement(braceStatement: SwiftAST):
-// declaration: 	MutableList<Statement>
-// declaration: {
-// declaration: 	return mutableListOf()
-// declaration: }
 
 	internal func translateSwitchStatement(_ switchStatement: SwiftAST) throws -> Statement {
 		guard switchStatement.name == "Switch Statement" else {

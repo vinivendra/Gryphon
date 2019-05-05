@@ -27,6 +27,60 @@ internal fun translateBraceStatement(braceStatement: SwiftAST):
 	return mutableListOf()
 }
 
+internal fun SwiftTranslator.translateIfStatement(ifStatement: SwiftAST): IfStatementData {
+    if (!(ifStatement.name == "If Statement" || ifStatement.name == "Guard Statement")) {
+        throw createUnexpectedASTStructureError(
+            "Trying to translate ${ifStatement.name} as an if or guard statement",
+            ast = ifStatement,
+            translator = this)
+    }
+
+    val isGuard: Boolean = (ifStatement.name == "Guard Statement")
+    val ifConditions: IfConditionsTranslation = translateIfConditions(ifStatement = ifStatement)
+    val conditions: MutableList<IfStatementData.IfCondition> = ifConditions.conditions
+    val extraStatements: MutableList<Statement> = ifConditions.statements
+    val braceStatement: SwiftAST
+    val elseStatement: IfStatementData?
+    val secondToLastTree: SwiftAST? = ifStatement.subtrees.secondToLast
+    val lastTree: SwiftAST? = ifStatement.subtrees.lastOrNull()
+
+    if (ifStatement.subtrees.size > 2 && secondToLastTree != null && secondToLastTree.name == "Brace Statement" && lastTree != null && lastTree.name == "If Statement") {
+        braceStatement = secondToLastTree
+        elseStatement = translateIfStatement(lastTree)
+    }
+    else if (ifStatement.subtrees.size > 2 && secondToLastTree != null && secondToLastTree.name == "Brace Statement" && lastTree != null && lastTree.name == "Brace Statement") {
+        braceStatement = secondToLastTree
+        val statements: MutableList<Statement> = translateBraceStatement(lastTree)
+        elseStatement = IfStatementData(
+            conditions = mutableListOf(),
+            declarations = mutableListOf(),
+            statements = statements,
+            elseStatement = null,
+            isGuard = false)
+    }
+    else if (lastTree != null && lastTree.name == "Brace Statement") {
+        braceStatement = lastTree
+        elseStatement = null
+    }
+    else {
+        throw createUnexpectedASTStructureError(
+            "Unable to detect body of statements",
+            ast = ifStatement,
+            translator = this)
+    }
+
+    val statements: MutableList<Statement> = translateBraceStatement(braceStatement)
+
+    val resultingStatements = (extraStatements + statements).toMutableList()
+
+    return IfStatementData(
+        conditions = conditions,
+        declarations = mutableListOf(),
+        statements = resultingStatements,
+        elseStatement = elseStatement,
+        isGuard = isGuard)
+}
+
 internal fun SwiftTranslator.translateSwitchStatement(switchStatement: SwiftAST): Statement {
     if (switchStatement.name != "Switch Statement") {
         return unexpectedASTStructureError(
