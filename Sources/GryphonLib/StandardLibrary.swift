@@ -177,6 +177,7 @@ public final class ArrayClass<Element>: // kotlin: ignore
 		return ArrayClass<Element>(self.array + newElements)
 	}
 
+	@discardableResult
 	public func removeFirst() -> Element {
 		return array.removeFirst()
 	}
