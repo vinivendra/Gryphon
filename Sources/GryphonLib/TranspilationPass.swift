@@ -1830,7 +1830,7 @@ public class RecordFunctionsTranspilationPass: TranspilationPass {
 		-> FunctionDeclarationData?
 	{
 		let swiftAPIName = functionDeclaration.prefix + "(" +
-			functionDeclaration.parameters.map { ($0.apiLabel ?? $0.label) + ":" }.joined() + ")"
+			functionDeclaration.parameters.map { ($0.apiLabel ?? "_") + ":" }.joined() + ")"
 
 		KotlinTranslator.addFunctionTranslation(KotlinTranslator.FunctionTranslation(
 			swiftAPIName: swiftAPIName,
