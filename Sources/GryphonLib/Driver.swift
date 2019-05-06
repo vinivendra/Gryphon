@@ -229,11 +229,18 @@ public class Driver {
 		let shouldGenerateRawAST = shouldGenerateAST || shouldEmitRawAST
 		let shouldGenerateSwiftAST = shouldGenerateRawAST || shouldEmitSwiftAST
 
-		let mainFilePath = (inputFilePaths.count == 1) ?
-			inputFilePaths[0] :
-			inputFilePaths.first {
+		let mainFilePath: String?
+		if arguments.contains("-no-main-file") {
+			mainFilePath = nil
+		}
+		else if (inputFilePaths.count == 1) {
+			mainFilePath = inputFilePaths[0]
+		}
+		else {
+			mainFilePath = inputFilePaths.first {
 				$0.hasSuffix("main.swift") || $0.hasSuffix("main.swiftASTDump")
 			}
+		}
 
 		let settings = Settings(
 			shouldEmitSwiftAST: shouldEmitSwiftAST,

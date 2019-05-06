@@ -109,7 +109,18 @@ class Driver {
             val shouldGenerateAST: Boolean = shouldGenerateKotlin || shouldEmitAST
             val shouldGenerateRawAST: Boolean = shouldGenerateAST || shouldEmitRawAST
             val shouldGenerateSwiftAST: Boolean = shouldGenerateRawAST || shouldEmitSwiftAST
-            val mainFilePath: String? = if (inputFilePaths.size == 1) { inputFilePaths[(0)] } else { inputFilePaths.find { it.endsWith("main.swift") || it.endsWith("main.swiftASTDump") } }
+            val mainFilePath: String?
+
+            if (arguments.contains("-no-main-file")) {
+                mainFilePath = null
+            }
+            else if ((inputFilePaths.size == 1)) {
+                mainFilePath = inputFilePaths[0]
+            }
+            else {
+                mainFilePath = inputFilePaths.find { it.endsWith("main.swift") || it.endsWith("main.swiftASTDump") }
+            }
+
             val settings: Settings = Settings(
                 shouldEmitSwiftAST = shouldEmitSwiftAST,
                 shouldEmitRawAST = shouldEmitRawAST,
