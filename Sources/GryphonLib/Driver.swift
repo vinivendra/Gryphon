@@ -233,7 +233,7 @@ public class Driver {
 		if arguments.contains("-no-main-file") {
 			mainFilePath = nil
 		}
-		else if (inputFilePaths.count == 1) {
+		else if inputFilePaths.count == 1 {
 			mainFilePath = inputFilePaths[0]
 		}
 		else {

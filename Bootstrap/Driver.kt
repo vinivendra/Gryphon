@@ -114,7 +114,7 @@ class Driver {
             if (arguments.contains("-no-main-file")) {
                 mainFilePath = null
             }
-            else if ((inputFilePaths.size == 1)) {
+            else if (inputFilePaths.size == 1) {
                 mainFilePath = inputFilePaths[0]
             }
             else {
