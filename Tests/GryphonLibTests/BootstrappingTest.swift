@@ -100,6 +100,60 @@ class BootstrappingTest: XCTestCase {
 		Compiler.printErrorsAndWarnings()
 	}
 
+	func testSwiftTranslatorOutput() {
+		guard !BootstrappingTest.hasError else {
+			XCTFail("Error during setup")
+			return
+		}
+
+		let tests = TestUtils.testCasesForAllTests
+
+		for testName in tests {
+			print("- Testing \(testName)...")
+
+			do {
+				let testFilePath = TestUtils.testFilesPath + testName + ".swift"
+
+				// Get Kotlin results
+				let kotlinArguments: ArrayClass = ["-emit-rawAST", testFilePath]
+				// FIXME: This would be ideal, but it's timing out
+//				guard let runOutput = runTranspiledGryphon(withArguments: kotlinArguments) else {
+//					XCTFail("Error running transpiled transpiler. " +
+//						"It's possible a command timed out.\nRun result: \(runResult)")
+//					return
+//				}
+//				let transpiledSwiftAST = runOutput.standardOutput
+
+				let rawASTFilePath = Utilities.changeExtension(of: testFilePath, to: .gryphonASTRaw)
+				let transpiledRawAST = try Utilities.readFile(rawASTFilePath)
+
+				// Get Swift results
+				let swiftArguments = kotlinArguments + ["-q", "-Q"]
+				let driverResult = try Driver.run(withArguments: swiftArguments)
+				guard let resultArray = driverResult as? ArrayClass<Any?>,
+					let swiftASTs = resultArray.as(ArrayClass<SwiftAST>.self),
+					let originalSwiftAST = swiftASTs.first else
+				{
+					XCTFail("Error generating SwiftASTs.\n" +
+						"Driver result: \(driverResult ?? "nil")")
+					return
+				}
+
+				// Compare results
+				XCTAssert(
+					transpiledRawAST == originalSwiftAST.description,
+					"Test \(testName): failed to produce expected result. Diff:" +
+						TestUtils.diff(transpiledRawAST, originalSwiftAST.description))
+			}
+			catch let error {
+				XCTFail("🚨 Test failed with error:\n\(error)")
+			}
+		}
+
+		XCTAssertFalse(Compiler.hasErrorsOrWarnings())
+		Compiler.printErrorsAndWarnings()
+	}
+
 	override static func setUp() {
 		print("* Updating bootstrap files...")
 

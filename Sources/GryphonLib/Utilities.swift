@@ -92,6 +92,7 @@ public enum FileExtension: String {
 	// This should be the same as the extension in the dumpAST.pl and separateASTs.pl files
 	case swiftASTDump
 	case swiftAST
+	case gryphonASTRaw
 	case output
 	case kt
 	case swift

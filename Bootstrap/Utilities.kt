@@ -29,6 +29,7 @@ class Utilities {
 public enum class FileExtension {
     SWIFT_AST_DUMP,
     SWIFT_AST,
+    GRYPHON_AST_RAW,
     OUTPUT,
     KT,
     SWIFT;
@@ -38,6 +39,7 @@ public enum class FileExtension {
             return when (rawValue) {
                 "swiftASTDump" -> FileExtension.SWIFT_AST_DUMP
                 "swiftAST" -> FileExtension.SWIFT_AST
+                "gryphonASTRaw" -> FileExtension.GRYPHON_AST_RAW
                 "output" -> FileExtension.OUTPUT
                 "kt" -> FileExtension.KT
                 "swift" -> FileExtension.SWIFT
@@ -51,6 +53,7 @@ public enum class FileExtension {
             return when (this) {
                 FileExtension.SWIFT_AST_DUMP -> "swiftASTDump"
                 FileExtension.SWIFT_AST -> "swiftAST"
+                FileExtension.GRYPHON_AST_RAW -> "gryphonASTRaw"
                 FileExtension.OUTPUT -> "output"
                 FileExtension.KT -> "kt"
                 FileExtension.SWIFT -> "swift"

@@ -8,6 +8,7 @@
 *.swiftAstDump
 # Intermediate representations used in testing
 *.swiftAST
+*.gryphonASTRaw
 # Used by the test suite to print diffs when tests fail
 /.tmp
 # Used by the acceptance tests to build the translated programs
