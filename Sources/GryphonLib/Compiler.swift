@@ -64,6 +64,26 @@ public class Compiler {
 		let astDump = try Utilities.readFile(inputFile)
 		return try generateSwiftAST(fromASTDump: astDump)
 	}
+
+	public static func generateGryphonRawAST(
+		fromSwiftAST swiftAST: SwiftAST,
+		asMainFile: Bool)
+		throws -> GryphonAST
+	{
+		log("\t- Translating Swift ASTs to Gryphon ASTs...")
+		return try SwiftTranslator().translateAST(swiftAST, asMainFile: asMainFile)
+	}
+
+	public static func transpileGryphonRawASTs(
+		fromASTDumpFiles inputFiles: [String])
+		throws -> [GryphonAST]
+	{
+		let asts = try inputFiles.map { try transpileSwiftAST(fromASTDumpFile: $0) }
+		let translateAsMainFile = (inputFiles.count == 1)
+		return try asts.map {
+			try generateGryphonRawAST(fromSwiftAST: $0, asMainFile: translateAsMainFile)
+		}
+	}
 }
 
 extension Compiler { // kotlin: ignore
@@ -121,13 +141,6 @@ extension Compiler { // kotlin: ignore
 		return TranspilationPass.runFirstRoundOfPasses(on: ast)
 	}
 
-	public static func generateGryphonRawAST(fromSwiftAST swiftAST: SwiftAST, asMainFile: Bool)
-		throws -> GryphonAST
-	{
-		log("\t- Translating Swift ASTs to Gryphon ASTs...")
-		return try SwiftTranslator().translateAST(swiftAST, asMainFile: asMainFile)
-	}
-
 	//
 	public static func transpileCompileAndRun(
 		ASTDumpFiles inputFiles: [String], fromFolder outputFolder: String = OS.buildFolder)
@@ -171,16 +184,6 @@ extension Compiler { // kotlin: ignore
 	{
 		let rawASTs = try transpileGryphonRawASTs(fromASTDumpFiles: inputFiles)
 		return try rawASTs.map { try generateGryphonAST(fromGryphonRawAST: $0) }
-	}
-
-	public static func transpileGryphonRawASTs(fromASTDumpFiles inputFiles: [String])
-		throws -> [GryphonAST]
-	{
-		let asts = try inputFiles.map { try transpileSwiftAST(fromASTDumpFile: $0) }
-		let translateAsMainFile = (inputFiles.count == 1)
-		return try asts.map {
-			try generateGryphonRawAST(fromSwiftAST: $0, asMainFile: translateAsMainFile)
-		}
 	}
 
 	//

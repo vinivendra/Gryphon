@@ -65,33 +65,32 @@ public class Driver {
 			}
 		}
 
+		guard settings.shouldGenerateRawAST else {
+			return swiftAST
+		}
+
+		let isMainFile = (inputFilePath == settings.mainFilePath)
+
+		let gryphonRawAST = try Compiler.generateGryphonRawAST(
+			fromSwiftAST: swiftAST,
+			asMainFile: isMainFile)
+		if settings.shouldEmitRawAST {
+			let output = gryphonRawAST.prettyDescription(
+				horizontalLimit: settings.horizontalLimit)
+			if let outputFilePath = settings.outputFileMap?.getOutputFile(
+				forInputFile: inputFilePath, outputType: .gryphonASTRaw),
+				settings.canPrintToFiles
+			{
+				Utilities.createFile(atPath: outputFilePath, containing: output)
+			}
+			else if settings.canPrintToOutput {
+				print(output)
+			}
+		}
+
 		// insert: return null
 
 		if true { // kotlin: ignore
-
-			guard settings.shouldGenerateRawAST else {
-				return swiftAST
-			}
-
-			let isMainFile = (inputFilePath == settings.mainFilePath)
-
-			let gryphonRawAST = try Compiler.generateGryphonRawAST(
-				fromSwiftAST: swiftAST,
-				asMainFile: isMainFile)
-			if settings.shouldEmitRawAST {
-				let output = gryphonRawAST.prettyDescription(
-					horizontalLimit: settings.horizontalLimit)
-				if let outputFilePath = settings.outputFileMap?.getOutputFile(
-						forInputFile: inputFilePath, outputType: .gryphonASTRaw),
-					settings.canPrintToFiles
-				{
-					Utilities.createFile(atPath: outputFilePath, containing: output)
-				}
-				else if settings.canPrintToOutput {
-					print(output)
-				}
-			}
-
 			guard settings.shouldGenerateAST else {
 				return gryphonRawAST
 			}

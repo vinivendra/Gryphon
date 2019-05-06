@@ -22,6 +22,26 @@ class Driver {
                 }
             }
 
+            if (!(settings.shouldGenerateRawAST)) {
+                return swiftAST
+            }
+
+            val isMainFile: Boolean = (inputFilePath == settings.mainFilePath)
+            val gryphonRawAST: GryphonAST = Compiler.generateGryphonRawAST(swiftAST = swiftAST, asMainFile = isMainFile)
+
+            if (settings.shouldEmitRawAST) {
+                val output: String = gryphonRawAST.prettyDescription(horizontalLimit = settings.horizontalLimit)
+                val outputFilePath: String? = settings.outputFileMap?.getOutputFile(
+                    file = inputFilePath,
+                    outputType = OutputFileMap.OutputType.GRYPHON_AST_RAW)
+                if (outputFilePath != null && settings.canPrintToFiles) {
+                    Utilities.createFile(filePath = outputFilePath, contents = output)
+                }
+                else if (settings.canPrintToOutput) {
+                    println(output)
+                }
+            }
+
             return null
         }
 

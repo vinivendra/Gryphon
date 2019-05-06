@@ -40,6 +40,20 @@ class Compiler {
             val astDump: String = Utilities.readFile(inputFile)
             return generateSwiftAST(astDump = astDump)
         }
+
+        public fun generateGryphonRawAST(swiftAST: SwiftAST, asMainFile: Boolean): GryphonAST {
+            log("\t- Translating Swift ASTs to Gryphon ASTs...")
+            return SwiftTranslator().translateAST(swiftAST, isMainFile = asMainFile)
+        }
+
+        public fun transpileGryphonRawASTs(
+            inputFiles: MutableList<String>)
+            : MutableList<GryphonAST>
+        {
+            val asts: MutableList<SwiftAST> = inputFiles.map { transpileSwiftAST(inputFile = it) }.toMutableList()
+            val translateAsMainFile: Boolean = (inputFiles.size == 1)
+            return asts.map { generateGryphonRawAST(swiftAST = it, asMainFile = translateAsMainFile) }.toMutableList()
+        }
     }
 }
 
