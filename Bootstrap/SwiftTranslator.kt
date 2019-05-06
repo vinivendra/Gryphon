@@ -665,7 +665,7 @@ else {
             val rightHand: Expression = translateExpression(rightHandExpression)
             val leftHand: Expression = translateExpression(leftHandExpression)
 
-            if (leftHand is Expression && rightHand is Expression.DeclarationReferenceExpression) {
+            if (leftHand is Expression.TypeExpression && rightHand is Expression.DeclarationReferenceExpression) {
                 val rightExpression: DeclarationReferenceData = rightHand.data
                 if (rightExpression.identifier == "none") {
                     return Expression.NilLiteralExpression()
@@ -1134,7 +1134,8 @@ else {
 
         for (condition in conditions) {
             val patternEnumElement: SwiftAST? = condition.subtree(name = "Pattern Enum Element")
-            val enumElementType: String? = patternEnumElement?.get("type")
+            val patternAttributes: MutableList<String>? = patternEnumElement?.standaloneAttributes
+            val enumElementType: String? = patternAttributes?.firstOrNull()
             val optionalSomeElement: SwiftAST? = condition.subtree(name = "Optional Some Element") ?: condition.subtree(name = "Pattern Optional Some")
             val patternLet: SwiftAST? = condition.subtree(name = "Pattern Let")
             val declarationReferenceAST: SwiftAST? = condition.subtrees.lastOrNull()
@@ -1248,12 +1249,12 @@ else {
                 }
             }
             else if (condition.name == "Pattern" && enumElementType != null && declarationReference != null) {
+                val enumTypeComponents: String = enumElementType.split(separator = '.').map { it.capitalizedAsCamelCase() }.toMutableList().joinToString(separator = ".")
                 val translatedDeclarationReference: Expression = translateDeclarationReferenceExpression(declarationReference)
-                val translatedType: String = cleanUpType(enumElementType)
                 conditionsResult.add(IfStatementData.IfCondition.Condition(
                     expression = Expression.BinaryOperatorExpression(
                             leftExpression = translatedDeclarationReference,
-                            rightExpression = Expression.TypeExpression(typeName = translatedType),
+                            rightExpression = Expression.TypeExpression(typeName = enumTypeComponents),
                             operatorSymbol = "is",
                             typeName = "Bool")))
             }

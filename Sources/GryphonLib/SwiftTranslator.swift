@@ -1300,7 +1300,8 @@ public class SwiftTranslator {
 
 		for condition in conditions {
 			let patternEnumElement = condition.subtree(named: "Pattern Enum Element")
-			let enumElementType = patternEnumElement?["type"]
+			let patternAttributes = patternEnumElement?.standaloneAttributes
+			let enumElementType = patternAttributes?.first
 
 			// If it's an `if let`
 			if condition.name == "Pattern",
@@ -1423,13 +1424,17 @@ public class SwiftTranslator {
 				let declarationReference =
 					condition.subtree(named: "Declaration Reference Expression")
 			{
+				let enumTypeComponents = enumElementType
+					.split(separator: ".")
+					.map { String($0).capitalizedAsCamelCase() }
+					.joined(separator: ".")
+
 				let translatedDeclarationReference =
 					try translateDeclarationReferenceExpression(declarationReference)
-				let translatedType = cleanUpType(enumElementType)
 
 				conditionsResult.append(.condition(expression: .binaryOperatorExpression(
 					leftExpression: translatedDeclarationReference,
-					rightExpression: .typeExpression(typeName: translatedType),
+					rightExpression: .typeExpression(typeName: enumTypeComponents),
 					operatorSymbol: "is",
 					typeName: "Bool")))
 			}
