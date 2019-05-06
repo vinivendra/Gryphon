@@ -1335,50 +1335,75 @@ public class AnonymousParametersTranspilationPass: TranspilationPass {
 	}
 }
 
-/// ArrayClass needs explicit initializers to account for the fact that it can't be implicitly
-/// cast to covariant types. For instance:
-///
-/// ````
-/// let myIntArray: ArrayClass = [1, 2, 3]
-/// let myAnyArray = myIntArray as ArrayClass<Any> // error
-/// let myAnyArray = ArrayClass<Any>(myIntArray) // OK
-/// ````
-///
-/// This transformation can't be done with the current template mode because there's no way to get
-/// the type for the cast. However, since this seems to be a specific case that only shows up in the
-/// stdlib at the moment, this pass should serve as a workaround.
-public class CovarianceInitsAsCastsTranspilationPass: TranspilationPass {
+/**
+ArrayClass needs explicit initializers to account for the fact that it can't be implicitly
+cast to covariant types. For instance:
+
+````
+let myIntArray: ArrayClass = [1, 2, 3]
+let myAnyArray = myIntArray as ArrayClass<Any> // error
+let myAnyArray = ArrayClass<Any>(myIntArray) // OK
+````
+
+This transformation can't be done with the current template mode because there's no way to get
+the type for the cast. However, since this seems to be a specific case that only shows up in the
+stdlib at the moment, this pass should serve as a workaround.
+
+The conversion is done by calling `array.toMutableList<Element>()` rather than a normal class. This
+allows translations to cover a few (not fully understood) corner cases where the array isn't a
+`MutableList` (it happened once with an `EmptyList`), meaning a normal cast would fail.
+*/
+public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 	override func replaceCallExpression(_ callExpression: CallExpressionData) -> Expression {
 		if case let .typeExpression(typeName: typeName) = callExpression.function,
-			typeName.hasPrefix("ArrayClass"),
+			typeName.hasPrefix("ArrayClass<"),
 			case let .tupleExpression(pairs: pairs) = callExpression.parameters,
 			pairs.count == 1,
 			let onlyPair = pairs.first
 		{
+			let arrayClassElementType = String(typeName.dropFirst("ArrayClass<".count).dropLast())
+			let mappedElementType = Utilities.getTypeMapping(for: arrayClassElementType) ??
+				arrayClassElementType
+
 			if onlyPair.label == "array" {
-				// If we're initializing with an Array of a different type, we might need a cast
+				// If we're initializing with an Array of a different type, we might need to call
+				// `toMutableList`
 				if let arrayType = onlyPair.expression.swiftType {
 					let arrayElementType = arrayType.dropFirst().dropLast()
-					let arrayClassElementType =
-						typeName.dropFirst("ArrayClass<".count).dropLast()
 
 					if arrayElementType != arrayClassElementType {
-						return .binaryOperatorExpression(
+						return .dotExpression(
 							leftExpression: replaceExpression(onlyPair.expression),
-							rightExpression: .typeExpression(typeName: typeName),
-							operatorSymbol: "as",
-							typeName: typeName)
+							rightExpression: .callExpression(data: CallExpressionData(
+								function: .declarationReferenceExpression(data:
+									DeclarationReferenceData(
+										identifier: "toMutableList<\(mappedElementType)>",
+										typeName: typeName,
+										isStandardLibrary: false,
+										isImplicit: false,
+										range: nil)),
+								parameters: .tupleExpression(pairs: []),
+								typeName: typeName,
+								range: nil)))
 					}
 				}
 				// If it's an Array of the same type, just return the array itself
 				return replaceExpression(onlyPair.expression)
 			}
 			else {
-				return .binaryOperatorExpression(
+				return .dotExpression(
 					leftExpression: replaceExpression(onlyPair.expression),
-					rightExpression: .typeExpression(typeName: typeName),
-					operatorSymbol: "as",
-					typeName: typeName)
+					rightExpression: .callExpression(data: CallExpressionData(
+						function: .declarationReferenceExpression(data:
+							DeclarationReferenceData(
+								identifier: "toMutableList<\(mappedElementType)>",
+								typeName: typeName,
+								isStandardLibrary: false,
+								isImplicit: false,
+								range: nil)),
+						parameters: .tupleExpression(pairs: []),
+						typeName: typeName,
+						range: nil)))
 			}
 		}
 		else if case let .dotExpression(
@@ -2551,7 +2576,7 @@ public extension TranspilationPass {
 		// Transform structures that need to be slightly different in Kotlin
 		result = SelfToThisTranspilationPass(ast: result).run()
 		result = AnonymousParametersTranspilationPass(ast: result).run()
-		result = CovarianceInitsAsCastsTranspilationPass(ast: result).run()
+		result = CovarianceInitsAsCallsTranspilationPass(ast: result).run()
 		result = RemoveBreaksInSwitchesTranspilationPass(ast: result).run()
 		result = ReturnsInLambdasTranspilationPass(ast: result).run()
 		result = RefactorOptionalsInSubscriptsTranspilationPass(ast: result).run()

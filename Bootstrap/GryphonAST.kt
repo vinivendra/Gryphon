@@ -19,7 +19,7 @@ class GryphonAST: PrintableAsTree {
         }
     override val printableSubtrees: MutableList<PrintableAsTree?>
         get() {
-            return mutableListOf(PrintableTree("Declarations", declarations as MutableList<PrintableAsTree?>), PrintableTree("Statements", statements as MutableList<PrintableAsTree?>))
+            return mutableListOf(PrintableTree("Declarations", declarations.toMutableList<PrintableAsTree?>()), PrintableTree("Statements", statements.toMutableList<PrintableAsTree?>()))
         }
 
     override fun toString(): String {
@@ -32,7 +32,7 @@ internal fun PrintableTree.Companion.ofStatements(
     subtrees: MutableList<Statement>)
     : PrintableAsTree?
 {
-    val newSubtrees: MutableList<PrintableAsTree?> = subtrees as MutableList<PrintableAsTree?>
+    val newSubtrees: MutableList<PrintableAsTree?> = subtrees.toMutableList<PrintableAsTree?>()
     return PrintableTree.initOrNil(description, newSubtrees)
 }
 
@@ -127,7 +127,7 @@ public sealed class Statement: PrintableAsTree {
                 }
                 is Statement.CompanionObject -> {
                     val members: MutableList<Statement> = this.members
-                    members as MutableList<PrintableAsTree?>
+                    members.toMutableList<PrintableAsTree?>()
                 }
                 is Statement.EnumDeclaration -> {
                     val access: String? = this.access
@@ -137,7 +137,7 @@ public sealed class Statement: PrintableAsTree {
                     val members: MutableList<Statement> = this.members
                     val isImplicit: Boolean = this.isImplicit
 
-                    mutableListOf(if (isImplicit) { PrintableTree(("implicit")) } else { null }, PrintableTree.initOrNil(access), PrintableTree(enumName), PrintableTree.ofStrings("inherits", inherits), PrintableTree("elements", elements as MutableList<PrintableAsTree?>), PrintableTree.ofStatements("members", members))
+                    mutableListOf(if (isImplicit) { PrintableTree(("implicit")) } else { null }, PrintableTree.initOrNil(access), PrintableTree(enumName), PrintableTree.ofStrings("inherits", inherits), PrintableTree("elements", elements.toMutableList<PrintableAsTree?>()), PrintableTree.ofStatements("members", members))
                 }
                 is Statement.ProtocolDeclaration -> {
                     val protocolName: String = this.protocolName
@@ -173,14 +173,14 @@ public sealed class Statement: PrintableAsTree {
                 }
                 is Statement.DoStatement -> {
                     val statements: MutableList<Statement> = this.statements
-                    statements as MutableList<PrintableAsTree?>
+                    statements.toMutableList<PrintableAsTree?>()
                 }
                 is Statement.CatchStatement -> {
                     val variableDeclaration: VariableDeclarationData? = this.variableDeclaration
                     val statements: MutableList<Statement> = this.statements
                     mutableListOf(PrintableTree(
                         "variableDeclaration",
-                        mutableListOf(variableDeclaration?.let { Statement.VariableDeclaration(data = it) }) as MutableList<PrintableAsTree?>), PrintableTree.ofStatements("statements", statements))
+                        mutableListOf(variableDeclaration?.let { Statement.VariableDeclaration(data = it) }).toMutableList<PrintableAsTree?>()), PrintableTree.ofStatements("statements", statements))
                 }
                 is Statement.ForEachStatement -> {
                     val collection: Expression = this.collection
@@ -216,7 +216,7 @@ public sealed class Statement: PrintableAsTree {
                 }
                 is Statement.DeferStatement -> {
                     val statements: MutableList<Statement> = this.statements
-                    statements as MutableList<PrintableAsTree?>
+                    statements.toMutableList<PrintableAsTree?>()
                 }
                 is Statement.ThrowStatement -> {
                     val expression: Expression = this.expression
@@ -243,7 +243,7 @@ internal fun PrintableTree.Companion.ofExpressions(
     subtrees: MutableList<Expression>)
     : PrintableAsTree?
 {
-    val newSubtrees: MutableList<PrintableAsTree?> = subtrees as MutableList<PrintableAsTree?>
+    val newSubtrees: MutableList<PrintableAsTree?> = subtrees.toMutableList<PrintableAsTree?>()
     return PrintableTree.initOrNil(description, newSubtrees)
 }
 
@@ -326,7 +326,7 @@ public sealed class Expression: PrintableAsTree {
                 is Expression.TemplateExpression -> {
                     val pattern: String = this.pattern
                     val matches: MutableMap<String, Expression> = this.matches
-                    val matchesTrees: MutableList<PrintableAsTree?> = matches.map { PrintableTree(it.key, mutableListOf(it.value)) }.toMutableList() as MutableList<PrintableAsTree?>
+                    val matchesTrees: MutableList<PrintableAsTree?> = matches.map { PrintableTree(it.key, mutableListOf(it.value)) }.toMutableList().toMutableList<PrintableAsTree?>()
 
                     mutableListOf(PrintableTree("pattern \"${pattern}\""), PrintableTree("matches", matchesTrees))
                 }

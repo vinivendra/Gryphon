@@ -266,7 +266,7 @@ else {
         val inheritanceList: String? = classDeclaration["inherits"]
 
         if (inheritanceList != null) {
-            inheritanceArray = inheritanceList.split(separator = ", ") as MutableList<String>
+            inheritanceArray = inheritanceList.split(separator = ", ").toMutableList<String>()
         }
         else {
             inheritanceArray = mutableListOf()
@@ -295,7 +295,7 @@ else {
         val inheritanceList: String? = structDeclaration["inherits"]
 
         if (inheritanceList != null) {
-            inheritanceArray = inheritanceList.split(separator = ", ") as MutableList<String>
+            inheritanceArray = inheritanceList.split(separator = ", ").toMutableList<String>()
         }
         else {
             inheritanceArray = mutableListOf()
@@ -362,7 +362,7 @@ else {
         val inheritanceList: String? = enumDeclaration["inherits"]
 
         if (inheritanceList != null) {
-            inheritanceArray = inheritanceList.split(separator = ", ") as MutableList<String>
+            inheritanceArray = inheritanceList.split(separator = ", ").toMutableList<String>()
         }
         else {
             inheritanceArray = mutableListOf()
@@ -377,7 +377,7 @@ else {
                 name = "Tuple Expression")?.subtree(
                 name = "Array Expression")
             if (constructorDeclaration.standaloneAttributes.contains("init(rawValue:)") && constructorDeclaration.standaloneAttributes.contains("implicit") && arrayExpression != null) {
-                val rawValueASTs: MutableList<SwiftAST> = arrayExpression.subtrees.dropLast(1) as MutableList<SwiftAST>
+                val rawValueASTs: MutableList<SwiftAST> = arrayExpression.subtrees.dropLast(1).toMutableList<SwiftAST>()
                 rawValues = rawValueASTs.map { translateExpression(it) }.toMutableList()
                 break
             }
@@ -414,7 +414,7 @@ else {
                 val prefix: String = elementName.substring(0, parenthesisIndex)
                 val suffix: String = elementName.substring(parenthesisIndex)
                 val valuesString: String = suffix.drop(1).dropLast(2)
-                val valueLabels: MutableList<String> = valuesString.split(separator = ':').map { it }.toMutableList() as MutableList<String>
+                val valueLabels: MutableList<String> = valuesString.split(separator = ':').map { it }.toMutableList().toMutableList<String>()
                 val enumType: String? = enumElementDeclaration["interface type"]
 
                 enumType ?: return unexpectedASTStructureError(
@@ -993,7 +993,7 @@ else {
 
         val translatedExpression: Expression = translateExpression(expression)
         val cases: MutableList<SwitchCase> = mutableListOf()
-        val caseSubtrees: MutableList<SwiftAST> = switchStatement.subtrees.drop(1) as MutableList<SwiftAST>
+        val caseSubtrees: MutableList<SwiftAST> = switchStatement.subtrees.drop(1).toMutableList<SwiftAST>()
 
         for (caseSubtree in caseSubtrees) {
             val caseExpressions: MutableList<Expression> = mutableListOf()
@@ -1380,7 +1380,7 @@ else {
         val firstGenericString: String? = functionDeclaration.standaloneAttributes.find { it.startsWith("<") }
 
         if (firstGenericString != null) {
-            genericTypes = firstGenericString.dropLast(1).drop(1).split(separator = ',').map { it }.toMutableList() as MutableList<String>
+            genericTypes = firstGenericString.dropLast(1).drop(1).split(separator = ',').map { it }.toMutableList().toMutableList<String>()
         }
         else {
             genericTypes = mutableListOf()
@@ -1512,7 +1512,7 @@ else {
 
         val subtrees: MutableList<Statement> = translateBraceStatement(braceStatement)
 
-        return subtrees as MutableList<Statement?>
+        return subtrees.toMutableList<Statement?>()
     }
 
     internal fun translateVariableDeclaration(variableDeclaration: SwiftAST): Statement {
@@ -2012,7 +2012,7 @@ else {
                     }
                 }
 
-                val tupleComponents: MutableList<String> = typeName.drop(1).dropLast(1).split(separator = ", ") as MutableList<String>
+                val tupleComponents: MutableList<String> = typeName.drop(1).dropLast(1).split(separator = ", ").toMutableList<String>()
                 val labels: MutableList<String> = tupleComponents.map { it.takeWhile { it != ':' } }.toMutableList().map { it }.toMutableList()
                 val expressions: MutableList<Expression> = tupleExpression.subtrees.map { translateExpression(it) }.toMutableList()
 
@@ -2142,7 +2142,7 @@ else {
                 translator = this)
         }
 
-        val expressionsToTranslate: MutableList<SwiftAST> = arrayExpression.subtrees.dropLast(1) as MutableList<SwiftAST>
+        val expressionsToTranslate: MutableList<SwiftAST> = arrayExpression.subtrees.dropLast(1).toMutableList<SwiftAST>()
         val expressionsArray: MutableList<Expression> = expressionsToTranslate.map { translateExpression(it) }.toMutableList()
         val rawType: String? = arrayExpression["type"]
 

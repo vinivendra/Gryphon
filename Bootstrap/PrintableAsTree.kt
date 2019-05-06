@@ -5,7 +5,7 @@ class PrintableTree: PrintableAsTree {
             subtrees: MutableList<PrintableTree>)
             : PrintableAsTree?
         {
-            val newSubtrees: MutableList<PrintableAsTree?> = subtrees as MutableList<PrintableAsTree?>
+            val newSubtrees: MutableList<PrintableAsTree?> = subtrees.toMutableList<PrintableAsTree?>()
             return PrintableTree.initOrNil(description, newSubtrees)
         }
 
