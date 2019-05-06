@@ -148,13 +148,13 @@ class SwiftTranslator {
             "Do Catch Statement" -> result = translateDoCatchStatement(subtree)
             "For Each Statement" -> result = mutableListOf(translateForEachStatement(subtree))
             "While Statement" -> result = mutableListOf(translateWhileStatement(subtree))
-            "Function Declaration" -> result = mutableListOf(translateFunctionDeclaration(subtree))
+            "Function Declaration", "Constructor Declaration" -> result = mutableListOf(translateFunctionDeclaration(subtree))
             "Subscript Declaration" -> result = subtree.subtrees.filter { it.name == "Accessor Declaration" }.toMutableList().map { translateFunctionDeclaration(it) }.toMutableList()
             "Protocol" -> result = mutableListOf(translateProtocolDeclaration(subtree))
             "Throw Statement" -> result = mutableListOf(translateThrowStatement(subtree))
             "Variable Declaration" -> result = mutableListOf(translateVariableDeclaration(subtree))
             "Assign Expression" -> result = mutableListOf(translateAssignExpression(subtree))
-            "If Statement" -> result = mutableListOf(translateIfStatement(subtree))
+            "If Statement", "Guard Statement" -> result = mutableListOf(translateIfStatement(subtree))
             "Switch Statement" -> result = mutableListOf(translateSwitchStatement(subtree))
             "Defer Statement" -> result = mutableListOf(translateDeferStatement(subtree))
             "Pattern Binding Declaration" -> {
@@ -996,11 +996,10 @@ else {
         val caseSubtrees: MutableList<SwiftAST> = switchStatement.subtrees.drop(1) as MutableList<SwiftAST>
 
         for (caseSubtree in caseSubtrees) {
-            val caseExpression: Expression?
-            var extraStatements: MutableList<Statement>
-            val caseLabelItem: SwiftAST? = caseSubtree.subtree(name = "Case Label Item")
+            val caseExpressions: MutableList<Expression> = mutableListOf()
+            var extraStatements: MutableList<Statement> = mutableListOf()
 
-            if (caseLabelItem != null) {
+            for (caseLabelItem in caseSubtree.subtrees.filter { it.name == "Case Label Item" }.toMutableList()) {
                 val firstSubtreeSubtrees: MutableList<SwiftAST>? = caseLabelItem.subtrees.firstOrNull()?.subtrees
                 val maybeExpression: SwiftAST? = firstSubtreeSubtrees?.firstOrNull()
                 val patternLet: SwiftAST? = caseLabelItem.subtree(name = "Pattern Let")
@@ -1014,11 +1013,11 @@ else {
                     val declarations: MutableList<AssociatedValueDeclaration> = patternLetResult.declarations
                     val enumClassName: String = enumType + "." + enumCase.capitalizedAsCamelCase()
 
-                    caseExpression = Expression.BinaryOperatorExpression(
+                    caseExpressions.add(Expression.BinaryOperatorExpression(
                         leftExpression = translatedExpression,
                         rightExpression = Expression.TypeExpression(typeName = enumClassName),
                         operatorSymbol = "is",
-                        typeName = "Bool")
+                        typeName = "Bool"))
 
                     val range: SourceFileRange? = getRangeRecursively(ast = patternLet)
 
@@ -1044,22 +1043,14 @@ else {
                                 annotations = null)) }.toMutableList()
                 }
                 else if (patternEnumElement != null) {
-                    caseExpression = translateSimplePatternEnumElement(patternEnumElement)
+                    caseExpressions.add(translateSimplePatternEnumElement(patternEnumElement))
                     extraStatements = mutableListOf()
                 }
                 else if (expression != null) {
                     val translatedExpression: Expression = translateExpression(expression)
-                    caseExpression = translatedExpression
+                    caseExpressions.add(translatedExpression)
                     extraStatements = mutableListOf()
                 }
-                else {
-                    caseExpression = null
-                    extraStatements = mutableListOf()
-                }
-            }
-            else {
-                caseExpression = null
-                extraStatements = mutableListOf()
             }
 
             val braceStatement: SwiftAST? = caseSubtree.subtree(name = "Brace Statement")
@@ -1074,7 +1065,7 @@ else {
             val resultingStatements =
             	(extraStatements + translatedStatements).toMutableList()
 
-            cases.add(SwitchCase(expression = caseExpression, statements = resultingStatements))
+            cases.add(SwitchCase(expressions = caseExpressions, statements = resultingStatements))
         }
 
         return Statement.SwitchStatement(
@@ -1659,7 +1650,7 @@ else {
             "Dictionary Expression" -> result = translateDictionaryExpression(expression)
             "Binary Expression" -> result = translateBinaryExpression(expression)
             "If Expression" -> result = translateIfExpression(expression)
-            "Call Expression" -> result = translateCallExpression(expression)
+            "Call Expression", "Constructor Reference Call Expression" -> result = translateCallExpression(expression)
             "Closure Expression" -> result = translateClosureExpression(expression)
             "Declaration Reference Expression" -> result = translateDeclarationReferenceExpression(expression)
             "Dot Syntax Call Expression" -> result = translateDotSyntaxCallExpression(expression)
@@ -1758,7 +1749,7 @@ else {
                         translator = this)
                 }
             }
-            "Autoclosure Expression" -> {
+            "Autoclosure Expression", "Inject Into Optional", "Optional Evaluation Expression", "Inout Expression", "Load Expression", "Function Conversion Expression", "Try Expression", "Force Try Expression", "Dot Self Expression" -> {
                 val lastExpression: SwiftAST? = expression.subtrees.lastOrNull()
                 if (lastExpression != null) {
                     result = translateExpression(lastExpression)

@@ -333,10 +333,10 @@ public indirect enum Statement: PrintableAsTree, Equatable {
 
 			let caseItems = cases.map { switchCase -> PrintableAsTree? in
 				PrintableTree("case item", [
-					PrintableTree(
-						"expression", ArrayClass<PrintableAsTree?>([switchCase.expression])),
-					PrintableTree(
-						"statements", ArrayClass<PrintableAsTree?>(switchCase.statements)),
+					PrintableTree.ofExpressions(
+						"expressions", switchCase.expressions),
+					PrintableTree.ofStatements(
+						"statements", switchCase.statements),
 					])
 			}
 
@@ -1027,19 +1027,19 @@ public class IfStatementData: Equatable {
 }
 
 public class SwitchCase: Equatable {
-	var expression: Expression?
+	var expressions: ArrayClass<Expression>
 	var statements: ArrayClass<Statement>
 
 	init(
-		expression: Expression?,
+		expressions: ArrayClass<Expression>,
 		statements: ArrayClass<Statement>)
 	{
-		self.expression = expression
+		self.expressions = expressions
 		self.statements = statements
 	}
 
 	public static func == (lhs: SwitchCase, rhs: SwitchCase) -> Bool { // kotlin: ignore
-		return lhs.expression == rhs.expression &&
+		return lhs.expressions == rhs.expressions &&
 			lhs.statements == rhs.statements
 	}
 }

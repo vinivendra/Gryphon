@@ -958,7 +958,9 @@ public class KotlinTranslator {
 
 			result += increasedIndentation
 
-			if let caseExpression = switchCase.expression {
+			let translatedExpressions: ArrayClass<String> = []
+
+			for caseExpression in switchCase.expressions {
 				if case let Expression.binaryOperatorExpression(
 					leftExpression: declarationReference,
 					rightExpression: typeExpression,
@@ -970,7 +972,7 @@ public class KotlinTranslator {
 					let translatedType = try translateExpression(
 						typeExpression,
 						withIndentation: increasedIndentation)
-					result += "is \(translatedType) -> "
+					translatedExpressions.append("is \(translatedType)")
 				}
 				else if case let Expression.binaryOperatorExpression(
 					leftExpression: leftExpression, rightExpression: _, operatorSymbol: _,
@@ -984,20 +986,24 @@ public class KotlinTranslator {
 						pattern.contains("..") || pattern.contains("until") ||
 							pattern.contains("rangeTo")
 					{
-						result += "in \(translatedExpression) -> "
+						translatedExpressions.append("in \(translatedExpression)")
 					}
 					else {
-						result += "\(translatedExpression) -> "
+						translatedExpressions.append(translatedExpression)
 					}
 				}
 				else {
 					let translatedExpression = try translateExpression(
 						caseExpression, withIndentation: increasedIndentation)
-					result += "\(translatedExpression) -> "
+					translatedExpressions.append(translatedExpression)
 				}
 			}
-			else {
+
+			if translatedExpressions.isEmpty {
 				result += "else -> "
+			}
+			else {
+				result += translatedExpressions.joined(separator: ", ") + " -> "
 			}
 
 			if switchCase.statements.count == 1,

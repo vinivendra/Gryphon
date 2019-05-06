@@ -361,13 +361,11 @@ public class TranspilationPass {
 		}
 
 		let replacedCases = cases.map
-		{ (switchCase: SwitchCase) -> SwitchCase in
-			let newExpression = (switchCase.expression != nil) ?
-				replaceExpression(switchCase.expression!) :
-				nil
-			return SwitchCase(
-				expression: newExpression, statements: replaceStatements(switchCase.statements))
-		}
+			{
+				SwitchCase(
+					expressions: $0.expressions.map { replaceExpression($0) },
+					statements: replaceStatements($0.statements))
+			}
 
 		return [.switchStatement(
 			convertsToExpression: replacedConvertsToExpression,
@@ -1610,7 +1608,8 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 					let newStatements = ArrayClass(switchCase.statements.dropLast())
 					newStatements.append(.expressionStatement(expression: returnExpression))
 					newCases.append(SwitchCase(
-						expression: switchCase.expression, statements: newStatements))
+						expressions: switchCase.expressions,
+						statements: newStatements))
 				}
 			}
 			let conversionExpression =
@@ -1629,7 +1628,8 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 					let newStatements = ArrayClass(switchCase.statements.dropLast())
 					newStatements.append(.expressionStatement(expression: rightHand))
 					newCases.append(SwitchCase(
-						expression: switchCase.expression, statements: newStatements))
+						expressions: switchCase.expressions,
+						statements: newStatements))
 				}
 			}
 			let conversionExpression = Statement.assignmentStatement(
@@ -1741,26 +1741,30 @@ public class IsOperatorsInSealedClassesTranspilationPass: TranspilationPass {
 		}
 
 		let newCases = cases.map { (switchCase: SwitchCase) -> SwitchCase in
-			if let caseExpression = switchCase.expression,
-				case let .dotExpression(
-					leftExpression: leftExpression,
-					rightExpression: rightExpression) = caseExpression,
-				case let .typeExpression(typeName: typeName) = leftExpression,
-				case let .declarationReferenceExpression(
-					data: declarationReferenceExpression) = rightExpression
-			{
-				return SwitchCase(
-					expression: Expression.binaryOperatorExpression(
-						leftExpression: expression,
-						rightExpression: .typeExpression(
+			let newExpressions = switchCase.expressions.map
+				{ (caseExpression: Expression) -> Expression in
+					if case let .dotExpression(
+							leftExpression: leftExpression,
+							rightExpression: rightExpression) = caseExpression,
+						case let .typeExpression(typeName: typeName) = leftExpression,
+						case let .declarationReferenceExpression(
+							data: declarationReferenceExpression) = rightExpression
+					{
+						return Expression.binaryOperatorExpression(
+							leftExpression: expression,
+							rightExpression: .typeExpression(
 							typeName: "\(typeName).\(declarationReferenceExpression.identifier)"),
-						operatorSymbol: "is",
-						typeName: "Bool"),
-					statements: switchCase.statements)
-			}
-			else {
-				return switchCase
-			}
+							operatorSymbol: "is",
+							typeName: "Bool")
+					}
+					else {
+						return caseExpression
+					}
+				}
+
+			return SwitchCase(
+				expressions: newExpressions,
+				statements: switchCase.statements)
 		}
 
 		return super.replaceSwitchStatement(
@@ -2244,7 +2248,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 			}
 
 			return SwitchCase(
-				expression: rawValue,
+				expressions: [rawValue],
 				statements: [
 					.returnStatement(
 						expression: .dotExpression(
@@ -2264,7 +2268,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 		}
 
 		let defaultSwitchCase = SwitchCase(
-			expression: nil,
+			expressions: [],
 			statements: [.returnStatement(expression: .nilLiteralExpression)])
 
 		switchCases.append(defaultSwitchCase)
@@ -2309,7 +2313,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 	{
 		let switchCases = elements.map { element in
 			SwitchCase(
-				expression: .dotExpression(
+				expressions: [.dotExpression(
 					leftExpression: .typeExpression(typeName: enumName),
 					rightExpression: .declarationReferenceExpression(data:
 						DeclarationReferenceData(
@@ -2317,7 +2321,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 							typeName: enumName,
 							isStandardLibrary: false,
 							isImplicit: false,
-							range: nil))),
+							range: nil))), ],
 				statements: [
 					.returnStatement(
 						expression: element.rawValue),

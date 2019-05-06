@@ -208,7 +208,7 @@ public sealed class Statement: PrintableAsTree {
                     val cases: MutableList<SwitchCase> = this.cases
                     val caseItems: MutableList<PrintableAsTree?> = cases.map { switchCase -> PrintableTree(
                         "case item",
-                        mutableListOf(PrintableTree("expression", mutableListOf(switchCase.expression) as MutableList<PrintableAsTree?>), PrintableTree("statements", switchCase.statements as MutableList<PrintableAsTree?>))) }.toMutableList()
+                        mutableListOf(PrintableTree.ofExpressions("expressions", switchCase.expressions), PrintableTree.ofStatements("statements", switchCase.statements))) }.toMutableList()
 
                     mutableListOf(PrintableTree.ofStatements(
                         "converts to expression",
@@ -773,11 +773,11 @@ class IfStatementData {
 }
 
 class SwitchCase {
-    var expression: Expression? = null
+    var expressions: MutableList<Expression>
     var statements: MutableList<Statement>
 
-    constructor(expression: Expression?, statements: MutableList<Statement>) {
-        this.expression = expression
+    constructor(expressions: MutableList<Expression>, statements: MutableList<Statement>) {
+        this.expressions = expressions
         this.statements = statements
     }
 }

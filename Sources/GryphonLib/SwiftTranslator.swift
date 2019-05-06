@@ -1154,10 +1154,10 @@ public class SwiftTranslator {
 		let cases: ArrayClass<SwitchCase> = []
 		let caseSubtrees = ArrayClass<SwiftAST>(switchStatement.subtrees.dropFirst())
 		for caseSubtree in caseSubtrees {
-			let caseExpression: Expression?
-			var extraStatements: ArrayClass<Statement>
+			let caseExpressions: ArrayClass<Expression> = []
+			var extraStatements: ArrayClass<Statement> = []
 
-			if let caseLabelItem = caseSubtree.subtree(named: "Case Label Item") {
+			for caseLabelItem in caseSubtree.subtrees.filter({ $0.name == "Case Label Item" }) {
 				let firstSubtreeSubtrees = caseLabelItem.subtrees.first?.subtrees
 				let maybeExpression = firstSubtreeSubtrees?.first
 
@@ -1170,11 +1170,11 @@ public class SwiftTranslator {
 					let declarations = patternLetResult.declarations
 					let enumClassName = enumType + "." + enumCase.capitalizedAsCamelCase()
 
-					caseExpression = .binaryOperatorExpression(
+					caseExpressions.append(.binaryOperatorExpression(
 						leftExpression: translatedExpression,
 						rightExpression: .typeExpression(typeName: enumClassName),
 						operatorSymbol: "is",
-						typeName: "Bool")
+						typeName: "Bool"))
 
 					let range = getRangeRecursively(ofNode: patternLet)
 
@@ -1203,22 +1203,14 @@ public class SwiftTranslator {
 				else if let patternEnumElement =
 					caseLabelItem.subtree(named: "Pattern Enum Element")
 				{
-					caseExpression = try translateSimplePatternEnumElement(patternEnumElement)
+					try caseExpressions.append(translateSimplePatternEnumElement(patternEnumElement))
 					extraStatements = []
 				}
 				else if let expression = maybeExpression {
 					let translatedExpression = try translateExpression(expression)
-					caseExpression = translatedExpression
+					caseExpressions.append(translatedExpression)
 					extraStatements = []
 				}
-				else {
-					caseExpression = nil
-					extraStatements = []
-				}
-			}
-			else {
-				caseExpression = nil
-				extraStatements = []
 			}
 
 			guard let braceStatement = caseSubtree.subtree(named: "Brace Statement") else {
@@ -1234,7 +1226,7 @@ public class SwiftTranslator {
 			// insert: 	(extraStatements + translatedStatements).toMutableList()
 
 			cases.append(SwitchCase(
-				expression: caseExpression, statements: resultingStatements))
+				expressions: caseExpressions, statements: resultingStatements))
 		}
 
 		return .switchStatement(
