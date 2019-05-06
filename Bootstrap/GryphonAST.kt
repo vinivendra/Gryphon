@@ -368,9 +368,11 @@ public sealed class Expression: PrintableAsTree {
                     val keys: MutableList<Expression> = this.keys
                     val values: MutableList<Expression> = this.values
                     val typeName: String = this.typeName
-                    val keyValueStrings: MutableList<String> = keys.zip(values).map { pair -> "${pair.first}: ${pair.second}" }.toMutableList()
+                    val keyValueTrees: MutableList<PrintableAsTree?> = keys.zip(values).map { pair -> PrintableTree(
+                        "pair",
+                        mutableListOf(PrintableTree.ofExpressions("key", mutableListOf(pair.first)), PrintableTree.ofExpressions("value", mutableListOf(pair.second)))) }.toMutableList()
 
-                    mutableListOf(PrintableTree("type ${typeName}"), PrintableTree.ofStrings("key value pairs", keyValueStrings))
+                    mutableListOf(PrintableTree("type ${typeName}"), PrintableTree("key value pairs", keyValueTrees))
                 }
                 is Expression.ReturnExpression -> {
                     val expression: Expression? = this.expression

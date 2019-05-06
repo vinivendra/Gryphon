@@ -572,13 +572,16 @@ public indirect enum Expression: PrintableAsTree, Equatable {
 				PrintableTree("type \(typeName)"),
 				PrintableTree.ofExpressions("elements", elements), ]
 		case let .dictionaryExpression(keys: keys, values: values, typeName: typeName):
-			let keyValueStrings = zipToClass(keys, values).map
-				{ (pair: (first: Expression, second: Expression)) -> String in
-					"\(pair.first): \(pair.second)"
+			let keyValueTrees = zipToClass(keys, values).map
+				{ (pair: (first: Expression, second: Expression)) -> PrintableAsTree? in
+					PrintableTree("pair", [
+						PrintableTree.ofExpressions("key", [pair.first]),
+						PrintableTree.ofExpressions("value", [pair.second]),
+						])
 				}
 			return [
 				PrintableTree("type \(typeName)"),
-				PrintableTree.ofStrings("key value pairs", keyValueStrings), ]
+				PrintableTree("key value pairs", keyValueTrees), ]
 		case let .returnExpression(expression: expression):
 			return [expression]
 		case let .dotExpression(leftExpression: leftExpression, rightExpression: rightExpression):
