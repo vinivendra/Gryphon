@@ -1762,14 +1762,18 @@ public class SwiftTranslator {
 		let isLet = variableDeclaration.standaloneAttributes.contains("let")
 		let typeName = cleanUpType(rawType)
 
+		// TODO: Add a warning when double optionals are found, their behaviour is different in
+		// Kotlin.
 		var expression: Expression?
-		if let firstBindingExpression = danglingPatternBindings.first {
-			if let bindingExpression = firstBindingExpression {
-				if (bindingExpression.identifier == identifier &&
-					bindingExpression.typeName == typeName) ||
-					(bindingExpression.identifier == "<<Error>>")
+		if !danglingPatternBindings.isEmpty {
+			let firstBindingExpression = danglingPatternBindings[0]
+
+			if let firstBindingExpression = firstBindingExpression {
+				if (firstBindingExpression.identifier == identifier &&
+					firstBindingExpression.typeName == typeName) ||
+					(firstBindingExpression.identifier == "<<Error>>")
 				{
-					expression = bindingExpression.expression
+					expression = firstBindingExpression.expression
 				}
 			}
 
@@ -2755,17 +2759,19 @@ public class SwiftTranslator {
 
 		let result: ArrayClass<PatternBindingDeclaration?> = []
 
-		let subtrees = patternBindingDeclaration.subtrees
-		while !subtrees.isEmpty {
-			var pattern = subtrees.removeFirst()
+		let subtreesCopy = patternBindingDeclaration.subtrees.copy()
+		while !subtreesCopy.isEmpty {
+			var pattern = subtreesCopy[0]
+			subtreesCopy.removeFirst()
+
 			if let newPattern = pattern.subtree(named: "Pattern Named"),
 				pattern.name == "Pattern Typed"
 			{
 				pattern = newPattern
 			}
 
-			if let expression = subtrees.first, astIsExpression(expression) {
-				_ = subtrees.removeFirst()
+			if let expression = subtreesCopy.first, astIsExpression(expression) {
+				_ = subtreesCopy.removeFirst()
 
 				let translatedExpression = try translateExpression(expression)
 

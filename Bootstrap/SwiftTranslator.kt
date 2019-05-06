@@ -1551,13 +1551,12 @@ else {
         val isLet: Boolean = variableDeclaration.standaloneAttributes.contains("let")
         val typeName: String = cleanUpType(rawType)
         var expression: Expression? = null
-        val firstBindingExpression: PatternBindingDeclaration?? = danglingPatternBindings.firstOrNull()
 
-        if (firstBindingExpression != null) {
-            val bindingExpression: PatternBindingDeclaration? = firstBindingExpression
-            if (bindingExpression != null) {
-                if ((bindingExpression.identifier == identifier && bindingExpression.typeName == typeName) || (bindingExpression.identifier == "<<Error>>")) {
-                    expression = bindingExpression.expression
+        if (!danglingPatternBindings.isEmpty()) {
+            val firstBindingExpression: PatternBindingDeclaration? = danglingPatternBindings[0]
+            if (firstBindingExpression != null) {
+                if ((firstBindingExpression.identifier == identifier && firstBindingExpression.typeName == typeName) || (firstBindingExpression.identifier == "<<Error>>")) {
+                    expression = firstBindingExpression.expression
                 }
             }
             danglingPatternBindings.removeAt(0)
@@ -2497,20 +2496,23 @@ else {
         }
 
         val result: MutableList<PatternBindingDeclaration?> = mutableListOf()
-        val subtrees: MutableList<SwiftAST> = patternBindingDeclaration.subtrees
+        val subtreesCopy: MutableList<SwiftAST> = patternBindingDeclaration.subtrees.copy()
 
-        while (!subtrees.isEmpty()) {
-            var pattern: SwiftAST = subtrees.removeAt(0)
+        while (!subtreesCopy.isEmpty()) {
+            var pattern: SwiftAST = subtreesCopy[0]
+
+            subtreesCopy.removeAt(0)
+
             val newPattern: SwiftAST? = pattern.subtree(name = "Pattern Named")
 
             if (newPattern != null && pattern.name == "Pattern Typed") {
                 pattern = newPattern
             }
 
-            val expression: SwiftAST? = subtrees.firstOrNull()
+            val expression: SwiftAST? = subtreesCopy.firstOrNull()
 
             if (expression != null && astIsExpression(expression)) {
-                subtrees.removeAt(0)
+                subtreesCopy.removeAt(0)
 
                 val translatedExpression: Expression = translateExpression(expression)
                 val identifier: String? = pattern.standaloneAttributes.firstOrNull()
