@@ -19,7 +19,22 @@ class SwiftTranslator {
         val translatedSubtrees: MutableList<Statement> = translateSubtrees(ast.subtrees, scopeRange = fileRange)
         val isDeclaration: (Statement) -> Boolean = { ast ->
                 when (ast) {
-                    is Statement.ExpressionStatement -> true
+                    is Statement.ExpressionStatement -> {
+                        val innerExpression: Expression = ast.expression
+                        if (innerExpression is Expression.LiteralDeclarationExpression) {
+                            true
+                        }
+                        else {
+                            false
+                        }
+                    }
+                    is Statement.ProtocolDeclaration -> true
+                    is Statement.ClassDeclaration -> true
+                    is Statement.StructDeclaration -> true
+                    is Statement.ExtensionDeclaration -> true
+                    is Statement.FunctionDeclaration -> true
+                    is Statement.EnumDeclaration -> true
+                    is Statement.TypealiasDeclaration -> true
                     else -> false
                 }
             }

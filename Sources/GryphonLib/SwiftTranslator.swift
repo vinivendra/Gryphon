@@ -49,15 +49,26 @@ public class SwiftTranslator {
 
 		let isDeclaration = { (ast: Statement) -> Bool in
 			switch ast {
-			case .expressionStatement(expression: .literalDeclarationExpression),
-				 .protocolDeclaration,
-				 .classDeclaration,
-				 .structDeclaration,
-				 .extensionDeclaration,
-				 .functionDeclaration,
-				 .enumDeclaration,
-				 .typealiasDeclaration:
-
+			case let .expressionStatement(expression: innerExpression):
+				if case .literalDeclarationExpression = innerExpression {
+					return true
+				}
+				else {
+					return false
+				}
+			case .protocolDeclaration:
+				return true
+			case .classDeclaration:
+				return true
+			case .structDeclaration:
+				return true
+			case .extensionDeclaration:
+				return true
+			case .functionDeclaration:
+				return true
+			case .enumDeclaration:
+				return true
+			case .typealiasDeclaration:
 				return true
 			default:
 				return false
