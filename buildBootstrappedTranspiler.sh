@@ -17,5 +17,6 @@ kotlinc -include-runtime \
 	Bootstrap/Driver.kt \
 	Bootstrap/OutputFileMap.kt \
 	Bootstrap/GryphonAST.kt \
-	Bootstrap/SwiftTranslator.kt;
+	Bootstrap/SwiftTranslator.kt \
+	Bootstrap/TranspilationPass.kt;
 

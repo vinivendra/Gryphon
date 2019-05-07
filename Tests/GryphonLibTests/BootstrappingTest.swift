@@ -197,6 +197,7 @@ class BootstrappingTest: XCTestCase {
 			"SwiftAST",
 			"SwiftTranslator",
 			"GryphonAST",
+			"TranspilationPass",
 			"ASTDumpDecoder",
 			"Compiler",
 			"OutputFileMap",

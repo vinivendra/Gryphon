@@ -14,7 +14,7 @@
 * limitations under the License.
 */
 
-public class TranspilationPass {
+public class TranspilationPass { // kotlin: ignore
 	internal static func isASwiftRawRepresentableType(_ typeName: String) -> Bool {
 		return [
 			"String",
@@ -678,7 +678,7 @@ public class TranspilationPass {
 	}
 }
 
-public class DescriptionAsToStringTranspilationPass: TranspilationPass {
+public class DescriptionAsToStringTranspilationPass: TranspilationPass { // kotlin: ignore
 	override func replaceVariableDeclaration(_ variableDeclaration: VariableDeclarationData)
 		-> ArrayClass<Statement>
 	{
@@ -706,7 +706,7 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 	}
 }
 
-public class RemoveParenthesesTranspilationPass: TranspilationPass {
+public class RemoveParenthesesTranspilationPass: TranspilationPass { // kotlin: ignore
 	override func replaceSubscriptExpression(
 		subscriptedExpression: Expression, indexExpression: Expression, typeName: String)
 		-> Expression
@@ -774,7 +774,7 @@ public class RemoveParenthesesTranspilationPass: TranspilationPass {
 }
 
 /// Removes implicit declarations so that they don't show up on the translation
-public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
+public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass { // kotlin: ignore
 	override func replaceEnumDeclaration(
 		access: String?,
 		enumName: String,
@@ -835,7 +835,7 @@ public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
 
 /// Optional initializers can be translated as `invoke` operators to have similar syntax and
 /// functionality.
-public class OptionalInitsTranspilationPass: TranspilationPass {
+public class OptionalInitsTranspilationPass: TranspilationPass { // kotlin: ignore
 	private var isFailableInitializer: Bool = false
 
 	override func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclarationData)
@@ -876,7 +876,7 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 	}
 }
 
-public class RemoveExtraReturnsInInitsTranspilationPass: TranspilationPass {
+public class RemoveExtraReturnsInInitsTranspilationPass: TranspilationPass { // kotlin: ignore
 	override func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclarationData)
 		-> FunctionDeclarationData?
 	{
@@ -897,7 +897,7 @@ public class RemoveExtraReturnsInInitsTranspilationPass: TranspilationPass {
 
 /// The static functions and variables in a class must all be placed inside a single companion
 /// object.
-public class StaticMembersTranspilationPass: TranspilationPass {
+public class StaticMembersTranspilationPass: TranspilationPass { // kotlin: ignore
 	private func sendStaticMembersToCompanionObject(_ members: ArrayClass<Statement>)
 		-> ArrayClass<Statement>
 	{
@@ -985,7 +985,7 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 /// 	let x = A.B() // This becomes just B()
 /// }
 /// ````
-public class InnerTypePrefixesTranspilationPass: TranspilationPass {
+public class InnerTypePrefixesTranspilationPass: TranspilationPass { // kotlin: ignore
 	var typeNamesStack = [String]()
 
 	func removePrefixes(_ typeName: String) -> String {
@@ -1048,7 +1048,7 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass {
 // TODO: test
 /// Capitalizes references to enums (since enum cases in Kotlin are conventionally written in
 /// capitalized forms)
-public class CapitalizeEnumsTranspilationPass: TranspilationPass {
+public class CapitalizeEnumsTranspilationPass: TranspilationPass { // kotlin: ignore
 	override func replaceDotExpression(
 		leftExpression: Expression, rightExpression: Expression) -> Expression
 	{
@@ -1144,7 +1144,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 ///                └─ myEnum
 // TODO: test
 // TODO: add support for return whens (maybe put this before the when pass)
-public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
+public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass { // kotlin: ignore
 	private var returnTypesStack: [String] = []
 
 	private func removePrefixFromPossibleEnumReference(
@@ -1196,7 +1196,7 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
 	}
 }
 
-public class RenameOperatorsTranspilationPass: TranspilationPass {
+public class RenameOperatorsTranspilationPass: TranspilationPass { // kotlin: ignore
 	override func replaceBinaryOperatorExpression(
 		leftExpression: Expression, rightExpression: Expression, operatorSymbol: String,
 		typeName: String) -> Expression
@@ -1218,7 +1218,7 @@ public class RenameOperatorsTranspilationPass: TranspilationPass {
 	}
 }
 
-public class SelfToThisTranspilationPass: TranspilationPass {
+public class SelfToThisTranspilationPass: TranspilationPass { // kotlin: ignore
 	override func replaceDotExpression(
 		leftExpression: Expression, rightExpression: Expression) -> Expression
 	{
@@ -1249,7 +1249,7 @@ public class SelfToThisTranspilationPass: TranspilationPass {
 
 /// Declarations can't conform to Swift-only protocols like Codable and Equatable, and enums can't
 /// inherit from types Strings and Ints.
-public class CleanInheritancesTranspilationPass: TranspilationPass {
+public class CleanInheritancesTranspilationPass: TranspilationPass { // kotlin: ignore
 	private func isNotASwiftProtocol(_ protocolName: String) -> Bool {
 		return ![
 			"Equatable", "Codable", "Decodable", "Encodable", "CustomStringConvertible",
@@ -1304,7 +1304,7 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 }
 
 /// The "anonymous parameter" `$0` has to be replaced by `it`
-public class AnonymousParametersTranspilationPass: TranspilationPass {
+public class AnonymousParametersTranspilationPass: TranspilationPass { // kotlin: ignore
 	override func replaceDeclarationReferenceExpression(
 		_ expression: DeclarationReferenceData) -> DeclarationReferenceData
 	{
@@ -1353,7 +1353,7 @@ The conversion is done by calling `array.toMutableList<Element>()` rather than a
 allows translations to cover a few (not fully understood) corner cases where the array isn't a
 `MutableList` (it happened once with an `EmptyList`), meaning a normal cast would fail.
 */
-public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
+public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass { // kotlin: ignore
 	override func replaceCallExpression(_ callExpression: CallExpressionData) -> Expression {
 		if case let .typeExpression(typeName: typeName) = callExpression.function,
 			typeName.hasPrefix("ArrayClass<"),
@@ -1434,7 +1434,7 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 /// Closures in kotlin can't have normal "return" statements. Instead, they must have return@f
 /// statements (not yet implemented) or just standalone expressions (easier to implement but more
 /// error-prone). This pass turns return statements in closures into standalone expressions
-public class ReturnsInLambdasTranspilationPass: TranspilationPass {
+public class ReturnsInLambdasTranspilationPass: TranspilationPass { // kotlin: ignore
 	var isInClosure = false
 
 	override func replaceClosureExpression(
@@ -1465,7 +1465,7 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 /// let array: [Int]? = [1, 2, 3]
 /// array?[0] // Becomes `array?.get(0)` in Kotlin
 /// ````
-public class RefactorOptionalsInSubscriptsTranspilationPass: TranspilationPass {
+public class RefactorOptionalsInSubscriptsTranspilationPass: TranspilationPass { // kotlin: ignore
 	override func replaceSubscriptExpression(
 		subscriptedExpression: Expression,
 		indexExpression: Expression,
@@ -1503,7 +1503,7 @@ public class RefactorOptionalsInSubscriptsTranspilationPass: TranspilationPass {
 /// // Becomes
 /// foo?.bar?.baz
 /// ````
-public class AddOptionalsInDotChainsTranspilationPass: TranspilationPass {
+public class AddOptionalsInDotChainsTranspilationPass: TranspilationPass { // kotlin: ignore
 	override func replaceDotExpression(
 		leftExpression: Expression,
 		rightExpression: Expression)
@@ -1585,7 +1585,7 @@ public class AddOptionalsInDotChainsTranspilationPass: TranspilationPass {
 /// more generic way, thus allowing this conversion to happen (for instance) inside the parameter of
 /// a function call. However, that would be much more complicated and it's not clear that it would
 /// be desirable.
-public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
+public class SwitchesToExpressionsTranspilationPass: TranspilationPass { // kotlin: ignore
 	/// Detect switches whose bodies all end in the same returns or assignments
 	override func replaceSwitchStatement(
 		convertsToExpression: Statement?, expression: Expression,
@@ -1670,7 +1670,10 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 	}
 
 	/// Replace variable declarations followed by switch statements assignments
-	override func replaceStatements(_ oldStatement: ArrayClass<Statement>) -> ArrayClass<Statement> {
+	override func replaceStatements(
+		_ oldStatement: ArrayClass<Statement>)
+		-> ArrayClass<Statement>
+	{
 		let statements = super.replaceStatements(oldStatement)
 
 		let result: ArrayClass<Statement> = []
@@ -1722,7 +1725,7 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 
 /// Breaks are not allowed in Kotlin `when` statements, but the `when` statements don't have to be
 /// exhaustive. Just remove the cases that only have breaks.
-public class RemoveBreaksInSwitchesTranspilationPass: TranspilationPass {
+public class RemoveBreaksInSwitchesTranspilationPass: TranspilationPass { // kotlin: ignore
 	override func replaceSwitchStatement(
 		convertsToExpression: Statement?, expression: Expression, cases: ArrayClass<SwitchCase>)
 		-> ArrayClass<Statement>
@@ -1748,7 +1751,7 @@ public class RemoveBreaksInSwitchesTranspilationPass: TranspilationPass {
 
 /// Sealed classes should be tested for subclasses with the `is` operator. This is automatically
 /// done for enum cases with associated values, but in other cases it has to be handled here.
-public class IsOperatorsInSealedClassesTranspilationPass: TranspilationPass {
+public class IsOperatorsInSealedClassesTranspilationPass: TranspilationPass { // kotlin: ignore
 	override func replaceSwitchStatement(
 		convertsToExpression: Statement?,
 		expression: Expression,
@@ -1799,7 +1802,7 @@ public class IsOperatorsInSealedClassesTranspilationPass: TranspilationPass {
 	}
 }
 
-public class RemoveExtensionsTranspilationPass: TranspilationPass {
+public class RemoveExtensionsTranspilationPass: TranspilationPass { // kotlin: ignore
 	var extendingType: String?
 
 	override func replaceExtension(
@@ -1854,7 +1857,7 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 ///
 /// It also records all functions that have been marked as pure so that they don't raise warnings
 /// for possible side-effects in if-lets.
-public class RecordFunctionsTranspilationPass: TranspilationPass {
+public class RecordFunctionsTranspilationPass: TranspilationPass { // kotlin: ignore
 	override func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclarationData)
 		-> FunctionDeclarationData?
 	{
@@ -1876,7 +1879,7 @@ public class RecordFunctionsTranspilationPass: TranspilationPass {
 	}
 }
 
-public class RecordEnumsTranspilationPass: TranspilationPass {
+public class RecordEnumsTranspilationPass: TranspilationPass { // kotlin: ignore
 	override func replaceEnumDeclaration(
 		access: String?,
 		enumName: String,
@@ -1906,7 +1909,7 @@ public class RecordEnumsTranspilationPass: TranspilationPass {
 }
 
 /// Records all protocol declarations in the Kotlin Translator
-public class RecordProtocolsTranspilationPass: TranspilationPass {
+public class RecordProtocolsTranspilationPass: TranspilationPass { // kotlin: ignore
 	override func replaceProtocolDeclaration(
 		protocolName: String,
 		members: ArrayClass<Statement>)
@@ -1918,7 +1921,7 @@ public class RecordProtocolsTranspilationPass: TranspilationPass {
 	}
 }
 
-public class RaiseStandardLibraryWarningsTranspilationPass: TranspilationPass {
+public class RaiseStandardLibraryWarningsTranspilationPass: TranspilationPass { // kotlin: ignore
 	override func replaceDeclarationReferenceExpression(
 		_ expression: DeclarationReferenceData) -> DeclarationReferenceData
 	{
@@ -1937,7 +1940,7 @@ public class RaiseStandardLibraryWarningsTranspilationPass: TranspilationPass {
 /// If a value type's members are all immutable, that value type can safely be translated as a
 /// class. Otherwise, the translation can cause inconsistencies, so this pass raises warnings.
 /// Source: https://forums.swift.org/t/are-immutable-structs-like-classes/16270
-public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass {
+public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass { // kotlin: ignore
 	override func replaceStructDeclaration(
 		annotations: String?,
 		structName: String,
@@ -2017,7 +2020,9 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 /// rearranged to be before the if statement. This will cause any let conditions that have side
 /// effects (i.e. `let x = sideEffects()`) to run eagerly on Kotlin but lazily on Swift, which can
 /// lead to incorrect behavior.
-public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: TranspilationPass {
+public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: // kotlin: ignore
+	TranspilationPass
+{
 	override func replaceIfStatement(_ ifStatement: IfStatementData) -> IfStatementData {
 		raiseWarningsForIfStatement(ifStatement, isElse: false)
 
@@ -2127,7 +2132,7 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 }
 
 /// Sends let declarations to before the if statement, and replaces them with `x != null` conditions
-public class RearrangeIfLetsTranspilationPass: TranspilationPass {
+public class RearrangeIfLetsTranspilationPass: TranspilationPass { // kotlin: ignore
 
 	/// Send the let declarations to before the if statement
 	override func replaceIfStatement(_ ifStatement: IfStatementData) -> ArrayClass<Statement> {
@@ -2201,7 +2206,7 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 }
 
 /// Create a rawValue variable for enums that conform to rawRepresentable
-public class RawValuesTranspilationPass: TranspilationPass {
+public class RawValuesTranspilationPass: TranspilationPass { // kotlin: ignore
 	override func replaceEnumDeclaration(
 		access: String?,
 		enumName: String,
@@ -2396,7 +2401,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 /// Guards are translated as if statements with a ! at the start of the condition. Sometimes, the
 /// ! combines with a != or even another !, causing a double negative in the condition that can
 /// be removed (or turned into a single ==). This pass performs that transformation.
-public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
+public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass { // kotlin: ignore
 	override func replaceIfStatement(_ ifStatement: IfStatementData) -> IfStatementData {
 		if ifStatement.isGuard,
 			ifStatement.conditions.count == 1,
@@ -2406,7 +2411,9 @@ public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
 			let shouldStillBeGuard: Bool
 			let newCondition: Expression
 			if case let .prefixUnaryExpression(
-				expression: innerExpression, operatorSymbol: "!", typeName: _) = onlyConditionExpression
+				expression: innerExpression,
+				operatorSymbol: "!",
+				typeName: _) = onlyConditionExpression
 			{
 				newCondition = innerExpression
 				shouldStillBeGuard = false
@@ -2449,7 +2456,7 @@ public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
 
 /// Statements of the type `if (a == null) { return }` in Swift can be translated as `a ?: return`
 /// in Kotlin.
-public class ReturnIfNilTranspilationPass: TranspilationPass {
+public class ReturnIfNilTranspilationPass: TranspilationPass { // kotlin: ignore
 	override func replaceStatement(_ statement: Statement) -> ArrayClass<Statement> {
 		if case let .ifStatement(data: ifStatement) = statement,
 			ifStatement.conditions.count == 1,
@@ -2479,7 +2486,7 @@ public class ReturnIfNilTranspilationPass: TranspilationPass {
 	}
 }
 
-public class FixProtocolContentsTranspilationPass: TranspilationPass {
+public class FixProtocolContentsTranspilationPass: TranspilationPass { // kotlin: ignore
 	var isInProtocol = false
 
 	override func replaceProtocolDeclaration(
@@ -2524,7 +2531,7 @@ public class FixProtocolContentsTranspilationPass: TranspilationPass {
 	}
 }
 
-public extension TranspilationPass {
+public extension TranspilationPass { // kotlin: ignore
 	/// Runs transpilation passes that have to be run on all files before the other passes can
 	/// run. For instance, we need to record all enums declared on all files before we can
 	/// translate references to them correctly.
@@ -2615,7 +2622,7 @@ public extension TranspilationPass {
 }
 
 //
-public enum ASTNode: Equatable {
+public enum ASTNode: Equatable { // kotlin: ignore
 	case statement(Statement)
 	case expression(Expression)
 }
