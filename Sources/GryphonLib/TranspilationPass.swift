@@ -2277,10 +2277,14 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: // kotlin: ignore
 	TranspilationPass
 {
-	override func replaceIfStatementData(_ ifStatement: IfStatementData) -> IfStatementData {
+	override func replaceIfStatementData(
+		_ ifStatement: IfStatementData)
+		-> IfStatementData
+	{
 		raiseWarningsForIfStatement(ifStatement, isElse: false)
 
 		// No recursion by calling super, otherwise we'd run on the else statements twice
+		// TODO: Add recursion on the if's statements
 		return ifStatement
 	}
 
@@ -2309,16 +2313,18 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: // kotlin: ig
 		_ condition: IfStatementData.IfCondition)
 		-> ArrayClass<SourceFileRange>
 	{
-		if case let .declaration(variableDeclaration: variableDeclaration) = condition,
-			let expression = variableDeclaration.expression
-		{
-			return mayHaveSideEffectsOnRanges(expression)
+		if case let .declaration(variableDeclaration: variableDeclaration) = condition {
+			if let expression = variableDeclaration.expression {
+				return mayHaveSideEffectsOnRanges(expression)
+			}
 		}
 
 		return []
 	}
 
-	private func mayHaveSideEffectsOnRanges(_ expression: Expression) -> ArrayClass<SourceFileRange>
+	private func mayHaveSideEffectsOnRanges(
+		_ expression: Expression)
+		-> ArrayClass<SourceFileRange>
 	{
 		switch expression {
 		case let .callExpression(data: callExpression):
