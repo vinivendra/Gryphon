@@ -13,9 +13,9 @@ open class OutputFileMap {
         companion object {
             operator fun invoke(fileExtension: FileExtension): OutputFileMap.OutputType? {
                 return when (fileExtension) {
-                    FileExtension.SWIFT_AST_DUMP -> AST_DUMP
-                    FileExtension.SWIFT_AST -> SWIFT_AST
-                    FileExtension.KT -> KOTLIN
+                    FileExtension.SWIFT_AST_DUMP -> OutputType.AST_DUMP
+                    FileExtension.SWIFT_AST -> OutputType.SWIFT_AST
+                    FileExtension.KT -> OutputType.KOTLIN
                     else -> null
                 }
             }

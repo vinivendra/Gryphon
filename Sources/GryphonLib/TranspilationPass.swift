@@ -2713,20 +2713,26 @@ public extension TranspilationPass { // kotlin: ignore
 		result = SelfToThisTranspilationPass(ast: result).run()
 		result = AnonymousParametersTranspilationPass(ast: result).run()
 		result = CovarianceInitsAsCallsTranspilationPass(ast: result).run()
-		result = RemoveBreaksInSwitchesTranspilationPass(ast: result).run()
 		result = ReturnsInLambdasTranspilationPass(ast: result).run()
 		result = RefactorOptionalsInSubscriptsTranspilationPass(ast: result).run()
 		result = AddOptionalsInDotChainsTranspilationPass(ast: result).run()
 		result = RenameOperatorsTranspilationPass(ast: result).run()
 
+		// - CapitalizeEnums has to be before IsOperatorsInSealedClasses
 		result = CapitalizeEnumsTranspilationPass(ast: result).run()
 		result = IsOperatorsInSealedClassesTranspilationPass(ast: result).run()
+
+		// - SwitchesToExpressions has to be before RemoveBreaksInSwitches:
+		//   RemoveBreaks might remove a case that only has a break, turning an exhaustive switch
+		//   into a non-exhaustive one and making it convertible to an expression. However, only
+		//   exhaustive switches can be converted to expressions, so this should be avoided.
+		result = SwitchesToExpressionsTranspilationPass(ast: result).run()
+		result = RemoveBreaksInSwitchesTranspilationPass(ast: result).run()
 
 		// Improve Kotlin readability
 		result = OmitImplicitEnumPrefixesTranspilationPass(ast: result).run()
 		result = InnerTypePrefixesTranspilationPass(ast: result).run()
 		result = DoubleNegativesInGuardsTranspilationPass(ast: result).run()
-		result = SwitchesToExpressionsTranspilationPass(ast: result).run()
 		result = ReturnIfNilTranspilationPass(ast: result).run()
 
 		// Raise any warnings that may be left
