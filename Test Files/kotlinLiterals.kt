@@ -13,7 +13,7 @@ interface A {
 	val y: Int
 }
 
-class B: A {
+open class B: A {
 	override var x: Int = 1
 	override var y: Int = 3
 	var z: Int = 0
@@ -31,7 +31,7 @@ internal fun insertFunction() {
 	println("func 5")
 }
 
-class InsertClass {
+open class InsertClass {
 	var a: String = "class a"
 
 	var b: String = "class b"

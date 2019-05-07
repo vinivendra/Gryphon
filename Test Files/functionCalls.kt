@@ -64,7 +64,7 @@ fun variadics(a: Int, vararg b: Int, c: Int = 0) {
 	println(c)
 }
 
-class AClassWithABigName {
+open class AClassWithABigName {
 }
 
 internal fun fooBarBaz(

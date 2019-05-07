@@ -1,4 +1,4 @@
-class A {
+open class A {
 	companion object {
 		internal fun a(): A {
 			return A()

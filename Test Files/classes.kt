@@ -1,4 +1,4 @@
-class Box {
+open class Box {
 	var a: Int = 5
 	var b: String
 		get() {
@@ -18,8 +18,8 @@ class Box {
 	}
 }
 
-class A {
-	class B {
+open class A {
+	open class B {
 	}
 
 	val b: B = B()

@@ -1,7 +1,7 @@
 typealias A = Int
 
-class B {
-	class C {
+open class B {
+	open class C {
 	}
 }
 

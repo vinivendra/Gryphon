@@ -1,4 +1,4 @@
-class A {
+open class A {
 	var x: Int
 	var y: Int
 	var z: Int = 30
