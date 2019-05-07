@@ -417,11 +417,11 @@ public indirect enum Expression: PrintableAsTree, Equatable {
 		operatorSymbol: String,
 		typeName: String)
 	case prefixUnaryExpression(
-		expression: Expression,
+		subExpression: Expression,
 		operatorSymbol: String,
 		typeName: String)
 	case postfixUnaryExpression(
-		expression: Expression,
+		subExpression: Expression,
 		operatorSymbol: String,
 		typeName: String)
 	case ifExpression(
@@ -600,12 +600,12 @@ public indirect enum Expression: PrintableAsTree, Equatable {
 				PrintableTree("operator \(operatorSymbol)"),
 				PrintableTree.ofExpressions("right", [rightExpression]), ]
 		case let .prefixUnaryExpression(
-			expression: expression, operatorSymbol: operatorSymbol, typeName: typeName):
+			subExpression: subExpression, operatorSymbol: operatorSymbol, typeName: typeName):
 
 			return [
 				PrintableTree("type \(typeName)"),
 				PrintableTree("operator \(operatorSymbol)"),
-				PrintableTree.ofExpressions("expression", [expression]), ]
+				PrintableTree.ofExpressions("expression", [subExpression]), ]
 		case let .ifExpression(
 			condition: condition, trueExpression: trueExpression, falseExpression: falseExpression):
 
@@ -614,12 +614,12 @@ public indirect enum Expression: PrintableAsTree, Equatable {
 				PrintableTree.ofExpressions("trueExpression", [trueExpression]),
 				PrintableTree.ofExpressions("falseExpression", [falseExpression]), ]
 		case let .postfixUnaryExpression(
-			expression: expression, operatorSymbol: operatorSymbol, typeName: typeName):
+			subExpression: subExpression, operatorSymbol: operatorSymbol, typeName: typeName):
 
 			return [
 				PrintableTree("type \(typeName)"),
 				PrintableTree("operator \(operatorSymbol)"),
-				PrintableTree.ofExpressions("expression", [expression]), ]
+				PrintableTree.ofExpressions("expression", [subExpression]), ]
 		case let .callExpression(data: callExpression):
 			return [
 				PrintableTree("type \(callExpression.typeName)"),
@@ -731,9 +731,9 @@ public indirect enum Expression: PrintableAsTree, Equatable {
 			leftExpression: _, rightExpression: _, operatorSymbol: _, typeName: typeName):
 
 			return typeName
-		case let .prefixUnaryExpression(expression: _, operatorSymbol: _, typeName: typeName):
+		case let .prefixUnaryExpression(subExpression: _, operatorSymbol: _, typeName: typeName):
 			return typeName
-		case let .postfixUnaryExpression(expression: _, operatorSymbol: _, typeName: typeName):
+		case let .postfixUnaryExpression(subExpression: _, operatorSymbol: _, typeName: typeName):
 			return typeName
 		case let .ifExpression(condition: _, trueExpression: trueExpression, falseExpression: _):
 			return trueExpression.swiftType

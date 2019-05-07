@@ -1208,16 +1208,16 @@ public class KotlinTranslator {
 			return try translateInterpolatedStringLiteralExpression(
 				expressions: expressions.array, withIndentation: indentation)
 		case let .prefixUnaryExpression(
-			expression: expression, operatorSymbol: operatorSymbol, typeName: typeName):
+			subExpression: subExpression, operatorSymbol: operatorSymbol, typeName: typeName):
 
 			return try translatePrefixUnaryExpression(
-				expression: expression, operatorSymbol: operatorSymbol, typeName: typeName,
+				subExpression: subExpression, operatorSymbol: operatorSymbol, typeName: typeName,
 				withIndentation: indentation)
 		case let .postfixUnaryExpression(
-			expression: expression, operatorSymbol: operatorSymbol, typeName: typeName):
+			subExpression: subExpression, operatorSymbol: operatorSymbol, typeName: typeName):
 
 			return try translatePostfixUnaryExpression(
-				expression: expression, operatorSymbol: operatorSymbol, typeName: typeName,
+				subExpression: subExpression, operatorSymbol: operatorSymbol, typeName: typeName,
 				withIndentation: indentation)
 		case let .ifExpression(
 			condition: condition, trueExpression: trueExpression, falseExpression: falseExpression):
@@ -1355,24 +1355,24 @@ public class KotlinTranslator {
 	}
 
 	private func translatePrefixUnaryExpression(
-		expression: Expression,
+		subExpression: Expression,
 		operatorSymbol: String,
 		typeName: String,
 		withIndentation indentation: String) throws -> String
 	{
 		let expressionTranslation =
-			try translateExpression(expression, withIndentation: indentation)
+			try translateExpression(subExpression, withIndentation: indentation)
 		return operatorSymbol + expressionTranslation
 	}
 
 	private func translatePostfixUnaryExpression(
-		expression: Expression,
+		subExpression: Expression,
 		operatorSymbol: String,
 		typeName: String,
 		withIndentation indentation: String) throws -> String
 	{
 		let expressionTranslation =
-			try translateExpression(expression, withIndentation: indentation)
+			try translateExpression(subExpression, withIndentation: indentation)
 		return expressionTranslation + operatorSymbol
 	}
 

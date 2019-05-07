@@ -77,7 +77,7 @@ class SwiftTranslator {
             lastRange = getRange(ast = subtree)!!
         }
         else {
-            return subtrees.flatMap { translateSubtree(it) }.map { it }.filterNotNull().toMutableList()
+            return subtrees.flatMap { translateSubtree(it) }.toMutableList().map { it }.filterNotNull().toMutableList()
         }
 
         val commentToAST: (SourceFile.Comment) -> Statement? = { comment ->
@@ -560,7 +560,7 @@ else {
             val operatorInformation: DeclarationInformation = getInformationFromDeclaration(declaration)
 
             return Expression.PrefixUnaryExpression(
-                expression = expressionTranslation,
+                subExpression = expressionTranslation,
                 operatorSymbol = operatorInformation.identifier,
                 typeName = typeName)
         }
@@ -591,7 +591,7 @@ else {
             val operatorInformation: DeclarationInformation = getInformationFromDeclaration(declaration)
 
             return Expression.PostfixUnaryExpression(
-                expression = expressionTranslation,
+                subExpression = expressionTranslation,
                 operatorSymbol = operatorInformation.identifier,
                 typeName = typeName)
         }

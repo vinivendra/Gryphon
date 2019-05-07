@@ -218,10 +218,10 @@ extension Expression {
 				(leftType.isSubtype(of: rightType))
 		case let
 			(.prefixUnaryExpression(
-				expression: leftExpression, operatorSymbol: leftOperatorSymbol,
+				subExpression: leftExpression, operatorSymbol: leftOperatorSymbol,
 				typeName: leftType),
 			 .prefixUnaryExpression(
-				expression: rightExpression, operatorSymbol: rightOperatorSymbol,
+				subExpression: rightExpression, operatorSymbol: rightOperatorSymbol,
 				typeName: rightType)):
 
 			return leftExpression.matches(rightExpression, &matches) &&
@@ -229,10 +229,10 @@ extension Expression {
 				&& (leftType.isSubtype(of: rightType))
 		case let
 			(.postfixUnaryExpression(
-				expression: leftExpression, operatorSymbol: leftOperatorSymbol,
+				subExpression: leftExpression, operatorSymbol: leftOperatorSymbol,
 				typeName: leftType),
 			 .postfixUnaryExpression(
-				expression: rightExpression, operatorSymbol: rightOperatorSymbol,
+				subExpression: rightExpression, operatorSymbol: rightOperatorSymbol,
 				typeName: rightType)):
 
 			return leftExpression.matches(rightExpression, &matches) &&

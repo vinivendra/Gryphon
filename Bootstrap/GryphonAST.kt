@@ -262,8 +262,8 @@ public sealed class Expression: PrintableAsTree {
     class ReturnExpression(val expression: Expression?): Expression()
     class DotExpression(val leftExpression: Expression, val rightExpression: Expression): Expression()
     class BinaryOperatorExpression(val leftExpression: Expression, val rightExpression: Expression, val operatorSymbol: String, val typeName: String): Expression()
-    class PrefixUnaryExpression(val expression: Expression, val operatorSymbol: String, val typeName: String): Expression()
-    class PostfixUnaryExpression(val expression: Expression, val operatorSymbol: String, val typeName: String): Expression()
+    class PrefixUnaryExpression(val subExpression: Expression, val operatorSymbol: String, val typeName: String): Expression()
+    class PostfixUnaryExpression(val subExpression: Expression, val operatorSymbol: String, val typeName: String): Expression()
     class IfExpression(val condition: Expression, val trueExpression: Expression, val falseExpression: Expression): Expression()
     class CallExpression(val data: CallExpressionData): Expression()
     class ClosureExpression(val parameters: MutableList<LabeledType>, val statements: MutableList<Statement>, val typeName: String): Expression()
@@ -392,11 +392,11 @@ public sealed class Expression: PrintableAsTree {
                     mutableListOf(PrintableTree("type ${typeName}"), PrintableTree.ofExpressions("left", mutableListOf(leftExpression)), PrintableTree("operator ${operatorSymbol}"), PrintableTree.ofExpressions("right", mutableListOf(rightExpression)))
                 }
                 is Expression.PrefixUnaryExpression -> {
-                    val expression: Expression = this.expression
+                    val subExpression: Expression = this.subExpression
                     val operatorSymbol: String = this.operatorSymbol
                     val typeName: String = this.typeName
 
-                    mutableListOf(PrintableTree("type ${typeName}"), PrintableTree("operator ${operatorSymbol}"), PrintableTree.ofExpressions("expression", mutableListOf(expression)))
+                    mutableListOf(PrintableTree("type ${typeName}"), PrintableTree("operator ${operatorSymbol}"), PrintableTree.ofExpressions("expression", mutableListOf(subExpression)))
                 }
                 is Expression.IfExpression -> {
                     val condition: Expression = this.condition
@@ -406,11 +406,11 @@ public sealed class Expression: PrintableAsTree {
                     mutableListOf(PrintableTree.ofExpressions("condition", mutableListOf(condition)), PrintableTree.ofExpressions("trueExpression", mutableListOf(trueExpression)), PrintableTree.ofExpressions("falseExpression", mutableListOf(falseExpression)))
                 }
                 is Expression.PostfixUnaryExpression -> {
-                    val expression: Expression = this.expression
+                    val subExpression: Expression = this.subExpression
                     val operatorSymbol: String = this.operatorSymbol
                     val typeName: String = this.typeName
 
-                    mutableListOf(PrintableTree("type ${typeName}"), PrintableTree("operator ${operatorSymbol}"), PrintableTree.ofExpressions("expression", mutableListOf(expression)))
+                    mutableListOf(PrintableTree("type ${typeName}"), PrintableTree("operator ${operatorSymbol}"), PrintableTree.ofExpressions("expression", mutableListOf(subExpression)))
                 }
                 is Expression.CallExpression -> {
                     val callExpression: CallExpressionData = this.data

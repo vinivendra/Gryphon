@@ -62,6 +62,7 @@ func gryphonTemplates() {
 	let _closure3: (Any) -> Bool = { _ in true }
 	let _closure4: (MyOptional) -> Any = { _ in true }
 	let _closure5: (Character) -> Bool = { _ in true }
+	let _closure6: (Any) -> Any? = { a in a }
 
 	// MARK: Declare the templates
 
@@ -250,6 +251,9 @@ func gryphonTemplates() {
 	_ = _array.map(_closure2)
 	_ = "_array.map _closure2.toMutableList()"
 
+	_ = _array.flatMap(_closure6)
+	_ = "_array.flatMap _closure6.toMutableList()"
+
 	_ = _array.compactMap(_closure2)
 	_ = "_array.map _closure2.filterNotNull().toMutableList()"
 
@@ -283,6 +287,8 @@ func gryphonTemplates() {
 
 	_ = _dictionary.map(_closure2)
 	_ = "_dictionary.map _closure2.toMutableList()"
+
+	// TODO: Translate mapValues (Kotlin's takes (Key, Value) as an argument)
 
 	// Int
 	_ = Int.max

@@ -683,7 +683,7 @@ public class SwiftTranslator {
 			let operatorInformation = getInformationFromDeclaration(declaration)
 
 			return .prefixUnaryExpression(
-				expression: expressionTranslation,
+				subExpression: expressionTranslation,
 				operatorSymbol: operatorInformation.identifier,
 				typeName: typeName)
 		}
@@ -717,7 +717,7 @@ public class SwiftTranslator {
 			let operatorInformation = getInformationFromDeclaration(declaration)
 
 			return .postfixUnaryExpression(
-				expression: expressionTranslation,
+				subExpression: expressionTranslation,
 				operatorSymbol: operatorInformation.identifier,
 				typeName: typeName)
 		}

@@ -14,7 +14,7 @@
 * limitations under the License.
 */
 
-public class TranspilationPass { // kotlin: ignore
+public class TranspilationPass {
 	internal static func isASwiftRawRepresentableType(_ typeName: String) -> Bool {
 		return [
 			"String",
@@ -27,7 +27,7 @@ public class TranspilationPass { // kotlin: ignore
 	//
 	var ast: GryphonAST
 
-	fileprivate var parents = ArrayClass<ASTNode>()
+	fileprivate var parents: ArrayClass<ASTNode> = []
 	fileprivate var parent: ASTNode {
 		return parents.secondToLast!
 	}
@@ -46,16 +46,16 @@ public class TranspilationPass { // kotlin: ignore
 	}
 
 	func replaceStatements(_ statements: ArrayClass<Statement>) -> ArrayClass<Statement> {
-		return statements.flatMap(replaceStatement)
+		return statements.flatMap { replaceStatement($0) }
 	}
 
 	func replaceStatement(_ statement: Statement) -> ArrayClass<Statement> {
-		parents.append(.statement(statement))
+		parents.append(.statementNode(value: statement))
 		defer { parents.removeLast() }
 
 		switch statement {
 		case let .expressionStatement(expression: expression):
-			return replaceExpression(expression: expression)
+			return replaceExpressionStatement(expression: expression)
 		case let .extensionDeclaration(typeName: typeName, members: members):
 			return replaceExtension(typeName: typeName, members: members)
 		case let .importDeclaration(moduleName: moduleName):
@@ -135,7 +135,7 @@ public class TranspilationPass { // kotlin: ignore
 		}
 	}
 
-	func replaceExpression(expression: Expression) -> ArrayClass<Statement> {
+	func replaceExpressionStatement(expression: Expression) -> ArrayClass<Statement> {
 		return [.expressionStatement(expression: replaceExpression(expression))]
 	}
 
@@ -238,7 +238,7 @@ public class TranspilationPass { // kotlin: ignore
 	func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclarationData)
 		-> ArrayClass<Statement>
 	{
-		if let result = replaceFunctionDeclaration(functionDeclaration) {
+		if let result = replaceFunctionDeclarationData(functionDeclaration) {
 			return [.functionDeclaration(data: result)]
 		}
 		else {
@@ -246,7 +246,7 @@ public class TranspilationPass { // kotlin: ignore
 		}
 	}
 
-	func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclarationData)
+	func replaceFunctionDeclarationData(_ functionDeclaration: FunctionDeclarationData)
 		-> FunctionDeclarationData?
 	{
 		let replacedParameters = functionDeclaration.parameters
@@ -255,19 +255,35 @@ public class TranspilationPass { // kotlin: ignore
 					label: $0.label,
 					apiLabel: $0.apiLabel,
 					typeName: $0.typeName,
-					value: $0.value.map(replaceExpression))
+					value: $0.value.map { replaceExpression($0) })
 			}
 
 		let functionDeclaration = functionDeclaration
 		functionDeclaration.parameters = replacedParameters
-		functionDeclaration.statements = functionDeclaration.statements.map(replaceStatements)
+		functionDeclaration.statements =
+			functionDeclaration.statements.map { replaceStatements($0) }
 		return functionDeclaration
 	}
 
 	func replaceVariableDeclaration(_ variableDeclaration: VariableDeclarationData)
 		-> ArrayClass<Statement>
 	{
-		return [.variableDeclaration(data: replaceVariableDeclaration(variableDeclaration))]
+		return [.variableDeclaration(data: replaceVariableDeclarationData(variableDeclaration))]
+	}
+
+	func replaceVariableDeclarationData(_ variableDeclaration: VariableDeclarationData)
+		-> VariableDeclarationData
+	{
+		let variableDeclaration = variableDeclaration
+		variableDeclaration.expression =
+			variableDeclaration.expression.map { replaceExpression($0) }
+		if let getter = variableDeclaration.getter {
+			variableDeclaration.getter = replaceFunctionDeclarationData(getter)
+		}
+		if let setter = variableDeclaration.setter {
+			variableDeclaration.setter = replaceFunctionDeclarationData(setter)
+		}
+		return variableDeclaration
 	}
 
 	func replaceDoStatement(statements: ArrayClass<Statement>) -> ArrayClass<Statement> {
@@ -280,23 +296,9 @@ public class TranspilationPass { // kotlin: ignore
 		-> ArrayClass<Statement>
 	{
 		return [.catchStatement(
-			variableDeclaration: variableDeclaration.map(replaceVariableDeclaration),
+			variableDeclaration: variableDeclaration.map { replaceVariableDeclarationData($0) },
 			statements: replaceStatements(statements)),
 		]
-	}
-
-	func replaceVariableDeclaration(_ variableDeclaration: VariableDeclarationData)
-		-> VariableDeclarationData
-	{
-		let variableDeclaration = variableDeclaration
-		variableDeclaration.expression = variableDeclaration.expression.map(replaceExpression)
-		if let getter = variableDeclaration.getter {
-			variableDeclaration.getter = replaceFunctionDeclaration(getter)
-		}
-		if let setter = variableDeclaration.setter {
-			variableDeclaration.setter = replaceFunctionDeclaration(setter)
-		}
-		return variableDeclaration
 	}
 
 	func replaceForEachStatement(
@@ -320,29 +322,34 @@ public class TranspilationPass { // kotlin: ignore
 	}
 
 	func replaceIfStatement(_ ifStatement: IfStatementData) -> ArrayClass<Statement> {
-		return [Statement.ifStatement(data: replaceIfStatement(ifStatement))]
+		return [Statement.ifStatement(data: replaceIfStatementData(ifStatement))]
 	}
 
-	func replaceIfStatement(_ ifStatement: IfStatementData) -> IfStatementData {
+	func replaceIfStatementData(_ ifStatement: IfStatementData) -> IfStatementData {
 		let ifStatement = ifStatement
 		ifStatement.conditions = replaceIfConditions(ifStatement.conditions)
-		ifStatement.declarations = ifStatement.declarations.map(replaceVariableDeclaration)
+		ifStatement.declarations =
+			ifStatement.declarations.map { replaceVariableDeclarationData($0) }
 		ifStatement.statements = replaceStatements(ifStatement.statements)
-		ifStatement.elseStatement = ifStatement.elseStatement.map(replaceIfStatement)
+		ifStatement.elseStatement = ifStatement.elseStatement.map { replaceIfStatementData($0) }
 		return ifStatement
 	}
 
 	func replaceIfConditions(_ conditions: ArrayClass<IfStatementData.IfCondition>)
 		-> ArrayClass<IfStatementData.IfCondition>
 	{
-		return conditions.map { condition -> IfStatementData.IfCondition in
-			switch condition {
-			case let .condition(expression: expression):
-				return .condition(expression: replaceExpression(expression))
-			case let .declaration(variableDeclaration: variableDeclaration):
-				return .declaration(
-					variableDeclaration: replaceVariableDeclaration(variableDeclaration))
-			}
+		return conditions.map { replaceIfCondition($0) }
+	}
+
+	func replaceIfCondition(_ condition: IfStatementData.IfCondition)
+		-> IfStatementData.IfCondition
+	{
+		switch condition {
+		case let .condition(expression: expression):
+			return .condition(expression: replaceExpression(expression))
+		case let .declaration(variableDeclaration: variableDeclaration):
+			return .declaration(
+				variableDeclaration: replaceVariableDeclarationData(variableDeclaration))
 		}
 	}
 
@@ -351,10 +358,13 @@ public class TranspilationPass { // kotlin: ignore
 		cases: ArrayClass<SwitchCase>) -> ArrayClass<Statement>
 	{
 		let replacedConvertsToExpression: Statement?
-		if let convertsToExpression = convertsToExpression,
-			let replacedExpression = replaceStatement(convertsToExpression).first
-		{
-			replacedConvertsToExpression = replacedExpression
+		if let convertsToExpression = convertsToExpression {
+			if let replacedExpression = replaceStatement(convertsToExpression).first {
+				replacedConvertsToExpression = replacedExpression
+			}
+			else {
+				replacedConvertsToExpression = nil
+			}
 		}
 		else {
 			replacedConvertsToExpression = nil
@@ -382,7 +392,7 @@ public class TranspilationPass { // kotlin: ignore
 	}
 
 	func replaceReturnStatement(expression: Expression?) -> ArrayClass<Statement> {
-		return [.returnStatement(expression: expression.map(replaceExpression))]
+		return [.returnStatement(expression: expression.map { replaceExpression($0) })]
 	}
 
 	func replaceAssignmentStatement(leftHand: Expression, rightHand: Expression)
@@ -393,15 +403,15 @@ public class TranspilationPass { // kotlin: ignore
 	}
 
 	func replaceExpression(_ expression: Expression) -> Expression {
-		parents.append(.expression(expression))
+		parents.append(.expressionNode(value: expression))
 		defer { parents.removeLast() }
 
 		switch expression {
 		case let .templateExpression(pattern: pattern, matches: matches):
 			return replaceTemplateExpression(pattern: pattern, matches: matches)
-		case .literalCodeExpression(string: let string),
-			.literalDeclarationExpression(string: let string):
-
+		case let .literalCodeExpression(string: string):
+			return replaceLiteralCodeExpression(string: string)
+		case let .literalDeclarationExpression(string: string):
 			return replaceLiteralCodeExpression(string: string)
 		case let .parenthesesExpression(expression: expression):
 			return replaceParenthesesExpression(expression: expression)
@@ -437,15 +447,15 @@ public class TranspilationPass { // kotlin: ignore
 				leftExpression: leftExpression, rightExpression: rightExpression,
 				operatorSymbol: operatorSymbol, typeName: typeName)
 		case let .prefixUnaryExpression(
-			expression: expression, operatorSymbol: operatorSymbol, typeName: typeName):
+			subExpression: subExpression, operatorSymbol: operatorSymbol, typeName: typeName):
 
 			return replacePrefixUnaryExpression(
-				expression: expression, operatorSymbol: operatorSymbol, typeName: typeName)
+				subExpression: subExpression, operatorSymbol: operatorSymbol, typeName: typeName)
 		case let .postfixUnaryExpression(
-			expression: expression, operatorSymbol: operatorSymbol, typeName: typeName):
+			subExpression: subExpression, operatorSymbol: operatorSymbol, typeName: typeName):
 
 			return replacePostfixUnaryExpression(
-				expression: expression, operatorSymbol: operatorSymbol, typeName: typeName)
+				subExpression: subExpression, operatorSymbol: operatorSymbol, typeName: typeName)
 		case let .ifExpression(
 			condition: condition, trueExpression: trueExpression, falseExpression: falseExpression):
 
@@ -491,7 +501,12 @@ public class TranspilationPass { // kotlin: ignore
 	func replaceTemplateExpression(pattern: String, matches: DictionaryClass<String, Expression>)
 		-> Expression
 	{
-		return .templateExpression(pattern: pattern, matches: matches.mapValues(replaceExpression))
+		let newMatches = matches.mapValues { replaceExpression($0) } // kotlin: ignore
+		// insert: val newMatches = matches.mapValues { replaceExpression(it.value) }.toMutableMap()
+
+		return .templateExpression(
+			pattern: pattern,
+			matches: newMatches)
 	}
 
 	func replaceLiteralCodeExpression(string: String) -> Expression {
@@ -514,10 +529,10 @@ public class TranspilationPass { // kotlin: ignore
 		_ declarationReferenceExpression: DeclarationReferenceData) -> Expression
 	{
 		return .declarationReferenceExpression(
-			data: replaceDeclarationReferenceExpression(declarationReferenceExpression))
+			data: replaceDeclarationReferenceExpressionData(declarationReferenceExpression))
 	}
 
-	func replaceDeclarationReferenceExpression(
+	func replaceDeclarationReferenceExpressionData(
 		_ declarationReferenceExpression: DeclarationReferenceData)
 		-> DeclarationReferenceData
 	{
@@ -538,7 +553,9 @@ public class TranspilationPass { // kotlin: ignore
 	}
 
 	func replaceArrayExpression(elements: ArrayClass<Expression>, typeName: String) -> Expression {
-		return .arrayExpression(elements: elements.map(replaceExpression), typeName: typeName)
+		return .arrayExpression(
+			elements: elements.map { replaceExpression($0) },
+			typeName: typeName)
 	}
 
 	func replaceDictionaryExpression(
@@ -551,7 +568,7 @@ public class TranspilationPass { // kotlin: ignore
 	}
 
 	func replaceReturnExpression(innerExpression: Expression?) -> Expression {
-		return .returnExpression(expression: innerExpression.map(replaceExpression))
+		return .returnExpression(expression: innerExpression.map { replaceExpression($0) })
 	}
 
 	func replaceDotExpression(leftExpression: Expression, rightExpression: Expression)
@@ -574,19 +591,19 @@ public class TranspilationPass { // kotlin: ignore
 	}
 
 	func replacePrefixUnaryExpression(
-		expression: Expression, operatorSymbol: String, typeName: String) -> Expression
+		subExpression: Expression, operatorSymbol: String, typeName: String) -> Expression
 	{
 		return .prefixUnaryExpression(
-			expression: replaceExpression(expression),
+			subExpression: replaceExpression(subExpression),
 			operatorSymbol: operatorSymbol,
 			typeName: typeName)
 	}
 
 	func replacePostfixUnaryExpression(
-		expression: Expression, operatorSymbol: String, typeName: String) -> Expression
+		subExpression: Expression, operatorSymbol: String, typeName: String) -> Expression
 	{
 		return .postfixUnaryExpression(
-			expression: replaceExpression(expression),
+			subExpression: replaceExpression(subExpression),
 			operatorSymbol: operatorSymbol,
 			typeName: typeName)
 	}
@@ -602,10 +619,10 @@ public class TranspilationPass { // kotlin: ignore
 	}
 
 	func replaceCallExpression(_ callExpression: CallExpressionData) -> Expression {
-		return .callExpression(data: replaceCallExpression(callExpression))
+		return .callExpression(data: replaceCallExpressionData(callExpression))
 	}
 
-	func replaceCallExpression(_ callExpression: CallExpressionData) -> CallExpressionData {
+	func replaceCallExpressionData(_ callExpression: CallExpressionData) -> CallExpressionData {
 		return CallExpressionData(
 			function: replaceExpression(callExpression.function),
 			parameters: replaceExpression(callExpression.parameters),
@@ -658,7 +675,8 @@ public class TranspilationPass { // kotlin: ignore
 	func replaceInterpolatedStringLiteralExpression(expressions: ArrayClass<Expression>)
 		-> Expression
 	{
-		return .interpolatedStringLiteralExpression(expressions: expressions.map(replaceExpression))
+		return .interpolatedStringLiteralExpression(
+			expressions: expressions.map { replaceExpression($0) })
 	}
 
 	func replaceTupleExpression(pairs: ArrayClass<LabeledExpression>) -> Expression {
@@ -674,7 +692,9 @@ public class TranspilationPass { // kotlin: ignore
 		-> Expression
 	{
 		return .tupleShuffleExpression(
-			labels: labels, indices: indices, expressions: expressions.map(replaceExpression))
+			labels: labels,
+			indices: indices,
+			expressions: expressions.map { replaceExpression($0) })
 	}
 }
 
@@ -726,7 +746,7 @@ public class RemoveParenthesesTranspilationPass: TranspilationPass { // kotlin: 
 
 	override func replaceParenthesesExpression(expression: Expression) -> Expression {
 
-		if case let .expression(parentExpression) = parent {
+		if case let .expressionNode(parentExpression) = parent {
 			switch parentExpression {
 			case .tupleExpression, .interpolatedStringLiteralExpression:
 				return replaceExpression(expression)
@@ -821,14 +841,14 @@ public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass { //
 		}
 	}
 
-	override func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclarationData)
+	override func replaceFunctionDeclarationData(_ functionDeclaration: FunctionDeclarationData)
 		-> FunctionDeclarationData?
 	{
 		if functionDeclaration.isImplicit {
 			return nil
 		}
 		else {
-			return super.replaceFunctionDeclaration(functionDeclaration)
+			return super.replaceFunctionDeclarationData(functionDeclaration)
 		}
 	}
 }
@@ -838,7 +858,7 @@ public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass { //
 public class OptionalInitsTranspilationPass: TranspilationPass { // kotlin: ignore
 	private var isFailableInitializer: Bool = false
 
-	override func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclarationData)
+	override func replaceFunctionDeclarationData(_ functionDeclaration: FunctionDeclarationData)
 		-> FunctionDeclarationData?
 	{
 		if functionDeclaration.isStatic == true,
@@ -858,7 +878,7 @@ public class OptionalInitsTranspilationPass: TranspilationPass { // kotlin: igno
 			}
 		}
 
-		return super.replaceFunctionDeclaration(functionDeclaration)
+		return super.replaceFunctionDeclarationData(functionDeclaration)
 	}
 
 	override func replaceAssignmentStatement(leftHand: Expression, rightHand: Expression)
@@ -877,7 +897,7 @@ public class OptionalInitsTranspilationPass: TranspilationPass { // kotlin: igno
 }
 
 public class RemoveExtraReturnsInInitsTranspilationPass: TranspilationPass { // kotlin: ignore
-	override func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclarationData)
+	override func replaceFunctionDeclarationData(_ functionDeclaration: FunctionDeclarationData)
 		-> FunctionDeclarationData?
 	{
 		if functionDeclaration.isStatic == true,
@@ -927,7 +947,8 @@ public class StaticMembersTranspilationPass: TranspilationPass { // kotlin: igno
 
 		let nonStaticMembers = members.filter { !isStaticMember($0) }
 
-		let newMembers = ArrayClass([.companionObject(members: staticMembers)]) + nonStaticMembers
+		let newMembers = ArrayClass<Statement>([.companionObject(members: staticMembers)]) +
+			nonStaticMembers
 		return newMembers
 	}
 
@@ -1032,12 +1053,12 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass { // kotlin: 
 		return result
 	}
 
-	override func replaceVariableDeclaration(_ variableDeclaration: VariableDeclarationData)
+	override func replaceVariableDeclarationData(_ variableDeclaration: VariableDeclarationData)
 		-> VariableDeclarationData
 	{
 		let variableDeclaration = variableDeclaration
 		variableDeclaration.typeName = removePrefixes(variableDeclaration.typeName)
-		return super.replaceVariableDeclaration(variableDeclaration)
+		return super.replaceVariableDeclarationData(variableDeclaration)
 	}
 
 	override func replaceTypeExpression(typeName: String) -> Expression {
@@ -1163,12 +1184,12 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass { // k
 		}
 	}
 
-	override func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclarationData)
+	override func replaceFunctionDeclarationData(_ functionDeclaration: FunctionDeclarationData)
 		-> FunctionDeclarationData?
 	{
 		returnTypesStack.append(functionDeclaration.returnType)
 		defer { returnTypesStack.removeLast() }
-		return super.replaceFunctionDeclaration(functionDeclaration)
+		return super.replaceFunctionDeclarationData(functionDeclaration)
 	}
 
 	override func replaceReturnStatement(expression: Expression?) -> ArrayClass<Statement> {
@@ -1235,7 +1256,7 @@ public class SelfToThisTranspilationPass: TranspilationPass { // kotlin: ignore
 		}
 	}
 
-	override func replaceDeclarationReferenceExpression(
+	override func replaceDeclarationReferenceExpressionData(
 		_ expression: DeclarationReferenceData) -> DeclarationReferenceData
 	{
 		if expression.identifier == "self" {
@@ -1243,7 +1264,7 @@ public class SelfToThisTranspilationPass: TranspilationPass { // kotlin: ignore
 			expression.identifier = "this"
 			return expression
 		}
-		return super.replaceDeclarationReferenceExpression(expression)
+		return super.replaceDeclarationReferenceExpressionData(expression)
 	}
 }
 
@@ -1305,7 +1326,7 @@ public class CleanInheritancesTranspilationPass: TranspilationPass { // kotlin: 
 
 /// The "anonymous parameter" `$0` has to be replaced by `it`
 public class AnonymousParametersTranspilationPass: TranspilationPass { // kotlin: ignore
-	override func replaceDeclarationReferenceExpression(
+	override func replaceDeclarationReferenceExpressionData(
 		_ expression: DeclarationReferenceData) -> DeclarationReferenceData
 	{
 		if expression.identifier == "$0" {
@@ -1314,7 +1335,7 @@ public class AnonymousParametersTranspilationPass: TranspilationPass { // kotlin
 			return expression
 		}
 		else {
-			return super.replaceDeclarationReferenceExpression(expression)
+			return super.replaceDeclarationReferenceExpressionData(expression)
 		}
 	}
 
@@ -1837,7 +1858,7 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass { // kotlin: i
 		return [Statement.functionDeclaration(data: functionDeclaration)]
 	}
 
-	override func replaceVariableDeclaration(_ variableDeclaration: VariableDeclarationData)
+	override func replaceVariableDeclarationData(_ variableDeclaration: VariableDeclarationData)
 		-> VariableDeclarationData
 	{
 		let variableDeclaration = variableDeclaration
@@ -1858,7 +1879,7 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass { // kotlin: i
 /// It also records all functions that have been marked as pure so that they don't raise warnings
 /// for possible side-effects in if-lets.
 public class RecordFunctionsTranspilationPass: TranspilationPass { // kotlin: ignore
-	override func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclarationData)
+	override func replaceFunctionDeclarationData(_ functionDeclaration: FunctionDeclarationData)
 		-> FunctionDeclarationData?
 	{
 		let swiftAPIName = functionDeclaration.prefix + "(" +
@@ -1875,7 +1896,7 @@ public class RecordFunctionsTranspilationPass: TranspilationPass { // kotlin: ig
 			KotlinTranslator.recordPureFunction(functionDeclaration)
 		}
 
-		return super.replaceFunctionDeclaration(functionDeclaration)
+		return super.replaceFunctionDeclarationData(functionDeclaration)
 	}
 }
 
@@ -1922,7 +1943,7 @@ public class RecordProtocolsTranspilationPass: TranspilationPass { // kotlin: ig
 }
 
 public class RaiseStandardLibraryWarningsTranspilationPass: TranspilationPass { // kotlin: ignore
-	override func replaceDeclarationReferenceExpression(
+	override func replaceDeclarationReferenceExpressionData(
 		_ expression: DeclarationReferenceData) -> DeclarationReferenceData
 	{
 		if expression.isStandardLibrary {
@@ -1933,7 +1954,7 @@ public class RaiseStandardLibraryWarningsTranspilationPass: TranspilationPass { 
 					sourceFile: ast.sourceFile,
 					sourceFileRange: expression.range)
 		}
-		return super.replaceDeclarationReferenceExpression(expression)
+		return super.replaceDeclarationReferenceExpressionData(expression)
 	}
 }
 
@@ -2023,7 +2044,7 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: // kotlin: ignore
 	TranspilationPass
 {
-	override func replaceIfStatement(_ ifStatement: IfStatementData) -> IfStatementData {
+	override func replaceIfStatementData(_ ifStatement: IfStatementData) -> IfStatementData {
 		raiseWarningsForIfStatement(ifStatement, isElse: false)
 
 		// No recursion by calling super, otherwise we'd run on the else statements twice
@@ -2037,7 +2058,7 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: // kotlin: ig
 			ifStatement.conditions :
 			ArrayClass(ifStatement.conditions.dropFirst())
 
-		let sideEffectsRanges = conditions.flatMap(mayHaveSideEffectsOnRanges)
+		let sideEffectsRanges = conditions.flatMap { mayHaveSideEffectsOnRanges($0) }
 		for range in sideEffectsRanges {
 			Compiler.handleWarning(
 				message: "If condition may have side effects.",
@@ -2091,10 +2112,10 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: // kotlin: ig
 				mayHaveSideEffectsOnRanges(indexExpression)
 
 		case let .arrayExpression(elements: elements, typeName: _):
-			return elements.flatMap(mayHaveSideEffectsOnRanges)
+			return elements.flatMap { mayHaveSideEffectsOnRanges($0) }
 		case let .dictionaryExpression(keys: keys, values: values, typeName: _):
-			return keys.flatMap(mayHaveSideEffectsOnRanges) +
-				values.flatMap(mayHaveSideEffectsOnRanges)
+			return keys.flatMap { mayHaveSideEffectsOnRanges($0) } +
+				values.flatMap { mayHaveSideEffectsOnRanges($0) }
 		case let .dotExpression(leftExpression: leftExpression, rightExpression: rightExpression):
 			return mayHaveSideEffectsOnRanges(leftExpression) +
 				mayHaveSideEffectsOnRanges(rightExpression)
@@ -2106,10 +2127,14 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: // kotlin: ig
 
 			return mayHaveSideEffectsOnRanges(leftExpression) +
 				mayHaveSideEffectsOnRanges(rightExpression)
-		case let .prefixUnaryExpression(expression: expression, operatorSymbol: _, typeName: _):
-			return mayHaveSideEffectsOnRanges(expression)
-		case let .postfixUnaryExpression(expression: expression, operatorSymbol: _, typeName: _):
-			return mayHaveSideEffectsOnRanges(expression)
+		case let .prefixUnaryExpression(
+			subExpression: subExpression, operatorSymbol: _, typeName: _):
+
+			return mayHaveSideEffectsOnRanges(subExpression)
+		case let .postfixUnaryExpression(
+			subExpression: subExpression, operatorSymbol: _, typeName: _):
+
+			return mayHaveSideEffectsOnRanges(subExpression)
 		case let .ifExpression(
 			condition: condition,
 			trueExpression: trueExpression,
@@ -2120,11 +2145,11 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: // kotlin: ig
 				mayHaveSideEffectsOnRanges(falseExpression)
 
 		case let .interpolatedStringLiteralExpression(expressions: expressions):
-			return expressions.flatMap(mayHaveSideEffectsOnRanges)
+			return expressions.flatMap { mayHaveSideEffectsOnRanges($0) }
 		case let .tupleExpression(pairs: pairs):
 			return pairs.flatMap { mayHaveSideEffectsOnRanges($0.expression) }
 		case let .tupleShuffleExpression(labels: _, indices: _, expressions: expressions):
-			return expressions.flatMap(mayHaveSideEffectsOnRanges)
+			return expressions.flatMap { mayHaveSideEffectsOnRanges($0) }
 		default:
 			return []
  		}
@@ -2143,7 +2168,7 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass { // kotlin: ig
 	}
 
 	/// Add conditions (`x != null`) for all let declarations
-	override func replaceIfStatement(_ ifStatement: IfStatementData) -> IfStatementData {
+	override func replaceIfStatementData(_ ifStatement: IfStatementData) -> IfStatementData {
 		let newConditions = ifStatement.conditions.map { condition -> IfStatementData.IfCondition in
 			if case let .declaration(variableDeclaration: variableDeclaration) = condition {
 				return .condition(expression: .binaryOperatorExpression(
@@ -2164,7 +2189,7 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass { // kotlin: ig
 
 		let ifStatement = ifStatement
 		ifStatement.conditions = newConditions
-		return super.replaceIfStatement(ifStatement)
+		return super.replaceIfStatementData(ifStatement)
 	}
 
 	/// Gather the let declarations from the if statement and its else( if)s into a single array
@@ -2402,7 +2427,7 @@ public class RawValuesTranspilationPass: TranspilationPass { // kotlin: ignore
 /// ! combines with a != or even another !, causing a double negative in the condition that can
 /// be removed (or turned into a single ==). This pass performs that transformation.
 public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass { // kotlin: ignore
-	override func replaceIfStatement(_ ifStatement: IfStatementData) -> IfStatementData {
+	override func replaceIfStatementData(_ ifStatement: IfStatementData) -> IfStatementData {
 		if ifStatement.isGuard,
 			ifStatement.conditions.count == 1,
 			let onlyCondition = ifStatement.conditions.first,
@@ -2411,7 +2436,7 @@ public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass { // ko
 			let shouldStillBeGuard: Bool
 			let newCondition: Expression
 			if case let .prefixUnaryExpression(
-				expression: innerExpression,
+				subExpression: innerExpression,
 				operatorSymbol: "!",
 				typeName: _) = onlyConditionExpression
 			{
@@ -2446,10 +2471,10 @@ public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass { // ko
 				IfStatementData.IfCondition.condition(expression: $0)
 			}
 			ifStatement.isGuard = shouldStillBeGuard
-			return super.replaceIfStatement(ifStatement)
+			return super.replaceIfStatementData(ifStatement)
 		}
 		else {
-			return super.replaceIfStatement(ifStatement)
+			return super.replaceIfStatementData(ifStatement)
 		}
 	}
 }
@@ -2501,20 +2526,20 @@ public class FixProtocolContentsTranspilationPass: TranspilationPass { // kotlin
 		return result
 	}
 
-	override func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclarationData)
+	override func replaceFunctionDeclarationData(_ functionDeclaration: FunctionDeclarationData)
 		-> FunctionDeclarationData?
 	{
 		if isInProtocol {
 			let functionDeclaration = functionDeclaration
 			functionDeclaration.statements = nil
-			return super.replaceFunctionDeclaration(functionDeclaration)
+			return super.replaceFunctionDeclarationData(functionDeclaration)
 		}
 		else {
-			return super.replaceFunctionDeclaration(functionDeclaration)
+			return super.replaceFunctionDeclarationData(functionDeclaration)
 		}
 	}
 
-	override func replaceVariableDeclaration(_ variableDeclaration: VariableDeclarationData)
+	override func replaceVariableDeclarationData(_ variableDeclaration: VariableDeclarationData)
 		-> VariableDeclarationData
 	{
 		if isInProtocol {
@@ -2523,10 +2548,10 @@ public class FixProtocolContentsTranspilationPass: TranspilationPass { // kotlin
 			variableDeclaration.setter?.isImplicit = true
 			variableDeclaration.getter?.statements = nil
 			variableDeclaration.setter?.statements = nil
-			return super.replaceVariableDeclaration(variableDeclaration)
+			return super.replaceVariableDeclarationData(variableDeclaration)
 		}
 		else {
-			return super.replaceVariableDeclaration(variableDeclaration)
+			return super.replaceVariableDeclarationData(variableDeclaration)
 		}
 	}
 }
@@ -2611,9 +2636,9 @@ public extension TranspilationPass { // kotlin: ignore
 		print("[")
 		for parent in parents {
 			switch parent {
-			case let .statement(statement):
+			case let .statementNode(statement):
 				print("\t\(statement.name),")
-			case let .expression(expression):
+			case let .expressionNode(expression):
 				print("\t\(expression.name),")
 			}
 		}
@@ -2622,7 +2647,7 @@ public extension TranspilationPass { // kotlin: ignore
 }
 
 //
-public enum ASTNode: Equatable { // kotlin: ignore
-	case statement(Statement)
-	case expression(Expression)
+public enum ASTNode: Equatable {
+	case statementNode(value: Statement)
+	case expressionNode(value: Expression)
 }
