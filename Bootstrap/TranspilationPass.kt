@@ -1475,6 +1475,320 @@ open class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
     }
 }
 
+open class ReturnsInLambdasTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    var isInClosure: Boolean = false
+
+    override internal fun replaceClosureExpression(
+        parameters: MutableList<LabeledType>,
+        statements: MutableList<Statement>,
+        typeName: String)
+        : Expression
+    {
+        try {
+            isInClosure = true
+            return super.replaceClosureExpression(
+                parameters = parameters,
+                statements = statements,
+                typeName = typeName)
+        }
+        finally {
+            isInClosure = false
+        }
+    }
+
+    override internal fun replaceReturnStatement(
+        expression: Expression?)
+        : MutableList<Statement>
+    {
+        if (isInClosure && expression != null) {
+            return mutableListOf(Statement.ExpressionStatement(expression = expression))
+        }
+        else {
+            return mutableListOf(Statement.ReturnStatement(expression = expression))
+        }
+    }
+}
+
+open class RefactorOptionalsInSubscriptsTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    override internal fun replaceSubscriptExpression(
+        subscriptedExpression: Expression,
+        indexExpression: Expression,
+        typeName: String)
+        : Expression
+    {
+        if (subscriptedExpression is Expression.OptionalExpression) {
+            return replaceDotExpression(
+                leftExpression = subscriptedExpression,
+                rightExpression = Expression.CallExpression(
+                        data = CallExpressionData(
+                                function = Expression.DeclarationReferenceExpression(
+                                        data = DeclarationReferenceData(
+                                                identifier = "get",
+                                                typeName = "(${indexExpression.swiftType ?: "<<Error>>"}) -> ${typeName}",
+                                                isStandardLibrary = false,
+                                                isImplicit = false,
+                                                range = subscriptedExpression.range)),
+                                parameters = Expression.TupleExpression(
+                                        pairs = mutableListOf(LabeledExpression(label = null, expression = indexExpression))),
+                                typeName = typeName,
+                                range = subscriptedExpression.range)))
+        }
+        else {
+            return super.replaceSubscriptExpression(
+                subscriptedExpression = subscriptedExpression,
+                indexExpression = indexExpression,
+                typeName = typeName)
+        }
+    }
+}
+
+open class AddOptionalsInDotChainsTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    override internal fun replaceDotExpression(
+        leftExpression: Expression,
+        rightExpression: Expression)
+        : Expression
+    {
+        if (rightExpression is Expression.OptionalExpression) {
+        }
+        else if (leftExpression is Expression.DotExpression) {
+            val innerLeftExpression: Expression = leftExpression.leftExpression
+            val innerRightExpression: Expression = leftExpression.rightExpression
+            if (dotExpressionChainHasOptionals(innerLeftExpression)) {
+                return Expression.DotExpression(
+                    leftExpression = addOptionalsToDotExpressionChain(
+                            leftExpression = innerLeftExpression,
+                            rightExpression = innerRightExpression),
+                    rightExpression = rightExpression)
+            }
+        }
+        return super.replaceDotExpression(leftExpression = leftExpression, rightExpression = rightExpression)
+    }
+
+    internal fun addOptionalsToDotExpressionChain(
+        leftExpression: Expression,
+        rightExpression: Expression)
+        : Expression
+    {
+        if (rightExpression is Expression.OptionalExpression) {
+        }
+        else if (dotExpressionChainHasOptionals(leftExpression)) {
+            val processedLeftExpression: Expression
+            if (leftExpression is Expression.DotExpression) {
+                val innerLeftExpression: Expression = leftExpression.leftExpression
+                val innerRightExpression: Expression = leftExpression.rightExpression
+                processedLeftExpression = addOptionalsToDotExpressionChain(
+                    leftExpression = innerLeftExpression,
+                    rightExpression = innerRightExpression)
+            }
+            else {
+                processedLeftExpression = leftExpression
+            }
+            return addOptionalsToDotExpressionChain(
+                leftExpression = processedLeftExpression,
+                rightExpression = Expression.OptionalExpression(expression = rightExpression))
+        }
+        return super.replaceDotExpression(leftExpression = leftExpression, rightExpression = rightExpression)
+    }
+
+    private fun dotExpressionChainHasOptionals(expression: Expression): Boolean {
+        if (expression is Expression.OptionalExpression) {
+            return true
+        }
+        else if (expression is Expression.DotExpression) {
+            val leftExpression: Expression = expression.leftExpression
+            return dotExpressionChainHasOptionals(leftExpression)
+        }
+        else {
+            return false
+        }
+    }
+}
+
+open class SwitchesToExpressionsTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    override internal fun replaceSwitchStatement(
+        convertsToExpression: Statement?,
+        expression: Expression,
+        cases: MutableList<SwitchCase>)
+        : MutableList<Statement>
+    {
+        var hasAllReturnCases: Boolean = true
+        var hasAllAssignmentCases: Boolean = true
+        var assignmentExpression: Expression? = null
+
+        for (statements in cases.map { it.statements }.toMutableList()) {
+            val lastStatement: Statement? = statements.lastOrNull()
+
+            if (lastStatement == null) {
+                hasAllReturnCases = false
+                hasAllAssignmentCases = false
+                break
+            }
+
+            if (lastStatement is Statement.ReturnStatement && expression != null) {
+                val expression: Expression? = lastStatement.expression
+                hasAllAssignmentCases = false
+                continue
+            }
+            else if (lastStatement is Statement.AssignmentStatement) {
+                val leftHand: Expression = lastStatement.leftHand
+                if (assignmentExpression == null || assignmentExpression == leftHand) {
+                    hasAllReturnCases = false
+                    assignmentExpression = leftHand
+                    continue
+                }
+            }
+
+            hasAllReturnCases = false
+            hasAllAssignmentCases = false
+
+            break
+        }
+
+        if (hasAllReturnCases) {
+            val newCases: MutableList<SwitchCase> = mutableListOf()
+
+            for (switchCase in cases) {
+                val lastStatement: Statement = switchCase.statements.lastOrNull()!!
+                if (lastStatement is Statement.ReturnStatement) {
+                    val maybeExpression: Expression? = lastStatement.expression
+                    val returnExpression: Expression? = maybeExpression
+                    if (returnExpression != null) {
+                        val newStatements: MutableList<Statement> = switchCase.statements.dropLast(1).toMutableList<Statement>()
+                        newStatements.add(Statement.ExpressionStatement(expression = returnExpression))
+                        newCases.add(SwitchCase(expressions = switchCase.expressions, statements = newStatements))
+                    }
+                }
+            }
+
+            val conversionExpression: Statement = Statement.ReturnStatement(expression = Expression.NilLiteralExpression())
+
+            return mutableListOf(Statement.SwitchStatement(
+                convertsToExpression = conversionExpression,
+                expression = expression,
+                cases = newCases))
+        }
+        else if (hasAllAssignmentCases && assignmentExpression != null) {
+            val newCases: MutableList<SwitchCase> = mutableListOf()
+
+            for (switchCase in cases) {
+                val lastStatement: Statement = switchCase.statements.lastOrNull()!!
+                if (lastStatement is Statement.AssignmentStatement) {
+                    val rightHand: Expression = lastStatement.rightHand
+                    val newStatements: MutableList<Statement> = switchCase.statements.dropLast(1).toMutableList<Statement>()
+
+                    newStatements.add(Statement.ExpressionStatement(expression = rightHand))
+                    newCases.add(SwitchCase(expressions = switchCase.expressions, statements = newStatements))
+                }
+            }
+
+            val conversionExpression: Statement = Statement.AssignmentStatement(
+                leftHand = assignmentExpression,
+                rightHand = Expression.NilLiteralExpression())
+
+            return mutableListOf(Statement.SwitchStatement(
+                convertsToExpression = conversionExpression,
+                expression = expression,
+                cases = newCases))
+        }
+        else {
+            return super.replaceSwitchStatement(convertsToExpression = null, expression = expression, cases = cases)
+        }
+    }
+
+    override internal fun replaceStatements(
+        oldStatement: MutableList<Statement>)
+        : MutableList<Statement>
+    {
+        val statements: MutableList<Statement> = super.replaceStatements(oldStatement)
+        val result: MutableList<Statement> = mutableListOf()
+        var i: Int = 0
+
+        while (i < (statements.size - 1)) {
+            val currentStatement: Statement = statements[i]
+            val nextStatement: Statement = statements[i + 1]
+
+            if (currentStatement is Statement.VariableDeclaration && nextStatement is Statement.SwitchStatement) {
+                val variableDeclaration: VariableDeclarationData = currentStatement.data
+                val maybeConversion: Statement? = nextStatement.convertsToExpression
+                val switchExpression: Expression = nextStatement.expression
+                val cases: MutableList<SwitchCase> = nextStatement.cases
+                val switchConversion: Statement? = maybeConversion
+
+                if (variableDeclaration.isImplicit == false && variableDeclaration.extendsType == null && switchConversion != null && switchConversion is Statement.AssignmentStatement) {
+                    val leftHand: Expression = switchConversion.leftHand
+                    if (leftHand is Expression.DeclarationReferenceExpression) {
+                        val assignmentExpression: DeclarationReferenceData = leftHand.data
+                        if (assignmentExpression.identifier == variableDeclaration.identifier && !assignmentExpression.isStandardLibrary && !assignmentExpression.isImplicit) {
+                            variableDeclaration.expression = Expression.NilLiteralExpression()
+                            variableDeclaration.getter = null
+                            variableDeclaration.setter = null
+                            variableDeclaration.isStatic = false
+
+                            val newConversionExpression: Statement = Statement.VariableDeclaration(data = variableDeclaration)
+
+                            result.add(Statement.SwitchStatement(
+                                convertsToExpression = newConversionExpression,
+                                expression = switchExpression,
+                                cases = cases))
+
+                            i += 2
+
+                            continue
+                        }
+                    }
+                }
+            }
+
+            result.add(currentStatement)
+
+            i += 1
+        }
+
+        val lastStatement: Statement? = statements.lastOrNull()
+
+        if (lastStatement != null) {
+            result.add(lastStatement)
+        }
+
+        return result
+    }
+}
+
+open class RemoveBreaksInSwitchesTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    override internal fun replaceSwitchStatement(
+        convertsToExpression: Statement?,
+        expression: Expression,
+        cases: MutableList<SwitchCase>)
+        : MutableList<Statement>
+    {
+        val newCases: MutableList<SwitchCase> = cases.map { removeBreaksInSwitchCase(it) }.filterNotNull().toMutableList()
+        return super.replaceSwitchStatement(
+            convertsToExpression = convertsToExpression,
+            expression = expression,
+            cases = newCases)
+    }
+
+    private fun removeBreaksInSwitchCase(switchCase: SwitchCase): SwitchCase? {
+        val onlyStatement: Statement? = switchCase.statements.firstOrNull()
+        if (switchCase.statements.size == 1 && onlyStatement != null && onlyStatement is Statement.BreakStatement) {
+            return null
+        }
+        else {
+            return switchCase
+        }
+    }
+}
+
 public sealed class ASTNode {
     class StatementNode(val value: Statement): ASTNode()
     class ExpressionNode(val value: Expression): ASTNode()

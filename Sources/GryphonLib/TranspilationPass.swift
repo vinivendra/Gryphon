@@ -1629,10 +1629,12 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 /// Closures in kotlin can't have normal "return" statements. Instead, they must have return@f
 /// statements (not yet implemented) or just standalone expressions (easier to implement but more
 /// error-prone). This pass turns return statements in closures into standalone expressions
-public class ReturnsInLambdasTranspilationPass: TranspilationPass { // kotlin: ignore
+public class ReturnsInLambdasTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
 	var isInClosure = false
 
-	override func replaceClosureExpression(
+	override func replaceClosureExpression( // annotation: override
 		parameters: ArrayClass<LabeledType>,
 		statements: ArrayClass<Statement>,
 		typeName: String)
@@ -1644,7 +1646,10 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass { // kotlin: i
 			parameters: parameters, statements: statements, typeName: typeName)
 	}
 
-	override func replaceReturnStatement(expression: Expression?) -> ArrayClass<Statement> {
+	override func replaceReturnStatement( // annotation: override
+		expression: Expression?)
+		-> ArrayClass<Statement>
+	{
 		if isInClosure, let expression = expression {
 			return [.expressionStatement(expression: expression)]
 		}
@@ -1660,8 +1665,10 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass { // kotlin: i
 /// let array: [Int]? = [1, 2, 3]
 /// array?[0] // Becomes `array?.get(0)` in Kotlin
 /// ````
-public class RefactorOptionalsInSubscriptsTranspilationPass: TranspilationPass { // kotlin: ignore
-	override func replaceSubscriptExpression(
+public class RefactorOptionalsInSubscriptsTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	override func replaceSubscriptExpression( // annotation: override
 		subscriptedExpression: Expression,
 		indexExpression: Expression,
 		typeName: String)
@@ -1698,8 +1705,10 @@ public class RefactorOptionalsInSubscriptsTranspilationPass: TranspilationPass {
 /// // Becomes
 /// foo?.bar?.baz
 /// ````
-public class AddOptionalsInDotChainsTranspilationPass: TranspilationPass { // kotlin: ignore
-	override func replaceDotExpression(
+public class AddOptionalsInDotChainsTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	override func replaceDotExpression( // annotation: override
 		leftExpression: Expression,
 		rightExpression: Expression)
 		-> Expression
@@ -1708,14 +1717,15 @@ public class AddOptionalsInDotChainsTranspilationPass: TranspilationPass { // ko
 		}
 		else if case let .dotExpression(
 			leftExpression: innerLeftExpression,
-			rightExpression: innerRightExpression) = leftExpression,
-			dotExpressionChainHasOptionals(innerLeftExpression)
+			rightExpression: innerRightExpression) = leftExpression
 		{
-			return .dotExpression(
-				leftExpression: addOptionalsToDotExpressionChain(
-					leftExpression: innerLeftExpression,
-					rightExpression: innerRightExpression),
-				rightExpression: rightExpression)
+			if dotExpressionChainHasOptionals(innerLeftExpression) {
+				return .dotExpression(
+					leftExpression: addOptionalsToDotExpressionChain(
+						leftExpression: innerLeftExpression,
+						rightExpression: innerRightExpression),
+					rightExpression: rightExpression)
+			}
 		}
 
 		return super.replaceDotExpression(
@@ -1723,7 +1733,7 @@ public class AddOptionalsInDotChainsTranspilationPass: TranspilationPass { // ko
 			rightExpression: rightExpression)
 	}
 
-	private func addOptionalsToDotExpressionChain(
+	func addOptionalsToDotExpressionChain(
 		leftExpression: Expression,
 		rightExpression: Expression)
 		-> Expression
@@ -1780,9 +1790,11 @@ public class AddOptionalsInDotChainsTranspilationPass: TranspilationPass { // ko
 /// more generic way, thus allowing this conversion to happen (for instance) inside the parameter of
 /// a function call. However, that would be much more complicated and it's not clear that it would
 /// be desirable.
-public class SwitchesToExpressionsTranspilationPass: TranspilationPass { // kotlin: ignore
+public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
 	/// Detect switches whose bodies all end in the same returns or assignments
-	override func replaceSwitchStatement(
+	override func replaceSwitchStatement( // annotation: override
 		convertsToExpression: Statement?, expression: Expression,
 		cases: ArrayClass<SwitchCase>) -> ArrayClass<Statement>
 	{
@@ -1803,18 +1815,20 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass { // kotl
 				expression != nil
 			{
 				hasAllAssignmentCases = false
+				continue
 			}
-			else if case let .assignmentStatement(leftHand: leftHand, rightHand: _) = lastStatement,
-				assignmentExpression == nil || assignmentExpression == leftHand
+			else if case let .assignmentStatement(leftHand: leftHand, rightHand: _) = lastStatement
 			{
-				hasAllReturnCases = false
-				assignmentExpression = leftHand
+				if assignmentExpression == nil || assignmentExpression == leftHand {
+					hasAllReturnCases = false
+					assignmentExpression = leftHand
+					continue
+				}
 			}
-			else {
-				hasAllReturnCases = false
-				hasAllAssignmentCases = false
-				break
-			}
+
+			hasAllReturnCases = false
+			hasAllAssignmentCases = false
+			break
 		}
 
 		if hasAllReturnCases {
@@ -1822,20 +1836,21 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass { // kotl
 			for switchCase in cases {
 				// Swift switches must have at least one statement
 				let lastStatement = switchCase.statements.last!
-				if case let .returnStatement(expression: maybeExpression) = lastStatement,
-					let returnExpression = maybeExpression
-				{
-					let newStatements = ArrayClass(switchCase.statements.dropLast())
-					newStatements.append(.expressionStatement(expression: returnExpression))
-					newCases.append(SwitchCase(
-						expressions: switchCase.expressions,
-						statements: newStatements))
+				if case let .returnStatement(expression: maybeExpression) = lastStatement {
+					if let returnExpression = maybeExpression {
+						let newStatements = ArrayClass<Statement>(switchCase.statements.dropLast())
+						newStatements.append(.expressionStatement(expression: returnExpression))
+						newCases.append(SwitchCase(
+							expressions: switchCase.expressions,
+							statements: newStatements))
+					}
 				}
 			}
 			let conversionExpression =
 				Statement.returnStatement(expression: .nilLiteralExpression)
 			return [.switchStatement(
-				convertsToExpression: conversionExpression, expression: expression,
+				convertsToExpression: conversionExpression,
+				expression: expression,
 				cases: newCases), ]
 		}
 		else if hasAllAssignmentCases, let assignmentExpression = assignmentExpression {
@@ -1845,7 +1860,7 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass { // kotl
 				let lastStatement = switchCase.statements.last!
 				if case let .assignmentStatement(leftHand: _, rightHand: rightHand) = lastStatement
 				{
-					let newStatements = ArrayClass(switchCase.statements.dropLast())
+					let newStatements = ArrayClass<Statement>(switchCase.statements.dropLast())
 					newStatements.append(.expressionStatement(expression: rightHand))
 					newCases.append(SwitchCase(
 						expressions: switchCase.expressions,
@@ -1865,7 +1880,7 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass { // kotl
 	}
 
 	/// Replace variable declarations followed by switch statements assignments
-	override func replaceStatements(
+	override func replaceStatements( // annotation: override
 		_ oldStatement: ArrayClass<Statement>)
 		-> ArrayClass<Statement>
 	{
@@ -1878,36 +1893,49 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass { // kotl
 			let currentStatement = statements[i]
 			let nextStatement = statements[i + 1]
 			if case let .variableDeclaration(data: variableDeclaration) = currentStatement,
-				variableDeclaration.isImplicit == false,
-				variableDeclaration.extendsType == nil,
 				case let .switchStatement(
-					convertsToExpression: maybeConversion, expression: switchExpression,
-					cases: cases) = nextStatement,
-				let switchConversion = maybeConversion,
-				case let .assignmentStatement(leftHand: leftHand, rightHand: _) = switchConversion,
-				case let .declarationReferenceExpression(data: assignmentExpression) = leftHand,
-				assignmentExpression.identifier == variableDeclaration.identifier,
-				!assignmentExpression.isStandardLibrary,
-				!assignmentExpression.isImplicit
+					convertsToExpression: maybeConversion,
+					expression: switchExpression,
+					cases: cases) = nextStatement
 			{
-				variableDeclaration.expression = .nilLiteralExpression
-				variableDeclaration.getter = nil
-				variableDeclaration.setter = nil
-				variableDeclaration.isStatic = false
-				let newConversionExpression =
-					Statement.variableDeclaration(data: variableDeclaration)
-				result.append(.switchStatement(
-					convertsToExpression: newConversionExpression, expression: switchExpression,
-					cases: cases))
+				if variableDeclaration.isImplicit == false,
+					variableDeclaration.extendsType == nil,
+					let switchConversion = maybeConversion,
+					case let .assignmentStatement(
+						leftHand: leftHand,
+						rightHand: _) = switchConversion
+				{
+					if case let .declarationReferenceExpression(
+						data: assignmentExpression) = leftHand
+					{
 
-				// Skip appending variable declaration and the switch declaration, thus replacing
-				// both with the new switch declaration
-				i += 2
+						if assignmentExpression.identifier == variableDeclaration.identifier,
+							!assignmentExpression.isStandardLibrary,
+							!assignmentExpression.isImplicit
+						{
+							variableDeclaration.expression = .nilLiteralExpression
+							variableDeclaration.getter = nil
+							variableDeclaration.setter = nil
+							variableDeclaration.isStatic = false
+							let newConversionExpression =
+								Statement.variableDeclaration(data: variableDeclaration)
+							result.append(.switchStatement(
+								convertsToExpression: newConversionExpression,
+								expression: switchExpression,
+								cases: cases))
+
+							// Skip appending variable declaration and the switch declaration, thus
+							// replacing both with the new switch declaration
+							i += 2
+
+							continue
+						}
+					}
+				}
 			}
-			else {
-				result.append(currentStatement)
-				i += 1
-			}
+
+			result.append(currentStatement)
+			i += 1
 		}
 
 		if let lastStatement = statements.last {
@@ -1920,27 +1948,33 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass { // kotl
 
 /// Breaks are not allowed in Kotlin `when` statements, but the `when` statements don't have to be
 /// exhaustive. Just remove the cases that only have breaks.
-public class RemoveBreaksInSwitchesTranspilationPass: TranspilationPass { // kotlin: ignore
-	override func replaceSwitchStatement(
-		convertsToExpression: Statement?, expression: Expression, cases: ArrayClass<SwitchCase>)
+public class RemoveBreaksInSwitchesTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	override func replaceSwitchStatement( // annotation: override
+		convertsToExpression: Statement?,
+		expression: Expression,
+		cases: ArrayClass<SwitchCase>)
 		-> ArrayClass<Statement>
 	{
-		let newCases = cases.compactMap { (switchCase: SwitchCase) -> SwitchCase? in
-			if switchCase.statements.count == 1,
-				let onlyStatement = switchCase.statements.first,
-				case .breakStatement = onlyStatement
-			{
-				return nil
-			}
-			else {
-				return switchCase
-			}
-		}
+		let newCases = cases.compactMap { removeBreaksInSwitchCase($0) }
 
 		return super.replaceSwitchStatement(
 			convertsToExpression: convertsToExpression,
 			expression: expression,
 			cases: newCases)
+	}
+
+	private func removeBreaksInSwitchCase(_ switchCase: SwitchCase) -> SwitchCase? {
+		if switchCase.statements.count == 1,
+			let onlyStatement = switchCase.statements.first,
+			case .breakStatement = onlyStatement
+		{
+			return nil
+		}
+		else {
+			return switchCase
+		}
 	}
 }
 
