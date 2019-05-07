@@ -1789,6 +1789,148 @@ open class RemoveBreaksInSwitchesTranspilationPass: TranspilationPass {
     }
 }
 
+open class RemoveExtensionsTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    var extendingType: String? = null
+
+    override internal fun replaceExtension(
+        typeName: String,
+        members: MutableList<Statement>)
+        : MutableList<Statement>
+    {
+        extendingType = typeName
+
+        val members: MutableList<Statement> = replaceStatements(members)
+
+        extendingType = null
+
+        return members
+    }
+
+    override internal fun replaceStatement(statement: Statement): MutableList<Statement> {
+        return when (statement) {
+            is Statement.ExtensionDeclaration -> {
+                val typeName: String = statement.typeName
+                val members: MutableList<Statement> = statement.members
+                replaceExtension(typeName = typeName, members = members)
+            }
+            is Statement.FunctionDeclaration -> {
+                val functionDeclaration: FunctionDeclarationData = statement.data
+                replaceFunctionDeclaration(functionDeclaration)
+            }
+            is Statement.VariableDeclaration -> {
+                val variableDeclaration: VariableDeclarationData = statement.data
+                replaceVariableDeclaration(variableDeclaration)
+            }
+            else -> mutableListOf(statement)
+        }
+    }
+
+    override internal fun replaceFunctionDeclaration(
+        functionDeclaration: FunctionDeclarationData)
+        : MutableList<Statement>
+    {
+        val functionDeclaration: FunctionDeclarationData = functionDeclaration
+        functionDeclaration.extendsType = this.extendingType
+        return mutableListOf(Statement.FunctionDeclaration(data = functionDeclaration))
+    }
+
+    override internal fun replaceVariableDeclarationData(
+        variableDeclaration: VariableDeclarationData)
+        : VariableDeclarationData
+    {
+        val variableDeclaration: VariableDeclarationData = variableDeclaration
+        variableDeclaration.extendsType = this.extendingType
+        return variableDeclaration
+    }
+}
+
+open class RaiseStandardLibraryWarningsTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    override internal fun replaceDeclarationReferenceExpressionData(
+        expression: DeclarationReferenceData)
+        : DeclarationReferenceData
+    {
+        if (expression.isStandardLibrary) {
+            val message: String = "Reference to standard library \"${expression.identifier}\" was not " + "translated."
+            Compiler.handleWarning(
+                message = message,
+                sourceFile = ast.sourceFile,
+                sourceFileRange = expression.range)
+        }
+        return super.replaceDeclarationReferenceExpressionData(expression)
+    }
+}
+
+open class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    override internal fun replaceStructDeclaration(
+        annotations: String?,
+        structName: String,
+        inherits: MutableList<String>,
+        members: MutableList<Statement>)
+        : MutableList<Statement>
+    {
+        for (member in members) {
+            if (member is Statement.VariableDeclaration) {
+                val variableDeclaration: VariableDeclarationData = member.data
+                if (!variableDeclaration.isImplicit && !variableDeclaration.isStatic && !variableDeclaration.isLet && variableDeclaration.getter == null) {
+                    val message: String = "No support for mutable variables in value types: found variable " + "${variableDeclaration.identifier} inside struct ${structName}"
+                    Compiler.handleWarning(message = message, sourceFile = ast.sourceFile, sourceFileRange = null)
+                    continue
+                }
+            }
+            if (member is Statement.FunctionDeclaration) {
+                val functionDeclaration: FunctionDeclarationData = member.data
+                if (functionDeclaration.isMutating) {
+                    val methodName: String = functionDeclaration.prefix + "(" + functionDeclaration.parameters.map { it.label + ":" }.toMutableList().joinToString(separator = ", ") + ")"
+                    val message: String = "No support for mutating methods in value types: found method " + "${methodName} inside struct ${structName}"
+
+                    Compiler.handleWarning(message = message, sourceFile = ast.sourceFile, sourceFileRange = null)
+
+                    continue
+                }
+            }
+        }
+        return super.replaceStructDeclaration(
+            annotations = annotations,
+            structName = structName,
+            inherits = inherits,
+            members = members)
+    }
+
+    override internal fun replaceEnumDeclaration(
+        access: String?,
+        enumName: String,
+        inherits: MutableList<String>,
+        elements: MutableList<EnumElement>,
+        members: MutableList<Statement>,
+        isImplicit: Boolean)
+        : MutableList<Statement>
+    {
+        for (member in members) {
+            if (member is Statement.FunctionDeclaration) {
+                val functionDeclaration: FunctionDeclarationData = member.data
+                if (functionDeclaration.isMutating) {
+                    val methodName: String = functionDeclaration.prefix + "(" + functionDeclaration.parameters.map { it.label + ":" }.toMutableList().joinToString(separator = ", ") + ")"
+                    val message: String = "No support for mutating methods in value types: found method " + "${methodName} inside enum ${enumName}"
+                    Compiler.handleWarning(message = message, sourceFile = ast.sourceFile, sourceFileRange = null)
+                }
+            }
+        }
+        return super.replaceEnumDeclaration(
+            access = access,
+            enumName = enumName,
+            inherits = inherits,
+            elements = elements,
+            members = members,
+            isImplicit = isImplicit)
+    }
+}
+
 public sealed class ASTNode {
     class StatementNode(val value: Statement): ASTNode()
     class ExpressionNode(val value: Expression): ASTNode()

@@ -48,6 +48,21 @@ public class Compiler {
 		}
 	}
 
+	internal static func handleWarning(
+		message: String,
+		details: String = "",
+		sourceFile: SourceFile?,
+		sourceFileRange: SourceFileRange?)
+	{
+		Compiler.warnings.append(
+			Compiler.createErrorOrWarningMessage(
+				message: message,
+				details: details,
+				sourceFile: sourceFile,
+				sourceFileRange: sourceFileRange,
+				isError: false))
+	}
+
 	public static func clearErrorsAndWarnings() {
 		errors = []
 		warnings = []
@@ -187,21 +202,6 @@ extension Compiler { // kotlin: ignore
 	}
 
 	//
-	internal static func handleWarning(
-		message: String,
-		details: String = "",
-		sourceFile: SourceFile?,
-		sourceFileRange: SourceFileRange?)
-	{
-		Compiler.warnings.append(
-			Compiler.createErrorOrWarningMessage(
-				message: message,
-				details: details,
-				sourceFile: sourceFile,
-				sourceFileRange: sourceFileRange,
-				isError: false))
-	}
-
 	public static func printErrorsAndWarnings() {
 		if !errors.isEmpty {
 			print("Errors:")

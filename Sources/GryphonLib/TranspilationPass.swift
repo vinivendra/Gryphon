@@ -2040,10 +2040,12 @@ public class IsOperatorsInSealedClassesTranspilationPass: TranspilationPass { //
 	}
 }
 
-public class RemoveExtensionsTranspilationPass: TranspilationPass { // kotlin: ignore
+public class RemoveExtensionsTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
 	var extendingType: String?
 
-	override func replaceExtension(
+	override func replaceExtension( // annotation: override
 		typeName: String,
 		members: ArrayClass<Statement>)
 		-> ArrayClass<Statement>
@@ -2054,7 +2056,10 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass { // kotlin: i
 		return members
 	}
 
-	override func replaceStatement(_ statement: Statement) -> ArrayClass<Statement> {
+	override func replaceStatement( // annotation: override
+		_ statement: Statement)
+		-> ArrayClass<Statement>
+	{
 		switch statement {
 		case let .extensionDeclaration(typeName: typeName, members: members):
 			return replaceExtension(typeName: typeName, members: members)
@@ -2067,7 +2072,8 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass { // kotlin: i
 		}
 	}
 
-	override func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclarationData)
+	override func replaceFunctionDeclaration( // annotation: override
+		_ functionDeclaration: FunctionDeclarationData)
 		-> ArrayClass<Statement>
 	{
 		let functionDeclaration = functionDeclaration
@@ -2075,7 +2081,8 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass { // kotlin: i
 		return [Statement.functionDeclaration(data: functionDeclaration)]
 	}
 
-	override func replaceVariableDeclarationData(_ variableDeclaration: VariableDeclarationData)
+	override func replaceVariableDeclarationData( // annotation: override
+		_ variableDeclaration: VariableDeclarationData)
 		-> VariableDeclarationData
 	{
 		let variableDeclaration = variableDeclaration
@@ -2159,9 +2166,12 @@ public class RecordProtocolsTranspilationPass: TranspilationPass { // kotlin: ig
 	}
 }
 
-public class RaiseStandardLibraryWarningsTranspilationPass: TranspilationPass { // kotlin: ignore
-	override func replaceDeclarationReferenceExpressionData(
-		_ expression: DeclarationReferenceData) -> DeclarationReferenceData
+public class RaiseStandardLibraryWarningsTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	override func replaceDeclarationReferenceExpressionData( // annotation: override
+		_ expression: DeclarationReferenceData)
+		-> DeclarationReferenceData
 	{
 		if expression.isStandardLibrary {
 			let message = "Reference to standard library \"\(expression.identifier)\" was not " +
@@ -2178,8 +2188,10 @@ public class RaiseStandardLibraryWarningsTranspilationPass: TranspilationPass { 
 /// If a value type's members are all immutable, that value type can safely be translated as a
 /// class. Otherwise, the translation can cause inconsistencies, so this pass raises warnings.
 /// Source: https://forums.swift.org/t/are-immutable-structs-like-classes/16270
-public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass { // kotlin: ignore
-	override func replaceStructDeclaration(
+public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	override func replaceStructDeclaration( // annotation: override
 		annotations: String?,
 		structName: String,
 		inherits: ArrayClass<String>,
@@ -2187,31 +2199,35 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 		-> ArrayClass<Statement>
 	{
 		for member in members {
-			if case let .variableDeclaration(data: variableDeclaration) = member,
-				!variableDeclaration.isImplicit,
-				!variableDeclaration.isStatic,
-				!variableDeclaration.isLet,
-				variableDeclaration.getter == nil
-			{
-				let message = "No support for mutable variables in value types: found variable " +
-					"\(variableDeclaration.identifier) inside struct \(structName)"
-				Compiler.handleWarning(
-					message: message,
-					sourceFile: ast.sourceFile,
-					sourceFileRange: nil)
+			if case let .variableDeclaration(data: variableDeclaration) = member {
+				if !variableDeclaration.isImplicit,
+					!variableDeclaration.isStatic,
+					!variableDeclaration.isLet,
+					variableDeclaration.getter == nil
+				{
+					let message = "No support for mutable variables in value types: found variable " +
+						"\(variableDeclaration.identifier) inside struct \(structName)"
+					Compiler.handleWarning(
+						message: message,
+						sourceFile: ast.sourceFile,
+						sourceFileRange: nil)
+					continue
+				}
 			}
-			else if case let .functionDeclaration(data: functionDeclaration) = member,
-				functionDeclaration.isMutating
-			{
-				let methodName = functionDeclaration.prefix + "(" +
-					functionDeclaration.parameters.map { $0.label + ":" }
-						.joined(separator: ", ") + ")"
-				let message = "No support for mutating methods in value types: found method " +
-					"\(methodName) inside struct \(structName)"
-				Compiler.handleWarning(
-					message: message,
-					sourceFile: ast.sourceFile,
-					sourceFileRange: nil)
+
+			if case let .functionDeclaration(data: functionDeclaration) = member {
+				if functionDeclaration.isMutating {
+					let methodName = functionDeclaration.prefix + "(" +
+						functionDeclaration.parameters.map { $0.label + ":" }
+							.joined(separator: ", ") + ")"
+					let message = "No support for mutating methods in value types: found method " +
+						"\(methodName) inside struct \(structName)"
+					Compiler.handleWarning(
+						message: message,
+						sourceFile: ast.sourceFile,
+						sourceFileRange: nil)
+					continue
+				}
 			}
 		}
 
@@ -2219,7 +2235,7 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 			annotations: annotations, structName: structName, inherits: inherits, members: members)
 	}
 
-	override func replaceEnumDeclaration(
+	override func replaceEnumDeclaration( // annotation: override
 		access: String?,
 		enumName: String,
 		inherits: ArrayClass<String>,
@@ -2229,18 +2245,18 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 		-> ArrayClass<Statement>
 	{
 		for member in members {
-			if case let .functionDeclaration(data: functionDeclaration) = member,
-				functionDeclaration.isMutating
-			{
-				let methodName = functionDeclaration.prefix + "(" +
-					functionDeclaration.parameters.map { $0.label + ":" }
-						.joined(separator: ", ") + ")"
-				let message = "No support for mutating methods in value types: found method " +
-					"\(methodName) inside enum \(enumName)"
-				Compiler.handleWarning(
-					message: message,
-					sourceFile: ast.sourceFile,
-					sourceFileRange: nil)
+			if case let .functionDeclaration(data: functionDeclaration) = member {
+				if functionDeclaration.isMutating {
+					let methodName = functionDeclaration.prefix + "(" +
+						functionDeclaration.parameters.map { $0.label + ":" }
+							.joined(separator: ", ") + ")"
+					let message = "No support for mutating methods in value types: found method " +
+						"\(methodName) inside enum \(enumName)"
+					Compiler.handleWarning(
+						message: message,
+						sourceFile: ast.sourceFile,
+						sourceFileRange: nil)
+				}
 			}
 		}
 
@@ -2273,7 +2289,7 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: // kotlin: ig
 		// effects
 		let conditions = isElse ?
 			ifStatement.conditions :
-			ArrayClass(ifStatement.conditions.dropFirst())
+			ArrayClass<IfStatementData.IfCondition>(ifStatement.conditions.dropFirst())
 
 		let sideEffectsRanges = conditions.flatMap { mayHaveSideEffectsOnRanges($0) }
 		for range in sideEffectsRanges {

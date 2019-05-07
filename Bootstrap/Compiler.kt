@@ -25,6 +25,20 @@ open class Compiler {
             }
         }
 
+        internal fun handleWarning(
+            message: String,
+            details: String = "",
+            sourceFile: SourceFile?,
+            sourceFileRange: SourceFileRange?)
+        {
+            Compiler.warnings.add(Compiler.createErrorOrWarningMessage(
+                message = message,
+                details = details,
+                sourceFile = sourceFile,
+                sourceFileRange = sourceFileRange,
+                isError = false))
+        }
+
         public fun clearErrorsAndWarnings() {
             errors = mutableListOf()
             warnings = mutableListOf()
