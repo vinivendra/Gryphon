@@ -1987,47 +1987,56 @@ public class IsOperatorsInSealedClassesTranspilationPass: TranspilationPass { //
 		cases: ArrayClass<SwitchCase>)
 		-> ArrayClass<Statement>
 	{
-		guard case let .declarationReferenceExpression(
-				data: declarationReferenceExpression) = expression,
-			KotlinTranslator.sealedClasses.contains(declarationReferenceExpression.typeName) else
+		if case let .declarationReferenceExpression(
+				data: declarationReferenceExpression) = expression
 		{
-			return super.replaceSwitchStatement(
-				convertsToExpression: convertsToExpression,
-				expression: expression,
-				cases: cases)
-		}
-
-		let newCases = cases.map { (switchCase: SwitchCase) -> SwitchCase in
-			let newExpressions = switchCase.expressions.map
-				{ (caseExpression: Expression) -> Expression in
-					if case let .dotExpression(
-							leftExpression: leftExpression,
-							rightExpression: rightExpression) = caseExpression,
-						case let .typeExpression(typeName: typeName) = leftExpression,
-						case let .declarationReferenceExpression(
-							data: declarationReferenceExpression) = rightExpression
-					{
-						return Expression.binaryOperatorExpression(
-							leftExpression: expression,
-							rightExpression: .typeExpression(
-							typeName: "\(typeName).\(declarationReferenceExpression.identifier)"),
-							operatorSymbol: "is",
-							typeName: "Bool")
-					}
-					else {
-						return caseExpression
-					}
+			if KotlinTranslator.sealedClasses.contains(declarationReferenceExpression.typeName) {
+				let newCases = cases.map {
+					replaceIsOperatorsInSwitchCase($0, usingExpression: expression)
 				}
 
-			return SwitchCase(
-				expressions: newExpressions,
-				statements: switchCase.statements)
+				return super.replaceSwitchStatement(
+					convertsToExpression: convertsToExpression,
+					expression: expression,
+					cases: newCases)
+			}
 		}
 
 		return super.replaceSwitchStatement(
 			convertsToExpression: convertsToExpression,
 			expression: expression,
-			cases: newCases)
+			cases: cases)
+	}
+
+	private func replaceIsOperatorsInSwitchCase(
+		_ switchCase: SwitchCase,
+		usingExpression expression: Expression)
+		-> SwitchCase
+	{
+		let newExpressions = switchCase.expressions.map
+		{ (caseExpression: Expression) -> Expression in
+			if case let .dotExpression(
+				leftExpression: leftExpression,
+				rightExpression: rightExpression) = caseExpression,
+				case let .typeExpression(typeName: typeName) = leftExpression,
+				case let .declarationReferenceExpression(
+					data: declarationReferenceExpression) = rightExpression
+			{
+				return Expression.binaryOperatorExpression(
+					leftExpression: expression,
+					rightExpression: .typeExpression(
+						typeName: "\(typeName).\(declarationReferenceExpression.identifier)"),
+					operatorSymbol: "is",
+					typeName: "Bool")
+			}
+			else {
+				return caseExpression
+			}
+		}
+
+		return SwitchCase(
+			expressions: newExpressions,
+			statements: switchCase.statements)
 	}
 }
 
