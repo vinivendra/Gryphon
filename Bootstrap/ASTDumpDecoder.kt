@@ -1,4 +1,4 @@
-class ASTDumpDecoder {
+open class ASTDumpDecoder {
     val buffer: String
     var currentIndex: Int
     val remainingBuffer: String

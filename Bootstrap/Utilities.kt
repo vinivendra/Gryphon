@@ -3,7 +3,7 @@ import java.io.FileWriter
 import java.util.stream.Collectors
 import java.util.stream.Stream
 
-class Utilities {
+open class Utilities {
     companion object {
         internal fun expandSwiftAbbreviation(name: String): String {
             var nameComponents: MutableList<String> = name.split(separator = "_").map { it.capitalize() }.toMutableList()

@@ -2,7 +2,7 @@ import java.io.File
 
 typealias OutputFileMapBuffer = MutableMap<String, MutableMap<OutputFileMap.OutputType, String>>
 
-class OutputFileMap {
+open class OutputFileMap {
     public enum class OutputType {
         AST_DUMP,
         SWIFT_AST,

@@ -1,4 +1,4 @@
-class PrintableTree: PrintableAsTree {
+open class PrintableTree: PrintableAsTree {
     companion object {
         internal fun ofTrees(
             description: String,

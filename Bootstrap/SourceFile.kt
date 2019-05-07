@@ -1,4 +1,4 @@
-class SourceFile {
+open class SourceFile {
     var path: String
     val lines: MutableList<String>
 

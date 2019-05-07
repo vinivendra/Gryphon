@@ -523,7 +523,7 @@ public class KotlinTranslator {
 		className: String, inherits: [String], members: [Statement],
 		withIndentation indentation: String) throws -> String
 	{
-		var result = "\(indentation)class \(className)"
+		var result = "\(indentation)open class \(className)"
 
 		if !inherits.isEmpty {
 			let translatedInheritances = inherits.map(translateType)

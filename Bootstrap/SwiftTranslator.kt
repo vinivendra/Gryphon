@@ -1,4 +1,4 @@
-class SwiftTranslator {
+open class SwiftTranslator {
     var danglingPatternBindings: MutableList<PatternBindingDeclaration?> = mutableListOf()
     val errorDanglingPatternDeclaration: PatternBindingDeclaration = PatternBindingDeclaration(
         identifier = "<<Error>>",
@@ -1744,6 +1744,24 @@ else {
                 else {
                     result = unexpectedExpressionStructureError(
                         "Expected Conditional Checked Cast Expression to have a type and two nested " + "subtrees",
+                        ast = expression,
+                        translator = this)
+                }
+            }
+            "Super Reference Expression" -> {
+                val typeName: String? = expression["type"]
+                if (typeName != null) {
+                    result = Expression.DeclarationReferenceExpression(
+                        data = DeclarationReferenceData(
+                                identifier = "super",
+                                typeName = typeName,
+                                isStandardLibrary = false,
+                                isImplicit = false,
+                                range = getRange(ast = expression)))
+                }
+                else {
+                    result = unexpectedExpressionStructureError(
+                        "Unable to get type from Super Reference Expression",
                         ast = expression,
                         translator = this)
                 }

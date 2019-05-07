@@ -1,4 +1,4 @@
-class Driver {
+open class Driver {
     companion object {
         public fun runUpToFirstPasses(settings: Driver.Settings, inputFilePath: String): Any? {
             if (!(settings.shouldGenerateSwiftAST)) {

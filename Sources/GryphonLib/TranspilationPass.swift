@@ -36,7 +36,7 @@ public class TranspilationPass {
 		self.ast = ast
 	}
 
-	func run() -> GryphonAST {
+	func run() -> GryphonAST { // annotation: open
 		let replacedStatements = replaceStatements(ast.statements)
 		let replacedDeclarations = replaceStatements(ast.declarations)
 		return GryphonAST(
@@ -45,11 +45,17 @@ public class TranspilationPass {
 			statements: replacedStatements)
 	}
 
-	func replaceStatements(_ statements: ArrayClass<Statement>) -> ArrayClass<Statement> {
+	func replaceStatements( // annotation: open
+		_ statements: ArrayClass<Statement>)
+		-> ArrayClass<Statement>
+	{
 		return statements.flatMap { replaceStatement($0) }
 	}
 
-	func replaceStatement(_ statement: Statement) -> ArrayClass<Statement> {
+	func replaceStatement( // annotation: open
+		_ statement: Statement)
+		-> ArrayClass<Statement>
+	{
 		parents.append(.statementNode(value: statement))
 		defer { parents.removeLast() }
 
@@ -135,20 +141,32 @@ public class TranspilationPass {
 		}
 	}
 
-	func replaceExpressionStatement(expression: Expression) -> ArrayClass<Statement> {
+	func replaceExpressionStatement( // annotation: open
+		expression: Expression)
+		-> ArrayClass<Statement>
+	{
 		return [.expressionStatement(expression: replaceExpression(expression))]
 	}
 
-	func replaceExtension(typeName: String, members: ArrayClass<Statement>) -> ArrayClass<Statement>
+	func replaceExtension( // annotation: open
+		typeName: String,
+		members: ArrayClass<Statement>)
+		-> ArrayClass<Statement>
 	{
 		return [.extensionDeclaration(typeName: typeName, members: replaceStatements(members))]
 	}
 
-	func replaceImportDeclaration(moduleName: String) -> ArrayClass<Statement> {
+	func replaceImportDeclaration( // annotation: open
+		moduleName: String)
+		-> ArrayClass<Statement>
+	{
 		return [.importDeclaration(moduleName: moduleName)]
 	}
 
-	func replaceTypealiasDeclaration(identifier: String, typeName: String, isImplicit: Bool)
+	func replaceTypealiasDeclaration( // annotation: open
+		identifier: String,
+		typeName: String,
+		isImplicit: Bool)
 		-> ArrayClass<Statement>
 	{
 		return [.typealiasDeclaration(
@@ -157,7 +175,7 @@ public class TranspilationPass {
 			isImplicit: isImplicit), ]
 	}
 
-	func replaceClassDeclaration(
+	func replaceClassDeclaration( // annotation: open
 		name: String,
 		inherits: ArrayClass<String>,
 		members: ArrayClass<Statement>)
@@ -169,11 +187,14 @@ public class TranspilationPass {
 			members: replaceStatements(members)), ]
 	}
 
-	func replaceCompanionObject(members: ArrayClass<Statement>) -> ArrayClass<Statement> {
+	func replaceCompanionObject( // annotation: open
+		members: ArrayClass<Statement>)
+		-> ArrayClass<Statement>
+	{
 		return [.companionObject(members: replaceStatements(members))]
 	}
 
-	func replaceEnumDeclaration(
+	func replaceEnumDeclaration( // annotation: open
 		access: String?,
 		enumName: String,
 		inherits: ArrayClass<String>,
@@ -197,7 +218,7 @@ public class TranspilationPass {
 				members: replaceStatements(members), isImplicit: isImplicit), ]
 	}
 
-	func replaceEnumElementDeclaration(
+	func replaceEnumElementDeclaration( // annotation: open
 		enumName: String,
 		associatedValues: ArrayClass<LabeledType>,
 		rawValue: Expression?,
@@ -211,7 +232,7 @@ public class TranspilationPass {
 			annotations: annotations), ]
 	}
 
-	func replaceProtocolDeclaration(
+	func replaceProtocolDeclaration( // annotation: open
 		protocolName: String,
 		members: ArrayClass<Statement>)
 		-> ArrayClass<Statement>
@@ -221,7 +242,7 @@ public class TranspilationPass {
 			members: replaceStatements(members)), ]
 	}
 
-	func replaceStructDeclaration(
+	func replaceStructDeclaration( // annotation: open
 		annotations: String?,
 		structName: String,
 		inherits: ArrayClass<String>,
@@ -235,7 +256,8 @@ public class TranspilationPass {
 			members: replaceStatements(members)), ]
 	}
 
-	func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclarationData)
+	func replaceFunctionDeclaration( // annotation: open
+		_ functionDeclaration: FunctionDeclarationData)
 		-> ArrayClass<Statement>
 	{
 		if let result = replaceFunctionDeclarationData(functionDeclaration) {
@@ -246,7 +268,8 @@ public class TranspilationPass {
 		}
 	}
 
-	func replaceFunctionDeclarationData(_ functionDeclaration: FunctionDeclarationData)
+	func replaceFunctionDeclarationData( // annotation: open
+		_ functionDeclaration: FunctionDeclarationData)
 		-> FunctionDeclarationData?
 	{
 		let replacedParameters = functionDeclaration.parameters
@@ -265,13 +288,15 @@ public class TranspilationPass {
 		return functionDeclaration
 	}
 
-	func replaceVariableDeclaration(_ variableDeclaration: VariableDeclarationData)
+	func replaceVariableDeclaration( // annotation: open
+		_ variableDeclaration: VariableDeclarationData)
 		-> ArrayClass<Statement>
 	{
 		return [.variableDeclaration(data: replaceVariableDeclarationData(variableDeclaration))]
 	}
 
-	func replaceVariableDeclarationData(_ variableDeclaration: VariableDeclarationData)
+	func replaceVariableDeclarationData( // annotation: open
+		_ variableDeclaration: VariableDeclarationData)
 		-> VariableDeclarationData
 	{
 		let variableDeclaration = variableDeclaration
@@ -286,11 +311,14 @@ public class TranspilationPass {
 		return variableDeclaration
 	}
 
-	func replaceDoStatement(statements: ArrayClass<Statement>) -> ArrayClass<Statement> {
+	func replaceDoStatement( // annotation: open
+		statements: ArrayClass<Statement>)
+		-> ArrayClass<Statement>
+	{
 		return [.doStatement(statements: replaceStatements(statements))]
 	}
 
-	func replaceCatchStatement(
+	func replaceCatchStatement( // annotation: open
 		variableDeclaration: VariableDeclarationData?,
 		statements: ArrayClass<Statement>)
 		-> ArrayClass<Statement>
@@ -301,7 +329,7 @@ public class TranspilationPass {
 		]
 	}
 
-	func replaceForEachStatement(
+	func replaceForEachStatement( // annotation: open
 		collection: Expression, variable: Expression, statements: ArrayClass<Statement>)
 		-> ArrayClass<Statement>
 	{
@@ -311,7 +339,7 @@ public class TranspilationPass {
 			statements: replaceStatements(statements)), ]
 	}
 
-	func replaceWhileStatement(
+	func replaceWhileStatement( // annotation: open
 		expression: Expression,
 		statements: ArrayClass<Statement>)
 		-> ArrayClass<Statement>
@@ -321,11 +349,17 @@ public class TranspilationPass {
 			statements: replaceStatements(statements)), ]
 	}
 
-	func replaceIfStatement(_ ifStatement: IfStatementData) -> ArrayClass<Statement> {
+	func replaceIfStatement( // annotation: open
+		_ ifStatement: IfStatementData)
+		-> ArrayClass<Statement>
+	{
 		return [Statement.ifStatement(data: replaceIfStatementData(ifStatement))]
 	}
 
-	func replaceIfStatementData(_ ifStatement: IfStatementData) -> IfStatementData {
+	func replaceIfStatementData( // annotation: open
+		_ ifStatement: IfStatementData)
+		-> IfStatementData
+	{
 		let ifStatement = ifStatement
 		ifStatement.conditions = replaceIfConditions(ifStatement.conditions)
 		ifStatement.declarations =
@@ -335,13 +369,15 @@ public class TranspilationPass {
 		return ifStatement
 	}
 
-	func replaceIfConditions(_ conditions: ArrayClass<IfStatementData.IfCondition>)
+	func replaceIfConditions( // annotation: open
+		_ conditions: ArrayClass<IfStatementData.IfCondition>)
 		-> ArrayClass<IfStatementData.IfCondition>
 	{
 		return conditions.map { replaceIfCondition($0) }
 	}
 
-	func replaceIfCondition(_ condition: IfStatementData.IfCondition)
+	func replaceIfCondition( // annotation: open
+		_ condition: IfStatementData.IfCondition)
 		-> IfStatementData.IfCondition
 	{
 		switch condition {
@@ -353,7 +389,7 @@ public class TranspilationPass {
 		}
 	}
 
-	func replaceSwitchStatement(
+	func replaceSwitchStatement( // annotation: open
 		convertsToExpression: Statement?, expression: Expression,
 		cases: ArrayClass<SwitchCase>) -> ArrayClass<Statement>
 	{
@@ -383,26 +419,40 @@ public class TranspilationPass {
 			cases: replacedCases), ]
 	}
 
-	func replaceDeferStatement(statements: ArrayClass<Statement>) -> ArrayClass<Statement> {
+	func replaceDeferStatement( // annotation: open
+		statements: ArrayClass<Statement>)
+		-> ArrayClass<Statement>
+	{
 		return [.deferStatement(statements: replaceStatements(statements))]
 	}
 
-	func replaceThrowStatement(expression: Expression) -> ArrayClass<Statement> {
+	func replaceThrowStatement( // annotation: open
+		expression: Expression)
+		-> ArrayClass<Statement>
+	{
 		return [.throwStatement(expression: replaceExpression(expression))]
 	}
 
-	func replaceReturnStatement(expression: Expression?) -> ArrayClass<Statement> {
+	func replaceReturnStatement( // annotation: open
+		expression: Expression?)
+		-> ArrayClass<Statement>
+	{
 		return [.returnStatement(expression: expression.map { replaceExpression($0) })]
 	}
 
-	func replaceAssignmentStatement(leftHand: Expression, rightHand: Expression)
+	func replaceAssignmentStatement( // annotation: open
+		leftHand: Expression,
+		rightHand: Expression)
 		-> ArrayClass<Statement>
 	{
 		return [.assignmentStatement(
 			leftHand: replaceExpression(leftHand), rightHand: replaceExpression(rightHand)), ]
 	}
 
-	func replaceExpression(_ expression: Expression) -> Expression {
+	func replaceExpression( // annotation: open
+		_ expression: Expression)
+		-> Expression
+	{
 		parents.append(.expressionNode(value: expression))
 		defer { parents.removeLast() }
 
@@ -498,7 +548,9 @@ public class TranspilationPass {
 		}
 	}
 
-	func replaceTemplateExpression(pattern: String, matches: DictionaryClass<String, Expression>)
+	func replaceTemplateExpression( // annotation: open
+		pattern: String,
+		matches: DictionaryClass<String, Expression>)
 		-> Expression
 	{
 		let newMatches = matches.mapValues { replaceExpression($0) } // kotlin: ignore
@@ -509,42 +561,60 @@ public class TranspilationPass {
 			matches: newMatches)
 	}
 
-	func replaceLiteralCodeExpression(string: String) -> Expression {
+	func replaceLiteralCodeExpression( // annotation: open
+		string: String)
+		-> Expression
+	{
 		return .literalCodeExpression(string: string)
 	}
 
-	func replaceParenthesesExpression(expression: Expression) -> Expression {
+	func replaceParenthesesExpression( // annotation: open
+		expression: Expression)
+		-> Expression
+	{
 		return .parenthesesExpression(expression: replaceExpression(expression))
 	}
 
-	func replaceForceValueExpression(expression: Expression) -> Expression {
+	func replaceForceValueExpression( // annotation: open
+		expression: Expression)
+		-> Expression
+	{
 		return .forceValueExpression(expression: replaceExpression(expression))
 	}
 
-	func replaceOptionalExpression(expression: Expression) -> Expression {
+	func replaceOptionalExpression( // annotation: open
+		expression: Expression)
+		-> Expression
+	{
 		return .optionalExpression(expression: replaceExpression(expression))
 	}
 
-	func replaceDeclarationReferenceExpression(
-		_ declarationReferenceExpression: DeclarationReferenceData) -> Expression
+	func replaceDeclarationReferenceExpression( // annotation: open
+		_ declarationReferenceExpression: DeclarationReferenceData)
+		-> Expression
 	{
 		return .declarationReferenceExpression(
 			data: replaceDeclarationReferenceExpressionData(declarationReferenceExpression))
 	}
 
-	func replaceDeclarationReferenceExpressionData(
+	func replaceDeclarationReferenceExpressionData( // annotation: open
 		_ declarationReferenceExpression: DeclarationReferenceData)
 		-> DeclarationReferenceData
 	{
 		return declarationReferenceExpression
 	}
 
-	func replaceTypeExpression(typeName: String) -> Expression {
+	func replaceTypeExpression( // annotation: open
+		typeName: String)
+		-> Expression
+	{
 		return .typeExpression(typeName: typeName)
 	}
 
-	func replaceSubscriptExpression(
-		subscriptedExpression: Expression, indexExpression: Expression, typeName: String)
+	func replaceSubscriptExpression( // annotation: open
+		subscriptedExpression: Expression,
+		indexExpression: Expression,
+		typeName: String)
 		-> Expression
 	{
 		return .subscriptExpression(
@@ -552,13 +622,17 @@ public class TranspilationPass {
 			indexExpression: replaceExpression(indexExpression), typeName: typeName)
 	}
 
-	func replaceArrayExpression(elements: ArrayClass<Expression>, typeName: String) -> Expression {
+	func replaceArrayExpression( // annotation: open
+		elements: ArrayClass<Expression>,
+		typeName: String)
+		-> Expression
+	{
 		return .arrayExpression(
 			elements: elements.map { replaceExpression($0) },
 			typeName: typeName)
 	}
 
-	func replaceDictionaryExpression(
+	func replaceDictionaryExpression( // annotation: open
 		keys: ArrayClass<Expression>,
 		values: ArrayClass<Expression>,
 		typeName: String)
@@ -567,11 +641,16 @@ public class TranspilationPass {
 		return .dictionaryExpression(keys: keys, values: values, typeName: typeName)
 	}
 
-	func replaceReturnExpression(innerExpression: Expression?) -> Expression {
+	func replaceReturnExpression( // annotation: open
+		innerExpression: Expression?)
+		-> Expression
+	{
 		return .returnExpression(expression: innerExpression.map { replaceExpression($0) })
 	}
 
-	func replaceDotExpression(leftExpression: Expression, rightExpression: Expression)
+	func replaceDotExpression( // annotation: open
+		leftExpression: Expression,
+		rightExpression: Expression)
 		-> Expression
 	{
 		return .dotExpression(
@@ -579,8 +658,10 @@ public class TranspilationPass {
 			rightExpression: replaceExpression(rightExpression))
 	}
 
-	func replaceBinaryOperatorExpression(
-		leftExpression: Expression, rightExpression: Expression, operatorSymbol: String,
+	func replaceBinaryOperatorExpression( // annotation: open
+		leftExpression: Expression,
+		rightExpression: Expression,
+		operatorSymbol: String,
 		typeName: String) -> Expression
 	{
 		return .binaryOperatorExpression(
@@ -590,8 +671,11 @@ public class TranspilationPass {
 			typeName: typeName)
 	}
 
-	func replacePrefixUnaryExpression(
-		subExpression: Expression, operatorSymbol: String, typeName: String) -> Expression
+	func replacePrefixUnaryExpression( // annotation: open
+		subExpression: Expression,
+		operatorSymbol: String,
+		typeName: String)
+		-> Expression
 	{
 		return .prefixUnaryExpression(
 			subExpression: replaceExpression(subExpression),
@@ -599,8 +683,11 @@ public class TranspilationPass {
 			typeName: typeName)
 	}
 
-	func replacePostfixUnaryExpression(
-		subExpression: Expression, operatorSymbol: String, typeName: String) -> Expression
+	func replacePostfixUnaryExpression( // annotation: open
+		subExpression: Expression,
+		operatorSymbol: String,
+		typeName: String)
+		-> Expression
 	{
 		return .postfixUnaryExpression(
 			subExpression: replaceExpression(subExpression),
@@ -608,8 +695,10 @@ public class TranspilationPass {
 			typeName: typeName)
 	}
 
-	func replaceIfExpression(
-		condition: Expression, trueExpression: Expression, falseExpression: Expression)
+	func replaceIfExpression( // annotation: open
+		condition: Expression,
+		trueExpression: Expression,
+		falseExpression: Expression)
 		-> Expression
 	{
 		return .ifExpression(
@@ -618,11 +707,17 @@ public class TranspilationPass {
 			falseExpression: replaceExpression(falseExpression))
 	}
 
-	func replaceCallExpression(_ callExpression: CallExpressionData) -> Expression {
+	func replaceCallExpression( // annotation: open
+		_ callExpression: CallExpressionData)
+		-> Expression
+	{
 		return .callExpression(data: replaceCallExpressionData(callExpression))
 	}
 
-	func replaceCallExpressionData(_ callExpression: CallExpressionData) -> CallExpressionData {
+	func replaceCallExpressionData( // annotation: open
+		_ callExpression: CallExpressionData)
+		-> CallExpressionData
+	{
 		return CallExpressionData(
 			function: replaceExpression(callExpression.function),
 			parameters: replaceExpression(callExpression.parameters),
@@ -630,8 +725,10 @@ public class TranspilationPass {
 			range: callExpression.range)
 	}
 
-	func replaceClosureExpression(
-		parameters: ArrayClass<LabeledType>, statements: ArrayClass<Statement>, typeName: String)
+	func replaceClosureExpression( // annotation: open
+		parameters: ArrayClass<LabeledType>,
+		statements: ArrayClass<Statement>,
+		typeName: String)
 		-> Expression
 	{
 		return .closureExpression(
@@ -640,52 +737,56 @@ public class TranspilationPass {
 			typeName: typeName)
 	}
 
-	func replaceLiteralIntExpression(value: Int64) -> Expression {
+	func replaceLiteralIntExpression(value: Int64) -> Expression { // annotation: open
 		return .literalIntExpression(value: value)
 	}
 
-	func replaceLiteralUIntExpression(value: UInt64) -> Expression {
+	func replaceLiteralUIntExpression(value: UInt64) -> Expression { // annotation: open
 		return .literalUIntExpression(value: value)
 	}
 
-	func replaceLiteralDoubleExpression(value: Double) -> Expression {
+	func replaceLiteralDoubleExpression(value: Double) -> Expression { // annotation: open
 		return .literalDoubleExpression(value: value)
 	}
 
-	func replaceLiteralFloatExpression(value: Float) -> Expression {
+	func replaceLiteralFloatExpression(value: Float) -> Expression { // annotation: open
 		return .literalFloatExpression(value: value)
 	}
 
-	func replaceLiteralBoolExpression(value: Bool) -> Expression {
+	func replaceLiteralBoolExpression(value: Bool) -> Expression { // annotation: open
 		return .literalBoolExpression(value: value)
 	}
 
-	func replaceLiteralStringExpression(value: String) -> Expression {
+	func replaceLiteralStringExpression(value: String) -> Expression { // annotation: open
 		return .literalStringExpression(value: value)
 	}
 
-	func replaceLiteralCharacterExpression(value: String) -> Expression {
+	func replaceLiteralCharacterExpression(value: String) -> Expression { // annotation: open
 		return .literalCharacterExpression(value: value)
 	}
 
-	func replaceNilLiteralExpression() -> Expression {
+	func replaceNilLiteralExpression() -> Expression { // annotation: open
 		return .nilLiteralExpression
 	}
 
-	func replaceInterpolatedStringLiteralExpression(expressions: ArrayClass<Expression>)
+	func replaceInterpolatedStringLiteralExpression( // annotation: open
+		expressions: ArrayClass<Expression>)
 		-> Expression
 	{
 		return .interpolatedStringLiteralExpression(
 			expressions: expressions.map { replaceExpression($0) })
 	}
 
-	func replaceTupleExpression(pairs: ArrayClass<LabeledExpression>) -> Expression {
+	func replaceTupleExpression( // annotation: open
+		pairs: ArrayClass<LabeledExpression>)
+		-> Expression
+	{
 		return .tupleExpression( pairs: pairs.map {
 			LabeledExpression(label: $0.label, expression: replaceExpression($0.expression))
 		})
 	}
 
-	func replaceTupleShuffleExpression(
+	func replaceTupleShuffleExpression( // annotation: open
 		labels: ArrayClass<String>,
 		indices: ArrayClass<TupleShuffleIndex>,
 		expressions: ArrayClass<Expression>)
@@ -698,8 +799,11 @@ public class TranspilationPass {
 	}
 }
 
-public class DescriptionAsToStringTranspilationPass: TranspilationPass { // kotlin: ignore
-	override func replaceVariableDeclaration(_ variableDeclaration: VariableDeclarationData)
+public class DescriptionAsToStringTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	override func replaceVariableDeclaration( // annotation: override
+		_ variableDeclaration: VariableDeclarationData)
 		-> ArrayClass<Statement>
 	{
 		if variableDeclaration.identifier == "description",

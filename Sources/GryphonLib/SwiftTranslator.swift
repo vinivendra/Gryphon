@@ -1971,6 +1971,20 @@ public class SwiftTranslator {
 					"subtrees",
 					ast: expression, translator: self)
 			}
+		case "Super Reference Expression":
+			if let typeName = expression["type"] {
+				result = .declarationReferenceExpression(data: DeclarationReferenceData(
+					identifier: "super",
+					typeName: typeName,
+					isStandardLibrary: false,
+					isImplicit: false,
+					range: getRange(ofNode: expression)))
+			}
+			else {
+				result = try unexpectedExpressionStructureError(
+					"Unable to get type from Super Reference Expression",
+					ast: expression, translator: self)
+			}
 		case "Autoclosure Expression",
 			 "Inject Into Optional",
 			 "Optional Evaluation Expression",

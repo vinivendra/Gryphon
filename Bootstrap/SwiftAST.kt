@@ -1,4 +1,4 @@
-class SwiftAST: PrintableAsTree {
+open class SwiftAST: PrintableAsTree {
     companion object {
         var horizontalLimitWhenPrinting: Int = Int.MAX_VALUE
     }

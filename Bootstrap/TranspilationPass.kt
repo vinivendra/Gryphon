@@ -1,4 +1,4 @@
-class TranspilationPass {
+open class TranspilationPass {
     companion object {
         internal fun isASwiftRawRepresentableType(typeName: String): Boolean {
             return mutableListOf("String", "Int", "Int8", "Int16", "Int32", "Int64", "UInt", "UInt8", "UInt16", "UInt32", "UInt64", "Float", "Float32", "Float64", "Float80", "Double").contains(typeName)
@@ -16,7 +16,7 @@ class TranspilationPass {
         this.ast = ast
     }
 
-    internal fun run(): GryphonAST {
+    open internal fun run(): GryphonAST {
         val replacedStatements: MutableList<Statement> = replaceStatements(ast.statements)
         val replacedDeclarations: MutableList<Statement> = replaceStatements(ast.declarations)
         return GryphonAST(
@@ -25,11 +25,14 @@ class TranspilationPass {
             statements = replacedStatements)
     }
 
-    internal fun replaceStatements(statements: MutableList<Statement>): MutableList<Statement> {
+    open internal fun replaceStatements(
+        statements: MutableList<Statement>)
+        : MutableList<Statement>
+    {
         return statements.flatMap { replaceStatement(it) }.toMutableList()
     }
 
-    internal fun replaceStatement(statement: Statement): MutableList<Statement> {
+    open internal fun replaceStatement(statement: Statement): MutableList<Statement> {
         try {
             parents.add(ASTNode.StatementNode(value = statement))
             return when (statement) {
@@ -167,11 +170,11 @@ class TranspilationPass {
         }
     }
 
-    internal fun replaceExpressionStatement(expression: Expression): MutableList<Statement> {
+    open internal fun replaceExpressionStatement(expression: Expression): MutableList<Statement> {
         return mutableListOf(Statement.ExpressionStatement(expression = replaceExpression(expression)))
     }
 
-    internal fun replaceExtension(
+    open internal fun replaceExtension(
         typeName: String,
         members: MutableList<Statement>)
         : MutableList<Statement>
@@ -179,11 +182,11 @@ class TranspilationPass {
         return mutableListOf(Statement.ExtensionDeclaration(typeName = typeName, members = replaceStatements(members)))
     }
 
-    internal fun replaceImportDeclaration(moduleName: String): MutableList<Statement> {
+    open internal fun replaceImportDeclaration(moduleName: String): MutableList<Statement> {
         return mutableListOf(Statement.ImportDeclaration(moduleName = moduleName))
     }
 
-    internal fun replaceTypealiasDeclaration(
+    open internal fun replaceTypealiasDeclaration(
         identifier: String,
         typeName: String,
         isImplicit: Boolean)
@@ -195,7 +198,7 @@ class TranspilationPass {
             isImplicit = isImplicit))
     }
 
-    internal fun replaceClassDeclaration(
+    open internal fun replaceClassDeclaration(
         name: String,
         inherits: MutableList<String>,
         members: MutableList<Statement>)
@@ -207,11 +210,14 @@ class TranspilationPass {
             members = replaceStatements(members)))
     }
 
-    internal fun replaceCompanionObject(members: MutableList<Statement>): MutableList<Statement> {
+    open internal fun replaceCompanionObject(
+        members: MutableList<Statement>)
+        : MutableList<Statement>
+    {
         return mutableListOf(Statement.CompanionObject(members = replaceStatements(members)))
     }
 
-    internal fun replaceEnumDeclaration(
+    open internal fun replaceEnumDeclaration(
         access: String?,
         enumName: String,
         inherits: MutableList<String>,
@@ -233,7 +239,7 @@ class TranspilationPass {
             isImplicit = isImplicit))
     }
 
-    internal fun replaceEnumElementDeclaration(
+    open internal fun replaceEnumElementDeclaration(
         enumName: String,
         associatedValues: MutableList<LabeledType>,
         rawValue: Expression?,
@@ -247,7 +253,7 @@ class TranspilationPass {
             annotations = annotations))
     }
 
-    internal fun replaceProtocolDeclaration(
+    open internal fun replaceProtocolDeclaration(
         protocolName: String,
         members: MutableList<Statement>)
         : MutableList<Statement>
@@ -255,7 +261,7 @@ class TranspilationPass {
         return mutableListOf(Statement.ProtocolDeclaration(protocolName = protocolName, members = replaceStatements(members)))
     }
 
-    internal fun replaceStructDeclaration(
+    open internal fun replaceStructDeclaration(
         annotations: String?,
         structName: String,
         inherits: MutableList<String>,
@@ -269,7 +275,7 @@ class TranspilationPass {
             members = replaceStatements(members)))
     }
 
-    internal fun replaceFunctionDeclaration(
+    open internal fun replaceFunctionDeclaration(
         functionDeclaration: FunctionDeclarationData)
         : MutableList<Statement>
     {
@@ -282,7 +288,7 @@ class TranspilationPass {
         }
     }
 
-    internal fun replaceFunctionDeclarationData(
+    open internal fun replaceFunctionDeclarationData(
         functionDeclaration: FunctionDeclarationData)
         : FunctionDeclarationData?
     {
@@ -299,14 +305,14 @@ class TranspilationPass {
         return functionDeclaration
     }
 
-    internal fun replaceVariableDeclaration(
+    open internal fun replaceVariableDeclaration(
         variableDeclaration: VariableDeclarationData)
         : MutableList<Statement>
     {
         return mutableListOf(Statement.VariableDeclaration(data = replaceVariableDeclarationData(variableDeclaration)))
     }
 
-    internal fun replaceVariableDeclarationData(
+    open internal fun replaceVariableDeclarationData(
         variableDeclaration: VariableDeclarationData)
         : VariableDeclarationData
     {
@@ -329,11 +335,14 @@ class TranspilationPass {
         return variableDeclaration
     }
 
-    internal fun replaceDoStatement(statements: MutableList<Statement>): MutableList<Statement> {
+    open internal fun replaceDoStatement(
+        statements: MutableList<Statement>)
+        : MutableList<Statement>
+    {
         return mutableListOf(Statement.DoStatement(statements = replaceStatements(statements)))
     }
 
-    internal fun replaceCatchStatement(
+    open internal fun replaceCatchStatement(
         variableDeclaration: VariableDeclarationData?,
         statements: MutableList<Statement>)
         : MutableList<Statement>
@@ -343,7 +352,7 @@ class TranspilationPass {
             statements = replaceStatements(statements)))
     }
 
-    internal fun replaceForEachStatement(
+    open internal fun replaceForEachStatement(
         collection: Expression,
         variable: Expression,
         statements: MutableList<Statement>)
@@ -355,7 +364,7 @@ class TranspilationPass {
             statements = replaceStatements(statements)))
     }
 
-    internal fun replaceWhileStatement(
+    open internal fun replaceWhileStatement(
         expression: Expression,
         statements: MutableList<Statement>)
         : MutableList<Statement>
@@ -365,11 +374,11 @@ class TranspilationPass {
             statements = replaceStatements(statements)))
     }
 
-    internal fun replaceIfStatement(ifStatement: IfStatementData): MutableList<Statement> {
+    open internal fun replaceIfStatement(ifStatement: IfStatementData): MutableList<Statement> {
         return mutableListOf(Statement.IfStatement(data = replaceIfStatementData(ifStatement)))
     }
 
-    internal fun replaceIfStatementData(ifStatement: IfStatementData): IfStatementData {
+    open internal fun replaceIfStatementData(ifStatement: IfStatementData): IfStatementData {
         val ifStatement: IfStatementData = ifStatement
 
         ifStatement.conditions = replaceIfConditions(ifStatement.conditions)
@@ -380,14 +389,14 @@ class TranspilationPass {
         return ifStatement
     }
 
-    internal fun replaceIfConditions(
+    open internal fun replaceIfConditions(
         conditions: MutableList<IfStatementData.IfCondition>)
         : MutableList<IfStatementData.IfCondition>
     {
         return conditions.map { replaceIfCondition(it) }.toMutableList()
     }
 
-    internal fun replaceIfCondition(
+    open internal fun replaceIfCondition(
         condition: IfStatementData.IfCondition)
         : IfStatementData.IfCondition
     {
@@ -404,7 +413,7 @@ class TranspilationPass {
         }
     }
 
-    internal fun replaceSwitchStatement(
+    open internal fun replaceSwitchStatement(
         convertsToExpression: Statement?,
         expression: Expression,
         cases: MutableList<SwitchCase>)
@@ -435,22 +444,22 @@ class TranspilationPass {
             cases = replacedCases))
     }
 
-    internal fun replaceDeferStatement(
+    open internal fun replaceDeferStatement(
         statements: MutableList<Statement>)
         : MutableList<Statement>
     {
         return mutableListOf(Statement.DeferStatement(statements = replaceStatements(statements)))
     }
 
-    internal fun replaceThrowStatement(expression: Expression): MutableList<Statement> {
+    open internal fun replaceThrowStatement(expression: Expression): MutableList<Statement> {
         return mutableListOf(Statement.ThrowStatement(expression = replaceExpression(expression)))
     }
 
-    internal fun replaceReturnStatement(expression: Expression?): MutableList<Statement> {
+    open internal fun replaceReturnStatement(expression: Expression?): MutableList<Statement> {
         return mutableListOf(Statement.ReturnStatement(expression = expression?.let { replaceExpression(it) }))
     }
 
-    internal fun replaceAssignmentStatement(
+    open internal fun replaceAssignmentStatement(
         leftHand: Expression,
         rightHand: Expression)
         : MutableList<Statement>
@@ -460,7 +469,7 @@ class TranspilationPass {
             rightHand = replaceExpression(rightHand)))
     }
 
-    internal fun replaceExpression(expression: Expression): Expression {
+    open internal fun replaceExpression(expression: Expression): Expression {
         try {
             parents.add(ASTNode.ExpressionNode(value = expression))
             return when (expression) {
@@ -633,7 +642,7 @@ class TranspilationPass {
         }
     }
 
-    internal fun replaceTemplateExpression(
+    open internal fun replaceTemplateExpression(
         pattern: String,
         matches: MutableMap<String, Expression>)
         : Expression
@@ -642,23 +651,23 @@ class TranspilationPass {
         return Expression.TemplateExpression(pattern = pattern, matches = newMatches)
     }
 
-    internal fun replaceLiteralCodeExpression(string: String): Expression {
+    open internal fun replaceLiteralCodeExpression(string: String): Expression {
         return Expression.LiteralCodeExpression(string = string)
     }
 
-    internal fun replaceParenthesesExpression(expression: Expression): Expression {
+    open internal fun replaceParenthesesExpression(expression: Expression): Expression {
         return Expression.ParenthesesExpression(expression = replaceExpression(expression))
     }
 
-    internal fun replaceForceValueExpression(expression: Expression): Expression {
+    open internal fun replaceForceValueExpression(expression: Expression): Expression {
         return Expression.ForceValueExpression(expression = replaceExpression(expression))
     }
 
-    internal fun replaceOptionalExpression(expression: Expression): Expression {
+    open internal fun replaceOptionalExpression(expression: Expression): Expression {
         return Expression.OptionalExpression(expression = replaceExpression(expression))
     }
 
-    internal fun replaceDeclarationReferenceExpression(
+    open internal fun replaceDeclarationReferenceExpression(
         declarationReferenceExpression: DeclarationReferenceData)
         : Expression
     {
@@ -666,18 +675,18 @@ class TranspilationPass {
             data = replaceDeclarationReferenceExpressionData(declarationReferenceExpression))
     }
 
-    internal fun replaceDeclarationReferenceExpressionData(
+    open internal fun replaceDeclarationReferenceExpressionData(
         declarationReferenceExpression: DeclarationReferenceData)
         : DeclarationReferenceData
     {
         return declarationReferenceExpression
     }
 
-    internal fun replaceTypeExpression(typeName: String): Expression {
+    open internal fun replaceTypeExpression(typeName: String): Expression {
         return Expression.TypeExpression(typeName = typeName)
     }
 
-    internal fun replaceSubscriptExpression(
+    open internal fun replaceSubscriptExpression(
         subscriptedExpression: Expression,
         indexExpression: Expression,
         typeName: String)
@@ -689,7 +698,7 @@ class TranspilationPass {
             typeName = typeName)
     }
 
-    internal fun replaceArrayExpression(
+    open internal fun replaceArrayExpression(
         elements: MutableList<Expression>,
         typeName: String)
         : Expression
@@ -699,7 +708,7 @@ class TranspilationPass {
             typeName = typeName)
     }
 
-    internal fun replaceDictionaryExpression(
+    open internal fun replaceDictionaryExpression(
         keys: MutableList<Expression>,
         values: MutableList<Expression>,
         typeName: String)
@@ -708,11 +717,11 @@ class TranspilationPass {
         return Expression.DictionaryExpression(keys = keys, values = values, typeName = typeName)
     }
 
-    internal fun replaceReturnExpression(innerExpression: Expression?): Expression {
+    open internal fun replaceReturnExpression(innerExpression: Expression?): Expression {
         return Expression.ReturnExpression(expression = innerExpression?.let { replaceExpression(it) })
     }
 
-    internal fun replaceDotExpression(
+    open internal fun replaceDotExpression(
         leftExpression: Expression,
         rightExpression: Expression)
         : Expression
@@ -722,7 +731,7 @@ class TranspilationPass {
             rightExpression = replaceExpression(rightExpression))
     }
 
-    internal fun replaceBinaryOperatorExpression(
+    open internal fun replaceBinaryOperatorExpression(
         leftExpression: Expression,
         rightExpression: Expression,
         operatorSymbol: String,
@@ -736,7 +745,7 @@ class TranspilationPass {
             typeName = typeName)
     }
 
-    internal fun replacePrefixUnaryExpression(
+    open internal fun replacePrefixUnaryExpression(
         subExpression: Expression,
         operatorSymbol: String,
         typeName: String)
@@ -748,7 +757,7 @@ class TranspilationPass {
             typeName = typeName)
     }
 
-    internal fun replacePostfixUnaryExpression(
+    open internal fun replacePostfixUnaryExpression(
         subExpression: Expression,
         operatorSymbol: String,
         typeName: String)
@@ -760,7 +769,7 @@ class TranspilationPass {
             typeName = typeName)
     }
 
-    internal fun replaceIfExpression(
+    open internal fun replaceIfExpression(
         condition: Expression,
         trueExpression: Expression,
         falseExpression: Expression)
@@ -772,11 +781,11 @@ class TranspilationPass {
             falseExpression = replaceExpression(falseExpression))
     }
 
-    internal fun replaceCallExpression(callExpression: CallExpressionData): Expression {
+    open internal fun replaceCallExpression(callExpression: CallExpressionData): Expression {
         return Expression.CallExpression(data = replaceCallExpressionData(callExpression))
     }
 
-    internal fun replaceCallExpressionData(
+    open internal fun replaceCallExpressionData(
         callExpression: CallExpressionData)
         : CallExpressionData
     {
@@ -787,7 +796,7 @@ class TranspilationPass {
             range = callExpression.range)
     }
 
-    internal fun replaceClosureExpression(
+    open internal fun replaceClosureExpression(
         parameters: MutableList<LabeledType>,
         statements: MutableList<Statement>,
         typeName: String)
@@ -799,39 +808,39 @@ class TranspilationPass {
             typeName = typeName)
     }
 
-    internal fun replaceLiteralIntExpression(value: Long): Expression {
+    open internal fun replaceLiteralIntExpression(value: Long): Expression {
         return Expression.LiteralIntExpression(value = value)
     }
 
-    internal fun replaceLiteralUIntExpression(value: ULong): Expression {
+    open internal fun replaceLiteralUIntExpression(value: ULong): Expression {
         return Expression.LiteralUIntExpression(value = value)
     }
 
-    internal fun replaceLiteralDoubleExpression(value: Double): Expression {
+    open internal fun replaceLiteralDoubleExpression(value: Double): Expression {
         return Expression.LiteralDoubleExpression(value = value)
     }
 
-    internal fun replaceLiteralFloatExpression(value: Float): Expression {
+    open internal fun replaceLiteralFloatExpression(value: Float): Expression {
         return Expression.LiteralFloatExpression(value = value)
     }
 
-    internal fun replaceLiteralBoolExpression(value: Boolean): Expression {
+    open internal fun replaceLiteralBoolExpression(value: Boolean): Expression {
         return Expression.LiteralBoolExpression(value = value)
     }
 
-    internal fun replaceLiteralStringExpression(value: String): Expression {
+    open internal fun replaceLiteralStringExpression(value: String): Expression {
         return Expression.LiteralStringExpression(value = value)
     }
 
-    internal fun replaceLiteralCharacterExpression(value: String): Expression {
+    open internal fun replaceLiteralCharacterExpression(value: String): Expression {
         return Expression.LiteralCharacterExpression(value = value)
     }
 
-    internal fun replaceNilLiteralExpression(): Expression {
+    open internal fun replaceNilLiteralExpression(): Expression {
         return Expression.NilLiteralExpression()
     }
 
-    internal fun replaceInterpolatedStringLiteralExpression(
+    open internal fun replaceInterpolatedStringLiteralExpression(
         expressions: MutableList<Expression>)
         : Expression
     {
@@ -839,12 +848,12 @@ class TranspilationPass {
             expressions = expressions.map { replaceExpression(it) }.toMutableList())
     }
 
-    internal fun replaceTupleExpression(pairs: MutableList<LabeledExpression>): Expression {
+    open internal fun replaceTupleExpression(pairs: MutableList<LabeledExpression>): Expression {
         return Expression.TupleExpression(
             pairs = pairs.map { LabeledExpression(label = it.label, expression = replaceExpression(it.expression)) }.toMutableList())
     }
 
-    internal fun replaceTupleShuffleExpression(
+    open internal fun replaceTupleShuffleExpression(
         labels: MutableList<String>,
         indices: MutableList<TupleShuffleIndex>,
         expressions: MutableList<Expression>)
@@ -854,6 +863,35 @@ class TranspilationPass {
             labels = labels,
             indices = indices,
             expressions = expressions.map { replaceExpression(it) }.toMutableList())
+    }
+}
+
+open class DescriptionAsToStringTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    override internal fun replaceVariableDeclaration(
+        variableDeclaration: VariableDeclarationData)
+        : MutableList<Statement>
+    {
+        val getter: FunctionDeclarationData? = variableDeclaration.getter
+        if (variableDeclaration.identifier == "description" && variableDeclaration.typeName == "String" && getter != null) {
+            return mutableListOf(Statement.FunctionDeclaration(
+                data = FunctionDeclarationData(
+                        prefix = "toString",
+                        parameters = mutableListOf(),
+                        returnType = "String",
+                        functionType = "() -> String",
+                        genericTypes = mutableListOf(),
+                        isImplicit = false,
+                        isStatic = false,
+                        isMutating = false,
+                        isPure = false,
+                        extendsType = variableDeclaration.extendsType,
+                        statements = getter.statements,
+                        access = null,
+                        annotations = variableDeclaration.annotations)))
+        }
+        return super.replaceVariableDeclaration(variableDeclaration)
     }
 }
 

@@ -1,4 +1,4 @@
-class GryphonAST: PrintableAsTree {
+open class GryphonAST: PrintableAsTree {
     val sourceFile: SourceFile?
     val declarations: MutableList<Statement>
     val statements: MutableList<Statement>
@@ -610,7 +610,7 @@ data class FunctionParameter(
     val value: Expression?
 )
 
-class VariableDeclarationData {
+open class VariableDeclarationData {
     var identifier: String
     var typeName: String
     var expression: Expression? = null
@@ -647,7 +647,7 @@ class VariableDeclarationData {
     }
 }
 
-class DeclarationReferenceData {
+open class DeclarationReferenceData {
     var identifier: String
     var typeName: String
     var isStandardLibrary: Boolean
@@ -669,7 +669,7 @@ class DeclarationReferenceData {
     }
 }
 
-class CallExpressionData {
+open class CallExpressionData {
     var function: Expression
     var parameters: Expression
     var typeName: String
@@ -688,7 +688,7 @@ class CallExpressionData {
     }
 }
 
-class FunctionDeclarationData {
+open class FunctionDeclarationData {
     var prefix: String
     var parameters: MutableList<FunctionParameter>
     var returnType: String
@@ -734,7 +734,7 @@ class FunctionDeclarationData {
     }
 }
 
-class IfStatementData {
+open class IfStatementData {
     var conditions: MutableList<IfStatementData.IfCondition>
     var declarations: MutableList<VariableDeclarationData>
     var statements: MutableList<Statement>
@@ -774,7 +774,7 @@ class IfStatementData {
     }
 }
 
-class SwitchCase {
+open class SwitchCase {
     var expressions: MutableList<Expression>
     var statements: MutableList<Statement>
 
@@ -784,7 +784,7 @@ class SwitchCase {
     }
 }
 
-class EnumElement: PrintableAsTree {
+open class EnumElement: PrintableAsTree {
     var name: String
     var associatedValues: MutableList<LabeledType>
     var rawValue: Expression? = null
