@@ -1305,10 +1305,14 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass { // kotlin: ig
 // TODO: test
 // TODO: add support for return whens (maybe put this before the when pass)
 public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass { // kotlin: ignore
-	private var returnTypesStack: [String] = []
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	private var returnTypesStack: ArrayClass<String> = []
 
 	private func removePrefixFromPossibleEnumReference(
-		leftExpression: Expression, rightExpression: Expression) -> Expression
+		leftExpression: Expression,
+		rightExpression: Expression)
+		-> Expression
 	{
 		if case let .typeExpression(typeName: enumType) = leftExpression,
 			case let .declarationReferenceExpression(data: enumExpression) = rightExpression,
@@ -1323,7 +1327,8 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass { // k
 		}
 	}
 
-	override func replaceFunctionDeclarationData(_ functionDeclaration: FunctionDeclarationData)
+	override func replaceFunctionDeclarationData( // annotation: override
+		_ functionDeclaration: FunctionDeclarationData)
 		-> FunctionDeclarationData?
 	{
 		returnTypesStack.append(functionDeclaration.returnType)
@@ -1331,24 +1336,28 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass { // k
 		return super.replaceFunctionDeclarationData(functionDeclaration)
 	}
 
-	override func replaceReturnStatement(expression: Expression?) -> ArrayClass<Statement> {
+	override func replaceReturnStatement( // annotation: override
+		expression: Expression?)
+		-> ArrayClass<Statement>
+	{
 		if let returnType = returnTypesStack.last,
 			let expression = expression,
 			case let .dotExpression(
 				leftExpression: leftExpression,
-				rightExpression: rightExpression) = expression,
-			case let .typeExpression(typeName: typeExpression) = leftExpression
+				rightExpression: rightExpression) = expression
 		{
-			// It's ok to omit if the return type is an optional enum too
-			var returnType = returnType
-			if returnType.hasSuffix("?") {
-				returnType.removeLast("?".count)
-			}
+			if case let .typeExpression(typeName: typeExpression) = leftExpression {
+				// It's ok to omit if the return type is an optional enum too
+				var returnType = returnType
+				if returnType.hasSuffix("?") {
+					returnType.removeLast("?".count)
+				}
 
-			if typeExpression == returnType {
-				let newExpression = removePrefixFromPossibleEnumReference(
-					leftExpression: leftExpression, rightExpression: rightExpression)
-				return [.returnStatement(expression: newExpression)]
+				if typeExpression == returnType {
+					let newExpression = removePrefixFromPossibleEnumReference(
+						leftExpression: leftExpression, rightExpression: rightExpression)
+					return [.returnStatement(expression: newExpression)]
+				}
 			}
 		}
 
@@ -1356,10 +1365,15 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass { // k
 	}
 }
 
-public class RenameOperatorsTranspilationPass: TranspilationPass { // kotlin: ignore
-	override func replaceBinaryOperatorExpression(
-		leftExpression: Expression, rightExpression: Expression, operatorSymbol: String,
-		typeName: String) -> Expression
+public class RenameOperatorsTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	override func replaceBinaryOperatorExpression( // annotation: override
+		leftExpression: Expression,
+		rightExpression: Expression,
+		operatorSymbol: String,
+		typeName: String)
+		-> Expression
 	{
 		if operatorSymbol == "??" {
 			return super.replaceBinaryOperatorExpression(
@@ -1378,25 +1392,28 @@ public class RenameOperatorsTranspilationPass: TranspilationPass { // kotlin: ig
 	}
 }
 
-public class SelfToThisTranspilationPass: TranspilationPass { // kotlin: ignore
-	override func replaceDotExpression(
-		leftExpression: Expression, rightExpression: Expression) -> Expression
+public class SelfToThisTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	override func replaceDotExpression( // annotation: override
+		leftExpression: Expression,
+		rightExpression: Expression)
+		-> Expression
 	{
-		if case let .declarationReferenceExpression(data: expression) = leftExpression,
-			expression.identifier == "self",
-			expression.isImplicit
-		{
-			return replaceExpression(rightExpression)
+		if case let .declarationReferenceExpression(data: expression) = leftExpression {
+			if expression.identifier == "self", expression.isImplicit {
+				return replaceExpression(rightExpression)
+			}
 		}
-		else {
-			return .dotExpression(
-				leftExpression: replaceExpression(leftExpression),
-				rightExpression: replaceExpression(rightExpression))
-		}
+
+		return .dotExpression(
+			leftExpression: replaceExpression(leftExpression),
+			rightExpression: replaceExpression(rightExpression))
 	}
 
-	override func replaceDeclarationReferenceExpressionData(
-		_ expression: DeclarationReferenceData) -> DeclarationReferenceData
+	override func replaceDeclarationReferenceExpressionData( // annotation: override
+		_ expression: DeclarationReferenceData)
+		-> DeclarationReferenceData
 	{
 		if expression.identifier == "self" {
 			let expression = expression
@@ -1409,14 +1426,16 @@ public class SelfToThisTranspilationPass: TranspilationPass { // kotlin: ignore
 
 /// Declarations can't conform to Swift-only protocols like Codable and Equatable, and enums can't
 /// inherit from types Strings and Ints.
-public class CleanInheritancesTranspilationPass: TranspilationPass { // kotlin: ignore
-	private func isNotASwiftProtocol(_ protocolName: String) -> Bool {
-		return ![
+public class CleanInheritancesTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	private func isASwiftProtocol(_ protocolName: String) -> Bool {
+		return [
 			"Equatable", "Codable", "Decodable", "Encodable", "CustomStringConvertible",
 			].contains(protocolName)
 	}
 
-	override func replaceEnumDeclaration(
+	override func replaceEnumDeclaration( // annotation: override
 		access: String?,
 		enumName: String,
 		inherits: ArrayClass<String>,
@@ -1429,14 +1448,14 @@ public class CleanInheritancesTranspilationPass: TranspilationPass { // kotlin: 
 			access: access,
 			enumName: enumName,
 			inherits: inherits.filter {
-					isNotASwiftProtocol($0) && !TranspilationPass.isASwiftRawRepresentableType($0)
+					!isASwiftProtocol($0) && !TranspilationPass.isASwiftRawRepresentableType($0)
 				},
 			elements: elements,
 			members: members,
 			isImplicit: isImplicit)
 	}
 
-	override func replaceStructDeclaration(
+	override func replaceStructDeclaration( // annotation: override
 		annotations: String?,
 		structName: String,
 		inherits: ArrayClass<String>,
@@ -1446,11 +1465,11 @@ public class CleanInheritancesTranspilationPass: TranspilationPass { // kotlin: 
 		return super.replaceStructDeclaration(
 			annotations: annotations,
 			structName: structName,
-			inherits: inherits.filter(isNotASwiftProtocol),
+			inherits: inherits.filter { !isASwiftProtocol($0) },
 			members: members)
 	}
 
-	override func replaceClassDeclaration(
+	override func replaceClassDeclaration( // annotation: override
 		name: String,
 		inherits: ArrayClass<String>,
 		members: ArrayClass<Statement>)
@@ -1458,15 +1477,18 @@ public class CleanInheritancesTranspilationPass: TranspilationPass { // kotlin: 
 	{
 		return super.replaceClassDeclaration(
 			name: name,
-			inherits: inherits.filter(isNotASwiftProtocol),
+			inherits: inherits.filter { !isASwiftProtocol($0) },
 			members: members)
 	}
 }
 
 /// The "anonymous parameter" `$0` has to be replaced by `it`
-public class AnonymousParametersTranspilationPass: TranspilationPass { // kotlin: ignore
-	override func replaceDeclarationReferenceExpressionData(
-		_ expression: DeclarationReferenceData) -> DeclarationReferenceData
+public class AnonymousParametersTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	override func replaceDeclarationReferenceExpressionData( // annotation: override
+		_ expression: DeclarationReferenceData)
+		-> DeclarationReferenceData
 	{
 		if expression.identifier == "$0" {
 			let expression = expression
@@ -1478,8 +1500,10 @@ public class AnonymousParametersTranspilationPass: TranspilationPass { // kotlin
 		}
 	}
 
-	override func replaceClosureExpression(
-		parameters: ArrayClass<LabeledType>, statements: ArrayClass<Statement>, typeName: String)
+	override func replaceClosureExpression( // annotation: override
+		parameters: ArrayClass<LabeledType>,
+		statements: ArrayClass<Statement>,
+		typeName: String)
 		-> Expression
 	{
 		if parameters.count == 1,
@@ -1513,81 +1537,92 @@ The conversion is done by calling `array.toMutableList<Element>()` rather than a
 allows translations to cover a few (not fully understood) corner cases where the array isn't a
 `MutableList` (it happened once with an `EmptyList`), meaning a normal cast would fail.
 */
-public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass { // kotlin: ignore
-	override func replaceCallExpression(_ callExpression: CallExpressionData) -> Expression {
+public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	override func replaceCallExpression( // annotation: override
+		_ callExpression: CallExpressionData)
+		-> Expression
+	{
 		if case let .typeExpression(typeName: typeName) = callExpression.function,
-			typeName.hasPrefix("ArrayClass<"),
-			case let .tupleExpression(pairs: pairs) = callExpression.parameters,
-			pairs.count == 1,
-			let onlyPair = pairs.first
+			case let .tupleExpression(pairs: pairs) = callExpression.parameters
 		{
-			let arrayClassElementType = String(typeName.dropFirst("ArrayClass<".count).dropLast())
-			let mappedElementType = Utilities.getTypeMapping(for: arrayClassElementType) ??
-				arrayClassElementType
+			if typeName.hasPrefix("ArrayClass<"),
+				pairs.count == 1,
+				let onlyPair = pairs.first
+			{
+				let arrayClassElementType = String(typeName.dropFirst("ArrayClass<".count).dropLast())
+				let mappedElementType = Utilities.getTypeMapping(for: arrayClassElementType) ??
+					arrayClassElementType
 
-			if onlyPair.label == "array" {
-				// If we're initializing with an Array of a different type, we might need to call
-				// `toMutableList`
-				if let arrayType = onlyPair.expression.swiftType {
-					let arrayElementType = arrayType.dropFirst().dropLast()
+				if onlyPair.label == "array" {
+					// If we're initializing with an Array of a different type, we might need to call
+					// `toMutableList`
+					if let arrayType = onlyPair.expression.swiftType {
+						let arrayElementType = arrayType.dropFirst().dropLast()
 
-					if arrayElementType != arrayClassElementType {
-						return .dotExpression(
-							leftExpression: replaceExpression(onlyPair.expression),
-							rightExpression: .callExpression(data: CallExpressionData(
-								function: .declarationReferenceExpression(data:
-									DeclarationReferenceData(
-										identifier: "toMutableList<\(mappedElementType)>",
-										typeName: typeName,
-										isStandardLibrary: false,
-										isImplicit: false,
-										range: nil)),
-								parameters: .tupleExpression(pairs: []),
-								typeName: typeName,
-								range: nil)))
+						if arrayElementType != arrayClassElementType {
+							return .dotExpression(
+								leftExpression: replaceExpression(onlyPair.expression),
+								rightExpression: .callExpression(data: CallExpressionData(
+									function: .declarationReferenceExpression(data:
+										DeclarationReferenceData(
+											identifier: "toMutableList<\(mappedElementType)>",
+											typeName: typeName,
+											isStandardLibrary: false,
+											isImplicit: false,
+											range: nil)),
+									parameters: .tupleExpression(pairs: []),
+									typeName: typeName,
+									range: nil)))
+						}
 					}
+					// If it's an Array of the same type, just return the array itself
+					return replaceExpression(onlyPair.expression)
 				}
-				// If it's an Array of the same type, just return the array itself
-				return replaceExpression(onlyPair.expression)
-			}
-			else {
-				return .dotExpression(
-					leftExpression: replaceExpression(onlyPair.expression),
-					rightExpression: .callExpression(data: CallExpressionData(
-						function: .declarationReferenceExpression(data:
-							DeclarationReferenceData(
-								identifier: "toMutableList<\(mappedElementType)>",
-								typeName: typeName,
-								isStandardLibrary: false,
-								isImplicit: false,
-								range: nil)),
-						parameters: .tupleExpression(pairs: []),
-						typeName: typeName,
-						range: nil)))
+				else {
+					return .dotExpression(
+						leftExpression: replaceExpression(onlyPair.expression),
+						rightExpression: .callExpression(data: CallExpressionData(
+							function: .declarationReferenceExpression(data:
+								DeclarationReferenceData(
+									identifier: "toMutableList<\(mappedElementType)>",
+									typeName: typeName,
+									isStandardLibrary: false,
+									isImplicit: false,
+									range: nil)),
+							parameters: .tupleExpression(pairs: []),
+							typeName: typeName,
+							range: nil)))
+				}
 			}
 		}
-		else if case let .dotExpression(
+
+		if case let .dotExpression(
 				leftExpression: leftExpression,
-				rightExpression: rightExpression) = callExpression.function,
-			let leftType = leftExpression.swiftType,
-			leftType.hasPrefix("ArrayClass"),
-			case let .declarationReferenceExpression(
-				data: declarationReferenceExpression) = rightExpression,
-			declarationReferenceExpression.identifier == "as",
-			case let .tupleExpression(pairs: pairs) = callExpression.parameters,
-			pairs.count == 1,
-			let onlyPair = pairs.first,
-			case let .typeExpression(typeName: typeName) = onlyPair.expression
+				rightExpression: rightExpression) = callExpression.function
 		{
-			return .binaryOperatorExpression(
-				leftExpression: leftExpression,
-				rightExpression: .typeExpression(typeName: typeName),
-				operatorSymbol: "as?",
-				typeName: typeName + "?")
+			if let leftType = leftExpression.swiftType,
+				leftType.hasPrefix("ArrayClass"),
+				case let .declarationReferenceExpression(
+					data: declarationReferenceExpression) = rightExpression,
+				case let .tupleExpression(pairs: pairs) = callExpression.parameters
+			{
+				if declarationReferenceExpression.identifier == "as",
+					pairs.count == 1,
+					let onlyPair = pairs.first,
+					case let .typeExpression(typeName: typeName) = onlyPair.expression
+				{
+					return .binaryOperatorExpression(
+						leftExpression: leftExpression,
+						rightExpression: .typeExpression(typeName: typeName),
+						operatorSymbol: "as?",
+						typeName: typeName + "?")
+				}
+			}
 		}
-		else {
-			return super.replaceCallExpression(callExpression)
-		}
+
+		return super.replaceCallExpression(callExpression)
 	}
 }
 

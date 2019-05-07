@@ -670,10 +670,10 @@ open class DeclarationReferenceData {
 }
 
 open class CallExpressionData {
-    var function: Expression
-    var parameters: Expression
-    var typeName: String
-    var range: SourceFileRange? = null
+    val function: Expression
+    val parameters: Expression
+    val typeName: String
+    val range: SourceFileRange?
 
     constructor(
         function: Expression,

@@ -886,10 +886,10 @@ public class DeclarationReferenceData: Equatable {
 }
 
 public class CallExpressionData: Equatable {
-	var function: Expression
-	var parameters: Expression
-	var typeName: String
-	var range: SourceFileRange?
+	let function: Expression
+	let parameters: Expression
+	let typeName: String
+	let range: SourceFileRange?
 
 	init(
 		function: Expression,

@@ -189,6 +189,7 @@ class BootstrappingTest: XCTestCase {
 					"Exit status: \(dumpResult.status)\n")
 				return
 			}
+			print("* AST dump successful.")
 		}
 
 		let supportedFileNames = [
@@ -242,6 +243,8 @@ class BootstrappingTest: XCTestCase {
 				return
 			}
 
+			print("\t* Done.")
+
 			guard let compilationResult = driverResult as? Shell.CommandOutput else {
 				hasError = true
 				print("Error running driver. It's possible a command timed out.\n" +
@@ -257,9 +260,11 @@ class BootstrappingTest: XCTestCase {
 					"Exit status: \(compilationResult.status)\n")
 				return
 			}
+
+			print("* Kotlin transpilation successful.")
 		}
 
-		print("* Done.")
+		print("* Done updating bootstrap files.")
 	}
 
 	static var hasError = false

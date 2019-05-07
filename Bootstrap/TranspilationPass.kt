@@ -1249,6 +1249,232 @@ open class InnerTypePrefixesTranspilationPass: TranspilationPass {
     }
 }
 
+open class RenameOperatorsTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    override internal fun replaceBinaryOperatorExpression(
+        leftExpression: Expression,
+        rightExpression: Expression,
+        operatorSymbol: String,
+        typeName: String)
+        : Expression
+    {
+        if (operatorSymbol == "??") {
+            return super.replaceBinaryOperatorExpression(
+                leftExpression = leftExpression,
+                rightExpression = rightExpression,
+                operatorSymbol = "?:",
+                typeName = typeName)
+        }
+        else {
+            return super.replaceBinaryOperatorExpression(
+                leftExpression = leftExpression,
+                rightExpression = rightExpression,
+                operatorSymbol = operatorSymbol,
+                typeName = typeName)
+        }
+    }
+}
+
+open class SelfToThisTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    override internal fun replaceDotExpression(
+        leftExpression: Expression,
+        rightExpression: Expression)
+        : Expression
+    {
+        if (leftExpression is Expression.DeclarationReferenceExpression) {
+            val expression: DeclarationReferenceData = leftExpression.data
+            if (expression.identifier == "self" && expression.isImplicit) {
+                return replaceExpression(rightExpression)
+            }
+        }
+        return Expression.DotExpression(
+            leftExpression = replaceExpression(leftExpression),
+            rightExpression = replaceExpression(rightExpression))
+    }
+
+    override internal fun replaceDeclarationReferenceExpressionData(
+        expression: DeclarationReferenceData)
+        : DeclarationReferenceData
+    {
+        if (expression.identifier == "self") {
+            val expression: DeclarationReferenceData = expression
+            expression.identifier = "this"
+            return expression
+        }
+        return super.replaceDeclarationReferenceExpressionData(expression)
+    }
+}
+
+open class CleanInheritancesTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    private fun isASwiftProtocol(protocolName: String): Boolean {
+        return mutableListOf("Equatable", "Codable", "Decodable", "Encodable", "CustomStringConvertible").contains(protocolName)
+    }
+
+    override internal fun replaceEnumDeclaration(
+        access: String?,
+        enumName: String,
+        inherits: MutableList<String>,
+        elements: MutableList<EnumElement>,
+        members: MutableList<Statement>,
+        isImplicit: Boolean)
+        : MutableList<Statement>
+    {
+        return super.replaceEnumDeclaration(
+            access = access,
+            enumName = enumName,
+            inherits = inherits.filter { !isASwiftProtocol(it) && !TranspilationPass.isASwiftRawRepresentableType(it) }.toMutableList(),
+            elements = elements,
+            members = members,
+            isImplicit = isImplicit)
+    }
+
+    override internal fun replaceStructDeclaration(
+        annotations: String?,
+        structName: String,
+        inherits: MutableList<String>,
+        members: MutableList<Statement>)
+        : MutableList<Statement>
+    {
+        return super.replaceStructDeclaration(
+            annotations = annotations,
+            structName = structName,
+            inherits = inherits.filter { !isASwiftProtocol(it) }.toMutableList(),
+            members = members)
+    }
+
+    override internal fun replaceClassDeclaration(
+        name: String,
+        inherits: MutableList<String>,
+        members: MutableList<Statement>)
+        : MutableList<Statement>
+    {
+        return super.replaceClassDeclaration(
+            name = name,
+            inherits = inherits.filter { !isASwiftProtocol(it) }.toMutableList(),
+            members = members)
+    }
+}
+
+open class AnonymousParametersTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    override internal fun replaceDeclarationReferenceExpressionData(
+        expression: DeclarationReferenceData)
+        : DeclarationReferenceData
+    {
+        if (expression.identifier == "$0") {
+            val expression: DeclarationReferenceData = expression
+            expression.identifier = "it"
+            return expression
+        }
+        else {
+            return super.replaceDeclarationReferenceExpressionData(expression)
+        }
+    }
+
+    override internal fun replaceClosureExpression(
+        parameters: MutableList<LabeledType>,
+        statements: MutableList<Statement>,
+        typeName: String)
+        : Expression
+    {
+        if (parameters.size == 1 && parameters[0].label == "$0") {
+            return super.replaceClosureExpression(
+                parameters = mutableListOf(),
+                statements = statements,
+                typeName = typeName)
+        }
+        else {
+            return super.replaceClosureExpression(
+                parameters = parameters,
+                statements = statements,
+                typeName = typeName)
+        }
+    }
+}
+
+open class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    override internal fun replaceCallExpression(callExpression: CallExpressionData): Expression {
+        if (callExpression.function is Expression.TypeExpression && callExpression.parameters is Expression.TupleExpression) {
+            val typeName: String = callExpression.function.typeName
+            val pairs: MutableList<LabeledExpression> = callExpression.parameters.pairs
+            val onlyPair: LabeledExpression? = pairs.firstOrNull()
+
+            if (typeName.startsWith("ArrayClass<") && pairs.size == 1 && onlyPair != null) {
+                val arrayClassElementType: String = typeName.drop("ArrayClass<".length).dropLast(1)
+                val mappedElementType: String = Utilities.getTypeMapping(typeName = arrayClassElementType) ?: arrayClassElementType
+                if (onlyPair.label == "array") {
+                    val arrayType: String? = onlyPair.expression.swiftType
+                    if (arrayType != null) {
+                        val arrayElementType: String = arrayType.drop(1).dropLast(1)
+                        if (arrayElementType != arrayClassElementType) {
+                            return Expression.DotExpression(
+                                leftExpression = replaceExpression(onlyPair.expression),
+                                rightExpression = Expression.CallExpression(
+                                        data = CallExpressionData(
+                                                function = Expression.DeclarationReferenceExpression(
+                                                        data = DeclarationReferenceData(
+                                                                identifier = "toMutableList<${mappedElementType}>",
+                                                                typeName = typeName,
+                                                                isStandardLibrary = false,
+                                                                isImplicit = false,
+                                                                range = null)),
+                                                parameters = Expression.TupleExpression(pairs = mutableListOf()),
+                                                typeName = typeName,
+                                                range = null)))
+                        }
+                    }
+                    return replaceExpression(onlyPair.expression)
+                }
+                else {
+                    return Expression.DotExpression(
+                        leftExpression = replaceExpression(onlyPair.expression),
+                        rightExpression = Expression.CallExpression(
+                                data = CallExpressionData(
+                                        function = Expression.DeclarationReferenceExpression(
+                                                data = DeclarationReferenceData(
+                                                        identifier = "toMutableList<${mappedElementType}>",
+                                                        typeName = typeName,
+                                                        isStandardLibrary = false,
+                                                        isImplicit = false,
+                                                        range = null)),
+                                        parameters = Expression.TupleExpression(pairs = mutableListOf()),
+                                        typeName = typeName,
+                                        range = null)))
+                }
+            }
+        }
+        if (callExpression.function is Expression.DotExpression) {
+            val leftExpression: Expression = callExpression.function.leftExpression
+            val rightExpression: Expression = callExpression.function.rightExpression
+            val leftType: String? = leftExpression.swiftType
+
+            if (leftType != null && leftType.startsWith("ArrayClass") && rightExpression is Expression.DeclarationReferenceExpression && callExpression.parameters is Expression.TupleExpression) {
+                val declarationReferenceExpression: DeclarationReferenceData = rightExpression.data
+                val pairs: MutableList<LabeledExpression> = callExpression.parameters.pairs
+                val onlyPair: LabeledExpression? = pairs.firstOrNull()
+
+                if (declarationReferenceExpression.identifier == "as" && pairs.size == 1 && onlyPair != null && onlyPair.expression is Expression.TypeExpression) {
+                    val typeName: String = onlyPair.expression.typeName
+                    return Expression.BinaryOperatorExpression(
+                        leftExpression = leftExpression,
+                        rightExpression = Expression.TypeExpression(typeName = typeName),
+                        operatorSymbol = "as?",
+                        typeName = typeName + "?")
+                }
+            }
+        }
+        return super.replaceCallExpression(callExpression)
+    }
+}
+
 public sealed class ASTNode {
     class StatementNode(val value: Statement): ASTNode()
     class ExpressionNode(val value: Expression): ASTNode()
