@@ -907,8 +907,10 @@ public class RemoveParenthesesTranspilationPass: TranspilationPass {
 }
 
 /// Removes implicit declarations so that they don't show up on the translation
-public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass { // kotlin: ignore
-	override func replaceEnumDeclaration(
+public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	override func replaceEnumDeclaration( // annotation: override
 		access: String?,
 		enumName: String,
 		inherits: ArrayClass<String>,
@@ -931,8 +933,11 @@ public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass { //
 		}
 	}
 
-	override func replaceTypealiasDeclaration(
-		identifier: String, typeName: String, isImplicit: Bool) -> ArrayClass<Statement>
+	override func replaceTypealiasDeclaration( // annotation: override
+		identifier: String,
+		typeName: String,
+		isImplicit: Bool)
+		-> ArrayClass<Statement>
 	{
 		if isImplicit {
 			return []
@@ -943,7 +948,8 @@ public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass { //
 		}
 	}
 
-	override func replaceVariableDeclaration(_ variableDeclaration: VariableDeclarationData)
+	override func replaceVariableDeclaration( // annotation: override
+		_ variableDeclaration: VariableDeclarationData)
 		-> ArrayClass<Statement>
 	{
 		if variableDeclaration.isImplicit {
@@ -954,7 +960,8 @@ public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass { //
 		}
 	}
 
-	override func replaceFunctionDeclarationData(_ functionDeclaration: FunctionDeclarationData)
+	override func replaceFunctionDeclarationData( // annotation: override
+		_ functionDeclaration: FunctionDeclarationData)
 		-> FunctionDeclarationData?
 	{
 		if functionDeclaration.isImplicit {
@@ -968,10 +975,13 @@ public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass { //
 
 /// Optional initializers can be translated as `invoke` operators to have similar syntax and
 /// functionality.
-public class OptionalInitsTranspilationPass: TranspilationPass { // kotlin: ignore
+public class OptionalInitsTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
 	private var isFailableInitializer: Bool = false
 
-	override func replaceFunctionDeclarationData(_ functionDeclaration: FunctionDeclarationData)
+	override func replaceFunctionDeclarationData( // annotation: override
+		_ functionDeclaration: FunctionDeclarationData)
 		-> FunctionDeclarationData?
 	{
 		if functionDeclaration.isStatic == true,
@@ -994,23 +1004,28 @@ public class OptionalInitsTranspilationPass: TranspilationPass { // kotlin: igno
 		return super.replaceFunctionDeclarationData(functionDeclaration)
 	}
 
-	override func replaceAssignmentStatement(leftHand: Expression, rightHand: Expression)
+	override func replaceAssignmentStatement( // annotation: override
+		leftHand: Expression,
+		rightHand: Expression)
 		-> ArrayClass<Statement>
 	{
 		if isFailableInitializer,
-			case let .declarationReferenceExpression(data: expression) = leftHand,
-			expression.identifier == "self"
+			case let .declarationReferenceExpression(data: expression) = leftHand
 		{
-			return [.returnStatement(expression: rightHand)]
+			if expression.identifier == "self" {
+				return [.returnStatement(expression: rightHand)]
+			}
 		}
-		else {
-			return super.replaceAssignmentStatement(leftHand: leftHand, rightHand: rightHand)
-		}
+
+		return super.replaceAssignmentStatement(leftHand: leftHand, rightHand: rightHand)
 	}
 }
 
-public class RemoveExtraReturnsInInitsTranspilationPass: TranspilationPass { // kotlin: ignore
-	override func replaceFunctionDeclarationData(_ functionDeclaration: FunctionDeclarationData)
+public class RemoveExtraReturnsInInitsTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	override func replaceFunctionDeclarationData( // annotation: override
+		_ functionDeclaration: FunctionDeclarationData)
 		-> FunctionDeclarationData?
 	{
 		if functionDeclaration.isStatic == true,
@@ -1030,29 +1045,33 @@ public class RemoveExtraReturnsInInitsTranspilationPass: TranspilationPass { // 
 
 /// The static functions and variables in a class must all be placed inside a single companion
 /// object.
-public class StaticMembersTranspilationPass: TranspilationPass { // kotlin: ignore
-	private func sendStaticMembersToCompanionObject(_ members: ArrayClass<Statement>)
+public class StaticMembersTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	private func sendStaticMembersToCompanionObject(
+		_ members: ArrayClass<Statement>)
 		-> ArrayClass<Statement>
 	{
 		let isStaticMember = { (member: Statement) -> Bool in
-			if case let .functionDeclaration(data: functionDeclaration) = member,
-				functionDeclaration.isStatic == true,
-				functionDeclaration.extendsType == nil,
-				functionDeclaration.prefix != "init"
-			{
-				return true
+			if case let .functionDeclaration(data: functionDeclaration) = member {
+				if functionDeclaration.isStatic == true,
+					functionDeclaration.extendsType == nil,
+					functionDeclaration.prefix != "init"
+				{
+					return true
+				}
 			}
-			else if case let .variableDeclaration(data: variableDeclaration) = member,
-				variableDeclaration.isStatic
-			{
-				return true
+
+			if case let .variableDeclaration(data: variableDeclaration) = member {
+				if variableDeclaration.isStatic {
+					return true
+				}
 			}
-			else {
-				return false
-			}
+
+			return false
 		}
 
-		let staticMembers = members.filter(isStaticMember)
+		let staticMembers = members.filter { isStaticMember($0) }
 
 		guard !staticMembers.isEmpty else {
 			return members
@@ -1060,12 +1079,13 @@ public class StaticMembersTranspilationPass: TranspilationPass { // kotlin: igno
 
 		let nonStaticMembers = members.filter { !isStaticMember($0) }
 
-		let newMembers = ArrayClass<Statement>([.companionObject(members: staticMembers)]) +
-			nonStaticMembers
+		let newMembers = ArrayClass<Statement>([.companionObject(members: staticMembers)])
+		newMembers.append(contentsOf: nonStaticMembers)
+
 		return newMembers
 	}
 
-	override func replaceClassDeclaration(
+	override func replaceClassDeclaration( // annotation: override
 		name: String,
 		inherits: ArrayClass<String>,
 		members: ArrayClass<Statement>)
@@ -1075,7 +1095,7 @@ public class StaticMembersTranspilationPass: TranspilationPass { // kotlin: igno
 		return super.replaceClassDeclaration(name: name, inherits: inherits, members: newMembers)
 	}
 
-	override func replaceStructDeclaration(
+	override func replaceStructDeclaration( // annotation: override
 		annotations: String?,
 		structName: String,
 		inherits: ArrayClass<String>,
@@ -1090,7 +1110,7 @@ public class StaticMembersTranspilationPass: TranspilationPass { // kotlin: igno
 			members: newMembers)
 	}
 
-	override func replaceEnumDeclaration(
+	override func replaceEnumDeclaration( // annotation: override
 		access: String?,
 		enumName: String,
 		inherits: ArrayClass<String>,
@@ -1119,15 +1139,17 @@ public class StaticMembersTranspilationPass: TranspilationPass { // kotlin: igno
 /// 	let x = A.B() // This becomes just B()
 /// }
 /// ````
-public class InnerTypePrefixesTranspilationPass: TranspilationPass { // kotlin: ignore
-	var typeNamesStack = [String]()
+public class InnerTypePrefixesTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	var typeNamesStack: ArrayClass<String> = []
 
 	func removePrefixes(_ typeName: String) -> String {
 		var result = typeName
 		for typeName in typeNamesStack {
 			let prefix = typeName + "."
 			if result.hasPrefix(prefix) {
-				result.removeFirst(prefix.count)
+				result = String(result.dropFirst(prefix.count))
 			}
 			else {
 				return result
@@ -1137,7 +1159,7 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass { // kotlin: 
 		return result
 	}
 
-	override func replaceClassDeclaration(
+	override func replaceClassDeclaration( // annotation: override
 		name: String,
 		inherits: ArrayClass<String>,
 		members: ArrayClass<Statement>)
@@ -1149,7 +1171,7 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass { // kotlin: 
 		return result
 	}
 
-	override func replaceStructDeclaration(
+	override func replaceStructDeclaration( // annotation: override
 		annotations: String?,
 		structName: String,
 		inherits: ArrayClass<String>,
@@ -1166,7 +1188,8 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass { // kotlin: 
 		return result
 	}
 
-	override func replaceVariableDeclarationData(_ variableDeclaration: VariableDeclarationData)
+	override func replaceVariableDeclarationData( // annotation: override
+		_ variableDeclaration: VariableDeclarationData)
 		-> VariableDeclarationData
 	{
 		let variableDeclaration = variableDeclaration
@@ -1174,7 +1197,10 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass { // kotlin: 
 		return super.replaceVariableDeclarationData(variableDeclaration)
 	}
 
-	override func replaceTypeExpression(typeName: String) -> Expression {
+	override func replaceTypeExpression( // annotation: override
+		typeName: String)
+		-> Expression
+	{
 		return .typeExpression(typeName: removePrefixes(typeName))
 	}
 }

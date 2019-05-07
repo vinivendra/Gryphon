@@ -971,6 +971,284 @@ open class RemoveParenthesesTranspilationPass: TranspilationPass {
     }
 }
 
+open class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    override internal fun replaceEnumDeclaration(
+        access: String?,
+        enumName: String,
+        inherits: MutableList<String>,
+        elements: MutableList<EnumElement>,
+        members: MutableList<Statement>,
+        isImplicit: Boolean)
+        : MutableList<Statement>
+    {
+        if (isImplicit) {
+            return mutableListOf()
+        }
+        else {
+            return super.replaceEnumDeclaration(
+                access = access,
+                enumName = enumName,
+                inherits = inherits,
+                elements = elements,
+                members = members,
+                isImplicit = isImplicit)
+        }
+    }
+
+    override internal fun replaceTypealiasDeclaration(
+        identifier: String,
+        typeName: String,
+        isImplicit: Boolean)
+        : MutableList<Statement>
+    {
+        if (isImplicit) {
+            return mutableListOf()
+        }
+        else {
+            return super.replaceTypealiasDeclaration(
+                identifier = identifier,
+                typeName = typeName,
+                isImplicit = isImplicit)
+        }
+    }
+
+    override internal fun replaceVariableDeclaration(
+        variableDeclaration: VariableDeclarationData)
+        : MutableList<Statement>
+    {
+        if (variableDeclaration.isImplicit) {
+            return mutableListOf()
+        }
+        else {
+            return super.replaceVariableDeclaration(variableDeclaration)
+        }
+    }
+
+    override internal fun replaceFunctionDeclarationData(
+        functionDeclaration: FunctionDeclarationData)
+        : FunctionDeclarationData?
+    {
+        if (functionDeclaration.isImplicit) {
+            return null
+        }
+        else {
+            return super.replaceFunctionDeclarationData(functionDeclaration)
+        }
+    }
+}
+
+open class OptionalInitsTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    var isFailableInitializer: Boolean = false
+
+    override internal fun replaceFunctionDeclarationData(
+        functionDeclaration: FunctionDeclarationData)
+        : FunctionDeclarationData?
+    {
+        if (functionDeclaration.isStatic == true && functionDeclaration.extendsType == null && functionDeclaration.prefix == "init") {
+            if (functionDeclaration.returnType.endsWith("?")) {
+                val functionDeclaration: FunctionDeclarationData = functionDeclaration
+
+                isFailableInitializer = true
+
+                val newStatements: MutableList<Statement> = replaceStatements(functionDeclaration.statements ?: mutableListOf())
+
+                isFailableInitializer = false
+                functionDeclaration.prefix = "invoke"
+                functionDeclaration.statements = newStatements
+
+                return functionDeclaration
+            }
+        }
+        return super.replaceFunctionDeclarationData(functionDeclaration)
+    }
+
+    override internal fun replaceAssignmentStatement(
+        leftHand: Expression,
+        rightHand: Expression)
+        : MutableList<Statement>
+    {
+        if (isFailableInitializer && leftHand is Expression.DeclarationReferenceExpression) {
+            val expression: DeclarationReferenceData = leftHand.data
+            if (expression.identifier == "self") {
+                return mutableListOf(Statement.ReturnStatement(expression = rightHand))
+            }
+        }
+        return super.replaceAssignmentStatement(leftHand = leftHand, rightHand = rightHand)
+    }
+}
+
+open class RemoveExtraReturnsInInitsTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    override internal fun replaceFunctionDeclarationData(
+        functionDeclaration: FunctionDeclarationData)
+        : FunctionDeclarationData?
+    {
+        val lastStatement: Statement? = functionDeclaration.statements?.lastOrNull()
+        if (functionDeclaration.isStatic == true && functionDeclaration.extendsType == null && functionDeclaration.prefix == "init" && lastStatement != null && lastStatement is Statement.ReturnStatement) {
+            val functionDeclaration: FunctionDeclarationData = functionDeclaration
+            functionDeclaration.statements?.removeLast()
+            return functionDeclaration
+        }
+        return functionDeclaration
+    }
+}
+
+open class StaticMembersTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    private fun sendStaticMembersToCompanionObject(
+        members: MutableList<Statement>)
+        : MutableList<Statement>
+    {
+        val isStaticMember: (Statement) -> Boolean = { member ->
+                if (member is Statement.FunctionDeclaration) {
+                    val functionDeclaration: FunctionDeclarationData = member.data
+                    if (functionDeclaration.isStatic == true && functionDeclaration.extendsType == null && functionDeclaration.prefix != "init") {
+                        true
+                    }
+                }
+
+                if (member is Statement.VariableDeclaration) {
+                    val variableDeclaration: VariableDeclarationData = member.data
+                    if (variableDeclaration.isStatic) {
+                        true
+                    }
+                }
+
+                false
+            }
+        val staticMembers: MutableList<Statement> = members.filter { isStaticMember(it) }.toMutableList()
+
+        if (staticMembers.isEmpty()) {
+            return members
+        }
+
+        val nonStaticMembers: MutableList<Statement> = members.filter { !isStaticMember(it) }.toMutableList()
+        val newMembers: MutableList<Statement> = mutableListOf(Statement.CompanionObject(members = staticMembers)).toMutableList<Statement>()
+
+        newMembers.addAll(nonStaticMembers)
+
+        return newMembers
+    }
+
+    override internal fun replaceClassDeclaration(
+        name: String,
+        inherits: MutableList<String>,
+        members: MutableList<Statement>)
+        : MutableList<Statement>
+    {
+        val newMembers: MutableList<Statement> = sendStaticMembersToCompanionObject(members)
+        return super.replaceClassDeclaration(name = name, inherits = inherits, members = newMembers)
+    }
+
+    override internal fun replaceStructDeclaration(
+        annotations: String?,
+        structName: String,
+        inherits: MutableList<String>,
+        members: MutableList<Statement>)
+        : MutableList<Statement>
+    {
+        val newMembers: MutableList<Statement> = sendStaticMembersToCompanionObject(members)
+        return super.replaceStructDeclaration(
+            annotations = annotations,
+            structName = structName,
+            inherits = inherits,
+            members = newMembers)
+    }
+
+    override internal fun replaceEnumDeclaration(
+        access: String?,
+        enumName: String,
+        inherits: MutableList<String>,
+        elements: MutableList<EnumElement>,
+        members: MutableList<Statement>,
+        isImplicit: Boolean)
+        : MutableList<Statement>
+    {
+        val newMembers: MutableList<Statement> = sendStaticMembersToCompanionObject(members)
+        return super.replaceEnumDeclaration(
+            access = access,
+            enumName = enumName,
+            inherits = inherits,
+            elements = elements,
+            members = newMembers,
+            isImplicit = isImplicit)
+    }
+}
+
+open class InnerTypePrefixesTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    var typeNamesStack: MutableList<String> = mutableListOf()
+
+    internal fun removePrefixes(typeName: String): String {
+        var result: String = typeName
+        for (typeName in typeNamesStack) {
+            val prefix: String = typeName + "."
+            if (result.startsWith(prefix)) {
+                result = result.drop(prefix.length)
+            }
+            else {
+                return result
+            }
+        }
+        return result
+    }
+
+    override internal fun replaceClassDeclaration(
+        name: String,
+        inherits: MutableList<String>,
+        members: MutableList<Statement>)
+        : MutableList<Statement>
+    {
+        typeNamesStack.add(name)
+
+        val result: MutableList<Statement> = super.replaceClassDeclaration(name = name, inherits = inherits, members = members)
+
+        typeNamesStack.removeLast()
+
+        return result
+    }
+
+    override internal fun replaceStructDeclaration(
+        annotations: String?,
+        structName: String,
+        inherits: MutableList<String>,
+        members: MutableList<Statement>)
+        : MutableList<Statement>
+    {
+        typeNamesStack.add(structName)
+
+        val result: MutableList<Statement> = super.replaceStructDeclaration(
+            annotations = annotations,
+            structName = structName,
+            inherits = inherits,
+            members = members)
+
+        typeNamesStack.removeLast()
+
+        return result
+    }
+
+    override internal fun replaceVariableDeclarationData(
+        variableDeclaration: VariableDeclarationData)
+        : VariableDeclarationData
+    {
+        val variableDeclaration: VariableDeclarationData = variableDeclaration
+        variableDeclaration.typeName = removePrefixes(variableDeclaration.typeName)
+        return super.replaceVariableDeclarationData(variableDeclaration)
+    }
+
+    override internal fun replaceTypeExpression(typeName: String): Expression {
+        return Expression.TypeExpression(typeName = removePrefixes(typeName))
+    }
+}
+
 public sealed class ASTNode {
     class StatementNode(val value: Statement): ASTNode()
     class ExpressionNode(val value: Expression): ASTNode()
