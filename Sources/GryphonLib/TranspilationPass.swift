@@ -830,9 +830,13 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 	}
 }
 
-public class RemoveParenthesesTranspilationPass: TranspilationPass { // kotlin: ignore
-	override func replaceSubscriptExpression(
-		subscriptedExpression: Expression, indexExpression: Expression, typeName: String)
+public class RemoveParenthesesTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	override func replaceSubscriptExpression( // annotation: override
+		subscriptedExpression: Expression,
+		indexExpression: Expression,
+		typeName: String)
 		-> Expression
 	{
 		if case let .parenthesesExpression(expression: innerExpression) = indexExpression {
@@ -848,9 +852,12 @@ public class RemoveParenthesesTranspilationPass: TranspilationPass { // kotlin: 
 			typeName: typeName)
 	}
 
-	override func replaceParenthesesExpression(expression: Expression) -> Expression {
-
-		if case let .expressionNode(parentExpression) = parent {
+	override func replaceParenthesesExpression( // annotation: override
+		expression: Expression)
+		-> Expression
+	{
+		let myParent = self.parent
+		if case let .expressionNode(parentExpression) = myParent {
 			switch parentExpression {
 			case .tupleExpression, .interpolatedStringLiteralExpression:
 				return replaceExpression(expression)
@@ -862,8 +869,10 @@ public class RemoveParenthesesTranspilationPass: TranspilationPass { // kotlin: 
 		return .parenthesesExpression(expression: replaceExpression(expression))
 	}
 
-	override func replaceIfExpression(
-		condition: Expression, trueExpression: Expression, falseExpression: Expression)
+	override func replaceIfExpression( // annotation: override
+		condition: Expression,
+		trueExpression: Expression,
+		falseExpression: Expression)
 		-> Expression
 	{
 		let replacedCondition: Expression

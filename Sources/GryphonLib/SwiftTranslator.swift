@@ -1993,7 +1993,8 @@ public class SwiftTranslator {
 			 "Function Conversion Expression",
 			 "Try Expression",
 			 "Force Try Expression",
-			 "Dot Self Expression":
+			 "Dot Self Expression",
+			 "Derived To Base Expression":
 
 			if let lastExpression = expression.subtrees.last {
 				result = try translateExpression(lastExpression)

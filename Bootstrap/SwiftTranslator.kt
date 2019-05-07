@@ -1766,7 +1766,7 @@ else {
                         translator = this)
                 }
             }
-            "Autoclosure Expression", "Inject Into Optional", "Optional Evaluation Expression", "Inout Expression", "Load Expression", "Function Conversion Expression", "Try Expression", "Force Try Expression", "Dot Self Expression" -> {
+            "Autoclosure Expression", "Inject Into Optional", "Optional Evaluation Expression", "Inout Expression", "Load Expression", "Function Conversion Expression", "Try Expression", "Force Try Expression", "Dot Self Expression", "Derived To Base Expression" -> {
                 val lastExpression: SwiftAST? = expression.subtrees.lastOrNull()
                 if (lastExpression != null) {
                     result = translateExpression(lastExpression)

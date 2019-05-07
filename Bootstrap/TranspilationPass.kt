@@ -895,6 +895,82 @@ open class DescriptionAsToStringTranspilationPass: TranspilationPass {
     }
 }
 
+open class RemoveParenthesesTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    override internal fun replaceSubscriptExpression(
+        subscriptedExpression: Expression,
+        indexExpression: Expression,
+        typeName: String)
+        : Expression
+    {
+        if (indexExpression is Expression.ParenthesesExpression) {
+            val innerExpression: Expression = indexExpression.expression
+            return super.replaceSubscriptExpression(
+                subscriptedExpression = subscriptedExpression,
+                indexExpression = innerExpression,
+                typeName = typeName)
+        }
+        return super.replaceSubscriptExpression(
+            subscriptedExpression = subscriptedExpression,
+            indexExpression = indexExpression,
+            typeName = typeName)
+    }
+
+    override internal fun replaceParenthesesExpression(expression: Expression): Expression {
+        val myParent: ASTNode = this.parent
+        if (myParent is ASTNode.ExpressionNode) {
+            val parentExpression: Expression = myParent.value
+            when (parentExpression) {
+                is Expression.TupleExpression, is Expression.InterpolatedStringLiteralExpression -> return replaceExpression(expression)
+            }
+        }
+        return Expression.ParenthesesExpression(expression = replaceExpression(expression))
+    }
+
+    override internal fun replaceIfExpression(
+        condition: Expression,
+        trueExpression: Expression,
+        falseExpression: Expression)
+        : Expression
+    {
+        val replacedCondition: Expression
+
+        if (condition is Expression.ParenthesesExpression) {
+            val innerExpression: Expression = condition.expression
+            replacedCondition = innerExpression
+        }
+        else {
+            replacedCondition = condition
+        }
+
+        val replacedTrueExpression: Expression
+
+        if (trueExpression is Expression.ParenthesesExpression) {
+            val innerExpression: Expression = trueExpression.expression
+            replacedTrueExpression = innerExpression
+        }
+        else {
+            replacedTrueExpression = trueExpression
+        }
+
+        val replacedFalseExpression: Expression
+
+        if (falseExpression is Expression.ParenthesesExpression) {
+            val innerExpression: Expression = falseExpression.expression
+            replacedFalseExpression = innerExpression
+        }
+        else {
+            replacedFalseExpression = falseExpression
+        }
+
+        return Expression.IfExpression(
+            condition = replacedCondition,
+            trueExpression = replacedTrueExpression,
+            falseExpression = replacedFalseExpression)
+    }
+}
+
 public sealed class ASTNode {
     class StatementNode(val value: Statement): ASTNode()
     class ExpressionNode(val value: Expression): ASTNode()
