@@ -165,6 +165,16 @@ open class SwiftTranslator {
             "Break Statement" -> result = mutableListOf(Statement.BreakStatement())
             "Continue Statement" -> result = mutableListOf(Statement.ContinueStatement())
             "Fail Statement" -> result = mutableListOf(Statement.ReturnStatement(expression = Expression.NilLiteralExpression()))
+            "Optional Evaluation Expression" -> {
+                val assignExpression: SwiftAST? = subtree.subtree(name = "Inject Into Optional")?.subtree(name = "Assign Expression")
+                if (assignExpression != null) {
+                    result = translateSubtree(assignExpression)
+                }
+                else {
+                    val expression: Expression = translateExpression(subtree)
+                    result = mutableListOf(Statement.ExpressionStatement(expression = expression))
+                }
+            }
             else -> if (subtree.name.endsWith("Expression")) {
     val expression: Expression = translateExpression(subtree)
     result = mutableListOf(Statement.ExpressionStatement(expression = expression))

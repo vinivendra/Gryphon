@@ -249,6 +249,20 @@ public class SwiftTranslator {
 			result = [.continueStatement]
 		case "Fail Statement":
 			result = [.returnStatement(expression: .nilLiteralExpression)]
+		case "Optional Evaluation Expression":
+
+			// Some assign statements of the form a.b?.c come enveloped in other expressions
+			let assignExpression = subtree
+				.subtree(named: "Inject Into Optional")?
+				.subtree(named: "Assign Expression")
+			if let assignExpression = assignExpression {
+				result = try translateSubtree(assignExpression)
+			}
+			else {
+				let expression = try translateExpression(subtree)
+				result = [.expressionStatement(expression: expression)]
+			}
+
 		default:
 			if subtree.name.hasSuffix("Expression") {
 				let expression = try translateExpression(subtree)
