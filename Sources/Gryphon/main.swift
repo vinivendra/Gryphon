@@ -15,10 +15,12 @@
 */
 
 import GryphonLib
+import Darwin
 
 do {
 	try Driver.run(withArguments: ArrayClass(CommandLine.arguments.dropFirst()))
 }
 catch let error {
 	print(error)
+	exit(1)
 }
