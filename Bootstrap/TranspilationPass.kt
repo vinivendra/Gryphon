@@ -2019,6 +2019,326 @@ open class RearrangeIfLetsTranspilationPass: TranspilationPass {
     }
 }
 
+open class RawValuesTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    override internal fun replaceEnumDeclaration(
+        access: String?,
+        enumName: String,
+        inherits: MutableList<String>,
+        elements: MutableList<EnumElement>,
+        members: MutableList<Statement>,
+        isImplicit: Boolean)
+        : MutableList<Statement>
+    {
+        val typeName: String? = elements.map { it.rawValue?.swiftType }.filterNotNull().toMutableList().firstOrNull()
+        if (typeName != null) {
+            val rawValueVariable: VariableDeclarationData = createRawValueVariable(
+                rawValueType = typeName,
+                access = access,
+                enumName = enumName,
+                elements = elements)
+            val rawValueInitializer: FunctionDeclarationData? = createRawValueInitializer(
+                rawValueType = typeName,
+                access = access,
+                enumName = enumName,
+                elements = elements)
+
+            if (rawValueInitializer == null) {
+                Compiler.handleWarning(
+                    message = "Failed to create init(rawValue:)",
+                    details = "Unable to get all raw values in enum declaration.",
+                    sourceFile = ast.sourceFile,
+                    sourceFileRange = elements.map { it.rawValue?.range }.filterNotNull().toMutableList().firstOrNull())
+                return super.replaceEnumDeclaration(
+                    access = access,
+                    enumName = enumName,
+                    inherits = inherits,
+                    elements = elements,
+                    members = members,
+                    isImplicit = isImplicit)
+            }
+
+            val newMembers: MutableList<Statement> = members
+
+            newMembers.add(Statement.FunctionDeclaration(data = rawValueInitializer))
+            newMembers.add(Statement.VariableDeclaration(data = rawValueVariable))
+
+            return super.replaceEnumDeclaration(
+                access = access,
+                enumName = enumName,
+                inherits = inherits,
+                elements = elements,
+                members = newMembers,
+                isImplicit = isImplicit)
+        }
+        else {
+            return super.replaceEnumDeclaration(
+                access = access,
+                enumName = enumName,
+                inherits = inherits,
+                elements = elements,
+                members = members,
+                isImplicit = isImplicit)
+        }
+    }
+
+    private fun createRawValueInitializer(
+        rawValueType: String,
+        access: String?,
+        enumName: String,
+        elements: MutableList<EnumElement>)
+        : FunctionDeclarationData?
+    {
+        for (element in elements) {
+            if (element.rawValue == null) {
+                return null
+            }
+        }
+
+        val switchCases: MutableList<SwitchCase> = elements.map { element -> SwitchCase(
+            expressions = mutableListOf(element.rawValue!!),
+            statements = mutableListOf(Statement.ReturnStatement(
+                    expression = Expression.DotExpression(
+                            leftExpression = Expression.TypeExpression(typeName = enumName),
+                            rightExpression = Expression.DeclarationReferenceExpression(
+                                    data = DeclarationReferenceData(
+                                            identifier = element.name,
+                                            typeName = enumName,
+                                            isStandardLibrary = false,
+                                            isImplicit = false,
+                                            range = null)))))) }.toMutableList()
+        val defaultSwitchCase: SwitchCase = SwitchCase(
+            expressions = mutableListOf(),
+            statements = mutableListOf(Statement.ReturnStatement(expression = Expression.NilLiteralExpression())))
+
+        switchCases.add(defaultSwitchCase)
+
+        val switchStatement: Statement = Statement.SwitchStatement(
+            convertsToExpression = null,
+            expression = Expression.DeclarationReferenceExpression(
+                    data = DeclarationReferenceData(
+                            identifier = "rawValue",
+                            typeName = rawValueType,
+                            isStandardLibrary = false,
+                            isImplicit = false,
+                            range = null)),
+            cases = switchCases)
+
+        return FunctionDeclarationData(
+            prefix = "init",
+            parameters = mutableListOf(FunctionParameter(label = "rawValue", apiLabel = null, typeName = rawValueType, value = null)),
+            returnType = enumName + "?",
+            functionType = "(${rawValueType}) -> ${enumName}?",
+            genericTypes = mutableListOf(),
+            isImplicit = false,
+            isStatic = true,
+            isMutating = false,
+            isPure = true,
+            extendsType = null,
+            statements = mutableListOf(switchStatement),
+            access = access,
+            annotations = null)
+    }
+
+    private fun createRawValueVariable(
+        rawValueType: String,
+        access: String?,
+        enumName: String,
+        elements: MutableList<EnumElement>)
+        : VariableDeclarationData
+    {
+        val switchCases: MutableList<SwitchCase> = elements.map { element -> SwitchCase(
+            expressions = mutableListOf(Expression.DotExpression(
+                    leftExpression = Expression.TypeExpression(typeName = enumName),
+                    rightExpression = Expression.DeclarationReferenceExpression(
+                            data = DeclarationReferenceData(
+                                    identifier = element.name,
+                                    typeName = enumName,
+                                    isStandardLibrary = false,
+                                    isImplicit = false,
+                                    range = null)))),
+            statements = mutableListOf(Statement.ReturnStatement(expression = element.rawValue))) }.toMutableList()
+        val switchStatement: Statement = Statement.SwitchStatement(
+            convertsToExpression = null,
+            expression = Expression.DeclarationReferenceExpression(
+                    data = DeclarationReferenceData(
+                            identifier = "this",
+                            typeName = enumName,
+                            isStandardLibrary = false,
+                            isImplicit = false,
+                            range = null)),
+            cases = switchCases)
+        val getter: FunctionDeclarationData = FunctionDeclarationData(
+            prefix = "get",
+            parameters = mutableListOf(),
+            returnType = rawValueType,
+            functionType = "() -> ${rawValueType}",
+            genericTypes = mutableListOf(),
+            isImplicit = false,
+            isStatic = false,
+            isMutating = false,
+            isPure = false,
+            extendsType = null,
+            statements = mutableListOf(switchStatement),
+            access = access,
+            annotations = null)
+
+        return VariableDeclarationData(
+            identifier = "rawValue",
+            typeName = rawValueType,
+            expression = null,
+            getter = getter,
+            setter = null,
+            isLet = false,
+            isImplicit = false,
+            isStatic = false,
+            extendsType = null,
+            annotations = null)
+    }
+}
+
+open class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    override internal fun replaceIfStatementData(ifStatement: IfStatementData): IfStatementData {
+        val onlyCondition: IfStatementData.IfCondition? = ifStatement.conditions.firstOrNull()
+        if (ifStatement.isGuard && ifStatement.conditions.size == 1 && onlyCondition != null && onlyCondition is IfStatementData.IfCondition.Condition) {
+            val onlyConditionExpression: Expression = onlyCondition.expression
+            val shouldStillBeGuard: Boolean
+            val newCondition: Expression
+
+            if (onlyConditionExpression is Expression.PrefixUnaryExpression) {
+                val innerExpression: Expression = onlyConditionExpression.subExpression
+                newCondition = innerExpression
+                shouldStillBeGuard = false
+            }
+            else if (onlyConditionExpression is Expression.BinaryOperatorExpression) {
+                val leftExpression: Expression = onlyConditionExpression.leftExpression
+                val rightExpression: Expression = onlyConditionExpression.rightExpression
+                val typeName: String = onlyConditionExpression.typeName
+
+                newCondition = Expression.BinaryOperatorExpression(
+                    leftExpression = leftExpression,
+                    rightExpression = rightExpression,
+                    operatorSymbol = "==",
+                    typeName = typeName)
+                shouldStillBeGuard = false
+            }
+            else if (onlyConditionExpression is Expression.BinaryOperatorExpression) {
+                val leftExpression: Expression = onlyConditionExpression.leftExpression
+                val rightExpression: Expression = onlyConditionExpression.rightExpression
+                val typeName: String = onlyConditionExpression.typeName
+
+                newCondition = Expression.BinaryOperatorExpression(
+                    leftExpression = leftExpression,
+                    rightExpression = rightExpression,
+                    operatorSymbol = "!=",
+                    typeName = typeName)
+                shouldStillBeGuard = false
+            }
+            else {
+                newCondition = onlyConditionExpression
+                shouldStillBeGuard = true
+            }
+
+            val ifStatement: IfStatementData = ifStatement
+
+            ifStatement.conditions = mutableListOf(newCondition).toMutableList<Expression>().map { IfStatementData.IfCondition.Condition(expression = it) }.toMutableList()
+            ifStatement.isGuard = shouldStillBeGuard
+
+            return super.replaceIfStatementData(ifStatement)
+        }
+        else {
+            return super.replaceIfStatementData(ifStatement)
+        }
+    }
+}
+
+open class ReturnIfNilTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    override internal fun replaceStatement(statement: Statement): MutableList<Statement> {
+        if (statement is Statement.IfStatement) {
+            val ifStatement: IfStatementData = statement.data
+            if (ifStatement.conditions.size == 1 && ifStatement.statements.size == 1) {
+                val onlyStatement: Statement = ifStatement.statements[0]
+                val onlyCondition: IfStatementData.IfCondition = ifStatement.conditions[0]
+                if (onlyCondition is IfStatementData.IfCondition.Condition && onlyStatement is Statement.ReturnStatement) {
+                    val onlyConditionExpression: Expression = onlyCondition.expression
+                    val returnExpression: Expression? = onlyStatement.expression
+                    if (onlyConditionExpression is Expression.BinaryOperatorExpression) {
+                        val declarationReference: Expression = onlyConditionExpression.leftExpression
+                        if (declarationReference is Expression.DeclarationReferenceExpression) {
+                            val declarationExpression: DeclarationReferenceData = declarationReference.data
+                            return mutableListOf(Statement.ExpressionStatement(
+                                expression = Expression.BinaryOperatorExpression(
+                                        leftExpression = declarationReference,
+                                        rightExpression = Expression.ReturnExpression(expression = returnExpression),
+                                        operatorSymbol = "?:",
+                                        typeName = declarationExpression.typeName)))
+                        }
+                    }
+                }
+            }
+        }
+        return super.replaceStatement(statement)
+    }
+}
+
+open class FixProtocolContentsTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    var isInProtocol: Boolean = false
+
+    override internal fun replaceProtocolDeclaration(
+        protocolName: String,
+        members: MutableList<Statement>)
+        : MutableList<Statement>
+    {
+        isInProtocol = true
+
+        val result: MutableList<Statement> = super.replaceProtocolDeclaration(protocolName = protocolName, members = members)
+
+        isInProtocol = false
+
+        return result
+    }
+
+    override internal fun replaceFunctionDeclarationData(
+        functionDeclaration: FunctionDeclarationData)
+        : FunctionDeclarationData?
+    {
+        if (isInProtocol) {
+            val functionDeclaration: FunctionDeclarationData = functionDeclaration
+            functionDeclaration.statements = null
+            return super.replaceFunctionDeclarationData(functionDeclaration)
+        }
+        else {
+            return super.replaceFunctionDeclarationData(functionDeclaration)
+        }
+    }
+
+    override internal fun replaceVariableDeclarationData(
+        variableDeclaration: VariableDeclarationData)
+        : VariableDeclarationData
+    {
+        if (isInProtocol) {
+            val variableDeclaration: VariableDeclarationData = variableDeclaration
+
+            variableDeclaration.getter?.isImplicit = true
+            variableDeclaration.setter?.isImplicit = true
+            variableDeclaration.getter?.statements = null
+            variableDeclaration.setter?.statements = null
+
+            return super.replaceVariableDeclarationData(variableDeclaration)
+        }
+        else {
+            return super.replaceVariableDeclarationData(variableDeclaration)
+        }
+    }
+}
+
 public sealed class ASTNode {
     class StatementNode(val value: Statement): ASTNode()
     class ExpressionNode(val value: Expression): ASTNode()

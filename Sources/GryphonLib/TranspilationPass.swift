@@ -2501,7 +2501,7 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 }
 
 /// Create a rawValue variable for enums that conform to rawRepresentable
-public class RawValuesTranspilationPass: TranspilationPass { // kotlin: ignore
+public class RawValuesTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
 	override func replaceEnumDeclaration( // annotation: override
@@ -2696,8 +2696,13 @@ public class RawValuesTranspilationPass: TranspilationPass { // kotlin: ignore
 /// Guards are translated as if statements with a ! at the start of the condition. Sometimes, the
 /// ! combines with a != or even another !, causing a double negative in the condition that can
 /// be removed (or turned into a single ==). This pass performs that transformation.
-public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass { // kotlin: ignore
-	override func replaceIfStatementData(_ ifStatement: IfStatementData) -> IfStatementData {
+public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	override func replaceIfStatementData( // annotation: override
+		_ ifStatement: IfStatementData)
+		-> IfStatementData
+	{
 		if ifStatement.isGuard,
 			ifStatement.conditions.count == 1,
 			let onlyCondition = ifStatement.conditions.first,
@@ -2737,7 +2742,7 @@ public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass { // ko
 			}
 
 			let ifStatement = ifStatement
-			ifStatement.conditions = ArrayClass([newCondition]).map {
+			ifStatement.conditions = ArrayClass<Expression>([newCondition]).map {
 				IfStatementData.IfCondition.condition(expression: $0)
 			}
 			ifStatement.isGuard = shouldStillBeGuard
@@ -2751,40 +2756,55 @@ public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass { // ko
 
 /// Statements of the type `if (a == null) { return }` in Swift can be translated as `a ?: return`
 /// in Kotlin.
-public class ReturnIfNilTranspilationPass: TranspilationPass { // kotlin: ignore
-	override func replaceStatement(_ statement: Statement) -> ArrayClass<Statement> {
-		if case let .ifStatement(data: ifStatement) = statement,
-			ifStatement.conditions.count == 1,
-			let onlyCondition = ifStatement.conditions.first,
-			case let .condition(expression: onlyConditionExpression) = onlyCondition,
-			case let .binaryOperatorExpression(
-				leftExpression: declarationReference,
-				rightExpression: Expression.nilLiteralExpression,
-				operatorSymbol: "==",
-				typeName: _) = onlyConditionExpression,
-			case let .declarationReferenceExpression(
-				data: declarationExpression) = declarationReference,
-			ifStatement.statements.count == 1,
-			let onlyStatement = ifStatement.statements.first,
-			case let .returnStatement(expression: returnExpression) = onlyStatement
-		{
-			return [.expressionStatement(expression:
-				.binaryOperatorExpression(
-					leftExpression: declarationReference,
-					rightExpression: .returnExpression(expression: returnExpression),
-					operatorSymbol: "?:",
-					typeName: declarationExpression.typeName)), ]
+public class ReturnIfNilTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	override func replaceStatement( // annotation: override
+		_ statement: Statement)
+		-> ArrayClass<Statement>
+	{
+		if case let .ifStatement(data: ifStatement) = statement {
+			if ifStatement.conditions.count == 1,
+				ifStatement.statements.count == 1
+			{
+				let onlyStatement = ifStatement.statements[0]
+				let onlyCondition = ifStatement.conditions[0]
+
+				if case let .condition(expression: onlyConditionExpression) = onlyCondition,
+					case let .returnStatement(expression: returnExpression) = onlyStatement
+				{
+					if case let .binaryOperatorExpression(
+						leftExpression: declarationReference,
+						rightExpression: Expression.nilLiteralExpression,
+						operatorSymbol: "==",
+						typeName: _) = onlyConditionExpression
+					{
+						if case let .declarationReferenceExpression(
+							data: declarationExpression) = declarationReference
+						{
+							return [.expressionStatement(expression:
+								.binaryOperatorExpression(
+									leftExpression: declarationReference,
+									rightExpression: .returnExpression(expression:
+										returnExpression),
+									operatorSymbol: "?:",
+									typeName: declarationExpression.typeName)), ]
+						}
+					}
+				}
+			}
 		}
-		else {
-			return super.replaceStatement(statement)
-		}
+
+		return super.replaceStatement(statement)
 	}
 }
 
-public class FixProtocolContentsTranspilationPass: TranspilationPass { // kotlin: ignore
+public class FixProtocolContentsTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
 	var isInProtocol = false
 
-	override func replaceProtocolDeclaration(
+	override func replaceProtocolDeclaration( // annotation: override
 		protocolName: String,
 		members: ArrayClass<Statement>)
 		-> ArrayClass<Statement>
@@ -2796,7 +2816,8 @@ public class FixProtocolContentsTranspilationPass: TranspilationPass { // kotlin
 		return result
 	}
 
-	override func replaceFunctionDeclarationData(_ functionDeclaration: FunctionDeclarationData)
+	override func replaceFunctionDeclarationData( // annotation: override
+		_ functionDeclaration: FunctionDeclarationData)
 		-> FunctionDeclarationData?
 	{
 		if isInProtocol {
@@ -2809,7 +2830,8 @@ public class FixProtocolContentsTranspilationPass: TranspilationPass { // kotlin
 		}
 	}
 
-	override func replaceVariableDeclarationData(_ variableDeclaration: VariableDeclarationData)
+	override func replaceVariableDeclarationData( // annotation: override
+		_ variableDeclaration: VariableDeclarationData)
 		-> VariableDeclarationData
 	{
 		if isInProtocol {
