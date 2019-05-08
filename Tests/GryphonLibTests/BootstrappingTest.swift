@@ -155,116 +155,21 @@ class BootstrappingTest: XCTestCase {
 	}
 
 	override static func setUp() {
-		print("* Updating bootstrap files...")
+		let swiftFiles = Utilities.getFiles(
+			inDirectory: "Sources/GryphonLib", withExtension: .swift)
 
-		defer {
-			if Compiler.hasErrorsOrWarnings() {
-				hasError = true
-			}
-			Compiler.printErrorsAndWarnings()
-		}
+		let astDumpFiles = Utilities.getFiles(
+			inDirectory: "Test Files", withExtension: .swiftAST)
+		let rawASTFiles = Utilities.getFiles(
+			inDirectory: "Test Files", withExtension: .gryphonASTRaw)
 
-		// Transpile the transpiler
-		let outputFileMap = OutputFileMap("output-file-map.json")
-
-		// Dump the ASTs
-		if Utilities.needsToUpdateFiles(
-			in: "Sources/GryphonLib",
-			from: .swift,
-			to: .swiftASTDump,
-			outputFileMap: outputFileMap)
+		if Utilities.files(swiftFiles, wereModifiedLaterThan: astDumpFiles) ||
+			Utilities.files(swiftFiles, wereModifiedLaterThan: rawASTFiles)
 		{
-			print("* Dumping the ASTs...")
-			let dumpCommand = ["perl", "dumpTranspilerAST.pl" ]
-			guard let dumpResult = Shell.runShellCommand(dumpCommand) else {
-				hasError = true
-				print("Timed out.")
-				return
-			}
-			guard dumpResult.status == 0 else {
-				hasError = true
-				print("Failed to dump ASTs.\n" +
-					"Output:\n\(dumpResult.standardOutput)\n" +
-					"Error:\n\(dumpResult.standardError)\n" +
-					"Exit status: \(dumpResult.status)\n")
-				return
-			}
-			print("* AST dump successful.")
+			print("🚨 Bootstrap test files are out of date.\n" +
+				"Please run `updateBootstrapTestFiles.sh`.")
+			hasError = true
 		}
-
-		let supportedFileNames = [
-			"StandardLibrary",
-			"PrintableAsTree",
-			"SwiftAST",
-			"SwiftTranslator",
-			"GryphonAST",
-			"TranspilationPass",
-			"ASTDumpDecoder",
-			"Compiler",
-			"OutputFileMap",
-			"SourceFile",
-			"Driver",
-			"Extensions",
-			"Utilities",
-		]
-		let supportedFilePaths = supportedFileNames.map { "Sources/GryphonLib/\($0).swift" }
-
-		// Transpile the transpiler
-		if Utilities.needsToUpdateFiles(
-			supportedFileNames,
-			in: "Sources/GryphonLib",
-			from: .swift,
-			to: .kt,
-			outputFileMap: outputFileMap)
-		{
-			print("* Transpiling to kotlin...")
-			let inputFiles: ArrayClass = supportedFilePaths + [
-				"Bootstrap/PrintableAsTreeTest.kt",
-				"Bootstrap/ASTDumpDecoderTest.kt",
-				"Bootstrap/ExtensionsTest.kt",
-				"Bootstrap/UtilitiesTest.kt",
-				"Bootstrap/KotlinTests.kt",
-				"Bootstrap/main.kt",
-			]
-
-			let arguments: ArrayClass<String> = [
-				"build",
-				"-output-file-map=output-file-map.json",
-				"-indentation=\"    \"",
-				] + inputFiles
-
-			let driverResult: Any?
-			do {
-				driverResult = try Driver.run(withArguments: arguments)
-			}
-			catch let error {
-				hasError = true
-				print("Error running driver.\n\(error)")
-				return
-			}
-
-			print("\t* Done.")
-
-			guard let compilationResult = driverResult as? Shell.CommandOutput else {
-				hasError = true
-				print("Error running driver. It's possible a command timed out.\n" +
-					"Driver result: \(driverResult ?? "nil")")
-				return
-			}
-
-			guard compilationResult.status == 0 else {
-				hasError = true
-				print("Failed to run Kotlin bootstrap tests.\n" +
-					"Output:\n\(compilationResult.standardOutput)\n" +
-					"Error:\n\(compilationResult.standardError)\n" +
-					"Exit status: \(compilationResult.status)\n")
-				return
-			}
-
-			print("* Kotlin transpilation successful.")
-		}
-
-		print("* Done updating bootstrap files.")
 	}
 
 	static var hasError = false

@@ -26,11 +26,16 @@ private func gryphonTemplates() {
 	let _string2 = ""
 	let _string3 = ""
 	let _stringArray: [String]? = []
+	let _stringArray1: [String] = []
+	let _stringArray2: [String] = []
 	let _fileExtension1 = FileExtension.swift
 	let _fileExtension2 = FileExtension.swift
 
 	_ = Utilities.file(_string1, wasModifiedLaterThan: _string2)
 	_ = "Utilities.fileWasModifiedLaterThan(_string1, _string2)"
+
+	_ = Utilities.files(_stringArray1, wereModifiedLaterThan: _stringArray2)
+	_ = "Utilities.filesWereModifiedLaterThan(_stringArray1, _stringArray2)"
 
 	_ = Utilities.createFile(named: _string1, inDirectory: _string2, containing: _string3)
 	_ = "Utilities.createFileAndDirectory(" +
@@ -153,6 +158,82 @@ extension Utilities { // kotlin: ignore
 // declaration: 	val otherFileModifiedDate = otherFile.lastModified()
 // declaration: 	val isAfter = fileModifiedDate > otherFileModifiedDate
 // declaration: 	return isAfter
+// declaration: }
+
+extension Utilities { // kotlin: ignore
+	public static func files(
+		_ filePaths: [String], wereModifiedLaterThan otherFilePaths: [String]) -> Bool
+	{
+		guard !filePaths.isEmpty, !otherFilePaths.isEmpty else {
+			return true
+		}
+
+		let fileManager = FileManager.default
+
+		// Get the latest modification date among the first files
+		var latestDate: Date?
+		for filePath in filePaths {
+			let fileAttributes = try! fileManager.attributesOfItem(atPath: filePath)
+			let fileModifiedDate = fileAttributes[.modificationDate] as! Date
+			if let latestDateOfModification = latestDate,
+				(latestDateOfModification.timeIntervalSince(fileModifiedDate) < 0)
+			{
+				latestDate = fileModifiedDate
+			}
+			else {
+				latestDate = fileModifiedDate
+			}
+		}
+
+		// Ensure that latest date is still before all dates from other files
+		for filePath in otherFilePaths {
+			let fileAttributes = try! fileManager.attributesOfItem(atPath: filePath)
+			let fileModifiedDate = fileAttributes[.modificationDate] as! Date
+
+			if latestDate!.timeIntervalSince(fileModifiedDate) > 0 {
+				return true
+			}
+		}
+
+		return false
+	}
+}
+
+// declaration:
+// declaration: fun Utilities.Companion.filesWereModifiedLaterThan(
+// declaration: 	filePaths: MutableList<String>, otherFilePaths: MutableList<String>): Boolean
+// declaration: {
+// declaration: 	if (!(!filePaths.isEmpty() && !otherFilePaths.isEmpty())) {
+// declaration: 		return true
+// declaration: 	}
+// declaration:
+// declaration: 	// Get the latest modification date among the first files
+// declaration: 	var latestDate: Long? = null
+// declaration: 	for (filePath in filePaths) {
+// declaration: 		val file = File(filePath)
+// declaration: 		val fileModifiedDate = file.lastModified()
+// declaration:
+// declaration: 		if (latestDate != null &&
+// declaration: 			(latestDate < fileModifiedDate))
+// declaration: 		{
+// declaration: 			latestDate = fileModifiedDate
+// declaration: 		}
+// declaration: 		else {
+// declaration: 			latestDate = fileModifiedDate
+// declaration: 		}
+// declaration: 	}
+// declaration:
+// declaration: 	// Ensure that latest date is still before all dates from other files
+// declaration: 	for (filePath in otherFilePaths) {
+// declaration: 		val file = File(filePath)
+// declaration: 		val fileModifiedDate = file.lastModified()
+// declaration:
+// declaration: 		if (latestDate!! > fileModifiedDate) {
+// declaration: 			return true
+// declaration: 		}
+// declaration: 	}
+// declaration:
+// declaration: 	return false
 // declaration: }
 
 public class OS { // kotlin: ignore

@@ -98,6 +98,42 @@ fun Utilities.Companion.fileWasModifiedLaterThan(
 	return isAfter
 }
 
+fun Utilities.Companion.filesWereModifiedLaterThan(
+	filePaths: MutableList<String>, otherFilePaths: MutableList<String>): Boolean
+{
+	if (!(!filePaths.isEmpty() && !otherFilePaths.isEmpty())) {
+		return true
+	}
+
+	// Get the latest modification date among the first files
+	var latestDate: Long? = null
+	for (filePath in filePaths) {
+		val file = File(filePath)
+		val fileModifiedDate = file.lastModified()
+
+		if (latestDate != null &&
+			(latestDate < fileModifiedDate))
+		{
+			latestDate = fileModifiedDate
+		}
+		else {
+			latestDate = fileModifiedDate
+		}
+	}
+
+	// Ensure that latest date is still before all dates from other files
+	for (filePath in otherFilePaths) {
+		val file = File(filePath)
+		val fileModifiedDate = file.lastModified()
+
+		if (latestDate!! > fileModifiedDate) {
+			return true
+		}
+	}
+
+	return false
+}
+
 public class OS {
 	companion object {
 		val javaOSName = System.getProperty("os.name")
