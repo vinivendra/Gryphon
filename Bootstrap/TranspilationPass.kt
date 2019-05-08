@@ -1931,6 +1931,94 @@ open class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass {
     }
 }
 
+open class RearrangeIfLetsTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    override internal fun replaceIfStatement(
+        ifStatement: IfStatementData)
+        : MutableList<Statement>
+    {
+        val result: MutableList<Statement> = gatherLetDeclarations(ifStatement).map { Statement.VariableDeclaration(data = it) }.toMutableList()
+        result.addAll(super.replaceIfStatement(ifStatement))
+        return result
+    }
+
+    override internal fun replaceIfStatementData(ifStatement: IfStatementData): IfStatementData {
+        val newConditions: MutableList<IfStatementData.IfCondition> = ifStatement.conditions.map { replaceIfLetConditionWithNullCheck(it) }.toMutableList()
+        val ifStatement: IfStatementData = ifStatement
+
+        ifStatement.conditions = newConditions
+
+        return super.replaceIfStatementData(ifStatement)
+    }
+
+    private fun replaceIfLetConditionWithNullCheck(
+        condition: IfStatementData.IfCondition)
+        : IfStatementData.IfCondition
+    {
+        if (condition is IfStatementData.IfCondition.Declaration) {
+            val variableDeclaration: VariableDeclarationData = condition.variableDeclaration
+            return IfStatementData.IfCondition.Condition(
+                expression = Expression.BinaryOperatorExpression(
+                        leftExpression = Expression.DeclarationReferenceExpression(
+                                data = DeclarationReferenceData(
+                                        identifier = variableDeclaration.identifier,
+                                        typeName = variableDeclaration.typeName,
+                                        isStandardLibrary = false,
+                                        isImplicit = false,
+                                        range = variableDeclaration.expression?.range)),
+                        rightExpression = Expression.NilLiteralExpression(),
+                        operatorSymbol = "!=",
+                        typeName = "Boolean"))
+        }
+        else {
+            return condition
+        }
+    }
+
+    private fun gatherLetDeclarations(
+        ifStatement: IfStatementData?)
+        : MutableList<VariableDeclarationData>
+    {
+        ifStatement ?: return mutableListOf()
+
+        val letDeclarations: MutableList<VariableDeclarationData> = ifStatement.conditions.map { filterVariableDeclaration(it) }.filterNotNull().toMutableList().filter { !isShadowingVariableDeclaration(it) }.toMutableList()
+        val elseLetDeclarations: MutableList<VariableDeclarationData> = gatherLetDeclarations(ifStatement.elseStatement)
+        val result: MutableList<VariableDeclarationData> = letDeclarations
+
+        result.addAll(elseLetDeclarations)
+
+        return result
+    }
+
+    private fun filterVariableDeclaration(
+        condition: IfStatementData.IfCondition)
+        : VariableDeclarationData?
+    {
+        if (condition is IfStatementData.IfCondition.Declaration) {
+            val variableDeclaration: VariableDeclarationData = condition.variableDeclaration
+            return variableDeclaration
+        }
+        else {
+            return null
+        }
+    }
+
+    private fun isShadowingVariableDeclaration(
+        variableDeclaration: VariableDeclarationData)
+        : Boolean
+    {
+        val declarationExpression: Expression? = variableDeclaration.expression
+        if (declarationExpression != null && declarationExpression is Expression.DeclarationReferenceExpression) {
+            val expression: DeclarationReferenceData = declarationExpression.data
+            if (expression.identifier == variableDeclaration.identifier) {
+                return true
+            }
+        }
+        return false
+    }
+}
+
 public sealed class ASTNode {
     class StatementNode(val value: Statement): ASTNode()
     class ExpressionNode(val value: Expression): ASTNode()

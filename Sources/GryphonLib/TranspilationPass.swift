@@ -2396,39 +2396,55 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: // kotlin: ig
 }
 
 /// Sends let declarations to before the if statement, and replaces them with `x != null` conditions
-public class RearrangeIfLetsTranspilationPass: TranspilationPass { // kotlin: ignore
+public class RearrangeIfLetsTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
 	/// Send the let declarations to before the if statement
-	override func replaceIfStatement(_ ifStatement: IfStatementData) -> ArrayClass<Statement> {
-		let letDeclarations = gatherLetDeclarations(ifStatement)
+	override func replaceIfStatement( // annotation: override
+		_ ifStatement: IfStatementData)
+		-> ArrayClass<Statement>
+	{
+		let result = gatherLetDeclarations(ifStatement)
 			.map { Statement.variableDeclaration(data: $0) }
 
-		return letDeclarations + super.replaceIfStatement(ifStatement)
+		result.append(contentsOf: super.replaceIfStatement(ifStatement))
+
+		return result
 	}
 
 	/// Add conditions (`x != null`) for all let declarations
-	override func replaceIfStatementData(_ ifStatement: IfStatementData) -> IfStatementData {
-		let newConditions = ifStatement.conditions.map { condition -> IfStatementData.IfCondition in
-			if case let .declaration(variableDeclaration: variableDeclaration) = condition {
-				return .condition(expression: .binaryOperatorExpression(
-					leftExpression: .declarationReferenceExpression(data:
-						DeclarationReferenceData(
-							identifier: variableDeclaration.identifier,
-							typeName: variableDeclaration.typeName,
-							isStandardLibrary: false,
-							isImplicit: false,
-							range: variableDeclaration.expression?.range)),
-					rightExpression: .nilLiteralExpression, operatorSymbol: "!=",
-					typeName: "Boolean"))
-			}
-			else {
-				return condition
-			}
+	override func replaceIfStatementData( // annotation: override
+		_ ifStatement: IfStatementData)
+		-> IfStatementData
+	{
+		let newConditions = ifStatement.conditions.map {
+			replaceIfLetConditionWithNullCheck($0)
 		}
 
 		let ifStatement = ifStatement
 		ifStatement.conditions = newConditions
 		return super.replaceIfStatementData(ifStatement)
+	}
+
+	private func replaceIfLetConditionWithNullCheck(
+		_ condition: IfStatementData.IfCondition)
+		-> IfStatementData.IfCondition
+	{
+		if case let .declaration(variableDeclaration: variableDeclaration) = condition {
+			return .condition(expression: .binaryOperatorExpression(
+				leftExpression: .declarationReferenceExpression(data:
+					DeclarationReferenceData(
+						identifier: variableDeclaration.identifier,
+						typeName: variableDeclaration.typeName,
+						isStandardLibrary: false,
+						isImplicit: false,
+						range: variableDeclaration.expression?.range)),
+				rightExpression: .nilLiteralExpression, operatorSymbol: "!=",
+				typeName: "Boolean"))
+		}
+		else {
+			return condition
+		}
 	}
 
 	/// Gather the let declarations from the if statement and its else( if)s into a single array
@@ -2440,38 +2456,55 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass { // kotlin: ig
 			return []
 		}
 
-		let letDeclarations =
-			ifStatement.conditions.compactMap { condition -> VariableDeclarationData? in
-				if case let .declaration(variableDeclaration: variableDeclaration) = condition {
-					return variableDeclaration
-				}
-				else {
-					return nil
-				}
-			}.filter { variableDeclaration in
-				// If it's a shadowing identifier there's no need to declare it in Kotlin
-				// (i.e. `if let x = x { }`)
-				if let declarationExpression = variableDeclaration.expression,
-					case let .declarationReferenceExpression(
-						data: expression) = declarationExpression,
-					expression.identifier == variableDeclaration.identifier
-				{
-					return false
-				}
-				else {
-					return true
-				}
+		let letDeclarations = ifStatement.conditions.compactMap {
+				filterVariableDeclaration($0)
+			}.filter {
+				!isShadowingVariableDeclaration($0)
 			}
 
 		let elseLetDeclarations = gatherLetDeclarations(ifStatement.elseStatement)
 
-		return letDeclarations + elseLetDeclarations
+		let result = letDeclarations
+		result.append(contentsOf: elseLetDeclarations)
+		return result
+	}
+
+	private func filterVariableDeclaration(
+		_ condition: IfStatementData.IfCondition)
+		-> VariableDeclarationData?
+	{
+		if case let .declaration(variableDeclaration: variableDeclaration) = condition {
+			return variableDeclaration
+		}
+		else {
+			return nil
+		}
+	}
+
+	private func isShadowingVariableDeclaration(
+		_ variableDeclaration: VariableDeclarationData)
+		-> Bool
+	{
+		// If it's a shadowing identifier there's no need to declare it in Kotlin
+		// (i.e. `if let x = x { }`)
+		if let declarationExpression = variableDeclaration.expression,
+			case let .declarationReferenceExpression(
+				data: expression) = declarationExpression
+		{
+			if expression.identifier == variableDeclaration.identifier {
+				return true
+			}
+		}
+
+		return false
 	}
 }
 
 /// Create a rawValue variable for enums that conform to rawRepresentable
 public class RawValuesTranspilationPass: TranspilationPass { // kotlin: ignore
-	override func replaceEnumDeclaration(
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	override func replaceEnumDeclaration( // annotation: override
 		access: String?,
 		enumName: String,
 		inherits: ArrayClass<String>,
@@ -2536,13 +2569,15 @@ public class RawValuesTranspilationPass: TranspilationPass { // kotlin: ignore
 		elements: ArrayClass<EnumElement>)
 		-> FunctionDeclarationData?
 	{
-		let maybeSwitchCases = elements.map { element -> SwitchCase? in
-			guard let rawValue = element.rawValue else {
+		for element in elements {
+			if element.rawValue == nil {
 				return nil
 			}
+		}
 
-			return SwitchCase(
-				expressions: [rawValue],
+		let switchCases = elements.map { element -> SwitchCase in
+			SwitchCase(
+				expressions: [element.rawValue!],
 				statements: [
 					.returnStatement(
 						expression: .dotExpression(
@@ -2555,10 +2590,6 @@ public class RawValuesTranspilationPass: TranspilationPass { // kotlin: ignore
 									isImplicit: false,
 									range: nil)))),
 				])
-		}
-
-		guard let switchCases = maybeSwitchCases.as(ArrayClass<SwitchCase>.self) else {
-			return nil
 		}
 
 		let defaultSwitchCase = SwitchCase(
