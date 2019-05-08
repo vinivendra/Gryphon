@@ -2339,6 +2339,65 @@ open class FixProtocolContentsTranspilationPass: TranspilationPass {
     }
 }
 
+public fun TranspilationPass.Companion.runFirstRoundOfPasses(sourceFile: GryphonAST): GryphonAST {
+    var result: GryphonAST = sourceFile
+
+    result = RemoveImplicitDeclarationsTranspilationPass(ast = result).run()
+    result = CleanInheritancesTranspilationPass(ast = result).run()
+
+    return result
+}
+
+public fun TranspilationPass.Companion.runSecondRoundOfPasses(
+    sourceFile: GryphonAST)
+    : GryphonAST
+{
+    var result: GryphonAST = sourceFile
+
+    result = RemoveParenthesesTranspilationPass(ast = result).run()
+    result = RemoveExtraReturnsInInitsTranspilationPass(ast = result).run()
+    result = RawValuesTranspilationPass(ast = result).run()
+    result = DescriptionAsToStringTranspilationPass(ast = result).run()
+    result = OptionalInitsTranspilationPass(ast = result).run()
+    result = StaticMembersTranspilationPass(ast = result).run()
+    result = FixProtocolContentsTranspilationPass(ast = result).run()
+    result = RemoveExtensionsTranspilationPass(ast = result).run()
+    result = RearrangeIfLetsTranspilationPass(ast = result).run()
+    result = SelfToThisTranspilationPass(ast = result).run()
+    result = AnonymousParametersTranspilationPass(ast = result).run()
+    result = CovarianceInitsAsCallsTranspilationPass(ast = result).run()
+    result = ReturnsInLambdasTranspilationPass(ast = result).run()
+    result = RefactorOptionalsInSubscriptsTranspilationPass(ast = result).run()
+    result = AddOptionalsInDotChainsTranspilationPass(ast = result).run()
+    result = RenameOperatorsTranspilationPass(ast = result).run()
+    result = SwitchesToExpressionsTranspilationPass(ast = result).run()
+    result = RemoveBreaksInSwitchesTranspilationPass(ast = result).run()
+    result = InnerTypePrefixesTranspilationPass(ast = result).run()
+    result = DoubleNegativesInGuardsTranspilationPass(ast = result).run()
+    result = ReturnIfNilTranspilationPass(ast = result).run()
+    result = RaiseStandardLibraryWarningsTranspilationPass(ast = result).run()
+    result = RaiseMutableValueTypesWarningsTranspilationPass(ast = result).run()
+
+    return result
+}
+
+public fun TranspilationPass.printParents() {
+    println("[")
+    for (parent in parents) {
+        when (parent) {
+            is ASTNode.StatementNode -> {
+                val statement: Statement = parent.value
+                println("\t${statement.name},")
+            }
+            is ASTNode.ExpressionNode -> {
+                val expression: Expression = parent.value
+                println("\t${expression.name},")
+            }
+        }
+    }
+    println("]")
+}
+
 public sealed class ASTNode {
     class StatementNode(val value: Statement): ASTNode()
     class ExpressionNode(val value: Expression): ASTNode()

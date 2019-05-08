@@ -2848,7 +2848,7 @@ public class FixProtocolContentsTranspilationPass: TranspilationPass {
 	}
 }
 
-public extension TranspilationPass { // kotlin: ignore
+public extension TranspilationPass {
 	/// Runs transpilation passes that have to be run on all files before the other passes can
 	/// run. For instance, we need to record all enums declared on all files before we can
 	/// translate references to them correctly.
@@ -2864,10 +2864,10 @@ public extension TranspilationPass { // kotlin: ignore
 		result = CleanInheritancesTranspilationPass(ast: result).run()
 
 		// Record information on enum and function translations
-		result = RecordTemplatesTranspilationPass(ast: result).run()
-		result = RecordEnumsTranspilationPass(ast: result).run()
-		result = RecordProtocolsTranspilationPass(ast: result).run()
-		result = RecordFunctionsTranspilationPass(ast: result).run()
+		result = RecordTemplatesTranspilationPass(ast: result).run() // kotlin: ignore
+		result = RecordEnumsTranspilationPass(ast: result).run() // kotlin: ignore
+		result = RecordProtocolsTranspilationPass(ast: result).run() // kotlin: ignore
+		result = RecordFunctionsTranspilationPass(ast: result).run() // kotlin: ignore
 
 		return result
 	}
@@ -2879,7 +2879,7 @@ public extension TranspilationPass { // kotlin: ignore
 
 		// Replace templates (must go before other passes since templates are recorded before
 		// running any passes)
-		result = ReplaceTemplatesTranspilationPass(ast: result).run()
+		result = ReplaceTemplatesTranspilationPass(ast: result).run() // kotlin: ignore
 
 		// Cleanup
 		result = RemoveParenthesesTranspilationPass(ast: result).run()
@@ -2894,7 +2894,8 @@ public extension TranspilationPass { // kotlin: ignore
 		result = RemoveExtensionsTranspilationPass(ast: result).run()
 		// Note: We have to know the order of the conditions to raise warnings here, so they must go
 		// before the conditions are rearranged
-		result = RaiseWarningsForSideEffectsInIfLetsTranspilationPass(ast: result).run()
+		result = RaiseWarningsForSideEffectsInIfLetsTranspilationPass( // kotlin: ignore
+			ast: result).run()
 		result = RearrangeIfLetsTranspilationPass(ast: result).run()
 
 		// Transform structures that need to be slightly different in Kotlin
@@ -2907,8 +2908,8 @@ public extension TranspilationPass { // kotlin: ignore
 		result = RenameOperatorsTranspilationPass(ast: result).run()
 
 		// - CapitalizeEnums has to be before IsOperatorsInSealedClasses
-		result = CapitalizeEnumsTranspilationPass(ast: result).run()
-		result = IsOperatorsInSealedClassesTranspilationPass(ast: result).run()
+		result = CapitalizeEnumsTranspilationPass(ast: result).run() // kotlin: ignore
+		result = IsOperatorsInSealedClassesTranspilationPass(ast: result).run() // kotlin: ignore
 
 		// - SwitchesToExpressions has to be before RemoveBreaksInSwitches:
 		//   RemoveBreaks might remove a case that only has a break, turning an exhaustive switch
@@ -2918,7 +2919,7 @@ public extension TranspilationPass { // kotlin: ignore
 		result = RemoveBreaksInSwitchesTranspilationPass(ast: result).run()
 
 		// Improve Kotlin readability
-		result = OmitImplicitEnumPrefixesTranspilationPass(ast: result).run()
+		result = OmitImplicitEnumPrefixesTranspilationPass(ast: result).run() // kotlin: ignore
 		result = InnerTypePrefixesTranspilationPass(ast: result).run()
 		result = DoubleNegativesInGuardsTranspilationPass(ast: result).run()
 		result = ReturnIfNilTranspilationPass(ast: result).run()
