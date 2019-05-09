@@ -47,9 +47,10 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 					guard let literalString = getStringLiteralOrSum(expression) else {
 						continue
 					}
+					let cleanString = literalString.removingBackslashEscapes
 					TranspilationTemplate.templates.insert(
 						TranspilationTemplate(
-							expression: templateExpression, string: literalString),
+							expression: templateExpression, string: cleanString),
 						at: 0)
 					previousExpression = nil
 				}

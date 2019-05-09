@@ -1531,7 +1531,7 @@ extension KotlinTranslator { // kotlin: ignore
 	}
 
 	private func translateLiteralCodeExpression(string: String) -> String {
-		return removeBackslashEscapes(string)
+		return string.removingBackslashEscapes
 	}
 
 	private func translateTemplateExpression(
@@ -1718,40 +1718,6 @@ extension KotlinTranslator { // kotlin: ignore
 	}
 
 	// MARK: - Supporting methods
-	private func removeBackslashEscapes(_ string: String) -> String {
-		var result = ""
-		var isEscaping = false
-
-		for character in string {
-			if !isEscaping {
-				if character == "\\" {
-					isEscaping = true
-				}
-				else {
-					result.append(character)
-				}
-			}
-			else {
-				switch character {
-				case "\\":
-					result.append("\\")
-				case "n":
-					result.append("\n")
-				case "t":
-					result.append("\t")
-				default:
-					result.append(character)
-					isEscaping = false
-				}
-
-				isEscaping = false
-			}
-		}
-
-		return result
-	}
-
-	//
 	internal static var indentationString = "\t"
 
 	private func increaseIndentation(_ indentation: String) -> String {

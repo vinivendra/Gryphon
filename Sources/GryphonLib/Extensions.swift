@@ -176,6 +176,39 @@ internal extension String {
 		let capitalizedFirstCharacter = String(firstCharacter).uppercased()
 		return String(capitalizedFirstCharacter + self.dropFirst())
 	}
+
+	var removingBackslashEscapes: String {
+		var result = ""
+		var isEscaping = false
+
+		for character in self {
+			if !isEscaping {
+				if character == "\\" {
+					isEscaping = true
+				}
+				else {
+					result.append(character)
+				}
+			}
+			else {
+				switch character {
+				case "\\":
+					result.append("\\")
+				case "n":
+					result.append("\n")
+				case "t":
+					result.append("\t")
+				default:
+					result.append(character)
+					isEscaping = false
+				}
+
+				isEscaping = false
+			}
+		}
+
+		return result
+	}
 }
 
 //

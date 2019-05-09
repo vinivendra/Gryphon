@@ -137,6 +137,36 @@ internal fun String.capitalizedAsCamelCase(): String {
     return capitalizedFirstCharacter + this.drop(1)
 }
 
+val String.removingBackslashEscapes: String
+    get() {
+        var result: String = ""
+        var isEscaping: Boolean = false
+
+        for (character in this) {
+            if (!isEscaping) {
+                if (character == '\\') {
+                    isEscaping = true
+                }
+                else {
+                    result += character
+                }
+            }
+            else {
+                when (character) {
+                    '\\' -> result += '\\'
+                    'n' -> result += '\n'
+                    't' -> result += '\t'
+                    else -> {
+                        result += character
+                        isEscaping = false
+                    }
+                }
+                isEscaping = false
+            }
+        }
+
+        return result
+    }
 val Char.isNumber: Boolean
     get() {
         return this == '0' || this == '1' || this == '2' || this == '3' || this == '4' || this == '5' || this == '6' || this == '7' || this == '8' || this == '9'
