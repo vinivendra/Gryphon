@@ -1018,6 +1018,13 @@ else {
                 val expression: SwiftAST? = maybeExpression
 
                 if (patternLetResult != null && patternLet != null) {
+                    if (!(patternLetResult.comparisons.isEmpty())) {
+                        return unexpectedASTStructureError(
+                            "Comparison expressions are not supported in switch cases",
+                            ast = caseLabelItem,
+                            translator = this)
+                    }
+
                     val enumType: String = patternLetResult.enumType
                     val enumCase: String = patternLetResult.enumCase
                     val declarations: MutableList<AssociatedValueDeclaration> = patternLetResult.declarations
@@ -1230,6 +1237,7 @@ else {
                 val enumType: String = patternLetResult.enumType
                 val enumCase: String = patternLetResult.enumCase
                 val declarations: MutableList<AssociatedValueDeclaration> = patternLetResult.declarations
+                val comparisons: MutableList<AssociatedValueComparison> = patternLetResult.comparisons
                 val enumClassName: String = enumType + "." + enumCase.capitalizedAsCamelCase()
                 val declarationReference: Expression = translateExpression(declarationReferenceAST)
 
@@ -1239,6 +1247,23 @@ else {
                             rightExpression = Expression.TypeExpression(typeName = enumClassName),
                             operatorSymbol = "is",
                             typeName = "Bool")))
+
+                for (comparison in comparisons) {
+                    conditionsResult.add(IfStatementData.IfCondition.Condition(
+                        expression = Expression.BinaryOperatorExpression(
+                                leftExpression = Expression.DotExpression(
+                                        leftExpression = declarationReference,
+                                        rightExpression = Expression.DeclarationReferenceExpression(
+                                                data = DeclarationReferenceData(
+                                                        identifier = comparison.associatedValueName,
+                                                        typeName = comparison.associatedValueType,
+                                                        isStandardLibrary = false,
+                                                        isImplicit = false,
+                                                        range = comparison.comparedExpression.range))),
+                                rightExpression = comparison.comparedExpression,
+                                operatorSymbol = "==",
+                                typeName = "Bool")))
+                }
 
                 for (declaration in declarations) {
                     val range: SourceFileRange? = getRangeRecursively(ast = patternLet)
@@ -1303,7 +1328,6 @@ else {
         val valuesTupleWithoutParentheses: String = associatedValueTuple.drop(1).dropLast(1)
         val valueTuplesComponents: MutableList<String> = Utilities.splitTypeList(valuesTupleWithoutParentheses, separators = mutableListOf(","))
         val associatedValueNames: MutableList<String> = valueTuplesComponents.map { it.split(separator = ":")[0] }.toMutableList()
-        val declarations: MutableList<AssociatedValueDeclaration> = mutableListOf()
         val caseName: String = patternEnumElement.standaloneAttributes[0].split(separator = '.').lastOrNull()!!
 
         if (associatedValueNames.size != patternTuple.subtrees.size) {
@@ -1313,22 +1337,43 @@ else {
         val associatedValuesInfo: List<Pair<String, SwiftAST>> =
         	associatedValueNames.zip(patternTuple.subtrees)
 
-        val patternsNamed: MutableList<Pair<String, SwiftAST>> = associatedValuesInfo.filter { it.second.name == "Pattern Named" }.toMutableList()
+        val declarations: MutableList<AssociatedValueDeclaration> = mutableListOf()
+        val comparisons: MutableList<AssociatedValueComparison> = mutableListOf()
 
-        for (patternNamed in patternsNamed) {
-            val associatedValueName: String = patternNamed.first
-            val ast: SwiftAST = patternNamed.second
+        for (associatedValueInfo in associatedValuesInfo) {
+            val associatedValueName: String = associatedValueInfo.first
+            val ast: SwiftAST = associatedValueInfo.second
             val associatedValueType: String? = ast["type"]
 
             associatedValueType ?: return null
 
-            declarations.add(AssociatedValueDeclaration(
-                associatedValueName = associatedValueName,
-                associatedValueType = associatedValueType,
-                newVariable = ast.standaloneAttributes[0]))
+            if (ast.name == "Pattern Named") {
+                declarations.add(AssociatedValueDeclaration(
+                    associatedValueName = associatedValueName,
+                    associatedValueType = associatedValueType,
+                    newVariable = ast.standaloneAttributes[0]))
+                continue
+            }
+
+            val tupleExpression: SwiftAST? = ast.subtree(name = "Binary Expression")?.subtree(name = "Tuple Expression")
+            val tupleExpressionSubtrees: MutableList<SwiftAST>? = tupleExpression?.subtrees
+            val innerExpression: SwiftAST? = tupleExpressionSubtrees?.firstOrNull()
+
+            if (ast.name == "Pattern Expression" && innerExpression != null) {
+                val translatedExpression: Expression = translateExpression(innerExpression)
+                comparisons.add(AssociatedValueComparison(
+                    associatedValueName = associatedValueName,
+                    associatedValueType = associatedValueType,
+                    comparedExpression = translatedExpression))
+                continue
+            }
         }
 
-        return EnumPatternTranslation(enumType = enumType, enumCase = caseName, declarations = declarations)
+        return EnumPatternTranslation(
+            enumType = enumType,
+            enumCase = caseName,
+            declarations = declarations,
+            comparisons = comparisons)
     }
 
     internal fun translateFunctionDeclaration(functionDeclaration: SwiftAST): Statement? {
@@ -2710,13 +2755,20 @@ data class IfConditionsTranslation(
 data class EnumPatternTranslation(
     val enumType: String,
     val enumCase: String,
-    val declarations: MutableList<AssociatedValueDeclaration>
+    val declarations: MutableList<AssociatedValueDeclaration>,
+    val comparisons: MutableList<AssociatedValueComparison>
 )
 
 data class AssociatedValueDeclaration(
     val associatedValueName: String,
     val associatedValueType: String,
     val newVariable: String
+)
+
+data class AssociatedValueComparison(
+    val associatedValueName: String,
+    val associatedValueType: String,
+    val comparedExpression: Expression
 )
 
 data class SwiftTranslatorError(

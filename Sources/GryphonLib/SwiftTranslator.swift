@@ -1179,6 +1179,12 @@ public class SwiftTranslator {
 				let patternLetResult = try translateEnumPattern(patternLet)
 
 				if let patternLetResult = patternLetResult, let patternLet = patternLet {
+					guard patternLetResult.comparisons.isEmpty else {
+						return try unexpectedASTStructureError(
+							"Comparison expressions are not supported in switch cases",
+							ast: caseLabelItem, translator: self)
+					}
+
 					let enumType = patternLetResult.enumType
 					let enumCase = patternLetResult.enumCase
 					let declarations = patternLetResult.declarations
@@ -1217,7 +1223,8 @@ public class SwiftTranslator {
 				else if let patternEnumElement =
 					caseLabelItem.subtree(named: "Pattern Enum Element")
 				{
-					try caseExpressions.append(translateSimplePatternEnumElement(patternEnumElement))
+					try caseExpressions.append(
+						translateSimplePatternEnumElement(patternEnumElement))
 					extraStatements = []
 				}
 				else if let expression = maybeExpression {
@@ -1401,6 +1408,7 @@ public class SwiftTranslator {
 				let enumType = patternLetResult.enumType
 				let enumCase = patternLetResult.enumCase
 				let declarations = patternLetResult.declarations
+				let comparisons = patternLetResult.comparisons
 				let enumClassName = enumType + "." + enumCase.capitalizedAsCamelCase()
 
 				let declarationReference = try translateExpression(declarationReferenceAST)
@@ -1410,6 +1418,23 @@ public class SwiftTranslator {
 					rightExpression: .typeExpression(typeName: enumClassName),
 					operatorSymbol: "is",
 					typeName: "Bool")))
+
+				// TODO: test
+				for comparison in comparisons {
+					conditionsResult.append(.condition(expression: .binaryOperatorExpression(
+						leftExpression: .dotExpression(
+							leftExpression: declarationReference,
+							rightExpression: .declarationReferenceExpression(data:
+								DeclarationReferenceData(
+									identifier: comparison.associatedValueName,
+									typeName: comparison.associatedValueType,
+									isStandardLibrary: false,
+									isImplicit: false,
+									range: comparison.comparedExpression.range))),
+						rightExpression: comparison.comparedExpression,
+						operatorSymbol: "==",
+						typeName: "Bool")))
+				}
 
 				for declaration in declarations {
 					let range = getRangeRecursively(ofNode: patternLet)
@@ -1493,8 +1518,6 @@ public class SwiftTranslator {
 		let associatedValueNames =
 			valueTuplesComponents.map { $0.split(withStringSeparator: ":")[0] }
 
-		let declarations: ArrayClass<AssociatedValueDeclaration> = []
-
 		let caseName =
 			String(patternEnumElement.standaloneAttributes[0].split(separator: ".").last!)
 
@@ -1507,26 +1530,43 @@ public class SwiftTranslator {
 		// insert: val associatedValuesInfo: List<Pair<String, SwiftAST>> =
 		// insert: 	associatedValueNames.zip(patternTuple.subtrees)
 
-		let patternsNamed = associatedValuesInfo.filter { $0.1.name == "Pattern Named" }
-
-		for patternNamed in patternsNamed {
-			let associatedValueName = patternNamed.0
-			let ast = patternNamed.1
+		let declarations: ArrayClass<AssociatedValueDeclaration> = []
+		let comparisons: ArrayClass<AssociatedValueComparison> = []
+		for associatedValueInfo in associatedValuesInfo {
+			let associatedValueName = associatedValueInfo.0
+			let ast = associatedValueInfo.1
 
 			guard let associatedValueType = ast["type"] else {
 				return nil
 			}
 
-			declarations.append(AssociatedValueDeclaration(
-				associatedValueName: String(associatedValueName),
-				associatedValueType: associatedValueType,
-				newVariable: ast.standaloneAttributes[0]))
+			if ast.name == "Pattern Named" {
+				declarations.append(AssociatedValueDeclaration(
+					associatedValueName: String(associatedValueName),
+					associatedValueType: associatedValueType,
+					newVariable: ast.standaloneAttributes[0]))
+				continue
+			}
+
+			let tupleExpression = ast.subtree(named: "Binary Expression")?
+				.subtree(named: "Tuple Expression")
+			let tupleExpressionSubtrees = tupleExpression?.subtrees
+			let innerExpression = tupleExpressionSubtrees?.first
+			if ast.name == "Pattern Expression", let innerExpression = innerExpression {
+				let translatedExpression = try translateExpression(innerExpression)
+				comparisons.append(AssociatedValueComparison(
+					associatedValueName: String(associatedValueName),
+					associatedValueType: associatedValueType,
+					comparedExpression: translatedExpression))
+				continue
+			}
 		}
 
 		return EnumPatternTranslation(
 			enumType: enumType,
 			enumCase: caseName,
-			declarations: declarations)
+			declarations: declarations,
+			comparisons: comparisons)
 	}
 
 	internal func translateFunctionDeclaration(_ functionDeclaration: SwiftAST)
@@ -2997,12 +3037,19 @@ private struct EnumPatternTranslation {
 	let enumType: String
 	let enumCase: String
 	let declarations: ArrayClass<AssociatedValueDeclaration>
+	let comparisons: ArrayClass<AssociatedValueComparison>
 }
 
 private struct AssociatedValueDeclaration {
 	let associatedValueName: String
 	let associatedValueType: String
 	let newVariable: String
+}
+
+private struct AssociatedValueComparison {
+	let associatedValueName: String
+	let associatedValueType: String
+	let comparedExpression: Expression
 }
 
 struct SwiftTranslatorError: Error, CustomStringConvertible {

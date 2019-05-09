@@ -2607,12 +2607,12 @@ open class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
             val shouldStillBeGuard: Boolean
             val newCondition: Expression
 
-            if (onlyConditionExpression is Expression.PrefixUnaryExpression) {
+            if (onlyConditionExpression is Expression.PrefixUnaryExpression && onlyConditionExpression.operatorSymbol == "!") {
                 val innerExpression: Expression = onlyConditionExpression.subExpression
                 newCondition = innerExpression
                 shouldStillBeGuard = false
             }
-            else if (onlyConditionExpression is Expression.BinaryOperatorExpression) {
+            else if (onlyConditionExpression is Expression.BinaryOperatorExpression && onlyConditionExpression.operatorSymbol == "!=") {
                 val leftExpression: Expression = onlyConditionExpression.leftExpression
                 val rightExpression: Expression = onlyConditionExpression.rightExpression
                 val typeName: String = onlyConditionExpression.typeName
@@ -2624,7 +2624,7 @@ open class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
                     typeName = typeName)
                 shouldStillBeGuard = false
             }
-            else if (onlyConditionExpression is Expression.BinaryOperatorExpression) {
+            else if (onlyConditionExpression is Expression.BinaryOperatorExpression && onlyConditionExpression.operatorSymbol == "==") {
                 val leftExpression: Expression = onlyConditionExpression.leftExpression
                 val rightExpression: Expression = onlyConditionExpression.rightExpression
                 val typeName: String = onlyConditionExpression.typeName
@@ -2666,7 +2666,7 @@ open class ReturnIfNilTranspilationPass: TranspilationPass {
                 if (onlyCondition is IfStatementData.IfCondition.Condition && onlyStatement is Statement.ReturnStatement) {
                     val onlyConditionExpression: Expression = onlyCondition.expression
                     val returnExpression: Expression? = onlyStatement.expression
-                    if (onlyConditionExpression is Expression.BinaryOperatorExpression) {
+                    if (onlyConditionExpression is Expression.BinaryOperatorExpression && onlyConditionExpression.operatorSymbol == "==") {
                         val declarationReference: Expression = onlyConditionExpression.leftExpression
                         if (declarationReference is Expression.DeclarationReferenceExpression) {
                             val declarationExpression: DeclarationReferenceData = declarationReference.data
