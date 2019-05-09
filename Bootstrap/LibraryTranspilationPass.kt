@@ -71,6 +71,24 @@ open class RecordTemplatesTranspilationPass: TranspilationPass {
     }
 }
 
+open class ReplaceTemplatesTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    override internal fun replaceExpression(expression: Expression): Expression {
+        for (template in TranspilationTemplate.templates) {
+            val matches: MutableMap<String, Expression>? = expression.matches(template.expression)
+            if (matches != null) {
+                val replacedMatches = matches.mapValues {
+                	replaceExpression(it.value)
+                }.toMutableMap()
+
+                return Expression.TemplateExpression(pattern = template.string, matches = replacedMatches)
+            }
+        }
+        return super.replaceExpression(expression)
+    }
+}
+
 internal fun Expression.matches(template: Expression): MutableMap<String, Expression>? {
     val result: MutableMap<String, Expression> = mutableMapOf()
     val success: Boolean = matches(template, result)

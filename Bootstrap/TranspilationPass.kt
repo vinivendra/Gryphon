@@ -2743,6 +2743,7 @@ public fun TranspilationPass.Companion.runFirstRoundOfPasses(sourceFile: Gryphon
 
     result = RemoveImplicitDeclarationsTranspilationPass(ast = result).run()
     result = CleanInheritancesTranspilationPass(ast = result).run()
+    result = RecordTemplatesTranspilationPass(ast = result).run()
     result = RecordEnumsTranspilationPass(ast = result).run()
     result = RecordProtocolsTranspilationPass(ast = result).run()
     result = RecordFunctionsTranspilationPass(ast = result).run()
@@ -2756,6 +2757,7 @@ public fun TranspilationPass.Companion.runSecondRoundOfPasses(
 {
     var result: GryphonAST = sourceFile
 
+    result = ReplaceTemplatesTranspilationPass(ast = result).run()
     result = RemoveParenthesesTranspilationPass(ast = result).run()
     result = RemoveExtraReturnsInInitsTranspilationPass(ast = result).run()
     result = RawValuesTranspilationPass(ast = result).run()

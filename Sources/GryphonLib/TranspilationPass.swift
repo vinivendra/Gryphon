@@ -2896,7 +2896,7 @@ public extension TranspilationPass {
 		result = CleanInheritancesTranspilationPass(ast: result).run()
 
 		// Record information on enum and function translations
-		result = RecordTemplatesTranspilationPass(ast: result).run() // kotlin: ignore
+		result = RecordTemplatesTranspilationPass(ast: result).run()
 		result = RecordEnumsTranspilationPass(ast: result).run()
 		result = RecordProtocolsTranspilationPass(ast: result).run()
 		result = RecordFunctionsTranspilationPass(ast: result).run()
@@ -2911,7 +2911,7 @@ public extension TranspilationPass {
 
 		// Replace templates (must go before other passes since templates are recorded before
 		// running any passes)
-		result = ReplaceTemplatesTranspilationPass(ast: result).run() // kotlin: ignore
+		result = ReplaceTemplatesTranspilationPass(ast: result).run()
 
 		// Cleanup
 		result = RemoveParenthesesTranspilationPass(ast: result).run()

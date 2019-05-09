@@ -89,16 +89,26 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 	}
 }
 
-public class ReplaceTemplatesTranspilationPass: TranspilationPass { // kotlin: ignore
-	override func replaceExpression(_ expression: Expression) -> Expression {
+public class ReplaceTemplatesTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	override func replaceExpression( // annotation: override
+		_ expression: Expression)
+		-> Expression
+	{
 		for template in TranspilationTemplate.templates {
 			if let matches = expression.matches(template.expression) {
-				let replacedMatches = matches.mapValues {
+
+				let replacedMatches = matches.mapValues { // kotlin: ignore
 					self.replaceExpression($0)
 				}
+				// insert: val replacedMatches = matches.mapValues {
+				// insert: 	replaceExpression(it.value)
+				// insert: }.toMutableMap()
+
 				return .templateExpression(
 					pattern: template.string,
-					matches: DictionaryClass(replacedMatches))
+					matches: replacedMatches)
 			}
 		}
 		return super.replaceExpression(expression)
