@@ -534,14 +534,14 @@ fileprivate extension String { // kotlin: ignore
 	}
 }
 
-private func simplifyType(string: String) -> String { // kotlin: ignore
+private func simplifyType(string: String) -> String {
 	// Deal with standard library types that can be handled as other types
 	if let result = Utilities.getTypeMapping(for: string) {
 		return result
 	}
 
 	// Treat ArrayClass as Array
-	if string.hasPrefix("ArrayClass<"), string.last == ">" {
+	if string.hasPrefix("ArrayClass<"), string.last! == ">" {
 		let elementType = String(string.dropFirst("ArrayClass<".count).dropLast())
 		return "[\(elementType)]"
 	}
@@ -558,7 +558,7 @@ private func simplifyType(string: String) -> String { // kotlin: ignore
 	}
 
 	// Treat DictionaryClass as Dictionary
-	if string.hasPrefix("DictionaryClass<"), string.last == ">" {
+	if string.hasPrefix("DictionaryClass<"), string.last! == ">" {
 		let keyValue = String(string.dropFirst("DictionaryClass<".count).dropLast())
 			.split(withStringSeparator: ", ")
 		let key = keyValue[0]
@@ -567,7 +567,7 @@ private func simplifyType(string: String) -> String { // kotlin: ignore
 	}
 
 	// Convert Array<T> into [T]
-	if string.hasPrefix("Array<"), string.last == ">" {
+	if string.hasPrefix("Array<"), string.last! == ">" {
 		let elementType = String(string.dropFirst("Reference<".count).dropLast())
 		return "[\(elementType)]"
 	}

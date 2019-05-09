@@ -70,3 +70,52 @@ open class RecordTemplatesTranspilationPass: TranspilationPass {
         return null
     }
 }
+
+private fun simplifyType(string: String): String {
+    val result: String? = Utilities.getTypeMapping(typeName = string)
+
+    if (result != null) {
+        return result
+    }
+
+    if (string.startsWith("ArrayClass<") && string.lastOrNull()!! == '>') {
+        val elementType: String = string.drop("ArrayClass<".length).dropLast(1)
+        return "[${elementType}]"
+    }
+
+    if (string.startsWith("Slice<ArrayClass<") && string.endsWith(">>")) {
+        val elementType: String = string.drop("Slice<ArrayClass<".length).dropLast(">>".length)
+        return "[${elementType}]"
+    }
+    else if (string.startsWith("ArraySlice<") && string.endsWith(">")) {
+        val elementType: String = string.drop("ArraySlice<".length).dropLast(1)
+        return "[${elementType}]"
+    }
+
+    if (string.startsWith("DictionaryClass<") && string.lastOrNull()!! == '>') {
+        val keyValue: MutableList<String> = string.drop("DictionaryClass<".length).dropLast(1).split(separator = ", ")
+        val key: String = keyValue[0]
+        val value: String = keyValue[1]
+
+        return "[${key} : ${value}]"
+    }
+
+    if (string.startsWith("Array<") && string.lastOrNull()!! == '>') {
+        val elementType: String = string.drop("Reference<".length).dropLast(1)
+        return "[${elementType}]"
+    }
+
+    if (Utilities.isInEnvelopingParentheses(string)) {
+        return string.drop(1).dropLast(1)
+    }
+
+    if (string.startsWith("inout ")) {
+        return string.drop("inout ".length)
+    }
+
+    if (string.startsWith("__owned ")) {
+        return string.drop("__owned ".length)
+    }
+
+    return string
+}

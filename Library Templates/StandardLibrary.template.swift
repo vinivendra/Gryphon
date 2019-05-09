@@ -93,6 +93,9 @@ func gryphonTemplates() {
 	_ = _string.first
 	_ = "_string.firstOrNull()"
 
+	_ = _string.last
+	_ = "_string.lastOrNull()"
+
 	_ = Double(_string)
 	_ = "_string.toDouble()"
 
