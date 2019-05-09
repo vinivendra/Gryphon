@@ -143,6 +143,10 @@ public final class ArrayClass<Element>: // kotlin: ignore
 		return ArrayClass<Element>(self.array + [newElement])
 	}
 
+	public func insert(_ newElement: Element, at i: Index) {
+		array.insert(newElement, at: i)
+	}
+
 	public func filter(_ isIncluded: (Element) throws -> Bool) rethrows -> ArrayClass<Element> {
 		return try ArrayClass(self.array.filter(isIncluded))
 	}

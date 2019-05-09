@@ -16,33 +16,33 @@
 
 import Foundation
 
-public struct TranspilationTemplate { // kotlin: ignore
+public struct TranspilationTemplate {
 	let expression: Expression
 	let string: String
 
-	static var templates = [TranspilationTemplate]()
+	static var templates: ArrayClass<TranspilationTemplate> = []
 }
 
-public class RecordTemplatesTranspilationPass: TranspilationPass { // kotlin: ignore
-	override func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclarationData)
+public class RecordTemplatesTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	override func replaceFunctionDeclaration( // annotation: override
+		_ functionDeclaration: FunctionDeclarationData)
 		-> ArrayClass<Statement>
 	{
 		if functionDeclaration.prefix == "gryphonTemplates",
 			functionDeclaration.parameters.isEmpty,
 			let statements = functionDeclaration.statements
 		{
-			let expressions = statements.compactMap
-			{ (statement: Statement) -> Expression? in
+			let topLevelExpressions: ArrayClass<Expression> = []
+			for statement in statements {
 				if case let .expressionStatement(expression: expression) = statement {
-					return expression
-				}
-				else {
-					return nil
+					topLevelExpressions.append(expression)
 				}
 			}
 
 			var previousExpression: Expression?
-			for expression in expressions {
+			for expression in topLevelExpressions {
 				if let templateExpression = previousExpression {
 					guard let literalString = getStringLiteralOrSum(expression) else {
 						continue
@@ -71,19 +71,21 @@ public class RecordTemplatesTranspilationPass: TranspilationPass { // kotlin: ig
 		if case let .literalStringExpression(value: value) = expression {
 			return value
 		}
-		else if case let .binaryOperatorExpression(
+
+		if case let .binaryOperatorExpression(
 			leftExpression: leftExpression,
 			rightExpression: rightExpression,
 			operatorSymbol: "+",
-			typeName: "String") = expression,
-			let leftString = getStringLiteralOrSum(leftExpression),
-			let rightString = getStringLiteralOrSum(rightExpression)
+			typeName: "String") = expression
 		{
-			return leftString + rightString
+			if let leftString = getStringLiteralOrSum(leftExpression),
+				let rightString = getStringLiteralOrSum(rightExpression)
+			{
+				return leftString + rightString
+			}
 		}
-		else {
-			return nil
-		}
+
+		return nil
 	}
 }
 

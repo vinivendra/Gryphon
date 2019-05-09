@@ -209,6 +209,9 @@ func gryphonTemplates() {
 	_ = _array.append(_any)
 	_ = "_array.add(_any)"
 
+	_ = _array.insert(_any, at: _int)
+	_ = "_array.add(_int, _any)"
+
 	_ = _arrayOfOptionals.append(nil)
 	_ = "_arrayOfOptionals.add(null)"
 
