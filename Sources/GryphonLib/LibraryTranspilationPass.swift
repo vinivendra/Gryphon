@@ -16,14 +16,14 @@
 
 import Foundation
 
-public struct TranspilationTemplate {
+public struct TranspilationTemplate { // kotlin: ignore
 	let expression: Expression
 	let string: String
 
 	static var templates = [TranspilationTemplate]()
 }
 
-public class RecordTemplatesTranspilationPass: TranspilationPass {
+public class RecordTemplatesTranspilationPass: TranspilationPass { // kotlin: ignore
 	override func replaceFunctionDeclaration(_ functionDeclaration: FunctionDeclarationData)
 		-> ArrayClass<Statement>
 	{
@@ -87,7 +87,7 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 	}
 }
 
-public class ReplaceTemplatesTranspilationPass: TranspilationPass {
+public class ReplaceTemplatesTranspilationPass: TranspilationPass { // kotlin: ignore
 	override func replaceExpression(_ expression: Expression) -> Expression {
 		for template in TranspilationTemplate.templates {
 			if let matches = expression.matches(template.expression) {
@@ -103,7 +103,7 @@ public class ReplaceTemplatesTranspilationPass: TranspilationPass {
 	}
 }
 
-extension Expression {
+extension Expression { // kotlin: ignore
 	func matches(_ template: Expression) -> [String: Expression]? {
 		var result = [String: Expression]()
 		let success = matches(template, &result)
@@ -373,7 +373,7 @@ extension Expression {
 	}
 }
 
-fileprivate extension String {
+fileprivate extension String { // kotlin: ignore
 	func isSubtype(of superType: String) -> Bool {
 		// Check common cases
 		if self == superType {
@@ -501,7 +501,7 @@ fileprivate extension String {
 	}
 }
 
-private func simplifyType(string: String) -> String {
+private func simplifyType(string: String) -> String { // kotlin: ignore
 	// Deal with standard library types that can be handled as other types
 	if let result = Utilities.getTypeMapping(for: string) {
 		return result
