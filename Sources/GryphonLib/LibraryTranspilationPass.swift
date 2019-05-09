@@ -366,7 +366,9 @@ extension Expression { // kotlin: ignore
 			return false
 		}
 	}
+}
 
+extension Expression {
 	/**
 	In a static context, some type expressions can be omitted. When that happens, they get
 	translated as declaration references instead of type expressions. However, thwy should still

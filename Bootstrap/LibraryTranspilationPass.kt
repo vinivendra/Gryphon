@@ -71,6 +71,24 @@ open class RecordTemplatesTranspilationPass: TranspilationPass {
     }
 }
 
+private fun Expression.declarationExpressionMatchesImplicitTypeExpression(
+    expression: DeclarationReferenceData)
+    : Boolean
+{
+    if (expression.identifier == "self" && expression.typeName.endsWith(".Type") && expression.isImplicit) {
+        return true
+    }
+    else {
+        return true
+    }
+}
+
+internal fun Expression.isOfType(superType: String): Boolean {
+    val typeName: String? = this.swiftType
+    typeName ?: return false
+    return typeName.isSubtype(superType = superType)
+}
+
 internal fun String.isSubtype(superType: String): Boolean {
     if (this == superType) {
         return true
