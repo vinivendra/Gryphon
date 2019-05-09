@@ -159,12 +159,12 @@ class BootstrappingTest: XCTestCase {
 			inDirectory: "Sources/GryphonLib", withExtension: .swift)
 
 		let astDumpFiles = Utilities.getFiles(
-			inDirectory: "Test Files", withExtension: .swiftASTDump)
+			inDirectory: "Test Files", withExtension: .swiftAST)
 		let rawASTFiles = Utilities.getFiles(
 			inDirectory: "Test Files", withExtension: .gryphonASTRaw)
 
-		if Utilities.files(astDumpFiles, wereModifiedLaterThan: swiftFiles) ||
-			Utilities.files(rawASTFiles, wereModifiedLaterThan: swiftFiles)
+		if Utilities.files(swiftFiles, wereModifiedLaterThan: astDumpFiles) ||
+			Utilities.files(swiftFiles, wereModifiedLaterThan: rawASTFiles)
 		{
 			print("🚨 Bootstrap test files are out of date.\n" +
 				"Please run `updateBootstrapTestFiles.sh`.")
