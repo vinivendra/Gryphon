@@ -221,6 +221,9 @@ func gryphonTemplates() {
 	_ = _strArray.joined(separator: _string)
 	_ = "_strArray.joinToString(separator = _string)"
 
+	_ = _strArray.joined()
+	_ = "_strArray.joinToString(separator = \"\")"
+
 	_ = _array.count
 	_ = "_array.size"
 
@@ -259,6 +262,9 @@ func gryphonTemplates() {
 
 	_ = _array.filter(_closure3)
 	_ = "_array.filter _closure3.toMutableList()"
+
+	_ = _array.reduce(_any, _closure)
+	_ = "_array.fold(_any) _closure"
 
 	_ = zip(_array1, _array2)
 	_ = "_array1.zip(_array2)"

@@ -1249,6 +1249,139 @@ open class InnerTypePrefixesTranspilationPass: TranspilationPass {
     }
 }
 
+open class CapitalizeEnumsTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    override internal fun replaceDotExpression(
+        leftExpression: Expression,
+        rightExpression: Expression)
+        : Expression
+    {
+        if (leftExpression is Expression.TypeExpression && rightExpression is Expression.DeclarationReferenceExpression) {
+            val enumType: String = leftExpression.typeName
+            val enumExpression: DeclarationReferenceData = rightExpression.data
+            val lastEnumType: String = enumType.split(separator = '.').lastOrNull()!!
+
+            if (KotlinTranslator.sealedClasses.contains(lastEnumType)) {
+                val enumExpression: DeclarationReferenceData = enumExpression
+                enumExpression.identifier = enumExpression.identifier.capitalizedAsCamelCase()
+                return Expression.DotExpression(
+                    leftExpression = Expression.TypeExpression(typeName = enumType),
+                    rightExpression = Expression.DeclarationReferenceExpression(data = enumExpression))
+            }
+            else if (KotlinTranslator.enumClasses.contains(lastEnumType)) {
+                val enumExpression: DeclarationReferenceData = enumExpression
+                enumExpression.identifier = enumExpression.identifier.upperSnakeCase()
+                return Expression.DotExpression(
+                    leftExpression = Expression.TypeExpression(typeName = enumType),
+                    rightExpression = Expression.DeclarationReferenceExpression(data = enumExpression))
+            }
+        }
+        return super.replaceDotExpression(leftExpression = leftExpression, rightExpression = rightExpression)
+    }
+
+    override internal fun replaceEnumDeclaration(
+        access: String?,
+        enumName: String,
+        inherits: MutableList<String>,
+        elements: MutableList<EnumElement>,
+        members: MutableList<Statement>,
+        isImplicit: Boolean)
+        : MutableList<Statement>
+    {
+        val isSealedClass: Boolean = KotlinTranslator.sealedClasses.contains(enumName)
+        val isEnumClass: Boolean = KotlinTranslator.enumClasses.contains(enumName)
+        val newElements: MutableList<EnumElement>
+
+        if (isSealedClass) {
+            newElements = elements.map { element -> EnumElement(
+                name = element.name.capitalizedAsCamelCase(),
+                associatedValues = element.associatedValues,
+                rawValue = element.rawValue,
+                annotations = element.annotations) }.toMutableList()
+        }
+        else if (isEnumClass) {
+            newElements = elements.map { element -> EnumElement(
+                name = element.name.upperSnakeCase(),
+                associatedValues = element.associatedValues,
+                rawValue = element.rawValue,
+                annotations = element.annotations) }.toMutableList()
+        }
+        else {
+            newElements = elements
+        }
+
+        return super.replaceEnumDeclaration(
+            access = access,
+            enumName = enumName,
+            inherits = inherits,
+            elements = newElements,
+            members = members,
+            isImplicit = isImplicit)
+    }
+}
+
+open class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    var returnTypesStack: MutableList<String> = mutableListOf()
+
+    private fun removePrefixFromPossibleEnumReference(
+        leftExpression: Expression,
+        rightExpression: Expression)
+        : Expression
+    {
+        if (leftExpression is Expression.TypeExpression && rightExpression is Expression.DeclarationReferenceExpression) {
+            val enumType: String = leftExpression.typeName
+            val enumExpression: DeclarationReferenceData = rightExpression.data
+            if (enumExpression.typeName == "(${enumType}.Type) -> ${enumType}" && !KotlinTranslator.sealedClasses.contains(enumType)) {
+                return Expression.DeclarationReferenceExpression(data = enumExpression)
+            }
+        }
+        return super.replaceDotExpression(leftExpression = leftExpression, rightExpression = rightExpression)
+    }
+
+    override internal fun replaceFunctionDeclarationData(
+        functionDeclaration: FunctionDeclarationData)
+        : FunctionDeclarationData?
+    {
+        try {
+            returnTypesStack.add(functionDeclaration.returnType)
+            return super.replaceFunctionDeclarationData(functionDeclaration)
+        }
+        finally {
+            returnTypesStack.removeLast()
+        }
+    }
+
+    override internal fun replaceReturnStatement(
+        expression: Expression?)
+        : MutableList<Statement>
+    {
+        val returnType: String? = returnTypesStack.lastOrNull()
+        if (returnType != null && expression != null && expression is Expression.DotExpression) {
+            val leftExpression: Expression = expression.leftExpression
+            val rightExpression: Expression = expression.rightExpression
+            if (leftExpression is Expression.TypeExpression) {
+                val typeExpression: String = leftExpression.typeName
+                var returnType: String = returnType
+
+                if (returnType.endsWith("?")) {
+                    returnType = returnType.dropLast("?".length)
+                }
+
+                if (typeExpression == returnType) {
+                    val newExpression: Expression = removePrefixFromPossibleEnumReference(
+                        leftExpression = leftExpression,
+                        rightExpression = rightExpression)
+                    return mutableListOf(Statement.ReturnStatement(expression = newExpression))
+                }
+            }
+        }
+        return mutableListOf(Statement.ReturnStatement(expression = expression))
+    }
+}
+
 open class RenameOperatorsTranspilationPass: TranspilationPass {
     constructor(ast: GryphonAST): super(ast) { }
 
@@ -1789,6 +1922,62 @@ open class RemoveBreaksInSwitchesTranspilationPass: TranspilationPass {
     }
 }
 
+open class IsOperatorsInSealedClassesTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    override internal fun replaceSwitchStatement(
+        convertsToExpression: Statement?,
+        expression: Expression,
+        cases: MutableList<SwitchCase>)
+        : MutableList<Statement>
+    {
+        if (expression is Expression.DeclarationReferenceExpression) {
+            val declarationReferenceExpression: DeclarationReferenceData = expression.data
+            if (KotlinTranslator.sealedClasses.contains(declarationReferenceExpression.typeName)) {
+                val newCases: MutableList<SwitchCase> = cases.map { replaceIsOperatorsInSwitchCase(it, expression = expression) }.toMutableList()
+                return super.replaceSwitchStatement(
+                    convertsToExpression = convertsToExpression,
+                    expression = expression,
+                    cases = newCases)
+            }
+        }
+        return super.replaceSwitchStatement(
+            convertsToExpression = convertsToExpression,
+            expression = expression,
+            cases = cases)
+    }
+
+    private fun replaceIsOperatorsInSwitchCase(
+        switchCase: SwitchCase,
+        expression: Expression)
+        : SwitchCase
+    {
+        val newExpressions: MutableList<Expression> = switchCase.expressions.map { replaceIsOperatorsInExpression(it, expression = expression) }.toMutableList()
+        return SwitchCase(expressions = newExpressions, statements = switchCase.statements)
+    }
+
+    private fun replaceIsOperatorsInExpression(
+        caseExpression: Expression,
+        expression: Expression)
+        : Expression
+    {
+        if (caseExpression is Expression.DotExpression) {
+            val leftExpression: Expression = caseExpression.leftExpression
+            val rightExpression: Expression = caseExpression.rightExpression
+            if (leftExpression is Expression.TypeExpression && rightExpression is Expression.DeclarationReferenceExpression) {
+                val typeName: String = leftExpression.typeName
+                val declarationReferenceExpression: DeclarationReferenceData = rightExpression.data
+                return Expression.BinaryOperatorExpression(
+                    leftExpression = expression,
+                    rightExpression = Expression.TypeExpression(typeName = "${typeName}.${declarationReferenceExpression.identifier}"),
+                    operatorSymbol = "is",
+                    typeName = "Bool")
+            }
+        }
+        return caseExpression
+    }
+}
+
 open class RemoveExtensionsTranspilationPass: TranspilationPass {
     constructor(ast: GryphonAST): super(ast) { }
 
@@ -1846,6 +2035,72 @@ open class RemoveExtensionsTranspilationPass: TranspilationPass {
     }
 }
 
+open class RecordFunctionsTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    override internal fun replaceFunctionDeclarationData(
+        functionDeclaration: FunctionDeclarationData)
+        : FunctionDeclarationData?
+    {
+        val swiftAPIName: String = functionDeclaration.prefix + "(" + functionDeclaration.parameters.map { (it.apiLabel ?: "_") + ":" }.toMutableList().joinToString(separator = "") + ")"
+
+        KotlinTranslator.addFunctionTranslation(
+            KotlinTranslator.FunctionTranslation(
+                    swiftAPIName = swiftAPIName,
+                    typeName = functionDeclaration.functionType,
+                    prefix = functionDeclaration.prefix,
+                    parameters = functionDeclaration.parameters.map { it.label }.toMutableList()))
+
+        if (functionDeclaration.isPure) {
+            KotlinTranslator.recordPureFunction(functionDeclaration)
+        }
+
+        return super.replaceFunctionDeclarationData(functionDeclaration)
+    }
+}
+
+open class RecordEnumsTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    override internal fun replaceEnumDeclaration(
+        access: String?,
+        enumName: String,
+        inherits: MutableList<String>,
+        elements: MutableList<EnumElement>,
+        members: MutableList<Statement>,
+        isImplicit: Boolean)
+        : MutableList<Statement>
+    {
+        val isEnumClass: Boolean = inherits.isEmpty() && elements.fold(true) { result, element -> result && element.associatedValues.isEmpty() }
+        if (isEnumClass) {
+            KotlinTranslator.addEnumClass(enumName)
+        }
+        else {
+            KotlinTranslator.addSealedClass(enumName)
+        }
+        return mutableListOf(Statement.EnumDeclaration(
+            access = access,
+            enumName = enumName,
+            inherits = inherits,
+            elements = elements,
+            members = members,
+            isImplicit = isImplicit))
+    }
+}
+
+open class RecordProtocolsTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    override internal fun replaceProtocolDeclaration(
+        protocolName: String,
+        members: MutableList<Statement>)
+        : MutableList<Statement>
+    {
+        KotlinTranslator.addProtocol(protocolName)
+        return super.replaceProtocolDeclaration(protocolName = protocolName, members = members)
+    }
+}
+
 open class RaiseStandardLibraryWarningsTranspilationPass: TranspilationPass {
     constructor(ast: GryphonAST): super(ast) { }
 
@@ -1878,7 +2133,7 @@ open class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass {
             if (member is Statement.VariableDeclaration) {
                 val variableDeclaration: VariableDeclarationData = member.data
                 if (!variableDeclaration.isImplicit && !variableDeclaration.isStatic && !variableDeclaration.isLet && variableDeclaration.getter == null) {
-                    val message: String = "No support for mutable variables in value types: found variable " + "${variableDeclaration.identifier} inside struct ${structName}"
+                    val message: String = "No support for mutable variables in value types: found" + " variable ${variableDeclaration.identifier} inside struct ${structName}"
                     Compiler.handleWarning(message = message, sourceFile = ast.sourceFile, sourceFileRange = null)
                     continue
                 }
@@ -1928,6 +2183,150 @@ open class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass {
             elements = elements,
             members = members,
             isImplicit = isImplicit)
+    }
+}
+
+open class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    override internal fun replaceIfStatementData(ifStatement: IfStatementData): IfStatementData {
+        raiseWarningsForIfStatement(ifStatement, isElse = false)
+        return ifStatement
+    }
+
+    private fun raiseWarningsForIfStatement(ifStatement: IfStatementData, isElse: Boolean) {
+        val conditions: MutableList<IfStatementData.IfCondition> = if (isElse) { ifStatement.conditions } else { (ifStatement.conditions.drop(1)).toMutableList<IfStatementData.IfCondition>() }
+        val sideEffectsRanges: MutableList<SourceFileRange> = conditions.flatMap { rangesWithPossibleSideEffectsInCondition(it) }.toMutableList()
+
+        for (range in sideEffectsRanges) {
+            Compiler.handleWarning(
+                message = "If condition may have side effects.",
+                details = "",
+                sourceFile = ast.sourceFile,
+                sourceFileRange = range)
+        }
+
+        val elseStatement: IfStatementData? = ifStatement.elseStatement
+
+        if (elseStatement != null) {
+            raiseWarningsForIfStatement(elseStatement, isElse = true)
+        }
+    }
+
+    private fun rangesWithPossibleSideEffectsInCondition(
+        condition: IfStatementData.IfCondition)
+        : MutableList<SourceFileRange>
+    {
+        if (condition is IfStatementData.IfCondition.Declaration) {
+            val variableDeclaration: VariableDeclarationData = condition.variableDeclaration
+            val expression: Expression? = variableDeclaration.expression
+            if (expression != null) {
+                return rangesWithPossibleSideEffectsIn(expression)
+            }
+        }
+        return mutableListOf()
+    }
+
+    private fun rangesWithPossibleSideEffectsIn(
+        expression: Expression)
+        : MutableList<SourceFileRange>
+    {
+        when (expression) {
+            is Expression.CallExpression -> {
+                val callExpression: CallExpressionData = expression.data
+                val range: SourceFileRange? = callExpression.range
+                if (!KotlinTranslator.isReferencingPureFunction(callExpression) && range != null) {
+                    return mutableListOf(range)
+                }
+                else {
+                    return mutableListOf()
+                }
+            }
+            is Expression.ParenthesesExpression -> {
+                val expression: Expression = expression.expression
+                return rangesWithPossibleSideEffectsIn(expression)
+            }
+            is Expression.ForceValueExpression -> {
+                val expression: Expression = expression.expression
+                return rangesWithPossibleSideEffectsIn(expression)
+            }
+            is Expression.OptionalExpression -> {
+                val expression: Expression = expression.expression
+                return rangesWithPossibleSideEffectsIn(expression)
+            }
+            is Expression.SubscriptExpression -> {
+                val subscriptedExpression: Expression = expression.subscriptedExpression
+                val indexExpression: Expression = expression.indexExpression
+                val result: MutableList<SourceFileRange> = rangesWithPossibleSideEffectsIn(subscriptedExpression)
+
+                result.addAll(rangesWithPossibleSideEffectsIn(indexExpression))
+
+                return result
+            }
+            is Expression.ArrayExpression -> {
+                val elements: MutableList<Expression> = expression.elements
+                return elements.flatMap { rangesWithPossibleSideEffectsIn(it) }.toMutableList()
+            }
+            is Expression.DictionaryExpression -> {
+                val keys: MutableList<Expression> = expression.keys
+                val values: MutableList<Expression> = expression.values
+                val result: MutableList<SourceFileRange> = keys.flatMap { rangesWithPossibleSideEffectsIn(it) }.toMutableList()
+
+                result.addAll(values.flatMap { rangesWithPossibleSideEffectsIn(it) }.toMutableList())
+
+                return result
+            }
+            is Expression.DotExpression -> {
+                val leftExpression: Expression = expression.leftExpression
+                val rightExpression: Expression = expression.rightExpression
+                val result: MutableList<SourceFileRange> = rangesWithPossibleSideEffectsIn(leftExpression)
+
+                result.addAll(rangesWithPossibleSideEffectsIn(rightExpression))
+
+                return result
+            }
+            is Expression.BinaryOperatorExpression -> {
+                val leftExpression: Expression = expression.leftExpression
+                val rightExpression: Expression = expression.rightExpression
+                val result: MutableList<SourceFileRange> = rangesWithPossibleSideEffectsIn(leftExpression)
+
+                result.addAll(rangesWithPossibleSideEffectsIn(rightExpression))
+
+                return result
+            }
+            is Expression.PrefixUnaryExpression -> {
+                val subExpression: Expression = expression.subExpression
+                return rangesWithPossibleSideEffectsIn(subExpression)
+            }
+            is Expression.PostfixUnaryExpression -> {
+                val subExpression: Expression = expression.subExpression
+                return rangesWithPossibleSideEffectsIn(subExpression)
+            }
+            is Expression.IfExpression -> {
+                val condition: Expression = expression.condition
+                val trueExpression: Expression = expression.trueExpression
+                val falseExpression: Expression = expression.falseExpression
+                val result: MutableList<SourceFileRange> = rangesWithPossibleSideEffectsIn(condition)
+
+                result.addAll(rangesWithPossibleSideEffectsIn(trueExpression))
+                result.addAll(rangesWithPossibleSideEffectsIn(falseExpression))
+
+                return result
+            }
+            is Expression.InterpolatedStringLiteralExpression -> {
+                val expressions: MutableList<Expression> = expression.expressions
+                return expressions.flatMap { rangesWithPossibleSideEffectsIn(it) }.toMutableList()
+            }
+            is Expression.TupleExpression -> {
+                val pairs: MutableList<LabeledExpression> = expression.pairs
+                return pairs.flatMap { rangesWithPossibleSideEffectsIn(it.expression) }.toMutableList()
+            }
+            is Expression.TupleShuffleExpression -> {
+                val expressions: MutableList<Expression> = expression.expressions
+                return expressions.flatMap { rangesWithPossibleSideEffectsIn(it) }.toMutableList()
+            }
+            else -> return mutableListOf()
+        }
     }
 }
 
@@ -2344,6 +2743,9 @@ public fun TranspilationPass.Companion.runFirstRoundOfPasses(sourceFile: Gryphon
 
     result = RemoveImplicitDeclarationsTranspilationPass(ast = result).run()
     result = CleanInheritancesTranspilationPass(ast = result).run()
+    result = RecordEnumsTranspilationPass(ast = result).run()
+    result = RecordProtocolsTranspilationPass(ast = result).run()
+    result = RecordFunctionsTranspilationPass(ast = result).run()
 
     return result
 }
@@ -2362,6 +2764,7 @@ public fun TranspilationPass.Companion.runSecondRoundOfPasses(
     result = StaticMembersTranspilationPass(ast = result).run()
     result = FixProtocolContentsTranspilationPass(ast = result).run()
     result = RemoveExtensionsTranspilationPass(ast = result).run()
+    result = RaiseWarningsForSideEffectsInIfLetsTranspilationPass(ast = result).run()
     result = RearrangeIfLetsTranspilationPass(ast = result).run()
     result = SelfToThisTranspilationPass(ast = result).run()
     result = AnonymousParametersTranspilationPass(ast = result).run()
@@ -2370,8 +2773,11 @@ public fun TranspilationPass.Companion.runSecondRoundOfPasses(
     result = RefactorOptionalsInSubscriptsTranspilationPass(ast = result).run()
     result = AddOptionalsInDotChainsTranspilationPass(ast = result).run()
     result = RenameOperatorsTranspilationPass(ast = result).run()
+    result = CapitalizeEnumsTranspilationPass(ast = result).run()
+    result = IsOperatorsInSealedClassesTranspilationPass(ast = result).run()
     result = SwitchesToExpressionsTranspilationPass(ast = result).run()
     result = RemoveBreaksInSwitchesTranspilationPass(ast = result).run()
+    result = OmitImplicitEnumPrefixesTranspilationPass(ast = result).run()
     result = InnerTypePrefixesTranspilationPass(ast = result).run()
     result = DoubleNegativesInGuardsTranspilationPass(ast = result).run()
     result = ReturnIfNilTranspilationPass(ast = result).run()

@@ -1208,9 +1208,13 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass {
 // TODO: test
 /// Capitalizes references to enums (since enum cases in Kotlin are conventionally written in
 /// capitalized forms)
-public class CapitalizeEnumsTranspilationPass: TranspilationPass { // kotlin: ignore
-	override func replaceDotExpression(
-		leftExpression: Expression, rightExpression: Expression) -> Expression
+public class CapitalizeEnumsTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	override func replaceDotExpression( // annotation: override
+		leftExpression: Expression,
+		rightExpression: Expression)
+		-> Expression
 	{
 		if case let .typeExpression(typeName: enumType) = leftExpression,
 			case let .declarationReferenceExpression(data: enumExpression) = rightExpression
@@ -1237,7 +1241,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass { // kotlin: ig
 			leftExpression: leftExpression, rightExpression: rightExpression)
 	}
 
-	override func replaceEnumDeclaration(
+	override func replaceEnumDeclaration( // annotation: override
 		access: String?,
 		enumName: String,
 		inherits: ArrayClass<String>,
@@ -1249,24 +1253,27 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass { // kotlin: ig
 		let isSealedClass = KotlinTranslator.sealedClasses.contains(enumName)
 		let isEnumClass = KotlinTranslator.enumClasses.contains(enumName)
 
-		let newElements = elements.map { (element: EnumElement) -> EnumElement in
-			if isSealedClass {
-				return EnumElement(
+		let newElements: ArrayClass<EnumElement>
+		if isSealedClass {
+			newElements = elements.map { element in
+				EnumElement(
 					name: element.name.capitalizedAsCamelCase(),
 					associatedValues: element.associatedValues,
 					rawValue: element.rawValue,
 					annotations: element.annotations)
 			}
-			else if isEnumClass {
-				return EnumElement(
+		}
+		else if isEnumClass {
+			newElements = elements.map { element in
+				EnumElement(
 					name: element.name.upperSnakeCase(),
 					associatedValues: element.associatedValues,
 					rawValue: element.rawValue,
 					annotations: element.annotations)
 			}
-			else {
-				return element
-			}
+		}
+		else {
+			newElements = elements
 		}
 
 		return super.replaceEnumDeclaration(
@@ -1304,7 +1311,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass { // kotlin: ig
 ///                └─ myEnum
 // TODO: test
 // TODO: add support for return whens (maybe put this before the when pass)
-public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass { // kotlin: ignore
+public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
 	private var returnTypesStack: ArrayClass<String> = []
@@ -1315,16 +1322,18 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass { // k
 		-> Expression
 	{
 		if case let .typeExpression(typeName: enumType) = leftExpression,
-			case let .declarationReferenceExpression(data: enumExpression) = rightExpression,
-			enumExpression.typeName == "(\(enumType).Type) -> \(enumType)",
-			!KotlinTranslator.sealedClasses.contains(enumType)
+			case let .declarationReferenceExpression(data: enumExpression) = rightExpression
 		{
-			return .declarationReferenceExpression(data: enumExpression)
+			if enumExpression.typeName == "(\(enumType).Type) -> \(enumType)",
+				!KotlinTranslator.sealedClasses.contains(enumType)
+			{
+				return .declarationReferenceExpression(data: enumExpression)
+			}
 		}
-		else {
-			return super.replaceDotExpression(
-				leftExpression: leftExpression, rightExpression: rightExpression)
-		}
+
+		return super.replaceDotExpression(
+			leftExpression: leftExpression,
+			rightExpression: rightExpression)
 	}
 
 	override func replaceFunctionDeclarationData( // annotation: override
@@ -1350,7 +1359,7 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass { // k
 				// It's ok to omit if the return type is an optional enum too
 				var returnType = returnType
 				if returnType.hasSuffix("?") {
-					returnType.removeLast("?".count)
+					returnType = String(returnType.dropLast("?".count))
 				}
 
 				if typeExpression == returnType {
@@ -1980,8 +1989,10 @@ public class RemoveBreaksInSwitchesTranspilationPass: TranspilationPass {
 
 /// Sealed classes should be tested for subclasses with the `is` operator. This is automatically
 /// done for enum cases with associated values, but in other cases it has to be handled here.
-public class IsOperatorsInSealedClassesTranspilationPass: TranspilationPass { // kotlin: ignore
-	override func replaceSwitchStatement(
+public class IsOperatorsInSealedClassesTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	override func replaceSwitchStatement( // annotation: override
 		convertsToExpression: Statement?,
 		expression: Expression,
 		cases: ArrayClass<SwitchCase>)
@@ -2013,12 +2024,25 @@ public class IsOperatorsInSealedClassesTranspilationPass: TranspilationPass { //
 		usingExpression expression: Expression)
 		-> SwitchCase
 	{
-		let newExpressions = switchCase.expressions.map
-		{ (caseExpression: Expression) -> Expression in
-			if case let .dotExpression(
-				leftExpression: leftExpression,
-				rightExpression: rightExpression) = caseExpression,
-				case let .typeExpression(typeName: typeName) = leftExpression,
+		let newExpressions = switchCase.expressions.map {
+			replaceIsOperatorsInExpression($0, usingExpression: expression)
+		}
+
+		return SwitchCase(
+			expressions: newExpressions,
+			statements: switchCase.statements)
+	}
+
+	private func replaceIsOperatorsInExpression(
+		_ caseExpression: Expression,
+		usingExpression expression: Expression)
+		-> Expression
+	{
+		if case let .dotExpression(
+			leftExpression: leftExpression,
+			rightExpression: rightExpression) = caseExpression
+		{
+			if case let .typeExpression(typeName: typeName) = leftExpression,
 				case let .declarationReferenceExpression(
 					data: declarationReferenceExpression) = rightExpression
 			{
@@ -2029,14 +2053,9 @@ public class IsOperatorsInSealedClassesTranspilationPass: TranspilationPass { //
 					operatorSymbol: "is",
 					typeName: "Bool")
 			}
-			else {
-				return caseExpression
-			}
 		}
 
-		return SwitchCase(
-			expressions: newExpressions,
-			statements: switchCase.statements)
+		return caseExpression
 	}
 }
 
@@ -2102,8 +2121,11 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 ///
 /// It also records all functions that have been marked as pure so that they don't raise warnings
 /// for possible side-effects in if-lets.
-public class RecordFunctionsTranspilationPass: TranspilationPass { // kotlin: ignore
-	override func replaceFunctionDeclarationData(_ functionDeclaration: FunctionDeclarationData)
+public class RecordFunctionsTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	override func replaceFunctionDeclarationData( // annotation: override
+		_ functionDeclaration: FunctionDeclarationData)
 		-> FunctionDeclarationData?
 	{
 		let swiftAPIName = functionDeclaration.prefix + "(" +
@@ -2124,8 +2146,10 @@ public class RecordFunctionsTranspilationPass: TranspilationPass { // kotlin: ig
 	}
 }
 
-public class RecordEnumsTranspilationPass: TranspilationPass { // kotlin: ignore
-	override func replaceEnumDeclaration(
+public class RecordEnumsTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	override func replaceEnumDeclaration( // annotation: override
 		access: String?,
 		enumName: String,
 		inherits: ArrayClass<String>,
@@ -2134,7 +2158,9 @@ public class RecordEnumsTranspilationPass: TranspilationPass { // kotlin: ignore
 		isImplicit: Bool)
 		-> ArrayClass<Statement>
 	{
-		let isEnumClass = inherits.isEmpty && elements.allSatisfy { $0.associatedValues.isEmpty }
+		let isEnumClass = inherits.isEmpty && elements.reduce(true) { result, element in
+			result && element.associatedValues.isEmpty
+		}
 
 		if isEnumClass {
 			KotlinTranslator.addEnumClass(enumName)
@@ -2154,8 +2180,10 @@ public class RecordEnumsTranspilationPass: TranspilationPass { // kotlin: ignore
 }
 
 /// Records all protocol declarations in the Kotlin Translator
-public class RecordProtocolsTranspilationPass: TranspilationPass { // kotlin: ignore
-	override func replaceProtocolDeclaration(
+public class RecordProtocolsTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	override func replaceProtocolDeclaration( // annotation: override
 		protocolName: String,
 		members: ArrayClass<Statement>)
 		-> ArrayClass<Statement>
@@ -2205,8 +2233,8 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 					!variableDeclaration.isLet,
 					variableDeclaration.getter == nil
 				{
-					let message = "No support for mutable variables in value types: found variable " +
-						"\(variableDeclaration.identifier) inside struct \(structName)"
+					let message = "No support for mutable variables in value types: found" +
+						" variable \(variableDeclaration.identifier) inside struct \(structName)"
 					Compiler.handleWarning(
 						message: message,
 						sourceFile: ast.sourceFile,
@@ -2274,10 +2302,10 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 /// rearranged to be before the if statement. This will cause any let conditions that have side
 /// effects (i.e. `let x = sideEffects()`) to run eagerly on Kotlin but lazily on Swift, which can
 /// lead to incorrect behavior.
-public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: // kotlin: ignore
-	TranspilationPass
-{
-	override func replaceIfStatementData(
+public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	override func replaceIfStatementData( // annotation: override
 		_ ifStatement: IfStatementData)
 		-> IfStatementData
 	{
@@ -2295,7 +2323,7 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: // kotlin: ig
 			ifStatement.conditions :
 			ArrayClass<IfStatementData.IfCondition>(ifStatement.conditions.dropFirst())
 
-		let sideEffectsRanges = conditions.flatMap { mayHaveSideEffectsOnRanges($0) }
+		let sideEffectsRanges = conditions.flatMap { rangesWithPossibleSideEffectsInCondition($0) }
 		for range in sideEffectsRanges {
 			Compiler.handleWarning(
 				message: "If condition may have side effects.",
@@ -2309,20 +2337,20 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: // kotlin: ig
 		}
 	}
 
-	private func mayHaveSideEffectsOnRanges(
+	private func rangesWithPossibleSideEffectsInCondition(
 		_ condition: IfStatementData.IfCondition)
 		-> ArrayClass<SourceFileRange>
 	{
 		if case let .declaration(variableDeclaration: variableDeclaration) = condition {
 			if let expression = variableDeclaration.expression {
-				return mayHaveSideEffectsOnRanges(expression)
+				return rangesWithPossibleSideEffectsIn(expression)
 			}
 		}
 
 		return []
 	}
 
-	private func mayHaveSideEffectsOnRanges(
+	private func rangesWithPossibleSideEffectsIn(
 		_ expression: Expression)
 		-> ArrayClass<SourceFileRange>
 	{
@@ -2337,58 +2365,62 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: // kotlin: ig
 				return []
 			}
 		case let .parenthesesExpression(expression: expression):
-			return mayHaveSideEffectsOnRanges(expression)
+			return rangesWithPossibleSideEffectsIn(expression)
 		case let .forceValueExpression(expression: expression):
-			return mayHaveSideEffectsOnRanges(expression)
+			return rangesWithPossibleSideEffectsIn(expression)
 		case let .optionalExpression(expression: expression):
-			return mayHaveSideEffectsOnRanges(expression)
+			return rangesWithPossibleSideEffectsIn(expression)
 		case let .subscriptExpression(
 			subscriptedExpression: subscriptedExpression,
 			indexExpression: indexExpression,
 			typeName: _):
 
-			return mayHaveSideEffectsOnRanges(subscriptedExpression) +
-				mayHaveSideEffectsOnRanges(indexExpression)
+			let result = rangesWithPossibleSideEffectsIn(subscriptedExpression)
+			result.append(contentsOf: rangesWithPossibleSideEffectsIn(indexExpression))
+			return result
 
 		case let .arrayExpression(elements: elements, typeName: _):
-			return elements.flatMap { mayHaveSideEffectsOnRanges($0) }
+			return elements.flatMap { rangesWithPossibleSideEffectsIn($0) }
 		case let .dictionaryExpression(keys: keys, values: values, typeName: _):
-			return keys.flatMap { mayHaveSideEffectsOnRanges($0) } +
-				values.flatMap { mayHaveSideEffectsOnRanges($0) }
+			let result = keys.flatMap { rangesWithPossibleSideEffectsIn($0) }
+			result.append(contentsOf: values.flatMap { rangesWithPossibleSideEffectsIn($0) })
+			return result
 		case let .dotExpression(leftExpression: leftExpression, rightExpression: rightExpression):
-			return mayHaveSideEffectsOnRanges(leftExpression) +
-				mayHaveSideEffectsOnRanges(rightExpression)
+			let result = rangesWithPossibleSideEffectsIn(leftExpression)
+			result.append(contentsOf: rangesWithPossibleSideEffectsIn(rightExpression))
+			return result
 		case let .binaryOperatorExpression(
 			leftExpression: leftExpression,
 			rightExpression: rightExpression,
 			operatorSymbol: _,
 			typeName: _):
 
-			return mayHaveSideEffectsOnRanges(leftExpression) +
-				mayHaveSideEffectsOnRanges(rightExpression)
+			let result = rangesWithPossibleSideEffectsIn(leftExpression)
+			result.append(contentsOf: rangesWithPossibleSideEffectsIn(rightExpression))
+			return result
 		case let .prefixUnaryExpression(
 			subExpression: subExpression, operatorSymbol: _, typeName: _):
 
-			return mayHaveSideEffectsOnRanges(subExpression)
+			return rangesWithPossibleSideEffectsIn(subExpression)
 		case let .postfixUnaryExpression(
 			subExpression: subExpression, operatorSymbol: _, typeName: _):
 
-			return mayHaveSideEffectsOnRanges(subExpression)
+			return rangesWithPossibleSideEffectsIn(subExpression)
 		case let .ifExpression(
 			condition: condition,
 			trueExpression: trueExpression,
 			falseExpression: falseExpression):
 
-			return mayHaveSideEffectsOnRanges(condition) +
-				mayHaveSideEffectsOnRanges(trueExpression) +
-				mayHaveSideEffectsOnRanges(falseExpression)
-
+			let result = rangesWithPossibleSideEffectsIn(condition)
+			result.append(contentsOf: rangesWithPossibleSideEffectsIn(trueExpression))
+			result.append(contentsOf: rangesWithPossibleSideEffectsIn(falseExpression))
+			return result
 		case let .interpolatedStringLiteralExpression(expressions: expressions):
-			return expressions.flatMap { mayHaveSideEffectsOnRanges($0) }
+			return expressions.flatMap { rangesWithPossibleSideEffectsIn($0) }
 		case let .tupleExpression(pairs: pairs):
-			return pairs.flatMap { mayHaveSideEffectsOnRanges($0.expression) }
+			return pairs.flatMap { rangesWithPossibleSideEffectsIn($0.expression) }
 		case let .tupleShuffleExpression(labels: _, indices: _, expressions: expressions):
-			return expressions.flatMap { mayHaveSideEffectsOnRanges($0) }
+			return expressions.flatMap { rangesWithPossibleSideEffectsIn($0) }
 		default:
 			return []
  		}
@@ -2865,9 +2897,9 @@ public extension TranspilationPass {
 
 		// Record information on enum and function translations
 		result = RecordTemplatesTranspilationPass(ast: result).run() // kotlin: ignore
-		result = RecordEnumsTranspilationPass(ast: result).run() // kotlin: ignore
-		result = RecordProtocolsTranspilationPass(ast: result).run() // kotlin: ignore
-		result = RecordFunctionsTranspilationPass(ast: result).run() // kotlin: ignore
+		result = RecordEnumsTranspilationPass(ast: result).run()
+		result = RecordProtocolsTranspilationPass(ast: result).run()
+		result = RecordFunctionsTranspilationPass(ast: result).run()
 
 		return result
 	}
@@ -2894,8 +2926,7 @@ public extension TranspilationPass {
 		result = RemoveExtensionsTranspilationPass(ast: result).run()
 		// Note: We have to know the order of the conditions to raise warnings here, so they must go
 		// before the conditions are rearranged
-		result = RaiseWarningsForSideEffectsInIfLetsTranspilationPass( // kotlin: ignore
-			ast: result).run()
+		result = RaiseWarningsForSideEffectsInIfLetsTranspilationPass(ast: result).run()
 		result = RearrangeIfLetsTranspilationPass(ast: result).run()
 
 		// Transform structures that need to be slightly different in Kotlin
@@ -2908,8 +2939,8 @@ public extension TranspilationPass {
 		result = RenameOperatorsTranspilationPass(ast: result).run()
 
 		// - CapitalizeEnums has to be before IsOperatorsInSealedClasses
-		result = CapitalizeEnumsTranspilationPass(ast: result).run() // kotlin: ignore
-		result = IsOperatorsInSealedClassesTranspilationPass(ast: result).run() // kotlin: ignore
+		result = CapitalizeEnumsTranspilationPass(ast: result).run()
+		result = IsOperatorsInSealedClassesTranspilationPass(ast: result).run()
 
 		// - SwitchesToExpressions has to be before RemoveBreaksInSwitches:
 		//   RemoveBreaks might remove a case that only has a break, turning an exhaustive switch
@@ -2919,7 +2950,7 @@ public extension TranspilationPass {
 		result = RemoveBreaksInSwitchesTranspilationPass(ast: result).run()
 
 		// Improve Kotlin readability
-		result = OmitImplicitEnumPrefixesTranspilationPass(ast: result).run() // kotlin: ignore
+		result = OmitImplicitEnumPrefixesTranspilationPass(ast: result).run()
 		result = InnerTypePrefixesTranspilationPass(ast: result).run()
 		result = DoubleNegativesInGuardsTranspilationPass(ast: result).run()
 		result = ReturnIfNilTranspilationPass(ast: result).run()
