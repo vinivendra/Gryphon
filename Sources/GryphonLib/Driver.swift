@@ -88,21 +88,17 @@ public class Driver {
 			}
 		}
 
-		// insert: return null
-
-		if true { // kotlin: ignore
-			guard settings.shouldGenerateAST else {
-				return gryphonRawAST
-			}
-
-			let gryphonFirstPassedAST = try Compiler.generateGryphonASTAfterFirstPasses(
-				fromGryphonRawAST: gryphonRawAST)
-
-			return gryphonFirstPassedAST
+		guard settings.shouldGenerateAST else {
+			return gryphonRawAST
 		}
+
+		let gryphonFirstPassedAST = try Compiler.generateGryphonASTAfterFirstPasses(
+			fromGryphonRawAST: gryphonRawAST)
+
+		return gryphonFirstPassedAST
 	}
 
-	public static func runAfterFirstPasses( // kotlin: ignore
+	public static func runAfterFirstPasses(
 		onAST gryphonFirstPassedAST: GryphonAST,
 		withSettings settings: Settings,
 		onFile inputFilePath: String)
@@ -124,24 +120,28 @@ public class Driver {
 			}
 		}
 
-		guard settings.shouldGenerateKotlin else {
-			return gryphonAST
-		}
+		// insert: return gryphonAST
 
-		let kotlinCode = try Compiler.generateKotlinCode(fromGryphonAST: gryphonAST)
-		if let outputFilePath = settings.outputFileMap?.getOutputFile(
-				forInputFile: inputFilePath, outputType: .kotlin),
-			settings.canPrintToFiles
-		{
-			Utilities.createFile(atPath: outputFilePath, containing: kotlinCode)
-		}
-		else if settings.canPrintToOutput {
-			if settings.shouldEmitKotlin {
-				print(kotlinCode)
+		if true { // kotlin: ignore
+			guard settings.shouldGenerateKotlin else {
+				return gryphonAST
 			}
-		}
 
-		return kotlinCode
+			let kotlinCode = try Compiler.generateKotlinCode(fromGryphonAST: gryphonAST)
+			if let outputFilePath = settings.outputFileMap?.getOutputFile(
+					forInputFile: inputFilePath, outputType: .kotlin),
+				settings.canPrintToFiles
+			{
+				Utilities.createFile(atPath: outputFilePath, containing: kotlinCode)
+			}
+			else if settings.canPrintToOutput {
+				if settings.shouldEmitKotlin {
+					print(kotlinCode)
+				}
+			}
+
+			return kotlinCode
+		}
 	}
 
 	@discardableResult
@@ -284,36 +284,39 @@ public class Driver {
 			}
 		}
 
-		// insert: return firstResult
+		// If we've received a non-raw AST then we're in the middle of the transpilation passes.
+		// This means we need to at least run the second round of passes.
+		guard let asts = firstResult.as(ArrayClass<GryphonAST>.self),
+			settings.shouldGenerateAST else
+		{
+			return firstResult
+		}
+
+		let pairsArray = zipToClass(asts, filteredInputFiles) // kotlin: ignore
+		// insert: val pairsArray: MutableList<Pair<GryphonAST, String>> =
+		// insert: 	asts.zip(filteredInputFiles).toMutableList()
+
+		let secondResult: ArrayClass<Any?>
+		if shouldRunConcurrently {
+			secondResult = try pairsArray.parallelMap {
+				try runAfterFirstPasses(
+					onAST: $0.0,
+					withSettings: settings,
+					onFile: $0.1)
+			}
+		}
+		else {
+			secondResult = try pairsArray.map {
+				try runAfterFirstPasses(
+					onAST: $0.0,
+					withSettings: settings,
+					onFile: $0.1)
+			}
+		}
+
+		// insert: return secondResult
 
 		if true { // kotlin: ignore
-			// If we've received a non-raw AST then we're in the middle of the transpilation passes.
-			// This means we need to at least run the second round of passes.
-			guard settings.shouldGenerateAST,
-				let asts = firstResult.as(ArrayClass<GryphonAST>.self) else
-			{
-				return firstResult
-			}
-
-			let pairsArray = zipToClass(asts, filteredInputFiles)
-
-			let secondResult: ArrayClass<Any?>
-			if shouldRunConcurrently {
-				secondResult = try pairsArray.parallelMap {
-					try runAfterFirstPasses(
-						onAST: $0.0,
-						withSettings: settings,
-						onFile: $0.1)
-				}
-			}
-			else {
-				secondResult = try pairsArray.map {
-					try runAfterFirstPasses(
-						onAST: $0.0,
-						withSettings: settings,
-						onFile: $0.1)
-				}
-			}
 
 			guard settings.shouldBuild else {
 				return secondResult

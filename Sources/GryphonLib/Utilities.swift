@@ -20,6 +20,9 @@ import Foundation
 // declaration: import java.io.FileWriter
 // declaration: import java.util.stream.Collectors
 // declaration: import java.util.stream.Stream
+// declaration: import java.util.concurrent.Semaphore;
+
+typealias Semaphore = NSLock // kotlin: ignore
 
 private func gryphonTemplates() {
 	let _string1 = ""
@@ -44,6 +47,9 @@ private func gryphonTemplates() {
 	_ = Utilities.getFiles(_stringArray, inDirectory: _string1, withExtension: _fileExtension1)
 	_ = "getFiles(" +
 			"selectedFiles = _stringArray, directory = _string1, fileExtension = _fileExtension1)"
+
+	_ = Utilities.getFiles(inDirectory: _string1, withExtension: _fileExtension1)
+	_ = "getFiles(directory = _string1, fileExtension = _fileExtension1)"
 
 	_ = Utilities.createFileIfNeeded(at: _string1)
 	_ = "Utilities.createFileIfNeeded(filePath = _string1)"
@@ -98,6 +104,7 @@ public enum FileExtension: String {
 	case swiftASTDump
 	case swiftAST
 	case gryphonASTRaw
+	case gryphonAST
 	case output
 	case kt
 	case swift
@@ -461,8 +468,19 @@ extension Utilities {
 	}
 }
 
+internal let libraryUpdateLock: Semaphore = NSLock() // value: Semaphore(1)
+
 extension Utilities {
-	static public func updateLibraryFiles() throws { // kotlin: ignore
+	static public func updateLibraryFiles() throws {
+		libraryUpdateLock.lock() // kotlin: ignore
+		// insert: libraryUpdateLock.acquire()
+
+		// TODO: defers should always be the first statement, or try-finally's should be adjusted
+		defer {
+			libraryUpdateLock.unlock() // kotlin: ignore
+			// insert: libraryUpdateLock.release()
+		}
+
 		guard !libraryFilesHaveBeenUpdated else {
 			return
 		}

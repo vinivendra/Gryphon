@@ -62,14 +62,6 @@ class BootstrappingTest: XCTestCase {
 
 				// Get Kotlin results
 				let kotlinArguments: ArrayClass = ["-emit-swiftAST", testFilePath]
-				// FIXME: This would be ideal, but it's timing out
-//				guard let runOutput = runTranspiledGryphon(withArguments: kotlinArguments) else {
-//					XCTFail("Error running transpiled transpiler. " +
-//						"It's possible a command timed out.\nRun result: \(runResult)")
-//					return
-//				}
-//				let transpiledSwiftAST = runOutput.standardOutput
-
 				let swiftASTFilePath = Utilities.changeExtension(of: testFilePath, to: .swiftAST)
 				let transpiledSwiftAST = try Utilities.readFile(swiftASTFilePath)
 
@@ -116,14 +108,6 @@ class BootstrappingTest: XCTestCase {
 
 				// Get Kotlin results
 				let kotlinArguments: ArrayClass = ["-emit-rawAST", "-no-main-file", testFilePath]
-				// FIXME: This would be ideal, but it's timing out
-//				guard let runOutput = runTranspiledGryphon(withArguments: kotlinArguments) else {
-//					XCTFail("Error running transpiled transpiler. " +
-//						"It's possible a command timed out.\nRun result: \(runResult)")
-//					return
-//				}
-//				let transpiledSwiftAST = runOutput.standardOutput
-
 				let rawASTFilePath = Utilities.changeExtension(of: testFilePath, to: .gryphonASTRaw)
 				let transpiledRawAST = try Utilities.readFile(rawASTFilePath)
 
@@ -134,7 +118,7 @@ class BootstrappingTest: XCTestCase {
 					let rawASTs = resultArray.as(ArrayClass<GryphonAST>.self),
 					let originalRawAST = rawASTs.first else
 				{
-					XCTFail("Error generating SwiftASTs.\n" +
+					XCTFail("Error generating raw ASTs.\n" +
 						"Driver result: \(driverResult ?? "nil")")
 					return
 				}
@@ -144,6 +128,52 @@ class BootstrappingTest: XCTestCase {
 					transpiledRawAST == originalRawAST.description,
 					"Test \(testName): failed to produce expected result. Diff:" +
 						TestUtils.diff(transpiledRawAST, originalRawAST.description))
+			}
+			catch let error {
+				XCTFail("🚨 Test failed with error:\n\(error)")
+			}
+		}
+
+		XCTAssertFalse(Compiler.hasErrorsOrWarnings())
+		Compiler.printErrorsAndWarnings()
+	}
+
+	func testTranspilationPassOutput() {
+		guard !BootstrappingTest.hasError else {
+			XCTFail("Error during setup")
+			return
+		}
+
+		let tests = TestUtils.testCasesForAllTests
+
+		for testName in tests {
+			print("- Testing \(testName)...")
+
+			do {
+				let testFilePath = TestUtils.testFilesPath + testName + ".swift"
+
+				// Get Kotlin results
+				let kotlinArguments: ArrayClass = ["-emit-AST", "-no-main-file", testFilePath]
+				let astFilePath = Utilities.changeExtension(of: testFilePath, to: .gryphonAST)
+				let transpiledAST = try Utilities.readFile(astFilePath)
+
+				// Get Swift results
+				let swiftArguments = kotlinArguments + ["-q", "-Q"]
+				let driverResult = try Driver.run(withArguments: swiftArguments)
+				guard let resultArray = driverResult as? ArrayClass<Any?>,
+					let asts = resultArray.as(ArrayClass<GryphonAST>.self),
+					let originalAST = asts.first else
+				{
+					XCTFail("Error generating passed ASTs.\n" +
+						"Driver result: \(driverResult ?? "nil")")
+					return
+				}
+
+				// Compare results
+				XCTAssert(
+					transpiledAST == originalAST.description,
+					"Test \(testName): failed to produce expected result. Diff:" +
+						TestUtils.diff(transpiledAST, originalAST.description))
 			}
 			catch let error {
 				XCTFail("🚨 Test failed with error:\n\(error)")

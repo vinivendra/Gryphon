@@ -80,6 +80,7 @@ public class Compiler {
 		return try generateSwiftAST(fromASTDump: astDump)
 	}
 
+	//
 	public static func generateGryphonRawAST(
 		fromSwiftAST swiftAST: SwiftAST,
 		asMainFile: Bool)
@@ -98,6 +99,39 @@ public class Compiler {
 		return try asts.map {
 			try generateGryphonRawAST(fromSwiftAST: $0, asMainFile: translateAsMainFile)
 		}
+	}
+
+	//
+	public static func generateGryphonASTAfterFirstPasses(fromGryphonRawAST ast: GryphonAST)
+		throws -> GryphonAST
+	{
+		log("\t- Running first round of passes...")
+		try Utilities.updateLibraryFiles()
+		return TranspilationPass.runFirstRoundOfPasses(on: ast)
+	}
+
+	public static func generateGryphonASTAfterSecondPasses(fromGryphonRawAST ast: GryphonAST)
+		throws -> GryphonAST
+	{
+		log("\t- Running second round of passes...")
+		try Utilities.updateLibraryFiles()
+		return TranspilationPass.runSecondRoundOfPasses(on: ast)
+	}
+
+	public static func generateGryphonAST(fromGryphonRawAST ast: GryphonAST) throws -> GryphonAST {
+		var ast = ast
+		log("\t- Running passes on Gryphon ASTs...")
+		try Utilities.updateLibraryFiles()
+		ast = TranspilationPass.runFirstRoundOfPasses(on: ast)
+		ast = TranspilationPass.runSecondRoundOfPasses(on: ast)
+		return ast
+	}
+
+	public static func transpileGryphonASTs(fromASTDumpFiles inputFiles: [String])
+		throws -> [GryphonAST]
+	{
+		let rawASTs = try transpileGryphonRawASTs(fromASTDumpFiles: inputFiles)
+		return try rawASTs.map { try generateGryphonAST(fromGryphonRawAST: $0) }
 	}
 }
 
@@ -129,31 +163,6 @@ extension Compiler { // kotlin: ignore
 	public static func generateKotlinCode(fromGryphonAST ast: GryphonAST) throws -> String {
 		log("\t- Translating AST to Kotlin...")
 		return try KotlinTranslator().translateAST(ast)
-	}
-
-	public static func generateGryphonAST(fromGryphonRawAST ast: GryphonAST) throws -> GryphonAST {
-		var ast = ast
-		log("\t- Running passes on Gryphon ASTs...")
-		try Utilities.updateLibraryFiles()
-		ast = TranspilationPass.runFirstRoundOfPasses(on: ast)
-		ast = TranspilationPass.runSecondRoundOfPasses(on: ast)
-		return ast
-	}
-
-	public static func generateGryphonASTAfterSecondPasses(fromGryphonRawAST ast: GryphonAST)
-		throws -> GryphonAST
-	{
-		log("\t- Running second round of passes...")
-		try Utilities.updateLibraryFiles()
-		return TranspilationPass.runSecondRoundOfPasses(on: ast)
-	}
-
-	public static func generateGryphonASTAfterFirstPasses(fromGryphonRawAST ast: GryphonAST)
-		throws -> GryphonAST
-	{
-		log("\t- Running first round of passes...")
-		try Utilities.updateLibraryFiles()
-		return TranspilationPass.runFirstRoundOfPasses(on: ast)
 	}
 
 	//
@@ -192,13 +201,6 @@ extension Compiler { // kotlin: ignore
 	{
 		let asts = try transpileGryphonASTs(fromASTDumpFiles: inputFiles)
 		return try asts.map { try generateKotlinCode(fromGryphonAST: $0) }
-	}
-
-	public static func transpileGryphonASTs(fromASTDumpFiles inputFiles: [String])
-		throws -> [GryphonAST]
-	{
-		let rawASTs = try transpileGryphonRawASTs(fromASTDumpFiles: inputFiles)
-		return try rawASTs.map { try generateGryphonAST(fromGryphonRawAST: $0) }
 	}
 
 	//

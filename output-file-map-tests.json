@@ -1,122 +1,146 @@
 {
 	"Test Files/arrays.swift": {
 		"ast-dump": "Test Files/arrays.swiftASTDump",
-		"swiftAST": "Test Files/arrays.swiftAST"
-		"gryphonASTRaw": "Test Files/arrays.gryphonASTRaw"
+		"swiftAST": "Test Files/arrays.swiftAST",
+		"gryphonASTRaw": "Test Files/arrays.gryphonASTRaw",
+		"gryphonAST": "Test Files/arrays.gryphonAST",
 	},
 	"Test Files/assignments.swift": {
 		"ast-dump": "Test Files/assignments.swiftASTDump",
-		"swiftAST": "Test Files/assignments.swiftAST"
-		"gryphonASTRaw": "Test Files/assignments.gryphonASTRaw"
+		"swiftAST": "Test Files/assignments.swiftAST",
+		"gryphonASTRaw": "Test Files/assignments.gryphonASTRaw",
+		"gryphonAST": "Test Files/assignments.gryphonAST",
 	},
 	"Test Files/bhaskara.swift": {
 		"ast-dump": "Test Files/bhaskara.swiftASTDump",
-		"swiftAST": "Test Files/bhaskara.swiftAST"
-		"gryphonASTRaw": "Test Files/bhaskara.gryphonASTRaw"
+		"swiftAST": "Test Files/bhaskara.swiftAST",
+		"gryphonASTRaw": "Test Files/bhaskara.gryphonASTRaw",
+		"gryphonAST": "Test Files/bhaskara.gryphonAST",
 	},
 	"Test Files/classes.swift": {
 		"ast-dump": "Test Files/classes.swiftASTDump",
-		"swiftAST": "Test Files/classes.swiftAST"
-		"gryphonASTRaw": "Test Files/classes.gryphonASTRaw"
+		"swiftAST": "Test Files/classes.swiftAST",
+		"gryphonASTRaw": "Test Files/classes.gryphonASTRaw",
+		"gryphonAST": "Test Files/classes.gryphonAST",
 	},
 	"Test Files/closures.swift": {
 		"ast-dump": "Test Files/closures.swiftASTDump",
-		"swiftAST": "Test Files/closures.swiftAST"
-		"gryphonASTRaw": "Test Files/closures.gryphonASTRaw"
+		"swiftAST": "Test Files/closures.swiftAST",
+		"gryphonASTRaw": "Test Files/closures.gryphonASTRaw",
+		"gryphonAST": "Test Files/closures.gryphonAST",
 	},
 	"Test Files/dictionaries.swift": {
 		"ast-dump": "Test Files/dictionaries.swiftASTDump",
-		"swiftAST": "Test Files/dictionaries.swiftAST"
-		"gryphonASTRaw": "Test Files/dictionaries.gryphonASTRaw"
+		"swiftAST": "Test Files/dictionaries.swiftAST",
+		"gryphonASTRaw": "Test Files/dictionaries.gryphonASTRaw",
+		"gryphonAST": "Test Files/dictionaries.gryphonAST",
 	},
 	"Test Files/enums.swift": {
 		"ast-dump": "Test Files/enums.swiftASTDump",
-		"swiftAST": "Test Files/enums.swiftAST"
-		"gryphonASTRaw": "Test Files/enums.gryphonASTRaw"
+		"swiftAST": "Test Files/enums.swiftAST",
+		"gryphonASTRaw": "Test Files/enums.gryphonASTRaw",
+		"gryphonAST": "Test Files/enums.gryphonAST",
 	},
 	"Test Files/extensions.swift": {
 		"ast-dump": "Test Files/extensions.swiftASTDump",
-		"swiftAST": "Test Files/extensions.swiftAST"
-		"gryphonASTRaw": "Test Files/extensions.gryphonASTRaw"
+		"swiftAST": "Test Files/extensions.swiftAST",
+		"gryphonASTRaw": "Test Files/extensions.gryphonASTRaw",
+		"gryphonAST": "Test Files/extensions.gryphonAST",
 	},
 	"Test Files/functionCalls.swift": {
 		"ast-dump": "Test Files/functionCalls.swiftASTDump",
-		"swiftAST": "Test Files/functionCalls.swiftAST"
-		"gryphonASTRaw": "Test Files/functionCalls.gryphonASTRaw"
+		"swiftAST": "Test Files/functionCalls.swiftAST",
+		"gryphonASTRaw": "Test Files/functionCalls.gryphonASTRaw",
+		"gryphonAST": "Test Files/functionCalls.gryphonAST",
 	},
 	"Test Files/functionDefinitions.swift": {
 		"ast-dump": "Test Files/functionDefinitions.swiftASTDump",
-		"swiftAST": "Test Files/functionDefinitions.swiftAST"
-		"gryphonASTRaw": "Test Files/functionDefinitions.gryphonASTRaw"
+		"swiftAST": "Test Files/functionDefinitions.swiftAST",
+		"gryphonASTRaw": "Test Files/functionDefinitions.gryphonASTRaw",
+		"gryphonAST": "Test Files/functionDefinitions.gryphonAST",
 	},
 	"Test Files/ifStatement.swift": {
 		"ast-dump": "Test Files/ifStatement.swiftASTDump",
-		"swiftAST": "Test Files/ifStatement.swiftAST"
-		"gryphonASTRaw": "Test Files/ifStatement.gryphonASTRaw"
+		"swiftAST": "Test Files/ifStatement.swiftAST",
+		"gryphonASTRaw": "Test Files/ifStatement.gryphonASTRaw",
+		"gryphonAST": "Test Files/ifStatement.gryphonAST",
 	},
 	"Test Files/inits.swift": {
 		"ast-dump": "Test Files/inits.swiftASTDump",
-		"swiftAST": "Test Files/inits.swiftAST"
-		"gryphonASTRaw": "Test Files/inits.gryphonASTRaw"
+		"swiftAST": "Test Files/inits.swiftAST",
+		"gryphonASTRaw": "Test Files/inits.gryphonASTRaw",
+		"gryphonAST": "Test Files/inits.gryphonAST",
 	},
 	"Test Files/kotlinLiterals.swift": {
 		"ast-dump": "Test Files/kotlinLiterals.swiftASTDump",
-		"swiftAST": "Test Files/kotlinLiterals.swiftAST"
-		"gryphonASTRaw": "Test Files/kotlinLiterals.gryphonASTRaw"
+		"swiftAST": "Test Files/kotlinLiterals.swiftAST",
+		"gryphonASTRaw": "Test Files/kotlinLiterals.gryphonASTRaw",
+		"gryphonAST": "Test Files/kotlinLiterals.gryphonAST",
 	},
 	"Test Files/logicOperators.swift": {
 		"ast-dump": "Test Files/logicOperators.swiftASTDump",
-		"swiftAST": "Test Files/logicOperators.swiftAST"
-		"gryphonASTRaw": "Test Files/logicOperators.gryphonASTRaw"
+		"swiftAST": "Test Files/logicOperators.swiftAST",
+		"gryphonASTRaw": "Test Files/logicOperators.gryphonASTRaw",
+		"gryphonAST": "Test Files/logicOperators.gryphonAST",
 	},
 	"Test Files/misc.swift": {
 		"ast-dump": "Test Files/misc.swiftASTDump",
-		"swiftAST": "Test Files/misc.swiftAST"
-		"gryphonASTRaw": "Test Files/misc.gryphonASTRaw"
+		"swiftAST": "Test Files/misc.swiftAST",
+		"gryphonASTRaw": "Test Files/misc.gryphonASTRaw",
+		"gryphonAST": "Test Files/misc.gryphonAST",
 	},
 	"Test Files/numericLiterals.swift": {
 		"ast-dump": "Test Files/numericLiterals.swiftASTDump",
-		"swiftAST": "Test Files/numericLiterals.swiftAST"
-		"gryphonASTRaw": "Test Files/numericLiterals.gryphonASTRaw"
+		"swiftAST": "Test Files/numericLiterals.swiftAST",
+		"gryphonASTRaw": "Test Files/numericLiterals.gryphonASTRaw",
+		"gryphonAST": "Test Files/numericLiterals.gryphonAST",
 	},
 	"Test Files/operators.swift": {
 		"ast-dump": "Test Files/operators.swiftASTDump",
-		"swiftAST": "Test Files/operators.swiftAST"
-		"gryphonASTRaw": "Test Files/operators.gryphonASTRaw"
+		"swiftAST": "Test Files/operators.swiftAST",
+		"gryphonASTRaw": "Test Files/operators.gryphonASTRaw",
+		"gryphonAST": "Test Files/operators.gryphonAST",
 	},
 	"Test Files/print.swift": {
 		"ast-dump": "Test Files/print.swiftASTDump",
-		"swiftAST": "Test Files/print.swiftAST"
-		"gryphonASTRaw": "Test Files/print.gryphonASTRaw"
+		"swiftAST": "Test Files/print.swiftAST",
+		"gryphonASTRaw": "Test Files/print.gryphonASTRaw",
+		"gryphonAST": "Test Files/print.gryphonAST",
 	},
 	"Test Files/standardLibrary.swift": {
 		"ast-dump": "Test Files/standardLibrary.swiftASTDump",
-		"swiftAST": "Test Files/standardLibrary.swiftAST"
-		"gryphonASTRaw": "Test Files/standardLibrary.gryphonASTRaw"
+		"swiftAST": "Test Files/standardLibrary.swiftAST",
+		"gryphonASTRaw": "Test Files/standardLibrary.gryphonASTRaw",
+		"gryphonAST": "Test Files/standardLibrary.gryphonAST",
 	},
 	"Test Files/staticMembers.swift": {
 		"ast-dump": "Test Files/staticMembers.swiftASTDump",
-		"swiftAST": "Test Files/staticMembers.swiftAST"
-		"gryphonASTRaw": "Test Files/staticMembers.gryphonASTRaw"
+		"swiftAST": "Test Files/staticMembers.swiftAST",
+		"gryphonASTRaw": "Test Files/staticMembers.gryphonASTRaw",
+		"gryphonAST": "Test Files/staticMembers.gryphonAST",
 	},
 	"Test Files/strings.swift": {
 		"ast-dump": "Test Files/strings.swiftASTDump",
-		"swiftAST": "Test Files/strings.swiftAST"
-		"gryphonASTRaw": "Test Files/strings.gryphonASTRaw"
+		"swiftAST": "Test Files/strings.swiftAST",
+		"gryphonASTRaw": "Test Files/strings.gryphonASTRaw",
+		"gryphonAST": "Test Files/strings.gryphonAST",
 	},
 	"Test Files/structs.swift": {
 		"ast-dump": "Test Files/structs.swiftASTDump",
-		"swiftAST": "Test Files/structs.swiftAST"
-		"gryphonASTRaw": "Test Files/structs.gryphonASTRaw"
+		"swiftAST": "Test Files/structs.swiftAST",
+		"gryphonASTRaw": "Test Files/structs.gryphonASTRaw",
+		"gryphonAST": "Test Files/structs.gryphonAST",
 	},
 	"Test Files/switches.swift": {
 		"ast-dump": "Test Files/switches.swiftASTDump",
-		"swiftAST": "Test Files/switches.swiftAST"
-		"gryphonASTRaw": "Test Files/switches.gryphonASTRaw"
+		"swiftAST": "Test Files/switches.swiftAST",
+		"gryphonASTRaw": "Test Files/switches.gryphonASTRaw",
+		"gryphonAST": "Test Files/switches.gryphonAST",
 	},
 	"Test Files/warnings.swift": {
 		"ast-dump": "Test Files/warnings.swiftASTDump",
-		"swiftAST": "Test Files/warnings.swiftAST"
-		"gryphonASTRaw": "Test Files/warnings.gryphonASTRaw"
+		"swiftAST": "Test Files/warnings.swiftAST",
+		"gryphonASTRaw": "Test Files/warnings.gryphonASTRaw",
+		"gryphonAST": "Test Files/warnings.gryphonAST",
 	},
 }

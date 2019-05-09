@@ -42,7 +42,35 @@ open class Driver {
                 }
             }
 
-            return null
+            if (!(settings.shouldGenerateAST)) {
+                return gryphonRawAST
+            }
+
+            val gryphonFirstPassedAST: GryphonAST = Compiler.generateGryphonASTAfterFirstPasses(ast = gryphonRawAST)
+
+            return gryphonFirstPassedAST
+        }
+
+        public fun runAfterFirstPasses(
+            gryphonFirstPassedAST: GryphonAST,
+            settings: Driver.Settings,
+            inputFilePath: String)
+            : Any?
+        {
+            val gryphonAST: GryphonAST = Compiler.generateGryphonASTAfterSecondPasses(ast = gryphonFirstPassedAST)
+            if (settings.shouldEmitAST) {
+                val output: String = gryphonAST.prettyDescription(horizontalLimit = settings.horizontalLimit)
+                val outputFilePath: String? = settings.outputFileMap?.getOutputFile(
+                    file = inputFilePath,
+                    outputType = OutputFileMap.OutputType.GRYPHON_AST)
+                if (outputFilePath != null && settings.canPrintToFiles) {
+                    Utilities.createFile(filePath = outputFilePath, contents = output)
+                }
+                else if (settings.canPrintToOutput) {
+                    println(output)
+                }
+            }
+            return gryphonAST
         }
 
         public fun run(arguments: MutableList<String>): Any? {
@@ -149,7 +177,31 @@ open class Driver {
                 firstResult = filteredInputFiles.map { runUpToFirstPasses(settings = settings, inputFilePath = it) }.toMutableList()
             }
 
-            return firstResult
+            val asts: MutableList<GryphonAST>? = firstResult as? MutableList<GryphonAST>
+
+            if (!(asts != null && settings.shouldGenerateAST)) {
+                return firstResult
+            }
+
+            val pairsArray: MutableList<Pair<GryphonAST, String>> =
+            	asts.zip(filteredInputFiles).toMutableList()
+
+            val secondResult: MutableList<Any?>
+
+            if (shouldRunConcurrently) {
+                secondResult = pairsArray.parallelMap { runAfterFirstPasses(
+                        gryphonFirstPassedAST = it.first,
+                        settings = settings,
+                        inputFilePath = it.second) }
+            }
+            else {
+                secondResult = pairsArray.map { runAfterFirstPasses(
+                    gryphonFirstPassedAST = it.first,
+                    settings = settings,
+                    inputFilePath = it.second) }.toMutableList()
+            }
+
+            return secondResult
         }
 
         internal fun getASTDump(file: String, settings: Driver.Settings): String? {

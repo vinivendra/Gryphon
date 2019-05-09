@@ -68,6 +68,38 @@ open class Compiler {
             val translateAsMainFile: Boolean = (inputFiles.size == 1)
             return asts.map { generateGryphonRawAST(swiftAST = it, asMainFile = translateAsMainFile) }.toMutableList()
         }
+
+        public fun generateGryphonASTAfterFirstPasses(ast: GryphonAST): GryphonAST {
+            log("\t- Running first round of passes...")
+            Utilities.updateLibraryFiles()
+            return TranspilationPass.runFirstRoundOfPasses(sourceFile = ast)
+        }
+
+        public fun generateGryphonASTAfterSecondPasses(ast: GryphonAST): GryphonAST {
+            log("\t- Running second round of passes...")
+            Utilities.updateLibraryFiles()
+            return TranspilationPass.runSecondRoundOfPasses(sourceFile = ast)
+        }
+
+        public fun generateGryphonAST(ast: GryphonAST): GryphonAST {
+            var ast: GryphonAST = ast
+
+            log("\t- Running passes on Gryphon ASTs...")
+            Utilities.updateLibraryFiles()
+
+            ast = TranspilationPass.runFirstRoundOfPasses(sourceFile = ast)
+            ast = TranspilationPass.runSecondRoundOfPasses(sourceFile = ast)
+
+            return ast
+        }
+
+        public fun transpileGryphonASTs(
+            inputFiles: MutableList<String>)
+            : MutableList<GryphonAST>
+        {
+            val rawASTs: MutableList<GryphonAST> = transpileGryphonRawASTs(inputFiles = inputFiles)
+            return rawASTs.map { generateGryphonAST(ast = it) }.toMutableList()
+        }
     }
 }
 

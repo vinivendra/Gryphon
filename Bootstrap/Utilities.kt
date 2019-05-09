@@ -2,6 +2,7 @@ import java.io.File
 import java.io.FileWriter
 import java.util.stream.Collectors
 import java.util.stream.Stream
+import java.util.concurrent.Semaphore;
 
 open class Utilities {
     companion object {
@@ -30,6 +31,7 @@ public enum class FileExtension {
     SWIFT_AST_DUMP,
     SWIFT_AST,
     GRYPHON_AST_RAW,
+    GRYPHON_AST,
     OUTPUT,
     KT,
     SWIFT;
@@ -40,6 +42,7 @@ public enum class FileExtension {
                 "swiftASTDump" -> FileExtension.SWIFT_AST_DUMP
                 "swiftAST" -> FileExtension.SWIFT_AST
                 "gryphonASTRaw" -> FileExtension.GRYPHON_AST_RAW
+                "gryphonAST" -> FileExtension.GRYPHON_AST
                 "output" -> FileExtension.OUTPUT
                 "kt" -> FileExtension.KT
                 "swift" -> FileExtension.SWIFT
@@ -54,6 +57,7 @@ public enum class FileExtension {
                 FileExtension.SWIFT_AST_DUMP -> "swiftASTDump"
                 FileExtension.SWIFT_AST -> "swiftAST"
                 FileExtension.GRYPHON_AST_RAW -> "gryphonASTRaw"
+                FileExtension.GRYPHON_AST -> "gryphonAST"
                 FileExtension.OUTPUT -> "output"
                 FileExtension.KT -> "kt"
                 FileExtension.SWIFT -> "swift"
@@ -245,6 +249,40 @@ fun Utilities.Companion.getFiles(
 
 public fun Utilities.Companion.getAbsoultePath(file: String): String {
     return File(file).getAbsoluteFile().normalize().absolutePath
+}
+
+val libraryUpdateLock: Semaphore = Semaphore(1)
+
+public fun Utilities.Companion.updateLibraryFiles() {
+    try {
+        libraryUpdateLock.acquire()
+
+        if (libraryFilesHaveBeenUpdated) {
+            return
+        }
+
+        val libraryTemplatesFolder: String = "Library Templates"
+
+        if (Utilities.needsToUpdateFiles(folder = libraryTemplatesFolder, originExtension = FileExtension.SWIFT, destinationExtension = FileExtension.SWIFT_AST_DUMP)) {
+            throw FileError.OutdatedFile(inFolder = libraryTemplatesFolder)
+        }
+
+        println("\t* Updating library files...")
+
+        val templateFilePaths: MutableList<String> = getFiles(directory = libraryTemplatesFolder, fileExtension = FileExtension.SWIFT_AST_DUMP)
+        val asts: MutableList<GryphonAST> = Compiler.transpileGryphonRawASTs(inputFiles = templateFilePaths)
+
+        for (ast in asts) {
+            RecordTemplatesTranspilationPass(ast = ast).run()
+        }
+
+        libraryFilesHaveBeenUpdated = true
+
+        println("\t* Done!")
+    }
+    finally {
+        libraryUpdateLock.release()
+    }
 }
 
 public fun Utilities.Companion.updateTestFiles() {
