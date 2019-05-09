@@ -1,4 +1,16 @@
-echo "➡️ [1/6] Building Gryphon..."
+echo "➡️ [1/7] Running pre-build script..."
+
+if bash preBuildScript.sh
+then
+	echo "✅ Done."
+	echo ""
+else
+	echo "🚨 Failed to run pre-build script."
+	exit $?
+fi
+
+
+echo "➡️ [2/7] Building Gryphon..."
 
 if swift build
 then
@@ -10,7 +22,7 @@ else
 fi
 
 
-echo "➡️ [2/6] Dumping the Swift ASTs..."
+echo "➡️ [3/7] Dumping the Swift ASTs..."
 
 if perl dumpTranspilerAST.pl
 then
@@ -22,7 +34,7 @@ else
 fi
 
 
-echo "➡️ [3/6] Transpiling the Gryphon source files to Kotlin..."
+echo "➡️ [4/7] Transpiling the Gryphon source files to Kotlin..."
 
 if bash transpileBootstrappedTranspiler.sh
 then
@@ -34,7 +46,7 @@ else
 fi
 
 
-echo "➡️ [4/6] Compiling Kotlin files..."
+echo "➡️ [5/7] Compiling Kotlin files..."
 
 if bash buildBootstrappedTranspiler.sh
 then
@@ -46,7 +58,7 @@ else
 fi
 
 
-echo "➡️ [5/6] Updating the Swift AST test files..."
+echo "➡️ [6/7] Updating the Swift AST test files..."
 
 if java -jar Bootstrap/kotlin.jar -emit-swiftAST \
 		Test\ Files/*.swift -output-file-map=output-file-map-tests.json
@@ -59,7 +71,7 @@ else
 fi
 
 
-echo "➡️ [6/6] Updating the Raw AST test files..."
+echo "➡️ [7/7] Updating the Raw AST test files..."
 
 if java -jar Bootstrap/kotlin.jar -emit-rawAST \
 		Test\ Files/*.swift -output-file-map=output-file-map-tests.json
