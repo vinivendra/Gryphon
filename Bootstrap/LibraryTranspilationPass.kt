@@ -71,6 +71,238 @@ open class RecordTemplatesTranspilationPass: TranspilationPass {
     }
 }
 
+internal fun Expression.matches(template: Expression): MutableMap<String, Expression>? {
+    val result: MutableMap<String, Expression> = mutableMapOf()
+    val success: Boolean = matches(template, result)
+    if (success) {
+        return result
+    }
+    else {
+        return null
+    }
+}
+
+private fun Expression.matches(
+    template: Expression,
+    matches: MutableMap<String, Expression>)
+    : Boolean
+{
+    if (template is Expression.DeclarationReferenceExpression) {
+        val templateExpression: DeclarationReferenceData = template.data
+        if (templateExpression.identifier.startsWith("_") && this.isOfType(templateExpression.typeName)) {
+            matches[templateExpression.identifier] = this
+            return true
+        }
+    }
+    if (this is Expression.LiteralCodeExpression && template is Expression.LiteralCodeExpression) {
+        val leftString: String = this.string
+        val rightString: String = template.string
+        return leftString == rightString
+    }
+    else if (this is Expression.ParenthesesExpression && template is Expression.ParenthesesExpression) {
+        val leftExpression: Expression = this.expression
+        val rightExpression: Expression = template.expression
+        return leftExpression.matches(rightExpression, matches)
+    }
+    else if (this is Expression.ForceValueExpression && template is Expression.ForceValueExpression) {
+        val leftExpression: Expression = this.expression
+        val rightExpression: Expression = template.expression
+        return leftExpression.matches(rightExpression, matches)
+    }
+    else if (this is Expression.DeclarationReferenceExpression && template is Expression.DeclarationReferenceExpression) {
+        val leftExpression: DeclarationReferenceData = this.data
+        val rightExpression: DeclarationReferenceData = template.data
+        return leftExpression.identifier == rightExpression.identifier && leftExpression.typeName.isSubtype(superType = rightExpression.typeName) && leftExpression.isImplicit == rightExpression.isImplicit
+    }
+    else if (this is Expression.OptionalExpression && template is Expression.DeclarationReferenceExpression) {
+        val leftExpression: Expression = this.expression
+        return leftExpression.matches(template, matches)
+    }
+    else if (this is Expression.TypeExpression && template is Expression.TypeExpression) {
+        val leftType: String = this.typeName
+        val rightType: String = template.typeName
+        return leftType.isSubtype(superType = rightType)
+    }
+    else if (this is Expression.TypeExpression && template is Expression.DeclarationReferenceExpression) {
+        val leftType: String = this.typeName
+        val rightExpression: DeclarationReferenceData = template.data
+
+        if (!(declarationExpressionMatchesImplicitTypeExpression(rightExpression))) {
+            return false
+        }
+
+        val expressionType: String = rightExpression.typeName.dropLast(".Type".length)
+
+        return leftType.isSubtype(superType = expressionType)
+    }
+    else if (this is Expression.DeclarationReferenceExpression && template is Expression.TypeExpression) {
+        val leftExpression: DeclarationReferenceData = this.data
+        val rightType: String = template.typeName
+
+        if (!(declarationExpressionMatchesImplicitTypeExpression(leftExpression))) {
+            return false
+        }
+
+        val expressionType: String = leftExpression.typeName.dropLast(".Type".length)
+
+        return expressionType.isSubtype(superType = rightType)
+    }
+    else if (this is Expression.SubscriptExpression && template is Expression.SubscriptExpression) {
+        val leftSubscriptedExpression: Expression = this.subscriptedExpression
+        val leftIndexExpression: Expression = this.indexExpression
+        val leftType: String = this.typeName
+        val rightSubscriptedExpression: Expression = template.subscriptedExpression
+        val rightIndexExpression: Expression = template.indexExpression
+        val rightType: String = template.typeName
+
+        return leftSubscriptedExpression.matches(rightSubscriptedExpression, matches) && leftIndexExpression.matches(rightIndexExpression, matches) && leftType.isSubtype(superType = rightType)
+    }
+    else if (this is Expression.ArrayExpression && template is Expression.ArrayExpression) {
+        val leftElements: MutableList<Expression> = this.elements
+        val leftType: String = this.typeName
+        val rightElements: MutableList<Expression> = template.elements
+        val rightType: String = template.typeName
+        var result: Boolean = true
+
+        for ((leftElement, rightElement) in leftElements.zip(rightElements)) {
+            result = result && leftElement.matches(rightElement, matches)
+        }
+
+        return result && (leftType.isSubtype(superType = rightType))
+    }
+    else if (this is Expression.DotExpression && template is Expression.DotExpression) {
+        val leftLeftExpression: Expression = this.leftExpression
+        val leftRightExpression: Expression = this.rightExpression
+        val rightLeftExpression: Expression = template.leftExpression
+        val rightRightExpression: Expression = template.rightExpression
+
+        return leftLeftExpression.matches(rightLeftExpression, matches) && leftRightExpression.matches(rightRightExpression, matches)
+    }
+    else if (this is Expression.BinaryOperatorExpression && template is Expression.BinaryOperatorExpression) {
+        val leftLeftExpression: Expression = this.leftExpression
+        val leftRightExpression: Expression = this.rightExpression
+        val leftOperatorSymbol: String = this.operatorSymbol
+        val leftType: String = this.typeName
+        val rightLeftExpression: Expression = template.leftExpression
+        val rightRightExpression: Expression = template.rightExpression
+        val rightOperatorSymbol: String = template.operatorSymbol
+        val rightType: String = template.typeName
+
+        return leftLeftExpression.matches(rightLeftExpression, matches) && leftRightExpression.matches(rightRightExpression, matches) && (leftOperatorSymbol == rightOperatorSymbol) && (leftType.isSubtype(superType = rightType))
+    }
+    else if (this is Expression.PrefixUnaryExpression && template is Expression.PrefixUnaryExpression) {
+        val leftExpression: Expression = this.subExpression
+        val leftOperatorSymbol: String = this.operatorSymbol
+        val leftType: String = this.typeName
+        val rightExpression: Expression = template.subExpression
+        val rightOperatorSymbol: String = template.operatorSymbol
+        val rightType: String = template.typeName
+
+        return leftExpression.matches(rightExpression, matches) && (leftOperatorSymbol == rightOperatorSymbol) && (leftType.isSubtype(superType = rightType))
+    }
+    else if (this is Expression.PostfixUnaryExpression && template is Expression.PostfixUnaryExpression) {
+        val leftExpression: Expression = this.subExpression
+        val leftOperatorSymbol: String = this.operatorSymbol
+        val leftType: String = this.typeName
+        val rightExpression: Expression = template.subExpression
+        val rightOperatorSymbol: String = template.operatorSymbol
+        val rightType: String = template.typeName
+
+        return leftExpression.matches(rightExpression, matches) && (leftOperatorSymbol == rightOperatorSymbol) && (leftType.isSubtype(superType = rightType))
+    }
+    else if (this is Expression.CallExpression && template is Expression.CallExpression) {
+        val leftCallExpression: CallExpressionData = this.data
+        val rightCallExpression: CallExpressionData = template.data
+        return leftCallExpression.function.matches(rightCallExpression.function, matches) && leftCallExpression.parameters.matches(rightCallExpression.parameters, matches) && leftCallExpression.typeName.isSubtype(superType = rightCallExpression.typeName)
+    }
+    else if (this is Expression.LiteralIntExpression && template is Expression.LiteralIntExpression) {
+        val leftValue: Long = this.value
+        val rightValue: Long = template.value
+        return leftValue == rightValue
+    }
+    else if (this is Expression.LiteralDoubleExpression && template is Expression.LiteralDoubleExpression) {
+        val leftValue: Double = this.value
+        val rightValue: Double = template.value
+        return leftValue == rightValue
+    }
+    else if (this is Expression.LiteralBoolExpression && template is Expression.LiteralBoolExpression) {
+        val leftValue: Boolean = this.value
+        val rightValue: Boolean = template.value
+        return leftValue == rightValue
+    }
+    else if (this is Expression.LiteralStringExpression && template is Expression.LiteralStringExpression) {
+        val leftValue: String = this.value
+        val rightValue: String = template.value
+        return leftValue == rightValue
+    }
+    else if (this is Expression.LiteralStringExpression && template is Expression.DeclarationReferenceExpression) {
+        val leftValue: String = this.value
+        val characterExpression: Expression = Expression.LiteralCharacterExpression(value = leftValue)
+        return characterExpression.matches(template, matches)
+    }
+    if (this is Expression.NilLiteralExpression && template is Expression.NilLiteralExpression) {
+        return true
+    }
+    else if (this is Expression.InterpolatedStringLiteralExpression && template is Expression.InterpolatedStringLiteralExpression) {
+        val leftExpressions: MutableList<Expression> = this.expressions
+        val rightExpressions: MutableList<Expression> = template.expressions
+        var result: Boolean = true
+
+        for ((leftExpression, rightExpression) in leftExpressions.zip(rightExpressions)) {
+            result = result && leftExpression.matches(rightExpression, matches)
+        }
+
+        return result
+    }
+    else if (this is Expression.TupleExpression && template is Expression.TupleExpression) {
+        val leftPairs: MutableList<LabeledExpression> = this.pairs
+        val rightPairs: MutableList<LabeledExpression> = template.pairs
+        val onlyLeftPair: LabeledExpression? = leftPairs.firstOrNull()
+        val onlyRightPair: LabeledExpression? = rightPairs.firstOrNull()
+
+        if (leftPairs.size == 1 && onlyLeftPair != null && rightPairs.size == 1 && onlyRightPair != null) {
+            if (onlyLeftPair.expression is Expression.ParenthesesExpression) {
+                val closureExpression: Expression = onlyLeftPair.expression.expression
+                if (closureExpression is Expression.ClosureExpression) {
+                    if (onlyRightPair.expression is Expression.ParenthesesExpression) {
+                        val templateExpression: Expression = onlyRightPair.expression.expression
+                        return closureExpression.matches(templateExpression, matches)
+                    }
+                    else {
+                        return closureExpression.matches(onlyRightPair.expression, matches)
+                    }
+                }
+            }
+        }
+
+        var result: Boolean = true
+
+        for ((leftPair, rightPair) in leftPairs.zip(rightPairs)) {
+            result = result && leftPair.expression.matches(rightPair.expression, matches) && leftPair.label == rightPair.label
+        }
+
+        return result
+    }
+    else if (this is Expression.TupleShuffleExpression && template is Expression.TupleShuffleExpression) {
+        val leftLabels: MutableList<String> = this.labels
+        val leftIndices: MutableList<TupleShuffleIndex> = this.indices
+        val leftExpressions: MutableList<Expression> = this.expressions
+        val rightLabels: MutableList<String> = template.labels
+        val rightIndices: MutableList<TupleShuffleIndex> = template.indices
+        val rightExpressions: MutableList<Expression> = template.expressions
+        var result: Boolean = (leftLabels == rightLabels) && (leftIndices == rightIndices)
+
+        for ((leftExpression, rightExpression) in leftExpressions.zip(rightExpressions)) {
+            result = result && leftExpression.matches(rightExpression, matches)
+        }
+
+        return result
+    }
+    else {
+        return false
+    }
+}
+
 private fun Expression.declarationExpressionMatchesImplicitTypeExpression(
     expression: DeclarationReferenceData)
     : Boolean

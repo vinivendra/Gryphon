@@ -105,7 +105,7 @@ public class ReplaceTemplatesTranspilationPass: TranspilationPass { // kotlin: i
 	}
 }
 
-extension Expression { // kotlin: ignore
+extension Expression {
 	func matches(_ template: Expression) -> DictionaryClass<String, Expression>? {
 		let result: DictionaryClass<String, Expression> = [:]
 		let success = matches(template, result)
@@ -366,9 +366,7 @@ extension Expression { // kotlin: ignore
 			return false
 		}
 	}
-}
 
-extension Expression {
 	/**
 	In a static context, some type expressions can be omitted. When that happens, they get
 	translated as declaration references instead of type expressions. However, thwy should still
