@@ -71,6 +71,113 @@ open class RecordTemplatesTranspilationPass: TranspilationPass {
     }
 }
 
+internal fun String.isSubtype(superType: String): Boolean {
+    if (this == superType) {
+        return true
+    }
+    else if (this.isEmpty() || superType.isEmpty()) {
+        return false
+    }
+    else if (superType == "Any" || superType == "AnyType" || superType == "Hash" || superType == "Compare" || superType == "MyOptional") {
+        return true
+    }
+    else if (superType == "MyOptional?") {
+        return this.endsWith("?")
+    }
+
+    if (Utilities.isInEnvelopingParentheses(this) && Utilities.isInEnvelopingParentheses(superType)) {
+        val selfContents: String = this.drop(1).dropLast(1)
+        val superContents: String = superType.drop(1).dropLast(1)
+        val selfComponents: MutableList<String> = selfContents.split(separator = ", ")
+        val superComponents: MutableList<String> = superContents.split(separator = ", ")
+
+        if (selfComponents.size != superComponents.size) {
+            return false
+        }
+
+        for ((selfComponent, superComponent) in selfComponents.zip(superComponents)) {
+            if (!(selfComponent.isSubtype(superType = superComponent))) {
+                return false
+            }
+        }
+
+        return true
+    }
+
+    val simpleSelf: String = simplifyType(string = this)
+    val simpleSuperType: String = simplifyType(string = superType)
+
+    if (simpleSelf != this || simpleSuperType != superType) {
+        return simpleSelf.isSubtype(superType = simpleSuperType)
+    }
+
+    if (this.lastOrNull()!! == '?' && superType.lastOrNull()!! == '?') {
+        val newSelf: String = this.dropLast(1)
+        val newSuperType: String = superType.dropLast(1)
+        return newSelf.isSubtype(superType = newSuperType)
+    }
+    else if (superType.lastOrNull()!! == '?') {
+        val newSuperType: String = superType.dropLast(1)
+        return this.isSubtype(superType = newSuperType)
+    }
+
+    if (superType.contains(" -> ")) {
+        if (!(this.contains(" -> "))) {
+            return false
+        }
+        return true
+    }
+
+    if (this.firstOrNull()!! == '[' && this.lastOrNull()!! == ']' && superType.firstOrNull()!! == '[' && superType.lastOrNull()!! == ']') {
+        if (this.contains(":") && superType.contains(":")) {
+            val selfKeyValue: MutableList<String> = this.drop(1).dropLast(1).split(separator = " : ")
+            val superKeyValue: MutableList<String> = superType.drop(1).dropLast(1).split(separator = " : ")
+            val selfKey: String = selfKeyValue[0]
+            val selfValue: String = selfKeyValue[1]
+            val superKey: String = superKeyValue[0]
+            val superValue: String = superKeyValue[1]
+
+            return selfKey.isSubtype(superType = superKey) && selfValue.isSubtype(superType = superValue)
+        }
+        else if (!this.contains(":") && !superType.contains(":")) {
+            val selfElement: String = this.drop(1).dropLast(1)
+            val superTypeElement: String = superType.drop(1).dropLast(1)
+            return selfElement.isSubtype(superType = superTypeElement)
+        }
+    }
+
+    if (this.contains("<") && this.lastOrNull()!! == '>' && superType.contains("<") && superType.lastOrNull()!! == '>') {
+        val selfStartGenericsIndex: Int = this.indexOf('<')
+        val superTypeStartGenericsIndex: Int = superType.indexOf('<')
+        val selfGenericArguments: String = this.substring(selfStartGenericsIndex).drop(1).dropLast(1)
+        val superTypeGenericArguments: String = superType.substring(superTypeStartGenericsIndex).drop(1).dropLast(1)
+        val selfTypeComponents: MutableList<String> = selfGenericArguments.split(separator = ", ")
+        val superTypeComponents: MutableList<String> = superTypeGenericArguments.split(separator = ", ")
+
+        if (superTypeComponents.size != selfTypeComponents.size) {
+            return false
+        }
+
+        for ((selfTypeComponent, superTypeComponent) in selfTypeComponents.zip(superTypeComponents)) {
+            if (!selfTypeComponent.isSubtype(superType = superTypeComponent)) {
+                return false
+            }
+        }
+
+        return true
+    }
+    else if (this.contains("<") && this.lastOrNull()!! == '>') {
+        val typeWithoutGenerics: String = this.takeWhile { it != '<' }
+        return typeWithoutGenerics.isSubtype(superType = superType)
+    }
+    else if (superType.contains("<") && superType.lastOrNull()!! == '>') {
+        val typeWithoutGenerics: String = superType.takeWhile { it != '<' }
+        return this.isSubtype(superType = typeWithoutGenerics)
+    }
+
+    return false
+}
+
 private fun simplifyType(string: String): String {
     val result: String? = Utilities.getTypeMapping(typeName = string)
 

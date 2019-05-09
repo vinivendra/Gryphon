@@ -406,11 +406,14 @@ extension Expression { // kotlin: ignore
 	}
 }
 
-fileprivate extension String { // kotlin: ignore
+internal extension String {
 	func isSubtype(of superType: String) -> Bool {
 		// Check common cases
 		if self == superType {
 			return true
+		}
+		else if self.isEmpty || superType.isEmpty {
+			return false
 		}
 		else if superType == "Any" ||
 			superType == "AnyType" ||
@@ -454,12 +457,12 @@ fileprivate extension String { // kotlin: ignore
 		}
 
 		// Handle optionals
-		if self.last == "?", superType.last == "?" {
+		if self.last! == "?", superType.last! == "?" {
 			let newSelf = String(self.dropLast())
 			let newSuperType = String(superType.dropLast())
 			return newSelf.isSubtype(of: newSuperType)
 		}
-		else if superType.last == "?" {
+		else if superType.last! == "?" {
 			let newSuperType = String(superType.dropLast())
 			return self.isSubtype(of: newSuperType)
 		}
@@ -474,7 +477,7 @@ fileprivate extension String { // kotlin: ignore
 		}
 
 		// Handle arrays and dictionaries
-		if self.first == "[", self.last == "]", superType.first == "[", superType.last == "]" {
+		if self.first! == "[", self.last! == "]", superType.first! == "[", superType.last! == "]" {
 			if self.contains(":") && superType.contains(":") {
 				let selfKeyValue =
 					String(self.dropFirst().dropLast()).split(withStringSeparator: " : ")
@@ -494,7 +497,7 @@ fileprivate extension String { // kotlin: ignore
 		}
 
 		// Handle generics
-		if self.contains("<"), self.last == ">", superType.contains("<"), superType.last == ">" {
+		if self.contains("<"), self.last! == ">", superType.contains("<"), superType.last! == ">" {
 			let selfStartGenericsIndex = self.firstIndex(of: "<")!
 			let superTypeStartGenericsIndex = superType.firstIndex(of: "<")!
 
@@ -511,7 +514,7 @@ fileprivate extension String { // kotlin: ignore
 			}
 
 			for (selfTypeComponent, superTypeComponent) in
-				zip(selfTypeComponents, superTypeComponents)
+				zipToClass(selfTypeComponents, superTypeComponents)
 			{
 				if !selfTypeComponent.isSubtype(of: superTypeComponent) {
 					return false
@@ -520,12 +523,18 @@ fileprivate extension String { // kotlin: ignore
 
 			return true
 		}
-		else if self.contains("<"), self.last == ">" {
-			let typeWithoutGenerics = String(self.prefix { $0 != "<" })
+		else if self.contains("<"), self.last! == ">" {
+			let typeWithoutGenerics = String(self.prefix {
+				$0 !=
+					"<" // value: '<'
+			})
 			return typeWithoutGenerics.isSubtype(of: superType)
 		}
-		else if superType.contains("<"), superType.last == ">" {
-			let typeWithoutGenerics = String(superType.prefix { $0 != "<" })
+		else if superType.contains("<"), superType.last! == ">" {
+			let typeWithoutGenerics = String(superType.prefix {
+				$0 !=
+					"<" // value: '<'
+			})
 			return self.isSubtype(of: typeWithoutGenerics)
 		}
 
