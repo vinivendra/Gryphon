@@ -14,4 +14,5 @@
 	Sources/GryphonLib/SourceFile.swift \
 	Sources/GryphonLib/Driver.swift \
 	Sources/GryphonLib/Extensions.swift \
-	Sources/GryphonLib/Utilities.swift
+	Sources/GryphonLib/Utilities.swift \
+	Sources/GryphonLib/KotlinTranslator.swift

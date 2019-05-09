@@ -19,6 +19,119 @@ public class KotlinTranslator {
 
 	static let lineLimit = 100
 
+	/**
+	This variable is used to store enum definitions in order to allow the translator
+	to translate them as sealed classes (see the `translate(dotSyntaxCallExpression)` method).
+	*/
+	private(set) static var sealedClasses: ArrayClass<String> = []
+
+	public static func addSealedClass(_ className: String) {
+		sealedClasses.append(className)
+	}
+
+	/**
+	This variable is used to store enum definitions in order to allow the translator
+	to translate them as enum classes (see the `translate(dotSyntaxCallExpression)` method).
+	*/
+	private(set) static var enumClasses: ArrayClass<String> = []
+
+	public static func addEnumClass(_ className: String) {
+		enumClasses.append(className)
+	}
+
+	/**
+	This variable is used to store protocol definitions in order to allow the translator
+	to translate conformances to them correctly (instead of as class inheritances).
+	*/
+	private(set) static var protocols: ArrayClass<String> = []
+
+	public static func addProtocol(_ protocolName: String) {
+		protocols.append(protocolName)
+	}
+
+	/// Stores information on how a Swift function should be translated into Kotlin, including what
+	/// its prefix should be and what its parameters should be named. The `swiftAPIName` and the
+	/// `type` properties are used to look up the right function translation, and they should match
+	/// declarationReferences that reference this function.
+	/// This is used, for instance, to translate a function to Kotlin using the internal parameter
+	/// names instead of Swift's API label names, improving correctness and readability of the
+	/// translation. The information has to be stored because declaration references don't include
+	/// the internal parameter names, only the API names.
+	public struct FunctionTranslation {
+		let swiftAPIName: String
+		let typeName: String
+		let prefix: String
+		let parameters: [String]
+	}
+
+	private static var functionTranslations: ArrayClass<FunctionTranslation> = []
+
+	public static func addFunctionTranslation(_ newValue: FunctionTranslation) {
+		functionTranslations.append(newValue)
+	}
+
+	public static func getFunctionTranslation(forName name: String, typeName: String)
+		-> FunctionTranslation?
+	{
+		// Functions with unnamed parameters here are identified only by their prefix. For instance
+		// `f(_:_:)` here is named `f` but has been stored earlier as `f(_:_:)`.
+		for functionTranslation in functionTranslations {
+			if functionTranslation.swiftAPIName.hasPrefix(name),
+				functionTranslation.typeName == typeName
+			{
+				return functionTranslation
+			}
+		}
+
+		return nil
+	}
+
+	// TODO: These records should probably go in a Context class of some kind
+	/// Stores pure functions so we can reference them later
+	private static var pureFunctions: ArrayClass<FunctionDeclarationData> = []
+
+	public static func recordPureFunction(_ newValue: FunctionDeclarationData) {
+		pureFunctions.append(newValue)
+	}
+
+	public static func isReferencingPureFunction(
+		_ callExpression: CallExpressionData)
+		-> Bool
+	{
+		var finalCallExpression = callExpression.function
+		while true {
+			if case let .dotExpression(
+				leftExpression: _, rightExpression: nextCallExpression) = finalCallExpression
+			{
+				finalCallExpression = nextCallExpression
+			}
+			else {
+				break
+			}
+		}
+
+		if case let .declarationReferenceExpression(
+			data: declarationReferenceExpression) = finalCallExpression
+		{
+			for functionDeclaration in pureFunctions {
+				if declarationReferenceExpression.identifier.hasPrefix(functionDeclaration.prefix),
+					declarationReferenceExpression.typeName == functionDeclaration.functionType
+				{
+					return true
+				}
+			}
+		}
+
+		return false
+	}
+
+	// MARK: - Interface
+
+	public init() { }
+
+}
+
+extension KotlinTranslator { // kotlin: ignore
 	private func translateType(_ typeName: String) -> String {
 		let typeName = typeName.replacingOccurrences(of: "()", with: "Unit")
 
@@ -90,111 +203,6 @@ public class KotlinTranslator {
 			return Utilities.getTypeMapping(for: typeName) ?? typeName
 		}
 	}
-
-	/**
-	This variable is used to store enum definitions in order to allow the translator
-	to translate them as sealed classes (see the `translate(dotSyntaxCallExpression)` method).
-	*/
-	private(set) static var sealedClasses = [String]()
-
-	public static func addSealedClass(_ className: String) {
-		sealedClasses.append(className)
-	}
-
-	/**
-	This variable is used to store enum definitions in order to allow the translator
-	to translate them as enum classes (see the `translate(dotSyntaxCallExpression)` method).
-	*/
-	private(set) static var enumClasses = [String]()
-
-	public static func addEnumClass(_ className: String) {
-		enumClasses.append(className)
-	}
-
-	/**
-	This variable is used to store protocol definitions in order to allow the translator
-	to translate conformances to them correctly (instead of as class inheritances).
-	*/
-	private(set) static var protocols = [String]()
-
-	public static func addProtocol(_ protocolName: String) {
-		protocols.append(protocolName)
-	}
-
-	/// Stores information on how a Swift function should be translated into Kotlin, including what
-	/// its prefix should be and what its parameters should be named. The `swiftAPIName` and the
-	/// `type` properties are used to look up the right function translation, and they should match
-	/// declarationReferences that reference this function.
-	/// This is used, for instance, to translate a function to Kotlin using the internal parameter
-	/// names instead of Swift's API label names, improving correctness and readability of the
-	/// translation. The information has to be stored because declaration references don't include
-	/// the internal parameter names, only the API names.
-	public struct FunctionTranslation {
-		let swiftAPIName: String
-		let typeName: String
-		let prefix: String
-		let parameters: [String]
-	}
-
-	private static var functionTranslations = [FunctionTranslation]()
-
-	public static func addFunctionTranslation(_ newValue: FunctionTranslation) {
-		functionTranslations.append(newValue)
-	}
-
-	public static func getFunctionTranslation(forName name: String, typeName: String)
-		-> FunctionTranslation?
-	{
-		// Functions with unnamed parameters here are identified only by their prefix. For instance
-		// `f(_:_:)` here is named `f` but has been stored earlier as `f(_:_:)`.
-		for functionTranslation in functionTranslations {
-			if functionTranslation.swiftAPIName.hasPrefix(name),
-				functionTranslation.typeName == typeName
-			{
-				return functionTranslation
-			}
-		}
-
-		return nil
-	}
-
-	// TODO: These records should probably go in a Context class of some kind
-	/// Stores pure functions so we can reference them later
-	private static var pureFunctions: ArrayClass<FunctionDeclarationData> = []
-
-	public static func recordPureFunction(_ newValue: FunctionDeclarationData) {
-		pureFunctions.append(newValue)
-	}
-
-	public static func isReferencingPureFunction(
-		_ callExpression: CallExpressionData)
-		-> Bool
-	{
-		var finalCallExpression = callExpression.function
-		while case let .dotExpression(
-			leftExpression: _, rightExpression: nextCallExpression) = finalCallExpression
-		{
-			finalCallExpression = nextCallExpression
-		}
-
-		if case let .declarationReferenceExpression(
-			data: declarationReferenceExpression) = finalCallExpression
-		{
-			for functionDeclaration in pureFunctions {
-				if declarationReferenceExpression.identifier.hasPrefix(functionDeclaration.prefix),
-					declarationReferenceExpression.typeName == functionDeclaration.functionType
-				{
-					return true
-				}
-			}
-		}
-
-		return false
-	}
-
-	// MARK: - Interface
-
-	public init() { }
 
 	public func translateAST(_ sourceFile: GryphonAST) throws -> String {
 		let declarationsTranslation =
@@ -1755,7 +1763,7 @@ public class KotlinTranslator {
 	}
 }
 
-public enum KotlinTranslatorError: Error, CustomStringConvertible {
+public enum KotlinTranslatorError: Error, CustomStringConvertible { // kotlin: ignore
 	case unexpectedASTStructure(
 		file: String,
 		line: Int,
@@ -1789,7 +1797,7 @@ public enum KotlinTranslatorError: Error, CustomStringConvertible {
 	}
 }
 
-func unexpectedASTStructureError(
+func unexpectedASTStructureError( // kotlin: ignore
 	file: String = #file, line: Int = #line, function: String = #function, _ message: String,
 	AST ast: Statement) throws -> String
 {
