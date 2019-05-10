@@ -129,9 +129,6 @@ public class KotlinTranslator {
 
 	public init() { }
 
-}
-
-extension KotlinTranslator { // kotlin: ignore
 	private func translateType(_ typeName: String) -> String {
 		let typeName = typeName.replacingOccurrences(of: "()", with: "Unit")
 
@@ -180,16 +177,8 @@ extension KotlinTranslator { // kotlin: ignore
 		}
 		else if typeName.contains(" -> ") {
 			let functionComponents = Utilities.splitTypeList(typeName, separators: [" -> "])
-			let translatedComponents = functionComponents.map { (component: String) -> String in
-				if Utilities.isInEnvelopingParentheses(component) {
-					let openComponent = String(component.dropFirst().dropLast())
-					let componentParts = Utilities.splitTypeList(openComponent, separators: [", "])
-					let translatedParts = componentParts.map(translateType)
-					return translatedParts.joined(separator: ", ")
-				}
-				else {
-					return translateType(component)
-				}
+			let translatedComponents = functionComponents.map {
+				translateFunctionTypeComponent($0)
 			}
 
 			let firstTypes = translatedComponents.dropLast().map { "(\($0))" }
@@ -204,6 +193,20 @@ extension KotlinTranslator { // kotlin: ignore
 		}
 	}
 
+	private func translateFunctionTypeComponent(_ component: String) -> String {
+		if Utilities.isInEnvelopingParentheses(component) {
+			let openComponent = String(component.dropFirst().dropLast())
+			let componentParts = Utilities.splitTypeList(openComponent, separators: [", "])
+			let translatedParts = componentParts.map { translateType($0) }
+			return translatedParts.joined(separator: ", ")
+		}
+		else {
+			return translateType(component)
+		}
+	}
+}
+
+extension KotlinTranslator { // kotlin: ignore
 	public func translateAST(_ sourceFile: GryphonAST) throws -> String {
 		let declarationsTranslation =
 			try translate(subtrees: sourceFile.declarations.array, withIndentation: "")
