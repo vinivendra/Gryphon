@@ -10,6 +10,7 @@
 *.swiftAST
 *.gryphonASTRaw
 *.gryphonAST
+*.kttest
 # Used by the test suite to print diffs when tests fail
 /.tmp
 # Used by the acceptance tests to build the translated programs

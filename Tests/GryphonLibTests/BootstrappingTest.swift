@@ -184,6 +184,53 @@ class BootstrappingTest: XCTestCase {
 		Compiler.printErrorsAndWarnings()
 	}
 
+	func testKotlinTranslatorOutput() {
+		guard !BootstrappingTest.hasError else {
+			XCTFail("Error during setup")
+			return
+		}
+
+		let tests = TestUtils.testCasesForAllTests
+
+		for testName in tests {
+			print("- Testing \(testName)...")
+
+			do {
+				let testFilePath = TestUtils.testFilesPath + testName + ".swift"
+
+				// Get Kotlin results
+				let kotlinArguments: ArrayClass = ["-emit-kotlin", "-no-main-file", testFilePath]
+				let kotlinFilePath = Utilities.changeExtension(of: testFilePath, to: .kt)
+				let testOutputFilePath = kotlinFilePath + "test"
+				let transpiledKotlinCode = try Utilities.readFile(testOutputFilePath)
+
+				// Get Swift results
+				let swiftArguments = kotlinArguments + ["-q", "-Q"]
+				let driverResult = try Driver.run(withArguments: swiftArguments)
+				guard let resultArray = driverResult as? ArrayClass<Any?>,
+					let kotlinCodes = resultArray.as(ArrayClass<String>.self),
+					let originalKotlinCode = kotlinCodes.first else
+				{
+					XCTFail("Error generating passed ASTs.\n" +
+						"Driver result: \(driverResult ?? "nil")")
+					return
+				}
+
+				// Compare results
+				XCTAssert(
+					transpiledKotlinCode == originalKotlinCode.description,
+					"Test \(testName): failed to produce expected result. Diff:" +
+						TestUtils.diff(transpiledKotlinCode, originalKotlinCode.description))
+			}
+			catch let error {
+				XCTFail("🚨 Test failed with error:\n\(error)")
+			}
+		}
+
+		XCTAssertFalse(Compiler.hasErrorsOrWarnings())
+		Compiler.printErrorsAndWarnings()
+	}
+
 	override static func setUp() {
 		let swiftFiles = Utilities.getFiles(
 			inDirectory: "Sources/GryphonLib", withExtension: .swift)
