@@ -493,7 +493,7 @@ extension Utilities {
 		}
 
 		// TODO: Replace prints in this file with Compiler.log when the compiler gets bootstrapped
-		print("\t* Updating library files...")
+		Compiler.log("\t* Updating library files...")
 
 		let templateFilePaths =
 			getFiles(inDirectory: libraryTemplatesFolder, withExtension: .swiftASTDump)
@@ -505,7 +505,7 @@ extension Utilities {
 
 		libraryFilesHaveBeenUpdated = true
 
-		print("\t* Done!")
+		Compiler.log("\t* Done!")
 	}
 
 	static public func updateTestFiles() throws {
@@ -515,7 +515,7 @@ extension Utilities {
 
 		try updateLibraryFiles() // kotlin: ignore
 
-		print("\t* Updating unit test files...")
+		Compiler.log("\t* Updating unit test files...")
 
 		let testFilesFolder = "Test Files"
 		if needsToUpdateFiles(in: testFilesFolder, from: .swift, to: .swiftASTDump) {
@@ -524,7 +524,7 @@ extension Utilities {
 
 		testFilesHaveBeenUpdated = true
 
-		print("\t* Done!")
+		Compiler.log("\t* Done!")
 	}
 
 	static internal func needsToUpdateFiles(

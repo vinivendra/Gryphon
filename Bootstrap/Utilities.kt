@@ -267,7 +267,7 @@ public fun Utilities.Companion.updateLibraryFiles() {
             throw FileError.OutdatedFile(inFolder = libraryTemplatesFolder)
         }
 
-        println("\t* Updating library files...")
+        Compiler.log("\t* Updating library files...")
 
         val templateFilePaths: MutableList<String> = getFiles(directory = libraryTemplatesFolder, fileExtension = FileExtension.SWIFT_AST_DUMP)
         val asts: MutableList<GryphonAST> = Compiler.transpileGryphonRawASTs(inputFiles = templateFilePaths)
@@ -278,7 +278,7 @@ public fun Utilities.Companion.updateLibraryFiles() {
 
         libraryFilesHaveBeenUpdated = true
 
-        println("\t* Done!")
+        Compiler.log("\t* Done!")
     }
     finally {
         libraryUpdateLock.release()
@@ -290,7 +290,7 @@ public fun Utilities.Companion.updateTestFiles() {
         return
     }
 
-    println("\t* Updating unit test files...")
+    Compiler.log("\t* Updating unit test files...")
 
     val testFilesFolder: String = "Test Files"
 
@@ -300,7 +300,7 @@ public fun Utilities.Companion.updateTestFiles() {
 
     testFilesHaveBeenUpdated = true
 
-    println("\t* Done!")
+    Compiler.log("\t* Done!")
 }
 
 internal fun Utilities.Companion.needsToUpdateFiles(
