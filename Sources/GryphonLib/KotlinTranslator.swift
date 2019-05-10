@@ -131,84 +131,6 @@ public class KotlinTranslator {
 
 	public init() { }
 
-	internal func translateType(_ typeName: String) -> String {
-		let typeName = typeName.replacingOccurrences(of: "()", with: "Unit")
-
-		if typeName.hasSuffix("?") {
-			return translateType(String(typeName.dropLast())) + "?"
-		}
-		else if typeName.hasPrefix("[") {
-			if typeName.contains(":") {
-				let innerType = String(typeName.dropLast().dropFirst())
-				let innerTypes = Utilities.splitTypeList(innerType)
-				let keyType = innerTypes[0]
-				let valueType = innerTypes[1]
-				let translatedKey = translateType(keyType)
-				let translatedValue = translateType(valueType)
-				return "MutableMap<\(translatedKey), \(translatedValue)>"
-			}
-			else {
-				let innerType = String(typeName.dropLast().dropFirst())
-				let translatedInnerType = translateType(innerType)
-				return "MutableList<\(translatedInnerType)>"
-			}
-		}
-		else if typeName.hasPrefix("ArrayClass<") {
-			let innerType = String(typeName.dropLast().dropFirst("ArrayClass<".count))
-			let translatedInnerType = translateType(innerType)
-			return "MutableList<\(translatedInnerType)>"
-		}
-		else if typeName.hasPrefix("DictionaryClass<") {
-			let innerTypes = String(typeName.dropLast().dropFirst("DictionaryClass<".count))
-			let keyValue = Utilities.splitTypeList(innerTypes)
-			let key = keyValue[0]
-			let value = keyValue[1]
-			let translatedKey = translateType(key)
-			let translatedValue = translateType(value)
-			return "MutableMap<\(translatedKey), \(translatedValue)>"
-		}
-		else if Utilities.isInEnvelopingParentheses(typeName) {
-			let innerTypeString = String(typeName.dropFirst().dropLast())
-			let innerTypes = Utilities.splitTypeList(innerTypeString, separators: [", "])
-			if innerTypes.count == 2 {
-				return "Pair<\(innerTypes.joined(separator: ", "))>"
-			}
-			else {
-				return translateType(String(typeName.dropFirst().dropLast()))
-			}
-		}
-		else if typeName.contains(" -> ") {
-			let functionComponents = Utilities.splitTypeList(typeName, separators: [" -> "])
-			let translatedComponents = functionComponents.map {
-				translateFunctionTypeComponent($0)
-			}
-
-			let firstTypes = translatedComponents.dropLast().map { "(\($0))" }
-			let lastType = translatedComponents.last!
-
-			var allTypes = firstTypes
-			allTypes.append(lastType)
-			return allTypes.joined(separator: " -> ")
-		}
-		else {
-			return Utilities.getTypeMapping(for: typeName) ?? typeName
-		}
-	}
-
-	private func translateFunctionTypeComponent(_ component: String) -> String {
-		if Utilities.isInEnvelopingParentheses(component) {
-			let openComponent = String(component.dropFirst().dropLast())
-			let componentParts = Utilities.splitTypeList(openComponent, separators: [", "])
-			let translatedParts = componentParts.map { translateType($0) }
-			return translatedParts.joined(separator: ", ")
-		}
-		else {
-			return translateType(component)
-		}
-	}
-}
-
-extension KotlinTranslator { // kotlin: ignore
 	public func translateAST(_ sourceFile: GryphonAST) throws -> String {
 		let declarationsTranslation =
 			try translateSubtrees(sourceFile.declarations, withIndentation: "")
@@ -233,7 +155,7 @@ extension KotlinTranslator { // kotlin: ignore
 		return result
 	}
 
-	// MARK: - Implementation
+	// MARK: Statement translations
 
 	private func translateEnumDeclaration(
 		access: String?,
@@ -253,7 +175,7 @@ extension KotlinTranslator { // kotlin: ignore
 		var result = "\(indentation)\(accessString) \(enumString) class " + enumName
 
 		if !inherits.isEmpty {
-			var translatedInheritedTypes = inherits.map(translateType)
+			var translatedInheritedTypes = inherits.map { translateType($0) }
 			translatedInheritedTypes = translatedInheritedTypes.map {
 				KotlinTranslator.protocols.contains($0) ?
 					$0 :
@@ -268,11 +190,10 @@ extension KotlinTranslator { // kotlin: ignore
 
 		var casesTranslation = ""
 		if isEnumClass {
-			casesTranslation += elements.map { element in
-				let capitalizedElementName = element.name
-				let annotationsString = (element.annotations == nil) ? "" :
-					"\(element.annotations!) "
-				return "\(increasedIndentation)\(annotationsString)\(capitalizedElementName)"
+			casesTranslation += elements.map {
+					increasedIndentation +
+						(($0.annotations == nil) ? "" : "\($0.annotations!) ") +
+						$0.name
 				}.joined(separator: ",\n") + ";\n"
 		}
 		else {
@@ -295,10 +216,6 @@ extension KotlinTranslator { // kotlin: ignore
 
 		return result
 	}
-}
-
-extension KotlinTranslator {
-	// MARK: Statement translations
 
 	private func translateEnumElementDeclaration(
 		enumName: String,
@@ -1850,6 +1767,83 @@ extension KotlinTranslator {
 	}
 
 	// MARK: - Supporting methods
+
+	internal func translateType(_ typeName: String) -> String {
+		let typeName = typeName.replacingOccurrences(of: "()", with: "Unit")
+
+		if typeName.hasSuffix("?") {
+			return translateType(String(typeName.dropLast())) + "?"
+		}
+		else if typeName.hasPrefix("[") {
+			if typeName.contains(":") {
+				let innerType = String(typeName.dropLast().dropFirst())
+				let innerTypes = Utilities.splitTypeList(innerType)
+				let keyType = innerTypes[0]
+				let valueType = innerTypes[1]
+				let translatedKey = translateType(keyType)
+				let translatedValue = translateType(valueType)
+				return "MutableMap<\(translatedKey), \(translatedValue)>"
+			}
+			else {
+				let innerType = String(typeName.dropLast().dropFirst())
+				let translatedInnerType = translateType(innerType)
+				return "MutableList<\(translatedInnerType)>"
+			}
+		}
+		else if typeName.hasPrefix("ArrayClass<") {
+			let innerType = String(typeName.dropLast().dropFirst("ArrayClass<".count))
+			let translatedInnerType = translateType(innerType)
+			return "MutableList<\(translatedInnerType)>"
+		}
+		else if typeName.hasPrefix("DictionaryClass<") {
+			let innerTypes = String(typeName.dropLast().dropFirst("DictionaryClass<".count))
+			let keyValue = Utilities.splitTypeList(innerTypes)
+			let key = keyValue[0]
+			let value = keyValue[1]
+			let translatedKey = translateType(key)
+			let translatedValue = translateType(value)
+			return "MutableMap<\(translatedKey), \(translatedValue)>"
+		}
+		else if Utilities.isInEnvelopingParentheses(typeName) {
+			let innerTypeString = String(typeName.dropFirst().dropLast())
+			let innerTypes = Utilities.splitTypeList(innerTypeString, separators: [", "])
+			if innerTypes.count == 2 {
+				return "Pair<\(innerTypes.joined(separator: ", "))>"
+			}
+			else {
+				return translateType(String(typeName.dropFirst().dropLast()))
+			}
+		}
+		else if typeName.contains(" -> ") {
+			let functionComponents = Utilities.splitTypeList(typeName, separators: [" -> "])
+			let translatedComponents = functionComponents.map {
+				translateFunctionTypeComponent($0)
+			}
+
+			let firstTypes = translatedComponents.dropLast().map { "(\($0))" }
+			let lastType = translatedComponents.last!
+
+			var allTypes = firstTypes
+			allTypes.append(lastType)
+			return allTypes.joined(separator: " -> ")
+		}
+		else {
+			return Utilities.getTypeMapping(for: typeName) ?? typeName
+		}
+	}
+
+	private func translateFunctionTypeComponent(_ component: String) -> String {
+		if Utilities.isInEnvelopingParentheses(component) {
+			let openComponent = String(component.dropFirst().dropLast())
+			let componentParts = Utilities.splitTypeList(openComponent, separators: [", "])
+			let translatedParts = componentParts.map { translateType($0) }
+			return translatedParts.joined(separator: ", ")
+		}
+		else {
+			return translateType(component)
+		}
+	}
+
 	private func increaseIndentation(_ indentation: String) -> String {
 		return indentation + KotlinTranslator.indentationString
 	}
