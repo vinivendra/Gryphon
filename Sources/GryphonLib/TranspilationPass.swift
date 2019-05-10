@@ -1052,25 +1052,6 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 		_ members: ArrayClass<Statement>)
 		-> ArrayClass<Statement>
 	{
-		let isStaticMember = { (member: Statement) -> Bool in
-			if case let .functionDeclaration(data: functionDeclaration) = member {
-				if functionDeclaration.isStatic == true,
-					functionDeclaration.extendsType == nil,
-					functionDeclaration.prefix != "init"
-				{
-					return true
-				}
-			}
-
-			if case let .variableDeclaration(data: variableDeclaration) = member {
-				if variableDeclaration.isStatic {
-					return true
-				}
-			}
-
-			return false
-		}
-
 		let staticMembers = members.filter { isStaticMember($0) }
 
 		guard !staticMembers.isEmpty else {
@@ -1083,6 +1064,25 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 		newMembers.append(contentsOf: nonStaticMembers)
 
 		return newMembers
+	}
+
+	private func isStaticMember(_ member: Statement) -> Bool {
+		if case let .functionDeclaration(data: functionDeclaration) = member {
+			if functionDeclaration.isStatic == true,
+				functionDeclaration.extendsType == nil,
+				functionDeclaration.prefix != "init"
+			{
+				return true
+			}
+		}
+
+		if case let .variableDeclaration(data: variableDeclaration) = member {
+			if variableDeclaration.isStatic {
+				return true
+			}
+		}
+
+		return false
 	}
 
 	override func replaceClassDeclaration( // annotation: override

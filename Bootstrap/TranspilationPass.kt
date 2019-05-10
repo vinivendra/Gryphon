@@ -1105,23 +1105,6 @@ open class StaticMembersTranspilationPass: TranspilationPass {
         members: MutableList<Statement>)
         : MutableList<Statement>
     {
-        val isStaticMember: (Statement) -> Boolean = { member ->
-                if (member is Statement.FunctionDeclaration) {
-                    val functionDeclaration: FunctionDeclarationData = member.data
-                    if (functionDeclaration.isStatic == true && functionDeclaration.extendsType == null && functionDeclaration.prefix != "init") {
-                        true
-                    }
-                }
-
-                if (member is Statement.VariableDeclaration) {
-                    val variableDeclaration: VariableDeclarationData = member.data
-                    if (variableDeclaration.isStatic) {
-                        true
-                    }
-                }
-
-                false
-            }
         val staticMembers: MutableList<Statement> = members.filter { isStaticMember(it) }.toMutableList()
 
         if (staticMembers.isEmpty()) {
@@ -1134,6 +1117,22 @@ open class StaticMembersTranspilationPass: TranspilationPass {
         newMembers.addAll(nonStaticMembers)
 
         return newMembers
+    }
+
+    private fun isStaticMember(member: Statement): Boolean {
+        if (member is Statement.FunctionDeclaration) {
+            val functionDeclaration: FunctionDeclarationData = member.data
+            if (functionDeclaration.isStatic == true && functionDeclaration.extendsType == null && functionDeclaration.prefix != "init") {
+                return true
+            }
+        }
+        if (member is Statement.VariableDeclaration) {
+            val variableDeclaration: VariableDeclarationData = member.data
+            if (variableDeclaration.isStatic) {
+                return true
+            }
+        }
+        return false
     }
 
     override internal fun replaceClassDeclaration(
