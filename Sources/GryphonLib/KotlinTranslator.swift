@@ -199,40 +199,54 @@ public class KotlinTranslator {
 			{
 				continue
 			}
-			else if case .expressionStatement(
-				expression: .callExpression) = currentSubtree.subtree,
-				case .expressionStatement(expression: .callExpression) = nextSubtree.subtree
+			if case let .expressionStatement(
+					expression: currentExpression) = currentSubtree.subtree,
+				case let .expressionStatement(expression: nextExpression) = nextSubtree.subtree
 			{
-				continue
+				if case .callExpression = currentExpression,
+					case .callExpression = nextExpression
+				{
+					continue
+				}
 			}
-			else if case .expressionStatement(
-				expression: .templateExpression) = currentSubtree.subtree,
-				case .expressionStatement(expression: .templateExpression) = nextSubtree.subtree
+			if case let .expressionStatement(
+					expression: currentExpression) = currentSubtree.subtree,
+				case let .expressionStatement(
+					expression: nextExpression) = nextSubtree.subtree
 			{
-				continue
+				if case .templateExpression = currentExpression,
+					case .templateExpression = nextExpression
+				{
+					continue
+				}
 			}
-			else if case .expressionStatement(
-				expression: .literalCodeExpression) = currentSubtree.subtree,
-				case .expressionStatement(expression: .literalCodeExpression) = nextSubtree.subtree
+			if case let .expressionStatement(
+					expression: currentExpression) = currentSubtree.subtree,
+				case let .expressionStatement(
+					expression: nextExpression) = nextSubtree.subtree
 			{
-				continue
+				if case .literalCodeExpression = currentExpression,
+					case .literalCodeExpression = nextExpression
+				{
+					continue
+				}
 			}
-			else if case .assignmentStatement = currentSubtree.subtree,
+			if case .assignmentStatement = currentSubtree.subtree,
 				case .assignmentStatement = nextSubtree.subtree
 			{
 				continue
 			}
-			else if case .typealiasDeclaration = currentSubtree.subtree,
+			if case .typealiasDeclaration = currentSubtree.subtree,
 				case .typealiasDeclaration = nextSubtree.subtree
 			{
 				continue
 			}
-			else if case .doStatement = currentSubtree.subtree,
+			if case .doStatement = currentSubtree.subtree,
 				case .catchStatement = nextSubtree.subtree
 			{
 				continue
 			}
-			else if case .catchStatement = currentSubtree.subtree,
+			if case .catchStatement = currentSubtree.subtree,
 				case .catchStatement = nextSubtree.subtree
 			{
 				continue
@@ -1762,8 +1776,10 @@ public class KotlinTranslator {
 				result += string
 			}
 			else {
-				result +=
-					try "${" + translateExpression(expression, withIndentation: indentation) + "}"
+				let startDelimiter = "${" // value: \"\\${\"
+				result += try startDelimiter +
+					translateExpression(expression, withIndentation: indentation) +
+					"}"
 			}
 		}
 

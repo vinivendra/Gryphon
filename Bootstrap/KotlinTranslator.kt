@@ -124,30 +124,51 @@ open class KotlinTranslator {
 
         for ((currentSubtree, nextSubtree) in treesAndTranslations.zip(treesAndTranslationsWithoutFirst)) {
             result += currentSubtree.translation
+
             if (currentSubtree.subtree is Statement.VariableDeclaration && nextSubtree.subtree is Statement.VariableDeclaration) {
                 continue
             }
-            else if (currentSubtree.subtree is Statement.ExpressionStatement && nextSubtree.subtree is Statement.ExpressionStatement) {
+
+            if (currentSubtree.subtree is Statement.ExpressionStatement && nextSubtree.subtree is Statement.ExpressionStatement) {
+                val currentExpression: Expression = currentSubtree.subtree.expression
+                val nextExpression: Expression = nextSubtree.subtree.expression
+                if (currentExpression is Expression.CallExpression && nextExpression is Expression.CallExpression) {
+                    continue
+                }
+            }
+
+            if (currentSubtree.subtree is Statement.ExpressionStatement && nextSubtree.subtree is Statement.ExpressionStatement) {
+                val currentExpression: Expression = currentSubtree.subtree.expression
+                val nextExpression: Expression = nextSubtree.subtree.expression
+                if (currentExpression is Expression.TemplateExpression && nextExpression is Expression.TemplateExpression) {
+                    continue
+                }
+            }
+
+            if (currentSubtree.subtree is Statement.ExpressionStatement && nextSubtree.subtree is Statement.ExpressionStatement) {
+                val currentExpression: Expression = currentSubtree.subtree.expression
+                val nextExpression: Expression = nextSubtree.subtree.expression
+                if (currentExpression is Expression.LiteralCodeExpression && nextExpression is Expression.LiteralCodeExpression) {
+                    continue
+                }
+            }
+
+            if (currentSubtree.subtree is Statement.AssignmentStatement && nextSubtree.subtree is Statement.AssignmentStatement) {
                 continue
             }
-            else if (currentSubtree.subtree is Statement.ExpressionStatement && nextSubtree.subtree is Statement.ExpressionStatement) {
+
+            if (currentSubtree.subtree is Statement.TypealiasDeclaration && nextSubtree.subtree is Statement.TypealiasDeclaration) {
                 continue
             }
-            else if (currentSubtree.subtree is Statement.ExpressionStatement && nextSubtree.subtree is Statement.ExpressionStatement) {
+
+            if (currentSubtree.subtree is Statement.DoStatement && nextSubtree.subtree is Statement.CatchStatement) {
                 continue
             }
-            else if (currentSubtree.subtree is Statement.AssignmentStatement && nextSubtree.subtree is Statement.AssignmentStatement) {
+
+            if (currentSubtree.subtree is Statement.CatchStatement && nextSubtree.subtree is Statement.CatchStatement) {
                 continue
             }
-            else if (currentSubtree.subtree is Statement.TypealiasDeclaration && nextSubtree.subtree is Statement.TypealiasDeclaration) {
-                continue
-            }
-            else if (currentSubtree.subtree is Statement.DoStatement && nextSubtree.subtree is Statement.CatchStatement) {
-                continue
-            }
-            else if (currentSubtree.subtree is Statement.CatchStatement && nextSubtree.subtree is Statement.CatchStatement) {
-                continue
-            }
+
             result += "\n"
         }
 
@@ -1686,7 +1707,8 @@ open class KotlinTranslator {
                 result += string
             }
             else {
-                result += "${" + translateExpression(expression, indentation = indentation) + "}"
+                val startDelimiter: String = "\${"
+                result += startDelimiter + translateExpression(expression, indentation = indentation) + "}"
             }
         }
 
