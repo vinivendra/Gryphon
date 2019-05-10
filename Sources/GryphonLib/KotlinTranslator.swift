@@ -295,6 +295,10 @@ extension KotlinTranslator { // kotlin: ignore
 
 		return result
 	}
+}
+
+extension KotlinTranslator {
+	// MARK: Statement translations
 
 	private func translateEnumElementDeclaration(
 		enumName: String,
@@ -333,7 +337,10 @@ extension KotlinTranslator { // kotlin: ignore
 	}
 
 	private func translateTypealias(
-		identifier: String, typeName: String, isImplicit: Bool, withIndentation indentation: String)
+		identifier: String,
+		typeName: String,
+		isImplicit: Bool,
+		withIndentation indentation: String)
 		throws -> String
 	{
 		let translatedType = translateType(typeName)
@@ -350,7 +357,7 @@ extension KotlinTranslator { // kotlin: ignore
 		var result = "\(indentation)open class \(className)"
 
 		if !inherits.isEmpty {
-			let translatedInheritances = inherits.map(translateType)
+			let translatedInheritances = inherits.map { translateType($0) }
 			result += ": " + translatedInheritances.joined(separator: ", ")
 		}
 
@@ -383,20 +390,8 @@ extension KotlinTranslator { // kotlin: ignore
 
 		var result = "\(annotationsString)\(indentation)data class \(structName)(\n"
 
-		let isProperty = { (member: Statement) -> Bool in
-			if case let .variableDeclaration(data: variableDeclaration) = member,
-				variableDeclaration.getter == nil,
-				variableDeclaration.setter == nil,
-				!variableDeclaration.isStatic
-			{
-				return true
-			}
-			else {
-				return false
-			}
-		}
-		let properties = members.filter(isProperty)
-		let otherMembers = members.filter { !isProperty($0) }
+		let properties = members.filter { statementIsStructProperty($0) }
+		let otherMembers = members.filter { !statementIsStructProperty($0) }
 
 		// Translate properties individually, dropping the newlines at the end
 		let propertyTranslations = try properties.map {
@@ -407,7 +402,7 @@ extension KotlinTranslator { // kotlin: ignore
 		result += propertiesTranslation + "\n\(indentation))"
 
 		if !inherits.isEmpty {
-			var translatedInheritedTypes = inherits.map(translateType)
+			var translatedInheritedTypes = inherits.map { translateType($0) }
 			translatedInheritedTypes = translatedInheritedTypes.map {
 				KotlinTranslator.protocols.contains($0) ?
 					$0 :
@@ -430,6 +425,22 @@ extension KotlinTranslator { // kotlin: ignore
 		return result
 	}
 
+	private func statementIsStructProperty(
+		_ statement: Statement)
+		-> Bool
+	{
+		if case let .variableDeclaration(data: variableDeclaration) = statement {
+			if variableDeclaration.getter == nil,
+				variableDeclaration.setter == nil,
+				!variableDeclaration.isStatic
+			{
+				return true
+			}
+		}
+
+		return false
+	}
+
 	private func translateCompanionObject(
 		members: ArrayClass<Statement>,
 		withIndentation indentation: String)
@@ -447,10 +458,6 @@ extension KotlinTranslator { // kotlin: ignore
 
 		return result
 	}
-}
-
-extension KotlinTranslator {
-	// MARK: Statement translations
 
 	private func translateFunctionDeclaration(
 		functionDeclaration: FunctionDeclarationData, withIndentation indentation: String,

@@ -159,6 +159,136 @@ open class KotlinTranslator {
     }
 }
 
+private fun KotlinTranslator.translateEnumElementDeclaration(
+    enumName: String,
+    element: EnumElement,
+    indentation: String)
+    : String
+{
+    val capitalizedElementName: String = element.name.capitalizedAsCamelCase()
+    val annotationsString: String = if (element.annotations == null) { "" } else { "${element.annotations!!} " }
+    val result: String = "${indentation}${annotationsString}class ${capitalizedElementName}"
+
+    if (element.associatedValues.isEmpty()) {
+        return result + ": ${enumName}()\n"
+    }
+    else {
+        val associatedValuesString: String = element.associatedValues.map { "val ${it.label}: ${translateType(it.typeName)}" }.toMutableList().joinToString(separator = ", ")
+        return result + "(${associatedValuesString}): ${enumName}()\n"
+    }
+}
+
+private fun KotlinTranslator.translateProtocolDeclaration(
+    protocolName: String,
+    members: MutableList<Statement>,
+    indentation: String)
+    : String
+{
+    var result: String = "${indentation}interface ${protocolName} {\n"
+    val contents: String = translateSubtrees(subtrees = members, indentation = increaseIndentation(indentation))
+
+    result += contents
+
+    result += "${indentation}}\n"
+
+    return result
+}
+
+private fun KotlinTranslator.translateTypealias(
+    identifier: String,
+    typeName: String,
+    isImplicit: Boolean,
+    indentation: String)
+    : String
+{
+    val translatedType: String = translateType(typeName)
+    return "${indentation}typealias ${identifier} = ${translatedType}\n"
+}
+
+private fun KotlinTranslator.translateClassDeclaration(
+    className: String,
+    inherits: MutableList<String>,
+    members: MutableList<Statement>,
+    indentation: String)
+    : String
+{
+    var result: String = "${indentation}open class ${className}"
+
+    if (!inherits.isEmpty()) {
+        val translatedInheritances: MutableList<String> = inherits.map { translateType(it) }.toMutableList()
+        result += ": " + translatedInheritances.joinToString(separator = ", ")
+    }
+
+    result += " {\n"
+
+    val increasedIndentation: String = increaseIndentation(indentation)
+    val classContents: String = translateSubtrees(subtrees = members, indentation = increasedIndentation)
+
+    result += classContents + "${indentation}}\n"
+
+    return result
+}
+
+private fun KotlinTranslator.translateStructDeclaration(
+    annotations: String?,
+    structName: String,
+    inherits: MutableList<String>,
+    members: MutableList<Statement>,
+    indentation: String)
+    : String
+{
+    val increasedIndentation: String = increaseIndentation(indentation)
+    val annotationsString: String = annotations?.let { "${indentation}${it}\n" } ?: ""
+    var result: String = "${annotationsString}${indentation}data class ${structName}(\n"
+    val properties: MutableList<Statement> = members.filter { statementIsStructProperty(it) }.toMutableList()
+    val otherMembers: MutableList<Statement> = members.filter { !statementIsStructProperty(it) }.toMutableList()
+    val propertyTranslations: MutableList<String> = properties.map { translateSubtree(it, indentation = increasedIndentation).dropLast(1) }.toMutableList()
+    val propertiesTranslation: String = propertyTranslations.joinToString(separator = ",\n")
+
+    result += propertiesTranslation + "\n${indentation})"
+
+    if (!inherits.isEmpty()) {
+        var translatedInheritedTypes: MutableList<String> = inherits.map { translateType(it) }.toMutableList()
+        translatedInheritedTypes = translatedInheritedTypes.map { if (KotlinTranslator.protocols.contains(it)) { it } else { it + "()" } }.toMutableList()
+        result += ": ${translatedInheritedTypes.joinToString(separator = ", ")}"
+    }
+
+    val otherMembersTranslation: String = translateSubtrees(subtrees = otherMembers, indentation = increasedIndentation)
+
+    if (!otherMembersTranslation.isEmpty()) {
+        result += " {\n${otherMembersTranslation}${indentation}}\n"
+    }
+    else {
+        result += "\n"
+    }
+
+    return result
+}
+
+private fun KotlinTranslator.statementIsStructProperty(statement: Statement): Boolean {
+    if (statement is Statement.VariableDeclaration) {
+        val variableDeclaration: VariableDeclarationData = statement.data
+        if (variableDeclaration.getter == null && variableDeclaration.setter == null && !variableDeclaration.isStatic) {
+            return true
+        }
+    }
+    return false
+}
+
+private fun KotlinTranslator.translateCompanionObject(
+    members: MutableList<Statement>,
+    indentation: String)
+    : String
+{
+    var result: String = "${indentation}companion object {\n"
+    val increasedIndentation: String = increaseIndentation(indentation)
+    val contents: String = translateSubtrees(subtrees = members, indentation = increasedIndentation)
+
+    result += contents + "${indentation}}\n"
+
+    return result
+}
+
 private fun KotlinTranslator.translateFunctionDeclaration(
     functionDeclaration: FunctionDeclarationData,
     indentation: String,
