@@ -159,6 +159,75 @@ open class KotlinTranslator {
     }
 }
 
+fun translateExpression(expression: Expression,
+	withIndentation: String): String
+{
+	return ""
+}
+
+private fun KotlinTranslator.translateClosureExpression(
+    parameters: MutableList<LabeledType>,
+    statements: MutableList<Statement>,
+    typeName: String,
+    indentation: String)
+    : String
+{
+    if (statements.isEmpty()) {
+        return "{ }"
+    }
+
+    var result: String = "{"
+    val parametersString: String = parameters.map { it.label }.toMutableList().joinToString(separator = ", ")
+
+    if (!parametersString.isEmpty()) {
+        result += " " + parametersString + " ->"
+    }
+
+    val firstStatement: Statement? = statements.firstOrNull()
+
+    if (statements.size == 1 && firstStatement != null && firstStatement is Statement.ExpressionStatement) {
+        val expression: Expression = firstStatement.expression
+        result += " " + translateExpression(expression, withIndentation = indentation) + " }"
+    }
+    else {
+        result += "\n"
+
+        val closingBraceIndentation: String = increaseIndentation(indentation)
+        val contentsIndentation: String = increaseIndentation(closingBraceIndentation)
+
+        result += translateSubtrees(subtrees = statements, indentation = contentsIndentation)
+
+        result += closingBraceIndentation + "}"
+    }
+
+    return result
+}
+
+private fun KotlinTranslator.translateLiteralCodeExpression(string: String): String {
+    return string.removingBackslashEscapes
+}
+
+private fun KotlinTranslator.translateTemplateExpression(
+    pattern: String,
+    matches: MutableMap<String, Expression>,
+    indentation: String)
+    : String
+{
+    var result: String = pattern
+    for ((string, expression) in matches) {
+        val expressionTranslation: String = translateExpression(expression, withIndentation = indentation)
+        result = result.replace(string, expressionTranslation)
+    }
+    return result
+}
+
+private fun KotlinTranslator.translateDeclarationReferenceExpression(
+    declarationReferenceExpression: DeclarationReferenceData)
+    : String
+{
+    return declarationReferenceExpression.identifier.takeWhile { it != '(' }
+}
+
 private fun KotlinTranslator.translateTupleExpression(
     pairs: MutableList<LabeledExpression>,
     translation: KotlinTranslator.FunctionTranslation? = null,
@@ -318,10 +387,13 @@ private fun KotlinTranslator.translateInterpolatedStringLiteralExpression(
     return result
 }
 
-fun translateExpression(expression: Expression,
-	withIndentation: String): String
+private fun KotlinTranslator.translateSubtrees(
+    subtrees: MutableList<Statement>,
+    indentation: String,
+    limitForAddingNewlines: Int = 0)
+    : String
 {
-	return ""
+    return ""
 }
 
 private fun KotlinTranslator.increaseIndentation(indentation: String): String {
