@@ -159,6 +159,132 @@ open class KotlinTranslator {
     }
 }
 
+private fun KotlinTranslator.translateTupleExpression(
+    pairs: MutableList<LabeledExpression>,
+    translation: KotlinTranslator.FunctionTranslation? = null,
+    indentation: String,
+    shouldAddNewlines: Boolean = false)
+    : String
+{
+    if (pairs.isEmpty()) {
+        return "()"
+    }
+
+    val parameters: MutableList<String?>
+    val translationParameters: MutableList<String>? = translation?.parameters
+
+    if (translationParameters != null) {
+        parameters = translationParameters.zip(pairs).map { translationPairTuple -> if (translationPairTuple.second.label == null) { null } else { translationPairTuple.first } }.toMutableList()
+    }
+    else {
+        parameters = pairs.map { it.label }.toMutableList()
+    }
+
+    val expressions: MutableList<Expression> = pairs.map { it.expression }.toMutableList()
+    val expressionIndentation: String = if (shouldAddNewlines) { increaseIndentation((indentation)) } else { indentation }
+    val translations: MutableList<String> = parameters.zip(expressions).map { parameterExpressionTuple -> translateParameter(
+        label = parameterExpressionTuple.first,
+        expression = parameterExpressionTuple.second,
+        indentation = expressionIndentation) }.toMutableList()
+
+    if (!shouldAddNewlines) {
+        val contents: String = translations.joinToString(separator = ", ")
+        return "(${contents})"
+    }
+    else {
+        val contents: String = translations.joinToString(separator = ",\n${indentation}")
+        return "(\n${indentation}${contents})"
+    }
+}
+
+private fun KotlinTranslator.translateParameter(
+    label: String?,
+    expression: Expression,
+    indentation: String)
+    : String
+{
+    val expression: String = translateExpression(expression, withIndentation = indentation)
+    if (label != null) {
+        return "${label} = ${expression}"
+    }
+    else {
+        return expression
+    }
+}
+
+private fun KotlinTranslator.translateTupleShuffleExpression(
+    labels: MutableList<String>,
+    indices: MutableList<TupleShuffleIndex>,
+    expressions: MutableList<Expression>,
+    translation: KotlinTranslator.FunctionTranslation? = null,
+    indentation: String,
+    shouldAddNewlines: Boolean = false)
+    : String
+{
+    val parameters: MutableList<String> = translation?.parameters ?: labels
+    val increasedIndentation: String = increaseIndentation(indentation)
+    val translations: MutableList<String> = mutableListOf()
+    var expressionIndex: Int = 0
+    val containsVariadics: Boolean = (indices.find { index ->
+            if (index is TupleShuffleIndex.Variadic) {
+                true
+            }
+
+            false
+        } != null)
+    var isBeforeVariadic: Boolean = containsVariadics
+
+    if (parameters.size != indices.size) {
+        return unexpectedASTStructureError(
+            "Different number of labels and indices in a tuple shuffle expression. " + "Labels: ${labels}, indices: ${indices}",
+            ast = Statement.ExpressionStatement(
+                    expression = Expression.TupleShuffleExpression(labels = labels, indices = indices, expressions = expressions)))
+    }
+
+    for ((label, index) in parameters.zip(indices)) {
+        when (index) {
+            is TupleShuffleIndex.Present -> {
+                val expression: Expression = expressions[expressionIndex]
+                var result: String = ""
+
+                if (!isBeforeVariadic) {
+                    result += "${label} = "
+                }
+
+                result += translateExpression(expression, withIndentation = increasedIndentation)
+
+                translations.add(result)
+
+                expressionIndex += 1
+            }
+            is TupleShuffleIndex.Variadic -> {
+                val variadicCount: Int = index.count
+                isBeforeVariadic = false
+                for (_0 in 0 until variadicCount) {
+                    val expression: Expression = expressions[expressionIndex]
+                    val result: String = translateExpression(expression, withIndentation = increasedIndentation)
+
+                    translations.add(result)
+
+                    expressionIndex += 1
+                }
+            }
+        }
+    }
+
+    var result: String = "("
+
+    if (shouldAddNewlines) {
+        result += "\n${indentation}"
+    }
+
+    val separator: String = if (shouldAddNewlines) { ",\n${indentation}" } else { ", " }
+
+    result += translations.joinToString(separator = separator) + ")"
+
+    return result
+}
+
 private fun KotlinTranslator.translateStringLiteral(value: String): String {
     return "\"${value}\""
 }
@@ -192,7 +318,9 @@ private fun KotlinTranslator.translateInterpolatedStringLiteralExpression(
     return result
 }
 
-fun translateExpression(expression: Expression, indentation: String): String {
+fun translateExpression(expression: Expression,
+	withIndentation: String): String
+{
 	return ""
 }
 

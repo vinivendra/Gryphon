@@ -1580,6 +1580,10 @@ extension KotlinTranslator { // kotlin: ignore
 	{
 		return String(declarationReferenceExpression.identifier.prefix { $0 != "(" })
 	}
+}
+
+extension KotlinTranslator {
+	// MARK: Expression translations
 
 	private func translateTupleExpression(
 		pairs: ArrayClass<LabeledExpression>,
@@ -1598,13 +1602,8 @@ extension KotlinTranslator { // kotlin: ignore
 		let parameters: ArrayClass<String?>
 		if let translationParameters = translation?.parameters {
 			parameters = zipToClass(translationParameters, pairs).map
-				{ (translationParameter, pair) in
-					if pair.label == nil {
-						return nil
-					}
-					else {
-						return translationParameter
-					}
+				{ translationPairTuple in
+					(translationPairTuple.1.label == nil) ? nil : translationPairTuple.0
 				}
 		}
 		else {
@@ -1616,17 +1615,12 @@ extension KotlinTranslator { // kotlin: ignore
 		let expressionIndentation =
 			shouldAddNewlines ? increaseIndentation(indentation) : indentation
 
-		let translations = try zip(parameters, expressions)
-			.map { (parameter: String?, expression: Expression) -> String in
-				let expression =
-					try translateExpression(expression, withIndentation: expressionIndentation)
-
-				if let label = parameter {
-					return "\(label) = \(expression)"
-				}
-				else {
-					return expression
-				}
+		let translations = try zipToClass(parameters, expressions)
+			.map { parameterExpressionTuple -> String in
+				try translateParameter(
+					withLabel: parameterExpressionTuple.0,
+					expression: parameterExpressionTuple.1,
+					indentation: expressionIndentation)
 			}
 
 		if !shouldAddNewlines {
@@ -1636,6 +1630,22 @@ extension KotlinTranslator { // kotlin: ignore
 		else {
 			let contents = translations.joined(separator: ",\n\(indentation)")
 			return "(\n\(indentation)\(contents))"
+		}
+	}
+
+	private func translateParameter(
+		withLabel label: String?,
+		expression: Expression,
+		indentation: String)
+		throws -> String
+	{
+		let expression = try translateExpression(expression, withIndentation: indentation)
+
+		if let label = label {
+			return "\(label) = \(expression)"
+		}
+		else {
+			return expression
 		}
 	}
 
@@ -1668,7 +1678,7 @@ extension KotlinTranslator { // kotlin: ignore
 		guard parameters.count == indices.count else {
 			return try unexpectedASTStructureError(
 				"Different number of labels and indices in a tuple shuffle expression. " +
-					"Labels: \(labels), indices: \(indices)",
+				"Labels: \(labels), indices: \(indices)",
 				AST: .expressionStatement(expression: .tupleShuffleExpression(
 					labels: labels,
 					indices: indices,
@@ -1716,10 +1726,6 @@ extension KotlinTranslator { // kotlin: ignore
 
 		return result
 	}
-}
-
-extension KotlinTranslator {
-	// MARK: Expression translations
 
 	private func translateStringLiteral(value: String) -> String {
 		return "\"\(value)\""
@@ -1758,7 +1764,9 @@ extension KotlinTranslator {
 		return result
 	}
 
-	// declaration: fun translateExpression(expression: Expression, indentation: String): String {
+	// declaration: fun translateExpression(expression: Expression,
+	// declaration: 	withIndentation: String): String
+	// declaration: {
 	// declaration: 	return ""
 	// declaration: }
 
