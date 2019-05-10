@@ -247,7 +247,7 @@ extension Compiler { // kotlin: ignore
 		if !kotlinTranslatorErrors.isEmpty {
 			print("Kotlin translator failed to translate:")
 
-			let kotlinTranslatorHistogram = kotlinTranslatorErrors.group { $0.astName }
+			let kotlinTranslatorHistogram = kotlinTranslatorErrors.group { $0.ast.name }
 			for (astName, errorArray) in
 				kotlinTranslatorHistogram.sorted(by: { $0.value.count > $1.value.count })
 			{

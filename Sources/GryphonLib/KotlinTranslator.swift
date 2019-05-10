@@ -1732,46 +1732,28 @@ extension KotlinTranslator { // kotlin: ignore
 	}
 }
 
-public enum KotlinTranslatorError: Error, CustomStringConvertible { // kotlin: ignore
-	case unexpectedASTStructure(
-		file: String,
-		line: Int,
-		function: String,
-		message: String,
-		AST: Statement)
+struct KotlinTranslatorError: Error, CustomStringConvertible { // kotlin: ignore
+	let message: String
+	let ast: Statement
 
 	public var description: String {
-		switch self {
-		case let .unexpectedASTStructure(
-			file: file, line: line, function: function, message: message, AST: ast):
+		var nodeDescription = ""
+		ast.prettyPrint(horizontalLimit: 100) {
+			nodeDescription += $0
+		}
 
-			var nodeDescription = ""
-			ast.prettyPrint(horizontalLimit: 100) {
-				nodeDescription += $0
-			}
-
-			return "Error: failed to translate Gryphon AST into Kotlin.\n" +
-				"On file \(file), line \(line), function \(function).\n" +
-				message + ".\n" +
+		return "Error: failed to translate Gryphon AST into Kotlin.\n" +
+			message + ".\n" +
 			"Thrown when translating the following AST node:\n\(nodeDescription)"
-
-		}
-	}
-
-	public var astName: String {
-		switch self {
-		case let .unexpectedASTStructure(file: _, line: _, function: _, message: _, AST: ast):
-			return ast.name
-		}
 	}
 }
 
 func unexpectedASTStructureError( // kotlin: ignore
-	file: String = #file, line: Int = #line, function: String = #function, _ message: String,
-	AST ast: Statement) throws -> String
+	_ message: String,
+	AST ast: Statement)
+	throws -> String
 {
-	let error = KotlinTranslatorError.unexpectedASTStructure(
-		file: file, line: line, function: function, message: message, AST: ast)
+	let error = KotlinTranslatorError(message: message, ast: ast)
 	try Compiler.handleError(error)
 	return KotlinTranslator.errorTranslation
 }
