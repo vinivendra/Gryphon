@@ -159,6 +159,140 @@ open class KotlinTranslator {
     }
 }
 
+private fun KotlinTranslator.translateDoStatement(
+    statements: MutableList<Statement>,
+    indentation: String)
+    : String
+{
+    val translatedStatements: String = translateSubtrees(
+        statements,
+        indentation = increaseIndentation(indentation),
+        limitForAddingNewlines = 3)
+    return "${indentation}try {\n${translatedStatements}${indentation}}\n"
+}
+
+private fun KotlinTranslator.translateCatchStatement(
+    variableDeclaration: VariableDeclarationData?,
+    statements: MutableList<Statement>,
+    indentation: String)
+    : String
+{
+    var result: String = ""
+
+    if (variableDeclaration != null) {
+        val translatedType: String = translateType(variableDeclaration.typeName)
+        result = "${indentation}catch " + "(${variableDeclaration.identifier}: ${translatedType}) {\n"
+    }
+    else {
+        result = "${indentation}catch {\n"
+    }
+
+    val translatedStatements: String = translateSubtrees(
+        statements,
+        indentation = increaseIndentation(indentation),
+        limitForAddingNewlines = 3)
+
+    result += "${translatedStatements}"
+
+    result += "${indentation}}\n"
+
+    return result
+}
+
+private fun KotlinTranslator.translateForEachStatement(
+    collection: Expression,
+    variable: Expression,
+    statements: MutableList<Statement>,
+    indentation: String)
+    : String
+{
+    var result: String = "${indentation}for ("
+    val variableTranslation: String = translateExpression(variable, indentation = indentation)
+
+    result += variableTranslation + " in "
+
+    val collectionTranslation: String = translateExpression(collection, indentation = indentation)
+
+    result += collectionTranslation + ") {\n"
+
+    val increasedIndentation: String = increaseIndentation(indentation)
+    val statementsTranslation: String = translateSubtrees(statements, indentation = increasedIndentation, limitForAddingNewlines = 3)
+
+    result += statementsTranslation
+
+    result += indentation + "}\n"
+
+    return result
+}
+
+private fun KotlinTranslator.translateWhileStatement(
+    expression: Expression,
+    statements: MutableList<Statement>,
+    indentation: String)
+    : String
+{
+    var result: String = "${indentation}while ("
+    val expressionTranslation: String = translateExpression(expression, indentation = indentation)
+
+    result += expressionTranslation + ") {\n"
+
+    val increasedIndentation: String = increaseIndentation(indentation)
+    val statementsTranslation: String = translateSubtrees(statements, indentation = increasedIndentation, limitForAddingNewlines = 3)
+
+    result += statementsTranslation
+
+    result += indentation + "}\n"
+
+    return result
+}
+
+private fun KotlinTranslator.translateIfStatement(
+    ifStatement: IfStatementData,
+    isElseIf: Boolean = false,
+    indentation: String)
+    : String
+{
+    val keyword: String = if (ifStatement.conditions.isEmpty() && ifStatement.declarations.isEmpty()) { "else" } else { if (isElseIf) { "else if" } else { "if" } }
+    var result: String = indentation + keyword + " "
+    val increasedIndentation: String = increaseIndentation(indentation)
+    val conditionsTranslation: String = ifStatement.conditions.map { conditionToExpression(it) }.filterNotNull().toMutableList().map { translateExpression(it, indentation = indentation) }.toMutableList().joinToString(separator = " && ")
+
+    if (keyword != "else") {
+        val parenthesizedCondition: String = if (ifStatement.isGuard) { "(!(" + conditionsTranslation + ")) " } else { "(" + conditionsTranslation + ") " }
+        result += parenthesizedCondition
+    }
+
+    result += "{\n"
+
+    val statementsString: String = translateSubtrees(
+        ifStatement.statements,
+        indentation = increasedIndentation,
+        limitForAddingNewlines = 3)
+
+    result += statementsString + indentation + "}\n"
+
+    val unwrappedElse: IfStatementData? = ifStatement.elseStatement
+
+    if (unwrappedElse != null) {
+        result += translateIfStatement(unwrappedElse, isElseIf = true, indentation = indentation)
+    }
+
+    return result
+}
+
+private fun KotlinTranslator.conditionToExpression(
+    condition: IfStatementData.IfCondition)
+    : Expression?
+{
+    if (condition is IfStatementData.IfCondition.Condition) {
+        val expression: Expression = condition.expression
+        return expression
+    }
+    else {
+        return null
+    }
+}
+
 private fun KotlinTranslator.translateSwitchStatement(
     convertsToExpression: Statement?,
     expression: Expression,

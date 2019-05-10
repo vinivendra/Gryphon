@@ -598,6 +598,10 @@ extension KotlinTranslator { // kotlin: ignore
 
 		return result
 	}
+}
+
+extension KotlinTranslator {
+	// MARK: Statement translations
 
 	private func translateDoStatement(
 		statements: ArrayClass<Statement>,
@@ -622,7 +626,7 @@ extension KotlinTranslator { // kotlin: ignore
 		if let variableDeclaration = variableDeclaration {
 			let translatedType = translateType(variableDeclaration.typeName)
 			result = "\(indentation)catch " +
-				"(\(variableDeclaration.identifier): \(translatedType)) {\n"
+			"(\(variableDeclaration.identifier): \(translatedType)) {\n"
 		}
 		else {
 			result = "\(indentation)catch {\n"
@@ -692,8 +696,10 @@ extension KotlinTranslator { // kotlin: ignore
 	}
 
 	private func translateIfStatement(
-		_ ifStatement: IfStatementData, isElseIf: Bool = false,
-		withIndentation indentation: String) throws -> String
+		_ ifStatement: IfStatementData,
+		isElseIf: Bool = false,
+		withIndentation indentation: String)
+		throws -> String
 	{
 		let keyword = (ifStatement.conditions.isEmpty && ifStatement.declarations.isEmpty) ?
 			"else" :
@@ -703,13 +709,8 @@ extension KotlinTranslator { // kotlin: ignore
 
 		let increasedIndentation = increaseIndentation(indentation)
 
-		let conditionsTranslation = try ifStatement.conditions.compactMap { condition in
-				if case let .condition(expression: expression) = condition {
-					return expression
-				}
-				else {
-					return nil
-				}
+		let conditionsTranslation = try ifStatement.conditions.compactMap {
+				conditionToExpression($0)
 			}.map {
 				try translateExpression($0, withIndentation: indentation)
 			}.joined(separator: " && ")
@@ -738,10 +739,15 @@ extension KotlinTranslator { // kotlin: ignore
 
 		return result
 	}
-}
 
-extension KotlinTranslator {
-	// MARK: Statement translations
+	private func conditionToExpression(_ condition: IfStatementData.IfCondition) -> Expression? {
+		if case let .condition(expression: expression) = condition {
+			return expression
+		}
+		else {
+			return nil
+		}
+	}
 
 	private func translateSwitchStatement(
 		convertsToExpression: Statement?,
