@@ -165,6 +165,118 @@ fun translateExpression(expression: Expression,
 	return ""
 }
 
+private fun KotlinTranslator.translateCallExpression(
+    callExpression: CallExpressionData,
+    indentation: String,
+    shouldAddNewlines: Boolean = false)
+    : String
+{
+    var result: String = ""
+    var functionExpression: Expression = callExpression.function
+
+    while (true) {
+        if (functionExpression is Expression.DotExpression) {
+            val leftExpression: Expression = functionExpression.leftExpression
+            val rightExpression: Expression = functionExpression.rightExpression
+
+            result += translateExpression(leftExpression, withIndentation = indentation) + "."
+
+            functionExpression = rightExpression
+        }
+        else {
+            break
+        }
+    }
+
+    val functionTranslation: KotlinTranslator.FunctionTranslation?
+
+    if (functionExpression is Expression.DeclarationReferenceExpression) {
+        val expression: DeclarationReferenceData = functionExpression.data
+        functionTranslation = KotlinTranslator.getFunctionTranslation(
+            name = expression.identifier,
+            typeName = expression.typeName)
+    }
+    else {
+        functionTranslation = null
+    }
+
+    val prefix: String = functionTranslation?.prefix ?: translateExpression(functionExpression, withIndentation = indentation)
+    val parametersTranslation: String = translateParameters(
+        callExpression = callExpression,
+        functionTranslation = functionTranslation,
+        indentation = indentation,
+        shouldAddNewlines = shouldAddNewlines)
+
+    result += "${prefix}${parametersTranslation}"
+
+    if (!shouldAddNewlines && result.length >= KotlinTranslator.lineLimit) {
+        return translateCallExpression(callExpression, indentation = indentation, shouldAddNewlines = true)
+    }
+    else {
+        return result
+    }
+}
+
+private fun KotlinTranslator.translateParameters(
+    callExpression: CallExpressionData,
+    functionTranslation: KotlinTranslator.FunctionTranslation?,
+    indentation: String,
+    shouldAddNewlines: Boolean)
+    : String
+{
+    if (callExpression.parameters is Expression.TupleExpression) {
+        val pairs: MutableList<LabeledExpression> = callExpression.parameters.pairs
+        val closurePair: LabeledExpression? = pairs.lastOrNull()
+
+        if (closurePair != null) {
+            if (closurePair.expression is Expression.ClosureExpression) {
+                val parameters: MutableList<LabeledType> = closurePair.expression.parameters
+                val statements: MutableList<Statement> = closurePair.expression.statements
+                val typeName: String = closurePair.expression.typeName
+                val closureTranslation: String = translateClosureExpression(
+                    parameters = parameters,
+                    statements = statements,
+                    typeName = typeName,
+                    indentation = increaseIndentation(indentation))
+
+                if (parameters.size > 1) {
+                    val firstParametersTranslation: String = translateTupleExpression(
+                        pairs = pairs.dropLast(1).toMutableList<LabeledExpression>(),
+                        translation = functionTranslation,
+                        indentation = increaseIndentation(indentation),
+                        shouldAddNewlines = shouldAddNewlines)
+                    return "${firstParametersTranslation} ${closureTranslation}"
+                }
+                else {
+                    return " ${closureTranslation}"
+                }
+            }
+        }
+
+        return translateTupleExpression(
+            pairs = pairs,
+            translation = functionTranslation,
+            indentation = increaseIndentation(indentation),
+            shouldAddNewlines = shouldAddNewlines)
+    }
+    else if (callExpression.parameters is Expression.TupleShuffleExpression) {
+        val labels: MutableList<String> = callExpression.parameters.labels
+        val indices: MutableList<TupleShuffleIndex> = callExpression.parameters.indices
+        val expressions: MutableList<Expression> = callExpression.parameters.expressions
+
+        return translateTupleShuffleExpression(
+            labels = labels,
+            indices = indices,
+            expressions = expressions,
+            translation = functionTranslation,
+            indentation = increaseIndentation(indentation),
+            shouldAddNewlines = shouldAddNewlines)
+    }
+    return unexpectedASTStructureError(
+        "Expected the parameters to be either a .tupleExpression or a " + ".tupleShuffleExpression",
+        ast = Statement.ExpressionStatement(expression = Expression.CallExpression(data = callExpression)))
+}
+
 private fun KotlinTranslator.translateClosureExpression(
     parameters: MutableList<LabeledType>,
     statements: MutableList<Statement>,

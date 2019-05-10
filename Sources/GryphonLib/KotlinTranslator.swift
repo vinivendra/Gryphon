@@ -1350,6 +1350,16 @@ extension KotlinTranslator { // kotlin: ignore
 		return "if (\(conditionTranslation)) { \(trueExpressionTranslation) } else " +
 			"{ \(falseExpressionTranslation) }"
 	}
+}
+
+extension KotlinTranslator {
+	// MARK: Expression translations
+
+	// declaration: fun translateExpression(expression: Expression,
+	// declaration: 	withIndentation: String): String
+	// declaration: {
+	// declaration: 	return ""
+	// declaration: }
 
 	private func translateCallExpression(
 		_ callExpression: CallExpressionData,
@@ -1360,11 +1370,19 @@ extension KotlinTranslator { // kotlin: ignore
 		var result = ""
 
 		var functionExpression = callExpression.function
-		while case let .dotExpression(
-			leftExpression: leftExpression, rightExpression: rightExpression) = functionExpression
-		{
-			result += try translateExpression(leftExpression, withIndentation: indentation) + "."
-			functionExpression = rightExpression
+		while true {
+			if case let .dotExpression(
+				leftExpression: leftExpression,
+				rightExpression: rightExpression) = functionExpression
+			{
+				result += try translateExpression(
+					leftExpression,
+					withIndentation: indentation) + "."
+				functionExpression = rightExpression
+			}
+			else {
+				break
+			}
 		}
 
 		let functionTranslation: FunctionTranslation?
@@ -1417,7 +1435,7 @@ extension KotlinTranslator { // kotlin: ignore
 						parameters: parameters,
 						statements: statements,
 						typeName: typeName,
-						withIndentation: increaseIndentation(indentation))
+						withIndentation: increaseIndentation(indentation)) 
 					if parameters.count > 1 {
 						let firstParametersTranslation = try translateTupleExpression(
 							pairs: ArrayClass<LabeledExpression>(pairs.dropLast()),
@@ -1455,16 +1473,6 @@ extension KotlinTranslator { // kotlin: ignore
 			".tupleShuffleExpression",
 			AST: .expressionStatement(expression: .callExpression(data: callExpression)))
 	}
-}
-
-extension KotlinTranslator {
-	// MARK: Expression translations
-
-	// declaration: fun translateExpression(expression: Expression,
-	// declaration: 	withIndentation: String): String
-	// declaration: {
-	// declaration: 	return ""
-	// declaration: }
 
 	private func translateClosureExpression(
 		parameters: ArrayClass<LabeledType>,
