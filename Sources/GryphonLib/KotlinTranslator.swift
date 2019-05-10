@@ -447,6 +447,10 @@ extension KotlinTranslator { // kotlin: ignore
 
 		return result
 	}
+}
+
+extension KotlinTranslator {
+	// MARK: Statement translations
 
 	private func translateFunctionDeclaration(
 		functionDeclaration: FunctionDeclarationData, withIndentation indentation: String,
@@ -487,7 +491,7 @@ extension KotlinTranslator { // kotlin: ignore
 					var genericTypes = genericExtensionString
 						.dropFirst().dropLast()
 						.split(separator: ",")
-						.map(String.init)
+						.map { String($0) }
 					genericTypes.append(contentsOf: functionDeclaration.genericTypes)
 					genericString = "<\(genericTypes.joined(separator: ", "))> "
 				}
@@ -512,17 +516,8 @@ extension KotlinTranslator { // kotlin: ignore
 			returnString = ""
 		}
 
-		let parameterStrings = try functionDeclaration.parameters.map
-			{ (parameter: FunctionParameter) -> String in
-				let labelAndTypeString = parameter.label + ": " + translateType(parameter.typeName)
-				if let defaultValue = parameter.value {
-					return try labelAndTypeString + " = "
-						+ translateExpression(defaultValue, withIndentation: indentation)
-				}
-				else {
-					return labelAndTypeString
-				}
-			}
+		let parameterStrings = try functionDeclaration.parameters
+			.map { try translateFunctionDeclarationParameter($0, withIndentation: indentation) }
 
 		if !shouldAddNewlines {
 			result += parameterStrings.joined(separator: ", ") + ")" + returnString + " {\n"
@@ -549,25 +544,9 @@ extension KotlinTranslator { // kotlin: ignore
 		}
 
 		// Get all statements that have been deferred
-		let innerDeferStatements = statements.flatMap
-		{ (statement: Statement) -> ArrayClass<Statement> in
-			if case let .deferStatement(statements: innerStatements) = statement {
-				return innerStatements
-			}
-			else {
-				return []
-			}
-		}
-
+		let innerDeferStatements = statements.flatMap { extractInnerDeferStatements($0) }
 		// Get all other statements
-		let nonDeferStatements = statements.filter { statement in
-			if case .deferStatement = statement {
-				return false
-			}
-			else {
-				return true
-			}
-		}
+		let nonDeferStatements = statements.filter { !isDeferStatement($0) }
 
 		indentation = increaseIndentation(indentation)
 
@@ -598,10 +577,45 @@ extension KotlinTranslator { // kotlin: ignore
 
 		return result
 	}
-}
 
-extension KotlinTranslator {
-	// MARK: Statement translations
+	private func isDeferStatement(
+		_ maybeDeferStatement: Statement)
+		-> Bool
+	{
+		if case .deferStatement = maybeDeferStatement {
+			return true
+		}
+		else {
+			return false
+		}
+	}
+
+	private func extractInnerDeferStatements(
+		_ maybeDeferStatement: Statement)
+		-> ArrayClass<Statement>
+	{
+		if case let .deferStatement(statements: innerStatements) = maybeDeferStatement {
+			return innerStatements
+		}
+		else {
+			return []
+		}
+	}
+
+	private func translateFunctionDeclarationParameter(
+		_ parameter: FunctionParameter,
+		withIndentation indentation: String)
+		throws -> String
+	{
+		let labelAndTypeString = parameter.label + ": " + translateType(parameter.typeName)
+		if let defaultValue = parameter.value {
+			return try labelAndTypeString + " = "
+				+ translateExpression(defaultValue, withIndentation: indentation)
+		}
+		else {
+			return labelAndTypeString
+		}
+	}
 
 	private func translateDoStatement(
 		statements: ArrayClass<Statement>,

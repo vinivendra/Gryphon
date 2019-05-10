@@ -159,6 +159,182 @@ open class KotlinTranslator {
     }
 }
 
+private fun KotlinTranslator.translateFunctionDeclaration(
+    functionDeclaration: FunctionDeclarationData,
+    indentation: String,
+    shouldAddNewlines: Boolean = false)
+    : String
+{
+    if (functionDeclaration.isImplicit) {
+        return ""
+    }
+
+    var indentation: String = indentation
+    var result: String = indentation
+    val isInit: Boolean = (functionDeclaration.prefix == "init")
+
+    if (isInit) {
+        result += "constructor("
+    }
+    else if (functionDeclaration.prefix == "invoke") {
+        result += "operator fun invoke("
+    }
+    else {
+        val annotations: String? = functionDeclaration.annotations
+
+        if (annotations != null) {
+            result += annotations + " "
+        }
+
+        val access: String? = functionDeclaration.access
+
+        if (access != null) {
+            result += access + " "
+        }
+
+        result += "fun "
+
+        val extensionType: String? = functionDeclaration.extendsType
+
+        if (extensionType != null) {
+            val translatedExtensionType: String = translateType(extensionType)
+            val companionString: String = if (functionDeclaration.isStatic) { "Companion." } else { "" }
+            val genericString: String
+            val genericExtensionIndex: Int? = translatedExtensionType.indexOrNull('<')
+
+            if (genericExtensionIndex != null) {
+                val genericExtensionString: String = translatedExtensionType.suffix(startIndex = genericExtensionIndex)
+                var genericTypes: MutableList<String> = genericExtensionString.drop(1).dropLast(1).split(separator = ',').map { it }.toMutableList()
+
+                genericTypes.addAll(functionDeclaration.genericTypes)
+
+                genericString = "<${genericTypes.joinToString(separator = ", ")}> "
+            }
+            else if (!functionDeclaration.genericTypes.isEmpty()) {
+                genericString = "<${functionDeclaration.genericTypes.joinToString(separator = ", ")}> "
+            }
+            else {
+                genericString = ""
+            }
+
+            result += genericString + translatedExtensionType + "." + companionString
+        }
+
+        result += functionDeclaration.prefix + "("
+    }
+
+    val returnString: String
+
+    if (functionDeclaration.returnType != "()" && !isInit) {
+        val translatedReturnType: String = translateType(functionDeclaration.returnType)
+        returnString = ": ${translatedReturnType}"
+    }
+    else {
+        returnString = ""
+    }
+
+    val parameterStrings: MutableList<String> = functionDeclaration.parameters.map { translateFunctionDeclarationParameter(it, indentation = indentation) }.toMutableList()
+
+    if (!shouldAddNewlines) {
+        result += parameterStrings.joinToString(separator = ", ") + ")" + returnString + " {\n"
+        if (result.length >= KotlinTranslator.lineLimit) {
+            return translateFunctionDeclaration(
+                functionDeclaration = functionDeclaration,
+                indentation = indentation,
+                shouldAddNewlines = true)
+        }
+    }
+    else {
+        val parameterIndentation: String = increaseIndentation(indentation)
+        val parametersString: String = parameterStrings.joinToString(separator = ",\n${parameterIndentation}")
+
+        result += "\n${parameterIndentation}" + parametersString + ")\n"
+
+        if (!returnString.isEmpty()) {
+            result += "${parameterIndentation}${returnString}\n"
+        }
+
+        result += "${indentation}{\n"
+    }
+
+    val statements: MutableList<Statement>? = functionDeclaration.statements
+
+    statements ?: return result + "\n"
+
+    val innerDeferStatements: MutableList<Statement> = statements.flatMap { extractInnerDeferStatements(it) }.toMutableList()
+    val nonDeferStatements: MutableList<Statement> = statements.filter { !isDeferStatement(it) }.toMutableList()
+
+    indentation = increaseIndentation(indentation)
+
+    if (!innerDeferStatements.isEmpty()) {
+        val increasedIndentation: String = increaseIndentation(indentation)
+
+        result += "${indentation}try {\n"
+
+        result += translateSubtrees(
+            nonDeferStatements,
+            indentation = increasedIndentation,
+            limitForAddingNewlines = 3)
+
+        result += "${indentation}}\n"
+
+        result += "${indentation}finally {\n"
+
+        result += translateSubtrees(
+            innerDeferStatements,
+            indentation = increasedIndentation,
+            limitForAddingNewlines = 3)
+
+        result += "${indentation}}\n"
+    }
+    else {
+        result += translateSubtrees(statements, indentation = indentation, limitForAddingNewlines = 3)
+    }
+
+    indentation = decreaseIndentation(indentation)
+
+    result += indentation + "}\n"
+
+    return result
+}
+
+private fun KotlinTranslator.isDeferStatement(maybeDeferStatement: Statement): Boolean {
+    if (maybeDeferStatement is Statement.DeferStatement) {
+        return true
+    }
+    else {
+        return false
+    }
+}
+
+private fun KotlinTranslator.extractInnerDeferStatements(
+    maybeDeferStatement: Statement)
+    : MutableList<Statement>
+{
+    if (maybeDeferStatement is Statement.DeferStatement) {
+        val innerStatements: MutableList<Statement> = maybeDeferStatement.statements
+        return innerStatements
+    }
+    else {
+        return mutableListOf()
+    }
+}
+
+private fun KotlinTranslator.translateFunctionDeclarationParameter(
+    parameter: FunctionParameter,
+    indentation: String)
+    : String
+{
+    val labelAndTypeString: String = parameter.label + ": " + translateType(parameter.typeName)
+    val defaultValue: Expression? = parameter.value
+    if (defaultValue != null) {
+        return labelAndTypeString + " = " + translateExpression(defaultValue, indentation = indentation)
+    }
+    else {
+        return labelAndTypeString
+    }
+}
+
 private fun KotlinTranslator.translateDoStatement(
     statements: MutableList<Statement>,
     indentation: String)
