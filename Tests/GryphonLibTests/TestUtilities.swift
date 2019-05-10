@@ -52,7 +52,7 @@ enum TestUtils {
 }
 
 extension TestUtils {
-	static let testCasesForAcceptanceTest: [String] = [
+	static let testCasesForAcceptanceTest: ArrayClass<String> = [
 		"arrays",
 		"assignments",
 		"bhaskara",

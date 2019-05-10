@@ -307,38 +307,6 @@ extension ArrayClass {
 	}
 }
 
-// MARK: - PrintableTree compatibility with Array
-// Only needed temporarily, while the conversion of the codebase (from using Array to using
-// ArrayClass) isn't done.
-extension PrintableTree { // kotlin: ignore
-	convenience init(_ description: String, _ subtrees: [PrintableAsTree?]) {
-		self.init(description, ArrayClass(subtrees))
-	}
-
-	convenience init(_ subtrees: [PrintableAsTree?]) {
-		self.init("Array", ArrayClass(subtrees))
-	}
-
-	static func initOrNil(_ description: String, _ subtreesOrNil: [PrintableAsTree?])
-		-> PrintableTree?
-	{
-		let arrayClass = ArrayClass(subtreesOrNil)
-		return PrintableTree.initOrNil(description, arrayClass)
-	}
-
-	convenience init(_ description: String, _ subtrees: [String?]) {
-		let convertedSubtrees = subtrees.map { (string: String?) -> PrintableAsTree? in
-			if let string = string {
-				return PrintableTree(string)
-			}
-			else {
-				return nil
-			}
-		}
-		self.init(description, convertedSubtrees)
-	}
-}
-
 //
 extension PrintableTree {
 	static func ofStrings(_ description: String, _ subtrees: ArrayClass<String>)

@@ -339,7 +339,7 @@ internal fun Utilities.Companion.splitTypeList(
     : MutableList<String>
 {
     var bracketsLevel: Int = 0
-    var result: MutableList<String> = mutableListOf()
+    val result: MutableList<String> = mutableListOf()
     var currentResult: String = ""
     var remainingString: String = typeList
     var index: Int = 0

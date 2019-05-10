@@ -62,7 +62,7 @@ class ArrayClassTest: XCTestCase {
 	func testAppendingContentsOf() {
 		let arrayRef1: ArrayClass = [1, 2, 3]
 		let arrayRef2: ArrayClass = [4, 5, 6]
-		let array: [Int] = [7, 8, 9]
+		let array: ArrayClass<Int> = [7, 8, 9]
 
 		XCTAssertEqual(arrayRef1.appending(contentsOf: arrayRef2), [1, 2, 3, 4, 5, 6])
 		XCTAssertEqual(arrayRef1, [1, 2, 3])

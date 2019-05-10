@@ -91,8 +91,8 @@ public class Compiler {
 	}
 
 	public static func transpileGryphonRawASTs(
-		fromASTDumpFiles inputFiles: [String])
-		throws -> [GryphonAST]
+		fromASTDumpFiles inputFiles: ArrayClass<String>)
+		throws -> ArrayClass<GryphonAST>
 	{
 		let asts = try inputFiles.map { try transpileSwiftAST(fromASTDumpFile: $0) }
 		let translateAsMainFile = (inputFiles.count == 1)
@@ -127,8 +127,8 @@ public class Compiler {
 		return ast
 	}
 
-	public static func transpileGryphonASTs(fromASTDumpFiles inputFiles: [String])
-		throws -> [GryphonAST]
+	public static func transpileGryphonASTs(fromASTDumpFiles inputFiles: ArrayClass<String>)
+		throws -> ArrayClass<GryphonAST>
 	{
 		let rawASTs = try transpileGryphonRawASTs(fromASTDumpFiles: inputFiles)
 		return try rawASTs.map { try generateGryphonAST(fromGryphonRawAST: $0) }
@@ -138,7 +138,7 @@ public class Compiler {
 extension Compiler { // kotlin: ignore
 	public static func runCompiledProgram(
 		fromFolder outputFolder: String,
-		withArguments arguments: [String] = [])
+		withArguments arguments: ArrayClass<String> = [])
 		throws -> Shell.CommandOutput?
 	{
 		log("\t- Running Kotlin...")
@@ -148,7 +148,7 @@ extension Compiler { // kotlin: ignore
 		return commandResult
 	}
 
-	public static func compile(kotlinFiles filePaths: [String], outputFolder: String)
+	public static func compile(kotlinFiles filePaths: ArrayClass<String>, outputFolder: String)
 		throws -> Shell.CommandOutput?
 	{
 		log("\t- Compiling Kotlin...")
@@ -167,7 +167,8 @@ extension Compiler { // kotlin: ignore
 
 	//
 	public static func transpileCompileAndRun(
-		ASTDumpFiles inputFiles: [String], fromFolder outputFolder: String = OS.buildFolder)
+		ASTDumpFiles inputFiles: ArrayClass<String>,
+		fromFolder outputFolder: String = OS.buildFolder)
 		throws -> Shell.CommandOutput?
 	{
 		let compilationResult =
@@ -179,12 +180,13 @@ extension Compiler { // kotlin: ignore
 	}
 
 	public static func transpileThenCompile(
-		ASTDumpFiles inputFiles: [String], outputFolder: String = OS.buildFolder)
+		ASTDumpFiles inputFiles: ArrayClass<String>,
+		outputFolder: String = OS.buildFolder)
 		throws -> Shell.CommandOutput?
 	{
 		let kotlinCodes = try transpileKotlinCode(fromASTDumpFiles: inputFiles)
 		// Write kotlin files to the output folder
-		let kotlinFilePaths = zip(inputFiles, kotlinCodes).map { tuple -> String in
+		let kotlinFilePaths = zipToClass(inputFiles, kotlinCodes).map { tuple -> String in
 			let inputFile = tuple.0
 			let kotlinCode = tuple.1
 			let inputFileName = inputFile.split(withStringSeparator: "/").last!
@@ -197,7 +199,9 @@ extension Compiler { // kotlin: ignore
 		return try compile(kotlinFiles: kotlinFilePaths, outputFolder: outputFolder)
 	}
 
-	public static func transpileKotlinCode(fromASTDumpFiles inputFiles: [String]) throws -> [String]
+	public static func transpileKotlinCode(
+		fromASTDumpFiles inputFiles: ArrayClass<String>)
+		throws -> ArrayClass<String>
 	{
 		let asts = try transpileGryphonASTs(fromASTDumpFiles: inputFiles)
 		return try asts.map { try generateKotlinCode(fromGryphonAST: $0) }

@@ -28,9 +28,9 @@ private func gryphonTemplates() {
 	let _string1 = ""
 	let _string2 = ""
 	let _string3 = ""
-	let _stringArray: [String]? = []
-	let _stringArray1: [String] = []
-	let _stringArray2: [String] = []
+	let _stringArray: ArrayClass<String>? = []
+	let _stringArray1: ArrayClass<String> = []
+	let _stringArray2: ArrayClass<String> = []
 	let _fileExtension1 = FileExtension.swift
 	let _fileExtension2 = FileExtension.swift
 
@@ -169,7 +169,9 @@ extension Utilities { // kotlin: ignore
 
 extension Utilities { // kotlin: ignore
 	public static func files(
-		_ filePaths: [String], wereModifiedLaterThan otherFilePaths: [String]) -> Bool
+		_ filePaths: ArrayClass<String>,
+		wereModifiedLaterThan otherFilePaths: ArrayClass<String>)
+		-> Bool
 	{
 		guard !filePaths.isEmpty, !otherFilePaths.isEmpty else {
 			return true
@@ -402,22 +404,22 @@ private var testFilesHaveBeenUpdated = false
 
 extension Utilities {
 	static func getFiles( // kotlin: ignore
-		_ selectedFiles: [String]? = nil,
+		_ selectedFiles: ArrayClass<String>? = nil,
 		inDirectory directory: String,
 		withExtension fileExtension: FileExtension)
-		-> [String]
+		-> ArrayClass<String>
 	{
 		let directoryPath = Process().currentDirectoryPath + "/\(directory)/"
 		let currentURL = URL(fileURLWithPath: directoryPath)
-		let allURLs = try! FileManager.default.contentsOfDirectory(
+		let allURLs = ArrayClass<URL>(try! FileManager.default.contentsOfDirectory(
 			at: currentURL,
-			includingPropertiesForKeys: nil)
+			includingPropertiesForKeys: nil))
 		let filteredURLs = allURLs.filter { $0.pathExtension == fileExtension.rawValue }
 		let sortedURLs = filteredURLs.sorted { (url1: URL, url2: URL) -> Bool in
 				url1.absoluteString < url2.absoluteString
 		}
 
-		let selectedURLs: [URL]
+		let selectedURLs: ArrayClass<URL>
 		if let selectedFiles = selectedFiles {
 			selectedURLs = sortedURLs.filter { url in
 				let fileName = url.deletingPathExtension().lastPathComponent
@@ -526,7 +528,7 @@ extension Utilities {
 	}
 
 	static internal func needsToUpdateFiles(
-		_ files: [String]? = nil,
+		_ files: ArrayClass<String>? = nil,
 		in folder: String,
 		from originExtension: FileExtension,
 		to destinationExtension: FileExtension,
@@ -635,11 +637,11 @@ extension ArrayClass { // kotlin: ignore
 extension Utilities {
 	static func splitTypeList(
 		_ typeList: String,
-		separators: [String] = [",", ":"])
-		-> [String]
+		separators: ArrayClass<String> = [",", ":"])
+		-> ArrayClass<String>
 	{
 		var bracketsLevel = 0
-		var result: [String] = []
+		let result: ArrayClass<String> = []
 		var currentResult = ""
 		var remainingString = Substring(typeList)
 

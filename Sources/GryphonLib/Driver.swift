@@ -329,7 +329,7 @@ public class Driver {
 			let kotlinFiles = generatedKotlinFiles + inputKotlinFiles
 
 			guard let compilationResult = try Compiler.compile(
-				kotlinFiles: kotlinFiles.array,
+				kotlinFiles: kotlinFiles,
 				outputFolder: settings.outputFolder) else
 			{
 				return nil
