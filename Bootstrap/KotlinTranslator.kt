@@ -1623,13 +1623,7 @@ open class KotlinTranslator {
         val increasedIndentation: String = increaseIndentation(indentation)
         val translations: MutableList<String> = mutableListOf()
         var expressionIndex: Int = 0
-        val containsVariadics: Boolean = (indices.find { index ->
-                if (index is TupleShuffleIndex.Variadic) {
-                    true
-                }
-
-                false
-            } != null)
+        val containsVariadics: Boolean = (indices.find { indexIsVariadic(it) } != null)
         var isBeforeVariadic: Boolean = containsVariadics
 
         if (parameters.size != indices.size) {
@@ -1681,6 +1675,15 @@ open class KotlinTranslator {
         result += translations.joinToString(separator = separator) + ")"
 
         return result
+    }
+
+    private fun indexIsVariadic(index: TupleShuffleIndex): Boolean {
+        if (index is TupleShuffleIndex.Variadic) {
+            return true
+        }
+        else {
+            return false
+        }
     }
 
     private fun translateStringLiteral(value: String): String {

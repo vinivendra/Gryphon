@@ -1689,25 +1689,20 @@ public class KotlinTranslator {
 
 		// Variadic arguments can't be named, which means all arguments before them can't be named
 		// either.
-		let containsVariadics = indices.contains { index in
-			if case .variadic = index {
-				return true
-			}
-			return false
-		}
+		let containsVariadics = indices.contains { indexIsVariadic($0) }
 		var isBeforeVariadic = containsVariadics
 
 		guard parameters.count == indices.count else {
 			return try unexpectedASTStructureError(
 				"Different number of labels and indices in a tuple shuffle expression. " +
-				"Labels: \(labels), indices: \(indices)",
+					"Labels: \(labels), indices: \(indices)",
 				AST: .expressionStatement(expression: .tupleShuffleExpression(
 					labels: labels,
 					indices: indices,
 					expressions: expressions)))
 		}
 
-		for (label, index) in zip(parameters, indices) {
+		for (label, index) in zipToClass(parameters, indices) {
 			switch index {
 			case .absent:
 				break
@@ -1747,6 +1742,15 @@ public class KotlinTranslator {
 		result += translations.joined(separator: separator) + ")"
 
 		return result
+	}
+
+	private func indexIsVariadic(_ index: TupleShuffleIndex) -> Bool {
+		if case .variadic = index {
+			return true
+		}
+		else {
+			return false
+		}
 	}
 
 	private func translateStringLiteral(value: String) -> String {
