@@ -216,7 +216,7 @@ class ExtensionsTest: XCTestCase {
 	}
 
 	func testSafeIndex() {
-		let array = [1, 2, 3]
+		let array: ArrayClass = [1, 2, 3]
 		XCTAssert(array[safe: 0] == 1)
 		XCTAssert(array[safe: 1] == 2)
 		XCTAssert(array[safe: 2] == 3)
@@ -225,14 +225,14 @@ class ExtensionsTest: XCTestCase {
 	}
 
 	func testSecondToLast() {
-		let array1 = [1, 2, 3]
-		let array2 = [1]
+		let array1: ArrayClass = [1, 2, 3]
+		let array2: ArrayClass = [1]
 		XCTAssert(array1.secondToLast == 2)
 		XCTAssert(array2.secondToLast == nil)
 	}
 
-	func testRotated() {
-		let array = [1, 2, 3]
+	func testRotate() {
+		let array: ArrayClass = [1, 2, 3]
 		let array1 = array.rotated()
 		let array2 = array1.rotated()
 		let array3 = array2.rotated()
@@ -242,41 +242,6 @@ class ExtensionsTest: XCTestCase {
 	}
 
 	func testGroupBy() {
-		let array = [1, 2, 3, 2, 3, 1, 2, 3]
-		let histogram = array.group(by: { "\($0)" })
-		XCTAssertEqual(
-			histogram,
-			["1": [1, 1],
-			"2": [2, 2, 2],
-			"3": [3, 3, 3], ])
-
-		let isEvenHistogram = array.group(by: { $0 % 2 == 0 })
-		XCTAssertEqual(
-			isEvenHistogram,
-			[true: [2, 2, 2],
-			 false: [1, 3, 3, 1, 3], ])
-	}
-
-	func testArrayClassSafeIndex() {
-		let array: ArrayClass = [1, 2, 3]
-		XCTAssert(array[safe: 0] == 1)
-		XCTAssert(array[safe: 1] == 2)
-		XCTAssert(array[safe: 2] == 3)
-		XCTAssert(array[safe: 3] == nil)
-		XCTAssert(array[safe: -1] == nil)
-	}
-
-	func testArrayClassRotate() {
-		let array: ArrayClass = [1, 2, 3]
-		let array1 = array.rotated()
-		let array2 = array1.rotated()
-		let array3 = array2.rotated()
-		XCTAssertEqual(array1, [2, 3, 1])
-		XCTAssertEqual(array2, [3, 1, 2])
-		XCTAssertEqual(array3, [1, 2, 3])
-	}
-
-	func testArrayClassGroupBy() {
 		let array: ArrayClass = [1, 2, 3, 2, 3, 1, 2, 3]
 		let histogram = array.group(by: { "\($0)" })
 		XCTAssertEqual(
@@ -299,10 +264,7 @@ class ExtensionsTest: XCTestCase {
 		("testUpperSnakeCase", testUpperSnakeCase),
 		("testSafeIndex", testSafeIndex),
 		("testSecondToLast", testSecondToLast),
-		("testRotated", testRotated),
+		("testRotate", testRotate),
 		("testGroupBy", testGroupBy),
-		("testArrayClassSafeIndex", testArrayClassSafeIndex),
-		("testArrayClassRotate", testArrayClassRotate),
-		("testArrayClassGroupBy", testArrayClassGroupBy),
 	]
 }

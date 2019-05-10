@@ -49,9 +49,9 @@ internal extension String {
 	func split(
 		withStringSeparator separator: String,
 		maxSplits: Int = Int.max,
-		omittingEmptySubsequences: Bool = true) -> [String]
+		omittingEmptySubsequences: Bool = true) -> ArrayClass<String>
 	{
-		var result: [String] = []
+		let result: ArrayClass<String> = []
 
 		var splits = 0
 		var previousIndex = startIndex
@@ -90,8 +90,8 @@ internal extension String {
 	}
 
 	/// Non-overlapping
-	func occurrences(of searchedSubstring: String) -> [Range<String.Index>] {
-		var result: [Range<String.Index>] = []
+	func occurrences(of searchedSubstring: String) -> ArrayClass<Range<String.Index>> {
+		let result: ArrayClass<Range<String.Index>> = []
 
 		var currentSubstring = Substring(self)
 		var substringOffset = self.startIndex
@@ -257,54 +257,6 @@ extension Character {
 }
 
 //
-extension Array { // kotlin: ignore
-	/// Returns nil if index is out of bounds.
-	subscript (safe index: Int) -> Element? {
-		if index >= 0 && index < count {
-			return self[index]
-		}
-		else {
-			return nil
-		}
-	}
-
-	var secondToLast: Element? {
-		return self.dropLast().last
-	}
-
-	/// Returns the same array, but with the first element moved to the end.
-	func rotated() -> [Element] {
-		guard let first = first else {
-			return self
-		}
-
-		var newArray: [Element] = [Element]()
-		newArray.reserveCapacity(self.count)
-		newArray.append(contentsOf: self.dropFirst())
-		newArray.append(first)
-
-		return newArray
-	}
-
-	/// Moves the first element of the array to the end.
-	mutating func rotate() {
-		self = self.rotated()
-	}
-
-	/// Groups the array's elements into a dictionary according to the keys provided by the given
-	/// closure, forming a sort of histogram.
-	func group<Key>(by getKey: (Element) -> Key) -> [Key: [Element]] {
-		var result = [Key: [Element]]()
-		for element in self {
-			let key = getKey(element)
-			var array = result[key] ?? []
-			array.append(element)
-			result[key] = array
-		}
-		return result
-	}
-}
-
 extension ArrayClass {
 	/// Returns nil if index is out of bounds.
 	subscript (safe index: Int) -> Element? { // kotlin: ignore
@@ -350,21 +302,6 @@ extension ArrayClass {
 			let array = result[key] ?? []
 			array.append(element)
 			result[key] = array
-		}
-		return result
-	}
-}
-
-// TODO: Delete this
-// MARK: - Common types conforming to PrintableAsTree
-extension Dictionary: // kotlin: ignore
-	PrintableAsTree where Value: PrintableAsTree, Key == String
-{
-	public var treeDescription: String { return "Dictionary" }
-	public var printableSubtrees: ArrayClass<PrintableAsTree?> {
-		let result: ArrayClass<PrintableAsTree?> = []
-		for (key, value) in self {
-			result.append(PrintableTree(key, [value]))
 		}
 		return result
 	}

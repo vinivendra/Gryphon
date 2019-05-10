@@ -276,7 +276,7 @@ else {
         val inheritanceList: String? = classDeclaration["inherits"]
 
         if (inheritanceList != null) {
-            inheritanceArray = inheritanceList.split(separator = ", ").toMutableList<String>()
+            inheritanceArray = inheritanceList.split(separator = ", ")
         }
         else {
             inheritanceArray = mutableListOf()
@@ -305,7 +305,7 @@ else {
         val inheritanceList: String? = structDeclaration["inherits"]
 
         if (inheritanceList != null) {
-            inheritanceArray = inheritanceList.split(separator = ", ").toMutableList<String>()
+            inheritanceArray = inheritanceList.split(separator = ", ")
         }
         else {
             inheritanceArray = mutableListOf()
@@ -372,7 +372,7 @@ else {
         val inheritanceList: String? = enumDeclaration["inherits"]
 
         if (inheritanceList != null) {
-            inheritanceArray = inheritanceList.split(separator = ", ").toMutableList<String>()
+            inheritanceArray = inheritanceList.split(separator = ", ")
         }
         else {
             inheritanceArray = mutableListOf()
@@ -2084,7 +2084,7 @@ else {
                     }
                 }
 
-                val tupleComponents: MutableList<String> = typeName.drop(1).dropLast(1).split(separator = ", ").toMutableList<String>()
+                val tupleComponents: MutableList<String> = typeName.drop(1).dropLast(1).split(separator = ", ")
                 val labels: MutableList<String> = tupleComponents.map { it.takeWhile { it != ':' } }.toMutableList().map { it }.toMutableList()
                 val expressions: MutableList<Expression> = tupleExpression.subtrees.map { translateExpression(it) }.toMutableList()
 

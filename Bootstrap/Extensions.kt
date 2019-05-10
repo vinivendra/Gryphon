@@ -15,7 +15,7 @@ internal fun String.split(
     omittingEmptySubsequences: Boolean = true)
     : MutableList<String>
 {
-    var result: MutableList<String> = mutableListOf()
+    val result: MutableList<String> = mutableListOf()
     var splits: Int = 0
     var previousIndex: Int = 0
     val separators: MutableList<IntRange> = this.occurrences(searchedSubstring = separator)
@@ -53,7 +53,7 @@ internal fun String.split(
 }
 
 internal fun String.occurrences(searchedSubstring: String): MutableList<IntRange> {
-    var result: MutableList<IntRange> = mutableListOf()
+    val result: MutableList<IntRange> = mutableListOf()
     var currentSubstring: String = this
     var substringOffset: Int = 0
 

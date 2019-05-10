@@ -371,7 +371,7 @@ public class SwiftTranslator {
 		// Check for inheritance
 		let inheritanceArray: ArrayClass<String>
 		if let inheritanceList = classDeclaration["inherits"] {
-			inheritanceArray = ArrayClass<String>(inheritanceList.split(withStringSeparator: ", "))
+			inheritanceArray = inheritanceList.split(withStringSeparator: ", ")
 		}
 		else {
 			inheritanceArray = []
@@ -405,7 +405,7 @@ public class SwiftTranslator {
 		// Check for inheritance
 		let inheritanceArray: ArrayClass<String>
 		if let inheritanceList = structDeclaration["inherits"] {
-			inheritanceArray = ArrayClass<String>(inheritanceList.split(withStringSeparator: ", "))
+			inheritanceArray = inheritanceList.split(withStringSeparator: ", ")
 		}
 		else {
 			inheritanceArray = []
@@ -476,13 +476,13 @@ public class SwiftTranslator {
 
 		let inheritanceArray: ArrayClass<String>
 		if let inheritanceList = enumDeclaration["inherits"] {
-			inheritanceArray = ArrayClass<String>(inheritanceList.split(withStringSeparator: ", "))
+			inheritanceArray = inheritanceList.split(withStringSeparator: ", ")
 		}
 		else {
 			inheritanceArray = []
 		}
 
-		var rawValues: [Expression] = []
+		var rawValues: ArrayClass<Expression> = []
 		let constructorDeclarations = enumDeclaration.subtrees.filter {
 			$0.name ==  "Constructor Declaration"
 		}
@@ -2317,9 +2317,8 @@ public class SwiftTranslator {
 					}
 				}
 
-				let tupleComponents = ArrayClass<String>(
-					String(typeName.dropFirst().dropLast())
-						.split(withStringSeparator: ", "))
+				let tupleComponents =
+					String(typeName.dropFirst().dropLast()).split(withStringSeparator: ", ")
 				let labels = tupleComponents
 					.map { $0.prefix(while: {
 						$0 !=
