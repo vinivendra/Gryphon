@@ -1002,9 +1002,14 @@ extension KotlinTranslator { // kotlin: ignore
 			return "\(indentation)return\n"
 		}
 	}
+}
+
+extension KotlinTranslator {
+	// MARK: Statement translations
 
 	private func translateVariableDeclaration(
-		_ variableDeclaration: VariableDeclarationData, withIndentation indentation: String)
+		_ variableDeclaration: VariableDeclarationData,
+		withIndentation indentation: String)
 		throws -> String
 	{
 		guard !variableDeclaration.isImplicit else {
@@ -1102,9 +1107,7 @@ extension KotlinTranslator { // kotlin: ignore
 		let rightTranslation = try translateExpression(rightHand, withIndentation: indentation)
 		return "\(indentation)\(leftTranslation) = \(rightTranslation)\n"
 	}
-}
 
-extension KotlinTranslator {
 	// MARK: Expression translations
 
 	private func translateExpression(

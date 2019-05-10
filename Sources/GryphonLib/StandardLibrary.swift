@@ -394,3 +394,13 @@ extension DictionaryClass: Codable where Key: Codable, Value: Codable { // kotli
 // declaration: fun <T> MutableList<T>.removeLast() {
 // declaration: 	this.removeAt(this.size - 1)
 // declaration: }
+// declaration:
+// declaration: fun String.indexOrNull(character: Char): Int? {
+// declaration: 	val result = this.indexOf(character)
+// declaration: 	if (result == -1) {
+// declaration: 		return null
+// declaration: 	}
+// declaration: 	else {
+// declaration: 		return result
+// declaration: 	}
+// declaration: }

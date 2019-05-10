@@ -159,6 +159,116 @@ open class KotlinTranslator {
     }
 }
 
+private fun KotlinTranslator.translateVariableDeclaration(
+    variableDeclaration: VariableDeclarationData,
+    indentation: String)
+    : String
+{
+    if (variableDeclaration.isImplicit) {
+        return ""
+    }
+
+    var result: String = indentation
+    val annotations: String? = variableDeclaration.annotations
+
+    if (annotations != null) {
+        result += "${annotations} "
+    }
+
+    var keyword: String
+
+    if (variableDeclaration.getter != null && variableDeclaration.setter != null) {
+        keyword = "var"
+    }
+    else if (variableDeclaration.getter != null && variableDeclaration.setter == null) {
+        keyword = "val"
+    }
+    else {
+        if (variableDeclaration.isLet) {
+            keyword = "val"
+        }
+        else {
+            keyword = "var"
+        }
+    }
+
+    result += "${keyword} "
+
+    val extensionPrefix: String
+    val extendsType: String? = variableDeclaration.extendsType
+
+    if (extendsType != null) {
+        val translatedExtendedType: String = translateType(extendsType)
+        val genericString: String
+        val genericIndex: Int? = translatedExtendedType.indexOrNull('<')
+
+        if (genericIndex != null) {
+            val genericContents: String = translatedExtendedType.suffix(startIndex = genericIndex)
+            genericString = "${genericContents} "
+        }
+        else {
+            genericString = ""
+        }
+
+        extensionPrefix = genericString + translatedExtendedType + "."
+    }
+    else {
+        extensionPrefix = ""
+    }
+
+    result += "${extensionPrefix}${variableDeclaration.identifier}: "
+
+    val translatedType: String = translateType(variableDeclaration.typeName)
+
+    result += translatedType
+
+    val expression: Expression? = variableDeclaration.expression
+
+    if (expression != null) {
+        val expressionTranslation: String = translateExpression(expression, indentation = indentation)
+        result += " = " + expressionTranslation
+    }
+
+    result += "\n"
+
+    val indentation1: String = increaseIndentation(indentation)
+    val indentation2: String = increaseIndentation(indentation1)
+    val getter: FunctionDeclarationData? = variableDeclaration.getter
+
+    if (getter != null) {
+        val statements: MutableList<Statement>? = getter.statements
+        if (statements != null) {
+            result += indentation1 + "get() {\n"
+            result += translateSubtrees(statements, indentation = indentation2, limitForAddingNewlines = 3)
+            result += indentation1 + "}\n"
+        }
+    }
+
+    val setter: FunctionDeclarationData? = variableDeclaration.setter
+
+    if (setter != null) {
+        val statements: MutableList<Statement>? = setter.statements
+        if (statements != null) {
+            result += indentation1 + "set(newValue) {\n"
+            result += translateSubtrees(statements, indentation = indentation2, limitForAddingNewlines = 3)
+            result += indentation1 + "}\n"
+        }
+    }
+
+    return result
+}
+
+private fun KotlinTranslator.translateAssignmentStatement(
+    leftHand: Expression,
+    rightHand: Expression,
+    indentation: String)
+    : String
+{
+    val leftTranslation: String = translateExpression(leftHand, indentation = indentation)
+    val rightTranslation: String = translateExpression(rightHand, indentation = indentation)
+    return "${indentation}${leftTranslation} = ${rightTranslation}\n"
+}
+
 private fun KotlinTranslator.translateExpression(
     expression: Expression,
     indentation: String)

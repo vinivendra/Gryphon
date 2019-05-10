@@ -129,6 +129,9 @@ func gryphonTemplates() {
 	_ = _string.firstIndex(of: _character)!
 	_ = "_string.indexOf(_character)"
 
+	_ = _string.index(of: _character)
+	_ = "_string.indexOrNull(_character)"
+
 	_ = _string.prefix(_int)
 	_ = "_string.substring(0, _int)"
 
