@@ -1162,7 +1162,7 @@ else {
             val optionalSomeElement: SwiftAST? = condition.subtree(name = "Optional Some Element") ?: condition.subtree(name = "Pattern Optional Some")
             val patternLet: SwiftAST? = condition.subtree(name = "Pattern Let")
             val declarationReferenceAST: SwiftAST? = condition.subtrees.lastOrNull()
-            val declarationReference: SwiftAST? = condition.subtree(name = "Declaration Reference Expression")
+            val expressionTree: SwiftAST? = condition.subtrees.lastOrNull()
 
             if (condition.name == "Pattern" && optionalSomeElement != null) {
                 val patternNamed: SwiftAST
@@ -1289,12 +1289,12 @@ else {
                                 annotations = null)))
                 }
             }
-            else if (condition.name == "Pattern" && enumElementType != null && declarationReference != null) {
+            else if (condition.name == "Pattern" && enumElementType != null && condition.subtrees.size > 1 && expressionTree != null) {
                 val enumTypeComponents: String = enumElementType.split(separator = '.').map { it.capitalizedAsCamelCase() }.toMutableList().joinToString(separator = ".")
-                val translatedDeclarationReference: Expression = translateDeclarationReferenceExpression(declarationReference)
+                val translatedExpression: Expression = translateExpression(expressionTree)
                 conditionsResult.add(IfStatementData.IfCondition.Condition(
                     expression = Expression.BinaryOperatorExpression(
-                            leftExpression = translatedDeclarationReference,
+                            leftExpression = translatedExpression,
                             rightExpression = Expression.TypeExpression(typeName = enumTypeComponents),
                             operatorSymbol = "is",
                             typeName = "Bool")))

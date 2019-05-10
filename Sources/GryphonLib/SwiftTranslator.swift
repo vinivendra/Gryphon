@@ -1463,19 +1463,18 @@ public class SwiftTranslator {
 			// If it's an `if case`
 			else if condition.name == "Pattern",
 				let enumElementType = enumElementType,
-				let declarationReference =
-					condition.subtree(named: "Declaration Reference Expression")
+				condition.subtrees.count > 1,
+				let expressionTree = condition.subtrees.last
 			{
 				let enumTypeComponents = enumElementType
 					.split(separator: ".")
 					.map { String($0).capitalizedAsCamelCase() }
 					.joined(separator: ".")
 
-				let translatedDeclarationReference =
-					try translateDeclarationReferenceExpression(declarationReference)
+				let translatedExpression = try translateExpression(expressionTree)
 
 				conditionsResult.append(.condition(expression: .binaryOperatorExpression(
-					leftExpression: translatedDeclarationReference,
+					leftExpression: translatedExpression,
 					rightExpression: .typeExpression(typeName: enumTypeComponents),
 					operatorSymbol: "is",
 					typeName: "Bool")))

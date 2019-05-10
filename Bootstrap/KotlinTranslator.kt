@@ -1,8 +1,5 @@
 open class KotlinTranslator {
     companion object {
-        var indentationString: String = "\t"
-        val errorTranslation: String = "<<Error>>"
-        val lineLimit: Int = 100
         var sealedClasses: MutableList<String> = mutableListOf()
 
         public fun addSealedClass(className: String) {
@@ -70,6 +67,10 @@ open class KotlinTranslator {
 
             return false
         }
+
+        var indentationString: String = "\t"
+        val errorTranslation: String = "<<Error>>"
+        val lineLimit: Int = 100
     }
 
     data class FunctionTranslation(
@@ -98,6 +99,222 @@ open class KotlinTranslator {
 
         result += "fun main(args: Array<String>) {\n${statementsTranslation}}\n"
 
+        return result
+    }
+
+    data class TreeAndTranslation(
+        val subtree: Statement,
+        val translation: String
+    )
+
+    private fun translateSubtrees(
+        subtrees: MutableList<Statement>,
+        indentation: String,
+        limitForAddingNewlines: Int = 0)
+        : String
+    {
+        val treesAndTranslations: MutableList<KotlinTranslator.TreeAndTranslation> = subtrees.map { TreeAndTranslation(subtree = it, translation = translateSubtree(it, indentation = indentation)) }.toMutableList().filter { !it.translation.isEmpty() }.toMutableList()
+
+        if (treesAndTranslations.size <= limitForAddingNewlines) {
+            return treesAndTranslations.map { it.translation }.toMutableList().joinToString(separator = "")
+        }
+
+        val treesAndTranslationsWithoutFirst: MutableList<KotlinTranslator.TreeAndTranslation> = treesAndTranslations.drop(1).toMutableList<TreeAndTranslation>()
+        var result: String = ""
+
+        for ((currentSubtree, nextSubtree) in treesAndTranslations.zip(treesAndTranslationsWithoutFirst)) {
+            result += currentSubtree.translation
+            if (currentSubtree.subtree is Statement.VariableDeclaration && nextSubtree.subtree is Statement.VariableDeclaration) {
+                continue
+            }
+            else if (currentSubtree.subtree is Statement.ExpressionStatement && nextSubtree.subtree is Statement.ExpressionStatement) {
+                continue
+            }
+            else if (currentSubtree.subtree is Statement.ExpressionStatement && nextSubtree.subtree is Statement.ExpressionStatement) {
+                continue
+            }
+            else if (currentSubtree.subtree is Statement.ExpressionStatement && nextSubtree.subtree is Statement.ExpressionStatement) {
+                continue
+            }
+            else if (currentSubtree.subtree is Statement.AssignmentStatement && nextSubtree.subtree is Statement.AssignmentStatement) {
+                continue
+            }
+            else if (currentSubtree.subtree is Statement.TypealiasDeclaration && nextSubtree.subtree is Statement.TypealiasDeclaration) {
+                continue
+            }
+            else if (currentSubtree.subtree is Statement.DoStatement && nextSubtree.subtree is Statement.CatchStatement) {
+                continue
+            }
+            else if (currentSubtree.subtree is Statement.CatchStatement && nextSubtree.subtree is Statement.CatchStatement) {
+                continue
+            }
+            result += "\n"
+        }
+
+        val lastSubtree: TreeAndTranslation? = treesAndTranslations.lastOrNull()
+
+        if (lastSubtree != null) {
+            result += lastSubtree.translation
+        }
+
+        return result
+    }
+
+    private fun translateSubtree(subtree: Statement, indentation: String): String {
+        val result: String
+        when (subtree) {
+            is Statement.ImportDeclaration -> result = ""
+            is Statement.ExtensionDeclaration -> return unexpectedASTStructureError(
+    "Extension structure should have been removed in a transpilation pass",
+    ast = subtree)
+            is Statement.DeferStatement -> return unexpectedASTStructureError(
+    "Defer statements are only supported as top-level statements in function bodies",
+    ast = subtree)
+            is Statement.TypealiasDeclaration -> {
+                val identifier: String = subtree.identifier
+                val typeName: String = subtree.typeName
+                val isImplicit: Boolean = subtree.isImplicit
+
+                result = translateTypealias(
+                    identifier = identifier,
+                    typeName = typeName,
+                    isImplicit = isImplicit,
+                    indentation = indentation)
+            }
+            is Statement.ClassDeclaration -> {
+                val className: String = subtree.className
+                val inherits: MutableList<String> = subtree.inherits
+                val members: MutableList<Statement> = subtree.members
+
+                result = translateClassDeclaration(
+                    className = className,
+                    inherits = inherits,
+                    members = members,
+                    indentation = indentation)
+            }
+            is Statement.StructDeclaration -> {
+                val annotations: String? = subtree.annotations
+                val structName: String = subtree.structName
+                val inherits: MutableList<String> = subtree.inherits
+                val members: MutableList<Statement> = subtree.members
+
+                result = translateStructDeclaration(
+                    annotations = annotations,
+                    structName = structName,
+                    inherits = inherits,
+                    members = members,
+                    indentation = indentation)
+            }
+            is Statement.CompanionObject -> {
+                val members: MutableList<Statement> = subtree.members
+                result = translateCompanionObject(members = members, indentation = indentation)
+            }
+            is Statement.EnumDeclaration -> {
+                val access: String? = subtree.access
+                val enumName: String = subtree.enumName
+                val inherits: MutableList<String> = subtree.inherits
+                val elements: MutableList<EnumElement> = subtree.elements
+                val members: MutableList<Statement> = subtree.members
+                val isImplicit: Boolean = subtree.isImplicit
+
+                result = translateEnumDeclaration(
+                    access = access,
+                    enumName = enumName,
+                    inherits = inherits,
+                    elements = elements,
+                    members = members,
+                    isImplicit = isImplicit,
+                    indentation = indentation)
+            }
+            is Statement.DoStatement -> {
+                val statements: MutableList<Statement> = subtree.statements
+                result = translateDoStatement(statements = statements, indentation = indentation)
+            }
+            is Statement.CatchStatement -> {
+                val variableDeclaration: VariableDeclarationData? = subtree.variableDeclaration
+                val statements: MutableList<Statement> = subtree.statements
+                result = translateCatchStatement(
+                    variableDeclaration = variableDeclaration,
+                    statements = statements,
+                    indentation = indentation)
+            }
+            is Statement.ForEachStatement -> {
+                val collection: Expression = subtree.collection
+                val variable: Expression = subtree.variable
+                val statements: MutableList<Statement> = subtree.statements
+
+                result = translateForEachStatement(
+                    collection = collection,
+                    variable = variable,
+                    statements = statements,
+                    indentation = indentation)
+            }
+            is Statement.WhileStatement -> {
+                val expression: Expression = subtree.expression
+                val statements: MutableList<Statement> = subtree.statements
+                result = translateWhileStatement(
+                    expression = expression,
+                    statements = statements,
+                    indentation = indentation)
+            }
+            is Statement.FunctionDeclaration -> {
+                val functionDeclaration: FunctionDeclarationData = subtree.data
+                result = translateFunctionDeclaration(functionDeclaration = functionDeclaration, indentation = indentation)
+            }
+            is Statement.ProtocolDeclaration -> {
+                val protocolName: String = subtree.protocolName
+                val members: MutableList<Statement> = subtree.members
+                result = translateProtocolDeclaration(
+                    protocolName = protocolName,
+                    members = members,
+                    indentation = indentation)
+            }
+            is Statement.ThrowStatement -> {
+                val expression: Expression = subtree.expression
+                result = translateThrowStatement(expression = expression, indentation = indentation)
+            }
+            is Statement.VariableDeclaration -> {
+                val variableDeclaration: VariableDeclarationData = subtree.data
+                result = translateVariableDeclaration(variableDeclaration, indentation = indentation)
+            }
+            is Statement.AssignmentStatement -> {
+                val leftHand: Expression = subtree.leftHand
+                val rightHand: Expression = subtree.rightHand
+                result = translateAssignmentStatement(leftHand = leftHand, rightHand = rightHand, indentation = indentation)
+            }
+            is Statement.IfStatement -> {
+                val ifStatement: IfStatementData = subtree.data
+                result = translateIfStatement(ifStatement = ifStatement, indentation = indentation)
+            }
+            is Statement.SwitchStatement -> {
+                val convertsToExpression: Statement? = subtree.convertsToExpression
+                val expression: Expression = subtree.expression
+                val cases: MutableList<SwitchCase> = subtree.cases
+
+                result = translateSwitchStatement(
+                    convertsToExpression = convertsToExpression,
+                    expression = expression,
+                    cases = cases,
+                    indentation = indentation)
+            }
+            is Statement.ReturnStatement -> {
+                val expression: Expression? = subtree.expression
+                result = translateReturnStatement(expression = expression, indentation = indentation)
+            }
+            is Statement.BreakStatement -> result = "${indentation}break\n"
+            is Statement.ContinueStatement -> result = "${indentation}continue\n"
+            is Statement.ExpressionStatement -> {
+                val expression: Expression = subtree.expression
+                val expressionTranslation: String = translateExpression(expression, indentation = indentation)
+                if (!expressionTranslation.isEmpty()) {
+                    return indentation + expressionTranslation + "\n"
+                }
+                else {
+                    return "\n"
+                }
+            }
+            is Statement.Error -> return KotlinTranslator.errorTranslation
+        }
         return result
     }
 
@@ -1476,19 +1693,6 @@ open class KotlinTranslator {
         result += "\""
 
         return result
-    }
-
-    private fun translateSubtrees(
-        subtrees: MutableList<Statement>,
-        indentation: String,
-        limitForAddingNewlines: Int = 0)
-        : String
-    {
-        return ""
-    }
-
-    private fun translateSubtree(subtree: Statement, indentation: String): String {
-        return ""
     }
 
     internal fun translateType(typeName: String): String {
