@@ -159,6 +159,155 @@ open class KotlinTranslator {
     }
 }
 
+private fun KotlinTranslator.translateSwitchStatement(
+    convertsToExpression: Statement?,
+    expression: Expression,
+    cases: MutableList<SwitchCase>,
+    indentation: String)
+    : String
+{
+    var result: String = ""
+
+    if (convertsToExpression != null) {
+        if (convertsToExpression is Statement.ReturnStatement) {
+            result = "${indentation}return when ("
+        }
+        else if (convertsToExpression is Statement.AssignmentStatement) {
+            val leftHand: Expression = convertsToExpression.leftHand
+            val translatedLeftHand: String = translateExpression(leftHand, indentation = indentation)
+            result = "${indentation}${translatedLeftHand} = when ("
+        }
+        else if (convertsToExpression is Statement.VariableDeclaration) {
+            val variableDeclaration: VariableDeclarationData = convertsToExpression.data
+            val newVariableDeclaration: VariableDeclarationData = VariableDeclarationData(
+                identifier = variableDeclaration.identifier,
+                typeName = variableDeclaration.typeName,
+                expression = Expression.NilLiteralExpression(),
+                getter = null,
+                setter = null,
+                isLet = variableDeclaration.isLet,
+                isImplicit = false,
+                isStatic = false,
+                extendsType = null,
+                annotations = variableDeclaration.annotations)
+            val translatedVariableDeclaration: String = translateVariableDeclaration(newVariableDeclaration, indentation = indentation)
+            val cleanTranslation: String = translatedVariableDeclaration.dropLast("null\n".length)
+
+            result = "${cleanTranslation}when ("
+        }
+    }
+
+    if (result.isEmpty()) {
+        result = "${indentation}when ("
+    }
+
+    val expressionTranslation: String = translateExpression(expression, indentation = indentation)
+    val increasedIndentation: String = increaseIndentation(indentation)
+
+    result += "${expressionTranslation}) {\n"
+
+    for (switchCase in cases) {
+        if (switchCase.statements.isEmpty()) {
+            continue
+        }
+
+        result += increasedIndentation
+
+        val translatedExpressions: MutableList<String> = mutableListOf()
+
+        for (caseExpression in switchCase.expressions) {
+            val translatedExpression: String = translateSwitchCaseExpression(
+                caseExpression,
+                switchExpression = expression,
+                indentation = increasedIndentation)
+            translatedExpressions.add(translatedExpression)
+        }
+
+        if (translatedExpressions.isEmpty()) {
+            result += "else -> "
+        }
+        else {
+            result += translatedExpressions.joinToString(separator = ", ") + " -> "
+        }
+
+        val onlyStatement: Statement? = switchCase.statements.firstOrNull()
+
+        if (switchCase.statements.size == 1 && onlyStatement != null) {
+            val statementTranslation: String = translateSubtree(onlyStatement, indentation = "")
+            result += statementTranslation
+        }
+        else {
+            result += "{\n"
+
+            val statementsIndentation: String = increaseIndentation(increasedIndentation)
+            val statementsTranslation: String = translateSubtrees(
+                switchCase.statements,
+                indentation = statementsIndentation,
+                limitForAddingNewlines = 3)
+
+            result += "${statementsTranslation}${increasedIndentation}}\n"
+        }
+    }
+
+    result += "${indentation}}\n"
+
+    return result
+}
+
+private fun KotlinTranslator.translateSwitchCaseExpression(
+    caseExpression: Expression,
+    switchExpression: Expression,
+    indentation: String)
+    : String
+{
+    if (caseExpression is Expression.BinaryOperatorExpression) {
+        val leftExpression: Expression = caseExpression.leftExpression
+        val rightExpression: Expression = caseExpression.rightExpression
+        val operatorSymbol: String = caseExpression.operatorSymbol
+        val typeName: String = caseExpression.typeName
+
+        if (leftExpression == switchExpression && operatorSymbol == "is" && typeName == "Bool") {
+            val translatedType: String = translateExpression(rightExpression, indentation = indentation)
+            return "is ${translatedType}"
+        }
+        else {
+            val translatedExpression: String = translateExpression(leftExpression, indentation = indentation)
+            if (leftExpression is Expression.TemplateExpression) {
+                val pattern: String = leftExpression.pattern
+                if (pattern.contains("..") || pattern.contains("until") || pattern.contains("rangeTo")) {
+                    return "in ${translatedExpression}"
+                }
+            }
+            return translatedExpression
+        }
+    }
+    val translatedExpression: String = translateExpression(caseExpression, indentation = indentation)
+    return translatedExpression
+}
+
+private fun KotlinTranslator.translateThrowStatement(
+    expression: Expression,
+    indentation: String)
+    : String
+{
+    val expressionString: String = translateExpression(expression, indentation = indentation)
+    return "${indentation}throw ${expressionString}\n"
+}
+
+private fun KotlinTranslator.translateReturnStatement(
+    expression: Expression?,
+    indentation: String)
+    : String
+{
+    if (expression != null) {
+        val expressionString: String = translateExpression(expression, indentation = indentation)
+        return "${indentation}return ${expressionString}\n"
+    }
+    else {
+        return "${indentation}return\n"
+    }
+}
+
 private fun KotlinTranslator.translateVariableDeclaration(
     variableDeclaration: VariableDeclarationData,
     indentation: String)
@@ -921,6 +1070,10 @@ private fun KotlinTranslator.translateSubtrees(
     limitForAddingNewlines: Int = 0)
     : String
 {
+    return ""
+}
+
+private fun KotlinTranslator.translateSubtree(subtree: Statement, indentation: String): String {
     return ""
 }
 
