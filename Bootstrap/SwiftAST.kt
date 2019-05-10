@@ -82,4 +82,15 @@ open class SwiftAST: PrintableAsTree {
         this.prettyPrint(horizontalLimit = horizontalLimit, printFunction = { result += it })
         return result
     }
+
+    override open fun equals(other: Any?): Boolean {
+        val lhs: SwiftAST = this
+        val rhs: Any? = other
+        if (rhs is SwiftAST) {
+            return lhs.name == rhs.name && lhs.standaloneAttributes == rhs.standaloneAttributes && lhs.keyValueAttributes == rhs.keyValueAttributes && lhs.subtrees == rhs.subtrees
+        }
+        else {
+            return false
+        }
+    }
 }

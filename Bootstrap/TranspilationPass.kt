@@ -1764,12 +1764,15 @@ open class SwitchesToExpressionsTranspilationPass: TranspilationPass {
                 break
             }
 
-            if (lastStatement is Statement.ReturnStatement && expression != null) {
+            if (lastStatement is Statement.ReturnStatement) {
                 val expression: Expression? = lastStatement.expression
-                hasAllAssignmentCases = false
-                continue
+                if (expression != null) {
+                    hasAllAssignmentCases = false
+                    continue
+                }
             }
-            else if (lastStatement is Statement.AssignmentStatement) {
+
+            if (lastStatement is Statement.AssignmentStatement) {
                 val leftHand: Expression = lastStatement.leftHand
                 if (assignmentExpression == null || assignmentExpression == leftHand) {
                     hasAllReturnCases = false
@@ -1836,10 +1839,10 @@ open class SwitchesToExpressionsTranspilationPass: TranspilationPass {
     }
 
     override internal fun replaceStatements(
-        oldStatement: MutableList<Statement>)
+        oldStatements: MutableList<Statement>)
         : MutableList<Statement>
     {
-        val statements: MutableList<Statement> = super.replaceStatements(oldStatement)
+        val statements: MutableList<Statement> = super.replaceStatements(oldStatements)
         val result: MutableList<Statement> = mutableListOf()
         var i: Int = 0
 
@@ -2417,6 +2420,101 @@ open class RearrangeIfLetsTranspilationPass: TranspilationPass {
     }
 }
 
+open class EquatableOperatorsTranspilationPass: TranspilationPass {
+    constructor(ast: GryphonAST): super(ast) { }
+
+    override internal fun replaceFunctionDeclarationData(
+        functionDeclaration: FunctionDeclarationData)
+        : FunctionDeclarationData?
+    {
+        val oldStatements: MutableList<Statement>? = functionDeclaration.statements
+
+        if (!(functionDeclaration.prefix == "==" && functionDeclaration.parameters.size == 2 && oldStatements != null)) {
+            return functionDeclaration
+        }
+
+        val lhs: FunctionParameter = functionDeclaration.parameters[0]
+        val rhs: FunctionParameter = functionDeclaration.parameters[1]
+        val newStatements: MutableList<Statement> = mutableListOf()
+
+        newStatements.add(Statement.VariableDeclaration(
+            data = VariableDeclarationData(
+                    identifier = lhs.label,
+                    typeName = lhs.typeName,
+                    expression = Expression.DeclarationReferenceExpression(
+                            data = DeclarationReferenceData(
+                                    identifier = "this",
+                                    typeName = lhs.typeName,
+                                    isStandardLibrary = false,
+                                    isImplicit = false,
+                                    range = null)),
+                    getter = null,
+                    setter = null,
+                    isLet = true,
+                    isImplicit = false,
+                    isStatic = false,
+                    extendsType = null,
+                    annotations = null)))
+        newStatements.add(Statement.VariableDeclaration(
+            data = VariableDeclarationData(
+                    identifier = rhs.label,
+                    typeName = "Any?",
+                    expression = Expression.DeclarationReferenceExpression(
+                            data = DeclarationReferenceData(
+                                    identifier = "other",
+                                    typeName = "Any?",
+                                    isStandardLibrary = false,
+                                    isImplicit = false,
+                                    range = null)),
+                    getter = null,
+                    setter = null,
+                    isLet = true,
+                    isImplicit = false,
+                    isStatic = false,
+                    extendsType = null,
+                    annotations = null)))
+        newStatements.add(Statement.IfStatement(
+            data = IfStatementData(
+                    conditions = mutableListOf(IfStatementData.IfCondition.Condition(
+                            expression = Expression.BinaryOperatorExpression(
+                                    leftExpression = Expression.DeclarationReferenceExpression(
+                                            data = DeclarationReferenceData(
+                                                    identifier = rhs.label,
+                                                    typeName = "Any?",
+                                                    isStandardLibrary = false,
+                                                    isImplicit = false,
+                                                    range = null)),
+                                    rightExpression = Expression.TypeExpression(typeName = rhs.typeName),
+                                    operatorSymbol = "is",
+                                    typeName = "Bool"))),
+                    declarations = mutableListOf(),
+                    statements = oldStatements,
+                    elseStatement = IfStatementData(
+                            conditions = mutableListOf(),
+                            declarations = mutableListOf(),
+                            statements = mutableListOf(Statement.ReturnStatement(expression = Expression.LiteralBoolExpression(value = false))),
+                            elseStatement = null,
+                            isGuard = false),
+                    isGuard = false)))
+
+        return super.replaceFunctionDeclarationData(
+            FunctionDeclarationData(
+                    prefix = "equals",
+                    parameters = mutableListOf(FunctionParameter(label = "other", apiLabel = null, typeName = "Any?", value = null)),
+                    returnType = "Bool",
+                    functionType = "(Any?) -> Bool",
+                    genericTypes = mutableListOf(),
+                    isImplicit = functionDeclaration.isImplicit,
+                    isStatic = false,
+                    isMutating = functionDeclaration.isMutating,
+                    isPure = functionDeclaration.isPure,
+                    extendsType = null,
+                    statements = newStatements,
+                    access = null,
+                    annotations = "override open"))
+    }
+}
+
 open class RawValuesTranspilationPass: TranspilationPass {
     constructor(ast: GryphonAST): super(ast) { }
 
@@ -2759,6 +2857,7 @@ public fun TranspilationPass.Companion.runSecondRoundOfPasses(
     result = ReplaceTemplatesTranspilationPass(ast = result).run()
     result = RemoveParenthesesTranspilationPass(ast = result).run()
     result = RemoveExtraReturnsInInitsTranspilationPass(ast = result).run()
+    result = EquatableOperatorsTranspilationPass(ast = result).run()
     result = RawValuesTranspilationPass(ast = result).run()
     result = DescriptionAsToStringTranspilationPass(ast = result).run()
     result = OptionalInitsTranspilationPass(ast = result).run()

@@ -30,7 +30,7 @@ public final class GryphonAST: PrintableAsTree, Equatable, CustomStringConvertib
 	}
 
 	//
-	public static func == (lhs: GryphonAST, rhs: GryphonAST) -> Bool { // kotlin: ignore
+	public static func == (lhs: GryphonAST, rhs: GryphonAST) -> Bool {
 		return lhs.declarations == rhs.declarations &&
 			lhs.statements == rhs.statements
 	}
@@ -360,6 +360,217 @@ public indirect enum Statement: PrintableAsTree, Equatable {
 			return [leftHand, rightHand]
 		case .error:
 			return []
+		}
+	}
+
+	public static func == (lhs: Statement, rhs: Statement) -> Bool {
+		if case let expressionStatement(expression: leftExpression) = lhs,
+			case let expressionStatement(expression: rightExpression) = rhs
+		{
+			return leftExpression == rightExpression
+		}
+		if case let typealiasDeclaration(
+				identifier: leftIdentifier,
+				typeName: leftTypeName,
+				isImplicit: leftIsImplicit) = lhs,
+			case let typealiasDeclaration(
+				identifier: rightIdentifier,
+				typeName: rightTypeName,
+				isImplicit: rightIsImplicit) = rhs
+		{
+			return leftIdentifier == rightIdentifier &&
+				leftTypeName == rightTypeName &&
+				leftIsImplicit == rightIsImplicit
+		}
+		if case let extensionDeclaration(
+			typeName: leftTypeName,
+			members: leftMembers) = lhs,
+		case let extensionDeclaration(
+			typeName: rightTypeName,
+			members: rightMembers) = rhs
+		{
+			return leftTypeName == rightTypeName &&
+				leftMembers == rightMembers
+		}
+		if case let importDeclaration(moduleName: leftModuleName) = lhs,
+		case let importDeclaration(moduleName: rightModuleName) = rhs
+		{
+			return leftModuleName == rightModuleName
+		}
+		if case let classDeclaration(
+			className: leftClassName,
+			inherits: leftInherits,
+			members: leftMembers) = lhs,
+		case let classDeclaration(
+			className: rightClassName,
+			inherits: rightInherits,
+			members: rightMembers) = rhs
+		{
+			return leftClassName == rightClassName &&
+				leftInherits == rightInherits &&
+				leftMembers == rightMembers
+		}
+		if case let companionObject(members: leftMembers) = lhs,
+		case let companionObject(members: rightMembers) = rhs
+		{
+			return leftMembers == rightMembers
+		}
+		if case let enumDeclaration(
+			access: leftAccess,
+			enumName: leftEnumName,
+			inherits: leftInherits,
+			elements: leftElements,
+			members: leftMembers,
+			isImplicit: leftIsImplicit) = lhs,
+		case let enumDeclaration(
+			access: rightAccess,
+			enumName: rightEnumName,
+			inherits: rightInherits,
+			elements: rightElements,
+			members: rightMembers,
+			isImplicit: rightIsImplicit) = rhs
+		{
+			return leftAccess == rightAccess &&
+				leftEnumName == rightEnumName &&
+				leftInherits == rightInherits &&
+				leftElements == rightElements &&
+				leftMembers == rightMembers &&
+				leftIsImplicit == rightIsImplicit
+		}
+		if case let protocolDeclaration(
+			protocolName: leftProtocolName,
+			members: leftMembers) = lhs,
+		case let protocolDeclaration(
+			protocolName: rightProtocolName,
+			members: rightMembers) = rhs
+		{
+			return leftProtocolName == rightProtocolName &&
+				leftMembers == rightMembers
+		}
+		if case let structDeclaration(
+			annotations: leftAnnotations,
+			structName: leftStructName,
+			inherits: leftInherits,
+			members: leftMembers) = lhs,
+		case let structDeclaration(
+			annotations: rightAnnotations,
+			structName: rightStructName,
+			inherits: rightInherits,
+			members: rightMembers) = rhs
+		{
+			return leftAnnotations == rightAnnotations &&
+				leftStructName == rightStructName &&
+				leftInherits == rightInherits &&
+				leftMembers == rightMembers
+		}
+		if case let functionDeclaration(data: leftData) = lhs,
+		case let functionDeclaration(data: rightData) = rhs
+		{
+			return leftData == rightData
+		}
+		if case let variableDeclaration(data: leftData) = lhs,
+		case let variableDeclaration(data: rightData) = rhs
+		{
+			return leftData == rightData
+		}
+		if case let doStatement(statements: leftStatements) = lhs,
+		case let doStatement(statements: rightStatements) = rhs
+		{
+			return leftStatements == rightStatements
+		}
+		if case let catchStatement(
+			variableDeclaration: leftVariableDeclaration,
+			statements: leftStatements) = lhs,
+		case let catchStatement(
+			variableDeclaration: rightVariableDeclaration,
+			statements: rightStatements) = rhs
+		{
+			return leftVariableDeclaration == rightVariableDeclaration &&
+				leftStatements == rightStatements
+		}
+		if case let forEachStatement(
+			collection: leftCollection,
+			variable: leftVariable,
+			statements: leftStatements) = lhs,
+		case let forEachStatement(
+			collection: rightCollection,
+			variable: rightVariable,
+			statements: rightStatements) = rhs
+		{
+			return leftCollection == rightCollection &&
+				leftVariable == rightVariable &&
+				leftStatements == rightStatements
+		}
+		if case let whileStatement(
+			expression: leftExpression,
+			statements: leftStatements) = lhs,
+		case let whileStatement(
+			expression: rightExpression,
+			statements: rightStatements) = rhs
+		{
+			return leftExpression == rightExpression &&
+				leftStatements == rightStatements
+		}
+		if case let ifStatement(data: leftData) = lhs,
+		case let ifStatement(data: rightData) = rhs
+		{
+			return leftData == rightData
+		}
+		if case let switchStatement(
+			convertsToExpression: leftConvertsToExpression,
+			expression: leftExpression,
+			cases: leftCases) = lhs,
+		case let switchStatement(
+			convertsToExpression: rightConvertsToExpression,
+			expression: rightExpression,
+			cases: rightCases) = rhs
+		{
+			return leftConvertsToExpression == rightConvertsToExpression &&
+			leftExpression == rightExpression &&
+			leftCases == rightCases
+		}
+		if case let deferStatement(statements: leftStatements) = lhs,
+		case let deferStatement(statements: rightStatements) = rhs
+		{
+			return leftStatements == rightStatements
+		}
+		if case let throwStatement(expression: leftExpression) = lhs,
+		case let throwStatement(expression: rightExpression) = rhs
+		{
+			return leftExpression == rightExpression
+		}
+		if case let returnStatement(expression: leftExpression) = lhs,
+		case let returnStatement(expression: rightExpression) = rhs
+		{
+			return leftExpression == rightExpression
+		}
+		if case .breakStatement = lhs,
+			case .breakStatement = rhs
+		{
+			return true
+		}
+		if case .continueStatement = lhs,
+			case .continueStatement = rhs
+		{
+			return true
+		}
+		if case let .assignmentStatement(
+				leftHand: leftLeftHand,
+				rightHand: leftRightHand) = lhs,
+			case let .assignmentStatement(
+				leftHand: rightLeftHand,
+				rightHand: rightRightHand) = rhs
+		{
+			return leftLeftHand == rightLeftHand &&
+				leftRightHand == rightRightHand
+		}
+		if case .error = lhs,
+			case .error = rhs
+		{
+			return true
+		}
+		else {
+			return false
 		}
 	}
 }
@@ -782,6 +993,160 @@ public indirect enum Expression: PrintableAsTree, Equatable {
 			return nil
 		}
 	}
+
+	static public func == (lhs: Expression, rhs: Expression) -> Bool {
+		if case let .literalCodeExpression(string: leftString) = lhs,
+			case let .literalCodeExpression(string: rightString) = rhs
+		{
+			return leftString == rightString
+		}
+		else if case let .parenthesesExpression(expression: leftExpression) = lhs,
+			case let .parenthesesExpression(expression: rightExpression) = rhs
+		{
+			return leftExpression == rightExpression
+		}
+		else if case let .forceValueExpression(expression: leftExpression) = lhs,
+			case let .forceValueExpression(expression: rightExpression) = rhs
+		{
+			return leftExpression == rightExpression
+		}
+		else if case let .declarationReferenceExpression(data: leftExpression) = lhs,
+			case let .declarationReferenceExpression(data: rightExpression) = rhs
+		{
+			return leftExpression == rightExpression
+		}
+		else if case let .typeExpression(typeName: leftType) = lhs,
+			case let .typeExpression(typeName: rightType) = rhs
+		{
+			return leftType == rightType
+		}
+		else if case let .subscriptExpression(
+				subscriptedExpression: leftSubscriptedExpression,
+				indexExpression: leftIndexExpression,
+				typeName: leftType) = lhs,
+			case let .subscriptExpression(
+				subscriptedExpression: rightSubscriptedExpression,
+				indexExpression: rightIndexExpression,
+				typeName: rightType) = rhs
+		{
+			return leftSubscriptedExpression == rightSubscriptedExpression
+				&& leftIndexExpression == rightIndexExpression
+				&& leftType == rightType
+		}
+		else if case let .arrayExpression(elements: leftElements, typeName: leftType) = lhs,
+			case let .arrayExpression(elements: rightElements, typeName: rightType) = rhs
+		{
+			return leftElements == rightElements &&
+				leftType == rightType
+		}
+		else if case let .dotExpression(
+				leftExpression: leftLeftExpression,
+				rightExpression: leftRightExpression) = lhs,
+			case let .dotExpression(
+				leftExpression: rightLeftExpression,
+				rightExpression: rightRightExpression) = rhs
+		{
+			return leftLeftExpression == rightLeftExpression &&
+				leftRightExpression == rightRightExpression
+		}
+		else if case let .binaryOperatorExpression(
+				leftExpression: leftLeftExpression,
+				rightExpression: leftRightExpression,
+				operatorSymbol: leftOperatorSymbol,
+				typeName: leftType) = lhs,
+			case let .binaryOperatorExpression(
+				leftExpression: rightLeftExpression,
+				rightExpression: rightRightExpression,
+				operatorSymbol: rightOperatorSymbol,
+				typeName: rightType) = rhs
+		{
+			return leftLeftExpression == rightLeftExpression &&
+				leftRightExpression == rightRightExpression &&
+				leftOperatorSymbol == rightOperatorSymbol &&
+				leftType == rightType
+		}
+		else if case let .prefixUnaryExpression(
+				subExpression: leftExpression,
+				operatorSymbol: leftOperatorSymbol,
+				typeName: leftType) = lhs,
+			case let .prefixUnaryExpression(
+				subExpression: rightExpression,
+				operatorSymbol: rightOperatorSymbol,
+				typeName: rightType) = rhs
+		{
+			return leftExpression == rightExpression &&
+				leftOperatorSymbol == rightOperatorSymbol &&
+				leftType == rightType
+		}
+		else if case let .postfixUnaryExpression(
+				subExpression: leftExpression,
+				operatorSymbol: leftOperatorSymbol,
+				typeName: leftType) = lhs,
+			case let .postfixUnaryExpression(
+				subExpression: rightExpression,
+				operatorSymbol: rightOperatorSymbol,
+				typeName: rightType) = rhs
+		{
+			return leftExpression == rightExpression &&
+				leftOperatorSymbol == rightOperatorSymbol &&
+				leftType == rightType
+		}
+		else if case let .callExpression(data: leftCallExpression) = lhs,
+			case let .callExpression(data: rightCallExpression) = rhs
+		{
+			return leftCallExpression == rightCallExpression
+		}
+		else if case let .literalIntExpression(value: leftValue) = lhs,
+			case let .literalIntExpression(value: rightValue) = rhs
+		{
+			return leftValue == rightValue
+		}
+		else if case let .literalDoubleExpression(value: leftValue) = lhs,
+			case let .literalDoubleExpression(value: rightValue) = rhs
+		{
+			return leftValue == rightValue
+		}
+		else if case let .literalBoolExpression(value: leftValue) = lhs,
+			case let .literalBoolExpression(value: rightValue) = rhs
+		{
+			return leftValue == rightValue
+		}
+		else if case let .literalStringExpression(value: leftValue) = lhs,
+			case let .literalStringExpression(value: rightValue) = rhs
+		{
+			return leftValue == rightValue
+		}
+		if case .nilLiteralExpression = lhs, case .nilLiteralExpression = rhs
+		{
+			return true
+		}
+		else if case let .interpolatedStringLiteralExpression(expressions: leftExpressions) = lhs,
+			case let .interpolatedStringLiteralExpression(expressions: rightExpressions) = rhs
+		{
+			return leftExpressions == rightExpressions
+		}
+		else if case let .tupleExpression(pairs: leftPairs) = lhs,
+			case let .tupleExpression(pairs: rightPairs) = rhs
+		{
+			return leftPairs == rightPairs
+		}
+		else if case let .tupleShuffleExpression(
+				labels: leftLabels,
+				indices: leftIndices,
+				expressions: leftExpressions) = lhs,
+			case let .tupleShuffleExpression(
+				labels: rightLabels,
+				indices: rightIndices,
+				expressions: rightExpressions) = rhs
+		{
+			return leftLabels == rightLabels &&
+				leftIndices == rightIndices &&
+				leftExpressions == rightExpressions
+		}
+		else {
+			return false
+		}
+	}
 }
 
 public struct LabeledExpression: Equatable {
@@ -837,7 +1202,7 @@ public class VariableDeclarationData: Equatable {
 		self.annotations = annotations
 	}
 
-	public static func == ( // kotlin: ignore
+	public static func == (
 		lhs: VariableDeclarationData,
 		rhs: VariableDeclarationData)
 		-> Bool
@@ -876,7 +1241,7 @@ public class DeclarationReferenceData: Equatable {
 		self.range = range
 	}
 
-	public static func == ( // kotlin: ignore
+	public static func == (
 		lhs: DeclarationReferenceData,
 		rhs: DeclarationReferenceData)
 		-> Bool
@@ -907,7 +1272,7 @@ public class CallExpressionData: Equatable {
 		self.range = range
 	}
 
-	public static func == ( // kotlin: ignore
+	public static func == (
 		lhs: CallExpressionData,
 		rhs: CallExpressionData)
 		-> Bool
@@ -964,7 +1329,7 @@ public class FunctionDeclarationData: Equatable {
 		self.annotations = annotations
 	}
 
-	public static func == ( // kotlin: ignore
+	public static func == (
 		lhs: FunctionDeclarationData,
 		rhs: FunctionDeclarationData)
 		-> Bool
@@ -1020,7 +1385,7 @@ public class IfStatementData: Equatable {
 		self.isGuard = isGuard
 	}
 
-	public static func == ( // kotlin: ignore
+	public static func == (
 		lhs: IfStatementData,
 		rhs: IfStatementData)
 		-> Bool
@@ -1045,7 +1410,7 @@ public class SwitchCase: Equatable {
 		self.statements = statements
 	}
 
-	public static func == (lhs: SwitchCase, rhs: SwitchCase) -> Bool { // kotlin: ignore
+	public static func == (lhs: SwitchCase, rhs: SwitchCase) -> Bool {
 		return lhs.expressions == rhs.expressions &&
 			lhs.statements == rhs.statements
 	}
@@ -1069,7 +1434,7 @@ public class EnumElement: PrintableAsTree, Equatable {
 		self.annotations = annotations
 	}
 
-	public static func == (lhs: EnumElement, rhs: EnumElement) -> Bool { // kotlin: ignore
+	public static func == (lhs: EnumElement, rhs: EnumElement) -> Bool {
 		return lhs.name == rhs.name &&
 		lhs.associatedValues == rhs.associatedValues &&
 		lhs.rawValue == rhs.rawValue &&
@@ -1109,20 +1474,19 @@ public enum TupleShuffleIndex: Equatable, CustomStringConvertible {
 		}
 	}
 
-	// TODO: Implement equatable translation
-	public func isEqualToOther(_ other: TupleShuffleIndex) -> Bool {
-		if case let .variadic(count: selfCount) = self,
-			case let .variadic(count: otherCount) = other
+	public static func == (lhs: TupleShuffleIndex, rhs: TupleShuffleIndex) -> Bool {
+		if case let .variadic(count: lhsCount) = lhs,
+			case let .variadic(count: rhsCount) = rhs
 		{
-			return (selfCount == otherCount)
+			return (lhsCount == rhsCount)
 		}
-		else if case .absent = self,
-			case .absent = other
+		else if case .absent = lhs,
+			case .absent = rhs
 		{
 			return true
 		}
-		else if case .present = self,
-			case .present = other
+		else if case .present = lhs,
+			case .present = rhs
 		{
 			return true
 		}

@@ -1820,14 +1820,14 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 				break
 			}
 
-			if case let .returnStatement(expression: expression) = lastStatement,
-				expression != nil
-			{
-				hasAllAssignmentCases = false
-				continue
+			if case let .returnStatement(expression: expression) = lastStatement {
+				if expression != nil {
+					hasAllAssignmentCases = false
+					continue
+				}
 			}
-			else if case let .assignmentStatement(leftHand: leftHand, rightHand: _) = lastStatement
-			{
+
+			if case let .assignmentStatement(leftHand: leftHand, rightHand: _) = lastStatement {
 				if assignmentExpression == nil || assignmentExpression == leftHand {
 					hasAllReturnCases = false
 					assignmentExpression = leftHand
@@ -1890,10 +1890,10 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 
 	/// Replace variable declarations followed by switch statements assignments
 	override func replaceStatements( // annotation: override
-		_ oldStatement: ArrayClass<Statement>)
+		_ oldStatements: ArrayClass<Statement>)
 		-> ArrayClass<Statement>
 	{
-		let statements = super.replaceStatements(oldStatement)
+		let statements = super.replaceStatements(oldStatements)
 
 		let result: ArrayClass<Statement> = []
 
@@ -2532,6 +2532,108 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 	}
 }
 
+/// Change the implementation of a `==` operator to be usable in Kotlin
+public class EquatableOperatorsTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	override func replaceFunctionDeclarationData( // annotation: override
+		_ functionDeclaration: FunctionDeclarationData)
+		-> FunctionDeclarationData?
+	{
+		guard functionDeclaration.prefix == "==",
+			functionDeclaration.parameters.count == 2,
+			let oldStatements = functionDeclaration.statements else
+		{
+			return functionDeclaration
+		}
+
+		let lhs = functionDeclaration.parameters[0]
+		let rhs = functionDeclaration.parameters[1]
+
+		let newStatements: ArrayClass<Statement> = []
+
+		// Declare new variables with the same name as the Swift paramemeters, containing `this` and
+		// `other`
+		newStatements.append(.variableDeclaration(data: VariableDeclarationData(
+			identifier: lhs.label,
+			typeName: lhs.typeName,
+			expression: .declarationReferenceExpression(data: DeclarationReferenceData(
+				identifier: "this",
+				typeName: lhs.typeName,
+				isStandardLibrary: false,
+				isImplicit: false,
+				range: nil)),
+			getter: nil,
+			setter: nil,
+			isLet: true,
+			isImplicit: false,
+			isStatic: false,
+			extendsType: nil,
+			annotations: nil)))
+		newStatements.append(.variableDeclaration(data: VariableDeclarationData(
+			identifier: rhs.label,
+			typeName: "Any?",
+			expression: .declarationReferenceExpression(data: DeclarationReferenceData(
+				identifier: "other",
+				typeName: "Any?",
+				isStandardLibrary: false,
+				isImplicit: false,
+				range: nil)),
+			getter: nil,
+			setter: nil,
+			isLet: true,
+			isImplicit: false,
+			isStatic: false,
+			extendsType: nil,
+			annotations: nil)))
+
+		// Add an if statement to guarantee the comparison only happens between the right types
+		newStatements.append(.ifStatement(data: IfStatementData(
+			conditions: [ .condition(expression: .binaryOperatorExpression(
+				leftExpression: .declarationReferenceExpression(data: DeclarationReferenceData(
+					identifier: rhs.label,
+					typeName: "Any?",
+					isStandardLibrary: false,
+					isImplicit: false,
+					range: nil)),
+				rightExpression: .typeExpression(typeName: rhs.typeName),
+				operatorSymbol: "is",
+				typeName: "Bool")),
+			],
+			declarations: [],
+			statements: oldStatements,
+			elseStatement: IfStatementData(
+				conditions: [],
+				declarations: [],
+				statements: [
+					Statement.returnStatement(expression: .literalBoolExpression(value: false)),
+				],
+				elseStatement: nil,
+				isGuard: false),
+			isGuard: false)))
+
+		return super.replaceFunctionDeclarationData(FunctionDeclarationData(
+			prefix: "equals",
+			parameters: [
+				FunctionParameter(
+					label: "other",
+					apiLabel: nil,
+					typeName: "Any?",
+					value: nil), ],
+			returnType: "Bool",
+			functionType: "(Any?) -> Bool",
+			genericTypes: [],
+			isImplicit: functionDeclaration.isImplicit,
+			isStatic: false,
+			isMutating: functionDeclaration.isMutating,
+			isPure: functionDeclaration.isPure,
+			extendsType: nil,
+			statements: newStatements,
+			access: nil,
+			annotations: "override open"))
+	}
+}
+
 /// Create a rawValue variable for enums that conform to rawRepresentable
 public class RawValuesTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
@@ -2918,6 +3020,7 @@ public extension TranspilationPass {
 		result = RemoveExtraReturnsInInitsTranspilationPass(ast: result).run()
 
 		// Transform structures that need to be significantly different in Kotlin
+		result = EquatableOperatorsTranspilationPass(ast: result).run()
 		result = RawValuesTranspilationPass(ast: result).run()
 		result = DescriptionAsToStringTranspilationPass(ast: result).run()
 		result = OptionalInitsTranspilationPass(ast: result).run()

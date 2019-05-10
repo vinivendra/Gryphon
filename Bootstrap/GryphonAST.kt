@@ -13,6 +13,17 @@ open class GryphonAST: PrintableAsTree {
         this.statements = statements
     }
 
+    override open fun equals(other: Any?): Boolean {
+        val lhs: GryphonAST = this
+        val rhs: Any? = other
+        if (rhs is GryphonAST) {
+            return lhs.declarations == rhs.declarations && lhs.statements == rhs.statements
+        }
+        else {
+            return false
+        }
+    }
+
     override val treeDescription: String
         get() {
             return "Source File"
@@ -236,6 +247,209 @@ public sealed class Statement: PrintableAsTree {
                 is Statement.Error -> mutableListOf()
             }
         }
+
+    override open fun equals(other: Any?): Boolean {
+        val lhs: Statement = this
+        val rhs: Any? = other
+        if (rhs is Statement) {
+            if (lhs is Statement.ExpressionStatement && rhs is Statement.ExpressionStatement) {
+                val leftExpression: Expression = lhs.expression
+                val rightExpression: Expression = rhs.expression
+                return leftExpression == rightExpression
+            }
+
+            if (lhs is Statement.TypealiasDeclaration && rhs is Statement.TypealiasDeclaration) {
+                val leftIdentifier: String = lhs.identifier
+                val leftTypeName: String = lhs.typeName
+                val leftIsImplicit: Boolean = lhs.isImplicit
+                val rightIdentifier: String = rhs.identifier
+                val rightTypeName: String = rhs.typeName
+                val rightIsImplicit: Boolean = rhs.isImplicit
+
+                return leftIdentifier == rightIdentifier && leftTypeName == rightTypeName && leftIsImplicit == rightIsImplicit
+            }
+
+            if (lhs is Statement.ExtensionDeclaration && rhs is Statement.ExtensionDeclaration) {
+                val leftTypeName: String = lhs.typeName
+                val leftMembers: MutableList<Statement> = lhs.members
+                val rightTypeName: String = rhs.typeName
+                val rightMembers: MutableList<Statement> = rhs.members
+
+                return leftTypeName == rightTypeName && leftMembers == rightMembers
+            }
+
+            if (lhs is Statement.ImportDeclaration && rhs is Statement.ImportDeclaration) {
+                val leftModuleName: String = lhs.moduleName
+                val rightModuleName: String = rhs.moduleName
+                return leftModuleName == rightModuleName
+            }
+
+            if (lhs is Statement.ClassDeclaration && rhs is Statement.ClassDeclaration) {
+                val leftClassName: String = lhs.className
+                val leftInherits: MutableList<String> = lhs.inherits
+                val leftMembers: MutableList<Statement> = lhs.members
+                val rightClassName: String = rhs.className
+                val rightInherits: MutableList<String> = rhs.inherits
+                val rightMembers: MutableList<Statement> = rhs.members
+
+                return leftClassName == rightClassName && leftInherits == rightInherits && leftMembers == rightMembers
+            }
+
+            if (lhs is Statement.CompanionObject && rhs is Statement.CompanionObject) {
+                val leftMembers: MutableList<Statement> = lhs.members
+                val rightMembers: MutableList<Statement> = rhs.members
+                return leftMembers == rightMembers
+            }
+
+            if (lhs is Statement.EnumDeclaration && rhs is Statement.EnumDeclaration) {
+                val leftAccess: String? = lhs.access
+                val leftEnumName: String = lhs.enumName
+                val leftInherits: MutableList<String> = lhs.inherits
+                val leftElements: MutableList<EnumElement> = lhs.elements
+                val leftMembers: MutableList<Statement> = lhs.members
+                val leftIsImplicit: Boolean = lhs.isImplicit
+                val rightAccess: String? = rhs.access
+                val rightEnumName: String = rhs.enumName
+                val rightInherits: MutableList<String> = rhs.inherits
+                val rightElements: MutableList<EnumElement> = rhs.elements
+                val rightMembers: MutableList<Statement> = rhs.members
+                val rightIsImplicit: Boolean = rhs.isImplicit
+
+                return leftAccess == rightAccess && leftEnumName == rightEnumName && leftInherits == rightInherits && leftElements == rightElements && leftMembers == rightMembers && leftIsImplicit == rightIsImplicit
+            }
+
+            if (lhs is Statement.ProtocolDeclaration && rhs is Statement.ProtocolDeclaration) {
+                val leftProtocolName: String = lhs.protocolName
+                val leftMembers: MutableList<Statement> = lhs.members
+                val rightProtocolName: String = rhs.protocolName
+                val rightMembers: MutableList<Statement> = rhs.members
+
+                return leftProtocolName == rightProtocolName && leftMembers == rightMembers
+            }
+
+            if (lhs is Statement.StructDeclaration && rhs is Statement.StructDeclaration) {
+                val leftAnnotations: String? = lhs.annotations
+                val leftStructName: String = lhs.structName
+                val leftInherits: MutableList<String> = lhs.inherits
+                val leftMembers: MutableList<Statement> = lhs.members
+                val rightAnnotations: String? = rhs.annotations
+                val rightStructName: String = rhs.structName
+                val rightInherits: MutableList<String> = rhs.inherits
+                val rightMembers: MutableList<Statement> = rhs.members
+
+                return leftAnnotations == rightAnnotations && leftStructName == rightStructName && leftInherits == rightInherits && leftMembers == rightMembers
+            }
+
+            if (lhs is Statement.FunctionDeclaration && rhs is Statement.FunctionDeclaration) {
+                val leftData: FunctionDeclarationData = lhs.data
+                val rightData: FunctionDeclarationData = rhs.data
+                return leftData == rightData
+            }
+
+            if (lhs is Statement.VariableDeclaration && rhs is Statement.VariableDeclaration) {
+                val leftData: VariableDeclarationData = lhs.data
+                val rightData: VariableDeclarationData = rhs.data
+                return leftData == rightData
+            }
+
+            if (lhs is Statement.DoStatement && rhs is Statement.DoStatement) {
+                val leftStatements: MutableList<Statement> = lhs.statements
+                val rightStatements: MutableList<Statement> = rhs.statements
+                return leftStatements == rightStatements
+            }
+
+            if (lhs is Statement.CatchStatement && rhs is Statement.CatchStatement) {
+                val leftVariableDeclaration: VariableDeclarationData? = lhs.variableDeclaration
+                val leftStatements: MutableList<Statement> = lhs.statements
+                val rightVariableDeclaration: VariableDeclarationData? = rhs.variableDeclaration
+                val rightStatements: MutableList<Statement> = rhs.statements
+
+                return leftVariableDeclaration == rightVariableDeclaration && leftStatements == rightStatements
+            }
+
+            if (lhs is Statement.ForEachStatement && rhs is Statement.ForEachStatement) {
+                val leftCollection: Expression = lhs.collection
+                val leftVariable: Expression = lhs.variable
+                val leftStatements: MutableList<Statement> = lhs.statements
+                val rightCollection: Expression = rhs.collection
+                val rightVariable: Expression = rhs.variable
+                val rightStatements: MutableList<Statement> = rhs.statements
+
+                return leftCollection == rightCollection && leftVariable == rightVariable && leftStatements == rightStatements
+            }
+
+            if (lhs is Statement.WhileStatement && rhs is Statement.WhileStatement) {
+                val leftExpression: Expression = lhs.expression
+                val leftStatements: MutableList<Statement> = lhs.statements
+                val rightExpression: Expression = rhs.expression
+                val rightStatements: MutableList<Statement> = rhs.statements
+
+                return leftExpression == rightExpression && leftStatements == rightStatements
+            }
+
+            if (lhs is Statement.IfStatement && rhs is Statement.IfStatement) {
+                val leftData: IfStatementData = lhs.data
+                val rightData: IfStatementData = rhs.data
+                return leftData == rightData
+            }
+
+            if (lhs is Statement.SwitchStatement && rhs is Statement.SwitchStatement) {
+                val leftConvertsToExpression: Statement? = lhs.convertsToExpression
+                val leftExpression: Expression = lhs.expression
+                val leftCases: MutableList<SwitchCase> = lhs.cases
+                val rightConvertsToExpression: Statement? = rhs.convertsToExpression
+                val rightExpression: Expression = rhs.expression
+                val rightCases: MutableList<SwitchCase> = rhs.cases
+
+                return leftConvertsToExpression == rightConvertsToExpression && leftExpression == rightExpression && leftCases == rightCases
+            }
+
+            if (lhs is Statement.DeferStatement && rhs is Statement.DeferStatement) {
+                val leftStatements: MutableList<Statement> = lhs.statements
+                val rightStatements: MutableList<Statement> = rhs.statements
+                return leftStatements == rightStatements
+            }
+
+            if (lhs is Statement.ThrowStatement && rhs is Statement.ThrowStatement) {
+                val leftExpression: Expression = lhs.expression
+                val rightExpression: Expression = rhs.expression
+                return leftExpression == rightExpression
+            }
+
+            if (lhs is Statement.ReturnStatement && rhs is Statement.ReturnStatement) {
+                val leftExpression: Expression? = lhs.expression
+                val rightExpression: Expression? = rhs.expression
+                return leftExpression == rightExpression
+            }
+
+            if (lhs is Statement.BreakStatement && rhs is Statement.BreakStatement) {
+                return true
+            }
+
+            if (lhs is Statement.ContinueStatement && rhs is Statement.ContinueStatement) {
+                return true
+            }
+
+            if (lhs is Statement.AssignmentStatement && rhs is Statement.AssignmentStatement) {
+                val leftLeftHand: Expression = lhs.leftHand
+                val leftRightHand: Expression = lhs.rightHand
+                val rightLeftHand: Expression = rhs.leftHand
+                val rightRightHand: Expression = rhs.rightHand
+
+                return leftLeftHand == rightLeftHand && leftRightHand == rightRightHand
+            }
+
+            if (lhs is Statement.Error && rhs is Statement.Error) {
+                return true
+            }
+            else {
+                return false
+            }
+        }
+        else {
+            return false
+        }
+    }
 }
 
 internal fun PrintableTree.Companion.ofExpressions(
@@ -593,6 +807,150 @@ public sealed class Expression: PrintableAsTree {
                 else -> null
             }
         }
+
+    override open fun equals(other: Any?): Boolean {
+        val lhs: Expression = this
+        val rhs: Any? = other
+        if (rhs is Expression) {
+            if (lhs is Expression.LiteralCodeExpression && rhs is Expression.LiteralCodeExpression) {
+                val leftString: String = lhs.string
+                val rightString: String = rhs.string
+                return leftString == rightString
+            }
+            else if (lhs is Expression.ParenthesesExpression && rhs is Expression.ParenthesesExpression) {
+                val leftExpression: Expression = lhs.expression
+                val rightExpression: Expression = rhs.expression
+                return leftExpression == rightExpression
+            }
+            else if (lhs is Expression.ForceValueExpression && rhs is Expression.ForceValueExpression) {
+                val leftExpression: Expression = lhs.expression
+                val rightExpression: Expression = rhs.expression
+                return leftExpression == rightExpression
+            }
+            else if (lhs is Expression.DeclarationReferenceExpression && rhs is Expression.DeclarationReferenceExpression) {
+                val leftExpression: DeclarationReferenceData = lhs.data
+                val rightExpression: DeclarationReferenceData = rhs.data
+                return leftExpression == rightExpression
+            }
+            else if (lhs is Expression.TypeExpression && rhs is Expression.TypeExpression) {
+                val leftType: String = lhs.typeName
+                val rightType: String = rhs.typeName
+                return leftType == rightType
+            }
+            else if (lhs is Expression.SubscriptExpression && rhs is Expression.SubscriptExpression) {
+                val leftSubscriptedExpression: Expression = lhs.subscriptedExpression
+                val leftIndexExpression: Expression = lhs.indexExpression
+                val leftType: String = lhs.typeName
+                val rightSubscriptedExpression: Expression = rhs.subscriptedExpression
+                val rightIndexExpression: Expression = rhs.indexExpression
+                val rightType: String = rhs.typeName
+
+                return leftSubscriptedExpression == rightSubscriptedExpression && leftIndexExpression == rightIndexExpression && leftType == rightType
+            }
+            else if (lhs is Expression.ArrayExpression && rhs is Expression.ArrayExpression) {
+                val leftElements: MutableList<Expression> = lhs.elements
+                val leftType: String = lhs.typeName
+                val rightElements: MutableList<Expression> = rhs.elements
+                val rightType: String = rhs.typeName
+
+                return leftElements == rightElements && leftType == rightType
+            }
+            else if (lhs is Expression.DotExpression && rhs is Expression.DotExpression) {
+                val leftLeftExpression: Expression = lhs.leftExpression
+                val leftRightExpression: Expression = lhs.rightExpression
+                val rightLeftExpression: Expression = rhs.leftExpression
+                val rightRightExpression: Expression = rhs.rightExpression
+
+                return leftLeftExpression == rightLeftExpression && leftRightExpression == rightRightExpression
+            }
+            else if (lhs is Expression.BinaryOperatorExpression && rhs is Expression.BinaryOperatorExpression) {
+                val leftLeftExpression: Expression = lhs.leftExpression
+                val leftRightExpression: Expression = lhs.rightExpression
+                val leftOperatorSymbol: String = lhs.operatorSymbol
+                val leftType: String = lhs.typeName
+                val rightLeftExpression: Expression = rhs.leftExpression
+                val rightRightExpression: Expression = rhs.rightExpression
+                val rightOperatorSymbol: String = rhs.operatorSymbol
+                val rightType: String = rhs.typeName
+
+                return leftLeftExpression == rightLeftExpression && leftRightExpression == rightRightExpression && leftOperatorSymbol == rightOperatorSymbol && leftType == rightType
+            }
+            else if (lhs is Expression.PrefixUnaryExpression && rhs is Expression.PrefixUnaryExpression) {
+                val leftExpression: Expression = lhs.subExpression
+                val leftOperatorSymbol: String = lhs.operatorSymbol
+                val leftType: String = lhs.typeName
+                val rightExpression: Expression = rhs.subExpression
+                val rightOperatorSymbol: String = rhs.operatorSymbol
+                val rightType: String = rhs.typeName
+
+                return leftExpression == rightExpression && leftOperatorSymbol == rightOperatorSymbol && leftType == rightType
+            }
+            else if (lhs is Expression.PostfixUnaryExpression && rhs is Expression.PostfixUnaryExpression) {
+                val leftExpression: Expression = lhs.subExpression
+                val leftOperatorSymbol: String = lhs.operatorSymbol
+                val leftType: String = lhs.typeName
+                val rightExpression: Expression = rhs.subExpression
+                val rightOperatorSymbol: String = rhs.operatorSymbol
+                val rightType: String = rhs.typeName
+
+                return leftExpression == rightExpression && leftOperatorSymbol == rightOperatorSymbol && leftType == rightType
+            }
+            else if (lhs is Expression.CallExpression && rhs is Expression.CallExpression) {
+                val leftCallExpression: CallExpressionData = lhs.data
+                val rightCallExpression: CallExpressionData = rhs.data
+                return leftCallExpression == rightCallExpression
+            }
+            else if (lhs is Expression.LiteralIntExpression && rhs is Expression.LiteralIntExpression) {
+                val leftValue: Long = lhs.value
+                val rightValue: Long = rhs.value
+                return leftValue == rightValue
+            }
+            else if (lhs is Expression.LiteralDoubleExpression && rhs is Expression.LiteralDoubleExpression) {
+                val leftValue: Double = lhs.value
+                val rightValue: Double = rhs.value
+                return leftValue == rightValue
+            }
+            else if (lhs is Expression.LiteralBoolExpression && rhs is Expression.LiteralBoolExpression) {
+                val leftValue: Boolean = lhs.value
+                val rightValue: Boolean = rhs.value
+                return leftValue == rightValue
+            }
+            else if (lhs is Expression.LiteralStringExpression && rhs is Expression.LiteralStringExpression) {
+                val leftValue: String = lhs.value
+                val rightValue: String = rhs.value
+                return leftValue == rightValue
+            }
+            if (lhs is Expression.NilLiteralExpression && rhs is Expression.NilLiteralExpression) {
+                return true
+            }
+            else if (lhs is Expression.InterpolatedStringLiteralExpression && rhs is Expression.InterpolatedStringLiteralExpression) {
+                val leftExpressions: MutableList<Expression> = lhs.expressions
+                val rightExpressions: MutableList<Expression> = rhs.expressions
+                return leftExpressions == rightExpressions
+            }
+            else if (lhs is Expression.TupleExpression && rhs is Expression.TupleExpression) {
+                val leftPairs: MutableList<LabeledExpression> = lhs.pairs
+                val rightPairs: MutableList<LabeledExpression> = rhs.pairs
+                return leftPairs == rightPairs
+            }
+            else if (lhs is Expression.TupleShuffleExpression && rhs is Expression.TupleShuffleExpression) {
+                val leftLabels: MutableList<String> = lhs.labels
+                val leftIndices: MutableList<TupleShuffleIndex> = lhs.indices
+                val leftExpressions: MutableList<Expression> = lhs.expressions
+                val rightLabels: MutableList<String> = rhs.labels
+                val rightIndices: MutableList<TupleShuffleIndex> = rhs.indices
+                val rightExpressions: MutableList<Expression> = rhs.expressions
+
+                return leftLabels == rightLabels && leftIndices == rightIndices && leftExpressions == rightExpressions
+            }
+            else {
+                return false
+            }
+        }
+        else {
+            return false
+        }
+    }
 }
 
 data class LabeledExpression(
@@ -647,6 +1005,17 @@ open class VariableDeclarationData {
         this.extendsType = extendsType
         this.annotations = annotations
     }
+
+    override open fun equals(other: Any?): Boolean {
+        val lhs: VariableDeclarationData = this
+        val rhs: Any? = other
+        if (rhs is VariableDeclarationData) {
+            return lhs.identifier == rhs.identifier && lhs.typeName == rhs.typeName && lhs.expression == rhs.expression && lhs.getter == rhs.getter && lhs.setter == rhs.setter && lhs.isLet == rhs.isLet && lhs.isImplicit == rhs.isImplicit && lhs.isStatic == rhs.isStatic && lhs.extendsType == rhs.extendsType && lhs.annotations == rhs.annotations
+        }
+        else {
+            return false
+        }
+    }
 }
 
 open class DeclarationReferenceData {
@@ -669,6 +1038,17 @@ open class DeclarationReferenceData {
         this.isImplicit = isImplicit
         this.range = range
     }
+
+    override open fun equals(other: Any?): Boolean {
+        val lhs: DeclarationReferenceData = this
+        val rhs: Any? = other
+        if (rhs is DeclarationReferenceData) {
+            return lhs.identifier == rhs.identifier && lhs.typeName == rhs.typeName && lhs.isStandardLibrary == rhs.isStandardLibrary && lhs.isImplicit == rhs.isImplicit && lhs.range == rhs.range
+        }
+        else {
+            return false
+        }
+    }
 }
 
 open class CallExpressionData {
@@ -687,6 +1067,17 @@ open class CallExpressionData {
         this.parameters = parameters
         this.typeName = typeName
         this.range = range
+    }
+
+    override open fun equals(other: Any?): Boolean {
+        val lhs: CallExpressionData = this
+        val rhs: Any? = other
+        if (rhs is CallExpressionData) {
+            return lhs.function == rhs.function && lhs.parameters == rhs.parameters && lhs.typeName == rhs.typeName && lhs.range == rhs.range
+        }
+        else {
+            return false
+        }
     }
 }
 
@@ -734,6 +1125,17 @@ open class FunctionDeclarationData {
         this.access = access
         this.annotations = annotations
     }
+
+    override open fun equals(other: Any?): Boolean {
+        val lhs: FunctionDeclarationData = this
+        val rhs: Any? = other
+        if (rhs is FunctionDeclarationData) {
+            return lhs.prefix == rhs.prefix && lhs.parameters == rhs.parameters && lhs.returnType == rhs.returnType && lhs.functionType == rhs.functionType && lhs.genericTypes == rhs.genericTypes && lhs.isImplicit == rhs.isImplicit && lhs.isStatic == rhs.isStatic && lhs.isMutating == rhs.isMutating && lhs.isPure == rhs.isPure && lhs.extendsType == rhs.extendsType && lhs.statements == rhs.statements && lhs.access == rhs.access && lhs.annotations == rhs.annotations
+        }
+        else {
+            return false
+        }
+    }
 }
 
 open class IfStatementData {
@@ -774,6 +1176,17 @@ open class IfStatementData {
         this.elseStatement = elseStatement
         this.isGuard = isGuard
     }
+
+    override open fun equals(other: Any?): Boolean {
+        val lhs: IfStatementData = this
+        val rhs: Any? = other
+        if (rhs is IfStatementData) {
+            return lhs.conditions == rhs.conditions && lhs.declarations == rhs.declarations && lhs.statements == rhs.statements && lhs.elseStatement == rhs.elseStatement && lhs.isGuard == rhs.isGuard
+        }
+        else {
+            return false
+        }
+    }
 }
 
 open class SwitchCase {
@@ -783,6 +1196,17 @@ open class SwitchCase {
     constructor(expressions: MutableList<Expression>, statements: MutableList<Statement>) {
         this.expressions = expressions
         this.statements = statements
+    }
+
+    override open fun equals(other: Any?): Boolean {
+        val lhs: SwitchCase = this
+        val rhs: Any? = other
+        if (rhs is SwitchCase) {
+            return lhs.expressions == rhs.expressions && lhs.statements == rhs.statements
+        }
+        else {
+            return false
+        }
     }
 }
 
@@ -802,6 +1226,17 @@ open class EnumElement: PrintableAsTree {
         this.associatedValues = associatedValues
         this.rawValue = rawValue
         this.annotations = annotations
+    }
+
+    override open fun equals(other: Any?): Boolean {
+        val lhs: EnumElement = this
+        val rhs: Any? = other
+        if (rhs is EnumElement) {
+            return lhs.name == rhs.name && lhs.associatedValues == rhs.associatedValues && lhs.rawValue == rhs.rawValue && lhs.annotations == rhs.annotations
+        }
+        else {
+            return false
+        }
     }
 
     override val treeDescription: String
@@ -832,17 +1267,24 @@ public sealed class TupleShuffleIndex {
         }
     }
 
-    public fun isEqualToOther(other: TupleShuffleIndex): Boolean {
-        if (this is TupleShuffleIndex.Variadic && other is TupleShuffleIndex.Variadic) {
-            val selfCount: Int = this.count
-            val otherCount: Int = other.count
-            return (selfCount == otherCount)
-        }
-        else if (this is TupleShuffleIndex.Absent && other is TupleShuffleIndex.Absent) {
-            return true
-        }
-        else if (this is TupleShuffleIndex.Present && other is TupleShuffleIndex.Present) {
-            return true
+    override open fun equals(other: Any?): Boolean {
+        val lhs: TupleShuffleIndex = this
+        val rhs: Any? = other
+        if (rhs is TupleShuffleIndex) {
+            if (lhs is TupleShuffleIndex.Variadic && rhs is TupleShuffleIndex.Variadic) {
+                val lhsCount: Int = lhs.count
+                val rhsCount: Int = rhs.count
+                return (lhsCount == rhsCount)
+            }
+            else if (lhs is TupleShuffleIndex.Absent && rhs is TupleShuffleIndex.Absent) {
+                return true
+            }
+            else if (lhs is TupleShuffleIndex.Present && rhs is TupleShuffleIndex.Present) {
+                return true
+            }
+            else {
+                return false
+            }
         }
         else {
             return false

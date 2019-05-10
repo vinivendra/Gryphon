@@ -311,7 +311,7 @@ private fun Expression.matches(
         var result: Boolean = (leftLabels == rightLabels)
 
         for ((leftIndex, rightIndex) in leftIndices.zip(rightIndices)) {
-            result = result && leftIndex.isEqualToOther(rightIndex)
+            result = result && leftIndex == rightIndex
         }
 
         for ((leftExpression, rightExpression) in leftExpressions.zip(rightExpressions)) {

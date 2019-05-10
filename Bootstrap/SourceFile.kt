@@ -61,4 +61,15 @@ data class SourceFileRange(
     val lineEnd: Int,
     val columnStart: Int,
     val columnEnd: Int
-)
+) {
+    override open fun equals(other: Any?): Boolean {
+        val lhs: SourceFileRange = this
+        val rhs: Any? = other
+        if (rhs is SourceFileRange) {
+            return true
+        }
+        else {
+            return false
+        }
+    }
+}

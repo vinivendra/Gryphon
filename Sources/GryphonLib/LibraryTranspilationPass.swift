@@ -369,7 +369,7 @@ extension Expression {
 			var result = (leftLabels == rightLabels)
 
 			for (leftIndex, rightIndex) in zip(leftIndices, rightIndices) {
-				result = result && leftIndex.isEqualToOther(rightIndex)
+				result = result && leftIndex == rightIndex
 			}
 
 			for (leftExpression, rightExpression) in zip(leftExpressions, rightExpressions) {

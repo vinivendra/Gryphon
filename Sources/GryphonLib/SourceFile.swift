@@ -85,7 +85,7 @@ struct SourceFileRange: Equatable {
 	/// This is technically incorrect but allows AST nodes with ranges to get an automatic Equatable
 	/// conformance that ignores ranges, which is useful since we're frequently comparing nodes
 	/// with the same practical meaning but different source file ranges.
-	static func == (lhs: SourceFileRange, rhs: SourceFileRange) -> Bool { // kotlin: ignore
+	static func == (lhs: SourceFileRange, rhs: SourceFileRange) -> Bool {
 		return true
 	}
 }

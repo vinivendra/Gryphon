@@ -104,7 +104,7 @@ public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible
 	}
 
 	// MARK: - Equatable
-	public static func == (lhs: SwiftAST, rhs: SwiftAST) -> Bool { // kotlin: ignore
+	public static func == (lhs: SwiftAST, rhs: SwiftAST) -> Bool {
 		return lhs.name == rhs.name &&
 			lhs.standaloneAttributes == rhs.standaloneAttributes &&
 			lhs.keyValueAttributes == rhs.keyValueAttributes &&
