@@ -120,28 +120,24 @@ public class Driver {
 			}
 		}
 
-		// insert: return gryphonAST
-
-		if true { // kotlin: ignore
-			guard settings.shouldGenerateKotlin else {
-				return gryphonAST
-			}
-
-			let kotlinCode = try Compiler.generateKotlinCode(fromGryphonAST: gryphonAST)
-			if let outputFilePath = settings.outputFileMap?.getOutputFile(
-					forInputFile: inputFilePath, outputType: .kotlin),
-				settings.canPrintToFiles
-			{
-				Utilities.createFile(atPath: outputFilePath, containing: kotlinCode)
-			}
-			else if settings.canPrintToOutput {
-				if settings.shouldEmitKotlin {
-					print(kotlinCode)
-				}
-			}
-
-			return kotlinCode
+		guard settings.shouldGenerateKotlin else {
+			return gryphonAST
 		}
+
+		let kotlinCode = try Compiler.generateKotlinCode(fromGryphonAST: gryphonAST)
+		if let outputFilePath = settings.outputFileMap?.getOutputFile(
+				forInputFile: inputFilePath, outputType: .kotlin),
+			settings.canPrintToFiles
+		{
+			Utilities.createFile(atPath: outputFilePath, containing: kotlinCode)
+		}
+		else if settings.canPrintToOutput {
+			if settings.shouldEmitKotlin {
+				print(kotlinCode)
+			}
+		}
+
+		return kotlinCode
 	}
 
 	@discardableResult

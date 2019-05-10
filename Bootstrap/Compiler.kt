@@ -100,6 +100,16 @@ open class Compiler {
             val rawASTs: MutableList<GryphonAST> = transpileGryphonRawASTs(inputFiles = inputFiles)
             return rawASTs.map { generateGryphonAST(ast = it) }.toMutableList()
         }
+
+        public fun generateKotlinCode(ast: GryphonAST): String {
+            log("\t- Translating AST to Kotlin...")
+            return KotlinTranslator().translateAST(ast)
+        }
+
+        public fun transpileKotlinCode(inputFiles: MutableList<String>): MutableList<String> {
+            val asts: MutableList<GryphonAST> = transpileGryphonASTs(inputFiles = inputFiles)
+            return asts.map { generateKotlinCode(ast = it) }.toMutableList()
+        }
     }
 }
 

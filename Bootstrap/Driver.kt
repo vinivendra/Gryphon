@@ -58,6 +58,7 @@ open class Driver {
             : Any?
         {
             val gryphonAST: GryphonAST = Compiler.generateGryphonASTAfterSecondPasses(ast = gryphonFirstPassedAST)
+
             if (settings.shouldEmitAST) {
                 val output: String = gryphonAST.prettyDescription(horizontalLimit = settings.horizontalLimit)
                 val outputFilePath: String? = settings.outputFileMap?.getOutputFile(
@@ -70,7 +71,26 @@ open class Driver {
                     println(output)
                 }
             }
-            return gryphonAST
+
+            if (!(settings.shouldGenerateKotlin)) {
+                return gryphonAST
+            }
+
+            val kotlinCode: String = Compiler.generateKotlinCode(ast = gryphonAST)
+            val outputFilePath: String? = settings.outputFileMap?.getOutputFile(
+                file = inputFilePath,
+                outputType = OutputFileMap.OutputType.KOTLIN)
+
+            if (outputFilePath != null && settings.canPrintToFiles) {
+                Utilities.createFile(filePath = outputFilePath, contents = kotlinCode)
+            }
+            else if (settings.canPrintToOutput) {
+                if (settings.shouldEmitKotlin) {
+                    println(kotlinCode)
+                }
+            }
+
+            return kotlinCode
         }
 
         public fun run(arguments: MutableList<String>): Any? {

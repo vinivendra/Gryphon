@@ -127,11 +127,29 @@ public class Compiler {
 		return ast
 	}
 
-	public static func transpileGryphonASTs(fromASTDumpFiles inputFiles: ArrayClass<String>)
+	public static func transpileGryphonASTs(
+		fromASTDumpFiles inputFiles: ArrayClass<String>)
 		throws -> ArrayClass<GryphonAST>
 	{
 		let rawASTs = try transpileGryphonRawASTs(fromASTDumpFiles: inputFiles)
 		return try rawASTs.map { try generateGryphonAST(fromGryphonRawAST: $0) }
+	}
+
+	//
+	public static func generateKotlinCode(
+		fromGryphonAST ast: GryphonAST)
+		throws -> String
+	{
+		log("\t- Translating AST to Kotlin...")
+		return try KotlinTranslator().translateAST(ast)
+	}
+
+	public static func transpileKotlinCode(
+		fromASTDumpFiles inputFiles: ArrayClass<String>)
+		throws -> ArrayClass<String>
+	{
+		let asts = try transpileGryphonASTs(fromASTDumpFiles: inputFiles)
+		return try asts.map { try generateKotlinCode(fromGryphonAST: $0) }
 	}
 }
 
@@ -158,11 +176,6 @@ extension Compiler { // kotlin: ignore
 		let commandResult = Shell.runShellCommand(kotlinCompilerPath, arguments: arguments)
 
 		return commandResult
-	}
-
-	public static func generateKotlinCode(fromGryphonAST ast: GryphonAST) throws -> String {
-		log("\t- Translating AST to Kotlin...")
-		return try KotlinTranslator().translateAST(ast)
 	}
 
 	//
@@ -197,14 +210,6 @@ extension Compiler { // kotlin: ignore
 			return kotlinFilePath
 		}
 		return try compile(kotlinFiles: kotlinFilePaths, outputFolder: outputFolder)
-	}
-
-	public static func transpileKotlinCode(
-		fromASTDumpFiles inputFiles: ArrayClass<String>)
-		throws -> ArrayClass<String>
-	{
-		let asts = try transpileGryphonASTs(fromASTDumpFiles: inputFiles)
-		return try asts.map { try generateKotlinCode(fromGryphonAST: $0) }
 	}
 
 	//
