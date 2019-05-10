@@ -159,6 +159,39 @@ open class KotlinTranslator {
     }
 }
 
+private fun KotlinTranslator.translateStringLiteral(value: String): String {
+    return "\"${value}\""
+}
+
+private fun KotlinTranslator.translateCharacterLiteral(value: String): String {
+    return "'${value}'"
+}
+
+private fun KotlinTranslator.translateInterpolatedStringLiteralExpression(
+    expressions: MutableList<Expression>,
+    indentation: String)
+    : String
+{
+    var result: String = "\""
+
+    for (expression in expressions) {
+        if (expression is Expression.LiteralStringExpression) {
+            val string: String = expression.value
+            if (string == "\"\"") {
+                continue
+            }
+            result += string
+        }
+        else {
+            result += "${" + translateExpression(expression, withIndentation = indentation) + "}"
+        }
+    }
+
+    result += "\""
+
+    return result
+}
+
 fun translateExpression(expression: Expression, indentation: String): String {
 	return ""
 }

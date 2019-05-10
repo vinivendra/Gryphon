@@ -1686,6 +1686,10 @@ extension KotlinTranslator { // kotlin: ignore
 
 		return result
 	}
+}
+
+extension KotlinTranslator {
+	// MARK: Expression translations
 
 	private func translateStringLiteral(value: String) -> String {
 		return "\"\(value)\""
@@ -1697,7 +1701,9 @@ extension KotlinTranslator { // kotlin: ignore
 	}
 
 	private func translateInterpolatedStringLiteralExpression(
-		expressions: [Expression], withIndentation indentation: String) throws -> String
+		expressions: [Expression],
+		withIndentation indentation: String)
+		throws -> String
 	{
 		var result = "\""
 
@@ -1721,9 +1727,7 @@ extension KotlinTranslator { // kotlin: ignore
 
 		return result
 	}
-}
 
-extension KotlinTranslator {
 	// declaration: fun translateExpression(expression: Expression, indentation: String): String {
 	// declaration: 	return ""
 	// declaration: }
