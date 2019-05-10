@@ -15,6 +15,8 @@
 */
 
 public class KotlinTranslator {
+	internal static var indentationString = "\t"
+
 	static let errorTranslation = "<<Error>>"
 
 	static let lineLimit = 100
@@ -1719,10 +1721,14 @@ extension KotlinTranslator { // kotlin: ignore
 
 		return result
 	}
+}
+
+extension KotlinTranslator {
+	// declaration: fun translateExpression(expression: Expression, indentation: String): String {
+	// declaration: 	return ""
+	// declaration: }
 
 	// MARK: - Supporting methods
-	internal static var indentationString = "\t"
-
 	private func increaseIndentation(_ indentation: String) -> String {
 		return indentation + KotlinTranslator.indentationString
 	}
@@ -1732,28 +1738,28 @@ extension KotlinTranslator { // kotlin: ignore
 	}
 }
 
-struct KotlinTranslatorError: Error, CustomStringConvertible { // kotlin: ignore
-	let message: String
+struct KotlinTranslatorError: Error, CustomStringConvertible {
+	let errorMessage: String
 	let ast: Statement
 
-	public var description: String {
+	public var description: String { // annotation: override
 		var nodeDescription = ""
 		ast.prettyPrint(horizontalLimit: 100) {
 			nodeDescription += $0
 		}
 
 		return "Error: failed to translate Gryphon AST into Kotlin.\n" +
-			message + ".\n" +
+			errorMessage + ".\n" +
 			"Thrown when translating the following AST node:\n\(nodeDescription)"
 	}
 }
 
-func unexpectedASTStructureError( // kotlin: ignore
-	_ message: String,
+func unexpectedASTStructureError(
+	_ errorMessage: String,
 	AST ast: Statement)
 	throws -> String
 {
-	let error = KotlinTranslatorError(message: message, ast: ast)
+	let error = KotlinTranslatorError(errorMessage: errorMessage, ast: ast)
 	try Compiler.handleError(error)
 	return KotlinTranslator.errorTranslation
 }

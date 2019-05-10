@@ -1,5 +1,6 @@
 open class KotlinTranslator {
     companion object {
+        var indentationString: String = "\t"
         val errorTranslation: String = "<<Error>>"
         val lineLimit: Int = 100
         var sealedClasses: MutableList<String> = mutableListOf()
@@ -156,4 +157,33 @@ open class KotlinTranslator {
             return translateType(component)
         }
     }
+}
+
+fun translateExpression(expression: Expression, indentation: String): String {
+	return ""
+}
+
+private fun KotlinTranslator.increaseIndentation(indentation: String): String {
+    return indentation + KotlinTranslator.indentationString
+}
+
+private fun KotlinTranslator.decreaseIndentation(indentation: String): String {
+    return indentation.dropLast(KotlinTranslator.indentationString.length)
+}
+
+data class KotlinTranslatorError(
+    val errorMessage: String,
+    val ast: Statement
+): Exception() {
+    override fun toString(): String {
+        var nodeDescription: String = ""
+        ast.prettyPrint(horizontalLimit = 100, printFunction = { nodeDescription += it })
+        return "Error: failed to translate Gryphon AST into Kotlin.\n" + errorMessage + ".\n" + "Thrown when translating the following AST node:\n${nodeDescription}"
+    }
+}
+
+internal fun unexpectedASTStructureError(errorMessage: String, ast: Statement): String {
+    val error: KotlinTranslatorError = KotlinTranslatorError(errorMessage = errorMessage, ast = ast)
+    Compiler.handleError(error)
+    return KotlinTranslator.errorTranslation
 }
