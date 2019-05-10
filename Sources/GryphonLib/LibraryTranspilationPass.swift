@@ -366,10 +366,16 @@ extension Expression {
 				indices: rightIndices,
 				expressions: rightExpressions) = template
 		{
-			var result = (leftLabels == rightLabels) && (leftIndices == rightIndices)
+			var result = (leftLabels == rightLabels)
+
+			for (leftIndex, rightIndex) in zip(leftIndices, rightIndices) {
+				result = result && leftIndex.isEqualToOther(rightIndex)
+			}
+
 			for (leftExpression, rightExpression) in zip(leftExpressions, rightExpressions) {
 				result = result && leftExpression.matches(rightExpression, matches)
 			}
+
 			return result
 		}
 		else {

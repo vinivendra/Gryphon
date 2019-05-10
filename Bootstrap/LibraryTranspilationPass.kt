@@ -308,7 +308,11 @@ private fun Expression.matches(
         val rightLabels: MutableList<String> = template.labels
         val rightIndices: MutableList<TupleShuffleIndex> = template.indices
         val rightExpressions: MutableList<Expression> = template.expressions
-        var result: Boolean = (leftLabels == rightLabels) && (leftIndices == rightIndices)
+        var result: Boolean = (leftLabels == rightLabels)
+
+        for ((leftIndex, rightIndex) in leftIndices.zip(rightIndices)) {
+            result = result && leftIndex.isEqualToOther(rightIndex)
+        }
 
         for ((leftExpression, rightExpression) in leftExpressions.zip(rightExpressions)) {
             result = result && leftExpression.matches(rightExpression, matches)

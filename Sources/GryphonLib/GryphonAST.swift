@@ -535,12 +535,16 @@ public indirect enum Expression: PrintableAsTree, Equatable {
 	public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		switch self {
 		case let .templateExpression(pattern: pattern, matches: matches):
-			let matchesTrees = ArrayClass<PrintableAsTree?>(
-				matches.map { PrintableTree($0.key, [$0.value]) })
+			let matchesTrees = matches.map { PrintableTree($0.key, [$0.value]) }
+
+			let sortedMatchesTrees = matchesTrees.sorted { a, b in // kotlin: ignore
+				a.treeDescription < b.treeDescription
+			}
+			// insert: val sortedMatchesTrees = matchesTrees.sortedBy({ it.treeDescription })
 
 			return [
 				PrintableTree("pattern \"\(pattern)\""),
-				PrintableTree("matches", matchesTrees), ]
+				PrintableTree("matches", ArrayClass<PrintableAsTree?>(sortedMatchesTrees)), ]
 		case .literalCodeExpression(string: let string):
 			return [PrintableTree(string)]
 		case .literalDeclarationExpression(string: let string):
@@ -1102,6 +1106,28 @@ public enum TupleShuffleIndex: Equatable, CustomStringConvertible {
 			return "absent"
 		case .present:
 			return "present"
+		}
+	}
+
+	// TODO: Implement equatable translation
+	public func isEqualToOther(_ other: TupleShuffleIndex) -> Bool {
+		if case let .variadic(count: selfCount) = self,
+			case let .variadic(count: otherCount) = other
+		{
+			return (selfCount == otherCount)
+		}
+		else if case .absent = self,
+			case .absent = other
+		{
+			return true
+		}
+		else if case .present = self,
+			case .present = other
+		{
+			return true
+		}
+		else {
+			return false
 		}
 	}
 }

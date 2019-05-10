@@ -326,9 +326,11 @@ public sealed class Expression: PrintableAsTree {
                 is Expression.TemplateExpression -> {
                     val pattern: String = this.pattern
                     val matches: MutableMap<String, Expression> = this.matches
-                    val matchesTrees: MutableList<PrintableAsTree?> = matches.map { PrintableTree(it.key, mutableListOf(it.value)) }.toMutableList().toMutableList<PrintableAsTree?>()
+                    val matchesTrees: MutableList<PrintableTree> = matches.map { PrintableTree(it.key, mutableListOf(it.value)) }.toMutableList()
 
-                    mutableListOf(PrintableTree("pattern \"${pattern}\""), PrintableTree("matches", matchesTrees))
+                    val sortedMatchesTrees = matchesTrees.sortedBy({ it.treeDescription })
+
+                    mutableListOf(PrintableTree("pattern \"${pattern}\""), PrintableTree("matches", sortedMatchesTrees.toMutableList<PrintableAsTree?>()))
                 }
                 is Expression.LiteralCodeExpression -> mutableListOf(PrintableTree(string))
                 is Expression.LiteralDeclarationExpression -> mutableListOf(PrintableTree(string))
@@ -827,6 +829,23 @@ public sealed class TupleShuffleIndex {
             }
             is TupleShuffleIndex.Absent -> "absent"
             is TupleShuffleIndex.Present -> "present"
+        }
+    }
+
+    public fun isEqualToOther(other: TupleShuffleIndex): Boolean {
+        if (this is TupleShuffleIndex.Variadic && other is TupleShuffleIndex.Variadic) {
+            val selfCount: Int = this.count
+            val otherCount: Int = other.count
+            return (selfCount == otherCount)
+        }
+        else if (this is TupleShuffleIndex.Absent && other is TupleShuffleIndex.Absent) {
+            return true
+        }
+        else if (this is TupleShuffleIndex.Present && other is TupleShuffleIndex.Present) {
+            return true
+        }
+        else {
+            return false
         }
     }
 }
