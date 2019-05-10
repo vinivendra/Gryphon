@@ -82,7 +82,7 @@ open class KotlinTranslator {
     constructor() {
     }
 
-    private fun translateType(typeName: String): String {
+    internal fun translateType(typeName: String): String {
         val typeName: String = typeName.replace("()", "Unit")
         if (typeName.endsWith("?")) {
             return translateType(typeName.dropLast(1)) + "?"
@@ -159,10 +159,316 @@ open class KotlinTranslator {
     }
 }
 
-fun translateExpression(expression: Expression,
-	withIndentation: String): String
+private fun KotlinTranslator.translateExpression(
+    expression: Expression,
+    indentation: String)
+    : String
 {
-	return ""
+    return when (expression) {
+        is Expression.TemplateExpression -> {
+            val pattern: String = expression.pattern
+            val matches: MutableMap<String, Expression> = expression.matches
+            translateTemplateExpression(pattern = pattern, matches = matches, indentation = indentation)
+        }
+        is Expression.LiteralCodeExpression -> {
+            val string: String = expression.string
+            translateLiteralCodeExpression(string = string)
+        }
+        is Expression.LiteralDeclarationExpression -> {
+            val string: String = expression.string
+            translateLiteralCodeExpression(string = string)
+        }
+        is Expression.ArrayExpression -> {
+            val elements: MutableList<Expression> = expression.elements
+            val typeName: String = expression.typeName
+            translateArrayExpression(elements = elements, typeName = typeName, indentation = indentation)
+        }
+        is Expression.DictionaryExpression -> {
+            val keys: MutableList<Expression> = expression.keys
+            val values: MutableList<Expression> = expression.values
+            val typeName: String = expression.typeName
+
+            translateDictionaryExpression(
+                keys = keys,
+                values = values,
+                typeName = typeName,
+                indentation = indentation)
+        }
+        is Expression.BinaryOperatorExpression -> {
+            val leftExpression: Expression = expression.leftExpression
+            val rightExpression: Expression = expression.rightExpression
+            val operatorSymbol: String = expression.operatorSymbol
+            val typeName: String = expression.typeName
+
+            translateBinaryOperatorExpression(
+                leftExpression = leftExpression,
+                rightExpression = rightExpression,
+                operatorSymbol = operatorSymbol,
+                typeName = typeName,
+                indentation = indentation)
+        }
+        is Expression.CallExpression -> {
+            val callExpression: CallExpressionData = expression.data
+            translateCallExpression(callExpression = callExpression, indentation = indentation)
+        }
+        is Expression.ClosureExpression -> {
+            val parameters: MutableList<LabeledType> = expression.parameters
+            val statements: MutableList<Statement> = expression.statements
+            val typeName: String = expression.typeName
+
+            translateClosureExpression(
+                parameters = parameters,
+                statements = statements,
+                typeName = typeName,
+                indentation = indentation)
+        }
+        is Expression.DeclarationReferenceExpression -> {
+            val declarationReferenceExpression: DeclarationReferenceData = expression.data
+            translateDeclarationReferenceExpression(declarationReferenceExpression)
+        }
+        is Expression.ReturnExpression -> {
+            val expression: Expression? = expression.expression
+            translateReturnExpression(expression = expression, indentation = indentation)
+        }
+        is Expression.DotExpression -> {
+            val leftExpression: Expression = expression.leftExpression
+            val rightExpression: Expression = expression.rightExpression
+            translateDotSyntaxCallExpression(
+                leftExpression = leftExpression,
+                rightExpression = rightExpression,
+                indentation = indentation)
+        }
+        is Expression.LiteralStringExpression -> {
+            val value: String = expression.value
+            translateStringLiteral(value = value)
+        }
+        is Expression.LiteralCharacterExpression -> {
+            val value: String = expression.value
+            translateCharacterLiteral(value = value)
+        }
+        is Expression.InterpolatedStringLiteralExpression -> {
+            val expressions: MutableList<Expression> = expression.expressions
+            translateInterpolatedStringLiteralExpression(expressions = expressions, indentation = indentation)
+        }
+        is Expression.PrefixUnaryExpression -> {
+            val subExpression: Expression = expression.subExpression
+            val operatorSymbol: String = expression.operatorSymbol
+            val typeName: String = expression.typeName
+
+            translatePrefixUnaryExpression(
+                subExpression = subExpression,
+                operatorSymbol = operatorSymbol,
+                typeName = typeName,
+                indentation = indentation)
+        }
+        is Expression.PostfixUnaryExpression -> {
+            val subExpression: Expression = expression.subExpression
+            val operatorSymbol: String = expression.operatorSymbol
+            val typeName: String = expression.typeName
+
+            translatePostfixUnaryExpression(
+                subExpression = subExpression,
+                operatorSymbol = operatorSymbol,
+                typeName = typeName,
+                indentation = indentation)
+        }
+        is Expression.IfExpression -> {
+            val condition: Expression = expression.condition
+            val trueExpression: Expression = expression.trueExpression
+            val falseExpression: Expression = expression.falseExpression
+
+            translateIfExpression(
+                condition = condition,
+                trueExpression = trueExpression,
+                falseExpression = falseExpression,
+                indentation = indentation)
+        }
+        is Expression.TypeExpression -> {
+            val typeName: String = expression.typeName
+            translateType(typeName)
+        }
+        is Expression.SubscriptExpression -> {
+            val subscriptedExpression: Expression = expression.subscriptedExpression
+            val indexExpression: Expression = expression.indexExpression
+            val typeName: String = expression.typeName
+
+            translateSubscriptExpression(
+                subscriptedExpression = subscriptedExpression,
+                indexExpression = indexExpression,
+                typeName = typeName,
+                indentation = indentation)
+        }
+        is Expression.ParenthesesExpression -> {
+            val expression: Expression = expression.expression
+            "(" + translateExpression(expression, indentation = indentation) + ")"
+        }
+        is Expression.ForceValueExpression -> {
+            val expression: Expression = expression.expression
+            translateExpression(expression, indentation = indentation) + "!!"
+        }
+        is Expression.OptionalExpression -> {
+            val expression: Expression = expression.expression
+            translateExpression(expression, indentation = indentation) + "?"
+        }
+        is Expression.LiteralIntExpression -> {
+            val value: Long = expression.value
+            value.toString()
+        }
+        is Expression.LiteralUIntExpression -> {
+            val value: ULong = expression.value
+            value.toString() + "u"
+        }
+        is Expression.LiteralDoubleExpression -> {
+            val value: Double = expression.value
+            value.toString()
+        }
+        is Expression.LiteralFloatExpression -> {
+            val value: Float = expression.value
+            value.toString() + "f"
+        }
+        is Expression.LiteralBoolExpression -> {
+            val value: Boolean = expression.value
+            value.toString()
+        }
+        is Expression.NilLiteralExpression -> "null"
+        is Expression.TupleExpression -> {
+            val pairs: MutableList<LabeledExpression> = expression.pairs
+            translateTupleExpression(pairs = pairs, indentation = indentation)
+        }
+        is Expression.TupleShuffleExpression -> {
+            val labels: MutableList<String> = expression.labels
+            val indices: MutableList<TupleShuffleIndex> = expression.indices
+            val expressions: MutableList<Expression> = expression.expressions
+
+            translateTupleShuffleExpression(
+                labels = labels,
+                indices = indices,
+                expressions = expressions,
+                indentation = indentation)
+        }
+        is Expression.Error -> KotlinTranslator.errorTranslation
+    }
+}
+
+private fun KotlinTranslator.translateSubscriptExpression(
+    subscriptedExpression: Expression,
+    indexExpression: Expression,
+    typeName: String,
+    indentation: String)
+    : String
+{
+    return translateExpression(subscriptedExpression, indentation = indentation) + "[${translateExpression(indexExpression, indentation = indentation)}]"
+}
+
+private fun KotlinTranslator.translateArrayExpression(
+    elements: MutableList<Expression>,
+    typeName: String,
+    indentation: String)
+    : String
+{
+    val expressionsString: String = elements.map { translateExpression(it, indentation = indentation) }.toMutableList().joinToString(separator = ", ")
+    return "mutableListOf(${expressionsString})"
+}
+
+private fun KotlinTranslator.translateDictionaryExpression(
+    keys: MutableList<Expression>,
+    values: MutableList<Expression>,
+    typeName: String,
+    indentation: String)
+    : String
+{
+    val keyExpressions: MutableList<String> = keys.map { translateExpression(it, indentation = indentation) }.toMutableList()
+    val valueExpressions: MutableList<String> = values.map { translateExpression(it, indentation = indentation) }.toMutableList()
+    val expressionsString: String = keyExpressions.zip(valueExpressions).map { keyValueTuple -> "${keyValueTuple.first} to ${keyValueTuple.second}" }.toMutableList().joinToString(separator = ", ")
+
+    return "mutableMapOf(${expressionsString})"
+}
+
+private fun KotlinTranslator.translateReturnExpression(
+    expression: Expression?,
+    indentation: String)
+    : String
+{
+    if (expression != null) {
+        val expressionString: String = translateExpression(expression, indentation = indentation)
+        return "return ${expressionString}"
+    }
+    else {
+        return "return"
+    }
+}
+
+private fun KotlinTranslator.translateDotSyntaxCallExpression(
+    leftExpression: Expression,
+    rightExpression: Expression,
+    indentation: String)
+    : String
+{
+    val leftHandString: String = translateExpression(leftExpression, indentation = indentation)
+    val rightHandString: String = translateExpression(rightExpression, indentation = indentation)
+    if (KotlinTranslator.sealedClasses.contains(leftHandString)) {
+        val translatedEnumCase: String = rightHandString.capitalizedAsCamelCase()
+        return "${leftHandString}.${translatedEnumCase}()"
+    }
+    else {
+        val enumName: String = leftHandString.split(separator = ".").lastOrNull()!!
+        if (KotlinTranslator.enumClasses.contains(enumName)) {
+            val translatedEnumCase: String = rightHandString.upperSnakeCase()
+            return "${leftHandString}.${translatedEnumCase}"
+        }
+        else {
+            return "${leftHandString}.${rightHandString}"
+        }
+    }
+}
+
+private fun KotlinTranslator.translateBinaryOperatorExpression(
+    leftExpression: Expression,
+    rightExpression: Expression,
+    operatorSymbol: String,
+    typeName: String,
+    indentation: String)
+    : String
+{
+    val leftTranslation: String = translateExpression(leftExpression, indentation = indentation)
+    val rightTranslation: String = translateExpression(rightExpression, indentation = indentation)
+    return "${leftTranslation} ${operatorSymbol} ${rightTranslation}"
+}
+
+private fun KotlinTranslator.translatePrefixUnaryExpression(
+    subExpression: Expression,
+    operatorSymbol: String,
+    typeName: String,
+    indentation: String)
+    : String
+{
+    val expressionTranslation: String = translateExpression(subExpression, indentation = indentation)
+    return operatorSymbol + expressionTranslation
+}
+
+private fun KotlinTranslator.translatePostfixUnaryExpression(
+    subExpression: Expression,
+    operatorSymbol: String,
+    typeName: String,
+    indentation: String)
+    : String
+{
+    val expressionTranslation: String = translateExpression(subExpression, indentation = indentation)
+    return expressionTranslation + operatorSymbol
+}
+
+private fun KotlinTranslator.translateIfExpression(
+    condition: Expression,
+    trueExpression: Expression,
+    falseExpression: Expression,
+    indentation: String)
+    : String
+{
+    val conditionTranslation: String = translateExpression(condition, indentation = indentation)
+    val trueExpressionTranslation: String = translateExpression(trueExpression, indentation = indentation)
+    val falseExpressionTranslation: String = translateExpression(falseExpression, indentation = indentation)
+
+    return "if (${conditionTranslation}) { ${trueExpressionTranslation} } else " + "{ ${falseExpressionTranslation} }"
 }
 
 private fun KotlinTranslator.translateCallExpression(
@@ -179,7 +485,7 @@ private fun KotlinTranslator.translateCallExpression(
             val leftExpression: Expression = functionExpression.leftExpression
             val rightExpression: Expression = functionExpression.rightExpression
 
-            result += translateExpression(leftExpression, withIndentation = indentation) + "."
+            result += translateExpression(leftExpression, indentation = indentation) + "."
 
             functionExpression = rightExpression
         }
@@ -200,7 +506,7 @@ private fun KotlinTranslator.translateCallExpression(
         functionTranslation = null
     }
 
-    val prefix: String = functionTranslation?.prefix ?: translateExpression(functionExpression, withIndentation = indentation)
+    val prefix: String = functionTranslation?.prefix ?: translateExpression(functionExpression, indentation = indentation)
     val parametersTranslation: String = translateParameters(
         callExpression = callExpression,
         functionTranslation = functionTranslation,
@@ -299,7 +605,7 @@ private fun KotlinTranslator.translateClosureExpression(
 
     if (statements.size == 1 && firstStatement != null && firstStatement is Statement.ExpressionStatement) {
         val expression: Expression = firstStatement.expression
-        result += " " + translateExpression(expression, withIndentation = indentation) + " }"
+        result += " " + translateExpression(expression, indentation = indentation) + " }"
     }
     else {
         result += "\n"
@@ -327,7 +633,7 @@ private fun KotlinTranslator.translateTemplateExpression(
 {
     var result: String = pattern
     for ((string, expression) in matches) {
-        val expressionTranslation: String = translateExpression(expression, withIndentation = indentation)
+        val expressionTranslation: String = translateExpression(expression, indentation = indentation)
         result = result.replace(string, expressionTranslation)
     }
     return result
@@ -384,7 +690,7 @@ private fun KotlinTranslator.translateParameter(
     indentation: String)
     : String
 {
-    val expression: String = translateExpression(expression, withIndentation = indentation)
+    val expression: String = translateExpression(expression, indentation = indentation)
     if (label != null) {
         return "${label} = ${expression}"
     }
@@ -432,7 +738,7 @@ private fun KotlinTranslator.translateTupleShuffleExpression(
                     result += "${label} = "
                 }
 
-                result += translateExpression(expression, withIndentation = increasedIndentation)
+                result += translateExpression(expression, indentation = increasedIndentation)
 
                 translations.add(result)
 
@@ -443,7 +749,7 @@ private fun KotlinTranslator.translateTupleShuffleExpression(
                 isBeforeVariadic = false
                 for (_0 in 0 until variadicCount) {
                     val expression: Expression = expressions[expressionIndex]
-                    val result: String = translateExpression(expression, withIndentation = increasedIndentation)
+                    val result: String = translateExpression(expression, indentation = increasedIndentation)
 
                     translations.add(result)
 
@@ -490,7 +796,7 @@ private fun KotlinTranslator.translateInterpolatedStringLiteralExpression(
             result += string
         }
         else {
-            result += "${" + translateExpression(expression, withIndentation = indentation) + "}"
+            result += "${" + translateExpression(expression, indentation = indentation) + "}"
         }
     }
 

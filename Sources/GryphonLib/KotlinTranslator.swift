@@ -131,7 +131,7 @@ public class KotlinTranslator {
 
 	public init() { }
 
-	private func translateType(_ typeName: String) -> String {
+	internal func translateType(_ typeName: String) -> String {
 		let typeName = typeName.replacingOccurrences(of: "()", with: "Unit")
 
 		if typeName.hasSuffix("?") {
@@ -1102,6 +1102,10 @@ extension KotlinTranslator { // kotlin: ignore
 		let rightTranslation = try translateExpression(rightHand, withIndentation: indentation)
 		return "\(indentation)\(leftTranslation) = \(rightTranslation)\n"
 	}
+}
+
+extension KotlinTranslator {
+	// MARK: Expression translations
 
 	private func translateExpression(
 		_ expression: Expression,
@@ -1111,10 +1115,10 @@ extension KotlinTranslator { // kotlin: ignore
 		switch expression {
 		case let .templateExpression(pattern: pattern, matches: matches):
 			return try translateTemplateExpression(
-				pattern: pattern, matches: matches.dictionary, withIndentation: indentation)
-		case .literalCodeExpression(string: let string),
-			.literalDeclarationExpression(string: let string):
-
+				pattern: pattern, matches: matches, withIndentation: indentation)
+		case let .literalCodeExpression(string: string):
+			return translateLiteralCodeExpression(string: string)
+		case let .literalDeclarationExpression(string: string):
 			return translateLiteralCodeExpression(string: string)
 		case let .arrayExpression(elements: elements, typeName: typeName):
 			return try translateArrayExpression(
@@ -1230,7 +1234,7 @@ extension KotlinTranslator { // kotlin: ignore
 		throws -> String
 	{
 		return try translateExpression(subscriptedExpression, withIndentation: indentation) +
-			"[\(try translateExpression(indexExpression, withIndentation: indentation))]"
+		"[\(try translateExpression(indexExpression, withIndentation: indentation))]"
 	}
 
 	private func translateArrayExpression(
@@ -1240,7 +1244,7 @@ extension KotlinTranslator { // kotlin: ignore
 		throws -> String
 	{
 		let expressionsString = try elements.map {
-				try translateExpression($0, withIndentation: indentation)
+			try translateExpression($0, withIndentation: indentation)
 			}.joined(separator: ", ")
 
 		return "mutableListOf(\(expressionsString))"
@@ -1257,8 +1261,9 @@ extension KotlinTranslator { // kotlin: ignore
 			try keys.map { try translateExpression($0, withIndentation: indentation) }
 		let valueExpressions =
 			try values.map { try translateExpression($0, withIndentation: indentation) }
-		let expressionsString =
-			zip(keyExpressions, valueExpressions).map { "\($0) to \($1)" }.joined(separator: ", ")
+		let expressionsString = zipToClass(keyExpressions, valueExpressions).map { keyValueTuple in
+				"\(keyValueTuple.0) to \(keyValueTuple.1)"
+			}.joined(separator: ", ")
 
 		return "mutableMapOf(\(expressionsString))"
 	}
@@ -1348,18 +1353,8 @@ extension KotlinTranslator { // kotlin: ignore
 			try translateExpression(falseExpression, withIndentation: indentation)
 
 		return "if (\(conditionTranslation)) { \(trueExpressionTranslation) } else " +
-			"{ \(falseExpressionTranslation) }"
+		"{ \(falseExpressionTranslation) }"
 	}
-}
-
-extension KotlinTranslator {
-	// MARK: Expression translations
-
-	// declaration: fun translateExpression(expression: Expression,
-	// declaration: 	withIndentation: String): String
-	// declaration: {
-	// declaration: 	return ""
-	// declaration: }
 
 	private func translateCallExpression(
 		_ callExpression: CallExpressionData,
@@ -1435,7 +1430,7 @@ extension KotlinTranslator {
 						parameters: parameters,
 						statements: statements,
 						typeName: typeName,
-						withIndentation: increaseIndentation(indentation)) 
+						withIndentation: increaseIndentation(indentation))
 					if parameters.count > 1 {
 						let firstParametersTranslation = try translateTupleExpression(
 							pairs: ArrayClass<LabeledExpression>(pairs.dropLast()),
@@ -1516,7 +1511,9 @@ extension KotlinTranslator {
 	}
 
 	private func translateTemplateExpression(
-		pattern: String, matches: [String: Expression], withIndentation indentation: String)
+		pattern: String,
+		matches: DictionaryClass<String, Expression>,
+		withIndentation indentation: String)
 		throws -> String
 	{
 		var result = pattern
