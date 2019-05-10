@@ -1377,59 +1377,14 @@ extension KotlinTranslator { // kotlin: ignore
 			functionTranslation = nil
 		}
 
-		let parametersTranslation: String
-		if case let .tupleExpression(pairs: pairs) = callExpression.parameters {
-			if let closurePair = pairs.last,
-				case let .closureExpression(
-					parameters: parameters,
-					statements: statements,
-					typeName: typeName) = closurePair.expression
-			{
-				let closureTranslation = try translateClosureExpression(
-					parameters: parameters,
-					statements: statements,
-					typeName: typeName,
-					withIndentation: increaseIndentation(indentation))
-				if parameters.count > 1 {
-					let firstParametersTranslation = try translateTupleExpression(
-						pairs: ArrayClass<LabeledExpression>(pairs.dropLast()),
-						translation: functionTranslation,
-						withIndentation: increaseIndentation(indentation),
-						shouldAddNewlines: shouldAddNewlines)
-					parametersTranslation = "\(firstParametersTranslation) \(closureTranslation)"
-				}
-				else {
-					parametersTranslation = " \(closureTranslation)"
-				}
-			}
-			else {
-				parametersTranslation = try translateTupleExpression(
-					pairs: pairs,
-					translation: functionTranslation,
-					withIndentation: increaseIndentation(indentation),
-					shouldAddNewlines: shouldAddNewlines)
-			}
-		}
-		else if case let .tupleShuffleExpression(
-			labels: labels, indices: indices, expressions: expressions) = callExpression.parameters
-		{
-			parametersTranslation = try translateTupleShuffleExpression(
-				labels: labels,
-				indices: indices,
-				expressions: expressions,
-				translation: functionTranslation,
-				withIndentation: increaseIndentation(indentation),
-				shouldAddNewlines: shouldAddNewlines)
-		}
-		else {
-			return try unexpectedASTStructureError(
-				"Expected the parameters to be either a .tupleExpression or a " +
-					".tupleShuffleExpression",
-				AST: .expressionStatement(expression: .callExpression(data: callExpression)))
-		}
-
 		let prefix = try functionTranslation?.prefix ??
 			translateExpression(functionExpression, withIndentation: indentation)
+
+		let parametersTranslation = try translateParameters(
+			forCallExpression: callExpression,
+			withFunctionTranslation: functionTranslation,
+			withIndentation: indentation,
+			shouldAddNewlines: shouldAddNewlines)
 
 		result += "\(prefix)\(parametersTranslation)"
 
@@ -1442,6 +1397,63 @@ extension KotlinTranslator { // kotlin: ignore
 		else {
 			return result
 		}
+	}
+
+	private func translateParameters(
+		forCallExpression callExpression: CallExpressionData,
+		withFunctionTranslation functionTranslation: FunctionTranslation?,
+		withIndentation indentation: String,
+		shouldAddNewlines: Bool)
+		throws -> String
+	{
+		if case let .tupleExpression(pairs: pairs) = callExpression.parameters {
+			if let closurePair = pairs.last {
+				if case let .closureExpression(
+					parameters: parameters,
+					statements: statements,
+					typeName: typeName) = closurePair.expression
+				{
+					let closureTranslation = try translateClosureExpression(
+						parameters: parameters,
+						statements: statements,
+						typeName: typeName,
+						withIndentation: increaseIndentation(indentation))
+					if parameters.count > 1 {
+						let firstParametersTranslation = try translateTupleExpression(
+							pairs: ArrayClass<LabeledExpression>(pairs.dropLast()),
+							translation: functionTranslation,
+							withIndentation: increaseIndentation(indentation),
+							shouldAddNewlines: shouldAddNewlines)
+						return "\(firstParametersTranslation) \(closureTranslation)"
+					}
+					else {
+						return " \(closureTranslation)"
+					}
+				}
+			}
+
+			return try translateTupleExpression(
+				pairs: pairs,
+				translation: functionTranslation,
+				withIndentation: increaseIndentation(indentation),
+				shouldAddNewlines: shouldAddNewlines)
+		}
+		else if case let .tupleShuffleExpression(
+			labels: labels, indices: indices, expressions: expressions) = callExpression.parameters
+		{
+			return try translateTupleShuffleExpression(
+				labels: labels,
+				indices: indices,
+				expressions: expressions,
+				translation: functionTranslation,
+				withIndentation: increaseIndentation(indentation),
+				shouldAddNewlines: shouldAddNewlines)
+		}
+
+		return try unexpectedASTStructureError(
+			"Expected the parameters to be either a .tupleExpression or a " +
+			".tupleShuffleExpression",
+			AST: .expressionStatement(expression: .callExpression(data: callExpression)))
 	}
 }
 
