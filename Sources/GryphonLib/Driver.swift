@@ -159,11 +159,20 @@ public class Driver {
 		Compiler.shouldLogProgress(if: arguments.contains("-verbose"))
 		Compiler.shouldStopAtFirstError = !arguments.contains("-continue-on-error")
 
-		if let indentationArgument = arguments.first(where: { $0.hasPrefix("-indentation=\"") }) {
+		if let indentationArgument = arguments.first(where: { $0.hasPrefix("-indentation=") }) {
 			let indentationString = indentationArgument
-				.dropFirst("-indentation=\"".count)
-				.dropLast()
-			KotlinTranslator.indentationString = String(indentationString) // kotlin: ignore
+				.dropFirst("-indentation=".count)
+
+			if indentationString == "t" {
+				KotlinTranslator.indentationString = "\t"
+			}
+			else if let numberOfSpaces = Int(indentationString) {
+				var result = ""
+				for _ in 0..<numberOfSpaces {
+					result += " "
+				}
+				KotlinTranslator.indentationString = result
+			}
 		}
 
 		let horizontalLimit: Int?

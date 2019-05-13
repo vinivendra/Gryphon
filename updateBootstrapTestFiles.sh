@@ -100,7 +100,7 @@ fi
 echo "➡️ [9/9] Updating the .kttest test files..."
 
 if java -jar Bootstrap/kotlin.jar -emit-kotlin \
-		Test\ Files/*.swift -output-file-map=output-file-map-tests.json
+		Test\ Files/*.swift -output-file-map=output-file-map-tests.json -indentation=4
 then
 	echo "✅ Done."
 	echo ""

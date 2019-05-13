@@ -99,10 +99,21 @@ open class Driver {
 
             Compiler.shouldStopAtFirstError = !arguments.contains("-continue-on-error")
 
-            val indentationArgument: String? = arguments.find { it.startsWith("-indentation=\"") }
+            val indentationArgument: String? = arguments.find { it.startsWith("-indentation=") }
 
             if (indentationArgument != null) {
-                val indentationString: String = indentationArgument.drop("-indentation=\"".length).dropLast(1)
+                val indentationString: String = indentationArgument.drop("-indentation=".length)
+                val numberOfSpaces: Int? = indentationString.toIntOrNull()
+                if (indentationString == "t") {
+                    KotlinTranslator.indentationString = "\t"
+                }
+                else if (numberOfSpaces != null) {
+                    var result: String = ""
+                    for (_0 in 0 until numberOfSpaces) {
+                        result += " "
+                    }
+                    KotlinTranslator.indentationString = result
+                }
             }
 
             val horizontalLimit: Int?

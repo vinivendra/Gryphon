@@ -199,7 +199,11 @@ class BootstrappingTest: XCTestCase {
 				let testFilePath = TestUtils.testFilesPath + testName + ".swift"
 
 				// Get Kotlin results
-				let kotlinArguments: ArrayClass = ["-emit-kotlin", "-no-main-file", testFilePath]
+				let kotlinArguments: ArrayClass = [
+					"-emit-kotlin",
+					"-no-main-file",
+					"-indentation=4",
+					testFilePath, ]
 				let kotlinFilePath = Utilities.changeExtension(of: testFilePath, to: .kt)
 				let testOutputFilePath = kotlinFilePath + "test"
 				let transpiledKotlinCode = try Utilities.readFile(testOutputFilePath)

@@ -1,7 +1,7 @@
 ./.build/debug/Gryphon \
 	-emit-kotlin \
 	-output-file-map=output-file-map.json \
-	-indentation=\"\ \ \ \ \" \
+	-indentation=4 \
 	Sources/GryphonLib/StandardLibrary.swift \
 	Sources/GryphonLib/PrintableAsTree.swift \
 	Sources/GryphonLib/SwiftAST.swift \
