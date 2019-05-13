@@ -319,35 +319,32 @@ public class Driver {
 			}
 		}
 
-		// insert: return secondResult
-
-		if true { // kotlin: ignore
-
-			guard settings.shouldBuild else {
-				return secondResult
-			}
-
-			let generatedKotlinFiles = filteredInputFiles.compactMap {
-				settings.outputFileMap?.getOutputFile(forInputFile: $0, outputType: .kotlin)
-			}
-			let inputKotlinFiles = inputFilePaths.filter { $0.hasSuffix(".kt") }
-			let kotlinFiles = generatedKotlinFiles + inputKotlinFiles
-
-			guard let compilationResult = try Compiler.compile(
-				kotlinFiles: kotlinFiles,
-				outputFolder: settings.outputFolder) else
-			{
-				return nil
-			}
-
-			guard settings.shouldRun else {
-				return compilationResult
-			}
-
-			let runResult = try Compiler.runCompiledProgram(fromFolder: settings.outputFolder)
-
-			return runResult
+		guard settings.shouldBuild else {
+			return secondResult
 		}
+
+		let generatedKotlinFiles = filteredInputFiles.compactMap {
+			settings.outputFileMap?.getOutputFile(forInputFile: $0, outputType: .kotlin)
+		}
+		let inputKotlinFiles = inputFilePaths.filter { $0.hasSuffix(".kt") }
+
+		let kotlinFiles = generatedKotlinFiles
+		kotlinFiles.append(contentsOf: inputKotlinFiles)
+
+		guard let compilationResult = try Compiler.compile(
+			kotlinFiles: kotlinFiles,
+			outputFolder: settings.outputFolder) else
+		{
+			return nil
+		}
+
+		guard settings.shouldRun else {
+			return compilationResult
+		}
+
+		let runResult = try Compiler.runCompiledProgram(fromFolder: settings.outputFolder)
+
+		return runResult
 	}
 
 	static func getASTDump(forFile file: String, settings: Settings) -> String? {

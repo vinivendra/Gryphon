@@ -232,7 +232,27 @@ open class Driver {
                     inputFilePath = it.second) }.toMutableList()
             }
 
-            return secondResult
+            if (!(settings.shouldBuild)) {
+                return secondResult
+            }
+
+            val generatedKotlinFiles: MutableList<String> = filteredInputFiles.map { settings.outputFileMap?.getOutputFile(file = it, outputType = OutputFileMap.OutputType.KOTLIN) }.filterNotNull().toMutableList()
+            val inputKotlinFiles: MutableList<String> = inputFilePaths.filter { it.endsWith(".kt") }.toMutableList()
+            val kotlinFiles: MutableList<String> = generatedKotlinFiles
+
+            kotlinFiles.addAll(inputKotlinFiles)
+
+            val compilationResult: Shell.CommandOutput? = Compiler.compile(filePaths = kotlinFiles, outputFolder = settings.outputFolder)
+
+            compilationResult ?: return null
+
+            if (!(settings.shouldRun)) {
+                return compilationResult
+            }
+
+            val runResult: Shell.CommandOutput? = Compiler.runCompiledProgram(outputFolder = settings.outputFolder)
+
+            return runResult
         }
 
         internal fun getASTDump(file: String, settings: Driver.Settings): String? {
