@@ -2,6 +2,7 @@
 	-emit-kotlin \
 	-output-file-map=output-file-map.json \
 	-indentation=4 \
+	-q \
 	Sources/GryphonLib/StandardLibrary.swift \
 	Sources/GryphonLib/PrintableAsTree.swift \
 	Sources/GryphonLib/SwiftAST.swift \

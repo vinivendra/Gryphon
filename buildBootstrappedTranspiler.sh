@@ -20,5 +20,6 @@ kotlinc -include-runtime \
 	Bootstrap/SwiftTranslator.kt \
 	Bootstrap/TranspilationPass.kt \
 	Bootstrap/KotlinTranslator.kt \
-	Bootstrap/LibraryTranspilationPass.kt;
+	Bootstrap/LibraryTranspilationPass.kt \
+	Bootstrap/Shell.kt;
 

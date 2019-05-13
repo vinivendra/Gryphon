@@ -35,10 +35,6 @@
 		"ast-dump": "Bootstrap/PrintableAsTree.swiftASTDump",
 		"kotlin": "Bootstrap/PrintableAsTree.kt",
 	},
-	"Sources/GryphonLib/Shell.swift": {
-		"ast-dump": "Bootstrap/Shell.swiftASTDump",
-		"kotlin": "Bootstrap/Shell.kt",
-	},
 	"Sources/GryphonLib/SourceFile.swift": {
 		"ast-dump": "Bootstrap/SourceFile.swiftASTDump",
 		"kotlin": "Bootstrap/SourceFile.kt",

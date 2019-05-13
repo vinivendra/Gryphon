@@ -24,8 +24,12 @@ func stopTask(_ task: Process) {
 }
 #endif
 
-public enum Shell {
-	public typealias CommandOutput = (standardOutput: String, standardError: String, status: Int32)
+public class Shell {
+	public struct CommandOutput {
+		let standardOutput: String
+		let standardError: String
+		let status: Int32
+	}
 
 	static let defaultTimeout: TimeInterval = 60
 
@@ -67,7 +71,7 @@ public enum Shell {
 		let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
 		let errorString = String(data: errorData, encoding: .utf8) ?? ""
 
-		return (standardOutput: outputString,
+		return CommandOutput(standardOutput: outputString,
 				standardError: errorString,
 				status: task.terminationStatus)
 	}
