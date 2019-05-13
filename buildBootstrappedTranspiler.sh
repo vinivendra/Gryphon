@@ -3,7 +3,7 @@ kotlinc -include-runtime \
 	Bootstrap/PrintableAsTree.kt \
 	Bootstrap/PrintableAsTreeTest.kt \
 	Bootstrap/KotlinTests.kt \
-	Bootstrap/StandardLibrary.kt \
+	Bootstrap/KotlinStandardLibrary.kt \
 	Bootstrap/ASTDumpDecoder.kt \
 	Bootstrap/ASTDumpDecoderTest.kt \
 	Bootstrap/main.kt \

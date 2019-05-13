@@ -1784,12 +1784,19 @@ else {
                 }
             }
             "Conditional Checked Cast Expression" -> {
-                val bindOptionalExpression: SwiftAST? = expression.subtrees.firstOrNull()
-                val bindOptionalSubtrees: MutableList<SwiftAST>? = bindOptionalExpression?.subtrees
-                val subExpression: SwiftAST? = bindOptionalSubtrees?.firstOrNull()
+                val subExpression: SwiftAST? = expression.subtrees.firstOrNull()
+                val subExpressionSubtrees: MutableList<SwiftAST>? = subExpression?.subtrees
+                val subSubExpression: SwiftAST? = subExpressionSubtrees?.firstOrNull()
                 val typeName: String? = expression["type"]
 
-                if (typeName != null && subExpression != null) {
+                if (typeName != null && subSubExpression != null) {
+                    result = Expression.BinaryOperatorExpression(
+                        leftExpression = translateExpression(subSubExpression),
+                        rightExpression = Expression.TypeExpression(typeName = typeName),
+                        operatorSymbol = "as?",
+                        typeName = typeName)
+                }
+                else if (typeName != null && subExpression != null) {
                     result = Expression.BinaryOperatorExpression(
                         leftExpression = translateExpression(subExpression),
                         rightExpression = Expression.TypeExpression(typeName = typeName),
@@ -1798,7 +1805,7 @@ else {
                 }
                 else {
                     result = unexpectedExpressionStructureError(
-                        "Expected Conditional Checked Cast Expression to have a type and two nested " + "subtrees",
+                        "Expected Conditional Checked Cast Expression to have a type and " + "an expression as a subtree",
                         ast = expression,
                         translator = this)
                 }

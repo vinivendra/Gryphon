@@ -175,6 +175,70 @@ open class Compiler {
             }
             return runCompiledProgram(outputFolder = outputFolder)
         }
+
+        public fun printErrorsAndWarnings() {
+            if (!errors.isEmpty()) {
+                println("Errors:")
+                for (error in errors) {
+                    println(error)
+                }
+            }
+            if (!warnings.isEmpty()) {
+                println("Warnings:")
+                for (warning in warnings) {
+                    println(warning)
+                }
+            }
+            if (hasErrorsOrWarnings()) {
+                println("Total: ${errors.size} errors and ${warnings.size} warnings.")
+            }
+        }
+
+        public fun hasErrorsOrWarnings(): Boolean {
+            return !errors.isEmpty() || !warnings.isEmpty()
+        }
+
+        public fun printErrorStatistics() {
+            println("Errors: ${Compiler.errors.size}. Warnings: ${Compiler.warnings.size}.")
+
+            val swiftASTDumpErrors: MutableList<SwiftTranslatorError> = errors.map { it as? SwiftTranslatorError? }.filterNotNull().toMutableList()
+
+            if (!swiftASTDumpErrors.isEmpty()) {
+                println("Swift AST translator failed to translate:")
+
+                val swiftASTDumpHistogram: MutableMap<String, MutableList<SwiftTranslatorError>> = swiftASTDumpErrors.group { it.ast.name }
+
+                val sortedHistogram = swiftASTDumpHistogram.entries.toMutableList()
+                	.sorted(isAscending = { a, b ->
+                		a.value.size > b.value.size
+                	})
+
+                for (tuple in sortedHistogram) {
+                    val astName: String = tuple.key
+                    val errorArray: MutableList<SwiftTranslatorError> = tuple.value
+                    println("- ${errorArray.size} ${astName}s")
+                }
+            }
+
+            val kotlinTranslatorErrors: MutableList<KotlinTranslatorError> = errors.map { it as? KotlinTranslatorError? }.filterNotNull().toMutableList()
+
+            if (!kotlinTranslatorErrors.isEmpty()) {
+                println("Kotlin translator failed to translate:")
+
+                val kotlinTranslatorHistogram: MutableMap<String, MutableList<KotlinTranslatorError>> = kotlinTranslatorErrors.group { it.ast.name }
+
+                val sortedHistogram = kotlinTranslatorHistogram.entries.toMutableList()
+                	.sorted(isAscending = { a, b ->
+                		a.value.size > b.value.size
+                	})
+
+                for (tuple in sortedHistogram) {
+                    val astName: String = tuple.key
+                    val errorArray: MutableList<KotlinTranslatorError> = tuple.value
+                    println("- ${errorArray.size} ${astName}s")
+                }
+            }
+        }
     }
 }
 

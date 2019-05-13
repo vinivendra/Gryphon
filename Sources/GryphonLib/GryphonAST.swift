@@ -748,10 +748,9 @@ public indirect enum Expression: PrintableAsTree, Equatable {
 		case let .templateExpression(pattern: pattern, matches: matches):
 			let matchesTrees = matches.map { PrintableTree($0.key, [$0.value]) }
 
-			let sortedMatchesTrees = matchesTrees.sorted { a, b in // kotlin: ignore
+			let sortedMatchesTrees = matchesTrees.sorted { a, b in
 				a.treeDescription < b.treeDescription
 			}
-			// insert: val sortedMatchesTrees = matchesTrees.sortedBy({ it.treeDescription })
 
 			return [
 				PrintableTree("pattern \"\(pattern)\""),

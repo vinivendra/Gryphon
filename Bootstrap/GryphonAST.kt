@@ -541,8 +541,7 @@ public sealed class Expression: PrintableAsTree {
                     val pattern: String = this.pattern
                     val matches: MutableMap<String, Expression> = this.matches
                     val matchesTrees: MutableList<PrintableTree> = matches.map { PrintableTree(it.key, mutableListOf(it.value)) }.toMutableList()
-
-                    val sortedMatchesTrees = matchesTrees.sortedBy({ it.treeDescription })
+                    val sortedMatchesTrees: MutableList<PrintableTree> = matchesTrees.sorted(isAscending = { a, b -> a.treeDescription < b.treeDescription })
 
                     mutableListOf(PrintableTree("pattern \"${pattern}\""), PrintableTree("matches", sortedMatchesTrees.toMutableList<PrintableAsTree?>()))
                 }

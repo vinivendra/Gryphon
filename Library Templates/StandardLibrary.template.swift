@@ -63,6 +63,7 @@ func gryphonTemplates() {
 	let _closure4: (MyOptional) -> Any = { _ in true }
 	let _closure5: (Character) -> Bool = { _ in true }
 	let _closure6: (Any) -> Any? = { a in a }
+	let _closure7: (Compare, Compare) -> Bool = { _, _ in true }
 
 	// MARK: Declare the templates
 
@@ -289,6 +290,9 @@ func gryphonTemplates() {
 
 	_ = _comparableArray.sorted()
 	_ = "_comparableArray.sorted()"
+
+	_ = _comparableArray.sorted(by: _closure7)
+	_ = "_comparableArray.sorted(isAscending = _closure7)"
 
 	_ = _comparableArray.contains(_compare)
 	_ = "_comparableArray.contains(_compare)"

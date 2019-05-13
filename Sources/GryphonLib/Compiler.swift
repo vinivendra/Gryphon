@@ -214,9 +214,7 @@ public class Compiler {
 		}
 		return try runCompiledProgram(fromFolder: outputFolder)
 	}
-}
 
-extension Compiler { // kotlin: ignore
 	public static func printErrorsAndWarnings() {
 		if !errors.isEmpty {
 			print("Errors:")
@@ -249,9 +247,19 @@ extension Compiler { // kotlin: ignore
 			print("Swift AST translator failed to translate:")
 
 			let swiftASTDumpHistogram = swiftASTDumpErrors.group { $0.ast.name }
-			for (astName, errorArray) in
-				swiftASTDumpHistogram.sorted(by: { $0.value.count > $1.value.count })
-			{
+
+			let sortedHistogram = swiftASTDumpHistogram.sorted(by: { a, b in // kotlin: ignore
+				a.value.count > b.value.count
+			})
+
+			// insert: val sortedHistogram = swiftASTDumpHistogram.entries.toMutableList()
+			// insert: 	.sorted(isAscending = { a, b ->
+			// insert: 		a.value.size > b.value.size
+			// insert: 	})
+
+			for tuple in sortedHistogram {
+				let astName = tuple.key
+				let errorArray = tuple.value
 				print("- \(errorArray.count) \(astName)s")
 			}
 		}
@@ -261,9 +269,19 @@ extension Compiler { // kotlin: ignore
 			print("Kotlin translator failed to translate:")
 
 			let kotlinTranslatorHistogram = kotlinTranslatorErrors.group { $0.ast.name }
-			for (astName, errorArray) in
-				kotlinTranslatorHistogram.sorted(by: { $0.value.count > $1.value.count })
-			{
+
+			let sortedHistogram = kotlinTranslatorHistogram.sorted(by: { a, b in // kotlin: ignore
+				a.value.count > b.value.count
+			})
+
+			// insert: val sortedHistogram = kotlinTranslatorHistogram.entries.toMutableList()
+			// insert: 	.sorted(isAscending = { a, b ->
+			// insert: 		a.value.size > b.value.size
+			// insert: 	})
+
+			for tuple in sortedHistogram {
+				let astName = tuple.key
+				let errorArray = tuple.value
 				print("- \(errorArray.count) \(astName)s")
 			}
 		}

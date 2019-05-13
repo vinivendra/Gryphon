@@ -1,0 +1,72 @@
+fun <T> MutableList<T>.copy(): MutableList<T> {
+	return this.toMutableList()
+}
+
+fun String.suffix(startIndex: Int): String {
+	return this.substring(startIndex, this.length)
+}
+
+fun <T> MutableList<T>.removeLast() {
+	this.removeAt(this.size - 1)
+}
+
+fun String.indexOrNull(character: Char): Int? {
+	val result = this.indexOf(character)
+	if (result == -1) {
+		return null
+	}
+	else {
+		return result
+	}
+}
+
+fun <Element> MutableList<Element>.sorted(
+	isAscending: (Element, Element) -> Boolean)
+    : MutableList<Element>
+{
+    val copyList = this.copy()
+	copyList.quicksort(0, this.size - 1, isAscending)
+    return copyList
+}
+
+fun <Element> MutableList<Element>.quicksort(
+	left: Int,
+	right: Int,
+	isAscending: (Element, Element) -> Boolean)
+{
+    if (left < right) {
+        val pivot = this.partition(left, right, isAscending)
+        this.quicksort(left, pivot - 1, isAscending)
+        this.quicksort(pivot + 1, right, isAscending)
+    }
+}
+
+fun <Element> MutableList<Element>.partition(
+	left: Int,
+	right: Int,
+	isAscending: (Element, Element) -> Boolean)
+	: Int
+{
+    val pivot = this[right]
+
+    var i = left - 1
+
+    var j = left
+    while (j <= right - 1) {
+        if (isAscending(this[j], pivot)) {
+            i += 1
+
+            val aux = this[i]
+            this[i] = this[j]
+            this[j] = aux
+        }
+
+        j += 1
+    }
+
+    val aux = this[i + 1]
+    this[i + 1] = this[right]
+    this[right] = aux
+
+    return i + 1
+}

@@ -2007,11 +2007,19 @@ public class SwiftTranslator {
 					ast: expression, translator: self)
 			}
 		case "Conditional Checked Cast Expression":
-			let bindOptionalExpression = expression.subtrees.first
-			let bindOptionalSubtrees = bindOptionalExpression?.subtrees
-			let subExpression = bindOptionalSubtrees?.first
+			let subExpression = expression.subtrees.first
+			let subExpressionSubtrees = subExpression?.subtrees
+			let subSubExpression = subExpressionSubtrees?.first
+			let typeName = expression["type"]
 
-			if let typeName = expression["type"], let subExpression = subExpression {
+			if let typeName = typeName, let subSubExpression = subSubExpression {
+				result = .binaryOperatorExpression(
+					leftExpression: try translateExpression(subSubExpression),
+					rightExpression: .typeExpression(typeName: typeName),
+					operatorSymbol: "as?",
+					typeName: typeName)
+			}
+			else if let typeName = typeName, let subExpression = subExpression {
 				result = .binaryOperatorExpression(
 					leftExpression: try translateExpression(subExpression),
 					rightExpression: .typeExpression(typeName: typeName),
@@ -2020,8 +2028,8 @@ public class SwiftTranslator {
 			}
 			else {
 				result = try unexpectedExpressionStructureError(
-					"Expected Conditional Checked Cast Expression to have a type and two nested " +
-					"subtrees",
+					"Expected Conditional Checked Cast Expression to have a type and " +
+					"an expression as a subtree",
 					ast: expression, translator: self)
 			}
 		case "Super Reference Expression":

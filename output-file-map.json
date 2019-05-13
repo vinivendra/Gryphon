@@ -39,9 +39,8 @@
 		"ast-dump": "Bootstrap/SourceFile.swiftASTDump",
 		"kotlin": "Bootstrap/SourceFile.kt",
 	},
-	"Sources/GryphonLib/StandardLibrary.swift": {
-		"ast-dump": "Bootstrap/StandardLibrary.swiftASTDump",
-		"kotlin": "Bootstrap/StandardLibrary.kt",
+	"Sources/GryphonLib/SwiftStandardLibrary.swift": {
+		"ast-dump": "Bootstrap/SwiftStandardLibrary.swiftASTDump",
 	},
 	"Sources/GryphonLib/SwiftAST.swift": {
 		"ast-dump": "Bootstrap/SwiftAST.swiftASTDump",

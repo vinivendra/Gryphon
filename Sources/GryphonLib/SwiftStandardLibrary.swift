@@ -380,27 +380,3 @@ extension DictionaryClass: Codable where Key: Codable, Value: Codable { // kotli
 		try self.init(Buffer(from: decoder))
 	}
 }
-
-// MARK: - Kotlin standard library
-
-// declaration: fun <T> MutableList<T>.copy(): MutableList<T> {
-// declaration: 	return this.toMutableList()
-// declaration: }
-// declaration:
-// declaration: fun String.suffix(startIndex: Int): String {
-// declaration: 	return this.substring(startIndex, this.length)
-// declaration: }
-// declaration:
-// declaration: fun <T> MutableList<T>.removeLast() {
-// declaration: 	this.removeAt(this.size - 1)
-// declaration: }
-// declaration:
-// declaration: fun String.indexOrNull(character: Char): Int? {
-// declaration: 	val result = this.indexOf(character)
-// declaration: 	if (result == -1) {
-// declaration: 		return null
-// declaration: 	}
-// declaration: 	else {
-// declaration: 		return result
-// declaration: 	}
-// declaration: }
