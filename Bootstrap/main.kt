@@ -1,3 +1,5 @@
+import kotlin.system.exitProcess
+
 fun main(args: Array<String>) {
 	if (args.contains("-test")) {
 		PrintableAsTreeTest().runAllTests()
@@ -7,6 +9,13 @@ fun main(args: Array<String>) {
 		ShellTest().runAllTests()
 	}
 	else {
-		Driver.run(arguments = args.toMutableList())
+		val result = Driver.run(arguments = args.toMutableList())
+
+		val commandResult = result as? Shell.CommandOutput
+		if (commandResult != null) {
+			println(commandResult.standardOutput)
+			System.err.println(commandResult.standardError)
+			exitProcess(commandResult.status)
+		}
 	}
 }

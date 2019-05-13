@@ -15,10 +15,16 @@
 */
 
 import GryphonLib
-import Darwin
+import Foundation
 
 do {
-	try Driver.run(withArguments: ArrayClass(CommandLine.arguments.dropFirst()))
+	let result = try Driver.run(withArguments: ArrayClass(CommandLine.arguments.dropFirst()))
+
+	if let commandResult = result as? Shell.CommandOutput {
+		print(commandResult.standardOutput)
+		FileHandle.standardError.write(commandResult.standardError.data(using: .utf8)!)
+		exit(commandResult.status)
+	}
 }
 catch let error {
 	print(error)

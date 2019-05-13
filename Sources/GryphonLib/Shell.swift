@@ -26,9 +26,9 @@ func stopTask(_ task: Process) {
 
 public class Shell {
 	public struct CommandOutput {
-		let standardOutput: String
-		let standardError: String
-		let status: Int32
+		public let standardOutput: String
+		public let standardError: String
+		public let status: Int32
 	}
 
 	static let defaultTimeout: TimeInterval = 60
