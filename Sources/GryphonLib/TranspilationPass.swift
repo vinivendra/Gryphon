@@ -2909,12 +2909,13 @@ public class ReturnIfNilTranspilationPass: TranspilationPass {
 				{
 					if case let .binaryOperatorExpression(
 						leftExpression: declarationReference,
-						rightExpression: Expression.nilLiteralExpression,
+						rightExpression: comparedExpression,
 						operatorSymbol: "==",
 						typeName: _) = onlyConditionExpression
 					{
 						if case let .declarationReferenceExpression(
-							data: declarationExpression) = declarationReference
+								data: declarationExpression) = declarationReference,
+							case .nilLiteralExpression = comparedExpression
 						{
 							return [.expressionStatement(expression:
 								.binaryOperatorExpression(

@@ -2765,7 +2765,8 @@ open class ReturnIfNilTranspilationPass: TranspilationPass {
                     val returnExpression: Expression? = onlyStatement.expression
                     if (onlyConditionExpression is Expression.BinaryOperatorExpression && onlyConditionExpression.operatorSymbol == "==") {
                         val declarationReference: Expression = onlyConditionExpression.leftExpression
-                        if (declarationReference is Expression.DeclarationReferenceExpression) {
+                        val comparedExpression: Expression = onlyConditionExpression.rightExpression
+                        if (declarationReference is Expression.DeclarationReferenceExpression && comparedExpression is Expression.NilLiteralExpression) {
                             val declarationExpression: DeclarationReferenceData = declarationReference.data
                             return mutableListOf(Statement.ExpressionStatement(
                                 expression = Expression.BinaryOperatorExpression(
