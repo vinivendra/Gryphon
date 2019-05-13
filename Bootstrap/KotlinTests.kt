@@ -31,12 +31,26 @@ open class Test(val className: String) {
     	}
 	}
 
+	fun <T> XCTAssertNotEqual(a: T, b: T, test: String = "No message") {
+    	if (a == b) {
+    		allTestsSucceeded = false
+    		println("${className} - XCTAssertNotEqual failed: ${test}.\n\"${a}\"\nis equal to\n\"${b}\"\n--")
+    		Exception().printStackTrace()
+    	}
+	}
+
 	fun <T> XCTAssertNil(a: T?, test: String = "No message") {
     	if (a != null) {
     		allTestsSucceeded = false
     		println("${className} - XCTAssertNil failed: ${test}.")	
     		Exception().printStackTrace()
     	}
+	}
+
+	fun XCTFail(test: String = "No message") {
+    	allTestsSucceeded = false
+		println("${className} - XCTFail: ${test}.")	
+		Exception().printStackTrace()
 	}
 
 	fun XCTAssertNoThrow(closure: () -> Unit, test: String = "No message") {

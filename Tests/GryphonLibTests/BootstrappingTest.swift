@@ -34,7 +34,7 @@ class BootstrappingTest: XCTestCase {
 			}
 
 			let testMessages = runOutput.standardOutput.split(separator: "\n")
-			XCTAssertEqual(testMessages.count, 4)
+			XCTAssertEqual(testMessages.count, 5)
 			for testMessage in testMessages {
 				if !testMessage.hasSuffix("All tests succeeded!") {
 					XCTFail(String(testMessage))

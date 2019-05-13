@@ -35,10 +35,17 @@ public class Shell {
                 directory = null
             }
 
-            val process: Process = Runtime.getRuntime().exec(
-                /*command array*/ array,
-                /*environment*/ null,
-                /*directory*/ directory)
+            val processBuilder: ProcessBuilder = ProcessBuilder()
+            processBuilder.command(commandAndArguments)
+            val process: Process = processBuilder.start()
+
+            val hasFinished: Boolean = process.waitFor(
+                timeout,
+                TimeUnit.SECONDS)
+
+            if (!hasFinished) {
+                return null
+            }
 
             val output: StringBuilder = StringBuilder()
             val outputReader: BufferedReader = BufferedReader(
@@ -51,19 +58,11 @@ public class Shell {
 
             val error: StringBuilder = StringBuilder()
             val errorReader: BufferedReader = BufferedReader(
-                    InputStreamReader(process.getInputStream()))
+                    InputStreamReader(process.getErrorStream()))
             line = errorReader.readLine()
             while (line != null) {
                 error.append(line + "\n")
                 line = errorReader.readLine()
-            }
-
-            val hasFinished: Boolean = process.waitFor(
-                timeout,
-                TimeUnit.SECONDS)
-
-            if (!hasFinished) {
-                return null
             }
 
             return CommandOutput(

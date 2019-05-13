@@ -4,6 +4,7 @@ fun main(args: Array<String>) {
 		ASTDumpDecoderTest().runAllTests()
 		ExtensionsTest().runAllTests()
 		UtilitiesTest().runAllTests()
+		ShellTest().runAllTests()
 	}
 	else {
 		Driver.run(arguments = args.toMutableList())
