@@ -37,7 +37,7 @@ public class Shell {
 	@discardableResult
 	internal static func runShellCommand(
 		_ command: String,
-		arguments: [String],
+		arguments: ArrayClass<String>,
 		fromFolder currentFolder: String? = nil,
 		timeout: TimeInterval = Shell.defaultTimeout)
 		-> CommandOutput!
@@ -46,7 +46,7 @@ public class Shell {
 		let errorPipe = Pipe()
 		let task = Process()
 		task.launchPath = command
-		task.arguments = arguments
+		task.arguments = arguments.array
 		task.standardOutput = outputPipe
 		task.standardError = errorPipe
 
@@ -79,7 +79,7 @@ public class Shell {
 	/// Returns nil when the operation times out.
 	@discardableResult
 	internal static func runShellCommand(
-		_ arguments: [String],
+		_ arguments: ArrayClass<String>,
 		fromFolder currentFolder: String? = nil,
 		timeout: TimeInterval = Shell.defaultTimeout) -> CommandOutput!
 	{

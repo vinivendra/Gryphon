@@ -110,6 +110,71 @@ open class Compiler {
             val asts: MutableList<GryphonAST> = transpileGryphonASTs(inputFiles = inputFiles)
             return asts.map { generateKotlinCode(ast = it) }.toMutableList()
         }
+
+        public fun compile(
+            filePaths: MutableList<String>,
+            outputFolder: String)
+            : Shell.CommandOutput?
+        {
+            log("\t- Compiling Kotlin...")
+
+            val arguments: MutableList<String> = mutableListOf("-include-runtime", "-d", outputFolder + "/kotlin.jar")
+
+            arguments.addAll(filePaths)
+
+            val commandResult: Shell.CommandOutput? = Shell.runShellCommand(kotlinCompilerPath, arguments = arguments)
+
+            return commandResult
+        }
+
+        public fun transpileThenCompile(
+            inputFiles: MutableList<String>,
+            outputFolder: String = OS.buildFolder)
+            : Shell.CommandOutput?
+        {
+            val kotlinCodes: MutableList<String> = transpileKotlinCode(inputFiles = inputFiles)
+            val kotlinFilePaths: MutableList<String> = mutableListOf()
+
+            for ((inputFile, kotlinCode) in inputFiles.zip(kotlinCodes)) {
+                val inputFileName: String = inputFile.split(separator = "/").lastOrNull()!!
+                val kotlinFileName: String = Utilities.changeExtension(filePath = inputFileName, newExtension = FileExtension.KT)
+                val folderWithSlash: String = if (outputFolder.endsWith("/")) { outputFolder } else { outputFolder + "/" }
+                val kotlinFilePath: String = folderWithSlash + kotlinFileName
+
+                Utilities.createFile(filePath = kotlinFilePath, contents = kotlinCode)
+                kotlinFilePaths.add(kotlinFilePath)
+            }
+
+            return compile(filePaths = kotlinFilePaths, outputFolder = outputFolder)
+        }
+
+        public fun runCompiledProgram(
+            outputFolder: String,
+            arguments: MutableList<String> = mutableListOf())
+            : Shell.CommandOutput?
+        {
+            log("\t- Running Kotlin...")
+
+            val commandArguments: MutableList<String> = mutableListOf("java", "-jar", "kotlin.jar")
+
+            commandArguments.addAll(arguments)
+
+            val commandResult: Shell.CommandOutput? = Shell.runShellCommand(commandArguments, currentFolder = outputFolder)
+
+            return commandResult
+        }
+
+        public fun transpileCompileAndRun(
+            inputFiles: MutableList<String>,
+            outputFolder: String = OS.buildFolder)
+            : Shell.CommandOutput?
+        {
+            val compilationResult: Shell.CommandOutput? = transpileThenCompile(inputFiles = inputFiles, outputFolder = outputFolder)
+            if (!(compilationResult != null && compilationResult!!.status == 0)) {
+                return compilationResult
+            }
+            return runCompiledProgram(outputFolder = outputFolder)
+        }
     }
 }
 

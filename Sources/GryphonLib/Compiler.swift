@@ -151,34 +151,57 @@ public class Compiler {
 		let asts = try transpileGryphonASTs(fromASTDumpFiles: inputFiles)
 		return try asts.map { try generateKotlinCode(fromGryphonAST: $0) }
 	}
-}
 
-extension Compiler { // kotlin: ignore
-	public static func runCompiledProgram(
-		fromFolder outputFolder: String,
-		withArguments arguments: ArrayClass<String> = [])
-		throws -> Shell.CommandOutput?
-	{
-		log("\t- Running Kotlin...")
-		let commandArguments = ["java", "-jar", "kotlin.jar"] + arguments
-		let commandResult = Shell.runShellCommand(commandArguments, fromFolder: outputFolder)
-
-		return commandResult
-	}
-
+	//
 	public static func compile(kotlinFiles filePaths: ArrayClass<String>, outputFolder: String)
 		throws -> Shell.CommandOutput?
 	{
 		log("\t- Compiling Kotlin...")
 
 		// Call the kotlin compiler
-		let arguments = ["-include-runtime", "-d", outputFolder + "/kotlin.jar"] + filePaths
+		let arguments: ArrayClass = ["-include-runtime", "-d", outputFolder + "/kotlin.jar"]
+		arguments.append(contentsOf: filePaths)
 		let commandResult = Shell.runShellCommand(kotlinCompilerPath, arguments: arguments)
 
 		return commandResult
 	}
 
+	public static func transpileThenCompile(
+		ASTDumpFiles inputFiles: ArrayClass<String>,
+		outputFolder: String = OS.buildFolder)
+		throws -> Shell.CommandOutput?
+	{
+		let kotlinCodes = try transpileKotlinCode(fromASTDumpFiles: inputFiles)
+		// Write kotlin files to the output folder
+		let kotlinFilePaths: ArrayClass<String> = []
+		for (inputFile, kotlinCode) in zipToClass(inputFiles, kotlinCodes) {
+			let inputFileName = inputFile.split(withStringSeparator: "/").last!
+			let kotlinFileName = Utilities.changeExtension(of: inputFileName, to: .kt)
+			let folderWithSlash = outputFolder.hasSuffix("/") ? outputFolder : (outputFolder + "/")
+			let kotlinFilePath = folderWithSlash + kotlinFileName
+			Utilities.createFile(atPath: kotlinFilePath, containing: kotlinCode)
+			kotlinFilePaths.append(kotlinFilePath)
+		}
+
+		return try compile(kotlinFiles: kotlinFilePaths, outputFolder: outputFolder)
+	}
+
 	//
+	public static func runCompiledProgram(
+		fromFolder outputFolder: String,
+		withArguments arguments: ArrayClass<String> = [])
+		throws -> Shell.CommandOutput?
+	{
+		log("\t- Running Kotlin...")
+
+		// Run the compiled program
+		let commandArguments: ArrayClass = ["java", "-jar", "kotlin.jar"]
+		commandArguments.append(contentsOf: arguments)
+		let commandResult = Shell.runShellCommand(commandArguments, fromFolder: outputFolder)
+
+		return commandResult
+	}
+
 	public static func transpileCompileAndRun(
 		ASTDumpFiles inputFiles: ArrayClass<String>,
 		fromFolder outputFolder: String = OS.buildFolder)
@@ -191,28 +214,9 @@ extension Compiler { // kotlin: ignore
 		}
 		return try runCompiledProgram(fromFolder: outputFolder)
 	}
+}
 
-	public static func transpileThenCompile(
-		ASTDumpFiles inputFiles: ArrayClass<String>,
-		outputFolder: String = OS.buildFolder)
-		throws -> Shell.CommandOutput?
-	{
-		let kotlinCodes = try transpileKotlinCode(fromASTDumpFiles: inputFiles)
-		// Write kotlin files to the output folder
-		let kotlinFilePaths = zipToClass(inputFiles, kotlinCodes).map { tuple -> String in
-			let inputFile = tuple.0
-			let kotlinCode = tuple.1
-			let inputFileName = inputFile.split(withStringSeparator: "/").last!
-			let kotlinFileName = Utilities.changeExtension(of: inputFileName, to: .kt)
-			let folderWithSlash = outputFolder.hasSuffix("/") ? outputFolder : (outputFolder + "/")
-			let kotlinFilePath = folderWithSlash + kotlinFileName
-			Utilities.createFile(atPath: kotlinFilePath, containing: kotlinCode)
-			return kotlinFilePath
-		}
-		return try compile(kotlinFiles: kotlinFilePaths, outputFolder: outputFolder)
-	}
-
-	//
+extension Compiler { // kotlin: ignore
 	public static func printErrorsAndWarnings() {
 		if !errors.isEmpty {
 			print("Errors:")
