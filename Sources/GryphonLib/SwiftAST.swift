@@ -85,9 +85,9 @@ public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible
 			ArrayClass<PrintableAsTree?>(standaloneAttributes.map { PrintableTree($0) })
 		let subtreesArray = ArrayClass<PrintableAsTree?>(subtrees)
 
-		let result = standaloneAttributesArray + keyValueArray + subtreesArray // kotlin: ignore
-		// insert: val result = (standaloneAttributesArray + keyValueArray + subtreesArray)
-		// insert: 	.toMutableList()
+		let result = standaloneAttributesArray
+		result.append(contentsOf: keyValueArray)
+		result.append(contentsOf: subtreesArray)
 
 		return result
 	}

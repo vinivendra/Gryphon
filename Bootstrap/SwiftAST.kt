@@ -66,9 +66,10 @@ open class SwiftAST: PrintableAsTree {
             val keyValueArray: MutableList<PrintableAsTree?> = keyValueStrings.toMutableList<PrintableAsTree?>()
             val standaloneAttributesArray: MutableList<PrintableAsTree?> = standaloneAttributes.map { PrintableTree(it) }.toMutableList().toMutableList<PrintableAsTree?>()
             val subtreesArray: MutableList<PrintableAsTree?> = subtrees.toMutableList<PrintableAsTree?>()
+            val result: MutableList<PrintableAsTree?> = standaloneAttributesArray
 
-            val result = (standaloneAttributesArray + keyValueArray + subtreesArray)
-            	.toMutableList()
+            result.addAll(keyValueArray)
+            result.addAll(subtreesArray)
 
             return result
         }

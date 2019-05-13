@@ -743,7 +743,7 @@ else {
 
         val translatedInnerDoStatements: MutableList<Statement> = translateBraceStatement(braceStatement)
         val translatedDoStatement: Statement = Statement.DoStatement(statements = translatedInnerDoStatements)
-        val catchStatements: MutableList<Statement> = mutableListOf()
+        val catchStatements: MutableList<Statement?> = mutableListOf()
 
         for (catchStatement in doCatchStatement.subtrees.drop(1)) {
             if (catchStatement.name != "Catch") {
@@ -787,8 +787,9 @@ else {
                 statements = translatedStatements))
         }
 
-        val resultingStatements = (listOf(translatedDoStatement) + catchStatements)
-        	.toMutableList<Statement?>()
+        val resultingStatements: MutableList<Statement?> = mutableListOf(translatedDoStatement)
+
+        resultingStatements.addAll(catchStatements)
 
         return resultingStatements
     }
@@ -975,8 +976,9 @@ else {
         }
 
         val statements: MutableList<Statement> = translateBraceStatement(braceStatement)
+        val resultingStatements: MutableList<Statement> = extraStatements
 
-        val resultingStatements = (extraStatements + statements).toMutableList()
+        resultingStatements.addAll(statements)
 
         return IfStatementData(
             conditions = conditions,
@@ -1078,10 +1080,9 @@ else {
                 translator = this)
 
             val translatedStatements: MutableList<Statement> = translateBraceStatement(braceStatement)
+            val resultingStatements: MutableList<Statement> = extraStatements
 
-            val resultingStatements =
-            	(extraStatements + translatedStatements).toMutableList()
-
+            resultingStatements.addAll(translatedStatements)
             cases.add(SwitchCase(expressions = caseExpressions, statements = resultingStatements))
         }
 

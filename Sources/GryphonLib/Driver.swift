@@ -144,9 +144,7 @@ public class Driver {
 	public static func run(
 		withArguments arguments: ArrayClass<String>) throws -> Any?
 	{
-		Compiler.clearErrorsAndWarnings()
-
-		defer { // kotlin: ignore
+		defer {
 			if arguments.contains("-summarize-errors") {
 				Compiler.printErrorStatistics()
 			}
@@ -154,6 +152,8 @@ public class Driver {
 				Compiler.printErrorsAndWarnings()
 			}
 		}
+
+		Compiler.clearErrorsAndWarnings()
 
 		// Parse arguments
 		Compiler.shouldLogProgress(if: arguments.contains("-verbose"))
@@ -268,7 +268,7 @@ public class Driver {
 		let shouldRunConcurrently = !arguments.contains("-sync")
 
 		// Update libraries syncronously to guarantee it's only done once
-		if shouldGenerateAST { // kotlin: ignore
+		if shouldGenerateAST {
 			try Utilities.updateLibraryFiles()
 		}
 

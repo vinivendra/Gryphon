@@ -91,7 +91,7 @@ public class OutputFileMap {
 				lineEnd: lineNumber,
 				columnStart: 1,
 				columnEnd: line.count)
-			Compiler.handleWarning( // kotlin: ignore
+			Compiler.handleWarning(
 				message: "Unable to interpret line in output file map.",
 				sourceFile: sourceFile,
 				sourceFileRange: sourceFileRange)

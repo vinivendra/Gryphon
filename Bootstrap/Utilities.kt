@@ -290,6 +290,7 @@ public fun Utilities.Companion.updateTestFiles() {
         return
     }
 
+    updateLibraryFiles()
     Compiler.log("\t* Updating unit test files...")
 
     val testFilesFolder: String = "Test Files"

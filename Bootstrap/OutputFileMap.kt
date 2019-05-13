@@ -101,6 +101,11 @@ open class OutputFileMap {
                 lineEnd = lineNumber,
                 columnStart = 1,
                 columnEnd = line.length)
+
+            Compiler.handleWarning(
+                message = "Unable to interpret line in output file map.",
+                sourceFile = sourceFile,
+                sourceFileRange = sourceFileRange)
         }
 
         if (currentFilePath != null) {

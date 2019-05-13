@@ -153,8 +153,7 @@ extension Utilities {
 		-> String
 	{
 		let components = filePath.split(withStringSeparator: "/", omittingEmptySubsequences: false)
-		var newComponents = components.dropLast()
-			.map { String($0) } // kotlin: ignore
+		var newComponents = components.dropLast().map { String($0) }
 		let nameComponent = components.last!
 		let nameComponents =
 			nameComponent.split(withStringSeparator: ".", omittingEmptySubsequences: false)
@@ -545,7 +544,7 @@ extension Utilities {
 			return
 		}
 
-		try updateLibraryFiles() // kotlin: ignore
+		try updateLibraryFiles()
 
 		Compiler.log("\t* Updating unit test files...")
 

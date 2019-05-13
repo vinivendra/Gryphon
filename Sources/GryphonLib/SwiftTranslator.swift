@@ -880,7 +880,7 @@ public class SwiftTranslator {
 		let translatedInnerDoStatements = try translateBraceStatement(braceStatement)
 		let translatedDoStatement = Statement.doStatement(statements: translatedInnerDoStatements)
 
-		let catchStatements: ArrayClass<Statement> = []
+		let catchStatements: ArrayClass<Statement?> = []
 		for catchStatement in doCatchStatement.subtrees.dropFirst() {
 			guard catchStatement.name == "Catch" else {
 				continue
@@ -926,10 +926,8 @@ public class SwiftTranslator {
 				statements: translatedStatements))
 		}
 
-		let resultingStatements = // kotlin: ignore
-			ArrayClass<Statement?>([translatedDoStatement] + catchStatements)
-		// insert: val resultingStatements = (listOf(translatedDoStatement) + catchStatements)
-		// insert: 	.toMutableList<Statement?>()
+		let resultingStatements: ArrayClass<Statement?> = [translatedDoStatement]
+		resultingStatements.append(contentsOf: catchStatements)
 
 		return resultingStatements
 	}
@@ -1139,8 +1137,8 @@ public class SwiftTranslator {
 
 		let statements = try translateBraceStatement(braceStatement)
 
-		let resultingStatements = extraStatements + statements // kotlin: ignore
-		// insert: val resultingStatements = (extraStatements + statements).toMutableList()
+		let resultingStatements = extraStatements
+		resultingStatements.append(contentsOf: statements)
 
 		return IfStatementData(
 			conditions: conditions,
@@ -1242,9 +1240,8 @@ public class SwiftTranslator {
 
 			let translatedStatements = try translateBraceStatement(braceStatement)
 
-			let resultingStatements = extraStatements + translatedStatements // kotlin: ignore
-			// insert: val resultingStatements =
-			// insert: 	(extraStatements + translatedStatements).toMutableList()
+			let resultingStatements = extraStatements
+			resultingStatements.append(contentsOf: translatedStatements)
 
 			cases.append(SwitchCase(
 				expressions: caseExpressions, statements: resultingStatements))
