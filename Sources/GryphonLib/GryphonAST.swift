@@ -1,18 +1,18 @@
-/*
-* Copyright 2018 Vinícius Jorge Vendramini
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+//
+// Copyright 2018 Vinícius Jorge Vendramini
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 
 public final class GryphonAST: PrintableAsTree, Equatable, CustomStringConvertible {
 	let sourceFile: SourceFile?
@@ -64,6 +64,8 @@ extension PrintableTree {
 
 public indirect enum Statement: PrintableAsTree, Equatable {
 
+	case comment(
+		value: String)
 	case expressionStatement(
 		expression: Expression)
 	case typealiasDeclaration(
@@ -134,6 +136,8 @@ public indirect enum Statement: PrintableAsTree, Equatable {
 	//
 	public var name: String {
 		switch self {
+		case .comment:
+			return "comment".capitalizedAsCamelCase()
 		case .expressionStatement:
 			return "expressionStatement".capitalizedAsCamelCase()
 		case .extensionDeclaration:
@@ -192,11 +196,14 @@ public indirect enum Statement: PrintableAsTree, Equatable {
 
 	public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		switch self {
+		case let .comment(value: value):
+			return [PrintableTree("//\(value)")]
 		case let .expressionStatement(expression: expression):
 			return [expression]
 		case let .extensionDeclaration(typeName: typeName, members: members):
-			return [PrintableTree(typeName),
-					PrintableTree.ofStatements("members", members), ]
+			return [
+				PrintableTree(typeName),
+				PrintableTree.ofStatements("members", members), ]
 		case let .importDeclaration(moduleName: moduleName):
 			return [PrintableTree(moduleName)]
 		case let .typealiasDeclaration(
