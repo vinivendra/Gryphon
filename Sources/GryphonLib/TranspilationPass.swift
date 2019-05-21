@@ -60,6 +60,8 @@ public class TranspilationPass {
 		defer { parents.removeLast() }
 
 		switch statement {
+		case let .comment(value: value, range: range):
+			return replaceComment(value: value, range: range)
 		case let .expressionStatement(expression: expression):
 			return replaceExpressionStatement(expression: expression)
 		case let .extensionDeclaration(typeName: typeName, members: members):
@@ -139,6 +141,12 @@ public class TranspilationPass {
 		case .error:
 			return [.error]
 		}
+	}
+
+	func replaceComment(value: String, range: SourceFileRange) // annotation: open
+		-> ArrayClass<Statement>
+	{
+		return [.comment(value: value, range: range)]
 	}
 
 	func replaceExpressionStatement( // annotation: open

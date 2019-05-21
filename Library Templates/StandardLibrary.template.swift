@@ -130,6 +130,9 @@ func gryphonTemplates() {
 	_ = _string.firstIndex(of: _character)!
 	_ = "_string.indexOf(_character)"
 
+	_ = _string.contains(where: _closure5)
+	_ = "(_string.find _closure5 != null)"
+
 	_ = _string.index(of: _character)
 	_ = "_string.indexOrNull(_character)"
 

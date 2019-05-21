@@ -80,16 +80,15 @@ public class SwiftTranslator {
 			// Special case: comments at the top of the source file (i.e. license comments, etc)
 			// will be put outside of the main function so they're at the top of the source file
 			if isInTopOfFileComments {
-				if case let .comment(value: _, range: range) = statement,
-					lastTopOfFileCommentLine == range.lineStart - 1
-				{
-					lastTopOfFileCommentLine = range.lineEnd
-					declarations.append(statement)
-					continue
+				if case let .comment(value: _, range: range) = statement {
+					if lastTopOfFileCommentLine == range.lineStart - 1 {
+						lastTopOfFileCommentLine = range.lineEnd
+						declarations.append(statement)
+						continue
+					}
 				}
-				else {
-					isInTopOfFileComments = false
-				}
+
+				isInTopOfFileComments = false
 			}
 
 			// Special case: other comments in main files will be ignored because we can't know if
@@ -106,6 +105,8 @@ public class SwiftTranslator {
 				else {
 					statements.append(statement)
 				}
+
+				continue
 			}
 
 			// Common cases: declarations go outside the main function, everything else goes inside.
@@ -149,7 +150,7 @@ public class SwiftTranslator {
 		let result: ArrayClass<Statement> = []
 
 		var lastRange: SourceFileRange
-		// I we have a scope, start at its lower bound
+		// If we have a scope, start at its lower bound
 		if let scopeRange = scopeRange {
 			lastRange = SourceFileRange(
 				lineStart: -1,
@@ -166,27 +167,13 @@ public class SwiftTranslator {
 			return try subtrees.flatMap{ try translateSubtree($0) }.compactMap { $0 }
 		}
 
-		let commentToAST = { (comment: SourceFile.Comment) -> Statement? in
-			if comment.key == "insert" {
-				return Statement.expressionStatement(expression:
-					.literalCodeExpression(string: comment.value))
-			}
-			else if comment.key == "declaration" {
-				return Statement.expressionStatement(expression:
-					.literalDeclarationExpression(string: comment.value))
-			}
-			else {
-				return nil
-			}
-		}
-
 		for subtree in subtrees {
 			if let currentRange = getRange(ofNode: subtree),
 				lastRange.lineEnd <= currentRange.lineStart
 			{
-				let comments = insertedCode(inRange: lastRange.lineEnd..<currentRange.lineStart)
-				let newASTs = comments.compactMap { commentToAST($0) }
-				result.append(contentsOf: newASTs)
+				let newStatements = insertedCode(
+					inRange: lastRange.lineEnd..<currentRange.lineStart)
+				result.append(contentsOf: newStatements)
 
 				lastRange = currentRange
 			}
@@ -198,10 +185,9 @@ public class SwiftTranslator {
 		if let scopeRange = scopeRange,
 			lastRange.lineEnd < scopeRange.lineEnd
 		{
-			let comments = insertedCode(
+			let newStatements = insertedCode(
 				inRange: lastRange.lineEnd..<scopeRange.lineEnd)
-			let newASTs = comments.compactMap { commentToAST($0) }
-			result.append(contentsOf: newASTs)
+			result.append(contentsOf: newStatements)
 		}
 
 		return result
@@ -230,7 +216,7 @@ public class SwiftTranslator {
 
 	internal func translateSubtree(_ subtree: SwiftAST) throws -> ArrayClass<Statement?> {
 
-		if getComment(forNode: subtree, key: .kotlin) == "ignore" {
+		if getKeyedComment(forNode: subtree, key: .kotlin) == "ignore" {
 			return []
 		}
 
@@ -310,7 +296,7 @@ public class SwiftTranslator {
 			}
 		}
 
-		let shouldInspect = (getComment(forNode: subtree, key: .gryphon) == "inspect")
+		let shouldInspect = (getKeyedComment(forNode: subtree, key: .gryphon) == "inspect")
 		if shouldInspect {
 			print("===\nInspecting:")
 			print(subtree)
@@ -398,7 +384,7 @@ public class SwiftTranslator {
 				ast: classDeclaration, translator: self)
 		}
 
-		if getComment(forNode: classDeclaration, key: .kotlin) == "ignore" {
+		if getKeyedComment(forNode: classDeclaration, key: .kotlin) == "ignore" {
 			return nil
 		}
 
@@ -430,11 +416,11 @@ public class SwiftTranslator {
 				ast: structDeclaration, translator: self)
 		}
 
-		if getComment(forNode: structDeclaration, key: .kotlin) == "ignore" {
+		if getKeyedComment(forNode: structDeclaration, key: .kotlin) == "ignore" {
 			return nil
 		}
 
-		let annotations = getComment(forNode: structDeclaration, key: .annotation)
+		let annotations = getKeyedComment(forNode: structDeclaration, key: .annotation)
 
 		// Get the struct name
 		let name = structDeclaration.standaloneAttributes.first!
@@ -494,7 +480,7 @@ public class SwiftTranslator {
 				ast: enumDeclaration, translator: self)
 		}
 
-		if getComment(forNode: enumDeclaration, key: .kotlin) == "ignore" {
+		if getKeyedComment(forNode: enumDeclaration, key: .kotlin) == "ignore" {
 			return nil
 		}
 
@@ -544,7 +530,7 @@ public class SwiftTranslator {
 		for index in enumElementDeclarations.indices {
 			let enumElementDeclaration = enumElementDeclarations[index]
 
-			guard getComment(forNode: enumElementDeclaration, key: .kotlin) != "ignore" else {
+			guard getKeyedComment(forNode: enumElementDeclaration, key: .kotlin) != "ignore" else {
 				continue
 			}
 
@@ -555,7 +541,7 @@ public class SwiftTranslator {
 					ast: enumDeclaration, translator: self)
 			}
 
-			let annotations = getComment(forNode: enumElementDeclaration, key: .annotation)
+			let annotations = getKeyedComment(forNode: enumElementDeclaration, key: .annotation)
 
 			if !elementName.contains("(") {
 				elements.append(EnumElement(
@@ -1766,14 +1752,14 @@ public class SwiftTranslator {
 
 		// TODO: test annotations in functions
 		var annotations: [String?] = []
-		annotations.append(getComment(forNode: functionDeclaration, key: .annotation))
+		annotations.append(getKeyedComment(forNode: functionDeclaration, key: .annotation))
 		if isSubscript {
 			annotations.append("operator")
 		}
 		let joinedAnnotations = annotations.compactMap { $0 }.joined(separator: " ")
 		let annotationsResult = joinedAnnotations.isEmpty ? nil : joinedAnnotations
 
-		let isPure = (getComment(forNode: functionDeclaration, key: .gryphon) == "pure")
+		let isPure = (getKeyedComment(forNode: functionDeclaration, key: .gryphon) == "pure")
 
 		return .functionDeclaration(data: FunctionDeclarationData(
 			prefix: String(functionNamePrefix),
@@ -1823,7 +1809,7 @@ public class SwiftTranslator {
 
 		let isImplicit = variableDeclaration.standaloneAttributes.contains("implicit")
 
-		let annotations = getComment(forNode: variableDeclaration, key: .annotation)
+		let annotations = getKeyedComment(forNode: variableDeclaration, key: .annotation)
 
 		let isStatic: Bool
 
@@ -1867,7 +1853,7 @@ public class SwiftTranslator {
 			_ = danglingPatternBindings.removeFirst()
 		}
 
-		if let valueReplacement = getComment(forNode: variableDeclaration, key: .value),
+		if let valueReplacement = getKeyedComment(forNode: variableDeclaration, key: .value),
 			expression == nil
 		{
 			expression = .literalCodeExpression(string: valueReplacement)
@@ -1887,8 +1873,8 @@ public class SwiftTranslator {
 			}
 
 			let isImplicit = subtree.standaloneAttributes.contains("implicit")
-			let isPure = (getComment(forNode: subtree, key: .gryphon) == "pure")
-			let annotations = getComment(forNode: subtree, key: .annotation)
+			let isPure = (getKeyedComment(forNode: subtree, key: .gryphon) == "pure")
+			let annotations = getKeyedComment(forNode: subtree, key: .annotation)
 
 			if subtree["get_for"] != nil {
 				getter = FunctionDeclarationData(
@@ -1942,7 +1928,7 @@ public class SwiftTranslator {
 
 	internal func translateExpression(_ expression: SwiftAST) throws -> Expression {
 
-		if let valueReplacement = getComment(forNode: expression, key: .value) {
+		if let valueReplacement = getKeyedComment(forNode: expression, key: .value) {
 			return Expression.literalCodeExpression(string: valueReplacement)
 		}
 
@@ -2113,7 +2099,7 @@ public class SwiftTranslator {
 				"Unknown expression", ast: expression, translator: self)
 		}
 
-		let shouldInspect = (getComment(forNode: expression, key: .gryphon) == "inspect")
+		let shouldInspect = (getKeyedComment(forNode: expression, key: .gryphon) == "inspect")
 		if shouldInspect {
 			print("===\nInspecting:")
 			print(expression)
@@ -2738,11 +2724,23 @@ public class SwiftTranslator {
 
 	// MARK: - Source file interactions
 
-	internal func insertedCode(inRange range: Range<Int>) -> ArrayClass<SourceFile.Comment> {
-		let result: ArrayClass<SourceFile.Comment> = []
+	internal func insertedCode(inRange range: Range<Int>) -> ArrayClass<Statement> {
+		let result: ArrayClass<Statement> = []
 		for lineNumber in range {
-			if let insertComment = sourceFile?.getCommentFromLine(lineNumber) {
-				result.append(insertComment)
+			if let insertComment = sourceFile?.getKeyedCommentFromLine(lineNumber) {
+				if insertComment.key == .insert {
+					result.append(.expressionStatement(expression:
+						.literalCodeExpression(string: insertComment.value)))
+				}
+				else if insertComment.key == .declaration {
+					result.append(.expressionStatement(expression:
+						.literalDeclarationExpression(string: insertComment.value)))
+				}
+			}
+			else if let normalComment = sourceFile?.getCommentFromLine(lineNumber) {
+				result.append(.comment(
+					value: normalComment.contents,
+					range: normalComment.range))
 			}
 		}
 		return result
@@ -2762,16 +2760,16 @@ public class SwiftTranslator {
 		return nil
 	}
 
-	internal func getComment(forNode ast: SwiftAST, key: SourceFile.CommentKey) -> String? {
-		if let comment = getComment(forNode: ast), comment.key == key {
+	internal func getKeyedComment(forNode ast: SwiftAST, key: SourceFile.CommentKey) -> String? {
+		if let comment = getKeyedComment(forNode: ast), comment.key == key {
 			return comment.value
 		}
 		return nil
 	}
 
-	internal func getComment(forNode ast: SwiftAST) -> SourceFile.Comment? {
+	internal func getKeyedComment(forNode ast: SwiftAST) -> SourceFile.KeyedComment? {
 		if let lineNumber = getRange(ofNode: ast)?.lineStart {
-			return sourceFile?.getCommentFromLine(lineNumber)
+			return sourceFile?.getKeyedCommentFromLine(lineNumber)
 		}
 		else {
 			return nil

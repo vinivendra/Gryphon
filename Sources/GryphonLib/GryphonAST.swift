@@ -65,7 +65,8 @@ extension PrintableTree {
 public indirect enum Statement: PrintableAsTree, Equatable {
 
 	case comment(
-		value: String)
+		value: String,
+		range: SourceFileRange)
 	case expressionStatement(
 		expression: Expression)
 	case typealiasDeclaration(
@@ -196,7 +197,7 @@ public indirect enum Statement: PrintableAsTree, Equatable {
 
 	public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		switch self {
-		case let .comment(value: value):
+		case let .comment(value: value, range: _):
 			return [PrintableTree("//\(value)")]
 		case let .expressionStatement(expression: expression):
 			return [expression]

@@ -50,14 +50,59 @@ public class SourceFile {
 		case annotation
 	}
 
-	public struct Comment {
+	public struct KeyedComment {
 		let key: CommentKey
 		let value: String
+	}
+
+	public struct CommonComment {
+		let contents: String
+		let range: SourceFileRange
 	}
 }
 
 extension SourceFile {
-	public func getCommentFromLine(_ lineNumber: Int) -> SourceFile.Comment? {
+	/// Returns any comment in the given line, or `nil` if there isn't one
+	public func getCommentFromLine(_ lineNumber: Int) -> CommonComment? { // gryphon: pure
+		guard let line = getLine(lineNumber) else {
+			return nil
+		}
+
+		let lineComponents = line
+			.split(withStringSeparator: "//", maxSplits: 1, omittingEmptySubsequences: false)
+
+		// If there's no comment
+		guard lineComponents.count == 2 else {
+			return nil
+		}
+
+		// If the comment comes after some code (not yet supported)
+		let commentIsAfterCode = lineComponents[0].contains {
+			$0 !=
+				" " // value: ' '
+			&& $0 !=
+				"\t" // value: '\\t'
+		}
+		guard !commentIsAfterCode else {
+			return nil
+		}
+
+		// Get the comment's range
+		let columnStartIndex = line.occurrences(of: "//").first!.lowerBound
+		let columnStartInt = columnStartIndex.utf16Offset(in: line) // value: columnStartIndex
+
+		let range = SourceFileRange(
+			lineStart: lineNumber,
+			lineEnd: lineNumber,
+			columnStart: columnStartInt,
+			columnEnd: line.count)
+
+		return SourceFile.CommonComment(contents: lineComponents[1], range: range)
+	}
+
+	/// Returns a keyed comment in the given line, or `nil` if there isn't one (or if the existing
+	/// comment isn't keyed).
+	public func getKeyedCommentFromLine(_ lineNumber: Int) -> SourceFile.KeyedComment? {
 		guard let line = getLine(lineNumber) else {
 			return nil
 		}
@@ -76,7 +121,7 @@ extension SourceFile {
 			if let key = commentComponents.first, key == "declaration:" || key == "insert:" {
 				let cleanKey = String(key.dropLast())
 				let commentKey = SourceFile.CommentKey(rawValue: cleanKey)!
-				return SourceFile.Comment(key: commentKey, value: "")
+				return SourceFile.KeyedComment(key: commentKey, value: "")
 			}
 
 			return nil
@@ -87,7 +132,7 @@ extension SourceFile {
 
 		// If it's a valid comment key
 		if let commentKey = SourceFile.CommentKey(rawValue: key) {
-			return SourceFile.Comment(key: commentKey, value: value)
+			return SourceFile.KeyedComment(key: commentKey, value: value)
 		}
 		else {
 			return nil
@@ -95,7 +140,7 @@ extension SourceFile {
 	}
 }
 
-struct SourceFileRange: Equatable {
+public struct SourceFileRange: Equatable {
 	let lineStart: Int
 	let lineEnd: Int
 	let columnStart: Int
@@ -104,7 +149,7 @@ struct SourceFileRange: Equatable {
 	/// This is technically incorrect but allows AST nodes with ranges to get an automatic Equatable
 	/// conformance that ignores ranges, which is useful since we're frequently comparing nodes
 	/// with the same practical meaning but different source file ranges.
-	static func == (lhs: SourceFileRange, rhs: SourceFileRange) -> Bool {
+	public static func == (lhs: SourceFileRange, rhs: SourceFileRange) -> Bool {
 		return true
 	}
 }

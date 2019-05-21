@@ -194,6 +194,9 @@ public class KotlinTranslator {
 			result += currentSubtree.translation
 
 			// Cases that should go together
+			if case .comment = currentSubtree.subtree {
+				continue
+			}
 			if case .variableDeclaration = currentSubtree.subtree,
 				case .variableDeclaration = nextSubtree.subtree
 			{
@@ -270,6 +273,8 @@ public class KotlinTranslator {
 		let result: String
 
 		switch subtree {
+		case let .comment(value: value, range: _):
+			result = "\(indentation)//\(value)\n"
 		case .importDeclaration:
 			result = ""
 		case .extensionDeclaration:
