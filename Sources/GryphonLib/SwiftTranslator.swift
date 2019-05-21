@@ -47,42 +47,13 @@ public class SwiftTranslator {
 			ast.subtrees,
 			scopeRange: fileRange)
 
-		let isDeclaration = { (ast: Statement) -> Bool in
-			switch ast {
-			case let .expressionStatement(expression: innerExpression):
-				if case .literalDeclarationExpression = innerExpression {
-					return true
-				}
-				else {
-					return false
-				}
-			case .protocolDeclaration:
-				return true
-			case .classDeclaration:
-				return true
-			case .structDeclaration:
-				return true
-			case .extensionDeclaration:
-				return true
-			case .functionDeclaration:
-				return true
-			case .enumDeclaration:
-				return true
-			case .typealiasDeclaration:
-				return true
-			default:
-				return false
-			}
-		}
-
 		if isMainFile {
-			let declarations = translatedSubtrees.filter { isDeclaration($0) }
-			let statements = translatedSubtrees.filter({ !isDeclaration($0) })
+			let declarationsAndStatements = filterStatements(translatedSubtrees)
 
 			return GryphonAST(
 				sourceFile: sourceFile,
-				declarations: declarations,
-				statements: statements)
+				declarations: declarationsAndStatements.declarations,
+				statements: declarationsAndStatements.statements)
 		}
 		else {
 			return GryphonAST(
@@ -90,6 +61,72 @@ public class SwiftTranslator {
 				declarations: translatedSubtrees,
 				statements: [])
 		}
+	}
+
+	struct DeclarationsAndStatements {
+		let declarations: ArrayClass<Statement>
+		let statements: ArrayClass<Statement>
+	}
+
+	func filterStatements(_ allStatements: ArrayClass<Statement>) -> DeclarationsAndStatements {
+		let declarations: ArrayClass<Statement> = []
+		let statements: ArrayClass<Statement> = []
+
+		var isInTopOfFileComments = true
+		var lastTopOfFileCommentLine = 0
+
+		for statement in allStatements {
+
+			// Special case: comments at the top of the source file (i.e. license comments, etc)
+			// will be put outside of the main function so they're at the top of the source file
+			if isInTopOfFileComments {
+				if case let .comment(value: _, range: range) = statement,
+					lastTopOfFileCommentLine == range.lineStart - 1
+				{
+					lastTopOfFileCommentLine = range.lineEnd
+					declarations.append(statement)
+					continue
+				}
+				else {
+					isInTopOfFileComments = false
+				}
+			}
+
+			// Special case: other comments in main files will be ignored because we can't know if
+			// they're supposed to be in the main function or not
+			if case .comment = statement {
+				continue
+			}
+
+			// Special case: expression statements may be literal declarations or normal statements
+			if case let .expressionStatement(expression: innerExpression) = statement {
+				if case .literalDeclarationExpression = innerExpression {
+					declarations.append(statement)
+				}
+				else {
+					statements.append(statement)
+				}
+			}
+
+			// Common cases: declarations go outside the main function, everything else goes inside.
+			switch statement {
+			case .protocolDeclaration,
+				 .classDeclaration,
+				 .structDeclaration,
+				 .extensionDeclaration,
+				 .functionDeclaration,
+				 .enumDeclaration,
+				 .typealiasDeclaration:
+
+				declarations.append(statement)
+			default:
+				statements.append(statement)
+			}
+		}
+
+		return SwiftTranslator.DeclarationsAndStatements(
+			declarations: declarations,
+			statements: statements)
 	}
 
 	// MARK: - Top-level translations
