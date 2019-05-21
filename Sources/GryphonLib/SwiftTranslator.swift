@@ -193,7 +193,7 @@ public class SwiftTranslator {
 
 	internal func translateSubtree(_ subtree: SwiftAST) throws -> ArrayClass<Statement?> {
 
-		if getComment(forNode: subtree, key: "kotlin") == "ignore" {
+		if getComment(forNode: subtree, key: .kotlin) == "ignore" {
 			return []
 		}
 
@@ -273,7 +273,7 @@ public class SwiftTranslator {
 			}
 		}
 
-		let shouldInspect = (getComment(forNode: subtree, key: "gryphon") == "inspect")
+		let shouldInspect = (getComment(forNode: subtree, key: .gryphon) == "inspect")
 		if shouldInspect {
 			print("===\nInspecting:")
 			print(subtree)
@@ -361,7 +361,7 @@ public class SwiftTranslator {
 				ast: classDeclaration, translator: self)
 		}
 
-		if getComment(forNode: classDeclaration, key: "kotlin") == "ignore" {
+		if getComment(forNode: classDeclaration, key: .kotlin) == "ignore" {
 			return nil
 		}
 
@@ -393,11 +393,11 @@ public class SwiftTranslator {
 				ast: structDeclaration, translator: self)
 		}
 
-		if getComment(forNode: structDeclaration, key: "kotlin") == "ignore" {
+		if getComment(forNode: structDeclaration, key: .kotlin) == "ignore" {
 			return nil
 		}
 
-		let annotations = getComment(forNode: structDeclaration, key: "annotation")
+		let annotations = getComment(forNode: structDeclaration, key: .annotation)
 
 		// Get the struct name
 		let name = structDeclaration.standaloneAttributes.first!
@@ -457,7 +457,7 @@ public class SwiftTranslator {
 				ast: enumDeclaration, translator: self)
 		}
 
-		if getComment(forNode: enumDeclaration, key: "kotlin") == "ignore" {
+		if getComment(forNode: enumDeclaration, key: .kotlin) == "ignore" {
 			return nil
 		}
 
@@ -507,7 +507,7 @@ public class SwiftTranslator {
 		for index in enumElementDeclarations.indices {
 			let enumElementDeclaration = enumElementDeclarations[index]
 
-			guard getComment(forNode: enumElementDeclaration, key: "kotlin") != "ignore" else {
+			guard getComment(forNode: enumElementDeclaration, key: .kotlin) != "ignore" else {
 				continue
 			}
 
@@ -518,7 +518,7 @@ public class SwiftTranslator {
 					ast: enumDeclaration, translator: self)
 			}
 
-			let annotations = getComment(forNode: enumElementDeclaration, key: "annotation")
+			let annotations = getComment(forNode: enumElementDeclaration, key: .annotation)
 
 			if !elementName.contains("(") {
 				elements.append(EnumElement(
@@ -1729,14 +1729,14 @@ public class SwiftTranslator {
 
 		// TODO: test annotations in functions
 		var annotations: [String?] = []
-		annotations.append(getComment(forNode: functionDeclaration, key: "annotation"))
+		annotations.append(getComment(forNode: functionDeclaration, key: .annotation))
 		if isSubscript {
 			annotations.append("operator")
 		}
 		let joinedAnnotations = annotations.compactMap { $0 }.joined(separator: " ")
 		let annotationsResult = joinedAnnotations.isEmpty ? nil : joinedAnnotations
 
-		let isPure = (getComment(forNode: functionDeclaration, key: "gryphon") == "pure")
+		let isPure = (getComment(forNode: functionDeclaration, key: .gryphon) == "pure")
 
 		return .functionDeclaration(data: FunctionDeclarationData(
 			prefix: String(functionNamePrefix),
@@ -1786,7 +1786,7 @@ public class SwiftTranslator {
 
 		let isImplicit = variableDeclaration.standaloneAttributes.contains("implicit")
 
-		let annotations = getComment(forNode: variableDeclaration, key: "annotation")
+		let annotations = getComment(forNode: variableDeclaration, key: .annotation)
 
 		let isStatic: Bool
 
@@ -1830,7 +1830,7 @@ public class SwiftTranslator {
 			_ = danglingPatternBindings.removeFirst()
 		}
 
-		if let valueReplacement = getComment(forNode: variableDeclaration, key: "value"),
+		if let valueReplacement = getComment(forNode: variableDeclaration, key: .value),
 			expression == nil
 		{
 			expression = .literalCodeExpression(string: valueReplacement)
@@ -1850,8 +1850,8 @@ public class SwiftTranslator {
 			}
 
 			let isImplicit = subtree.standaloneAttributes.contains("implicit")
-			let isPure = (getComment(forNode: subtree, key: "gryphon") == "pure")
-			let annotations = getComment(forNode: subtree, key: "annotation")
+			let isPure = (getComment(forNode: subtree, key: .gryphon) == "pure")
+			let annotations = getComment(forNode: subtree, key: .annotation)
 
 			if subtree["get_for"] != nil {
 				getter = FunctionDeclarationData(
@@ -1905,7 +1905,7 @@ public class SwiftTranslator {
 
 	internal func translateExpression(_ expression: SwiftAST) throws -> Expression {
 
-		if let valueReplacement = getComment(forNode: expression, key: "value") {
+		if let valueReplacement = getComment(forNode: expression, key: .value) {
 			return Expression.literalCodeExpression(string: valueReplacement)
 		}
 
@@ -2076,7 +2076,7 @@ public class SwiftTranslator {
 				"Unknown expression", ast: expression, translator: self)
 		}
 
-		let shouldInspect = (getComment(forNode: expression, key: "gryphon") == "inspect")
+		let shouldInspect = (getComment(forNode: expression, key: .gryphon) == "inspect")
 		if shouldInspect {
 			print("===\nInspecting:")
 			print(expression)
@@ -2725,7 +2725,7 @@ public class SwiftTranslator {
 		return nil
 	}
 
-	internal func getComment(forNode ast: SwiftAST, key: String) -> String? {
+	internal func getComment(forNode ast: SwiftAST, key: SourceFile.CommentKey) -> String? {
 		if let comment = getComment(forNode: ast), comment.key == key {
 			return comment.value
 		}

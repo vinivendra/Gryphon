@@ -40,8 +40,18 @@ public class SourceFile {
 		}
 	}
 
+	public enum CommentKey: String {
+		case declaration
+		case insert
+		case kotlin
+		case value
+		case inspect
+		case gryphon
+		case annotation
+	}
+
 	public struct Comment {
-		let key: String
+		let key: CommentKey
 		let value: String
 	}
 }
@@ -64,7 +74,9 @@ extension SourceFile {
 		guard commentComponents.count == 2 else {
 			// Allow the insertion of newlines even if the IDE trims the trailing spaces
 			if let key = commentComponents.first, key == "declaration:" || key == "insert:" {
-				return SourceFile.Comment(key: String(key.dropLast()), value: "")
+				let cleanKey = String(key.dropLast())
+				let commentKey = SourceFile.CommentKey(rawValue: cleanKey)!
+				return SourceFile.Comment(key: commentKey, value: "")
 			}
 
 			return nil
@@ -72,7 +84,14 @@ extension SourceFile {
 
 		let key = commentComponents[0]
 		let value = commentComponents[1]
-		return SourceFile.Comment(key: key, value: value)
+
+		// If it's a valid comment key
+		if let commentKey = SourceFile.CommentKey(rawValue: key) {
+			return SourceFile.Comment(key: commentKey, value: value)
+		}
+		else {
+			return nil
+		}
 	}
 }
 
