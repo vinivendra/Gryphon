@@ -2953,7 +2953,7 @@ public class SwiftTranslator {
 	internal func getInformationFromDeclaration(_ declaration: String)
 		-> DeclarationInformation
 	{
-		let isStandardLibrary = declaration.hasPrefix("Swift")
+		let isStandardLibrary = declaration.hasPrefix("Swift.")
 
 		var index = declaration.startIndex
 		var lastPeriodIndex = declaration.startIndex
