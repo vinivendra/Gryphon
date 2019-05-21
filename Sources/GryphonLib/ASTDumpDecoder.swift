@@ -144,16 +144,16 @@ internal class ASTDumpDecoder {
 		}
 	}
 
-	/**
-	Reads an identifier. An identifier may have parentheses (or angle brackets) in it, so this
-	function also checks to see if they're balanced and only exits when the last open parethesis
-	has been closed.
-
-	For some reason (a bug in the compiler) the identifier can sometimes be split in two by a
-	newline. Newlines that seem to occur normally are followed by a series of spaces, but these
-	buggy newlines are just followed by the rest of the identifier. So if the character following
-	newline is not a space, we assume that's what happened and keep reading the rest.
-	*/
+	///
+	/// Reads an identifier. An identifier may have parentheses (or angle brackets) in it, so this
+	/// function also checks to see if they're balanced and only exits when the last open parethesis
+	/// has been closed.
+	///
+	/// For some reason (a bug in the compiler) the identifier can sometimes be split in two by a
+	/// newline. Newlines that seem to occur normally are followed by a series of spaces, but these
+	/// buggy newlines are just followed by the rest of the identifier. So if the character
+	/// following newline is not a space, we assume that's what happened and keep reading the rest.
+	///
 	func readIdentifier() -> String {
 		var parenthesesLevel = 0
 
@@ -201,14 +201,15 @@ internal class ASTDumpDecoder {
 		return cleanString
 	}
 
-	/**
-	Reads a list of identifiers. This is used to read a list of classes and/or protocols in
-	inheritance clauses, as in `class MyClass: A, B, C, D, E { }`.
-	This algorithm assumes an identifier list is always the last attribute in a subtree, and thus
-	always ends in whitespace. This may well not be true, and in that case this will have to change.
-
-	Also prevents the newline bug (see the documentation for readIdentifier).
-	*/
+	///
+	/// Reads a list of identifiers. This is used to read a list of classes and/or protocols in
+	/// inheritance clauses, as in `class MyClass: A, B, C, D, E { }`.
+	/// This algorithm assumes an identifier list is always the last attribute in a subtree, and
+	/// thus always ends in whitespace. This may well not be true, and in that case this will have
+	/// to change.
+	///
+	/// Also prevents the newline bug (see the documentation for readIdentifier).
+	///
 	func readIdentifierList() -> String {
 		defer { cleanLeadingWhitespace() }
 
@@ -238,13 +239,13 @@ internal class ASTDumpDecoder {
 		return cleanString
 	}
 
-	/**
-	Reads a key. A key can't have parentheses, single or double quotes, or whitespace in it
-	(expect for composed keys, as a special case below) and it must end with an '='. If the
-	string in the beginning of the buffer isn't a key, this function returns nil.
+	///
+	/// Reads a key. A key can't have parentheses, single or double quotes, or whitespace in it
+	/// (expect for composed keys, as a special case below) and it must end with an '='. If the
+	/// string in the beginning of the buffer isn't a key, this function returns nil.
 
-	Also prevents the newline bug (see the documentation for readIdentifier).
-	*/
+	/// Also prevents the newline bug (see the documentation for readIdentifier).
+	///
 	func readKey() -> String? {
 		defer { cleanLeadingWhitespace() }
 
@@ -300,12 +301,12 @@ internal class ASTDumpDecoder {
 		return cleanString
 	}
 
-	/**
-	Reads a location. A location is a series of characters that can't be colons or parentheses
-	(usually it's a file path), followed by a colon, a number, another colon and another number.
-
-	Also prevents the newline bug (see the documentation for readIdentifier).
-	*/
+	///
+	/// Reads a location. A location is a series of characters that can't be colons or parentheses
+	/// (usually it's a file path), followed by a colon, a number, another colon and another number.
+	///
+	/// Also prevents the newline bug (see the documentation for readIdentifier).
+	///
 	func readLocation() -> String {
 		defer { cleanLeadingWhitespace() }
 
@@ -353,12 +354,13 @@ internal class ASTDumpDecoder {
 		return cleanString
 	}
 
-	/**
-	Reads a declaration location. A declaration location is a series of characters defining a swift
-	declaration, up to an '@'. After that comes a location, read by the `readLocation` function.
-
-	Also prevents the newline bug (see the documentation for readIdentifier).
-	*/
+	///
+	/// Reads a declaration location. A declaration location is a series of characters defining a
+	/// swift declaration, up to an '@'. After that comes a location, read by the `readLocation`
+	/// function.
+	///
+	/// Also prevents the newline bug (see the documentation for readIdentifier).
+	///
 	func readDeclarationLocation() -> String? {
 		defer { cleanLeadingWhitespace() }
 
@@ -415,17 +417,17 @@ internal class ASTDumpDecoder {
 		return cleanString + location
 	}
 
-	/**
-	Reads a declaration without a location after. A declaration normally contains periods indicating
-	the parts of the declaration. We use this fact to try to distinguish declarations from normal
-	identifiers.
-
-	A declaration may also contain a type followed by " extension.", as in
-	"Swift.(file).Int extension.+". In that case, the space before extension is included in the
-	declaration.
-
-	Also prevents the newline bug (see the documentation for readIdentifier).
-	*/
+	///
+	/// Reads a declaration without a location after. A declaration normally contains periods
+	/// indicating the parts of the declaration. We use this fact to try to distinguish declarations 
+	/// from normal identifiers.
+	///
+	/// A declaration may also contain a type followed by " extension.", as in
+	/// "Swift.(file).Int extension.+". In that case, the space before extension is included in the
+	/// declaration.
+	///
+	/// Also prevents the newline bug (see the documentation for readIdentifier).
+	///
 	func readDeclaration() -> String? {
 		defer { cleanLeadingWhitespace() }
 
@@ -484,12 +486,12 @@ internal class ASTDumpDecoder {
 		return cleanString
 	}
 
-	/**
-	Reads a double quoted string, taking care not to count double quotes that have been escaped by a
-	backslash.
+	///
+	/// Reads a double quoted string, taking care not to count double quotes that have been escaped
+	/// by a backslash.
 
-	Also prevents the newline bug (see the documentation for readIdentifier).
-	*/
+	/// Also prevents the newline bug (see the documentation for readIdentifier).
+	///
 	func readDoubleQuotedString() -> String {
 		defer { cleanLeadingWhitespace() }
 
@@ -535,14 +537,14 @@ internal class ASTDumpDecoder {
 		return cleanString
 	}
 
-	/**
-	Reads a single quoted string. These often show up in lists of names, which may be in a form
-	such as `'',foo,'','',bar`. In this case, we want to parse the whole thing, not just the initial
-	empty single-quoted string, so this function calls `readStandaloneAttribute` if it finds a comma
-	in order to parse the rest of the list.
-
-	Also prevents the newline bug (see the documentation for readIdentifier).
-	*/
+	///
+	/// Reads a single quoted string. These often show up in lists of names, which may be in a form
+	/// such as `'',foo,'','',bar`. In this case, we want to parse the whole thing, not just the
+	/// initial empty single-quoted string, so this function calls `readStandaloneAttribute` if it
+	/// finds a comma in order to parse the rest of the list.
+	///
+	/// Also prevents the newline bug (see the documentation for readIdentifier).
+	///
 	func readSingleQuotedString() -> String {
 		defer { cleanLeadingWhitespace() }
 
@@ -584,11 +586,11 @@ internal class ASTDumpDecoder {
 		}
 	}
 
-	/**
-	Reads a string inside brackets and returns the string (without the brackets).
-
-	Also prevents the newline bug (see the documentation for readIdentifier).
-	*/
+	///
+	/// Reads a string inside brackets and returns the string (without the brackets).
+	///
+	/// Also prevents the newline bug (see the documentation for readIdentifier).
+	///
 	func readStringInBrackets() -> String {
 		defer { cleanLeadingWhitespace() }
 
@@ -624,11 +626,11 @@ internal class ASTDumpDecoder {
 		return cleanString
 	}
 
-	/**
-	Reads a string inside angle brackets and returns the string (without the brackets).
-
-	Also prevents the newline bug (see the documentation for readIdentifier).
-	*/
+	///
+	/// Reads a string inside angle brackets and returns the string (without the brackets).
+	///
+	/// Also prevents the newline bug (see the documentation for readIdentifier).
+	///
 	func readStringInAngleBrackets() -> String {
 		defer { cleanLeadingWhitespace() }
 

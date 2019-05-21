@@ -17,30 +17,30 @@
 public class KotlinTranslator {
 	// MARK: - Interface - Recording information
 
-	/**
-	This variable is used to store enum definitions in order to allow the translator
-	to translate them as sealed classes (see the `translate(dotSyntaxCallExpression)` method).
-	*/
+	///
+	/// This variable is used to store enum definitions in order to allow the translator
+	/// to translate them as sealed classes (see the `translate(dotSyntaxCallExpression)` method).
+	///
 	private(set) static var sealedClasses: ArrayClass<String> = []
 
 	public static func addSealedClass(_ className: String) {
 		sealedClasses.append(className)
 	}
 
-	/**
-	This variable is used to store enum definitions in order to allow the translator
-	to translate them as enum classes (see the `translate(dotSyntaxCallExpression)` method).
-	*/
+	///
+	/// This variable is used to store enum definitions in order to allow the translator
+	/// to translate them as enum classes (see the `translate(dotSyntaxCallExpression)` method).
+	///
 	private(set) static var enumClasses: ArrayClass<String> = []
 
 	public static func addEnumClass(_ className: String) {
 		enumClasses.append(className)
 	}
 
-	/**
-	This variable is used to store protocol definitions in order to allow the translator
-	to translate conformances to them correctly (instead of as class inheritances).
-	*/
+	/// 
+	/// This variable is used to store protocol definitions in order to allow the translator
+	/// to translate conformances to them correctly (instead of as class inheritances).
+	///
 	private(set) static var protocols: ArrayClass<String> = []
 
 	public static func addProtocol(_ protocolName: String) {

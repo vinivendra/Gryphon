@@ -1528,24 +1528,24 @@ public class AnonymousParametersTranspilationPass: TranspilationPass {
 	}
 }
 
-/**
-ArrayClass needs explicit initializers to account for the fact that it can't be implicitly
-cast to covariant types. For instance:
-
-````
-let myIntArray: ArrayClass = [1, 2, 3]
-let myAnyArray = myIntArray as ArrayClass<Any> // error
-let myAnyArray = ArrayClass<Any>(myIntArray) // OK
-````
-
-This transformation can't be done with the current template mode because there's no way to get
-the type for the cast. However, since this seems to be a specific case that only shows up in the
-stdlib at the moment, this pass should serve as a workaround.
-
-The conversion is done by calling `array.toMutableList<Element>()` rather than a normal class. This
-allows translations to cover a few (not fully understood) corner cases where the array isn't a
-`MutableList` (it happened once with an `EmptyList`), meaning a normal cast would fail.
-*/
+///
+/// ArrayClass needs explicit initializers to account for the fact that it can't be implicitly
+/// cast to covariant types. For instance:
+///
+/// ````
+/// let myIntArray: ArrayClass = [1, 2, 3]
+/// let myAnyArray = myIntArray as ArrayClass<Any> // error
+/// let myAnyArray = ArrayClass<Any>(myIntArray) // OK
+/// ````
+///
+/// This transformation can't be done with the current template mode because there's no way to get
+/// the type for the cast. However, since this seems to be a specific case that only shows up in the
+/// stdlib at the moment, this pass should serve as a workaround.
+///
+/// The conversion is done by calling `array.toMutableList<Element>()` rather than a normal class.
+/// This allows translations to cover a few (not fully understood) corner cases where the array
+/// isn't a `MutableList` (it happened once with an `EmptyList`), meaning a normal cast would fail.
+///
 public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 

@@ -383,22 +383,23 @@ extension Expression {
 		}
 	}
 
-	/**
-	In a static context, some type expressions can be omitted. When that happens, they get
-	translated as declaration references instead of type expressions. However, thwy should still
-	match type expressions, as they're basically the same. This method should detect those cases.
-
-	Example:
-
-	```
-	class A {
-		static func a() { }
-		static func b() {
-			a() // implicitly this is A.a(), and the implicit `A` gets dumped as a declaration
-			// reference expression instead of a type expression.
-		}
-	```
-	**/
+	///
+	/// In a static context, some type expressions can be omitted. When that happens, they get
+	/// translated as declaration references instead of type expressions. However, thwy should still
+	/// match type expressions, as they're basically the same. This method should detect those
+	/// cases.
+	///
+	/// Example:
+	///
+	/// ```
+	/// class A {
+	/// 	static func a() { }
+	/// 	static func b() {
+	/// 		a() // implicitly this is A.a(), and the implicit `A` gets dumped as a declaration
+	/// 		// reference expression instead of a type expression.
+	/// 	}
+	/// ```
+	///
 	private func declarationExpressionMatchesImplicitTypeExpression(
 		_ expression: DeclarationReferenceData) -> Bool
 	{
