@@ -1392,11 +1392,19 @@ public class RenameOperatorsTranspilationPass: TranspilationPass {
 		typeName: String)
 		-> Expression
 	{
-		if operatorSymbol == "??" {
+        let operatorTranslations: DictionaryClass = [
+            "??": "?:",
+            "<<": "shl",
+            ">>": "shr",
+            "&": "and",
+            "|": "or",
+            "^": "xor",
+        ]
+		if let operatorTranslation = operatorTranslations[operatorSymbol] {
 			return super.replaceBinaryOperatorExpression(
 				leftExpression: leftExpression,
 				rightExpression: rightExpression,
-				operatorSymbol: "?:",
+				operatorSymbol: operatorTranslation,
 				typeName: typeName)
 		}
 		else {
