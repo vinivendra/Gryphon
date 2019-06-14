@@ -23,3 +23,18 @@
 **/xcuserdata
 default.profraw
 
+### Kotlin files generated in bootstrap
+Bootstrap/PrintableAsTree.kt
+Bootstrap/SwiftAST.kt
+Bootstrap/SwiftTranslator.kt
+Bootstrap/GryphonAST.kt
+Bootstrap/TranspilationPass.kt
+Bootstrap/ASTDumpDecoder.kt
+Bootstrap/Compiler.kt
+Bootstrap/OutputFileMap.kt
+Bootstrap/SourceFile.kt
+Bootstrap/Driver.kt
+Bootstrap/Extensions.kt
+Bootstrap/SharedUtilities.kt
+Bootstrap/KotlinTranslator.kt
+Bootstrap/LibraryTranspilationPass.kt
