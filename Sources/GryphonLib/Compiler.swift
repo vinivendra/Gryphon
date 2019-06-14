@@ -301,7 +301,7 @@ extension Compiler {
 		if let sourceFile = sourceFile {
 			let sourceFilePath = sourceFile.path
 			let relativePath = URL( // value: sourceFilePath
-				fileURLWithPath: sourceFilePath).relativePath
+				fileURLWithPath: sourceFilePath).absoluteString.dropFirst("file://".count)
 
 			if let sourceFileRange = sourceFileRange {
 				let sourceFileString = sourceFile.getLine(sourceFileRange.lineStart) ??
