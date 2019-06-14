@@ -39,9 +39,6 @@
 		"ast-dump": "Bootstrap/SourceFile.swiftASTDump",
 		"kotlin": "Bootstrap/SourceFile.kt",
 	},
-	"Sources/GryphonLib/SwiftStandardLibrary.swift": {
-		"ast-dump": "Bootstrap/SwiftStandardLibrary.swiftASTDump",
-	},
 	"Sources/GryphonLib/SwiftAST.swift": {
 		"ast-dump": "Bootstrap/SwiftAST.swiftASTDump",
 		"kotlin": "Bootstrap/SwiftAST.kt",
@@ -54,8 +51,15 @@
 		"ast-dump": "Bootstrap/TranspilationPass.swiftASTDump",
 		"kotlin": "Bootstrap/TranspilationPass.kt",
 	},
-	"Sources/GryphonLib/Utilities.swift": {
-		"ast-dump": "Bootstrap/Utilities.swiftASTDump",
-		"kotlin": "Bootstrap/Utilities.kt",
-	},
+    "Sources/GryphonLib/SharedUtilities.swift": {
+        "ast-dump": "Bootstrap/SharedUtilities.swiftASTDump",
+        "kotlin": "Bootstrap/SharedUtilities.kt",
+    },
+
+    "Sources/GryphonLib/SwiftStandardLibrary.swift": {
+        "ast-dump": "Bootstrap/SwiftStandardLibrary.swiftASTDump",
+    },
+    "Sources/GryphonLib/Utilities.swift": {
+        "ast-dump": "Bootstrap/Utilities.swiftASTDump",
+    },
 }

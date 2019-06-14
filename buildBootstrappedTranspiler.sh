@@ -11,6 +11,7 @@ kotlinc -include-runtime \
 	Bootstrap/ExtensionsTest.kt \
 	Bootstrap/SwiftAST.kt \
 	Bootstrap/Utilities.kt \
+    Bootstrap/SharedUtilities.kt \
 	Bootstrap/UtilitiesTest.kt \
 	Bootstrap/Compiler.kt \
 	Bootstrap/SourceFile.kt \
@@ -23,4 +24,3 @@ kotlinc -include-runtime \
 	Bootstrap/LibraryTranspilationPass.kt \
 	Bootstrap/Shell.kt \
 	Bootstrap/ShellTest.kt;
-
