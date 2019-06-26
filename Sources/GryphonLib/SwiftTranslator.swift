@@ -26,6 +26,9 @@ public class SwiftTranslator {
 
 	fileprivate var sourceFile: SourceFile?
 
+	static let functionCompatibleASTNodes: ArrayClass<String> =
+		["Function Declaration", "Constructor Declaration", "Accessor Declaration"]
+
 	// MARK: - Interface
 
 	public init() { }
@@ -1294,7 +1297,7 @@ public class SwiftTranslator {
 				ast: simplePatternEnumElement, translator: self)
 		}
 
-		var enumElements = enumReference.split(separator: ".")
+		let enumElements = ArrayClass<Substring>(enumReference.split(separator: "."))
 
 		guard let lastEnumElement = enumElements.last else {
 			return try unexpectedExpressionStructureError(
@@ -1591,9 +1594,7 @@ public class SwiftTranslator {
 	internal func translateFunctionDeclaration(_ functionDeclaration: SwiftAST)
 		throws -> Statement?
 	{
-		let compatibleASTNodes =
-			["Function Declaration", "Constructor Declaration", "Accessor Declaration"]
-		guard compatibleASTNodes.contains(functionDeclaration.name) else {
+		guard SwiftTranslator.functionCompatibleASTNodes.contains(functionDeclaration.name) else {
 			return try unexpectedASTStructureError(
 				"Trying to translate \(functionDeclaration.name) as 'Function Declaration'",
 				ast: functionDeclaration, translator: self)
@@ -1751,7 +1752,7 @@ public class SwiftTranslator {
 		}
 
 		// TODO: test annotations in functions
-		var annotations: [String?] = []
+		let annotations: ArrayClass<String?> = []
 		annotations.append(getKeyedComment(forNode: functionDeclaration, key: .annotation))
 		if isSubscript {
 			annotations.append("operator")
@@ -2386,11 +2387,11 @@ public class SwiftTranslator {
 			return .tupleExpression(pairs: [])
 		}
 
-		let namesArray = names.split(separator: ",")
+		let namesArray = ArrayClass<Substring>(names.split(separator: ","))
 
 		let tuplePairs: ArrayClass<LabeledExpression> = []
 
-		for (name, expression) in zip(namesArray, tupleExpression.subtrees) {
+		for (name, expression) in zipToClass(namesArray, tupleExpression.subtrees) {
 			let expression = try translateExpression(expression)
 
 			// Empty names (like the underscore in "foo(_:)") are represented by ''

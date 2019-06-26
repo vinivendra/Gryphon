@@ -15,13 +15,23 @@
 //
 
 public class TranspilationPass {
-	internal static func isASwiftRawRepresentableType(_ typeName: String) -> Bool {
-		return [
-			"String",
-			"Int", "Int8", "Int16", "Int32", "Int64",
-			"UInt", "UInt8", "UInt16", "UInt32", "UInt64",
-			"Float", "Float32", "Float64", "Float80", "Double",
-			].contains(typeName)
+	static let swiftRawRepresentableTypes: ArrayClass<String> = [
+		"String",
+		"Int", "Int8", "Int16", "Int32", "Int64",
+		"UInt", "UInt8", "UInt16", "UInt32", "UInt64",
+		"Float", "Float32", "Float64", "Float80", "Double",
+		]
+
+	static func isASwiftRawRepresentableType(_ typeName: String) -> Bool {
+		return swiftRawRepresentableTypes.contains(typeName)
+	}
+
+	static let swiftProtocols: ArrayClass<String> = [
+		"Equatable", "Codable", "Decodable", "Encodable", "CustomStringConvertible",
+	]
+
+	static func isASwiftProtocol(_ protocolName: String) -> Bool {
+		return swiftProtocols.contains(protocolName)
 	}
 
 	//
@@ -1454,12 +1464,6 @@ public class SelfToThisTranspilationPass: TranspilationPass {
 public class CleanInheritancesTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
-	private func isASwiftProtocol(_ protocolName: String) -> Bool {
-		return [
-			"Equatable", "Codable", "Decodable", "Encodable", "CustomStringConvertible",
-			].contains(protocolName)
-	}
-
 	override func replaceEnumDeclaration( // annotation: override
 		access: String?,
 		enumName: String,
@@ -1473,7 +1477,8 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 			access: access,
 			enumName: enumName,
 			inherits: inherits.filter {
-					!isASwiftProtocol($0) && !TranspilationPass.isASwiftRawRepresentableType($0)
+					!TranspilationPass.isASwiftProtocol($0) &&
+						!TranspilationPass.isASwiftRawRepresentableType($0)
 				},
 			elements: elements,
 			members: members,
@@ -1490,7 +1495,7 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 		return super.replaceStructDeclaration(
 			annotations: annotations,
 			structName: structName,
-			inherits: inherits.filter { !isASwiftProtocol($0) },
+			inherits: inherits.filter { !TranspilationPass.isASwiftProtocol($0) },
 			members: members)
 	}
 
@@ -1502,7 +1507,7 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 	{
 		return super.replaceClassDeclaration(
 			name: name,
-			inherits: inherits.filter { !isASwiftProtocol($0) },
+			inherits: inherits.filter { !TranspilationPass.isASwiftProtocol($0) },
 			members: members)
 	}
 }
@@ -2314,6 +2319,63 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 	}
 }
 
+/// `ArrayClass`es and `DictionaryClass`es are prefered to using `Arrays` and `Dictionaries` for
+/// guaranteeing correctness. This pass raises warnings when it finds uses of the native data
+/// structures, which should help avoid these bugs.
+public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	override func replaceExpression(_ expression: Expression) -> Expression // annotation: override
+	{
+		if let type = expression.swiftType, type.hasPrefix("[") {
+			let message = "Native type \(type) can lead to different behavior in Kotlin. Prefer " +
+			"ArrayClass or DictionaryClass instead."
+			Compiler.handleWarning(
+				message: message,
+				details: expression.prettyDescription(),
+				sourceFile: ast.sourceFile,
+				sourceFileRange: nil)
+		}
+
+		return super.replaceExpression(expression)
+	}
+
+	override func replaceDotExpression( // annotation: override
+		leftExpression: Expression,
+		rightExpression: Expression)
+		-> Expression
+	{
+		// TODO: automatically add parentheses around or's in if conditions otherwise they can
+		// associate incorrectly.
+
+		// If the expression is being transformed into a mutableList or a mutableMap it's probably
+		// ok.
+		if let leftExpressionType = leftExpression.swiftType,
+			leftExpressionType.hasPrefix("["),
+			case let .callExpression(data: callExpressionData) = rightExpression
+		{
+			if (callExpressionData.typeName.hasPrefix("ArrayClass") ||
+					callExpressionData.typeName.hasPrefix("DictionaryClass")),
+				case let .declarationReferenceExpression(data: declarationReferenceData) =
+					callExpressionData.function
+			{
+				if declarationReferenceData.identifier.hasPrefix("toMutable"),
+					(declarationReferenceData.typeName.hasPrefix("ArrayClass") ||
+						declarationReferenceData.typeName.hasPrefix("DictionaryClass"))
+				{
+					return .dotExpression(
+						leftExpression: leftExpression,
+						rightExpression: rightExpression)
+				}
+			}
+		}
+
+		return super.replaceDotExpression(
+			leftExpression: leftExpression,
+			rightExpression: rightExpression)
+	}
+}
+
 /// If statements with let declarations get translated to Kotlin by having their let declarations
 /// rearranged to be before the if statement. This will cause any let conditions that have side
 /// effects (i.e. `let x = sideEffects()`) to run eagerly on Kotlin but lazily on Swift, which can
@@ -3078,6 +3140,7 @@ public extension TranspilationPass {
 		// Raise any warnings that may be left
 		result = RaiseStandardLibraryWarningsTranspilationPass(ast: result).run()
 		result = RaiseMutableValueTypesWarningsTranspilationPass(ast: result).run()
+		result = RaiseNativeDataStructureWarningsTranspilationPass(ast: result).run()
 
 		return result
 	}

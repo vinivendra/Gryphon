@@ -227,6 +227,13 @@ extension ArrayClass: Codable where Element: Codable { // kotlin: ignore
 	}
 }
 
+extension ArrayClass where Element: Comparable { // kotlin: ignore
+	@inlinable
+	public func sorted() -> ArrayClass<Element> {
+		return ArrayClass(array.sorted())
+	}
+}
+
 public protocol BackedByArray { // kotlin: ignore
 	associatedtype Element
 	var arrayBacking: [Element] { get }
@@ -265,6 +272,7 @@ public final class DictionaryClass<Key, Value>: // kotlin: ignore
 	where Key: Hashable
 {
 	public typealias Buffer = [Key: Value]
+	public typealias KeyValueTuple = (key: Key, value: Value)
 
 	public var dictionary: Buffer
 
@@ -345,7 +353,7 @@ public final class DictionaryClass<Key, Value>: // kotlin: ignore
 	}
 
 	//
-	public func map<T>(_ transform: ((key: Key, value: Value)) throws -> T)
+	public func map<T>(_ transform: (KeyValueTuple) throws -> T)
 		rethrows -> ArrayClass<T>
 	{
 		return try ArrayClass<T>(self.dictionary.map(transform))
@@ -354,6 +362,14 @@ public final class DictionaryClass<Key, Value>: // kotlin: ignore
 	@inlinable
 	public func mapValues<T>(_ transform: (Value) throws -> T) rethrows -> DictionaryClass<Key, T> {
 		return try DictionaryClass<Key, T>(dictionary.mapValues(transform))
+	}
+
+	@inlinable
+	public func sorted(
+		by areInIncreasingOrder: (KeyValueTuple, KeyValueTuple) throws -> Bool)
+		rethrows -> ArrayClass<KeyValueTuple>
+	{
+		return ArrayClass<KeyValueTuple>(try dictionary.sorted(by: areInIncreasingOrder))
 	}
 }
 

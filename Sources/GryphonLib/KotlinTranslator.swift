@@ -647,10 +647,10 @@ public class KotlinTranslator {
 				if let genericExtensionIndex = translatedExtensionType.index(of: "<") {
 					let genericExtensionString =
 						translatedExtensionType.suffix(from: genericExtensionIndex)
-					var genericTypes = genericExtensionString
+					let genericTypes = ArrayClass<String>(genericExtensionString
 						.dropFirst().dropLast()
 						.split(separator: ",")
-						.map { String($0) }
+						.map { String($0) })
 					genericTypes.append(contentsOf: functionDeclaration.genericTypes)
 					genericString = "<\(genericTypes.joined(separator: ", "))> "
 				}
@@ -1851,10 +1851,10 @@ public class KotlinTranslator {
 				translateFunctionTypeComponent($0)
 			}
 
-			let firstTypes = translatedComponents.dropLast().map { "(\($0))" }
+			let firstTypes = ArrayClass<String>(translatedComponents.dropLast().map { "(\($0))" })
 			let lastType = translatedComponents.last!
 
-			var allTypes = firstTypes
+			let allTypes = firstTypes
 			allTypes.append(lastType)
 			return allTypes.joined(separator: " -> ")
 		}

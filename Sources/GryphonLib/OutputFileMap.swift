@@ -66,13 +66,13 @@ public class OutputFileMap {
 
 		var currentFileResult: DictionaryClass<OutputType, String> = [:]
 		var currentFilePath: String?
-		let lines = contents.split(separator: "\n")
+		let lines = contents.split(withStringSeparator: "\n")
 
 		for index in lines.indices {
 			let line = lines[index]
 
 			let lineNumber = index + 1
-			let lineComponents = line.split(separator: "\"")
+			let lineComponents = line.split(withStringSeparator: "\"")
 
 			// If there are no strings in this line
 			if lineComponents.count == 1 {

@@ -139,7 +139,7 @@ extension Utilities {
         -> String
     {
         let components = filePath.split(withStringSeparator: "/", omittingEmptySubsequences: false)
-        var newComponents = components.dropLast().map { String($0) }
+        let newComponents = ArrayClass<String>(components.dropLast().map { String($0) })
         let nameComponent = components.last!
         let nameComponents =
             nameComponent.split(withStringSeparator: ".", omittingEmptySubsequences: false)

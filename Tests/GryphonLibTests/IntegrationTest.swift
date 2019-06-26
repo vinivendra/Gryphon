@@ -46,8 +46,13 @@ class IntegrationTest: XCTestCase {
 			}
 		}
 
-		XCTAssertFalse(Compiler.hasErrorsOrWarnings())
-		Compiler.printErrorsAndWarnings()
+		let hasOnlyNativeTypeWarnings =
+			Compiler.warnings.filter { !$0.contains("Native type") }.isEmpty
+		XCTAssert(hasOnlyNativeTypeWarnings)
+
+		if !hasOnlyNativeTypeWarnings || !Compiler.errors.isEmpty {
+			Compiler.printErrorsAndWarnings()
+		}
 	}
 
 	static var allTests = [
