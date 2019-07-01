@@ -595,564 +595,862 @@ extension PrintableTree {
 	}
 }
 
-public indirect enum Expression: PrintableAsTree, Equatable {
+public class Expression: PrintableAsTree, Equatable {
+	let name: String
+	let range: SourceFileRange?
 
-	case literalCodeExpression(
-		string: String)
-	case literalDeclarationExpression(
-		string: String)
-	case templateExpression(
-		pattern: String,
-		matches: DictionaryClass<String, Expression>)
-	case parenthesesExpression(
-		expression: Expression)
-	case forceValueExpression(
-		expression: Expression)
-	case optionalExpression(
-		expression: Expression)
-	case declarationReferenceExpression(
-		data: DeclarationReferenceData)
-	case typeExpression(
-		typeName: String)
-	case subscriptExpression(
-		subscriptedExpression: Expression,
-		indexExpression: Expression,
-		typeName: String)
-	case arrayExpression(
-		elements: ArrayClass<Expression>,
-		typeName: String)
-	case dictionaryExpression(
-		keys: ArrayClass<Expression>,
-		values: ArrayClass<Expression>,
-		typeName: String)
-	case returnExpression(
-		expression: Expression?)
-	case dotExpression(
-		leftExpression: Expression,
-		rightExpression: Expression)
-	case binaryOperatorExpression(
+	init(range: SourceFileRange?, name: String) {
+		self.range = range
+		self.name = name
+	}
+
+	var swiftType: String? {
+		fatalError("Accessing field in abstract class Expression")
+	}
+
+	// PrintableAsTree
+	public var treeDescription: String {
+		return name
+	}
+
+	public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		fatalError("Accessing field in abstract class Expression")
+	}
+
+	public static func == (lhs: Expression, rhs: Expression) -> Bool {
+		fatalError("Calling method from abstract class Expression")
+	}
+}
+
+public class literalCodeExpression: Expression {
+	let string: String
+
+	init(range: SourceFileRange?, string: String) {
+		self.string = string
+		super.init(range: range, name: "literalCodeExpression".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [PrintableTree(string)]
+	}
+
+	override var swiftType: String? {
+		return nil
+	}
+
+	public static func == (lhs: literalCodeExpression, rhs: literalCodeExpression) -> Bool {
+		return lhs.swiftType == rhs.string
+	}
+}
+
+public class literalDeclarationExpression: Expression {
+	let string: String
+
+	init(range: SourceFileRange?, string: String) {
+		self.string = string
+		super.init(range: range, name: "literalDeclarationExpression".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [PrintableTree(string)]
+	}
+
+	override var swiftType: String? {
+		return nil
+	}
+
+	public static func == (
+		lhs: literalDeclarationExpression,
+		rhs: literalDeclarationExpression)
+		-> Bool
+	{
+		return false
+	}
+}
+
+public class templateExpression: Expression {
+	let pattern: String
+	let matches: DictionaryClass<String, Expression>
+
+	init(range: SourceFileRange?, pattern: String, matches: DictionaryClass<String, Expression>) {
+		self.pattern = pattern
+		self.matches = matches
+		super.init(range: range, name: "literalDeclarationExpression".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		let matchesTrees = matches.map { PrintableTree($0.key, [$0.value]) }
+
+		let sortedMatchesTrees = matchesTrees.sorted { a, b in
+			a.treeDescription < b.treeDescription
+		}
+
+		return [
+			PrintableTree("pattern \"\(pattern)\""),
+			PrintableTree("matches", ArrayClass<PrintableAsTree?>(sortedMatchesTrees)), ]
+	}
+
+	override var swiftType: String? {
+		return nil
+	}
+
+	public static func == (lhs: templateExpression, rhs: templateExpression) -> Bool {
+		return false
+	}
+}
+
+public class parenthesesExpression: Expression {
+	let expression: Expression
+
+	init(range: SourceFileRange?, expression: Expression) {
+		self.expression = expression
+		super.init(range: range, name: "literalDeclarationExpression".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [expression]
+	}
+
+	override var swiftType: String? {
+		return expression.swiftType
+	}
+
+	public static func == (lhs: parenthesesExpression, rhs: parenthesesExpression) -> Bool {
+		return lhs.expression == rhs.expression
+	}
+}
+
+public class forceValueExpression: Expression {
+	let expression: Expression
+
+	init(range: SourceFileRange?, expression: Expression) {
+		self.expression = expression
+		super.init(range: range, name: "literalDeclarationExpression".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [expression]
+	}
+
+	override var swiftType: String? {
+		let subtype = expression.swiftType
+		if let subtype = subtype, subtype.hasSuffix("?") {
+			return String(subtype.dropLast())
+		}
+		else {
+			return expression.swiftType
+		}
+	}
+
+	public static func == (lhs: forceValueExpression, rhs: forceValueExpression) -> Bool {
+		return lhs.expression == rhs.expression
+	}
+}
+
+public class optionalExpression: Expression {
+	let expression: Expression
+
+	init(range: SourceFileRange?, expression: Expression) {
+		self.expression = expression
+		super.init(range: range, name: "literalDeclarationExpression".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [expression]
+	}
+
+	override var swiftType: String? {
+		if let typeName = expression.swiftType {
+			return String(typeName.dropLast()) // Drop the "?"
+		}
+		else {
+			return nil
+		}
+	}
+
+	public static func == (lhs: optionalExpression, rhs: optionalExpression) -> Bool {
+		return lhs.expression == rhs.expression
+	}
+}
+
+public class declarationReferenceExpression: Expression {
+	let data: DeclarationReferenceData
+
+	init(range: SourceFileRange?, data: DeclarationReferenceData) {
+		self.data = data
+		super.init(range: range, name: "literalDeclarationExpression".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [
+			PrintableTree(data.typeName),
+			PrintableTree(data.identifier),
+			data.isStandardLibrary ? PrintableTree("isStandardLibrary") : nil,
+			data.isImplicit ? PrintableTree("implicit") : nil, ]
+	}
+
+	override var swiftType: String? {
+		return data.typeName
+	}
+
+	public static func == (
+		lhs: declarationReferenceExpression,
+		rhs: declarationReferenceExpression)
+		-> Bool
+	{
+		return lhs.data == rhs.data
+	}
+}
+
+public class typeExpression: Expression {
+	let typeName: String
+
+	init(range: SourceFileRange?, typeName: String) {
+		self.typeName = typeName
+		super.init(range: range, name: "literalDeclarationExpression".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [PrintableTree(typeName)]
+	}
+
+	override var swiftType: String? {
+		return typeName
+	}
+
+	public static func == (lhs: typeExpression, rhs: typeExpression) -> Bool {
+		return lhs.typeName == rhs.typeName
+	}
+}
+
+public class subscriptExpression: Expression {
+	let subscriptedExpression: Expression
+	let indexExpression: Expression
+	let typeName: String
+
+	init(range: SourceFileRange?,
+		 subscriptedExpression: Expression,
+		 indexExpression: Expression,
+		 typeName: String)
+	{
+		self.subscriptedExpression = subscriptedExpression
+		self.indexExpression = indexExpression
+		self.typeName = typeName
+		super.init(range: range, name: "literalDeclarationExpression".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [
+			PrintableTree("type \(typeName)"),
+			PrintableTree.ofExpressions("subscriptedExpression", [subscriptedExpression]),
+			PrintableTree.ofExpressions("indexExpression", [indexExpression]), ]
+	}
+
+	override var swiftType: String? {
+		return typeName
+	}
+
+	public static func == (lhs: subscriptExpression, rhs: subscriptExpression) -> Bool {
+		return lhs.subscriptedExpression == rhs.subscriptedExpression &&
+			lhs.indexExpression == rhs.indexExpression &&
+			lhs.typeName == rhs.typeName
+	}
+}
+
+public class arrayExpression: Expression {
+	let elements: ArrayClass<Expression>
+	let typeName: String
+
+	init(range: SourceFileRange?, elements: ArrayClass<Expression>, typeName: String) {
+		self.elements = elements
+		self.typeName = typeName
+		super.init(range: range, name: "literalDeclarationExpression".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [
+			PrintableTree("type \(typeName)"),
+			PrintableTree.ofExpressions("elements", elements), ]
+	}
+
+	override var swiftType: String? {
+		return typeName
+	}
+
+	public static func == (lhs: arrayExpression, rhs: arrayExpression) -> Bool {
+		return lhs.elements == rhs.elements &&
+			lhs.typeName == rhs.typeName
+	}
+}
+
+public class dictionaryExpression: Expression {
+	let keys: ArrayClass<Expression>
+	let values: ArrayClass<Expression>
+	let typeName: String
+
+	init(range: SourceFileRange?,
+		 keys: ArrayClass<Expression>,
+		 values: ArrayClass<Expression>,
+		 typeName: String)
+	{
+		self.keys = keys
+		self.values = values
+		self.typeName = typeName
+		super.init(range: range, name: "literalDeclarationExpression".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		let keyValueTrees = zipToClass(keys, values).map
+		{ (pair: (first: Expression, second: Expression)) -> PrintableAsTree? in
+			PrintableTree("pair", [
+				PrintableTree.ofExpressions("key", [pair.first]),
+				PrintableTree.ofExpressions("value", [pair.second]),
+				])
+		}
+		return [
+			PrintableTree("type \(typeName)"),
+			PrintableTree("key value pairs", keyValueTrees), ]
+	}
+
+	override var swiftType: String? {
+		return typeName
+	}
+
+	public static func == (lhs: dictionaryExpression, rhs: dictionaryExpression) -> Bool {
+		return lhs.keys == rhs.keys &&
+			lhs.values == rhs.values &&
+			lhs.typeName == rhs.typeName
+	}
+}
+
+public class returnExpression: Expression {
+	let expression: Expression?
+
+	init(range: SourceFileRange?, expression: Expression?) {
+		self.expression = expression
+		super.init(range: range, name: "literalDeclarationExpression".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [expression]
+	}
+
+	override var swiftType: String? {
+		return expression?.swiftType
+	}
+
+	public static func == (lhs: returnExpression, rhs: returnExpression) -> Bool {
+		return lhs.expression == rhs.expression
+	}
+}
+
+public class dotExpression: Expression {
+	let leftExpression: Expression
+	let rightExpression: Expression
+
+	init(range: SourceFileRange?, leftExpression: Expression, rightExpression: Expression) {
+		self.leftExpression = leftExpression
+		self.rightExpression = rightExpression
+		super.init(range: range, name: "literalDeclarationExpression".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [
+			PrintableTree.ofExpressions("left", [leftExpression]),
+			PrintableTree.ofExpressions("right", [rightExpression]), ]
+	}
+
+	override var swiftType: String? {
+		// Enum references should be considered to have the left type, as the right expression's
+		// is a function type (something like `(MyEnum.Type) -> MyEnum` or
+		// `(A.MyEnum.Type) -> A.MyEnum`).
+		if let leftType = leftExpression as? typeExpression,
+			let rightDeclarationReference = rightExpression as? declarationReferenceExpression
+		{
+			let enumType = leftType.typeName
+
+			if rightDeclarationReference.data.typeName.hasPrefix("("),
+				rightDeclarationReference.data.typeName.contains("\(enumType).Type) -> "),
+				rightDeclarationReference.data.typeName.hasSuffix(enumType)
+			{
+				return enumType
+			}
+		}
+
+		return rightExpression.swiftType
+	}
+
+	public static func == (lhs: dotExpression, rhs: dotExpression) -> Bool {
+		return lhs.leftExpression == rhs.leftExpression &&
+			lhs.rightExpression == rhs.rightExpression
+	}
+}
+
+public class binaryOperatorExpression: Expression {
+	let leftExpression: Expression
+	let rightExpression: Expression
+	let operatorSymbol: String
+	let typeName: String
+
+	init(
+		range: SourceFileRange?,
 		leftExpression: Expression,
 		rightExpression: Expression,
 		operatorSymbol: String,
 		typeName: String)
-	case prefixUnaryExpression(
-		subExpression: Expression,
-		operatorSymbol: String,
-		typeName: String)
-	case postfixUnaryExpression(
-		subExpression: Expression,
-		operatorSymbol: String,
-		typeName: String)
-	case ifExpression(
-		condition: Expression,
-		trueExpression: Expression,
-		falseExpression: Expression)
-	case callExpression(
-		data: CallExpressionData)
-	case closureExpression(
-		parameters: ArrayClass<LabeledType>,
-		statements: ArrayClass<Statement>,
-		typeName: String)
-	case literalIntExpression(
-		value: Int64)
-	case literalUIntExpression(
-		value: UInt64)
-	case literalDoubleExpression(
-		value: Double)
-	case literalFloatExpression(
-		value: Float)
-	case literalBoolExpression(
-		value: Bool)
-	case literalStringExpression(
-		value: String)
-	case literalCharacterExpression(
-		value: String)
-	case nilLiteralExpression
-	case interpolatedStringLiteralExpression(
-		expressions: ArrayClass<Expression>)
-	case tupleExpression(
-		pairs: ArrayClass<LabeledExpression>)
-	case tupleShuffleExpression(
-		labels: ArrayClass<String>,
-		indices: ArrayClass<TupleShuffleIndex>,
-		expressions: ArrayClass<Expression>)
-	case error
+	{
+		self.leftExpression = leftExpression
+		self.rightExpression = rightExpression
+		self.operatorSymbol = operatorSymbol
+		self.typeName = typeName
+		super.init(range: range, name: "literalDeclarationExpression".capitalizedAsCamelCase())
+	}
 
-	//
-	public var name: String {
-		switch self {
-		case .templateExpression:
-			return "templateExpression".capitalizedAsCamelCase()
-		case .literalCodeExpression:
-			return "literalCodeExpression".capitalizedAsCamelCase()
-		case .literalDeclarationExpression:
-			return "literalDeclarationExpression".capitalizedAsCamelCase()
-		case .parenthesesExpression:
-			return "parenthesesExpression".capitalizedAsCamelCase()
-		case .forceValueExpression:
-			return "forceValueExpression".capitalizedAsCamelCase()
-		case .optionalExpression:
-			return "optionalExpression".capitalizedAsCamelCase()
-		case .declarationReferenceExpression:
-			return "declarationReferenceExpression".capitalizedAsCamelCase()
-		case .typeExpression:
-			return "typeExpression".capitalizedAsCamelCase()
-		case .subscriptExpression:
-			return "subscriptExpression".capitalizedAsCamelCase()
-		case .arrayExpression:
-			return "arrayExpression".capitalizedAsCamelCase()
-		case .dictionaryExpression:
-			return "dictionaryExpression".capitalizedAsCamelCase()
-		case .returnExpression:
-			return "returnExpression".capitalizedAsCamelCase()
-		case .dotExpression:
-			return "dotExpression".capitalizedAsCamelCase()
-		case .binaryOperatorExpression:
-			return "binaryOperatorExpression".capitalizedAsCamelCase()
-		case .prefixUnaryExpression:
-			return "prefixUnaryExpression".capitalizedAsCamelCase()
-		case .postfixUnaryExpression:
-			return "postfixUnaryExpression".capitalizedAsCamelCase()
-		case .ifExpression:
-			return "ifExpression".capitalizedAsCamelCase()
-		case .callExpression:
-			return "callExpression".capitalizedAsCamelCase()
-		case .closureExpression:
-			return "closureExpression".capitalizedAsCamelCase()
-		case .literalIntExpression:
-			return "literalIntExpression".capitalizedAsCamelCase()
-		case .literalUIntExpression:
-			return "literalUIntExpression".capitalizedAsCamelCase()
-		case .literalDoubleExpression:
-			return "literalDoubleExpression".capitalizedAsCamelCase()
-		case .literalFloatExpression:
-			return "literalFloatExpression".capitalizedAsCamelCase()
-		case .literalBoolExpression:
-			return "literalBoolExpression".capitalizedAsCamelCase()
-		case .literalStringExpression:
-			return "literalStringExpression".capitalizedAsCamelCase()
-		case .literalCharacterExpression:
-			return "literalCharacterExpression".capitalizedAsCamelCase()
-		case .nilLiteralExpression:
-			return "nilLiteralExpression".capitalizedAsCamelCase()
-		case .interpolatedStringLiteralExpression:
-			return "interpolatedStringLiteralExpression".capitalizedAsCamelCase()
-		case .tupleExpression:
-			return "tupleExpression".capitalizedAsCamelCase()
-		case .tupleShuffleExpression:
-			return "tupleShuffleExpression".capitalizedAsCamelCase()
-		case .error:
-			return "error".capitalizedAsCamelCase()
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [
+			PrintableTree("type \(typeName)"),
+			PrintableTree.ofExpressions("left", [leftExpression]),
+			PrintableTree("operator \(operatorSymbol)"),
+			PrintableTree.ofExpressions("right", [rightExpression]), ]
+	}
+
+	override var swiftType: String? {
+		return typeName
+	}
+
+	public static func == (lhs: binaryOperatorExpression, rhs: binaryOperatorExpression) -> Bool {
+		return lhs.leftExpression == rhs.leftExpression &&
+			lhs.rightExpression == rhs.rightExpression &&
+			lhs.operatorSymbol == rhs.operatorSymbol &&
+			lhs.typeName == rhs.typeName
+	}
+}
+
+public class prefixUnaryExpression: Expression {
+	let subExpression: Expression
+	let operatorSymbol: String
+	let typeName: String
+
+	init(range: SourceFileRange?,
+		 subExpression: Expression,
+		 operatorSymbol: String,
+		 typeName: String)
+	{
+		self.subExpression = subExpression
+		self.operatorSymbol = operatorSymbol
+		self.typeName = typeName
+		super.init(range: range, name: "literalDeclarationExpression".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [
+			PrintableTree("type \(typeName)"),
+			PrintableTree("operator \(operatorSymbol)"),
+			PrintableTree.ofExpressions("expression", [subExpression]), ]
+	}
+
+	override var swiftType: String? {
+		return typeName
+	}
+
+	public static func == (lhs: prefixUnaryExpression, rhs: prefixUnaryExpression) -> Bool {
+		return lhs.subExpression == rhs.subExpression &&
+			lhs.operatorSymbol == rhs.operatorSymbol &&
+			lhs.typeName == rhs.typeName
+	}
+}
+
+public class postfixUnaryExpression: Expression {
+	let subExpression: Expression
+	let operatorSymbol: String
+	let typeName: String
+
+	init(range: SourceFileRange?,
+		 subExpression: Expression,
+		 operatorSymbol: String,
+		 typeName: String)
+	{
+		self.subExpression = subExpression
+		self.operatorSymbol = operatorSymbol
+		self.typeName = typeName
+		super.init(range: range, name: "literalDeclarationExpression".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [
+			PrintableTree("type \(typeName)"),
+			PrintableTree("operator \(operatorSymbol)"),
+			PrintableTree.ofExpressions("expression", [subExpression]), ]
+	}
+
+	override var swiftType: String? {
+		return typeName
+	}
+
+	public static func == (lhs: postfixUnaryExpression, rhs: postfixUnaryExpression) -> Bool {
+		return lhs.subExpression == rhs.subExpression &&
+			lhs.operatorSymbol == rhs.operatorSymbol &&
+			lhs.typeName == rhs.typeName
+	}
+}
+
+public class ifExpression: Expression {
+	let condition: Expression
+	let trueExpression: Expression
+	let falseExpression: Expression
+
+	init(range: SourceFileRange?,
+		 condition: Expression,
+		 trueExpression: Expression,
+		 falseExpression: Expression)
+	{
+		self.condition = condition
+		self.trueExpression = trueExpression
+		self.falseExpression = falseExpression
+		super.init(range: range, name: "literalDeclarationExpression".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [
+			PrintableTree.ofExpressions("condition", [condition]),
+			PrintableTree.ofExpressions("trueExpression", [trueExpression]),
+			PrintableTree.ofExpressions("falseExpression", [falseExpression]), ]
+	}
+
+	override var swiftType: String? {
+		return trueExpression.swiftType
+	}
+
+	public static func == (lhs: ifExpression, rhs: ifExpression) -> Bool {
+		return lhs.condition == rhs.condition &&
+			lhs.trueExpression == rhs.trueExpression &&
+			lhs.falseExpression == rhs.falseExpression
+	}
+}
+
+public class callExpression: Expression {
+	let data: CallExpressionData
+
+	init(range: SourceFileRange?, data: CallExpressionData) {
+		self.data = data
+		super.init(range: range, name: "literalDeclarationExpression".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [
+			PrintableTree("type \(data.typeName)"),
+			PrintableTree.ofExpressions("function", [data.function]),
+			PrintableTree.ofExpressions("parameters", [data.parameters]), ]
+	}
+
+	override var swiftType: String? {
+		return data.typeName
+	}
+
+	public static func == (lhs: callExpression, rhs: callExpression) -> Bool {
+		return lhs.data == rhs.data
+	}
+}
+
+public class closureExpression: Expression {
+	let parameters: ArrayClass<LabeledType>
+	let statements: ArrayClass<Statement>
+	let typeName: String
+
+	init(range: SourceFileRange?,
+		 parameters: ArrayClass<LabeledType>,
+		 statements: ArrayClass<Statement>,
+		 typeName: String)
+	{
+		self.parameters = parameters
+		self.statements = statements
+		self.typeName = typeName
+		super.init(range: range, name: "literalDeclarationExpression".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		let parametersString =
+			"(" + parameters.map { $0.label + ":" }.joined(separator: ", ") + ")"
+		return [
+			PrintableTree(typeName),
+			PrintableTree(parametersString),
+			PrintableTree.ofStatements("statements", statements), ]
+	}
+
+	override var swiftType: String? {
+		return typeName
+	}
+
+	public static func == (lhs: closureExpression, rhs: closureExpression) -> Bool {
+		return lhs.parameters == rhs.parameters &&
+			lhs.parameters == rhs.parameters &&
+			lhs.typeName == rhs.typeName
+	}
+}
+
+public class literalIntExpression: Expression {
+	let value: Int64
+
+	init(range: SourceFileRange?, value: Int64) {
+		self.value = value
+		super.init(range: range, name: "literalDeclarationExpression".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [PrintableTree(String(value))]
+	}
+
+	override var swiftType: String? {
+		return "Int"
+	}
+
+	public static func == (lhs: literalIntExpression, rhs: literalIntExpression) -> Bool {
+		return lhs.value == rhs.value
+	}
+}
+
+public class literalUIntExpression: Expression {
+	let value: UInt64
+
+	init(range: SourceFileRange?, value: UInt64) {
+		self.value = value
+		super.init(range: range, name: "literalDeclarationExpression".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [PrintableTree(String(value))]
+	}
+
+	override var swiftType: String? {
+		return "UInt"
+	}
+
+	public static func == (lhs: literalUIntExpression, rhs: literalUIntExpression) -> Bool {
+		return lhs.value == rhs.value
+	}
+}
+
+public class literalDoubleExpression: Expression {
+	let value: Double
+
+	init(range: SourceFileRange?, value: Double) {
+		self.value = value
+		super.init(range: range, name: "literalDeclarationExpression".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [PrintableTree(String(value))]
+	}
+
+	override var swiftType: String? {
+		return "Double"
+	}
+
+	public static func == (lhs: literalDoubleExpression, rhs: literalDoubleExpression) -> Bool {
+		return lhs.value == rhs.value
+	}
+}
+
+public class literalFloatExpression: Expression {
+	let value: Float
+
+	init(range: SourceFileRange?, value: Float) {
+		self.value = value
+		super.init(range: range, name: "literalDeclarationExpression".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [PrintableTree(String(value))]
+	}
+
+	override var swiftType: String? {
+		return "Float"
+	}
+
+	public static func == (lhs: literalFloatExpression, rhs: literalFloatExpression) -> Bool {
+		return lhs.value == rhs.value
+	}
+}
+
+public class literalBoolExpression: Expression {
+	let value: Bool
+
+	init(range: SourceFileRange?, value: Bool) {
+		self.value = value
+		super.init(range: range, name: "literalDeclarationExpression".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [PrintableTree(String(value))]
+	}
+
+	override var swiftType: String? {
+		return "Bool"
+	}
+
+	public static func == (lhs: literalBoolExpression, rhs: literalBoolExpression) -> Bool {
+		return lhs.value == rhs.value
+	}
+}
+
+public class literalStringExpression: Expression {
+	let value: String
+
+	init(range: SourceFileRange?, value: String) {
+		self.value = value
+		super.init(range: range, name: "literalDeclarationExpression".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [PrintableTree(String(value))]
+	}
+
+	override var swiftType: String? {
+		return "String"
+	}
+
+	public static func == (lhs: literalStringExpression, rhs: literalStringExpression) -> Bool {
+		return lhs.value == rhs.value
+	}
+}
+
+public class literalCharacterExpression: Expression {
+	let value: String
+
+	init(range: SourceFileRange?, value: String) {
+		self.value = value
+		super.init(range: range, name: "literalDeclarationExpression".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [PrintableTree(String(value))]
+	}
+
+	override var swiftType: String? {
+		return "Character"
+	}
+
+	public static func == (lhs: literalCharacterExpression, rhs: literalCharacterExpression) -> Bool
+	{
+		return lhs.value == rhs.value
+	}
+}
+
+public class nilLiteralExpression: Expression {
+	init(range: SourceFileRange?) {
+		super.init(range: range, name: "nilLiteralExpression".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return []
+	}
+
+	override var swiftType: String? {
+		return nil
+	}
+
+	public static func == (lhs: nilLiteralExpression, rhs: nilLiteralExpression) -> Bool {
+		return true
+	}
+}
+
+public class interpolatedStringLiteralExpression: Expression {
+	let expressions: ArrayClass<Expression>
+
+	init(range: SourceFileRange?, expressions: ArrayClass<Expression>) {
+		self.expressions = expressions
+		super.init(range: range, name: "literalDeclarationExpression".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [PrintableTree.ofExpressions("expressions", expressions)]
+	}
+
+	override var swiftType: String? {
+		return "String"
+	}
+
+	public static func == (
+		lhs: interpolatedStringLiteralExpression,
+		rhs: interpolatedStringLiteralExpression)
+		-> Bool
+	{
+		return lhs.expressions == rhs.expressions
+	}
+}
+
+public class tupleExpression: Expression {
+	let pairs: ArrayClass<LabeledExpression>
+
+	init(range: SourceFileRange?, pairs: ArrayClass<LabeledExpression>) {
+		self.pairs = pairs
+		super.init(range: range, name: "literalDeclarationExpression".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return pairs.map {
+			PrintableTree.ofExpressions(($0.label ?? "_") + ":", [$0.expression])
 		}
 	}
 
-	//
-	public var treeDescription: String { // annotation: override
-		return name
+	override var swiftType: String? {
+		return nil
 	}
 
-	public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
-		switch self {
-		case let .templateExpression(pattern: pattern, matches: matches):
-			let matchesTrees = matches.map { PrintableTree($0.key, [$0.value]) }
+	public static func == (lhs: tupleExpression, rhs: tupleExpression) -> Bool {
+		return lhs.pairs == rhs.pairs
+	}
+}
 
-			let sortedMatchesTrees = matchesTrees.sorted { a, b in
-				a.treeDescription < b.treeDescription
-			}
+public class tupleShuffleExpression: Expression {
+	let labels: ArrayClass<String>
+	let indices: ArrayClass<TupleShuffleIndex>
+	let expressions: ArrayClass<Expression>
 
-			return [
-				PrintableTree("pattern \"\(pattern)\""),
-				PrintableTree("matches", ArrayClass<PrintableAsTree?>(sortedMatchesTrees)), ]
-		case .literalCodeExpression(string: let string):
-			return [PrintableTree(string)]
-		case .literalDeclarationExpression(string: let string):
-			return [PrintableTree(string)]
-		case let .parenthesesExpression(expression: expression):
-			return [expression]
-		case let .forceValueExpression(expression: expression):
-			return [expression]
-		case let .optionalExpression(expression: expression):
-			return [expression]
-		case let .declarationReferenceExpression(data: expression):
-			return [
-				PrintableTree(expression.typeName),
-				PrintableTree(expression.identifier),
-				expression.isStandardLibrary ? PrintableTree("isStandardLibrary") : nil,
-				expression.isImplicit ? PrintableTree("implicit") : nil, ]
-		case let .typeExpression(typeName: typeName):
-			return [PrintableTree(typeName)]
-		case let .subscriptExpression(
-			subscriptedExpression: subscriptedExpression, indexExpression: indexExpression,
-			typeName: typeName):
-
-			return [
-				PrintableTree("type \(typeName)"),
-				PrintableTree.ofExpressions("subscriptedExpression", [subscriptedExpression]),
-				PrintableTree.ofExpressions("indexExpression", [indexExpression]), ]
-		case let .arrayExpression(elements: elements, typeName: typeName):
-			return [
-				PrintableTree("type \(typeName)"),
-				PrintableTree.ofExpressions("elements", elements), ]
-		case let .dictionaryExpression(keys: keys, values: values, typeName: typeName):
-			let keyValueTrees = zipToClass(keys, values).map
-				{ (pair: (first: Expression, second: Expression)) -> PrintableAsTree? in
-					PrintableTree("pair", [
-						PrintableTree.ofExpressions("key", [pair.first]),
-						PrintableTree.ofExpressions("value", [pair.second]),
-						])
-				}
-			return [
-				PrintableTree("type \(typeName)"),
-				PrintableTree("key value pairs", keyValueTrees), ]
-		case let .returnExpression(expression: expression):
-			return [expression]
-		case let .dotExpression(leftExpression: leftExpression, rightExpression: rightExpression):
-			return [
-				PrintableTree.ofExpressions("left", [leftExpression]),
-				PrintableTree.ofExpressions("right", [rightExpression]), ]
-		case let .binaryOperatorExpression(
-			leftExpression: leftExpression,
-			rightExpression: rightExpression,
-			operatorSymbol: operatorSymbol,
-			typeName: typeName):
-
-			return [
-				PrintableTree("type \(typeName)"),
-				PrintableTree.ofExpressions("left", [leftExpression]),
-				PrintableTree("operator \(operatorSymbol)"),
-				PrintableTree.ofExpressions("right", [rightExpression]), ]
-		case let .prefixUnaryExpression(
-			subExpression: subExpression, operatorSymbol: operatorSymbol, typeName: typeName):
-
-			return [
-				PrintableTree("type \(typeName)"),
-				PrintableTree("operator \(operatorSymbol)"),
-				PrintableTree.ofExpressions("expression", [subExpression]), ]
-		case let .ifExpression(
-			condition: condition, trueExpression: trueExpression, falseExpression: falseExpression):
-
-			return [
-				PrintableTree.ofExpressions("condition", [condition]),
-				PrintableTree.ofExpressions("trueExpression", [trueExpression]),
-				PrintableTree.ofExpressions("falseExpression", [falseExpression]), ]
-		case let .postfixUnaryExpression(
-			subExpression: subExpression, operatorSymbol: operatorSymbol, typeName: typeName):
-
-			return [
-				PrintableTree("type \(typeName)"),
-				PrintableTree("operator \(operatorSymbol)"),
-				PrintableTree.ofExpressions("expression", [subExpression]), ]
-		case let .callExpression(data: callExpression):
-			return [
-				PrintableTree("type \(callExpression.typeName)"),
-				PrintableTree.ofExpressions("function", [callExpression.function]),
-				PrintableTree.ofExpressions("parameters", [callExpression.parameters]), ]
-		case let .closureExpression(
-			parameters: parameters, statements: statements, typeName: typeName):
-
-			let parametersString =
-				"(" + parameters.map { $0.label + ":" }.joined(separator: ", ") + ")"
-			return [
-				PrintableTree(typeName),
-				PrintableTree(parametersString),
-				PrintableTree.ofStatements("statements", statements), ]
-		case let .tupleExpression(pairs: pairs):
-			return pairs.map {
-				PrintableTree.ofExpressions(($0.label ?? "_") + ":", [$0.expression])
-			}
-		case let .tupleShuffleExpression(
-			labels: labels, indices: indices, expressions: expressions):
-
-			return [
-				PrintableTree.ofStrings("labels", labels),
-				PrintableTree.ofStrings("indices", indices.map { $0.description }),
-				PrintableTree.ofExpressions("expressions", expressions), ]
-		case let .literalIntExpression(value: value):
-			return [PrintableTree(String(value))]
-		case let .literalUIntExpression(value: value):
-			return [PrintableTree(String(value))]
-		case let .literalDoubleExpression(value: value):
-			return [PrintableTree(String(value))]
-		case let .literalFloatExpression(value: value):
-			return [PrintableTree(String(value))]
-		case let .literalBoolExpression(value: value):
-			return [PrintableTree(String(value))]
-		case let .literalStringExpression(value: value):
-			return [PrintableTree("\"\(value)\"")]
-		case let .literalCharacterExpression(value: value):
-			return [PrintableTree("'\(value)'")]
-		case .nilLiteralExpression:
-			return []
-		case let .interpolatedStringLiteralExpression(expressions: expressions):
-			return [PrintableTree.ofExpressions("expressions", expressions)]
-		case .error:
-			return []
-		}
+	init(range: SourceFileRange?,
+		 labels: ArrayClass<String>,
+		 indices: ArrayClass<TupleShuffleIndex>,
+		 expressions: ArrayClass<Expression>)
+	{
+		self.labels = labels
+		self.indices = indices
+		self.expressions = expressions
+		super.init(range: range, name: "literalDeclarationExpression".capitalizedAsCamelCase())
 	}
 
-	// TODO: Add support for `case .a, .b:`
-	public var swiftType: String? {
-		switch self {
-		case .templateExpression:
-			return nil
-		case .literalCodeExpression:
-			return nil
-		case .literalDeclarationExpression:
-			return nil
-		case let .parenthesesExpression(expression: expression):
-			return expression.swiftType
-		case let .forceValueExpression(expression: expression):
-			let subtype = expression.swiftType
-			if let subtype = subtype, subtype.hasSuffix("?") {
-				return String(subtype.dropLast())
-			}
-			else {
-				return expression.swiftType
-			}
-
-		case let .optionalExpression(expression: expression):
-			if let typeName = expression.swiftType {
-				return String(typeName.dropLast()) // Drop the "?"
-			}
-			else {
-				return nil
-			}
-		case let .declarationReferenceExpression(data: declarationReferenceExpression):
-			return declarationReferenceExpression.typeName
-		case let .typeExpression(typeName: typeName):
-			return typeName
-		case let .subscriptExpression(
-			subscriptedExpression: _, indexExpression: _, typeName: typeName):
-
-			return typeName
-		case let .arrayExpression(elements: _, typeName: typeName):
-			return typeName
-		case let .dictionaryExpression(keys: _, values: _, typeName: typeName):
-			return typeName
-		case let .returnExpression(expression: expression):
-			return expression?.swiftType
-		case let .dotExpression(leftExpression: leftExpression, rightExpression: rightExpression):
-
-			// Enum references should be considered to have the left type, as the right expression's
-			// is a function type (something like `(MyEnum.Type) -> MyEnum` or
-			// `(A.MyEnum.Type) -> A.MyEnum`).
-			if case let .typeExpression(typeName: enumType) = leftExpression,
-				case let .declarationReferenceExpression(
-					data: declarationReferenceExpression) = rightExpression
-			{
-				if declarationReferenceExpression.typeName.hasPrefix("("),
-				declarationReferenceExpression.typeName.contains("\(enumType).Type) -> "),
-				declarationReferenceExpression.typeName.hasSuffix(enumType)
-				{
-					return enumType
-				}
-			}
-
-			return rightExpression.swiftType
-		case let .binaryOperatorExpression(
-			leftExpression: _, rightExpression: _, operatorSymbol: _, typeName: typeName):
-
-			return typeName
-		case let .prefixUnaryExpression(subExpression: _, operatorSymbol: _, typeName: typeName):
-			return typeName
-		case let .postfixUnaryExpression(subExpression: _, operatorSymbol: _, typeName: typeName):
-			return typeName
-		case let .ifExpression(condition: _, trueExpression: trueExpression, falseExpression: _):
-			return trueExpression.swiftType
-		case let .callExpression(data: callExpression):
-			return callExpression.typeName
-		case let .closureExpression(parameters: _, statements: _, typeName: typeName):
-			return typeName
-		case .literalIntExpression:
-			return "Int"
-		case .literalUIntExpression:
-			return "UInt"
-		case .literalDoubleExpression:
-			return "Double"
-		case .literalFloatExpression:
-			return "Float"
-		case .literalBoolExpression:
-			return "Bool"
-		case .literalStringExpression:
-			return "String"
-		case .literalCharacterExpression:
-			return "Character"
-		case .nilLiteralExpression:
-			return nil
-		case .interpolatedStringLiteralExpression:
-			return "String"
-		case .tupleExpression:
-			return nil
-		case .tupleShuffleExpression:
-			return nil
-		case .error:
-			return "<<Error>>"
-		}
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [
+			PrintableTree.ofStrings("labels", labels),
+			PrintableTree.ofStrings("indices", indices.map { $0.description }),
+			PrintableTree.ofExpressions("expressions", expressions), ]
 	}
 
-	var range: SourceFileRange? {
-		switch self {
-		case let .declarationReferenceExpression(data: declarationReferenceExpression):
-			return declarationReferenceExpression.range
-		case let .callExpression(data: callExpression):
-			return callExpression.range
-		default:
-			return nil
-		}
+	override var swiftType: String? {
+		return nil
 	}
 
-	static public func == (lhs: Expression, rhs: Expression) -> Bool {
-		if case let .literalCodeExpression(string: leftString) = lhs,
-			case let .literalCodeExpression(string: rightString) = rhs
-		{
-			return leftString == rightString
-		}
-		else if case let .parenthesesExpression(expression: leftExpression) = lhs,
-			case let .parenthesesExpression(expression: rightExpression) = rhs
-		{
-			return leftExpression == rightExpression
-		}
-		else if case let .forceValueExpression(expression: leftExpression) = lhs,
-			case let .forceValueExpression(expression: rightExpression) = rhs
-		{
-			return leftExpression == rightExpression
-		}
-		else if case let .declarationReferenceExpression(data: leftExpression) = lhs,
-			case let .declarationReferenceExpression(data: rightExpression) = rhs
-		{
-			return leftExpression == rightExpression
-		}
-		else if case let .typeExpression(typeName: leftType) = lhs,
-			case let .typeExpression(typeName: rightType) = rhs
-		{
-			return leftType == rightType
-		}
-		else if case let .subscriptExpression(
-				subscriptedExpression: leftSubscriptedExpression,
-				indexExpression: leftIndexExpression,
-				typeName: leftType) = lhs,
-			case let .subscriptExpression(
-				subscriptedExpression: rightSubscriptedExpression,
-				indexExpression: rightIndexExpression,
-				typeName: rightType) = rhs
-		{
-			return leftSubscriptedExpression == rightSubscriptedExpression
-				&& leftIndexExpression == rightIndexExpression
-				&& leftType == rightType
-		}
-		else if case let .arrayExpression(elements: leftElements, typeName: leftType) = lhs,
-			case let .arrayExpression(elements: rightElements, typeName: rightType) = rhs
-		{
-			return leftElements == rightElements &&
-				leftType == rightType
-		}
-		else if case let .dotExpression(
-				leftExpression: leftLeftExpression,
-				rightExpression: leftRightExpression) = lhs,
-			case let .dotExpression(
-				leftExpression: rightLeftExpression,
-				rightExpression: rightRightExpression) = rhs
-		{
-			return leftLeftExpression == rightLeftExpression &&
-				leftRightExpression == rightRightExpression
-		}
-		else if case let .binaryOperatorExpression(
-				leftExpression: leftLeftExpression,
-				rightExpression: leftRightExpression,
-				operatorSymbol: leftOperatorSymbol,
-				typeName: leftType) = lhs,
-			case let .binaryOperatorExpression(
-				leftExpression: rightLeftExpression,
-				rightExpression: rightRightExpression,
-				operatorSymbol: rightOperatorSymbol,
-				typeName: rightType) = rhs
-		{
-			return leftLeftExpression == rightLeftExpression &&
-				leftRightExpression == rightRightExpression &&
-				leftOperatorSymbol == rightOperatorSymbol &&
-				leftType == rightType
-		}
-		else if case let .prefixUnaryExpression(
-				subExpression: leftExpression,
-				operatorSymbol: leftOperatorSymbol,
-				typeName: leftType) = lhs,
-			case let .prefixUnaryExpression(
-				subExpression: rightExpression,
-				operatorSymbol: rightOperatorSymbol,
-				typeName: rightType) = rhs
-		{
-			return leftExpression == rightExpression &&
-				leftOperatorSymbol == rightOperatorSymbol &&
-				leftType == rightType
-		}
-		else if case let .postfixUnaryExpression(
-				subExpression: leftExpression,
-				operatorSymbol: leftOperatorSymbol,
-				typeName: leftType) = lhs,
-			case let .postfixUnaryExpression(
-				subExpression: rightExpression,
-				operatorSymbol: rightOperatorSymbol,
-				typeName: rightType) = rhs
-		{
-			return leftExpression == rightExpression &&
-				leftOperatorSymbol == rightOperatorSymbol &&
-				leftType == rightType
-		}
-		else if case let .callExpression(data: leftCallExpression) = lhs,
-			case let .callExpression(data: rightCallExpression) = rhs
-		{
-			return leftCallExpression == rightCallExpression
-		}
-		else if case let .literalIntExpression(value: leftValue) = lhs,
-			case let .literalIntExpression(value: rightValue) = rhs
-		{
-			return leftValue == rightValue
-		}
-		else if case let .literalDoubleExpression(value: leftValue) = lhs,
-			case let .literalDoubleExpression(value: rightValue) = rhs
-		{
-			return leftValue == rightValue
-		}
-		else if case let .literalBoolExpression(value: leftValue) = lhs,
-			case let .literalBoolExpression(value: rightValue) = rhs
-		{
-			return leftValue == rightValue
-		}
-		else if case let .literalStringExpression(value: leftValue) = lhs,
-			case let .literalStringExpression(value: rightValue) = rhs
-		{
-			return leftValue == rightValue
-		}
-		if case .nilLiteralExpression = lhs, case .nilLiteralExpression = rhs
-		{
-			return true
-		}
-		else if case let .interpolatedStringLiteralExpression(expressions: leftExpressions) = lhs,
-			case let .interpolatedStringLiteralExpression(expressions: rightExpressions) = rhs
-		{
-			return leftExpressions == rightExpressions
-		}
-		else if case let .tupleExpression(pairs: leftPairs) = lhs,
-			case let .tupleExpression(pairs: rightPairs) = rhs
-		{
-			return leftPairs == rightPairs
-		}
-		else if case let .tupleShuffleExpression(
-				labels: leftLabels,
-				indices: leftIndices,
-				expressions: leftExpressions) = lhs,
-			case let .tupleShuffleExpression(
-				labels: rightLabels,
-				indices: rightIndices,
-				expressions: rightExpressions) = rhs
-		{
-			return leftLabels == rightLabels &&
-				leftIndices == rightIndices &&
-				leftExpressions == rightExpressions
-		}
-		else {
-			return false
-		}
+	public static func == (lhs: tupleShuffleExpression, rhs: tupleShuffleExpression) -> Bool {
+		return lhs.labels == rhs.labels &&
+			lhs.indices == rhs.indices &&
+			lhs.expressions == rhs.expressions
+	}
+}
+
+public class error: Expression {
+	init(range: SourceFileRange?) {
+		super.init(range: range, name: "error".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return []
+	}
+
+	override var swiftType: String? {
+		return "<<Error>>"
+	}
+
+	public static func == (lhs: error, rhs: error) -> Bool {
+		return true
 	}
 }
 
