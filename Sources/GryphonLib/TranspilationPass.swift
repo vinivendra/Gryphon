@@ -474,96 +474,133 @@ public class TranspilationPass {
 		parents.append(.expressionNode(value: expression))
 		defer { parents.removeLast() }
 
-		switch expression {
-		case let .templateExpression(pattern: pattern, matches: matches):
-			return replaceTemplateExpression(pattern: pattern, matches: matches)
-		case let .literalCodeExpression(string: string):
-			return replaceLiteralCodeExpression(string: string)
-		case let .literalDeclarationExpression(string: string):
-			return replaceLiteralCodeExpression(string: string)
-		case let .parenthesesExpression(expression: expression):
-			return replaceParenthesesExpression(expression: expression)
-		case let .forceValueExpression(expression: expression):
-			return replaceForceValueExpression(expression: expression)
-		case let .optionalExpression(expression: expression):
-			return replaceOptionalExpression(expression: expression)
-		case let .declarationReferenceExpression(data: declarationReferenceExpression):
-			return replaceDeclarationReferenceExpression(declarationReferenceExpression)
-		case let .typeExpression(typeName: typeName):
-			return replaceTypeExpression(typeName: typeName)
-		case let .subscriptExpression(
-			subscriptedExpression: subscriptedExpression, indexExpression: indexExpression,
-			typeName: typeName):
-
-			return replaceSubscriptExpression(
-				subscriptedExpression: subscriptedExpression, indexExpression: indexExpression,
-				typeName: typeName)
-		case let .arrayExpression(elements: elements, typeName: typeName):
-			return replaceArrayExpression(elements: elements, typeName: typeName)
-		case let .dictionaryExpression(keys: keys, values: values, typeName: typeName):
-			return replaceDictionaryExpression(keys: keys, values: values, typeName: typeName)
-		case let .returnExpression(expression: innerExpression):
-			return replaceReturnExpression(innerExpression: innerExpression)
-		case let .dotExpression(leftExpression: leftExpression, rightExpression: rightExpression):
-			return replaceDotExpression(
-				leftExpression: leftExpression, rightExpression: rightExpression)
-		case let .binaryOperatorExpression(
-			leftExpression: leftExpression, rightExpression: rightExpression,
-			operatorSymbol: operatorSymbol, typeName: typeName):
-
-			return replaceBinaryOperatorExpression(
-				leftExpression: leftExpression, rightExpression: rightExpression,
-				operatorSymbol: operatorSymbol, typeName: typeName)
-		case let .prefixUnaryExpression(
-			subExpression: subExpression, operatorSymbol: operatorSymbol, typeName: typeName):
-
-			return replacePrefixUnaryExpression(
-				subExpression: subExpression, operatorSymbol: operatorSymbol, typeName: typeName)
-		case let .postfixUnaryExpression(
-			subExpression: subExpression, operatorSymbol: operatorSymbol, typeName: typeName):
-
-			return replacePostfixUnaryExpression(
-				subExpression: subExpression, operatorSymbol: operatorSymbol, typeName: typeName)
-		case let .ifExpression(
-			condition: condition, trueExpression: trueExpression, falseExpression: falseExpression):
-
-			return replaceIfExpression(
-				condition: condition,
-				trueExpression: trueExpression,
-				falseExpression: falseExpression)
-		case let .callExpression(data: callExpression):
-			return replaceCallExpression(callExpression)
-		case let .closureExpression(parameters: parameters, statements: statements, typeName: typeName):
-			return replaceClosureExpression(
-				parameters: parameters, statements: statements, typeName: typeName)
-		case let .literalIntExpression(value: value):
-			return replaceLiteralIntExpression(value: value)
-		case let .literalUIntExpression(value: value):
-			return replaceLiteralUIntExpression(value: value)
-		case let .literalDoubleExpression(value: value):
-			return replaceLiteralDoubleExpression(value: value)
-		case let .literalFloatExpression(value: value):
-			return replaceLiteralFloatExpression(value: value)
-		case let .literalBoolExpression(value: value):
-			return replaceLiteralBoolExpression(value: value)
-		case let .literalStringExpression(value: value):
-			return replaceLiteralStringExpression(value: value)
-		case let .literalCharacterExpression(value: value):
-			return replaceLiteralCharacterExpression(value: value)
-		case .nilLiteralExpression:
-			return replaceNilLiteralExpression()
-		case let .interpolatedStringLiteralExpression(expressions: expressions):
-			return replaceInterpolatedStringLiteralExpression(expressions: expressions)
-		case let .tupleExpression(pairs: pairs):
-			return replaceTupleExpression(pairs: pairs)
-		case let .tupleShuffleExpression(
-			labels: labels, indices: indices, expressions: expressions):
-
-			return replaceTupleShuffleExpression(
-				labels: labels, indices: indices, expressions: expressions)
-		case .error:
-			return .error
+		if let subExpression = expression as? TemplateExpression {
+			return replaceTemplateExpression(
+				pattern: subExpression.pattern,
+				matches: subExpression.matches)
 		}
+		if let subExpression = expression as? LiteralCodeExpression {
+			return replaceLiteralCodeExpression(string: subExpression.string)
+		}
+		if let subExpression = expression as? LiteralDeclarationExpression {
+			return replaceLiteralCodeExpression(string: subExpression.string)
+		}
+		if let subExpression = expression as? ParenthesesExpression {
+			return replaceParenthesesExpression(expression: subExpression.expression)
+		}
+		if let subExpression = expression as? ForceValueExpression {
+			return replaceForceValueExpression(expression: subExpression.expression)
+		}
+		if let subExpression = expression as? OptionalExpression {
+			return replaceOptionalExpression(expression: subExpression.expression)
+		}
+		if let subExpression = expression as? DeclarationReferenceExpression {
+			return replaceDeclarationReferenceExpression(subExpression.data)
+		}
+		if let subExpression = expression as? TypeExpression {
+			return replaceTypeExpression(typeName: subExpression.typeName)
+		}
+		if let subExpression = expression as? SubscriptExpression {
+			return replaceSubscriptExpression(
+				subscriptedExpression: subExpression.subscriptedExpression,
+				indexExpression: subExpression.indexExpression,
+				typeName: subExpression.typeName)
+		}
+		if let subExpression = expression as? ArrayExpression {
+			return replaceArrayExpression(
+				elements: subExpression.elements,
+				typeName: subExpression.typeName)
+		}
+		if let subExpression = expression as? DictionaryExpression {
+			return replaceDictionaryExpression(
+				keys: subExpression.keys,
+				values: subExpression.values,
+				typeName: subExpression.typeName)
+		}
+		if let subExpression = expression as? ReturnExpression {
+			return replaceReturnExpression(innerExpression: subExpression.expression)
+		}
+		if let subExpression = expression as? DotExpression {
+			return replaceDotExpression(
+				leftExpression: subExpression.leftExpression,
+				rightExpression: subExpression.rightExpression)
+		}
+		if let subExpression = expression as? BinaryOperatorExpression {
+			return replaceBinaryOperatorExpression(
+				leftExpression: subExpression.leftExpression,
+				rightExpression: subExpression.rightExpression,
+				operatorSymbol: subExpression.operatorSymbol,
+				typeName: subExpression.typeName)
+		}
+		if let subExpression = expression as? PrefixUnaryExpression {
+			return replacePrefixUnaryExpression(
+				subExpression: subExpression.subExpression,
+				operatorSymbol: subExpression.operatorSymbol,
+				typeName: subExpression.typeName)
+		}
+		if let subExpression = expression as? PostfixUnaryExpression {
+			return replacePostfixUnaryExpression(
+				subExpression: subExpression.subExpression,
+				operatorSymbol: subExpression.operatorSymbol,
+				typeName: subExpression.typeName)
+		}
+		if let subExpression = expression as? IfExpression {
+			return replaceIfExpression(
+				condition: subExpression.condition,
+				trueExpression: subExpression.trueExpression,
+				falseExpression: subExpression.falseExpression)
+		}
+		if let subExpression = expression as? CallExpression {
+			return replaceCallExpression(subExpression.data)
+		}
+		if let subExpression = expression as? ClosureExpression {
+			return replaceClosureExpression(
+				parameters: subExpression.parameters,
+				statements: subExpression.statements,
+				typeName: subExpression.typeName)
+		}
+		if let subExpression = expression as? LiteralIntExpression {
+			return replaceLiteralIntExpression(value: subExpression.value)
+		}
+		if let subExpression = expression as? LiteralUIntExpression {
+			return replaceLiteralUIntExpression(value: subExpression.value)
+		}
+		if let subExpression = expression as? LiteralDoubleExpression {
+			return replaceLiteralDoubleExpression(value: subExpression.value)
+		}
+		if let subExpression = expression as? LiteralFloatExpression {
+			return replaceLiteralFloatExpression(value: subExpression.value)
+		}
+		if let subExpression = expression as? LiteralBoolExpression {
+			return replaceLiteralBoolExpression(value: subExpression.value)
+		}
+		if let subExpression = expression as? LiteralStringExpression {
+			return replaceLiteralStringExpression(value: subExpression.value)
+		}
+		if let subExpression = expression as? LiteralCharacterExpression {
+			return replaceLiteralCharacterExpression(value: subExpression.value)
+		}
+		if expression is NilLiteralExpression {
+			return replaceNilLiteralExpression()
+		}
+		if let subExpression = expression as? InterpolatedStringLiteralExpression {
+			return replaceInterpolatedStringLiteralExpression(
+				expressions: subExpression.expressions)
+		}
+		if let subExpression = expression as? TupleExpression {
+			return replaceTupleExpression(pairs: subExpression.pairs)
+		}
+		if let subExpression = expression as? TupleShuffleExpression {
+			return replaceTupleShuffleExpression(
+				labels: subExpression.labels,
+				indices: subExpression.indices,
+				expressions: subExpression.expressions)
+		}
+		if expression is ErrorExpression {
+			return ErrorExpression(range: nil)
+		}
+
+		fatalError("This should never be reached.")
 	}
 
 	func replaceTemplateExpression( // annotation: open
@@ -574,7 +611,8 @@ public class TranspilationPass {
 		let newMatches = matches.mapValues { replaceExpression($0) } // kotlin: ignore
 		// insert: val newMatches = matches.mapValues { replaceExpression(it.value) }.toMutableMap()
 
-		return .templateExpression(
+		return TemplateExpression(
+			range: nil,
 			pattern: pattern,
 			matches: newMatches)
 	}
@@ -583,36 +621,37 @@ public class TranspilationPass {
 		string: String)
 		-> Expression
 	{
-		return .literalCodeExpression(string: string)
+		return LiteralCodeExpression(range: nil, string: string)
 	}
 
 	func replaceParenthesesExpression( // annotation: open
 		expression: Expression)
 		-> Expression
 	{
-		return .parenthesesExpression(expression: replaceExpression(expression))
+		return ParenthesesExpression(range: nil, expression: replaceExpression(expression))
 	}
 
 	func replaceForceValueExpression( // annotation: open
 		expression: Expression)
 		-> Expression
 	{
-		return .forceValueExpression(expression: replaceExpression(expression))
+		return ForceValueExpression(range: nil, expression: replaceExpression(expression))
 	}
 
 	func replaceOptionalExpression( // annotation: open
 		expression: Expression)
 		-> Expression
 	{
-		return .optionalExpression(expression: replaceExpression(expression))
+		return OptionalExpression(range: nil, expression: replaceExpression(expression))
 	}
 
 	func replaceDeclarationReferenceExpression( // annotation: open
-		_ declarationReferenceExpression: DeclarationReferenceData)
+		_ declarationReferenceExpressionFixme: DeclarationReferenceData)
 		-> Expression
 	{
-		return .declarationReferenceExpression(
-			data: replaceDeclarationReferenceExpressionData(declarationReferenceExpression))
+		return DeclarationReferenceExpression(
+			range: nil,
+			data: replaceDeclarationReferenceExpressionData(declarationReferenceExpressionFixme))
 	}
 
 	func replaceDeclarationReferenceExpressionData( // annotation: open
@@ -626,7 +665,7 @@ public class TranspilationPass {
 		typeName: String)
 		-> Expression
 	{
-		return .typeExpression(typeName: typeName)
+		return TypeExpression(range: nil, typeName: typeName)
 	}
 
 	func replaceSubscriptExpression( // annotation: open
@@ -635,7 +674,8 @@ public class TranspilationPass {
 		typeName: String)
 		-> Expression
 	{
-		return .subscriptExpression(
+		return SubscriptExpression(
+			range: nil,
 			subscriptedExpression: replaceExpression(subscriptedExpression),
 			indexExpression: replaceExpression(indexExpression), typeName: typeName)
 	}
@@ -645,7 +685,8 @@ public class TranspilationPass {
 		typeName: String)
 		-> Expression
 	{
-		return .arrayExpression(
+		return ArrayExpression(
+			range: nil,
 			elements: elements.map { replaceExpression($0) },
 			typeName: typeName)
 	}
@@ -656,14 +697,16 @@ public class TranspilationPass {
 		typeName: String)
 		-> Expression
 	{
-		return .dictionaryExpression(keys: keys, values: values, typeName: typeName)
+		return DictionaryExpression(range: nil, keys: keys, values: values, typeName: typeName)
 	}
 
 	func replaceReturnExpression( // annotation: open
 		innerExpression: Expression?)
 		-> Expression
 	{
-		return .returnExpression(expression: innerExpression.map { replaceExpression($0) })
+		return ReturnExpression(
+			range: nil,
+			expression: innerExpression.map { replaceExpression($0) })
 	}
 
 	func replaceDotExpression( // annotation: open
@@ -671,7 +714,8 @@ public class TranspilationPass {
 		rightExpression: Expression)
 		-> Expression
 	{
-		return .dotExpression(
+		return DotExpression(
+			range: nil,
 			leftExpression: replaceExpression(leftExpression),
 			rightExpression: replaceExpression(rightExpression))
 	}
@@ -682,7 +726,8 @@ public class TranspilationPass {
 		operatorSymbol: String,
 		typeName: String) -> Expression
 	{
-		return .binaryOperatorExpression(
+		return BinaryOperatorExpression(
+			range: nil,
 			leftExpression: replaceExpression(leftExpression),
 			rightExpression: replaceExpression(rightExpression),
 			operatorSymbol: operatorSymbol,
@@ -695,7 +740,8 @@ public class TranspilationPass {
 		typeName: String)
 		-> Expression
 	{
-		return .prefixUnaryExpression(
+		return PrefixUnaryExpression(
+			range: nil,
 			subExpression: replaceExpression(subExpression),
 			operatorSymbol: operatorSymbol,
 			typeName: typeName)
@@ -707,7 +753,8 @@ public class TranspilationPass {
 		typeName: String)
 		-> Expression
 	{
-		return .postfixUnaryExpression(
+		return PostfixUnaryExpression(
+			range: nil,
 			subExpression: replaceExpression(subExpression),
 			operatorSymbol: operatorSymbol,
 			typeName: typeName)
@@ -719,17 +766,18 @@ public class TranspilationPass {
 		falseExpression: Expression)
 		-> Expression
 	{
-		return .ifExpression(
+		return IfExpression(
+			range: nil,
 			condition: replaceExpression(condition),
 			trueExpression: replaceExpression(trueExpression),
 			falseExpression: replaceExpression(falseExpression))
 	}
 
 	func replaceCallExpression( // annotation: open
-		_ callExpression: CallExpressionData)
+		_ callExpressionFixme: CallExpressionData)
 		-> Expression
 	{
-		return .callExpression(data: replaceCallExpressionData(callExpression))
+		return CallExpression(range: nil, data: replaceCallExpressionData(callExpressionFixme))
 	}
 
 	func replaceCallExpressionData( // annotation: open
@@ -749,49 +797,51 @@ public class TranspilationPass {
 		typeName: String)
 		-> Expression
 	{
-		return .closureExpression(
+		return ClosureExpression(
+			range: nil,
 			parameters: parameters,
 			statements: replaceStatements(statements),
 			typeName: typeName)
 	}
 
 	func replaceLiteralIntExpression(value: Int64) -> Expression { // annotation: open
-		return .literalIntExpression(value: value)
+		return LiteralIntExpression(range: nil, value: value)
 	}
 
 	func replaceLiteralUIntExpression(value: UInt64) -> Expression { // annotation: open
-		return .literalUIntExpression(value: value)
+		return LiteralUIntExpression(range: nil, value: value)
 	}
 
 	func replaceLiteralDoubleExpression(value: Double) -> Expression { // annotation: open
-		return .literalDoubleExpression(value: value)
+		return LiteralDoubleExpression(range: nil, value: value)
 	}
 
 	func replaceLiteralFloatExpression(value: Float) -> Expression { // annotation: open
-		return .literalFloatExpression(value: value)
+		return LiteralFloatExpression(range: nil, value: value)
 	}
 
 	func replaceLiteralBoolExpression(value: Bool) -> Expression { // annotation: open
-		return .literalBoolExpression(value: value)
+		return LiteralBoolExpression(range: nil, value: value)
 	}
 
 	func replaceLiteralStringExpression(value: String) -> Expression { // annotation: open
-		return .literalStringExpression(value: value)
+		return LiteralStringExpression(range: nil, value: value)
 	}
 
 	func replaceLiteralCharacterExpression(value: String) -> Expression { // annotation: open
-		return .literalCharacterExpression(value: value)
+		return LiteralCharacterExpression(range: nil, value: value)
 	}
 
 	func replaceNilLiteralExpression() -> Expression { // annotation: open
-		return .nilLiteralExpression
+		return NilLiteralExpression(range: nil)
 	}
 
 	func replaceInterpolatedStringLiteralExpression( // annotation: open
 		expressions: ArrayClass<Expression>)
 		-> Expression
 	{
-		return .interpolatedStringLiteralExpression(
+		return InterpolatedStringLiteralExpression(
+			range: nil,
 			expressions: expressions.map { replaceExpression($0) })
 	}
 
@@ -799,9 +849,11 @@ public class TranspilationPass {
 		pairs: ArrayClass<LabeledExpression>)
 		-> Expression
 	{
-		return .tupleExpression( pairs: pairs.map {
-			LabeledExpression(label: $0.label, expression: replaceExpression($0.expression))
-		})
+		return TupleExpression(
+			range: nil,
+			pairs: pairs.map {
+				LabeledExpression(label: $0.label, expression: replaceExpression($0.expression))
+			})
 	}
 
 	func replaceTupleShuffleExpression( // annotation: open
@@ -810,7 +862,8 @@ public class TranspilationPass {
 		expressions: ArrayClass<Expression>)
 		-> Expression
 	{
-		return .tupleShuffleExpression(
+		return TupleShuffleExpression(
+			range: nil,
 			labels: labels,
 			indices: indices,
 			expressions: expressions.map { replaceExpression($0) })
@@ -857,10 +910,10 @@ public class RemoveParenthesesTranspilationPass: TranspilationPass {
 		typeName: String)
 		-> Expression
 	{
-		if case let .parenthesesExpression(expression: innerExpression) = indexExpression {
+		if let parentheses = indexExpression as? ParenthesesExpression {
 			return super.replaceSubscriptExpression(
 				subscriptedExpression: subscriptedExpression,
-				indexExpression: innerExpression,
+				indexExpression: parentheses.expression,
 				typeName: typeName)
 		}
 
@@ -876,15 +929,14 @@ public class RemoveParenthesesTranspilationPass: TranspilationPass {
 	{
 		let myParent = self.parent
 		if case let .expressionNode(parentExpression) = myParent {
-			switch parentExpression {
-			case .tupleExpression, .interpolatedStringLiteralExpression:
+			if parentExpression is TupleExpression ||
+				parentExpression is InterpolatedStringLiteralExpression
+			{
 				return replaceExpression(expression)
-			default:
-				break
 			}
 		}
 
-		return .parenthesesExpression(expression: replaceExpression(expression))
+		return ParenthesesExpression(range: nil, expression: replaceExpression(expression))
 	}
 
 	override func replaceIfExpression( // annotation: override
@@ -894,30 +946,31 @@ public class RemoveParenthesesTranspilationPass: TranspilationPass {
 		-> Expression
 	{
 		let replacedCondition: Expression
-		if case let .parenthesesExpression(expression: innerExpression) = condition {
-			replacedCondition = innerExpression
+		if let parentheses = condition as? ParenthesesExpression {
+			replacedCondition = parentheses.expression
 		}
 		else {
 			replacedCondition = condition
 		}
 
 		let replacedTrueExpression: Expression
-		if case let .parenthesesExpression(expression: innerExpression) = trueExpression {
-			replacedTrueExpression = innerExpression
+		if let parentheses = trueExpression as? ParenthesesExpression {
+			replacedTrueExpression = parentheses.expression
 		}
 		else {
 			replacedTrueExpression = trueExpression
 		}
 
 		let replacedFalseExpression: Expression
-		if case let .parenthesesExpression(expression: innerExpression) = falseExpression {
-			replacedFalseExpression = innerExpression
+		if let parentheses = falseExpression as? ParenthesesExpression {
+			replacedFalseExpression = parentheses.expression
 		}
 		else {
 			replacedFalseExpression = falseExpression
 		}
 
-		return .ifExpression(
+		return IfExpression(
+			range: nil,
 			condition: replacedCondition,
 			trueExpression: replacedTrueExpression,
 			falseExpression: replacedFalseExpression)
@@ -1028,9 +1081,9 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 		-> ArrayClass<Statement>
 	{
 		if isFailableInitializer,
-			case let .declarationReferenceExpression(data: expression) = leftHand
+			let expression = leftHand as? DeclarationReferenceExpression
 		{
-			if expression.identifier == "self" {
+			if expression.data.identifier == "self" {
 				return [.returnStatement(expression: rightHand)]
 			}
 		}
@@ -1219,7 +1272,7 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass {
 		typeName: String)
 		-> Expression
 	{
-		return .typeExpression(typeName: removePrefixes(typeName))
+		return TypeExpression(range: nil, typeName: removePrefixes(typeName))
 	}
 }
 
@@ -1234,24 +1287,31 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 		rightExpression: Expression)
 		-> Expression
 	{
-		if case let .typeExpression(typeName: enumType) = leftExpression,
-			case let .declarationReferenceExpression(data: enumExpression) = rightExpression
+		if let enumTypeExpression = leftExpression as? TypeExpression,
+			let enumExpression = rightExpression as? DeclarationReferenceExpression
 		{
-			let lastEnumType = String(enumType.split(separator: ".").last!)
+			let lastEnumType = String(enumTypeExpression.typeName.split(separator: ".").last!)
 
 			if KotlinTranslator.sealedClasses.contains(lastEnumType) {
 				let enumExpression = enumExpression
-				enumExpression.identifier = enumExpression.identifier.capitalizedAsCamelCase()
-				return .dotExpression(
-					leftExpression: .typeExpression(typeName: enumType),
-					rightExpression: .declarationReferenceExpression(data: enumExpression))
+				enumExpression.data.identifier =
+					enumExpression.data.identifier.capitalizedAsCamelCase()
+				return DotExpression(
+					range: nil,
+					leftExpression: TypeExpression(
+						range: nil,
+						typeName: enumTypeExpression.typeName),
+					rightExpression: enumExpression)
 			}
 			else if KotlinTranslator.enumClasses.contains(lastEnumType) {
 				let enumExpression = enumExpression
-				enumExpression.identifier = enumExpression.identifier.upperSnakeCase()
-				return .dotExpression(
-					leftExpression: .typeExpression(typeName: enumType),
-					rightExpression: .declarationReferenceExpression(data: enumExpression))
+				enumExpression.data.identifier = enumExpression.data.identifier.upperSnakeCase()
+				return DotExpression(
+					range: nil,
+					leftExpression: TypeExpression(
+						range: nil,
+						typeName: enumTypeExpression.typeName),
+					rightExpression: enumExpression)
 			}
 		}
 
@@ -1339,13 +1399,14 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
 		rightExpression: Expression)
 		-> Expression
 	{
-		if case let .typeExpression(typeName: enumType) = leftExpression,
-			case let .declarationReferenceExpression(data: enumExpression) = rightExpression
+		if let enumTypeExpression = leftExpression as? TypeExpression,
+			let enumExpression = rightExpression as? DeclarationReferenceExpression
 		{
-			if enumExpression.typeName == "(\(enumType).Type) -> \(enumType)",
-				!KotlinTranslator.sealedClasses.contains(enumType)
+			if enumExpression.data.typeName ==
+					"(\(enumTypeExpression.typeName).Type) -> \(enumTypeExpression.typeName)",
+				!KotlinTranslator.sealedClasses.contains(enumTypeExpression.typeName)
 			{
-				return .declarationReferenceExpression(data: enumExpression)
+				return enumExpression
 			}
 		}
 
@@ -1369,20 +1430,19 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
 	{
 		if let returnType = returnTypesStack.last,
 			let expression = expression,
-			case let .dotExpression(
-				leftExpression: leftExpression,
-				rightExpression: rightExpression) = expression
+			let dotExpression = expression as? DotExpression
 		{
-			if case let .typeExpression(typeName: typeExpression) = leftExpression {
+			if let typeExpression = dotExpression.leftExpression as? TypeExpression {
 				// It's ok to omit if the return type is an optional enum too
 				var returnType = returnType
 				if returnType.hasSuffix("?") {
 					returnType = String(returnType.dropLast("?".count))
 				}
 
-				if typeExpression == returnType {
+				if typeExpression.typeName == returnType {
 					let newExpression = removePrefixFromPossibleEnumReference(
-						leftExpression: leftExpression, rightExpression: rightExpression)
+						leftExpression: dotExpression.leftExpression,
+						rightExpression: dotExpression.rightExpression)
 					return [.returnStatement(expression: newExpression)]
 				}
 			}
@@ -1435,13 +1495,16 @@ public class SelfToThisTranspilationPass: TranspilationPass {
 		rightExpression: Expression)
 		-> Expression
 	{
-		if case let .declarationReferenceExpression(data: expression) = leftExpression {
-			if expression.identifier == "self", expression.isImplicit {
+		if let declarationReferenceExpression = leftExpression as? DeclarationReferenceExpression {
+			if declarationReferenceExpression.data.identifier == "self",
+				declarationReferenceExpression.data.isImplicit
+			{
 				return replaceExpression(rightExpression)
 			}
 		}
 
-		return .dotExpression(
+		return DotExpression(
+			range: nil,
 			leftExpression: replaceExpression(leftExpression),
 			rightExpression: replaceExpression(rightExpression))
 	}
@@ -1574,14 +1637,15 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 		_ callExpression: CallExpressionData)
 		-> Expression
 	{
-		if case let .typeExpression(typeName: typeName) = callExpression.function,
-			case let .tupleExpression(pairs: pairs) = callExpression.parameters
+		if let typeExpression = callExpression.function as? TypeExpression,
+			let tupleExpression = callExpression.parameters as? TupleExpression
 		{
-			if typeName.hasPrefix("ArrayClass<"),
-				pairs.count == 1,
-				let onlyPair = pairs.first
+			if typeExpression.typeName.hasPrefix("ArrayClass<"),
+				tupleExpression.pairs.count == 1,
+				let onlyPair = tupleExpression.pairs.first
 			{
-				let arrayClassElementType = String(typeName.dropFirst("ArrayClass<".count).dropLast())
+				let arrayClassElementType =
+					String(typeExpression.typeName.dropFirst("ArrayClass<".count).dropLast())
 				let mappedElementType = Utilities.getTypeMapping(for: arrayClassElementType) ??
 					arrayClassElementType
 
@@ -1592,18 +1656,21 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 						let arrayElementType = arrayType.dropFirst().dropLast()
 
 						if arrayElementType != arrayClassElementType {
-							return .dotExpression(
+							return DotExpression(
+								range: nil,
 								leftExpression: replaceExpression(onlyPair.expression),
-								rightExpression: .callExpression(data: CallExpressionData(
-									function: .declarationReferenceExpression(data:
+								rightExpression: CallExpression(
+									range: nil,
+									data: CallExpressionData(
+									function: DeclarationReferenceExpression(range: nil, data:
 										DeclarationReferenceData(
 											identifier: "toMutableList<\(mappedElementType)>",
-											typeName: typeName,
+											typeName: typeExpression.typeName,
 											isStandardLibrary: false,
 											isImplicit: false,
 											range: nil)),
-									parameters: .tupleExpression(pairs: []),
-									typeName: typeName,
+									parameters: TupleExpression(range: nil, pairs: []),
+									typeName: typeExpression.typeName,
 									range: nil)))
 						}
 					}
@@ -1611,43 +1678,44 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 					return replaceExpression(onlyPair.expression)
 				}
 				else {
-					return .dotExpression(
+					return DotExpression(
+						range: nil,
 						leftExpression: replaceExpression(onlyPair.expression),
-						rightExpression: .callExpression(data: CallExpressionData(
-							function: .declarationReferenceExpression(data:
+						rightExpression: CallExpression(range: nil, data: CallExpressionData(
+							function: DeclarationReferenceExpression(range: nil, data:
 								DeclarationReferenceData(
 									identifier: "toMutableList<\(mappedElementType)>",
-									typeName: typeName,
+									typeName: typeExpression.typeName,
 									isStandardLibrary: false,
 									isImplicit: false,
 									range: nil)),
-							parameters: .tupleExpression(pairs: []),
-							typeName: typeName,
+							parameters: TupleExpression(range: nil, pairs: []),
+							typeName: typeExpression.typeName,
 							range: nil)))
 				}
 			}
 		}
 
-		if case let .dotExpression(
-				leftExpression: leftExpression,
-				rightExpression: rightExpression) = callExpression.function
-		{
-			if let leftType = leftExpression.swiftType,
+		if let dotExpression = callExpression.function as? DotExpression {
+			if let leftType = dotExpression.leftExpression.swiftType,
 				leftType.hasPrefix("ArrayClass"),
-				case let .declarationReferenceExpression(
-					data: declarationReferenceExpression) = rightExpression,
-				case let .tupleExpression(pairs: pairs) = callExpression.parameters
+				let declarationReferenceExpression =
+					dotExpression.rightExpression as? DeclarationReferenceExpression,
+				let tupleExpression = callExpression.parameters as? TupleExpression
 			{
-				if declarationReferenceExpression.identifier == "as",
-					pairs.count == 1,
-					let onlyPair = pairs.first,
-					case let .typeExpression(typeName: typeName) = onlyPair.expression
+				if declarationReferenceExpression.data.identifier == "as",
+					tupleExpression.pairs.count == 1,
+					let onlyPair = tupleExpression.pairs.first,
+					let typeExpression = onlyPair.expression as? TypeExpression
 				{
-					return .binaryOperatorExpression(
-						leftExpression: leftExpression,
-						rightExpression: .typeExpression(typeName: typeName),
+					return BinaryOperatorExpression(
+						range: nil,
+						leftExpression: dotExpression.leftExpression,
+						rightExpression: TypeExpression(
+							range: nil,
+							typeName: typeExpression.typeName),
 						operatorSymbol: "as?",
-						typeName: typeName + "?")
+						typeName: typeExpression.typeName + "?")
 				}
 			}
 		}
@@ -1704,17 +1772,19 @@ public class RefactorOptionalsInSubscriptsTranspilationPass: TranspilationPass {
 		typeName: String)
 		-> Expression
 	{
-		if case .optionalExpression = subscriptedExpression {
+		if subscriptedExpression is OptionalExpression {
 			return replaceDotExpression(
 				leftExpression: subscriptedExpression,
-				rightExpression: .callExpression(data: CallExpressionData(
-					function: .declarationReferenceExpression(data: DeclarationReferenceData(
-						identifier: "get",
-						typeName: "(\(indexExpression.swiftType ?? "<<Error>>")) -> \(typeName)",
-						isStandardLibrary: false,
-						isImplicit: false,
-						range: subscriptedExpression.range)),
-					parameters: .tupleExpression(pairs:
+				rightExpression: CallExpression(range: nil, data: CallExpressionData(
+					function: DeclarationReferenceExpression(
+						range: nil,
+						data: DeclarationReferenceData(
+							identifier: "get",
+							typeName: "(\(indexExpression.swiftType ?? "<<Error>>")) -> \(typeName)",
+							isStandardLibrary: false,
+							isImplicit: false,
+							range: subscriptedExpression.range)),
+					parameters: TupleExpression(range: nil, pairs:
 						[LabeledExpression(label: nil, expression: indexExpression)]),
 					typeName: typeName,
 					range: subscriptedExpression.range)))
@@ -1743,17 +1813,16 @@ public class AddOptionalsInDotChainsTranspilationPass: TranspilationPass {
 		rightExpression: Expression)
 		-> Expression
 	{
-		if case .optionalExpression = rightExpression {
+		// FIXME:
+		if rightExpression is OptionalExpression {
 		}
-		else if case let .dotExpression(
-			leftExpression: innerLeftExpression,
-			rightExpression: innerRightExpression) = leftExpression
-		{
-			if dotExpressionChainHasOptionals(innerLeftExpression) {
-				return .dotExpression(
+		else if let dotExpression = leftExpression as? DotExpression {
+			if dotExpressionChainHasOptionals(dotExpression.leftExpression) {
+				return DotExpression(
+					range: nil,
 					leftExpression: addOptionalsToDotExpressionChain(
-						leftExpression: innerLeftExpression,
-						rightExpression: innerRightExpression),
+						leftExpression: dotExpression.leftExpression,
+						rightExpression: dotExpression.rightExpression),
 					rightExpression: rightExpression)
 			}
 		}
@@ -1768,18 +1837,16 @@ public class AddOptionalsInDotChainsTranspilationPass: TranspilationPass {
 		rightExpression: Expression)
 		-> Expression
 	{
-		if case .optionalExpression = rightExpression {
+		// FIXME:
+		if rightExpression is OptionalExpression {
 		}
 		else if dotExpressionChainHasOptionals(leftExpression) {
 
 			let processedLeftExpression: Expression
-			if case let .dotExpression(
-				leftExpression: innerLeftExpression,
-				rightExpression: innerRightExpression) = leftExpression
-			{
+			if let dotExpression = leftExpression as? DotExpression {
 				processedLeftExpression = addOptionalsToDotExpressionChain(
-					leftExpression: innerLeftExpression,
-					rightExpression: innerRightExpression)
+					leftExpression: dotExpression.leftExpression,
+					rightExpression: dotExpression.rightExpression)
 			}
 			else {
 				processedLeftExpression = leftExpression
@@ -1787,7 +1854,7 @@ public class AddOptionalsInDotChainsTranspilationPass: TranspilationPass {
 
 			return addOptionalsToDotExpressionChain(
 				leftExpression: processedLeftExpression,
-				rightExpression: .optionalExpression(expression: rightExpression))
+				rightExpression: OptionalExpression(range: nil, expression: rightExpression))
 		}
 
 		return super.replaceDotExpression(
@@ -1796,13 +1863,11 @@ public class AddOptionalsInDotChainsTranspilationPass: TranspilationPass {
 	}
 
 	private func dotExpressionChainHasOptionals(_ expression: Expression) -> Bool {
-		if case .optionalExpression = expression {
+		if expression is OptionalExpression {
 			return true
 		}
-		else if case let .dotExpression(
-			leftExpression: leftExpression, rightExpression: _) = expression
-		{
-			return dotExpressionChainHasOptionals(leftExpression)
+		else if let dotExpression = expression as? DotExpression {
+			return dotExpressionChainHasOptionals(dotExpression.leftExpression)
 		}
 		else {
 			return false
@@ -1877,7 +1942,7 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 				}
 			}
 			let conversionExpression =
-				Statement.returnStatement(expression: .nilLiteralExpression)
+				Statement.returnStatement(expression: NilLiteralExpression(range: nil))
 			return [.switchStatement(
 				convertsToExpression: conversionExpression,
 				expression: expression,
@@ -1898,7 +1963,7 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 				}
 			}
 			let conversionExpression = Statement.assignmentStatement(
-				leftHand: assignmentExpression, rightHand: .nilLiteralExpression)
+				leftHand: assignmentExpression, rightHand: NilLiteralExpression(range: nil))
 			return [.switchStatement(
 				convertsToExpression: conversionExpression, expression: expression,
 				cases: newCases), ]
@@ -1935,15 +2000,15 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 						leftHand: leftHand,
 						rightHand: _) = switchConversion
 				{
-					if case let .declarationReferenceExpression(
-						data: assignmentExpression) = leftHand
+					if let assignmentExpression =
+						leftHand as? DeclarationReferenceExpression
 					{
 
-						if assignmentExpression.identifier == variableDeclaration.identifier,
-							!assignmentExpression.isStandardLibrary,
-							!assignmentExpression.isImplicit
+						if assignmentExpression.data.identifier == variableDeclaration.identifier,
+							!assignmentExpression.data.isStandardLibrary,
+							!assignmentExpression.data.isImplicit
 						{
-							variableDeclaration.expression = .nilLiteralExpression
+							variableDeclaration.expression = NilLiteralExpression(range: nil)
 							variableDeclaration.getter = nil
 							variableDeclaration.setter = nil
 							variableDeclaration.isStatic = false
@@ -2019,10 +2084,10 @@ public class IsOperatorsInSealedClassesTranspilationPass: TranspilationPass {
 		cases: ArrayClass<SwitchCase>)
 		-> ArrayClass<Statement>
 	{
-		if case let .declarationReferenceExpression(
-				data: declarationReferenceExpression) = expression
-		{
-			if KotlinTranslator.sealedClasses.contains(declarationReferenceExpression.typeName) {
+		if let declarationReferenceExpression = expression as? DeclarationReferenceExpression {
+			if KotlinTranslator.sealedClasses.contains(
+				declarationReferenceExpression.data.typeName)
+			{
 				let newCases = cases.map {
 					replaceIsOperatorsInSwitchCase($0, usingExpression: expression)
 				}
@@ -2059,18 +2124,18 @@ public class IsOperatorsInSealedClassesTranspilationPass: TranspilationPass {
 		usingExpression expression: Expression)
 		-> Expression
 	{
-		if case let .dotExpression(
-			leftExpression: leftExpression,
-			rightExpression: rightExpression) = caseExpression
-		{
-			if case let .typeExpression(typeName: typeName) = leftExpression,
-				case let .declarationReferenceExpression(
-					data: declarationReferenceExpression) = rightExpression
+		if let dotExpression = caseExpression as? DotExpression {
+			if let typeExpression = dotExpression.leftExpression as? TypeExpression,
+				let declarationReferenceExpression =
+					dotExpression.rightExpression as? DeclarationReferenceExpression
 			{
-				return Expression.binaryOperatorExpression(
+				return BinaryOperatorExpression(
+					range: nil,
 					leftExpression: expression,
-					rightExpression: .typeExpression(
-						typeName: "\(typeName).\(declarationReferenceExpression.identifier)"),
+					rightExpression: TypeExpression(
+						range: nil,
+						typeName: "\(typeExpression.typeName)." +
+							"\(declarationReferenceExpression.data.identifier)"),
 					operatorSymbol: "is",
 					typeName: "Bool")
 			}
@@ -2352,18 +2417,18 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 		// ok.
 		if let leftExpressionType = leftExpression.swiftType,
 			leftExpressionType.hasPrefix("["),
-			case let .callExpression(data: callExpressionData) = rightExpression
-		{
-			if (callExpressionData.typeName.hasPrefix("ArrayClass") ||
-					callExpressionData.typeName.hasPrefix("DictionaryClass")),
-				case let .declarationReferenceExpression(data: declarationReferenceData) =
-					callExpressionData.function
+			let callExpression = rightExpression as? CallExpression {
+			if (callExpression.data.typeName.hasPrefix("ArrayClass") ||
+					callExpression.data.typeName.hasPrefix("DictionaryClass")),
+				let declarationReference =
+					callExpression.data.function as? DeclarationReferenceExpression
 			{
-				if declarationReferenceData.identifier.hasPrefix("toMutable"),
-					(declarationReferenceData.typeName.hasPrefix("ArrayClass") ||
-						declarationReferenceData.typeName.hasPrefix("DictionaryClass"))
+				if declarationReference.data.identifier.hasPrefix("toMutable"),
+					(declarationReference.data.typeName.hasPrefix("ArrayClass") ||
+						declarationReference.data.typeName.hasPrefix("DictionaryClass"))
 				{
-					return .dotExpression(
+					return DotExpression(
+						range: nil,
 						leftExpression: leftExpression,
 						rightExpression: rightExpression)
 				}
@@ -2432,76 +2497,77 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 		_ expression: Expression)
 		-> ArrayClass<SourceFileRange>
 	{
-		switch expression {
-		case let .callExpression(data: callExpression):
-			if !KotlinTranslator.isReferencingPureFunction(callExpression),
-				let range = callExpression.range
+		if let subExpression = expression as? CallExpression {
+			if !KotlinTranslator.isReferencingPureFunction(subExpression.data),
+				let range = subExpression.data.range
 			{
 				return [range]
 			}
 			else {
 				return []
 			}
-		case let .parenthesesExpression(expression: expression):
-			return rangesWithPossibleSideEffectsIn(expression)
-		case let .forceValueExpression(expression: expression):
-			return rangesWithPossibleSideEffectsIn(expression)
-		case let .optionalExpression(expression: expression):
-			return rangesWithPossibleSideEffectsIn(expression)
-		case let .subscriptExpression(
-			subscriptedExpression: subscriptedExpression,
-			indexExpression: indexExpression,
-			typeName: _):
-
-			let result = rangesWithPossibleSideEffectsIn(subscriptedExpression)
-			result.append(contentsOf: rangesWithPossibleSideEffectsIn(indexExpression))
+		}
+		if let subExpression = expression as? ParenthesesExpression {
+			return rangesWithPossibleSideEffectsIn(subExpression.expression)
+		}
+		if let subExpression = expression as? ForceValueExpression {
+			return rangesWithPossibleSideEffectsIn(subExpression.expression)
+		}
+		if let subExpression = expression as? OptionalExpression {
+			return rangesWithPossibleSideEffectsIn(subExpression.expression)
+		}
+		if let subExpression = expression as? SubscriptExpression {
+			let result = rangesWithPossibleSideEffectsIn(subExpression.subscriptedExpression)
+			result.append(contentsOf:
+				rangesWithPossibleSideEffectsIn(subExpression.indexExpression))
 			return result
-
-		case let .arrayExpression(elements: elements, typeName: _):
-			return elements.flatMap { rangesWithPossibleSideEffectsIn($0) }
-		case let .dictionaryExpression(keys: keys, values: values, typeName: _):
-			let result = keys.flatMap { rangesWithPossibleSideEffectsIn($0) }
-			result.append(contentsOf: values.flatMap { rangesWithPossibleSideEffectsIn($0) })
+		}
+		if let subExpression = expression as? ArrayExpression {
+			return subExpression.elements.flatMap { rangesWithPossibleSideEffectsIn($0) }
+		}
+		if let subExpression = expression as? DictionaryExpression {
+			let result = subExpression.keys.flatMap { rangesWithPossibleSideEffectsIn($0) }
+			result.append(contentsOf:
+				subExpression.values.flatMap { rangesWithPossibleSideEffectsIn($0) })
 			return result
-		case let .dotExpression(leftExpression: leftExpression, rightExpression: rightExpression):
-			let result = rangesWithPossibleSideEffectsIn(leftExpression)
-			result.append(contentsOf: rangesWithPossibleSideEffectsIn(rightExpression))
+		}
+		if let subExpression = expression as? DotExpression {
+			let result = rangesWithPossibleSideEffectsIn(subExpression.leftExpression)
+			result.append(contentsOf:
+				rangesWithPossibleSideEffectsIn(subExpression.rightExpression))
 			return result
-		case let .binaryOperatorExpression(
-			leftExpression: leftExpression,
-			rightExpression: rightExpression,
-			operatorSymbol: _,
-			typeName: _):
-
-			let result = rangesWithPossibleSideEffectsIn(leftExpression)
-			result.append(contentsOf: rangesWithPossibleSideEffectsIn(rightExpression))
+		}
+		if let subExpression = expression as? BinaryOperatorExpression {
+			let result = rangesWithPossibleSideEffectsIn(subExpression.leftExpression)
+			result.append(contentsOf:
+				rangesWithPossibleSideEffectsIn(subExpression.rightExpression))
 			return result
-		case let .prefixUnaryExpression(
-			subExpression: subExpression, operatorSymbol: _, typeName: _):
-
-			return rangesWithPossibleSideEffectsIn(subExpression)
-		case let .postfixUnaryExpression(
-			subExpression: subExpression, operatorSymbol: _, typeName: _):
-
-			return rangesWithPossibleSideEffectsIn(subExpression)
-		case let .ifExpression(
-			condition: condition,
-			trueExpression: trueExpression,
-			falseExpression: falseExpression):
-
-			let result = rangesWithPossibleSideEffectsIn(condition)
-			result.append(contentsOf: rangesWithPossibleSideEffectsIn(trueExpression))
-			result.append(contentsOf: rangesWithPossibleSideEffectsIn(falseExpression))
+		}
+		if let subExpression = expression as? PrefixUnaryExpression {
+			return rangesWithPossibleSideEffectsIn(subExpression.subExpression)
+		}
+		if let subExpression = expression as? PostfixUnaryExpression {
+			return rangesWithPossibleSideEffectsIn(subExpression.subExpression)
+		}
+		if let subExpression = expression as? IfExpression {
+			let result = rangesWithPossibleSideEffectsIn(subExpression.condition)
+			result.append(contentsOf:
+				rangesWithPossibleSideEffectsIn(subExpression.trueExpression))
+			result.append(contentsOf:
+				rangesWithPossibleSideEffectsIn(subExpression.falseExpression))
 			return result
-		case let .interpolatedStringLiteralExpression(expressions: expressions):
-			return expressions.flatMap { rangesWithPossibleSideEffectsIn($0) }
-		case let .tupleExpression(pairs: pairs):
-			return pairs.flatMap { rangesWithPossibleSideEffectsIn($0.expression) }
-		case let .tupleShuffleExpression(labels: _, indices: _, expressions: expressions):
-			return expressions.flatMap { rangesWithPossibleSideEffectsIn($0) }
-		default:
-			return []
- 		}
+		}
+		if let subExpression = expression as? InterpolatedStringLiteralExpression {
+			return subExpression.expressions.flatMap { rangesWithPossibleSideEffectsIn($0) }
+		}
+		if let subExpression = expression as? TupleExpression {
+			return subExpression.pairs.flatMap { rangesWithPossibleSideEffectsIn($0.expression) }
+		}
+		if let subExpression = expression as? TupleShuffleExpression {
+			return subExpression.expressions.flatMap { rangesWithPossibleSideEffectsIn($0) }
+		}
+
+		return []
 	}
 }
 
@@ -2541,15 +2607,17 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 		-> IfStatementData.IfCondition
 	{
 		if case let .declaration(variableDeclaration: variableDeclaration) = condition {
-			return .condition(expression: .binaryOperatorExpression(
-				leftExpression: .declarationReferenceExpression(data:
+			return .condition(expression: BinaryOperatorExpression(
+				range: nil,
+				leftExpression: DeclarationReferenceExpression(range: nil, data:
 					DeclarationReferenceData(
 						identifier: variableDeclaration.identifier,
 						typeName: variableDeclaration.typeName,
 						isStandardLibrary: false,
 						isImplicit: false,
 						range: variableDeclaration.expression?.range)),
-				rightExpression: .nilLiteralExpression, operatorSymbol: "!=",
+				rightExpression: NilLiteralExpression(range: nil),
+				operatorSymbol: "!=",
 				typeName: "Boolean"))
 		}
 		else {
@@ -2598,10 +2666,9 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 		// If it's a shadowing identifier there's no need to declare it in Kotlin
 		// (i.e. `if let x = x { }`)
 		if let declarationExpression = variableDeclaration.expression,
-			case let .declarationReferenceExpression(
-				data: expression) = declarationExpression
+			let expression = declarationExpression as? DeclarationReferenceExpression
 		{
-			if expression.identifier == variableDeclaration.identifier {
+			if expression.data.identifier == variableDeclaration.identifier {
 				return true
 			}
 		}
@@ -2635,7 +2702,7 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 		newStatements.append(.variableDeclaration(data: VariableDeclarationData(
 			identifier: lhs.label,
 			typeName: lhs.typeName,
-			expression: .declarationReferenceExpression(data: DeclarationReferenceData(
+			expression: DeclarationReferenceExpression(range: nil, data: DeclarationReferenceData(
 				identifier: "this",
 				typeName: lhs.typeName,
 				isStandardLibrary: false,
@@ -2651,7 +2718,7 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 		newStatements.append(.variableDeclaration(data: VariableDeclarationData(
 			identifier: rhs.label,
 			typeName: "Any?",
-			expression: .declarationReferenceExpression(data: DeclarationReferenceData(
+			expression: DeclarationReferenceExpression(range: nil, data: DeclarationReferenceData(
 				identifier: "other",
 				typeName: "Any?",
 				isStandardLibrary: false,
@@ -2667,14 +2734,17 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 
 		// Add an if statement to guarantee the comparison only happens between the right types
 		newStatements.append(.ifStatement(data: IfStatementData(
-			conditions: [ .condition(expression: .binaryOperatorExpression(
-				leftExpression: .declarationReferenceExpression(data: DeclarationReferenceData(
-					identifier: rhs.label,
-					typeName: "Any?",
-					isStandardLibrary: false,
-					isImplicit: false,
-					range: nil)),
-				rightExpression: .typeExpression(typeName: rhs.typeName),
+			conditions: [ .condition(expression: BinaryOperatorExpression(
+				range: nil,
+				leftExpression: DeclarationReferenceExpression(
+					range: nil,
+					data: DeclarationReferenceData(
+						identifier: rhs.label,
+						typeName: "Any?",
+						isStandardLibrary: false,
+						isImplicit: false,
+						range: nil)),
+				rightExpression: TypeExpression(range: nil, typeName: rhs.typeName),
 				operatorSymbol: "is",
 				typeName: "Bool")),
 			],
@@ -2684,7 +2754,8 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 				conditions: [],
 				declarations: [],
 				statements: [
-					Statement.returnStatement(expression: .literalBoolExpression(value: false)),
+					Statement.returnStatement(expression:
+						LiteralBoolExpression(range: nil, value: false)),
 				],
 				elseStatement: nil,
 				isGuard: false),
@@ -2792,10 +2863,12 @@ public class RawValuesTranspilationPass: TranspilationPass {
 				expressions: [element.rawValue!],
 				statements: [
 					.returnStatement(
-						expression: .dotExpression(
-							leftExpression: .typeExpression(typeName: enumName),
-							rightExpression: .declarationReferenceExpression(data:
-								DeclarationReferenceData(
+						expression: DotExpression(
+							range: nil,
+							leftExpression: TypeExpression(range: nil, typeName: enumName),
+							rightExpression: DeclarationReferenceExpression(
+								range: nil,
+								data: DeclarationReferenceData(
 									identifier: element.name,
 									typeName: enumName,
 									isStandardLibrary: false,
@@ -2806,13 +2879,13 @@ public class RawValuesTranspilationPass: TranspilationPass {
 
 		let defaultSwitchCase = SwitchCase(
 			expressions: [],
-			statements: [.returnStatement(expression: .nilLiteralExpression)])
+			statements: [.returnStatement(expression: NilLiteralExpression(range: nil))])
 
 		switchCases.append(defaultSwitchCase)
 
 		let switchStatement = Statement.switchStatement(
 			convertsToExpression: nil,
-			expression: .declarationReferenceExpression(data:
+			expression: DeclarationReferenceExpression(range: nil, data:
 				DeclarationReferenceData(
 					identifier: "rawValue",
 					typeName: rawValueType,
@@ -2850,10 +2923,12 @@ public class RawValuesTranspilationPass: TranspilationPass {
 	{
 		let switchCases = elements.map { element in
 			SwitchCase(
-				expressions: [.dotExpression(
-					leftExpression: .typeExpression(typeName: enumName),
-					rightExpression: .declarationReferenceExpression(data:
-						DeclarationReferenceData(
+				expressions: [DotExpression(
+					range: nil,
+					leftExpression: TypeExpression(range: nil, typeName: enumName),
+					rightExpression: DeclarationReferenceExpression(
+						range: nil,
+						data: DeclarationReferenceData(
 							identifier: element.name,
 							typeName: enumName,
 							isStandardLibrary: false,
@@ -2867,7 +2942,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 
 		let switchStatement = Statement.switchStatement(
 			convertsToExpression: nil,
-			expression: .declarationReferenceExpression(data:
+			expression: DeclarationReferenceExpression(range: nil, data:
 				DeclarationReferenceData(
 					identifier: "this",
 					typeName: enumName,
@@ -2922,30 +2997,34 @@ public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
 		{
 			let shouldStillBeGuard: Bool
 			let newCondition: Expression
-			if case let .prefixUnaryExpression(
-				subExpression: innerExpression,
-				operatorSymbol: "!",
-				typeName: _) = onlyConditionExpression
+			if let prefixUnaryExpression = onlyConditionExpression as? PrefixUnaryExpression,
+				prefixUnaryExpression.operatorSymbol == "!"
 			{
-				newCondition = innerExpression
+				newCondition = prefixUnaryExpression.subExpression
 				shouldStillBeGuard = false
 			}
-			else if case let .binaryOperatorExpression(
-				leftExpression: leftExpression, rightExpression: rightExpression,
-				operatorSymbol: "!=", typeName: typeName) = onlyConditionExpression
+			else if let binaryOperatorExpression =
+					onlyConditionExpression as? BinaryOperatorExpression,
+				binaryOperatorExpression.operatorSymbol == "!="
 			{
-				newCondition = .binaryOperatorExpression(
-					leftExpression: leftExpression, rightExpression: rightExpression,
-					operatorSymbol: "==", typeName: typeName)
+				newCondition = BinaryOperatorExpression(
+					range: nil,
+					leftExpression: binaryOperatorExpression.leftExpression,
+					rightExpression: binaryOperatorExpression.rightExpression,
+					operatorSymbol: "==",
+					typeName: binaryOperatorExpression.typeName)
 				shouldStillBeGuard = false
 			}
-			else if case let .binaryOperatorExpression(
-				leftExpression: leftExpression, rightExpression: rightExpression,
-				operatorSymbol: "==", typeName: typeName) = onlyConditionExpression
+			else if let binaryOperatorExpression =
+					onlyConditionExpression as? BinaryOperatorExpression,
+				binaryOperatorExpression.operatorSymbol == "=="
 			{
-				newCondition = .binaryOperatorExpression(
-					leftExpression: leftExpression, rightExpression: rightExpression,
-					operatorSymbol: "!=", typeName: typeName)
+				newCondition = BinaryOperatorExpression(
+					range: nil,
+					leftExpression: binaryOperatorExpression.leftExpression,
+					rightExpression: binaryOperatorExpression.rightExpression,
+					operatorSymbol: "!=",
+					typeName: binaryOperatorExpression.typeName)
 				shouldStillBeGuard = false
 			}
 			else {
@@ -2985,23 +3064,23 @@ public class ReturnIfNilTranspilationPass: TranspilationPass {
 				if case let .condition(expression: onlyConditionExpression) = onlyCondition,
 					case let .returnStatement(expression: returnExpression) = onlyStatement
 				{
-					if case let .binaryOperatorExpression(
-						leftExpression: declarationReference,
-						rightExpression: comparedExpression,
-						operatorSymbol: "==",
-						typeName: _) = onlyConditionExpression
+					if let binaryOperatorExpression =
+							onlyConditionExpression as? BinaryOperatorExpression,
+						binaryOperatorExpression.operatorSymbol == "=="
 					{
-						if case let .declarationReferenceExpression(
-								data: declarationExpression) = declarationReference,
-							case .nilLiteralExpression = comparedExpression
+						if let declarationExpression =
+								binaryOperatorExpression.leftExpression as?
+									DeclarationReferenceExpression,
+							binaryOperatorExpression.rightExpression is NilLiteralExpression
 						{
 							return [.expressionStatement(expression:
-								.binaryOperatorExpression(
-									leftExpression: declarationReference,
-									rightExpression: .returnExpression(expression:
+								BinaryOperatorExpression(
+									range: nil,
+									leftExpression: binaryOperatorExpression.leftExpression,
+									rightExpression: ReturnExpression(range: nil, expression:
 										returnExpression),
 									operatorSymbol: "?:",
-									typeName: declarationExpression.typeName)), ]
+									typeName: declarationExpression.data.typeName)), ]
 						}
 					}
 				}

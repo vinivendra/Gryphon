@@ -68,18 +68,17 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 	/// Some String literals are written as sums of string literals (i.e. "a" + "b") or they'd be
 	/// too large to fit in one line. This method should detect Strings both with and without sums.
 	private func getStringLiteralOrSum(_ expression: Expression) -> String? {
-		if case let .literalStringExpression(value: value) = expression {
-			return value
+
+		if let stringExpression = expression as? LiteralStringExpression {
+			return stringExpression.value
 		}
 
-		if case let .binaryOperatorExpression(
-			leftExpression: leftExpression,
-			rightExpression: rightExpression,
-			operatorSymbol: "+",
-			typeName: "String") = expression
+		if let binaryExpression = expression as? BinaryOperatorExpression,
+			binaryExpression.operatorSymbol == "+",
+			binaryExpression.typeName == "String"
 		{
-			if let leftString = getStringLiteralOrSum(leftExpression),
-				let rightString = getStringLiteralOrSum(rightExpression)
+			if let leftString = getStringLiteralOrSum(binaryExpression.leftExpression),
+				let rightString = getStringLiteralOrSum(binaryExpression.rightExpression)
 			{
 				return leftString + rightString
 			}
@@ -106,7 +105,8 @@ public class ReplaceTemplatesTranspilationPass: TranspilationPass {
 				// insert: 	replaceExpression(it.value)
 				// insert: }.toMutableMap()
 
-				return .templateExpression(
+				return TemplateExpression(
+					range: expression.range,
 					pattern: template.string,
 					matches: replacedMatches)
 			}
@@ -130,257 +130,213 @@ extension Expression {
 	private func matches(
 		_ template: Expression, _ matches: DictionaryClass<String, Expression>) -> Bool
 	{
-		if case let .declarationReferenceExpression(
-				data: templateExpression) = template
-		{
-			if templateExpression.identifier.hasPrefix("_"),
-				self.isOfType(templateExpression.typeName)
+		if let declarationExpression = template as? DeclarationReferenceExpression {
+			if declarationExpression.data.identifier.hasPrefix("_"),
+				self.isOfType(declarationExpression.data.typeName)
 			{
-				matches[templateExpression.identifier] = self
+				matches[declarationExpression.data.identifier] = self
 				return true
 			}
 		}
 
-		if case let .literalCodeExpression(string: leftString) = self,
-			case let .literalCodeExpression(string: rightString) = template
-		{
-			return leftString == rightString
+		if let lhs = self as? LiteralCodeExpression, let rhs = template as? LiteralCodeExpression {
+			return lhs.string == rhs.string
 		}
-		else if case let .parenthesesExpression(expression: leftExpression) = self,
-			case let .parenthesesExpression(expression: rightExpression) = template
+		if let lhs = self as? ParenthesesExpression,
+			let rhs = template as? ParenthesesExpression
 		{
-
-			return leftExpression.matches(rightExpression, matches)
+			return lhs.expression.matches(rhs.expression, matches)
 		}
-		else if case let .forceValueExpression(expression: leftExpression) = self,
-			case let .forceValueExpression(expression: rightExpression) = template
+		if let lhs = self as? ForceValueExpression,
+			let rhs = template as? ForceValueExpression
 		{
-
-			return leftExpression.matches(rightExpression, matches)
+			return lhs.expression.matches(rhs.expression, matches)
 		}
-		else if case let .declarationReferenceExpression(data: leftExpression) = self,
-			 case let .declarationReferenceExpression(data: rightExpression) = template
+		if let lhs = self as? DeclarationReferenceExpression,
+			let rhs = template as? DeclarationReferenceExpression
 		{
-
-			return leftExpression.identifier == rightExpression.identifier &&
-				leftExpression.typeName.isSubtype(of: rightExpression.typeName) &&
-				leftExpression.isImplicit == rightExpression.isImplicit
+			return lhs.data.identifier == rhs.data.identifier &&
+				lhs.data.typeName.isSubtype(of: rhs.data.typeName) &&
+				lhs.data.isImplicit == rhs.data.isImplicit
 		}
-		else if case let .optionalExpression(expression: leftExpression) = self,
-			 case .declarationReferenceExpression = template
+		if let lhs = self as? OptionalExpression,
+			let rhs = template as? OptionalExpression
 		{
-
-			return leftExpression.matches(template, matches)
+			return lhs.expression.matches(rhs.expression, matches)
 		}
-		else if case let .typeExpression(typeName: leftType) = self,
-			 case let .typeExpression(typeName: rightType) = template
+		if let lhs = self as? TypeExpression,
+			let rhs = template as? TypeExpression
 		{
-
-			return leftType.isSubtype(of: rightType)
+			return lhs.typeName.isSubtype(of: rhs.typeName)
 		}
-		else if case let .typeExpression(typeName: leftType) = self,
-			 case let .declarationReferenceExpression(data: rightExpression) = template
+		if let lhs = self as? TypeExpression,
+			let rhs = template as? DeclarationReferenceExpression
 		{
-
-			guard declarationExpressionMatchesImplicitTypeExpression(rightExpression) else {
+			guard declarationExpressionMatchesImplicitTypeExpression(rhs.data) else {
 				return false
 			}
-			let expressionType = String(rightExpression.typeName.dropLast(".Type".count))
-			return leftType.isSubtype(of: expressionType)
+			let expressionType = String(rhs.data.typeName.dropLast(".Type".count))
+			return lhs.typeName.isSubtype(of: expressionType)
 		}
-		else if case let .declarationReferenceExpression(data: leftExpression) = self,
-			 case let .typeExpression(typeName: rightType) = template
+		if let lhs = self as? DeclarationReferenceExpression,
+			let rhs = template as? TypeExpression
 		{
-			guard declarationExpressionMatchesImplicitTypeExpression(leftExpression) else {
+			guard declarationExpressionMatchesImplicitTypeExpression(lhs.data) else {
 				return false
 			}
-			let expressionType = String(leftExpression.typeName.dropLast(".Type".count))
-			return expressionType.isSubtype(of: rightType)
+			let expressionType = String(lhs.data.typeName.dropLast(".Type".count))
+			return expressionType.isSubtype(of: rhs.typeName)
 		}
-		else if case let .subscriptExpression(
-				subscriptedExpression: leftSubscriptedExpression,
-				indexExpression: leftIndexExpression, typeName: leftType) = self,
-			 case let .subscriptExpression(
-				subscriptedExpression: rightSubscriptedExpression,
-				indexExpression: rightIndexExpression, typeName: rightType) = template
+		if let lhs = self as? SubscriptExpression,
+			let rhs = template as? SubscriptExpression
 		{
-
-				return leftSubscriptedExpression.matches(rightSubscriptedExpression, matches)
-					&& leftIndexExpression.matches(rightIndexExpression, matches)
-					&& leftType.isSubtype(of: rightType)
+			return lhs.subscriptedExpression.matches(rhs.subscriptedExpression, matches)
+				&& lhs.indexExpression.matches(rhs.indexExpression, matches)
+				&& lhs.typeName.isSubtype(of: rhs.typeName)
 		}
-		else if case let .arrayExpression(elements: leftElements, typeName: leftType) = self,
-			 case let .arrayExpression(elements: rightElements, typeName: rightType) = template
+		if let lhs = self as? ArrayExpression,
+			let rhs = template as? ArrayExpression
 		{
-
 			var result = true
-			for (leftElement, rightElement) in zipToClass(leftElements, rightElements) {
+			for (leftElement, rightElement) in zipToClass(lhs.elements, rhs.elements) {
 				result = result && leftElement.matches(rightElement, matches)
 			}
-			return result && (leftType.isSubtype(of: rightType))
+			return result && (lhs.typeName.isSubtype(of: rhs.typeName))
 		}
-		else if case let .dotExpression(
-				leftExpression: leftLeftExpression,
-				rightExpression: leftRightExpression) = self,
-			 case let .dotExpression(
-				leftExpression: rightLeftExpression,
-				rightExpression: rightRightExpression) = template
+		if let lhs = self as? DotExpression,
+			let rhs = template as? DotExpression
 		{
-
-			return leftLeftExpression.matches(rightLeftExpression, matches) &&
-				leftRightExpression.matches(rightRightExpression, matches)
+			return lhs.leftExpression.matches(rhs.leftExpression, matches) &&
+				lhs.rightExpression.matches(rhs.rightExpression, matches)
 		}
-		else if case let .binaryOperatorExpression(
-				leftExpression: leftLeftExpression, rightExpression: leftRightExpression,
-				operatorSymbol: leftOperatorSymbol, typeName: leftType) = self,
-			 case let .binaryOperatorExpression(
-				leftExpression: rightLeftExpression, rightExpression: rightRightExpression,
-				operatorSymbol: rightOperatorSymbol, typeName: rightType) = template
+		if let lhs = self as? BinaryOperatorExpression,
+			let rhs = template as? BinaryOperatorExpression
 		{
-
-			return leftLeftExpression.matches(rightLeftExpression, matches) &&
-				leftRightExpression.matches(rightRightExpression, matches) &&
-				(leftOperatorSymbol == rightOperatorSymbol) &&
-				(leftType.isSubtype(of: rightType))
+			return lhs.leftExpression.matches(rhs.leftExpression, matches) &&
+				lhs.rightExpression.matches(rhs.rightExpression, matches) &&
+				lhs.operatorSymbol == rhs.operatorSymbol &&
+				lhs.typeName.isSubtype(of: rhs.typeName)
 		}
-		else if case let .prefixUnaryExpression(
-				subExpression: leftExpression, operatorSymbol: leftOperatorSymbol,
-				typeName: leftType) = self,
-			 case let .prefixUnaryExpression(
-				subExpression: rightExpression, operatorSymbol: rightOperatorSymbol,
-				typeName: rightType) = template
+		if let lhs = self as? PrefixUnaryExpression,
+			let rhs = template as? PrefixUnaryExpression
 		{
-
-			return leftExpression.matches(rightExpression, matches) &&
-				(leftOperatorSymbol == rightOperatorSymbol)
-				&& (leftType.isSubtype(of: rightType))
+			return lhs.subExpression.matches(rhs.subExpression, matches) &&
+				lhs.operatorSymbol == rhs.operatorSymbol &&
+				lhs.typeName.isSubtype(of: rhs.typeName)
 		}
-		else if case let .postfixUnaryExpression(
-				subExpression: leftExpression, operatorSymbol: leftOperatorSymbol,
-				typeName: leftType) = self,
-			 case let .postfixUnaryExpression(
-				subExpression: rightExpression, operatorSymbol: rightOperatorSymbol,
-				typeName: rightType) = template
+		if let lhs = self as? PostfixUnaryExpression,
+			let rhs = template as? PostfixUnaryExpression
 		{
-
-			return leftExpression.matches(rightExpression, matches) &&
-				(leftOperatorSymbol == rightOperatorSymbol)
-				&& (leftType.isSubtype(of: rightType))
+			return lhs.subExpression.matches(rhs.subExpression, matches) &&
+				lhs.operatorSymbol == rhs.operatorSymbol &&
+				lhs.typeName.isSubtype(of: rhs.typeName)
 		}
-		else if case let .callExpression(data: leftCallExpression) = self,
-			 case let .callExpression(data: rightCallExpression) = template
+		if let lhs = self as? CallExpression,
+			let rhs = template as? CallExpression
 		{
-
-			return leftCallExpression.function.matches(
-					rightCallExpression.function, matches) &&
-				leftCallExpression.parameters.matches(
-					rightCallExpression.parameters, matches) &&
-				leftCallExpression.typeName.isSubtype(of: rightCallExpression.typeName)
+			return lhs.data.function.matches(
+				rhs.data.function, matches) &&
+				lhs.data.parameters.matches(rhs.data.parameters, matches) &&
+				lhs.data.typeName.isSubtype(of: rhs.data.typeName)
 		}
-		else if case let .literalIntExpression(value: leftValue) = self,
-			 case let .literalIntExpression(value: rightValue) = template
+		if let lhs = self as? LiteralIntExpression,
+			let rhs = template as? LiteralIntExpression
 		{
-
-			return leftValue == rightValue
+			return lhs.value == rhs.value
 		}
-		else if case let .literalDoubleExpression(value: leftValue) = self,
-			 case let .literalDoubleExpression(value: rightValue) = template
+		if let lhs = self as? LiteralDoubleExpression,
+			let rhs = template as? LiteralDoubleExpression
 		{
-
-			return leftValue == rightValue
+			return lhs.value == rhs.value
 		}
-		else if case let .literalBoolExpression(value: leftValue) = self,
-			 case let .literalBoolExpression(value: rightValue) = template
+		if let lhs = self as? LiteralFloatExpression,
+			let rhs = template as? LiteralFloatExpression
 		{
-
-			return leftValue == rightValue
+			return lhs.value == rhs.value
 		}
-		else if case let .literalStringExpression(value: leftValue) = self,
-			 case let .literalStringExpression(value: rightValue) = template
+		if let lhs = self as? LiteralBoolExpression,
+			let rhs = template as? LiteralBoolExpression
 		{
-
-			return leftValue == rightValue
+			return lhs.value == rhs.value
 		}
-		else if case let .literalStringExpression(value: leftValue) = self,
-			 case .declarationReferenceExpression = template
+		if let lhs = self as? LiteralStringExpression,
+			let rhs = template as? LiteralStringExpression
 		{
-
-			let characterExpression = Expression.literalCharacterExpression(value: leftValue)
+			return lhs.value == rhs.value
+		}
+		if let lhs = self as? LiteralStringExpression,
+			template is DeclarationReferenceExpression
+		{
+			let characterExpression = LiteralCharacterExpression(range: lhs.range, value: lhs.value)
 			return characterExpression.matches(template, matches)
 		}
-		if case .nilLiteralExpression = self, case .nilLiteralExpression = template
+		if self is NilLiteralExpression,
+			template is NilLiteralExpression
 		{
 			return true
 		}
-		else if case let .interpolatedStringLiteralExpression(expressions: leftExpressions) = self,
-			 case let .interpolatedStringLiteralExpression(expressions: rightExpressions) = template
+		if let lhs = self as? InterpolatedStringLiteralExpression,
+			let rhs = template as? InterpolatedStringLiteralExpression
 		{
-
 			var result = true
-			for (leftExpression, rightExpression) in zipToClass(leftExpressions, rightExpressions) {
+			for (leftExpression, rightExpression) in zipToClass(lhs.expressions, rhs.expressions) {
 				result = result && leftExpression.matches(rightExpression, matches)
 			}
 			return result
 		}
-		else if case let .tupleExpression(pairs: leftPairs) = self,
-			 case let .tupleExpression(pairs: rightPairs) = template
+		if let lhs = self as? TupleExpression,
+			let rhs = template as? TupleExpression
 		{
 			// Check manually for matches in trailing closures (that don't have labels in code
 			// but do in templates)
-			if leftPairs.count == 1,
-				let onlyLeftPair = leftPairs.first,
-				rightPairs.count == 1,
-				let onlyRightPair = rightPairs.first
+			if lhs.pairs.count == 1,
+				let onlyLeftPair = lhs.pairs.first,
+				rhs.pairs.count == 1,
+				let onlyRightPair = rhs.pairs.first
 			{
-				if case let .parenthesesExpression(
-					expression: closureExpression) = onlyLeftPair.expression
-				{
-					if case .closureExpression = closureExpression {
+				if let closureInParentheses = onlyLeftPair.expression as? ParenthesesExpression {
+					if closureInParentheses.expression is ClosureExpression {
 						// Unwrap a redundand parentheses expression if needed
-						if case let .parenthesesExpression(
-							expression: templateExpression) = onlyRightPair.expression
+						if let templateInParentheses =
+							onlyRightPair.expression as? ParenthesesExpression
 						{
-							return closureExpression.matches(templateExpression, matches)
+							return closureInParentheses.expression.matches(
+								templateInParentheses.expression, matches)
 						}
 						else {
-							return closureExpression.matches(onlyRightPair.expression, matches)
+							return closureInParentheses.expression.matches(
+								onlyRightPair.expression, matches)
 						}
 					}
 				}
 			}
 
 			var result = true
-			for (leftPair, rightPair) in zip(leftPairs, rightPairs) {
+			for (leftPair, rightPair) in zip(lhs.pairs, rhs.pairs) {
 				result = result &&
 					leftPair.expression.matches(rightPair.expression, matches) &&
 					leftPair.label == rightPair.label
 			}
 			return result
 		}
-		else if case let .tupleShuffleExpression(
-				labels: leftLabels,
-				indices: leftIndices,
-				expressions: leftExpressions) = self,
-			 case let .tupleShuffleExpression(
-				labels: rightLabels,
-				indices: rightIndices,
-				expressions: rightExpressions) = template
+		if let lhs = self as? TupleShuffleExpression,
+			let rhs = template as? TupleShuffleExpression
 		{
-			var result = (leftLabels == rightLabels)
+			var result = (lhs.labels == rhs.labels)
 
-			for (leftIndex, rightIndex) in zip(leftIndices, rightIndices) {
+			for (leftIndex, rightIndex) in zip(lhs.indices, rhs.indices) {
 				result = result && leftIndex == rightIndex
 			}
 
-			for (leftExpression, rightExpression) in zip(leftExpressions, rightExpressions) {
+			for (leftExpression, rightExpression) in zip(lhs.expressions, rhs.expressions) {
 				result = result && leftExpression.matches(rightExpression, matches)
 			}
 
 			return result
 		}
-		else {
-			return false
-		}
+
+		// If no matches were found
+		return false
 	}
 
 	///

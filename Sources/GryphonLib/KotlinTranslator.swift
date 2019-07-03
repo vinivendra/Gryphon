@@ -98,22 +98,18 @@ public class KotlinTranslator {
 	{
 		var finalCallExpression = callExpression.function
 		while true {
-			if case let .dotExpression(
-				leftExpression: _, rightExpression: nextCallExpression) = finalCallExpression
-			{
-				finalCallExpression = nextCallExpression
+			if let nextCallExpression = finalCallExpression as? DotExpression {
+				finalCallExpression = nextCallExpression.rightExpression
 			}
 			else {
 				break
 			}
 		}
 
-		if case let .declarationReferenceExpression(
-			data: declarationReferenceExpression) = finalCallExpression
-		{
+		if let declarationExpression = finalCallExpression as? DeclarationReferenceExpression {
 			for functionDeclaration in pureFunctions {
-				if declarationReferenceExpression.identifier.hasPrefix(functionDeclaration.prefix),
-					declarationReferenceExpression.typeName == functionDeclaration.functionType
+				if declarationExpression.data.identifier.hasPrefix(functionDeclaration.prefix),
+					declarationExpression.data.typeName == functionDeclaration.functionType
 				{
 					return true
 				}
@@ -206,8 +202,8 @@ public class KotlinTranslator {
 					expression: currentExpression) = currentSubtree.subtree,
 				case let .expressionStatement(expression: nextExpression) = nextSubtree.subtree
 			{
-				if case .callExpression = currentExpression,
-					case .callExpression = nextExpression
+				if currentExpression is CallExpression,
+					nextExpression is CallExpression
 				{
 					continue
 				}
@@ -217,8 +213,8 @@ public class KotlinTranslator {
 				case let .expressionStatement(
 					expression: nextExpression) = nextSubtree.subtree
 			{
-				if case .templateExpression = currentExpression,
-					case .templateExpression = nextExpression
+				if currentExpression is TemplateExpression,
+					nextExpression is TemplateExpression
 				{
 					continue
 				}
@@ -228,8 +224,8 @@ public class KotlinTranslator {
 				case let .expressionStatement(
 					expression: nextExpression) = nextSubtree.subtree
 			{
-				if case .literalCodeExpression = currentExpression,
-					case .literalCodeExpression = nextExpression
+				if currentExpression is LiteralCodeExpression,
+					nextExpression is LiteralCodeExpression
 				{
 					continue
 				}
@@ -947,7 +943,7 @@ public class KotlinTranslator {
 				let newVariableDeclaration = VariableDeclarationData(
 					identifier: variableDeclaration.identifier,
 					typeName: variableDeclaration.typeName,
-					expression: .nilLiteralExpression,
+					expression: NilLiteralExpression(range: nil),
 					getter: nil,
 					setter: nil,
 					isLet: variableDeclaration.isLet,
@@ -1026,28 +1022,27 @@ public class KotlinTranslator {
 		indentation: String)
 		throws -> String
 	{
-		if case let Expression.binaryOperatorExpression(
-			leftExpression: leftExpression,
-			rightExpression: rightExpression,
-			operatorSymbol: operatorSymbol,
-			typeName: typeName) = caseExpression
-		{
-			if leftExpression == switchExpression, operatorSymbol == "is", typeName == "Bool" {
+		if let binaryExpression = caseExpression as? BinaryOperatorExpression {
+			if binaryExpression.leftExpression == switchExpression,
+				binaryExpression.operatorSymbol == "is",
+				binaryExpression.typeName == "Bool"
+			{
 				// TODO: test
 				let translatedType = try translateExpression(
-					rightExpression,
+					binaryExpression.rightExpression,
 					withIndentation: indentation)
 				return "is \(translatedType)"
 			}
 			else {
 				let translatedExpression = try translateExpression(
-					leftExpression,
+					binaryExpression.leftExpression,
 					withIndentation: indentation)
 
 				// If it's a range
-				if case let .templateExpression(pattern: pattern, matches: _) = leftExpression {
-					if pattern.contains("..") || pattern.contains("until") ||
-						pattern.contains("rangeTo")
+				if let template = binaryExpression.leftExpression as? TemplateExpression {
+					if template.pattern.contains("..") ||
+						template.pattern.contains("until") ||
+						template.pattern.contains("rangeTo")
 					{
 						return "in \(translatedExpression)"
 					}
@@ -1190,118 +1185,163 @@ public class KotlinTranslator {
 		withIndentation indentation: String)
 		throws -> String
 	{
-		switch expression {
-		case let .templateExpression(pattern: pattern, matches: matches):
+		if let templateExpression = expression as? TemplateExpression {
 			return try translateTemplateExpression(
-				pattern: pattern, matches: matches, withIndentation: indentation)
-		case let .literalCodeExpression(string: string):
-			return translateLiteralCodeExpression(string: string)
-		case let .literalDeclarationExpression(string: string):
-			return translateLiteralCodeExpression(string: string)
-		case let .arrayExpression(elements: elements, typeName: typeName):
+				pattern: templateExpression.pattern,
+				matches: templateExpression.matches,
+				withIndentation: indentation)
+		}
+		if let literalCodeExpression = expression as? LiteralCodeExpression {
+			return translateLiteralCodeExpression(string: literalCodeExpression.string)
+		}
+		if let literalDeclarationExpression = expression as? LiteralDeclarationExpression {
+			return translateLiteralCodeExpression(string: literalDeclarationExpression.string)
+		}
+		if let arrayExpression = expression as? ArrayExpression {
 			return try translateArrayExpression(
-				elements: elements, typeName: typeName, withIndentation: indentation)
-		case let .dictionaryExpression(keys: keys, values: values, typeName: typeName):
+				elements: arrayExpression.elements,
+				typeName: arrayExpression.typeName,
+				withIndentation: indentation)
+		}
+		if let dictionaryExpression = expression as? DictionaryExpression {
 			return try translateDictionaryExpression(
-				keys: keys,
-				values: values,
-				typeName: typeName,
+				keys: dictionaryExpression.keys,
+				values: dictionaryExpression.values,
+				typeName: dictionaryExpression.typeName,
 				withIndentation: indentation)
-		case let .binaryOperatorExpression(
-			leftExpression: leftExpression,
-			rightExpression: rightExpression,
-			operatorSymbol: operatorSymbol,
-			typeName: typeName):
-
+		}
+		if let binaryOperatorExpression = expression as? BinaryOperatorExpression {
 			return try translateBinaryOperatorExpression(
-				leftExpression: leftExpression,
-				rightExpression: rightExpression,
-				operatorSymbol: operatorSymbol,
-				typeName: typeName,
+				leftExpression: binaryOperatorExpression.leftExpression,
+				rightExpression: binaryOperatorExpression.rightExpression,
+				operatorSymbol: binaryOperatorExpression.operatorSymbol,
+				typeName: binaryOperatorExpression.typeName,
 				withIndentation: indentation)
-		case let .callExpression(data: callExpression):
-			return try translateCallExpression(callExpression, withIndentation: indentation)
-		case let .closureExpression(
-			parameters: parameters, statements: statements, typeName: typeName):
-
+		}
+		if let callExpression = expression as? CallExpression {
+			return try translateCallExpression(callExpression.data, withIndentation: indentation)
+		}
+		if let closureExpression = expression as? ClosureExpression {
 			return try translateClosureExpression(
-				parameters: parameters, statements: statements, typeName: typeName,
+				parameters: closureExpression.parameters,
+				statements: closureExpression.statements,
+				typeName: closureExpression.typeName,
 				withIndentation: indentation)
-		case let .declarationReferenceExpression(data: declarationReferenceExpression):
-			return translateDeclarationReferenceExpression(declarationReferenceExpression)
-		case let .returnExpression(expression: expression):
+		}
+		if let declarationReferenceExpression = expression as? DeclarationReferenceExpression {
+			return translateDeclarationReferenceExpression(declarationReferenceExpression.data)
+		}
+		if let returnExpression = expression as? ReturnExpression {
 			return try translateReturnExpression(
-				expression: expression, withIndentation: indentation)
-		case let .dotExpression(leftExpression: leftExpression, rightExpression: rightExpression):
+				expression: returnExpression.expression,
+				withIndentation: indentation)
+		}
+		if let dotExpression = expression as? DotExpression {
 			return try translateDotSyntaxCallExpression(
-				leftExpression: leftExpression,
-				rightExpression: rightExpression,
+				leftExpression: dotExpression.leftExpression,
+				rightExpression: dotExpression.rightExpression,
 				withIndentation: indentation)
-		case let .literalStringExpression(value: value):
-			return translateStringLiteral(value: value)
-		case let .literalCharacterExpression(value: value):
-			return translateCharacterLiteral(value: value)
-		case let .interpolatedStringLiteralExpression(expressions: expressions):
+		}
+		if let literalStringExpression = expression as? LiteralStringExpression {
+			return translateStringLiteral(value: literalStringExpression.value)
+		}
+		if let literalCharacterExpression = expression as? LiteralCharacterExpression {
+			return translateCharacterLiteral(value: literalCharacterExpression.value)
+		}
+		if let interpolatedStringLiteralExpression =
+			expression as? InterpolatedStringLiteralExpression
+		{
 			return try translateInterpolatedStringLiteralExpression(
-				expressions: expressions, withIndentation: indentation)
-		case let .prefixUnaryExpression(
-			subExpression: subExpression, operatorSymbol: operatorSymbol, typeName: typeName):
-
+				expressions: interpolatedStringLiteralExpression.expressions,
+				withIndentation: indentation)
+		}
+		if let prefixUnaryExpression = expression as? PrefixUnaryExpression {
 			return try translatePrefixUnaryExpression(
-				subExpression: subExpression, operatorSymbol: operatorSymbol, typeName: typeName,
+				subExpression: prefixUnaryExpression.subExpression,
+				operatorSymbol: prefixUnaryExpression.operatorSymbol,
+				typeName: prefixUnaryExpression.typeName,
 				withIndentation: indentation)
-		case let .postfixUnaryExpression(
-			subExpression: subExpression, operatorSymbol: operatorSymbol, typeName: typeName):
-
+		}
+		if let postfixUnaryExpression = expression as? PostfixUnaryExpression {
 			return try translatePostfixUnaryExpression(
-				subExpression: subExpression, operatorSymbol: operatorSymbol, typeName: typeName,
+				subExpression: postfixUnaryExpression.subExpression,
+				operatorSymbol: postfixUnaryExpression.operatorSymbol,
+				typeName: postfixUnaryExpression.typeName,
 				withIndentation: indentation)
-		case let .ifExpression(
-			condition: condition, trueExpression: trueExpression, falseExpression: falseExpression):
-
+		}
+		if let ifExpression = expression as? IfExpression {
 			return try translateIfExpression(
-				condition: condition,
-				trueExpression: trueExpression,
-				falseExpression: falseExpression,
+				condition: ifExpression.condition,
+				trueExpression: ifExpression.trueExpression,
+				falseExpression: ifExpression.falseExpression,
 				withIndentation: indentation)
-		case let .typeExpression(typeName: typeName):
-			return translateType(typeName)
-		case let .subscriptExpression(
-			subscriptedExpression: subscriptedExpression, indexExpression: indexExpression,
-			typeName: typeName):
-
+		}
+		if let typeExpression = expression as? TypeExpression {
+			return translateType(typeExpression.typeName)
+		}
+		if let subscriptExpression = expression as? SubscriptExpression {
 			return try translateSubscriptExpression(
-				subscriptedExpression: subscriptedExpression, indexExpression: indexExpression,
-				typeName: typeName, withIndentation: indentation)
-		case let .parenthesesExpression(expression: expression):
-			return try "(" + translateExpression(expression, withIndentation: indentation) + ")"
-		case let .forceValueExpression(expression: expression):
-			return try translateExpression(expression, withIndentation: indentation) + "!!"
-		case let .optionalExpression(expression: expression):
-			return try translateExpression(expression, withIndentation: indentation) + "?"
-		case let .literalIntExpression(value: value):
-			return String(value)
-		case let .literalUIntExpression(value: value):
-			return String(value) + "u"
-		case let .literalDoubleExpression(value: value):
-			return String(value)
-		case let .literalFloatExpression(value: value):
-			return String(value) + "f"
-		case let .literalBoolExpression(value: value):
-			return String(value)
-		case .nilLiteralExpression:
-			return "null"
-		case let .tupleExpression(pairs: pairs):
-			return try translateTupleExpression(pairs: pairs, withIndentation: indentation)
-		case let .tupleShuffleExpression(
-			labels: labels, indices: indices, expressions: expressions):
-
-			return try translateTupleShuffleExpression(
-				labels: labels, indices: indices, expressions: expressions,
+				subscriptedExpression: subscriptExpression.subscriptedExpression,
+				indexExpression: subscriptExpression.indexExpression,
+				typeName: subscriptExpression.typeName,
 				withIndentation: indentation)
-		case .error:
+		}
+		if let parenthesesExpression = expression as? ParenthesesExpression {
+			return try "(" +
+				translateExpression(
+					parenthesesExpression.expression, withIndentation: indentation) +
+				")"
+		}
+		if let forceValueExpression = expression as? ForceValueExpression {
+			return try translateExpression(
+					forceValueExpression.expression,
+					withIndentation: indentation) +
+				"!!"
+		}
+		if let optionalExpression = expression as? OptionalExpression {
+			return try translateExpression(
+					optionalExpression.expression,
+					withIndentation: indentation) +
+				"?"
+		}
+		if let literalIntExpression = expression as? LiteralIntExpression {
+			return String(literalIntExpression.value)
+		}
+		if let literalCharacterExpression = expression as? LiteralCharacterExpression {
+			return translateCharacterLiteral(value: literalCharacterExpression.value)
+		}
+		if let literalUIntExpression = expression as? LiteralUIntExpression {
+			return String(literalUIntExpression.value) + "u"
+		}
+		if let literalDoubleExpression = expression as? LiteralDoubleExpression {
+			return String(literalDoubleExpression.value)
+		}
+		if let literalFloatExpression = expression as? LiteralFloatExpression {
+			return String(literalFloatExpression.value) + "f"
+		}
+		if let literalBoolExpression = expression as? LiteralBoolExpression {
+			return String(literalBoolExpression.value)
+		}
+		if expression is NilLiteralExpression {
+			return "null"
+		}
+		if let tupleExpression = expression as? TupleExpression {
+			return try translateTupleExpression(
+				pairs: tupleExpression.pairs,
+				withIndentation: indentation)
+		}
+		if let tupleShuffleExpression = expression as? TupleShuffleExpression {
+			return try translateTupleShuffleExpression(
+				labels: tupleShuffleExpression.labels,
+				indices: tupleShuffleExpression.indices,
+				expressions: tupleShuffleExpression.expressions,
+				withIndentation: indentation)
+		}
+		if expression is ErrorExpression {
 			return KotlinTranslator.errorTranslation
 		}
+
+		fatalError("This should never be reached.")
 	}
 
 	private func translateSubscriptExpression(
@@ -1444,14 +1484,11 @@ public class KotlinTranslator {
 
 		var functionExpression = callExpression.function
 		while true {
-			if case let .dotExpression(
-				leftExpression: leftExpression,
-				rightExpression: rightExpression) = functionExpression
-			{
+			if let expression = functionExpression as? DotExpression {
 				result += try translateExpression(
-					leftExpression,
+					expression.leftExpression,
 					withIndentation: indentation) + "."
-				functionExpression = rightExpression
+				functionExpression = expression.rightExpression
 			}
 			else {
 				break
@@ -1459,10 +1496,10 @@ public class KotlinTranslator {
 		}
 
 		let functionTranslation: FunctionTranslation?
-		if case let .declarationReferenceExpression(data: expression) = functionExpression {
+		if let expression = functionExpression as? DeclarationReferenceExpression {
 			functionTranslation = KotlinTranslator.getFunctionTranslation(
-				forName: expression.identifier,
-				typeName: expression.typeName)
+				forName: expression.data.identifier,
+				typeName: expression.data.typeName)
 		}
 		else {
 			functionTranslation = nil
@@ -1497,21 +1534,18 @@ public class KotlinTranslator {
 		shouldAddNewlines: Bool)
 		throws -> String
 	{
-		if case let .tupleExpression(pairs: pairs) = callExpression.parameters {
-			if let closurePair = pairs.last {
-				if case let .closureExpression(
-					parameters: parameters,
-					statements: statements,
-					typeName: typeName) = closurePair.expression
+		if let tupleExpression = callExpression.parameters as? TupleExpression {
+			if let closurePair = tupleExpression.pairs.last {
+				if let closureExpression = closurePair.expression as? ClosureExpression
 				{
 					let closureTranslation = try translateClosureExpression(
-						parameters: parameters,
-						statements: statements,
-						typeName: typeName,
+						parameters: closureExpression.parameters,
+						statements: closureExpression.statements,
+						typeName: closureExpression.typeName,
 						withIndentation: increaseIndentation(indentation))
-					if parameters.count > 1 {
+					if closureExpression.parameters.count > 1 {
 						let firstParametersTranslation = try translateTupleExpression(
-							pairs: ArrayClass<LabeledExpression>(pairs.dropLast()),
+							pairs: ArrayClass<LabeledExpression>(tupleExpression.pairs.dropLast()),
 							translation: functionTranslation,
 							withIndentation: increaseIndentation(indentation),
 							shouldAddNewlines: shouldAddNewlines)
@@ -1524,18 +1558,16 @@ public class KotlinTranslator {
 			}
 
 			return try translateTupleExpression(
-				pairs: pairs,
+				pairs: tupleExpression.pairs,
 				translation: functionTranslation,
 				withIndentation: increaseIndentation(indentation),
 				shouldAddNewlines: shouldAddNewlines)
 		}
-		else if case let .tupleShuffleExpression(
-			labels: labels, indices: indices, expressions: expressions) = callExpression.parameters
-		{
+		else if let tupleShuffleExpression = callExpression.parameters as? TupleShuffleExpression {
 			return try translateTupleShuffleExpression(
-				labels: labels,
-				indices: indices,
-				expressions: expressions,
+				labels: tupleShuffleExpression.labels,
+				indices: tupleShuffleExpression.indices,
+				expressions: tupleShuffleExpression.expressions,
 				translation: functionTranslation,
 				withIndentation: increaseIndentation(indentation),
 				shouldAddNewlines: shouldAddNewlines)
@@ -1544,7 +1576,7 @@ public class KotlinTranslator {
 		return try unexpectedASTStructureError(
 			"Expected the parameters to be either a .tupleExpression or a " +
 			".tupleShuffleExpression",
-			AST: .expressionStatement(expression: .callExpression(data: callExpression)))
+			AST: .expressionStatement(expression: CallExpression(range: nil, data: callExpression)))
 	}
 
 	private func translateClosureExpression(
@@ -1701,7 +1733,8 @@ public class KotlinTranslator {
 			return try unexpectedASTStructureError(
 				"Different number of labels and indices in a tuple shuffle expression. " +
 					"Labels: \(labels), indices: \(indices)",
-				AST: .expressionStatement(expression: .tupleShuffleExpression(
+				AST: .expressionStatement(expression: TupleShuffleExpression(
+					range: nil,
 					labels: labels,
 					indices: indices,
 					expressions: expressions)))
@@ -1775,14 +1808,14 @@ public class KotlinTranslator {
 		var result = "\""
 
 		for expression in expressions {
-			if case let .literalStringExpression(value: string) = expression {
+			if let literalStringExpression = expression as? LiteralStringExpression {
 				// Empty strings, as a special case, are represented by the swift ast dump
 				// as two double quotes with nothing between them, instead of an actual empty string
-				guard string != "\"\"" else {
+				guard literalStringExpression.value != "\"\"" else {
 					continue
 				}
 
-				result += string
+				result += literalStringExpression.value
 			}
 			else {
 				let startDelimiter = "${" // value: \"\\${\"
