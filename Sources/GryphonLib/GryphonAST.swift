@@ -596,8 +596,11 @@ extension PrintableTree {
 }
 
 /// Necessary changes when adding a new expression:
-/// - Add equatable support in Expression.==
-/// - Add support for matching it in Library TranspilationPass
+/// - GryphonAST's Expression.==
+/// - KotlinTranslator.translateExpression
+/// - SwiftTranslator.translateExpression
+/// - TranspilationPass.replaceExpression
+/// - LibraryTranspilationPass's Expression.matches
 public class Expression: PrintableAsTree, Equatable {
 	let name: String
 	let range: SourceFileRange?
