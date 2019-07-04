@@ -36,8 +36,8 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 		{
 			let topLevelExpressions: ArrayClass<Expression> = []
 			for statement in statements {
-				if case let .expressionStatement(expression: expression) = statement {
-					topLevelExpressions.append(expression)
+				if let expressionStatement = statement as? ExpressionStatement {
+					topLevelExpressions.append(expressionStatement.expression)
 				}
 			}
 

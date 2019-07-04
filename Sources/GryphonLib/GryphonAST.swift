@@ -62,524 +62,681 @@ extension PrintableTree {
 	}
 }
 
-public indirect enum Statement: PrintableAsTree, Equatable {
+/// Necessary changes when adding a new statement:
+public /*abstract*/ class Statement: PrintableAsTree, Equatable {
+	let name: String
+	let range: SourceFileRange?
 
-	case comment(
-		value: String,
-		range: SourceFileRange)
-	case expressionStatement(
-		expression: Expression)
-	case typealiasDeclaration(
+	init(range: SourceFileRange?, name: String) {
+		self.range = range
+		self.name = name
+	}
+
+	// PrintableAsTree
+	public var treeDescription: String {
+		return name
+	}
+
+	public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		fatalError("Accessing field in abstract class Statement")
+	}
+
+	public static func == (lhs: Statement, rhs: Statement) -> Bool {
+		return false
+	}
+}
+
+public class CommentStatement: Statement {
+	let value: String
+
+	init(range: SourceFileRange?, value: String) {
+		self.value = value
+		super.init(range: range, name: "CommentStatement".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [PrintableTree("//\(value)")]
+	}
+
+	public static func == (lhs: CommentStatement, rhs: CommentStatement) -> Bool {
+		return lhs.value == rhs.value
+	}
+}
+
+public class ExpressionStatement: Statement {
+	let expression: Expression
+
+	init(range: SourceFileRange?, expression: Expression) {
+		self.expression = expression
+		super.init(range: range, name: "ExpressionStatement".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [expression]
+	}
+
+	public static func == (lhs: ExpressionStatement, rhs: ExpressionStatement) -> Bool {
+		return lhs.expression == rhs.expression
+	}
+}
+
+public class TypealiasDeclaration: Statement {
+	let identifier: String
+	let typeName: String
+	let isImplicit: Bool
+
+	init(
+		range: SourceFileRange?,
 		identifier: String,
 		typeName: String,
 		isImplicit: Bool)
-	case extensionDeclaration(
+	{
+		self.identifier = identifier
+		self.typeName = typeName
+		self.isImplicit = isImplicit
+		super.init(range: range, name: "TypealiasDeclaration".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [
+			isImplicit ? PrintableTree("implicit") : nil,
+			PrintableTree("identifier: \(identifier)"),
+			PrintableTree("typeName: \(typeName)"), ]
+	}
+
+	public static func == (lhs: TypealiasDeclaration, rhs: TypealiasDeclaration) -> Bool {
+		return lhs.identifier == rhs.identifier &&
+			lhs.typeName == rhs.typeName &&
+			lhs.isImplicit == rhs.isImplicit
+	}
+}
+
+public class ExtensionDeclaration: Statement {
+	let typeName: String
+	let members: ArrayClass<Statement>
+
+	init(
+		range: SourceFileRange?,
 		typeName: String,
 		members: ArrayClass<Statement>)
-	case importDeclaration(
+	{
+		self.typeName = typeName
+		self.members = members
+		super.init(range: range, name: "ExtensionDeclaration".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [
+			PrintableTree(typeName),
+			PrintableTree.ofStatements("members", members), ]
+	}
+
+	public static func == (lhs: ExtensionDeclaration, rhs: ExtensionDeclaration) -> Bool {
+		return lhs.typeName == rhs.typeName &&
+			lhs.members == rhs.members
+	}
+}
+
+public class ImportDeclaration: Statement {
+	let moduleName: String
+
+	init(
+		range: SourceFileRange?,
 		moduleName: String)
-	case classDeclaration(
+	{
+		self.moduleName = moduleName
+		super.init(range: range, name: "ImportDeclaration".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [PrintableTree(moduleName)]
+	}
+
+	public static func == (lhs: ImportDeclaration, rhs: ImportDeclaration) -> Bool {
+		return lhs.moduleName == rhs.moduleName
+	}
+}
+
+public class ClassDeclaration: Statement {
+	let className: String
+	let inherits: ArrayClass<String>
+	let members: ArrayClass<Statement>
+
+	init(
+		range: SourceFileRange?,
 		className: String,
 		inherits: ArrayClass<String>,
 		members: ArrayClass<Statement>)
-	case companionObject(
+	{
+		self.className = className
+		self.inherits = inherits
+		self.members = members
+		super.init(range: range, name: "ClassDeclaration".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return  [
+			PrintableTree(className),
+			PrintableTree.ofStrings("inherits", inherits),
+			PrintableTree.ofStatements("members", members), ]
+	}
+
+	public static func == (lhs: ClassDeclaration, rhs: ClassDeclaration) -> Bool {
+		return lhs.className == rhs.className &&
+			lhs.inherits == rhs.inherits &&
+			lhs.members == rhs.members
+	}
+}
+
+public class CompanionObject: Statement {
+	let members: ArrayClass<Statement>
+
+	init(
+		range: SourceFileRange?,
 		members: ArrayClass<Statement>)
-	case enumDeclaration(
+	{
+		self.members = members
+		super.init(range: range, name: "CompanionObject".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return ArrayClass<PrintableAsTree?>(members)
+	}
+
+	public static func == (lhs: CompanionObject, rhs: CompanionObject) -> Bool {
+		return lhs.members == rhs.members
+	}
+}
+
+public class EnumDeclaration: Statement {
+	let access: String?
+	let enumName: String
+	let inherits: ArrayClass<String>
+	let elements: ArrayClass<EnumElement>
+	let members: ArrayClass<Statement>
+	let isImplicit: Bool
+
+	init(
+		range: SourceFileRange?,
 		access: String?,
 		enumName: String,
 		inherits: ArrayClass<String>,
 		elements: ArrayClass<EnumElement>,
 		members: ArrayClass<Statement>,
 		isImplicit: Bool)
-	case protocolDeclaration(
+	{
+		self.access = access
+		self.enumName = enumName
+		self.inherits = inherits
+		self.elements = elements
+		self.members = members
+		self.isImplicit = isImplicit
+		super.init(range: range, name: "EnumDeclaration".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return ArrayClass<PrintableAsTree?>(members)
+	}
+
+	public static func == (lhs: EnumDeclaration, rhs: EnumDeclaration) -> Bool {
+		return lhs.access == rhs.access &&
+			lhs.enumName == rhs.enumName &&
+			lhs.inherits == rhs.inherits &&
+			lhs.elements == rhs.elements &&
+			lhs.members == rhs.members &&
+			lhs.isImplicit == rhs.isImplicit
+	}
+}
+
+public class ProtocolDeclaration: Statement {
+	let protocolName: String
+	let members: ArrayClass<Statement>
+
+	init(
+		range: SourceFileRange?,
 		protocolName: String,
 		members: ArrayClass<Statement>)
-	case structDeclaration(
+	{
+		self.protocolName = protocolName
+		self.members = members
+		super.init(range: range, name: "ProtocolDeclaration".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [
+			PrintableTree(protocolName),
+			PrintableTree.ofStatements("members", members), ]
+	}
+
+	public static func == (lhs: ProtocolDeclaration, rhs: ProtocolDeclaration) -> Bool {
+		return lhs.protocolName == rhs.protocolName &&
+			lhs.members == rhs.members
+	}
+}
+
+public class StructDeclaration: Statement {
+	let annotations: String?
+	let structName: String
+	let inherits: ArrayClass<String>
+	let members: ArrayClass<Statement>
+
+	init(
+		range: SourceFileRange?,
 		annotations: String?,
 		structName: String,
 		inherits: ArrayClass<String>,
 		members: ArrayClass<Statement>)
-	case functionDeclaration(
+	{
+		self.annotations = annotations
+		self.structName = structName
+		self.inherits = inherits
+		self.members = members
+		super.init(range: range, name: "StructDeclaration".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [
+			PrintableTree.initOrNil(
+				"annotations", [PrintableTree.initOrNil(annotations)]),
+			PrintableTree(structName),
+			PrintableTree.ofStrings("inherits", inherits),
+			PrintableTree.ofStatements("members", members), ]
+	}
+
+	public static func == (lhs: StructDeclaration, rhs: StructDeclaration) -> Bool {
+		return lhs.annotations == rhs.annotations &&
+		lhs.structName == rhs.structName &&
+		lhs.inherits == rhs.inherits &&
+		lhs.members == rhs.members
+	}
+}
+
+public class FunctionDeclaration: Statement {
+	let data: FunctionDeclarationData
+
+	init(
+		range: SourceFileRange?,
 		data: FunctionDeclarationData)
-	case variableDeclaration(
-		data: VariableDeclarationData)
-	case doStatement(
-		statements: ArrayClass<Statement>)
-	case catchStatement(
-		variableDeclaration: VariableDeclarationData?,
-		statements: ArrayClass<Statement>)
-	case forEachStatement(
-		collection: Expression,
-		variable: Expression,
-		statements: ArrayClass<Statement>)
-	case whileStatement(
-		expression: Expression,
-		statements: ArrayClass<Statement>)
-	case ifStatement(
-		data: IfStatementData)
-	case switchStatement(
-		convertsToExpression: Statement?,
-		expression: Expression,
-		cases: ArrayClass<SwitchCase>)
-	case deferStatement(
-		statements: ArrayClass<Statement>)
-	case throwStatement(
-		expression: Expression)
-	case returnStatement(
-		expression: Expression?)
-	case breakStatement
-	case continueStatement
-	case assignmentStatement(
-		leftHand: Expression,
-		rightHand: Expression)
-	case error
-
-	//
-	public var name: String {
-		switch self {
-		case .comment:
-			return "comment".capitalizedAsCamelCase()
-		case .expressionStatement:
-			return "expressionStatement".capitalizedAsCamelCase()
-		case .extensionDeclaration:
-			return "extensionDeclaration".capitalizedAsCamelCase()
-		case .importDeclaration:
-			return "importDeclaration".capitalizedAsCamelCase()
-		case .typealiasDeclaration:
-			return "typealiasDeclaration".capitalizedAsCamelCase()
-		case .classDeclaration:
-			return "classDeclaration".capitalizedAsCamelCase()
-		case .companionObject:
-			return "companionObject".capitalizedAsCamelCase()
-		case .enumDeclaration:
-			return "enumDeclaration".capitalizedAsCamelCase()
-		case .protocolDeclaration:
-			return "protocolDeclaration".capitalizedAsCamelCase()
-		case .structDeclaration:
-			return "structDeclaration".capitalizedAsCamelCase()
-		case .functionDeclaration:
-			return "functionDeclaration".capitalizedAsCamelCase()
-		case .variableDeclaration:
-			return "variableDeclaration".capitalizedAsCamelCase()
-		case .doStatement:
-			return "doStatement".capitalizedAsCamelCase()
-		case .catchStatement:
-			return "catchStatement".capitalizedAsCamelCase()
-		case .forEachStatement:
-			return "forEachStatement".capitalizedAsCamelCase()
-		case .whileStatement:
-			return "whileStatement".capitalizedAsCamelCase()
-		case .ifStatement:
-			return "ifStatement".capitalizedAsCamelCase()
-		case .switchStatement:
-			return "switchStatement".capitalizedAsCamelCase()
-		case .deferStatement:
-			return "deferStatement".capitalizedAsCamelCase()
-		case .throwStatement:
-			return "throwStatement".capitalizedAsCamelCase()
-		case .returnStatement:
-			return "returnStatement".capitalizedAsCamelCase()
-		case .breakStatement:
-			return "breakStatement".capitalizedAsCamelCase()
-		case .continueStatement:
-			return "continueStatement".capitalizedAsCamelCase()
-		case .assignmentStatement:
-			return "assignmentStatement".capitalizedAsCamelCase()
-		case .error:
-			return "error".capitalizedAsCamelCase()
-		}
+	{
+		self.data = data
+		super.init(range: range, name: "FunctionDeclaration".capitalizedAsCamelCase())
 	}
 
-	//
-	public var treeDescription: String { // annotation: override
-		return name
-	}
-
-	public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
-		switch self {
-		case let .comment(value: value, range: _):
-			return [PrintableTree("//\(value)")]
-		case let .expressionStatement(expression: expression):
-			return [expression]
-		case let .extensionDeclaration(typeName: typeName, members: members):
-			return [
-				PrintableTree(typeName),
-				PrintableTree.ofStatements("members", members), ]
-		case let .importDeclaration(moduleName: moduleName):
-			return [PrintableTree(moduleName)]
-		case let .typealiasDeclaration(
-			identifier: identifier, typeName: typeName, isImplicit: isImplicit):
-
-			return [
-				isImplicit ? PrintableTree("implicit") : nil,
-				PrintableTree("identifier: \(identifier)"),
-				PrintableTree("typeName: \(typeName)"), ]
-		case let .classDeclaration(className: className, inherits: inherits, members: members):
-			return  [
-				PrintableTree(className),
-				PrintableTree.ofStrings("inherits", inherits),
-				PrintableTree.ofStatements("members", members), ]
-		case let .companionObject(members: members):
-			return ArrayClass<PrintableAsTree?>(members)
-		case let .enumDeclaration(
-			access: access,
-			enumName: enumName,
-			inherits: inherits,
-			elements: elements,
-			members: members,
-			isImplicit: isImplicit):
-
-			return [
-				isImplicit ? PrintableTree("implicit") : nil,
-				PrintableTree.initOrNil(access),
-				PrintableTree(enumName),
-				PrintableTree.ofStrings("inherits", inherits),
-				PrintableTree("elements", ArrayClass<PrintableAsTree?>(elements)),
-				PrintableTree.ofStatements("members", members), ]
-		case let .protocolDeclaration(protocolName: protocolName, members: members):
-			return [
-				PrintableTree(protocolName),
-				PrintableTree.ofStatements("members", members), ]
-		case let .structDeclaration(
-			annotations: annotations, structName: structName, inherits: inherits, members: members):
-
-			return [
-				PrintableTree.initOrNil(
-					"annotations", [PrintableTree.initOrNil(annotations)]),
-				PrintableTree(structName),
-				PrintableTree.ofStrings("inherits", inherits),
-				PrintableTree.ofStatements("members", members), ]
-		case let .functionDeclaration(data: functionDeclaration):
-			let parametersTrees = functionDeclaration.parameters
-				.map { parameter -> PrintableAsTree? in
-					PrintableTree(
-						"parameter",
-						[
-							parameter.apiLabel.map { PrintableTree("api label: \($0)") },
-							PrintableTree("label: \(parameter.label)"),
-							PrintableTree("type: \(parameter.typeName)"),
-							PrintableTree.initOrNil("value", [parameter.value]),
-						])
-			}
-
-			return [
-				functionDeclaration.extendsType.map { PrintableTree("extends type \($0)") },
-				functionDeclaration.isImplicit ? PrintableTree("implicit") : nil,
-				functionDeclaration.isStatic ? PrintableTree("static") : nil,
-				functionDeclaration.isMutating ? PrintableTree("mutating") : nil,
-				PrintableTree.initOrNil(functionDeclaration.access),
-				PrintableTree("type: \(functionDeclaration.functionType)"),
-				PrintableTree("prefix: \(functionDeclaration.prefix)"),
-				PrintableTree("parameters", parametersTrees),
-				PrintableTree("return type: \(functionDeclaration.returnType)"),
-				PrintableTree.ofStatements(
-					"statements", (functionDeclaration.statements ?? [])), ]
-		case let .variableDeclaration(data: variableDeclaration):
-			return [
-				PrintableTree.initOrNil(
-					"extendsType", [PrintableTree.initOrNil(variableDeclaration.extendsType)]),
-				variableDeclaration.isImplicit ? PrintableTree("implicit") : nil,
-				variableDeclaration.isStatic ? PrintableTree("static") : nil,
-				variableDeclaration.isLet ? PrintableTree("let") : PrintableTree("var"),
-				PrintableTree(variableDeclaration.identifier),
-				PrintableTree(variableDeclaration.typeName),
-				variableDeclaration.expression,
-				PrintableTree.initOrNil(
-					"getter",
-					[variableDeclaration.getter.map { Statement.functionDeclaration(data: $0) }]),
-				PrintableTree.initOrNil(
-					"setter",
-					[variableDeclaration.setter.map { Statement.functionDeclaration(data: $0) }]),
-				PrintableTree.initOrNil(
-					"annotations", [PrintableTree.initOrNil(variableDeclaration.annotations)]), ]
-		case let .doStatement(statements: statements):
-			return ArrayClass<PrintableAsTree?>(statements)
-
-		case let .catchStatement(variableDeclaration: variableDeclaration, statements: statements):
-			return [
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		let parametersTrees = data.parameters
+			.map { parameter -> PrintableAsTree? in
 				PrintableTree(
-					"variableDeclaration", ArrayClass<PrintableAsTree?>([
-							variableDeclaration.map { Statement.variableDeclaration(data: $0) },
-						])),
-				PrintableTree.ofStatements(
-					"statements", statements),
-			]
-
-		case let .forEachStatement(
-			collection: collection,
-			variable: variable,
-			statements: statements):
-
-			return [
-				PrintableTree("variable", [variable]),
-				PrintableTree("collection", [collection]),
-				PrintableTree.ofStatements("statements", statements), ]
-		case let .whileStatement(expression: expression, statements: statements):
-			return [
-				PrintableTree.ofExpressions("expression", [expression]),
-				PrintableTree.ofStatements("statements", statements), ]
-		case let .ifStatement(data: ifStatement):
-			let declarationTrees =
-				ifStatement.declarations.map { Statement.variableDeclaration(data: $0) }
-			let conditionTrees = ifStatement.conditions.map { $0.toStatement() }
-			let elseStatementTrees = ifStatement.elseStatement
-				.map({ Statement.ifStatement(data: $0) })?.printableSubtrees ?? []
-			return [
-				ifStatement.isGuard ? PrintableTree("guard") : nil,
-				PrintableTree.ofStatements(
-					"declarations", declarationTrees),
-				PrintableTree.ofStatements(
-					"conditions", conditionTrees),
-				PrintableTree.ofStatements(
-					"statements", ifStatement.statements),
-				PrintableTree.initOrNil(
-					"else", elseStatementTrees), ]
-		case let .switchStatement(
-			convertsToExpression: convertsToExpression,
-			expression: expression,
-			cases: cases):
-
-			let caseItems = cases.map { switchCase -> PrintableAsTree? in
-				PrintableTree("case item", [
-					PrintableTree.ofExpressions(
-						"expressions", switchCase.expressions),
-					PrintableTree.ofStatements(
-						"statements", switchCase.statements),
+					"parameter",
+					[
+						parameter.apiLabel.map { PrintableTree("api label: \($0)") },
+						PrintableTree("label: \(parameter.label)"),
+						PrintableTree("type: \(parameter.typeName)"),
+						PrintableTree.initOrNil("value", [parameter.value]),
 					])
 			}
 
-			return [
-				PrintableTree.ofStatements(
-					"converts to expression",
-					convertsToExpression.map { [$0] } ?? []),
-				PrintableTree.ofExpressions("expression", [expression]),
-				PrintableTree("case items", caseItems), ]
-		case let .deferStatement(statements: statements):
-			return ArrayClass<PrintableAsTree?>(statements)
-		case let .throwStatement(expression: expression):
-			return [expression]
-		case let .returnStatement(expression: expression):
-			return [expression]
-		case .breakStatement:
-			return []
-		case .continueStatement:
-			return []
-		case let .assignmentStatement(leftHand: leftHand, rightHand: rightHand):
-			return [leftHand, rightHand]
-		case .error:
-			return []
-		}
+		return [
+			data.extendsType.map { PrintableTree("extends type \($0)") },
+			data.isImplicit ? PrintableTree("implicit") : nil,
+			data.isStatic ? PrintableTree("static") : nil,
+			data.isMutating ? PrintableTree("mutating") : nil,
+			PrintableTree.initOrNil(data.access),
+			PrintableTree("type: \(data.functionType)"),
+			PrintableTree("prefix: \(data.prefix)"),
+			PrintableTree("parameters", parametersTrees),
+			PrintableTree("return type: \(data.returnType)"),
+			PrintableTree.ofStatements(
+				"statements", (data.statements ?? [])), ]
 	}
 
-	public static func == (lhs: Statement, rhs: Statement) -> Bool {
-		if case let expressionStatement(expression: leftExpression) = lhs,
-			case let expressionStatement(expression: rightExpression) = rhs
-		{
-			return leftExpression == rightExpression
+	public static func == (lhs: FunctionDeclaration, rhs: FunctionDeclaration) -> Bool {
+		return lhs.data == rhs.data
+	}
+}
+
+public class VariableDeclaration: Statement {
+	let data: VariableDeclarationData
+
+	init(
+		range: SourceFileRange?,
+		data: VariableDeclarationData)
+	{
+		self.data = data
+		super.init(range: range, name: "VariableDeclaration".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [
+			PrintableTree.initOrNil(
+				"extendsType", [PrintableTree.initOrNil(data.extendsType)]),
+			data.isImplicit ? PrintableTree("implicit") : nil,
+			data.isStatic ? PrintableTree("static") : nil,
+			data.isLet ? PrintableTree("let") : PrintableTree("var"),
+			PrintableTree(data.identifier),
+			PrintableTree(data.typeName),
+			data.expression,
+			PrintableTree.initOrNil(
+				"getter",
+				[data.getter.map { FunctionDeclaration(range: nil, data: $0) }]),
+			PrintableTree.initOrNil(
+				"setter",
+				[data.setter.map { FunctionDeclaration(range: nil, data: $0) }]),
+			PrintableTree.initOrNil(
+				"annotations", [PrintableTree.initOrNil(data.annotations)]), ]
+	}
+
+	public static func == (lhs: VariableDeclaration, rhs: VariableDeclaration) -> Bool {
+		return lhs.data == rhs.data
+	}
+}
+
+public class DoStatement: Statement {
+	let statements: ArrayClass<Statement>
+
+	init(
+		range: SourceFileRange?,
+		statements: ArrayClass<Statement>)
+	{
+		self.statements = statements
+		super.init(range: range, name: "DoStatement".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return ArrayClass<PrintableAsTree?>(statements)
+	}
+
+	public static func == (lhs: DoStatement, rhs: DoStatement) -> Bool {
+		return lhs.statements == rhs.statements
+	}
+}
+
+public class CatchStatement: Statement {
+	let variableDeclaration: VariableDeclarationData?
+	let statements: ArrayClass<Statement>
+
+	init(
+		range: SourceFileRange?,
+		variableDeclaration: VariableDeclarationData?,
+		statements: ArrayClass<Statement>)
+	{
+		self.variableDeclaration = variableDeclaration
+		self.statements = statements
+		super.init(range: range, name: "CatchStatement".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [
+			PrintableTree(
+				"variableDeclaration", ArrayClass<PrintableAsTree?>([
+					variableDeclaration.map { VariableDeclaration(range: nil, data: $0) },
+					])),
+			PrintableTree.ofStatements(
+				"statements", statements),
+		]
+	}
+
+	public static func == (lhs: CatchStatement, rhs: CatchStatement) -> Bool {
+		return lhs.variableDeclaration == rhs.variableDeclaration &&
+			lhs.statements == rhs.statements
+	}
+}
+
+public class ForEachStatement: Statement {
+	let collection: Expression
+	let variable: Expression
+	let statements: ArrayClass<Statement>
+
+	init(
+		range: SourceFileRange?,
+		collection: Expression,
+		variable: Expression,
+		statements: ArrayClass<Statement>)
+	{
+		self.collection = collection
+		self.variable = variable
+		self.statements = statements
+		super.init(range: range, name: "ForEachStatement".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [
+			PrintableTree("variable", [variable]),
+			PrintableTree("collection", [collection]),
+			PrintableTree.ofStatements("statements", statements), ]
+	}
+
+	public static func == (lhs: ForEachStatement, rhs: ForEachStatement) -> Bool {
+		return lhs.collection == rhs.collection &&
+			lhs.variable == rhs.variable &&
+			lhs.statements == rhs.statements
+	}
+}
+
+public class WhileStatement: Statement {
+	let expression: Expression
+	let statements: ArrayClass<Statement>
+
+	init(
+		range: SourceFileRange?,
+		expression: Expression,
+		statements: ArrayClass<Statement>)
+	{
+		self.expression = expression
+		self.statements = statements
+		super.init(range: range, name: "WhileStatement".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [
+			PrintableTree.ofExpressions("expression", [expression]),
+			PrintableTree.ofStatements("statements", statements), ]
+	}
+
+	public static func == (lhs: WhileStatement, rhs: WhileStatement) -> Bool {
+		return lhs.expression == rhs.expression &&
+			lhs.statements == rhs.statements
+	}
+}
+
+public class IfStatement: Statement {
+	let data: IfStatementData
+
+	init(
+		range: SourceFileRange?,
+		data: IfStatementData)
+	{
+		self.data = data
+		super.init(range: range, name: "IfStatement".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		let declarationTrees =
+			data.declarations.map { VariableDeclaration(range: nil, data: $0) }
+		let conditionTrees = data.conditions.map { $0.toStatement() }
+		let elseStatementTrees = data.elseStatement
+			.map({ IfStatement(range: nil, data: $0) })?.printableSubtrees ?? []
+		return [
+			data.isGuard ? PrintableTree("guard") : nil,
+			PrintableTree(
+				"declarations", ArrayClass<PrintableAsTree?>(declarationTrees)),
+			PrintableTree.ofStatements(
+				"conditions", conditionTrees),
+			PrintableTree.ofStatements(
+				"statements", data.statements),
+			PrintableTree.initOrNil(
+				"else", elseStatementTrees), ]
+	}
+
+	public static func == (lhs: IfStatement, rhs: IfStatement) -> Bool {
+		return lhs.data == rhs.data
+	}
+}
+
+public class SwitchStatement: Statement {
+	let convertsToExpression: Statement?
+	let expression: Expression
+	let cases: ArrayClass<SwitchCase>
+
+	init(
+		range: SourceFileRange?,
+		convertsToExpression: Statement?,
+		expression: Expression,
+		cases: ArrayClass<SwitchCase>)
+	{
+		self.convertsToExpression = convertsToExpression
+		self.expression = expression
+		self.cases = cases
+		super.init(range: range, name: "SwitchStatement".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		let caseItems = cases.map { switchCase -> PrintableAsTree? in
+			PrintableTree("case item", [
+				PrintableTree.ofExpressions(
+					"expressions", switchCase.expressions),
+				PrintableTree.ofStatements(
+					"statements", switchCase.statements),
+				])
 		}
-		if case let typealiasDeclaration(
-				identifier: leftIdentifier,
-				typeName: leftTypeName,
-				isImplicit: leftIsImplicit) = lhs,
-			case let typealiasDeclaration(
-				identifier: rightIdentifier,
-				typeName: rightTypeName,
-				isImplicit: rightIsImplicit) = rhs
-		{
-			return leftIdentifier == rightIdentifier &&
-				leftTypeName == rightTypeName &&
-				leftIsImplicit == rightIsImplicit
-		}
-		if case let extensionDeclaration(
-			typeName: leftTypeName,
-			members: leftMembers) = lhs,
-		case let extensionDeclaration(
-			typeName: rightTypeName,
-			members: rightMembers) = rhs
-		{
-			return leftTypeName == rightTypeName &&
-				leftMembers == rightMembers
-		}
-		if case let importDeclaration(moduleName: leftModuleName) = lhs,
-		case let importDeclaration(moduleName: rightModuleName) = rhs
-		{
-			return leftModuleName == rightModuleName
-		}
-		if case let classDeclaration(
-			className: leftClassName,
-			inherits: leftInherits,
-			members: leftMembers) = lhs,
-		case let classDeclaration(
-			className: rightClassName,
-			inherits: rightInherits,
-			members: rightMembers) = rhs
-		{
-			return leftClassName == rightClassName &&
-				leftInherits == rightInherits &&
-				leftMembers == rightMembers
-		}
-		if case let companionObject(members: leftMembers) = lhs,
-		case let companionObject(members: rightMembers) = rhs
-		{
-			return leftMembers == rightMembers
-		}
-		if case let enumDeclaration(
-			access: leftAccess,
-			enumName: leftEnumName,
-			inherits: leftInherits,
-			elements: leftElements,
-			members: leftMembers,
-			isImplicit: leftIsImplicit) = lhs,
-		case let enumDeclaration(
-			access: rightAccess,
-			enumName: rightEnumName,
-			inherits: rightInherits,
-			elements: rightElements,
-			members: rightMembers,
-			isImplicit: rightIsImplicit) = rhs
-		{
-			return leftAccess == rightAccess &&
-				leftEnumName == rightEnumName &&
-				leftInherits == rightInherits &&
-				leftElements == rightElements &&
-				leftMembers == rightMembers &&
-				leftIsImplicit == rightIsImplicit
-		}
-		if case let protocolDeclaration(
-			protocolName: leftProtocolName,
-			members: leftMembers) = lhs,
-		case let protocolDeclaration(
-			protocolName: rightProtocolName,
-			members: rightMembers) = rhs
-		{
-			return leftProtocolName == rightProtocolName &&
-				leftMembers == rightMembers
-		}
-		if case let structDeclaration(
-			annotations: leftAnnotations,
-			structName: leftStructName,
-			inherits: leftInherits,
-			members: leftMembers) = lhs,
-		case let structDeclaration(
-			annotations: rightAnnotations,
-			structName: rightStructName,
-			inherits: rightInherits,
-			members: rightMembers) = rhs
-		{
-			return leftAnnotations == rightAnnotations &&
-				leftStructName == rightStructName &&
-				leftInherits == rightInherits &&
-				leftMembers == rightMembers
-		}
-		if case let functionDeclaration(data: leftData) = lhs,
-		case let functionDeclaration(data: rightData) = rhs
-		{
-			return leftData == rightData
-		}
-		if case let variableDeclaration(data: leftData) = lhs,
-		case let variableDeclaration(data: rightData) = rhs
-		{
-			return leftData == rightData
-		}
-		if case let doStatement(statements: leftStatements) = lhs,
-		case let doStatement(statements: rightStatements) = rhs
-		{
-			return leftStatements == rightStatements
-		}
-		if case let catchStatement(
-			variableDeclaration: leftVariableDeclaration,
-			statements: leftStatements) = lhs,
-		case let catchStatement(
-			variableDeclaration: rightVariableDeclaration,
-			statements: rightStatements) = rhs
-		{
-			return leftVariableDeclaration == rightVariableDeclaration &&
-				leftStatements == rightStatements
-		}
-		if case let forEachStatement(
-			collection: leftCollection,
-			variable: leftVariable,
-			statements: leftStatements) = lhs,
-		case let forEachStatement(
-			collection: rightCollection,
-			variable: rightVariable,
-			statements: rightStatements) = rhs
-		{
-			return leftCollection == rightCollection &&
-				leftVariable == rightVariable &&
-				leftStatements == rightStatements
-		}
-		if case let whileStatement(
-			expression: leftExpression,
-			statements: leftStatements) = lhs,
-		case let whileStatement(
-			expression: rightExpression,
-			statements: rightStatements) = rhs
-		{
-			return leftExpression == rightExpression &&
-				leftStatements == rightStatements
-		}
-		if case let ifStatement(data: leftData) = lhs,
-		case let ifStatement(data: rightData) = rhs
-		{
-			return leftData == rightData
-		}
-		if case let switchStatement(
-			convertsToExpression: leftConvertsToExpression,
-			expression: leftExpression,
-			cases: leftCases) = lhs,
-		case let switchStatement(
-			convertsToExpression: rightConvertsToExpression,
-			expression: rightExpression,
-			cases: rightCases) = rhs
-		{
-			return leftConvertsToExpression == rightConvertsToExpression &&
-			leftExpression == rightExpression &&
-			leftCases == rightCases
-		}
-		if case let deferStatement(statements: leftStatements) = lhs,
-		case let deferStatement(statements: rightStatements) = rhs
-		{
-			return leftStatements == rightStatements
-		}
-		if case let throwStatement(expression: leftExpression) = lhs,
-		case let throwStatement(expression: rightExpression) = rhs
-		{
-			return leftExpression == rightExpression
-		}
-		if case let returnStatement(expression: leftExpression) = lhs,
-		case let returnStatement(expression: rightExpression) = rhs
-		{
-			return leftExpression == rightExpression
-		}
-		if case .breakStatement = lhs,
-			case .breakStatement = rhs
-		{
-			return true
-		}
-		if case .continueStatement = lhs,
-			case .continueStatement = rhs
-		{
-			return true
-		}
-		if case let .assignmentStatement(
-				leftHand: leftLeftHand,
-				rightHand: leftRightHand) = lhs,
-			case let .assignmentStatement(
-				leftHand: rightLeftHand,
-				rightHand: rightRightHand) = rhs
-		{
-			return leftLeftHand == rightLeftHand &&
-				leftRightHand == rightRightHand
-		}
-		if case .error = lhs,
-			case .error = rhs
-		{
-			return true
-		}
-		else {
-			return false
-		}
+
+		return [
+			PrintableTree.ofStatements(
+				"converts to expression",
+				convertsToExpression.map { [$0] } ?? []),
+			PrintableTree.ofExpressions("expression", [expression]),
+			PrintableTree("case items", caseItems), ]
+	}
+
+	public static func == (lhs: SwitchStatement, rhs: SwitchStatement) -> Bool {
+		return lhs.convertsToExpression == rhs.convertsToExpression &&
+			lhs.expression == rhs.expression &&
+			lhs.cases == rhs.cases
+	}
+}
+
+public class DeferStatement: Statement {
+	let statements: ArrayClass<Statement>
+
+	init(
+		range: SourceFileRange?,
+		statements: ArrayClass<Statement>)
+	{
+		self.statements = statements
+		super.init(range: range, name: "DeferStatement".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return ArrayClass<PrintableAsTree?>(statements)
+	}
+
+	public static func == (lhs: DeferStatement, rhs: DeferStatement) -> Bool {
+		return lhs.statements == rhs.statements
+	}
+}
+
+public class ThrowStatement: Statement {
+	let expression: Expression
+
+	init(
+		range: SourceFileRange?,
+		expression: Expression)
+	{
+		self.expression = expression
+		super.init(range: range, name: "ThrowStatement".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [expression]
+	}
+
+	public static func == (lhs: ThrowStatement, rhs: ThrowStatement) -> Bool {
+		return lhs.expression == rhs.expression
+	}
+}
+
+public class ReturnStatement: Statement {
+	let expression: Expression?
+
+	init(
+		range: SourceFileRange?,
+		expression: Expression?)
+	{
+		self.expression = expression
+		super.init(range: range, name: "ReturnStatement".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [expression]
+	}
+
+	public static func == (lhs: ReturnStatement, rhs: ReturnStatement) -> Bool {
+		return lhs.expression == rhs.expression
+	}
+}
+
+public class BreakStatement: Statement {
+	init(range: SourceFileRange?) {
+		super.init(range: range, name: "BreakStatement".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return []
+	}
+
+	public static func == (lhs: BreakStatement, rhs: BreakStatement) -> Bool {
+		return true
+	}
+}
+
+public class ContinueStatement: Statement {
+	init(range: SourceFileRange?) {
+		super.init(range: range, name: "ContinueStatement".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return []
+	}
+
+	public static func == (lhs: ContinueStatement, rhs: ContinueStatement) -> Bool {
+		return true
+	}
+}
+
+public class AssignmentStatement: Statement {
+	let leftHand: Expression
+	let rightHand: Expression
+
+	init(
+		range: SourceFileRange?,
+		leftHand: Expression,
+		rightHand: Expression)
+	{
+		self.leftHand = leftHand
+		self.rightHand = rightHand
+		super.init(range: range, name: "AssignmentStatement".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return [leftHand, rightHand]
+	}
+
+	public static func == (lhs: AssignmentStatement, rhs: AssignmentStatement) -> Bool {
+		return lhs.leftHand == rhs.leftHand &&
+			lhs.rightHand == rhs.rightHand
+	}
+}
+
+public class ErrorStatement: Statement {
+	init(range: SourceFileRange?) {
+		super.init(range: range, name: "ErrorStatement".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+		return []
+	}
+
+	public static func == (lhs: ErrorStatement, rhs: ErrorStatement) -> Bool {
+		return true
 	}
 }
 
@@ -596,12 +753,12 @@ extension PrintableTree {
 }
 
 /// Necessary changes when adding a new expression:
-/// - GryphonAST's Expression.==
-/// - KotlinTranslator.translateExpression
-/// - SwiftTranslator.translateExpression
-/// - TranspilationPass.replaceExpression
-/// - LibraryTranspilationPass's Expression.matches
-public class Expression: PrintableAsTree, Equatable {
+/// - GryphonAST's `Expression.==`
+/// - `KotlinTranslator.translateExpression`
+/// - `SwiftTranslator.translateExpression`
+/// - `TranspilationPass.replaceExpression`
+/// - LibraryTranspilationPass's `Expression.matches`
+public /*abstract*/ class Expression: PrintableAsTree, Equatable {
 	let name: String
 	let range: SourceFileRange?
 
@@ -1856,9 +2013,9 @@ public class IfStatementData: Equatable {
 		func toStatement() -> Statement {
 			switch self {
 			case let .condition(expression: expression):
-				return .expressionStatement(expression: expression)
+				return ExpressionStatement(range: nil, expression: expression)
 			case let .declaration(variableDeclaration: variableDeclaration):
-				return .variableDeclaration(data: variableDeclaration)
+				return VariableDeclaration(range: nil, data: variableDeclaration)
 			}
 		}
 	}

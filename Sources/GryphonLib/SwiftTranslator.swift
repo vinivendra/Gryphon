@@ -83,8 +83,10 @@ public class SwiftTranslator {
 			// Special case: comments at the top of the source file (i.e. license comments, etc)
 			// will be put outside of the main function so they're at the top of the source file
 			if isInTopOfFileComments {
-				if case let .comment(value: _, range: range) = statement {
-					if lastTopOfFileCommentLine == range.lineStart - 1 {
+				if let commentStatement = statement as? CommentStatement {
+					if let range = commentStatement.range,
+						lastTopOfFileCommentLine == range.lineStart - 1
+					{
 						lastTopOfFileCommentLine = range.lineEnd
 						declarations.append(statement)
 						continue
@@ -96,13 +98,13 @@ public class SwiftTranslator {
 
 			// Special case: other comments in main files will be ignored because we can't know if
 			// they're supposed to be in the main function or not
-			if case .comment = statement {
+			if statement is CommentStatement {
 				continue
 			}
 
 			// Special case: expression statements may be literal declarations or normal statements
-			if case let .expressionStatement(expression: innerExpression) = statement {
-				if innerExpression is LiteralDeclarationExpression {
+			if let expressionStatement = statement as? ExpressionStatement {
+				if expressionStatement.expression is LiteralDeclarationExpression {
 					declarations.append(statement)
 				}
 				else {
@@ -113,17 +115,17 @@ public class SwiftTranslator {
 			}
 
 			// Common cases: declarations go outside the main function, everything else goes inside.
-			switch statement {
-			case .protocolDeclaration,
-				 .classDeclaration,
-				 .structDeclaration,
-				 .extensionDeclaration,
-				 .functionDeclaration,
-				 .enumDeclaration,
-				 .typealiasDeclaration:
-
+			if statement is ProtocolDeclaration ||
+				statement is ClassDeclaration ||
+				statement is StructDeclaration ||
+				statement is ExtensionDeclaration ||
+				statement is FunctionDeclaration ||
+				statement is EnumDeclaration ||
+				statement is TypealiasDeclaration
+			{
 				declarations.append(statement)
-			default:
+			}
+			else {
 				statements.append(statement)
 			}
 		}
@@ -228,7 +230,7 @@ public class SwiftTranslator {
 		case "Top Level Code Declaration":
 			result = try translateTopLevelCode(subtree)
 		case "Import Declaration":
-			result = [.importDeclaration(moduleName: subtree.standaloneAttributes[0])]
+			result = [ImportDeclaration(range: nil, moduleName: subtree.standaloneAttributes[0])]
 		case "Typealias":
 			result = [try translateTypealiasDeclaration(subtree)]
 		case "Class Declaration":
@@ -270,11 +272,11 @@ public class SwiftTranslator {
 		case "Return Statement":
 			result = [try translateReturnStatement(subtree)]
 		case "Break Statement":
-			result = [.breakStatement]
+			result = [BreakStatement(range: nil)]
 		case "Continue Statement":
-			result = [.continueStatement]
+			result = [ContinueStatement(range: nil)]
 		case "Fail Statement":
-			result = [.returnStatement(expression: NilLiteralExpression(range: nil))]
+			result = [ReturnStatement(range: nil, expression: NilLiteralExpression(range: nil))]
 		case "Optional Evaluation Expression":
 
 			// Some assign statements of the form a.b?.c come enveloped in other expressions
@@ -286,13 +288,13 @@ public class SwiftTranslator {
 			}
 			else {
 				let expression = try translateExpression(subtree)
-				result = [.expressionStatement(expression: expression)]
+				result = [ExpressionStatement(range: nil, expression: expression)]
 			}
 
 		default:
 			if subtree.name.hasSuffix("Expression") {
 				let expression = try translateExpression(subtree)
-				result = [.expressionStatement(expression: expression)]
+				result = [ExpressionStatement(range: nil, expression: expression)]
 			}
 			else {
 				result = []
@@ -329,7 +331,7 @@ public class SwiftTranslator {
 
 		let members = try translateSubtreesOf(protocolDeclaration)
 
-		return .protocolDeclaration(protocolName: protocolName, members: members)
+		return ProtocolDeclaration(range: nil, protocolName: protocolName, members: members)
 	}
 
 	internal func translateAssignExpression(_ assignExpression: SwiftAST) throws -> Statement {
@@ -343,13 +345,18 @@ public class SwiftTranslator {
 			let rightExpression = assignExpression.subtree(at: 1)
 		{
 			if leftExpression.name == "Discard Assignment Expression" {
-				return try .expressionStatement(expression: translateExpression(rightExpression))
+				return try ExpressionStatement(
+					range: nil,
+					expression: translateExpression(rightExpression))
 			}
 			else {
 				let leftTranslation = try translateExpression(leftExpression)
 				let rightTranslation = try translateExpression(rightExpression)
 
-				return .assignmentStatement(leftHand: leftTranslation, rightHand: rightTranslation)
+				return AssignmentStatement(
+					range: nil,
+					leftHand: leftTranslation,
+					rightHand: rightTranslation)
 			}
 		}
 		else {
@@ -374,7 +381,8 @@ public class SwiftTranslator {
 			identifier = typealiasDeclaration.standaloneAttributes[0]
 		}
 
-		return .typealiasDeclaration(
+		return TypealiasDeclaration(
+			range: nil,
 			identifier: identifier,
 			typeName: typealiasDeclaration["type"]!,
 			isImplicit: isImplicit)
@@ -406,7 +414,8 @@ public class SwiftTranslator {
 		// Translate the contents
 		let classContents = try translateSubtreesOf(classDeclaration)
 
-		return .classDeclaration(
+		return ClassDeclaration(
+			range: nil,
 			className: name,
 			inherits: inheritanceArray,
 			members: classContents)
@@ -440,7 +449,8 @@ public class SwiftTranslator {
 		// Translate the contents
 		let structContents = try translateSubtreesOf(structDeclaration)
 
-		return .structDeclaration(
+		return StructDeclaration(
+			range: nil,
 			annotations: annotations,
 			structName: name,
 			inherits: inheritanceArray,
@@ -456,7 +466,7 @@ public class SwiftTranslator {
 
 		if let expression = throwStatement.subtrees.last {
 			let expressionTranslation = try translateExpression(expression)
-			return .throwStatement(expression: expressionTranslation)
+			return ThrowStatement(range: nil, expression: expressionTranslation)
 		}
 		else {
 			return try unexpectedASTStructureError(
@@ -473,7 +483,7 @@ public class SwiftTranslator {
 
 		let members = try translateSubtreesOf(extensionDeclaration)
 
-		return .extensionDeclaration(typeName: typeName, members: members)
+		return ExtensionDeclaration(range: nil, typeName: typeName, members: members)
 	}
 
 	internal func translateEnumDeclaration(_ enumDeclaration: SwiftAST) throws -> Statement? {
@@ -589,7 +599,8 @@ public class SwiftTranslator {
 
 		let translatedMembers = try translateSubtreesInScope(members, scope: enumDeclaration)
 
-		return .enumDeclaration(
+		return EnumDeclaration(
+			range: nil,
 			access: access,
 			enumName: name,
 			inherits: inheritanceArray,
@@ -888,10 +899,10 @@ public class SwiftTranslator {
 
 		if let expression = returnStatement.subtrees.last {
 			let translatedExpression = try translateExpression(expression)
-			return .returnStatement(expression: translatedExpression)
+			return ReturnStatement(range: nil, expression: translatedExpression)
 		}
 		else {
-			return .returnStatement(expression: nil)
+			return ReturnStatement(range: nil, expression: nil)
 		}
 	}
 
@@ -915,7 +926,7 @@ public class SwiftTranslator {
 		}
 
 		let translatedInnerDoStatements = try translateBraceStatement(braceStatement)
-		let translatedDoStatement = Statement.doStatement(statements: translatedInnerDoStatements)
+		let translatedDoStatement = DoStatement(range: nil, statements: translatedInnerDoStatements)
 
 		let catchStatements: ArrayClass<Statement?> = []
 		for catchStatement in doCatchStatement.subtrees.dropFirst() {
@@ -958,7 +969,8 @@ public class SwiftTranslator {
 
 			let translatedStatements = try translateBraceStatement(braceStatement)
 
-			catchStatements.append(.catchStatement(
+			catchStatements.append(CatchStatement(
+				range: nil,
 				variableDeclaration: variableDeclaration,
 				statements: translatedStatements))
 		}
@@ -1055,7 +1067,8 @@ public class SwiftTranslator {
 		let collectionTranslation = try translateExpression(collectionExpression)
 		let statements = try translateBraceStatement(braceStatement)
 
-		return .forEachStatement(
+		return ForEachStatement(
+			range: nil,
 			collection: collectionTranslation,
 			variable: variable,
 			statements: statements)
@@ -1085,7 +1098,7 @@ public class SwiftTranslator {
 		let expression = try translateExpression(expressionSubtree)
 		let statements = try translateBraceStatement(braceStatement)
 
-		return .whileStatement(expression: expression, statements: statements)
+		return WhileStatement(range: nil, expression: expression, statements: statements)
 	}
 
 	internal func translateDeferStatement(_ deferStatement: SwiftAST) throws -> Statement {
@@ -1106,13 +1119,13 @@ public class SwiftTranslator {
 		}
 
 		let statements = try translateBraceStatement(braceStatement)
-		return .deferStatement(statements: statements)
+		return DeferStatement(range: nil, statements: statements)
 	}
 
 	internal func translateIfStatement(_ ifStatement: SwiftAST) throws -> Statement {
 		do {
 			let result: IfStatementData = try translateIfStatementData(ifStatement)
-			return .ifStatement(data: result)
+			return IfStatement(range: nil, data: result)
 		}
 		catch let error {
 			return try handleUnexpectedASTStructureError(error)
@@ -1236,7 +1249,7 @@ public class SwiftTranslator {
 					let range = getRangeRecursively(ofNode: patternLet)
 
 					extraStatements = declarations.map {
-						Statement.variableDeclaration(data: VariableDeclarationData(
+						VariableDeclaration(range: nil, data: VariableDeclarationData(
 							identifier: $0.newVariable,
 							typeName: $0.associatedValueType,
 							expression: DotExpression(
@@ -1287,7 +1300,8 @@ public class SwiftTranslator {
 				expressions: caseExpressions, statements: resultingStatements))
 		}
 
-		return .switchStatement(
+		return SwitchStatement(
+			range: nil,
 			convertsToExpression: nil,
 			expression: translatedExpression,
 			cases: cases)
@@ -1481,7 +1495,8 @@ public class SwiftTranslator {
 				for declaration in declarations {
 					let range = getRangeRecursively(ofNode: patternLet)
 
-					statementsResult.append(.variableDeclaration(
+					statementsResult.append(VariableDeclaration(
+						range: nil,
 						data: VariableDeclarationData(
 							identifier: declaration.newVariable,
 							typeName: declaration.associatedValueType,
@@ -1785,7 +1800,7 @@ public class SwiftTranslator {
 
 		let isPure = (getKeyedComment(forNode: functionDeclaration, key: .gryphon) == "pure")
 
-		return .functionDeclaration(data: FunctionDeclarationData(
+		return FunctionDeclaration(range: nil, data: FunctionDeclarationData(
 			prefix: String(functionNamePrefix),
 			parameters: parameters,
 			returnType: returnType,
@@ -1935,7 +1950,7 @@ public class SwiftTranslator {
 			}
 		}
 
-		return .variableDeclaration(data: VariableDeclarationData(
+		return VariableDeclaration(range: nil, data: VariableDeclarationData(
 			identifier: identifier,
 			typeName: typeName,
 			expression: expression,
@@ -2292,7 +2307,7 @@ public class SwiftTranslator {
 		}
 		else {
 			let expression = try translateExpression(lastSubtree)
-			statements = [Statement.expressionStatement(expression: expression)]
+			statements = [ExpressionStatement(range: nil, expression: expression)]
 		}
 
 		return ClosureExpression(
@@ -2764,18 +2779,18 @@ public class SwiftTranslator {
 		for lineNumber in range {
 			if let insertComment = sourceFile?.getKeyedCommentFromLine(lineNumber) {
 				if insertComment.key == .insert {
-					result.append(.expressionStatement(expression:
+					result.append(ExpressionStatement(range: nil, expression:
 						LiteralCodeExpression(range: nil, string: insertComment.value)))
 				}
 				else if insertComment.key == .declaration {
-					result.append(.expressionStatement(expression:
+					result.append(ExpressionStatement(range: nil, expression:
 						LiteralDeclarationExpression(range: nil, string: insertComment.value)))
 				}
 			}
 			else if let normalComment = sourceFile?.getCommentFromLine(lineNumber) {
-				result.append(.comment(
-					value: normalComment.contents,
-					range: normalComment.range))
+				result.append(CommentStatement(
+					range: normalComment.range,
+					value: normalComment.contents))
 			}
 		}
 		return result
@@ -3057,7 +3072,7 @@ public class SwiftTranslator {
 
 	func handleUnexpectedASTStructureError(_ error: Error) throws -> Statement {
 		try Compiler.handleError(error)
-		return .error
+		return ErrorStatement(range: nil)
 	}
 
 	func unexpectedASTStructureError(

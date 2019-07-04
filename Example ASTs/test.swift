@@ -14,4 +14,8 @@
 // limitations under the License.
 //
 
-print("Hello, world!")
+let a: Any = ""
+
+if let a = a as? String {
+
+}
