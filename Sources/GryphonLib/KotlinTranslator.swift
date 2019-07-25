@@ -190,63 +190,50 @@ public class KotlinTranslator {
 			result += currentSubtree.translation
 
 			// Cases that should go together
-			if case .comment = currentSubtree.subtree {
+			if currentSubtree.subtree is CommentStatement {
 				continue
 			}
-			if case .variableDeclaration = currentSubtree.subtree,
-				case .variableDeclaration = nextSubtree.subtree
+			if currentSubtree.subtree is VariableDeclaration,
+				nextSubtree.subtree is VariableDeclaration
 			{
 				continue
 			}
-			if case let .expressionStatement(
-					expression: currentExpression) = currentSubtree.subtree,
-				case let .expressionStatement(expression: nextExpression) = nextSubtree.subtree
+			if let currentExpressionStatement = currentSubtree.subtree as? ExpressionStatement,
+				let nextExpressionStatement = nextSubtree.subtree as? ExpressionStatement
 			{
-				if currentExpression is CallExpression,
-					nextExpression is CallExpression
+				if currentExpressionStatement.expression is CallExpression,
+					nextExpressionStatement.expression is CallExpression
+				{
+					continue
+				}
+				if currentExpressionStatement.expression is TemplateExpression,
+					nextExpressionStatement.expression is TemplateExpression
+				{
+					continue
+				}
+				if currentExpressionStatement.expression is LiteralCodeExpression,
+					nextExpressionStatement.expression is LiteralCodeExpression
 				{
 					continue
 				}
 			}
-			if case let .expressionStatement(
-					expression: currentExpression) = currentSubtree.subtree,
-				case let .expressionStatement(
-					expression: nextExpression) = nextSubtree.subtree
-			{
-				if currentExpression is TemplateExpression,
-					nextExpression is TemplateExpression
-				{
-					continue
-				}
-			}
-			if case let .expressionStatement(
-					expression: currentExpression) = currentSubtree.subtree,
-				case let .expressionStatement(
-					expression: nextExpression) = nextSubtree.subtree
-			{
-				if currentExpression is LiteralCodeExpression,
-					nextExpression is LiteralCodeExpression
-				{
-					continue
-				}
-			}
-			if case .assignmentStatement = currentSubtree.subtree,
-				case .assignmentStatement = nextSubtree.subtree
+			if currentSubtree.subtree is AssignmentStatement,
+				nextSubtree.subtree is AssignmentStatement
 			{
 				continue
 			}
-			if case .typealiasDeclaration = currentSubtree.subtree,
-				case .typealiasDeclaration = nextSubtree.subtree
+			if currentSubtree.subtree is TypealiasDeclaration,
+				nextSubtree.subtree is TypealiasDeclaration
 			{
 				continue
 			}
-			if case .doStatement = currentSubtree.subtree,
-				case .catchStatement = nextSubtree.subtree
+			if currentSubtree.subtree is DoStatement,
+				nextSubtree.subtree is CatchStatement
 			{
 				continue
 			}
-			if case .catchStatement = currentSubtree.subtree,
-				case .catchStatement = nextSubtree.subtree
+			if currentSubtree.subtree is CatchStatement,
+				nextSubtree.subtree is CatchStatement
 			{
 				continue
 			}
@@ -266,126 +253,149 @@ public class KotlinTranslator {
 		withIndentation indentation: String)
 		throws -> String
 	{
-		let result: String
-
-		switch subtree {
-		case let .comment(value: value, range: _):
-			result = "\(indentation)//\(value)\n"
-		case .importDeclaration:
-			result = ""
-		case .extensionDeclaration:
+		if let commentStatement = subtree as? CommentStatement {
+			return "\(indentation)//\(commentStatement.value)\n"
+		}
+		if subtree is ImportDeclaration {
+			return ""
+		}
+		if subtree is ExtensionDeclaration {
 			return try unexpectedASTStructureError(
 				"Extension structure should have been removed in a transpilation pass",
 				AST: subtree)
-		case .deferStatement:
+		}
+		if subtree is DeferStatement {
 			return try unexpectedASTStructureError(
 				"Defer statements are only supported as top-level statements in function bodies",
 				AST: subtree)
-		case let .typealiasDeclaration(
-			identifier: identifier, typeName: typeName, isImplicit: isImplicit):
-
-			result = try translateTypealias(
-				identifier: identifier, typeName: typeName, isImplicit: isImplicit,
+		}
+		if let typealiasDeclaration = subtree as? TypealiasDeclaration {
+			return try translateTypealias(
+				identifier: typealiasDeclaration.identifier,
+				typeName: typealiasDeclaration.typeName,
+				isImplicit: typealiasDeclaration.isImplicit,
 				withIndentation: indentation)
-		case let .classDeclaration(className: className, inherits: inherits, members: members):
-			result = try translateClassDeclaration(
-				className: className,
-				inherits: inherits,
-				members: members,
+		}
+		if let classDeclaration = subtree as? ClassDeclaration {
+			return try translateClassDeclaration(
+				className: classDeclaration.className,
+				inherits: classDeclaration.inherits,
+				members: classDeclaration.members,
 				withIndentation: indentation)
-		case let .structDeclaration(
-			annotations: annotations, structName: structName, inherits: inherits, members: members):
-
-			result = try translateStructDeclaration(
-				annotations: annotations,
-				structName: structName,
-				inherits: inherits,
-				members: members,
+		}
+		if let structDeclaration = subtree as? StructDeclaration {
+			return try translateStructDeclaration(
+				annotations: structDeclaration.annotations,
+				structName: structDeclaration.structName,
+				inherits: structDeclaration.inherits,
+				members: structDeclaration.members,
 				withIndentation: indentation)
-		case let .companionObject(members: members):
-			result = try translateCompanionObject(
-				members: members, withIndentation: indentation)
-		case let .enumDeclaration(
-			access: access,
-			enumName: enumName,
-			inherits: inherits,
-			elements: elements,
-			members: members,
-			isImplicit: isImplicit):
-
-			result = try translateEnumDeclaration(
-				access: access,
-				enumName: enumName,
-				inherits: inherits,
-				elements: elements,
-				members: members,
-				isImplicit: isImplicit,
+		}
+		if let companionObject = subtree as? CompanionObject {
+			return try translateCompanionObject(
+				members: companionObject.members,
 				withIndentation: indentation)
-		case let .doStatement(statements: statements):
-			result = try translateDoStatement(
-				statements: statements,
+		}
+		if let enumDeclaration = subtree as? EnumDeclaration {
+			return try translateEnumDeclaration(
+				access: enumDeclaration.access,
+				enumName: enumDeclaration.enumName,
+				inherits: enumDeclaration.inherits,
+				elements: enumDeclaration.elements,
+				members: enumDeclaration.members,
+				isImplicit: enumDeclaration.isImplicit,
 				withIndentation: indentation)
-		case let .catchStatement(variableDeclaration: variableDeclaration, statements: statements):
-			result = try translateCatchStatement(
-				variableDeclaration: variableDeclaration,
-				statements: statements,
+		}
+		if let doStatement = subtree as? DoStatement {
+			return try translateDoStatement(
+				statements: doStatement.statements,
 				withIndentation: indentation)
-		case let .forEachStatement(
-			collection: collection, variable: variable, statements: statements):
-
-			result = try translateForEachStatement(
-				collection: collection, variable: variable, statements: statements,
+		}
+		if let catchStatement = subtree as? CatchStatement {
+			return try translateCatchStatement(
+				variableDeclaration: catchStatement.variableDeclaration,
+				statements: catchStatement.statements,
 				withIndentation: indentation)
-		case let .whileStatement(expression: expression, statements: statements):
-			result = try translateWhileStatement(
-				expression: expression, statements: statements, withIndentation: indentation)
-		case let .functionDeclaration(data: functionDeclaration):
-			result = try translateFunctionDeclaration(
-				functionDeclaration: functionDeclaration, withIndentation: indentation)
-		case let .protocolDeclaration(protocolName: protocolName, members: members):
-			result = try translateProtocolDeclaration(
-				protocolName: protocolName, members: members, withIndentation: indentation)
-		case let .throwStatement(expression: expression):
-			result = try translateThrowStatement(
-				expression: expression, withIndentation: indentation)
-		case let .variableDeclaration(data: variableDeclaration):
-			result = try translateVariableDeclaration(
-				variableDeclaration, withIndentation: indentation)
-		case let .assignmentStatement(leftHand: leftHand, rightHand: rightHand):
-			result = try translateAssignmentStatement(
-				leftHand: leftHand, rightHand: rightHand, withIndentation: indentation)
-		case let .ifStatement(data: ifStatement):
-			result = try translateIfStatement(ifStatement, withIndentation: indentation)
-		case let .switchStatement(
-			convertsToExpression: convertsToExpression, expression: expression,
-			cases: cases):
-
-			result = try translateSwitchStatement(
-				convertsToExpression: convertsToExpression,
-				expression: expression,
-				cases: cases,
+		}
+		if let forEachStatement = subtree as? ForEachStatement {
+			return try translateForEachStatement(
+				collection: forEachStatement.collection,
+				variable: forEachStatement.variable,
+				statements: forEachStatement.statements,
 				withIndentation: indentation)
-		case let .returnStatement(expression: expression):
-			result = try translateReturnStatement(
-				expression: expression, withIndentation: indentation)
-		case .breakStatement:
-			result = "\(indentation)break\n"
-		case .continueStatement:
-			result = "\(indentation)continue\n"
-		case let .expressionStatement(expression: expression):
-			let expressionTranslation =
-				try translateExpression(expression, withIndentation: indentation)
+		}
+		if let whileStatement = subtree as? WhileStatement {
+			return try translateWhileStatement(
+				expression: whileStatement.expression,
+				statements: whileStatement.statements,
+				withIndentation: indentation)
+		}
+		if let functionDeclaration = subtree as? FunctionDeclaration {
+			return try translateFunctionDeclaration(
+				functionDeclaration: functionDeclaration.data,
+				withIndentation: indentation)
+		}
+		if let protocolDeclaration = subtree as? ProtocolDeclaration {
+			return try translateProtocolDeclaration(
+				protocolName: protocolDeclaration.protocolName,
+				members: protocolDeclaration.members,
+				withIndentation: indentation)
+		}
+		if let throwStatement = subtree as? ThrowStatement {
+			return try translateThrowStatement(
+				expression: throwStatement.expression,
+				withIndentation: indentation)
+		}
+		if let variableDeclaration = subtree as? VariableDeclaration {
+			return try translateVariableDeclaration(
+				variableDeclaration.data,
+				withIndentation: indentation)
+		}
+		if let assignmentStatement = subtree as? AssignmentStatement {
+			return try translateAssignmentStatement(
+				leftHand: assignmentStatement.leftHand,
+				rightHand: assignmentStatement.rightHand,
+				withIndentation: indentation)
+		}
+		if let ifStatement = subtree as? IfStatement {
+			return try translateIfStatement(
+				ifStatement.data,
+				withIndentation: indentation)
+		}
+		if let switchStatement = subtree as? SwitchStatement {
+			return try translateSwitchStatement(
+				convertsToExpression: switchStatement.convertsToExpression,
+				expression: switchStatement.expression,
+				cases: switchStatement.cases,
+				withIndentation: indentation)
+		}
+		if let returnStatement = subtree as? ReturnStatement {
+			return try translateReturnStatement(
+				expression: returnStatement.expression,
+				withIndentation: indentation)
+		}
+		if subtree is BreakStatement {
+			return "\(indentation)break\n"
+		}
+		if subtree is ContinueStatement {
+			return "\(indentation)continue\n"
+		}
+		if let expressionStatement = subtree as? ExpressionStatement {
+			let expressionTranslation = try translateExpression(
+				expressionStatement.expression,
+				withIndentation: indentation)
 			if !expressionTranslation.isEmpty {
 				return indentation + expressionTranslation + "\n"
 			}
 			else {
 				return "\n"
 			}
-		case .error:
+		}
+		if subtree is ErrorStatement {
 			return KotlinTranslator.errorTranslation
 		}
 
-		return result
+		fatalError("This should never be reached.")
 	}
 
 	private func translateEnumDeclaration(
@@ -577,10 +587,10 @@ public class KotlinTranslator {
 		_ statement: Statement)
 		-> Bool
 	{
-		if case let .variableDeclaration(data: variableDeclaration) = statement {
-			if variableDeclaration.getter == nil,
-				variableDeclaration.setter == nil,
-				!variableDeclaration.isStatic
+		if let variableDeclaration = statement as? VariableDeclaration {
+			if variableDeclaration.data.getter == nil,
+				variableDeclaration.data.setter == nil,
+				!variableDeclaration.data.isStatic
 			{
 				return true
 			}
@@ -737,7 +747,7 @@ public class KotlinTranslator {
 		_ maybeDeferStatement: Statement)
 		-> Bool
 	{
-		if case .deferStatement = maybeDeferStatement {
+		if maybeDeferStatement is DeferStatement {
 			return true
 		}
 		else {
@@ -749,8 +759,8 @@ public class KotlinTranslator {
 		_ maybeDeferStatement: Statement)
 		-> ArrayClass<Statement>
 	{
-		if case let .deferStatement(statements: innerStatements) = maybeDeferStatement {
-			return innerStatements
+		if let deferStatement = maybeDeferStatement as? DeferStatement {
+			return deferStatement.statements
 		}
 		else {
 			return []
@@ -928,29 +938,27 @@ public class KotlinTranslator {
 		var result: String = ""
 
 		if let convertsToExpression = convertsToExpression {
-			if case .returnStatement(expression: _) = convertsToExpression {
+			if convertsToExpression is ReturnStatement {
 				result = "\(indentation)return when ("
 			}
-			else if case let .assignmentStatement(
-				leftHand: leftHand, rightHand: _) = convertsToExpression
-			{
-				let translatedLeftHand =
-					try translateExpression(leftHand, withIndentation: indentation)
+			else if let assignmentStatement = convertsToExpression as? AssignmentStatement {
+				let translatedLeftHand = try translateExpression(
+					assignmentStatement.leftHand,
+					withIndentation: indentation)
 				result = "\(indentation)\(translatedLeftHand) = when ("
 			}
-			else if case let .variableDeclaration(data: variableDeclaration) = convertsToExpression
-			{
+			else if let variableDeclaration = convertsToExpression as? VariableDeclaration {
 				let newVariableDeclaration = VariableDeclarationData(
-					identifier: variableDeclaration.identifier,
-					typeName: variableDeclaration.typeName,
+					identifier: variableDeclaration.data.identifier,
+					typeName: variableDeclaration.data.typeName,
 					expression: NilLiteralExpression(range: nil),
 					getter: nil,
 					setter: nil,
-					isLet: variableDeclaration.isLet,
+					isLet: variableDeclaration.data.isLet,
 					isImplicit: false,
 					isStatic: false,
 					extendsType: nil,
-					annotations: variableDeclaration.annotations)
+					annotations: variableDeclaration.data.annotations)
 				let translatedVariableDeclaration = try translateVariableDeclaration(
 					newVariableDeclaration,
 					withIndentation: indentation)
@@ -1576,7 +1584,11 @@ public class KotlinTranslator {
 		return try unexpectedASTStructureError(
 			"Expected the parameters to be either a .tupleExpression or a " +
 			".tupleShuffleExpression",
-			AST: .expressionStatement(expression: CallExpression(range: nil, data: callExpression)))
+			AST: ExpressionStatement(
+				range: nil,
+				expression: CallExpression(
+					range: nil,
+					data: callExpression)))
 	}
 
 	private func translateClosureExpression(
@@ -1601,9 +1613,11 @@ public class KotlinTranslator {
 		let firstStatement = statements.first
 		if statements.count == 1,
 			let firstStatement = firstStatement,
-			case let .expressionStatement(expression: expression) = firstStatement
+			let expressionStatement = firstStatement as? ExpressionStatement
 		{
-			result += try " " + translateExpression(expression, withIndentation: indentation) + " }"
+			result += try " " +
+				translateExpression(expressionStatement.expression, withIndentation: indentation) +
+				" }"
 		}
 		else {
 			result += "\n"
@@ -1733,11 +1747,13 @@ public class KotlinTranslator {
 			return try unexpectedASTStructureError(
 				"Different number of labels and indices in a tuple shuffle expression. " +
 					"Labels: \(labels), indices: \(indices)",
-				AST: .expressionStatement(expression: TupleShuffleExpression(
+				AST: ExpressionStatement(
 					range: nil,
-					labels: labels,
-					indices: indices,
-					expressions: expressions)))
+					expression: TupleShuffleExpression(
+						range: nil,
+						labels: labels,
+						indices: indices,
+						expressions: expressions)))
 		}
 
 		for (label, index) in zipToClass(parameters, indices) {
