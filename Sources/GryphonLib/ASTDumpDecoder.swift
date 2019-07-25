@@ -682,7 +682,6 @@ extension ASTDumpDecoder {
 		// end eventually
 		while true {
 			// Add key-value attributes
-			// TODO: Add warnings for potential bugs in eager evaluation of if-lets
 			if let key = readKey() {
 				if key == "location" {
 					keyValueAttributes[key] = readLocation()

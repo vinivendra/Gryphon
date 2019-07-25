@@ -194,7 +194,6 @@ extension Utilities {
             throw FileError.outdatedFile(inFolder: libraryTemplatesFolder)
         }
 
-        // TODO: Replace prints in this file with Compiler.log when the compiler gets bootstrapped
         Compiler.log("\t* Updating library files...")
 
         let templateFilePaths =
