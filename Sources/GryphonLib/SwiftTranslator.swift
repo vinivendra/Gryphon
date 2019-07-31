@@ -2093,7 +2093,7 @@ public class SwiftTranslator {
 			let subExpression = expression.subtrees.first
 			let subExpressionSubtrees = subExpression?.subtrees
 			let subSubExpression = subExpressionSubtrees?.first
-			let typeName = expression["type"]
+			let typeName = expression["writtenType"]
 
 			if let typeName = typeName, let subSubExpression = subSubExpression {
 				result = BinaryOperatorExpression(
