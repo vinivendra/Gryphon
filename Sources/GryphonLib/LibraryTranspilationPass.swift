@@ -27,7 +27,7 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
 	override func replaceFunctionDeclaration( // annotation: override
-		_ functionDeclaration: FunctionDeclarationData)
+		_ functionDeclaration: FunctionDeclaration)
 		-> ArrayClass<Statement>
 	{
 		if functionDeclaration.prefix == "gryphonTemplates",

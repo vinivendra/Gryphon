@@ -119,8 +119,11 @@ public class TranspilationPass {
 				inherits: structDeclaration.inherits,
 				members: structDeclaration.members)
 		}
+		if let initializerDeclaration = statement as? InitializerDeclaration {
+			return replaceInitializerDeclaration(initializerDeclaration)
+		}
 		if let functionDeclaration = statement as? FunctionDeclaration {
-			return replaceFunctionDeclaration(functionDeclaration.data)
+			return replaceFunctionDeclaration(functionDeclaration)
 		}
 		if let variableDeclaration = statement as? VariableDeclaration {
 			return replaceVariableDeclaration(variableDeclaration.data)
@@ -310,21 +313,53 @@ public class TranspilationPass {
 			members: replaceStatements(members)), ]
 	}
 
-	func replaceFunctionDeclaration( // annotation: open
-		_ functionDeclaration: FunctionDeclarationData)
+	func replaceInitializerDeclaration( // annotation: open
+		_ initializerDeclaration: InitializerDeclaration)
 		-> ArrayClass<Statement>
 	{
-		if let result = replaceFunctionDeclarationData(functionDeclaration) {
-			return [FunctionDeclaration(range: nil, data: result)]
+		if let result = replaceInitializerDeclaration(initializerDeclaration) {
+			return [result]
 		}
 		else {
 			return []
 		}
 	}
 
-	func replaceFunctionDeclarationData( // annotation: open
-		_ functionDeclaration: FunctionDeclarationData)
-		-> FunctionDeclarationData?
+	func replaceInitializerDeclaration( // annotation: open
+		_ initializerDeclaration: InitializerDeclaration)
+		-> InitializerDeclaration?
+	{
+		let replacedParameters = initializerDeclaration.parameters
+			.map {
+				FunctionParameter(
+					label: $0.label,
+					apiLabel: $0.apiLabel,
+					typeName: $0.typeName,
+					value: $0.value.map { replaceExpression($0) })
+		}
+
+		let initializerDeclaration = initializerDeclaration
+		initializerDeclaration.parameters = replacedParameters
+		initializerDeclaration.statements =
+			initializerDeclaration.statements.map { replaceStatements($0) }
+		return initializerDeclaration
+	}
+
+	func replaceFunctionDeclaration( // annotation: open
+		_ functionDeclaration: FunctionDeclaration)
+		-> ArrayClass<Statement>
+	{
+		if let result = replaceFunctionDeclaration(functionDeclaration) {
+			return [result]
+		}
+		else {
+			return []
+		}
+	}
+
+	func replaceFunctionDeclaration( // annotation: open
+		_ functionDeclaration: FunctionDeclaration)
+		-> FunctionDeclaration?
 	{
 		let replacedParameters = functionDeclaration.parameters
 			.map {
@@ -359,10 +394,10 @@ public class TranspilationPass {
 		variableDeclaration.expression =
 			variableDeclaration.expression.map { replaceExpression($0) }
 		if let getter = variableDeclaration.getter {
-			variableDeclaration.getter = replaceFunctionDeclarationData(getter)
+			variableDeclaration.getter = replaceFunctionDeclaration(getter)
 		}
 		if let setter = variableDeclaration.setter {
-			variableDeclaration.setter = replaceFunctionDeclarationData(setter)
+			variableDeclaration.setter = replaceFunctionDeclaration(setter)
 		}
 		return variableDeclaration
 	}
@@ -925,7 +960,8 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 			variableDeclaration.typeName == "String",
 			let getter = variableDeclaration.getter
 		{
-			return [FunctionDeclaration(range: nil, data: FunctionDeclarationData(
+			return [FunctionDeclaration(
+				range: nil,
 				prefix: "toString",
 				parameters: [],
 				returnType: "String",
@@ -938,7 +974,7 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 				extendsType: variableDeclaration.extendsType,
 				statements: getter.statements,
 				access: nil,
-				annotations: variableDeclaration.annotations)), ]
+				annotations: variableDeclaration.annotations), ]
 		}
 
 		return super.replaceVariableDeclaration(variableDeclaration)
@@ -1075,15 +1111,15 @@ public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
 		}
 	}
 
-	override func replaceFunctionDeclarationData( // annotation: override
-		_ functionDeclaration: FunctionDeclarationData)
-		-> FunctionDeclarationData?
+	override func replaceFunctionDeclaration( // annotation: override
+		_ functionDeclaration: FunctionDeclaration)
+		-> FunctionDeclaration?
 	{
 		if functionDeclaration.isImplicit {
 			return nil
 		}
 		else {
-			return super.replaceFunctionDeclarationData(functionDeclaration)
+			return super.replaceFunctionDeclaration(functionDeclaration)
 		}
 	}
 }
@@ -1095,28 +1131,39 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 
 	private var isFailableInitializer: Bool = false
 
-	override func replaceFunctionDeclarationData( // annotation: override
-		_ functionDeclaration: FunctionDeclarationData)
-		-> FunctionDeclarationData?
+	override func replaceInitializerDeclaration( // annotation: override
+		_ initializerDeclaration: InitializerDeclaration)
+		-> ArrayClass<Statement>
 	{
-		if functionDeclaration.isStatic == true,
-			functionDeclaration.extendsType == nil,
-			functionDeclaration.prefix == "init"
+		if initializerDeclaration.isStatic == true,
+			initializerDeclaration.extendsType == nil
 		{
-			if functionDeclaration.returnType.hasSuffix("?") {
-				let functionDeclaration = functionDeclaration
-
+			if initializerDeclaration.returnType.hasSuffix("?") {
 				isFailableInitializer = true
-				let newStatements = replaceStatements(functionDeclaration.statements ?? [])
+				let newStatements = replaceStatements(initializerDeclaration.statements ?? [])
 				isFailableInitializer = false
 
-				functionDeclaration.prefix = "invoke"
-				functionDeclaration.statements = newStatements
-				return functionDeclaration
+				let result: ArrayClass<Statement> = [FunctionDeclaration(
+					range: initializerDeclaration.range,
+					prefix: "invoke",
+					parameters: initializerDeclaration.parameters,
+					returnType: initializerDeclaration.returnType,
+					functionType: initializerDeclaration.functionType,
+					genericTypes: initializerDeclaration.genericTypes,
+					isImplicit: initializerDeclaration.isImplicit,
+					isStatic: initializerDeclaration.isStatic,
+					isMutating: initializerDeclaration.isMutating,
+					isPure: initializerDeclaration.isPure,
+					extendsType: initializerDeclaration.extendsType,
+					statements: newStatements,
+					access: initializerDeclaration.access,
+					annotations: initializerDeclaration.annotations), ]
+
+				return result
 			}
 		}
 
-		return super.replaceFunctionDeclarationData(functionDeclaration)
+		return super.replaceInitializerDeclaration(initializerDeclaration)
 	}
 
 	override func replaceAssignmentStatement( // annotation: override
@@ -1139,22 +1186,22 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 public class RemoveExtraReturnsInInitsTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
-	override func replaceFunctionDeclarationData( // annotation: override
-		_ functionDeclaration: FunctionDeclarationData)
-		-> FunctionDeclarationData?
+	override func replaceInitializerDeclaration(
+		_ initializerDeclaration: InitializerDeclaration)
+		-> InitializerDeclaration?
 	{
-		if functionDeclaration.isStatic == true,
-			functionDeclaration.extendsType == nil,
-			functionDeclaration.prefix == "init",
-			let lastStatement = functionDeclaration.statements?.last,
+		if initializerDeclaration.isStatic == true,
+			initializerDeclaration.extendsType == nil,
+			let lastStatement = initializerDeclaration.statements?.last,
 			lastStatement is ReturnStatement
 		{
-			let functionDeclaration = functionDeclaration
-			functionDeclaration.statements?.removeLast()
-			return functionDeclaration
+			// TODO: Try removing these assignments now that these are reference types
+			let initializerDeclaration = initializerDeclaration
+			initializerDeclaration.statements?.removeLast()
+			return initializerDeclaration
 		}
 
-		return functionDeclaration
+		return initializerDeclaration
 	}
 }
 
@@ -1184,9 +1231,9 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 
 	private func isStaticMember(_ member: Statement) -> Bool {
 		if let functionDeclaration = member as? FunctionDeclaration {
-			if functionDeclaration.data.isStatic == true,
-				functionDeclaration.data.extendsType == nil,
-				functionDeclaration.data.prefix != "init"
+			if functionDeclaration.isStatic == true,
+				functionDeclaration.extendsType == nil,
+				!(functionDeclaration is InitializerDeclaration)
 			{
 				return true
 			}
@@ -1466,13 +1513,13 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
 			rightExpression: rightExpression)
 	}
 
-	override func replaceFunctionDeclarationData( // annotation: override
-		_ functionDeclaration: FunctionDeclarationData)
-		-> FunctionDeclarationData?
+	override func replaceFunctionDeclaration( // annotation: override
+		_ functionDeclaration: FunctionDeclaration)
+		-> FunctionDeclaration?
 	{
 		returnTypesStack.append(functionDeclaration.returnType)
 		defer { returnTypesStack.removeLast() }
-		return super.replaceFunctionDeclarationData(functionDeclaration)
+		return super.replaceFunctionDeclaration(functionDeclaration)
 	}
 
 	override func replaceReturnStatement( // annotation: override
@@ -1535,6 +1582,98 @@ public class RenameOperatorsTranspilationPass: TranspilationPass {
 				operatorSymbol: operatorSymbol,
 				typeName: typeName)
 		}
+	}
+}
+
+/// Calls to the superclass's initializers are made in the function block in Swift but have to be
+/// in the function header in Kotlin. This should remove the calls from the initializer bodies and
+/// send them to the appropriate property.
+public class CallsToSuperclassInitializersTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	override func replaceInitializerDeclaration( // annotation: override
+		_ initializerDeclaration: InitializerDeclaration)
+		-> InitializerDeclaration?
+	{
+		var superCall: CallExpression?
+		let newStatements = ArrayClass<Statement>()
+
+		if let statements = initializerDeclaration.statements {
+			for statement in statements {
+				if let maybeSuperCall = getSuperCall(from: statement) {
+					if let superCall = superCall {
+						// TODO: This probably can't happen, but super calls inside ifs and such
+						// _can_ happen and should be warned about
+						let message = "Kotlin only supports a single call to the superclass's " +
+						"initializer"
+						Compiler.handleWarning(
+							message: message,
+							sourceFile: ast.sourceFile,
+							sourceFileRange: superCall.range)
+						Compiler.handleWarning(
+							message: message,
+							sourceFile: ast.sourceFile,
+							sourceFileRange: maybeSuperCall.range)
+
+						return initializerDeclaration
+					}
+					else {
+						superCall = maybeSuperCall
+					}
+				}
+				else {
+					// Keep all statements except super calls
+					newStatements.append(statement)
+				}
+			}
+		}
+
+		if let superCall = superCall {
+			return InitializerDeclaration(
+				range: initializerDeclaration.range,
+				parameters: initializerDeclaration.parameters,
+				returnType: initializerDeclaration.returnType,
+				functionType: initializerDeclaration.functionType,
+				genericTypes: initializerDeclaration.genericTypes,
+				isImplicit: initializerDeclaration.isImplicit,
+				isStatic: initializerDeclaration.isStatic,
+				isMutating: initializerDeclaration.isMutating,
+				isPure: initializerDeclaration.isPure,
+				extendsType: initializerDeclaration.extendsType,
+				statements: newStatements,
+				access: initializerDeclaration.access,
+				annotations: initializerDeclaration.annotations,
+				superCall: superCall)
+		}
+		else {
+			return initializerDeclaration
+		}
+	}
+
+	private func getSuperCall(from statement: Statement) -> CallExpression? {
+		if let expressionStatement = statement as? ExpressionStatement {
+			if let callExpression = expressionStatement.expression as? CallExpression {
+				if let dotExpression = callExpression.data.function as? DotExpression {
+					if let leftExpression = dotExpression.leftExpression as?
+						DeclarationReferenceExpression,
+						let rightExpression = dotExpression.rightExpression as?
+						DeclarationReferenceExpression,
+						leftExpression.data.identifier == "super",
+						rightExpression.data.identifier == "init"
+					{
+						return CallExpression(
+							range: callExpression.range,
+							data: CallExpressionData(
+								function: leftExpression,
+								parameters: callExpression.data.parameters,
+								typeName: callExpression.data.typeName,
+								range: callExpression.data.range))
+					}
+				}
+			}
+		}
+
+		return nil
 	}
 }
 
@@ -2228,7 +2367,7 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 				members: extensionDeclaration.members)
 		}
 		if let functionDeclaration = statement as? FunctionDeclaration {
-			return replaceFunctionDeclaration(functionDeclaration.data)
+			return replaceFunctionDeclaration(functionDeclaration)
 		}
 		if let variableDeclaration = statement as? VariableDeclaration {
 			return replaceVariableDeclaration(variableDeclaration.data)
@@ -2238,11 +2377,11 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceFunctionDeclaration( // annotation: override
-		_ functionDeclaration: FunctionDeclarationData)
+		_ functionDeclaration: FunctionDeclaration)
 		-> ArrayClass<Statement>
 	{
 		functionDeclaration.extendsType = self.extendingType
-		return [FunctionDeclaration(range: nil, data: functionDeclaration)]
+		return [functionDeclaration]
 	}
 
 	override func replaceVariableDeclarationData( // annotation: override
@@ -2269,9 +2408,9 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 public class RecordFunctionsTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
-	override func replaceFunctionDeclarationData( // annotation: override
-		_ functionDeclaration: FunctionDeclarationData)
-		-> FunctionDeclarationData?
+	override func replaceFunctionDeclaration( // annotation: override
+		_ functionDeclaration: FunctionDeclaration)
+		-> FunctionDeclaration?
 	{
 		let swiftAPIName = functionDeclaration.prefix + "(" +
 			functionDeclaration.parameters.map { ($0.apiLabel ?? "_") + ":" }.joined() + ")"
@@ -2287,7 +2426,7 @@ public class RecordFunctionsTranspilationPass: TranspilationPass {
 			KotlinTranslator.recordPureFunction(functionDeclaration)
 		}
 
-		return super.replaceFunctionDeclarationData(functionDeclaration)
+		return super.replaceFunctionDeclaration(functionDeclaration)
 	}
 }
 
@@ -2391,9 +2530,9 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 			}
 
 			if let functionDeclaration = member as? FunctionDeclaration {
-				if functionDeclaration.data.isMutating {
-					let methodName = functionDeclaration.data.prefix + "(" +
-						functionDeclaration.data.parameters.map { $0.label + ":" }
+				if functionDeclaration.isMutating {
+					let methodName = functionDeclaration.prefix + "(" +
+						functionDeclaration.parameters.map { $0.label + ":" }
 							.joined(separator: ", ") + ")"
 					let message = "No support for mutating methods in value types: found method " +
 						"\(methodName) inside struct \(structName)"
@@ -2421,9 +2560,9 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 	{
 		for member in members {
 			if let functionDeclaration = member as? FunctionDeclaration {
-				if functionDeclaration.data.isMutating {
-					let methodName = functionDeclaration.data.prefix + "(" +
-						functionDeclaration.data.parameters.map { $0.label + ":" }
+				if functionDeclaration.isMutating {
+					let methodName = functionDeclaration.prefix + "(" +
+						functionDeclaration.parameters.map { $0.label + ":" }
 							.joined(separator: ", ") + ")"
 					let message = "No support for mutating methods in value types: found method " +
 						"\(methodName) inside enum \(enumName)"
@@ -2742,9 +2881,9 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 public class EquatableOperatorsTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
-	override func replaceFunctionDeclarationData( // annotation: override
-		_ functionDeclaration: FunctionDeclarationData)
-		-> FunctionDeclarationData?
+	override func replaceFunctionDeclaration( // annotation: override
+		_ functionDeclaration: FunctionDeclaration)
+		-> FunctionDeclaration?
 	{
 		guard functionDeclaration.prefix == "==",
 			functionDeclaration.parameters.count == 2,
@@ -2822,7 +2961,8 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 				isGuard: false),
 			isGuard: false)))
 
-		return super.replaceFunctionDeclarationData(FunctionDeclarationData(
+		return super.replaceFunctionDeclaration(FunctionDeclaration(
+			range: nil,
 			prefix: "equals",
 			parameters: [
 				FunctionParameter(
@@ -2884,7 +3024,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 			}
 
 			let newMembers = members
-			newMembers.append(FunctionDeclaration(range: nil, data: rawValueInitializer))
+			newMembers.append(rawValueInitializer)
 			newMembers.append(VariableDeclaration(range: nil, data: rawValueVariable))
 
 			return super.replaceEnumDeclaration(
@@ -2911,7 +3051,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 		access: String?,
 		enumName: String,
 		elements: ArrayClass<EnumElement>)
-		-> FunctionDeclarationData?
+		-> FunctionDeclaration?
 	{
 		for element in elements {
 			if element.rawValue == nil {
@@ -2957,8 +3097,8 @@ public class RawValuesTranspilationPass: TranspilationPass {
 					range: nil)),
 			cases: switchCases)
 
-		return FunctionDeclarationData(
-			prefix: "init",
+		return InitializerDeclaration(
+			range: nil,
 			parameters: [FunctionParameter(
 				label: "rawValue",
 				apiLabel: nil,
@@ -2974,7 +3114,8 @@ public class RawValuesTranspilationPass: TranspilationPass {
 			extendsType: nil,
 			statements: [switchStatement],
 			access: access,
-			annotations: nil)
+			annotations: nil,
+			superCall: nil)
 	}
 
 	private func createRawValueVariable(
@@ -3016,7 +3157,8 @@ public class RawValuesTranspilationPass: TranspilationPass {
 					range: nil)),
 			cases: switchCases)
 
-		let getter = FunctionDeclarationData(
+		let getter = FunctionDeclaration(
+			range: nil,
 			prefix: "get",
 			parameters: [],
 			returnType: rawValueType,
@@ -3173,17 +3315,17 @@ public class FixProtocolContentsTranspilationPass: TranspilationPass {
 		return result
 	}
 
-	override func replaceFunctionDeclarationData( // annotation: override
-		_ functionDeclaration: FunctionDeclarationData)
-		-> FunctionDeclarationData?
+	override func replaceFunctionDeclaration( // annotation: override
+		_ functionDeclaration: FunctionDeclaration)
+		-> FunctionDeclaration?
 	{
 		if isInProtocol {
 			let functionDeclaration = functionDeclaration
 			functionDeclaration.statements = nil
-			return super.replaceFunctionDeclarationData(functionDeclaration)
+			return super.replaceFunctionDeclaration(functionDeclaration)
 		}
 		else {
-			return super.replaceFunctionDeclarationData(functionDeclaration)
+			return super.replaceFunctionDeclaration(functionDeclaration)
 		}
 	}
 
@@ -3263,6 +3405,7 @@ public extension TranspilationPass {
 		result = RefactorOptionalsInSubscriptsTranspilationPass(ast: result).run()
 		result = AddOptionalsInDotChainsTranspilationPass(ast: result).run()
 		result = RenameOperatorsTranspilationPass(ast: result).run()
+		result = CallsToSuperclassInitializersTranspilationPass(ast: result).run()
 
 		// - CapitalizeEnums has to be before IsOperatorsInSealedClasses
 		result = CapitalizeEnumsTranspilationPass(ast: result).run()

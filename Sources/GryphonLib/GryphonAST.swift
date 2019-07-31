@@ -353,14 +353,51 @@ public class StructDeclaration: Statement {
 }
 
 public class FunctionDeclaration: Statement {
-	let data: FunctionDeclarationData
+	var prefix: String
+	var parameters: ArrayClass<FunctionParameter>
+	var returnType: String
+	var functionType: String
+	var genericTypes: ArrayClass<String>
+	var isImplicit: Bool
+	var isStatic: Bool
+	var isMutating: Bool
+	var isPure: Bool
+	var extendsType: String?
+	var statements: ArrayClass<Statement>?
+	var access: String?
+	var annotations: String?
 
 	init(
 		range: SourceFileRange?,
-		data: FunctionDeclarationData)
+		prefix: String,
+		parameters: ArrayClass<FunctionParameter>,
+		returnType: String,
+		functionType: String,
+		genericTypes: ArrayClass<String>,
+		isImplicit: Bool,
+		isStatic: Bool,
+		isMutating: Bool,
+		isPure: Bool,
+		extendsType: String?,
+		statements: ArrayClass<Statement>?,
+		access: String?,
+		annotations: String?,
+		name: String = "FunctionDeclaration".capitalizedAsCamelCase())
 	{
-		self.data = data
-		super.init(range: range, name: "FunctionDeclaration".capitalizedAsCamelCase())
+		self.prefix = prefix
+		self.parameters = parameters
+		self.returnType = returnType
+		self.functionType = functionType
+		self.genericTypes = genericTypes
+		self.isImplicit = isImplicit
+		self.isStatic = isStatic
+		self.isMutating = isMutating
+		self.isPure = isPure
+		self.extendsType = extendsType
+		self.statements = statements
+		self.access = access
+		self.annotations = annotations
+		super.init(range: range, name: name)
 	}
 
 	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
@@ -377,21 +414,97 @@ public class FunctionDeclaration: Statement {
 			}
 
 		return [
-			data.extendsType.map { PrintableTree("extends type \($0)") },
-			data.isImplicit ? PrintableTree("implicit") : nil,
-			data.isStatic ? PrintableTree("static") : nil,
-			data.isMutating ? PrintableTree("mutating") : nil,
-			PrintableTree.initOrNil(data.access),
-			PrintableTree("type: \(data.functionType)"),
-			PrintableTree("prefix: \(data.prefix)"),
+			extendsType.map { PrintableTree("extends type \($0)") },
+			isImplicit ? PrintableTree("implicit") : nil,
+			isStatic ? PrintableTree("static") : nil,
+			isMutating ? PrintableTree("mutating") : nil,
+			PrintableTree.initOrNil(access),
+			PrintableTree("type: \(functionType)"),
+			PrintableTree("prefix: \(prefix)"),
 			PrintableTree("parameters", parametersTrees),
-			PrintableTree("return type: \(data.returnType)"),
+			PrintableTree("return type: \(returnType)"),
 			PrintableTree.ofStatements(
-				"statements", (data.statements ?? [])), ]
+				"statements", (statements ?? [])), ]
 	}
 
 	public static func == (lhs: FunctionDeclaration, rhs: FunctionDeclaration) -> Bool {
-		return lhs.data == rhs.data
+		return lhs.prefix == rhs.prefix &&
+			lhs.parameters == rhs.parameters &&
+			lhs.returnType == rhs.returnType &&
+			lhs.functionType == rhs.functionType &&
+			lhs.genericTypes == rhs.genericTypes &&
+			lhs.isImplicit == rhs.isImplicit &&
+			lhs.isStatic == rhs.isStatic &&
+			lhs.isMutating == rhs.isMutating &&
+			lhs.isPure == rhs.isPure &&
+			lhs.extendsType == rhs.extendsType &&
+			lhs.statements == rhs.statements &&
+			lhs.access == rhs.access &&
+			lhs.annotations == rhs.annotations
+	}
+}
+
+public class InitializerDeclaration: FunctionDeclaration {
+	let superCall: CallExpression?
+
+	init(
+		range: SourceFileRange?,
+		parameters: ArrayClass<FunctionParameter>,
+		returnType: String,
+		functionType: String,
+		genericTypes: ArrayClass<String>,
+		isImplicit: Bool,
+		isStatic: Bool,
+		isMutating: Bool,
+		isPure: Bool,
+		extendsType: String?,
+		statements: ArrayClass<Statement>?,
+		access: String?,
+		annotations: String?,
+		superCall: CallExpression?,
+		name: String = "FunctionDeclaration".capitalizedAsCamelCase())
+	{
+		self.superCall = superCall
+		super.init(
+			range: range,
+			prefix: "init",
+			parameters: parameters,
+			returnType: returnType,
+			functionType: functionType,
+			genericTypes: genericTypes,
+			isImplicit: isImplicit,
+			isStatic: isStatic,
+			isMutating: isMutating,
+			isPure: isPure,
+			extendsType: extendsType,
+			statements: statements,
+			access: access,
+			annotations: annotations,
+			name: "InitializerDeclaration".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
+		let result = super.printableSubtrees
+		result.append(PrintableTree.initOrNil("super call", [superCall]))
+		return result
+	}
+
+	public static func == (lhs: InitializerDeclaration, rhs: InitializerDeclaration) -> Bool {
+		return
+//			lhs.prefix == rhs.prefix &&	// Prefixes aren't checked because they're always "init"
+			lhs.parameters == rhs.parameters &&
+			lhs.returnType == rhs.returnType &&
+			lhs.functionType == rhs.functionType &&
+			lhs.genericTypes == rhs.genericTypes &&
+			lhs.isImplicit == rhs.isImplicit &&
+			lhs.isStatic == rhs.isStatic &&
+			lhs.isMutating == rhs.isMutating &&
+			lhs.isPure == rhs.isPure &&
+			lhs.extendsType == rhs.extendsType &&
+			lhs.statements == rhs.statements &&
+			lhs.access == rhs.access &&
+			lhs.annotations == rhs.annotations &&
+			lhs.superCall == rhs.superCall
 	}
 }
 
@@ -416,12 +529,8 @@ public class VariableDeclaration: Statement {
 			PrintableTree(data.identifier),
 			PrintableTree(data.typeName),
 			data.expression,
-			PrintableTree.initOrNil(
-				"getter",
-				[data.getter.map { FunctionDeclaration(range: nil, data: $0) }]),
-			PrintableTree.initOrNil(
-				"setter",
-				[data.setter.map { FunctionDeclaration(range: nil, data: $0) }]),
+			PrintableTree.initOrNil("getter", [data.getter]),
+			PrintableTree.initOrNil("setter", [data.setter]),
 			PrintableTree.initOrNil(
 				"annotations", [PrintableTree.initOrNil(data.annotations)]), ]
 	}
@@ -1820,8 +1929,8 @@ public class VariableDeclarationData: Equatable {
 	var identifier: String
 	var typeName: String
 	var expression: Expression?
-	var getter: FunctionDeclarationData?
-	var setter: FunctionDeclarationData?
+	var getter: FunctionDeclaration?
+	var setter: FunctionDeclaration?
 	var isLet: Bool
 	var isImplicit: Bool
 	var isStatic: Bool
@@ -1832,8 +1941,8 @@ public class VariableDeclarationData: Equatable {
 		identifier: String,
 		typeName: String,
 		expression: Expression?,
-		getter: FunctionDeclarationData?,
-		setter: FunctionDeclarationData?,
+		getter: FunctionDeclaration?,
+		setter: FunctionDeclaration?,
 		isLet: Bool,
 		isImplicit: Bool,
 		isStatic: Bool,
@@ -1931,72 +2040,6 @@ public class CallExpressionData: Equatable {
 			lhs.parameters == rhs.parameters &&
 			lhs.typeName == rhs.typeName &&
 			lhs.range == rhs.range
-	}
-}
-
-public class FunctionDeclarationData: Equatable {
-	var prefix: String
-	var parameters: ArrayClass<FunctionParameter>
-	var returnType: String
-	var functionType: String
-	var genericTypes: ArrayClass<String>
-	var isImplicit: Bool
-	var isStatic: Bool
-	var isMutating: Bool
-	var isPure: Bool
-	var extendsType: String?
-	var statements: ArrayClass<Statement>?
-	var access: String?
-	var annotations: String?
-
-	init(
-		prefix: String,
-		parameters: ArrayClass<FunctionParameter>,
-		returnType: String,
-		functionType: String,
-		genericTypes: ArrayClass<String>,
-		isImplicit: Bool,
-		isStatic: Bool,
-		isMutating: Bool,
-		isPure: Bool,
-		extendsType: String?,
-		statements: ArrayClass<Statement>?,
-		access: String?,
-		annotations: String?)
-	{
-		self.prefix = prefix
-		self.parameters = parameters
-		self.returnType = returnType
-		self.functionType = functionType
-		self.genericTypes = genericTypes
-		self.isImplicit = isImplicit
-		self.isStatic = isStatic
-		self.isMutating = isMutating
-		self.isPure = isPure
-		self.extendsType = extendsType
-		self.statements = statements
-		self.access = access
-		self.annotations = annotations
-	}
-
-	public static func == (
-		lhs: FunctionDeclarationData,
-		rhs: FunctionDeclarationData)
-		-> Bool
-	{
-		return lhs.prefix == rhs.prefix &&
-			lhs.parameters == rhs.parameters &&
-			lhs.returnType == rhs.returnType &&
-			lhs.functionType == rhs.functionType &&
-			lhs.genericTypes == rhs.genericTypes &&
-			lhs.isImplicit == rhs.isImplicit &&
-			lhs.isStatic == rhs.isStatic &&
-			lhs.isMutating == rhs.isMutating &&
-			lhs.isPure == rhs.isPure &&
-			lhs.extendsType == rhs.extendsType &&
-			lhs.statements == rhs.statements &&
-			lhs.access == rhs.access &&
-			lhs.annotations == rhs.annotations
 	}
 }
 

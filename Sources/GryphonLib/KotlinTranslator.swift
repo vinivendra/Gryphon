@@ -86,9 +86,9 @@ public class KotlinTranslator {
 
 	// TODO: These records should probably go in a Context class of some kind
 	/// Stores pure functions so we can reference them later
-	private static var pureFunctions: ArrayClass<FunctionDeclarationData> = []
+	private static var pureFunctions: ArrayClass<FunctionDeclaration> = []
 
-	public static func recordPureFunction(_ newValue: FunctionDeclarationData) {
+	public static func recordPureFunction(_ newValue: FunctionDeclaration) {
 		pureFunctions.append(newValue)
 	}
 
@@ -332,7 +332,7 @@ public class KotlinTranslator {
 		}
 		if let functionDeclaration = subtree as? FunctionDeclaration {
 			return try translateFunctionDeclaration(
-				functionDeclaration: functionDeclaration.data,
+				functionDeclaration: functionDeclaration,
 				withIndentation: indentation)
 		}
 		if let protocolDeclaration = subtree as? ProtocolDeclaration {
@@ -618,8 +618,10 @@ public class KotlinTranslator {
 	}
 
 	private func translateFunctionDeclaration(
-		functionDeclaration: FunctionDeclarationData, withIndentation indentation: String,
-		shouldAddNewlines: Bool = false) throws -> String
+		functionDeclaration: FunctionDeclaration,
+		withIndentation indentation: String,
+		shouldAddNewlines: Bool = false)
+		throws -> String
 	{
 		guard !functionDeclaration.isImplicit else {
 			return ""
@@ -628,7 +630,7 @@ public class KotlinTranslator {
 		var indentation = indentation
 		var result = indentation
 
-		let isInit = (functionDeclaration.prefix == "init")
+		let isInit = (functionDeclaration is InitializerDeclaration)
 		if isInit {
 			result += "constructor("
 		}
@@ -672,20 +674,30 @@ public class KotlinTranslator {
 			result += functionDeclaration.prefix + "("
 		}
 
-		let returnString: String
-		if functionDeclaration.returnType != "()", !isInit {
-			let translatedReturnType = translateType(functionDeclaration.returnType)
-			returnString = ": \(translatedReturnType)"
+		// Check if we need to call a superclass initializer or if we need to specify a return type
+		// after the parameters
+		var returnOrSuperCallString: String = ""
+		if let initializerDeclaration = functionDeclaration as? InitializerDeclaration {
+			if let superCall = initializerDeclaration.superCall {
+				let superCallTranslation = try translateCallExpression(
+					superCall.data,
+					withIndentation: increaseIndentation(indentation))
+				returnOrSuperCallString = ": \(superCallTranslation)"
+			}
 		}
-		else {
-			returnString = ""
+		else if functionDeclaration.returnType != "()", !isInit {
+			// If it doesn't, that place might be used for the return type
+
+			let translatedReturnType = translateType(functionDeclaration.returnType)
+			returnOrSuperCallString = ": \(translatedReturnType)"
 		}
 
 		let parameterStrings = try functionDeclaration.parameters
 			.map { try translateFunctionDeclarationParameter($0, withIndentation: indentation) }
 
 		if !shouldAddNewlines {
-			result += parameterStrings.joined(separator: ", ") + ")" + returnString + " {\n"
+			result += parameterStrings.joined(separator: ", ") + ")" +
+				returnOrSuperCallString + " {\n"
 			if result.count >= KotlinTranslator.lineLimit {
 				return try translateFunctionDeclaration(
 					functionDeclaration: functionDeclaration, withIndentation: indentation,
@@ -697,8 +709,8 @@ public class KotlinTranslator {
 			let parametersString = parameterStrings.joined(separator: ",\n\(parameterIndentation)")
 			result += "\n\(parameterIndentation)" + parametersString + ")\n"
 
-			if !returnString.isEmpty {
-				result += "\(parameterIndentation)\(returnString)\n"
+			if !returnOrSuperCallString.isEmpty {
+				result += "\(parameterIndentation)\(returnOrSuperCallString)\n"
 			}
 
 			result += "\(indentation){\n"

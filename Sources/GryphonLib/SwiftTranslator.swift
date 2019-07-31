@@ -1800,20 +1800,41 @@ public class SwiftTranslator {
 
 		let isPure = (getKeyedComment(forNode: functionDeclaration, key: .gryphon) == "pure")
 
-		return FunctionDeclaration(range: nil, data: FunctionDeclarationData(
-			prefix: String(functionNamePrefix),
-			parameters: parameters,
-			returnType: returnType,
-			functionType: interfaceType,
-			genericTypes: genericTypes,
-			isImplicit: isImplicit,
-			isStatic: isStatic,
-			isMutating: isMutating,
-			isPure: isPure,
-			extendsType: nil,
-			statements: statements,
-			access: access,
-			annotations: annotationsResult))
+		let prefix = String(functionNamePrefix)
+		if prefix == "init" {
+			return InitializerDeclaration(
+				range: nil,
+				parameters: parameters,
+				returnType: returnType,
+				functionType: interfaceType,
+				genericTypes: genericTypes,
+				isImplicit: isImplicit,
+				isStatic: isStatic,
+				isMutating: isMutating,
+				isPure: isPure,
+				extendsType: nil,
+				statements: statements,
+				access: access,
+				annotations: annotationsResult,
+				superCall: nil)
+		}
+		else {
+			return FunctionDeclaration(
+				range: nil,
+				prefix: prefix,
+				parameters: parameters,
+				returnType: returnType,
+				functionType: interfaceType,
+				genericTypes: genericTypes,
+				isImplicit: isImplicit,
+				isStatic: isStatic,
+				isMutating: isMutating,
+				isPure: isPure,
+				extendsType: nil,
+				statements: statements,
+				access: access,
+				annotations: annotationsResult)
+		}
 	}
 
 	internal func translateTopLevelCode(_ topLevelCodeDeclaration: SwiftAST) throws
@@ -1898,8 +1919,8 @@ public class SwiftTranslator {
 			expression = LiteralCodeExpression(range: nil, string: valueReplacement)
 		}
 
-		var getter: FunctionDeclarationData?
-		var setter: FunctionDeclarationData?
+		var getter: FunctionDeclaration?
+		var setter: FunctionDeclaration?
 		for subtree in variableDeclaration.subtrees {
 			let access = subtree["access"]
 
@@ -1916,7 +1937,8 @@ public class SwiftTranslator {
 			let annotations = getKeyedComment(forNode: subtree, key: .annotation)
 
 			if subtree["get_for"] != nil {
-				getter = FunctionDeclarationData(
+				getter = FunctionDeclaration(
+					range: nil,
 					prefix: "get",
 					parameters: [],
 					returnType: typeName,
@@ -1932,7 +1954,8 @@ public class SwiftTranslator {
 					annotations: annotations)
 			}
 			else if subtree["materializeForSet_for"] != nil || subtree["set_for"] != nil {
-				setter = FunctionDeclarationData(
+				setter = FunctionDeclaration(
+					range: nil,
 					prefix: "set",
 					parameters: [FunctionParameter(
 						label: "newValue", apiLabel: nil, typeName: typeName, value: nil), ],
@@ -2094,6 +2117,23 @@ public class SwiftTranslator {
 					"an expression as a subtree",
 					ast: expression, translator: self)
 			}
+		case "Is Subtype Expression":
+			let subExpression = expression.subtrees.first
+			let typeName = expression["writtenType"]
+
+			if let typeName = typeName, let subExpression = subExpression {
+				result = BinaryOperatorExpression(
+					range: nil,
+					leftExpression: try translateExpression(subExpression),
+					rightExpression: TypeExpression(range: nil, typeName: typeName),
+					operatorSymbol: "is",
+					typeName: "Bool")
+			}
+			else {
+				result = try unexpectedExpressionStructureError(
+					"Expected Is Subtype Expression to have a type and an expression as a subtree",
+					ast: expression, translator: self)
+			}
 		case "Super Reference Expression":
 			if let typeName = expression["type"] {
 				result = DeclarationReferenceExpression(range: nil, data: DeclarationReferenceData(
@@ -2117,7 +2157,8 @@ public class SwiftTranslator {
 			 "Try Expression",
 			 "Force Try Expression",
 			 "Dot Self Expression",
-			 "Derived To Base Expression":
+			 "Derived To Base Expression",
+			 "Rebind Self In Constructor Expression":
 
 			if let lastExpression = expression.subtrees.last {
 				result = try translateExpression(lastExpression)
@@ -2136,6 +2177,14 @@ public class SwiftTranslator {
 					"Unrecognized structure in automatic expression",
 					ast: expression, translator: self)
 			}
+		case "Other Constructor Reference Expression":
+			result = DeclarationReferenceExpression(range: nil, data: DeclarationReferenceData(
+				identifier: "init",
+				typeName: expression["type"]!,
+				isStandardLibrary: false,
+				isImplicit: false,
+				range: nil))
+
 		default:
 			result = try unexpectedExpressionStructureError(
 				"Unknown expression", ast: expression, translator: self)
