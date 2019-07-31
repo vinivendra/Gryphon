@@ -877,7 +877,7 @@ public /*abstract*/ class Expression: PrintableAsTree, Equatable {
 		self.name = name
 	}
 
-	var swiftType: String? {
+	var swiftType: String? { // annotation: open
 		fatalError("Accessing field in abstract class Expression")
 	}
 
@@ -1079,7 +1079,7 @@ public class LiteralCodeExpression: Expression {
 		return [PrintableTree(string)]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		return nil
 	}
 
@@ -1100,7 +1100,7 @@ public class LiteralDeclarationExpression: Expression {
 		return [PrintableTree(string)]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		return nil
 	}
 
@@ -1135,7 +1135,7 @@ public class TemplateExpression: Expression {
 			PrintableTree("matches", ArrayClass<PrintableAsTree?>(sortedMatchesTrees)), ]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		return nil
 	}
 
@@ -1156,7 +1156,7 @@ public class ParenthesesExpression: Expression {
 		return [expression]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		return expression.swiftType
 	}
 
@@ -1177,7 +1177,7 @@ public class ForceValueExpression: Expression {
 		return [expression]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		let subtype = expression.swiftType
 		if let subtype = subtype, subtype.hasSuffix("?") {
 			return String(subtype.dropLast())
@@ -1204,7 +1204,7 @@ public class OptionalExpression: Expression {
 		return [expression]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		if let typeName = expression.swiftType {
 			return String(typeName.dropLast()) // Drop the "?"
 		}
@@ -1234,7 +1234,7 @@ public class DeclarationReferenceExpression: Expression {
 			data.isImplicit ? PrintableTree("implicit") : nil, ]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		return data.typeName
 	}
 
@@ -1259,7 +1259,7 @@ public class TypeExpression: Expression {
 		return [PrintableTree(typeName)]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		return typeName
 	}
 
@@ -1292,7 +1292,7 @@ public class SubscriptExpression: Expression {
 			PrintableTree.ofExpressions("indexExpression", [indexExpression]), ]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		return typeName
 	}
 
@@ -1319,7 +1319,7 @@ public class ArrayExpression: Expression {
 			PrintableTree.ofExpressions("elements", elements), ]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		return typeName
 	}
 
@@ -1359,7 +1359,7 @@ public class DictionaryExpression: Expression {
 			PrintableTree("key value pairs", keyValueTrees), ]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		return typeName
 	}
 
@@ -1382,7 +1382,7 @@ public class ReturnExpression: Expression {
 		return [expression]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		return expression?.swiftType
 	}
 
@@ -1407,7 +1407,7 @@ public class DotExpression: Expression {
 			PrintableTree.ofExpressions("right", [rightExpression]), ]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		// Enum references should be considered to have the left type, as the right expression's
 		// is a function type (something like `(MyEnum.Type) -> MyEnum` or
 		// `(A.MyEnum.Type) -> A.MyEnum`).
@@ -1461,7 +1461,7 @@ public class BinaryOperatorExpression: Expression {
 			PrintableTree.ofExpressions("right", [rightExpression]), ]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		return typeName
 	}
 
@@ -1497,7 +1497,7 @@ public class PrefixUnaryExpression: Expression {
 			PrintableTree.ofExpressions("expression", [subExpression]), ]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		return typeName
 	}
 
@@ -1532,7 +1532,7 @@ public class PostfixUnaryExpression: Expression {
 			PrintableTree.ofExpressions("expression", [subExpression]), ]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		return typeName
 	}
 
@@ -1567,7 +1567,7 @@ public class IfExpression: Expression {
 			PrintableTree.ofExpressions("falseExpression", [falseExpression]), ]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		return trueExpression.swiftType
 	}
 
@@ -1593,7 +1593,7 @@ public class CallExpression: Expression {
 			PrintableTree.ofExpressions("parameters", [data.parameters]), ]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		return data.typeName
 	}
 
@@ -1628,7 +1628,7 @@ public class ClosureExpression: Expression {
 			PrintableTree.ofStatements("statements", statements), ]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		return typeName
 	}
 
@@ -1651,7 +1651,7 @@ public class LiteralIntExpression: Expression {
 		return [PrintableTree(String(value))]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		return "Int"
 	}
 
@@ -1672,7 +1672,7 @@ public class LiteralUIntExpression: Expression {
 		return [PrintableTree(String(value))]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		return "UInt"
 	}
 
@@ -1693,7 +1693,7 @@ public class LiteralDoubleExpression: Expression {
 		return [PrintableTree(String(value))]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		return "Double"
 	}
 
@@ -1714,7 +1714,7 @@ public class LiteralFloatExpression: Expression {
 		return [PrintableTree(String(value))]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		return "Float"
 	}
 
@@ -1735,7 +1735,7 @@ public class LiteralBoolExpression: Expression {
 		return [PrintableTree(String(value))]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		return "Bool"
 	}
 
@@ -1756,7 +1756,7 @@ public class LiteralStringExpression: Expression {
 		return [PrintableTree(String(value))]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		return "String"
 	}
 
@@ -1777,7 +1777,7 @@ public class LiteralCharacterExpression: Expression {
 		return [PrintableTree(String(value))]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		return "Character"
 	}
 
@@ -1796,7 +1796,7 @@ public class NilLiteralExpression: Expression {
 		return []
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		return nil
 	}
 
@@ -1819,7 +1819,7 @@ public class InterpolatedStringLiteralExpression: Expression {
 		return [PrintableTree.ofExpressions("expressions", expressions)]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		return "String"
 	}
 
@@ -1846,7 +1846,7 @@ public class TupleExpression: Expression {
 		}
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		return nil
 	}
 
@@ -1879,7 +1879,7 @@ public class TupleShuffleExpression: Expression {
 			PrintableTree.ofExpressions("expressions", expressions), ]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		return nil
 	}
 
@@ -1899,7 +1899,7 @@ public class ErrorExpression: Expression {
 		return []
 	}
 
-	override var swiftType: String? {
+	override var swiftType: String? { // annotation: override
 		return "<<Error>>"
 	}
 
