@@ -2394,6 +2394,55 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 	}
 }
 
+/// If let conditions of the type `if let foo = foo as? Type` can be more simply translated as
+/// `if (foo is Type)`. This pass makes that transformation.
+public class ShadowedIfLetAsToIsTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST): super(ast) { }
+
+	override func replaceIfStatementData(_ ifStatement: IfStatementData) -> IfStatementData {
+		let newConditions: ArrayClass<IfStatementData.IfCondition> = []
+
+		for condition in ifStatement.conditions {
+			var conditionWasReplaced = false
+
+			if case let .declaration(variableDeclaration: variableDeclaration) = condition {
+				if let expression = variableDeclaration.expression {
+					if let binaryOperator = expression as? BinaryOperatorExpression {
+						if let leftExpression =
+								binaryOperator.leftExpression as? DeclarationReferenceExpression,
+							let rightExpression =
+								binaryOperator.rightExpression as? TypeExpression,
+							binaryOperator.operatorSymbol == "as?"
+						{
+							if variableDeclaration.identifier == leftExpression.data.identifier {
+								conditionWasReplaced = true
+								newConditions.append(IfStatementData.IfCondition.condition(
+									expression: BinaryOperatorExpression(
+										range: nil,
+										leftExpression: leftExpression,
+										rightExpression: rightExpression,
+										operatorSymbol: "is",
+										typeName: "Bool")))
+							}
+						}
+					}
+				}
+			}
+
+			if !conditionWasReplaced {
+				newConditions.append(condition)
+			}
+		}
+
+		return super.replaceIfStatementData(IfStatementData(
+			conditions: newConditions,
+			declarations: ifStatement.declarations,
+			statements: ifStatement.statements,
+			elseStatement: ifStatement.elseStatement,
+			isGuard: ifStatement.isGuard))
+	}
+}
+
 /// Swift functions (both declarations and calls) have to be translated using their internal
 /// parameter names, not their API names. This is both for correctness and readability. Since calls
 /// only contain the API names, we need a way to use the API names to retrieve the internal names.
@@ -3392,8 +3441,13 @@ public extension TranspilationPass {
 		result = StaticMembersTranspilationPass(ast: result).run()
 		result = FixProtocolContentsTranspilationPass(ast: result).run()
 		result = RemoveExtensionsTranspilationPass(ast: result).run()
-		// Note: We have to know the order of the conditions to raise warnings here, so they must go
-		// before the conditions are rearranged
+
+		// Deal with if lets:
+		// - We can refactor shadowed if-let-as conditions before raising warnings to avoid false
+		//   alarms
+		// - We have to know the order of the conditions to raise warnings here, so warnings must go
+		//   before the conditions are rearranged
+		result = ShadowedIfLetAsToIsTranspilationPass(ast: result).run()
 		result = RaiseWarningsForSideEffectsInIfLetsTranspilationPass(ast: result).run()
 		result = RearrangeIfLetsTranspilationPass(ast: result).run()
 
