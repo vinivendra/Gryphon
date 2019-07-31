@@ -73,12 +73,13 @@ public /*abstract*/ class Statement: PrintableAsTree, Equatable {
 	}
 
 	// PrintableAsTree
-	public var treeDescription: String {
+	public var treeDescription: String { // annotation: override
 		return name
 	}
 
-	public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		fatalError("Accessing field in abstract class Statement")
+		// insert: return mutableListOf()
 	}
 
 	public static func == (lhs: Statement, rhs: Statement) -> Bool {
@@ -94,7 +95,7 @@ public class CommentStatement: Statement {
 		super.init(range: range, name: "CommentStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [PrintableTree("//\(value)")]
 	}
 
@@ -111,7 +112,7 @@ public class ExpressionStatement: Statement {
 		super.init(range: range, name: "ExpressionStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [expression]
 	}
 
@@ -137,7 +138,7 @@ public class TypealiasDeclaration: Statement {
 		super.init(range: range, name: "TypealiasDeclaration".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [
 			isImplicit ? PrintableTree("implicit") : nil,
 			PrintableTree("identifier: \(identifier)"),
@@ -165,7 +166,7 @@ public class ExtensionDeclaration: Statement {
 		super.init(range: range, name: "ExtensionDeclaration".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree(typeName),
 			PrintableTree.ofStatements("members", members), ]
@@ -188,7 +189,7 @@ public class ImportDeclaration: Statement {
 		super.init(range: range, name: "ImportDeclaration".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [PrintableTree(moduleName)]
 	}
 
@@ -214,7 +215,7 @@ public class ClassDeclaration: Statement {
 		super.init(range: range, name: "ClassDeclaration".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return  [
 			PrintableTree(className),
 			PrintableTree.ofStrings("inherits", inherits),
@@ -239,7 +240,7 @@ public class CompanionObject: Statement {
 		super.init(range: range, name: "CompanionObject".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return ArrayClass<PrintableAsTree?>(members)
 	}
 
@@ -274,7 +275,7 @@ public class EnumDeclaration: Statement {
 		super.init(range: range, name: "EnumDeclaration".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return ArrayClass<PrintableAsTree?>(members)
 	}
 
@@ -302,7 +303,7 @@ public class ProtocolDeclaration: Statement {
 		super.init(range: range, name: "ProtocolDeclaration".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree(protocolName),
 			PrintableTree.ofStatements("members", members), ]
@@ -334,7 +335,7 @@ public class StructDeclaration: Statement {
 		super.init(range: range, name: "StructDeclaration".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree.initOrNil(
 				"annotations", [PrintableTree.initOrNil(annotations)]),
@@ -362,8 +363,8 @@ public class FunctionDeclaration: Statement {
 		super.init(range: range, name: "FunctionDeclaration".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
-		let parametersTrees = data.parameters
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
+		let parametersTrees = parameters
 			.map { parameter -> PrintableAsTree? in
 				PrintableTree(
 					"parameter",
@@ -405,7 +406,7 @@ public class VariableDeclaration: Statement {
 		super.init(range: range, name: "VariableDeclaration".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree.initOrNil(
 				"extendsType", [PrintableTree.initOrNil(data.extendsType)]),
@@ -441,7 +442,7 @@ public class DoStatement: Statement {
 		super.init(range: range, name: "DoStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return ArrayClass<PrintableAsTree?>(statements)
 	}
 
@@ -464,7 +465,7 @@ public class CatchStatement: Statement {
 		super.init(range: range, name: "CatchStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree(
 				"variableDeclaration", ArrayClass<PrintableAsTree?>([
@@ -498,7 +499,7 @@ public class ForEachStatement: Statement {
 		super.init(range: range, name: "ForEachStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree("variable", [variable]),
 			PrintableTree("collection", [collection]),
@@ -526,7 +527,7 @@ public class WhileStatement: Statement {
 		super.init(range: range, name: "WhileStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree.ofExpressions("expression", [expression]),
 			PrintableTree.ofStatements("statements", statements), ]
@@ -549,7 +550,7 @@ public class IfStatement: Statement {
 		super.init(range: range, name: "IfStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		let declarationTrees =
 			data.declarations.map { VariableDeclaration(range: nil, data: $0) }
 		let conditionTrees = data.conditions.map { $0.toStatement() }
@@ -589,7 +590,7 @@ public class SwitchStatement: Statement {
 		super.init(range: range, name: "SwitchStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		let caseItems = cases.map { switchCase -> PrintableAsTree? in
 			PrintableTree("case item", [
 				PrintableTree.ofExpressions(
@@ -625,7 +626,7 @@ public class DeferStatement: Statement {
 		super.init(range: range, name: "DeferStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return ArrayClass<PrintableAsTree?>(statements)
 	}
 
@@ -645,7 +646,7 @@ public class ThrowStatement: Statement {
 		super.init(range: range, name: "ThrowStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [expression]
 	}
 
@@ -665,7 +666,7 @@ public class ReturnStatement: Statement {
 		super.init(range: range, name: "ReturnStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [expression]
 	}
 
@@ -679,7 +680,7 @@ public class BreakStatement: Statement {
 		super.init(range: range, name: "BreakStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return []
 	}
 
@@ -693,7 +694,7 @@ public class ContinueStatement: Statement {
 		super.init(range: range, name: "ContinueStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return []
 	}
 
@@ -716,7 +717,7 @@ public class AssignmentStatement: Statement {
 		super.init(range: range, name: "AssignmentStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [leftHand, rightHand]
 	}
 
@@ -731,7 +732,7 @@ public class ErrorStatement: Statement {
 		super.init(range: range, name: "ErrorStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return []
 	}
 
@@ -772,11 +773,11 @@ public /*abstract*/ class Expression: PrintableAsTree, Equatable {
 	}
 
 	// PrintableAsTree
-	public var treeDescription: String {
+	public var treeDescription: String { // annotation: override
 		return name
 	}
 
-	public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		fatalError("Accessing field in abstract class Expression")
 	}
 
@@ -965,7 +966,7 @@ public class LiteralCodeExpression: Expression {
 		super.init(range: range, name: "LiteralCodeExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [PrintableTree(string)]
 	}
 
@@ -986,7 +987,7 @@ public class LiteralDeclarationExpression: Expression {
 		super.init(range: range, name: "LiteralDeclarationExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [PrintableTree(string)]
 	}
 
@@ -1013,7 +1014,7 @@ public class TemplateExpression: Expression {
 		super.init(range: range, name: "TemplateExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		let matchesTrees = matches.map { PrintableTree($0.key, [$0.value]) }
 
 		let sortedMatchesTrees = matchesTrees.sorted { a, b in
@@ -1042,7 +1043,7 @@ public class ParenthesesExpression: Expression {
 		super.init(range: range, name: "ParenthesesExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [expression]
 	}
 
@@ -1063,7 +1064,7 @@ public class ForceValueExpression: Expression {
 		super.init(range: range, name: "ForceValueExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [expression]
 	}
 
@@ -1090,7 +1091,7 @@ public class OptionalExpression: Expression {
 		super.init(range: range, name: "OptionalExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [expression]
 	}
 
@@ -1116,7 +1117,7 @@ public class DeclarationReferenceExpression: Expression {
 		super.init(range: range, name: "DeclarationReferenceExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree(data.typeName),
 			PrintableTree(data.identifier),
@@ -1145,7 +1146,7 @@ public class TypeExpression: Expression {
 		super.init(range: range, name: "TypeExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [PrintableTree(typeName)]
 	}
 
@@ -1175,7 +1176,7 @@ public class SubscriptExpression: Expression {
 		super.init(range: range, name: "SubscriptExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree("type \(typeName)"),
 			PrintableTree.ofExpressions("subscriptedExpression", [subscriptedExpression]),
@@ -1203,7 +1204,7 @@ public class ArrayExpression: Expression {
 		super.init(range: range, name: "ArrayExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree("type \(typeName)"),
 			PrintableTree.ofExpressions("elements", elements), ]
@@ -1236,7 +1237,7 @@ public class DictionaryExpression: Expression {
 		super.init(range: range, name: "DictionaryExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		let keyValueTrees = zipToClass(keys, values).map
 		{ (pair: (first: Expression, second: Expression)) -> PrintableAsTree? in
 			PrintableTree("pair", [
@@ -1268,7 +1269,7 @@ public class ReturnExpression: Expression {
 		super.init(range: range, name: "ReturnExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [expression]
 	}
 
@@ -1291,7 +1292,7 @@ public class DotExpression: Expression {
 		super.init(range: range, name: "DotExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree.ofExpressions("left", [leftExpression]),
 			PrintableTree.ofExpressions("right", [rightExpression]), ]
@@ -1343,7 +1344,7 @@ public class BinaryOperatorExpression: Expression {
 		super.init(range: range, name: "BinaryOperatorExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree("type \(typeName)"),
 			PrintableTree.ofExpressions("left", [leftExpression]),
@@ -1380,7 +1381,7 @@ public class PrefixUnaryExpression: Expression {
 		super.init(range: range, name: "PrefixUnaryExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree("type \(typeName)"),
 			PrintableTree("operator \(operatorSymbol)"),
@@ -1415,7 +1416,7 @@ public class PostfixUnaryExpression: Expression {
 		super.init(range: range, name: "PrefixUnaryExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree("type \(typeName)"),
 			PrintableTree("operator \(operatorSymbol)"),
@@ -1450,7 +1451,7 @@ public class IfExpression: Expression {
 		super.init(range: range, name: "IfExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree.ofExpressions("condition", [condition]),
 			PrintableTree.ofExpressions("trueExpression", [trueExpression]),
@@ -1476,7 +1477,7 @@ public class CallExpression: Expression {
 		super.init(range: range, name: "CallExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree("type \(data.typeName)"),
 			PrintableTree.ofExpressions("function", [data.function]),
@@ -1509,7 +1510,7 @@ public class ClosureExpression: Expression {
 		super.init(range: range, name: "ClosureExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		let parametersString =
 			"(" + parameters.map { $0.label + ":" }.joined(separator: ", ") + ")"
 		return [
@@ -1537,7 +1538,7 @@ public class LiteralIntExpression: Expression {
 		super.init(range: range, name: "LiteralIntExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [PrintableTree(String(value))]
 	}
 
@@ -1558,7 +1559,7 @@ public class LiteralUIntExpression: Expression {
 		super.init(range: range, name: "LiteralUIntExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [PrintableTree(String(value))]
 	}
 
@@ -1579,7 +1580,7 @@ public class LiteralDoubleExpression: Expression {
 		super.init(range: range, name: "LiteralDoubleExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [PrintableTree(String(value))]
 	}
 
@@ -1600,7 +1601,7 @@ public class LiteralFloatExpression: Expression {
 		super.init(range: range, name: "LiteralFloatExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [PrintableTree(String(value))]
 	}
 
@@ -1621,7 +1622,7 @@ public class LiteralBoolExpression: Expression {
 		super.init(range: range, name: "LiteralBoolExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [PrintableTree(String(value))]
 	}
 
@@ -1642,7 +1643,7 @@ public class LiteralStringExpression: Expression {
 		super.init(range: range, name: "LiteralStringExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [PrintableTree(String(value))]
 	}
 
@@ -1663,7 +1664,7 @@ public class LiteralCharacterExpression: Expression {
 		super.init(range: range, name: "LiteralCharacterExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [PrintableTree(String(value))]
 	}
 
@@ -1682,7 +1683,7 @@ public class NilLiteralExpression: Expression {
 		super.init(range: range, name: "NilLiteralExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return []
 	}
 
@@ -1705,7 +1706,7 @@ public class InterpolatedStringLiteralExpression: Expression {
 			name: "InterpolatedStringLiteralExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [PrintableTree.ofExpressions("expressions", expressions)]
 	}
 
@@ -1730,7 +1731,7 @@ public class TupleExpression: Expression {
 		super.init(range: range, name: "TupleExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return pairs.map {
 			PrintableTree.ofExpressions(($0.label ?? "_") + ":", [$0.expression])
 		}
@@ -1762,7 +1763,7 @@ public class TupleShuffleExpression: Expression {
 		super.init(range: range, name: "TupleShuffleExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree.ofStrings("labels", labels),
 			PrintableTree.ofStrings("indices", indices.map { $0.description }),
@@ -1785,7 +1786,7 @@ public class ErrorExpression: Expression {
 		super.init(range: range, name: "ErrorExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: ArrayClass<PrintableAsTree?> {
+	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return []
 	}
 
