@@ -680,35 +680,32 @@ public class SwiftTranslator {
 			let label = labelAndType?[safe: 0]
 			let typeName = labelAndType?[safe: 1]
 
-			if let label = label,
-				let typeName = typeName,
-				let leftExpression = leftHand as? DeclarationReferenceExpression
-			{
-				return DotExpression(
-					range: nil,
-					leftExpression: leftHand,
-					rightExpression: DeclarationReferenceExpression(range: nil, data:
-						DeclarationReferenceData(
-							identifier: label,
-							typeName: typeName,
-							isStandardLibrary: leftExpression.data.isStandardLibrary,
-							isImplicit: false,
-							range: leftExpression.range)))
-			}
-			else if let leftExpression = leftHand as? DeclarationReferenceExpression,
-				let tupleComponent = tupleComponent
-			{
-				let memberName = (number == 0) ? "first" : "second"
-				return DotExpression(
-					range: nil,
-					leftExpression: leftHand,
-					rightExpression: DeclarationReferenceExpression(range: nil, data:
-						DeclarationReferenceData(
-							identifier: memberName,
-							typeName: tupleComponent,
-							isStandardLibrary: leftExpression.data.isStandardLibrary,
-							isImplicit: false,
-							range: leftExpression.data.range)))
+			if let leftExpression = leftHand as? DeclarationReferenceExpression {
+				if let label = label, let typeName = typeName {
+					return DotExpression(
+						range: nil,
+						leftExpression: leftHand,
+						rightExpression: DeclarationReferenceExpression(range: nil, data:
+							DeclarationReferenceData(
+								identifier: label,
+								typeName: typeName,
+								isStandardLibrary: leftExpression.data.isStandardLibrary,
+								isImplicit: false,
+								range: leftExpression.range)))
+				}
+				else if let tupleComponent = tupleComponent {
+					let memberName = (number == 0) ? "first" : "second"
+					return DotExpression(
+						range: nil,
+						leftExpression: leftHand,
+						rightExpression: DeclarationReferenceExpression(range: nil, data:
+							DeclarationReferenceData(
+								identifier: memberName,
+								typeName: tupleComponent,
+								isStandardLibrary: leftExpression.data.isStandardLibrary,
+								isImplicit: false,
+								range: leftExpression.data.range)))
+				}
 			}
 		}
 

@@ -14,6 +14,23 @@
 // limitations under the License.
 //
 
+/// Implements the basic algorithm that visits nodes in the AST. Subclassing this class and
+/// overriding the `replace` and `process` methods lets you alter the AST in specific places, which
+/// is how most passes are implemented.
+/// The `process` methods are just like the `replace` methods, except that they return the same type
+/// that they receive. The different names serves only to make this file compile correctly in
+/// Kotlin.
+/// The default implementation of `replace` methods is to simply return the same node as they
+/// received - after visiting all of its subnodes and replacing them if necessary. This means
+/// running the base TranspilationPass class on an AST, without overriding any methods, will simply
+/// return the same AST.
+/// It also means that overriding methods may call their respective super methods if they want to
+/// visit all subnodes (instead of manually re-implementing this visit). For example, when
+/// overriding `replaceIfStatement`, instead of just returning a new if statement a user might call
+/// `return super.replaceIfStatement(myNewIfStatement)` to make sure their overriding method also
+/// runs on nested if statements.
+/// The `process` methods are always called from their respective `replace` methods, meaning users
+/// can override either one to replace a certain statement type.
 public class TranspilationPass {
 	static let swiftRawRepresentableTypes: ArrayClass<String> = [
 		"String",
@@ -54,6 +71,8 @@ public class TranspilationPass {
 			declarations: replacedDeclarations,
 			statements: replacedStatements)
 	}
+
+	// MARK: - Replace Statements
 
 	func replaceStatements( // annotation: open
 		_ statements: ArrayClass<Statement>)
@@ -317,7 +336,7 @@ public class TranspilationPass {
 		_ initializerDeclaration: InitializerDeclaration)
 		-> ArrayClass<Statement>
 	{
-		if let result = replaceInitializerDeclaration(initializerDeclaration) {
+		if let result = processInitializerDeclaration(initializerDeclaration) {
 			return [result]
 		}
 		else {
@@ -325,7 +344,7 @@ public class TranspilationPass {
 		}
 	}
 
-	func replaceInitializerDeclaration( // annotation: open
+	func processInitializerDeclaration( // annotation: open
 		_ initializerDeclaration: InitializerDeclaration)
 		-> InitializerDeclaration?
 	{
@@ -349,7 +368,7 @@ public class TranspilationPass {
 		_ functionDeclaration: FunctionDeclaration)
 		-> ArrayClass<Statement>
 	{
-		if let result = replaceFunctionDeclaration(functionDeclaration) {
+		if let result = processFunctionDeclaration(functionDeclaration) {
 			return [result]
 		}
 		else {
@@ -357,7 +376,7 @@ public class TranspilationPass {
 		}
 	}
 
-	func replaceFunctionDeclaration( // annotation: open
+	func processFunctionDeclaration( // annotation: open
 		_ functionDeclaration: FunctionDeclaration)
 		-> FunctionDeclaration?
 	{
@@ -383,10 +402,10 @@ public class TranspilationPass {
 	{
 		return [VariableDeclaration(
 			range: nil,
-			data: replaceVariableDeclarationData(variableDeclaration)), ]
+			data: processVariableDeclarationData(variableDeclaration)), ]
 	}
 
-	func replaceVariableDeclarationData( // annotation: open
+	func processVariableDeclarationData( // annotation: open
 		_ variableDeclaration: VariableDeclarationData)
 		-> VariableDeclarationData
 	{
@@ -394,10 +413,10 @@ public class TranspilationPass {
 		variableDeclaration.expression =
 			variableDeclaration.expression.map { replaceExpression($0) }
 		if let getter = variableDeclaration.getter {
-			variableDeclaration.getter = replaceFunctionDeclaration(getter)
+			variableDeclaration.getter = processFunctionDeclaration(getter)
 		}
 		if let setter = variableDeclaration.setter {
-			variableDeclaration.setter = replaceFunctionDeclaration(setter)
+			variableDeclaration.setter = processFunctionDeclaration(setter)
 		}
 		return variableDeclaration
 	}
@@ -416,7 +435,7 @@ public class TranspilationPass {
 	{
 		return [CatchStatement(
 			range: nil,
-			variableDeclaration: variableDeclaration.map { replaceVariableDeclarationData($0) },
+			variableDeclaration: variableDeclaration.map { processVariableDeclarationData($0) },
 			statements: replaceStatements(statements)),
 		]
 	}
@@ -447,19 +466,19 @@ public class TranspilationPass {
 		_ ifStatement: IfStatementData)
 		-> ArrayClass<Statement>
 	{
-		return [IfStatement(range: nil, data: replaceIfStatementData(ifStatement))]
+		return [IfStatement(range: nil, data: processIfStatementData(ifStatement))]
 	}
 
-	func replaceIfStatementData( // annotation: open
+	func processIfStatementData( // annotation: open
 		_ ifStatement: IfStatementData)
 		-> IfStatementData
 	{
 		let ifStatement = ifStatement
 		ifStatement.conditions = replaceIfConditions(ifStatement.conditions)
 		ifStatement.declarations =
-			ifStatement.declarations.map { replaceVariableDeclarationData($0) }
+			ifStatement.declarations.map { processVariableDeclarationData($0) }
 		ifStatement.statements = replaceStatements(ifStatement.statements)
-		ifStatement.elseStatement = ifStatement.elseStatement.map { replaceIfStatementData($0) }
+		ifStatement.elseStatement = ifStatement.elseStatement.map { processIfStatementData($0) }
 		return ifStatement
 	}
 
@@ -479,7 +498,7 @@ public class TranspilationPass {
 			return .condition(expression: replaceExpression(expression))
 		case let .declaration(variableDeclaration: variableDeclaration):
 			return .declaration(
-				variableDeclaration: replaceVariableDeclarationData(variableDeclaration))
+				variableDeclaration: processVariableDeclarationData(variableDeclaration))
 		}
 	}
 
@@ -546,6 +565,7 @@ public class TranspilationPass {
 			rightHand: replaceExpression(rightHand)), ]
 	}
 
+	// MARK: - Replace Expressions
 	func replaceExpression( // annotation: open
 		_ expression: Expression)
 		-> Expression
@@ -553,127 +573,127 @@ public class TranspilationPass {
 		parents.append(.expressionNode(value: expression))
 		defer { parents.removeLast() }
 
-		if let subExpression = expression as? TemplateExpression {
+		if let expression = expression as? TemplateExpression {
 			return replaceTemplateExpression(
-				pattern: subExpression.pattern,
-				matches: subExpression.matches)
+				pattern: expression.pattern,
+				matches: expression.matches)
 		}
-		if let subExpression = expression as? LiteralCodeExpression {
-			return replaceLiteralCodeExpression(string: subExpression.string)
+		if let expression = expression as? LiteralCodeExpression {
+			return replaceLiteralCodeExpression(string: expression.string)
 		}
-		if let subExpression = expression as? LiteralDeclarationExpression {
-			return replaceLiteralCodeExpression(string: subExpression.string)
+		if let expression = expression as? LiteralDeclarationExpression {
+			return replaceLiteralCodeExpression(string: expression.string)
 		}
-		if let subExpression = expression as? ParenthesesExpression {
-			return replaceParenthesesExpression(expression: subExpression.expression)
+		if let expression = expression as? ParenthesesExpression {
+			return replaceParenthesesExpression(expression: expression.expression)
 		}
-		if let subExpression = expression as? ForceValueExpression {
-			return replaceForceValueExpression(expression: subExpression.expression)
+		if let expression = expression as? ForceValueExpression {
+			return replaceForceValueExpression(expression: expression.expression)
 		}
-		if let subExpression = expression as? OptionalExpression {
-			return replaceOptionalExpression(expression: subExpression.expression)
+		if let expression = expression as? OptionalExpression {
+			return replaceOptionalExpression(expression: expression.expression)
 		}
-		if let subExpression = expression as? DeclarationReferenceExpression {
-			return replaceDeclarationReferenceExpression(subExpression.data)
+		if let expression = expression as? DeclarationReferenceExpression {
+			return replaceDeclarationReferenceExpression(expression.data)
 		}
-		if let subExpression = expression as? TypeExpression {
-			return replaceTypeExpression(typeName: subExpression.typeName)
+		if let expression = expression as? TypeExpression {
+			return replaceTypeExpression(typeName: expression.typeName)
 		}
-		if let subExpression = expression as? SubscriptExpression {
+		if let expression = expression as? SubscriptExpression {
 			return replaceSubscriptExpression(
-				subscriptedExpression: subExpression.subscriptedExpression,
-				indexExpression: subExpression.indexExpression,
-				typeName: subExpression.typeName)
+				subscriptedExpression: expression.subscriptedExpression,
+				indexExpression: expression.indexExpression,
+				typeName: expression.typeName)
 		}
-		if let subExpression = expression as? ArrayExpression {
+		if let expression = expression as? ArrayExpression {
 			return replaceArrayExpression(
-				elements: subExpression.elements,
-				typeName: subExpression.typeName)
+				elements: expression.elements,
+				typeName: expression.typeName)
 		}
-		if let subExpression = expression as? DictionaryExpression {
+		if let expression = expression as? DictionaryExpression {
 			return replaceDictionaryExpression(
-				keys: subExpression.keys,
-				values: subExpression.values,
-				typeName: subExpression.typeName)
+				keys: expression.keys,
+				values: expression.values,
+				typeName: expression.typeName)
 		}
-		if let subExpression = expression as? ReturnExpression {
-			return replaceReturnExpression(innerExpression: subExpression.expression)
+		if let expression = expression as? ReturnExpression {
+			return replaceReturnExpression(innerExpression: expression.expression)
 		}
-		if let subExpression = expression as? DotExpression {
+		if let expression = expression as? DotExpression {
 			return replaceDotExpression(
-				leftExpression: subExpression.leftExpression,
-				rightExpression: subExpression.rightExpression)
+				leftExpression: expression.leftExpression,
+				rightExpression: expression.rightExpression)
 		}
-		if let subExpression = expression as? BinaryOperatorExpression {
+		if let expression = expression as? BinaryOperatorExpression {
 			return replaceBinaryOperatorExpression(
-				leftExpression: subExpression.leftExpression,
-				rightExpression: subExpression.rightExpression,
-				operatorSymbol: subExpression.operatorSymbol,
-				typeName: subExpression.typeName)
+				leftExpression: expression.leftExpression,
+				rightExpression: expression.rightExpression,
+				operatorSymbol: expression.operatorSymbol,
+				typeName: expression.typeName)
 		}
-		if let subExpression = expression as? PrefixUnaryExpression {
+		if let expression = expression as? PrefixUnaryExpression {
 			return replacePrefixUnaryExpression(
-				subExpression: subExpression.subExpression,
-				operatorSymbol: subExpression.operatorSymbol,
-				typeName: subExpression.typeName)
+				subExpression: expression.subExpression,
+				operatorSymbol: expression.operatorSymbol,
+				typeName: expression.typeName)
 		}
-		if let subExpression = expression as? PostfixUnaryExpression {
+		if let expression = expression as? PostfixUnaryExpression {
 			return replacePostfixUnaryExpression(
-				subExpression: subExpression.subExpression,
-				operatorSymbol: subExpression.operatorSymbol,
-				typeName: subExpression.typeName)
+				subExpression: expression.subExpression,
+				operatorSymbol: expression.operatorSymbol,
+				typeName: expression.typeName)
 		}
-		if let subExpression = expression as? IfExpression {
+		if let expression = expression as? IfExpression {
 			return replaceIfExpression(
-				condition: subExpression.condition,
-				trueExpression: subExpression.trueExpression,
-				falseExpression: subExpression.falseExpression)
+				condition: expression.condition,
+				trueExpression: expression.trueExpression,
+				falseExpression: expression.falseExpression)
 		}
-		if let subExpression = expression as? CallExpression {
-			return replaceCallExpression(subExpression.data)
+		if let expression = expression as? CallExpression {
+			return replaceCallExpression(expression.data)
 		}
-		if let subExpression = expression as? ClosureExpression {
+		if let expression = expression as? ClosureExpression {
 			return replaceClosureExpression(
-				parameters: subExpression.parameters,
-				statements: subExpression.statements,
-				typeName: subExpression.typeName)
+				parameters: expression.parameters,
+				statements: expression.statements,
+				typeName: expression.typeName)
 		}
-		if let subExpression = expression as? LiteralIntExpression {
-			return replaceLiteralIntExpression(value: subExpression.value)
+		if let expression = expression as? LiteralIntExpression {
+			return replaceLiteralIntExpression(value: expression.value)
 		}
-		if let subExpression = expression as? LiteralUIntExpression {
-			return replaceLiteralUIntExpression(value: subExpression.value)
+		if let expression = expression as? LiteralUIntExpression {
+			return replaceLiteralUIntExpression(value: expression.value)
 		}
-		if let subExpression = expression as? LiteralDoubleExpression {
-			return replaceLiteralDoubleExpression(value: subExpression.value)
+		if let expression = expression as? LiteralDoubleExpression {
+			return replaceLiteralDoubleExpression(value: expression.value)
 		}
-		if let subExpression = expression as? LiteralFloatExpression {
-			return replaceLiteralFloatExpression(value: subExpression.value)
+		if let expression = expression as? LiteralFloatExpression {
+			return replaceLiteralFloatExpression(value: expression.value)
 		}
-		if let subExpression = expression as? LiteralBoolExpression {
-			return replaceLiteralBoolExpression(value: subExpression.value)
+		if let expression = expression as? LiteralBoolExpression {
+			return replaceLiteralBoolExpression(value: expression.value)
 		}
-		if let subExpression = expression as? LiteralStringExpression {
-			return replaceLiteralStringExpression(value: subExpression.value)
+		if let expression = expression as? LiteralStringExpression {
+			return replaceLiteralStringExpression(value: expression.value)
 		}
-		if let subExpression = expression as? LiteralCharacterExpression {
-			return replaceLiteralCharacterExpression(value: subExpression.value)
+		if let expression = expression as? LiteralCharacterExpression {
+			return replaceLiteralCharacterExpression(value: expression.value)
 		}
 		if expression is NilLiteralExpression {
 			return replaceNilLiteralExpression()
 		}
-		if let subExpression = expression as? InterpolatedStringLiteralExpression {
+		if let expression = expression as? InterpolatedStringLiteralExpression {
 			return replaceInterpolatedStringLiteralExpression(
-				expressions: subExpression.expressions)
+				expressions: expression.expressions)
 		}
-		if let subExpression = expression as? TupleExpression {
-			return replaceTupleExpression(pairs: subExpression.pairs)
+		if let expression = expression as? TupleExpression {
+			return replaceTupleExpression(pairs: expression.pairs)
 		}
-		if let subExpression = expression as? TupleShuffleExpression {
+		if let expression = expression as? TupleShuffleExpression {
 			return replaceTupleShuffleExpression(
-				labels: subExpression.labels,
-				indices: subExpression.indices,
-				expressions: subExpression.expressions)
+				labels: expression.labels,
+				indices: expression.indices,
+				expressions: expression.expressions)
 		}
 		if expression is ErrorExpression {
 			return ErrorExpression(range: nil)
@@ -949,6 +969,8 @@ public class TranspilationPass {
 	}
 }
 
+// MARK: - Transpilation passes
+
 public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
@@ -1026,24 +1048,24 @@ public class RemoveParenthesesTranspilationPass: TranspilationPass {
 		-> Expression
 	{
 		let replacedCondition: Expression
-		if let parentheses = condition as? ParenthesesExpression {
-			replacedCondition = parentheses.expression
+		if let condition = condition as? ParenthesesExpression {
+			replacedCondition = condition.expression
 		}
 		else {
 			replacedCondition = condition
 		}
 
 		let replacedTrueExpression: Expression
-		if let parentheses = trueExpression as? ParenthesesExpression {
-			replacedTrueExpression = parentheses.expression
+		if let trueExpression = trueExpression as? ParenthesesExpression {
+			replacedTrueExpression = trueExpression.expression
 		}
 		else {
 			replacedTrueExpression = trueExpression
 		}
 
 		let replacedFalseExpression: Expression
-		if let parentheses = falseExpression as? ParenthesesExpression {
-			replacedFalseExpression = parentheses.expression
+		if let falseExpression = falseExpression as? ParenthesesExpression {
+			replacedFalseExpression = falseExpression.expression
 		}
 		else {
 			replacedFalseExpression = falseExpression
@@ -1111,7 +1133,7 @@ public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
 		}
 	}
 
-	override func replaceFunctionDeclaration( // annotation: override
+	override func processFunctionDeclaration( // annotation: override
 		_ functionDeclaration: FunctionDeclaration)
 		-> FunctionDeclaration?
 	{
@@ -1119,7 +1141,7 @@ public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
 			return nil
 		}
 		else {
-			return super.replaceFunctionDeclaration(functionDeclaration)
+			return super.processFunctionDeclaration(functionDeclaration)
 		}
 	}
 }
@@ -1186,7 +1208,7 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 public class RemoveExtraReturnsInInitsTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
-	override func replaceInitializerDeclaration(
+	override func processInitializerDeclaration( // annotation: override
 		_ initializerDeclaration: InitializerDeclaration)
 		-> InitializerDeclaration?
 	{
@@ -1357,13 +1379,13 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass {
 		return result
 	}
 
-	override func replaceVariableDeclarationData( // annotation: override
+	override func processVariableDeclarationData( // annotation: override
 		_ variableDeclaration: VariableDeclarationData)
 		-> VariableDeclarationData
 	{
 		let variableDeclaration = variableDeclaration
 		variableDeclaration.typeName = removePrefixes(variableDeclaration.typeName)
-		return super.replaceVariableDeclarationData(variableDeclaration)
+		return super.processVariableDeclarationData(variableDeclaration)
 	}
 
 	override func replaceTypeExpression( // annotation: override
@@ -1513,13 +1535,13 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
 			rightExpression: rightExpression)
 	}
 
-	override func replaceFunctionDeclaration( // annotation: override
+	override func processFunctionDeclaration( // annotation: override
 		_ functionDeclaration: FunctionDeclaration)
 		-> FunctionDeclaration?
 	{
 		returnTypesStack.append(functionDeclaration.returnType)
 		defer { returnTypesStack.removeLast() }
-		return super.replaceFunctionDeclaration(functionDeclaration)
+		return super.processFunctionDeclaration(functionDeclaration)
 	}
 
 	override func replaceReturnStatement( // annotation: override
@@ -1591,12 +1613,12 @@ public class RenameOperatorsTranspilationPass: TranspilationPass {
 public class CallsToSuperclassInitializersTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
-	override func replaceInitializerDeclaration( // annotation: override
+	override func processInitializerDeclaration( // annotation: override
 		_ initializerDeclaration: InitializerDeclaration)
 		-> InitializerDeclaration?
 	{
 		var superCall: CallExpression?
-		let newStatements = ArrayClass<Statement>()
+		let newStatements: ArrayClass<Statement> = []
 
 		if let statements = initializerDeclaration.statements {
 			for statement in statements {
@@ -2384,7 +2406,7 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 		return [functionDeclaration]
 	}
 
-	override func replaceVariableDeclarationData( // annotation: override
+	override func processVariableDeclarationData( // annotation: override
 		_ variableDeclaration: VariableDeclarationData)
 		-> VariableDeclarationData
 	{
@@ -2399,7 +2421,10 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 public class ShadowedIfLetAsToIsTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
-	override func replaceIfStatementData(_ ifStatement: IfStatementData) -> IfStatementData {
+	override func processIfStatementData( // annotation: override
+		_ ifStatement: IfStatementData)
+		-> IfStatementData
+	{
 		let newConditions: ArrayClass<IfStatementData.IfCondition> = []
 
 		for condition in ifStatement.conditions {
@@ -2434,7 +2459,7 @@ public class ShadowedIfLetAsToIsTranspilationPass: TranspilationPass {
 			}
 		}
 
-		return super.replaceIfStatementData(IfStatementData(
+		return super.processIfStatementData(IfStatementData(
 			conditions: newConditions,
 			declarations: ifStatement.declarations,
 			statements: ifStatement.statements,
@@ -2457,7 +2482,7 @@ public class ShadowedIfLetAsToIsTranspilationPass: TranspilationPass {
 public class RecordFunctionsTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
-	override func replaceFunctionDeclaration( // annotation: override
+	override func processFunctionDeclaration( // annotation: override
 		_ functionDeclaration: FunctionDeclaration)
 		-> FunctionDeclaration?
 	{
@@ -2475,7 +2500,7 @@ public class RecordFunctionsTranspilationPass: TranspilationPass {
 			KotlinTranslator.recordPureFunction(functionDeclaration)
 		}
 
-		return super.replaceFunctionDeclaration(functionDeclaration)
+		return super.processFunctionDeclaration(functionDeclaration)
 	}
 }
 
@@ -2697,7 +2722,7 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
-	override func replaceIfStatementData( // annotation: override
+	override func processIfStatementData( // annotation: override
 		_ ifStatement: IfStatementData)
 		-> IfStatementData
 	{
@@ -2746,9 +2771,9 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 		_ expression: Expression)
 		-> ArrayClass<SourceFileRange>
 	{
-		if let subExpression = expression as? CallExpression {
-			if !KotlinTranslator.isReferencingPureFunction(subExpression.data),
-				let range = subExpression.data.range
+		if let expression = expression as? CallExpression {
+			if !KotlinTranslator.isReferencingPureFunction(expression.data),
+				let range = expression.data.range
 			{
 				return [range]
 			}
@@ -2756,64 +2781,64 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 				return []
 			}
 		}
-		if let subExpression = expression as? ParenthesesExpression {
-			return rangesWithPossibleSideEffectsIn(subExpression.expression)
+		if let expression = expression as? ParenthesesExpression {
+			return rangesWithPossibleSideEffectsIn(expression.expression)
 		}
-		if let subExpression = expression as? ForceValueExpression {
-			return rangesWithPossibleSideEffectsIn(subExpression.expression)
+		if let expression = expression as? ForceValueExpression {
+			return rangesWithPossibleSideEffectsIn(expression.expression)
 		}
-		if let subExpression = expression as? OptionalExpression {
-			return rangesWithPossibleSideEffectsIn(subExpression.expression)
+		if let expression = expression as? OptionalExpression {
+			return rangesWithPossibleSideEffectsIn(expression.expression)
 		}
-		if let subExpression = expression as? SubscriptExpression {
-			let result = rangesWithPossibleSideEffectsIn(subExpression.subscriptedExpression)
+		if let expression = expression as? SubscriptExpression {
+			let result = rangesWithPossibleSideEffectsIn(expression.subscriptedExpression)
 			result.append(contentsOf:
-				rangesWithPossibleSideEffectsIn(subExpression.indexExpression))
+				rangesWithPossibleSideEffectsIn(expression.indexExpression))
 			return result
 		}
-		if let subExpression = expression as? ArrayExpression {
-			return subExpression.elements.flatMap { rangesWithPossibleSideEffectsIn($0) }
+		if let expression = expression as? ArrayExpression {
+			return expression.elements.flatMap { rangesWithPossibleSideEffectsIn($0) }
 		}
-		if let subExpression = expression as? DictionaryExpression {
-			let result = subExpression.keys.flatMap { rangesWithPossibleSideEffectsIn($0) }
+		if let expression = expression as? DictionaryExpression {
+			let result = expression.keys.flatMap { rangesWithPossibleSideEffectsIn($0) }
 			result.append(contentsOf:
-				subExpression.values.flatMap { rangesWithPossibleSideEffectsIn($0) })
+				expression.values.flatMap { rangesWithPossibleSideEffectsIn($0) })
 			return result
 		}
-		if let subExpression = expression as? DotExpression {
-			let result = rangesWithPossibleSideEffectsIn(subExpression.leftExpression)
+		if let expression = expression as? DotExpression {
+			let result = rangesWithPossibleSideEffectsIn(expression.leftExpression)
 			result.append(contentsOf:
-				rangesWithPossibleSideEffectsIn(subExpression.rightExpression))
+				rangesWithPossibleSideEffectsIn(expression.rightExpression))
 			return result
 		}
-		if let subExpression = expression as? BinaryOperatorExpression {
-			let result = rangesWithPossibleSideEffectsIn(subExpression.leftExpression)
+		if let expression = expression as? BinaryOperatorExpression {
+			let result = rangesWithPossibleSideEffectsIn(expression.leftExpression)
 			result.append(contentsOf:
-				rangesWithPossibleSideEffectsIn(subExpression.rightExpression))
+				rangesWithPossibleSideEffectsIn(expression.rightExpression))
 			return result
 		}
-		if let subExpression = expression as? PrefixUnaryExpression {
-			return rangesWithPossibleSideEffectsIn(subExpression.subExpression)
+		if let expression = expression as? PrefixUnaryExpression {
+			return rangesWithPossibleSideEffectsIn(expression.subExpression)
 		}
-		if let subExpression = expression as? PostfixUnaryExpression {
-			return rangesWithPossibleSideEffectsIn(subExpression.subExpression)
+		if let expression = expression as? PostfixUnaryExpression {
+			return rangesWithPossibleSideEffectsIn(expression.subExpression)
 		}
-		if let subExpression = expression as? IfExpression {
-			let result = rangesWithPossibleSideEffectsIn(subExpression.condition)
+		if let expression = expression as? IfExpression {
+			let result = rangesWithPossibleSideEffectsIn(expression.condition)
 			result.append(contentsOf:
-				rangesWithPossibleSideEffectsIn(subExpression.trueExpression))
+				rangesWithPossibleSideEffectsIn(expression.trueExpression))
 			result.append(contentsOf:
-				rangesWithPossibleSideEffectsIn(subExpression.falseExpression))
+				rangesWithPossibleSideEffectsIn(expression.falseExpression))
 			return result
 		}
-		if let subExpression = expression as? InterpolatedStringLiteralExpression {
-			return subExpression.expressions.flatMap { rangesWithPossibleSideEffectsIn($0) }
+		if let expression = expression as? InterpolatedStringLiteralExpression {
+			return expression.expressions.flatMap { rangesWithPossibleSideEffectsIn($0) }
 		}
-		if let subExpression = expression as? TupleExpression {
-			return subExpression.pairs.flatMap { rangesWithPossibleSideEffectsIn($0.expression) }
+		if let expression = expression as? TupleExpression {
+			return expression.pairs.flatMap { rangesWithPossibleSideEffectsIn($0.expression) }
 		}
-		if let subExpression = expression as? TupleShuffleExpression {
-			return subExpression.expressions.flatMap { rangesWithPossibleSideEffectsIn($0) }
+		if let expression = expression as? TupleShuffleExpression {
+			return expression.expressions.flatMap { rangesWithPossibleSideEffectsIn($0) }
 		}
 
 		return []
@@ -2845,7 +2870,7 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 	}
 
 	/// Add conditions (`x != null`) for all let declarations
-	override func replaceIfStatementData( // annotation: override
+	override func processIfStatementData( // annotation: override
 		_ ifStatement: IfStatementData)
 		-> IfStatementData
 	{
@@ -2855,7 +2880,7 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 
 		let ifStatement = ifStatement
 		ifStatement.conditions = newConditions
-		return super.replaceIfStatementData(ifStatement)
+		return super.processIfStatementData(ifStatement)
 	}
 
 	private func replaceIfLetConditionWithNullCheck(
@@ -2937,7 +2962,7 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 public class EquatableOperatorsTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
-	override func replaceFunctionDeclaration( // annotation: override
+	override func processFunctionDeclaration( // annotation: override
 		_ functionDeclaration: FunctionDeclaration)
 		-> FunctionDeclaration?
 	{
@@ -3017,7 +3042,7 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 				isGuard: false),
 			isGuard: false)))
 
-		return super.replaceFunctionDeclaration(FunctionDeclaration(
+		return super.processFunctionDeclaration(FunctionDeclaration(
 			range: nil,
 			prefix: "equals",
 			parameters: [
@@ -3249,7 +3274,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
-	override func replaceIfStatementData( // annotation: override
+	override func processIfStatementData( // annotation: override
 		_ ifStatement: IfStatementData)
 		-> IfStatementData
 	{
@@ -3300,10 +3325,10 @@ public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
 				IfStatementData.IfCondition.condition(expression: $0)
 			}
 			ifStatement.isGuard = shouldStillBeGuard
-			return super.replaceIfStatementData(ifStatement)
+			return super.processIfStatementData(ifStatement)
 		}
 		else {
-			return super.replaceIfStatementData(ifStatement)
+			return super.processIfStatementData(ifStatement)
 		}
 	}
 }
@@ -3371,21 +3396,21 @@ public class FixProtocolContentsTranspilationPass: TranspilationPass {
 		return result
 	}
 
-	override func replaceFunctionDeclaration( // annotation: override
+	override func processFunctionDeclaration( // annotation: override
 		_ functionDeclaration: FunctionDeclaration)
 		-> FunctionDeclaration?
 	{
 		if isInProtocol {
 			let functionDeclaration = functionDeclaration
 			functionDeclaration.statements = nil
-			return super.replaceFunctionDeclaration(functionDeclaration)
+			return super.processFunctionDeclaration(functionDeclaration)
 		}
 		else {
-			return super.replaceFunctionDeclaration(functionDeclaration)
+			return super.processFunctionDeclaration(functionDeclaration)
 		}
 	}
 
-	override func replaceVariableDeclarationData( // annotation: override
+	override func processVariableDeclarationData( // annotation: override
 		_ variableDeclaration: VariableDeclarationData)
 		-> VariableDeclarationData
 	{
@@ -3395,10 +3420,10 @@ public class FixProtocolContentsTranspilationPass: TranspilationPass {
 			variableDeclaration.setter?.isImplicit = true
 			variableDeclaration.getter?.statements = nil
 			variableDeclaration.setter?.statements = nil
-			return super.replaceVariableDeclarationData(variableDeclaration)
+			return super.processVariableDeclarationData(variableDeclaration)
 		}
 		else {
-			return super.replaceVariableDeclarationData(variableDeclaration)
+			return super.processVariableDeclarationData(variableDeclaration)
 		}
 	}
 }

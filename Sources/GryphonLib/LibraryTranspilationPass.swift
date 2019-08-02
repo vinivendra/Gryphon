@@ -130,47 +130,50 @@ extension Expression {
 	private func matches(
 		_ template: Expression, _ matches: DictionaryClass<String, Expression>) -> Bool
 	{
-		if let declarationExpression = template as? DeclarationReferenceExpression {
+		let lhs = self
+		let rhs = template
+
+		if let declarationExpression = rhs as? DeclarationReferenceExpression {
 			if declarationExpression.data.identifier.hasPrefix("_"),
-				self.isOfType(declarationExpression.data.typeName)
+				lhs.isOfType(declarationExpression.data.typeName)
 			{
-				matches[declarationExpression.data.identifier] = self
+				matches[declarationExpression.data.identifier] = lhs
 				return true
 			}
 		}
 
-		if let lhs = self as? LiteralCodeExpression, let rhs = template as? LiteralCodeExpression {
+		if let lhs = lhs as? LiteralCodeExpression, let rhs = rhs as? LiteralCodeExpression {
 			return lhs.string == rhs.string
 		}
-		if let lhs = self as? ParenthesesExpression,
-			let rhs = template as? ParenthesesExpression
+		if let lhs = lhs as? ParenthesesExpression,
+			let rhs = rhs as? ParenthesesExpression
 		{
 			return lhs.expression.matches(rhs.expression, matches)
 		}
-		if let lhs = self as? ForceValueExpression,
-			let rhs = template as? ForceValueExpression
+		if let lhs = lhs as? ForceValueExpression,
+			let rhs = rhs as? ForceValueExpression
 		{
 			return lhs.expression.matches(rhs.expression, matches)
 		}
-		if let lhs = self as? DeclarationReferenceExpression,
-			let rhs = template as? DeclarationReferenceExpression
+		if let lhs = lhs as? DeclarationReferenceExpression,
+			let rhs = rhs as? DeclarationReferenceExpression
 		{
 			return lhs.data.identifier == rhs.data.identifier &&
 				lhs.data.typeName.isSubtype(of: rhs.data.typeName) &&
 				lhs.data.isImplicit == rhs.data.isImplicit
 		}
-		if let lhs = self as? OptionalExpression,
-			let rhs = template as? OptionalExpression
+		if let lhs = lhs as? OptionalExpression,
+			let rhs = rhs as? OptionalExpression
 		{
 			return lhs.expression.matches(rhs.expression, matches)
 		}
-		if let lhs = self as? TypeExpression,
-			let rhs = template as? TypeExpression
+		if let lhs = lhs as? TypeExpression,
+			let rhs = rhs as? TypeExpression
 		{
 			return lhs.typeName.isSubtype(of: rhs.typeName)
 		}
-		if let lhs = self as? TypeExpression,
-			let rhs = template as? DeclarationReferenceExpression
+		if let lhs = lhs as? TypeExpression,
+			let rhs = rhs as? DeclarationReferenceExpression
 		{
 			guard declarationExpressionMatchesImplicitTypeExpression(rhs.data) else {
 				return false
@@ -178,8 +181,8 @@ extension Expression {
 			let expressionType = String(rhs.data.typeName.dropLast(".Type".count))
 			return lhs.typeName.isSubtype(of: expressionType)
 		}
-		if let lhs = self as? DeclarationReferenceExpression,
-			let rhs = template as? TypeExpression
+		if let lhs = lhs as? DeclarationReferenceExpression,
+			let rhs = rhs as? TypeExpression
 		{
 			guard declarationExpressionMatchesImplicitTypeExpression(lhs.data) else {
 				return false
@@ -187,15 +190,15 @@ extension Expression {
 			let expressionType = String(lhs.data.typeName.dropLast(".Type".count))
 			return expressionType.isSubtype(of: rhs.typeName)
 		}
-		if let lhs = self as? SubscriptExpression,
-			let rhs = template as? SubscriptExpression
+		if let lhs = lhs as? SubscriptExpression,
+			let rhs = rhs as? SubscriptExpression
 		{
 			return lhs.subscriptedExpression.matches(rhs.subscriptedExpression, matches)
 				&& lhs.indexExpression.matches(rhs.indexExpression, matches)
 				&& lhs.typeName.isSubtype(of: rhs.typeName)
 		}
-		if let lhs = self as? ArrayExpression,
-			let rhs = template as? ArrayExpression
+		if let lhs = lhs as? ArrayExpression,
+			let rhs = rhs as? ArrayExpression
 		{
 			var result = true
 			for (leftElement, rightElement) in zipToClass(lhs.elements, rhs.elements) {
@@ -203,80 +206,80 @@ extension Expression {
 			}
 			return result && (lhs.typeName.isSubtype(of: rhs.typeName))
 		}
-		if let lhs = self as? DotExpression,
-			let rhs = template as? DotExpression
+		if let lhs = lhs as? DotExpression,
+			let rhs = rhs as? DotExpression
 		{
 			return lhs.leftExpression.matches(rhs.leftExpression, matches) &&
 				lhs.rightExpression.matches(rhs.rightExpression, matches)
 		}
-		if let lhs = self as? BinaryOperatorExpression,
-			let rhs = template as? BinaryOperatorExpression
+		if let lhs = lhs as? BinaryOperatorExpression,
+			let rhs = rhs as? BinaryOperatorExpression
 		{
 			return lhs.leftExpression.matches(rhs.leftExpression, matches) &&
 				lhs.rightExpression.matches(rhs.rightExpression, matches) &&
 				lhs.operatorSymbol == rhs.operatorSymbol &&
 				lhs.typeName.isSubtype(of: rhs.typeName)
 		}
-		if let lhs = self as? PrefixUnaryExpression,
-			let rhs = template as? PrefixUnaryExpression
+		if let lhs = lhs as? PrefixUnaryExpression,
+			let rhs = rhs as? PrefixUnaryExpression
 		{
 			return lhs.subExpression.matches(rhs.subExpression, matches) &&
 				lhs.operatorSymbol == rhs.operatorSymbol &&
 				lhs.typeName.isSubtype(of: rhs.typeName)
 		}
-		if let lhs = self as? PostfixUnaryExpression,
-			let rhs = template as? PostfixUnaryExpression
+		if let lhs = lhs as? PostfixUnaryExpression,
+			let rhs = rhs as? PostfixUnaryExpression
 		{
 			return lhs.subExpression.matches(rhs.subExpression, matches) &&
 				lhs.operatorSymbol == rhs.operatorSymbol &&
 				lhs.typeName.isSubtype(of: rhs.typeName)
 		}
-		if let lhs = self as? CallExpression,
-			let rhs = template as? CallExpression
+		if let lhs = lhs as? CallExpression,
+			let rhs = rhs as? CallExpression
 		{
 			return lhs.data.function.matches(
 				rhs.data.function, matches) &&
 				lhs.data.parameters.matches(rhs.data.parameters, matches) &&
 				lhs.data.typeName.isSubtype(of: rhs.data.typeName)
 		}
-		if let lhs = self as? LiteralIntExpression,
-			let rhs = template as? LiteralIntExpression
+		if let lhs = lhs as? LiteralIntExpression,
+			let rhs = rhs as? LiteralIntExpression
 		{
 			return lhs.value == rhs.value
 		}
-		if let lhs = self as? LiteralDoubleExpression,
-			let rhs = template as? LiteralDoubleExpression
+		if let lhs = lhs as? LiteralDoubleExpression,
+			let rhs = rhs as? LiteralDoubleExpression
 		{
 			return lhs.value == rhs.value
 		}
-		if let lhs = self as? LiteralFloatExpression,
-			let rhs = template as? LiteralFloatExpression
+		if let lhs = lhs as? LiteralFloatExpression,
+			let rhs = rhs as? LiteralFloatExpression
 		{
 			return lhs.value == rhs.value
 		}
-		if let lhs = self as? LiteralBoolExpression,
-			let rhs = template as? LiteralBoolExpression
+		if let lhs = lhs as? LiteralBoolExpression,
+			let rhs = rhs as? LiteralBoolExpression
 		{
 			return lhs.value == rhs.value
 		}
-		if let lhs = self as? LiteralStringExpression,
-			let rhs = template as? LiteralStringExpression
+		if let lhs = lhs as? LiteralStringExpression,
+			let rhs = rhs as? LiteralStringExpression
 		{
 			return lhs.value == rhs.value
 		}
-		if let lhs = self as? LiteralStringExpression,
-			template is DeclarationReferenceExpression
+		if let lhs = lhs as? LiteralStringExpression,
+			rhs is DeclarationReferenceExpression
 		{
 			let characterExpression = LiteralCharacterExpression(range: lhs.range, value: lhs.value)
-			return characterExpression.matches(template, matches)
+			return characterExpression.matches(rhs, matches)
 		}
-		if self is NilLiteralExpression,
-			template is NilLiteralExpression
+		if lhs is NilLiteralExpression,
+			rhs is NilLiteralExpression
 		{
 			return true
 		}
-		if let lhs = self as? InterpolatedStringLiteralExpression,
-			let rhs = template as? InterpolatedStringLiteralExpression
+		if let lhs = lhs as? InterpolatedStringLiteralExpression,
+			let rhs = rhs as? InterpolatedStringLiteralExpression
 		{
 			var result = true
 			for (leftExpression, rightExpression) in zipToClass(lhs.expressions, rhs.expressions) {
@@ -284,8 +287,8 @@ extension Expression {
 			}
 			return result
 		}
-		if let lhs = self as? TupleExpression,
-			let rhs = template as? TupleExpression
+		if let lhs = lhs as? TupleExpression,
+			let rhs = rhs as? TupleExpression
 		{
 			// Check manually for matches in trailing closures (that don't have labels in code
 			// but do in templates)
@@ -319,8 +322,8 @@ extension Expression {
 			}
 			return result
 		}
-		if let lhs = self as? TupleShuffleExpression,
-			let rhs = template as? TupleShuffleExpression
+		if let lhs = lhs as? TupleShuffleExpression,
+			let rhs = rhs as? TupleShuffleExpression
 		{
 			var result = (lhs.labels == rhs.labels)
 

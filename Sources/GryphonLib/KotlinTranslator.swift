@@ -1327,9 +1327,6 @@ public class KotlinTranslator {
 		if let literalIntExpression = expression as? LiteralIntExpression {
 			return String(literalIntExpression.value)
 		}
-		if let literalCharacterExpression = expression as? LiteralCharacterExpression {
-			return translateCharacterLiteral(value: literalCharacterExpression.value)
-		}
 		if let literalUIntExpression = expression as? LiteralUIntExpression {
 			return String(literalUIntExpression.value) + "u"
 		}
