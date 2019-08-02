@@ -2829,7 +2829,14 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 		_ ifStatement: IfStatementData)
 		-> ArrayClass<Statement>
 	{
-		let result: ArrayClass<Statement> = gatherLetDeclarations(ifStatement)
+		let gatheredDeclarations = gatherLetDeclarations(ifStatement)
+
+		// When if-lets are rearranged, it's possible to have two equal declarations (i.e.
+		// `val a = b as? String` showing up twice) coming from two different `else if`s, which
+		// create conflicts in Kotlin.
+		let uniqueDeclarations = gatheredDeclarations.removingDuplicates()
+
+		let result: ArrayClass<Statement> = uniqueDeclarations
 			.map { VariableDeclaration(range: nil, data: $0) }
 
 		result.append(contentsOf: super.replaceIfStatement(ifStatement))

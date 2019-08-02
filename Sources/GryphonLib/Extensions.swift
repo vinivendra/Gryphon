@@ -307,6 +307,39 @@ extension ArrayClass {
 	}
 }
 
+extension ArrayClass where Element: Equatable {
+	/// Removes duplicated items from the array, keeping the first unique items. Returns a copy of
+	/// the array with only unique items in it. O(n^2).
+	func removingDuplicates() -> ArrayClass<Element> {
+		let result: ArrayClass<Element> = []
+
+		for i in self.indices {
+			let consideredDeclaration = self[i]
+
+			var hasDuplicate = false
+
+			var j = i - 1
+			while j >= 0 {
+				let possibleDuplicate = self[j]
+
+				if possibleDuplicate == consideredDeclaration {
+					hasDuplicate = true
+					break
+				}
+
+				j -= 1
+			}
+
+			if !hasDuplicate {
+				result.append(consideredDeclaration)
+			}
+		}
+
+		return result
+	}
+}
+
+
 //
 extension PrintableTree {
 	static func ofStrings(_ description: String, _ subtrees: ArrayClass<String>)
