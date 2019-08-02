@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
+// declaration: import kotlin.system.*
+
 public class KotlinTranslator {
 	// MARK: - Interface - Recording information
 

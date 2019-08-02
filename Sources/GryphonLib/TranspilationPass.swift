@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
+// declaration: import kotlin.system.*
+
 /// Implements the basic algorithm that visits nodes in the AST. Subclassing this class and
 /// overriding the `replace` and `process` methods lets you alter the AST in specific places, which
 /// is how most passes are implemented.

@@ -67,12 +67,15 @@ func gryphonTemplates() {
 
 	// MARK: Declare the templates
 
-	// Print
+	// System
 	_ = print(_any)
 	_ = "println(_any)"
 
 	_ = print(_any, terminator: "")
 	_ = "print(_any)"
+
+	_ = fatalError(_string)
+	_ = "println(\"Fatal error: ${_string}\"); exitProcess(-1)"
 
 	// Darwin
 	_ = sqrt(_double)

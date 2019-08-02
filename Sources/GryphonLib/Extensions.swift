@@ -339,7 +339,6 @@ extension ArrayClass where Element: Equatable {
 	}
 }
 
-
 //
 extension PrintableTree {
 	static func ofStrings(_ description: String, _ subtrees: ArrayClass<String>)

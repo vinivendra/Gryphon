@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
+// declaration: import kotlin.system.*
+
 public final class GryphonAST: PrintableAsTree, Equatable, CustomStringConvertible {
 	let sourceFile: SourceFile?
 	let declarations: ArrayClass<Statement>
@@ -79,7 +81,6 @@ public /*abstract*/ class Statement: PrintableAsTree, Equatable {
 
 	public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		fatalError("Accessing field in abstract class Statement")
-		// insert: return mutableListOf()
 	}
 
 	public static func == (lhs: Statement, rhs: Statement) -> Bool {
