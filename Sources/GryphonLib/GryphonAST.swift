@@ -65,6 +65,11 @@ extension PrintableTree {
 }
 
 /// Necessary changes when adding a new statement:
+/// - GryphonAST's `Statement.==`
+/// - `TranspilationPass.replaceStatement`
+/// - `SwiftTranslator.translateStatement`
+/// - `KotlinTranslator.translateSubtree`
+/// - LibraryTranspilationPass's `Expression.matches`
 public /*abstract*/ class Statement: PrintableAsTree, Equatable {
 	let name: String
 	let range: SourceFileRange?
@@ -84,6 +89,85 @@ public /*abstract*/ class Statement: PrintableAsTree, Equatable {
 	}
 
 	public static func == (lhs: Statement, rhs: Statement) -> Bool {
+		if let lhs = lhs as? CommentStatement, let rhs = rhs as? CommentStatement {
+			return lhs == rhs
+		}
+		if let lhs = lhs as? ExpressionStatement, let rhs = rhs as? ExpressionStatement {
+			return lhs == rhs
+		}
+		if let lhs = lhs as? TypealiasDeclaration, let rhs = rhs as? TypealiasDeclaration {
+			return lhs == rhs
+		}
+		if let lhs = lhs as? ExtensionDeclaration, let rhs = rhs as? ExtensionDeclaration {
+			return lhs == rhs
+		}
+		if let lhs = lhs as? ImportDeclaration, let rhs = rhs as? ImportDeclaration {
+			return lhs == rhs
+		}
+		if let lhs = lhs as? ClassDeclaration, let rhs = rhs as? ClassDeclaration {
+			return lhs == rhs
+		}
+		if let lhs = lhs as? CompanionObject, let rhs = rhs as? CompanionObject {
+			return lhs == rhs
+		}
+		if let lhs = lhs as? EnumDeclaration, let rhs = rhs as? EnumDeclaration {
+			return lhs == rhs
+		}
+		if let lhs = lhs as? ProtocolDeclaration, let rhs = rhs as? ProtocolDeclaration {
+			return lhs == rhs
+		}
+		if let lhs = lhs as? StructDeclaration, let rhs = rhs as? StructDeclaration {
+			return lhs == rhs
+		}
+		if let lhs = lhs as? FunctionDeclaration, let rhs = rhs as? FunctionDeclaration {
+			return lhs == rhs
+		}
+		if let lhs = lhs as? InitializerDeclaration, let rhs = rhs as? InitializerDeclaration {
+			return lhs == rhs
+		}
+		if let lhs = lhs as? VariableDeclaration, let rhs = rhs as? VariableDeclaration {
+			return lhs == rhs
+		}
+		if let lhs = lhs as? DoStatement, let rhs = rhs as? DoStatement {
+			return lhs == rhs
+		}
+		if let lhs = lhs as? CatchStatement, let rhs = rhs as? CatchStatement {
+			return lhs == rhs
+		}
+		if let lhs = lhs as? ForEachStatement, let rhs = rhs as? ForEachStatement {
+			return lhs == rhs
+		}
+		if let lhs = lhs as? WhileStatement, let rhs = rhs as? WhileStatement {
+			return lhs == rhs
+		}
+		if let lhs = lhs as? IfStatement, let rhs = rhs as? IfStatement {
+			return lhs == rhs
+		}
+		if let lhs = lhs as? SwitchStatement, let rhs = rhs as? SwitchStatement {
+			return lhs == rhs
+		}
+		if let lhs = lhs as? DeferStatement, let rhs = rhs as? DeferStatement {
+			return lhs == rhs
+		}
+		if let lhs = lhs as? ThrowStatement, let rhs = rhs as? ThrowStatement {
+			return lhs == rhs
+		}
+		if let lhs = lhs as? ReturnStatement, let rhs = rhs as? ReturnStatement {
+			return lhs == rhs
+		}
+		if let lhs = lhs as? BreakStatement, let rhs = rhs as? BreakStatement {
+			return lhs == rhs
+		}
+		if let lhs = lhs as? ContinueStatement, let rhs = rhs as? ContinueStatement {
+			return lhs == rhs
+		}
+		if let lhs = lhs as? AssignmentStatement, let rhs = rhs as? AssignmentStatement {
+			return lhs == rhs
+		}
+		if let lhs = lhs as? ErrorStatement, let rhs = rhs as? ErrorStatement {
+			return lhs == rhs
+		}
+
 		return false
 	}
 }
@@ -895,173 +979,157 @@ public /*abstract*/ class Expression: PrintableAsTree, Equatable {
 		if let lhs = lhs as? LiteralCodeExpression,
 			let rhs = rhs as? LiteralCodeExpression
 		{
-			return lhs.string == rhs.string
+			return lhs == rhs
 		}
 		if let lhs = lhs as? LiteralDeclarationExpression,
 			let rhs = rhs as? LiteralDeclarationExpression
 		{
-			return lhs.string == rhs.string
+			return lhs == rhs
 		}
 		if let lhs = lhs as? TemplateExpression,
 			let rhs = rhs as? TemplateExpression
 		{
-			return lhs.pattern == rhs.pattern &&
-				lhs.matches == rhs.matches
+			return lhs == rhs
 		}
 		if let lhs = lhs as? ParenthesesExpression,
 			let rhs = rhs as? ParenthesesExpression
 		{
-			return lhs.expression == rhs.expression
+			return lhs == rhs
 		}
 		if let lhs = lhs as? ForceValueExpression,
 			let rhs = rhs as? ForceValueExpression
 		{
-			return lhs.expression == rhs.expression
+			return lhs == rhs
 		}
 		if let lhs = lhs as? OptionalExpression,
 			let rhs = rhs as? OptionalExpression
 		{
-			return lhs.expression == rhs.expression
+			return lhs == rhs
 		}
 		if let lhs = lhs as? DeclarationReferenceExpression,
 			let rhs = rhs as? DeclarationReferenceExpression
 		{
-			return lhs.data == rhs.data
+			return lhs == rhs
 		}
 		if let lhs = lhs as? TypeExpression,
 			let rhs = rhs as? TypeExpression
 		{
-			return lhs.typeName == rhs.typeName
+			return lhs == rhs
 		}
 		if let lhs = lhs as? SubscriptExpression,
 			let rhs = rhs as? SubscriptExpression
 		{
-			return lhs.subscriptedExpression == rhs.subscriptedExpression &&
-				lhs.indexExpression == rhs.indexExpression &&
-				lhs.typeName == rhs.typeName
+			return lhs == rhs
 		}
 		if let lhs = lhs as? ArrayExpression,
 			let rhs = rhs as? ArrayExpression
 		{
-			return lhs.elements == rhs.elements &&
-				lhs.typeName == rhs.typeName
+			return lhs == rhs
 		}
 		if let lhs = lhs as? DictionaryExpression,
 			let rhs = rhs as? DictionaryExpression
 		{
-			return lhs.keys == rhs.keys &&
-				lhs.values == rhs.values &&
-				lhs.typeName == rhs.typeName
+			return lhs == rhs
 		}
 		if let lhs = lhs as? ReturnExpression,
 			let rhs = rhs as? ReturnExpression
 		{
-			return lhs.expression == rhs.expression
+			return lhs == rhs
 		}
 		if let lhs = lhs as? DotExpression,
 			let rhs = rhs as? DotExpression
 		{
-			return lhs.leftExpression == rhs.leftExpression &&
-				lhs.rightExpression == rhs.rightExpression
+			return lhs == rhs
 		}
 		if let lhs = lhs as? BinaryOperatorExpression,
 			let rhs = rhs as? BinaryOperatorExpression
 		{
-			return lhs.leftExpression == rhs.leftExpression &&
-				lhs.rightExpression == rhs.rightExpression &&
-				lhs.operatorSymbol == rhs.operatorSymbol &&
-				lhs.typeName == rhs.typeName
+			return lhs == rhs
 		}
 		if let lhs = lhs as? PrefixUnaryExpression,
 			let rhs = rhs as? PrefixUnaryExpression
 		{
-			return lhs.subExpression == rhs.subExpression &&
-				lhs.operatorSymbol == rhs.operatorSymbol &&
-				lhs.typeName == rhs.typeName
+			return lhs == rhs
 		}
 		if let lhs = lhs as? PostfixUnaryExpression,
 			let rhs = rhs as? PostfixUnaryExpression
 		{
-			return lhs.subExpression == rhs.subExpression &&
-				lhs.operatorSymbol == rhs.operatorSymbol &&
-				lhs.typeName == rhs.typeName
+			return lhs == rhs
 		}
 		if let lhs = lhs as? IfExpression,
 			let rhs = rhs as? IfExpression
 		{
-			return lhs.condition == rhs.condition &&
-				lhs.trueExpression == rhs.trueExpression &&
-				lhs.falseExpression == rhs.falseExpression
+			return lhs == rhs
 		}
 		if let lhs = lhs as? CallExpression,
 			let rhs = rhs as? CallExpression
 		{
-			return lhs.data == rhs.data
+			return lhs == rhs
 		}
 		if let lhs = lhs as? ClosureExpression,
 			let rhs = rhs as? ClosureExpression
 		{
-			return lhs.parameters == rhs.parameters &&
-				lhs.statements == rhs.statements &&
-				lhs.typeName == rhs.typeName
+			return lhs == rhs
 		}
 		if let lhs = lhs as? LiteralIntExpression,
 			let rhs = rhs as? LiteralIntExpression
 		{
-			return lhs.value == rhs.value
+			return lhs == rhs
 		}
 		if let lhs = lhs as? LiteralUIntExpression,
 			let rhs = rhs as? LiteralUIntExpression
 		{
-			return lhs.value == rhs.value
+			return lhs == rhs
 		}
 		if let lhs = lhs as? LiteralDoubleExpression,
 			let rhs = rhs as? LiteralDoubleExpression
 		{
-			return lhs.value == rhs.value
+			return lhs == rhs
 		}
 		if let lhs = lhs as? LiteralFloatExpression,
 			let rhs = rhs as? LiteralFloatExpression
 		{
-			return lhs.value == rhs.value
+			return lhs == rhs
 		}
 		if let lhs = lhs as? LiteralBoolExpression,
 			let rhs = rhs as? LiteralBoolExpression
 		{
-			return lhs.value == rhs.value
+			return lhs == rhs
 		}
 		if let lhs = lhs as? LiteralStringExpression,
 			let rhs = rhs as? LiteralStringExpression
 		{
-			return lhs.value == rhs.value
+			return lhs == rhs
 		}
 		if let lhs = lhs as? LiteralCharacterExpression,
 			let rhs = rhs as? LiteralCharacterExpression
 		{
-			return lhs.value == rhs.value
+			return lhs == rhs
 		}
-		if lhs is NilLiteralExpression, rhs is NilLiteralExpression {
+		if lhs is NilLiteralExpression,
+			rhs is NilLiteralExpression
+		{
 			return true
 		}
 		if let lhs = lhs as? InterpolatedStringLiteralExpression,
 			let rhs = rhs as? InterpolatedStringLiteralExpression
 		{
-			return lhs.expressions == rhs.expressions
+			return lhs == rhs
 		}
 		if let lhs = lhs as? TupleExpression,
 			let rhs = rhs as? TupleExpression
 		{
-			return lhs.pairs == rhs.pairs
+			return lhs == rhs
 		}
 		if let lhs = lhs as? TupleShuffleExpression,
 			let rhs = rhs as? TupleShuffleExpression
 		{
-			return lhs.labels == rhs.labels &&
-				lhs.indices == rhs.indices &&
-				lhs.expressions == rhs.expressions
+			return lhs == rhs
 		}
-		if lhs is ErrorExpression, rhs is ErrorExpression {
-			return true
+		if lhs is ErrorExpression,
+			rhs is ErrorExpression
+		{
+			return lhs == rhs
 		}
 
 		return false
@@ -1085,7 +1153,7 @@ public class LiteralCodeExpression: Expression {
 	}
 
 	public static func == (lhs: LiteralCodeExpression, rhs: LiteralCodeExpression) -> Bool {
-		return lhs.swiftType == rhs.string
+		return lhs.string == rhs.string
 	}
 }
 
@@ -1110,7 +1178,7 @@ public class LiteralDeclarationExpression: Expression {
 		rhs: LiteralDeclarationExpression)
 		-> Bool
 	{
-		return false
+		return lhs.string == rhs.string
 	}
 }
 
@@ -1141,7 +1209,8 @@ public class TemplateExpression: Expression {
 	}
 
 	public static func == (lhs: TemplateExpression, rhs: TemplateExpression) -> Bool {
-		return false
+		return lhs.pattern == rhs.pattern &&
+			lhs.matches == rhs.matches
 	}
 }
 
