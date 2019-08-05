@@ -651,12 +651,10 @@ public class SwiftTranslator {
 			let range = getRangeRecursively(ofNode: memberReferenceExpression)
 			let rightHand = DeclarationReferenceExpression(
 				range: range,
-				data: DeclarationReferenceData(
-					identifier: declarationInformation.identifier,
-					typeName: typeName,
-					isStandardLibrary: declarationInformation.isStandardLibrary,
-					isImplicit: isImplicit,
-					range: range))
+				identifier: declarationInformation.identifier,
+				typeName: typeName,
+				isStandardLibrary: declarationInformation.isStandardLibrary,
+				isImplicit: isImplicit)
 			return DotExpression(
 				range: getRangeRecursively(ofNode: memberOwner),
 				leftExpression: leftHand,
@@ -709,12 +707,10 @@ public class SwiftTranslator {
 						leftExpression: leftHand,
 						rightExpression: DeclarationReferenceExpression(
 							range: range,
-							data: DeclarationReferenceData(
-								identifier: label,
-								typeName: typeName,
-								isStandardLibrary: leftExpression.data.isStandardLibrary,
-								isImplicit: false,
-								range: range)))
+							identifier: label,
+							typeName: typeName,
+							isStandardLibrary: leftExpression.isStandardLibrary,
+							isImplicit: false))
 				}
 				else if let tupleComponent = tupleComponent {
 					let memberName = (number == 0) ? "first" : "second"
@@ -724,12 +720,10 @@ public class SwiftTranslator {
 						leftExpression: leftHand,
 						rightExpression: DeclarationReferenceExpression(
 							range: range,
-							data: DeclarationReferenceData(
-								identifier: memberName,
-								typeName: tupleComponent,
-								isStandardLibrary: leftExpression.data.isStandardLibrary,
-								isImplicit: false,
-								range: range)))
+							identifier: memberName,
+							typeName: tupleComponent,
+							isStandardLibrary: leftExpression.isStandardLibrary,
+							isImplicit: false))
 				}
 			}
 		}
@@ -898,7 +892,7 @@ public class SwiftTranslator {
 			if leftHand is TypeExpression,
 				let rightExpression = rightHand as? DeclarationReferenceExpression
 			{
-				if rightExpression.data.identifier == "none" {
+				if rightExpression.identifier == "none" {
 					return NilLiteralExpression(
 						range: getRangeRecursively(ofNode: dotSyntaxCallExpression))
 				}
@@ -1039,19 +1033,16 @@ public class SwiftTranslator {
 		let variableAttributes = variableSubtreeNamed?.standaloneAttributes
 		let variableName = variableAttributes?.first
 
-		if let variableSubtreeNamed = variableSubtreeNamed,
-			let rawTypeNamed = rawTypeNamed,
+		if let rawTypeNamed = rawTypeNamed,
 			let maybeCollectionExpression = maybeCollectionExpression,
 			let variableName = variableName
 		{
 			variable = DeclarationReferenceExpression(
-				range: getRangeRecursively(ofNode: variableSubtreeNamed),
-				data: DeclarationReferenceData(
-					identifier: variableName,
-					typeName: cleanUpType(rawTypeNamed),
-					isStandardLibrary: false,
-					isImplicit: false,
-					range: variableRange))
+				range: variableRange,
+				identifier: variableName,
+				typeName: cleanUpType(rawTypeNamed),
+				isStandardLibrary: false,
+				isImplicit: false)
 			collectionExpression = maybeCollectionExpression
 		}
 		else if let variableSubtreeTuple = variableSubtreeTuple,
@@ -1064,13 +1055,11 @@ public class SwiftTranslator {
 					return LabeledExpression(
 						label: nil,
 						expression: DeclarationReferenceExpression(
-							range: getRangeRecursively(ofNode: subtree),
-							data: DeclarationReferenceData(
-								identifier: name,
-								typeName: cleanUpType(typeName),
-								isStandardLibrary: false,
-								isImplicit: false,
-								range: variableRange)))
+							range: variableRange,
+							identifier: name,
+							typeName: cleanUpType(typeName),
+							isStandardLibrary: false,
+							isImplicit: false))
 				}
 
 			variable = TupleExpression(
@@ -1078,19 +1067,16 @@ public class SwiftTranslator {
 				pairs: variables)
 			collectionExpression = maybeCollectionExpression
 		}
-		else if let variableSubtreeAny = variableSubtreeAny,
-			let rawTypeAny = rawTypeAny,
+		else if let rawTypeAny = rawTypeAny,
 			let maybeCollectionExpression = maybeCollectionExpression
 		{
 			let typeName = cleanUpType(rawTypeAny)
 			variable = DeclarationReferenceExpression(
-				range: getRangeRecursively(ofNode: variableSubtreeAny),
-				data: DeclarationReferenceData(
-					identifier: "_0",
-					typeName: typeName,
-					isStandardLibrary: false,
-					isImplicit: false,
-					range: variableRange))
+				range: variableRange,
+				identifier: "_0",
+				typeName: typeName,
+				isStandardLibrary: false,
+				isImplicit: false)
 			collectionExpression = maybeCollectionExpression
 		}
 		else {
@@ -1307,13 +1293,11 @@ public class SwiftTranslator {
 								range: getRangeRecursively(ofNode: patternLet),
 								leftExpression: translatedExpression,
 								rightExpression: DeclarationReferenceExpression(
-									range: getRangeRecursively(ofNode: patternLet),
-									data: DeclarationReferenceData(
-										identifier: $0.associatedValueName,
-										typeName: $0.associatedValueType,
-										isStandardLibrary: false,
-										isImplicit: false,
-										range: range))),
+									range: range,
+									identifier: $0.associatedValueName,
+									typeName: $0.associatedValueType,
+									isStandardLibrary: false,
+									isImplicit: false)),
 							getter: nil,
 							setter: nil,
 							isLet: true,
@@ -1388,12 +1372,10 @@ public class SwiftTranslator {
 		let range = getRangeRecursively(ofNode: simplePatternEnumElement)
 		let lastExpression = DeclarationReferenceExpression(
 			range: range,
-			data: DeclarationReferenceData(
-				identifier: String(lastEnumElement),
-				typeName: typeName,
-				isStandardLibrary: false,
-				isImplicit: false,
-				range: range))
+			identifier: String(lastEnumElement),
+			typeName: typeName,
+			isStandardLibrary: false,
+			isImplicit: false)
 
 		enumElements.removeLast()
 		if !enumElements.isEmpty {
@@ -1539,12 +1521,10 @@ public class SwiftTranslator {
 							leftExpression: declarationReference,
 							rightExpression: DeclarationReferenceExpression(
 								range: range,
-								data: DeclarationReferenceData(
-									identifier: comparison.associatedValueName,
-									typeName: comparison.associatedValueType,
-									isStandardLibrary: false,
-									isImplicit: false,
-									range: range))),
+								identifier: comparison.associatedValueName,
+								typeName: comparison.associatedValueType,
+								isStandardLibrary: false,
+								isImplicit: false)),
 						rightExpression: comparison.comparedExpression,
 						operatorSymbol: "==",
 						typeName: "Bool")))
@@ -1562,12 +1542,10 @@ public class SwiftTranslator {
 							leftExpression: declarationReference,
 							rightExpression: DeclarationReferenceExpression(
 								range: range,
-								data: DeclarationReferenceData(
-									identifier: String(declaration.associatedValueName),
-									typeName: declaration.associatedValueType,
-									isStandardLibrary: false,
-									isImplicit: false,
-									range: range))),
+								identifier: String(declaration.associatedValueName),
+								typeName: declaration.associatedValueType,
+								isStandardLibrary: false,
+								isImplicit: false)),
 						getter: nil,
 						setter: nil,
 						isLet: true,
@@ -2199,13 +2177,11 @@ public class SwiftTranslator {
 		case "Super Reference Expression":
 			if let typeName = expression["type"] {
 				result = DeclarationReferenceExpression(
-					range: getRangeRecursively(ofNode: expression),
-					data: DeclarationReferenceData(
-						identifier: "super",
-						typeName: typeName,
-						isStandardLibrary: false,
-						isImplicit: false,
-						range: getRange(ofNode: expression)))
+					range: getRange(ofNode: expression),
+					identifier: "super",
+					typeName: typeName,
+					isStandardLibrary: false,
+					isImplicit: false)
 			}
 			else {
 				result = try unexpectedExpressionStructureError(
@@ -2244,12 +2220,10 @@ public class SwiftTranslator {
 		case "Other Constructor Reference Expression":
 			result = DeclarationReferenceExpression(
 				range: getRangeRecursively(ofNode: expression),
-				data: DeclarationReferenceData(
-					identifier: "init",
-					typeName: expression["type"]!,
-					isStandardLibrary: false,
-					isImplicit: false,
-					range: getRangeRecursively(ofNode: expression)))
+				identifier: "init",
+				typeName: expression["type"]!,
+				isStandardLibrary: false,
+				isImplicit: false)
 
 		default:
 			result = try unexpectedExpressionStructureError(
@@ -2907,37 +2881,31 @@ public class SwiftTranslator {
 			let declarationInformation = getInformationFromDeclaration(discriminator)
 
 			return DeclarationReferenceExpression(
-				range: getRangeRecursively(ofNode: declarationReferenceExpressionFixme),
-				data: DeclarationReferenceData(
+					range: range,
 					identifier: declarationInformation.identifier,
 					typeName: typeName,
 					isStandardLibrary: declarationInformation.isStandardLibrary,
-					isImplicit: isImplicit,
-					range: range))
+					isImplicit: isImplicit)
 		}
 		else if let codeDeclaration = declarationReferenceExpressionFixme.standaloneAttributes.first,
 			codeDeclaration.hasPrefix("code.")
 		{
 			let declarationInformation = getInformationFromDeclaration(codeDeclaration)
 			return DeclarationReferenceExpression(
-				range: getRangeRecursively(ofNode: declarationReferenceExpressionFixme),
-				data: DeclarationReferenceData(
-					identifier: declarationInformation.identifier,
-					typeName: typeName,
-					isStandardLibrary: declarationInformation.isStandardLibrary,
-					isImplicit: isImplicit,
-					range: range))
+				range: range,
+				identifier: declarationInformation.identifier,
+				typeName: typeName,
+				isStandardLibrary: declarationInformation.isStandardLibrary,
+				isImplicit: isImplicit)
 		}
 		else if let declaration = declarationReferenceExpressionFixme["decl"] {
 			let declarationInformation = getInformationFromDeclaration(declaration)
 			return DeclarationReferenceExpression(
-				range: getRangeRecursively(ofNode: declarationReferenceExpressionFixme),
-				data: DeclarationReferenceData(
-					identifier: declarationInformation.identifier,
-					typeName: typeName,
-					isStandardLibrary: declarationInformation.isStandardLibrary,
-					isImplicit: isImplicit,
-					range: range))
+				range: range,
+				identifier: declarationInformation.identifier,
+				typeName: typeName,
+				isStandardLibrary: declarationInformation.isStandardLibrary,
+				isImplicit: isImplicit)
 		}
 		else {
 			return try unexpectedExpressionStructureError(

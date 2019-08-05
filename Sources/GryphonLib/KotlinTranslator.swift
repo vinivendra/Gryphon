@@ -110,8 +110,8 @@ public class KotlinTranslator {
 
 		if let declarationExpression = finalCallExpression as? DeclarationReferenceExpression {
 			for functionDeclaration in pureFunctions {
-				if declarationExpression.data.identifier.hasPrefix(functionDeclaration.prefix),
-					declarationExpression.data.typeName == functionDeclaration.functionType
+				if declarationExpression.identifier.hasPrefix(functionDeclaration.prefix),
+					declarationExpression.typeName == functionDeclaration.functionType
 				{
 					return true
 				}
@@ -1252,7 +1252,7 @@ public class KotlinTranslator {
 				withIndentation: indentation)
 		}
 		if let declarationReferenceExpression = expression as? DeclarationReferenceExpression {
-			return translateDeclarationReferenceExpression(declarationReferenceExpression.data)
+			return translateDeclarationReferenceExpression(declarationReferenceExpression)
 		}
 		if let returnExpression = expression as? ReturnExpression {
 			return try translateReturnExpression(
@@ -1518,8 +1518,8 @@ public class KotlinTranslator {
 		let functionTranslation: FunctionTranslation?
 		if let expression = functionExpression as? DeclarationReferenceExpression {
 			functionTranslation = KotlinTranslator.getFunctionTranslation(
-				forName: expression.data.identifier,
-				typeName: expression.data.typeName)
+				forName: expression.identifier,
+				typeName: expression.typeName)
 		}
 		else {
 			functionTranslation = nil
@@ -1662,7 +1662,7 @@ public class KotlinTranslator {
 	}
 
 	private func translateDeclarationReferenceExpression(
-		_ declarationReferenceExpression: DeclarationReferenceData) -> String
+		_ declarationReferenceExpression: DeclarationReferenceExpression) -> String
 	{
 		return String(declarationReferenceExpression.identifier.prefix {
 			$0 !=

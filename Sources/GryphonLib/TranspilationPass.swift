@@ -594,7 +594,7 @@ public class TranspilationPass {
 			return replaceOptionalExpression(expression: expression.expression)
 		}
 		if let expression = expression as? DeclarationReferenceExpression {
-			return replaceDeclarationReferenceExpression(expression.data)
+			return replaceDeclarationReferenceExpression(expression)
 		}
 		if let expression = expression as? TypeExpression {
 			return replaceTypeExpression(typeName: expression.typeName)
@@ -745,17 +745,15 @@ public class TranspilationPass {
 	}
 
 	func replaceDeclarationReferenceExpression( // annotation: open
-		_ declarationReferenceExpressionFixme: DeclarationReferenceData)
+		_ declarationReferenceExpressionFixme: DeclarationReferenceExpression)
 		-> Expression
 	{
-		return DeclarationReferenceExpression(
-			range: nil,
-			data: replaceDeclarationReferenceExpressionData(declarationReferenceExpressionFixme))
+		return replaceDeclarationReferenceExpressionData(declarationReferenceExpressionFixme)
 	}
 
 	func replaceDeclarationReferenceExpressionData( // annotation: open
-		_ declarationReferenceExpression: DeclarationReferenceData)
-		-> DeclarationReferenceData
+		_ declarationReferenceExpression: DeclarationReferenceExpression)
+		-> DeclarationReferenceExpression
 	{
 		return declarationReferenceExpression
 	}
@@ -1196,7 +1194,7 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 		if isFailableInitializer,
 			let expression = leftHand as? DeclarationReferenceExpression
 		{
-			if expression.data.identifier == "self" {
+			if expression.identifier == "self" {
 				return [ReturnStatement(range: nil, expression: rightHand)]
 			}
 		}
@@ -1414,8 +1412,8 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 
 			if KotlinTranslator.sealedClasses.contains(lastEnumType) {
 				let enumExpression = enumExpression
-				enumExpression.data.identifier =
-					enumExpression.data.identifier.capitalizedAsCamelCase()
+				enumExpression.identifier =
+					enumExpression.identifier.capitalizedAsCamelCase()
 				return DotExpression(
 					range: nil,
 					leftExpression: TypeExpression(
@@ -1425,7 +1423,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 			}
 			else if KotlinTranslator.enumClasses.contains(lastEnumType) {
 				let enumExpression = enumExpression
-				enumExpression.data.identifier = enumExpression.data.identifier.upperSnakeCase()
+				enumExpression.identifier = enumExpression.identifier.upperSnakeCase()
 				return DotExpression(
 					range: nil,
 					leftExpression: TypeExpression(
@@ -1522,7 +1520,7 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
 		if let enumTypeExpression = leftExpression as? TypeExpression,
 			let enumExpression = rightExpression as? DeclarationReferenceExpression
 		{
-			if enumExpression.data.typeName ==
+			if enumExpression.typeName ==
 					"(\(enumTypeExpression.typeName).Type) -> \(enumTypeExpression.typeName)",
 				!KotlinTranslator.sealedClasses.contains(enumTypeExpression.typeName)
 			{
@@ -1680,8 +1678,8 @@ public class CallsToSuperclassInitializersTranspilationPass: TranspilationPass {
 						DeclarationReferenceExpression,
 						let rightExpression = dotExpression.rightExpression as?
 						DeclarationReferenceExpression,
-						leftExpression.data.identifier == "super",
-						rightExpression.data.identifier == "init"
+						leftExpression.identifier == "super",
+						rightExpression.identifier == "init"
 					{
 						return CallExpression(
 							range: callExpression.range,
@@ -1708,8 +1706,8 @@ public class SelfToThisTranspilationPass: TranspilationPass {
 		-> Expression
 	{
 		if let declarationReferenceExpression = leftExpression as? DeclarationReferenceExpression {
-			if declarationReferenceExpression.data.identifier == "self",
-				declarationReferenceExpression.data.isImplicit
+			if declarationReferenceExpression.identifier == "self",
+				declarationReferenceExpression.isImplicit
 			{
 				return replaceExpression(rightExpression)
 			}
@@ -1722,8 +1720,8 @@ public class SelfToThisTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceDeclarationReferenceExpressionData( // annotation: override
-		_ expression: DeclarationReferenceData)
-		-> DeclarationReferenceData
+		_ expression: DeclarationReferenceExpression)
+		-> DeclarationReferenceExpression
 	{
 		if expression.identifier == "self" {
 			let expression = expression
@@ -1792,8 +1790,8 @@ public class AnonymousParametersTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
 	override func replaceDeclarationReferenceExpressionData( // annotation: override
-		_ expression: DeclarationReferenceData)
-		-> DeclarationReferenceData
+		_ expression: DeclarationReferenceExpression)
+		-> DeclarationReferenceExpression
 	{
 		if expression.identifier == "$0" {
 			let expression = expression
@@ -1874,13 +1872,12 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 								rightExpression: CallExpression(
 									range: nil,
 									data: CallExpressionData(
-									function: DeclarationReferenceExpression(range: nil, data:
-										DeclarationReferenceData(
-											identifier: "toMutableList<\(mappedElementType)>",
-											typeName: typeExpression.typeName,
-											isStandardLibrary: false,
-											isImplicit: false,
-											range: nil)),
+									function: DeclarationReferenceExpression(
+										range: nil,
+										identifier: "toMutableList<\(mappedElementType)>",
+										typeName: typeExpression.typeName,
+										isStandardLibrary: false,
+										isImplicit: false),
 									parameters: TupleExpression(range: nil, pairs: []),
 									typeName: typeExpression.typeName,
 									range: nil)))
@@ -1894,13 +1891,12 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 						range: nil,
 						leftExpression: replaceExpression(onlyPair.expression),
 						rightExpression: CallExpression(range: nil, data: CallExpressionData(
-							function: DeclarationReferenceExpression(range: nil, data:
-								DeclarationReferenceData(
-									identifier: "toMutableList<\(mappedElementType)>",
-									typeName: typeExpression.typeName,
-									isStandardLibrary: false,
-									isImplicit: false,
-									range: nil)),
+							function: DeclarationReferenceExpression(
+								range: nil,
+								identifier: "toMutableList<\(mappedElementType)>",
+								typeName: typeExpression.typeName,
+								isStandardLibrary: false,
+								isImplicit: false),
 							parameters: TupleExpression(range: nil, pairs: []),
 							typeName: typeExpression.typeName,
 							range: nil)))
@@ -1915,7 +1911,7 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 					dotExpression.rightExpression as? DeclarationReferenceExpression,
 				let tupleExpression = callExpression.parameters as? TupleExpression
 			{
-				if declarationReferenceExpression.data.identifier == "as",
+				if declarationReferenceExpression.identifier == "as",
 					tupleExpression.pairs.count == 1,
 					let onlyPair = tupleExpression.pairs.first
 				{
@@ -1990,13 +1986,11 @@ public class RefactorOptionalsInSubscriptsTranspilationPass: TranspilationPass {
 				leftExpression: subscriptedExpression,
 				rightExpression: CallExpression(range: nil, data: CallExpressionData(
 					function: DeclarationReferenceExpression(
-						range: nil,
-						data: DeclarationReferenceData(
-							identifier: "get",
-							typeName: "(\(indexExpression.swiftType ?? "<<Error>>")) -> \(typeName)",
-							isStandardLibrary: false,
-							isImplicit: false,
-							range: subscriptedExpression.range)),
+						range: subscriptedExpression.range,
+						identifier: "get",
+						typeName: "(\(indexExpression.swiftType ?? "<<Error>>")) -> \(typeName)",
+						isStandardLibrary: false,
+						isImplicit: false),
 					parameters: TupleExpression(range: nil, pairs:
 						[LabeledExpression(label: nil, expression: indexExpression)]),
 					typeName: typeName,
@@ -2222,9 +2216,9 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 						assignmentStatement.leftHand as? DeclarationReferenceExpression
 					{
 
-						if assignmentExpression.data.identifier == variableDeclaration.identifier,
-							!assignmentExpression.data.isStandardLibrary,
-							!assignmentExpression.data.isImplicit
+						if assignmentExpression.identifier == variableDeclaration.identifier,
+							!assignmentExpression.isStandardLibrary,
+							!assignmentExpression.isImplicit
 						{
 							variableDeclaration.expression = NilLiteralExpression(range: nil)
 							variableDeclaration.getter = nil
@@ -2304,7 +2298,7 @@ public class IsOperatorsInSealedClassesTranspilationPass: TranspilationPass {
 	{
 		if let declarationReferenceExpression = expression as? DeclarationReferenceExpression {
 			if KotlinTranslator.sealedClasses.contains(
-				declarationReferenceExpression.data.typeName)
+				declarationReferenceExpression.typeName)
 			{
 				let newCases = cases.map {
 					replaceIsOperatorsInSwitchCase($0, usingExpression: expression)
@@ -2353,7 +2347,7 @@ public class IsOperatorsInSealedClassesTranspilationPass: TranspilationPass {
 					rightExpression: TypeExpression(
 						range: nil,
 						typeName: "\(typeExpression.typeName)." +
-							"\(declarationReferenceExpression.data.identifier)"),
+							"\(declarationReferenceExpression.identifier)"),
 					operatorSymbol: "is",
 					typeName: "Bool")
 			}
@@ -2439,7 +2433,7 @@ public class ShadowedIfLetAsToIsTranspilationPass: TranspilationPass {
 								binaryOperator.rightExpression as? TypeExpression,
 							binaryOperator.operatorSymbol == "as?"
 						{
-							if variableDeclaration.identifier == leftExpression.data.identifier {
+							if variableDeclaration.identifier == leftExpression.identifier {
 								conditionWasReplaced = true
 								newConditions.append(IfStatementData.IfCondition.condition(
 									expression: BinaryOperatorExpression(
@@ -2557,8 +2551,8 @@ public class RaiseStandardLibraryWarningsTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
 	override func replaceDeclarationReferenceExpressionData( // annotation: override
-		_ expression: DeclarationReferenceData)
-		-> DeclarationReferenceData
+		_ expression: DeclarationReferenceExpression)
+		-> DeclarationReferenceExpression
 	{
 		if expression.isStandardLibrary {
 			let message = "Reference to standard library \"\(expression.identifier)\" was not " +
@@ -2697,9 +2691,9 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 				let declarationReference =
 					callExpression.data.function as? DeclarationReferenceExpression
 			{
-				if declarationReference.data.identifier.hasPrefix("toMutable"),
-					(declarationReference.data.typeName.hasPrefix("ArrayClass") ||
-						declarationReference.data.typeName.hasPrefix("DictionaryClass"))
+				if declarationReference.identifier.hasPrefix("toMutable"),
+					(declarationReference.typeName.hasPrefix("ArrayClass") ||
+						declarationReference.typeName.hasPrefix("DictionaryClass"))
 				{
 					return DotExpression(
 						range: nil,
@@ -2889,13 +2883,12 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 		if case let .declaration(variableDeclaration: variableDeclaration) = condition {
 			return .condition(expression: BinaryOperatorExpression(
 				range: nil,
-				leftExpression: DeclarationReferenceExpression(range: nil, data:
-					DeclarationReferenceData(
-						identifier: variableDeclaration.identifier,
-						typeName: variableDeclaration.typeName,
-						isStandardLibrary: false,
-						isImplicit: false,
-						range: variableDeclaration.expression?.range)),
+				leftExpression: DeclarationReferenceExpression(
+					range: variableDeclaration.expression?.range,
+					identifier: variableDeclaration.identifier,
+					typeName: variableDeclaration.typeName,
+					isStandardLibrary: false,
+					isImplicit: false),
 				rightExpression: NilLiteralExpression(range: nil),
 				operatorSymbol: "!=",
 				typeName: "Boolean"))
@@ -2948,7 +2941,7 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 		if let declarationExpression = variableDeclaration.expression,
 			let expression = declarationExpression as? DeclarationReferenceExpression
 		{
-			if expression.data.identifier == variableDeclaration.identifier {
+			if expression.identifier == variableDeclaration.identifier {
 				return true
 			}
 		}
@@ -2983,12 +2976,12 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 			range: nil,
 			identifier: lhs.label,
 			typeName: lhs.typeName,
-			expression: DeclarationReferenceExpression(range: nil, data: DeclarationReferenceData(
+			expression: DeclarationReferenceExpression(
+				range: nil,
 				identifier: "this",
 				typeName: lhs.typeName,
 				isStandardLibrary: false,
-				isImplicit: false,
-				range: nil)),
+				isImplicit: false),
 			getter: nil,
 			setter: nil,
 			isLet: true,
@@ -3000,12 +2993,12 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 			range: nil,
 			identifier: rhs.label,
 			typeName: "Any?",
-			expression: DeclarationReferenceExpression(range: nil, data: DeclarationReferenceData(
+			expression: DeclarationReferenceExpression(
+				range: nil,
 				identifier: "other",
 				typeName: "Any?",
 				isStandardLibrary: false,
-				isImplicit: false,
-				range: nil)),
+				isImplicit: false),
 			getter: nil,
 			setter: nil,
 			isLet: true,
@@ -3020,12 +3013,10 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 				range: nil,
 				leftExpression: DeclarationReferenceExpression(
 					range: nil,
-					data: DeclarationReferenceData(
-						identifier: rhs.label,
-						typeName: "Any?",
-						isStandardLibrary: false,
-						isImplicit: false,
-						range: nil)),
+					identifier: rhs.label,
+					typeName: "Any?",
+					isStandardLibrary: false,
+					isImplicit: false),
 				rightExpression: TypeExpression(range: nil, typeName: rhs.typeName),
 				operatorSymbol: "is",
 				typeName: "Bool")),
@@ -3152,12 +3143,10 @@ public class RawValuesTranspilationPass: TranspilationPass {
 							leftExpression: TypeExpression(range: nil, typeName: enumName),
 							rightExpression: DeclarationReferenceExpression(
 								range: nil,
-								data: DeclarationReferenceData(
-									identifier: element.name,
-									typeName: enumName,
-									isStandardLibrary: false,
-									isImplicit: false,
-									range: nil)))),
+								identifier: element.name,
+								typeName: enumName,
+								isStandardLibrary: false,
+								isImplicit: false))),
 				])
 		}
 
@@ -3170,13 +3159,12 @@ public class RawValuesTranspilationPass: TranspilationPass {
 		let switchStatement = SwitchStatement(
 			range: nil,
 			convertsToExpression: nil,
-			expression: DeclarationReferenceExpression(range: nil, data:
-				DeclarationReferenceData(
-					identifier: "rawValue",
-					typeName: rawValueType,
-					isStandardLibrary: false,
-					isImplicit: false,
-					range: nil)),
+			expression: DeclarationReferenceExpression(
+				range: nil,
+				identifier: "rawValue",
+				typeName: rawValueType,
+				isStandardLibrary: false,
+				isImplicit: false),
 			cases: switchCases)
 
 		return InitializerDeclaration(
@@ -3214,12 +3202,10 @@ public class RawValuesTranspilationPass: TranspilationPass {
 					leftExpression: TypeExpression(range: nil, typeName: enumName),
 					rightExpression: DeclarationReferenceExpression(
 						range: nil,
-						data: DeclarationReferenceData(
-							identifier: element.name,
-							typeName: enumName,
-							isStandardLibrary: false,
-							isImplicit: false,
-							range: nil))), ],
+						identifier: element.name,
+						typeName: enumName,
+						isStandardLibrary: false,
+						isImplicit: false)), ],
 				statements: [
 					ReturnStatement(
 						range: nil,
@@ -3230,13 +3216,12 @@ public class RawValuesTranspilationPass: TranspilationPass {
 		let switchStatement = SwitchStatement(
 			range: nil,
 			convertsToExpression: nil,
-			expression: DeclarationReferenceExpression(range: nil, data:
-				DeclarationReferenceData(
-					identifier: "this",
-					typeName: enumName,
-					isStandardLibrary: false,
-					isImplicit: false,
-					range: nil)),
+			expression: DeclarationReferenceExpression(
+				range: nil,
+				identifier: "this",
+				typeName: enumName,
+				isStandardLibrary: false,
+				isImplicit: false),
 			cases: switchCases)
 
 		let getter = FunctionDeclaration(
@@ -3370,7 +3355,7 @@ public class ReturnIfNilTranspilationPass: TranspilationPass {
 									rightExpression: ReturnExpression(range: nil, expression:
 										returnStatement.expression),
 									operatorSymbol: "?:",
-									typeName: declarationExpression.data.typeName)), ]
+									typeName: declarationExpression.typeName)), ]
 						}
 					}
 				}

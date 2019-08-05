@@ -1326,23 +1326,35 @@ public class OptionalExpression: Expression {
 }
 
 public class DeclarationReferenceExpression: Expression {
-	let data: DeclarationReferenceData
+	var identifier: String
+	var typeName: String
+	var isStandardLibrary: Bool
+	var isImplicit: Bool
 
-	init(range: SourceFileRange?, data: DeclarationReferenceData) {
-		self.data = data
+	init(
+		range: SourceFileRange?,
+		identifier: String,
+		typeName: String,
+		isStandardLibrary: Bool,
+		isImplicit: Bool)
+	{
+		self.identifier = identifier
+		self.typeName = typeName
+		self.isStandardLibrary = isStandardLibrary
+		self.isImplicit = isImplicit
 		super.init(range: range, name: "DeclarationReferenceExpression".capitalizedAsCamelCase())
 	}
 
 	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [
-			PrintableTree(data.typeName),
-			PrintableTree(data.identifier),
-			data.isStandardLibrary ? PrintableTree("isStandardLibrary") : nil,
-			data.isImplicit ? PrintableTree("implicit") : nil, ]
+			PrintableTree(typeName),
+			PrintableTree(identifier),
+			isStandardLibrary ? PrintableTree("isStandardLibrary") : nil,
+			isImplicit ? PrintableTree("implicit") : nil, ]
 	}
 
 	override var swiftType: String? { // annotation: override
-		return data.typeName
+		return typeName
 	}
 
 	public static func == (
@@ -1350,7 +1362,11 @@ public class DeclarationReferenceExpression: Expression {
 		rhs: DeclarationReferenceExpression)
 		-> Bool
 	{
-		return lhs.data == rhs.data
+		return lhs.identifier == rhs.identifier &&
+			lhs.typeName == rhs.typeName &&
+			lhs.isStandardLibrary == rhs.isStandardLibrary &&
+			lhs.isImplicit == rhs.isImplicit &&
+			lhs.range == rhs.range
 	}
 }
 
@@ -1523,9 +1539,9 @@ public class DotExpression: Expression {
 		{
 			let enumType = leftType.typeName
 
-			if rightDeclarationReference.data.typeName.hasPrefix("("),
-				rightDeclarationReference.data.typeName.contains("\(enumType).Type) -> "),
-				rightDeclarationReference.data.typeName.hasSuffix(enumType)
+			if rightDeclarationReference.typeName.hasPrefix("("),
+				rightDeclarationReference.typeName.contains("\(enumType).Type) -> "),
+				rightDeclarationReference.typeName.hasSuffix(enumType)
 			{
 				return enumType
 			}
@@ -2030,40 +2046,6 @@ public struct FunctionParameter: Equatable {
 	let apiLabel: String?
 	let typeName: String
 	let value: Expression?
-}
-
-public class DeclarationReferenceData: Equatable {
-	var identifier: String
-	var typeName: String
-	var isStandardLibrary: Bool
-	var isImplicit: Bool
-	var range: SourceFileRange?
-
-	init(
-		identifier: String,
-		typeName: String,
-		isStandardLibrary: Bool,
-		isImplicit: Bool,
-		range: SourceFileRange?)
-	{
-		self.identifier = identifier
-		self.typeName = typeName
-		self.isStandardLibrary = isStandardLibrary
-		self.isImplicit = isImplicit
-		self.range = range
-	}
-
-	public static func == (
-		lhs: DeclarationReferenceData,
-		rhs: DeclarationReferenceData)
-		-> Bool
-	{
-		return lhs.identifier == rhs.identifier &&
-			lhs.typeName == rhs.typeName &&
-			lhs.isStandardLibrary == rhs.isStandardLibrary &&
-			lhs.isImplicit == rhs.isImplicit &&
-			lhs.range == rhs.range
-	}
 }
 
 public class CallExpressionData: Equatable {
