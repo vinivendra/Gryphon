@@ -1919,17 +1919,18 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 			{
 				if declarationReferenceExpression.data.identifier == "as",
 					tupleExpression.pairs.count == 1,
-					let onlyPair = tupleExpression.pairs.first,
-					let typeExpression = onlyPair.expression as? TypeExpression
+					let onlyPair = tupleExpression.pairs.first
 				{
-					return BinaryOperatorExpression(
-						range: nil,
-						leftExpression: dotExpression.leftExpression,
-						rightExpression: TypeExpression(
+					if let typeExpression = onlyPair.expression as? TypeExpression {
+						return BinaryOperatorExpression(
 							range: nil,
-							typeName: typeExpression.typeName),
-						operatorSymbol: "as?",
-						typeName: typeExpression.typeName + "?")
+							leftExpression: dotExpression.leftExpression,
+							rightExpression: TypeExpression(
+								range: nil,
+								typeName: typeExpression.typeName),
+							operatorSymbol: "as?",
+							typeName: typeExpression.typeName + "?")
+					}
 				}
 			}
 		}
