@@ -594,34 +594,74 @@ public class InitializerDeclaration: FunctionDeclaration {
 }
 
 public class VariableDeclaration: Statement {
-	let data: VariableDeclarationData
+	var identifier: String
+	var typeName: String
+	var expression: Expression?
+	var getter: FunctionDeclaration?
+	var setter: FunctionDeclaration?
+	var isLet: Bool
+	var isImplicit: Bool
+	var isStatic: Bool
+	var extendsType: String?
+	var annotations: String?
 
 	init(
 		range: SourceFileRange?,
-		data: VariableDeclarationData)
+		identifier: String,
+		typeName: String,
+		expression: Expression?,
+		getter: FunctionDeclaration?,
+		setter: FunctionDeclaration?,
+		isLet: Bool,
+		isImplicit: Bool,
+		isStatic: Bool,
+		extendsType: String?,
+		annotations: String?)
 	{
-		self.data = data
+		self.identifier = identifier
+		self.typeName = typeName
+		self.expression = expression
+		self.getter = getter
+		self.setter = setter
+		self.isLet = isLet
+		self.isImplicit = isImplicit
+		self.isStatic = isStatic
+		self.extendsType = extendsType
+		self.annotations = annotations
 		super.init(range: range, name: "VariableDeclaration".capitalizedAsCamelCase())
 	}
 
 	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree.initOrNil(
-				"extendsType", [PrintableTree.initOrNil(data.extendsType)]),
-			data.isImplicit ? PrintableTree("implicit") : nil,
-			data.isStatic ? PrintableTree("static") : nil,
-			data.isLet ? PrintableTree("let") : PrintableTree("var"),
-			PrintableTree(data.identifier),
-			PrintableTree(data.typeName),
-			data.expression,
-			PrintableTree.initOrNil("getter", [data.getter]),
-			PrintableTree.initOrNil("setter", [data.setter]),
+				"extendsType", [PrintableTree.initOrNil(extendsType)]),
+			isImplicit ? PrintableTree("implicit") : nil,
+			isStatic ? PrintableTree("static") : nil,
+			isLet ? PrintableTree("let") : PrintableTree("var"),
+			PrintableTree(identifier),
+			PrintableTree(typeName),
+			expression,
+			PrintableTree.initOrNil("getter", [getter]),
+			PrintableTree.initOrNil("setter", [setter]),
 			PrintableTree.initOrNil(
-				"annotations", [PrintableTree.initOrNil(data.annotations)]), ]
+				"annotations", [PrintableTree.initOrNil(annotations)]), ]
 	}
 
-	public static func == (lhs: VariableDeclaration, rhs: VariableDeclaration) -> Bool {
-		return lhs.data == rhs.data
+	public static func == (
+		lhs: VariableDeclaration,
+		rhs: VariableDeclaration)
+		-> Bool
+	{
+		return lhs.identifier == rhs.identifier &&
+			lhs.typeName == rhs.typeName &&
+			lhs.expression == rhs.expression &&
+			lhs.getter == rhs.getter &&
+			lhs.setter == rhs.setter &&
+			lhs.isLet == rhs.isLet &&
+			lhs.isImplicit == rhs.isImplicit &&
+			lhs.isStatic == rhs.isStatic &&
+			lhs.extendsType == rhs.extendsType &&
+			lhs.annotations == rhs.annotations
 	}
 }
 
@@ -646,12 +686,12 @@ public class DoStatement: Statement {
 }
 
 public class CatchStatement: Statement {
-	let variableDeclaration: VariableDeclarationData?
+	let variableDeclaration: VariableDeclaration?
 	let statements: ArrayClass<Statement>
 
 	init(
 		range: SourceFileRange?,
-		variableDeclaration: VariableDeclarationData?,
+		variableDeclaration: VariableDeclaration?,
 		statements: ArrayClass<Statement>)
 	{
 		self.variableDeclaration = variableDeclaration
@@ -662,9 +702,7 @@ public class CatchStatement: Statement {
 	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree(
-				"variableDeclaration", ArrayClass<PrintableAsTree?>([
-					variableDeclaration.map { VariableDeclaration(range: nil, data: $0) },
-					])),
+				"variableDeclaration", ArrayClass<PrintableAsTree?>([ variableDeclaration ])),
 			PrintableTree.ofStatements(
 				"statements", statements),
 		]
@@ -745,8 +783,7 @@ public class IfStatement: Statement {
 	}
 
 	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
-		let declarationTrees =
-			data.declarations.map { VariableDeclaration(range: nil, data: $0) }
+		let declarationTrees = data.declarations
 		let conditionTrees = data.conditions.map { $0.toStatement() }
 		let elseStatementTrees = data.elseStatement
 			.map({ IfStatement(range: nil, data: $0) })?.printableSubtrees ?? []
@@ -1995,60 +2032,6 @@ public struct FunctionParameter: Equatable {
 	let value: Expression?
 }
 
-public class VariableDeclarationData: Equatable {
-	var identifier: String
-	var typeName: String
-	var expression: Expression?
-	var getter: FunctionDeclaration?
-	var setter: FunctionDeclaration?
-	var isLet: Bool
-	var isImplicit: Bool
-	var isStatic: Bool
-	var extendsType: String?
-	var annotations: String?
-
-	init(
-		identifier: String,
-		typeName: String,
-		expression: Expression?,
-		getter: FunctionDeclaration?,
-		setter: FunctionDeclaration?,
-		isLet: Bool,
-		isImplicit: Bool,
-		isStatic: Bool,
-		extendsType: String?,
-		annotations: String?)
-	{
-		self.identifier = identifier
-		self.typeName = typeName
-		self.expression = expression
-		self.getter = getter
-		self.setter = setter
-		self.isLet = isLet
-		self.isImplicit = isImplicit
-		self.isStatic = isStatic
-		self.extendsType = extendsType
-		self.annotations = annotations
-	}
-
-	public static func == (
-		lhs: VariableDeclarationData,
-		rhs: VariableDeclarationData)
-		-> Bool
-	{
-		return lhs.identifier == rhs.identifier &&
-			lhs.typeName == rhs.typeName &&
-			lhs.expression == rhs.expression &&
-			lhs.getter == rhs.getter &&
-			lhs.setter == rhs.setter &&
-			lhs.isLet == rhs.isLet &&
-			lhs.isImplicit == rhs.isImplicit &&
-			lhs.isStatic == rhs.isStatic &&
-			lhs.extendsType == rhs.extendsType &&
-			lhs.annotations == rhs.annotations
-	}
-}
-
 public class DeclarationReferenceData: Equatable {
 	var identifier: String
 	var typeName: String
@@ -2115,28 +2098,28 @@ public class CallExpressionData: Equatable {
 
 public class IfStatementData: Equatable {
 	var conditions: ArrayClass<IfCondition>
-	var declarations: ArrayClass<VariableDeclarationData>
+	var declarations: ArrayClass<VariableDeclaration>
 	var statements: ArrayClass<Statement>
 	var elseStatement: IfStatementData?
 	var isGuard: Bool
 
 	public enum IfCondition: Equatable {
 		case condition(expression: Expression)
-		case declaration(variableDeclaration: VariableDeclarationData)
+		case declaration(variableDeclaration: VariableDeclaration)
 
 		func toStatement() -> Statement {
 			switch self {
 			case let .condition(expression: expression):
 				return ExpressionStatement(range: nil, expression: expression)
 			case let .declaration(variableDeclaration: variableDeclaration):
-				return VariableDeclaration(range: nil, data: variableDeclaration)
+				return variableDeclaration
 			}
 		}
 	}
 
 	public init(
 		conditions: ArrayClass<IfCondition>,
-		declarations: ArrayClass<VariableDeclarationData>,
+		declarations: ArrayClass<VariableDeclaration>,
 		statements: ArrayClass<Statement>,
 		elseStatement: IfStatementData?,
 		isGuard: Bool)

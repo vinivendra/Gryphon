@@ -147,7 +147,7 @@ public class TranspilationPass {
 			return replaceFunctionDeclaration(functionDeclaration)
 		}
 		if let variableDeclaration = statement as? VariableDeclaration {
-			return replaceVariableDeclaration(variableDeclaration.data)
+			return replaceVariableDeclaration(variableDeclaration)
 		}
 		if let doStatement = statement as? DoStatement {
 			return replaceDoStatement(statements: doStatement.statements)
@@ -399,17 +399,15 @@ public class TranspilationPass {
 	}
 
 	func replaceVariableDeclaration( // annotation: open
-		_ variableDeclaration: VariableDeclarationData)
+		_ variableDeclaration: VariableDeclaration)
 		-> ArrayClass<Statement>
 	{
-		return [VariableDeclaration(
-			range: nil,
-			data: processVariableDeclarationData(variableDeclaration)), ]
+		return [processVariableDeclaration(variableDeclaration)]
 	}
 
-	func processVariableDeclarationData( // annotation: open
-		_ variableDeclaration: VariableDeclarationData)
-		-> VariableDeclarationData
+	func processVariableDeclaration( // annotation: open
+		_ variableDeclaration: VariableDeclaration)
+		-> VariableDeclaration
 	{
 		let variableDeclaration = variableDeclaration
 		variableDeclaration.expression =
@@ -431,13 +429,13 @@ public class TranspilationPass {
 	}
 
 	func replaceCatchStatement( // annotation: open
-		variableDeclaration: VariableDeclarationData?,
+		variableDeclaration: VariableDeclaration?,
 		statements: ArrayClass<Statement>)
 		-> ArrayClass<Statement>
 	{
 		return [CatchStatement(
 			range: nil,
-			variableDeclaration: variableDeclaration.map { processVariableDeclarationData($0) },
+			variableDeclaration: variableDeclaration.map { processVariableDeclaration($0) },
 			statements: replaceStatements(statements)),
 		]
 	}
@@ -478,7 +476,7 @@ public class TranspilationPass {
 		let ifStatement = ifStatement
 		ifStatement.conditions = replaceIfConditions(ifStatement.conditions)
 		ifStatement.declarations =
-			ifStatement.declarations.map { processVariableDeclarationData($0) }
+			ifStatement.declarations.map { processVariableDeclaration($0) }
 		ifStatement.statements = replaceStatements(ifStatement.statements)
 		ifStatement.elseStatement = ifStatement.elseStatement.map { processIfStatementData($0) }
 		return ifStatement
@@ -500,7 +498,7 @@ public class TranspilationPass {
 			return .condition(expression: replaceExpression(expression))
 		case let .declaration(variableDeclaration: variableDeclaration):
 			return .declaration(
-				variableDeclaration: processVariableDeclarationData(variableDeclaration))
+				variableDeclaration: processVariableDeclaration(variableDeclaration))
 		}
 	}
 
@@ -977,7 +975,7 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
 	override func replaceVariableDeclaration( // annotation: override
-		_ variableDeclaration: VariableDeclarationData)
+		_ variableDeclaration: VariableDeclaration)
 		-> ArrayClass<Statement>
 	{
 		if variableDeclaration.identifier == "description",
@@ -1124,7 +1122,7 @@ public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceVariableDeclaration( // annotation: override
-		_ variableDeclaration: VariableDeclarationData)
+		_ variableDeclaration: VariableDeclaration)
 		-> ArrayClass<Statement>
 	{
 		if variableDeclaration.isImplicit {
@@ -1264,7 +1262,7 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 		}
 
 		if let variableDeclaration = member as? VariableDeclaration {
-			if variableDeclaration.data.isStatic {
+			if variableDeclaration.isStatic {
 				return true
 			}
 		}
@@ -1381,13 +1379,13 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass {
 		return result
 	}
 
-	override func processVariableDeclarationData( // annotation: override
-		_ variableDeclaration: VariableDeclarationData)
-		-> VariableDeclarationData
+	override func processVariableDeclaration( // annotation: override
+		_ variableDeclaration: VariableDeclaration)
+		-> VariableDeclaration
 	{
 		let variableDeclaration = variableDeclaration
 		variableDeclaration.typeName = removePrefixes(variableDeclaration.typeName)
-		return super.processVariableDeclarationData(variableDeclaration)
+		return super.processVariableDeclaration(variableDeclaration)
 	}
 
 	override func replaceTypeExpression( // annotation: override
@@ -2215,8 +2213,8 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 			if let variableDeclaration = currentStatement as? VariableDeclaration,
 				let switchStatement = nextStatement as? SwitchStatement
 			{
-				if variableDeclaration.data.isImplicit == false,
-					variableDeclaration.data.extendsType == nil,
+				if variableDeclaration.isImplicit == false,
+					variableDeclaration.extendsType == nil,
 					let switchConversion = switchStatement.convertsToExpression,
 					let assignmentStatement = switchConversion as? AssignmentStatement
 				{
@@ -2224,15 +2222,14 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 						assignmentStatement.leftHand as? DeclarationReferenceExpression
 					{
 
-						if assignmentExpression.data.identifier ==
-								variableDeclaration.data.identifier,
+						if assignmentExpression.data.identifier == variableDeclaration.identifier,
 							!assignmentExpression.data.isStandardLibrary,
 							!assignmentExpression.data.isImplicit
 						{
-							variableDeclaration.data.expression = NilLiteralExpression(range: nil)
-							variableDeclaration.data.getter = nil
-							variableDeclaration.data.setter = nil
-							variableDeclaration.data.isStatic = false
+							variableDeclaration.expression = NilLiteralExpression(range: nil)
+							variableDeclaration.getter = nil
+							variableDeclaration.setter = nil
+							variableDeclaration.isStatic = false
 							let newConversionExpression = variableDeclaration
 							result.append(SwitchStatement(
 								range: nil,
@@ -2395,7 +2392,7 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 			return replaceFunctionDeclaration(functionDeclaration)
 		}
 		if let variableDeclaration = statement as? VariableDeclaration {
-			return replaceVariableDeclaration(variableDeclaration.data)
+			return replaceVariableDeclaration(variableDeclaration)
 		}
 
 		return [statement]
@@ -2409,9 +2406,9 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 		return [functionDeclaration]
 	}
 
-	override func processVariableDeclarationData( // annotation: override
-		_ variableDeclaration: VariableDeclarationData)
-		-> VariableDeclarationData
+	override func processVariableDeclaration( // annotation: override
+		_ variableDeclaration: VariableDeclaration)
+		-> VariableDeclaration
 	{
 		let variableDeclaration = variableDeclaration
 		variableDeclaration.extendsType = self.extendingType
@@ -2590,13 +2587,13 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 	{
 		for member in members {
 			if let variableDeclaration = member as? VariableDeclaration {
-				if !variableDeclaration.data.isImplicit,
-					!variableDeclaration.data.isStatic,
-					!variableDeclaration.data.isLet,
-					variableDeclaration.data.getter == nil
+				if !variableDeclaration.isImplicit,
+					!variableDeclaration.isStatic,
+					!variableDeclaration.isLet,
+					variableDeclaration.getter == nil
 				{
 					let message = "No support for mutable variables in value types: found" +
-						" variable \(variableDeclaration.data.identifier) inside struct " +
+						" variable \(variableDeclaration.identifier) inside struct " +
 						structName
 					Compiler.handleWarning(
 						message: message,
@@ -2864,8 +2861,7 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 		// create conflicts in Kotlin.
 		let uniqueDeclarations = gatheredDeclarations.removingDuplicates()
 
-		let result: ArrayClass<Statement> = uniqueDeclarations
-			.map { VariableDeclaration(range: nil, data: $0) }
+		let result = ArrayClass<Statement>(uniqueDeclarations)
 
 		result.append(contentsOf: super.replaceIfStatement(ifStatement))
 
@@ -2912,7 +2908,7 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 	/// Gather the let declarations from the if statement and its else( if)s into a single array
 	private func gatherLetDeclarations(
 		_ ifStatement: IfStatementData?)
-		-> ArrayClass<VariableDeclarationData>
+		-> ArrayClass<VariableDeclaration>
 	{
 		guard let ifStatement = ifStatement else {
 			return []
@@ -2933,7 +2929,7 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 
 	private func filterVariableDeclaration(
 		_ condition: IfStatementData.IfCondition)
-		-> VariableDeclarationData?
+		-> VariableDeclaration?
 	{
 		if case let .declaration(variableDeclaration: variableDeclaration) = condition {
 			return variableDeclaration
@@ -2944,7 +2940,7 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 	}
 
 	private func isShadowingVariableDeclaration(
-		_ variableDeclaration: VariableDeclarationData)
+		_ variableDeclaration: VariableDeclaration)
 		-> Bool
 	{
 		// If it's a shadowing identifier there's no need to declare it in Kotlin
@@ -2983,7 +2979,8 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 
 		// Declare new variables with the same name as the Swift paramemeters, containing `this` and
 		// `other`
-		newStatements.append(VariableDeclaration(range: nil, data: VariableDeclarationData(
+		newStatements.append(VariableDeclaration(
+			range: nil,
 			identifier: lhs.label,
 			typeName: lhs.typeName,
 			expression: DeclarationReferenceExpression(range: nil, data: DeclarationReferenceData(
@@ -2998,8 +2995,9 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 			isImplicit: false,
 			isStatic: false,
 			extendsType: nil,
-			annotations: nil)))
-		newStatements.append(VariableDeclaration(range: nil, data: VariableDeclarationData(
+			annotations: nil))
+		newStatements.append(VariableDeclaration(
+			range: nil,
 			identifier: rhs.label,
 			typeName: "Any?",
 			expression: DeclarationReferenceExpression(range: nil, data: DeclarationReferenceData(
@@ -3014,7 +3012,7 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 			isImplicit: false,
 			isStatic: false,
 			extendsType: nil,
-			annotations: nil)))
+			annotations: nil))
 
 		// Add an if statement to guarantee the comparison only happens between the right types
 		newStatements.append(IfStatement(range: nil, data: IfStatementData(
@@ -3109,7 +3107,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 
 			let newMembers = members
 			newMembers.append(rawValueInitializer)
-			newMembers.append(VariableDeclaration(range: nil, data: rawValueVariable))
+			newMembers.append(rawValueVariable)
 
 			return super.replaceEnumDeclaration(
 				access: access,
@@ -3207,7 +3205,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 		access: String?,
 		enumName: String,
 		elements: ArrayClass<EnumElement>)
-		-> VariableDeclarationData
+		-> VariableDeclaration
 	{
 		let switchCases = elements.map { element in
 			SwitchCase(
@@ -3257,7 +3255,8 @@ public class RawValuesTranspilationPass: TranspilationPass {
 			access: access,
 			annotations: nil)
 
-		return VariableDeclarationData(
+		return VariableDeclaration(
+			range: nil,
 			identifier: "rawValue",
 			typeName: rawValueType,
 			expression: nil,
@@ -3413,9 +3412,9 @@ public class FixProtocolContentsTranspilationPass: TranspilationPass {
 		}
 	}
 
-	override func processVariableDeclarationData( // annotation: override
-		_ variableDeclaration: VariableDeclarationData)
-		-> VariableDeclarationData
+	override func processVariableDeclaration( // annotation: override
+		_ variableDeclaration: VariableDeclaration)
+		-> VariableDeclaration
 	{
 		if isInProtocol {
 			let variableDeclaration = variableDeclaration
@@ -3423,10 +3422,10 @@ public class FixProtocolContentsTranspilationPass: TranspilationPass {
 			variableDeclaration.setter?.isImplicit = true
 			variableDeclaration.getter?.statements = nil
 			variableDeclaration.setter?.statements = nil
-			return super.processVariableDeclarationData(variableDeclaration)
+			return super.processVariableDeclaration(variableDeclaration)
 		}
 		else {
-			return super.processVariableDeclarationData(variableDeclaration)
+			return super.processVariableDeclaration(variableDeclaration)
 		}
 	}
 }

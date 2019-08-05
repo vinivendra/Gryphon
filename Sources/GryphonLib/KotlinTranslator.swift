@@ -350,7 +350,7 @@ public class KotlinTranslator {
 		}
 		if let variableDeclaration = subtree as? VariableDeclaration {
 			return try translateVariableDeclaration(
-				variableDeclaration.data,
+				variableDeclaration,
 				withIndentation: indentation)
 		}
 		if let assignmentStatement = subtree as? AssignmentStatement {
@@ -590,9 +590,9 @@ public class KotlinTranslator {
 		-> Bool
 	{
 		if let variableDeclaration = statement as? VariableDeclaration {
-			if variableDeclaration.data.getter == nil,
-				variableDeclaration.data.setter == nil,
-				!variableDeclaration.data.isStatic
+			if variableDeclaration.getter == nil,
+				variableDeclaration.setter == nil,
+				!variableDeclaration.isStatic
 			{
 				return true
 			}
@@ -809,7 +809,7 @@ public class KotlinTranslator {
 	}
 
 	private func translateCatchStatement(
-		variableDeclaration: VariableDeclarationData?,
+		variableDeclaration: VariableDeclaration?,
 		statements: ArrayClass<Statement>,
 		withIndentation indentation: String)
 		throws -> String
@@ -962,17 +962,18 @@ public class KotlinTranslator {
 				result = "\(indentation)\(translatedLeftHand) = when ("
 			}
 			else if let variableDeclaration = convertsToExpression as? VariableDeclaration {
-				let newVariableDeclaration = VariableDeclarationData(
-					identifier: variableDeclaration.data.identifier,
-					typeName: variableDeclaration.data.typeName,
+				let newVariableDeclaration = VariableDeclaration(
+					range: nil,
+					identifier: variableDeclaration.identifier,
+					typeName: variableDeclaration.typeName,
 					expression: NilLiteralExpression(range: nil),
 					getter: nil,
 					setter: nil,
-					isLet: variableDeclaration.data.isLet,
+					isLet: variableDeclaration.isLet,
 					isImplicit: false,
 					isStatic: false,
 					extendsType: nil,
-					annotations: variableDeclaration.data.annotations)
+					annotations: variableDeclaration.annotations)
 				let translatedVariableDeclaration = try translateVariableDeclaration(
 					newVariableDeclaration,
 					withIndentation: indentation)
@@ -1100,7 +1101,7 @@ public class KotlinTranslator {
 	}
 
 	private func translateVariableDeclaration(
-		_ variableDeclaration: VariableDeclarationData,
+		_ variableDeclaration: VariableDeclaration,
 		withIndentation indentation: String)
 		throws -> String
 	{

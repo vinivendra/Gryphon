@@ -966,7 +966,7 @@ public class SwiftTranslator {
 				continue
 			}
 
-			let variableDeclaration: VariableDeclarationData?
+			let variableDeclaration: VariableDeclaration?
 
 			let patternNamed = catchStatement
 				.subtree(named: "Pattern Let")?
@@ -975,8 +975,12 @@ public class SwiftTranslator {
 			let variableName = patternAttributes?.first
 			let variableType = patternNamed?["type"]
 
-			if let variableName = variableName, let variableType = variableType {
-				variableDeclaration = VariableDeclarationData(
+			if let patternNamed = patternNamed,
+				let variableName = variableName,
+				let variableType = variableType
+			{
+				variableDeclaration = VariableDeclaration(
+					range: getRangeRecursively(ofNode: patternNamed),
 					identifier: variableName,
 					typeName: variableType,
 					expression: nil,
@@ -1297,27 +1301,26 @@ public class SwiftTranslator {
 					extraStatements = declarations.map {
 						VariableDeclaration(
 							range: getRangeRecursively(ofNode: patternLet),
-							data: VariableDeclarationData(
-								identifier: $0.newVariable,
-								typeName: $0.associatedValueType,
-								expression: DotExpression(
+							identifier: $0.newVariable,
+							typeName: $0.associatedValueType,
+							expression: DotExpression(
+								range: getRangeRecursively(ofNode: patternLet),
+								leftExpression: translatedExpression,
+								rightExpression: DeclarationReferenceExpression(
 									range: getRangeRecursively(ofNode: patternLet),
-									leftExpression: translatedExpression,
-									rightExpression: DeclarationReferenceExpression(
-										range: getRangeRecursively(ofNode: patternLet),
-										data: DeclarationReferenceData(
-											identifier: $0.associatedValueName,
-											typeName: $0.associatedValueType,
-											isStandardLibrary: false,
-											isImplicit: false,
-											range: range))),
-								getter: nil,
-								setter: nil,
-								isLet: true,
-								isImplicit: false,
-								isStatic: false,
-								extendsType: nil,
-								annotations: nil))
+									data: DeclarationReferenceData(
+										identifier: $0.associatedValueName,
+										typeName: $0.associatedValueType,
+										isStandardLibrary: false,
+										isImplicit: false,
+										range: range))),
+							getter: nil,
+							setter: nil,
+							isLet: true,
+							isImplicit: false,
+							isStatic: false,
+							extendsType: nil,
+							annotations: nil)
 					}
 				}
 				else if let patternEnumElement =
@@ -1482,7 +1485,8 @@ public class SwiftTranslator {
 
 				let expression = try translateExpression(lastCondition)
 
-				conditionsResult.append(.declaration(variableDeclaration: VariableDeclarationData(
+				conditionsResult.append(.declaration(variableDeclaration: VariableDeclaration(
+					range: getRangeRecursively(ofNode: lastCondition),
 					identifier: name,
 					typeName: typeName,
 					expression: expression,
@@ -1551,27 +1555,26 @@ public class SwiftTranslator {
 
 					statementsResult.append(VariableDeclaration(
 						range: range,
-						data: VariableDeclarationData(
-							identifier: declaration.newVariable,
-							typeName: declaration.associatedValueType,
-							expression: DotExpression(
+						identifier: declaration.newVariable,
+						typeName: declaration.associatedValueType,
+						expression: DotExpression(
+							range: range,
+							leftExpression: declarationReference,
+							rightExpression: DeclarationReferenceExpression(
 								range: range,
-								leftExpression: declarationReference,
-								rightExpression: DeclarationReferenceExpression(
-									range: range,
-									data: DeclarationReferenceData(
-										identifier: String(declaration.associatedValueName),
-										typeName: declaration.associatedValueType,
-										isStandardLibrary: false,
-										isImplicit: false,
-										range: range))),
-							getter: nil,
-							setter: nil,
-							isLet: true,
-							isImplicit: false,
-							isStatic: false,
-							extendsType: nil,
-							annotations: nil)))
+								data: DeclarationReferenceData(
+									identifier: String(declaration.associatedValueName),
+									typeName: declaration.associatedValueType,
+									isStandardLibrary: false,
+									isImplicit: false,
+									range: range))),
+						getter: nil,
+						setter: nil,
+						isLet: true,
+						isImplicit: false,
+						isStatic: false,
+						extendsType: nil,
+						annotations: nil))
 				}
 			}
 			// If it's an `if case`
@@ -2033,17 +2036,16 @@ public class SwiftTranslator {
 
 		return VariableDeclaration(
 			range: getRangeRecursively(ofNode: variableDeclaration),
-			data: VariableDeclarationData(
-				identifier: identifier,
-				typeName: typeName,
-				expression: expression,
-				getter: getter,
-				setter: setter,
-				isLet: isLet,
-				isImplicit: isImplicit,
-				isStatic: isStatic,
-				extendsType: nil,
-				annotations: annotations))
+			identifier: identifier,
+			typeName: typeName,
+			expression: expression,
+			getter: getter,
+			setter: setter,
+			isLet: isLet,
+			isImplicit: isImplicit,
+			isStatic: isStatic,
+			extendsType: nil,
+			annotations: annotations)
 	}
 
 	// MARK: - Expression translations
