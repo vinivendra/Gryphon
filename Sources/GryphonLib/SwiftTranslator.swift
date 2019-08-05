@@ -1156,17 +1156,7 @@ public class SwiftTranslator {
 			statements: statements)
 	}
 
-	internal func translateIfStatement(_ ifStatement: SwiftAST) throws -> Statement {
-		do {
-			let result: IfStatementData = try translateIfStatementData(ifStatement)
-			return IfStatement(range: getRangeRecursively(ofNode: ifStatement), data: result)
-		}
-		catch let error {
-			return try handleUnexpectedASTStructureError(error, inAST: ifStatement)
-		}
-	}
-
-	internal func translateIfStatementData(_ ifStatement: SwiftAST) throws -> IfStatementData {
+	internal func translateIfStatement(_ ifStatement: SwiftAST) throws -> IfStatement {
 		guard ifStatement.name == "If Statement" || ifStatement.name == "Guard Statement" else {
 			throw createUnexpectedASTStructureError(
 				"Trying to translate \(ifStatement.name) as an if or guard statement",
@@ -1180,7 +1170,7 @@ public class SwiftTranslator {
 		let extraStatements = ifConditions.statements
 
 		let braceStatement: SwiftAST
-		let elseStatement: IfStatementData?
+		let elseStatement: IfStatement?
 
 		let secondToLastTree = ifStatement.subtrees.secondToLast
 		let lastTree = ifStatement.subtrees.last
@@ -1192,7 +1182,7 @@ public class SwiftTranslator {
 			lastTree.name == "If Statement"
 		{
 			braceStatement = secondToLastTree
-			elseStatement = try translateIfStatementData(lastTree)
+			elseStatement = try translateIfStatement(lastTree)
 		}
 		else if ifStatement.subtrees.count > 2,
 			let secondToLastTree = secondToLastTree,
@@ -1202,8 +1192,10 @@ public class SwiftTranslator {
 		{
 			braceStatement = secondToLastTree
 			let statements = try translateBraceStatement(lastTree)
-			elseStatement = IfStatementData(
-				conditions: [], declarations: [],
+			elseStatement = IfStatement(
+				range: getRangeRecursively(ofNode: ifStatement),
+				conditions: [],
+				declarations: [],
 				statements: statements,
 				elseStatement: nil,
 				isGuard: false)
@@ -1225,7 +1217,8 @@ public class SwiftTranslator {
 		let resultingStatements = extraStatements
 		resultingStatements.append(contentsOf: statements)
 
-		return IfStatementData(
+		return IfStatement(
+			range: getRangeRecursively(ofNode: ifStatement),
 			conditions: conditions,
 			declarations: [],
 			statements: resultingStatements,
@@ -1403,7 +1396,7 @@ public class SwiftTranslator {
 					ast: ifStatement, translator: self), ])
 		}
 
-		let conditionsResult: ArrayClass<IfStatementData.IfCondition> = []
+		let conditionsResult: ArrayClass<IfStatement.IfCondition> = []
 		let statementsResult: ArrayClass<Statement> = []
 
 		let conditions = ifStatement.subtrees.filter {
@@ -3263,7 +3256,7 @@ struct DeclarationInformation {
 }
 
 private struct IfConditionsTranslation {
-	let conditions: ArrayClass<IfStatementData.IfCondition>
+	let conditions: ArrayClass<IfStatement.IfCondition>
 	let statements: ArrayClass<Statement>
 }
 

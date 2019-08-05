@@ -772,35 +772,68 @@ public class WhileStatement: Statement {
 }
 
 public class IfStatement: Statement {
-	let data: IfStatementData
+	var conditions: ArrayClass<IfCondition>
+	var declarations: ArrayClass<VariableDeclaration>
+	var statements: ArrayClass<Statement>
+	var elseStatement: IfStatement?
+	var isGuard: Bool
 
-	init(
+	public enum IfCondition: Equatable {
+		case condition(expression: Expression)
+		case declaration(variableDeclaration: VariableDeclaration)
+
+		func toStatement() -> Statement {
+			switch self {
+			case let .condition(expression: expression):
+				return ExpressionStatement(range: nil, expression: expression)
+			case let .declaration(variableDeclaration: variableDeclaration):
+				return variableDeclaration
+			}
+		}
+	}
+
+	public init(
 		range: SourceFileRange?,
-		data: IfStatementData)
+		conditions: ArrayClass<IfCondition>,
+		declarations: ArrayClass<VariableDeclaration>,
+		statements: ArrayClass<Statement>,
+		elseStatement: IfStatement?,
+		isGuard: Bool)
 	{
-		self.data = data
+		self.conditions = conditions
+		self.declarations = declarations
+		self.statements = statements
+		self.elseStatement = elseStatement
+		self.isGuard = isGuard
 		super.init(range: range, name: "IfStatement".capitalizedAsCamelCase())
 	}
 
 	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
-		let declarationTrees = data.declarations
-		let conditionTrees = data.conditions.map { $0.toStatement() }
-		let elseStatementTrees = data.elseStatement
-			.map({ IfStatement(range: nil, data: $0) })?.printableSubtrees ?? []
+		let declarationTrees = declarations
+		let conditionTrees = conditions.map { $0.toStatement() }
+		let elseStatementTrees = elseStatement?.printableSubtrees ?? []
 		return [
-			data.isGuard ? PrintableTree("guard") : nil,
+			isGuard ? PrintableTree("guard") : nil,
 			PrintableTree(
 				"declarations", ArrayClass<PrintableAsTree?>(declarationTrees)),
 			PrintableTree.ofStatements(
 				"conditions", conditionTrees),
 			PrintableTree.ofStatements(
-				"statements", data.statements),
+				"statements", statements),
 			PrintableTree.initOrNil(
 				"else", elseStatementTrees), ]
 	}
 
-	public static func == (lhs: IfStatement, rhs: IfStatement) -> Bool {
-		return lhs.data == rhs.data
+	public static func == (
+		lhs: IfStatement,
+		rhs: IfStatement)
+		-> Bool
+	{
+		return lhs.conditions == rhs.conditions &&
+			lhs.declarations == rhs.declarations &&
+			lhs.statements == rhs.statements &&
+			lhs.elseStatement == rhs.elseStatement &&
+			lhs.isGuard == rhs.isGuard
 	}
 }
 
@@ -2060,54 +2093,6 @@ public struct FunctionParameter: Equatable {
 	let apiLabel: String?
 	let typeName: String
 	let value: Expression?
-}
-
-public class IfStatementData: Equatable {
-	var conditions: ArrayClass<IfCondition>
-	var declarations: ArrayClass<VariableDeclaration>
-	var statements: ArrayClass<Statement>
-	var elseStatement: IfStatementData?
-	var isGuard: Bool
-
-	public enum IfCondition: Equatable {
-		case condition(expression: Expression)
-		case declaration(variableDeclaration: VariableDeclaration)
-
-		func toStatement() -> Statement {
-			switch self {
-			case let .condition(expression: expression):
-				return ExpressionStatement(range: nil, expression: expression)
-			case let .declaration(variableDeclaration: variableDeclaration):
-				return variableDeclaration
-			}
-		}
-	}
-
-	public init(
-		conditions: ArrayClass<IfCondition>,
-		declarations: ArrayClass<VariableDeclaration>,
-		statements: ArrayClass<Statement>,
-		elseStatement: IfStatementData?,
-		isGuard: Bool)
-	{
-		self.conditions = conditions
-		self.declarations = declarations
-		self.statements = statements
-		self.elseStatement = elseStatement
-		self.isGuard = isGuard
-	}
-
-	public static func == (
-		lhs: IfStatementData,
-		rhs: IfStatementData)
-		-> Bool
-	{
-		return lhs.conditions == rhs.conditions &&
-			lhs.declarations == rhs.declarations &&
-			lhs.statements == rhs.statements &&
-			lhs.elseStatement == rhs.elseStatement &&
-			lhs.isGuard == rhs.isGuard
-	}
 }
 
 public class SwitchCase: Equatable {

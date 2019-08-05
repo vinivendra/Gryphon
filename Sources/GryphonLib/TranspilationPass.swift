@@ -169,7 +169,7 @@ public class TranspilationPass {
 				statements: whileStatement.statements)
 		}
 		if let ifStatement = statement as? IfStatement {
-			return replaceIfStatement(ifStatement.data)
+			return replaceIfStatement(ifStatement)
 		}
 		if let switchStatement = statement as? SwitchStatement {
 			return replaceSwitchStatement(
@@ -463,35 +463,35 @@ public class TranspilationPass {
 	}
 
 	func replaceIfStatement( // annotation: open
-		_ ifStatement: IfStatementData)
+		_ ifStatement: IfStatement)
 		-> ArrayClass<Statement>
 	{
-		return [IfStatement(range: nil, data: processIfStatementData(ifStatement))]
+		return [processIfStatement(ifStatement)]
 	}
 
-	func processIfStatementData( // annotation: open
-		_ ifStatement: IfStatementData)
-		-> IfStatementData
+	func processIfStatement( // annotation: open
+		_ ifStatement: IfStatement)
+		-> IfStatement
 	{
 		let ifStatement = ifStatement
 		ifStatement.conditions = replaceIfConditions(ifStatement.conditions)
 		ifStatement.declarations =
 			ifStatement.declarations.map { processVariableDeclaration($0) }
 		ifStatement.statements = replaceStatements(ifStatement.statements)
-		ifStatement.elseStatement = ifStatement.elseStatement.map { processIfStatementData($0) }
+		ifStatement.elseStatement = ifStatement.elseStatement.map { processIfStatement($0) }
 		return ifStatement
 	}
 
 	func replaceIfConditions( // annotation: open
-		_ conditions: ArrayClass<IfStatementData.IfCondition>)
-		-> ArrayClass<IfStatementData.IfCondition>
+		_ conditions: ArrayClass<IfStatement.IfCondition>)
+		-> ArrayClass<IfStatement.IfCondition>
 	{
 		return conditions.map { replaceIfCondition($0) }
 	}
 
 	func replaceIfCondition( // annotation: open
-		_ condition: IfStatementData.IfCondition)
-		-> IfStatementData.IfCondition
+		_ condition: IfStatement.IfCondition)
+		-> IfStatement.IfCondition
 	{
 		switch condition {
 		case let .condition(expression: expression):
@@ -2412,11 +2412,11 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 public class ShadowedIfLetAsToIsTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
-	override func processIfStatementData( // annotation: override
-		_ ifStatement: IfStatementData)
-		-> IfStatementData
+	override func processIfStatement( // annotation: override
+		_ ifStatement: IfStatement)
+		-> IfStatement
 	{
-		let newConditions: ArrayClass<IfStatementData.IfCondition> = []
+		let newConditions: ArrayClass<IfStatement.IfCondition> = []
 
 		for condition in ifStatement.conditions {
 			var conditionWasReplaced = false
@@ -2432,7 +2432,7 @@ public class ShadowedIfLetAsToIsTranspilationPass: TranspilationPass {
 						{
 							if variableDeclaration.identifier == leftExpression.identifier {
 								conditionWasReplaced = true
-								newConditions.append(IfStatementData.IfCondition.condition(
+								newConditions.append(IfStatement.IfCondition.condition(
 									expression: BinaryOperatorExpression(
 										range: nil,
 										leftExpression: leftExpression,
@@ -2450,7 +2450,8 @@ public class ShadowedIfLetAsToIsTranspilationPass: TranspilationPass {
 			}
 		}
 
-		return super.processIfStatementData(IfStatementData(
+		return super.processIfStatement(IfStatement(
+			range: nil,
 			conditions: newConditions,
 			declarations: ifStatement.declarations,
 			statements: ifStatement.statements,
@@ -2713,9 +2714,9 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
-	override func processIfStatementData( // annotation: override
-		_ ifStatement: IfStatementData)
-		-> IfStatementData
+	override func processIfStatement( // annotation: override
+		_ ifStatement: IfStatement)
+		-> IfStatement
 	{
 		raiseWarningsForIfStatement(ifStatement, isElse: false)
 
@@ -2724,12 +2725,12 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 		return ifStatement
 	}
 
-	private func raiseWarningsForIfStatement(_ ifStatement: IfStatementData, isElse: Bool) {
+	private func raiseWarningsForIfStatement(_ ifStatement: IfStatement, isElse: Bool) {
 		// The first condition of an non-else if statement is the only one that can safely have side
 		// effects
 		let conditions = isElse ?
 			ifStatement.conditions :
-			ArrayClass<IfStatementData.IfCondition>(ifStatement.conditions.dropFirst())
+			ArrayClass<IfStatement.IfCondition>(ifStatement.conditions.dropFirst())
 
 		let sideEffectsRanges = conditions.flatMap { rangesWithPossibleSideEffectsInCondition($0) }
 		for range in sideEffectsRanges {
@@ -2746,7 +2747,7 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 	}
 
 	private func rangesWithPossibleSideEffectsInCondition(
-		_ condition: IfStatementData.IfCondition)
+		_ condition: IfStatement.IfCondition)
 		-> ArrayClass<SourceFileRange>
 	{
 		if case let .declaration(variableDeclaration: variableDeclaration) = condition {
@@ -2842,7 +2843,7 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 
 	/// Send the let declarations to before the if statement
 	override func replaceIfStatement( // annotation: override
-		_ ifStatement: IfStatementData)
+		_ ifStatement: IfStatement)
 		-> ArrayClass<Statement>
 	{
 		let gatheredDeclarations = gatherLetDeclarations(ifStatement)
@@ -2860,9 +2861,9 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 	}
 
 	/// Add conditions (`x != null`) for all let declarations
-	override func processIfStatementData( // annotation: override
-		_ ifStatement: IfStatementData)
-		-> IfStatementData
+	override func processIfStatement( // annotation: override
+		_ ifStatement: IfStatement)
+		-> IfStatement
 	{
 		let newConditions = ifStatement.conditions.map {
 			replaceIfLetConditionWithNullCheck($0)
@@ -2870,12 +2871,12 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 
 		let ifStatement = ifStatement
 		ifStatement.conditions = newConditions
-		return super.processIfStatementData(ifStatement)
+		return super.processIfStatement(ifStatement)
 	}
 
 	private func replaceIfLetConditionWithNullCheck(
-		_ condition: IfStatementData.IfCondition)
-		-> IfStatementData.IfCondition
+		_ condition: IfStatement.IfCondition)
+		-> IfStatement.IfCondition
 	{
 		if case let .declaration(variableDeclaration: variableDeclaration) = condition {
 			return .condition(expression: BinaryOperatorExpression(
@@ -2897,7 +2898,7 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 
 	/// Gather the let declarations from the if statement and its else( if)s into a single array
 	private func gatherLetDeclarations(
-		_ ifStatement: IfStatementData?)
+		_ ifStatement: IfStatement?)
 		-> ArrayClass<VariableDeclaration>
 	{
 		guard let ifStatement = ifStatement else {
@@ -2918,7 +2919,7 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 	}
 
 	private func filterVariableDeclaration(
-		_ condition: IfStatementData.IfCondition)
+		_ condition: IfStatement.IfCondition)
 		-> VariableDeclaration?
 	{
 		if case let .declaration(variableDeclaration: variableDeclaration) = condition {
@@ -3005,7 +3006,8 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 			annotations: nil))
 
 		// Add an if statement to guarantee the comparison only happens between the right types
-		newStatements.append(IfStatement(range: nil, data: IfStatementData(
+		newStatements.append(IfStatement(
+			range: nil,
 			conditions: [ .condition(expression: BinaryOperatorExpression(
 				range: nil,
 				leftExpression: DeclarationReferenceExpression(
@@ -3020,7 +3022,8 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 			],
 			declarations: [],
 			statements: oldStatements,
-			elseStatement: IfStatementData(
+			elseStatement: IfStatement(
+				range: nil,
 				conditions: [],
 				declarations: [],
 				statements: [
@@ -3029,7 +3032,7 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 				],
 				elseStatement: nil,
 				isGuard: false),
-			isGuard: false)))
+			isGuard: false))
 
 		return super.processFunctionDeclaration(FunctionDeclaration(
 			range: nil,
@@ -3258,9 +3261,9 @@ public class RawValuesTranspilationPass: TranspilationPass {
 public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
-	override func processIfStatementData( // annotation: override
-		_ ifStatement: IfStatementData)
-		-> IfStatementData
+	override func processIfStatement( // annotation: override
+		_ ifStatement: IfStatement)
+		-> IfStatement
 	{
 		if ifStatement.isGuard,
 			ifStatement.conditions.count == 1,
@@ -3306,13 +3309,13 @@ public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
 
 			let ifStatement = ifStatement
 			ifStatement.conditions = ArrayClass<Expression>([newCondition]).map {
-				IfStatementData.IfCondition.condition(expression: $0)
+				IfStatement.IfCondition.condition(expression: $0)
 			}
 			ifStatement.isGuard = shouldStillBeGuard
-			return super.processIfStatementData(ifStatement)
+			return super.processIfStatement(ifStatement)
 		}
 		else {
-			return super.processIfStatementData(ifStatement)
+			return super.processIfStatement(ifStatement)
 		}
 	}
 }
@@ -3327,11 +3330,11 @@ public class ReturnIfNilTranspilationPass: TranspilationPass {
 		-> ArrayClass<Statement>
 	{
 		if let ifStatement = statement as? IfStatement {
-			if ifStatement.data.conditions.count == 1,
-				ifStatement.data.statements.count == 1
+			if ifStatement.conditions.count == 1,
+				ifStatement.statements.count == 1
 			{
-				let onlyStatement = ifStatement.data.statements[0]
-				let onlyCondition = ifStatement.data.conditions[0]
+				let onlyStatement = ifStatement.statements[0]
+				let onlyCondition = ifStatement.conditions[0]
 
 				if case let .condition(expression: onlyConditionExpression) = onlyCondition,
 					let returnStatement = onlyStatement as? ReturnStatement

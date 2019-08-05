@@ -361,7 +361,7 @@ public class KotlinTranslator {
 		}
 		if let ifStatement = subtree as? IfStatement {
 			return try translateIfStatement(
-				ifStatement.data,
+				ifStatement,
 				withIndentation: indentation)
 		}
 		if let switchStatement = subtree as? SwitchStatement {
@@ -889,7 +889,7 @@ public class KotlinTranslator {
 	}
 
 	private func translateIfStatement(
-		_ ifStatement: IfStatementData,
+		_ ifStatement: IfStatement,
 		isElseIf: Bool = false,
 		withIndentation indentation: String)
 		throws -> String
@@ -933,7 +933,7 @@ public class KotlinTranslator {
 		return result
 	}
 
-	private func conditionToExpression(_ condition: IfStatementData.IfCondition) -> Expression? {
+	private func conditionToExpression(_ condition: IfStatement.IfCondition) -> Expression? {
 		if case let .condition(expression: expression) = condition {
 			return expression
 		}
