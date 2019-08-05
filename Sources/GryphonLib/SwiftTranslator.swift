@@ -2338,12 +2338,10 @@ public class SwiftTranslator {
 		let range = getRange(ofNode: callExpressionFixme)
 
 		return CallExpression(
-			range: getRangeRecursively(ofNode: callExpressionFixme),
-			data: CallExpressionData(
-				function: function,
-				parameters: parameters,
-				typeName: typeName,
-				range: range))
+			range: range,
+			function: function,
+			parameters: parameters,
+			typeName: typeName)
 	}
 
 	// FIXME: rename this parameter

@@ -95,7 +95,7 @@ public class KotlinTranslator {
 	}
 
 	public static func isReferencingPureFunction(
-		_ callExpression: CallExpressionData)
+		_ callExpression: CallExpression)
 		-> Bool
 	{
 		var finalCallExpression = callExpression.function
@@ -682,7 +682,7 @@ public class KotlinTranslator {
 		if let initializerDeclaration = functionDeclaration as? InitializerDeclaration {
 			if let superCall = initializerDeclaration.superCall {
 				let superCallTranslation = try translateCallExpression(
-					superCall.data,
+					superCall,
 					withIndentation: increaseIndentation(indentation))
 				returnOrSuperCallString = ": \(superCallTranslation)"
 			}
@@ -1242,7 +1242,7 @@ public class KotlinTranslator {
 				withIndentation: indentation)
 		}
 		if let callExpression = expression as? CallExpression {
-			return try translateCallExpression(callExpression.data, withIndentation: indentation)
+			return try translateCallExpression(callExpression, withIndentation: indentation)
 		}
 		if let closureExpression = expression as? ClosureExpression {
 			return try translateClosureExpression(
@@ -1495,7 +1495,7 @@ public class KotlinTranslator {
 	}
 
 	private func translateCallExpression(
-		_ callExpression: CallExpressionData,
+		_ callExpression: CallExpression,
 		withIndentation indentation: String,
 		shouldAddNewlines: Bool = false)
 		throws -> String
@@ -1548,7 +1548,7 @@ public class KotlinTranslator {
 	}
 
 	private func translateParameters(
-		forCallExpression callExpression: CallExpressionData,
+		forCallExpression callExpression: CallExpression,
 		withFunctionTranslation functionTranslation: FunctionTranslation?,
 		withIndentation indentation: String,
 		shouldAddNewlines: Bool)
@@ -1597,10 +1597,8 @@ public class KotlinTranslator {
 			"Expected the parameters to be either a .tupleExpression or a " +
 			".tupleShuffleExpression",
 			AST: ExpressionStatement(
-				range: nil,
-				expression: CallExpression(
-					range: nil,
-					data: callExpression)))
+				range: callExpression.range,
+				expression: callExpression))
 	}
 
 	private func translateClosureExpression(

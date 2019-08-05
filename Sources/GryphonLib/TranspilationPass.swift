@@ -650,7 +650,7 @@ public class TranspilationPass {
 				falseExpression: expression.falseExpression)
 		}
 		if let expression = expression as? CallExpression {
-			return replaceCallExpression(expression.data)
+			return replaceCallExpression(expression)
 		}
 		if let expression = expression as? ClosureExpression {
 			return replaceClosureExpression(
@@ -871,21 +871,21 @@ public class TranspilationPass {
 	}
 
 	func replaceCallExpression( // annotation: open
-		_ callExpressionFixme: CallExpressionData)
+		_ callExpressionFixme: CallExpression)
 		-> Expression
 	{
-		return CallExpression(range: nil, data: replaceCallExpressionData(callExpressionFixme))
+		return replaceCallExpressionData(callExpressionFixme)
 	}
 
 	func replaceCallExpressionData( // annotation: open
-		_ callExpression: CallExpressionData)
-		-> CallExpressionData
+		_ callExpression: CallExpression)
+		-> CallExpression
 	{
-		return CallExpressionData(
+		return CallExpression(
+			range: callExpression.range,
 			function: replaceExpression(callExpression.function),
 			parameters: replaceExpression(callExpression.parameters),
-			typeName: callExpression.typeName,
-			range: callExpression.range)
+			typeName: callExpression.typeName)
 	}
 
 	func replaceClosureExpression( // annotation: open
@@ -1673,7 +1673,7 @@ public class CallsToSuperclassInitializersTranspilationPass: TranspilationPass {
 	private func getSuperCall(from statement: Statement) -> CallExpression? {
 		if let expressionStatement = statement as? ExpressionStatement {
 			if let callExpression = expressionStatement.expression as? CallExpression {
-				if let dotExpression = callExpression.data.function as? DotExpression {
+				if let dotExpression = callExpression.function as? DotExpression {
 					if let leftExpression = dotExpression.leftExpression as?
 						DeclarationReferenceExpression,
 						let rightExpression = dotExpression.rightExpression as?
@@ -1683,11 +1683,9 @@ public class CallsToSuperclassInitializersTranspilationPass: TranspilationPass {
 					{
 						return CallExpression(
 							range: callExpression.range,
-							data: CallExpressionData(
-								function: leftExpression,
-								parameters: callExpression.data.parameters,
-								typeName: callExpression.data.typeName,
-								range: callExpression.data.range))
+							function: leftExpression,
+							parameters: callExpression.parameters,
+							typeName: callExpression.typeName)
 					}
 				}
 			}
@@ -1844,7 +1842,7 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
 	override func replaceCallExpression( // annotation: override
-		_ callExpression: CallExpressionData)
+		_ callExpression: CallExpression)
 		-> Expression
 	{
 		if let typeExpression = callExpression.function as? TypeExpression,
@@ -1869,9 +1867,9 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 							return DotExpression(
 								range: nil,
 								leftExpression: replaceExpression(onlyPair.expression),
-								rightExpression: CallExpression(
+								rightExpression:
+								CallExpression(
 									range: nil,
-									data: CallExpressionData(
 									function: DeclarationReferenceExpression(
 										range: nil,
 										identifier: "toMutableList<\(mappedElementType)>",
@@ -1879,8 +1877,7 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 										isStandardLibrary: false,
 										isImplicit: false),
 									parameters: TupleExpression(range: nil, pairs: []),
-									typeName: typeExpression.typeName,
-									range: nil)))
+									typeName: typeExpression.typeName))
 						}
 					}
 					// If it's an Array of the same type, just return the array itself
@@ -1890,7 +1887,8 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 					return DotExpression(
 						range: nil,
 						leftExpression: replaceExpression(onlyPair.expression),
-						rightExpression: CallExpression(range: nil, data: CallExpressionData(
+						rightExpression: CallExpression(
+							range: nil,
 							function: DeclarationReferenceExpression(
 								range: nil,
 								identifier: "toMutableList<\(mappedElementType)>",
@@ -1898,8 +1896,7 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 								isStandardLibrary: false,
 								isImplicit: false),
 							parameters: TupleExpression(range: nil, pairs: []),
-							typeName: typeExpression.typeName,
-							range: nil)))
+							typeName: typeExpression.typeName))
 				}
 			}
 		}
@@ -1984,7 +1981,8 @@ public class RefactorOptionalsInSubscriptsTranspilationPass: TranspilationPass {
 		if subscriptedExpression is OptionalExpression {
 			return replaceDotExpression(
 				leftExpression: subscriptedExpression,
-				rightExpression: CallExpression(range: nil, data: CallExpressionData(
+				rightExpression: CallExpression(
+					range: subscriptedExpression.range,
 					function: DeclarationReferenceExpression(
 						range: subscriptedExpression.range,
 						identifier: "get",
@@ -1993,8 +1991,7 @@ public class RefactorOptionalsInSubscriptsTranspilationPass: TranspilationPass {
 						isImplicit: false),
 					parameters: TupleExpression(range: nil, pairs:
 						[LabeledExpression(label: nil, expression: indexExpression)]),
-					typeName: typeName,
-					range: subscriptedExpression.range)))
+					typeName: typeName))
 		}
 		else {
 			return super.replaceSubscriptExpression(
@@ -2686,10 +2683,10 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 		if let leftExpressionType = leftExpression.swiftType,
 			leftExpressionType.hasPrefix("["),
 			let callExpression = rightExpression as? CallExpression {
-			if (callExpression.data.typeName.hasPrefix("ArrayClass") ||
-					callExpression.data.typeName.hasPrefix("DictionaryClass")),
+			if (callExpression.typeName.hasPrefix("ArrayClass") ||
+					callExpression.typeName.hasPrefix("DictionaryClass")),
 				let declarationReference =
-					callExpression.data.function as? DeclarationReferenceExpression
+				callExpression.function as? DeclarationReferenceExpression
 			{
 				if declarationReference.identifier.hasPrefix("toMutable"),
 					(declarationReference.typeName.hasPrefix("ArrayClass") ||
@@ -2766,8 +2763,8 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 		-> ArrayClass<SourceFileRange>
 	{
 		if let expression = expression as? CallExpression {
-			if !KotlinTranslator.isReferencingPureFunction(expression.data),
-				let range = expression.data.range
+			if !KotlinTranslator.isReferencingPureFunction(expression),
+				let range = expression.range
 			{
 				return [range]
 			}

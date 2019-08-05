@@ -237,10 +237,10 @@ extension Expression {
 		if let lhs = lhs as? CallExpression,
 			let rhs = rhs as? CallExpression
 		{
-			return lhs.data.function.matches(
-				rhs.data.function, matches) &&
-				lhs.data.parameters.matches(rhs.data.parameters, matches) &&
-				lhs.data.typeName.isSubtype(of: rhs.data.typeName)
+			return lhs.function.matches(
+				rhs.function, matches) &&
+				lhs.parameters.matches(rhs.parameters, matches) &&
+				lhs.typeName.isSubtype(of: rhs.typeName)
 		}
 		if let lhs = lhs as? LiteralIntExpression,
 			let rhs = rhs as? LiteralIntExpression

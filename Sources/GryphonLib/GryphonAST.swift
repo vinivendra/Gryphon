@@ -1365,8 +1365,7 @@ public class DeclarationReferenceExpression: Expression {
 		return lhs.identifier == rhs.identifier &&
 			lhs.typeName == rhs.typeName &&
 			lhs.isStandardLibrary == rhs.isStandardLibrary &&
-			lhs.isImplicit == rhs.isImplicit &&
-			lhs.range == rhs.range
+			lhs.isImplicit == rhs.isImplicit
 	}
 }
 
@@ -1702,26 +1701,41 @@ public class IfExpression: Expression {
 }
 
 public class CallExpression: Expression {
-	let data: CallExpressionData
+	let function: Expression
+	let parameters: Expression
+	let typeName: String
 
-	init(range: SourceFileRange?, data: CallExpressionData) {
-		self.data = data
+	init(
+		range: SourceFileRange?,
+		function: Expression,
+		parameters: Expression,
+		typeName: String)
+	{
+		self.function = function
+		self.parameters = parameters
+		self.typeName = typeName
 		super.init(range: range, name: "CallExpression".capitalizedAsCamelCase())
 	}
 
 	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
 		return [
-			PrintableTree("type \(data.typeName)"),
-			PrintableTree.ofExpressions("function", [data.function]),
-			PrintableTree.ofExpressions("parameters", [data.parameters]), ]
+			PrintableTree("type \(typeName)"),
+			PrintableTree.ofExpressions("function", [function]),
+			PrintableTree.ofExpressions("parameters", [parameters]), ]
 	}
 
 	override var swiftType: String? { // annotation: override
-		return data.typeName
+		return typeName
 	}
 
-	public static func == (lhs: CallExpression, rhs: CallExpression) -> Bool {
-		return lhs.data == rhs.data
+	public static func == (
+		lhs: CallExpression,
+		rhs: CallExpression)
+		-> Bool
+	{
+		return lhs.function == rhs.function &&
+			lhs.parameters == rhs.parameters &&
+			lhs.typeName == rhs.typeName
 	}
 }
 
@@ -2046,36 +2060,6 @@ public struct FunctionParameter: Equatable {
 	let apiLabel: String?
 	let typeName: String
 	let value: Expression?
-}
-
-public class CallExpressionData: Equatable {
-	let function: Expression
-	let parameters: Expression
-	let typeName: String
-	let range: SourceFileRange?
-
-	init(
-		function: Expression,
-		parameters: Expression,
-		typeName: String,
-		range: SourceFileRange?)
-	{
-		self.function = function
-		self.parameters = parameters
-		self.typeName = typeName
-		self.range = range
-	}
-
-	public static func == (
-		lhs: CallExpressionData,
-		rhs: CallExpressionData)
-		-> Bool
-	{
-		return lhs.function == rhs.function &&
-			lhs.parameters == rhs.parameters &&
-			lhs.typeName == rhs.typeName &&
-			lhs.range == rhs.range
-	}
 }
 
 public class IfStatementData: Equatable {
