@@ -2088,19 +2088,9 @@ public class SwiftTranslator {
 			}
 		case "Conditional Checked Cast Expression":
 			let subExpression = expression.subtrees.first
-			let subExpressionSubtrees = subExpression?.subtrees
-			let subSubExpression = subExpressionSubtrees?.first
 			let typeName = expression["writtenType"]
 
-			if let typeName = typeName, let subSubExpression = subSubExpression {
-				result = BinaryOperatorExpression(
-					range: nil,
-					leftExpression: try translateExpression(subSubExpression),
-					rightExpression: TypeExpression(range: nil, typeName: typeName),
-					operatorSymbol: "as?",
-					typeName: typeName)
-			}
-			else if let typeName = typeName, let subExpression = subExpression {
+			if let typeName = typeName, let subExpression = subExpression {
 				result = BinaryOperatorExpression(
 					range: nil,
 					leftExpression: try translateExpression(subExpression),
