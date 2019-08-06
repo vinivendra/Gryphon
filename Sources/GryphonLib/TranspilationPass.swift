@@ -91,7 +91,7 @@ public class TranspilationPass {
 		defer { parents.removeLast() }
 
 		if let commentStatement = statement as? CommentStatement {
-			return replaceComment(range: commentStatement.range, value: commentStatement.value)
+			return replaceComment(commentStatement)
 		}
 		if let expressionStatement = statement as? ExpressionStatement {
 			return replaceExpressionStatement(expression: expressionStatement.expression)
@@ -102,7 +102,7 @@ public class TranspilationPass {
 				members: extensionDeclaration.members)
 		}
 		if let importDeclaration = statement as? ImportDeclaration {
-			return replaceImportDeclaration(moduleName: importDeclaration.moduleName)
+			return replaceImportDeclaration(importDeclaration)
 		}
 		if let typealiasDeclaration = statement as? TypealiasDeclaration {
 			return replaceTypealiasDeclaration(
@@ -204,10 +204,10 @@ public class TranspilationPass {
 		fatalError("This should never be reached.")
 	}
 
-	func replaceComment(range: SourceFileRange?, value: String) // annotation: open
+	func replaceComment(_ commentStatement: CommentStatement) // annotation: open
 		-> ArrayClass<Statement>
 	{
-		return [CommentStatement(range: range, value: value)]
+		return [commentStatement]
 	}
 
 	func replaceExpressionStatement( // annotation: open
@@ -229,10 +229,10 @@ public class TranspilationPass {
 	}
 
 	func replaceImportDeclaration( // annotation: open
-		moduleName: String)
+		_ importDeclaration: ImportDeclaration)
 		-> ArrayClass<Statement>
 	{
-		return [ImportDeclaration(range: nil, moduleName: moduleName)]
+		return [importDeclaration]
 	}
 
 	func replaceTypealiasDeclaration( // annotation: open
@@ -283,29 +283,16 @@ public class TranspilationPass {
 				access: access,
 				enumName: enumName,
 				inherits: inherits,
-				elements: elements.flatMap {
-						replaceEnumElementDeclaration(
-							enumName: $0.name,
-							associatedValues: $0.associatedValues,
-							rawValue: $0.rawValue,
-							annotations: $0.annotations)
-					},
+				elements: elements.flatMap { replaceEnumElementDeclaration($0) },
 				members: replaceStatements(members),
 				isImplicit: isImplicit), ]
 	}
 
 	func replaceEnumElementDeclaration( // annotation: open
-		enumName: String,
-		associatedValues: ArrayClass<LabeledType>,
-		rawValue: Expression?,
-		annotations: String?)
+		_ enumElement: EnumElement)
 		-> ArrayClass<EnumElement>
 	{
-		return [EnumElement(
-			name: enumName,
-			associatedValues: associatedValues,
-			rawValue: rawValue,
-			annotations: annotations), ]
+		return [enumElement]
 	}
 
 	func replaceProtocolDeclaration( // annotation: open
