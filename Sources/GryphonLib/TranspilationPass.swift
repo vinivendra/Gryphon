@@ -94,21 +94,16 @@ public class TranspilationPass {
 			return replaceComment(commentStatement)
 		}
 		if let expressionStatement = statement as? ExpressionStatement {
-			return replaceExpressionStatement(expression: expressionStatement.expression)
+			return replaceExpressionStatement(expressionStatement)
 		}
 		if let extensionDeclaration = statement as? ExtensionDeclaration {
-			return replaceExtension(
-				typeName: extensionDeclaration.typeName,
-				members: extensionDeclaration.members)
+			return replaceExtension(extensionDeclaration)
 		}
 		if let importDeclaration = statement as? ImportDeclaration {
 			return replaceImportDeclaration(importDeclaration)
 		}
 		if let typealiasDeclaration = statement as? TypealiasDeclaration {
-			return replaceTypealiasDeclaration(
-				identifier: typealiasDeclaration.identifier,
-				typeName: typealiasDeclaration.typeName,
-				isImplicit: typealiasDeclaration.isImplicit)
+			return replaceTypealiasDeclaration(typealiasDeclaration)
 		}
 		if let classDeclaration = statement as? ClassDeclaration {
 			return replaceClassDeclaration(
@@ -117,7 +112,7 @@ public class TranspilationPass {
 				members: classDeclaration.members)
 		}
 		if let companionObject = statement as? CompanionObject {
-			return replaceCompanionObject(members: companionObject.members)
+			return replaceCompanionObject(companionObject)
 		}
 		if let enumDeclaration = statement as? EnumDeclaration {
 			return replaceEnumDeclaration(
@@ -150,7 +145,7 @@ public class TranspilationPass {
 			return replaceVariableDeclaration(variableDeclaration)
 		}
 		if let doStatement = statement as? DoStatement {
-			return replaceDoStatement(statements: doStatement.statements)
+			return replaceDoStatement(doStatement)
 		}
 		if let catchStatement = statement as? CatchStatement {
 			return replaceCatchStatement(
@@ -178,13 +173,13 @@ public class TranspilationPass {
 				cases: switchStatement.cases)
 		}
 		if let deferStatement = statement as? DeferStatement {
-			return replaceDeferStatement(statements: deferStatement.statements)
+			return replaceDeferStatement(deferStatement)
 		}
 		if let throwStatement = statement as? ThrowStatement {
-			return replaceThrowStatement(expression: throwStatement.expression)
+			return replaceThrowStatement(throwStatement)
 		}
 		if let returnStatement = statement as? ReturnStatement {
-			return replaceReturnStatement(expression: returnStatement.expression)
+			return replaceReturnStatement(returnStatement)
 		}
 		if statement is BreakStatement {
 			return [BreakStatement(range: nil)]
@@ -211,21 +206,22 @@ public class TranspilationPass {
 	}
 
 	func replaceExpressionStatement( // annotation: open
-		expression: Expression)
+		_ expressionStatement: ExpressionStatement)
 		-> ArrayClass<Statement>
 	{
-		return [ExpressionStatement(range: nil, expression: replaceExpression(expression))]
+		return [ExpressionStatement(
+			range: expressionStatement.range,
+			expression: replaceExpression(expressionStatement.expression)), ]
 	}
 
 	func replaceExtension( // annotation: open
-		typeName: String,
-		members: ArrayClass<Statement>)
+		_ extensionDeclaration: ExtensionDeclaration)
 		-> ArrayClass<Statement>
 	{
 		return [ExtensionDeclaration(
-			range: nil,
-			typeName: typeName,
-			members: replaceStatements(members)), ]
+			range: extensionDeclaration.range,
+			typeName: extensionDeclaration.typeName,
+			members: replaceStatements(extensionDeclaration.members)), ]
 	}
 
 	func replaceImportDeclaration( // annotation: open
@@ -236,16 +232,10 @@ public class TranspilationPass {
 	}
 
 	func replaceTypealiasDeclaration( // annotation: open
-		identifier: String,
-		typeName: String,
-		isImplicit: Bool)
+		_ typealiasDeclaration: TypealiasDeclaration)
 		-> ArrayClass<Statement>
 	{
-		return [TypealiasDeclaration(
-			range: nil,
-			identifier: identifier,
-			typeName: typeName,
-			isImplicit: isImplicit), ]
+		return [typealiasDeclaration]
 	}
 
 	func replaceClassDeclaration( // annotation: open
@@ -262,10 +252,12 @@ public class TranspilationPass {
 	}
 
 	func replaceCompanionObject( // annotation: open
-		members: ArrayClass<Statement>)
+		_ companionObject: CompanionObject)
 		-> ArrayClass<Statement>
 	{
-		return [CompanionObject(range: nil, members: replaceStatements(members))]
+		return [CompanionObject(
+			range: companionObject.range,
+			members: replaceStatements(companionObject.members)), ]
 	}
 
 	func replaceEnumDeclaration( // annotation: open
@@ -409,10 +401,12 @@ public class TranspilationPass {
 	}
 
 	func replaceDoStatement( // annotation: open
-		statements: ArrayClass<Statement>)
+		_ doStatement: DoStatement)
 		-> ArrayClass<Statement>
 	{
-		return [DoStatement(range: nil, statements: replaceStatements(statements))]
+		return [DoStatement(
+			range: doStatement.range,
+			statements: replaceStatements(doStatement.statements)), ]
 	}
 
 	func replaceCatchStatement( // annotation: open
@@ -521,24 +515,30 @@ public class TranspilationPass {
 	}
 
 	func replaceDeferStatement( // annotation: open
-		statements: ArrayClass<Statement>)
+		_ deferStatement: DeferStatement)
 		-> ArrayClass<Statement>
 	{
-		return [DeferStatement(range: nil, statements: replaceStatements(statements))]
+		return [DeferStatement(
+			range: deferStatement.range,
+			statements: replaceStatements(deferStatement.statements)), ]
 	}
 
 	func replaceThrowStatement( // annotation: open
-		expression: Expression)
+		_ throwStatement: ThrowStatement)
 		-> ArrayClass<Statement>
 	{
-		return [ThrowStatement(range: nil, expression: replaceExpression(expression))]
+		return [ThrowStatement(
+			range: throwStatement.range,
+			expression: replaceExpression(throwStatement.expression)), ]
 	}
 
 	func replaceReturnStatement( // annotation: open
-		expression: Expression?)
+		_ returnStatement: ReturnStatement)
 		-> ArrayClass<Statement>
 	{
-		return [ReturnStatement(range: nil, expression: expression.map { replaceExpression($0) })]
+		return [ReturnStatement(
+			range: returnStatement.range,
+			expression: returnStatement.expression.map { replaceExpression($0) }), ]
 	}
 
 	func replaceAssignmentStatement( // annotation: open
@@ -1092,17 +1092,14 @@ public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceTypealiasDeclaration( // annotation: override
-		identifier: String,
-		typeName: String,
-		isImplicit: Bool)
+		_ typealiasDeclaration: TypealiasDeclaration)
 		-> ArrayClass<Statement>
 	{
-		if isImplicit {
+		if typealiasDeclaration.isImplicit {
 			return []
 		}
 		else {
-			return super.replaceTypealiasDeclaration(
-				identifier: identifier, typeName: typeName, isImplicit: isImplicit)
+			return super.replaceTypealiasDeclaration(typealiasDeclaration)
 		}
 	}
 
@@ -1530,11 +1527,11 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceReturnStatement( // annotation: override
-		expression: Expression?)
+		_ returnStatement: ReturnStatement)
 		-> ArrayClass<Statement>
 	{
 		if let returnType = returnTypesStack.last,
-			let expression = expression,
+			let expression = returnStatement.expression,
 			let dotExpression = expression as? DotExpression
 		{
 			if let typeExpression = dotExpression.leftExpression as? TypeExpression {
@@ -1553,7 +1550,7 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
 			}
 		}
 
-		return [ReturnStatement(range: nil, expression: expression)]
+		return super.replaceReturnStatement(returnStatement)
 	}
 }
 
@@ -1938,14 +1935,16 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceReturnStatement( // annotation: override
-		expression: Expression?)
+		_ returnStatement: ReturnStatement)
 		-> ArrayClass<Statement>
 	{
-		if isInClosure, let expression = expression {
-			return [ExpressionStatement(range: nil, expression: expression)]
+		if isInClosure, let expression = returnStatement.expression {
+			return [ExpressionStatement(
+				range: returnStatement.range,
+				expression: expression), ]
 		}
 		else {
-			return [ReturnStatement(range: nil, expression: expression)]
+			return super.replaceReturnStatement(returnStatement)
 		}
 	}
 }
@@ -2347,12 +2346,11 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 	var extendingType: String?
 
 	override func replaceExtension( // annotation: override
-		typeName: String,
-		members: ArrayClass<Statement>)
+		_ extensionDeclaration: ExtensionDeclaration)
 		-> ArrayClass<Statement>
 	{
-		extendingType = typeName
-		let members = replaceStatements(members)
+		extendingType = extensionDeclaration.typeName
+		let members = replaceStatements(extensionDeclaration.members)
 		extendingType = nil
 		return members
 	}
@@ -2362,9 +2360,7 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 		-> ArrayClass<Statement>
 	{
 		if let extensionDeclaration = statement as? ExtensionDeclaration {
-			return replaceExtension(
-				typeName: extensionDeclaration.typeName,
-				members: extensionDeclaration.members)
+			return replaceExtension(extensionDeclaration)
 		}
 		if let functionDeclaration = statement as? FunctionDeclaration {
 			return replaceFunctionDeclaration(functionDeclaration)
