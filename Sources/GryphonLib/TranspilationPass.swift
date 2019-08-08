@@ -142,29 +142,19 @@ public class TranspilationPass {
 			return replaceDoStatement(doStatement)
 		}
 		if let catchStatement = statement as? CatchStatement {
-			return replaceCatchStatement(
-				variableDeclaration: catchStatement.variableDeclaration,
-				statements: catchStatement.statements)
+			return replaceCatchStatement(catchStatement)
 		}
 		if let forEachStatement = statement as? ForEachStatement {
-			return replaceForEachStatement(
-				collection: forEachStatement.collection,
-				variable: forEachStatement.variable,
-				statements: forEachStatement.statements)
+			return replaceForEachStatement(forEachStatement)
 		}
 		if let whileStatement = statement as? WhileStatement {
-			return replaceWhileStatement(
-				expression: whileStatement.expression,
-				statements: whileStatement.statements)
+			return replaceWhileStatement(whileStatement)
 		}
 		if let ifStatement = statement as? IfStatement {
 			return replaceIfStatement(ifStatement)
 		}
 		if let switchStatement = statement as? SwitchStatement {
-			return replaceSwitchStatement(
-				convertsToExpression: switchStatement.convertsToExpression,
-				expression: switchStatement.expression,
-				cases: switchStatement.cases)
+			return replaceSwitchStatement(switchStatement)
 		}
 		if let deferStatement = statement as? DeferStatement {
 			return replaceDeferStatement(deferStatement)
@@ -182,9 +172,7 @@ public class TranspilationPass {
 			return [ContinueStatement(range: nil)]
 		}
 		if let assignmentStatement = statement as? AssignmentStatement {
-			return replaceAssignmentStatement(
-				leftHand: assignmentStatement.leftHand,
-				rightHand: assignmentStatement.rightHand)
+			return replaceAssignmentStatement(assignmentStatement)
 		}
 		if statement is ErrorStatement {
 			return [ErrorStatement(range: nil)]
@@ -400,37 +388,36 @@ public class TranspilationPass {
 	}
 
 	func replaceCatchStatement( // annotation: open
-		variableDeclaration: VariableDeclaration?,
-		statements: ArrayClass<Statement>)
+		_ catchStatement: CatchStatement)
 		-> ArrayClass<Statement>
 	{
 		return [CatchStatement(
-			range: nil,
-			variableDeclaration: variableDeclaration.map { processVariableDeclaration($0) },
-			statements: replaceStatements(statements)),
+			range: catchStatement.range,
+			variableDeclaration: catchStatement.variableDeclaration
+				.map { processVariableDeclaration($0) },
+			statements: replaceStatements(catchStatement.statements)),
 		]
 	}
 
 	func replaceForEachStatement( // annotation: open
-		collection: Expression, variable: Expression, statements: ArrayClass<Statement>)
+		_ forEachStatement: ForEachStatement)
 		-> ArrayClass<Statement>
 	{
 		return [ForEachStatement(
-			range: nil,
-			collection: replaceExpression(collection),
-			variable: replaceExpression(variable),
-			statements: replaceStatements(statements)), ]
+			range: forEachStatement.range,
+			collection: replaceExpression(forEachStatement.collection),
+			variable: replaceExpression(forEachStatement.variable),
+			statements: replaceStatements(forEachStatement.statements)), ]
 	}
 
 	func replaceWhileStatement( // annotation: open
-		expression: Expression,
-		statements: ArrayClass<Statement>)
+		_ whileStatement: WhileStatement)
 		-> ArrayClass<Statement>
 	{
 		return [WhileStatement(
-			range: nil,
-			expression: replaceExpression(expression),
-			statements: replaceStatements(statements)), ]
+			range: whileStatement.range,
+			expression: replaceExpression(whileStatement.expression),
+			statements: replaceStatements(whileStatement.statements)), ]
 	}
 
 	func replaceIfStatement( // annotation: open
@@ -474,11 +461,11 @@ public class TranspilationPass {
 	}
 
 	func replaceSwitchStatement( // annotation: open
-		convertsToExpression: Statement?, expression: Expression,
-		cases: ArrayClass<SwitchCase>) -> ArrayClass<Statement>
+		_ switchStatement: SwitchStatement)
+		-> ArrayClass<Statement>
 	{
 		let replacedConvertsToExpression: Statement?
-		if let convertsToExpression = convertsToExpression {
+		if let convertsToExpression = switchStatement.convertsToExpression {
 			if let replacedExpression = replaceStatement(convertsToExpression).first {
 				replacedConvertsToExpression = replacedExpression
 			}
@@ -490,7 +477,7 @@ public class TranspilationPass {
 			replacedConvertsToExpression = nil
 		}
 
-		let replacedCases = cases.map
+		let replacedCases = switchStatement.cases.map
 			{
 				SwitchCase(
 					expressions: $0.expressions.map { replaceExpression($0) },
@@ -498,9 +485,9 @@ public class TranspilationPass {
 			}
 
 		return [SwitchStatement(
-			range: nil,
+			range: switchStatement.range,
 			convertsToExpression: replacedConvertsToExpression,
-			expression: replaceExpression(expression),
+			expression: replaceExpression(switchStatement.expression),
 			cases: replacedCases), ]
 	}
 
@@ -532,14 +519,13 @@ public class TranspilationPass {
 	}
 
 	func replaceAssignmentStatement( // annotation: open
-		leftHand: Expression,
-		rightHand: Expression)
+		_ assignmentStatement: AssignmentStatement)
 		-> ArrayClass<Statement>
 	{
 		return [AssignmentStatement(
-			range: nil,
-			leftHand: replaceExpression(leftHand),
-			rightHand: replaceExpression(rightHand)), ]
+			range: assignmentStatement.range,
+			leftHand: replaceExpression(assignmentStatement.leftHand),
+			rightHand: replaceExpression(assignmentStatement.rightHand)), ]
 	}
 
 	// MARK: - Replace Expressions
@@ -1161,19 +1147,20 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceAssignmentStatement( // annotation: override
-		leftHand: Expression,
-		rightHand: Expression)
+		_ assignmentStatement: AssignmentStatement)
 		-> ArrayClass<Statement>
 	{
 		if isFailableInitializer,
-			let expression = leftHand as? DeclarationReferenceExpression
+			let expression = assignmentStatement.leftHand as? DeclarationReferenceExpression
 		{
 			if expression.identifier == "self" {
-				return [ReturnStatement(range: nil, expression: rightHand)]
+				return [ReturnStatement(
+					range: assignmentStatement.range,
+					expression: assignmentStatement.rightHand), ]
 			}
 		}
 
-		return super.replaceAssignmentStatement(leftHand: leftHand, rightHand: rightHand)
+		return super.replaceAssignmentStatement(assignmentStatement)
 	}
 }
 
@@ -2059,14 +2046,14 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 
 	/// Detect switches whose bodies all end in the same returns or assignments
 	override func replaceSwitchStatement( // annotation: override
-		convertsToExpression: Statement?, expression: Expression,
-		cases: ArrayClass<SwitchCase>) -> ArrayClass<Statement>
+		_ switchStatement: SwitchStatement)
+		-> ArrayClass<Statement>
 	{
 		var hasAllReturnCases = true
 		var hasAllAssignmentCases = true
 		var assignmentExpression: Expression?
 
-		for statements in cases.map({ $0.statements }) {
+		for statements in switchStatement.cases.map({ $0.statements }) {
 			// TODO: breaks in switches are ignored, which will be incorrect if there's code after
 			// the break. Throw a warning.
 			guard let lastStatement = statements.last else {
@@ -2099,7 +2086,7 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 
 		if hasAllReturnCases {
 			let newCases: ArrayClass<SwitchCase> = []
-			for switchCase in cases {
+			for switchCase in switchStatement.cases {
 				// Swift switches must have at least one statement
 				let lastStatement = switchCase.statements.last!
 				if let returnStatement = lastStatement as? ReturnStatement {
@@ -2119,12 +2106,12 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 			return [SwitchStatement(
 				range: nil,
 				convertsToExpression: conversionExpression,
-				expression: expression,
+				expression: switchStatement.expression,
 				cases: newCases), ]
 		}
 		else if hasAllAssignmentCases, let assignmentExpression = assignmentExpression {
 			let newCases: ArrayClass<SwitchCase> = []
-			for switchCase in cases {
+			for switchCase in switchStatement.cases {
 				// Swift switches must have at least one statement
 				let lastStatement = switchCase.statements.last!
 				if let assignmentStatement = lastStatement as? AssignmentStatement {
@@ -2144,12 +2131,11 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 			return [SwitchStatement(
 				range: nil,
 				convertsToExpression: conversionExpression,
-				expression: expression,
+				expression: switchStatement.expression,
 				cases: newCases), ]
 		}
 		else {
-			return super.replaceSwitchStatement(
-				convertsToExpression: nil, expression: expression, cases: cases)
+			return super.replaceSwitchStatement(switchStatement)
 		}
 	}
 
@@ -2221,17 +2207,16 @@ public class RemoveBreaksInSwitchesTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
 	override func replaceSwitchStatement( // annotation: override
-		convertsToExpression: Statement?,
-		expression: Expression,
-		cases: ArrayClass<SwitchCase>)
+		_ switchStatement: SwitchStatement)
 		-> ArrayClass<Statement>
 	{
-		let newCases = cases.compactMap { removeBreaksInSwitchCase($0) }
+		let newCases = switchStatement.cases.compactMap { removeBreaksInSwitchCase($0) }
 
-		return super.replaceSwitchStatement(
-			convertsToExpression: convertsToExpression,
-			expression: expression,
-			cases: newCases)
+		return super.replaceSwitchStatement(SwitchStatement(
+			range: switchStatement.range,
+			convertsToExpression: switchStatement.convertsToExpression,
+			expression: switchStatement.expression,
+			cases: newCases))
 	}
 
 	private func removeBreaksInSwitchCase(_ switchCase: SwitchCase) -> SwitchCase? {
@@ -2253,30 +2238,28 @@ public class IsOperatorsInSealedClassesTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
 	override func replaceSwitchStatement( // annotation: override
-		convertsToExpression: Statement?,
-		expression: Expression,
-		cases: ArrayClass<SwitchCase>)
+		_ switchStatement: SwitchStatement)
 		-> ArrayClass<Statement>
 	{
-		if let declarationReferenceExpression = expression as? DeclarationReferenceExpression {
+		if let declarationReferenceExpression =
+			switchStatement.expression as? DeclarationReferenceExpression
+		{
 			if KotlinTranslator.sealedClasses.contains(
 				declarationReferenceExpression.typeName)
 			{
-				let newCases = cases.map {
-					replaceIsOperatorsInSwitchCase($0, usingExpression: expression)
+				let newCases = switchStatement.cases.map {
+					replaceIsOperatorsInSwitchCase($0, usingExpression: switchStatement.expression)
 				}
 
-				return super.replaceSwitchStatement(
-					convertsToExpression: convertsToExpression,
-					expression: expression,
-					cases: newCases)
+				return super.replaceSwitchStatement(SwitchStatement(
+					range: switchStatement.range,
+					convertsToExpression: switchStatement.convertsToExpression,
+					expression: switchStatement.expression,
+					cases: newCases))
 			}
 		}
 
-		return super.replaceSwitchStatement(
-			convertsToExpression: convertsToExpression,
-			expression: expression,
-			cases: cases)
+		return super.replaceSwitchStatement(switchStatement)
 	}
 
 	private func replaceIsOperatorsInSwitchCase(
