@@ -218,6 +218,11 @@ public class KotlinTranslator {
 				{
 					continue
 				}
+				if currentExpressionStatement.expression is LiteralDeclarationExpression,
+					nextExpressionStatement.expression is LiteralDeclarationExpression
+				{
+					continue
+				}
 			}
 			if currentSubtree.subtree is AssignmentStatement,
 				nextSubtree.subtree is AssignmentStatement

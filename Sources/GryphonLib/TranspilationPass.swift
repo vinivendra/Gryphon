@@ -521,15 +521,13 @@ public class TranspilationPass {
 		defer { parents.removeLast() }
 
 		if let expression = expression as? TemplateExpression {
-			return replaceTemplateExpression(
-				pattern: expression.pattern,
-				matches: expression.matches)
+			return replaceTemplateExpression(expression)
 		}
 		if let expression = expression as? LiteralCodeExpression {
-			return replaceLiteralCodeExpression(string: expression.string)
+			return replaceLiteralCodeExpression(expression)
 		}
 		if let expression = expression as? LiteralDeclarationExpression {
-			return replaceLiteralCodeExpression(string: expression.string)
+			return replaceLiteralDeclarationExpression(expression)
 		}
 		if let expression = expression as? ParenthesesExpression {
 			return replaceParenthesesExpression(expression: expression.expression)
@@ -650,24 +648,32 @@ public class TranspilationPass {
 	}
 
 	func replaceTemplateExpression( // annotation: open
-		pattern: String,
-		matches: DictionaryClass<String, Expression>)
+		_ templateExpression: TemplateExpression)
 		-> Expression
 	{
-		let newMatches = matches.mapValues { replaceExpression($0) } // kotlin: ignore
-		// insert: val newMatches = matches.mapValues { replaceExpression(it.value) }.toMutableMap()
+		let newMatches = templateExpression.matches // kotlin: ignore
+			.mapValues { replaceExpression($0) }
+		// insert: val newMatches = templateExpression.matches
+		// insert: 	.mapValues { replaceExpression(it.value) }.toMutableMap()
 
 		return TemplateExpression(
-			range: nil,
-			pattern: pattern,
+			range: templateExpression.range,
+			pattern: templateExpression.pattern,
 			matches: newMatches)
 	}
 
 	func replaceLiteralCodeExpression( // annotation: open
-		string: String)
+		_ literalCodeExpression: LiteralCodeExpression)
 		-> Expression
 	{
-		return LiteralCodeExpression(range: nil, string: string)
+		return literalCodeExpression
+	}
+
+	func replaceLiteralDeclarationExpression( // annotation: open
+		_ literalDeclarationExpression: LiteralDeclarationExpression)
+		-> Expression
+	{
+		return literalDeclarationExpression
 	}
 
 	func replaceParenthesesExpression( // annotation: open
