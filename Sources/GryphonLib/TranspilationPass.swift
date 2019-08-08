@@ -530,13 +530,13 @@ public class TranspilationPass {
 			return replaceLiteralDeclarationExpression(expression)
 		}
 		if let expression = expression as? ParenthesesExpression {
-			return replaceParenthesesExpression(expression: expression.expression)
+			return replaceParenthesesExpression(expression)
 		}
 		if let expression = expression as? ForceValueExpression {
-			return replaceForceValueExpression(expression: expression.expression)
+			return replaceForceValueExpression(expression)
 		}
 		if let expression = expression as? OptionalExpression {
-			return replaceOptionalExpression(expression: expression.expression)
+			return replaceOptionalExpression(expression)
 		}
 		if let expression = expression as? DeclarationReferenceExpression {
 			return replaceDeclarationReferenceExpression(expression)
@@ -677,24 +677,30 @@ public class TranspilationPass {
 	}
 
 	func replaceParenthesesExpression( // annotation: open
-		expression: Expression)
+		_ parenthesesExpression: ParenthesesExpression)
 		-> Expression
 	{
-		return ParenthesesExpression(range: nil, expression: replaceExpression(expression))
+		return ParenthesesExpression(
+			range: parenthesesExpression.range,
+			expression: replaceExpression(parenthesesExpression.expression))
 	}
 
 	func replaceForceValueExpression( // annotation: open
-		expression: Expression)
+		_ forceValueExpression: ForceValueExpression)
 		-> Expression
 	{
-		return ForceValueExpression(range: nil, expression: replaceExpression(expression))
+		return ForceValueExpression(
+			range: forceValueExpression.range,
+			expression: replaceExpression(forceValueExpression.expression))
 	}
 
 	func replaceOptionalExpression( // annotation: open
-		expression: Expression)
+		_ optionalExpression: OptionalExpression)
 		-> Expression
 	{
-		return OptionalExpression(range: nil, expression: replaceExpression(expression))
+		return OptionalExpression(
+			range: optionalExpression.range,
+			expression: replaceExpression(optionalExpression.expression))
 	}
 
 	func replaceDeclarationReferenceExpression( // annotation: open
@@ -977,7 +983,7 @@ public class RemoveParenthesesTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceParenthesesExpression( // annotation: override
-		expression: Expression)
+		_ parenthesesExpression: ParenthesesExpression)
 		-> Expression
 	{
 		let myParent = self.parent
@@ -985,11 +991,11 @@ public class RemoveParenthesesTranspilationPass: TranspilationPass {
 			if parentExpression is TupleExpression ||
 				parentExpression is InterpolatedStringLiteralExpression
 			{
-				return replaceExpression(expression)
+				return replaceExpression(parenthesesExpression.expression)
 			}
 		}
 
-		return ParenthesesExpression(range: nil, expression: replaceExpression(expression))
+		return super.replaceParenthesesExpression(parenthesesExpression)
 	}
 
 	override func replaceIfExpression( // annotation: override
