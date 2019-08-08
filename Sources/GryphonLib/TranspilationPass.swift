@@ -106,22 +106,13 @@ public class TranspilationPass {
 			return replaceTypealiasDeclaration(typealiasDeclaration)
 		}
 		if let classDeclaration = statement as? ClassDeclaration {
-			return replaceClassDeclaration(
-				className: classDeclaration.className,
-				inherits: classDeclaration.inherits,
-				members: classDeclaration.members)
+			return replaceClassDeclaration(classDeclaration)
 		}
 		if let companionObject = statement as? CompanionObject {
 			return replaceCompanionObject(companionObject)
 		}
 		if let enumDeclaration = statement as? EnumDeclaration {
-			return replaceEnumDeclaration(
-				access: enumDeclaration.access,
-				enumName: enumDeclaration.enumName,
-				inherits: enumDeclaration.inherits,
-				elements: enumDeclaration.elements,
-				members: enumDeclaration.members,
-				isImplicit: enumDeclaration.isImplicit)
+			return replaceEnumDeclaration(enumDeclaration)
 		}
 		if let protocolDeclaration = statement as? ProtocolDeclaration {
 			return replaceProtocolDeclaration(protocolDeclaration)
@@ -221,16 +212,14 @@ public class TranspilationPass {
 	}
 
 	func replaceClassDeclaration( // annotation: open
-		className: String,
-		inherits: ArrayClass<String>,
-		members: ArrayClass<Statement>)
+		_ classDeclaration: ClassDeclaration)
 		-> ArrayClass<Statement>
 	{
 		return [ClassDeclaration(
-			range: nil,
-			className: className,
-			inherits: inherits,
-			members: replaceStatements(members)), ]
+			range: classDeclaration.range,
+			className: classDeclaration.className,
+			inherits: classDeclaration.inherits,
+			members: replaceStatements(classDeclaration.members)), ]
 	}
 
 	func replaceCompanionObject( // annotation: open
@@ -243,23 +232,18 @@ public class TranspilationPass {
 	}
 
 	func replaceEnumDeclaration( // annotation: open
-		access: String?,
-		enumName: String,
-		inherits: ArrayClass<String>,
-		elements: ArrayClass<EnumElement>,
-		members: ArrayClass<Statement>,
-		isImplicit: Bool)
+		_ enumDeclaration: EnumDeclaration)
 		-> ArrayClass<Statement>
 	{
 		return [
 			EnumDeclaration(
-				range: nil,
-				access: access,
-				enumName: enumName,
-				inherits: inherits,
-				elements: elements.flatMap { replaceEnumElementDeclaration($0) },
-				members: replaceStatements(members),
-				isImplicit: isImplicit), ]
+				range: enumDeclaration.range,
+				access: enumDeclaration.access,
+				enumName: enumDeclaration.enumName,
+				inherits: enumDeclaration.inherits,
+				elements: enumDeclaration.elements.flatMap { replaceEnumElementDeclaration($0) },
+				members: replaceStatements(enumDeclaration.members),
+				isImplicit: enumDeclaration.isImplicit), ]
 	}
 
 	func replaceEnumElementDeclaration( // annotation: open
@@ -1045,25 +1029,14 @@ public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
 	override func replaceEnumDeclaration( // annotation: override
-		access: String?,
-		enumName: String,
-		inherits: ArrayClass<String>,
-		elements: ArrayClass<EnumElement>,
-		members: ArrayClass<Statement>,
-		isImplicit: Bool)
+		_ enumDeclaration: EnumDeclaration)
 		-> ArrayClass<Statement>
 	{
-		if isImplicit {
+		if enumDeclaration.isImplicit {
 			return []
 		}
 		else {
-			return super.replaceEnumDeclaration(
-				access: access,
-				enumName: enumName,
-				inherits: inherits,
-				elements: elements,
-				members: members,
-				isImplicit: isImplicit)
+			return super.replaceEnumDeclaration(enumDeclaration)
 		}
 	}
 
@@ -1230,16 +1203,15 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceClassDeclaration( // annotation: override
-		className: String,
-		inherits: ArrayClass<String>,
-		members: ArrayClass<Statement>)
+		_ classDeclaration: ClassDeclaration)
 		-> ArrayClass<Statement>
 	{
-		let newMembers = sendStaticMembersToCompanionObject(members)
-		return super.replaceClassDeclaration(
-			className: className,
-			inherits: inherits,
-			members: newMembers)
+		let newMembers = sendStaticMembersToCompanionObject(classDeclaration.members)
+		return super.replaceClassDeclaration(ClassDeclaration(
+			range: classDeclaration.range,
+			className: classDeclaration.className,
+			inherits: classDeclaration.inherits,
+			members: newMembers))
 	}
 
 	override func replaceStructDeclaration( // annotation: override
@@ -1256,22 +1228,18 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceEnumDeclaration( // annotation: override
-		access: String?,
-		enumName: String,
-		inherits: ArrayClass<String>,
-		elements: ArrayClass<EnumElement>,
-		members: ArrayClass<Statement>,
-		isImplicit: Bool)
+		_ enumDeclaration: EnumDeclaration)
 		-> ArrayClass<Statement>
 	{
-		let newMembers = sendStaticMembersToCompanionObject(members)
-		return super.replaceEnumDeclaration(
-			access: access,
-			enumName: enumName,
-			inherits: inherits,
-			elements: elements,
+		let newMembers = sendStaticMembersToCompanionObject(enumDeclaration.members)
+		return super.replaceEnumDeclaration(EnumDeclaration(
+			range: enumDeclaration.range,
+			access: enumDeclaration.access,
+			enumName: enumDeclaration.enumName,
+			inherits: enumDeclaration.inherits,
+			elements: enumDeclaration.elements,
 			members: newMembers,
-			isImplicit: isImplicit)
+			isImplicit: enumDeclaration.isImplicit))
 	}
 }
 
@@ -1305,16 +1273,11 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceClassDeclaration( // annotation: override
-		className: String,
-		inherits: ArrayClass<String>,
-		members: ArrayClass<Statement>)
+		_ classDeclaration: ClassDeclaration)
 		-> ArrayClass<Statement>
 	{
-		typeNamesStack.append(className)
-		let result = super.replaceClassDeclaration(
-			className: className,
-			inherits: inherits,
-			members: members)
+		typeNamesStack.append(classDeclaration.className)
+		let result = super.replaceClassDeclaration(classDeclaration)
 		typeNamesStack.removeLast()
 		return result
 	}
@@ -1390,20 +1353,15 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceEnumDeclaration( // annotation: override
-		access: String?,
-		enumName: String,
-		inherits: ArrayClass<String>,
-		elements: ArrayClass<EnumElement>,
-		members: ArrayClass<Statement>,
-		isImplicit: Bool)
+		_ enumDeclaration: EnumDeclaration)
 		-> ArrayClass<Statement>
 	{
-		let isSealedClass = KotlinTranslator.sealedClasses.contains(enumName)
-		let isEnumClass = KotlinTranslator.enumClasses.contains(enumName)
+		let isSealedClass = KotlinTranslator.sealedClasses.contains(enumDeclaration.enumName)
+		let isEnumClass = KotlinTranslator.enumClasses.contains(enumDeclaration.enumName)
 
 		let newElements: ArrayClass<EnumElement>
 		if isSealedClass {
-			newElements = elements.map { element in
+			newElements = enumDeclaration.elements.map { element in
 				EnumElement(
 					name: element.name.capitalizedAsCamelCase(),
 					associatedValues: element.associatedValues,
@@ -1412,7 +1370,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 			}
 		}
 		else if isEnumClass {
-			newElements = elements.map { element in
+			newElements = enumDeclaration.elements.map { element in
 				EnumElement(
 					name: element.name.upperSnakeCase(),
 					associatedValues: element.associatedValues,
@@ -1421,16 +1379,17 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 			}
 		}
 		else {
-			newElements = elements
+			newElements = enumDeclaration.elements
 		}
 
-		return super.replaceEnumDeclaration(
-			access: access,
-			enumName: enumName,
-			inherits: inherits,
+		return super.replaceEnumDeclaration(EnumDeclaration(
+			range: enumDeclaration.range,
+			access: enumDeclaration.access,
+			enumName: enumDeclaration.enumName,
+			inherits: enumDeclaration.inherits,
 			elements: newElements,
-			members: members,
-			isImplicit: isImplicit)
+			members: enumDeclaration.members,
+			isImplicit: enumDeclaration.isImplicit))
 	}
 }
 
@@ -1688,24 +1647,20 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
 	override func replaceEnumDeclaration( // annotation: override
-		access: String?,
-		enumName: String,
-		inherits: ArrayClass<String>,
-		elements: ArrayClass<EnumElement>,
-		members: ArrayClass<Statement>,
-		isImplicit: Bool)
+		_ enumDeclaration: EnumDeclaration)
 		-> ArrayClass<Statement>
 	{
-		return super.replaceEnumDeclaration(
-			access: access,
-			enumName: enumName,
-			inherits: inherits.filter {
+		return super.replaceEnumDeclaration(EnumDeclaration(
+			range: enumDeclaration.range,
+			access: enumDeclaration.access,
+			enumName: enumDeclaration.enumName,
+			inherits: enumDeclaration.inherits.filter {
 					!TranspilationPass.isASwiftProtocol($0) &&
 						!TranspilationPass.isASwiftRawRepresentableType($0)
 				},
-			elements: elements,
-			members: members,
-			isImplicit: isImplicit)
+			elements: enumDeclaration.elements,
+			members: enumDeclaration.members,
+			isImplicit: enumDeclaration.isImplicit))
 	}
 
 	override func replaceStructDeclaration( // annotation: override
@@ -1721,15 +1676,14 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceClassDeclaration( // annotation: override
-		className: String,
-		inherits: ArrayClass<String>,
-		members: ArrayClass<Statement>)
+		_ classDeclaration: ClassDeclaration)
 		-> ArrayClass<Statement>
 	{
-		return super.replaceClassDeclaration(
-			className: className,
-			inherits: inherits.filter { !TranspilationPass.isASwiftProtocol($0) },
-			members: members)
+		return super.replaceClassDeclaration(ClassDeclaration(
+			range: classDeclaration.range,
+			className: classDeclaration.className,
+			inherits: classDeclaration.inherits.filter { !TranspilationPass.isASwiftProtocol($0) },
+			members: classDeclaration.members))
 	}
 }
 
@@ -2445,33 +2399,22 @@ public class RecordEnumsTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
 	override func replaceEnumDeclaration( // annotation: override
-		access: String?,
-		enumName: String,
-		inherits: ArrayClass<String>,
-		elements: ArrayClass<EnumElement>,
-		members: ArrayClass<Statement>,
-		isImplicit: Bool)
+		_ enumDeclaration: EnumDeclaration)
 		-> ArrayClass<Statement>
 	{
-		let isEnumClass = inherits.isEmpty && elements.reduce(true) { result, element in
-			result && element.associatedValues.isEmpty
-		}
+		let isEnumClass = enumDeclaration.inherits.isEmpty &&
+			enumDeclaration.elements.reduce(true) { result, element in
+				result && element.associatedValues.isEmpty
+			}
 
 		if isEnumClass {
-			KotlinTranslator.addEnumClass(enumName)
+			KotlinTranslator.addEnumClass(enumDeclaration.enumName)
 		}
 		else {
-			KotlinTranslator.addSealedClass(enumName)
+			KotlinTranslator.addSealedClass(enumDeclaration.enumName)
 		}
 
-		return [EnumDeclaration(
-			range: nil,
-			access: access,
-			enumName: enumName,
-			inherits: inherits,
-			elements: elements,
-			members: members,
-			isImplicit: isImplicit), ]
+		return [enumDeclaration]
 	}
 }
 
@@ -2556,37 +2499,26 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 	}
 
 	override func replaceEnumDeclaration( // annotation: override
-		access: String?,
-		enumName: String,
-		inherits: ArrayClass<String>,
-		elements: ArrayClass<EnumElement>,
-		members: ArrayClass<Statement>,
-		isImplicit: Bool)
+		_ enumDeclaration: EnumDeclaration)
 		-> ArrayClass<Statement>
 	{
-		for member in members {
+		for member in enumDeclaration.members {
 			if let functionDeclaration = member as? FunctionDeclaration {
 				if functionDeclaration.isMutating {
 					let methodName = functionDeclaration.prefix + "(" +
 						functionDeclaration.parameters.map { $0.label + ":" }
 							.joined(separator: ", ") + ")"
 					let message = "No support for mutating methods in value types: found method " +
-						"\(methodName) inside enum \(enumName)"
+						"\(methodName) inside enum \(enumDeclaration.enumName)"
 					Compiler.handleWarning(
 						message: message,
 						sourceFile: ast.sourceFile,
-						sourceFileRange: nil)
+						sourceFileRange: functionDeclaration.range)
 				}
 			}
 		}
 
-		return super.replaceEnumDeclaration(
-			access: access,
-			enumName: enumName,
-			inherits: inherits,
-			elements: elements,
-			members: members,
-			isImplicit: isImplicit)
+		return super.replaceEnumDeclaration(enumDeclaration)
 	}
 }
 
@@ -3002,60 +2934,44 @@ public class RawValuesTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
 	override func replaceEnumDeclaration( // annotation: override
-		access: String?,
-		enumName: String,
-		inherits: ArrayClass<String>,
-		elements: ArrayClass<EnumElement>,
-		members: ArrayClass<Statement>,
-		isImplicit: Bool) -> ArrayClass<Statement>
+		_ enumDeclaration: EnumDeclaration) -> ArrayClass<Statement>
 	{
-		if let typeName = elements.compactMap({ $0.rawValue?.swiftType }).first {
+		if let typeName = enumDeclaration.elements.compactMap({ $0.rawValue?.swiftType }).first {
 			let rawValueVariable = createRawValueVariable(
 				rawValueType: typeName,
-				access: access,
-				enumName: enumName,
-				elements: elements)
+				access: enumDeclaration.access,
+				enumName: enumDeclaration.enumName,
+				elements: enumDeclaration.elements)
 
 			guard let rawValueInitializer = createRawValueInitializer(
 				rawValueType: typeName,
-				access: access,
-				enumName: enumName,
-				elements: elements) else
+				access: enumDeclaration.access,
+				enumName: enumDeclaration.enumName,
+				elements: enumDeclaration.elements) else
 			{
 				Compiler.handleWarning(
 					message: "Failed to create init(rawValue:)",
 					details: "Unable to get all raw values in enum declaration.",
 					sourceFile: ast.sourceFile,
-					sourceFileRange: elements.compactMap { $0.rawValue?.range }.first)
-				return super.replaceEnumDeclaration(
-					access: access,
-					enumName: enumName,
-					inherits: inherits,
-					elements: elements,
-					members: members,
-					isImplicit: isImplicit)
+					sourceFileRange: enumDeclaration.range)
+				return super.replaceEnumDeclaration(enumDeclaration)
 			}
 
-			let newMembers = members
+			let newMembers = enumDeclaration.members
 			newMembers.append(rawValueInitializer)
 			newMembers.append(rawValueVariable)
 
-			return super.replaceEnumDeclaration(
-				access: access,
-				enumName: enumName,
-				inherits: inherits,
-				elements: elements,
+			return super.replaceEnumDeclaration(EnumDeclaration(
+				range: enumDeclaration.range,
+				access: enumDeclaration.access,
+				enumName: enumDeclaration.enumName,
+				inherits: enumDeclaration.inherits,
+				elements: enumDeclaration.elements,
 				members: newMembers,
-				isImplicit: isImplicit)
+				isImplicit: enumDeclaration.isImplicit))
 		}
 		else {
-			return super.replaceEnumDeclaration(
-				access: access,
-				enumName: enumName,
-				inherits: inherits,
-				elements: elements,
-				members: members,
-				isImplicit: isImplicit)
+			return super.replaceEnumDeclaration(enumDeclaration)
 		}
 	}
 
