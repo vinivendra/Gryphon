@@ -542,13 +542,10 @@ public class TranspilationPass {
 			return replaceDeclarationReferenceExpression(expression)
 		}
 		if let expression = expression as? TypeExpression {
-			return replaceTypeExpression(typeName: expression.typeName)
+			return replaceTypeExpression(expression)
 		}
 		if let expression = expression as? SubscriptExpression {
-			return replaceSubscriptExpression(
-				subscriptedExpression: expression.subscriptedExpression,
-				indexExpression: expression.indexExpression,
-				typeName: expression.typeName)
+			return replaceSubscriptExpression(expression)
 		}
 		if let expression = expression as? ArrayExpression {
 			return replaceArrayExpression(
@@ -704,13 +701,13 @@ public class TranspilationPass {
 	}
 
 	func replaceDeclarationReferenceExpression( // annotation: open
-		_ declarationReferenceExpressionFixme: DeclarationReferenceExpression)
+		_ declarationReferenceExpression: DeclarationReferenceExpression)
 		-> Expression
 	{
-		return replaceDeclarationReferenceExpressionData(declarationReferenceExpressionFixme)
+		return processDeclarationReferenceExpression(declarationReferenceExpression)
 	}
 
-	func replaceDeclarationReferenceExpressionData( // annotation: open
+	func processDeclarationReferenceExpression( // annotation: open
 		_ declarationReferenceExpression: DeclarationReferenceExpression)
 		-> DeclarationReferenceExpression
 	{
@@ -718,22 +715,21 @@ public class TranspilationPass {
 	}
 
 	func replaceTypeExpression( // annotation: open
-		typeName: String)
+		_ typeExpression: TypeExpression)
 		-> Expression
 	{
-		return TypeExpression(range: nil, typeName: typeName)
+		return typeExpression
 	}
 
 	func replaceSubscriptExpression( // annotation: open
-		subscriptedExpression: Expression,
-		indexExpression: Expression,
-		typeName: String)
+		_ subscriptExpression: SubscriptExpression)
 		-> Expression
 	{
 		return SubscriptExpression(
-			range: nil,
-			subscriptedExpression: replaceExpression(subscriptedExpression),
-			indexExpression: replaceExpression(indexExpression), typeName: typeName)
+			range: subscriptExpression.range,
+			subscriptedExpression: replaceExpression(subscriptExpression.subscriptedExpression),
+			indexExpression: replaceExpression(subscriptExpression.indexExpression),
+			typeName: subscriptExpression.typeName)
 	}
 
 	func replaceArrayExpression( // annotation: open
@@ -964,22 +960,18 @@ public class RemoveParenthesesTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
 	override func replaceSubscriptExpression( // annotation: override
-		subscriptedExpression: Expression,
-		indexExpression: Expression,
-		typeName: String)
+		_ subscriptExpression: SubscriptExpression)
 		-> Expression
 	{
-		if let parentheses = indexExpression as? ParenthesesExpression {
-			return super.replaceSubscriptExpression(
-				subscriptedExpression: subscriptedExpression,
+		if let parentheses = subscriptExpression.indexExpression as? ParenthesesExpression {
+			return super.replaceSubscriptExpression(SubscriptExpression(
+				range: subscriptExpression.range,
+				subscriptedExpression: subscriptExpression.subscriptedExpression,
 				indexExpression: parentheses.expression,
-				typeName: typeName)
+				typeName: subscriptExpression.typeName))
 		}
 
-		return super.replaceSubscriptExpression(
-			subscriptedExpression: subscriptedExpression,
-			indexExpression: indexExpression,
-			typeName: typeName)
+		return super.replaceSubscriptExpression(subscriptExpression)
 	}
 
 	override func replaceParenthesesExpression( // annotation: override
@@ -1314,10 +1306,12 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceTypeExpression( // annotation: override
-		typeName: String)
+		_ typeExpression: TypeExpression)
 		-> Expression
 	{
-		return TypeExpression(range: nil, typeName: removePrefixes(typeName))
+		return TypeExpression(
+			range: typeExpression.range,
+			typeName: removePrefixes(typeExpression.typeName))
 	}
 }
 
@@ -1640,7 +1634,7 @@ public class SelfToThisTranspilationPass: TranspilationPass {
 			rightExpression: replaceExpression(rightExpression))
 	}
 
-	override func replaceDeclarationReferenceExpressionData( // annotation: override
+	override func processDeclarationReferenceExpression( // annotation: override
 		_ expression: DeclarationReferenceExpression)
 		-> DeclarationReferenceExpression
 	{
@@ -1649,7 +1643,7 @@ public class SelfToThisTranspilationPass: TranspilationPass {
 			expression.identifier = "this"
 			return expression
 		}
-		return super.replaceDeclarationReferenceExpressionData(expression)
+		return super.processDeclarationReferenceExpression(expression)
 	}
 }
 
@@ -1703,7 +1697,7 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 public class AnonymousParametersTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
-	override func replaceDeclarationReferenceExpressionData( // annotation: override
+	override func processDeclarationReferenceExpression( // annotation: override
 		_ expression: DeclarationReferenceExpression)
 		-> DeclarationReferenceExpression
 	{
@@ -1713,7 +1707,7 @@ public class AnonymousParametersTranspilationPass: TranspilationPass {
 			return expression
 		}
 		else {
-			return super.replaceDeclarationReferenceExpressionData(expression)
+			return super.processDeclarationReferenceExpression(expression)
 		}
 	}
 
@@ -1891,31 +1885,30 @@ public class RefactorOptionalsInSubscriptsTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
 	override func replaceSubscriptExpression( // annotation: override
-		subscriptedExpression: Expression,
-		indexExpression: Expression,
-		typeName: String)
+		_ subscriptExpression: SubscriptExpression)
 		-> Expression
 	{
-		if subscriptedExpression is OptionalExpression {
+		if subscriptExpression.subscriptedExpression is OptionalExpression {
+			let indexExpressionType = subscriptExpression.indexExpression.swiftType ?? "<<Error>>"
 			return replaceDotExpression(
-				leftExpression: subscriptedExpression,
+				leftExpression: subscriptExpression.subscriptedExpression,
 				rightExpression: CallExpression(
-					range: subscriptedExpression.range,
+					range: subscriptExpression.subscriptedExpression.range,
 					function: DeclarationReferenceExpression(
-						range: subscriptedExpression.range,
+						range: subscriptExpression.subscriptedExpression.range,
 						identifier: "get",
-						typeName: "(\(indexExpression.swiftType ?? "<<Error>>")) -> \(typeName)",
+						typeName: "(\(indexExpressionType)) -> \(subscriptExpression.typeName)",
 						isStandardLibrary: false,
 						isImplicit: false),
-					parameters: TupleExpression(range: nil, pairs:
-						[LabeledExpression(label: nil, expression: indexExpression)]),
-					typeName: typeName))
+					parameters: TupleExpression(
+						range: nil,
+						pairs: [LabeledExpression(
+							label: nil,
+							expression: subscriptExpression.indexExpression), ]),
+					typeName: subscriptExpression.typeName))
 		}
 		else {
-			return super.replaceSubscriptExpression(
-				subscriptedExpression: subscriptedExpression,
-				indexExpression: indexExpression,
-				typeName: typeName)
+			return super.replaceSubscriptExpression(subscriptExpression)
 		}
 	}
 }
@@ -2447,7 +2440,7 @@ public class RecordProtocolsTranspilationPass: TranspilationPass {
 public class RaiseStandardLibraryWarningsTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
-	override func replaceDeclarationReferenceExpressionData( // annotation: override
+	override func processDeclarationReferenceExpression( // annotation: override
 		_ expression: DeclarationReferenceExpression)
 		-> DeclarationReferenceExpression
 	{
@@ -2459,7 +2452,7 @@ public class RaiseStandardLibraryWarningsTranspilationPass: TranspilationPass {
 					sourceFile: ast.sourceFile,
 					sourceFileRange: expression.range)
 		}
-		return super.replaceDeclarationReferenceExpressionData(expression)
+		return super.processDeclarationReferenceExpression(expression)
 	}
 }
 
