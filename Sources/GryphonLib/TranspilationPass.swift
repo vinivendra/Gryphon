@@ -124,16 +124,10 @@ public class TranspilationPass {
 				isImplicit: enumDeclaration.isImplicit)
 		}
 		if let protocolDeclaration = statement as? ProtocolDeclaration {
-			return replaceProtocolDeclaration(
-				protocolName: protocolDeclaration.protocolName,
-				members: protocolDeclaration.members)
+			return replaceProtocolDeclaration(protocolDeclaration)
 		}
 		if let structDeclaration = statement as? StructDeclaration {
-			return replaceStructDeclaration(
-				annotations: structDeclaration.annotations,
-				structName: structDeclaration.structName,
-				inherits: structDeclaration.inherits,
-				members: structDeclaration.members)
+			return replaceStructDeclaration(structDeclaration)
 		}
 		if let initializerDeclaration = statement as? InitializerDeclaration {
 			return replaceInitializerDeclaration(initializerDeclaration)
@@ -288,29 +282,25 @@ public class TranspilationPass {
 	}
 
 	func replaceProtocolDeclaration( // annotation: open
-		protocolName: String,
-		members: ArrayClass<Statement>)
+		_ protocolDeclaration: ProtocolDeclaration)
 		-> ArrayClass<Statement>
 	{
 		return [ProtocolDeclaration(
-			range: nil,
-			protocolName: protocolName,
-			members: replaceStatements(members)), ]
+			range: protocolDeclaration.range,
+			protocolName: protocolDeclaration.protocolName,
+			members: replaceStatements(protocolDeclaration.members)), ]
 	}
 
 	func replaceStructDeclaration( // annotation: open
-		annotations: String?,
-		structName: String,
-		inherits: ArrayClass<String>,
-		members: ArrayClass<Statement>)
+		_ structDeclaration: StructDeclaration)
 		-> ArrayClass<Statement>
 	{
 		return [StructDeclaration(
-			range: nil,
-			annotations: annotations,
-			structName: structName,
-			inherits: inherits,
-			members: replaceStatements(members)), ]
+			range: structDeclaration.range,
+			annotations: structDeclaration.annotations,
+			structName: structDeclaration.structName,
+			inherits: structDeclaration.inherits,
+			members: replaceStatements(structDeclaration.members)), ]
 	}
 
 	func replaceInitializerDeclaration( // annotation: open
@@ -1266,18 +1256,16 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceStructDeclaration( // annotation: override
-		annotations: String?,
-		structName: String,
-		inherits: ArrayClass<String>,
-		members: ArrayClass<Statement>)
+		_ structDeclaration: StructDeclaration)
 		-> ArrayClass<Statement>
 	{
-		let newMembers = sendStaticMembersToCompanionObject(members)
-		return super.replaceStructDeclaration(
-			annotations: annotations,
-			structName: structName,
-			inherits: inherits,
-			members: newMembers)
+		let newMembers = sendStaticMembersToCompanionObject(structDeclaration.members)
+		return super.replaceStructDeclaration(StructDeclaration(
+			range: structDeclaration.range,
+			annotations: structDeclaration.annotations,
+			structName: structDeclaration.structName,
+			inherits: structDeclaration.inherits,
+			members: newMembers))
 	}
 
 	override func replaceEnumDeclaration( // annotation: override
@@ -1345,18 +1333,11 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceStructDeclaration( // annotation: override
-		annotations: String?,
-		structName: String,
-		inherits: ArrayClass<String>,
-		members: ArrayClass<Statement>)
+		_ structDeclaration: StructDeclaration)
 		-> ArrayClass<Statement>
 	{
-		typeNamesStack.append(structName)
-		let result = super.replaceStructDeclaration(
-			annotations: annotations,
-			structName: structName,
-			inherits: inherits,
-			members: members)
+		typeNamesStack.append(structDeclaration.structName)
+		let result = super.replaceStructDeclaration(structDeclaration)
 		typeNamesStack.removeLast()
 		return result
 	}
@@ -1741,17 +1722,15 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceStructDeclaration( // annotation: override
-		annotations: String?,
-		structName: String,
-		inherits: ArrayClass<String>,
-		members: ArrayClass<Statement>)
+		_ structDeclaration: StructDeclaration)
 		-> ArrayClass<Statement>
 	{
-		return super.replaceStructDeclaration(
-			annotations: annotations,
-			structName: structName,
-			inherits: inherits.filter { !TranspilationPass.isASwiftProtocol($0) },
-			members: members)
+		return super.replaceStructDeclaration(StructDeclaration(
+			range: structDeclaration.range,
+			annotations: structDeclaration.annotations,
+			structName: structDeclaration.structName,
+			inherits: structDeclaration.inherits.filter { !TranspilationPass.isASwiftProtocol($0) },
+			members: structDeclaration.members))
 	}
 
 	override func replaceClassDeclaration( // annotation: override
@@ -2518,13 +2497,12 @@ public class RecordProtocolsTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
 	override func replaceProtocolDeclaration( // annotation: override
-		protocolName: String,
-		members: ArrayClass<Statement>)
+		_ protocolDeclaration: ProtocolDeclaration)
 		-> ArrayClass<Statement>
 	{
-		KotlinTranslator.addProtocol(protocolName)
+		KotlinTranslator.addProtocol(protocolDeclaration.protocolName)
 
-		return super.replaceProtocolDeclaration(protocolName: protocolName, members: members)
+		return super.replaceProtocolDeclaration(protocolDeclaration)
 	}
 }
 
@@ -2554,13 +2532,10 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
 	override func replaceStructDeclaration( // annotation: override
-		annotations: String?,
-		structName: String,
-		inherits: ArrayClass<String>,
-		members: ArrayClass<Statement>)
+		_ structDeclaration: StructDeclaration)
 		-> ArrayClass<Statement>
 	{
-		for member in members {
+		for member in structDeclaration.members {
 			if let variableDeclaration = member as? VariableDeclaration {
 				if !variableDeclaration.isImplicit,
 					!variableDeclaration.isStatic,
@@ -2569,11 +2544,11 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 				{
 					let message = "No support for mutable variables in value types: found" +
 						" variable \(variableDeclaration.identifier) inside struct " +
-						structName
+						structDeclaration.structName
 					Compiler.handleWarning(
 						message: message,
 						sourceFile: ast.sourceFile,
-						sourceFileRange: nil)
+						sourceFileRange: variableDeclaration.range)
 					continue
 				}
 			}
@@ -2584,18 +2559,17 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 						functionDeclaration.parameters.map { $0.label + ":" }
 							.joined(separator: ", ") + ")"
 					let message = "No support for mutating methods in value types: found method " +
-						"\(methodName) inside struct \(structName)"
+						"\(methodName) inside struct \(structDeclaration.structName)"
 					Compiler.handleWarning(
 						message: message,
 						sourceFile: ast.sourceFile,
-						sourceFileRange: nil)
+						sourceFileRange: functionDeclaration.range)
 					continue
 				}
 			}
 		}
 
-		return super.replaceStructDeclaration(
-			annotations: annotations, structName: structName, inherits: inherits, members: members)
+		return super.replaceStructDeclaration(structDeclaration)
 	}
 
 	override func replaceEnumDeclaration( // annotation: override
@@ -3355,12 +3329,11 @@ public class FixProtocolContentsTranspilationPass: TranspilationPass {
 	var isInProtocol = false
 
 	override func replaceProtocolDeclaration( // annotation: override
-		protocolName: String,
-		members: ArrayClass<Statement>)
+		_ protocolDeclaration: ProtocolDeclaration)
 		-> ArrayClass<Statement>
 	{
 		isInProtocol = true
-		let result = super.replaceProtocolDeclaration(protocolName: protocolName, members: members)
+		let result = super.replaceProtocolDeclaration(protocolDeclaration)
 		isInProtocol = false
 
 		return result
