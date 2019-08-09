@@ -920,7 +920,7 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 			let getter = variableDeclaration.getter
 		{
 			return [FunctionDeclaration(
-				range: nil,
+				range: variableDeclaration.range,
 				prefix: "toString",
 				parameters: [],
 				returnType: "String",
@@ -1151,7 +1151,8 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
 	private func sendStaticMembersToCompanionObject(
-		_ members: ArrayClass<Statement>)
+		_ members: ArrayClass<Statement>,
+		withRange range: SourceFileRange?)
 		-> ArrayClass<Statement>
 	{
 		let staticMembers = members.filter { isStaticMember($0) }
@@ -1163,7 +1164,7 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 		let nonStaticMembers = members.filter { !isStaticMember($0) }
 
 		let newMembers: ArrayClass<Statement> =
-			[CompanionObject(range: nil, members: staticMembers)]
+			[CompanionObject(range: range, members: staticMembers)]
 		newMembers.append(contentsOf: nonStaticMembers)
 
 		return newMembers
@@ -1192,7 +1193,9 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 		_ classDeclaration: ClassDeclaration)
 		-> ArrayClass<Statement>
 	{
-		let newMembers = sendStaticMembersToCompanionObject(classDeclaration.members)
+		let newMembers = sendStaticMembersToCompanionObject(
+			classDeclaration.members,
+			withRange: classDeclaration.range)
 		return super.replaceClassDeclaration(ClassDeclaration(
 			range: classDeclaration.range,
 			className: classDeclaration.className,
@@ -1204,7 +1207,9 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 		_ structDeclaration: StructDeclaration)
 		-> ArrayClass<Statement>
 	{
-		let newMembers = sendStaticMembersToCompanionObject(structDeclaration.members)
+		let newMembers = sendStaticMembersToCompanionObject(
+			structDeclaration.members,
+			withRange: structDeclaration.range)
 		return super.replaceStructDeclaration(StructDeclaration(
 			range: structDeclaration.range,
 			annotations: structDeclaration.annotations,
@@ -1217,7 +1222,9 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 		_ enumDeclaration: EnumDeclaration)
 		-> ArrayClass<Statement>
 	{
-		let newMembers = sendStaticMembersToCompanionObject(enumDeclaration.members)
+		let newMembers = sendStaticMembersToCompanionObject(
+			enumDeclaration.members,
+			withRange: enumDeclaration.range)
 		return super.replaceEnumDeclaration(EnumDeclaration(
 			range: enumDeclaration.range,
 			access: enumDeclaration.access,
@@ -1317,9 +1324,9 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 				enumExpression.identifier =
 					enumExpression.identifier.capitalizedAsCamelCase()
 				return DotExpression(
-					range: nil,
+					range: dotExpression.range,
 					leftExpression: TypeExpression(
-						range: nil,
+						range: dotExpression.leftExpression.range,
 						typeName: enumTypeExpression.typeName),
 					rightExpression: enumExpression)
 			}
@@ -1327,9 +1334,9 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 				let enumExpression = enumExpression
 				enumExpression.identifier = enumExpression.identifier.upperSnakeCase()
 				return DotExpression(
-					range: nil,
+					range: dotExpression.range,
 					leftExpression: TypeExpression(
-						range: nil,
+						range: dotExpression.leftExpression.range,
 						typeName: enumTypeExpression.typeName),
 					rightExpression: enumExpression)
 			}
@@ -1453,7 +1460,9 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
 
 				if typeExpression.typeName == returnType {
 					let newExpression = removePrefixFromPossibleEnumReference(dotExpression)
-					return [ReturnStatement(range: nil, expression: newExpression)]
+					return [ReturnStatement(
+						range: returnStatement.range,
+						expression: newExpression), ]
 				}
 			}
 		}
@@ -1742,18 +1751,20 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 
 						if arrayElementType != arrayClassElementType {
 							return DotExpression(
-								range: nil,
+								range: callExpression.range,
 								leftExpression: replaceExpression(onlyPair.expression),
 								rightExpression:
 								CallExpression(
-									range: nil,
+									range: callExpression.range,
 									function: DeclarationReferenceExpression(
-										range: nil,
+										range: callExpression.range,
 										identifier: "toMutableList<\(mappedElementType)>",
 										typeName: typeExpression.typeName,
 										isStandardLibrary: false,
 										isImplicit: false),
-									parameters: TupleExpression(range: nil, pairs: []),
+									parameters: TupleExpression(
+										range: callExpression.range,
+										pairs: []),
 									typeName: typeExpression.typeName))
 						}
 					}
@@ -1762,17 +1773,19 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 				}
 				else {
 					return DotExpression(
-						range: nil,
+						range: callExpression.range,
 						leftExpression: replaceExpression(onlyPair.expression),
 						rightExpression: CallExpression(
-							range: nil,
+							range: callExpression.range,
 							function: DeclarationReferenceExpression(
-								range: nil,
+								range: callExpression.range,
 								identifier: "toMutableList<\(mappedElementType)>",
 								typeName: typeExpression.typeName,
 								isStandardLibrary: false,
 								isImplicit: false),
-							parameters: TupleExpression(range: nil, pairs: []),
+							parameters: TupleExpression(
+								range: callExpression.range,
+								pairs: []),
 							typeName: typeExpression.typeName))
 				}
 			}
@@ -1791,10 +1804,10 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 				{
 					if let typeExpression = onlyPair.expression as? TypeExpression {
 						return BinaryOperatorExpression(
-							range: nil,
+							range: callExpression.range,
 							leftExpression: dotExpression.leftExpression,
 							rightExpression: TypeExpression(
-								range: nil,
+								range: callExpression.range,
 								typeName: typeExpression.typeName),
 							operatorSymbol: "as?",
 							typeName: typeExpression.typeName + "?")
@@ -1866,7 +1879,7 @@ public class RefactorOptionalsInSubscriptsTranspilationPass: TranspilationPass {
 						isStandardLibrary: false,
 						isImplicit: false),
 					parameters: TupleExpression(
-						range: nil,
+						range: subscriptExpression.indexExpression.range,
 						pairs: [LabeledExpression(
 							label: nil,
 							expression: subscriptExpression.indexExpression), ]),
@@ -1898,7 +1911,7 @@ public class AddOptionalsInDotChainsTranspilationPass: TranspilationPass {
 		else if let leftDotExpression = dotExpression.leftExpression as? DotExpression {
 			if dotExpressionChainHasOptionals(leftDotExpression.leftExpression) {
 				return DotExpression(
-					range: nil,
+					range: dotExpression.range,
 					leftExpression: addOptionalsToDotExpressionChain(leftDotExpression),
 					rightExpression: dotExpression.rightExpression)
 			}
@@ -2010,7 +2023,7 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 					if let returnExpression = returnStatement.expression {
 						let newStatements = ArrayClass<Statement>(switchCase.statements.dropLast())
 						newStatements.append(ExpressionStatement(
-							range: nil,
+							range: returnExpression.range,
 							expression: returnExpression))
 						newCases.append(SwitchCase(
 							expressions: switchCase.expressions,
@@ -2019,9 +2032,11 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 				}
 			}
 			let conversionExpression =
-				ReturnStatement(range: nil, expression: NilLiteralExpression(range: nil))
+				ReturnStatement(
+					range: switchStatement.range,
+					expression: NilLiteralExpression(range: switchStatement.range))
 			return [SwitchStatement(
-				range: nil,
+				range: switchStatement.range,
 				convertsToExpression: conversionExpression,
 				expression: switchStatement.expression,
 				cases: newCases), ]
@@ -2034,7 +2049,7 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 				if let assignmentStatement = lastStatement as? AssignmentStatement {
 					let newStatements = ArrayClass<Statement>(switchCase.statements.dropLast())
 					newStatements.append(ExpressionStatement(
-						range: nil,
+						range: assignmentStatement.rightHand.range,
 						expression: assignmentStatement.rightHand))
 					newCases.append(SwitchCase(
 						expressions: switchCase.expressions,
@@ -2042,11 +2057,11 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 				}
 			}
 			let conversionExpression = AssignmentStatement(
-				range: nil,
+				range: switchStatement.range,
 				leftHand: assignmentExpression,
-				rightHand: NilLiteralExpression(range: nil))
+				rightHand: NilLiteralExpression(range: switchStatement.range))
 			return [SwitchStatement(
-				range: nil,
+				range: switchStatement.range,
 				convertsToExpression: conversionExpression,
 				expression: switchStatement.expression,
 				cases: newCases), ]
@@ -2085,13 +2100,14 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 							!assignmentExpression.isStandardLibrary,
 							!assignmentExpression.isImplicit
 						{
-							variableDeclaration.expression = NilLiteralExpression(range: nil)
+							variableDeclaration.expression = NilLiteralExpression(
+								range: switchStatement.range)
 							variableDeclaration.getter = nil
 							variableDeclaration.setter = nil
 							variableDeclaration.isStatic = false
 							let newConversionExpression = variableDeclaration
 							result.append(SwitchStatement(
-								range: nil,
+								range: switchStatement.range,
 								convertsToExpression: newConversionExpression,
 								expression: switchStatement.expression,
 								cases: switchStatement.cases))
@@ -2204,10 +2220,10 @@ public class IsOperatorsInSealedClassesTranspilationPass: TranspilationPass {
 					dotExpression.rightExpression as? DeclarationReferenceExpression
 			{
 				return BinaryOperatorExpression(
-					range: nil,
+					range: dotExpression.range,
 					leftExpression: expression,
 					rightExpression: TypeExpression(
-						range: nil,
+						range: typeExpression.range,
 						typeName: "\(typeExpression.typeName)." +
 							"\(declarationReferenceExpression.identifier)"),
 					operatorSymbol: "is",
