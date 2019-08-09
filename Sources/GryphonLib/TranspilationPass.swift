@@ -557,9 +557,7 @@ public class TranspilationPass {
 			return replaceReturnExpression(expression)
 		}
 		if let expression = expression as? DotExpression {
-			return replaceDotExpression(
-				leftExpression: expression.leftExpression,
-				rightExpression: expression.rightExpression)
+			return replaceDotExpression(expression)
 		}
 		if let expression = expression as? BinaryOperatorExpression {
 			return replaceBinaryOperatorExpression(
@@ -749,7 +747,7 @@ public class TranspilationPass {
 	}
 
 	func replaceReturnExpression( // annotation: open
-		_ returnStatement: ReturnStatement)
+		_ returnStatement: ReturnExpression)
 		-> Expression
 	{
 		return ReturnExpression(
@@ -758,14 +756,13 @@ public class TranspilationPass {
 	}
 
 	func replaceDotExpression( // annotation: open
-		leftExpression: Expression,
-		rightExpression: Expression)
+		_ dotExpression: DotExpression)
 		-> Expression
 	{
 		return DotExpression(
-			range: nil,
-			leftExpression: replaceExpression(leftExpression),
-			rightExpression: replaceExpression(rightExpression))
+			range: dotExpression.range,
+			leftExpression: replaceExpression(dotExpression.leftExpression),
+			rightExpression: replaceExpression(dotExpression.rightExpression))
 	}
 
 	func replaceBinaryOperatorExpression( // annotation: open
@@ -1318,12 +1315,11 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
 	override func replaceDotExpression( // annotation: override
-		leftExpression: Expression,
-		rightExpression: Expression)
+		_ dotExpression: DotExpression)
 		-> Expression
 	{
-		if let enumTypeExpression = leftExpression as? TypeExpression,
-			let enumExpression = rightExpression as? DeclarationReferenceExpression
+		if let enumTypeExpression = dotExpression.leftExpression as? TypeExpression,
+			let enumExpression = dotExpression.rightExpression as? DeclarationReferenceExpression
 		{
 			let lastEnumType = String(enumTypeExpression.typeName.split(separator: ".").last!)
 
@@ -1350,8 +1346,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 			}
 		}
 
-		return super.replaceDotExpression(
-			leftExpression: leftExpression, rightExpression: rightExpression)
+		return super.replaceDotExpression(dotExpression)
 	}
 
 	override func replaceEnumDeclaration( // annotation: override
@@ -1426,12 +1421,11 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
 	private var returnTypesStack: ArrayClass<String> = []
 
 	private func removePrefixFromPossibleEnumReference(
-		leftExpression: Expression,
-		rightExpression: Expression)
+		_ dotExpression: DotExpression)
 		-> Expression
 	{
-		if let enumTypeExpression = leftExpression as? TypeExpression,
-			let enumExpression = rightExpression as? DeclarationReferenceExpression
+		if let enumTypeExpression = dotExpression.leftExpression as? TypeExpression,
+			let enumExpression = dotExpression.rightExpression as? DeclarationReferenceExpression
 		{
 			if enumExpression.typeName ==
 					"(\(enumTypeExpression.typeName).Type) -> \(enumTypeExpression.typeName)",
@@ -1441,9 +1435,7 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
 			}
 		}
 
-		return super.replaceDotExpression(
-			leftExpression: leftExpression,
-			rightExpression: rightExpression)
+		return super.replaceDotExpression(dotExpression)
 	}
 
 	override func processFunctionDeclaration( // annotation: override
@@ -1471,9 +1463,7 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
 				}
 
 				if typeExpression.typeName == returnType {
-					let newExpression = removePrefixFromPossibleEnumReference(
-						leftExpression: dotExpression.leftExpression,
-						rightExpression: dotExpression.rightExpression)
+					let newExpression = removePrefixFromPossibleEnumReference(dotExpression)
 					return [ReturnStatement(range: nil, expression: newExpression)]
 				}
 			}
@@ -1612,22 +1602,20 @@ public class SelfToThisTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
 	override func replaceDotExpression( // annotation: override
-		leftExpression: Expression,
-		rightExpression: Expression)
+		_ dotExpression: DotExpression)
 		-> Expression
 	{
-		if let declarationReferenceExpression = leftExpression as? DeclarationReferenceExpression {
+		if let declarationReferenceExpression =
+			dotExpression.leftExpression as? DeclarationReferenceExpression
+		{
 			if declarationReferenceExpression.identifier == "self",
 				declarationReferenceExpression.isImplicit
 			{
-				return replaceExpression(rightExpression)
+				return replaceExpression(dotExpression.rightExpression)
 			}
 		}
 
-		return DotExpression(
-			range: nil,
-			leftExpression: replaceExpression(leftExpression),
-			rightExpression: replaceExpression(rightExpression))
+		return super.replaceDotExpression(dotExpression)
 	}
 
 	override func processDeclarationReferenceExpression( // annotation: override
@@ -1886,7 +1874,8 @@ public class RefactorOptionalsInSubscriptsTranspilationPass: TranspilationPass {
 	{
 		if subscriptExpression.subscriptedExpression is OptionalExpression {
 			let indexExpressionType = subscriptExpression.indexExpression.swiftType ?? "<<Error>>"
-			return replaceDotExpression(
+			return replaceDotExpression(DotExpression(
+				range: subscriptExpression.range,
 				leftExpression: subscriptExpression.subscriptedExpression,
 				rightExpression: CallExpression(
 					range: subscriptExpression.subscriptedExpression.range,
@@ -1901,7 +1890,7 @@ public class RefactorOptionalsInSubscriptsTranspilationPass: TranspilationPass {
 						pairs: [LabeledExpression(
 							label: nil,
 							expression: subscriptExpression.indexExpression), ]),
-					typeName: subscriptExpression.typeName))
+					typeName: subscriptExpression.typeName)))
 		}
 		else {
 			return super.replaceSubscriptExpression(subscriptExpression)
@@ -1920,57 +1909,50 @@ public class AddOptionalsInDotChainsTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
 	override func replaceDotExpression( // annotation: override
-		leftExpression: Expression,
-		rightExpression: Expression)
+		_ dotExpression: DotExpression)
 		-> Expression
 	{
 		// FIXME:
-		if rightExpression is OptionalExpression {
+		if dotExpression.rightExpression is OptionalExpression {
 		}
-		else if let dotExpression = leftExpression as? DotExpression {
-			if dotExpressionChainHasOptionals(dotExpression.leftExpression) {
+		else if let leftDotExpression = dotExpression.leftExpression as? DotExpression {
+			if dotExpressionChainHasOptionals(leftDotExpression.leftExpression) {
 				return DotExpression(
 					range: nil,
-					leftExpression: addOptionalsToDotExpressionChain(
-						leftExpression: dotExpression.leftExpression,
-						rightExpression: dotExpression.rightExpression),
-					rightExpression: rightExpression)
+					leftExpression: addOptionalsToDotExpressionChain(leftDotExpression),
+					rightExpression: dotExpression.rightExpression)
 			}
 		}
 
-		return super.replaceDotExpression(
-			leftExpression: leftExpression,
-			rightExpression: rightExpression)
+		return super.replaceDotExpression(dotExpression)
 	}
 
 	func addOptionalsToDotExpressionChain(
-		leftExpression: Expression,
-		rightExpression: Expression)
+		_ dotExpression: DotExpression)
 		-> Expression
 	{
 		// FIXME:
-		if rightExpression is OptionalExpression {
+		if dotExpression.rightExpression is OptionalExpression {
 		}
-		else if dotExpressionChainHasOptionals(leftExpression) {
+		else if dotExpressionChainHasOptionals(dotExpression.leftExpression) {
 
 			let processedLeftExpression: Expression
-			if let dotExpression = leftExpression as? DotExpression {
-				processedLeftExpression = addOptionalsToDotExpressionChain(
-					leftExpression: dotExpression.leftExpression,
-					rightExpression: dotExpression.rightExpression)
+			if let leftDotExpression = dotExpression.leftExpression as? DotExpression {
+				processedLeftExpression = addOptionalsToDotExpressionChain(leftDotExpression)
 			}
 			else {
-				processedLeftExpression = leftExpression
+				processedLeftExpression = dotExpression.leftExpression
 			}
 
-			return addOptionalsToDotExpressionChain(
+			return addOptionalsToDotExpressionChain(DotExpression(
+				range: dotExpression.range,
 				leftExpression: processedLeftExpression,
-				rightExpression: OptionalExpression(range: nil, expression: rightExpression))
+				rightExpression: OptionalExpression(
+					range: dotExpression.rightExpression.range,
+					expression: dotExpression.rightExpression)))
 		}
 
-		return super.replaceDotExpression(
-			leftExpression: leftExpression,
-			rightExpression: rightExpression)
+		return super.replaceDotExpression(dotExpression)
 	}
 
 	private func dotExpressionChainHasOptionals(_ expression: Expression) -> Bool {
@@ -2545,8 +2527,7 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 	}
 
 	override func replaceDotExpression( // annotation: override
-		leftExpression: Expression,
-		rightExpression: Expression)
+		_ dotExpression: DotExpression)
 		-> Expression
 	{
 		// TODO: automatically add parentheses around or's in if conditions otherwise they can
@@ -2554,9 +2535,9 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 
 		// If the expression is being transformed into a mutableList or a mutableMap it's probably
 		// ok.
-		if let leftExpressionType = leftExpression.swiftType,
+		if let leftExpressionType = dotExpression.leftExpression.swiftType,
 			leftExpressionType.hasPrefix("["),
-			let callExpression = rightExpression as? CallExpression {
+			let callExpression = dotExpression.rightExpression as? CallExpression {
 			if (callExpression.typeName.hasPrefix("ArrayClass") ||
 					callExpression.typeName.hasPrefix("DictionaryClass")),
 				let declarationReference =
@@ -2566,17 +2547,12 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 					(declarationReference.typeName.hasPrefix("ArrayClass") ||
 						declarationReference.typeName.hasPrefix("DictionaryClass"))
 				{
-					return DotExpression(
-						range: nil,
-						leftExpression: leftExpression,
-						rightExpression: rightExpression)
+					return dotExpression
 				}
 			}
 		}
 
-		return super.replaceDotExpression(
-			leftExpression: leftExpression,
-			rightExpression: rightExpression)
+		return super.replaceDotExpression(dotExpression)
 	}
 }
 
