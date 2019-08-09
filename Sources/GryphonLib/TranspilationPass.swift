@@ -578,32 +578,31 @@ public class TranspilationPass {
 			return replaceClosureExpression(expression)
 		}
 		if let expression = expression as? LiteralIntExpression {
-			return replaceLiteralIntExpression(value: expression.value)
+			return replaceLiteralIntExpression(expression)
 		}
 		if let expression = expression as? LiteralUIntExpression {
-			return replaceLiteralUIntExpression(value: expression.value)
+			return replaceLiteralUIntExpression(expression)
 		}
 		if let expression = expression as? LiteralDoubleExpression {
-			return replaceLiteralDoubleExpression(value: expression.value)
+			return replaceLiteralDoubleExpression(expression)
 		}
 		if let expression = expression as? LiteralFloatExpression {
-			return replaceLiteralFloatExpression(value: expression.value)
+			return replaceLiteralFloatExpression(expression)
 		}
 		if let expression = expression as? LiteralBoolExpression {
-			return replaceLiteralBoolExpression(value: expression.value)
+			return replaceLiteralBoolExpression(expression)
 		}
 		if let expression = expression as? LiteralStringExpression {
-			return replaceLiteralStringExpression(value: expression.value)
+			return replaceLiteralStringExpression(expression)
 		}
 		if let expression = expression as? LiteralCharacterExpression {
-			return replaceLiteralCharacterExpression(value: expression.value)
+			return replaceLiteralCharacterExpression(expression)
 		}
-		if expression is NilLiteralExpression {
-			return replaceNilLiteralExpression()
+		if let expression = expression as? NilLiteralExpression {
+			return replaceNilLiteralExpression(expression)
 		}
 		if let expression = expression as? InterpolatedStringLiteralExpression {
-			return replaceInterpolatedStringLiteralExpression(
-				expressions: expression.expressions)
+			return replaceInterpolatedStringLiteralExpression(expression)
 		}
 		if let expression = expression as? TupleExpression {
 			return replaceTupleExpression(pairs: expression.pairs)
@@ -822,45 +821,69 @@ public class TranspilationPass {
 			typeName: closureExpression.typeName)
 	}
 
-	func replaceLiteralIntExpression(value: Int64) -> Expression { // annotation: open
-		return LiteralIntExpression(range: nil, value: value)
+	func replaceLiteralIntExpression( // annotation: open
+		_ literalIntExpression: LiteralIntExpression)
+		-> Expression
+	{
+		return literalIntExpression
 	}
 
-	func replaceLiteralUIntExpression(value: UInt64) -> Expression { // annotation: open
-		return LiteralUIntExpression(range: nil, value: value)
+	func replaceLiteralUIntExpression( // annotation: open
+		_ literalUIntExpression: LiteralUIntExpression)
+		-> Expression {
+		return literalUIntExpression
 	}
 
-	func replaceLiteralDoubleExpression(value: Double) -> Expression { // annotation: open
-		return LiteralDoubleExpression(range: nil, value: value)
+	func replaceLiteralDoubleExpression( // annotation: open
+		_ literalDoubleExpression: LiteralDoubleExpression)
+		-> Expression
+	{
+		return literalDoubleExpression
 	}
 
-	func replaceLiteralFloatExpression(value: Float) -> Expression { // annotation: open
-		return LiteralFloatExpression(range: nil, value: value)
+	func replaceLiteralFloatExpression( // annotation: open
+		_ literalFloatExpression: LiteralFloatExpression)
+		-> Expression
+	{
+		return literalFloatExpression
 	}
 
-	func replaceLiteralBoolExpression(value: Bool) -> Expression { // annotation: open
-		return LiteralBoolExpression(range: nil, value: value)
+	func replaceLiteralBoolExpression( // annotation: open
+		_ literalBoolExpression: LiteralBoolExpression)
+		-> Expression
+	{
+		return literalBoolExpression
 	}
 
-	func replaceLiteralStringExpression(value: String) -> Expression { // annotation: open
-		return LiteralStringExpression(range: nil, value: value)
+	func replaceLiteralStringExpression( // annotation: open
+		_ literalStringExpression: LiteralStringExpression)
+		-> Expression
+	{
+		return literalStringExpression
 	}
 
-	func replaceLiteralCharacterExpression(value: String) -> Expression { // annotation: open
-		return LiteralCharacterExpression(range: nil, value: value)
+	func replaceLiteralCharacterExpression( // annotation: open
+		_ literalCharacterExpression: LiteralCharacterExpression)
+		-> Expression
+	{
+		return literalCharacterExpression
 	}
 
-	func replaceNilLiteralExpression() -> Expression { // annotation: open
-		return NilLiteralExpression(range: nil)
+	func replaceNilLiteralExpression( // annotation: open
+		_ nilLiteralExpression: NilLiteralExpression)
+		-> Expression
+	{
+		return nilLiteralExpression
 	}
 
 	func replaceInterpolatedStringLiteralExpression( // annotation: open
-		expressions: ArrayClass<Expression>)
+		_ interpolatedStringLiteralExpression: InterpolatedStringLiteralExpression)
 		-> Expression
 	{
 		return InterpolatedStringLiteralExpression(
-			range: nil,
-			expressions: expressions.map { replaceExpression($0) })
+			range: interpolatedStringLiteralExpression.range,
+			expressions: interpolatedStringLiteralExpression.expressions
+				.map { replaceExpression($0) })
 	}
 
 	func replaceTupleExpression( // annotation: open
