@@ -605,13 +605,10 @@ public class TranspilationPass {
 			return replaceInterpolatedStringLiteralExpression(expression)
 		}
 		if let expression = expression as? TupleExpression {
-			return replaceTupleExpression(pairs: expression.pairs)
+			return replaceTupleExpression(expression)
 		}
 		if let expression = expression as? TupleShuffleExpression {
-			return replaceTupleShuffleExpression(
-				labels: expression.labels,
-				indices: expression.indices,
-				expressions: expression.expressions)
+			return replaceTupleShuffleExpression(expression)
 		}
 		if expression is ErrorExpression {
 			return ErrorExpression(range: nil)
@@ -887,27 +884,25 @@ public class TranspilationPass {
 	}
 
 	func replaceTupleExpression( // annotation: open
-		pairs: ArrayClass<LabeledExpression>)
+		_ tupleExpression: TupleExpression)
 		-> Expression
 	{
 		return TupleExpression(
-			range: nil,
-			pairs: pairs.map {
+			range: tupleExpression.range,
+			pairs: tupleExpression.pairs.map {
 				LabeledExpression(label: $0.label, expression: replaceExpression($0.expression))
 			})
 	}
 
 	func replaceTupleShuffleExpression( // annotation: open
-		labels: ArrayClass<String>,
-		indices: ArrayClass<TupleShuffleIndex>,
-		expressions: ArrayClass<Expression>)
+		_ tupleShuffleExpression: TupleShuffleExpression)
 		-> Expression
 	{
 		return TupleShuffleExpression(
-			range: nil,
-			labels: labels,
-			indices: indices,
-			expressions: expressions.map { replaceExpression($0) })
+			range: tupleShuffleExpression.range,
+			labels: tupleShuffleExpression.labels,
+			indices: tupleShuffleExpression.indices,
+			expressions: tupleShuffleExpression.expressions.map { replaceExpression($0) })
 	}
 }
 
