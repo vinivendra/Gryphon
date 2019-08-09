@@ -548,18 +548,13 @@ public class TranspilationPass {
 			return replaceSubscriptExpression(expression)
 		}
 		if let expression = expression as? ArrayExpression {
-			return replaceArrayExpression(
-				elements: expression.elements,
-				typeName: expression.typeName)
+			return replaceArrayExpression(expression)
 		}
 		if let expression = expression as? DictionaryExpression {
-			return replaceDictionaryExpression(
-				keys: expression.keys,
-				values: expression.values,
-				typeName: expression.typeName)
+			return replaceDictionaryExpression(expression)
 		}
 		if let expression = expression as? ReturnExpression {
-			return replaceReturnExpression(innerExpression: expression.expression)
+			return replaceReturnExpression(expression)
 		}
 		if let expression = expression as? DotExpression {
 			return replaceDotExpression(
@@ -733,32 +728,33 @@ public class TranspilationPass {
 	}
 
 	func replaceArrayExpression( // annotation: open
-		elements: ArrayClass<Expression>,
-		typeName: String)
+		_ arrayExpression: ArrayExpression)
 		-> Expression
 	{
 		return ArrayExpression(
-			range: nil,
-			elements: elements.map { replaceExpression($0) },
-			typeName: typeName)
+			range: arrayExpression.range,
+			elements: arrayExpression.elements.map { replaceExpression($0) },
+			typeName: arrayExpression.typeName)
 	}
 
 	func replaceDictionaryExpression( // annotation: open
-		keys: ArrayClass<Expression>,
-		values: ArrayClass<Expression>,
-		typeName: String)
+		_ dictionaryExpression: DictionaryExpression)
 		-> Expression
 	{
-		return DictionaryExpression(range: nil, keys: keys, values: values, typeName: typeName)
+		return DictionaryExpression(
+			range: dictionaryExpression.range,
+			keys: dictionaryExpression.keys.map { replaceExpression($0) },
+			values: dictionaryExpression.values.map { replaceExpression($0) },
+			typeName: dictionaryExpression.typeName)
 	}
 
 	func replaceReturnExpression( // annotation: open
-		innerExpression: Expression?)
+		_ returnStatement: ReturnStatement)
 		-> Expression
 	{
 		return ReturnExpression(
-			range: nil,
-			expression: innerExpression.map { replaceExpression($0) })
+			range: returnStatement.range,
+			expression: returnStatement.expression.map { replaceExpression($0) })
 	}
 
 	func replaceDotExpression( // annotation: open
