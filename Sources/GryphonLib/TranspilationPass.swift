@@ -560,38 +560,22 @@ public class TranspilationPass {
 			return replaceDotExpression(expression)
 		}
 		if let expression = expression as? BinaryOperatorExpression {
-			return replaceBinaryOperatorExpression(
-				leftExpression: expression.leftExpression,
-				rightExpression: expression.rightExpression,
-				operatorSymbol: expression.operatorSymbol,
-				typeName: expression.typeName)
+			return replaceBinaryOperatorExpression(expression)
 		}
 		if let expression = expression as? PrefixUnaryExpression {
-			return replacePrefixUnaryExpression(
-				subExpression: expression.subExpression,
-				operatorSymbol: expression.operatorSymbol,
-				typeName: expression.typeName)
+			return replacePrefixUnaryExpression(expression)
 		}
 		if let expression = expression as? PostfixUnaryExpression {
-			return replacePostfixUnaryExpression(
-				subExpression: expression.subExpression,
-				operatorSymbol: expression.operatorSymbol,
-				typeName: expression.typeName)
+			return replacePostfixUnaryExpression(expression)
 		}
 		if let expression = expression as? IfExpression {
-			return replaceIfExpression(
-				condition: expression.condition,
-				trueExpression: expression.trueExpression,
-				falseExpression: expression.falseExpression)
+			return replaceIfExpression(expression)
 		}
 		if let expression = expression as? CallExpression {
 			return replaceCallExpression(expression)
 		}
 		if let expression = expression as? ClosureExpression {
-			return replaceClosureExpression(
-				parameters: expression.parameters,
-				statements: expression.statements,
-				typeName: expression.typeName)
+			return replaceClosureExpression(expression)
 		}
 		if let expression = expression as? LiteralIntExpression {
 			return replaceLiteralIntExpression(value: expression.value)
@@ -766,66 +750,57 @@ public class TranspilationPass {
 	}
 
 	func replaceBinaryOperatorExpression( // annotation: open
-		leftExpression: Expression,
-		rightExpression: Expression,
-		operatorSymbol: String,
-		typeName: String) -> Expression
+		_ binaryOperatorExpression: BinaryOperatorExpression) -> Expression
 	{
 		return BinaryOperatorExpression(
-			range: nil,
-			leftExpression: replaceExpression(leftExpression),
-			rightExpression: replaceExpression(rightExpression),
-			operatorSymbol: operatorSymbol,
-			typeName: typeName)
+			range: binaryOperatorExpression.range,
+			leftExpression: replaceExpression(binaryOperatorExpression.leftExpression),
+			rightExpression: replaceExpression(binaryOperatorExpression.rightExpression),
+			operatorSymbol: binaryOperatorExpression.operatorSymbol,
+			typeName: binaryOperatorExpression.typeName)
 	}
 
 	func replacePrefixUnaryExpression( // annotation: open
-		subExpression: Expression,
-		operatorSymbol: String,
-		typeName: String)
+		_ prefixUnaryExpression: PrefixUnaryExpression)
 		-> Expression
 	{
 		return PrefixUnaryExpression(
-			range: nil,
-			subExpression: replaceExpression(subExpression),
-			operatorSymbol: operatorSymbol,
-			typeName: typeName)
+			range: prefixUnaryExpression.range,
+			subExpression: replaceExpression(prefixUnaryExpression.subExpression),
+			operatorSymbol: prefixUnaryExpression.operatorSymbol,
+			typeName: prefixUnaryExpression.typeName)
 	}
 
 	func replacePostfixUnaryExpression( // annotation: open
-		subExpression: Expression,
-		operatorSymbol: String,
-		typeName: String)
+		_ postfixUnaryExpression: PostfixUnaryExpression)
 		-> Expression
 	{
 		return PostfixUnaryExpression(
-			range: nil,
-			subExpression: replaceExpression(subExpression),
-			operatorSymbol: operatorSymbol,
-			typeName: typeName)
+			range: postfixUnaryExpression.range,
+			subExpression: replaceExpression(postfixUnaryExpression.subExpression),
+			operatorSymbol: postfixUnaryExpression.operatorSymbol,
+			typeName: postfixUnaryExpression.typeName)
 	}
 
 	func replaceIfExpression( // annotation: open
-		condition: Expression,
-		trueExpression: Expression,
-		falseExpression: Expression)
+		_ ifExpression: IfExpression)
 		-> Expression
 	{
 		return IfExpression(
-			range: nil,
-			condition: replaceExpression(condition),
-			trueExpression: replaceExpression(trueExpression),
-			falseExpression: replaceExpression(falseExpression))
+			range: ifExpression.range,
+			condition: replaceExpression(ifExpression.condition),
+			trueExpression: replaceExpression(ifExpression.trueExpression),
+			falseExpression: replaceExpression(ifExpression.falseExpression))
 	}
 
 	func replaceCallExpression( // annotation: open
 		_ callExpressionFixme: CallExpression)
 		-> Expression
 	{
-		return replaceCallExpressionData(callExpressionFixme)
+		return processCallExpression(callExpressionFixme)
 	}
 
-	func replaceCallExpressionData( // annotation: open
+	func processCallExpression( // annotation: open
 		_ callExpression: CallExpression)
 		-> CallExpression
 	{
@@ -837,16 +812,14 @@ public class TranspilationPass {
 	}
 
 	func replaceClosureExpression( // annotation: open
-		parameters: ArrayClass<LabeledType>,
-		statements: ArrayClass<Statement>,
-		typeName: String)
+		_ closureExpression: ClosureExpression)
 		-> Expression
 	{
 		return ClosureExpression(
-			range: nil,
-			parameters: parameters,
-			statements: replaceStatements(statements),
-			typeName: typeName)
+			range: closureExpression.range,
+			parameters: closureExpression.parameters,
+			statements: replaceStatements(closureExpression.statements),
+			typeName: closureExpression.typeName)
 	}
 
 	func replaceLiteralIntExpression(value: Int64) -> Expression { // annotation: open
@@ -984,37 +957,35 @@ public class RemoveParenthesesTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceIfExpression( // annotation: override
-		condition: Expression,
-		trueExpression: Expression,
-		falseExpression: Expression)
+		_ ifExpression: IfExpression)
 		-> Expression
 	{
 		let replacedCondition: Expression
-		if let condition = condition as? ParenthesesExpression {
+		if let condition = ifExpression.condition as? ParenthesesExpression {
 			replacedCondition = condition.expression
 		}
 		else {
-			replacedCondition = condition
+			replacedCondition = ifExpression.condition
 		}
 
 		let replacedTrueExpression: Expression
-		if let trueExpression = trueExpression as? ParenthesesExpression {
+		if let trueExpression = ifExpression.trueExpression as? ParenthesesExpression {
 			replacedTrueExpression = trueExpression.expression
 		}
 		else {
-			replacedTrueExpression = trueExpression
+			replacedTrueExpression = ifExpression.trueExpression
 		}
 
 		let replacedFalseExpression: Expression
-		if let falseExpression = falseExpression as? ParenthesesExpression {
+		if let falseExpression = ifExpression.falseExpression as? ParenthesesExpression {
 			replacedFalseExpression = falseExpression.expression
 		}
 		else {
-			replacedFalseExpression = falseExpression
+			replacedFalseExpression = ifExpression.falseExpression
 		}
 
 		return IfExpression(
-			range: nil,
+			range: ifExpression.range,
 			condition: replacedCondition,
 			trueExpression: replacedTrueExpression,
 			falseExpression: replacedFalseExpression)
@@ -1477,10 +1448,7 @@ public class RenameOperatorsTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
 	override func replaceBinaryOperatorExpression( // annotation: override
-		leftExpression: Expression,
-		rightExpression: Expression,
-		operatorSymbol: String,
-		typeName: String)
+		_ binaryOperatorExpression: BinaryOperatorExpression)
 		-> Expression
 	{
         let operatorTranslations: DictionaryClass = [
@@ -1491,19 +1459,16 @@ public class RenameOperatorsTranspilationPass: TranspilationPass {
             "|": "or",
             "^": "xor",
         ]
-		if let operatorTranslation = operatorTranslations[operatorSymbol] {
-			return super.replaceBinaryOperatorExpression(
-				leftExpression: leftExpression,
-				rightExpression: rightExpression,
+		if let operatorTranslation = operatorTranslations[binaryOperatorExpression.operatorSymbol] {
+			return super.replaceBinaryOperatorExpression(BinaryOperatorExpression(
+				range: binaryOperatorExpression.range,
+				leftExpression: binaryOperatorExpression.leftExpression,
+				rightExpression: binaryOperatorExpression.rightExpression,
 				operatorSymbol: operatorTranslation,
-				typeName: typeName)
+				typeName: binaryOperatorExpression.typeName))
 		}
 		else {
-			return super.replaceBinaryOperatorExpression(
-				leftExpression: leftExpression,
-				rightExpression: rightExpression,
-				operatorSymbol: operatorSymbol,
-				typeName: typeName)
+			return super.replaceBinaryOperatorExpression(binaryOperatorExpression)
 		}
 	}
 }
@@ -1696,20 +1661,20 @@ public class AnonymousParametersTranspilationPass: TranspilationPass {
 	}
 
 	override func replaceClosureExpression( // annotation: override
-		parameters: ArrayClass<LabeledType>,
-		statements: ArrayClass<Statement>,
-		typeName: String)
+		_ closureExpression: ClosureExpression)
 		-> Expression
 	{
-		if parameters.count == 1,
-			parameters[0].label == "$0"
+		if closureExpression.parameters.count == 1,
+			closureExpression.parameters[0].label == "$0"
 		{
-			return super.replaceClosureExpression(
-				parameters: [], statements: statements, typeName: typeName)
+			return super.replaceClosureExpression(ClosureExpression(
+				range: closureExpression.range,
+				parameters: [],
+				statements: closureExpression.statements,
+				typeName: closureExpression.typeName))
 		}
 		else {
-			return super.replaceClosureExpression(
-				parameters: parameters, statements: statements, typeName: typeName)
+			return super.replaceClosureExpression(closureExpression)
 		}
 	}
 }
@@ -1833,15 +1798,12 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 	var isInClosure = false
 
 	override func replaceClosureExpression( // annotation: override
-		parameters: ArrayClass<LabeledType>,
-		statements: ArrayClass<Statement>,
-		typeName: String)
+		_ closureExpression: ClosureExpression)
 		-> Expression
 	{
 		isInClosure = true
 		defer { isInClosure = false }
-		return super.replaceClosureExpression(
-			parameters: parameters, statements: statements, typeName: typeName)
+		return super.replaceClosureExpression(closureExpression)
 	}
 
 	override func replaceReturnStatement( // annotation: override
