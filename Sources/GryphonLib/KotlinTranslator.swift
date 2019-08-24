@@ -277,26 +277,13 @@ public class KotlinTranslator {
 				AST: subtree)
 		}
 		if let typealiasDeclaration = subtree as? TypealiasDeclaration {
-			return try translateTypealias(
-				identifier: typealiasDeclaration.identifier,
-				typeName: typealiasDeclaration.typeName,
-				isImplicit: typealiasDeclaration.isImplicit,
-				withIndentation: indentation)
+			return try translateTypealias(typealiasDeclaration, withIndentation: indentation)
 		}
 		if let classDeclaration = subtree as? ClassDeclaration {
-			return try translateClassDeclaration(
-				className: classDeclaration.className,
-				inherits: classDeclaration.inherits,
-				members: classDeclaration.members,
-				withIndentation: indentation)
+			return try translateClassDeclaration(classDeclaration, withIndentation: indentation)
 		}
 		if let structDeclaration = subtree as? StructDeclaration {
-			return try translateStructDeclaration(
-				annotations: structDeclaration.annotations,
-				structName: structDeclaration.structName,
-				inherits: structDeclaration.inherits,
-				members: structDeclaration.members,
-				withIndentation: indentation)
+			return try translateStructDeclaration(structDeclaration, withIndentation: indentation)
 		}
 		if let companionObject = subtree as? CompanionObject {
 			return try translateCompanionObject(
@@ -502,27 +489,23 @@ public class KotlinTranslator {
 	}
 
 	private func translateTypealias(
-		identifier: String,
-		typeName: String,
-		isImplicit: Bool,
+		_ typealiasDeclaration: TypealiasDeclaration,
 		withIndentation indentation: String)
 		throws -> String
 	{
-		let translatedType = translateType(typeName)
-		return "\(indentation)typealias \(identifier) = \(translatedType)\n"
+		let translatedType = translateType(typealiasDeclaration.typeName)
+		return "\(indentation)typealias \(typealiasDeclaration.identifier) = \(translatedType)\n"
 	}
 
 	private func translateClassDeclaration(
-		className: String,
-		inherits: ArrayClass<String>,
-		members: ArrayClass<Statement>,
+		_ classDeclaration: ClassDeclaration,
 		withIndentation indentation: String)
 		throws -> String
 	{
-		var result = "\(indentation)open class \(className)"
+		var result = "\(indentation)open class \(classDeclaration.className)"
 
-		if !inherits.isEmpty {
-			let translatedInheritances = inherits.map { translateType($0) }
+		if !classDeclaration.inherits.isEmpty {
+			let translatedInheritances = classDeclaration.inherits.map { translateType($0) }
 			result += ": " + translatedInheritances.joined(separator: ", ")
 		}
 
@@ -531,7 +514,7 @@ public class KotlinTranslator {
 		let increasedIndentation = increaseIndentation(indentation)
 
 		let classContents = try translateSubtrees(
-			members,
+			classDeclaration.members,
 			withIndentation: increasedIndentation)
 
 		result += classContents + "\(indentation)}\n"
@@ -542,21 +525,19 @@ public class KotlinTranslator {
 	/// If a value type's members are all immutable, that value type can safely be translated as a
 	/// class. Source: https://forums.swift.org/t/are-immutable-structs-like-classes/16270
 	private func translateStructDeclaration(
-		annotations: String?,
-		structName: String,
-		inherits: ArrayClass<String>,
-		members: ArrayClass<Statement>,
+		_ structDeclaration: StructDeclaration,
 		withIndentation indentation: String)
 		throws -> String
 	{
 		let increasedIndentation = increaseIndentation(indentation)
 
-		let annotationsString = annotations.map { "\(indentation)\($0)\n" } ?? ""
+		let annotationsString = structDeclaration.annotations.map { "\(indentation)\($0)\n" } ?? ""
 
-		var result = "\(annotationsString)\(indentation)data class \(structName)(\n"
+		var result = "\(annotationsString)\(indentation)data class " +
+			"\(structDeclaration.structName)(\n"
 
-		let properties = members.filter { statementIsStructProperty($0) }
-		let otherMembers = members.filter { !statementIsStructProperty($0) }
+		let properties = structDeclaration.members.filter { statementIsStructProperty($0) }
+		let otherMembers = structDeclaration.members.filter { !statementIsStructProperty($0) }
 
 		// Translate properties individually, dropping the newlines at the end
 		let propertyTranslations = try properties.map {
@@ -566,8 +547,8 @@ public class KotlinTranslator {
 
 		result += propertiesTranslation + "\n\(indentation))"
 
-		if !inherits.isEmpty {
-			var translatedInheritedTypes = inherits.map { translateType($0) }
+		if !structDeclaration.inherits.isEmpty {
+			var translatedInheritedTypes = structDeclaration.inherits.map { translateType($0) }
 			translatedInheritedTypes = translatedInheritedTypes.map {
 				KotlinTranslator.protocols.contains($0) ?
 					$0 :
