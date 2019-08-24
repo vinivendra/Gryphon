@@ -1161,10 +1161,7 @@ public class KotlinTranslator {
 		throws -> String
 	{
 		if let templateExpression = expression as? TemplateExpression {
-			return try translateTemplateExpression(
-				pattern: templateExpression.pattern,
-				matches: templateExpression.matches,
-				withIndentation: indentation)
+			return try translateTemplateExpression(templateExpression, withIndentation: indentation)
 		}
 		if let literalCodeExpression = expression as? LiteralCodeExpression {
 			return translateLiteralCodeExpression(string: literalCodeExpression.string)
@@ -1173,35 +1170,21 @@ public class KotlinTranslator {
 			return translateLiteralCodeExpression(string: literalDeclarationExpression.string)
 		}
 		if let arrayExpression = expression as? ArrayExpression {
-			return try translateArrayExpression(
-				elements: arrayExpression.elements,
-				typeName: arrayExpression.typeName,
-				withIndentation: indentation)
+			return try translateArrayExpression(arrayExpression, withIndentation: indentation)
 		}
 		if let dictionaryExpression = expression as? DictionaryExpression {
 			return try translateDictionaryExpression(
-				keys: dictionaryExpression.keys,
-				values: dictionaryExpression.values,
-				typeName: dictionaryExpression.typeName,
-				withIndentation: indentation)
+				dictionaryExpression, withIndentation: indentation)
 		}
 		if let binaryOperatorExpression = expression as? BinaryOperatorExpression {
 			return try translateBinaryOperatorExpression(
-				leftExpression: binaryOperatorExpression.leftExpression,
-				rightExpression: binaryOperatorExpression.rightExpression,
-				operatorSymbol: binaryOperatorExpression.operatorSymbol,
-				typeName: binaryOperatorExpression.typeName,
-				withIndentation: indentation)
+				binaryOperatorExpression, withIndentation: indentation)
 		}
 		if let callExpression = expression as? CallExpression {
 			return try translateCallExpression(callExpression, withIndentation: indentation)
 		}
 		if let closureExpression = expression as? ClosureExpression {
-			return try translateClosureExpression(
-				parameters: closureExpression.parameters,
-				statements: closureExpression.statements,
-				typeName: closureExpression.typeName,
-				withIndentation: indentation)
+			return try translateClosureExpression(closureExpression, withIndentation: indentation)
 		}
 		if let declarationReferenceExpression = expression as? DeclarationReferenceExpression {
 			return translateDeclarationReferenceExpression(declarationReferenceExpression)
@@ -1328,12 +1311,11 @@ public class KotlinTranslator {
 	}
 
 	private func translateArrayExpression(
-		elements: ArrayClass<Expression>,
-		typeName: String,
+		_ arrayExpression: ArrayExpression,
 		withIndentation indentation: String)
 		throws -> String
 	{
-		let expressionsString = try elements.map {
+		let expressionsString = try arrayExpression.elements.map {
 			try translateExpression($0, withIndentation: indentation)
 			}.joined(separator: ", ")
 
@@ -1341,16 +1323,16 @@ public class KotlinTranslator {
 	}
 
 	private func translateDictionaryExpression(
-		keys: ArrayClass<Expression>,
-		values: ArrayClass<Expression>,
-		typeName: String,
+		_ dictionaryExpression: DictionaryExpression,
 		withIndentation indentation: String)
 		throws -> String
 	{
-		let keyExpressions =
-			try keys.map { try translateExpression($0, withIndentation: indentation) }
-		let valueExpressions =
-			try values.map { try translateExpression($0, withIndentation: indentation) }
+		let keyExpressions = try dictionaryExpression.keys.map {
+				try translateExpression($0, withIndentation: indentation)
+			}
+		let valueExpressions = try dictionaryExpression.values.map {
+				try translateExpression($0, withIndentation: indentation)
+			}
 		let expressionsString = zipToClass(keyExpressions, valueExpressions).map { keyValueTuple in
 				"\(keyValueTuple.0) to \(keyValueTuple.1)"
 			}.joined(separator: ", ")
@@ -1394,17 +1376,17 @@ public class KotlinTranslator {
 	}
 
 	private func translateBinaryOperatorExpression(
-		leftExpression: Expression,
-		rightExpression: Expression,
-		operatorSymbol: String,
-		typeName: String,
+		_ binaryOperatorExpression: BinaryOperatorExpression,
 		withIndentation indentation: String)
 		throws -> String
 	{
-		let leftTranslation = try translateExpression(leftExpression, withIndentation: indentation)
-		let rightTranslation =
-			try translateExpression(rightExpression, withIndentation: indentation)
-		return "\(leftTranslation) \(operatorSymbol) \(rightTranslation)"
+		let leftTranslation = try translateExpression(
+			binaryOperatorExpression.leftExpression,
+			withIndentation: indentation)
+		let rightTranslation = try translateExpression(
+			binaryOperatorExpression.rightExpression,
+			withIndentation: indentation)
+		return "\(leftTranslation) \(binaryOperatorExpression.operatorSymbol) \(rightTranslation)"
 	}
 
 	private func translatePrefixUnaryExpression(
@@ -1511,9 +1493,7 @@ public class KotlinTranslator {
 				if let closureExpression = closurePair.expression as? ClosureExpression
 				{
 					let closureTranslation = try translateClosureExpression(
-						parameters: closureExpression.parameters,
-						statements: closureExpression.statements,
-						typeName: closureExpression.typeName,
+						closureExpression,
 						withIndentation: increaseIndentation(indentation))
 					if closureExpression.parameters.count > 1 {
 						let firstParametersTranslation = try translateTupleExpression(
@@ -1554,26 +1534,24 @@ public class KotlinTranslator {
 	}
 
 	private func translateClosureExpression(
-		parameters: ArrayClass<LabeledType>,
-		statements: ArrayClass<Statement>,
-		typeName: String,
+		_ closureExpression: ClosureExpression,
 		withIndentation indentation: String)
 		throws -> String
 	{
-		guard !statements.isEmpty else {
+		guard !closureExpression.statements.isEmpty else {
 			return "{ }"
 		}
 
 		var result = "{"
 
-		let parametersString = parameters.map{ $0.label }.joined(separator: ", ")
+		let parametersString = closureExpression.parameters.map{ $0.label }.joined(separator: ", ")
 
 		if !parametersString.isEmpty {
 			result += " " + parametersString + " ->"
 		}
 
-		let firstStatement = statements.first
-		if statements.count == 1,
+		let firstStatement = closureExpression.statements.first
+		if closureExpression.statements.count == 1,
 			let firstStatement = firstStatement,
 			let expressionStatement = firstStatement as? ExpressionStatement
 		{
@@ -1585,7 +1563,9 @@ public class KotlinTranslator {
 			result += "\n"
 			let closingBraceIndentation = increaseIndentation(indentation)
 			let contentsIndentation = increaseIndentation(closingBraceIndentation)
-			result += try translateSubtrees(statements, withIndentation: contentsIndentation)
+			result += try translateSubtrees(
+				closureExpression.statements,
+				withIndentation: contentsIndentation)
 			result += closingBraceIndentation + "}"
 		}
 
@@ -1597,13 +1577,12 @@ public class KotlinTranslator {
 	}
 
 	private func translateTemplateExpression(
-		pattern: String,
-		matches: DictionaryClass<String, Expression>,
+		_ templateExpression: TemplateExpression,
 		withIndentation indentation: String)
 		throws -> String
 	{
-		var result = pattern
-		for (string, expression) in matches {
+		var result = templateExpression.pattern
+		for (string, expression) in templateExpression.matches {
 			let expressionTranslation =
 				try translateExpression(expression, withIndentation: indentation)
 			result = result.replacingOccurrences(of: string, with: expressionTranslation)
