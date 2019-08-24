@@ -1190,64 +1190,46 @@ public class KotlinTranslator {
 			return translateDeclarationReferenceExpression(declarationReferenceExpression)
 		}
 		if let returnExpression = expression as? ReturnExpression {
-			return try translateReturnExpression(
-				expression: returnExpression.expression,
-				withIndentation: indentation)
+			return try translateReturnExpression(returnExpression, withIndentation: indentation)
 		}
 		if let dotExpression = expression as? DotExpression {
-			return try translateDotSyntaxCallExpression(
-				leftExpression: dotExpression.leftExpression,
-				rightExpression: dotExpression.rightExpression,
-				withIndentation: indentation)
+			return try translateDotSyntaxCallExpression(dotExpression, withIndentation: indentation)
 		}
 		if let literalStringExpression = expression as? LiteralStringExpression {
-			return translateStringLiteral(value: literalStringExpression.value)
+			return translateStringLiteral(literalStringExpression)
 		}
 		if let literalCharacterExpression = expression as? LiteralCharacterExpression {
-			return translateCharacterLiteral(value: literalCharacterExpression.value)
+			return translateCharacterLiteral(literalCharacterExpression)
 		}
 		if let interpolatedStringLiteralExpression =
 			expression as? InterpolatedStringLiteralExpression
 		{
 			return try translateInterpolatedStringLiteralExpression(
-				expressions: interpolatedStringLiteralExpression.expressions,
-				withIndentation: indentation)
+				interpolatedStringLiteralExpression, withIndentation: indentation)
 		}
 		if let prefixUnaryExpression = expression as? PrefixUnaryExpression {
 			return try translatePrefixUnaryExpression(
-				subExpression: prefixUnaryExpression.subExpression,
-				operatorSymbol: prefixUnaryExpression.operatorSymbol,
-				typeName: prefixUnaryExpression.typeName,
-				withIndentation: indentation)
+				prefixUnaryExpression, withIndentation: indentation)
 		}
 		if let postfixUnaryExpression = expression as? PostfixUnaryExpression {
 			return try translatePostfixUnaryExpression(
-				subExpression: postfixUnaryExpression.subExpression,
-				operatorSymbol: postfixUnaryExpression.operatorSymbol,
-				typeName: postfixUnaryExpression.typeName,
-				withIndentation: indentation)
+				postfixUnaryExpression, withIndentation: indentation)
 		}
 		if let ifExpression = expression as? IfExpression {
-			return try translateIfExpression(
-				condition: ifExpression.condition,
-				trueExpression: ifExpression.trueExpression,
-				falseExpression: ifExpression.falseExpression,
-				withIndentation: indentation)
+			return try translateIfExpression(ifExpression, withIndentation: indentation)
 		}
 		if let typeExpression = expression as? TypeExpression {
 			return translateType(typeExpression.typeName)
 		}
 		if let subscriptExpression = expression as? SubscriptExpression {
 			return try translateSubscriptExpression(
-				subscriptedExpression: subscriptExpression.subscriptedExpression,
-				indexExpression: subscriptExpression.indexExpression,
-				typeName: subscriptExpression.typeName,
-				withIndentation: indentation)
+				subscriptExpression, withIndentation: indentation)
 		}
 		if let parenthesesExpression = expression as? ParenthesesExpression {
 			return try "(" +
 				translateExpression(
-					parenthesesExpression.expression, withIndentation: indentation) +
+					parenthesesExpression.expression,
+					withIndentation: indentation) +
 				")"
 		}
 		if let forceValueExpression = expression as? ForceValueExpression {
@@ -1281,16 +1263,11 @@ public class KotlinTranslator {
 			return "null"
 		}
 		if let tupleExpression = expression as? TupleExpression {
-			return try translateTupleExpression(
-				pairs: tupleExpression.pairs,
-				withIndentation: indentation)
+			return try translateTupleExpression(tupleExpression, withIndentation: indentation)
 		}
 		if let tupleShuffleExpression = expression as? TupleShuffleExpression {
 			return try translateTupleShuffleExpression(
-				labels: tupleShuffleExpression.labels,
-				indices: tupleShuffleExpression.indices,
-				expressions: tupleShuffleExpression.expressions,
-				withIndentation: indentation)
+				tupleShuffleExpression, withIndentation: indentation)
 		}
 		if expression is ErrorExpression {
 			return KotlinTranslator.errorTranslation
@@ -1300,14 +1277,18 @@ public class KotlinTranslator {
 	}
 
 	private func translateSubscriptExpression(
-		subscriptedExpression: Expression,
-		indexExpression: Expression,
-		typeName: String,
+		_ subscriptExpression: SubscriptExpression,
 		withIndentation indentation: String)
 		throws -> String
 	{
-		return try translateExpression(subscriptedExpression, withIndentation: indentation) +
-		"[\(try translateExpression(indexExpression, withIndentation: indentation))]"
+		let translatedSubscriptExpression = try translateExpression(
+			subscriptExpression.indexExpression,
+			withIndentation: indentation)
+
+		return try translateExpression(
+				subscriptExpression.subscriptedExpression,
+				withIndentation: indentation) +
+			"[\(translatedSubscriptExpression)]"
 	}
 
 	private func translateArrayExpression(
@@ -1341,9 +1322,11 @@ public class KotlinTranslator {
 	}
 
 	private func translateReturnExpression(
-		expression: Expression?, withIndentation indentation: String) throws -> String
+		_ returnExpression: ReturnExpression,
+		withIndentation indentation: String)
+		throws -> String
 	{
-		if let expression = expression {
+		if let expression = returnExpression.expression {
 			let expressionString = try translateExpression(expression, withIndentation: indentation)
 			return "return \(expressionString)"
 		}
@@ -1353,11 +1336,14 @@ public class KotlinTranslator {
 	}
 
 	private func translateDotSyntaxCallExpression(
-		leftExpression: Expression, rightExpression: Expression,
-		withIndentation indentation: String) throws -> String
+		_ dotExpression: DotExpression,
+		withIndentation indentation: String)
+		throws -> String
 	{
-		let leftHandString = try translateExpression(leftExpression, withIndentation: indentation)
-		let rightHandString = try translateExpression(rightExpression, withIndentation: indentation)
+		let leftHandString =
+			try translateExpression(dotExpression.leftExpression, withIndentation: indentation)
+		let rightHandString =
+			try translateExpression(dotExpression.rightExpression, withIndentation: indentation)
 
 		if KotlinTranslator.sealedClasses.contains(leftHandString) {
 			let translatedEnumCase = rightHandString.capitalizedAsCamelCase()
@@ -1390,39 +1376,38 @@ public class KotlinTranslator {
 	}
 
 	private func translatePrefixUnaryExpression(
-		subExpression: Expression,
-		operatorSymbol: String,
-		typeName: String,
-		withIndentation indentation: String) throws -> String
+		_ prefixUnaryExpression: PrefixUnaryExpression,
+		withIndentation indentation: String)
+		throws -> String
 	{
-		let expressionTranslation =
-			try translateExpression(subExpression, withIndentation: indentation)
-		return operatorSymbol + expressionTranslation
+		let expressionTranslation = try translateExpression(
+			prefixUnaryExpression.subExpression,
+			withIndentation: indentation)
+		return prefixUnaryExpression.operatorSymbol + expressionTranslation
 	}
 
 	private func translatePostfixUnaryExpression(
-		subExpression: Expression,
-		operatorSymbol: String,
-		typeName: String,
-		withIndentation indentation: String) throws -> String
+		_ postfixUnaryExpression: PostfixUnaryExpression,
+		withIndentation indentation: String)
+		throws -> String
 	{
-		let expressionTranslation =
-			try translateExpression(subExpression, withIndentation: indentation)
-		return expressionTranslation + operatorSymbol
+		let expressionTranslation = try translateExpression(
+			postfixUnaryExpression.subExpression,
+			withIndentation: indentation)
+		return expressionTranslation + postfixUnaryExpression.operatorSymbol
 	}
 
 	private func translateIfExpression(
-		condition: Expression,
-		trueExpression: Expression,
-		falseExpression: Expression,
-		withIndentation indentation: String) throws -> String
+		_ ifExpression: IfExpression,
+		withIndentation indentation: String)
+		throws -> String
 	{
 		let conditionTranslation =
-			try translateExpression(condition, withIndentation: indentation)
+			try translateExpression(ifExpression.condition, withIndentation: indentation)
 		let trueExpressionTranslation =
-			try translateExpression(trueExpression, withIndentation: indentation)
+			try translateExpression(ifExpression.trueExpression, withIndentation: indentation)
 		let falseExpressionTranslation =
-			try translateExpression(falseExpression, withIndentation: indentation)
+			try translateExpression(ifExpression.falseExpression, withIndentation: indentation)
 
 		return "if (\(conditionTranslation)) { \(trueExpressionTranslation) } else " +
 		"{ \(falseExpressionTranslation) }"
@@ -1496,8 +1481,12 @@ public class KotlinTranslator {
 						closureExpression,
 						withIndentation: increaseIndentation(indentation))
 					if closureExpression.parameters.count > 1 {
+						let newTupleExpression = TupleExpression(
+							range: tupleExpression.range,
+							pairs: ArrayClass<LabeledExpression>(tupleExpression.pairs.dropLast()))
+
 						let firstParametersTranslation = try translateTupleExpression(
-							pairs: ArrayClass<LabeledExpression>(tupleExpression.pairs.dropLast()),
+							newTupleExpression,
 							translation: functionTranslation,
 							withIndentation: increaseIndentation(indentation),
 							shouldAddNewlines: shouldAddNewlines)
@@ -1510,16 +1499,14 @@ public class KotlinTranslator {
 			}
 
 			return try translateTupleExpression(
-				pairs: tupleExpression.pairs,
+				tupleExpression,
 				translation: functionTranslation,
 				withIndentation: increaseIndentation(indentation),
 				shouldAddNewlines: shouldAddNewlines)
 		}
 		else if let tupleShuffleExpression = callExpression.parameters as? TupleShuffleExpression {
 			return try translateTupleShuffleExpression(
-				labels: tupleShuffleExpression.labels,
-				indices: tupleShuffleExpression.indices,
-				expressions: tupleShuffleExpression.expressions,
+				tupleShuffleExpression,
 				translation: functionTranslation,
 				withIndentation: increaseIndentation(indentation),
 				shouldAddNewlines: shouldAddNewlines)
@@ -1600,13 +1587,13 @@ public class KotlinTranslator {
 	}
 
 	private func translateTupleExpression(
-		pairs: ArrayClass<LabeledExpression>,
+		_ tupleExpression: TupleExpression,
 		translation: FunctionTranslation? = nil,
 		withIndentation indentation: String,
 		shouldAddNewlines: Bool = false)
 		throws -> String
 	{
-		guard !pairs.isEmpty else {
+		guard !tupleExpression.pairs.isEmpty else {
 			return "()"
 		}
 
@@ -1615,16 +1602,16 @@ public class KotlinTranslator {
 		// labels in the call when they've also been omitted in Swift.
 		let parameters: ArrayClass<String?>
 		if let translationParameters = translation?.parameters {
-			parameters = zipToClass(translationParameters, pairs).map
+			parameters = zipToClass(translationParameters, tupleExpression.pairs).map
 				{ translationPairTuple in
 					(translationPairTuple.1.label == nil) ? nil : translationPairTuple.0
 				}
 		}
 		else {
-			parameters = pairs.map { $0.label }
+			parameters = tupleExpression.pairs.map { $0.label }
 		}
 
-		let expressions = pairs.map { $0.expression }
+		let expressions = tupleExpression.pairs.map { $0.expression }
 
 		let expressionIndentation =
 			shouldAddNewlines ? increaseIndentation(indentation) : indentation
@@ -1664,15 +1651,13 @@ public class KotlinTranslator {
 	}
 
 	private func translateTupleShuffleExpression(
-		labels: ArrayClass<String>,
-		indices: ArrayClass<TupleShuffleIndex>,
-		expressions: ArrayClass<Expression>,
+		_ tupleShuffleExpression: TupleShuffleExpression,
 		translation: FunctionTranslation? = nil,
 		withIndentation indentation: String,
 		shouldAddNewlines: Bool = false)
 		throws -> String
 	{
-		let parameters = translation?.parameters ?? labels
+		let parameters = translation?.parameters ?? tupleShuffleExpression.labels
 
 		let increasedIndentation = increaseIndentation(indentation)
 
@@ -1681,28 +1666,29 @@ public class KotlinTranslator {
 
 		// Variadic arguments can't be named, which means all arguments before them can't be named
 		// either.
-		let containsVariadics = indices.contains { indexIsVariadic($0) }
+		let containsVariadics = tupleShuffleExpression.indices.contains { indexIsVariadic($0) }
 		var isBeforeVariadic = containsVariadics
 
-		guard parameters.count == indices.count else {
+		guard parameters.count == tupleShuffleExpression.indices.count else {
 			return try unexpectedASTStructureError(
 				"Different number of labels and indices in a tuple shuffle expression. " +
-					"Labels: \(labels), indices: \(indices)",
+					"Labels: \(tupleShuffleExpression.labels), " +
+					"indices: \(tupleShuffleExpression.indices)",
 				AST: ExpressionStatement(
 					range: nil,
 					expression: TupleShuffleExpression(
 						range: nil,
-						labels: labels,
-						indices: indices,
-						expressions: expressions)))
+						labels: tupleShuffleExpression.labels,
+						indices: tupleShuffleExpression.indices,
+						expressions: tupleShuffleExpression.expressions)))
 		}
 
-		for (label, index) in zipToClass(parameters, indices) {
+		for (label, index) in zipToClass(parameters, tupleShuffleExpression.indices) {
 			switch index {
 			case .absent:
 				break
 			case .present:
-				let expression = expressions[expressionIndex]
+				let expression = tupleShuffleExpression.expressions[expressionIndex]
 
 				var result = ""
 
@@ -1718,7 +1704,7 @@ public class KotlinTranslator {
 			case let .variadic(count: variadicCount):
 				isBeforeVariadic = false
 				for _ in 0..<variadicCount {
-					let expression = expressions[expressionIndex]
+					let expression = tupleShuffleExpression.expressions[expressionIndex]
 					let result = try translateExpression(
 						expression, withIndentation: increasedIndentation)
 					translations.append(result)
@@ -1748,23 +1734,29 @@ public class KotlinTranslator {
 		}
 	}
 
-	private func translateStringLiteral(value: String) -> String {
-		return "\"\(value)\""
+	private func translateStringLiteral(
+		_ literalStringExpression: LiteralStringExpression)
+		-> String
+	{
+		return "\"\(literalStringExpression.value)\""
 	}
 
 	// TODO: Test chars
-	private func translateCharacterLiteral(value: String) -> String {
-		return "'\(value)'"
+	private func translateCharacterLiteral(
+		_ literalCharacterExpression: LiteralCharacterExpression)
+		-> String
+	{
+		return "'\(literalCharacterExpression.value)'"
 	}
 
 	private func translateInterpolatedStringLiteralExpression(
-		expressions: ArrayClass<Expression>,
+		_ interpolatedStringLiteralExpression: InterpolatedStringLiteralExpression,
 		withIndentation indentation: String)
 		throws -> String
 	{
 		var result = "\""
 
-		for expression in expressions {
+		for expression in interpolatedStringLiteralExpression.expressions {
 			if let literalStringExpression = expression as? LiteralStringExpression {
 				// Empty strings, as a special case, are represented by the swift ast dump
 				// as two double quotes with nothing between them, instead of an actual empty string
