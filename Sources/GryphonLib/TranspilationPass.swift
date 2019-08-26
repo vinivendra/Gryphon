@@ -157,16 +157,16 @@ public class TranspilationPass {
 			return replaceReturnStatement(returnStatement)
 		}
 		if statement is BreakStatement {
-			return [BreakStatement(range: nil)]
+			return [BreakStatement(range: statement.range)]
 		}
 		if statement is ContinueStatement {
-			return [ContinueStatement(range: nil)]
+			return [ContinueStatement(range: statement.range)]
 		}
 		if let assignmentStatement = statement as? AssignmentStatement {
 			return replaceAssignmentStatement(assignmentStatement)
 		}
 		if statement is ErrorStatement {
-			return [ErrorStatement(range: nil)]
+			return [ErrorStatement(range: statement.range)]
 		}
 
 		fatalError("This should never be reached.")
@@ -611,7 +611,7 @@ public class TranspilationPass {
 			return replaceTupleShuffleExpression(expression)
 		}
 		if expression is ErrorExpression {
-			return ErrorExpression(range: nil)
+			return ErrorExpression(range: expression.range)
 		}
 
 		fatalError("This should never be reached.")
@@ -2312,7 +2312,7 @@ public class ShadowedIfLetAsToIsTranspilationPass: TranspilationPass {
 								conditionWasReplaced = true
 								newConditions.append(IfStatement.IfCondition.condition(
 									expression: BinaryOperatorExpression(
-										range: nil,
+										range: binaryOperator.range,
 										leftExpression: leftExpression,
 										rightExpression: rightExpression,
 										operatorSymbol: "is",
@@ -2329,7 +2329,7 @@ public class ShadowedIfLetAsToIsTranspilationPass: TranspilationPass {
 		}
 
 		return super.processIfStatement(IfStatement(
-			range: nil,
+			range: ifStatement.range,
 			conditions: newConditions,
 			declarations: ifStatement.declarations,
 			statements: ifStatement.statements,
@@ -2725,14 +2725,15 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 	{
 		if case let .declaration(variableDeclaration: variableDeclaration) = condition {
 			return .condition(expression: BinaryOperatorExpression(
-				range: nil,
+				range: variableDeclaration.range,
 				leftExpression: DeclarationReferenceExpression(
 					range: variableDeclaration.expression?.range,
 					identifier: variableDeclaration.identifier,
 					typeName: variableDeclaration.typeName,
 					isStandardLibrary: false,
 					isImplicit: false),
-				rightExpression: NilLiteralExpression(range: nil),
+				rightExpression: NilLiteralExpression(
+					range: variableDeclaration.range),
 				operatorSymbol: "!=",
 				typeName: "Boolean"))
 		}
@@ -2813,14 +2814,16 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 
 		let newStatements: ArrayClass<Statement> = []
 
+		let range = functionDeclaration.range
+
 		// Declare new variables with the same name as the Swift paramemeters, containing `this` and
 		// `other`
 		newStatements.append(VariableDeclaration(
-			range: nil,
+			range: range,
 			identifier: lhs.label,
 			typeName: lhs.typeName,
 			expression: DeclarationReferenceExpression(
-				range: nil,
+				range: range,
 				identifier: "this",
 				typeName: lhs.typeName,
 				isStandardLibrary: false,
@@ -2833,11 +2836,11 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 			extendsType: nil,
 			annotations: nil))
 		newStatements.append(VariableDeclaration(
-			range: nil,
+			range: range,
 			identifier: rhs.label,
 			typeName: "Any?",
 			expression: DeclarationReferenceExpression(
-				range: nil,
+				range: range,
 				identifier: "other",
 				typeName: "Any?",
 				isStandardLibrary: false,
@@ -2852,35 +2855,35 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 
 		// Add an if statement to guarantee the comparison only happens between the right types
 		newStatements.append(IfStatement(
-			range: nil,
+			range: range,
 			conditions: [ .condition(expression: BinaryOperatorExpression(
-				range: nil,
+				range: range,
 				leftExpression: DeclarationReferenceExpression(
-					range: nil,
+					range: range,
 					identifier: rhs.label,
 					typeName: "Any?",
 					isStandardLibrary: false,
 					isImplicit: false),
-				rightExpression: TypeExpression(range: nil, typeName: rhs.typeName),
+				rightExpression: TypeExpression(range: range, typeName: rhs.typeName),
 				operatorSymbol: "is",
 				typeName: "Bool")),
 			],
 			declarations: [],
 			statements: oldStatements,
 			elseStatement: IfStatement(
-				range: nil,
+				range: range,
 				conditions: [],
 				declarations: [],
 				statements: [
-					ReturnStatement(range: nil, expression:
-						LiteralBoolExpression(range: nil, value: false)),
+					ReturnStatement(range: range, expression:
+						LiteralBoolExpression(range: range, value: false)),
 				],
 				elseStatement: nil,
 				isGuard: false),
 			isGuard: false))
 
 		return super.processFunctionDeclaration(FunctionDeclaration(
-			range: nil,
+			range: range,
 			prefix: "equals",
 			parameters: [
 				FunctionParameter(
@@ -2911,16 +2914,12 @@ public class RawValuesTranspilationPass: TranspilationPass {
 	{
 		if let typeName = enumDeclaration.elements.compactMap({ $0.rawValue?.swiftType }).first {
 			let rawValueVariable = createRawValueVariable(
-				rawValueType: typeName,
-				access: enumDeclaration.access,
-				enumName: enumDeclaration.enumName,
-				elements: enumDeclaration.elements)
+				withRawValueType: typeName,
+				forEnumDeclaration: enumDeclaration)
 
 			guard let rawValueInitializer = createRawValueInitializer(
-				rawValueType: typeName,
-				access: enumDeclaration.access,
-				enumName: enumDeclaration.enumName,
-				elements: enumDeclaration.elements) else
+				withRawValueType: typeName,
+				forEnumDeclaration: enumDeclaration) else
 			{
 				Compiler.handleWarning(
 					message: "Failed to create init(rawValue:)",
@@ -2949,31 +2948,33 @@ public class RawValuesTranspilationPass: TranspilationPass {
 	}
 
 	private func createRawValueInitializer(
-		rawValueType: String,
-		access: String?,
-		enumName: String,
-		elements: ArrayClass<EnumElement>)
+		withRawValueType rawValueType: String,
+		forEnumDeclaration enumDeclaration: EnumDeclaration)
 		-> FunctionDeclaration?
 	{
-		for element in elements {
+		for element in enumDeclaration.elements {
 			if element.rawValue == nil {
 				return nil
 			}
 		}
 
-		let switchCases = elements.map { element -> SwitchCase in
+		let range = enumDeclaration.range
+
+		let switchCases = enumDeclaration.elements.map { element -> SwitchCase in
 			SwitchCase(
 				expressions: [element.rawValue!],
 				statements: [
 					ReturnStatement(
-						range: nil,
+						range: range,
 						expression: DotExpression(
-							range: nil,
-							leftExpression: TypeExpression(range: nil, typeName: enumName),
+							range: range,
+							leftExpression: TypeExpression(
+								range: range,
+								typeName: enumDeclaration.enumName),
 							rightExpression: DeclarationReferenceExpression(
-								range: nil,
+								range: range,
 								identifier: element.name,
-								typeName: enumName,
+								typeName: enumDeclaration.enumName,
 								isStandardLibrary: false,
 								isImplicit: false))),
 				])
@@ -2981,15 +2982,17 @@ public class RawValuesTranspilationPass: TranspilationPass {
 
 		let defaultSwitchCase = SwitchCase(
 			expressions: [],
-			statements: [ReturnStatement(range: nil, expression: NilLiteralExpression(range: nil))])
+			statements: [ReturnStatement(
+				range: range,
+				expression: NilLiteralExpression(range: range)), ])
 
 		switchCases.append(defaultSwitchCase)
 
 		let switchStatement = SwitchStatement(
-			range: nil,
+			range: range,
 			convertsToExpression: nil,
 			expression: DeclarationReferenceExpression(
-				range: nil,
+				range: range,
 				identifier: "rawValue",
 				typeName: rawValueType,
 				isStandardLibrary: false,
@@ -2997,14 +3000,14 @@ public class RawValuesTranspilationPass: TranspilationPass {
 			cases: switchCases)
 
 		return InitializerDeclaration(
-			range: nil,
+			range: range,
 			parameters: [FunctionParameter(
 				label: "rawValue",
 				apiLabel: nil,
 				typeName: rawValueType,
 				value: nil), ],
-			returnType: enumName + "?",
-			functionType: "(\(rawValueType)) -> \(enumName)?",
+			returnType: enumDeclaration.enumName + "?",
+			functionType: "(\(rawValueType)) -> \(enumDeclaration.enumName)?",
 			genericTypes: [],
 			isImplicit: false,
 			isStatic: true,
@@ -3012,49 +3015,51 @@ public class RawValuesTranspilationPass: TranspilationPass {
 			isPure: true,
 			extendsType: nil,
 			statements: [switchStatement],
-			access: access,
+			access: enumDeclaration.access,
 			annotations: nil,
 			superCall: nil)
 	}
 
 	private func createRawValueVariable(
-		rawValueType: String,
-		access: String?,
-		enumName: String,
-		elements: ArrayClass<EnumElement>)
+		withRawValueType rawValueType: String,
+		forEnumDeclaration enumDeclaration: EnumDeclaration)
 		-> VariableDeclaration
 	{
-		let switchCases = elements.map { element in
+		let range = enumDeclaration.range
+
+		let switchCases = enumDeclaration.elements.map { element in
 			SwitchCase(
 				expressions: [DotExpression(
-					range: nil,
-					leftExpression: TypeExpression(range: nil, typeName: enumName),
+					range: range,
+					leftExpression: TypeExpression(
+						range: range,
+						typeName: enumDeclaration.enumName),
 					rightExpression: DeclarationReferenceExpression(
-						range: nil,
+						range: range,
 						identifier: element.name,
-						typeName: enumName,
+						typeName: enumDeclaration.enumName,
 						isStandardLibrary: false,
 						isImplicit: false)), ],
 				statements: [
 					ReturnStatement(
-						range: nil,
+						range: range,
 						expression: element.rawValue),
 				])
 		}
 
 		let switchStatement = SwitchStatement(
-			range: nil,
+			range: range,
 			convertsToExpression: nil,
 			expression: DeclarationReferenceExpression(
-				range: nil,
+				range: range,
 				identifier: "this",
-				typeName: enumName,
+				typeName: enumDeclaration.enumName,
 				isStandardLibrary: false,
 				isImplicit: false),
 			cases: switchCases)
 
 		let getter = FunctionDeclaration(
-			range: nil,
+			range: range,
 			prefix: "get",
 			parameters: [],
 			returnType: rawValueType,
@@ -3066,11 +3071,11 @@ public class RawValuesTranspilationPass: TranspilationPass {
 			isPure: false,
 			extendsType: nil,
 			statements: [switchStatement],
-			access: access,
+			access: enumDeclaration.access,
 			annotations: nil)
 
 		return VariableDeclaration(
-			range: nil,
+			range: range,
 			identifier: "rawValue",
 			typeName: rawValueType,
 			expression: nil,
@@ -3112,7 +3117,7 @@ public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
 				binaryOperatorExpression.operatorSymbol == "!="
 			{
 				newCondition = BinaryOperatorExpression(
-					range: nil,
+					range: binaryOperatorExpression.range,
 					leftExpression: binaryOperatorExpression.leftExpression,
 					rightExpression: binaryOperatorExpression.rightExpression,
 					operatorSymbol: "==",
@@ -3124,7 +3129,7 @@ public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
 				binaryOperatorExpression.operatorSymbol == "=="
 			{
 				newCondition = BinaryOperatorExpression(
-					range: nil,
+					range: binaryOperatorExpression.range,
 					leftExpression: binaryOperatorExpression.leftExpression,
 					rightExpression: binaryOperatorExpression.rightExpression,
 					operatorSymbol: "!=",
@@ -3177,12 +3182,14 @@ public class ReturnIfNilTranspilationPass: TranspilationPass {
 									DeclarationReferenceExpression,
 							binaryOperatorExpression.rightExpression is NilLiteralExpression
 						{
-							return [ExpressionStatement(range: nil, expression:
-								BinaryOperatorExpression(
-									range: nil,
+							return [ExpressionStatement(
+								range: ifStatement.range,
+								expression: BinaryOperatorExpression(
+									range: ifStatement.range,
 									leftExpression: binaryOperatorExpression.leftExpression,
-									rightExpression: ReturnExpression(range: nil, expression:
-										returnStatement.expression),
+									rightExpression: ReturnExpression(
+										range: ifStatement.range,
+										expression: returnStatement.expression),
 									operatorSymbol: "?:",
 									typeName: declarationExpression.typeName)), ]
 						}
