@@ -618,6 +618,14 @@ public class KotlinTranslator {
 
 				result += genericString + translatedExtensionType + "." + companionString
 			}
+			else {
+				if !functionDeclaration.genericTypes.isEmpty {
+					let genericString =
+						"<\(functionDeclaration.genericTypes.joined(separator: ", "))> "
+					result += genericString
+				}
+			}
+
 			result += functionDeclaration.prefix + "("
 		}
 
