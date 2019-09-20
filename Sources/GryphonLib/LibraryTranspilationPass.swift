@@ -530,6 +530,10 @@ private func simplifyType(string: String) -> String {
 		let elementType = String(string.dropFirst("ArrayClass<".count).dropLast())
 		return "[\(elementType)]"
 	}
+	if string.hasPrefix("FixedArray<"), string.last! == ">" {
+		let elementType = String(string.dropFirst("FixedArray<".count).dropLast())
+		return "[\(elementType)]"
+	}
 
 	// Treat Slice as Array
 	if string.hasPrefix("Slice<ArrayClass<"), string.hasSuffix(">>") {

@@ -450,8 +450,8 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 		}
 
 		if case let .generic(typeName: typeName, genericArguments: genericArguments) = gryphonType {
-			// Treat ArrayClass and ArraySlice as Array
-			if typeName == "ArrayClass" || typeName == "ArraySlice" {
+			// Treat ArrayClass, FixedArray and ArraySlice as Array
+			if typeName == "ArrayClass" || typeName == "FixedArray" || typeName == "ArraySlice" {
 				// ArrayClass should have exactly one generic argument, which is its element
 				return .array(subType: genericArguments[0])
 			}
@@ -463,8 +463,11 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 					typeName: innerTypeName,
 					genericArguments: innerGenericArguments) = genericArguments[0]
 			{
+				// There should have exactly one generic argument: the element
 				if innerTypeName == "ArrayClass" {
-					// ArrayClass should have exactly one generic argument, which is its element
+					return .array(subType: innerGenericArguments[0])
+				}
+				else if innerTypeName == "FixedArray" {
 					return .array(subType: innerGenericArguments[0])
 				}
 			}

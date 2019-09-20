@@ -263,6 +263,181 @@ public func zipToClass<Array1, Element1, Array2, Element2>( // kotlin: ignore
 	return ArrayClass(Array(zip(array1.arrayBacking, array2.arrayBacking)))
 }
 
+public struct FixedArray<Element>: // kotlin: ignore
+	ExpressibleByArrayLiteral, CustomStringConvertible, CustomDebugStringConvertible,
+	RandomAccessCollection
+{
+	public typealias Buffer = [Element]
+
+	public let array: Buffer
+
+	public init(_ array: Buffer) {
+		self.array = array
+	}
+
+	public init<T>(_ fixedArray: FixedArray<T>) {
+		self.array = fixedArray.array as! Buffer
+	}
+
+	public init<S>(_ sequence: S) where Element == S.Element, S: Sequence {
+		self.array = Array(sequence)
+	}
+
+	public init() {
+		self.array = []
+	}
+
+	public func `as`<CastedType>(
+		_ type: FixedArray<CastedType>.Type)
+		-> FixedArray<CastedType>?
+	{
+		if let castedArray = self.array as? [CastedType] {
+			return FixedArray<CastedType>(castedArray)
+		}
+		else {
+			return nil
+		}
+	}
+
+	// Expressible By Array Literal
+	public typealias ArrayLiteralElement = Element
+
+	public init(arrayLiteral elements: Element...) {
+		self.array = elements
+	}
+
+	// ...
+	public subscript (_ index: Int) -> Element {
+		return array[index]
+	}
+
+	// Custom (Debug) String Convertible
+	public var description: String {
+		return array.description
+	}
+
+	public var debugDescription: String {
+		return array.debugDescription
+	}
+
+	// Collection
+	public var startIndex: Int {
+		return array.startIndex
+	}
+
+	public var endIndex: Int {
+		return array.endIndex
+	}
+
+	public func index(after i: Int) -> Int {
+		return i + 1
+	}
+
+	public var isEmpty: Bool {
+		return array.isEmpty
+	}
+
+	public var first: Element? {
+		return array.first
+	}
+
+	public var last: Element? {
+		return array.last
+	}
+
+	// Bidirectional Collection
+	public func index(before i: Int) -> Int {
+		return i - 1
+	}
+
+	//
+	public func appending(_ newElement: Element) -> FixedArray<Element> {
+		return FixedArray<Element>(self.array + [newElement])
+	}
+
+	public func filter(_ isIncluded: (Element) throws -> Bool) rethrows -> FixedArray<Element> {
+		return try FixedArray(self.array.filter(isIncluded))
+	}
+
+	public func map<T>(_ transform: (Element) throws -> T) rethrows -> FixedArray<T> {
+		return try FixedArray<T>(self.array.map(transform))
+	}
+
+	public func compactMap<T>(_ transform: (Element) throws -> T?) rethrows -> FixedArray<T> {
+		return try FixedArray<T>(self.array.compactMap(transform))
+	}
+
+	public func flatMap<SegmentOfResult>(
+		_ transform: (Element) throws -> SegmentOfResult)
+		rethrows -> FixedArray<SegmentOfResult.Element>
+		where SegmentOfResult: Sequence
+	{
+		return try FixedArray<SegmentOfResult.Element>(array.flatMap(transform))
+	}
+
+	@inlinable
+	public func sorted(
+		by areInIncreasingOrder: (Element, Element) throws -> Bool) rethrows
+		-> FixedArray<Element>
+	{
+		return FixedArray(try array.sorted(by: areInIncreasingOrder))
+	}
+
+	public func appending<S>(contentsOf newElements: S) -> FixedArray<Element>
+		where S: Sequence, Element == S.Element
+	{
+		return FixedArray<Element>(self.array + newElements)
+	}
+
+	public func reversed() -> [Element] {
+		return array.reversed()
+	}
+
+	public var indices: Range<Int> {
+		return array.indices
+	}
+}
+
+extension FixedArray: Equatable where Element: Equatable { // kotlin: ignore
+	public static func == (lhs: FixedArray, rhs: FixedArray) -> Bool {
+		return lhs.array == rhs.array
+	}
+
+	//
+	public func firstIndex(of element: Element) -> Int? {
+		return array.firstIndex(of: element)
+	}
+}
+
+extension FixedArray: Hashable where Element: Hashable { // kotlin: ignore
+	public func hash(into hasher: inout Hasher) {
+		array.hash(into: &hasher)
+	}
+}
+
+extension FixedArray: Codable where Element: Codable { // kotlin: ignore
+	public func encode(to encoder: Encoder) throws {
+		try array.encode(to: encoder)
+	}
+
+	public init(from decoder: Decoder) throws {
+		try self.init(Buffer(from: decoder))
+	}
+}
+
+extension FixedArray where Element: Comparable { // kotlin: ignore
+	@inlinable
+	public func sorted() -> FixedArray<Element> {
+		return FixedArray(array.sorted())
+	}
+}
+
+extension FixedArray: BackedByArray { // kotlin: ignore
+	public var arrayBacking: [Element] {
+		return self.array
+	}
+}
+
 /// According to https://swiftdoc.org/v4.2/type/dictionary/hierarchy/
 /// the Dictionary type in Swift conforms exactly to these protocols,
 /// plus CustomReflectable (which is beyond Gryphon's scope for now).

@@ -1734,14 +1734,26 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 		if let typeExpression = callExpression.function as? TypeExpression,
 			let tupleExpression = callExpression.parameters as? TupleExpression
 		{
-			if typeExpression.typeName.hasPrefix("ArrayClass<"),
+			// TODO: Fix references to toMutableList in the stdlib templates (i.e. include toList)
+			let isArrayClass = typeExpression.typeName.hasPrefix("ArrayClass<")
+			let isFixedArray = typeExpression.typeName.hasPrefix("FixedArray<")
+			let arrayFunction = isArrayClass ? "toMutableList" : "toList"
+
+			if (isArrayClass || isFixedArray),
 				tupleExpression.pairs.count == 1,
 				let onlyPair = tupleExpression.pairs.first
 			{
-				let arrayClassElementType =
-					String(typeExpression.typeName.dropFirst("ArrayClass<".count).dropLast())
-				let mappedElementType = Utilities.getTypeMapping(for: arrayClassElementType) ??
-					arrayClassElementType
+				let elementType: String
+				if isArrayClass {
+					elementType =
+						String(typeExpression.typeName.dropFirst("ArrayClass<".count).dropLast())
+				}
+				else {
+					elementType =
+						String(typeExpression.typeName.dropFirst("FixedArray<".count).dropLast())
+				}
+
+				let mappedElementType = Utilities.getTypeMapping(for: elementType) ?? elementType
 
 				if onlyPair.label == "array" {
 					// If we're initializing with an Array of a different type, we might need to call
@@ -1749,7 +1761,7 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 					if let arrayType = onlyPair.expression.swiftType {
 						let arrayElementType = arrayType.dropFirst().dropLast()
 
-						if arrayElementType != arrayClassElementType {
+						if arrayElementType != elementType {
 							return DotExpression(
 								range: callExpression.range,
 								leftExpression: replaceExpression(onlyPair.expression),
@@ -1758,7 +1770,7 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 									range: callExpression.range,
 									function: DeclarationReferenceExpression(
 										range: callExpression.range,
-										identifier: "toMutableList<\(mappedElementType)>",
+										identifier: "\(arrayFunction)<\(mappedElementType)>",
 										typeName: typeExpression.typeName,
 										isStandardLibrary: false,
 										isImplicit: false),
@@ -1779,7 +1791,7 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 							range: callExpression.range,
 							function: DeclarationReferenceExpression(
 								range: callExpression.range,
-								identifier: "toMutableList<\(mappedElementType)>",
+								identifier: "\(arrayFunction)<\(mappedElementType)>",
 								typeName: typeExpression.typeName,
 								isStandardLibrary: false,
 								isImplicit: false),
@@ -1793,7 +1805,7 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 
 		if let dotExpression = callExpression.function as? DotExpression {
 			if let leftType = dotExpression.leftExpression.swiftType,
-				leftType.hasPrefix("ArrayClass"),
+				(leftType.hasPrefix("ArrayClass") || leftType.hasPrefix("FixedArray")),
 				let declarationReferenceExpression =
 					dotExpression.rightExpression as? DeclarationReferenceExpression,
 				let tupleExpression = callExpression.parameters as? TupleExpression
@@ -2501,9 +2513,9 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 	}
 }
 
-/// `ArrayClass`es and `DictionaryClass`es are prefered to using `Arrays` and `Dictionaries` for
-/// guaranteeing correctness. This pass raises warnings when it finds uses of the native data
-/// structures, which should help avoid these bugs.
+/// `ArrayClass`es, `FixedArray`s and `DictionaryClass`es are prefered to using `Arrays` and
+/// `Dictionaries` for guaranteeing correctness. This pass raises warnings when it finds uses of the
+/// native data structures, which should help avoid these bugs.
 public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST): super(ast) { }
 
@@ -2511,7 +2523,7 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 	{
 		if let type = expression.swiftType, type.hasPrefix("[") {
 			let message = "Native type \(type) can lead to different behavior in Kotlin. Prefer " +
-			"ArrayClass or DictionaryClass instead."
+			"ArrayClass, FixedArray or DictionaryClass instead."
 			Compiler.handleWarning(
 				message: message,
 				details: expression.prettyDescription(),
@@ -2542,6 +2554,11 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 				if declarationReference.identifier.hasPrefix("toMutable"),
 					(declarationReference.typeName.hasPrefix("ArrayClass") ||
 						declarationReference.typeName.hasPrefix("DictionaryClass"))
+				{
+					return dotExpression
+				}
+				else if declarationReference.identifier.hasPrefix("toList"),
+					declarationReference.typeName.hasPrefix("FixedArray")
 				{
 					return dotExpression
 				}

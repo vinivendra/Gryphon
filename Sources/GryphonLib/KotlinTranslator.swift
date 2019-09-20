@@ -1308,7 +1308,15 @@ public class KotlinTranslator {
 			try translateExpression($0, withIndentation: indentation)
 			}.joined(separator: ", ")
 
-		return "mutableListOf(\(expressionsString))"
+		if arrayExpression.typeName.hasPrefix("ArrayClass") {
+			return "mutableListOf(\(expressionsString))"
+		}
+		else if arrayExpression.typeName.hasPrefix("FixedArray") {
+			return "listOf(\(expressionsString))"
+		}
+		else {
+			return "mutableListOf(\(expressionsString))"
+		}
 	}
 
 	private func translateDictionaryExpression(
@@ -1815,6 +1823,11 @@ public class KotlinTranslator {
 			let innerType = String(typeName.dropLast().dropFirst("ArrayClass<".count))
 			let translatedInnerType = translateType(innerType)
 			return "MutableList<\(translatedInnerType)>"
+		}
+		else if typeName.hasPrefix("FixedArray<") {
+			let innerType = String(typeName.dropLast().dropFirst("FixedArray<".count))
+			let translatedInnerType = translateType(innerType)
+			return "List<\(translatedInnerType)>"
 		}
 		else if typeName.hasPrefix("DictionaryClass<") {
 			let innerTypes = String(typeName.dropLast().dropFirst("DictionaryClass<".count))

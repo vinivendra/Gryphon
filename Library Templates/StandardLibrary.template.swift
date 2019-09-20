@@ -306,6 +306,9 @@ func gryphonTemplates() {
 	_ = _comparableArray.index(of: _compare)
 	_ = "_comparableArray.indexOf(_compare)"
 
+	_ = _comparableArray.firstIndex(of: _compare)
+	_ = "_comparableArray.indexOf(_compare)"
+
 	// Dictionary
 	_ = _dictionary.reduce(_any, _closure)
 	_ = "_dictionary.entries.fold(initial = _any, operation = _closure)"

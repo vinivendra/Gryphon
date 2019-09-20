@@ -36,12 +36,12 @@ fun String.indexOrNull(character: Char): Int? {
 	}
 }
 
-fun <Element> MutableList<Element>.sorted(
-	isAscending: (Element, Element) -> Boolean)
+fun <Element> List<Element>.sorted(
+    isAscending: (Element, Element) -> Boolean)
     : MutableList<Element>
 {
-    val copyList = this.copy()
-	copyList.quicksort(0, this.size - 1, isAscending)
+    val copyList = this.toMutableList()
+    copyList.quicksort(0, this.size - 1, isAscending)
     return copyList
 }
 
