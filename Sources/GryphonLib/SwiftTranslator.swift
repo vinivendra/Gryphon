@@ -2087,6 +2087,17 @@ public class SwiftTranslator {
 		case "Open Existential Expression":
 			let processedExpression = try processOpenExistentialExpression(expression)
 			result = try translateExpression(processedExpression)
+		// TODO: Remove new dead code from 5.1 AST adaptations
+		case "Boolean Literal Expression":
+			let value = Bool(expression["value"]!)!
+			result = LiteralBoolExpression(
+				range: getRangeRecursively(ofNode: expression),
+				value: value)
+		case "Integer Literal Expression":
+			let value = Int64(expression["value"]!)!
+			result = LiteralIntExpression(
+				range: getRangeRecursively(ofNode: expression),
+				value: value)
 		case "Parentheses Expression":
 			if let innerExpression = expression.subtree(at: 0) {
 				// Swift 5: Compiler-created parentheses expressions may be marked with "implicit"
@@ -2431,12 +2442,13 @@ public class SwiftTranslator {
 		}
 		// FIXME: Rename this variable
 		else if let tupleShuffleExpressionFixme = callExpression
-			.subtree(named: "Tuple Shuffle Expression")
+			.subtree(named: "Argument Shuffle Expression")
 		{
 			let parenthesesExpression = tupleShuffleExpressionFixme
 				.subtree(named: "Parentheses Expression")
 
-			let tupleExpressionFixme = tupleShuffleExpressionFixme.subtree(named: "Tuple Expression")
+			let tupleExpressionFixme =
+				tupleShuffleExpressionFixme.subtree(named: "Tuple Expression")
 			let typeName = tupleShuffleExpressionFixme["type"]
 			let elements = tupleShuffleExpressionFixme["elements"]
 			let rawIndicesStrings = elements?.split(withStringSeparator: ", ")

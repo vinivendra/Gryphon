@@ -12,3 +12,4 @@ if which swiftlint >/dev/null; then
 else
   echo "warning: SwiftLint not installed."
 fi
+
