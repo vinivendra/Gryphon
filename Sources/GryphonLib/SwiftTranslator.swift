@@ -2120,7 +2120,7 @@ public class SwiftTranslator {
 			result = try translateExpression(processedExpression)
 		// TODO: Remove new dead code from 5.1 AST adaptations
 		case "Boolean Literal Expression":
-			let value = Bool(expression["value"]!)!
+			let value = (expression["value"]! == "true")
 			result = LiteralBoolExpression(
 				range: getRangeRecursively(ofNode: expression),
 				value: value)
@@ -2497,7 +2497,7 @@ public class SwiftTranslator {
 
 					guard let rawIndex = rawIndex else {
 						return try unexpectedExpressionStructureError(
-							"Expected Tuple shuffle index but found nil",
+							"Expected Tuple shuffle index to be an integer",
 							ast: callExpression,
 							translator: self)
 					}
@@ -2879,8 +2879,10 @@ public class SwiftTranslator {
 				ast: stringLiteralExpression, translator: self)
 		}
 
-		if let value = stringLiteralExpression["value"] {
-			if stringLiteralExpression["type"] == "Character" {
+		if let value = stringLiteralExpression["value"],
+			let typeName = stringLiteralExpression["type"]
+		{
+			if Utilities.getTypeMapping(for: typeName) == "Char" {
 				if value == "\'" {
 					return LiteralCharacterExpression(
 						range: getRangeRecursively(ofNode: stringLiteralExpression),
