@@ -758,27 +758,27 @@ public class SwiftTranslator {
 	}
 
 	internal func translatePrefixUnaryExpression(
-		_ prefixExpressionFixme: SwiftAST)
+		_ prefixExpression: SwiftAST)
 		throws -> Expression
 	{
-		guard prefixExpressionFixme.name == "Prefix Unary Expression" else {
+		guard prefixExpression.name == "Prefix Unary Expression" else {
 			return try unexpectedExpressionStructureError(
-				"Trying to translate \(prefixExpressionFixme.name) as 'Prefix Unary Expression'",
-				ast: prefixExpressionFixme, translator: self)
+				"Trying to translate \(prefixExpression.name) as 'Prefix Unary Expression'",
+				ast: prefixExpression, translator: self)
 		}
 
-		if let rawType = prefixExpressionFixme["type"],
-			let declaration = prefixExpressionFixme
+		if let rawType = prefixExpression["type"],
+			let declaration = prefixExpression
 				.subtree(named: "Dot Syntax Call Expression")?
 				.subtree(named: "Declaration Reference Expression")?["decl"],
-			let expression = prefixExpressionFixme.subtree(at: 1)
+			let expression = prefixExpression.subtree(at: 1)
 		{
 			let typeName = cleanUpType(rawType)
 			let expressionTranslation = try translateExpression(expression)
 			let operatorInformation = getInformationFromDeclaration(declaration)
 
 			return PrefixUnaryExpression(
-				range: getRangeRecursively(ofNode: prefixExpressionFixme),
+				range: getRangeRecursively(ofNode: prefixExpression),
 				subExpression: expressionTranslation,
 				operatorSymbol: operatorInformation.identifier,
 				typeName: typeName)
@@ -788,32 +788,32 @@ public class SwiftTranslator {
 				"Expected Prefix Unary Expression to have a Dot Syntax Call Expression with a " +
 					"Declaration Reference Expression, for the operator, and expected it to have " +
 				"a second expression as the operand.",
-				ast: prefixExpressionFixme, translator: self)
+				ast: prefixExpression, translator: self)
 		}
 	}
 
 	internal func translatePostfixUnaryExpression(
-		_ postfixExpressionFixme: SwiftAST)
+		_ postfixExpression: SwiftAST)
 		throws -> Expression
 	{
-		guard postfixExpressionFixme.name == "Postfix Unary Expression" else {
+		guard postfixExpression.name == "Postfix Unary Expression" else {
 			return try unexpectedExpressionStructureError(
-				"Trying to translate \(postfixExpressionFixme.name) as 'Postfix Unary Expression'",
-				ast: postfixExpressionFixme, translator: self)
+				"Trying to translate \(postfixExpression.name) as 'Postfix Unary Expression'",
+				ast: postfixExpression, translator: self)
 		}
 
-		if let rawType = postfixExpressionFixme["type"],
-			let declaration = postfixExpressionFixme
+		if let rawType = postfixExpression["type"],
+			let declaration = postfixExpression
 				.subtree(named: "Dot Syntax Call Expression")?
 				.subtree(named: "Declaration Reference Expression")?["decl"],
-			let expression = postfixExpressionFixme.subtree(at: 1)
+			let expression = postfixExpression.subtree(at: 1)
 		{
 			let typeName = cleanUpType(rawType)
 			let expressionTranslation = try translateExpression(expression)
 			let operatorInformation = getInformationFromDeclaration(declaration)
 
 			return PostfixUnaryExpression(
-				range: getRangeRecursively(ofNode: postfixExpressionFixme),
+				range: getRangeRecursively(ofNode: postfixExpression),
 				subExpression: expressionTranslation,
 				operatorSymbol: operatorInformation.identifier,
 				typeName: typeName)
@@ -823,7 +823,7 @@ public class SwiftTranslator {
 				"Expected Postfix Unary Expression to have a Dot Syntax Call Expression with a " +
 					"Declaration Reference Expression, for the operator, and expected it to have " +
 				"a second expression as the operand.",
-				ast: postfixExpressionFixme, translator: self)
+				ast: postfixExpression, translator: self)
 		}
 	}
 
@@ -869,27 +869,26 @@ public class SwiftTranslator {
 		}
 	}
 
-	// FIXME: Fix the parameter names once Expression subclasses have been capitalized
-	internal func translateIfExpression(_ ifExpressionFixme: SwiftAST) throws -> Expression {
-		guard ifExpressionFixme.name == "If Expression" else {
+	internal func translateIfExpression(_ ifExpression: SwiftAST) throws -> Expression {
+		guard ifExpression.name == "If Expression" else {
 			return try unexpectedExpressionStructureError(
-				"Trying to translate \(ifExpressionFixme.name) as 'If Expression'",
-				ast: ifExpressionFixme, translator: self)
+				"Trying to translate \(ifExpression.name) as 'If Expression'",
+				ast: ifExpression, translator: self)
 		}
 
-		guard ifExpressionFixme.subtrees.count == 3 else {
+		guard ifExpression.subtrees.count == 3 else {
 			return try unexpectedExpressionStructureError(
 				"Expected If Expression to have three subtrees (a condition, a true expression " +
 				"and a false expression)",
-				ast: ifExpressionFixme, translator: self)
+				ast: ifExpression, translator: self)
 		}
 
-		let condition = try translateExpression(ifExpressionFixme.subtrees[0])
-		let trueExpression = try translateExpression(ifExpressionFixme.subtrees[1])
-		let falseExpression = try translateExpression(ifExpressionFixme.subtrees[2])
+		let condition = try translateExpression(ifExpression.subtrees[0])
+		let trueExpression = try translateExpression(ifExpression.subtrees[1])
+		let falseExpression = try translateExpression(ifExpression.subtrees[2])
 
 		return IfExpression(
-			range: getRangeRecursively(ofNode: ifExpressionFixme),
+			range: getRangeRecursively(ofNode: ifExpression),
 			condition: condition,
 			trueExpression: trueExpression,
 			falseExpression: falseExpression)
@@ -2272,70 +2271,68 @@ public class SwiftTranslator {
 		return result
 	}
 
-	// FIXME: Remove the `fixme` from this parameter
-	internal func translateTypeExpression(_ typeExpressionFixme: SwiftAST) throws -> Expression {
-		guard typeExpressionFixme.name == "Type Expression" else {
+	internal func translateTypeExpression(_ typeExpression: SwiftAST) throws -> Expression {
+		guard typeExpression.name == "Type Expression" else {
 			return try unexpectedExpressionStructureError(
-				"Trying to translate \(typeExpressionFixme.name) as 'Type Expression'",
-				ast: typeExpressionFixme, translator: self)
+				"Trying to translate \(typeExpression.name) as 'Type Expression'",
+				ast: typeExpression, translator: self)
 		}
 
-		guard let typeName = typeExpressionFixme["typerepr"] else {
+		guard let typeName = typeExpression["typerepr"] else {
 			return try unexpectedExpressionStructureError(
 				"Unrecognized structure",
-				ast: typeExpressionFixme, translator: self)
+				ast: typeExpression, translator: self)
 		}
 
 		return TypeExpression(
-			range: getRangeRecursively(ofNode: typeExpressionFixme),
+			range: getRangeRecursively(ofNode: typeExpression),
 			typeName: cleanUpType(typeName))
 	}
 
-	// FIXME: rename this parameter
-	internal func translateCallExpression(_ callExpressionFixme: SwiftAST) throws -> Expression {
-		guard callExpressionFixme.name == "Call Expression" else {
+	internal func translateCallExpression(_ callExpression: SwiftAST) throws -> Expression {
+		guard callExpression.name == "Call Expression" else {
 			return try unexpectedExpressionStructureError(
-				"Trying to translate \(callExpressionFixme.name) as 'Call Expression'",
-				ast: callExpressionFixme, translator: self)
+				"Trying to translate \(callExpression.name) as 'Call Expression'",
+				ast: callExpression, translator: self)
 		}
 
 		// If the call expression corresponds to an integer literal
-		if let argumentLabels = callExpressionFixme["arg_labels"] {
+		if let argumentLabels = callExpression["arg_labels"] {
 			if argumentLabels == "_builtinIntegerLiteral:" ||
 				argumentLabels == "_builtinFloatLiteral:"
 			{
-				return try translateAsNumericLiteral(callExpressionFixme)
+				return try translateAsNumericLiteral(callExpression)
 			}
 			else if argumentLabels == "_builtinBooleanLiteral:" {
-				return try translateAsBooleanLiteral(callExpressionFixme)
+				return try translateAsBooleanLiteral(callExpression)
 			}
 			else if argumentLabels == "nilLiteral:" {
-				return NilLiteralExpression(range: getRangeRecursively(ofNode: callExpressionFixme))
+				return NilLiteralExpression(range: getRangeRecursively(ofNode: callExpression))
 			}
 		}
 
 		let function: Expression
 
 		// If it's an empty expression used in an "if" condition
-		let dotSyntaxSubtrees = callExpressionFixme
+		let dotSyntaxSubtrees = callExpression
 			.subtree(named: "Dot Syntax Call Expression")?.subtrees
 		let containedExpression = dotSyntaxSubtrees?.last
 
 		if let containedExpression = containedExpression,
-			callExpressionFixme.standaloneAttributes.contains("implicit"),
-			callExpressionFixme["arg_labels"] == "",
-			callExpressionFixme["type"] == "Int1"
+			callExpression.standaloneAttributes.contains("implicit"),
+			callExpression["arg_labels"] == "",
+			callExpression["type"] == "Int1"
 		{
 			return try translateExpression(containedExpression)
 		}
 
-		guard let rawType = callExpressionFixme["type"] else {
+		guard let rawType = callExpression["type"] else {
 			return try unexpectedExpressionStructureError(
-				"Failed to recognize type", ast: callExpressionFixme, translator: self)
+				"Failed to recognize type", ast: callExpression, translator: self)
 		}
 		let typeName = cleanUpType(rawType)
 
-		let dotSyntaxCallExpression = callExpressionFixme
+		let dotSyntaxCallExpression = callExpression
 			.subtree(named: "Dot Syntax Call Expression")
 		let methodName = dotSyntaxCallExpression?
 			.subtree(at: 0, named: "Declaration Reference Expression")
@@ -2345,29 +2342,29 @@ public class SwiftTranslator {
 			let methodName = try translateDeclarationReferenceExpression(methodName)
 			let methodOwner = try translateExpression(methodOwner)
 			function = DotExpression(
-				range: getRangeRecursively(ofNode: callExpressionFixme),
+				range: getRangeRecursively(ofNode: callExpression),
 				leftExpression: methodOwner,
 				rightExpression: methodName)
 		}
-		else if let declarationReferenceExpression = callExpressionFixme
+		else if let declarationReferenceExpression = callExpression
 			.subtree(named: "Declaration Reference Expression")
 		{
 			function = try translateDeclarationReferenceExpression(
 				declarationReferenceExpression)
 		}
-		else if let typeExpression = callExpressionFixme
+		else if let typeExpression = callExpression
 			.subtree(named: "Constructor Reference Call Expression")?
 			.subtree(named: "Type Expression")
 		{
 			function = try translateTypeExpression(typeExpression)
 		}
 		else {
-			function = try translateExpression(callExpressionFixme.subtrees[0])
+			function = try translateExpression(callExpression.subtrees[0])
 		}
 
-		let parameters = try translateCallExpressionParameters(callExpressionFixme)
+		let parameters = try translateCallExpressionParameters(callExpression)
 
-		let range = getRange(ofNode: callExpressionFixme)
+		let range = getRange(ofNode: callExpression)
 
 		return CallExpression(
 			range: range,
@@ -2376,21 +2373,20 @@ public class SwiftTranslator {
 			typeName: typeName)
 	}
 
-	// FIXME: rename this parameter
 	internal func translateClosureExpression(
-		_ closureExpressionFixme: SwiftAST)
+		_ closureExpression: SwiftAST)
 		throws -> Expression
 	{
-		guard closureExpressionFixme.name == "Closure Expression" else {
+		guard closureExpression.name == "Closure Expression" else {
 			return try unexpectedExpressionStructureError(
-				"Trying to translate \(closureExpressionFixme.name) as 'Closure Expression'",
-				ast: closureExpressionFixme, translator: self)
+				"Trying to translate \(closureExpression.name) as 'Closure Expression'",
+				ast: closureExpression, translator: self)
 		}
 
 		// Get the parameters.
 		let parameterList: SwiftAST?
 
-		if let unwrapped = closureExpressionFixme.subtree(named: "Parameter List") {
+		if let unwrapped = closureExpression.subtree(named: "Parameter List") {
 			parameterList = unwrapped
 		}
 		else {
@@ -2412,22 +2408,22 @@ public class SwiftTranslator {
 				else {
 					return try unexpectedExpressionStructureError(
 						"Unable to detect name or attribute for a parameter",
-						ast: closureExpressionFixme, translator: self)
+						ast: closureExpression, translator: self)
 				}
 			}
 		}
 
 		// Translate the return type
 		// FIXME: Doesn't allow to return function types
-		guard let typeName = closureExpressionFixme["type"] else {
+		guard let typeName = closureExpression["type"] else {
 			return try unexpectedExpressionStructureError(
-				"Unable to get type or return type", ast: closureExpressionFixme, translator: self)
+				"Unable to get type or return type", ast: closureExpression, translator: self)
 		}
 
 		// Translate the closure body
-		guard let lastSubtree = closureExpressionFixme.subtrees.last else {
+		guard let lastSubtree = closureExpression.subtrees.last else {
 			return try unexpectedExpressionStructureError(
-				"Unable to get closure body", ast: closureExpressionFixme, translator: self)
+				"Unable to get closure body", ast: closureExpression, translator: self)
 		}
 
 		let statements: ArrayClass<Statement>
@@ -2442,7 +2438,7 @@ public class SwiftTranslator {
 		}
 
 		return ClosureExpression(
-			range: getRangeRecursively(ofNode: closureExpressionFixme),
+			range: getRangeRecursively(ofNode: closureExpression),
 			parameters: parameters,
 			statements: statements,
 			typeName: cleanUpType(typeName))
@@ -2468,17 +2464,15 @@ public class SwiftTranslator {
 		else if let tupleExpression = callExpression.subtree(named: "Tuple Expression") {
 			parameters = try translateTupleExpression(tupleExpression)
 		}
-		// FIXME: Rename this variable
-		else if let tupleShuffleExpressionFixme = callExpression
+		else if let tupleShuffleExpression = callExpression
 			.subtree(named: "Argument Shuffle Expression")
 		{
-			let parenthesesExpression = tupleShuffleExpressionFixme
+			let parenthesesExpression = tupleShuffleExpression
 				.subtree(named: "Parentheses Expression")
 
-			let tupleExpressionFixme =
-				tupleShuffleExpressionFixme.subtree(named: "Tuple Expression")
-			let typeName = tupleShuffleExpressionFixme["type"]
-			let elements = tupleShuffleExpressionFixme["elements"]
+			let tupleExpression = tupleShuffleExpression.subtree(named: "Tuple Expression")
+			let typeName = tupleShuffleExpression["type"]
+			let elements = tupleShuffleExpression["elements"]
 			let rawIndicesStrings = elements?.split(withStringSeparator: ", ")
 			let rawIndices = rawIndicesStrings.map({ $0.map { Int($0) } })
 
@@ -2488,7 +2482,7 @@ public class SwiftTranslator {
 					range: getRangeRecursively(ofNode: parenthesesExpression),
 					pairs: [LabeledExpression(label: nil, expression: expression)])
 			}
-			else if let tupleExpression = tupleExpressionFixme,
+			else if let tupleExpression = tupleExpression,
 				let typeName = typeName,
 				let rawIndices = rawIndices
 			{
@@ -2503,7 +2497,7 @@ public class SwiftTranslator {
 					}
 
 					if rawIndex == -2 {
-						let variadicSources = tupleShuffleExpressionFixme["variadic_sources"]?
+						let variadicSources = tupleShuffleExpression["variadic_sources"]?
 							.split(withStringSeparator: ", ")
 						guard let variadicCount = variadicSources?.count else {
 							return try unexpectedExpressionStructureError(
@@ -2539,7 +2533,7 @@ public class SwiftTranslator {
 					try translateExpression($0)
 				}
 				parameters = TupleShuffleExpression(
-					range: getRangeRecursively(ofNode: tupleShuffleExpressionFixme),
+					range: getRangeRecursively(ofNode: tupleShuffleExpression),
 					labels: labels,
 					indices: indices,
 					expressions: expressions)
@@ -2557,18 +2551,17 @@ public class SwiftTranslator {
 		return parameters
 	}
 
-	// FIXME: Rename this parameter
-	internal func translateTupleExpression(_ tupleExpressionFixme: SwiftAST) throws -> Expression {
-		guard tupleExpressionFixme.name == "Tuple Expression" else {
+	internal func translateTupleExpression(_ tupleExpression: SwiftAST) throws -> Expression {
+		guard tupleExpression.name == "Tuple Expression" else {
 			return try unexpectedExpressionStructureError(
-				"Trying to translate \(tupleExpressionFixme.name) as 'Tuple Expression'",
-				ast: tupleExpressionFixme, translator: self)
+				"Trying to translate \(tupleExpression.name) as 'Tuple Expression'",
+				ast: tupleExpression, translator: self)
 		}
 
 		// Only empty tuples don't have a list of names
-		guard let names = tupleExpressionFixme["names"] else {
+		guard let names = tupleExpression["names"] else {
 			return TupleExpression(
-				range: getRangeRecursively(ofNode: tupleExpressionFixme),
+				range: getRangeRecursively(ofNode: tupleExpression),
 				pairs: [])
 		}
 
@@ -2576,7 +2569,7 @@ public class SwiftTranslator {
 
 		let tuplePairs: ArrayClass<LabeledExpression> = []
 
-		for (name, expression) in zipToClass(namesArray, tupleExpressionFixme.subtrees) {
+		for (name, expression) in zipToClass(namesArray, tupleExpression.subtrees) {
 			let expression = try translateExpression(expression)
 
 			// Empty names (like the underscore in "foo(_:)") are represented by ''
@@ -2590,25 +2583,24 @@ public class SwiftTranslator {
 		}
 
 		return TupleExpression(
-			range: getRangeRecursively(ofNode: tupleExpressionFixme),
+			range: getRangeRecursively(ofNode: tupleExpression),
 			pairs: tuplePairs)
 	}
 
-	// FIXME: Rename this parameter
 	internal func translateInterpolatedStringLiteralExpression(
-		_ interpolatedStringLiteralExpressionFixme: SwiftAST)
+		_ interpolatedStringLiteralExpression: SwiftAST)
 		throws -> Expression
 	{
-		guard interpolatedStringLiteralExpressionFixme.name ==
+		guard interpolatedStringLiteralExpression.name ==
 			"Interpolated String Literal Expression" else
 		{
 			return try unexpectedExpressionStructureError(
-				"Trying to translate \(interpolatedStringLiteralExpressionFixme.name) as " +
+				"Trying to translate \(interpolatedStringLiteralExpression.name) as " +
 				"'Interpolated String Literal Expression'",
-				ast: interpolatedStringLiteralExpressionFixme, translator: self)
+				ast: interpolatedStringLiteralExpression, translator: self)
 		}
 
-		guard let braceStatement = interpolatedStringLiteralExpressionFixme
+		guard let braceStatement = interpolatedStringLiteralExpression
 			.subtree(named: "Tap Expression")?
 			.subtree(named: "Brace Statement") else
 		{
@@ -2616,7 +2608,7 @@ public class SwiftTranslator {
 				"Expected the Interpolated String Literal Expression to contain a Tap" +
 					"Expression containing a Brace Statement containing the String " +
 				"interpolation contents",
-				ast: interpolatedStringLiteralExpressionFixme, translator: self)
+				ast: interpolatedStringLiteralExpression, translator: self)
 		}
 
 		let expressions: ArrayClass<Expression> = []
@@ -2630,7 +2622,7 @@ public class SwiftTranslator {
 				return try unexpectedExpressionStructureError(
 					"Expected the brace statement to contain only Call Expressions containing " +
 					"Parentheses Expressions containing the relevant expressions.",
-					ast: interpolatedStringLiteralExpressionFixme, translator: self)
+					ast: interpolatedStringLiteralExpression, translator: self)
 			}
 
 			let translatedExpression = try translateExpression(expression)
@@ -2638,28 +2630,27 @@ public class SwiftTranslator {
 		}
 
 		return InterpolatedStringLiteralExpression(
-			range: getRangeRecursively(ofNode: interpolatedStringLiteralExpressionFixme),
+			range: getRangeRecursively(ofNode: interpolatedStringLiteralExpression),
 			expressions: expressions)
 	}
 
-	// FIXME: rename this parameter
 	internal func translateSubscriptExpression(
-		_ subscriptExpressionFixme: SwiftAST)
+		_ subscriptExpression: SwiftAST)
 		throws -> Expression
 	{
-		guard subscriptExpressionFixme.name == "Subscript Expression" else {
+		guard subscriptExpression.name == "Subscript Expression" else {
 			return try unexpectedExpressionStructureError(
-				"Trying to translate \(subscriptExpressionFixme.name) as 'Subscript Expression'",
-				ast: subscriptExpressionFixme, translator: self)
+				"Trying to translate \(subscriptExpression.name) as 'Subscript Expression'",
+				ast: subscriptExpression, translator: self)
 		}
 
-		let rawType = subscriptExpressionFixme["type"]
-		let subscriptContents = subscriptExpressionFixme.subtree(
+		let rawType = subscriptExpression["type"]
+		let subscriptContents = subscriptExpression.subtree(
 			at: 1,
 			named: "Parentheses Expression") ??
-			subscriptExpressionFixme.subtree(
+			subscriptExpression.subtree(
 				at: 1, named: "Tuple Expression")
-		let subscriptedExpression = subscriptExpressionFixme.subtree(at: 0)
+		let subscriptedExpression = subscriptExpression.subtree(at: 0)
 
 		if let rawType = rawType,
 			let subscriptContents = subscriptContents,
@@ -2670,56 +2661,54 @@ public class SwiftTranslator {
 			let subscriptedExpressionTranslation = try translateExpression(subscriptedExpression)
 
 			return SubscriptExpression(
-				range: getRangeRecursively(ofNode: subscriptExpressionFixme),
+				range: getRangeRecursively(ofNode: subscriptExpression),
 				subscriptedExpression: subscriptedExpressionTranslation,
 				indexExpression: subscriptContentsTranslation,
 				typeName: typeName)
 		}
 		else {
 			return try unexpectedExpressionStructureError(
-				"Unrecognized structure", ast: subscriptExpressionFixme, translator: self)
+				"Unrecognized structure", ast: subscriptExpression, translator: self)
 		}
 	}
 
-	// FIXME: -
-	internal func translateArrayExpression(_ arrayExpressionFixme: SwiftAST) throws -> Expression {
-		guard arrayExpressionFixme.name == "Array Expression" else {
+	internal func translateArrayExpression(_ arrayExpression: SwiftAST) throws -> Expression {
+		guard arrayExpression.name == "Array Expression" else {
 			return try unexpectedExpressionStructureError(
-				"Trying to translate \(arrayExpressionFixme.name) as 'Array Expression'",
-				ast: arrayExpressionFixme, translator: self)
+				"Trying to translate \(arrayExpression.name) as 'Array Expression'",
+				ast: arrayExpression, translator: self)
 		}
 
 		// Drop the "Semantic Expression" at the end
-		let expressionsToTranslate = ArrayClass<SwiftAST>(arrayExpressionFixme.subtrees.dropLast())
+		let expressionsToTranslate = ArrayClass<SwiftAST>(arrayExpression.subtrees.dropLast())
 
 		let expressionsArray = try expressionsToTranslate.map { try translateExpression($0) }
 
-		guard let rawType = arrayExpressionFixme["type"] else {
+		guard let rawType = arrayExpression["type"] else {
 			return try unexpectedExpressionStructureError(
-				"Failed to get type", ast: arrayExpressionFixme, translator: self)
+				"Failed to get type", ast: arrayExpression, translator: self)
 		}
 		let typeName = cleanUpType(rawType)
 
 		return ArrayExpression(
-			range: getRangeRecursively(ofNode: arrayExpressionFixme),
+			range: getRangeRecursively(ofNode: arrayExpression),
 			elements: expressionsArray,
 			typeName: typeName)
 	}
 
-	// FIXME: -
 	internal func translateDictionaryExpression(
-		_ dictionaryExpressionFixme: SwiftAST)
+		_ dictionaryExpression: SwiftAST)
 		throws -> Expression
 	{
-		guard dictionaryExpressionFixme.name == "Dictionary Expression" else {
+		guard dictionaryExpression.name == "Dictionary Expression" else {
 			return try unexpectedExpressionStructureError(
-				"Trying to translate \(dictionaryExpressionFixme.name) as 'Dictionary Expression'",
-				ast: dictionaryExpressionFixme, translator: self)
+				"Trying to translate \(dictionaryExpression.name) as 'Dictionary Expression'",
+				ast: dictionaryExpression, translator: self)
 		}
 
 		let keys: ArrayClass<Expression> = []
 		let values: ArrayClass<Expression> = []
-		for tupleExpression in dictionaryExpressionFixme.subtrees {
+		for tupleExpression in dictionaryExpression.subtrees {
 			guard tupleExpression.name == "Tuple Expression" else {
 				continue
 			}
@@ -2728,7 +2717,7 @@ public class SwiftTranslator {
 			{
 				return try unexpectedExpressionStructureError(
 					"Unable to get either key or value for one of the tuple expressions",
-					ast: dictionaryExpressionFixme, translator: self)
+					ast: dictionaryExpression, translator: self)
 			}
 
 			let keyTranslation = try translateExpression(keyAST)
@@ -2737,14 +2726,14 @@ public class SwiftTranslator {
 			values.append(valueTranslation)
 		}
 
-		guard let typeName = dictionaryExpressionFixme["type"] else {
+		guard let typeName = dictionaryExpression["type"] else {
 			return try unexpectedExpressionStructureError(
 				"Unable to get type",
-				ast: dictionaryExpressionFixme, translator: self)
+				ast: dictionaryExpression, translator: self)
 		}
 
 		return DictionaryExpression(
-			range: getRangeRecursively(ofNode: dictionaryExpressionFixme),
+			range: getRangeRecursively(ofNode: dictionaryExpression),
 			keys: keys,
 			values: values,
 			typeName: typeName)
@@ -2906,29 +2895,28 @@ public class SwiftTranslator {
 		}
 	}
 
-	// FIXME: -
 	internal func translateDeclarationReferenceExpression(
-		_ declarationReferenceExpressionFixme: SwiftAST)
+		_ declarationReferenceExpression: SwiftAST)
 		throws -> Expression
 	{
-		guard declarationReferenceExpressionFixme.name == "Declaration Reference Expression" else {
+		guard declarationReferenceExpression.name == "Declaration Reference Expression" else {
 			return try unexpectedExpressionStructureError(
-				"Trying to translate \(declarationReferenceExpressionFixme.name) as " +
+				"Trying to translate \(declarationReferenceExpression.name) as " +
 				"'Declaration Reference Expression'",
-				ast: declarationReferenceExpressionFixme, translator: self)
+				ast: declarationReferenceExpression, translator: self)
 		}
 
-		guard let rawType = declarationReferenceExpressionFixme["type"] else {
+		guard let rawType = declarationReferenceExpression["type"] else {
 			return try unexpectedExpressionStructureError(
-				"Failed to recognize type", ast: declarationReferenceExpressionFixme, translator: self)
+				"Failed to recognize type", ast: declarationReferenceExpression, translator: self)
 		}
 		let typeName = cleanUpType(rawType)
 
-		let isImplicit = declarationReferenceExpressionFixme.standaloneAttributes.contains("implicit")
+		let isImplicit = declarationReferenceExpression.standaloneAttributes.contains("implicit")
 
-		let range = getRange(ofNode: declarationReferenceExpressionFixme)
+		let range = getRange(ofNode: declarationReferenceExpression)
 
-		if let discriminator = declarationReferenceExpressionFixme["discriminator"] {
+		if let discriminator = declarationReferenceExpression["discriminator"] {
 			let declarationInformation = getInformationFromDeclaration(discriminator)
 
 			return DeclarationReferenceExpression(
@@ -2938,7 +2926,7 @@ public class SwiftTranslator {
 					isStandardLibrary: declarationInformation.isStandardLibrary,
 					isImplicit: isImplicit)
 		}
-		else if let codeDeclaration = declarationReferenceExpressionFixme.standaloneAttributes.first,
+		else if let codeDeclaration = declarationReferenceExpression.standaloneAttributes.first,
 			codeDeclaration.hasPrefix("code.")
 		{
 			let declarationInformation = getInformationFromDeclaration(codeDeclaration)
@@ -2949,7 +2937,7 @@ public class SwiftTranslator {
 				isStandardLibrary: declarationInformation.isStandardLibrary,
 				isImplicit: isImplicit)
 		}
-		else if let declaration = declarationReferenceExpressionFixme["decl"] {
+		else if let declaration = declarationReferenceExpression["decl"] {
 			let declarationInformation = getInformationFromDeclaration(declaration)
 			return DeclarationReferenceExpression(
 				range: range,
@@ -2960,7 +2948,7 @@ public class SwiftTranslator {
 		}
 		else {
 			return try unexpectedExpressionStructureError(
-				"Unrecognized structure", ast: declarationReferenceExpressionFixme, translator: self)
+				"Unrecognized structure", ast: declarationReferenceExpression, translator: self)
 		}
 	}
 
@@ -3293,11 +3281,11 @@ public class SwiftTranslator {
 		translator: SwiftTranslator)
 		throws -> Expression
 	{
-		let errorFixme = SwiftTranslatorError(
+		let error = SwiftTranslatorError(
 			errorMessage: errorMessage,
 			ast: ast,
 			translator: translator)
-		try Compiler.handleError(errorFixme)
+		try Compiler.handleError(error)
 		return ErrorExpression(range: getRangeRecursively(ofNode: ast))
 	}
 }

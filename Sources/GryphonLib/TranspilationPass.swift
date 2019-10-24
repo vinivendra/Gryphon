@@ -790,10 +790,10 @@ public class TranspilationPass {
 	}
 
 	func replaceCallExpression( // annotation: open
-		_ callExpressionFixme: CallExpression)
+		_ callExpression: CallExpression)
 		-> Expression
 	{
-		return processCallExpression(callExpressionFixme)
+		return processCallExpression(callExpression)
 	}
 
 	func processCallExpression( // annotation: open
