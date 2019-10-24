@@ -221,6 +221,30 @@ public class SwiftTranslator {
 		return try translateSubtreesInScope(braceStatement.subtrees, scope: braceStatement)
 	}
 
+	internal func translateSingleStatementFunction(
+		_ ast: SwiftAST)
+		throws -> ArrayClass<Statement>
+	{
+		guard hasSingleStatement(ast) else {
+			throw createUnexpectedASTStructureError(
+				"Trying to translate \(ast.name) as a single-statement function",
+				ast: ast, translator: self)
+		}
+
+		return try translateSubtreesInScope([ast.subtrees.last!], scope: ast)
+	}
+
+	private func hasSingleStatement(_ ast: SwiftAST) -> Bool {
+		if let singleStatement = ast.subtrees.last,
+			!singleStatement.name.contains("Parameter")
+		{
+			return true
+		}
+		else {
+			return false
+		}
+	}
+
 	internal func translateSubtree(_ subtree: SwiftAST) throws -> ArrayClass<Statement?> {
 
 		if getKeyedComment(forNode: subtree, key: .kotlin) == "ignore" {
@@ -1701,9 +1725,10 @@ public class SwiftTranslator {
 		let access = functionDeclaration["access"]
 
 		// Find out if it's static and if it's mutating
-		let maybeInterfaceType = functionDeclaration["interface type"]
-		let maybeInterfaceTypeComponents = functionDeclaration["interface type"]?
-			.split(withStringSeparator: " -> ")
+		// FIXME: "type" is necessary; check if "interface type" is still used
+		let maybeInterfaceType = functionDeclaration["interface type"] ??
+			functionDeclaration["type"]
+		let maybeInterfaceTypeComponents = maybeInterfaceType?.split(withStringSeparator: " -> ")
 		let maybeFirstInterfaceTypeComponent = maybeInterfaceTypeComponents?.first
 
 		guard let interfaceType = maybeInterfaceType,
@@ -1814,6 +1839,9 @@ public class SwiftTranslator {
 		let statements: ArrayClass<Statement>
 		if let braceStatement = functionDeclaration.subtree(named: "Brace Statement") {
 			statements = try translateBraceStatement(braceStatement)
+		}
+		else if hasSingleStatement(functionDeclaration) {
+			statements = try translateSingleStatementFunction(functionDeclaration)
 		}
 		else {
 			statements = []
@@ -1960,6 +1988,9 @@ public class SwiftTranslator {
 			if let braceStatement = subtree.subtree(named: "Brace Statement") {
 				statements = try translateBraceStatement(braceStatement)
 			}
+			else if hasSingleStatement(subtree) {
+				statements = try translateSingleStatementFunction(subtree)
+			}
 			else {
 				statements = []
 			}
@@ -2093,11 +2124,8 @@ public class SwiftTranslator {
 			result = LiteralBoolExpression(
 				range: getRangeRecursively(ofNode: expression),
 				value: value)
-		case "Integer Literal Expression":
-			let value = Int64(expression["value"]!)!
-			result = LiteralIntExpression(
-				range: getRangeRecursively(ofNode: expression),
-				value: value)
+		case "Integer Literal Expression", "Float Literal Expression":
+			result = try translateAsNumericLiteral(expression)
 		case "Parentheses Expression":
 			if let innerExpression = expression.subtree(at: 0) {
 				// Swift 5: Compiler-created parentheses expressions may be marked with "implicit"
@@ -2722,32 +2750,48 @@ public class SwiftTranslator {
 			typeName: typeName)
 	}
 
-	internal func translateAsNumericLiteral(_ callExpression: SwiftAST) throws -> Expression {
-		guard callExpression.name == "Call Expression" else {
-			return try unexpectedExpressionStructureError(
-				"Trying to translate \(callExpression.name) as 'Call Expression'",
-				ast: callExpression, translator: self)
-		}
-
+	internal func translateAsNumericLiteral(
+		_ numericLiteralExpression: SwiftAST)
+		throws -> Expression
+	{
 		// FIXME: Negative float literals are translated as positive becuase the AST dump doesn't
 		// seemd to include any info showing they're negative.
 		// Bug filed at https://bugs.swift.org/browse/SR-10131
-		let tupleExpression = callExpression.subtree(named: "Tuple Expression")
-		let literalExpression = tupleExpression?.subtree(named: "Integer Literal Expression") ??
-			tupleExpression?.subtree(named: "Float Literal Expression")
-		let value = literalExpression?["value"]
 
-		let constructorReferenceCallExpression = callExpression
-			.subtree(named: "Constructor Reference Call Expression")
-		let typeExpression = constructorReferenceCallExpression?.subtree(named: "Type Expression")
-		let rawType = typeExpression?["typerepr"]
+		let literalExpression: SwiftAST?
+		let rawType: String?
+
+		if numericLiteralExpression.name == "Call Expression" {
+			let tupleExpression = numericLiteralExpression.subtree(named: "Tuple Expression")
+			literalExpression = tupleExpression?.subtree(named: "Integer Literal Expression") ??
+				tupleExpression?.subtree(named: "Float Literal Expression")
+
+			let constructorReferenceCallExpression = numericLiteralExpression
+				.subtree(named: "Constructor Reference Call Expression")
+			let typeExpression = constructorReferenceCallExpression?.subtree(named: "Type Expression")
+			rawType = typeExpression?["typerepr"]
+		}
+		else if numericLiteralExpression.name == "Integer Literal Expression" ||
+			numericLiteralExpression.name == "Float Literal Expression"
+		{
+			literalExpression = numericLiteralExpression
+			rawType = numericLiteralExpression["type"]
+		}
+		else {
+			return try unexpectedExpressionStructureError(
+			"Unrecognized structure for numeric literal",
+			ast: numericLiteralExpression,
+			translator: self)
+		}
+
+		let value = literalExpression?["value"]
 
 		if let value = value, let literalExpression = literalExpression, let rawType = rawType {
 			if value.hasPrefix("0b") || value.hasPrefix("0o") || value.hasPrefix("0x") {
 				// Fixable
 				return try unexpectedExpressionStructureError(
 					"No support yet for alternative integer formats",
-					ast: callExpression,
+					ast: numericLiteralExpression,
 					translator: self)
 			}
 
@@ -2772,7 +2816,7 @@ public class SwiftTranslator {
 			}
 			else if typeName == "Float80" {
 				return try unexpectedExpressionStructureError(
-					"No support for 80-bit Floats", ast: callExpression, translator: self)
+					"No support for 80-bit Floats", ast: numericLiteralExpression, translator: self)
 			}
 			else if typeName.hasPrefix("U") {
 				return LiteralUIntExpression(
@@ -2783,7 +2827,7 @@ public class SwiftTranslator {
 				if signedValue == "-9223372036854775808" {
 					return try unexpectedExpressionStructureError(
 						"Kotlin's Long (equivalent to Int64) only goes down to " +
-						"-9223372036854775807", ast: callExpression, translator: self)
+						"-9223372036854775807", ast: numericLiteralExpression, translator: self)
 				}
 				else {
 					return LiteralIntExpression(
@@ -2794,7 +2838,9 @@ public class SwiftTranslator {
 		}
 		else {
 			return try unexpectedExpressionStructureError(
-				"Unrecognized structure for numeric literal", ast: callExpression, translator: self)
+				"Unrecognized structure for numeric literal",
+				ast: numericLiteralExpression,
+				translator: self)
 		}
 	}
 
