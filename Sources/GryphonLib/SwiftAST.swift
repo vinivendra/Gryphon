@@ -93,7 +93,7 @@ public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible
 	}
 
 	// MARK: - Descriptions
-	public var description: String { // annotation: override
+	public var description: String {
 		return self.prettyDescription()
 	}
 

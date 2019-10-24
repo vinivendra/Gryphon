@@ -1724,7 +1724,6 @@ public class SwiftTranslator {
 		let access = functionDeclaration["access"]
 
 		// Find out if it's static and if it's mutating
-		// FIXME: "type" is necessary; check if "interface type" is still used
 		let maybeInterfaceType = functionDeclaration["interface type"] ??
 			functionDeclaration["type"]
 		let maybeInterfaceTypeComponents = maybeInterfaceType?.split(withStringSeparator: " -> ")
@@ -3333,7 +3332,7 @@ struct SwiftTranslatorError: Error, CustomStringConvertible {
 	let translator: SwiftTranslator
 
 	// TODO: descriptions' override annotations should be automatic
-	var description: String { // annotation: override
+	var description: String {
 		var nodeDescription = ""
 		ast.prettyPrint {
 			nodeDescription += $0

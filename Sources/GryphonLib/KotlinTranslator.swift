@@ -1893,7 +1893,7 @@ struct KotlinTranslatorError: Error, CustomStringConvertible {
 	let errorMessage: String
 	let ast: Statement
 
-	public var description: String { // annotation: override
+	public var description: String {
 		var nodeDescription = ""
 		ast.prettyPrint(horizontalLimit: 100) {
 			nodeDescription += $0

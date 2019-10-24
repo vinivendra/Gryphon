@@ -919,6 +919,12 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 			variableDeclaration.typeName == "String",
 			let getter = variableDeclaration.getter
 		{
+			var annotations = (variableDeclaration.annotations ?? "").split(separator: " ")
+			if !annotations.contains("override") {
+				annotations.append("override")
+			}
+			let newAnnotations = annotations.joined(separator: " ")
+
 			return [FunctionDeclaration(
 				range: variableDeclaration.range,
 				prefix: "toString",
@@ -933,7 +939,7 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 				extendsType: variableDeclaration.extendsType,
 				statements: getter.statements,
 				access: nil,
-				annotations: variableDeclaration.annotations), ]
+				annotations: newAnnotations), ]
 		}
 
 		return super.replaceVariableDeclaration(variableDeclaration)
@@ -1917,10 +1923,9 @@ public class AddOptionalsInDotChainsTranspilationPass: TranspilationPass {
 		_ dotExpression: DotExpression)
 		-> Expression
 	{
-		// FIXME:
-		if dotExpression.rightExpression is OptionalExpression {
-		}
-		else if let leftDotExpression = dotExpression.leftExpression as? DotExpression {
+		if !(dotExpression.rightExpression is OptionalExpression),
+			let leftDotExpression = dotExpression.leftExpression as? DotExpression
+		{
 			if dotExpressionChainHasOptionals(leftDotExpression.leftExpression) {
 				return DotExpression(
 					range: dotExpression.range,
@@ -1936,10 +1941,9 @@ public class AddOptionalsInDotChainsTranspilationPass: TranspilationPass {
 		_ dotExpression: DotExpression)
 		-> Expression
 	{
-		// FIXME:
-		if dotExpression.rightExpression is OptionalExpression {
-		}
-		else if dotExpressionChainHasOptionals(dotExpression.leftExpression) {
+		if !(dotExpression.rightExpression is OptionalExpression),
+			dotExpressionChainHasOptionals(dotExpression.leftExpression)
+		{
 
 			let processedLeftExpression: Expression
 			if let leftDotExpression = dotExpression.leftExpression as? DotExpression {

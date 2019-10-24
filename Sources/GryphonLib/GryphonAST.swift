@@ -48,7 +48,7 @@ public final class GryphonAST: PrintableAsTree, Equatable, CustomStringConvertib
 	}
 
 	//
-	public var description: String { // annotation: override
+	public var description: String {
 		return prettyDescription()
 	}
 }
@@ -2160,7 +2160,7 @@ public enum TupleShuffleIndex: Equatable, CustomStringConvertible {
 	case absent
 	case present
 
-	public var description: String { // annotation: override
+	public var description: String {
 		switch self {
 		case let .variadic(count: count):
 			return "variadics: \(count)"

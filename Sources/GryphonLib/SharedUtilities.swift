@@ -170,7 +170,7 @@ extension Utilities {
 enum FileError: Error, CustomStringConvertible {
     case outdatedFile(inFolder: String)
 
-    var description: String { // annotation: override
+    var description: String {
         switch self {
         case let .outdatedFile(inFolder: folder):
             return "One of the files in the \(folder) folder is outdated.\n" +
