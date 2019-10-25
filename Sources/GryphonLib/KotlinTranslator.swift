@@ -17,111 +17,7 @@
 // declaration: import kotlin.system.*
 
 public class KotlinTranslator {
-	// MARK: - Interface - Recording information
-
-	///
-	/// This variable is used to store enum definitions in order to allow the translator
-	/// to translate them as sealed classes (see the `translate(dotSyntaxCallExpression)` method).
-	///
-	private(set) static var sealedClasses: ArrayClass<String> = []
-
-	public static func addSealedClass(_ className: String) {
-		sealedClasses.append(className)
-	}
-
-	///
-	/// This variable is used to store enum definitions in order to allow the translator
-	/// to translate them as enum classes (see the `translate(dotSyntaxCallExpression)` method).
-	///
-	private(set) static var enumClasses: ArrayClass<String> = []
-
-	public static func addEnumClass(_ className: String) {
-		enumClasses.append(className)
-	}
-
-	/// 
-	/// This variable is used to store protocol definitions in order to allow the translator
-	/// to translate conformances to them correctly (instead of as class inheritances).
-	///
-	private(set) static var protocols: ArrayClass<String> = []
-
-	public static func addProtocol(_ protocolName: String) {
-		protocols.append(protocolName)
-	}
-
-	/// Stores information on how a Swift function should be translated into Kotlin, including what
-	/// its prefix should be and what its parameters should be named. The `swiftAPIName` and the
-	/// `type` properties are used to look up the right function translation, and they should match
-	/// declarationReferences that reference this function.
-	/// This is used, for instance, to translate a function to Kotlin using the internal parameter
-	/// names instead of Swift's API label names, improving correctness and readability of the
-	/// translation. The information has to be stored because declaration references don't include
-	/// the internal parameter names, only the API names.
-	public struct FunctionTranslation {
-		let swiftAPIName: String
-		let typeName: String
-		let prefix: String
-		let parameters: ArrayClass<String>
-	}
-
-	private static var functionTranslations: ArrayClass<FunctionTranslation> = []
-
-	public static func addFunctionTranslation(_ newValue: FunctionTranslation) {
-		functionTranslations.append(newValue)
-	}
-
-	public static func getFunctionTranslation(forName name: String, typeName: String)
-		-> FunctionTranslation?
-	{
-		// Functions with unnamed parameters here are identified only by their prefix. For instance
-		// `f(_:_:)` here is named `f` but has been stored earlier as `f(_:_:)`.
-		for functionTranslation in functionTranslations {
-			if functionTranslation.swiftAPIName.hasPrefix(name),
-				functionTranslation.typeName == typeName
-			{
-				return functionTranslation
-			}
-		}
-
-		return nil
-	}
-
-	// TODO: These records should probably go in a Context class of some kind
-	/// Stores pure functions so we can reference them later
-	private static var pureFunctions: ArrayClass<FunctionDeclaration> = []
-
-	public static func recordPureFunction(_ newValue: FunctionDeclaration) {
-		pureFunctions.append(newValue)
-	}
-
-	public static func isReferencingPureFunction(
-		_ callExpression: CallExpression)
-		-> Bool
-	{
-		var finalCallExpression = callExpression.function
-		while true {
-			if let nextCallExpression = finalCallExpression as? DotExpression {
-				finalCallExpression = nextCallExpression.rightExpression
-			}
-			else {
-				break
-			}
-		}
-
-		if let declarationExpression = finalCallExpression as? DeclarationReferenceExpression {
-			for functionDeclaration in pureFunctions {
-				if declarationExpression.identifier.hasPrefix(functionDeclaration.prefix),
-					declarationExpression.typeName == functionDeclaration.functionType
-				{
-					return true
-				}
-			}
-		}
-
-		return false
-	}
-
-	// MARK: - Interface - Translating
+	// MARK: - Interface
 
 	public init() { }
 
@@ -150,6 +46,8 @@ public class KotlinTranslator {
 	}
 
 	// MARK: - Properties for translation
+
+	static let context = TranspilationContext()
 
 	internal static var indentationString = "\t"
 
@@ -360,7 +258,7 @@ public class KotlinTranslator {
 		withIndentation indentation: String)
 		throws -> String
 	{
-		let isEnumClass = KotlinTranslator.enumClasses.contains(enumDeclaration.enumName)
+		let isEnumClass = KotlinTranslator.context.enumClasses.contains(enumDeclaration.enumName)
 
 		let accessString = enumDeclaration.access ?? ""
 		let enumString = isEnumClass ? "enum" : "sealed"
@@ -370,7 +268,7 @@ public class KotlinTranslator {
 		if !enumDeclaration.inherits.isEmpty {
 			var translatedInheritedTypes = enumDeclaration.inherits.map { translateType($0) }
 			translatedInheritedTypes = translatedInheritedTypes.map {
-				KotlinTranslator.protocols.contains($0) ?
+				KotlinTranslator.context.protocols.contains($0) ?
 					$0 :
 					$0 + "()"
 			}
@@ -509,7 +407,7 @@ public class KotlinTranslator {
 		if !structDeclaration.inherits.isEmpty {
 			var translatedInheritedTypes = structDeclaration.inherits.map { translateType($0) }
 			translatedInheritedTypes = translatedInheritedTypes.map {
-				KotlinTranslator.protocols.contains($0) ?
+				KotlinTranslator.context.protocols.contains($0) ?
 					$0 :
 					$0 + "()"
 			}
@@ -1361,13 +1259,13 @@ public class KotlinTranslator {
 		let rightHandString =
 			try translateExpression(dotExpression.rightExpression, withIndentation: indentation)
 
-		if KotlinTranslator.sealedClasses.contains(leftHandString) {
+		if KotlinTranslator.context.sealedClasses.contains(leftHandString) {
 			let translatedEnumCase = rightHandString.capitalizedAsCamelCase()
 			return "\(leftHandString).\(translatedEnumCase)()"
 		}
 		else {
 			let enumName = leftHandString.split(withStringSeparator: ".").last!
-			if KotlinTranslator.enumClasses.contains(enumName) {
+			if KotlinTranslator.context.enumClasses.contains(enumName) {
 				let translatedEnumCase = rightHandString.upperSnakeCase()
 				return "\(leftHandString).\(translatedEnumCase)"
 			}
@@ -1450,9 +1348,9 @@ public class KotlinTranslator {
 			}
 		}
 
-		let functionTranslation: FunctionTranslation?
+		let functionTranslation: TranspilationContext.FunctionTranslation?
 		if let expression = functionExpression as? DeclarationReferenceExpression {
-			functionTranslation = KotlinTranslator.getFunctionTranslation(
+			functionTranslation = KotlinTranslator.context.getFunctionTranslation(
 				forName: expression.identifier,
 				typeName: expression.typeName)
 		}
@@ -1484,7 +1382,7 @@ public class KotlinTranslator {
 
 	private func translateParameters(
 		forCallExpression callExpression: CallExpression,
-		withFunctionTranslation functionTranslation: FunctionTranslation?,
+		withFunctionTranslation functionTranslation: TranspilationContext.FunctionTranslation?,
 		withIndentation indentation: String,
 		shouldAddNewlines: Bool)
 		throws -> String
@@ -1604,7 +1502,7 @@ public class KotlinTranslator {
 
 	private func translateTupleExpression(
 		_ tupleExpression: TupleExpression,
-		translation: FunctionTranslation? = nil,
+		translation: TranspilationContext.FunctionTranslation? = nil,
 		withIndentation indentation: String,
 		shouldAddNewlines: Bool = false)
 		throws -> String
@@ -1668,7 +1566,7 @@ public class KotlinTranslator {
 
 	private func translateTupleShuffleExpression(
 		_ tupleShuffleExpression: TupleShuffleExpression,
-		translation: FunctionTranslation? = nil,
+		translation: TranspilationContext.FunctionTranslation? = nil,
 		withIndentation indentation: String,
 		shouldAddNewlines: Bool = false)
 		throws -> String

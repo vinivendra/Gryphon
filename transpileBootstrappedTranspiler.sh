@@ -8,6 +8,7 @@
 	Sources/GryphonLib/SwiftAST.swift \
 	Sources/GryphonLib/SwiftTranslator.swift \
 	Sources/GryphonLib/GryphonAST.swift \
+	Sources/GryphonLib/TranspilationContext.swift \
 	Sources/GryphonLib/TranspilationPass.swift \
 	Sources/GryphonLib/ASTDumpDecoder.swift \
 	Sources/GryphonLib/Compiler.swift \

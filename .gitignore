@@ -28,6 +28,7 @@ Bootstrap/PrintableAsTree.kt
 Bootstrap/SwiftAST.kt
 Bootstrap/SwiftTranslator.kt
 Bootstrap/GryphonAST.kt
+Bootstrap/TranspilationContext.kt
 Bootstrap/TranspilationPass.kt
 Bootstrap/ASTDumpDecoder.kt
 Bootstrap/Compiler.kt

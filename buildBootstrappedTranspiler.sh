@@ -19,6 +19,7 @@ kotlinc -include-runtime \
 	Bootstrap/OutputFileMap.kt \
 	Bootstrap/GryphonAST.kt \
 	Bootstrap/SwiftTranslator.kt \
+	Bootstrap/TranspilationContext.kt \
 	Bootstrap/TranspilationPass.kt \
 	Bootstrap/KotlinTranslator.kt \
 	Bootstrap/LibraryTranspilationPass.kt \

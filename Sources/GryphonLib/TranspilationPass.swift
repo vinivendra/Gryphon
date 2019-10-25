@@ -1325,7 +1325,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 		{
 			let lastEnumType = String(enumTypeExpression.typeName.split(separator: ".").last!)
 
-			if KotlinTranslator.sealedClasses.contains(lastEnumType) {
+			if KotlinTranslator.context.sealedClasses.contains(lastEnumType) {
 				let enumExpression = enumExpression
 				enumExpression.identifier =
 					enumExpression.identifier.capitalizedAsCamelCase()
@@ -1336,7 +1336,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 						typeName: enumTypeExpression.typeName),
 					rightExpression: enumExpression)
 			}
-			else if KotlinTranslator.enumClasses.contains(lastEnumType) {
+			else if KotlinTranslator.context.enumClasses.contains(lastEnumType) {
 				let enumExpression = enumExpression
 				enumExpression.identifier = enumExpression.identifier.upperSnakeCase()
 				return DotExpression(
@@ -1355,8 +1355,9 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 		_ enumDeclaration: EnumDeclaration)
 		-> ArrayClass<Statement>
 	{
-		let isSealedClass = KotlinTranslator.sealedClasses.contains(enumDeclaration.enumName)
-		let isEnumClass = KotlinTranslator.enumClasses.contains(enumDeclaration.enumName)
+		let isSealedClass =
+			KotlinTranslator.context.sealedClasses.contains(enumDeclaration.enumName)
+		let isEnumClass = KotlinTranslator.context.enumClasses.contains(enumDeclaration.enumName)
 
 		let newElements: ArrayClass<EnumElement>
 		if isSealedClass {
@@ -1431,7 +1432,7 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
 		{
 			if enumExpression.typeName ==
 					"(\(enumTypeExpression.typeName).Type) -> \(enumTypeExpression.typeName)",
-				!KotlinTranslator.sealedClasses.contains(enumTypeExpression.typeName)
+				!KotlinTranslator.context.sealedClasses.contains(enumTypeExpression.typeName)
 			{
 				return enumExpression
 			}
@@ -2193,7 +2194,7 @@ public class IsOperatorsInSealedClassesTranspilationPass: TranspilationPass {
 		if let declarationReferenceExpression =
 			switchStatement.expression as? DeclarationReferenceExpression
 		{
-			if KotlinTranslator.sealedClasses.contains(
+			if KotlinTranslator.context.sealedClasses.contains(
 				declarationReferenceExpression.typeName)
 			{
 				let newCases = switchStatement.cases.map {
@@ -2375,15 +2376,16 @@ public class RecordFunctionsTranspilationPass: TranspilationPass {
 		let swiftAPIName = functionDeclaration.prefix + "(" +
 			functionDeclaration.parameters.map { ($0.apiLabel ?? "_") + ":" }.joined() + ")"
 
-		KotlinTranslator.addFunctionTranslation(KotlinTranslator.FunctionTranslation(
-			swiftAPIName: swiftAPIName,
-			typeName: functionDeclaration.functionType,
-			prefix: functionDeclaration.prefix,
-			parameters: functionDeclaration.parameters.map { $0.label }))
+		KotlinTranslator.context.addFunctionTranslation(
+			TranspilationContext.FunctionTranslation(
+				swiftAPIName: swiftAPIName,
+				typeName: functionDeclaration.functionType,
+				prefix: functionDeclaration.prefix,
+				parameters: functionDeclaration.parameters.map { $0.label }))
 
 		//
 		if functionDeclaration.isPure {
-			KotlinTranslator.recordPureFunction(functionDeclaration)
+			KotlinTranslator.context.recordPureFunction(functionDeclaration)
 		}
 
 		return super.processFunctionDeclaration(functionDeclaration)
@@ -2403,10 +2405,10 @@ public class RecordEnumsTranspilationPass: TranspilationPass {
 			}
 
 		if isEnumClass {
-			KotlinTranslator.addEnumClass(enumDeclaration.enumName)
+			KotlinTranslator.context.addEnumClass(enumDeclaration.enumName)
 		}
 		else {
-			KotlinTranslator.addSealedClass(enumDeclaration.enumName)
+			KotlinTranslator.context.addSealedClass(enumDeclaration.enumName)
 		}
 
 		return [enumDeclaration]
@@ -2421,7 +2423,7 @@ public class RecordProtocolsTranspilationPass: TranspilationPass {
 		_ protocolDeclaration: ProtocolDeclaration)
 		-> ArrayClass<Statement>
 	{
-		KotlinTranslator.addProtocol(protocolDeclaration.protocolName)
+		KotlinTranslator.context.addProtocol(protocolDeclaration.protocolName)
 
 		return super.replaceProtocolDeclaration(protocolDeclaration)
 	}
@@ -2630,7 +2632,7 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 		-> ArrayClass<SourceFileRange>
 	{
 		if let expression = expression as? CallExpression {
-			if !KotlinTranslator.isReferencingPureFunction(expression),
+			if !KotlinTranslator.context.isReferencingPureFunction(expression),
 				let range = expression.range
 			{
 				return [range]

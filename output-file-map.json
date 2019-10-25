@@ -51,6 +51,10 @@
 		"ast-dump": "Bootstrap/TranspilationPass.swiftASTDump",
 		"kotlin": "Bootstrap/TranspilationPass.kt",
 	},
+	"Sources/GryphonLib/TranspilationContext.swift": {
+		"ast-dump": "Bootstrap/TranspilationContext.swiftASTDump",
+		"kotlin": "Bootstrap/TranspilationContext.kt",
+	},
     "Sources/GryphonLib/SharedUtilities.swift": {
         "ast-dump": "Bootstrap/SharedUtilities.swiftASTDump",
         "kotlin": "Bootstrap/SharedUtilities.kt",
