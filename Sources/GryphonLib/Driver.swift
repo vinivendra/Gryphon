@@ -39,6 +39,7 @@ public class Driver {
 
 	public static func runUpToFirstPasses(
 		withSettings settings: Settings,
+		withContext context: TranspilationContext,
 		onFile inputFilePath: String) throws -> Any?
 	{
 		guard settings.shouldGenerateSwiftAST else {
@@ -93,7 +94,8 @@ public class Driver {
 		}
 
 		let gryphonFirstPassedAST = try Compiler.generateGryphonASTAfterFirstPasses(
-			fromGryphonRawAST: gryphonRawAST)
+			fromGryphonRawAST: gryphonRawAST,
+			withContext: context)
 
 		return gryphonFirstPassedAST
 	}
@@ -101,11 +103,12 @@ public class Driver {
 	public static func runAfterFirstPasses(
 		onAST gryphonFirstPassedAST: GryphonAST,
 		withSettings settings: Settings,
+		withContext context: TranspilationContext,
 		onFile inputFilePath: String)
 		throws -> Any?
 	{
 		let gryphonAST = try Compiler.generateGryphonASTAfterSecondPasses(
-			fromGryphonRawAST: gryphonFirstPassedAST)
+			fromGryphonRawAST: gryphonFirstPassedAST, withContext: context)
 		if settings.shouldEmitAST {
 			let output = gryphonAST.prettyDescription(
 				horizontalLimit: settings.horizontalLimit)
@@ -124,7 +127,9 @@ public class Driver {
 			return gryphonAST
 		}
 
-		let kotlinCode = try Compiler.generateKotlinCode(fromGryphonAST: gryphonAST)
+		let kotlinCode = try Compiler.generateKotlinCode(
+			fromGryphonAST: gryphonAST,
+			withContext: context)
 		if let outputFilePath = settings.outputFileMap?.getOutputFile(
 				forInputFile: inputFilePath, outputType: .kotlin),
 			settings.canPrintToFiles
@@ -159,22 +164,7 @@ public class Driver {
 		Compiler.shouldLogProgress(if: arguments.contains("-verbose"))
 		Compiler.shouldStopAtFirstError = !arguments.contains("-continue-on-error")
 
-		if let indentationArgument = arguments.first(where: { $0.hasPrefix("-indentation=") }) {
-			let indentationString = indentationArgument
-				.dropFirst("-indentation=".count)
-
-			if indentationString == "t" {
-				KotlinTranslator.indentationString = "\t"
-			}
-			else if let numberOfSpaces = Int(indentationString) {
-				var result = ""
-				for _ in 0..<numberOfSpaces {
-					result += " "
-				}
-				KotlinTranslator.indentationString = result
-			}
-		}
-
+		//
 		let horizontalLimit: Int?
 		if let lineLimitArgument = arguments.first(where: { $0.hasPrefix("-line-limit=") }) {
 			let lineLimitString = lineLimitArgument.dropFirst("-line-limit=".count)
@@ -184,6 +174,7 @@ public class Driver {
 			horizontalLimit = nil
 		}
 
+		//
 		let outputFileMap: OutputFileMap?
 		if let outputFileMapArgument =
 			arguments.first(where: { $0.hasPrefix("-output-file-map=") })
@@ -195,6 +186,7 @@ public class Driver {
 			outputFileMap = nil
 		}
 
+		//
 		let outputFolder: String
 		if let outputFolderIndex = arguments.index(of: "-o") {
 			if let maybeOutputFolder = arguments[safe: outputFolderIndex + 1] {
@@ -208,10 +200,12 @@ public class Driver {
 			outputFolder = OS.buildFolder
 		}
 
+		//
 		let inputFilePaths = arguments.filter {
 			!$0.hasPrefix("-") && $0 != "run" && $0 != "build"
 		}
 
+		//
 		let shouldEmitSwiftAST = arguments.contains("-emit-swiftAST")
 		let shouldEmitRawAST = arguments.contains("-emit-rawAST")
 		let shouldEmitAST = arguments.contains("-emit-AST")
@@ -226,14 +220,17 @@ public class Driver {
 
 		let shouldEmitKotlin = !hasChosenTask || arguments.contains("-emit-kotlin")
 
+		//
 		let canPrintToFiles = !arguments.contains("-Q")
 		let canPrintToOutput = !arguments.contains("-q")
 
+		//
 		let shouldGenerateKotlin = shouldBuild || shouldEmitKotlin
 		let shouldGenerateAST = shouldGenerateKotlin || shouldEmitAST
 		let shouldGenerateRawAST = shouldGenerateAST || shouldEmitRawAST
 		let shouldGenerateSwiftAST = shouldGenerateRawAST || shouldEmitSwiftAST
 
+		//
 		let mainFilePath: String?
 		if arguments.contains("-no-main-file") {
 			mainFilePath = nil
@@ -247,6 +244,7 @@ public class Driver {
 			}
 		}
 
+		//
 		let settings = Settings(
 			shouldEmitSwiftAST: shouldEmitSwiftAST,
 			shouldEmitRawAST: shouldEmitRawAST,
@@ -265,6 +263,28 @@ public class Driver {
 			outputFolder: outputFolder,
 			mainFilePath: mainFilePath)
 
+		//
+		var indentationString = "\t"
+		if let indentationArgument = arguments.first(where: { $0.hasPrefix("-indentation=") }) {
+			let indentationargument = indentationArgument
+				.dropFirst("-indentation=".count)
+
+			if indentationargument == "t" {
+				indentationString = "\t"
+			}
+			else if let numberOfSpaces = Int(indentationargument) {
+				var result = ""
+				for _ in 0..<numberOfSpaces {
+					result += " "
+				}
+				indentationString = result
+			}
+		}
+
+		//
+		let context = TranspilationContext(indentationString: indentationString)
+
+		//
 		let shouldRunConcurrently = !arguments.contains("-sync")
 
 		// Update libraries syncronously to guarantee it's only done once
@@ -280,12 +300,12 @@ public class Driver {
 		let firstResult: ArrayClass<Any?>
 		if shouldRunConcurrently {
 			firstResult = try filteredInputFiles.parallelMap {
-				try runUpToFirstPasses(withSettings: settings, onFile: $0)
+				try runUpToFirstPasses(withSettings: settings, withContext: context, onFile: $0)
 			}
 		}
 		else {
 			firstResult = try filteredInputFiles.map {
-				try runUpToFirstPasses(withSettings: settings, onFile: $0)
+				try runUpToFirstPasses(withSettings: settings, withContext: context, onFile: $0)
 			}
 		}
 
@@ -307,6 +327,7 @@ public class Driver {
 				try runAfterFirstPasses(
 					onAST: $0.0,
 					withSettings: settings,
+					withContext: context,
 					onFile: $0.1)
 			}
 		}
@@ -315,6 +336,7 @@ public class Driver {
 				try runAfterFirstPasses(
 					onAST: $0.0,
 					withSettings: settings,
+					withContext: context,
 					onFile: $0.1)
 			}
 		}

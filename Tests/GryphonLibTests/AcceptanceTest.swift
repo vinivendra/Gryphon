@@ -29,7 +29,8 @@ class AcceptanceTest: XCTestCase {
 				// and get its output
 				let testFilePath = TestUtils.testFilesPath + testName
 				guard let compilationResult = try Compiler.transpileCompileAndRun(
-					ASTDumpFiles: [testFilePath.withExtension(.swiftASTDump)]) else
+					ASTDumpFiles: [testFilePath.withExtension(.swiftASTDump)],
+					withContext: TranspilationContext(indentationString: "\t")) else
 				{
 					XCTFail("Test \(testName) - compilation error. " +
 						"It's possible a command timed out.")

@@ -210,7 +210,9 @@ extension Utilities {
         let asts = try Compiler.transpileGryphonRawASTs(fromASTDumpFiles: templateFilePaths)
 
         for ast in asts {
-            _ = RecordTemplatesTranspilationPass(ast: ast).run()
+			_ = RecordTemplatesTranspilationPass(
+				ast: ast,
+				context: TranspilationContext.globalContext).run()
         }
 
         libraryFilesHaveBeenUpdated = true

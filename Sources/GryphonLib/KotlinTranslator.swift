@@ -17,9 +17,18 @@
 // declaration: import kotlin.system.*
 
 public class KotlinTranslator {
+	// MARK: - Constants
+	static let errorTranslation = "<<Error>>"
+	static let lineLimit = 100
+
+	// MARK: - Properties
+	private let context: TranspilationContext
+
 	// MARK: - Interface
 
-	public init() { }
+	public init(context: TranspilationContext) {
+		self.context = context
+	}
 
 	public func translateAST(_ sourceFile: GryphonAST) throws -> String {
 		let declarationsTranslation =
@@ -44,16 +53,6 @@ public class KotlinTranslator {
 
 		return result
 	}
-
-	// MARK: - Properties for translation
-
-	static let context = TranspilationContext()
-
-	internal static var indentationString = "\t"
-
-	static let errorTranslation = "<<Error>>"
-
-	static let lineLimit = 100
 
 	// MARK: - Statement translations
 
@@ -258,7 +257,7 @@ public class KotlinTranslator {
 		withIndentation indentation: String)
 		throws -> String
 	{
-		let isEnumClass = KotlinTranslator.context.enumClasses.contains(enumDeclaration.enumName)
+		let isEnumClass = self.context.enumClasses.contains(enumDeclaration.enumName)
 
 		let accessString = enumDeclaration.access ?? ""
 		let enumString = isEnumClass ? "enum" : "sealed"
@@ -268,7 +267,7 @@ public class KotlinTranslator {
 		if !enumDeclaration.inherits.isEmpty {
 			var translatedInheritedTypes = enumDeclaration.inherits.map { translateType($0) }
 			translatedInheritedTypes = translatedInheritedTypes.map {
-				KotlinTranslator.context.protocols.contains($0) ?
+				self.context.protocols.contains($0) ?
 					$0 :
 					$0 + "()"
 			}
@@ -407,7 +406,7 @@ public class KotlinTranslator {
 		if !structDeclaration.inherits.isEmpty {
 			var translatedInheritedTypes = structDeclaration.inherits.map { translateType($0) }
 			translatedInheritedTypes = translatedInheritedTypes.map {
-				KotlinTranslator.context.protocols.contains($0) ?
+				self.context.protocols.contains($0) ?
 					$0 :
 					$0 + "()"
 			}
@@ -1259,13 +1258,13 @@ public class KotlinTranslator {
 		let rightHandString =
 			try translateExpression(dotExpression.rightExpression, withIndentation: indentation)
 
-		if KotlinTranslator.context.sealedClasses.contains(leftHandString) {
+		if self.context.sealedClasses.contains(leftHandString) {
 			let translatedEnumCase = rightHandString.capitalizedAsCamelCase()
 			return "\(leftHandString).\(translatedEnumCase)()"
 		}
 		else {
 			let enumName = leftHandString.split(withStringSeparator: ".").last!
-			if KotlinTranslator.context.enumClasses.contains(enumName) {
+			if self.context.enumClasses.contains(enumName) {
 				let translatedEnumCase = rightHandString.upperSnakeCase()
 				return "\(leftHandString).\(translatedEnumCase)"
 			}
@@ -1350,7 +1349,7 @@ public class KotlinTranslator {
 
 		let functionTranslation: TranspilationContext.FunctionTranslation?
 		if let expression = functionExpression as? DeclarationReferenceExpression {
-			functionTranslation = KotlinTranslator.context.getFunctionTranslation(
+			functionTranslation = self.context.getFunctionTranslation(
 				forName: expression.identifier,
 				typeName: expression.typeName)
 		}
@@ -1777,11 +1776,11 @@ public class KotlinTranslator {
 	}
 
 	private func increaseIndentation(_ indentation: String) -> String {
-		return indentation + KotlinTranslator.indentationString
+		return indentation + self.context.indentationString
 	}
 
 	private func decreaseIndentation(_ indentation: String) -> String {
-		return String(indentation.dropLast(KotlinTranslator.indentationString.count))
+		return String(indentation.dropLast(self.context.indentationString.count))
 	}
 }
 

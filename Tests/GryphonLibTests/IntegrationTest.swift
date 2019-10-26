@@ -28,7 +28,8 @@ class IntegrationTest: XCTestCase {
 				// Generate kotlin code using the whole compiler
 				let testFilePath = TestUtils.testFilesPath + testName
 				let generatedKotlinCode = try Compiler.transpileKotlinCode(
-					fromASTDumpFiles: [testFilePath.withExtension(.swiftASTDump)]).first!
+					fromASTDumpFiles: [testFilePath.withExtension(.swiftASTDump)],
+					withContext: TranspilationContext(indentationString: "\t")).first!
 
 				// Load the previously stored kotlin code from file
 				let expectedKotlinCode = try! String(

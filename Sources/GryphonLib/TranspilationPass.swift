@@ -34,35 +34,19 @@
 /// The `process` methods are always called from their respective `replace` methods, meaning users
 /// can override either one to replace a certain statement type.
 public class TranspilationPass {
-	static let swiftRawRepresentableTypes: ArrayClass<String> = [
-		"String",
-		"Int", "Int8", "Int16", "Int32", "Int64",
-		"UInt", "UInt8", "UInt16", "UInt32", "UInt64",
-		"Float", "Float32", "Float64", "Float80", "Double",
-		]
-
-	static func isASwiftRawRepresentableType(_ typeName: String) -> Bool {
-		return swiftRawRepresentableTypes.contains(typeName)
-	}
-
-	static let swiftProtocols: ArrayClass<String> = [
-		"Equatable", "Codable", "Decodable", "Encodable", "CustomStringConvertible",
-	]
-
-	static func isASwiftProtocol(_ protocolName: String) -> Bool {
-		return swiftProtocols.contains(protocolName)
-	}
-
-	//
-	var ast: GryphonAST
+	// MARK: - Properties
+	let ast: GryphonAST
+	let context: TranspilationContext
 
 	fileprivate var parents: ArrayClass<ASTNode> = []
 	fileprivate var parent: ASTNode {
 		return parents.secondToLast!
 	}
 
-	init(ast: GryphonAST) {
+	// MARK: - Interface
+	init(ast: GryphonAST, context: TranspilationContext) {
 		self.ast = ast
+		self.context = context
 	}
 
 	func run() -> GryphonAST { // annotation: open
@@ -73,6 +57,26 @@ public class TranspilationPass {
 			declarations: replacedDeclarations,
 			statements: replacedStatements)
 	}
+
+	// MARK: - Helper functions
+	static func isASwiftRawRepresentableType(_ typeName: String) -> Bool {
+		return swiftRawRepresentableTypes.contains(typeName)
+	}
+
+	static func isASwiftProtocol(_ protocolName: String) -> Bool {
+		return swiftProtocols.contains(protocolName)
+	}
+
+	static let swiftRawRepresentableTypes: ArrayClass<String> = [
+		"String",
+		"Int", "Int8", "Int16", "Int32", "Int64",
+		"UInt", "UInt8", "UInt16", "UInt32", "UInt64",
+		"Float", "Float32", "Float64", "Float80", "Double",
+	]
+
+	static let swiftProtocols: ArrayClass<String> = [
+		"Equatable", "Codable", "Decodable", "Encodable", "CustomStringConvertible",
+	]
 
 	// MARK: - Replace Statements
 
@@ -909,7 +913,8 @@ public class TranspilationPass {
 // MARK: - Transpilation passes
 
 public class DescriptionAsToStringTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	override func replaceVariableDeclaration( // annotation: override
 		_ variableDeclaration: VariableDeclaration)
@@ -947,7 +952,8 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 }
 
 public class RemoveParenthesesTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	override func replaceSubscriptExpression( // annotation: override
 		_ subscriptExpression: SubscriptExpression)
@@ -1018,7 +1024,8 @@ public class RemoveParenthesesTranspilationPass: TranspilationPass {
 
 /// Removes implicit declarations so that they don't show up on the translation
 public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	override func replaceEnumDeclaration( // annotation: override
 		_ enumDeclaration: EnumDeclaration)
@@ -1072,7 +1079,8 @@ public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
 /// Optional initializers can be translated as `invoke` operators to have similar syntax and
 /// functionality.
 public class OptionalInitsTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	private var isFailableInitializer: Bool = false
 
@@ -1130,7 +1138,8 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 }
 
 public class RemoveExtraReturnsInInitsTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	override func processInitializerDeclaration( // annotation: override
 		_ initializerDeclaration: InitializerDeclaration)
@@ -1154,7 +1163,8 @@ public class RemoveExtraReturnsInInitsTranspilationPass: TranspilationPass {
 /// The static functions and variables in a class must all be placed inside a single companion
 /// object.
 public class StaticMembersTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	private func sendStaticMembersToCompanionObject(
 		_ members: ArrayClass<Statement>,
@@ -1252,7 +1262,8 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 /// }
 /// ````
 public class InnerTypePrefixesTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	var typeNamesStack: ArrayClass<String> = []
 
@@ -1314,7 +1325,8 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass {
 /// Capitalizes references to enums (since enum cases in Kotlin are conventionally written in
 /// capitalized forms)
 public class CapitalizeEnumsTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	override func replaceDotExpression( // annotation: override
 		_ dotExpression: DotExpression)
@@ -1325,7 +1337,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 		{
 			let lastEnumType = String(enumTypeExpression.typeName.split(separator: ".").last!)
 
-			if KotlinTranslator.context.sealedClasses.contains(lastEnumType) {
+			if self.context.sealedClasses.contains(lastEnumType) {
 				let enumExpression = enumExpression
 				enumExpression.identifier =
 					enumExpression.identifier.capitalizedAsCamelCase()
@@ -1336,7 +1348,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 						typeName: enumTypeExpression.typeName),
 					rightExpression: enumExpression)
 			}
-			else if KotlinTranslator.context.enumClasses.contains(lastEnumType) {
+			else if self.context.enumClasses.contains(lastEnumType) {
 				let enumExpression = enumExpression
 				enumExpression.identifier = enumExpression.identifier.upperSnakeCase()
 				return DotExpression(
@@ -1356,8 +1368,8 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 		-> ArrayClass<Statement>
 	{
 		let isSealedClass =
-			KotlinTranslator.context.sealedClasses.contains(enumDeclaration.enumName)
-		let isEnumClass = KotlinTranslator.context.enumClasses.contains(enumDeclaration.enumName)
+			self.context.sealedClasses.contains(enumDeclaration.enumName)
+		let isEnumClass = self.context.enumClasses.contains(enumDeclaration.enumName)
 
 		let newElements: ArrayClass<EnumElement>
 		if isSealedClass {
@@ -1419,7 +1431,8 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 // TODO: test
 // TODO: add support for return whens (maybe put this before the when pass)
 public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	private var returnTypesStack: ArrayClass<String> = []
 
@@ -1432,7 +1445,7 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
 		{
 			if enumExpression.typeName ==
 					"(\(enumTypeExpression.typeName).Type) -> \(enumTypeExpression.typeName)",
-				!KotlinTranslator.context.sealedClasses.contains(enumTypeExpression.typeName)
+				!self.context.sealedClasses.contains(enumTypeExpression.typeName)
 			{
 				return enumExpression
 			}
@@ -1479,7 +1492,8 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
 }
 
 public class RenameOperatorsTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	override func replaceBinaryOperatorExpression( // annotation: override
 		_ binaryOperatorExpression: BinaryOperatorExpression)
@@ -1511,7 +1525,8 @@ public class RenameOperatorsTranspilationPass: TranspilationPass {
 /// in the function header in Kotlin. This should remove the calls from the initializer bodies and
 /// send them to the appropriate property.
 public class CallsToSuperclassInitializersTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	override func processInitializerDeclaration( // annotation: override
 		_ initializerDeclaration: InitializerDeclaration)
@@ -1598,7 +1613,8 @@ public class CallsToSuperclassInitializersTranspilationPass: TranspilationPass {
 }
 
 public class SelfToThisTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	override func replaceDotExpression( // annotation: override
 		_ dotExpression: DotExpression)
@@ -1633,7 +1649,8 @@ public class SelfToThisTranspilationPass: TranspilationPass {
 /// Declarations can't conform to Swift-only protocols like Codable and Equatable, and enums can't
 /// inherit from types Strings and Ints.
 public class CleanInheritancesTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	override func replaceEnumDeclaration( // annotation: override
 		_ enumDeclaration: EnumDeclaration)
@@ -1678,7 +1695,8 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 
 /// The "anonymous parameter" `$0` has to be replaced by `it`
 public class AnonymousParametersTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	override func processDeclarationReferenceExpression( // annotation: override
 		_ expression: DeclarationReferenceExpression)
@@ -1732,7 +1750,8 @@ public class AnonymousParametersTranspilationPass: TranspilationPass {
 /// isn't a `MutableList` (it happened once with an `EmptyList`), meaning a normal cast would fail.
 ///
 public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	override func replaceCallExpression( // annotation: override
 		_ callExpression: CallExpression)
@@ -1843,7 +1862,8 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 /// statements (not yet implemented) or just standalone expressions (easier to implement but more
 /// error-prone). This pass turns return statements in closures into standalone expressions
 public class ReturnsInLambdasTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	var isInClosure = false
 
@@ -1878,7 +1898,8 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 /// array?[0] // Becomes `array?.get(0)` in Kotlin
 /// ````
 public class RefactorOptionalsInSubscriptsTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	override func replaceSubscriptExpression( // annotation: override
 		_ subscriptExpression: SubscriptExpression)
@@ -1918,7 +1939,8 @@ public class RefactorOptionalsInSubscriptsTranspilationPass: TranspilationPass {
 /// foo?.bar?.baz
 /// ````
 public class AddOptionalsInDotChainsTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	override func replaceDotExpression( // annotation: override
 		_ dotExpression: DotExpression)
@@ -1989,7 +2011,8 @@ public class AddOptionalsInDotChainsTranspilationPass: TranspilationPass {
 /// a function call. However, that would be much more complicated and it's not clear that it would
 /// be desirable.
 public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	/// Detect switches whose bodies all end in the same returns or assignments
 	override func replaceSwitchStatement( // annotation: override
@@ -2154,7 +2177,8 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 /// Breaks are not allowed in Kotlin `when` statements, but the `when` statements don't have to be
 /// exhaustive. Just remove the cases that only have breaks.
 public class RemoveBreaksInSwitchesTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	override func replaceSwitchStatement( // annotation: override
 		_ switchStatement: SwitchStatement)
@@ -2185,7 +2209,8 @@ public class RemoveBreaksInSwitchesTranspilationPass: TranspilationPass {
 /// Sealed classes should be tested for subclasses with the `is` operator. This is automatically
 /// done for enum cases with associated values, but in other cases it has to be handled here.
 public class IsOperatorsInSealedClassesTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	override func replaceSwitchStatement( // annotation: override
 		_ switchStatement: SwitchStatement)
@@ -2194,7 +2219,7 @@ public class IsOperatorsInSealedClassesTranspilationPass: TranspilationPass {
 		if let declarationReferenceExpression =
 			switchStatement.expression as? DeclarationReferenceExpression
 		{
-			if KotlinTranslator.context.sealedClasses.contains(
+			if self.context.sealedClasses.contains(
 				declarationReferenceExpression.typeName)
 			{
 				let newCases = switchStatement.cases.map {
@@ -2253,7 +2278,8 @@ public class IsOperatorsInSealedClassesTranspilationPass: TranspilationPass {
 }
 
 public class RemoveExtensionsTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	var extendingType: String?
 
@@ -2305,7 +2331,8 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 /// If let conditions of the type `if let foo = foo as? Type` can be more simply translated as
 /// `if (foo is Type)`. This pass makes that transformation.
 public class ShadowedIfLetAsToIsTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	override func processIfStatement( // annotation: override
 		_ ifStatement: IfStatement)
@@ -2367,7 +2394,8 @@ public class ShadowedIfLetAsToIsTranspilationPass: TranspilationPass {
 /// It also records all functions that have been marked as pure so that they don't raise warnings
 /// for possible side-effects in if-lets.
 public class RecordFunctionsTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	override func processFunctionDeclaration( // annotation: override
 		_ functionDeclaration: FunctionDeclaration)
@@ -2376,7 +2404,7 @@ public class RecordFunctionsTranspilationPass: TranspilationPass {
 		let swiftAPIName = functionDeclaration.prefix + "(" +
 			functionDeclaration.parameters.map { ($0.apiLabel ?? "_") + ":" }.joined() + ")"
 
-		KotlinTranslator.context.addFunctionTranslation(
+		self.context.addFunctionTranslation(
 			TranspilationContext.FunctionTranslation(
 				swiftAPIName: swiftAPIName,
 				typeName: functionDeclaration.functionType,
@@ -2385,7 +2413,7 @@ public class RecordFunctionsTranspilationPass: TranspilationPass {
 
 		//
 		if functionDeclaration.isPure {
-			KotlinTranslator.context.recordPureFunction(functionDeclaration)
+			self.context.recordPureFunction(functionDeclaration)
 		}
 
 		return super.processFunctionDeclaration(functionDeclaration)
@@ -2393,7 +2421,8 @@ public class RecordFunctionsTranspilationPass: TranspilationPass {
 }
 
 public class RecordEnumsTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	override func replaceEnumDeclaration( // annotation: override
 		_ enumDeclaration: EnumDeclaration)
@@ -2405,10 +2434,10 @@ public class RecordEnumsTranspilationPass: TranspilationPass {
 			}
 
 		if isEnumClass {
-			KotlinTranslator.context.addEnumClass(enumDeclaration.enumName)
+			self.context.addEnumClass(enumDeclaration.enumName)
 		}
 		else {
-			KotlinTranslator.context.addSealedClass(enumDeclaration.enumName)
+			self.context.addSealedClass(enumDeclaration.enumName)
 		}
 
 		return [enumDeclaration]
@@ -2417,20 +2446,22 @@ public class RecordEnumsTranspilationPass: TranspilationPass {
 
 /// Records all protocol declarations in the Kotlin Translator
 public class RecordProtocolsTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	override func replaceProtocolDeclaration( // annotation: override
 		_ protocolDeclaration: ProtocolDeclaration)
 		-> ArrayClass<Statement>
 	{
-		KotlinTranslator.context.addProtocol(protocolDeclaration.protocolName)
+		self.context.addProtocol(protocolDeclaration.protocolName)
 
 		return super.replaceProtocolDeclaration(protocolDeclaration)
 	}
 }
 
 public class RaiseStandardLibraryWarningsTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	override func processDeclarationReferenceExpression( // annotation: override
 		_ expression: DeclarationReferenceExpression)
@@ -2452,7 +2483,8 @@ public class RaiseStandardLibraryWarningsTranspilationPass: TranspilationPass {
 /// class. Otherwise, the translation can cause inconsistencies, so this pass raises warnings.
 /// Source: https://forums.swift.org/t/are-immutable-structs-like-classes/16270
 public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	override func replaceStructDeclaration( // annotation: override
 		_ structDeclaration: StructDeclaration)
@@ -2523,7 +2555,8 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 /// `Dictionaries` for guaranteeing correctness. This pass raises warnings when it finds uses of the
 /// native data structures, which should help avoid these bugs.
 public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	override func replaceExpression(_ expression: Expression) -> Expression // annotation: override
 	{
@@ -2580,7 +2613,8 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 /// effects (i.e. `let x = sideEffects()`) to run eagerly on Kotlin but lazily on Swift, which can
 /// lead to incorrect behavior.
 public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	override func processIfStatement( // annotation: override
 		_ ifStatement: IfStatement)
@@ -2632,7 +2666,7 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 		-> ArrayClass<SourceFileRange>
 	{
 		if let expression = expression as? CallExpression {
-			if !KotlinTranslator.context.isReferencingPureFunction(expression),
+			if !self.context.isReferencingPureFunction(expression),
 				let range = expression.range
 			{
 				return [range]
@@ -2707,7 +2741,8 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 
 /// Sends let declarations to before the if statement, and replaces them with `x != null` conditions
 public class RearrangeIfLetsTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	/// Send the let declarations to before the if statement
 	override func replaceIfStatement( // annotation: override
@@ -2819,7 +2854,8 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 
 /// Change the implementation of a `==` operator to be usable in Kotlin
 public class EquatableOperatorsTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	override func processFunctionDeclaration( // annotation: override
 		_ functionDeclaration: FunctionDeclaration)
@@ -2930,7 +2966,8 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 
 /// Create a rawValue variable for enums that conform to rawRepresentable
 public class RawValuesTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	override func replaceEnumDeclaration( // annotation: override
 		_ enumDeclaration: EnumDeclaration) -> ArrayClass<Statement>
@@ -3116,7 +3153,8 @@ public class RawValuesTranspilationPass: TranspilationPass {
 /// ! combines with a != or even another !, causing a double negative in the condition that can
 /// be removed (or turned into a single ==). This pass performs that transformation.
 public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	override func processIfStatement( // annotation: override
 		_ ifStatement: IfStatement)
@@ -3180,7 +3218,8 @@ public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
 /// Statements of the type `if (a == null) { return }` in Swift can be translated as `a ?: return`
 /// in Kotlin.
 public class ReturnIfNilTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	override func replaceStatement( // annotation: override
 		_ statement: Statement)
@@ -3226,7 +3265,8 @@ public class ReturnIfNilTranspilationPass: TranspilationPass {
 }
 
 public class FixProtocolContentsTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	var isInProtocol = false
 
@@ -3277,90 +3317,98 @@ public extension TranspilationPass {
 	/// Runs transpilation passes that have to be run on all files before the other passes can
 	/// run. For instance, we need to record all enums declared on all files before we can
 	/// translate references to them correctly.
-	static func runFirstRoundOfPasses(on sourceFile: GryphonAST) -> GryphonAST {
-		var result = sourceFile
+	static func runFirstRoundOfPasses(
+		on sourceFile: GryphonAST,
+		withContext context: TranspilationContext)
+		-> GryphonAST
+	{
+		var ast = sourceFile
 
 		// Remove declarations that shouldn't even be considered in the passes
-		result = RemoveImplicitDeclarationsTranspilationPass(ast: result).run()
+		ast = RemoveImplicitDeclarationsTranspilationPass(ast: ast, context: context).run()
 
 		// RecordEnums needs to be after CleanInheritance: it needs Swift-only inheritances removed
 		// in order to know if the enum inherits from a class or not, and therefore is a sealed
 		// class or an enum class.
-		result = CleanInheritancesTranspilationPass(ast: result).run()
+		ast = CleanInheritancesTranspilationPass(ast: ast, context: context).run()
 
 		// Record information on enum and function translations
-		result = RecordTemplatesTranspilationPass(ast: result).run()
-		result = RecordEnumsTranspilationPass(ast: result).run()
-		result = RecordProtocolsTranspilationPass(ast: result).run()
-		result = RecordFunctionsTranspilationPass(ast: result).run()
+		ast = RecordTemplatesTranspilationPass(ast: ast, context: context).run()
+		ast = RecordEnumsTranspilationPass(ast: ast, context: context).run()
+		ast = RecordProtocolsTranspilationPass(ast: ast, context: context).run()
+		ast = RecordFunctionsTranspilationPass(ast: ast, context: context).run()
 
-		return result
+		return ast
 	}
 
 	/// Runs transpilation passes that can be run independently on any files, provided they happen
 	/// after the `runFirstRoundOfPasses`.
-	static func runSecondRoundOfPasses(on sourceFile: GryphonAST) -> GryphonAST {
-		var result = sourceFile
+	static func runSecondRoundOfPasses(
+		on sourceFile: GryphonAST,
+		withContext context: TranspilationContext)
+		-> GryphonAST
+	{
+		var ast = sourceFile
 
 		// Replace templates (must go before other passes since templates are recorded before
 		// running any passes)
-		result = ReplaceTemplatesTranspilationPass(ast: result).run()
+		ast = ReplaceTemplatesTranspilationPass(ast: ast, context: context).run()
 
 		// Cleanup
-		result = RemoveParenthesesTranspilationPass(ast: result).run()
-		result = RemoveExtraReturnsInInitsTranspilationPass(ast: result).run()
+		ast = RemoveParenthesesTranspilationPass(ast: ast, context: context).run()
+		ast = RemoveExtraReturnsInInitsTranspilationPass(ast: ast, context: context).run()
 
 		// Transform structures that need to be significantly different in Kotlin
-		result = EquatableOperatorsTranspilationPass(ast: result).run()
-		result = RawValuesTranspilationPass(ast: result).run()
-		result = DescriptionAsToStringTranspilationPass(ast: result).run()
-		result = OptionalInitsTranspilationPass(ast: result).run()
-		result = StaticMembersTranspilationPass(ast: result).run()
-		result = FixProtocolContentsTranspilationPass(ast: result).run()
-		result = RemoveExtensionsTranspilationPass(ast: result).run()
+		ast = EquatableOperatorsTranspilationPass(ast: ast, context: context).run()
+		ast = RawValuesTranspilationPass(ast: ast, context: context).run()
+		ast = DescriptionAsToStringTranspilationPass(ast: ast, context: context).run()
+		ast = OptionalInitsTranspilationPass(ast: ast, context: context).run()
+		ast = StaticMembersTranspilationPass(ast: ast, context: context).run()
+		ast = FixProtocolContentsTranspilationPass(ast: ast, context: context).run()
+		ast = RemoveExtensionsTranspilationPass(ast: ast, context: context).run()
 
 		// Deal with if lets:
 		// - We can refactor shadowed if-let-as conditions before raising warnings to avoid false
 		//   alarms
 		// - We have to know the order of the conditions to raise warnings here, so warnings must go
 		//   before the conditions are rearranged
-		result = ShadowedIfLetAsToIsTranspilationPass(ast: result).run()
-		result = RaiseWarningsForSideEffectsInIfLetsTranspilationPass(ast: result).run()
-		result = RearrangeIfLetsTranspilationPass(ast: result).run()
+		ast = ShadowedIfLetAsToIsTranspilationPass(ast: ast, context: context).run()
+		ast = RaiseWarningsForSideEffectsInIfLetsTranspilationPass(ast: ast, context: context).run()
+		ast = RearrangeIfLetsTranspilationPass(ast: ast, context: context).run()
 
 		// Transform structures that need to be slightly different in Kotlin
-		result = SelfToThisTranspilationPass(ast: result).run()
-		result = AnonymousParametersTranspilationPass(ast: result).run()
-		result = CovarianceInitsAsCallsTranspilationPass(ast: result).run()
-		result = ReturnsInLambdasTranspilationPass(ast: result).run()
-		result = RefactorOptionalsInSubscriptsTranspilationPass(ast: result).run()
-		result = AddOptionalsInDotChainsTranspilationPass(ast: result).run()
-		result = RenameOperatorsTranspilationPass(ast: result).run()
-		result = CallsToSuperclassInitializersTranspilationPass(ast: result).run()
+		ast = SelfToThisTranspilationPass(ast: ast, context: context).run()
+		ast = AnonymousParametersTranspilationPass(ast: ast, context: context).run()
+		ast = CovarianceInitsAsCallsTranspilationPass(ast: ast, context: context).run()
+		ast = ReturnsInLambdasTranspilationPass(ast: ast, context: context).run()
+		ast = RefactorOptionalsInSubscriptsTranspilationPass(ast: ast, context: context).run()
+		ast = AddOptionalsInDotChainsTranspilationPass(ast: ast, context: context).run()
+		ast = RenameOperatorsTranspilationPass(ast: ast, context: context).run()
+		ast = CallsToSuperclassInitializersTranspilationPass(ast: ast, context: context).run()
 
 		// - CapitalizeEnums has to be before IsOperatorsInSealedClasses
-		result = CapitalizeEnumsTranspilationPass(ast: result).run()
-		result = IsOperatorsInSealedClassesTranspilationPass(ast: result).run()
+		ast = CapitalizeEnumsTranspilationPass(ast: ast, context: context).run()
+		ast = IsOperatorsInSealedClassesTranspilationPass(ast: ast, context: context).run()
 
 		// - SwitchesToExpressions has to be before RemoveBreaksInSwitches:
 		//   RemoveBreaks might remove a case that only has a break, turning an exhaustive switch
 		//   into a non-exhaustive one and making it convertible to an expression. However, only
 		//   exhaustive switches can be converted to expressions, so this should be avoided.
-		result = SwitchesToExpressionsTranspilationPass(ast: result).run()
-		result = RemoveBreaksInSwitchesTranspilationPass(ast: result).run()
+		ast = SwitchesToExpressionsTranspilationPass(ast: ast, context: context).run()
+		ast = RemoveBreaksInSwitchesTranspilationPass(ast: ast, context: context).run()
 
 		// Improve Kotlin readability
-		result = OmitImplicitEnumPrefixesTranspilationPass(ast: result).run()
-		result = InnerTypePrefixesTranspilationPass(ast: result).run()
-		result = DoubleNegativesInGuardsTranspilationPass(ast: result).run()
-		result = ReturnIfNilTranspilationPass(ast: result).run()
+		ast = OmitImplicitEnumPrefixesTranspilationPass(ast: ast, context: context).run()
+		ast = InnerTypePrefixesTranspilationPass(ast: ast, context: context).run()
+		ast = DoubleNegativesInGuardsTranspilationPass(ast: ast, context: context).run()
+		ast = ReturnIfNilTranspilationPass(ast: ast, context: context).run()
 
 		// Raise any warnings that may be left
-		result = RaiseStandardLibraryWarningsTranspilationPass(ast: result).run()
-		result = RaiseMutableValueTypesWarningsTranspilationPass(ast: result).run()
-		result = RaiseNativeDataStructureWarningsTranspilationPass(ast: result).run()
+		ast = RaiseStandardLibraryWarningsTranspilationPass(ast: ast, context: context).run()
+		ast = RaiseMutableValueTypesWarningsTranspilationPass(ast: ast, context: context).run()
+		ast = RaiseNativeDataStructureWarningsTranspilationPass(ast: ast, context: context).run()
 
-		return result
+		return ast
 	}
 
 	func printParents() {

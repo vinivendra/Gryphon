@@ -14,7 +14,48 @@
 // limitations under the License.
 //
 
+// declaration: import kotlin.system.*
+
 public class TranspilationContext {
+	/// The global context is used for information that should be accessible globally, such as
+	/// standard library templates (which can be calculated once and are the same every time).
+	static let globalContext = TranspilationContext()
+
+	/// Normal contexts should be initialized based on the pre-existing global information, using
+	/// the public `init(indentationString:)` method. This method is only for initializing the
+	/// global context.
+	private init() {
+		self.indentationString = ""
+		self.templates = []
+	}
+
+	public init(indentationString: String) {
+		do {
+			try Utilities.updateLibraryFiles()
+		}
+		catch let error {
+			fatalError("Failed to initialize standard library templates!\n\(error)")
+		}
+
+		self.templates = TranspilationContext.globalContext.templates.copy()
+		self.indentationString = indentationString
+	}
+
+	//
+	var indentationString: String
+
+	//
+	public struct TranspilationTemplate {
+		let expression: Expression
+		let string: String
+	}
+
+	var templates: ArrayClass<TranspilationTemplate> = []
+
+	public func addTemplate(_ template: TranspilationTemplate) {
+		templates.insert(template, at: 0)
+	}
+
 	///
 	/// This variable is used to store enum definitions in order to allow the translator
 	/// to translate them as sealed classes (see the `translate(dotSyntaxCallExpression)` method).

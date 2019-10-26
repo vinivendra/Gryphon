@@ -102,54 +102,67 @@ public class Compiler {
 	}
 
 	//
-	public static func generateGryphonASTAfterFirstPasses(fromGryphonRawAST ast: GryphonAST)
+	public static func generateGryphonASTAfterFirstPasses(
+		fromGryphonRawAST ast: GryphonAST,
+		withContext context: TranspilationContext)
 		throws -> GryphonAST
 	{
 		log("\t- Running first round of passes...")
 		try Utilities.updateLibraryFiles()
-		return TranspilationPass.runFirstRoundOfPasses(on: ast)
+		return TranspilationPass.runFirstRoundOfPasses(on: ast, withContext: context)
 	}
 
-	public static func generateGryphonASTAfterSecondPasses(fromGryphonRawAST ast: GryphonAST)
+	public static func generateGryphonASTAfterSecondPasses(
+		fromGryphonRawAST ast: GryphonAST,
+		withContext context: TranspilationContext)
 		throws -> GryphonAST
 	{
 		log("\t- Running second round of passes...")
 		try Utilities.updateLibraryFiles()
-		return TranspilationPass.runSecondRoundOfPasses(on: ast)
+		return TranspilationPass.runSecondRoundOfPasses(on: ast, withContext: context)
 	}
 
-	public static func generateGryphonAST(fromGryphonRawAST ast: GryphonAST) throws -> GryphonAST {
+	public static func generateGryphonAST(
+		fromGryphonRawAST ast: GryphonAST,
+		withContext context: TranspilationContext)
+		throws -> GryphonAST
+	{
 		var ast = ast
 		log("\t- Running passes on Gryphon ASTs...")
 		try Utilities.updateLibraryFiles()
-		ast = TranspilationPass.runFirstRoundOfPasses(on: ast)
-		ast = TranspilationPass.runSecondRoundOfPasses(on: ast)
+		ast = TranspilationPass.runFirstRoundOfPasses(on: ast, withContext: context)
+		ast = TranspilationPass.runSecondRoundOfPasses(on: ast, withContext: context)
 		return ast
 	}
 
 	public static func transpileGryphonASTs(
-		fromASTDumpFiles inputFiles: ArrayClass<String>)
+		fromASTDumpFiles inputFiles: ArrayClass<String>,
+		withContext context: TranspilationContext)
 		throws -> ArrayClass<GryphonAST>
 	{
 		let rawASTs = try transpileGryphonRawASTs(fromASTDumpFiles: inputFiles)
-		return try rawASTs.map { try generateGryphonAST(fromGryphonRawAST: $0) }
+		return try rawASTs.map {
+			try generateGryphonAST(fromGryphonRawAST: $0, withContext: context)
+		}
 	}
 
 	//
 	public static func generateKotlinCode(
-		fromGryphonAST ast: GryphonAST)
+		fromGryphonAST ast: GryphonAST,
+		withContext context: TranspilationContext)
 		throws -> String
 	{
 		log("\t- Translating AST to Kotlin...")
-		return try KotlinTranslator().translateAST(ast)
+		return try KotlinTranslator(context: context).translateAST(ast)
 	}
 
 	public static func transpileKotlinCode(
-		fromASTDumpFiles inputFiles: ArrayClass<String>)
+		fromASTDumpFiles inputFiles: ArrayClass<String>,
+		withContext context: TranspilationContext)
 		throws -> ArrayClass<String>
 	{
-		let asts = try transpileGryphonASTs(fromASTDumpFiles: inputFiles)
-		return try asts.map { try generateKotlinCode(fromGryphonAST: $0) }
+		let asts = try transpileGryphonASTs(fromASTDumpFiles: inputFiles, withContext: context)
+		return try asts.map { try generateKotlinCode(fromGryphonAST: $0, withContext: context) }
 	}
 
 	//
@@ -168,10 +181,13 @@ public class Compiler {
 
 	public static func transpileThenCompile(
 		ASTDumpFiles inputFiles: ArrayClass<String>,
+		withContext context: TranspilationContext,
 		outputFolder: String = OS.buildFolder)
 		throws -> Shell.CommandOutput?
 	{
-		let kotlinCodes = try transpileKotlinCode(fromASTDumpFiles: inputFiles)
+		let kotlinCodes = try transpileKotlinCode(
+			fromASTDumpFiles: inputFiles,
+			withContext: context)
 		// Write kotlin files to the output folder
 		let kotlinFilePaths: ArrayClass<String> = []
 		for (inputFile, kotlinCode) in zipToClass(inputFiles, kotlinCodes) {
@@ -204,11 +220,14 @@ public class Compiler {
 
 	public static func transpileCompileAndRun(
 		ASTDumpFiles inputFiles: ArrayClass<String>,
+		withContext context: TranspilationContext,
 		fromFolder outputFolder: String = OS.buildFolder)
 		throws -> Shell.CommandOutput?
 	{
-		let compilationResult =
-			try transpileThenCompile(ASTDumpFiles: inputFiles, outputFolder: outputFolder)
+		let compilationResult = try transpileThenCompile(
+			ASTDumpFiles: inputFiles,
+			withContext: context,
+			outputFolder: outputFolder)
 		guard compilationResult != nil, compilationResult!.status == 0 else {
 			return compilationResult
 		}

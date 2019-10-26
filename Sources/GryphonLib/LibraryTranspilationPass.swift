@@ -16,15 +16,11 @@
 
 import Foundation
 
-public struct TranspilationTemplate {
-	let expression: Expression
-	let string: String
-
-	static var templates: ArrayClass<TranspilationTemplate> = []
-}
+/// This pass records templates statically in TranspilationTemplate so they can be retrieved later.
 
 public class RecordTemplatesTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	override func replaceFunctionDeclaration( // annotation: override
 		_ functionDeclaration: FunctionDeclaration)
@@ -48,10 +44,9 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 						continue
 					}
 					let cleanString = literalString.removingBackslashEscapes
-					TranspilationTemplate.templates.insert(
-						TranspilationTemplate(
-							expression: templateExpression, string: cleanString),
-						at: 0)
+					self.context.addTemplate(TranspilationContext.TranspilationTemplate(
+						expression: templateExpression,
+						string: cleanString))
 					previousExpression = nil
 				}
 				else {
@@ -89,13 +84,14 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 }
 
 public class ReplaceTemplatesTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST): super(ast) { }
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
 
 	override func replaceExpression( // annotation: override
 		_ expression: Expression)
 		-> Expression
 	{
-		for template in TranspilationTemplate.templates {
+		for template in context.templates {
 			if let matches = expression.matches(template.expression) {
 
 				let replacedMatches = matches.mapValues { // kotlin: ignore
