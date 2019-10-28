@@ -2568,7 +2568,7 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 				message: message,
 				details: expression.prettyDescription(),
 				sourceFile: ast.sourceFile,
-				sourceFileRange: nil)
+				sourceFileRange: expression.range)
 		}
 
 		return super.replaceExpression(expression)
