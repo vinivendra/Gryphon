@@ -36,7 +36,7 @@ fi
 
 echo "➡️ [4/9] Transpiling the Gryphon source files to Kotlin..."
 
-if bash transpileBootstrappedTranspiler.sh
+if bash transpileGryphonSources.sh
 then
 	echo "✅ Done."
 	echo ""
