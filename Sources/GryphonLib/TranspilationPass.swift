@@ -924,7 +924,8 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 			variableDeclaration.typeName == "String",
 			let getter = variableDeclaration.getter
 		{
-			var annotations = (variableDeclaration.annotations ?? "").split(separator: " ")
+			let annotations = (variableDeclaration.annotations ?? "")
+				.split(withStringSeparator: " ")
 			if !annotations.contains("override") {
 				annotations.append("override")
 			}
