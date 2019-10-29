@@ -50,6 +50,9 @@ private func gryphonTemplates() {
     _ = Utilities.createFileIfNeeded(at: _string1)
     _ = "Utilities.createFileIfNeeded(filePath = _string1)"
 
+	Utilities.createFolderIfNeeded(at: _string1)
+    _ = "Utilities.createFolderIfNeeded(path = _string1)"
+
     Utilities.createFile(atPath: _string1, containing: _string2)
     _ = "Utilities.createFile(filePath = _string1, contents = _string2)"
 
@@ -198,7 +201,7 @@ extension Utilities {
             return
         }
 
-        let libraryTemplatesFolder = "Library Templates"
+        let libraryTemplatesFolder = ".gryphon"
         if needsToUpdateFiles(in: libraryTemplatesFolder, from: .swift, to: .swiftASTDump) {
             throw FileError.outdatedFile(inFolder: libraryTemplatesFolder)
         }

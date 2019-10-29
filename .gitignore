@@ -2,8 +2,10 @@
 .DS_Store
 
 ### Build products
-# Gryphon build folder
+# Swift build folder
 /.build
+# Gryphon auxiliary folder
+/.gryphon
 # AST Dumps for translated files
 *.swiftAstDump
 # Intermediate representations used in testing

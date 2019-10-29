@@ -131,6 +131,11 @@ fun Utilities.Companion.createFileIfNeeded(filePath: String): Boolean {
 	}
 }
 
+fun Utilities.Companion.createFolderIfNeeded(path: String) {
+	val directoryFile = File(path)
+	directoryFile.mkdirs()
+}	
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 fun Utilities.Companion.getFiles(

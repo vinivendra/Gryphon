@@ -132,8 +132,7 @@ extension Utilities {
 
 extension Utilities {
 	/// - Returns: `true` if the file was created, `false` if it already existed.
-	public static func createFileIfNeeded(at filePath: String) -> Bool
-	{
+	public static func createFileIfNeeded(at filePath: String) -> Bool {
 		let fileManager = FileManager.default
 
 		if !fileManager.fileExists(atPath: filePath) {
@@ -144,6 +143,11 @@ extension Utilities {
 		else {
 			return false
 		}
+	}
+
+	public static func createFolderIfNeeded(at path: String) {
+		let fileManager = FileManager.default
+		try! fileManager.createDirectory(atPath: path, withIntermediateDirectories: true)
 	}
 }
 
