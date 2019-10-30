@@ -151,6 +151,13 @@ extension Utilities {
 	}
 }
 
+extension Utilities {
+	public static func deleteFolder(at path: String) {
+		let fileManager = FileManager.default
+		try? fileManager.removeItem(atPath: path)
+	}
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 extension Utilities {

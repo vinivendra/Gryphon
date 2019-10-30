@@ -56,6 +56,9 @@ private func gryphonTemplates() {
     Utilities.createFile(atPath: _string1, containing: _string2)
     _ = "Utilities.createFile(filePath = _string1, contents = _string2)"
 
+	Utilities.deleteFolder(at: _string1)
+	_ = "Utilities.deleteFolder(path = _string1)"
+
     _ = Utilities.needsToUpdateFiles(
         _stringArray, in: _string1, from: _fileExtension1, to: _fileExtension2)
     _ = "Utilities.needsToUpdateFiles(" +
