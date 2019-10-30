@@ -2883,9 +2883,22 @@ public class SwiftTranslator {
 				}
 			}
 			else {
+				// Check if there's a `// gryphon: multiline` comment just before the string
+				// literal, since we can't put a comment in the same line as a multiline string.
+				var isMultiline = false
+				if let lineNumber = getRange(ofNode: stringLiteralExpression)?.lineStart {
+					if let maybeMultilineComment =
+							sourceFile?.getKeyedCommentFromLine(lineNumber - 1),
+						maybeMultilineComment.key == .gryphon
+					{
+						isMultiline = (maybeMultilineComment.value == "multiline")
+					}
+				}
+
 				return LiteralStringExpression(
 					range: getRangeRecursively(ofNode: stringLiteralExpression),
-					value: value)
+					value: value,
+					isMultiline: isMultiline)
 			}
 		}
 		else {

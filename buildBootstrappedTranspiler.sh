@@ -6,6 +6,7 @@ kotlinc -include-runtime \
 	Bootstrap/KotlinStandardLibrary.kt \
 	Bootstrap/ASTDumpDecoder.kt \
 	Bootstrap/ASTDumpDecoderTest.kt \
+	Bootstrap/AuxiliaryFileContents.kt \
 	Bootstrap/main.kt \
 	Bootstrap/Extensions.kt \
 	Bootstrap/ExtensionsTest.kt \

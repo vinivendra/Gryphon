@@ -3,6 +3,10 @@
 		"ast-dump": "Bootstrap/ASTDumpDecoder.swiftASTDump",
 		"kotlin": "Bootstrap/ASTDumpDecoder.kt",
 	},
+	"Sources/GryphonLib/AuxiliaryFileContents.swift": {
+		"ast-dump": "Bootstrap/AuxiliaryFileContents.swiftASTDump",
+		"kotlin": "Bootstrap/AuxiliaryFileContents.kt",
+	},
 	"Sources/GryphonLib/Compiler.swift": {
 		"ast-dump": "Bootstrap/Compiler.swiftASTDump",
 		"kotlin": "Bootstrap/Compiler.kt",

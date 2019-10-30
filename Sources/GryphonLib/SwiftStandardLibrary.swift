@@ -16,6 +16,8 @@
 
 // MARK: - Swift standard library
 
+typealias MultilineString = String
+
 private func gryphonTemplates() {
 	let _array1: ArrayClass<Any> = [1, 2, 3]
 	let _array2: ArrayClass<Any> = [1, 2, 3]

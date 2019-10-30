@@ -1916,14 +1916,19 @@ public class LiteralBoolExpression: Expression {
 
 public class LiteralStringExpression: Expression {
 	let value: String
+	let isMultiline: Bool
 
-	init(range: SourceFileRange?, value: String) {
+	init(range: SourceFileRange?, value: String, isMultiline: Bool) {
 		self.value = value
+		self.isMultiline = isMultiline
 		super.init(range: range, name: "LiteralStringExpression".capitalizedAsCamelCase())
 	}
 
 	override public var printableSubtrees: ArrayClass<PrintableAsTree?> { // annotation: override
-		return [PrintableTree(String(value))]
+		return [
+			PrintableTree(value),
+			isMultiline ? PrintableTree("multiline") : nil,
+		]
 	}
 
 	override var swiftType: String? { // annotation: override

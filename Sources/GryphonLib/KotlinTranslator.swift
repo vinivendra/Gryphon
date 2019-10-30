@@ -1651,7 +1651,15 @@ public class KotlinTranslator {
 		_ literalStringExpression: LiteralStringExpression)
 		-> String
 	{
-		return "\"\(literalStringExpression.value)\""
+		if literalStringExpression.isMultiline {
+			let processedString = literalStringExpression.value
+				.replacingOccurrences(of: "\\n", with: "\n")
+				.replacingOccurrences(of: "\\t", with: "\t")
+			return "\"\"\"\n\(processedString)\"\"\""
+		}
+		else {
+			return "\"\(literalStringExpression.value)\""
+		}
 	}
 
 	// TODO: Test chars
