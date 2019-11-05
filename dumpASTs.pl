@@ -99,7 +99,7 @@ if ($needsToUpdate) {
 	print "Calling the Swift compiler...\n";
 	my @quotedSwiftFiles = map { "\"$_\"" } @swiftFiles;
 	my $inputFiles = join(" ", @quotedSwiftFiles);
-	my $output = `xcrun -toolchain org.swift.4220190203a swiftc $inputFiles -dump-ast -module-name=ModuleName -output-file-map=$ofmFilePath 2>&1`;
+	my $output = `swiftc $inputFiles -dump-ast -module-name=ModuleName -output-file-map=$ofmFilePath 2>&1`;
 
 	# Delete the output file map
 	unlink($ofmFilePath);
