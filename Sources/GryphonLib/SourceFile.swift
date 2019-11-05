@@ -146,7 +146,7 @@ extension SourceFile {
 	}
 }
 
-public struct SourceFileRange: Equatable {
+public struct SourceFileRange: Equatable, Hashable {
 	let lineStart: Int
 	let lineEnd: Int
 	let columnStart: Int

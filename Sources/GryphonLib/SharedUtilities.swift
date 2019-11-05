@@ -128,6 +128,7 @@ public enum FileExtension: String {
     case gryphonASTRaw
     case gryphonAST
     case output
+	case kotlinErrorMap
     case kt
     case swift
 }
@@ -255,6 +256,13 @@ extension Utilities {
 		let pathInGryphonFolder = ".gryphon/ASTDumps/" + relativePath
 		let astDumpPath = Utilities.changeExtension(of: pathInGryphonFolder, to: .swiftASTDump)
 		return astDumpPath
+	}
+
+	static public func pathOfKotlinErrorMapFile(forSwiftFile swiftFile: String) -> String {
+		let relativePath = Utilities.getRelativePath(forFile: swiftFile)
+		let pathInGryphonFolder = ".gryphon/KotlinErrorMaps/" + relativePath
+		let errorMapPath = Utilities.changeExtension(of: pathInGryphonFolder, to: .kotlinErrorMap)
+		return errorMapPath
 	}
 
     static internal func needsToDumpASTForSwiftFiles(
