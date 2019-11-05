@@ -14,21 +14,29 @@
 // limitations under the License.
 //
 
+// gryphon output: Sources/GryphonLib/GryphonAST.swiftAST
+// gryphon output: Sources/GryphonLib/GryphonAST.gryphonASTRaw
+// gryphon output: Sources/GryphonLib/GryphonAST.gryphonAST
+// gryphon output: Bootstrap/GryphonAST.kt
+
 // declaration: import kotlin.system.*
 
 public final class GryphonAST: PrintableAsTree, Equatable, CustomStringConvertible {
 	let sourceFile: SourceFile?
 	let declarations: ArrayClass<Statement>
 	let statements: ArrayClass<Statement>
+	let outputFileMap: DictionaryClass<FileExtension, String>
 
 	init(
 		sourceFile: SourceFile?,
 		declarations: ArrayClass<Statement>,
-		statements: ArrayClass<Statement>)
+		statements: ArrayClass<Statement>,
+		outputFileMap: DictionaryClass<FileExtension, String>)
 	{
 		self.sourceFile = sourceFile
 		self.declarations = declarations
 		self.statements = statements
+		self.outputFileMap = outputFileMap
 	}
 
 	//

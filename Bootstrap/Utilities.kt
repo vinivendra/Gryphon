@@ -16,6 +16,7 @@
 
 import java.io.File
 import java.io.FileWriter
+import java.nio.file.Paths
 import java.util.stream.Collectors
 import java.util.stream.Stream
 import java.util.concurrent.Semaphore
@@ -142,6 +143,10 @@ fun Utilities.Companion.deleteFolder(path: String) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+fun Utilities.Companion.getCurrentFolder(): String {
+	return Paths.get("").toAbsolutePath().toString()
+}
 
 fun Utilities.Companion.getFiles(
 	selectedFiles: MutableList<String>? = null,

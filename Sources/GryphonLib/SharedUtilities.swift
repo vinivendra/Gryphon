@@ -14,6 +14,11 @@
 // limitations under the License.
 //
 
+// gryphon output: Sources/GryphonLib/SharedUtilities.swiftAST
+// gryphon output: Sources/GryphonLib/SharedUtilities.gryphonASTRaw
+// gryphon output: Sources/GryphonLib/SharedUtilities.gryphonAST
+// gryphon output: Bootstrap/SharedUtilities.kt
+
 import Foundation
 
 private func gryphonTemplates() {
@@ -24,7 +29,6 @@ private func gryphonTemplates() {
     let _stringArray1: ArrayClass<String> = []
     let _stringArray2: ArrayClass<String> = []
     let _fileExtension1 = FileExtension.swift
-    let _fileExtension2 = FileExtension.swift
     let _timeInterval: TimeInterval = 0
 
     _ = Utilities.file(_string1, wasModifiedLaterThan: _string2)
@@ -58,21 +62,6 @@ private func gryphonTemplates() {
 
 	Utilities.deleteFolder(at: _string1)
 	_ = "Utilities.deleteFolder(path = _string1)"
-
-    _ = Utilities.needsToUpdateFiles(
-        _stringArray, in: _string1, from: _fileExtension1, to: _fileExtension2)
-    _ = "Utilities.needsToUpdateFiles(" +
-        "files = _stringArray, " +
-        "folder = _string1, " +
-        "originExtension = _fileExtension1, " +
-        "destinationExtension = _fileExtension2)"
-
-    _ = Utilities.needsToUpdateFiles(
-        in: _string1, from: _fileExtension1, to: _fileExtension2)
-    _ = "Utilities.needsToUpdateFiles(" +
-        "folder = _string1, " +
-        "originExtension = _fileExtension1, " +
-        "destinationExtension = _fileExtension2)"
 
     // Shell translations
     _ = Shell.runShellCommand(
@@ -150,7 +139,9 @@ extension String {
 }
 
 extension Utilities {
-    public static func changeExtension(of filePath: String, to newExtension: FileExtension)
+    public static func changeExtension(
+		of filePath: String,
+		to newExtension: FileExtension)
         -> String
     {
         let components = filePath.split(withStringSeparator: "/", omittingEmptySubsequences: false)
@@ -168,6 +159,20 @@ extension Utilities {
         let newName = nameWithoutExtension.withExtension(newExtension)
         newComponents.append(newName)
         return newComponents.joined(separator: "/")
+    }
+
+	public static func getExtension(of filePath: String) -> FileExtension? {
+        let components = filePath.split(withStringSeparator: "/", omittingEmptySubsequences: false)
+        let nameComponent = components.last!
+        let nameComponents =
+            nameComponent.split(withStringSeparator: ".", omittingEmptySubsequences: false)
+
+        // If there's no extension
+        guard let extensionString = nameComponents.last else {
+            return nil
+        }
+
+        return FileExtension(rawValue: extensionString)
     }
 }
 
@@ -205,7 +210,7 @@ extension Utilities {
         }
 
         let libraryTemplatesFolder = ".gryphon"
-        if needsToUpdateFiles(in: libraryTemplatesFolder, from: .swift, to: .swiftASTDump) {
+		if needsToDumpASTForSwiftFiles(in: libraryTemplatesFolder) {
             throw FileError.outdatedFile(inFolder: libraryTemplatesFolder)
         }
 
@@ -236,7 +241,7 @@ extension Utilities {
         Compiler.log("\t* Updating unit test files...")
 
         let testFilesFolder = "Test Files"
-        if needsToUpdateFiles(in: testFilesFolder, from: .swift, to: .swiftASTDump) {
+        if needsToDumpASTForSwiftFiles(in: testFilesFolder) {
             throw FileError.outdatedFile(inFolder: testFilesFolder)
         }
 
@@ -245,33 +250,51 @@ extension Utilities {
         Compiler.log("\t* Done!")
     }
 
-    static internal func needsToUpdateFiles(
-        _ files: ArrayClass<String>? = nil,
-        in folder: String,
-        from originExtension: FileExtension,
-        to destinationExtension: FileExtension,
-        outputFileMap: OutputFileMap? = nil) -> Bool
+	static public func pathOfSwiftASTDumpFile(forSwiftFile swiftFile: String) -> String {
+		let relativePath = Utilities.getRelativePath(forFile: swiftFile)
+		let pathInGryphonFolder = ".gryphon/ASTDumps/" + relativePath
+		let astDumpPath = Utilities.changeExtension(of: pathInGryphonFolder, to: .swiftASTDump)
+		return astDumpPath
+	}
+
+    static internal func needsToDumpASTForSwiftFiles(
+        _ swiftFiles: ArrayClass<String>? = nil,
+        in folder: String)
+		-> Bool
     {
-        let testFiles = getFiles(files, inDirectory: folder, withExtension: originExtension)
+		let files = getFiles(swiftFiles, inDirectory: folder, withExtension: .swift)
 
-        for originFile in testFiles {
-            let destinationFilePath = outputFileMap?.getOutputFile(
-                forInputFile: originFile,
-                outputType: OutputFileMap.OutputType(fileExtension: destinationExtension)!)
-                ?? Utilities.changeExtension(of: originFile, to: destinationExtension)
+        for swiftFile in files {
+			let astDumpFilePath: String
+			// Normal files should go from "./path/to/file.swift" to
+			// "./.gryphon/path/to/file.swiftASTDump". Files that are already in "./.gryphon", such
+			// as the stdlib templates file, are special cases and should be dumped at "./.gryphon"
+			// (rather than "./.gryphon/.gryphon", which is what the normal algorithm would return).
+			if folder.hasSuffix(".gryphon") || folder.hasSuffix(".gryphon/") {
+				astDumpFilePath = Utilities.changeExtension(of: swiftFile, to: .swiftASTDump)
+			}
+			else {
+				astDumpFilePath = Utilities.pathOfSwiftASTDumpFile(forSwiftFile: swiftFile)
+			}
 
-            let destinationFileWasJustCreated =
-                Utilities.createFileIfNeeded(at: destinationFilePath)
-            let destinationFileIsOutdated = destinationFileWasJustCreated ||
-                Utilities.file(originFile, wasModifiedLaterThan: destinationFilePath)
+            let astDumpFileWasJustCreated =
+                Utilities.createFileIfNeeded(at: astDumpFilePath)
+            let astDumpFileIsOutdated = astDumpFileWasJustCreated ||
+                Utilities.file(swiftFile, wasModifiedLaterThan: astDumpFilePath)
 
-            if destinationFileIsOutdated {
+            if astDumpFileIsOutdated {
                 return true
             }
         }
 
         return false
     }
+
+	public static func getRelativePath(forFile file: String) -> String {
+		let currentDirectoryPath = Utilities.getCurrentFolder()
+		let absoluteFilePath = getAbsoultePath(forFile: file)
+		return String(absoluteFilePath.dropFirst(currentDirectoryPath.count + 1))
+	}
 }
 
 extension Utilities {

@@ -14,6 +14,11 @@
 // limitations under the License.
 //
 
+// gryphon output: Test Files/Bootstrap Outputs/warnings.swiftAST
+// gryphon output: Test Files/Bootstrap Outputs/warnings.gryphonASTRaw
+// gryphon output: Test Files/Bootstrap Outputs/warnings.gryphonAST
+// gryphon output: Test Files/Bootstrap Outputs/warnings.kt
+
 struct UnsupportedStruct {
 	let immutableVariable = 0
 	var mutableVariable = 0

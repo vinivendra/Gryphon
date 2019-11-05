@@ -14,6 +14,11 @@
 // limitations under the License.
 //
 
+// gryphon output: Sources/GryphonLib/TranspilationPass.swiftAST
+// gryphon output: Sources/GryphonLib/TranspilationPass.gryphonASTRaw
+// gryphon output: Sources/GryphonLib/TranspilationPass.gryphonAST
+// gryphon output: Bootstrap/TranspilationPass.kt
+
 // declaration: import kotlin.system.*
 
 /// Implements the basic algorithm that visits nodes in the AST. Subclassing this class and
@@ -55,7 +60,8 @@ public class TranspilationPass {
 		return GryphonAST(
 			sourceFile: ast.sourceFile,
 			declarations: replacedDeclarations,
-			statements: replacedStatements)
+			statements: replacedStatements,
+			outputFileMap: ast.outputFileMap)
 	}
 
 	// MARK: - Helper functions

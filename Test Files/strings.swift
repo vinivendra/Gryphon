@@ -14,6 +14,11 @@
 // limitations under the License.
 //
 
+// gryphon output: Test Files/Bootstrap Outputs/strings.swiftAST
+// gryphon output: Test Files/Bootstrap Outputs/strings.gryphonASTRaw
+// gryphon output: Test Files/Bootstrap Outputs/strings.gryphonAST
+// gryphon output: Test Files/Bootstrap Outputs/strings.kt
+
 // String Literal
 let x = "Hello, world!"
 let y = "The string above is \(x)"

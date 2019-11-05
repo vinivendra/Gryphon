@@ -1,4 +1,4 @@
-echo "➡️ [1/5] Compiling Kotlin files..."
+echo "➡️ [1/2] Compiling Kotlin files..."
 
 if bash buildBootstrappedTranspiler.sh
 then
@@ -10,53 +10,20 @@ else
 fi
 
 
-echo "➡️ [2/5] Updating the Swift AST test files..."
+echo "➡️ [2/2] Updating the bootstrap outputs..."
 
-if java -jar Bootstrap/kotlin.jar -emit-swiftAST \
-		Test\ Files/*.swift -output-file-map=output-file-map-tests.json
-then
-	echo "✅ Done."
-	echo ""
-else
-	echo "🚨 Failed to update the Swift AST test files."
-	exit $?
-fi
+for file in Test\ Files/*.swift
+do
+	echo "	↪️ Updating $file..."
+	if java -jar Bootstrap/kotlin.jar -indentation=t \
+		-emit-swiftAST -emit-rawAST -emit-AST -emit-kotlin \
+		"$file"
+	then
+		echo "	  ✅ Done."
+	else
+		echo "🚨 Failed!"
+		exit $?
+	fi
+done
 
-
-echo "➡️ [4/5] Updating the Raw AST test files..."
-
-if java -jar Bootstrap/kotlin.jar -emit-rawAST \
-		Test\ Files/*.swift -output-file-map=output-file-map-tests.json
-then
-	echo "✅ Done."
-	echo ""
-else
-	echo "🚨 Failed to update the Raw AST test files."
-	exit $?
-fi
-
-
-echo "➡️ [5/5] Updating the AST test files..."
-
-if java -jar Bootstrap/kotlin.jar -emit-AST \
-		Test\ Files/*.swift -output-file-map=output-file-map-tests.json
-then
-	echo "✅ Done."
-	echo ""
-else
-	echo "🚨 Failed to update the AST test files."
-	exit $?
-fi
-
-
-echo "➡️ [9/5] Updating the .kttest test files..."
-
-if java -jar Bootstrap/kotlin.jar -emit-kotlin \
-		Test\ Files/*.swift -output-file-map=output-file-map-tests.json -indentation=4
-then
-	echo "✅ Done."
-	echo ""
-else
-	echo "🚨 Failed to update the .kttest test files."
-	exit $?
-fi
+echo "✅ Done."

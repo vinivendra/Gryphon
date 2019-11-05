@@ -14,6 +14,11 @@
 // limitations under the License.
 //
 
+// gryphon output: Test Files/Bootstrap Outputs/functionCalls.swiftAST
+// gryphon output: Test Files/Bootstrap Outputs/functionCalls.gryphonASTRaw
+// gryphon output: Test Files/Bootstrap Outputs/functionCalls.gryphonAST
+// gryphon output: Test Files/Bootstrap Outputs/functionCalls.kt
+
 // Function calls without return types
 func foo() { }
 func foo1(bar: Int) { }

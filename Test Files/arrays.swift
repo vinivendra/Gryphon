@@ -14,6 +14,11 @@
 // limitations under the License.
 //
 
+// gryphon output: Test Files/Bootstrap Outputs/arrays.swiftAST
+// gryphon output: Test Files/Bootstrap Outputs/arrays.gryphonASTRaw
+// gryphon output: Test Files/Bootstrap Outputs/arrays.gryphonAST
+// gryphon output: Test Files/Bootstrap Outputs/arrays.kt
+
 /// According to http://swiftdoc.org/v4.2/type/Array/hierarchy/
 /// (link found via https://www.raywenderlich.com/139591/building-custom-collection-swift)
 /// the Array type in Swift conforms exactly to these protocols,

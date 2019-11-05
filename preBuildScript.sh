@@ -1,8 +1,10 @@
 # Update AST dumps
 echo " ➡️  Updating AST dumps for tests and library templates..."
-perl dumpAST.pl Example\ ASTs/*.swift
-perl dumpAST.pl Test\ Files/*.swift
-perl dumpAST.pl .gryphon/*.swift
+perl dumpASTs.pl ".gryphon/StandardLibrary.template.swift"
+perl dumpASTs.pl "Example ASTs/test.swift"
+for testFile in Test\ Files/*.swift; do
+    perl dumpASTs.pl "$testFile"
+done
 
 # Lint swift files
 echo " ➡️  Linting swift files..."
@@ -12,4 +14,3 @@ if which swiftlint >/dev/null; then
 else
   echo "warning: SwiftLint not installed."
 fi
-

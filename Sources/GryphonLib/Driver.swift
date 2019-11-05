@@ -14,6 +14,11 @@
 // limitations under the License.
 //
 
+// gryphon output: Sources/GryphonLib/Driver.swiftAST
+// gryphon output: Sources/GryphonLib/Driver.gryphonASTRaw
+// gryphon output: Sources/GryphonLib/Driver.gryphonAST
+// gryphon output: Bootstrap/Driver.kt
+
 public class Driver {
 	public struct Settings {
 		let shouldEmitSwiftAST: Bool
@@ -31,10 +36,14 @@ public class Driver {
 		let canPrintToOutput: Bool
 
 		let horizontalLimit: Int?
-		let outputFileMap: OutputFileMap?
 		let outputFolder: String
 
 		let mainFilePath: String?
+	}
+
+	public struct KotlinTranslation {
+		let kotlinFilePath: String?
+		let kotlinCode: String
 	}
 
 	public static func runUpToFirstPasses(
@@ -46,7 +55,7 @@ public class Driver {
 			return [] // value: mutableListOf<Any>()
 		}
 
-		let swiftASTDumpFile = getASTDump(forFile: inputFilePath, settings: settings)!
+		let swiftASTDumpFile = getASTDump(forFile: inputFilePath)!
 
 		let swiftASTDump = try Utilities.readFile(swiftASTDumpFile)
 
@@ -55,13 +64,7 @@ public class Driver {
 		if settings.shouldEmitSwiftAST {
 			let output = swiftAST.prettyDescription(
 				horizontalLimit: settings.horizontalLimit)
-			if let outputFilePath = settings.outputFileMap?.getOutputFile(
-					forInputFile: inputFilePath, outputType: .swiftAST),
-				settings.canPrintToFiles
-			{
-				Utilities.createFile(atPath: outputFilePath, containing: output)
-			}
-			else if settings.canPrintToOutput {
+			if settings.canPrintToOutput && !settings.canPrintToFiles {
 				print(output)
 			}
 		}
@@ -75,11 +78,21 @@ public class Driver {
 		let gryphonRawAST = try Compiler.generateGryphonRawAST(
 			fromSwiftAST: swiftAST,
 			asMainFile: isMainFile)
+
+		if settings.shouldEmitSwiftAST {
+			let output = swiftAST.prettyDescription(
+				horizontalLimit: settings.horizontalLimit)
+			if let outputFilePath = gryphonRawAST.outputFileMap[.swiftAST],
+				settings.canPrintToFiles
+			{
+				Utilities.createFile(atPath: outputFilePath, containing: output)
+			}
+		}
+
 		if settings.shouldEmitRawAST {
 			let output = gryphonRawAST.prettyDescription(
 				horizontalLimit: settings.horizontalLimit)
-			if let outputFilePath = settings.outputFileMap?.getOutputFile(
-				forInputFile: inputFilePath, outputType: .gryphonASTRaw),
+			if let outputFilePath = gryphonRawAST.outputFileMap[.gryphonASTRaw],
 				settings.canPrintToFiles
 			{
 				Utilities.createFile(atPath: outputFilePath, containing: output)
@@ -112,8 +125,7 @@ public class Driver {
 		if settings.shouldEmitAST {
 			let output = gryphonAST.prettyDescription(
 				horizontalLimit: settings.horizontalLimit)
-			if let outputFilePath = settings.outputFileMap?.getOutputFile(
-					forInputFile: inputFilePath, outputType: .gryphonAST),
+			if let outputFilePath = gryphonAST.outputFileMap[.gryphonAST],
 				settings.canPrintToFiles
 			{
 				Utilities.createFile(atPath: outputFilePath, containing: output)
@@ -130,8 +142,7 @@ public class Driver {
 		let kotlinCode = try Compiler.generateKotlinCode(
 			fromGryphonAST: gryphonAST,
 			withContext: context)
-		if let outputFilePath = settings.outputFileMap?.getOutputFile(
-				forInputFile: inputFilePath, outputType: .kotlin),
+		if let outputFilePath = gryphonAST.outputFileMap[.kt],
 			settings.canPrintToFiles
 		{
 			Utilities.createFile(atPath: outputFilePath, containing: kotlinCode)
@@ -142,7 +153,9 @@ public class Driver {
 			}
 		}
 
-		return kotlinCode
+		return KotlinTranslation(
+			kotlinFilePath: gryphonAST.outputFileMap[.kt],
+			kotlinCode: kotlinCode)
 	}
 
 	@discardableResult
@@ -178,18 +191,6 @@ public class Driver {
 		}
 		else {
 			horizontalLimit = nil
-		}
-
-		//
-		let outputFileMap: OutputFileMap?
-		if let outputFileMapArgument =
-			arguments.first(where: { $0.hasPrefix("-output-file-map=") })
-		{
-			let outputFileMapPath = outputFileMapArgument.dropFirst("-output-file-map=".count)
-			outputFileMap = OutputFileMap(String(outputFileMapPath))
-		}
-		else {
-			outputFileMap = nil
 		}
 
 		//
@@ -231,9 +232,12 @@ public class Driver {
 		let canPrintToOutput = !arguments.contains("-q")
 
 		//
+		// Note: if we need to print the Swift AST to a file, we need to build the raw Gryphon AST
+		// first to get the output file's path from the comments
 		let shouldGenerateKotlin = shouldBuild || shouldEmitKotlin
 		let shouldGenerateAST = shouldGenerateKotlin || shouldEmitAST
-		let shouldGenerateRawAST = shouldGenerateAST || shouldEmitRawAST
+		let shouldGenerateRawAST = shouldGenerateAST || shouldEmitRawAST ||
+			(shouldEmitSwiftAST && canPrintToFiles)
 		let shouldGenerateSwiftAST = shouldGenerateRawAST || shouldEmitSwiftAST
 
 		//
@@ -265,7 +269,6 @@ public class Driver {
 			canPrintToFiles: canPrintToFiles,
 			canPrintToOutput: canPrintToOutput,
 			horizontalLimit: horizontalLimit,
-			outputFileMap: outputFileMap,
 			outputFolder: outputFolder,
 			mainFilePath: mainFilePath)
 
@@ -351,10 +354,9 @@ public class Driver {
 			return secondResult
 		}
 
-		let generatedKotlinFiles = filteredInputFiles.compactMap {
-			settings.outputFileMap?.getOutputFile(forInputFile: $0, outputType: .kotlin)
-		}
-		let inputKotlinFiles = inputFilePaths.filter { $0.hasSuffix(".kt") }
+		let generatedKotlinFiles = (secondResult.as(ArrayClass<KotlinTranslation>.self))!
+			.compactMap { $0.kotlinFilePath }
+		let inputKotlinFiles = inputFilePaths.filter { Utilities.getExtension(of: $0) == .kt }
 
 		let kotlinFiles = generatedKotlinFiles
 		kotlinFiles.append(contentsOf: inputKotlinFiles)
@@ -388,16 +390,9 @@ public class Driver {
 			containing: standardLibraryTemplateFileContents)
 	}
 
-	static func getASTDump(forFile file: String, settings: Settings) -> String? {
+	static func getASTDump(forFile file: String) -> String? {
 		if file.hasSuffix(".swift") {
-			if let astDumpFile = settings.outputFileMap?.getOutputFile(
-				forInputFile: file, outputType: .astDump)
-			{
-				return astDumpFile
-			}
-			else {
-				return Utilities.changeExtension(of: file, to: .swiftASTDump)
-			}
+			return Utilities.pathOfSwiftASTDumpFile(forSwiftFile: file)
 		}
 		else if file.hasSuffix(".swiftASTDump") {
 			return file

@@ -14,6 +14,11 @@
 // limitations under the License.
 //
 
+// gryphon output: Test Files/Bootstrap Outputs/functionDefinitions.swiftAST
+// gryphon output: Test Files/Bootstrap Outputs/functionDefinitions.gryphonASTRaw
+// gryphon output: Test Files/Bootstrap Outputs/functionDefinitions.gryphonAST
+// gryphon output: Test Files/Bootstrap Outputs/functionDefinitions.kt
+
 // Empty function
 func foo() {
 }

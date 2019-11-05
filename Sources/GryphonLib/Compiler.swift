@@ -14,6 +14,11 @@
 // limitations under the License.
 //
 
+// gryphon output: Sources/GryphonLib/Compiler.swiftAST
+// gryphon output: Sources/GryphonLib/Compiler.gryphonASTRaw
+// gryphon output: Sources/GryphonLib/Compiler.gryphonAST
+// gryphon output: Bootstrap/Compiler.kt
+
 import Foundation
 
 public class Compiler {
@@ -319,12 +324,11 @@ extension Compiler {
 
 		if let sourceFile = sourceFile {
 			let sourceFilePath = sourceFile.path
-			let relativePath = "/" + URL( // value: sourceFilePath
-				fileURLWithPath: sourceFilePath).pathComponents.dropFirst().joined(separator: "/")
+			let absolutePath = Utilities.getAbsoultePath(forFile: sourceFilePath)
 
 			if let sourceFileRange = sourceFileRange {
 				let sourceFileString = sourceFile.getLine(sourceFileRange.lineStart) ??
-					"<<Unable to get line \(sourceFileRange.lineStart) in file \(relativePath)>>"
+					"<<Unable to get line \(sourceFileRange.lineStart) in file \(absolutePath)>>"
 
 				var underlineString = ""
 				if sourceFileRange.columnEnd < sourceFileString.count {
@@ -346,14 +350,14 @@ extension Compiler {
 					}
 				}
 
-				return "\(relativePath):\(sourceFileRange.lineStart):" +
+				return "\(absolutePath):\(sourceFileRange.lineStart):" +
 					"\(sourceFileRange.columnStart): \(errorOrWarning): \(message)\n" +
 					"\(sourceFileString)\n" +
 					"\(underlineString)\n" +
 					details
 			}
 			else {
-				return "\(relativePath): \(errorOrWarning): \(message)\n" +
+				return "\(absolutePath): \(errorOrWarning): \(message)\n" +
 					details
 			}
 		}

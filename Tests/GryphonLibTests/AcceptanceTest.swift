@@ -28,8 +28,9 @@ class AcceptanceTest: XCTestCase {
 				// Translate the swift code to kotlin, compile the resulting kotlin code, run it,
 				// and get its output
 				let testFilePath = TestUtils.testFilesPath + testName
+				let astDumpFilePath = Utilities.pathOfSwiftASTDumpFile(forSwiftFile: testFilePath)
 				guard let compilationResult = try Compiler.transpileCompileAndRun(
-					ASTDumpFiles: [testFilePath.withExtension(.swiftASTDump)],
+					ASTDumpFiles: [astDumpFilePath],
 					withContext: TranspilationContext(indentationString: "\t")) else
 				{
 					XCTFail("Test \(testName) - compilation error. " +

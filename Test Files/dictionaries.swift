@@ -14,6 +14,11 @@
 // limitations under the License.
 //
 
+// gryphon output: Test Files/Bootstrap Outputs/dictionaries.swiftAST
+// gryphon output: Test Files/Bootstrap Outputs/dictionaries.gryphonASTRaw
+// gryphon output: Test Files/Bootstrap Outputs/dictionaries.gryphonAST
+// gryphon output: Test Files/Bootstrap Outputs/dictionaries.kt
+
 /// According to https://swiftdoc.org/v4.2/type/dictionary/hierarchy/
 /// the Dictionary type in Swift conforms exactly to these protocols,
 /// plus CustomReflectable (which is beyond Gryphon's scope for now).

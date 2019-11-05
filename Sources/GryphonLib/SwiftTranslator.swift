@@ -14,10 +14,17 @@
 // limitations under the License.
 //
 
+// gryphon output: Sources/GryphonLib/SwiftTranslator.swiftAST
+// gryphon output: Sources/GryphonLib/SwiftTranslator.gryphonASTRaw
+// gryphon output: Sources/GryphonLib/SwiftTranslator.gryphonAST
+// gryphon output: Bootstrap/SwiftTranslator.kt
+
 import Foundation
 
 public class SwiftTranslator {
 	// MARK: - Properties
+
+	var outputFileMap: DictionaryClass<FileExtension, String> = [:]
 
 	var danglingPatternBindings: ArrayClass<PatternBindingDeclaration?> = []
 
@@ -58,13 +65,15 @@ public class SwiftTranslator {
 			return GryphonAST(
 				sourceFile: sourceFile,
 				declarations: declarationsAndStatements.declarations,
-				statements: declarationsAndStatements.statements)
+				statements: declarationsAndStatements.statements,
+				outputFileMap: outputFileMap)
 		}
 		else {
 			return GryphonAST(
 				sourceFile: sourceFile,
 				declarations: translatedSubtrees,
-				statements: [])
+				statements: [],
+				outputFileMap: outputFileMap)
 		}
 	}
 
@@ -2980,6 +2989,11 @@ public class SwiftTranslator {
 				else if insertComment.key == .declaration {
 					result.append(ExpressionStatement(range: astRange, expression:
 						LiteralDeclarationExpression(range: astRange, string: insertComment.value)))
+				}
+				else if insertComment.key == .gryphonOutput,
+					let fileExtension = Utilities.getExtension(of: insertComment.value)
+				{
+					outputFileMap[fileExtension] = insertComment.value
 				}
 			}
 			else if let normalComment = sourceFile?.getCommentFromLine(lineNumber) {

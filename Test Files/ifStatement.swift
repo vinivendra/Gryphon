@@ -14,6 +14,11 @@
 // limitations under the License.
 //
 
+// gryphon output: Test Files/Bootstrap Outputs/ifStatement.swiftAST
+// gryphon output: Test Files/Bootstrap Outputs/ifStatement.gryphonASTRaw
+// gryphon output: Test Files/Bootstrap Outputs/ifStatement.gryphonAST
+// gryphon output: Test Files/Bootstrap Outputs/ifStatement.kt
+
 //
 if true {
 	print("Simple if's")

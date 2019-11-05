@@ -13,7 +13,6 @@
 	Sources/GryphonLib/ASTDumpDecoder.swift \
 	Sources/GryphonLib/AuxiliaryFileContents.swift \
 	Sources/GryphonLib/Compiler.swift \
-	Sources/GryphonLib/OutputFileMap.swift \
 	Sources/GryphonLib/SourceFile.swift \
 	Sources/GryphonLib/Driver.swift \
 	Sources/GryphonLib/Extensions.swift \

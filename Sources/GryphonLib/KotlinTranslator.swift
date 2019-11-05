@@ -14,6 +14,11 @@
 // limitations under the License.
 //
 
+// gryphon output: Sources/GryphonLib/KotlinTranslator.swiftAST
+// gryphon output: Sources/GryphonLib/KotlinTranslator.gryphonASTRaw
+// gryphon output: Sources/GryphonLib/KotlinTranslator.gryphonAST
+// gryphon output: Bootstrap/KotlinTranslator.kt
+
 // declaration: import kotlin.system.*
 
 public class KotlinTranslator {

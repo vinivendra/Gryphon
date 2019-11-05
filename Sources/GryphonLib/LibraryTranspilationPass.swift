@@ -14,6 +14,11 @@
 // limitations under the License.
 //
 
+// gryphon output: Sources/GryphonLib/LibraryTranspilationPass.swiftAST
+// gryphon output: Sources/GryphonLib/LibraryTranspilationPass.gryphonASTRaw
+// gryphon output: Sources/GryphonLib/LibraryTranspilationPass.gryphonAST
+// gryphon output: Bootstrap/LibraryTranspilationPass.kt
+
 import Foundation
 
 /// This pass records templates statically in TranspilationTemplate so they can be retrieved later.

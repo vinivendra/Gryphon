@@ -14,6 +14,11 @@
 // limitations under the License.
 //
 
+// gryphon output: Test Files/Bootstrap Outputs/bhaskara.swiftAST
+// gryphon output: Test Files/Bootstrap Outputs/bhaskara.gryphonASTRaw
+// gryphon output: Test Files/Bootstrap Outputs/bhaskara.gryphonAST
+// gryphon output: Test Files/Bootstrap Outputs/bhaskara.kt
+
 import Foundation
 
 func bhaskara(a: Double, b: Double, c: Double) -> Double {

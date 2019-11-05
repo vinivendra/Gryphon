@@ -14,6 +14,11 @@
 // limitations under the License.
 //
 
+// gryphon output: Test Files/Bootstrap Outputs/staticMembers.swiftAST
+// gryphon output: Test Files/Bootstrap Outputs/staticMembers.gryphonASTRaw
+// gryphon output: Test Files/Bootstrap Outputs/staticMembers.gryphonAST
+// gryphon output: Test Files/Bootstrap Outputs/staticMembers.kt
+
 class A {
 	var x = 0
 

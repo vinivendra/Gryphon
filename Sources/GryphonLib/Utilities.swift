@@ -161,13 +161,17 @@ extension Utilities {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 extension Utilities {
+	static func getCurrentFolder() -> String {
+		return FileManager.default.currentDirectoryPath
+	}
+
 	static func getFiles(
 		_ selectedFiles: ArrayClass<String>? = nil,
 		inDirectory directory: String,
 		withExtension fileExtension: FileExtension)
 		-> ArrayClass<String>
 	{
-		let directoryPath = Process().currentDirectoryPath + "/\(directory)/"
+		let directoryPath = Utilities.getCurrentFolder() + "/\(directory)/"
 		let currentURL = URL(fileURLWithPath: directoryPath)
 		let allURLs = ArrayClass<URL>(try! FileManager.default.contentsOfDirectory(
 			at: currentURL,
@@ -194,7 +198,7 @@ extension Utilities {
 
 extension Utilities {
 	public static func getAbsoultePath(forFile file: String) -> String {
-		return URL(fileURLWithPath: file).absoluteString
+		return "/" + URL(fileURLWithPath: file).pathComponents.dropFirst().joined(separator: "/")
 	}
 }
 

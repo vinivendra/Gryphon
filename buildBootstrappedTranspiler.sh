@@ -17,7 +17,6 @@ kotlinc -include-runtime \
 	Bootstrap/Compiler.kt \
 	Bootstrap/SourceFile.kt \
 	Bootstrap/Driver.kt \
-	Bootstrap/OutputFileMap.kt \
 	Bootstrap/GryphonAST.kt \
 	Bootstrap/SwiftTranslator.kt \
 	Bootstrap/TranspilationContext.kt \

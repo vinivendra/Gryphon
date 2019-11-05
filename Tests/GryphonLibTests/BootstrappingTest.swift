@@ -61,13 +61,17 @@ class BootstrappingTest: XCTestCase {
 				let testFilePath = TestUtils.testFilesPath + testName + ".swift"
 
 				// Get Kotlin results
-				let kotlinArguments: ArrayClass = ["-emit-swiftAST", testFilePath]
-				let swiftASTFilePath = Utilities.changeExtension(of: testFilePath, to: .swiftAST)
+				let swiftASTFilePath = BootstrappingTest.getBootstrapOutputFilePath(
+					forTest: testName,
+					withExtension: .swiftAST)
 				let transpiledSwiftAST = try Utilities.readFile(swiftASTFilePath)
 
 				// Get Swift results
-				let swiftArguments = kotlinArguments + ["-q", "-Q"]
-				let driverResult = try Driver.run(withArguments: swiftArguments)
+				let driverResult = try Driver.run(withArguments:
+					["-emit-swiftAST",
+					 "-indentation=t",
+					 "-q", "-Q",
+					 testFilePath, ])
 				guard let resultArray = driverResult as? ArrayClass<Any?>,
 					let swiftASTs = resultArray.as(ArrayClass<SwiftAST>.self),
 					let originalSwiftAST = swiftASTs.first else
@@ -107,13 +111,17 @@ class BootstrappingTest: XCTestCase {
 				let testFilePath = TestUtils.testFilesPath + testName + ".swift"
 
 				// Get Kotlin results
-				let kotlinArguments: ArrayClass = ["-emit-rawAST", "-no-main-file", testFilePath]
-				let rawASTFilePath = Utilities.changeExtension(of: testFilePath, to: .gryphonASTRaw)
+				let rawASTFilePath = BootstrappingTest.getBootstrapOutputFilePath(
+					forTest: testName,
+					withExtension: .gryphonASTRaw)
 				let transpiledRawAST = try Utilities.readFile(rawASTFilePath)
 
 				// Get Swift results
-				let swiftArguments = kotlinArguments + ["-q", "-Q"]
-				let driverResult = try Driver.run(withArguments: swiftArguments)
+				let driverResult = try Driver.run(withArguments:
+					["-emit-rawAST",
+					 "-indentation=t",
+					 "-q", "-Q",
+					 testFilePath, ])
 				guard let resultArray = driverResult as? ArrayClass<Any?>,
 					let rawASTs = resultArray.as(ArrayClass<GryphonAST>.self),
 					let originalRawAST = rawASTs.first else
@@ -153,13 +161,17 @@ class BootstrappingTest: XCTestCase {
 				let testFilePath = TestUtils.testFilesPath + testName + ".swift"
 
 				// Get Kotlin results
-				let kotlinArguments: ArrayClass = ["-emit-AST", "-no-main-file", testFilePath]
-				let astFilePath = Utilities.changeExtension(of: testFilePath, to: .gryphonAST)
+				let astFilePath = BootstrappingTest.getBootstrapOutputFilePath(
+					forTest: testName,
+					withExtension: .gryphonAST)
 				let transpiledAST = try Utilities.readFile(astFilePath)
 
 				// Get Swift results
-				let swiftArguments = kotlinArguments + ["-q", "-Q"]
-				let driverResult = try Driver.run(withArguments: swiftArguments)
+				let driverResult = try Driver.run(withArguments:
+					["-emit-AST",
+					 "-indentation=t",
+					 "-q", "-Q",
+					 testFilePath, ])
 				guard let resultArray = driverResult as? ArrayClass<Any?>,
 					let asts = resultArray.as(ArrayClass<GryphonAST>.self),
 					let originalAST = asts.first else
@@ -199,20 +211,21 @@ class BootstrappingTest: XCTestCase {
 				let testFilePath = TestUtils.testFilesPath + testName + ".swift"
 
 				// Get Kotlin results
-				let kotlinArguments: ArrayClass = [
-					"-emit-kotlin",
-					"-no-main-file",
-					"-indentation=4",
-					testFilePath, ]
-				let kotlinFilePath = Utilities.changeExtension(of: testFilePath, to: .kt)
-				let testOutputFilePath = kotlinFilePath + "test"
+				let testOutputFilePath = BootstrappingTest.getBootstrapOutputFilePath(
+					forTest: testName,
+					withExtension: .kt)
 				let transpiledKotlinCode = try Utilities.readFile(testOutputFilePath)
 
 				// Get Swift results
-				let swiftArguments = kotlinArguments + ["-q", "-Q"]
-				let driverResult = try Driver.run(withArguments: swiftArguments)
+				let driverResult = try Driver.run(withArguments:
+					["-emit-kotlin",
+					 "-indentation=t",
+					 "-q", "-Q",
+					 testFilePath, ])
 				guard let resultArray = driverResult as? ArrayClass<Any?>,
-					let kotlinCodes = resultArray.as(ArrayClass<String>.self),
+					let kotlinCodes = resultArray
+						.as(ArrayClass<Driver.KotlinTranslation>.self)?
+						.map({ $0.kotlinCode }),
 					let originalKotlinCode = kotlinCodes.first else
 				{
 					XCTFail("Error generating passed ASTs.\n" +
@@ -235,23 +248,39 @@ class BootstrappingTest: XCTestCase {
 		Compiler.printErrorsAndWarnings()
 	}
 
+	static func getBootstrapOutputFilePath(
+		forTest testName: String,
+		withExtension fileExtension: FileExtension)
+		-> String
+	{
+		return bootstrapOutputsFolder + "/" + testName + "." + fileExtension.rawValue
+	}
+
 	override static func setUp() {
 		let swiftFiles = Utilities.getFiles(
 			inDirectory: "Sources/GryphonLib", withExtension: .swift)
 
-		let astDumpFiles = Utilities.getFiles(
-			inDirectory: "Test Files", withExtension: .swiftAST)
+		let swiftASTFiles = Utilities.getFiles(
+			inDirectory: bootstrapOutputsFolder, withExtension: .swiftAST)
 		let rawASTFiles = Utilities.getFiles(
-			inDirectory: "Test Files", withExtension: .gryphonASTRaw)
+			inDirectory: bootstrapOutputsFolder, withExtension: .gryphonASTRaw)
+		let astFiles = Utilities.getFiles(
+			inDirectory: bootstrapOutputsFolder, withExtension: .gryphonAST)
+		let kotlinFiles = Utilities.getFiles(
+			inDirectory: bootstrapOutputsFolder, withExtension: .kt)
 
-		if Utilities.files(swiftFiles, wereModifiedLaterThan: astDumpFiles) ||
-			Utilities.files(swiftFiles, wereModifiedLaterThan: rawASTFiles)
+		if Utilities.files(swiftFiles, wereModifiedLaterThan: swiftASTFiles) ||
+			Utilities.files(swiftFiles, wereModifiedLaterThan: rawASTFiles) ||
+			Utilities.files(swiftFiles, wereModifiedLaterThan: astFiles) ||
+			Utilities.files(swiftFiles, wereModifiedLaterThan: kotlinFiles)
 		{
-			print("🚨 Bootstrap test files are out of date.\n" +
-				"Please run `updateBootstrapTestFiles.sh`.")
+			print("🚨 Bootstrap test files are out of date." +
+				"Please run `bootstrapGryphon.sh` and then `prepareForBootstrapTests.sh`.")
 			hasError = true
 		}
 	}
+
+	static let bootstrapOutputsFolder = "Test Files/Bootstrap Outputs"
 
 	static var hasError = false
 

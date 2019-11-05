@@ -24,7 +24,7 @@ fi
 
 echo "➡️ [3/4] Dumping the Swift ASTs..."
 
-if perl dumpTranspilerAST.pl
+if perl dumpASTs.pl Sources/GryphonLib/*.swift
 then
 	echo "✅ Done."
 	echo ""
