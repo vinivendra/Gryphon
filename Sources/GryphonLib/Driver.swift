@@ -378,15 +378,21 @@ public class Driver {
 	}
 
 	static func initialize() {
-		let gryphonFolder = ".gryphon"
+		let gryphonRootFolder = ".gryphon"
+		let scriptsFolder = gryphonRootFolder + "/scripts"
 
-		// Create gryphon folder
-		Utilities.createFolderIfNeeded(at: gryphonFolder)
+		// Create gryphon folder and subfolders
+		Utilities.createFolderIfNeeded(at: gryphonRootFolder)
+		Utilities.createFolderIfNeeded(at: scriptsFolder)
 
-		// Save the standard library templates file in it
+		// Save the files
 		Utilities.createFile(
 			named: "StandardLibrary.template.swift",
-			inDirectory: gryphonFolder,
+			inDirectory: gryphonRootFolder,
+			containing: standardLibraryTemplateFileContents)
+		Utilities.createFile(
+			named: "mapKotlinErrorsToSwift.swift",
+			inDirectory: scriptsFolder,
 			containing: standardLibraryTemplateFileContents)
 	}
 

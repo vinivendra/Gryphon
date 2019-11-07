@@ -1,10 +1,12 @@
 echo "➡️ [1/2] Compiling Kotlin files..."
 
-if bash buildBootstrappedTranspiler.sh
+if bash buildBootstrappedTranspiler.sh 2> .gryphon/kotlinErrors.errors
 then
+	swift .gryphon/scripts/mapKotlinErrorsToSwift.swift < .gryphon/kotlinErrors.errors
 	echo "✅ Done."
 	echo ""
 else
+	swift .gryphon/scripts/NmapKotlinErrorsToSwift.swift < .gryphon/kotlinErrors.errors
 	echo "🚨 Failed to compile Kotlin files."
 	exit $?
 fi

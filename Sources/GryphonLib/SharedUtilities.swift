@@ -258,8 +258,8 @@ extension Utilities {
 		return astDumpPath
 	}
 
-	static public func pathOfKotlinErrorMapFile(forSwiftFile swiftFile: String) -> String {
-		let relativePath = Utilities.getRelativePath(forFile: swiftFile)
+	static public func pathOfKotlinErrorMapFile(forKotlinFile kotlinFile: String) -> String {
+		let relativePath = Utilities.getRelativePath(forFile: kotlinFile)
 		let pathInGryphonFolder = ".gryphon/KotlinErrorMaps/" + relativePath
 		let errorMapPath = Utilities.changeExtension(of: pathInGryphonFolder, to: .kotlinErrorMap)
 		return errorMapPath

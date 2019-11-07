@@ -24,6 +24,7 @@
 
 let kotlinStringInterpolation = "{_string}"
 
+// TODO: This string isn't being translated as multiline
 // gryphon: multiline
 internal let standardLibraryTemplateFileContents = """
 	// WARNING: Any changes to this file should be reflected in the literal string in Driver.swift
@@ -376,5 +377,152 @@ internal let standardLibraryTemplateFileContents = """
 		_ = "_optional?.let _closure4"
 	}
 
+"""
+
+// gryphon: multiline
+internal let errorMapScriptFileContents = """
+import Foundation
+
+func getAbsoultePath(forFile file: String) -> String {
+	return "/" + URL(fileURLWithPath: file).pathComponents.dropFirst().joined(separator: "/")
+}
+
+struct ErrorInformation {
+	let filePath: String
+	let lineNumber: Int
+	let columnNumber: Int
+	let errorMessage: String
+}
+
+func getInformation(fromString string: String) -> ErrorInformation {
+	let components = string.split(separator: ":")
+	return ErrorInformation(
+		filePath: String(components[0]),
+		lineNumber: Int(components[1])!,
+		columnNumber: Int(components[2])!,
+		errorMessage: String(components[3...].joined(separator: ":")))
+}
+
+struct SourceFileRange {
+	let lineStart: Int
+	let columnStart: Int
+	let lineEnd: Int
+	let columnEnd: Int
+}
+
+struct Mapping {
+	let kotlinRange: SourceFileRange
+	let swiftRange: SourceFileRange
+}
+
+struct ErrorMap {
+	let kotlinFilePath: String
+	let swiftFilePath: String
+	let mappings: [Mapping]
+
+	init(kotlinFilePath: String, contents: String) {
+		self.kotlinFilePath = kotlinFilePath
+
+		let components = contents.split(separator: "\n")
+		self.swiftFilePath = String(components[0])
+
+		self.mappings = components.dropFirst().map { string in
+			let mappingComponents = string.split(separator: ":")
+			let kotlinRange = SourceFileRange(
+				lineStart: Int(mappingComponents[0])!,
+				columnStart: Int(mappingComponents[1])!,
+				lineEnd: Int(mappingComponents[2])!,
+				columnEnd: Int(mappingComponents[3])!)
+			let swiftRange = SourceFileRange(
+				lineStart: Int(mappingComponents[4])!,
+				columnStart: Int(mappingComponents[5])!,
+				lineEnd: Int(mappingComponents[6])!,
+				columnEnd: Int(mappingComponents[7])!)
+			return Mapping(kotlinRange: kotlinRange, swiftRange: swiftRange)
+		}
+	}
+
+	func getSwiftRange(forKotlinLine line: Int, column: Int) -> SourceFileRange? {
+		// TODO: This could be a binary search
+		for mapping in mappings {
+			if mapping.kotlinRange.lineStart <= line,
+				mapping.kotlinRange.lineEnd >= line,
+				mapping.kotlinRange.columnStart <= column,
+				mapping.kotlinRange.columnEnd <= column
+			{
+				return mapping.swiftRange
+			}
+		}
+
+		return nil
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+var input: [String] = []
+
+// Read all the input, separated into lines
+// TODO: This could be done in real time
+while let nextLine = readLine(strippingNewline: false) {
+	input.append(nextLine)
+}
+
+// Join the lines into errors/warnings
+var errors: [String] = []
+var currentError = ""
+for line in input {
+	if line.contains(": error: ") || line.contains(": warning: ") {
+		if !currentError.isEmpty {
+			errors.append(currentError)
+		}
+		currentError = line
+	}
+	else {
+		currentError += line
+	}
+}
+if !currentError.isEmpty {
+	errors.append(currentError)
+}
+
+// Handle the errors
+var errorMaps: [String: ErrorMap] = [:]
+for error in errors {
+	let errorInformation = getInformation(fromString: error)
+	let errorMapPath =
+		".gryphon/KotlinErrorMaps/" + errorInformation.filePath.dropLast(2) + "kotlinErrorMap"
+
+	if errorMaps[errorMapPath] == nil {
+		if let fileContents = try? String(contentsOfFile: errorMapPath) {
+			errorMaps[errorMapPath] = ErrorMap(
+				kotlinFilePath: errorInformation.filePath,
+				contents: fileContents)
+		}
+		else {
+			print(error)
+			continue
+		}
+	}
+
+	let errorMap = errorMaps[errorMapPath]!
+
+	if let swiftRange = errorMap.getSwiftRange(
+		forKotlinLine: errorInformation.lineNumber,
+		column: errorInformation.columnNumber)
+	{
+		print("\\(getAbsoultePath(forFile: errorMap.swiftFilePath)):\\(swiftRange.lineStart):" +
+			"\\(swiftRange.columnStart):\\(errorInformation.errorMessage)")
+	}
+	else {
+		print(error)
+	}
+}
+
+//main.kt:2:5: error: conflicting declarations: var result: String, var result: String
+//var result: String = ""
+//    ^
+//main.kt:3:5: error: conflicting declarations: var result: String, var result: String
+//var result = result
+//    ^
 
 """

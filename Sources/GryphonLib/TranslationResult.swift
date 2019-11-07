@@ -75,6 +75,7 @@ public class Translation {
 			errorMap: errorMap.joined(separator: "\n"))
 	}
 
+	// TODO: Check the performance penalties of using this algorithm
 	private func resolveTranslationInto(
 		translationResult: ArrayClass<String>,
 		errorMap: ArrayClass<String>,
@@ -98,11 +99,14 @@ public class Translation {
 
 		if let swiftRange = swiftRange {
 			let endPosition = currentPosition.copy()
-			errorMap.append(
-				"\(swiftRange.lineStart):\(swiftRange.columnStart), " +
-				"\(swiftRange.lineEnd):\(swiftRange.columnEnd) -> " +
-				"\(startingPosition.lineNumber):\(startingPosition.columnNumber), " +
-				"\(endPosition.lineNumber):\(endPosition.columnNumber)")
+			let newEntry = "\(startingPosition.lineNumber):\(startingPosition.columnNumber):" +
+				"\(endPosition.lineNumber):\(endPosition.columnNumber):" +
+				"\(swiftRange.lineStart):\(swiftRange.columnStart):" +
+				"\(swiftRange.lineEnd):\(swiftRange.columnEnd)"
+			let lastEntry = errorMap.last
+			if lastEntry == nil || lastEntry! != newEntry {
+				errorMap.append(newEntry)
+			}
 		}
 	}
 

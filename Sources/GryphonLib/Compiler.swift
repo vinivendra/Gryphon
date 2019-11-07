@@ -160,6 +160,17 @@ public class Compiler {
 		log("\t- Translating AST to Kotlin...")
 		let translation = try KotlinTranslator(context: context).translateAST(ast)
 		let translationResult = translation.resolveTranslation()
+
+		if let swiftFilePath = ast.sourceFile?.path, let kotlinFilePath = ast.outputFileMap[.kt] {
+			let errorMap = translationResult.errorMap
+			let errorMapFilePath = Utilities.pathOfKotlinErrorMapFile(forKotlinFile: kotlinFilePath)
+			let errorMapFolder =
+				errorMapFilePath.split(withStringSeparator: "/").dropLast().joined(separator: "/")
+			let errorMapFileContents = swiftFilePath + "\n" + errorMap
+			Utilities.createFolderIfNeeded(at: errorMapFolder)
+			Utilities.createFile(atPath: errorMapFilePath, containing: errorMapFileContents)
+		}
+
 		return translationResult.translation
 	}
 
