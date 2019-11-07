@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/ErrorMapping.swiftAST
-// gryphon output: Sources/GryphonLib/ErrorMapping.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/ErrorMapping.gryphonAST
-// gryphon output: Bootstrap/ErrorMapping.kt
+// gryphon output: Sources/GryphonLib/TranslationResult.swiftAST
+// gryphon output: Sources/GryphonLib/TranslationResult.gryphonASTRaw
+// gryphon output: Sources/GryphonLib/TranslationResult.gryphonAST
+// gryphon output: Bootstrap/TranslationResult.kt
 
 public struct TranslationResult {
 	let translation: String
@@ -32,12 +32,38 @@ public class Translation {
 		self.swiftRange = range
 	}
 
+	init(forRange range: SourceFileRange?, withString string: String) {
+		self.swiftRange = range
+		self.append(string)
+	}
+
 	func append(_ string: String) {
 		children.append(TranslationUnit(string))
 	}
 
 	func append(_ map: Translation) {
 		children.append(TranslationUnit(map))
+	}
+
+	var isEmpty: Bool {
+		if children.isEmpty {
+			return true
+		}
+
+		for child in children {
+			if let string = child.stringLiteral {
+				if string != "" {
+					return false
+				}
+			}
+			else {
+				if !(child.node!.isEmpty) {
+					return false
+				}
+			}
+		}
+
+		return true
 	}
 
 	public func resolveTranslation() -> TranslationResult {
@@ -76,7 +102,23 @@ public class Translation {
 				"\(swiftRange.lineStart):\(swiftRange.columnStart), " +
 				"\(swiftRange.lineEnd):\(swiftRange.columnEnd) -> " +
 				"\(startingPosition.lineNumber):\(startingPosition.columnNumber), " +
-				"\(endPosition.lineNumber):\(startingPosition.columnNumber)")
+				"\(endPosition.lineNumber):\(endPosition.columnNumber)")
+		}
+	}
+
+	/// Goes through the translation subtree looking for the given suffix. If it is found, it is
+	/// dropped from the tree (in-place). Otherwise, nothing happens.
+	public func dropLast(_ string: String) {
+		if let lastUnit = children.last {
+			if let string = lastUnit.stringLiteral {
+				if string.hasSuffix(string) {
+					let newUnit = TranslationUnit(String(string.dropLast(string.count)))
+					children[children.count - 1] = newUnit
+				}
+			}
+			else {
+				lastUnit.node!.dropLast(string)
+			}
 		}
 	}
 }
@@ -99,12 +141,12 @@ struct TranslationUnit {
 }
 
 private class SourceFilePosition {
-	var lineNumber: Int = 0
-	var columnNumber: Int = 0
+	var lineNumber: Int
+	var columnNumber: Int
 
 	public init() {
-		self.lineNumber = 0
-		self.columnNumber = 0
+		self.lineNumber = 1
+		self.columnNumber = 1
 	}
 
 	private init(lineNumber: Int, columnNumber: Int) {
@@ -118,14 +160,32 @@ private class SourceFilePosition {
 		let newLines = string.occurrences(of: "\n").count
 		if newLines > 0 {
 			self.lineNumber += newLines
-			self.columnNumber = string.split(withStringSeparator: "\n").last!.count
+			let lastLineContents = string.split(
+				withStringSeparator: "\n",
+				omittingEmptySubsequences: false).last!
+			self.columnNumber = lastLineContents.count + 1
 		}
 		else {
-			self.columnNumber = string.count
+			self.columnNumber += string.count
 		}
 	}
 
 	func copy() -> SourceFilePosition {
 		return SourceFilePosition(lineNumber: self.lineNumber, columnNumber: self.columnNumber)
+	}
+}
+
+extension Translation {
+	func appendTranslations(
+		_ translations: ArrayClass<Translation>,
+		withSeparator separator: String)
+	{
+		for translation in translations.dropLast() {
+			self.append(translation)
+			self.append(separator)
+		}
+		if let lastTranslation = translations.last {
+			self.append(lastTranslation)
+		}
 	}
 }

@@ -158,7 +158,9 @@ public class Compiler {
 		throws -> String
 	{
 		log("\t- Translating AST to Kotlin...")
-		return try KotlinTranslator(context: context).translateAST(ast)
+		let translation = try KotlinTranslator(context: context).translateAST(ast)
+		let translationResult = translation.resolveTranslation()
+		return translationResult.translation
 	}
 
 	public static func transpileKotlinCode(
