@@ -167,6 +167,11 @@ public class Driver {
 			print("Initialization successful.")
 			return nil
 		}
+		else if arguments.contains("-clean") {
+			cleanup()
+			print("Cleanup successful.")
+			return nil
+		}
 
 		defer {
 			if arguments.contains("-summarize-errors") {
@@ -393,7 +398,11 @@ public class Driver {
 		Utilities.createFile(
 			named: "mapKotlinErrorsToSwift.swift",
 			inDirectory: scriptsFolder,
-			containing: standardLibraryTemplateFileContents)
+			containing: errorMapScriptFileContents)
+	}
+
+	static func cleanup() {
+		Utilities.deleteFolder(at: ".gryphon")
 	}
 
 	static func getASTDump(forFile file: String) -> String? {

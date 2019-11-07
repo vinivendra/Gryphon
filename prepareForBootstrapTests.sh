@@ -6,7 +6,7 @@ then
 	echo "✅ Done."
 	echo ""
 else
-	swift .gryphon/scripts/NmapKotlinErrorsToSwift.swift < .gryphon/kotlinErrors.errors
+	swift .gryphon/scripts/mapKotlinErrorsToSwift.swift < .gryphon/kotlinErrors.errors
 	echo "🚨 Failed to compile Kotlin files."
 	exit $?
 fi
