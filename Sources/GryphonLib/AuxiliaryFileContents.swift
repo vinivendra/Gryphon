@@ -282,6 +282,9 @@ internal let standardLibraryTemplateFileContents = """
 		_ = _array.first(where: _closure3)
 		_ = "_array.find _closure3"
 
+		_ = _array.last(where: _closure3)
+		_ = "_array.findLast _closure3"
+
 		_ = _array.last
 		_ = "_array.lastOrNull()"
 

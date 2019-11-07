@@ -81,7 +81,7 @@ public class TranspilationPass {
 	]
 
 	static let swiftProtocols: ArrayClass<String> = [
-		"Equatable", "Codable", "Decodable", "Encodable", "CustomStringConvertible",
+		"Equatable", "Codable", "Decodable", "Encodable", "CustomStringConvertible", "Hashable",
 	]
 
 	// MARK: - Replace Statements

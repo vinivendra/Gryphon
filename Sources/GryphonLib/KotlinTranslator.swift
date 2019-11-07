@@ -76,9 +76,10 @@ public class KotlinTranslator {
 	{
 		let subtreesRange: SourceFileRange?
 
-		if let startRange = subtrees.first(where: { $0.range != nil })?.range,
-			let endRange = subtrees.last(where: { $0.range != nil })?.range
-		{
+		let startRange = subtrees.first(where: { $0.range != nil })?.range
+		let endRange = subtrees.last(where: { $0.range != nil })?.range
+
+		if let startRange = startRange, let endRange = endRange {
 			subtreesRange = SourceFileRange(
 				lineStart: startRange.lineStart,
 				lineEnd: endRange.lineEnd,
@@ -98,7 +99,7 @@ public class KotlinTranslator {
 			}
 
 		if treesAndTranslations.count <= limitForAddingNewlines {
-			let result = Translation(forRange: subtreesRange)
+			let result = Translation(range: subtreesRange)
 			for translation in treesAndTranslations.map({ $0.translation }) {
 				result.append(translation)
 			}
@@ -108,7 +109,7 @@ public class KotlinTranslator {
 		let treesAndTranslationsWithoutFirst =
 			ArrayClass<TreeAndTranslation>(treesAndTranslations.dropFirst())
 
-		let result = Translation(forRange: subtreesRange)
+		let result = Translation(range: subtreesRange)
 
 		for (currentSubtree, nextSubtree)
 			in zipToClass(treesAndTranslations, treesAndTranslationsWithoutFirst)
@@ -186,11 +187,11 @@ public class KotlinTranslator {
 	{
 		if let commentStatement = subtree as? CommentStatement {
 			return Translation(
-				forRange: subtree.range,
-				withString: "\(indentation)//\(commentStatement.value)\n")
+				range: subtree.range,
+				string: "\(indentation)//\(commentStatement.value)\n")
 		}
 		if subtree is ImportDeclaration {
-			return Translation(forRange: subtree.range)
+			return Translation(range: subtree.range)
 		}
 		if subtree is ExtensionDeclaration {
 			return try unexpectedASTStructureError(
@@ -259,20 +260,20 @@ public class KotlinTranslator {
 		}
 		if subtree is BreakStatement {
 			return Translation(
-				forRange: subtree.range,
-				withString: "\(indentation)break\n")
+				range: subtree.range,
+				string: "\(indentation)break\n")
 		}
 		if subtree is ContinueStatement {
 			return Translation(
-				forRange: subtree.range,
-				withString: "\(indentation)continue\n")
+				range: subtree.range,
+				string: "\(indentation)continue\n")
 		}
 		if let expressionStatement = subtree as? ExpressionStatement {
 			let expressionTranslation = try translateExpression(
 				expressionStatement.expression,
 				withIndentation: indentation)
 			if !expressionTranslation.isEmpty {
-				let result = Translation(forRange: subtree.range)
+				let result = Translation(range: subtree.range)
 				result.append(indentation)
 				result.append(expressionTranslation)
 				result.append("\n")
@@ -280,14 +281,14 @@ public class KotlinTranslator {
 			}
 			else {
 				return Translation(
-					forRange: subtree.range,
-					withString: "\n")
+					range: subtree.range,
+					string: "\n")
 			}
 		}
 		if subtree is ErrorStatement {
 			return Translation(
-				forRange: subtree.range,
-				withString: KotlinTranslator.errorTranslation)
+				range: subtree.range,
+				string: KotlinTranslator.errorTranslation)
 		}
 
 		fatalError("This should never be reached.")
@@ -303,7 +304,7 @@ public class KotlinTranslator {
 		let accessString = enumDeclaration.access ?? ""
 		let enumString = isEnumClass ? "enum" : "sealed"
 
-		let result = Translation(forRange: enumDeclaration.range)
+		let result = Translation(range: enumDeclaration.range)
 		result.append("\(indentation)\(accessString) \(enumString) class " +
 			enumDeclaration.enumName)
 
@@ -364,7 +365,7 @@ public class KotlinTranslator {
 		let capitalizedElementName = element.name.capitalizedAsCamelCase()
 		let annotationsString = (element.annotations == nil) ? "" : "\(element.annotations!) "
 
-		let result = Translation(forRange: nil)
+		let result = Translation(range: nil)
 		result.append("\(indentation)\(annotationsString)class \(capitalizedElementName)")
 
 		if element.associatedValues.isEmpty {
@@ -386,7 +387,7 @@ public class KotlinTranslator {
 		withIndentation indentation: String)
 		throws -> Translation
 	{
-		let result = Translation(forRange: protocolDeclaration.range)
+		let result = Translation(range: protocolDeclaration.range)
 		result.append("\(indentation)interface \(protocolDeclaration.protocolName) {\n")
 		let contents = try translateSubtrees(
 			protocolDeclaration.members,
@@ -402,7 +403,7 @@ public class KotlinTranslator {
 		throws -> Translation
 	{
 		let translatedType = translateType(typealiasDeclaration.typeName)
-		let result = Translation(forRange: typealiasDeclaration.range)
+		let result = Translation(range: typealiasDeclaration.range)
 		result.append(
 			"\(indentation)typealias \(typealiasDeclaration.identifier) = \(translatedType)\n")
 		return result
@@ -413,7 +414,7 @@ public class KotlinTranslator {
 		withIndentation indentation: String)
 		throws -> Translation
 	{
-		let result = Translation(forRange: classDeclaration.range)
+		let result = Translation(range: classDeclaration.range)
 		result.append("\(indentation)open class \(classDeclaration.className)")
 
 		if !classDeclaration.inherits.isEmpty {
@@ -445,7 +446,7 @@ public class KotlinTranslator {
 
 		let annotationsString = structDeclaration.annotations.map { "\(indentation)\($0)\n" } ?? ""
 
-		let result = Translation(forRange: structDeclaration.range)
+		let result = Translation(range: structDeclaration.range)
 		result.append("\(annotationsString)\(indentation)data class " +
 			"\(structDeclaration.structName)(\n")
 
@@ -508,7 +509,7 @@ public class KotlinTranslator {
 		withIndentation indentation: String)
 		throws -> Translation
 	{
-		let result = Translation(forRange: companionObject.range)
+		let result = Translation(range: companionObject.range)
 		result.append("\(indentation)companion object {\n")
 
 		let increasedIndentation = increaseIndentation(indentation)
@@ -529,12 +530,12 @@ public class KotlinTranslator {
 		throws -> Translation
 	{
 		guard !functionDeclaration.isImplicit else {
-			return Translation(forRange: functionDeclaration.range)
+			return Translation(range: functionDeclaration.range)
 		}
 
 		var indentation = indentation
 
-		let result = Translation(forRange: functionDeclaration.range)
+		let result = Translation(range: functionDeclaration.range)
 		result.append(indentation)
 
 		let isInit = (functionDeclaration is InitializerDeclaration)
@@ -591,20 +592,20 @@ public class KotlinTranslator {
 
 		// Check if we need to call a superclass initializer or if we need to specify a return type
 		// after the parameters
-		var returnOrSuperCallString: String = ""
+		var returnTypeString: String?
+		var superCallTranslation: Translation?
 		if let initializerDeclaration = functionDeclaration as? InitializerDeclaration {
 			if let superCall = initializerDeclaration.superCall {
-				let superCallTranslation = try translateCallExpression(
+				superCallTranslation = try translateCallExpression(
 					superCall,
 					withIndentation: increaseIndentation(indentation))
-				returnOrSuperCallString = ": \(superCallTranslation)"
 			}
 		}
 		else if functionDeclaration.returnType != "()", !isInit {
 			// If it doesn't, that place might be used for the return type
 
 			let translatedReturnType = translateType(functionDeclaration.returnType)
-			returnOrSuperCallString = ": \(translatedReturnType)"
+			returnTypeString = translatedReturnType
 		}
 
 		let parameterStrings = try functionDeclaration.parameters
@@ -612,7 +613,17 @@ public class KotlinTranslator {
 
 		if !shouldAddNewlines {
 			result.appendTranslations(parameterStrings, withSeparator: ", ")
-			result.append(")" + returnOrSuperCallString + " {\n")
+			result.append(")")
+			if let returnTypeString = returnTypeString {
+				result.append(": ")
+				result.append(returnTypeString)
+			}
+			else if let superCallTranslation = superCallTranslation {
+				result.append(": ")
+				result.append(superCallTranslation)
+			}
+			result.append(" {\n")
+
 			if result.resolveTranslation().translation.count >= KotlinTranslator.lineLimit {
 				return try translateFunctionDeclaration(
 					functionDeclaration: functionDeclaration, withIndentation: indentation,
@@ -625,8 +636,17 @@ public class KotlinTranslator {
 			result.appendTranslations(parameterStrings, withSeparator: ",\n\(parameterIndentation)")
 			result.append(")\n")
 
-			if !returnOrSuperCallString.isEmpty {
-				result.append("\(parameterIndentation)\(returnOrSuperCallString)\n")
+			if let returnTypeString = returnTypeString {
+				result.append(parameterIndentation)
+				result.append(": ")
+				result.append(returnTypeString)
+				result.append("\n")
+			}
+			else if let superCallTranslation = superCallTranslation {
+				result.append(parameterIndentation)
+				result.append(": ")
+				result.append(superCallTranslation)
+				result.append("\n")
 			}
 
 			result.append("\(indentation){\n")
@@ -703,13 +723,13 @@ public class KotlinTranslator {
 	{
 		let labelAndTypeString = parameter.label + ": " + translateType(parameter.typeName)
 		if let defaultValue = parameter.value {
-			let result = Translation(forRange: nil)
+			let result = Translation(range: nil)
 			result.append(labelAndTypeString + " = ")
 			result.append(try translateExpression(defaultValue, withIndentation: indentation))
 			return result
 		}
 		else {
-			return Translation(forRange: nil, withString: labelAndTypeString)
+			return Translation(range: nil, string: labelAndTypeString)
 		}
 	}
 
@@ -722,7 +742,7 @@ public class KotlinTranslator {
 			doStatement.statements,
 			withIndentation: increaseIndentation(indentation),
 			limitForAddingNewlines: 3)
-		let result = Translation(forRange: doStatement.range)
+		let result = Translation(range: doStatement.range)
 		result.append("\(indentation)try {\n")
 		result.append(translatedStatements)
 		result.append("\(indentation)}\n")
@@ -734,7 +754,7 @@ public class KotlinTranslator {
 		withIndentation indentation: String)
 		throws -> Translation
 	{
-		let result = Translation(forRange: catchStatement.range)
+		let result = Translation(range: catchStatement.range)
 
 		if let variableDeclaration = catchStatement.variableDeclaration {
 			let translatedType = translateType(variableDeclaration.typeName)
@@ -761,7 +781,7 @@ public class KotlinTranslator {
 		withIndentation indentation: String)
 		throws -> Translation
 	{
-		let result = Translation(forRange: forEachStatement.range)
+		let result = Translation(range: forEachStatement.range)
 		result.append("\(indentation)for (")
 
 		let variableTranslation =
@@ -795,7 +815,7 @@ public class KotlinTranslator {
 		withIndentation indentation: String)
 		throws -> Translation
 	{
-		let result = Translation(forRange: whileStatement.range)
+		let result = Translation(range: whileStatement.range)
 		result.append("\(indentation)while (")
 
 		let expressionTranslation =
@@ -824,7 +844,7 @@ public class KotlinTranslator {
 			"else" :
 			(isElseIf ? "else if" : "if")
 
-		let result = Translation(forRange: ifStatement.range)
+		let result = Translation(range: ifStatement.range)
 		result.append(indentation + keyword + " ")
 
 		let increasedIndentation = increaseIndentation(indentation)
@@ -880,7 +900,7 @@ public class KotlinTranslator {
 		withIndentation indentation: String)
 		throws -> Translation
 	{
-		let result = Translation(forRange: switchStatement.range)
+		let result = Translation(range: switchStatement.range)
 
 		if let convertsToExpression = switchStatement.convertsToExpression {
 			if convertsToExpression is ReturnStatement {
@@ -992,7 +1012,7 @@ public class KotlinTranslator {
 				let translatedType = try translateExpression(
 					binaryExpression.rightExpression,
 					withIndentation: indentation)
-				let result = Translation(forRange: caseExpression.range)
+				let result = Translation(range: caseExpression.range)
 				result.append("is ")
 				result.append(translatedType)
 				return result
@@ -1008,7 +1028,7 @@ public class KotlinTranslator {
 						template.pattern.contains("until") ||
 						template.pattern.contains("rangeTo")
 					{
-						let result = Translation(forRange: caseExpression.range)
+						let result = Translation(range: caseExpression.range)
 						result.append("in ")
 						result.append(translatedExpression)
 						return result
@@ -1032,7 +1052,7 @@ public class KotlinTranslator {
 	{
 		let expressionTranslation =
 			try translateExpression(throwStatement.expression, withIndentation: indentation)
-		let result = Translation(forRange: throwStatement.range)
+		let result = Translation(range: throwStatement.range)
 		result.append("\(indentation)throw ")
 		result.append(expressionTranslation)
 		result.append("\n")
@@ -1047,7 +1067,7 @@ public class KotlinTranslator {
 		if let expression = returnStatement.expression {
 			let expressionTranslation =
 				try translateExpression(expression, withIndentation: indentation)
-			let result = Translation(forRange: returnStatement.range)
+			let result = Translation(range: returnStatement.range)
 			result.append("\(indentation)return ")
 			result.append(expressionTranslation)
 			result.append("\n")
@@ -1055,8 +1075,8 @@ public class KotlinTranslator {
 		}
 		else {
 			return Translation(
-				forRange: returnStatement.range,
-				withString: "\(indentation)return\n")
+				range: returnStatement.range,
+				string: "\(indentation)return\n")
 		}
 	}
 
@@ -1066,10 +1086,10 @@ public class KotlinTranslator {
 		throws -> Translation
 	{
 		guard !variableDeclaration.isImplicit else {
-			return Translation(forRange: variableDeclaration.range)
+			return Translation(range: variableDeclaration.range)
 		}
 
-		let result = Translation(forRange: variableDeclaration.range)
+		let result = Translation(range: variableDeclaration.range)
 		result.append(indentation)
 
 		if let annotations = variableDeclaration.annotations {
@@ -1163,7 +1183,7 @@ public class KotlinTranslator {
 			try translateExpression(assignmentStatement.leftHand, withIndentation: indentation)
 		let rightTranslation =
 			try translateExpression(assignmentStatement.rightHand, withIndentation: indentation)
-		let result = Translation(forRange: assignmentStatement.range)
+		let result = Translation(range: assignmentStatement.range)
 		result.append(indentation)
 		result.append(leftTranslation)
 		result.append(" = ")
@@ -1239,15 +1259,15 @@ public class KotlinTranslator {
 		}
 		if let typeExpression = expression as? TypeExpression {
 			return Translation(
-				forRange: typeExpression.range,
-				withString: translateType(typeExpression.typeName))
+				range: typeExpression.range,
+				string: translateType(typeExpression.typeName))
 		}
 		if let subscriptExpression = expression as? SubscriptExpression {
 			return try translateSubscriptExpression(
 				subscriptExpression, withIndentation: indentation)
 		}
 		if let parenthesesExpression = expression as? ParenthesesExpression {
-			let result = Translation(forRange: parenthesesExpression.range)
+			let result = Translation(range: parenthesesExpression.range)
 			result.append("(")
 			result.append(try translateExpression(
 				parenthesesExpression.expression,
@@ -1256,7 +1276,7 @@ public class KotlinTranslator {
 			return result
 		}
 		if let forceValueExpression = expression as? ForceValueExpression {
-			let result = Translation(forRange: forceValueExpression.range)
+			let result = Translation(range: forceValueExpression.range)
 			result.append(try translateExpression(
 				forceValueExpression.expression,
 				withIndentation: indentation))
@@ -1264,7 +1284,7 @@ public class KotlinTranslator {
 			return result
 		}
 		if let optionalExpression = expression as? OptionalExpression {
-			let result = Translation(forRange: optionalExpression.range)
+			let result = Translation(range: optionalExpression.range)
 			result.append(try translateExpression(
 				optionalExpression.expression,
 				withIndentation: indentation))
@@ -1273,33 +1293,33 @@ public class KotlinTranslator {
 		}
 		if let literalIntExpression = expression as? LiteralIntExpression {
 			return Translation(
-				forRange: literalIntExpression.range,
-				withString: String(literalIntExpression.value))
+				range: literalIntExpression.range,
+				string: String(literalIntExpression.value))
 		}
 		if let literalUIntExpression = expression as? LiteralUIntExpression {
 			return Translation(
-				forRange: literalUIntExpression.range,
-				withString: String(literalUIntExpression.value) + "u")
+				range: literalUIntExpression.range,
+				string: String(literalUIntExpression.value) + "u")
 		}
 		if let literalDoubleExpression = expression as? LiteralDoubleExpression {
 			return Translation(
-				forRange: literalDoubleExpression.range,
-				withString: String(literalDoubleExpression.value))
+				range: literalDoubleExpression.range,
+				string: String(literalDoubleExpression.value))
 		}
 		if let literalFloatExpression = expression as? LiteralFloatExpression {
 			return Translation(
-				forRange: literalFloatExpression.range,
-				withString: String(literalFloatExpression.value) + "f")
+				range: literalFloatExpression.range,
+				string: String(literalFloatExpression.value) + "f")
 		}
 		if let literalBoolExpression = expression as? LiteralBoolExpression {
 			return Translation(
-				forRange: literalBoolExpression.range,
-				withString: String(literalBoolExpression.value))
+				range: literalBoolExpression.range,
+				string: String(literalBoolExpression.value))
 		}
 		if expression is NilLiteralExpression {
 			return Translation(
-				forRange: expression.range,
-				withString: "null")
+				range: expression.range,
+				string: "null")
 		}
 		if let tupleExpression = expression as? TupleExpression {
 			return try translateTupleExpression(tupleExpression, withIndentation: indentation)
@@ -1310,8 +1330,8 @@ public class KotlinTranslator {
 		}
 		if expression is ErrorExpression {
 			return Translation(
-				forRange: expression.range,
-				withString: KotlinTranslator.errorTranslation)
+				range: expression.range,
+				string: KotlinTranslator.errorTranslation)
 		}
 
 		fatalError("This should never be reached.")
@@ -1329,7 +1349,7 @@ public class KotlinTranslator {
 			subscriptExpression.subscriptedExpression,
 			withIndentation: indentation)
 
-		let result = Translation(forRange: subscriptExpression.range)
+		let result = Translation(range: subscriptExpression.range)
 		result.append(translatedSubscriptedExpression)
 		result.append("[")
 		result.append(translatedIndexExpression)
@@ -1342,7 +1362,7 @@ public class KotlinTranslator {
 		withIndentation indentation: String)
 		throws -> Translation
 	{
-		let result = Translation(forRange: arrayExpression.range)
+		let result = Translation(range: arrayExpression.range)
 
 		let translations = try arrayExpression.elements.map {
 			try translateExpression($0, withIndentation: indentation)
@@ -1370,7 +1390,7 @@ public class KotlinTranslator {
 		withIndentation indentation: String)
 		throws -> Translation
 	{
-		let result = Translation(forRange: dictionaryExpression.range)
+		let result = Translation(range: dictionaryExpression.range)
 		result.append("mutableMapOf(")
 
 		let keyTranslations = try dictionaryExpression.keys.map {
@@ -1409,13 +1429,13 @@ public class KotlinTranslator {
 		if let expression = returnExpression.expression {
 			let expressionTranslation =
 				try translateExpression(expression, withIndentation: indentation)
-			let result = Translation(forRange: returnExpression.range)
+			let result = Translation(range: returnExpression.range)
 			result.append("return ")
 			result.append(expressionTranslation)
 			return result
 		}
 		else {
-			return Translation(forRange: returnExpression.range, withString: "return")
+			return Translation(range: returnExpression.range, string: "return")
 		}
 	}
 
@@ -1433,7 +1453,7 @@ public class KotlinTranslator {
 
 		if self.context.sealedClasses.contains(leftHandString) {
 			let translatedEnumCase = rightHandString.capitalizedAsCamelCase()
-			let result = Translation(forRange: dotExpression.range)
+			let result = Translation(range: dotExpression.range)
 			result.append(leftHandTranslation)
 			result.append(".")
 			result.append(translatedEnumCase)
@@ -1444,14 +1464,14 @@ public class KotlinTranslator {
 			let enumName = leftHandString.split(withStringSeparator: ".").last!
 			if self.context.enumClasses.contains(enumName) {
 				let translatedEnumCase = rightHandString.upperSnakeCase()
-				let result = Translation(forRange: dotExpression.range)
+				let result = Translation(range: dotExpression.range)
 				result.append(leftHandTranslation)
 				result.append(".")
 				result.append(translatedEnumCase)
 				return result
 			}
 			else {
-				let result = Translation(forRange: dotExpression.range)
+				let result = Translation(range: dotExpression.range)
 				result.append(leftHandTranslation)
 				result.append(".")
 				result.append(rightHandTranslation)
@@ -1472,7 +1492,7 @@ public class KotlinTranslator {
 			binaryOperatorExpression.rightExpression,
 			withIndentation: indentation)
 
-		let result = Translation(forRange: binaryOperatorExpression.range)
+		let result = Translation(range: binaryOperatorExpression.range)
 		result.append(leftTranslation)
 		result.append(" ")
 		result.append(binaryOperatorExpression.operatorSymbol)
@@ -1489,7 +1509,7 @@ public class KotlinTranslator {
 		let expressionTranslation = try translateExpression(
 			prefixUnaryExpression.subExpression,
 			withIndentation: indentation)
-		let result = Translation(forRange: prefixUnaryExpression.range)
+		let result = Translation(range: prefixUnaryExpression.range)
 		result.append(prefixUnaryExpression.operatorSymbol)
 		result.append(expressionTranslation)
 		return result
@@ -1503,7 +1523,7 @@ public class KotlinTranslator {
 		let expressionTranslation = try translateExpression(
 			postfixUnaryExpression.subExpression,
 			withIndentation: indentation)
-		let result = Translation(forRange: postfixUnaryExpression.range)
+		let result = Translation(range: postfixUnaryExpression.range)
 		result.append(expressionTranslation)
 		result.append(postfixUnaryExpression.operatorSymbol)
 		return result
@@ -1521,7 +1541,7 @@ public class KotlinTranslator {
 		let falseExpressionTranslation =
 			try translateExpression(ifExpression.falseExpression, withIndentation: indentation)
 
-		let result = Translation(forRange: ifExpression.range)
+		let result = Translation(range: ifExpression.range)
 		result.append("if (")
 		result.append(conditionTranslation)
 		result.append(") { ")
@@ -1538,7 +1558,7 @@ public class KotlinTranslator {
 		shouldAddNewlines: Bool = false)
 		throws -> Translation
 	{
-		let result = Translation(forRange: callExpression.range)
+		let result = Translation(range: callExpression.range)
 
 		var functionExpression = callExpression.function
 		while true {
@@ -1617,14 +1637,14 @@ public class KotlinTranslator {
 							withIndentation: increaseIndentation(indentation),
 							shouldAddNewlines: shouldAddNewlines)
 
-						let result = Translation(forRange: callExpression.range)
+						let result = Translation(range: callExpression.range)
 						result.append(firstParametersTranslation)
 						result.append(" ")
 						result.append(closureTranslation)
 						return result
 					}
 					else {
-						let result = Translation(forRange: callExpression.range)
+						let result = Translation(range: callExpression.range)
 						result.append(" ")
 						result.append(closureTranslation)
 						return result
@@ -1660,10 +1680,10 @@ public class KotlinTranslator {
 		throws -> Translation
 	{
 		guard !closureExpression.statements.isEmpty else {
-			return Translation(forRange: closureExpression.range, withString: "{ }")
+			return Translation(range: closureExpression.range, string: "{ }")
 		}
 
-		let result = Translation(forRange: closureExpression.range)
+		let result = Translation(range: closureExpression.range)
 		result.append("{")
 
 		let parametersString = closureExpression.parameters.map{ $0.label }.joined(separator: ", ")
@@ -1703,8 +1723,8 @@ public class KotlinTranslator {
 		-> Translation
 	{
 		return Translation(
-			forRange: expression.range,
-			withString: expression.string.removingBackslashEscapes)
+			range: expression.range,
+			string: expression.string.removingBackslashEscapes)
 	}
 
 	private func translateLiteralDeclarationExpression(
@@ -1712,8 +1732,8 @@ public class KotlinTranslator {
 		-> Translation
 	{
 		return Translation(
-			forRange: expression.range,
-			withString: expression.string.removingBackslashEscapes)
+			range: expression.range,
+			string: expression.string.removingBackslashEscapes)
 	}
 
 	private func translateTemplateExpression(
@@ -1730,7 +1750,7 @@ public class KotlinTranslator {
 				of: string,
 				with: expressionTranslation)
 		}
-		return Translation(forRange: templateExpression.range, withString: result)
+		return Translation(range: templateExpression.range, string: result)
 	}
 
 	private func translateDeclarationReferenceExpression(
@@ -1738,8 +1758,8 @@ public class KotlinTranslator {
 		-> Translation
 	{
 		return Translation(
-			forRange: declarationReferenceExpression.range,
-			withString: String(declarationReferenceExpression.identifier.prefix {
+			range: declarationReferenceExpression.range,
+			string: String(declarationReferenceExpression.identifier.prefix {
 					$0 !=
 						"(" // value: '('
 				}))
@@ -1754,8 +1774,8 @@ public class KotlinTranslator {
 	{
 		guard !tupleExpression.pairs.isEmpty else {
 			return Translation(
-				forRange: tupleExpression.range,
-				withString: "()")
+				range: tupleExpression.range,
+				string: "()")
 		}
 
 		// In tuple expressions (when used as parameters for call expressions) there seems to be
@@ -1786,14 +1806,14 @@ public class KotlinTranslator {
 			}
 
 		if !shouldAddNewlines {
-			let result = Translation(forRange: tupleExpression.range)
+			let result = Translation(range: tupleExpression.range)
 			result.append("(")
 			result.appendTranslations(translations, withSeparator: ", ")
 			result.append(")")
 			return result
 		}
 		else {
-			let result = Translation(forRange: tupleExpression.range)
+			let result = Translation(range: tupleExpression.range)
 			result.append("(\n\(indentation)")
 			result.appendTranslations(translations, withSeparator: ",\n\(indentation)")
 			result.append(")")
@@ -1810,7 +1830,7 @@ public class KotlinTranslator {
 		let translatedExpression = try translateExpression(expression, withIndentation: indentation)
 
 		if let label = label {
-			let result = Translation(forRange: expression.range)
+			let result = Translation(range: expression.range)
 			result.append(label)
 			result.append(" = ")
 			result.append(translatedExpression)
@@ -1861,7 +1881,7 @@ public class KotlinTranslator {
 			case .present:
 				let expression = tupleShuffleExpression.expressions[expressionIndex]
 
-				let result = Translation(forRange: expression.range)
+				let result = Translation(range: expression.range)
 
 				if !isBeforeVariadic {
 					result.append("\(label) = ")
@@ -1885,7 +1905,7 @@ public class KotlinTranslator {
 			}
 		}
 
-		let result = Translation(forRange: tupleShuffleExpression.range)
+		let result = Translation(range: tupleShuffleExpression.range)
 		result.append("(")
 
 		if shouldAddNewlines {
@@ -1916,14 +1936,14 @@ public class KotlinTranslator {
 			let processedString = literalStringExpression.value
 				.replacingOccurrences(of: "\\n", with: "\n")
 				.replacingOccurrences(of: "\\t", with: "\t")
-			let result = Translation(forRange: literalStringExpression.range)
+			let result = Translation(range: literalStringExpression.range)
 			result.append("\"\"\"\n")
 			result.append(processedString)
 			result.append("\"\"\"")
 			return result
 		}
 		else {
-			let result = Translation(forRange: literalStringExpression.range)
+			let result = Translation(range: literalStringExpression.range)
 			result.append("\"")
 			result.append(literalStringExpression.value)
 			result.append("\"")
@@ -1936,7 +1956,7 @@ public class KotlinTranslator {
 		_ literalCharacterExpression: LiteralCharacterExpression)
 		-> Translation
 	{
-		let result = Translation(forRange: literalCharacterExpression.range)
+		let result = Translation(range: literalCharacterExpression.range)
 		result.append("'")
 		result.append(literalCharacterExpression.value)
 		result.append("'")
@@ -1949,8 +1969,8 @@ public class KotlinTranslator {
 		throws -> Translation
 	{
 		let result = Translation(
-			forRange: interpolatedStringLiteralExpression.range,
-			withString: "\"")
+			range: interpolatedStringLiteralExpression.range,
+			string: "\"")
 
 		for expression in interpolatedStringLiteralExpression.expressions {
 			if let literalStringExpression = expression as? LiteralStringExpression {
@@ -2091,5 +2111,5 @@ func unexpectedASTStructureError(
 {
 	let error = KotlinTranslatorError(errorMessage: errorMessage, ast: ast)
 	try Compiler.handleError(error)
-	return Translation(forRange: ast.range, withString: KotlinTranslator.errorTranslation)
+	return Translation(range: ast.range, string: KotlinTranslator.errorTranslation)
 }

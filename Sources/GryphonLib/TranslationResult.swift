@@ -28,11 +28,11 @@ public class Translation {
 	let swiftRange: SourceFileRange?
 	let children: ArrayClass<TranslationUnit> = []
 
-	init(forRange range: SourceFileRange?) {
+	init(range: SourceFileRange?) {
 		self.swiftRange = range
 	}
 
-	init(forRange range: SourceFileRange?, withString string: String) {
+	init(range: SourceFileRange?, string: String) {
 		self.swiftRange = range
 		self.append(string)
 	}
@@ -110,9 +110,10 @@ public class Translation {
 	/// dropped from the tree (in-place). Otherwise, nothing happens.
 	public func dropLast(_ string: String) {
 		if let lastUnit = children.last {
-			if let string = lastUnit.stringLiteral {
-				if string.hasSuffix(string) {
-					let newUnit = TranslationUnit(String(string.dropLast(string.count)))
+			if let stringLiteral = lastUnit.stringLiteral {
+				if stringLiteral.hasSuffix(string) {
+					let newUnit =
+						TranslationUnit(String(stringLiteral.dropLast(string.count)))
 					children[children.count - 1] = newUnit
 				}
 			}
@@ -129,15 +130,18 @@ struct TranslationUnit {
 
 	// Only these two initializers exits, therefore exactly one of the properties will always be
 	// non-nil
-	init(_ stringLiteral: String) {
+	init(_ stringLiteral: String) { // kotlin: ignore
 		self.stringLiteral = stringLiteral
 		self.node = nil
 	}
 
-	init(_ node: Translation) {
+	init(_ node: Translation) { // kotlin: ignore
 		self.stringLiteral = nil
 		self.node = node
 	}
+
+	// declaration: constructor(stringLiteral: String): this(stringLiteral, null) { }
+	// declaration: constructor(node: Translation): this(null, node) { }
 }
 
 private class SourceFilePosition {
