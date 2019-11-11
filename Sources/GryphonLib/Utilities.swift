@@ -126,7 +126,10 @@ extension Utilities {
 
 	internal static func createFile(atPath filePath: String, containing contents: String) {
 		let fileManager = FileManager.default
-		fileManager.createFile(atPath: filePath, contents: Data(contents.utf8))
+		let successful = fileManager.createFile(atPath: filePath, contents: Data(contents.utf8))
+		if !successful {
+			print("🚨 Error writing to file \(filePath)")
+		}
 	}
 }
 

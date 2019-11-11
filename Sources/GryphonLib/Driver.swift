@@ -145,6 +145,8 @@ public class Driver {
 		if let outputFilePath = gryphonAST.outputFileMap[.kt],
 			settings.canPrintToFiles
 		{
+			let absoluteFilePath = Utilities.getAbsoultePath(forFile: outputFilePath)
+			Compiler.log("Writing to file \(absoluteFilePath)")
 			Utilities.createFile(atPath: outputFilePath, containing: kotlinCode)
 		}
 		else if settings.canPrintToOutput {
@@ -162,17 +164,48 @@ public class Driver {
 	public static func run(
 		withArguments arguments: ArrayClass<String>) throws -> Any?
 	{
+		var shouldPerformCompilation = true
+		if arguments.contains("-clean") {
+			cleanup()
+			print("Cleanup successful.")
+			shouldPerformCompilation = false
+		}
 		if arguments.contains("-init") {
 			initialize()
 			print("Initialization successful.")
-			return nil
+			shouldPerformCompilation = false
 		}
-		else if arguments.contains("-clean") {
-			cleanup()
-			print("Cleanup successful.")
+		if arguments.contains("-createASTDumpScript") {
+			let success = createSwiftASTDumpScriptFromXcode()
+			if success {
+				print("Script creation successful.")
+			}
+			else {
+				print("Script creation failed.")
+			}
+			shouldPerformCompilation = false
+		}
+
+		if arguments.contains("-updateASTDumps") {
+			let swiftFiles = arguments.filter { $0.hasSuffix(".swift") }
+			let success = updateASTDumps(forFiles: swiftFiles)
+			if !success {
+				print("AST dump failed. Stopping compilation.")
+				shouldPerformCompilation = false
+			}
+		}
+
+		guard shouldPerformCompilation else {
 			return nil
 		}
 
+		return try performCompilation(withArguments: arguments)
+	}
+
+	@discardableResult
+	public static func performCompilation(
+		withArguments arguments: ArrayClass<String>) throws -> Any?
+	{
 		defer {
 			if arguments.contains("-summarize-errors") {
 				Compiler.printErrorStatistics()
@@ -403,6 +436,123 @@ public class Driver {
 
 	static func cleanup() {
 		Utilities.deleteFolder(at: ".gryphon")
+	}
+
+	static func createSwiftASTDumpScriptFromXcode() -> Bool {
+		guard let commandResult = Shell.runShellCommand(["xcodebuild", "-dry-run"]) else
+		{
+			print("Failed to run xcodebuild")
+			return false
+		}
+
+		guard commandResult.status == 0 else {
+			print("Error running xcodebuild:\n" +
+				commandResult.standardOutput +
+				commandResult.standardError)
+			return false
+		}
+
+		let output = commandResult.standardOutput
+		let buildSteps = output.split(withStringSeparator: "\n\n")
+		guard let compileSwiftStep =
+			buildSteps.first(where: { $0.hasPrefix("CompileSwiftSources") }) else
+		{
+			print("Unable to find the Swift compilation command in the Xcode project.")
+			return false
+		}
+
+		let commands = compileSwiftStep.split(withStringSeparator: "\n")
+		let compilationCommand = commands.last!
+		let commandComponents = compilationCommand.splitUsingUnescapedSpaces()
+
+		let newComponents = commandComponents.filter { (argument: String) -> Bool in
+			argument != "-incremental" &&
+			argument != "-whole-module-optimization" &&
+			argument != "-c" &&
+			argument != "-parseable-output" &&
+			argument != "-output-file-map" &&
+			!argument.hasSuffix("OutputFileMap.json") &&
+			argument != "-serialize-diagnostics" &&
+			!argument.hasSuffix(".swiftmodule") &&
+			!argument.hasSuffix("Swift.h") &&
+			!argument.hasPrefix("-emit")
+		}
+		let templatesFilePath = Utilities
+			.getAbsoultePath(forFile: ".gryphon/StandardLibrary.template.swift")
+		newComponents.append(templatesFilePath)
+
+		let escapedOutputFileMapPath = Utilities
+			.getAbsoultePath(forFile: ".gryphon/output-file-map.json")
+			.replacingOccurrences(of: " ", with: "\\ ")
+		newComponents.append("-output-file-map")
+		newComponents.append(escapedOutputFileMapPath)
+		newComponents.append("-dump-ast")
+		let newCompilationCommand = newComponents.joined(separator: " ")
+
+		// Drop the header and the old compilation command
+		var scriptContents = commands.dropFirst().dropLast().joined(separator: "\n")
+		scriptContents += "\n" + newCompilationCommand + "\n"
+		Utilities.createFile(
+			named: "updateASTDumps.sh",
+			inDirectory: ".gryphon",
+			containing: scriptContents)
+
+		return true
+	}
+
+	static func updateASTDumps(forFiles swiftFiles: ArrayClass<String>) -> Bool {
+		// TODO: Send these paths to constants so they aren't duplicated all around the code
+		//// Create the outputFileMap
+		var outputFileMapContents = "{\n"
+
+		// Add the templates file
+		let templatesFile = Utilities
+			.getAbsoultePath(forFile: ".gryphon/StandardLibrary.template.swift")
+		let templatesASTDumpFile = Utilities.changeExtension(of: templatesFile, to: .swiftASTDump)
+		outputFileMapContents += "\t\"\(templatesFile)\": {\n" +
+			"\t\t\"ast-dump\": \"\(templatesASTDumpFile)\",\n" +
+			"\t},\n"
+
+		// Add the swift files
+		for swiftFile in swiftFiles {
+			let astDumpPath = Utilities.pathOfSwiftASTDumpFile(forSwiftFile: swiftFile)
+			let astDumpAbsolutePath = Utilities.getAbsoultePath(forFile: astDumpPath)
+			let swiftAbsoultePath = Utilities.getAbsoultePath(forFile: swiftFile)
+			outputFileMapContents += "\t\"\(swiftAbsoultePath)\": {\n" +
+				"\t\t\"ast-dump\": \"\(astDumpAbsolutePath)\",\n" +
+				"\t},\n"
+		}
+		outputFileMapContents += "}\n"
+
+		Utilities.createFile(
+			named: "output-file-map.json",
+			inDirectory: ".gryphon",
+			containing: outputFileMapContents)
+
+		//// Create the necessary folders for the AST dump files
+		for swiftFile in swiftFiles {
+			let astDumpPath = Utilities.pathOfSwiftASTDumpFile(forSwiftFile: swiftFile)
+			let folderPath = astDumpPath.split(withStringSeparator: "/")
+				.dropLast()
+				.joined(separator: "/")
+			Utilities.createFolderIfNeeded(at: folderPath)
+		}
+
+		//// Call the Swift compiler
+		guard let commandResult = Shell.runShellCommand(["bash", ".gryphon/updateASTDumps.sh"]) else
+		{
+			print("Failed to call AST dump script.")
+			return false
+		}
+
+		guard commandResult.status == 0 else {
+			print("Error calling AST dump script:\n" +
+				commandResult.standardOutput +
+				commandResult.standardError)
+			return false
+		}
+
+		return true
 	}
 
 	static func getASTDump(forFile file: String) -> String? {

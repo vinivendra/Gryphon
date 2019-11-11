@@ -125,6 +125,36 @@ internal extension String {
 		return result
 	}
 
+	func splitUsingUnescapedSpaces() -> ArrayClass<String> {
+		let result: ArrayClass<String> = []
+
+		var isEscaping = false
+		var index = self.startIndex
+		var startIndexOfCurrentComponent = index
+		while index != self.endIndex {
+			let character = self[index]
+			if character == "\\" {
+				isEscaping = !isEscaping
+			}
+			else if character == " ", !isEscaping {
+				result.append(String(self[startIndexOfCurrentComponent..<index]))
+				startIndexOfCurrentComponent = self.index(after: index)
+			}
+
+			if character != "\\" {
+				isEscaping = false
+			}
+
+			index = self.index(after: index)
+		}
+
+		if startIndexOfCurrentComponent != index {
+			result.append(String(self[startIndexOfCurrentComponent..<index]))
+		}
+
+		return result
+	}
+
 	func removeTrailingWhitespace() -> String {
 		guard !isEmpty else {
 			return ""
