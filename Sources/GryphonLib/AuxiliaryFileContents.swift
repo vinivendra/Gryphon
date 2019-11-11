@@ -531,3 +531,49 @@ for error in errors {
 //    ^
 
 """
+
+// gryphon: multiline
+internal let xcodeTargetScriptFileContents = """
+require 'xcodeproj'
+project_path = 'iOSTest.xcodeproj'
+project = Xcodeproj::Project.open(project_path)
+
+targetName = "Gryphon"
+buildPhaseName = "Call Gryphon"
+
+# Create the new target (or fetch it if it exists)
+gryphonTarget = project.targets.detect { |target| target.name == targetName }
+if gryphonTarget == nil
+	puts "\tCreating new Gryphon target..."
+	gryphonTarget = project.new_aggregate_target(targetName)
+else
+	puts "\tUpdating Gryphon target..."
+end
+
+# Set the product name of the target (otherwise Xcode may complain)
+gryphonTarget.build_configurations.each do |config|
+	config.build_settings["PRODUCT_NAME"] = "Gryphon"
+end
+
+# Create a new run script build phase (or fetch it if it exists)
+buildPhase = gryphonTarget.shell_script_build_phases.detect { |buildPhase|
+	buildPhase.name == buildPhaseName
+}
+if buildPhase == nil
+	puts "\tCreating new Run Script build phase..."
+	buildPhase = gryphonTarget.new_shell_script_build_phase(buildPhaseName)
+else
+	puts "\tUpdating Run Script build phase..."
+end
+
+# Set the script we want to run
+buildPhase.shell_script =
+	"gryphon -updateASTDumps -emit-kotlin $SCRIPT_INPUT_FILE_LIST_0"
+
+# Set the path to the input file list
+buildPhase.input_file_list_paths = ["$(SRCROOT)/gryphonInputFiles.xcfilelist"]
+
+# Save the changes to disk
+project.save()
+
+"""

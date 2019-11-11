@@ -131,6 +131,8 @@ public enum FileExtension: String {
 	case kotlinErrorMap
     case kt
     case swift
+
+	case xcfilelist
 }
 
 extension String {

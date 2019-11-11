@@ -187,7 +187,10 @@ public class Driver {
 		}
 
 		if arguments.contains("-updateASTDumps") {
-			let swiftFiles = arguments.filter { $0.hasSuffix(".swift") }
+			let inputFiles = getInputFilePaths(inArguments: arguments)
+			let swiftFiles = inputFiles.filter {
+				Utilities.getExtension(of: $0) == .swift
+			}
 			let success = updateASTDumps(forFiles: swiftFiles)
 			if !success {
 				print("AST dump failed. Stopping compilation.")
@@ -246,9 +249,7 @@ public class Driver {
 		}
 
 		//
-		let inputFilePaths = arguments.filter {
-			!$0.hasPrefix("-") && $0 != "run" && $0 != "build"
-		}
+		let inputFilePaths = getInputFilePaths(inArguments: arguments)
 
 		//
 		let shouldEmitSwiftAST = arguments.contains("-emit-swiftAST")
@@ -415,6 +416,31 @@ public class Driver {
 		return runResult
 	}
 
+	static func getInputFilePaths(inArguments arguments: ArrayClass<String>) -> ArrayClass<String> {
+		let result: ArrayClass<String> = []
+		result.append(contentsOf: arguments.filter {
+			Utilities.getExtension(of: $0) == .swift
+		})
+		result.append(contentsOf: arguments.filter {
+			Utilities.getExtension(of: $0) == .swiftASTDump
+		})
+
+		let fileLists = arguments.filter {
+			Utilities.getExtension(of: $0) == .xcfilelist
+		}
+		for fileList in fileLists {
+			do {
+				let contents = try Utilities.readFile(fileList)
+				let files = contents.split(withStringSeparator: "\n")
+				result.append(contentsOf: files)
+			} catch let error {
+				print(error)
+			}
+		}
+
+		return result
+	}
+
 	static func initialize() {
 		let gryphonRootFolder = ".gryphon"
 		let scriptsFolder = gryphonRootFolder + "/scripts"
@@ -432,6 +458,10 @@ public class Driver {
 			named: "mapKotlinErrorsToSwift.swift",
 			inDirectory: scriptsFolder,
 			containing: errorMapScriptFileContents)
+		Utilities.createFile(
+			named: "makeGryphonTargets.rb",
+			inDirectory: scriptsFolder,
+			containing: xcodeTargetScriptFileContents)
 	}
 
 	static func cleanup() {
