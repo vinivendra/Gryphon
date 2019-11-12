@@ -68,7 +68,8 @@ class BootstrappingTest: XCTestCase {
 
 				// Get Swift results
 				let driverResult = try Driver.run(withArguments:
-					["-emit-swiftAST",
+					["-skipASTDumps",
+					 "-emit-swiftAST",
 					 "-indentation=t",
 					 "-q", "-Q",
 					 testFilePath, ])
@@ -118,7 +119,8 @@ class BootstrappingTest: XCTestCase {
 
 				// Get Swift results
 				let driverResult = try Driver.run(withArguments:
-					["-emit-rawAST",
+					["-skipASTDumps",
+					 "-emit-rawAST",
 					 "-indentation=t",
 					 "-q", "-Q",
 					 testFilePath, ])
@@ -168,7 +170,8 @@ class BootstrappingTest: XCTestCase {
 
 				// Get Swift results
 				let driverResult = try Driver.run(withArguments:
-					["-emit-AST",
+					["-skipASTDumps",
+					 "-emit-AST",
 					 "-indentation=t",
 					 "-q", "-Q",
 					 testFilePath, ])
@@ -218,7 +221,8 @@ class BootstrappingTest: XCTestCase {
 
 				// Get Swift results
 				let driverResult = try Driver.run(withArguments:
-					["-emit-kotlin",
+					["-skipASTDumps",
+					 "-emit-kotlin",
 					 "-indentation=t",
 					 "-q", "-Q",
 					 testFilePath, ])

@@ -20,6 +20,8 @@
 // gryphon output: Bootstrap/Driver.kt
 
 public class Driver {
+	public static let gryphonVersion = "0.4-beta"
+
 	public struct Settings {
 		let shouldEmitSwiftAST: Bool
 		let shouldEmitRawAST: Bool
@@ -164,18 +166,40 @@ public class Driver {
 	public static func run(
 		withArguments arguments: ArrayClass<String>) throws -> Any?
 	{
+		if arguments.contains("help") || arguments.contains("-help") || arguments.contains("--help")
+		{
+			printUsage()
+			return nil
+		}
+
+		if arguments.contains("--version") {
+			printVersion()
+			return nil
+		}
+
 		var shouldPerformCompilation = true
-		if arguments.contains("-clean") {
+		if arguments.contains("clean") {
 			cleanup()
 			print("Cleanup successful.")
 			shouldPerformCompilation = false
 		}
-		if arguments.contains("-init") {
+
+		if arguments.contains("init") {
 			initialize()
 			print("Initialization successful.")
 			shouldPerformCompilation = false
+
+			if arguments.contains("-no-xcode") {
+				return nil
+			}
+			else {
+				_ = try Driver.run(withArguments: ["createASTDumpScript"])
+				_ = try Driver.run(withArguments: ["makeGryphonTargets"])
+				return nil
+			}
 		}
-		if arguments.contains("-createASTDumpScript") {
+
+		if arguments.contains("createASTDumpScript") {
 			let success = createSwiftASTDumpScriptFromXcode()
 			if success {
 				print("Script creation successful.")
@@ -185,7 +209,7 @@ public class Driver {
 			}
 			shouldPerformCompilation = false
 		}
-		if arguments.contains("-makeGryphonTargets") {
+		if arguments.contains("makeGryphonTargets") {
 			let success = makeGryphonTargets()
 			if success {
 				print("Gryphon target creation successful.")
@@ -193,7 +217,7 @@ public class Driver {
 			shouldPerformCompilation = false
 		}
 
-		if arguments.contains("-updateASTDumps") {
+		if !arguments.contains("-skipASTDumps") {
 			let inputFiles = getInputFilePaths(inArguments: arguments)
 			let swiftFiles = inputFiles.filter {
 				Utilities.getExtension(of: $0) == .swift
@@ -262,8 +286,8 @@ public class Driver {
 		let shouldEmitSwiftAST = arguments.contains("-emit-swiftAST")
 		let shouldEmitRawAST = arguments.contains("-emit-rawAST")
 		let shouldEmitAST = arguments.contains("-emit-AST")
-		let shouldRun = arguments.contains("run")
-		let shouldBuild = shouldRun || arguments.contains("build")
+		let shouldRun = arguments.contains("-run")
+		let shouldBuild = shouldRun || arguments.contains("-build")
 
 		let hasChosenTask = shouldEmitSwiftAST ||
 			shouldEmitRawAST ||
@@ -632,5 +656,93 @@ public class Driver {
 		else {
 			return nil
 		}
+	}
+
+	static func printVersion() {
+		print("Gryphon version \(gryphonVersion)")
+	}
+
+	static func printUsage() {
+		print("""
+		-- Gryphon transpiler --
+		Version \(gryphonVersion)
+
+		  Calling this executable with "help", "-help" or "--help" displays this
+		  information.
+		  Calling it with "--version" displays only the current version.
+
+		Commands:
+
+		  ➡️  init                  Initializes the files and directories needed by
+		        Gryphon to translate the Xcode project in the current folder, and adds
+		        Gryphon targets to that project.
+		      ↪️  -no-xcode         Use this option to initialize Gryphon for
+		            translating a Swift program in the current folder that doesn't use
+		            Xcode.
+		  ➡️  clean                 Deletes the `.gryphon` folder created during
+		        initialization.
+		  ➡️  createASTDumpScript   Configures Gryphon to be used with an Xcode
+		        project in the current folder. Only needed if using
+		        `gryphon init -no-xcode`.
+		  ➡️  makeGryphonTargets    Adds auxiliary targets to the Xcode project
+		        in the current folder (or resets them if they exist). Only needed if
+		        using `gryphon init -no-xcode`.
+
+		Note: Essentially, `gryphon init` is equivalent to:
+		  gryphon init -no-xcode
+		  gryphon createASTDumpScript
+		  gryphon makeGryphonTargets
+
+		Main usage:
+		  gryphon [Options] [File paths]
+
+		  Options:
+		      ↪️  -skipASTDumps       Skip calling the Swift compiler to update
+		            the AST dumps (i.e. if the Swift sources haven't changed since the
+		            last translation).
+
+		      ↪️  -emit-swiftAST      Emit the swift AST (and intermediate
+		            representation) either to a file ending in ".swiftAST" specified by
+		            a "// gryphon output: " comment or to the console.
+		      ↪️  -emit-rawAST        Emit the raw Gryphon AST (and intermediate
+		            representation) either to a file ending in ".gryphonASTRaw"
+		            specified by a "// gryphon output: " comment or to the console.
+		      ↪️  -emit-AST           Emit the processed Gryphon AST (and intermediate
+		            representation) either to a file ending in ".gryphonASTRaw"
+		            specified by a "// gryphon output: " comment or to the console.
+		      ↪️  -emit-kotlin        Emit the Kotlin output either to a file ending in
+		            ".kt" specified by a "// gryphon output: " comment or to the
+		            console. This is the default if no other `-emit` options are used.
+		      ↪️  -build              Transpiles the input swift files and calls the
+		            Kotlin compiler to build them.
+		      ↪️  -run                Transpiles the input swift files, calls the Kotlin
+		            compiler to build them, and runs the resulting program. Implies
+		            `-build`.
+		      ↪️  -o                  Specifies the build folder used by `-build` and
+		            `-run`. Defaults to a folder starting with ".kotlinBuild" followed
+		            by a system identifier.
+
+		      ↪️  -no-main-file       Do not generate a Kotlin file with a "main"
+		            function.
+
+		      ↪️  -continue-on-error  Continue translating even if errors are found.
+
+		      ↪️  -line-limit=<N>     Limit the maximum horizontal size when printing
+		            ASTs.
+		      ↪️  -Q                  Quiet mode: do not write intermediate
+		            representations or Kotlin translations to any output files.
+		      ↪️  -q                  Quiet mode: do not write intermediate
+		            representations or Kotlin translations to the console.
+		      ↪️  -indentation=<N>    Specify the indentation to be used in the output
+		            Kotlin files. Use "t" for tabs or an integer for the corresponding
+		            number of spaces. Defaults to tabs.
+
+		      ↪️  -verbose            Print more information.
+		      ↪️  -summarize-errors   Print a summary of the transpilation errors and
+		            warnings.
+
+		      ↪️  -sync               Do not use concurrency.
+		""")
+
 	}
 }

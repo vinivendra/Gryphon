@@ -23,7 +23,7 @@ class InitializationTests: XCTestCase {
 		Utilities.deleteFolder(at: ".gryphon")
 
 		// Create a new folder
-		try! Driver.run(withArguments: ["-init"])
+		try! Driver.run(withArguments: ["init"])
 
 		// Check the new folder's contents are right
 		guard let templatesFileContents =
@@ -38,18 +38,18 @@ class InitializationTests: XCTestCase {
 		if templatesFileContents != standardLibraryTemplateFileContents {
 			XCTFail("Library templates file's contents are wrong.")
 		}
-		if scriptFileContents != errorMapScriptFileContents {
+		if scriptFileContents != kotlinErrorMapScriptFileContents {
 			XCTFail("Error map script contents file's contents are wrong.")
 		}
 
 		//
 		// Test cleanup
-		try! Driver.run(withArguments: ["-clean"])
+		try! Driver.run(withArguments: ["clean"])
 		let failedContents = try? Utilities.readFile(".gryphon/StandardLibrary.template.swift")
 		XCTAssertNil(failedContents, "Gryphon -clean: failed to delete files.")
 
 		// Create the folder again so other testing and development can continue
-		try! Driver.run(withArguments: ["-init"])
+		try! Driver.run(withArguments: ["init"])
 	}
 
 	static var allTests = [

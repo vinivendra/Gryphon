@@ -36,7 +36,7 @@ class ShellTest: XCTestCase {
 			return
 		}
 		XCTAssertEqual(command1Result.standardOutput, "")
-		XCTAssertEqual(command1Result.standardError, "<unknown>:0: error: no input files\n")
+		XCTAssert(command1Result.standardError.contains("<unknown>:0: error: no input files\n"))
 		XCTAssertNotEqual(command1Result.status, 0)
 
 		let command2: ArrayClass = ["swiftc", "--help"]
