@@ -464,11 +464,19 @@ public class Driver {
 		Utilities.createFile(
 			named: "mapKotlinErrorsToSwift.swift",
 			inDirectory: scriptsFolder,
-			containing: errorMapScriptFileContents)
+			containing: kotlinErrorMapScriptFileContents)
+		Utilities.createFile(
+			named: "mapGradleErrorsToSwift.swift",
+			inDirectory: scriptsFolder,
+			containing: gradleErrorMapScriptFileContents)
 		Utilities.createFile(
 			named: "makeGryphonTargets.rb",
 			inDirectory: scriptsFolder,
 			containing: xcodeTargetScriptFileContents)
+		Utilities.createFile(
+			named: "compileKotlin.sh",
+			inDirectory: scriptsFolder,
+			containing: compileKotlinScriptFileContents)
 	}
 
 	static func cleanup() {

@@ -382,7 +382,7 @@ func gryphonTemplates() {
 """
 
 // gryphon: multiline
-internal let errorMapScriptFileContents = """
+internal let kotlinErrorMapScriptFileContents = """
 // WARNING: Any changes to this file should be reflected in the literal string in
 // AuxiliaryFileContents.swift
 
@@ -533,47 +533,289 @@ for error in errors {
 """
 
 // gryphon: multiline
+internal let gradleErrorMapScriptFileContents = """
+// WARNING: Any changes to this file should be reflected in the literal string in
+// AuxiliaryFileContents.swift
+
+// This script should be run on a folder initialized by Gryphon (i.e. containing the relevant
+// `.gryphon` folder)
+
+// Examples of compatible errors:
+//e: /path/to/Model.kt: (15, 2): Expecting member declaration
+//e: /path/to/Model.kt: (12, 44): Unresolved reference: foo
+
+import Foundation
+
+func getAbsoultePath(forFile file: String) -> String {
+	return "/" + URL(fileURLWithPath: file).pathComponents.dropFirst().joined(separator: "/")
+}
+
+func getRelativePath(forFile file: String) -> String {
+	let currentDirectoryPath = FileManager.default.currentDirectoryPath
+	let absoluteFilePath = getAbsoultePath(forFile: file)
+	return String(absoluteFilePath.dropFirst(currentDirectoryPath.count + 1))
+}
+
+struct ErrorInformation {
+	let filePath: String
+	let lineNumber: Int
+	let columnNumber: Int
+	let errorMessage: String
+	let isError: Bool
+}
+
+func getInformation(fromString string: String) -> ErrorInformation {
+	let components = string.split(separator: ":")
+	let filePath = String(components[1].dropFirst()) // Drop the first space
+	let lineAndColumn = components[2].dropFirst(2).dropLast().split(separator: ",")
+	let line = Int(lineAndColumn[0])!
+	let column = Int(lineAndColumn[1].dropFirst())!
+	return ErrorInformation(
+		filePath: getRelativePath(forFile: filePath),
+		lineNumber: line,
+		columnNumber: column,
+		errorMessage: String(components[3...].joined(separator: ":")),
+		isError: components[0] == "e")
+}
+
+struct SourceFileRange {
+	let lineStart: Int
+	let columnStart: Int
+	let lineEnd: Int
+	let columnEnd: Int
+}
+
+struct Mapping {
+	let kotlinRange: SourceFileRange
+	let swiftRange: SourceFileRange
+}
+
+struct ErrorMap {
+	let kotlinFilePath: String
+	let swiftFilePath: String
+	let mappings: [Mapping]
+
+	init(kotlinFilePath: String, contents: String) {
+		self.kotlinFilePath = kotlinFilePath
+
+		let components = contents.split(separator: "\\n")
+		self.swiftFilePath = String(components[0])
+
+		self.mappings = components.dropFirst().map { string in
+			let mappingComponents = string.split(separator: ":")
+			let kotlinRange = SourceFileRange(
+				lineStart: Int(mappingComponents[0])!,
+				columnStart: Int(mappingComponents[1])!,
+				lineEnd: Int(mappingComponents[2])!,
+				columnEnd: Int(mappingComponents[3])!)
+			let swiftRange = SourceFileRange(
+				lineStart: Int(mappingComponents[4])!,
+				columnStart: Int(mappingComponents[5])!,
+				lineEnd: Int(mappingComponents[6])!,
+				columnEnd: Int(mappingComponents[7])!)
+			return Mapping(kotlinRange: kotlinRange, swiftRange: swiftRange)
+		}
+	}
+
+	func getSwiftRange(forKotlinLine line: Int, column: Int) -> SourceFileRange? {
+		// TODO: This could be a binary search
+		for mapping in mappings {
+			if mapping.kotlinRange.lineStart <= line,
+				mapping.kotlinRange.lineEnd >= line,
+				mapping.kotlinRange.columnStart <= column,
+				mapping.kotlinRange.columnEnd <= column
+			{
+				return mapping.swiftRange
+			}
+		}
+
+		return nil
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+var input: [String] = []
+
+// Read all the input, separated into lines
+// TODO: This could be done in real time
+while let nextLine = readLine(strippingNewline: false) {
+	input.append(nextLine)
+}
+
+// Get only lines with errors and warnings
+var errors = input.filter { $0.hasPrefix("e: ") || $0.hasPrefix("w: ") }
+
+// Handle the errors
+var errorMaps: [String: ErrorMap] = [:]
+for error in errors {
+	let errorInformation = getInformation(fromString: error)
+	let errorMapPath =
+		".gryphon/KotlinErrorMaps/" + errorInformation.filePath.dropLast(2) + "kotlinErrorMap"
+
+	if errorMaps[errorMapPath] == nil {
+		if let fileContents = try? String(contentsOfFile: errorMapPath) {
+			errorMaps[errorMapPath] = ErrorMap(
+				kotlinFilePath: errorInformation.filePath,
+				contents: fileContents)
+		}
+		else {
+			// Print error with the available information
+			let errorString = errorInformation.isError ? "error" : "warning"
+			print("\\(getAbsoultePath(forFile: errorInformation.filePath)):" +
+				"\\(errorInformation.lineNumber):" +
+				"\\(errorInformation.columnNumber): " +
+				"\\(errorString):\\(errorInformation.errorMessage)")
+			continue
+		}
+	}
+
+	let errorMap = errorMaps[errorMapPath]!
+
+	if let swiftRange = errorMap.getSwiftRange(
+		forKotlinLine: errorInformation.lineNumber,
+		column: errorInformation.columnNumber)
+	{
+		let errorString = errorInformation.isError ? "error" : "warning"
+		print("\\(getAbsoultePath(forFile: errorMap.swiftFilePath)):\\(swiftRange.lineStart):" +
+			"\\(swiftRange.columnStart): \\(errorString):\\(errorInformation.errorMessage)")
+	}
+	else {
+		// Print error with the available information
+		let errorString = errorInformation.isError ? "error" : "warning"
+		print("\\(getAbsoultePath(forFile: errorMap.swiftFilePath)):" +
+			"0:0: \\(errorString):\\(errorInformation.errorMessage)")
+	}
+}
+
+if !errors.isEmpty {
+	exit(-1)
+}
+
+"""
+
+// gryphon: multiline
 internal let xcodeTargetScriptFileContents = """
 require 'xcodeproj'
 project_path = 'iOSTest.xcodeproj'
 project = Xcodeproj::Project.open(project_path)
 
-targetName = "Gryphon"
-buildPhaseName = "Call Gryphon"
+gryphonTargetName = "Gryphon"
+gryphonBuildPhaseName = "Call Gryphon"
+kotlinTargetName = "Kotlin"
+kotlinBuildPhaseName = "Compile Kotlin"
+
+####################################################################################################
+# Make the Gryphon target
 
 # Create the new target (or fetch it if it exists)
-gryphonTarget = project.targets.detect { |target| target.name == targetName }
+gryphonTarget = project.targets.detect { |target| target.name == gryphonTargetName }
 if gryphonTarget == nil
-	puts "\tCreating new Gryphon target..."
-	gryphonTarget = project.new_aggregate_target(targetName)
+	puts "	Creating new Gryphon target..."
+	gryphonTarget = project.new_aggregate_target(gryphonTargetName)
 else
-	puts "\tUpdating Gryphon target..."
+	puts "	Updating Gryphon target..."
 end
 
 # Set the product name of the target (otherwise Xcode may complain)
+# Set the build settings so that only the "My Mac" platform is available
 gryphonTarget.build_configurations.each do |config|
 	config.build_settings["PRODUCT_NAME"] = "Gryphon"
+	config.build_settings["SUPPORTED_PLATFORMS"] = "macosx"
+	config.build_settings["SUPPORTS_MACCATALYST"] = "FALSE"
 end
 
 # Create a new run script build phase (or fetch it if it exists)
-buildPhase = gryphonTarget.shell_script_build_phases.detect { |buildPhase|
-	buildPhase.name == buildPhaseName
+gryphonBuildPhase = gryphonTarget.shell_script_build_phases.detect { |buildPhase|
+	buildPhase.name == gryphonBuildPhaseName
 }
-if buildPhase == nil
-	puts "\tCreating new Run Script build phase..."
-	buildPhase = gryphonTarget.new_shell_script_build_phase(buildPhaseName)
+if gryphonBuildPhase == nil
+	puts "	Creating new Run Script build phase..."
+	gryphonBuildPhase = gryphonTarget.new_shell_script_build_phase(gryphonBuildPhaseName)
 else
-	puts "\tUpdating Run Script build phase..."
+	puts "	Updating Run Script build phase..."
 end
 
 # Set the script we want to run
-buildPhase.shell_script =
+gryphonBuildPhase.shell_script =
 	"gryphon -updateASTDumps -emit-kotlin $SCRIPT_INPUT_FILE_LIST_0"
 
 # Set the path to the input file list
-buildPhase.input_file_list_paths = ["$(SRCROOT)/gryphonInputFiles.xcfilelist"]
+gryphonBuildPhase.input_file_list_paths = ["$(SRCROOT)/gryphonInputFiles.xcfilelist"]
 
+
+####################################################################################################
+# Make the Kotlin target
+
+# Create the new target (or fetch it if it exists)
+kotlinTarget = project.targets.detect { |target| target.name == kotlinTargetName }
+if kotlinTarget == nil
+	puts "	Creating new Kotlin target..."
+	kotlinTarget = project.new_aggregate_target(kotlinTargetName)
+else
+	puts "	Updating Kotlin target..."
+end
+
+# Set the product name of the target (otherwise Xcode may complain)
+# Set the build settings so that only the "My Mac" platform is available
+# Create a new build setting for setting the Android project's folder
+kotlinTarget.build_configurations.each do |config|
+	config.build_settings["PRODUCT_NAME"] = "Koltin"
+	config.build_settings["SUPPORTED_PLATFORMS"] = "macosx"
+	config.build_settings["SUPPORTS_MACCATALYST"] = "FALSE"
+	config.build_settings["ANDROIDROOT"] = "../Android"
+end
+
+# Create a new run script build phase (or fetch it if it exists)
+kotlinBuildPhase = kotlinTarget.shell_script_build_phases.detect { |buildPhase|
+	buildPhase.name == kotlinBuildPhaseName
+}
+if kotlinBuildPhase == nil
+	puts "	Creating new Run Script build phase..."
+	kotlinBuildPhase = kotlinTarget.new_shell_script_build_phase(kotlinBuildPhaseName)
+else
+	puts "	Updating Run Script build phase..."
+end
+
+# Set the script we want to run
+kotlinBuildPhase.shell_script = "bash .gryphon/scripts/compileKotlin.sh"
+
+####################################################################################################
 # Save the changes to disk
 project.save()
+
+"""
+
+// gryphon: multiline
+internal let compileKotlinScriptFileContents = """
+# Remove old logs
+# The `-f` option is here to avoid reporting errors when the files are not found
+rm -f "$SRCROOT/.gryphon/gradleOutput.txt"
+rm -f "$SRCROOT/.gryphon/gradleErrors.txt"
+
+# Switch to the Android folder so we can use pre-built gradle info to speed up the compilation.
+cd "$ANDROIDROOT"
+
+# Compile the Android sources and save the logs gack to the iOS folder
+./gradlew compileDebugSources > \
+	"$SRCROOT/.gryphon/gradleOutput.txt" 2> \
+	"$SRCROOT/.gryphon/gradleErrors.txt"
+
+# Switch back to the iOS folder
+cd $SRCROOT
+
+# Map the Kotlin errors back to Swift
+EXITSTATUS=0
+
+swift .gryphon/scripts/mapGradleErrorsToSwift.swift < .gryphon/gradleOutput.txt
+if test "$?" -ne "0" ; then
+	EXITSTATUS=-1
+fi
+
+swift .gryphon/scripts/mapGradleErrorsToSwift.swift < .gryphon/gradleErrors.txt
+if test "$?" -ne "0" ; then
+	EXITSTATUS=-1
+fi
+
+exit $EXITSTATUS
 
 """
