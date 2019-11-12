@@ -185,6 +185,13 @@ public class Driver {
 			}
 			shouldPerformCompilation = false
 		}
+		if arguments.contains("-makeGryphonTargets") {
+			let success = makeGryphonTargets()
+			if success {
+				print("Gryphon target creation successful.")
+			}
+			shouldPerformCompilation = false
+		}
 
 		if arguments.contains("-updateASTDumps") {
 			let inputFiles = getInputFilePaths(inArguments: arguments)
@@ -526,6 +533,28 @@ public class Driver {
 			named: "updateASTDumps.sh",
 			inDirectory: ".gryphon",
 			containing: scriptContents)
+
+		return true
+	}
+
+	static func makeGryphonTargets() -> Bool {
+		// Run the ruby script
+		guard let commandResult =
+			Shell.runShellCommand(["ruby", ".gryphon/scripts/makeGryphonTargets.rb"]) else
+		{
+			print("Failed to make gryphon targets")
+			return false
+		}
+
+		guard commandResult.status == 0 else {
+			print("Error making gryphon targets:\n" +
+				commandResult.standardOutput +
+				commandResult.standardError)
+			return false
+		}
+
+		// Create the xcfilelist so the user has an easier time finding it and populating it
+		_ = Utilities.createFileIfNeeded(at: "gryphonInputFiles.xcfilelist")
 
 		return true
 	}
