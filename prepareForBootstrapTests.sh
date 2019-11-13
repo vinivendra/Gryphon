@@ -17,7 +17,7 @@ echo "➡️ [2/2] Updating the bootstrap outputs..."
 for file in Test\ Files/*.swift
 do
 	echo "	↪️ Updating $file..."
-	if java -jar Bootstrap/kotlin.jar -indentation=t \
+	if java -jar Bootstrap/kotlin.jar -indentation=t -skipASTDumps \
 		-emit-swiftAST -emit-rawAST -emit-AST -emit-kotlin \
 		"$file"
 	then

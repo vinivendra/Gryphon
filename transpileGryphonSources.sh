@@ -3,6 +3,7 @@
 	-output-file-map=output-file-map.json \
 	-indentation=4 \
 	-q \
+	-skipASTDumps \
 	Sources/GryphonLib/SwiftStandardLibrary.swift \
 	Sources/GryphonLib/PrintableAsTree.swift \
 	Sources/GryphonLib/SwiftAST.swift \
