@@ -22,6 +22,36 @@
 public class Driver {
 	public static let gryphonVersion = "0.4-beta"
 
+	public static let supportedArguments: FixedArray<String> = [
+		"help", "-help", "--help",
+		"--version",
+		"init",
+		"-no-xcode",
+		"clean",
+		"createASTDumpScript",
+		"makeGryphonTargets",
+		"-skipASTDumps",
+		"-emit-swiftAST",
+		"-emit-rawAST",
+		"-emit-AST",
+		"-emit-kotlin",
+		"-build",
+		"-run",
+		"-o",
+		"-no-main-file",
+		"-continue-on-error",
+		"-Q",
+		"-q",
+		"-verbose",
+		"-summarize-errors",
+		"-sync",
+	]
+
+	public static let supportedArgumentsWithParameters: FixedArray<String> = [
+		"-line-limit=",
+		"-indentation=",
+	]
+
 	public struct Settings {
 		let shouldEmitSwiftAST: Bool
 		let shouldEmitRawAST: Bool
@@ -46,6 +76,14 @@ public class Driver {
 	public struct KotlinTranslation {
 		let kotlinFilePath: String?
 		let kotlinCode: String
+	}
+
+	public struct DriverError: Error, CustomStringConvertible {
+		let errorMessage: String
+
+		public var description: String {
+			return errorMessage
+		}
 	}
 
 	public static func runUpToFirstPasses(
@@ -166,6 +204,12 @@ public class Driver {
 	public static func run(
 		withArguments arguments: ArrayClass<String>) throws -> Any?
 	{
+		let badArguments = unsupportedArguments(in: arguments)
+		if !badArguments.isEmpty {
+			let argumentsString = badArguments.map { "\"\($0)\"" }.joined(separator: ", ")
+			throw DriverError(errorMessage: "Unsupported arguments: \(argumentsString).")
+		}
+
 		if arguments.isEmpty ||
 			arguments.contains("help") ||
 			arguments.contains("-help") ||
@@ -180,17 +224,15 @@ public class Driver {
 			return nil
 		}
 
-		var shouldPerformCompilation = true
 		if arguments.contains("clean") {
 			cleanup()
 			print("Cleanup successful.")
-			shouldPerformCompilation = false
+			return nil
 		}
 
 		if arguments.contains("init") {
 			initialize()
 			print("Initialization successful.")
-			shouldPerformCompilation = false
 
 			if arguments.contains("-no-xcode") {
 				return nil
@@ -205,19 +247,22 @@ public class Driver {
 		if arguments.contains("createASTDumpScript") {
 			let success = createSwiftASTDumpScriptFromXcode()
 			if success {
-				print("Script creation successful.")
+				print("AST dump script creation successful.")
+				return nil
 			}
 			else {
-				print("Script creation failed.")
+				throw DriverError(errorMessage: "AST dump script creation failed.")
 			}
-			shouldPerformCompilation = false
 		}
 		if arguments.contains("makeGryphonTargets") {
 			let success = makeGryphonTargets()
 			if success {
 				print("Gryphon target creation successful.")
+				return nil
 			}
-			shouldPerformCompilation = false
+			else {
+				throw DriverError(errorMessage: "Gryphon target creation failed.")
+			}
 		}
 
 		if !arguments.contains("-skipASTDumps") {
@@ -227,13 +272,8 @@ public class Driver {
 			}
 			let success = updateASTDumps(forFiles: swiftFiles)
 			if !success {
-				print("AST dump failed. Stopping compilation.")
-				shouldPerformCompilation = false
+				throw DriverError(errorMessage: "AST dump failed.")
 			}
-		}
-
-		guard shouldPerformCompilation else {
-			return nil
 		}
 
 		return try performCompilation(withArguments: arguments)
@@ -659,6 +699,35 @@ public class Driver {
 		else {
 			return nil
 		}
+	}
+
+	static func unsupportedArguments(in arguments: ArrayClass<String>) -> ArrayClass<String> {
+		// Start with all arguments, remove the ones that are OK, return what's left
+		var badArguments = arguments
+		badArguments = badArguments.filter { !supportedArguments.contains($0) }
+		badArguments = badArguments.filter { isSupportedArgumentWithParameters($0) }
+		badArguments = badArguments.filter { isSupportedInputFilePath($0) }
+		return badArguments
+	}
+
+	static func isSupportedArgumentWithParameters(_ argument: String) -> Bool {
+		for supportedArgumentWithParameters in supportedArgumentsWithParameters {
+			if argument.hasPrefix(supportedArgumentWithParameters) {
+				return false
+			}
+		}
+		return true
+	}
+
+	static func isSupportedInputFilePath(_ filePath: String) -> Bool {
+		if let fileExtension = Utilities.getExtension(of: filePath) {
+			if fileExtension == .swift || fileExtension == .swiftASTDump ||
+				fileExtension == .kt || fileExtension == .xcfilelist
+			{
+				return false
+			}
+		}
+		return true
 	}
 
 	static func printVersion() {

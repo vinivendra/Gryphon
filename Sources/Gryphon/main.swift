@@ -28,5 +28,5 @@ do {
 }
 catch let error {
 	print(error)
-	exit(1)
+	exit(-1)
 }

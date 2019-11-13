@@ -1,6 +1,5 @@
 ./.build/debug/Gryphon \
 	-emit-kotlin \
-	-output-file-map=output-file-map.json \
 	-indentation=4 \
 	-q \
 	-skipASTDumps \

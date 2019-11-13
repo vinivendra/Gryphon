@@ -8,7 +8,7 @@ then
 else
 	swift .gryphon/scripts/mapKotlinErrorsToSwift.swift < .gryphon/kotlinErrors.errors
 	echo "🚨 Failed to compile Kotlin files."
-	exit $?
+	exit -1
 fi
 
 
@@ -24,7 +24,7 @@ do
 		echo "	  ✅ Done."
 	else
 		echo "🚨 Failed!"
-		exit $?
+		exit -1
 	fi
 done
 

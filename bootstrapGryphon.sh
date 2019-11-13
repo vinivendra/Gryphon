@@ -6,7 +6,7 @@ then
 	echo ""
 else
 	echo "🚨 Failed to run pre-build script."
-	exit $?
+	exit -1
 fi
 
 
@@ -18,7 +18,7 @@ then
 	echo ""
 else
 	echo "🚨 Failed to build Gryphon."
-	exit $?
+	exit -1
 fi
 
 
@@ -30,7 +30,7 @@ then
 	echo ""
 else
 	echo "🚨 Failed to dump the Swift ASTs."
-	exit $?
+	exit -1
 fi
 
 
@@ -42,5 +42,5 @@ then
 	echo ""
 else
 	echo "🚨 Failed to transpile the Gryphon source files."
-	exit $?
+	exit -1
 fi

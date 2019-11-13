@@ -23,7 +23,7 @@ class InitializationTests: XCTestCase {
 		Utilities.deleteFolder(at: ".gryphon")
 
 		// Create a new folder
-		try! Driver.run(withArguments: ["init"])
+		try! Driver.run(withArguments: ["init", "-no-xcode"])
 
 		// Check the new folder's contents are right
 		guard let templatesFileContents =
@@ -49,7 +49,7 @@ class InitializationTests: XCTestCase {
 		XCTAssertNil(failedContents, "Gryphon -clean: failed to delete files.")
 
 		// Create the folder again so other testing and development can continue
-		try! Driver.run(withArguments: ["init"])
+		try! Driver.run(withArguments: ["init", "-no-xcode"])
 	}
 
 	static var allTests = [
