@@ -267,6 +267,9 @@ public class Driver {
 
 		if !arguments.contains("-skipASTDumps") {
 			let inputFiles = getInputFilePaths(inArguments: arguments)
+			if inputFiles.isEmpty {
+				throw DriverError(errorMessage: "No input files provided.")
+			}
 			let swiftFiles = inputFiles.filter {
 				Utilities.getExtension(of: $0) == .swift
 			}
@@ -324,6 +327,9 @@ public class Driver {
 
 		//
 		let inputFilePaths = getInputFilePaths(inArguments: arguments)
+		if inputFilePaths.isEmpty {
+			throw DriverError(errorMessage: "No input files provided.")
+		}
 
 		//
 		let shouldEmitSwiftAST = arguments.contains("-emit-swiftAST")
