@@ -166,7 +166,10 @@ public class Driver {
 	public static func run(
 		withArguments arguments: ArrayClass<String>) throws -> Any?
 	{
-		if arguments.contains("help") || arguments.contains("-help") || arguments.contains("--help")
+		if arguments.isEmpty ||
+			arguments.contains("help") ||
+			arguments.contains("-help") ||
+			arguments.contains("--help")
 		{
 			printUsage()
 			return nil
