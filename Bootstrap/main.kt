@@ -25,13 +25,19 @@ fun main(args: Array<String>) {
 		ShellTest().runAllTests()
 	}
 	else {
-		val result = Driver.run(arguments = args.toMutableList())
+		try {
+			val result = Driver.run(arguments = args.toMutableList())
 
-		val commandResult = result as? Shell.CommandOutput
-		if (commandResult != null) {
-			println(commandResult.standardOutput)
-			System.err.println(commandResult.standardError)
-			exitProcess(commandResult.status)
+			val commandResult = result as? Shell.CommandOutput
+			if (commandResult != null) {
+				println(commandResult.standardOutput)
+				System.err.println(commandResult.standardError)
+				exitProcess(commandResult.status)
+			}
+		}
+		catch (error: Exception) {
+			println(error)
+			exitProcess(-1)
 		}
 	}
 }
