@@ -22,6 +22,8 @@
 // TODO: Test `gryphon -init`
 // TODO: Test multiline strings
 
+// TODO: Dollar signs should probably be automatically escaped
+let dollarSign = "$" // value: "\\$"
 let kotlinStringInterpolation = "{_string}"
 
 // TODO: This string isn't being translated as multiline
@@ -108,7 +110,7 @@ func gryphonTemplates() {
 	_ = "print(_any)"
 
 	_ = fatalError(_string)
-	_ = "println(\\\"Fatal error: $\(kotlinStringInterpolation)\\\"); exitProcess(-1)"
+	_ = "println(\\\"Fatal error: \(dollarSign)\(kotlinStringInterpolation)\\\"); exitProcess(-1)"
 
 	// Darwin
 	_ = sqrt(_double)
@@ -643,7 +645,7 @@ while let nextLine = readLine(strippingNewline: false) {
 }
 
 // Get only lines with errors and warnings
-var errors = input.filter { $0.hasPrefix("e: ") || $0.hasPrefix("w: ") }
+var errors = input.filter { \(dollarSign)0.hasPrefix("e: ") || \(dollarSign)0.hasPrefix("w: ") }
 
 // Handle the errors
 var errorMaps: [String: ErrorMap] = [:]
@@ -737,10 +739,10 @@ end
 
 # Set the script we want to run
 gryphonBuildPhase.shell_script =
-	"gryphon -emit-kotlin $SCRIPT_INPUT_FILE_LIST_0"
+	"gryphon -emit-kotlin \(dollarSign)SCRIPT_INPUT_FILE_LIST_0"
 
 # Set the path to the input file list
-gryphonBuildPhase.input_file_list_paths = ["$(SRCROOT)/gryphonInputFiles.xcfilelist"]
+gryphonBuildPhase.input_file_list_paths = ["\(dollarSign)(SRCROOT)/gryphonInputFiles.xcfilelist"]
 
 
 ####################################################################################################
@@ -789,33 +791,33 @@ project.save()
 internal let compileKotlinScriptFileContents = """
 # Remove old logs
 # The `-f` option is here to avoid reporting errors when the files are not found
-rm -f "$SRCROOT/.gryphon/gradleOutput.txt"
-rm -f "$SRCROOT/.gryphon/gradleErrors.txt"
+rm -f "\(dollarSign)SRCROOT/.gryphon/gradleOutput.txt"
+rm -f "\(dollarSign)SRCROOT/.gryphon/gradleErrors.txt"
 
 # Switch to the Android folder so we can use pre-built gradle info to speed up the compilation.
-cd "$ANDROIDROOT"
+cd "\(dollarSign)ANDROIDROOT"
 
 # Compile the Android sources and save the logs gack to the iOS folder
 ./gradlew compileDebugSources > \
-	"$SRCROOT/.gryphon/gradleOutput.txt" 2> \
-	"$SRCROOT/.gryphon/gradleErrors.txt"
+	"\(dollarSign)SRCROOT/.gryphon/gradleOutput.txt" 2> \
+	"\(dollarSign)SRCROOT/.gryphon/gradleErrors.txt"
 
 # Switch back to the iOS folder
-cd $SRCROOT
+cd \(dollarSign)SRCROOT
 
 # Map the Kotlin errors back to Swift
 EXITSTATUS=0
 
 swift .gryphon/scripts/mapGradleErrorsToSwift.swift < .gryphon/gradleOutput.txt
-if test "$?" -ne "0" ; then
+if test "\(dollarSign)?" -ne "0" ; then
 	EXITSTATUS=-1
 fi
 
 swift .gryphon/scripts/mapGradleErrorsToSwift.swift < .gryphon/gradleErrors.txt
-if test "$?" -ne "0" ; then
+if test "\(dollarSign)?" -ne "0" ; then
 	EXITSTATUS=-1
 fi
 
-exit $EXITSTATUS
+exit \(dollarSign)EXITSTATUS
 
 """
