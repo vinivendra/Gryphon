@@ -18,45 +18,52 @@
 import XCTest
 
 class FixedArrayTest: XCTestCase {
-	func testEquality() {
+	func testEquatable() {
 		let array1: FixedArray = [1, 2, 3]
 		let array2: FixedArray = [1, 2, 3]
-		let array3: FixedArray = [3, 2, 1]
+		let array3: FixedArray = [4, 5, 6]
 
-		XCTAssertEqual(array1, array2)
-		XCTAssertNotEqual(array1, array3)
+		XCTAssert(array1 == array2)
+		XCTAssertFalse(array2 == array3)
 	}
 
-	func testInitializers() {
-		// init(_ array:)
-		let array1: FixedArray<Int> = FixedArray([1, 2, 3])
-		// init(_ fixedArray:)
-		let array2 = FixedArray(array1)
-		let arrayAny: FixedArray<Any> = FixedArray(array1)
-		let array3: FixedArray<Int> = FixedArray(arrayAny)
-		// init()
-		let array4 = FixedArray<Int>()
-		// init(arrayLiteral:)
-		let array5: FixedArray<Int> = []
-		let array6: FixedArray<Int> = [1, 2, 3]
-
-		XCTAssertEqual(array1, array2)
-		XCTAssertEqual(array1, array3)
-		XCTAssertEqual(array4, array5)
-		XCTAssertEqual(array1, array6)
-	}
-
-	func testAsCasting() {
+	func testInits() {
 		let array1: FixedArray = [1, 2, 3]
-		guard let arrayAny = array1.as(FixedArray<Any>.self) else {
-			XCTFail("Int is a subtype of Any, this cast should never fail.")
-			return
-		}
-		let array3 = arrayAny.as(FixedArray<Int>.self)
-		let array4 = array1.as(FixedArray<String>.self)
+		let array2: FixedArray = FixedArray([1, 2, 3])
+		let array3: FixedArray = FixedArray(array1)
+		let sequence = AnySequence([1, 2, 3])
+		let array4: FixedArray = FixedArray(sequence)
+		let array5: FixedArray<Int> = FixedArray()
+		let array6: FixedArray<Int> = []
 
+		XCTAssertEqual(array1, array2)
 		XCTAssertEqual(array1, array3)
-		XCTAssertEqual(array4, nil)
+		XCTAssertEqual(array1, array4)
+		XCTAssertNotEqual(array1, array5)
+		XCTAssertNotEqual(array1, array6)
+		XCTAssertEqual(array5, array6)
+	}
+
+	func testCasting() {
+		let array1: FixedArray<Any> = [1, 2, 3]
+
+		let failedCast: FixedArray<String>? = array1.as(FixedArray<String>.self)
+		let successfulCast: FixedArray<Int>? = array1.as(FixedArray<Int>.self)
+
+		XCTAssertNil(failedCast)
+		XCTAssertNotNil(successfulCast)
+		XCTAssertEqual(successfulCast, [1, 2, 3])
+	}
+
+	func testToMutableArray() {
+		let array1: FixedArray = [1, 2, 3]
+		let array2: FixedArray = [1, 2, 3, 4]
+		let mutableArray: MutableArray = array1.toMutableArray()
+
+		XCTAssert(array1 == mutableArray)
+		XCTAssert(mutableArray == array1)
+		XCTAssert(array2 != mutableArray)
+		XCTAssert(mutableArray != array2)
 	}
 
 	func testSubscript() {
@@ -67,93 +74,214 @@ class FixedArrayTest: XCTestCase {
 		XCTAssertEqual(array1[2], 3)
 	}
 
-	func testCollection() {
+	func testDescription() {
+		let array: FixedArray = [1, 2, 3]
+
+		XCTAssert(array.description.contains("1"))
+		XCTAssert(array.description.contains("2"))
+		XCTAssert(array.description.contains("3"))
+		XCTAssert(!array.description.contains("4"))
+	}
+
+	func testDebugDescription() {
+		let array: FixedArray = [1, 2, 3]
+
+		XCTAssert(array.debugDescription.contains("1"))
+		XCTAssert(array.debugDescription.contains("2"))
+		XCTAssert(array.debugDescription.contains("3"))
+		XCTAssert(!array.debugDescription.contains("4"))
+	}
+
+	func testCollectionIndices() {
+		let array: FixedArray = [1, 2, 3]
+		let middleIndex = array.index(after: array.startIndex)
+		let lastIndex = array.index(after: middleIndex)
+		let endIndex = array.index(after: lastIndex)
+
+		// Test start index
+		XCTAssertEqual(array[array.startIndex], 1)
+
+		// Test index(after:)
+		XCTAssertEqual(array[middleIndex], 2)
+		XCTAssertEqual(array[lastIndex], 3)
+
+		// Test endIndex
+		XCTAssertEqual(endIndex, array.endIndex)
+		XCTAssertNotEqual(lastIndex, array.endIndex)
+	}
+
+	func testIsEmpty() {
 		let array: FixedArray = [1, 2, 3]
 		let emptyArray: FixedArray<Int> = []
 
-		var i = 1
-		for item in array {
-			XCTAssertEqual(item, i)
-			i += 1
-		}
-
-		XCTAssertFalse(array.isEmpty)
+		XCTAssert(!array.isEmpty)
 		XCTAssert(emptyArray.isEmpty)
+	}
+
+	func testFirst() {
+		let array: FixedArray = [1, 2, 3]
+		let emptyArray: FixedArray<Int> = []
 
 		XCTAssertEqual(array.first, 1)
 		XCTAssertEqual(emptyArray.first, nil)
+	}
+
+	func testLast() {
+		let array: FixedArray = [1, 2, 3]
+		let emptyArray: FixedArray<Int> = []
 
 		XCTAssertEqual(array.last, 3)
 		XCTAssertEqual(emptyArray.last, nil)
 	}
 
-	func testFunctionalMethods() {
+	func testIndexBefore() {
 		let array: FixedArray = [1, 2, 3]
-		let appendedArray = array.appending(4)
-		let filteredArray = array.filter { $0 > 2 }
-		let mappedArray = array.map { "\($0)" }
-		let compactMappedArray = array.compactMap { ($0 > 2) ? $0 : nil }
-		let flatMappedArray = array.flatMap { [$0, $0 + 1] }
+		let lastIndex = array.index(before: array.endIndex)
 
-		XCTAssertEqual(appendedArray, [1, 2, 3, 4])
-		XCTAssertEqual(filteredArray, [3])
-		XCTAssertEqual(mappedArray, ["1", "2", "3"])
-		XCTAssertEqual(compactMappedArray, [3])
-		XCTAssertEqual(flatMappedArray, [1, 2, 2, 3, 3, 4])
+		XCTAssertEqual(array[lastIndex], 3)
 	}
 
-	func testSorting() {
-		let array: FixedArray = [2, 3, 1]
-
-		XCTAssertEqual(array.sorted(by: >), [3, 2, 1])
-		XCTAssertEqual(array.sorted(), [1, 2, 3])
+	func testAppending() {
+		let array1: FixedArray = [1, 2, 3]
+		let array2 = array1.appending(4)
+		XCTAssertEqual(array2, [1, 2, 3, 4])
+		XCTAssertEqual(array1, [1, 2, 3])
 	}
 
-	func testSequences() {
-		let array = [1, 2, 3]
-		let fixedArray1 = FixedArray(array)
-		let fixedArray2 = fixedArray1.appending(contentsOf: array)
-
-		XCTAssertEqual(fixedArray1, [1, 2, 3])
-		XCTAssertEqual(fixedArray2, [1, 2, 3, 1, 2, 3])
+	func testFilter() {
+		let array1: FixedArray = [1, 2, 3]
+		let array2 = array1.filter { $0 > 1 }
+		XCTAssertEqual(array1, [1, 2, 3])
+		XCTAssertEqual(array2, [2, 3])
 	}
 
-	func testReversed() {
-		let array: FixedArray = [1, 2, 3]
+	func testMap() {
+		let array1: FixedArray = [1, 2, 3]
+		let array2 = array1.map { $0 * 2 }
+		XCTAssertEqual(array1, [1, 2, 3])
+		XCTAssertEqual(array2, [2, 4, 6])
+	}
 
-		XCTAssertEqual(array.reversed(), [3, 2, 1])
+	func testCompactMap() {
+		let array1: FixedArray = [1, 2, 3]
+		let array2 = array1.compactMap { (e: Int) -> Int? in (e == 2) ? e : nil }
+		XCTAssertEqual(array1, [1, 2, 3])
+		XCTAssertEqual(array2, [2])
+	}
+
+	func testFlatMap() {
+		let array1: FixedArray = [1, 2, 3]
+		let array2 = array1.flatMap { [$0, 10 * $0] }
+		XCTAssertEqual(array1, [1, 2, 3])
+		XCTAssertEqual(array2, [1, 10, 2, 20, 3, 30])
+	}
+
+	func testSortedBy() {
+		let array1: FixedArray = [3, 1, 2]
+		let array2: FixedArray = [1, 2, 3]
+
+		XCTAssertEqual(array1.sorted { $0 < $1 }, [1, 2, 3])
+		XCTAssertEqual(array1, [3, 1, 2])
+		XCTAssertEqual(array2.sorted { $0 < $1 }, [1, 2, 3])
+		XCTAssertEqual(array2.sorted { $0 > $1 }, [3, 2, 1])
+	}
+
+	func testAppendingContentsOf() {
+		let array1: FixedArray = [1, 2, 3]
+		let array2: FixedArray = [4, 5, 6]
+		let array3: FixedArray<Int> = [7, 8, 9]
+
+		XCTAssertEqual(array1.appending(contentsOf: array2), [1, 2, 3, 4, 5, 6])
+		XCTAssertEqual(array1, [1, 2, 3])
+		XCTAssertEqual(array2, [4, 5, 6])
+
+		XCTAssertEqual(array1.appending(contentsOf: array3), [1, 2, 3, 7, 8, 9])
+		XCTAssertEqual(array1, [1, 2, 3])
+		XCTAssertEqual(array3, [7, 8, 9])
 	}
 
 	func testIndices() {
 		let array: FixedArray = [1, 2, 3]
+		XCTAssertEqual(array.indices, 0..<3)
+	}
 
-		var i = 0
-		for index in array.indices {
-			XCTAssertEqual(index, i)
-			i += 1
+	func testIndexOfElement() {
+		let array: FixedArray = [1, 2, 10]
+		XCTAssertEqual(array.index(of: 1), 0)
+		XCTAssertEqual(array.index(of: 2), 1)
+		XCTAssertEqual(array.index(of: 10), 2)
+	}
+
+	func testHash() {
+		let array1: FixedArray = [1, 2, 3]
+		let array2: FixedArray = [1, 2, 3]
+		let array3: FixedArray = [1, 2, 3, 4]
+		let hash1 = array1.hashValue
+		let hash2 = array2.hashValue
+		let hash3 = array3.hashValue
+
+		XCTAssertEqual(hash1, hash2)
+		XCTAssertNotEqual(hash1, hash3)
+		XCTAssertNotEqual(hash2, hash3)
+	}
+
+	func testCodable() {
+		let array1: FixedArray = [1, 2, 3]
+		let array2: FixedArray = [1, 2, 3, 4]
+
+		let encoding1 = try! JSONEncoder().encode(array1)
+		let array3 = try! JSONDecoder().decode(FixedArray<Int>.self, from: encoding1)
+
+		let encoding2 = try! JSONEncoder().encode(array2)
+		let array4 = try! JSONDecoder().decode(FixedArray<Int>.self, from: encoding2)
+
+		XCTAssertEqual(array1, array3)
+		XCTAssertEqual(array2, array4)
+		XCTAssertNotEqual(array3, array4)
+	}
+
+	func testSorted() {
+		let array1: FixedArray = [3, 2, 1]
+		let array2: FixedArray = [1, 2, 3]
+
+		XCTAssertEqual(array1.sorted(), [1, 2, 3])
+		XCTAssertEqual(array1, [3, 2, 1])
+		XCTAssertEqual(array2.sorted(), [1, 2, 3])
+	}
+
+	func testZipToClass() {
+		let array1: FixedArray = [3, 2, 1]
+		let array2: FixedArray = [1, 2, 3]
+
+		for (a, b) in zipToClass(array1, array2) {
+			XCTAssertEqual(a + b, 4)
 		}
 	}
 
-	func testIndexOf() {
-		let array: FixedArray = [1, 2, 3]
-
-		XCTAssertEqual(array.index(of: 1), 0)
-		XCTAssertEqual(array.index(of: 2), 1)
-		XCTAssertEqual(array.index(of: 3), 2)
-		XCTAssertEqual(array.index(of: 4), nil)
-	}
-
 	static var allTests = [
-		("testEquality", testEquality),
-		("testInitializers", testInitializers),
-		("testAsCasting", testAsCasting),
+		("testEquatable", testEquatable),
+		("testInits", testInits),
+		("testCasting", testCasting),
 		("testSubscript", testSubscript),
-		("testCollection", testCollection),
-		("testFunctionalMethods", testFunctionalMethods),
-		("testSorting", testSorting),
-		("testSequences", testSequences),
-		("testReversed", testReversed),
+		("testDescription", testDescription),
+		("testDebugDescription", testDebugDescription),
+		("testCollectionIndices", testCollectionIndices),
+		("testIsEmpty", testIsEmpty),
+		("testFirst", testFirst),
+		("testLast", testLast),
+		("testIndexBefore", testIndexBefore),
+		("testAppending", testAppending),
+		("testFilter", testFilter),
+		("testMap", testMap),
+		("testCompactMap", testCompactMap),
+		("testFlatMap", testFlatMap),
+		("testSortedBy", testSortedBy),
+		("testAppendingContentsOf", testAppendingContentsOf),
 		("testIndices", testIndices),
-		("testIndexOf", testIndexOf),
-	]
+		("testIndexOfElement", testIndexOfElement),
+		("testHash", testHash),
+		("testCodable", testCodable),
+		("testSorted", testSorted),
+		("testZipToClass", testZipToClass),
+		]
 }
