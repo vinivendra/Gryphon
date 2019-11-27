@@ -573,3 +573,132 @@ extension DictionaryClass: Codable where Key: Codable, Value: Codable { // kotli
 		try self.init(Buffer(from: decoder))
 	}
 }
+
+/// According to https://swiftdoc.org/v4.2/type/dictionary/hierarchy/
+/// the Dictionary type in Swift conforms exactly to these protocols,
+/// plus CustomReflectable (which is beyond Gryphon's scope for now).
+public struct FixedDictionary<Key, Value>: // kotlin: ignore
+	ExpressibleByDictionaryLiteral, CustomStringConvertible, CustomDebugStringConvertible,
+	Collection
+	where Key: Hashable
+{
+	public typealias Buffer = [Key: Value]
+	public typealias KeyValueTuple = (key: Key, value: Value)
+
+	public let dictionary: Buffer
+
+	public init(_ dictionary: Buffer) {
+		self.dictionary = dictionary
+	}
+
+	public init<K, V>(_ dictionaryClass: FixedDictionary<K, V>) {
+		self.dictionary = dictionaryClass.dictionary as! Buffer
+	}
+
+	public func copy() -> FixedDictionary<Key, Value> {
+		return FixedDictionary(dictionary)
+	}
+
+	// Expressible By Dictionary Literal
+	public init(dictionaryLiteral elements: (Key, Value)...) {
+		self.dictionary = Buffer(uniqueKeysWithValues: elements)
+	}
+
+	// ...
+	public subscript (_ key: Key) -> Value? {
+		return dictionary[key]
+	}
+
+	// Custom (Debug) String Convertible
+	public var description: String {
+		return dictionary.description
+	}
+
+	public var debugDescription: String {
+		return dictionary.debugDescription
+	}
+
+	// Collection
+	public typealias SubSequence = Slice<[Key: Value]>
+
+	@inlinable public var startIndex: Buffer.Index {
+		return dictionary.startIndex
+	}
+
+	@inlinable public var endIndex: Buffer.Index {
+		return dictionary.endIndex
+	}
+
+	@inlinable
+	public func index(after i: Buffer.Index) -> Buffer.Index
+	{
+		return dictionary.index(after: i)
+	}
+
+	@inlinable
+	public func formIndex(after i: inout Buffer.Index) {
+		dictionary.formIndex(after: &i)
+	}
+
+	@inlinable
+	public func index(forKey key: Key) -> Buffer.Index? {
+		return dictionary.index(forKey: key)
+	}
+
+	@inlinable
+	public subscript(position: Buffer.Index) -> Buffer.Element {
+		return dictionary[position]
+	}
+
+	@inlinable public var count: Int {
+		return dictionary.count
+	}
+
+	@inlinable public var isEmpty: Bool {
+		return dictionary.isEmpty
+	}
+
+	//
+	public func map<T>(_ transform: (KeyValueTuple) throws -> T)
+		rethrows -> ArrayClass<T>
+	{
+		return try ArrayClass<T>(self.dictionary.map(transform))
+	}
+
+	@inlinable
+	public func mapValues<T>(_ transform: (Value) throws -> T) rethrows -> FixedDictionary<Key, T> {
+		return try FixedDictionary<Key, T>(dictionary.mapValues(transform))
+	}
+
+	@inlinable
+	public func sorted(
+		by areInIncreasingOrder: (KeyValueTuple, KeyValueTuple) throws -> Bool)
+		rethrows -> ArrayClass<KeyValueTuple>
+	{
+		return ArrayClass<KeyValueTuple>(try dictionary.sorted(by: areInIncreasingOrder))
+	}
+}
+
+extension FixedDictionary: Equatable where Value: Equatable { // kotlin: ignore
+	public static func == (
+		lhs: FixedDictionary, rhs: FixedDictionary) -> Bool
+	{
+		return lhs.dictionary == rhs.dictionary
+	}
+}
+
+extension FixedDictionary: Hashable where Value: Hashable { // kotlin: ignore
+	public func hash(into hasher: inout Hasher) {
+		dictionary.hash(into: &hasher)
+	}
+}
+
+extension FixedDictionary: Codable where Key: Codable, Value: Codable { // kotlin: ignore
+	public func encode(to encoder: Encoder) throws {
+		try dictionary.encode(to: encoder)
+	}
+
+	public init(from decoder: Decoder) throws {
+		try self.init(Buffer(from: decoder))
+	}
+}

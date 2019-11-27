@@ -555,6 +555,13 @@ private func simplifyType(string: String) -> String {
 		let value = keyValue[1]
 		return "[\(key) : \(value)]"
 	}
+	else if string.hasPrefix("FixedDictionary<"), string.last! == ">" {
+		let keyValue = String(string.dropFirst("FixedDictionary<".count).dropLast())
+			.split(withStringSeparator: ", ")
+		let key = keyValue[0]
+		let value = keyValue[1]
+		return "[\(key) : \(value)]"
+	}
 
 	// Convert Array<T> into [T]
 	if string.hasPrefix("Array<"), string.last! == ">" {

@@ -1391,7 +1391,13 @@ public class KotlinTranslator {
 		throws -> Translation
 	{
 		let result = Translation(range: dictionaryExpression.range)
-		result.append("mutableMapOf(")
+
+		if dictionaryExpression.typeName.hasPrefix("FixedDictionary") {
+			result.append("mapOf(")
+		}
+		else {
+			result.append("mutableMapOf(")
+		}
 
 		let keyTranslations = try dictionaryExpression.keys.map {
 				try translateExpression($0, withIndentation: indentation)
@@ -2036,6 +2042,15 @@ public class KotlinTranslator {
 			let translatedKey = translateType(key)
 			let translatedValue = translateType(value)
 			return "MutableMap<\(translatedKey), \(translatedValue)>"
+		}
+		else if typeName.hasPrefix("FixedDictionary<") {
+			let innerTypes = String(typeName.dropLast().dropFirst("FixedDictionary<".count))
+			let keyValue = Utilities.splitTypeList(innerTypes)
+			let key = keyValue[0]
+			let value = keyValue[1]
+			let translatedKey = translateType(key)
+			let translatedValue = translateType(value)
+			return "Map<\(translatedKey), \(translatedValue)>"
 		}
 		else if Utilities.isInEnvelopingParentheses(typeName) {
 			let innerTypeString = String(typeName.dropFirst().dropLast())

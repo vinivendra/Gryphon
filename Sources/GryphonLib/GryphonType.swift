@@ -468,7 +468,7 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 					typeName: innerTypeName,
 					genericArguments: innerGenericArguments) = genericArguments[0]
 			{
-				// There should have exactly one generic argument: the element
+				// There should be exactly one generic argument: the element
 				if innerTypeName == "ArrayClass" {
 					return .array(subType: innerGenericArguments[0])
 				}
@@ -478,7 +478,7 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 			}
 
 			// Treat DictionaryClass as Dictionary
-			if typeName == "DictionaryClass" {
+			if typeName == "DictionaryClass" || typeName == "FixedDictionary" {
 				// DictionaryClass should have exactly two generic argument: a key and a value
 				return .dictionary(key: genericArguments[0], value: genericArguments[1])
 			}

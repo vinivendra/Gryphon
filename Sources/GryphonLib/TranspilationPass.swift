@@ -2592,9 +2592,9 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 	}
 }
 
-/// `ArrayClass`es, `FixedArray`s and `DictionaryClass`es are prefered to using `Arrays` and
-/// `Dictionaries` for guaranteeing correctness. This pass raises warnings when it finds uses of the
-/// native data structures, which should help avoid these bugs.
+/// `ArrayClass`es, `FixedArray`s, `DictionaryClass`es, and `FixedDictionaries`s are prefered to
+/// using `Arrays` and `Dictionaries` for guaranteeing correctness. This pass raises warnings when
+/// it finds uses of the native data structures, which should help avoid these bugs.
 public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
 	// declaration:     super(ast, context) { }
@@ -2603,7 +2603,7 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 	{
 		if let type = expression.swiftType, type.hasPrefix("[") {
 			let message = "Native type \(type) can lead to different behavior in Kotlin. Prefer " +
-			"ArrayClass, FixedArray or DictionaryClass instead."
+			"ArrayClass, FixedArray, DictionaryClass or FixedDictionary instead."
 			Compiler.handleWarning(
 				message: message,
 				details: expression.prettyDescription(),
@@ -2627,9 +2627,11 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 			leftExpressionType.hasPrefix("["),
 			let callExpression = dotExpression.rightExpression as? CallExpression {
 			if (callExpression.typeName.hasPrefix("ArrayClass") ||
-					callExpression.typeName.hasPrefix("DictionaryClass")),
+					callExpression.typeName.hasPrefix("FixedArray") ||
+					callExpression.typeName.hasPrefix("DictionaryClass") ||
+					callExpression.typeName.hasPrefix("FixedDictionary")),
 				let declarationReference =
-				callExpression.function as? DeclarationReferenceExpression
+					callExpression.function as? DeclarationReferenceExpression
 			{
 				if declarationReference.identifier.hasPrefix("toMutable"),
 					(declarationReference.typeName.hasPrefix("ArrayClass") ||
@@ -2639,6 +2641,11 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 				}
 				else if declarationReference.identifier.hasPrefix("toList"),
 					declarationReference.typeName.hasPrefix("FixedArray")
+				{
+					return dotExpression
+				}
+				else if declarationReference.identifier.hasPrefix("toMap"),
+					declarationReference.typeName.hasPrefix("FixedDictionary")
 				{
 					return dotExpression
 				}
