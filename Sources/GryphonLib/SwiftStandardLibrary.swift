@@ -67,6 +67,10 @@ public final class MutableArray<Element>: // kotlin: ignore
 		return MutableArray(array)
 	}
 
+	public func toFixedArray() -> FixedArray<Element> {
+		return FixedArray(array)
+	}
+
 	// Expressible By Array Literal
 	public typealias ArrayLiteralElement = Element
 
@@ -301,6 +305,10 @@ public struct FixedArray<Element>: // kotlin: ignore
 		}
 	}
 
+	public func toMutableArray() -> MutableArray<Element> {
+		return MutableArray(array)
+	}
+
 	// Expressible By Array Literal
 	public typealias ArrayLiteralElement = Element
 
@@ -406,6 +414,23 @@ extension FixedArray: Equatable where Element: Equatable { // kotlin: ignore
 	}
 
 	//
+	public static func == (lhs: MutableArray<Element>, rhs: FixedArray) -> Bool {
+		return lhs.array == rhs.array
+	}
+
+	public static func == (lhs: FixedArray, rhs: MutableArray<Element>) -> Bool {
+		return lhs.array == rhs.array
+	}
+
+	public static func != (lhs: MutableArray<Element>, rhs: FixedArray) -> Bool {
+		return lhs.array != rhs.array
+	}
+
+	public static func != (lhs: FixedArray, rhs: MutableArray<Element>) -> Bool {
+		return lhs.array != rhs.array
+	}
+
+	//
 	public func firstIndex(of element: Element) -> Int? {
 		return array.firstIndex(of: element)
 	}
@@ -457,12 +482,17 @@ public final class MutableDictionary<Key, Value>: // kotlin: ignore
 		self.dictionary = dictionary
 	}
 
-	public init<K, V>(_ mutableDictionary: MutableDictionary<K, V>) {
+	public init<Key, Value>(_ mutableDictionary: MutableDictionary<Key, Value>) {
 		self.dictionary = mutableDictionary.dictionary as! Buffer
 	}
 
 	public func copy() -> MutableDictionary<Key, Value> {
 		return MutableDictionary(dictionary)
+	}
+
+	// TODO: Add translation support for these methods
+	public func toFixedDictionary() -> FixedDictionary<Key, Value> {
+		return FixedDictionary(dictionary)
 	}
 
 	// Expressible By Dictionary Literal
@@ -600,6 +630,10 @@ public struct FixedDictionary<Key, Value>: // kotlin: ignore
 
 	public func copy() -> FixedDictionary<Key, Value> {
 		return FixedDictionary(dictionary)
+	}
+
+	public func toMutableDictionary() -> MutableDictionary<Key, Value> {
+		return MutableDictionary(dictionary)
 	}
 
 	// Expressible By Dictionary Literal
