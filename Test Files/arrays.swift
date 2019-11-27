@@ -23,7 +23,7 @@
 /// (link found via https://www.raywenderlich.com/139591/building-custom-collection-swift)
 /// the Array type in Swift conforms exactly to these protocols,
 /// plus CustomReflectable (which is beyond Gryphon's scope for now).
-public final class ArrayClass<Element>: // kotlin: ignore
+public final class MutableArray<Element>: // kotlin: ignore
 	ExpressibleByArrayLiteral, CustomStringConvertible, CustomDebugStringConvertible,
 	RandomAccessCollection, MutableCollection, RangeReplaceableCollection
 {
@@ -35,24 +35,24 @@ public final class ArrayClass<Element>: // kotlin: ignore
 		self.array = array
 	}
 
-	public init<T>(_ arrayClass: ArrayClass<T>) {
-		self.array = arrayClass.array as! Buffer
+	public init<T>(_ mutableArray: MutableArray<T>) {
+		self.array = mutableArray.array as! Buffer
 	}
 
 	public func `as`<CastedType>(
-		_ type: ArrayClass<CastedType>.Type)
-		-> ArrayClass<CastedType>?
+		_ type: MutableArray<CastedType>.Type)
+		-> MutableArray<CastedType>?
 	{
 		if let castedArray = self.array as? [CastedType] {
-			return ArrayClass<CastedType>(castedArray)
+			return MutableArray<CastedType>(castedArray)
 		}
 		else {
 			return nil
 		}
 	}
 
-	public func copy() -> ArrayClass<Element> {
-		return ArrayClass(array)
+	public func copy() -> MutableArray<Element> {
+		return MutableArray(array)
 	}
 
 	// Expressible By Array Literal
@@ -129,46 +129,46 @@ public final class ArrayClass<Element>: // kotlin: ignore
 		array.append(newElement)
 	}
 
-	public func appending(_ newElement: Element) -> ArrayClass<Element> {
-		return ArrayClass<Element>(self.array + [newElement])
+	public func appending(_ newElement: Element) -> MutableArray<Element> {
+		return MutableArray<Element>(self.array + [newElement])
 	}
 
 	public func insert(_ newElement: Element, at i: Index) {
 		array.insert(newElement, at: i)
 	}
 
-	public func filter(_ isIncluded: (Element) throws -> Bool) rethrows -> ArrayClass<Element> {
-		return try ArrayClass(self.array.filter(isIncluded))
+	public func filter(_ isIncluded: (Element) throws -> Bool) rethrows -> MutableArray<Element> {
+		return try MutableArray(self.array.filter(isIncluded))
 	}
 
-	public func map<T>(_ transform: (Element) throws -> T) rethrows -> ArrayClass<T> {
-		return try ArrayClass<T>(self.array.map(transform))
+	public func map<T>(_ transform: (Element) throws -> T) rethrows -> MutableArray<T> {
+		return try MutableArray<T>(self.array.map(transform))
 	}
 
-	public func compactMap<T>(_ transform: (Element) throws -> T?) rethrows -> ArrayClass<T> {
-		return try ArrayClass<T>(self.array.compactMap(transform))
+	public func compactMap<T>(_ transform: (Element) throws -> T?) rethrows -> MutableArray<T> {
+		return try MutableArray<T>(self.array.compactMap(transform))
 	}
 
 	public func flatMap<SegmentOfResult>(
 		_ transform: (Element) throws -> SegmentOfResult)
-		rethrows -> ArrayClass<SegmentOfResult.Element>
+		rethrows -> MutableArray<SegmentOfResult.Element>
 		where SegmentOfResult: Sequence
 	{
-		return try ArrayClass<SegmentOfResult.Element>(array.flatMap(transform))
+		return try MutableArray<SegmentOfResult.Element>(array.flatMap(transform))
 	}
 
 	@inlinable
 	public func sorted(
 		by areInIncreasingOrder: (Element, Element) throws -> Bool) rethrows
-		-> ArrayClass<Element>
+		-> MutableArray<Element>
 	{
-		return ArrayClass(try array.sorted(by: areInIncreasingOrder))
+		return MutableArray(try array.sorted(by: areInIncreasingOrder))
 	}
 
-	public func appending<S>(contentsOf newElements: S) -> ArrayClass<Element>
+	public func appending<S>(contentsOf newElements: S) -> MutableArray<Element>
 		where S: Sequence, Element == S.Element
 	{
-		return ArrayClass<Element>(self.array + newElements)
+		return MutableArray<Element>(self.array + newElements)
 	}
 
 	@discardableResult
@@ -190,8 +190,8 @@ public final class ArrayClass<Element>: // kotlin: ignore
 	}
 }
 
-extension ArrayClass: Equatable where Element: Equatable { // kotlin: ignore
-	public static func == (lhs: ArrayClass, rhs: ArrayClass) -> Bool {
+extension MutableArray: Equatable where Element: Equatable { // kotlin: ignore
+	public static func == (lhs: MutableArray, rhs: MutableArray) -> Bool {
 		return lhs.array == rhs.array
 	}
 
@@ -201,13 +201,13 @@ extension ArrayClass: Equatable where Element: Equatable { // kotlin: ignore
 	}
 }
 
-extension ArrayClass: Hashable where Element: Hashable { // kotlin: ignore
+extension MutableArray: Hashable where Element: Hashable { // kotlin: ignore
 	public func hash(into hasher: inout Hasher) {
 		array.hash(into: &hasher)
 	}
 }
 
-extension ArrayClass: Codable where Element: Codable { // kotlin: ignore
+extension MutableArray: Codable where Element: Codable { // kotlin: ignore
 	public func encode(to encoder: Encoder) throws {
 		try array.encode(to: encoder)
 	}
@@ -217,10 +217,10 @@ extension ArrayClass: Codable where Element: Codable { // kotlin: ignore
 	}
 }
 
-extension ArrayClass where Element: Comparable { // kotlin: ignore
+extension MutableArray where Element: Comparable { // kotlin: ignore
 	@inlinable
-	public func sorted() -> ArrayClass<Element> {
-		return ArrayClass(array.sorted())
+	public func sorted() -> MutableArray<Element> {
+		return MutableArray(array.sorted())
 	}
 }
 
@@ -395,7 +395,7 @@ extension FixedArray where Element: Comparable { // kotlin: ignore
 
 // Array Class:
 
-let array1: ArrayClass = [1, 2, 3]
+let array1: MutableArray = [1, 2, 3]
 let array2 = array1
 array1[0] = 10
 print(array1)

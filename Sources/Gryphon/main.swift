@@ -18,7 +18,7 @@ import GryphonLib
 import Foundation
 
 do {
-	let result = try Driver.run(withArguments: ArrayClass(CommandLine.arguments.dropFirst()))
+	let result = try Driver.run(withArguments: MutableArray(CommandLine.arguments.dropFirst()))
 
 	if let commandResult = result as? Shell.CommandOutput {
 		print(commandResult.standardOutput)

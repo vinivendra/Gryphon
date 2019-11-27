@@ -202,7 +202,7 @@ public class Driver {
 
 	@discardableResult
 	public static func run(
-		withArguments arguments: ArrayClass<String>) throws -> Any?
+		withArguments arguments: MutableArray<String>) throws -> Any?
 	{
 		let badArguments = unsupportedArguments(in: arguments)
 		if !badArguments.isEmpty {
@@ -284,7 +284,7 @@ public class Driver {
 
 	@discardableResult
 	public static func performCompilation(
-		withArguments arguments: ArrayClass<String>) throws -> Any?
+		withArguments arguments: MutableArray<String>) throws -> Any?
 	{
 		defer {
 			if arguments.contains("-summarize-errors") {
@@ -425,7 +425,7 @@ public class Driver {
 			$0.hasSuffix(".swift") || $0.hasSuffix(".swiftASTDump")
 		}
 
-		let firstResult: ArrayClass<Any?>
+		let firstResult: MutableArray<Any?>
 		if shouldRunConcurrently {
 			firstResult = try filteredInputFiles.parallelMap {
 				try runUpToFirstPasses(withSettings: settings, withContext: context, onFile: $0)
@@ -439,7 +439,7 @@ public class Driver {
 
 		// If we've received a non-raw AST then we're in the middle of the transpilation passes.
 		// This means we need to at least run the second round of passes.
-		guard let asts = firstResult.as(ArrayClass<GryphonAST>.self),
+		guard let asts = firstResult.as(MutableArray<GryphonAST>.self),
 			settings.shouldGenerateAST else
 		{
 			return firstResult
@@ -449,7 +449,7 @@ public class Driver {
 		// insert: val pairsArray: MutableList<Pair<GryphonAST, String>> =
 		// insert: 	asts.zip(filteredInputFiles).toMutableList()
 
-		let secondResult: ArrayClass<Any?>
+		let secondResult: MutableArray<Any?>
 		if shouldRunConcurrently {
 			secondResult = try pairsArray.parallelMap {
 				try runAfterFirstPasses(
@@ -473,7 +473,7 @@ public class Driver {
 			return secondResult
 		}
 
-		let generatedKotlinFiles = (secondResult.as(ArrayClass<KotlinTranslation>.self))!
+		let generatedKotlinFiles = (secondResult.as(MutableArray<KotlinTranslation>.self))!
 			.compactMap { $0.kotlinFilePath }
 		let inputKotlinFiles = inputFilePaths.filter { Utilities.getExtension(of: $0) == .kt }
 
@@ -496,8 +496,11 @@ public class Driver {
 		return runResult
 	}
 
-	static func getInputFilePaths(inArguments arguments: ArrayClass<String>) -> ArrayClass<String> {
-		let result: ArrayClass<String> = []
+	static func getInputFilePaths(
+		inArguments arguments: MutableArray<String>)
+		-> MutableArray<String>
+	{
+		let result: MutableArray<String> = []
 		result.append(contentsOf: arguments.filter {
 			Utilities.getExtension(of: $0) == .swift
 		})
@@ -640,7 +643,7 @@ public class Driver {
 		return true
 	}
 
-	static func updateASTDumps(forFiles swiftFiles: ArrayClass<String>) -> Bool {
+	static func updateASTDumps(forFiles swiftFiles: MutableArray<String>) -> Bool {
 		// TODO: Send these paths to constants so they aren't duplicated all around the code
 		//// Create the outputFileMap
 		var outputFileMapContents = "{\n"
@@ -707,7 +710,7 @@ public class Driver {
 		}
 	}
 
-	static func unsupportedArguments(in arguments: ArrayClass<String>) -> ArrayClass<String> {
+	static func unsupportedArguments(in arguments: MutableArray<String>) -> MutableArray<String> {
 		// Start with all arguments, remove the ones that are OK, return what's left
 		var badArguments = arguments
 		badArguments = badArguments.filter { !supportedArguments.contains($0) }

@@ -216,7 +216,7 @@ class ExtensionsTest: XCTestCase {
 	}
 
 	func testSafeIndex() {
-		let array: ArrayClass = [1, 2, 3]
+		let array: MutableArray = [1, 2, 3]
 		XCTAssert(array[safe: 0] == 1)
 		XCTAssert(array[safe: 1] == 2)
 		XCTAssert(array[safe: 2] == 3)
@@ -225,14 +225,14 @@ class ExtensionsTest: XCTestCase {
 	}
 
 	func testSecondToLast() {
-		let array1: ArrayClass = [1, 2, 3]
-		let array2: ArrayClass = [1]
+		let array1: MutableArray = [1, 2, 3]
+		let array2: MutableArray = [1]
 		XCTAssert(array1.secondToLast == 2)
 		XCTAssert(array2.secondToLast == nil)
 	}
 
 	func testRotate() {
-		let array: ArrayClass = [1, 2, 3]
+		let array: MutableArray = [1, 2, 3]
 		let array1 = array.rotated()
 		let array2 = array1.rotated()
 		let array3 = array2.rotated()
@@ -242,7 +242,7 @@ class ExtensionsTest: XCTestCase {
 	}
 
 	func testGroupBy() {
-		let array: ArrayClass = [1, 2, 3, 2, 3, 1, 2, 3]
+		let array: MutableArray = [1, 2, 3, 2, 3, 1, 2, 3]
 		let histogram = array.group(by: { "\($0)" })
 		XCTAssertEqual(
 			histogram,

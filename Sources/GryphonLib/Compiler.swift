@@ -41,8 +41,8 @@ public class Compiler {
 	//
 	public static var shouldStopAtFirstError = false
 
-	public private(set) static var errors: ArrayClass<Error> = []
-	public private(set) static var warnings: ArrayClass<String> = []
+	public private(set) static var errors: MutableArray<Error> = []
+	public private(set) static var warnings: MutableArray<String> = []
 
 	internal static func handleError(_ error: Error) throws {
 		if Compiler.shouldStopAtFirstError {
@@ -96,8 +96,8 @@ public class Compiler {
 	}
 
 	public static func transpileGryphonRawASTs(
-		fromASTDumpFiles inputFiles: ArrayClass<String>)
-		throws -> ArrayClass<GryphonAST>
+		fromASTDumpFiles inputFiles: MutableArray<String>)
+		throws -> MutableArray<GryphonAST>
 	{
 		let asts = try inputFiles.map { try transpileSwiftAST(fromASTDumpFile: $0) }
 		let translateAsMainFile = (inputFiles.count == 1)
@@ -141,9 +141,9 @@ public class Compiler {
 	}
 
 	public static func transpileGryphonASTs(
-		fromASTDumpFiles inputFiles: ArrayClass<String>,
+		fromASTDumpFiles inputFiles: MutableArray<String>,
 		withContext context: TranspilationContext)
-		throws -> ArrayClass<GryphonAST>
+		throws -> MutableArray<GryphonAST>
 	{
 		let rawASTs = try transpileGryphonRawASTs(fromASTDumpFiles: inputFiles)
 		return try rawASTs.map {
@@ -175,22 +175,22 @@ public class Compiler {
 	}
 
 	public static func transpileKotlinCode(
-		fromASTDumpFiles inputFiles: ArrayClass<String>,
+		fromASTDumpFiles inputFiles: MutableArray<String>,
 		withContext context: TranspilationContext)
-		throws -> ArrayClass<String>
+		throws -> MutableArray<String>
 	{
 		let asts = try transpileGryphonASTs(fromASTDumpFiles: inputFiles, withContext: context)
 		return try asts.map { try generateKotlinCode(fromGryphonAST: $0, withContext: context) }
 	}
 
 	//
-	public static func compile(kotlinFiles filePaths: ArrayClass<String>, outputFolder: String)
+	public static func compile(kotlinFiles filePaths: MutableArray<String>, outputFolder: String)
 		throws -> Shell.CommandOutput?
 	{
 		log("\t- Compiling Kotlin...")
 
 		// Call the kotlin compiler
-		let arguments: ArrayClass = ["-include-runtime", "-d", outputFolder + "/kotlin.jar"]
+		let arguments: MutableArray = ["-include-runtime", "-d", outputFolder + "/kotlin.jar"]
 		arguments.append(contentsOf: filePaths)
 		let commandResult = Shell.runShellCommand(kotlinCompilerPath, arguments: arguments)
 
@@ -198,7 +198,7 @@ public class Compiler {
 	}
 
 	public static func transpileThenCompile(
-		ASTDumpFiles inputFiles: ArrayClass<String>,
+		ASTDumpFiles inputFiles: MutableArray<String>,
 		withContext context: TranspilationContext,
 		outputFolder: String = OS.buildFolder)
 		throws -> Shell.CommandOutput?
@@ -207,7 +207,7 @@ public class Compiler {
 			fromASTDumpFiles: inputFiles,
 			withContext: context)
 		// Write kotlin files to the output folder
-		let kotlinFilePaths: ArrayClass<String> = []
+		let kotlinFilePaths: MutableArray<String> = []
 		for (inputFile, kotlinCode) in zipToClass(inputFiles, kotlinCodes) {
 			let inputFileName = inputFile.split(withStringSeparator: "/").last!
 			let kotlinFileName = Utilities.changeExtension(of: inputFileName, to: .kt)
@@ -223,13 +223,13 @@ public class Compiler {
 	//
 	public static func runCompiledProgram(
 		fromFolder outputFolder: String,
-		withArguments arguments: ArrayClass<String> = [])
+		withArguments arguments: MutableArray<String> = [])
 		throws -> Shell.CommandOutput?
 	{
 		log("\t- Running Kotlin...")
 
 		// Run the compiled program
-		let commandArguments: ArrayClass = ["java", "-jar", "kotlin.jar"]
+		let commandArguments: MutableArray = ["java", "-jar", "kotlin.jar"]
 		commandArguments.append(contentsOf: arguments)
 		let commandResult = Shell.runShellCommand(commandArguments, fromFolder: outputFolder)
 
@@ -237,7 +237,7 @@ public class Compiler {
 	}
 
 	public static func transpileCompileAndRun(
-		ASTDumpFiles inputFiles: ArrayClass<String>,
+		ASTDumpFiles inputFiles: MutableArray<String>,
 		withContext context: TranspilationContext,
 		fromFolder outputFolder: String = OS.buildFolder)
 		throws -> Shell.CommandOutput?

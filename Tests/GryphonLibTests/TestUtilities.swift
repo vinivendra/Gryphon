@@ -23,7 +23,7 @@ enum TestUtils {
 	static func diff(_ string1: String, _ string2: String) -> String {
 		return withTemporaryFile(named: "file1.txt", containing: string1) { file1Path in
 			withTemporaryFile(named: "file2.txt", containing: string2) { file2Path in
-				let command: ArrayClass = ["diff", file1Path, file2Path]
+				let command: MutableArray = ["diff", file1Path, file2Path]
 				let commandResult = Shell.runShellCommand(command)
 				if let commandResult = commandResult {
 					return "\n\n===\n\(commandResult.standardOutput)===\n"
@@ -52,7 +52,7 @@ enum TestUtils {
 }
 
 extension TestUtils {
-	static let testCasesForAcceptanceTest: ArrayClass<String> = [
+	static let testCasesForAcceptanceTest: MutableArray<String> = [
 		"arrays",
 		"assignments",
 		"bhaskara",

@@ -21,35 +21,35 @@
 
 public class PrintableTree: PrintableAsTree {
 	public var treeDescription: String // annotation: override
-	public var printableSubtrees: ArrayClass<PrintableAsTree?> // annotation: override
+	public var printableSubtrees: MutableArray<PrintableAsTree?> // annotation: override
 
 	init(_ description: String) {
 		self.treeDescription = description
 		self.printableSubtrees = []
 	}
 
-	init(_ description: String, _ subtrees: ArrayClass<PrintableAsTree?>) {
+	init(_ description: String, _ subtrees: MutableArray<PrintableAsTree?>) {
 		self.treeDescription = description
 		self.printableSubtrees = subtrees
 	}
 
-	init(_ array: ArrayClass<PrintableAsTree?>) {
+	init(_ array: MutableArray<PrintableAsTree?>) {
 		self.treeDescription = "Array"
 		self.printableSubtrees = array
 	}
 
-	static func ofTrees(_ description: String, _ subtrees: ArrayClass<PrintableTree>)
+	static func ofTrees(_ description: String, _ subtrees: MutableArray<PrintableTree>)
 		-> PrintableAsTree?
 	{
-		let newSubtrees = ArrayClass<PrintableAsTree?>(subtrees)
+		let newSubtrees = MutableArray<PrintableAsTree?>(subtrees)
 		return PrintableTree.initOrNil(description, newSubtrees)
 	}
 
 	static func initOrNil(
-		_ description: String, _ subtreesOrNil: ArrayClass<PrintableAsTree?>)
+		_ description: String, _ subtreesOrNil: MutableArray<PrintableAsTree?>)
 		-> PrintableTree?
 	{
-		let subtrees: ArrayClass<PrintableAsTree?> = []
+		let subtrees: MutableArray<PrintableAsTree?> = []
 		for subtree in subtreesOrNil {
 			if let unwrapped = subtree {
 				subtrees.append(unwrapped)
@@ -79,12 +79,12 @@ public class PrintableTree: PrintableAsTree {
 
 public protocol PrintableAsTree {
 	var treeDescription: String { get }
-	var printableSubtrees: ArrayClass<PrintableAsTree?> { get }
+	var printableSubtrees: MutableArray<PrintableAsTree?> { get }
 }
 
 public extension PrintableAsTree {
 	func prettyPrint(
-		indentation: ArrayClass<String> = [],
+		indentation: MutableArray<String> = [],
 		isLast: Bool = true,
 		horizontalLimit: Int? = nil,
 		printFunction: (String) -> () = { print($0, terminator: "") })
@@ -118,7 +118,7 @@ public extension PrintableAsTree {
 			}
 		}
 
-		let subtrees: ArrayClass<PrintableAsTree> = []
+		let subtrees: MutableArray<PrintableAsTree> = []
 		for element in printableSubtrees {
 			if let unwrapped = element {
 				subtrees.append(unwrapped)

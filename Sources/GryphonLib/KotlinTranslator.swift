@@ -69,7 +69,7 @@ public class KotlinTranslator {
 	}
 
 	private func translateSubtrees(
-		_ subtrees: ArrayClass<Statement>,
+		_ subtrees: MutableArray<Statement>,
 		withIndentation indentation: String,
 		limitForAddingNewlines: Int = 0)
 		throws -> Translation
@@ -107,7 +107,7 @@ public class KotlinTranslator {
 		}
 
 		let treesAndTranslationsWithoutFirst =
-			ArrayClass<TreeAndTranslation>(treesAndTranslations.dropFirst())
+			MutableArray<TreeAndTranslation>(treesAndTranslations.dropFirst())
 
 		let result = Translation(range: subtreesRange)
 
@@ -563,7 +563,7 @@ public class KotlinTranslator {
 				if let genericExtensionIndex = translatedExtensionType.index(of: "<") {
 					let genericExtensionString =
 						translatedExtensionType.suffix(from: genericExtensionIndex)
-					let genericTypes = ArrayClass<String>(genericExtensionString
+					let genericTypes = MutableArray<String>(genericExtensionString
 						.dropFirst().dropLast()
 						.split(separator: ",")
 						.map { String($0) })
@@ -706,7 +706,7 @@ public class KotlinTranslator {
 
 	private func extractInnerDeferStatements(
 		_ maybeDeferStatement: Statement)
-		-> ArrayClass<Statement>
+		-> MutableArray<Statement>
 	{
 		if let deferStatement = maybeDeferStatement as? DeferStatement {
 			return deferStatement.statements
@@ -955,7 +955,7 @@ public class KotlinTranslator {
 
 			result.append(increasedIndentation)
 
-			let translatedExpressions: ArrayClass<Translation> = []
+			let translatedExpressions: MutableArray<Translation> = []
 
 			for caseExpression in switchCase.expressions {
 				let translatedExpression = try translateSwitchCaseExpression(
@@ -1368,7 +1368,7 @@ public class KotlinTranslator {
 			try translateExpression($0, withIndentation: indentation)
 			}
 
-		if arrayExpression.typeName.hasPrefix("ArrayClass") {
+		if arrayExpression.typeName.hasPrefix("MutableArray") {
 			result.append("mutableListOf")
 		}
 		else if arrayExpression.typeName.hasPrefix("FixedArray") {
@@ -1635,7 +1635,8 @@ public class KotlinTranslator {
 					if closureExpression.parameters.count > 1 {
 						let newTupleExpression = TupleExpression(
 							range: tupleExpression.range,
-							pairs: ArrayClass<LabeledExpression>(tupleExpression.pairs.dropLast()))
+							pairs: MutableArray<LabeledExpression>(
+								tupleExpression.pairs.dropLast()))
 
 						let firstParametersTranslation = try translateTupleExpression(
 							newTupleExpression,
@@ -1787,7 +1788,7 @@ public class KotlinTranslator {
 		// In tuple expressions (when used as parameters for call expressions) there seems to be
 		// little risk of triggering errors in Kotlin. Therefore, we can try to omit some parameter
 		// labels in the call when they've also been omitted in Swift.
-		let parameters: ArrayClass<String?>
+		let parameters: MutableArray<String?>
 		if let translationParameters = functionTranslation?.parameters {
 			parameters = zipToClass(translationParameters, tupleExpression.pairs).map
 				{ translationPairTuple in
@@ -1858,7 +1859,7 @@ public class KotlinTranslator {
 
 		let increasedIndentation = increaseIndentation(indentation)
 
-		let translations: ArrayClass<Translation> = []
+		let translations: MutableArray<Translation> = []
 		var expressionIndex = 0
 
 		// Variadic arguments can't be named, which means all arguments before them can't be named
@@ -2024,8 +2025,8 @@ public class KotlinTranslator {
 				return "MutableList<\(translatedInnerType)>"
 			}
 		}
-		else if typeName.hasPrefix("ArrayClass<") {
-			let innerType = String(typeName.dropLast().dropFirst("ArrayClass<".count))
+		else if typeName.hasPrefix("MutableArray<") {
+			let innerType = String(typeName.dropLast().dropFirst("MutableArray<".count))
 			let translatedInnerType = translateType(innerType)
 			return "MutableList<\(translatedInnerType)>"
 		}
@@ -2068,7 +2069,7 @@ public class KotlinTranslator {
 				translateFunctionTypeComponent($0)
 			}
 
-			let firstTypes = ArrayClass<String>(translatedComponents.dropLast().map { "(\($0))" })
+			let firstTypes = MutableArray<String>(translatedComponents.dropLast().map { "(\($0))" })
 			let lastType = translatedComponents.last!
 
 			let allTypes = firstTypes

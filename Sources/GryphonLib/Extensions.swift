@@ -22,7 +22,7 @@
 import Foundation
 
 private func gryphonTemplates() {
-	let _array: ArrayClass<Any> = []
+	let _array: MutableArray<Any> = []
 	let _index = 0
 	let _string1 = ""
 	let _character: Character = " "
@@ -54,9 +54,9 @@ internal extension String {
 	func split(
 		withStringSeparator separator: String,
 		maxSplits: Int = Int.max,
-		omittingEmptySubsequences: Bool = true) -> ArrayClass<String>
+		omittingEmptySubsequences: Bool = true) -> MutableArray<String>
 	{
-		let result: ArrayClass<String> = []
+		let result: MutableArray<String> = []
 
 		var splits = 0
 		var previousIndex = startIndex
@@ -95,8 +95,8 @@ internal extension String {
 	}
 
 	/// Non-overlapping
-	func occurrences(of searchedSubstring: String) -> ArrayClass<Range<String.Index>> {
-		let result: ArrayClass<Range<String.Index>> = []
+	func occurrences(of searchedSubstring: String) -> MutableArray<Range<String.Index>> {
+		let result: MutableArray<Range<String.Index>> = []
 
 		var currentSubstring = Substring(self)
 		var substringOffset = self.startIndex
@@ -125,8 +125,8 @@ internal extension String {
 		return result
 	}
 
-	func splitUsingUnescapedSpaces() -> ArrayClass<String> {
-		let result: ArrayClass<String> = []
+	func splitUsingUnescapedSpaces() -> MutableArray<String> {
+		let result: MutableArray<String> = []
 
 		var isEscaping = false
 		var index = self.startIndex
@@ -292,7 +292,7 @@ extension Character {
 }
 
 //
-extension ArrayClass {
+extension MutableArray {
 	/// Returns nil if index is out of bounds.
 	subscript (safe index: Int) -> Element? { // kotlin: ignore
 		return getSafe(index)
@@ -313,12 +313,12 @@ extension ArrayClass {
 	}
 
 	/// Returns the same array, but with the first element moved to the end.
-	func rotated() -> ArrayClass<Element> {
+	func rotated() -> MutableArray<Element> {
 		guard let first = self.first else {
 			return self
 		}
 
-		var newArray: ArrayClass<Element> = []
+		var newArray: MutableArray<Element> = []
 		newArray.reserveCapacity(self.count) // kotlin: ignore
 		newArray.append(contentsOf: self.dropFirst())
 		newArray.append(first)
@@ -329,9 +329,9 @@ extension ArrayClass {
 	/// Groups the array's elements into a dictionary according to the keys provided by the given
 	/// closure, forming a sort of histogram.
 	func group<Key>(by getKey: (Element) -> Key)
-		-> DictionaryClass<Key, ArrayClass<Element>>
+		-> DictionaryClass<Key, MutableArray<Element>>
 	{
-		let result: DictionaryClass<Key, ArrayClass<Element>> = [:]
+		let result: DictionaryClass<Key, MutableArray<Element>> = [:]
 		for element in self {
 			let key = getKey(element)
 			let array = result[key] ?? []
@@ -342,11 +342,11 @@ extension ArrayClass {
 	}
 }
 
-extension ArrayClass where Element: Equatable {
+extension MutableArray where Element: Equatable {
 	/// Removes duplicated items from the array, keeping the first unique items. Returns a copy of
 	/// the array with only unique items in it. O(n^2).
-	func removingDuplicates() -> ArrayClass<Element> {
-		let result: ArrayClass<Element> = []
+	func removingDuplicates() -> MutableArray<Element> {
+		let result: MutableArray<Element> = []
 
 		for i in self.indices {
 			let consideredDeclaration = self[i]
@@ -376,7 +376,7 @@ extension ArrayClass where Element: Equatable {
 
 //
 extension PrintableTree {
-	static func ofStrings(_ description: String, _ subtrees: ArrayClass<String>)
+	static func ofStrings(_ description: String, _ subtrees: MutableArray<String>)
 		-> PrintableAsTree?
 	{
 		let newSubtrees = subtrees.map { string -> PrintableAsTree? in PrintableTree(string) }

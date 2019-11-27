@@ -23,12 +23,12 @@ import Foundation
 
 public class SourceFile {
 	public var path: String
-	private let lines: ArrayClass<Substring>
+	private let lines: MutableArray<Substring>
 
 	public init(path: String, contents: String) {
 		self.path = path
 
-		self.lines = ArrayClass<Substring>(
+		self.lines = MutableArray<Substring>(
 			contents.split(separator: "\n", omittingEmptySubsequences: false))
 	}
 

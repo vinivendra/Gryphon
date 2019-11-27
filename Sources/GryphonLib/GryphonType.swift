@@ -24,9 +24,9 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 	case optional(subType: GryphonType)
 	case array(subType: GryphonType)
 	case dictionary(key: GryphonType, value: GryphonType)
-	case tuple(subTypes: ArrayClass<GryphonType>)
-	case function(parameters: ArrayClass<GryphonType>, returnType: GryphonType)
-	case generic(typeName: String, genericArguments: ArrayClass<GryphonType>)
+	case tuple(subTypes: MutableArray<GryphonType>)
+	case function(parameters: MutableArray<GryphonType>, returnType: GryphonType)
+	case generic(typeName: String, genericArguments: MutableArray<GryphonType>)
 
 	var description: String {
 		switch self {
@@ -186,7 +186,7 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 					subType1 = firstAttempt
 				}
 
-				let tupleElements: ArrayClass<GryphonType> = [subType1]
+				let tupleElements: MutableArray<GryphonType> = [subType1]
 
 				while string[index] == "," {
 					index = string.index(after: index)
@@ -272,7 +272,7 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 					return nil
 				}
 
-				let genericElements: ArrayClass<GryphonType> = [subType1]
+				let genericElements: MutableArray<GryphonType> = [subType1]
 
 				while string[index] == "," {
 					index = string.index(after: index)
@@ -455,9 +455,9 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 		}
 
 		if case let .generic(typeName: typeName, genericArguments: genericArguments) = gryphonType {
-			// Treat ArrayClass, FixedArray and ArraySlice as Array
-			if typeName == "ArrayClass" || typeName == "FixedArray" || typeName == "ArraySlice" {
-				// ArrayClass should have exactly one generic argument, which is its element
+			// Treat MutableArray, FixedArray and ArraySlice as Array
+			if typeName == "MutableArray" || typeName == "FixedArray" || typeName == "ArraySlice" {
+				// MutableArray should have exactly one generic argument, which is its element
 				return .array(subType: genericArguments[0])
 			}
 
@@ -469,7 +469,7 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 					genericArguments: innerGenericArguments) = genericArguments[0]
 			{
 				// There should be exactly one generic argument: the element
-				if innerTypeName == "ArrayClass" {
+				if innerTypeName == "MutableArray" {
 					return .array(subType: innerGenericArguments[0])
 				}
 				else if innerTypeName == "FixedArray" {

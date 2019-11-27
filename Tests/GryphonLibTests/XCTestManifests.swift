@@ -20,7 +20,7 @@ import XCTest
 public func allTests() -> [XCTestCaseEntry] {
 	return [
 		testCase(AcceptanceTest.allTests),
-		testCase(ArrayClassTest.allTests),
+		testCase(MutableArrayTest.allTests),
 		testCase(ASTDumpDecoderTest.allTests),
 		testCase(BootstrappingTest.allTests),
 		testCase(ExtensionsTest.allTests),

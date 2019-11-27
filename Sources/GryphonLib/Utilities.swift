@@ -37,8 +37,8 @@ extension Utilities {
 
 extension Utilities {
 	public static func files(
-		_ filePaths: ArrayClass<String>,
-		wereModifiedLaterThan otherFilePaths: ArrayClass<String>)
+		_ filePaths: MutableArray<String>,
+		wereModifiedLaterThan otherFilePaths: MutableArray<String>)
 		-> Bool
 	{
 		guard !filePaths.isEmpty, !otherFilePaths.isEmpty else {
@@ -169,14 +169,14 @@ extension Utilities {
 	}
 
 	static func getFiles(
-		_ selectedFiles: ArrayClass<String>? = nil,
+		_ selectedFiles: MutableArray<String>? = nil,
 		inDirectory directory: String,
 		withExtension fileExtension: FileExtension)
-		-> ArrayClass<String>
+		-> MutableArray<String>
 	{
 		let directoryPath = Utilities.getCurrentFolder() + "/\(directory)/"
 		let currentURL = URL(fileURLWithPath: directoryPath)
-		let allURLs = ArrayClass<URL>(try! FileManager.default.contentsOfDirectory(
+		let allURLs = MutableArray<URL>(try! FileManager.default.contentsOfDirectory(
 			at: currentURL,
 			includingPropertiesForKeys: nil))
 		let filteredURLs = allURLs.filter { $0.pathExtension == fileExtension.rawValue }
@@ -184,7 +184,7 @@ extension Utilities {
 				url1.absoluteString < url2.absoluteString
 		}
 
-		let selectedURLs: ArrayClass<URL>
+		let selectedURLs: MutableArray<URL>
 		if let selectedFiles = selectedFiles {
 			selectedURLs = sortedURLs.filter { url in
 				let fileName = url.deletingPathExtension().lastPathComponent
@@ -208,14 +208,14 @@ extension Utilities {
 internal let libraryUpdateLock: Semaphore = NSLock()
 
 //
-extension ArrayClass {
+extension MutableArray {
 
 	/// Meant for concurrently executing a map in an array with few elements and with an expensive
 	/// transform.
 	/// Technically it's O(n lg(n)) since the array has to be sorted at the end, but it's expected
 	/// that the transforms will take much longer than the sorting.
 	public func parallelMap<Result>(_ transform: @escaping (Element) throws -> Result)
-		throws -> ArrayClass<Result>
+		throws -> MutableArray<Result>
 	{
 		guard self.count > 1 else {
 			return try self.map(transform)
@@ -232,8 +232,8 @@ extension ArrayClass {
 			group.enter()
 		}
 
-		let selfEnumerated = ArrayClass<(offset: Int, element: Element)>(self.enumerated())
-		let unsortedResult: ArrayClass<(index: Int, element: Result)> = []
+		let selfEnumerated = MutableArray<(offset: Int, element: Element)>(self.enumerated())
+		let unsortedResult: MutableArray<(index: Int, element: Result)> = []
 
 		concurrentQueue.async {
 			DispatchQueue.concurrentPerform(iterations: selfEnumerated.count)

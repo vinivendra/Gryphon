@@ -25,9 +25,9 @@ private func gryphonTemplates() {
     let _string1 = ""
     let _string2 = ""
     let _string3 = ""
-    let _stringArray: ArrayClass<String>? = []
-    let _stringArray1: ArrayClass<String> = []
-    let _stringArray2: ArrayClass<String> = []
+    let _stringArray: MutableArray<String>? = []
+    let _stringArray1: MutableArray<String> = []
+    let _stringArray2: MutableArray<String> = []
     let _fileExtension1 = FileExtension.swift
     let _timeInterval: TimeInterval = 0
 
@@ -148,7 +148,7 @@ extension Utilities {
         -> String
     {
         let components = filePath.split(withStringSeparator: "/", omittingEmptySubsequences: false)
-        let newComponents = ArrayClass<String>(components.dropLast().map { String($0) })
+        let newComponents = MutableArray<String>(components.dropLast().map { String($0) })
         let nameComponent = components.last!
         let nameComponents =
             nameComponent.split(withStringSeparator: ".", omittingEmptySubsequences: false)
@@ -268,7 +268,7 @@ extension Utilities {
 	}
 
     static internal func needsToDumpASTForSwiftFiles(
-        _ swiftFiles: ArrayClass<String>? = nil,
+        _ swiftFiles: MutableArray<String>? = nil,
         in folder: String)
 		-> Bool
     {
@@ -310,11 +310,11 @@ extension Utilities {
 extension Utilities {
     static func splitTypeList(
         _ typeList: String,
-        separators: ArrayClass<String> = [",", ":"])
-        -> ArrayClass<String>
+        separators: MutableArray<String> = [",", ":"])
+        -> MutableArray<String>
     {
         var bracketsLevel = 0
-        let result: ArrayClass<String> = []
+        let result: MutableArray<String> = []
         var currentResult = ""
         var remainingString = Substring(typeList)
 

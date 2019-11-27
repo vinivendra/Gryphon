@@ -73,8 +73,8 @@ class BootstrappingTest: XCTestCase {
 					 "-indentation=t",
 					 "-q", "-Q",
 					 testFilePath, ])
-				guard let resultArray = driverResult as? ArrayClass<Any?>,
-					let swiftASTs = resultArray.as(ArrayClass<SwiftAST>.self),
+				guard let resultArray = driverResult as? MutableArray<Any?>,
+					let swiftASTs = resultArray.as(MutableArray<SwiftAST>.self),
 					let originalSwiftAST = swiftASTs.first else
 				{
 					XCTFail("Error generating SwiftASTs.\n" +
@@ -124,8 +124,8 @@ class BootstrappingTest: XCTestCase {
 					 "-indentation=t",
 					 "-q", "-Q",
 					 testFilePath, ])
-				guard let resultArray = driverResult as? ArrayClass<Any?>,
-					let rawASTs = resultArray.as(ArrayClass<GryphonAST>.self),
+				guard let resultArray = driverResult as? MutableArray<Any?>,
+					let rawASTs = resultArray.as(MutableArray<GryphonAST>.self),
 					let originalRawAST = rawASTs.first else
 				{
 					XCTFail("Error generating raw ASTs.\n" +
@@ -175,8 +175,8 @@ class BootstrappingTest: XCTestCase {
 					 "-indentation=t",
 					 "-q", "-Q",
 					 testFilePath, ])
-				guard let resultArray = driverResult as? ArrayClass<Any?>,
-					let asts = resultArray.as(ArrayClass<GryphonAST>.self),
+				guard let resultArray = driverResult as? MutableArray<Any?>,
+					let asts = resultArray.as(MutableArray<GryphonAST>.self),
 					let originalAST = asts.first else
 				{
 					XCTFail("Error generating passed ASTs.\n" +
@@ -226,9 +226,9 @@ class BootstrappingTest: XCTestCase {
 					 "-indentation=t",
 					 "-q", "-Q",
 					 testFilePath, ])
-				guard let resultArray = driverResult as? ArrayClass<Any?>,
+				guard let resultArray = driverResult as? MutableArray<Any?>,
 					let kotlinCodes = resultArray
-						.as(ArrayClass<Driver.KotlinTranslation>.self)?
+						.as(MutableArray<Driver.KotlinTranslation>.self)?
 						.map({ $0.kotlinCode }),
 					let originalKotlinCode = kotlinCodes.first else
 				{

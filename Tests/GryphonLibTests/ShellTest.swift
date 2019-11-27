@@ -19,7 +19,7 @@ import XCTest
 
 class ShellTest: XCTestCase {
 	func testEcho() {
-		let command: ArrayClass = ["echo", "foo bar baz"]
+		let command: MutableArray = ["echo", "foo bar baz"]
 		guard let commandResult = Shell.runShellCommand(command) else {
 			XCTFail("Timed out.")
 			return
@@ -30,7 +30,7 @@ class ShellTest: XCTestCase {
 	}
 
 	func testSwiftc() {
-		let command1: ArrayClass = ["swiftc", "-dump-ast"]
+		let command1: MutableArray = ["swiftc", "-dump-ast"]
 		guard let command1Result = Shell.runShellCommand(command1) else {
 			XCTFail("Timed out.")
 			return
@@ -39,7 +39,7 @@ class ShellTest: XCTestCase {
 		XCTAssert(command1Result.standardError.contains("<unknown>:0: error: no input files\n"))
 		XCTAssertNotEqual(command1Result.status, 0)
 
-		let command2: ArrayClass = ["swiftc", "--help"]
+		let command2: MutableArray = ["swiftc", "--help"]
 		guard let command2Result = Shell.runShellCommand(command2) else {
 			XCTFail("Timed out.")
 			return

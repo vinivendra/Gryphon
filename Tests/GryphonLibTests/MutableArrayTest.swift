@@ -17,52 +17,52 @@
 @testable import GryphonLib
 import XCTest
 
-class ArrayClassTest: XCTestCase {
+class MutableArrayTest: XCTestCase {
 	func testReference() {
-		let array1: ArrayClass = [1, 2, 3]
+		let array1: MutableArray = [1, 2, 3]
 		let array2 = array1
 		array1[0] = 10
 		XCTAssertEqual(array1, array2)
 	}
 
 	func testCopy() {
-		let array1: ArrayClass = [1, 2, 3]
+		let array1: MutableArray = [1, 2, 3]
 		let array2 = array1.copy()
 		array1[0] = 10
 		XCTAssertNotEqual(array1, array2)
 	}
 
 	func testAppend() {
-		let array1: ArrayClass = [1, 2, 3]
+		let array1: MutableArray = [1, 2, 3]
 		array1.append(4)
 		XCTAssertEqual(array1, [1, 2, 3, 4])
 	}
 
 	func testFilter() {
-		var array1: ArrayClass = [1, 2, 3]
+		var array1: MutableArray = [1, 2, 3]
 		array1 = array1.filter { $0 > 1 }
 		XCTAssertEqual(array1, [2, 3])
 	}
 
 	func testMap() {
-		var array1: ArrayClass = [1, 2, 3]
+		var array1: MutableArray = [1, 2, 3]
 		array1 = array1.map { $0 * 2 }
 		XCTAssertEqual(array1, [2, 4, 6])
 	}
 
 	func testEquatable() {
-		let array1: ArrayClass = [1, 2, 3]
-		let array2: ArrayClass = [1, 2, 3]
-		let array3: ArrayClass = [4, 5, 6]
+		let array1: MutableArray = [1, 2, 3]
+		let array2: MutableArray = [1, 2, 3]
+		let array3: MutableArray = [4, 5, 6]
 
 		XCTAssert(array1 == array2)
 		XCTAssertFalse(array2 == array3)
 	}
 
 	func testAppendingContentsOf() {
-		let arrayRef1: ArrayClass = [1, 2, 3]
-		let arrayRef2: ArrayClass = [4, 5, 6]
-		let array: ArrayClass<Int> = [7, 8, 9]
+		let arrayRef1: MutableArray = [1, 2, 3]
+		let arrayRef2: MutableArray = [4, 5, 6]
+		let array: MutableArray<Int> = [7, 8, 9]
 
 		XCTAssertEqual(arrayRef1.appending(contentsOf: arrayRef2), [1, 2, 3, 4, 5, 6])
 		XCTAssertEqual(arrayRef1, [1, 2, 3])
@@ -74,7 +74,7 @@ class ArrayClassTest: XCTestCase {
 	}
 
 	func testAppending() {
-		let array1: ArrayClass = [1, 2, 3]
+		let array1: MutableArray = [1, 2, 3]
 		XCTAssertEqual(array1.appending(4), [1, 2, 3, 4])
 		XCTAssertEqual(array1, [1, 2, 3])
 	}
