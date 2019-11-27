@@ -2035,8 +2035,8 @@ public class KotlinTranslator {
 			let translatedInnerType = translateType(innerType)
 			return "List<\(translatedInnerType)>"
 		}
-		else if typeName.hasPrefix("DictionaryClass<") {
-			let innerTypes = String(typeName.dropLast().dropFirst("DictionaryClass<".count))
+		else if typeName.hasPrefix("MutableDictionary<") {
+			let innerTypes = String(typeName.dropLast().dropFirst("MutableDictionary<".count))
 			let keyValue = Utilities.splitTypeList(innerTypes)
 			let key = keyValue[0]
 			let value = keyValue[1]

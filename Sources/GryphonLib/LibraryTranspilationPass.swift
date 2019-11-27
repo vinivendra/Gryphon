@@ -117,8 +117,8 @@ public class ReplaceTemplatesTranspilationPass: TranspilationPass {
 }
 
 extension Expression {
-	func matches(_ template: Expression) -> DictionaryClass<String, Expression>? {
-		let result: DictionaryClass<String, Expression> = [:]
+	func matches(_ template: Expression) -> MutableDictionary<String, Expression>? {
+		let result: MutableDictionary<String, Expression> = [:]
 		let success = matches(template, result)
 		if success {
 			return result
@@ -129,7 +129,7 @@ extension Expression {
 	}
 
 	private func matches(
-		_ template: Expression, _ matches: DictionaryClass<String, Expression>) -> Bool
+		_ template: Expression, _ matches: MutableDictionary<String, Expression>) -> Bool
 	{
 		let lhs = self
 		let rhs = template
@@ -547,9 +547,9 @@ private func simplifyType(string: String) -> String {
 		return "[\(elementType)]"
 	}
 
-	// Treat DictionaryClass as Dictionary
-	if string.hasPrefix("DictionaryClass<"), string.last! == ">" {
-		let keyValue = String(string.dropFirst("DictionaryClass<".count).dropLast())
+	// Treat MutableDictionary as Dictionary
+	if string.hasPrefix("MutableDictionary<"), string.last! == ">" {
+		let keyValue = String(string.dropFirst("MutableDictionary<".count).dropLast())
 			.split(withStringSeparator: ", ")
 		let key = keyValue[0]
 		let value = keyValue[1]

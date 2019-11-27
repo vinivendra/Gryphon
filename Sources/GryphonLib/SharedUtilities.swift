@@ -392,7 +392,7 @@ extension Utilities {
     }
 
     static func getTypeMapping(for typeName: String) -> String? {
-        let typeMappings: DictionaryClass = [
+        let typeMappings: MutableDictionary = [
             "Bool": "Boolean",
             "Error": "Exception",
             "UInt8": "UByte",

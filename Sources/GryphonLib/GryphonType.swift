@@ -477,9 +477,9 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 				}
 			}
 
-			// Treat DictionaryClass as Dictionary
-			if typeName == "DictionaryClass" || typeName == "FixedDictionary" {
-				// DictionaryClass should have exactly two generic argument: a key and a value
+			// Treat MutableDictionary as Dictionary
+			if typeName == "MutableDictionary" || typeName == "FixedDictionary" {
+				// MutableDictionary should have exactly two generic argument: a key and a value
 				return .dictionary(key: genericArguments[0], value: genericArguments[1])
 			}
 		}

@@ -329,9 +329,9 @@ extension MutableArray {
 	/// Groups the array's elements into a dictionary according to the keys provided by the given
 	/// closure, forming a sort of histogram.
 	func group<Key>(by getKey: (Element) -> Key)
-		-> DictionaryClass<Key, MutableArray<Element>>
+		-> MutableDictionary<Key, MutableArray<Element>>
 	{
-		let result: DictionaryClass<Key, MutableArray<Element>> = [:]
+		let result: MutableDictionary<Key, MutableArray<Element>> = [:]
 		for element in self {
 			let key = getKey(element)
 			let array = result[key] ?? []

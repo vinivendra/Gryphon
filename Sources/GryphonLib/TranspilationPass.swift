@@ -1506,7 +1506,7 @@ public class RenameOperatorsTranspilationPass: TranspilationPass {
 		_ binaryOperatorExpression: BinaryOperatorExpression)
 		-> Expression
 	{
-        let operatorTranslations: DictionaryClass = [
+        let operatorTranslations: MutableDictionary = [
             "??": "?:",
             "<<": "shl",
             ">>": "shr",
@@ -2593,7 +2593,7 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 	}
 }
 
-/// `MutableArray`es, `FixedArray`s, `DictionaryClass`es, and `FixedDictionaries`s are prefered to
+/// `MutableArray`s, `FixedArray`s, `MutableDictionary`s, and `FixedDictionary`s are prefered to
 /// using `Arrays` and `Dictionaries` for guaranteeing correctness. This pass raises warnings when
 /// it finds uses of the native data structures, which should help avoid these bugs.
 public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPass {
@@ -2604,7 +2604,7 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 	{
 		if let type = expression.swiftType, type.hasPrefix("[") {
 			let message = "Native type \(type) can lead to different behavior in Kotlin. Prefer " +
-			"MutableArray, FixedArray, DictionaryClass or FixedDictionary instead."
+			"MutableArray, FixedArray, MutableDictionary or FixedDictionary instead."
 			Compiler.handleWarning(
 				message: message,
 				details: expression.prettyDescription(),
@@ -2629,14 +2629,14 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 			let callExpression = dotExpression.rightExpression as? CallExpression {
 			if (callExpression.typeName.hasPrefix("MutableArray") ||
 					callExpression.typeName.hasPrefix("FixedArray") ||
-					callExpression.typeName.hasPrefix("DictionaryClass") ||
+					callExpression.typeName.hasPrefix("MutableDictionary") ||
 					callExpression.typeName.hasPrefix("FixedDictionary")),
 				let declarationReference =
 					callExpression.function as? DeclarationReferenceExpression
 			{
 				if declarationReference.identifier.hasPrefix("toMutable"),
 					(declarationReference.typeName.hasPrefix("MutableArray") ||
-						declarationReference.typeName.hasPrefix("DictionaryClass"))
+						declarationReference.typeName.hasPrefix("MutableDictionary"))
 				{
 					return dotExpression
 				}

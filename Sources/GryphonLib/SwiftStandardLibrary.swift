@@ -443,7 +443,7 @@ extension FixedArray: BackedByArray { // kotlin: ignore
 /// According to https://swiftdoc.org/v4.2/type/dictionary/hierarchy/
 /// the Dictionary type in Swift conforms exactly to these protocols,
 /// plus CustomReflectable (which is beyond Gryphon's scope for now).
-public final class DictionaryClass<Key, Value>: // kotlin: ignore
+public final class MutableDictionary<Key, Value>: // kotlin: ignore
 	ExpressibleByDictionaryLiteral, CustomStringConvertible, CustomDebugStringConvertible,
 	Collection
 	where Key: Hashable
@@ -457,12 +457,12 @@ public final class DictionaryClass<Key, Value>: // kotlin: ignore
 		self.dictionary = dictionary
 	}
 
-	public init<K, V>(_ dictionaryClass: DictionaryClass<K, V>) {
-		self.dictionary = dictionaryClass.dictionary as! Buffer
+	public init<K, V>(_ mutableDictionary: MutableDictionary<K, V>) {
+		self.dictionary = mutableDictionary.dictionary as! Buffer
 	}
 
-	public func copy() -> DictionaryClass<Key, Value> {
-		return DictionaryClass(dictionary)
+	public func copy() -> MutableDictionary<Key, Value> {
+		return MutableDictionary(dictionary)
 	}
 
 	// Expressible By Dictionary Literal
@@ -537,8 +537,11 @@ public final class DictionaryClass<Key, Value>: // kotlin: ignore
 	}
 
 	@inlinable
-	public func mapValues<T>(_ transform: (Value) throws -> T) rethrows -> DictionaryClass<Key, T> {
-		return try DictionaryClass<Key, T>(dictionary.mapValues(transform))
+	public func mapValues<T>(
+		_ transform: (Value) throws -> T)
+		rethrows -> MutableDictionary<Key, T>
+	{
+		return try MutableDictionary<Key, T>(dictionary.mapValues(transform))
 	}
 
 	@inlinable
@@ -550,21 +553,21 @@ public final class DictionaryClass<Key, Value>: // kotlin: ignore
 	}
 }
 
-extension DictionaryClass: Equatable where Value: Equatable { // kotlin: ignore
+extension MutableDictionary: Equatable where Value: Equatable { // kotlin: ignore
 	public static func == (
-		lhs: DictionaryClass, rhs: DictionaryClass) -> Bool
+		lhs: MutableDictionary, rhs: MutableDictionary) -> Bool
 	{
 		return lhs.dictionary == rhs.dictionary
 	}
 }
 
-extension DictionaryClass: Hashable where Value: Hashable { // kotlin: ignore
+extension MutableDictionary: Hashable where Value: Hashable { // kotlin: ignore
 	public func hash(into hasher: inout Hasher) {
 		dictionary.hash(into: &hasher)
 	}
 }
 
-extension DictionaryClass: Codable where Key: Codable, Value: Codable { // kotlin: ignore
+extension MutableDictionary: Codable where Key: Codable, Value: Codable { // kotlin: ignore
 	public func encode(to encoder: Encoder) throws {
 		try dictionary.encode(to: encoder)
 	}
@@ -591,8 +594,8 @@ public struct FixedDictionary<Key, Value>: // kotlin: ignore
 		self.dictionary = dictionary
 	}
 
-	public init<K, V>(_ dictionaryClass: FixedDictionary<K, V>) {
-		self.dictionary = dictionaryClass.dictionary as! Buffer
+	public init<K, V>(_ fixedDictionary: FixedDictionary<K, V>) {
+		self.dictionary = fixedDictionary.dictionary as! Buffer
 	}
 
 	public func copy() -> FixedDictionary<Key, Value> {
