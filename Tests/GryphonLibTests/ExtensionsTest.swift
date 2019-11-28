@@ -314,14 +314,29 @@ class ExtensionsTest: XCTestCase {
 			 false: [1, 3, 3, 1, 3], ])
 	}
 
+	func testRemovingDuplicates() {
+		let array1: MutableArray = [1, 2, 3]
+		let array2: MutableArray = [1, 2, 3, 1, 2, 2]
+		let array3: MutableArray<Int> = []
+
+		XCTAssertEqual(array1.removingDuplicates(), [1, 2, 3])
+		XCTAssertEqual(array2.removingDuplicates(), [1, 2, 3])
+		XCTAssertEqual(array3.removingDuplicates(), [])
+	}
+
 	static var allTests = [
 		("testStringSplit", testStringSplit),
 		("testOccurrencesOfSubstring", testOccurrencesOfSubstring),
+		("testSplitUsingUnescapedSpaces", testSplitUsingUnescapedSpaces),
 		("testRemoveTrailingWhitespace", testRemoveTrailingWhitespace),
 		("testUpperSnakeCase", testUpperSnakeCase),
+		("testCapitalizedAsCamelCase", testCapitalizedAsCamelCase),
+		("testRemovingBackslashEscapes", testRemovingBackslashEscapes),
+		("testIsNumberAndIsUppercase", testIsNumberAndIsUppercase),
 		("testSafeIndex", testSafeIndex),
 		("testSecondToLast", testSecondToLast),
 		("testRotated", testRotated),
 		("testGroupBy", testGroupBy),
+		("testRemovingDuplicates", testRemovingDuplicates),
 	]
 }
