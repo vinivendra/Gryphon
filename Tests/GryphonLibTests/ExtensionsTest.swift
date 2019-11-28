@@ -197,6 +197,21 @@ class ExtensionsTest: XCTestCase {
 			 ])
 	}
 
+	func testSplitUsingUnescapedSpaces() {
+		XCTAssertEqual(
+			"foo bar baz".splitUsingUnescapedSpaces(),
+			["foo", "bar", "baz"])
+		XCTAssertEqual(
+			"foo\\ bar baz".splitUsingUnescapedSpaces(),
+			["foo\\ bar", "baz"])
+		XCTAssertEqual(
+			"foo\\ bar\\ baz".splitUsingUnescapedSpaces(),
+			["foo\\ bar\\ baz"])
+		XCTAssertEqual(
+			"foo bar\\ baz".splitUsingUnescapedSpaces(),
+			["foo", "bar\\ baz"])
+	}
+
 	func testRemoveTrailingWhitespace() {
 		XCTAssertEqual("", "".removeTrailingWhitespace())
 		XCTAssertEqual("a", "a".removeTrailingWhitespace())
@@ -215,6 +230,42 @@ class ExtensionsTest: XCTestCase {
 		XCTAssertEqual("HTTPS_BAR", "HTTPSBar".upperSnakeCase())
 	}
 
+	func testCapitalizedAsCamelCase() {
+		XCTAssertEqual("Abc", "abc".capitalizedAsCamelCase())
+		XCTAssertEqual("FooBar", "fooBar".capitalizedAsCamelCase())
+	}
+
+	func testRemovingBackslashEscapes() {
+		XCTAssertEqual("a b", "a b".removingBackslashEscapes)
+		XCTAssertEqual("a b\n", "a b\\n".removingBackslashEscapes)
+		XCTAssertEqual("a\tb\n", "a\\tb\\n".removingBackslashEscapes)
+		XCTAssertEqual("\\a\tb\n", "\\\\a\\tb\\n".removingBackslashEscapes)
+	}
+
+	func testIsNumberAndIsUppercase() {
+		let numbers = "0123456789"
+		let uppercaseCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		let lowercaseCharacters = "abcdefghijklmnopqrstuvwxyz"
+		XCTAssertEqual(numbers.count, 10)
+		XCTAssertEqual(uppercaseCharacters.count, 26)
+		XCTAssertEqual(lowercaseCharacters.count, 26)
+
+		for character in numbers {
+			XCTAssert(character.isNumber)
+			XCTAssertFalse(character.isUppercase)
+		}
+
+		for character in uppercaseCharacters {
+			XCTAssert(character.isUppercase)
+			XCTAssertFalse(character.isNumber)
+		}
+
+		for character in lowercaseCharacters {
+			XCTAssertFalse(character.isUppercase)
+			XCTAssertFalse(character.isNumber)
+		}
+	}
+
 	func testSafeIndex() {
 		let array: MutableArray = [1, 2, 3]
 		XCTAssert(array[safe: 0] == 1)
@@ -222,6 +273,12 @@ class ExtensionsTest: XCTestCase {
 		XCTAssert(array[safe: 2] == 3)
 		XCTAssert(array[safe: 3] == nil)
 		XCTAssert(array[safe: -1] == nil)
+
+		XCTAssert(array.getSafe(0) == 1)
+		XCTAssert(array.getSafe(1) == 2)
+		XCTAssert(array.getSafe(2) == 3)
+		XCTAssert(array.getSafe(3) == nil)
+		XCTAssert(array.getSafe(-1) == nil)
 	}
 
 	func testSecondToLast() {
@@ -231,7 +288,7 @@ class ExtensionsTest: XCTestCase {
 		XCTAssert(array2.secondToLast == nil)
 	}
 
-	func testRotate() {
+	func testRotated() {
 		let array: MutableArray = [1, 2, 3]
 		let array1 = array.rotated()
 		let array2 = array1.rotated()
@@ -264,7 +321,7 @@ class ExtensionsTest: XCTestCase {
 		("testUpperSnakeCase", testUpperSnakeCase),
 		("testSafeIndex", testSafeIndex),
 		("testSecondToLast", testSecondToLast),
-		("testRotate", testRotate),
+		("testRotated", testRotated),
 		("testGroupBy", testGroupBy),
 	]
 }

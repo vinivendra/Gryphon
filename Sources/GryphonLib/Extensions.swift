@@ -125,6 +125,8 @@ internal extension String {
 		return result
 	}
 
+	/// Returns an array of the string's components separated by spaces. Spaces that have been
+	/// escaped ("\ ") are ignored.
 	func splitUsingUnescapedSpaces() -> MutableArray<String> {
 		let result: MutableArray<String> = []
 
@@ -171,7 +173,7 @@ internal extension String {
 		return String(self[startIndex...lastValidIndex])
 	}
 
-	// TODO: test
+	/// "fooBar" becomes "FOO_BAR", "HTTPSBar" becomes "HTTPS_BAR", etc
 	func upperSnakeCase() -> String {
 		guard !self.isEmpty else {
 			return self
@@ -206,12 +208,15 @@ internal extension String {
 		return result
 	}
 
+	/// "fooBar" becomes "FooBar"
 	func capitalizedAsCamelCase() -> String {
 		let firstCharacter = self.first!
 		let capitalizedFirstCharacter = String(firstCharacter).uppercased()
 		return String(capitalizedFirstCharacter + self.dropFirst())
 	}
 
+	/// Turns all "\\n" (backslash + 'n') into "\n" (newline), "\\t" (backslash + 't') into "\t"
+	/// (tab), and "\\\\" (backslash + backslash) into "\\" (backslash).
 	var removingBackslashEscapes: String {
 		var result = ""
 		var isEscaping = false
