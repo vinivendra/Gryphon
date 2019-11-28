@@ -486,6 +486,18 @@ public final class MutableDictionary<Key, Value>: // kotlin: ignore
 		self.dictionary = mutableDictionary.dictionary as! Buffer
 	}
 
+	public func `as`<CastedKey, CastedValue>(
+		_ type: MutableDictionary<CastedKey, CastedValue>.Type)
+		-> MutableDictionary<CastedKey, CastedValue>?
+	{
+		if let castedDictionary = self.dictionary as? [CastedKey: CastedValue] {
+			return MutableDictionary<CastedKey, CastedValue>(castedDictionary)
+		}
+		else {
+			return nil
+		}
+	}
+
 	public func copy() -> MutableDictionary<Key, Value> {
 		return MutableDictionary(dictionary)
 	}
@@ -628,6 +640,18 @@ public struct FixedDictionary<Key, Value>: // kotlin: ignore
 		self.dictionary = fixedDictionary.dictionary as! Buffer
 	}
 
+	public func `as`<CastedKey, CastedValue>(
+		_ type: FixedDictionary<CastedKey, CastedValue>.Type)
+		-> FixedDictionary<CastedKey, CastedValue>?
+	{
+		if let castedDictionary = self.dictionary as? [CastedKey: CastedValue] {
+			return FixedDictionary<CastedKey, CastedValue>(castedDictionary)
+		}
+		else {
+			return nil
+		}
+	}
+
 	public func copy() -> FixedDictionary<Key, Value> {
 		return FixedDictionary(dictionary)
 	}
@@ -718,9 +742,28 @@ public struct FixedDictionary<Key, Value>: // kotlin: ignore
 
 extension FixedDictionary: Equatable where Value: Equatable { // kotlin: ignore
 	public static func == (
-		lhs: FixedDictionary, rhs: FixedDictionary) -> Bool
+		lhs: FixedDictionary,
+		rhs: FixedDictionary)
+		-> Bool
 	{
 		return lhs.dictionary == rhs.dictionary
+	}
+
+	//
+	public static func == (lhs: MutableDictionary<Key, Value>, rhs: FixedDictionary) -> Bool {
+		return lhs.dictionary == rhs.dictionary
+	}
+
+	public static func == (lhs: FixedDictionary, rhs: MutableDictionary<Key, Value>) -> Bool {
+		return lhs.dictionary == rhs.dictionary
+	}
+
+	public static func != (lhs: MutableDictionary<Key, Value>, rhs: FixedDictionary) -> Bool {
+		return lhs.dictionary != rhs.dictionary
+	}
+
+	public static func != (lhs: FixedDictionary, rhs: MutableDictionary<Key, Value>) -> Bool {
+		return lhs.dictionary != rhs.dictionary
 	}
 }
 
