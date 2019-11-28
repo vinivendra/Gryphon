@@ -1940,11 +1940,9 @@ public class KotlinTranslator {
 		-> Translation
 	{
 		if literalStringExpression.isMultiline {
-			let processedString = literalStringExpression.value
-				.replacingOccurrences(of: "\\n", with: "\n")
-				.replacingOccurrences(of: "\\t", with: "\t")
+			let processedString = literalStringExpression.value.removingBackslashEscapes
 			let result = Translation(range: literalStringExpression.range)
-			result.append("\"\"\"\n")
+			result.append("\"\"\"")
 			result.append(processedString)
 			result.append("\"\"\"")
 			return result
@@ -1975,9 +1973,12 @@ public class KotlinTranslator {
 		withIndentation indentation: String)
 		throws -> Translation
 	{
+		let isMultiline = interpolatedStringLiteralExpression.isMultiline
+		let delimiter = isMultiline ? "\"\"\"" : "\""
+
 		let result = Translation(
 			range: interpolatedStringLiteralExpression.range,
-			string: "\"")
+			string: delimiter)
 
 		for expression in interpolatedStringLiteralExpression.expressions {
 			if let literalStringExpression = expression as? LiteralStringExpression {
@@ -1987,7 +1988,13 @@ public class KotlinTranslator {
 					continue
 				}
 
-				result.append(literalStringExpression.value)
+				if isMultiline {
+					let processedString = literalStringExpression.value.removingBackslashEscapes
+					result.append(processedString)
+				}
+				else {
+					result.append(literalStringExpression.value)
+				}
 			}
 			else {
 				let startDelimiter = "${" // value: \"\\${\"
@@ -1997,7 +2004,7 @@ public class KotlinTranslator {
 			}
 		}
 
-		result.append("\"")
+		result.append(delimiter)
 		return result
 	}
 

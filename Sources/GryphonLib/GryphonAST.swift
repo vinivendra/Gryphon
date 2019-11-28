@@ -2013,6 +2013,13 @@ public class InterpolatedStringLiteralExpression: Expression {
 	{
 		return lhs.expressions == rhs.expressions
 	}
+
+	var isMultiline: Bool {
+		if let firstString = expressions.compactMap({ $0 as? LiteralStringExpression }).first {
+			return firstString.isMultiline
+		}
+		return false
+	}
 }
 
 public class TupleExpression: Expression {

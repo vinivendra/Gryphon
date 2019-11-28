@@ -1619,40 +1619,6 @@ public class CallsToSuperclassInitializersTranspilationPass: TranspilationPass {
 	}
 }
 
-/// Kotlin adds a hidden "\n" at the end of multiline strings. If multiline strings in Swift end
-/// in "\n", we can just chop that off and it'll work. Otherwise, this might lead to incorrect
-/// behavior.
-public class ChompNewlinesFromMultilineStringsTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
-	// declaration:     super(ast, context) { }
-
-	override func replaceLiteralStringExpression( // annotation: override
-		_ literalStringExpression: LiteralStringExpression)
-		-> Expression
-	{
-		guard literalStringExpression.isMultiline else {
-			return literalStringExpression
-		}
-
-		if literalStringExpression.value.hasSuffix("\\n") {
-			return LiteralStringExpression(
-				range: literalStringExpression.range,
-				value: String(literalStringExpression.value.dropLast("\\n".count)),
-				isMultiline: literalStringExpression.isMultiline)
-		}
-		else {
-			let message = "Kotlin will add a hidden '\\n' to the end of this string. Add one " +
-				"manually here to ensure the translation will be the same."
-			Compiler.handleWarning(
-				message: message,
-				details: literalStringExpression.prettyDescription(),
-				sourceFile: ast.sourceFile,
-				sourceFileRange: literalStringExpression.range)
-			return literalStringExpression
-		}
-	}
-}
-
 public class SelfToThisTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
 	// declaration:     super(ast, context) { }
@@ -3426,7 +3392,6 @@ public extension TranspilationPass {
 		ast = RearrangeIfLetsTranspilationPass(ast: ast, context: context).run()
 
 		// Transform structures that need to be slightly different in Kotlin
-		ast = ChompNewlinesFromMultilineStringsTranspilationPass(ast: ast, context: context).run()
 		ast = SelfToThisTranspilationPass(ast: ast, context: context).run()
 		ast = AnonymousParametersTranspilationPass(ast: ast, context: context).run()
 		ast = CovarianceInitsAsCallsTranspilationPass(ast: ast, context: context).run()
