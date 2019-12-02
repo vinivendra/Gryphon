@@ -97,8 +97,6 @@ class UtilitiesTest: XCTestCase {
     func testGetRelativePath() {
         let currentFolder = Utilities.getCurrentFolder()
 
-        XCTAssert(currentFolder.last! != "/")
-
         XCTAssertEqual(
             "path/to/file.swift",
             Utilities.getRelativePath(forFile: "path/to/file.swift"))
@@ -147,5 +145,32 @@ class UtilitiesTest: XCTestCase {
         XCTAssertEqual(Utilities.getTypeMapping(for: "Range<String.Index>"), "IntRange")
 
         XCTAssertEqual(Utilities.getTypeMapping(for: "Asdf"), nil)
+    }
+
+    func testGetCurrentFolder() {
+        XCTAssert(Utilities.getCurrentFolder().hasSuffix("Gryphon"))
+    }
+
+    func testGetFiles() {
+        let allSwiftFiles = Utilities.getFiles(
+            inDirectory: "Sources/GryphonLib",
+            withExtension: .swift)
+        let someSwiftFiles = Utilities.getFiles(
+            ["Utilities", "SharedUtilities"],
+            inDirectory: "Sources/GryphonLib",
+            withExtension: .swift)
+        let kotlinFiles = Utilities.getFiles(
+            inDirectory: "Sources/GryphonLib",
+            withExtension: .kt)
+
+        XCTAssert(allSwiftFiles.contains { $0.hasSuffix("/Utilities.swift") })
+        XCTAssert(allSwiftFiles.contains { $0.hasSuffix("/SharedUtilities.swift") })
+        XCTAssert(allSwiftFiles.contains { $0.hasSuffix("/TranspilationPass.swift") })
+
+        XCTAssert(someSwiftFiles.contains { $0.hasSuffix("/Utilities.swift") })
+        XCTAssert(someSwiftFiles.contains { $0.hasSuffix("/SharedUtilities.swift") })
+        XCTAssert(someSwiftFiles.count == 2)
+
+        XCTAssert(kotlinFiles.isEmpty)
     }
 }
