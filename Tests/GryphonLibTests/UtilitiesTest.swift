@@ -18,6 +18,8 @@
 import XCTest
 
 class UtilitiesTest: XCTestCase {
+    struct EmptyError: Error { }
+
 	func testExpandSwiftAbbreviation() {
 		XCTAssertEqual(
 			Utilities.expandSwiftAbbreviation("source_file"), "Source File")
@@ -172,5 +174,44 @@ class UtilitiesTest: XCTestCase {
         XCTAssert(someSwiftFiles.count == 2)
 
         XCTAssert(kotlinFiles.isEmpty)
+    }
+
+    func testGetAbsolutePath() {
+        let file = "Sources/GryphonLib/Utilities.swift"
+        let absolutePath = Utilities.getAbsoultePath(forFile: file)
+
+        XCTAssert(absolutePath.hasPrefix("/"))
+        XCTAssert(absolutePath.hasSuffix(file))
+    }
+
+    func testParallelMap() {
+        let array1: MutableArray<Int> = []
+        let array2: MutableArray<Int> = [1]
+        let array3: MutableArray<Int> = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        let array4: MutableArray<Int> = MutableArray<Int>([Int](0...10_000))
+
+        let array1Copy = array1.copy()
+        let array2Copy = array2.copy()
+        let array3Copy = array3.copy()
+        let array4Copy = array4.copy()
+
+        let mappedArray1 = try! array1.parallelMap { $0 * 2 }
+        let mappedArray2 = try! array2.parallelMap { $0 * 2 }
+        let mappedArray3 = try! array3.parallelMap { $0 * 2 }
+        let mappedArray4 = try! array4.parallelMap { $0 * 2 }
+
+        let array4Result = MutableArray<Int>([Int](0...10_000)).map { $0 * 2 }
+
+        XCTAssertEqual(array1, array1Copy)
+        XCTAssertEqual(array2, array2Copy)
+        XCTAssertEqual(array3, array3Copy)
+        XCTAssertEqual(array4, array4Copy)
+
+        XCTAssertEqual(mappedArray1, [])
+        XCTAssertEqual(mappedArray2, [2])
+        XCTAssertEqual(mappedArray3, [2, 4, 6, 8, 10, 12, 14, 16, 18, 20])
+        XCTAssertEqual(mappedArray4, array4Result)
+
+        XCTAssertThrowsError(try array3.map { (_: Int) -> Int in throw EmptyError() })
     }
 }

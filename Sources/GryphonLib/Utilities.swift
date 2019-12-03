@@ -269,10 +269,10 @@ extension MutableArray {
 
 		// Elements may have been added in any order. We have to re-sort the array.
 		let result = unsortedResult.sorted { (leftIndexedElement, rightIndexedELement) -> Bool in
-			leftIndexedElement.index < rightIndexedELement.index
-		}.map {
-			$0.element
-		}
+                leftIndexedElement.index < rightIndexedELement.index
+            }.map {
+                $0.element
+            }
 
 		return result
 	}
