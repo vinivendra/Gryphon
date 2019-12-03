@@ -50,7 +50,12 @@ public class PrintableTree: PrintableAsTree {
 		_ subtreesOrNil: MutableArray<PrintableAsTree?>)
 		-> PrintableTree?
 	{
-		let subtrees: MutableArray<PrintableAsTree?> = subtreesOrNil.compactMap { $0 }
+		let subtrees: MutableArray<PrintableAsTree?> = []
+		for subtree in subtreesOrNil {
+			if let unwrapped = subtree {
+				subtrees.append(unwrapped)
+			}
+		}
 
 		guard !subtrees.isEmpty else {
 			return nil

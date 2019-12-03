@@ -68,6 +68,18 @@ class PrintableAsTreeTest: XCTestCase {
 			""")
 	}
 
+    func testInitOrNil() {
+        let subtree: PrintableAsTree? = PrintableTree("")
+
+        let noDescription: PrintableAsTree? = PrintableTree.initOrNil(nil)
+        let noChildren: PrintableAsTree? = PrintableTree.initOrNil("", [nil])
+        let okTree: PrintableAsTree? = PrintableTree.initOrNil("", [subtree])
+
+        XCTAssertNil(noDescription)
+        XCTAssertNil(noChildren)
+        XCTAssertNotNil(okTree)
+    }
+
 	static var allTests = [
 		("testPrinting", testPrinting),
 		("testHorizontalLimit", testHorizontalLimit),
