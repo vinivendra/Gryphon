@@ -112,6 +112,7 @@ public class Translation {
 
 	/// Goes through the translation subtree looking for the given suffix. If it is found, it is
 	/// dropped from the tree (in-place). Otherwise, nothing happens.
+	/// Does not match the suffix if it is separated between more than one translation unit.
 	public func dropLast(_ string: String) {
 		if let lastUnit = children.last {
 			if let stringLiteral = lastUnit.stringLiteral {
@@ -148,7 +149,7 @@ struct TranslationUnit {
 	// declaration: constructor(node: Translation): this(null, node) { }
 }
 
-private class SourceFilePosition {
+internal class SourceFilePosition {
 	var lineNumber: Int
 	var columnNumber: Int
 
