@@ -51,6 +51,9 @@ private func gryphonTemplates() {
     _ = Utilities.getAbsoultePath(forFile: _string1)
     _ = "Utilities.getAbsoultePath(file = _string1)"
 
+	_ = Utilities.fileExists(at: _string1)
+	_ = "Utilities.fileExists(filePath = _string1)"
+
     _ = Utilities.createFileIfNeeded(at: _string1)
     _ = "Utilities.createFileIfNeeded(filePath = _string1)"
 

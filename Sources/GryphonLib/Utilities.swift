@@ -134,11 +134,15 @@ extension Utilities {
 }
 
 extension Utilities {
+	public static func fileExists(at filePath: String) -> Bool {
+		let fileManager = FileManager.default
+		return fileManager.fileExists(atPath: filePath)
+	}
+
 	/// - Returns: `true` if the file was created, `false` if it already existed.
 	public static func createFileIfNeeded(at filePath: String) -> Bool {
-		let fileManager = FileManager.default
-
-		if !fileManager.fileExists(atPath: filePath) {
+        if !Utilities.fileExists(at: filePath) {
+            let fileManager = FileManager.default
 			let success = fileManager.createFile(atPath: filePath, contents: nil)
 			assert(success)
 			return true

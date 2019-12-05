@@ -120,9 +120,13 @@ fun Utilities.Companion.createFile(filePath: String, contents: String) {
 	writer.close()
 }
 
-fun Utilities.Companion.createFileIfNeeded(filePath: String): Boolean {
+fun Utilities.Companion.fileExists(filePath: String): Boolean {
 	val file = File(filePath)
-	if (!file.exists()) {
+	return !file.exists()
+}
+
+fun Utilities.Companion.createFileIfNeeded(filePath: String): Boolean {
+	if (Utilities.fileExists(filePath)) {
 		val success = file.createNewFile()
 		assert(success)
 		return true
