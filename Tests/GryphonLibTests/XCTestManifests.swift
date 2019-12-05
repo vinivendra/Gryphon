@@ -22,16 +22,19 @@ public func allTests() -> [XCTestCaseEntry] {
 		testCase(AcceptanceTest.allTests),
 		testCase(ASTDumpDecoderTest.allTests),
 		testCase(BootstrappingTest.allTests),
+		testCase(CompilerTest.allTests),
+		testCase(DriverTest.allTests),
 		testCase(ExtensionsTest.allTests),
 		testCase(IntegrationTest.allTests),
 		testCase(PrintableAsTreeTest.allTests),
 		testCase(ShellTest.allTests),
+		testCase(SourceFileTest.allTests),
 		testCase(FixedArrayTest.allTests),
 		testCase(MutableArrayTest.allTests),
 		testCase(MutableDictionaryTest.allTests),
 
 		// Initialization tests reset the stdlib templates file, so they need to be at the end.
-		testCase(InitializationTests.allTests),
+		testCase(InitializationTest.allTests),
 	]
 }
 #endif

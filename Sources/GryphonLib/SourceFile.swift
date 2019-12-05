@@ -36,6 +36,8 @@ public class SourceFile {
 		return lines.count
 	}
 
+	/// Get a line from the source file (indices starting in 1). Returns `nil` if the line number is
+	/// larger than the file's size or less than zero.
 	public func getLine(_ lineNumber: Int) -> String? {
 		if let line = lines[safe: lineNumber - 1] {
 			return String(line)
@@ -68,7 +70,7 @@ public class SourceFile {
 }
 
 extension SourceFile {
-	/// Returns any comment in the given line, or `nil` if there isn't one
+	/// Returns any comment in the given line, or `nil` if there isn't one. Line indices start at 1.
 	public func getCommentFromLine(_ lineNumber: Int) -> CommonComment? { // gryphon: pure
 		guard let line = getLine(lineNumber) else {
 			return nil
