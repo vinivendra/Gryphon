@@ -2776,9 +2776,9 @@ public class SwiftTranslator {
 		}
 		else {
 			return try unexpectedExpressionStructureError(
-			"Unrecognized structure for numeric literal",
-			ast: numericLiteralExpression,
-			translator: self)
+                "Unrecognized structure for numeric literal",
+                ast: numericLiteralExpression,
+                translator: self)
 		}
 
 		let value = literalExpression?["value"]

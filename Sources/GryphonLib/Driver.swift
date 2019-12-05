@@ -744,7 +744,10 @@ public class Driver {
 	}
 
 	static func printUsage() {
-		print("""
+		print(usageString)
+	}
+
+    static let usageString = """
 		-- Gryphon transpiler --
 		Version \(gryphonVersion)
 
@@ -823,7 +826,5 @@ public class Driver {
 		            warnings.
 
 		      ↪️  -sync               Do not use concurrency.
-		""")
-
-	}
+		"""
 }
