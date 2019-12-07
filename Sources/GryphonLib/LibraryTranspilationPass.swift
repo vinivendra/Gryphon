@@ -268,12 +268,6 @@ extension Expression {
 		{
 			return lhs.value == rhs.value
 		}
-		if let lhs = lhs as? LiteralStringExpression,
-			rhs is DeclarationReferenceExpression
-		{
-			let characterExpression = LiteralCharacterExpression(range: lhs.range, value: lhs.value)
-			return characterExpression.matches(rhs, matches)
-		}
 		if lhs is NilLiteralExpression,
 			rhs is NilLiteralExpression
 		{
