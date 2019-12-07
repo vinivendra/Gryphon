@@ -12,7 +12,7 @@ kotlinc -include-runtime \
 	Bootstrap/ExtensionsTest.kt \
 	Bootstrap/SwiftAST.kt \
 	Bootstrap/Utilities.kt \
-    Bootstrap/SharedUtilities.kt \
+	Bootstrap/SharedUtilities.kt \
 	Bootstrap/UtilitiesTest.kt \
 	Bootstrap/Compiler.kt \
 	Bootstrap/SourceFile.kt \
