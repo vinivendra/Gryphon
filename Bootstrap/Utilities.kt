@@ -127,6 +127,7 @@ fun Utilities.Companion.fileExists(filePath: String): Boolean {
 
 fun Utilities.Companion.createFileIfNeeded(filePath: String): Boolean {
 	if (Utilities.fileExists(filePath)) {
+		val file = File(filePath)
 		val success = file.createNewFile()
 		assert(success)
 		return true
