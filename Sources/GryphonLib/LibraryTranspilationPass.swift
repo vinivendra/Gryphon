@@ -201,7 +201,7 @@ extension Expression {
 		if let lhs = lhs as? ArrayExpression,
 			let rhs = rhs as? ArrayExpression
 		{
-			var result = true
+			var result = (lhs.elements.count == rhs.elements.count)
 			for (leftElement, rightElement) in zipToClass(lhs.elements, rhs.elements) {
 				result = result && leftElement.matches(rightElement, matches)
 			}
