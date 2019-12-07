@@ -293,6 +293,7 @@ extension Expression {
 		{
 			// Check manually for matches in trailing closures (that don't have labels in code
 			// but do in templates)
+			// FIXME: This should also apply to functions with more than one argument
 			if lhs.pairs.count == 1,
 				let onlyLeftPair = lhs.pairs.first,
 				rhs.pairs.count == 1,
@@ -300,7 +301,7 @@ extension Expression {
 			{
 				if let closureInParentheses = onlyLeftPair.expression as? ParenthesesExpression {
 					if closureInParentheses.expression is ClosureExpression {
-						// Unwrap a redundand parentheses expression if needed
+						// Unwrap a redundant parentheses expression if needed
 						if let templateInParentheses =
 							onlyRightPair.expression as? ParenthesesExpression
 						{
