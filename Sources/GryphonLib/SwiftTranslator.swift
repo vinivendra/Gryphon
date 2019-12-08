@@ -2577,21 +2577,21 @@ public class SwiftTranslator {
 				ast: tupleExpression, translator: self)
 		}
 
-		// Only empty tuples don't have a list of names
-		guard let names = tupleExpression["names"] else {
-			return TupleExpression(
-				range: getRangeRecursively(ofNode: tupleExpression),
-				pairs: [])
+		let namesArray: MutableArray<String>
+		if let names = tupleExpression["names"] {
+			namesArray = MutableArray<Substring>(names.split(separator: ","))
+				.map { String($0) }
 		}
-
-		let namesArray = MutableArray<Substring>(names.split(separator: ","))
+		else {
+			// If there are no names create a list of enough length with all empty names
+			namesArray = tupleExpression.subtrees.map { _ in "_" }
+		}
 
 		let tuplePairs: MutableArray<LabeledExpression> = []
 
 		for (name, expression) in zipToClass(namesArray, tupleExpression.subtrees) {
 			let expression = try translateExpression(expression)
 
-			// Empty names (like the underscore in "foo(_:)") are represented by ''
 			if name == "_" {
 				tuplePairs.append(LabeledExpression(label: nil, expression: expression))
 			}

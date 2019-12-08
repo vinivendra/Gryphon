@@ -1898,6 +1898,61 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 	}
 }
 
+/// Tuples with two elements can be translated to Kotlin automatically as `Pair`s. This doesn't
+/// apply to tuples in call expressions (where they just represent the call's parameters) or for
+/// statements iterating over `zip`s (i.e. the `(a, b)` in `for (a, b) in zip(c, d) { ... }`).
+public class TuplesToPairsTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
+
+	override func replaceTupleExpression( // annotation: override
+		_ tupleExpression: TupleExpression)
+		-> Expression
+	{
+		// Ensure it's a pair
+		guard tupleExpression.pairs.count == 2 else {
+			return tupleExpression
+		}
+
+		// Ignore tuples in call expressions and for statements
+		let fixedParent = parent
+		if case let .expressionNode(value: parentExpression) = fixedParent {
+			guard !(parentExpression is CallExpression) else {
+				return tupleExpression
+			}
+		}
+		else if case let .statementNode(value: parentStatement) = fixedParent {
+			guard !(parentStatement is ForEachStatement) else {
+				return tupleExpression
+			}
+		}
+
+		// Try to find out the types of the expressions so we can form the correct result type
+		let maybeTypes = tupleExpression.pairs.map { $0.expression.swiftType }
+		guard let types = maybeTypes.as(MutableArray<String>.self) else {
+			return tupleExpression
+		}
+		let pairType = "Pair<\(types.joined(separator: ", "))>"
+
+		return CallExpression(
+			range: tupleExpression.range,
+			function: TypeExpression(
+				range: tupleExpression.range,
+				typeName: pairType),
+			parameters: TupleExpression(
+				range: tupleExpression.range,
+				pairs: [
+					LabeledExpression(
+						label: nil,
+						expression: tupleExpression.pairs[0].expression),
+					LabeledExpression(
+						label: nil,
+						expression: tupleExpression.pairs[1].expression),
+			]),
+			typeName: pairType)
+	}
+}
+
 /// Optional subscripts in kotlin have to be refactored as function calls:
 ///
 /// ````
@@ -3396,6 +3451,7 @@ public extension TranspilationPass {
 		ast = AnonymousParametersTranspilationPass(ast: ast, context: context).run()
 		ast = CovarianceInitsAsCallsTranspilationPass(ast: ast, context: context).run()
 		ast = ReturnsInLambdasTranspilationPass(ast: ast, context: context).run()
+		ast = TuplesToPairsTranspilationPass(ast: ast, context: context).run()
 		ast = RefactorOptionalsInSubscriptsTranspilationPass(ast: ast, context: context).run()
 		ast = AddOptionalsInDotChainsTranspilationPass(ast: ast, context: context).run()
 		ast = RenameOperatorsTranspilationPass(ast: ast, context: context).run()
