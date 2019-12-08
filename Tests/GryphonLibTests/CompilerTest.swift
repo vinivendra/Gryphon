@@ -109,4 +109,10 @@ class CompilerTest: XCTestCase {
 			Some details
 			""")
     }
+
+	static var allTests = [
+		("testKotlinCompiler", testKotlinCompiler),
+		("testErrorHandling", testErrorHandling),
+		("testErrorMessages", testErrorMessages),
+	]
 }

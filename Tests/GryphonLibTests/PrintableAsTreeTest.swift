@@ -83,5 +83,6 @@ class PrintableAsTreeTest: XCTestCase {
 	static var allTests = [
 		("testPrinting", testPrinting),
 		("testHorizontalLimit", testHorizontalLimit),
+		("testInitOrNil", testInitOrNil),
 	]
 }

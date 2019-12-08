@@ -289,6 +289,10 @@ class BootstrappingTest: XCTestCase {
 	static var hasError = false
 
 	static var allTests = [
-		("test", testUnitTests),
+		("testUnitTests", testUnitTests),
+		("testASTDumpDecoderOutput", testASTDumpDecoderOutput),
+		("testSwiftTranslatorOutput", testSwiftTranslatorOutput),
+		("testTranspilationPassOutput", testTranspilationPassOutput),
+		("testKotlinTranslatorOutput", testKotlinTranslatorOutput),
 	]
 }

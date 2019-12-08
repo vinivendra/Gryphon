@@ -185,4 +185,13 @@ class TranslationResultTest: XCTestCase {
 		XCTAssertNotEqual(position.lineNumber, position3.lineNumber)
 		XCTAssertNotEqual(position.columnNumber, position3.columnNumber)
 	}
+
+	static var allTests = [
+		("testShallowTranslation", testShallowTranslation),
+		("testDeepTranslation", testDeepTranslation),
+		("testDropLast", testDropLast),
+		("testIsEmpty", testIsEmpty),
+		("testSourceFilePositionPosition", testSourceFilePositionPosition),
+		("testSourceFilePositionCopy", testSourceFilePositionCopy),
+	]
 }

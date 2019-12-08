@@ -241,7 +241,7 @@ class LibraryTranspilationTest: XCTestCase {
 
 	// MARK: - Subtyping
 
-	func testSimpleSubtypes() {
+	func testSubtyping() {
 		// FIXME: Tests that are commented should work but don't. Rather than fixing them using the
 		// current structure, they should be un-commented after the refactoring of the typing system
 
@@ -390,4 +390,13 @@ class LibraryTranspilationTest: XCTestCase {
 		XCTAssert("__owned Int".isSubtype(of: "Int"))
 		XCTAssert("Int".isSubtype(of: "__owned Int"))
 	}
+
+	static var allTests = [
+		("testSimpleMatches", testSimpleMatches),
+		("testMatchDictionary", testMatchDictionary),
+		("testImplicitTypeExpression", testImplicitTypeExpression),
+		("testTrailingClosures", testTrailingClosures),
+		("testSubtyping", testSubtyping),
+		("testSimplifiedSubtypes", testSimplifiedSubtypes),
+	]
 }

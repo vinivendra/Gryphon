@@ -214,4 +214,21 @@ class UtilitiesTest: XCTestCase {
 
         XCTAssertThrowsError(try array3.map { (_: Int) -> Int in throw EmptyError() })
     }
+
+	static var allTests = [
+		("testExpandSwiftAbbreviation", testExpandSwiftAbbreviation),
+		("testFileExtension", testFileExtension),
+		("testChangeExtension", testChangeExtension),
+		("testGetExtension", testGetExtension),
+		("testPathOfSwiftASTDumpFile", testPathOfSwiftASTDumpFile),
+		("testPathOfKotlinErrorMapFile", testPathOfKotlinErrorMapFile),
+		("testGetRelativePath", testGetRelativePath),
+		("testSplitTypeList", testSplitTypeList),
+		("testIsInEnvelopingParentheses", testIsInEnvelopingParentheses),
+		("testGetTypeMapping", testGetTypeMapping),
+		("testGetCurrentFolder", testGetCurrentFolder),
+		("testGetFiles", testGetFiles),
+		("testGetAbsolutePath", testGetAbsolutePath),
+		("testParallelMap", testParallelMap),
+	]
 }

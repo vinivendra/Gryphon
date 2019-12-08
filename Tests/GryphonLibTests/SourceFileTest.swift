@@ -57,4 +57,9 @@ class SourceFileTest: XCTestCase {
 		XCTAssertNil(sourceFile.getKeyedCommentFromLine(10)) // Out of range
 		XCTAssertNil(sourceFile.getKeyedCommentFromLine(-1)) // Negative number
 	}
+
+	static var allTests = [
+		("testGetCommentFromLine", testGetCommentFromLine),
+		("testGetKeyedCommentFromLine", testGetKeyedCommentFromLine),
+	]
 }

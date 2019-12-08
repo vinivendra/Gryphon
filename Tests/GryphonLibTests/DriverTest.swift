@@ -173,4 +173,11 @@ class DriverTest: XCTestCase {
 		XCTAssertFalse(Compiler.hasErrorsOrWarnings())
 		Compiler.printErrorsAndWarnings()
 	}
+
+	static var allTests = [
+		("testUsageString", testUsageString),
+		("testNoMainFile", testNoMainFile),
+		("testContinueOnErrors", testContinueOnErrors),
+		("testIndentation", testIndentation),
+	]
 }
