@@ -2046,13 +2046,13 @@ public class TupleExpression: Expression {
 }
 
 public class TupleShuffleExpression: Expression {
-	let labels: MutableArray<String>
+	let labels: MutableArray<String?>
 	let indices: MutableArray<TupleShuffleIndex>
 	let expressions: MutableArray<Expression>
 
 	init(
 		range: SourceFileRange?,
-		labels: MutableArray<String>,
+		labels: MutableArray<String?>,
 		indices: MutableArray<TupleShuffleIndex>,
 		expressions: MutableArray<Expression>)
 	{
@@ -2063,8 +2063,9 @@ public class TupleShuffleExpression: Expression {
 	}
 
 	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+		let labelStrings = labels.map { ($0 ?? "_") + ":" }
 		return [
-			PrintableTree.ofStrings("labels", labels),
+			PrintableTree.ofStrings("labels", labelStrings),
 			PrintableTree.ofStrings("indices", indices.map { $0.description }),
 			PrintableTree.ofExpressions("expressions", expressions), ]
 	}

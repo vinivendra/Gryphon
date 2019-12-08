@@ -1855,7 +1855,8 @@ public class KotlinTranslator {
 		shouldAddNewlines: Bool = false)
 		throws -> Translation
 	{
-		let parameters = translation?.parameters ?? tupleShuffleExpression.labels
+		let parameters = translation?.parameters.as(MutableArray<String?>.self) ??
+			tupleShuffleExpression.labels
 
 		let increasedIndentation = increaseIndentation(indentation)
 
@@ -1890,7 +1891,7 @@ public class KotlinTranslator {
 
 				let result = Translation(range: expression.range)
 
-				if !isBeforeVariadic {
+				if !isBeforeVariadic, let label = label {
 					result.append("\(label) = ")
 				}
 

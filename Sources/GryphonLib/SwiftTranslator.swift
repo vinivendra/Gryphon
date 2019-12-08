@@ -2531,12 +2531,8 @@ public class SwiftTranslator {
 
 				let tupleComponents =
 					String(typeName.dropFirst().dropLast()).split(withStringSeparator: ", ")
-				let labels = tupleComponents
-					.map { $0.prefix(while: {
-						$0 !=
-							":" // value: ':'
-					}) }
-					.map { String($0) }
+				let labels = tupleComponents.map { getLabelFromTupleComponent($0) }
+
 				let expressions = try tupleExpression.subtrees.map {
 					try translateExpression($0)
 				}
@@ -2557,6 +2553,21 @@ public class SwiftTranslator {
 		}
 
 		return parameters
+	}
+
+	/// Tuples here can be either "(Int, Int)" or "(a: Int, b: Int)". This function is called for
+	/// each component in the tuple and returns either `nil` or "a" accordingly.
+	private func getLabelFromTupleComponent(_ component: String) -> String? {
+		if component.contains(":") {
+			let label = component.prefix(while: {
+					$0 !=
+						":" // value: ':'
+				})
+			return String(label)
+		}
+		else {
+			return nil
+		}
 	}
 
 	internal func translateTupleExpression(_ tupleExpression: SwiftAST) throws -> Expression {
