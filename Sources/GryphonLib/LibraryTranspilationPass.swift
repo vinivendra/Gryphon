@@ -340,7 +340,7 @@ extension Expression {
 
 	///
 	/// In a static context, some type expressions can be omitted. When that happens, they get
-	/// translated as declaration references instead of type expressions. However, thwy should still
+	/// translated as declaration references instead of type expressions. However, they should still
 	/// match type expressions, as they're basically the same. This method should detect those
 	/// cases.
 	///
@@ -365,6 +365,7 @@ extension Expression {
 			return true
 		}
 		else {
+			// FIXME: Check if this is correct, then either fix it or comment it
 			return true
 		}
 	}
