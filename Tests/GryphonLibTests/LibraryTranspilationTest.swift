@@ -238,4 +238,156 @@ class LibraryTranspilationTest: XCTestCase {
 		XCTAssertEqual(trailingExpression.matches(template), ["_closure": closureExpression])
 		XCTAssertEqual(normalExpression.matches(template), ["_closure": closureExpression])
 	}
+
+	// MARK: - Subtyping
+
+	func testSimpleSubtypes() {
+		// FIXME: Tests that are commented should work but don't. Rather than fixing them using the
+		// current structure, they should be un-commented after the refactoring of the typing system
+
+		// Same types
+		XCTAssert("String".isSubtype(of: "String"))
+		XCTAssert("Int".isSubtype(of: "Int"))
+		XCTAssert("Any".isSubtype(of: "Any"))
+		XCTAssert("Box<Int>".isSubtype(of: "Box<Int>"))
+		XCTAssert("Dictionary<Int, String>".isSubtype(of: "Dictionary<Int, String>"))
+
+		// Different types
+		XCTAssertFalse("String".isSubtype(of: "Int"))
+		XCTAssertFalse("Int".isSubtype(of: "String"))
+
+		// Empty types
+		XCTAssertFalse("".isSubtype(of: "Int"))
+		XCTAssertFalse("Int".isSubtype(of: ""))
+
+		// Universal supertypes
+		XCTAssert("String".isSubtype(of: "Any"))
+		XCTAssert("Int".isSubtype(of: "Any"))
+		XCTAssert("Any".isSubtype(of: "Any"))
+		XCTAssert("Box<Int>".isSubtype(of: "Any"))
+		XCTAssert("Dictionary<Int, String>".isSubtype(of: "Any"))
+
+		XCTAssert("String".isSubtype(of: "AnyType"))
+		XCTAssert("Int".isSubtype(of: "AnyType"))
+		XCTAssert("Any".isSubtype(of: "AnyType"))
+		XCTAssert("Box<Int>".isSubtype(of: "AnyType"))
+		XCTAssert("Dictionary<Int, String>".isSubtype(of: "AnyType"))
+
+		XCTAssert("String".isSubtype(of: "Hash"))
+		XCTAssert("Int".isSubtype(of: "Hash"))
+		XCTAssert("Any".isSubtype(of: "Hash"))
+		XCTAssert("Box<Int>".isSubtype(of: "Hash"))
+		XCTAssert("Dictionary<Int, String>".isSubtype(of: "Hash"))
+
+		XCTAssert("String".isSubtype(of: "Compare"))
+		XCTAssert("Int".isSubtype(of: "Compare"))
+		XCTAssert("Any".isSubtype(of: "Compare"))
+		XCTAssert("Box<Int>".isSubtype(of: "Compare"))
+		XCTAssert("Dictionary<Int, String>".isSubtype(of: "Compare"))
+
+		XCTAssert("String".isSubtype(of: "MyOptional"))
+		XCTAssert("Int".isSubtype(of: "MyOptional"))
+		XCTAssert("Any".isSubtype(of: "MyOptional"))
+		XCTAssert("Box<Int>".isSubtype(of: "MyOptional"))
+		XCTAssert("Dictionary<Int, String>".isSubtype(of: "MyOptional"))
+
+		// Optionals
+		XCTAssert("String?".isSubtype(of: "MyOptional?"))
+		XCTAssert("Int?".isSubtype(of: "MyOptional?"))
+		XCTAssert("Any?".isSubtype(of: "MyOptional?"))
+		XCTAssert("Box<Int>?".isSubtype(of: "MyOptional?"))
+		XCTAssert("Dictionary<Int, String>?".isSubtype(of: "MyOptional?"))
+
+		XCTAssertFalse("String".isSubtype(of: "MyOptional?"))
+		XCTAssertFalse("Int".isSubtype(of: "MyOptional?"))
+		XCTAssertFalse("Any".isSubtype(of: "MyOptional?"))
+		XCTAssertFalse("Box<Int>".isSubtype(of: "MyOptional?"))
+		XCTAssertFalse("Dictionary<Int, String>".isSubtype(of: "MyOptional?"))
+
+		// Tuples
+		XCTAssert("(String)".isSubtype(of: "(String)"))
+		XCTAssert("(String)".isSubtype(of: "(Any)"))
+		XCTAssertFalse("(String)".isSubtype(of: "(Int)"))
+
+		XCTAssert("(String, Int)".isSubtype(of: "(String, Int)"))
+		XCTAssert("(String, Int)".isSubtype(of: "(Any, Int)"))
+		XCTAssert("(String, Int)".isSubtype(of: "(String, Any)"))
+		XCTAssert("(String, Int)".isSubtype(of: "(Any, Any)"))
+		XCTAssertFalse("(String, Int)".isSubtype(of: "(Int, Int)"))
+
+		XCTAssertFalse("(String)".isSubtype(of: "(String, String)"))
+		XCTAssertFalse("(String, String)".isSubtype(of: "(String)"))
+		XCTAssertFalse("(String, Int)".isSubtype(of: "(Any)"))
+
+		// Arrays
+		XCTAssert("[String]".isSubtype(of: "[String]"))
+		XCTAssert("[String]".isSubtype(of: "[Any]"))
+		XCTAssertFalse("[String]".isSubtype(of: "[Int]"))
+
+		// Dictionaries
+		XCTAssert("[String : String]".isSubtype(of: "[String : String]"))
+		XCTAssert("[String : String]".isSubtype(of: "[Any : Any]"))
+		XCTAssert("[String : String]".isSubtype(of: "[String : Any]"))
+		XCTAssert("[String : String]".isSubtype(of: "[Any : String]"))
+		XCTAssertFalse("[String : String]".isSubtype(of: "[Int : Int]"))
+		XCTAssertFalse("[String : String]".isSubtype(of: "[Int : String]"))
+		XCTAssertFalse("[String : String]".isSubtype(of: "[String : Int]"))
+
+		// Generics
+		XCTAssert("Box<String>".isSubtype(of: "Box<Any>"))
+		XCTAssertFalse("Box<String>".isSubtype(of: "Box<Int>"))
+		// XCTAssertFalse("Box<String>".isSubtype(of: "Foo<String>"))
+
+		XCTAssert("Box<String, String>".isSubtype(of: "Box<Any, Any>"))
+		XCTAssert("Box<String, String>".isSubtype(of: "Box<Any, String>"))
+		XCTAssert("Box<String, String>".isSubtype(of: "Box<String, Any>"))
+		XCTAssertFalse("Box<String, String>".isSubtype(of: "Box<Any>"))
+		XCTAssertFalse("Box<String, String>".isSubtype(of: "Box<Int, String>"))
+		XCTAssertFalse("Box<String, String>".isSubtype(of: "Box<String, Int>"))
+		// XCTAssertFalse("Box<String, String>".isSubtype(of: "Foo<String, String>"))
+	}
+
+	func testSimplifiedSubtypes() {
+		// FIXME: Tests that are commented should work but don't. Rather than fixing them using the
+		// current structure, they should be un-commented after the refactoring of the typing system
+
+		// Mapped types
+		XCTAssert("Bool".isSubtype(of: "Boolean"))
+		XCTAssert("Boolean".isSubtype(of: "Bool"))
+
+		// Arrays
+		XCTAssert("MutableArray<Int>".isSubtype(of: "[Int]"))
+		XCTAssert("[Int]".isSubtype(of: "MutableArray<Int>"))
+		XCTAssert("FixedArray<Int>".isSubtype(of: "[Int]"))
+		XCTAssert("[Int]".isSubtype(of: "FixedArray<Int>"))
+		// XCTAssert("Array<Int>".isSubtype(of: "[Int]"))
+		// XCTAssert("[Int]".isSubtype(of: "Array<Int>"))
+
+		// Dictionaries
+		XCTAssert("MutableDictionary<Int, Int>".isSubtype(of: "[Int : Int]"))
+		XCTAssert("[Int : Int]".isSubtype(of: "MutableDictionary<Int, Int>"))
+		XCTAssert("FixedDictionary<Int, Int>".isSubtype(of: "[Int : Int]"))
+		XCTAssert("[Int : Int]".isSubtype(of: "FixedDictionary<Int, Int>"))
+		// XCTAssert("Dictionary<Int, Int>".isSubtype(of: "[Int : Int]"))
+		// XCTAssert("[Int : Int]".isSubtype(of: "Dictionary<Int, Int>"))
+
+		// Array slices
+		XCTAssert("Slice<MutableArray<Int>>".isSubtype(of: "[Int]"))
+		XCTAssert("[Int]".isSubtype(of: "Slice<MutableArray<Int>>"))
+		// XCTAssert("Slice<FixedArray<Int>>".isSubtype(of: "[Int]"))
+		// XCTAssert("[Int]".isSubtype(of: "Slice<FixedArray<Int>>"))
+		// XCTAssert("Slice<Array<Int>>".isSubtype(of: "[Int]"))
+		// XCTAssert("[Int]".isSubtype(of: "Slice<Array<Int>>"))
+
+		// Parentheses
+		XCTAssert("(Int)".isSubtype(of: "Int"))
+		XCTAssert("Int".isSubtype(of: "(Int)"))
+
+		// Keywords
+		XCTAssert("inout Int".isSubtype(of: "Int"))
+		XCTAssert("Int".isSubtype(of: "inout Int"))
+
+		XCTAssert("__owned Int".isSubtype(of: "Int"))
+		XCTAssert("Int".isSubtype(of: "__owned Int"))
+	}
 }
