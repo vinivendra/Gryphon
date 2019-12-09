@@ -1868,20 +1868,6 @@ public class KotlinTranslator {
 		let containsVariadics = tupleShuffleExpression.indices.contains { indexIsVariadic($0) }
 		var isBeforeVariadic = containsVariadics
 
-		guard parameters.count == tupleShuffleExpression.indices.count else {
-			return try unexpectedASTStructureError(
-				"Different number of labels and indices in a tuple shuffle expression. " +
-					"Labels: \(tupleShuffleExpression.labels), " +
-					"indices: \(tupleShuffleExpression.indices)",
-				AST: ExpressionStatement(
-					range: nil,
-					expression: TupleShuffleExpression(
-						range: nil,
-						labels: tupleShuffleExpression.labels,
-						indices: tupleShuffleExpression.indices,
-						expressions: tupleShuffleExpression.expressions)))
-		}
-
 		for (label, index) in zipToClass(parameters, tupleShuffleExpression.indices) {
 			switch index {
 			case .absent:

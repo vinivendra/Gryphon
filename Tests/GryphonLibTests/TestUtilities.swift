@@ -84,14 +84,14 @@ class TestUtilities {
 		"structs",
 		"switches",
 	]
-	static let testCasesForAllTests = testCasesForAcceptanceTest + [
+	static let testCasesForAllTests = testCasesForAcceptanceTest + FixedArray<String>([
 		"enums",
 		"functionDefinitions",
 		"strings",
-	]
-	static let testCasesForTranspilationPassTest = testCasesForAllTests + [
+	])
+	static let testCasesForTranspilationPassTest = testCasesForAllTests + FixedArray<String>([
 		"warnings",
-	]
+	])
 	static let allTestCases = testCasesForTranspilationPassTest
 }
 

@@ -14,25 +14,71 @@
 // limitations under the License.
 //
 
+// gryphon output: Bootstrap/ExtensionsTest.kt
+
+#if !IS_DUMPING_ASTS
 @testable import GryphonLib
 import XCTest
+#endif
 
 struct TestableRange: Equatable {
 	let lowerBound: Int
 	let upperBound: Int
 
-	init(_ range: Range<String.Index>) {
+	// declaration: constructor(range: IntRange): this(range.start, range.endInclusive) { }
+
+	init(_ range: Range<String.Index>) { // kotlin: ignore
 		self.lowerBound = range.lowerBound.encodedOffset
 		self.upperBound = range.upperBound.encodedOffset
 	}
 
-	init(_ lowerBound: Int, _ upperBound: Int) {
+	init(_ lowerBound: Int, _ upperBound: Int) { // kotlin: ignore
 		self.lowerBound = lowerBound
 		self.upperBound = upperBound
 	}
 }
 
 class ExtensionsTest: XCTestCase {
+	// declaration: constructor(): super() { }
+
+	public func getClassName() -> String { // annotation: override
+		return "ExtensionsTest"
+	}
+
+	override public func runAllTests() { // annotation: override
+		testStringSplit()
+		testOccurrencesOfSubstring()
+		testSplitUsingUnescapedSpaces()
+		testRemoveTrailingWhitespace()
+		testUpperSnakeCase()
+		testCapitalizedAsCamelCase()
+		testRemovingBackslashEscapes()
+		testIsNumberAndIsUppercase()
+		testSafeIndex()
+		testSecondToLast()
+		testRotated()
+		testGroupBy()
+		testRemovingDuplicates()
+		super.runAllTests()
+	}
+
+	static var allTests = [ // kotlin: ignore
+		("testStringSplit", testStringSplit),
+		("testOccurrencesOfSubstring", testOccurrencesOfSubstring),
+		("testSplitUsingUnescapedSpaces", testSplitUsingUnescapedSpaces),
+		("testRemoveTrailingWhitespace", testRemoveTrailingWhitespace),
+		("testUpperSnakeCase", testUpperSnakeCase),
+		("testCapitalizedAsCamelCase", testCapitalizedAsCamelCase),
+		("testRemovingBackslashEscapes", testRemovingBackslashEscapes),
+		("testIsNumberAndIsUppercase", testIsNumberAndIsUppercase),
+		("testSafeIndex", testSafeIndex),
+		("testSecondToLast", testSecondToLast),
+		("testRotated", testRotated),
+		("testGroupBy", testGroupBy),
+		("testRemovingDuplicates", testRemovingDuplicates),
+	]
+
+	// MARK: - Tests
 	func testStringSplit() {
 		XCTAssertEqual(
 			"->".split(withStringSeparator: "->"),
@@ -160,41 +206,62 @@ class ExtensionsTest: XCTestCase {
 
 	func testOccurrencesOfSubstring() {
 		XCTAssertEqual(
-			"->".occurrences(of: "->").map(TestableRange.init),
-			[TestableRange(0, 2)])
+			"->".occurrences(of: "->").map { TestableRange($0) },
+			MutableArray<TestableRange>(
+				[TestableRange(0, 2)]))
 		XCTAssertEqual(
-			"a->b".occurrences(of: "->").map(TestableRange.init),
-			[TestableRange(1, 3)])
+			"a->b".occurrences(of: "->").map { TestableRange($0) },
+			MutableArray<TestableRange>(
+				[TestableRange(1, 3)]))
 		XCTAssertEqual(
-			"a->b->c".occurrences(of: "->").map(TestableRange.init),
-			[TestableRange(1, 3), TestableRange(4, 6)])
+			"a->b->c".occurrences(of: "->").map { TestableRange($0) },
+			MutableArray<TestableRange>(
+				[TestableRange(1, 3),
+				 TestableRange(4, 6),
+			]))
 		XCTAssertEqual(
-			"->b->c".occurrences(of: "->").map(TestableRange.init),
-			[TestableRange(0, 2), TestableRange(3, 5)])
+			"->b->c".occurrences(of: "->").map { TestableRange($0) },
+			MutableArray<TestableRange>(
+				[TestableRange(0, 2),
+				 TestableRange(3, 5),
+			]))
 		XCTAssertEqual(
-			"->->c".occurrences(of: "->").map(TestableRange.init),
-			[TestableRange(0, 2), TestableRange(2, 4)])
+			"->->c".occurrences(of: "->").map { TestableRange($0) },
+			MutableArray<TestableRange>(
+				[TestableRange(0, 2),
+				 TestableRange(2, 4),
+			]))
 		XCTAssertEqual(
-			"a->b->".occurrences(of: "->").map(TestableRange.init),
-			[TestableRange(1, 3), TestableRange(4, 6)])
+			"a->b->".occurrences(of: "->").map { TestableRange($0) },
+			MutableArray<TestableRange>(
+				[TestableRange(1, 3),
+				 TestableRange(4, 6),
+			]))
 		XCTAssertEqual(
-			"a->->".occurrences(of: "->").map(TestableRange.init),
-			[TestableRange(1, 3), TestableRange(3, 5)])
+			"a->->".occurrences(of: "->").map { TestableRange($0) },
+			MutableArray<TestableRange>(
+				[TestableRange(1, 3),
+				 TestableRange(3, 5),
+			]))
 		XCTAssertEqual(
-			"a->->b".occurrences(of: "->").map(TestableRange.init),
-			[TestableRange(1, 3), TestableRange(3, 5)])
+			"a->->b".occurrences(of: "->").map { TestableRange($0) },
+			MutableArray<TestableRange>(
+				[TestableRange(1, 3),
+				 TestableRange(3, 5),
+			]))
 		XCTAssertEqual(
-			"abc".occurrences(of: "->").map(TestableRange.init),
-			[])
+			"abc".occurrences(of: "->").map { TestableRange($0) },
+			MutableArray<TestableRange>([])) // value: mutableListOf<TestableRange>()
 		XCTAssertEqual(
 			"->(Int, (String) -> Int) ->-> Int ->"
-				.occurrences(of: "->").map(TestableRange.init),
-			[TestableRange(0, 2),
-			 TestableRange(17, 19),
-			 TestableRange(25, 27),
-			 TestableRange(27, 29),
-			 TestableRange(34, 36),
-			 ])
+				.occurrences(of: "->").map { TestableRange($0) },
+			MutableArray<TestableRange>([
+				TestableRange(0, 2),
+				TestableRange(17, 19),
+				TestableRange(25, 27),
+				TestableRange(27, 29),
+				TestableRange(34, 36),
+			]))
 	}
 
 	func testSplitUsingUnescapedSpaces() {
@@ -323,20 +390,4 @@ class ExtensionsTest: XCTestCase {
 		XCTAssertEqual(array2.removingDuplicates(), [1, 2, 3])
 		XCTAssertEqual(array3.removingDuplicates(), [])
 	}
-
-	static var allTests = [
-		("testStringSplit", testStringSplit),
-		("testOccurrencesOfSubstring", testOccurrencesOfSubstring),
-		("testSplitUsingUnescapedSpaces", testSplitUsingUnescapedSpaces),
-		("testRemoveTrailingWhitespace", testRemoveTrailingWhitespace),
-		("testUpperSnakeCase", testUpperSnakeCase),
-		("testCapitalizedAsCamelCase", testCapitalizedAsCamelCase),
-		("testRemovingBackslashEscapes", testRemovingBackslashEscapes),
-		("testIsNumberAndIsUppercase", testIsNumberAndIsUppercase),
-		("testSafeIndex", testSafeIndex),
-		("testSecondToLast", testSecondToLast),
-		("testRotated", testRotated),
-		("testGroupBy", testGroupBy),
-		("testRemovingDuplicates", testRemovingDuplicates),
-	]
 }
