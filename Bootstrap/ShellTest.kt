@@ -14,7 +14,11 @@
 // limitations under the License.
 //
 
-class ShellTest(): Test("ShellTest") {
+class ShellTest(): XCTestCase() {
+    override fun getClassName(): String {
+        return "ShellTest"
+    }
+    
     override fun runAllTests() {
         testEcho()
         testSwiftc()

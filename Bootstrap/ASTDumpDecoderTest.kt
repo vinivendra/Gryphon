@@ -14,7 +14,11 @@
 // limitations under the License.
 //
 
-class ASTDumpDecoderTest(): Test("ASTDumpDecoderTest") {
+class ASTDumpDecoderTest(): XCTestCase() {
+	override fun getClassName(): String {
+		return "ASTDumpDecoderTest"
+	}
+	
 	override fun runAllTests() {
 		testDecoderCanRead()
 		testDecoderRead()

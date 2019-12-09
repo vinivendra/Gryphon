@@ -399,6 +399,9 @@ internal extension String {
 		else if superType == "MyOptional?" {
 			return self.hasSuffix("?")
 		}
+		else if superType == "XCTestCase" {
+			return self.contains("Test")
+		}
 
 		// Handle tuples
 		if Utilities.isInEnvelopingParentheses(self), Utilities.isInEnvelopingParentheses(superType)

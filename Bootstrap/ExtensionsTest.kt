@@ -22,7 +22,11 @@ data class TestableRange(
 	constructor(range: IntRange): this(range.start, range.endInclusive) { }
 }
 
-class ExtensionsTest(): Test("ExtensionsTest") {
+class ExtensionsTest(): XCTestCase() {
+	override fun getClassName(): String {
+		return "ExtensionsTest"
+	}
+	
 	override fun runAllTests() {
 		testStringSplit()
 		testOccurrencesOfSubstring()

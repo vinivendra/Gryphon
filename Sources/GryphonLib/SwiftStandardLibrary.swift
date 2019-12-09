@@ -408,6 +408,24 @@ public struct FixedArray<Element>: // kotlin: ignore
 	}
 }
 
+// TODO: test
+extension FixedArray { // kotlin: ignore
+	@inlinable
+	public static func + <Other>(
+		lhs: FixedArray<Element>,
+		rhs: Other)
+		-> FixedArray<Element>
+		where Other: Sequence,
+		FixedArray.Element == Other.Element
+	{
+		var array = lhs.array
+		for element in rhs {
+			array.append(element)
+		}
+		return FixedArray(array)
+	}
+}
+
 extension FixedArray: Equatable where Element: Equatable { // kotlin: ignore
 	public static func == (lhs: FixedArray, rhs: FixedArray) -> Bool {
 		return lhs.array == rhs.array

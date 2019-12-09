@@ -24,7 +24,10 @@ fi
 
 echo "➡️ [3/4] Dumping the Swift ASTs..."
 
-if perl dumpASTs.pl Sources/GryphonLib/*.swift
+if perl dumpASTs.pl Sources/GryphonLib/*.swift \
+	Tests/GryphonLibTests/SourceFileTest.swift \
+	Tests/GryphonLibTests/TestUtilities.swift \
+	.gryphon/GryphonXCTest.swift
 then
 	echo "✅ Done."
 	echo ""

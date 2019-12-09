@@ -223,7 +223,8 @@ extension Utilities {
         Compiler.log("\t* Updating library files...")
 
         let templateFilePaths =
-            getFiles(inDirectory: libraryTemplatesFolder, withExtension: .swiftASTDump)
+			getFiles(inDirectory: libraryTemplatesFolder, withExtension: .swiftASTDump)
+				.filter { $0.hasSuffix(".template.swiftASTDump") }
         let asts = try Compiler.transpileGryphonRawASTs(fromASTDumpFiles: templateFilePaths)
 
         for ast in asts {

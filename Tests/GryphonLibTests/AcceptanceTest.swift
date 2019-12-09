@@ -19,7 +19,7 @@ import XCTest
 
 class AcceptanceTest: XCTestCase {
 	func test() {
-		let tests = TestUtils.testCasesForAcceptanceTest
+		let tests = TestUtilities.testCasesForAcceptanceTest
 
 		for testName in tests {
 			print("- Testing \(testName)...")
@@ -27,7 +27,7 @@ class AcceptanceTest: XCTestCase {
 			do {
 				// Translate the swift code to kotlin, compile the resulting kotlin code, run it,
 				// and get its output
-				let testFilePath = TestUtils.testFilesPath + testName
+				let testFilePath = TestUtilities.testFilesPath + testName
 				let astDumpFilePath = Utilities.pathOfSwiftASTDumpFile(forSwiftFile: testFilePath)
 				guard let compilationResult = try Compiler.transpileCompileAndRun(
 					ASTDumpFiles: [astDumpFilePath],
@@ -53,7 +53,7 @@ class AcceptanceTest: XCTestCase {
 				XCTAssert(
 					compilationResult.standardOutput == expectedOutput,
 					"Test \(testName): program failed to produce expected result. Diff:" +
-						TestUtils.diff(compilationResult.standardOutput, expectedOutput))
+						TestUtilities.diff(compilationResult.standardOutput, expectedOutput))
 
 				print("\t- Done!")
 			}

@@ -34,7 +34,7 @@ class BootstrappingTest: XCTestCase {
 			}
 
 			let testMessages = runOutput.standardOutput.split(separator: "\n")
-			XCTAssertEqual(testMessages.count, 5)
+			XCTAssertEqual(testMessages.count, 6)
 			for testMessage in testMessages {
 				if !testMessage.hasSuffix("All tests succeeded!") {
 					XCTFail(String(testMessage))
@@ -52,13 +52,13 @@ class BootstrappingTest: XCTestCase {
 			return
 		}
 
-		let tests = TestUtils.testCasesForAllTests
+		let tests = TestUtilities.testCasesForAllTests
 
 		for testName in tests {
 			print("- Testing \(testName)...")
 
 			do {
-				let testFilePath = TestUtils.testFilesPath + testName + ".swift"
+				let testFilePath = TestUtilities.testFilesPath + testName + ".swift"
 
 				// Get Kotlin results
 				let swiftASTFilePath = BootstrappingTest.getBootstrapOutputFilePath(
@@ -86,7 +86,7 @@ class BootstrappingTest: XCTestCase {
 				XCTAssert(
 					transpiledSwiftAST == originalSwiftAST.description,
 					"Test \(testName): failed to produce expected result. Diff:" +
-						TestUtils.diff(transpiledSwiftAST, originalSwiftAST.description))
+						TestUtilities.diff(transpiledSwiftAST, originalSwiftAST.description))
 			}
 			catch let error {
 				XCTFail("🚨 Test failed with error:\n\(error)")
@@ -103,13 +103,13 @@ class BootstrappingTest: XCTestCase {
 			return
 		}
 
-		let tests = TestUtils.testCasesForAllTests
+		let tests = TestUtilities.testCasesForAllTests
 
 		for testName in tests {
 			print("- Testing \(testName)...")
 
 			do {
-				let testFilePath = TestUtils.testFilesPath + testName + ".swift"
+				let testFilePath = TestUtilities.testFilesPath + testName + ".swift"
 
 				// Get Kotlin results
 				let rawASTFilePath = BootstrappingTest.getBootstrapOutputFilePath(
@@ -137,7 +137,7 @@ class BootstrappingTest: XCTestCase {
 				XCTAssert(
 					transpiledRawAST == originalRawAST.description,
 					"Test \(testName): failed to produce expected result. Diff:" +
-						TestUtils.diff(transpiledRawAST, originalRawAST.description))
+						TestUtilities.diff(transpiledRawAST, originalRawAST.description))
 			}
 			catch let error {
 				XCTFail("🚨 Test failed with error:\n\(error)")
@@ -154,13 +154,13 @@ class BootstrappingTest: XCTestCase {
 			return
 		}
 
-		let tests = TestUtils.testCasesForAllTests
+		let tests = TestUtilities.testCasesForAllTests
 
 		for testName in tests {
 			print("- Testing \(testName)...")
 
 			do {
-				let testFilePath = TestUtils.testFilesPath + testName + ".swift"
+				let testFilePath = TestUtilities.testFilesPath + testName + ".swift"
 
 				// Get Kotlin results
 				let astFilePath = BootstrappingTest.getBootstrapOutputFilePath(
@@ -188,7 +188,7 @@ class BootstrappingTest: XCTestCase {
 				XCTAssert(
 					transpiledAST == originalAST.description,
 					"Test \(testName): failed to produce expected result. Diff:" +
-						TestUtils.diff(transpiledAST, originalAST.description))
+						TestUtilities.diff(transpiledAST, originalAST.description))
 			}
 			catch let error {
 				XCTFail("🚨 Test failed with error:\n\(error)")
@@ -205,13 +205,13 @@ class BootstrappingTest: XCTestCase {
 			return
 		}
 
-		let tests = TestUtils.testCasesForAllTests
+		let tests = TestUtilities.testCasesForAllTests
 
 		for testName in tests {
 			print("- Testing \(testName)...")
 
 			do {
-				let testFilePath = TestUtils.testFilesPath + testName + ".swift"
+				let testFilePath = TestUtilities.testFilesPath + testName + ".swift"
 
 				// Get Kotlin results
 				let testOutputFilePath = BootstrappingTest.getBootstrapOutputFilePath(
@@ -241,7 +241,7 @@ class BootstrappingTest: XCTestCase {
 				XCTAssert(
 					transpiledKotlinCode == originalKotlinCode.description,
 					"Test \(testName): failed to produce expected result. Diff:" +
-						TestUtils.diff(transpiledKotlinCode, originalKotlinCode.description))
+						TestUtilities.diff(transpiledKotlinCode, originalKotlinCode.description))
 			}
 			catch let error {
 				XCTFail("🚨 Test failed with error:\n\(error)")

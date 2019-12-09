@@ -19,10 +19,10 @@ my $needsToUpdate = $false;
 sub outputFileForInputFile {
 	my $inputFileName = $_[0]; # First parameter
 
-	# If it's the templates file, it should go in the root .gryphon folder instead of the ASTDumps
-	# folder
-	if ($inputFileName =~ /(.*)\.gryphon\/StandardLibrary\.template\.swift$/) {
-		return "$1.gryphon/StandardLibrary.template.swiftASTDump"
+	# If it's in the root .gryphon folder instead of the ASTDumps folder then the AST dump should be
+	# there too
+	if ($inputFileName =~ /(.*)\.gryphon\//) {
+		return $inputFileName . "ASTDump"
 	}
 	else {
 		my $outputFileName = $gryphonASTDumpsFolder . "$inputFileName" . "ASTDump";
@@ -99,15 +99,17 @@ if ($needsToUpdate) {
 	print "Calling the Swift compiler...\n";
 	my @quotedSwiftFiles = map { "\"$_\"" } @swiftFiles;
 	my $inputFiles = join(" ", @quotedSwiftFiles);
-	my $output = `swiftc $inputFiles -dump-ast -module-name=ModuleName -output-file-map=$ofmFilePath 2>&1`;
+	my $output = `swiftc $inputFiles -dump-ast -module-name=ModuleName -output-file-map=$ofmFilePath -D IS_DUMPING_ASTS 2>&1`;
 
 	# Delete the output file map
 	unlink($ofmFilePath);
 
 	# If the compilation failed (if the exit status isn't 0)
-	if ($? != 0) {
+	my $status = $?;
+	if ($status != 0) {
 		print "🚨 Error in the Swift compiler:\n";
 		print "$output\n";
+		exit 1;
 	}
 	else {
 		print "✅ Done.\n";

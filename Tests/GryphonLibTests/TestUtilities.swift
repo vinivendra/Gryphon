@@ -14,31 +14,42 @@
 // limitations under the License.
 //
 
-@testable import GryphonLib
+// gryphon output: Bootstrap/TestUtilities.kt
+
 import Foundation
 
-enum TestUtils {
-	static let testFilesPath: String = Process().currentDirectoryPath + "/Test Files/"
+#if !IS_DUMPING_ASTS
+@testable import GryphonLib
+import XCTest
+#endif
+
+class TestUtilities {
+	// MARK: - Diffs
+	static let testFilesPath: String = Utilities.getCurrentFolder() + "/Test Files/"
 
 	static func diff(_ string1: String, _ string2: String) -> String {
-		return withTemporaryFile(named: "file1.txt", containing: string1) { file1Path in
-			withTemporaryFile(named: "file2.txt", containing: string2) { file2Path in
-				let command: MutableArray = ["diff", file1Path, file2Path]
-				let commandResult = Shell.runShellCommand(command)
-				if let commandResult = commandResult {
-					return "\n\n===\n\(commandResult.standardOutput)===\n"
-				}
-				else {
-					return " timed out."
-				}
+		return withTemporaryFile(fileName: "file1.txt", contents: string1) { file1Path in
+			withTemporaryFile(fileName: "file2.txt", contents: string2) { file2Path in
+				TestUtilities.diffFiles(file1Path, file2Path)
 			}
 		}
 	}
 
+	static func diffFiles(_ file1Path: String, _ file2Path: String) -> String {
+		let command: MutableArray = ["diff", file1Path, file2Path]
+		let commandResult = Shell.runShellCommand(command)
+		if let commandResult = commandResult {
+			return "\n\n===\n\(commandResult.standardOutput)===\n"
+		}
+		else {
+			return " timed out."
+		}
+	}
+
 	static func withTemporaryFile<T>(
-		named fileName: String,
-		containing contents: String,
-		_ closure: (String) throws -> T)
+		fileName: String,
+		contents: String,
+		closure: (String) throws -> T)
 		rethrows -> T
 	{
 		let temporaryDirectory = ".tmp"
@@ -49,10 +60,9 @@ enum TestUtils {
 			containing: contents)
 		return try closure(filePath)
 	}
-}
 
-extension TestUtils {
-	static let testCasesForAcceptanceTest: MutableArray<String> = [
+	// MARK: - Test cases
+	static let testCasesForAcceptanceTest: FixedArray<String> = [
 		"arrays",
 		"assignments",
 		"bhaskara",
@@ -84,3 +94,12 @@ extension TestUtils {
 	]
 	static let allTestCases = testCasesForTranspilationPassTest
 }
+
+// MARK: - XCTestCase stubs
+#if !IS_DUMPING_ASTS
+/// This extension is needed so that classes that override this method can call `super`, which is
+/// important for the Kotlin tests.
+extension XCTestCase {
+	public func runAllTests() { }
+}
+#endif

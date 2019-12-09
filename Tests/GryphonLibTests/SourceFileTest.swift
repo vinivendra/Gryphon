@@ -14,10 +14,32 @@
 // limitations under the License.
 //
 
+// gryphon output: Bootstrap/SourceFileTest.kt
+
+#if !IS_DUMPING_ASTS
 @testable import GryphonLib
 import XCTest
+#endif
 
 class SourceFileTest: XCTestCase {
+	// declaration: constructor(): super() { }
+
+	public func getClassName() -> String { // annotation: override
+		return "SourceFileTest"
+	}
+
+	override public func runAllTests() { // annotation: override
+		testGetCommentFromLine()
+		testGetKeyedCommentFromLine()
+		super.runAllTests()
+	}
+
+	static var allTests = [ // kotlin: ignore
+		("testGetCommentFromLine", testGetCommentFromLine),
+		("testGetKeyedCommentFromLine", testGetKeyedCommentFromLine),
+	]
+
+	// MARK: - Tests
 	func testGetCommentFromLine() {
 		let sourceFileContents = """
 			let x: Int = 0 // kotlin: ignore
@@ -57,9 +79,4 @@ class SourceFileTest: XCTestCase {
 		XCTAssertNil(sourceFile.getKeyedCommentFromLine(10)) // Out of range
 		XCTAssertNil(sourceFile.getKeyedCommentFromLine(-1)) // Negative number
 	}
-
-	static var allTests = [
-		("testGetCommentFromLine", testGetCommentFromLine),
-		("testGetKeyedCommentFromLine", testGetKeyedCommentFromLine),
-	]
 }

@@ -30,7 +30,7 @@ class DriverTest: XCTestCase {
 
 	func testNoMainFile() {
 		do {
-			let testFilePath = TestUtils.testFilesPath + "arrays.swift"
+			let testFilePath = TestUtilities.testFilesPath + "arrays.swift"
 
 			//
 			let driverResult1 = try Driver.run(withArguments:
@@ -84,7 +84,7 @@ class DriverTest: XCTestCase {
 
 	func testContinueOnErrors() {
 		do {
-			let testFilePath = TestUtils.testFilesPath + "errors.swift"
+			let testFilePath = TestUtilities.testFilesPath + "errors.swift"
 
 			//
 			Compiler.clearErrorsAndWarnings()
@@ -121,7 +121,7 @@ class DriverTest: XCTestCase {
 
 	func testIndentation() {
 		do {
-			let testFilePath = TestUtils.testFilesPath + "arrays.swift"
+			let testFilePath = TestUtilities.testFilesPath + "arrays.swift"
 
 			//
 			let driverResult1 = try Driver.run(withArguments:

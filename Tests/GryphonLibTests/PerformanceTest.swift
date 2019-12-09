@@ -19,13 +19,13 @@ import XCTest
 
 class PerformanceTest: XCTestCase {
 	func testASTDumpDecoder() {
-		let tests = TestUtils.testCasesForAllTests
+		let tests = TestUtilities.testCasesForAllTests
 
 		let astDumpContents: MutableArray<String> = tests.map { testName in
-			let testFilePath = TestUtils.testFilesPath + testName
+			let testFilePath = TestUtilities.testFilesPath + testName
 			let astDumpFilePath = Utilities.pathOfSwiftASTDumpFile(forSwiftFile: testFilePath)
 			return try! String(contentsOfFile: astDumpFilePath)
-		}
+		}.toMutableArray()
 
 		measure {
 			for astDump in astDumpContents {
@@ -40,13 +40,13 @@ class PerformanceTest: XCTestCase {
 	}
 
 	func testSwiftTranslator() {
-		let tests = TestUtils.testCasesForAllTests
+		let tests = TestUtilities.testCasesForAllTests
 
 		let swiftASTs: MutableArray<SwiftAST> = tests.map { testName in
-			let testFilePath = TestUtils.testFilesPath + testName
+			let testFilePath = TestUtilities.testFilesPath + testName
 			let astDumpFilePath = Utilities.pathOfSwiftASTDumpFile(forSwiftFile: testFilePath)
 			return try! Compiler.transpileSwiftAST(fromASTDumpFile: astDumpFilePath)
-		}
+		}.toMutableArray()
 
 		measure {
 			for swiftASTs in swiftASTs {
@@ -63,12 +63,12 @@ class PerformanceTest: XCTestCase {
 	}
 
 	func testFirstTranspilationPasses() {
-		let tests = TestUtils.testCasesForAllTests
+		let tests = TestUtilities.testCasesForAllTests
 
 		let astDumpFilePaths: MutableArray<String> = tests.map { testName in
-			let testFilePath = TestUtils.testFilesPath + testName
+			let testFilePath = TestUtilities.testFilesPath + testName
 			return Utilities.pathOfSwiftASTDumpFile(forSwiftFile: testFilePath)
-		}
+		}.toMutableArray()
 
 		let rawASTs = try! Compiler.transpileGryphonRawASTs(fromASTDumpFiles: astDumpFilePaths)
 
@@ -87,12 +87,12 @@ class PerformanceTest: XCTestCase {
 	}
 
 	func testSecondTranspilationPasses() {
-		let tests = TestUtils.testCasesForAllTests
+		let tests = TestUtilities.testCasesForAllTests
 
 		let astDumpFilePaths: MutableArray<String> = tests.map { testName in
-			let testFilePath = TestUtils.testFilesPath + testName
+			let testFilePath = TestUtilities.testFilesPath + testName
 			return Utilities.pathOfSwiftASTDumpFile(forSwiftFile: testFilePath)
-		}
+		}.toMutableArray()
 
 		let semiRawASTs =
 			try! Compiler.transpileGryphonRawASTs(fromASTDumpFiles: astDumpFilePaths).map {
@@ -116,12 +116,12 @@ class PerformanceTest: XCTestCase {
 	}
 
 	func testAllTranspilationPasses() {
-		let tests = TestUtils.testCasesForAllTests
+		let tests = TestUtilities.testCasesForAllTests
 
 		let astDumpFilePaths: MutableArray<String> = tests.map { testName in
-			let testFilePath = TestUtils.testFilesPath + testName
+			let testFilePath = TestUtilities.testFilesPath + testName
 			return Utilities.pathOfSwiftASTDumpFile(forSwiftFile: testFilePath)
-		}
+		}.toMutableArray()
 
 		let rawASTs = try! Compiler.transpileGryphonRawASTs(fromASTDumpFiles: astDumpFilePaths)
 
@@ -140,18 +140,18 @@ class PerformanceTest: XCTestCase {
 	}
 
 	func testKotlinTranslator() {
-		let tests = TestUtils.testCasesForAllTests
+		let tests = TestUtilities.testCasesForAllTests
 
 		let astsAndContexts: MutableArray<(GryphonAST, TranspilationContext)> = tests.map
 			{ testName in
-				let testFilePath = TestUtils.testFilesPath + testName
+				let testFilePath = TestUtilities.testFilesPath + testName
 				let astDumpFilePath = Utilities.pathOfSwiftASTDumpFile(forSwiftFile: testFilePath)
 				let context = TranspilationContext(indentationString: "\t")
 				let ast = try! Compiler.transpileGryphonASTs(
 					fromASTDumpFiles: [astDumpFilePath],
 					withContext: context).first!
 				return (ast, context)
-			}
+			}.toMutableArray()
 
 		measure {
 			for astAndContext in astsAndContexts {
@@ -169,12 +169,12 @@ class PerformanceTest: XCTestCase {
 	}
 
 	func testFullTranspilation() {
-		let tests = TestUtils.testCasesForAllTests
+		let tests = TestUtilities.testCasesForAllTests
 
 		measure {
 			for testName in tests {
 				do {
-					let testFilePath = TestUtils.testFilesPath + testName
+					let testFilePath = TestUtilities.testFilesPath + testName
 					let astDumpFilePath = Utilities.pathOfSwiftASTDumpFile(
 						forSwiftFile: testFilePath)
 					_ = try Compiler.transpileKotlinCode(

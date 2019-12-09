@@ -14,7 +14,11 @@
 // limitations under the License.
 //
 
-class UtilitiesTest(): Test("UtilitiesTest") {
+class UtilitiesTest(): XCTestCase() {
+    override fun getClassName(): String {
+        return "UtilitiesTest"
+    }
+    
 	override fun runAllTests() {
 		testExpandSwiftAbbreviation()
 		testFileExtensions()

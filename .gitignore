@@ -44,3 +44,7 @@ Bootstrap/Extensions.kt
 Bootstrap/SharedUtilities.kt
 Bootstrap/KotlinTranslator.kt
 Bootstrap/LibraryTranspilationPass.kt
+
+Bootstrap/SourceFileTest.kt
+Bootstrap/TestUtilities.kt
+

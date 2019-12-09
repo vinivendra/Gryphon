@@ -14,7 +14,11 @@
 // limitations under the License.
 //
 
-class PrintableAsTreeTest(): Test("PrintableAsTreeTest") {
+class PrintableAsTreeTest(): XCTestCase() {
+	override fun getClassName(): String {
+		return "PrintableAsTreeTest"
+	}
+	
 	override fun runAllTests() {
 		testPrinting()
 		testHorizontalLimit()

@@ -1632,7 +1632,7 @@ public class KotlinTranslator {
 					let closureTranslation = try translateClosureExpression(
 						closureExpression,
 						withIndentation: increaseIndentation(indentation))
-					if closureExpression.parameters.count > 1 {
+					if tupleExpression.pairs.count > 1 {
 						let newTupleExpression = TupleExpression(
 							range: tupleExpression.range,
 							pairs: MutableArray<LabeledExpression>(
@@ -2090,6 +2090,10 @@ public class KotlinTranslator {
 	}
 
 	private func translateFunctionTypeComponent(_ component: String) -> String {
+		if component.hasSuffix(")throws") {
+			return translateFunctionTypeComponent(String(component.dropLast("throws".count)))
+		}
+
 		if Utilities.isInEnvelopingParentheses(component) {
 			let openComponent = String(component.dropFirst().dropLast())
 			let componentParts = Utilities.splitTypeList(openComponent, separators: [", "])

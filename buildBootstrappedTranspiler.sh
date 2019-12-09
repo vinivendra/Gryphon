@@ -16,6 +16,7 @@ kotlinc -include-runtime \
 	Bootstrap/UtilitiesTest.kt \
 	Bootstrap/Compiler.kt \
 	Bootstrap/SourceFile.kt \
+	Bootstrap/SourceFileTest.kt \
 	Bootstrap/Driver.kt \
 	Bootstrap/GryphonAST.kt \
 	Bootstrap/SwiftTranslator.kt \
@@ -25,4 +26,5 @@ kotlinc -include-runtime \
 	Bootstrap/KotlinTranslator.kt \
 	Bootstrap/LibraryTranspilationPass.kt \
 	Bootstrap/Shell.kt \
-	Bootstrap/ShellTest.kt;
+	Bootstrap/ShellTest.kt \
+	Bootstrap/TestUtilities.kt;

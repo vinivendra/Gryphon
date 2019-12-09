@@ -538,6 +538,10 @@ public class Driver {
 			inDirectory: gryphonRootFolder,
 			containing: standardLibraryTemplateFileContents)
 		Utilities.createFile(
+			named: "GryphonXCTest.swift",
+			inDirectory: gryphonRootFolder,
+			containing: gryphonXCTestFileContents)
+		Utilities.createFile(
 			named: "mapKotlinErrorsToSwift.swift",
 			inDirectory: scriptsFolder,
 			containing: kotlinErrorMapScriptFileContents)

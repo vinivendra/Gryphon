@@ -14,19 +14,23 @@
 // limitations under the License.
 //
 
-open class Test(val className: String) {
+open class XCTestCase() {
+	open fun getClassName(): String {
+		return "XCTestCase"
+	}
+
 	var allTestsSucceeded = true
 
 	open fun runAllTests() {
 		if (allTestsSucceeded) {
-			println("${className}: All tests succeeded!")
+			println("${getClassName()}: All tests succeeded!")
 		}
 	}
 
 	fun XCTAssert(condition: Boolean, test: String = "No message") {
 		if (!condition) {
 			allTestsSucceeded = false
-			println("${className} - XCTAssert failed: ${test}.")
+			println("${getClassName()} - XCTAssert failed: ${test}.")
 			Exception().printStackTrace()
 		}
 	}
@@ -34,7 +38,7 @@ open class Test(val className: String) {
 	fun XCTAssertFalse(condition: Boolean, test: String = "No message") {
 		if (condition) {
 			allTestsSucceeded = false
-			println("${className} - XCTAssertFalse failed: ${test}.")
+			println("${getClassName()} - XCTAssertFalse failed: ${test}.")
 			Exception().printStackTrace()
 		}
 	}
@@ -42,7 +46,7 @@ open class Test(val className: String) {
 	fun <T> XCTAssertEqual(a: T, b: T, test: String = "No message") {
     	if (a != b) {
     		allTestsSucceeded = false
-    		println("${className} - XCTAssertEqual failed: ${test}.\n\"${a}\"\nis not equal to\n\"${b}\"\n--")
+    		println("${getClassName()} - XCTAssertEqual failed: ${test}.\n\"${a}\"\nis not equal to\n\"${b}\"\n--")
     		Exception().printStackTrace()
     	}
 	}
@@ -50,7 +54,7 @@ open class Test(val className: String) {
 	fun <T> XCTAssertNotEqual(a: T, b: T, test: String = "No message") {
     	if (a == b) {
     		allTestsSucceeded = false
-    		println("${className} - XCTAssertNotEqual failed: ${test}.\n\"${a}\"\nis equal to\n\"${b}\"\n--")
+    		println("${getClassName()} - XCTAssertNotEqual failed: ${test}.\n\"${a}\"\nis equal to\n\"${b}\"\n--")
     		Exception().printStackTrace()
     	}
 	}
@@ -58,14 +62,14 @@ open class Test(val className: String) {
 	fun <T> XCTAssertNil(a: T?, test: String = "No message") {
     	if (a != null) {
     		allTestsSucceeded = false
-    		println("${className} - XCTAssertNil failed: ${test}.")	
+    		println("${getClassName()} - XCTAssertNil failed: ${test}.")	
     		Exception().printStackTrace()
     	}
 	}
 
 	fun XCTFail(test: String = "No message") {
     	allTestsSucceeded = false
-		println("${className} - XCTFail: ${test}.")	
+		println("${getClassName()} - XCTFail: ${test}.")	
 		Exception().printStackTrace()
 	}
 
@@ -75,7 +79,7 @@ open class Test(val className: String) {
     	}
     	catch (error: Exception) {
     		allTestsSucceeded = false
-    		println("${className} - XCTAssertNoThrow failed: ${test}.")
+    		println("${getClassName()} - XCTAssertNoThrow failed: ${test}.")
     		Exception().printStackTrace()
     		println("Error thrown:")
     		println(error)

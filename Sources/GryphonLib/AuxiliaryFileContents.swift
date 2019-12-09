@@ -26,6 +26,61 @@
 let dollarSign = "$" // value: "\\$"
 let kotlinStringInterpolation = "{_string}"
 
+// gryphon: multiline
+internal let gryphonXCTestFileContents = """
+private struct Compare: Comparable { // kotlin: ignore
+	static func < (lhs: Compare, rhs: Compare) -> Bool {
+		return false
+	}
+}
+
+private struct MyOptional { } // kotlin: ignore
+
+class XCTestCase { // kotlin: ignore
+	public func XCTAssert(_ condition: Bool, _ message: String = "") { }
+	public func XCTAssertEqual<T>(_ a: T, _ b: T, _ message: String = "") where T : Equatable { }
+	public func XCTAssertFalse(_ condition: Bool, _ message: String = "") { }
+	public func XCTAssertNil<T>(_ expression: T?, _ message: String = "") { }
+
+	public func runAllTests() { }
+}
+
+extension XCTestCase {
+	private func gryphonTemplates() {
+		let _bool = true
+		let _string = ""
+		let _any1: Compare = Compare()
+		let _any2: Compare = Compare()
+		let _optional: MyOptional? = MyOptional()
+
+		XCTAssert(_bool)
+		_ = "XCTAssert(_bool)"
+
+		XCTAssert(_bool, _string)
+		_ = "XCTAssert(_bool, _string)"
+
+		XCTAssertFalse(_bool)
+		_ = "XCTAssertFalse(_bool)"
+
+		XCTAssertFalse(_bool, _string)
+		_ = "XCTAssertFalse(_bool, _string)"
+
+		XCTAssertNil(_optional)
+		_ = "XCTAssertNil(_optional)"
+
+		XCTAssertNil(_optional, _string)
+		_ = "XCTAssertNil(_optional, _string)"
+
+		XCTAssertEqual(_any1, _any2, _string)
+		_ = "XCTAssertEqual(_any1, _any2, _string)"
+
+		XCTAssertEqual(_any1, _any2)
+		_ = "XCTAssertEqual(_any1, _any2)"
+	}
+}
+
+"""
+
 // TODO: This string isn't being translated as multiline
 // TODO: Comments should be ignored inside multiline strings
 // gryphon: multiline

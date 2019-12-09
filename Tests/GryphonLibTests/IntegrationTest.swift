@@ -19,14 +19,14 @@ import XCTest
 
 class IntegrationTest: XCTestCase {
 	func test() {
-		let tests = TestUtils.testCasesForAllTests
+		let tests = TestUtilities.testCasesForAllTests
 
 		for testName in tests {
 			print("- Testing \(testName)...")
 
 			do {
 				// Generate kotlin code using the whole compiler
-				let testFilePath = TestUtils.testFilesPath + testName
+				let testFilePath = TestUtilities.testFilesPath + testName
 				let astDumpFilePath = Utilities.pathOfSwiftASTDumpFile(forSwiftFile: testFilePath)
 				let generatedKotlinCode = try Compiler.transpileKotlinCode(
 					fromASTDumpFiles: [astDumpFilePath],
@@ -39,7 +39,7 @@ class IntegrationTest: XCTestCase {
 				XCTAssert(
 					generatedKotlinCode == expectedKotlinCode,
 					"Test \(testName): the transpiler failed to produce expected result. Diff:" +
-						TestUtils.diff(generatedKotlinCode, expectedKotlinCode))
+						TestUtilities.diff(generatedKotlinCode, expectedKotlinCode))
 
 				print("\t- Done!")
 			}

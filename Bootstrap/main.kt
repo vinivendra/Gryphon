@@ -23,6 +23,7 @@ fun main(args: Array<String>) {
 		ExtensionsTest().runAllTests()
 		UtilitiesTest().runAllTests()
 		ShellTest().runAllTests()
+		SourceFileTest().runAllTests()
 	}
 	else {
 		try {

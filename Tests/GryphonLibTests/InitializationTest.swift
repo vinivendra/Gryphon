@@ -28,6 +28,8 @@ class InitializationTests: XCTestCase {
 		// Check the new folder's contents are right
 		guard let templatesFileContents =
 				try? Utilities.readFile(".gryphon/StandardLibrary.template.swift"),
+			let xctestFileContents =
+				try? Utilities.readFile(".gryphon/GryphonXCTest.swift"),
 			let scriptFileContents =
 				try? Utilities.readFile(".gryphon/scripts/mapKotlinErrorsToSwift.swift") else
 		{
@@ -37,6 +39,9 @@ class InitializationTests: XCTestCase {
 
 		if templatesFileContents != standardLibraryTemplateFileContents {
 			XCTFail("Library templates file's contents are wrong.")
+		}
+		if xctestFileContents != gryphonXCTestFileContents {
+			XCTFail("Gryphon's XCTest file's contents are wrong.")
 		}
 		if scriptFileContents != kotlinErrorMapScriptFileContents {
 			XCTFail("Error map script contents file's contents are wrong.")
