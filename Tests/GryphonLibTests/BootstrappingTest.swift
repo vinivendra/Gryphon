@@ -35,10 +35,17 @@ class BootstrappingTest: XCTestCase {
 
 			let testMessages = runOutput.standardOutput.split(separator: "\n")
 			XCTAssertEqual(testMessages.count, 7)
+
+			var testsFailed = false
 			for testMessage in testMessages {
 				if !testMessage.hasSuffix("All tests succeeded!") {
 					XCTFail(String(testMessage))
+					testsFailed = true
 				}
+			}
+
+			if testsFailed {
+				print(runOutput.standardError)
 			}
 		}
 		catch let error {
