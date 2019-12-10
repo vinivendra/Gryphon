@@ -312,7 +312,9 @@ extension Utilities {
 }
 
 extension Utilities {
-    static func splitTypeList(
+	/// Splits a type using the given separators, taking into consideration possible separators.
+	/// For instance, "(A, (B, C))" becomes ["A", "(B, C)"] rather than ["A", "(B", "C)"].
+    static func splitTypeList( // gryphon: pure
         _ typeList: String,
         separators: MutableArray<String> = [",", ":"])
         -> MutableArray<String>
@@ -332,12 +334,21 @@ extension Utilities {
                 let foundSeparator = separators.first(where: { remainingString.hasPrefix($0) })
             {
                 // Skip the separator
-                index = typeList.index(index, offsetBy: foundSeparator.count - 1)
+                index = typeList.index(index, offsetBy: foundSeparator.count)
+				remainingString = typeList[index...]
 
                 // Add the built result to the array
                 result.append(currentResult)
                 currentResult = ""
+				continue
             }
+			else if remainingString.hasPrefix("->") {
+				// Avoid having the '>' in "->" be counted as a closing '>'
+				currentResult.append("->")
+				index = typeList.index(index, offsetBy: 2)
+				remainingString = typeList[index...]
+				continue
+			}
             else if character == "<" || character == "[" || character == "(" {
                 bracketsLevel += 1
                 currentResult.append(character)
