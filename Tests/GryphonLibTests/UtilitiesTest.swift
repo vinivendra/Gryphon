@@ -149,6 +149,17 @@ class UtilitiesTest: XCTestCase {
         XCTAssertEqual(Utilities.getTypeMapping(for: "Asdf"), nil)
     }
 
+	func testReadFile() {
+		do {
+			let contents = try Utilities.readFile("Readme.md")
+			XCTAssert(contents.contains("Gryphon"))
+			XCTAssertFalse(contents.contains("blahblahblah"))
+		}
+		catch {
+			XCTFail("Failed to read file")
+		}
+	}
+
 	func testFileExists() {
 		XCTAssert(Utilities.fileExists(at: "Readme.md"))
 		XCTAssertFalse(Utilities.fileExists(at: "foo.txt"))
