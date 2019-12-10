@@ -1953,6 +1953,54 @@ public class TuplesToPairsTranspilationPass: TranspilationPass {
 	}
 }
 
+/// Kotlin doesn't support autoclosures, but we can turn them into normal closures so they work
+/// correctly.
+public class AutoclosuresTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
+
+	override func replaceCallExpression( // annotation: override
+		_ callExpression: CallExpression)
+		-> Expression
+	{
+		guard let type = callExpression.function.swiftType,
+			type.contains("@autoclosure") else
+		{
+			return callExpression
+		}
+
+		let parametersString = Utilities.splitTypeList(type, separators: [" -> "]).secondToLast!
+		let parametersWithoutParentheses = String(parametersString.dropFirst().dropLast())
+		let parameterTypes = Utilities.splitTypeList(parametersWithoutParentheses)
+
+		// TODO: Add support for tupe shuffle expressions
+		if let tupleExpression = callExpression.parameters as? TupleExpression {
+			for index in tupleExpression.pairs.indices {
+				let pair = tupleExpression.pairs[index]
+				let expression = pair.expression
+				let parameterType = parameterTypes[index]
+
+				if parameterType.hasPrefix("@autoclosure") {
+					let newExpression = ClosureExpression(
+						range: expression.range,
+						parameters: [],
+						statements: [ExpressionStatement(
+							range: expression.range,
+							expression: expression), ],
+						typeName: parameterType)
+
+					tupleExpression.pairs[index] = LabeledExpression(
+						label: pair.label,
+						expression: newExpression)
+				}
+			}
+		}
+
+		return callExpression
+
+	}
+}
+
 /// Optional subscripts in kotlin have to be refactored as function calls:
 ///
 /// ````
@@ -3452,6 +3500,7 @@ public extension TranspilationPass {
 		ast = CovarianceInitsAsCallsTranspilationPass(ast: ast, context: context).run()
 		ast = ReturnsInLambdasTranspilationPass(ast: ast, context: context).run()
 		ast = TuplesToPairsTranspilationPass(ast: ast, context: context).run()
+		ast = AutoclosuresTranspilationPass(ast: ast, context: context).run()
 		ast = RefactorOptionalsInSubscriptsTranspilationPass(ast: ast, context: context).run()
 		ast = AddOptionalsInDotChainsTranspilationPass(ast: ast, context: context).run()
 		ast = RenameOperatorsTranspilationPass(ast: ast, context: context).run()
