@@ -26,7 +26,7 @@ class BootstrappingTest: XCTestCase {
 			}
 
 			guard let runOutput = try Compiler.runCompiledProgram(
-				fromFolder: "Bootstrap",
+				inFolder: "Bootstrap",
 				withArguments: ["-test"]) else
 			{
 				XCTFail("Error running transpiled transpiler. It's possible a command timed out.")

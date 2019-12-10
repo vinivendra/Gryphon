@@ -491,7 +491,7 @@ public class Driver {
 			return compilationResult
 		}
 
-		let runResult = try Compiler.runCompiledProgram(fromFolder: settings.outputFolder)
+		let runResult = try Compiler.runCompiledProgram(inFolder: settings.outputFolder)
 
 		return runResult
 	}

@@ -222,16 +222,18 @@ public class Compiler {
 
 	//
 	public static func runCompiledProgram(
-		fromFolder outputFolder: String,
+		inFolder buildFolder: String,
 		withArguments arguments: MutableArray<String> = [])
 		throws -> Shell.CommandOutput?
 	{
 		log("\t- Running Kotlin...")
 
+		let processedBuildFolder = buildFolder.hasSuffix("/") ? buildFolder : (buildFolder + "/")
+
 		// Run the compiled program
-		let commandArguments: MutableArray = ["java", "-jar", "kotlin.jar"]
+		let commandArguments: MutableArray = ["java", "-jar", processedBuildFolder + "kotlin.jar"]
 		commandArguments.append(contentsOf: arguments)
-		let commandResult = Shell.runShellCommand(commandArguments, fromFolder: outputFolder)
+		let commandResult = Shell.runShellCommand(commandArguments)
 
 		return commandResult
 	}
@@ -249,7 +251,7 @@ public class Compiler {
 		guard compilationResult != nil, compilationResult!.status == 0 else {
 			return compilationResult
 		}
-		return try runCompiledProgram(fromFolder: outputFolder)
+		return try runCompiledProgram(inFolder: outputFolder)
 	}
 
 	public static func printErrorsAndWarnings() {
