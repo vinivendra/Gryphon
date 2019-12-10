@@ -26,6 +26,7 @@ echo "➡️ [3/4] Dumping the Swift ASTs..."
 
 if perl dumpASTs.pl Sources/GryphonLib/*.swift \
 	Tests/GryphonLibTests/ASTDumpDecoderTest.swift \
+	Tests/GryphonLibTests/CompilerTest.swift \
 	Tests/GryphonLibTests/ExtensionsTest.swift \
 	Tests/GryphonLibTests/SourceFileTest.swift \
 	Tests/GryphonLibTests/TestUtilities.swift \

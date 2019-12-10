@@ -20,6 +20,7 @@ fun main(args: Array<String>) {
 	if (args.contains("-test")) {
 		PrintableAsTreeTest().runAllTests()
 		ASTDumpDecoderTest().runAllTests()
+		CompilerTest().runAllTests()
 		ExtensionsTest().runAllTests()
 		UtilitiesTest().runAllTests()
 		ShellTest().runAllTests()

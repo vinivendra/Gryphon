@@ -46,6 +46,7 @@ Bootstrap/KotlinTranslator.kt
 Bootstrap/LibraryTranspilationPass.kt
 
 Bootstrap/ASTDumpDecoderTest.kt
+Bootstrap/CompilerTest.kt
 Bootstrap/ExtensionsTest.kt
 Bootstrap/SourceFileTest.kt
 Bootstrap/TestUtilities.kt

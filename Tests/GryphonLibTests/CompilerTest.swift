@@ -14,12 +14,38 @@
 // limitations under the License.
 //
 
+// gryphon output: Bootstrap/CompilerTest.kt
+
+#if !IS_DUMPING_ASTS
 @testable import GryphonLib
 import XCTest
+#endif
+
+class MyError: Error {
+	// declaration: constructor(): super() { }
+}
 
 class CompilerTest: XCTestCase {
-	struct MyError: Error { }
+	// declaration: constructor(): super() { }
 
+	public func getClassName() -> String { // annotation: override
+		return "CompilerTest"
+	}
+
+	override public func runAllTests() { // annotation: override
+		testKotlinCompiler()
+		testErrorHandling()
+		testErrorMessages()
+		super.runAllTests()
+	}
+
+	static var allTests = [ // kotlin: ignore
+		("testKotlinCompiler", testKotlinCompiler),
+		("testErrorHandling", testErrorHandling),
+		("testErrorMessages", testErrorMessages),
+	]
+
+	// MARK: - Tests
 	func testKotlinCompiler() {
 		XCTAssert(Utilities.fileExists(at: Compiler.kotlinCompilerPath))
 	}
@@ -109,10 +135,4 @@ class CompilerTest: XCTestCase {
 			Some details
 			""")
     }
-
-	static var allTests = [
-		("testKotlinCompiler", testKotlinCompiler),
-		("testErrorHandling", testErrorHandling),
-		("testErrorMessages", testErrorMessages),
-	]
 }
