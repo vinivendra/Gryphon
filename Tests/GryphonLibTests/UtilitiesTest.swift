@@ -14,12 +14,56 @@
 // limitations under the License.
 //
 
+// gryphon output: Bootstrap/UtilitiesTest.kt
+
+#if !IS_DUMPING_ASTS
 @testable import GryphonLib
 import XCTest
+#endif
 
 class UtilitiesTest: XCTestCase {
 	// declaration: constructor(): super() { }
 
+	public func getClassName() -> String { // annotation: override
+		return "UtilitiesTest"
+	}
+
+	override public func runAllTests() { // annotation: override
+		testExpandSwiftAbbreviation()
+		testFileExtension()
+		testChangeExtension()
+		testGetExtension()
+		testPathOfSwiftASTDumpFile()
+		testPathOfKotlinErrorMapFile()
+		testGetRelativePath()
+		testSplitTypeList()
+		testIsInEnvelopingParentheses()
+		testGetTypeMapping()
+		testGetCurrentFolder()
+		testGetFiles()
+		testGetAbsolutePath()
+		testParallelMap()
+		super.runAllTests()
+	}
+
+	static var allTests = [ // kotlin: ignore
+		("testExpandSwiftAbbreviation", testExpandSwiftAbbreviation),
+		("testFileExtension", testFileExtension),
+		("testChangeExtension", testChangeExtension),
+		("testGetExtension", testGetExtension),
+		("testPathOfSwiftASTDumpFile", testPathOfSwiftASTDumpFile),
+		("testPathOfKotlinErrorMapFile", testPathOfKotlinErrorMapFile),
+		("testGetRelativePath", testGetRelativePath),
+		("testSplitTypeList", testSplitTypeList),
+		("testIsInEnvelopingParentheses", testIsInEnvelopingParentheses),
+		("testGetTypeMapping", testGetTypeMapping),
+		("testGetCurrentFolder", testGetCurrentFolder),
+		("testGetFiles", testGetFiles),
+		("testGetAbsolutePath", testGetAbsolutePath),
+		("testParallelMap", testParallelMap),
+	]
+
+	// MARK: - Tests
 	func testExpandSwiftAbbreviation() {
 		XCTAssertEqual(
 			Utilities.expandSwiftAbbreviation("source_file"), "Source File")
@@ -204,7 +248,8 @@ class UtilitiesTest: XCTestCase {
         let array1: MutableArray<Int> = []
         let array2: MutableArray<Int> = [1]
         let array3: MutableArray<Int> = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-        let array4: MutableArray<Int> = MutableArray<Int>([Int](0...10_000))
+        let array4: MutableArray<Int> = MutableArray<Int>([Int](0...10_000)) // kotlin: ignore
+		// insert: val array4: MutableList<Int> = (0..10000).map{ it }.toMutableList()
 
         let array1Copy = array1.copy()
         let array2Copy = array2.copy()
@@ -216,7 +261,8 @@ class UtilitiesTest: XCTestCase {
         let mappedArray3 = try! array3.parallelMap { $0 * 2 }
         let mappedArray4 = try! array4.parallelMap { $0 * 2 }
 
-        let array4Result = MutableArray<Int>([Int](0...10_000)).map { $0 * 2 }
+        let array4Result = MutableArray<Int>([Int](0...10_000)).map { $0 * 2 } // kotlin: ignore
+		// insert: val array4Result: MutableList<Int> = (0..10000).map{ it * 2 }.toMutableList()
 
         XCTAssertEqual(array1, array1Copy)
         XCTAssertEqual(array2, array2Copy)
@@ -230,21 +276,4 @@ class UtilitiesTest: XCTestCase {
 
         XCTAssertThrowsError(try array3.map { (_: Int) -> Int in throw TestError() })
     }
-
-	static var allTests = [
-		("testExpandSwiftAbbreviation", testExpandSwiftAbbreviation),
-		("testFileExtension", testFileExtension),
-		("testChangeExtension", testChangeExtension),
-		("testGetExtension", testGetExtension),
-		("testPathOfSwiftASTDumpFile", testPathOfSwiftASTDumpFile),
-		("testPathOfKotlinErrorMapFile", testPathOfKotlinErrorMapFile),
-		("testGetRelativePath", testGetRelativePath),
-		("testSplitTypeList", testSplitTypeList),
-		("testIsInEnvelopingParentheses", testIsInEnvelopingParentheses),
-		("testGetTypeMapping", testGetTypeMapping),
-		("testGetCurrentFolder", testGetCurrentFolder),
-		("testGetFiles", testGetFiles),
-		("testGetAbsolutePath", testGetAbsolutePath),
-		("testParallelMap", testParallelMap),
-	]
 }
