@@ -14,10 +14,32 @@
 // limitations under the License.
 //
 
+// gryphon output: Bootstrap/ASTDumpDecoderTest.kt
+
+#if !IS_DUMPING_ASTS
 @testable import GryphonLib
 import XCTest
+#endif
 
 class ASTDumpDecoderTest: XCTestCase {
+	// declaration: constructor(): super() { }
+
+	public func getClassName() -> String { // annotation: override
+		return "ASTDumpDecoderTest"
+	}
+
+	override public func runAllTests() { // annotation: override
+		testDecoderCanRead()
+		testDecoderRead()
+		super.runAllTests()
+	}
+
+	static var allTests = [ // kotlin: ignore
+		("testDecoderCanRead", testDecoderCanRead),
+		("testDecoderRead", testDecoderRead),
+	]
+
+	// MARK: - Tests
 	func testDecoderCanRead() {
 		XCTAssert(ASTDumpDecoder(encodedString:
 			"(foo)").canReadOpeningParenthesis())
@@ -165,9 +187,4 @@ class ASTDumpDecoderTest: XCTestCase {
 		XCTAssertEqual(string, "<bla>")
 		XCTAssertEqual(decoder.remainingBuffer, "foo)")
 	}
-
-	static var allTests = [
-		("testDecoderCanRead", testDecoderCanRead),
-		("testDecoderRead", testDecoderRead),
-	]
 }

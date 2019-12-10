@@ -20,6 +20,7 @@
 	Sources/GryphonLib/SharedUtilities.swift \
 	Sources/GryphonLib/KotlinTranslator.swift \
 	Sources/GryphonLib/LibraryTranspilationPass.swift \
+	Tests/GryphonLibTests/ASTDumpDecoderTest.swift \
 	Tests/GryphonLibTests/ExtensionsTest.swift \
 	Tests/GryphonLibTests/SourceFileTest.swift \
 	Tests/GryphonLibTests/TestUtilities.swift
