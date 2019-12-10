@@ -122,11 +122,11 @@ fun Utilities.Companion.createFile(filePath: String, contents: String) {
 
 fun Utilities.Companion.fileExists(filePath: String): Boolean {
 	val file = File(filePath)
-	return !file.exists()
+	return file.exists()
 }
 
 fun Utilities.Companion.createFileIfNeeded(filePath: String): Boolean {
-	if (Utilities.fileExists(filePath)) {
+	if (!Utilities.fileExists(filePath)) {
 		val file = File(filePath)
 		val success = file.createNewFile()
 		assert(success)

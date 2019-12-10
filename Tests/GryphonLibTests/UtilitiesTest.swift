@@ -149,6 +149,11 @@ class UtilitiesTest: XCTestCase {
         XCTAssertEqual(Utilities.getTypeMapping(for: "Asdf"), nil)
     }
 
+	func testFileExists() {
+		XCTAssert(Utilities.fileExists(at: "Readme.md"))
+		XCTAssertFalse(Utilities.fileExists(at: "foo.txt"))
+	}
+
     func testGetCurrentFolder() {
         XCTAssert(Utilities.getCurrentFolder().hasSuffix("Gryphon"))
     }
