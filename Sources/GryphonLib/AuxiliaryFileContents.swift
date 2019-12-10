@@ -44,6 +44,9 @@ class XCTestCase { // kotlin: ignore
 	public func XCTAssertNoThrow<T>(
 		_ expression: @autoclosure () throws -> T,
 		_ message: String = "") { }
+	public func XCTAssertThrowsError<T>(
+		_ expression: @autoclosure () throws -> T,
+		_ message: String = "") { }
 	public func XCTFail(_ message: String = "") { }
 
 	public func runAllTests() { }

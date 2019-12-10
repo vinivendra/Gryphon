@@ -85,4 +85,12 @@ open class XCTestCase() {
     		println(error)
     	}
 	}
+
+	fun XCTAssertThrowsError(closure: () -> Unit) {
+		closure()
+		// If the error is thrown, the closure returns early and this isn't run:
+		allTestsSucceeded = false
+		println("${getClassName()} - XCTAssertNoThrow failed.")
+		Exception().printStackTrace()
+	}
 }
