@@ -42,11 +42,11 @@ private func gryphonTemplates() {
         "fileName = _string1, directory = _string2, contents = _string3)"
 
     _ = Utilities.getFiles(_stringArray, inDirectory: _string1, withExtension: _fileExtension1)
-    _ = "getFiles(" +
+    _ = "Utilities.getFiles(" +
         "selectedFiles = _stringArray, directory = _string1, fileExtension = _fileExtension1)"
 
     _ = Utilities.getFiles(inDirectory: _string1, withExtension: _fileExtension1)
-    _ = "getFiles(directory = _string1, fileExtension = _fileExtension1)"
+    _ = "Utilities.getFiles(directory = _string1, fileExtension = _fileExtension1)"
 
     _ = Utilities.getAbsoultePath(forFile: _string1)
     _ = "Utilities.getAbsoultePath(file = _string1)"
