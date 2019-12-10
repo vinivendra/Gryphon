@@ -18,7 +18,7 @@
 import XCTest
 
 class UtilitiesTest: XCTestCase {
-    struct EmptyError: Error { }
+	// declaration: constructor(): super() { }
 
 	func testExpandSwiftAbbreviation() {
 		XCTAssertEqual(
@@ -228,7 +228,7 @@ class UtilitiesTest: XCTestCase {
         XCTAssertEqual(mappedArray3, [2, 4, 6, 8, 10, 12, 14, 16, 18, 20])
         XCTAssertEqual(mappedArray4, array4Result)
 
-        XCTAssertThrowsError(try array3.map { (_: Int) -> Int in throw EmptyError() })
+        XCTAssertThrowsError(try array3.map { (_: Int) -> Int in throw TestError() })
     }
 
 	static var allTests = [

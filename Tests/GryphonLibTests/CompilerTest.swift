@@ -21,10 +21,6 @@
 import XCTest
 #endif
 
-class MyError: Error {
-	// declaration: constructor(): super() { }
-}
-
 class CompilerTest: XCTestCase {
 	// declaration: constructor(): super() { }
 
@@ -55,7 +51,7 @@ class CompilerTest: XCTestCase {
 			Compiler.shouldStopAtFirstError = false
 
 			//
-			try Compiler.handleError(MyError())
+			try Compiler.handleError(TestError())
 
 			XCTAssert(Compiler.hasErrorsOrWarnings())
 			XCTAssertFalse(Compiler.errors.isEmpty)

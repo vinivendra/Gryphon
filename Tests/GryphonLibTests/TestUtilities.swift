@@ -23,6 +23,10 @@ import Foundation
 import XCTest
 #endif
 
+class TestError: Error {
+	// declaration: constructor(): super() { }
+}
+
 class TestUtilities {
 	// MARK: - Diffs
 	static let testFilesPath: String = Utilities.getCurrentFolder() + "/Test Files/"
