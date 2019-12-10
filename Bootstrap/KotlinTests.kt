@@ -73,13 +73,13 @@ open class XCTestCase() {
 		Exception().printStackTrace()
 	}
 
-	fun XCTAssertNoThrow(closure: () -> Unit, test: String = "No message") {
+	fun XCTAssertNoThrow(closure: () -> Unit) {
 		try {
 			closure()
     	}
     	catch (error: Exception) {
     		allTestsSucceeded = false
-    		println("${getClassName()} - XCTAssertNoThrow failed: ${test}.")
+    		println("${getClassName()} - XCTAssertNoThrow failed.")
     		Exception().printStackTrace()
     		println("Error thrown:")
     		println(error)

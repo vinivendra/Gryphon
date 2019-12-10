@@ -41,6 +41,7 @@ class XCTestCase { // kotlin: ignore
 	public func XCTAssertEqual<T>(_ a: T, _ b: T, _ message: String = "") where T : Equatable { }
 	public func XCTAssertFalse(_ condition: Bool, _ message: String = "") { }
 	public func XCTAssertNil<T>(_ expression: T?, _ message: String = "") { }
+	public func XCTAssertNoThrow<T>(_ expression: T, _ message: String = "") { }
 
 	public func runAllTests() { }
 }
