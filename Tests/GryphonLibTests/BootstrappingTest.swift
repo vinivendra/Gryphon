@@ -33,16 +33,8 @@ class BootstrappingTest: XCTestCase {
 				return
 			}
 
-			let testMessages = runOutput.standardOutput.split(separator: "\n")
-			XCTAssertEqual(testMessages.count, 7)
-
-			var testsFailed = false
-			for testMessage in testMessages {
-				if !testMessage.hasSuffix("All tests succeeded!") {
-					XCTFail(String(testMessage))
-					testsFailed = true
-				}
-			}
+			let testsFailed = runOutput.standardOutput.contains("Error, tests failed!")
+			XCTAssertFalse(testsFailed, "Kotlin unit tests failed. Printing stack trace:\n")
 
 			if testsFailed {
 				print(runOutput.standardError)

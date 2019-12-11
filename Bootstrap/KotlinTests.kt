@@ -25,6 +25,9 @@ open class XCTestCase() {
 		if (allTestsSucceeded) {
 			println("${getClassName()}: All tests succeeded!")
 		}
+		else {
+			println("${getClassName()}: Error, tests failed!")
+		}
 	}
 
 	fun XCTAssert(condition: Boolean, test: String = "No message") {
