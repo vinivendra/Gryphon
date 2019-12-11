@@ -14,10 +14,36 @@
 // limitations under the License.
 //
 
+// gryphon output: Bootstrap/DriverTest.kt
+
+#if !IS_DUMPING_ASTS
 @testable import GryphonLib
 import XCTest
+#endif
 
 class DriverTest: XCTestCase {
+	// declaration: constructor(): super() { }
+
+	public func getClassName() -> String { // annotation: override
+		return "DriverTest"
+	}
+
+	override public func runAllTests() { // annotation: override
+		testUsageString()
+		testNoMainFile()
+		testContinueOnErrors()
+		testIndentation()
+		super.runAllTests()
+	}
+
+	static var allTests = [ // kotlin: ignore
+		("testUsageString", testUsageString),
+		("testNoMainFile", testNoMainFile),
+		("testContinueOnErrors", testContinueOnErrors),
+		("testIndentation", testIndentation),
+	]
+
+	// MARK: - Tests
 	func testUsageString() {
 		for argument in Driver.supportedArguments {
 			XCTAssert(Driver.usageString.contains(argument))
@@ -39,16 +65,16 @@ class DriverTest: XCTestCase {
 				 "-indentation=t",
 				 "-q", "-Q",
 				 testFilePath, ])
-			guard let resultArray1 = driverResult1 as? MutableArray<Any?>,
-				let kotlinCodes1 = resultArray1
-					.as(MutableArray<Driver.KotlinTranslation>.self)?
-					.map({ $0.kotlinCode }),
-				let kotlinCode1 = kotlinCodes1.first else
-			{
+			let resultArray1 = driverResult1 as? MutableArray<Any?>
+			let kotlinTranslations1 = resultArray1?.as(MutableArray<Driver.KotlinTranslation>.self)
+
+			guard let kotlinTranslation1 = kotlinTranslations1?.first else {
 				XCTFail("Error generating Kotlin code.\n" +
 					"Driver result: \(driverResult1 ?? "nil")")
 				return
 			}
+
+			let kotlinCode1 = kotlinTranslation1.kotlinCode
 
 			XCTAssert(kotlinCode1.contains("fun main(args: Array<String>) {"))
 
@@ -60,16 +86,16 @@ class DriverTest: XCTestCase {
 				 "-no-main-file",
 				 "-q", "-Q",
 				 testFilePath, ])
-			guard let resultArray2 = driverResult2 as? MutableArray<Any?>,
-				let kotlinCodes2 = resultArray2
-					.as(MutableArray<Driver.KotlinTranslation>.self)?
-					.map({ $0.kotlinCode }),
-				let kotlinCode2 = kotlinCodes2.first else
-			{
+			let resultArray2 = driverResult2 as? MutableArray<Any?>
+			let kotlinTranslations2 = resultArray2?.as(MutableArray<Driver.KotlinTranslation>.self)
+
+			guard let kotlinTranslation2 = kotlinTranslations2?.first else {
 				XCTFail("Error generating Kotlin code.\n" +
 					"Driver result: \(driverResult2 ?? "nil")")
 				return
 			}
+
+			let kotlinCode2 = kotlinTranslation2.kotlinCode
 
 			XCTAssertFalse(kotlinCode2.contains("fun main(args: Array<String>) {"))
 
@@ -130,16 +156,16 @@ class DriverTest: XCTestCase {
 				 "-indentation=t",
 				 "-q", "-Q",
 				 testFilePath, ])
-			guard let resultArray1 = driverResult1 as? MutableArray<Any?>,
-				let kotlinCodes1 = resultArray1
-					.as(MutableArray<Driver.KotlinTranslation>.self)?
-					.map({ $0.kotlinCode }),
-				let kotlinCode1 = kotlinCodes1.first else
-			{
+			let resultArray1 = driverResult1 as? MutableArray<Any?>
+			let kotlinTranslations1 = resultArray1?.as(MutableArray<Driver.KotlinTranslation>.self)
+
+			guard let kotlinTranslation1 = kotlinTranslations1?.first else {
 				XCTFail("Error generating Kotlin code.\n" +
 					"Driver result: \(driverResult1 ?? "nil")")
 				return
 			}
+
+			let kotlinCode1 = kotlinTranslation1.kotlinCode
 
 			XCTAssert(kotlinCode1.contains("\t"))
 			XCTAssertFalse(kotlinCode1.contains("    "))
@@ -151,16 +177,16 @@ class DriverTest: XCTestCase {
 				 "-indentation=4",
 				 "-q", "-Q",
 				 testFilePath, ])
-			guard let resultArray2 = driverResult2 as? MutableArray<Any?>,
-				let kotlinCodes2 = resultArray2
-					.as(MutableArray<Driver.KotlinTranslation>.self)?
-					.map({ $0.kotlinCode }),
-				let kotlinCode2 = kotlinCodes2.first else
-			{
+			let resultArray2 = driverResult2 as? MutableArray<Any?>
+			let kotlinTranslations2 = resultArray2?.as(MutableArray<Driver.KotlinTranslation>.self)
+
+			guard let kotlinTranslation2 = kotlinTranslations2?.first else {
 				XCTFail("Error generating Kotlin code.\n" +
 					"Driver result: \(driverResult2 ?? "nil")")
 				return
 			}
+
+			let kotlinCode2 = kotlinTranslation2.kotlinCode
 
 			XCTAssert(kotlinCode2.contains("    "))
 			XCTAssertFalse(kotlinCode2.contains("\t"))
@@ -173,11 +199,4 @@ class DriverTest: XCTestCase {
 		XCTAssertFalse(Compiler.hasErrorsOrWarnings())
 		Compiler.printErrorsAndWarnings()
 	}
-
-	static var allTests = [
-		("testUsageString", testUsageString),
-		("testNoMainFile", testNoMainFile),
-		("testContinueOnErrors", testContinueOnErrors),
-		("testIndentation", testIndentation),
-	]
 }

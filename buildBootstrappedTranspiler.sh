@@ -8,6 +8,7 @@ kotlinc -include-runtime \
 	Bootstrap/ASTDumpDecoderTest.kt \
 	Bootstrap/AuxiliaryFileContents.kt \
 	Bootstrap/CompilerTest.kt \
+	Bootstrap/DriverTest.kt \
 	Bootstrap/main.kt \
 	Bootstrap/Extensions.kt \
 	Bootstrap/ExtensionsTest.kt \

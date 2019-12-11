@@ -22,6 +22,7 @@
 	Sources/GryphonLib/LibraryTranspilationPass.swift \
 	Tests/GryphonLibTests/ASTDumpDecoderTest.swift \
 	Tests/GryphonLibTests/CompilerTest.swift \
+	Tests/GryphonLibTests/DriverTest.swift \
 	Tests/GryphonLibTests/ExtensionsTest.swift \
 	Tests/GryphonLibTests/SourceFileTest.swift \
 	Tests/GryphonLibTests/UtilitiesTest.swift \
