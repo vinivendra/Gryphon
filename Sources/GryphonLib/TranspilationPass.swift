@@ -1619,6 +1619,33 @@ public class CallsToSuperclassInitializersTranspilationPass: TranspilationPass {
 	}
 }
 
+/// If we're casting an expression that has an optional type -- for instance `foo as? Int` when
+/// `foo` has an optional type like `Any?` -- then `foo` comes wrapped in an optional that needs to
+/// be unwrapped.
+public class OptionalsInConditionalCastsTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
+
+	override func replaceBinaryOperatorExpression( // annotation: override
+		_ binaryOperatorExpression: BinaryOperatorExpression)
+		-> Expression
+	{
+		guard binaryOperatorExpression.operatorSymbol == "as?",
+			let optionalExpression = binaryOperatorExpression.leftExpression as? OptionalExpression
+			else
+		{
+			return binaryOperatorExpression
+		}
+
+		return BinaryOperatorExpression(
+			range: binaryOperatorExpression.range,
+			leftExpression: optionalExpression.expression,
+			rightExpression: binaryOperatorExpression.rightExpression,
+			operatorSymbol: "as?",
+			typeName: binaryOperatorExpression.typeName)
+	}
+}
+
 public class SelfToThisTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
 	// declaration:     super(ast, context) { }
@@ -3505,6 +3532,7 @@ public extension TranspilationPass {
 		ast = AddOptionalsInDotChainsTranspilationPass(ast: ast, context: context).run()
 		ast = RenameOperatorsTranspilationPass(ast: ast, context: context).run()
 		ast = CallsToSuperclassInitializersTranspilationPass(ast: ast, context: context).run()
+		ast = OptionalsInConditionalCastsTranspilationPass(ast: ast, context: context).run()
 
 		// - CapitalizeEnums has to be before IsOperatorsInSealedClasses
 		ast = CapitalizeEnumsTranspilationPass(ast: ast, context: context).run()
