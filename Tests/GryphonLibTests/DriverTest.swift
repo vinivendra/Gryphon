@@ -33,7 +33,6 @@ class DriverTest: XCTestCase {
 		testNoMainFile()
 		testContinueOnErrors()
 		testIndentation()
-		super.runAllTests()
 	}
 
 	static var allTests = [ // kotlin: ignore

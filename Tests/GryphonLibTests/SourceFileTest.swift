@@ -31,7 +31,6 @@ class SourceFileTest: XCTestCase {
 	override public func runAllTests() { // annotation: override
 		testGetCommentFromLine()
 		testGetKeyedCommentFromLine()
-		super.runAllTests()
 	}
 
 	static var allTests = [ // kotlin: ignore

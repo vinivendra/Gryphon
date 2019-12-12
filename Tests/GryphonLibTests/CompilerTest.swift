@@ -32,7 +32,6 @@ class CompilerTest: XCTestCase {
 		testKotlinCompiler()
 		testErrorHandling()
 		testErrorMessages()
-		super.runAllTests()
 	}
 
 	static var allTests = [ // kotlin: ignore

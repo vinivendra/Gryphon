@@ -59,7 +59,6 @@ class ExtensionsTest: XCTestCase {
 		testRotated()
 		testGroupBy()
 		testRemovingDuplicates()
-		super.runAllTests()
 	}
 
 	static var allTests = [ // kotlin: ignore

@@ -43,7 +43,6 @@ class UtilitiesTest: XCTestCase {
 		testGetFiles()
 		testGetAbsolutePath()
 		testParallelMap()
-		super.runAllTests()
 	}
 
 	static var allTests = [ // kotlin: ignore

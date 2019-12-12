@@ -21,15 +21,29 @@ open class XCTestCase() {
 
 	var allTestsSucceeded = true
 
-	open fun runAllTests() {
+	fun run() {
+		println("➡️  Running ${getClassName()}...")
+
+		runAllTests()
+
+		println("↪️  ${getClassName()} done.")
+
 		if (allTestsSucceeded) {
-			println("${getClassName()}: All tests succeeded!")
+			XCTestCase.passedTests.add(getClassName())
 		}
 		else {
-			println("${getClassName()}: Error, tests failed!")
+			XCTestCase.passedTests.add(getClassName())
 		}
+	}	
+
+	open fun runAllTests() { }
+
+	companion object {
+		var passedTests = mutableListOf<String>()
+		var failedTests = mutableListOf<String>()
 	}
 
+	//
 	fun XCTAssert(condition: Boolean, test: String = "No message") {
 		if (!condition) {
 			allTestsSucceeded = false

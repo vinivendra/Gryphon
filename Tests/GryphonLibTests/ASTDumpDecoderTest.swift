@@ -31,7 +31,6 @@ class ASTDumpDecoderTest: XCTestCase {
 	override public func runAllTests() { // annotation: override
 		testDecoderCanRead()
 		testDecoderRead()
-		super.runAllTests()
 	}
 
 	static var allTests = [ // kotlin: ignore
