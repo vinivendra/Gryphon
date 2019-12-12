@@ -28,8 +28,6 @@ fun main(args: Array<String>) {
 		ShellTest().run()
 		SourceFileTest().run()
 
-		println("")
-
 		for (passedTest in XCTestCase.passedTests) {
 			println("✅ ${passedTest}: All tests succeeded!")
 		}

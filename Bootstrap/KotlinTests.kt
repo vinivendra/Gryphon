@@ -26,7 +26,7 @@ open class XCTestCase() {
 
 		runAllTests()
 
-		println("↪️  ${getClassName()} done.")
+		println("↪️  ${getClassName()} done.\n")
 
 		if (allTestsSucceeded) {
 			XCTestCase.passedTests.add(getClassName())
