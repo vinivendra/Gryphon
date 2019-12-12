@@ -18,17 +18,17 @@ import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {
 	if (args.contains("-test")) {
-		PrintableAsTreeTest().run()
 		ASTDumpDecoderTest().run()
 		CompilerTest().run()
 		DriverTest().run()
 		ExtensionsTest().run()
 		IntegrationTest().run()
 		LibraryTranspilationTest().run()
-		TranslationResultTest().run()
-		UtilitiesTest().run()
+		PrintableAsTreeTest().run()
 		ShellTest().run()
 		SourceFileTest().run()
+		TranslationResultTest().run()
+		UtilitiesTest().run()
 
 		for (passedTest in XCTestCase.passedTests) {
 			println("✅ ${passedTest}: All tests succeeded!")

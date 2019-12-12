@@ -36,6 +36,7 @@ if perl dumpASTs.pl Sources/GryphonLib/*.swift \
 	Tests/GryphonLibTests/SourceFileTest.swift \
 	Tests/GryphonLibTests/TranslationResultTest.swift \
 	Tests/GryphonLibTests/UtilitiesTest.swift \
+	\
 	Tests/GryphonLibTests/TestUtilities.swift \
 	.gryphon/GryphonXCTest.swift
 then

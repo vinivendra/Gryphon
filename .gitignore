@@ -27,23 +27,23 @@ Test Files/Bootstrap Outputs
 default.profraw
 
 ### Kotlin files generated in bootstrap
-Bootstrap/AuxiliaryFileContents.kt
-Bootstrap/PrintableAsTree.kt
-Bootstrap/SwiftAST.kt
-Bootstrap/SwiftTranslator.kt
-Bootstrap/GryphonAST.kt
-Bootstrap/TranspilationContext.kt
-Bootstrap/TranspilationPass.kt
-Bootstrap/TranslationResult.kt
 Bootstrap/ASTDumpDecoder.kt
+Bootstrap/AuxiliaryFileContents.kt
 Bootstrap/Compiler.kt
-Bootstrap/OutputFileMap.kt
-Bootstrap/SourceFile.kt
 Bootstrap/Driver.kt
 Bootstrap/Extensions.kt
-Bootstrap/SharedUtilities.kt
+Bootstrap/GryphonAST.kt
 Bootstrap/KotlinTranslator.kt
 Bootstrap/LibraryTranspilationPass.kt
+Bootstrap/OutputFileMap.kt
+Bootstrap/PrintableAsTree.kt
+Bootstrap/SharedUtilities.kt
+Bootstrap/SourceFile.kt
+Bootstrap/SwiftAST.kt
+Bootstrap/SwiftTranslator.kt
+Bootstrap/TranslationResult.kt
+Bootstrap/TranspilationContext.kt
+Bootstrap/TranspilationPass.kt
 
 Bootstrap/ASTDumpDecoderTest.kt
 Bootstrap/CompilerTest.kt
@@ -56,5 +56,6 @@ Bootstrap/ShellTest.kt
 Bootstrap/SourceFileTest.kt
 Bootstrap/TranslationResultTest.kt
 Bootstrap/UtilitiesTest.kt
+
 Bootstrap/TestUtilities.kt
 
