@@ -14,12 +14,47 @@
 // limitations under the License.
 //
 
+// gryphon output: Bootstrap/TranslationResultTest.kt
+
+#if !IS_DUMPING_ASTS
 @testable import GryphonLib
 import XCTest
+#endif
+
+#if !IS_DUMPING_ASTS
+typealias GryphonTranslation = GryphonLib.Translation
+#else
+typealias GryphonTranslation = Translation // kotlin: ignore
+#endif
+// declaration: typealias GryphonTranslation = Translation
 
 class TranslationResultTest: XCTestCase {
+	// declaration: constructor(): super() { }
 
-	func getDeepTranslation() -> GryphonLib.Translation {
+	public func getClassName() -> String { // annotation: override
+		return "TranslationResultTest"
+	}
+
+	override public func runAllTests() { // annotation: override
+		testShallowTranslation()
+		testDeepTranslation()
+		testDropLast()
+		testIsEmpty()
+		testSourceFilePositionPosition()
+		testSourceFilePositionCopy()
+	}
+
+	static var allTests = [ // kotlin: ignore
+		("testShallowTranslation", testShallowTranslation),
+		("testDeepTranslation", testDeepTranslation),
+		("testDropLast", testDropLast),
+		("testIsEmpty", testIsEmpty),
+		("testSourceFilePositionPosition", testSourceFilePositionPosition),
+		("testSourceFilePositionCopy", testSourceFilePositionCopy),
+	]
+
+	// MARK: - Tests
+	func getDeepTranslation() -> GryphonTranslation {
 		let translation = Translation(range: SourceFileRange(
 			lineStart: 1, lineEnd: 5, columnStart: 1, columnEnd: 1))
 		translation.append("fun foo(bla: Int): Int {\n")
@@ -185,13 +220,4 @@ class TranslationResultTest: XCTestCase {
 		XCTAssertNotEqual(position.lineNumber, position3.lineNumber)
 		XCTAssertNotEqual(position.columnNumber, position3.columnNumber)
 	}
-
-	static var allTests = [
-		("testShallowTranslation", testShallowTranslation),
-		("testDeepTranslation", testDeepTranslation),
-		("testDropLast", testDropLast),
-		("testIsEmpty", testIsEmpty),
-		("testSourceFilePositionPosition", testSourceFilePositionPosition),
-		("testSourceFilePositionCopy", testSourceFilePositionCopy),
-	]
 }
