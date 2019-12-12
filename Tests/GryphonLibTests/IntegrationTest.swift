@@ -14,10 +14,42 @@
 // limitations under the License.
 //
 
+// gryphon output: Bootstrap/IntegrationTest.kt
+
+#if !IS_DUMPING_ASTS
 @testable import GryphonLib
 import XCTest
+#endif
+
+// declaration: import kotlin.system.exitProcess
 
 class IntegrationTest: XCTestCase {
+	// declaration: constructor(): super() { }
+
+	public func getClassName() -> String { // annotation: override
+		return "IntegrationTest"
+	}
+
+	override static func setUp() {
+		do {
+			try Utilities.updateTestFiles()
+		}
+		catch let error {
+			print(error)
+			fatalError("Failed to update test files.")
+		}
+	}
+
+	override public func runAllTests() { // annotation: override
+		IntegrationTest.setUp()
+		test()
+	}
+
+	static var allTests = [ // kotlin: ignore
+		("test", test),
+	]
+
+	// MARK: - Tests
 	func test() {
 		let tests = TestUtilities.testCasesForAllTests
 
@@ -33,8 +65,7 @@ class IntegrationTest: XCTestCase {
 					withContext: TranspilationContext(indentationString: "\t")).first!
 
 				// Load the previously stored kotlin code from file
-				let expectedKotlinCode = try! String(
-					contentsOfFile: testFilePath.withExtension(.kt))
+				let expectedKotlinCode = try! Utilities.readFile(testFilePath.withExtension(.kt))
 
 				XCTAssert(
 					generatedKotlinCode == expectedKotlinCode,
@@ -55,23 +86,5 @@ class IntegrationTest: XCTestCase {
 		if !hasOnlyNativeTypeWarnings || !Compiler.errors.isEmpty {
 			Compiler.printErrorsAndWarnings()
 		}
-	}
-
-	static var allTests = [
-		("test", test),
-	]
-
-	override static func setUp() {
-		do {
-			try Utilities.updateTestFiles()
-		}
-		catch let error {
-			print(error)
-			fatalError("Failed to update test files.")
-		}
-	}
-
-	override func setUp() {
-		Compiler.clearErrorsAndWarnings()
 	}
 }

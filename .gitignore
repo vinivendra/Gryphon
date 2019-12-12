@@ -49,6 +49,7 @@ Bootstrap/ASTDumpDecoderTest.kt
 Bootstrap/CompilerTest.kt
 Bootstrap/DriverTest.kt
 Bootstrap/ExtensionsTest.kt
+Bootstrap/IntegrationTest.kt
 Bootstrap/SourceFileTest.kt
 Bootstrap/UtilitiesTest.kt
 Bootstrap/TestUtilities.kt

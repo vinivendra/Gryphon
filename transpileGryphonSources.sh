@@ -24,6 +24,7 @@
 	Tests/GryphonLibTests/CompilerTest.swift \
 	Tests/GryphonLibTests/DriverTest.swift \
 	Tests/GryphonLibTests/ExtensionsTest.swift \
+	Tests/GryphonLibTests/IntegrationTest.swift \
 	Tests/GryphonLibTests/SourceFileTest.swift \
 	Tests/GryphonLibTests/UtilitiesTest.swift \
 	Tests/GryphonLibTests/TestUtilities.swift

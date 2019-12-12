@@ -37,6 +37,8 @@ private struct Compare: Comparable { // kotlin: ignore
 private struct MyOptional { } // kotlin: ignore
 
 class XCTestCase { // kotlin: ignore
+	class func setUp() { }
+
 	public func XCTAssert(_ condition: Bool, _ message: String = "") { }
 	public func XCTAssertEqual<T>(_ a: T, _ b: T, _ message: String = "") where T : Equatable { }
 	public func XCTAssertFalse(_ condition: Bool, _ message: String = "") { }

@@ -16,6 +16,7 @@ kotlinc -include-runtime \
 	Bootstrap/Utilities.kt \
 	Bootstrap/SharedUtilities.kt \
 	Bootstrap/UtilitiesTest.kt \
+	Bootstrap/IntegrationTest.kt \
 	Bootstrap/Compiler.kt \
 	Bootstrap/SourceFile.kt \
 	Bootstrap/SourceFileTest.kt \
