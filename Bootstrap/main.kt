@@ -30,6 +30,8 @@ fun main(args: Array<String>) {
 		TranslationResultTest().run()
 		UtilitiesTest().run()
 
+		InitializationTest().run()
+
 		for (passedTest in XCTestCase.passedTests) {
 			println("✅ ${passedTest}: All tests succeeded!")
 		}

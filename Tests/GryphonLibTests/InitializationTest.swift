@@ -14,10 +14,29 @@
 // limitations under the License.
 //
 
+// gryphon output: Bootstrap/InitializationTest.kt
+
+#if !IS_DUMPING_ASTS
 @testable import GryphonLib
 import XCTest
+#endif
 
-class InitializationTests: XCTestCase {
+class InitializationTest: XCTestCase {
+	// declaration: constructor(): super() { }
+
+	public func getClassName() -> String { // annotation: override
+		return "InitializationTest"
+	}
+
+	override public func runAllTests() { // annotation: override
+		testInitialization()
+	}
+
+	static var allTests = [ // kotlin: ignore
+		("testInitialization", testInitialization),
+	]
+
+	// MARK: - Tests
 	func testInitialization() {
 		// Delete old folder
 		Utilities.deleteFolder(at: ".gryphon")
@@ -26,38 +45,35 @@ class InitializationTests: XCTestCase {
 		try! Driver.run(withArguments: ["init", "-no-xcode"])
 
 		// Check the new folder's contents are right
-		guard let templatesFileContents =
-				try? Utilities.readFile(".gryphon/StandardLibrary.template.swift"),
+		do {
+			let templatesFileContents =
+				try Utilities.readFile(".gryphon/StandardLibrary.template.swift")
 			let xctestFileContents =
-				try? Utilities.readFile(".gryphon/GryphonXCTest.swift"),
+				try Utilities.readFile(".gryphon/GryphonXCTest.swift")
 			let scriptFileContents =
-				try? Utilities.readFile(".gryphon/scripts/mapKotlinErrorsToSwift.swift") else
-		{
-			XCTFail("Gryphon -init: failed to create files.")
+				try Utilities.readFile(".gryphon/scripts/mapKotlinErrorsToSwift.swift")
+
+			if templatesFileContents != standardLibraryTemplateFileContents {
+				XCTFail("Library templates file's contents are wrong.")
+			}
+			if xctestFileContents != gryphonXCTestFileContents {
+				XCTFail("Gryphon's XCTest file's contents are wrong.")
+			}
+			if scriptFileContents != kotlinErrorMapScriptFileContents {
+				XCTFail("Error map script contents file's contents are wrong.")
+			}
+
+			//
+			// Test cleanup
+			try! Driver.run(withArguments: ["clean"])
+			XCTAssertFalse(Utilities.fileExists(at: ".gryphon/StandardLibrary.template.swift"))
+
+			// Create the folder again so other testing and development can continue
+			try! Driver.run(withArguments: ["init", "-no-xcode"])
+		}
+		catch let error {
+			XCTFail("Gryphon -init failed to read file: \(error)")
 			return
 		}
-
-		if templatesFileContents != standardLibraryTemplateFileContents {
-			XCTFail("Library templates file's contents are wrong.")
-		}
-		if xctestFileContents != gryphonXCTestFileContents {
-			XCTFail("Gryphon's XCTest file's contents are wrong.")
-		}
-		if scriptFileContents != kotlinErrorMapScriptFileContents {
-			XCTFail("Error map script contents file's contents are wrong.")
-		}
-
-		//
-		// Test cleanup
-		try! Driver.run(withArguments: ["clean"])
-		let failedContents = try? Utilities.readFile(".gryphon/StandardLibrary.template.swift")
-		XCTAssertNil(failedContents, "Gryphon -clean: failed to delete files.")
-
-		// Create the folder again so other testing and development can continue
-		try! Driver.run(withArguments: ["init", "-no-xcode"])
 	}
-
-	static var allTests = [
-		("testInitialization", testInitialization),
-	]
 }

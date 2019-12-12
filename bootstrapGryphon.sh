@@ -30,6 +30,7 @@ if perl dumpASTs.pl Sources/GryphonLib/*.swift \
 	Tests/GryphonLibTests/DriverTest.swift \
 	Tests/GryphonLibTests/ExtensionsTest.swift \
 	Tests/GryphonLibTests/IntegrationTest.swift \
+	Tests/GryphonLibTests/InitializationTest.swift \
 	Tests/GryphonLibTests/LibraryTranspilationTest.swift \
 	Tests/GryphonLibTests/PrintableAsTreeTest.swift \
 	Tests/GryphonLibTests/ShellTest.swift \
