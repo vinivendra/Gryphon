@@ -14,10 +14,39 @@
 // limitations under the License.
 //
 
+// gryphon output: Bootstrap/LibraryTranspilationTest.kt
+
+#if !IS_DUMPING_ASTS
 @testable import GryphonLib
 import XCTest
+#endif
 
 class LibraryTranspilationTest: XCTestCase {
+	// declaration: constructor(): super() { }
+
+	public func getClassName() -> String { // annotation: override
+		return "LibraryTranspilationTest"
+	}
+
+	override public func runAllTests() { // annotation: override
+		testSimpleMatches()
+		testMatchDictionary()
+		testImplicitTypeExpression()
+		testTrailingClosures()
+		testSubtyping()
+		testSimplifiedSubtypes()
+	}
+
+	static var allTests = [ // kotlin: ignore
+		("testSimpleMatches", testSimpleMatches),
+		("testMatchDictionary", testMatchDictionary),
+		("testImplicitTypeExpression", testImplicitTypeExpression),
+		("testTrailingClosures", testTrailingClosures),
+		("testSubtyping", testSubtyping),
+		("testSimplifiedSubtypes", testSimplifiedSubtypes),
+	]
+
+	// MARK: - Tests
 	func testSimpleMatches() {
 		let range1 = SourceFileRange(lineStart: 1, lineEnd: 1, columnStart: 1, columnEnd: 1)
 		let range2 = SourceFileRange(lineStart: 2, lineEnd: 2, columnStart: 2, columnEnd: 2)
@@ -390,13 +419,4 @@ class LibraryTranspilationTest: XCTestCase {
 		XCTAssert("__owned Int".isSubtype(of: "Int"))
 		XCTAssert("Int".isSubtype(of: "__owned Int"))
 	}
-
-	static var allTests = [
-		("testSimpleMatches", testSimpleMatches),
-		("testMatchDictionary", testMatchDictionary),
-		("testImplicitTypeExpression", testImplicitTypeExpression),
-		("testTrailingClosures", testTrailingClosures),
-		("testSubtyping", testSubtyping),
-		("testSimplifiedSubtypes", testSimplifiedSubtypes),
-	]
 }

@@ -50,6 +50,7 @@ Bootstrap/CompilerTest.kt
 Bootstrap/DriverTest.kt
 Bootstrap/ExtensionsTest.kt
 Bootstrap/IntegrationTest.kt
+Bootstrap/LibraryTranspilationTest.kt
 Bootstrap/SourceFileTest.kt
 Bootstrap/TranslationResultTest.kt
 Bootstrap/UtilitiesTest.kt

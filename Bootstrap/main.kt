@@ -24,6 +24,7 @@ fun main(args: Array<String>) {
 		DriverTest().run()
 		ExtensionsTest().run()
 		IntegrationTest().run()
+		LibraryTranspilationTest().run()
 		TranslationResultTest().run()
 		UtilitiesTest().run()
 		ShellTest().run()

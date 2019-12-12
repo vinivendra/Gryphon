@@ -84,6 +84,14 @@ open class XCTestCase() {
     	}
 	}
 
+	fun <T> XCTAssertNotNil(a: T?, test: String = "No message") {
+    	if (a == null) {
+    		allTestsSucceeded = false
+    		println("${getClassName()} - XCTAssertNotNil failed: ${test}.")	
+    		Exception().printStackTrace()
+    	}
+	}
+
 	fun XCTFail(test: String = "No message") {
     	allTestsSucceeded = false
 		println("${getClassName()} - XCTFail: ${test}.")	
