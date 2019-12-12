@@ -14,10 +14,33 @@
 // limitations under the License.
 //
 
+// gryphon output: Bootstrap/PrintableAsTreeTest.kt
+
+#if !IS_DUMPING_ASTS
 @testable import GryphonLib
 import XCTest
+#endif
 
 class PrintableAsTreeTest: XCTestCase {
+	// declaration: constructor(): super() { }
+
+	public func getClassName() -> String { // annotation: override
+		return "PrintableAsTreeTest"
+	}
+
+	override public func runAllTests() { // annotation: override
+		testPrinting()
+		testHorizontalLimit()
+		testInitOrNil()
+	}
+
+	static var allTests = [ // kotlin: ignore
+		("testPrinting", testPrinting),
+		("testHorizontalLimit", testHorizontalLimit),
+		("testInitOrNil", testInitOrNil),
+	]
+
+	// MARK: - Tests
 	func testPrinting() {
 		let root = PrintableTree("root")
 		let a = PrintableTree("a")
@@ -79,10 +102,4 @@ class PrintableAsTreeTest: XCTestCase {
         XCTAssertNil(noChildren)
         XCTAssertNotNil(okTree)
     }
-
-	static var allTests = [
-		("testPrinting", testPrinting),
-		("testHorizontalLimit", testHorizontalLimit),
-		("testInitOrNil", testInitOrNil),
-	]
 }
