@@ -14,10 +14,31 @@
 // limitations under the License.
 //
 
+// gryphon output: Bootstrap/ShellTest.kt
+
+#if !IS_DUMPING_ASTS
 @testable import GryphonLib
 import XCTest
+#endif
 
 class ShellTest: XCTestCase {
+	// declaration: constructor(): super() { }
+
+	public func getClassName() -> String { // annotation: override
+		return "ShellTest"
+	}
+
+	override public func runAllTests() { // annotation: override
+		testEcho()
+		testSwiftc()
+	}
+
+	static var allTests = [ // kotlin: ignore
+		("testEcho", testEcho),
+		("testSwiftc", testSwiftc),
+	]
+
+	// MARK: - Tests
 	func testEcho() {
 		let command: MutableArray = ["echo", "foo bar baz"]
 		guard let commandResult = Shell.runShellCommand(command) else {
@@ -48,9 +69,4 @@ class ShellTest: XCTestCase {
 		XCTAssertEqual(command2Result.standardError, "")
 		XCTAssertEqual(command2Result.status, 0)
 	}
-
-	static var allTests = [
-		("testEcho", testEcho),
-		("testSwiftc", testSwiftc),
-	]
 }

@@ -28,6 +28,7 @@
 	Tests/GryphonLibTests/LibraryTranspilationTest.swift \
 	Tests/GryphonLibTests/PrintableAsTreeTest.swift \
 	Tests/GryphonLibTests/TranslationResultTest.swift \
+	Tests/GryphonLibTests/ShellTest.swift \
 	Tests/GryphonLibTests/SourceFileTest.swift \
 	Tests/GryphonLibTests/UtilitiesTest.swift \
 	Tests/GryphonLibTests/TestUtilities.swift
