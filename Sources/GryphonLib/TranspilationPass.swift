@@ -1892,6 +1892,39 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 	}
 }
 
+/// Gryphon's custom data structures use different initializers that need to be turned into the
+/// corresponding Kotlin function calls (i.e. `MutableArray<Int>()` to `mutableListOf<Int>()`).
+public class DataStructureInitializersTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
+
+	override func replaceCallExpression( // annotation: override
+		_ callExpression: CallExpression)
+		-> Expression
+	{
+		if let typeExpression = callExpression.function as? TypeExpression,
+			typeExpression.typeName.hasPrefix("MutableArray<"),
+			let tupleExpression = callExpression.parameters as? TupleExpression,
+			tupleExpression.pairs.isEmpty
+		{
+			let typeName = typeExpression.typeName
+			let arrayElement = String(typeName.dropFirst("MutableArray<".count).dropLast())
+			return CallExpression(
+				range: callExpression.range,
+				function: DeclarationReferenceExpression(
+					range: callExpression.range,
+					identifier: "mutableListOf<\(arrayElement)>",
+					typeName: typeName,
+					isStandardLibrary: false,
+					isImplicit: false),
+				parameters: tupleExpression,
+				typeName: typeName)
+		}
+
+		return callExpression
+	}
+}
+
 /// Closures in kotlin can't have normal "return" statements. Instead, they must have return@f
 /// statements (not yet implemented) or just standalone expressions (easier to implement but more
 /// error-prone). This pass turns return statements in closures into standalone expressions
@@ -3525,6 +3558,7 @@ public extension TranspilationPass {
 		ast = SelfToThisTranspilationPass(ast: ast, context: context).run()
 		ast = AnonymousParametersTranspilationPass(ast: ast, context: context).run()
 		ast = CovarianceInitsAsCallsTranspilationPass(ast: ast, context: context).run()
+		ast = DataStructureInitializersTranspilationPass(ast: ast, context: context).run()
 		ast = ReturnsInLambdasTranspilationPass(ast: ast, context: context).run()
 		ast = TuplesToPairsTranspilationPass(ast: ast, context: context).run()
 		ast = AutoclosuresTranspilationPass(ast: ast, context: context).run()
