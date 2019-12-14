@@ -21,6 +21,7 @@ typealias MultilineString = String
 private func gryphonTemplates() {
 	let _array1: MutableArray<Any> = [1, 2, 3]
 	let _array2: MutableArray<Any> = [1, 2, 3]
+	let _any: Any = 0
 	let _string: String = ""
 	let _index = _string.startIndex
 
@@ -29,6 +30,15 @@ private func gryphonTemplates() {
 
 	_ = _string.suffix(from: _index)
 	_ = "_string.suffix(startIndex = _index)"
+
+	_ = _array1.toFixedArray()
+	_ = "_array1.toList()"
+
+	_ = _array1.appending(_any)
+	_ = "_array1 + _any"
+
+	_ = _array1.appending(contentsOf: _array2)
+	_ = "_array1 + _array2"
 }
 
 /// According to http://swiftdoc.org/v4.2/type/Array/hierarchy/

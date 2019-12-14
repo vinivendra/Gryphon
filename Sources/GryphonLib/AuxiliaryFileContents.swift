@@ -347,6 +347,18 @@ func gryphonTemplates() {
 	_ = _array.indices
 	_ = "_array.indices"
 
+	_ = _array.startIndex
+	_ = "0"
+
+	_ = _array.endIndex
+	_ = "_array.size"
+
+	_ = _array.index(after: _int)
+	_ = "_int + 1"
+
+	_ = _array.index(before: _int)
+	_ = "_int - 1"
+
 	_ = _array.first
 	_ = "_array.firstOrNull()"
 
