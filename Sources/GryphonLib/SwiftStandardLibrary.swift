@@ -155,8 +155,8 @@ public final class MutableArray<Element>: // kotlin: ignore
 		array.append(newElement)
 	}
 
-	public func appending(_ newElement: Element) -> MutableArray<Element> {
-		return MutableArray<Element>(self.array + [newElement])
+	public func appending(_ newElement: Element) -> FixedArray<Element> {
+		return FixedArray<Element>(self.array + [newElement])
 	}
 
 	public func insert(_ newElement: Element, at i: Index) {
