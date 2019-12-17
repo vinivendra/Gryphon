@@ -23,14 +23,14 @@
 
 public final class GryphonAST: PrintableAsTree, Equatable, CustomStringConvertible {
 	let sourceFile: SourceFile?
-	let declarations: MutableArray<Statement>
-	let statements: MutableArray<Statement>
+	let declarations: MutableList<Statement>
+	let statements: MutableList<Statement>
 	let outputFileMap: MutableDictionary<FileExtension, String>
 
 	init(
 		sourceFile: SourceFile?,
-		declarations: MutableArray<Statement>,
-		statements: MutableArray<Statement>,
+		declarations: MutableList<Statement>,
+		statements: MutableList<Statement>,
 		outputFileMap: MutableDictionary<FileExtension, String>)
 	{
 		self.sourceFile = sourceFile
@@ -50,9 +50,9 @@ public final class GryphonAST: PrintableAsTree, Equatable, CustomStringConvertib
 		return "Source File"
 	}
 
-	public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
-		return [PrintableTree("Declarations", MutableArray<PrintableAsTree?>(declarations)),
-				PrintableTree("Statements", MutableArray<PrintableAsTree?>(statements)), ]
+	public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
+		return [PrintableTree("Declarations", MutableList<PrintableAsTree?>(declarations)),
+				PrintableTree("Statements", MutableList<PrintableAsTree?>(statements)), ]
 	}
 
 	//
@@ -64,10 +64,12 @@ public final class GryphonAST: PrintableAsTree, Equatable, CustomStringConvertib
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 extension PrintableTree {
-	static func ofStatements(_ description: String, _ subtrees: MutableArray<Statement>)
+	static func ofStatements(
+		_ description: String,
+		_ subtrees: List<Statement>)
 		-> PrintableAsTree?
 	{
-		let newSubtrees = MutableArray<PrintableAsTree?>(subtrees)
+		let newSubtrees = MutableList<PrintableAsTree?>(subtrees)
 		return PrintableTree.initOrNil(description, newSubtrees)
 	}
 }
@@ -92,7 +94,7 @@ public /*abstract*/ class Statement: PrintableAsTree, Equatable {
 		return name
 	}
 
-	public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		fatalError("Accessing field in abstract class Statement")
 	}
 
@@ -188,7 +190,7 @@ public class CommentStatement: Statement {
 		super.init(range: range, name: "CommentStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [PrintableTree("//\(value)")]
 	}
 
@@ -205,7 +207,7 @@ public class ExpressionStatement: Statement {
 		super.init(range: range, name: "ExpressionStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [expression]
 	}
 
@@ -231,7 +233,7 @@ public class TypealiasDeclaration: Statement {
 		super.init(range: range, name: "TypealiasDeclaration".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [
 			isImplicit ? PrintableTree("implicit") : nil,
 			PrintableTree("identifier: \(identifier)"),
@@ -247,19 +249,19 @@ public class TypealiasDeclaration: Statement {
 
 public class ExtensionDeclaration: Statement {
 	let typeName: String
-	let members: MutableArray<Statement>
+	let members: MutableList<Statement>
 
 	init(
 		range: SourceFileRange?,
 		typeName: String,
-		members: MutableArray<Statement>)
+		members: MutableList<Statement>)
 	{
 		self.typeName = typeName
 		self.members = members
 		super.init(range: range, name: "ExtensionDeclaration".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree(typeName),
 			PrintableTree.ofStatements("members", members), ]
@@ -282,7 +284,7 @@ public class ImportDeclaration: Statement {
 		super.init(range: range, name: "ImportDeclaration".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [PrintableTree(moduleName)]
 	}
 
@@ -293,14 +295,14 @@ public class ImportDeclaration: Statement {
 
 public class ClassDeclaration: Statement {
 	let className: String
-	let inherits: MutableArray<String>
-	let members: MutableArray<Statement>
+	let inherits: MutableList<String>
+	let members: MutableList<Statement>
 
 	init(
 		range: SourceFileRange?,
 		className: String,
-		inherits: MutableArray<String>,
-		members: MutableArray<Statement>)
+		inherits: MutableList<String>,
+		members: MutableList<Statement>)
 	{
 		self.className = className
 		self.inherits = inherits
@@ -308,7 +310,7 @@ public class ClassDeclaration: Statement {
 		super.init(range: range, name: "ClassDeclaration".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return  [
 			PrintableTree(className),
 			PrintableTree.ofStrings("inherits", inherits),
@@ -323,18 +325,18 @@ public class ClassDeclaration: Statement {
 }
 
 public class CompanionObject: Statement {
-	let members: MutableArray<Statement>
+	let members: MutableList<Statement>
 
 	init(
 		range: SourceFileRange?,
-		members: MutableArray<Statement>)
+		members: MutableList<Statement>)
 	{
 		self.members = members
 		super.init(range: range, name: "CompanionObject".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
-		return MutableArray<PrintableAsTree?>(members)
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
+		return MutableList<PrintableAsTree?>(members)
 	}
 
 	public static func == (lhs: CompanionObject, rhs: CompanionObject) -> Bool {
@@ -345,18 +347,18 @@ public class CompanionObject: Statement {
 public class EnumDeclaration: Statement {
 	let access: String?
 	let enumName: String
-	let inherits: MutableArray<String>
-	let elements: MutableArray<EnumElement>
-	let members: MutableArray<Statement>
+	let inherits: MutableList<String>
+	let elements: MutableList<EnumElement>
+	let members: MutableList<Statement>
 	let isImplicit: Bool
 
 	init(
 		range: SourceFileRange?,
 		access: String?,
 		enumName: String,
-		inherits: MutableArray<String>,
-		elements: MutableArray<EnumElement>,
-		members: MutableArray<Statement>,
+		inherits: MutableList<String>,
+		elements: MutableList<EnumElement>,
+		members: MutableList<Statement>,
 		isImplicit: Bool)
 	{
 		self.access = access
@@ -368,8 +370,8 @@ public class EnumDeclaration: Statement {
 		super.init(range: range, name: "EnumDeclaration".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
-		return MutableArray<PrintableAsTree?>(members)
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
+		return MutableList<PrintableAsTree?>(members)
 	}
 
 	public static func == (lhs: EnumDeclaration, rhs: EnumDeclaration) -> Bool {
@@ -384,19 +386,19 @@ public class EnumDeclaration: Statement {
 
 public class ProtocolDeclaration: Statement {
 	let protocolName: String
-	let members: MutableArray<Statement>
+	let members: MutableList<Statement>
 
 	init(
 		range: SourceFileRange?,
 		protocolName: String,
-		members: MutableArray<Statement>)
+		members: MutableList<Statement>)
 	{
 		self.protocolName = protocolName
 		self.members = members
 		super.init(range: range, name: "ProtocolDeclaration".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree(protocolName),
 			PrintableTree.ofStatements("members", members), ]
@@ -411,15 +413,15 @@ public class ProtocolDeclaration: Statement {
 public class StructDeclaration: Statement {
 	let annotations: String?
 	let structName: String
-	let inherits: MutableArray<String>
-	let members: MutableArray<Statement>
+	let inherits: MutableList<String>
+	let members: MutableList<Statement>
 
 	init(
 		range: SourceFileRange?,
 		annotations: String?,
 		structName: String,
-		inherits: MutableArray<String>,
-		members: MutableArray<Statement>)
+		inherits: MutableList<String>,
+		members: MutableList<Statement>)
 	{
 		self.annotations = annotations
 		self.structName = structName
@@ -428,7 +430,7 @@ public class StructDeclaration: Statement {
 		super.init(range: range, name: "StructDeclaration".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree.initOrNil(
 				"annotations", [PrintableTree.initOrNil(annotations)]),
@@ -447,32 +449,32 @@ public class StructDeclaration: Statement {
 
 public class FunctionDeclaration: Statement {
 	var prefix: String
-	var parameters: MutableArray<FunctionParameter>
+	var parameters: MutableList<FunctionParameter>
 	var returnType: String
 	var functionType: String
-	var genericTypes: MutableArray<String>
+	var genericTypes: MutableList<String>
 	var isImplicit: Bool
 	var isStatic: Bool
 	var isMutating: Bool
 	var isPure: Bool
 	var extendsType: String?
-	var statements: MutableArray<Statement>?
+	var statements: MutableList<Statement>?
 	var access: String?
 	var annotations: String?
 
 	init(
 		range: SourceFileRange?,
 		prefix: String,
-		parameters: MutableArray<FunctionParameter>,
+		parameters: MutableList<FunctionParameter>,
 		returnType: String,
 		functionType: String,
-		genericTypes: MutableArray<String>,
+		genericTypes: MutableList<String>,
 		isImplicit: Bool,
 		isStatic: Bool,
 		isMutating: Bool,
 		isPure: Bool,
 		extendsType: String?,
-		statements: MutableArray<Statement>?,
+		statements: MutableList<Statement>?,
 		access: String?,
 		annotations: String?,
 		name: String = "FunctionDeclaration".capitalizedAsCamelCase())
@@ -493,7 +495,7 @@ public class FunctionDeclaration: Statement {
 		super.init(range: range, name: name)
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		let parametersTrees = parameters
 			.map { parameter -> PrintableAsTree? in
 				PrintableTree(
@@ -542,16 +544,16 @@ public class InitializerDeclaration: FunctionDeclaration {
 
 	init(
 		range: SourceFileRange?,
-		parameters: MutableArray<FunctionParameter>,
+		parameters: MutableList<FunctionParameter>,
 		returnType: String,
 		functionType: String,
-		genericTypes: MutableArray<String>,
+		genericTypes: MutableList<String>,
 		isImplicit: Bool,
 		isStatic: Bool,
 		isMutating: Bool,
 		isPure: Bool,
 		extendsType: String?,
-		statements: MutableArray<Statement>?,
+		statements: MutableList<Statement>?,
 		access: String?,
 		annotations: String?,
 		superCall: CallExpression?,
@@ -576,8 +578,8 @@ public class InitializerDeclaration: FunctionDeclaration {
 			name: "InitializerDeclaration".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
-		let result = super.printableSubtrees
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
+		let result = super.printableSubtrees.toMutableList()
 		result.append(PrintableTree.initOrNil("super call", [superCall]))
 		return result
 	}
@@ -639,7 +641,7 @@ public class VariableDeclaration: Statement {
 		super.init(range: range, name: "VariableDeclaration".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree.initOrNil(
 				"extendsType", [PrintableTree.initOrNil(extendsType)]),
@@ -674,18 +676,18 @@ public class VariableDeclaration: Statement {
 }
 
 public class DoStatement: Statement {
-	let statements: MutableArray<Statement>
+	let statements: MutableList<Statement>
 
 	init(
 		range: SourceFileRange?,
-		statements: MutableArray<Statement>)
+		statements: MutableList<Statement>)
 	{
 		self.statements = statements
 		super.init(range: range, name: "DoStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
-		return MutableArray<PrintableAsTree?>(statements)
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
+		return MutableList<PrintableAsTree?>(statements)
 	}
 
 	public static func == (lhs: DoStatement, rhs: DoStatement) -> Bool {
@@ -695,22 +697,22 @@ public class DoStatement: Statement {
 
 public class CatchStatement: Statement {
 	let variableDeclaration: VariableDeclaration?
-	let statements: MutableArray<Statement>
+	let statements: MutableList<Statement>
 
 	init(
 		range: SourceFileRange?,
 		variableDeclaration: VariableDeclaration?,
-		statements: MutableArray<Statement>)
+		statements: MutableList<Statement>)
 	{
 		self.variableDeclaration = variableDeclaration
 		self.statements = statements
 		super.init(range: range, name: "CatchStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree(
-				"variableDeclaration", MutableArray<PrintableAsTree?>([ variableDeclaration ])),
+				"variableDeclaration", MutableList<PrintableAsTree?>([ variableDeclaration ])),
 			PrintableTree.ofStatements(
 				"statements", statements),
 		]
@@ -725,13 +727,13 @@ public class CatchStatement: Statement {
 public class ForEachStatement: Statement {
 	let collection: Expression
 	let variable: Expression
-	let statements: MutableArray<Statement>
+	let statements: MutableList<Statement>
 
 	init(
 		range: SourceFileRange?,
 		collection: Expression,
 		variable: Expression,
-		statements: MutableArray<Statement>)
+		statements: MutableList<Statement>)
 	{
 		self.collection = collection
 		self.variable = variable
@@ -739,7 +741,7 @@ public class ForEachStatement: Statement {
 		super.init(range: range, name: "ForEachStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree("variable", [variable]),
 			PrintableTree("collection", [collection]),
@@ -755,19 +757,19 @@ public class ForEachStatement: Statement {
 
 public class WhileStatement: Statement {
 	let expression: Expression
-	let statements: MutableArray<Statement>
+	let statements: MutableList<Statement>
 
 	init(
 		range: SourceFileRange?,
 		expression: Expression,
-		statements: MutableArray<Statement>)
+		statements: MutableList<Statement>)
 	{
 		self.expression = expression
 		self.statements = statements
 		super.init(range: range, name: "WhileStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree.ofExpressions("expression", [expression]),
 			PrintableTree.ofStatements("statements", statements), ]
@@ -780,9 +782,9 @@ public class WhileStatement: Statement {
 }
 
 public class IfStatement: Statement {
-	var conditions: MutableArray<IfCondition>
-	var declarations: MutableArray<VariableDeclaration>
-	var statements: MutableArray<Statement>
+	var conditions: MutableList<IfCondition>
+	var declarations: MutableList<VariableDeclaration>
+	var statements: MutableList<Statement>
 	var elseStatement: IfStatement?
 	var isGuard: Bool
 
@@ -802,9 +804,9 @@ public class IfStatement: Statement {
 
 	public init(
 		range: SourceFileRange?,
-		conditions: MutableArray<IfCondition>,
-		declarations: MutableArray<VariableDeclaration>,
-		statements: MutableArray<Statement>,
+		conditions: MutableList<IfCondition>,
+		declarations: MutableList<VariableDeclaration>,
+		statements: MutableList<Statement>,
 		elseStatement: IfStatement?,
 		isGuard: Bool)
 	{
@@ -816,14 +818,14 @@ public class IfStatement: Statement {
 		super.init(range: range, name: "IfStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		let declarationTrees = declarations
 		let conditionTrees = conditions.map { $0.toStatement() }
 		let elseStatementTrees = elseStatement?.printableSubtrees ?? []
 		return [
 			isGuard ? PrintableTree("guard") : nil,
 			PrintableTree(
-				"declarations", MutableArray<PrintableAsTree?>(declarationTrees)),
+				"declarations", MutableList<PrintableAsTree?>(declarationTrees)),
 			PrintableTree.ofStatements(
 				"conditions", conditionTrees),
 			PrintableTree.ofStatements(
@@ -848,13 +850,13 @@ public class IfStatement: Statement {
 public class SwitchStatement: Statement {
 	let convertsToExpression: Statement?
 	let expression: Expression
-	let cases: MutableArray<SwitchCase>
+	let cases: MutableList<SwitchCase>
 
 	init(
 		range: SourceFileRange?,
 		convertsToExpression: Statement?,
 		expression: Expression,
-		cases: MutableArray<SwitchCase>)
+		cases: MutableList<SwitchCase>)
 	{
 		self.convertsToExpression = convertsToExpression
 		self.expression = expression
@@ -862,7 +864,7 @@ public class SwitchStatement: Statement {
 		super.init(range: range, name: "SwitchStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		let caseItems = cases.map { switchCase -> PrintableAsTree? in
 			PrintableTree("case item", [
 				PrintableTree.ofExpressions(
@@ -888,18 +890,18 @@ public class SwitchStatement: Statement {
 }
 
 public class DeferStatement: Statement {
-	let statements: MutableArray<Statement>
+	let statements: MutableList<Statement>
 
 	init(
 		range: SourceFileRange?,
-		statements: MutableArray<Statement>)
+		statements: MutableList<Statement>)
 	{
 		self.statements = statements
 		super.init(range: range, name: "DeferStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
-		return MutableArray<PrintableAsTree?>(statements)
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
+		return MutableList<PrintableAsTree?>(statements)
 	}
 
 	public static func == (lhs: DeferStatement, rhs: DeferStatement) -> Bool {
@@ -918,7 +920,7 @@ public class ThrowStatement: Statement {
 		super.init(range: range, name: "ThrowStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [expression]
 	}
 
@@ -938,7 +940,7 @@ public class ReturnStatement: Statement {
 		super.init(range: range, name: "ReturnStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [expression]
 	}
 
@@ -952,7 +954,7 @@ public class BreakStatement: Statement {
 		super.init(range: range, name: "BreakStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return []
 	}
 
@@ -966,7 +968,7 @@ public class ContinueStatement: Statement {
 		super.init(range: range, name: "ContinueStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return []
 	}
 
@@ -989,7 +991,7 @@ public class AssignmentStatement: Statement {
 		super.init(range: range, name: "AssignmentStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [leftHand, rightHand]
 	}
 
@@ -1004,7 +1006,7 @@ public class ErrorStatement: Statement {
 		super.init(range: range, name: "ErrorStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return []
 	}
 
@@ -1017,10 +1019,12 @@ public class ErrorStatement: Statement {
 // TODO: dictionaryExpression should have key-value pairs
 
 extension PrintableTree {
-	static func ofExpressions(_ description: String, _ subtrees: MutableArray<Expression>)
+	static func ofExpressions(
+		_ description: String,
+		_ subtrees: List<Expression>)
 		-> PrintableAsTree?
 	{
-		let newSubtrees = MutableArray<PrintableAsTree?>(subtrees)
+		let newSubtrees = MutableList<PrintableAsTree?>(subtrees)
 		return PrintableTree.initOrNil(description, newSubtrees)
 	}
 }
@@ -1049,7 +1053,7 @@ public /*abstract*/ class Expression: PrintableAsTree, Equatable {
 		return name
 	}
 
-	public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		fatalError("Accessing field in abstract class Expression")
 	}
 
@@ -1222,7 +1226,7 @@ public class LiteralCodeExpression: Expression {
 		super.init(range: range, name: "LiteralCodeExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [PrintableTree(string)]
 	}
 
@@ -1243,7 +1247,7 @@ public class LiteralDeclarationExpression: Expression {
 		super.init(range: range, name: "LiteralDeclarationExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [PrintableTree(string)]
 	}
 
@@ -1270,7 +1274,7 @@ public class TemplateExpression: Expression {
 		super.init(range: range, name: "TemplateExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		let matchesTrees = matches.map { PrintableTree($0.key, [$0.value]) }
 
 		let sortedMatchesTrees = matchesTrees.sorted { a, b in
@@ -1279,7 +1283,7 @@ public class TemplateExpression: Expression {
 
 		return [
 			PrintableTree("pattern \"\(pattern)\""),
-			PrintableTree("matches", MutableArray<PrintableAsTree?>(sortedMatchesTrees)), ]
+			PrintableTree("matches", MutableList<PrintableAsTree?>(sortedMatchesTrees)), ]
 	}
 
 	override var swiftType: String? { // annotation: override
@@ -1300,7 +1304,7 @@ public class ParenthesesExpression: Expression {
 		super.init(range: range, name: "ParenthesesExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [expression]
 	}
 
@@ -1321,7 +1325,7 @@ public class ForceValueExpression: Expression {
 		super.init(range: range, name: "ForceValueExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [expression]
 	}
 
@@ -1348,7 +1352,7 @@ public class OptionalExpression: Expression {
 		super.init(range: range, name: "OptionalExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [expression]
 	}
 
@@ -1386,7 +1390,7 @@ public class DeclarationReferenceExpression: Expression {
 		super.init(range: range, name: "DeclarationReferenceExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree(typeName),
 			PrintableTree(identifier),
@@ -1418,7 +1422,7 @@ public class TypeExpression: Expression {
 		super.init(range: range, name: "TypeExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [PrintableTree(typeName)]
 	}
 
@@ -1448,7 +1452,7 @@ public class SubscriptExpression: Expression {
 		super.init(range: range, name: "SubscriptExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree("type \(typeName)"),
 			PrintableTree.ofExpressions("subscriptedExpression", [subscriptedExpression]),
@@ -1467,16 +1471,16 @@ public class SubscriptExpression: Expression {
 }
 
 public class ArrayExpression: Expression {
-	let elements: MutableArray<Expression>
+	let elements: MutableList<Expression>
 	let typeName: String
 
-	init(range: SourceFileRange?, elements: MutableArray<Expression>, typeName: String) {
+	init(range: SourceFileRange?, elements: MutableList<Expression>, typeName: String) {
 		self.elements = elements
 		self.typeName = typeName
 		super.init(range: range, name: "ArrayExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree("type \(typeName)"),
 			PrintableTree.ofExpressions("elements", elements), ]
@@ -1493,14 +1497,14 @@ public class ArrayExpression: Expression {
 }
 
 public class DictionaryExpression: Expression {
-	let keys: MutableArray<Expression>
-	let values: MutableArray<Expression>
+	let keys: MutableList<Expression>
+	let values: MutableList<Expression>
 	let typeName: String
 
 	init(
 		range: SourceFileRange?,
-		keys: MutableArray<Expression>,
-		values: MutableArray<Expression>,
+		keys: MutableList<Expression>,
+		values: MutableList<Expression>,
 		typeName: String)
 	{
 		self.keys = keys
@@ -1509,7 +1513,7 @@ public class DictionaryExpression: Expression {
 		super.init(range: range, name: "DictionaryExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		let keyValueTrees = zipToClass(keys, values).map
 		{ (pair: (first: Expression, second: Expression)) -> PrintableAsTree? in
 			PrintableTree("pair", [
@@ -1541,7 +1545,7 @@ public class ReturnExpression: Expression {
 		super.init(range: range, name: "ReturnExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [expression]
 	}
 
@@ -1564,7 +1568,7 @@ public class DotExpression: Expression {
 		super.init(range: range, name: "DotExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree.ofExpressions("left", [leftExpression]),
 			PrintableTree.ofExpressions("right", [rightExpression]), ]
@@ -1616,7 +1620,7 @@ public class BinaryOperatorExpression: Expression {
 		super.init(range: range, name: "BinaryOperatorExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree("type \(typeName)"),
 			PrintableTree.ofExpressions("left", [leftExpression]),
@@ -1653,7 +1657,7 @@ public class PrefixUnaryExpression: Expression {
 		super.init(range: range, name: "PrefixUnaryExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree("type \(typeName)"),
 			PrintableTree("operator \(operatorSymbol)"),
@@ -1688,7 +1692,7 @@ public class PostfixUnaryExpression: Expression {
 		super.init(range: range, name: "PrefixUnaryExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree("type \(typeName)"),
 			PrintableTree("operator \(operatorSymbol)"),
@@ -1723,7 +1727,7 @@ public class IfExpression: Expression {
 		super.init(range: range, name: "IfExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree.ofExpressions("condition", [condition]),
 			PrintableTree.ofExpressions("trueExpression", [trueExpression]),
@@ -1758,7 +1762,7 @@ public class CallExpression: Expression {
 		super.init(range: range, name: "CallExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree("type \(typeName)"),
 			PrintableTree.ofExpressions("function", [function]),
@@ -1781,14 +1785,14 @@ public class CallExpression: Expression {
 }
 
 public class ClosureExpression: Expression {
-	let parameters: MutableArray<LabeledType>
-	let statements: MutableArray<Statement>
+	let parameters: MutableList<LabeledType>
+	let statements: MutableList<Statement>
 	let typeName: String
 
 	init(
 		range: SourceFileRange?,
-		parameters: MutableArray<LabeledType>,
-		statements: MutableArray<Statement>,
+		parameters: MutableList<LabeledType>,
+		statements: MutableList<Statement>,
 		typeName: String)
 	{
 		self.parameters = parameters
@@ -1797,7 +1801,7 @@ public class ClosureExpression: Expression {
 		super.init(range: range, name: "ClosureExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		let parametersString =
 			"(" + parameters.map { $0.label + ":" }.joined(separator: ", ") + ")"
 		return [
@@ -1825,7 +1829,7 @@ public class LiteralIntExpression: Expression {
 		super.init(range: range, name: "LiteralIntExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [PrintableTree(String(value))]
 	}
 
@@ -1846,7 +1850,7 @@ public class LiteralUIntExpression: Expression {
 		super.init(range: range, name: "LiteralUIntExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [PrintableTree(String(value))]
 	}
 
@@ -1867,7 +1871,7 @@ public class LiteralDoubleExpression: Expression {
 		super.init(range: range, name: "LiteralDoubleExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [PrintableTree(String(value))]
 	}
 
@@ -1888,7 +1892,7 @@ public class LiteralFloatExpression: Expression {
 		super.init(range: range, name: "LiteralFloatExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [PrintableTree(String(value))]
 	}
 
@@ -1909,7 +1913,7 @@ public class LiteralBoolExpression: Expression {
 		super.init(range: range, name: "LiteralBoolExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [PrintableTree(String(value))]
 	}
 
@@ -1932,7 +1936,7 @@ public class LiteralStringExpression: Expression {
 		super.init(range: range, name: "LiteralStringExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [
 			PrintableTree(value),
 			isMultiline ? PrintableTree("multiline") : nil,
@@ -1956,7 +1960,7 @@ public class LiteralCharacterExpression: Expression {
 		super.init(range: range, name: "LiteralCharacterExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [PrintableTree(String(value))]
 	}
 
@@ -1975,7 +1979,7 @@ public class NilLiteralExpression: Expression {
 		super.init(range: range, name: "NilLiteralExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return []
 	}
 
@@ -1989,16 +1993,16 @@ public class NilLiteralExpression: Expression {
 }
 
 public class InterpolatedStringLiteralExpression: Expression {
-	let expressions: MutableArray<Expression>
+	let expressions: MutableList<Expression>
 
-	init(range: SourceFileRange?, expressions: MutableArray<Expression>) {
+	init(range: SourceFileRange?, expressions: MutableList<Expression>) {
 		self.expressions = expressions
 		super.init(
 			range: range,
 			name: "InterpolatedStringLiteralExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return [PrintableTree.ofExpressions("expressions", expressions)]
 	}
 
@@ -2023,14 +2027,14 @@ public class InterpolatedStringLiteralExpression: Expression {
 }
 
 public class TupleExpression: Expression {
-	let pairs: MutableArray<LabeledExpression>
+	let pairs: MutableList<LabeledExpression>
 
-	init(range: SourceFileRange?, pairs: MutableArray<LabeledExpression>) {
+	init(range: SourceFileRange?, pairs: MutableList<LabeledExpression>) {
 		self.pairs = pairs
 		super.init(range: range, name: "TupleExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return pairs.map {
 			PrintableTree.ofExpressions(($0.label ?? "_") + ":", [$0.expression])
 		}
@@ -2046,15 +2050,15 @@ public class TupleExpression: Expression {
 }
 
 public class TupleShuffleExpression: Expression {
-	let labels: MutableArray<String?>
-	let indices: MutableArray<TupleShuffleIndex>
-	let expressions: MutableArray<Expression>
+	let labels: MutableList<String?>
+	let indices: MutableList<TupleShuffleIndex>
+	let expressions: MutableList<Expression>
 
 	init(
 		range: SourceFileRange?,
-		labels: MutableArray<String?>,
-		indices: MutableArray<TupleShuffleIndex>,
-		expressions: MutableArray<Expression>)
+		labels: MutableList<String?>,
+		indices: MutableList<TupleShuffleIndex>,
+		expressions: MutableList<Expression>)
 	{
 		self.labels = labels
 		self.indices = indices
@@ -2062,7 +2066,7 @@ public class TupleShuffleExpression: Expression {
 		super.init(range: range, name: "TupleShuffleExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		let labelStrings = labels.map { ($0 ?? "_") + ":" }
 		return [
 			PrintableTree.ofStrings("labels", labelStrings),
@@ -2086,7 +2090,7 @@ public class ErrorExpression: Expression {
 		super.init(range: range, name: "ErrorExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		return []
 	}
 
@@ -2117,12 +2121,12 @@ public struct FunctionParameter: Equatable {
 }
 
 public class SwitchCase: Equatable {
-	var expressions: MutableArray<Expression>
-	var statements: MutableArray<Statement>
+	var expressions: MutableList<Expression>
+	var statements: MutableList<Statement>
 
 	init(
-		expressions: MutableArray<Expression>,
-		statements: MutableArray<Statement>)
+		expressions: MutableList<Expression>,
+		statements: MutableList<Statement>)
 	{
 		self.expressions = expressions
 		self.statements = statements
@@ -2136,13 +2140,13 @@ public class SwitchCase: Equatable {
 
 public class EnumElement: PrintableAsTree, Equatable {
 	var name: String
-	var associatedValues: MutableArray<LabeledType>
+	var associatedValues: MutableList<LabeledType>
 	var rawValue: Expression?
 	var annotations: String?
 
 	init(
 		name: String,
-		associatedValues: MutableArray<LabeledType>,
+		associatedValues: MutableList<LabeledType>,
 		rawValue: Expression?,
 		annotations: String?)
 	{
@@ -2163,7 +2167,7 @@ public class EnumElement: PrintableAsTree, Equatable {
 		return ".\(self.name)"
 	}
 
-	public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		let associatedValues = self.associatedValues
 			.map { "\($0.label): \($0.typeName)" }
 			.joined(separator: ", ")

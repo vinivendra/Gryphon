@@ -43,7 +43,7 @@ public class TranspilationPass {
 	let ast: GryphonAST
 	let context: TranspilationContext
 
-	fileprivate var parents: MutableArray<ASTNode> = []
+	fileprivate var parents: MutableList<ASTNode> = []
 	fileprivate var parent: ASTNode {
 		return parents.secondToLast!
 	}
@@ -73,29 +73,29 @@ public class TranspilationPass {
 		return swiftProtocols.contains(protocolName)
 	}
 
-	static let swiftRawRepresentableTypes: MutableArray<String> = [
+	static let swiftRawRepresentableTypes: MutableList<String> = [
 		"String",
 		"Int", "Int8", "Int16", "Int32", "Int64",
 		"UInt", "UInt8", "UInt16", "UInt32", "UInt64",
 		"Float", "Float32", "Float64", "Float80", "Double",
 	]
 
-	static let swiftProtocols: MutableArray<String> = [
+	static let swiftProtocols: MutableList<String> = [
 		"Equatable", "Codable", "Decodable", "Encodable", "CustomStringConvertible", "Hashable",
 	]
 
 	// MARK: - Replace Statements
 
 	func replaceStatements( // annotation: open
-		_ statements: MutableArray<Statement>)
-		-> MutableArray<Statement>
+		_ statements: MutableList<Statement>)
+		-> MutableList<Statement>
 	{
-		return statements.flatMap { replaceStatement($0) }
+		return statements.flatMap { replaceStatement($0) }.toMutableList()
 	}
 
 	func replaceStatement( // annotation: open
 		_ statement: Statement)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		parents.append(.statementNode(value: statement))
 		defer { parents.removeLast() }
@@ -183,14 +183,14 @@ public class TranspilationPass {
 	}
 
 	func replaceComment(_ commentStatement: CommentStatement) // annotation: open
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		return [commentStatement]
 	}
 
 	func replaceExpressionStatement( // annotation: open
 		_ expressionStatement: ExpressionStatement)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		return [ExpressionStatement(
 			range: expressionStatement.range,
@@ -199,7 +199,7 @@ public class TranspilationPass {
 
 	func replaceExtension( // annotation: open
 		_ extensionDeclaration: ExtensionDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		return [ExtensionDeclaration(
 			range: extensionDeclaration.range,
@@ -209,21 +209,21 @@ public class TranspilationPass {
 
 	func replaceImportDeclaration( // annotation: open
 		_ importDeclaration: ImportDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		return [importDeclaration]
 	}
 
 	func replaceTypealiasDeclaration( // annotation: open
 		_ typealiasDeclaration: TypealiasDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		return [typealiasDeclaration]
 	}
 
 	func replaceClassDeclaration( // annotation: open
 		_ classDeclaration: ClassDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		return [ClassDeclaration(
 			range: classDeclaration.range,
@@ -234,7 +234,7 @@ public class TranspilationPass {
 
 	func replaceCompanionObject( // annotation: open
 		_ companionObject: CompanionObject)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		return [CompanionObject(
 			range: companionObject.range,
@@ -243,7 +243,7 @@ public class TranspilationPass {
 
 	func replaceEnumDeclaration( // annotation: open
 		_ enumDeclaration: EnumDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		return [
 			EnumDeclaration(
@@ -251,21 +251,23 @@ public class TranspilationPass {
 				access: enumDeclaration.access,
 				enumName: enumDeclaration.enumName,
 				inherits: enumDeclaration.inherits,
-				elements: enumDeclaration.elements.flatMap { replaceEnumElementDeclaration($0) },
+				elements: enumDeclaration.elements
+					.flatMap { replaceEnumElementDeclaration($0) }
+					.toMutableList(),
 				members: replaceStatements(enumDeclaration.members),
 				isImplicit: enumDeclaration.isImplicit), ]
 	}
 
 	func replaceEnumElementDeclaration( // annotation: open
 		_ enumElement: EnumElement)
-		-> MutableArray<EnumElement>
+		-> MutableList<EnumElement>
 	{
 		return [enumElement]
 	}
 
 	func replaceProtocolDeclaration( // annotation: open
 		_ protocolDeclaration: ProtocolDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		return [ProtocolDeclaration(
 			range: protocolDeclaration.range,
@@ -275,7 +277,7 @@ public class TranspilationPass {
 
 	func replaceStructDeclaration( // annotation: open
 		_ structDeclaration: StructDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		return [StructDeclaration(
 			range: structDeclaration.range,
@@ -287,7 +289,7 @@ public class TranspilationPass {
 
 	func replaceInitializerDeclaration( // annotation: open
 		_ initializerDeclaration: InitializerDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		if let result = processInitializerDeclaration(initializerDeclaration) {
 			return [result]
@@ -311,7 +313,7 @@ public class TranspilationPass {
 		}
 
 		let initializerDeclaration = initializerDeclaration
-		initializerDeclaration.parameters = replacedParameters
+		initializerDeclaration.parameters = replacedParameters.toMutableList()
 		initializerDeclaration.statements =
 			initializerDeclaration.statements.map { replaceStatements($0) }
 		return initializerDeclaration
@@ -319,7 +321,7 @@ public class TranspilationPass {
 
 	func replaceFunctionDeclaration( // annotation: open
 		_ functionDeclaration: FunctionDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		if let result = processFunctionDeclaration(functionDeclaration) {
 			return [result]
@@ -343,7 +345,7 @@ public class TranspilationPass {
 			}
 
 		let functionDeclaration = functionDeclaration
-		functionDeclaration.parameters = replacedParameters
+		functionDeclaration.parameters = replacedParameters.toMutableList()
 		functionDeclaration.statements =
 			functionDeclaration.statements.map { replaceStatements($0) }
 		return functionDeclaration
@@ -351,7 +353,7 @@ public class TranspilationPass {
 
 	func replaceVariableDeclaration( // annotation: open
 		_ variableDeclaration: VariableDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		return [processVariableDeclaration(variableDeclaration)]
 	}
@@ -374,7 +376,7 @@ public class TranspilationPass {
 
 	func replaceDoStatement( // annotation: open
 		_ doStatement: DoStatement)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		return [DoStatement(
 			range: doStatement.range,
@@ -383,7 +385,7 @@ public class TranspilationPass {
 
 	func replaceCatchStatement( // annotation: open
 		_ catchStatement: CatchStatement)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		return [CatchStatement(
 			range: catchStatement.range,
@@ -395,7 +397,7 @@ public class TranspilationPass {
 
 	func replaceForEachStatement( // annotation: open
 		_ forEachStatement: ForEachStatement)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		return [ForEachStatement(
 			range: forEachStatement.range,
@@ -406,7 +408,7 @@ public class TranspilationPass {
 
 	func replaceWhileStatement( // annotation: open
 		_ whileStatement: WhileStatement)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		return [WhileStatement(
 			range: whileStatement.range,
@@ -416,7 +418,7 @@ public class TranspilationPass {
 
 	func replaceIfStatement( // annotation: open
 		_ ifStatement: IfStatement)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		return [processIfStatement(ifStatement)]
 	}
@@ -428,17 +430,17 @@ public class TranspilationPass {
 		let ifStatement = ifStatement
 		ifStatement.conditions = replaceIfConditions(ifStatement.conditions)
 		ifStatement.declarations =
-			ifStatement.declarations.map { processVariableDeclaration($0) }
+			ifStatement.declarations.map { processVariableDeclaration($0) }.toMutableList()
 		ifStatement.statements = replaceStatements(ifStatement.statements)
 		ifStatement.elseStatement = ifStatement.elseStatement.map { processIfStatement($0) }
 		return ifStatement
 	}
 
 	func replaceIfConditions( // annotation: open
-		_ conditions: MutableArray<IfStatement.IfCondition>)
-		-> MutableArray<IfStatement.IfCondition>
+		_ conditions: MutableList<IfStatement.IfCondition>)
+		-> MutableList<IfStatement.IfCondition>
 	{
-		return conditions.map { replaceIfCondition($0) }
+		return conditions.map { replaceIfCondition($0) }.toMutableList()
 	}
 
 	func replaceIfCondition( // annotation: open
@@ -456,7 +458,7 @@ public class TranspilationPass {
 
 	func replaceSwitchStatement( // annotation: open
 		_ switchStatement: SwitchStatement)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		let replacedConvertsToExpression: Statement?
 		if let convertsToExpression = switchStatement.convertsToExpression {
@@ -474,7 +476,7 @@ public class TranspilationPass {
 		let replacedCases = switchStatement.cases.map
 			{
 				SwitchCase(
-					expressions: $0.expressions.map { replaceExpression($0) },
+					expressions: $0.expressions.map { replaceExpression($0) }.toMutableList(),
 					statements: replaceStatements($0.statements))
 			}
 
@@ -482,12 +484,12 @@ public class TranspilationPass {
 			range: switchStatement.range,
 			convertsToExpression: replacedConvertsToExpression,
 			expression: replaceExpression(switchStatement.expression),
-			cases: replacedCases), ]
+			cases: replacedCases.toMutableList()), ]
 	}
 
 	func replaceDeferStatement( // annotation: open
 		_ deferStatement: DeferStatement)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		return [DeferStatement(
 			range: deferStatement.range,
@@ -496,7 +498,7 @@ public class TranspilationPass {
 
 	func replaceThrowStatement( // annotation: open
 		_ throwStatement: ThrowStatement)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		return [ThrowStatement(
 			range: throwStatement.range,
@@ -505,7 +507,7 @@ public class TranspilationPass {
 
 	func replaceReturnStatement( // annotation: open
 		_ returnStatement: ReturnStatement)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		return [ReturnStatement(
 			range: returnStatement.range,
@@ -514,7 +516,7 @@ public class TranspilationPass {
 
 	func replaceAssignmentStatement( // annotation: open
 		_ assignmentStatement: AssignmentStatement)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		return [AssignmentStatement(
 			range: assignmentStatement.range,
@@ -721,7 +723,7 @@ public class TranspilationPass {
 	{
 		return ArrayExpression(
 			range: arrayExpression.range,
-			elements: arrayExpression.elements.map { replaceExpression($0) },
+			elements: arrayExpression.elements.map { replaceExpression($0) }.toMutableList(),
 			typeName: arrayExpression.typeName)
 	}
 
@@ -731,8 +733,8 @@ public class TranspilationPass {
 	{
 		return DictionaryExpression(
 			range: dictionaryExpression.range,
-			keys: dictionaryExpression.keys.map { replaceExpression($0) },
-			values: dictionaryExpression.values.map { replaceExpression($0) },
+			keys: dictionaryExpression.keys.map { replaceExpression($0) }.toMutableList(),
+			values: dictionaryExpression.values.map { replaceExpression($0) }.toMutableList(),
 			typeName: dictionaryExpression.typeName)
 	}
 
@@ -890,7 +892,7 @@ public class TranspilationPass {
 		return InterpolatedStringLiteralExpression(
 			range: interpolatedStringLiteralExpression.range,
 			expressions: interpolatedStringLiteralExpression.expressions
-				.map { replaceExpression($0) })
+				.map { replaceExpression($0) }.toMutableList())
 	}
 
 	func replaceTupleExpression( // annotation: open
@@ -901,7 +903,7 @@ public class TranspilationPass {
 			range: tupleExpression.range,
 			pairs: tupleExpression.pairs.map {
 				LabeledExpression(label: $0.label, expression: replaceExpression($0.expression))
-			})
+			}.toMutableList())
 	}
 
 	func replaceTupleShuffleExpression( // annotation: open
@@ -912,7 +914,9 @@ public class TranspilationPass {
 			range: tupleShuffleExpression.range,
 			labels: tupleShuffleExpression.labels,
 			indices: tupleShuffleExpression.indices,
-			expressions: tupleShuffleExpression.expressions.map { replaceExpression($0) })
+			expressions: tupleShuffleExpression.expressions
+				.map { replaceExpression($0) }
+				.toMutableList())
 	}
 }
 
@@ -924,7 +928,7 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 
 	override func replaceVariableDeclaration( // annotation: override
 		_ variableDeclaration: VariableDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		if variableDeclaration.identifier == "description",
 			variableDeclaration.typeName == "String",
@@ -1036,7 +1040,7 @@ public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
 
 	override func replaceEnumDeclaration( // annotation: override
 		_ enumDeclaration: EnumDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		if enumDeclaration.isImplicit {
 			return []
@@ -1048,7 +1052,7 @@ public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
 
 	override func replaceTypealiasDeclaration( // annotation: override
 		_ typealiasDeclaration: TypealiasDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		if typealiasDeclaration.isImplicit {
 			return []
@@ -1060,7 +1064,7 @@ public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
 
 	override func replaceVariableDeclaration( // annotation: override
 		_ variableDeclaration: VariableDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		if variableDeclaration.isImplicit {
 			return []
@@ -1093,7 +1097,7 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 
 	override func replaceInitializerDeclaration( // annotation: override
 		_ initializerDeclaration: InitializerDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		if initializerDeclaration.isStatic == true,
 			initializerDeclaration.extendsType == nil
@@ -1103,7 +1107,7 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 				let newStatements = replaceStatements(initializerDeclaration.statements ?? [])
 				isFailableInitializer = false
 
-				let result: MutableArray<Statement> = [FunctionDeclaration(
+				let result: MutableList<Statement> = [FunctionDeclaration(
 					range: initializerDeclaration.range,
 					prefix: "invoke",
 					parameters: initializerDeclaration.parameters,
@@ -1128,7 +1132,7 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 
 	override func replaceAssignmentStatement( // annotation: override
 		_ assignmentStatement: AssignmentStatement)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		if isFailableInitializer,
 			let expression = assignmentStatement.leftHand as? DeclarationReferenceExpression
@@ -1174,9 +1178,9 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 	// declaration:     super(ast, context) { }
 
 	private func sendStaticMembersToCompanionObject(
-		_ members: MutableArray<Statement>,
+		_ members: MutableList<Statement>,
 		withRange range: SourceFileRange?)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		let staticMembers = members.filter { isStaticMember($0) }
 
@@ -1186,8 +1190,8 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 
 		let nonStaticMembers = members.filter { !isStaticMember($0) }
 
-		let newMembers: MutableArray<Statement> =
-			[CompanionObject(range: range, members: staticMembers)]
+		let newMembers: MutableList<Statement> =
+			[CompanionObject(range: range, members: staticMembers.toMutableList())]
 		newMembers.append(contentsOf: nonStaticMembers)
 
 		return newMembers
@@ -1214,7 +1218,7 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 
 	override func replaceClassDeclaration( // annotation: override
 		_ classDeclaration: ClassDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		let newMembers = sendStaticMembersToCompanionObject(
 			classDeclaration.members,
@@ -1228,7 +1232,7 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 
 	override func replaceStructDeclaration( // annotation: override
 		_ structDeclaration: StructDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		let newMembers = sendStaticMembersToCompanionObject(
 			structDeclaration.members,
@@ -1243,7 +1247,7 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 
 	override func replaceEnumDeclaration( // annotation: override
 		_ enumDeclaration: EnumDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		let newMembers = sendStaticMembersToCompanionObject(
 			enumDeclaration.members,
@@ -1272,7 +1276,7 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
 	// declaration:     super(ast, context) { }
 
-	var typeNamesStack: MutableArray<String> = []
+	var typeNamesStack: MutableList<String> = []
 
 	func removePrefixes(_ typeName: String) -> String {
 		var result = typeName
@@ -1291,7 +1295,7 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass {
 
 	override func replaceClassDeclaration( // annotation: override
 		_ classDeclaration: ClassDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		typeNamesStack.append(classDeclaration.className)
 		let result = super.replaceClassDeclaration(classDeclaration)
@@ -1301,7 +1305,7 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass {
 
 	override func replaceStructDeclaration( // annotation: override
 		_ structDeclaration: StructDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		typeNamesStack.append(structDeclaration.structName)
 		let result = super.replaceStructDeclaration(structDeclaration)
@@ -1372,13 +1376,13 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 
 	override func replaceEnumDeclaration( // annotation: override
 		_ enumDeclaration: EnumDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		let isSealedClass =
 			self.context.sealedClasses.contains(enumDeclaration.enumName)
 		let isEnumClass = self.context.enumClasses.contains(enumDeclaration.enumName)
 
-		let newElements: MutableArray<EnumElement>
+		let newElements: MutableList<EnumElement>
 		if isSealedClass {
 			newElements = enumDeclaration.elements.map { element in
 				EnumElement(
@@ -1386,7 +1390,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 					associatedValues: element.associatedValues,
 					rawValue: element.rawValue,
 					annotations: element.annotations)
-			}
+			}.toMutableList()
 		}
 		else if isEnumClass {
 			newElements = enumDeclaration.elements.map { element in
@@ -1395,7 +1399,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 					associatedValues: element.associatedValues,
 					rawValue: element.rawValue,
 					annotations: element.annotations)
-			}
+			}.toMutableList()
 		}
 		else {
 			newElements = enumDeclaration.elements
@@ -1441,7 +1445,7 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
 	// declaration:     super(ast, context) { }
 
-	private var returnTypesStack: MutableArray<String> = []
+	private var returnTypesStack: MutableList<String> = []
 
 	private func removePrefixFromPossibleEnumReference(
 		_ dotExpression: DotExpression)
@@ -1472,7 +1476,7 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
 
 	override func replaceReturnStatement( // annotation: override
 		_ returnStatement: ReturnStatement)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		if let returnType = returnTypesStack.last,
 			let expression = returnStatement.expression,
@@ -1540,7 +1544,7 @@ public class CallsToSuperclassInitializersTranspilationPass: TranspilationPass {
 		-> InitializerDeclaration?
 	{
 		var superCall: CallExpression?
-		let newStatements: MutableArray<Statement> = []
+		let newStatements: MutableList<Statement> = []
 
 		if let statements = initializerDeclaration.statements {
 			for statement in statements {
@@ -1688,7 +1692,7 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 
 	override func replaceEnumDeclaration( // annotation: override
 		_ enumDeclaration: EnumDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		return super.replaceEnumDeclaration(EnumDeclaration(
 			range: enumDeclaration.range,
@@ -1705,7 +1709,7 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 
 	override func replaceStructDeclaration( // annotation: override
 		_ structDeclaration: StructDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		return super.replaceStructDeclaration(StructDeclaration(
 			range: structDeclaration.range,
@@ -1717,7 +1721,7 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 
 	override func replaceClassDeclaration( // annotation: override
 		_ classDeclaration: ClassDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		return super.replaceClassDeclaration(ClassDeclaration(
 			range: classDeclaration.range,
@@ -1766,13 +1770,13 @@ public class AnonymousParametersTranspilationPass: TranspilationPass {
 }
 
 ///
-/// MutableArray needs explicit initializers to account for the fact that it can't be implicitly
+/// MutableList needs explicit initializers to account for the fact that it can't be implicitly
 /// cast to covariant types. For instance:
 ///
 /// ````
-/// let myIntArray: MutableArray = [1, 2, 3]
-/// let myAnyArray = myIntArray as MutableArray<Any> // error
-/// let myAnyArray = MutableArray<Any>(myIntArray) // OK
+/// let myIntArray: MutableList = [1, 2, 3]
+/// let myAnyArray = myIntArray as MutableList<Any> // error
+/// let myAnyArray = MutableList<Any>(myIntArray) // OK
 /// ````
 ///
 /// This transformation can't be done with the current template mode because there's no way to get
@@ -1795,22 +1799,22 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 			let tupleExpression = callExpression.parameters as? TupleExpression
 		{
 			// TODO: Fix references to toMutableList in the stdlib templates (i.e. include toList)
-			let isMutableArray = typeExpression.typeName.hasPrefix("MutableArray<")
-			let isFixedArray = typeExpression.typeName.hasPrefix("FixedArray<")
-			let arrayFunction = isMutableArray ? "toMutableList" : "toList"
+			let isMutableList = typeExpression.typeName.hasPrefix("MutableList<")
+			let isList = typeExpression.typeName.hasPrefix("List<")
+			let arrayFunction = isMutableList ? "toMutableList" : "toList"
 
-			if (isMutableArray || isFixedArray),
+			if (isMutableList || isList),
 				tupleExpression.pairs.count == 1,
 				let onlyPair = tupleExpression.pairs.first
 			{
 				let elementType: String
-				if isMutableArray {
+				if isMutableList {
 					elementType =
-						String(typeExpression.typeName.dropFirst("MutableArray<".count).dropLast())
+						String(typeExpression.typeName.dropFirst("MutableList<".count).dropLast())
 				}
 				else {
 					elementType =
-						String(typeExpression.typeName.dropFirst("FixedArray<".count).dropLast())
+						String(typeExpression.typeName.dropFirst("List<".count).dropLast())
 				}
 
 				let mappedElementType = Utilities.getTypeMapping(for: elementType) ?? elementType
@@ -1865,7 +1869,7 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 
 		if let dotExpression = callExpression.function as? DotExpression {
 			if let leftType = dotExpression.leftExpression.swiftType,
-				(leftType.hasPrefix("MutableArray") || leftType.hasPrefix("FixedArray")),
+				(leftType.hasPrefix("MutableList") || leftType.hasPrefix("List")),
 				let declarationReferenceExpression =
 					dotExpression.rightExpression as? DeclarationReferenceExpression,
 				let tupleExpression = callExpression.parameters as? TupleExpression
@@ -1893,7 +1897,7 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 }
 
 /// Gryphon's custom data structures use different initializers that need to be turned into the
-/// corresponding Kotlin function calls (i.e. `MutableArray<Int>()` to `mutableListOf<Int>()`).
+/// corresponding Kotlin function calls (i.e. `MutableList<Int>()` to `mutableListOf<Int>()`).
 public class DataStructureInitializersTranspilationPass: TranspilationPass {
 	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
 	// declaration:     super(ast, context) { }
@@ -1903,12 +1907,12 @@ public class DataStructureInitializersTranspilationPass: TranspilationPass {
 		-> Expression
 	{
 		if let typeExpression = callExpression.function as? TypeExpression,
-			typeExpression.typeName.hasPrefix("MutableArray<"),
+			typeExpression.typeName.hasPrefix("MutableList<"),
 			let tupleExpression = callExpression.parameters as? TupleExpression,
 			tupleExpression.pairs.isEmpty
 		{
 			let typeName = typeExpression.typeName
-			let arrayElement = String(typeName.dropFirst("MutableArray<".count).dropLast())
+			let arrayElement = String(typeName.dropFirst("MutableList<".count).dropLast())
 			return CallExpression(
 				range: callExpression.range,
 				function: DeclarationReferenceExpression(
@@ -1945,7 +1949,7 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 
 	override func replaceReturnStatement( // annotation: override
 		_ returnStatement: ReturnStatement)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		if isInClosure, let expression = returnStatement.expression {
 			return [ExpressionStatement(
@@ -1989,7 +1993,7 @@ public class TuplesToPairsTranspilationPass: TranspilationPass {
 
 		// Try to find out the types of the expressions so we can form the correct result type
 		let maybeTypes = tupleExpression.pairs.map { $0.expression.swiftType }
-		guard let types = maybeTypes.as(MutableArray<String>.self) else {
+		guard let types = maybeTypes.as(MutableList<String>.self) else {
 			return tupleExpression
 		}
 		let pairType = "Pair<\(types.joined(separator: ", "))>"
@@ -2187,7 +2191,7 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 	/// Detect switches whose bodies all end in the same returns or assignments
 	override func replaceSwitchStatement( // annotation: override
 		_ switchStatement: SwitchStatement)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		var hasAllReturnCases = true
 		var hasAllAssignmentCases = true
@@ -2225,13 +2229,13 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 		}
 
 		if hasAllReturnCases {
-			let newCases: MutableArray<SwitchCase> = []
+			let newCases: MutableList<SwitchCase> = []
 			for switchCase in switchStatement.cases {
 				// Swift switches must have at least one statement
 				let lastStatement = switchCase.statements.last!
 				if let returnStatement = lastStatement as? ReturnStatement {
 					if let returnExpression = returnStatement.expression {
-						let newStatements = MutableArray<Statement>(
+						let newStatements = MutableList<Statement>(
 							switchCase.statements.dropLast())
 						newStatements.append(ExpressionStatement(
 							range: returnExpression.range,
@@ -2253,12 +2257,12 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 				cases: newCases), ]
 		}
 		else if hasAllAssignmentCases, let assignmentExpression = assignmentExpression {
-			let newCases: MutableArray<SwitchCase> = []
+			let newCases: MutableList<SwitchCase> = []
 			for switchCase in switchStatement.cases {
 				// Swift switches must have at least one statement
 				let lastStatement = switchCase.statements.last!
 				if let assignmentStatement = lastStatement as? AssignmentStatement {
-					let newStatements = MutableArray<Statement>(switchCase.statements.dropLast())
+					let newStatements = MutableList<Statement>(switchCase.statements.dropLast())
 					newStatements.append(ExpressionStatement(
 						range: assignmentStatement.rightHand.range,
 						expression: assignmentStatement.rightHand))
@@ -2284,12 +2288,12 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 
 	/// Replace variable declarations followed by switch statements assignments
 	override func replaceStatements( // annotation: override
-		_ oldStatements: MutableArray<Statement>)
-		-> MutableArray<Statement>
+		_ oldStatements: MutableList<Statement>)
+		-> MutableList<Statement>
 	{
 		let statements = super.replaceStatements(oldStatements)
 
-		let result: MutableArray<Statement> = []
+		let result: MutableList<Statement> = []
 
 		var i = 0
 		while i < (statements.count - 1) {
@@ -2353,7 +2357,7 @@ public class RemoveBreaksInSwitchesTranspilationPass: TranspilationPass {
 
 	override func replaceSwitchStatement( // annotation: override
 		_ switchStatement: SwitchStatement)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		let newCases = switchStatement.cases.compactMap { removeBreaksInSwitchCase($0) }
 
@@ -2361,7 +2365,7 @@ public class RemoveBreaksInSwitchesTranspilationPass: TranspilationPass {
 			range: switchStatement.range,
 			convertsToExpression: switchStatement.convertsToExpression,
 			expression: switchStatement.expression,
-			cases: newCases))
+			cases: newCases.toMutableList()))
 	}
 
 	private func removeBreaksInSwitchCase(_ switchCase: SwitchCase) -> SwitchCase? {
@@ -2385,7 +2389,7 @@ public class IsOperatorsInSealedClassesTranspilationPass: TranspilationPass {
 
 	override func replaceSwitchStatement( // annotation: override
 		_ switchStatement: SwitchStatement)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		if let declarationReferenceExpression =
 			switchStatement.expression as? DeclarationReferenceExpression
@@ -2401,7 +2405,7 @@ public class IsOperatorsInSealedClassesTranspilationPass: TranspilationPass {
 					range: switchStatement.range,
 					convertsToExpression: switchStatement.convertsToExpression,
 					expression: switchStatement.expression,
-					cases: newCases))
+					cases: newCases.toMutableList()))
 			}
 		}
 
@@ -2418,7 +2422,7 @@ public class IsOperatorsInSealedClassesTranspilationPass: TranspilationPass {
 		}
 
 		return SwitchCase(
-			expressions: newExpressions,
+			expressions: newExpressions.toMutableList(),
 			statements: switchCase.statements)
 	}
 
@@ -2456,7 +2460,7 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 
 	override func replaceExtension( // annotation: override
 		_ extensionDeclaration: ExtensionDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		extendingType = extensionDeclaration.typeName
 		let members = replaceStatements(extensionDeclaration.members)
@@ -2466,7 +2470,7 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 
 	override func replaceStatement( // annotation: override
 		_ statement: Statement)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		if let extensionDeclaration = statement as? ExtensionDeclaration {
 			return replaceExtension(extensionDeclaration)
@@ -2483,7 +2487,7 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 
 	override func replaceFunctionDeclaration( // annotation: override
 		_ functionDeclaration: FunctionDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		functionDeclaration.extendsType = self.extendingType
 		return [functionDeclaration]
@@ -2509,7 +2513,7 @@ public class ShadowedIfLetAsToIsTranspilationPass: TranspilationPass {
 		_ ifStatement: IfStatement)
 		-> IfStatement
 	{
-		let newConditions: MutableArray<IfStatement.IfCondition> = []
+		let newConditions: MutableList<IfStatement.IfCondition> = []
 
 		for condition in ifStatement.conditions {
 			var conditionWasReplaced = false
@@ -2580,7 +2584,7 @@ public class RecordFunctionsTranspilationPass: TranspilationPass {
 				swiftAPIName: swiftAPIName,
 				typeName: functionDeclaration.functionType,
 				prefix: functionDeclaration.prefix,
-				parameters: functionDeclaration.parameters.map { $0.label }))
+				parameters: functionDeclaration.parameters.map { $0.label }.toMutableList()))
 
 		//
 		if functionDeclaration.isPure {
@@ -2597,7 +2601,7 @@ public class RecordEnumsTranspilationPass: TranspilationPass {
 
 	override func replaceEnumDeclaration( // annotation: override
 		_ enumDeclaration: EnumDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		let isEnumClass = enumDeclaration.inherits.isEmpty &&
 			enumDeclaration.elements.reduce(true) { result, element in
@@ -2622,7 +2626,7 @@ public class RecordProtocolsTranspilationPass: TranspilationPass {
 
 	override func replaceProtocolDeclaration( // annotation: override
 		_ protocolDeclaration: ProtocolDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		self.context.addProtocol(protocolDeclaration.protocolName)
 
@@ -2659,7 +2663,7 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 
 	override func replaceStructDeclaration( // annotation: override
 		_ structDeclaration: StructDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		for member in structDeclaration.members {
 			if let variableDeclaration = member as? VariableDeclaration {
@@ -2700,7 +2704,7 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 
 	override func replaceEnumDeclaration( // annotation: override
 		_ enumDeclaration: EnumDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		for member in enumDeclaration.members {
 			if let functionDeclaration = member as? FunctionDeclaration {
@@ -2722,7 +2726,7 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 	}
 }
 
-/// `MutableArray`s, `FixedArray`s, `MutableDictionary`s, and `FixedDictionary`s are prefered to
+/// `MutableList`s, `List`s, `MutableDictionary`s, and `FixedDictionary`s are prefered to
 /// using `Arrays` and `Dictionaries` for guaranteeing correctness. This pass raises warnings when
 /// it finds uses of the native data structures, which should help avoid these bugs.
 public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPass {
@@ -2733,7 +2737,7 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 	{
 		if let type = expression.swiftType, type.hasPrefix("[") {
 			let message = "Native type \(type) can lead to different behavior in Kotlin. Prefer " +
-			"MutableArray, FixedArray, MutableDictionary or FixedDictionary instead."
+			"MutableList, List, MutableDictionary or FixedDictionary instead."
 			Compiler.handleWarning(
 				message: message,
 				details: expression.prettyDescription(),
@@ -2756,21 +2760,21 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 		if let leftExpressionType = dotExpression.leftExpression.swiftType,
 			leftExpressionType.hasPrefix("["),
 			let callExpression = dotExpression.rightExpression as? CallExpression {
-			if (callExpression.typeName.hasPrefix("MutableArray") ||
-					callExpression.typeName.hasPrefix("FixedArray") ||
+			if (callExpression.typeName.hasPrefix("MutableList") ||
+					callExpression.typeName.hasPrefix("List") ||
 					callExpression.typeName.hasPrefix("MutableDictionary") ||
 					callExpression.typeName.hasPrefix("FixedDictionary")),
 				let declarationReference =
 					callExpression.function as? DeclarationReferenceExpression
 			{
 				if declarationReference.identifier.hasPrefix("toMutable"),
-					(declarationReference.typeName.hasPrefix("MutableArray") ||
+					(declarationReference.typeName.hasPrefix("MutableList") ||
 						declarationReference.typeName.hasPrefix("MutableDictionary"))
 				{
 					return dotExpression
 				}
 				else if declarationReference.identifier.hasPrefix("toList"),
-					declarationReference.typeName.hasPrefix("FixedArray")
+					declarationReference.typeName.hasPrefix("List")
 				{
 					return dotExpression
 				}
@@ -2810,7 +2814,7 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 		// effects
 		let conditions = isElse ?
 			ifStatement.conditions :
-			MutableArray<IfStatement.IfCondition>(ifStatement.conditions.dropFirst())
+			MutableList<IfStatement.IfCondition>(ifStatement.conditions.dropFirst())
 
 		let sideEffectsRanges = conditions.flatMap { rangesWithPossibleSideEffectsInCondition($0) }
 		for range in sideEffectsRanges {
@@ -2828,7 +2832,7 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 
 	private func rangesWithPossibleSideEffectsInCondition(
 		_ condition: IfStatement.IfCondition)
-		-> MutableArray<SourceFileRange>
+		-> MutableList<SourceFileRange>
 	{
 		if case let .declaration(variableDeclaration: variableDeclaration) = condition {
 			if let expression = variableDeclaration.expression {
@@ -2841,7 +2845,7 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 
 	private func rangesWithPossibleSideEffectsIn(
 		_ expression: Expression)
-		-> MutableArray<SourceFileRange>
+		-> MutableList<SourceFileRange>
 	{
 		if let expression = expression as? CallExpression {
 			if !self.context.isReferencingPureFunction(expression),
@@ -2869,10 +2873,14 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 			return result
 		}
 		if let expression = expression as? ArrayExpression {
-			return expression.elements.flatMap { rangesWithPossibleSideEffectsIn($0) }
+			return expression.elements
+				.flatMap { rangesWithPossibleSideEffectsIn($0) }
+				.toMutableList()
 		}
 		if let expression = expression as? DictionaryExpression {
-			let result = expression.keys.flatMap { rangesWithPossibleSideEffectsIn($0) }
+			let result = expression.keys
+				.flatMap { rangesWithPossibleSideEffectsIn($0) }
+				.toMutableList()
 			result.append(contentsOf:
 				expression.values.flatMap { rangesWithPossibleSideEffectsIn($0) })
 			return result
@@ -2904,13 +2912,19 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 			return result
 		}
 		if let expression = expression as? InterpolatedStringLiteralExpression {
-			return expression.expressions.flatMap { rangesWithPossibleSideEffectsIn($0) }
+			return expression.expressions
+				.flatMap { rangesWithPossibleSideEffectsIn($0) }
+				.toMutableList()
 		}
 		if let expression = expression as? TupleExpression {
-			return expression.pairs.flatMap { rangesWithPossibleSideEffectsIn($0.expression) }
+			return expression.pairs
+				.flatMap { rangesWithPossibleSideEffectsIn($0.expression) }
+				.toMutableList()
 		}
 		if let expression = expression as? TupleShuffleExpression {
-			return expression.expressions.flatMap { rangesWithPossibleSideEffectsIn($0) }
+			return expression.expressions
+				.flatMap { rangesWithPossibleSideEffectsIn($0) }
+				.toMutableList()
 		}
 
 		return []
@@ -2925,7 +2939,7 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 	/// Send the let declarations to before the if statement
 	override func replaceIfStatement( // annotation: override
 		_ ifStatement: IfStatement)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		let gatheredDeclarations = gatherLetDeclarations(ifStatement)
 
@@ -2934,7 +2948,7 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 		// create conflicts in Kotlin.
 		let uniqueDeclarations = gatheredDeclarations.removingDuplicates()
 
-		let result = MutableArray<Statement>(uniqueDeclarations)
+		let result = MutableList<Statement>(uniqueDeclarations)
 
 		result.append(contentsOf: super.replaceIfStatement(ifStatement))
 
@@ -2948,7 +2962,7 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 	{
 		let newConditions = ifStatement.conditions.map {
 			replaceIfLetConditionWithNullCheck($0)
-		}
+		}.toMutableList()
 
 		let ifStatement = ifStatement
 		ifStatement.conditions = newConditions
@@ -2981,7 +2995,7 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 	/// Gather the let declarations from the if statement and its else( if)s into a single array
 	private func gatherLetDeclarations(
 		_ ifStatement: IfStatement?)
-		-> MutableArray<VariableDeclaration>
+		-> MutableList<VariableDeclaration>
 	{
 		guard let ifStatement = ifStatement else {
 			return []
@@ -2995,7 +3009,7 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 
 		let elseLetDeclarations = gatherLetDeclarations(ifStatement.elseStatement)
 
-		let result = letDeclarations
+		let result = letDeclarations.toMutableList()
 		result.append(contentsOf: elseLetDeclarations)
 		return result
 	}
@@ -3049,7 +3063,7 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 		let lhs = functionDeclaration.parameters[0]
 		let rhs = functionDeclaration.parameters[1]
 
-		let newStatements: MutableArray<Statement> = []
+		let newStatements: MutableList<Statement> = []
 
 		let range = functionDeclaration.range
 
@@ -3148,7 +3162,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 	// declaration:     super(ast, context) { }
 
 	override func replaceEnumDeclaration( // annotation: override
-		_ enumDeclaration: EnumDeclaration) -> MutableArray<Statement>
+		_ enumDeclaration: EnumDeclaration) -> MutableList<Statement>
 	{
 		if let typeName = enumDeclaration.elements.compactMap({ $0.rawValue?.swiftType }).first {
 			let rawValueVariable = createRawValueVariable(
@@ -3216,7 +3230,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 								isStandardLibrary: false,
 								isImplicit: false))),
 				])
-		}
+		}.toMutableList()
 
 		let defaultSwitchCase = SwitchCase(
 			expressions: [],
@@ -3283,7 +3297,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 						range: range,
 						expression: element.rawValue),
 				])
-		}
+		}.toMutableList()
 
 		let switchStatement = SwitchStatement(
 			range: range,
@@ -3381,9 +3395,9 @@ public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
 			}
 
 			let ifStatement = ifStatement
-			ifStatement.conditions = MutableArray<Expression>([newCondition]).map {
-				IfStatement.IfCondition.condition(expression: $0)
-			}
+			ifStatement.conditions = MutableList<Expression>([newCondition]).map {
+					IfStatement.IfCondition.condition(expression: $0)
+				}.toMutableList()
 			ifStatement.isGuard = shouldStillBeGuard
 			return super.processIfStatement(ifStatement)
 		}
@@ -3401,7 +3415,7 @@ public class ReturnIfNilTranspilationPass: TranspilationPass {
 
 	override func replaceStatement( // annotation: override
 		_ statement: Statement)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		if let ifStatement = statement as? IfStatement {
 			if ifStatement.conditions.count == 1,
@@ -3450,7 +3464,7 @@ public class FixProtocolContentsTranspilationPass: TranspilationPass {
 
 	override func replaceProtocolDeclaration( // annotation: override
 		_ protocolDeclaration: ProtocolDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		isInProtocol = true
 		let result = super.replaceProtocolDeclaration(protocolDeclaration)

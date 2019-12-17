@@ -25,9 +25,9 @@ private func gryphonTemplates() {
     let _string1 = ""
     let _string2 = ""
     let _string3 = ""
-    let _stringArray: MutableArray<String>? = []
-    let _stringArray1: MutableArray<String> = []
-    let _stringArray2: MutableArray<String> = []
+    let _stringArray: MutableList<String>? = []
+    let _stringArray1: MutableList<String> = []
+    let _stringArray2: MutableList<String> = []
     let _fileExtension1 = FileExtension.swift
     let _timeInterval: TimeInterval = 0
 
@@ -151,7 +151,7 @@ extension Utilities {
         -> String
     {
         let components = filePath.split(withStringSeparator: "/", omittingEmptySubsequences: false)
-        let newComponents = MutableArray<String>(components.dropLast().map { String($0) })
+        let newComponents = MutableList<String>(components.dropLast())
         let nameComponent = components.last!
         let nameComponents =
             nameComponent.split(withStringSeparator: ".", omittingEmptySubsequences: false)
@@ -225,6 +225,7 @@ extension Utilities {
         let templateFilePaths =
 			getFiles(inDirectory: libraryTemplatesFolder, withExtension: .swiftASTDump)
 				.filter { $0.hasSuffix(".template.swiftASTDump") }
+				.toMutableList()
         let asts = try Compiler.transpileGryphonRawASTs(fromASTDumpFiles: templateFilePaths)
 
         for ast in asts {
@@ -272,7 +273,7 @@ extension Utilities {
 	}
 
     static internal func needsToDumpASTForSwiftFiles(
-        _ swiftFiles: MutableArray<String>? = nil,
+        _ swiftFiles: MutableList<String>? = nil,
         in folder: String)
 		-> Bool
     {
@@ -316,11 +317,11 @@ extension Utilities {
 	/// For instance, "(A, (B, C))" becomes ["A", "(B, C)"] rather than ["A", "(B", "C)"].
     static func splitTypeList( // gryphon: pure
         _ typeList: String,
-        separators: MutableArray<String> = [",", ":"])
-        -> MutableArray<String>
+        separators: MutableList<String> = [",", ":"])
+        -> MutableList<String>
     {
         var bracketsLevel = 0
-        let result: MutableArray<String> = []
+        let result: MutableList<String> = []
         var currentResult = ""
         var remainingString = Substring(typeList)
 

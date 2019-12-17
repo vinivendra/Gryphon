@@ -41,8 +41,8 @@ public class Compiler {
 	//
 	public static var shouldStopAtFirstError = false
 
-	public private(set) static var errors: MutableArray<Error> = []
-	public private(set) static var warnings: MutableArray<String> = []
+	public private(set) static var errors: MutableList<Error> = []
+	public private(set) static var warnings: MutableList<String> = []
 
 	internal static func handleError(_ error: Error) throws {
 		if Compiler.shouldStopAtFirstError {
@@ -96,14 +96,14 @@ public class Compiler {
 	}
 
 	public static func transpileGryphonRawASTs(
-		fromASTDumpFiles inputFiles: MutableArray<String>)
-		throws -> MutableArray<GryphonAST>
+		fromASTDumpFiles inputFiles: MutableList<String>)
+		throws -> MutableList<GryphonAST>
 	{
 		let asts = try inputFiles.map { try transpileSwiftAST(fromASTDumpFile: $0) }
 		let translateAsMainFile = (inputFiles.count == 1)
 		return try asts.map {
 			try generateGryphonRawAST(fromSwiftAST: $0, asMainFile: translateAsMainFile)
-		}
+		}.toMutableList()
 	}
 
 	//
@@ -141,14 +141,14 @@ public class Compiler {
 	}
 
 	public static func transpileGryphonASTs(
-		fromASTDumpFiles inputFiles: MutableArray<String>,
+		fromASTDumpFiles inputFiles: MutableList<String>,
 		withContext context: TranspilationContext)
-		throws -> MutableArray<GryphonAST>
+		throws -> MutableList<GryphonAST>
 	{
 		let rawASTs = try transpileGryphonRawASTs(fromASTDumpFiles: inputFiles)
 		return try rawASTs.map {
 			try generateGryphonAST(fromGryphonRawAST: $0, withContext: context)
-		}
+		}.toMutableList()
 	}
 
 	//
@@ -175,22 +175,24 @@ public class Compiler {
 	}
 
 	public static func transpileKotlinCode(
-		fromASTDumpFiles inputFiles: MutableArray<String>,
+		fromASTDumpFiles inputFiles: MutableList<String>,
 		withContext context: TranspilationContext)
-		throws -> MutableArray<String>
+		throws -> MutableList<String>
 	{
 		let asts = try transpileGryphonASTs(fromASTDumpFiles: inputFiles, withContext: context)
-		return try asts.map { try generateKotlinCode(fromGryphonAST: $0, withContext: context) }
+		return try asts.map {
+			try generateKotlinCode(fromGryphonAST: $0, withContext: context)
+		}.toMutableList()
 	}
 
 	//
-	public static func compile(kotlinFiles filePaths: MutableArray<String>, outputFolder: String)
+	public static func compile(kotlinFiles filePaths: MutableList<String>, outputFolder: String)
 		throws -> Shell.CommandOutput?
 	{
 		log("\t- Compiling Kotlin...")
 
 		// Call the kotlin compiler
-		let arguments: MutableArray = ["-include-runtime", "-d", outputFolder + "/kotlin.jar"]
+		let arguments: MutableList = ["-include-runtime", "-d", outputFolder + "/kotlin.jar"]
 		arguments.append(contentsOf: filePaths)
 		let commandResult = Shell.runShellCommand(kotlinCompilerPath, arguments: arguments)
 
@@ -198,7 +200,7 @@ public class Compiler {
 	}
 
 	public static func transpileThenCompile(
-		ASTDumpFiles inputFiles: MutableArray<String>,
+		ASTDumpFiles inputFiles: MutableList<String>,
 		withContext context: TranspilationContext,
 		outputFolder: String = OS.buildFolder)
 		throws -> Shell.CommandOutput?
@@ -207,7 +209,7 @@ public class Compiler {
 			fromASTDumpFiles: inputFiles,
 			withContext: context)
 		// Write kotlin files to the output folder
-		let kotlinFilePaths: MutableArray<String> = []
+		let kotlinFilePaths: MutableList<String> = []
 		for (inputFile, kotlinCode) in zipToClass(inputFiles, kotlinCodes) {
 			let inputFileName = inputFile.split(withStringSeparator: "/").last!
 			let kotlinFileName = Utilities.changeExtension(of: inputFileName, to: .kt)
@@ -223,7 +225,7 @@ public class Compiler {
 	//
 	public static func runCompiledProgram(
 		inFolder buildFolder: String,
-		withArguments arguments: MutableArray<String> = [])
+		withArguments arguments: MutableList<String> = [])
 		throws -> Shell.CommandOutput?
 	{
 		log("\t- Running Kotlin...")
@@ -231,7 +233,7 @@ public class Compiler {
 		let processedBuildFolder = buildFolder.hasSuffix("/") ? buildFolder : (buildFolder + "/")
 
 		// Run the compiled program
-		let commandArguments: MutableArray = ["java", "-jar", processedBuildFolder + "kotlin.jar"]
+		let commandArguments: MutableList = ["java", "-jar", processedBuildFolder + "kotlin.jar"]
 		commandArguments.append(contentsOf: arguments)
 		let commandResult = Shell.runShellCommand(commandArguments)
 
@@ -239,7 +241,7 @@ public class Compiler {
 	}
 
 	public static func transpileCompileAndRun(
-		ASTDumpFiles inputFiles: MutableArray<String>,
+		ASTDumpFiles inputFiles: MutableList<String>,
 		withContext context: TranspilationContext,
 		fromFolder outputFolder: String = OS.buildFolder)
 		throws -> Shell.CommandOutput?

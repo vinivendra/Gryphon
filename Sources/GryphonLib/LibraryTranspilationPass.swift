@@ -29,13 +29,13 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 
 	override func replaceFunctionDeclaration( // annotation: override
 		_ functionDeclaration: FunctionDeclaration)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		if functionDeclaration.prefix == "gryphonTemplates",
 			functionDeclaration.parameters.isEmpty,
 			let statements = functionDeclaration.statements
 		{
-			let topLevelExpressions: MutableArray<Expression> = []
+			let topLevelExpressions: MutableList<Expression> = []
 			for statement in statements {
 				if let expressionStatement = statement as? ExpressionStatement {
 					topLevelExpressions.append(expressionStatement.expression)
@@ -525,20 +525,20 @@ private func simplifyType(string: String) -> String {
 		return result
 	}
 
-	// Treat MutableArray as Array
-	if string.hasPrefix("MutableArray<"), string.last! == ">" {
-		let elementType = String(string.dropFirst("MutableArray<".count).dropLast())
+	// Treat MutableList as Array
+	if string.hasPrefix("MutableList<"), string.last! == ">" {
+		let elementType = String(string.dropFirst("MutableList<".count).dropLast())
 		return "[\(elementType)]"
 	}
-	if string.hasPrefix("FixedArray<"), string.last! == ">" {
-		let elementType = String(string.dropFirst("FixedArray<".count).dropLast())
+	if string.hasPrefix("List<"), string.last! == ">" {
+		let elementType = String(string.dropFirst("List<".count).dropLast())
 		return "[\(elementType)]"
 	}
 
 	// Treat Slice as Array
-	if string.hasPrefix("Slice<MutableArray<"), string.hasSuffix(">>") {
+	if string.hasPrefix("Slice<MutableList<"), string.hasSuffix(">>") {
 		let elementType =
-			String(string.dropFirst("Slice<MutableArray<".count).dropLast(">>".count))
+			String(string.dropFirst("Slice<MutableList<".count).dropLast(">>".count))
 		return "[\(elementType)]"
 	}
 	else if string.hasPrefix("ArraySlice<"), string.hasSuffix(">") {

@@ -244,23 +244,23 @@ class UtilitiesTest: XCTestCase {
     }
 
     func testParallelMap() {
-        let array1: MutableArray<Int> = []
-        let array2: MutableArray<Int> = [1]
-        let array3: MutableArray<Int> = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-        let array4: MutableArray<Int> = MutableArray<Int>([Int](0...10_000)) // kotlin: ignore
+        let array1: MutableList<Int> = []
+        let array2: MutableList<Int> = [1]
+        let array3: MutableList<Int> = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        let array4: MutableList<Int> = MutableList<Int>([Int](0...10_000)) // kotlin: ignore
 		// insert: val array4: MutableList<Int> = (0..10000).map{ it }.toMutableList()
 
-        let array1Copy = array1.copy()
-        let array2Copy = array2.copy()
-        let array3Copy = array3.copy()
-        let array4Copy = array4.copy()
+		let array1Copy = array1.toMutableList()
+        let array2Copy = array2.toMutableList()
+        let array3Copy = array3.toMutableList()
+        let array4Copy = array4.toMutableList()
 
         let mappedArray1 = try! array1.parallelMap { $0 * 2 }
         let mappedArray2 = try! array2.parallelMap { $0 * 2 }
         let mappedArray3 = try! array3.parallelMap { $0 * 2 }
         let mappedArray4 = try! array4.parallelMap { $0 * 2 }
 
-        let array4Result = MutableArray<Int>([Int](0...10_000)).map { $0 * 2 } // kotlin: ignore
+        let array4Result = MutableList<Int>([Int](0...10_000)).map { $0 * 2 } // kotlin: ignore
 		// insert: val array4Result: MutableList<Int> = (0..10000).map{ it * 2 }.toMutableList()
 
         XCTAssertEqual(array1, array1Copy)

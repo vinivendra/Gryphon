@@ -21,15 +21,15 @@
 
 public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible {
 	let name: String
-	let standaloneAttributes: MutableArray<String>
+	let standaloneAttributes: MutableList<String>
 	let keyValueAttributes: MutableDictionary<String, String>
-	let subtrees: MutableArray<SwiftAST>
+	let subtrees: MutableList<SwiftAST>
 
 	//
 	static public var horizontalLimitWhenPrinting = Int.max
 
 	//
-	internal init(_ name: String, _ subtrees: MutableArray<SwiftAST> = []) {
+	internal init(_ name: String, _ subtrees: MutableList<SwiftAST> = []) {
 		self.name = name
 		self.standaloneAttributes = []
 		self.keyValueAttributes = [:]
@@ -38,9 +38,9 @@ public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible
 
 	internal init(
 		_ name: String,
-		_ standaloneAttributes: MutableArray<String>,
+		_ standaloneAttributes: MutableList<String>,
 		_ keyValueAttributes: MutableDictionary<String, String>,
-		_ subtrees: MutableArray<SwiftAST> = [])
+		_ subtrees: MutableList<SwiftAST> = [])
 	{
 		self.name = name
 		self.standaloneAttributes = standaloneAttributes
@@ -82,13 +82,13 @@ public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible
 		return name
 	}
 
-	public var printableSubtrees: MutableArray<PrintableAsTree?> { // annotation: override
+	public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		let keyValueStrings = keyValueAttributes
 			.map { "\($0.key) → \($0.value)" }.sorted().map { PrintableTree($0) }
-		let keyValueArray = MutableArray<PrintableAsTree?>(keyValueStrings)
+		let keyValueArray = MutableList<PrintableAsTree?>(keyValueStrings)
 		let standaloneAttributesArray =
-			MutableArray<PrintableAsTree?>(standaloneAttributes.map { PrintableTree($0) })
-		let subtreesArray = MutableArray<PrintableAsTree?>(subtrees)
+			MutableList<PrintableAsTree?>(standaloneAttributes.map { PrintableTree($0) })
+		let subtreesArray = MutableList<PrintableAsTree?>(subtrees)
 
 		let result = standaloneAttributesArray
 		result.append(contentsOf: keyValueArray)

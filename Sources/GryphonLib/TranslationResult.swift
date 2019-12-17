@@ -26,7 +26,7 @@ public struct TranslationResult {
 
 public class Translation {
 	let swiftRange: SourceFileRange?
-	let children: MutableArray<TranslationUnit> = []
+	let children: MutableList<TranslationUnit> = []
 
 	init(range: SourceFileRange?) {
 		self.swiftRange = range
@@ -67,8 +67,8 @@ public class Translation {
 	}
 
 	public func resolveTranslation() -> TranslationResult {
-		let translationResult: MutableArray<String> = []
-		let errorMap: MutableArray<String> = []
+		let translationResult: MutableList<String> = []
+		let errorMap: MutableList<String> = []
 		resolveTranslationInto(translationResult: translationResult, errorMap: errorMap)
 		return TranslationResult(
 			translation: translationResult.joined(),
@@ -77,8 +77,8 @@ public class Translation {
 
 	// TODO: Check the performance penalties of using this algorithm
 	private func resolveTranslationInto(
-		translationResult: MutableArray<String>,
-		errorMap: MutableArray<String>,
+		translationResult: MutableList<String>,
+		errorMap: MutableList<String>,
 		currentPosition: SourceFilePosition = SourceFilePosition())
 	{
 		let startingPosition = currentPosition.copy()
@@ -186,7 +186,7 @@ internal class SourceFilePosition {
 
 extension Translation {
 	func appendTranslations(
-		_ translations: MutableArray<Translation>,
+		_ translations: List<Translation>,
 		withSeparator separator: String)
 	{
 		for translation in translations.dropLast() {

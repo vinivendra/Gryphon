@@ -42,16 +42,16 @@ class PrintableAsTreeTest: XCTestCase {
 
 	// MARK: - Tests
 	func testPrinting() {
-		let root = PrintableTree("root")
-		let a = PrintableTree("a")
-		let b = PrintableTree("b")
-		let c = PrintableTree("c")
-		let d = PrintableTree("d")
-
-		root.addChild(a)
-		a.addChild(b)
-		b.addChild(c)
-		root.addChild(d)
+		let root = PrintableTree(
+			"root", [
+			PrintableTree(
+				"a",
+				[PrintableTree(
+					"b",
+					[PrintableTree(
+						"c"), ]), ]),
+			PrintableTree(
+				"d"), ])
 
 		var result = ""
 		root.prettyPrint {
@@ -67,16 +67,16 @@ class PrintableAsTreeTest: XCTestCase {
 	}
 
 	func testHorizontalLimit() {
-		let root = PrintableTree("root")
-		let a = PrintableTree("aaaaaaaaaaaaaaaaaa")
-		let b = PrintableTree("bbbbbbbbbbbbbbbbbb")
-		let c = PrintableTree("cccccccccccccccccc")
-		let d = PrintableTree("dddddddddddddddddd")
-
-		root.addChild(a)
-		a.addChild(b)
-		b.addChild(c)
-		root.addChild(d)
+		let root = PrintableTree(
+		"root", [
+		PrintableTree(
+			"aaaaaaaaaaaaaaaaaa",
+			[PrintableTree(
+				"bbbbbbbbbbbbbbbbbb",
+				[PrintableTree(
+					"cccccccccccccccccc"), ]), ]),
+		PrintableTree(
+			"dddddddddddddddddd"), ])
 
 		var result = ""
 		root.prettyPrint(horizontalLimit: 15) {

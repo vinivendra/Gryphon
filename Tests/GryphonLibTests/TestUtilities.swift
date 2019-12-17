@@ -40,7 +40,7 @@ class TestUtilities {
 	}
 
 	static func diffFiles(_ file1Path: String, _ file2Path: String) -> String {
-		let command: MutableArray = ["diff", file1Path, file2Path]
+		let command: MutableList = ["diff", file1Path, file2Path]
 		let commandResult = Shell.runShellCommand(command)
 		if let commandResult = commandResult {
 			return "\n\n===\n\(commandResult.standardOutput)===\n"
@@ -66,7 +66,7 @@ class TestUtilities {
 	}
 
 	// MARK: - Test cases
-	static let testCasesForAcceptanceTest: FixedArray<String> = [
+	static let testCasesForAcceptanceTest: List<String> = [
 		"arrays",
 		"assignments",
 		"bhaskara",
@@ -88,12 +88,12 @@ class TestUtilities {
 		"structs",
 		"switches",
 	]
-	static let testCasesForAllTests = testCasesForAcceptanceTest + FixedArray<String>([
+	static let testCasesForAllTests = testCasesForAcceptanceTest + List<String>([
 		"enums",
 		"functionDefinitions",
 		"strings",
 	])
-	static let testCasesForTranspilationPassTest = testCasesForAllTests + FixedArray<String>([
+	static let testCasesForTranspilationPassTest = testCasesForAllTests + List<String>([
 		"warnings",
 	])
 	static let allTestCases = testCasesForTranspilationPassTest

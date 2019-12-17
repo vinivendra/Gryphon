@@ -22,7 +22,7 @@
 public class Driver {
 	public static let gryphonVersion = "0.4-beta"
 
-	public static let supportedArguments: FixedArray<String> = [
+	public static let supportedArguments: List<String> = [
 		"help", "-help", "--help",
 		"--version",
 		"init",
@@ -47,7 +47,7 @@ public class Driver {
 		"-sync",
 	]
 
-	public static let supportedArgumentsWithParameters: FixedArray<String> = [
+	public static let supportedArgumentsWithParameters: List<String> = [
 		"-line-limit=",
 		"-indentation=",
 	]
@@ -202,7 +202,7 @@ public class Driver {
 
 	@discardableResult
 	public static func run(
-		withArguments arguments: MutableArray<String>) throws -> Any?
+		withArguments arguments: MutableList<String>) throws -> Any?
 	{
 		let badArguments = unsupportedArguments(in: arguments)
 		if !badArguments.isEmpty {
@@ -273,7 +273,7 @@ public class Driver {
 			let swiftFiles = inputFiles.filter {
 				Utilities.getExtension(of: $0) == .swift
 			}
-			let success = updateASTDumps(forFiles: swiftFiles)
+			let success = updateASTDumps(forFiles: swiftFiles.toMutableList())
 			if !success {
 				throw DriverError(errorMessage: "AST dump failed.")
 			}
@@ -284,7 +284,7 @@ public class Driver {
 
 	@discardableResult
 	public static func performCompilation(
-		withArguments arguments: MutableArray<String>) throws -> Any?
+		withArguments arguments: MutableList<String>) throws -> Any?
 	{
 		defer {
 			if arguments.contains("-summarize-errors") {
@@ -425,7 +425,7 @@ public class Driver {
 			$0.hasSuffix(".swift") || $0.hasSuffix(".swiftASTDump")
 		}
 
-		let firstResult: MutableArray<Any?>
+		let firstResult: MutableList<Any?>
 		if shouldRunConcurrently {
 			firstResult = try filteredInputFiles.parallelMap {
 				try runUpToFirstPasses(withSettings: settings, withContext: context, onFile: $0)
@@ -434,12 +434,12 @@ public class Driver {
 		else {
 			firstResult = try filteredInputFiles.map {
 				try runUpToFirstPasses(withSettings: settings, withContext: context, onFile: $0)
-			}
+			}.toMutableList()
 		}
 
 		// If we've received a non-raw AST then we're in the middle of the transpilation passes.
 		// This means we need to at least run the second round of passes.
-		guard let asts = firstResult.as(MutableArray<GryphonAST>.self),
+		guard let asts = firstResult.as(MutableList<GryphonAST>.self),
 			settings.shouldGenerateAST else
 		{
 			return firstResult
@@ -449,7 +449,7 @@ public class Driver {
 		// insert: val pairsArray: MutableList<Pair<GryphonAST, String>> =
 		// insert: 	asts.zip(filteredInputFiles).toMutableList()
 
-		let secondResult: MutableArray<Any?>
+		let secondResult: MutableList<Any?>
 		if shouldRunConcurrently {
 			secondResult = try pairsArray.parallelMap {
 				try runAfterFirstPasses(
@@ -466,18 +466,18 @@ public class Driver {
 					withSettings: settings,
 					withContext: context,
 					onFile: $0.1)
-			}
+			}.toMutableList()
 		}
 
 		guard settings.shouldBuild else {
 			return secondResult
 		}
 
-		let generatedKotlinFiles = (secondResult.as(MutableArray<KotlinTranslation>.self))!
+		let generatedKotlinFiles = (secondResult.as(MutableList<KotlinTranslation>.self))!
 			.compactMap { $0.kotlinFilePath }
 		let inputKotlinFiles = inputFilePaths.filter { Utilities.getExtension(of: $0) == .kt }
 
-		let kotlinFiles = generatedKotlinFiles
+		let kotlinFiles = generatedKotlinFiles.toMutableList()
 		kotlinFiles.append(contentsOf: inputKotlinFiles)
 
 		guard let compilationResult = try Compiler.compile(
@@ -497,10 +497,10 @@ public class Driver {
 	}
 
 	static func getInputFilePaths(
-		inArguments arguments: MutableArray<String>)
-		-> MutableArray<String>
+		inArguments arguments: MutableList<String>)
+		-> MutableList<String>
 	{
-		let result: MutableArray<String> = []
+		let result: MutableList<String> = []
 		result.append(contentsOf: arguments.filter {
 			Utilities.getExtension(of: $0) == .swift
 		})
@@ -601,7 +601,8 @@ public class Driver {
 			!argument.hasSuffix(".swiftmodule") &&
 			!argument.hasSuffix("Swift.h") &&
 			!argument.hasPrefix("-emit")
-		}
+		}.toMutableList()
+
 		let templatesFilePath = Utilities
 			.getAbsoultePath(forFile: ".gryphon/StandardLibrary.template.swift")
 		newComponents.append(templatesFilePath)
@@ -647,7 +648,7 @@ public class Driver {
 		return true
 	}
 
-	static func updateASTDumps(forFiles swiftFiles: MutableArray<String>) -> Bool {
+	static func updateASTDumps(forFiles swiftFiles: MutableList<String>) -> Bool {
 		// TODO: Send these paths to constants so they aren't duplicated all around the code
 		//// Create the outputFileMap
 		var outputFileMapContents = "{\n"
@@ -714,7 +715,7 @@ public class Driver {
 		}
 	}
 
-	static func unsupportedArguments(in arguments: MutableArray<String>) -> MutableArray<String> {
+	static func unsupportedArguments(in arguments: MutableList<String>) -> MutableList<String> {
 		// Start with all arguments, remove the ones that are OK, return what's left
 		var badArguments = arguments
 		badArguments = badArguments.filter { !supportedArguments.contains($0) }

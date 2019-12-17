@@ -21,36 +21,38 @@
 
 public class PrintableTree: PrintableAsTree {
 	public var treeDescription: String // annotation: override
-	public var printableSubtrees: MutableArray<PrintableAsTree?> // annotation: override
+	public var printableSubtrees: List<PrintableAsTree?> // annotation: override
 
 	init(_ description: String) {
 		self.treeDescription = description
 		self.printableSubtrees = []
 	}
 
-	init(_ description: String, _ subtrees: MutableArray<PrintableAsTree?>) {
+	init(_ description: String, _ subtrees: List<PrintableAsTree?>) {
 		self.treeDescription = description
 		self.printableSubtrees = subtrees
 	}
 
-	init(_ array: MutableArray<PrintableAsTree?>) {
+	init(_ array: List<PrintableAsTree?>) {
 		self.treeDescription = "Array"
 		self.printableSubtrees = array
 	}
 
-	static func ofTrees(_ description: String, _ subtrees: MutableArray<PrintableTree>)
+	static func ofTrees(
+		_ description: String,
+		_ subtrees: List<PrintableTree>)
 		-> PrintableAsTree?
 	{
-		let newSubtrees = MutableArray<PrintableAsTree?>(subtrees)
+		let newSubtrees = MutableList<PrintableAsTree?>(subtrees)
 		return PrintableTree.initOrNil(description, newSubtrees)
 	}
 
 	static func initOrNil(
 		_ description: String,
-		_ subtreesOrNil: MutableArray<PrintableAsTree?>)
+		_ subtreesOrNil: List<PrintableAsTree?>)
 		-> PrintableTree?
 	{
-		let subtrees: MutableArray<PrintableAsTree?> = []
+		let subtrees: MutableList<PrintableAsTree?> = []
 		for subtree in subtreesOrNil {
 			if let unwrapped = subtree {
 				subtrees.append(unwrapped)
@@ -72,20 +74,16 @@ public class PrintableTree: PrintableAsTree {
 			return nil
 		}
 	}
-
-	func addChild(_ child: PrintableAsTree?) {
-		printableSubtrees.append(child)
-	}
 }
 
 public protocol PrintableAsTree {
 	var treeDescription: String { get }
-	var printableSubtrees: MutableArray<PrintableAsTree?> { get }
+	var printableSubtrees: List<PrintableAsTree?> { get }
 }
 
 public extension PrintableAsTree {
 	func prettyPrint(
-		indentation: MutableArray<String> = [],
+		indentation: MutableList<String> = [],
 		isLast: Bool = true,
 		horizontalLimit: Int? = nil,
 		printFunction: (String) -> () = { print($0, terminator: "") })
@@ -119,7 +117,7 @@ public extension PrintableAsTree {
 			}
 		}
 
-		let subtrees: MutableArray<PrintableAsTree> = []
+		let subtrees: MutableList<PrintableAsTree> = []
 		for element in printableSubtrees {
 			if let unwrapped = element {
 				subtrees.append(unwrapped)
@@ -127,7 +125,7 @@ public extension PrintableAsTree {
 		}
 
 		for subtree in subtrees.dropLast() {
-			let newIndentation = indentation.copy()
+			let newIndentation = indentation.toMutableList()
 			newIndentation.append(" ├─")
 			subtree.prettyPrint(
 				indentation: newIndentation,
@@ -135,7 +133,7 @@ public extension PrintableAsTree {
 				horizontalLimit: horizontalLimit,
 				printFunction: printFunction)
 		}
-		let newIndentation = indentation.copy()
+		let newIndentation = indentation.toMutableList()
 		newIndentation.append(" └─")
 		subtrees.last?.prettyPrint(
 			indentation: newIndentation,

@@ -22,7 +22,7 @@
 import Foundation
 
 private func gryphonTemplates() {
-	let _array: MutableArray<Any> = []
+	let _array: MutableList<Any> = []
 	let _index = 0
 	let _string1 = ""
 	let _character: Character = " "
@@ -54,9 +54,9 @@ internal extension String {
 	func split(
 		withStringSeparator separator: String,
 		maxSplits: Int = Int.max,
-		omittingEmptySubsequences: Bool = true) -> MutableArray<String>
+		omittingEmptySubsequences: Bool = true) -> MutableList<String>
 	{
-		let result: MutableArray<String> = []
+		let result: MutableList<String> = []
 
 		var splits = 0
 		var previousIndex = startIndex
@@ -95,8 +95,8 @@ internal extension String {
 	}
 
 	/// Non-overlapping
-	func occurrences(of searchedSubstring: String) -> MutableArray<Range<String.Index>> {
-		let result: MutableArray<Range<String.Index>> = []
+	func occurrences(of searchedSubstring: String) -> MutableList<Range<String.Index>> {
+		let result: MutableList<Range<String.Index>> = []
 
 		var currentSubstring = Substring(self)
 		var substringOffset = self.startIndex
@@ -127,8 +127,8 @@ internal extension String {
 
 	/// Returns an array of the string's components separated by spaces. Spaces that have been
 	/// escaped ("\ ") are ignored.
-	func splitUsingUnescapedSpaces() -> MutableArray<String> {
-		let result: MutableArray<String> = []
+	func splitUsingUnescapedSpaces() -> MutableList<String> {
+		let result: MutableList<String> = []
 
 		var isEscaping = false
 		var index = self.startIndex
@@ -297,7 +297,7 @@ extension Character {
 }
 
 //
-extension MutableArray {
+extension List {
 	/// Returns nil if index is out of bounds.
 	subscript (safe index: Int) -> Element? { // kotlin: ignore
 		return getSafe(index)
@@ -318,12 +318,12 @@ extension MutableArray {
 	}
 
 	/// Returns the same array, but with the first element moved to the end.
-	func rotated() -> MutableArray<Element> {
+	func rotated() -> List<Element> {
 		guard let first = self.first else {
 			return self
 		}
 
-		var newArray: MutableArray<Element> = []
+		var newArray: MutableList<Element> = []
 		newArray.reserveCapacity(self.count) // kotlin: ignore
 		newArray.append(contentsOf: self.dropFirst())
 		newArray.append(first)
@@ -334,9 +334,9 @@ extension MutableArray {
 	/// Groups the array's elements into a dictionary according to the keys provided by the given
 	/// closure, forming a sort of histogram.
 	func group<Key>(by getKey: (Element) -> Key)
-		-> MutableDictionary<Key, MutableArray<Element>>
+		-> MutableDictionary<Key, MutableList<Element>>
 	{
-		let result: MutableDictionary<Key, MutableArray<Element>> = [:]
+		let result: MutableDictionary<Key, MutableList<Element>> = [:]
 		for element in self {
 			let key = getKey(element)
 			let array = result[key] ?? []
@@ -347,11 +347,11 @@ extension MutableArray {
 	}
 }
 
-extension MutableArray where Element: Equatable {
+extension List where Element: Equatable {
 	/// Removes duplicated items from the array, keeping the first unique items. Returns a copy of
 	/// the array with only unique items in it. O(n^2).
-	func removingDuplicates() -> MutableArray<Element> {
-		let result: MutableArray<Element> = []
+	func removingDuplicates() -> MutableList<Element> {
+		let result: MutableList<Element> = []
 
 		for i in self.indices {
 			let consideredDeclaration = self[i]
@@ -381,7 +381,7 @@ extension MutableArray where Element: Equatable {
 
 //
 extension PrintableTree {
-	static func ofStrings(_ description: String, _ subtrees: MutableArray<String>)
+	static func ofStrings(_ description: String, _ subtrees: List<String>)
 		-> PrintableAsTree?
 	{
 		let newSubtrees = subtrees.map { string -> PrintableAsTree? in PrintableTree(string) }

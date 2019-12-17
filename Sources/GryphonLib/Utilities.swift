@@ -37,8 +37,8 @@ extension Utilities {
 
 extension Utilities {
 	public static func files(
-		_ filePaths: MutableArray<String>,
-		wereModifiedLaterThan otherFilePaths: MutableArray<String>)
+		_ filePaths: MutableList<String>,
+		wereModifiedLaterThan otherFilePaths: MutableList<String>)
 		-> Bool
 	{
 		guard !filePaths.isEmpty, !otherFilePaths.isEmpty else {
@@ -173,14 +173,14 @@ extension Utilities {
 	}
 
 	static func getFiles(
-		_ selectedFiles: MutableArray<String>? = nil,
+		_ selectedFiles: MutableList<String>? = nil,
 		inDirectory directory: String,
 		withExtension fileExtension: FileExtension)
-		-> MutableArray<String>
+		-> MutableList<String>
 	{
 		let directoryPath = Utilities.getCurrentFolder() + "/\(directory)/"
 		let currentURL = URL(fileURLWithPath: directoryPath)
-		let allURLs = MutableArray<URL>(try! FileManager.default.contentsOfDirectory(
+		let allURLs = MutableList<URL>(try! FileManager.default.contentsOfDirectory(
 			at: currentURL,
 			includingPropertiesForKeys: nil))
 		let filteredURLs = allURLs.filter { $0.pathExtension == fileExtension.rawValue }
@@ -188,18 +188,18 @@ extension Utilities {
 				url1.absoluteString < url2.absoluteString
 		}
 
-		let selectedURLs: MutableArray<URL>
+		let selectedURLs: MutableList<URL>
 		if let selectedFiles = selectedFiles {
 			selectedURLs = sortedURLs.filter { url in
 				let fileName = url.deletingPathExtension().lastPathComponent
 				return selectedFiles.contains(fileName)
-			}
+			}.toMutableList()
 		}
 		else {
-			selectedURLs = sortedURLs
+			selectedURLs = sortedURLs.toMutableList()
 		}
 
-		return selectedURLs.map { $0.path }
+		return selectedURLs.map { $0.path }.toMutableList()
 	}
 }
 
@@ -212,17 +212,17 @@ extension Utilities {
 internal let libraryUpdateLock: Semaphore = NSLock()
 
 //
-extension MutableArray {
+extension List {
 
 	/// Meant for concurrently executing a map in an array with few elements and with an expensive
 	/// transform.
 	/// Technically it's O(n lg(n)) since the array has to be sorted at the end, but it's expected
 	/// that the transforms will take much longer than the sorting.
 	public func parallelMap<Result>(_ transform: @escaping (Element) throws -> Result)
-		throws -> MutableArray<Result>
+		throws -> MutableList<Result>
 	{
 		guard self.count > 1 else {
-			return try self.map(transform)
+			return try self.map(transform).toMutableList()
 		}
 
 		let concurrentQueue = DispatchQueue(
@@ -236,8 +236,8 @@ extension MutableArray {
 			group.enter()
 		}
 
-		let selfEnumerated = MutableArray<(offset: Int, element: Element)>(self.enumerated())
-		let unsortedResult: MutableArray<(index: Int, element: Result)> = []
+		let selfEnumerated = MutableList<(offset: Int, element: Element)>(self.enumerated())
+		let unsortedResult: MutableList<(index: Int, element: Result)> = []
 
 		concurrentQueue.async {
 			DispatchQueue.concurrentPerform(iterations: selfEnumerated.count)
@@ -278,6 +278,6 @@ extension MutableArray {
                 $0.element
             }
 
-		return result
+		return result.toMutableList()
 	}
 }

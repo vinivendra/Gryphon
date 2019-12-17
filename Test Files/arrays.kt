@@ -15,76 +15,76 @@
 //
 
 fun main(args: Array<String>) {
-	val array1: MutableList<Int> = mutableListOf(1, 2, 3)
-	val array2: MutableList<Int> = array1
+	val mutableList1: MutableList<Int> = mutableListOf(1, 2, 3)
+	val mutableList2: MutableList<Int> = mutableList1
 
-	array1[0] = 10
+	mutableList1[0] = 10
 
-	println(array1)
-	println(array2)
-	println(array2[0])
+	println(mutableList1)
+	println(mutableList2)
+	println(mutableList2[0])
 
-	for (i in array1) {
+	for (i in mutableList1) {
 		println(i)
 	}
 
-	for (j in array2) {
+	for (j in mutableList2) {
 		println(j)
 	}
 
-	for (i in array1) {
-		for (j in array2) {
+	for (i in mutableList1) {
+		for (j in mutableList2) {
 			println("${i}, ${j}")
 		}
 	}
 
-	val fixedArray1: List<Int> = listOf(1, 2, 3)
+	val list1: List<Int> = listOf(1, 2, 3)
 
-	println(fixedArray1[2] == 3)
+	println(list1[2] == 3)
 
-	val fixedArray2: List<Int> = listOf()
+	val list2: List<Int> = listOf()
 
-	println(fixedArray2.size == 0)
+	println(list2.size == 0)
 
-	val fixedArray3: List<Any>? = fixedArray1 as? List<Any>
-	val fixedArray4: List<Int>? = fixedArray3!! as? List<Int>
+	val list3: List<Any>? = list1 as? List<Any>
+	val list4: List<Int>? = list3!! as? List<Int>
 
-	println(fixedArray4!![2] == 3)
+	println(list4!![2] == 3)
 
-	for (item in fixedArray1) {
+	for (item in list1) {
 		println(item)
 	}
 
-	println(fixedArray1.isEmpty())
-	println(fixedArray2.isEmpty())
-	println(fixedArray1.firstOrNull()!! == 1)
-	println(fixedArray1.lastOrNull()!! == 3)
-	println(fixedArray2.firstOrNull() == null)
-	println(fixedArray2.lastOrNull() == null)
+	println(list1.isEmpty())
+	println(list2.isEmpty())
+	println(list1.firstOrNull()!! == 1)
+	println(list1.lastOrNull()!! == 3)
+	println(list2.firstOrNull() == null)
+	println(list2.lastOrNull() == null)
 
-	val fixedArray5: List<Int> = fixedArray1.filter { it > 2 }.toMutableList()
+	val list5: List<Int> = list1.filter { it > 2 }.toMutableList()
 
-	println(fixedArray5.size == 1)
-	println(fixedArray5[0] == 3)
+	println(list5.size == 1)
+	println(list5[0] == 3)
 
-	val fixedArray6: List<Int> = fixedArray1.map { it + 1 }.toMutableList()
+	val list6: List<Int> = list1.map { it + 1 }.toMutableList()
 
-	println(fixedArray6.size == 3)
-	println(fixedArray6[2] == 4)
+	println(list6.size == 3)
+	println(list6[2] == 4)
 
-	val fixedArray7: List<Int> = fixedArray1.map { if (it > 2) { it } else { null } }.filterNotNull().toMutableList()
+	val list7: List<Int> = list1.map { if (it > 2) { it } else { null } }.filterNotNull().toMutableList()
 
-	println(fixedArray7.size == 1)
-	println(fixedArray7[0] == 3)
+	println(list7.size == 1)
+	println(list7[0] == 3)
 
-	val fixedArray8: List<Int> = fixedArray1.flatMap { a -> listOf(a, a + 1) }.toMutableList()
+	val list8: List<Int> = list1.flatMap { a -> listOf(a, a + 1) }.toMutableList()
 
-	println(fixedArray8.size == 6)
-	println(fixedArray8[0] == 1)
-	println(fixedArray8[5] == 4)
+	println(list8.size == 6)
+	println(list8[0] == 1)
+	println(list8[5] == 4)
 
-	val fixedArray9: List<Int> = listOf(3, 2, 1)
-	val fixedArray10: List<Int> = fixedArray9.sorted()
+	val list9: List<Int> = listOf(3, 2, 1)
+	val list10: List<Int> = list9.sorted()
 
-	println(fixedArray10[0] == 1)
+	println(list10[0] == 1)
 }

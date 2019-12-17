@@ -37,7 +37,7 @@ public class Shell {
 	@discardableResult
 	internal static func runShellCommand(
 		_ command: String,
-		arguments: MutableArray<String>,
+		arguments: MutableList<String>,
 		fromFolder currentFolder: String? = nil,
 		timeout: TimeInterval = Shell.defaultTimeout)
 		-> CommandOutput!
@@ -79,7 +79,7 @@ public class Shell {
 	/// Returns nil when the operation times out.
 	@discardableResult
 	internal static func runShellCommand(
-		_ arguments: MutableArray<String>,
+		_ arguments: MutableList<String>,
 		fromFolder currentFolder: String? = nil,
 		timeout: TimeInterval = Shell.defaultTimeout) -> CommandOutput!
 	{

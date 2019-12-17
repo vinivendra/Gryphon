@@ -385,10 +385,10 @@ class LibraryTranspilationTest: XCTestCase {
 		XCTAssert("Boolean".isSubtype(of: "Bool"))
 
 		// Arrays
-		XCTAssert("MutableArray<Int>".isSubtype(of: "[Int]"))
-		XCTAssert("[Int]".isSubtype(of: "MutableArray<Int>"))
-		XCTAssert("FixedArray<Int>".isSubtype(of: "[Int]"))
-		XCTAssert("[Int]".isSubtype(of: "FixedArray<Int>"))
+		XCTAssert("MutableList<Int>".isSubtype(of: "[Int]"))
+		XCTAssert("[Int]".isSubtype(of: "MutableList<Int>"))
+		XCTAssert("List<Int>".isSubtype(of: "[Int]"))
+		XCTAssert("[Int]".isSubtype(of: "List<Int>"))
 		// XCTAssert("Array<Int>".isSubtype(of: "[Int]"))
 		// XCTAssert("[Int]".isSubtype(of: "Array<Int>"))
 
@@ -401,10 +401,10 @@ class LibraryTranspilationTest: XCTestCase {
 		// XCTAssert("[Int : Int]".isSubtype(of: "Dictionary<Int, Int>"))
 
 		// Array slices
-		XCTAssert("Slice<MutableArray<Int>>".isSubtype(of: "[Int]"))
-		XCTAssert("[Int]".isSubtype(of: "Slice<MutableArray<Int>>"))
-		// XCTAssert("Slice<FixedArray<Int>>".isSubtype(of: "[Int]"))
-		// XCTAssert("[Int]".isSubtype(of: "Slice<FixedArray<Int>>"))
+		XCTAssert("Slice<MutableList<Int>>".isSubtype(of: "[Int]"))
+		XCTAssert("[Int]".isSubtype(of: "Slice<MutableList<Int>>"))
+		// XCTAssert("Slice<List<Int>>".isSubtype(of: "[Int]"))
+		// XCTAssert("[Int]".isSubtype(of: "Slice<List<Int>>"))
 		// XCTAssert("Slice<Array<Int>>".isSubtype(of: "[Int]"))
 		// XCTAssert("[Int]".isSubtype(of: "Slice<Array<Int>>"))
 

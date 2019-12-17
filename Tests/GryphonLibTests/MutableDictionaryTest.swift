@@ -164,8 +164,8 @@ class MutableDictionaryTest: XCTestCase {
 		let dictionary: MutableDictionary = [1: 10, 2: 20]
 		let mappedDictionary = dictionary.map { $0.0 + $0.1 }
 
-		let answer1: MutableArray = [11, 22]
-		let answer2: MutableArray = [22, 11]
+		let answer1: MutableList = [11, 22]
+		let answer2: MutableList = [22, 11]
 		XCTAssert((mappedDictionary == answer1) || (mappedDictionary == answer2))
 
 		XCTAssertEqual(dictionary, [1: 10, 2: 20])

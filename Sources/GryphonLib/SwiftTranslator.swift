@@ -26,7 +26,7 @@ public class SwiftTranslator {
 
 	var outputFileMap: MutableDictionary<FileExtension, String> = [:]
 
-	var danglingPatternBindings: MutableArray<PatternBindingDeclaration?> = []
+	var danglingPatternBindings: MutableList<PatternBindingDeclaration?> = []
 
 	let errorDanglingPatternDeclaration = PatternBindingDeclaration(
 		identifier: "<<Error>>",
@@ -35,7 +35,7 @@ public class SwiftTranslator {
 
 	fileprivate var sourceFile: SourceFile?
 
-	static let functionCompatibleASTNodes: MutableArray<String> =
+	static let functionCompatibleASTNodes: MutableList<String> =
 		["Function Declaration", "Constructor Declaration", "Accessor Declaration"]
 
 	// MARK: - Interface
@@ -78,13 +78,13 @@ public class SwiftTranslator {
 	}
 
 	struct DeclarationsAndStatements {
-		let declarations: MutableArray<Statement>
-		let statements: MutableArray<Statement>
+		let declarations: MutableList<Statement>
+		let statements: MutableList<Statement>
 	}
 
-	func filterStatements(_ allStatements: MutableArray<Statement>) -> DeclarationsAndStatements {
-		let declarations: MutableArray<Statement> = []
-		let statements: MutableArray<Statement> = []
+	func filterStatements(_ allStatements: MutableList<Statement>) -> DeclarationsAndStatements {
+		let declarations: MutableList<Statement> = []
+		let statements: MutableList<Statement> = []
 
 		var isInTopOfFileComments = true
 		var lastTopOfFileCommentLine = 0
@@ -149,9 +149,9 @@ public class SwiftTranslator {
 	// MARK: - Top-level translations
 
 	internal func translateSubtreesInScope(
-		_ subtrees: MutableArray<SwiftAST>,
+		_ subtrees: MutableList<SwiftAST>,
 		scope: SwiftAST)
-		throws -> MutableArray<Statement>
+		throws -> MutableList<Statement>
 	{
 		let scopeRange = getRange(ofNode: scope)
 		return try translateSubtrees(
@@ -159,11 +159,11 @@ public class SwiftTranslator {
 	}
 
 	internal func translateSubtrees(
-		_ subtrees: MutableArray<SwiftAST>,
+		_ subtrees: MutableList<SwiftAST>,
 		scopeRange: SourceFileRange?)
-		throws -> MutableArray<Statement>
+		throws -> MutableList<Statement>
 	{
-		let result: MutableArray<Statement> = []
+		let result: MutableList<Statement> = []
 
 		var lastRange: SourceFileRange
 		// If we have a scope, start at its lower bound
@@ -180,7 +180,9 @@ public class SwiftTranslator {
 		}
 		// If there is no info on ranges, then just translate the subtrees normally
 		else {
-			return try subtrees.flatMap{ try translateSubtree($0) }.compactMap { $0 }
+			return try subtrees.flatMap{ try translateSubtree($0) }
+				.compactMap { $0 }
+				.toMutableList()
 		}
 
 		for subtree in subtrees {
@@ -212,14 +214,14 @@ public class SwiftTranslator {
 	// MARK: - Statement translations
 
 	internal func translateSubtreesOf(_ ast: SwiftAST)
-		throws -> MutableArray<Statement>
+		throws -> MutableList<Statement>
 	{
 		return try translateSubtreesInScope(ast.subtrees, scope: ast)
 	}
 
 	internal func translateBraceStatement(
 		_ braceStatement: SwiftAST)
-		throws -> MutableArray<Statement>
+		throws -> MutableList<Statement>
 	{
 		guard braceStatement.name == "Brace Statement" else {
 			throw createUnexpectedASTStructureError(
@@ -232,7 +234,7 @@ public class SwiftTranslator {
 
 	internal func translateSingleStatementFunction(
 		_ ast: SwiftAST)
-		throws -> MutableArray<Statement>
+		throws -> MutableList<Statement>
 	{
 		guard hasSingleStatement(ast) else {
 			throw createUnexpectedASTStructureError(
@@ -254,13 +256,13 @@ public class SwiftTranslator {
 		}
 	}
 
-	internal func translateSubtree(_ subtree: SwiftAST) throws -> MutableArray<Statement?> {
+	internal func translateSubtree(_ subtree: SwiftAST) throws -> MutableList<Statement?> {
 
 		if getKeyedComment(forNode: subtree, key: .kotlin) == "ignore" {
 			return []
 		}
 
-		let result: MutableArray<Statement?>
+		let result: MutableList<Statement?>
 		switch subtree.name {
 		case "Top Level Code Declaration":
 			result = try translateTopLevelCode(subtree)
@@ -289,6 +291,7 @@ public class SwiftTranslator {
 		case "Subscript Declaration":
 			result = try subtree.subtrees.filter { $0.name == "Accessor Declaration" }
 				.map { try translateFunctionDeclaration($0) }
+				.toMutableList()
 		case "Protocol":
 			result = [try translateProtocolDeclaration(subtree)]
 		case "Throw Statement":
@@ -451,7 +454,7 @@ public class SwiftTranslator {
 		let name = classDeclaration.standaloneAttributes.first!
 
 		// Check for inheritance
-		let inheritanceArray: MutableArray<String>
+		let inheritanceArray: MutableList<String>
 		if let inheritanceList = classDeclaration["inherits"] {
 			inheritanceArray = inheritanceList.split(withStringSeparator: ", ")
 		}
@@ -486,7 +489,7 @@ public class SwiftTranslator {
 		let name = structDeclaration.standaloneAttributes.first!
 
 		// Check for inheritance
-		let inheritanceArray: MutableArray<String>
+		let inheritanceArray: MutableList<String>
 		if let inheritanceList = structDeclaration["inherits"] {
 			inheritanceArray = inheritanceList.split(withStringSeparator: ", ")
 		}
@@ -563,7 +566,7 @@ public class SwiftTranslator {
 			name = enumDeclaration.standaloneAttributes[0]
 		}
 
-		let inheritanceArray: MutableArray<String>
+		let inheritanceArray: MutableList<String>
 		if let inheritanceList = enumDeclaration["inherits"] {
 			inheritanceArray = inheritanceList.split(withStringSeparator: ", ")
 		}
@@ -571,7 +574,7 @@ public class SwiftTranslator {
 			inheritanceArray = []
 		}
 
-		var rawValues: MutableArray<Expression> = []
+		var rawValues: MutableList<Expression> = []
 		let constructorDeclarations = enumDeclaration.subtrees.filter {
 			$0.name ==  "Constructor Declaration"
 		}
@@ -584,13 +587,13 @@ public class SwiftTranslator {
 					.subtree(named: "Tuple Expression")?
 					.subtree(named: "Array Expression")
 			{
-				let rawValueASTs = MutableArray<SwiftAST>(arrayExpression.subtrees.dropLast())
-				rawValues = try rawValueASTs.map { try translateExpression($0) }
+				let rawValueASTs = MutableList<SwiftAST>(arrayExpression.subtrees.dropLast())
+				rawValues = try rawValueASTs.map { try translateExpression($0) }.toMutableList()
 				break
 			}
 		}
 
-		let elements: MutableArray<EnumElement> = []
+		let elements: MutableList<EnumElement> = []
 		let enumElementDeclarations =
 			enumDeclaration.subtrees.filter { $0.name == "Enum Element Declaration" }
 		for index in enumElementDeclarations.indices {
@@ -621,7 +624,7 @@ public class SwiftTranslator {
 				let prefix = String(elementName[elementName.startIndex..<parenthesisIndex])
 				let suffix = elementName[parenthesisIndex...]
 				let valuesString = suffix.dropFirst().dropLast(2)
-				let valueLabels = MutableArray<String>(
+				let valueLabels = MutableList<String>(
 					valuesString.split(separator: ":")
 						.map { String($0) })
 
@@ -637,6 +640,7 @@ public class SwiftTranslator {
 
 				let associatedValues = zipToClass(valueLabels, valueTypes)
 					.map { LabeledType(label: $0.0, typeName: $0.1) }
+					.toMutableList()
 
 				elements.append(EnumElement(
 					name: prefix,
@@ -650,7 +654,9 @@ public class SwiftTranslator {
 			$0.name != "Enum Element Declaration" && $0.name != "Enum Case Declaration"
 		}
 
-		let translatedMembers = try translateSubtreesInScope(members, scope: enumDeclaration)
+		let translatedMembers = try translateSubtreesInScope(
+			members.toMutableList(),
+			scope: enumDeclaration)
 
 		return EnumDeclaration(
 			range: getRangeRecursively(ofNode: enumDeclaration),
@@ -964,7 +970,7 @@ public class SwiftTranslator {
 
 	internal func translateDoCatchStatement(
 		_ doCatchStatement: SwiftAST)
-		throws -> MutableArray<Statement?>
+		throws -> MutableList<Statement?>
 	{
 		guard doCatchStatement.name == "Do Catch Statement" else {
 			return try [unexpectedASTStructureError(
@@ -986,7 +992,7 @@ public class SwiftTranslator {
 			range: getRangeRecursively(ofNode: doCatchStatement),
 			statements: translatedInnerDoStatements)
 
-		let catchStatements: MutableArray<Statement?> = []
+		let catchStatements: MutableList<Statement?> = []
 		for catchStatement in doCatchStatement.subtrees.dropFirst() {
 			guard catchStatement.name == "Catch" else {
 				continue
@@ -1037,7 +1043,7 @@ public class SwiftTranslator {
 				statements: translatedStatements))
 		}
 
-		let resultingStatements: MutableArray<Statement?> = [translatedDoStatement]
+		let resultingStatements: MutableList<Statement?> = [translatedDoStatement]
 		resultingStatements.append(contentsOf: catchStatements)
 
 		return resultingStatements
@@ -1080,7 +1086,7 @@ public class SwiftTranslator {
 		else if let variableSubtreeTuple = variableSubtreeTuple,
 			let maybeCollectionExpression = maybeCollectionExpression
 		{
-			let variables: MutableArray<LabeledExpression> =
+			let variables: MutableList<LabeledExpression> =
 				variableSubtreeTuple.subtrees.map { subtree in
 					let name = subtree.standaloneAttributes[0]
 					let typeName = subtree.keyValueAttributes["type"]!
@@ -1092,7 +1098,7 @@ public class SwiftTranslator {
 							typeName: cleanUpType(typeName),
 							isStandardLibrary: false,
 							isImplicit: false))
-				}
+				}.toMutableList()
 
 			variable = TupleExpression(
 				range: getRangeRecursively(ofNode: variableSubtreeTuple),
@@ -1273,11 +1279,11 @@ public class SwiftTranslator {
 
 		let translatedExpression = try translateExpression(expression)
 
-		let cases: MutableArray<SwitchCase> = []
-		let caseSubtrees = MutableArray<SwiftAST>(switchStatement.subtrees.dropFirst())
+		let cases: MutableList<SwitchCase> = []
+		let caseSubtrees = MutableList<SwiftAST>(switchStatement.subtrees.dropFirst())
 		for caseSubtree in caseSubtrees {
-			let caseExpressions: MutableArray<Expression> = []
-			var extraStatements: MutableArray<Statement> = []
+			let caseExpressions: MutableList<Expression> = []
+			var extraStatements: MutableList<Statement> = []
 
 			for caseLabelItem in caseSubtree.subtrees.filter({ $0.name == "Case Label Item" }) {
 				let firstSubtreeSubtrees = caseLabelItem.subtrees.first?.subtrees
@@ -1330,7 +1336,7 @@ public class SwiftTranslator {
 							isStatic: false,
 							extendsType: nil,
 							annotations: nil)
-					}
+					}.toMutableList()
 				}
 				else if let patternEnumElement =
 					caseLabelItem.subtree(named: "Pattern Enum Element")
@@ -1386,7 +1392,7 @@ public class SwiftTranslator {
 				ast: simplePatternEnumElement, translator: self)
 		}
 
-		let enumElements = MutableArray<Substring>(enumReference.split(separator: "."))
+		let enumElements = MutableList<Substring>(enumReference.split(separator: "."))
 
 		guard let lastEnumElement = enumElements.last else {
 			return try unexpectedExpressionStructureError(
@@ -1428,8 +1434,8 @@ public class SwiftTranslator {
 					ast: ifStatement, translator: self), ])
 		}
 
-		let conditionsResult: MutableArray<IfStatement.IfCondition> = []
-		let statementsResult: MutableArray<Statement> = []
+		let conditionsResult: MutableList<IfStatement.IfCondition> = []
+		let statementsResult: MutableList<Statement> = []
 
 		let conditions = ifStatement.subtrees.filter {
 			$0.name != "If Statement" && $0.name != "Brace Statement"
@@ -1652,8 +1658,8 @@ public class SwiftTranslator {
 		// insert: val associatedValuesInfo: List<Pair<String, SwiftAST>> =
 		// insert: 	associatedValueNames.zip(patternTuple.subtrees)
 
-		let declarations: MutableArray<AssociatedValueDeclaration> = []
-		let comparisons: MutableArray<AssociatedValueComparison> = []
+		let declarations: MutableList<AssociatedValueDeclaration> = []
+		let comparisons: MutableList<AssociatedValueComparison> = []
 		for associatedValueInfo in associatedValuesInfo {
 			let associatedValueName = associatedValueInfo.0
 			let ast = associatedValueInfo.1
@@ -1750,11 +1756,11 @@ public class SwiftTranslator {
 		let isStatic = firstInterfaceTypeComponent.contains(".Type")
 		let isMutating = firstInterfaceTypeComponent.contains("inout")
 
-		let genericTypes: MutableArray<String>
+		let genericTypes: MutableList<String>
 		if let firstGenericString = functionDeclaration.standaloneAttributes
 			.first(where: { $0.hasPrefix("<") })
 		{
-			genericTypes = MutableArray<String>(
+			genericTypes = MutableList<String>(
 				firstGenericString
 					.dropLast()
 					.dropFirst()
@@ -1792,7 +1798,7 @@ public class SwiftTranslator {
 		}
 
 		// Translate the parameters
-		let parameters: MutableArray<FunctionParameter> = []
+		let parameters: MutableList<FunctionParameter> = []
 		if let parameterList = parameterList {
 			for parameter in parameterList.subtrees {
 				if let name = parameter.standaloneAttributes.first,
@@ -1843,7 +1849,7 @@ public class SwiftTranslator {
 		}
 
 		// Translate the function body
-		let statements: MutableArray<Statement>
+		let statements: MutableList<Statement>
 		if let braceStatement = functionDeclaration.subtree(named: "Brace Statement") {
 			statements = try translateBraceStatement(braceStatement)
 		}
@@ -1855,7 +1861,7 @@ public class SwiftTranslator {
 		}
 
 		// TODO: test annotations in functions
-		let annotations: MutableArray<String?> = []
+		let annotations: MutableList<String?> = []
 		annotations.append(getKeyedComment(forNode: functionDeclaration, key: .annotation))
 		if isSubscript {
 			annotations.append("operator")
@@ -1903,7 +1909,7 @@ public class SwiftTranslator {
 	}
 
 	internal func translateTopLevelCode(_ topLevelCodeDeclaration: SwiftAST) throws
-		-> MutableArray<Statement?>
+		-> MutableList<Statement?>
 	{
 		guard topLevelCodeDeclaration.name == "Top Level Code Declaration" else {
 			return try [unexpectedASTStructureError(
@@ -1919,7 +1925,7 @@ public class SwiftTranslator {
 
 		let subtrees = try translateBraceStatement(braceStatement)
 
-		return MutableArray<Statement?>(subtrees)
+		return MutableList<Statement?>(subtrees)
 	}
 
 	internal func translateVariableDeclaration(
@@ -1991,7 +1997,7 @@ public class SwiftTranslator {
 		for subtree in variableDeclaration.subtrees {
 			let access = subtree["access"]
 
-			let statements: MutableArray<Statement>
+			let statements: MutableList<Statement>
 			if let braceStatement = subtree.subtree(named: "Brace Statement") {
 				statements = try translateBraceStatement(braceStatement)
 			}
@@ -2402,7 +2408,7 @@ public class SwiftTranslator {
 		}
 
 		// Translate the parameters
-		let parameters: MutableArray<LabeledType> = []
+		let parameters: MutableList<LabeledType> = []
 		if let parameterList = parameterList {
 			for parameter in parameterList.subtrees {
 				if let name = parameter.standaloneAttributes.first,
@@ -2434,7 +2440,7 @@ public class SwiftTranslator {
 				"Unable to get closure body", ast: closureExpression, translator: self)
 		}
 
-		let statements: MutableArray<Statement>
+		let statements: MutableList<Statement>
 		if lastSubtree.name == "Brace Statement" {
 			statements = try translateBraceStatement(lastSubtree)
 		}
@@ -2494,7 +2500,7 @@ public class SwiftTranslator {
 				let typeName = typeName,
 				let rawIndices = rawIndices
 			{
-				let indices: MutableArray<TupleShuffleIndex> = []
+				let indices: MutableList<TupleShuffleIndex> = []
 				for rawIndex in rawIndices {
 
 					guard let rawIndex = rawIndex else {
@@ -2538,9 +2544,9 @@ public class SwiftTranslator {
 				}
 				parameters = TupleShuffleExpression(
 					range: getRangeRecursively(ofNode: tupleShuffleExpression),
-					labels: labels,
+					labels: labels.toMutableList(),
 					indices: indices,
-					expressions: expressions)
+					expressions: expressions.toMutableList())
 			}
 			else {
 				return try unexpectedExpressionStructureError(
@@ -2577,17 +2583,18 @@ public class SwiftTranslator {
 				ast: tupleExpression, translator: self)
 		}
 
-		let namesArray: MutableArray<String>
+		let namesArray: MutableList<String>
 		if let names = tupleExpression["names"] {
-			namesArray = MutableArray<Substring>(names.split(separator: ","))
+			namesArray = MutableList<Substring>(names.split(separator: ","))
 				.map { String($0) }
+				.toMutableList()
 		}
 		else {
 			// If there are no names create a list of enough length with all empty names
-			namesArray = tupleExpression.subtrees.map { _ in "_" }
+			namesArray = tupleExpression.subtrees.map { _ in "_" }.toMutableList()
 		}
 
-		let tuplePairs: MutableArray<LabeledExpression> = []
+		let tuplePairs: MutableList<LabeledExpression> = []
 
 		for (name, expression) in zipToClass(namesArray, tupleExpression.subtrees) {
 			let expression = try translateExpression(expression)
@@ -2630,7 +2637,7 @@ public class SwiftTranslator {
 				ast: interpolatedStringLiteralExpression, translator: self)
 		}
 
-		let expressions: MutableArray<Expression> = []
+		let expressions: MutableList<Expression> = []
 
 		for callExpression in braceStatement.subtrees.dropFirst() {
 			let maybeSubtrees = callExpression.subtree(named: "Parentheses Expression")?.subtrees
@@ -2699,9 +2706,11 @@ public class SwiftTranslator {
 		}
 
 		// Drop the "Semantic Expression" at the end
-		let expressionsToTranslate = MutableArray<SwiftAST>(arrayExpression.subtrees.dropLast())
+		let expressionsToTranslate = MutableList<SwiftAST>(arrayExpression.subtrees.dropLast())
 
-		let expressionsArray = try expressionsToTranslate.map { try translateExpression($0) }
+		let expressionsArray = try expressionsToTranslate
+			.map { try translateExpression($0) }
+			.toMutableList()
 
 		guard let rawType = arrayExpression["type"] else {
 			return try unexpectedExpressionStructureError(
@@ -2725,8 +2734,8 @@ public class SwiftTranslator {
 				ast: dictionaryExpression, translator: self)
 		}
 
-		let keys: MutableArray<Expression> = []
-		let values: MutableArray<Expression> = []
+		let keys: MutableList<Expression> = []
+		let values: MutableList<Expression> = []
 		for tupleExpression in dictionaryExpression.subtrees {
 			guard tupleExpression.name == "Tuple Expression" else {
 				continue
@@ -2986,8 +2995,8 @@ public class SwiftTranslator {
 
 	// MARK: - Source file interactions
 
-	internal func insertedCode(inRange range: Range<Int>) -> MutableArray<Statement> {
-		let result: MutableArray<Statement> = []
+	internal func insertedCode(inRange range: Range<Int>) -> MutableList<Statement> {
+		let result: MutableList<Statement> = []
 		for lineNumber in range {
 			let astRange = SourceFileRange(
 				lineStart: lineNumber, lineEnd: lineNumber, columnStart: 0, columnEnd: 0)
@@ -3134,9 +3143,9 @@ public class SwiftTranslator {
 			return
 		}
 
-		let result: MutableArray<PatternBindingDeclaration?> = []
+		let result: MutableList<PatternBindingDeclaration?> = []
 
-		let subtreesCopy = patternBindingDeclaration.subtrees.copy()
+		let subtreesCopy = patternBindingDeclaration.subtrees.toMutableList()
 		while !subtreesCopy.isEmpty {
 			var pattern = subtreesCopy[0]
 			subtreesCopy.removeFirst()
@@ -3208,7 +3217,7 @@ public class SwiftTranslator {
 			return replacementAST
 		}
 
-		let newSubtrees: MutableArray<SwiftAST> = []
+		let newSubtrees: MutableList<SwiftAST> = []
 		for subtree in ast.subtrees {
 			newSubtrees.append(astReplacingOpaqueValues(in: subtree, with: replacementAST))
 		}
@@ -3341,15 +3350,15 @@ struct DeclarationInformation {
 }
 
 private struct IfConditionsTranslation {
-	let conditions: MutableArray<IfStatement.IfCondition>
-	let statements: MutableArray<Statement>
+	let conditions: MutableList<IfStatement.IfCondition>
+	let statements: MutableList<Statement>
 }
 
 private struct EnumPatternTranslation {
 	let enumType: String
 	let enumCase: String
-	let declarations: MutableArray<AssociatedValueDeclaration>
-	let comparisons: MutableArray<AssociatedValueComparison>
+	let declarations: MutableList<AssociatedValueDeclaration>
+	let comparisons: MutableList<AssociatedValueComparison>
 }
 
 private struct AssociatedValueDeclaration {

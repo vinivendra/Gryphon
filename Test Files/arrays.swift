@@ -19,57 +19,124 @@
 // gryphon output: Test Files/Bootstrap Outputs/arrays.gryphonAST
 // gryphon output: Test Files/Bootstrap Outputs/arrays.kt
 
+private func gryphonTemplates() {
+	let _array1: MutableList<Any> = [1, 2, 3]
+	let _array2: MutableList<Any> = [1, 2, 3]
+	let _any: Any = 0
+	let _string: String = ""
+	let _index = _string.startIndex
+
+	_ = zipToClass(_array1, _array2)
+	_ = "_array1.zip(_array2)"
+
+	_ = _string.suffix(from: _index)
+	_ = "_string.suffix(startIndex = _index)"
+
+	_ = _array1.toList()
+	_ = "_array1.toList()"
+
+	_ = _array1.appending(_any)
+	_ = "_array1 + _any"
+
+	_ = _array1.appending(contentsOf: _array2)
+	_ = "_array1 + _array2"
+}
+
 /// According to http://swiftdoc.org/v4.2/type/Array/hierarchy/
 /// (link found via https://www.raywenderlich.com/139591/building-custom-collection-swift)
 /// the Array type in Swift conforms exactly to these protocols,
 /// plus CustomReflectable (which is beyond Gryphon's scope for now).
-public final class MutableArray<Element>: // kotlin: ignore
-	ExpressibleByArrayLiteral, CustomStringConvertible, CustomDebugStringConvertible,
-	RandomAccessCollection, MutableCollection, RangeReplaceableCollection
+public struct _ListSlice<Element>: Collection, // kotlin: ignore
+	BidirectionalCollection,
+	RandomAccessCollection,
+	MutableCollection,
+	RangeReplaceableCollection
+{
+	public typealias Index = Int
+	public typealias SubSequence = _ListSlice<Element>
+
+	let list: List<Element>
+	let range: Range<Int>
+
+	public var startIndex: Int {
+		return range.startIndex
+	}
+
+	public var endIndex: Int {
+		return range.endIndex
+	}
+
+	public subscript(position: Int) -> Element {
+		get {
+			return list[position]
+		}
+
+		// MutableCollection
+		set {
+			list._setElement(newValue, atIndex: position)
+		}
+	}
+
+	public func index(after i: Int) -> Int {
+        return list.index(after: i)
+    }
+
+	// BidirectionalCollection
+	public func index(before i: Int) -> Int {
+        return list.index(before: i)
+    }
+
+	// RangeReplaceableCollection
+	public init() {
+		self.list = []
+		self.range = 0..<0
+	}
+
+	// Other methods
+	public func filter(_ isIncluded: (Element) throws -> Bool) rethrows -> List<Element> {
+		let array = list.array[range]
+		return try List(array.filter(isIncluded))
+	}
+
+	public func map<T>(_ transform: (Element) throws -> T) rethrows -> List<T> {
+		let array = list.array[range]
+		return try List<T>(array.map(transform))
+	}
+
+	public func compactMap<T>(_ transform: (Element) throws -> T?) rethrows -> List<T> {
+		let array = list.array[range]
+		return try List<T>(array.compactMap(transform))
+	}
+
+	public func flatMap<SegmentOfResult>(
+		_ transform: (Element) throws -> SegmentOfResult)
+		rethrows -> List<SegmentOfResult.Element>
+		where SegmentOfResult: Sequence
+	{
+		let array = list.array[range]
+		return try List<SegmentOfResult.Element>(array.flatMap(transform))
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+public class List<Element>: CustomStringConvertible, // kotlin: ignore
+	CustomDebugStringConvertible,
+	ExpressibleByArrayLiteral,
+	Sequence,
+	Collection,
+	BidirectionalCollection,
+	RandomAccessCollection
 {
 	public typealias Buffer = [Element]
+	public typealias ArrayLiteralElement = Element
+	public typealias Index = Int
+	public typealias SubSequence = _ListSlice<Element>
 
 	public var array: Buffer
 
 	public init(_ array: Buffer) {
 		self.array = array
-	}
-
-	public init<T>(_ mutableArray: MutableArray<T>) {
-		self.array = mutableArray.array as! Buffer
-	}
-
-	public func `as`<CastedType>(
-		_ type: MutableArray<CastedType>.Type)
-		-> MutableArray<CastedType>?
-	{
-		if let castedArray = self.array as? [CastedType] {
-			return MutableArray<CastedType>(castedArray)
-		}
-		else {
-			return nil
-		}
-	}
-
-	public func copy() -> MutableArray<Element> {
-		return MutableArray(array)
-	}
-
-	// Expressible By Array Literal
-	public typealias ArrayLiteralElement = Element
-
-	public required init(arrayLiteral elements: Element...) {
-		self.array = elements
-	}
-
-	// ...
-	public subscript (_ index: Int) -> Element {
-		get {
-			return array[index]
-		}
-		set {
-			array[index] = newValue
-		}
 	}
 
 	// Custom (Debug) String Convertible
@@ -81,6 +148,16 @@ public final class MutableArray<Element>: // kotlin: ignore
 		return array.debugDescription
 	}
 
+	// Expressible By Array Literal
+	public required init(arrayLiteral elements: Element...) {
+		self.array = elements
+	}
+
+	// Sequence
+	public func makeIterator() -> IndexingIterator<List<Element>> {
+		return IndexingIterator(_elements: self)
+	}
+
 	// Collection
 	public var startIndex: Int {
 		return array.startIndex
@@ -90,8 +167,51 @@ public final class MutableArray<Element>: // kotlin: ignore
 		return array.endIndex
 	}
 
+	public subscript(position: Int) -> Element {
+		return array[position]
+	}
+
 	public func index(after i: Int) -> Int {
-		return i + 1
+        return array.index(after: i)
+    }
+
+	// BidirectionalCollection
+	public func index(before i: Int) -> Int {
+        return array.index(before: i)
+    }
+
+	// Used for _ListSlice to conform to MutableCollection
+	fileprivate func _setElement(_ element: Element, atIndex index: Int) {
+		array[index] = element
+	}
+
+	// Other methods
+	public init<T>(_ list: List<T>) {
+		self.array = list.array as! Buffer
+	}
+
+	public init<S>(_ sequence: S) where Element == S.Element, S: Sequence {
+		self.array = Array(sequence)
+	}
+
+	public init() {
+		self.array = []
+	}
+
+	public func `as`<CastedType>(
+		_ type: List<CastedType>.Type)
+		-> List<CastedType>?
+	{
+		if let castedList = self.array as? [CastedType] {
+			return List<CastedType>(castedList)
+		}
+		else {
+			return nil
+		}
+	}
+
+	public func toList() -> List<Element> {
+		return List(array)
 	}
 
 	public var isEmpty: Bool {
@@ -106,69 +226,161 @@ public final class MutableArray<Element>: // kotlin: ignore
 		return array.last
 	}
 
-	// Bidirectional Collection
-	public func index(before i: Int) -> Int {
-		return i - 1
+	public func dropFirst(_ k: Int = 1) -> List<Element> {
+		return List(array.dropFirst())
 	}
 
-	// Range Replaceable Collection
-	public func append<S>(contentsOf newElements: S) where S: Sequence, Element == S.Element {
-		self.array.append(contentsOf: newElements)
+	public func dropLast(_ k: Int = 1) -> List<Element> {
+		return List(array.dropLast())
 	}
 
-	public init<S>(_ sequence: S) where Element == S.Element, S: Sequence {
-		self.array = Array(sequence)
+	public func appending(_ newElement: Element) -> List<Element> {
+		return List<Element>(self.array + [newElement])
 	}
 
-	public required init() {
-		self.array = []
+	public func filter(_ isIncluded: (Element) throws -> Bool) rethrows -> List<Element> {
+		return try List(self.array.filter(isIncluded))
 	}
 
-	//
-	public func append(_ newElement: Element) {
-		array.append(newElement)
+	public func map<T>(_ transform: (Element) throws -> T) rethrows -> List<T> {
+		return try List<T>(self.array.map(transform))
 	}
 
-	public func appending(_ newElement: Element) -> MutableArray<Element> {
-		return MutableArray<Element>(self.array + [newElement])
-	}
-
-	public func insert(_ newElement: Element, at i: Index) {
-		array.insert(newElement, at: i)
-	}
-
-	public func filter(_ isIncluded: (Element) throws -> Bool) rethrows -> MutableArray<Element> {
-		return try MutableArray(self.array.filter(isIncluded))
-	}
-
-	public func map<T>(_ transform: (Element) throws -> T) rethrows -> MutableArray<T> {
-		return try MutableArray<T>(self.array.map(transform))
-	}
-
-	public func compactMap<T>(_ transform: (Element) throws -> T?) rethrows -> MutableArray<T> {
-		return try MutableArray<T>(self.array.compactMap(transform))
+	public func compactMap<T>(_ transform: (Element) throws -> T?) rethrows -> List<T> {
+		return try List<T>(self.array.compactMap(transform))
 	}
 
 	public func flatMap<SegmentOfResult>(
 		_ transform: (Element) throws -> SegmentOfResult)
-		rethrows -> MutableArray<SegmentOfResult.Element>
+		rethrows -> List<SegmentOfResult.Element>
 		where SegmentOfResult: Sequence
 	{
-		return try MutableArray<SegmentOfResult.Element>(array.flatMap(transform))
+		return try List<SegmentOfResult.Element>(array.flatMap(transform))
 	}
 
 	@inlinable
 	public func sorted(
 		by areInIncreasingOrder: (Element, Element) throws -> Bool) rethrows
-		-> MutableArray<Element>
+		-> List<Element>
 	{
-		return MutableArray(try array.sorted(by: areInIncreasingOrder))
+		return List(try array.sorted(by: areInIncreasingOrder))
 	}
 
-	public func appending<S>(contentsOf newElements: S) -> MutableArray<Element>
+	public func appending<S>(contentsOf newElements: S) -> List<Element>
 		where S: Sequence, Element == S.Element
 	{
-		return MutableArray<Element>(self.array + newElements)
+		return List<Element>(self.array + newElements)
+	}
+
+	public func reversed() -> List<Element> {
+		return List(array.reversed())
+	}
+
+	public var indices: Range<Int> {
+		return array.indices
+	}
+}
+
+extension List { // kotlin: ignore
+	public func toMutableList() -> MutableList<Element> {
+		return MutableList(array)
+	}
+}
+
+// TODO: test
+extension List { // kotlin: ignore
+	@inlinable
+	public static func + <Other>(
+		lhs: List<Element>,
+		rhs: Other)
+		-> List<Element>
+		where Other: Sequence,
+		List.Element == Other.Element
+	{
+		var array = lhs.array
+		for element in rhs {
+			array.append(element)
+		}
+		return List(array)
+	}
+}
+
+extension List: Equatable where Element: Equatable { // kotlin: ignore
+	public static func == (lhs: List, rhs: List) -> Bool {
+		return lhs.array == rhs.array
+	}
+
+	//
+	public func firstIndex(of element: Element) -> Int? {
+		return array.firstIndex(of: element)
+	}
+}
+
+extension List: Hashable where Element: Hashable { // kotlin: ignore
+	public func hash(into hasher: inout Hasher) {
+		array.hash(into: &hasher)
+	}
+}
+
+extension List where Element: Comparable { // kotlin: ignore
+	@inlinable
+	public func sorted() -> List<Element> {
+		return List(array.sorted())
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+public class MutableList<Element>: List<Element>, // kotlin: ignore
+	MutableCollection,
+	RangeReplaceableCollection
+{
+	// MutableCollection
+	public override subscript(position: Int) -> Element {
+		get {
+			return array[position]
+		}
+		set {
+			array[position] = newValue
+		}
+	}
+
+	// RangeReplaceableCollection
+	override public required init() {
+		super.init([])
+	}
+
+	public required init(arrayLiteral elements: Element...) {
+		super.init(elements)
+	}
+
+	// Other methods
+	override public init<T>(_ list: List<T>) {
+		super.init(list.array as! Buffer)
+	}
+
+	public func `as`<CastedType>(
+		_ type: MutableList<CastedType>.Type)
+		-> MutableList<CastedType>?
+	{
+		if let castedList = self.array as? [CastedType] {
+			return MutableList<CastedType>(castedList)
+		}
+		else {
+			return nil
+		}
+	}
+
+	public func append(_ newElement: Element) {
+		array.append(newElement)
+	}
+
+	public func append<S>(contentsOf newElements: S) where S: Sequence, Element == S.Element {
+		self.array.append(contentsOf: newElements)
+	}
+
+	public func insert(_ newElement: Element, at i: Index) {
+		array.insert(newElement, at: i)
 	}
 
 	@discardableResult
@@ -182,282 +394,109 @@ public final class MutableArray<Element>: // kotlin: ignore
 	}
 
 	public func reverse() {
-		array.reverse()
-	}
-
-	public var indices: Range<Int> {
-		return array.indices
+		self.array = self.array.reversed()
 	}
 }
 
-extension MutableArray: Equatable where Element: Equatable { // kotlin: ignore
-	public static func == (lhs: MutableArray, rhs: MutableArray) -> Bool {
-		return lhs.array == rhs.array
-	}
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	//
-	public func index(of element: Element) -> Int? {
-		return array.index(of: element)
+public protocol BackedByArray { // kotlin: ignore
+	associatedtype Element
+	var arrayBacking: [Element] { get }
+}
+
+extension List: BackedByArray { // kotlin: ignore
+	public var arrayBacking: [Element] {
+		return self.array
 	}
 }
 
-extension MutableArray: Hashable where Element: Hashable { // kotlin: ignore
-	public func hash(into hasher: inout Hasher) {
-		array.hash(into: &hasher)
+extension Array: BackedByArray { // kotlin: ignore
+	public var arrayBacking: [Element] {
+		return self
 	}
 }
 
-extension MutableArray: Codable where Element: Codable { // kotlin: ignore
-	public func encode(to encoder: Encoder) throws {
-		try array.encode(to: encoder)
-	}
-
-	public convenience init(from decoder: Decoder) throws {
-		try self.init(Buffer(from: decoder))
-	}
-}
-
-extension MutableArray where Element: Comparable { // kotlin: ignore
-	@inlinable
-	public func sorted() -> MutableArray<Element> {
-		return MutableArray(array.sorted())
-	}
-}
-
-public struct FixedArray<Element>: // kotlin: ignore
-	ExpressibleByArrayLiteral, CustomStringConvertible, CustomDebugStringConvertible,
-	RandomAccessCollection
+public func zipToClass<Array1, Element1, Array2, Element2>( // kotlin: ignore
+	_ array1: Array1,
+	_ array2: Array2)
+	-> List<(Element1, Element2)>
+	where Array1: BackedByArray,
+	Array2: BackedByArray,
+	Element1 == Array1.Element,
+	Element2 == Array2.Element
 {
-	public typealias Buffer = [Element]
-
-	public let array: Buffer
-
-	public init(_ array: Buffer) {
-		self.array = array
-	}
-
-	public init<T>(_ fixedArray: FixedArray<T>) {
-		self.array = fixedArray.array as! Buffer
-	}
-
-	public init<S>(_ sequence: S) where Element == S.Element, S: Sequence {
-		self.array = Array(sequence)
-	}
-
-	public init() {
-		self.array = []
-	}
-
-	public func `as`<CastedType>(
-		_ type: FixedArray<CastedType>.Type)
-		-> FixedArray<CastedType>?
-	{
-		if let castedArray = self.array as? [CastedType] {
-			return FixedArray<CastedType>(castedArray)
-		}
-		else {
-			return nil
-		}
-	}
-
-	// Expressible By Array Literal
-	public typealias ArrayLiteralElement = Element
-
-	public init(arrayLiteral elements: Element...) {
-		self.array = elements
-	}
-
-	// ...
-	public subscript (_ index: Int) -> Element {
-		return array[index]
-	}
-
-	// Custom (Debug) String Convertible
-	public var description: String {
-		return array.description
-	}
-
-	public var debugDescription: String {
-		return array.debugDescription
-	}
-
-	// Collection
-	public var startIndex: Int {
-		return array.startIndex
-	}
-
-	public var endIndex: Int {
-		return array.endIndex
-	}
-
-	public func index(after i: Int) -> Int {
-		return i + 1
-	}
-
-	public var isEmpty: Bool {
-		return array.isEmpty
-	}
-
-	public var first: Element? {
-		return array.first
-	}
-
-	public var last: Element? {
-		return array.last
-	}
-
-	// Bidirectional Collection
-	public func index(before i: Int) -> Int {
-		return i - 1
-	}
-
-	//
-	public func appending(_ newElement: Element) -> FixedArray<Element> {
-		return FixedArray<Element>(self.array + [newElement])
-	}
-
-	public func filter(_ isIncluded: (Element) throws -> Bool) rethrows -> FixedArray<Element> {
-		return try FixedArray(self.array.filter(isIncluded))
-	}
-
-	public func map<T>(_ transform: (Element) throws -> T) rethrows -> FixedArray<T> {
-		return try FixedArray<T>(self.array.map(transform))
-	}
-
-	public func compactMap<T>(_ transform: (Element) throws -> T?) rethrows -> FixedArray<T> {
-		return try FixedArray<T>(self.array.compactMap(transform))
-	}
-
-	public func flatMap<SegmentOfResult>(
-		_ transform: (Element) throws -> SegmentOfResult)
-		rethrows -> FixedArray<SegmentOfResult.Element>
-		where SegmentOfResult: Sequence
-	{
-		return try FixedArray<SegmentOfResult.Element>(array.flatMap(transform))
-	}
-
-	@inlinable
-	public func sorted(
-		by areInIncreasingOrder: (Element, Element) throws -> Bool) rethrows
-		-> FixedArray<Element>
-	{
-		return FixedArray(try array.sorted(by: areInIncreasingOrder))
-	}
-
-	public func appending<S>(contentsOf newElements: S) -> FixedArray<Element>
-		where S: Sequence, Element == S.Element
-	{
-		return FixedArray<Element>(self.array + newElements)
-	}
-
-	public func reversed() -> [Element] {
-		return array.reversed()
-	}
-
-	public var indices: Range<Int> {
-		return array.indices
-	}
+	return List(Array(zip(array1.arrayBacking, array2.arrayBacking)))
 }
 
-extension FixedArray: Equatable where Element: Equatable { // kotlin: ignore
-	public static func == (lhs: FixedArray, rhs: FixedArray) -> Bool {
-		return lhs.array == rhs.array
-	}
 
-	//
-	public func firstIndex(of element: Element) -> Int? {
-		return array.firstIndex(of: element)
-	}
-}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Mutable List
 
-extension FixedArray: Hashable where Element: Hashable { // kotlin: ignore
-	public func hash(into hasher: inout Hasher) {
-		array.hash(into: &hasher)
-	}
-}
+let mutableList1: MutableList = [1, 2, 3]
+let mutableList2 = mutableList1
+mutableList1[0] = 10
+print(mutableList1)
+print(mutableList2)
+print(mutableList2[0])
 
-extension FixedArray: Codable where Element: Codable { // kotlin: ignore
-	public func encode(to encoder: Encoder) throws {
-		try array.encode(to: encoder)
-	}
-
-	public init(from decoder: Decoder) throws {
-		try self.init(Buffer(from: decoder))
-	}
-}
-
-extension FixedArray where Element: Comparable { // kotlin: ignore
-	@inlinable
-	public func sorted() -> FixedArray<Element> {
-		return FixedArray(array.sorted())
-	}
-}
-
-// Array Class:
-
-let array1: MutableArray = [1, 2, 3]
-let array2 = array1
-array1[0] = 10
-print(array1)
-print(array2)
-print(array2[0])
-
-for i in array1 {
+for i in mutableList1 {
 	print(i)
 }
 
-for j in array2 {
+for j in mutableList2 {
 	print(j)
 }
 
-for i in array1 {
-	for j in array2 {
+for i in mutableList1 {
+	for j in mutableList2 {
 		print("\(i), \(j)")
 	}
 }
 
-// Fixed array:
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// List
 
-let fixedArray1: FixedArray<Int> = [1, 2, 3]
-print(fixedArray1[2] == 3)
+let list1: List<Int> = [1, 2, 3]
+print(list1[2] == 3)
 
-let fixedArray2: FixedArray<Int> = []
-print(fixedArray2.count == 0)
+let list2: List<Int> = []
+print(list2.count == 0)
 
-let fixedArray3: FixedArray<Any>? = fixedArray1.as(FixedArray<Any>.self)
-let fixedArray4: FixedArray<Int>? = fixedArray3!.as(FixedArray<Int>.self)
-print(fixedArray4![2] == 3)
+let list3: List<Any>? = list1.as(List<Any>.self)
+let list4: List<Int>? = list3!.as(List<Int>.self)
+print(list4![2] == 3)
 
-for item in fixedArray1 {
+for item in list1 {
 	print(item)
 }
 
-print(fixedArray1.isEmpty)
-print(fixedArray2.isEmpty)
+print(list1.isEmpty)
+print(list2.isEmpty)
 
-print(fixedArray1.first! == 1)
-print(fixedArray1.last! == 3)
+print(list1.first! == 1)
+print(list1.last! == 3)
 
-print(fixedArray2.first == nil)
-print(fixedArray2.last == nil)
+print(list2.first == nil)
+print(list2.last == nil)
 
-let fixedArray5 = fixedArray1.filter { $0 > 2 }
-print(fixedArray5.count == 1)
-print(fixedArray5[0] == 3)
+let list5 = list1.filter { $0 > 2 }
+print(list5.count == 1)
+print(list5[0] == 3)
 
-let fixedArray6 = fixedArray1.map { $0 + 1 }
-print(fixedArray6.count == 3)
-print(fixedArray6[2] == 4)
+let list6 = list1.map { $0 + 1 }
+print(list6.count == 3)
+print(list6[2] == 4)
 
-let fixedArray7 = fixedArray1.compactMap { ($0 > 2) ? $0 : nil }
-print(fixedArray7.count == 1)
-print(fixedArray7[0] == 3)
+let list7 = list1.compactMap { ($0 > 2) ? $0 : nil }
+print(list7.count == 1)
+print(list7[0] == 3)
 
-let fixedArray8 = fixedArray1.flatMap { (a: Int) -> FixedArray<Int> in [a, a + 1] }
-print(fixedArray8.count == 6)
-print(fixedArray8[0] == 1)
-print(fixedArray8[5] == 4)
+let list8 = list1.flatMap { (a: Int) -> List<Int> in [a, a + 1] }
+print(list8.count == 6)
+print(list8[0] == 1)
+print(list8[5] == 4)
 
-let fixedArray9: FixedArray<Int> = [3, 2, 1]
-let fixedArray10 = fixedArray9.sorted()
-print(fixedArray10[0] == 1)
+let list9: List<Int> = [3, 2, 1]
+let list10 = list9.sorted()
+print(list10[0] == 1)

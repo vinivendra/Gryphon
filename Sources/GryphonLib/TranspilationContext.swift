@@ -42,7 +42,7 @@ public class TranspilationContext {
 			fatalError("Failed to initialize standard library templates!\n\(error)")
 		}
 
-		self.templates = TranspilationContext.globalContext.templates.copy()
+		self.templates = TranspilationContext.globalContext.templates.toMutableList()
 		self.indentationString = indentationString
 	}
 
@@ -55,7 +55,7 @@ public class TranspilationContext {
 		let string: String
 	}
 
-	var templates: MutableArray<TranspilationTemplate> = []
+	var templates: MutableList<TranspilationTemplate> = []
 
 	public func addTemplate(_ template: TranspilationTemplate) {
 		templates.insert(template, at: 0)
@@ -65,7 +65,7 @@ public class TranspilationContext {
 	/// This variable is used to store enum definitions in order to allow the translator
 	/// to translate them as sealed classes (see the `translate(dotSyntaxCallExpression)` method).
 	///
-	private(set) var sealedClasses: MutableArray<String> = []
+	private(set) var sealedClasses: MutableList<String> = []
 
 	public func addSealedClass(_ className: String) {
 		sealedClasses.append(className)
@@ -75,7 +75,7 @@ public class TranspilationContext {
 	/// This variable is used to store enum definitions in order to allow the translator
 	/// to translate them as enum classes (see the `translate(dotSyntaxCallExpression)` method).
 	///
-	private(set) var enumClasses: MutableArray<String> = []
+	private(set) var enumClasses: MutableList<String> = []
 
 	public func addEnumClass(_ className: String) {
 		enumClasses.append(className)
@@ -85,7 +85,7 @@ public class TranspilationContext {
 	/// This variable is used to store protocol definitions in order to allow the translator
 	/// to translate conformances to them correctly (instead of as class inheritances).
 	///
-	private(set) var protocols: MutableArray<String> = []
+	private(set) var protocols: MutableList<String> = []
 
 	public func addProtocol(_ protocolName: String) {
 		protocols.append(protocolName)
@@ -103,10 +103,10 @@ public class TranspilationContext {
 		let swiftAPIName: String
 		let typeName: String
 		let prefix: String
-		let parameters: MutableArray<String>
+		let parameters: MutableList<String>
 	}
 
-	private var functionTranslations: MutableArray<FunctionTranslation> = []
+	private var functionTranslations: MutableList<FunctionTranslation> = []
 
 	public func addFunctionTranslation(_ newValue: FunctionTranslation) {
 		functionTranslations.append(newValue)
@@ -130,7 +130,7 @@ public class TranspilationContext {
 
 	// TODO: These records should probably go in a Context class of some kind
 	/// Stores pure functions so we can reference them later
-	private var pureFunctions: MutableArray<FunctionDeclaration> = []
+	private var pureFunctions: MutableList<FunctionDeclaration> = []
 
 	public func recordPureFunction(_ newValue: FunctionDeclaration) {
 		pureFunctions.append(newValue)

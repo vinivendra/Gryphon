@@ -69,7 +69,7 @@ public class KotlinTranslator {
 	}
 
 	private func translateSubtrees(
-		_ subtrees: MutableArray<Statement>,
+		_ subtrees: List<Statement>,
 		withIndentation indentation: String,
 		limitForAddingNewlines: Int = 0)
 		throws -> Translation
@@ -107,7 +107,7 @@ public class KotlinTranslator {
 		}
 
 		let treesAndTranslationsWithoutFirst =
-			MutableArray<TreeAndTranslation>(treesAndTranslations.dropFirst())
+			MutableList<TreeAndTranslation>(treesAndTranslations.dropFirst())
 
 		let result = Translation(range: subtreesRange)
 
@@ -563,7 +563,7 @@ public class KotlinTranslator {
 				if let genericExtensionIndex = translatedExtensionType.index(of: "<") {
 					let genericExtensionString =
 						translatedExtensionType.suffix(from: genericExtensionIndex)
-					let genericTypes = MutableArray<String>(genericExtensionString
+					let genericTypes = MutableList<String>(genericExtensionString
 						.dropFirst().dropLast()
 						.split(separator: ",")
 						.map { String($0) })
@@ -706,7 +706,7 @@ public class KotlinTranslator {
 
 	private func extractInnerDeferStatements(
 		_ maybeDeferStatement: Statement)
-		-> MutableArray<Statement>
+		-> MutableList<Statement>
 	{
 		if let deferStatement = maybeDeferStatement as? DeferStatement {
 			return deferStatement.statements
@@ -955,7 +955,7 @@ public class KotlinTranslator {
 
 			result.append(increasedIndentation)
 
-			let translatedExpressions: MutableArray<Translation> = []
+			let translatedExpressions: MutableList<Translation> = []
 
 			for caseExpression in switchCase.expressions {
 				let translatedExpression = try translateSwitchCaseExpression(
@@ -1368,10 +1368,10 @@ public class KotlinTranslator {
 			try translateExpression($0, withIndentation: indentation)
 			}
 
-		if arrayExpression.typeName.hasPrefix("MutableArray") {
+		if arrayExpression.typeName.hasPrefix("MutableList") {
 			result.append("mutableListOf")
 		}
-		else if arrayExpression.typeName.hasPrefix("FixedArray") {
+		else if arrayExpression.typeName.hasPrefix("List") {
 			result.append("listOf")
 		}
 		else {
@@ -1635,7 +1635,7 @@ public class KotlinTranslator {
 					if tupleExpression.pairs.count > 1 {
 						let newTupleExpression = TupleExpression(
 							range: tupleExpression.range,
-							pairs: MutableArray<LabeledExpression>(
+							pairs: MutableList<LabeledExpression>(
 								tupleExpression.pairs.dropLast()))
 
 						let firstParametersTranslation = try translateTupleExpression(
@@ -1788,7 +1788,7 @@ public class KotlinTranslator {
 		// In tuple expressions (when used as parameters for call expressions) there seems to be
 		// little risk of triggering errors in Kotlin. Therefore, we can try to omit some parameter
 		// labels in the call when they've also been omitted in Swift.
-		let parameters: MutableArray<String?>
+		let parameters: List<String?>
 		if let translationParameters = functionTranslation?.parameters {
 			parameters = zipToClass(translationParameters, tupleExpression.pairs).map
 				{ translationPairTuple in
@@ -1855,12 +1855,12 @@ public class KotlinTranslator {
 		shouldAddNewlines: Bool = false)
 		throws -> Translation
 	{
-		let parameters = translation?.parameters.as(MutableArray<String?>.self) ??
+		let parameters = translation?.parameters.as(MutableList<String?>.self) ??
 			tupleShuffleExpression.labels
 
 		let increasedIndentation = increaseIndentation(indentation)
 
-		let translations: MutableArray<Translation> = []
+		let translations: MutableList<Translation> = []
 		var expressionIndex = 0
 
 		// Variadic arguments can't be named, which means all arguments before them can't be named
@@ -2019,13 +2019,13 @@ public class KotlinTranslator {
 				return "MutableList<\(translatedInnerType)>"
 			}
 		}
-		else if typeName.hasPrefix("MutableArray<") {
-			let innerType = String(typeName.dropLast().dropFirst("MutableArray<".count))
+		else if typeName.hasPrefix("MutableList<") {
+			let innerType = String(typeName.dropLast().dropFirst("MutableList<".count))
 			let translatedInnerType = translateType(innerType)
 			return "MutableList<\(translatedInnerType)>"
 		}
-		else if typeName.hasPrefix("FixedArray<") {
-			let innerType = String(typeName.dropLast().dropFirst("FixedArray<".count))
+		else if typeName.hasPrefix("List<") {
+			let innerType = String(typeName.dropLast().dropFirst("List<".count))
 			let translatedInnerType = translateType(innerType)
 			return "List<\(translatedInnerType)>"
 		}
@@ -2063,7 +2063,7 @@ public class KotlinTranslator {
 				translateFunctionTypeComponent($0)
 			}
 
-			let firstTypes = MutableArray<String>(translatedComponents.dropLast().map { "(\($0))" })
+			let firstTypes = MutableList<String>(translatedComponents.dropLast().map { "(\($0))" })
 			let lastType = translatedComponents.last!
 
 			let allTypes = firstTypes
