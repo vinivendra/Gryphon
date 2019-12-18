@@ -393,10 +393,10 @@ class LibraryTranspilationTest: XCTestCase {
 		// XCTAssert("[Int]".isSubtype(of: "Array<Int>"))
 
 		// Dictionaries
-		XCTAssert("MutableDictionary<Int, Int>".isSubtype(of: "[Int : Int]"))
-		XCTAssert("[Int : Int]".isSubtype(of: "MutableDictionary<Int, Int>"))
-		XCTAssert("FixedDictionary<Int, Int>".isSubtype(of: "[Int : Int]"))
-		XCTAssert("[Int : Int]".isSubtype(of: "FixedDictionary<Int, Int>"))
+		XCTAssert("MutableMap<Int, Int>".isSubtype(of: "[Int : Int]"))
+		XCTAssert("[Int : Int]".isSubtype(of: "MutableMap<Int, Int>"))
+		XCTAssert("Map<Int, Int>".isSubtype(of: "[Int : Int]"))
+		XCTAssert("[Int : Int]".isSubtype(of: "Map<Int, Int>"))
 		// XCTAssert("Dictionary<Int, Int>".isSubtype(of: "[Int : Int]"))
 		// XCTAssert("[Int : Int]".isSubtype(of: "Dictionary<Int, Int>"))
 

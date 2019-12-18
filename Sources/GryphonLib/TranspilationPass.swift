@@ -1510,7 +1510,7 @@ public class RenameOperatorsTranspilationPass: TranspilationPass {
 		_ binaryOperatorExpression: BinaryOperatorExpression)
 		-> Expression
 	{
-        let operatorTranslations: MutableDictionary = [
+        let operatorTranslations: MutableMap = [
             "??": "?:",
             "<<": "shl",
             ">>": "shr",
@@ -2726,7 +2726,7 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 	}
 }
 
-/// `MutableList`s, `List`s, `MutableDictionary`s, and `FixedDictionary`s are prefered to
+/// `MutableList`s, `List`s, `MutableMap`s, and `Map`s are prefered to
 /// using `Arrays` and `Dictionaries` for guaranteeing correctness. This pass raises warnings when
 /// it finds uses of the native data structures, which should help avoid these bugs.
 public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPass {
@@ -2737,7 +2737,7 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 	{
 		if let type = expression.swiftType, type.hasPrefix("[") {
 			let message = "Native type \(type) can lead to different behavior in Kotlin. Prefer " +
-			"MutableList, List, MutableDictionary or FixedDictionary instead."
+			"MutableList, List, MutableMap or Map instead."
 			Compiler.handleWarning(
 				message: message,
 				details: expression.prettyDescription(),
@@ -2762,14 +2762,14 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 			let callExpression = dotExpression.rightExpression as? CallExpression {
 			if (callExpression.typeName.hasPrefix("MutableList") ||
 					callExpression.typeName.hasPrefix("List") ||
-					callExpression.typeName.hasPrefix("MutableDictionary") ||
-					callExpression.typeName.hasPrefix("FixedDictionary")),
+					callExpression.typeName.hasPrefix("MutableMap") ||
+					callExpression.typeName.hasPrefix("Map")),
 				let declarationReference =
 					callExpression.function as? DeclarationReferenceExpression
 			{
 				if declarationReference.identifier.hasPrefix("toMutable"),
 					(declarationReference.typeName.hasPrefix("MutableList") ||
-						declarationReference.typeName.hasPrefix("MutableDictionary"))
+						declarationReference.typeName.hasPrefix("MutableMap"))
 				{
 					return dotExpression
 				}
@@ -2779,7 +2779,7 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 					return dotExpression
 				}
 				else if declarationReference.identifier.hasPrefix("toMap"),
-					declarationReference.typeName.hasPrefix("FixedDictionary")
+					declarationReference.typeName.hasPrefix("Map")
 				{
 					return dotExpression
 				}

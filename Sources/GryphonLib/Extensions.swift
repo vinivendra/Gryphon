@@ -334,9 +334,9 @@ extension List {
 	/// Groups the array's elements into a dictionary according to the keys provided by the given
 	/// closure, forming a sort of histogram.
 	func group<Key>(by getKey: (Element) -> Key)
-		-> MutableDictionary<Key, MutableList<Element>>
+		-> MutableMap<Key, MutableList<Element>>
 	{
-		let result: MutableDictionary<Key, MutableList<Element>> = [:]
+		let result: MutableMap<Key, MutableList<Element>> = [:]
 		for element in self {
 			let key = getKey(element)
 			let array = result[key] ?? []

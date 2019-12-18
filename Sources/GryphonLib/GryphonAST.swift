@@ -25,13 +25,13 @@ public final class GryphonAST: PrintableAsTree, Equatable, CustomStringConvertib
 	let sourceFile: SourceFile?
 	let declarations: MutableList<Statement>
 	let statements: MutableList<Statement>
-	let outputFileMap: MutableDictionary<FileExtension, String>
+	let outputFileMap: MutableMap<FileExtension, String>
 
 	init(
 		sourceFile: SourceFile?,
 		declarations: MutableList<Statement>,
 		statements: MutableList<Statement>,
-		outputFileMap: MutableDictionary<FileExtension, String>)
+		outputFileMap: MutableMap<FileExtension, String>)
 	{
 		self.sourceFile = sourceFile
 		self.declarations = declarations
@@ -1266,9 +1266,9 @@ public class LiteralDeclarationExpression: Expression {
 
 public class TemplateExpression: Expression {
 	let pattern: String
-	let matches: MutableDictionary<String, Expression>
+	let matches: MutableMap<String, Expression>
 
-	init(range: SourceFileRange?, pattern: String, matches: MutableDictionary<String, Expression>) {
+	init(range: SourceFileRange?, pattern: String, matches: MutableMap<String, Expression>) {
 		self.pattern = pattern
 		self.matches = matches
 		super.init(range: range, name: "TemplateExpression".capitalizedAsCamelCase())

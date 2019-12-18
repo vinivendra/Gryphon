@@ -22,25 +22,38 @@
 /// According to https://swiftdoc.org/v4.2/type/dictionary/hierarchy/
 /// the Dictionary type in Swift conforms exactly to these protocols,
 /// plus CustomReflectable (which is beyond Gryphon's scope for now).
-public final class MutableDictionary<Key, Value>: // kotlin: ignore
+public final class MutableMap<Key, Value>: // kotlin: ignore
 	ExpressibleByDictionaryLiteral, CustomStringConvertible, CustomDebugStringConvertible,
 	Collection
 	where Key: Hashable
 {
 	public typealias Buffer = [Key: Value]
+	public typealias KeyValueTuple = (key: Key, value: Value)
 
 	public var dictionary: Buffer
 
-	public init(dictionary: Buffer) {
+	public init(_ dictionary: Buffer) {
 		self.dictionary = dictionary
 	}
 
-	public init<K, V>(_ dictionaryReference: MutableDictionary<K, V>) {
-		self.dictionary = dictionaryReference.dictionary as! Buffer
+	public init<Key, Value>(_ mutableDictionary: MutableMap<Key, Value>) {
+		self.dictionary = mutableDictionary.dictionary as! Buffer
 	}
 
-	public func copy() -> MutableDictionary<Key, Value> {
-		return MutableDictionary(dictionary: dictionary)
+	public func `as`<CastedKey, CastedValue>(
+		_ type: MutableMap<CastedKey, CastedValue>.Type)
+		-> MutableMap<CastedKey, CastedValue>?
+	{
+		if let castedDictionary = self.dictionary as? [CastedKey: CastedValue] {
+			return MutableMap<CastedKey, CastedValue>(castedDictionary)
+		}
+		else {
+			return nil
+		}
+	}
+
+	public func copy() -> MutableMap<Key, Value> {
+		return MutableMap(dictionary)
 	}
 
 	// Expressible By Dictionary Literal
@@ -106,29 +119,38 @@ public final class MutableDictionary<Key, Value>: // kotlin: ignore
 	@inlinable public var isEmpty: Bool {
 		return dictionary.isEmpty
 	}
+
+	//
+	@inlinable
+	public func mapValues<T>(
+		_ transform: (Value) throws -> T)
+		rethrows -> MutableMap<Key, T>
+	{
+		return try MutableMap<Key, T>(dictionary.mapValues(transform))
+	}
 }
 
-extension MutableDictionary: Equatable where Value: Equatable { // kotlin: ignore
+extension MutableMap: Equatable where Value: Equatable { // kotlin: ignore
 	public static func == (
-		lhs: MutableDictionary, rhs: MutableDictionary) -> Bool
+		lhs: MutableMap, rhs: MutableMap) -> Bool
 	{
 		return lhs.dictionary == rhs.dictionary
 	}
 }
 
-extension MutableDictionary: Hashable where Value: Hashable { // kotlin: ignore
+extension MutableMap: Hashable where Value: Hashable { // kotlin: ignore
 	public func hash(into hasher: inout Hasher) {
 		dictionary.hash(into: &hasher)
 	}
 }
 
-extension MutableDictionary: Codable where Key: Codable, Value: Codable { // kotlin: ignore
+extension MutableMap: Codable where Key: Codable, Value: Codable { // kotlin: ignore
 	public func encode(to encoder: Encoder) throws {
 		try dictionary.encode(to: encoder)
 	}
 
 	public convenience init(from decoder: Decoder) throws {
-		try self.init(dictionary: Buffer(from: decoder))
+		try self.init(Buffer(from: decoder))
 	}
 }
 
@@ -144,7 +166,7 @@ print(dictionaryA["d"])
 print(dictionaryB[0])
 
 // Dictionary references
-let dictionary1: MutableDictionary = ["a": 1, "b": 2, "c": 3]
+let dictionary1: MutableMap = ["a": 1, "b": 2, "c": 3]
 let dictionary2 = dictionary1
 dictionary1["a"] = 10
 
@@ -158,7 +180,7 @@ print(dictionary2["b"])
 print(dictionary2["c"])
 print(dictionary2["d"])
 
-let dictionary3: MutableDictionary<String, Int> = [:]
+let dictionary3: MutableMap<String, Int> = [:]
 
 print(dictionary3["a"])
 print(dictionary3["d"])

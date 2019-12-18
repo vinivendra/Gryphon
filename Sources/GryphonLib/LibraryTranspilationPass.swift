@@ -117,8 +117,8 @@ public class ReplaceTemplatesTranspilationPass: TranspilationPass {
 }
 
 extension Expression {
-	func matches(_ template: Expression) -> MutableDictionary<String, Expression>? {
-		let result: MutableDictionary<String, Expression> = [:]
+	func matches(_ template: Expression) -> MutableMap<String, Expression>? {
+		let result: MutableMap<String, Expression> = [:]
 		let success = matches(template, result)
 		if success {
 			return result
@@ -129,7 +129,7 @@ extension Expression {
 	}
 
 	private func matches(
-		_ template: Expression, _ matches: MutableDictionary<String, Expression>) -> Bool
+		_ template: Expression, _ matches: MutableMap<String, Expression>) -> Bool
 	{
 		let lhs = self
 		let rhs = template
@@ -546,16 +546,16 @@ private func simplifyType(string: String) -> String {
 		return "[\(elementType)]"
 	}
 
-	// Treat MutableDictionary as Dictionary
-	if string.hasPrefix("MutableDictionary<"), string.last! == ">" {
-		let keyValue = String(string.dropFirst("MutableDictionary<".count).dropLast())
+	// Treat MutableMap as Dictionary
+	if string.hasPrefix("MutableMap<"), string.last! == ">" {
+		let keyValue = String(string.dropFirst("MutableMap<".count).dropLast())
 			.split(withStringSeparator: ", ")
 		let key = keyValue[0]
 		let value = keyValue[1]
 		return "[\(key) : \(value)]"
 	}
-	else if string.hasPrefix("FixedDictionary<"), string.last! == ">" {
-		let keyValue = String(string.dropFirst("FixedDictionary<".count).dropLast())
+	else if string.hasPrefix("Map<"), string.last! == ">" {
+		let keyValue = String(string.dropFirst("Map<".count).dropLast())
 			.split(withStringSeparator: ", ")
 		let key = keyValue[0]
 		let value = keyValue[1]

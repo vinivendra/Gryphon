@@ -17,64 +17,88 @@
 @testable import GryphonLib
 import XCTest
 
-class FixedDictionaryTest: XCTestCase {
+class MutableMapTest: XCTestCase {
 
 	func testEquatable() {
-		let dictionary1: FixedDictionary = [1: 10, 2: 20]
-		let dictionary2: FixedDictionary = [1: 10, 2: 20]
-		let dictionary3: FixedDictionary = [3: 30, 4: 40]
+		let dictionary1: MutableMap = [1: 10, 2: 20]
+		let dictionary2: MutableMap = [1: 10, 2: 20]
+		let dictionary3: MutableMap = [3: 30, 4: 40]
 
 		XCTAssert(dictionary1 == dictionary2)
 		XCTAssertFalse(dictionary2 == dictionary3)
 	}
 
 	func testInits() {
-		let dictionary1: FixedDictionary = [1: 10, 2: 20]
-		let dictionary2: FixedDictionary = FixedDictionary([1: 10, 2: 20])
-		let dictionary3: FixedDictionary = FixedDictionary<Int, Int>(dictionary1)
-		let dictionary4: FixedDictionary<Int, Int> = FixedDictionary()
-		let dictionary5: FixedDictionary<Int, Int> = [:]
+		let dictionary1: MutableMap = [1: 10, 2: 20]
+		let dictionary2: MutableMap = MutableMap([1: 10, 2: 20])
+		let dictionary3: MutableMap = MutableMap<Int, Int>(dictionary1)
+		let dictionary4: MutableMap<Int, Int> = MutableMap()
+		let dictionary5: MutableMap<Int, Int> = [:]
 
 		XCTAssertEqual(dictionary1, dictionary2)
 		XCTAssertEqual(dictionary1, dictionary3)
 		XCTAssertEqual(dictionary4, dictionary5)
-		XCTAssertNotEqual(dictionary1, dictionary4)
-		XCTAssertNotEqual(dictionary1, dictionary5)
+
+		dictionary1[3] = 30
+		dictionary4[3] = 30
+
+		XCTAssertNotEqual(dictionary1, dictionary2)
+		XCTAssertNotEqual(dictionary1, dictionary3)
+		XCTAssertNotEqual(dictionary4, dictionary5)
+		XCTAssertEqual(dictionary2, dictionary3)
+	}
+
+	func testPassingByReference() {
+		let dictionary1: MutableMap = [1: 10, 2: 20]
+		let dictionary2 = dictionary1
+		dictionary1[3] = 30
+		XCTAssertEqual(dictionary1, dictionary2)
 	}
 
 	func testCasting() {
-		let dictionary1: FixedDictionary<Int, Any> = [1: 10, 2: 20]
+		let dictionary1: MutableMap<Int, Any> = [1: 10, 2: 20]
 
-		let failedCast: FixedDictionary<Int, String>? =
-			dictionary1.as(FixedDictionary<Int, String>.self)
-		let successfulCast: FixedDictionary<Int, Int>? =
-			dictionary1.as(FixedDictionary<Int, Int>.self)
+		let failedCast: MutableMap<Int, String>? =
+			dictionary1.as(MutableMap<Int, String>.self)
+		let successfulCast: MutableMap<Int, Int>? =
+			dictionary1.as(MutableMap<Int, Int>.self)
 
 		XCTAssertNil(failedCast)
 		XCTAssertNotNil(successfulCast)
 		XCTAssertEqual(successfulCast, [1: 10, 2: 20])
 	}
 
-	func testToMutableDictionary() {
-		let dictionary1: FixedDictionary = [1: 10, 2: 20]
-		let dictionary2: FixedDictionary = [1: 10, 2: 20, 3: 30]
-		let MutableDictionary: MutableDictionary = dictionary1.toMutableDictionary()
+	func testCopy() {
+		let dictionary1: MutableMap = [1: 10, 2: 20]
+		let dictionary2 = dictionary1.copy()
+		dictionary1[3] = 30
+		XCTAssertNotEqual(dictionary1, dictionary2)
+	}
 
-		XCTAssert(dictionary1 == MutableDictionary)
-		XCTAssert(MutableDictionary == dictionary1)
-		XCTAssert(dictionary2 != MutableDictionary)
-		XCTAssert(MutableDictionary != dictionary2)
+	func testToFixedDictionary() {
+		let dictionary1: MutableMap = [1: 10, 2: 20]
+		let dictionary2: MutableMap = [1: 10, 2: 20, 3: 30]
+		let fixedDictionary: Map = dictionary1.toMap()
+
+		XCTAssert(dictionary1 == fixedDictionary)
+		XCTAssert(fixedDictionary == dictionary1)
+		XCTAssert(dictionary2 != fixedDictionary)
+		XCTAssert(fixedDictionary != dictionary2)
 	}
 
 	func testSubscript() {
-		let dictionary1: FixedDictionary = [1: 10, 2: 20]
+		let dictionary1: MutableMap = [1: 10, 2: 20]
+		let dictionary2: MutableMap = [1: 100, 2: 20]
+		dictionary1[1] = 100
 
-		XCTAssertEqual(dictionary1[1], 10)
+		XCTAssertEqual(dictionary1, dictionary2)
+
+		XCTAssertEqual(dictionary1[1], 100)
 		XCTAssertEqual(dictionary1[2], 20)
 	}
 
 	func testDescription() {
-		let dictionary: FixedDictionary = [1: 10, 2: 20]
+		let dictionary: MutableMap = [1: 10, 2: 20]
 
 		XCTAssert(dictionary.description.contains("1"))
 		XCTAssert(dictionary.description.contains("10"))
@@ -84,7 +108,7 @@ class FixedDictionaryTest: XCTestCase {
 	}
 
 	func testDebugDescription() {
-		let dictionary: FixedDictionary = [1: 10, 2: 20]
+		let dictionary: MutableMap = [1: 10, 2: 20]
 
 		XCTAssert(dictionary.debugDescription.contains("1"))
 		XCTAssert(dictionary.debugDescription.contains("10"))
@@ -94,7 +118,7 @@ class FixedDictionaryTest: XCTestCase {
 	}
 
 	func testCollectionIndices() {
-		let dictionary: FixedDictionary = [1: 10, 2: 20]
+		let dictionary: MutableMap = [1: 10, 2: 20]
 		let lastIndex = dictionary.index(after: dictionary.startIndex)
 
 		// startIndex and indexAfter
@@ -117,10 +141,10 @@ class FixedDictionaryTest: XCTestCase {
 	}
 
 	func testCount() {
-		let dictionary1: FixedDictionary<Int, Int> = [:]
-		let dictionary2: FixedDictionary = [1: 10]
-		let dictionary3: FixedDictionary = [1: 10, 2: 20]
-		let dictionary4: FixedDictionary = [1: 10, 2: 20, 3: 30]
+		let dictionary1: MutableMap<Int, Int> = [:]
+		let dictionary2: MutableMap = [1: 10]
+		let dictionary3: MutableMap = [1: 10, 2: 20]
+		let dictionary4: MutableMap = [1: 10, 2: 20, 3: 30]
 
 		XCTAssertEqual(dictionary1.count, 0)
 		XCTAssertEqual(dictionary2.count, 1)
@@ -129,15 +153,15 @@ class FixedDictionaryTest: XCTestCase {
 	}
 
 	func testIsEmpty() {
-		let dictionary: FixedDictionary = [1: 10, 2: 20]
-		let emptyDictionary: FixedDictionary<Int, Int> = [:]
+		let dictionary: MutableMap = [1: 10, 2: 20]
+		let emptyDictionary: MutableMap<Int, Int> = [:]
 
 		XCTAssert(!dictionary.isEmpty)
 		XCTAssert(emptyDictionary.isEmpty)
 	}
 
 	func testMap() {
-		let dictionary: FixedDictionary = [1: 10, 2: 20]
+		let dictionary: MutableMap = [1: 10, 2: 20]
 		let mappedDictionary = dictionary.map { $0.0 + $0.1 }
 
 		let answer1: MutableList = [11, 22]
@@ -148,7 +172,7 @@ class FixedDictionaryTest: XCTestCase {
 	}
 
 	func testMapValues() {
-		let dictionary: FixedDictionary = [1: 10, 2: 20]
+		let dictionary: MutableMap = [1: 10, 2: 20]
 		let mappedDictionary = dictionary.mapValues { $0 * 10 }
 
 		XCTAssertEqual(mappedDictionary, [1: 100, 2: 200])
@@ -156,7 +180,7 @@ class FixedDictionaryTest: XCTestCase {
 	}
 
 	func testSortedBy() {
-		let dictionary: FixedDictionary = [1: 20, 2: 10]
+		let dictionary: MutableMap = [1: 20, 2: 10]
 
 		let keySorted = dictionary.sorted { $0.0 < $1.0 }
 		let keySortedKeys = keySorted.map { $0.0 }
@@ -181,9 +205,9 @@ class FixedDictionaryTest: XCTestCase {
 	}
 
 	func testHash() {
-		let dictionary1: FixedDictionary = [1: 20, 2: 10]
-		let dictionary2: FixedDictionary = [1: 20, 2: 10]
-		let dictionary3: FixedDictionary = [1: 20, 2: 10, 3: 30]
+		let dictionary1: MutableMap = [1: 20, 2: 10]
+		let dictionary2: MutableMap = [1: 20, 2: 10]
+		let dictionary3: MutableMap = [1: 20, 2: 10, 3: 30]
 		let hash1 = dictionary1.hashValue
 		let hash2 = dictionary2.hashValue
 		let hash3 = dictionary3.hashValue
@@ -194,17 +218,17 @@ class FixedDictionaryTest: XCTestCase {
 	}
 
 	func testCodable() {
-		let dictionary1: FixedDictionary = [1: 20, 2: 10]
-		let dictionary2: FixedDictionary = [1: 20, 2: 10, 3: 30]
+		let dictionary1: MutableMap = [1: 20, 2: 10]
+		let dictionary2: MutableMap = [1: 20, 2: 10, 3: 30]
 
 		let encoding1 = try! JSONEncoder().encode(dictionary1)
 		let dictionary3 = try! JSONDecoder().decode(
-			FixedDictionary<Int, Int>.self,
+			MutableMap<Int, Int>.self,
 			from: encoding1)
 
 		let encoding2 = try! JSONEncoder().encode(dictionary2)
 		let dictionary4 = try! JSONDecoder().decode(
-			FixedDictionary<Int, Int>.self,
+			MutableMap<Int, Int>.self,
 			from: encoding2)
 
 		XCTAssertEqual(dictionary1, dictionary3)
@@ -215,8 +239,10 @@ class FixedDictionaryTest: XCTestCase {
 	static var allTests = [
 		("testEquatable", testEquatable),
 		("testInits", testInits),
+		("testPassingByReference", testPassingByReference),
 		("testCasting", testCasting),
-		("testToMutableDictionary", testToMutableDictionary),
+		("testCopy", testCopy),
+		("testToFixedDictionary", testToFixedDictionary),
 		("testSubscript", testSubscript),
 		("testDescription", testDescription),
 		("testDebugDescription", testDebugDescription),

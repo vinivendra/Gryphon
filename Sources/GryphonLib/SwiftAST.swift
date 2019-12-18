@@ -22,7 +22,7 @@
 public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible {
 	let name: String
 	let standaloneAttributes: MutableList<String>
-	let keyValueAttributes: MutableDictionary<String, String>
+	let keyValueAttributes: MutableMap<String, String>
 	let subtrees: MutableList<SwiftAST>
 
 	//
@@ -39,7 +39,7 @@ public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible
 	internal init(
 		_ name: String,
 		_ standaloneAttributes: MutableList<String>,
-		_ keyValueAttributes: MutableDictionary<String, String>,
+		_ keyValueAttributes: MutableMap<String, String>,
 		_ subtrees: MutableList<SwiftAST> = [])
 	{
 		self.name = name

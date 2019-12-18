@@ -431,7 +431,7 @@ public func zipToClass<Array1, Element1, Array2, Element2>( // kotlin: ignore
 /// According to https://swiftdoc.org/v4.2/type/dictionary/hierarchy/
 /// the Dictionary type in Swift conforms exactly to these protocols,
 /// plus CustomReflectable (which is beyond Gryphon's scope for now).
-public final class MutableDictionary<Key, Value>: // kotlin: ignore
+public final class MutableMap<Key, Value>: // kotlin: ignore
 	ExpressibleByDictionaryLiteral, CustomStringConvertible, CustomDebugStringConvertible,
 	Collection
 	where Key: Hashable
@@ -445,29 +445,29 @@ public final class MutableDictionary<Key, Value>: // kotlin: ignore
 		self.dictionary = dictionary
 	}
 
-	public init<Key, Value>(_ mutableDictionary: MutableDictionary<Key, Value>) {
+	public init<Key, Value>(_ mutableDictionary: MutableMap<Key, Value>) {
 		self.dictionary = mutableDictionary.dictionary as! Buffer
 	}
 
 	public func `as`<CastedKey, CastedValue>(
-		_ type: MutableDictionary<CastedKey, CastedValue>.Type)
-		-> MutableDictionary<CastedKey, CastedValue>?
+		_ type: MutableMap<CastedKey, CastedValue>.Type)
+		-> MutableMap<CastedKey, CastedValue>?
 	{
 		if let castedDictionary = self.dictionary as? [CastedKey: CastedValue] {
-			return MutableDictionary<CastedKey, CastedValue>(castedDictionary)
+			return MutableMap<CastedKey, CastedValue>(castedDictionary)
 		}
 		else {
 			return nil
 		}
 	}
 
-	public func copy() -> MutableDictionary<Key, Value> {
-		return MutableDictionary(dictionary)
+	public func copy() -> MutableMap<Key, Value> {
+		return MutableMap(dictionary)
 	}
 
 	// TODO: Add translation support for these methods
-	public func toFixedDictionary() -> FixedDictionary<Key, Value> {
-		return FixedDictionary(dictionary)
+	public func toMap() -> Map<Key, Value> {
+		return Map(dictionary)
 	}
 
 	// Expressible By Dictionary Literal
@@ -544,9 +544,9 @@ public final class MutableDictionary<Key, Value>: // kotlin: ignore
 	@inlinable
 	public func mapValues<T>(
 		_ transform: (Value) throws -> T)
-		rethrows -> MutableDictionary<Key, T>
+		rethrows -> MutableMap<Key, T>
 	{
-		return try MutableDictionary<Key, T>(dictionary.mapValues(transform))
+		return try MutableMap<Key, T>(dictionary.mapValues(transform))
 	}
 
 	@inlinable
@@ -558,21 +558,21 @@ public final class MutableDictionary<Key, Value>: // kotlin: ignore
 	}
 }
 
-extension MutableDictionary: Equatable where Value: Equatable { // kotlin: ignore
+extension MutableMap: Equatable where Value: Equatable { // kotlin: ignore
 	public static func == (
-		lhs: MutableDictionary, rhs: MutableDictionary) -> Bool
+		lhs: MutableMap, rhs: MutableMap) -> Bool
 	{
 		return lhs.dictionary == rhs.dictionary
 	}
 }
 
-extension MutableDictionary: Hashable where Value: Hashable { // kotlin: ignore
+extension MutableMap: Hashable where Value: Hashable { // kotlin: ignore
 	public func hash(into hasher: inout Hasher) {
 		dictionary.hash(into: &hasher)
 	}
 }
 
-extension MutableDictionary: Codable where Key: Codable, Value: Codable { // kotlin: ignore
+extension MutableMap: Codable where Key: Codable, Value: Codable { // kotlin: ignore
 	public func encode(to encoder: Encoder) throws {
 		try dictionary.encode(to: encoder)
 	}
@@ -585,7 +585,7 @@ extension MutableDictionary: Codable where Key: Codable, Value: Codable { // kot
 /// According to https://swiftdoc.org/v4.2/type/dictionary/hierarchy/
 /// the Dictionary type in Swift conforms exactly to these protocols,
 /// plus CustomReflectable (which is beyond Gryphon's scope for now).
-public struct FixedDictionary<Key, Value>: // kotlin: ignore
+public struct Map<Key, Value>: // kotlin: ignore
 	ExpressibleByDictionaryLiteral, CustomStringConvertible, CustomDebugStringConvertible,
 	Collection
 	where Key: Hashable
@@ -599,28 +599,28 @@ public struct FixedDictionary<Key, Value>: // kotlin: ignore
 		self.dictionary = dictionary
 	}
 
-	public init<K, V>(_ fixedDictionary: FixedDictionary<K, V>) {
-		self.dictionary = fixedDictionary.dictionary as! Buffer
+	public init<K, V>(_ map: Map<K, V>) {
+		self.dictionary = map.dictionary as! Buffer
 	}
 
 	public func `as`<CastedKey, CastedValue>(
-		_ type: FixedDictionary<CastedKey, CastedValue>.Type)
-		-> FixedDictionary<CastedKey, CastedValue>?
+		_ type: Map<CastedKey, CastedValue>.Type)
+		-> Map<CastedKey, CastedValue>?
 	{
 		if let castedDictionary = self.dictionary as? [CastedKey: CastedValue] {
-			return FixedDictionary<CastedKey, CastedValue>(castedDictionary)
+			return Map<CastedKey, CastedValue>(castedDictionary)
 		}
 		else {
 			return nil
 		}
 	}
 
-	public func copy() -> FixedDictionary<Key, Value> {
-		return FixedDictionary(dictionary)
+	public func copy() -> Map<Key, Value> {
+		return Map(dictionary)
 	}
 
-	public func toMutableDictionary() -> MutableDictionary<Key, Value> {
-		return MutableDictionary(dictionary)
+	public func toMutableDictionary() -> MutableMap<Key, Value> {
+		return MutableMap(dictionary)
 	}
 
 	// Expressible By Dictionary Literal
@@ -690,8 +690,8 @@ public struct FixedDictionary<Key, Value>: // kotlin: ignore
 	}
 
 	@inlinable
-	public func mapValues<T>(_ transform: (Value) throws -> T) rethrows -> FixedDictionary<Key, T> {
-		return try FixedDictionary<Key, T>(dictionary.mapValues(transform))
+	public func mapValues<T>(_ transform: (Value) throws -> T) rethrows -> Map<Key, T> {
+		return try Map<Key, T>(dictionary.mapValues(transform))
 	}
 
 	@inlinable
@@ -703,40 +703,40 @@ public struct FixedDictionary<Key, Value>: // kotlin: ignore
 	}
 }
 
-extension FixedDictionary: Equatable where Value: Equatable { // kotlin: ignore
+extension Map: Equatable where Value: Equatable { // kotlin: ignore
 	public static func == (
-		lhs: FixedDictionary,
-		rhs: FixedDictionary)
+		lhs: Map,
+		rhs: Map)
 		-> Bool
 	{
 		return lhs.dictionary == rhs.dictionary
 	}
 
 	//
-	public static func == (lhs: MutableDictionary<Key, Value>, rhs: FixedDictionary) -> Bool {
+	public static func == (lhs: MutableMap<Key, Value>, rhs: Map) -> Bool {
 		return lhs.dictionary == rhs.dictionary
 	}
 
-	public static func == (lhs: FixedDictionary, rhs: MutableDictionary<Key, Value>) -> Bool {
+	public static func == (lhs: Map, rhs: MutableMap<Key, Value>) -> Bool {
 		return lhs.dictionary == rhs.dictionary
 	}
 
-	public static func != (lhs: MutableDictionary<Key, Value>, rhs: FixedDictionary) -> Bool {
+	public static func != (lhs: MutableMap<Key, Value>, rhs: Map) -> Bool {
 		return lhs.dictionary != rhs.dictionary
 	}
 
-	public static func != (lhs: FixedDictionary, rhs: MutableDictionary<Key, Value>) -> Bool {
+	public static func != (lhs: Map, rhs: MutableMap<Key, Value>) -> Bool {
 		return lhs.dictionary != rhs.dictionary
 	}
 }
 
-extension FixedDictionary: Hashable where Value: Hashable { // kotlin: ignore
+extension Map: Hashable where Value: Hashable { // kotlin: ignore
 	public func hash(into hasher: inout Hasher) {
 		dictionary.hash(into: &hasher)
 	}
 }
 
-extension FixedDictionary: Codable where Key: Codable, Value: Codable { // kotlin: ignore
+extension Map: Codable where Key: Codable, Value: Codable { // kotlin: ignore
 	public func encode(to encoder: Encoder) throws {
 		try dictionary.encode(to: encoder)
 	}

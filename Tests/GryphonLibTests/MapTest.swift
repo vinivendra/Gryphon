@@ -17,88 +17,64 @@
 @testable import GryphonLib
 import XCTest
 
-class MutableDictionaryTest: XCTestCase {
+class MapTest: XCTestCase {
 
 	func testEquatable() {
-		let dictionary1: MutableDictionary = [1: 10, 2: 20]
-		let dictionary2: MutableDictionary = [1: 10, 2: 20]
-		let dictionary3: MutableDictionary = [3: 30, 4: 40]
+		let dictionary1: Map = [1: 10, 2: 20]
+		let dictionary2: Map = [1: 10, 2: 20]
+		let dictionary3: Map = [3: 30, 4: 40]
 
 		XCTAssert(dictionary1 == dictionary2)
 		XCTAssertFalse(dictionary2 == dictionary3)
 	}
 
 	func testInits() {
-		let dictionary1: MutableDictionary = [1: 10, 2: 20]
-		let dictionary2: MutableDictionary = MutableDictionary([1: 10, 2: 20])
-		let dictionary3: MutableDictionary = MutableDictionary<Int, Int>(dictionary1)
-		let dictionary4: MutableDictionary<Int, Int> = MutableDictionary()
-		let dictionary5: MutableDictionary<Int, Int> = [:]
+		let dictionary1: Map = [1: 10, 2: 20]
+		let dictionary2: Map = Map([1: 10, 2: 20])
+		let dictionary3: Map = Map<Int, Int>(dictionary1)
+		let dictionary4: Map<Int, Int> = Map()
+		let dictionary5: Map<Int, Int> = [:]
 
 		XCTAssertEqual(dictionary1, dictionary2)
 		XCTAssertEqual(dictionary1, dictionary3)
 		XCTAssertEqual(dictionary4, dictionary5)
-
-		dictionary1[3] = 30
-		dictionary4[3] = 30
-
-		XCTAssertNotEqual(dictionary1, dictionary2)
-		XCTAssertNotEqual(dictionary1, dictionary3)
-		XCTAssertNotEqual(dictionary4, dictionary5)
-		XCTAssertEqual(dictionary2, dictionary3)
-	}
-
-	func testPassingByReference() {
-		let dictionary1: MutableDictionary = [1: 10, 2: 20]
-		let dictionary2 = dictionary1
-		dictionary1[3] = 30
-		XCTAssertEqual(dictionary1, dictionary2)
+		XCTAssertNotEqual(dictionary1, dictionary4)
+		XCTAssertNotEqual(dictionary1, dictionary5)
 	}
 
 	func testCasting() {
-		let dictionary1: MutableDictionary<Int, Any> = [1: 10, 2: 20]
+		let dictionary1: Map<Int, Any> = [1: 10, 2: 20]
 
-		let failedCast: MutableDictionary<Int, String>? =
-			dictionary1.as(MutableDictionary<Int, String>.self)
-		let successfulCast: MutableDictionary<Int, Int>? =
-			dictionary1.as(MutableDictionary<Int, Int>.self)
+		let failedCast: Map<Int, String>? =
+			dictionary1.as(Map<Int, String>.self)
+		let successfulCast: Map<Int, Int>? =
+			dictionary1.as(Map<Int, Int>.self)
 
 		XCTAssertNil(failedCast)
 		XCTAssertNotNil(successfulCast)
 		XCTAssertEqual(successfulCast, [1: 10, 2: 20])
 	}
 
-	func testCopy() {
-		let dictionary1: MutableDictionary = [1: 10, 2: 20]
-		let dictionary2 = dictionary1.copy()
-		dictionary1[3] = 30
-		XCTAssertNotEqual(dictionary1, dictionary2)
-	}
+	func testToMutableDictionary() {
+		let dictionary1: Map = [1: 10, 2: 20]
+		let dictionary2: Map = [1: 10, 2: 20, 3: 30]
+		let MutableDictionary: MutableMap = dictionary1.toMutableDictionary()
 
-	func testToFixedDictionary() {
-		let dictionary1: MutableDictionary = [1: 10, 2: 20]
-		let dictionary2: MutableDictionary = [1: 10, 2: 20, 3: 30]
-		let fixedDictionary: FixedDictionary = dictionary1.toFixedDictionary()
-
-		XCTAssert(dictionary1 == fixedDictionary)
-		XCTAssert(fixedDictionary == dictionary1)
-		XCTAssert(dictionary2 != fixedDictionary)
-		XCTAssert(fixedDictionary != dictionary2)
+		XCTAssert(dictionary1 == MutableDictionary)
+		XCTAssert(MutableDictionary == dictionary1)
+		XCTAssert(dictionary2 != MutableDictionary)
+		XCTAssert(MutableDictionary != dictionary2)
 	}
 
 	func testSubscript() {
-		let dictionary1: MutableDictionary = [1: 10, 2: 20]
-		let dictionary2: MutableDictionary = [1: 100, 2: 20]
-		dictionary1[1] = 100
+		let dictionary1: Map = [1: 10, 2: 20]
 
-		XCTAssertEqual(dictionary1, dictionary2)
-
-		XCTAssertEqual(dictionary1[1], 100)
+		XCTAssertEqual(dictionary1[1], 10)
 		XCTAssertEqual(dictionary1[2], 20)
 	}
 
 	func testDescription() {
-		let dictionary: MutableDictionary = [1: 10, 2: 20]
+		let dictionary: Map = [1: 10, 2: 20]
 
 		XCTAssert(dictionary.description.contains("1"))
 		XCTAssert(dictionary.description.contains("10"))
@@ -108,7 +84,7 @@ class MutableDictionaryTest: XCTestCase {
 	}
 
 	func testDebugDescription() {
-		let dictionary: MutableDictionary = [1: 10, 2: 20]
+		let dictionary: Map = [1: 10, 2: 20]
 
 		XCTAssert(dictionary.debugDescription.contains("1"))
 		XCTAssert(dictionary.debugDescription.contains("10"))
@@ -118,7 +94,7 @@ class MutableDictionaryTest: XCTestCase {
 	}
 
 	func testCollectionIndices() {
-		let dictionary: MutableDictionary = [1: 10, 2: 20]
+		let dictionary: Map = [1: 10, 2: 20]
 		let lastIndex = dictionary.index(after: dictionary.startIndex)
 
 		// startIndex and indexAfter
@@ -141,10 +117,10 @@ class MutableDictionaryTest: XCTestCase {
 	}
 
 	func testCount() {
-		let dictionary1: MutableDictionary<Int, Int> = [:]
-		let dictionary2: MutableDictionary = [1: 10]
-		let dictionary3: MutableDictionary = [1: 10, 2: 20]
-		let dictionary4: MutableDictionary = [1: 10, 2: 20, 3: 30]
+		let dictionary1: Map<Int, Int> = [:]
+		let dictionary2: Map = [1: 10]
+		let dictionary3: Map = [1: 10, 2: 20]
+		let dictionary4: Map = [1: 10, 2: 20, 3: 30]
 
 		XCTAssertEqual(dictionary1.count, 0)
 		XCTAssertEqual(dictionary2.count, 1)
@@ -153,15 +129,15 @@ class MutableDictionaryTest: XCTestCase {
 	}
 
 	func testIsEmpty() {
-		let dictionary: MutableDictionary = [1: 10, 2: 20]
-		let emptyDictionary: MutableDictionary<Int, Int> = [:]
+		let dictionary: Map = [1: 10, 2: 20]
+		let emptyDictionary: Map<Int, Int> = [:]
 
 		XCTAssert(!dictionary.isEmpty)
 		XCTAssert(emptyDictionary.isEmpty)
 	}
 
 	func testMap() {
-		let dictionary: MutableDictionary = [1: 10, 2: 20]
+		let dictionary: Map = [1: 10, 2: 20]
 		let mappedDictionary = dictionary.map { $0.0 + $0.1 }
 
 		let answer1: MutableList = [11, 22]
@@ -172,7 +148,7 @@ class MutableDictionaryTest: XCTestCase {
 	}
 
 	func testMapValues() {
-		let dictionary: MutableDictionary = [1: 10, 2: 20]
+		let dictionary: Map = [1: 10, 2: 20]
 		let mappedDictionary = dictionary.mapValues { $0 * 10 }
 
 		XCTAssertEqual(mappedDictionary, [1: 100, 2: 200])
@@ -180,7 +156,7 @@ class MutableDictionaryTest: XCTestCase {
 	}
 
 	func testSortedBy() {
-		let dictionary: MutableDictionary = [1: 20, 2: 10]
+		let dictionary: Map = [1: 20, 2: 10]
 
 		let keySorted = dictionary.sorted { $0.0 < $1.0 }
 		let keySortedKeys = keySorted.map { $0.0 }
@@ -205,9 +181,9 @@ class MutableDictionaryTest: XCTestCase {
 	}
 
 	func testHash() {
-		let dictionary1: MutableDictionary = [1: 20, 2: 10]
-		let dictionary2: MutableDictionary = [1: 20, 2: 10]
-		let dictionary3: MutableDictionary = [1: 20, 2: 10, 3: 30]
+		let dictionary1: Map = [1: 20, 2: 10]
+		let dictionary2: Map = [1: 20, 2: 10]
+		let dictionary3: Map = [1: 20, 2: 10, 3: 30]
 		let hash1 = dictionary1.hashValue
 		let hash2 = dictionary2.hashValue
 		let hash3 = dictionary3.hashValue
@@ -218,17 +194,17 @@ class MutableDictionaryTest: XCTestCase {
 	}
 
 	func testCodable() {
-		let dictionary1: MutableDictionary = [1: 20, 2: 10]
-		let dictionary2: MutableDictionary = [1: 20, 2: 10, 3: 30]
+		let dictionary1: Map = [1: 20, 2: 10]
+		let dictionary2: Map = [1: 20, 2: 10, 3: 30]
 
 		let encoding1 = try! JSONEncoder().encode(dictionary1)
 		let dictionary3 = try! JSONDecoder().decode(
-			MutableDictionary<Int, Int>.self,
+			Map<Int, Int>.self,
 			from: encoding1)
 
 		let encoding2 = try! JSONEncoder().encode(dictionary2)
 		let dictionary4 = try! JSONDecoder().decode(
-			MutableDictionary<Int, Int>.self,
+			Map<Int, Int>.self,
 			from: encoding2)
 
 		XCTAssertEqual(dictionary1, dictionary3)
@@ -239,10 +215,8 @@ class MutableDictionaryTest: XCTestCase {
 	static var allTests = [
 		("testEquatable", testEquatable),
 		("testInits", testInits),
-		("testPassingByReference", testPassingByReference),
 		("testCasting", testCasting),
-		("testCopy", testCopy),
-		("testToFixedDictionary", testToFixedDictionary),
+		("testToMutableDictionary", testToMutableDictionary),
 		("testSubscript", testSubscript),
 		("testDescription", testDescription),
 		("testDebugDescription", testDebugDescription),
@@ -254,5 +228,5 @@ class MutableDictionaryTest: XCTestCase {
 		("testSortedBy", testSortedBy),
 		("testHash", testHash),
 		("testCodable", testCodable),
-		]
+	]
 }

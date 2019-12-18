@@ -24,7 +24,7 @@ import Foundation
 public class SwiftTranslator {
 	// MARK: - Properties
 
-	var outputFileMap: MutableDictionary<FileExtension, String> = [:]
+	var outputFileMap: MutableMap<FileExtension, String> = [:]
 
 	var danglingPatternBindings: MutableList<PatternBindingDeclaration?> = []
 
