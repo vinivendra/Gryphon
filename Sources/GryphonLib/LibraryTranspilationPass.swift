@@ -454,7 +454,7 @@ internal extension String {
 
 		// Handle arrays and dictionaries
 		if self.first! == "[", self.last! == "]", superType.first! == "[", superType.last! == "]" {
-			if self.contains(":") && superType.contains(":") {
+			if self.contains(" : ") && superType.contains(" : ") {
 				let selfKeyValue =
 					String(self.dropFirst().dropLast()).split(withStringSeparator: " : ")
 				let superKeyValue =

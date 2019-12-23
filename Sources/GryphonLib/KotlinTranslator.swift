@@ -2051,7 +2051,11 @@ public class KotlinTranslator {
 			let innerTypeString = String(typeName.dropFirst().dropLast())
 			let innerTypes = Utilities.splitTypeList(innerTypeString, separators: [", "])
 			if innerTypes.count == 2 {
-				return "Pair<\(innerTypes.joined(separator: ", "))>"
+				// If it's a named tuple, use only the types
+				let processedTypes = innerTypes.map {
+					Utilities.splitTypeList($0, separators: [":"]).last!
+				}
+				return "Pair<\(processedTypes.joined(separator: ", "))>"
 			}
 			else {
 				return translateType(String(typeName.dropFirst().dropLast()))
