@@ -61,9 +61,6 @@ class AcceptanceTest: XCTestCase {
 				XCTFail("🚨 Test failed with error:\n\(error)")
 			}
 		}
-
-		XCTAssertFalse(Compiler.hasErrorsOrWarnings())
-		Compiler.printErrorsAndWarnings()
 	}
 
 	static var allTests = [
