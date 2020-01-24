@@ -64,11 +64,6 @@ print(array.last)
 
 print(array.dropLast())
 
-// Dictionary
-let dictionary = [10: 1, 20: 2, 30: 3]
-let reduceResult = dictionary.reduce(0) { acc, keyValue in acc + keyValue.value }
-print(reduceResult)
-
 // Int
 print(Int.max)
 

@@ -313,7 +313,7 @@ public class Driver {
 
 		//
 		let outputFolder: String
-		if let outputFolderIndex = arguments.index(of: "-o") {
+		if let outputFolderIndex = arguments.firstIndex(of: "-o") {
 			if let maybeOutputFolder = arguments[safe: outputFolderIndex + 1] {
 				outputFolder = maybeOutputFolder
 			}

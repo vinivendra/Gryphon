@@ -16,7 +16,7 @@
 
 // MARK: - Swift standard library
 
-typealias MultilineString = String
+private struct Hash: Hashable { }
 
 private func gryphonTemplates() {
 	let _array1: MutableList<Any> = [1, 2, 3]
@@ -40,6 +40,8 @@ private func gryphonTemplates() {
 	_ = _array1.appending(contentsOf: _array2)
 	_ = "_array1 + _array2"
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// According to http://swiftdoc.org/v4.2/type/Array/hierarchy/
 /// (link found via https://www.raywenderlich.com/139591/building-custom-collection-swift)
@@ -280,6 +282,8 @@ public class List<Element>: CustomStringConvertible, // kotlin: ignore
 	}
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 extension List { // kotlin: ignore
 	public func toMutableList() -> MutableList<Element> {
 		return MutableList(array)
@@ -428,16 +432,24 @@ public func zipToClass<Array1, Element1, Array2, Element2>( // kotlin: ignore
 	return List(Array(zip(array1.arrayBacking, array2.arrayBacking)))
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 /// According to https://swiftdoc.org/v4.2/type/dictionary/hierarchy/
 /// the Dictionary type in Swift conforms exactly to these protocols,
 /// plus CustomReflectable (which is beyond Gryphon's scope for now).
-public final class MutableMap<Key, Value>: // kotlin: ignore
-	ExpressibleByDictionaryLiteral, CustomStringConvertible, CustomDebugStringConvertible,
+public class Map<Key, Value>: // kotlin: ignore
+	CustomStringConvertible,
+	CustomDebugStringConvertible,
+	ExpressibleByDictionaryLiteral,
 	Collection
 	where Key: Hashable
 {
 	public typealias Buffer = [Key: Value]
 	public typealias KeyValueTuple = (key: Key, value: Value)
+
+	public typealias SubSequence = Slice<Buffer>
+	public typealias Index = Buffer.Index
+	public typealias Element = KeyValueTuple
 
 	public var dictionary: Buffer
 
@@ -445,44 +457,9 @@ public final class MutableMap<Key, Value>: // kotlin: ignore
 		self.dictionary = dictionary
 	}
 
-	public init<Key, Value>(_ mutableDictionary: MutableMap<Key, Value>) {
-		self.dictionary = mutableDictionary.dictionary as! Buffer
-	}
-
-	public func `as`<CastedKey, CastedValue>(
-		_ type: MutableMap<CastedKey, CastedValue>.Type)
-		-> MutableMap<CastedKey, CastedValue>?
-	{
-		if let castedDictionary = self.dictionary as? [CastedKey: CastedValue] {
-			return MutableMap<CastedKey, CastedValue>(castedDictionary)
-		}
-		else {
-			return nil
-		}
-	}
-
-	public func copy() -> MutableMap<Key, Value> {
-		return MutableMap(dictionary)
-	}
-
-	// TODO: Add translation support for these methods
-	public func toMap() -> Map<Key, Value> {
-		return Map(dictionary)
-	}
-
-	// Expressible By Dictionary Literal
-	public required init(dictionaryLiteral elements: (Key, Value)...) {
-		self.dictionary = Buffer(uniqueKeysWithValues: elements)
-	}
-
-	// ...
-	public subscript (_ key: Key) -> Value? {
-		get {
-			return dictionary[key]
-		}
-		set {
-			dictionary[key] = newValue
-		}
+	// The tuple inside the list has to be translated as a Pair for Kotlin compatibility
+	public func toList() -> List<(Key, Value)> {
+		return List(dictionary).map { ($0.0, $0.1) }
 	}
 
 	// Custom (Debug) String Convertible
@@ -494,111 +471,35 @@ public final class MutableMap<Key, Value>: // kotlin: ignore
 		return dictionary.debugDescription
 	}
 
-	// Collection
-	public typealias SubSequence = Slice<[Key: Value]>
+	// Expressible By Dictionary Literal
+	public required init(dictionaryLiteral elements: (Key, Value)...) {
+		self.dictionary = Buffer(uniqueKeysWithValues: elements)
+	}
 
-	@inlinable public var startIndex: Buffer.Index {
+	// Sequence
+	public func makeIterator() -> IndexingIterator<Map<Key, Value>> {
+		return IndexingIterator(_elements: self)
+	}
+
+	// Collection
+	public var startIndex: Index {
 		return dictionary.startIndex
 	}
 
-	@inlinable public var endIndex: Buffer.Index {
+	public var endIndex: Index {
 		return dictionary.endIndex
 	}
 
 	@inlinable
-	public func index(after i: Buffer.Index) -> Buffer.Index
-	{
-		return dictionary.index(after: i)
-	}
-
-	@inlinable
-	public func formIndex(after i: inout Buffer.Index) {
-		dictionary.formIndex(after: &i)
-	}
-
-	@inlinable
-	public func index(forKey key: Key) -> Buffer.Index? {
-		return dictionary.index(forKey: key)
-	}
-
-	@inlinable
-	public subscript(position: Buffer.Index) -> Buffer.Element {
+	public subscript(position: Index) -> Element {
 		return dictionary[position]
 	}
 
-	@inlinable public var count: Int {
-		return dictionary.count
+	public func index(after i: Index) -> Index {
+		return dictionary.index(after: i)
 	}
 
-	@inlinable public var isEmpty: Bool {
-		return dictionary.isEmpty
-	}
-
-	//
-	public func map<T>(_ transform: (KeyValueTuple) throws -> T)
-		rethrows -> MutableList<T>
-	{
-		return try MutableList<T>(self.dictionary.map(transform))
-	}
-
-	@inlinable
-	public func mapValues<T>(
-		_ transform: (Value) throws -> T)
-		rethrows -> MutableMap<Key, T>
-	{
-		return try MutableMap<Key, T>(dictionary.mapValues(transform))
-	}
-
-	@inlinable
-	public func sorted(
-		by areInIncreasingOrder: (KeyValueTuple, KeyValueTuple) throws -> Bool)
-		rethrows -> MutableList<KeyValueTuple>
-	{
-		return MutableList<KeyValueTuple>(try dictionary.sorted(by: areInIncreasingOrder))
-	}
-}
-
-extension MutableMap: Equatable where Value: Equatable { // kotlin: ignore
-	public static func == (
-		lhs: MutableMap, rhs: MutableMap) -> Bool
-	{
-		return lhs.dictionary == rhs.dictionary
-	}
-}
-
-extension MutableMap: Hashable where Value: Hashable { // kotlin: ignore
-	public func hash(into hasher: inout Hasher) {
-		dictionary.hash(into: &hasher)
-	}
-}
-
-extension MutableMap: Codable where Key: Codable, Value: Codable { // kotlin: ignore
-	public func encode(to encoder: Encoder) throws {
-		try dictionary.encode(to: encoder)
-	}
-
-	public convenience init(from decoder: Decoder) throws {
-		try self.init(Buffer(from: decoder))
-	}
-}
-
-/// According to https://swiftdoc.org/v4.2/type/dictionary/hierarchy/
-/// the Dictionary type in Swift conforms exactly to these protocols,
-/// plus CustomReflectable (which is beyond Gryphon's scope for now).
-public struct Map<Key, Value>: // kotlin: ignore
-	ExpressibleByDictionaryLiteral, CustomStringConvertible, CustomDebugStringConvertible,
-	Collection
-	where Key: Hashable
-{
-	public typealias Buffer = [Key: Value]
-	public typealias KeyValueTuple = (key: Key, value: Value)
-
-	public let dictionary: Buffer
-
-	public init(_ dictionary: Buffer) {
-		self.dictionary = dictionary
-	}
-
+	// Other methods
 	public init<K, V>(_ map: Map<K, V>) {
 		self.dictionary = map.dictionary as! Buffer
 	}
@@ -615,63 +516,22 @@ public struct Map<Key, Value>: // kotlin: ignore
 		}
 	}
 
-	public func copy() -> Map<Key, Value> {
+	public func toMap() -> Map<Key, Value> {
 		return Map(dictionary)
 	}
 
-	public func toMutableDictionary() -> MutableMap<Key, Value> {
-		return MutableMap(dictionary)
-	}
-
-	// Expressible By Dictionary Literal
-	public init(dictionaryLiteral elements: (Key, Value)...) {
-		self.dictionary = Buffer(uniqueKeysWithValues: elements)
-	}
-
-	// ...
 	public subscript (_ key: Key) -> Value? {
 		return dictionary[key]
 	}
 
-	// Custom (Debug) String Convertible
-	public var description: String {
-		return dictionary.description
-	}
-
-	public var debugDescription: String {
-		return dictionary.debugDescription
-	}
-
-	// Collection
-	public typealias SubSequence = Slice<[Key: Value]>
-
-	@inlinable public var startIndex: Buffer.Index {
-		return dictionary.startIndex
-	}
-
-	@inlinable public var endIndex: Buffer.Index {
-		return dictionary.endIndex
-	}
-
 	@inlinable
-	public func index(after i: Buffer.Index) -> Buffer.Index
-	{
-		return dictionary.index(after: i)
-	}
-
-	@inlinable
-	public func formIndex(after i: inout Buffer.Index) {
+	public func formIndex(after i: inout Index) {
 		dictionary.formIndex(after: &i)
 	}
 
 	@inlinable
-	public func index(forKey key: Key) -> Buffer.Index? {
+	public func index(forKey key: Key) -> Index? {
 		return dictionary.index(forKey: key)
-	}
-
-	@inlinable
-	public subscript(position: Buffer.Index) -> Buffer.Element {
-		return dictionary[position]
 	}
 
 	@inlinable public var count: Int {
@@ -682,11 +542,10 @@ public struct Map<Key, Value>: // kotlin: ignore
 		return dictionary.isEmpty
 	}
 
-	//
 	public func map<T>(_ transform: (KeyValueTuple) throws -> T)
-		rethrows -> MutableList<T>
+		rethrows -> List<T>
 	{
-		return try MutableList<T>(self.dictionary.map(transform))
+		return try List<T>(self.dictionary.map(transform))
 	}
 
 	@inlinable
@@ -703,30 +562,17 @@ public struct Map<Key, Value>: // kotlin: ignore
 	}
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+extension Map { // kotlin: ignore
+	public func toMutableMap() -> MutableMap<Key, Value> {
+		return MutableMap(dictionary)
+	}
+}
+
 extension Map: Equatable where Value: Equatable { // kotlin: ignore
-	public static func == (
-		lhs: Map,
-		rhs: Map)
-		-> Bool
-	{
+	public static func == (lhs: Map, rhs: Map) -> Bool {
 		return lhs.dictionary == rhs.dictionary
-	}
-
-	//
-	public static func == (lhs: MutableMap<Key, Value>, rhs: Map) -> Bool {
-		return lhs.dictionary == rhs.dictionary
-	}
-
-	public static func == (lhs: Map, rhs: MutableMap<Key, Value>) -> Bool {
-		return lhs.dictionary == rhs.dictionary
-	}
-
-	public static func != (lhs: MutableMap<Key, Value>, rhs: Map) -> Bool {
-		return lhs.dictionary != rhs.dictionary
-	}
-
-	public static func != (lhs: Map, rhs: MutableMap<Key, Value>) -> Bool {
-		return lhs.dictionary != rhs.dictionary
 	}
 }
 
@@ -736,12 +582,27 @@ extension Map: Hashable where Value: Hashable { // kotlin: ignore
 	}
 }
 
-extension Map: Codable where Key: Codable, Value: Codable { // kotlin: ignore
-	public func encode(to encoder: Encoder) throws {
-		try dictionary.encode(to: encoder)
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+public class MutableMap<Key, Value>: Map<Key, Value> where Key: Hashable { // kotlin: ignore
+	override public subscript (_ key: Key) -> Value? {
+		get {
+			return dictionary[key]
+		}
+		set {
+			dictionary[key] = newValue
+		}
 	}
 
-	public init(from decoder: Decoder) throws {
-		try self.init(Buffer(from: decoder))
+	public func `as`<CastedKey, CastedValue>(
+		_ type: MutableMap<CastedKey, CastedValue>.Type)
+		-> MutableMap<CastedKey, CastedValue>?
+	{
+		if let castedDictionary = self.dictionary as? [CastedKey: CastedValue] {
+			return MutableMap<CastedKey, CastedValue>(castedDictionary)
+		}
+		else {
+			return nil
+		}
 	}
 }

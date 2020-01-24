@@ -289,18 +289,13 @@ public class Compiler {
 
 			let swiftASTDumpHistogram = swiftASTDumpErrors.group { $0.ast.name }
 
-			let sortedHistogram = swiftASTDumpHistogram.sorted(by: { a, b in // kotlin: ignore
-				a.value.count > b.value.count
-			})
-
-			// insert: val sortedHistogram = swiftASTDumpHistogram.entries.toMutableList()
-			// insert: 	.sorted(isAscending = { a, b ->
-			// insert: 		a.value.size > b.value.size
-			// insert: 	})
+			let sortedHistogram = swiftASTDumpHistogram.toList().sorted(by: { a, b in
+					a.1.count > b.1.count
+				})
 
 			for tuple in sortedHistogram {
-				let astName = tuple.key
-				let errorArray = tuple.value
+				let astName = tuple.0
+				let errorArray = tuple.1
 				print("- \(errorArray.count) \(astName)s")
 			}
 		}

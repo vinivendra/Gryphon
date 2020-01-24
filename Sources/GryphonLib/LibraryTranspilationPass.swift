@@ -109,7 +109,7 @@ public class ReplaceTemplatesTranspilationPass: TranspilationPass {
 				return TemplateExpression(
 					range: expression.range,
 					pattern: template.string,
-					matches: replacedMatches)
+					matches: replacedMatches.toMutableMap())
 			}
 		}
 		return super.replaceExpression(expression)

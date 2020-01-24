@@ -641,7 +641,7 @@ public class TranspilationPass {
 		return TemplateExpression(
 			range: templateExpression.range,
 			pattern: templateExpression.pattern,
-			matches: newMatches)
+			matches: newMatches.toMutableMap())
 	}
 
 	func replaceLiteralCodeExpression( // annotation: open
@@ -2014,6 +2014,62 @@ public class TuplesToPairsTranspilationPass: TranspilationPass {
 						expression: tupleExpression.pairs[1].expression),
 			]),
 			typeName: pairType)
+	}
+}
+
+/// When tuples are translated as pairs, their members need to be translated as the pair's `first`
+/// and `second` members.
+public class TupleMembersTranspilationPass: TranspilationPass {
+	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
+	// declaration:     super(ast, context) { }
+
+	override func replaceDotExpression( // annotation: override
+		_ dotExpression: DotExpression)
+		-> Expression
+	{
+		// Supported tuple types here will be a string like "(foo: Int, bar: Int)"
+
+		// If the left expression is of a tuple type and the right expression refers to its member
+		guard let swiftType = dotExpression.leftExpression.swiftType,
+			Utilities.isInEnvelopingParentheses(swiftType),
+			let memberExpression = dotExpression.rightExpression as? DeclarationReferenceExpression
+			else
+		{
+			return dotExpression
+		}
+
+		let innerString = String(swiftType.dropFirst().dropLast())
+		let tupleComponents = Utilities.splitTypeList(innerString, separators: [","])
+
+		// If the tuple will be translated as a pair and the right expression refers to one of the
+		// tuple's components
+		guard let tupleMemberIndex = tupleComponents.firstIndex(where: {
+					$0.split(withStringSeparator: ":").first == memberExpression.identifier
+				}),
+			tupleComponents.count == 2
+			else
+		{
+			return dotExpression
+		}
+
+		// One exception to this rule: key-value tuples (assumed to be from dictionaries)
+		guard !(tupleComponents[0].hasPrefix("key:") && tupleComponents[1].hasPrefix("value:"))
+			else
+		{
+			return dotExpression
+		}
+
+		let newIdentifier = (tupleMemberIndex == 0) ? "first" : "second"
+
+		return DotExpression(
+			range: dotExpression.range,
+			leftExpression: dotExpression.leftExpression,
+			rightExpression: DeclarationReferenceExpression(
+				range: memberExpression.range,
+				identifier: newIdentifier,
+				typeName: memberExpression.typeName,
+				isStandardLibrary: memberExpression.isStandardLibrary,
+				isImplicit: memberExpression.isImplicit))
 	}
 }
 
@@ -3575,6 +3631,7 @@ public extension TranspilationPass {
 		ast = DataStructureInitializersTranspilationPass(ast: ast, context: context).run()
 		ast = ReturnsInLambdasTranspilationPass(ast: ast, context: context).run()
 		ast = TuplesToPairsTranspilationPass(ast: ast, context: context).run()
+		ast = TupleMembersTranspilationPass(ast: ast, context: context).run()
 		ast = AutoclosuresTranspilationPass(ast: ast, context: context).run()
 		ast = RefactorOptionalsInSubscriptsTranspilationPass(ast: ast, context: context).run()
 		ast = AddOptionalsInDotChainsTranspilationPass(ast: ast, context: context).run()

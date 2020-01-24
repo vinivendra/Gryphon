@@ -55,10 +55,10 @@ class MapTest: XCTestCase {
 		XCTAssertEqual(successfulCast, [1: 10, 2: 20])
 	}
 
-	func testToMutableDictionary() {
+	func testToMutableMap() {
 		let dictionary1: Map = [1: 10, 2: 20]
 		let dictionary2: Map = [1: 10, 2: 20, 3: 30]
-		let MutableDictionary: MutableMap = dictionary1.toMutableDictionary()
+		let MutableDictionary: MutableMap = dictionary1.toMutableMap()
 
 		XCTAssert(dictionary1 == MutableDictionary)
 		XCTAssert(MutableDictionary == dictionary1)
@@ -193,30 +193,11 @@ class MapTest: XCTestCase {
 		XCTAssertNotEqual(hash2, hash3)
 	}
 
-	func testCodable() {
-		let dictionary1: Map = [1: 20, 2: 10]
-		let dictionary2: Map = [1: 20, 2: 10, 3: 30]
-
-		let encoding1 = try! JSONEncoder().encode(dictionary1)
-		let dictionary3 = try! JSONDecoder().decode(
-			Map<Int, Int>.self,
-			from: encoding1)
-
-		let encoding2 = try! JSONEncoder().encode(dictionary2)
-		let dictionary4 = try! JSONDecoder().decode(
-			Map<Int, Int>.self,
-			from: encoding2)
-
-		XCTAssertEqual(dictionary1, dictionary3)
-		XCTAssertEqual(dictionary2, dictionary4)
-		XCTAssertNotEqual(dictionary3, dictionary4)
-	}
-
 	static var allTests = [
 		("testEquatable", testEquatable),
 		("testInits", testInits),
 		("testCasting", testCasting),
-		("testToMutableDictionary", testToMutableDictionary),
+		("testToMutableMap", testToMutableMap),
 		("testSubscript", testSubscript),
 		("testDescription", testDescription),
 		("testDebugDescription", testDebugDescription),
@@ -227,6 +208,5 @@ class MapTest: XCTestCase {
 		("testMapValues", testMapValues),
 		("testSortedBy", testSortedBy),
 		("testHash", testHash),
-		("testCodable", testCodable),
 	]
 }

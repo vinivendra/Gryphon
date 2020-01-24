@@ -49,11 +49,6 @@ fun main(args: Array<String>) {
 	println(stringArray.size)
 	println(array.lastOrNull())
 	println(array.dropLast(1))
-
-	val dictionary: MutableMap<Int, Int> = mutableMapOf(10 to 1, 20 to 2, 30 to 3)
-	val reduceResult: Int = dictionary.entries.fold(initial = 0, operation = { acc, keyValue -> acc + keyValue.value })
-
-	println(reduceResult)
 	println(Int.MAX_VALUE)
 	println(Int.MIN_VALUE)
 	println(Math.min(0, 1))

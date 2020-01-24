@@ -2019,17 +2019,17 @@ public class KotlinTranslator {
 				return "MutableList<\(translatedInnerType)>"
 			}
 		}
-		else if typeName.hasPrefix("MutableList<") {
+		else if typeName.hasPrefix("MutableList<") && (typeName.last! == ">") {
 			let innerType = String(typeName.dropLast().dropFirst("MutableList<".count))
 			let translatedInnerType = translateType(innerType)
 			return "MutableList<\(translatedInnerType)>"
 		}
-		else if typeName.hasPrefix("List<") {
+		else if typeName.hasPrefix("List<") && (typeName.last! == ">") {
 			let innerType = String(typeName.dropLast().dropFirst("List<".count))
 			let translatedInnerType = translateType(innerType)
 			return "List<\(translatedInnerType)>"
 		}
-		else if typeName.hasPrefix("MutableMap<") {
+		else if typeName.hasPrefix("MutableMap<") && (typeName.last! == ">") {
 			let innerTypes = String(typeName.dropLast().dropFirst("MutableMap<".count))
 			let keyValue = Utilities.splitTypeList(innerTypes)
 			let key = keyValue[0]
@@ -2038,7 +2038,7 @@ public class KotlinTranslator {
 			let translatedValue = translateType(value)
 			return "MutableMap<\(translatedKey), \(translatedValue)>"
 		}
-		else if typeName.hasPrefix("Map<") {
+		else if typeName.hasPrefix("Map<") && (typeName.last! == ">") {
 			let innerTypes = String(typeName.dropLast().dropFirst("Map<".count))
 			let keyValue = Utilities.splitTypeList(innerTypes)
 			let key = keyValue[0]
@@ -2055,7 +2055,17 @@ public class KotlinTranslator {
 				let processedTypes = innerTypes.map {
 					Utilities.splitTypeList($0, separators: [":"]).last!
 				}
-				return "Pair<\(processedTypes.joined(separator: ", "))>"
+
+				// One exception: key-value tuples from dictionaries should become Entry, not Pair
+				let names = innerTypes.map {
+					Utilities.splitTypeList($0, separators: [":"]).first!
+				}
+				if names == ["key", "value"] {
+					return "Entry<\(processedTypes.joined(separator: ", "))>"
+				}
+				else {
+					return "Pair<\(processedTypes.joined(separator: ", "))>"
+				}
 			}
 			else {
 				return translateType(String(typeName.dropFirst().dropLast()))

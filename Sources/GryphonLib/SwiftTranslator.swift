@@ -2243,7 +2243,8 @@ public class SwiftTranslator {
 			 "Force Try Expression",
 			 "Dot Self Expression",
 			 "Derived To Base Expression",
-			 "Rebind Self In Constructor Expression":
+			 "Rebind Self In Constructor Expression",
+			 "Metatype Conversion Expression":
 
 			if let lastExpression = expression.subtrees.last {
 				result = try translateExpression(lastExpression)

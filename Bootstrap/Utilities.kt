@@ -190,7 +190,7 @@ val libraryUpdateLock: Semaphore = Semaphore(1)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-fun <Element, Result> MutableList<Element>.parallelMap(
+fun <Element, Result> List<Element>.parallelMap(
 	transform: (Element) -> Result): MutableList<Result>
 {
 	return this.parallelStream().map(transform).collect(Collectors.toList())

@@ -29,7 +29,7 @@
 	Tests/GryphonLibTests/InitializationTest.swift \
 	Tests/GryphonLibTests/IntegrationTest.swift \
 	Tests/GryphonLibTests/LibraryTranspilationTest.swift \
-	Tests/GryphonLibTests/MutableArrayTest.swift \
+	Tests/GryphonLibTests/MutableListTest.swift \
 	Tests/GryphonLibTests/PrintableAsTreeTest.swift \
 	Tests/GryphonLibTests/ShellTest.swift \
 	Tests/GryphonLibTests/SourceFileTest.swift \

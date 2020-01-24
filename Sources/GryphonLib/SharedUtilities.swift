@@ -432,7 +432,10 @@ extension Utilities {
             "String.Element": "Char",
             "Range<String.Index>": "IntRange",
             "Range<Int>": "IntRange",
+
             "Array<Element>.Index": "Int",
+			"List<Element>.Index": "Int",
+			"MutableList<Element>.Index": "Int",
         ]
 
         return typeMappings[typeName]

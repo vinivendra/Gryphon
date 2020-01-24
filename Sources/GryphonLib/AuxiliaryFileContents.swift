@@ -404,7 +404,7 @@ func gryphonTemplates() {
 	_ = _array.indices
 	_ = "_array.indices"
 
-	_ = _array.index(where: _closure3)
+	_ = _array.firstIndex(where: _closure3)
 	_ = "_array.indexOfFirst _closure3"
 
 	_ = _array.contains(where: _closure3)
@@ -426,9 +426,6 @@ func gryphonTemplates() {
 	_ = "_comparableArray.indexOf(_compare)"
 
 	// Dictionary
-	_ = _dictionary.reduce(_any, _closure)
-	_ = "_dictionary.entries.fold(initial = _any, operation = _closure)"
-
 	_ = _dictionary.map(_closure2)
 	_ = "_dictionary.map _closure2.toMutableList()"
 
