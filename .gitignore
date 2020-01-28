@@ -52,7 +52,7 @@ Bootstrap/ExtensionsTest.kt
 Bootstrap/InitializationTest.kt
 Bootstrap/IntegrationTest.kt
 Bootstrap/LibraryTranspilationTest.kt
-Bootstrap/MutableArrayTest.kt
+Bootstrap/MutableListTest.kt
 Bootstrap/PrintableAsTreeTest.kt
 Bootstrap/ShellTest.kt
 Bootstrap/SourceFileTest.kt
