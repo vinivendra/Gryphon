@@ -306,7 +306,7 @@ class MutableListTest: XCTestCase {
 
 	func testFlatMap() {
 		let list1: MutableList<Int> = [1, 2, 3]
-		let list2 = list1.flatMap { [$0, 10 * $0] }
+		let list2 = list1.flatMap { MutableList<Int>([$0, 10 * $0]) }
 		XCTAssertEqual(list1, [1, 2, 3])
 		XCTAssertEqual(list2, [1, 10, 2, 20, 3, 30])
 	}
@@ -388,9 +388,9 @@ class MutableListTest: XCTestCase {
 		let list1: MutableList<Int> = [3, 2, 1]
 		let list2: MutableList<Int> = [1, 2, 3]
 
-		XCTAssertEqual(list1.sorted(), [1, 2, 3])
+		XCTAssertEqual(list1.sorted(), MutableList<Int>([1, 2, 3]))
 		XCTAssertEqual(list1, [3, 2, 1])
-		XCTAssertEqual(list2.sorted(), [1, 2, 3])
+		XCTAssertEqual(list2.sorted(), MutableList<Int>([1, 2, 3]))
 	}
 
 	func testZipToClass() {

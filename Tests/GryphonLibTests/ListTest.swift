@@ -14,10 +14,73 @@
 // limitations under the License.
 //
 
+// gryphon output: Bootstrap/ListTest.kt
+
+#if !IS_DUMPING_ASTS
 @testable import GryphonLib
 import XCTest
+#else
+import Foundation
+#endif
 
 class ListTest: XCTestCase {
+	// declaration: constructor(): super() { }
+
+	public func getClassName() -> String { // annotation: override
+		return "ListTest"
+	}
+
+	override public func runAllTests() { // annotation: override
+		testEquatable()
+		testInits()
+		testCasting()
+		testSubscript()
+		testDescription()
+		testCollectionIndices()
+		testIsEmpty()
+		testFirst()
+		testLast()
+		testIndexBefore()
+		testAppending()
+		testFilter()
+		testMap()
+		testCompactMap()
+		testFlatMap()
+		testSortedBy()
+		testAppendingContentsOf()
+		testIndices()
+		testIndexOfElement()
+		testSorted()
+		testZipToClass()
+	}
+
+	static var allTests = [ // kotlin: ignore
+		("testEquatable", testEquatable),
+		("testInits", testInits),
+		("testCasting", testCasting),
+		("testSubscript", testSubscript),
+		("testDescription", testDescription),
+		("testDebugDescription", testDebugDescription),
+		("testCollectionIndices", testCollectionIndices),
+		("testIsEmpty", testIsEmpty),
+		("testFirst", testFirst),
+		("testLast", testLast),
+		("testIndexBefore", testIndexBefore),
+		("testAppending", testAppending),
+		("testFilter", testFilter),
+		("testMap", testMap),
+		("testCompactMap", testCompactMap),
+		("testFlatMap", testFlatMap),
+		("testSortedBy", testSortedBy),
+		("testAppendingContentsOf", testAppendingContentsOf),
+		("testIndices", testIndices),
+		("testIndexOfElement", testIndexOfElement),
+		("testHash", testHash),
+		("testSorted", testSorted),
+		("testZipToClass", testZipToClass),
+		]
+
+	// MARK: - Tests
 	func testEquatable() {
 		let list1: List = [1, 2, 3]
 		let list2: List = [1, 2, 3]
@@ -28,17 +91,17 @@ class ListTest: XCTestCase {
 	}
 
 	func testInits() {
-		let list1: List = [1, 2, 3]
-		let list2: List = List([1, 2, 3])
-		let list3: List = List(list1)
-		let sequence = AnySequence([1, 2, 3])
-		let list4: List = List(sequence)
-		let list5: List<Int> = List()
+		let list1: List<Int> = [1, 2, 3]
+		let list2: List<Int> = List<Int>([1, 2, 3])
+		let list3: List = List(list1) // kotlin: ignore
+		let sequence = AnySequence([1, 2, 3]) // kotlin: ignore
+		let list4: List = List(sequence) // kotlin: ignore
+		let list5: List<Int> = List<Int>()
 		let list6: List<Int> = []
 
 		XCTAssertEqual(list1, list2)
-		XCTAssertEqual(list1, list3)
-		XCTAssertEqual(list1, list4)
+		XCTAssertEqual(list1, list3) // kotlin: ignore
+		XCTAssertEqual(list1, list4) // kotlin: ignore
 		XCTAssertNotEqual(list1, list5)
 		XCTAssertNotEqual(list1, list6)
 		XCTAssertEqual(list5, list6)
@@ -83,7 +146,7 @@ class ListTest: XCTestCase {
 		XCTAssert(!list.description.contains("4"))
 	}
 
-	func testDebugDescription() {
+	func testDebugDescription() { // kotlin: ignore
 		let list: List = [1, 2, 3]
 
 		XCTAssert(list.debugDescription.contains("1"))
@@ -170,20 +233,23 @@ class ListTest: XCTestCase {
 	}
 
 	func testFlatMap() {
-		let list1: List = [1, 2, 3]
-		let list2 = list1.flatMap { [$0, 10 * $0] }
+		let list1: List<Int> = [1, 2, 3]
+		let list2 = list1.flatMap { List<Int>([$0, 10 * $0]) }
 		XCTAssertEqual(list1, [1, 2, 3])
 		XCTAssertEqual(list2, [1, 10, 2, 20, 3, 30])
 	}
 
 	func testSortedBy() {
-		let list1: List = [3, 1, 2]
-		let list2: List = [1, 2, 3]
+		let list1: List<Int> = [3, 1, 2]
+		let list2: List<Int> = [1, 2, 3]
+		let sortedArray1 = list1.sorted { a, b in a < b }
+		let sortedArray2 = list2.sorted { a, b in a < b }
+		let sortedArray2Descending = list2.sorted { a, b in a > b }
 
-		XCTAssertEqual(list1.sorted { $0 < $1 }, [1, 2, 3])
+		XCTAssertEqual(sortedArray1, [1, 2, 3])
 		XCTAssertEqual(list1, [3, 1, 2])
-		XCTAssertEqual(list2.sorted { $0 < $1 }, [1, 2, 3])
-		XCTAssertEqual(list2.sorted { $0 > $1 }, [3, 2, 1])
+		XCTAssertEqual(sortedArray2, [1, 2, 3])
+		XCTAssertEqual(sortedArray2Descending, [3, 2, 1])
 	}
 
 	func testAppendingContentsOf() {
@@ -212,7 +278,7 @@ class ListTest: XCTestCase {
 		XCTAssertEqual(list.index(of: 10), 2)
 	}
 
-	func testHash() {
+	func testHash() { // kotlin: ignore
 		let list1: List = [1, 2, 3]
 		let list2: List = [1, 2, 3]
 		let list3: List = [1, 2, 3, 4]
@@ -229,9 +295,9 @@ class ListTest: XCTestCase {
 		let list1: List = [3, 2, 1]
 		let list2: List = [1, 2, 3]
 
-		XCTAssertEqual(list1.sorted(), [1, 2, 3])
+		XCTAssertEqual(list1.sorted(), List<Int>([1, 2, 3]))
 		XCTAssertEqual(list1, [3, 2, 1])
-		XCTAssertEqual(list2.sorted(), [1, 2, 3])
+		XCTAssertEqual(list2.sorted(), List<Int>([1, 2, 3]))
 	}
 
 	func testZipToClass() {
@@ -242,30 +308,4 @@ class ListTest: XCTestCase {
 			XCTAssertEqual(a + b, 4)
 		}
 	}
-
-	static var allTests = [
-		("testEquatable", testEquatable),
-		("testInits", testInits),
-		("testCasting", testCasting),
-		("testSubscript", testSubscript),
-		("testDescription", testDescription),
-		("testDebugDescription", testDebugDescription),
-		("testCollectionIndices", testCollectionIndices),
-		("testIsEmpty", testIsEmpty),
-		("testFirst", testFirst),
-		("testLast", testLast),
-		("testIndexBefore", testIndexBefore),
-		("testAppending", testAppending),
-		("testFilter", testFilter),
-		("testMap", testMap),
-		("testCompactMap", testCompactMap),
-		("testFlatMap", testFlatMap),
-		("testSortedBy", testSortedBy),
-		("testAppendingContentsOf", testAppendingContentsOf),
-		("testIndices", testIndices),
-		("testIndexOfElement", testIndexOfElement),
-		("testHash", testHash),
-		("testSorted", testSorted),
-		("testZipToClass", testZipToClass),
-		]
 }

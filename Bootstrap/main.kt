@@ -24,6 +24,7 @@ fun main(args: Array<String>) {
 		ExtensionsTest().run()
 		IntegrationTest().run()
 		LibraryTranspilationTest().run()
+		ListTest().run()
 		MutableListTest().run()
 		PrintableAsTreeTest().run()
 		ShellTest().run()

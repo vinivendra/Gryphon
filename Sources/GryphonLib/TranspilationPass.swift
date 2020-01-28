@@ -1907,17 +1907,30 @@ public class DataStructureInitializersTranspilationPass: TranspilationPass {
 		-> Expression
 	{
 		if let typeExpression = callExpression.function as? TypeExpression,
-			typeExpression.typeName.hasPrefix("MutableList<"),
 			let tupleExpression = callExpression.parameters as? TupleExpression,
 			tupleExpression.pairs.isEmpty
 		{
 			let typeName = typeExpression.typeName
-			let arrayElement = String(typeName.dropFirst("MutableList<".count).dropLast())
+
+			let functionName: String
+			let arrayElement: String
+			if typeName.hasPrefix("MutableList<") {
+				functionName = "mutableListOf"
+				arrayElement = String(typeName.dropFirst("MutableList<".count).dropLast())
+			}
+			else if typeName.hasPrefix("List<") {
+				functionName = "listOf"
+				arrayElement = String(typeName.dropFirst("List<".count).dropLast())
+			}
+			else {
+				return callExpression
+			}
+
 			return CallExpression(
 				range: callExpression.range,
 				function: DeclarationReferenceExpression(
 					range: callExpression.range,
-					identifier: "mutableListOf<\(arrayElement)>",
+					identifier: "\(functionName)<\(arrayElement)>",
 					typeName: typeName,
 					isStandardLibrary: false,
 					isImplicit: false),
