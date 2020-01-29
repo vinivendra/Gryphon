@@ -19,6 +19,9 @@
 // gryphon output: Sources/GryphonLib/GryphonType.gryphonAST
 // gryphon output: Bootstrap/GryphonType.kt
 
+// TODO: Fix incompatibility with explicit generics (i.e. having to type List<Int> instead of just
+// List) or at least raise a warning.
+
 indirect enum GryphonType: CustomStringConvertible, Equatable {
 	case namedType(typeName: String)
 	case optional(subType: GryphonType)
