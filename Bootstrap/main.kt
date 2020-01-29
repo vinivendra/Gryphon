@@ -26,6 +26,8 @@ fun main(args: Array<String>) {
 		LibraryTranspilationTest().run()
 		ListTest().run()
 		MutableListTest().run()
+		MapTest().run()
+		MutableMapTest().run()
 		PrintableAsTreeTest().run()
 		ShellTest().run()
 		SourceFileTest().run()
