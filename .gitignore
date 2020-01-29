@@ -55,6 +55,7 @@ Bootstrap/LibraryTranspilationTest.kt
 Bootstrap/ListTest.kt
 Bootstrap/MutableListTest.kt
 Bootstrap/MapTest.kt
+Bootstrap/MutableMapTest.kt
 Bootstrap/PrintableAsTreeTest.kt
 Bootstrap/ShellTest.kt
 Bootstrap/SourceFileTest.kt

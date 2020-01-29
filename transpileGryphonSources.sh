@@ -32,6 +32,7 @@
 	Tests/GryphonLibTests/ListTest.swift \
 	Tests/GryphonLibTests/MutableListTest.swift \
 	Tests/GryphonLibTests/MapTest.swift \
+	Tests/GryphonLibTests/MutableMapTest.swift \
 	Tests/GryphonLibTests/PrintableAsTreeTest.swift \
 	Tests/GryphonLibTests/ShellTest.swift \
 	Tests/GryphonLibTests/SourceFileTest.swift \

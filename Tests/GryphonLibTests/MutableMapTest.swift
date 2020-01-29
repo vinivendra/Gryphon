@@ -14,11 +14,56 @@
 // limitations under the License.
 //
 
+// gryphon output: Bootstrap/MutableMapTest.kt
+
+#if !IS_DUMPING_ASTS
 @testable import GryphonLib
 import XCTest
+#else
+import Foundation
+#endif
 
 class MutableMapTest: XCTestCase {
+	// declaration: constructor(): super() { }
 
+	public func getClassName() -> String { // annotation: override
+		return "MutableMapTest"
+	}
+
+	override public func runAllTests() { // annotation: override
+		testEquatable()
+		testInits()
+		testPassingByReference()
+		testCasting()
+		testCopy()
+		testToFixedDictionary()
+		testSubscript()
+		testDescription()
+		testCount()
+		testIsEmpty()
+		testMap()
+	}
+
+	static var allTests = [ // kotlin: ignore
+		("testEquatable", testEquatable),
+		("testInits", testInits),
+		("testPassingByReference", testPassingByReference),
+		("testCasting", testCasting),
+		("testCopy", testCopy),
+		("testToFixedDictionary", testToFixedDictionary),
+		("testSubscript", testSubscript),
+		("testDescription", testDescription),
+		("testDebugDescription", testDebugDescription),
+		("testCollectionIndices", testCollectionIndices),
+		("testCount", testCount),
+		("testIsEmpty", testIsEmpty),
+		("testMap", testMap),
+		("testMapValues", testMapValues),
+		("testSortedBy", testSortedBy),
+		("testHash", testHash),
+	]
+
+	// MARK: - Tests
 	func testEquatable() {
 		let dictionary1: MutableMap = [1: 10, 2: 20]
 		let dictionary2: MutableMap = [1: 10, 2: 20]
@@ -29,23 +74,23 @@ class MutableMapTest: XCTestCase {
 	}
 
 	func testInits() {
-		let dictionary1: MutableMap = [1: 10, 2: 20]
-		let dictionary2: MutableMap = MutableMap([1: 10, 2: 20])
-		let dictionary3: MutableMap = MutableMap<Int, Int>(dictionary1)
-		let dictionary4: MutableMap<Int, Int> = MutableMap()
+		let dictionary1: MutableMap<Int, Int> = [1: 10, 2: 20]
+		let dictionary2: MutableMap<Int, Int> = MutableMap<Int, Int>([1: 10, 2: 20])
+		let dictionary3: MutableMap<Int, Int> = MutableMap<Int, Int>(dictionary1) // kotlin: ignore
+		let dictionary4: MutableMap<Int, Int> = MutableMap<Int, Int>()
 		let dictionary5: MutableMap<Int, Int> = [:]
 
 		XCTAssertEqual(dictionary1, dictionary2)
-		XCTAssertEqual(dictionary1, dictionary3)
+		XCTAssertEqual(dictionary1, dictionary3) // kotlin: ignore
 		XCTAssertEqual(dictionary4, dictionary5)
 
 		dictionary1[3] = 30
 		dictionary4[3] = 30
 
 		XCTAssertNotEqual(dictionary1, dictionary2)
-		XCTAssertNotEqual(dictionary1, dictionary3)
+		XCTAssertNotEqual(dictionary1, dictionary3) // kotlin: ignore
 		XCTAssertNotEqual(dictionary4, dictionary5)
-		XCTAssertEqual(dictionary2, dictionary3)
+		XCTAssertEqual(dictionary2, dictionary3) // kotlin: ignore
 	}
 
 	func testPassingByReference() {
@@ -107,7 +152,7 @@ class MutableMapTest: XCTestCase {
 		XCTAssert(!dictionary.description.contains("3"))
 	}
 
-	func testDebugDescription() {
+	func testDebugDescription() { // kotlin: ignore
 		let dictionary: MutableMap = [1: 10, 2: 20]
 
 		XCTAssert(dictionary.debugDescription.contains("1"))
@@ -117,7 +162,7 @@ class MutableMapTest: XCTestCase {
 		XCTAssert(!dictionary.debugDescription.contains("3"))
 	}
 
-	func testCollectionIndices() {
+	func testCollectionIndices() { // kotlin: ignore
 		let dictionary: MutableMap = [1: 10, 2: 20]
 		let lastIndex = dictionary.index(after: dictionary.startIndex)
 
@@ -171,7 +216,7 @@ class MutableMapTest: XCTestCase {
 		XCTAssertEqual(dictionary, [1: 10, 2: 20])
 	}
 
-	func testMapValues() {
+	func testMapValues() { // kotlin: ignore
 		let dictionary: MutableMap = [1: 10, 2: 20]
 		let mappedDictionary = dictionary.mapValues { $0 * 10 }
 
@@ -179,7 +224,7 @@ class MutableMapTest: XCTestCase {
 		XCTAssertEqual(dictionary, [1: 10, 2: 20])
 	}
 
-	func testSortedBy() {
+	func testSortedBy() { // kotlin: ignore
 		let dictionary: MutableMap = [1: 20, 2: 10]
 
 		let keySorted = dictionary.sorted { $0.0 < $1.0 }
@@ -204,7 +249,7 @@ class MutableMapTest: XCTestCase {
 		XCTAssertEqual(dictionary, [1: 20, 2: 10])
 	}
 
-	func testHash() {
+	func testHash() { // kotlin: ignore
 		let dictionary1: MutableMap = [1: 20, 2: 10]
 		let dictionary2: MutableMap = [1: 20, 2: 10]
 		let dictionary3: MutableMap = [1: 20, 2: 10, 3: 30]
@@ -216,23 +261,4 @@ class MutableMapTest: XCTestCase {
 		XCTAssertNotEqual(hash1, hash3)
 		XCTAssertNotEqual(hash2, hash3)
 	}
-
-	static var allTests = [
-		("testEquatable", testEquatable),
-		("testInits", testInits),
-		("testPassingByReference", testPassingByReference),
-		("testCasting", testCasting),
-		("testCopy", testCopy),
-		("testToFixedDictionary", testToFixedDictionary),
-		("testSubscript", testSubscript),
-		("testDescription", testDescription),
-		("testDebugDescription", testDebugDescription),
-		("testCollectionIndices", testCollectionIndices),
-		("testCount", testCount),
-		("testIsEmpty", testIsEmpty),
-		("testMap", testMap),
-		("testMapValues", testMapValues),
-		("testSortedBy", testSortedBy),
-		("testHash", testHash),
-		]
 }
