@@ -426,6 +426,12 @@ func gryphonTemplates() {
 	_ = "_comparableArray.indexOf(_compare)"
 
 	// Dictionary
+	_ = _dictionary.count
+	_ = "_dictionary.size"
+
+	_ = _dictionary.isEmpty
+	_ = "_dictionary.isEmpty()"
+
 	_ = _dictionary.map(_closure2)
 	_ = "_dictionary.map _closure2.toMutableList()"
 

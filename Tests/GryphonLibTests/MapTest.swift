@@ -14,11 +14,52 @@
 // limitations under the License.
 //
 
+// gryphon output: Bootstrap/MapTest.kt
+
+#if !IS_DUMPING_ASTS
 @testable import GryphonLib
 import XCTest
+#else
+import Foundation
+#endif
 
 class MapTest: XCTestCase {
+	// declaration: constructor(): super() { }
 
+	public func getClassName() -> String { // annotation: override
+		return "MapTest"
+	}
+
+	override public func runAllTests() { // annotation: override
+		testEquatable()
+		testInits()
+		testCasting()
+		testToMutableMap()
+		testSubscript()
+		testDescription()
+		testCount()
+		testIsEmpty()
+		testMap()
+	}
+
+	static var allTests = [ // kotlin: ignore
+		("testEquatable", testEquatable),
+		("testInits", testInits),
+		("testCasting", testCasting),
+		("testToMutableMap", testToMutableMap),
+		("testSubscript", testSubscript),
+		("testDescription", testDescription),
+		("testDebugDescription", testDebugDescription),
+		("testCollectionIndices", testCollectionIndices),
+		("testCount", testCount),
+		("testIsEmpty", testIsEmpty),
+		("testMap", testMap),
+		("testMapValues", testMapValues),
+		("testSortedBy", testSortedBy),
+		("testHash", testHash),
+	]
+
+	// MARK: - Tests
 	func testEquatable() {
 		let dictionary1: Map = [1: 10, 2: 20]
 		let dictionary2: Map = [1: 10, 2: 20]
@@ -29,14 +70,14 @@ class MapTest: XCTestCase {
 	}
 
 	func testInits() {
-		let dictionary1: Map = [1: 10, 2: 20]
-		let dictionary2: Map = Map([1: 10, 2: 20])
-		let dictionary3: Map = Map<Int, Int>(dictionary1)
-		let dictionary4: Map<Int, Int> = Map()
+		let dictionary1: Map<Int, Int> = [1: 10, 2: 20]
+		let dictionary2: Map<Int, Int> = Map<Int, Int>([1: 10, 2: 20])
+		let dictionary3: Map<Int, Int> = Map<Int, Int>(dictionary1) // kotlin: ignore
+		let dictionary4: Map<Int, Int> = Map<Int, Int>()
 		let dictionary5: Map<Int, Int> = [:]
 
 		XCTAssertEqual(dictionary1, dictionary2)
-		XCTAssertEqual(dictionary1, dictionary3)
+		XCTAssertEqual(dictionary1, dictionary3) // kotlin: ignore
 		XCTAssertEqual(dictionary4, dictionary5)
 		XCTAssertNotEqual(dictionary1, dictionary4)
 		XCTAssertNotEqual(dictionary1, dictionary5)
@@ -83,7 +124,7 @@ class MapTest: XCTestCase {
 		XCTAssert(!dictionary.description.contains("3"))
 	}
 
-	func testDebugDescription() {
+	func testDebugDescription() { // kotlin: ignore
 		let dictionary: Map = [1: 10, 2: 20]
 
 		XCTAssert(dictionary.debugDescription.contains("1"))
@@ -93,7 +134,7 @@ class MapTest: XCTestCase {
 		XCTAssert(!dictionary.debugDescription.contains("3"))
 	}
 
-	func testCollectionIndices() {
+	func testCollectionIndices() { // kotlin: ignore
 		let dictionary: Map = [1: 10, 2: 20]
 		let lastIndex = dictionary.index(after: dictionary.startIndex)
 
@@ -147,26 +188,30 @@ class MapTest: XCTestCase {
 		XCTAssertEqual(dictionary, [1: 10, 2: 20])
 	}
 
-	func testMapValues() {
-		let dictionary: Map = [1: 10, 2: 20]
+	func testMapValues() {// kotlin: ignore
+		// TODO: Kotlin's mapValues takes an Entry instead of a value. That has to be translated
+		// somehow. Seems to be hard to do with templates; maybe it'll have to be with a new pass.
+		let dictionary: Map<Int, Int> = [1: 10, 2: 20]
 		let mappedDictionary = dictionary.mapValues { $0 * 10 }
 
 		XCTAssertEqual(mappedDictionary, [1: 100, 2: 200])
 		XCTAssertEqual(dictionary, [1: 10, 2: 20])
 	}
 
-	func testSortedBy() {
+	func testSortedBy() { // kotlin: ignore
+		// TODO: Either implement a translation for map sorting or remove this method/raise a
+		// warning
 		let dictionary: Map = [1: 20, 2: 10]
 
-		let keySorted = dictionary.sorted { $0.0 < $1.0 }
+		let keySorted = dictionary.sorted { a, b in a.0 < b.0 }
 		let keySortedKeys = keySorted.map { $0.0 }
 		let keySortedValues = keySorted.map { $0.1 }
 
-		let valueSorted = dictionary.sorted { $0.1 < $1.1 }
+		let valueSorted = dictionary.sorted { a, b in a.1 < b.1 }
 		let valueSortedKeys = valueSorted.map { $0.0 }
 		let valueSortedValues = valueSorted.map { $0.1 }
 
-		let reverseSorted = dictionary.sorted { $0.0 > $1.0 }
+		let reverseSorted = dictionary.sorted { a, b in a.0 > b.0 }
 		let reverseSortedKeys = reverseSorted.map { $0.0 }
 		let reverseSortedValues = reverseSorted.map { $0.1 }
 
@@ -180,7 +225,7 @@ class MapTest: XCTestCase {
 		XCTAssertEqual(dictionary, [1: 20, 2: 10])
 	}
 
-	func testHash() {
+	func testHash() { // kotlin: ignore
 		let dictionary1: Map = [1: 20, 2: 10]
 		let dictionary2: Map = [1: 20, 2: 10]
 		let dictionary3: Map = [1: 20, 2: 10, 3: 30]
@@ -192,21 +237,4 @@ class MapTest: XCTestCase {
 		XCTAssertNotEqual(hash1, hash3)
 		XCTAssertNotEqual(hash2, hash3)
 	}
-
-	static var allTests = [
-		("testEquatable", testEquatable),
-		("testInits", testInits),
-		("testCasting", testCasting),
-		("testToMutableMap", testToMutableMap),
-		("testSubscript", testSubscript),
-		("testDescription", testDescription),
-		("testDebugDescription", testDebugDescription),
-		("testCollectionIndices", testCollectionIndices),
-		("testCount", testCount),
-		("testIsEmpty", testIsEmpty),
-		("testMap", testMap),
-		("testMapValues", testMapValues),
-		("testSortedBy", testSortedBy),
-		("testHash", testHash),
-	]
 }

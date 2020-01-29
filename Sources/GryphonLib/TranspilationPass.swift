@@ -1770,8 +1770,8 @@ public class AnonymousParametersTranspilationPass: TranspilationPass {
 }
 
 ///
-/// MutableList needs explicit initializers to account for the fact that it can't be implicitly
-/// cast to covariant types. For instance:
+/// Gryphon's collections need explicit initializers to account for the fact that they can't be
+/// implicitly cast to covariant types. For instance:
 ///
 /// ````
 /// let myIntArray: MutableList = [1, 2, 3]
@@ -1783,7 +1783,7 @@ public class AnonymousParametersTranspilationPass: TranspilationPass {
 /// the type for the cast. However, since this seems to be a specific case that only shows up in the
 /// stdlib at the moment, this pass should serve as a workaround.
 ///
-/// The conversion is done by calling `array.toMutableList<Element>()` rather than a normal class.
+/// The conversion is done by calling `array.toMutableList<Element>()`.
 /// This allows translations to cover a few (not fully understood) corner cases where the array
 /// isn't a `MutableList` (it happened once with an `EmptyList`), meaning a normal cast would fail.
 ///
@@ -1795,81 +1795,79 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 		_ callExpression: CallExpression)
 		-> Expression
 	{
+		// Deal with cases where an initializer is used directly (i.e. `MutableList<Int>(list)`)
 		if let typeExpression = callExpression.function as? TypeExpression,
 			let tupleExpression = callExpression.parameters as? TupleExpression
 		{
 			// TODO: Fix references to toMutableList in the stdlib templates (i.e. include toList)
 			let isMutableList = typeExpression.typeName.hasPrefix("MutableList<")
 			let isList = typeExpression.typeName.hasPrefix("List<")
-			let arrayFunction = isMutableList ? "toMutableList" : "toList"
+			let isMutableMap = typeExpression.typeName.hasPrefix("MutableMap<")
+			let isMap = typeExpression.typeName.hasPrefix("Map<")
 
-			if (isMutableList || isList),
-				tupleExpression.pairs.count == 1,
+			let functionName: String
+			let genericElementsString: String
+			if isMutableList {
+				functionName = "toMutableList"
+				genericElementsString =
+					String(typeExpression.typeName.dropFirst("MutableList<".count).dropLast())
+			}
+			else if isList {
+				functionName = "toList"
+				genericElementsString =
+					String(typeExpression.typeName.dropFirst("List<".count).dropLast())
+			}
+			else if isMutableMap {
+				functionName = "toMutableMap"
+				genericElementsString =
+					String(typeExpression.typeName.dropFirst("MutableMap<".count).dropLast())
+			}
+			else if isMap {
+				functionName = "toMap"
+				genericElementsString =
+					String(typeExpression.typeName.dropFirst("Map<".count).dropLast())
+			}
+			else {
+				return super.replaceCallExpression(callExpression)
+			}
+
+			if tupleExpression.pairs.count == 1,
 				let onlyPair = tupleExpression.pairs.first
 			{
-				let elementType: String
-				if isMutableList {
-					elementType =
-						String(typeExpression.typeName.dropFirst("MutableList<".count).dropLast())
-				}
-				else {
-					elementType =
-						String(typeExpression.typeName.dropFirst("List<".count).dropLast())
-				}
-
-				let mappedElementType = Utilities.getTypeMapping(for: elementType) ?? elementType
-
-				if onlyPair.label == "array" {
-					// If we're initializing with an Array of a different type, we might need to call
-					// `toMutableList`
-					if let arrayType = onlyPair.expression.swiftType {
-						let arrayElementType = arrayType.dropFirst().dropLast()
-
-						if arrayElementType != elementType {
-							return DotExpression(
-								range: callExpression.range,
-								leftExpression: replaceExpression(onlyPair.expression),
-								rightExpression:
-								CallExpression(
-									range: callExpression.range,
-									function: DeclarationReferenceExpression(
-										range: callExpression.range,
-										identifier: "\(arrayFunction)<\(mappedElementType)>",
-										typeName: typeExpression.typeName,
-										isStandardLibrary: false,
-										isImplicit: false),
-									parameters: TupleExpression(
-										range: callExpression.range,
-										pairs: []),
-									typeName: typeExpression.typeName))
-						}
+				let genericElements =
+					Utilities.splitTypeList(genericElementsString, separators: [","])
+				let mappedGenericElements = genericElements.map {
+						Utilities.getTypeMapping(for: $0) ?? $0
 					}
-					// If it's an Array of the same type, just return the array itself
-					return replaceExpression(onlyPair.expression)
-				}
-				else {
-					return DotExpression(
+				let mappedGenericString = mappedGenericElements.joined(separator: ", ")
+
+				// TODO: If the generic type is the same, we might be able to optimize here. Try
+				// this once the type system has been refactored
+				return DotExpression(
+					range: callExpression.range,
+					leftExpression: replaceExpression(onlyPair.expression),
+					rightExpression: CallExpression(
 						range: callExpression.range,
-						leftExpression: replaceExpression(onlyPair.expression),
-						rightExpression: CallExpression(
+						function: DeclarationReferenceExpression(
 							range: callExpression.range,
-							function: DeclarationReferenceExpression(
-								range: callExpression.range,
-								identifier: "\(arrayFunction)<\(mappedElementType)>",
-								typeName: typeExpression.typeName,
-								isStandardLibrary: false,
-								isImplicit: false),
-							parameters: TupleExpression(
-								range: callExpression.range,
-								pairs: []),
-							typeName: typeExpression.typeName))
-				}
+							identifier: "\(functionName)<\(mappedGenericString)>",
+							typeName: typeExpression.typeName,
+							isStandardLibrary: false,
+							isImplicit: false),
+						parameters: TupleExpression(
+							range: callExpression.range,
+							pairs: []),
+						typeName: typeExpression.typeName))
 			}
 		}
 
+		// Deal with cases where the casting method is called (i.e. `list.as(List<Int>.self)`)
 		if let dotExpression = callExpression.function as? DotExpression {
 			if let leftType = dotExpression.leftExpression.swiftType,
-				(leftType.hasPrefix("MutableList") || leftType.hasPrefix("List")),
+				(leftType.hasPrefix("MutableList") ||
+					leftType.hasPrefix("List") ||
+					leftType.hasPrefix("MutableMap") ||
+					leftType.hasPrefix("Map")),
 				let declarationReferenceExpression =
 					dotExpression.rightExpression as? DeclarationReferenceExpression,
 				let tupleExpression = callExpression.parameters as? TupleExpression
@@ -1906,39 +1904,71 @@ public class DataStructureInitializersTranspilationPass: TranspilationPass {
 		_ callExpression: CallExpression)
 		-> Expression
 	{
-		if let typeExpression = callExpression.function as? TypeExpression,
-			let tupleExpression = callExpression.parameters as? TupleExpression,
-			tupleExpression.pairs.isEmpty
-		{
+		let tupleExpression = callExpression.parameters as? TupleExpression
+		let tupleShuffleExpression = callExpression.parameters as? TupleShuffleExpression
+
+		if let typeExpression = callExpression.function as? TypeExpression {
+
+			// Make sure there are no parameters
+			// TODO: This could be simpler and safer if tupleExpression and tupleShuffleExpression
+			// shared a common "Tuple" superclass
+			if let tupleExpression = tupleExpression {
+				guard tupleExpression.pairs.isEmpty else {
+					return super.replaceCallExpression(callExpression)
+				}
+			}
+			else if let tupleShuffleExpression = tupleShuffleExpression {
+				guard tupleShuffleExpression.expressions.isEmpty else {
+					return super.replaceCallExpression(callExpression)
+				}
+			}
+
+			// Get the function's name and the generic elements
 			let typeName = typeExpression.typeName
 
 			let functionName: String
-			let arrayElement: String
+			let genericElements: String
 			if typeName.hasPrefix("MutableList<") {
 				functionName = "mutableListOf"
-				arrayElement = String(typeName.dropFirst("MutableList<".count).dropLast())
+				genericElements = String(typeName.dropFirst("MutableList<".count).dropLast())
 			}
 			else if typeName.hasPrefix("List<") {
 				functionName = "listOf"
-				arrayElement = String(typeName.dropFirst("List<".count).dropLast())
+				genericElements = String(typeName.dropFirst("List<".count).dropLast())
+			}
+			else if typeName.hasPrefix("MutableMap<") {
+				functionName = "mutableMapOf"
+				genericElements = String(typeName.dropFirst("MutableMap<".count).dropLast())
+			}
+			else if typeName.hasPrefix("Map<") {
+				functionName = "mapOf"
+				genericElements = String(typeName.dropFirst("Map<".count).dropLast())
 			}
 			else {
-				return callExpression
+				return super.replaceCallExpression(callExpression)
+			}
+
+			let parameters: Expression
+			if let tupleExpression = tupleExpression {
+				parameters = tupleExpression
+			}
+			else {
+				parameters = tupleShuffleExpression!
 			}
 
 			return CallExpression(
 				range: callExpression.range,
 				function: DeclarationReferenceExpression(
 					range: callExpression.range,
-					identifier: "\(functionName)<\(arrayElement)>",
+					identifier: "\(functionName)<\(genericElements)>",
 					typeName: typeName,
 					isStandardLibrary: false,
 					isImplicit: false),
-				parameters: tupleExpression,
+				parameters: parameters,
 				typeName: typeName)
 		}
 
-		return callExpression
+		return super.replaceCallExpression(callExpression)
 	}
 }
 
