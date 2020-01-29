@@ -15,25 +15,25 @@
 //
 
 fun <T> MutableList<T>.copy(): MutableList<T> {
-	return this.toMutableList()
+    return this.toMutableList()
 }
 
 fun String.suffix(startIndex: Int): String {
-	return this.substring(startIndex, this.length)
+    return this.substring(startIndex, this.length)
 }
 
 fun <T> MutableList<T>.removeLast() {
-	this.removeAt(this.size - 1)
+    this.removeAt(this.size - 1)
 }
 
 fun String.indexOrNull(character: Char): Int? {
-	val result = this.indexOf(character)
-	if (result == -1) {
-		return null
-	}
-	else {
-		return result
-	}
+    val result = this.indexOf(character)
+    if (result == -1) {
+        return null
+    }
+    else {
+        return result
+    }
 }
 
 fun <Element> List<Element>.sorted(
@@ -46,9 +46,9 @@ fun <Element> List<Element>.sorted(
 }
 
 fun <Element> MutableList<Element>.quicksort(
-	left: Int,
-	right: Int,
-	isAscending: (Element, Element) -> Boolean)
+    left: Int,
+    right: Int,
+    isAscending: (Element, Element) -> Boolean)
 {
     if (left < right) {
         val pivot = this.partition(left, right, isAscending)
@@ -58,10 +58,10 @@ fun <Element> MutableList<Element>.quicksort(
 }
 
 fun <Element> MutableList<Element>.partition(
-	left: Int,
-	right: Int,
-	isAscending: (Element, Element) -> Boolean)
-	: Int
+    left: Int,
+    right: Int,
+    isAscending: (Element, Element) -> Boolean)
+    : Int
 {
     val pivot = this[right]
 

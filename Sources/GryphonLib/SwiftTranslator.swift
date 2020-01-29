@@ -1653,7 +1653,7 @@ public class SwiftTranslator {
 		let associatedValuesInfo = // kotlin: ignore
 			zipToClass(associatedValueNames, patternTuple.subtrees)
 		// insert: val associatedValuesInfo: List<Pair<String, SwiftAST>> =
-		// insert: 	associatedValueNames.zip(patternTuple.subtrees)
+		// insert:     associatedValueNames.zip(patternTuple.subtrees)
 
 		let declarations: MutableList<AssociatedValueDeclaration> = []
 		let comparisons: MutableList<AssociatedValueComparison> = []

@@ -15,111 +15,111 @@
 //
 
 open class XCTestCase() {
-	open fun getClassName(): String {
-		return "XCTestCase"
-	}
+    open fun getClassName(): String {
+        return "XCTestCase"
+    }
 
-	var allTestsSucceeded = true
+    var allTestsSucceeded = true
 
-	fun run() {
-		println("➡️  Running ${getClassName()}...")
+    fun run() {
+        println("➡️  Running ${getClassName()}...")
 
-		runAllTests()
+        runAllTests()
 
-		println("↪️  ${getClassName()} done.\n")
+        println("↪️  ${getClassName()} done.\n")
 
-		if (allTestsSucceeded) {
-			XCTestCase.passedTests.add(getClassName())
-		}
-		else {
-			XCTestCase.passedTests.add(getClassName())
-		}
-	}	
+        if (allTestsSucceeded) {
+            XCTestCase.passedTests.add(getClassName())
+        }
+        else {
+            XCTestCase.passedTests.add(getClassName())
+        }
+    }    
 
-	open fun runAllTests() { }
+    open fun runAllTests() { }
 
-	companion object {
-		var passedTests = mutableListOf<String>()
-		var failedTests = mutableListOf<String>()
-	}
+    companion object {
+        var passedTests = mutableListOf<String>()
+        var failedTests = mutableListOf<String>()
+    }
 
-	//
-	fun XCTAssert(condition: Boolean, test: String = "No message") {
-		if (!condition) {
-			allTestsSucceeded = false
-			println("${getClassName()} - XCTAssert failed: ${test}.")
-			Exception().printStackTrace()
-		}
-	}
+    //
+    fun XCTAssert(condition: Boolean, test: String = "No message") {
+        if (!condition) {
+            allTestsSucceeded = false
+            println("${getClassName()} - XCTAssert failed: ${test}.")
+            Exception().printStackTrace()
+        }
+    }
 
-	fun XCTAssertFalse(condition: Boolean, test: String = "No message") {
-		if (condition) {
-			allTestsSucceeded = false
-			println("${getClassName()} - XCTAssertFalse failed: ${test}.")
-			Exception().printStackTrace()
-		}
-	}
+    fun XCTAssertFalse(condition: Boolean, test: String = "No message") {
+        if (condition) {
+            allTestsSucceeded = false
+            println("${getClassName()} - XCTAssertFalse failed: ${test}.")
+            Exception().printStackTrace()
+        }
+    }
 
-	fun <T> XCTAssertEqual(a: T, b: T, test: String = "No message") {
-    	if (a != b) {
-    		allTestsSucceeded = false
-    		println("${getClassName()} - XCTAssertEqual failed: ${test}.\n\"${a}\"\nis not equal to\n\"${b}\"\n--")
-    		Exception().printStackTrace()
-    	}
-	}
+    fun <T> XCTAssertEqual(a: T, b: T, test: String = "No message") {
+        if (a != b) {
+            allTestsSucceeded = false
+            println("${getClassName()} - XCTAssertEqual failed: ${test}.\n\"${a}\"\nis not equal to\n\"${b}\"\n--")
+            Exception().printStackTrace()
+        }
+    }
 
-	fun <T> XCTAssertNotEqual(a: T, b: T, test: String = "No message") {
-    	if (a == b) {
-    		allTestsSucceeded = false
-    		println("${getClassName()} - XCTAssertNotEqual failed: ${test}.\n\"${a}\"\nis equal to\n\"${b}\"\n--")
-    		Exception().printStackTrace()
-    	}
-	}
+    fun <T> XCTAssertNotEqual(a: T, b: T, test: String = "No message") {
+        if (a == b) {
+            allTestsSucceeded = false
+            println("${getClassName()} - XCTAssertNotEqual failed: ${test}.\n\"${a}\"\nis equal to\n\"${b}\"\n--")
+            Exception().printStackTrace()
+        }
+    }
 
-	fun <T> XCTAssertNil(a: T?, test: String = "No message") {
-    	if (a != null) {
-    		allTestsSucceeded = false
-    		println("${getClassName()} - XCTAssertNil failed: ${test}.")	
-    		Exception().printStackTrace()
-    	}
-	}
+    fun <T> XCTAssertNil(a: T?, test: String = "No message") {
+        if (a != null) {
+            allTestsSucceeded = false
+            println("${getClassName()} - XCTAssertNil failed: ${test}.")    
+            Exception().printStackTrace()
+        }
+    }
 
-	fun <T> XCTAssertNotNil(a: T?, test: String = "No message") {
-    	if (a == null) {
-    		allTestsSucceeded = false
-    		println("${getClassName()} - XCTAssertNotNil failed: ${test}.")	
-    		Exception().printStackTrace()
-    	}
-	}
+    fun <T> XCTAssertNotNil(a: T?, test: String = "No message") {
+        if (a == null) {
+            allTestsSucceeded = false
+            println("${getClassName()} - XCTAssertNotNil failed: ${test}.")    
+            Exception().printStackTrace()
+        }
+    }
 
-	fun XCTFail(test: String = "No message") {
-    	allTestsSucceeded = false
-		println("${getClassName()} - XCTFail: ${test}.")	
-		Exception().printStackTrace()
-	}
+    fun XCTFail(test: String = "No message") {
+        allTestsSucceeded = false
+        println("${getClassName()} - XCTFail: ${test}.")    
+        Exception().printStackTrace()
+    }
 
-	fun XCTAssertNoThrow(closure: () -> Unit) {
-		try {
-			closure()
-    	}
-    	catch (error: Exception) {
-    		allTestsSucceeded = false
-    		println("${getClassName()} - XCTAssertNoThrow failed.")
-    		Exception().printStackTrace()
-    		println("Error thrown:")
-    		println(error)
-    	}
-	}
+    fun XCTAssertNoThrow(closure: () -> Unit) {
+        try {
+            closure()
+        }
+        catch (error: Exception) {
+            allTestsSucceeded = false
+            println("${getClassName()} - XCTAssertNoThrow failed.")
+            Exception().printStackTrace()
+            println("Error thrown:")
+            println(error)
+        }
+    }
 
-	fun XCTAssertThrowsError(closure: () -> Unit) {
-		try {
-			closure()
-			// If the error is thrown, the closure returns early and this isn't
-			// run:
-			allTestsSucceeded = false
-			println("${getClassName()} - XCTAssertNoThrow failed.")
-			Exception().printStackTrace()
-		} catch (error: Exception) {
-		}
-	}
+    fun XCTAssertThrowsError(closure: () -> Unit) {
+        try {
+            closure()
+            // If the error is thrown, the closure returns early and this isn't
+            // run:
+            allTestsSucceeded = false
+            println("${getClassName()} - XCTAssertNoThrow failed.")
+            Exception().printStackTrace()
+        } catch (error: Exception) {
+        }
+    }
 }

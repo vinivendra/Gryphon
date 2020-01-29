@@ -22,164 +22,164 @@ import java.util.stream.Stream
 import java.util.concurrent.Semaphore
 
 fun Utilities.Companion.fileWasModifiedLaterThan(
-	filePath: String, otherFilePath: String): Boolean
+    filePath: String, otherFilePath: String): Boolean
 {
-	val file = File(filePath)
-	val fileModifiedDate = file.lastModified()
-	val otherFile = File(otherFilePath)
-	val otherFileModifiedDate = otherFile.lastModified()
-	val isAfter = fileModifiedDate > otherFileModifiedDate
-	return isAfter
+    val file = File(filePath)
+    val fileModifiedDate = file.lastModified()
+    val otherFile = File(otherFilePath)
+    val otherFileModifiedDate = otherFile.lastModified()
+    val isAfter = fileModifiedDate > otherFileModifiedDate
+    return isAfter
 }
 
 fun Utilities.Companion.filesWereModifiedLaterThan(
-	filePaths: MutableList<String>, otherFilePaths: MutableList<String>): Boolean
+    filePaths: MutableList<String>, otherFilePaths: MutableList<String>): Boolean
 {
-	if (!(!filePaths.isEmpty() && !otherFilePaths.isEmpty())) {
-		return true
-	}
+    if (!(!filePaths.isEmpty() && !otherFilePaths.isEmpty())) {
+        return true
+    }
 
-	// Get the latest modification date among the first files
-	var latestDate: Long? = null
-	for (filePath in filePaths) {
-		val file = File(filePath)
-		val fileModifiedDate = file.lastModified()
+    // Get the latest modification date among the first files
+    var latestDate: Long? = null
+    for (filePath in filePaths) {
+        val file = File(filePath)
+        val fileModifiedDate = file.lastModified()
 
-		if (latestDate != null &&
-			(latestDate < fileModifiedDate))
-		{
-			latestDate = fileModifiedDate
-		}
-		else {
-			latestDate = fileModifiedDate
-		}
-	}
+        if (latestDate != null &&
+            (latestDate < fileModifiedDate))
+        {
+            latestDate = fileModifiedDate
+        }
+        else {
+            latestDate = fileModifiedDate
+        }
+    }
 
-	// Ensure that latest date is still before all dates from other files
-	for (filePath in otherFilePaths) {
-		val file = File(filePath)
-		val fileModifiedDate = file.lastModified()
+    // Ensure that latest date is still before all dates from other files
+    for (filePath in otherFilePaths) {
+        val file = File(filePath)
+        val fileModifiedDate = file.lastModified()
 
-		if (latestDate!! > fileModifiedDate) {
-			return true
-		}
-	}
+        if (latestDate!! > fileModifiedDate) {
+            return true
+        }
+    }
 
-	return false
+    return false
 }
 
 public class OS {
-	companion object {
-		val javaOSName = System.getProperty("os.name")
-		val osName = if (javaOSName == "Mac OS X") { "macOS" } else { "Linux" }
+    companion object {
+        val javaOSName = System.getProperty("os.name")
+        val osName = if (javaOSName == "Mac OS X") { "macOS" } else { "Linux" }
 
-		val javaArchitecture = System.getProperty("os.arch")
-		val architecture = if (javaArchitecture == "x86_64") { "x86_64" }
-			else { "i386" }
+        val javaArchitecture = System.getProperty("os.arch")
+        val architecture = if (javaArchitecture == "x86_64") { "x86_64" }
+            else { "i386" }
 
-		val systemIdentifier: String = osName + "-" + architecture
-		val buildFolder = ".kotlinBuild-${systemIdentifier}"
-	}
+        val systemIdentifier: String = osName + "-" + architecture
+        val buildFolder = ".kotlinBuild-${systemIdentifier}"
+    }
 }
 
 fun Utilities.Companion.readFile(filePath: String): String {
-	return File(filePath).readText()
+    return File(filePath).readText()
 }
 
 fun Utilities.Companion.createFileAndDirectory(
-	fileName: String,
-	directory: String,
-	contents: String): String
+    fileName: String,
+    directory: String,
+    contents: String): String
 {
-	// Create directory (and intermediate directories if needed)
-	val directoryFile = File(directory)
-	directoryFile.mkdirs()
+    // Create directory (and intermediate directories if needed)
+    val directoryFile = File(directory)
+    directoryFile.mkdirs()
 
-	// Create file path
-	val filePath = directory + "/" + fileName
+    // Create file path
+    val filePath = directory + "/" + fileName
 
-	// Delete file if it exists, do nothing if it doesn't
-	val file = File(filePath)
-	file.delete()
+    // Delete file if it exists, do nothing if it doesn't
+    val file = File(filePath)
+    file.delete()
 
-	// Create the file and write to it
-	val success = file.createNewFile()
-	assert(success)
-	val writer = FileWriter(file)
-	writer.write(contents)
-	writer.close()
+    // Create the file and write to it
+    val success = file.createNewFile()
+    assert(success)
+    val writer = FileWriter(file)
+    writer.write(contents)
+    writer.close()
 
-	return filePath
+    return filePath
 }
 
 fun Utilities.Companion.createFile(filePath: String, contents: String) {
-	val file = File(filePath)
-	file.createNewFile()
-	val writer = FileWriter(file)
-	writer.write(contents)
-	writer.close()
+    val file = File(filePath)
+    file.createNewFile()
+    val writer = FileWriter(file)
+    writer.write(contents)
+    writer.close()
 }
 
 fun Utilities.Companion.fileExists(filePath: String): Boolean {
-	val file = File(filePath)
-	return file.exists()
+    val file = File(filePath)
+    return file.exists()
 }
 
 fun Utilities.Companion.createFileIfNeeded(filePath: String): Boolean {
-	if (!Utilities.fileExists(filePath)) {
-		val file = File(filePath)
-		val success = file.createNewFile()
-		assert(success)
-		return true
-	}
-	else {
-		return false
-	}
+    if (!Utilities.fileExists(filePath)) {
+        val file = File(filePath)
+        val success = file.createNewFile()
+        assert(success)
+        return true
+    }
+    else {
+        return false
+    }
 }
 
 fun Utilities.Companion.createFolderIfNeeded(path: String) {
-	val directoryFile = File(path)
-	directoryFile.mkdirs()
+    val directoryFile = File(path)
+    directoryFile.mkdirs()
 }
 
 fun Utilities.Companion.deleteFolder(path: String) {
-	var directoryFile = File(path)
+    var directoryFile = File(path)
     directoryFile.deleteRecursively()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 fun Utilities.Companion.getCurrentFolder(): String {
-	return Paths.get("").toAbsolutePath().toString()
+    return Paths.get("").toAbsolutePath().toString()
 }
 
 fun Utilities.Companion.getFiles(
-	selectedFiles: MutableList<String>? = null,
-	directory: String,
-	fileExtension: FileExtension): MutableList<String>
+    selectedFiles: MutableList<String>? = null,
+    directory: String,
+    fileExtension: FileExtension): MutableList<String>
 {
-	val contentsOfDirectory = File(directory).listFiles()
-	val allFilesInDirectory = contentsOfDirectory.filter { it.isFile() }
-	val filteredFiles = allFilesInDirectory.filter {
-		it.absolutePath.endsWith(".${fileExtension.rawValue}")
-	}
-	val sortedFiles = filteredFiles.sortedBy { it.absolutePath }
+    val contentsOfDirectory = File(directory).listFiles()
+    val allFilesInDirectory = contentsOfDirectory.filter { it.isFile() }
+    val filteredFiles = allFilesInDirectory.filter {
+        it.absolutePath.endsWith(".${fileExtension.rawValue}")
+    }
+    val sortedFiles = filteredFiles.sortedBy { it.absolutePath }
 
-	var selectedURLs: List<File>
-	if (selectedFiles != null) {
-		val selectedFilesWithExtensions = selectedFiles.map {
-			it + ".${fileExtension.rawValue}"
-		}
+    var selectedURLs: List<File>
+    if (selectedFiles != null) {
+        val selectedFilesWithExtensions = selectedFiles.map {
+            it + ".${fileExtension.rawValue}"
+        }
 
-		selectedURLs = sortedFiles.filter {
-			selectedFilesWithExtensions.contains(it.getName())
-		}
-	}
-	else {
-		selectedURLs = sortedFiles
-	}
+        selectedURLs = sortedFiles.filter {
+            selectedFilesWithExtensions.contains(it.getName())
+        }
+    }
+    else {
+        selectedURLs = sortedFiles
+    }
 
-	return selectedURLs.map { it.absolutePath }.toMutableList()
+    return selectedURLs.map { it.absolutePath }.toMutableList()
 }
 
 public fun Utilities.Companion.getAbsoultePath(file: String): String {
@@ -191,8 +191,8 @@ val libraryUpdateLock: Semaphore = Semaphore(1)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 fun <Element, Result> List<Element>.parallelMap(
-	transform: (Element) -> Result): MutableList<Result>
+    transform: (Element) -> Result): MutableList<Result>
 {
-	return this.parallelStream().map(transform).collect(Collectors.toList())
-		.toMutableList()
+    return this.parallelStream().map(transform).collect(Collectors.toList())
+        .toMutableList()
 }

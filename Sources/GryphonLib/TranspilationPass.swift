@@ -636,7 +636,7 @@ public class TranspilationPass {
 		let newMatches = templateExpression.matches // kotlin: ignore
 			.mapValues { replaceExpression($0) }
 		// insert: val newMatches = templateExpression.matches
-		// insert: 	.mapValues { replaceExpression(it.value) }.toMutableMap()
+		// insert:     .mapValues { replaceExpression(it.value) }.toMutableMap()
 
 		return TemplateExpression(
 			range: templateExpression.range,
@@ -1430,7 +1430,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 /// Assumes subtrees like the one below are references to enums (see also
 /// CapitalizeAllEnumsTranspilationPass).
 ///
-///	    ...
+///     ...
 ///        └─ dotExpression
 ///          ├─ left
 ///          │  └─ typeExpression

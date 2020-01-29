@@ -311,9 +311,9 @@ public class Compiler {
 			})
 
 			// insert: val sortedHistogram = kotlinTranslatorHistogram.entries.toMutableList()
-			// insert: 	.sorted(isAscending = { a, b ->
-			// insert: 		a.value.size > b.value.size
-			// insert: 	})
+			// insert:     .sorted(isAscending = { a, b ->
+			// insert:         a.value.size > b.value.size
+			// insert:     })
 
 			for tuple in sortedHistogram {
 				let astName = tuple.key

@@ -17,53 +17,53 @@
 import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {
-	if (args.contains("-test")) {
-		ASTDumpDecoderTest().run()
-		CompilerTest().run()
-		DriverTest().run()
-		ExtensionsTest().run()
-		IntegrationTest().run()
-		LibraryTranspilationTest().run()
-		ListTest().run()
-		MutableListTest().run()
-		MapTest().run()
-		MutableMapTest().run()
-		PrintableAsTreeTest().run()
-		ShellTest().run()
-		SourceFileTest().run()
-		TranslationResultTest().run()
-		UtilitiesTest().run()
+    if (args.contains("-test")) {
+        ASTDumpDecoderTest().run()
+        CompilerTest().run()
+        DriverTest().run()
+        ExtensionsTest().run()
+        IntegrationTest().run()
+        LibraryTranspilationTest().run()
+        ListTest().run()
+        MutableListTest().run()
+        MapTest().run()
+        MutableMapTest().run()
+        PrintableAsTreeTest().run()
+        ShellTest().run()
+        SourceFileTest().run()
+        TranslationResultTest().run()
+        UtilitiesTest().run()
 
-		InitializationTest().run()
+        InitializationTest().run()
 
-		for (passedTest in XCTestCase.passedTests) {
-			println("✅ ${passedTest}: All tests succeeded!")
-		}
+        for (passedTest in XCTestCase.passedTests) {
+            println("✅ ${passedTest}: All tests succeeded!")
+        }
 
-		if (!XCTestCase.passedTests.isEmpty() && 
-			!XCTestCase.failedTests.isEmpty())
-		{
-			println("")
-		}
+        if (!XCTestCase.passedTests.isEmpty() && 
+            !XCTestCase.failedTests.isEmpty())
+        {
+            println("")
+        }
 
-		for (failedTest in XCTestCase.failedTests) {
-			println("🚨 ${failedTest}: Test failed!")
-		}
-	}
-	else {
-		try {
-			val result = Driver.run(arguments = args.toMutableList())
+        for (failedTest in XCTestCase.failedTests) {
+            println("🚨 ${failedTest}: Test failed!")
+        }
+    }
+    else {
+        try {
+            val result = Driver.run(arguments = args.toMutableList())
 
-			val commandResult = result as? Shell.CommandOutput
-			if (commandResult != null) {
-				println(commandResult.standardOutput)
-				System.err.println(commandResult.standardError)
-				exitProcess(commandResult.status)
-			}
-		}
-		catch (error: Exception) {
-			println(error)
-			exitProcess(-1)
-		}
-	}
+            val commandResult = result as? Shell.CommandOutput
+            if (commandResult != null) {
+                println(commandResult.standardOutput)
+                System.err.println(commandResult.standardError)
+                exitProcess(commandResult.status)
+            }
+        }
+        catch (error: Exception) {
+            println(error)
+            exitProcess(-1)
+        }
+    }
 }
