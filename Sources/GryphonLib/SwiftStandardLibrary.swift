@@ -16,8 +16,6 @@
 
 // MARK: - Swift standard library
 
-private struct Hash: Hashable { }
-
 private func gryphonTemplates() {
 	let _array1: MutableList<Any> = [1, 2, 3]
 	let _array2: MutableList<Any> = [1, 2, 3]
