@@ -42,6 +42,11 @@ internal fun bla(): Int? {
 	return 0
 }
 
+internal sealed class B {
+	class C(val d: Int): B()
+	class E(val f: Int, val g: String): B()
+}
+
 fun main(args: Array<String>) {
 	if (true) {
 		println("Simple if's")
@@ -174,5 +179,69 @@ fun main(args: Array<String>) {
 
 	if (x != null) {
 		println("If let #5")
+	}
+
+	val bEnum: B = B.C(d = 0)
+	val bEnum2: B = B.E(f = 0, g = "foo")
+
+	if (bEnum is B.C) {
+		println("If case let #1")
+	}
+
+	if (bEnum is B.C) {
+		val foo: Int = bEnum.d
+		println("If case let #2: ${foo}")
+	}
+
+	if (bEnum is B.E) {
+		val foo: Int = bEnum.f
+		val bar: String = bEnum.g
+		println("--")
+	}
+
+	if (bEnum2 is B.E) {
+		val foo: Int = bEnum2.f
+		val bar: String = bEnum2.g
+		println("If case let #3: ${foo}, ${bar}")
+	}
+
+	if (bEnum2 is B.E) {
+		val bar: String = bEnum2.g
+		println("If case let #4: ${bar}")
+	}
+
+	if (bEnum2 is B.E) {
+		val foo: Int = bEnum2.f
+		println("If case let #5: ${foo}")
+	}
+
+	if (bEnum2 is B.E) {
+		println("If case let #6")
+	}
+
+	if (false) {
+		println("--")
+	}
+	else if (bEnum is B.C) {
+		val foo: Int = bEnum.d
+		println("If case let #7: ${foo}")
+	}
+	else if (bEnum2 is B.E) {
+		val foo: Int = bEnum2.f
+		val bar: String = bEnum2.g
+		println("--")
+	}
+
+	if (false) {
+		println("--")
+	}
+	else if (bEnum2 is B.E) {
+		val foo: Int = bEnum2.f
+		val bar: String = bEnum2.g
+		println("If case let #8: ${foo}, ${bar}")
+	}
+	else if (bEnum is B.C) {
+		val foo: Int = bEnum.d
+		println("--")
 	}
 }

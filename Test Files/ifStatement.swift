@@ -171,3 +171,60 @@ else {
 if let x = x {
 	print("If let #5")
 }
+
+//
+enum B {
+	case c(d: Int)
+	case e(f: Int, g: String)
+}
+
+let bEnum = B.c(d: 0)
+let bEnum2 = B.e(f: 0, g: "foo")
+
+if case .c = bEnum {
+	print("If case let #1")
+}
+
+if case let .c(d: foo) = bEnum {
+	print("If case let #2: \(foo)")
+}
+
+if case let .e(f: foo, g: bar) = bEnum {
+	print("--")
+}
+
+if case let .e(f: foo, g: bar) = bEnum2 {
+	print("If case let #3: \(foo), \(bar)")
+}
+
+if case let .e(f: _, g: bar) = bEnum2 {
+	print("If case let #4: \(bar)")
+}
+
+if case let .e(f: foo, g: _) = bEnum2 {
+	print("If case let #5: \(foo)")
+}
+
+if case let .e(f: _, g: _) = bEnum2 {
+	print("If case let #6")
+}
+
+if false {
+	print("--")
+}
+else if case let .c(d: foo) = bEnum {
+	print("If case let #7: \(foo)")
+}
+else if case let .e(f: foo, g: bar) = bEnum2 {
+	print("--")
+}
+
+if false {
+	print("--")
+}
+else if case let .e(f: foo, g: bar) = bEnum2 {
+	print("If case let #8: \(foo), \(bar)")
+}
+else if case let .c(d: foo) = bEnum {
+	print("--")
+}
