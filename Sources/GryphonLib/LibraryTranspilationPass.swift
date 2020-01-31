@@ -238,8 +238,7 @@ extension Expression {
 		if let lhs = lhs as? CallExpression,
 			let rhs = rhs as? CallExpression
 		{
-			return lhs.function.matches(
-				rhs.function, matches) &&
+			return lhs.function.matches(rhs.function, matches) &&
 				lhs.parameters.matches(rhs.parameters, matches) &&
 				lhs.typeName.isSubtype(of: rhs.typeName)
 		}
