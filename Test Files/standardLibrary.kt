@@ -18,18 +18,88 @@ fun f(a: Int) {
 }
 
 fun main(args: Array<String>) {
+	val string: String = "abcde"
+	val bIndex: Int = 1
+	val cIndex: Int = 2
+	val dIndex: Int = 3
+	var variableIndex: Int = cIndex
+	val substring: String = "abcd"
+	val range: IntRange = IntRange(0, string.length)
+	var variableString: String = "abcde"
+	val character: Char = 'i'
+
 	println(0)
 	print(0)
 	println(0)
 	println(Math.sqrt(9.0))
+	println(0.toString())
+	println("bla".toString())
 	println("".isEmpty())
 	println("a".isEmpty())
 	println("".length)
 	println("a".length)
+	println("abc".firstOrNull()!!)
+	println("".firstOrNull())
+	println("abc".lastOrNull()!!)
+	println("".lastOrNull())
 	println("0".toDouble())
 	println("1".toDouble())
+	println("0".toFloat())
+	println("1".toFloat())
+	println("0".toULong())
+	println("1".toULong())
+	println("0".toLong())
+	println("1".toLong())
+	println("0".toIntOrNull())
+	println("1".toIntOrNull())
 	println("abcde".dropLast(1))
+	println("abcde".dropLast(2))
+	println("abcde".drop(1))
+	println("abcde".drop(2))
+
+	for (index in string.indices) {
+		println(string[index])
+	}
+
 	println("abcde".substring(0, 4))
+	println("abcde".substring(0, cIndex))
+	println("abcde".substring(cIndex))
+	println("abcde".substring(0, cIndex))
+	println("abcde".substring(0, cIndex + 1))
+	println("abcde".substring(bIndex, dIndex))
+	println("abcde".substring(bIndex, dIndex + 1))
+	println(substring)
+	println(string.substring(0, string.length))
+	println(string[0])
+	variableIndex -= 1
+	println(string[variableIndex])
+	println(string[cIndex + 1])
+	println(string[cIndex - 1])
+	println(string[cIndex + 2])
+	println(substring[bIndex + 1])
+	println("aaBaBAa".replace("a", "A"))
+	println(string.takeWhile { it != 'c' })
+	println(string.startsWith("abc"))
+	println(string.startsWith("d"))
+	println(string.endsWith("cde"))
+	println(string.endsWith("a"))
+	println(range.start == 0)
+	println(range.start == string.length)
+	println(range.endInclusive == 0)
+	println(range.endInclusive == string.length)
+
+	val newRange: IntRange = IntRange(0, string.length)
+
+	println(newRange.start == 0)
+	println(newRange.start == string.length)
+	println(newRange.endInclusive == 0)
+	println(newRange.endInclusive == string.length)
+	variableString += "fgh"
+	println(variableString)
+	variableString += character
+	println(variableString)
+	println(string.capitalize())
+	println(string.toUpperCase())
 
 	var array: MutableList<Int> = mutableListOf(1, 2, 3)
 

@@ -249,8 +249,11 @@ func gryphonTemplates() {
 	_ = _string[_index...]
 	_ = "_string.substring(_index)"
 
-	_ = _string[..._index]
+	_ = _string[..<_index]
 	_ = "_string.substring(0, _index)"
+
+	_ = _string[..._index]
+	_ = "_string.substring(0, _index + 1)"
 
 	_ = _string[_index1..<_index2]
 	_ = "_string.substring(_index1, _index2)"
