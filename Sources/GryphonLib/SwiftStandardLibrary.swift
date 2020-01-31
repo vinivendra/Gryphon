@@ -14,7 +14,12 @@
 // limitations under the License.
 //
 
-// MARK: - Swift standard library
+// Replacement for Comparable
+private struct Compare: Comparable {
+	static func < (lhs: Compare, rhs: Compare) -> Bool {
+		return false
+	}
+}
 
 private func gryphonTemplates() {
 	let _array1: MutableList<Any> = [1, 2, 3]
@@ -22,6 +27,8 @@ private func gryphonTemplates() {
 	let _any: Any = 0
 	let _string: String = ""
 	let _index = _string.startIndex
+	let _comparableArray: [Compare] = []
+	let _closure: (Compare, Compare) -> Bool = { _, _ in true }
 
 	// Templates with an input that references methods defined in this file
 	_ = zipToClass(_array1, _array2)
@@ -39,6 +46,13 @@ private func gryphonTemplates() {
 	// Templates with an output that references methods defined in the KotlinStandardLibrary.kt file
 	_ = _string.suffix(from: _index)
 	_ = "_string.suffix(startIndex = _index)"
+
+	// TODO: add unit tests and/or test cases for the templates below
+	_ = _comparableArray.sorted(by: _closure)
+	_ = "_comparableArray.sorted(isAscending = _closure)"
+
+	_ = _array1.removeLast()
+	_ = "_array1.removeLast()"
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

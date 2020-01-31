@@ -25,7 +25,7 @@ typealias PrintContents = Any // kotlin: ignore
 // declaration: typealias PrintContents = Any?
 
 func printTest(_ contents: PrintContents, _ testName: String) {
-	let firstColumnSize = 30
+	let firstColumnSize = 40
 
 	let contentsString = "\(contents)"
 	print(contentsString, terminator: "")
@@ -49,7 +49,7 @@ let character: Character = "i"
 
 // Print
 print(0, terminator: "")
-print("                             (Print)")
+print("                                       (Print)")
 
 // Darwin
 printTest(sqrt(9), "Sqrt")
@@ -206,9 +206,60 @@ printTest(stringArray.joined(), "Array joined")
 printTest(array.count, "Array count")
 printTest(stringArray.count, "Array count")
 
-print(array.last)
+for index in array.indices {
+	printTest(array[index], "Array indices")
+}
 
-print(array.dropLast())
+printTest(array[array.startIndex], "Array startIndex")
+
+printTest(array.endIndex == array.count, "Array endIndex")
+
+printTest(array.index(after: 2), "Array index after")
+
+printTest(array.index(before: 2), "Array index before")
+
+printTest(array.first, "Array first")
+printTest(emptyArray.first, "Array first")
+
+printTest(array.first(where: { $0 > 3 }), "Array first where")
+
+printTest(array.last(where: { $0 > 3 }), "Array last where")
+
+printTest(array.last, "Array last")
+
+array.removeFirst()
+printTest(array, "Array remove first")
+
+printTest(array.dropFirst(), "Array drop first")
+
+printTest(array.dropLast(), "Array drop last")
+
+printTest(array.map { $0 + 1 }, "Array map")
+
+printTest(array.flatMap { [$0 + 1, $0 + 2] }, "Array flat map")
+
+printTest(array.compactMap { $0 == 10 ? $0 : nil }, "Array compact map")
+
+printTest(array.filter { $0 < 10 }, "Array filter")
+
+printTest(array.reduce(1) { acc, el in acc * el }, "Array reduce")
+
+for (element1, element2) in zip(array, array2) {
+	printTest(element1, "Array zip")
+	printTest(element2, "Array zip")
+}
+
+printTest(array.firstIndex(where: { $0 > 2 }), "Array firstIndex")
+
+printTest(array.contains(where: { $0 > 2 }), "Array contains where")
+printTest(array.contains(where: { $0 > 2000 }), "Array contains where")
+
+printTest(array.sorted(), "Array sorted")
+
+printTest(array.contains(10), "Array contains")
+printTest(array.contains(10000), "Array contains")
+
+printTest(array.firstIndex(of: 10), "Array firstIndex of")
 
 // Int
 print(Int.max)

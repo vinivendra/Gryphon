@@ -16,7 +16,7 @@
 typealias PrintContents = Any?
 
 internal fun printTest(contents: PrintContents, testName: String) {
-	val firstColumnSize: Int = 30
+	val firstColumnSize: Int = 40
 	val contentsString: String = "${contents}"
 
 	print(contentsString)
@@ -46,7 +46,7 @@ fun main(args: Array<String>) {
 	val character: Char = 'i'
 
 	print(0)
-	println("                             (Print)")
+	println("                                       (Print)")
 
 	printTest(Math.sqrt(9.0), "Sqrt")
 	printTest(0.toString(), "String(_anyType)")
@@ -169,8 +169,46 @@ fun main(args: Array<String>) {
 	printTest(array.size, "Array count")
 	printTest(stringArray.size, "Array count")
 
-	println(array.lastOrNull())
-	println(array.dropLast(1))
+	for (index in array.indices) {
+		printTest(array[index], "Array indices")
+	}
+
+	printTest(array[0], "Array startIndex")
+	printTest(array.size == array.size, "Array endIndex")
+	printTest(2 + 1, "Array index after")
+	printTest(2 - 1, "Array index before")
+	printTest(array.firstOrNull(), "Array first")
+	printTest(emptyArray.firstOrNull(), "Array first")
+	printTest(array.find { it > 3 }, "Array first where")
+	printTest(array.findLast { it > 3 }, "Array last where")
+	printTest(array.lastOrNull(), "Array last")
+
+	array.removeAt(0)
+
+	printTest(array, "Array remove first")
+	printTest(array.drop(1), "Array drop first")
+	printTest(array.dropLast(1), "Array drop last")
+	printTest(array.map { it + 1 }.toMutableList(), "Array map")
+	printTest(array.flatMap { mutableListOf(it + 1, it + 2) }.toMutableList(), "Array flat map")
+	printTest(
+		array.map { if (it == 10) { it } else { null } }.filterNotNull().toMutableList(),
+		"Array compact map")
+	printTest(array.filter { it < 10 }.toMutableList(), "Array filter")
+	printTest(array.fold(1) { acc, el -> acc * el }, "Array reduce")
+
+	for ((element1, element2) in array.zip(array2)) {
+		printTest(element1, "Array zip")
+		printTest(element2, "Array zip")
+	}
+
+	printTest(array.indexOfFirst { it > 2 }, "Array firstIndex")
+	printTest((array.find { it > 2 } != null), "Array contains where")
+	printTest((array.find { it > 2000 } != null), "Array contains where")
+	printTest(array.sorted(), "Array sorted")
+	printTest(array.contains(10), "Array contains")
+	printTest(array.contains(10000), "Array contains")
+	printTest(array.indexOf(10), "Array firstIndex of")
+
 	println(Int.MAX_VALUE)
 	println(Int.MIN_VALUE)
 	println(Math.min(0, 1))

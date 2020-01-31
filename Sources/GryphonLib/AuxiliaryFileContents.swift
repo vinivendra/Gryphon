@@ -21,6 +21,7 @@
 
 // TODO: Test `gryphon -init`
 // TODO: Test multiline strings
+// TODO: array.firstIndex(of:) fails by returning nil on Swift and -1 on Kotlin
 
 // TODO: Dollar signs should probably be automatically escaped
 let dollarSign = "$" // value: "\\$"
@@ -137,7 +138,7 @@ func gryphonTemplates() {
 	var _array2: [Any] = []
 	let _array3: [Any] = []
 	var _arrayOfOptionals: [Any?] = []
-	var _comparableArray : [Compare] = []
+	var _comparableArray: [Compare] = []
 	let _compare = Compare()
 	var _index: String.Index = "abc".endIndex
 	let _index1: String.Index = "abc".startIndex
@@ -381,9 +382,6 @@ func gryphonTemplates() {
 	_ = _array.removeFirst()
 	_ = "_array.removeAt(0)"
 
-	_ = _array.removeLast()
-	_ = "_array.removeLast()"
-
 	_ = _array.dropFirst()
 	_ = "_array.drop(1)"
 
@@ -408,9 +406,6 @@ func gryphonTemplates() {
 	_ = zip(_array1, _array2)
 	_ = "_array1.zip(_array2)"
 
-	_ = _array.indices
-	_ = "_array.indices"
-
 	_ = _array.firstIndex(where: _closure3)
 	_ = "_array.indexOfFirst _closure3"
 
@@ -420,14 +415,8 @@ func gryphonTemplates() {
 	_ = _comparableArray.sorted()
 	_ = "_comparableArray.sorted()"
 
-	_ = _comparableArray.sorted(by: _closure7)
-	_ = "_comparableArray.sorted(isAscending = _closure7)"
-
 	_ = _comparableArray.contains(_compare)
 	_ = "_comparableArray.contains(_compare)"
-
-	_ = _comparableArray.index(of: _compare)
-	_ = "_comparableArray.indexOf(_compare)"
 
 	_ = _comparableArray.firstIndex(of: _compare)
 	_ = "_comparableArray.indexOf(_compare)"
