@@ -16,12 +16,15 @@
 typealias PrintContents = Any?
 
 internal fun printTest(contents: PrintContents, testName: String) {
+	val firstColumnSize: Int = 30
 	val contentsString: String = "${contents}"
 
 	print(contentsString)
 
-	for (_0 in contentsString.length until 20) {
-		print(" ")
+	if (contentsString.length < firstColumnSize) {
+		for (_0 in contentsString.length until firstColumnSize) {
+			print(" ")
+		}
 	}
 
 	println("(${testName})")
@@ -43,7 +46,7 @@ fun main(args: Array<String>) {
 	val character: Char = 'i'
 
 	print(0)
-	println("                   (Print)")
+	println("                             (Print)")
 
 	printTest(Math.sqrt(9.0), "Sqrt")
 	printTest(0.toString(), "String(_anyType)")
@@ -120,23 +123,52 @@ fun main(args: Array<String>) {
 	printTest(variableString, "String append character")
 	printTest(string.capitalize(), "String capitalized")
 	printTest(string.toUpperCase(), "String uppercased")
+	printTest(character.toUpperCase(), "Character uppercased")
 
 	var array: MutableList<Int> = mutableListOf(1, 2, 3)
-
-	println(array)
-	array.add(4)
-	println(array)
-
+	val array2: MutableList<Int> = mutableListOf(2, 1)
+	var array3: MutableList<Int> = mutableListOf(1)
+	var array4: MutableList<Int> = mutableListOf(2, 1)
+	var arrayOfOptionals: MutableList<Int?> = mutableListOf(1)
 	val emptyArray: MutableList<Int> = mutableListOf()
-
-	println(emptyArray.isEmpty())
-	println(array.isEmpty())
-
 	val stringArray: MutableList<String> = mutableListOf("1", "2", "3")
 
-	println(stringArray.joinToString(separator = " => "))
-	println(array.size)
-	println(stringArray.size)
+	printTest(array, "Array append")
+
+	array.add(4)
+
+	printTest(array, "Array append")
+
+	array.add(0, 0)
+
+	printTest(array, "Array insert")
+
+	array.add(5, 5)
+
+	printTest(array, "Array insert")
+
+	array.add(3, 10)
+
+	printTest(array, "Array insert")
+
+	arrayOfOptionals.add(null)
+
+	printTest(arrayOfOptionals, "Array append nil")
+
+	array3.addAll(array2)
+
+	printTest(array3, "Array append(contentsOf:) constant")
+
+	array3.addAll(array4)
+
+	printTest(array3, "Array append(contentsOf:) variable")
+	printTest(emptyArray.isEmpty(), "Array isEmpty")
+	printTest(array.isEmpty(), "Array isEmpty")
+	printTest(stringArray.joinToString(separator = " => "), "Array joined separator")
+	printTest(stringArray.joinToString(separator = ""), "Array joined")
+	printTest(array.size, "Array count")
+	printTest(stringArray.size, "Array count")
+
 	println(array.lastOrNull())
 	println(array.dropLast(1))
 	println(Int.MAX_VALUE)

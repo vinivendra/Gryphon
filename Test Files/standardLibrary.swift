@@ -25,10 +25,14 @@ typealias PrintContents = Any // kotlin: ignore
 // declaration: typealias PrintContents = Any?
 
 func printTest(_ contents: PrintContents, _ testName: String) {
+	let firstColumnSize = 30
+
 	let contentsString = "\(contents)"
 	print(contentsString, terminator: "")
-	for _ in contentsString.count..<20 {
-		print(" ", terminator: "")
+	if contentsString.count < firstColumnSize {
+		for _ in contentsString.count..<firstColumnSize {
+			print(" ", terminator: "")
+		}
 	}
 	print("(\(testName))")
 }
@@ -45,7 +49,7 @@ let character: Character = "i"
 
 // Print
 print(0, terminator: "")
-print("                   (Print)")
+print("                             (Print)")
 
 // Darwin
 printTest(sqrt(9), "Sqrt")
@@ -160,22 +164,47 @@ printTest(string.capitalized, "String capitalized")
 
 printTest(string.uppercased(), "String uppercased")
 
+// Character
+printTest(character.uppercased(), "Character uppercased")
+
 // Array
 var array = [1, 2, 3]
-
-print(array)
-array.append(4)
-print(array)
-
+let array2 = [2, 1]
+var array3 = [1]
+var array4 = [2, 1]
+var arrayOfOptionals: [Int?] = [1]
 let emptyArray: [Int] = []
-print(emptyArray.isEmpty)
-print(array.isEmpty)
-
 let stringArray = ["1", "2", "3"]
-print(stringArray.joined(separator: " => "))
 
-print(array.count)
-print(stringArray.count)
+printTest(array, "Array append")
+array.append(4)
+printTest(array, "Array append")
+
+array.insert(0, at: 0)
+printTest(array, "Array insert")
+array.insert(5, at: 5)
+printTest(array, "Array insert")
+array.insert(10, at: 3)
+printTest(array, "Array insert")
+
+arrayOfOptionals.append(nil)
+printTest(arrayOfOptionals, "Array append nil")
+
+array3.append(contentsOf: array2)
+printTest(array3, "Array append(contentsOf:) constant")
+
+array3.append(contentsOf: array4)
+printTest(array3, "Array append(contentsOf:) variable")
+
+printTest(emptyArray.isEmpty, "Array isEmpty")
+printTest(array.isEmpty, "Array isEmpty")
+
+printTest(stringArray.joined(separator: " => "), "Array joined separator")
+
+printTest(stringArray.joined(), "Array joined")
+
+printTest(array.count, "Array count")
+printTest(stringArray.count, "Array count")
 
 print(array.last)
 

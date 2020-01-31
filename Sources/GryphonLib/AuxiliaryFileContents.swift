@@ -135,6 +135,7 @@ func gryphonTemplates() {
 	var _array: [Any] = []
 	var _array1: [Any] = []
 	var _array2: [Any] = []
+	let _array3: [Any] = []
 	var _arrayOfOptionals: [Any?] = []
 	var _comparableArray : [Compare] = []
 	let _compare = Compare()
@@ -334,6 +335,9 @@ func gryphonTemplates() {
 
 	_ = _array1.append(contentsOf: _array2)
 	_ = "_array1.addAll(_array2)"
+
+	_ = _array1.append(contentsOf: _array3)
+	_ = "_array1.addAll(_array3)"
 
 	_ = _array.isEmpty
 	_ = "_array.isEmpty()"
