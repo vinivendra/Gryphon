@@ -20,7 +20,10 @@ private func gryphonTemplates() {
 	let _array1: MutableList<Any> = [1, 2, 3]
 	let _array2: MutableList<Any> = [1, 2, 3]
 	let _any: Any = 0
+	let _string: String = ""
+	let _index = _string.startIndex
 
+	// Templates with an input that references methods defined in this file
 	_ = zipToClass(_array1, _array2)
 	_ = "_array1.zip(_array2)"
 
@@ -32,6 +35,10 @@ private func gryphonTemplates() {
 
 	_ = _array1.appending(contentsOf: _array2)
 	_ = "_array1 + _array2"
+
+	// Templates with an output that references methods defined in the KotlinStandardLibrary.kt file
+	_ = _string.suffix(from: _index)
+	_ = "_string.suffix(startIndex = _index)"
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

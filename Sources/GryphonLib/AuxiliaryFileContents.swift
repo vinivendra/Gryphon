@@ -246,9 +246,6 @@ func gryphonTemplates() {
 	_ = _string.prefix(upTo: _index)
 	_ = "_string.substring(0, _index)"
 
-	_ = _string.suffix(from: _index)
-	_ = "_string.suffix(startIndex = _index)"
-
 	_ = _string[_index...]
 	_ = "_string.substring(_index)"
 
