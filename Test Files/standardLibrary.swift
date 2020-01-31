@@ -21,6 +21,18 @@
 
 import Foundation
 
+typealias PrintContents = Any // kotlin: ignore
+// declaration: typealias PrintContents = Any?
+
+func printTest(_ contents: PrintContents, _ testName: String) {
+	let contentsString = "\(contents)"
+	print(contentsString, terminator: "")
+	for _ in contentsString.count..<20 {
+		print(" ", terminator: "")
+	}
+	print("(\(testName))")
+}
+
 let string = "abcde"
 let bIndex = string.index(string.startIndex, offsetBy: 1) // value: 1
 let cIndex = string.index(string.startIndex, offsetBy: 2) // value: 2
@@ -32,122 +44,121 @@ var variableString = "abcde"
 let character: Character = "i"
 
 // Print
-print(0)
 print(0, terminator: "")
-print(0)
+print("                   (Print)")
 
 // Darwin
-print(sqrt(9))
+printTest(sqrt(9), "Sqrt")
 
 // String
-print(String(0))
+printTest(String(0), "String(_anyType)")
 
-print("bla".description)
+printTest("bla".description, "String description")
 
-print("".isEmpty)
-print("a".isEmpty)
+printTest("".isEmpty, "String isEmpty")
+printTest("a".isEmpty, "String isEmpty")
 
-print("".count)
-print("a".count)
+printTest("".count, "String count")
+printTest("a".count, "String count")
 
-print("abc".first!)
-print("".first)
+printTest("abc".first!, "String first")
+printTest("".first, "String first")
 
-print("abc".last!)
-print("".last)
+printTest("abc".last!, "String last")
+printTest("".last, "String last")
 
-print(Double("0"))
-print(Double("1"))
+printTest(Double("0"), "String double")
+printTest(Double("1"), "String double")
 
-print(Float("0"))
-print(Float("1"))
+printTest(Float("0"), "String float")
+printTest(Float("1"), "String float")
 
-print(UInt64("0"))
-print(UInt64("1"))
+printTest(UInt64("0"), "String uint64")
+printTest(UInt64("1"), "String uint64")
 
-print(Int64("0"))
-print(Int64("1"))
+printTest(Int64("0"), "String int64")
+printTest(Int64("1"), "String int64")
 
-print(Int("0"))
-print(Int("1"))
+printTest(Int("0"), "String int")
+printTest(Int("1"), "String int")
 
-print("abcde".dropLast())
+printTest("abcde".dropLast(), "String dropLast()")
 
-print("abcde".dropLast(2))
+printTest("abcde".dropLast(2), "String dorpLast(int)")
 
-print("abcde".dropFirst())
+printTest("abcde".dropFirst(), "String dropFirst")
 
-print("abcde".dropFirst(2))
+printTest("abcde".dropFirst(2), "String dropFirst(int)")
 
 for index in string.indices {
-	print(string[index])
+	printTest(string[index], "String indices")
 }
 
-print("abcde".prefix(4))
+printTest("abcde".prefix(4), "String prefix")
 
-print("abcde".prefix(upTo: cIndex))
+printTest("abcde".prefix(upTo: cIndex), "String prefix(upTo:)")
 
-print("abcde"[cIndex...])
+printTest("abcde"[cIndex...], "String index...")
 
-print("abcde"[..<cIndex])
+printTest("abcde"[..<cIndex], "String ..<index")
 
-print("abcde"[...cIndex])
+printTest("abcde"[...cIndex], "String ...index")
 
-print("abcde"[bIndex..<dIndex])
+printTest("abcde"[bIndex..<dIndex], "String index..<index")
 
-print("abcde"[bIndex...dIndex])
+printTest("abcde"[bIndex...dIndex], "String index...index")
 
-print(String(substring))
+printTest(String(substring), "String String(substring)")
 
-print(string.prefix(upTo: string.endIndex))
+printTest(string.prefix(upTo: string.endIndex), "String endIndex")
 
-print(string[string.startIndex])
+printTest(string[string.startIndex], "String startIndex")
 
 string.formIndex(before: &variableIndex)
-print(string[variableIndex])
+printTest(string[variableIndex], "String formIndex(brefore:)")
 
-print(string[string.index(after: cIndex)])
+printTest(string[string.index(after: cIndex)], "String index after")
 
-print(string[string.index(before: cIndex)])
+printTest(string[string.index(before: cIndex)], "String index before")
 
-print(string[string.index(cIndex, offsetBy: 2)])
+printTest(string[string.index(cIndex, offsetBy: 2)], "String index offset by")
 
-print(substring[substring.index(bIndex, offsetBy: 1)])
+printTest(substring[substring.index(bIndex, offsetBy: 1)], "String substring index offset by")
 
-print("aaBaBAa".replacingOccurrences(of: "a", with: "A"))
+printTest("aaBaBAa".replacingOccurrences(of: "a", with: "A"), "String replacing occurrences")
 
-print(string.prefix(while: { $0 != "c" }))
+printTest(string.prefix(while: { $0 != "c" }), "String prefix while")
 
-print(string.hasPrefix("abc"))
-print(string.hasPrefix("d"))
+printTest(string.hasPrefix("abc"), "String hasPrefix")
+printTest(string.hasPrefix("d"), "String hasPrefix")
 
-print(string.hasSuffix("cde"))
-print(string.hasSuffix("a"))
+printTest(string.hasSuffix("cde"), "String hasSuffix")
+printTest(string.hasSuffix("a"), "String hasSuffix")
 
-print(range.lowerBound == string.startIndex)
-print(range.lowerBound == string.endIndex)
+printTest(range.lowerBound == string.startIndex, "String range lowerBound")
+printTest(range.lowerBound == string.endIndex, "String range lowerBound")
 
-print(range.upperBound == string.startIndex)
-print(range.upperBound == string.endIndex)
+printTest(range.upperBound == string.startIndex, "String range upperBound")
+printTest(range.upperBound == string.endIndex, "String range upperBound")
 
 let newRange =
 	Range<String.Index>(uncheckedBounds:
 		(lower: string.startIndex,
 		 upper: string.endIndex))
-print(newRange.lowerBound == string.startIndex)
-print(newRange.lowerBound == string.endIndex)
-print(newRange.upperBound == string.startIndex)
-print(newRange.upperBound == string.endIndex)
+printTest(newRange.lowerBound == string.startIndex, "String range uncheckedBounds")
+printTest(newRange.lowerBound == string.endIndex, "String range uncheckedBounds")
+printTest(newRange.upperBound == string.startIndex, "String range uncheckedBounds")
+printTest(newRange.upperBound == string.endIndex, "String range uncheckedBounds")
 
 variableString.append("fgh")
-print(variableString)
+printTest(variableString, "String append")
 
 variableString.append(character)
-print(variableString)
+printTest(variableString, "String append character")
 
-print(string.capitalized)
+printTest(string.capitalized, "String capitalized")
 
-print(string.uppercased())
+printTest(string.uppercased(), "String uppercased")
 
 // Array
 var array = [1, 2, 3]

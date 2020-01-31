@@ -1,68 +1,67 @@
-0
-00
-3.0
-0
-bla
-true
-false
-0
-1
-a
-null
-c
-null
-0.0
-1.0
-0.0
-1.0
-0
-1
-0
-1
-0
-1
-abcd
-abc
-bcde
-cde
-a
-b
-c
-d
-e
-abcd
-ab
-cde
-ab
-abc
-bc
-bcd
-abcd
-abcde
-a
-b
-d
-b
-e
-c
-AABABAA
-ab
-true
-false
-true
-false
-true
-false
-false
-true
-true
-false
-false
-true
-abcdefgh
-abcdefghi
-Abcde
-ABCDE
+0                   (Print)
+3.0                 (Sqrt)
+0                   (String(_anyType))
+bla                 (String description)
+true                (String isEmpty)
+false               (String isEmpty)
+0                   (String count)
+1                   (String count)
+a                   (String first)
+null                (String first)
+c                   (String last)
+null                (String last)
+0.0                 (String double)
+1.0                 (String double)
+0.0                 (String float)
+1.0                 (String float)
+0                   (String uint64)
+1                   (String uint64)
+0                   (String int64)
+1                   (String int64)
+0                   (String int)
+1                   (String int)
+abcd                (String dropLast())
+abc                 (String dorpLast(int))
+bcde                (String dropFirst)
+cde                 (String dropFirst(int))
+a                   (String indices)
+b                   (String indices)
+c                   (String indices)
+d                   (String indices)
+e                   (String indices)
+abcd                (String prefix)
+ab                  (String prefix(upTo:))
+cde                 (String index...)
+ab                  (String ..<index)
+abc                 (String ...index)
+bc                  (String index..<index)
+bcd                 (String index...index)
+abcd                (String String(substring))
+abcde               (String endIndex)
+a                   (String startIndex)
+b                   (String formIndex(brefore:))
+d                   (String index after)
+b                   (String index before)
+e                   (String index offset by)
+c                   (String substring index offset by)
+AABABAA             (String replacing occurrences)
+ab                  (String prefix while)
+true                (String hasPrefix)
+false               (String hasPrefix)
+true                (String hasSuffix)
+false               (String hasSuffix)
+true                (String range lowerBound)
+false               (String range lowerBound)
+false               (String range upperBound)
+true                (String range upperBound)
+true                (String range uncheckedBounds)
+false               (String range uncheckedBounds)
+false               (String range uncheckedBounds)
+true                (String range uncheckedBounds)
+abcdefgh            (String append)
+abcdefghi           (String append character)
+Abcde               (String capitalized)
+ABCDE               (String uppercased)
 [1, 2, 3]
 [1, 2, 3, 4]
 true

@@ -13,6 +13,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+typealias PrintContents = Any?
+
+internal fun printTest(contents: PrintContents, testName: String) {
+	val contentsString: String = "${contents}"
+
+	print(contentsString)
+
+	for (_0 in contentsString.length until 20) {
+		print(" ")
+	}
+
+	println("(${testName})")
+}
+
 fun f(a: Int) {
 	println(a)
 }
@@ -28,78 +42,84 @@ fun main(args: Array<String>) {
 	var variableString: String = "abcde"
 	val character: Char = 'i'
 
-	println(0)
 	print(0)
-	println(0)
-	println(Math.sqrt(9.0))
-	println(0.toString())
-	println("bla".toString())
-	println("".isEmpty())
-	println("a".isEmpty())
-	println("".length)
-	println("a".length)
-	println("abc".firstOrNull()!!)
-	println("".firstOrNull())
-	println("abc".lastOrNull()!!)
-	println("".lastOrNull())
-	println("0".toDouble())
-	println("1".toDouble())
-	println("0".toFloat())
-	println("1".toFloat())
-	println("0".toULong())
-	println("1".toULong())
-	println("0".toLong())
-	println("1".toLong())
-	println("0".toIntOrNull())
-	println("1".toIntOrNull())
-	println("abcde".dropLast(1))
-	println("abcde".dropLast(2))
-	println("abcde".drop(1))
-	println("abcde".drop(2))
+	println("                   (Print)")
+
+	printTest(Math.sqrt(9.0), "Sqrt")
+	printTest(0.toString(), "String(_anyType)")
+	printTest("bla".toString(), "String description")
+	printTest("".isEmpty(), "String isEmpty")
+	printTest("a".isEmpty(), "String isEmpty")
+	printTest("".length, "String count")
+	printTest("a".length, "String count")
+	printTest("abc".firstOrNull()!!, "String first")
+	printTest("".firstOrNull(), "String first")
+	printTest("abc".lastOrNull()!!, "String last")
+	printTest("".lastOrNull(), "String last")
+	printTest("0".toDouble(), "String double")
+	printTest("1".toDouble(), "String double")
+	printTest("0".toFloat(), "String float")
+	printTest("1".toFloat(), "String float")
+	printTest("0".toULong(), "String uint64")
+	printTest("1".toULong(), "String uint64")
+	printTest("0".toLong(), "String int64")
+	printTest("1".toLong(), "String int64")
+	printTest("0".toIntOrNull(), "String int")
+	printTest("1".toIntOrNull(), "String int")
+	printTest("abcde".dropLast(1), "String dropLast()")
+	printTest("abcde".dropLast(2), "String dorpLast(int)")
+	printTest("abcde".drop(1), "String dropFirst")
+	printTest("abcde".drop(2), "String dropFirst(int)")
 
 	for (index in string.indices) {
-		println(string[index])
+		printTest(string[index], "String indices")
 	}
 
-	println("abcde".substring(0, 4))
-	println("abcde".substring(0, cIndex))
-	println("abcde".substring(cIndex))
-	println("abcde".substring(0, cIndex))
-	println("abcde".substring(0, cIndex + 1))
-	println("abcde".substring(bIndex, dIndex))
-	println("abcde".substring(bIndex, dIndex + 1))
-	println(substring)
-	println(string.substring(0, string.length))
-	println(string[0])
+	printTest("abcde".substring(0, 4), "String prefix")
+	printTest("abcde".substring(0, cIndex), "String prefix(upTo:)")
+	printTest("abcde".substring(cIndex), "String index...")
+	printTest("abcde".substring(0, cIndex), "String ..<index")
+	printTest("abcde".substring(0, cIndex + 1), "String ...index")
+	printTest("abcde".substring(bIndex, dIndex), "String index..<index")
+	printTest("abcde".substring(bIndex, dIndex + 1), "String index...index")
+	printTest(substring, "String String(substring)")
+	printTest(string.substring(0, string.length), "String endIndex")
+	printTest(string[0], "String startIndex")
+
 	variableIndex -= 1
-	println(string[variableIndex])
-	println(string[cIndex + 1])
-	println(string[cIndex - 1])
-	println(string[cIndex + 2])
-	println(substring[bIndex + 1])
-	println("aaBaBAa".replace("a", "A"))
-	println(string.takeWhile { it != 'c' })
-	println(string.startsWith("abc"))
-	println(string.startsWith("d"))
-	println(string.endsWith("cde"))
-	println(string.endsWith("a"))
-	println(range.start == 0)
-	println(range.start == string.length)
-	println(range.endInclusive == 0)
-	println(range.endInclusive == string.length)
+
+	printTest(string[variableIndex], "String formIndex(brefore:)")
+	printTest(string[cIndex + 1], "String index after")
+	printTest(string[cIndex - 1], "String index before")
+	printTest(string[cIndex + 2], "String index offset by")
+	printTest(substring[bIndex + 1], "String substring index offset by")
+	printTest("aaBaBAa".replace("a", "A"), "String replacing occurrences")
+	printTest(string.takeWhile { it != 'c' }, "String prefix while")
+	printTest(string.startsWith("abc"), "String hasPrefix")
+	printTest(string.startsWith("d"), "String hasPrefix")
+	printTest(string.endsWith("cde"), "String hasSuffix")
+	printTest(string.endsWith("a"), "String hasSuffix")
+	printTest(range.start == 0, "String range lowerBound")
+	printTest(range.start == string.length, "String range lowerBound")
+	printTest(range.endInclusive == 0, "String range upperBound")
+	printTest(range.endInclusive == string.length, "String range upperBound")
 
 	val newRange: IntRange = IntRange(0, string.length)
 
-	println(newRange.start == 0)
-	println(newRange.start == string.length)
-	println(newRange.endInclusive == 0)
-	println(newRange.endInclusive == string.length)
+	printTest(newRange.start == 0, "String range uncheckedBounds")
+	printTest(newRange.start == string.length, "String range uncheckedBounds")
+	printTest(newRange.endInclusive == 0, "String range uncheckedBounds")
+	printTest(newRange.endInclusive == string.length, "String range uncheckedBounds")
+
 	variableString += "fgh"
-	println(variableString)
+
+	printTest(variableString, "String append")
+
 	variableString += character
-	println(variableString)
-	println(string.capitalize())
-	println(string.toUpperCase())
+
+	printTest(variableString, "String append character")
+	printTest(string.capitalize(), "String capitalized")
+	printTest(string.toUpperCase(), "String uppercased")
 
 	var array: MutableList<Int> = mutableListOf(1, 2, 3)
 
