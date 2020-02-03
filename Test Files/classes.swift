@@ -58,3 +58,76 @@ class A {
 
 	let b = B()
 }
+
+// Test static methods
+class C {
+	var x = 0
+
+	static func a() -> C {
+		return C()
+	}
+
+	func b() -> C {
+		return C()
+	}
+
+	static func c() -> C? {
+		return C()
+	}
+
+	static func d() -> C? {
+		return nil
+	}
+
+	func e() -> Int {
+		print("Hello, world!")
+		return 1
+	}
+
+	static func f() -> Int {
+		return 1
+	}
+}
+
+struct D {
+	let x: Int
+
+	init(x: Int) { // kotlin: ignore
+		self.x = x
+	}
+
+	init?(string: String?) {
+		guard let string = string else {
+			return nil
+		}
+
+		switch string {
+		case "A": self = D(x: 0)
+		case "B": self = D(x: 0)
+		case "C": self = D(x: 0)
+		case "D": self = D(x: 0)
+		case "E": self = D(x: 0)
+		default: return nil
+		}
+	}
+}
+
+print(C.a().x)
+print(C().b().x)
+
+var a = C.c()
+if let ac = a {
+	print(ac.x)
+}
+
+a = C.d()
+if let ad = a {
+	print(ad.x)
+}
+
+print(C().e())
+print(C.f())
+
+print(D(x: 10))
+print(D(string: "not supported"))
+print(D(string: "A")!)

@@ -13,6 +13,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+internal fun definition1() {
+}
+
+internal fun definition2() {
+	var x: Int = 0
+}
+
+internal fun definition3(x: Int, y: Int) {
+}
+
+internal fun definition4(): Int {
+	return 0
+}
+
 internal fun foo() {
 }
 

@@ -40,6 +40,55 @@ open class A {
 	val b: B = B()
 }
 
+open class C {
+	companion object {
+		internal fun a(): C {
+			return C()
+		}
+
+		internal fun c(): C? {
+			return C()
+		}
+
+		internal fun d(): C? {
+			return null
+		}
+
+		internal fun f(): Int {
+			return 1
+		}
+	}
+
+	var x: Int = 0
+
+	internal fun b(): C {
+		return C()
+	}
+
+	internal fun e(): Int {
+		println("Hello, world!")
+		return 1
+	}
+}
+
+data class D(
+	val x: Int
+) {
+	companion object {
+		operator fun invoke(string: String?): D? {
+			string ?: return null
+			return when (string) {
+				"A" -> D(x = 0)
+				"B" -> D(x = 0)
+				"C" -> D(x = 0)
+				"D" -> D(x = 0)
+				"E" -> D(x = 0)
+				else -> null
+			}
+		}
+	}
+}
+
 fun main(args: Array<String>) {
 	val box1: Box = Box()
 
@@ -51,4 +100,27 @@ fun main(args: Array<String>) {
 	box1.b = "whatever"
 
 	println(box1.c)
+	println(C.a().x)
+	println(C().b().x)
+
+	var a: C? = C.c()
+	val ac: C? = a
+
+	if (ac != null) {
+		println(ac.x)
+	}
+
+	a = C.d()
+
+	val ad: C? = a
+
+	if (ad != null) {
+		println(ad.x)
+	}
+
+	println(C().e())
+	println(C.f())
+	println(D(x = 10))
+	println(D(string = "not supported"))
+	println(D(string = "A")!!)
 }

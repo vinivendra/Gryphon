@@ -19,7 +19,30 @@
 // gryphon output: Test Files/Bootstrap Outputs/functionCalls.gryphonAST
 // gryphon output: Test Files/Bootstrap Outputs/functionCalls.kt
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Function definitions
+
+// Empty function
+func definition1() {
+}
+
+// With a body
+func definition2() {
+	var x: Int = 0
+}
+
+// With parameters
+func definition3(x: Int, y: Int) {
+}
+
+// With a return type
+func definition4() -> Int {
+	return 0
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 // Function calls without return types
+
 func foo() { }
 func foo1(bar: Int) { }
 func foo2(_ bar: Int) { }
@@ -36,8 +59,7 @@ foo4(0, baz: 0)
 // foo5(bar: 0, 0) // Results in Kotlin error: mixing named and positioned arguments is not allowed
 foo6(0, 0)
 
-
-
+////////////////////////////////////////////////////////////////////////////////////////////////////
 // Function calls with return types
 func bla() -> Int { return 0 }
 func bla1(bar: Int) -> Int { return 1 }
@@ -55,6 +77,7 @@ print("\(bla4(0, baz: 0))")
 // print("\(bla5(bar: 0, 0))") // Results in Kotlin error: mixing named and positioned arguments is not allowed
 print("\(bla6(0, 0))")
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 // Function calls with parameters with default values
 func bar1(a: Int = 1) { }
 func bar2(a: Int = 1, b: Int = 2) { }
@@ -75,6 +98,7 @@ bar3(a: 0, b: 0)
 bar4(a: 0)
 bar4(a: 0, b: 0)
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 // Tuple Shuffles
 func f(a: Int = 0, b: Int = 0, c: Int = 0) {
 	print("\(a) \(b) \(c)")
@@ -107,6 +131,7 @@ func variadics(a: Int, b: Int..., c: Int = 0) { // kotlin: ignore
 variadics(a: 1, b: 1, 2, 3, c: 1)
 variadics(a: 1, b: 1, 2, 3)
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 // Function calls with many parameters
 class AClassWithABigName { }
 
