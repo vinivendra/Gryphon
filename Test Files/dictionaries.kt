@@ -15,8 +15,8 @@
 //
 
 fun main(args: Array<String>) {
-	val dictionaryA: MutableMap<String, Int> = mutableMapOf("a" to 1, "b" to 2, "c" to 3)
-	val dictionaryB: MutableMap<Int, Int> = mutableMapOf()
+	val dictionaryA: Map<String, Int> = mapOf("a" to 1, "b" to 2, "c" to 3)
+	val dictionaryB: Map<Int, Int> = mapOf()
 
 	println(dictionaryA["a"])
 	println(dictionaryA["b"])

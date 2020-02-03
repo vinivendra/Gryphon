@@ -110,7 +110,7 @@ fun main(args: Array<String>) {
 		println("if 5")
 	}
 
-	for (i in mutableListOf(1)) {
+	for (i in listOf(1)) {
 		println("for 1")
 
 		println("for 2")

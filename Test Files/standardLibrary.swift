@@ -168,13 +168,16 @@ printTest(string.uppercased(), "String uppercased")
 printTest(character.uppercased(), "Character uppercased")
 
 // Array
-var array = [1, 2, 3]
+var array = [1, 2, 3] // kotlin: ignore
 let array2 = [2, 1]
-var array3 = [1]
-var array4 = [2, 1]
-var arrayOfOptionals: [Int?] = [1]
+var array3 = [1] // kotlin: ignore
+let array4 = [2, 1]
+var arrayOfOptionals: [Int?] = [1] // kotlin: ignore
 let emptyArray: [Int] = []
 let stringArray = ["1", "2", "3"]
+// insert: val array: MutableList<Int> = mutableListOf(1, 2, 3)
+// insert: val array3: MutableList<Int> = mutableListOf(1, 2, 3)
+// insert: val arrayOfOptionals: MutableList<Int?> = mutableListOf(1, 2, 3)
 
 printTest(array, "Array append")
 array.append(4)

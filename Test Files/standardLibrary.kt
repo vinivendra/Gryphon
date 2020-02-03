@@ -125,13 +125,14 @@ fun main(args: Array<String>) {
 	printTest(string.toUpperCase(), "String uppercased")
 	printTest(character.toUpperCase(), "Character uppercased")
 
-	var array: MutableList<Int> = mutableListOf(1, 2, 3)
-	val array2: MutableList<Int> = mutableListOf(2, 1)
-	var array3: MutableList<Int> = mutableListOf(1)
-	var array4: MutableList<Int> = mutableListOf(2, 1)
-	var arrayOfOptionals: MutableList<Int?> = mutableListOf(1)
-	val emptyArray: MutableList<Int> = mutableListOf()
-	val stringArray: MutableList<String> = mutableListOf("1", "2", "3")
+	val array2: List<Int> = listOf(2, 1)
+	val array4: List<Int> = listOf(2, 1)
+	val emptyArray: List<Int> = listOf()
+	val stringArray: List<String> = listOf("1", "2", "3")
+
+	val array: MutableList<Int> = mutableListOf(1, 2, 3)
+	val array3: MutableList<Int> = mutableListOf(1, 2, 3)
+	val arrayOfOptionals: MutableList<Int?> = mutableListOf(1, 2, 3)
 
 	printTest(array, "Array append")
 
@@ -189,7 +190,7 @@ fun main(args: Array<String>) {
 	printTest(array.drop(1), "Array drop first")
 	printTest(array.dropLast(1), "Array drop last")
 	printTest(array.map { it + 1 }.toMutableList(), "Array map")
-	printTest(array.flatMap { mutableListOf(it + 1, it + 2) }.toMutableList(), "Array flat map")
+	printTest(array.flatMap { listOf(it + 1, it + 2) }.toMutableList(), "Array flat map")
 	printTest(
 		array.map { if (it == 10) { it } else { null } }.filterNotNull().toMutableList(),
 		"Array compact map")
