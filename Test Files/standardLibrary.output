@@ -112,6 +112,11 @@ false                                   (Array contains where)
 true                                    (Array contains)
 false                                   (Array contains)
 2                                       (Array firstIndex of)
+2                                       (Dictionary count)
+false                                   (Dictionary isEmpty)
+true                                    (Dictionary isEmpty)
+2                                       (Dictionary map)
+4                                       (Dictionary map)
 2147483647
 -2147483648
 0

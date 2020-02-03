@@ -210,6 +210,18 @@ fun main(args: Array<String>) {
 	printTest(array.contains(10000), "Array contains")
 	printTest(array.indexOf(10), "Array firstIndex of")
 
+	val dictionary: Map<Int, Int> = mapOf(1 to 1, 2 to 2)
+	val emptyDictionary: Map<Int, Int> = mapOf()
+
+	printTest(dictionary.size, "Dictionary count")
+	printTest(dictionary.isEmpty(), "Dictionary isEmpty")
+	printTest(emptyDictionary.isEmpty(), "Dictionary isEmpty")
+
+	val mappedDictionary: List<Int> = dictionary.map { it.value + it.key }
+
+	printTest(mappedDictionary[0], "Dictionary map")
+	printTest(mappedDictionary[1], "Dictionary map")
+
 	println(Int.MAX_VALUE)
 	println(Int.MIN_VALUE)
 	println(Math.min(0, 1))

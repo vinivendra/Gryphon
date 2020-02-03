@@ -264,6 +264,19 @@ printTest(array.contains(10000), "Array contains")
 
 printTest(array.firstIndex(of: 10), "Array firstIndex of")
 
+// Dictionaries
+let dictionary = [1: 1, 2: 2]
+let emptyDictionary: [Int: Int] = [:]
+
+printTest(dictionary.count, "Dictionary count")
+
+printTest(dictionary.isEmpty, "Dictionary isEmpty")
+printTest(emptyDictionary.isEmpty, "Dictionary isEmpty")
+
+let mappedDictionary = dictionary.map { $0.value + $0.key }
+printTest(mappedDictionary[0], "Dictionary map")
+printTest(mappedDictionary[1], "Dictionary map")
+
 // Int
 print(Int.max)
 
