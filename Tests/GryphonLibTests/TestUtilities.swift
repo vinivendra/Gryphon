@@ -69,7 +69,6 @@ class TestUtilities {
 	static let testCasesForAcceptanceTest: List<String> = [
 		"arrays",
 		"assignments",
-		"bhaskara",
 		"classes",
 		"closures",
 		"dictionaries",
