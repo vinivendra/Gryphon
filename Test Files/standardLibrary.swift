@@ -278,31 +278,32 @@ printTest(mappedDictionary[0], "Dictionary map")
 printTest(mappedDictionary[1], "Dictionary map")
 
 // Int
-print(Int.max)
+printTest(Int.max, "Int max")
 
-print(Int.min)
+printTest(Int.min, "Int min")
 
-print(min(0, 1))
-print(min(15, -30))
+printTest(min(0, 1), "Int min(a, b)")
+printTest(min(15, -30), "Int min(a, b)")
 
-print(0...3)
-print(-1..<3)
+printTest(0...3, "Int ...")
+
+printTest(-1..<3, "Int ..<")
 
 // Double
-print(1.0...3.0)
+printTest(1.0...3.0, "Double ...")
 
 //
 // Recursive matches
-print(Int.min..<0)
+printTest(Int.min..<0, "Recursive matches")
 
 //
 // User-defined templates
 func f(of a: Int) { // kotlin: ignore
-	print(a)
+	printTest(a, "User template")
 }
 
-// declaration: fun f(a: Int) {
-// declaration: 	println(a)
+// declaration: fun g(a: Int) {
+// declaration: 	printTest(a, "User template")
 // declaration: }
 
 f(of: 10)
@@ -311,5 +312,5 @@ func gryphonTemplates() {
 	var _int = 0
 
 	f(of: _int)
-	"f(a = _int)"
+	"g(a = _int)"
 }

@@ -117,12 +117,12 @@ false                                   (Dictionary isEmpty)
 true                                    (Dictionary isEmpty)
 2                                       (Dictionary map)
 4                                       (Dictionary map)
-2147483647
--2147483648
-0
--30
-0..3
--1..2
-1.0..3.0
--2147483648..-1
-10
+2147483647                              (Int max)
+-2147483648                             (Int min)
+0                                       (Int min(a, b))
+-30                                     (Int min(a, b))
+0..3                                    (Int ...)
+-1..2                                   (Int ..<)
+1.0..3.0                                (Double ...)
+-2147483648..-1                         (Recursive matches)
+10                                      (User template)

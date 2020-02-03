@@ -30,8 +30,8 @@ internal fun printTest(contents: PrintContents, testName: String) {
 	println("(${testName})")
 }
 
-fun f(a: Int) {
-	println(a)
+fun g(a: Int) {
+	printTest(a, "User template")
 }
 
 fun main(args: Array<String>) {
@@ -221,14 +221,14 @@ fun main(args: Array<String>) {
 
 	printTest(mappedDictionary[0], "Dictionary map")
 	printTest(mappedDictionary[1], "Dictionary map")
+	printTest(Int.MAX_VALUE, "Int max")
+	printTest(Int.MIN_VALUE, "Int min")
+	printTest(Math.min(0, 1), "Int min(a, b)")
+	printTest(Math.min(15, -30), "Int min(a, b)")
+	printTest(0..3, "Int ...")
+	printTest(-1 until 3, "Int ..<")
+	printTest((1.0).rangeTo(3.0), "Double ...")
+	printTest(Int.MIN_VALUE until 0, "Recursive matches")
 
-	println(Int.MAX_VALUE)
-	println(Int.MIN_VALUE)
-	println(Math.min(0, 1))
-	println(Math.min(15, -30))
-	println(0..3)
-	println(-1 until 3)
-	println((1.0).rangeTo(3.0))
-	println(Int.MIN_VALUE until 0)
-	f(a = 10)
+	g(a = 10)
 }
