@@ -273,9 +273,9 @@ class ListTest: XCTestCase {
 
 	func testIndexOfElement() {
 		let list: List = [1, 2, 10]
-		XCTAssertEqual(list.index(of: 1), 0)
-		XCTAssertEqual(list.index(of: 2), 1)
-		XCTAssertEqual(list.index(of: 10), 2)
+		XCTAssertEqual(list.firstIndex(of: 1), 0)
+		XCTAssertEqual(list.firstIndex(of: 2), 1)
+		XCTAssertEqual(list.firstIndex(of: 10), 2)
 	}
 
 	func testHash() { // kotlin: ignore
