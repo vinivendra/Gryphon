@@ -429,7 +429,7 @@ func gryphonTemplates() {
 	_ = "_dictionary.isEmpty()"
 
 	_ = _dictionary.map(_closure2)
-	_ = "_dictionary.map _closure2.toMutableList()"
+	_ = "_dictionary.map _closure2"
 
 	// TODO: Translate mapValues (Kotlin's takes (Key, Value) as an argument)
 
