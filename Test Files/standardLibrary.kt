@@ -35,6 +35,23 @@ fun g(a: Int) {
 }
 
 fun main(args: Array<String>) {
+	println("Hello, world!")
+	println(42)
+
+	val message: String = "A message in a variable."
+
+	println(message)
+
+	val number: Int = 13
+
+	println(number)
+	println("Here's a bool literal: ${true}.\nAnd here's a number: ${17}.")
+	println("The stored message is: ${message}\nAnd the stored number is: ${number}.")
+	print(0)
+	println(" (Print)")
+
+	printTest(Math.sqrt(9.0), "Sqrt")
+
 	val string: String = "abcde"
 	val bIndex: Int = 1
 	val cIndex: Int = 2
@@ -45,10 +62,6 @@ fun main(args: Array<String>) {
 	var variableString: String = "abcde"
 	val character: Char = 'i'
 
-	print(0)
-	println("                                       (Print)")
-
-	printTest(Math.sqrt(9.0), "Sqrt")
 	printTest(0.toString(), "String(_anyType)")
 	printTest("bla".toString(), "String description")
 	printTest("".isEmpty(), "String isEmpty")

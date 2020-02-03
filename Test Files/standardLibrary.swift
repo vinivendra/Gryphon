@@ -37,6 +37,26 @@ func printTest(_ contents: PrintContents, _ testName: String) {
 	print("(\(testName))")
 }
 
+// Print
+print("Hello, world!")
+print(42)
+
+let message = "A message in a variable."
+print(message)
+
+let number = 13
+print(number)
+
+print("Here's a bool literal: \(true).\nAnd here's a number: \(17).")
+print("The stored message is: \(message)\nAnd the stored number is: \(number).")
+
+print(0, terminator: "")
+print(" (Print)")
+
+// Darwin
+printTest(sqrt(9), "Sqrt")
+
+// String
 let string = "abcde"
 let bIndex = string.index(string.startIndex, offsetBy: 1) // value: 1
 let cIndex = string.index(string.startIndex, offsetBy: 2) // value: 2
@@ -47,14 +67,6 @@ let range = string.startIndex..<string.endIndex // value: IntRange(0, string.len
 var variableString = "abcde"
 let character: Character = "i"
 
-// Print
-print(0, terminator: "")
-print("                                       (Print)")
-
-// Darwin
-printTest(sqrt(9), "Sqrt")
-
-// String
 printTest(String(0), "String(_anyType)")
 
 printTest("bla".description, "String description")

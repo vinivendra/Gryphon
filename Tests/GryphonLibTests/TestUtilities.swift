@@ -82,7 +82,6 @@ class TestUtilities {
 		"misc",
 		"numericLiterals",
 		"operators",
-		"print",
 		"standardLibrary",
 		"structs",
 		"switches",
