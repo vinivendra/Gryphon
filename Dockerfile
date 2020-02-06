@@ -11,10 +11,10 @@ RUN apt-get install curl -y
 RUN apt-get install wget -y
 
 
-# Install Kotlin 1.2.31
+# Install Kotlin 1.3.61
 
 ### From https://hub.docker.com/r/jujhars13/docker-kotlin/~/dockerfile/
-ENV VERSION 1.2.31
+ENV VERSION 1.3.61
 ENV KOTLIN_URL https://github.com/JetBrains/kotlin/releases/download/v${VERSION}/kotlin-compiler-${VERSION}.zip
 RUN wget ${KOTLIN_URL} -O /tmp/kotlin.zip && \
     unzip /tmp/kotlin.zip -d /opt && \
@@ -24,14 +24,14 @@ ENV PATH $PATH:/opt/kotlinc/bin
 
 # Install Java 8
 
-### From https://stackoverflow.com/questions/48301257/how-to-install-oracle-java8-installer-on-docker-debianjessie
-RUN echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main" > /etc/apt/sources.list.d/webupd8team-java.list
-RUN echo "deb-src http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main" >> /etc/apt/sources.list.d/webupd8team-java.list
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EEA14886
-RUN echo "debconf shared/accepted-oracle-license-v1-1 select true" | /usr/bin/debconf-set-selections
+### From https://stackoverflow.com/questions/36587850/best-way-to-install-java-8-using-docker
+RUN apt-get install -y --no-install-recommends software-properties-common
+RUN add-apt-repository -y ppa:openjdk-r/ppa
 RUN apt-get update
-RUN apt-get install -y --force-yes vim
-RUN apt-get install -y --force-yes oracle-java8-installer
+RUN apt-get install -y openjdk-8-jdk
+RUN apt-get install -y openjdk-8-jre
+RUN update-alternatives --config java
+RUN update-alternatives --config javac
 
 
 # Set the working directory
