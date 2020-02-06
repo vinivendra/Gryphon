@@ -32,21 +32,30 @@ class TestUtilities {
 	static let testFilesPath: String = Utilities.getCurrentFolder() + "/Test Files/"
 
 	static func diff(_ string1: String, _ string2: String) -> String {
-		return withTemporaryFile(fileName: "file1.txt", contents: string1) { file1Path in
+		let diffResult = withTemporaryFile(fileName: "file1.txt", contents: string1) { file1Path in
 			withTemporaryFile(fileName: "file2.txt", contents: string2) { file2Path in
 				TestUtilities.diffFiles(file1Path, file2Path)
 			}
 		}
+
+		if let diffResult = diffResult {
+			return diffResult
+		}
+		else {
+			return "Diff timed out. Printing full result.\n" +
+				"\n===\nDiff string 1:\n\n\(string1)===\n" +
+				"\n===\nDiff string 2:\n\n\(string2)===\n"
+		}
 	}
 
-	static func diffFiles(_ file1Path: String, _ file2Path: String) -> String {
+	static func diffFiles(_ file1Path: String, _ file2Path: String) -> String? {
 		let command: MutableList = ["diff", file1Path, file2Path]
 		let commandResult = Shell.runShellCommand(command)
 		if let commandResult = commandResult {
 			return "\n\n===\n\(commandResult.standardOutput)===\n"
 		}
 		else {
-			return " timed out."
+			return nil
 		}
 	}
 
