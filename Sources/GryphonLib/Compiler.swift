@@ -214,9 +214,13 @@ public class Compiler {
 		for (inputFile, kotlinCode) in zipToClass(inputFiles, kotlinCodes) {
 			let inputFileName = inputFile.split(withStringSeparator: "/").last!
 			let kotlinFileName = Utilities.changeExtension(of: inputFileName, to: .kt)
+			Utilities.createFile(
+				named: kotlinFileName,
+				inDirectory: outputFolder,
+				containing: kotlinCode)
+
 			let folderWithSlash = outputFolder.hasSuffix("/") ? outputFolder : (outputFolder + "/")
 			let kotlinFilePath = folderWithSlash + kotlinFileName
-			Utilities.createFile(atPath: kotlinFilePath, containing: kotlinCode)
 			kotlinFilePaths.append(kotlinFilePath)
 		}
 
