@@ -37,8 +37,7 @@ class BootstrappingTest: XCTestCase {
 			print(runOutput.standardError)
 			print("----- Status: \(runOutput.status) -----")
 
-			let testsFailed = runOutput.standardOutput.contains("Error, tests failed!") ||
-				runOutput.standardError.contains("java.lang.Exception")
+			let testsFailed = runOutput.standardOutput.contains("Error, tests failed!")
 			XCTAssertFalse(testsFailed, "Kotlin unit tests failed. Printing stack trace:\n")
 
 			if testsFailed {

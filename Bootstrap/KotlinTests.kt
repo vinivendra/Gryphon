@@ -32,7 +32,7 @@ open class XCTestCase() {
             XCTestCase.passedTests.add(getClassName())
         }
         else {
-            XCTestCase.passedTests.add(getClassName())
+            XCTestCase.failedTests.add(getClassName())
         }
     }    
 
