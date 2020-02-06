@@ -56,32 +56,6 @@ class TranslationResultTest: XCTestCase {
 	]
 
 	// MARK: - Tests
-	func getDeepTranslation() -> GryphonTranslation {
-		let translation = Translation(range: SourceFileRange(
-			lineStart: 1, lineEnd: 5, columnStart: 1, columnEnd: 1))
-		translation.append("fun foo(bla: Int): Int {\n")
-
-		let translation2 = Translation(range: SourceFileRange(
-			lineStart: 2, lineEnd: 2, columnStart: 1, columnEnd: 5))
-		translation2.append("\treturn ")
-		translation2.append("bla\n")
-
-		translation.append(translation2)
-
-		let translation3 = Translation(range: SourceFileRange(
-			lineStart: 3, lineEnd: 3, columnStart: 1, columnEnd: 2))
-		translation3.append("\treturn ")
-
-		let translation4 = Translation(range: SourceFileRange(
-			lineStart: 3, lineEnd: 3, columnStart: 3, columnEnd: 5))
-		translation4.append("bla + 1\n")
-
-		translation3.append(translation4)
-		translation.append(translation3)
-
-		return translation
-	}
-
 	func testShallowTranslation() {
 		let translation = Translation(range: SourceFileRange(
 			lineStart: 1, lineEnd: 1, columnStart: 1, columnEnd: 5))
@@ -221,5 +195,32 @@ class TranslationResultTest: XCTestCase {
 		XCTAssertNotEqual(position.columnNumber, position2.columnNumber)
 		XCTAssertNotEqual(position.lineNumber, position3.lineNumber)
 		XCTAssertNotEqual(position.columnNumber, position3.columnNumber)
+	}
+
+	// MARK: Auxiliary methods
+	func getDeepTranslation() -> GryphonTranslation {
+		let translation = Translation(range: SourceFileRange(
+			lineStart: 1, lineEnd: 5, columnStart: 1, columnEnd: 1))
+		translation.append("fun foo(bla: Int): Int {\n")
+
+		let translation2 = Translation(range: SourceFileRange(
+			lineStart: 2, lineEnd: 2, columnStart: 1, columnEnd: 5))
+		translation2.append("\treturn ")
+		translation2.append("bla\n")
+
+		translation.append(translation2)
+
+		let translation3 = Translation(range: SourceFileRange(
+			lineStart: 3, lineEnd: 3, columnStart: 1, columnEnd: 2))
+		translation3.append("\treturn ")
+
+		let translation4 = Translation(range: SourceFileRange(
+			lineStart: 3, lineEnd: 3, columnStart: 3, columnEnd: 5))
+		translation4.append("bla + 1\n")
+
+		translation3.append(translation4)
+		translation.append(translation3)
+
+		return translation
 	}
 }

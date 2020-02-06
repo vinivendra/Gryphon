@@ -33,9 +33,9 @@ public func allTests() -> [XCTestCaseEntry] {
 		testCase(TranslationResultTest.allTests),
 		testCase(UtilitiesTest.allTests),
 		testCase(ListTest.allTests),
-		testCase(FixedDictionaryTest.allTests),
 		testCase(MutableListTest.allTests),
-		testCase(MutableDictionaryTest.allTests),
+		testCase(MapTest.allTests),
+		testCase(MutableMapTest.allTests),
 
 		// Initialization tests reset the stdlib templates file, so they need to be at the end.
 		testCase(InitializationTest.allTests),

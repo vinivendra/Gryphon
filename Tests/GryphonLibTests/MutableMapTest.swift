@@ -37,7 +37,7 @@ class MutableMapTest: XCTestCase {
 		testPassingByReference()
 		testCasting()
 		testCopy()
-		testToFixedDictionary()
+		testToMap()
 		testSubscript()
 		testDescription()
 		// testDebugDescription()
@@ -57,7 +57,7 @@ class MutableMapTest: XCTestCase {
 		("testPassingByReference", testPassingByReference),
 		("testCasting", testCasting),
 		("testCopy", testCopy),
-		("testToFixedDictionary", testToFixedDictionary),
+		("testToMap", testToMap),
 		("testSubscript", testSubscript),
 		("testDescription", testDescription),
 		("testDebugDescription", testDebugDescription),
@@ -125,7 +125,7 @@ class MutableMapTest: XCTestCase {
 		XCTAssertNotEqual(dictionary1, dictionary2)
 	}
 
-	func testToFixedDictionary() {
+	func testToMap() {
 		let dictionary1: MutableMap = [1: 10, 2: 20]
 		let dictionary2: MutableMap = [1: 10, 2: 20, 3: 30]
 		let fixedDictionary: Map = dictionary1.toMap()
