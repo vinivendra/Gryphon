@@ -34,6 +34,7 @@ fun main(args: Array<String>) {
         TranslationResultTest().run()
         UtilitiesTest().run()
 
+        // AcceptanceTest().run()
         // InitializationTest().run()
 
         for (passedTest in XCTestCase.passedTests) {

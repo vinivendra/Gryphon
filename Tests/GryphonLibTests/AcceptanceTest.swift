@@ -14,10 +14,44 @@
 // limitations under the License.
 //
 
+// gryphon output: Bootstrap/AcceptanceTest.kt
+
+#if !IS_DUMPING_ASTS
 @testable import GryphonLib
 import XCTest
+#endif
+
+// declaration: import kotlin.system.exitProcess
 
 class AcceptanceTest: XCTestCase {
+	// declaration: constructor(): super() { }
+
+	public func getClassName() -> String { // annotation: override
+		return "AcceptanceTest"
+	}
+
+	override static func setUp() {
+		do {
+			try Utilities.updateTestFiles()
+		}
+		catch let error {
+			print(error)
+			fatalError("Failed to update test files.")
+		}
+	}
+
+	/// Tests to be run by the translated Kotlin version.
+	public func runAllTests() { // annotation: override
+		AcceptanceTest.setUp()
+		test()
+	}
+
+	/// Tests to be run when using Swift on Linux
+	static var allTests = [ // kotlin: ignore
+		("test", test),
+	]
+
+	// MARK: - Tests
 	func test() {
 		let tests = TestUtilities.testCasesForAcceptanceTest
 
@@ -39,8 +73,7 @@ class AcceptanceTest: XCTestCase {
 				}
 
 				// Load the previously stored kotlin code from file
-				let expectedOutput =
-					try! String(contentsOfFile: testFilePath.withExtension(.output))
+				let expectedOutput = try! Utilities.readFile(testFilePath.withExtension(.output))
 
 				XCTAssert(
 					compilationResult.standardError == "",
@@ -61,23 +94,5 @@ class AcceptanceTest: XCTestCase {
 				XCTFail("🚨 Test failed with error:\n\(error)")
 			}
 		}
-	}
-
-	static var allTests = [
-		("test", test),
-	]
-
-	override static func setUp() {
-		do {
-			try Utilities.updateTestFiles()
-		}
-		catch let error {
-			print(error)
-			fatalError("Failed to update test files.")
-		}
-	}
-
-	override func setUp() {
-		Compiler.clearErrorsAndWarnings()
 	}
 }

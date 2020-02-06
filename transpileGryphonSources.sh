@@ -22,6 +22,7 @@
 	Sources/GryphonLib/TranspilationContext.swift \
 	Sources/GryphonLib/TranspilationPass.swift \
 	\
+	Tests/GryphonLibTests/AcceptanceTest.swift \
 	Tests/GryphonLibTests/ASTDumpDecoderTest.swift \
 	Tests/GryphonLibTests/CompilerTest.swift \
 	Tests/GryphonLibTests/DriverTest.swift \
