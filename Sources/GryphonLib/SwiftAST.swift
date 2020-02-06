@@ -1,5 +1,5 @@
 //
-// Copyright 2018 Vinícius Jorge Vendramini
+// Copyright 2018 Vinicius Jorge Vendramini
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -84,7 +84,7 @@ public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible
 
 	public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
 		let keyValueStrings = keyValueAttributes
-			.map { "\($0.key) → \($0.value)" }.sorted().map { PrintableTree($0) }
+			.map { "\($0.key) -> \($0.value)" }.sorted().map { PrintableTree($0) }
 		let keyValueArray = MutableList<PrintableAsTree?>(keyValueStrings)
 		let standaloneAttributesArray =
 			MutableList<PrintableAsTree?>(standaloneAttributes.map { PrintableTree($0) })

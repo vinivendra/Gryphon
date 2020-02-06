@@ -1,5 +1,5 @@
 //
-// Copyright 2018 Vinícius Jorge Vendramini
+// Copyright 2018 Vinicius Jorge Vendramini
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ class BootstrappingTest: XCTestCase {
 
 			guard let runOutput = try Compiler.runCompiledProgram(
 				inFolder: "Bootstrap",
-				withArguments: ["-test"]) else
+				withArguments: ["-test", "-avoid-unicode"]) else
 			{
 				XCTFail("Error running transpiled transpiler. It's possible a command timed out.")
 				return
@@ -70,6 +70,7 @@ class BootstrappingTest: XCTestCase {
 					["-skipASTDumps",
 					 "-emit-swiftAST",
 					 "-indentation=t",
+					 "-avoid-unicode",
 					 "-q", "-Q",
 					 testFilePath, ])
 				guard let resultArray = driverResult as? MutableList<Any?>,
@@ -121,6 +122,7 @@ class BootstrappingTest: XCTestCase {
 					["-skipASTDumps",
 					 "-emit-rawAST",
 					 "-indentation=t",
+					 "-avoid-unicode",
 					 "-q", "-Q",
 					 testFilePath, ])
 				guard let resultArray = driverResult as? MutableList<Any?>,
@@ -172,6 +174,7 @@ class BootstrappingTest: XCTestCase {
 					["-skipASTDumps",
 					 "-emit-AST",
 					 "-indentation=t",
+					 "-avoid-unicode",
 					 "-q", "-Q",
 					 testFilePath, ])
 				guard let resultArray = driverResult as? MutableList<Any?>,
@@ -223,6 +226,7 @@ class BootstrappingTest: XCTestCase {
 					["-skipASTDumps",
 					 "-emit-kotlin",
 					 "-indentation=t",
+					 "-avoid-unicode",
 					 "-q", "-Q",
 					 testFilePath, ])
 				guard let resultArray = driverResult as? MutableList<Any?>,

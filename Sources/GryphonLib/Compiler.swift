@@ -1,5 +1,5 @@
 //
-// Copyright 2018 Vinícius Jorge Vendramini
+// Copyright 2018 Vinicius Jorge Vendramini
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ public class Compiler {
 
 	//
 	public static var shouldStopAtFirstError = false
+	public static var shouldAvoidUnicodeCharacters = false
 
 	public private(set) static var errors: MutableList<Error> = []
 	public private(set) static var warnings: MutableList<String> = []

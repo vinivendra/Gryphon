@@ -20,7 +20,7 @@ do
         echo "    ↪️ Skipping $file..."
     else
         echo "    ↪️ Updating $file..."
-        if java -jar Bootstrap/kotlin.jar -indentation=t -skipASTDumps \
+        if java -jar Bootstrap/kotlin.jar -indentation=t -avoid-unicode -skipASTDumps \
             -emit-swiftAST -emit-rawAST -emit-AST -emit-kotlin \
             "$file"
         then

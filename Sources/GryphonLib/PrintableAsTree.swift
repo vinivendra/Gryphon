@@ -1,5 +1,5 @@
 //
-// Copyright 2018 Vinícius Jorge Vendramini
+// Copyright 2018 Vinicius Jorge Vendramini
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -88,23 +88,34 @@ public extension PrintableAsTree {
 		horizontalLimit: Int? = nil,
 		printFunction: (String) -> () = { print($0, terminator: "") })
 	{
+		let verticalBar = Compiler.shouldAvoidUnicodeCharacters ? "|" : "│"
+		let verticalRightBar = Compiler.shouldAvoidUnicodeCharacters ? "|" : "├"
+		let cornerBar = Compiler.shouldAvoidUnicodeCharacters ? "|" : "└"
+		let horizontalBar = Compiler.shouldAvoidUnicodeCharacters ? "-" : "─"
+		let ellipsis = Compiler.shouldAvoidUnicodeCharacters ? "..." : "…"
+
 		let horizontalLimit = horizontalLimit ?? Int.max
 
 		// Print the indentation
 		let indentationString = indentation.joined(separator: "")
 
+		// Create the line
 		let rawLine = "\(indentationString) \(treeDescription)"
+
+		// Cut the line the horizontal limit, then add ellipsis if necessary
 		let line: String
 		if rawLine.count > horizontalLimit {
-			line = rawLine.prefix(horizontalLimit - 1) + "…"
+			line = rawLine.prefix(horizontalLimit - ellipsis.count) + ellipsis
 		}
 		else {
 			line = rawLine
 		}
 
+		// Print the line
 		printFunction(line + "\n")
 
-		// Correct the indentation for this level
+		// Check if this is the last sibling, so we know whether to print this level's line while
+		// printing the subtrees
 		if !indentation.isEmpty {
 			// If I'm the last branch, don't print a line in my level anymore.
 			if isLast {
@@ -113,28 +124,27 @@ public extension PrintableAsTree {
 			// If there are more branches after me, keep printing the line
 			// so my siblings can be correctly printed later.
 			else {
-				indentation[indentation.count - 1] = " │ "
+				indentation[indentation.count - 1] = " \(verticalBar) "
 			}
 		}
 
-		let subtrees: MutableList<PrintableAsTree> = []
-		for element in printableSubtrees {
-			if let unwrapped = element {
-				subtrees.append(unwrapped)
-			}
-		}
+		// Filter the subtrees to remove nil's
+		let subtrees = printableSubtrees.compactMap { $0 }
 
+		// Print each non-nil subtree except the last one
 		for subtree in subtrees.dropLast() {
 			let newIndentation = indentation.toMutableList()
-			newIndentation.append(" ├─")
+			newIndentation.append(" \(verticalRightBar)\(horizontalBar)")
 			subtree.prettyPrint(
 				indentation: newIndentation,
 				isLast: false,
 				horizontalLimit: horizontalLimit,
 				printFunction: printFunction)
 		}
+
+		// Print the last subtree
 		let newIndentation = indentation.toMutableList()
-		newIndentation.append(" └─")
+		newIndentation.append(" \(cornerBar)\(horizontalBar)")
 		subtrees.last?.prettyPrint(
 			indentation: newIndentation,
 			isLast: true,

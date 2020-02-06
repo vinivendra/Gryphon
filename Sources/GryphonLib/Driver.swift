@@ -1,5 +1,5 @@
 //
-// Copyright 2018 Vinícius Jorge Vendramini
+// Copyright 2018 Vinicius Jorge Vendramini
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ public class Driver {
 		"-continue-on-error",
 		"-Q",
 		"-q",
+		"-avoid-unicode",
 		"-verbose",
 		"-summarize-errors",
 		"-sync",
@@ -300,6 +301,7 @@ public class Driver {
 		// Parse arguments
 		Compiler.shouldLogProgress(if: arguments.contains("-verbose"))
 		Compiler.shouldStopAtFirstError = !arguments.contains("-continue-on-error")
+		Compiler.shouldAvoidUnicodeCharacters = arguments.contains("-avoid-unicode")
 
 		//
 		let horizontalLimit: Int?
@@ -826,6 +828,8 @@ public class Driver {
 		            Kotlin files. Use "t" for tabs or an integer for the corresponding
 		            number of spaces. Defaults to tabs.
 
+		      ↪️  -avoid-unicode      Avoid using Unicode arrows and emojis in some
+		            places.
 		      ↪️  -verbose            Print more information.
 		      ↪️  -summarize-errors   Print a summary of the transpilation errors and
 		            warnings.
