@@ -45,16 +45,30 @@ public class Shell {
 		let outputPipe = Pipe()
 		let errorPipe = Pipe()
 		let task = Process()
-		task.launchPath = command
+
+		if #available(OSX 10.13, *) {
+			task.executableURL = URL(fileURLWithPath: command)
+		} else {
+			task.launchPath = command
+		}
+
 		task.arguments = arguments.array
 		task.standardOutput = outputPipe
 		task.standardError = errorPipe
 
 		if let currentFolder = currentFolder {
-			task.currentDirectoryPath = currentFolder
+			if #available(OSX 10.13, *) {
+				task.currentDirectoryURL = URL(fileURLWithPath: currentFolder)
+			} else {
+				task.currentDirectoryPath = currentFolder
+			}
 		}
 
-		task.launch()
+		if #available(OSX 10.13, *) {
+			try! task.run()
+		} else {
+			task.launch()
+		}
 
 		let startTime = Date()
 		while task.isRunning,
