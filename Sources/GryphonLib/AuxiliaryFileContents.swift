@@ -53,8 +53,6 @@ class XCTestCase { // kotlin: ignore
 		_ expression: @autoclosure () throws -> T,
 		_ message: String = "") { }
 	public func XCTFail(_ message: String = "") { }
-
-	public func runAllTests() { }
 }
 
 extension XCTestCase {

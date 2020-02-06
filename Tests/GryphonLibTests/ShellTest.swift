@@ -28,11 +28,13 @@ class ShellTest: XCTestCase {
 		return "ShellTest"
 	}
 
-	override public func runAllTests() { // annotation: override
+	/// Tests to be run by the translated Kotlin version.
+	public func runAllTests() { // annotation: override
 		testEcho()
 		testSwiftc()
 	}
 
+	/// Tests to be run when using Swift on Linux
 	static var allTests = [ // kotlin: ignore
 		("testEcho", testEcho),
 		("testSwiftc", testSwiftc),

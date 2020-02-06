@@ -45,7 +45,8 @@ class ExtensionsTest: XCTestCase {
 		return "ExtensionsTest"
 	}
 
-	override public func runAllTests() { // annotation: override
+	/// Tests to be run by the translated Kotlin version.
+	public func runAllTests() { // annotation: override
 		testStringSplit()
 		testOccurrencesOfSubstring()
 		testSplitUsingUnescapedSpaces()
@@ -61,6 +62,7 @@ class ExtensionsTest: XCTestCase {
 		testRemovingDuplicates()
 	}
 
+	/// Tests to be run when using Swift on Linux
 	static var allTests = [ // kotlin: ignore
 		("testStringSplit", testStringSplit),
 		("testOccurrencesOfSubstring", testOccurrencesOfSubstring),

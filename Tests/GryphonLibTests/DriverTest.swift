@@ -28,13 +28,15 @@ class DriverTest: XCTestCase {
 		return "DriverTest"
 	}
 
-	override public func runAllTests() { // annotation: override
+	/// Tests to be run by the translated Kotlin version.
+	public func runAllTests() { // annotation: override
 		testUsageString()
 		testNoMainFile()
 		testContinueOnErrors()
 		testIndentation()
 	}
 
+	/// Tests to be run when using Swift on Linux
 	static var allTests = [ // kotlin: ignore
 		("testUsageString", testUsageString),
 		("testNoMainFile", testNoMainFile),

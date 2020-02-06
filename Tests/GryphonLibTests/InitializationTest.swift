@@ -28,10 +28,12 @@ class InitializationTest: XCTestCase {
 		return "InitializationTest"
 	}
 
-	override public func runAllTests() { // annotation: override
+	/// Tests to be run by the translated Kotlin version.
+	public func runAllTests() { // annotation: override
 		testInitialization()
 	}
 
+	/// Tests to be run when using Swift on Linux
 	static var allTests = [ // kotlin: ignore
 		("testInitialization", testInitialization),
 	]

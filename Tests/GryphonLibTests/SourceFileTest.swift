@@ -28,11 +28,13 @@ class SourceFileTest: XCTestCase {
 		return "SourceFileTest"
 	}
 
-	override public func runAllTests() { // annotation: override
+	/// Tests to be run by the translated Kotlin version.
+	public func runAllTests() { // annotation: override
 		testGetCommentFromLine()
 		testGetKeyedCommentFromLine()
 	}
 
+	/// Tests to be run when using Swift on Linux
 	static var allTests = [ // kotlin: ignore
 		("testGetCommentFromLine", testGetCommentFromLine),
 		("testGetKeyedCommentFromLine", testGetKeyedCommentFromLine),

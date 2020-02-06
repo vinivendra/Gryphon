@@ -92,12 +92,3 @@ class TestUtilities {
 	])
 	static let allTestCases = testCasesForTranspilationPassTest
 }
-
-// MARK: - XCTestCase stubs
-#if !IS_DUMPING_ASTS
-/// This extension is needed so that classes that override this method can call `super`, which is
-/// important for the Kotlin tests.
-extension XCTestCase {
-	public func runAllTests() { }
-}
-#endif

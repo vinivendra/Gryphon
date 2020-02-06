@@ -30,7 +30,8 @@ class MapTest: XCTestCase {
 		return "MapTest"
 	}
 
-	override public func runAllTests() { // annotation: override
+	/// Tests to be run by the translated Kotlin version.
+	public func runAllTests() { // annotation: override
 		testEquatable()
 		testInits()
 		testCasting()
@@ -42,6 +43,7 @@ class MapTest: XCTestCase {
 		testMap()
 	}
 
+	/// Tests to be run when using Swift on Linux
 	static var allTests = [ // kotlin: ignore
 		("testEquatable", testEquatable),
 		("testInits", testInits),

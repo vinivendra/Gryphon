@@ -28,7 +28,8 @@ class LibraryTranspilationTest: XCTestCase {
 		return "LibraryTranspilationTest"
 	}
 
-	override public func runAllTests() { // annotation: override
+	/// Tests to be run by the translated Kotlin version.
+	public func runAllTests() { // annotation: override
 		testSimpleMatches()
 		testMatchDictionary()
 		testImplicitTypeExpression()
@@ -37,6 +38,7 @@ class LibraryTranspilationTest: XCTestCase {
 		testSimplifiedSubtypes()
 	}
 
+	/// Tests to be run when using Swift on Linux
 	static var allTests = [ // kotlin: ignore
 		("testSimpleMatches", testSimpleMatches),
 		("testMatchDictionary", testMatchDictionary),

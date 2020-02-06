@@ -30,7 +30,8 @@ class ListTest: XCTestCase {
 		return "ListTest"
 	}
 
-	override public func runAllTests() { // annotation: override
+	/// Tests to be run by the translated Kotlin version.
+	public func runAllTests() { // annotation: override
 		testEquatable()
 		testInits()
 		testCasting()
@@ -54,6 +55,7 @@ class ListTest: XCTestCase {
 		testZipToClass()
 	}
 
+	/// Tests to be run when using Swift on Linux
 	static var allTests = [ // kotlin: ignore
 		("testEquatable", testEquatable),
 		("testInits", testInits),

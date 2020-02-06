@@ -35,7 +35,8 @@ class TranslationResultTest: XCTestCase {
 		return "TranslationResultTest"
 	}
 
-	override public func runAllTests() { // annotation: override
+	/// Tests to be run by the translated Kotlin version.
+	public func runAllTests() { // annotation: override
 		testShallowTranslation()
 		testDeepTranslation()
 		testDropLast()
@@ -44,6 +45,7 @@ class TranslationResultTest: XCTestCase {
 		testSourceFilePositionCopy()
 	}
 
+	/// Tests to be run when using Swift on Linux
 	static var allTests = [ // kotlin: ignore
 		("testShallowTranslation", testShallowTranslation),
 		("testDeepTranslation", testDeepTranslation),

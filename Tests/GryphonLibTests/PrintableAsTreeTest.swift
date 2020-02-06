@@ -28,12 +28,14 @@ class PrintableAsTreeTest: XCTestCase {
 		return "PrintableAsTreeTest"
 	}
 
-	override public func runAllTests() { // annotation: override
+	/// Tests to be run by the translated Kotlin version.
+	public func runAllTests() { // annotation: override
 		testPrinting()
 		testHorizontalLimit()
 		testInitOrNil()
 	}
 
+	/// Tests to be run when using Swift on Linux
 	static var allTests = [ // kotlin: ignore
 		("testPrinting", testPrinting),
 		("testHorizontalLimit", testHorizontalLimit),
