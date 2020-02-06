@@ -10,6 +10,6 @@ null
 Hello, world!
 1
 1
-D(x: 10)
+D(x=10)
 null
-D(x: 0)
+D(x=0)

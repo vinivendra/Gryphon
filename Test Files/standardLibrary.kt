@@ -144,8 +144,8 @@ fun main(args: Array<String>) {
 	val stringArray: List<String> = listOf("1", "2", "3")
 
 	val array: MutableList<Int> = mutableListOf(1, 2, 3)
-	val array3: MutableList<Int> = mutableListOf(1, 2, 3)
-	val arrayOfOptionals: MutableList<Int?> = mutableListOf(1, 2, 3)
+	val array3: MutableList<Int> = mutableListOf(1)
+	val arrayOfOptionals: MutableList<Int?> = mutableListOf(1)
 
 	printTest(array, "Array append")
 
