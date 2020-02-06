@@ -48,16 +48,12 @@ extension Utilities {
 		let fileManager = FileManager.default
 
 		// Get the latest modification date among the first files
-		var latestDate: Date?
+		var latestDate = Date.distantPast
 		for filePath in filePaths {
 			let fileAttributes = try! fileManager.attributesOfItem(atPath: filePath)
 			let fileModifiedDate = fileAttributes[.modificationDate] as! Date
-			if let latestDateOfModification = latestDate,
-				(latestDateOfModification.timeIntervalSince(fileModifiedDate) < 0)
-			{
-				latestDate = fileModifiedDate
-			}
-			else {
+
+			if !latestDate.isAfter(fileModifiedDate) {
 				latestDate = fileModifiedDate
 			}
 		}
@@ -67,12 +63,18 @@ extension Utilities {
 			let fileAttributes = try! fileManager.attributesOfItem(atPath: filePath)
 			let fileModifiedDate = fileAttributes[.modificationDate] as! Date
 
-			if latestDate!.timeIntervalSince(fileModifiedDate) > 0 {
+			if latestDate.isAfter(fileModifiedDate) {
 				return true
 			}
 		}
 
 		return false
+	}
+}
+
+fileprivate extension Date {
+	func isAfter(_ other: Date) -> Bool {
+		return (self.timeIntervalSince(other) > 0)
 	}
 }
 
