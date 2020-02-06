@@ -40,6 +40,8 @@ class UtilitiesTest: XCTestCase {
 		testSplitTypeList()
 		testIsInEnvelopingParentheses()
 		testGetTypeMapping()
+		testReadFile()
+		testFileExists()
 		testGetCurrentFolder()
 		testGetFiles()
 		testGetAbsolutePath()
@@ -58,6 +60,8 @@ class UtilitiesTest: XCTestCase {
 		("testSplitTypeList", testSplitTypeList),
 		("testIsInEnvelopingParentheses", testIsInEnvelopingParentheses),
 		("testGetTypeMapping", testGetTypeMapping),
+		("testReadFile", testReadFile),
+		("testFileExists", testFileExists),
 		("testGetCurrentFolder", testGetCurrentFolder),
 		("testGetFiles", testGetFiles),
 		("testGetAbsolutePath", testGetAbsolutePath),

@@ -35,8 +35,10 @@ class ListTest: XCTestCase {
 		testEquatable()
 		testInits()
 		testCasting()
+		testToMutableList()
 		testSubscript()
 		testDescription()
+		// testDebugDescription()
 		testCollectionIndices()
 		testIsEmpty()
 		testFirst()
@@ -51,6 +53,7 @@ class ListTest: XCTestCase {
 		testAppendingContentsOf()
 		testIndices()
 		testIndexOfElement()
+		// testHash()
 		testSorted()
 		testZipToClass()
 	}
@@ -60,6 +63,7 @@ class ListTest: XCTestCase {
 		("testEquatable", testEquatable),
 		("testInits", testInits),
 		("testCasting", testCasting),
+		("testToMutableList", testToMutableList),
 		("testSubscript", testSubscript),
 		("testDescription", testDescription),
 		("testDebugDescription", testDebugDescription),

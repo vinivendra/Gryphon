@@ -40,6 +40,7 @@ class MutableListTest: XCTestCase {
 		testToList()
 		testSubscript()
 		testDescription()
+		// testDebugDescription()
 		testCollectionIndices()
 		testIsEmpty()
 		testFirst()
@@ -60,6 +61,7 @@ class MutableListTest: XCTestCase {
 		testReverse()
 		testIndices()
 		testIndexOfElement()
+		// testHash()
 		testSorted()
 		testZipToClass()
 	}

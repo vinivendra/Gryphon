@@ -40,9 +40,14 @@ class MutableMapTest: XCTestCase {
 		testToFixedDictionary()
 		testSubscript()
 		testDescription()
+		// testDebugDescription()
+		// testCollectionIndices()
 		testCount()
 		testIsEmpty()
 		testMap()
+		// testMapValues()
+		// testSortedBy()
+		// testHash()
 	}
 
 	/// Tests to be run when using Swift on Linux
