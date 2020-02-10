@@ -211,7 +211,7 @@ public class Compiler {
 			withContext: context)
 		// Write kotlin files to the output folder
 		let kotlinFilePaths: MutableList<String> = []
-		for (inputFile, kotlinCode) in zipToClass(inputFiles, kotlinCodes) {
+		for (inputFile, kotlinCode) in zip(inputFiles, kotlinCodes) {
 			let inputFileName = inputFile.split(withStringSeparator: "/").last!
 			let kotlinFileName = Utilities.changeExtension(of: inputFileName, to: .kt)
 			Utilities.createFile(

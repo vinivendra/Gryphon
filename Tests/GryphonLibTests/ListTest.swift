@@ -55,7 +55,7 @@ class ListTest: XCTestCase {
 		testIndexOfElement()
 		// testHash()
 		testSorted()
-		testZipToClass()
+		testZip()
 	}
 
 	/// Tests to be run when using Swift on Linux
@@ -83,7 +83,7 @@ class ListTest: XCTestCase {
 		("testIndexOfElement", testIndexOfElement),
 		("testHash", testHash),
 		("testSorted", testSorted),
-		("testZipToClass", testZipToClass),
+		("testZip", testZip),
 		]
 
 	// MARK: - Tests
@@ -308,11 +308,21 @@ class ListTest: XCTestCase {
 		XCTAssertEqual(list2.sorted(), List<Int>([1, 2, 3]))
 	}
 
-	func testZipToClass() {
+	func testZip() {
+		let array1: [Int] = [3, 2, 1]
+		let array2: [Int] = [1, 2, 3]
 		let list1: List = [3, 2, 1]
 		let list2: List = [1, 2, 3]
 
-		for (a, b) in zipToClass(list1, list2) {
+		for (a, b) in zip(list1, list2) {
+			XCTAssertEqual(a + b, 4)
+		}
+
+		for (a, b) in zip(array1, list2) {
+			XCTAssertEqual(a + b, 4)
+		}
+
+		for (a, b) in zip(list1, array2) {
 			XCTAssertEqual(a + b, 4)
 		}
 	}

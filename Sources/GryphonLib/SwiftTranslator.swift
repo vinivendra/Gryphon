@@ -638,7 +638,7 @@ public class SwiftTranslator {
 				let valueTypesString = String(valuesComponent.dropFirst().dropLast())
 				let valueTypes = Utilities.splitTypeList(valueTypesString)
 
-				let associatedValues = zipToClass(valueLabels, valueTypes)
+				let associatedValues = zip(valueLabels, valueTypes)
 					.map { LabeledType(label: $0.0, typeName: $0.1) }
 					.toMutableList()
 
@@ -1650,10 +1650,7 @@ public class SwiftTranslator {
 			return nil
 		}
 
-		let associatedValuesInfo = // kotlin: ignore
-			zipToClass(associatedValueNames, patternTuple.subtrees)
-		// insert: val associatedValuesInfo: List<Pair<String, SwiftAST>> =
-		// insert:     associatedValueNames.zip(patternTuple.subtrees)
+		let associatedValuesInfo = zip(associatedValueNames, patternTuple.subtrees)
 
 		let declarations: MutableList<AssociatedValueDeclaration> = []
 		let comparisons: MutableList<AssociatedValueComparison> = []
@@ -2594,7 +2591,7 @@ public class SwiftTranslator {
 
 		let tuplePairs: MutableList<LabeledExpression> = []
 
-		for (name, expression) in zipToClass(namesArray, tupleExpression.subtrees) {
+		for (name, expression) in zip(namesArray, tupleExpression.subtrees) {
 			let expression = try translateExpression(expression)
 
 			if name == "_" {

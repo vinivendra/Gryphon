@@ -31,7 +31,7 @@ private func gryphonTemplates() {
 	let _closure: (Compare, Compare) -> Bool = { _, _ in true }
 
 	// Templates with an input that references methods defined in this file
-	_ = zipToClass(_array1, _array2)
+	_ = zip(_array1, _array2)
 	_ = "_array1.zip(_array2)"
 
 	_ = _array1.toList()
@@ -417,33 +417,30 @@ public class MutableList<Element>: List<Element>, // kotlin: ignore
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-public protocol BackedByArray { // kotlin: ignore
-	associatedtype Element
-	var arrayBacking: [Element] { get }
-}
-
-extension List: BackedByArray { // kotlin: ignore
-	public var arrayBacking: [Element] {
-		return self.array
-	}
-}
-
-extension Array: BackedByArray { // kotlin: ignore
-	public var arrayBacking: [Element] {
-		return self
-	}
-}
-
-public func zipToClass<Array1, Element1, Array2, Element2>( // kotlin: ignore
-	_ array1: Array1,
-	_ array2: Array2)
-	-> List<(Element1, Element2)>
-	where Array1: BackedByArray,
-	Array2: BackedByArray,
-	Element1 == Array1.Element,
-	Element2 == Array2.Element
+public func zip<ASequence, ListElement>( // kotlin: ignore
+	_ array1: ASequence,
+	_ array2: List<ListElement>)
+	-> List<(ASequence.Element, ListElement)>
+	where ASequence: Sequence
 {
-	return List(Array(zip(array1.arrayBacking, array2.arrayBacking)))
+	return List(Swift.zip(array1, array2))
+}
+
+public func zip<ASequence, ListElement>( // kotlin: ignore
+	_ array1: List<ListElement>,
+	_ array2: ASequence)
+	-> List<(ListElement, ASequence.Element)>
+	where ASequence: Sequence
+{
+	return List(Swift.zip(array1, array2))
+}
+
+public func zip<List1Element, List2Element>( // kotlin: ignore
+	_ array1: List<List1Element>,
+	_ array2: List<List2Element>)
+	-> List<(List1Element, List2Element)>
+{
+	return List(Swift.zip(array1, array2))
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

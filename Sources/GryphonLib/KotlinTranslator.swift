@@ -112,7 +112,7 @@ public class KotlinTranslator {
 		let result = Translation(range: subtreesRange)
 
 		for (currentSubtree, nextSubtree)
-			in zipToClass(treesAndTranslations, treesAndTranslationsWithoutFirst)
+			in zip(treesAndTranslations, treesAndTranslationsWithoutFirst)
 		{
 			result.append(currentSubtree.translation)
 
@@ -1404,7 +1404,7 @@ public class KotlinTranslator {
 			}
 
 		for (keyTranslation, valueTranslation)
-			in zipToClass(keyTranslations, valueTranslations).dropLast()
+			in zip(keyTranslations, valueTranslations).dropLast()
 		{
 			result.append(keyTranslation)
 			result.append(" to ")
@@ -1787,7 +1787,7 @@ public class KotlinTranslator {
 		// labels in the call when they've also been omitted in Swift.
 		let parameters: List<String?>
 		if let translationParameters = functionTranslation?.parameters {
-			parameters = zipToClass(translationParameters, tupleExpression.pairs).map
+			parameters = zip(translationParameters, tupleExpression.pairs).map
 				{ translationPairTuple in
 					(translationPairTuple.1.label == nil) ? nil : translationPairTuple.0
 				}
@@ -1801,7 +1801,7 @@ public class KotlinTranslator {
 		let expressionIndentation =
 			shouldAddNewlines ? increaseIndentation(indentation) : indentation
 
-		let translations = try zipToClass(parameters, expressions)
+		let translations = try zip(parameters, expressions)
 			.map { parameterExpressionTuple -> Translation in
 				try translateParameter(
 					withLabel: parameterExpressionTuple.0,
@@ -1865,7 +1865,7 @@ public class KotlinTranslator {
 		let containsVariadics = tupleShuffleExpression.indices.contains { indexIsVariadic($0) }
 		var isBeforeVariadic = containsVariadics
 
-		for (label, index) in zipToClass(parameters, tupleShuffleExpression.indices) {
+		for (label, index) in zip(parameters, tupleShuffleExpression.indices) {
 			switch index {
 			case .absent:
 				break

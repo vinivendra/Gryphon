@@ -352,7 +352,7 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 				return false
 			}
 
-			for (selfSubType, superSubType) in zipToClass(selfSubTypes, selfSubTypes) {
+			for (selfSubType, superSubType) in zip(selfSubTypes, selfSubTypes) {
 				guard selfSubType.isSubtype(of: superSubType) else {
 					return false
 				}
@@ -434,7 +434,7 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 				}
 
 				for (selfTypeArgument, superTypeArgument) in
-					zipToClass(selfTypeArguments, superTypeArguments)
+					zip(selfTypeArguments, superTypeArguments)
 				{
 					guard selfTypeArgument.isSubtype(of: superTypeArgument) else {
 						return false

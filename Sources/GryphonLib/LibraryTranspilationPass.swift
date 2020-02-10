@@ -202,7 +202,7 @@ extension Expression {
 			let rhs = rhs as? ArrayExpression
 		{
 			var result = (lhs.elements.count == rhs.elements.count)
-			for (leftElement, rightElement) in zipToClass(lhs.elements, rhs.elements) {
+			for (leftElement, rightElement) in zip(lhs.elements, rhs.elements) {
 				result = result && leftElement.matches(rightElement, matches)
 			}
 			return result && (lhs.typeName.isSubtype(of: rhs.typeName))
@@ -276,7 +276,7 @@ extension Expression {
 			let rhs = rhs as? InterpolatedStringLiteralExpression
 		{
 			var result = true
-			for (leftExpression, rightExpression) in zipToClass(lhs.expressions, rhs.expressions) {
+			for (leftExpression, rightExpression) in zip(lhs.expressions, rhs.expressions) {
 				result = result && leftExpression.matches(rightExpression, matches)
 			}
 			return result
@@ -415,7 +415,7 @@ internal extension String {
 				return false
 			}
 
-			for (selfComponent, superComponent) in zipToClass(selfComponents, superComponents) {
+			for (selfComponent, superComponent) in zip(selfComponents, superComponents) {
 				guard selfComponent.isSubtype(of: superComponent) else {
 					return false
 				}
@@ -489,7 +489,7 @@ internal extension String {
 			}
 
 			for (selfTypeComponent, superTypeComponent) in
-				zipToClass(selfTypeComponents, superTypeComponents)
+				zip(selfTypeComponents, superTypeComponents)
 			{
 				if !selfTypeComponent.isSubtype(of: superTypeComponent) {
 					return false

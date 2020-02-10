@@ -447,9 +447,7 @@ public class Driver {
 			return firstResult
 		}
 
-		let pairsArray = zipToClass(asts, filteredInputFiles) // kotlin: ignore
-		// insert: val pairsArray: MutableList<Pair<GryphonAST, String>> =
-		// insert:     asts.zip(filteredInputFiles).toMutableList()
+		let pairsArray = zip(asts, filteredInputFiles)
 
 		let secondResult: MutableList<Any?>
 		if shouldRunConcurrently {

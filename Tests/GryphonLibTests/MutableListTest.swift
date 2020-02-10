@@ -63,7 +63,7 @@ class MutableListTest: XCTestCase {
 		testIndexOfElement()
 		// testHash()
 		testSorted()
-		testZipToClass()
+		testZip()
 	}
 
 	/// Tests to be run when using Swift on Linux
@@ -99,7 +99,7 @@ class MutableListTest: XCTestCase {
 		("testIndexOfElement", testIndexOfElement),
 		("testHash", testHash),
 		("testSorted", testSorted),
-		("testZipToClass", testZipToClass),
+		("testZip", testZip),
 	]
 
 	// MARK: - Tests
@@ -397,11 +397,21 @@ class MutableListTest: XCTestCase {
 		XCTAssertEqual(list2.sorted(), MutableList<Int>([1, 2, 3]))
 	}
 
-	func testZipToClass() {
-		let list1: MutableList<Int> = [3, 2, 1]
-		let list2: MutableList<Int> = [1, 2, 3]
+	func testZip() {
+		let array1: [Int] = [3, 2, 1]
+		let array2: [Int] = [1, 2, 3]
+		let list1: MutableList = [3, 2, 1]
+		let list2: MutableList = [1, 2, 3]
 
-		for (a, b) in zipToClass(list1, list2) {
+		for (a, b) in zip(list1, list2) {
+			XCTAssertEqual(a + b, 4)
+		}
+
+		for (a, b) in zip(array1, list2) {
+			XCTAssertEqual(a + b, 4)
+		}
+
+		for (a, b) in zip(list1, array2) {
 			XCTAssertEqual(a + b, 4)
 		}
 	}

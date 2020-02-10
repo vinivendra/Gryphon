@@ -1514,7 +1514,7 @@ public class DictionaryExpression: Expression {
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
-		let keyValueTrees = zipToClass(keys, values).map
+		let keyValueTrees = zip(keys, values).map
 		{ (pair: (first: Expression, second: Expression)) -> PrintableAsTree? in
 			PrintableTree("pair", [
 				PrintableTree.ofExpressions("key", [pair.first]),
