@@ -16,7 +16,7 @@
 
 // gryphon output: Bootstrap/IntegrationTest.kt
 
-#if !IS_DUMPING_ASTS
+#if !GRYPHON
 @testable import GryphonLib
 import XCTest
 #endif

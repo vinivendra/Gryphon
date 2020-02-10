@@ -16,12 +16,12 @@
 
 // gryphon output: Bootstrap/TranslationResultTest.kt
 
-#if !IS_DUMPING_ASTS
+#if !GRYPHON
 @testable import GryphonLib
 import XCTest
 #endif
 
-#if !IS_DUMPING_ASTS
+#if !GRYPHON
 typealias GryphonTranslation = GryphonLib.Translation
 #else
 typealias GryphonTranslation = Translation // kotlin: ignore

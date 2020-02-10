@@ -99,7 +99,7 @@ if ($needsToUpdate) {
 	print "Calling the Swift compiler...\n";
 	my @quotedSwiftFiles = map { "\"$_\"" } @swiftFiles;
 	my $inputFiles = join(" ", @quotedSwiftFiles);
-	my $output = `swiftc $inputFiles -dump-ast -module-name=ModuleName -output-file-map=$ofmFilePath -D IS_DUMPING_ASTS 2>&1`;
+	my $output = `swiftc $inputFiles -dump-ast -module-name=ModuleName -output-file-map=$ofmFilePath -D GRYPHON 2>&1`;
 
 	# Delete the output file map
 	unlink($ofmFilePath);
