@@ -48,7 +48,6 @@ included:
   - Tests/GryphonLibTests
 excluded:
   - Examples
-  - Sources/GryphonLib/CwlRandom.swift
 
 line_length: 100
 
