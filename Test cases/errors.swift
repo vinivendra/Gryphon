@@ -19,5 +19,8 @@
 // gryphon output: Test cases/Bootstrap Outputs/errors.gryphonAST
 // gryphon output: Test cases/Bootstrap Outputs/errors.kt
 
+// This file should contain two lines that cause Gryphon to throw an error, but it doesn't have to
+// be these lines specifically. If these errors are ever "fixed", they can be replaced by others.
+
 var y: Int = 0x0101
 var x: Int = 0b0101
