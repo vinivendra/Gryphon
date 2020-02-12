@@ -164,7 +164,8 @@ public class Compiler {
 
 		if let swiftFilePath = ast.sourceFile?.path, let kotlinFilePath = ast.outputFileMap[.kt] {
 			let errorMap = translationResult.errorMap
-			let errorMapFilePath = Utilities.pathOfKotlinErrorMapFile(forKotlinFile: kotlinFilePath)
+			let errorMapFilePath =
+				SupportingFile.pathOfKotlinErrorMapFile(forKotlinFile: kotlinFilePath)
 			let errorMapFolder =
 				errorMapFilePath.split(withStringSeparator: "/").dropLast().joined(separator: "/")
 			let errorMapFileContents = swiftFilePath + "\n" + errorMap

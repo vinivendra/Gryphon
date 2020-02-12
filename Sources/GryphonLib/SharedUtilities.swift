@@ -98,13 +98,72 @@ private func gryphonTemplates() {
     _ = "Shell.runShellCommand(_stringArray1)"
 }
 
-public class Utilities {
-	// Changes to these paths might need to be reflected in preBuildScript.sh
-	static let gryphonTemplatesLibraryName = "GryphonTemplatesLibrary.swift"
-	static let gryphonTemplatesLibraryPath = ".gryphon/" + gryphonTemplatesLibraryName
-	static let gryphonTemplatesLibraryASTDumpPath =
-		Utilities.changeExtension(of: gryphonTemplatesLibraryPath, to: .swiftASTDump)
+/// Stores all hard-coded file names and paths. Changes to these paths might need to be reflected in
+/// preBuildScript.sh
+public class SupportingFile {
+	let name: String
 
+	private init(_ name: String) {
+		self.name = name
+	}
+
+	var relativePath: String {
+		switch name {
+		case SupportingFile.xcFileList.name:
+			return name
+		case SupportingFile.mapKotlinErrorsToSwift.name,
+			SupportingFile.mapGradleErrorsToSwift.name,
+			SupportingFile.makeGryphonTargets.name,
+			SupportingFile.compileKotlin.name:
+
+			return "\(SupportingFile.gryphonScriptsFolder)/\(name)"
+		default:
+			return "\(SupportingFile.gryphonBuildFolder)/\(name)"
+		}
+	}
+
+	var absolutePath: String {
+		return Utilities.getAbsoultePath(forFile: relativePath)
+	}
+
+	//
+	static public func pathOfSwiftASTDumpFile(forSwiftFile swiftFile: String) -> String {
+		let relativePath = Utilities.getRelativePath(forFile: swiftFile)
+		let pathInGryphonFolder = ".gryphon/ASTDumps/" + relativePath
+		let astDumpPath = Utilities.changeExtension(of: pathInGryphonFolder, to: .swiftASTDump)
+		return astDumpPath
+	}
+
+	static public func pathOfKotlinErrorMapFile(forKotlinFile kotlinFile: String) -> String {
+		let relativePath = Utilities.getRelativePath(forFile: kotlinFile)
+		let pathInGryphonFolder = ".gryphon/KotlinErrorMaps/" + relativePath
+		let errorMapPath = Utilities.changeExtension(of: pathInGryphonFolder, to: .kotlinErrorMap)
+		return errorMapPath
+	}
+
+	// Files in the project folder
+	static let xcFileList = SupportingFile("gryphonInputFiles.xcfilelist")
+
+	// Files in the Gryphon build folder ("/path/to/project/.gryphon")
+	static let gryphonBuildFolder = ".gryphon"
+
+	static let gryphonTemplatesLibrary = SupportingFile("GryphonTemplatesLibrary.swift")
+	static let gryphonTemplatesLibraryASTDump = SupportingFile(
+		Utilities.changeExtension(of: "GryphonTemplatesLibrary.swift", to: .swiftASTDump))
+	static let temporaryOutputFileMap = SupportingFile("output-file-map.json")
+	static let astDumpsScript = SupportingFile("updateASTDumps.sh")
+	static let gryphonXCTest = SupportingFile("GryphonXCTest.swift")
+
+	// Files in the Gryphon scripts folder ("/path/to/project/.gryphon/scripts")
+	static let gryphonScriptsFolder = "\(gryphonBuildFolder)/scripts"
+
+	static let mapKotlinErrorsToSwift = SupportingFile("mapKotlinErrorsToSwift.swift")
+	static let mapGradleErrorsToSwift = SupportingFile("mapGradleErrorsToSwift.swift")
+	static let makeGryphonTargets = SupportingFile("makeGryphonTargets.rb")
+	static let compileKotlin = SupportingFile("compileKotlin.sh")
+}
+
+public class Utilities {
     internal static func expandSwiftAbbreviation(_ name: String) -> String {
         // Separate snake case and capitalize
         var nameComponents = name.split(withStringSeparator: "_").map { $0.capitalized }
@@ -222,7 +281,7 @@ extension Utilities {
         }
 
         let astArray = try Compiler.transpileGryphonRawASTs(fromASTDumpFiles:
-			[gryphonTemplatesLibraryASTDumpPath])
+			[SupportingFile.gryphonTemplatesLibraryASTDump.relativePath])
 
         let ast = astArray[0]
 		_ = RecordTemplatesTranspilationPass(
@@ -254,20 +313,6 @@ extension Utilities {
         Compiler.log("\t* Done!")
     }
 
-	static public func pathOfSwiftASTDumpFile(forSwiftFile swiftFile: String) -> String {
-		let relativePath = Utilities.getRelativePath(forFile: swiftFile)
-		let pathInGryphonFolder = ".gryphon/ASTDumps/" + relativePath
-		let astDumpPath = Utilities.changeExtension(of: pathInGryphonFolder, to: .swiftASTDump)
-		return astDumpPath
-	}
-
-	static public func pathOfKotlinErrorMapFile(forKotlinFile kotlinFile: String) -> String {
-		let relativePath = Utilities.getRelativePath(forFile: kotlinFile)
-		let pathInGryphonFolder = ".gryphon/KotlinErrorMaps/" + relativePath
-		let errorMapPath = Utilities.changeExtension(of: pathInGryphonFolder, to: .kotlinErrorMap)
-		return errorMapPath
-	}
-
     static internal func needsToDumpASTForSwiftFiles(
         _ swiftFiles: MutableList<String>? = nil,
         in folder: String)
@@ -285,7 +330,7 @@ extension Utilities {
 				astDumpFilePath = Utilities.changeExtension(of: swiftFile, to: .swiftASTDump)
 			}
 			else {
-				astDumpFilePath = Utilities.pathOfSwiftASTDumpFile(forSwiftFile: swiftFile)
+				astDumpFilePath = SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: swiftFile)
 			}
 
             let astDumpFileWasJustCreated =

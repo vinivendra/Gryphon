@@ -525,43 +525,33 @@ public class Driver {
 	}
 
 	static func initialize() {
-		let gryphonRootFolder = ".gryphon"
-		let scriptsFolder = gryphonRootFolder + "/scripts"
-
 		// Create gryphon folder and subfolders
-		Utilities.createFolderIfNeeded(at: gryphonRootFolder)
-		Utilities.createFolderIfNeeded(at: scriptsFolder)
+		Utilities.createFolderIfNeeded(at: SupportingFile.gryphonBuildFolder)
+		Utilities.createFolderIfNeeded(at: SupportingFile.gryphonScriptsFolder)
 
 		// Save the files
-		// TODO: make these paths into variables
 		Utilities.createFile(
-			named: Utilities.gryphonTemplatesLibraryName,
-			inDirectory: gryphonRootFolder,
+			atPath: SupportingFile.gryphonTemplatesLibrary.relativePath,
 			containing: gryphonTemplatesLibraryFileContents)
 		Utilities.createFile(
-			named: "GryphonXCTest.swift",
-			inDirectory: gryphonRootFolder,
+			atPath: SupportingFile.gryphonXCTest.relativePath,
 			containing: gryphonXCTestFileContents)
 		Utilities.createFile(
-			named: "mapKotlinErrorsToSwift.swift",
-			inDirectory: scriptsFolder,
+			atPath: SupportingFile.mapKotlinErrorsToSwift.relativePath,
 			containing: kotlinErrorMapScriptFileContents)
 		Utilities.createFile(
-			named: "mapGradleErrorsToSwift.swift",
-			inDirectory: scriptsFolder,
+			atPath: SupportingFile.mapGradleErrorsToSwift.relativePath,
 			containing: gradleErrorMapScriptFileContents)
 		Utilities.createFile(
-			named: "makeGryphonTargets.rb",
-			inDirectory: scriptsFolder,
+			atPath: SupportingFile.makeGryphonTargets.relativePath,
 			containing: xcodeTargetScriptFileContents)
 		Utilities.createFile(
-			named: "compileKotlin.sh",
-			inDirectory: scriptsFolder,
+			atPath: SupportingFile.compileKotlin.relativePath,
 			containing: compileKotlinScriptFileContents)
 	}
 
 	static func cleanup() {
-		Utilities.deleteFolder(at: ".gryphon")
+		Utilities.deleteFolder(at: SupportingFile.gryphonBuildFolder)
 	}
 
 	static func createSwiftASTDumpScriptFromXcode() -> Bool {
@@ -604,12 +594,10 @@ public class Driver {
 			!argument.hasPrefix("-emit")
 		}.toMutableList()
 
-		let templatesFilePath = Utilities
-			.getAbsoultePath(forFile: Utilities.gryphonTemplatesLibraryPath)
+		let templatesFilePath = SupportingFile.gryphonTemplatesLibrary.absolutePath
 		newComponents.append(templatesFilePath)
 
-		let escapedOutputFileMapPath = Utilities
-			.getAbsoultePath(forFile: ".gryphon/output-file-map.json")
+		let escapedOutputFileMapPath = SupportingFile.temporaryOutputFileMap.relativePath
 			.replacingOccurrences(of: " ", with: "\\ ")
 		newComponents.append("-output-file-map")
 		newComponents.append(escapedOutputFileMapPath)
@@ -620,8 +608,8 @@ public class Driver {
 		var scriptContents = commands.dropFirst().dropLast().joined(separator: "\n")
 		scriptContents += "\n" + newCompilationCommand + "\n"
 		Utilities.createFile(
-			named: "updateASTDumps.sh",
-			inDirectory: ".gryphon",
+			named: SupportingFile.astDumpsScript.name,
+			inDirectory: SupportingFile.gryphonBuildFolder,
 			containing: scriptContents)
 
 		return true
@@ -630,7 +618,7 @@ public class Driver {
 	static func makeGryphonTargets() -> Bool {
 		// Run the ruby script
 		guard let commandResult =
-			Shell.runShellCommand(["ruby", ".gryphon/scripts/makeGryphonTargets.rb"]) else
+			Shell.runShellCommand(["ruby", SupportingFile.makeGryphonTargets.relativePath]) else
 		{
 			print("Failed to make gryphon targets")
 			return false
@@ -644,7 +632,7 @@ public class Driver {
 		}
 
 		// Create the xcfilelist so the user has an easier time finding it and populating it
-		_ = Utilities.createFileIfNeeded(at: "gryphonInputFiles.xcfilelist")
+		_ = Utilities.createFileIfNeeded(at: SupportingFile.xcFileList.relativePath)
 
 		return true
 	}
@@ -655,16 +643,15 @@ public class Driver {
 		var outputFileMapContents = "{\n"
 
 		// Add the templates file
-		let templatesFile = Utilities
-			.getAbsoultePath(forFile: Utilities.gryphonTemplatesLibraryPath)
-		let templatesASTDumpFile = Utilities.changeExtension(of: templatesFile, to: .swiftASTDump)
+		let templatesFile = SupportingFile.gryphonTemplatesLibrary.absolutePath
+		let templatesASTDumpFile = SupportingFile.gryphonTemplatesLibraryASTDump.absolutePath
 		outputFileMapContents += "\t\"\(templatesFile)\": {\n" +
 			"\t\t\"ast-dump\": \"\(templatesASTDumpFile)\",\n" +
 			"\t},\n"
 
 		// Add the swift files
 		for swiftFile in swiftFiles {
-			let astDumpPath = Utilities.pathOfSwiftASTDumpFile(forSwiftFile: swiftFile)
+			let astDumpPath = SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: swiftFile)
 			let astDumpAbsolutePath = Utilities.getAbsoultePath(forFile: astDumpPath)
 			let swiftAbsoultePath = Utilities.getAbsoultePath(forFile: swiftFile)
 			outputFileMapContents += "\t\"\(swiftAbsoultePath)\": {\n" +
@@ -674,13 +661,12 @@ public class Driver {
 		outputFileMapContents += "}\n"
 
 		Utilities.createFile(
-			named: "output-file-map.json",
-			inDirectory: ".gryphon",
+			atPath: SupportingFile.temporaryOutputFileMap.relativePath,
 			containing: outputFileMapContents)
 
 		//// Create the necessary folders for the AST dump files
 		for swiftFile in swiftFiles {
-			let astDumpPath = Utilities.pathOfSwiftASTDumpFile(forSwiftFile: swiftFile)
+			let astDumpPath = SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: swiftFile)
 			let folderPath = astDumpPath.split(withStringSeparator: "/")
 				.dropLast()
 				.joined(separator: "/")
@@ -706,7 +692,7 @@ public class Driver {
 
 	static func getASTDump(forFile file: String) -> String? {
 		if file.hasSuffix(".swift") {
-			return Utilities.pathOfSwiftASTDumpFile(forSwiftFile: file)
+			return SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: file)
 		}
 		else if file.hasSuffix(".swiftASTDump") {
 			return file

@@ -123,25 +123,25 @@ class UtilitiesTest: XCTestCase {
 
     func testPathOfSwiftASTDumpFile() {
         XCTAssertEqual(
-            Utilities.pathOfSwiftASTDumpFile(forSwiftFile: "src/path/to/file.swift"),
+            SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: "src/path/to/file.swift"),
             ".gryphon/ASTDumps/src/path/to/file.swiftASTDump")
         XCTAssertEqual(
-            Utilities.pathOfSwiftASTDumpFile(forSwiftFile: "folder/file.swift"),
+            SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: "folder/file.swift"),
             ".gryphon/ASTDumps/folder/file.swiftASTDump")
         XCTAssertEqual(
-            Utilities.pathOfSwiftASTDumpFile(forSwiftFile: "file.swift"),
+            SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: "file.swift"),
             ".gryphon/ASTDumps/file.swiftASTDump")
     }
 
     func testPathOfKotlinErrorMapFile() {
         XCTAssertEqual(
-            Utilities.pathOfKotlinErrorMapFile(forKotlinFile: "src/path/to/file.kt"),
+            SupportingFile.pathOfKotlinErrorMapFile(forKotlinFile: "src/path/to/file.kt"),
             ".gryphon/KotlinErrorMaps/src/path/to/file.kotlinErrorMap")
         XCTAssertEqual(
-            Utilities.pathOfKotlinErrorMapFile(forKotlinFile: "folder/file.kt"),
+            SupportingFile.pathOfKotlinErrorMapFile(forKotlinFile: "folder/file.kt"),
             ".gryphon/KotlinErrorMaps/folder/file.kotlinErrorMap")
         XCTAssertEqual(
-            Utilities.pathOfKotlinErrorMapFile(forKotlinFile: "file.kt"),
+            SupportingFile.pathOfKotlinErrorMapFile(forKotlinFile: "file.kt"),
             ".gryphon/KotlinErrorMaps/file.kotlinErrorMap")
     }
 
