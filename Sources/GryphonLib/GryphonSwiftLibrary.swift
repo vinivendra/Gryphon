@@ -43,7 +43,7 @@ private func gryphonTemplates() {
 	_ = _array1.appending(contentsOf: _array2)
 	_ = "_array1 + _array2"
 
-	// Templates with an output that references methods defined in the KotlinStandardLibrary.kt file
+	// Templates with an output that references methods defined in the GryphonKotlinLibrary.kt file
 	_ = _string.suffix(from: _index)
 	_ = "_string.suffix(startIndex = _index)"
 

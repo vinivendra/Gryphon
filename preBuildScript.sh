@@ -1,7 +1,7 @@
 # Update AST dumps
 echo " ➡️  Updating AST dumps for tests and library templates..."
 
-perl dumpASTs.pl ".gryphon/StandardLibrary.template.swift"
+perl dumpASTs.pl ".gryphon/GryphonTemplatesLibrary.swift"
 [ $? -eq 0 ] || exit 1
 
 perl dumpASTs.pl ".gryphon/GryphonXCTest.swift"

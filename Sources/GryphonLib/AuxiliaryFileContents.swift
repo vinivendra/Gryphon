@@ -94,7 +94,7 @@ extension XCTestCase {
 // TODO: This string isn't being translated as multiline
 // TODO: Comments should be ignored inside multiline strings
 // gryphon: multiline
-internal let standardLibraryTemplateFileContents = """
+internal let gryphonTemplatesLibraryFileContents = """
 // WARNING: Any changes to this file should be reflected in the literal string in
 // AuxiliaryFileContents.swift
 

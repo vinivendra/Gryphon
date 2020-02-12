@@ -419,7 +419,7 @@ public class Driver {
 
 		// Update libraries syncronously to guarantee it's only done once
 		if shouldGenerateAST {
-			try Utilities.updateLibraryFiles()
+			try Utilities.processGryphonTemplatesLibrary()
 		}
 
 		// Run compiler steps
@@ -533,10 +533,11 @@ public class Driver {
 		Utilities.createFolderIfNeeded(at: scriptsFolder)
 
 		// Save the files
+		// TODO: make these paths into variables
 		Utilities.createFile(
-			named: "StandardLibrary.template.swift",
+			named: Utilities.gryphonTemplatesLibraryName,
 			inDirectory: gryphonRootFolder,
-			containing: standardLibraryTemplateFileContents)
+			containing: gryphonTemplatesLibraryFileContents)
 		Utilities.createFile(
 			named: "GryphonXCTest.swift",
 			inDirectory: gryphonRootFolder,
@@ -604,7 +605,7 @@ public class Driver {
 		}.toMutableList()
 
 		let templatesFilePath = Utilities
-			.getAbsoultePath(forFile: ".gryphon/StandardLibrary.template.swift")
+			.getAbsoultePath(forFile: Utilities.gryphonTemplatesLibraryPath)
 		newComponents.append(templatesFilePath)
 
 		let escapedOutputFileMapPath = Utilities
@@ -655,7 +656,7 @@ public class Driver {
 
 		// Add the templates file
 		let templatesFile = Utilities
-			.getAbsoultePath(forFile: ".gryphon/StandardLibrary.template.swift")
+			.getAbsoultePath(forFile: Utilities.gryphonTemplatesLibraryPath)
 		let templatesASTDumpFile = Utilities.changeExtension(of: templatesFile, to: .swiftASTDump)
 		outputFileMapContents += "\t\"\(templatesFile)\": {\n" +
 			"\t\t\"ast-dump\": \"\(templatesASTDumpFile)\",\n" +

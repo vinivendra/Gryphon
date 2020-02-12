@@ -114,7 +114,7 @@ public class Compiler {
 		throws -> GryphonAST
 	{
 		log("\t- Running first round of passes...")
-		try Utilities.updateLibraryFiles()
+		try Utilities.processGryphonTemplatesLibrary()
 		return TranspilationPass.runFirstRoundOfPasses(on: ast, withContext: context)
 	}
 
@@ -124,7 +124,7 @@ public class Compiler {
 		throws -> GryphonAST
 	{
 		log("\t- Running second round of passes...")
-		try Utilities.updateLibraryFiles()
+		try Utilities.processGryphonTemplatesLibrary()
 		return TranspilationPass.runSecondRoundOfPasses(on: ast, withContext: context)
 	}
 
@@ -135,7 +135,7 @@ public class Compiler {
 	{
 		var ast = ast
 		log("\t- Running passes on Gryphon ASTs...")
-		try Utilities.updateLibraryFiles()
+		try Utilities.processGryphonTemplatesLibrary()
 		ast = TranspilationPass.runFirstRoundOfPasses(on: ast, withContext: context)
 		ast = TranspilationPass.runSecondRoundOfPasses(on: ast, withContext: context)
 		return ast

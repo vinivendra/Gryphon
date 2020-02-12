@@ -23,7 +23,7 @@
 
 public class TranspilationContext {
 	/// The global context is used for information that should be accessible globally, such as
-	/// standard library templates (which can be calculated once and are the same every time).
+	/// the Gryphon templates library (which can be calculated once and are the same every time).
 	static let globalContext = TranspilationContext()
 
 	/// Normal contexts should be initialized based on the pre-existing global information, using
@@ -36,10 +36,10 @@ public class TranspilationContext {
 
 	public init(indentationString: String) {
 		do {
-			try Utilities.updateLibraryFiles()
+			try Utilities.processGryphonTemplatesLibrary()
 		}
 		catch let error {
-			fatalError("Failed to initialize standard library templates!\n\(error)")
+			fatalError("Failed to initialize the Gryphon templates library!\n\(error)")
 		}
 
 		self.templates = TranspilationContext.globalContext.templates.toMutableList()

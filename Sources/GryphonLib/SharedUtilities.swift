@@ -99,6 +99,12 @@ private func gryphonTemplates() {
 }
 
 public class Utilities {
+	// Changes to these paths might need to be reflected in preBuildScript.sh
+	static let gryphonTemplatesLibraryName = "GryphonTemplatesLibrary.swift"
+	static let gryphonTemplatesLibraryPath = ".gryphon/" + gryphonTemplatesLibraryName
+	static let gryphonTemplatesLibraryASTDumpPath =
+		Utilities.changeExtension(of: gryphonTemplatesLibraryPath, to: .swiftASTDump)
+
     internal static func expandSwiftAbbreviation(_ name: String) -> String {
         // Separate snake case and capitalize
         var nameComponents = name.split(withStringSeparator: "_").map { $0.capitalized }
@@ -197,11 +203,11 @@ enum FileError: Error, CustomStringConvertible {
     }
 }
 
-internal var libraryFilesHaveBeenUpdated = false
-internal var testCasesHaveBeenUpdated = false
+private var templatesLibraryHasBeenProcessed = false
+private var testCasesHaveBeenUpdated = false
 
 extension Utilities {
-    static public func updateLibraryFiles() throws {
+    static public func processGryphonTemplatesLibrary() throws {
         libraryUpdateLock.lock() // kotlin: ignore
         // insert: libraryUpdateLock.acquire()
 
@@ -211,40 +217,30 @@ extension Utilities {
             // insert: libraryUpdateLock.release()
         }
 
-        guard !libraryFilesHaveBeenUpdated else {
+        guard !templatesLibraryHasBeenProcessed else {
             return
         }
 
-        let libraryTemplatesFolder = ".gryphon"
-		if needsToDumpASTForSwiftFiles(in: libraryTemplatesFolder) {
-            throw FileError.outdatedFile(inFolder: libraryTemplatesFolder)
-        }
+        let astArray = try Compiler.transpileGryphonRawASTs(fromASTDumpFiles:
+			[gryphonTemplatesLibraryASTDumpPath])
 
-        Compiler.log("\t* Updating library files...")
+        let ast = astArray[0]
+		_ = RecordTemplatesTranspilationPass(
+			ast: ast,
+			context: TranspilationContext.globalContext).run()
 
-        let templateFilePaths =
-			getFiles(inDirectory: libraryTemplatesFolder, withExtension: .swiftASTDump)
-				.filter { $0.hasSuffix(".template.swiftASTDump") }
-				.toMutableList()
-        let asts = try Compiler.transpileGryphonRawASTs(fromASTDumpFiles: templateFilePaths)
-
-        for ast in asts {
-			_ = RecordTemplatesTranspilationPass(
-				ast: ast,
-				context: TranspilationContext.globalContext).run()
-        }
-
-        libraryFilesHaveBeenUpdated = true
+        templatesLibraryHasBeenProcessed = true
 
         Compiler.log("\t* Done!")
     }
 
+	// TODO: Send this (and associated code) to the test suite and rename this method
     static public func updateTestCases() throws {
         guard !testCasesHaveBeenUpdated else {
             return
         }
 
-        try updateLibraryFiles()
+        try processGryphonTemplatesLibrary()
 
         Compiler.log("\t* Updating unit test files...")
 

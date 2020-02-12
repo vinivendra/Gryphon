@@ -49,13 +49,13 @@ class InitializationTest: XCTestCase {
 		// Check the new folder's contents are right
 		do {
 			let templatesFileContents =
-				try Utilities.readFile(".gryphon/StandardLibrary.template.swift")
+				try Utilities.readFile(Utilities.gryphonTemplatesLibraryPath)
 			let xctestFileContents =
 				try Utilities.readFile(".gryphon/GryphonXCTest.swift")
 			let scriptFileContents =
 				try Utilities.readFile(".gryphon/scripts/mapKotlinErrorsToSwift.swift")
 
-			if templatesFileContents != standardLibraryTemplateFileContents {
+			if templatesFileContents != gryphonTemplatesLibraryFileContents {
 				XCTFail("Library templates file's contents are wrong.")
 			}
 			if xctestFileContents != gryphonXCTestFileContents {
@@ -68,7 +68,7 @@ class InitializationTest: XCTestCase {
 			//
 			// Test cleanup
 			try! Driver.run(withArguments: ["clean"])
-			XCTAssertFalse(Utilities.fileExists(at: ".gryphon/StandardLibrary.template.swift"))
+			XCTAssertFalse(Utilities.fileExists(at: Utilities.gryphonTemplatesLibraryPath))
 
 			// Create the folder again so other testing and development can continue
 			try! Driver.run(withArguments: ["init", "-no-xcode"])
