@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// gryphon output: Test Files/Bootstrap Outputs/kotlinLiterals.swiftAST
-// gryphon output: Test Files/Bootstrap Outputs/kotlinLiterals.gryphonASTRaw
-// gryphon output: Test Files/Bootstrap Outputs/kotlinLiterals.gryphonAST
-// gryphon output: Test Files/Bootstrap Outputs/kotlinLiterals.kt
+// gryphon output: Test cases/Bootstrap Outputs/kotlinLiterals.swiftAST
+// gryphon output: Test cases/Bootstrap Outputs/kotlinLiterals.gryphonASTRaw
+// gryphon output: Test cases/Bootstrap Outputs/kotlinLiterals.gryphonAST
+// gryphon output: Test cases/Bootstrap Outputs/kotlinLiterals.kt
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 

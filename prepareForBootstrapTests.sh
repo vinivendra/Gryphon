@@ -14,7 +14,7 @@ fi
 
 echo "➡️ [2/2] Updating the bootstrap outputs..."
 
-for file in Test\ Files/*.swift
+for file in Test\ cases/*.swift
 do
     if [[ $file == *"errors.swift" ]]; then
         echo "    ↪️ Skipping $file..."

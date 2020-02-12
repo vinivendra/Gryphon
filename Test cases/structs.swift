@@ -14,29 +14,30 @@
 // limitations under the License.
 //
 
-// gryphon output: Test Files/Bootstrap Outputs/warnings.swiftAST
-// gryphon output: Test Files/Bootstrap Outputs/warnings.gryphonASTRaw
-// gryphon output: Test Files/Bootstrap Outputs/warnings.gryphonAST
-// gryphon output: Test Files/Bootstrap Outputs/warnings.kt
+// gryphon output: Test cases/Bootstrap Outputs/structs.swiftAST
+// gryphon output: Test cases/Bootstrap Outputs/structs.gryphonASTRaw
+// gryphon output: Test cases/Bootstrap Outputs/structs.gryphonAST
+// gryphon output: Test cases/Bootstrap Outputs/structs.kt
 
-struct UnsupportedStruct {
-	let immutableVariable = 0
-	var mutableVariable = 0
-
-	func pureFunction() { }
-	mutating func mutatingFunction() { }
-
-	var computedVarIsOK: Int {
-		return 0
-	}
+struct SupportedStruct {
+	let x = 0
+	let y = 1
 }
 
-enum UnsupportedEnum {
-	case a(int: Int)
-
-	mutating func mutatingFunction() { }
-
-	var computedVarIsOK: Int {
-		return 0
-	}
+struct OtherSupportedStruct {
+	let x: Int
+	let y: Int
 }
+
+struct NoInheritance: Equatable, Codable {
+	let x: Int
+	let y: Int
+}
+
+let a = SupportedStruct()
+let b = OtherSupportedStruct(x: 10, y: 20)
+
+print(a.x)
+print(a.y)
+print(b.x)
+print(b.y)

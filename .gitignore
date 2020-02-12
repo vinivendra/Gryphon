@@ -17,7 +17,7 @@
 # Used by the acceptance tests to build the translated programs
 /.kotlinBuild*
 # Used by bootstrap tests to save the Kotlin outputs
-Test Files/Bootstrap Outputs
+Test cases/Bootstrap Outputs
 # Result of building the translated programs
 *.jar
 

@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// gryphon output: Test Files/Bootstrap Outputs/ifStatement.swiftAST
-// gryphon output: Test Files/Bootstrap Outputs/ifStatement.gryphonASTRaw
-// gryphon output: Test Files/Bootstrap Outputs/ifStatement.gryphonAST
-// gryphon output: Test Files/Bootstrap Outputs/ifStatement.kt
+// gryphon output: Test cases/Bootstrap Outputs/ifStatement.swiftAST
+// gryphon output: Test cases/Bootstrap Outputs/ifStatement.gryphonASTRaw
+// gryphon output: Test cases/Bootstrap Outputs/ifStatement.gryphonAST
+// gryphon output: Test cases/Bootstrap Outputs/ifStatement.kt
 
 //
 if true {

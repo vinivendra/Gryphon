@@ -22,8 +22,8 @@ class PerformanceTest: XCTestCase {
 		let tests = TestUtilities.testCasesForAllTests
 
 		let astDumpContents: MutableList<String> = tests.map { testName in
-			let testFilePath = TestUtilities.testFilesPath + testName
-			let astDumpFilePath = Utilities.pathOfSwiftASTDumpFile(forSwiftFile: testFilePath)
+			let testCasePath = TestUtilities.testCasesPath + testName
+			let astDumpFilePath = Utilities.pathOfSwiftASTDumpFile(forSwiftFile: testCasePath)
 			return try! String(contentsOfFile: astDumpFilePath)
 		}.toMutableList()
 
@@ -43,8 +43,8 @@ class PerformanceTest: XCTestCase {
 		let tests = TestUtilities.testCasesForAllTests
 
 		let swiftASTs: MutableList<SwiftAST> = tests.map { testName in
-			let testFilePath = TestUtilities.testFilesPath + testName
-			let astDumpFilePath = Utilities.pathOfSwiftASTDumpFile(forSwiftFile: testFilePath)
+			let testCasePath = TestUtilities.testCasesPath + testName
+			let astDumpFilePath = Utilities.pathOfSwiftASTDumpFile(forSwiftFile: testCasePath)
 			return try! Compiler.transpileSwiftAST(fromASTDumpFile: astDumpFilePath)
 		}.toMutableList()
 
@@ -66,8 +66,8 @@ class PerformanceTest: XCTestCase {
 		let tests = TestUtilities.testCasesForAllTests
 
 		let astDumpFilePaths: MutableList<String> = tests.map { testName in
-			let testFilePath = TestUtilities.testFilesPath + testName
-			return Utilities.pathOfSwiftASTDumpFile(forSwiftFile: testFilePath)
+			let testCasePath = TestUtilities.testCasesPath + testName
+			return Utilities.pathOfSwiftASTDumpFile(forSwiftFile: testCasePath)
 		}.toMutableList()
 
 		let rawASTs = try! Compiler.transpileGryphonRawASTs(fromASTDumpFiles: astDumpFilePaths)
@@ -90,8 +90,8 @@ class PerformanceTest: XCTestCase {
 		let tests = TestUtilities.testCasesForAllTests
 
 		let astDumpFilePaths: MutableList<String> = tests.map { testName in
-			let testFilePath = TestUtilities.testFilesPath + testName
-			return Utilities.pathOfSwiftASTDumpFile(forSwiftFile: testFilePath)
+			let testCasePath = TestUtilities.testCasesPath + testName
+			return Utilities.pathOfSwiftASTDumpFile(forSwiftFile: testCasePath)
 		}.toMutableList()
 
 		let semiRawASTs =
@@ -119,8 +119,8 @@ class PerformanceTest: XCTestCase {
 		let tests = TestUtilities.testCasesForAllTests
 
 		let astDumpFilePaths: MutableList<String> = tests.map { testName in
-			let testFilePath = TestUtilities.testFilesPath + testName
-			return Utilities.pathOfSwiftASTDumpFile(forSwiftFile: testFilePath)
+			let testCasePath = TestUtilities.testCasesPath + testName
+			return Utilities.pathOfSwiftASTDumpFile(forSwiftFile: testCasePath)
 		}.toMutableList()
 
 		let rawASTs = try! Compiler.transpileGryphonRawASTs(fromASTDumpFiles: astDumpFilePaths)
@@ -144,8 +144,8 @@ class PerformanceTest: XCTestCase {
 
 		let astsAndContexts: MutableList<(GryphonAST, TranspilationContext)> = tests.map
 			{ testName in
-				let testFilePath = TestUtilities.testFilesPath + testName
-				let astDumpFilePath = Utilities.pathOfSwiftASTDumpFile(forSwiftFile: testFilePath)
+				let testCasePath = TestUtilities.testCasesPath + testName
+				let astDumpFilePath = Utilities.pathOfSwiftASTDumpFile(forSwiftFile: testCasePath)
 				let context = TranspilationContext(indentationString: "\t")
 				let ast = try! Compiler.transpileGryphonASTs(
 					fromASTDumpFiles: [astDumpFilePath],
@@ -174,9 +174,9 @@ class PerformanceTest: XCTestCase {
 		measure {
 			for testName in tests {
 				do {
-					let testFilePath = TestUtilities.testFilesPath + testName
+					let testCasePath = TestUtilities.testCasesPath + testName
 					let astDumpFilePath = Utilities.pathOfSwiftASTDumpFile(
-						forSwiftFile: testFilePath)
+						forSwiftFile: testCasePath)
 					_ = try Compiler.transpileKotlinCode(
 						fromASTDumpFiles: [astDumpFilePath],
 						withContext: TranspilationContext(indentationString: "\t"))
@@ -200,7 +200,7 @@ class PerformanceTest: XCTestCase {
 
 	override static func setUp() {
 		do {
-			try Utilities.updateTestFiles()
+			try Utilities.updateTestCases()
 		}
 		catch let error {
 			print(error)

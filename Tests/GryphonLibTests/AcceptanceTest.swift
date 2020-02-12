@@ -32,7 +32,7 @@ class AcceptanceTest: XCTestCase {
 
 	override static func setUp() {
 		do {
-			try Utilities.updateTestFiles()
+			try Utilities.updateTestCases()
 		}
 		catch let error {
 			print(error)
@@ -61,8 +61,8 @@ class AcceptanceTest: XCTestCase {
 			do {
 				// Translate the swift code to kotlin, compile the resulting kotlin code, run it,
 				// and get its output
-				let testFilePath = TestUtilities.testFilesPath + testName
-				let astDumpFilePath = Utilities.pathOfSwiftASTDumpFile(forSwiftFile: testFilePath)
+				let testCasePath = TestUtilities.testCasesPath + testName
+				let astDumpFilePath = Utilities.pathOfSwiftASTDumpFile(forSwiftFile: testCasePath)
 				guard let compilationResult = try Compiler.transpileCompileAndRun(
 					ASTDumpFiles: [astDumpFilePath],
 					withContext: TranspilationContext(indentationString: "\t")) else
@@ -73,7 +73,7 @@ class AcceptanceTest: XCTestCase {
 				}
 
 				// Load the previously stored kotlin code from file
-				let expectedOutput = try! Utilities.readFile(testFilePath.withExtension(.output))
+				let expectedOutput = try! Utilities.readFile(testCasePath.withExtension(.output))
 
 				XCTAssert(
 					compilationResult.standardError == "",

@@ -29,7 +29,7 @@ class TestError: Error {
 
 class TestUtilities {
 	// MARK: - Diffs
-	static let testFilesPath: String = Utilities.getCurrentFolder() + "/Test Files/"
+	static let testCasesPath: String = Utilities.getCurrentFolder() + "/Test cases/"
 
 	static func diff(_ string1: String, _ string2: String) -> String {
 		let diffResult = withTemporaryFile(fileName: "file1.txt", contents: string1) { file1Path in

@@ -57,7 +57,7 @@ class DriverTest: XCTestCase {
 
 	func testNoMainFile() {
 		do {
-			let testFilePath = TestUtilities.testFilesPath + "classes.swift"
+			let testCasePath = TestUtilities.testCasesPath + "classes.swift"
 
 			//
 			let driverResult1 = try Driver.run(withArguments:
@@ -65,7 +65,7 @@ class DriverTest: XCTestCase {
 				 "-emit-kotlin",
 				 "-indentation=t",
 				 "-q", "-Q",
-				 testFilePath, ])
+				 testCasePath, ])
 			let resultArray1 = driverResult1 as? MutableList<Any?>
 			let kotlinTranslations1 = resultArray1?.as(MutableList<Driver.KotlinTranslation>.self)
 
@@ -86,7 +86,7 @@ class DriverTest: XCTestCase {
 				 "-indentation=t",
 				 "-no-main-file",
 				 "-q", "-Q",
-				 testFilePath, ])
+				 testCasePath, ])
 			let resultArray2 = driverResult2 as? MutableList<Any?>
 			let kotlinTranslations2 = resultArray2?.as(MutableList<Driver.KotlinTranslation>.self)
 
@@ -111,7 +111,7 @@ class DriverTest: XCTestCase {
 
 	func testContinueOnErrors() {
 		do {
-			let testFilePath = TestUtilities.testFilesPath + "errors.swift"
+			let testCasePath = TestUtilities.testCasesPath + "errors.swift"
 
 			//
 			Compiler.clearErrorsAndWarnings()
@@ -122,7 +122,7 @@ class DriverTest: XCTestCase {
 				 "-indentation=t",
 				 "-continue-on-error",
 				 "-q", "-Q",
-				 testFilePath, ])
+				 testCasePath, ])
 
 			XCTAssert(Compiler.errors.count == 2)
 
@@ -135,7 +135,7 @@ class DriverTest: XCTestCase {
 				 "-indentation=t",
 				 "-no-main-file",
 				 "-q", "-Q",
-				 testFilePath, ])
+				 testCasePath, ])
 
 			XCTFail("Expected Driver to throw an error.")
 		}
@@ -148,7 +148,7 @@ class DriverTest: XCTestCase {
 
 	func testIndentation() {
 		do {
-			let testFilePath = TestUtilities.testFilesPath + "classes.swift"
+			let testCasePath = TestUtilities.testCasesPath + "classes.swift"
 
 			//
 			let driverResult1 = try Driver.run(withArguments:
@@ -156,7 +156,7 @@ class DriverTest: XCTestCase {
 				 "-emit-kotlin",
 				 "-indentation=t",
 				 "-q", "-Q",
-				 testFilePath, ])
+				 testCasePath, ])
 			let resultArray1 = driverResult1 as? MutableList<Any?>
 			let kotlinTranslations1 = resultArray1?.as(MutableList<Driver.KotlinTranslation>.self)
 
@@ -177,7 +177,7 @@ class DriverTest: XCTestCase {
 				 "-emit-kotlin",
 				 "-indentation=4",
 				 "-q", "-Q",
-				 testFilePath, ])
+				 testCasePath, ])
 			let resultArray2 = driverResult2 as? MutableList<Any?>
 			let kotlinTranslations2 = resultArray2?.as(MutableList<Driver.KotlinTranslation>.self)
 

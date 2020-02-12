@@ -19,7 +19,7 @@ open class AcceptanceTest: XCTestCase {
     companion object {
         internal fun setUp() {
             try {
-                Utilities.updateTestFiles()
+                Utilities.updateTestCases()
             }
             catch (error: Exception) {
                 println(error)
@@ -49,8 +49,8 @@ open class AcceptanceTest: XCTestCase {
             try {
                 // Translate the swift code to kotlin, compile the resulting kotlin code, run it,
                 // and get its output
-                val testFilePath: String = TestUtilities.testFilesPath + testName
-                val astDumpFilePath: String = Utilities.pathOfSwiftASTDumpFile(swiftFile = testFilePath)
+                val testCasePath: String = TestUtilities.testCasesPath + testName
+                val astDumpFilePath: String = Utilities.pathOfSwiftASTDumpFile(swiftFile = testCasePath)
                 val compilationResult: Shell.CommandOutput? = Compiler.transpileCompileAndRun(
                     inputFiles = mutableListOf(astDumpFilePath),
                     context = TranspilationContext(indentationString = "\t"))
@@ -61,7 +61,7 @@ open class AcceptanceTest: XCTestCase {
                 }
 
                 // Load the previously stored kotlin code from file
-                val expectedOutput: String = Utilities.readFile(testFilePath.withExtension(FileExtension.OUTPUT))
+                val expectedOutput: String = Utilities.readFile(testCasePath.withExtension(FileExtension.OUTPUT))
 
                 XCTAssert(
                     compilationResult.standardError == "",

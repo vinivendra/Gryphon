@@ -14,41 +14,29 @@
 // limitations under the License.
 //
 
-// gryphon output: Test Files/Bootstrap Outputs/misc.swiftAST
-// gryphon output: Test Files/Bootstrap Outputs/misc.gryphonASTRaw
-// gryphon output: Test Files/Bootstrap Outputs/misc.gryphonAST
-// gryphon output: Test Files/Bootstrap Outputs/misc.kt
+// gryphon output: Test cases/Bootstrap Outputs/warnings.swiftAST
+// gryphon output: Test cases/Bootstrap Outputs/warnings.gryphonASTRaw
+// gryphon output: Test cases/Bootstrap Outputs/warnings.gryphonAST
+// gryphon output: Test cases/Bootstrap Outputs/warnings.kt
 
-// Typealias
-typealias A = Int
+struct UnsupportedStruct {
+	let immutableVariable = 0
+	var mutableVariable = 0
 
-// Typealias with inner types
-class B {
-	class C {
+	func pureFunction() { }
+	mutating func mutatingFunction() { }
 
+	var computedVarIsOK: Int {
+		return 0
 	}
 }
 
-typealias BC = B.C
+enum UnsupportedEnum {
+	case a(int: Int)
 
-// Typealias with generics
-class List<T> { } // kotlin: ignore
+	mutating func mutatingFunction() { }
 
-typealias ListInt = List<Int>
-
-//
-var a: A = 0
-var bc: BC
-
-// `a ?: return`
-func f(a: Int?) {
-	if a == nil {
-		return
+	var computedVarIsOK: Int {
+		return 0
 	}
-	print(a)
 }
-
-f(a: 10)
-print("==")
-f(a: nil)
-print("==")

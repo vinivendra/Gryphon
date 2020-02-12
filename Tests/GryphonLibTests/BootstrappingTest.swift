@@ -61,7 +61,7 @@ class BootstrappingTest: XCTestCase {
 			print("- Testing \(testName)...")
 
 			do {
-				let testFilePath = TestUtilities.testFilesPath + testName + ".swift"
+				let testCasePath = TestUtilities.testCasesPath + testName + ".swift"
 
 				// Get Kotlin results
 				let swiftASTFilePath = BootstrappingTest.getBootstrapOutputFilePath(
@@ -76,7 +76,7 @@ class BootstrappingTest: XCTestCase {
 					 "-indentation=t",
 					 "-avoid-unicode",
 					 "-q", "-Q",
-					 testFilePath, ])
+					 testCasePath, ])
 				guard let resultArray = driverResult as? MutableList<Any?>,
 					let swiftASTs = resultArray.as(MutableList<SwiftAST>.self),
 					let originalSwiftAST = swiftASTs.first else
@@ -113,7 +113,7 @@ class BootstrappingTest: XCTestCase {
 			print("- Testing \(testName)...")
 
 			do {
-				let testFilePath = TestUtilities.testFilesPath + testName + ".swift"
+				let testCasePath = TestUtilities.testCasesPath + testName + ".swift"
 
 				// Get Kotlin results
 				let rawASTFilePath = BootstrappingTest.getBootstrapOutputFilePath(
@@ -128,7 +128,7 @@ class BootstrappingTest: XCTestCase {
 					 "-indentation=t",
 					 "-avoid-unicode",
 					 "-q", "-Q",
-					 testFilePath, ])
+					 testCasePath, ])
 				guard let resultArray = driverResult as? MutableList<Any?>,
 					let rawASTs = resultArray.as(MutableList<GryphonAST>.self),
 					let originalRawAST = rawASTs.first else
@@ -165,7 +165,7 @@ class BootstrappingTest: XCTestCase {
 			print("- Testing \(testName)...")
 
 			do {
-				let testFilePath = TestUtilities.testFilesPath + testName + ".swift"
+				let testCasePath = TestUtilities.testCasesPath + testName + ".swift"
 
 				// Get Kotlin results
 				let astFilePath = BootstrappingTest.getBootstrapOutputFilePath(
@@ -180,7 +180,7 @@ class BootstrappingTest: XCTestCase {
 					 "-indentation=t",
 					 "-avoid-unicode",
 					 "-q", "-Q",
-					 testFilePath, ])
+					 testCasePath, ])
 				guard let resultArray = driverResult as? MutableList<Any?>,
 					let asts = resultArray.as(MutableList<GryphonAST>.self),
 					let originalAST = asts.first else
@@ -217,7 +217,7 @@ class BootstrappingTest: XCTestCase {
 			print("- Testing \(testName)...")
 
 			do {
-				let testFilePath = TestUtilities.testFilesPath + testName + ".swift"
+				let testCasePath = TestUtilities.testCasesPath + testName + ".swift"
 
 				// Get Kotlin results
 				let testOutputFilePath = BootstrappingTest.getBootstrapOutputFilePath(
@@ -232,7 +232,7 @@ class BootstrappingTest: XCTestCase {
 					 "-indentation=t",
 					 "-avoid-unicode",
 					 "-q", "-Q",
-					 testFilePath, ])
+					 testCasePath, ])
 				guard let resultArray = driverResult as? MutableList<Any?>,
 					let kotlinCodes = resultArray
 						.as(MutableList<Driver.KotlinTranslation>.self)?
@@ -291,7 +291,7 @@ class BootstrappingTest: XCTestCase {
 		}
 	}
 
-	static let bootstrapOutputsFolder = "Test Files/Bootstrap Outputs"
+	static let bootstrapOutputsFolder = "Test cases/Bootstrap Outputs"
 
 	static var hasError = false
 

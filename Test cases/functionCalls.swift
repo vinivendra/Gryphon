@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// gryphon output: Test Files/Bootstrap Outputs/functionCalls.swiftAST
-// gryphon output: Test Files/Bootstrap Outputs/functionCalls.gryphonASTRaw
-// gryphon output: Test Files/Bootstrap Outputs/functionCalls.gryphonAST
-// gryphon output: Test Files/Bootstrap Outputs/functionCalls.kt
+// gryphon output: Test cases/Bootstrap Outputs/functionCalls.swiftAST
+// gryphon output: Test cases/Bootstrap Outputs/functionCalls.gryphonASTRaw
+// gryphon output: Test cases/Bootstrap Outputs/functionCalls.gryphonAST
+// gryphon output: Test cases/Bootstrap Outputs/functionCalls.kt
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Function definitions

@@ -14,30 +14,41 @@
 // limitations under the License.
 //
 
-// gryphon output: Test Files/Bootstrap Outputs/structs.swiftAST
-// gryphon output: Test Files/Bootstrap Outputs/structs.gryphonASTRaw
-// gryphon output: Test Files/Bootstrap Outputs/structs.gryphonAST
-// gryphon output: Test Files/Bootstrap Outputs/structs.kt
+// gryphon output: Test cases/Bootstrap Outputs/misc.swiftAST
+// gryphon output: Test cases/Bootstrap Outputs/misc.gryphonASTRaw
+// gryphon output: Test cases/Bootstrap Outputs/misc.gryphonAST
+// gryphon output: Test cases/Bootstrap Outputs/misc.kt
 
-struct SupportedStruct {
-	let x = 0
-	let y = 1
+// Typealias
+typealias A = Int
+
+// Typealias with inner types
+class B {
+	class C {
+
+	}
 }
 
-struct OtherSupportedStruct {
-	let x: Int
-	let y: Int
+typealias BC = B.C
+
+// Typealias with generics
+class List<T> { } // kotlin: ignore
+
+typealias ListInt = List<Int>
+
+//
+var a: A = 0
+var bc: BC
+
+// `a ?: return`
+func f(a: Int?) {
+	if a == nil {
+		return
+	}
+	print(a)
 }
 
-struct NoInheritance: Equatable, Codable {
-	let x: Int
-	let y: Int
-}
-
-let a = SupportedStruct()
-let b = OtherSupportedStruct(x: 10, y: 20)
-
-print(a.x)
-print(a.y)
-print(b.x)
-print(b.y)
+f(a: 10)
+print("==")
+f(a: nil)
+print("==")

@@ -32,7 +32,7 @@ class IntegrationTest: XCTestCase {
 
 	override static func setUp() {
 		do {
-			try Utilities.updateTestFiles()
+			try Utilities.updateTestCases()
 		}
 		catch let error {
 			print(error)
@@ -60,14 +60,14 @@ class IntegrationTest: XCTestCase {
 
 			do {
 				// Generate kotlin code using the whole compiler
-				let testFilePath = TestUtilities.testFilesPath + testName
-				let astDumpFilePath = Utilities.pathOfSwiftASTDumpFile(forSwiftFile: testFilePath)
+				let testCasePath = TestUtilities.testCasesPath + testName
+				let astDumpFilePath = Utilities.pathOfSwiftASTDumpFile(forSwiftFile: testCasePath)
 				let generatedKotlinCode = try Compiler.transpileKotlinCode(
 					fromASTDumpFiles: [astDumpFilePath],
 					withContext: TranspilationContext(indentationString: "\t")).first!
 
 				// Load the previously stored kotlin code from file
-				let expectedKotlinCode = try! Utilities.readFile(testFilePath.withExtension(.kt))
+				let expectedKotlinCode = try! Utilities.readFile(testCasePath.withExtension(.kt))
 
 				XCTAssert(
 					generatedKotlinCode == expectedKotlinCode,

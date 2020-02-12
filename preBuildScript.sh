@@ -10,8 +10,8 @@ perl dumpASTs.pl ".gryphon/GryphonXCTest.swift"
 perl dumpASTs.pl "Example ASTs/test.swift"
 [ $? -eq 0 ] || exit 1
 
-for testFile in Test\ Files/*.swift; do
-    perl dumpASTs.pl "$testFile"
+for testCase in Test\ cases/*.swift; do
+    perl dumpASTs.pl "$testCase"
     [ $? -eq 0 ] || exit 1
 done
 

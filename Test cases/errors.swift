@@ -14,35 +14,10 @@
 // limitations under the License.
 //
 
-// gryphon output: Test Files/Bootstrap Outputs/assignments.swiftAST
-// gryphon output: Test Files/Bootstrap Outputs/assignments.gryphonASTRaw
-// gryphon output: Test Files/Bootstrap Outputs/assignments.gryphonAST
-// gryphon output: Test Files/Bootstrap Outputs/assignments.kt
+// gryphon output: Test cases/Bootstrap Outputs/errors.swiftAST
+// gryphon output: Test cases/Bootstrap Outputs/errors.gryphonASTRaw
+// gryphon output: Test cases/Bootstrap Outputs/errors.gryphonAST
+// gryphon output: Test cases/Bootstrap Outputs/errors.kt
 
-var x: Int = 0
-var y = x
-var z = 10
-z = x
-
-print("\(x)")
-print("\(y)")
-print("\(z)")
-
-//
-let a: Int? = nil
-
-print("\(a)")
-
-//
-let i: Int
-i = 0
-
-let r, g, b: Double
-r = 10
-g = 10
-b = 10
-
-let red = 1, green = 2, blue = 3
-
-let v = 0, w: Double
-let v2: Double, w2 = 0
+var y: Int = 0x0101
+var x: Int = 0b0101

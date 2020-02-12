@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// gryphon output: Test Files/Bootstrap Outputs/numericLiterals.swiftAST
-// gryphon output: Test Files/Bootstrap Outputs/numericLiterals.gryphonASTRaw
-// gryphon output: Test Files/Bootstrap Outputs/numericLiterals.gryphonAST
-// gryphon output: Test Files/Bootstrap Outputs/numericLiterals.kt
+// gryphon output: Test cases/Bootstrap Outputs/numericLiterals.swiftAST
+// gryphon output: Test cases/Bootstrap Outputs/numericLiterals.gryphonASTRaw
+// gryphon output: Test cases/Bootstrap Outputs/numericLiterals.gryphonAST
+// gryphon output: Test cases/Bootstrap Outputs/numericLiterals.kt
 
 func foo(int: Int, double: Double, float: Float) {
 	print(int)

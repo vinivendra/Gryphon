@@ -198,7 +198,7 @@ enum FileError: Error, CustomStringConvertible {
 }
 
 internal var libraryFilesHaveBeenUpdated = false
-internal var testFilesHaveBeenUpdated = false
+internal var testCasesHaveBeenUpdated = false
 
 extension Utilities {
     static public func updateLibraryFiles() throws {
@@ -239,8 +239,8 @@ extension Utilities {
         Compiler.log("\t* Done!")
     }
 
-    static public func updateTestFiles() throws {
-        guard !testFilesHaveBeenUpdated else {
+    static public func updateTestCases() throws {
+        guard !testCasesHaveBeenUpdated else {
             return
         }
 
@@ -248,12 +248,12 @@ extension Utilities {
 
         Compiler.log("\t* Updating unit test files...")
 
-        let testFilesFolder = "Test Files"
-        if needsToDumpASTForSwiftFiles(in: testFilesFolder) {
-            throw FileError.outdatedFile(inFolder: testFilesFolder)
+        let testCasesFolder = "Test cases"
+        if needsToDumpASTForSwiftFiles(in: testCasesFolder) {
+            throw FileError.outdatedFile(inFolder: testCasesFolder)
         }
 
-        testFilesHaveBeenUpdated = true
+        testCasesHaveBeenUpdated = true
 
         Compiler.log("\t* Done!")
     }

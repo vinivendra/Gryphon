@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// gryphon output: Test Files/Bootstrap Outputs/inits.swiftAST
-// gryphon output: Test Files/Bootstrap Outputs/inits.gryphonASTRaw
-// gryphon output: Test Files/Bootstrap Outputs/inits.gryphonAST
-// gryphon output: Test Files/Bootstrap Outputs/inits.kt
+// gryphon output: Test cases/Bootstrap Outputs/inits.swiftAST
+// gryphon output: Test cases/Bootstrap Outputs/inits.gryphonASTRaw
+// gryphon output: Test cases/Bootstrap Outputs/inits.gryphonAST
+// gryphon output: Test cases/Bootstrap Outputs/inits.kt
 
 class A {
 	var x: Int
