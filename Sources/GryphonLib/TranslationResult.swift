@@ -145,8 +145,8 @@ struct TranslationUnit {
 		self.node = node
 	}
 
-	// declaration: constructor(stringLiteral: String): this(stringLiteral, null) { }
-	// declaration: constructor(node: Translation): this(null, node) { }
+	// insert: constructor(stringLiteral: String): this(stringLiteral, null) { }
+	// insert: constructor(node: Translation): this(null, node) { }
 }
 
 internal class SourceFilePosition {

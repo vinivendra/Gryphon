@@ -25,7 +25,7 @@ struct TestableRange: Equatable {
 	let lowerBound: Int
 	let upperBound: Int
 
-	// declaration: constructor(range: IntRange): this(range.start, range.endInclusive) { }
+	// insert: constructor(range: IntRange): this(range.start, range.endInclusive) { }
 
 	init(_ range: Range<String.Index>) { // kotlin: ignore
 		self.lowerBound = range.lowerBound.encodedOffset
@@ -39,7 +39,7 @@ struct TestableRange: Equatable {
 }
 
 class ExtensionsTest: XCTestCase {
-	// declaration: constructor(): super() { }
+	// insert: constructor(): super() { }
 
 	public func getClassName() -> String { // annotation: override
 		return "ExtensionsTest"

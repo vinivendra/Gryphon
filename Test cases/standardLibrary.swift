@@ -22,7 +22,7 @@
 import Foundation
 
 typealias PrintContents = Any // kotlin: ignore
-// declaration: typealias PrintContents = Any?
+// insert: typealias PrintContents = Any?
 
 func printTest(_ contents: PrintContents, _ testName: String) {
 	let firstColumnSize = 40
@@ -187,9 +187,9 @@ let array4 = [2, 1]
 var arrayOfOptionals: [Int?] = [1] // kotlin: ignore
 let emptyArray: [Int] = []
 let stringArray = ["1", "2", "3"]
-// insert: val array: MutableList<Int> = mutableListOf(1, 2, 3)
-// insert: val array3: MutableList<Int> = mutableListOf(1)
-// insert: val arrayOfOptionals: MutableList<Int?> = mutableListOf(1)
+// insertInMain: val array: MutableList<Int> = mutableListOf(1, 2, 3)
+// insertInMain: val array3: MutableList<Int> = mutableListOf(1)
+// insertInMain: val arrayOfOptionals: MutableList<Int?> = mutableListOf(1)
 
 printTest(array, "Array append")
 array.append(4)
@@ -314,9 +314,9 @@ func f(of a: Int) { // kotlin: ignore
 	printTest(a, "User template")
 }
 
-// declaration: fun g(a: Int) {
-// declaration: 	printTest(a, "User template")
-// declaration: }
+// insert: fun g(a: Int) {
+// insert: 	printTest(a, "User template")
+// insert: }
 
 f(of: 10)
 

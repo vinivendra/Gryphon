@@ -24,7 +24,7 @@ import XCTest
 #endif
 
 class TestError: Error {
-	// declaration: constructor(): super() { }
+	// insert: constructor(): super() { }
 }
 
 class TestUtilities {

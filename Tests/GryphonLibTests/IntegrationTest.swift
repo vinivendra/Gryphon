@@ -21,10 +21,10 @@
 import XCTest
 #endif
 
-// declaration: import kotlin.system.exitProcess
+// insert: import kotlin.system.exitProcess
 
 class IntegrationTest: XCTestCase {
-	// declaration: constructor(): super() { }
+	// insert: constructor(): super() { }
 
 	public func getClassName() -> String { // annotation: override
 		return "IntegrationTest"

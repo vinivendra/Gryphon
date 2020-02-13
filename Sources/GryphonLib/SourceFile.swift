@@ -48,8 +48,8 @@ public class SourceFile {
 	}
 
 	public enum CommentKey: String {
-		case declaration
 		case insert
+		case insertInMain
 		case kotlin
 		case value
 		case inspect
@@ -126,7 +126,7 @@ extension SourceFile {
 			comment.split(withStringSeparator: ": ", maxSplits: 1, omittingEmptySubsequences: false)
 		guard commentComponents.count == 2 else {
 			// Allow the insertion of newlines even if the IDE trims the trailing spaces
-			if let key = commentComponents.first, key == "declaration:" || key == "insert:" {
+			if let key = commentComponents.first, key == "insert:" || key == "insertInMain:" {
 				let cleanKey = String(key.dropLast())
 				let commentKey = SourceFile.CommentKey(rawValue: cleanKey)!
 				return SourceFile.KeyedComment(key: commentKey, value: "")

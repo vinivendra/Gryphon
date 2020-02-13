@@ -22,14 +22,14 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Insert code at the beginning of the file
-// insert: println(\"Inserting at the beginning of the file\")
+// insertInMain: println(\"Inserting at the beginning of the file\")
 
 // Test imports in kotlin
-// declaration: import java.util.*
-// declaration:
-// declaration: fun myFunction(): String {
-// declaration: 	return \"Calling myFunction()\" // \\n \\t \\
-// declaration: }
+// insert: import java.util.*
+// insert:
+// insert: fun myFunction(): String {
+// insert: 	return \"Calling myFunction()\" // \\n \\t \\
+// insert: }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 import Foundation
@@ -54,10 +54,10 @@ f(a: 0,
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Kotlin literals as statements
-// insert: println(\"This will be ignored by swift, but not by kotlin.\")
-// insert:
-// insert: println(myFunction())
-// insert: println(myOtherFunction())
+// insertInMain: println(\"This will be ignored by swift, but not by kotlin.\")
+// insertInMain:
+// insertInMain: println(myFunction())
+// insertInMain: println(myOtherFunction())
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Ignore swift statements
@@ -103,59 +103,59 @@ print(B().y)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Test inserts and declarations
 if true {
-	// insert: println(\"if 1\")
+	// insertInMain: println(\"if 1\")
 	print("if 2")
-	// insert: println(\"if 3\")
+	// insertInMain: println(\"if 3\")
 	print("if 4")
-	// insert: println(\"if 5\")
+	// insertInMain: println(\"if 5\")
 }
 
 for i in [1] {
-	// insert: println(\"for 1\")
+	// insertInMain: println(\"for 1\")
 	print("for 2")
-	// insert: println(\"for 3\")
+	// insertInMain: println(\"for 3\")
 	print("for 4")
-	// insert: println(\"for 5\")
+	// insertInMain: println(\"for 5\")
 }
 
 func insertFunction() {
-	// insert: println(\"func 1\")
+	// insertInMain: println(\"func 1\")
 	print("func 2")
-	// insert: println(\"func 3\")
+	// insertInMain: println(\"func 3\")
 	print("func 4")
-	// insert: println(\"func 5\")
+	// insertInMain: println(\"func 5\")
 }
 insertFunction()
 
 class InsertClass {
-	// insert: var a: String = \"class a\"
+	// insertInMain: var a: String = \"class a\"
 	var b: String = "class b"
-	// insert: var c: String = \"class c\"
+	// insertInMain: var c: String = \"class c\"
 	var d: String = "class d"
-	// insert: var e: String = \"class e\"
+	// insertInMain: var e: String = \"class e\"
 
 	func insertMethod() {
-		// insert: println(\"method 1\")
+		// insertInMain: println(\"method 1\")
 		print("method 2")
-		// insert: println(\"method 3\")
+		// insertInMain: println(\"method 3\")
 		print("method 4")
-		// insert: println(\"method 5\")
+		// insertInMain: println(\"method 5\")
 	}
 }
 let insertClass = InsertClass()
-// insert: println(insertClass.a)
-// insert: println(insertClass.b)
-// insert: println(insertClass.c)
-// insert: println(insertClass.d)
-// insert: println(insertClass.e)
+// insertInMain: println(insertClass.a)
+// insertInMain: println(insertClass.b)
+// insertInMain: println(insertClass.c)
+// insertInMain: println(insertClass.d)
+// insertInMain: println(insertClass.e)
 insertClass.insertMethod()
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Insert code at the end of the file
 
-// insert: println(\"Code at the end of file.\")
+// insertInMain: println(\"Code at the end of file.\")
 
-// declaration: fun myOtherFunction(): String {
-// declaration: 	return \"Calling myOtherFunction()\" // \\n \\t \\
-// declaration: }
+// insert: fun myOtherFunction(): String {
+// insert: 	return \"Calling myOtherFunction()\" // \\n \\t \\
+// insert: }

@@ -22,7 +22,7 @@ import XCTest
 #endif
 
 class DriverTest: XCTestCase {
-	// declaration: constructor(): super() { }
+	// insert: constructor(): super() { }
 
 	public func getClassName() -> String { // annotation: override
 		return "DriverTest"

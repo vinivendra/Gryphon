@@ -19,7 +19,7 @@
 // gryphon output: Sources/GryphonLib/GryphonAST.gryphonAST
 // gryphon output: Bootstrap/GryphonAST.kt
 
-// declaration: import kotlin.system.*
+// insert: import kotlin.system.*
 
 public final class GryphonAST: PrintableAsTree, Equatable, CustomStringConvertible {
 	let sourceFile: SourceFile?

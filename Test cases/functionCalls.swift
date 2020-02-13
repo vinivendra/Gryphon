@@ -120,13 +120,13 @@ func variadics(a: Int, b: Int..., c: Int = 0) { // kotlin: ignore
 	print(c)
 }
 
-// declaration: fun variadics(a: Int, vararg b: Int, c: Int = 0) {
-// declaration: 	print(a)
-// declaration: 	for (element in b) {
-// declaration: 		print(element)
-// declaration: 	}
-// declaration: 	println(c)
-// declaration: }
+// insert: fun variadics(a: Int, vararg b: Int, c: Int = 0) {
+// insert: 	print(a)
+// insert: 	for (element in b) {
+// insert: 		print(element)
+// insert: 	}
+// insert: 	println(c)
+// insert: }
 
 variadics(a: 1, b: 1, 2, 3, c: 1)
 variadics(a: 1, b: 1, 2, 3)

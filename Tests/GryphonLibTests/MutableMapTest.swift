@@ -24,7 +24,7 @@ import Foundation
 #endif
 
 class MutableMapTest: XCTestCase {
-	// declaration: constructor(): super() { }
+	// insert: constructor(): super() { }
 
 	public func getClassName() -> String { // annotation: override
 		return "MutableMapTest"

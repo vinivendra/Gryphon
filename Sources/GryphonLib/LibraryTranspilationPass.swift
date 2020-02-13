@@ -24,8 +24,8 @@ import Foundation
 /// This pass records templates statically in TranspilationTemplate so they can be retrieved later.
 
 public class RecordTemplatesTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
-	// declaration:     super(ast, context) { }
+	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// insert:     super(ast, context) { }
 
 	override func replaceFunctionDeclaration( // annotation: override
 		_ functionDeclaration: FunctionDeclaration)
@@ -89,8 +89,8 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 }
 
 public class ReplaceTemplatesTranspilationPass: TranspilationPass {
-	// declaration: constructor(ast: GryphonAST, context: TranspilationContext):
-	// declaration:     super(ast, context) { }
+	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// insert:     super(ast, context) { }
 
 	override func replaceExpression( // annotation: override
 		_ expression: Expression)

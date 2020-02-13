@@ -26,10 +26,10 @@ typealias GryphonTranslation = GryphonLib.Translation
 #else
 typealias GryphonTranslation = Translation // kotlin: ignore
 #endif
-// declaration: typealias GryphonTranslation = Translation
+// insert: typealias GryphonTranslation = Translation
 
 class TranslationResultTest: XCTestCase {
-	// declaration: constructor(): super() { }
+	// insert: constructor(): super() { }
 
 	public func getClassName() -> String { // annotation: override
 		return "TranslationResultTest"

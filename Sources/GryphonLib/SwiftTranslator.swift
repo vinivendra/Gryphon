@@ -2997,11 +2997,11 @@ public class SwiftTranslator {
 				lineStart: lineNumber, lineEnd: lineNumber, columnStart: 0, columnEnd: 0)
 
 			if let insertComment = sourceFile?.getKeyedCommentFromLine(lineNumber) {
-				if insertComment.key == .insert {
+				if insertComment.key == .insertInMain {
 					result.append(ExpressionStatement(range: astRange, expression:
 						LiteralCodeExpression(range: astRange, string: insertComment.value)))
 				}
-				else if insertComment.key == .declaration {
+				else if insertComment.key == .insert {
 					result.append(ExpressionStatement(range: astRange, expression:
 						LiteralDeclarationExpression(range: astRange, string: insertComment.value)))
 				}

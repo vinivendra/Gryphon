@@ -22,7 +22,7 @@ import XCTest
 #endif
 
 class LibraryTranspilationTest: XCTestCase {
-	// declaration: constructor(): super() { }
+	// insert: constructor(): super() { }
 
 	public func getClassName() -> String { // annotation: override
 		return "LibraryTranspilationTest"

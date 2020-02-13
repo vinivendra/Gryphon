@@ -38,16 +38,16 @@ private func gryphonTemplates() {
 	_ = "_string1.split(separator = _character, omittingEmptySubsequences = _bool)"
 }
 
-// declaration: internal fun String.split(
-// declaration:     separator: Char,
-// declaration:     maxSplits: Int = Int.MAX_VALUE,
-// declaration:     omittingEmptySubsequences: Boolean = true)
-// declaration:     : MutableList<String>
-// declaration: {
-// declaration:     return this.split(separator = separator.toString(),
-// declaration:         maxSplits = maxSplits,
-// declaration:         omittingEmptySubsequences = omittingEmptySubsequences)
-// declaration: }
+// insert: internal fun String.split(
+// insert:     separator: Char,
+// insert:     maxSplits: Int = Int.MAX_VALUE,
+// insert:     omittingEmptySubsequences: Boolean = true)
+// insert:     : MutableList<String>
+// insert: {
+// insert:     return this.split(separator = separator.toString(),
+// insert:         maxSplits = maxSplits,
+// insert:         omittingEmptySubsequences = omittingEmptySubsequences)
+// insert: }
 
 internal extension String {
 	// Result should have at most maxSplits + 1 elements.

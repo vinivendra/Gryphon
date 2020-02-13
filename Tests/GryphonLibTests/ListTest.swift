@@ -24,7 +24,7 @@ import Foundation
 #endif
 
 class ListTest: XCTestCase {
-	// declaration: constructor(): super() { }
+	// insert: constructor(): super() { }
 
 	public func getClassName() -> String { // annotation: override
 		return "ListTest"

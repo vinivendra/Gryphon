@@ -19,7 +19,7 @@
 // gryphon output: Sources/GryphonLib/TranspilationContext.gryphonAST
 // gryphon output: Bootstrap/TranspilationContext.kt
 
-// declaration: import kotlin.system.*
+// insert: import kotlin.system.*
 
 public class TranspilationContext {
 	/// The global context is used for information that should be accessible globally, such as
