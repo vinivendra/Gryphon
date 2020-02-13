@@ -41,7 +41,7 @@ class InitializationTest: XCTestCase {
 	// MARK: - Tests
 	func testInitialization() {
 		// Delete old folder
-		Utilities.deleteFolder(at: ".gryphon")
+		Utilities.deleteFolder(at: SupportingFile.gryphonBuildFolder)
 
 		// Create a new folder
 		try! Driver.run(withArguments: ["init", "-no-xcode"])

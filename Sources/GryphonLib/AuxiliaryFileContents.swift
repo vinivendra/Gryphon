@@ -573,7 +573,8 @@ var errorMaps: [String: ErrorMap] = [:]
 for error in errors {
 	let errorInformation = getInformation(fromString: error)
 	let errorMapPath =
-		".gryphon/KotlinErrorMaps/" + errorInformation.filePath.dropLast(2) + "kotlinErrorMap"
+		"\(SupportingFile.kotlinErrorMapsFolder)/" + errorInformation.filePath.dropLast(2) +
+		"kotlinErrorMap"
 
 	if errorMaps[errorMapPath] == nil {
 		if let fileContents = try? String(contentsOfFile: errorMapPath) {
@@ -616,7 +617,7 @@ internal let gradleErrorMapScriptFileContents = """
 // AuxiliaryFileContents.swift
 
 // This script should be run on a folder initialized by Gryphon (i.e. containing the relevant
-// `.gryphon` folder)
+// `\(SupportingFile.gryphonBuildFolder)` folder)
 
 // Examples of compatible errors:
 //e: /path/to/Model.kt: (15, 2): Expecting member declaration
@@ -728,7 +729,8 @@ var errorMaps: [String: ErrorMap] = [:]
 for error in errors {
 	let errorInformation = getInformation(fromString: error)
 	let errorMapPath =
-		".gryphon/KotlinErrorMaps/" + errorInformation.filePath.dropLast(2) + "kotlinErrorMap"
+		"\(SupportingFile.kotlinErrorMapsFolder)/" + errorInformation.filePath.dropLast(2) +
+		"kotlinErrorMap"
 
 	if errorMaps[errorMapPath] == nil {
 		if let fileContents = try? String(contentsOfFile: errorMapPath) {
@@ -818,7 +820,7 @@ gryphonBuildPhase.shell_script =
 	"gryphon -emit-kotlin \(dollarSign)SCRIPT_INPUT_FILE_LIST_0"
 
 # Set the path to the input file list
-gryphonBuildPhase.input_file_list_paths = ["\(dollarSign)(SRCROOT)/gryphonInputFiles.xcfilelist"]
+gryphonBuildPhase.input_file_list_paths = ["\(dollarSign)(SRCROOT)/\(SupportingFile.xcFileList)"]
 
 
 ####################################################################################################
@@ -855,7 +857,7 @@ else
 end
 
 # Set the script we want to run
-kotlinBuildPhase.shell_script = "bash .gryphon/scripts/compileKotlin.sh"
+kotlinBuildPhase.shell_script = "bash \(SupportingFile.compileKotlin.relativePath)"
 
 ####################################################################################################
 # Save the changes to disk
@@ -867,16 +869,16 @@ project.save()
 internal let compileKotlinScriptFileContents = """
 # Remove old logs
 # The `-f` option is here to avoid reporting errors when the files are not found
-rm -f "\(dollarSign)SRCROOT/.gryphon/gradleOutput.txt"
-rm -f "\(dollarSign)SRCROOT/.gryphon/gradleErrors.txt"
+rm -f "\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleOutput.txt"
+rm -f "\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleErrors.txt"
 
 # Switch to the Android folder so we can use pre-built gradle info to speed up the compilation.
 cd "\(dollarSign)ANDROIDROOT"
 
 # Compile the Android sources and save the logs gack to the iOS folder
 ./gradlew compileDebugSources > \
-	"\(dollarSign)SRCROOT/.gryphon/gradleOutput.txt" 2> \
-	"\(dollarSign)SRCROOT/.gryphon/gradleErrors.txt"
+	"\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleOutput.txt" 2> \
+	"\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleErrors.txt"
 
 # Switch back to the iOS folder
 cd \(dollarSign)SRCROOT
@@ -884,12 +886,14 @@ cd \(dollarSign)SRCROOT
 # Map the Kotlin errors back to Swift
 EXITSTATUS=0
 
-swift .gryphon/scripts/mapGradleErrorsToSwift.swift < .gryphon/gradleOutput.txt
+swift \(SupportingFile.mapGradleErrorsToSwift.relativePath) < \
+	\(SupportingFile.gryphonBuildFolder)/gradleOutput.txt
 if test "\(dollarSign)?" -ne "0" ; then
 	EXITSTATUS=-1
 fi
 
-swift .gryphon/scripts/mapGradleErrorsToSwift.swift < .gryphon/gradleErrors.txt
+swift \(SupportingFile.mapGradleErrorsToSwift.relativePath) < \
+	\(SupportingFile.gryphonBuildFolder)/gradleErrors.txt
 if test "\(dollarSign)?" -ne "0" ; then
 	EXITSTATUS=-1
 fi

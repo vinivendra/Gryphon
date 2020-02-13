@@ -74,7 +74,7 @@ if ($needsToUpdate) {
 	$outputFileMapContents = $outputFileMapContents . "}\n";
 
 	# Write them to a file
-	my $ofmFilePath = $gryphonFolder . "temp-output-file-map.json";
+	my $ofmFilePath = $gryphonFolder . "output-file-map.json";
 	open(my $fh, '>', $ofmFilePath) or die "Could not open file '$ofmFilePath' $!";
 	print $fh $outputFileMapContents;
 	close $fh;

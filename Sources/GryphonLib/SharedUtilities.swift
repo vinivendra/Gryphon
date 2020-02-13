@@ -99,7 +99,7 @@ private func gryphonTemplates() {
 }
 
 /// Stores all hard-coded file names and paths. Changes to these paths might need to be reflected in
-/// preBuildScript.sh
+/// preBuildScript.sh, prepareForBootstrapTests.sh, and dumpASTs.pl
 public class SupportingFile {
 	let name: String
 
@@ -129,34 +129,36 @@ public class SupportingFile {
 	//
 	static public func pathOfSwiftASTDumpFile(forSwiftFile swiftFile: String) -> String {
 		let relativePath = Utilities.getRelativePath(forFile: swiftFile)
-		let pathInGryphonFolder = ".gryphon/ASTDumps/" + relativePath
+		let pathInGryphonFolder = "\(astDumpsFolder)/\(relativePath)"
 		let astDumpPath = Utilities.changeExtension(of: pathInGryphonFolder, to: .swiftASTDump)
 		return astDumpPath
 	}
 
 	static public func pathOfKotlinErrorMapFile(forKotlinFile kotlinFile: String) -> String {
 		let relativePath = Utilities.getRelativePath(forFile: kotlinFile)
-		let pathInGryphonFolder = ".gryphon/KotlinErrorMaps/" + relativePath
+		let pathInGryphonFolder = "\(kotlinErrorMapsFolder)/\(relativePath)"
 		let errorMapPath = Utilities.changeExtension(of: pathInGryphonFolder, to: .kotlinErrorMap)
 		return errorMapPath
 	}
+
+	// Folders
+	static let gryphonBuildFolder = ".gryphon"
+	static let gryphonScriptsFolder = "\(gryphonBuildFolder)/scripts"
+	static let kotlinErrorMapsFolder = "\(gryphonBuildFolder)/KotlinErrorMaps"
+	static let astDumpsFolder = "\(gryphonBuildFolder)/ASTDumps"
 
 	// Files in the project folder
 	static let xcFileList = SupportingFile("gryphonInputFiles.xcfilelist")
 
 	// Files in the Gryphon build folder ("/path/to/project/.gryphon")
-	static let gryphonBuildFolder = ".gryphon"
-
 	static let gryphonTemplatesLibrary = SupportingFile("GryphonTemplatesLibrary.swift")
 	static let gryphonTemplatesLibraryASTDump = SupportingFile(
-		Utilities.changeExtension(of: "GryphonTemplatesLibrary.swift", to: .swiftASTDump))
+		Utilities.changeExtension(of: gryphonTemplatesLibrary.name, to: .swiftASTDump))
 	static let temporaryOutputFileMap = SupportingFile("output-file-map.json")
 	static let astDumpsScript = SupportingFile("updateASTDumps.sh")
 	static let gryphonXCTest = SupportingFile("GryphonXCTest.swift")
 
 	// Files in the Gryphon scripts folder ("/path/to/project/.gryphon/scripts")
-	static let gryphonScriptsFolder = "\(gryphonBuildFolder)/scripts"
-
 	static let mapKotlinErrorsToSwift = SupportingFile("mapKotlinErrorsToSwift.swift")
 	static let mapGradleErrorsToSwift = SupportingFile("mapGradleErrorsToSwift.swift")
 	static let makeGryphonTargets = SupportingFile("makeGryphonTargets.rb")
@@ -245,6 +247,18 @@ extension Utilities {
 
         return FileExtension(rawValue: extensionString)
     }
+
+	public static func fileHasExtension(_ filePath: String, _ testExtension: FileExtension) -> Bool
+	{
+		if let fileExtension = getExtension(of: filePath),
+			fileExtension == testExtension
+		{
+			return true
+		}
+		else {
+			return false
+		}
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -326,7 +340,9 @@ extension Utilities {
 			// "./.gryphon/path/to/file.swiftASTDump". Files that are already in "./.gryphon", such
 			// as the stdlib templates file, are special cases and should be dumped at "./.gryphon"
 			// (rather than "./.gryphon/.gryphon", which is what the normal algorithm would return).
-			if folder.hasSuffix(".gryphon") || folder.hasSuffix(".gryphon/") {
+			if folder.hasSuffix(SupportingFile.gryphonBuildFolder) ||
+				folder.hasSuffix(SupportingFile.gryphonBuildFolder + "/")
+			{
 				astDumpFilePath = Utilities.changeExtension(of: swiftFile, to: .swiftASTDump)
 			}
 			else {

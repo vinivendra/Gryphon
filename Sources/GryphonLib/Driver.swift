@@ -424,7 +424,7 @@ public class Driver {
 
 		// Run compiler steps
 		let filteredInputFiles = inputFilePaths.filter {
-			$0.hasSuffix(".swift") || $0.hasSuffix(".swiftASTDump")
+			Utilities.fileHasExtension($0, .swift) || Utilities.fileHasExtension($0, .swiftASTDump)
 		}
 
 		let firstResult: MutableList<Any?>
@@ -674,7 +674,8 @@ public class Driver {
 		}
 
 		//// Call the Swift compiler
-		guard let commandResult = Shell.runShellCommand(["bash", ".gryphon/updateASTDumps.sh"]) else
+		guard let commandResult =
+			Shell.runShellCommand(["bash", SupportingFile.astDumpsScript.relativePath]) else
 		{
 			print("Failed to call AST dump script.")
 			return false
@@ -691,10 +692,10 @@ public class Driver {
 	}
 
 	static func getASTDump(forFile file: String) -> String? {
-		if file.hasSuffix(".swift") {
+		if Utilities.fileHasExtension(file, .swift) {
 			return SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: file)
 		}
-		else if file.hasSuffix(".swiftASTDump") {
+		else if Utilities.fileHasExtension(file, .swiftASTDump) {
 			return file
 		}
 		else {
@@ -755,7 +756,8 @@ public class Driver {
 		      ↪️  -no-xcode         Use this option to initialize Gryphon for
 		            translating a Swift program in the current folder that doesn't use
 		            Xcode.
-		  ➡️  clean                 Deletes the `.gryphon` folder created during
+		  ➡️  clean                 Deletes the `\(SupportingFile.gryphonBuildFolder)` \
+		folder created during
 		        initialization.
 		  ➡️  createASTDumpScript   Configures Gryphon to be used with an Xcode
 		        project in the current folder. Only needed if using
