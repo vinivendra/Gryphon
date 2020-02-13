@@ -142,27 +142,28 @@ public class SupportingFile {
 	}
 
 	// Folders
-	static let gryphonBuildFolder = ".gryphon"
-	static let gryphonScriptsFolder = "\(gryphonBuildFolder)/scripts"
-	static let kotlinErrorMapsFolder = "\(gryphonBuildFolder)/KotlinErrorMaps"
-	static let astDumpsFolder = "\(gryphonBuildFolder)/ASTDumps"
+	public static let gryphonBuildFolder = ".gryphon"
+	public static let gryphonScriptsFolder = "\(gryphonBuildFolder)/scripts"
+	public static let kotlinErrorMapsFolder = "\(gryphonBuildFolder)/KotlinErrorMaps"
+	public static let astDumpsFolder = "\(gryphonBuildFolder)/ASTDumps"
+	public static let kotlinBuildFolder = "\(gryphonBuildFolder)/kotlinBuild-\(OS.systemIdentifier)"
 
 	// Files in the project folder
-	static let xcFileList = SupportingFile("gryphonInputFiles.xcfilelist")
+	public static let xcFileList = SupportingFile("gryphonInputFiles.xcfilelist")
 
 	// Files in the Gryphon build folder ("/path/to/project/.gryphon")
-	static let gryphonTemplatesLibrary = SupportingFile("GryphonTemplatesLibrary.swift")
-	static let gryphonTemplatesLibraryASTDump = SupportingFile(
+	public static let gryphonTemplatesLibrary = SupportingFile("GryphonTemplatesLibrary.swift")
+	public static let gryphonTemplatesLibraryASTDump = SupportingFile(
 		Utilities.changeExtension(of: gryphonTemplatesLibrary.name, to: .swiftASTDump))
-	static let temporaryOutputFileMap = SupportingFile("output-file-map.json")
-	static let astDumpsScript = SupportingFile("updateASTDumps.sh")
-	static let gryphonXCTest = SupportingFile("GryphonXCTest.swift")
+	public static let temporaryOutputFileMap = SupportingFile("output-file-map.json")
+	public static let astDumpsScript = SupportingFile("updateASTDumps.sh")
+	public static let gryphonXCTest = SupportingFile("GryphonXCTest.swift")
 
 	// Files in the Gryphon scripts folder ("/path/to/project/.gryphon/scripts")
-	static let mapKotlinErrorsToSwift = SupportingFile("mapKotlinErrorsToSwift.swift")
-	static let mapGradleErrorsToSwift = SupportingFile("mapGradleErrorsToSwift.swift")
-	static let makeGryphonTargets = SupportingFile("makeGryphonTargets.rb")
-	static let compileKotlin = SupportingFile("compileKotlin.sh")
+	public static let mapKotlinErrorsToSwift = SupportingFile("mapKotlinErrorsToSwift.swift")
+	public static let mapGradleErrorsToSwift = SupportingFile("mapGradleErrorsToSwift.swift")
+	public static let makeGryphonTargets = SupportingFile("makeGryphonTargets.rb")
+	public static let compileKotlin = SupportingFile("compileKotlin.sh")
 }
 
 public class Utilities {

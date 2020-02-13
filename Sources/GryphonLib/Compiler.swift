@@ -204,7 +204,7 @@ public class Compiler {
 	public static func transpileThenCompile(
 		ASTDumpFiles inputFiles: MutableList<String>,
 		withContext context: TranspilationContext,
-		outputFolder: String = OS.buildFolder)
+		outputFolder: String = SupportingFile.kotlinBuildFolder)
 		throws -> Shell.CommandOutput?
 	{
 		let kotlinCodes = try transpileKotlinCode(
@@ -249,7 +249,7 @@ public class Compiler {
 	public static func transpileCompileAndRun(
 		ASTDumpFiles inputFiles: MutableList<String>,
 		withContext context: TranspilationContext,
-		fromFolder outputFolder: String = OS.buildFolder)
+		fromFolder outputFolder: String = SupportingFile.kotlinBuildFolder)
 		throws -> Shell.CommandOutput?
 	{
 		let compilationResult = try transpileThenCompile(

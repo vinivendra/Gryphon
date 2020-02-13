@@ -78,7 +78,6 @@ public class OS {
             else { "i386" }
 
         val systemIdentifier: String = osName + "-" + architecture
-        val buildFolder = ".kotlinBuild-${systemIdentifier}"
     }
 }
 

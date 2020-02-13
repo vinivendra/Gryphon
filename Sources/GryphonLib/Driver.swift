@@ -320,11 +320,11 @@ public class Driver {
 				outputFolder = maybeOutputFolder
 			}
 			else {
-				outputFolder = OS.buildFolder
+				outputFolder = SupportingFile.kotlinBuildFolder
 			}
 		}
 		else {
-			outputFolder = OS.buildFolder
+			outputFolder = SupportingFile.kotlinBuildFolder
 		}
 
 		//

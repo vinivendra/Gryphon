@@ -92,8 +92,6 @@ public class OS {
 	#endif
 
 	public static let systemIdentifier: String = osName + "-" + architecture
-
-	public static let buildFolder = ".kotlinBuild-\(systemIdentifier)"
 }
 
 extension Utilities {
