@@ -1063,8 +1063,8 @@ public /*abstract*/ class Expression: PrintableAsTree, Equatable {
 		{
 			return lhs == rhs
 		}
-		if let lhs = lhs as? LiteralDeclarationExpression,
-			let rhs = rhs as? LiteralDeclarationExpression
+		if let lhs = lhs as? LiteralCodeExpression,
+			let rhs = rhs as? LiteralCodeExpression
 		{
 			return lhs == rhs
 		}
@@ -1220,14 +1220,18 @@ public /*abstract*/ class Expression: PrintableAsTree, Equatable {
 
 public class LiteralCodeExpression: Expression {
 	let string: String
+	let shouldGoToMainFunction: Bool
 
-	init(range: SourceFileRange?, string: String) {
+	init(range: SourceFileRange?, string: String, shouldGoToMainFunction: Bool) {
 		self.string = string
+		self.shouldGoToMainFunction = shouldGoToMainFunction
 		super.init(range: range, name: "LiteralCodeExpression".capitalizedAsCamelCase())
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
-		return [PrintableTree(string)]
+		return [
+			PrintableTree(string),
+			shouldGoToMainFunction ? PrintableTree("shouldGoToMainFunction") : nil, ]
 	}
 
 	override var swiftType: String? { // annotation: override
@@ -1235,32 +1239,8 @@ public class LiteralCodeExpression: Expression {
 	}
 
 	public static func == (lhs: LiteralCodeExpression, rhs: LiteralCodeExpression) -> Bool {
-		return lhs.string == rhs.string
-	}
-}
-
-public class LiteralDeclarationExpression: Expression {
-	let string: String
-
-	init(range: SourceFileRange?, string: String) {
-		self.string = string
-		super.init(range: range, name: "LiteralDeclarationExpression".capitalizedAsCamelCase())
-	}
-
-	override public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
-		return [PrintableTree(string)]
-	}
-
-	override var swiftType: String? { // annotation: override
-		return nil
-	}
-
-	public static func == (
-		lhs: LiteralDeclarationExpression,
-		rhs: LiteralDeclarationExpression)
-		-> Bool
-	{
-		return lhs.string == rhs.string
+		return lhs.string == rhs.string &&
+			lhs.shouldGoToMainFunction == rhs.shouldGoToMainFunction
 	}
 }
 

@@ -115,7 +115,10 @@ public class SwiftTranslator {
 
 			// Special case: expression statements may be literal declarations or normal statements
 			if let expressionStatement = statement as? ExpressionStatement {
-				if expressionStatement.expression is LiteralDeclarationExpression {
+				if let literalCodeExpression =
+						expressionStatement.expression as? LiteralCodeExpression,
+					!literalCodeExpression.shouldGoToMainFunction
+				{
 					declarations.append(statement)
 				}
 				else {
@@ -1983,7 +1986,8 @@ public class SwiftTranslator {
 		{
 			expression = LiteralCodeExpression(
 				range: getRangeRecursively(ofNode: variableDeclaration),
-				string: valueReplacement)
+				string: valueReplacement,
+				shouldGoToMainFunction: true)
 		}
 
 		var getter: FunctionDeclaration?
@@ -2064,7 +2068,8 @@ public class SwiftTranslator {
 		if let valueReplacement = getKeyedComment(forNode: expression, key: .value) {
 			return LiteralCodeExpression(
 				range: getRangeRecursively(ofNode: expression),
-				string: valueReplacement)
+				string: valueReplacement,
+				shouldGoToMainFunction: true)
 		}
 
 		let result: Expression
@@ -2998,12 +3003,20 @@ public class SwiftTranslator {
 
 			if let insertComment = sourceFile?.getKeyedCommentFromLine(lineNumber) {
 				if insertComment.key == .insertInMain {
-					result.append(ExpressionStatement(range: astRange, expression:
-						LiteralCodeExpression(range: astRange, string: insertComment.value)))
+					result.append(ExpressionStatement(
+						range: astRange,
+						expression: LiteralCodeExpression(
+							range: astRange,
+							string: insertComment.value,
+							shouldGoToMainFunction: true)))
 				}
 				else if insertComment.key == .insert {
-					result.append(ExpressionStatement(range: astRange, expression:
-						LiteralDeclarationExpression(range: astRange, string: insertComment.value)))
+					result.append(ExpressionStatement(
+						range: astRange,
+						expression: LiteralCodeExpression(
+							range: astRange,
+							string: insertComment.value,
+							shouldGoToMainFunction: false)))
 				}
 				else if insertComment.key == .gryphonOutput,
 					let fileExtension = Utilities.getExtension(of: insertComment.value)

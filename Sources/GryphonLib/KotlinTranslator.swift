@@ -143,8 +143,8 @@ public class KotlinTranslator {
 				{
 					continue
 				}
-				if currentExpressionStatement.expression is LiteralDeclarationExpression,
-					nextExpressionStatement.expression is LiteralDeclarationExpression
+				if currentExpressionStatement.expression is LiteralCodeExpression,
+					nextExpressionStatement.expression is LiteralCodeExpression
 				{
 					continue
 				}
@@ -1205,9 +1205,6 @@ public class KotlinTranslator {
 		if let literalCodeExpression = expression as? LiteralCodeExpression {
 			return translateLiteralCodeExpression(literalCodeExpression)
 		}
-		if let literalDeclarationExpression = expression as? LiteralDeclarationExpression {
-			return translateLiteralDeclarationExpression(literalDeclarationExpression)
-		}
 		if let arrayExpression = expression as? ArrayExpression {
 			return try translateArrayExpression(arrayExpression, withIndentation: indentation)
 		}
@@ -1724,15 +1721,6 @@ public class KotlinTranslator {
 
 	private func translateLiteralCodeExpression(
 		_ expression: LiteralCodeExpression)
-		-> Translation
-	{
-		return Translation(
-			range: expression.range,
-			string: expression.string.removingBackslashEscapes)
-	}
-
-	private func translateLiteralDeclarationExpression(
-		_ expression: LiteralDeclarationExpression)
 		-> Translation
 	{
 		return Translation(

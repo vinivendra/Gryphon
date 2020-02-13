@@ -538,9 +538,6 @@ public class TranspilationPass {
 		if let expression = expression as? LiteralCodeExpression {
 			return replaceLiteralCodeExpression(expression)
 		}
-		if let expression = expression as? LiteralDeclarationExpression {
-			return replaceLiteralDeclarationExpression(expression)
-		}
 		if let expression = expression as? ParenthesesExpression {
 			return replaceParenthesesExpression(expression)
 		}
@@ -649,13 +646,6 @@ public class TranspilationPass {
 		-> Expression
 	{
 		return literalCodeExpression
-	}
-
-	func replaceLiteralDeclarationExpression( // annotation: open
-		_ literalDeclarationExpression: LiteralDeclarationExpression)
-		-> Expression
-	{
-		return literalDeclarationExpression
 	}
 
 	func replaceParenthesesExpression( // annotation: open
