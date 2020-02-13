@@ -52,8 +52,9 @@ public class SourceFile {
 		case insertInMain
 		case ignore
 		case value
-		case inspect
-		case gryphon
+		case inspect // TODO: test
+		case multiline // TODO: test
+		case pure // TODO: test
 		case annotation
 		case gryphonOutput = "gryphon output"
 	}
@@ -71,7 +72,7 @@ public class SourceFile {
 
 extension SourceFile {
 	/// Returns any comment in the given line, or `nil` if there isn't one. Line indices start at 1.
-	public func getCommentFromLine(_ lineNumber: Int) -> CommonComment? { // gryphon: pure
+	public func getCommentFromLine(_ lineNumber: Int) -> CommonComment? { // pure: pure
 		guard let line = getLine(lineNumber) else {
 			return nil
 		}

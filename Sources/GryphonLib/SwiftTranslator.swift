@@ -351,7 +351,7 @@ public class SwiftTranslator {
 			}
 		}
 
-		let shouldInspect = (getKeyedComment(forNode: subtree, key: .gryphon) == "inspect")
+		let shouldInspect = (getKeyedComment(forNode: subtree, key: .inspect) == "inspect")
 		if shouldInspect {
 			print("===\nInspecting:")
 			print(subtree)
@@ -1866,7 +1866,7 @@ public class SwiftTranslator {
 		let joinedAnnotations = annotations.compactMap { $0 }.joined(separator: " ")
 		let annotationsResult = joinedAnnotations.isEmpty ? nil : joinedAnnotations
 
-		let isPure = (getKeyedComment(forNode: functionDeclaration, key: .gryphon) == "pure")
+		let isPure = (getKeyedComment(forNode: functionDeclaration, key: .pure) == "pure")
 
 		let prefix = String(functionNamePrefix)
 		if prefix == "init" {
@@ -2007,7 +2007,7 @@ public class SwiftTranslator {
 			}
 
 			let isImplicit = subtree.standaloneAttributes.contains("implicit")
-			let isPure = (getKeyedComment(forNode: subtree, key: .gryphon) == "pure")
+			let isPure = (getKeyedComment(forNode: subtree, key: .pure) == "pure")
 			let annotations = getKeyedComment(forNode: subtree, key: .annotation)
 
 			if subtree["get_for"] != nil {
@@ -2275,7 +2275,7 @@ public class SwiftTranslator {
 				"Unknown expression", ast: expression, translator: self)
 		}
 
-		let shouldInspect = (getKeyedComment(forNode: expression, key: .gryphon) == "inspect")
+		let shouldInspect = (getKeyedComment(forNode: expression, key: .pure) == "inspect")
 		if shouldInspect {
 			print("===\nInspecting:")
 			print(expression)
@@ -2912,13 +2912,13 @@ public class SwiftTranslator {
 				}
 			}
 			else {
-				// Check if there's a `// gryphon: multiline` comment just before the string
+				// Check if there's a `// multiline: multiline` comment just before the string
 				// literal, since we can't put a comment in the same line as a multiline string.
 				var isMultiline = false
 				if let lineNumber = getRange(ofNode: stringLiteralExpression)?.lineStart {
 					if let maybeMultilineComment =
 							sourceFile?.getKeyedCommentFromLine(lineNumber - 1),
-						maybeMultilineComment.key == .gryphon
+						maybeMultilineComment.key == .multiline
 					{
 						isMultiline = (maybeMultilineComment.value == "multiline")
 					}

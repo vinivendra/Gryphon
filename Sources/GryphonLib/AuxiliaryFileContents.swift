@@ -27,7 +27,7 @@
 let dollarSign = "$" // value: "\\$"
 let kotlinStringInterpolation = "{_string}"
 
-// gryphon: multiline
+// multiline: multiline
 internal let gryphonXCTestFileContents = """
 private struct Compare: Comparable { // ignore: ignore
 	static func < (lhs: Compare, rhs: Compare) -> Bool {
@@ -94,7 +94,7 @@ extension XCTestCase {
 // TODO: This string isn't being translated as multiline
 // TODO: Comments should be ignored inside multiline strings
 // TODO: Rename/refactor these global variables (see SupportingFile)
-// gryphon: multiline
+// multiline: multiline
 internal let gryphonTemplatesLibraryFileContents = """
 // WARNING: Any changes to this file should be reflected in the literal string in
 // AuxiliaryFileContents.swift
@@ -459,7 +459,7 @@ func gryphonTemplates() {
 
 """
 
-// gryphon: multiline
+// multiline: multiline
 internal let kotlinErrorMapScriptFileContents = """
 // WARNING: Any changes to this file should be reflected in the literal string in
 // AuxiliaryFileContents.swift
@@ -611,7 +611,7 @@ for error in errors {
 
 """
 
-// gryphon: multiline
+// multiline: multiline
 internal let gradleErrorMapScriptFileContents = """
 // WARNING: Any changes to this file should be reflected in the literal string in
 // AuxiliaryFileContents.swift
@@ -773,7 +773,7 @@ if !errors.isEmpty {
 
 """
 
-// gryphon: multiline
+// multiline: multiline
 internal let xcodeTargetScriptFileContents = """
 require 'xcodeproj'
 project_path = 'iOSTest.xcodeproj'
@@ -865,7 +865,7 @@ project.save()
 
 """
 
-// gryphon: multiline
+// multiline: multiline
 internal let compileKotlinScriptFileContents = """
 # Remove old logs
 # The `-f` option is here to avoid reporting errors when the files are not found
