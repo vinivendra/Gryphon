@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// gryphon output: Bootstrap/InitializationTest.kt
+// output: Bootstrap/InitializationTest.kt
 
 #if !GRYPHON
 @testable import GryphonLib

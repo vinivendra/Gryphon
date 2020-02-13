@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// gryphon output: Test cases/Bootstrap Outputs/classes.swiftAST
-// gryphon output: Test cases/Bootstrap Outputs/classes.gryphonASTRaw
-// gryphon output: Test cases/Bootstrap Outputs/classes.gryphonAST
-// gryphon output: Test cases/Bootstrap Outputs/classes.kt
+// output: Test cases/Bootstrap Outputs/classes.swiftAST
+// output: Test cases/Bootstrap Outputs/classes.gryphonASTRaw
+// output: Test cases/Bootstrap Outputs/classes.gryphonAST
+// output: Test cases/Bootstrap Outputs/classes.kt
 
 class Box {
 	var a: Int = 5

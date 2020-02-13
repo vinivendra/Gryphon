@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// gryphon output: Test cases/Bootstrap Outputs/standardLibrary.swiftAST
-// gryphon output: Test cases/Bootstrap Outputs/standardLibrary.gryphonASTRaw
-// gryphon output: Test cases/Bootstrap Outputs/standardLibrary.gryphonAST
-// gryphon output: Test cases/Bootstrap Outputs/standardLibrary.kt
+// output: Test cases/Bootstrap Outputs/standardLibrary.swiftAST
+// output: Test cases/Bootstrap Outputs/standardLibrary.gryphonASTRaw
+// output: Test cases/Bootstrap Outputs/standardLibrary.gryphonAST
+// output: Test cases/Bootstrap Outputs/standardLibrary.kt
 
 import Foundation
 

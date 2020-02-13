@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/PrintableAsTree.swiftAST
-// gryphon output: Sources/GryphonLib/PrintableAsTree.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/PrintableAsTree.gryphonAST
-// gryphon output: Bootstrap/PrintableAsTree.kt
+// output: Sources/GryphonLib/PrintableAsTree.swiftAST
+// output: Sources/GryphonLib/PrintableAsTree.gryphonASTRaw
+// output: Sources/GryphonLib/PrintableAsTree.gryphonAST
+// output: Bootstrap/PrintableAsTree.kt
 
 public class PrintableTree: PrintableAsTree {
 	public var treeDescription: String // annotation: override

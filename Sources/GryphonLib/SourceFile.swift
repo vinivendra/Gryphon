@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/SourceFile.swiftAST
-// gryphon output: Sources/GryphonLib/SourceFile.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/SourceFile.gryphonAST
-// gryphon output: Bootstrap/SourceFile.kt
+// output: Sources/GryphonLib/SourceFile.swiftAST
+// output: Sources/GryphonLib/SourceFile.gryphonASTRaw
+// output: Sources/GryphonLib/SourceFile.gryphonAST
+// output: Bootstrap/SourceFile.kt
 
 import Foundation
 
@@ -56,7 +56,7 @@ public class SourceFile {
 		case multiline // TODO: test
 		case pure // TODO: test
 		case annotation
-		case gryphonOutput = "gryphon output"
+		case output
 	}
 
 	public struct KeyedComment {

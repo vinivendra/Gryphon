@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// gryphon output: Bootstrap/TestUtilities.kt
+// output: Bootstrap/TestUtilities.kt
 
 import Foundation
 

@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/Driver.swiftAST
-// gryphon output: Sources/GryphonLib/Driver.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/Driver.gryphonAST
-// gryphon output: Bootstrap/Driver.kt
+// output: Sources/GryphonLib/Driver.swiftAST
+// output: Sources/GryphonLib/Driver.gryphonASTRaw
+// output: Sources/GryphonLib/Driver.gryphonAST
+// output: Bootstrap/Driver.kt
 
 public class Driver {
 	public static let gryphonVersion = "0.4-beta"

@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/SwiftAST.swiftAST
-// gryphon output: Sources/GryphonLib/SwiftAST.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/SwiftAST.gryphonAST
-// gryphon output: Bootstrap/SwiftAST.kt
+// output: Sources/GryphonLib/SwiftAST.swiftAST
+// output: Sources/GryphonLib/SwiftAST.gryphonASTRaw
+// output: Sources/GryphonLib/SwiftAST.gryphonAST
+// output: Bootstrap/SwiftAST.kt
 
 public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible {
 	let name: String

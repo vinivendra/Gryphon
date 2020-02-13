@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/SwiftTranslator.swiftAST
-// gryphon output: Sources/GryphonLib/SwiftTranslator.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/SwiftTranslator.gryphonAST
-// gryphon output: Bootstrap/SwiftTranslator.kt
+// output: Sources/GryphonLib/SwiftTranslator.swiftAST
+// output: Sources/GryphonLib/SwiftTranslator.gryphonASTRaw
+// output: Sources/GryphonLib/SwiftTranslator.gryphonAST
+// output: Bootstrap/SwiftTranslator.kt
 
 import Foundation
 
@@ -3018,7 +3018,7 @@ public class SwiftTranslator {
 							string: insertComment.value,
 							shouldGoToMainFunction: false)))
 				}
-				else if insertComment.key == .gryphonOutput,
+				else if insertComment.key == .output,
 					let fileExtension = Utilities.getExtension(of: insertComment.value)
 				{
 					outputFileMap[fileExtension] = insertComment.value

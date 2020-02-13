@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/AuxiliaryFileContents.swiftAST
-// gryphon output: Sources/GryphonLib/AuxiliaryFileContents.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/AuxiliaryFileContents.gryphonAST
-// gryphon output: Bootstrap/AuxiliaryFileContents.kt
+// output: Sources/GryphonLib/AuxiliaryFileContents.swiftAST
+// output: Sources/GryphonLib/AuxiliaryFileContents.gryphonASTRaw
+// output: Sources/GryphonLib/AuxiliaryFileContents.gryphonAST
+// output: Bootstrap/AuxiliaryFileContents.kt
 
 // TODO: Test `gryphon -init`
 // TODO: Test multiline strings

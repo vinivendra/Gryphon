@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// gryphon output: Test cases/Bootstrap Outputs/enums.swiftAST
-// gryphon output: Test cases/Bootstrap Outputs/enums.gryphonASTRaw
-// gryphon output: Test cases/Bootstrap Outputs/enums.gryphonAST
-// gryphon output: Test cases/Bootstrap Outputs/enums.kt
+// output: Test cases/Bootstrap Outputs/enums.swiftAST
+// output: Test cases/Bootstrap Outputs/enums.gryphonASTRaw
+// output: Test cases/Bootstrap Outputs/enums.gryphonAST
+// output: Test cases/Bootstrap Outputs/enums.kt
 
 enum CalculatorError: Error {
 	case invalidCharacter

@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/TranslationResult.swiftAST
-// gryphon output: Sources/GryphonLib/TranslationResult.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/TranslationResult.gryphonAST
-// gryphon output: Bootstrap/TranslationResult.kt
+// output: Sources/GryphonLib/TranslationResult.swiftAST
+// output: Sources/GryphonLib/TranslationResult.gryphonASTRaw
+// output: Sources/GryphonLib/TranslationResult.gryphonAST
+// output: Bootstrap/TranslationResult.kt
 
 public struct TranslationResult {
 	let translation: String

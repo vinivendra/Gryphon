@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/KotlinTranslator.swiftAST
-// gryphon output: Sources/GryphonLib/KotlinTranslator.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/KotlinTranslator.gryphonAST
-// gryphon output: Bootstrap/KotlinTranslator.kt
+// output: Sources/GryphonLib/KotlinTranslator.swiftAST
+// output: Sources/GryphonLib/KotlinTranslator.gryphonASTRaw
+// output: Sources/GryphonLib/KotlinTranslator.gryphonAST
+// output: Bootstrap/KotlinTranslator.kt
 
 // insert: import kotlin.system.*
 

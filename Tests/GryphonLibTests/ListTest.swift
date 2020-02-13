@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// gryphon output: Bootstrap/ListTest.kt
+// output: Bootstrap/ListTest.kt
 
 #if !GRYPHON
 @testable import GryphonLib

@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// gryphon output: Bootstrap/DriverTest.kt
+// output: Bootstrap/DriverTest.kt
 
 #if !GRYPHON
 @testable import GryphonLib

@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// gryphon output: Bootstrap/MutableMapTest.kt
+// output: Bootstrap/MutableMapTest.kt
 
 #if !GRYPHON
 @testable import GryphonLib

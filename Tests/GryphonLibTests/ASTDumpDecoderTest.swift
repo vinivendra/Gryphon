@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// gryphon output: Bootstrap/ASTDumpDecoderTest.kt
+// output: Bootstrap/ASTDumpDecoderTest.kt
 
 #if !GRYPHON
 @testable import GryphonLib

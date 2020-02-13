@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// gryphon output: Test cases/Bootstrap Outputs/logicOperators.swiftAST
-// gryphon output: Test cases/Bootstrap Outputs/logicOperators.gryphonASTRaw
-// gryphon output: Test cases/Bootstrap Outputs/logicOperators.gryphonAST
-// gryphon output: Test cases/Bootstrap Outputs/logicOperators.kt
+// output: Test cases/Bootstrap Outputs/logicOperators.swiftAST
+// output: Test cases/Bootstrap Outputs/logicOperators.gryphonASTRaw
+// output: Test cases/Bootstrap Outputs/logicOperators.gryphonAST
+// output: Test cases/Bootstrap Outputs/logicOperators.kt
 
 let t = true
 let f = false

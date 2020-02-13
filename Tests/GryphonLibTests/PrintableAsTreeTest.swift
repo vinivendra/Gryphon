@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// gryphon output: Bootstrap/PrintableAsTreeTest.kt
+// output: Bootstrap/PrintableAsTreeTest.kt
 
 #if !GRYPHON
 @testable import GryphonLib

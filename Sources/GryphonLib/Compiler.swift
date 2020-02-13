@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/Compiler.swiftAST
-// gryphon output: Sources/GryphonLib/Compiler.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/Compiler.gryphonAST
-// gryphon output: Bootstrap/Compiler.kt
+// output: Sources/GryphonLib/Compiler.swiftAST
+// output: Sources/GryphonLib/Compiler.gryphonASTRaw
+// output: Sources/GryphonLib/Compiler.gryphonAST
+// output: Bootstrap/Compiler.kt
 
 import Foundation
 

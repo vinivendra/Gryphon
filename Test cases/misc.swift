@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// gryphon output: Test cases/Bootstrap Outputs/misc.swiftAST
-// gryphon output: Test cases/Bootstrap Outputs/misc.gryphonASTRaw
-// gryphon output: Test cases/Bootstrap Outputs/misc.gryphonAST
-// gryphon output: Test cases/Bootstrap Outputs/misc.kt
+// output: Test cases/Bootstrap Outputs/misc.swiftAST
+// output: Test cases/Bootstrap Outputs/misc.gryphonASTRaw
+// output: Test cases/Bootstrap Outputs/misc.gryphonAST
+// output: Test cases/Bootstrap Outputs/misc.kt
 
 // Typealias
 typealias A = Int
