@@ -7,7 +7,7 @@ perl dumpASTs.pl ".gryphon/GryphonTemplatesLibrary.swift"
 perl dumpASTs.pl ".gryphon/GryphonXCTest.swift"
 [ $? -eq 0 ] || exit 1
 
-perl dumpASTs.pl "Example ASTs/test.swift"
+perl dumpASTs.pl "test.swift"
 [ $? -eq 0 ] || exit 1
 
 for testCase in Test\ cases/*.swift; do
