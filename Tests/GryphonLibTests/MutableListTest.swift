@@ -67,7 +67,7 @@ class MutableListTest: XCTestCase {
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // kotlin: ignore
+	static var allTests = [ // ignore: ignore
 		("testEquatable", testEquatable),
 		("testInits", testInits),
 		("testPassingByReference", testPassingByReference),
@@ -115,27 +115,27 @@ class MutableListTest: XCTestCase {
 	func testInits() {
 		let list1: MutableList<Int> = [1, 2, 3]
 		let list2: MutableList<Int> = MutableList<Int>([1, 2, 3])
-		let list3: MutableList = MutableList(list1) // kotlin: ignore
-		let sequence = AnySequence([1, 2, 3]) // kotlin: ignore
-		let list4: MutableList<Int> = MutableList<Int>(sequence) // kotlin: ignore
+		let list3: MutableList = MutableList(list1) // ignore: ignore
+		let sequence = AnySequence([1, 2, 3]) // ignore: ignore
+		let list4: MutableList<Int> = MutableList<Int>(sequence) // ignore: ignore
 		let list5: MutableList<Int> = MutableList<Int>()
 		let list6: MutableList<Int> = []
 
 		XCTAssertEqual(list1, list2)
-		XCTAssertEqual(list1, list3) // kotlin: ignore
-		XCTAssertEqual(list1, list4) // kotlin: ignore
+		XCTAssertEqual(list1, list3) // ignore: ignore
+		XCTAssertEqual(list1, list4) // ignore: ignore
 		XCTAssertEqual(list5, list6)
 
 		list1.append(4)
 		list5.append(4)
 
 		XCTAssertNotEqual(list1, list2)
-		XCTAssertNotEqual(list1, list3) // kotlin: ignore
-		XCTAssertNotEqual(list1, list4) // kotlin: ignore
+		XCTAssertNotEqual(list1, list3) // ignore: ignore
+		XCTAssertNotEqual(list1, list4) // ignore: ignore
 		XCTAssertNotEqual(list5, list6)
 		XCTAssertEqual(list2, [1, 2, 3])
-		XCTAssertEqual(list2, list3) // kotlin: ignore
-		XCTAssertEqual(list2, list4) // kotlin: ignore
+		XCTAssertEqual(list2, list3) // ignore: ignore
+		XCTAssertEqual(list2, list4) // ignore: ignore
 	}
 
 	func testPassingByReference() {
@@ -195,7 +195,7 @@ class MutableListTest: XCTestCase {
 		XCTAssert(!list.description.contains("4"))
 	}
 
-	func testDebugDescription() { // kotlin: ignore
+	func testDebugDescription() { // ignore: ignore
 		let list: MutableList<Int> = [1, 2, 3]
 
 		XCTAssert(list.debugDescription.contains("1"))
@@ -375,7 +375,7 @@ class MutableListTest: XCTestCase {
 		XCTAssertEqual(list.firstIndex(of: 10), 2)
 	}
 
-	func testHash() { // kotlin: ignore
+	func testHash() { // ignore: ignore
 		let list1: MutableList<Int> = [1, 2, 3]
 		let list2: MutableList<Int> = [1, 2, 3]
 		let list3: MutableList<Int> = [1, 2, 3, 4]

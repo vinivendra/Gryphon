@@ -29,15 +29,15 @@ let kotlinStringInterpolation = "{_string}"
 
 // gryphon: multiline
 internal let gryphonXCTestFileContents = """
-private struct Compare: Comparable { // kotlin: ignore
+private struct Compare: Comparable { // ignore: ignore
 	static func < (lhs: Compare, rhs: Compare) -> Bool {
 		return false
 	}
 }
 
-private struct MyOptional { } // kotlin: ignore
+private struct MyOptional { } // ignore: ignore
 
-class XCTestCase { // kotlin: ignore
+class XCTestCase { // ignore: ignore
 	class func setUp() { }
 
 	public func XCTAssert(_ condition: Bool, _ message: String = "") { }

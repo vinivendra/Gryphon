@@ -99,7 +99,7 @@ public class ReplaceTemplatesTranspilationPass: TranspilationPass {
 		for template in context.templates {
 			if let matches = expression.matches(template.expression) {
 
-				let replacedMatches = matches.mapValues { // kotlin: ignore
+				let replacedMatches = matches.mapValues { // ignore: ignore
 					self.replaceExpression($0)
 				}
 				// insert: val replacedMatches = matches.mapValues {

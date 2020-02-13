@@ -35,7 +35,7 @@ class ASTDumpDecoderTest: XCTestCase {
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // kotlin: ignore
+	static var allTests = [ // ignore: ignore
 		("testDecoderCanRead", testDecoderCanRead),
 		("testDecoderRead", testDecoderRead),
 	]

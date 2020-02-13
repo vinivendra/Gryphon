@@ -35,7 +35,7 @@ class SourceFileTest: XCTestCase {
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // kotlin: ignore
+	static var allTests = [ // ignore: ignore
 		("testGetCommentFromLine", testGetCommentFromLine),
 		("testGetKeyedCommentFromLine", testGetKeyedCommentFromLine),
 	]
@@ -43,7 +43,7 @@ class SourceFileTest: XCTestCase {
 	// MARK: - Tests
 	func testGetCommentFromLine() {
 		let sourceFileContents = """
-			let x: Int = 0 // kotlin: ignore
+			let x: Int = 0 // ignore: ignore
 			// blabla
 			let x: Int = 0
 
@@ -65,7 +65,7 @@ class SourceFileTest: XCTestCase {
 
 	func testGetKeyedCommentFromLine() {
 		let sourceFileContents = """
-			let x: Int = 0 // kotlin: ignore
+			let x: Int = 0 // ignore: ignore
 			// blabla
 			let x: Int = 0
 
@@ -74,7 +74,7 @@ class SourceFileTest: XCTestCase {
 		let comment = sourceFile.getKeyedCommentFromLine(1)
 
 		XCTAssertEqual(comment?.value, "ignore")
-		XCTAssertEqual(comment?.key, .kotlin)
+		XCTAssertEqual(comment?.key, .ignore)
 		XCTAssertNil(sourceFile.getKeyedCommentFromLine(2)) // Common comment
 		XCTAssertNil(sourceFile.getKeyedCommentFromLine(3)) // No comment
 		XCTAssertNil(sourceFile.getKeyedCommentFromLine(10)) // Out of range

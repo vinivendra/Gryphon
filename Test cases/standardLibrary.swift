@@ -21,7 +21,7 @@
 
 import Foundation
 
-typealias PrintContents = Any // kotlin: ignore
+typealias PrintContents = Any // ignore: ignore
 // insert: typealias PrintContents = Any?
 
 func printTest(_ contents: PrintContents, _ testName: String) {
@@ -180,11 +180,11 @@ printTest(string.uppercased(), "String uppercased")
 printTest(character.uppercased(), "Character uppercased")
 
 // Array
-var array = [1, 2, 3] // kotlin: ignore
+var array = [1, 2, 3] // ignore: ignore
 let array2 = [2, 1]
-var array3 = [1] // kotlin: ignore
+var array3 = [1] // ignore: ignore
 let array4 = [2, 1]
-var arrayOfOptionals: [Int?] = [1] // kotlin: ignore
+var arrayOfOptionals: [Int?] = [1] // ignore: ignore
 let emptyArray: [Int] = []
 let stringArray = ["1", "2", "3"]
 // insertInMain: val array: MutableList<Int> = mutableListOf(1, 2, 3)
@@ -310,7 +310,7 @@ printTest(Int.min..<0, "Recursive matches")
 
 //
 // User-defined templates
-func f(of a: Int) { // kotlin: ignore
+func f(of a: Int) { // ignore: ignore
 	printTest(a, "User template")
 }
 

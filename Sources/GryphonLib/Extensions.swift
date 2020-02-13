@@ -102,7 +102,7 @@ internal extension String {
 		var substringOffset = self.startIndex
 
 		while substringOffset < self.endIndex {
-			let maybeIndex = // kotlin: ignore
+			let maybeIndex = // ignore: ignore
 				currentSubstring.range(of: searchedSubstring)?.lowerBound
 			// insert: var maybeIndex: Int? = currentSubstring.indexOf(searchedSubstring)
 			// insert: maybeIndex = if (maybeIndex == -1) { null } else { maybeIndex }
@@ -182,7 +182,7 @@ internal extension String {
 		var result: String = ""
 		result.append(self[self.startIndex].uppercased())
 
-		let indicesWithoutTheFirstOne = self.indices.dropFirst() // kotlin: ignore
+		let indicesWithoutTheFirstOne = self.indices.dropFirst() // ignore: ignore
 		// insert: val indicesWithoutTheFirstOne = this.indices.drop(1)
 
 		for index in indicesWithoutTheFirstOne {
@@ -299,7 +299,7 @@ extension Character {
 //
 extension List {
 	/// Returns nil if index is out of bounds.
-	subscript (safe index: Int) -> Element? { // kotlin: ignore
+	subscript (safe index: Int) -> Element? { // ignore: ignore
 		return getSafe(index)
 	}
 
@@ -324,7 +324,7 @@ extension List {
 		}
 
 		var newArray: MutableList<Element> = []
-		newArray.reserveCapacity(self.count) // kotlin: ignore
+		newArray.reserveCapacity(self.count) // ignore: ignore
 		newArray.append(contentsOf: self.dropFirst())
 		newArray.append(first)
 

@@ -32,7 +32,7 @@ class B {
 typealias BC = B.C
 
 // Typealias with generics
-class List<T> { } // kotlin: ignore
+class List<T> { } // ignore: ignore
 
 typealias ListInt = List<Int>
 

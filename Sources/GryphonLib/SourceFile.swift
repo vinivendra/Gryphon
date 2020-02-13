@@ -50,7 +50,7 @@ public class SourceFile {
 	public enum CommentKey: String {
 		case insert
 		case insertInMain
-		case kotlin
+		case ignore
 		case value
 		case inspect
 		case gryphon

@@ -92,7 +92,7 @@ class C {
 struct D {
 	let x: Int
 
-	init(x: Int) { // kotlin: ignore
+	init(x: Int) { // ignore: ignore
 		self.x = x
 	}
 

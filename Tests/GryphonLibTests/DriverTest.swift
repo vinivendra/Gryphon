@@ -37,7 +37,7 @@ class DriverTest: XCTestCase {
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // kotlin: ignore
+	static var allTests = [ // ignore: ignore
 		("testUsageString", testUsageString),
 		("testNoMainFile", testNoMainFile),
 		("testContinueOnErrors", testContinueOnErrors),

@@ -112,7 +112,7 @@ f(a: 1, c: 1)
 f(b: 1, c: 1)
 f(a: 1, b: 1, c: 1)
 
-func variadics(a: Int, b: Int..., c: Int = 0) { // kotlin: ignore
+func variadics(a: Int, b: Int..., c: Int = 0) { // ignore: ignore
 	print(a, terminator: "")
 	for element in b {
 		print(element, terminator: "")

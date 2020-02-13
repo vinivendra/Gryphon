@@ -630,7 +630,7 @@ public class TranspilationPass {
 		_ templateExpression: TemplateExpression)
 		-> Expression
 	{
-		let newMatches = templateExpression.matches // kotlin: ignore
+		let newMatches = templateExpression.matches // ignore: ignore
 			.mapValues { replaceExpression($0) }
 		// insert: val newMatches = templateExpression.matches
 		// insert:     .mapValues { replaceExpression(it.value) }.toMutableMap()

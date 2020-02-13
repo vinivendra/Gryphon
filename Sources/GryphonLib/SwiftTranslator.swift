@@ -261,7 +261,7 @@ public class SwiftTranslator {
 
 	internal func translateSubtree(_ subtree: SwiftAST) throws -> MutableList<Statement?> {
 
-		if getKeyedComment(forNode: subtree, key: .kotlin) == "ignore" {
+		if getKeyedComment(forNode: subtree, key: .ignore) == "ignore" {
 			return []
 		}
 
@@ -449,7 +449,7 @@ public class SwiftTranslator {
 				ast: classDeclaration, translator: self)
 		}
 
-		if getKeyedComment(forNode: classDeclaration, key: .kotlin) == "ignore" {
+		if getKeyedComment(forNode: classDeclaration, key: .ignore) == "ignore" {
 			return nil
 		}
 
@@ -482,7 +482,7 @@ public class SwiftTranslator {
 				ast: structDeclaration, translator: self)
 		}
 
-		if getKeyedComment(forNode: structDeclaration, key: .kotlin) == "ignore" {
+		if getKeyedComment(forNode: structDeclaration, key: .ignore) == "ignore" {
 			return nil
 		}
 
@@ -552,7 +552,7 @@ public class SwiftTranslator {
 				ast: enumDeclaration, translator: self)
 		}
 
-		if getKeyedComment(forNode: enumDeclaration, key: .kotlin) == "ignore" {
+		if getKeyedComment(forNode: enumDeclaration, key: .ignore) == "ignore" {
 			return nil
 		}
 
@@ -602,7 +602,7 @@ public class SwiftTranslator {
 		for index in enumElementDeclarations.indices {
 			let enumElementDeclaration = enumElementDeclarations[index]
 
-			guard getKeyedComment(forNode: enumElementDeclaration, key: .kotlin) != "ignore" else {
+			guard getKeyedComment(forNode: enumElementDeclaration, key: .ignore) != "ignore" else {
 				continue
 			}
 

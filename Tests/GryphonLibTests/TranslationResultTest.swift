@@ -24,7 +24,7 @@ import XCTest
 #if !GRYPHON
 typealias GryphonTranslation = GryphonLib.Translation
 #else
-typealias GryphonTranslation = Translation // kotlin: ignore
+typealias GryphonTranslation = Translation // ignore: ignore
 #endif
 // insert: typealias GryphonTranslation = Translation
 
@@ -46,7 +46,7 @@ class TranslationResultTest: XCTestCase {
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // kotlin: ignore
+	static var allTests = [ // ignore: ignore
 		("testShallowTranslation", testShallowTranslation),
 		("testDeepTranslation", testDeepTranslation),
 		("testDropLast", testDropLast),

@@ -312,7 +312,7 @@ public class Compiler {
 
 			let kotlinTranslatorHistogram = kotlinTranslatorErrors.group { $0.ast.name }
 
-			let sortedHistogram = kotlinTranslatorHistogram.sorted(by: { a, b in // kotlin: ignore
+			let sortedHistogram = kotlinTranslatorHistogram.sorted(by: { a, b in // ignore: ignore
 				a.value.count > b.value.count
 			})
 

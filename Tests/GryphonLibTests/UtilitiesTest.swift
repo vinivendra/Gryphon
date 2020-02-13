@@ -49,7 +49,7 @@ class UtilitiesTest: XCTestCase {
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // kotlin: ignore
+	static var allTests = [ // ignore: ignore
 		("testExpandSwiftAbbreviation", testExpandSwiftAbbreviation),
 		("testFileExtension", testFileExtension),
 		("testChangeExtension", testChangeExtension),
@@ -253,7 +253,7 @@ class UtilitiesTest: XCTestCase {
         let array1: MutableList<Int> = []
         let array2: MutableList<Int> = [1]
         let array3: MutableList<Int> = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-        let array4: MutableList<Int> = MutableList<Int>([Int](0...10_000)) // kotlin: ignore
+        let array4: MutableList<Int> = MutableList<Int>([Int](0...10_000)) // ignore: ignore
 		// insert: val array4: MutableList<Int> = (0..10000).map{ it }.toMutableList()
 
 		let array1Copy = array1.toMutableList()
@@ -266,7 +266,7 @@ class UtilitiesTest: XCTestCase {
         let mappedArray3 = try! array3.parallelMap { $0 * 2 }
         let mappedArray4 = try! array4.parallelMap { $0 * 2 }
 
-        let array4Result = MutableList<Int>([Int](0...10_000)).map { $0 * 2 } // kotlin: ignore
+        let array4Result = MutableList<Int>([Int](0...10_000)).map { $0 * 2 } // ignore: ignore
 		// insert: val array4Result: MutableList<Int> = (0..10000).map{ it * 2 }.toMutableList()
 
         XCTAssertEqual(array1, array1Copy)

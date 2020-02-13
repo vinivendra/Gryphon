@@ -135,12 +135,12 @@ struct TranslationUnit {
 
 	// Only these two initializers exits, therefore exactly one of the properties will always be
 	// non-nil
-	init(_ stringLiteral: String) { // kotlin: ignore
+	init(_ stringLiteral: String) { // ignore: ignore
 		self.stringLiteral = stringLiteral
 		self.node = nil
 	}
 
-	init(_ node: Translation) { // kotlin: ignore
+	init(_ node: Translation) { // ignore: ignore
 		self.stringLiteral = nil
 		self.node = node
 	}

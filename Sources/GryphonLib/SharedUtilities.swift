@@ -282,12 +282,12 @@ private var testCasesHaveBeenUpdated = false
 
 extension Utilities {
     static public func processGryphonTemplatesLibrary() throws {
-        libraryUpdateLock.lock() // kotlin: ignore
+        libraryUpdateLock.lock() // ignore: ignore
         // insert: libraryUpdateLock.acquire()
 
         // TODO: defers should always be the first statement, or try-finally's should be adjusted
         defer {
-            libraryUpdateLock.unlock() // kotlin: ignore
+            libraryUpdateLock.unlock() // ignore: ignore
             // insert: libraryUpdateLock.release()
         }
 

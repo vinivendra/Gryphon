@@ -59,7 +59,7 @@ class ListTest: XCTestCase {
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // kotlin: ignore
+	static var allTests = [ // ignore: ignore
 		("testEquatable", testEquatable),
 		("testInits", testInits),
 		("testCasting", testCasting),
@@ -99,15 +99,15 @@ class ListTest: XCTestCase {
 	func testInits() {
 		let list1: List<Int> = [1, 2, 3]
 		let list2: List<Int> = List<Int>([1, 2, 3])
-		let list3: List = List(list1) // kotlin: ignore
-		let sequence = AnySequence([1, 2, 3]) // kotlin: ignore
-		let list4: List = List(sequence) // kotlin: ignore
+		let list3: List = List(list1) // ignore: ignore
+		let sequence = AnySequence([1, 2, 3]) // ignore: ignore
+		let list4: List = List(sequence) // ignore: ignore
 		let list5: List<Int> = List<Int>()
 		let list6: List<Int> = []
 
 		XCTAssertEqual(list1, list2)
-		XCTAssertEqual(list1, list3) // kotlin: ignore
-		XCTAssertEqual(list1, list4) // kotlin: ignore
+		XCTAssertEqual(list1, list3) // ignore: ignore
+		XCTAssertEqual(list1, list4) // ignore: ignore
 		XCTAssertNotEqual(list1, list5)
 		XCTAssertNotEqual(list1, list6)
 		XCTAssertEqual(list5, list6)
@@ -154,7 +154,7 @@ class ListTest: XCTestCase {
 		XCTAssert(!list.description.contains("4"))
 	}
 
-	func testDebugDescription() { // kotlin: ignore
+	func testDebugDescription() { // ignore: ignore
 		let list: List = [1, 2, 3]
 
 		XCTAssert(list.debugDescription.contains("1"))
@@ -286,7 +286,7 @@ class ListTest: XCTestCase {
 		XCTAssertEqual(list.firstIndex(of: 10), 2)
 	}
 
-	func testHash() { // kotlin: ignore
+	func testHash() { // ignore: ignore
 		let list1: List = [1, 2, 3]
 		let list2: List = [1, 2, 3]
 		let list3: List = [1, 2, 3, 4]

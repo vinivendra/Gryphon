@@ -39,7 +39,7 @@ class LibraryTranspilationTest: XCTestCase {
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // kotlin: ignore
+	static var allTests = [ // ignore: ignore
 		("testSimpleMatches", testSimpleMatches),
 		("testMatchDictionary", testMatchDictionary),
 		("testImplicitTypeExpression", testImplicitTypeExpression),

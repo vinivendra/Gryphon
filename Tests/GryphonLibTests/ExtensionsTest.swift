@@ -27,12 +27,12 @@ struct TestableRange: Equatable {
 
 	// insert: constructor(range: IntRange): this(range.start, range.endInclusive) { }
 
-	init(_ range: Range<String.Index>) { // kotlin: ignore
+	init(_ range: Range<String.Index>) { // ignore: ignore
 		self.lowerBound = range.lowerBound.encodedOffset
 		self.upperBound = range.upperBound.encodedOffset
 	}
 
-	init(_ lowerBound: Int, _ upperBound: Int) { // kotlin: ignore
+	init(_ lowerBound: Int, _ upperBound: Int) { // ignore: ignore
 		self.lowerBound = lowerBound
 		self.upperBound = upperBound
 	}
@@ -63,7 +63,7 @@ class ExtensionsTest: XCTestCase {
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // kotlin: ignore
+	static var allTests = [ // ignore: ignore
 		("testStringSplit", testStringSplit),
 		("testOccurrencesOfSubstring", testOccurrencesOfSubstring),
 		("testSplitUsingUnescapedSpaces", testSplitUsingUnescapedSpaces),
