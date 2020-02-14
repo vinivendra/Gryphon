@@ -31,13 +31,13 @@ class SourceFileTest: XCTestCase {
 	/// Tests to be run by the translated Kotlin version.
 	public func runAllTests() { // annotation: override
 		testGetCommentFromLine()
-		testGetKeyedCommentFromLine()
+		testGetTranslationCommentFromLine()
 	}
 
 	/// Tests to be run when using Swift on Linux
 	static var allTests = [ // ignore: ignore
 		("testGetCommentFromLine", testGetCommentFromLine),
-		("testGetKeyedCommentFromLine", testGetKeyedCommentFromLine),
+		("testGetTranslationCommentFromLine", testGetTranslationCommentFromLine),
 	]
 
 	// MARK: - Tests
@@ -63,7 +63,7 @@ class SourceFileTest: XCTestCase {
 		XCTAssertNil(sourceFile.getCommentFromLine(-1)) // Negative number
 	}
 
-	func testGetKeyedCommentFromLine() {
+	func testGetTranslationCommentFromLine() {
 		let sourceFileContents = """
 			let x: Int = 0 // ignore: ignore
 			// blabla
@@ -71,13 +71,13 @@ class SourceFileTest: XCTestCase {
 
 			"""
 		let sourceFile = SourceFile(path: "", contents: sourceFileContents)
-		let comment = sourceFile.getKeyedCommentFromLine(1)
+		let comment = sourceFile.getTranslationCommentFromLine(1)
 
 		XCTAssertEqual(comment?.value, "ignore")
 		XCTAssertEqual(comment?.key, .ignore)
-		XCTAssertNil(sourceFile.getKeyedCommentFromLine(2)) // Common comment
-		XCTAssertNil(sourceFile.getKeyedCommentFromLine(3)) // No comment
-		XCTAssertNil(sourceFile.getKeyedCommentFromLine(10)) // Out of range
-		XCTAssertNil(sourceFile.getKeyedCommentFromLine(-1)) // Negative number
+		XCTAssertNil(sourceFile.getTranslationCommentFromLine(2)) // Common comment
+		XCTAssertNil(sourceFile.getTranslationCommentFromLine(3)) // No comment
+		XCTAssertNil(sourceFile.getTranslationCommentFromLine(10)) // Out of range
+		XCTAssertNil(sourceFile.getTranslationCommentFromLine(-1)) // Negative number
 	}
 }

@@ -48,20 +48,23 @@ public class SourceFile {
 	}
 
 	public enum CommentKey: String {
+		// Comments with values (i.e. `// gryphon insert: <value>`)
 		case insert
 		case insertInMain
-		case ignore
 		case value
+		case annotation
+		case output
+
+		// Comments without values (i.e. `// gryphon ignore`)
+		case ignore
 		case inspect // TODO: test
 		case multiline // TODO: test
 		case pure // TODO: test
-		case annotation
-		case output
 	}
 
-	public struct KeyedComment {
+	public struct TranslationComment {
 		let key: CommentKey
-		let value: String
+		let value: String?
 	}
 
 	public struct CommonComment {
@@ -111,7 +114,7 @@ extension SourceFile {
 
 	/// Returns a keyed comment in the given line, or `nil` if there isn't one (or if the existing
 	/// comment isn't keyed).
-	public func getKeyedCommentFromLine(_ lineNumber: Int) -> SourceFile.KeyedComment? {
+	public func getTranslationCommentFromLine(_ lineNumber: Int) -> SourceFile.TranslationComment? {
 		guard let line = getLine(lineNumber) else {
 			return nil
 		}
@@ -130,7 +133,7 @@ extension SourceFile {
 			if let key = commentComponents.first, key == "insert:" || key == "insertInMain:" {
 				let cleanKey = String(key.dropLast())
 				let commentKey = SourceFile.CommentKey(rawValue: cleanKey)!
-				return SourceFile.KeyedComment(key: commentKey, value: "")
+				return SourceFile.TranslationComment(key: commentKey, value: "")
 			}
 
 			return nil
@@ -141,7 +144,7 @@ extension SourceFile {
 
 		// If it's a valid comment key
 		if let commentKey = SourceFile.CommentKey(rawValue: key) {
-			return SourceFile.KeyedComment(key: commentKey, value: value)
+			return SourceFile.TranslationComment(key: commentKey, value: value)
 		}
 		else {
 			return nil

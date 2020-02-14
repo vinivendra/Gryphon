@@ -261,7 +261,7 @@ public class SwiftTranslator {
 
 	internal func translateSubtree(_ subtree: SwiftAST) throws -> MutableList<Statement?> {
 
-		if getKeyedComment(forNode: subtree, key: .ignore) == "ignore" {
+		if nodeHasTranslationComment(subtree, withKey: .ignore) {
 			return []
 		}
 
@@ -351,7 +351,7 @@ public class SwiftTranslator {
 			}
 		}
 
-		let shouldInspect = (getKeyedComment(forNode: subtree, key: .inspect) == "inspect")
+		let shouldInspect = nodeHasTranslationComment(subtree, withKey: .inspect)
 		if shouldInspect {
 			print("===\nInspecting:")
 			print(subtree)
@@ -449,7 +449,7 @@ public class SwiftTranslator {
 				ast: classDeclaration, translator: self)
 		}
 
-		if getKeyedComment(forNode: classDeclaration, key: .ignore) == "ignore" {
+		if nodeHasTranslationComment(classDeclaration, withKey: .ignore) {
 			return nil
 		}
 
@@ -482,11 +482,11 @@ public class SwiftTranslator {
 				ast: structDeclaration, translator: self)
 		}
 
-		if getKeyedComment(forNode: structDeclaration, key: .ignore) == "ignore" {
+		if nodeHasTranslationComment(structDeclaration, withKey: .ignore) {
 			return nil
 		}
 
-		let annotations = getKeyedComment(forNode: structDeclaration, key: .annotation)
+		let annotations = getTranslationCommentValue(forNode: structDeclaration, key: .annotation)
 
 		// Get the struct name
 		let name = structDeclaration.standaloneAttributes.first!
@@ -552,7 +552,7 @@ public class SwiftTranslator {
 				ast: enumDeclaration, translator: self)
 		}
 
-		if getKeyedComment(forNode: enumDeclaration, key: .ignore) == "ignore" {
+		if nodeHasTranslationComment(enumDeclaration, withKey: .ignore) {
 			return nil
 		}
 
@@ -602,7 +602,7 @@ public class SwiftTranslator {
 		for index in enumElementDeclarations.indices {
 			let enumElementDeclaration = enumElementDeclarations[index]
 
-			guard getKeyedComment(forNode: enumElementDeclaration, key: .ignore) != "ignore" else {
+			guard !nodeHasTranslationComment(enumElementDeclaration, withKey: .ignore) else {
 				continue
 			}
 
@@ -613,7 +613,9 @@ public class SwiftTranslator {
 					ast: enumDeclaration, translator: self)
 			}
 
-			let annotations = getKeyedComment(forNode: enumElementDeclaration, key: .annotation)
+			let annotations = getTranslationCommentValue(
+				forNode: enumElementDeclaration,
+				key: .annotation)
 
 			if !elementName.contains("(") {
 				elements.append(EnumElement(
@@ -1859,14 +1861,16 @@ public class SwiftTranslator {
 
 		// TODO: test annotations in functions
 		let annotations: MutableList<String?> = []
-		annotations.append(getKeyedComment(forNode: functionDeclaration, key: .annotation))
+		annotations.append(getTranslationCommentValue(
+			forNode: functionDeclaration,
+			key: .annotation))
 		if isSubscript {
 			annotations.append("operator")
 		}
 		let joinedAnnotations = annotations.compactMap { $0 }.joined(separator: " ")
 		let annotationsResult = joinedAnnotations.isEmpty ? nil : joinedAnnotations
 
-		let isPure = (getKeyedComment(forNode: functionDeclaration, key: .pure) == "pure")
+		let isPure = nodeHasTranslationComment(functionDeclaration, withKey: .pure)
 
 		let prefix = String(functionNamePrefix)
 		if prefix == "init" {
@@ -1937,7 +1941,7 @@ public class SwiftTranslator {
 
 		let isImplicit = variableDeclaration.standaloneAttributes.contains("implicit")
 
-		let annotations = getKeyedComment(forNode: variableDeclaration, key: .annotation)
+		let annotations = getTranslationCommentValue(forNode: variableDeclaration, key: .annotation)
 
 		let isStatic: Bool
 
@@ -1981,7 +1985,8 @@ public class SwiftTranslator {
 			_ = danglingPatternBindings.removeFirst()
 		}
 
-		if let valueReplacement = getKeyedComment(forNode: variableDeclaration, key: .value),
+		if let valueReplacement =
+				getTranslationCommentValue(forNode: variableDeclaration, key: .value),
 			expression == nil
 		{
 			expression = LiteralCodeExpression(
@@ -2007,8 +2012,8 @@ public class SwiftTranslator {
 			}
 
 			let isImplicit = subtree.standaloneAttributes.contains("implicit")
-			let isPure = (getKeyedComment(forNode: subtree, key: .pure) == "pure")
-			let annotations = getKeyedComment(forNode: subtree, key: .annotation)
+			let isPure = nodeHasTranslationComment(subtree, withKey: .pure)
+			let annotations = getTranslationCommentValue(forNode: subtree, key: .annotation)
 
 			if subtree["get_for"] != nil {
 				getter = FunctionDeclaration(
@@ -2065,7 +2070,7 @@ public class SwiftTranslator {
 
 	internal func translateExpression(_ expression: SwiftAST) throws -> Expression {
 
-		if let valueReplacement = getKeyedComment(forNode: expression, key: .value) {
+		if let valueReplacement = getTranslationCommentValue(forNode: expression, key: .value) {
 			return LiteralCodeExpression(
 				range: getRangeRecursively(ofNode: expression),
 				string: valueReplacement,
@@ -2275,7 +2280,7 @@ public class SwiftTranslator {
 				"Unknown expression", ast: expression, translator: self)
 		}
 
-		let shouldInspect = (getKeyedComment(forNode: expression, key: .pure) == "inspect")
+		let shouldInspect = nodeHasTranslationComment(expression, withKey: .inspect)
 		if shouldInspect {
 			print("===\nInspecting:")
 			print(expression)
@@ -2917,7 +2922,7 @@ public class SwiftTranslator {
 				var isMultiline = false
 				if let lineNumber = getRange(ofNode: stringLiteralExpression)?.lineStart {
 					if let maybeMultilineComment =
-							sourceFile?.getKeyedCommentFromLine(lineNumber - 1),
+							sourceFile?.getTranslationCommentFromLine(lineNumber - 1),
 						maybeMultilineComment.key == .multiline
 					{
 						isMultiline = (maybeMultilineComment.value == "multiline")
@@ -3001,13 +3006,17 @@ public class SwiftTranslator {
 			let astRange = SourceFileRange(
 				lineStart: lineNumber, lineEnd: lineNumber, columnStart: 0, columnEnd: 0)
 
-			if let insertComment = sourceFile?.getKeyedCommentFromLine(lineNumber) {
+			let insertComment = sourceFile?.getTranslationCommentFromLine(lineNumber)
+			let commentValue = insertComment?.value
+			if let insertComment = insertComment,
+				let commentValue = commentValue
+			{
 				if insertComment.key == .insertInMain {
 					result.append(ExpressionStatement(
 						range: astRange,
 						expression: LiteralCodeExpression(
 							range: astRange,
-							string: insertComment.value,
+							string: commentValue,
 							shouldGoToMainFunction: true)))
 				}
 				else if insertComment.key == .insert {
@@ -3015,11 +3024,11 @@ public class SwiftTranslator {
 						range: astRange,
 						expression: LiteralCodeExpression(
 							range: astRange,
-							string: insertComment.value,
+							string: commentValue,
 							shouldGoToMainFunction: false)))
 				}
 				else if insertComment.key == .output,
-					let fileExtension = Utilities.getExtension(of: insertComment.value)
+					let fileExtension = Utilities.getExtension(of: commentValue)
 				{
 					outputFileMap[fileExtension] = insertComment.value
 				}
@@ -3047,16 +3056,33 @@ public class SwiftTranslator {
 		return nil
 	}
 
-	internal func getKeyedComment(forNode ast: SwiftAST, key: SourceFile.CommentKey) -> String? {
-		if let comment = getKeyedComment(forNode: ast), comment.key == key {
+	internal func getTranslationCommentValue(
+		forNode ast: SwiftAST,
+		key: SourceFile.CommentKey)
+		-> String?
+	{
+		if let comment = getTranslationComment(forNode: ast), comment.key == key {
 			return comment.value
 		}
 		return nil
 	}
 
-	internal func getKeyedComment(forNode ast: SwiftAST) -> SourceFile.KeyedComment? {
+	/// Returns true if the given node has a translation comment with the given key (i.e.
+	/// `// gryphon <key>`). Returns false otherwise.
+	internal func nodeHasTranslationComment(
+		_ ast: SwiftAST,
+		withKey key: SourceFile.CommentKey)
+		-> Bool
+	{
+		if let comment = getTranslationComment(forNode: ast), comment.key == key {
+			return true
+		}
+		return false
+	}
+
+	internal func getTranslationComment(forNode ast: SwiftAST) -> SourceFile.TranslationComment? {
 		if let lineNumber = getRange(ofNode: ast)?.lineStart {
-			return sourceFile?.getKeyedCommentFromLine(lineNumber)
+			return sourceFile?.getTranslationCommentFromLine(lineNumber)
 		}
 		else {
 			return nil
