@@ -228,6 +228,7 @@ public class TranspilationPass {
 		return [ClassDeclaration(
 			range: classDeclaration.range,
 			className: classDeclaration.className,
+			access: classDeclaration.access,
 			inherits: classDeclaration.inherits,
 			members: replaceStatements(classDeclaration.members)), ]
 	}
@@ -1216,6 +1217,7 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 		return super.replaceClassDeclaration(ClassDeclaration(
 			range: classDeclaration.range,
 			className: classDeclaration.className,
+			access: classDeclaration.access,
 			inherits: classDeclaration.inherits,
 			members: newMembers))
 	}
@@ -1716,6 +1718,7 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 		return super.replaceClassDeclaration(ClassDeclaration(
 			range: classDeclaration.range,
 			className: classDeclaration.className,
+			access: classDeclaration.access,
 			inherits: classDeclaration.inherits.filter { !TranspilationPass.isASwiftProtocol($0) },
 			members: classDeclaration.members))
 	}

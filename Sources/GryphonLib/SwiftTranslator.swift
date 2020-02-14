@@ -453,8 +453,9 @@ public class SwiftTranslator {
 			return nil
 		}
 
-		// Get the class name
+		// Get the class name and access modifier
 		let name = classDeclaration.standaloneAttributes.first!
+		let access = classDeclaration["access"]
 
 		// Check for inheritance
 		let inheritanceArray: MutableList<String>
@@ -471,6 +472,7 @@ public class SwiftTranslator {
 		return ClassDeclaration(
 			range: getRangeRecursively(ofNode: classDeclaration),
 			className: name,
+			access: access,
 			inherits: inheritanceArray,
 			members: classContents)
 	}

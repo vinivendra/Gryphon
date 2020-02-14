@@ -415,7 +415,13 @@ public class KotlinTranslator {
 		throws -> Translation
 	{
 		let result = Translation(range: classDeclaration.range)
-		result.append("\(indentation)open class \(classDeclaration.className)")
+		result.append("\(indentation)open")
+
+		if let access = classDeclaration.access {
+			result.append(" \(access)")
+		}
+
+		result.append(" class \(classDeclaration.className)")
 
 		if !classDeclaration.inherits.isEmpty {
 			let translatedInheritances = classDeclaration.inherits.map { translateType($0) }
