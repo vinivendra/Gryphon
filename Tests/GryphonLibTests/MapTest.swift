@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// output: Bootstrap/MapTest.kt
+// gryphon output: Bootstrap/MapTest.kt
 
 #if !GRYPHON
 @testable import GryphonLib
@@ -24,14 +24,14 @@ import Foundation
 #endif
 
 class MapTest: XCTestCase {
-	// insert: constructor(): super() { }
+	// gryphon insert: constructor(): super() { }
 
-	public func getClassName() -> String { // annotation: override
+	public func getClassName() -> String { // gryphon annotation: override
 		return "MapTest"
 	}
 
 	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // annotation: override
+	public func runAllTests() { // gryphon annotation: override
 		testEquatable()
 		testInits()
 		testCasting()
@@ -49,7 +49,7 @@ class MapTest: XCTestCase {
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // ignore: ignore
+	static var allTests = [ // gryphon ignore
 		("testEquatable", testEquatable),
 		("testInits", testInits),
 		("testCasting", testCasting),
@@ -79,12 +79,12 @@ class MapTest: XCTestCase {
 	func testInits() {
 		let dictionary1: Map<Int, Int> = [1: 10, 2: 20]
 		let dictionary2: Map<Int, Int> = Map<Int, Int>([1: 10, 2: 20])
-		let dictionary3: Map<Int, Int> = Map<Int, Int>(dictionary1) // ignore: ignore
+		let dictionary3: Map<Int, Int> = Map<Int, Int>(dictionary1) // gryphon ignore
 		let dictionary4: Map<Int, Int> = Map<Int, Int>()
 		let dictionary5: Map<Int, Int> = [:]
 
 		XCTAssertEqual(dictionary1, dictionary2)
-		XCTAssertEqual(dictionary1, dictionary3) // ignore: ignore
+		XCTAssertEqual(dictionary1, dictionary3) // gryphon ignore
 		XCTAssertEqual(dictionary4, dictionary5)
 		XCTAssertNotEqual(dictionary1, dictionary4)
 		XCTAssertNotEqual(dictionary1, dictionary5)
@@ -129,7 +129,7 @@ class MapTest: XCTestCase {
 		XCTAssert(!dictionary.description.contains("3"))
 	}
 
-	func testDebugDescription() { // ignore: ignore
+	func testDebugDescription() { // gryphon ignore
 		let dictionary: Map = [1: 10, 2: 20]
 
 		XCTAssert(dictionary.debugDescription.contains("1"))
@@ -139,7 +139,7 @@ class MapTest: XCTestCase {
 		XCTAssert(!dictionary.debugDescription.contains("3"))
 	}
 
-	func testCollectionIndices() { // ignore: ignore
+	func testCollectionIndices() { // gryphon ignore
 		let dictionary: Map = [1: 10, 2: 20]
 		let lastIndex = dictionary.index(after: dictionary.startIndex)
 
@@ -193,7 +193,7 @@ class MapTest: XCTestCase {
 		XCTAssertEqual(dictionary, [1: 10, 2: 20])
 	}
 
-	func testMapValues() {// ignore: ignore
+	func testMapValues() {// gryphon ignore
 		// TODO: Kotlin's mapValues takes an Entry instead of a value. That has to be translated
 		// somehow. Seems to be hard to do with templates; maybe it'll have to be with a new pass.
 		// Once solved, translate this test and its mutable counterpart.
@@ -204,7 +204,7 @@ class MapTest: XCTestCase {
 		XCTAssertEqual(dictionary, [1: 10, 2: 20])
 	}
 
-	func testSortedBy() { // ignore: ignore
+	func testSortedBy() { // gryphon ignore
 		// TODO: Either implement a translation for map sorting or remove this method/raise a
 		// warning.
 		// Once solved, translate this test and its mutable counterpart.
@@ -232,7 +232,7 @@ class MapTest: XCTestCase {
 		XCTAssertEqual(dictionary, [1: 20, 2: 10])
 	}
 
-	func testHash() { // ignore: ignore
+	func testHash() { // gryphon ignore
 		let dictionary1: Map = [1: 20, 2: 10]
 		let dictionary2: Map = [1: 20, 2: 10]
 		let dictionary3: Map = [1: 20, 2: 10, 3: 30]

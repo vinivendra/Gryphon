@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// output: Bootstrap/TranslationResultTest.kt
+// gryphon output: Bootstrap/TranslationResultTest.kt
 
 #if !GRYPHON
 @testable import GryphonLib
@@ -24,19 +24,19 @@ import XCTest
 #if !GRYPHON
 typealias GryphonTranslation = GryphonLib.Translation
 #else
-typealias GryphonTranslation = Translation // ignore: ignore
+typealias GryphonTranslation = Translation // gryphon ignore
 #endif
-// insert: typealias GryphonTranslation = Translation
+// gryphon insert: typealias GryphonTranslation = Translation
 
 class TranslationResultTest: XCTestCase {
-	// insert: constructor(): super() { }
+	// gryphon insert: constructor(): super() { }
 
-	public func getClassName() -> String { // annotation: override
+	public func getClassName() -> String { // gryphon annotation: override
 		return "TranslationResultTest"
 	}
 
 	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // annotation: override
+	public func runAllTests() { // gryphon annotation: override
 		testShallowTranslation()
 		testDeepTranslation()
 		testDropLast()
@@ -46,7 +46,7 @@ class TranslationResultTest: XCTestCase {
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // ignore: ignore
+	static var allTests = [ // gryphon ignore
 		("testShallowTranslation", testShallowTranslation),
 		("testDeepTranslation", testDeepTranslation),
 		("testDropLast", testDropLast),

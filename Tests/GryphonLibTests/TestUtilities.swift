@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// output: Bootstrap/TestUtilities.kt
+// gryphon output: Bootstrap/TestUtilities.kt
 
 import Foundation
 
@@ -24,7 +24,7 @@ import XCTest
 #endif
 
 class TestError: Error {
-	// insert: constructor(): super() { }
+	// gryphon insert: constructor(): super() { }
 }
 
 class TestUtilities {

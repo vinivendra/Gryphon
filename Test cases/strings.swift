@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// output: Test cases/Bootstrap Outputs/strings.swiftAST
-// output: Test cases/Bootstrap Outputs/strings.gryphonASTRaw
-// output: Test cases/Bootstrap Outputs/strings.gryphonAST
-// output: Test cases/Bootstrap Outputs/strings.kt
+// gryphon output: Test cases/Bootstrap Outputs/strings.swiftAST
+// gryphon output: Test cases/Bootstrap Outputs/strings.gryphonASTRaw
+// gryphon output: Test cases/Bootstrap Outputs/strings.gryphonAST
+// gryphon output: Test cases/Bootstrap Outputs/strings.kt
 
 // String Literal
 let x = "Hello, world!"

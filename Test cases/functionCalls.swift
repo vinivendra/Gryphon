@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// output: Test cases/Bootstrap Outputs/functionCalls.swiftAST
-// output: Test cases/Bootstrap Outputs/functionCalls.gryphonASTRaw
-// output: Test cases/Bootstrap Outputs/functionCalls.gryphonAST
-// output: Test cases/Bootstrap Outputs/functionCalls.kt
+// gryphon output: Test cases/Bootstrap Outputs/functionCalls.swiftAST
+// gryphon output: Test cases/Bootstrap Outputs/functionCalls.gryphonASTRaw
+// gryphon output: Test cases/Bootstrap Outputs/functionCalls.gryphonAST
+// gryphon output: Test cases/Bootstrap Outputs/functionCalls.kt
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Function definitions
@@ -112,7 +112,7 @@ f(a: 1, c: 1)
 f(b: 1, c: 1)
 f(a: 1, b: 1, c: 1)
 
-func variadics(a: Int, b: Int..., c: Int = 0) { // ignore: ignore
+func variadics(a: Int, b: Int..., c: Int = 0) { // gryphon ignore
 	print(a, terminator: "")
 	for element in b {
 		print(element, terminator: "")
@@ -120,13 +120,13 @@ func variadics(a: Int, b: Int..., c: Int = 0) { // ignore: ignore
 	print(c)
 }
 
-// insert: fun variadics(a: Int, vararg b: Int, c: Int = 0) {
-// insert: 	print(a)
-// insert: 	for (element in b) {
-// insert: 		print(element)
-// insert: 	}
-// insert: 	println(c)
-// insert: }
+// gryphon insert: fun variadics(a: Int, vararg b: Int, c: Int = 0) {
+// gryphon insert: 	print(a)
+// gryphon insert: 	for (element in b) {
+// gryphon insert: 		print(element)
+// gryphon insert: 	}
+// gryphon insert: 	println(c)
+// gryphon insert: }
 
 variadics(a: 1, b: 1, 2, 3, c: 1)
 variadics(a: 1, b: 1, 2, 3)

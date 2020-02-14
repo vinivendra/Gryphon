@@ -14,15 +14,15 @@
 // limitations under the License.
 //
 
-// output: Test cases/Bootstrap Outputs/standardLibrary.swiftAST
-// output: Test cases/Bootstrap Outputs/standardLibrary.gryphonASTRaw
-// output: Test cases/Bootstrap Outputs/standardLibrary.gryphonAST
-// output: Test cases/Bootstrap Outputs/standardLibrary.kt
+// gryphon output: Test cases/Bootstrap Outputs/standardLibrary.swiftAST
+// gryphon output: Test cases/Bootstrap Outputs/standardLibrary.gryphonASTRaw
+// gryphon output: Test cases/Bootstrap Outputs/standardLibrary.gryphonAST
+// gryphon output: Test cases/Bootstrap Outputs/standardLibrary.kt
 
 import Foundation
 
-typealias PrintContents = Any // ignore: ignore
-// insert: typealias PrintContents = Any?
+typealias PrintContents = Any // gryphon ignore
+// gryphon insert: typealias PrintContents = Any?
 
 func printTest(_ contents: PrintContents, _ testName: String) {
 	let firstColumnSize = 40
@@ -58,12 +58,12 @@ printTest(sqrt(9), "Sqrt")
 
 // String
 let string = "abcde"
-let bIndex = string.index(string.startIndex, offsetBy: 1) // value: 1
-let cIndex = string.index(string.startIndex, offsetBy: 2) // value: 2
-let dIndex = string.index(string.startIndex, offsetBy: 3) // value: 3
+let bIndex = string.index(string.startIndex, offsetBy: 1) // gryphon value: 1
+let cIndex = string.index(string.startIndex, offsetBy: 2) // gryphon value: 2
+let dIndex = string.index(string.startIndex, offsetBy: 3) // gryphon value: 3
 var variableIndex = cIndex
-let substring = "abcde".dropLast() // value: "abcd"
-let range = string.startIndex..<string.endIndex // value: IntRange(0, string.length)
+let substring = "abcde".dropLast() // gryphon value: "abcd"
+let range = string.startIndex..<string.endIndex // gryphon value: IntRange(0, string.length)
 var variableString = "abcde"
 let character: Character = "i"
 
@@ -180,16 +180,16 @@ printTest(string.uppercased(), "String uppercased")
 printTest(character.uppercased(), "Character uppercased")
 
 // Array
-var array = [1, 2, 3] // ignore: ignore
+var array = [1, 2, 3] // gryphon ignore
 let array2 = [2, 1]
-var array3 = [1] // ignore: ignore
+var array3 = [1] // gryphon ignore
 let array4 = [2, 1]
-var arrayOfOptionals: [Int?] = [1] // ignore: ignore
+var arrayOfOptionals: [Int?] = [1] // gryphon ignore
 let emptyArray: [Int] = []
 let stringArray = ["1", "2", "3"]
-// insertInMain: val array: MutableList<Int> = mutableListOf(1, 2, 3)
-// insertInMain: val array3: MutableList<Int> = mutableListOf(1)
-// insertInMain: val arrayOfOptionals: MutableList<Int?> = mutableListOf(1)
+// gryphon insertInMain: val array: MutableList<Int> = mutableListOf(1, 2, 3)
+// gryphon insertInMain: val array3: MutableList<Int> = mutableListOf(1)
+// gryphon insertInMain: val arrayOfOptionals: MutableList<Int?> = mutableListOf(1)
 
 printTest(array, "Array append")
 array.append(4)
@@ -310,13 +310,13 @@ printTest(Int.min..<0, "Recursive matches")
 
 //
 // User-defined templates
-func f(of a: Int) { // ignore: ignore
+func f(of a: Int) { // gryphon ignore
 	printTest(a, "User template")
 }
 
-// insert: fun g(a: Int) {
-// insert: 	printTest(a, "User template")
-// insert: }
+// gryphon insert: fun g(a: Int) {
+// gryphon insert: 	printTest(a, "User template")
+// gryphon insert: }
 
 f(of: 10)
 

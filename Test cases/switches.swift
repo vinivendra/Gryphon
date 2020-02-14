@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// output: Test cases/Bootstrap Outputs/switches.swiftAST
-// output: Test cases/Bootstrap Outputs/switches.gryphonASTRaw
-// output: Test cases/Bootstrap Outputs/switches.gryphonAST
-// output: Test cases/Bootstrap Outputs/switches.kt
+// gryphon output: Test cases/Bootstrap Outputs/switches.swiftAST
+// gryphon output: Test cases/Bootstrap Outputs/switches.gryphonASTRaw
+// gryphon output: Test cases/Bootstrap Outputs/switches.gryphonAST
+// gryphon output: Test cases/Bootstrap Outputs/switches.kt
 
 func printNumberName(_ x: Int) {
 	switch x {

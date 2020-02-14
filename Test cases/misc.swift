@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// output: Test cases/Bootstrap Outputs/misc.swiftAST
-// output: Test cases/Bootstrap Outputs/misc.gryphonASTRaw
-// output: Test cases/Bootstrap Outputs/misc.gryphonAST
-// output: Test cases/Bootstrap Outputs/misc.kt
+// gryphon output: Test cases/Bootstrap Outputs/misc.swiftAST
+// gryphon output: Test cases/Bootstrap Outputs/misc.gryphonASTRaw
+// gryphon output: Test cases/Bootstrap Outputs/misc.gryphonAST
+// gryphon output: Test cases/Bootstrap Outputs/misc.kt
 
 // Typealias
 typealias A = Int
@@ -32,7 +32,7 @@ class B {
 typealias BC = B.C
 
 // Typealias with generics
-class List<T> { } // ignore: ignore
+class List<T> { } // gryphon ignore
 
 typealias ListInt = List<Int>
 

@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// output: Sources/GryphonLib/ASTDumpDecoder.swiftAST
-// output: Sources/GryphonLib/ASTDumpDecoder.gryphonASTRaw
-// output: Sources/GryphonLib/ASTDumpDecoder.gryphonAST
-// output: Bootstrap/ASTDumpDecoder.kt
+// gryphon output: Sources/GryphonLib/ASTDumpDecoder.swiftAST
+// gryphon output: Sources/GryphonLib/ASTDumpDecoder.gryphonASTRaw
+// gryphon output: Sources/GryphonLib/ASTDumpDecoder.gryphonAST
+// gryphon output: Bootstrap/ASTDumpDecoder.kt
 
 internal class ASTDumpDecoder {
 	let buffer: String

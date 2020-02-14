@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// output: Bootstrap/MutableListTest.kt
+// gryphon output: Bootstrap/MutableListTest.kt
 
 #if !GRYPHON
 @testable import GryphonLib
@@ -24,14 +24,14 @@ import Foundation
 #endif
 
 class MutableListTest: XCTestCase {
-	// insert: constructor(): super() { }
+	// gryphon insert: constructor(): super() { }
 
-	public func getClassName() -> String { // annotation: override
+	public func getClassName() -> String { // gryphon annotation: override
 		return "MutableListTest"
 	}
 
 	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // annotation: override
+	public func runAllTests() { // gryphon annotation: override
 		testEquatable()
 		testInits()
 		testPassingByReference()
@@ -67,7 +67,7 @@ class MutableListTest: XCTestCase {
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // ignore: ignore
+	static var allTests = [ // gryphon ignore
 		("testEquatable", testEquatable),
 		("testInits", testInits),
 		("testPassingByReference", testPassingByReference),
@@ -115,27 +115,27 @@ class MutableListTest: XCTestCase {
 	func testInits() {
 		let list1: MutableList<Int> = [1, 2, 3]
 		let list2: MutableList<Int> = MutableList<Int>([1, 2, 3])
-		let list3: MutableList = MutableList(list1) // ignore: ignore
-		let sequence = AnySequence([1, 2, 3]) // ignore: ignore
-		let list4: MutableList<Int> = MutableList<Int>(sequence) // ignore: ignore
+		let list3: MutableList = MutableList(list1) // gryphon ignore
+		let sequence = AnySequence([1, 2, 3]) // gryphon ignore
+		let list4: MutableList<Int> = MutableList<Int>(sequence) // gryphon ignore
 		let list5: MutableList<Int> = MutableList<Int>()
 		let list6: MutableList<Int> = []
 
 		XCTAssertEqual(list1, list2)
-		XCTAssertEqual(list1, list3) // ignore: ignore
-		XCTAssertEqual(list1, list4) // ignore: ignore
+		XCTAssertEqual(list1, list3) // gryphon ignore
+		XCTAssertEqual(list1, list4) // gryphon ignore
 		XCTAssertEqual(list5, list6)
 
 		list1.append(4)
 		list5.append(4)
 
 		XCTAssertNotEqual(list1, list2)
-		XCTAssertNotEqual(list1, list3) // ignore: ignore
-		XCTAssertNotEqual(list1, list4) // ignore: ignore
+		XCTAssertNotEqual(list1, list3) // gryphon ignore
+		XCTAssertNotEqual(list1, list4) // gryphon ignore
 		XCTAssertNotEqual(list5, list6)
 		XCTAssertEqual(list2, [1, 2, 3])
-		XCTAssertEqual(list2, list3) // ignore: ignore
-		XCTAssertEqual(list2, list4) // ignore: ignore
+		XCTAssertEqual(list2, list3) // gryphon ignore
+		XCTAssertEqual(list2, list4) // gryphon ignore
 	}
 
 	func testPassingByReference() {
@@ -195,7 +195,7 @@ class MutableListTest: XCTestCase {
 		XCTAssert(!list.description.contains("4"))
 	}
 
-	func testDebugDescription() { // ignore: ignore
+	func testDebugDescription() { // gryphon ignore
 		let list: MutableList<Int> = [1, 2, 3]
 
 		XCTAssert(list.debugDescription.contains("1"))
@@ -375,7 +375,7 @@ class MutableListTest: XCTestCase {
 		XCTAssertEqual(list.firstIndex(of: 10), 2)
 	}
 
-	func testHash() { // ignore: ignore
+	func testHash() { // gryphon ignore
 		let list1: MutableList<Int> = [1, 2, 3]
 		let list2: MutableList<Int> = [1, 2, 3]
 		let list3: MutableList<Int> = [1, 2, 3, 4]

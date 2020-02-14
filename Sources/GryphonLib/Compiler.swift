@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// output: Sources/GryphonLib/Compiler.swiftAST
-// output: Sources/GryphonLib/Compiler.gryphonASTRaw
-// output: Sources/GryphonLib/Compiler.gryphonAST
-// output: Bootstrap/Compiler.kt
+// gryphon output: Sources/GryphonLib/Compiler.swiftAST
+// gryphon output: Sources/GryphonLib/Compiler.gryphonASTRaw
+// gryphon output: Sources/GryphonLib/Compiler.gryphonAST
+// gryphon output: Bootstrap/Compiler.kt
 
 import Foundation
 
@@ -312,14 +312,14 @@ public class Compiler {
 
 			let kotlinTranslatorHistogram = kotlinTranslatorErrors.group { $0.ast.name }
 
-			let sortedHistogram = kotlinTranslatorHistogram.sorted(by: { a, b in // ignore: ignore
+			let sortedHistogram = kotlinTranslatorHistogram.sorted(by: { a, b in // gryphon ignore
 				a.value.count > b.value.count
 			})
 
-			// insert: val sortedHistogram = kotlinTranslatorHistogram.entries.toMutableList()
-			// insert:     .sorted(isAscending = { a, b ->
-			// insert:         a.value.size > b.value.size
-			// insert:     })
+			// gryphon insert: val sortedHistogram = kotlinTranslatorHistogram.entries
+			// gryphon insert:     .toMutableList().sorted(isAscending = { a, b ->
+			// gryphon insert:         a.value.size > b.value.size
+			// gryphon insert:     })
 
 			for tuple in sortedHistogram {
 				let astName = tuple.key

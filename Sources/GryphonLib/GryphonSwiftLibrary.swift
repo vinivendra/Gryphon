@@ -61,7 +61,7 @@ private func gryphonTemplates() {
 /// (link found via https://www.raywenderlich.com/139591/building-custom-collection-swift)
 /// the Array type in Swift conforms exactly to these protocols,
 /// plus CustomReflectable (which is beyond Gryphon's scope for now).
-public struct _ListSlice<Element>: Collection, // ignore: ignore
+public struct _ListSlice<Element>: Collection, // gryphon ignore
 	BidirectionalCollection,
 	RandomAccessCollection,
 	MutableCollection,
@@ -135,7 +135,7 @@ public struct _ListSlice<Element>: Collection, // ignore: ignore
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-public class List<Element>: CustomStringConvertible, // ignore: ignore
+public class List<Element>: CustomStringConvertible, // gryphon ignore
 	CustomDebugStringConvertible,
 	ExpressibleByArrayLiteral,
 	Sequence,
@@ -298,14 +298,14 @@ public class List<Element>: CustomStringConvertible, // ignore: ignore
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-extension List { // ignore: ignore
+extension List { // gryphon ignore
 	public func toMutableList() -> MutableList<Element> {
 		return MutableList(array)
 	}
 }
 
 // TODO: test
-extension List { // ignore: ignore
+extension List { // gryphon ignore
 	@inlinable
 	public static func + <Other>(
 		lhs: List<Element>,
@@ -322,7 +322,7 @@ extension List { // ignore: ignore
 	}
 }
 
-extension List: Equatable where Element: Equatable { // ignore: ignore
+extension List: Equatable where Element: Equatable { // gryphon ignore
 	public static func == (lhs: List, rhs: List) -> Bool {
 		return lhs.array == rhs.array
 	}
@@ -333,13 +333,13 @@ extension List: Equatable where Element: Equatable { // ignore: ignore
 	}
 }
 
-extension List: Hashable where Element: Hashable { // ignore: ignore
+extension List: Hashable where Element: Hashable { // gryphon ignore
 	public func hash(into hasher: inout Hasher) {
 		array.hash(into: &hasher)
 	}
 }
 
-extension List where Element: Comparable { // ignore: ignore
+extension List where Element: Comparable { // gryphon ignore
 	@inlinable
 	public func sorted() -> List<Element> {
 		return List(array.sorted())
@@ -348,7 +348,7 @@ extension List where Element: Comparable { // ignore: ignore
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-public class MutableList<Element>: List<Element>, // ignore: ignore
+public class MutableList<Element>: List<Element>, // gryphon ignore
 	MutableCollection,
 	RangeReplaceableCollection
 {
@@ -417,7 +417,7 @@ public class MutableList<Element>: List<Element>, // ignore: ignore
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-public func zip<ASequence, ListElement>( // ignore: ignore
+public func zip<ASequence, ListElement>( // gryphon ignore
 	_ array1: ASequence,
 	_ array2: List<ListElement>)
 	-> List<(ASequence.Element, ListElement)>
@@ -426,7 +426,7 @@ public func zip<ASequence, ListElement>( // ignore: ignore
 	return List(Swift.zip(array1, array2))
 }
 
-public func zip<ASequence, ListElement>( // ignore: ignore
+public func zip<ASequence, ListElement>( // gryphon ignore
 	_ array1: List<ListElement>,
 	_ array2: ASequence)
 	-> List<(ListElement, ASequence.Element)>
@@ -435,7 +435,7 @@ public func zip<ASequence, ListElement>( // ignore: ignore
 	return List(Swift.zip(array1, array2))
 }
 
-public func zip<List1Element, List2Element>( // ignore: ignore
+public func zip<List1Element, List2Element>( // gryphon ignore
 	_ array1: List<List1Element>,
 	_ array2: List<List2Element>)
 	-> List<(List1Element, List2Element)>
@@ -448,7 +448,7 @@ public func zip<List1Element, List2Element>( // ignore: ignore
 /// According to https://swiftdoc.org/v4.2/type/dictionary/hierarchy/
 /// the Dictionary type in Swift conforms exactly to these protocols,
 /// plus CustomReflectable (which is beyond Gryphon's scope for now).
-public class Map<Key, Value>: // ignore: ignore
+public class Map<Key, Value>: // gryphon ignore
 	CustomStringConvertible,
 	CustomDebugStringConvertible,
 	ExpressibleByDictionaryLiteral,
@@ -575,19 +575,19 @@ public class Map<Key, Value>: // ignore: ignore
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-extension Map { // ignore: ignore
+extension Map { // gryphon ignore
 	public func toMutableMap() -> MutableMap<Key, Value> {
 		return MutableMap(dictionary)
 	}
 }
 
-extension Map: Equatable where Value: Equatable { // ignore: ignore
+extension Map: Equatable where Value: Equatable { // gryphon ignore
 	public static func == (lhs: Map, rhs: Map) -> Bool {
 		return lhs.dictionary == rhs.dictionary
 	}
 }
 
-extension Map: Hashable where Value: Hashable { // ignore: ignore
+extension Map: Hashable where Value: Hashable { // gryphon ignore
 	public func hash(into hasher: inout Hasher) {
 		dictionary.hash(into: &hasher)
 	}
@@ -595,7 +595,7 @@ extension Map: Hashable where Value: Hashable { // ignore: ignore
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-public class MutableMap<Key, Value>: Map<Key, Value> where Key: Hashable { // ignore: ignore
+public class MutableMap<Key, Value>: Map<Key, Value> where Key: Hashable { // gryphon ignore
 	override public subscript (_ key: Key) -> Value? {
 		get {
 			return dictionary[key]

@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// output: Sources/GryphonLib/TranslationResult.swiftAST
-// output: Sources/GryphonLib/TranslationResult.gryphonASTRaw
-// output: Sources/GryphonLib/TranslationResult.gryphonAST
-// output: Bootstrap/TranslationResult.kt
+// gryphon output: Sources/GryphonLib/TranslationResult.swiftAST
+// gryphon output: Sources/GryphonLib/TranslationResult.gryphonASTRaw
+// gryphon output: Sources/GryphonLib/TranslationResult.gryphonAST
+// gryphon output: Bootstrap/TranslationResult.kt
 
 public struct TranslationResult {
 	let translation: String
@@ -135,18 +135,18 @@ struct TranslationUnit {
 
 	// Only these two initializers exits, therefore exactly one of the properties will always be
 	// non-nil
-	init(_ stringLiteral: String) { // ignore: ignore
+	init(_ stringLiteral: String) { // gryphon ignore
 		self.stringLiteral = stringLiteral
 		self.node = nil
 	}
 
-	init(_ node: Translation) { // ignore: ignore
+	init(_ node: Translation) { // gryphon ignore
 		self.stringLiteral = nil
 		self.node = node
 	}
 
-	// insert: constructor(stringLiteral: String): this(stringLiteral, null) { }
-	// insert: constructor(node: Translation): this(null, node) { }
+	// gryphon insert: constructor(stringLiteral: String): this(stringLiteral, null) { }
+	// gryphon insert: constructor(node: Translation): this(null, node) { }
 }
 
 internal class SourceFilePosition {

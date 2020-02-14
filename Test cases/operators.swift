@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// output: Test cases/Bootstrap Outputs/operators.swiftAST
-// output: Test cases/Bootstrap Outputs/operators.gryphonASTRaw
-// output: Test cases/Bootstrap Outputs/operators.gryphonAST
-// output: Test cases/Bootstrap Outputs/operators.kt
+// gryphon output: Test cases/Bootstrap Outputs/operators.swiftAST
+// gryphon output: Test cases/Bootstrap Outputs/operators.gryphonASTRaw
+// gryphon output: Test cases/Bootstrap Outputs/operators.gryphonAST
+// gryphon output: Test cases/Bootstrap Outputs/operators.kt
 
 let x = 0
 let y = x + 1

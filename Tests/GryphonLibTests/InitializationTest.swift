@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// output: Bootstrap/InitializationTest.kt
+// gryphon output: Bootstrap/InitializationTest.kt
 
 #if !GRYPHON
 @testable import GryphonLib
@@ -22,19 +22,19 @@ import XCTest
 #endif
 
 class InitializationTest: XCTestCase {
-	// insert: constructor(): super() { }
+	// gryphon insert: constructor(): super() { }
 
-	public func getClassName() -> String { // annotation: override
+	public func getClassName() -> String { // gryphon annotation: override
 		return "InitializationTest"
 	}
 
 	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // annotation: override
+	public func runAllTests() { // gryphon annotation: override
 		testInitialization()
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // ignore: ignore
+	static var allTests = [ // gryphon ignore
 		("testInitialization", testInitialization),
 	]
 

@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// output: Sources/GryphonLib/SwiftTranslator.swiftAST
-// output: Sources/GryphonLib/SwiftTranslator.gryphonASTRaw
-// output: Sources/GryphonLib/SwiftTranslator.gryphonAST
-// output: Bootstrap/SwiftTranslator.kt
+// gryphon output: Sources/GryphonLib/SwiftTranslator.swiftAST
+// gryphon output: Sources/GryphonLib/SwiftTranslator.gryphonASTRaw
+// gryphon output: Sources/GryphonLib/SwiftTranslator.gryphonAST
+// gryphon output: Bootstrap/SwiftTranslator.kt
 
 import Foundation
 
@@ -1772,7 +1772,7 @@ public class SwiftTranslator {
 
 		let functionNamePrefix = functionName.prefix {
 			$0 !=
-				"(" // value: '('
+				"(" // gryphon value: '('
 		}
 
 		// Get the function parameters.
@@ -2572,7 +2572,7 @@ public class SwiftTranslator {
 		if component.contains(":") {
 			let label = component.prefix(while: {
 					$0 !=
-						":" // value: ':'
+						":" // gryphon value: ':'
 				})
 			return String(label)
 		}
@@ -2917,15 +2917,14 @@ public class SwiftTranslator {
 				}
 			}
 			else {
-				// Check if there's a `// multiline: multiline` comment just before the string
+				// Check if there's a `// gryphon multiline` comment just before the string
 				// literal, since we can't put a comment in the same line as a multiline string.
 				var isMultiline = false
 				if let lineNumber = getRange(ofNode: stringLiteralExpression)?.lineStart {
-					if let maybeMultilineComment =
-							sourceFile?.getTranslationCommentFromLine(lineNumber - 1),
-						maybeMultilineComment.key == .multiline
+					if let translationComment =
+							sourceFile?.getTranslationCommentFromLine(lineNumber - 1)
 					{
-						isMultiline = (maybeMultilineComment.value == "multiline")
+						isMultiline = (translationComment.key == .multiline)
 					}
 				}
 

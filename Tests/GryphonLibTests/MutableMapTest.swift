@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// output: Bootstrap/MutableMapTest.kt
+// gryphon output: Bootstrap/MutableMapTest.kt
 
 #if !GRYPHON
 @testable import GryphonLib
@@ -24,14 +24,14 @@ import Foundation
 #endif
 
 class MutableMapTest: XCTestCase {
-	// insert: constructor(): super() { }
+	// gryphon insert: constructor(): super() { }
 
-	public func getClassName() -> String { // annotation: override
+	public func getClassName() -> String { // gryphon annotation: override
 		return "MutableMapTest"
 	}
 
 	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // annotation: override
+	public func runAllTests() { // gryphon annotation: override
 		testEquatable()
 		testInits()
 		testPassingByReference()
@@ -51,7 +51,7 @@ class MutableMapTest: XCTestCase {
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // ignore: ignore
+	static var allTests = [ // gryphon ignore
 		("testEquatable", testEquatable),
 		("testInits", testInits),
 		("testPassingByReference", testPassingByReference),
@@ -83,21 +83,21 @@ class MutableMapTest: XCTestCase {
 	func testInits() {
 		let dictionary1: MutableMap<Int, Int> = [1: 10, 2: 20]
 		let dictionary2: MutableMap<Int, Int> = MutableMap<Int, Int>([1: 10, 2: 20])
-		let dictionary3: MutableMap<Int, Int> = MutableMap<Int, Int>(dictionary1) // ignore: ignore
+		let dictionary3: MutableMap<Int, Int> = MutableMap<Int, Int>(dictionary1) // gryphon ignore
 		let dictionary4: MutableMap<Int, Int> = MutableMap<Int, Int>()
 		let dictionary5: MutableMap<Int, Int> = [:]
 
 		XCTAssertEqual(dictionary1, dictionary2)
-		XCTAssertEqual(dictionary1, dictionary3) // ignore: ignore
+		XCTAssertEqual(dictionary1, dictionary3) // gryphon ignore
 		XCTAssertEqual(dictionary4, dictionary5)
 
 		dictionary1[3] = 30
 		dictionary4[3] = 30
 
 		XCTAssertNotEqual(dictionary1, dictionary2)
-		XCTAssertNotEqual(dictionary1, dictionary3) // ignore: ignore
+		XCTAssertNotEqual(dictionary1, dictionary3) // gryphon ignore
 		XCTAssertNotEqual(dictionary4, dictionary5)
-		XCTAssertEqual(dictionary2, dictionary3) // ignore: ignore
+		XCTAssertEqual(dictionary2, dictionary3) // gryphon ignore
 	}
 
 	func testPassingByReference() {
@@ -157,7 +157,7 @@ class MutableMapTest: XCTestCase {
 		XCTAssert(!dictionary.description.contains("3"))
 	}
 
-	func testDebugDescription() { // ignore: ignore
+	func testDebugDescription() { // gryphon ignore
 		let dictionary: MutableMap = [1: 10, 2: 20]
 
 		XCTAssert(dictionary.debugDescription.contains("1"))
@@ -167,7 +167,7 @@ class MutableMapTest: XCTestCase {
 		XCTAssert(!dictionary.debugDescription.contains("3"))
 	}
 
-	func testCollectionIndices() { // ignore: ignore
+	func testCollectionIndices() { // gryphon ignore
 		let dictionary: MutableMap = [1: 10, 2: 20]
 		let lastIndex = dictionary.index(after: dictionary.startIndex)
 
@@ -221,7 +221,7 @@ class MutableMapTest: XCTestCase {
 		XCTAssertEqual(dictionary, [1: 10, 2: 20])
 	}
 
-	func testMapValues() { // ignore: ignore
+	func testMapValues() { // gryphon ignore
 		let dictionary: MutableMap = [1: 10, 2: 20]
 		let mappedDictionary = dictionary.mapValues { $0 * 10 }
 
@@ -229,7 +229,7 @@ class MutableMapTest: XCTestCase {
 		XCTAssertEqual(dictionary, [1: 10, 2: 20])
 	}
 
-	func testSortedBy() { // ignore: ignore
+	func testSortedBy() { // gryphon ignore
 		let dictionary: MutableMap = [1: 20, 2: 10]
 
 		let keySorted = dictionary.sorted { $0.0 < $1.0 }
@@ -254,7 +254,7 @@ class MutableMapTest: XCTestCase {
 		XCTAssertEqual(dictionary, [1: 20, 2: 10])
 	}
 
-	func testHash() { // ignore: ignore
+	func testHash() { // gryphon ignore
 		let dictionary1: MutableMap = [1: 20, 2: 10]
 		let dictionary2: MutableMap = [1: 20, 2: 10]
 		let dictionary3: MutableMap = [1: 20, 2: 10, 3: 30]

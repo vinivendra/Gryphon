@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// output: Bootstrap/ExtensionsTest.kt
+// gryphon output: Bootstrap/ExtensionsTest.kt
 
 #if !GRYPHON
 @testable import GryphonLib
@@ -25,28 +25,28 @@ struct TestableRange: Equatable {
 	let lowerBound: Int
 	let upperBound: Int
 
-	// insert: constructor(range: IntRange): this(range.start, range.endInclusive) { }
+	// gryphon insert: constructor(range: IntRange): this(range.start, range.endInclusive) { }
 
-	init(_ range: Range<String.Index>) { // ignore: ignore
+	init(_ range: Range<String.Index>) { // gryphon ignore
 		self.lowerBound = range.lowerBound.encodedOffset
 		self.upperBound = range.upperBound.encodedOffset
 	}
 
-	init(_ lowerBound: Int, _ upperBound: Int) { // ignore: ignore
+	init(_ lowerBound: Int, _ upperBound: Int) { // gryphon ignore
 		self.lowerBound = lowerBound
 		self.upperBound = upperBound
 	}
 }
 
 class ExtensionsTest: XCTestCase {
-	// insert: constructor(): super() { }
+	// gryphon insert: constructor(): super() { }
 
-	public func getClassName() -> String { // annotation: override
+	public func getClassName() -> String { // gryphon annotation: override
 		return "ExtensionsTest"
 	}
 
 	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // annotation: override
+	public func runAllTests() { // gryphon annotation: override
 		testStringSplit()
 		testOccurrencesOfSubstring()
 		testSplitUsingUnescapedSpaces()
@@ -63,7 +63,7 @@ class ExtensionsTest: XCTestCase {
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // ignore: ignore
+	static var allTests = [ // gryphon ignore
 		("testStringSplit", testStringSplit),
 		("testOccurrencesOfSubstring", testOccurrencesOfSubstring),
 		("testSplitUsingUnescapedSpaces", testSplitUsingUnescapedSpaces),
@@ -252,7 +252,7 @@ class ExtensionsTest: XCTestCase {
 			]))
 		XCTAssertEqual(
 			"abc".occurrences(of: "->").map { TestableRange($0) },
-			MutableList<TestableRange>([])) // value: mutableListOf<TestableRange>()
+			MutableList<TestableRange>([])) // gryphon value: mutableListOf<TestableRange>()
 		XCTAssertEqual(
 			"->(Int, (String) -> Int) ->-> Int ->"
 				.occurrences(of: "->").map { TestableRange($0) },

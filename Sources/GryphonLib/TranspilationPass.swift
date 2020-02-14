@@ -14,12 +14,12 @@
 // limitations under the License.
 //
 
-// output: Sources/GryphonLib/TranspilationPass.swiftAST
-// output: Sources/GryphonLib/TranspilationPass.gryphonASTRaw
-// output: Sources/GryphonLib/TranspilationPass.gryphonAST
-// output: Bootstrap/TranspilationPass.kt
+// gryphon output: Sources/GryphonLib/TranspilationPass.swiftAST
+// gryphon output: Sources/GryphonLib/TranspilationPass.gryphonASTRaw
+// gryphon output: Sources/GryphonLib/TranspilationPass.gryphonAST
+// gryphon output: Bootstrap/TranspilationPass.kt
 
-// insert: import kotlin.system.*
+// gryphon insert: import kotlin.system.*
 
 /// Implements the basic algorithm that visits nodes in the AST. Subclassing this class and
 /// overriding the `replace` and `process` methods lets you alter the AST in specific places, which
@@ -54,7 +54,7 @@ public class TranspilationPass {
 		self.context = context
 	}
 
-	func run() -> GryphonAST { // annotation: open
+	func run() -> GryphonAST { // gryphon annotation: open
 		let replacedStatements = replaceStatements(ast.statements)
 		let replacedDeclarations = replaceStatements(ast.declarations)
 		return GryphonAST(
@@ -86,14 +86,14 @@ public class TranspilationPass {
 
 	// MARK: - Replace Statements
 
-	func replaceStatements( // annotation: open
+	func replaceStatements( // gryphon annotation: open
 		_ statements: MutableList<Statement>)
 		-> MutableList<Statement>
 	{
 		return statements.flatMap { replaceStatement($0) }.toMutableList()
 	}
 
-	func replaceStatement( // annotation: open
+	func replaceStatement( // gryphon annotation: open
 		_ statement: Statement)
 		-> MutableList<Statement>
 	{
@@ -182,13 +182,13 @@ public class TranspilationPass {
 		fatalError("This should never be reached.")
 	}
 
-	func replaceComment(_ commentStatement: CommentStatement) // annotation: open
+	func replaceComment(_ commentStatement: CommentStatement) // gryphon annotation: open
 		-> MutableList<Statement>
 	{
 		return [commentStatement]
 	}
 
-	func replaceExpressionStatement( // annotation: open
+	func replaceExpressionStatement( // gryphon annotation: open
 		_ expressionStatement: ExpressionStatement)
 		-> MutableList<Statement>
 	{
@@ -197,7 +197,7 @@ public class TranspilationPass {
 			expression: replaceExpression(expressionStatement.expression)), ]
 	}
 
-	func replaceExtension( // annotation: open
+	func replaceExtension( // gryphon annotation: open
 		_ extensionDeclaration: ExtensionDeclaration)
 		-> MutableList<Statement>
 	{
@@ -207,21 +207,21 @@ public class TranspilationPass {
 			members: replaceStatements(extensionDeclaration.members)), ]
 	}
 
-	func replaceImportDeclaration( // annotation: open
+	func replaceImportDeclaration( // gryphon annotation: open
 		_ importDeclaration: ImportDeclaration)
 		-> MutableList<Statement>
 	{
 		return [importDeclaration]
 	}
 
-	func replaceTypealiasDeclaration( // annotation: open
+	func replaceTypealiasDeclaration( // gryphon annotation: open
 		_ typealiasDeclaration: TypealiasDeclaration)
 		-> MutableList<Statement>
 	{
 		return [typealiasDeclaration]
 	}
 
-	func replaceClassDeclaration( // annotation: open
+	func replaceClassDeclaration( // gryphon annotation: open
 		_ classDeclaration: ClassDeclaration)
 		-> MutableList<Statement>
 	{
@@ -232,7 +232,7 @@ public class TranspilationPass {
 			members: replaceStatements(classDeclaration.members)), ]
 	}
 
-	func replaceCompanionObject( // annotation: open
+	func replaceCompanionObject( // gryphon annotation: open
 		_ companionObject: CompanionObject)
 		-> MutableList<Statement>
 	{
@@ -241,7 +241,7 @@ public class TranspilationPass {
 			members: replaceStatements(companionObject.members)), ]
 	}
 
-	func replaceEnumDeclaration( // annotation: open
+	func replaceEnumDeclaration( // gryphon annotation: open
 		_ enumDeclaration: EnumDeclaration)
 		-> MutableList<Statement>
 	{
@@ -258,14 +258,14 @@ public class TranspilationPass {
 				isImplicit: enumDeclaration.isImplicit), ]
 	}
 
-	func replaceEnumElementDeclaration( // annotation: open
+	func replaceEnumElementDeclaration( // gryphon annotation: open
 		_ enumElement: EnumElement)
 		-> MutableList<EnumElement>
 	{
 		return [enumElement]
 	}
 
-	func replaceProtocolDeclaration( // annotation: open
+	func replaceProtocolDeclaration( // gryphon annotation: open
 		_ protocolDeclaration: ProtocolDeclaration)
 		-> MutableList<Statement>
 	{
@@ -275,7 +275,7 @@ public class TranspilationPass {
 			members: replaceStatements(protocolDeclaration.members)), ]
 	}
 
-	func replaceStructDeclaration( // annotation: open
+	func replaceStructDeclaration( // gryphon annotation: open
 		_ structDeclaration: StructDeclaration)
 		-> MutableList<Statement>
 	{
@@ -287,7 +287,7 @@ public class TranspilationPass {
 			members: replaceStatements(structDeclaration.members)), ]
 	}
 
-	func replaceInitializerDeclaration( // annotation: open
+	func replaceInitializerDeclaration( // gryphon annotation: open
 		_ initializerDeclaration: InitializerDeclaration)
 		-> MutableList<Statement>
 	{
@@ -299,7 +299,7 @@ public class TranspilationPass {
 		}
 	}
 
-	func processInitializerDeclaration( // annotation: open
+	func processInitializerDeclaration( // gryphon annotation: open
 		_ initializerDeclaration: InitializerDeclaration)
 		-> InitializerDeclaration?
 	{
@@ -319,7 +319,7 @@ public class TranspilationPass {
 		return initializerDeclaration
 	}
 
-	func replaceFunctionDeclaration( // annotation: open
+	func replaceFunctionDeclaration( // gryphon annotation: open
 		_ functionDeclaration: FunctionDeclaration)
 		-> MutableList<Statement>
 	{
@@ -331,7 +331,7 @@ public class TranspilationPass {
 		}
 	}
 
-	func processFunctionDeclaration( // annotation: open
+	func processFunctionDeclaration( // gryphon annotation: open
 		_ functionDeclaration: FunctionDeclaration)
 		-> FunctionDeclaration?
 	{
@@ -351,14 +351,14 @@ public class TranspilationPass {
 		return functionDeclaration
 	}
 
-	func replaceVariableDeclaration( // annotation: open
+	func replaceVariableDeclaration( // gryphon annotation: open
 		_ variableDeclaration: VariableDeclaration)
 		-> MutableList<Statement>
 	{
 		return [processVariableDeclaration(variableDeclaration)]
 	}
 
-	func processVariableDeclaration( // annotation: open
+	func processVariableDeclaration( // gryphon annotation: open
 		_ variableDeclaration: VariableDeclaration)
 		-> VariableDeclaration
 	{
@@ -374,7 +374,7 @@ public class TranspilationPass {
 		return variableDeclaration
 	}
 
-	func replaceDoStatement( // annotation: open
+	func replaceDoStatement( // gryphon annotation: open
 		_ doStatement: DoStatement)
 		-> MutableList<Statement>
 	{
@@ -383,7 +383,7 @@ public class TranspilationPass {
 			statements: replaceStatements(doStatement.statements)), ]
 	}
 
-	func replaceCatchStatement( // annotation: open
+	func replaceCatchStatement( // gryphon annotation: open
 		_ catchStatement: CatchStatement)
 		-> MutableList<Statement>
 	{
@@ -395,7 +395,7 @@ public class TranspilationPass {
 		]
 	}
 
-	func replaceForEachStatement( // annotation: open
+	func replaceForEachStatement( // gryphon annotation: open
 		_ forEachStatement: ForEachStatement)
 		-> MutableList<Statement>
 	{
@@ -406,7 +406,7 @@ public class TranspilationPass {
 			statements: replaceStatements(forEachStatement.statements)), ]
 	}
 
-	func replaceWhileStatement( // annotation: open
+	func replaceWhileStatement( // gryphon annotation: open
 		_ whileStatement: WhileStatement)
 		-> MutableList<Statement>
 	{
@@ -416,14 +416,14 @@ public class TranspilationPass {
 			statements: replaceStatements(whileStatement.statements)), ]
 	}
 
-	func replaceIfStatement( // annotation: open
+	func replaceIfStatement( // gryphon annotation: open
 		_ ifStatement: IfStatement)
 		-> MutableList<Statement>
 	{
 		return [processIfStatement(ifStatement)]
 	}
 
-	func processIfStatement( // annotation: open
+	func processIfStatement( // gryphon annotation: open
 		_ ifStatement: IfStatement)
 		-> IfStatement
 	{
@@ -436,14 +436,14 @@ public class TranspilationPass {
 		return ifStatement
 	}
 
-	func replaceIfConditions( // annotation: open
+	func replaceIfConditions( // gryphon annotation: open
 		_ conditions: MutableList<IfStatement.IfCondition>)
 		-> MutableList<IfStatement.IfCondition>
 	{
 		return conditions.map { replaceIfCondition($0) }.toMutableList()
 	}
 
-	func replaceIfCondition( // annotation: open
+	func replaceIfCondition( // gryphon annotation: open
 		_ condition: IfStatement.IfCondition)
 		-> IfStatement.IfCondition
 	{
@@ -456,7 +456,7 @@ public class TranspilationPass {
 		}
 	}
 
-	func replaceSwitchStatement( // annotation: open
+	func replaceSwitchStatement( // gryphon annotation: open
 		_ switchStatement: SwitchStatement)
 		-> MutableList<Statement>
 	{
@@ -487,7 +487,7 @@ public class TranspilationPass {
 			cases: replacedCases.toMutableList()), ]
 	}
 
-	func replaceDeferStatement( // annotation: open
+	func replaceDeferStatement( // gryphon annotation: open
 		_ deferStatement: DeferStatement)
 		-> MutableList<Statement>
 	{
@@ -496,7 +496,7 @@ public class TranspilationPass {
 			statements: replaceStatements(deferStatement.statements)), ]
 	}
 
-	func replaceThrowStatement( // annotation: open
+	func replaceThrowStatement( // gryphon annotation: open
 		_ throwStatement: ThrowStatement)
 		-> MutableList<Statement>
 	{
@@ -505,7 +505,7 @@ public class TranspilationPass {
 			expression: replaceExpression(throwStatement.expression)), ]
 	}
 
-	func replaceReturnStatement( // annotation: open
+	func replaceReturnStatement( // gryphon annotation: open
 		_ returnStatement: ReturnStatement)
 		-> MutableList<Statement>
 	{
@@ -514,7 +514,7 @@ public class TranspilationPass {
 			expression: returnStatement.expression.map { replaceExpression($0) }), ]
 	}
 
-	func replaceAssignmentStatement( // annotation: open
+	func replaceAssignmentStatement( // gryphon annotation: open
 		_ assignmentStatement: AssignmentStatement)
 		-> MutableList<Statement>
 	{
@@ -525,7 +525,7 @@ public class TranspilationPass {
 	}
 
 	// MARK: - Replace Expressions
-	func replaceExpression( // annotation: open
+	func replaceExpression( // gryphon annotation: open
 		_ expression: Expression)
 		-> Expression
 	{
@@ -626,14 +626,14 @@ public class TranspilationPass {
 		fatalError("This should never be reached.")
 	}
 
-	func replaceTemplateExpression( // annotation: open
+	func replaceTemplateExpression( // gryphon annotation: open
 		_ templateExpression: TemplateExpression)
 		-> Expression
 	{
-		let newMatches = templateExpression.matches // ignore: ignore
+		let newMatches = templateExpression.matches // gryphon ignore
 			.mapValues { replaceExpression($0) }
-		// insert: val newMatches = templateExpression.matches
-		// insert:     .mapValues { replaceExpression(it.value) }.toMutableMap()
+		// gryphon insert: val newMatches = templateExpression.matches
+		// gryphon insert:     .mapValues { replaceExpression(it.value) }.toMutableMap()
 
 		return TemplateExpression(
 			range: templateExpression.range,
@@ -641,14 +641,14 @@ public class TranspilationPass {
 			matches: newMatches.toMutableMap())
 	}
 
-	func replaceLiteralCodeExpression( // annotation: open
+	func replaceLiteralCodeExpression( // gryphon annotation: open
 		_ literalCodeExpression: LiteralCodeExpression)
 		-> Expression
 	{
 		return literalCodeExpression
 	}
 
-	func replaceParenthesesExpression( // annotation: open
+	func replaceParenthesesExpression( // gryphon annotation: open
 		_ parenthesesExpression: ParenthesesExpression)
 		-> Expression
 	{
@@ -657,7 +657,7 @@ public class TranspilationPass {
 			expression: replaceExpression(parenthesesExpression.expression))
 	}
 
-	func replaceForceValueExpression( // annotation: open
+	func replaceForceValueExpression( // gryphon annotation: open
 		_ forceValueExpression: ForceValueExpression)
 		-> Expression
 	{
@@ -666,7 +666,7 @@ public class TranspilationPass {
 			expression: replaceExpression(forceValueExpression.expression))
 	}
 
-	func replaceOptionalExpression( // annotation: open
+	func replaceOptionalExpression( // gryphon annotation: open
 		_ optionalExpression: OptionalExpression)
 		-> Expression
 	{
@@ -675,28 +675,28 @@ public class TranspilationPass {
 			expression: replaceExpression(optionalExpression.expression))
 	}
 
-	func replaceDeclarationReferenceExpression( // annotation: open
+	func replaceDeclarationReferenceExpression( // gryphon annotation: open
 		_ declarationReferenceExpression: DeclarationReferenceExpression)
 		-> Expression
 	{
 		return processDeclarationReferenceExpression(declarationReferenceExpression)
 	}
 
-	func processDeclarationReferenceExpression( // annotation: open
+	func processDeclarationReferenceExpression( // gryphon annotation: open
 		_ declarationReferenceExpression: DeclarationReferenceExpression)
 		-> DeclarationReferenceExpression
 	{
 		return declarationReferenceExpression
 	}
 
-	func replaceTypeExpression( // annotation: open
+	func replaceTypeExpression( // gryphon annotation: open
 		_ typeExpression: TypeExpression)
 		-> Expression
 	{
 		return typeExpression
 	}
 
-	func replaceSubscriptExpression( // annotation: open
+	func replaceSubscriptExpression( // gryphon annotation: open
 		_ subscriptExpression: SubscriptExpression)
 		-> Expression
 	{
@@ -707,7 +707,7 @@ public class TranspilationPass {
 			typeName: subscriptExpression.typeName)
 	}
 
-	func replaceArrayExpression( // annotation: open
+	func replaceArrayExpression( // gryphon annotation: open
 		_ arrayExpression: ArrayExpression)
 		-> Expression
 	{
@@ -717,7 +717,7 @@ public class TranspilationPass {
 			typeName: arrayExpression.typeName)
 	}
 
-	func replaceDictionaryExpression( // annotation: open
+	func replaceDictionaryExpression( // gryphon annotation: open
 		_ dictionaryExpression: DictionaryExpression)
 		-> Expression
 	{
@@ -728,7 +728,7 @@ public class TranspilationPass {
 			typeName: dictionaryExpression.typeName)
 	}
 
-	func replaceReturnExpression( // annotation: open
+	func replaceReturnExpression( // gryphon annotation: open
 		_ returnStatement: ReturnExpression)
 		-> Expression
 	{
@@ -737,7 +737,7 @@ public class TranspilationPass {
 			expression: returnStatement.expression.map { replaceExpression($0) })
 	}
 
-	func replaceDotExpression( // annotation: open
+	func replaceDotExpression( // gryphon annotation: open
 		_ dotExpression: DotExpression)
 		-> Expression
 	{
@@ -747,7 +747,7 @@ public class TranspilationPass {
 			rightExpression: replaceExpression(dotExpression.rightExpression))
 	}
 
-	func replaceBinaryOperatorExpression( // annotation: open
+	func replaceBinaryOperatorExpression( // gryphon annotation: open
 		_ binaryOperatorExpression: BinaryOperatorExpression) -> Expression
 	{
 		return BinaryOperatorExpression(
@@ -758,7 +758,7 @@ public class TranspilationPass {
 			typeName: binaryOperatorExpression.typeName)
 	}
 
-	func replacePrefixUnaryExpression( // annotation: open
+	func replacePrefixUnaryExpression( // gryphon annotation: open
 		_ prefixUnaryExpression: PrefixUnaryExpression)
 		-> Expression
 	{
@@ -769,7 +769,7 @@ public class TranspilationPass {
 			typeName: prefixUnaryExpression.typeName)
 	}
 
-	func replacePostfixUnaryExpression( // annotation: open
+	func replacePostfixUnaryExpression( // gryphon annotation: open
 		_ postfixUnaryExpression: PostfixUnaryExpression)
 		-> Expression
 	{
@@ -780,7 +780,7 @@ public class TranspilationPass {
 			typeName: postfixUnaryExpression.typeName)
 	}
 
-	func replaceIfExpression( // annotation: open
+	func replaceIfExpression( // gryphon annotation: open
 		_ ifExpression: IfExpression)
 		-> Expression
 	{
@@ -791,14 +791,14 @@ public class TranspilationPass {
 			falseExpression: replaceExpression(ifExpression.falseExpression))
 	}
 
-	func replaceCallExpression( // annotation: open
+	func replaceCallExpression( // gryphon annotation: open
 		_ callExpression: CallExpression)
 		-> Expression
 	{
 		return processCallExpression(callExpression)
 	}
 
-	func processCallExpression( // annotation: open
+	func processCallExpression( // gryphon annotation: open
 		_ callExpression: CallExpression)
 		-> CallExpression
 	{
@@ -809,7 +809,7 @@ public class TranspilationPass {
 			typeName: callExpression.typeName)
 	}
 
-	func replaceClosureExpression( // annotation: open
+	func replaceClosureExpression( // gryphon annotation: open
 		_ closureExpression: ClosureExpression)
 		-> Expression
 	{
@@ -820,62 +820,62 @@ public class TranspilationPass {
 			typeName: closureExpression.typeName)
 	}
 
-	func replaceLiteralIntExpression( // annotation: open
+	func replaceLiteralIntExpression( // gryphon annotation: open
 		_ literalIntExpression: LiteralIntExpression)
 		-> Expression
 	{
 		return literalIntExpression
 	}
 
-	func replaceLiteralUIntExpression( // annotation: open
+	func replaceLiteralUIntExpression( // gryphon annotation: open
 		_ literalUIntExpression: LiteralUIntExpression)
 		-> Expression {
 		return literalUIntExpression
 	}
 
-	func replaceLiteralDoubleExpression( // annotation: open
+	func replaceLiteralDoubleExpression( // gryphon annotation: open
 		_ literalDoubleExpression: LiteralDoubleExpression)
 		-> Expression
 	{
 		return literalDoubleExpression
 	}
 
-	func replaceLiteralFloatExpression( // annotation: open
+	func replaceLiteralFloatExpression( // gryphon annotation: open
 		_ literalFloatExpression: LiteralFloatExpression)
 		-> Expression
 	{
 		return literalFloatExpression
 	}
 
-	func replaceLiteralBoolExpression( // annotation: open
+	func replaceLiteralBoolExpression( // gryphon annotation: open
 		_ literalBoolExpression: LiteralBoolExpression)
 		-> Expression
 	{
 		return literalBoolExpression
 	}
 
-	func replaceLiteralStringExpression( // annotation: open
+	func replaceLiteralStringExpression( // gryphon annotation: open
 		_ literalStringExpression: LiteralStringExpression)
 		-> Expression
 	{
 		return literalStringExpression
 	}
 
-	func replaceLiteralCharacterExpression( // annotation: open
+	func replaceLiteralCharacterExpression( // gryphon annotation: open
 		_ literalCharacterExpression: LiteralCharacterExpression)
 		-> Expression
 	{
 		return literalCharacterExpression
 	}
 
-	func replaceNilLiteralExpression( // annotation: open
+	func replaceNilLiteralExpression( // gryphon annotation: open
 		_ nilLiteralExpression: NilLiteralExpression)
 		-> Expression
 	{
 		return nilLiteralExpression
 	}
 
-	func replaceInterpolatedStringLiteralExpression( // annotation: open
+	func replaceInterpolatedStringLiteralExpression( // gryphon annotation: open
 		_ interpolatedStringLiteralExpression: InterpolatedStringLiteralExpression)
 		-> Expression
 	{
@@ -885,7 +885,7 @@ public class TranspilationPass {
 				.map { replaceExpression($0) }.toMutableList())
 	}
 
-	func replaceTupleExpression( // annotation: open
+	func replaceTupleExpression( // gryphon annotation: open
 		_ tupleExpression: TupleExpression)
 		-> Expression
 	{
@@ -896,7 +896,7 @@ public class TranspilationPass {
 			}.toMutableList())
 	}
 
-	func replaceTupleShuffleExpression( // annotation: open
+	func replaceTupleShuffleExpression( // gryphon annotation: open
 		_ tupleShuffleExpression: TupleShuffleExpression)
 		-> Expression
 	{
@@ -913,10 +913,10 @@ public class TranspilationPass {
 // MARK: - Transpilation passes
 
 public class DescriptionAsToStringTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func replaceVariableDeclaration( // annotation: override
+	override func replaceVariableDeclaration( // gryphon annotation: override
 		_ variableDeclaration: VariableDeclaration)
 		-> MutableList<Statement>
 	{
@@ -953,10 +953,10 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 }
 
 public class RemoveParenthesesTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func replaceSubscriptExpression( // annotation: override
+	override func replaceSubscriptExpression( // gryphon annotation: override
 		_ subscriptExpression: SubscriptExpression)
 		-> Expression
 	{
@@ -971,7 +971,7 @@ public class RemoveParenthesesTranspilationPass: TranspilationPass {
 		return super.replaceSubscriptExpression(subscriptExpression)
 	}
 
-	override func replaceParenthesesExpression( // annotation: override
+	override func replaceParenthesesExpression( // gryphon annotation: override
 		_ parenthesesExpression: ParenthesesExpression)
 		-> Expression
 	{
@@ -987,7 +987,7 @@ public class RemoveParenthesesTranspilationPass: TranspilationPass {
 		return super.replaceParenthesesExpression(parenthesesExpression)
 	}
 
-	override func replaceIfExpression( // annotation: override
+	override func replaceIfExpression( // gryphon annotation: override
 		_ ifExpression: IfExpression)
 		-> Expression
 	{
@@ -1025,10 +1025,10 @@ public class RemoveParenthesesTranspilationPass: TranspilationPass {
 
 /// Removes implicit declarations so that they don't show up on the translation
 public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func replaceEnumDeclaration( // annotation: override
+	override func replaceEnumDeclaration( // gryphon annotation: override
 		_ enumDeclaration: EnumDeclaration)
 		-> MutableList<Statement>
 	{
@@ -1040,7 +1040,7 @@ public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
 		}
 	}
 
-	override func replaceTypealiasDeclaration( // annotation: override
+	override func replaceTypealiasDeclaration( // gryphon annotation: override
 		_ typealiasDeclaration: TypealiasDeclaration)
 		-> MutableList<Statement>
 	{
@@ -1052,7 +1052,7 @@ public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
 		}
 	}
 
-	override func replaceVariableDeclaration( // annotation: override
+	override func replaceVariableDeclaration( // gryphon annotation: override
 		_ variableDeclaration: VariableDeclaration)
 		-> MutableList<Statement>
 	{
@@ -1064,7 +1064,7 @@ public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
 		}
 	}
 
-	override func processFunctionDeclaration( // annotation: override
+	override func processFunctionDeclaration( // gryphon annotation: override
 		_ functionDeclaration: FunctionDeclaration)
 		-> FunctionDeclaration?
 	{
@@ -1080,12 +1080,12 @@ public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
 /// Optional initializers can be translated as `invoke` operators to have similar syntax and
 /// functionality.
 public class OptionalInitsTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
 	private var isFailableInitializer: Bool = false
 
-	override func replaceInitializerDeclaration( // annotation: override
+	override func replaceInitializerDeclaration( // gryphon annotation: override
 		_ initializerDeclaration: InitializerDeclaration)
 		-> MutableList<Statement>
 	{
@@ -1120,7 +1120,7 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 		return super.replaceInitializerDeclaration(initializerDeclaration)
 	}
 
-	override func replaceAssignmentStatement( // annotation: override
+	override func replaceAssignmentStatement( // gryphon annotation: override
 		_ assignmentStatement: AssignmentStatement)
 		-> MutableList<Statement>
 	{
@@ -1139,10 +1139,10 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 }
 
 public class RemoveExtraReturnsInInitsTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func processInitializerDeclaration( // annotation: override
+	override func processInitializerDeclaration( // gryphon annotation: override
 		_ initializerDeclaration: InitializerDeclaration)
 		-> InitializerDeclaration?
 	{
@@ -1164,8 +1164,8 @@ public class RemoveExtraReturnsInInitsTranspilationPass: TranspilationPass {
 /// The static functions and variables in a class must all be placed inside a single companion
 /// object.
 public class StaticMembersTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
 	private func sendStaticMembersToCompanionObject(
 		_ members: MutableList<Statement>,
@@ -1206,7 +1206,7 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 		return false
 	}
 
-	override func replaceClassDeclaration( // annotation: override
+	override func replaceClassDeclaration( // gryphon annotation: override
 		_ classDeclaration: ClassDeclaration)
 		-> MutableList<Statement>
 	{
@@ -1220,7 +1220,7 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 			members: newMembers))
 	}
 
-	override func replaceStructDeclaration( // annotation: override
+	override func replaceStructDeclaration( // gryphon annotation: override
 		_ structDeclaration: StructDeclaration)
 		-> MutableList<Statement>
 	{
@@ -1235,7 +1235,7 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 			members: newMembers))
 	}
 
-	override func replaceEnumDeclaration( // annotation: override
+	override func replaceEnumDeclaration( // gryphon annotation: override
 		_ enumDeclaration: EnumDeclaration)
 		-> MutableList<Statement>
 	{
@@ -1263,8 +1263,8 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 /// }
 /// ````
 public class InnerTypePrefixesTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
 	var typeNamesStack: MutableList<String> = []
 
@@ -1283,7 +1283,7 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass {
 		return result
 	}
 
-	override func replaceClassDeclaration( // annotation: override
+	override func replaceClassDeclaration( // gryphon annotation: override
 		_ classDeclaration: ClassDeclaration)
 		-> MutableList<Statement>
 	{
@@ -1293,7 +1293,7 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass {
 		return result
 	}
 
-	override func replaceStructDeclaration( // annotation: override
+	override func replaceStructDeclaration( // gryphon annotation: override
 		_ structDeclaration: StructDeclaration)
 		-> MutableList<Statement>
 	{
@@ -1303,7 +1303,7 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass {
 		return result
 	}
 
-	override func processVariableDeclaration( // annotation: override
+	override func processVariableDeclaration( // gryphon annotation: override
 		_ variableDeclaration: VariableDeclaration)
 		-> VariableDeclaration
 	{
@@ -1312,7 +1312,7 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass {
 		return super.processVariableDeclaration(variableDeclaration)
 	}
 
-	override func replaceTypeExpression( // annotation: override
+	override func replaceTypeExpression( // gryphon annotation: override
 		_ typeExpression: TypeExpression)
 		-> Expression
 	{
@@ -1326,10 +1326,10 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass {
 /// Capitalizes references to enums (since enum cases in Kotlin are conventionally written in
 /// capitalized forms)
 public class CapitalizeEnumsTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func replaceDotExpression( // annotation: override
+	override func replaceDotExpression( // gryphon annotation: override
 		_ dotExpression: DotExpression)
 		-> Expression
 	{
@@ -1364,7 +1364,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 		return super.replaceDotExpression(dotExpression)
 	}
 
-	override func replaceEnumDeclaration( // annotation: override
+	override func replaceEnumDeclaration( // gryphon annotation: override
 		_ enumDeclaration: EnumDeclaration)
 		-> MutableList<Statement>
 	{
@@ -1432,8 +1432,8 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 // TODO: test
 // TODO: add support for return whens (maybe put this before the when pass)
 public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
 	private var returnTypesStack: MutableList<String> = []
 
@@ -1455,7 +1455,7 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
 		return super.replaceDotExpression(dotExpression)
 	}
 
-	override func processFunctionDeclaration( // annotation: override
+	override func processFunctionDeclaration( // gryphon annotation: override
 		_ functionDeclaration: FunctionDeclaration)
 		-> FunctionDeclaration?
 	{
@@ -1464,7 +1464,7 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
 		return super.processFunctionDeclaration(functionDeclaration)
 	}
 
-	override func replaceReturnStatement( // annotation: override
+	override func replaceReturnStatement( // gryphon annotation: override
 		_ returnStatement: ReturnStatement)
 		-> MutableList<Statement>
 	{
@@ -1493,10 +1493,10 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
 }
 
 public class RenameOperatorsTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func replaceBinaryOperatorExpression( // annotation: override
+	override func replaceBinaryOperatorExpression( // gryphon annotation: override
 		_ binaryOperatorExpression: BinaryOperatorExpression)
 		-> Expression
 	{
@@ -1526,10 +1526,10 @@ public class RenameOperatorsTranspilationPass: TranspilationPass {
 /// in the function header in Kotlin. This should remove the calls from the initializer bodies and
 /// send them to the appropriate property.
 public class CallsToSuperclassInitializersTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func processInitializerDeclaration( // annotation: override
+	override func processInitializerDeclaration( // gryphon annotation: override
 		_ initializerDeclaration: InitializerDeclaration)
 		-> InitializerDeclaration?
 	{
@@ -1617,10 +1617,10 @@ public class CallsToSuperclassInitializersTranspilationPass: TranspilationPass {
 /// `foo` has an optional type like `Any?` -- then `foo` comes wrapped in an optional that needs to
 /// be unwrapped.
 public class OptionalsInConditionalCastsTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func replaceBinaryOperatorExpression( // annotation: override
+	override func replaceBinaryOperatorExpression( // gryphon annotation: override
 		_ binaryOperatorExpression: BinaryOperatorExpression)
 		-> Expression
 	{
@@ -1641,10 +1641,10 @@ public class OptionalsInConditionalCastsTranspilationPass: TranspilationPass {
 }
 
 public class SelfToThisTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func replaceDotExpression( // annotation: override
+	override func replaceDotExpression( // gryphon annotation: override
 		_ dotExpression: DotExpression)
 		-> Expression
 	{
@@ -1661,7 +1661,7 @@ public class SelfToThisTranspilationPass: TranspilationPass {
 		return super.replaceDotExpression(dotExpression)
 	}
 
-	override func processDeclarationReferenceExpression( // annotation: override
+	override func processDeclarationReferenceExpression( // gryphon annotation: override
 		_ expression: DeclarationReferenceExpression)
 		-> DeclarationReferenceExpression
 	{
@@ -1677,10 +1677,10 @@ public class SelfToThisTranspilationPass: TranspilationPass {
 /// Declarations can't conform to Swift-only protocols like Codable and Equatable, and enums can't
 /// inherit from types Strings and Ints.
 public class CleanInheritancesTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func replaceEnumDeclaration( // annotation: override
+	override func replaceEnumDeclaration( // gryphon annotation: override
 		_ enumDeclaration: EnumDeclaration)
 		-> MutableList<Statement>
 	{
@@ -1697,7 +1697,7 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 			isImplicit: enumDeclaration.isImplicit))
 	}
 
-	override func replaceStructDeclaration( // annotation: override
+	override func replaceStructDeclaration( // gryphon annotation: override
 		_ structDeclaration: StructDeclaration)
 		-> MutableList<Statement>
 	{
@@ -1709,7 +1709,7 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 			members: structDeclaration.members))
 	}
 
-	override func replaceClassDeclaration( // annotation: override
+	override func replaceClassDeclaration( // gryphon annotation: override
 		_ classDeclaration: ClassDeclaration)
 		-> MutableList<Statement>
 	{
@@ -1723,10 +1723,10 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 
 /// The "anonymous parameter" `$0` has to be replaced by `it`
 public class AnonymousParametersTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func processDeclarationReferenceExpression( // annotation: override
+	override func processDeclarationReferenceExpression( // gryphon annotation: override
 		_ expression: DeclarationReferenceExpression)
 		-> DeclarationReferenceExpression
 	{
@@ -1740,7 +1740,7 @@ public class AnonymousParametersTranspilationPass: TranspilationPass {
 		}
 	}
 
-	override func replaceClosureExpression( // annotation: override
+	override func replaceClosureExpression( // gryphon annotation: override
 		_ closureExpression: ClosureExpression)
 		-> Expression
 	{
@@ -1778,10 +1778,10 @@ public class AnonymousParametersTranspilationPass: TranspilationPass {
 /// isn't a `MutableList` (it happened once with an `EmptyList`), meaning a normal cast would fail.
 ///
 public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func replaceCallExpression( // annotation: override
+	override func replaceCallExpression( // gryphon annotation: override
 		_ callExpression: CallExpression)
 		-> Expression
 	{
@@ -1887,10 +1887,10 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 /// Gryphon's custom data structures use different initializers that need to be turned into the
 /// corresponding Kotlin function calls (i.e. `MutableList<Int>()` to `mutableListOf<Int>()`).
 public class DataStructureInitializersTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func replaceCallExpression( // annotation: override
+	override func replaceCallExpression( // gryphon annotation: override
 		_ callExpression: CallExpression)
 		-> Expression
 	{
@@ -1966,12 +1966,12 @@ public class DataStructureInitializersTranspilationPass: TranspilationPass {
 /// statements (not yet implemented) or just standalone expressions (easier to implement but more
 /// error-prone). This pass turns return statements in closures into standalone expressions
 public class ReturnsInLambdasTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
 	var isInClosure = false
 
-	override func replaceClosureExpression( // annotation: override
+	override func replaceClosureExpression( // gryphon annotation: override
 		_ closureExpression: ClosureExpression)
 		-> Expression
 	{
@@ -1980,7 +1980,7 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 		return super.replaceClosureExpression(closureExpression)
 	}
 
-	override func replaceReturnStatement( // annotation: override
+	override func replaceReturnStatement( // gryphon annotation: override
 		_ returnStatement: ReturnStatement)
 		-> MutableList<Statement>
 	{
@@ -1999,10 +1999,10 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 /// apply to tuples in call expressions (where they just represent the call's parameters) or for
 /// statements iterating over `zip`s (i.e. the `(a, b)` in `for (a, b) in zip(c, d) { ... }`).
 public class TuplesToPairsTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func replaceTupleExpression( // annotation: override
+	override func replaceTupleExpression( // gryphon annotation: override
 		_ tupleExpression: TupleExpression)
 		-> Expression
 	{
@@ -2053,10 +2053,10 @@ public class TuplesToPairsTranspilationPass: TranspilationPass {
 /// When tuples are translated as pairs, their members need to be translated as the pair's `first`
 /// and `second` members.
 public class TupleMembersTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func replaceDotExpression( // annotation: override
+	override func replaceDotExpression( // gryphon annotation: override
 		_ dotExpression: DotExpression)
 		-> Expression
 	{
@@ -2109,10 +2109,10 @@ public class TupleMembersTranspilationPass: TranspilationPass {
 /// Kotlin doesn't support autoclosures, but we can turn them into normal closures so they work
 /// correctly.
 public class AutoclosuresTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func replaceCallExpression( // annotation: override
+	override func replaceCallExpression( // gryphon annotation: override
 		_ callExpression: CallExpression)
 		-> Expression
 	{
@@ -2161,10 +2161,10 @@ public class AutoclosuresTranspilationPass: TranspilationPass {
 /// array?[0] // Becomes `array?.get(0)` in Kotlin
 /// ````
 public class RefactorOptionalsInSubscriptsTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func replaceSubscriptExpression( // annotation: override
+	override func replaceSubscriptExpression( // gryphon annotation: override
 		_ subscriptExpression: SubscriptExpression)
 		-> Expression
 	{
@@ -2202,10 +2202,10 @@ public class RefactorOptionalsInSubscriptsTranspilationPass: TranspilationPass {
 /// foo?.bar?.baz
 /// ````
 public class AddOptionalsInDotChainsTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func replaceDotExpression( // annotation: override
+	override func replaceDotExpression( // gryphon annotation: override
 		_ dotExpression: DotExpression)
 		-> Expression
 	{
@@ -2274,11 +2274,11 @@ public class AddOptionalsInDotChainsTranspilationPass: TranspilationPass {
 /// a function call. However, that would be much more complicated and it's not clear that it would
 /// be desirable.
 public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
 	/// Detect switches whose bodies all end in the same returns or assignments
-	override func replaceSwitchStatement( // annotation: override
+	override func replaceSwitchStatement( // gryphon annotation: override
 		_ switchStatement: SwitchStatement)
 		-> MutableList<Statement>
 	{
@@ -2376,7 +2376,7 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 	}
 
 	/// Replace variable declarations followed by switch statements assignments
-	override func replaceStatements( // annotation: override
+	override func replaceStatements( // gryphon annotation: override
 		_ oldStatements: MutableList<Statement>)
 		-> MutableList<Statement>
 	{
@@ -2441,10 +2441,10 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 /// Breaks are not allowed in Kotlin `when` statements, but the `when` statements don't have to be
 /// exhaustive. Just remove the cases that only have breaks.
 public class RemoveBreaksInSwitchesTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func replaceSwitchStatement( // annotation: override
+	override func replaceSwitchStatement( // gryphon annotation: override
 		_ switchStatement: SwitchStatement)
 		-> MutableList<Statement>
 	{
@@ -2473,10 +2473,10 @@ public class RemoveBreaksInSwitchesTranspilationPass: TranspilationPass {
 /// Sealed classes should be tested for subclasses with the `is` operator. This is automatically
 /// done for enum cases with associated values, but in other cases it has to be handled here.
 public class IsOperatorsInSealedClassesTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func replaceSwitchStatement( // annotation: override
+	override func replaceSwitchStatement( // gryphon annotation: override
 		_ switchStatement: SwitchStatement)
 		-> MutableList<Statement>
 	{
@@ -2542,12 +2542,12 @@ public class IsOperatorsInSealedClassesTranspilationPass: TranspilationPass {
 }
 
 public class RemoveExtensionsTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
 	var extendingType: String?
 
-	override func replaceExtension( // annotation: override
+	override func replaceExtension( // gryphon annotation: override
 		_ extensionDeclaration: ExtensionDeclaration)
 		-> MutableList<Statement>
 	{
@@ -2557,7 +2557,7 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 		return members
 	}
 
-	override func replaceStatement( // annotation: override
+	override func replaceStatement( // gryphon annotation: override
 		_ statement: Statement)
 		-> MutableList<Statement>
 	{
@@ -2574,7 +2574,7 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 		return [statement]
 	}
 
-	override func replaceFunctionDeclaration( // annotation: override
+	override func replaceFunctionDeclaration( // gryphon annotation: override
 		_ functionDeclaration: FunctionDeclaration)
 		-> MutableList<Statement>
 	{
@@ -2582,7 +2582,7 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 		return [functionDeclaration]
 	}
 
-	override func processVariableDeclaration( // annotation: override
+	override func processVariableDeclaration( // gryphon annotation: override
 		_ variableDeclaration: VariableDeclaration)
 		-> VariableDeclaration
 	{
@@ -2595,10 +2595,10 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 /// If let conditions of the type `if let foo = foo as? Type` can be more simply translated as
 /// `if (foo is Type)`. This pass makes that transformation.
 public class ShadowedIfLetAsToIsTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func processIfStatement( // annotation: override
+	override func processIfStatement( // gryphon annotation: override
 		_ ifStatement: IfStatement)
 		-> IfStatement
 	{
@@ -2658,10 +2658,10 @@ public class ShadowedIfLetAsToIsTranspilationPass: TranspilationPass {
 /// It also records all functions that have been marked as pure so that they don't raise warnings
 /// for possible side-effects in if-lets.
 public class RecordFunctionsTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func processFunctionDeclaration( // annotation: override
+	override func processFunctionDeclaration( // gryphon annotation: override
 		_ functionDeclaration: FunctionDeclaration)
 		-> FunctionDeclaration?
 	{
@@ -2685,10 +2685,10 @@ public class RecordFunctionsTranspilationPass: TranspilationPass {
 }
 
 public class RecordEnumsTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func replaceEnumDeclaration( // annotation: override
+	override func replaceEnumDeclaration( // gryphon annotation: override
 		_ enumDeclaration: EnumDeclaration)
 		-> MutableList<Statement>
 	{
@@ -2710,10 +2710,10 @@ public class RecordEnumsTranspilationPass: TranspilationPass {
 
 /// Records all protocol declarations in the Kotlin Translator
 public class RecordProtocolsTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func replaceProtocolDeclaration( // annotation: override
+	override func replaceProtocolDeclaration( // gryphon annotation: override
 		_ protocolDeclaration: ProtocolDeclaration)
 		-> MutableList<Statement>
 	{
@@ -2724,10 +2724,10 @@ public class RecordProtocolsTranspilationPass: TranspilationPass {
 }
 
 public class RaiseStandardLibraryWarningsTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func processDeclarationReferenceExpression( // annotation: override
+	override func processDeclarationReferenceExpression( // gryphon annotation: override
 		_ expression: DeclarationReferenceExpression)
 		-> DeclarationReferenceExpression
 	{
@@ -2747,10 +2747,10 @@ public class RaiseStandardLibraryWarningsTranspilationPass: TranspilationPass {
 /// class. Otherwise, the translation can cause inconsistencies, so this pass raises warnings.
 /// Source: https://forums.swift.org/t/are-immutable-structs-like-classes/16270
 public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func replaceStructDeclaration( // annotation: override
+	override func replaceStructDeclaration( // gryphon annotation: override
 		_ structDeclaration: StructDeclaration)
 		-> MutableList<Statement>
 	{
@@ -2791,7 +2791,7 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 		return super.replaceStructDeclaration(structDeclaration)
 	}
 
-	override func replaceEnumDeclaration( // annotation: override
+	override func replaceEnumDeclaration( // gryphon annotation: override
 		_ enumDeclaration: EnumDeclaration)
 		-> MutableList<Statement>
 	{
@@ -2819,10 +2819,12 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 /// using `Arrays` and `Dictionaries` for guaranteeing correctness. This pass raises warnings when
 /// it finds uses of the native data structures, which should help avoid these bugs.
 public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func replaceExpression(_ expression: Expression) -> Expression // annotation: override
+	override func replaceExpression( // gryphon annotation: override
+		_ expression: Expression)
+		-> Expression
 	{
 		if let type = expression.swiftType, type.hasPrefix("[") {
 			let message = "Native type \(type) can lead to different behavior in Kotlin. Prefer " +
@@ -2837,7 +2839,7 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 		return super.replaceExpression(expression)
 	}
 
-	override func replaceDotExpression( // annotation: override
+	override func replaceDotExpression( // gryphon annotation: override
 		_ dotExpression: DotExpression)
 		-> Expression
 	{
@@ -2884,10 +2886,10 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 /// effects (i.e. `let x = sideEffects()`) to run eagerly on Kotlin but lazily on Swift, which can
 /// lead to incorrect behavior.
 public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func processIfStatement( // annotation: override
+	override func processIfStatement( // gryphon annotation: override
 		_ ifStatement: IfStatement)
 		-> IfStatement
 	{
@@ -3022,11 +3024,11 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 
 /// Sends let declarations to before the if statement, and replaces them with `x != null` conditions
 public class RearrangeIfLetsTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
 	/// Send the let declarations to before the if statement
-	override func replaceIfStatement( // annotation: override
+	override func replaceIfStatement( // gryphon annotation: override
 		_ ifStatement: IfStatement)
 		-> MutableList<Statement>
 	{
@@ -3045,7 +3047,7 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 	}
 
 	/// Add conditions (`x != null`) for all let declarations
-	override func processIfStatement( // annotation: override
+	override func processIfStatement( // gryphon annotation: override
 		_ ifStatement: IfStatement)
 		-> IfStatement
 	{
@@ -3135,10 +3137,10 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 
 /// Change the implementation of a `==` operator to be usable in Kotlin
 public class EquatableOperatorsTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func processFunctionDeclaration( // annotation: override
+	override func processFunctionDeclaration( // gryphon annotation: override
 		_ functionDeclaration: FunctionDeclaration)
 		-> FunctionDeclaration?
 	{
@@ -3247,10 +3249,10 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 
 /// Create a rawValue variable for enums that conform to rawRepresentable
 public class RawValuesTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func replaceEnumDeclaration( // annotation: override
+	override func replaceEnumDeclaration( // gryphon annotation: override
 		_ enumDeclaration: EnumDeclaration) -> MutableList<Statement>
 	{
 		if let typeName = enumDeclaration.elements.compactMap({ $0.rawValue?.swiftType }).first {
@@ -3434,10 +3436,10 @@ public class RawValuesTranspilationPass: TranspilationPass {
 /// ! combines with a != or even another !, causing a double negative in the condition that can
 /// be removed (or turned into a single ==). This pass performs that transformation.
 public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func processIfStatement( // annotation: override
+	override func processIfStatement( // gryphon annotation: override
 		_ ifStatement: IfStatement)
 		-> IfStatement
 	{
@@ -3499,10 +3501,10 @@ public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
 /// Statements of the type `if (a == null) { return }` in Swift can be translated as `a ?: return`
 /// in Kotlin.
 public class ReturnIfNilTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func replaceStatement( // annotation: override
+	override func replaceStatement( // gryphon annotation: override
 		_ statement: Statement)
 		-> MutableList<Statement>
 	{
@@ -3546,12 +3548,12 @@ public class ReturnIfNilTranspilationPass: TranspilationPass {
 }
 
 public class FixProtocolContentsTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
 	var isInProtocol = false
 
-	override func replaceProtocolDeclaration( // annotation: override
+	override func replaceProtocolDeclaration( // gryphon annotation: override
 		_ protocolDeclaration: ProtocolDeclaration)
 		-> MutableList<Statement>
 	{
@@ -3562,7 +3564,7 @@ public class FixProtocolContentsTranspilationPass: TranspilationPass {
 		return result
 	}
 
-	override func processFunctionDeclaration( // annotation: override
+	override func processFunctionDeclaration( // gryphon annotation: override
 		_ functionDeclaration: FunctionDeclaration)
 		-> FunctionDeclaration?
 	{
@@ -3576,7 +3578,7 @@ public class FixProtocolContentsTranspilationPass: TranspilationPass {
 		}
 	}
 
-	override func processVariableDeclaration( // annotation: override
+	override func processVariableDeclaration( // gryphon annotation: override
 		_ variableDeclaration: VariableDeclaration)
 		-> VariableDeclaration
 	{

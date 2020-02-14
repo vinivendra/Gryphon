@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// output: Bootstrap/SourceFileTest.kt
+// gryphon output: Bootstrap/SourceFileTest.kt
 
 #if !GRYPHON
 @testable import GryphonLib
@@ -22,20 +22,20 @@ import XCTest
 #endif
 
 class SourceFileTest: XCTestCase {
-	// insert: constructor(): super() { }
+	// gryphon insert: constructor(): super() { }
 
-	public func getClassName() -> String { // annotation: override
+	public func getClassName() -> String { // gryphon annotation: override
 		return "SourceFileTest"
 	}
 
 	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // annotation: override
+	public func runAllTests() { // gryphon annotation: override
 		testGetCommentFromLine()
 		testGetTranslationCommentFromLine()
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // ignore: ignore
+	static var allTests = [ // gryphon ignore
 		("testGetCommentFromLine", testGetCommentFromLine),
 		("testGetTranslationCommentFromLine", testGetTranslationCommentFromLine),
 	]
@@ -43,7 +43,7 @@ class SourceFileTest: XCTestCase {
 	// MARK: - Tests
 	func testGetCommentFromLine() {
 		let sourceFileContents = """
-			let x: Int = 0 // ignore: ignore
+			let x: Int = 0 // gryphon ignore
 			// blabla
 			let x: Int = 0
 
@@ -64,8 +64,9 @@ class SourceFileTest: XCTestCase {
 	}
 
 	func testGetTranslationCommentFromLine() {
+		// TODO: add tests for insert comments once they are fixed on multiline strings
 		let sourceFileContents = """
-			let x: Int = 0 // ignore: ignore
+			let x: Int = 0 // gryphon ignore
 			// blabla
 			let x: Int = 0
 
@@ -73,7 +74,7 @@ class SourceFileTest: XCTestCase {
 		let sourceFile = SourceFile(path: "", contents: sourceFileContents)
 		let comment = sourceFile.getTranslationCommentFromLine(1)
 
-		XCTAssertEqual(comment?.value, "ignore")
+		XCTAssertEqual(comment?.value, nil)
 		XCTAssertEqual(comment?.key, .ignore)
 		XCTAssertNil(sourceFile.getTranslationCommentFromLine(2)) // Common comment
 		XCTAssertNil(sourceFile.getTranslationCommentFromLine(3)) // No comment

@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// output: Sources/GryphonLib/SourceFile.swiftAST
-// output: Sources/GryphonLib/SourceFile.gryphonASTRaw
-// output: Sources/GryphonLib/SourceFile.gryphonAST
-// output: Bootstrap/SourceFile.kt
+// gryphon output: Sources/GryphonLib/SourceFile.swiftAST
+// gryphon output: Sources/GryphonLib/SourceFile.gryphonASTRaw
+// gryphon output: Sources/GryphonLib/SourceFile.gryphonAST
+// gryphon output: Bootstrap/SourceFile.kt
 
 import Foundation
 
@@ -75,7 +75,7 @@ public class SourceFile {
 
 extension SourceFile {
 	/// Returns any comment in the given line, or `nil` if there isn't one. Line indices start at 1.
-	public func getCommentFromLine(_ lineNumber: Int) -> CommonComment? { // pure: pure
+	public func getCommentFromLine(_ lineNumber: Int) -> CommonComment? { // gryphon pure
 		guard let line = getLine(lineNumber) else {
 			return nil
 		}
@@ -91,9 +91,9 @@ extension SourceFile {
 		// If the comment comes after some code (not yet supported)
 		let commentIsAfterCode = lineComponents[0].contains {
 			$0 !=
-				" " // value: ' '
+				" " // gryphon value: ' '
 			&& $0 !=
-				"\t" // value: '\\t'
+				"\t" // gryphon value: '\\t'
 		}
 		guard !commentIsAfterCode else {
 			return nil
@@ -101,7 +101,7 @@ extension SourceFile {
 
 		// Get the comment's range
 		let columnStartIndex = line.occurrences(of: "//").first!.lowerBound
-		let columnStartInt = columnStartIndex.utf16Offset(in: line) // value: columnStartIndex
+		let columnStartInt = columnStartIndex.utf16Offset(in: line) // gryphon value: columnStartIndex
 
 		let range = SourceFileRange(
 			lineStart: lineNumber,
@@ -119,6 +119,7 @@ extension SourceFile {
 			return nil
 		}
 
+		// Get the comment from the line
 		let lineComponents = line
 			.split(withStringSeparator: "// ", maxSplits: 1, omittingEmptySubsequences: false)
 		guard lineComponents.count == 2 else {
@@ -126,29 +127,38 @@ extension SourceFile {
 		}
 
 		let comment = lineComponents[1]
-		let commentComponents =
-			comment.split(withStringSeparator: ": ", maxSplits: 1, omittingEmptySubsequences: false)
-		guard commentComponents.count == 2 else {
-			// Allow the insertion of newlines even if the IDE trims the trailing spaces
-			if let key = commentComponents.first, key == "insert:" || key == "insertInMain:" {
-				let cleanKey = String(key.dropLast())
-				let commentKey = SourceFile.CommentKey(rawValue: cleanKey)!
-				return SourceFile.TranslationComment(key: commentKey, value: "")
-			}
 
+		// Make sure it's a gryphon comment
+		guard comment.hasPrefix("gryphon ") else {
 			return nil
 		}
 
-		let key = commentComponents[0]
-		let value = commentComponents[1]
+		// Separate the comment in a key and an optional value
+		let commentComponents = comment.split(
+			withStringSeparator: ": ",
+			maxSplits: 1,
+			omittingEmptySubsequences: false)
+		let commentKeyString = String(commentComponents[0].dropFirst("gryphon ".count))
 
-		// If it's a valid comment key
-		if let commentKey = SourceFile.CommentKey(rawValue: key) {
+		// If it's a valid key
+		if let commentKey = SourceFile.CommentKey(rawValue: commentKeyString) {
+			let value = commentComponents[safe: 1]
 			return SourceFile.TranslationComment(key: commentKey, value: value)
 		}
 		else {
-			return nil
+			// Special case: if it's an empty insert comment, there's no space after the ":", so the
+			// `split(...)` fails above. This means Initializing the key fails, because there's
+			// still a ":" in the key string.
+			if commentKeyString == "\(SourceFile.CommentKey.insert.rawValue):" ||
+				commentKeyString == "\(SourceFile.CommentKey.insertInMain.rawValue):"
+			{
+				let cleanKey = String(commentKeyString.dropLast())
+				let commentKey = SourceFile.CommentKey(rawValue: cleanKey)!
+				return SourceFile.TranslationComment(key: commentKey, value: "")
+			}
 		}
+
+		return nil
 	}
 }
 

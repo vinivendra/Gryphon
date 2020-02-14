@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// output: Bootstrap/ASTDumpDecoderTest.kt
+// gryphon output: Bootstrap/ASTDumpDecoderTest.kt
 
 #if !GRYPHON
 @testable import GryphonLib
@@ -22,20 +22,20 @@ import XCTest
 #endif
 
 class ASTDumpDecoderTest: XCTestCase {
-	// insert: constructor(): super() { }
+	// gryphon insert: constructor(): super() { }
 
-	public func getClassName() -> String { // annotation: override
+	public func getClassName() -> String { // gryphon annotation: override
 		return "ASTDumpDecoderTest"
 	}
 
 	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // annotation: override
+	public func runAllTests() { // gryphon annotation: override
 		testDecoderCanRead()
 		testDecoderRead()
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // ignore: ignore
+	static var allTests = [ // gryphon ignore
 		("testDecoderCanRead", testDecoderCanRead),
 		("testDecoderRead", testDecoderRead),
 	]

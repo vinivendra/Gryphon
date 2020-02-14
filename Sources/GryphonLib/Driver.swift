@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// output: Sources/GryphonLib/Driver.swiftAST
-// output: Sources/GryphonLib/Driver.gryphonASTRaw
-// output: Sources/GryphonLib/Driver.gryphonAST
-// output: Bootstrap/Driver.kt
+// gryphon output: Sources/GryphonLib/Driver.swiftAST
+// gryphon output: Sources/GryphonLib/Driver.gryphonASTRaw
+// gryphon output: Sources/GryphonLib/Driver.gryphonAST
+// gryphon output: Bootstrap/Driver.kt
 
 public class Driver {
 	public static let gryphonVersion = "0.4-beta"
@@ -93,7 +93,7 @@ public class Driver {
 		onFile inputFilePath: String) throws -> Any?
 	{
 		guard settings.shouldGenerateSwiftAST else {
-			return [] // value: mutableListOf<Any>()
+			return [] // gryphon value: mutableListOf<Any>()
 		}
 
 		let swiftASTDumpFile = getASTDump(forFile: inputFilePath)!

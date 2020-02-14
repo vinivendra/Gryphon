@@ -14,20 +14,20 @@
 // limitations under the License.
 //
 
-// output: Sources/GryphonLib/LibraryTranspilationPass.swiftAST
-// output: Sources/GryphonLib/LibraryTranspilationPass.gryphonASTRaw
-// output: Sources/GryphonLib/LibraryTranspilationPass.gryphonAST
-// output: Bootstrap/LibraryTranspilationPass.kt
+// gryphon output: Sources/GryphonLib/LibraryTranspilationPass.swiftAST
+// gryphon output: Sources/GryphonLib/LibraryTranspilationPass.gryphonASTRaw
+// gryphon output: Sources/GryphonLib/LibraryTranspilationPass.gryphonAST
+// gryphon output: Bootstrap/LibraryTranspilationPass.kt
 
 import Foundation
 
 /// This pass records templates statically in TranspilationTemplate so they can be retrieved later.
 
 public class RecordTemplatesTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func replaceFunctionDeclaration( // annotation: override
+	override func replaceFunctionDeclaration( // gryphon annotation: override
 		_ functionDeclaration: FunctionDeclaration)
 		-> MutableList<Statement>
 	{
@@ -89,22 +89,22 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 }
 
 public class ReplaceTemplatesTranspilationPass: TranspilationPass {
-	// insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// insert:     super(ast, context) { }
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
 
-	override func replaceExpression( // annotation: override
+	override func replaceExpression( // gryphon annotation: override
 		_ expression: Expression)
 		-> Expression
 	{
 		for template in context.templates {
 			if let matches = expression.matches(template.expression) {
 
-				let replacedMatches = matches.mapValues { // ignore: ignore
+				let replacedMatches = matches.mapValues { // gryphon ignore
 					self.replaceExpression($0)
 				}
-				// insert: val replacedMatches = matches.mapValues {
-				// insert:     replaceExpression(it.value)
-				// insert: }.toMutableMap()
+				// gryphon insert: val replacedMatches = matches.mapValues {
+				// gryphon insert:     replaceExpression(it.value)
+				// gryphon insert: }.toMutableMap()
 
 				return TemplateExpression(
 					range: expression.range,
@@ -501,14 +501,14 @@ internal extension String {
 		else if self.contains("<"), self.last! == ">" {
 			let typeWithoutGenerics = String(self.prefix {
 				$0 !=
-					"<" // value: '<'
+					"<" // gryphon value: '<'
 			})
 			return typeWithoutGenerics.isSubtype(of: superType)
 		}
 		else if superType.contains("<"), superType.last! == ">" {
 			let typeWithoutGenerics = String(superType.prefix {
 				$0 !=
-					"<" // value: '<'
+					"<" // gryphon value: '<'
 			})
 			return self.isSubtype(of: typeWithoutGenerics)
 		}

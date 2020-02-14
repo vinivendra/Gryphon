@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// output: Bootstrap/DriverTest.kt
+// gryphon output: Bootstrap/DriverTest.kt
 
 #if !GRYPHON
 @testable import GryphonLib
@@ -22,14 +22,14 @@ import XCTest
 #endif
 
 class DriverTest: XCTestCase {
-	// insert: constructor(): super() { }
+	// gryphon insert: constructor(): super() { }
 
-	public func getClassName() -> String { // annotation: override
+	public func getClassName() -> String { // gryphon annotation: override
 		return "DriverTest"
 	}
 
 	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // annotation: override
+	public func runAllTests() { // gryphon annotation: override
 		testUsageString()
 		testNoMainFile()
 		testContinueOnErrors()
@@ -37,7 +37,7 @@ class DriverTest: XCTestCase {
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // ignore: ignore
+	static var allTests = [ // gryphon ignore
 		("testUsageString", testUsageString),
 		("testNoMainFile", testNoMainFile),
 		("testContinueOnErrors", testContinueOnErrors),

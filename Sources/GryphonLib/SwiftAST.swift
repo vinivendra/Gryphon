@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// output: Sources/GryphonLib/SwiftAST.swiftAST
-// output: Sources/GryphonLib/SwiftAST.gryphonASTRaw
-// output: Sources/GryphonLib/SwiftAST.gryphonAST
-// output: Bootstrap/SwiftAST.kt
+// gryphon output: Sources/GryphonLib/SwiftAST.swiftAST
+// gryphon output: Sources/GryphonLib/SwiftAST.gryphonASTRaw
+// gryphon output: Sources/GryphonLib/SwiftAST.gryphonAST
+// gryphon output: Bootstrap/SwiftAST.kt
 
 public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible {
 	let name: String
@@ -53,18 +53,18 @@ public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible
 		return keyValueAttributes[key]
 	}
 
-	func subtree(named name: String) -> SwiftAST? { // pure: pure
+	func subtree(named name: String) -> SwiftAST? { // gryphon pure
 		return subtrees.first { $0.name == name }
 	}
 
-	func subtree(at index: Int) -> SwiftAST? { // pure: pure
+	func subtree(at index: Int) -> SwiftAST? { // gryphon pure
 		guard index >= 0, index < subtrees.count else {
 			return nil
 		}
 		return subtrees[index]
 	}
 
-	func subtree(at index: Int, named name: String) -> SwiftAST? { // pure: pure
+	func subtree(at index: Int, named name: String) -> SwiftAST? { // gryphon pure
 		guard index >= 0, index < subtrees.count else {
 			return nil
 		}
@@ -78,11 +78,11 @@ public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible
 	}
 
 	// MARK: - PrintableAsTree
-	public var treeDescription: String { // annotation: override
+	public var treeDescription: String { // gryphon annotation: override
 		return name
 	}
 
-	public var printableSubtrees: List<PrintableAsTree?> { // annotation: override
+	public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
 		let keyValueStrings = keyValueAttributes
 			.map { "\($0.key) -> \($0.value)" }.sorted().map { PrintableTree($0) }
 		let keyValueArray = MutableList<PrintableAsTree?>(keyValueStrings)

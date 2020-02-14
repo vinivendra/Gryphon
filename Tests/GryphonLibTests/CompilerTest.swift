@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// output: Bootstrap/CompilerTest.kt
+// gryphon output: Bootstrap/CompilerTest.kt
 
 #if !GRYPHON
 @testable import GryphonLib
@@ -22,21 +22,21 @@ import XCTest
 #endif
 
 class CompilerTest: XCTestCase {
-	// insert: constructor(): super() { }
+	// gryphon insert: constructor(): super() { }
 
-	public func getClassName() -> String { // annotation: override
+	public func getClassName() -> String { // gryphon annotation: override
 		return "CompilerTest"
 	}
 
 	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // annotation: override
+	public func runAllTests() { // gryphon annotation: override
 		testKotlinCompiler()
 		testErrorHandling()
 		testErrorMessages()
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // ignore: ignore
+	static var allTests = [ // gryphon ignore
 		("testKotlinCompiler", testKotlinCompiler),
 		("testErrorHandling", testErrorHandling),
 		("testErrorMessages", testErrorMessages),

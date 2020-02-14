@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// output: Test cases/Bootstrap Outputs/structs.swiftAST
-// output: Test cases/Bootstrap Outputs/structs.gryphonASTRaw
-// output: Test cases/Bootstrap Outputs/structs.gryphonAST
-// output: Test cases/Bootstrap Outputs/structs.kt
+// gryphon output: Test cases/Bootstrap Outputs/structs.swiftAST
+// gryphon output: Test cases/Bootstrap Outputs/structs.gryphonASTRaw
+// gryphon output: Test cases/Bootstrap Outputs/structs.gryphonAST
+// gryphon output: Test cases/Bootstrap Outputs/structs.kt
 
 struct SupportedStruct {
 	let x = 0

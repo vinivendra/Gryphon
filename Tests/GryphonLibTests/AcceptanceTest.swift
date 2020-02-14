@@ -14,19 +14,19 @@
 // limitations under the License.
 //
 
-// output: Bootstrap/AcceptanceTest.kt
+// gryphon output: Bootstrap/AcceptanceTest.kt
 
 #if !GRYPHON
 @testable import GryphonLib
 import XCTest
 #endif
 
-// insert: import kotlin.system.exitProcess
+// gryphon insert: import kotlin.system.exitProcess
 
 class AcceptanceTest: XCTestCase {
-	// insert: constructor(): super() { }
+	// gryphon insert: constructor(): super() { }
 
-	public func getClassName() -> String { // annotation: override
+	public func getClassName() -> String { // gryphon annotation: override
 		return "AcceptanceTest"
 	}
 
@@ -41,13 +41,13 @@ class AcceptanceTest: XCTestCase {
 	}
 
 	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // annotation: override
+	public func runAllTests() { // gryphon annotation: override
 		AcceptanceTest.setUp()
 		test()
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // ignore: ignore
+	static var allTests = [ // gryphon ignore
 		("test", test),
 	]
 

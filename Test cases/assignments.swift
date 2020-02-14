@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// output: Test cases/Bootstrap Outputs/assignments.swiftAST
-// output: Test cases/Bootstrap Outputs/assignments.gryphonASTRaw
-// output: Test cases/Bootstrap Outputs/assignments.gryphonAST
-// output: Test cases/Bootstrap Outputs/assignments.kt
+// gryphon output: Test cases/Bootstrap Outputs/assignments.swiftAST
+// gryphon output: Test cases/Bootstrap Outputs/assignments.gryphonASTRaw
+// gryphon output: Test cases/Bootstrap Outputs/assignments.gryphonAST
+// gryphon output: Test cases/Bootstrap Outputs/assignments.kt
 
 var x: Int = 0
 var y = x

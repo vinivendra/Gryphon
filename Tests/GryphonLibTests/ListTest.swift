@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// output: Bootstrap/ListTest.kt
+// gryphon output: Bootstrap/ListTest.kt
 
 #if !GRYPHON
 @testable import GryphonLib
@@ -24,14 +24,14 @@ import Foundation
 #endif
 
 class ListTest: XCTestCase {
-	// insert: constructor(): super() { }
+	// gryphon insert: constructor(): super() { }
 
-	public func getClassName() -> String { // annotation: override
+	public func getClassName() -> String { // gryphon annotation: override
 		return "ListTest"
 	}
 
 	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // annotation: override
+	public func runAllTests() { // gryphon annotation: override
 		testEquatable()
 		testInits()
 		testCasting()
@@ -59,7 +59,7 @@ class ListTest: XCTestCase {
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // ignore: ignore
+	static var allTests = [ // gryphon ignore
 		("testEquatable", testEquatable),
 		("testInits", testInits),
 		("testCasting", testCasting),
@@ -99,15 +99,15 @@ class ListTest: XCTestCase {
 	func testInits() {
 		let list1: List<Int> = [1, 2, 3]
 		let list2: List<Int> = List<Int>([1, 2, 3])
-		let list3: List = List(list1) // ignore: ignore
-		let sequence = AnySequence([1, 2, 3]) // ignore: ignore
-		let list4: List = List(sequence) // ignore: ignore
+		let list3: List = List(list1) // gryphon ignore
+		let sequence = AnySequence([1, 2, 3]) // gryphon ignore
+		let list4: List = List(sequence) // gryphon ignore
 		let list5: List<Int> = List<Int>()
 		let list6: List<Int> = []
 
 		XCTAssertEqual(list1, list2)
-		XCTAssertEqual(list1, list3) // ignore: ignore
-		XCTAssertEqual(list1, list4) // ignore: ignore
+		XCTAssertEqual(list1, list3) // gryphon ignore
+		XCTAssertEqual(list1, list4) // gryphon ignore
 		XCTAssertNotEqual(list1, list5)
 		XCTAssertNotEqual(list1, list6)
 		XCTAssertEqual(list5, list6)
@@ -154,7 +154,7 @@ class ListTest: XCTestCase {
 		XCTAssert(!list.description.contains("4"))
 	}
 
-	func testDebugDescription() { // ignore: ignore
+	func testDebugDescription() { // gryphon ignore
 		let list: List = [1, 2, 3]
 
 		XCTAssert(list.debugDescription.contains("1"))
@@ -286,7 +286,7 @@ class ListTest: XCTestCase {
 		XCTAssertEqual(list.firstIndex(of: 10), 2)
 	}
 
-	func testHash() { // ignore: ignore
+	func testHash() { // gryphon ignore
 		let list1: List = [1, 2, 3]
 		let list2: List = [1, 2, 3]
 		let list3: List = [1, 2, 3, 4]

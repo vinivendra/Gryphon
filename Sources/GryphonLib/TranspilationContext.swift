@@ -14,12 +14,12 @@
 // limitations under the License.
 //
 
-// output: Sources/GryphonLib/TranspilationContext.swiftAST
-// output: Sources/GryphonLib/TranspilationContext.gryphonASTRaw
-// output: Sources/GryphonLib/TranspilationContext.gryphonAST
-// output: Bootstrap/TranspilationContext.kt
+// gryphon output: Sources/GryphonLib/TranspilationContext.swiftAST
+// gryphon output: Sources/GryphonLib/TranspilationContext.gryphonASTRaw
+// gryphon output: Sources/GryphonLib/TranspilationContext.gryphonAST
+// gryphon output: Bootstrap/TranspilationContext.kt
 
-// insert: import kotlin.system.*
+// gryphon insert: import kotlin.system.*
 
 public class TranspilationContext {
 	/// The global context is used for information that should be accessible globally, such as

@@ -14,12 +14,12 @@
 // limitations under the License.
 //
 
-// output: Sources/GryphonLib/KotlinTranslator.swiftAST
-// output: Sources/GryphonLib/KotlinTranslator.gryphonASTRaw
-// output: Sources/GryphonLib/KotlinTranslator.gryphonAST
-// output: Bootstrap/KotlinTranslator.kt
+// gryphon output: Sources/GryphonLib/KotlinTranslator.swiftAST
+// gryphon output: Sources/GryphonLib/KotlinTranslator.gryphonASTRaw
+// gryphon output: Sources/GryphonLib/KotlinTranslator.gryphonAST
+// gryphon output: Bootstrap/KotlinTranslator.kt
 
-// insert: import kotlin.system.*
+// gryphon insert: import kotlin.system.*
 
 public class KotlinTranslator {
 	// MARK: - Constants
@@ -1753,7 +1753,7 @@ public class KotlinTranslator {
 			range: declarationReferenceExpression.range,
 			string: String(declarationReferenceExpression.identifier.prefix {
 					$0 !=
-						"(" // value: '('
+						"(" // gryphon value: '('
 				}))
 	}
 
@@ -1969,7 +1969,7 @@ public class KotlinTranslator {
 				}
 			}
 			else {
-				let startDelimiter = "${" // value: \"\\${\"
+				let startDelimiter = "${" // gryphon value: \"\\${\"
 				result.append(startDelimiter)
 				result.append(try translateExpression(expression, withIndentation: indentation))
 				result.append("}")

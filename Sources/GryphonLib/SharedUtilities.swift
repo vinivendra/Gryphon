@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// output: Sources/GryphonLib/SharedUtilities.swiftAST
-// output: Sources/GryphonLib/SharedUtilities.gryphonASTRaw
-// output: Sources/GryphonLib/SharedUtilities.gryphonAST
-// output: Bootstrap/SharedUtilities.kt
+// gryphon output: Sources/GryphonLib/SharedUtilities.swiftAST
+// gryphon output: Sources/GryphonLib/SharedUtilities.gryphonASTRaw
+// gryphon output: Sources/GryphonLib/SharedUtilities.gryphonAST
+// gryphon output: Bootstrap/SharedUtilities.kt
 
 import Foundation
 
@@ -282,13 +282,13 @@ private var testCasesHaveBeenUpdated = false
 
 extension Utilities {
     static public func processGryphonTemplatesLibrary() throws {
-        libraryUpdateLock.lock() // ignore: ignore
-        // insert: libraryUpdateLock.acquire()
+        libraryUpdateLock.lock() // gryphon ignore
+        // gryphon insert: libraryUpdateLock.acquire()
 
         // TODO: defers should always be the first statement, or try-finally's should be adjusted
         defer {
-            libraryUpdateLock.unlock() // ignore: ignore
-            // insert: libraryUpdateLock.release()
+            libraryUpdateLock.unlock() // gryphon ignore
+            // gryphon insert: libraryUpdateLock.release()
         }
 
         guard !templatesLibraryHasBeenProcessed else {
@@ -373,7 +373,7 @@ extension Utilities {
 extension Utilities {
 	/// Splits a type using the given separators, taking into consideration possible separators.
 	/// For instance, "(A, (B, C))" becomes ["A", "(B, C)"] rather than ["A", "(B", "C)"].
-    static func splitTypeList( // pure: pure
+    static func splitTypeList( // gryphon pure
         _ typeList: String,
         separators: MutableList<String> = [",", ":"])
         -> MutableList<String>

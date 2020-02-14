@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-// output: Sources/GryphonLib/Extensions.swiftAST
-// output: Sources/GryphonLib/Extensions.gryphonASTRaw
-// output: Sources/GryphonLib/Extensions.gryphonAST
-// output: Bootstrap/Extensions.kt
+// gryphon output: Sources/GryphonLib/Extensions.swiftAST
+// gryphon output: Sources/GryphonLib/Extensions.gryphonASTRaw
+// gryphon output: Sources/GryphonLib/Extensions.gryphonAST
+// gryphon output: Bootstrap/Extensions.kt
 
 import Foundation
 
@@ -38,16 +38,16 @@ private func gryphonTemplates() {
 	_ = "_string1.split(separator = _character, omittingEmptySubsequences = _bool)"
 }
 
-// insert: internal fun String.split(
-// insert:     separator: Char,
-// insert:     maxSplits: Int = Int.MAX_VALUE,
-// insert:     omittingEmptySubsequences: Boolean = true)
-// insert:     : MutableList<String>
-// insert: {
-// insert:     return this.split(separator = separator.toString(),
-// insert:         maxSplits = maxSplits,
-// insert:         omittingEmptySubsequences = omittingEmptySubsequences)
-// insert: }
+// gryphon insert: internal fun String.split(
+// gryphon insert:     separator: Char,
+// gryphon insert:     maxSplits: Int = Int.MAX_VALUE,
+// gryphon insert:     omittingEmptySubsequences: Boolean = true)
+// gryphon insert:     : MutableList<String>
+// gryphon insert: {
+// gryphon insert:     return this.split(separator = separator.toString(),
+// gryphon insert:         maxSplits = maxSplits,
+// gryphon insert:         omittingEmptySubsequences = omittingEmptySubsequences)
+// gryphon insert: }
 
 internal extension String {
 	// Result should have at most maxSplits + 1 elements.
@@ -102,10 +102,10 @@ internal extension String {
 		var substringOffset = self.startIndex
 
 		while substringOffset < self.endIndex {
-			let maybeIndex = // ignore: ignore
+			let maybeIndex = // gryphon ignore
 				currentSubstring.range(of: searchedSubstring)?.lowerBound
-			// insert: var maybeIndex: Int? = currentSubstring.indexOf(searchedSubstring)
-			// insert: maybeIndex = if (maybeIndex == -1) { null } else { maybeIndex }
+			// gryphon insert: var maybeIndex: Int? = currentSubstring.indexOf(searchedSubstring)
+			// gryphon insert: maybeIndex = if (maybeIndex == -1) { null } else { maybeIndex }
 
 			guard let foundIndex = maybeIndex else {
 				break
@@ -113,7 +113,7 @@ internal extension String {
 
 			// In Kotlin the foundIndex is counted from the substring's start, but in Swift it's
 			// from the string's start. This compensates for that difference.
-			let occurenceStartIndex = foundIndex // value: foundIndex + substringOffset
+			let occurenceStartIndex = foundIndex // gryphon value: foundIndex + substringOffset
 
 			let occurenceEndIndex =
 				currentSubstring.index(occurenceStartIndex, offsetBy: searchedSubstring.count)
@@ -182,8 +182,8 @@ internal extension String {
 		var result: String = ""
 		result.append(self[self.startIndex].uppercased())
 
-		let indicesWithoutTheFirstOne = self.indices.dropFirst() // ignore: ignore
-		// insert: val indicesWithoutTheFirstOne = this.indices.drop(1)
+		let indicesWithoutTheFirstOne = self.indices.dropFirst() // gryphon ignore
+		// gryphon insert: val indicesWithoutTheFirstOne = this.indices.drop(1)
 
 		for index in indicesWithoutTheFirstOne {
 			let currentCharacter = self[index]
@@ -299,7 +299,7 @@ extension Character {
 //
 extension List {
 	/// Returns nil if index is out of bounds.
-	subscript (safe index: Int) -> Element? { // ignore: ignore
+	subscript (safe index: Int) -> Element? { // gryphon ignore
 		return getSafe(index)
 	}
 
@@ -324,7 +324,7 @@ extension List {
 		}
 
 		var newArray: MutableList<Element> = []
-		newArray.reserveCapacity(self.count) // ignore: ignore
+		newArray.reserveCapacity(self.count) // gryphon ignore
 		newArray.append(contentsOf: self.dropFirst())
 		newArray.append(first)
 
