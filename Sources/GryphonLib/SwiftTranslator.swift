@@ -490,6 +490,8 @@ public class SwiftTranslator {
 
 		let annotations = getTranslationCommentValue(forNode: structDeclaration, key: .annotation)
 
+		let access = structDeclaration["access"]
+
 		// Get the struct name
 		let name = structDeclaration.standaloneAttributes.first!
 
@@ -509,6 +511,7 @@ public class SwiftTranslator {
 			range: getRangeRecursively(ofNode: structDeclaration),
 			annotations: annotations,
 			structName: name,
+			access: access,
 			inherits: inheritanceArray,
 			members: structContents)
 	}

@@ -71,7 +71,7 @@ internal open class C {
 	}
 }
 
-data class D(
+internal data class D(
 	val x: Int
 ) {
 	companion object {

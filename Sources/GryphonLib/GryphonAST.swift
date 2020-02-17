@@ -418,6 +418,7 @@ public class ProtocolDeclaration: Statement {
 public class StructDeclaration: Statement {
 	let annotations: String?
 	let structName: String
+	let access: String?
 	let inherits: MutableList<String>
 	let members: MutableList<Statement>
 
@@ -425,11 +426,13 @@ public class StructDeclaration: Statement {
 		range: SourceFileRange?,
 		annotations: String?,
 		structName: String,
+		access: String?,
 		inherits: MutableList<String>,
 		members: MutableList<Statement>)
 	{
 		self.annotations = annotations
 		self.structName = structName
+		self.access = access
 		self.inherits = inherits
 		self.members = members
 		super.init(range: range, name: "StructDeclaration".capitalizedAsCamelCase())
@@ -440,15 +443,17 @@ public class StructDeclaration: Statement {
 			PrintableTree.initOrNil(
 				"annotations", [PrintableTree.initOrNil(annotations)]),
 			PrintableTree(structName),
+			PrintableTree.initOrNil(access),
 			PrintableTree.ofStrings("inherits", inherits),
 			PrintableTree.ofStatements("members", members), ]
 	}
 
 	public static func == (lhs: StructDeclaration, rhs: StructDeclaration) -> Bool {
 		return lhs.annotations == rhs.annotations &&
-		lhs.structName == rhs.structName &&
-		lhs.inherits == rhs.inherits &&
-		lhs.members == rhs.members
+			lhs.structName == rhs.structName &&
+			lhs.access == rhs.access &&
+			lhs.inherits == rhs.inherits &&
+			lhs.members == rhs.members
 	}
 }
 

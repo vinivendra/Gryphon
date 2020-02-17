@@ -453,8 +453,13 @@ public class KotlinTranslator {
 		let annotationsString = structDeclaration.annotations.map { "\(indentation)\($0)\n" } ?? ""
 
 		let result = Translation(range: structDeclaration.range)
-		result.append("\(annotationsString)\(indentation)data class " +
-			"\(structDeclaration.structName)(\n")
+		result.append("\(annotationsString)\(indentation)")
+
+		if let access = structDeclaration.access {
+			result.append("\(access) ")
+		}
+
+		result.append("data class \(structDeclaration.structName)(\n")
 
 		let properties = structDeclaration.members.filter { statementIsStructProperty($0) }
 		let otherMembers = structDeclaration.members.filter { !statementIsStructProperty($0) }

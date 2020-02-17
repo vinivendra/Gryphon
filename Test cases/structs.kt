@@ -13,17 +13,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-data class SupportedStruct(
+internal data class SupportedStruct(
 	val x: Int = 0,
 	val y: Int = 1
 )
 
-data class OtherSupportedStruct(
+internal data class OtherSupportedStruct(
 	val x: Int,
 	val y: Int
 )
 
-data class NoInheritance(
+internal data class NoInheritance(
 	val x: Int,
 	val y: Int
 )

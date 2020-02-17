@@ -284,6 +284,7 @@ public class TranspilationPass {
 			range: structDeclaration.range,
 			annotations: structDeclaration.annotations,
 			structName: structDeclaration.structName,
+			access: structDeclaration.access,
 			inherits: structDeclaration.inherits,
 			members: replaceStatements(structDeclaration.members)), ]
 	}
@@ -1234,6 +1235,7 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 			range: structDeclaration.range,
 			annotations: structDeclaration.annotations,
 			structName: structDeclaration.structName,
+			access: structDeclaration.access,
 			inherits: structDeclaration.inherits,
 			members: newMembers))
 	}
@@ -1682,6 +1684,28 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 		return result
 	}
 
+	// TODO: Add access to structs
+	// TODO: Process extensions, companions, and protocols
+	override func replaceStructDeclaration( // gryphon annotation: override
+		_ structDeclaration: StructDeclaration)
+		-> MutableList<Statement>
+	{
+		let newAccess = getAccessModifier(
+			forModifier: structDeclaration.access,
+			declaration: structDeclaration)
+
+		accessModifiersStack.append(newAccess)
+		let result = super.replaceStructDeclaration(StructDeclaration(
+			range: structDeclaration.range,
+			annotations: structDeclaration.annotations,
+			structName: structDeclaration.structName,
+			access: newAccess,
+			inherits: structDeclaration.inherits,
+			members: structDeclaration.members))
+		accessModifiersStack.removeLast()
+		return result
+	}
+
 	override func replaceEnumDeclaration( // gryphon annotation: override
 		_ enumDeclaration: EnumDeclaration)
 		-> MutableList<Statement>
@@ -1714,6 +1738,7 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 			case let .statementNode(value: parentDeclaration) = parent
 		{
 			if (parentDeclaration is ClassDeclaration) ||
+				(parentDeclaration is StructDeclaration) ||
 				(parentDeclaration is EnumDeclaration)
 			{
 				newAccess = getAccessModifier(
@@ -1767,27 +1792,6 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 		accessModifiersStack.removeLast()
 		return result
 	}
-
-	// TODO: Add access to structs
-	// TODO: Process extensions, companions, and protocols
-//	override func replaceStructDeclaration(
-//		_ structDeclaration: StructDeclaration)
-//		-> MutableList<Statement>
-//	{
-//		let newAccess = getAccessModifier(
-//			forModifier: structDeclaration.access,
-//			declaration: structDeclaration)
-//
-//		accessModifiersStack.append(newAccess)
-//		let result = super.replaceStructDeclaration(StructDeclaration(
-//			range: structDeclaration.range,
-//			annotations: structDeclaration.annotations,
-//			structName: structDeclaration.structName,
-//			inherits: structDeclaration.inherits,
-//			members: structDeclaration).members)
-//		accessModifiersStack.removeLast()
-//		return result
-//	}
 
 	/// Receives an access modifier from a Swift declaration and returns the modifier that should be
 	/// on the Kotlin translation.
@@ -1949,6 +1953,7 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 			range: structDeclaration.range,
 			annotations: structDeclaration.annotations,
 			structName: structDeclaration.structName,
+			access: structDeclaration.access,
 			inherits: structDeclaration.inherits.filter { !TranspilationPass.isASwiftProtocol($0) },
 			members: structDeclaration.members))
 	}
