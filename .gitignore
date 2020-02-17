@@ -45,6 +45,7 @@ Bootstrap/TranslationResult.kt
 Bootstrap/TranspilationContext.kt
 Bootstrap/TranspilationPass.kt
 
+Bootstrap/AcceptanceTest.kt
 Bootstrap/ASTDumpDecoderTest.kt
 Bootstrap/CompilerTest.kt
 Bootstrap/DriverTest.kt
