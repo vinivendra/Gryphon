@@ -52,10 +52,10 @@ internal enum class WithMembers {
 	FOO_BAR,
 	BAZ;
 
-	internal fun a() {
+	fun a() {
 	}
 
-	internal fun b() {
+	fun b() {
 	}
 }
 

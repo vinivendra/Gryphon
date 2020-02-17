@@ -33,7 +33,7 @@ public class SwiftTranslator {
 		typeName: "<<Error>>",
 		expression: ErrorExpression(range: nil))
 
-	fileprivate var sourceFile: SourceFile?
+	internal var sourceFile: SourceFile?
 
 	static let functionCompatibleASTNodes: MutableList<String> =
 		["Function Declaration", "Constructor Declaration", "Accessor Declaration"]
@@ -1022,6 +1022,7 @@ public class SwiftTranslator {
 					expression: nil,
 					getter: nil,
 					setter: nil,
+					access: nil,
 					isLet: true,
 					isImplicit: false,
 					isStatic: false,
@@ -1335,6 +1336,7 @@ public class SwiftTranslator {
 									isImplicit: false)),
 							getter: nil,
 							setter: nil,
+							access: nil,
 							isLet: true,
 							isImplicit: false,
 							isStatic: false,
@@ -1507,7 +1509,9 @@ public class SwiftTranslator {
 					identifier: name,
 					typeName: typeName,
 					expression: expression,
-					getter: nil, setter: nil,
+					getter: nil,
+					setter: nil,
+					access: nil,
 					isLet: isLet,
 					isImplicit: false,
 					isStatic: false,
@@ -1583,6 +1587,7 @@ public class SwiftTranslator {
 								isImplicit: false)),
 						getter: nil,
 						setter: nil,
+						access: nil,
 						isLet: true,
 						isImplicit: false,
 						isStatic: false,
@@ -1942,6 +1947,7 @@ public class SwiftTranslator {
 		}
 
 		let isImplicit = variableDeclaration.standaloneAttributes.contains("implicit")
+		let access = variableDeclaration["access"]
 
 		let annotations = getTranslationCommentValue(forNode: variableDeclaration, key: .annotation)
 
@@ -2000,7 +2006,7 @@ public class SwiftTranslator {
 		var getter: FunctionDeclaration?
 		var setter: FunctionDeclaration?
 		for subtree in variableDeclaration.subtrees {
-			let access = subtree["access"]
+			let functionAccess = subtree["access"]
 
 			let statements: MutableList<Statement>
 			if let braceStatement = subtree.subtree(named: "Brace Statement") {
@@ -2031,7 +2037,7 @@ public class SwiftTranslator {
 					isPure: isPure,
 					extendsType: nil,
 					statements: statements,
-					access: access,
+					access: functionAccess,
 					annotations: annotations)
 			}
 			else if subtree["materializeForSet_for"] != nil || subtree["set_for"] != nil {
@@ -2049,7 +2055,7 @@ public class SwiftTranslator {
 					isPure: isPure,
 					extendsType: nil,
 					statements: statements,
-					access: access,
+					access: functionAccess,
 					annotations: annotations)
 			}
 		}
@@ -2061,6 +2067,7 @@ public class SwiftTranslator {
 			expression: expression,
 			getter: getter,
 			setter: setter,
+			access: access,
 			isLet: isLet,
 			isImplicit: isImplicit,
 			isStatic: isStatic,

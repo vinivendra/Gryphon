@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-open class Box {
+internal open class Box {
 	var a: Int = 5
 	var b: String
 		get() {
@@ -24,48 +24,48 @@ open class Box {
 		}
 	var c: Int? = null
 
-	internal fun returnFive(): Int {
+	fun returnFive(): Int {
 		return a
 	}
 
-	internal fun returnInt(a: Int): Int {
+	fun returnInt(a: Int): Int {
 		return a
 	}
 }
 
-open class A {
+internal open class A {
 	open class B {
 	}
 
 	val b: B = B()
 }
 
-open class C {
+internal open class C {
 	companion object {
-		internal fun a(): C {
+		fun a(): C {
 			return C()
 		}
 
-		internal fun c(): C? {
+		fun c(): C? {
 			return C()
 		}
 
-		internal fun d(): C? {
+		fun d(): C? {
 			return null
 		}
 
-		internal fun f(): Int {
+		fun f(): Int {
 			return 1
 		}
 	}
 
 	var x: Int = 0
 
-	internal fun b(): C {
+	fun b(): C {
 		return C()
 	}
 
-	internal fun e(): Int {
+	fun e(): Int {
 		println("Hello, world!")
 		return 1
 	}

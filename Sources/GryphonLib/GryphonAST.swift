@@ -614,6 +614,7 @@ public class VariableDeclaration: Statement {
 	var expression: Expression?
 	var getter: FunctionDeclaration?
 	var setter: FunctionDeclaration?
+	var access: String?
 	var isLet: Bool
 	var isImplicit: Bool
 	var isStatic: Bool
@@ -627,6 +628,7 @@ public class VariableDeclaration: Statement {
 		expression: Expression?,
 		getter: FunctionDeclaration?,
 		setter: FunctionDeclaration?,
+		access: String?,
 		isLet: Bool,
 		isImplicit: Bool,
 		isStatic: Bool,
@@ -639,6 +641,7 @@ public class VariableDeclaration: Statement {
 		self.getter = getter
 		self.setter = setter
 		self.isLet = isLet
+		self.access = access
 		self.isImplicit = isImplicit
 		self.isStatic = isStatic
 		self.extendsType = extendsType
@@ -656,6 +659,7 @@ public class VariableDeclaration: Statement {
 			PrintableTree(identifier),
 			PrintableTree(typeName),
 			expression,
+			PrintableTree.initOrNil(access),
 			PrintableTree.initOrNil("getter", [getter]),
 			PrintableTree.initOrNil("setter", [setter]),
 			PrintableTree.initOrNil(
@@ -672,6 +676,7 @@ public class VariableDeclaration: Statement {
 			lhs.expression == rhs.expression &&
 			lhs.getter == rhs.getter &&
 			lhs.setter == rhs.setter &&
+			lhs.access == rhs.access &&
 			lhs.isLet == rhs.isLet &&
 			lhs.isImplicit == rhs.isImplicit &&
 			lhs.isStatic == rhs.isStatic &&

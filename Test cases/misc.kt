@@ -15,7 +15,7 @@
 //
 typealias A = Int
 
-open class B {
+internal open class B {
 	open class C {
 	}
 }

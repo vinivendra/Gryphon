@@ -93,7 +93,7 @@ fun variadics(a: Int, vararg b: Int, c: Int = 0) {
 	println(c)
 }
 
-open class AClassWithABigName {
+internal open class AClassWithABigName {
 }
 
 internal fun fooBarBaz(

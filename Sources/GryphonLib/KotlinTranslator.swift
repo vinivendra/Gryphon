@@ -415,13 +415,13 @@ public class KotlinTranslator {
 		throws -> Translation
 	{
 		let result = Translation(range: classDeclaration.range)
-		result.append("\(indentation)open")
+		result.append("\(indentation)")
 
 		if let access = classDeclaration.access {
-			result.append(" \(access)")
+			result.append("\(access) ")
 		}
 
-		result.append(" class \(classDeclaration.className)")
+		result.append("open class \(classDeclaration.className)")
 
 		if !classDeclaration.inherits.isEmpty {
 			let translatedInheritances = classDeclaration.inherits.map { translateType($0) }
@@ -928,6 +928,7 @@ public class KotlinTranslator {
 					expression: NilLiteralExpression(range: nil),
 					getter: nil,
 					setter: nil,
+					access: nil,
 					isLet: variableDeclaration.isLet,
 					isImplicit: false,
 					isStatic: false,
@@ -1100,6 +1101,10 @@ public class KotlinTranslator {
 
 		if let annotations = variableDeclaration.annotations {
 			result.append("\(annotations) ")
+		}
+
+		if let access = variableDeclaration.access {
+			result.append("\(access) ")
 		}
 
 		var keyword: String

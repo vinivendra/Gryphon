@@ -673,8 +673,8 @@ internal class ASTDumpDecoder {
 }
 
 // MARK: - Creating a SwiftAST
-extension ASTDumpDecoder {
-	public func decode() throws -> SwiftAST {
+internal extension ASTDumpDecoder {
+	func decode() throws -> SwiftAST {
 		let standaloneAttributes: MutableList<String> = []
 		let keyValueAttributes: MutableMap<String, String> = [:]
 		let subtrees: MutableList<SwiftAST> = []

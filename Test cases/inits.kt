@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-open class A {
+internal open class A {
 	var x: Int
 	var y: Int
 	var z: Int = 30

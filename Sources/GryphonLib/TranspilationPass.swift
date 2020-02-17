@@ -43,9 +43,9 @@ public class TranspilationPass {
 	let ast: GryphonAST
 	let context: TranspilationContext
 
-	fileprivate var parents: MutableList<ASTNode> = []
-	fileprivate var parent: ASTNode {
-		return parents.secondToLast!
+	internal var parents: MutableList<ASTNode> = []
+	internal var parent: ASTNode? {
+		return parents.secondToLast
 	}
 
 	// MARK: - Interface
@@ -945,7 +945,7 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 				isPure: false,
 				extendsType: variableDeclaration.extendsType,
 				statements: getter.statements,
-				access: nil,
+				access: "public",
 				annotations: newAnnotations), ]
 		}
 
@@ -976,8 +976,9 @@ public class RemoveParenthesesTranspilationPass: TranspilationPass {
 		_ parenthesesExpression: ParenthesesExpression)
 		-> Expression
 	{
-		let myParent = self.parent
-		if case let .expressionNode(parentExpression) = myParent {
+		if let parent = parent,
+			case let .expressionNode(parentExpression) = parent
+		{
 			if parentExpression is TupleExpression ||
 				parentExpression is InterpolatedStringLiteralExpression
 			{
@@ -1642,6 +1643,247 @@ public class OptionalsInConditionalCastsTranspilationPass: TranspilationPass {
 	}
 }
 
+/// This pass is responsible for determining what access modifiers are going to be printed in the
+/// output code. This mainly includes two tasks: determining how to translate Swift's access
+/// modifiers into Kotlin, and determining which modifiers should be printed and which should be
+/// implicit.
+///
+/// Some Kotlin rules:
+///   - top-level declarations are `public` by default
+///   - top-level `private` declarations are visible to anything in that file
+///   - inner declarations can't be more visible than their parents (i.e. a `public` property in an
+///       `internal` class is treated as an `internal` property).
+///   - inner declarations default to `public`, but because they can't be more visible than their
+///       parents, in practice they default to the modifier of their parents.
+public class AccessModifiersTranspilationPass: TranspilationPass {
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
+
+	/// A stack containing access modifiers from parent declarations. Modifiers in this stack should
+	/// already be processed.
+	var accessModifiersStack: MutableList<String?> = []
+
+	override func replaceClassDeclaration( // gryphon annotation: override
+		_ classDeclaration: ClassDeclaration)
+		-> MutableList<Statement>
+	{
+		let newAccess = getAccessModifier(
+			forModifier: classDeclaration.access,
+			declaration: classDeclaration)
+
+		accessModifiersStack.append(newAccess)
+		let result = super.replaceClassDeclaration(ClassDeclaration(
+			range: classDeclaration.range,
+			className: classDeclaration.className,
+			access: newAccess,
+			inherits: classDeclaration.inherits,
+			members: classDeclaration.members))
+		accessModifiersStack.removeLast()
+		return result
+	}
+
+	override func replaceEnumDeclaration( // gryphon annotation: override
+		_ enumDeclaration: EnumDeclaration)
+		-> MutableList<Statement>
+	{
+		let newAccess = getAccessModifier(
+			forModifier: enumDeclaration.access,
+			declaration: enumDeclaration)
+
+		accessModifiersStack.append(newAccess)
+		let result = super.replaceEnumDeclaration(EnumDeclaration(
+			range: enumDeclaration.range,
+			access: newAccess,
+			enumName: enumDeclaration.enumName,
+			inherits: enumDeclaration.inherits,
+			elements: enumDeclaration.elements,
+			members: enumDeclaration.members,
+			isImplicit: enumDeclaration.isImplicit))
+		accessModifiersStack.removeLast()
+		return result
+	}
+
+	override func replaceVariableDeclaration( // gryphon annotation: override
+		_ variableDeclaration: VariableDeclaration)
+		-> MutableList<Statement>
+	{
+		// Only translate the access modifiers if it's a property.
+		// If it's a local variable, remove access modifiers.
+		var newAccess: String?
+		if let parent = parent,
+			case let .statementNode(value: parentDeclaration) = parent
+		{
+			if (parentDeclaration is ClassDeclaration) ||
+				(parentDeclaration is EnumDeclaration)
+			{
+				newAccess = getAccessModifier(
+					forModifier: variableDeclaration.access,
+					declaration: variableDeclaration)
+			}
+		}
+
+		accessModifiersStack.append(newAccess)
+		let result = super.replaceVariableDeclaration(VariableDeclaration(
+			range: variableDeclaration.range,
+			identifier: variableDeclaration.identifier,
+			typeName: variableDeclaration.typeName,
+			expression: variableDeclaration.expression,
+			getter: variableDeclaration.getter,
+			setter: variableDeclaration.setter,
+			access: newAccess,
+			isLet: variableDeclaration.isLet,
+			isImplicit: variableDeclaration.isImplicit,
+			isStatic: variableDeclaration.isStatic,
+			extendsType: variableDeclaration.extendsType,
+			annotations: variableDeclaration.annotations))
+		accessModifiersStack.removeLast()
+		return result
+	}
+
+	override func replaceFunctionDeclaration( // gryphon annotation: override
+		_ functionDeclaration: FunctionDeclaration)
+		-> MutableList<Statement>
+	{
+		let newAccess = getAccessModifier(
+			forModifier: functionDeclaration.access,
+			declaration: functionDeclaration)
+
+		accessModifiersStack.append(newAccess)
+		let result = super.replaceFunctionDeclaration(FunctionDeclaration(
+			range: functionDeclaration.range,
+			prefix: functionDeclaration.prefix,
+			parameters: functionDeclaration.parameters,
+			returnType: functionDeclaration.returnType,
+			functionType: functionDeclaration.functionType,
+			genericTypes: functionDeclaration.genericTypes,
+			isImplicit: functionDeclaration.isImplicit,
+			isStatic: functionDeclaration.isStatic,
+			isMutating: functionDeclaration.isMutating,
+			isPure: functionDeclaration.isPure,
+			extendsType: functionDeclaration.extendsType,
+			statements: functionDeclaration.statements,
+			access: newAccess,
+			annotations: functionDeclaration.annotations))
+		accessModifiersStack.removeLast()
+		return result
+	}
+
+	// TODO: Add access to structs
+	// TODO: Process extensions, companions, and protocols
+//	override func replaceStructDeclaration(
+//		_ structDeclaration: StructDeclaration)
+//		-> MutableList<Statement>
+//	{
+//		let newAccess = getAccessModifier(
+//			forModifier: structDeclaration.access,
+//			declaration: structDeclaration)
+//
+//		accessModifiersStack.append(newAccess)
+//		let result = super.replaceStructDeclaration(StructDeclaration(
+//			range: structDeclaration.range,
+//			annotations: structDeclaration.annotations,
+//			structName: structDeclaration.structName,
+//			inherits: structDeclaration.inherits,
+//			members: structDeclaration).members)
+//		accessModifiersStack.removeLast()
+//		return result
+//	}
+
+	/// Receives an access modifier from a Swift declaration and returns the modifier that should be
+	/// on the Kotlin translation.
+	private func getAccessModifier(
+		forModifier modifier: String?,
+		declaration: Statement)
+		-> String?
+	{
+		// Swift declarations default to internal
+		let swiftModifier = modifier ?? "internal"
+
+		if accessModifiersStack.isEmpty {
+			// If it's a top-level declaration
+
+			if swiftModifier == "public" || swiftModifier == "open" {
+				// Top-level Kotlin declarations default to public
+				return nil
+			}
+			else if swiftModifier == "private" || swiftModifier == "fileprivate" {
+				// Top-level Kotlin declarations that are private behave like Swift's fileprivate.
+				// Top-level private and fileprivate in Swift seem to be pretty much the same.
+				return "private"
+			}
+			else {
+				return "internal"
+			}
+		}
+		else {
+			// If it's an inner declaration
+
+			// Note that the outer modifier (in the stack) has already been translated, but the
+			// inner one hasn't
+			let outerModifier = accessModifiersStack.compactMap { $0 }.last
+			let innerModifier = swiftModifier
+
+			// Inner declarations can't be accurately translated as fileprivate. Default to the next
+			// most open modifier (internal) so the Kotlin code will compile, but raise a warning.
+			if innerModifier == "fileprivate" {
+				raiseFilePrivateWarning(forDeclaration: declaration)
+				return getAccessModifier(forModifier: "internal", declaration: declaration)
+			}
+
+			if let outerModifier = outerModifier {
+				if outerModifier == "private" {
+					// If the outer modifier is private, we can only be private
+					return nil
+				}
+				else if outerModifier == "internal" {
+					// If the outer modifier is internal, we can only explicitly be private,
+					// otherwise we default to internal
+					if innerModifier == "private" {
+						return "private"
+					}
+
+					return nil
+				}
+			}
+			else {
+				// If the outer defaults to public, we can only explicitly be internal or private
+				if innerModifier == "internal" {
+					return "internal"
+				}
+				else if innerModifier == "private" {
+					return "private"
+				}
+
+				return nil
+			}
+		}
+
+		raiseAlgorithmErrorWarning(forDeclaration: declaration)
+		return nil
+	}
+
+	/// If there's a filePrivate declaration inside a more open declaration, it can be seen by other
+	/// declarations in the same file for Swift, but there's no similar behavior in Kotlin. Default
+	/// to internal (the next most open modifier) so that the Kotlin code compiles, but raise a
+	/// warning.
+	private func raiseFilePrivateWarning(forDeclaration declaration: Statement) {
+		let message = "Kotlin does not support fileprivate declarations. " +
+			"Defaulting to \"internal\"."
+		Compiler.handleWarning(
+			message: message,
+			sourceFile: ast.sourceFile,
+			sourceFileRange: declaration.range)
+	}
+
+	private func raiseAlgorithmErrorWarning(forDeclaration declaration: Statement) {
+		let message = "Failed to calculate the correct access modifier. Defaulting to \"public\"."
+		Compiler.handleWarning(
+			message: message,
+			sourceFile: ast.sourceFile,
+			sourceFileRange: declaration.range)
+	}
+}
+
 public class SelfToThisTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
 	// gryphon insert:     super(ast, context) { }
@@ -2015,15 +2257,16 @@ public class TuplesToPairsTranspilationPass: TranspilationPass {
 		}
 
 		// Ignore tuples in call expressions and for statements
-		let fixedParent = parent
-		if case let .expressionNode(value: parentExpression) = fixedParent {
-			guard !(parentExpression is CallExpression) else {
-				return tupleExpression
+		if let parent = parent {
+			if case let .expressionNode(value: parentExpression) = parent {
+				guard !(parentExpression is CallExpression) else {
+					return tupleExpression
+				}
 			}
-		}
-		else if case let .statementNode(value: parentStatement) = fixedParent {
-			guard !(parentStatement is ForEachStatement) else {
-				return tupleExpression
+			else if case let .statementNode(value: parentStatement) = parent {
+				guard !(parentStatement is ForEachStatement) else {
+					return tupleExpression
+				}
 			}
 		}
 
@@ -3175,6 +3418,7 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 				isImplicit: false),
 			getter: nil,
 			setter: nil,
+			access: nil,
 			isLet: true,
 			isImplicit: false,
 			isStatic: false,
@@ -3192,6 +3436,7 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 				isImplicit: false),
 			getter: nil,
 			setter: nil,
+			access: nil,
 			isLet: true,
 			isImplicit: false,
 			isStatic: false,
@@ -3245,7 +3490,7 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 			isPure: functionDeclaration.isPure,
 			extendsType: nil,
 			statements: newStatements,
-			access: nil,
+			access: "public",
 			annotations: "override open"))
 	}
 }
@@ -3427,6 +3672,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 			expression: nil,
 			getter: getter,
 			setter: nil,
+			access: nil,
 			isLet: false,
 			isImplicit: false,
 			isStatic: false,
@@ -3676,6 +3922,7 @@ public extension TranspilationPass {
 		ast = RenameOperatorsTranspilationPass(ast: ast, context: context).run()
 		ast = CallsToSuperclassInitializersTranspilationPass(ast: ast, context: context).run()
 		ast = OptionalsInConditionalCastsTranspilationPass(ast: ast, context: context).run()
+		ast = AccessModifiersTranspilationPass(ast: ast, context: context).run()
 
 		// - CapitalizeEnums has to be before IsOperatorsInSealedClasses
 		ast = CapitalizeEnumsTranspilationPass(ast: ast, context: context).run()

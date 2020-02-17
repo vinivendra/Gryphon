@@ -28,7 +28,7 @@ interface A {
 	val y: Int
 }
 
-open class B: A {
+internal open class B: A {
 	override var x: Int = 1
 	override var y: Int = 3
 	var z: Int = 0
@@ -46,7 +46,7 @@ internal fun insertFunction() {
 	println("func 5")
 }
 
-open class InsertClass {
+internal open class InsertClass {
 	var a: String = "class a"
 
 	var b: String = "class b"
@@ -57,7 +57,7 @@ open class InsertClass {
 
 	var e: String = "class e"
 
-	internal fun insertMethod() {
+	fun insertMethod() {
 		println("method 1")
 
 		println("method 2")
