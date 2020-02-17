@@ -76,6 +76,7 @@ class TestUtilities {
 
 	// MARK: - Test cases
 	static let testCasesForAcceptanceTest: List<String> = [
+		"access",
 		"assignments",
 		"classes",
 		"closures",

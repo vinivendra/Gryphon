@@ -74,7 +74,6 @@ class AcceptanceTest: XCTestCase {
 				}
 
 				// Load the previously stored kotlin code from file
-				let expectedOutput = try! Utilities.readFile(testCasePath.withExtension(.output))
 
 				XCTAssert(
 					compilationResult.standardError == "",
@@ -84,10 +83,24 @@ class AcceptanceTest: XCTestCase {
 					compilationResult.status == 0,
 					"Test \(testName): the compiler exited with value " +
 					"\(compilationResult.status).")
-				XCTAssert(
-					compilationResult.standardOutput == expectedOutput,
-					"Test \(testName): program failed to produce expected result. Diff:" +
-						TestUtilities.diff(compilationResult.standardOutput, expectedOutput))
+
+				// Files that don't output anything are just included here to ensure the compilation
+				// succeeds and have no file that contains the expected output (since there's no
+				// expected output).
+				let outputFilePath = testCasePath.withExtension(.output)
+				if Utilities.fileExists(at: outputFilePath) {
+					let expectedOutput = try! Utilities.readFile(outputFilePath)
+					XCTAssert(
+						compilationResult.standardOutput == expectedOutput,
+						"Test \(testName): program failed to produce expected result. Diff:" +
+							TestUtilities.diff(compilationResult.standardOutput, expectedOutput))
+				}
+				else {
+					XCTAssert(
+						compilationResult.standardOutput.isEmpty,
+						"Test \(testName): expected no output from program. Received output:" +
+							compilationResult.standardOutput)
+				}
 
 				print("\t- Done!")
 			}

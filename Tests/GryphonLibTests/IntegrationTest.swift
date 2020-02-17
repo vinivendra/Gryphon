@@ -82,11 +82,15 @@ class IntegrationTest: XCTestCase {
 			}
 		}
 
-		let hasOnlyNativeTypeWarnings =
-			Compiler.warnings.filter { !$0.contains("Native type") }.isEmpty
-		XCTAssert(hasOnlyNativeTypeWarnings)
+		let unexpectedWarnings = Compiler.warnings.filter {
+				!$0.contains("Native type") &&
+				!$0.contains("fileprivate declarations")
+			}
+		XCTAssert(unexpectedWarnings.isEmpty, "Unexpected warnings in integration tests:\n" +
+			"\(unexpectedWarnings.joined(separator: "\n\n"))")
 
-		if !hasOnlyNativeTypeWarnings || !Compiler.errors.isEmpty {
+		if !Compiler.errors.isEmpty {
+			XCTFail("🚨 Integration test found errors:\n")
 			Compiler.printErrorsAndWarnings()
 		}
 	}
