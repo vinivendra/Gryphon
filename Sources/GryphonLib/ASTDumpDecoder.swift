@@ -50,9 +50,14 @@ internal class ASTDumpDecoder {
 		}
 	}
 
-	//
+	///
+	/// For some reason (a bug in the Swift compiler) AST dumps can sometimes contain weird newlines
+	/// (i.e. middle of identifiers). This problem is handled by stripping all newlines from the AST
+	/// dump here, and having individual algorithms decode their strings without relying on
+	/// newlines for delimiters.
+	///
 	init(encodedString: String) {
-		self.buffer = encodedString
+		self.buffer = encodedString.replacingOccurrences(of: "\n", with: "")
 		self.currentIndex = buffer.startIndex
 	}
 
@@ -69,7 +74,7 @@ internal class ASTDumpDecoder {
 
 			let character = buffer[currentIndex]
 
-			if character != " " && character != "\n" {
+			if character != " " {
 				return
 			}
 
@@ -154,11 +159,6 @@ internal class ASTDumpDecoder {
 	/// function also checks to see if they're balanced and only exits when the last open parethesis
 	/// has been closed.
 	///
-	/// For some reason (a bug in the compiler) the identifier can sometimes be split in two by a
-	/// newline. Newlines that seem to occur normally are followed by a series of spaces, but these
-	/// buggy newlines are just followed by the rest of the identifier. So if the character
-	/// following newline is not a space, we assume that's what happened and keep reading the rest.
-	///
 	func readIdentifier() -> String {
 		var parenthesesLevel = 0
 
@@ -173,12 +173,6 @@ internal class ASTDumpDecoder {
 			else if character == ")" || character == ">" {
 				parenthesesLevel -= 1
 				if parenthesesLevel < 0 {
-					break
-				}
-			}
-			else if character == "\n" {
-				let nextCharacter = buffer[buffer.index(after: index)]
-				if nextCharacter == " " {
 					break
 				}
 			}
@@ -197,59 +191,54 @@ internal class ASTDumpDecoder {
 		}
 
 		let string = String(buffer[currentIndex..<index])
-		let cleanString = string.replacingOccurrences(of: "\n", with: "")
 
 		currentIndex = index
 
 		cleanLeadingWhitespace()
 
-		return cleanString
+		return string
 	}
 
 	///
 	/// Reads a list of identifiers. This is used to read a list of classes and/or protocols in
 	/// inheritance clauses, as in `class MyClass: A, B, C, D, E { }`.
-	/// This algorithm assumes an identifier list is always the last attribute in a subtree, and
-	/// thus always ends in whitespace. This may well not be true, and in that case this will have
-	/// to change.
-	///
-	/// Also prevents the newline bug (see the documentation for readIdentifier).
+	/// This algorithm assumes an identifier list is always separated by ", " and ends in a space
+	/// that isn't preceded by a comma.
 	///
 	func readIdentifierList() -> String {
 		defer { cleanLeadingWhitespace() }
+
+		var previousCharacterIsComma = false
 
 		var index = currentIndex
 		while true {
 			let character = buffer[index]
 
-			if character == ")" {
+			if character == " ", !previousCharacterIsComma {
 				break
 			}
 
-			if character == "\n" {
-				let nextCharacter = buffer[buffer.index(after: index)]
-				if nextCharacter == " " {
-					break
-				}
+			if character == "," {
+				previousCharacterIsComma = true
+			}
+			else {
+				previousCharacterIsComma = false
 			}
 
 			index = buffer.index(after: index)
 		}
 
 		let string = String(buffer[currentIndex..<index])
-		let cleanString = string.replacingOccurrences(of: "\n", with: "")
 
 		currentIndex = index
 
-		return cleanString
+		return string
 	}
 
 	///
 	/// Reads a key. A key can't have parentheses, single or double quotes, or whitespace in it
 	/// (expect for composed keys, as a special case below) and it must end with an '='. If the
 	/// string in the beginning of the buffer isn't a key, this function returns nil.
-
-	/// Also prevents the newline bug (see the documentation for readIdentifier).
 	///
 	func readKey() -> String? {
 		defer { cleanLeadingWhitespace() }
@@ -261,13 +250,6 @@ internal class ASTDumpDecoder {
 		var index = currentIndex
 		while true {
 			let character = buffer[index]
-
-			if character == "\n" {
-				let nextCharacter = buffer[buffer.index(after: index)]
-				if nextCharacter == " " {
-					return nil
-				}
-			}
 
 			guard character != "(",
 				character != ")",
@@ -298,19 +280,16 @@ internal class ASTDumpDecoder {
 		}
 
 		let string = String(buffer[currentIndex..<index])
-		let cleanString = string.replacingOccurrences(of: "\n", with: "")
 
 		// Skip the =
 		currentIndex = buffer.index(after: index)
 
-		return cleanString
+		return string
 	}
 
 	///
 	/// Reads a location. A location is a series of characters that can't be colons or parentheses
 	/// (usually it's a file path), followed by a colon, a number, another colon and another number.
-	///
-	/// Also prevents the newline bug (see the documentation for readIdentifier).
 	///
 	func readLocation() -> String {
 		defer { cleanLeadingWhitespace() }
@@ -353,18 +332,15 @@ internal class ASTDumpDecoder {
 
 		//
 		let string = String(buffer[currentIndex..<index])
-		let cleanString = string.replacingOccurrences(of: "\n", with: "")
 
 		currentIndex = index
-		return cleanString
+		return string
 	}
 
 	///
 	/// Reads a declaration location. A declaration location is a series of characters defining a
 	/// swift declaration, up to an '@'. After that comes a location, read by the `readLocation`
 	/// function.
-	///
-	/// Also prevents the newline bug (see the documentation for readIdentifier).
 	///
 	func readDeclarationLocation() -> String? {
 		defer { cleanLeadingWhitespace() }
@@ -379,14 +355,6 @@ internal class ASTDumpDecoder {
 
 		while index != buffer.endIndex {
 			let character = buffer[index]
-
-			if character == "\n" {
-				let nextCharacter = buffer[buffer.index(after: index)]
-				if nextCharacter == " " {
-					// Unexpected, this isn't a declaration location
-					return nil
-				}
-			}
 
 			guard character != " " else {
 				// Unexpected, this isn't a declaration location
@@ -407,19 +375,18 @@ internal class ASTDumpDecoder {
 		index = buffer.index(after: index)
 
 		// Ensure a location comes after
-		guard buffer[index] != " ", buffer[index] != "\n", buffer[index] != ")" else {
+		guard buffer[index] != " ", buffer[index] != ")" else {
 			return nil
 		}
 
 		//
 		let string = buffer[currentIndex..<index]
-		let cleanString = string.replacingOccurrences(of: "\n", with: "")
 
 		currentIndex = index
 
 		let location = readLocation()
 
-		return cleanString + location
+		return string + location
 	}
 
 	///
@@ -430,8 +397,6 @@ internal class ASTDumpDecoder {
 	/// A declaration may also contain a type followed by " extension.", as in
 	/// "Swift.(file).Int extension.+". In that case, the space before extension is included in the
 	/// declaration.
-	///
-	/// Also prevents the newline bug (see the documentation for readIdentifier).
 	///
 	func readDeclaration() -> String? {
 		defer { cleanLeadingWhitespace() }
@@ -457,21 +422,11 @@ internal class ASTDumpDecoder {
 				}
 			}
 			else if character == " " {
-				let endIndex = buffer.index(index, offsetBy: " extension.".count + 1)
-
-				let nextPart = buffer[index..<endIndex].replacingOccurrences(of: "\n", with: "")
-
-				if nextPart.hasPrefix(" extension.") {
+				if buffer[index...].hasPrefix(" extension.") {
 					index = buffer.index(after: index)
 					continue
 				}
 				else {
-					break
-				}
-			}
-			else if character == "\n" {
-				let nextCharacter = buffer[buffer.index(after: index)]
-				if nextCharacter == " " {
 					break
 				}
 			}
@@ -484,18 +439,15 @@ internal class ASTDumpDecoder {
 		}
 
 		let string = String(buffer[currentIndex..<index])
-		let cleanString = string.replacingOccurrences(of: "\n", with: "")
 
 		currentIndex = index
 
-		return cleanString
+		return string
 	}
 
 	///
 	/// Reads a double quoted string, taking care not to count double quotes that have been escaped
 	/// by a backslash.
-
-	/// Also prevents the newline bug (see the documentation for readIdentifier).
 	///
 	func readDoubleQuotedString() -> String {
 		defer { cleanLeadingWhitespace() }
@@ -533,13 +485,12 @@ internal class ASTDumpDecoder {
 		}
 
 		let string = String(buffer[firstContentsIndex..<index])
-		let cleanString = string.replacingOccurrences(of: "\n", with: "")
 
 		// Skip the closing "
 		index = buffer.index(after: index)
 		currentIndex = index
 
-		return cleanString
+		return string
 	}
 
 	///
@@ -547,8 +498,6 @@ internal class ASTDumpDecoder {
 	/// such as `'',foo,'','',bar`. In this case, we want to parse the whole thing, not just the
 	/// initial empty single-quoted string, so this function calls `readStandaloneAttribute` if it
 	/// finds a comma in order to parse the rest of the list.
-	///
-	/// Also prevents the newline bug (see the documentation for readIdentifier).
 	///
 	func readSingleQuotedString() -> String {
 		defer { cleanLeadingWhitespace() }
@@ -572,7 +521,6 @@ internal class ASTDumpDecoder {
 		else {
 			string = String(buffer[firstContentsIndex..<index])
 		}
-		let cleanString = string.replacingOccurrences(of: "\n", with: "")
 
 		// Skip the closing '
 		index = buffer.index(after: index)
@@ -584,17 +532,15 @@ internal class ASTDumpDecoder {
 		if buffer[currentIndex] == "," {
 			currentIndex = nextIndex()
 			otherString = readStandaloneAttribute()
-			return cleanString + "," + otherString
+			return string + "," + otherString
 		}
 		else {
-			return cleanString
+			return string
 		}
 	}
 
 	///
 	/// Reads a string inside brackets and returns the string (without the brackets).
-	///
-	/// Also prevents the newline bug (see the documentation for readIdentifier).
 	///
 	func readStringInBrackets() -> String {
 		defer { cleanLeadingWhitespace() }
@@ -622,19 +568,16 @@ internal class ASTDumpDecoder {
 		}
 
 		let string = String(buffer[firstContentsIndex..<index])
-		let cleanString = string.replacingOccurrences(of: "\n", with: "")
 
 		// Skip the closing ]
 		index = buffer.index(after: index)
 		currentIndex = index
 
-		return cleanString
+		return string
 	}
 
 	///
 	/// Reads a string inside angle brackets and returns the string (without the brackets).
-	///
-	/// Also prevents the newline bug (see the documentation for readIdentifier).
 	///
 	func readStringInAngleBrackets() -> String {
 		defer { cleanLeadingWhitespace() }
@@ -664,11 +607,10 @@ internal class ASTDumpDecoder {
 		index = buffer.index(after: index)
 
 		let string = String(buffer[currentIndex..<index])
-		let cleanString = string.replacingOccurrences(of: "\n", with: "")
 
 		currentIndex = index
 
-		return cleanString
+		return string
 	}
 }
 
