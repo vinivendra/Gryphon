@@ -1684,8 +1684,7 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 		return result
 	}
 
-	// TODO: Add access to structs
-	// TODO: Process extensions, companions, and protocols
+	// TODO: Process extensions and companions
 	override func replaceStructDeclaration( // gryphon annotation: override
 		_ structDeclaration: StructDeclaration)
 		-> MutableList<Statement>
@@ -1723,6 +1722,19 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 			elements: enumDeclaration.elements,
 			members: enumDeclaration.members,
 			isImplicit: enumDeclaration.isImplicit))
+		accessModifiersStack.removeLast()
+		return result
+	}
+
+	override func replaceProtocolDeclaration( // gryphon annotation: override
+		_ protocolDeclaration: ProtocolDeclaration)
+		-> MutableList<Statement>
+	{
+		// Push the non-existent "protocol" access modifier as a special marker so that inner
+		// declarations will omit their own access modifiers. This is because declarations inside
+		// a protocol always inherit the procotol's access modifier.
+		accessModifiersStack.append("protocol")
+		let result = super.replaceProtocolDeclaration(protocolDeclaration)
 		accessModifiersStack.removeLast()
 		return result
 	}
@@ -1845,6 +1857,12 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 			// inner one hasn't
 			let outerModifier = accessModifiersStack.compactMap { $0 }.last
 			let innerModifier = swiftModifier
+
+			// The "protocol" string is used as a special value when we're translating members of a
+			// protocol (which should never have explicit access modifiers).
+			if outerModifier == "protocol" {
+				return nil
+			}
 
 			// Inner declarations can't be accurately translated as fileprivate. Default to the next
 			// most open modifier (internal) so the Kotlin code will compile, but raise a warning.
