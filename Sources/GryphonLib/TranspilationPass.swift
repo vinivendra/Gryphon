@@ -48,6 +48,14 @@ public class TranspilationPass {
 		return parents.secondToLast
 	}
 
+	/// Is the current node that's being replaced a statement on the main function or a declaration?
+	internal var isReplacingStatements = false
+
+	/// Top-level nodes are those outside the main function and with no parents.
+	internal var isTopLevelNode: Bool {
+		return parent == nil && !isReplacingStatements
+	}
+
 	// MARK: - Interface
 	init(ast: GryphonAST, context: TranspilationContext) {
 		self.ast = ast
@@ -55,8 +63,11 @@ public class TranspilationPass {
 	}
 
 	func run() -> GryphonAST { // gryphon annotation: open
+		isReplacingStatements = true
 		let replacedStatements = replaceStatements(ast.statements)
+		isReplacingStatements = false
 		let replacedDeclarations = replaceStatements(ast.declarations)
+
 		return GryphonAST(
 			sourceFile: ast.sourceFile,
 			declarations: replacedDeclarations,
@@ -1657,9 +1668,12 @@ public class OptionalsInConditionalCastsTranspilationPass: TranspilationPass {
 ///       `internal` class is treated as an `internal` property).
 ///   - inner declarations default to `public`, but because they can't be more visible than their
 ///       parents, in practice they default to the modifier of their parents.
+///
 public class AccessModifiersTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
 	// gryphon insert:     super(ast, context) { }
+
+	// TODO: Translate access modifiers for extensions (currently not printed in the AST dump)
 
 	/// A stack containing access modifiers from parent declarations. Modifiers in this stack should
 	/// already be processed.
@@ -1684,7 +1698,6 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 		return result
 	}
 
-	// TODO: Process extensions and companions
 	override func replaceStructDeclaration( // gryphon annotation: override
 		_ structDeclaration: StructDeclaration)
 		-> MutableList<Statement>
@@ -1757,6 +1770,12 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 					forModifier: variableDeclaration.access,
 					declaration: variableDeclaration)
 			}
+		}
+		else if isTopLevelNode {
+			// Top-level variable declarations keep their access modifiers
+			newAccess = getAccessModifier(
+				forModifier: variableDeclaration.access,
+				declaration: variableDeclaration)
 		}
 
 		accessModifiersStack.append(newAccess)

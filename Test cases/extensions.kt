@@ -13,11 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-val String.isString: Boolean
+internal val String.isString: Boolean
 	get() {
 		return true
 	}
-val String.world: String
+internal val String.world: String
 	get() {
 		return "World!"
 	}
