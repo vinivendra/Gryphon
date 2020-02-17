@@ -388,12 +388,21 @@ public class KotlinTranslator {
 		throws -> Translation
 	{
 		let result = Translation(range: protocolDeclaration.range)
-		result.append("\(indentation)interface \(protocolDeclaration.protocolName) {\n")
+		result.append("\(indentation)")
+
+		if let access = protocolDeclaration.access {
+			result.append("\(access) ")
+		}
+
+		result.append("interface \(protocolDeclaration.protocolName) {\n")
+
 		let contents = try translateSubtrees(
 			protocolDeclaration.members,
 			withIndentation: increaseIndentation(indentation))
 		result.append(contents)
+
 		result.append("\(indentation)}\n")
+
 		return result
 	}
 

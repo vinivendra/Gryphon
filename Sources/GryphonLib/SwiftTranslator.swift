@@ -379,11 +379,14 @@ public class SwiftTranslator {
 				ast: protocolDeclaration, translator: self)
 		}
 
+		let access = protocolDeclaration["access"]
+
 		let members = try translateSubtreesOf(protocolDeclaration)
 
 		return ProtocolDeclaration(
 			range: getRangeRecursively(ofNode: protocolDeclaration),
 			protocolName: protocolName,
+			access: access,
 			members: members)
 	}
 

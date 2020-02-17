@@ -23,7 +23,7 @@ internal fun f(a: Int = 0, b: Int = 1) {
 	println(a + b)
 }
 
-interface A {
+internal interface A {
 	val x: Int
 	val y: Int
 }
