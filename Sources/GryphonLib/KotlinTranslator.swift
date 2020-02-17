@@ -404,8 +404,14 @@ public class KotlinTranslator {
 	{
 		let translatedType = translateType(typealiasDeclaration.typeName)
 		let result = Translation(range: typealiasDeclaration.range)
-		result.append(
-			"\(indentation)typealias \(typealiasDeclaration.identifier) = \(translatedType)\n")
+		result.append(indentation)
+
+		if let access = typealiasDeclaration.access {
+			result.append("\(access) ")
+		}
+
+		result.append("typealias \(typealiasDeclaration.identifier) = \(translatedType)\n")
+
 		return result
 	}
 

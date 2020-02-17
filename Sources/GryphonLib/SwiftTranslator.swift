@@ -435,10 +435,13 @@ public class SwiftTranslator {
 			identifier = typealiasDeclaration.standaloneAttributes[0]
 		}
 
+		let access = typealiasDeclaration["access"]
+
 		return TypealiasDeclaration(
 			range: getRangeRecursively(ofNode: typealiasDeclaration),
 			identifier: identifier,
 			typeName: typealiasDeclaration["type"]!,
+			access: access,
 			isImplicit: isImplicit)
 	}
 

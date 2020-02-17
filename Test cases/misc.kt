@@ -13,15 +13,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-typealias A = Int
+internal typealias A = Int
 
 internal open class B {
 	open class C {
 	}
 }
 
-typealias BC = B.C
-typealias ListInt = List<Int>
+internal typealias BC = B.C
+internal typealias ListInt = List<Int>
 
 internal fun f(a: Int?) {
 	a ?: return

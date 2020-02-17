@@ -1793,6 +1793,25 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 		return result
 	}
 
+	override func replaceTypealiasDeclaration( // gryphon annotation: override
+		_ typealiasDeclaration: TypealiasDeclaration)
+		-> MutableList<Statement>
+	{
+		let newAccess = getAccessModifier(
+			forModifier: typealiasDeclaration.access,
+			declaration: typealiasDeclaration)
+
+		accessModifiersStack.append(newAccess)
+		let result = super.replaceTypealiasDeclaration(TypealiasDeclaration(
+			range: typealiasDeclaration.range,
+			identifier: typealiasDeclaration.identifier,
+			typeName: typealiasDeclaration.typeName,
+			access: newAccess,
+			isImplicit: typealiasDeclaration.isImplicit))
+		accessModifiersStack.removeLast()
+		return result
+	}
+
 	/// Receives an access modifier from a Swift declaration and returns the modifier that should be
 	/// on the Kotlin translation.
 	private func getAccessModifier(

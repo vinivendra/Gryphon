@@ -219,17 +219,20 @@ public class ExpressionStatement: Statement {
 public class TypealiasDeclaration: Statement {
 	let identifier: String
 	let typeName: String
+	let access: String?
 	let isImplicit: Bool
 
 	init(
 		range: SourceFileRange?,
 		identifier: String,
 		typeName: String,
+		access: String?,
 		isImplicit: Bool)
 	{
 		self.identifier = identifier
 		self.typeName = typeName
 		self.isImplicit = isImplicit
+		self.access = access
 		super.init(range: range, name: "TypealiasDeclaration".capitalizedAsCamelCase())
 	}
 
@@ -237,12 +240,14 @@ public class TypealiasDeclaration: Statement {
 		return [
 			isImplicit ? PrintableTree("implicit") : nil,
 			PrintableTree("identifier: \(identifier)"),
-			PrintableTree("typeName: \(typeName)"), ]
+			PrintableTree("typeName: \(typeName)"),
+			PrintableTree.initOrNil(access), ]
 	}
 
 	public static func == (lhs: TypealiasDeclaration, rhs: TypealiasDeclaration) -> Bool {
 		return lhs.identifier == rhs.identifier &&
 			lhs.typeName == rhs.typeName &&
+			lhs.access == rhs.access &&
 			lhs.isImplicit == rhs.isImplicit
 	}
 }
