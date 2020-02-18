@@ -97,7 +97,7 @@ class BootstrappingTest: XCTestCase {
 			}
 		}
 
-		XCTAssertFalse(Compiler.hasErrorsOrWarnings())
+		XCTAssertFalse(Compiler.hasIssues())
 		Compiler.printErrorsAndWarnings()
 	}
 
@@ -149,7 +149,7 @@ class BootstrappingTest: XCTestCase {
 			}
 		}
 
-		XCTAssertFalse(Compiler.hasErrorsOrWarnings())
+		XCTAssertFalse(Compiler.hasIssues())
 		Compiler.printErrorsAndWarnings()
 	}
 
@@ -201,7 +201,7 @@ class BootstrappingTest: XCTestCase {
 			}
 		}
 
-		XCTAssertFalse(Compiler.hasErrorsOrWarnings())
+		XCTAssertFalse(Compiler.hasIssues())
 		Compiler.printErrorsAndWarnings()
 	}
 
@@ -255,7 +255,7 @@ class BootstrappingTest: XCTestCase {
 			}
 		}
 
-		XCTAssertFalse(Compiler.hasErrorsOrWarnings())
+		XCTAssertFalse(Compiler.hasIssues())
 		Compiler.printErrorsAndWarnings()
 	}
 

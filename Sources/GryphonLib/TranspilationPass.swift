@@ -3147,7 +3147,7 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 			"MutableList, List, MutableMap or Map instead."
 			Compiler.handleWarning(
 				message: message,
-				details: expression.prettyDescription(),
+				astDetails: expression.prettyDescription(),
 				sourceFile: ast.sourceFile,
 				sourceFileRange: expression.range)
 		}
@@ -3227,7 +3227,6 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 		for range in sideEffectsRanges {
 			Compiler.handleWarning(
 				message: "If condition may have side effects.",
-				details: "",
 				sourceFile: ast.sourceFile,
 				sourceFileRange: range)
 		}
@@ -3584,7 +3583,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 			{
 				Compiler.handleWarning(
 					message: "Failed to create init(rawValue:)",
-					details: "Unable to get all raw values in enum declaration.",
+					astDetails: "Unable to get all raw values in enum declaration.",
 					sourceFile: ast.sourceFile,
 					sourceFileRange: enumDeclaration.range)
 				return super.replaceEnumDeclaration(enumDeclaration)

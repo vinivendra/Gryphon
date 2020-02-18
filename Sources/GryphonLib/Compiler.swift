@@ -42,36 +42,83 @@ public class Compiler {
 	public static var shouldStopAtFirstError = false
 	public static var shouldAvoidUnicodeCharacters = false
 
-	public private(set) static var errors: MutableList<Error> = []
-	public private(set) static var warnings: MutableList<String> = []
+	// TODO: handle translation of private(set)
+	internal static var issues: MutableList<CompilerIssue> = []
 
-	internal static func handleError(_ error: Error) throws {
+	internal static var numberOfErrors: Int {
+		return issues.filter { $0.isError }.count
+	}
+	internal static var numberOfWarnings: Int {
+		return issues.filter { !$0.isError }.count
+	}
+
+	internal static func handleError(
+		message: String,
+		astDetails: String = "",
+		sourceFile: SourceFile?,
+		sourceFileRange: SourceFileRange?)
+		throws
+	{
+		let issue = CompilerIssue(
+			message: message,
+			astDetails: astDetails,
+			sourceFile: sourceFile,
+			sourceFileRange: sourceFileRange,
+			isError: true)
+
 		if Compiler.shouldStopAtFirstError {
-			throw error
+			throw GryphonError(errorMessage: issue.fullMessage)
 		}
 		else {
-			Compiler.errors.append(error)
+			Compiler.issues.append(issue)
 		}
 	}
 
 	internal static func handleWarning(
 		message: String,
-		details: String = "",
+		astDetails: String = "",
 		sourceFile: SourceFile?,
 		sourceFileRange: SourceFileRange?)
 	{
-		Compiler.warnings.append(
-			Compiler.createErrorOrWarningMessage(
-				message: message,
-				details: details,
-				sourceFile: sourceFile,
-				sourceFileRange: sourceFileRange,
-				isError: false))
+		// Check if there's a comment muting warnings in this line in the source code
+		if let sourceFileRange = sourceFileRange {
+			if let comment = sourceFile?.getTranslationCommentFromLine(sourceFileRange.lineStart) {
+				if comment.key == .mute {
+					return
+				}
+			}
+		}
+
+		Compiler.issues.append(CompilerIssue(
+			message: message,
+			astDetails: astDetails,
+			sourceFile: sourceFile,
+			sourceFileRange: sourceFileRange,
+			isError: false))
 	}
 
-	public static func clearErrorsAndWarnings() {
-		errors = []
-		warnings = []
+	public static func hasIssues() -> Bool {
+		return !issues.isEmpty
+	}
+
+	public static func clearIssues() {
+		issues = []
+	}
+
+	public static func printErrorsAndWarnings() {
+		let sortedIssues = issues.sorted { a, b in
+				a.isBeforeIssueInLines(b)
+			}.sorted { a, b in
+				a.isBeforeIssueInSourceFile(b)
+			}
+
+		for issue in sortedIssues {
+			print(issue.fullMessage)
+		}
+
+		if hasIssues() {
+			print("Total: \(numberOfErrors) errors and \(numberOfWarnings) warnings.")
+		}
 	}
 
 	//
@@ -261,82 +308,54 @@ public class Compiler {
 		}
 		return try runCompiledProgram(inFolder: outputFolder)
 	}
+}
 
-	public static func printErrorsAndWarnings() {
-		if !errors.isEmpty {
-			print("Errors:")
-			for error in errors {
-				print(error)
-			}
-		}
+public struct GryphonError: Error, CustomStringConvertible {
+	let errorMessage: String
 
-		if !warnings.isEmpty {
-			print("Warnings:")
-			for warning in warnings {
-				print(warning)
-			}
-		}
-
-		if hasErrorsOrWarnings() {
-			print("Total: \(errors.count) errors and \(warnings.count) warnings.")
-		}
-	}
-
-	public static func hasErrorsOrWarnings() -> Bool {
-		return !errors.isEmpty || !warnings.isEmpty
-	}
-
-	public static func printErrorStatistics() {
-		print("Errors: \(Compiler.errors.count). Warnings: \(Compiler.warnings.count).")
-
-		let swiftASTDumpErrors = errors.compactMap { $0 as? SwiftTranslatorError }
-		if !swiftASTDumpErrors.isEmpty {
-			print("Swift AST translator failed to translate:")
-
-			let swiftASTDumpHistogram = swiftASTDumpErrors.group { $0.ast.name }
-
-			let sortedHistogram = swiftASTDumpHistogram.toList().sorted(by: { a, b in
-					a.1.count > b.1.count
-				})
-
-			for tuple in sortedHistogram {
-				let astName = tuple.0
-				let errorArray = tuple.1
-				print("- \(errorArray.count) \(astName)s")
-			}
-		}
-
-		let kotlinTranslatorErrors = errors.compactMap { $0 as? KotlinTranslatorError }
-		if !kotlinTranslatorErrors.isEmpty {
-			print("Kotlin translator failed to translate:")
-
-			let kotlinTranslatorHistogram = kotlinTranslatorErrors.group { $0.ast.name }
-
-			let sortedHistogram = kotlinTranslatorHistogram.sorted(by: { a, b in // gryphon ignore
-				a.value.count > b.value.count
-			})
-
-			// gryphon insert: val sortedHistogram = kotlinTranslatorHistogram.entries
-			// gryphon insert:     .toMutableList().sorted(isAscending = { a, b ->
-			// gryphon insert:         a.value.size > b.value.size
-			// gryphon insert:     })
-
-			for tuple in sortedHistogram {
-				let astName = tuple.key
-				let errorArray = tuple.value
-				print("- \(errorArray.count) \(astName)s")
-			}
-		}
+	public var description: String {
+		return errorMessage
 	}
 }
 
-extension Compiler {
-	static func createErrorOrWarningMessage(
+/// A compiler error or warning, including information needed to sort it before printing
+/// (sourceFile, range and isError) and the full message that should be printed.
+internal class CompilerIssue {
+	/// The complete message, including source file and range information, that should be printed
+	let fullMessage: String
+	/// `true` if this is an error, `false` if this is a warning.
+	let isError: Bool
+	let sourceFile: SourceFile?
+	let range: SourceFileRange?
+
+	/// Initializes an issue, using the given information to create the message to be printed.
+	/// The `message` parameter is the short message in the issue header (i.e. "Unrecognized
+	/// identifier"); the details can be verbose, they will be printed later and won't show in Xcode
+	/// (i.e. "while translating the AST:\n\(ast.prettyPrint())").
+	init(
 		message: String,
-		details: String,
+		astDetails: String,
 		sourceFile: SourceFile?,
 		sourceFileRange: SourceFileRange?,
-		isError: Bool = true) -> String
+		isError: Bool)
+	{
+		self.fullMessage = CompilerIssue.createMessage(
+			message: message,
+			astDetails: astDetails,
+			sourceFile: sourceFile,
+			sourceFileRange: sourceFileRange,
+			isError: isError)
+		self.isError = isError
+		self.sourceFile = sourceFile
+		self.range = sourceFileRange
+	}
+
+	private static func createMessage(
+		message: String,
+		astDetails: String,
+		sourceFile: SourceFile?,
+		sourceFileRange: SourceFileRange?,
+		isError: Bool) -> String
 	{
 		let errorOrWarning = isError ? "error" : "warning"
 
@@ -372,16 +391,47 @@ extension Compiler {
 					"\(sourceFileRange.columnStart): \(errorOrWarning): \(message)\n" +
 					"\(sourceFileString)\n" +
 					"\(underlineString)\n" +
-					details
+					astDetails
 			}
 			else {
 				return "\(absolutePath): \(errorOrWarning): \(message)\n" +
-					details
+					astDetails
 			}
 		}
 		else {
 			return "\(errorOrWarning): \(message)\n" +
-				details
+				astDetails
 		}
 	}
+
+	/// Comparison function for ordering issues with smaller lines first, and issues with no lines
+	/// last (i.e. issues where the `range` is `nil`).
+	func isBeforeIssueInLines(_ otherIssue: CompilerIssue) -> Bool {
+		if let thisLine = self.range?.lineStart {
+			if let otherLine = otherIssue.range?.lineStart {
+				return thisLine < otherLine
+			}
+			else {
+				return true
+			}
+		}
+
+		return false
+	}
+
+	/// Comparison function for ordering issues alphabetically by source file path, and issues with
+	/// no source files last.
+	func isBeforeIssueInSourceFile(_ otherIssue: CompilerIssue) -> Bool {
+		if let thisPath = self.sourceFile?.path {
+			if let otherPath = otherIssue.sourceFile?.path {
+				return thisPath < otherPath
+			}
+			else {
+				return true
+			}
+		}
+
+		return false
+	}
+
 }

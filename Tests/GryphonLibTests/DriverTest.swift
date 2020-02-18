@@ -105,7 +105,7 @@ class DriverTest: XCTestCase {
 			XCTFail("🚨 Test failed with error:\n\(error)")
 		}
 
-		XCTAssertFalse(Compiler.hasErrorsOrWarnings())
+		XCTAssertFalse(Compiler.hasIssues())
 		Compiler.printErrorsAndWarnings()
 	}
 
@@ -114,7 +114,7 @@ class DriverTest: XCTestCase {
 			let testCasePath = TestUtilities.testCasesPath + "errors.swift"
 
 			//
-			Compiler.clearErrorsAndWarnings()
+			Compiler.clearIssues()
 
 			_ = try Driver.run(withArguments:
 				["-skipASTDumps",
@@ -124,10 +124,10 @@ class DriverTest: XCTestCase {
 				 "-q", "-Q",
 				 testCasePath, ])
 
-			XCTAssert(Compiler.errors.count == 2)
+			XCTAssert(Compiler.numberOfErrors == 2)
 
 			//
-			Compiler.clearErrorsAndWarnings()
+			Compiler.clearIssues()
 
 			_ = try Driver.run(withArguments:
 				["-skipASTDumps",
@@ -143,7 +143,7 @@ class DriverTest: XCTestCase {
 			// If the Driver threw an error then it's working correctly.
 		}
 
-		Compiler.clearErrorsAndWarnings()
+		Compiler.clearIssues()
 	}
 
 	func testIndentation() {
@@ -197,7 +197,7 @@ class DriverTest: XCTestCase {
 			XCTFail("🚨 Test failed with error:\n\(error)")
 		}
 
-		XCTAssertFalse(Compiler.hasErrorsOrWarnings())
+		XCTAssertFalse(Compiler.hasIssues())
 		Compiler.printErrorsAndWarnings()
 	}
 }

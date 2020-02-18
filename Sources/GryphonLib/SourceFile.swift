@@ -60,6 +60,7 @@ public class SourceFile {
 		case inspect // TODO: test
 		case multiline // TODO: test
 		case pure // TODO: test
+		case mute
 	}
 
 	public struct TranslationComment {

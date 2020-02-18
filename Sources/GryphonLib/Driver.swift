@@ -44,7 +44,6 @@ public class Driver {
 		"-q",
 		"-avoid-unicode",
 		"-verbose",
-		"-summarize-errors",
 		"-sync",
 	]
 
@@ -288,15 +287,10 @@ public class Driver {
 		withArguments arguments: MutableList<String>) throws -> Any?
 	{
 		defer {
-			if arguments.contains("-summarize-errors") {
-				Compiler.printErrorStatistics()
-			}
-			else {
-				Compiler.printErrorsAndWarnings()
-			}
+			Compiler.printErrorsAndWarnings()
 		}
 
-		Compiler.clearErrorsAndWarnings()
+		Compiler.clearIssues()
 
 		// Parse arguments
 		Compiler.shouldLogProgress(if: arguments.contains("-verbose"))
@@ -818,8 +812,6 @@ public class Driver {
 		      ↪️  -avoid-unicode      Avoid using Unicode arrows and emojis in some
 		            places.
 		      ↪️  -verbose            Print more information.
-		      ↪️  -summarize-errors   Print a summary of the transpilation errors and
-		            warnings.
 
 		      ↪️  -sync               Do not use concurrency.
 		"""

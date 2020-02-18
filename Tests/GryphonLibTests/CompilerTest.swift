@@ -52,30 +52,30 @@ class CompilerTest: XCTestCase {
 			Compiler.shouldStopAtFirstError = false
 
 			//
-			try Compiler.handleError(TestError())
+			try Compiler.handleError(message: "", sourceFile: nil, sourceFileRange: nil)
 
-			XCTAssert(Compiler.hasErrorsOrWarnings())
-			XCTAssertFalse(Compiler.errors.isEmpty)
-			XCTAssert(Compiler.warnings.isEmpty)
+			XCTAssert(Compiler.hasIssues())
+			XCTAssertFalse(Compiler.numberOfErrors == 0)
+			XCTAssert(Compiler.numberOfWarnings == 0)
 
-			Compiler.clearErrorsAndWarnings()
+			Compiler.clearIssues()
 
-			XCTAssertFalse(Compiler.hasErrorsOrWarnings())
-			XCTAssert(Compiler.errors.isEmpty)
-			XCTAssert(Compiler.warnings.isEmpty)
+			XCTAssertFalse(Compiler.hasIssues())
+			XCTAssert(Compiler.numberOfErrors == 0)
+			XCTAssert(Compiler.numberOfWarnings == 0)
 
 			//
 			Compiler.handleWarning(message: "", sourceFile: nil, sourceFileRange: nil)
 
-			XCTAssert(Compiler.hasErrorsOrWarnings())
-			XCTAssert(Compiler.errors.isEmpty)
-			XCTAssertFalse(Compiler.warnings.isEmpty)
+			XCTAssert(Compiler.hasIssues())
+			XCTAssert(Compiler.numberOfErrors == 0)
+			XCTAssertFalse(Compiler.numberOfWarnings == 0)
 
-			Compiler.clearErrorsAndWarnings()
+			Compiler.clearIssues()
 
-			XCTAssertFalse(Compiler.hasErrorsOrWarnings())
-			XCTAssert(Compiler.errors.isEmpty)
-			XCTAssert(Compiler.warnings.isEmpty)
+			XCTAssertFalse(Compiler.hasIssues())
+			XCTAssert(Compiler.numberOfErrors == 0)
+			XCTAssert(Compiler.numberOfWarnings == 0)
 		}
 		catch let error {
 			XCTFail("🚨 Test failed with error:\n\(error)")
@@ -93,12 +93,12 @@ class CompilerTest: XCTestCase {
 			columnEnd: 5)
 
 		//
-		let errorMessage = Compiler.createErrorOrWarningMessage(
+		let errorMessage = CompilerIssue(
 			message: "My error message",
-			details: "Some details",
+			astDetails: "Some details",
 			sourceFile: sourceFile,
 			sourceFileRange: sourceFileRange,
-			isError: true)
+			isError: true).fullMessage
 
 		let errorMessageWithRelativePath =
 			errorMessage.dropFirst(Utilities.getCurrentFolder().count + 1)
@@ -113,12 +113,12 @@ class CompilerTest: XCTestCase {
 			""")
 
 		//
-		let warningMessage = Compiler.createErrorOrWarningMessage(
+		let warningMessage = CompilerIssue(
 			message: "My warning message",
-			details: "Some details",
+			astDetails: "Some details",
 			sourceFile: sourceFile,
 			sourceFileRange: sourceFileRange,
-			isError: false)
+			isError: false).fullMessage
 
 		let warningMessageWithRelativePath =
 			warningMessage.dropFirst(Utilities.getCurrentFolder().count + 1)

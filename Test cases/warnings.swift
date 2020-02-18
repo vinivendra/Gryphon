@@ -19,6 +19,7 @@
 // gryphon output: Test cases/Bootstrap Outputs/warnings.gryphonAST
 // gryphon output: Test cases/Bootstrap Outputs/warnings.kt
 
+// Test warnings for mutable value types
 struct UnsupportedStruct {
 	let immutableVariable = 0
 	var mutableVariable = 0
@@ -40,3 +41,15 @@ enum UnsupportedEnum {
 		return 0
 	}
 }
+
+// Test warnings for native declarations
+let nativeArray: [Int] = []
+let nativeDictionary: [Int: Int] = [:]
+
+// Test warnings for nested fileprivate members
+class MyClass {
+	fileprivate var filePrivateVariable: Int = 0
+}
+
+// Test muting warnings
+let noWarnings: [Int] = [] // gryphon mute

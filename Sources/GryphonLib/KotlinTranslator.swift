@@ -28,6 +28,7 @@ public class KotlinTranslator {
 
 	// MARK: - Properties
 	private let context: TranspilationContext
+	private var sourceFile: SourceFile?
 
 	// MARK: - Interface
 
@@ -35,13 +36,15 @@ public class KotlinTranslator {
 		self.context = context
 	}
 
-	public func translateAST(_ sourceFile: GryphonAST) throws -> Translation {
+	public func translateAST(_ gryphonAST: GryphonAST) throws -> Translation {
+		sourceFile = gryphonAST.sourceFile
+
 		let declarationsTranslation =
-			try translateSubtrees(sourceFile.declarations, withIndentation: "")
+			try translateSubtrees(gryphonAST.declarations, withIndentation: "")
 
 		let indentation = increaseIndentation("")
 		let statementsTranslation =
-			try translateSubtrees(sourceFile.statements, withIndentation: indentation)
+			try translateSubtrees(gryphonAST.statements, withIndentation: indentation)
 
 		let result = declarationsTranslation
 
@@ -2128,32 +2131,25 @@ public class KotlinTranslator {
 	private func decreaseIndentation(_ indentation: String) -> String {
 		return String(indentation.dropLast(self.context.indentationString.count))
 	}
-}
 
-// MARK: - Error handling
-
-struct KotlinTranslatorError: Error, CustomStringConvertible {
-	let errorMessage: String
-	let ast: Statement
-
-	public var description: String {
+	private func unexpectedASTStructureError(
+		_ errorMessage: String,
+		AST ast: Statement)
+		throws -> Translation
+	{
 		var nodeDescription = ""
 		ast.prettyPrint(horizontalLimit: 100) {
 			nodeDescription += $0
 		}
 
-		return "Error: failed to translate Gryphon AST into Kotlin.\n" +
-			errorMessage + ".\n" +
-			"Thrown when translating the following AST node:\n\(nodeDescription)"
-	}
-}
+		let message = "failed to translate Gryphon AST into Kotlin: " + errorMessage + "."
+		let astDetails = "Thrown when translating the following AST node:\n\(nodeDescription)"
 
-func unexpectedASTStructureError(
-	_ errorMessage: String,
-	AST ast: Statement)
-	throws -> Translation
-{
-	let error = KotlinTranslatorError(errorMessage: errorMessage, ast: ast)
-	try Compiler.handleError(error)
-	return Translation(range: ast.range, string: KotlinTranslator.errorTranslation)
+		try Compiler.handleError(
+			message: message,
+			astDetails: astDetails,
+			sourceFile: sourceFile,
+			sourceFileRange: ast.range)
+		return Translation(range: ast.range, string: KotlinTranslator.errorTranslation)
+	}
 }

@@ -44,11 +44,13 @@ class IntegrationTest: XCTestCase {
 	public func runAllTests() { // gryphon annotation: override
 		IntegrationTest.setUp()
 		test()
+		warningTest()
 	}
 
 	/// Tests to be run when using Swift on Linux
 	static var allTests = [ // gryphon ignore
 		("test", test),
+		("warningTest", warningTest),
 	]
 
 	// MARK: - Tests
@@ -82,16 +84,54 @@ class IntegrationTest: XCTestCase {
 			}
 		}
 
-		let unexpectedWarnings = Compiler.warnings.filter {
-				!$0.contains("Native type") &&
-				!$0.contains("fileprivate declarations")
+		let unexpectedWarnings = Compiler.issues.filter {
+				!$0.isError &&
+				!$0.fullMessage.contains("Native type") &&
+				!$0.fullMessage.contains("fileprivate declarations")
 			}
 		XCTAssert(unexpectedWarnings.isEmpty, "Unexpected warnings in integration tests:\n" +
-			"\(unexpectedWarnings.joined(separator: "\n\n"))")
+			"\(unexpectedWarnings.map { $0.fullMessage }.joined(separator: "\n\n"))")
 
-		if !Compiler.errors.isEmpty {
+		if Compiler.numberOfErrors != 0 {
 			XCTFail("🚨 Integration test found errors:\n")
 			Compiler.printErrorsAndWarnings()
+		}
+	}
+
+	func warningTest() {
+		do {
+			Compiler.clearIssues()
+
+			// Generate kotlin code using the whole compiler
+			let testCasePath = TestUtilities.testCasesPath + "warnings"
+			let astDumpFilePath =
+				SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: testCasePath)
+			_ = try Compiler.transpileKotlinCode(
+				fromASTDumpFiles: [astDumpFilePath],
+				withContext: TranspilationContext(indentationString: "\t")).first!
+
+			Compiler.printErrorsAndWarnings()
+
+			XCTAssert(Compiler.numberOfErrors == 0)
+
+			// Make sure the comment for muting warnings is working
+			XCTAssert(Compiler.numberOfWarnings == 6)
+
+			XCTAssertEqual(
+				Compiler.issues.filter { $0.fullMessage.contains("mutable variables") }.count,
+				1)
+			XCTAssertEqual(
+				Compiler.issues.filter { $0.fullMessage.contains("mutating methods") }.count,
+				2)
+			XCTAssertEqual(
+				Compiler.issues.filter { $0.fullMessage.contains("Native type") }.count,
+				2)
+			XCTAssertEqual(
+				Compiler.issues.filter { $0.fullMessage.contains("fileprivate") }.count,
+				1)
+		}
+		catch let error {
+			XCTFail("🚨 Test failed with error:\n\(error)")
 		}
 	}
 }
