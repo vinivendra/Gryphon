@@ -1772,6 +1772,7 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 			case let .statementNode(value: parentDeclaration) = parent
 		{
 			if (parentDeclaration is ClassDeclaration) ||
+				(parentDeclaration is CompanionObject) ||
 				(parentDeclaration is StructDeclaration) ||
 				(parentDeclaration is EnumDeclaration)
 			{

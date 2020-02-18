@@ -90,6 +90,77 @@ private class A5 {
 	private func b5() { }
 }
 
+// Check access modifiers for static members
+class A6 {
+	static var a1 = 0
+	public static var a2 = 0
+	internal static var a3 = 0
+	fileprivate static var a4 = 0
+	private static var a5 = 0
+
+	static func b1() { }
+	public static func b2() { }
+	internal static func b3() { }
+	fileprivate static func b4() { }
+	private static func b5() { }
+}
+
+public class A7 {
+	static var a1 = 0
+	public static var a2 = 0
+	internal static var a3 = 0
+	fileprivate static var a4 = 0
+	private static var a5 = 0
+
+	static func b1() { }
+	public static func b2() { }
+	internal static func b3() { }
+	fileprivate static func b4() { }
+	private static func b5() { }
+}
+
+internal class A8 {
+	static var a1 = 0
+	public static var a2 = 0
+	internal static var a3 = 0
+	fileprivate static var a4 = 0
+	private static var a5 = 0
+
+	static func b1() { }
+	public static func b2() { }
+	internal static func b3() { }
+	fileprivate static func b4() { }
+	private static func b5() { }
+}
+
+fileprivate class A9 {
+	static var a1 = 0
+	public static var a2 = 0
+	internal static var a3 = 0
+	fileprivate static var a4 = 0
+	private static var a5 = 0
+
+	static func b1() { }
+	public static func b2() { }
+	internal static func b3() { }
+	fileprivate static func b4() { }
+	private static func b5() { }
+}
+
+private class A10 {
+	static var a1 = 0
+	public static var a2 = 0
+	internal static var a3 = 0
+	fileprivate static var a4 = 0
+	private static var a5 = 0
+
+	static func b1() { }
+	public static func b2() { }
+	internal static func b3() { }
+	fileprivate static func b4() { }
+	private static func b5() { }
+}
+
 // Check access modifiers inside structs
 struct B1 {
 	let a1 = 0
