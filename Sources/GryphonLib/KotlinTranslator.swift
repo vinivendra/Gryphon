@@ -480,10 +480,12 @@ public class KotlinTranslator {
 	{
 		let increasedIndentation = increaseIndentation(indentation)
 
-		let annotationsString = structDeclaration.annotations.map { "\(indentation)\($0)\n" } ?? ""
-
 		let result = Translation(range: structDeclaration.range)
-		result.append("\(annotationsString)\(indentation)")
+		result.append(indentation)
+
+		if let annotations = structDeclaration.annotations {
+			result.append("\(annotations) ")
+		}
 
 		if let access = structDeclaration.access {
 			result.append("\(access) ")

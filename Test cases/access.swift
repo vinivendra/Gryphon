@@ -382,3 +382,7 @@ protocol E2 { // gryphon annotation: public
 enum E3 { // gryphon annotation: public
 	case a
 }
+
+struct E4 { // gryphon annotation: public
+	let a: Int = 0
+}

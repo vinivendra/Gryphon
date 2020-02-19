@@ -675,6 +675,10 @@ public enum class E3 {
 	A;
 }
 
+public data class E4(
+	internal val a: Int = 0
+)
+
 fun main(args: Array<String>) {
 	var a1: Int = 0
 	var a2: Int = 0

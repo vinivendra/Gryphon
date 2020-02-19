@@ -1707,16 +1707,17 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 		_ structDeclaration: StructDeclaration)
 		-> MutableList<Statement>
 	{
-		let newAccess = getAccessModifier(
-			forModifier: structDeclaration.access,
-			declaration: structDeclaration)
+		let translationResult = translateAccessModifierAndAnnotations(
+			access: structDeclaration.access,
+			annotations: structDeclaration.annotations,
+			forDeclaration: structDeclaration)
 
-		accessModifiersStack.append(newAccess)
+		accessModifiersStack.append(translationResult.access)
 		let result = super.replaceStructDeclaration(StructDeclaration(
 			range: structDeclaration.range,
-			annotations: structDeclaration.annotations,
+			annotations: translationResult.annotations,
 			structName: structDeclaration.structName,
-			access: newAccess,
+			access: translationResult.access,
 			inherits: structDeclaration.inherits,
 			members: structDeclaration.members))
 		accessModifiersStack.removeLast()
@@ -2008,8 +2009,9 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 					return nil
 				}
 			}
-			else {
-				// If the outer defaults to public, we can only explicitly be internal or private
+
+			if (outerModifier == nil) || (outerModifier! == "public") {
+				// If the outer is public, we can only explicitly be internal or private
 				if innerModifier == "internal" {
 					return "internal"
 				}

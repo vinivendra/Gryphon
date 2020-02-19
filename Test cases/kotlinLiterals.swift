@@ -107,6 +107,10 @@ enum D { // gryphon annotation: final
 	case a
 }
 
+struct E { // gryphon annotation: final
+	let a: Int = 0
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Test inserts and declarations
 if true {

@@ -41,6 +41,10 @@ final internal enum class D {
 	A;
 }
 
+final internal data class E(
+	val a: Int = 0
+)
+
 internal fun insertFunction() {
 	println("func 1")
 
