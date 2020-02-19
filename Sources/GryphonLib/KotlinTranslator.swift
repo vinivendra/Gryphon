@@ -393,6 +393,10 @@ public class KotlinTranslator {
 		let result = Translation(range: protocolDeclaration.range)
 		result.append("\(indentation)")
 
+		if let annotations = protocolDeclaration.annotations {
+			result.append("\(annotations) ")
+		}
+
 		if let access = protocolDeclaration.access {
 			result.append("\(access) ")
 		}

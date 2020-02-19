@@ -397,16 +397,19 @@ public class EnumDeclaration: Statement {
 public class ProtocolDeclaration: Statement {
 	let protocolName: String
 	let access: String?
+	let annotations: String?
 	let members: MutableList<Statement>
 
 	init(
 		range: SourceFileRange?,
 		protocolName: String,
 		access: String?,
+		annotations: String?,
 		members: MutableList<Statement>)
 	{
 		self.protocolName = protocolName
 		self.access = access
+		self.annotations = annotations
 		self.members = members
 		super.init(range: range, name: "ProtocolDeclaration".capitalizedAsCamelCase())
 	}
@@ -415,12 +418,15 @@ public class ProtocolDeclaration: Statement {
 		return [
 			PrintableTree(protocolName),
 			PrintableTree.initOrNil(access),
+			PrintableTree.initOrNil(
+				"annotations", [PrintableTree.initOrNil(annotations)]),
 			PrintableTree.ofStatements("members", members), ]
 	}
 
 	public static func == (lhs: ProtocolDeclaration, rhs: ProtocolDeclaration) -> Bool {
 		return lhs.protocolName == rhs.protocolName &&
 			lhs.access == rhs.access &&
+			lhs.annotations == rhs.annotations &&
 			lhs.members == rhs.members
 	}
 }

@@ -644,7 +644,7 @@ private fun String.b4() {
 private fun String.b5() {
 }
 
-open class A11 {
+open class E1 {
 	public var a1: Int = 0
 	internal var a2: Int = 0
 	protected var a3: Int = 0
@@ -660,6 +660,14 @@ open class A11 {
 	}
 
 	private fun b4() {
+	}
+}
+
+public interface E2 {
+	val a: Int
+
+	fun b() {
+
 	}
 }
 

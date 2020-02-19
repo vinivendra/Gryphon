@@ -34,6 +34,9 @@ internal open class B: A {
 	var z: Int = 0
 }
 
+open internal interface C {
+}
+
 internal fun insertFunction() {
 	println("func 1")
 

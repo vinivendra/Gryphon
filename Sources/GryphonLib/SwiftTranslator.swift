@@ -380,6 +380,7 @@ public class SwiftTranslator {
 		}
 
 		let access = protocolDeclaration["access"]
+		let annotations = getTranslationCommentValue(forNode: protocolDeclaration, key: .annotation)
 
 		let members = try translateSubtreesOf(protocolDeclaration)
 
@@ -387,6 +388,7 @@ public class SwiftTranslator {
 			range: getRangeRecursively(ofNode: protocolDeclaration),
 			protocolName: protocolName,
 			access: access,
+			annotations: annotations,
 			members: members)
 	}
 

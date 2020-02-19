@@ -362,7 +362,7 @@ fileprivate var a4: Int = 0
 private var a5: Int = 0
 
 // Check that annotations are correctly interpreted and treated as access modifiers
-public class A11 {
+public class E1 {
 	private var a1 = 0 // gryphon annotation: public
 	private var a2 = 0 // gryphon annotation: internal
 	private var a3 = 0 // gryphon annotation: protected
@@ -372,4 +372,9 @@ public class A11 {
 	private func b2() { } // gryphon annotation: internal
 	private func b3() { } // gryphon annotation: protected
 	internal func b4() { } // gryphon annotation: private
+}
+
+protocol E2 { // gryphon annotation: public
+	var a: Int { get }
+	func b()
 }

@@ -285,6 +285,7 @@ public class TranspilationPass {
 			range: protocolDeclaration.range,
 			protocolName: protocolDeclaration.protocolName,
 			access: protocolDeclaration.access,
+			annotations: protocolDeclaration.annotations,
 			members: replaceStatements(protocolDeclaration.members)), ]
 	}
 
@@ -1744,9 +1745,10 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 		_ protocolDeclaration: ProtocolDeclaration)
 		-> MutableList<Statement>
 	{
-		let newAccess = getAccessModifier(
-			forModifier: protocolDeclaration.access,
-			declaration: protocolDeclaration)
+		let translationResult = translateAccessModifierAndAnnotations(
+			access: protocolDeclaration.access,
+			annotations: protocolDeclaration.annotations,
+			forDeclaration: protocolDeclaration)
 
 		// Push the non-existent "protocol" access modifier as a special marker so that inner
 		// declarations will omit their own access modifiers. This is because declarations inside
@@ -1755,7 +1757,8 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 		let result = super.replaceProtocolDeclaration(ProtocolDeclaration(
 			range: protocolDeclaration.range,
 			protocolName: protocolDeclaration.protocolName,
-			access: newAccess,
+			access: translationResult.access,
+			annotations: translationResult.annotations,
 			members: protocolDeclaration.members))
 		accessModifiersStack.removeLast()
 		return result
