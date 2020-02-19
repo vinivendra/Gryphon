@@ -1765,10 +1765,23 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 		_ variableDeclaration: VariableDeclaration)
 		-> MutableList<Statement>
 	{
-		// Only translate the access modifiers if it's a property.
-		// If it's a local variable, remove access modifiers.
-		var newAccess: String?
-		if let parent = parent,
+		let translationResult = translateAccessModifierAndAnnotations(
+			access: variableDeclaration.access,
+			annotations: variableDeclaration.annotations,
+			forDeclaration: variableDeclaration)
+
+		// Use explicit access modifiers only when they were specified in the annotations, when it's
+		// a top-level variable, or when it's a property.
+		// Otherwise, assume it's a local variable, which can't have explicit access modifiers.
+		var shouldUseExplicitModifier = false
+
+		if translationResult.didUseAnnotations {
+			shouldUseExplicitModifier = true
+		}
+		else if isTopLevelNode {
+			shouldUseExplicitModifier = true
+		}
+		else if let parent = parent,
 			case let .statementNode(value: parentDeclaration) = parent
 		{
 			if (parentDeclaration is ClassDeclaration) ||
@@ -1776,45 +1789,55 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 				(parentDeclaration is StructDeclaration) ||
 				(parentDeclaration is EnumDeclaration)
 			{
-				newAccess = getAccessModifier(
-					forModifier: variableDeclaration.access,
-					declaration: variableDeclaration)
+				shouldUseExplicitModifier = true
 			}
 		}
-		else if isTopLevelNode {
-			// Top-level variable declarations keep their access modifiers
-			newAccess = getAccessModifier(
-				forModifier: variableDeclaration.access,
-				declaration: variableDeclaration)
-		}
 
-		accessModifiersStack.append(newAccess)
-		let result = super.replaceVariableDeclaration(VariableDeclaration(
-			range: variableDeclaration.range,
-			identifier: variableDeclaration.identifier,
-			typeName: variableDeclaration.typeName,
-			expression: variableDeclaration.expression,
-			getter: variableDeclaration.getter,
-			setter: variableDeclaration.setter,
-			access: newAccess,
-			isLet: variableDeclaration.isLet,
-			isImplicit: variableDeclaration.isImplicit,
-			isStatic: variableDeclaration.isStatic,
-			extendsType: variableDeclaration.extendsType,
-			annotations: variableDeclaration.annotations))
-		accessModifiersStack.removeLast()
-		return result
+		if shouldUseExplicitModifier {
+			accessModifiersStack.append(translationResult.access)
+			let result = super.replaceVariableDeclaration(VariableDeclaration(
+				range: variableDeclaration.range,
+				identifier: variableDeclaration.identifier,
+				typeName: variableDeclaration.typeName,
+				expression: variableDeclaration.expression,
+				getter: variableDeclaration.getter,
+				setter: variableDeclaration.setter,
+				access: translationResult.access,
+				isLet: variableDeclaration.isLet,
+				isImplicit: variableDeclaration.isImplicit,
+				isStatic: variableDeclaration.isStatic,
+				extendsType: variableDeclaration.extendsType,
+				annotations: translationResult.annotations))
+			accessModifiersStack.removeLast()
+			return result
+		}
+		else {
+			return super.replaceVariableDeclaration(VariableDeclaration(
+				range: variableDeclaration.range,
+				identifier: variableDeclaration.identifier,
+				typeName: variableDeclaration.typeName,
+				expression: variableDeclaration.expression,
+				getter: variableDeclaration.getter,
+				setter: variableDeclaration.setter,
+				access: nil,
+				isLet: variableDeclaration.isLet,
+				isImplicit: variableDeclaration.isImplicit,
+				isStatic: variableDeclaration.isStatic,
+				extendsType: variableDeclaration.extendsType,
+				annotations: variableDeclaration.annotations))
+		}
 	}
 
 	override func replaceFunctionDeclaration( // gryphon annotation: override
 		_ functionDeclaration: FunctionDeclaration)
 		-> MutableList<Statement>
 	{
-		let newAccess = getAccessModifier(
-			forModifier: functionDeclaration.access,
-			declaration: functionDeclaration)
+		let translationResult = translateAccessModifierAndAnnotations(
+			access: functionDeclaration.access,
+			annotations: functionDeclaration.annotations,
+			forDeclaration: functionDeclaration)
 
-		accessModifiersStack.append(newAccess)
+		accessModifiersStack.append(translationResult.access)
 		let result = super.replaceFunctionDeclaration(FunctionDeclaration(
 			range: functionDeclaration.range,
 			prefix: functionDeclaration.prefix,
@@ -1828,8 +1851,8 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 			isPure: functionDeclaration.isPure,
 			extendsType: functionDeclaration.extendsType,
 			statements: functionDeclaration.statements,
-			access: newAccess,
-			annotations: functionDeclaration.annotations))
+			access: translationResult.access,
+			annotations: translationResult.annotations))
 		accessModifiersStack.removeLast()
 		return result
 	}
@@ -1851,6 +1874,61 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 			isImplicit: typealiasDeclaration.isImplicit))
 		accessModifiersStack.removeLast()
 		return result
+	}
+
+	/// The result of translating an access modifier. Contains the translated access modifier, which
+	/// may have reuslted from an access modifier in an annotation; the remaining annotations, or
+	/// nil if there are none; and a flag indicating if an access modifier was taken from the
+	/// annotations.
+	struct AccessTranslationResult {
+		let access: String?
+		let annotations: String?
+		let didUseAnnotations: Bool
+	}
+
+	private func translateAccessModifierAndAnnotations(
+		access: String?,
+		annotations: String?,
+		forDeclaration declaration: Statement)
+		-> AccessTranslationResult
+	{
+		let accessResult: String?
+		let annotationsResult: String?
+		let didUseAnnotations: Bool
+
+		let splitAnnotations = annotations?.split(withStringSeparator: " ")
+		let explicitAccessModifiers = splitAnnotations?.filter { isKotlinAccessModifier($0) }
+
+		if let explicitAccessModifier = explicitAccessModifiers?.first {
+			accessResult = explicitAccessModifier
+			let remainingAnnotations = splitAnnotations!.filter { !isKotlinAccessModifier($0) }
+			if remainingAnnotations.isEmpty {
+				annotationsResult = nil
+			}
+			else {
+				annotationsResult = remainingAnnotations.joined(separator: " ")
+			}
+			didUseAnnotations = true
+		}
+		else {
+			accessResult = getAccessModifier(
+				forModifier: access,
+				declaration: declaration)
+			annotationsResult = annotations
+			didUseAnnotations = false
+		}
+
+		return AccessTranslationResult(
+			access: accessResult,
+			annotations: annotationsResult,
+			didUseAnnotations: didUseAnnotations)
+	}
+
+	private func isKotlinAccessModifier(_ modifier: String) -> Bool {
+		return (modifier == "public") ||
+			(modifier == "internal") ||
+			(modifier == "protected") ||
+			(modifier == "private")
 	}
 
 	/// Receives an access modifier from a Swift declaration and returns the modifier that should be
@@ -1884,8 +1962,15 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 
 			// Note that the outer modifier (in the stack) has already been translated, but the
 			// inner one hasn't
-			let outerModifier = accessModifiersStack.compactMap { $0 }.last
 			let innerModifier = swiftModifier
+			var outerModifier = accessModifiersStack.compactMap { $0 }.last
+
+			// Access modifiers can be manually specified to be "protected" using annotations. Since
+			// Swift modifiers can never be automatically translated as "protected", this algorithm
+			// can treat "protected" as the next most restrictive option, which is "private".
+			if outerModifier == "protected" {
+				outerModifier = "private"
+			}
 
 			// The "protocol" string is used as a special value when we're translating members of a
 			// protocol (which should never have explicit access modifiers).

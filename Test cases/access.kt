@@ -644,6 +644,25 @@ private fun String.b4() {
 private fun String.b5() {
 }
 
+open class A11 {
+	public var a1: Int = 0
+	internal var a2: Int = 0
+	protected var a3: Int = 0
+	private var a4: Int = 0
+
+	public fun b1() {
+	}
+
+	internal fun b2() {
+	}
+
+	protected fun b3() {
+	}
+
+	private fun b4() {
+	}
+}
+
 fun main(args: Array<String>) {
 	var a1: Int = 0
 	var a2: Int = 0
