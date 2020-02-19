@@ -295,8 +295,9 @@ extension Utilities {
             return
         }
 
-        let astArray = try Compiler.transpileGryphonRawASTs(fromASTDumpFiles:
-			[SupportingFile.gryphonTemplatesLibraryASTDump.relativePath])
+        let astArray = try Compiler.transpileGryphonRawASTs(
+			fromASTDumpFiles: [SupportingFile.gryphonTemplatesLibraryASTDump.relativePath],
+			withContext: TranspilationContext.globalContext)
 
         let ast = astArray[0]
 		_ = RecordTemplatesTranspilationPass(

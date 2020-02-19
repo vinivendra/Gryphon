@@ -33,6 +33,7 @@ public class SwiftTranslator {
 		typeName: "<<Error>>",
 		expression: ErrorExpression(range: nil))
 
+	internal var context: TranspilationContext
 	internal var sourceFile: SourceFile?
 
 	static let functionCompatibleASTNodes: MutableList<String> =
@@ -40,7 +41,9 @@ public class SwiftTranslator {
 
 	// MARK: - Interface
 
-	public init() { }
+	public init(context: TranspilationContext) {
+		self.context = context
+	}
 
 	public func translateAST(
 		_ ast: SwiftAST,
@@ -462,7 +465,8 @@ public class SwiftTranslator {
 
 		// Get the class name and access modifier
 		let name = classDeclaration.standaloneAttributes.first!
-		let annotations = getTranslationCommentValue(forNode: classDeclaration, key: .annotation)
+		let annotations = getTranslationCommentValue(forNode: classDeclaration, key: .annotation)?
+			.split(withStringSeparator: " ") ?? []
 		let access = classDeclaration["access"]
 
 		// Check for inheritance
@@ -482,6 +486,7 @@ public class SwiftTranslator {
 			className: name,
 			annotations: annotations,
 			access: access,
+			isOpen: !context.defaultFinal,
 			inherits: inheritanceArray,
 			members: classContents)
 	}

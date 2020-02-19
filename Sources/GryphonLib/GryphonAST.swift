@@ -300,22 +300,25 @@ public class ImportDeclaration: Statement {
 
 public class ClassDeclaration: Statement {
 	let className: String
-	let annotations: String?
+	let annotations: MutableList<String>
 	let access: String?
+	let isOpen: Bool
 	let inherits: MutableList<String>
 	let members: MutableList<Statement>
 
 	init(
 		range: SourceFileRange?,
 		className: String,
-		annotations: String?,
+		annotations: MutableList<String>,
 		access: String?,
+		isOpen: Bool,
 		inherits: MutableList<String>,
 		members: MutableList<Statement>)
 	{
 		self.className = className
 		self.annotations = annotations
 		self.access = access
+		self.isOpen = isOpen
 		self.inherits = inherits
 		self.members = members
 		super.init(range: range, name: "ClassDeclaration".capitalizedAsCamelCase())
@@ -324,8 +327,9 @@ public class ClassDeclaration: Statement {
 	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
 		return  [
 			PrintableTree(className),
-			PrintableTree.initOrNil(annotations),
+			PrintableTree.ofStrings("annotations", annotations),
 			PrintableTree.initOrNil(access),
+			isOpen ? PrintableTree("open") : PrintableTree("final"),
 			PrintableTree.ofStrings("inherits", inherits),
 			PrintableTree.ofStatements("members", members), ]
 	}
@@ -334,6 +338,7 @@ public class ClassDeclaration: Statement {
 		return lhs.className == rhs.className &&
 			lhs.annotations == rhs.annotations &&
 			lhs.access == rhs.access &&
+			lhs.isOpen == rhs.isOpen &&
 			lhs.inherits == rhs.inherits &&
 			lhs.members == rhs.members
 	}
@@ -389,7 +394,8 @@ public class EnumDeclaration: Statement {
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
-		let elementTrees: List<PrintableAsTree?> = elements.as(List<PrintableAsTree?>.self)!
+		let elementTrees: List<PrintableAsTree?> = elements.map
+			{ (element: EnumElement) -> PrintableAsTree? in element }
 
 		return [
 			PrintableTree(enumName),

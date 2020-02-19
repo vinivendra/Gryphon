@@ -22,6 +22,9 @@
 // gryphon insert: import kotlin.system.*
 
 public class TranspilationContext {
+	let indentationString: String
+	let defaultFinal: Bool
+
 	/// The global context is used for information that should be accessible globally, such as
 	/// the Gryphon templates library (which can be calculated once and are the same every time).
 	static let globalContext = TranspilationContext()
@@ -31,10 +34,11 @@ public class TranspilationContext {
 	/// global context.
 	private init() {
 		self.indentationString = ""
+		self.defaultFinal = false
 		self.templates = []
 	}
 
-	public init(indentationString: String) {
+	public init(indentationString: String, defaultFinal: Bool) {
 		do {
 			try Utilities.processGryphonTemplatesLibrary()
 		}
@@ -44,10 +48,8 @@ public class TranspilationContext {
 
 		self.templates = TranspilationContext.globalContext.templates.toMutableList()
 		self.indentationString = indentationString
+		self.defaultFinal = defaultFinal
 	}
-
-	//
-	var indentationString: String
 
 	//
 	public struct TranspilationTemplate {

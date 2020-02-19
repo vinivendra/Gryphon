@@ -136,21 +136,26 @@ public class Compiler {
 	//
 	public static func generateGryphonRawAST(
 		fromSwiftAST swiftAST: SwiftAST,
-		asMainFile: Bool)
+		asMainFile: Bool,
+		withContext context: TranspilationContext)
 		throws -> GryphonAST
 	{
 		log("\t- Translating Swift ASTs to Gryphon ASTs...")
-		return try SwiftTranslator().translateAST(swiftAST, asMainFile: asMainFile)
+		return try SwiftTranslator(context: context).translateAST(swiftAST, asMainFile: asMainFile)
 	}
 
 	public static func transpileGryphonRawASTs(
-		fromASTDumpFiles inputFiles: MutableList<String>)
+		fromASTDumpFiles inputFiles: MutableList<String>,
+		withContext context: TranspilationContext)
 		throws -> MutableList<GryphonAST>
 	{
 		let asts = try inputFiles.map { try transpileSwiftAST(fromASTDumpFile: $0) }
 		let translateAsMainFile = (inputFiles.count == 1)
 		return try asts.map {
-			try generateGryphonRawAST(fromSwiftAST: $0, asMainFile: translateAsMainFile)
+			try generateGryphonRawAST(
+				fromSwiftAST: $0,
+				asMainFile: translateAsMainFile,
+				withContext: context)
 		}.toMutableList()
 	}
 
@@ -193,7 +198,9 @@ public class Compiler {
 		withContext context: TranspilationContext)
 		throws -> MutableList<GryphonAST>
 	{
-		let rawASTs = try transpileGryphonRawASTs(fromASTDumpFiles: inputFiles)
+		let rawASTs = try transpileGryphonRawASTs(
+			fromASTDumpFiles: inputFiles,
+			withContext: context)
 		return try rawASTs.map {
 			try generateGryphonAST(fromGryphonRawAST: $0, withContext: context)
 		}.toMutableList()

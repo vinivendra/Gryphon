@@ -241,6 +241,7 @@ public class TranspilationPass {
 			className: classDeclaration.className,
 			annotations: classDeclaration.annotations,
 			access: classDeclaration.access,
+			isOpen: classDeclaration.isOpen,
 			inherits: classDeclaration.inherits,
 			members: replaceStatements(classDeclaration.members)), ]
 	}
@@ -1236,6 +1237,7 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 			className: classDeclaration.className,
 			annotations: classDeclaration.annotations,
 			access: classDeclaration.access,
+			isOpen: classDeclaration.isOpen,
 			inherits: classDeclaration.inherits,
 			members: newMembers))
 	}
@@ -1665,6 +1667,7 @@ public class OptionalsInConditionalCastsTranspilationPass: TranspilationPass {
 
 // TODO: Improve handling of `open` classes (either remove default open or allow a final annotation
 // to remove it). When that's done, make sure class annotations are tested.
+// TODO: Create a pass to override isOpen using annotations
 
 /// This pass is responsible for determining what access modifiers are going to be printed in the
 /// output code. This mainly includes two tasks: determining how to translate Swift's access
@@ -1704,6 +1707,7 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 			className: classDeclaration.className,
 			annotations: translationResult.annotations,
 			access: translationResult.access,
+			isOpen: classDeclaration.isOpen,
 			inherits: classDeclaration.inherits,
 			members: classDeclaration.members))
 		accessModifiersStack.removeLast()
@@ -1716,13 +1720,21 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 	{
 		let translationResult = translateAccessModifierAndAnnotations(
 			access: structDeclaration.access,
-			annotations: structDeclaration.annotations,
+			annotations: structDeclaration.annotations?.split(withStringSeparator: " ") ?? [],
 			forDeclaration: structDeclaration)
+
+		let resultingAnnotations: String?
+		if !translationResult.annotations.isEmpty {
+			resultingAnnotations = translationResult.annotations.joined(separator: " ")
+		}
+		else {
+			resultingAnnotations = nil
+		}
 
 		accessModifiersStack.append(translationResult.access)
 		let result = super.replaceStructDeclaration(StructDeclaration(
 			range: structDeclaration.range,
-			annotations: translationResult.annotations,
+			annotations: resultingAnnotations,
 			structName: structDeclaration.structName,
 			access: translationResult.access,
 			inherits: structDeclaration.inherits,
@@ -1737,15 +1749,23 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 	{
 		let translationResult = translateAccessModifierAndAnnotations(
 			access: enumDeclaration.access,
-			annotations: enumDeclaration.annotations,
+			annotations: enumDeclaration.annotations?.split(withStringSeparator: " ") ?? [],
 			forDeclaration: enumDeclaration)
+
+		let resultingAnnotations: String?
+		if !translationResult.annotations.isEmpty {
+			resultingAnnotations = translationResult.annotations.joined(separator: " ")
+		}
+		else {
+			resultingAnnotations = nil
+		}
 
 		accessModifiersStack.append(translationResult.access)
 		let result = super.replaceEnumDeclaration(EnumDeclaration(
 			range: enumDeclaration.range,
 			access: translationResult.access,
 			enumName: enumDeclaration.enumName,
-			annotations: translationResult.annotations,
+			annotations: resultingAnnotations,
 			inherits: enumDeclaration.inherits,
 			elements: enumDeclaration.elements,
 			members: enumDeclaration.members,
@@ -1760,8 +1780,16 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 	{
 		let translationResult = translateAccessModifierAndAnnotations(
 			access: protocolDeclaration.access,
-			annotations: protocolDeclaration.annotations,
+			annotations: protocolDeclaration.annotations?.split(withStringSeparator: " ") ?? [],
 			forDeclaration: protocolDeclaration)
+
+		let resultingAnnotations: String?
+		if !translationResult.annotations.isEmpty {
+			resultingAnnotations = translationResult.annotations.joined(separator: " ")
+		}
+		else {
+			resultingAnnotations = nil
+		}
 
 		// Push the non-existent "protocol" access modifier as a special marker so that inner
 		// declarations will omit their own access modifiers. This is because declarations inside
@@ -1771,7 +1799,7 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 			range: protocolDeclaration.range,
 			protocolName: protocolDeclaration.protocolName,
 			access: translationResult.access,
-			annotations: translationResult.annotations,
+			annotations: resultingAnnotations,
 			members: protocolDeclaration.members))
 		accessModifiersStack.removeLast()
 		return result
@@ -1783,7 +1811,7 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 	{
 		let translationResult = translateAccessModifierAndAnnotations(
 			access: variableDeclaration.access,
-			annotations: variableDeclaration.annotations,
+			annotations: variableDeclaration.annotations?.split(withStringSeparator: " ") ?? [],
 			forDeclaration: variableDeclaration)
 
 		// Use explicit access modifiers only when they were specified in the annotations, when it's
@@ -1809,6 +1837,14 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 			}
 		}
 
+		let resultingAnnotations: String?
+		if !translationResult.annotations.isEmpty {
+			resultingAnnotations = translationResult.annotations.joined(separator: " ")
+		}
+		else {
+			resultingAnnotations = nil
+		}
+
 		if shouldUseExplicitModifier {
 			accessModifiersStack.append(translationResult.access)
 			let result = super.replaceVariableDeclaration(VariableDeclaration(
@@ -1823,7 +1859,7 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 				isImplicit: variableDeclaration.isImplicit,
 				isStatic: variableDeclaration.isStatic,
 				extendsType: variableDeclaration.extendsType,
-				annotations: translationResult.annotations))
+				annotations: resultingAnnotations))
 			accessModifiersStack.removeLast()
 			return result
 		}
@@ -1850,8 +1886,16 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 	{
 		let translationResult = translateAccessModifierAndAnnotations(
 			access: functionDeclaration.access,
-			annotations: functionDeclaration.annotations,
+			annotations: functionDeclaration.annotations?.split(withStringSeparator: " ") ?? [],
 			forDeclaration: functionDeclaration)
+
+		let resultingAnnotations: String?
+		if !translationResult.annotations.isEmpty {
+			resultingAnnotations = translationResult.annotations.joined(separator: " ")
+		}
+		else {
+			resultingAnnotations = nil
+		}
 
 		accessModifiersStack.append(translationResult.access)
 		let result = super.replaceFunctionDeclaration(FunctionDeclaration(
@@ -1868,7 +1912,7 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 			extendsType: functionDeclaration.extendsType,
 			statements: functionDeclaration.statements,
 			access: translationResult.access,
-			annotations: translationResult.annotations))
+			annotations: resultingAnnotations))
 		accessModifiersStack.removeLast()
 		return result
 	}
@@ -1898,32 +1942,27 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 	/// annotations.
 	struct AccessTranslationResult {
 		let access: String?
-		let annotations: String?
+		let annotations: MutableList<String>
 		let didUseAnnotations: Bool
 	}
 
 	private func translateAccessModifierAndAnnotations(
 		access: String?,
-		annotations: String?,
+		annotations: MutableList<String>,
 		forDeclaration declaration: Statement)
 		-> AccessTranslationResult
 	{
 		let accessResult: String?
-		let annotationsResult: String?
+		let annotationsResult: MutableList<String>
 		let didUseAnnotations: Bool
 
-		let splitAnnotations = annotations?.split(withStringSeparator: " ")
-		let explicitAccessModifiers = splitAnnotations?.filter { isKotlinAccessModifier($0) }
+		let explicitAccessModifiers = annotations.filter { isKotlinAccessModifier($0) }
 
-		if let explicitAccessModifier = explicitAccessModifiers?.first {
+		if let explicitAccessModifier = explicitAccessModifiers.first {
 			accessResult = explicitAccessModifier
-			let remainingAnnotations = splitAnnotations!.filter { !isKotlinAccessModifier($0) }
-			if remainingAnnotations.isEmpty {
-				annotationsResult = nil
-			}
-			else {
-				annotationsResult = remainingAnnotations.joined(separator: " ")
-			}
+			annotationsResult = annotations
+				.filter { !isKotlinAccessModifier($0) }
+				.toMutableList()
 			didUseAnnotations = true
 		}
 		else {
@@ -2138,6 +2177,7 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 			className: classDeclaration.className,
 			annotations: classDeclaration.annotations,
 			access: classDeclaration.access,
+			isOpen: classDeclaration.isOpen,
 			inherits: classDeclaration.inherits
 				.filter { !TranspilationPass.isASwiftProtocol($0) }
 				.toMutableList(),

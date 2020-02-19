@@ -67,7 +67,9 @@ class IntegrationTest: XCTestCase {
 					SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: testCasePath)
 				let generatedKotlinCode = try Compiler.transpileKotlinCode(
 					fromASTDumpFiles: [astDumpFilePath],
-					withContext: TranspilationContext(indentationString: "\t")).first!
+					withContext: TranspilationContext(
+						indentationString: "\t",
+						defaultFinal: false)).first!
 
 				// Load the previously stored kotlin code from file
 				let expectedKotlinCode = try! Utilities.readFile(testCasePath.withExtension(.kt))
@@ -108,7 +110,9 @@ class IntegrationTest: XCTestCase {
 				SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: testCasePath)
 			_ = try Compiler.transpileKotlinCode(
 				fromASTDumpFiles: [astDumpFilePath],
-				withContext: TranspilationContext(indentationString: "\t")).first!
+				withContext: TranspilationContext(
+					indentationString: "\t",
+					defaultFinal: false)).first!
 
 			Compiler.printErrorsAndWarnings()
 

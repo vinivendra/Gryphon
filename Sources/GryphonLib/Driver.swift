@@ -39,6 +39,7 @@ public class Driver {
 		"-run",
 		"-o",
 		"-no-main-file",
+		"-default-final",
 		"-continue-on-error",
 		"-Q",
 		"-q",
@@ -117,7 +118,8 @@ public class Driver {
 
 		let gryphonRawAST = try Compiler.generateGryphonRawAST(
 			fromSwiftAST: swiftAST,
-			asMainFile: isMainFile)
+			asMainFile: isMainFile,
+			withContext: context)
 
 		if settings.shouldEmitSwiftAST {
 			let output = swiftAST.prettyDescription(
@@ -370,6 +372,10 @@ public class Driver {
 		}
 
 		//
+		// TODO: test
+		let defaultFinal = arguments.contains("-default-final")
+
+		//
 		let settings = Settings(
 			shouldEmitSwiftAST: shouldEmitSwiftAST,
 			shouldEmitRawAST: shouldEmitRawAST,
@@ -406,7 +412,9 @@ public class Driver {
 		}
 
 		//
-		let context = TranspilationContext(indentationString: indentationString)
+		let context = TranspilationContext(
+			indentationString: indentationString,
+			defaultFinal: defaultFinal)
 
 		//
 		let shouldRunConcurrently = !arguments.contains("-sync")
@@ -796,6 +804,9 @@ public class Driver {
 
 		      ↪️  -no-main-file       Do not generate a Kotlin file with a "main"
 		            function.
+
+		      ↪️  -default-final      Declarations will be "final" by default instead
+		            of open.
 
 		      ↪️  -continue-on-error  Continue translating even if errors are found.
 
