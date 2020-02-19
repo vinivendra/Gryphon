@@ -357,6 +357,7 @@ public class CompanionObject: Statement {
 public class EnumDeclaration: Statement {
 	let access: String?
 	let enumName: String
+	let annotations: String?
 	let inherits: MutableList<String>
 	let elements: MutableList<EnumElement>
 	let members: MutableList<Statement>
@@ -366,6 +367,7 @@ public class EnumDeclaration: Statement {
 		range: SourceFileRange?,
 		access: String?,
 		enumName: String,
+		annotations: String?,
 		inherits: MutableList<String>,
 		elements: MutableList<EnumElement>,
 		members: MutableList<Statement>,
@@ -373,6 +375,7 @@ public class EnumDeclaration: Statement {
 	{
 		self.access = access
 		self.enumName = enumName
+		self.annotations = annotations
 		self.inherits = inherits
 		self.elements = elements
 		self.members = members
@@ -381,12 +384,24 @@ public class EnumDeclaration: Statement {
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
-		return MutableList<PrintableAsTree?>(members)
+		let elementTrees: List<PrintableAsTree?> = elements.as(List<PrintableAsTree?>.self)!
+
+		return [
+			PrintableTree(enumName),
+			PrintableTree.initOrNil(access),
+			PrintableTree.initOrNil(
+				"annotations", [PrintableTree.initOrNil(annotations)]),
+			PrintableTree.ofStrings("inherits", inherits),
+			PrintableTree("elements", elementTrees),
+			PrintableTree.ofStatements("members", members),
+			isImplicit ? PrintableTree("implicit") : nil,
+		]
 	}
 
 	public static func == (lhs: EnumDeclaration, rhs: EnumDeclaration) -> Bool {
 		return lhs.access == rhs.access &&
 			lhs.enumName == rhs.enumName &&
+			lhs.annotations == rhs.annotations &&
 			lhs.inherits == rhs.inherits &&
 			lhs.elements == rhs.elements &&
 			lhs.members == rhs.members &&

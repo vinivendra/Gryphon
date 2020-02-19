@@ -408,7 +408,7 @@ internal enum class C1 {
 	}
 }
 
- enum class C2 {
+enum class C2 {
 	A;
 
 	internal val a1: Int
@@ -669,6 +669,10 @@ public interface E2 {
 	fun b() {
 
 	}
+}
+
+public enum class E3 {
+	A;
 }
 
 fun main(args: Array<String>) {

@@ -378,3 +378,7 @@ protocol E2 { // gryphon annotation: public
 	var a: Int { get }
 	func b()
 }
+
+enum E3 { // gryphon annotation: public
+	case a
+}

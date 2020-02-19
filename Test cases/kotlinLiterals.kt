@@ -37,6 +37,10 @@ internal open class B: A {
 open internal interface C {
 }
 
+final internal enum class D {
+	A;
+}
+
 internal fun insertFunction() {
 	println("func 1")
 

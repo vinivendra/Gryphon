@@ -671,6 +671,8 @@ public class SwiftTranslator {
 			$0.name != "Enum Element Declaration" && $0.name != "Enum Case Declaration"
 		}
 
+		let annotations = getTranslationCommentValue(forNode: enumDeclaration, key: .annotation)
+
 		let translatedMembers = try translateSubtreesInScope(
 			members.toMutableList(),
 			scope: enumDeclaration)
@@ -679,6 +681,7 @@ public class SwiftTranslator {
 			range: getRangeRecursively(ofNode: enumDeclaration),
 			access: access,
 			enumName: name,
+			annotations: annotations,
 			inherits: inheritanceArray,
 			elements: elements,
 			members: translatedMembers,

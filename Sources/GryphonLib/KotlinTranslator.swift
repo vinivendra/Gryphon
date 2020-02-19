@@ -304,12 +304,20 @@ public class KotlinTranslator {
 	{
 		let isEnumClass = self.context.enumClasses.contains(enumDeclaration.enumName)
 
-		let accessString = enumDeclaration.access ?? ""
 		let enumString = isEnumClass ? "enum" : "sealed"
 
 		let result = Translation(range: enumDeclaration.range)
-		result.append("\(indentation)\(accessString) \(enumString) class " +
-			enumDeclaration.enumName)
+		result.append(indentation)
+
+		if let annotations = enumDeclaration.annotations {
+			result.append("\(annotations) ")
+		}
+
+		if let access = enumDeclaration.access {
+			result.append("\(access) ")
+		}
+
+		result.append("\(enumString) class \(enumDeclaration.enumName)")
 
 		if !enumDeclaration.inherits.isEmpty {
 			var translatedInheritedTypes = enumDeclaration.inherits.map { translateType($0) }

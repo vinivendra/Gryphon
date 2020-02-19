@@ -103,6 +103,10 @@ print(B().y)
 protocol C { // gryphon annotation: open
 }
 
+enum D { // gryphon annotation: final
+	case a
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Test inserts and declarations
 if true {

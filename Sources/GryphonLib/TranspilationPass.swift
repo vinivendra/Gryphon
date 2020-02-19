@@ -262,6 +262,7 @@ public class TranspilationPass {
 				range: enumDeclaration.range,
 				access: enumDeclaration.access,
 				enumName: enumDeclaration.enumName,
+				annotations: enumDeclaration.annotations,
 				inherits: enumDeclaration.inherits,
 				elements: enumDeclaration.elements
 					.flatMap { replaceEnumElementDeclaration($0) }
@@ -1264,6 +1265,7 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 			range: enumDeclaration.range,
 			access: enumDeclaration.access,
 			enumName: enumDeclaration.enumName,
+			annotations: enumDeclaration.annotations,
 			inherits: enumDeclaration.inherits,
 			elements: enumDeclaration.elements,
 			members: newMembers,
@@ -1417,6 +1419,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 			range: enumDeclaration.range,
 			access: enumDeclaration.access,
 			enumName: enumDeclaration.enumName,
+			annotations: enumDeclaration.annotations,
 			inherits: enumDeclaration.inherits,
 			elements: newElements,
 			members: enumDeclaration.members,
@@ -1724,15 +1727,17 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 		_ enumDeclaration: EnumDeclaration)
 		-> MutableList<Statement>
 	{
-		let newAccess = getAccessModifier(
-			forModifier: enumDeclaration.access,
-			declaration: enumDeclaration)
+		let translationResult = translateAccessModifierAndAnnotations(
+			access: enumDeclaration.access,
+			annotations: enumDeclaration.annotations,
+			forDeclaration: enumDeclaration)
 
-		accessModifiersStack.append(newAccess)
+		accessModifiersStack.append(translationResult.access)
 		let result = super.replaceEnumDeclaration(EnumDeclaration(
 			range: enumDeclaration.range,
-			access: newAccess,
+			access: translationResult.access,
 			enumName: enumDeclaration.enumName,
+			annotations: translationResult.annotations,
 			inherits: enumDeclaration.inherits,
 			elements: enumDeclaration.elements,
 			members: enumDeclaration.members,
@@ -2090,6 +2095,7 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 			range: enumDeclaration.range,
 			access: enumDeclaration.access,
 			enumName: enumDeclaration.enumName,
+			annotations: enumDeclaration.annotations,
 			inherits: enumDeclaration.inherits.filter {
 					!TranspilationPass.isASwiftProtocol($0) &&
 						!TranspilationPass.isASwiftRawRepresentableType($0)
@@ -3690,6 +3696,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 				range: enumDeclaration.range,
 				access: enumDeclaration.access,
 				enumName: enumDeclaration.enumName,
+				annotations: enumDeclaration.annotations,
 				inherits: enumDeclaration.inherits,
 				elements: enumDeclaration.elements,
 				members: newMembers,
