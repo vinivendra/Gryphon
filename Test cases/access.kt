@@ -679,6 +679,18 @@ public data class E4(
 	internal val a: Int = 0
 )
 
+public open class E5 {
+}
+
+internal open class E6 {
+	protected open class Nested {
+		var a1: Int = 0
+		var a2: Int = 0
+		var a3: Int = 0
+		var a4: Int = 0
+	}
+}
+
 fun main(args: Array<String>) {
 	var a1: Int = 0
 	var a2: Int = 0

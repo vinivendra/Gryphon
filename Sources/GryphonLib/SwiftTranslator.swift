@@ -462,6 +462,7 @@ public class SwiftTranslator {
 
 		// Get the class name and access modifier
 		let name = classDeclaration.standaloneAttributes.first!
+		let annotations = getTranslationCommentValue(forNode: classDeclaration, key: .annotation)
 		let access = classDeclaration["access"]
 
 		// Check for inheritance
@@ -479,6 +480,7 @@ public class SwiftTranslator {
 		return ClassDeclaration(
 			range: getRangeRecursively(ofNode: classDeclaration),
 			className: name,
+			annotations: annotations,
 			access: access,
 			inherits: inheritanceArray,
 			members: classContents)

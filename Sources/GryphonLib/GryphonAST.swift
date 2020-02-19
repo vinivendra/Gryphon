@@ -300,6 +300,7 @@ public class ImportDeclaration: Statement {
 
 public class ClassDeclaration: Statement {
 	let className: String
+	let annotations: String?
 	let access: String?
 	let inherits: MutableList<String>
 	let members: MutableList<Statement>
@@ -307,11 +308,13 @@ public class ClassDeclaration: Statement {
 	init(
 		range: SourceFileRange?,
 		className: String,
+		annotations: String?,
 		access: String?,
 		inherits: MutableList<String>,
 		members: MutableList<Statement>)
 	{
 		self.className = className
+		self.annotations = annotations
 		self.access = access
 		self.inherits = inherits
 		self.members = members
@@ -321,6 +324,7 @@ public class ClassDeclaration: Statement {
 	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
 		return  [
 			PrintableTree(className),
+			PrintableTree.initOrNil(annotations),
 			PrintableTree.initOrNil(access),
 			PrintableTree.ofStrings("inherits", inherits),
 			PrintableTree.ofStatements("members", members), ]
@@ -328,6 +332,7 @@ public class ClassDeclaration: Statement {
 
 	public static func == (lhs: ClassDeclaration, rhs: ClassDeclaration) -> Bool {
 		return lhs.className == rhs.className &&
+			lhs.annotations == rhs.annotations &&
 			lhs.access == rhs.access &&
 			lhs.inherits == rhs.inherits &&
 			lhs.members == rhs.members

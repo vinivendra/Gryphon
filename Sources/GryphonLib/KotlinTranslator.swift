@@ -445,7 +445,11 @@ public class KotlinTranslator {
 		throws -> Translation
 	{
 		let result = Translation(range: classDeclaration.range)
-		result.append("\(indentation)")
+		result.append(indentation)
+
+		if let annotations = classDeclaration.annotations {
+			result.append("\(annotations) ")
+		}
 
 		if let access = classDeclaration.access {
 			result.append("\(access) ")

@@ -239,6 +239,7 @@ public class TranspilationPass {
 		return [ClassDeclaration(
 			range: classDeclaration.range,
 			className: classDeclaration.className,
+			annotations: classDeclaration.annotations,
 			access: classDeclaration.access,
 			inherits: classDeclaration.inherits,
 			members: replaceStatements(classDeclaration.members)), ]
@@ -1233,6 +1234,7 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 		return super.replaceClassDeclaration(ClassDeclaration(
 			range: classDeclaration.range,
 			className: classDeclaration.className,
+			annotations: classDeclaration.annotations,
 			access: classDeclaration.access,
 			inherits: classDeclaration.inherits,
 			members: newMembers))
@@ -1661,6 +1663,9 @@ public class OptionalsInConditionalCastsTranspilationPass: TranspilationPass {
 	}
 }
 
+// TODO: Improve handling of `open` classes (either remove default open or allow a final annotation
+// to remove it). When that's done, make sure class annotations are tested.
+
 /// This pass is responsible for determining what access modifiers are going to be printed in the
 /// output code. This mainly includes two tasks: determining how to translate Swift's access
 /// modifiers into Kotlin, and determining which modifiers should be printed and which should be
@@ -1688,15 +1693,17 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 		_ classDeclaration: ClassDeclaration)
 		-> MutableList<Statement>
 	{
-		let newAccess = getAccessModifier(
-			forModifier: classDeclaration.access,
-			declaration: classDeclaration)
+		let translationResult = translateAccessModifierAndAnnotations(
+			access: classDeclaration.access,
+			annotations: classDeclaration.annotations,
+			forDeclaration: classDeclaration)
 
-		accessModifiersStack.append(newAccess)
+		accessModifiersStack.append(translationResult.access)
 		let result = super.replaceClassDeclaration(ClassDeclaration(
 			range: classDeclaration.range,
 			className: classDeclaration.className,
-			access: newAccess,
+			annotations: translationResult.annotations,
+			access: translationResult.access,
 			inherits: classDeclaration.inherits,
 			members: classDeclaration.members))
 		accessModifiersStack.removeLast()
@@ -2129,6 +2136,7 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 		return super.replaceClassDeclaration(ClassDeclaration(
 			range: classDeclaration.range,
 			className: classDeclaration.className,
+			annotations: classDeclaration.annotations,
 			access: classDeclaration.access,
 			inherits: classDeclaration.inherits
 				.filter { !TranspilationPass.isASwiftProtocol($0) }

@@ -386,3 +386,16 @@ enum E3 { // gryphon annotation: public
 struct E4 { // gryphon annotation: public
 	let a: Int = 0
 }
+
+class E5 { // gryphon annotation: public
+}
+
+// Check that access modifiers are correctly calculated when a parent is protected
+class E6 {
+	class Nested { // gryphon annotation: protected
+		public var a1: Int = 0
+		internal var a2: Int = 0
+		fileprivate var a3: Int = 0
+		private var a4: Int = 0
+	}
+}
