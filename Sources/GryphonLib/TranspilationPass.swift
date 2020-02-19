@@ -2005,7 +2005,7 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 			inherits: enumDeclaration.inherits.filter {
 					!TranspilationPass.isASwiftProtocol($0) &&
 						!TranspilationPass.isASwiftRawRepresentableType($0)
-				},
+				}.toMutableList(),
 			elements: enumDeclaration.elements,
 			members: enumDeclaration.members,
 			isImplicit: enumDeclaration.isImplicit))
@@ -2020,7 +2020,9 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 			annotations: structDeclaration.annotations,
 			structName: structDeclaration.structName,
 			access: structDeclaration.access,
-			inherits: structDeclaration.inherits.filter { !TranspilationPass.isASwiftProtocol($0) },
+			inherits: structDeclaration.inherits
+				.filter { !TranspilationPass.isASwiftProtocol($0) }
+				.toMutableList(),
 			members: structDeclaration.members))
 	}
 
@@ -2032,7 +2034,9 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 			range: classDeclaration.range,
 			className: classDeclaration.className,
 			access: classDeclaration.access,
-			inherits: classDeclaration.inherits.filter { !TranspilationPass.isASwiftProtocol($0) },
+			inherits: classDeclaration.inherits
+				.filter { !TranspilationPass.isASwiftProtocol($0) }
+				.toMutableList(),
 			members: classDeclaration.members))
 	}
 }

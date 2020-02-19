@@ -202,12 +202,10 @@ fun main(args: Array<String>) {
 	printTest(array, "Array remove first")
 	printTest(array.drop(1), "Array drop first")
 	printTest(array.dropLast(1), "Array drop last")
-	printTest(array.map { it + 1 }.toMutableList(), "Array map")
-	printTest(array.flatMap { listOf(it + 1, it + 2) }.toMutableList(), "Array flat map")
-	printTest(
-		array.map { if (it == 10) { it } else { null } }.filterNotNull().toMutableList(),
-		"Array compact map")
-	printTest(array.filter { it < 10 }.toMutableList(), "Array filter")
+	printTest(array.map { it + 1 }, "Array map")
+	printTest(array.flatMap { listOf(it + 1, it + 2) }, "Array flat map")
+	printTest(array.map { if (it == 10) { it } else { null } }.filterNotNull(), "Array compact map")
+	printTest(array.filter { it < 10 }, "Array filter")
 	printTest(array.fold(1) { acc, el -> acc * el }, "Array reduce")
 
 	for ((element1, element2) in array.zip(array2)) {

@@ -697,9 +697,9 @@ public class Driver {
 		}
 	}
 
-	static func unsupportedArguments(in arguments: MutableList<String>) -> MutableList<String> {
+	static func unsupportedArguments(in arguments: MutableList<String>) -> List<String> {
 		// Start with all arguments, remove the ones that are OK, return what's left
-		var badArguments = arguments
+		var badArguments: List<String> = arguments
 		badArguments = badArguments.filter { !supportedArguments.contains($0) }
 		badArguments = badArguments.filter { isSupportedArgumentWithParameters($0) }
 		badArguments = badArguments.filter { isSupportedInputFilePath($0) }

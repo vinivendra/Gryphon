@@ -388,16 +388,16 @@ func gryphonTemplates() {
 	_ = "_array.dropLast(1)"
 
 	_ = _array.map(_closure2)
-	_ = "_array.map _closure2.toMutableList()"
+	_ = "_array.map _closure2"
 
 	_ = _array.flatMap(_closure6)
-	_ = "_array.flatMap _closure6.toMutableList()"
+	_ = "_array.flatMap _closure6"
 
 	_ = _array.compactMap(_closure2)
-	_ = "_array.map _closure2.filterNotNull().toMutableList()"
+	_ = "_array.map _closure2.filterNotNull()"
 
 	_ = _array.filter(_closure3)
-	_ = "_array.filter _closure3.toMutableList()"
+	_ = "_array.filter _closure3"
 
 	_ = _array.reduce(_any, _closure)
 	_ = "_array.fold(_any) _closure"
