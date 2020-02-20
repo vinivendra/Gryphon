@@ -1054,11 +1054,12 @@ public class SwiftTranslator {
 					getter: nil,
 					setter: nil,
 					access: nil,
+					isOpen: false,
 					isLet: true,
 					isImplicit: false,
 					isStatic: false,
 					extendsType: nil,
-					annotations: nil)
+					annotations: [])
 			}
 			else {
 				variableDeclaration = nil
@@ -1368,11 +1369,12 @@ public class SwiftTranslator {
 							getter: nil,
 							setter: nil,
 							access: nil,
+							isOpen: false,
 							isLet: true,
 							isImplicit: false,
 							isStatic: false,
 							extendsType: nil,
-							annotations: nil)
+							annotations: [])
 					}.toMutableList()
 				}
 				else if let patternEnumElement =
@@ -1543,11 +1545,12 @@ public class SwiftTranslator {
 					getter: nil,
 					setter: nil,
 					access: nil,
+					isOpen: false,
 					isLet: isLet,
 					isImplicit: false,
 					isStatic: false,
 					extendsType: nil,
-					annotations: nil)))
+					annotations: [])))
 			}
 			// If it's an `if case let`
 			else if condition.name == "Pattern",
@@ -1619,11 +1622,12 @@ public class SwiftTranslator {
 						getter: nil,
 						setter: nil,
 						access: nil,
+						isOpen: false,
 						isLet: true,
 						isImplicit: false,
 						isStatic: false,
 						extendsType: nil,
-						annotations: nil))
+						annotations: []))
 				}
 			}
 			// If it's an `if case`
@@ -1979,7 +1983,9 @@ public class SwiftTranslator {
 		let isImplicit = variableDeclaration.standaloneAttributes.contains("implicit")
 		let access = variableDeclaration["access"]
 
-		let annotations = getTranslationCommentValue(forNode: variableDeclaration, key: .annotation)
+		let annotations =
+			getTranslationCommentValue(forNode: variableDeclaration, key: .annotation)?
+			.split(withStringSeparator: " ") ?? []
 
 		let isStatic: Bool
 
@@ -2004,6 +2010,17 @@ public class SwiftTranslator {
 
 		let isLet = variableDeclaration.standaloneAttributes.contains("let")
 		let typeName = cleanUpType(rawType)
+
+		let isOpen: Bool
+		if variableDeclaration.standaloneAttributes.contains("final") {
+			isOpen = false
+		}
+		else if let access = access, access == "open" {
+			isOpen = true
+		}
+		else {
+			isOpen = !context.defaultFinal
+		}
 
 		// TODO: Add a warning when double optionals are found, their behaviour is different in
 		// Kotlin.
@@ -2098,6 +2115,7 @@ public class SwiftTranslator {
 			getter: getter,
 			setter: setter,
 			access: access,
+			isOpen: isOpen,
 			isLet: isLet,
 			isImplicit: isImplicit,
 			isStatic: isStatic,

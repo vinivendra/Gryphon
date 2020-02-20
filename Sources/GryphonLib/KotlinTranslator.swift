@@ -975,6 +975,7 @@ public class KotlinTranslator {
 					getter: nil,
 					setter: nil,
 					access: nil,
+					isOpen: false,
 					isLet: variableDeclaration.isLet,
 					isImplicit: false,
 					isStatic: false,
@@ -1145,12 +1146,17 @@ public class KotlinTranslator {
 		let result = Translation(range: variableDeclaration.range)
 		result.append(indentation)
 
-		if let annotations = variableDeclaration.annotations {
-			result.append("\(annotations) ")
+		if !variableDeclaration.annotations.isEmpty {
+			let annotationsString = variableDeclaration.annotations.joined(separator: " ")
+			result.append("\(annotationsString) ")
 		}
 
 		if let access = variableDeclaration.access {
 			result.append("\(access) ")
+		}
+
+		if variableDeclaration.isOpen {
+			result.append("open ")
 		}
 
 		var keyword: String

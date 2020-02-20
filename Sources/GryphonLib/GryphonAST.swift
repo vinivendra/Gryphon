@@ -662,11 +662,12 @@ public class VariableDeclaration: Statement {
 	var getter: FunctionDeclaration?
 	var setter: FunctionDeclaration?
 	var access: String?
+	var isOpen: Bool
 	var isLet: Bool
 	var isImplicit: Bool
 	var isStatic: Bool
 	var extendsType: String?
-	var annotations: String?
+	var annotations: MutableList<String>
 
 	init(
 		range: SourceFileRange?,
@@ -676,19 +677,21 @@ public class VariableDeclaration: Statement {
 		getter: FunctionDeclaration?,
 		setter: FunctionDeclaration?,
 		access: String?,
+		isOpen: Bool,
 		isLet: Bool,
 		isImplicit: Bool,
 		isStatic: Bool,
 		extendsType: String?,
-		annotations: String?)
+		annotations: MutableList<String>)
 	{
 		self.identifier = identifier
 		self.typeName = typeName
 		self.expression = expression
 		self.getter = getter
 		self.setter = setter
-		self.isLet = isLet
 		self.access = access
+		self.isOpen = isOpen
+		self.isLet = isLet
 		self.isImplicit = isImplicit
 		self.isStatic = isStatic
 		self.extendsType = extendsType
@@ -707,10 +710,10 @@ public class VariableDeclaration: Statement {
 			PrintableTree(typeName),
 			expression,
 			PrintableTree.initOrNil(access),
+			PrintableTree("open: \(isOpen)"),
 			PrintableTree.initOrNil("getter", [getter]),
 			PrintableTree.initOrNil("setter", [setter]),
-			PrintableTree.initOrNil(
-				"annotations", [PrintableTree.initOrNil(annotations)]), ]
+			PrintableTree.ofStrings("annotations", annotations), ]
 	}
 
 	public static func == (
@@ -724,6 +727,7 @@ public class VariableDeclaration: Statement {
 			lhs.getter == rhs.getter &&
 			lhs.setter == rhs.setter &&
 			lhs.access == rhs.access &&
+			lhs.isOpen == rhs.isOpen &&
 			lhs.isLet == rhs.isLet &&
 			lhs.isImplicit == rhs.isImplicit &&
 			lhs.isStatic == rhs.isStatic &&

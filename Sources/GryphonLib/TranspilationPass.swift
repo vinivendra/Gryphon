@@ -942,8 +942,7 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 			variableDeclaration.typeName == "String",
 			let getter = variableDeclaration.getter
 		{
-			let annotations = (variableDeclaration.annotations ?? "")
-				.split(withStringSeparator: " ")
+			let annotations = variableDeclaration.annotations
 			if !annotations.contains("override") {
 				annotations.append("override")
 			}
@@ -1673,6 +1672,18 @@ public class OptionalsInConditionalCastsTranspilationPass: TranspilationPass {
 /// or `final` to disable it. The default behavior is handled by SwiftTranslator, but users may
 /// choose on a case-by-case basis using annotations. This pass removes `open` and `final`
 /// annotations and sets the declaration's `isOpen` flag accordingly.
+///
+/// The precedence rules should be (more or less):
+///   1. Annotations with "open" or "final"
+///   2. Swift nodes that are always final (local variables, top-level variables, static members,
+///       structs and enum members, etc)
+///   3. Swift annotations (either the "final" annotation or the "open" access modifier)
+///   4. If the invocation includes the `-default-final` option, what's left is final; otherwise,
+///       it's open.
+///
+/// The SwiftTranslator handles numbers 3 and 4, and parts of 2 (i.e. static members are implicitly
+/// annotated with final); this pass overwrites those results with numbers 1 and 2 if needed.
+///
 public class OpenDeclarationsTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
 	// gryphon insert:     super(ast, context) { }
@@ -1706,6 +1717,56 @@ public class OpenDeclarationsTranspilationPass: TranspilationPass {
 			isOpen: isOpenResult,
 			inherits: classDeclaration.inherits,
 			members: classDeclaration.members))
+	}
+
+	override func replaceVariableDeclaration( // gryphon annotation: override
+		_ variableDeclaration: VariableDeclaration)
+		-> MutableList<Statement>
+	{
+		let isOpenResult: Bool
+		var annotationsResult = variableDeclaration.annotations
+
+		if annotationsResult.contains("open") {
+			isOpenResult = true
+			annotationsResult = annotationsResult.filter { $0 != "open" && $0 != "final" }
+		}
+		else if annotationsResult.contains("final") {
+			isOpenResult = false
+			annotationsResult = annotationsResult.filter { $0 != "open" && $0 != "final" }
+		}
+		else if let parent = parent,
+			case let .statementNode(value: parentDeclaration) = parent
+		{
+			if parentDeclaration is ClassDeclaration {
+				isOpenResult = variableDeclaration.isOpen
+			}
+			else if parentDeclaration is CompanionObject {
+				// Static variables are final by default in Swift (they have `final` on the AST
+				// dump) so the value should already be final here
+				isOpenResult = variableDeclaration.isOpen
+			}
+			else if parentDeclaration is StructDeclaration {
+				// Struct properties are always final in Swift
+				isOpenResult = false
+			}
+			else if parentDeclaration is EnumDeclaration {
+				// Enum properties are always final in Swift
+				isOpenResult = false
+			}
+			else {
+				// Local variables have to be final
+				isOpenResult = false
+			}
+		}
+		else {
+			// Top level declarations have to be final
+			isOpenResult = false
+		}
+
+		variableDeclaration.isOpen = isOpenResult
+		variableDeclaration.annotations = annotationsResult
+
+		return super.replaceVariableDeclaration(variableDeclaration)
 	}
 }
 
@@ -1851,41 +1912,13 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 	{
 		let translationResult = translateAccessModifierAndAnnotations(
 			access: variableDeclaration.access,
-			annotations: variableDeclaration.annotations?.split(withStringSeparator: " ") ?? [],
+			annotations: variableDeclaration.annotations,
 			forDeclaration: variableDeclaration)
 
 		// Use explicit access modifiers only when they were specified in the annotations, when it's
 		// a top-level variable, or when it's a property.
 		// Otherwise, assume it's a local variable, which can't have explicit access modifiers.
-		var shouldUseExplicitModifier = false
-
-		if translationResult.didUseAnnotations {
-			shouldUseExplicitModifier = true
-		}
-		else if isTopLevelNode {
-			shouldUseExplicitModifier = true
-		}
-		else if let parent = parent,
-			case let .statementNode(value: parentDeclaration) = parent
-		{
-			if (parentDeclaration is ClassDeclaration) ||
-				(parentDeclaration is CompanionObject) ||
-				(parentDeclaration is StructDeclaration) ||
-				(parentDeclaration is EnumDeclaration)
-			{
-				shouldUseExplicitModifier = true
-			}
-		}
-
-		let resultingAnnotations: String?
-		if !translationResult.annotations.isEmpty {
-			resultingAnnotations = translationResult.annotations.joined(separator: " ")
-		}
-		else {
-			resultingAnnotations = nil
-		}
-
-		if shouldUseExplicitModifier {
+		if translationResult.didUseAnnotations || isTopLevelNode || thisVariableIsAProperty() {
 			accessModifiersStack.append(translationResult.access)
 			let result = super.replaceVariableDeclaration(VariableDeclaration(
 				range: variableDeclaration.range,
@@ -1895,11 +1928,12 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 				getter: variableDeclaration.getter,
 				setter: variableDeclaration.setter,
 				access: translationResult.access,
+				isOpen: variableDeclaration.isOpen,
 				isLet: variableDeclaration.isLet,
 				isImplicit: variableDeclaration.isImplicit,
 				isStatic: variableDeclaration.isStatic,
 				extendsType: variableDeclaration.extendsType,
-				annotations: resultingAnnotations))
+				annotations: translationResult.annotations))
 			accessModifiersStack.removeLast()
 			return result
 		}
@@ -1912,6 +1946,7 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 				getter: variableDeclaration.getter,
 				setter: variableDeclaration.setter,
 				access: nil,
+				isOpen: variableDeclaration.isOpen,
 				isLet: variableDeclaration.isLet,
 				isImplicit: variableDeclaration.isImplicit,
 				isStatic: variableDeclaration.isStatic,
@@ -2111,6 +2146,24 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 
 		raiseAlgorithmErrorWarning(forDeclaration: declaration)
 		return nil
+	}
+
+	/// To be used inside a replaceVariableDeclaration or processVariableDeclaration method only.
+	/// Returns true if the variable is a property, false if it's a local variable or anything else.
+	func thisVariableIsAProperty() -> Bool {
+		if let parent = parent,
+			case let .statementNode(value: parentDeclaration) = parent
+		{
+			if (parentDeclaration is ClassDeclaration) ||
+				(parentDeclaration is CompanionObject) ||
+				(parentDeclaration is StructDeclaration) ||
+				(parentDeclaration is EnumDeclaration)
+			{
+				return true
+			}
+		}
+
+		return false
 	}
 
 	/// If there's a filePrivate declaration inside a more open declaration, it can be seen by other
@@ -3677,11 +3730,12 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 			getter: nil,
 			setter: nil,
 			access: nil,
+			isOpen: false,
 			isLet: true,
 			isImplicit: false,
 			isStatic: false,
 			extendsType: nil,
-			annotations: nil))
+			annotations: []))
 		newStatements.append(VariableDeclaration(
 			range: range,
 			identifier: rhs.label,
@@ -3695,11 +3749,12 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 			getter: nil,
 			setter: nil,
 			access: nil,
+			isOpen: false,
 			isLet: true,
 			isImplicit: false,
 			isStatic: false,
 			extendsType: nil,
-			annotations: nil))
+			annotations: []))
 
 		// Add an if statement to guarantee the comparison only happens between the right types
 		newStatements.append(IfStatement(
@@ -3932,11 +3987,12 @@ public class RawValuesTranspilationPass: TranspilationPass {
 			getter: getter,
 			setter: nil,
 			access: nil,
+			isOpen: false,
 			isLet: false,
 			isImplicit: false,
 			isStatic: false,
 			extendsType: nil,
-			annotations: nil)
+			annotations: [])
 	}
 }
 

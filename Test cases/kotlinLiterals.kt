@@ -29,9 +29,9 @@ internal interface A {
 }
 
 internal open class B: A {
-	override var x: Int = 1
-	override var y: Int = 3
-	var z: Int = 0
+	override open var x: Int = 1
+	override open var y: Int = 3
+	open var z: Int = 0
 }
 
 open internal interface C {
@@ -58,15 +58,15 @@ internal fun insertFunction() {
 }
 
 internal open class InsertClass {
-	var a: String = "class a"
+	open var a: String = "class a"
 
-	var b: String = "class b"
+	open var b: String = "class b"
 
-	var c: String = "class c"
+	open var c: String = "class c"
 
-	var d: String = "class d"
+	open var d: String = "class d"
 
-	var e: String = "class e"
+	open var e: String = "class e"
 
 	fun insertMethod() {
 		println("method 1")

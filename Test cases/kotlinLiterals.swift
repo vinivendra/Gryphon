@@ -139,11 +139,11 @@ func insertFunction() {
 insertFunction()
 
 class InsertClass {
-	// gryphon insertInMain: var a: String = \"class a\"
+	// gryphon insert: open var a: String = \"class a\"
 	var b: String = "class b"
-	// gryphon insertInMain: var c: String = \"class c\"
+	// gryphon insert: open var c: String = \"class c\"
 	var d: String = "class d"
-	// gryphon insertInMain: var e: String = \"class e\"
+	// gryphon insert: open var e: String = \"class e\"
 
 	func insertMethod() {
 		// gryphon insertInMain: println(\"method 1\")

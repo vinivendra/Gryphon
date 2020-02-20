@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 internal open class A {
-	var x: Int
-	var y: Int
-	var z: Int = 30
+	open var x: Int
+	open var y: Int
+	open var z: Int = 30
 
 	constructor() {
 		x = 0

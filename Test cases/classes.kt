@@ -14,15 +14,15 @@
 // limitations under the License.
 //
 internal open class Box {
-	var a: Int = 5
-	var b: String
+	open var a: Int = 5
+	open var b: String
 		get() {
 			return "get b"
 		}
 		set(newValue) {
 			println("set b")
 		}
-	var c: Int? = null
+	open var c: Int? = null
 
 	fun returnFive(): Int {
 		return a
@@ -59,7 +59,7 @@ internal open class C {
 		}
 	}
 
-	var x: Int = 0
+	open var x: Int = 0
 
 	fun b(): C {
 		return C()
@@ -90,11 +90,11 @@ internal data class D(
 }
 
 internal open class E {
-	var a: Int = 0
+	open var a: Int = 0
 }
 
 internal class F {
-	var a: Int = 0
+	open var a: Int = 0
 }
 
 fun main(args: Array<String>) {

@@ -14,11 +14,11 @@
 // limitations under the License.
 //
 internal open class A1 {
-	var a1: Int = 0
-	var a2: Int = 0
-	var a3: Int = 0
-	var a4: Int = 0
-	private var a5: Int = 0
+	open var a1: Int = 0
+	open var a2: Int = 0
+	open var a3: Int = 0
+	open var a4: Int = 0
+	private open var a5: Int = 0
 
 	fun b1() {
 	}
@@ -37,11 +37,11 @@ internal open class A1 {
 }
 
 open class A2 {
-	internal var a1: Int = 0
-	var a2: Int = 0
-	internal var a3: Int = 0
-	internal var a4: Int = 0
-	private var a5: Int = 0
+	internal open var a1: Int = 0
+	open var a2: Int = 0
+	internal open var a3: Int = 0
+	internal open var a4: Int = 0
+	private open var a5: Int = 0
 
 	internal fun b1() {
 	}
@@ -60,11 +60,11 @@ open class A2 {
 }
 
 internal open class A3 {
-	var a1: Int = 0
-	var a2: Int = 0
-	var a3: Int = 0
-	var a4: Int = 0
-	private var a5: Int = 0
+	open var a1: Int = 0
+	open var a2: Int = 0
+	open var a3: Int = 0
+	open var a4: Int = 0
+	private open var a5: Int = 0
 
 	fun b1() {
 	}
@@ -83,11 +83,11 @@ internal open class A3 {
 }
 
 private open class A4 {
-	var a1: Int = 0
-	var a2: Int = 0
-	var a3: Int = 0
-	var a4: Int = 0
-	var a5: Int = 0
+	open var a1: Int = 0
+	open var a2: Int = 0
+	open var a3: Int = 0
+	open var a4: Int = 0
+	open var a5: Int = 0
 
 	fun b1() {
 	}
@@ -106,11 +106,11 @@ private open class A4 {
 }
 
 private open class A5 {
-	var a1: Int = 0
-	var a2: Int = 0
-	var a3: Int = 0
-	var a4: Int = 0
-	var a5: Int = 0
+	open var a1: Int = 0
+	open var a2: Int = 0
+	open var a3: Int = 0
+	open var a4: Int = 0
+	open var a5: Int = 0
 
 	fun b1() {
 	}
@@ -645,10 +645,10 @@ private fun String.b5() {
 }
 
 open class E1 {
-	public var a1: Int = 0
-	internal var a2: Int = 0
-	protected var a3: Int = 0
-	private var a4: Int = 0
+	public open var a1: Int = 0
+	internal open var a2: Int = 0
+	protected open var a3: Int = 0
+	private open var a4: Int = 0
 
 	public fun b1() {
 	}
@@ -684,10 +684,10 @@ public open class E5 {
 
 internal open class E6 {
 	protected open class Nested {
-		var a1: Int = 0
-		var a2: Int = 0
-		var a3: Int = 0
-		var a4: Int = 0
+		open var a1: Int = 0
+		open var a2: Int = 0
+		open var a3: Int = 0
+		open var a4: Int = 0
 	}
 }
 
