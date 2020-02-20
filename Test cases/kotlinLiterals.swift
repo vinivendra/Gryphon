@@ -114,27 +114,27 @@ struct E { // gryphon annotation: final
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Test inserts and declarations
 if true {
-	// gryphon insertInMain: println(\"if 1\")
+	// gryphon insert: println(\"if 1\")
 	print("if 2")
-	// gryphon insertInMain: println(\"if 3\")
+	// gryphon insert: println(\"if 3\")
 	print("if 4")
-	// gryphon insertInMain: println(\"if 5\")
+	// gryphon insert: println(\"if 5\")
 }
 
 for i in [1] {
-	// gryphon insertInMain: println(\"for 1\")
+	// gryphon insert: println(\"for 1\")
 	print("for 2")
-	// gryphon insertInMain: println(\"for 3\")
+	// gryphon insert: println(\"for 3\")
 	print("for 4")
-	// gryphon insertInMain: println(\"for 5\")
+	// gryphon insert: println(\"for 5\")
 }
 
 func insertFunction() {
-	// gryphon insertInMain: println(\"func 1\")
+	// gryphon insert: println(\"func 1\")
 	print("func 2")
-	// gryphon insertInMain: println(\"func 3\")
+	// gryphon insert: println(\"func 3\")
 	print("func 4")
-	// gryphon insertInMain: println(\"func 5\")
+	// gryphon insert: println(\"func 5\")
 }
 insertFunction()
 
@@ -146,11 +146,11 @@ class InsertClass {
 	// gryphon insert: open var e: String = \"class e\"
 
 	func insertMethod() {
-		// gryphon insertInMain: println(\"method 1\")
+		// gryphon insert: println(\"method 1\")
 		print("method 2")
-		// gryphon insertInMain: println(\"method 3\")
+		// gryphon insert: println(\"method 3\")
 		print("method 4")
-		// gryphon insertInMain: println(\"method 5\")
+		// gryphon insert: println(\"method 5\")
 	}
 }
 let insertClass = InsertClass()
