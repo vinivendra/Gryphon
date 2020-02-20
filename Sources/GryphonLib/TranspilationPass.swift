@@ -1675,41 +1675,61 @@ public class OptionalsInConditionalCastsTranspilationPass: TranspilationPass {
 ///
 /// The precedence rules should be (more or less):
 ///   1. Annotations with "open" or "final"
-///   2. Swift nodes that are always final (local variables, top-level variables, static members,
+///   2. Declarations translated as "private", which can't also be "open" in Kotlin.
+///   3. Swift nodes that are always final (local variables, top-level variables, static members,
 ///       structs and enum members, etc)
-///   3. Swift annotations (either the "final" annotation or the "open" access modifier)
-///   4. If the invocation includes the `-default-final` option, what's left is final; otherwise,
+///   4. Swift annotations (either the "final" annotation or the "open" access modifier)
+///   5. If the invocation includes the `-default-final` option, what's left is final; otherwise,
 ///       it's open.
 ///
-/// The SwiftTranslator handles numbers 3 and 4, and parts of 2 (i.e. static members are implicitly
-/// annotated with final); this pass overwrites those results with numbers 1 and 2 if needed.
+/// The SwiftTranslator handles numbers 4 and 5, and parts of 3 (i.e. static members are implicitly
+/// annotated with final); this pass overwrites those results with numbers 1, 2, and 3 if needed.
 ///
 public class OpenDeclarationsTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
 	// gryphon insert:     super(ast, context) { }
 
+	var accessModifiersStack: MutableList<String?> = []
+
+	private func topmostAccessModifierIsPrivate() -> Bool {
+		for accessModifier in accessModifiersStack.reversed() {
+			if let accessModifier = accessModifier {
+				return (accessModifier == "private")
+			}
+		}
+
+		// Kotlin defaults to "public", not "private"
+		return false
+	}
+
 	override func replaceClassDeclaration( // gryphon annotation: override
 		_ classDeclaration: ClassDeclaration)
 		-> MutableList<Statement>
 	{
+		accessModifiersStack.append(classDeclaration.access)
+
 		let annotations = classDeclaration.annotations
 
 		let isOpenResult: Bool
 		let annotationsResult: MutableList<String>
 		if annotations.contains("open") {
 			isOpenResult = true
-			annotationsResult = annotations.filter { $0 != "open" && $0 != "final" }
+			annotationsResult = annotations.filter { $0 != "open" && $0 != "final" }.toMutableList()
 		}
 		else if annotations.contains("final") {
 			isOpenResult = false
-			annotationsResult = annotations.filter { $0 != "open" && $0 != "final" }
+			annotationsResult = annotations.filter { $0 != "open" && $0 != "final" }.toMutableList()
+		}
+		else if topmostAccessModifierIsPrivate() {
+			isOpenResult = false
+			annotationsResult = annotations
 		}
 		else {
 			isOpenResult = classDeclaration.isOpen
 			annotationsResult = annotations
 		}
 
-		return super.replaceClassDeclaration(ClassDeclaration(
+		let result = super.replaceClassDeclaration(ClassDeclaration(
 			range: classDeclaration.range,
 			className: classDeclaration.className,
 			annotations: annotationsResult,
@@ -1717,22 +1737,34 @@ public class OpenDeclarationsTranspilationPass: TranspilationPass {
 			isOpen: isOpenResult,
 			inherits: classDeclaration.inherits,
 			members: classDeclaration.members))
+
+		accessModifiersStack.removeLast()
+		return result
 	}
 
 	override func replaceVariableDeclaration( // gryphon annotation: override
 		_ variableDeclaration: VariableDeclaration)
 		-> MutableList<Statement>
 	{
-		let isOpenResult: Bool
+		accessModifiersStack.append(variableDeclaration.access)
+
 		var annotationsResult = variableDeclaration.annotations
 
+		let isOpenResult: Bool
 		if annotationsResult.contains("open") {
 			isOpenResult = true
-			annotationsResult = annotationsResult.filter { $0 != "open" && $0 != "final" }
+			annotationsResult = annotationsResult
+				.filter { $0 != "open" && $0 != "final" }
+				.toMutableList()
 		}
 		else if annotationsResult.contains("final") {
 			isOpenResult = false
-			annotationsResult = annotationsResult.filter { $0 != "open" && $0 != "final" }
+			annotationsResult = annotationsResult
+				.filter { $0 != "open" && $0 != "final" }
+				.toMutableList()
+		}
+		else if topmostAccessModifierIsPrivate() {
+			isOpenResult = false
 		}
 		else if let parent = parent,
 			case let .statementNode(value: parentDeclaration) = parent
@@ -1766,7 +1798,9 @@ public class OpenDeclarationsTranspilationPass: TranspilationPass {
 		variableDeclaration.isOpen = isOpenResult
 		variableDeclaration.annotations = annotationsResult
 
-		return super.replaceVariableDeclaration(variableDeclaration)
+		let result = super.replaceVariableDeclaration(variableDeclaration)
+		accessModifiersStack.removeLast()
+		return result
 	}
 }
 

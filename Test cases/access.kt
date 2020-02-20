@@ -18,7 +18,7 @@ internal open class A1 {
 	open var a2: Int = 0
 	open var a3: Int = 0
 	open var a4: Int = 0
-	private open var a5: Int = 0
+	private var a5: Int = 0
 
 	fun b1() {
 	}
@@ -41,7 +41,7 @@ open class A2 {
 	open var a2: Int = 0
 	internal open var a3: Int = 0
 	internal open var a4: Int = 0
-	private open var a5: Int = 0
+	private var a5: Int = 0
 
 	internal fun b1() {
 	}
@@ -64,7 +64,7 @@ internal open class A3 {
 	open var a2: Int = 0
 	open var a3: Int = 0
 	open var a4: Int = 0
-	private open var a5: Int = 0
+	private var a5: Int = 0
 
 	fun b1() {
 	}
@@ -82,12 +82,12 @@ internal open class A3 {
 	}
 }
 
-private open class A4 {
-	open var a1: Int = 0
-	open var a2: Int = 0
-	open var a3: Int = 0
-	open var a4: Int = 0
-	open var a5: Int = 0
+private class A4 {
+	var a1: Int = 0
+	var a2: Int = 0
+	var a3: Int = 0
+	var a4: Int = 0
+	var a5: Int = 0
 
 	fun b1() {
 	}
@@ -105,12 +105,12 @@ private open class A4 {
 	}
 }
 
-private open class A5 {
-	open var a1: Int = 0
-	open var a2: Int = 0
-	open var a3: Int = 0
-	open var a4: Int = 0
-	open var a5: Int = 0
+private class A5 {
+	var a1: Int = 0
+	var a2: Int = 0
+	var a3: Int = 0
+	var a4: Int = 0
+	var a5: Int = 0
 
 	fun b1() {
 	}
@@ -203,7 +203,7 @@ internal open class A8 {
 	}
 }
 
-private open class A9 {
+private class A9 {
 	companion object {
 		var a1: Int = 0
 		var a2: Int = 0
@@ -228,7 +228,7 @@ private open class A9 {
 	}
 }
 
-private open class A10 {
+private class A10 {
 	companion object {
 		var a1: Int = 0
 		var a2: Int = 0
@@ -648,7 +648,7 @@ open class E1 {
 	public open var a1: Int = 0
 	internal open var a2: Int = 0
 	protected open var a3: Int = 0
-	private open var a4: Int = 0
+	private var a4: Int = 0
 
 	public fun b1() {
 	}
