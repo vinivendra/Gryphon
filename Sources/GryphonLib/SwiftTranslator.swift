@@ -469,6 +469,17 @@ public class SwiftTranslator {
 			.split(withStringSeparator: " ") ?? []
 		let access = classDeclaration["access"]
 
+		let isOpen: Bool
+		if classDeclaration.standaloneAttributes.contains("final") {
+			isOpen = false
+		}
+		else if let access = access, access == "open" {
+			isOpen = true
+		}
+		else {
+			isOpen = !context.defaultFinal
+		}
+
 		// Check for inheritance
 		let inheritanceArray: MutableList<String>
 		if let inheritanceList = classDeclaration["inherits"] {
@@ -486,7 +497,7 @@ public class SwiftTranslator {
 			className: name,
 			annotations: annotations,
 			access: access,
-			isOpen: !context.defaultFinal,
+			isOpen: isOpen,
 			inherits: inheritanceArray,
 			members: classContents)
 	}
