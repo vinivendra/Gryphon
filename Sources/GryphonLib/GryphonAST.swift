@@ -329,7 +329,7 @@ public class ClassDeclaration: Statement {
 			PrintableTree(className),
 			PrintableTree.ofStrings("annotations", annotations),
 			PrintableTree.initOrNil(access),
-			isOpen ? PrintableTree("open") : PrintableTree("final"),
+			PrintableTree("open: \(isOpen)"),
 			PrintableTree.ofStrings("inherits", inherits),
 			PrintableTree.ofStatements("members", members), ]
 	}

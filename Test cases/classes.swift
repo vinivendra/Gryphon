@@ -112,6 +112,15 @@ struct D {
 	}
 }
 
+// Test open/final
+class E { // gryphon annotation: open
+	var a = 0
+}
+
+class F { // gryphon annotation: final
+	var a = 0
+}
+
 print(C.a().x)
 print(C().b().x)
 

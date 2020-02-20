@@ -1667,7 +1667,47 @@ public class OptionalsInConditionalCastsTranspilationPass: TranspilationPass {
 
 // TODO: Improve handling of `open` classes (either remove default open or allow a final annotation
 // to remove it). When that's done, make sure class annotations are tested.
-// TODO: Create a pass to override isOpen using annotations
+// TODO: Handle Swift's final and open
+
+/// Declarations that can be overriden in Kotlin have to be marked as `open` to enable overriding,
+/// or `final` to disable it. The default behavior is handled by SwiftTranslator, but users may
+/// choose on a case-by-case basis using annotations. This pass removes `open` and `final`
+/// annotations and sets the declaration's `isOpen` flag accordingly.
+public class OpenDeclarationsTranspilationPass: TranspilationPass {
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
+
+	override func replaceClassDeclaration( // gryphon annotation: override
+		_ classDeclaration: ClassDeclaration)
+		-> MutableList<Statement>
+	{
+		let annotations = classDeclaration.annotations
+
+		let isOpenResult: Bool
+		let annotationsResult: MutableList<String>
+		if annotations.contains("open") {
+			isOpenResult = true
+			annotationsResult = annotations.filter { $0 != "open" && $0 != "final" }
+		}
+		else if annotations.contains("final") {
+			isOpenResult = false
+			annotationsResult = annotations.filter { $0 != "open" && $0 != "final" }
+		}
+		else {
+			isOpenResult = classDeclaration.isOpen
+			annotationsResult = annotations
+		}
+
+		return super.replaceClassDeclaration(ClassDeclaration(
+			range: classDeclaration.range,
+			className: classDeclaration.className,
+			annotations: annotationsResult,
+			access: classDeclaration.access,
+			isOpen: isOpenResult,
+			inherits: classDeclaration.inherits,
+			members: classDeclaration.members))
+	}
+}
 
 /// This pass is responsible for determining what access modifiers are going to be printed in the
 /// output code. This mainly includes two tasks: determining how to translate Swift's access
@@ -4142,6 +4182,7 @@ public extension TranspilationPass {
 		ast = CallsToSuperclassInitializersTranspilationPass(ast: ast, context: context).run()
 		ast = OptionalsInConditionalCastsTranspilationPass(ast: ast, context: context).run()
 		ast = AccessModifiersTranspilationPass(ast: ast, context: context).run()
+		ast = OpenDeclarationsTranspilationPass(ast: ast, context: context).run()
 
 		// - CapitalizeEnums has to be before IsOperatorsInSealedClasses
 		ast = CapitalizeEnumsTranspilationPass(ast: ast, context: context).run()

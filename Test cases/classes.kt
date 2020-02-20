@@ -89,6 +89,14 @@ internal data class D(
 	}
 }
 
+internal open class E {
+	var a: Int = 0
+}
+
+internal class F {
+	var a: Int = 0
+}
+
 fun main(args: Array<String>) {
 	val box1: Box = Box()
 
