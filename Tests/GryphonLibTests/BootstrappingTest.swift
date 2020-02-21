@@ -70,13 +70,17 @@ class BootstrappingTest: XCTestCase {
 				let transpiledSwiftAST = try Utilities.readFile(swiftASTFilePath)
 
 				// Get Swift results
-				let driverResult = try Driver.run(withArguments:
+				let arguments: MutableList<String> =
 					["-skipASTDumps",
 					 "-emit-swiftAST",
 					 "-indentation=t",
 					 "-avoid-unicode",
 					 "-q", "-Q",
-					 testCasePath, ])
+					 testCasePath, ]
+				if testName.hasSuffix("-default-final") {
+					arguments.append("-default-final")
+				}
+				let driverResult = try Driver.run(withArguments: arguments)
 				guard let resultArray = driverResult as? MutableList<Any?>,
 					let swiftASTs = resultArray.as(MutableList<SwiftAST>.self),
 					let originalSwiftAST = swiftASTs.first else
@@ -122,13 +126,17 @@ class BootstrappingTest: XCTestCase {
 				let transpiledRawAST = try Utilities.readFile(rawASTFilePath)
 
 				// Get Swift results
-				let driverResult = try Driver.run(withArguments:
+				let arguments: MutableList<String> =
 					["-skipASTDumps",
 					 "-emit-rawAST",
 					 "-indentation=t",
 					 "-avoid-unicode",
 					 "-q", "-Q",
-					 testCasePath, ])
+					 testCasePath, ]
+				if testName.hasSuffix("-default-final") {
+					arguments.append("-default-final")
+				}
+				let driverResult = try Driver.run(withArguments: arguments)
 				guard let resultArray = driverResult as? MutableList<Any?>,
 					let rawASTs = resultArray.as(MutableList<GryphonAST>.self),
 					let originalRawAST = rawASTs.first else
@@ -174,13 +182,17 @@ class BootstrappingTest: XCTestCase {
 				let transpiledAST = try Utilities.readFile(astFilePath)
 
 				// Get Swift results
-				let driverResult = try Driver.run(withArguments:
+				let arguments: MutableList<String> =
 					["-skipASTDumps",
 					 "-emit-AST",
 					 "-indentation=t",
 					 "-avoid-unicode",
 					 "-q", "-Q",
-					 testCasePath, ])
+					 testCasePath, ]
+				if testName.hasSuffix("-default-final") {
+					arguments.append("-default-final")
+				}
+				let driverResult = try Driver.run(withArguments: arguments)
 				guard let resultArray = driverResult as? MutableList<Any?>,
 					let asts = resultArray.as(MutableList<GryphonAST>.self),
 					let originalAST = asts.first else
@@ -226,13 +238,17 @@ class BootstrappingTest: XCTestCase {
 				let transpiledKotlinCode = try Utilities.readFile(testOutputFilePath)
 
 				// Get Swift results
-				let driverResult = try Driver.run(withArguments:
+				let arguments: MutableList<String> =
 					["-skipASTDumps",
 					 "-emit-kotlin",
 					 "-indentation=t",
 					 "-avoid-unicode",
 					 "-q", "-Q",
-					 testCasePath, ])
+					 testCasePath, ]
+				if testName.hasSuffix("-default-final") {
+					arguments.append("-default-final")
+				}
+				let driverResult = try Driver.run(withArguments: arguments)
 				guard let resultArray = driverResult as? MutableList<Any?>,
 					let kotlinCodes = resultArray
 						.as(MutableList<Driver.KotlinTranslation>.self)?

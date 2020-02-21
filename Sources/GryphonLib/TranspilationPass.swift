@@ -1775,16 +1775,15 @@ public class OpenDeclarationsTranspilationPass: TranspilationPass {
 				isOpenResult = variableDeclaration.isOpen
 			}
 			else if parentDeclaration is CompanionObject {
-				// Static variables are final by default in Swift (they have `final` on the AST
-				// dump) so the value should already be final here
-				isOpenResult = variableDeclaration.isOpen
+				// Static declarations are always final in Swift
+				isOpenResult = false
 			}
 			else if parentDeclaration is StructDeclaration {
-				// Struct properties are always final in Swift
+				// Struct members are always final in Swift
 				isOpenResult = false
 			}
 			else if parentDeclaration is EnumDeclaration {
-				// Enum properties are always final in Swift
+				// Enum members are always final in Swift
 				isOpenResult = false
 			}
 			else {
@@ -1836,16 +1835,15 @@ public class OpenDeclarationsTranspilationPass: TranspilationPass {
 				isOpenResult = functionDeclaration.isOpen
 			}
 			else if parentDeclaration is CompanionObject {
-				// Static methods are final by default in Swift (they have `final` on the AST
-				// dump) so the value should already be final here
-				isOpenResult = functionDeclaration.isOpen
+				// Static declarations are always final in Swift
+				isOpenResult = false
 			}
 			else if parentDeclaration is StructDeclaration {
-				// Struct methods are always final in Swift
+				// Struct members are always final in Swift
 				isOpenResult = false
 			}
 			else if parentDeclaration is EnumDeclaration {
-				// Enum methods are always final in Swift
+				// Enum members are always final in Swift
 				isOpenResult = false
 			}
 			else {

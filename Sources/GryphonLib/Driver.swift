@@ -372,7 +372,6 @@ public class Driver {
 		}
 
 		//
-		// TODO: test
 		let defaultFinal = arguments.contains("-default-final")
 
 		//

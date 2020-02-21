@@ -65,11 +65,12 @@ class IntegrationTest: XCTestCase {
 				let testCasePath = TestUtilities.testCasesPath + testName
 				let astDumpFilePath =
 					SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: testCasePath)
+				let defaultFinal = testName.hasSuffix("-default-final")
 				let generatedKotlinCode = try Compiler.transpileKotlinCode(
 					fromASTDumpFiles: [astDumpFilePath],
 					withContext: TranspilationContext(
 						indentationString: "\t",
-						defaultFinal: false)).first!
+						defaultFinal: defaultFinal)).first!
 
 				// Load the previously stored kotlin code from file
 				let expectedKotlinCode = try! Utilities.readFile(testCasePath.withExtension(.kt))
