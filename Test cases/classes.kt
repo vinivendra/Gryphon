@@ -24,11 +24,11 @@ internal open class Box {
 		}
 	open var c: Int? = null
 
-	fun returnFive(): Int {
+	open fun returnFive(): Int {
 		return a
 	}
 
-	fun returnInt(a: Int): Int {
+	open fun returnInt(a: Int): Int {
 		return a
 	}
 }
@@ -61,11 +61,11 @@ internal open class C {
 
 	open var x: Int = 0
 
-	fun b(): C {
+	open fun b(): C {
 		return C()
 	}
 
-	fun e(): Int {
+	open fun e(): Int {
 		println("Hello, world!")
 		return 1
 	}

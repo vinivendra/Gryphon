@@ -598,12 +598,19 @@ public class KotlinTranslator {
 			result.append("operator fun invoke(")
 		}
 		else {
-			if let annotations = functionDeclaration.annotations {
-				result.append(annotations + " ")
+			if !functionDeclaration.annotations.isEmpty {
+				let annotationsString = functionDeclaration.annotations.joined(separator: " ")
+				result.append("\(annotationsString) ")
 			}
+
 			if let access = functionDeclaration.access {
-				result.append(access + " ")
+				result.append("\(access) ")
 			}
+
+			if functionDeclaration.isOpen {
+				result.append("open ")
+			}
+
 			result.append("fun ")
 			if let extensionType = functionDeclaration.extendsType {
 				let translatedExtensionType = translateType(extensionType)

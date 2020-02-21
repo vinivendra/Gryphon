@@ -1901,17 +1901,28 @@ public class SwiftTranslator {
 		}
 
 		// TODO: test annotations in functions
-		let annotations: MutableList<String?> = []
-		annotations.append(getTranslationCommentValue(
+		let annotations = getTranslationCommentValue(
 			forNode: functionDeclaration,
-			key: .annotation))
+			key: .annotation)?
+			.split(withStringSeparator: " ")
+			?? []
+
 		if isSubscript {
 			annotations.append("operator")
 		}
-		let joinedAnnotations = annotations.compactMap { $0 }.joined(separator: " ")
-		let annotationsResult = joinedAnnotations.isEmpty ? nil : joinedAnnotations
 
 		let isPure = nodeHasTranslationComment(functionDeclaration, withKey: .pure)
+
+		let isOpen: Bool
+		if functionDeclaration.standaloneAttributes.contains("final") {
+			isOpen = false
+		}
+		else if let access = access, access == "open" {
+			isOpen = true
+		}
+		else {
+			isOpen = !context.defaultFinal
+		}
 
 		let prefix = String(functionNamePrefix)
 		if prefix == "init" {
@@ -1921,6 +1932,7 @@ public class SwiftTranslator {
 				returnType: returnType,
 				functionType: interfaceType,
 				genericTypes: genericTypes,
+				isOpen: isOpen,
 				isImplicit: isImplicit,
 				isStatic: isStatic,
 				isMutating: isMutating,
@@ -1928,7 +1940,7 @@ public class SwiftTranslator {
 				extendsType: nil,
 				statements: statements,
 				access: access,
-				annotations: annotationsResult,
+				annotations: annotations,
 				superCall: nil)
 		}
 		else {
@@ -1939,6 +1951,7 @@ public class SwiftTranslator {
 				returnType: returnType,
 				functionType: interfaceType,
 				genericTypes: genericTypes,
+				isOpen: isOpen,
 				isImplicit: isImplicit,
 				isStatic: isStatic,
 				isMutating: isMutating,
@@ -1946,7 +1959,7 @@ public class SwiftTranslator {
 				extendsType: nil,
 				statements: statements,
 				access: access,
-				annotations: annotationsResult)
+				annotations: annotations)
 		}
 	}
 
@@ -2068,7 +2081,9 @@ public class SwiftTranslator {
 
 			let isImplicit = subtree.standaloneAttributes.contains("implicit")
 			let isPure = nodeHasTranslationComment(subtree, withKey: .pure)
-			let annotations = getTranslationCommentValue(forNode: subtree, key: .annotation)
+			let annotations = getTranslationCommentValue(forNode: subtree, key: .annotation)?
+				.split(withStringSeparator: " ")
+				?? []
 
 			if subtree["get_for"] != nil {
 				getter = FunctionDeclaration(
@@ -2078,6 +2093,7 @@ public class SwiftTranslator {
 					returnType: typeName,
 					functionType: "() -> (\(typeName))",
 					genericTypes: [],
+					isOpen: false,
 					isImplicit: isImplicit,
 					isStatic: false,
 					isMutating: false,
@@ -2096,6 +2112,7 @@ public class SwiftTranslator {
 					returnType: "()",
 					functionType: "(\(typeName)) -> ()",
 					genericTypes: [],
+					isOpen: false,
 					isImplicit: isImplicit,
 					isStatic: false,
 					isMutating: false,

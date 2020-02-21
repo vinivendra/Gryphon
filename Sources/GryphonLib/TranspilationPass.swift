@@ -942,11 +942,10 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 			variableDeclaration.typeName == "String",
 			let getter = variableDeclaration.getter
 		{
-			let annotations = variableDeclaration.annotations
-			if !annotations.contains("override") {
-				annotations.append("override")
+			let newAnnotations = variableDeclaration.annotations
+			if !newAnnotations.contains("override") {
+				newAnnotations.append("override")
 			}
-			let newAnnotations = annotations.joined(separator: " ")
 
 			return [FunctionDeclaration(
 				range: variableDeclaration.range,
@@ -955,6 +954,7 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 				returnType: "String",
 				functionType: "() -> String",
 				genericTypes: [],
+				isOpen: !context.defaultFinal,
 				isImplicit: false,
 				isStatic: false,
 				isMutating: false,
@@ -1122,6 +1122,7 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 					returnType: initializerDeclaration.returnType,
 					functionType: initializerDeclaration.functionType,
 					genericTypes: initializerDeclaration.genericTypes,
+					isOpen: initializerDeclaration.isOpen,
 					isImplicit: initializerDeclaration.isImplicit,
 					isStatic: initializerDeclaration.isStatic,
 					isMutating: initializerDeclaration.isMutating,
@@ -1597,6 +1598,7 @@ public class CallsToSuperclassInitializersTranspilationPass: TranspilationPass {
 				returnType: initializerDeclaration.returnType,
 				functionType: initializerDeclaration.functionType,
 				genericTypes: initializerDeclaration.genericTypes,
+				isOpen: initializerDeclaration.isOpen,
 				isImplicit: initializerDeclaration.isImplicit,
 				isStatic: initializerDeclaration.isStatic,
 				isMutating: initializerDeclaration.isMutating,
@@ -1802,6 +1804,67 @@ public class OpenDeclarationsTranspilationPass: TranspilationPass {
 		accessModifiersStack.removeLast()
 		return result
 	}
+
+	override func replaceFunctionDeclaration( // gryphon annotation: override
+		_ functionDeclaration: FunctionDeclaration)
+		-> MutableList<Statement>
+	{
+		accessModifiersStack.append(functionDeclaration.access)
+
+		var annotationsResult = functionDeclaration.annotations
+
+		let isOpenResult: Bool
+		if annotationsResult.contains("open") {
+			isOpenResult = true
+			annotationsResult = annotationsResult
+				.filter { $0 != "open" && $0 != "final" }
+				.toMutableList()
+		}
+		else if annotationsResult.contains("final") {
+			isOpenResult = false
+			annotationsResult = annotationsResult
+				.filter { $0 != "open" && $0 != "final" }
+				.toMutableList()
+		}
+		else if topmostAccessModifierIsPrivate() {
+			isOpenResult = false
+		}
+		else if let parent = parent,
+			case let .statementNode(value: parentDeclaration) = parent
+		{
+			if parentDeclaration is ClassDeclaration {
+				isOpenResult = functionDeclaration.isOpen
+			}
+			else if parentDeclaration is CompanionObject {
+				// Static methods are final by default in Swift (they have `final` on the AST
+				// dump) so the value should already be final here
+				isOpenResult = functionDeclaration.isOpen
+			}
+			else if parentDeclaration is StructDeclaration {
+				// Struct methods are always final in Swift
+				isOpenResult = false
+			}
+			else if parentDeclaration is EnumDeclaration {
+				// Enum methods are always final in Swift
+				isOpenResult = false
+			}
+			else {
+				// Any other functions will be final
+				isOpenResult = false
+			}
+		}
+		else {
+			// Top level declarations have to be final
+			isOpenResult = false
+		}
+
+		functionDeclaration.isOpen = isOpenResult
+		functionDeclaration.annotations = annotationsResult
+
+		let result = super.replaceFunctionDeclaration(functionDeclaration)
+		accessModifiersStack.removeLast()
+		return result
+	}
 }
 
 /// This pass is responsible for determining what access modifiers are going to be printed in the
@@ -1995,16 +2058,8 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 	{
 		let translationResult = translateAccessModifierAndAnnotations(
 			access: functionDeclaration.access,
-			annotations: functionDeclaration.annotations?.split(withStringSeparator: " ") ?? [],
+			annotations: functionDeclaration.annotations,
 			forDeclaration: functionDeclaration)
-
-		let resultingAnnotations: String?
-		if !translationResult.annotations.isEmpty {
-			resultingAnnotations = translationResult.annotations.joined(separator: " ")
-		}
-		else {
-			resultingAnnotations = nil
-		}
 
 		accessModifiersStack.append(translationResult.access)
 		let result = super.replaceFunctionDeclaration(FunctionDeclaration(
@@ -2014,6 +2069,7 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 			returnType: functionDeclaration.returnType,
 			functionType: functionDeclaration.functionType,
 			genericTypes: functionDeclaration.genericTypes,
+			isOpen: functionDeclaration.isOpen,
 			isImplicit: functionDeclaration.isImplicit,
 			isStatic: functionDeclaration.isStatic,
 			isMutating: functionDeclaration.isMutating,
@@ -2021,7 +2077,7 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 			extendsType: functionDeclaration.extendsType,
 			statements: functionDeclaration.statements,
 			access: translationResult.access,
-			annotations: resultingAnnotations))
+			annotations: translationResult.annotations))
 		accessModifiersStack.removeLast()
 		return result
 	}
@@ -3831,6 +3887,7 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 			returnType: "Bool",
 			functionType: "(Any?) -> Bool",
 			genericTypes: [],
+			isOpen: true,
 			isImplicit: functionDeclaration.isImplicit,
 			isStatic: false,
 			isMutating: functionDeclaration.isMutating,
@@ -3838,7 +3895,7 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 			extendsType: nil,
 			statements: newStatements,
 			access: "public",
-			annotations: "override open"))
+			annotations: ["override", "open"]))
 	}
 }
 
@@ -3948,6 +4005,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 			returnType: enumDeclaration.enumName + "?",
 			functionType: "(\(rawValueType)) -> \(enumDeclaration.enumName)?",
 			genericTypes: [],
+			isOpen: false,
 			isImplicit: false,
 			isStatic: true,
 			isMutating: false,
@@ -3955,7 +4013,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 			extendsType: nil,
 			statements: [switchStatement],
 			access: enumDeclaration.access,
-			annotations: nil,
+			annotations: [],
 			superCall: nil)
 	}
 
@@ -4004,6 +4062,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 			returnType: rawValueType,
 			functionType: "() -> \(rawValueType)",
 			genericTypes: [],
+			isOpen: false,
 			isImplicit: false,
 			isStatic: false,
 			isMutating: false,
@@ -4011,7 +4070,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 			extendsType: nil,
 			statements: [switchStatement],
 			access: enumDeclaration.access,
-			annotations: nil)
+			annotations: [])
 
 		return VariableDeclaration(
 			range: range,

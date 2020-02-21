@@ -505,6 +505,7 @@ public class FunctionDeclaration: Statement {
 	var returnType: String
 	var functionType: String
 	var genericTypes: MutableList<String>
+	var isOpen: Bool
 	var isImplicit: Bool
 	var isStatic: Bool
 	var isMutating: Bool
@@ -512,7 +513,7 @@ public class FunctionDeclaration: Statement {
 	var extendsType: String?
 	var statements: MutableList<Statement>?
 	var access: String?
-	var annotations: String?
+	var annotations: MutableList<String>
 
 	init(
 		range: SourceFileRange?,
@@ -521,6 +522,7 @@ public class FunctionDeclaration: Statement {
 		returnType: String,
 		functionType: String,
 		genericTypes: MutableList<String>,
+		isOpen: Bool,
 		isImplicit: Bool,
 		isStatic: Bool,
 		isMutating: Bool,
@@ -528,7 +530,7 @@ public class FunctionDeclaration: Statement {
 		extendsType: String?,
 		statements: MutableList<Statement>?,
 		access: String?,
-		annotations: String?,
+		annotations: MutableList<String>,
 		name: String = "FunctionDeclaration".capitalizedAsCamelCase())
 	{
 		self.prefix = prefix
@@ -536,6 +538,7 @@ public class FunctionDeclaration: Statement {
 		self.returnType = returnType
 		self.functionType = functionType
 		self.genericTypes = genericTypes
+		self.isOpen = isOpen
 		self.isImplicit = isImplicit
 		self.isStatic = isStatic
 		self.isMutating = isMutating
@@ -562,10 +565,12 @@ public class FunctionDeclaration: Statement {
 
 		return [
 			extendsType.map { PrintableTree("extends type \($0)") },
+			PrintableTree("open: \(isOpen)"),
 			isImplicit ? PrintableTree("implicit") : nil,
 			isStatic ? PrintableTree("static") : nil,
 			isMutating ? PrintableTree("mutating") : nil,
 			PrintableTree.initOrNil(access),
+			PrintableTree.ofStrings("annotations", annotations),
 			PrintableTree("type: \(functionType)"),
 			PrintableTree("prefix: \(prefix)"),
 			PrintableTree("parameters", parametersTrees),
@@ -580,6 +585,7 @@ public class FunctionDeclaration: Statement {
 			lhs.returnType == rhs.returnType &&
 			lhs.functionType == rhs.functionType &&
 			lhs.genericTypes == rhs.genericTypes &&
+			lhs.isOpen == rhs.isOpen &&
 			lhs.isImplicit == rhs.isImplicit &&
 			lhs.isStatic == rhs.isStatic &&
 			lhs.isMutating == rhs.isMutating &&
@@ -600,6 +606,7 @@ public class InitializerDeclaration: FunctionDeclaration {
 		returnType: String,
 		functionType: String,
 		genericTypes: MutableList<String>,
+		isOpen: Bool,
 		isImplicit: Bool,
 		isStatic: Bool,
 		isMutating: Bool,
@@ -607,7 +614,7 @@ public class InitializerDeclaration: FunctionDeclaration {
 		extendsType: String?,
 		statements: MutableList<Statement>?,
 		access: String?,
-		annotations: String?,
+		annotations: MutableList<String>,
 		superCall: CallExpression?,
 		name: String = "FunctionDeclaration".capitalizedAsCamelCase())
 	{
@@ -619,6 +626,7 @@ public class InitializerDeclaration: FunctionDeclaration {
 			returnType: returnType,
 			functionType: functionType,
 			genericTypes: genericTypes,
+			isOpen: isOpen,
 			isImplicit: isImplicit,
 			isStatic: isStatic,
 			isMutating: isMutating,

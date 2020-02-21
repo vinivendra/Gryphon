@@ -20,16 +20,16 @@ internal open class A1 {
 	open var a4: Int = 0
 	private var a5: Int = 0
 
-	fun b1() {
+	open fun b1() {
 	}
 
-	fun b2() {
+	open fun b2() {
 	}
 
-	fun b3() {
+	open fun b3() {
 	}
 
-	fun b4() {
+	open fun b4() {
 	}
 
 	private fun b5() {
@@ -43,16 +43,16 @@ open class A2 {
 	internal open var a4: Int = 0
 	private var a5: Int = 0
 
-	internal fun b1() {
+	internal open fun b1() {
 	}
 
-	fun b2() {
+	open fun b2() {
 	}
 
-	internal fun b3() {
+	internal open fun b3() {
 	}
 
-	internal fun b4() {
+	internal open fun b4() {
 	}
 
 	private fun b5() {
@@ -66,16 +66,16 @@ internal open class A3 {
 	open var a4: Int = 0
 	private var a5: Int = 0
 
-	fun b1() {
+	open fun b1() {
 	}
 
-	fun b2() {
+	open fun b2() {
 	}
 
-	fun b3() {
+	open fun b3() {
 	}
 
-	fun b4() {
+	open fun b4() {
 	}
 
 	private fun b5() {
@@ -650,13 +650,13 @@ open class E1 {
 	protected open var a3: Int = 0
 	private var a4: Int = 0
 
-	public fun b1() {
+	public open fun b1() {
 	}
 
-	internal fun b2() {
+	internal open fun b2() {
 	}
 
-	protected fun b3() {
+	protected open fun b3() {
 	}
 
 	private fun b4() {

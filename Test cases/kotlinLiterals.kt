@@ -68,7 +68,7 @@ internal open class InsertClass {
 
 	open var e: String = "class e"
 
-	fun insertMethod() {
+	open fun insertMethod() {
 		println("method 1")
 
 		println("method 2")
