@@ -1,7 +1,6 @@
 ./.build/debug/Gryphon \
 	-emit-kotlin \
 	-indentation=4 \
-	-q \
 	-skipASTDumps \
 	\
 	Sources/GryphonLib/ASTDumpDecoder.swift \

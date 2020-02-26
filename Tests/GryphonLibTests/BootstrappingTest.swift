@@ -75,7 +75,7 @@ class BootstrappingTest: XCTestCase {
 					 "-emit-swiftAST",
 					 "-indentation=t",
 					 "-avoid-unicode",
-					 "-q", "-Q",
+					 "--write-to-console",
 					 testCasePath, ]
 				if testName.hasSuffix("-default-final") {
 					arguments.append("-default-final")
@@ -131,7 +131,7 @@ class BootstrappingTest: XCTestCase {
 					 "-emit-rawAST",
 					 "-indentation=t",
 					 "-avoid-unicode",
-					 "-q", "-Q",
+					 "--write-to-console",
 					 testCasePath, ]
 				if testName.hasSuffix("-default-final") {
 					arguments.append("-default-final")
@@ -187,7 +187,7 @@ class BootstrappingTest: XCTestCase {
 					 "-emit-AST",
 					 "-indentation=t",
 					 "-avoid-unicode",
-					 "-q", "-Q",
+					 "--write-to-console",
 					 testCasePath, ]
 				if testName.hasSuffix("-default-final") {
 					arguments.append("-default-final")
@@ -243,7 +243,7 @@ class BootstrappingTest: XCTestCase {
 					 "-emit-kotlin",
 					 "-indentation=t",
 					 "-avoid-unicode",
-					 "-q", "-Q",
+					 "--write-to-console",
 					 testCasePath, ]
 				if testName.hasSuffix("-default-final") {
 					arguments.append("-default-final")

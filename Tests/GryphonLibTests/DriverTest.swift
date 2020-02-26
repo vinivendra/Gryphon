@@ -64,7 +64,7 @@ class DriverTest: XCTestCase {
 				["-skipASTDumps",
 				 "-emit-kotlin",
 				 "-indentation=t",
-				 "-q", "-Q",
+				 "--write-to-console",
 				 testCasePath, ])
 			let resultArray1 = driverResult1 as? MutableList<Any?>
 			let kotlinTranslations1 = resultArray1?.as(MutableList<Driver.KotlinTranslation>.self)
@@ -85,7 +85,7 @@ class DriverTest: XCTestCase {
 				 "-emit-kotlin",
 				 "-indentation=t",
 				 "-no-main-file",
-				 "-q", "-Q",
+				 "--write-to-console",
 				 testCasePath, ])
 			let resultArray2 = driverResult2 as? MutableList<Any?>
 			let kotlinTranslations2 = resultArray2?.as(MutableList<Driver.KotlinTranslation>.self)
@@ -121,7 +121,7 @@ class DriverTest: XCTestCase {
 				 "-emit-kotlin",
 				 "-indentation=t",
 				 "-continue-on-error",
-				 "-q", "-Q",
+				 "--write-to-console",
 				 testCasePath, ])
 
 			XCTAssert(Compiler.numberOfErrors == 2)
@@ -134,7 +134,7 @@ class DriverTest: XCTestCase {
 				 "-emit-kotlin",
 				 "-indentation=t",
 				 "-no-main-file",
-				 "-q", "-Q",
+				 "--write-to-console",
 				 testCasePath, ])
 
 			XCTFail("Expected Driver to throw an error.")
@@ -155,7 +155,7 @@ class DriverTest: XCTestCase {
 				["-skipASTDumps",
 				 "-emit-kotlin",
 				 "-indentation=t",
-				 "-q", "-Q",
+				 "--write-to-console",
 				 testCasePath, ])
 			let resultArray1 = driverResult1 as? MutableList<Any?>
 			let kotlinTranslations1 = resultArray1?.as(MutableList<Driver.KotlinTranslation>.self)
@@ -176,7 +176,7 @@ class DriverTest: XCTestCase {
 				["-skipASTDumps",
 				 "-emit-kotlin",
 				 "-indentation=4",
-				 "-q", "-Q",
+				 "--write-to-console",
 				 testCasePath, ])
 			let resultArray2 = driverResult2 as? MutableList<Any?>
 			let kotlinTranslations2 = resultArray2?.as(MutableList<Driver.KotlinTranslation>.self)

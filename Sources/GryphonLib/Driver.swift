@@ -41,8 +41,7 @@ public class Driver {
 		"-no-main-file",
 		"-default-final",
 		"-continue-on-error",
-		"-Q",
-		"-q",
+		"--write-to-console",
 		"-avoid-unicode",
 		"-verbose",
 		"-sync",
@@ -65,8 +64,7 @@ public class Driver {
 		let shouldGenerateRawAST: Bool
 		let shouldGenerateSwiftAST: Bool
 
-		let canPrintToFiles: Bool
-		let canPrintToOutput: Bool
+		let shouldPrintToConsole: Bool
 
 		let horizontalLimit: Int?
 		let outputFolder: String
@@ -105,9 +103,7 @@ public class Driver {
 		if settings.shouldEmitSwiftAST {
 			let output = swiftAST.prettyDescription(
 				horizontalLimit: settings.horizontalLimit)
-			if settings.canPrintToOutput && !settings.canPrintToFiles {
-				print(output)
-			}
+			print(output)
 		}
 
 		guard settings.shouldGenerateRawAST else {
@@ -125,7 +121,7 @@ public class Driver {
 			let output = swiftAST.prettyDescription(
 				horizontalLimit: settings.horizontalLimit)
 			if let outputFilePath = gryphonRawAST.outputFileMap[.swiftAST],
-				settings.canPrintToFiles
+				!settings.shouldPrintToConsole
 			{
 				Utilities.createFile(atPath: outputFilePath, containing: output)
 			}
@@ -135,11 +131,11 @@ public class Driver {
 			let output = gryphonRawAST.prettyDescription(
 				horizontalLimit: settings.horizontalLimit)
 			if let outputFilePath = gryphonRawAST.outputFileMap[.gryphonASTRaw],
-				settings.canPrintToFiles
+				!settings.shouldPrintToConsole
 			{
 				Utilities.createFile(atPath: outputFilePath, containing: output)
 			}
-			else if settings.canPrintToOutput {
+			else {
 				print(output)
 			}
 		}
@@ -168,11 +164,11 @@ public class Driver {
 			let output = gryphonAST.prettyDescription(
 				horizontalLimit: settings.horizontalLimit)
 			if let outputFilePath = gryphonAST.outputFileMap[.gryphonAST],
-				settings.canPrintToFiles
+				!settings.shouldPrintToConsole
 			{
 				Utilities.createFile(atPath: outputFilePath, containing: output)
 			}
-			else if settings.canPrintToOutput {
+			else {
 				print(output)
 			}
 		}
@@ -185,13 +181,13 @@ public class Driver {
 			fromGryphonAST: gryphonAST,
 			withContext: context)
 		if let outputFilePath = gryphonAST.outputFileMap[.kt],
-			settings.canPrintToFiles
+			!settings.shouldPrintToConsole
 		{
 			let absoluteFilePath = Utilities.getAbsoultePath(forFile: outputFilePath)
 			Compiler.log("Writing to file \(absoluteFilePath)")
 			Utilities.createFile(atPath: outputFilePath, containing: kotlinCode)
 		}
-		else if settings.canPrintToOutput {
+		else {
 			if settings.shouldEmitKotlin {
 				print(kotlinCode)
 			}
@@ -275,7 +271,7 @@ public class Driver {
 			let swiftFiles = inputFiles.filter {
 				Utilities.getExtension(of: $0) == .swift
 			}
-			let success = updateASTDumps(forFiles: swiftFiles.toMutableList())
+			let success = updateASTDumps(forFiles: swiftFiles)
 			if !success {
 				throw DriverError(errorMessage: "AST dump failed.")
 			}
@@ -345,8 +341,7 @@ public class Driver {
 		let shouldEmitKotlin = !hasChosenTask || arguments.contains("-emit-kotlin")
 
 		//
-		let canPrintToFiles = !arguments.contains("-Q")
-		let canPrintToOutput = !arguments.contains("-q")
+		let shouldPrintToConsole = arguments.contains("--write-to-console")
 
 		//
 		// Note: if we need to print the Swift AST to a file, we need to build the raw Gryphon AST
@@ -354,7 +349,7 @@ public class Driver {
 		let shouldGenerateKotlin = shouldBuild || shouldEmitKotlin
 		let shouldGenerateAST = shouldGenerateKotlin || shouldEmitAST
 		let shouldGenerateRawAST = shouldGenerateAST || shouldEmitRawAST ||
-			(shouldEmitSwiftAST && canPrintToFiles)
+			(shouldEmitSwiftAST && !shouldPrintToConsole)
 		let shouldGenerateSwiftAST = shouldGenerateRawAST || shouldEmitSwiftAST
 
 		//
@@ -386,8 +381,7 @@ public class Driver {
 			shouldGenerateAST: shouldGenerateAST,
 			shouldGenerateRawAST: shouldGenerateRawAST,
 			shouldGenerateSwiftAST: shouldGenerateSwiftAST,
-			canPrintToFiles: canPrintToFiles,
-			canPrintToOutput: canPrintToOutput,
+			shouldPrintToConsole: shouldPrintToConsole,
 			horizontalLimit: horizontalLimit,
 			outputFolder: outputFolder,
 			mainFilePath: mainFilePath)
@@ -638,7 +632,7 @@ public class Driver {
 		return true
 	}
 
-	static func updateASTDumps(forFiles swiftFiles: MutableList<String>) -> Bool {
+	static func updateASTDumps(forFiles swiftFiles: List<String>) -> Bool {
 		// TODO: Send these paths to constants so they aren't duplicated all around the code
 		//// Create the outputFileMap
 		var outputFileMapContents = "{\n"
@@ -811,10 +805,8 @@ public class Driver {
 
 		      ↪️  -line-limit=<N>     Limit the maximum horizontal size when printing
 		            ASTs.
-		      ↪️  -Q                  Quiet mode: do not write intermediate
-		            representations or Kotlin translations to any output files.
-		      ↪️  -q                  Quiet mode: do not write intermediate
-		            representations or Kotlin translations to the console.
+		      ↪️  --write-to-console  Write the output of any translations to the
+		            console instead of output files.
 		      ↪️  -indentation=<N>    Specify the indentation to be used in the output
 		            Kotlin files. Use "t" for tabs or an integer for the corresponding
 		            number of spaces. Defaults to tabs.
