@@ -30,26 +30,26 @@ public class Driver {
 		"clean",
 		"createASTDumpScript",
 		"makeGryphonTargets",
+		"-build",
+		"-run",
+		"-o",
+		"--no-main-file",
+		"--default-final",
+		"--continue-on-error",
+		"--write-to-console",
+		"--verbose",
+		"--sync",
 		"-skipASTDumps",
 		"-emit-swiftAST",
 		"-emit-rawAST",
 		"-emit-AST",
 		"-emit-kotlin",
-		"-build",
-		"-run",
-		"-o",
-		"-no-main-file",
-		"-default-final",
-		"-continue-on-error",
-		"--write-to-console",
 		"-avoid-unicode",
-		"-verbose",
-		"-sync",
 	]
 
 	public static let supportedArgumentsWithParameters: List<String> = [
+		"--indentation=",
 		"-line-limit=",
-		"-indentation=",
 	]
 
 	public struct Settings {
@@ -291,8 +291,8 @@ public class Driver {
 		Compiler.clearIssues()
 
 		// Parse arguments
-		Compiler.shouldLogProgress(if: arguments.contains("-verbose"))
-		Compiler.shouldStopAtFirstError = !arguments.contains("-continue-on-error")
+		Compiler.shouldLogProgress(if: arguments.contains("--verbose"))
+		Compiler.shouldStopAtFirstError = !arguments.contains("--continue-on-error")
 		Compiler.shouldAvoidUnicodeCharacters = arguments.contains("-avoid-unicode")
 
 		//
@@ -354,7 +354,7 @@ public class Driver {
 
 		//
 		let mainFilePath: String?
-		if arguments.contains("-no-main-file") {
+		if arguments.contains("--no-main-file") {
 			mainFilePath = nil
 		}
 		else if inputFilePaths.count == 1 {
@@ -367,7 +367,7 @@ public class Driver {
 		}
 
 		//
-		let defaultFinal = arguments.contains("-default-final")
+		let defaultFinal = arguments.contains("--default-final")
 
 		//
 		let settings = Settings(
@@ -388,9 +388,9 @@ public class Driver {
 
 		//
 		var indentationString = "\t"
-		if let indentationArgument = arguments.first(where: { $0.hasPrefix("-indentation=") }) {
+		if let indentationArgument = arguments.first(where: { $0.hasPrefix("--indentation=") }) {
 			let indentationargument = indentationArgument
-				.dropFirst("-indentation=".count)
+				.dropFirst("--indentation=".count)
 
 			if indentationargument == "t" {
 				indentationString = "\t"
@@ -410,7 +410,7 @@ public class Driver {
 			defaultFinal: defaultFinal)
 
 		//
-		let shouldRunConcurrently = !arguments.contains("-sync")
+		let shouldRunConcurrently = !arguments.contains("--sync")
 
 		// Update libraries syncronously to guarantee it's only done once
 		if shouldGenerateAST {
@@ -739,9 +739,9 @@ public class Driver {
 		-- Gryphon transpiler --
 		Version \(gryphonVersion)
 
-		  Calling this executable with "help", "-help" or "--help" displays this
-		  information.
-		  Calling it with "--version" displays only the current version.
+		  Running this command with "help", "-help" or "--help" displays the
+		  message below.
+		  Running it with "--version" displays the current version.
 
 		Commands:
 
@@ -770,6 +770,34 @@ public class Driver {
 		  gryphon [Options] [File paths]
 
 		  Options:
+		      ↪️  -build              Transpiles the input swift files and calls the
+		            Kotlin compiler to build them.
+		      ↪️  -run                Transpiles the input swift files, calls the Kotlin
+		            compiler to build them, and runs the resulting program. Implies
+		            `-build`.
+		      ↪️  -o                  Specifies the build folder used by `-build` and
+		            `-run`. Defaults to a folder starting with ".kotlinBuild" followed
+		            by a system identifier.
+
+		      ↪️  --no-main-file      Do not generate a Kotlin file with a "main"
+		            function.
+
+		      ↪️  --default-final     Declarations will be "final" by default instead
+		            of open.
+
+		      ↪️  --continue-on-error Continue translating even if errors are found.
+
+		      ↪️  --write-to-console  Write the output of any translations to the
+		            console instead of output files.
+		      ↪️  --indentation=<N>   Specify the indentation to be used in the output
+		            Kotlin files. Use "t" for tabs or an integer for the corresponding
+		            number of spaces. Defaults to tabs.
+
+		      ↪️  --verbose           Print more information.
+
+		      ↪️  --sync              Do not use concurrency.
+
+		Debug options:
 		      ↪️  -skipASTDumps       Skip calling the Swift compiler to update
 		            the AST dumps (i.e. if the Swift sources haven't changed since the
 		            last translation).
@@ -786,35 +814,10 @@ public class Driver {
 		      ↪️  -emit-kotlin        Emit the Kotlin output either to a file ending in
 		            ".kt" specified by a "// gryphon output: " comment or to the
 		            console. This is the default if no other `-emit` options are used.
-		      ↪️  -build              Transpiles the input swift files and calls the
-		            Kotlin compiler to build them.
-		      ↪️  -run                Transpiles the input swift files, calls the Kotlin
-		            compiler to build them, and runs the resulting program. Implies
-		            `-build`.
-		      ↪️  -o                  Specifies the build folder used by `-build` and
-		            `-run`. Defaults to a folder starting with ".kotlinBuild" followed
-		            by a system identifier.
-
-		      ↪️  -no-main-file       Do not generate a Kotlin file with a "main"
-		            function.
-
-		      ↪️  -default-final      Declarations will be "final" by default instead
-		            of open.
-
-		      ↪️  -continue-on-error  Continue translating even if errors are found.
 
 		      ↪️  -line-limit=<N>     Limit the maximum horizontal size when printing
 		            ASTs.
-		      ↪️  --write-to-console  Write the output of any translations to the
-		            console instead of output files.
-		      ↪️  -indentation=<N>    Specify the indentation to be used in the output
-		            Kotlin files. Use "t" for tabs or an integer for the corresponding
-		            number of spaces. Defaults to tabs.
-
 		      ↪️  -avoid-unicode      Avoid using Unicode arrows and emojis in some
 		            places.
-		      ↪️  -verbose            Print more information.
-
-		      ↪️  -sync               Do not use concurrency.
 		"""
 }

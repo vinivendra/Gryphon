@@ -64,7 +64,7 @@ class AcceptanceTest: XCTestCase {
 				let testCasePath = TestUtilities.testCasesPath + testName
 				let astDumpFilePath =
 					SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: testCasePath)
-				let defaultFinal = testName.hasSuffix("-default-final")
+				let defaultFinal = testName.hasSuffix("--default-final")
 				guard let compilationResult = try Compiler.transpileCompileAndRun(
 					ASTDumpFiles: [astDumpFilePath],
 					withContext: TranspilationContext(

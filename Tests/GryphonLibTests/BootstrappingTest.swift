@@ -73,12 +73,12 @@ class BootstrappingTest: XCTestCase {
 				let arguments: MutableList<String> =
 					["-skipASTDumps",
 					 "-emit-swiftAST",
-					 "-indentation=t",
+					 "--indentation=t",
 					 "-avoid-unicode",
 					 "--write-to-console",
 					 testCasePath, ]
-				if testName.hasSuffix("-default-final") {
-					arguments.append("-default-final")
+				if testName.hasSuffix("--default-final") {
+					arguments.append("--default-final")
 				}
 				let driverResult = try Driver.run(withArguments: arguments)
 				guard let resultArray = driverResult as? MutableList<Any?>,
@@ -129,12 +129,12 @@ class BootstrappingTest: XCTestCase {
 				let arguments: MutableList<String> =
 					["-skipASTDumps",
 					 "-emit-rawAST",
-					 "-indentation=t",
+					 "--indentation=t",
 					 "-avoid-unicode",
 					 "--write-to-console",
 					 testCasePath, ]
 				if testName.hasSuffix("-default-final") {
-					arguments.append("-default-final")
+					arguments.append("--default-final")
 				}
 				let driverResult = try Driver.run(withArguments: arguments)
 				guard let resultArray = driverResult as? MutableList<Any?>,
@@ -185,12 +185,12 @@ class BootstrappingTest: XCTestCase {
 				let arguments: MutableList<String> =
 					["-skipASTDumps",
 					 "-emit-AST",
-					 "-indentation=t",
+					 "--indentation=t",
 					 "-avoid-unicode",
 					 "--write-to-console",
 					 testCasePath, ]
 				if testName.hasSuffix("-default-final") {
-					arguments.append("-default-final")
+					arguments.append("--default-final")
 				}
 				let driverResult = try Driver.run(withArguments: arguments)
 				guard let resultArray = driverResult as? MutableList<Any?>,
@@ -241,12 +241,12 @@ class BootstrappingTest: XCTestCase {
 				let arguments: MutableList<String> =
 					["-skipASTDumps",
 					 "-emit-kotlin",
-					 "-indentation=t",
+					 "--indentation=t",
 					 "-avoid-unicode",
 					 "--write-to-console",
 					 testCasePath, ]
 				if testName.hasSuffix("-default-final") {
-					arguments.append("-default-final")
+					arguments.append("--default-final")
 				}
 				let driverResult = try Driver.run(withArguments: arguments)
 				guard let resultArray = driverResult as? MutableList<Any?>,

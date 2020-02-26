@@ -1681,7 +1681,7 @@ public class OptionalsInConditionalCastsTranspilationPass: TranspilationPass {
 ///   3. Swift nodes that are always final (local variables, top-level variables, static members,
 ///       structs and enum members, etc)
 ///   4. Swift annotations (either the "final" annotation or the "open" access modifier)
-///   5. If the invocation includes the `-default-final` option, what's left is final; otherwise,
+///   5. If the invocation includes the `--default-final` option, what's left is final; otherwise,
 ///       it's open.
 ///
 /// The SwiftTranslator handles numbers 4 and 5, and parts of 3 (i.e. static members are implicitly

@@ -23,10 +23,10 @@ do
 
 		defaultFinal="";
 		if [[ $file == *"-default-final.swift" ]]; then
-			defaultFinal="-default-final";
+			defaultFinal="--default-final";
 		fi
 
-        if java -jar Bootstrap/kotlin.jar -indentation=t -avoid-unicode -skipASTDumps \
+        if java -jar Bootstrap/kotlin.jar --indentation=t -avoid-unicode -skipASTDumps \
             -emit-swiftAST -emit-rawAST -emit-AST -emit-kotlin $defaultFinal \
             "$file"
         then

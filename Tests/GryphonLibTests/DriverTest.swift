@@ -63,7 +63,7 @@ class DriverTest: XCTestCase {
 			let driverResult1 = try Driver.run(withArguments:
 				["-skipASTDumps",
 				 "-emit-kotlin",
-				 "-indentation=t",
+				 "--indentation=t",
 				 "--write-to-console",
 				 testCasePath, ])
 			let resultArray1 = driverResult1 as? MutableList<Any?>
@@ -83,8 +83,8 @@ class DriverTest: XCTestCase {
 			let driverResult2 = try Driver.run(withArguments:
 				["-skipASTDumps",
 				 "-emit-kotlin",
-				 "-indentation=t",
-				 "-no-main-file",
+				 "--indentation=t",
+				 "--no-main-file",
 				 "--write-to-console",
 				 testCasePath, ])
 			let resultArray2 = driverResult2 as? MutableList<Any?>
@@ -119,8 +119,8 @@ class DriverTest: XCTestCase {
 			_ = try Driver.run(withArguments:
 				["-skipASTDumps",
 				 "-emit-kotlin",
-				 "-indentation=t",
-				 "-continue-on-error",
+				 "--indentation=t",
+				 "--continue-on-error",
 				 "--write-to-console",
 				 testCasePath, ])
 
@@ -132,8 +132,8 @@ class DriverTest: XCTestCase {
 			_ = try Driver.run(withArguments:
 				["-skipASTDumps",
 				 "-emit-kotlin",
-				 "-indentation=t",
-				 "-no-main-file",
+				 "--indentation=t",
+				 "--no-main-file",
 				 "--write-to-console",
 				 testCasePath, ])
 
@@ -154,7 +154,7 @@ class DriverTest: XCTestCase {
 			let driverResult1 = try Driver.run(withArguments:
 				["-skipASTDumps",
 				 "-emit-kotlin",
-				 "-indentation=t",
+				 "--indentation=t",
 				 "--write-to-console",
 				 testCasePath, ])
 			let resultArray1 = driverResult1 as? MutableList<Any?>
@@ -175,7 +175,7 @@ class DriverTest: XCTestCase {
 			let driverResult2 = try Driver.run(withArguments:
 				["-skipASTDumps",
 				 "-emit-kotlin",
-				 "-indentation=4",
+				 "--indentation=4",
 				 "--write-to-console",
 				 testCasePath, ])
 			let resultArray2 = driverResult2 as? MutableList<Any?>
