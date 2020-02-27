@@ -37,17 +37,20 @@ public class Driver {
 		"--write-to-console",
 		"--verbose",
 		"--sync",
+	]
+
+	public static let supportedArgumentsWithParameters: List<String> = [
+		"--indentation=",
+		"-line-limit=",
+	]
+
+	public static let debugArguments: List<String> = [
 		"-skipASTDumps",
 		"-emit-swiftAST",
 		"-emit-rawAST",
 		"-emit-AST",
 		"-emit-kotlin",
 		"-avoid-unicode",
-	]
-
-	public static let supportedArgumentsWithParameters: List<String> = [
-		"--indentation=",
-		"-line-limit=",
 	]
 
 	public struct Settings {
@@ -652,6 +655,7 @@ public class Driver {
 		// Start with all arguments, remove the ones that are OK, return what's left
 		var badArguments: List<String> = arguments
 		badArguments = badArguments.filter { !supportedArguments.contains($0) }
+		badArguments = badArguments.filter { !debugArguments.contains($0) }
 		badArguments = badArguments.filter { isSupportedArgumentWithParameters($0) }
 		badArguments = badArguments.filter { isSupportedInputFilePath($0) }
 		return badArguments
@@ -752,13 +756,13 @@ public class Driver {
 		            the AST dumps (i.e. if the Swift sources haven't changed since the
 		            last translation).
 
-		      ↪️  -emit-swiftAST      Emit the swift AST (and intermediate
+		      ↪️  -emit-swiftAST      Emit the swift AST (an intermediate
 		            representation) either to a file ending in ".swiftAST" specified by
 		            a "// gryphon output: " comment or to the console.
-		      ↪️  -emit-rawAST        Emit the raw Gryphon AST (and intermediate
+		      ↪️  -emit-rawAST        Emit the raw Gryphon AST (an intermediate
 		            representation) either to a file ending in ".gryphonASTRaw"
 		            specified by a "// gryphon output: " comment or to the console.
-		      ↪️  -emit-AST           Emit the processed Gryphon AST (and intermediate
+		      ↪️  -emit-AST           Emit the processed Gryphon AST (an intermediate
 		            representation) either to a file ending in ".gryphonASTRaw"
 		            specified by a "// gryphon output: " comment or to the console.
 		      ↪️  -emit-kotlin        Emit the Kotlin output either to a file ending in
