@@ -30,8 +30,6 @@ public class Driver {
 		"clean",
 		"createASTDumpScript",
 		"makeGryphonTargets",
-		"-build",
-		"-run",
 		"-o",
 		"--no-main-file",
 		"--default-final",
@@ -56,8 +54,6 @@ public class Driver {
 		let shouldEmitSwiftAST: Bool
 		let shouldEmitRawAST: Bool
 		let shouldEmitAST: Bool
-		let shouldRun: Bool
-		let shouldBuild: Bool
 		let shouldEmitKotlin: Bool
 		let shouldGenerateKotlin: Bool
 		let shouldGenerateAST: Bool
@@ -67,7 +63,6 @@ public class Driver {
 		let shouldPrintToConsole: Bool
 
 		let horizontalLimit: Int?
-		let outputFolder: String
 
 		let mainFilePath: String?
 	}
@@ -306,20 +301,6 @@ public class Driver {
 		}
 
 		//
-		let outputFolder: String
-		if let outputFolderIndex = arguments.firstIndex(of: "-o") {
-			if let maybeOutputFolder = arguments[safe: outputFolderIndex + 1] {
-				outputFolder = maybeOutputFolder
-			}
-			else {
-				outputFolder = SupportingFile.kotlinBuildFolder
-			}
-		}
-		else {
-			outputFolder = SupportingFile.kotlinBuildFolder
-		}
-
-		//
 		let inputFilePaths = getInputFilePaths(inArguments: arguments)
 		if inputFilePaths.isEmpty {
 			throw DriverError(errorMessage: "No input files provided.")
@@ -329,14 +310,10 @@ public class Driver {
 		let shouldEmitSwiftAST = arguments.contains("-emit-swiftAST")
 		let shouldEmitRawAST = arguments.contains("-emit-rawAST")
 		let shouldEmitAST = arguments.contains("-emit-AST")
-		let shouldRun = arguments.contains("-run")
-		let shouldBuild = shouldRun || arguments.contains("-build")
 
 		let hasChosenTask = shouldEmitSwiftAST ||
 			shouldEmitRawAST ||
-			shouldEmitAST ||
-			shouldRun ||
-			shouldBuild
+			shouldEmitAST
 
 		let shouldEmitKotlin = !hasChosenTask || arguments.contains("-emit-kotlin")
 
@@ -346,7 +323,7 @@ public class Driver {
 		//
 		// Note: if we need to print the Swift AST to a file, we need to build the raw Gryphon AST
 		// first to get the output file's path from the comments
-		let shouldGenerateKotlin = shouldBuild || shouldEmitKotlin
+		let shouldGenerateKotlin = shouldEmitKotlin
 		let shouldGenerateAST = shouldGenerateKotlin || shouldEmitAST
 		let shouldGenerateRawAST = shouldGenerateAST || shouldEmitRawAST ||
 			(shouldEmitSwiftAST && !shouldPrintToConsole)
@@ -374,8 +351,6 @@ public class Driver {
 			shouldEmitSwiftAST: shouldEmitSwiftAST,
 			shouldEmitRawAST: shouldEmitRawAST,
 			shouldEmitAST: shouldEmitAST,
-			shouldRun: shouldRun,
-			shouldBuild: shouldBuild,
 			shouldEmitKotlin: shouldEmitKotlin,
 			shouldGenerateKotlin: shouldGenerateKotlin,
 			shouldGenerateAST: shouldGenerateAST,
@@ -383,7 +358,6 @@ public class Driver {
 			shouldGenerateSwiftAST: shouldGenerateSwiftAST,
 			shouldPrintToConsole: shouldPrintToConsole,
 			horizontalLimit: horizontalLimit,
-			outputFolder: outputFolder,
 			mainFilePath: mainFilePath)
 
 		//
@@ -464,31 +438,7 @@ public class Driver {
 			}.toMutableList()
 		}
 
-		guard settings.shouldBuild else {
-			return secondResult
-		}
-
-		let generatedKotlinFiles = (secondResult.as(MutableList<KotlinTranslation>.self))!
-			.compactMap { $0.kotlinFilePath }
-		let inputKotlinFiles = inputFilePaths.filter { Utilities.getExtension(of: $0) == .kt }
-
-		let kotlinFiles = generatedKotlinFiles.toMutableList()
-		kotlinFiles.append(contentsOf: inputKotlinFiles)
-
-		guard let compilationResult = try Compiler.compile(
-			kotlinFiles: kotlinFiles,
-			outputFolder: settings.outputFolder) else
-		{
-			return nil
-		}
-
-		guard settings.shouldRun else {
-			return compilationResult
-		}
-
-		let runResult = try Compiler.runCompiledProgram(inFolder: settings.outputFolder)
-
-		return runResult
+		return secondResult
 	}
 
 	static func getInputFilePaths(

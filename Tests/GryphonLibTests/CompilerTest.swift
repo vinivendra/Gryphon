@@ -30,23 +30,17 @@ class CompilerTest: XCTestCase {
 
 	/// Tests to be run by the translated Kotlin version.
 	public func runAllTests() { // gryphon annotation: override
-		testKotlinCompiler()
 		testErrorHandling()
 		testErrorMessages()
 	}
 
 	/// Tests to be run when using Swift on Linux
 	static var allTests = [ // gryphon ignore
-		("testKotlinCompiler", testKotlinCompiler),
 		("testErrorHandling", testErrorHandling),
 		("testErrorMessages", testErrorMessages),
 	]
 
 	// MARK: - Tests
-	func testKotlinCompiler() {
-		XCTAssert(Utilities.fileExists(at: Compiler.kotlinCompilerPath))
-	}
-
 	func testErrorHandling() {
 		do {
 			Compiler.shouldStopAtFirstError = false

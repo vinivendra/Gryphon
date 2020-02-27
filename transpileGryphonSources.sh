@@ -39,4 +39,4 @@
 	Tests/GryphonLibTests/TranslationResultTest.swift \
 	Tests/GryphonLibTests/UtilitiesTest.swift \
 	\
-	Tests/GryphonLibTests/TestUtilities.swift
+	Tests/GryphonLibTests/SharedTestUtilities.swift

@@ -22,11 +22,6 @@
 import Foundation
 
 public class Compiler {
-	static let kotlinCompilerPath = (OS.osName == "Linux") ?
-		"/opt/kotlinc/bin/kotlinc" :
-		"/usr/local/bin/kotlinc"
-
-	//
 	public private(set) static var log: ((String) -> ()) = { print($0) }
 
 	public static func shouldLogProgress(if value: Bool) {
@@ -239,81 +234,6 @@ public class Compiler {
 		return try asts.map {
 			try generateKotlinCode(fromGryphonAST: $0, withContext: context)
 		}.toMutableList()
-	}
-
-	//
-	public static func compile(kotlinFiles filePaths: MutableList<String>, outputFolder: String)
-		throws -> Shell.CommandOutput?
-	{
-		log("\t- Compiling Kotlin...")
-
-		// Call the kotlin compiler
-		let arguments: MutableList = ["-include-runtime", "-d", outputFolder + "/kotlin.jar"]
-		arguments.append(contentsOf: filePaths)
-		let commandResult = Shell.runShellCommand(kotlinCompilerPath, arguments: arguments)
-
-		return commandResult
-	}
-
-	public static func transpileThenCompile(
-		ASTDumpFiles inputFiles: MutableList<String>,
-		withContext context: TranspilationContext,
-		outputFolder: String = SupportingFile.kotlinBuildFolder)
-		throws -> Shell.CommandOutput?
-	{
-		let kotlinCodes = try transpileKotlinCode(
-			fromASTDumpFiles: inputFiles,
-			withContext: context)
-		// Write kotlin files to the output folder
-		let kotlinFilePaths: MutableList<String> = []
-		for (inputFile, kotlinCode) in zip(inputFiles, kotlinCodes) {
-			let inputFileName = inputFile.split(withStringSeparator: "/").last!
-			let kotlinFileName = Utilities.changeExtension(of: inputFileName, to: .kt)
-			Utilities.createFile(
-				named: kotlinFileName,
-				inDirectory: outputFolder,
-				containing: kotlinCode)
-
-			let folderWithSlash = outputFolder.hasSuffix("/") ? outputFolder : (outputFolder + "/")
-			let kotlinFilePath = folderWithSlash + kotlinFileName
-			kotlinFilePaths.append(kotlinFilePath)
-		}
-
-		return try compile(kotlinFiles: kotlinFilePaths, outputFolder: outputFolder)
-	}
-
-	//
-	public static func runCompiledProgram(
-		inFolder buildFolder: String,
-		withArguments arguments: MutableList<String> = [])
-		throws -> Shell.CommandOutput?
-	{
-		log("\t- Running Kotlin...")
-
-		let processedBuildFolder = buildFolder.hasSuffix("/") ? buildFolder : (buildFolder + "/")
-
-		// Run the compiled program
-		let commandArguments: MutableList = ["java", "-jar", processedBuildFolder + "kotlin.jar"]
-		commandArguments.append(contentsOf: arguments)
-		let commandResult = Shell.runShellCommand(commandArguments)
-
-		return commandResult
-	}
-
-	public static func transpileCompileAndRun(
-		ASTDumpFiles inputFiles: MutableList<String>,
-		withContext context: TranspilationContext,
-		fromFolder outputFolder: String = SupportingFile.kotlinBuildFolder)
-		throws -> Shell.CommandOutput?
-	{
-		let compilationResult = try transpileThenCompile(
-			ASTDumpFiles: inputFiles,
-			withContext: context,
-			outputFolder: outputFolder)
-		guard compilationResult != nil, compilationResult!.status == 0 else {
-			return compilationResult
-		}
-		return try runCompiledProgram(inFolder: outputFolder)
 	}
 }
 

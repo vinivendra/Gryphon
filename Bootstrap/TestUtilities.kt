@@ -14,27 +14,19 @@
 // limitations under the License.
 //
 
-#if !GRYPHON
-@testable import GryphonLib
-import XCTest
-#endif
-
 public class OS {
-	#if os(macOS)
-	static let osName = "macOS"
-	#else
-	static let osName = "Linux"
-	#endif
+    companion object {
+        val javaOSName = System.getProperty("os.name")
+        val osName = if (javaOSName == "Mac OS X") { "macOS" } else { "Linux" }
 
-	#if arch(x86_64)
-	static let architecture = "x86_64"
-	#elseif arch(i386)
-	static let architecture = "i386"
-	#endif
+        val javaArchitecture = System.getProperty("os.arch")
+        val architecture = if (javaArchitecture == "x86_64") { "x86_64" }
+            else { "i386" }
 
-	public static let systemIdentifier: String = osName + "-" + architecture
+        val systemIdentifier: String = osName + "-" + architecture
 
-	static let kotlinCompilerPath = (osName == "Linux") ?
-		"/opt/kotlinc/bin/kotlinc" :
-		"/usr/local/bin/kotlinc"
+        val kotlinCompilerPath: String = if (osName == "Linux")
+            { "/opt/kotlinc/bin/kotlinc" } else
+            { "/usr/local/bin/kotlinc" }
+    }
 }

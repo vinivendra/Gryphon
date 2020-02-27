@@ -19,33 +19,29 @@ import XCTest
 
 class BootstrappingTest: XCTestCase {
 	func testUnitTests() {
-		do {
-			guard !BootstrappingTest.hasError else {
-				XCTFail("Error during setup")
-				return
-			}
-
-			guard let runOutput = try Compiler.runCompiledProgram(
-				inFolder: "Bootstrap",
-				withArguments: ["-test", "-avoid-unicode"]) else
-			{
-				XCTFail("Error running transpiled transpiler. It's possible a command timed out.")
-				return
-			}
-
-			print(runOutput.standardOutput)
-			print(runOutput.standardError)
-			print("----- Status: \(runOutput.status) -----")
-
-			let testsFailed = runOutput.standardOutput.contains("Test failed!")
-			XCTAssertFalse(testsFailed, "Kotlin unit tests failed. Printing stack trace:\n")
-
-			if testsFailed {
-				print(runOutput.standardError)
-			}
+		guard !BootstrappingTest.hasError else {
+			XCTFail("Error during setup")
+			return
 		}
-		catch let error {
-			XCTFail(error.localizedDescription)
+
+		guard let commandResult = Shell.runShellCommand([
+				"java", "-jar", "Bootstrap/kotlin.jar",
+				"-test", "-avoid-unicode",
+			]) else
+		{
+			XCTFail("Error running transpiled transpiler. It's possible a command timed out.")
+			return
+		}
+
+		print(commandResult.standardOutput)
+		print(commandResult.standardError)
+		print("----- Status: \(commandResult.status) -----")
+
+		let testsFailed = commandResult.standardOutput.contains("Test failed!")
+		XCTAssertFalse(testsFailed, "Kotlin unit tests failed. Printing stack trace:\n")
+
+		if testsFailed {
+			print(commandResult.standardError)
 		}
 	}
 

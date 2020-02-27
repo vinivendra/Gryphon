@@ -14,8 +14,6 @@
 *.gryphonAST
 # Used by the test suite to print diffs when tests fail
 /.tmp
-# Used by the acceptance tests to build the translated programs
-/.kotlinBuild*
 # Used by bootstrap tests to save the Kotlin outputs
 Test cases/Bootstrap Outputs
 # Result of building the translated programs
@@ -63,5 +61,5 @@ Bootstrap/SourceFileTest.kt
 Bootstrap/TranslationResultTest.kt
 Bootstrap/UtilitiesTest.kt
 
-Bootstrap/TestUtilities.kt
+Bootstrap/SharedTestUtilities.kt
 

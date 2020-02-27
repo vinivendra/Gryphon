@@ -68,19 +68,6 @@ fun Utilities.Companion.filesWereModifiedLaterThan(
     return false
 }
 
-public class OS {
-    companion object {
-        val javaOSName = System.getProperty("os.name")
-        val osName = if (javaOSName == "Mac OS X") { "macOS" } else { "Linux" }
-
-        val javaArchitecture = System.getProperty("os.arch")
-        val architecture = if (javaArchitecture == "x86_64") { "x86_64" }
-            else { "i386" }
-
-        val systemIdentifier: String = osName + "-" + architecture
-    }
-}
-
 fun Utilities.Companion.readFile(filePath: String): String {
     return File(filePath).readText()
 }

@@ -47,11 +47,15 @@ class DriverTest: XCTestCase {
 	// MARK: - Tests
 	func testUsageString() {
 		for argument in Driver.supportedArguments {
-			XCTAssert(Driver.usageString.contains(argument))
+			XCTAssert(
+				Driver.usageString.contains(argument),
+				"No help information for the argument \(argument)")
 		}
 
 		for argument in Driver.supportedArgumentsWithParameters {
-			XCTAssert(Driver.usageString.contains(argument))
+			XCTAssert(
+				Driver.usageString.contains(argument),
+				"No help information for the argument \(argument)")
 		}
 	}
 

@@ -78,22 +78,6 @@ fileprivate extension Date {
 	}
 }
 
-public class OS {
-	#if os(macOS)
-	static let osName = "macOS"
-	#else
-	static let osName = "Linux"
-	#endif
-
-	#if arch(x86_64)
-	static let architecture = "x86_64"
-	#elseif arch(i386)
-	static let architecture = "i386"
-	#endif
-
-	public static let systemIdentifier: String = osName + "-" + architecture
-}
-
 extension Utilities {
 	internal static func readFile(_ filePath: String) throws -> String {
 		return try String(contentsOfFile: filePath)

@@ -146,7 +146,6 @@ public class SupportingFile {
 	public static let gryphonScriptsFolder = "\(gryphonBuildFolder)/scripts"
 	public static let kotlinErrorMapsFolder = "\(gryphonBuildFolder)/KotlinErrorMaps"
 	public static let astDumpsFolder = "\(gryphonBuildFolder)/ASTDumps"
-	public static let kotlinBuildFolder = "\(gryphonBuildFolder)/kotlinBuild-\(OS.systemIdentifier)"
 
 	// Files in the project folder
 	public static let xcFileList = SupportingFile("gryphonInputFiles.xcfilelist")
