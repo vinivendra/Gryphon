@@ -203,6 +203,7 @@ public enum FileExtension: String {
     case swift
 
 	case xcfilelist
+	case xcodeproj
 }
 
 extension String {

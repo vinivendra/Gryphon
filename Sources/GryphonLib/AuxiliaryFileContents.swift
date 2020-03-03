@@ -776,7 +776,13 @@ if !errors.isEmpty {
 // gryphon multiline
 internal let xcodeTargetScriptFileContents = """
 require 'xcodeproj'
-project_path = 'iOSTest.xcodeproj'
+
+if ARGV.length < 1
+    STDERR.puts "Error: please specify the path to the Xcode project as an argument."
+    exit(false)
+end
+
+project_path = ARGV[0]
 project = Xcodeproj::Project.open(project_path)
 
 gryphonTargetName = "Gryphon"
@@ -820,7 +826,8 @@ gryphonBuildPhase.shell_script =
 	"gryphon -emit-kotlin \(dollarSign)SCRIPT_INPUT_FILE_LIST_0"
 
 # Set the path to the input file list
-gryphonBuildPhase.input_file_list_paths = ["\(dollarSign)(SRCROOT)/\(SupportingFile.xcFileList)"]
+gryphonBuildPhase.input_file_list_paths = [
+	"\(dollarSign)(SRCROOT)/\(SupportingFile.xcFileList.relativePath)"]
 
 
 ####################################################################################################

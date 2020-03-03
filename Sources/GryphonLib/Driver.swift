@@ -26,10 +26,7 @@ public class Driver {
 		"help", "-help", "--help",
 		"--version",
 		"init",
-		"-no-xcode",
 		"clean",
-		"createASTDumpScript",
-		"makeGryphonTargets",
 		"-o",
 		"--no-main-file",
 		"--default-final",
@@ -45,6 +42,8 @@ public class Driver {
 	]
 
 	public static let debugArguments: List<String> = [
+		"-setupXcode",
+		"-makeGryphonTargets",
 		"-skipASTDumps",
 		"-emit-swiftAST",
 		"-emit-rawAST",
@@ -223,25 +222,41 @@ public class Driver {
 		if arguments.contains("clean") {
 			cleanup()
 			print("Cleanup successful.")
-			return nil
+
+			if !arguments.contains("init") {
+				return nil
+			}
 		}
+
+		let inputFiles = getInputFilePaths(inArguments: arguments)
 
 		if arguments.contains("init") {
 			initialize()
 			print("Initialization successful.")
 
-			if arguments.contains("-no-xcode") {
-				return nil
+			let xcodeProjects = inputFiles.filter {
+					Utilities.getExtension(of: $0) == .xcodeproj
+				}
+
+			if let xcodeProject = xcodeProjects.first {
+				_ = try Driver.run(withArguments: ["-setupXcode", xcodeProject])
+				_ = try Driver.run(withArguments: ["-makeGryphonTargets", xcodeProject])
 			}
-			else {
-				_ = try Driver.run(withArguments: ["createASTDumpScript"])
-				_ = try Driver.run(withArguments: ["makeGryphonTargets"])
-				return nil
-			}
+
+			return nil
 		}
 
-		if arguments.contains("createASTDumpScript") {
-			let success = createSwiftASTDumpScriptFromXcode()
+		if arguments.contains("-setupXcode") {
+			let xcodeProjects = inputFiles.filter {
+					Utilities.getExtension(of: $0) == .xcodeproj
+				}
+
+			guard let xcodeProject = xcodeProjects.first else {
+				throw DriverError(errorMessage:
+					"please specify an Xcode project when using `-setupXcode`.")
+			}
+
+			let success = setupGryphonFolder(forXcodeProject: xcodeProject)
 			if success {
 				print("AST dump script creation successful.")
 				return nil
@@ -250,8 +265,17 @@ public class Driver {
 				throw DriverError(errorMessage: "AST dump script creation failed.")
 			}
 		}
-		if arguments.contains("makeGryphonTargets") {
-			let success = makeGryphonTargets()
+		if arguments.contains("-makeGryphonTargets") {
+			let xcodeProjects = inputFiles.filter {
+					Utilities.getExtension(of: $0) == .xcodeproj
+				}
+
+			guard let xcodeProject = xcodeProjects.first else {
+				throw DriverError(errorMessage:
+					"please specify an Xcode project when using `-makeGryphonTargets`.")
+			}
+
+			let success = makeGryphonTargets(forXcodeProject: xcodeProject)
 			if success {
 				print("Gryphon target creation successful.")
 				return nil
@@ -448,15 +472,24 @@ public class Driver {
 		inArguments arguments: MutableList<String>)
 		-> MutableList<String>
 	{
+		let cleanArguments = arguments.map {
+			$0.hasSuffix("/") ?
+				String($0.dropLast()) :
+				$0
+		}
+
 		let result: MutableList<String> = []
-		result.append(contentsOf: arguments.filter {
+		result.append(contentsOf: cleanArguments.filter {
 			Utilities.getExtension(of: $0) == .swift
 		})
-		result.append(contentsOf: arguments.filter {
+		result.append(contentsOf: cleanArguments.filter {
 			Utilities.getExtension(of: $0) == .swiftASTDump
 		})
+		result.append(contentsOf: cleanArguments.filter {
+			Utilities.getExtension(of: $0) == .xcodeproj
+		})
 
-		let fileLists = arguments.filter {
+		let fileLists = cleanArguments.filter {
 			Utilities.getExtension(of: $0) == .xcfilelist
 		}
 		for fileList in fileLists {
@@ -502,8 +535,12 @@ public class Driver {
 		Utilities.deleteFolder(at: SupportingFile.gryphonBuildFolder)
 	}
 
-	static func createSwiftASTDumpScriptFromXcode() -> Bool {
-		guard let commandResult = Shell.runShellCommand(["xcodebuild", "-dry-run"]) else
+	static func setupGryphonFolder(forXcodeProject xcodeProjectPath: String) -> Bool {
+		guard let commandResult = Shell.runShellCommand([
+			"xcodebuild",
+			"-dry-run",
+			"-project",
+			"\(xcodeProjectPath)", ]) else
 		{
 			print("Failed to run xcodebuild")
 			return false
@@ -563,10 +600,13 @@ public class Driver {
 		return true
 	}
 
-	static func makeGryphonTargets() -> Bool {
+	static func makeGryphonTargets(forXcodeProject xcodeProjectPath: String) -> Bool {
 		// Run the ruby script
 		guard let commandResult =
-			Shell.runShellCommand(["ruby", SupportingFile.makeGryphonTargets.relativePath]) else
+			Shell.runShellCommand([
+				"ruby",
+				"\(SupportingFile.makeGryphonTargets.relativePath)",
+				"\(xcodeProjectPath)", ]) else
 		{
 			print("Failed to make gryphon targets")
 			return false
@@ -673,7 +713,8 @@ public class Driver {
 	static func isSupportedInputFilePath(_ filePath: String) -> Bool {
 		if let fileExtension = Utilities.getExtension(of: filePath) {
 			if fileExtension == .swift || fileExtension == .swiftASTDump ||
-				fileExtension == .kt || fileExtension == .xcfilelist
+				fileExtension == .xcfilelist || fileExtension == .xcodeproj ||
+				fileExtension == .kt
 			{
 				return false
 			}
@@ -698,80 +739,79 @@ public class Driver {
 		  Running it with "--version" displays the current version.
 
 		Commands:
-
-		  ➡️  init                  Initializes the files and directories needed by
-		        Gryphon to translate the Xcode project in the current folder, and adds
-		        Gryphon targets to that project.
-		      ↪️  -no-xcode         Use this option to initialize Gryphon for
-		            translating a Swift program in the current folder that doesn't use
-		            Xcode.
-		  ➡️  clean                 Deletes the `\(SupportingFile.gryphonBuildFolder)` \
-		folder created during
-		        initialization.
-		  ➡️  createASTDumpScript   Configures Gryphon to be used with an Xcode
-		        project in the current folder. Only needed if using
-		        `gryphon init -no-xcode`.
-		  ➡️  makeGryphonTargets    Adds auxiliary targets to the Xcode project
-		        in the current folder (or resets them if they exist). Only needed if
-		        using `gryphon init -no-xcode`.
-
-		Note: Essentially, `gryphon init` is equivalent to:
-		  gryphon init -no-xcode
-		  gryphon createASTDumpScript
-		  gryphon makeGryphonTargets
+		  ➡️  init <Xcode project>
+		        Set up the current directory and the given Xcode project so that Gryphon
+		        can translate the project's source files.
+		  ➡️  clean
+		        Deletes the files and folders created by `gryphon init`.
 
 		Main usage:
-		  gryphon [Options] [File paths]
+		  gryphon [options] [file paths]
 
 		  Options:
-		      ↪️  -build              Transpiles the input swift files and calls the
-		            Kotlin compiler to build them.
-		      ↪️  -run                Transpiles the input swift files, calls the Kotlin
-		            compiler to build them, and runs the resulting program. Implies
-		            `-build`.
-		      ↪️  -o                  Specifies the build folder used by `-build` and
-		            `-run`. Defaults to a folder starting with ".kotlinBuild" followed
-		            by a system identifier.
+		      ↪️  --xcode
+		            Transpiles the given source files in a way that's compatible with
+		            Xcode projects and the iOS SDK. Omit this option if you want to
+		            transpile standalone Swift files.
 
-		      ↪️  --no-main-file      Do not generate a Kotlin file with a "main"
-		            function.
+		      ↪️  --no-main-file
+		            Do not generate a Kotlin file with a "main" function. This is
+		            implied if also using `--xcode`.
 
-		      ↪️  --default-final     Declarations will be "final" by default instead
-		            of open.
+		      ↪️  --default-final
+		            Kotlin declarations will be "final" by default instead of "open".
 
-		      ↪️  --continue-on-error Continue translating even if errors are found.
+		      ↪️  --continue-on-error
+		            Continue translating even if errors are found.
 
-		      ↪️  --write-to-console  Write the output of any translations to the
-		            console instead of output files.
-		      ↪️  --indentation=<N>   Specify the indentation to be used in the output
-		            Kotlin files. Use "t" for tabs or an integer for the corresponding
-		            number of spaces. Defaults to tabs.
+		      ↪️  --write-to-console
+		            Write the output of any translations to the console (instead of
+		            the specified output files).
+		      ↪️  --indentation=<N>
+		            Specify the indentation to be used in the output Kotlin files. Use
+		            "t" for tabs or an integer for the corresponding number of spaces.
+		            Defaults to tabs.
 
-		      ↪️  --verbose           Print more information.
+		      ↪️  --verbose
+		            Print more information to the console.
 
-		      ↪️  --sync              Do not use concurrency.
+		      ↪️  --sync
+		            Do not use concurrency.
 
-		Debug options:
-		      ↪️  -skipASTDumps       Skip calling the Swift compiler to update
-		            the AST dumps (i.e. if the Swift sources haven't changed since the
-		            last translation).
+		Advanced commands:
+		  ➡️  -setupXcode <Xcode project>
+		        Configures Gryphon's build folder to be used with the given Xcode
+		        project. Only needed if `gryphon init` was used without specifying an
+		        Xcode project.
+		  ➡️  -makeGryphonTargets <Xcode project>
+		        Adds auxiliary targets to the given Xcode project. Only needed if
+		        `gryphon init` was used without specifying an Xcode project.
 
-		      ↪️  -emit-swiftAST      Emit the swift AST (an intermediate
-		            representation) either to a file ending in ".swiftAST" specified by
-		            a "// gryphon output: " comment or to the console.
-		      ↪️  -emit-rawAST        Emit the raw Gryphon AST (an intermediate
-		            representation) either to a file ending in ".gryphonASTRaw"
-		            specified by a "// gryphon output: " comment or to the console.
-		      ↪️  -emit-AST           Emit the processed Gryphon AST (an intermediate
-		            representation) either to a file ending in ".gryphonASTRaw"
-		            specified by a "// gryphon output: " comment or to the console.
-		      ↪️  -emit-kotlin        Emit the Kotlin output either to a file ending in
-		            ".kt" specified by a "// gryphon output: " comment or to the
-		            console. This is the default if no other `-emit` options are used.
+		Advanced translation options:
+		      ↪️  -skipASTDumps
+		            Skip calling the Swift compiler to update the AST dumps (i.e. if the
+		            Swift sources haven't changed since the last translation).
 
-		      ↪️  -line-limit=<N>     Limit the maximum horizontal size when printing
-		            ASTs.
-		      ↪️  -avoid-unicode      Avoid using Unicode arrows and emojis in some
-		            places.
+		      ↪️  -emit-swiftAST
+		            Emit the Swift AST (an intermediate representation) either to a file
+		            ending in ".swiftAST" specified by a "// gryphon output: " comment
+		            or to the console if there isn't one.
+		      ↪️  -emit-rawAST
+		            Emit the raw Gryphon AST (an intermediate representation) either to
+		            a file ending in ".gryphonASTRaw" specified by a
+		            "// gryphon output: " comment or to the console if there isn't one.
+		      ↪️  -emit-AST
+		            Emit the processed Gryphon AST (an intermediate representation)
+		            either to a file ending in ".gryphonAST" specified by a
+		            "// gryphon output: " comment or to the console if there isn't one.
+		      ↪️  -emit-kotlin
+		            Emit the Kotlin output either to a file ending in ".kt" specified by
+		            a "// gryphon output: " comment or to the console if there isn't
+		            one. This is the default if no other `-emit` options are used.
+
+		      ↪️  -line-limit=<N>
+		            Limit the maximum horizontal size when printing ASTs.
+		      ↪️  -avoid-unicode
+		            Avoid using Unicode arrows and emojis in some places.
 		"""
 }
