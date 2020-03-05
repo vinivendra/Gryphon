@@ -27,7 +27,7 @@ public class Driver {
 		"--version",
 		"init",
 		"clean",
-		"-o",
+		"--xcode",
 		"--no-main-file",
 		"--default-final",
 		"--continue-on-error",
@@ -219,9 +219,11 @@ public class Driver {
 			return nil
 		}
 
+		Compiler.shouldLogProgress(if: arguments.contains("--verbose"))
+
 		if arguments.contains("clean") {
 			cleanup()
-			print("Cleanup successful.")
+			Compiler.log("Cleanup successful.")
 
 			if !arguments.contains("init") {
 				return nil
@@ -232,7 +234,7 @@ public class Driver {
 
 		if arguments.contains("init") {
 			initialize()
-			print("Initialization successful.")
+			Compiler.log("Initialization successful.")
 
 			let xcodeProjects = inputFiles.filter {
 					Utilities.getExtension(of: $0) == .xcodeproj
@@ -258,7 +260,7 @@ public class Driver {
 
 			let success = setupGryphonFolder(forXcodeProject: xcodeProject)
 			if success {
-				print("AST dump script creation successful.")
+				Compiler.log("AST dump script creation successful.")
 				return nil
 			}
 			else {
@@ -277,7 +279,7 @@ public class Driver {
 
 			let success = makeGryphonTargets(forXcodeProject: xcodeProject)
 			if success {
-				print("Gryphon target creation successful.")
+				Compiler.log("Gryphon target creation successful.")
 				return nil
 			}
 			else {
@@ -285,21 +287,34 @@ public class Driver {
 			}
 		}
 
-		if !arguments.contains("-skipASTDumps") {
-			let inputFiles = getInputFilePaths(inArguments: arguments)
-			if inputFiles.isEmpty {
-				throw DriverError(errorMessage: "No input files provided.")
-			}
-			let swiftFiles = inputFiles.filter {
-				Utilities.getExtension(of: $0) == .swift
-			}
-			let success = updateASTDumps(forFiles: swiftFiles)
-			if !success {
-				throw DriverError(errorMessage: "AST dump failed.")
-			}
+		// If there's no build folder, create one, perform the transpilation, then delete it
+		if !Utilities.fileExists(at: SupportingFile.gryphonBuildFolder) {
+			return try performCompilationWithTemporaryBuildFolder(withArguments: arguments)
+		}
+		else {
+			return try performCompilation(withArguments: arguments)
+		}
+	}
+
+	@discardableResult
+	public static func performCompilationWithTemporaryBuildFolder(
+		withArguments arguments: MutableList<String>) throws -> Any?
+	{
+		var result: Any?
+		do {
+			_ = try Driver.run(withArguments: ["init"])
+			result = try performCompilation(withArguments: arguments)
+		}
+		catch let error {
+			// Ensure `clean` runs even if an error was thrown
+			_ = try Driver.run(withArguments: ["clean"])
+			throw error
 		}
 
-		return try performCompilation(withArguments: arguments)
+		// Call `clean` if no errors were thrown
+		_ = try Driver.run(withArguments: ["clean"])
+
+		return result
 	}
 
 	@discardableResult
@@ -313,7 +328,6 @@ public class Driver {
 		Compiler.clearIssues()
 
 		// Parse arguments
-		Compiler.shouldLogProgress(if: arguments.contains("--verbose"))
 		Compiler.shouldStopAtFirstError = !arguments.contains("--continue-on-error")
 		Compiler.shouldAvoidUnicodeCharacters = arguments.contains("-avoid-unicode")
 
@@ -406,19 +420,33 @@ public class Driver {
 		}
 
 		//
+		let shouldRunConcurrently = !arguments.contains("--sync")
+
+		//// Dump the ASTs
+		if !arguments.contains("-skipASTDumps") {
+			let inputFiles = getInputFilePaths(inArguments: arguments)
+			if inputFiles.isEmpty {
+				throw DriverError(errorMessage: "No input files provided.")
+			}
+			let swiftFiles = inputFiles.filter {
+				Utilities.getExtension(of: $0) == .swift
+			}
+			try updateASTDumps(
+				forFiles: swiftFiles,
+				usingXcode: arguments.contains("--xcode"))
+		}
+
+		//// Perform transpilation
+
+		//
+		Compiler.log("Updating libraries...")
 		let context = TranspilationContext(
 			indentationString: indentationString,
 			defaultFinal: defaultFinal)
 
 		//
-		let shouldRunConcurrently = !arguments.contains("--sync")
+		Compiler.log("Translating source files...\n")
 
-		// Update libraries syncronously to guarantee it's only done once
-		if shouldGenerateAST {
-			try Utilities.processGryphonTemplatesLibrary()
-		}
-
-		// Run compiler steps
 		let filteredInputFiles = inputFilePaths.filter {
 			Utilities.fileHasExtension($0, .swift) || Utilities.fileHasExtension($0, .swiftASTDump)
 		}
@@ -625,7 +653,7 @@ public class Driver {
 		return true
 	}
 
-	static func updateASTDumps(forFiles swiftFiles: List<String>) -> Bool {
+	static func updateASTDumps(forFiles swiftFiles: List<String>, usingXcode: Bool) throws {
 		// TODO: Send these paths to constants so they aren't duplicated all around the code
 		//// Create the outputFileMap
 		var outputFileMapContents = "{\n"
@@ -661,22 +689,51 @@ public class Driver {
 			Utilities.createFolderIfNeeded(at: folderPath)
 		}
 
-		//// Call the Swift compiler
-		guard let commandResult =
-			Shell.runShellCommand(["bash", SupportingFile.astDumpsScript.relativePath]) else
-		{
-			print("Failed to call AST dump script.")
-			return false
+		//// Call the Swift compiler to dump the ASTs
+		let maybeCommandResult: Shell.CommandOutput?
+
+		Compiler.log("Calling the Swift compiler...")
+		if usingXcode {
+			maybeCommandResult = Shell.runShellCommand(
+				["bash", SupportingFile.astDumpsScript.relativePath],
+				timeout: nil)
+		}
+		else {
+			let arguments: MutableList = [
+				"swiftc",
+				"-dump-ast",
+				"-module-name", "Main",
+				"-output-file-map=\(SupportingFile.temporaryOutputFileMap.absolutePath)", ]
+			for swiftFile in swiftFiles {
+				arguments.append(Utilities.getAbsoultePath(forFile: swiftFile))
+			}
+
+			arguments.append(SupportingFile.gryphonTemplatesLibrary.absolutePath)
+
+			maybeCommandResult = Shell.runShellCommand(
+				arguments,
+				timeout: nil)
+		}
+
+		guard let commandResult = maybeCommandResult else {
+			throw DriverError(errorMessage: "Failed to call the Swift compiler.")
 		}
 
 		guard commandResult.status == 0 else {
-			print("Error calling AST dump script:\n" +
+			var errorMessage = "Error calling the Swift compiler.\n"
+
+			// Suggest solutions to known problems
+			if commandResult.standardError.contains("statements are not allowed at the top level") {
+				errorMessage.append(
+					"This may have happened because top-level statements are only allowed " +
+					"if the file is called \"main.swift\".\n")
+			}
+
+			errorMessage.append("Swift compiler output:\n\n" +
 				commandResult.standardOutput +
 				commandResult.standardError)
-			return false
+			throw DriverError(errorMessage: errorMessage)
 		}
-
-		return true
 	}
 
 	static func getASTDump(forFile file: String) -> String? {

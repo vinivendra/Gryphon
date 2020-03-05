@@ -39,7 +39,7 @@ public class Shell {
 		_ command: String,
 		arguments: MutableList<String>,
 		fromFolder currentFolder: String? = nil,
-		timeout: TimeInterval = Shell.defaultTimeout)
+		timeout: TimeInterval? = Shell.defaultTimeout)
 		-> CommandOutput!
 	{
 		let outputPipe = Pipe()
@@ -55,6 +55,7 @@ public class Shell {
 		task.arguments = arguments.array
 		task.standardOutput = outputPipe
 		task.standardError = errorPipe
+		task.qualityOfService = .userInitiated
 
 		if let currentFolder = currentFolder {
 			if #available(OSX 10.13, *) {
@@ -70,9 +71,14 @@ public class Shell {
 			task.launch()
 		}
 
-		let startTime = Date()
-		while task.isRunning,
-			Date().timeIntervalSince(startTime) < timeout { }
+		if let timeout = timeout {
+			let startTime = Date()
+			while task.isRunning,
+				Date().timeIntervalSince(startTime) < timeout { }
+		}
+		else {
+			task.waitUntilExit()
+		}
 
 		guard !task.isRunning else {
 			stopTask(task)
@@ -85,9 +91,10 @@ public class Shell {
 		let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
 		let errorString = String(data: errorData, encoding: .utf8) ?? ""
 
-		return CommandOutput(standardOutput: outputString,
-				standardError: errorString,
-				status: task.terminationStatus)
+		return CommandOutput(
+			standardOutput: outputString,
+			standardError: errorString,
+			status: task.terminationStatus)
 	}
 
 	/// Returns nil when the operation times out.
@@ -95,7 +102,7 @@ public class Shell {
 	internal static func runShellCommand(
 		_ arguments: MutableList<String>,
 		fromFolder currentFolder: String? = nil,
-		timeout: TimeInterval = Shell.defaultTimeout) -> CommandOutput!
+		timeout: TimeInterval? = Shell.defaultTimeout) -> CommandOutput!
 	{
 		return runShellCommand(
 			"/usr/bin/env",

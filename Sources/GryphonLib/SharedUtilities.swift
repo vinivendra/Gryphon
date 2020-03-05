@@ -108,17 +108,27 @@ public class SupportingFile {
 	}
 
 	var relativePath: String {
+		if let folder = self.folder {
+			return "\(folder)/\(name)"
+		}
+		else {
+			return name
+		}
+	}
+
+	/// Returns the location of the file (its parent folder) or nil if it's in the current folder
+	var folder: String? {
 		switch name {
 		case SupportingFile.xcFileList.name:
-			return name
+			return nil
 		case SupportingFile.mapKotlinErrorsToSwift.name,
 			SupportingFile.mapGradleErrorsToSwift.name,
 			SupportingFile.makeGryphonTargets.name,
 			SupportingFile.compileKotlin.name:
 
-			return "\(SupportingFile.gryphonScriptsFolder)/\(name)"
+			return SupportingFile.gryphonScriptsFolder
 		default:
-			return "\(SupportingFile.gryphonBuildFolder)/\(name)"
+			return SupportingFile.gryphonBuildFolder
 		}
 	}
 

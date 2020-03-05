@@ -823,7 +823,7 @@ end
 
 # Set the script we want to run
 gryphonBuildPhase.shell_script =
-	"gryphon -emit-kotlin \(dollarSign)SCRIPT_INPUT_FILE_LIST_0"
+	"gryphon --xcode \(dollarSign)SCRIPT_INPUT_FILE_LIST_0"
 
 # Set the path to the input file list
 gryphonBuildPhase.input_file_list_paths = [

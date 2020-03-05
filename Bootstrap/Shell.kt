@@ -16,7 +16,7 @@ public class Shell {
             command: String,
             arguments: MutableList<String>, 
             currentFolder: String? = null, 
-            timeout: Long = Shell.defaultTimeout)
+            timeout: Long? = Shell.defaultTimeout)
             : CommandOutput?
         {
             val commandAndArguments = mutableListOf(command)
@@ -39,9 +39,17 @@ public class Shell {
             processBuilder.command(commandAndArguments)
             val process: Process = processBuilder.start()
 
-            val hasFinished: Boolean = process.waitFor(
-                timeout,
-                TimeUnit.SECONDS)
+            val hasFinished: Boolean
+
+            if (timeout != null) {
+                hasFinished = process.waitFor(
+                    timeout,
+                    TimeUnit.SECONDS)
+            }
+            else {
+                hasFinished = true
+                process.waitFor()
+            }
 
             if (!hasFinished) {
                 return null
@@ -74,7 +82,7 @@ public class Shell {
         fun runShellCommand(
             arguments: MutableList<String>, 
             currentFolder: String? = null, 
-            timeout: Long = Shell.defaultTimeout)
+            timeout: Long? = Shell.defaultTimeout)
             : CommandOutput?
         {
             return runShellCommand(
