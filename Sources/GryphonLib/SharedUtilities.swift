@@ -21,7 +21,7 @@
 
 import Foundation
 
-private func gryphonTemplates() {
+private func gryphonTemplates() throws {
     let _string1 = ""
     let _string2 = ""
     let _string3 = ""
@@ -37,7 +37,7 @@ private func gryphonTemplates() {
     _ = Utilities.files(_stringArray1, wereModifiedLaterThan: _stringArray2)
     _ = "Utilities.filesWereModifiedLaterThan(_stringArray1, _stringArray2)"
 
-    _ = Utilities.createFile(named: _string1, inDirectory: _string2, containing: _string3)
+    _ = try Utilities.createFile(named: _string1, inDirectory: _string2, containing: _string3)
     _ = "Utilities.createFileAndDirectory(" +
         "fileName = _string1, directory = _string2, contents = _string3)"
 
@@ -60,7 +60,7 @@ private func gryphonTemplates() {
 	Utilities.createFolderIfNeeded(at: _string1)
     _ = "Utilities.createFolderIfNeeded(path = _string1)"
 
-    Utilities.createFile(atPath: _string1, containing: _string2)
+    try Utilities.createFile(atPath: _string1, containing: _string2)
     _ = "Utilities.createFile(filePath = _string1, contents = _string2)"
 
 	Utilities.deleteFolder(at: _string1)
@@ -96,6 +96,14 @@ private func gryphonTemplates() {
 
     _ = Shell.runShellCommand(_stringArray1)
     _ = "Shell.runShellCommand(_stringArray1)"
+}
+
+public struct GryphonError: Error, CustomStringConvertible {
+	let errorMessage: String
+
+	public var description: String {
+		return "🚨 " + errorMessage
+	}
 }
 
 /// Stores all hard-coded file names and paths. Changes to these paths might need to be reflected in
@@ -274,19 +282,6 @@ extension Utilities {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-enum FileError: Error, CustomStringConvertible {
-    case outdatedFile(inFolder: String)
-
-    var description: String {
-        switch self {
-        case let .outdatedFile(inFolder: folder):
-            return "One of the files in the \(folder) folder is outdated.\n" +
-                "Try running the preBuildScript.sh and the test suite to update compilation " +
-            "files."
-        }
-    }
-}
-
 private var templatesLibraryHasBeenProcessed = false
 private var testCasesHaveBeenUpdated = false
 
@@ -331,7 +326,10 @@ extension Utilities {
 
         let testCasesFolder = "Test cases"
         if needsToDumpASTForSwiftFiles(in: testCasesFolder) {
-            throw FileError.outdatedFile(inFolder: testCasesFolder)
+            throw GryphonError(errorMessage:
+				"One of the files in the \(testCasesFolder) folder is outdated.\n" +
+                "Try running the preBuildScript.sh and the test suite to update compilation " +
+				"files.")
         }
 
         testCasesHaveBeenUpdated = true

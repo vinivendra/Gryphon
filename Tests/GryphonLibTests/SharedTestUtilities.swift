@@ -32,16 +32,25 @@ class TestUtilities {
 	static let testCasesPath: String = Utilities.getCurrentFolder() + "/Test cases/"
 
 	static func diff(_ string1: String, _ string2: String) -> String {
-		let diffResult = withTemporaryFile(fileName: "file1.txt", contents: string1) { file1Path in
-			withTemporaryFile(fileName: "file2.txt", contents: string2) { file2Path in
-				TestUtilities.diffFiles(file1Path, file2Path)
+		do {
+			let diffResult = try withTemporaryFile(fileName: "file1.txt", contents: string1)
+				{ file1Path in
+					try withTemporaryFile(fileName: "file2.txt", contents: string2)
+						{ file2Path in
+							TestUtilities.diffFiles(file1Path, file2Path)
+						}
+				}
+
+			if let diffResult = diffResult {
+				return diffResult
+			}
+			else {
+				return "Diff timed out. Printing full result.\n" +
+					"\n===\nDiff string 1:\n\n\(string1)===\n" +
+					"\n===\nDiff string 2:\n\n\(string2)===\n"
 			}
 		}
-
-		if let diffResult = diffResult {
-			return diffResult
-		}
-		else {
+		catch {
 			return "Diff timed out. Printing full result.\n" +
 				"\n===\nDiff string 1:\n\n\(string1)===\n" +
 				"\n===\nDiff string 2:\n\n\(string2)===\n"
@@ -63,11 +72,11 @@ class TestUtilities {
 		fileName: String,
 		contents: String,
 		closure: (String) throws -> T)
-		rethrows -> T
+		throws -> T
 	{
 		let temporaryDirectory = ".tmp"
 
-		let filePath = Utilities.createFile(
+		let filePath = try Utilities.createFile(
 			named: fileName,
 			inDirectory: temporaryDirectory,
 			containing: contents)

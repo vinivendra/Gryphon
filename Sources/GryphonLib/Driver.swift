@@ -74,14 +74,6 @@ public class Driver {
 		let kotlinCode: String
 	}
 
-	public struct DriverError: Error, CustomStringConvertible {
-		let errorMessage: String
-
-		public var description: String {
-			return errorMessage
-		}
-	}
-
 	public static func runUpToFirstPasses(
 		withSettings settings: Settings,
 		withContext context: TranspilationContext,
@@ -93,7 +85,15 @@ public class Driver {
 
 		let swiftASTDumpFile = getASTDump(forFile: inputFilePath)!
 
-		let swiftASTDump = try Utilities.readFile(swiftASTDumpFile)
+		let swiftASTDump: String
+		do {
+			swiftASTDump = try Utilities.readFile(swiftASTDumpFile)
+		}
+		catch {
+			throw GryphonError(errorMessage:
+				"Error reading the AST for file \(inputFilePath). " +
+				"Running `gryphon init` or `gryphon init <xcode_project>` might fix this issue.")
+		}
 
 		// Generate the Swift AST
 		let swiftAST = try Compiler.generateSwiftAST(fromASTDump: swiftASTDump)
@@ -120,7 +120,7 @@ public class Driver {
 			if let outputFilePath = gryphonRawAST.outputFileMap[.swiftAST],
 				!settings.shouldPrintToConsole
 			{
-				Utilities.createFile(atPath: outputFilePath, containing: output)
+				try Utilities.createFile(atPath: outputFilePath, containing: output)
 			}
 		}
 
@@ -130,7 +130,7 @@ public class Driver {
 			if let outputFilePath = gryphonRawAST.outputFileMap[.gryphonASTRaw],
 				!settings.shouldPrintToConsole
 			{
-				Utilities.createFile(atPath: outputFilePath, containing: output)
+				try Utilities.createFile(atPath: outputFilePath, containing: output)
 			}
 			else {
 				print(output)
@@ -163,7 +163,7 @@ public class Driver {
 			if let outputFilePath = gryphonAST.outputFileMap[.gryphonAST],
 				!settings.shouldPrintToConsole
 			{
-				Utilities.createFile(atPath: outputFilePath, containing: output)
+				try Utilities.createFile(atPath: outputFilePath, containing: output)
 			}
 			else {
 				print(output)
@@ -182,7 +182,7 @@ public class Driver {
 		{
 			let absoluteFilePath = Utilities.getAbsoultePath(forFile: outputFilePath)
 			Compiler.log("Writing to file \(absoluteFilePath)")
-			Utilities.createFile(atPath: outputFilePath, containing: kotlinCode)
+			try Utilities.createFile(atPath: outputFilePath, containing: kotlinCode)
 		}
 		else {
 			if settings.shouldEmitKotlin {
@@ -202,7 +202,7 @@ public class Driver {
 		let badArguments = unsupportedArguments(in: arguments)
 		if !badArguments.isEmpty {
 			let argumentsString = badArguments.map { "\"\($0)\"" }.joined(separator: ", ")
-			throw DriverError(errorMessage: "Unsupported arguments: \(argumentsString).")
+			throw GryphonError(errorMessage: "Unsupported arguments: \(argumentsString).")
 		}
 
 		if arguments.isEmpty ||
@@ -233,7 +233,7 @@ public class Driver {
 		let inputFiles = getInputFilePaths(inArguments: arguments)
 
 		if arguments.contains("init") {
-			initialize()
+			try initialize()
 			Compiler.log("Initialization successful.")
 
 			let xcodeProjects = inputFiles.filter {
@@ -254,18 +254,12 @@ public class Driver {
 				}
 
 			guard let xcodeProject = xcodeProjects.first else {
-				throw DriverError(errorMessage:
-					"please specify an Xcode project when using `-setupXcode`.")
+				throw GryphonError(errorMessage:
+					"Please specify an Xcode project when using `-setupXcode`.")
 			}
 
-			let success = setupGryphonFolder(forXcodeProject: xcodeProject)
-			if success {
-				Compiler.log("AST dump script creation successful.")
-				return nil
-			}
-			else {
-				throw DriverError(errorMessage: "AST dump script creation failed.")
-			}
+			try setupGryphonFolder(forXcodeProject: xcodeProject)
+			Compiler.log("Xcode setup successful.")
 		}
 		if arguments.contains("-makeGryphonTargets") {
 			let xcodeProjects = inputFiles.filter {
@@ -273,18 +267,12 @@ public class Driver {
 				}
 
 			guard let xcodeProject = xcodeProjects.first else {
-				throw DriverError(errorMessage:
-					"please specify an Xcode project when using `-makeGryphonTargets`.")
+				throw GryphonError(errorMessage:
+					"Please specify an Xcode project when using `-makeGryphonTargets`.")
 			}
 
-			let success = makeGryphonTargets(forXcodeProject: xcodeProject)
-			if success {
-				Compiler.log("Gryphon target creation successful.")
-				return nil
-			}
-			else {
-				throw DriverError(errorMessage: "Gryphon target creation failed.")
-			}
+			try makeGryphonTargets(forXcodeProject: xcodeProject)
+			Compiler.log("Gryphon target creation successful.")
 		}
 
 		// If there's no build folder, create one, perform the transpilation, then delete it
@@ -344,7 +332,7 @@ public class Driver {
 		//
 		let inputFilePaths = getInputFilePaths(inArguments: arguments)
 		if inputFilePaths.isEmpty {
-			throw DriverError(errorMessage: "No input files provided.")
+			throw GryphonError(errorMessage: "No input files provided.")
 		}
 
 		//
@@ -426,7 +414,7 @@ public class Driver {
 		if !arguments.contains("-skipASTDumps") {
 			let inputFiles = getInputFilePaths(inArguments: arguments)
 			if inputFiles.isEmpty {
-				throw DriverError(errorMessage: "No input files provided.")
+				throw GryphonError(errorMessage: "No input files provided.")
 			}
 			let swiftFiles = inputFiles.filter {
 				Utilities.getExtension(of: $0) == .swift
@@ -533,28 +521,28 @@ public class Driver {
 		return result
 	}
 
-	static func initialize() {
+	static func initialize() throws {
 		// Create gryphon folder and subfolders
 		Utilities.createFolderIfNeeded(at: SupportingFile.gryphonBuildFolder)
 		Utilities.createFolderIfNeeded(at: SupportingFile.gryphonScriptsFolder)
 
 		// Save the files
-		Utilities.createFile(
+		try Utilities.createFile(
 			atPath: SupportingFile.gryphonTemplatesLibrary.relativePath,
 			containing: gryphonTemplatesLibraryFileContents)
-		Utilities.createFile(
+		try Utilities.createFile(
 			atPath: SupportingFile.gryphonXCTest.relativePath,
 			containing: gryphonXCTestFileContents)
-		Utilities.createFile(
+		try Utilities.createFile(
 			atPath: SupportingFile.mapKotlinErrorsToSwift.relativePath,
 			containing: kotlinErrorMapScriptFileContents)
-		Utilities.createFile(
+		try Utilities.createFile(
 			atPath: SupportingFile.mapGradleErrorsToSwift.relativePath,
 			containing: gradleErrorMapScriptFileContents)
-		Utilities.createFile(
+		try Utilities.createFile(
 			atPath: SupportingFile.makeGryphonTargets.relativePath,
 			containing: xcodeTargetScriptFileContents)
-		Utilities.createFile(
+		try Utilities.createFile(
 			atPath: SupportingFile.compileKotlin.relativePath,
 			containing: compileKotlinScriptFileContents)
 	}
@@ -563,22 +551,20 @@ public class Driver {
 		Utilities.deleteFolder(at: SupportingFile.gryphonBuildFolder)
 	}
 
-	static func setupGryphonFolder(forXcodeProject xcodeProjectPath: String) -> Bool {
+	static func setupGryphonFolder(forXcodeProject xcodeProjectPath: String) throws {
 		guard let commandResult = Shell.runShellCommand([
 			"xcodebuild",
 			"-dry-run",
 			"-project",
 			"\(xcodeProjectPath)", ]) else
 		{
-			print("Failed to run xcodebuild")
-			return false
+			throw GryphonError(errorMessage: "Failed to run xcodebuild")
 		}
 
 		guard commandResult.status == 0 else {
-			print("Error running xcodebuild:\n" +
+			throw GryphonError(errorMessage: "Error running xcodebuild:\n" +
 				commandResult.standardOutput +
 				commandResult.standardError)
-			return false
 		}
 
 		let output = commandResult.standardOutput
@@ -586,8 +572,8 @@ public class Driver {
 		guard let compileSwiftStep =
 			buildSteps.first(where: { $0.hasPrefix("CompileSwiftSources") }) else
 		{
-			print("Unable to find the Swift compilation command in the Xcode project.")
-			return false
+			throw GryphonError(errorMessage:
+				"Unable to find the Swift compilation command in the Xcode project.")
 		}
 
 		let commands = compileSwiftStep.split(withStringSeparator: "\n")
@@ -620,15 +606,13 @@ public class Driver {
 		// Drop the header and the old compilation command
 		var scriptContents = commands.dropFirst().dropLast().joined(separator: "\n")
 		scriptContents += "\n" + newCompilationCommand + "\n"
-		Utilities.createFile(
+		try Utilities.createFile(
 			named: SupportingFile.astDumpsScript.name,
 			inDirectory: SupportingFile.gryphonBuildFolder,
 			containing: scriptContents)
-
-		return true
 	}
 
-	static func makeGryphonTargets(forXcodeProject xcodeProjectPath: String) -> Bool {
+	static func makeGryphonTargets(forXcodeProject xcodeProjectPath: String) throws {
 		// Run the ruby script
 		guard let commandResult =
 			Shell.runShellCommand([
@@ -636,21 +620,17 @@ public class Driver {
 				"\(SupportingFile.makeGryphonTargets.relativePath)",
 				"\(xcodeProjectPath)", ]) else
 		{
-			print("Failed to make gryphon targets")
-			return false
+			throw GryphonError(errorMessage: "Failed to make gryphon targets")
 		}
 
 		guard commandResult.status == 0 else {
-			print("Error making gryphon targets:\n" +
+			throw GryphonError(errorMessage: "Error making gryphon targets:\n" +
 				commandResult.standardOutput +
 				commandResult.standardError)
-			return false
 		}
 
 		// Create the xcfilelist so the user has an easier time finding it and populating it
 		_ = Utilities.createFileIfNeeded(at: SupportingFile.xcFileList.relativePath)
-
-		return true
 	}
 
 	static func updateASTDumps(forFiles swiftFiles: List<String>, usingXcode: Bool) throws {
@@ -676,7 +656,7 @@ public class Driver {
 		}
 		outputFileMapContents += "}\n"
 
-		Utilities.createFile(
+		try Utilities.createFile(
 			atPath: SupportingFile.temporaryOutputFileMap.relativePath,
 			containing: outputFileMapContents)
 
@@ -716,7 +696,7 @@ public class Driver {
 		}
 
 		guard let commandResult = maybeCommandResult else {
-			throw DriverError(errorMessage: "Failed to call the Swift compiler.")
+			throw GryphonError(errorMessage: "Failed to call the Swift compiler.")
 		}
 
 		guard commandResult.status == 0 else {
@@ -732,7 +712,7 @@ public class Driver {
 			errorMessage.append("Swift compiler output:\n\n" +
 				commandResult.standardOutput +
 				commandResult.standardError)
-			throw DriverError(errorMessage: errorMessage)
+			throw GryphonError(errorMessage: errorMessage)
 		}
 	}
 

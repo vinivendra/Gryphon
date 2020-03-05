@@ -78,7 +78,7 @@ class AcceptanceTest: XCTestCase {
 					defaultFinal: defaultFinal))
 				let kotlinCode = kotlinResults[0]
 				let kotlinFilePath = "\(TestUtilities.kotlinBuildFolder)/\(testName).kt"
-				Utilities.createFile(atPath: kotlinFilePath, containing: kotlinCode)
+				try Utilities.createFile(atPath: kotlinFilePath, containing: kotlinCode)
 
 				// Compile the resulting Kotlin code
 				let hue = Shell.runShellCommand(

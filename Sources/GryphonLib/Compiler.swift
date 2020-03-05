@@ -219,7 +219,7 @@ public class Compiler {
 				errorMapFilePath.split(withStringSeparator: "/").dropLast().joined(separator: "/")
 			let errorMapFileContents = swiftFilePath + "\n" + errorMap
 			Utilities.createFolderIfNeeded(at: errorMapFolder)
-			Utilities.createFile(atPath: errorMapFilePath, containing: errorMapFileContents)
+			try Utilities.createFile(atPath: errorMapFilePath, containing: errorMapFileContents)
 		}
 
 		return translationResult.translation
@@ -234,14 +234,6 @@ public class Compiler {
 		return try asts.map {
 			try generateKotlinCode(fromGryphonAST: $0, withContext: context)
 		}.toMutableList()
-	}
-}
-
-public struct GryphonError: Error, CustomStringConvertible {
-	let errorMessage: String
-
-	public var description: String {
-		return errorMessage
 	}
 }
 

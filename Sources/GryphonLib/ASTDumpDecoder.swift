@@ -37,19 +37,6 @@ internal class ASTDumpDecoder {
 		}
 	}
 
-	//
-	enum DecodingError: Error, CustomStringConvertible {
-		case unexpectedContent(decoder: ASTDumpDecoder, errorMessage: String)
-
-		var description: String {
-			switch self {
-			case let .unexpectedContent(decoder, errorMessage):
-				return "Decoding error: \(errorMessage)\n" +
-				"Remaining buffer in decoder: \"\(decoder.remainingBuffer(upTo: 1_000))\""
-			}
-		}
-	}
-
 	///
 	/// For some reason (a bug in the Swift compiler) AST dumps can sometimes contain weird newlines
 	/// (i.e. middle of identifiers). This problem is handled by stripping all newlines from the AST
@@ -110,14 +97,18 @@ internal class ASTDumpDecoder {
 	// MARK: Read information
 	func readOpeningParenthesis() throws {
 		guard canReadOpeningParenthesis() else {
-			throw DecodingError.unexpectedContent(decoder: self, errorMessage: "Expected '('.")
+			throw GryphonError(errorMessage:
+				"Decoding error: Expected '('.\n" +
+				"Remaining buffer in decoder: \"\(remainingBuffer(upTo: 1_000))\"")
 		}
 		currentIndex = nextIndex()
 	}
 
 	func readClosingParenthesis() throws {
 		guard canReadClosingParenthesis() else {
-			throw DecodingError.unexpectedContent(decoder: self, errorMessage: "Expected ')'.")
+			throw GryphonError(errorMessage:
+				"Decoding error: Expected ')'.\n" +
+				"Remaining buffer in decoder: \"\(remainingBuffer(upTo: 1_000))\"")
 		}
 		currentIndex = nextIndex()
 		cleanLeadingWhitespace()

@@ -89,7 +89,8 @@ extension Utilities {
 	internal static func createFile(
 		named fileName: String,
 		inDirectory directory: String,
-		containing contents: String) -> String
+		containing contents: String)
+		throws -> String
 	{
 		// Create directory (and intermediate directories if needed)
 		let fileManager = FileManager.default
@@ -103,16 +104,16 @@ extension Utilities {
 		try? fileManager.removeItem(at: fileURL)
 
 		// Create the file and write to it
-		createFile(atPath: filePath, containing: contents)
+		try createFile(atPath: filePath, containing: contents)
 
 		return filePath
 	}
 
-	internal static func createFile(atPath filePath: String, containing contents: String) {
+	internal static func createFile(atPath filePath: String, containing contents: String) throws {
 		let fileManager = FileManager.default
 		let successful = fileManager.createFile(atPath: filePath, contents: Data(contents.utf8))
 		if !successful {
-			print("🚨 Error writing to file \(filePath)")
+			throw GryphonError(errorMessage: "Error writing to file \(filePath)")
 		}
 	}
 }
