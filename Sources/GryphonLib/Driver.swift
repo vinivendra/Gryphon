@@ -27,7 +27,6 @@ public class Driver {
 		"--version",
 		"init",
 		"clean",
-		"--xcode",
 		"--no-main-file",
 		"--default-final",
 		"--continue-on-error",
@@ -219,7 +218,8 @@ public class Driver {
 			return nil
 		}
 
-		Compiler.shouldLogProgress(if: arguments.contains("--verbose"))
+		let isVerbose = arguments.contains("--verbose")
+		Compiler.shouldLogProgress(if: isVerbose)
 
 		if arguments.contains("clean") {
 			cleanup()
@@ -230,49 +230,47 @@ public class Driver {
 			}
 		}
 
-		let inputFiles = getInputFilePaths(inArguments: arguments)
-
 		if arguments.contains("init") {
 			try initialize()
 			Compiler.log("Initialization successful.")
 
-			let xcodeProjects = inputFiles.filter {
-					Utilities.getExtension(of: $0) == .xcodeproj
+			if let xcodeProject = getXcodeProject(inArguments: arguments) {
+				if isVerbose {
+					_ = try Driver.run(withArguments:
+						["-setupXcode", "--verbose", xcodeProject])
+					_ = try Driver.run(withArguments:
+						["-makeGryphonTargets", "--verbose", xcodeProject])
 				}
-
-			if let xcodeProject = xcodeProjects.first {
-				_ = try Driver.run(withArguments: ["-setupXcode", xcodeProject])
-				_ = try Driver.run(withArguments: ["-makeGryphonTargets", xcodeProject])
+				else {
+					_ = try Driver.run(withArguments:
+						["-setupXcode", xcodeProject])
+					_ = try Driver.run(withArguments:
+						["-makeGryphonTargets", xcodeProject])
+				}
 			}
 
 			return nil
 		}
 
 		if arguments.contains("-setupXcode") {
-			let xcodeProjects = inputFiles.filter {
-					Utilities.getExtension(of: $0) == .xcodeproj
-				}
-
-			guard let xcodeProject = xcodeProjects.first else {
+			guard let xcodeProject = getXcodeProject(inArguments: arguments) else {
 				throw GryphonError(errorMessage:
 					"Please specify an Xcode project when using `-setupXcode`.")
 			}
 
 			try setupGryphonFolder(forXcodeProject: xcodeProject)
 			Compiler.log("Xcode setup successful.")
+			return nil
 		}
 		if arguments.contains("-makeGryphonTargets") {
-			let xcodeProjects = inputFiles.filter {
-					Utilities.getExtension(of: $0) == .xcodeproj
-				}
-
-			guard let xcodeProject = xcodeProjects.first else {
+			guard let xcodeProject = getXcodeProject(inArguments: arguments) else {
 				throw GryphonError(errorMessage:
 					"Please specify an Xcode project when using `-makeGryphonTargets`.")
 			}
 
 			try makeGryphonTargets(forXcodeProject: xcodeProject)
 			Compiler.log("Gryphon target creation successful.")
+			return nil
 		}
 
 		// If there's no build folder, create one, perform the transpilation, then delete it
@@ -288,19 +286,36 @@ public class Driver {
 	public static func performCompilationWithTemporaryBuildFolder(
 		withArguments arguments: MutableList<String>) throws -> Any?
 	{
+		let isVerbose = arguments.contains("--verbose")
+
 		var result: Any?
 		do {
-			_ = try Driver.run(withArguments: ["init"])
+			if isVerbose {
+				_ = try Driver.run(withArguments: ["init", "-verbose"])
+			}
+			else {
+				_ = try Driver.run(withArguments: ["init"])
+			}
 			result = try performCompilation(withArguments: arguments)
 		}
 		catch let error {
 			// Ensure `clean` runs even if an error was thrown
-			_ = try Driver.run(withArguments: ["clean"])
+			if isVerbose {
+				_ = try Driver.run(withArguments: ["clean", "-verbose"])
+			}
+			else {
+				_ = try Driver.run(withArguments: ["clean"])
+			}
 			throw error
 		}
 
 		// Call `clean` if no errors were thrown
-		_ = try Driver.run(withArguments: ["clean"])
+		if isVerbose {
+			_ = try Driver.run(withArguments: ["clean", "-verbose"])
+		}
+		else {
+			_ = try Driver.run(withArguments: ["clean"])
+		}
 
 		return result
 	}
@@ -368,7 +383,7 @@ public class Driver {
 		}
 		else {
 			mainFilePath = inputFilePaths.first {
-				$0.hasSuffix("main.swift") || $0.hasSuffix("main.swiftASTDump")
+				$0.hasSuffix("main.swift")
 			}
 		}
 
@@ -416,12 +431,46 @@ public class Driver {
 			if inputFiles.isEmpty {
 				throw GryphonError(errorMessage: "No input files provided.")
 			}
-			let swiftFiles = inputFiles.filter {
-				Utilities.getExtension(of: $0) == .swift
-			}
+
+			let maybeXcodeProject = getXcodeProject(inArguments: arguments)
+			let isUsingXcode = (maybeXcodeProject != nil)
+
 			try updateASTDumps(
-				forFiles: swiftFiles,
-				usingXcode: arguments.contains("--xcode"))
+				forFiles: inputFiles,
+				usingXcode: isUsingXcode)
+
+			// Check that all AST dump files have been updated successfully
+			let outdatedASTDumps = outdatedASTDumpFiles(forInputFiles: inputFiles)
+			if !outdatedASTDumps.isEmpty {
+
+				if let xcodeProject = maybeXcodeProject {
+					// If the AST dumps are out-of-date and we're using Xcode, it's possible one or
+					// more files are missing from the AST dump script. Try updating the script,
+					// then try to update the files again.
+
+					Compiler.log("Some AST dump files are out of date: " +
+						outdatedASTDumps.joined(separator: ", ") +
+						". Attempting to update file list...")
+
+					try setupGryphonFolder(forXcodeProject: xcodeProject)
+
+					try updateASTDumps(
+						forFiles: inputFiles,
+						usingXcode: isUsingXcode)
+
+					let newOutdatedASTDumps = outdatedASTDumpFiles(forInputFiles: inputFiles)
+
+					if !newOutdatedASTDumps.isEmpty {
+						throw GryphonError(errorMessage: "Unable to update AST dumps for files: " +
+							newOutdatedASTDumps.joined(separator: ", ") + ". " +
+							"Make sure the files are being compiled by Xcode.")
+					}
+				}
+				else {
+					throw GryphonError(errorMessage: "Unable to update AST dumps for files: " +
+						outdatedASTDumps.joined(separator: ", ") + ".")
+				}
+			}
 		}
 
 		//// Perform transpilation
@@ -435,18 +484,14 @@ public class Driver {
 		//
 		Compiler.log("Translating source files...\n")
 
-		let filteredInputFiles = inputFilePaths.filter {
-			Utilities.fileHasExtension($0, .swift) || Utilities.fileHasExtension($0, .swiftASTDump)
-		}
-
 		let firstResult: MutableList<Any?>
 		if shouldRunConcurrently {
-			firstResult = try filteredInputFiles.parallelMap {
+			firstResult = try inputFilePaths.parallelMap {
 				try runUpToFirstPasses(withSettings: settings, withContext: context, onFile: $0)
 			}
 		}
 		else {
-			firstResult = try filteredInputFiles.map {
+			firstResult = try inputFilePaths.map {
 				try runUpToFirstPasses(withSettings: settings, withContext: context, onFile: $0)
 			}.toMutableList()
 		}
@@ -459,7 +504,7 @@ public class Driver {
 			return firstResult
 		}
 
-		let pairsArray = zip(asts, filteredInputFiles)
+		let pairsArray = zip(asts, inputFilePaths)
 
 		let secondResult: MutableList<Any?>
 		if shouldRunConcurrently {
@@ -484,6 +529,29 @@ public class Driver {
 		return secondResult
 	}
 
+	static func getXcodeProject(inArguments arguments: MutableList<String>) -> String? {
+		return arguments.first { Utilities.fileHasExtension($0, .xcodeproj) }
+	}
+
+	static func outdatedASTDumpFiles(
+		forInputFiles inputFiles: List<String>)
+		-> MutableList<String>
+	{
+		let result: MutableList<String> = []
+
+		for inputFile in inputFiles {
+			let astDumpFile = SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: inputFile)
+			if !Utilities.fileExists(at: astDumpFile) ||
+				Utilities.file(inputFile, wasModifiedLaterThan: astDumpFile)
+			{
+				result.append(inputFile)
+			}
+		}
+
+		return result
+	}
+
+	/// Returns a list of all Swift input files, including those inside xcfilelists
 	static func getInputFilePaths(
 		inArguments arguments: MutableList<String>)
 		-> MutableList<String>
@@ -497,12 +565,6 @@ public class Driver {
 		let result: MutableList<String> = []
 		result.append(contentsOf: cleanArguments.filter {
 			Utilities.getExtension(of: $0) == .swift
-		})
-		result.append(contentsOf: cleanArguments.filter {
-			Utilities.getExtension(of: $0) == .swiftASTDump
-		})
-		result.append(contentsOf: cleanArguments.filter {
-			Utilities.getExtension(of: $0) == .xcodeproj
 		})
 
 		let fileLists = cleanArguments.filter {
@@ -735,6 +797,7 @@ public class Driver {
 		badArguments = badArguments.filter { !debugArguments.contains($0) }
 		badArguments = badArguments.filter { isSupportedArgumentWithParameters($0) }
 		badArguments = badArguments.filter { isSupportedInputFilePath($0) }
+		badArguments = badArguments.filter { !Utilities.fileHasExtension($0, .xcodeproj) }
 		return badArguments
 	}
 
@@ -749,9 +812,8 @@ public class Driver {
 
 	static func isSupportedInputFilePath(_ filePath: String) -> Bool {
 		if let fileExtension = Utilities.getExtension(of: filePath) {
-			if fileExtension == .swift || fileExtension == .swiftASTDump ||
-				fileExtension == .xcfilelist || fileExtension == .xcodeproj ||
-				fileExtension == .kt
+			if fileExtension == .swift ||
+				fileExtension == .xcfilelist
 			{
 				return false
 			}
@@ -775,25 +837,22 @@ public class Driver {
 		  message below.
 		  Running it with "--version" displays the current version.
 
-		Commands:
-		  ➡️  init <Xcode project>
-		        Set up the current directory and the given Xcode project so that Gryphon
-		        can translate the project's source files.
-		  ➡️  clean
-		        Deletes the files and folders created by `gryphon init`.
-
 		Main usage:
-		  gryphon [options] [file paths]
+		  gryphon [options] [xcode project] [input file paths]
+
+		  Notes:
+		      - Including the path of an Xcode project makes translation compatible
+		        with Xcode. Omit the Xcode project when translating standalone Swift
+		        files.
+		      - Input file paths may be:
+		        - Paths to .swift source files.
+		        - Paths to .xcfilelist files, which may contain paths to actual .swift
+		          source files separated by newlines.
 
 		  Options:
-		      ↪️  --xcode
-		            Transpiles the given source files in a way that's compatible with
-		            Xcode projects and the iOS SDK. Omit this option if you want to
-		            transpile standalone Swift files.
-
 		      ↪️  --no-main-file
 		            Do not generate a Kotlin file with a "main" function. This is
-		            implied if also using `--xcode`.
+		            implied if translating files from an Xcode project.
 
 		      ↪️  --default-final
 		            Kotlin declarations will be "final" by default instead of "open".
@@ -804,6 +863,7 @@ public class Driver {
 		      ↪️  --write-to-console
 		            Write the output of any translations to the console (instead of
 		            the specified output files).
+
 		      ↪️  --indentation=<N>
 		            Specify the indentation to be used in the output Kotlin files. Use
 		            "t" for tabs or an integer for the corresponding number of spaces.
@@ -816,10 +876,18 @@ public class Driver {
 		            Do not use concurrency.
 
 		Advanced commands:
+		  ➡️  clean
+		        Clean Gryphon's build folder in the local directory.
+
+		  ➡️  init <Xcode project>
+		        Set up the current directory and the given Xcode project so that Gryphon
+		        can translate the project's source files.
+
 		  ➡️  -setupXcode <Xcode project>
 		        Configures Gryphon's build folder to be used with the given Xcode
 		        project. Only needed if `gryphon init` was used without specifying an
 		        Xcode project.
+
 		  ➡️  -makeGryphonTargets <Xcode project>
 		        Adds auxiliary targets to the given Xcode project. Only needed if
 		        `gryphon init` was used without specifying an Xcode project.
@@ -848,6 +916,7 @@ public class Driver {
 
 		      ↪️  -line-limit=<N>
 		            Limit the maximum horizontal size when printing ASTs.
+
 		      ↪️  -avoid-unicode
 		            Avoid using Unicode arrows and emojis in some places.
 		"""
