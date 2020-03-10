@@ -123,6 +123,7 @@ fun Utilities.Companion.createFileIfNeeded(filePath: String): Boolean {
     }
 }
 
+/// Creates the folder if needed, as well as any nonexistent parent folders
 fun Utilities.Companion.createFolderIfNeeded(path: String) {
     val directoryFile = File(path)
     directoryFile.mkdirs()

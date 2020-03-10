@@ -30,3 +30,7 @@ public class OS {
             { "/usr/local/bin/kotlinc" }
     }
 }
+
+internal fun TestUtilities.Companion.changeCurrentDirectoryPath(newPath: String) {
+    System.setProperty("user.dir", newPath)
+}

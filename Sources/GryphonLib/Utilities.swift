@@ -137,6 +137,7 @@ extension Utilities {
 		}
 	}
 
+	/// Creates the folder if needed, as well as any nonexistent parent folders
 	public static func createFolderIfNeeded(at path: String) {
 		let fileManager = FileManager.default
 		try! fileManager.createDirectory(atPath: path, withIntermediateDirectories: true)

@@ -39,6 +39,7 @@ private struct MyOptional { } // gryphon ignore
 
 class XCTestCase { // gryphon ignore
 	class func setUp() { }
+	class func tearDown() { }
 
 	public func XCTAssert(_ condition: Bool, _ message: String = "") { }
 	public func XCTAssertEqual<T>(_ a: T, _ b: T, _ message: String = "") where T : Equatable { }
@@ -131,6 +132,7 @@ struct AnyType: CustomStringConvertible, LosslessStringConvertible {
 func gryphonTemplates() {
 
 	// MARK: Declare placeholder variables to use in the templates
+	var _bool: Bool = true
 	var _strArray: [String] = []
 	var _array: [Any] = []
 	var _array1: [Any] = []
@@ -178,6 +180,9 @@ func gryphonTemplates() {
 
 	_ = fatalError(_string)
 	_ = "println(\\\"Fatal error: \(dollarSign)\(kotlinStringInterpolation)\\\"); exitProcess(-1)"
+
+	_ = assert(_bool)
+	_ = "assert(_bool)"
 
 	// Darwin
 	_ = sqrt(_double)
@@ -460,7 +465,7 @@ func gryphonTemplates() {
 """
 
 // gryphon multiline
-internal let kotlinErrorMapScriptFileContents = """
+internal let mapKotlinErrorsToSwiftFileContents = """
 // WARNING: Any changes to this file should be reflected in the literal string in
 // AuxiliaryFileContents.swift
 
@@ -612,7 +617,7 @@ for error in errors {
 """
 
 // gryphon multiline
-internal let gradleErrorMapScriptFileContents = """
+internal let mapGradleErrorsToSwiftFileContents = """
 // WARNING: Any changes to this file should be reflected in the literal string in
 // AuxiliaryFileContents.swift
 
@@ -774,7 +779,7 @@ if !errors.isEmpty {
 """
 
 // gryphon multiline
-internal let xcodeTargetScriptFileContents = """
+internal let makeGryphonTargetsFileContents = """
 require 'xcodeproj'
 
 if ARGV.length < 1
@@ -864,7 +869,8 @@ else
 end
 
 # Set the script we want to run
-kotlinBuildPhase.shell_script = "bash \(SupportingFile.compileKotlin.relativePath)"
+kotlinBuildPhase.shell_script =
+	"bash \(SupportingFile.compileKotlinRelativePath)"
 
 ####################################################################################################
 # Save the changes to disk
@@ -873,7 +879,7 @@ project.save()
 """
 
 // gryphon multiline
-internal let compileKotlinScriptFileContents = """
+internal let compileKotlinFileContents = """
 # Remove old logs
 # The `-f` option is here to avoid reporting errors when the files are not found
 rm -f "\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleOutput.txt"
@@ -893,13 +899,13 @@ cd \(dollarSign)SRCROOT
 # Map the Kotlin errors back to Swift
 EXITSTATUS=0
 
-swift \(SupportingFile.mapGradleErrorsToSwift.relativePath) < \
+swift \(SupportingFile.mapGradleErrorsToSwiftRelativePath) < \
 	\(SupportingFile.gryphonBuildFolder)/gradleOutput.txt
 if test "\(dollarSign)?" -ne "0" ; then
 	EXITSTATUS=-1
 fi
 
-swift \(SupportingFile.mapGradleErrorsToSwift.relativePath) < \
+swift \(SupportingFile.mapGradleErrorsToSwiftRelativePath) < \
 	\(SupportingFile.gryphonBuildFolder)/gradleErrors.txt
 if test "\(dollarSign)?" -ne "0" ; then
 	EXITSTATUS=-1
@@ -908,3 +914,120 @@ fi
 exit \(dollarSign)EXITSTATUS
 
 """
+
+/// Stores all hard-coded file names and paths. Changes to these paths might need to be reflected in
+/// preBuildScript.sh, prepareForBootstrapTests.sh, and dumpASTs.pl
+public class SupportingFile {
+	let name: String
+	/// The folder where this file should be. A value of `nil` corresponds to the current directory.
+	let folder: String?
+	let contents: String?
+
+	private init(_ name: String, folder: String?, contents: String?) {
+		self.name = name
+		self.folder = folder
+		self.contents = contents
+	}
+
+	var relativePath: String {
+		if let folder = self.folder {
+			return "\(folder)/\(name)"
+		}
+		else {
+			return name
+		}
+	}
+
+	var absolutePath: String {
+		return Utilities.getAbsoultePath(forFile: relativePath)
+	}
+
+	//
+	static public func pathOfSwiftASTDumpFile(forSwiftFile swiftFile: String) -> String {
+		let relativePath = Utilities.getRelativePath(forFile: swiftFile)
+		let pathInGryphonFolder = "\(astDumpsFolder)/\(relativePath)"
+		let astDumpPath = Utilities.changeExtension(of: pathInGryphonFolder, to: .swiftASTDump)
+		return astDumpPath
+	}
+
+	static public func pathOfKotlinErrorMapFile(forKotlinFile kotlinFile: String) -> String {
+		let relativePath = Utilities.getRelativePath(forFile: kotlinFile)
+		let pathInGryphonFolder = "\(kotlinErrorMapsFolder)/\(relativePath)"
+		let errorMapPath = Utilities.changeExtension(of: pathInGryphonFolder, to: .kotlinErrorMap)
+		return errorMapPath
+	}
+
+	// Folders
+	public static let gryphonBuildFolder = ".gryphon"
+	public static let gryphonScriptsFolder = "\(gryphonBuildFolder)/scripts"
+	public static let kotlinErrorMapsFolder = "\(gryphonBuildFolder)/KotlinErrorMaps"
+	public static let astDumpsFolder = "\(gryphonBuildFolder)/ASTDumps"
+
+	// Files in the project folder
+	public static let xcFileList = SupportingFile(
+		"gryphonInputFiles.xcfilelist",
+		folder: nil,
+		contents: "")
+
+	// Files in the Gryphon build folder ("/path/to/project/.gryphon")
+	public static let gryphonTemplatesLibrary = SupportingFile(
+		"GryphonTemplatesLibrary.swift",
+		folder: SupportingFile.gryphonBuildFolder,
+		contents: gryphonTemplatesLibraryFileContents)
+	public static let gryphonTemplatesLibraryASTDump = SupportingFile(
+		Utilities.changeExtension(of: gryphonTemplatesLibrary.name, to: .swiftASTDump),
+		folder: SupportingFile.gryphonBuildFolder,
+		contents: nil)
+	public static let temporaryOutputFileMap = SupportingFile(
+		"output-file-map.json",
+		folder: SupportingFile.gryphonBuildFolder,
+		contents: nil)
+	public static let astDumpsScript = SupportingFile(
+		"updateASTDumps.sh",
+		folder: SupportingFile.gryphonBuildFolder,
+		contents: nil)
+	public static let gryphonXCTest = SupportingFile(
+		"GryphonXCTest.swift",
+		folder: SupportingFile.gryphonBuildFolder,
+		contents: gryphonXCTestFileContents)
+
+	// Files in the Gryphon scripts folder ("/path/to/project/.gryphon/scripts")
+	public static let mapKotlinErrorsToSwift = SupportingFile(
+		"mapKotlinErrorsToSwift.swift",
+		folder: SupportingFile.gryphonScriptsFolder,
+		contents: mapKotlinErrorsToSwiftFileContents)
+
+	internal static let mapGradleErrorsToSwiftRelativePath =
+		".gryphon/scripts/mapGradleErrorsToSwift.swift"
+	public static let mapGradleErrorsToSwift = SupportingFile(
+		"mapGradleErrorsToSwift.swift",
+		folder: SupportingFile.gryphonScriptsFolder,
+		contents: mapGradleErrorsToSwiftFileContents)
+
+	public static let makeGryphonTargets = SupportingFile(
+		"makeGryphonTargets.rb",
+		folder: SupportingFile.gryphonScriptsFolder,
+		contents: makeGryphonTargetsFileContents)
+
+	internal static let compileKotlinRelativePath =
+		".gryphon/scripts/compileKotlin.sh"
+	public static let compileKotlin = SupportingFile(
+		"compileKotlin.sh",
+		folder: SupportingFile.gryphonScriptsFolder,
+		contents: compileKotlinFileContents)
+
+	/// Files that should be created on every init
+	static let filesForInitialization: List<SupportingFile> = [
+		gryphonTemplatesLibrary,
+		gryphonXCTest,
+	]
+
+	static let filesForXcodeInitialization: List<SupportingFile> = [
+		gryphonTemplatesLibrary,
+		gryphonXCTest,
+		mapKotlinErrorsToSwift,
+		mapGradleErrorsToSwift,
+		makeGryphonTargets,
+		compileKotlin,
+	]
+}

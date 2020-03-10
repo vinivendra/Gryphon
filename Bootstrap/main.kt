@@ -35,7 +35,6 @@ fun main(args: Array<String>) {
         UtilitiesTest().run()
 
         // AcceptanceTest().run()
-        // InitializationTest().run()
 
         for (passedTest in XCTestCase.passedTests) {
             println("✅ ${passedTest}: All tests succeeded!")

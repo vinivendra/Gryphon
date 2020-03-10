@@ -41,6 +41,7 @@ public class Driver {
 	]
 
 	public static let debugArguments: List<String> = [
+		"--xcode",
 		"-setupXcode",
 		"-makeGryphonTargets",
 		"-skipASTDumps",
@@ -231,10 +232,19 @@ public class Driver {
 		}
 
 		if arguments.contains("init") {
-			try initialize()
+			let maybeXcodeProject = getXcodeProject(inArguments: arguments)
+
+			// The `--xcode` flag forces the initialization to add Xcode files to the
+			// Gryphon build folder even if no Xcode project was given. It's currently
+			// used only for developing Gryphon.
+			let shouldInitializeXcodeFiles = (maybeXcodeProject != nil) ||
+				arguments.contains("--xcode")
+
+			try initialize(includingXcodeFiles: shouldInitializeXcodeFiles)
+
 			Compiler.log("Initialization successful.")
 
-			if let xcodeProject = getXcodeProject(inArguments: arguments) {
+			if let xcodeProject = maybeXcodeProject {
 				if isVerbose {
 					_ = try Driver.run(withArguments:
 						["-setupXcode", "--verbose", xcodeProject])
@@ -291,7 +301,7 @@ public class Driver {
 		var result: Any?
 		do {
 			if isVerbose {
-				_ = try Driver.run(withArguments: ["init", "-verbose"])
+				_ = try Driver.run(withArguments: ["init", "--verbose"])
 			}
 			else {
 				_ = try Driver.run(withArguments: ["init"])
@@ -301,7 +311,7 @@ public class Driver {
 		catch let error {
 			// Ensure `clean` runs even if an error was thrown
 			if isVerbose {
-				_ = try Driver.run(withArguments: ["clean", "-verbose"])
+				_ = try Driver.run(withArguments: ["clean", "--verbose"])
 			}
 			else {
 				_ = try Driver.run(withArguments: ["clean"])
@@ -311,7 +321,7 @@ public class Driver {
 
 		// Call `clean` if no errors were thrown
 		if isVerbose {
-			_ = try Driver.run(withArguments: ["clean", "-verbose"])
+			_ = try Driver.run(withArguments: ["clean", "--verbose"])
 		}
 		else {
 			_ = try Driver.run(withArguments: ["clean"])
@@ -448,7 +458,7 @@ public class Driver {
 					// more files are missing from the AST dump script. Try updating the script,
 					// then try to update the files again.
 
-					Compiler.log("Some AST dump files are out of date: " +
+					Compiler.log("Failed to update some AST dump files: " +
 						outdatedASTDumps.joined(separator: ", ") +
 						". Attempting to update file list...")
 
@@ -583,30 +593,26 @@ public class Driver {
 		return result
 	}
 
-	static func initialize() throws {
-		// Create gryphon folder and subfolders
-		Utilities.createFolderIfNeeded(at: SupportingFile.gryphonBuildFolder)
-		Utilities.createFolderIfNeeded(at: SupportingFile.gryphonScriptsFolder)
+	static func initialize(includingXcodeFiles: Bool) throws {
+		let filesToInitialize: List<SupportingFile>
 
-		// Save the files
-		try Utilities.createFile(
-			atPath: SupportingFile.gryphonTemplatesLibrary.relativePath,
-			containing: gryphonTemplatesLibraryFileContents)
-		try Utilities.createFile(
-			atPath: SupportingFile.gryphonXCTest.relativePath,
-			containing: gryphonXCTestFileContents)
-		try Utilities.createFile(
-			atPath: SupportingFile.mapKotlinErrorsToSwift.relativePath,
-			containing: kotlinErrorMapScriptFileContents)
-		try Utilities.createFile(
-			atPath: SupportingFile.mapGradleErrorsToSwift.relativePath,
-			containing: gradleErrorMapScriptFileContents)
-		try Utilities.createFile(
-			atPath: SupportingFile.makeGryphonTargets.relativePath,
-			containing: xcodeTargetScriptFileContents)
-		try Utilities.createFile(
-			atPath: SupportingFile.compileKotlin.relativePath,
-			containing: compileKotlinScriptFileContents)
+		if includingXcodeFiles {
+			filesToInitialize = SupportingFile.filesForXcodeInitialization
+		}
+		else {
+			filesToInitialize = SupportingFile.filesForInitialization
+		}
+
+		for file in filesToInitialize {
+			if let contents = file.contents {
+				if let folder = file.folder {
+					Utilities.createFolderIfNeeded(at: folder)
+				}
+				try Utilities.createFile(
+					atPath: file.relativePath,
+					containing: contents)
+			}
+		}
 	}
 
 	static func cleanup() {
@@ -770,6 +776,12 @@ public class Driver {
 					"This may have happened because top-level statements are only allowed " +
 					"if the file is called \"main.swift\".\n")
 			}
+			else if commandResult.standardError.contains(
+				".gryphon/updateASTDumps.sh: No such file or directory")
+			{
+				errorMessage.append(
+					"Try running `gryphon init <xcode project>` to fix this problem.\n")
+			}
 
 			errorMessage.append("Swift compiler output:\n\n" +
 				commandResult.standardOutput +
@@ -838,12 +850,17 @@ public class Driver {
 		  Running it with "--version" displays the current version.
 
 		Main usage:
-		  gryphon [options] [xcode project] [input file paths]
+
+		  - Initialization
+		      gryphon init [xcode project]
+
+		  - Translation
+		      gryphon [xcode project] [options] [input file paths]
 
 		  Notes:
-		      - Including the path of an Xcode project makes translation compatible
-		        with Xcode. Omit the Xcode project when translating standalone Swift
-		        files.
+		      - Including the path of an Xcode project makes initialization and
+		        translation compatible with Xcode. Omit the Xcode project when
+		        translating standalone Swift files.
 		      - Input file paths may be:
 		        - Paths to .swift source files.
 		        - Paths to .xcfilelist files, which may contain paths to actual .swift
@@ -878,10 +895,6 @@ public class Driver {
 		Advanced commands:
 		  ➡️  clean
 		        Clean Gryphon's build folder in the local directory.
-
-		  ➡️  init <Xcode project>
-		        Set up the current directory and the given Xcode project so that Gryphon
-		        can translate the project's source files.
 
 		  ➡️  -setupXcode <Xcode project>
 		        Configures Gryphon's build folder to be used with the given Xcode
