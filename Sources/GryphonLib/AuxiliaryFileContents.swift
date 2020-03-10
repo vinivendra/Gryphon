@@ -29,14 +29,6 @@ let kotlinStringInterpolation = "{_string}"
 
 // gryphon multiline
 internal let gryphonXCTestFileContents = """
-private struct Compare: Comparable { // gryphon ignore
-	static func < (lhs: Compare, rhs: Compare) -> Bool {
-		return false
-	}
-}
-
-private struct MyOptional { } // gryphon ignore
-
 class XCTestCase { // gryphon ignore
 	class func setUp() { }
 	class func tearDown() { }
@@ -60,9 +52,9 @@ extension XCTestCase {
 	private func gryphonTemplates() {
 		let _bool = true
 		let _string = ""
-		let _any1: Compare = Compare()
-		let _any2: Compare = Compare()
-		let _optional: MyOptional? = MyOptional()
+		let _any1: _Compare = _Compare()
+		let _any2: _Compare = _Compare()
+		let _optional: _Optional? = _Optional()
 
 		XCTAssert(_bool)
 		_ = "XCTAssert(_bool)"
@@ -105,20 +97,20 @@ import Foundation
 // MARK: - Define special types as stand-ins for some protocols and other types
 
 // Replacement for Hashable
-struct Hash: Hashable { }
+struct _Hash: Hashable { }
 
 // Replacement for Comparable
-struct Compare: Comparable {
-	static func < (lhs: Compare, rhs: Compare) -> Bool {
+struct _Compare: Comparable {
+	static func < (lhs: _Compare, rhs: _Compare) -> Bool {
 		return false
 	}
 }
 
 // Replacement for Optional
-struct MyOptional { }
+struct _Optional { }
 
 // Replacement for Any
-struct AnyType: CustomStringConvertible, LosslessStringConvertible {
+struct _Any: CustomStringConvertible, LosslessStringConvertible {
 	init() { }
 
 	var description: String = ""
@@ -139,8 +131,8 @@ func gryphonTemplates() {
 	var _array2: [Any] = []
 	let _array3: [Any] = []
 	var _arrayOfOptionals: [Any?] = []
-	var _comparableArray: [Compare] = []
-	let _compare = Compare()
+	var _comparableArray: [_Compare] = []
+	let _compare = _Compare()
 	var _index: String.Index = "abc".endIndex
 	let _index1: String.Index = "abc".startIndex
 	let _index2: String.Index = "abc".startIndex
@@ -152,22 +144,22 @@ func gryphonTemplates() {
 	let _substring: Substring = "abc".dropLast()
 	let _range: Range<String.Index> = _string.startIndex..<_string.endIndex
 	let _any: Any = "abc"
-	let _anyType: AnyType = AnyType()
-	let _optional: MyOptional? = MyOptional()
+	let _anyType: _Any = _Any()
+	let _optional: _Optional? = _Optional()
 	let _double: Double = 0
 	let _double1: Double = 0
 	let _double2: Double = 0
 	let _int: Int = 0
 	let _int1: Int = 0
 	let _int2: Int = 0
-	let _dictionary: [Hash: Any] = [:]
+	let _dictionary: [_Hash: Any] = [:]
 	let _closure: (Any, Any) -> Any = { a, b in a }
 	let _closure2: (Any) -> Any = { a in a }
 	let _closure3: (Any) -> Bool = { _ in true }
-	let _closure4: (MyOptional) -> Any = { _ in true }
+	let _closure4: (_Optional) -> Any = { _ in true }
 	let _closure5: (Character) -> Bool = { _ in true }
 	let _closure6: (Any) -> Any? = { a in a }
-	let _closure7: (Compare, Compare) -> Bool = { _, _ in true }
+	let _closure7: (_Compare, _Compare) -> Bool = { _, _ in true }
 
 	// MARK: Declare the templates
 

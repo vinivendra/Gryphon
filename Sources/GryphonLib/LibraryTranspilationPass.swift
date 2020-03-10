@@ -388,14 +388,14 @@ internal extension String {
 			return false
 		}
 		else if superType == "Any" ||
-			superType == "AnyType" ||
-			superType == "Hash" ||
-			superType == "Compare" ||
-			superType == "MyOptional"
+			superType == "_Any" ||
+			superType == "_Hash" ||
+			superType == "_Compare" ||
+			superType == "_Optional"
 		{
 			return true
 		}
-		else if superType == "MyOptional?" {
+		else if superType == "_Optional?" {
 			return self.hasSuffix("?")
 		}
 		else if superType == "XCTestCase" {

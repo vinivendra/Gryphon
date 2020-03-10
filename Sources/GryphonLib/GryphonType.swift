@@ -323,17 +323,17 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 		// library translations)
 		if case let .namedType(typeName: namedSuperType) = superType {
 			if namedSuperType == "Any" ||
-				namedSuperType == "AnyType" ||
-				namedSuperType == "Hash" ||
-				namedSuperType == "Compare" ||
-				namedSuperType == "MyOptional"
+				namedSuperType == "_Any" ||
+				namedSuperType == "_Hash" ||
+				namedSuperType == "_Compare" ||
+				namedSuperType == "_Optional"
 			{
 				return true
 			}
 		}
 		if case let .optional(subType: optionalSuperType) = superType {
 			if case let .namedType(typeName: namedSuperType) = optionalSuperType {
-				if namedSuperType == "MyOptional" {
+				if namedSuperType == "_Optional" {
 					if case .optional = self {
 						return true
 					}

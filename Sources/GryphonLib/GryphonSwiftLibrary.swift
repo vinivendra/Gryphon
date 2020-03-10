@@ -14,12 +14,14 @@
 // limitations under the License.
 //
 
+#if !GRYPHON
 // Replacement for Comparable
-private struct Compare: Comparable {
-	static func < (lhs: Compare, rhs: Compare) -> Bool {
+private struct _Compare: Comparable {
+	static func < (lhs: _Compare, rhs: _Compare) -> Bool {
 		return false
 	}
 }
+#endif
 
 private func gryphonTemplates() {
 	let _array1: MutableList<Any> = [1, 2, 3]
@@ -27,8 +29,8 @@ private func gryphonTemplates() {
 	let _any: Any = 0
 	let _string: String = ""
 	let _index = _string.startIndex
-	let _comparableArray: [Compare] = []
-	let _closure: (Compare, Compare) -> Bool = { _, _ in true }
+	let _comparableArray: [_Compare] = []
+	let _closure: (_Compare, _Compare) -> Bool = { _, _ in true }
 
 	// Templates with an input that references methods defined in this file
 	_ = zip(_array1, _array2)

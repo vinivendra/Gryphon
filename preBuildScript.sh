@@ -4,8 +4,8 @@ echo " ➡️  Updating AST dumps for tests and library templates..."
 perl dumpASTs.pl ".gryphon/GryphonTemplatesLibrary.swift"
 [ $? -eq 0 ] || exit 1
 
-perl dumpASTs.pl ".gryphon/GryphonXCTest.swift"
-[ $? -eq 0 ] || exit 1
+#perl dumpASTs.pl ".gryphon/GryphonXCTest.swift"
+#[ $? -eq 0 ] || exit 1
 
 perl dumpASTs.pl "test.swift"
 [ $? -eq 0 ] || exit 1
