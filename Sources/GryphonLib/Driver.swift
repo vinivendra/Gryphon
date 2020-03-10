@@ -669,6 +669,8 @@ public class Driver {
 		newComponents.append("-output-file-map")
 		newComponents.append(escapedOutputFileMapPath)
 		newComponents.append("-dump-ast")
+		newComponents.append("-D")
+		newComponents.append("GRYPHON")
 		let newCompilationCommand = newComponents.joined(separator: " ")
 
 		// Drop the header and the old compilation command
@@ -751,6 +753,7 @@ public class Driver {
 				"swiftc",
 				"-dump-ast",
 				"-module-name", "Main",
+				"-D", "GRYPHON",
 				"-output-file-map=\(SupportingFile.temporaryOutputFileMap.absolutePath)", ]
 			for swiftFile in swiftFiles {
 				arguments.append(Utilities.getAbsoultePath(forFile: swiftFile))
