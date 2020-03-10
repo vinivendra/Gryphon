@@ -21,19 +21,23 @@ import Foundation
 class InitializationTest: XCTestCase {
 	/// Tests to be run when using Swift on Linux
 	static var allTests = [
+		("testXcodeInitialization", testXcodeInitialization),
 		("testInitialization", testInitialization),
 	]
 
 	static let testFolder = ".initTest"
 
 	// MARK: - Tests
-	func testInitialization() {
+	func testXcodeInitialization() {
+		if Utilities.fileExists(at: SupportingFile.gryphonBuildFolder) {
+			Utilities.deleteFolder(at: SupportingFile.gryphonBuildFolder)
+		}
+
 		do {
 			// Create a new folder
 			try Driver.run(withArguments: ["init", "--xcode"])
 
 			// Check the new folder's contents
-
 			for file in SupportingFile.filesForXcodeInitialization {
 				if let contents = file.contents {
 					let fileContents = try Utilities.readFile(file.relativePath)
@@ -43,8 +47,33 @@ class InitializationTest: XCTestCase {
 
 			// Test cleanup
 			try Driver.run(withArguments: ["clean"])
-			XCTAssertFalse(
-				Utilities.fileExists(at: SupportingFile.gryphonTemplatesLibrary.relativePath))
+			XCTAssertFalse(Utilities.fileExists(at: SupportingFile.gryphonBuildFolder))
+		}
+		catch let error {
+			XCTFail("\(error)")
+		}
+	}
+
+	func testInitialization() {
+		if Utilities.fileExists(at: SupportingFile.gryphonBuildFolder) {
+			Utilities.deleteFolder(at: SupportingFile.gryphonBuildFolder)
+		}
+
+		do {
+			// Create a new folder
+			try Driver.run(withArguments: ["init"])
+
+			// Check the new folder's contents
+			for file in SupportingFile.filesForInitialization {
+				if let contents = file.contents {
+					let fileContents = try Utilities.readFile(file.relativePath)
+					XCTAssertEqual(fileContents, contents)
+				}
+			}
+
+			// Test cleanup
+			try Driver.run(withArguments: ["clean"])
+			XCTAssertFalse(Utilities.fileExists(at: SupportingFile.gryphonBuildFolder))
 		}
 		catch let error {
 			XCTFail("\(error)")
@@ -58,7 +87,7 @@ class InitializationTest: XCTestCase {
 	}
 
 	override static func tearDown() {
-		Utilities.deleteFolder(at: testFolder)
 		TestUtilities.changeCurrentDirectoryPath("..")
+		Utilities.deleteFolder(at: testFolder)
 	}
 }
