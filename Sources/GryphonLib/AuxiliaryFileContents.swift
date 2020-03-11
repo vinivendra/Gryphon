@@ -29,6 +29,16 @@ let kotlinStringInterpolation = "{_string}"
 
 // gryphon multiline
 internal let gryphonXCTestFileContents = """
+// Replacement for Comparable
+private struct _Compare: Comparable {
+	static func < (lhs: _Compare, rhs: _Compare) -> Bool {
+		return false
+	}
+}
+
+// Replacement for Optional
+private struct _Optional { }
+
 class XCTestCase { // gryphon ignore
 	class func setUp() { }
 	class func tearDown() { }
@@ -97,20 +107,20 @@ import Foundation
 // MARK: - Define special types as stand-ins for some protocols and other types
 
 // Replacement for Hashable
-struct _Hash: Hashable { }
+private struct _Hash: Hashable { }
 
 // Replacement for Comparable
-struct _Compare: Comparable {
+private struct _Compare: Comparable {
 	static func < (lhs: _Compare, rhs: _Compare) -> Bool {
 		return false
 	}
 }
 
 // Replacement for Optional
-struct _Optional { }
+private struct _Optional { }
 
 // Replacement for Any
-struct _Any: CustomStringConvertible, LosslessStringConvertible {
+private struct _Any: CustomStringConvertible, LosslessStringConvertible {
 	init() { }
 
 	var description: String = ""
@@ -121,7 +131,7 @@ struct _Any: CustomStringConvertible, LosslessStringConvertible {
 }
 
 // MARK: - Define the templates
-func gryphonTemplates() {
+private func gryphonTemplates() {
 
 	// MARK: Declare placeholder variables to use in the templates
 	var _bool: Bool = true

@@ -14,14 +14,12 @@
 // limitations under the License.
 //
 
-#if !GRYPHON
 // Replacement for Comparable
 private struct _Compare: Comparable {
 	static func < (lhs: _Compare, rhs: _Compare) -> Bool {
 		return false
 	}
 }
-#endif
 
 private func gryphonTemplates() {
 	let _array1: MutableList<Any> = [1, 2, 3]
