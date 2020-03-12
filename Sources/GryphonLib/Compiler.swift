@@ -22,7 +22,7 @@
 import Foundation
 
 public class Compiler {
-	public private(set) static var log: ((String) -> ()) = { print($0) }
+	public private(set) static var log: ((String) -> ()) = { _ in }
 
 	public static func shouldLogProgress(if value: Bool) {
 		if value {

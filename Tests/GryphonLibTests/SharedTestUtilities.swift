@@ -86,6 +86,36 @@ class TestUtilities {
 	public static let kotlinBuildFolder =
 		"\(SupportingFile.gryphonBuildFolder)/kotlinBuild-\(OS.systemIdentifier)"
 
+	static private var testCasesHaveBeenUpdated = false
+
+    static public func updateASTsForTestCases() throws {
+        guard !testCasesHaveBeenUpdated else {
+            return
+        }
+
+		try Utilities.processGryphonTemplatesLibrary()
+
+        Compiler.log("\t* Updating ASTs for test cases...")
+
+        let testCasesFolder = "Test cases"
+        if Utilities.needsToDumpASTForSwiftFiles(in: testCasesFolder) {
+			let testFiles = Utilities.getFiles(inDirectory: testCasesFolder, withExtension: .swift)
+
+			for testFile in testFiles {
+				try Driver.updateASTDumps(forFiles: [testFile], usingXcode: false)
+			}
+
+			if Utilities.needsToDumpASTForSwiftFiles(in: testCasesFolder) {
+				throw GryphonError(errorMessage: "Failed to update the AST of at least one file " +
+					"in the \(testCasesFolder) folder")
+			}
+        }
+
+        testCasesHaveBeenUpdated = true
+
+        Compiler.log("\t- Done!")
+    }
+
 	// MARK: - Test cases
 	static let testCasesForAcceptanceTest: List<String> = [
 		"access",

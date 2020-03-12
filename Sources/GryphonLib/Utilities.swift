@@ -177,8 +177,10 @@ extension Utilities {
 		let selectedURLs: MutableList<URL>
 		if let selectedFiles = selectedFiles {
 			selectedURLs = sortedURLs.filter { url in
-				let fileName = url.deletingPathExtension().lastPathComponent
-				return selectedFiles.contains(fileName)
+				let fileName = url.lastPathComponent
+				let fileNameWithoutExtension = url.deletingPathExtension().lastPathComponent
+				return selectedFiles.contains(fileName) ||
+					selectedFiles.contains(fileNameWithoutExtension)
 			}.toMutableList()
 		}
 		else {

@@ -299,7 +299,7 @@ class BootstrappingTest: XCTestCase {
 			Utilities.files(swiftFiles, wereModifiedLaterThan: kotlinFiles)
 		{
 			print("🚨 Bootstrap test files are out of date. " +
-				"Please run `bootstrapGryphon.sh` and then `prepareForBootstrapTests.sh`.")
+				"Please run `prepareForBootstrapTests.sh`.")
 			hasError = true
 		}
 	}

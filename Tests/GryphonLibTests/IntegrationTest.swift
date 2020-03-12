@@ -32,7 +32,7 @@ class IntegrationTest: XCTestCase {
 
 	override static func setUp() {
 		do {
-			try Utilities.updateTestCases()
+			try TestUtilities.updateASTsForTestCases()
 		}
 		catch let error {
 			print(error)

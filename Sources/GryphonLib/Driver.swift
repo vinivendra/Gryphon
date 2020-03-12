@@ -27,6 +27,7 @@ public class Driver {
 		"--version",
 		"init",
 		"clean",
+		"--skip",
 		"--no-main-file",
 		"--default-final",
 		"--continue-on-error",
@@ -83,7 +84,7 @@ public class Driver {
 			return [] // gryphon value: mutableListOf<Any>()
 		}
 
-		let swiftASTDumpFile = getASTDump(forFile: inputFilePath)!
+		let swiftASTDumpFile = SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: inputFilePath)
 
 		let swiftASTDump: String
 		do {
@@ -355,7 +356,7 @@ public class Driver {
 		}
 
 		//
-		let inputFilePaths = getInputFilePaths(inArguments: arguments)
+		let inputFilePaths = try getInputFilePaths(inArguments: arguments)
 		if inputFilePaths.isEmpty {
 			throw GryphonError(errorMessage: "No input files provided.")
 		}
@@ -437,20 +438,33 @@ public class Driver {
 
 		//// Dump the ASTs
 		if !arguments.contains("-skipASTDumps") {
-			let inputFiles = getInputFilePaths(inArguments: arguments)
+			let maybeXcodeProject = getXcodeProject(inArguments: arguments)
+			let isUsingXcode = (maybeXcodeProject != nil)
+			let isSkippingFiles = arguments.contains("--skip")
+
+			if isUsingXcode && isSkippingFiles {
+				throw GryphonError(errorMessage: "Argument `--skip` is not supported when " +
+					"translating with Xcode support. To skip translation of a file, remove it " +
+					"from the `xcfilelist`.")
+			}
+
+			let inputFiles = try getInputFilePaths(inArguments: arguments)
 			if inputFiles.isEmpty {
 				throw GryphonError(errorMessage: "No input files provided.")
 			}
+			let allSourceFiles = inputFiles.toMutableList()
 
-			let maybeXcodeProject = getXcodeProject(inArguments: arguments)
-			let isUsingXcode = (maybeXcodeProject != nil)
+			if isSkippingFiles {
+				let skippedFiles = try getSkippedInputFilePaths(inArguments: arguments)
+				allSourceFiles.append(contentsOf: skippedFiles)
+			}
 
 			try updateASTDumps(
-				forFiles: inputFiles,
+				forFiles: allSourceFiles,
 				usingXcode: isUsingXcode)
 
 			// Check that all AST dump files have been updated successfully
-			let outdatedASTDumps = outdatedASTDumpFiles(forInputFiles: inputFiles)
+			let outdatedASTDumps = outdatedASTDumpFiles(forInputFiles: allSourceFiles)
 			if !outdatedASTDumps.isEmpty {
 
 				if let xcodeProject = maybeXcodeProject {
@@ -465,10 +479,10 @@ public class Driver {
 					try setupGryphonFolder(forXcodeProject: xcodeProject)
 
 					try updateASTDumps(
-						forFiles: inputFiles,
+						forFiles: allSourceFiles,
 						usingXcode: isUsingXcode)
 
-					let newOutdatedASTDumps = outdatedASTDumpFiles(forInputFiles: inputFiles)
+					let newOutdatedASTDumps = outdatedASTDumpFiles(forInputFiles: allSourceFiles)
 
 					if !newOutdatedASTDumps.isEmpty {
 						throw GryphonError(errorMessage: "Unable to update AST dumps for files: " +
@@ -561,36 +575,44 @@ public class Driver {
 		return result
 	}
 
-	/// Returns a list of all Swift input files, including those inside xcfilelists
+	/// Returns a list of all Swift input files, including those inside xcfilelists, but
+	/// excluding any files paths after the `--skip` flag.
 	static func getInputFilePaths(
-		inArguments arguments: MutableList<String>)
-		-> MutableList<String>
+		inArguments arguments: List<String>)
+		throws -> MutableList<String>
 	{
 		let cleanArguments = arguments.map {
-			$0.hasSuffix("/") ?
-				String($0.dropLast()) :
-				$0
-		}
+				$0.hasSuffix("/") ?
+					String($0.dropLast()) :
+					$0
+			}
+
+		let argumentsBeforeSkip = cleanArguments.prefix {
+				$0 != "--skip"
+			}
 
 		let result: MutableList<String> = []
-		result.append(contentsOf: cleanArguments.filter {
+		result.append(contentsOf: argumentsBeforeSkip.filter {
 			Utilities.getExtension(of: $0) == .swift
 		})
 
-		let fileLists = cleanArguments.filter {
+		let fileLists = argumentsBeforeSkip.filter {
 			Utilities.getExtension(of: $0) == .xcfilelist
 		}
 		for fileList in fileLists {
-			do {
-				let contents = try Utilities.readFile(fileList)
-				let files = contents.split(withStringSeparator: "\n")
-				result.append(contentsOf: files)
-			} catch let error {
-				print(error)
-			}
+			let contents = try Utilities.readFile(fileList)
+			let files = contents.split(withStringSeparator: "\n")
+			result.append(contentsOf: files)
 		}
 
 		return result
+	}
+
+	static func getSkippedInputFilePaths(
+		inArguments arguments: List<String>)
+		throws -> MutableList<String>
+	{
+		return try getInputFilePaths(inArguments: arguments.reversed())
 	}
 
 	static func initialize(includingXcodeFiles: Bool) throws {
@@ -708,13 +730,6 @@ public class Driver {
 		//// Create the outputFileMap
 		var outputFileMapContents = "{\n"
 
-		// Add the templates file
-		let templatesFile = SupportingFile.gryphonTemplatesLibrary.absolutePath
-		let templatesASTDumpFile = SupportingFile.gryphonTemplatesLibraryASTDump.absolutePath
-		outputFileMapContents += "\t\"\(templatesFile)\": {\n" +
-			"\t\t\"ast-dump\": \"\(templatesASTDumpFile)\",\n" +
-			"\t},\n"
-
 		// Add the swift files
 		for swiftFile in swiftFiles {
 			let astDumpPath = SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: swiftFile)
@@ -759,8 +774,6 @@ public class Driver {
 				arguments.append(Utilities.getAbsoultePath(forFile: swiftFile))
 			}
 
-			arguments.append(SupportingFile.gryphonTemplatesLibrary.absolutePath)
-
 			maybeCommandResult = Shell.runShellCommand(
 				arguments,
 				timeout: nil)
@@ -790,18 +803,6 @@ public class Driver {
 				commandResult.standardOutput +
 				commandResult.standardError)
 			throw GryphonError(errorMessage: errorMessage)
-		}
-	}
-
-	static func getASTDump(forFile file: String) -> String? {
-		if Utilities.fileHasExtension(file, .swift) {
-			return SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: file)
-		}
-		else if Utilities.fileHasExtension(file, .swiftASTDump) {
-			return file
-		}
-		else {
-			return nil
 		}
 	}
 
@@ -870,6 +871,11 @@ public class Driver {
 		          source files separated by newlines.
 
 		  Options:
+		      ↪️  --skip
+		            Input files after this option will not be translated. Use this to
+		            specify files that have to be compiled by Swift but don't have to be
+		            translated by Gryphon.
+
 		      ↪️  --no-main-file
 		            Do not generate a Kotlin file with a "main" function. This is
 		            implied if translating files from an Xcode project.

@@ -1,4 +1,28 @@
-echo "➡️ [1/2] Compiling Kotlin files..."
+echo "➡️ [1/4] Building Gryphon..."
+
+if swift build
+then
+	echo "✅ Done."
+	echo ""
+else
+	echo "🚨 Failed to build Gryphon."
+	exit -1
+fi
+
+
+echo "➡️ [2/4] Transpiling the Gryphon source files to Kotlin..."
+
+if bash transpileGryphonSources.sh
+then
+	echo "✅ Done."
+	echo ""
+else
+	echo "🚨 Failed to transpile the Gryphon source files."
+	exit -1
+fi
+
+
+echo "➡️ [3/4] Compiling Kotlin files..."
 
 if bash buildBootstrappedTranspiler.sh 2> .gryphon/kotlinErrors.errors
 then
@@ -12,7 +36,7 @@ else
 fi
 
 
-echo "➡️ [2/2] Updating the bootstrap outputs..."
+echo "➡️ [4/4] Updating the bootstrap outputs..."
 
 for file in Test\ cases/*.swift
 do

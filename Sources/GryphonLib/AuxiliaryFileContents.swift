@@ -385,6 +385,9 @@ private func gryphonTemplates() {
 	_ = _array.last
 	_ = "_array.lastOrNull()"
 
+	_ = _array.prefix(while: _closure3)
+	_ = "_array.takeWhile _closure3"
+
 	_ = _array.removeFirst()
 	_ = "_array.removeAt(0)"
 
@@ -918,7 +921,7 @@ exit \(dollarSign)EXITSTATUS
 """
 
 /// Stores all hard-coded file names and paths. Changes to these paths might need to be reflected in
-/// preBuildScript.sh, prepareForBootstrapTests.sh, and dumpASTs.pl
+/// prepareForBootstrapTests.sh
 public class SupportingFile {
 	let name: String
 	/// The folder where this file should be. A value of `nil` corresponds to the current directory.
@@ -976,10 +979,6 @@ public class SupportingFile {
 		"GryphonTemplatesLibrary.swift",
 		folder: SupportingFile.gryphonBuildFolder,
 		contents: gryphonTemplatesLibraryFileContents)
-	public static let gryphonTemplatesLibraryASTDump = SupportingFile(
-		Utilities.changeExtension(of: gryphonTemplatesLibrary.name, to: .swiftASTDump),
-		folder: SupportingFile.gryphonBuildFolder,
-		contents: nil)
 	public static let temporaryOutputFileMap = SupportingFile(
 		"output-file-map.json",
 		folder: SupportingFile.gryphonBuildFolder,

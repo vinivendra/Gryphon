@@ -133,7 +133,6 @@ public class Utilities {
 }
 
 public enum FileExtension: String {
-    // This should be the same as the extension in the dumpAST.pl and separateASTs.pl files
     case swiftASTDump
     case swiftAST
     case gryphonASTRaw
@@ -206,7 +205,6 @@ extension Utilities {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 private var templatesLibraryHasBeenProcessed = false
-private var testCasesHaveBeenUpdated = false
 
 extension Utilities {
     static public func processGryphonTemplatesLibrary() throws {
@@ -223,8 +221,26 @@ extension Utilities {
             return
         }
 
+		if Utilities.needsToDumpASTForSwiftFiles(
+			[SupportingFile.gryphonTemplatesLibrary.name],
+			in: SupportingFile.gryphonTemplatesLibrary.folder ?? ".")
+		{
+			try Driver.updateASTDumps(
+				forFiles: [SupportingFile.gryphonTemplatesLibrary.relativePath],
+				usingXcode: false)
+
+			if Utilities.needsToDumpASTForSwiftFiles(
+				[SupportingFile.gryphonTemplatesLibrary.name],
+				in: SupportingFile.gryphonTemplatesLibrary.folder ?? ".")
+			{
+				throw GryphonError(errorMessage:
+					"Failed to update AST dump for the Gryphon Templates library.")
+			}
+		}
+
         let astArray = try Compiler.transpileGryphonRawASTs(
-			fromASTDumpFiles: [SupportingFile.gryphonTemplatesLibraryASTDump.relativePath],
+			fromASTDumpFiles: [SupportingFile.pathOfSwiftASTDumpFile(
+				forSwiftFile: SupportingFile.gryphonTemplatesLibrary.relativePath), ],
 			withContext: TranspilationContext.globalContext)
 
         let ast = astArray[0]
@@ -237,29 +253,6 @@ extension Utilities {
         Compiler.log("\t* Done!")
     }
 
-	// TODO: Send this (and associated code) to the test suite and rename this method
-    static public func updateTestCases() throws {
-        guard !testCasesHaveBeenUpdated else {
-            return
-        }
-
-        try processGryphonTemplatesLibrary()
-
-        Compiler.log("\t* Updating unit test files...")
-
-        let testCasesFolder = "Test cases"
-        if needsToDumpASTForSwiftFiles(in: testCasesFolder) {
-            throw GryphonError(errorMessage:
-				"One of the files in the \(testCasesFolder) folder is outdated.\n" +
-                "Try running the preBuildScript.sh and the test suite to update compilation " +
-				"files.")
-        }
-
-        testCasesHaveBeenUpdated = true
-
-        Compiler.log("\t* Done!")
-    }
-
     static internal func needsToDumpASTForSwiftFiles(
         _ swiftFiles: MutableList<String>? = nil,
         in folder: String)
@@ -268,23 +261,10 @@ extension Utilities {
 		let files = getFiles(swiftFiles, inDirectory: folder, withExtension: .swift)
 
         for swiftFile in files {
-			let astDumpFilePath: String
-			// Normal files should go from "./path/to/file.swift" to
-			// "./.gryphon/path/to/file.swiftASTDump". Files that are already in "./.gryphon", such
-			// as the stdlib templates file, are special cases and should be dumped at "./.gryphon"
-			// (rather than "./.gryphon/.gryphon", which is what the normal algorithm would return).
-			if folder.hasSuffix(SupportingFile.gryphonBuildFolder) ||
-				folder.hasSuffix(SupportingFile.gryphonBuildFolder + "/")
-			{
-				astDumpFilePath = Utilities.changeExtension(of: swiftFile, to: .swiftASTDump)
-			}
-			else {
-				astDumpFilePath = SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: swiftFile)
-			}
+			let astDumpFilePath = SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: swiftFile)
 
-            let astDumpFileWasJustCreated =
-                Utilities.createFileIfNeeded(at: astDumpFilePath)
-            let astDumpFileIsOutdated = astDumpFileWasJustCreated ||
+            let astDumpFileExists = Utilities.fileExists(at: astDumpFilePath)
+            let astDumpFileIsOutdated = !astDumpFileExists ||
                 Utilities.file(swiftFile, wasModifiedLaterThan: astDumpFilePath)
 
             if astDumpFileIsOutdated {

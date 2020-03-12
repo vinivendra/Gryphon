@@ -21,6 +21,8 @@
 import XCTest
 #endif
 
+// gryphon insert: import kotlin.system.exitProcess
+
 class DriverTest: XCTestCase {
 	// gryphon insert: constructor(): super() { }
 
@@ -28,8 +30,19 @@ class DriverTest: XCTestCase {
 		return "DriverTest"
 	}
 
+	override static func setUp() {
+		do {
+			try TestUtilities.updateASTsForTestCases()
+		}
+		catch let error {
+			print(error)
+			fatalError("Failed to update test files.")
+		}
+	}
+
 	/// Tests to be run by the translated Kotlin version.
 	public func runAllTests() { // gryphon annotation: override
+		DriverTest.setUp()
 		testUsageString()
 		testNoMainFile()
 		testContinueOnErrors()

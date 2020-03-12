@@ -1,7 +1,5 @@
 ./.build/debug/Gryphon \
-	-emit-kotlin \
 	--indentation=4 \
-	-skipASTDumps \
 	\
 	Sources/GryphonLib/ASTDumpDecoder.swift \
 	Sources/GryphonLib/AuxiliaryFileContents.swift \
@@ -38,4 +36,10 @@
 	Tests/GryphonLibTests/TranslationResultTest.swift \
 	Tests/GryphonLibTests/UtilitiesTest.swift \
 	\
-	Tests/GryphonLibTests/SharedTestUtilities.swift
+	Tests/GryphonLibTests/SharedTestUtilities.swift \
+	\
+	--skip \
+	Sources/GryphonLib/Shell.swift \
+	Sources/GryphonLib/Utilities.swift \
+	Tests/GryphonLibTests/TestUtilities.swift \
+	.gryphon/GryphonXCTest.swift

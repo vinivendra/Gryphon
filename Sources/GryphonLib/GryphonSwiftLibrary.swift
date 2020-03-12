@@ -15,7 +15,7 @@
 //
 
 // Replacement for Comparable
-private struct _Compare: Comparable {
+private struct _Compare: Comparable { // gryphon ignore
 	static func < (lhs: _Compare, rhs: _Compare) -> Bool {
 		return false
 	}
@@ -271,6 +271,10 @@ public class List<Element>: CustomStringConvertible, // gryphon ignore
 		where SegmentOfResult: Sequence
 	{
 		return try List<SegmentOfResult.Element>(array.flatMap(transform))
+	}
+
+	public func prefix(while predicate: (Element) throws -> Bool) rethrows -> List<Element> {
+		return try List<Element>(array.prefix(while: predicate))
 	}
 
 	@inlinable

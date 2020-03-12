@@ -159,7 +159,8 @@ fun Utilities.Companion.getFiles(
         }
 
         selectedURLs = sortedFiles.filter {
-            selectedFilesWithExtensions.contains(it.getName())
+            selectedFilesWithExtensions.contains(it.getName()) ||
+                selectedFiles.contains(it.getName())
         }
     }
     else {
