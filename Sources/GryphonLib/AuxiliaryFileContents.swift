@@ -19,11 +19,6 @@
 // gryphon output: Sources/GryphonLib/AuxiliaryFileContents.gryphonAST
 // gryphon output: Bootstrap/AuxiliaryFileContents.kt
 
-// TODO: Test `gryphon -init`
-// TODO: Test multiline strings
-// TODO: array.firstIndex(of:) fails by returning nil on Swift and -1 on Kotlin
-
-// TODO: Dollar signs should probably be automatically escaped
 let dollarSign = "$" // gryphon value: "\\$"
 let kotlinStringInterpolation = "{_string}"
 
@@ -94,9 +89,6 @@ extension XCTestCase {
 
 """
 
-// TODO: This string isn't being translated as multiline
-// TODO: Comments should be ignored inside multiline strings
-// TODO: Rename/refactor these global variables (see SupportingFile)
 // gryphon multiline
 internal let gryphonTemplatesLibraryFileContents = """
 // WARNING: Any changes to this file should be reflected in the literal string in
@@ -440,8 +432,6 @@ private func gryphonTemplates() {
 	_ = _dictionary.map(_closure2)
 	_ = "_dictionary.map _closure2"
 
-	// TODO: Translate mapValues (Kotlin's takes (Key, Value) as an argument)
-
 	// Int
 	_ = Int.max
 	_ = "Int.MAX_VALUE"
@@ -536,7 +526,6 @@ struct ErrorMap {
 	}
 
 	func getSwiftRange(forKotlinLine line: Int, column: Int) -> SourceFileRange? {
-		// TODO: This could be a binary search
 		for mapping in mappings {
 			if mapping.kotlinRange.lineStart <= line,
 				mapping.kotlinRange.lineEnd >= line,
@@ -555,7 +544,6 @@ struct ErrorMap {
 var input: [String] = []
 
 // Read all the input, separated into lines
-// TODO: This could be done in real time
 while let nextLine = readLine(strippingNewline: false) {
 	input.append(nextLine)
 }
@@ -707,7 +695,6 @@ struct ErrorMap {
 	}
 
 	func getSwiftRange(forKotlinLine line: Int, column: Int) -> SourceFileRange? {
-		// TODO: This could be a binary search
 		for mapping in mappings {
 			if mapping.kotlinRange.lineStart <= line,
 				mapping.kotlinRange.lineEnd >= line,
@@ -726,7 +713,6 @@ struct ErrorMap {
 var input: [String] = []
 
 // Read all the input, separated into lines
-// TODO: This could be done in real time
 while let nextLine = readLine(strippingNewline: false) {
 	input.append(nextLine)
 }
