@@ -208,55 +208,55 @@ class ExtensionsTest: XCTestCase {
 	func testOccurrencesOfSubstring() {
 		XCTAssertEqual(
 			"->".occurrences(of: "->").map { TestableRange($0) },
-			MutableList<TestableRange>(
+			List<TestableRange>(
 				[TestableRange(0, 2)]))
 		XCTAssertEqual(
 			"a->b".occurrences(of: "->").map { TestableRange($0) },
-			MutableList<TestableRange>(
+			List<TestableRange>(
 				[TestableRange(1, 3)]))
 		XCTAssertEqual(
 			"a->b->c".occurrences(of: "->").map { TestableRange($0) },
-			MutableList<TestableRange>(
+			List<TestableRange>(
 				[TestableRange(1, 3),
 				 TestableRange(4, 6),
 			]))
 		XCTAssertEqual(
 			"->b->c".occurrences(of: "->").map { TestableRange($0) },
-			MutableList<TestableRange>(
+			List<TestableRange>(
 				[TestableRange(0, 2),
 				 TestableRange(3, 5),
 			]))
 		XCTAssertEqual(
 			"->->c".occurrences(of: "->").map { TestableRange($0) },
-			MutableList<TestableRange>(
+			List<TestableRange>(
 				[TestableRange(0, 2),
 				 TestableRange(2, 4),
 			]))
 		XCTAssertEqual(
 			"a->b->".occurrences(of: "->").map { TestableRange($0) },
-			MutableList<TestableRange>(
+			List<TestableRange>(
 				[TestableRange(1, 3),
 				 TestableRange(4, 6),
 			]))
 		XCTAssertEqual(
 			"a->->".occurrences(of: "->").map { TestableRange($0) },
-			MutableList<TestableRange>(
+			List<TestableRange>(
 				[TestableRange(1, 3),
 				 TestableRange(3, 5),
 			]))
 		XCTAssertEqual(
 			"a->->b".occurrences(of: "->").map { TestableRange($0) },
-			MutableList<TestableRange>(
+			List<TestableRange>(
 				[TestableRange(1, 3),
 				 TestableRange(3, 5),
 			]))
 		XCTAssertEqual(
 			"abc".occurrences(of: "->").map { TestableRange($0) },
-			MutableList<TestableRange>([])) // gryphon value: mutableListOf<TestableRange>()
+			List<TestableRange>([])) // gryphon value: mutableListOf<TestableRange>()
 		XCTAssertEqual(
 			"->(Int, (String) -> Int) ->-> Int ->"
 				.occurrences(of: "->").map { TestableRange($0) },
-			MutableList<TestableRange>([
+			List<TestableRange>([
 				TestableRange(0, 2),
 				TestableRange(17, 19),
 				TestableRange(25, 27),
@@ -335,7 +335,7 @@ class ExtensionsTest: XCTestCase {
 	}
 
 	func testSafeIndex() {
-		let array: MutableList = [1, 2, 3]
+		let array: List = [1, 2, 3]
 		XCTAssert(array[safe: 0] == 1)
 		XCTAssert(array[safe: 1] == 2)
 		XCTAssert(array[safe: 2] == 3)
@@ -350,14 +350,14 @@ class ExtensionsTest: XCTestCase {
 	}
 
 	func testSecondToLast() {
-		let array1: MutableList = [1, 2, 3]
-		let array2: MutableList = [1]
+		let array1: List = [1, 2, 3]
+		let array2: List = [1]
 		XCTAssert(array1.secondToLast == 2)
 		XCTAssert(array2.secondToLast == nil)
 	}
 
 	func testRotated() {
-		let array: MutableList = [1, 2, 3]
+		let array: List = [1, 2, 3]
 		let array1 = array.rotated()
 		let array2 = array1.rotated()
 		let array3 = array2.rotated()
@@ -367,7 +367,7 @@ class ExtensionsTest: XCTestCase {
 	}
 
 	func testGroupBy() {
-		let array: MutableList = [1, 2, 3, 2, 3, 1, 2, 3]
+		let array: List = [1, 2, 3, 2, 3, 1, 2, 3]
 		let histogram = array.group(by: { "\($0)" })
 		XCTAssertEqual(
 			histogram,
@@ -383,9 +383,9 @@ class ExtensionsTest: XCTestCase {
 	}
 
 	func testRemovingDuplicates() {
-		let array1: MutableList = [1, 2, 3]
-		let array2: MutableList = [1, 2, 3, 1, 2, 2]
-		let array3: MutableList<Int> = []
+		let array1: List = [1, 2, 3]
+		let array2: List = [1, 2, 3, 1, 2, 2]
+		let array3: List<Int> = []
 
 		XCTAssertEqual(array1.removingDuplicates(), [1, 2, 3])
 		XCTAssertEqual(array2.removingDuplicates(), [1, 2, 3])

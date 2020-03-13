@@ -250,24 +250,24 @@ class UtilitiesTest: XCTestCase {
     }
 
     func testParallelMap() {
-        let array1: MutableList<Int> = []
-        let array2: MutableList<Int> = [1]
-        let array3: MutableList<Int> = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-        let array4: MutableList<Int> = MutableList<Int>([Int](0...10_000)) // gryphon ignore
-		// gryphon insert: val array4: MutableList<Int> = (0..10000).map{ it }.toMutableList()
+        let array1: List<Int> = []
+        let array2: List<Int> = [1]
+        let array3: List<Int> = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        let array4: List<Int> = List<Int>([Int](0...10_000)) // gryphon ignore
+		// gryphon insert: val array4: List<Int> = (0..10000).map{ it }
 
-		let array1Copy = array1.toMutableList()
-        let array2Copy = array2.toMutableList()
-        let array3Copy = array3.toMutableList()
-        let array4Copy = array4.toMutableList()
+		let array1Copy = array1.toList()
+        let array2Copy = array2.toList()
+        let array3Copy = array3.toList()
+        let array4Copy = array4.toList()
 
         let mappedArray1 = try! array1.parallelMap { $0 * 2 }
         let mappedArray2 = try! array2.parallelMap { $0 * 2 }
         let mappedArray3 = try! array3.parallelMap { $0 * 2 }
         let mappedArray4 = try! array4.parallelMap { $0 * 2 }
 
-        let array4Result = MutableList<Int>([Int](0...10_000)).map { $0 * 2 } // gryphon ignore
-		// gryphon insert: val array4Result: MutableList<Int> = (0..10000).map{ it * 2 }.toMutableList()
+        let array4Result = List<Int>([Int](0...10_000)).map { $0 * 2 } // gryphon ignore
+		// gryphon insert: val array4Result: List<Int> = (0..10000).map{ it * 2 }
 
         XCTAssertEqual(array1, array1Copy)
         XCTAssertEqual(array2, array2Copy)
