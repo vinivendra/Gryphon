@@ -36,7 +36,7 @@ public class SwiftTranslator {
 	internal var context: TranspilationContext
 	internal var sourceFile: SourceFile?
 
-	static let functionCompatibleASTNodes: MutableList<String> =
+	static let functionCompatibleASTNodes: List<String> =
 		["Function Declaration", "Constructor Declaration", "Accessor Declaration"]
 
 	// MARK: - Interface
@@ -155,7 +155,7 @@ public class SwiftTranslator {
 	// MARK: - Top-level translations
 
 	internal func translateSubtreesInScope(
-		_ subtrees: MutableList<SwiftAST>,
+		_ subtrees: List<SwiftAST>,
 		scope: SwiftAST)
 		throws -> MutableList<Statement>
 	{
@@ -165,7 +165,7 @@ public class SwiftTranslator {
 	}
 
 	internal func translateSubtrees(
-		_ subtrees: MutableList<SwiftAST>,
+		_ subtrees: List<SwiftAST>,
 		scopeRange: SourceFileRange?)
 		throws -> MutableList<Statement>
 	{

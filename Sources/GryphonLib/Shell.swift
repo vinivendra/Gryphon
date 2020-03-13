@@ -37,7 +37,7 @@ public class Shell {
 	@discardableResult
 	internal static func runShellCommand(
 		_ command: String,
-		arguments: MutableList<String>,
+		arguments: List<String>,
 		fromFolder currentFolder: String? = nil,
 		timeout: TimeInterval? = Shell.defaultTimeout)
 		-> CommandOutput!
@@ -100,7 +100,7 @@ public class Shell {
 	/// Returns nil when the operation times out.
 	@discardableResult
 	internal static func runShellCommand(
-		_ arguments: MutableList<String>,
+		_ arguments: List<String>,
 		fromFolder currentFolder: String? = nil,
 		timeout: TimeInterval? = Shell.defaultTimeout) -> CommandOutput!
 	{

@@ -84,14 +84,14 @@ public class TranspilationPass {
 		return swiftProtocols.contains(protocolName)
 	}
 
-	static let swiftRawRepresentableTypes: MutableList<String> = [
+	static let swiftRawRepresentableTypes: List<String> = [
 		"String",
 		"Int", "Int8", "Int16", "Int32", "Int64",
 		"UInt", "UInt8", "UInt16", "UInt32", "UInt64",
 		"Float", "Float32", "Float64", "Float80", "Double",
 	]
 
-	static let swiftProtocols: MutableList<String> = [
+	static let swiftProtocols: List<String> = [
 		"Equatable", "Codable", "Decodable", "Encodable", "CustomStringConvertible", "Hashable",
 	]
 
@@ -4141,7 +4141,7 @@ public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
 			}
 
 			let ifStatement = ifStatement
-			ifStatement.conditions = MutableList<Expression>([newCondition]).map {
+			ifStatement.conditions = List<Expression>([newCondition]).map {
 					IfStatement.IfCondition.condition(expression: $0)
 				}.toMutableList()
 			ifStatement.isGuard = shouldStillBeGuard

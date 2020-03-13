@@ -105,7 +105,7 @@ public class TranspilationContext {
 		let swiftAPIName: String
 		let typeName: String
 		let prefix: String
-		let parameters: MutableList<String>
+		let parameters: List<String>
 	}
 
 	private var functionTranslations: MutableList<FunctionTranslation> = []

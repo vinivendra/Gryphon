@@ -37,8 +37,8 @@ extension Utilities {
 
 extension Utilities {
 	public static func files(
-		_ filePaths: MutableList<String>,
-		wereModifiedLaterThan otherFilePaths: MutableList<String>)
+		_ filePaths: List<String>,
+		wereModifiedLaterThan otherFilePaths: List<String>)
 		-> Bool
 	{
 		guard !filePaths.isEmpty, !otherFilePaths.isEmpty else {
@@ -159,14 +159,14 @@ extension Utilities {
 	}
 
 	static func getFiles(
-		_ selectedFiles: MutableList<String>? = nil,
+		_ selectedFiles: List<String>? = nil,
 		inDirectory directory: String,
 		withExtension fileExtension: FileExtension)
-		-> MutableList<String>
+		-> List<String>
 	{
 		let directoryPath = Utilities.getCurrentFolder() + "/\(directory)/"
 		let currentURL = URL(fileURLWithPath: directoryPath)
-		let allURLs = MutableList<URL>(try! FileManager.default.contentsOfDirectory(
+		let allURLs = List<URL>(try! FileManager.default.contentsOfDirectory(
 			at: currentURL,
 			includingPropertiesForKeys: nil))
 		let filteredURLs = allURLs.filter { $0.pathExtension == fileExtension.rawValue }
@@ -174,20 +174,20 @@ extension Utilities {
 				url1.absoluteString < url2.absoluteString
 		}
 
-		let selectedURLs: MutableList<URL>
+		let selectedURLs: List<URL>
 		if let selectedFiles = selectedFiles {
 			selectedURLs = sortedURLs.filter { url in
 				let fileName = url.lastPathComponent
 				let fileNameWithoutExtension = url.deletingPathExtension().lastPathComponent
 				return selectedFiles.contains(fileName) ||
 					selectedFiles.contains(fileNameWithoutExtension)
-			}.toMutableList()
+			}
 		}
 		else {
-			selectedURLs = sortedURLs.toMutableList()
+			selectedURLs = sortedURLs
 		}
 
-		return selectedURLs.map { $0.path }.toMutableList()
+		return selectedURLs.map { $0.path }
 	}
 }
 
@@ -207,10 +207,10 @@ extension List {
 	/// Technically it's O(n lg(n)) since the array has to be sorted at the end, but it's expected
 	/// that the transforms will take much longer than the sorting.
 	public func parallelMap<Result>(_ transform: @escaping (Element) throws -> Result)
-		throws -> MutableList<Result>
+		throws -> List<Result>
 	{
 		guard self.count > 1 else {
-			return try self.map(transform).toMutableList()
+			return try self.map(transform)
 		}
 
 		let concurrentQueue = DispatchQueue(
@@ -266,6 +266,6 @@ extension List {
                 $0.element
             }
 
-		return result.toMutableList()
+		return result
 	}
 }

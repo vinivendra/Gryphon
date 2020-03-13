@@ -512,7 +512,7 @@ public class Driver {
 		if shouldRunConcurrently {
 			firstResult = try inputFilePaths.parallelMap {
 				try runUpToFirstPasses(withSettings: settings, withContext: context, onFile: $0)
-			}
+			}.toMutableList()
 		}
 		else {
 			firstResult = try inputFilePaths.map {
@@ -538,7 +538,7 @@ public class Driver {
 					withSettings: settings,
 					withContext: context,
 					onFile: $0.1)
-			}
+			}.toMutableList()
 		}
 		else {
 			secondResult = try pairsArray.map {

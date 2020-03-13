@@ -33,7 +33,9 @@ fun Utilities.Companion.fileWasModifiedLaterThan(
 }
 
 fun Utilities.Companion.filesWereModifiedLaterThan(
-    filePaths: MutableList<String>, otherFilePaths: MutableList<String>): Boolean
+    filePaths: List<String>, 
+    otherFilePaths: List<String>)
+    : Boolean
 {
     if (!(!filePaths.isEmpty() && !otherFilePaths.isEmpty())) {
         return true
@@ -141,9 +143,10 @@ fun Utilities.Companion.getCurrentFolder(): String {
 }
 
 fun Utilities.Companion.getFiles(
-    selectedFiles: MutableList<String>? = null,
+    selectedFiles: List<String>? = null,
     directory: String,
-    fileExtension: FileExtension): MutableList<String>
+    fileExtension: FileExtension)
+    : List<String>
 {
     val contentsOfDirectory = File(directory).listFiles()
     val allFilesInDirectory = contentsOfDirectory.filter { it.isFile() }
@@ -167,7 +170,7 @@ fun Utilities.Companion.getFiles(
         selectedURLs = sortedFiles
     }
 
-    return selectedURLs.map { it.absolutePath }.toMutableList()
+    return selectedURLs.map { it.absolutePath }
 }
 
 public fun Utilities.Companion.getAbsoultePath(file: String): String {
@@ -179,8 +182,7 @@ val libraryUpdateLock: Semaphore = Semaphore(1)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 fun <Element, Result> List<Element>.parallelMap(
-    transform: (Element) -> Result): MutableList<Result>
+    transform: (Element) -> Result): List<Result>
 {
     return this.parallelStream().map(transform).collect(Collectors.toList())
-        .toMutableList()
 }

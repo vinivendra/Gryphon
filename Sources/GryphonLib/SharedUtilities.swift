@@ -25,7 +25,7 @@ private func gryphonTemplates() throws {
     let _string1 = ""
     let _string2 = ""
     let _string3 = ""
-    let _stringArray: MutableList<String>? = []
+    let _stringArray: List<String>? = []
     let _stringArray1: MutableList<String> = []
     let _stringArray2: MutableList<String> = []
     let _fileExtension1 = FileExtension.swift
@@ -254,7 +254,7 @@ extension Utilities {
     }
 
     static internal func needsToDumpASTForSwiftFiles(
-        _ swiftFiles: MutableList<String>? = nil,
+        _ swiftFiles: List<String>? = nil,
         in folder: String)
 		-> Bool
     {
@@ -287,7 +287,7 @@ extension Utilities {
 	/// For instance, "(A, (B, C))" becomes ["A", "(B, C)"] rather than ["A", "(B", "C)"].
     static func splitTypeList( // gryphon pure
         _ typeList: String,
-        separators: MutableList<String> = [",", ":"])
+        separators: List<String> = [",", ":"])
         -> MutableList<String>
     {
         var bracketsLevel = 0

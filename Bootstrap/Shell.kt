@@ -14,7 +14,7 @@ public class Shell {
 
         fun runShellCommand(
             command: String,
-            arguments: MutableList<String>, 
+            arguments: List<String>, 
             currentFolder: String? = null, 
             timeout: Long? = Shell.defaultTimeout)
             : CommandOutput?
@@ -80,7 +80,7 @@ public class Shell {
         }
 
         fun runShellCommand(
-            arguments: MutableList<String>, 
+            arguments: List<String>, 
             currentFolder: String? = null, 
             timeout: Long? = Shell.defaultTimeout)
             : CommandOutput?

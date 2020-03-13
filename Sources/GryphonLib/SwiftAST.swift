@@ -85,10 +85,10 @@ public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible
 	public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
 		let keyValueStrings = keyValueAttributes
 			.map { "\($0.key) -> \($0.value)" }.sorted().map { PrintableTree($0) }
-		let keyValueArray = MutableList<PrintableAsTree?>(keyValueStrings)
+		let keyValueArray = List<PrintableAsTree?>(keyValueStrings)
 		let standaloneAttributesArray =
 			MutableList<PrintableAsTree?>(standaloneAttributes.map { PrintableTree($0) })
-		let subtreesArray = MutableList<PrintableAsTree?>(subtrees)
+		let subtreesArray = List<PrintableAsTree?>(subtrees)
 
 		let result = standaloneAttributesArray
 		result.append(contentsOf: keyValueArray)
