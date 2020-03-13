@@ -1085,7 +1085,6 @@ public class ErrorStatement: Statement {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// TODO: dictionaryExpression should have key-value pairs
 
 extension PrintableTree {
 	static func ofExpressions(

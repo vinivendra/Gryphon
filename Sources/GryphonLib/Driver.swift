@@ -726,7 +726,6 @@ public class Driver {
 	}
 
 	static func updateASTDumps(forFiles swiftFiles: List<String>, usingXcode: Bool) throws {
-		// TODO: Send these paths to constants so they aren't duplicated all around the code
 		//// Create the outputFileMap
 		var outputFileMapContents = "{\n"
 

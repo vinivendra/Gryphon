@@ -37,7 +37,6 @@ public class Compiler {
 	public static var shouldStopAtFirstError = false
 	public static var shouldAvoidUnicodeCharacters = false
 
-	// TODO: handle translation of private(set)
 	internal static var issues: MutableList<CompilerIssue> = []
 
 	internal static var numberOfErrors: Int {
