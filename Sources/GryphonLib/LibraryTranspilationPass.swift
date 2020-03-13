@@ -29,7 +29,7 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 
 	override func replaceFunctionDeclaration( // gryphon annotation: override
 		_ functionDeclaration: FunctionDeclaration)
-		-> MutableList<Statement>
+		-> List<Statement>
 	{
 		if functionDeclaration.prefix == "gryphonTemplates",
 			functionDeclaration.parameters.isEmpty,
