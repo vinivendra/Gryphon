@@ -326,4 +326,18 @@ class ListTest: XCTestCase {
 			XCTAssertEqual(a + b, 4)
 		}
 	}
+
+	func testPlus() {
+		let list1: List = [1, 2, 3]
+		let list2: List = [4, 5, 6]
+		let list3: List = [7, 8, 9]
+
+		XCTAssertEqual(list1 + list2, [1, 2, 3, 4, 5, 6])
+		XCTAssertEqual(list1, [1, 2, 3])
+		XCTAssertEqual(list2, [4, 5, 6])
+
+		XCTAssertEqual(list1 + list3, [1, 2, 3, 7, 8, 9])
+		XCTAssertEqual(list1, [1, 2, 3])
+		XCTAssertEqual(list3, [7, 8, 9])
+	}
 }

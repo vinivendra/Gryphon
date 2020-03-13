@@ -47,7 +47,6 @@ private func gryphonTemplates() {
 	_ = _string.suffix(from: _index)
 	_ = "_string.suffix(startIndex = _index)"
 
-	// TODO: add unit tests and/or test cases for the templates below
 	_ = _comparableArray.sorted(by: _closure)
 	_ = "_comparableArray.sorted(isAscending = _closure)"
 
@@ -308,7 +307,6 @@ extension List { // gryphon ignore
 	}
 }
 
-// TODO: test
 extension List { // gryphon ignore
 	@inlinable
 	public static func + <Other>(
