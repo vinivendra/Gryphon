@@ -83,8 +83,8 @@ class DriverTest: XCTestCase {
 				 "--indentation=t",
 				 "--write-to-console",
 				 testCasePath, ])
-			let resultArray1 = driverResult1 as? MutableList<Any?>
-			let kotlinTranslations1 = resultArray1?.as(MutableList<Driver.KotlinTranslation>.self)
+			let resultArray1 = driverResult1 as? List<Any?>
+			let kotlinTranslations1 = resultArray1?.as(List<Driver.KotlinTranslation>.self)
 
 			guard let kotlinTranslation1 = kotlinTranslations1?.first else {
 				XCTFail("Error generating Kotlin code.\n" +
@@ -104,8 +104,8 @@ class DriverTest: XCTestCase {
 				 "--no-main-file",
 				 "--write-to-console",
 				 testCasePath, ])
-			let resultArray2 = driverResult2 as? MutableList<Any?>
-			let kotlinTranslations2 = resultArray2?.as(MutableList<Driver.KotlinTranslation>.self)
+			let resultArray2 = driverResult2 as? List<Any?>
+			let kotlinTranslations2 = resultArray2?.as(List<Driver.KotlinTranslation>.self)
 
 			guard let kotlinTranslation2 = kotlinTranslations2?.first else {
 				XCTFail("Error generating Kotlin code.\n" +
@@ -174,8 +174,8 @@ class DriverTest: XCTestCase {
 				 "--indentation=t",
 				 "--write-to-console",
 				 testCasePath, ])
-			let resultArray1 = driverResult1 as? MutableList<Any?>
-			let kotlinTranslations1 = resultArray1?.as(MutableList<Driver.KotlinTranslation>.self)
+			let resultArray1 = driverResult1 as? List<Any?>
+			let kotlinTranslations1 = resultArray1?.as(List<Driver.KotlinTranslation>.self)
 
 			guard let kotlinTranslation1 = kotlinTranslations1?.first else {
 				XCTFail("Error generating Kotlin code.\n" +
@@ -195,8 +195,8 @@ class DriverTest: XCTestCase {
 				 "--indentation=4",
 				 "--write-to-console",
 				 testCasePath, ])
-			let resultArray2 = driverResult2 as? MutableList<Any?>
-			let kotlinTranslations2 = resultArray2?.as(MutableList<Driver.KotlinTranslation>.self)
+			let resultArray2 = driverResult2 as? List<Any?>
+			let kotlinTranslations2 = resultArray2?.as(List<Driver.KotlinTranslation>.self)
 
 			guard let kotlinTranslation2 = kotlinTranslations2?.first else {
 				XCTFail("Error generating Kotlin code.\n" +

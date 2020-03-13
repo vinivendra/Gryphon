@@ -141,7 +141,7 @@ public class Compiler {
 	public static func transpileGryphonRawASTs(
 		fromASTDumpFiles inputFiles: List<String>,
 		withContext context: TranspilationContext)
-		throws -> MutableList<GryphonAST>
+		throws -> List<GryphonAST>
 	{
 		let asts = try inputFiles.map { try transpileSwiftAST(fromASTDumpFile: $0) }
 		let translateAsMainFile = (inputFiles.count == 1)
@@ -150,7 +150,7 @@ public class Compiler {
 				fromSwiftAST: $0,
 				asMainFile: translateAsMainFile,
 				withContext: context)
-		}.toMutableList()
+		}
 	}
 
 	//
@@ -190,14 +190,14 @@ public class Compiler {
 	public static func transpileGryphonASTs(
 		fromASTDumpFiles inputFiles: List<String>,
 		withContext context: TranspilationContext)
-		throws -> MutableList<GryphonAST>
+		throws -> List<GryphonAST>
 	{
 		let rawASTs = try transpileGryphonRawASTs(
 			fromASTDumpFiles: inputFiles,
 			withContext: context)
 		return try rawASTs.map {
 			try generateGryphonAST(fromGryphonRawAST: $0, withContext: context)
-		}.toMutableList()
+		}
 	}
 
 	//
@@ -227,12 +227,12 @@ public class Compiler {
 	public static func transpileKotlinCode(
 		fromASTDumpFiles inputFiles: List<String>,
 		withContext context: TranspilationContext)
-		throws -> MutableList<String>
+		throws -> List<String>
 	{
 		let asts = try transpileGryphonASTs(fromASTDumpFiles: inputFiles, withContext: context)
 		return try asts.map {
 			try generateKotlinCode(fromGryphonAST: $0, withContext: context)
-		}.toMutableList()
+		}
 	}
 }
 

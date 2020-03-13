@@ -78,10 +78,11 @@ public class Driver {
 	public static func runUpToFirstPasses(
 		withSettings settings: Settings,
 		withContext context: TranspilationContext,
-		onFile inputFilePath: String) throws -> Any?
+		onFile inputFilePath: String)
+		throws -> Any?
 	{
 		guard settings.shouldGenerateSwiftAST else {
-			return [] // gryphon value: mutableListOf<Any>()
+			return [] // gryphon value: listOf<Any>()
 		}
 
 		let swiftASTDumpFile = SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: inputFilePath)
@@ -198,7 +199,8 @@ public class Driver {
 
 	@discardableResult
 	public static func run(
-		withArguments arguments: List<String>) throws -> Any?
+		withArguments arguments: List<String>)
+		throws -> Any?
 	{
 		let badArguments = unsupportedArguments(in: arguments)
 		if !badArguments.isEmpty {
@@ -508,21 +510,21 @@ public class Driver {
 		//
 		Compiler.log("Translating source files...\n")
 
-		let firstResult: MutableList<Any?>
+		let firstResult: List<Any?>
 		if shouldRunConcurrently {
 			firstResult = try inputFilePaths.parallelMap {
 				try runUpToFirstPasses(withSettings: settings, withContext: context, onFile: $0)
-			}.toMutableList()
+			}
 		}
 		else {
 			firstResult = try inputFilePaths.map {
 				try runUpToFirstPasses(withSettings: settings, withContext: context, onFile: $0)
-			}.toMutableList()
+			}
 		}
 
 		// If we've received a non-raw AST then we're in the middle of the transpilation passes.
 		// This means we need to at least run the second round of passes.
-		guard let asts = firstResult.as(MutableList<GryphonAST>.self),
+		guard let asts = firstResult.as(List<GryphonAST>.self),
 			settings.shouldGenerateAST else
 		{
 			return firstResult
@@ -530,7 +532,7 @@ public class Driver {
 
 		let pairsArray = zip(asts, inputFilePaths)
 
-		let secondResult: MutableList<Any?>
+		let secondResult: List<Any?>
 		if shouldRunConcurrently {
 			secondResult = try pairsArray.parallelMap {
 				try runAfterFirstPasses(
@@ -538,7 +540,7 @@ public class Driver {
 					withSettings: settings,
 					withContext: context,
 					onFile: $0.1)
-			}.toMutableList()
+			}
 		}
 		else {
 			secondResult = try pairsArray.map {
@@ -547,7 +549,7 @@ public class Driver {
 					withSettings: settings,
 					withContext: context,
 					onFile: $0.1)
-			}.toMutableList()
+			}
 		}
 
 		return secondResult

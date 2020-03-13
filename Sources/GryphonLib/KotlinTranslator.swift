@@ -1908,7 +1908,7 @@ public class KotlinTranslator {
 		shouldAddNewlines: Bool = false)
 		throws -> Translation
 	{
-		let parameters = translation?.parameters.as(MutableList<String?>.self) ??
+		let parameters = translation?.parameters.as(List<String?>.self) ??
 			tupleShuffleExpression.labels
 
 		let increasedIndentation = increaseIndentation(indentation)

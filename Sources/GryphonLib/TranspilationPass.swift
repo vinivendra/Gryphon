@@ -2674,7 +2674,7 @@ public class TuplesToPairsTranspilationPass: TranspilationPass {
 
 		// Try to find out the types of the expressions so we can form the correct result type
 		let maybeTypes = tupleExpression.pairs.map { $0.expression.swiftType }
-		guard let types = maybeTypes.as(MutableList<String>.self) else {
+		guard let types = maybeTypes.as(List<String>.self) else {
 			return tupleExpression
 		}
 		let pairType = "Pair<\(types.joined(separator: ", "))>"

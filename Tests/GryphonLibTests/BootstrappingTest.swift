@@ -78,8 +78,8 @@ class BootstrappingTest: XCTestCase {
 					arguments.append("--default-final")
 				}
 				let driverResult = try Driver.run(withArguments: arguments)
-				guard let resultArray = driverResult as? MutableList<Any?>,
-					let swiftASTs = resultArray.as(MutableList<SwiftAST>.self),
+				guard let resultArray = driverResult as? List<Any?>,
+					let swiftASTs = resultArray.as(List<SwiftAST>.self),
 					let originalSwiftAST = swiftASTs.first else
 				{
 					XCTFail("Error generating SwiftASTs.\n" +
@@ -134,8 +134,8 @@ class BootstrappingTest: XCTestCase {
 					arguments.append("--default-final")
 				}
 				let driverResult = try Driver.run(withArguments: arguments)
-				guard let resultArray = driverResult as? MutableList<Any?>,
-					let rawASTs = resultArray.as(MutableList<GryphonAST>.self),
+				guard let resultArray = driverResult as? List<Any?>,
+					let rawASTs = resultArray.as(List<GryphonAST>.self),
 					let originalRawAST = rawASTs.first else
 				{
 					XCTFail("Error generating raw ASTs.\n" +
@@ -190,8 +190,8 @@ class BootstrappingTest: XCTestCase {
 					arguments.append("--default-final")
 				}
 				let driverResult = try Driver.run(withArguments: arguments)
-				guard let resultArray = driverResult as? MutableList<Any?>,
-					let asts = resultArray.as(MutableList<GryphonAST>.self),
+				guard let resultArray = driverResult as? List<Any?>,
+					let asts = resultArray.as(List<GryphonAST>.self),
 					let originalAST = asts.first else
 				{
 					XCTFail("Error generating passed ASTs.\n" +
@@ -246,9 +246,9 @@ class BootstrappingTest: XCTestCase {
 					arguments.append("--default-final")
 				}
 				let driverResult = try Driver.run(withArguments: arguments)
-				guard let resultArray = driverResult as? MutableList<Any?>,
+				guard let resultArray = driverResult as? List<Any?>,
 					let kotlinCodes = resultArray
-						.as(MutableList<Driver.KotlinTranslation>.self)?
+						.as(List<Driver.KotlinTranslation>.self)?
 						.map({ $0.kotlinCode }),
 					let originalKotlinCode = kotlinCodes.first else
 				{
