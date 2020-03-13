@@ -97,12 +97,12 @@ class ListTest: XCTestCase {
 	}
 
 	func testInits() {
-		let list1: List<Int> = [1, 2, 3]
-		let list2: List<Int> = List<Int>([1, 2, 3])
+		let list1: List = [1, 2, 3]
+		let list2: List = List<Int>([1, 2, 3])
 		let list3: List = List(list1) // gryphon ignore
 		let sequence = AnySequence([1, 2, 3]) // gryphon ignore
 		let list4: List = List(sequence) // gryphon ignore
-		let list5: List<Int> = List<Int>()
+		let list5: List = List<Int>()
 		let list6: List<Int> = []
 
 		XCTAssertEqual(list1, list2)
@@ -241,15 +241,15 @@ class ListTest: XCTestCase {
 	}
 
 	func testFlatMap() {
-		let list1: List<Int> = [1, 2, 3]
+		let list1: List = [1, 2, 3]
 		let list2 = list1.flatMap { List<Int>([$0, 10 * $0]) }
 		XCTAssertEqual(list1, [1, 2, 3])
 		XCTAssertEqual(list2, [1, 10, 2, 20, 3, 30])
 	}
 
 	func testSortedBy() {
-		let list1: List<Int> = [3, 1, 2]
-		let list2: List<Int> = [1, 2, 3]
+		let list1: List = [3, 1, 2]
+		let list2: List = [1, 2, 3]
 		let sortedArray1 = list1.sorted { a, b in a < b }
 		let sortedArray2 = list2.sorted { a, b in a < b }
 		let sortedArray2Descending = list2.sorted { a, b in a > b }
@@ -263,7 +263,7 @@ class ListTest: XCTestCase {
 	func testAppendingContentsOf() {
 		let list1: List = [1, 2, 3]
 		let list2: List = [4, 5, 6]
-		let list3: List<Int> = [7, 8, 9]
+		let list3: List = [7, 8, 9]
 
 		XCTAssertEqual(list1.appending(contentsOf: list2), [1, 2, 3, 4, 5, 6])
 		XCTAssertEqual(list1, [1, 2, 3])

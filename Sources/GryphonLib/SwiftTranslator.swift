@@ -36,7 +36,7 @@ public class SwiftTranslator {
 	internal var context: TranspilationContext
 	internal var sourceFile: SourceFile?
 
-	static let functionCompatibleASTNodes: List<String> =
+	static let functionCompatibleASTNodes: List =
 		["Function Declaration", "Constructor Declaration", "Accessor Declaration"]
 
 	// MARK: - Interface

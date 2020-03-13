@@ -27,7 +27,7 @@ private func gryphonTemplates() {
 	let _any: Any = 0
 	let _string: String = ""
 	let _index = _string.startIndex
-	let _comparableArray: [_Compare] = []
+	let _comparableArray: List<_Compare> = []
 	let _closure: (_Compare, _Compare) -> Bool = { _, _ in true }
 
 	// Templates with an input that references methods defined in this file

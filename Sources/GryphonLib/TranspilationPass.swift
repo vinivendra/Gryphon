@@ -84,14 +84,14 @@ public class TranspilationPass {
 		return swiftProtocols.contains(protocolName)
 	}
 
-	static let swiftRawRepresentableTypes: List<String> = [
+	static let swiftRawRepresentableTypes: List = [
 		"String",
 		"Int", "Int8", "Int16", "Int32", "Int64",
 		"UInt", "UInt8", "UInt16", "UInt32", "UInt64",
 		"Float", "Float32", "Float64", "Float80", "Double",
 	]
 
-	static let swiftProtocols: List<String> = [
+	static let swiftProtocols: List = [
 		"Equatable", "Codable", "Decodable", "Encodable", "CustomStringConvertible", "Hashable",
 	]
 

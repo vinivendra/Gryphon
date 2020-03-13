@@ -809,7 +809,7 @@ public class Driver {
 
 	static func unsupportedArguments(in arguments: List<String>) -> List<String> {
 		// Start with all arguments, remove the ones that are OK, return what's left
-		var badArguments: List<String> = arguments
+		var badArguments = arguments
 		badArguments = badArguments.filter { !supportedArguments.contains($0) }
 		badArguments = badArguments.filter { !debugArguments.contains($0) }
 		badArguments = badArguments.filter { isSupportedArgumentWithParameters($0) }

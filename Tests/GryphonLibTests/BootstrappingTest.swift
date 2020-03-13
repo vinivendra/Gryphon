@@ -67,7 +67,7 @@ class BootstrappingTest: XCTestCase {
 				let transpiledSwiftAST = try Utilities.readFile(swiftASTFilePath)
 
 				// Get Swift results
-				let arguments: MutableList<String> =
+				let arguments: MutableList =
 					["-skipASTDumps",
 					 "-emit-swiftAST",
 					 "--indentation=t",
@@ -123,7 +123,7 @@ class BootstrappingTest: XCTestCase {
 				let transpiledRawAST = try Utilities.readFile(rawASTFilePath)
 
 				// Get Swift results
-				let arguments: MutableList<String> =
+				let arguments: MutableList =
 					["-skipASTDumps",
 					 "-emit-rawAST",
 					 "--indentation=t",
@@ -179,7 +179,7 @@ class BootstrappingTest: XCTestCase {
 				let transpiledAST = try Utilities.readFile(astFilePath)
 
 				// Get Swift results
-				let arguments: MutableList<String> =
+				let arguments: MutableList =
 					["-skipASTDumps",
 					 "-emit-AST",
 					 "--indentation=t",
@@ -235,7 +235,7 @@ class BootstrappingTest: XCTestCase {
 				let transpiledKotlinCode = try Utilities.readFile(testOutputFilePath)
 
 				// Get Swift results
-				let arguments: MutableList<String> =
+				let arguments: MutableList =
 					["-skipASTDumps",
 					 "-emit-kotlin",
 					 "--indentation=t",

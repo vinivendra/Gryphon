@@ -394,7 +394,7 @@ public class EnumDeclaration: Statement {
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
-		let elementTrees: List<PrintableAsTree?> = elements.map
+		let elementTrees = elements.map
 			{ (element: EnumElement) -> PrintableAsTree? in element }
 
 		return [

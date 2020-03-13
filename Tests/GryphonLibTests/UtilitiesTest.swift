@@ -251,9 +251,9 @@ class UtilitiesTest: XCTestCase {
 
     func testParallelMap() {
         let array1: List<Int> = []
-        let array2: List<Int> = [1]
-        let array3: List<Int> = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-        let array4: List<Int> = List<Int>([Int](0...10_000)) // gryphon ignore
+        let array2: List = [1]
+        let array3: List = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        let array4: List = List<Int>([Int](0...10_000)) // gryphon ignore
 		// gryphon insert: val array4: List<Int> = (0..10000).map{ it }
 
 		let array1Copy = array1.toList()
