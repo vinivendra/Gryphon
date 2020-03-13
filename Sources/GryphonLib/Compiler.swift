@@ -139,7 +139,7 @@ public class Compiler {
 	}
 
 	public static func transpileGryphonRawASTs(
-		fromASTDumpFiles inputFiles: MutableList<String>,
+		fromASTDumpFiles inputFiles: List<String>,
 		withContext context: TranspilationContext)
 		throws -> MutableList<GryphonAST>
 	{
@@ -188,7 +188,7 @@ public class Compiler {
 	}
 
 	public static func transpileGryphonASTs(
-		fromASTDumpFiles inputFiles: MutableList<String>,
+		fromASTDumpFiles inputFiles: List<String>,
 		withContext context: TranspilationContext)
 		throws -> MutableList<GryphonAST>
 	{
@@ -225,7 +225,7 @@ public class Compiler {
 	}
 
 	public static func transpileKotlinCode(
-		fromASTDumpFiles inputFiles: MutableList<String>,
+		fromASTDumpFiles inputFiles: List<String>,
 		withContext context: TranspilationContext)
 		throws -> MutableList<String>
 	{

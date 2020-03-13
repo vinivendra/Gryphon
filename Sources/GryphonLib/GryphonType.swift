@@ -189,7 +189,7 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 					subType1 = firstAttempt
 				}
 
-				let tupleElements: MutableList<GryphonType> = [subType1]
+				let tupleElements: MutableList = [subType1]
 
 				while string[index] == "," {
 					index = string.index(after: index)
@@ -275,7 +275,7 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 					return nil
 				}
 
-				let genericElements: MutableList<GryphonType> = [subType1]
+				let genericElements: MutableList = [subType1]
 
 				while string[index] == "," {
 					index = string.index(after: index)

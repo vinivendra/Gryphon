@@ -109,8 +109,7 @@ public class KotlinTranslator {
 			return result
 		}
 
-		let treesAndTranslationsWithoutFirst =
-			MutableList<TreeAndTranslation>(treesAndTranslations.dropFirst())
+		let treesAndTranslationsWithoutFirst = treesAndTranslations.dropFirst()
 
 		let result = Translation(range: subtreesRange)
 
@@ -1699,8 +1698,7 @@ public class KotlinTranslator {
 					if tupleExpression.pairs.count > 1 {
 						let newTupleExpression = TupleExpression(
 							range: tupleExpression.range,
-							pairs: MutableList<LabeledExpression>(
-								tupleExpression.pairs.dropLast()))
+							pairs: tupleExpression.pairs.dropLast().toMutableList())
 
 						let firstParametersTranslation = try translateTupleExpression(
 							newTupleExpression,

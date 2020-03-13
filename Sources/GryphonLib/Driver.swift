@@ -22,7 +22,7 @@
 public class Driver {
 	public static let gryphonVersion = "0.4-beta"
 
-	public static let supportedArguments: List<String> = [
+	public static let supportedArguments: List = [
 		"help", "-help", "--help",
 		"--version",
 		"init",
@@ -36,12 +36,12 @@ public class Driver {
 		"--sync",
 	]
 
-	public static let supportedArgumentsWithParameters: List<String> = [
+	public static let supportedArgumentsWithParameters: List = [
 		"--indentation=",
 		"-line-limit=",
 	]
 
-	public static let debugArguments: List<String> = [
+	public static let debugArguments: List = [
 		"--xcode",
 		"-setupXcode",
 		"-makeGryphonTargets",
@@ -198,7 +198,7 @@ public class Driver {
 
 	@discardableResult
 	public static func run(
-		withArguments arguments: MutableList<String>) throws -> Any?
+		withArguments arguments: List<String>) throws -> Any?
 	{
 		let badArguments = unsupportedArguments(in: arguments)
 		if !badArguments.isEmpty {
@@ -295,7 +295,7 @@ public class Driver {
 
 	@discardableResult
 	public static func performCompilationWithTemporaryBuildFolder(
-		withArguments arguments: MutableList<String>) throws -> Any?
+		withArguments arguments: List<String>) throws -> Any?
 	{
 		let isVerbose = arguments.contains("--verbose")
 
@@ -333,7 +333,7 @@ public class Driver {
 
 	@discardableResult
 	public static func performCompilation(
-		withArguments arguments: MutableList<String>) throws -> Any?
+		withArguments arguments: List<String>) throws -> Any?
 	{
 		defer {
 			Compiler.printErrorsAndWarnings()
@@ -553,7 +553,7 @@ public class Driver {
 		return secondResult
 	}
 
-	static func getXcodeProject(inArguments arguments: MutableList<String>) -> String? {
+	static func getXcodeProject(inArguments arguments: List<String>) -> String? {
 		return arguments.first { Utilities.fileHasExtension($0, .xcodeproj) }
 	}
 
@@ -805,7 +805,7 @@ public class Driver {
 		}
 	}
 
-	static func unsupportedArguments(in arguments: MutableList<String>) -> List<String> {
+	static func unsupportedArguments(in arguments: List<String>) -> List<String> {
 		// Start with all arguments, remove the ones that are OK, return what's left
 		var badArguments: List<String> = arguments
 		badArguments = badArguments.filter { !supportedArguments.contains($0) }

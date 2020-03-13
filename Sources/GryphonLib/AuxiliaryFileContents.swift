@@ -1004,12 +1004,12 @@ public class SupportingFile {
 		contents: compileKotlinFileContents)
 
 	/// Files that should be created on every init
-	static let filesForInitialization: List<SupportingFile> = [
+	static let filesForInitialization: List = [
 		gryphonTemplatesLibrary,
 		gryphonXCTest,
 	]
 
-	static let filesForXcodeInitialization: List<SupportingFile> = [
+	static let filesForXcodeInitialization: List = [
 		gryphonTemplatesLibrary,
 		gryphonXCTest,
 		mapKotlinErrorsToSwift,
