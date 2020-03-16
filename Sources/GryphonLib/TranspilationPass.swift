@@ -1363,7 +1363,10 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 		if let enumTypeExpression = dotExpression.leftExpression as? TypeExpression,
 			let enumExpression = dotExpression.rightExpression as? DeclarationReferenceExpression
 		{
-			let lastEnumType = String(enumTypeExpression.typeName.split(separator: ".").last!)
+			let lastEnumType = String(enumTypeExpression
+				.typeName
+				.split(withStringSeparator: ".")
+				.last!)
 
 			if self.context.sealedClasses.contains(lastEnumType) {
 				let enumExpression = enumExpression

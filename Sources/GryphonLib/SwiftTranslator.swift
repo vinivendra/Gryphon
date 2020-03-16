@@ -1637,7 +1637,7 @@ public class SwiftTranslator {
 				let expressionTree = condition.subtrees.last
 			{
 				let enumTypeComponents = enumElementType
-					.split(separator: ".")
+					.split(withStringSeparator: ".")
 					.map { String($0).capitalizedAsCamelCase() }
 					.joined(separator: ".")
 
@@ -1690,8 +1690,10 @@ public class SwiftTranslator {
 		let associatedValueNames =
 			valueTuplesComponents.map { $0.split(withStringSeparator: ":")[0] }
 
-		let caseName =
-			String(patternEnumElement.standaloneAttributes[0].split(separator: ".").last!)
+		let caseName = String(patternEnumElement
+			.standaloneAttributes[0]
+			.split(withStringSeparator: ".")
+			.last!)
 
 		guard associatedValueNames.count == patternTuple.subtrees.count else {
 			return nil
