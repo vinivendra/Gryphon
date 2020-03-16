@@ -200,10 +200,6 @@ public class List<Element>: CustomStringConvertible, // gryphon ignore
 	}
 
 	// Other methods
-	public init<T>(_ list: List<T>) {
-		self.array = list.array as! Buffer
-	}
-
 	public init<S>(_ sequence: S) where Element == S.Element, S: Sequence {
 		self.array = Array(sequence)
 	}
@@ -212,16 +208,23 @@ public class List<Element>: CustomStringConvertible, // gryphon ignore
 		self.array = []
 	}
 
-	public func `as`<CastedType>(
-		_ type: List<CastedType>.Type)
-		-> List<CastedType>?
-	{
+	/// Used to obtain a List with a new element type. If all elements in the list can be casted to
+	/// the new type, the method succeeds and the new MutableList is returned. Otherwise, the method
+	/// returns `nil`.
+	public func `as`<CastedType>(_ type: List<CastedType>.Type) -> List<CastedType>? {
 		if let castedList = self.array as? [CastedType] {
 			return List<CastedType>(castedList)
 		}
 		else {
 			return nil
 		}
+	}
+
+	/// Used to obtain a List with a new element type. If all elements in the list can be casted to
+	/// the new type, the method succeeds and the new MutableList is returned. Otherwise, the method
+	/// crashes.
+	public func forceCast<CastedType>(to type: List<CastedType>.Type) -> List<CastedType> {
+		List<CastedType>(array as! [CastedType])
 	}
 
 	public func toList() -> List<Element> {
@@ -374,10 +377,6 @@ public class MutableList<Element>: List<Element>, // gryphon ignore
 	}
 
 	// Other methods
-	override public init<T>(_ list: List<T>) {
-		super.init(list.array as! Buffer)
-	}
-
 	public func append(_ newElement: Element) {
 		array.append(newElement)
 	}
@@ -405,7 +404,12 @@ public class MutableList<Element>: List<Element>, // gryphon ignore
 	}
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 extension List { // gryphon ignore
+
+	/// Used to obtain a MutableList with a new element type. If all elements in the list can be
+	/// casted to the new type, the method succeeds and the new MutableList is returned. Otherwise,
+	/// the method returns `nil`.
 	public func `as`<CastedType>(
 		_ type: MutableList<CastedType>.Type)
 		-> MutableList<CastedType>?
@@ -416,6 +420,16 @@ extension List { // gryphon ignore
 		else {
 			return nil
 		}
+	}
+
+	/// Used to obtain a MutableList with a new element type. If all elements in the list can be
+	/// casted to the new type, the method succeeds and the new MutableList is returned. Otherwise,
+	/// the method crashes.
+	public func forceCast<CastedType>(
+		to type: MutableList<CastedType>.Type)
+		-> MutableList<CastedType>
+	{
+		MutableList<CastedType>(array as! [CastedType])
 	}
 }
 

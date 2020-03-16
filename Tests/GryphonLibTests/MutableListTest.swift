@@ -202,6 +202,25 @@ class MutableListTest: XCTestCase {
 		XCTAssertNil(failedLM4)
 		XCTAssertNil(failedML4)
 		XCTAssertNil(failedMM4)
+
+		// Forced downcasts succeed
+		let forcedDowncastLM: MutableList<Int>? = listOfAnys.as(MutableList<Int>.self)
+		let forcedDowncastML: List<Int>? = mutableListOfAnys.as(List<Int>.self)
+		let forcedDowncastMM: MutableList<Int>? = mutableListOfAnys.as(MutableList<Int>.self)
+		XCTAssertEqual(forcedDowncastLM, [1, 2, 3])
+		XCTAssertEqual(forcedDowncastML, [1, 2, 3])
+		XCTAssertEqual(forcedDowncastMM, [1, 2, 3])
+
+		// Compatible forced casts succeed even if types are optional
+		let forcedOptionalLM: MutableList<Int?> =
+			listOfAnys.forceCast(to: MutableList<Int?>.self)
+		let forcedOptionalML: List<Int?> =
+			mutableListOfAnys.forceCast(to: List<Int?>.self)
+		let forcedOptionalMM: MutableList<Int?> =
+			mutableListOfAnys.forceCast(to: MutableList<Int?>.self)
+		XCTAssertEqual(forcedOptionalLM, [1, 2, 3])
+		XCTAssertEqual(forcedOptionalML, [1, 2, 3])
+		XCTAssertEqual(forcedOptionalMM, [1, 2, 3])
 	}
 
 	func testCopy() {

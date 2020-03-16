@@ -656,6 +656,7 @@ public class TranspilationPass {
 
 		return TemplateExpression(
 			range: templateExpression.range,
+			typeName: templateExpression.typeName,
 			pattern: templateExpression.pattern,
 			matches: newMatches.toMutableMap())
 	}
@@ -2496,30 +2497,35 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 					dotExpression.rightExpression as? DeclarationReferenceExpression,
 				let tupleExpression = callExpression.parameters as? TupleExpression
 			{
-				if rightExpression.identifier == "as",
+				if (rightExpression.identifier == "as" ||
+						rightExpression.identifier == "forceCast(to:)"),
 					tupleExpression.pairs.count == 1,
 					let onlyPair = tupleExpression.pairs.first
 				{
+					let methodSuffix = (rightExpression.identifier == "forceCast(to:)") ?
+						"" :
+						"OrNull"
+
 					if let typeExpression = onlyPair.expression as? TypeExpression {
 						let methodPrefix: String
 						let castedGenerics: String
 						if typeExpression.typeName.hasPrefix("List<") {
-							methodPrefix = "castOrNull"
+							methodPrefix = "cast" + methodSuffix
 							castedGenerics = String(
 								typeExpression.typeName.dropFirst("List<".count).dropLast())
 						}
 						else if typeExpression.typeName.hasPrefix("MutableList<") {
-							methodPrefix = "castMutableOrNull"
+							methodPrefix = "castMutable" + methodSuffix
 							castedGenerics = String(
 								typeExpression.typeName.dropFirst("MutableList<".count).dropLast())
 						}
 						else if typeExpression.typeName.hasPrefix("Map<") {
-							methodPrefix = "castOrNull"
+							methodPrefix = "cast" + methodSuffix
 							castedGenerics = String(
 								typeExpression.typeName.dropFirst("Map<".count).dropLast())
 						}
 						else if typeExpression.typeName.hasPrefix("MutableMap<") {
-							methodPrefix = "castMutableOrNull"
+							methodPrefix = "castMutable" + methodSuffix
 							castedGenerics = String(
 								typeExpression.typeName.dropFirst("MutableMap<".count).dropLast())
 						}
@@ -3710,7 +3716,7 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 		// create conflicts in Kotlin.
 		let uniqueDeclarations = gatheredDeclarations.removingDuplicates()
 
-		let result = MutableList<Statement>(uniqueDeclarations)
+		let result = uniqueDeclarations.forceCast(to: MutableList<Statement>.self)
 
 		result.append(contentsOf: super.replaceIfStatement(ifStatement))
 

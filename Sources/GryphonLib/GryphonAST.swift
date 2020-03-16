@@ -51,8 +51,13 @@ public final class GryphonAST: PrintableAsTree, Equatable, CustomStringConvertib
 	}
 
 	public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
-		return [PrintableTree("Declarations", MutableList<PrintableAsTree?>(declarations)),
-				PrintableTree("Statements", MutableList<PrintableAsTree?>(statements)), ]
+		return
+			[PrintableTree(
+				"Declarations",
+				declarations.forceCast(to: List<PrintableAsTree?>.self)),
+			 PrintableTree(
+				"Statements",
+				statements.forceCast(to: List<PrintableAsTree?>.self)), ]
 	}
 
 	//
@@ -69,7 +74,7 @@ extension PrintableTree {
 		_ subtrees: List<Statement>)
 		-> PrintableAsTree?
 	{
-		let newSubtrees = MutableList<PrintableAsTree?>(subtrees)
+		let newSubtrees = subtrees.forceCast(to: List<PrintableAsTree?>.self)
 		return PrintableTree.initOrNil(description, newSubtrees)
 	}
 }
@@ -356,7 +361,7 @@ public class CompanionObject: Statement {
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
-		return MutableList<PrintableAsTree?>(members)
+		return members.forceCast(to: List<PrintableAsTree?>.self)
 	}
 
 	public static func == (lhs: CompanionObject, rhs: CompanionObject) -> Bool {
@@ -756,7 +761,7 @@ public class DoStatement: Statement {
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
-		return MutableList<PrintableAsTree?>(statements)
+		return statements.forceCast(to: List<PrintableAsTree?>.self)
 	}
 
 	public static func == (lhs: DoStatement, rhs: DoStatement) -> Bool {
@@ -781,7 +786,7 @@ public class CatchStatement: Statement {
 	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
 		return [
 			PrintableTree(
-				"variableDeclaration", MutableList<PrintableAsTree?>([ variableDeclaration ])),
+				"variableDeclaration", MutableList<PrintableAsTree?>([variableDeclaration])),
 			PrintableTree.ofStatements(
 				"statements", statements),
 		]
@@ -894,7 +899,7 @@ public class IfStatement: Statement {
 		return [
 			isGuard ? PrintableTree("guard") : nil,
 			PrintableTree(
-				"declarations", MutableList<PrintableAsTree?>(declarationTrees)),
+				"declarations", declarationTrees.forceCast(to: List<PrintableAsTree?>.self)),
 			PrintableTree.ofStatements(
 				"conditions", conditionTrees),
 			PrintableTree.ofStatements(
@@ -970,7 +975,7 @@ public class DeferStatement: Statement {
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
-		return MutableList<PrintableAsTree?>(statements)
+		return statements.forceCast(to: List<PrintableAsTree?>.self)
 	}
 
 	public static func == (lhs: DeferStatement, rhs: DeferStatement) -> Bool {
@@ -1092,7 +1097,7 @@ extension PrintableTree {
 		_ subtrees: List<Expression>)
 		-> PrintableAsTree?
 	{
-		let newSubtrees = MutableList<PrintableAsTree?>(subtrees)
+		let newSubtrees = subtrees.forceCast(to: List<PrintableAsTree?>.self)
 		return PrintableTree.initOrNil(description, newSubtrees)
 	}
 }
@@ -1313,10 +1318,17 @@ public class LiteralCodeExpression: Expression {
 }
 
 public class TemplateExpression: Expression {
+	let typeName: String?
 	let pattern: String
 	let matches: MutableMap<String, Expression>
 
-	init(range: SourceFileRange?, pattern: String, matches: MutableMap<String, Expression>) {
+	init(
+		range: SourceFileRange?,
+		typeName: String?,
+		pattern: String,
+		matches: MutableMap<String, Expression>)
+	{
+		self.typeName = typeName
 		self.pattern = pattern
 		self.matches = matches
 		super.init(range: range, name: "TemplateExpression".capitalizedAsCamelCase())
@@ -1330,12 +1342,15 @@ public class TemplateExpression: Expression {
 		}
 
 		return [
+			PrintableTree.initOrNil(typeName),
 			PrintableTree("pattern \"\(pattern)\""),
-			PrintableTree("matches", MutableList<PrintableAsTree?>(sortedMatchesTrees)), ]
+			PrintableTree(
+				"matches",
+				sortedMatchesTrees.forceCast(to: List<PrintableAsTree?>.self)), ]
 	}
 
 	override var swiftType: String? { // gryphon annotation: override
-		return nil
+		return typeName
 	}
 
 	public static func == (lhs: TemplateExpression, rhs: TemplateExpression) -> Bool {

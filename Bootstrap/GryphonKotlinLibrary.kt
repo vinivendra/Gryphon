@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
+import java.lang.ClassCastException
+
 fun String.suffix(startIndex: Int): String {
     return this.substring(startIndex, this.length)
 }
@@ -31,7 +33,6 @@ fun String.indexOrNull(character: Char): Int? {
         return result
     }
 }
-
 
 @Suppress("UNCHECKED_CAST", "UNUSED_PARAMETER")
 inline fun <reified T> List<*>.castOrNull(): List<T>? {
@@ -74,6 +75,51 @@ inline fun <reified K, reified V> Map<*, *>.castMutableOrNull()
     }
     else {
         return null
+    }
+}
+
+
+@Suppress("UNCHECKED_CAST", "UNUSED_PARAMETER")
+inline fun <reified T> List<*>.cast(): List<T> {
+    if (this.all { it is T }) {
+        return this as List<T>
+    }
+    else {
+        throw ClassCastException()
+    }
+}
+
+@Suppress("UNCHECKED_CAST", "UNUSED_PARAMETER")
+inline fun <reified T> List<*>.castMutable(): MutableList<T> {
+    if (this.all { it is T }) {
+        return (this as List<T>).toMutableList()
+    }
+    else {
+        throw ClassCastException()
+    }
+}
+
+@Suppress("UNCHECKED_CAST", "UNUSED_PARAMETER")
+inline fun <reified K, reified V> Map<*, *>.cast()
+    : Map<K, V>?
+{
+    if (this.all { it.key is K && it.value is V }) {
+        return this as Map<K, V>
+    }
+    else {
+        throw ClassCastException()
+    }
+}
+
+@Suppress("UNCHECKED_CAST", "UNUSED_PARAMETER")
+inline fun <reified K, reified V> Map<*, *>.castMutable()
+    : MutableMap<K, V>?
+{
+    if (this.all { it.key is K && it.value is V }) {
+        return (this as Map<K, V>).toMutableMap()
+    }
+    else {
+        throw ClassCastException()
     }
 }
 

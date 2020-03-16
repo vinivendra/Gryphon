@@ -1980,7 +1980,7 @@ public class SwiftTranslator {
 
 		let subtrees = try translateBraceStatement(braceStatement)
 
-		return MutableList<Statement?>(subtrees)
+		return subtrees.forceCast(to: MutableList<Statement?>.self)
 	}
 
 	internal func translateVariableDeclaration(
@@ -2323,7 +2323,8 @@ public class SwiftTranslator {
 			 "Derived To Base Expression",
 			 "Rebind Self In Constructor Expression",
 			 "Metatype Conversion Expression",
-			 "Any Hashable Erasure Expression":
+			 "Any Hashable Erasure Expression",
+			 "Coerce Expression":
 
 			if let lastExpression = expression.subtrees.last {
 				result = try translateExpression(lastExpression)

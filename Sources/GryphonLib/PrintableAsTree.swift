@@ -43,7 +43,7 @@ public class PrintableTree: PrintableAsTree {
 		_ subtrees: List<PrintableTree>)
 		-> PrintableAsTree?
 	{
-		let newSubtrees = MutableList<PrintableAsTree?>(subtrees)
+		let newSubtrees = subtrees.forceCast(to: List<PrintableAsTree?>.self)
 		return PrintableTree.initOrNil(description, newSubtrees)
 	}
 

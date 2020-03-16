@@ -108,6 +108,7 @@ public class ReplaceTemplatesTranspilationPass: TranspilationPass {
 
 				return TemplateExpression(
 					range: expression.range,
+					typeName: expression.swiftType,
 					pattern: template.string,
 					matches: replacedMatches.toMutableMap())
 			}

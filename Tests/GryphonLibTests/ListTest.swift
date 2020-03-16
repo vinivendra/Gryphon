@@ -138,6 +138,14 @@ class ListTest: XCTestCase {
 		let failedCastList4: List<String>? = listOfDifferentTypes.as(List<String>.self)
 		XCTAssertNil(failedCastList3)
 		XCTAssertNil(failedCastList4)
+
+		// Force downcasts succeed
+		let forcedDowncastList: List<Int> = listOfAnys.forceCast(to: List<Int>.self)
+		XCTAssertEqual(forcedDowncastList, [1, 2, 3])
+
+		// Compatible forced casts succeed even if types are optional
+		let forcedOptionalCastList: List<Int?> = listOfAnys.forceCast(to: List<Int?>.self)
+		XCTAssertEqual(forcedOptionalCastList, [1, 2, 3])
 	}
 
 	func testToMutableList() {
