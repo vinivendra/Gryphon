@@ -378,18 +378,6 @@ public class MutableList<Element>: List<Element>, // gryphon ignore
 		super.init(list.array as! Buffer)
 	}
 
-	public func `as`<CastedType>(
-		_ type: MutableList<CastedType>.Type)
-		-> MutableList<CastedType>?
-	{
-		if let castedList = self.array as? [CastedType] {
-			return MutableList<CastedType>(castedList)
-		}
-		else {
-			return nil
-		}
-	}
-
 	public func append(_ newElement: Element) {
 		array.append(newElement)
 	}
@@ -414,6 +402,20 @@ public class MutableList<Element>: List<Element>, // gryphon ignore
 
 	public func reverse() {
 		self.array = self.array.reversed()
+	}
+}
+
+extension List { // gryphon ignore
+	public func `as`<CastedType>(
+		_ type: MutableList<CastedType>.Type)
+		-> MutableList<CastedType>?
+	{
+		if let castedList = self.array as? [CastedType] {
+			return MutableList<CastedType>(castedList)
+		}
+		else {
+			return nil
+		}
 	}
 }
 
@@ -606,7 +608,9 @@ public class MutableMap<Key, Value>: Map<Key, Value> where Key: Hashable { // gr
 			dictionary[key] = newValue
 		}
 	}
+}
 
+extension Map { // gryphon ignore
 	public func `as`<CastedKey, CastedValue>(
 		_ type: MutableMap<CastedKey, CastedValue>.Type)
 		-> MutableMap<CastedKey, CastedValue>?

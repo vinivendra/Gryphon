@@ -146,14 +146,29 @@ class MutableListTest: XCTestCase {
 	}
 
 	func testCasting() {
-		let list1: MutableList<Any> = [1, 2, 3]
-		let successfulCast: MutableList<Int>? = list1.as(MutableList<Int>.self)
+		let listOfAnys: List<Any> = [1, 2, 3]
+		let mutableListOfAnys: MutableList<Any> = [1, 2, 3]
 
-		XCTAssertNotNil(successfulCast)
-		XCTAssertEqual(successfulCast, [1, 2, 3])
+		let downcastLM: MutableList<Int>? = listOfAnys.as(MutableList<Int>.self)
+		let downcastML: List<Int>? = mutableListOfAnys.as(List<Int>.self)
+		let downcastMM: MutableList<Int>? = mutableListOfAnys.as(MutableList<Int>.self)
+		XCTAssertEqual(downcastLM, [1, 2, 3])
+		XCTAssertEqual(downcastML, [1, 2, 3])
+		XCTAssertEqual(downcastMM, [1, 2, 3])
 
-		// let failedCast: MutableList<String>? = list1.as(MutableList<String>.self)
-		// XCTAssertNil(failedCast)
+		let failedLM: MutableList<String>? = listOfAnys.as(MutableList<String>.self)
+		let failedML: List<String>? = mutableListOfAnys.as(List<String>.self)
+		let failedMM: MutableList<String>? = mutableListOfAnys.as(MutableList<String>.self)
+		XCTAssertNil(failedLM)
+		XCTAssertNil(failedML)
+		XCTAssertNil(failedMM)
+
+		let optionalLM: MutableList<Int?>? = listOfAnys.as(MutableList<Int?>.self)
+		let optionalML: List<Int?>? = mutableListOfAnys.as(List<Int?>.self)
+		let optionalMM: MutableList<Int?>? = mutableListOfAnys.as(MutableList<Int?>.self)
+		XCTAssertEqual(optionalLM, [1, 2, 3])
+		XCTAssertEqual(optionalML, [1, 2, 3])
+		XCTAssertEqual(optionalMM, [1, 2, 3])
 	}
 
 	func testCopy() {

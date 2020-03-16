@@ -108,14 +108,38 @@ class MutableMapTest: XCTestCase {
 	}
 
 	func testCasting() {
-		let dictionary1: MutableMap<Int, Any> = [1: 10, 2: 20]
-		let successfulCast: MutableMap<Int, Int>? = dictionary1.as(MutableMap<Int, Int>.self)
+		let mapOfAnys: Map<AnyHashable, AnyHashable> = [1: "1", 2: "2"]
+		let mutableMapOfAnys: MutableMap<AnyHashable, AnyHashable> = [1: "1", 2: "2"]
 
-		XCTAssertNotNil(successfulCast)
-		XCTAssertEqual(successfulCast, [1: 10, 2: 20])
+		let downcastMapIM: MutableMap<Int, String>? =
+			mapOfAnys.as(MutableMap<Int, String>.self)
+		let downcastMapMI: Map<Int, String>? =
+			mutableMapOfAnys.as(Map<Int, String>.self)
+		let downcastMapMM: MutableMap<Int, String>? =
+			mutableMapOfAnys.as(MutableMap<Int, String>.self)
+		XCTAssertEqual(downcastMapIM, [1: "1", 2: "2"])
+		XCTAssertEqual(downcastMapMI, [1: "1", 2: "2"])
+		XCTAssertEqual(downcastMapMM, [1: "1", 2: "2"])
 
-		// let failedCast: MutableMap<Int, String>? = dictionary1.as(MutableMap<Int, String>.self)
-		// XCTAssertNil(failedCast)
+		let failedMapIM: MutableMap<String, Int>? =
+			mapOfAnys.as(MutableMap<String, Int>.self)
+		let failedMapMI: Map<String, Int>? =
+			mutableMapOfAnys.as(Map<String, Int>.self)
+		let failedMapMM: MutableMap<String, Int>? =
+			mutableMapOfAnys.as(MutableMap<String, Int>.self)
+		XCTAssertNil(failedMapIM)
+		XCTAssertNil(failedMapMI)
+		XCTAssertNil(failedMapMM)
+
+		let optionalMapIM: MutableMap<Int?, String?>? =
+			mapOfAnys.as(MutableMap<Int?, String?>.self)
+		let optionalMapMI: Map<Int?, String?>? =
+			mutableMapOfAnys.as(Map<Int?, String?>.self)
+		let optionalMapMM: MutableMap<Int?, String?>? =
+			mutableMapOfAnys.as(MutableMap<Int?, String?>.self)
+		XCTAssertEqual(optionalMapIM, [1: "1", 2: "2"])
+		XCTAssertEqual(optionalMapMI, [1: "1", 2: "2"])
+		XCTAssertEqual(optionalMapMM, [1: "1", 2: "2"])
 	}
 
 	func testCopy() {

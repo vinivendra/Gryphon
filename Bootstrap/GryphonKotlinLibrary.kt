@@ -14,10 +14,6 @@
 // limitations under the License.
 //
 
-fun <T> MutableList<T>.copy(): MutableList<T> {
-    return this.toMutableList()
-}
-
 fun String.suffix(startIndex: Int): String {
     return this.substring(startIndex, this.length)
 }
@@ -33,6 +29,51 @@ fun String.indexOrNull(character: Char): Int? {
     }
     else {
         return result
+    }
+}
+
+
+@Suppress("UNCHECKED_CAST", "UNUSED_PARAMETER")
+inline fun <reified T> List<*>.castOrNull(): List<T>? {
+    if (this.all { it is T }) {
+        return this as List<T>
+    }
+    else {
+        return null
+    }
+}
+
+@Suppress("UNCHECKED_CAST", "UNUSED_PARAMETER")
+inline fun <reified T> List<*>.castMutableOrNull(): MutableList<T>? {
+    if (this.all { it is T }) {
+        return (this as List<T>).toMutableList()
+    }
+    else {
+        return null
+    }
+}
+
+@Suppress("UNCHECKED_CAST", "UNUSED_PARAMETER")
+inline fun <reified K, reified V> Map<*, *>.castOrNull()
+    : Map<K, V>?
+{
+    if (this.all { it.key is K && it.value is V }) {
+        return this as Map<K, V>
+    }
+    else {
+        return null
+    }
+}
+
+@Suppress("UNCHECKED_CAST", "UNUSED_PARAMETER")
+inline fun <reified K, reified V> Map<*, *>.castMutableOrNull()
+    : MutableMap<K, V>?
+{
+    if (this.all { it.key is K && it.value is V }) {
+        return (this as Map<K, V>).toMutableMap()
+    }
+    else {
+        return null
     }
 }
 

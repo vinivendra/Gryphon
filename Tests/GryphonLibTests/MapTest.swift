@@ -91,14 +91,16 @@ class MapTest: XCTestCase {
 	}
 
 	func testCasting() {
-		let dictionary1: Map<Int, Any> = [1: 10, 2: 20]
-		let successfulCast: Map<Int, Int>? = dictionary1.as(Map<Int, Int>.self)
+		let mapOfAnys: Map<AnyHashable, AnyHashable> = [1: "1", 2: "2"]
 
-		XCTAssertNotNil(successfulCast)
-		XCTAssertEqual(successfulCast, [1: 10, 2: 20])
+		let downcastMap: Map<Int, String>? = mapOfAnys.as(Map<Int, String>.self)
+		XCTAssertEqual(downcastMap, [1: "1", 2: "2"])
 
-		// let failedCast: Map<Int, String>? = dictionary1.as(Map<Int, String>.self)
-		// XCTAssertNil(failedCast)
+		let failedMap: Map<String, Int>? = mapOfAnys.as(Map<String, Int>.self)
+		XCTAssertNil(failedMap)
+
+		let optionalMap: Map<Int?, String?>? = mapOfAnys.as(Map<Int?, String?>.self)
+		XCTAssertEqual(optionalMap, [1: "1", 2: "2"])
 	}
 
 	func testToMutableMap() {

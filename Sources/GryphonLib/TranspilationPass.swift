@@ -2406,24 +2406,11 @@ public class AnonymousParametersTranspilationPass: TranspilationPass {
 	}
 }
 
-///
-/// Gryphon's collections need explicit initializers to account for the fact that they can't be
-/// implicitly cast to covariant types. For instance:
-///
-/// ````
-/// let myIntArray: MutableList = [1, 2, 3]
-/// let myAnyArray = myIntArray as MutableList<Any> // error
-/// let myAnyArray = MutableList<Any>(myIntArray) // OK
-/// ````
-///
-/// This transformation can't be done with the current template mode because there's no way to get
-/// the type for the cast. However, since this seems to be a specific case that only shows up in the
-/// stdlib at the moment, this pass should serve as a workaround.
-///
-/// The conversion is done by calling `array.toMutableList<Element>()`.
-/// This allows translations to cover a few (not fully understood) corner cases where the array
-/// isn't a `MutableList` (it happened once with an `EmptyList`), meaning a normal cast would fail.
-///
+/// Gryphon's collections aren't defined within the compiler, so they can't take advantage of
+/// checked casts for covariant types. Because of that, casts have to be checked at runtime. This is
+/// done using the `as` method from the GryphonSwiftLibrary, which translates to the `castOrNull`
+/// and `castMutableOrNull` methods from the GryphonKotlinLibrary. The type signature of the Swift
+/// and Kotlin versions is different, so this pass is used to perform the translation.
 public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
 	// gryphon insert:     super(ast, context) { }
@@ -2505,23 +2492,60 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 					leftType.hasPrefix("List") ||
 					leftType.hasPrefix("MutableMap") ||
 					leftType.hasPrefix("Map")),
-				let declarationReferenceExpression =
+				let rightExpression =
 					dotExpression.rightExpression as? DeclarationReferenceExpression,
 				let tupleExpression = callExpression.parameters as? TupleExpression
 			{
-				if declarationReferenceExpression.identifier == "as",
+				if rightExpression.identifier == "as",
 					tupleExpression.pairs.count == 1,
 					let onlyPair = tupleExpression.pairs.first
 				{
 					if let typeExpression = onlyPair.expression as? TypeExpression {
-						return BinaryOperatorExpression(
+						let methodPrefix: String
+						let castedGenerics: String
+						if typeExpression.typeName.hasPrefix("List<") {
+							methodPrefix = "castOrNull"
+							castedGenerics = String(
+								typeExpression.typeName.dropFirst("List<".count).dropLast())
+						}
+						else if typeExpression.typeName.hasPrefix("MutableList<") {
+							methodPrefix = "castMutableOrNull"
+							castedGenerics = String(
+								typeExpression.typeName.dropFirst("MutableList<".count).dropLast())
+						}
+						else if typeExpression.typeName.hasPrefix("Map<") {
+							methodPrefix = "castOrNull"
+							castedGenerics = String(
+								typeExpression.typeName.dropFirst("Map<".count).dropLast())
+						}
+						else if typeExpression.typeName.hasPrefix("MutableMap<") {
+							methodPrefix = "castMutableOrNull"
+							castedGenerics = String(
+								typeExpression.typeName.dropFirst("MutableMap<".count).dropLast())
+						}
+						else {
+							return super.replaceCallExpression(callExpression)
+						}
+
+						let castedGenericTypes = Utilities.splitTypeList(castedGenerics)
+						let fullMethodName =
+							"\(methodPrefix)<\(castedGenericTypes.joined(separator: ", "))>"
+
+						return CallExpression(
 							range: callExpression.range,
-							leftExpression: dotExpression.leftExpression,
-							rightExpression: TypeExpression(
-								range: callExpression.range,
-								typeName: typeExpression.typeName),
-							operatorSymbol: "as?",
-							typeName: typeExpression.typeName + "?")
+							function: DotExpression(
+								range: dotExpression.range,
+								leftExpression: dotExpression.leftExpression,
+								rightExpression: DeclarationReferenceExpression(
+									range: rightExpression.range,
+									identifier: fullMethodName,
+									typeName: rightExpression.typeName,
+									isStandardLibrary: rightExpression.isStandardLibrary,
+									isImplicit: rightExpression.isImplicit)),
+							parameters: TupleExpression(
+								range: tupleExpression.range,
+								pairs: []),
+							typeName: callExpression.typeName)
 					}
 				}
 			}

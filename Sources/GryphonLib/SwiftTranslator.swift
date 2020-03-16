@@ -2322,7 +2322,8 @@ public class SwiftTranslator {
 			 "Dot Self Expression",
 			 "Derived To Base Expression",
 			 "Rebind Self In Constructor Expression",
-			 "Metatype Conversion Expression":
+			 "Metatype Conversion Expression",
+			 "Any Hashable Erasure Expression":
 
 			if let lastExpression = expression.subtrees.last {
 				result = try translateExpression(lastExpression)

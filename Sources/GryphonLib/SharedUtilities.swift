@@ -393,6 +393,8 @@ extension Utilities {
             "Float64": "Double",
             "Character": "Char",
 
+			"AnyHashable": "Any",
+
             "String.Index": "Int",
             "Substring.Index": "Int",
             "Substring": "String",
