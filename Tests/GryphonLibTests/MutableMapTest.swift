@@ -110,7 +110,10 @@ class MutableMapTest: XCTestCase {
 	func testCasting() {
 		let mapOfAnys: Map<AnyHashable, AnyHashable> = [1: "1", 2: "2"]
 		let mutableMapOfAnys: MutableMap<AnyHashable, AnyHashable> = [1: "1", 2: "2"]
+		let mapOfDifferentTypes: Map<AnyHashable, AnyHashable> = [1: "1", "2": 2]
+		let mutableMapOfDifferentTypes: MutableMap<AnyHashable, AnyHashable> = [1: "1", "2": 2]
 
+		// Downcasts succeed
 		let downcastMapIM: MutableMap<Int, String>? =
 			mapOfAnys.as(MutableMap<Int, String>.self)
 		let downcastMapMI: Map<Int, String>? =
@@ -121,16 +124,18 @@ class MutableMapTest: XCTestCase {
 		XCTAssertEqual(downcastMapMI, [1: "1", 2: "2"])
 		XCTAssertEqual(downcastMapMM, [1: "1", 2: "2"])
 
-		let failedMapIM: MutableMap<String, Int>? =
+		// Casts to unrelated types fail
+		let failedMapIM1: MutableMap<String, Int>? =
 			mapOfAnys.as(MutableMap<String, Int>.self)
-		let failedMapMI: Map<String, Int>? =
+		let failedMapMI1: Map<String, Int>? =
 			mutableMapOfAnys.as(Map<String, Int>.self)
-		let failedMapMM: MutableMap<String, Int>? =
+		let failedMapMM1: MutableMap<String, Int>? =
 			mutableMapOfAnys.as(MutableMap<String, Int>.self)
-		XCTAssertNil(failedMapIM)
-		XCTAssertNil(failedMapMI)
-		XCTAssertNil(failedMapMM)
+		XCTAssertNil(failedMapIM1)
+		XCTAssertNil(failedMapMI1)
+		XCTAssertNil(failedMapMM1)
 
+		// Compatible casts succeed even if types are optional
 		let optionalMapIM: MutableMap<Int?, String?>? =
 			mapOfAnys.as(MutableMap<Int?, String?>.self)
 		let optionalMapMI: Map<Int?, String?>? =
@@ -140,6 +145,37 @@ class MutableMapTest: XCTestCase {
 		XCTAssertEqual(optionalMapIM, [1: "1", 2: "2"])
 		XCTAssertEqual(optionalMapMI, [1: "1", 2: "2"])
 		XCTAssertEqual(optionalMapMM, [1: "1", 2: "2"])
+
+		// Incompatible casts fail even if types are optional
+		let failedMapIM2: MutableMap<String?, Int?>? =
+			mapOfAnys.as(MutableMap<String?, Int?>.self)
+		let failedMapMI2: Map<String?, Int?>? =
+			mutableMapOfAnys.as(Map<String?, Int?>.self)
+		let failedMapMM2: MutableMap<String?, Int?>? =
+			mutableMapOfAnys.as(MutableMap<String?, Int?>.self)
+		XCTAssertNil(failedMapIM2)
+		XCTAssertNil(failedMapMI2)
+		XCTAssertNil(failedMapMM2)
+
+		// Casts fail unless all elements match the casted type
+		let failedMapIM3: MutableMap<String, Int>? =
+			mapOfDifferentTypes.as(MutableMap<String, Int>.self)
+		let failedMapMI3: Map<String, Int>? =
+			mutableMapOfDifferentTypes.as(Map<String, Int>.self)
+		let failedMapMM3: MutableMap<String, Int>? =
+			mutableMapOfDifferentTypes.as(MutableMap<String, Int>.self)
+		let failedMapIM4: MutableMap<Int, String>? =
+			mapOfDifferentTypes.as(MutableMap<Int, String>.self)
+		let failedMapMI4: Map<Int, String>? =
+			mutableMapOfDifferentTypes.as(Map<Int, String>.self)
+		let failedMapMM4: MutableMap<Int, String>? =
+			mutableMapOfDifferentTypes.as(MutableMap<Int, String>.self)
+		XCTAssertNil(failedMapIM3)
+		XCTAssertNil(failedMapMI3)
+		XCTAssertNil(failedMapMM3)
+		XCTAssertNil(failedMapIM4)
+		XCTAssertNil(failedMapMI4)
+		XCTAssertNil(failedMapMM4)
 	}
 
 	func testCopy() {

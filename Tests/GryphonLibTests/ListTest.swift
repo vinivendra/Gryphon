@@ -115,15 +115,29 @@ class ListTest: XCTestCase {
 
 	func testCasting() {
 		let listOfAnys: List<Any> = [1, 2, 3]
+		let listOfDifferentTypes: List<Any> = [1, "2", 3]
 
+		// Downcasts succeed
 		let downcastList: List<Int>? = listOfAnys.as(List<Int>.self)
 		XCTAssertEqual(downcastList, [1, 2, 3])
 
-		let failedCastList: List<String>? = listOfAnys.as(List<String>.self)
-		XCTAssertNil(failedCastList)
+		// Casts to unrelated types fail
+		let failedCastList1: List<String>? = listOfAnys.as(List<String>.self)
+		XCTAssertNil(failedCastList1)
 
+		// Compatible casts succeed even if types are optional
 		let optionalCastList: List<Int?>? = listOfAnys.as(List<Int?>.self)
 		XCTAssertEqual(optionalCastList, [1, 2, 3])
+
+		// Incompatible casts fail even if types are optional
+		let failedCastList2: List<String?>? = listOfAnys.as(List<String?>.self)
+		XCTAssertNil(failedCastList2)
+
+		// Casts fail unless all elements match the casted type
+		let failedCastList3: List<Int>? = listOfDifferentTypes.as(List<Int>.self)
+		let failedCastList4: List<String>? = listOfDifferentTypes.as(List<String>.self)
+		XCTAssertNil(failedCastList3)
+		XCTAssertNil(failedCastList4)
 	}
 
 	func testToMutableList() {

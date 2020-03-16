@@ -92,15 +92,29 @@ class MapTest: XCTestCase {
 
 	func testCasting() {
 		let mapOfAnys: Map<AnyHashable, AnyHashable> = [1: "1", 2: "2"]
+		let mapOfDifferentTypes: Map<AnyHashable, AnyHashable> = [1: "1", "2": 2]
 
+		// Downcasts succeed
 		let downcastMap: Map<Int, String>? = mapOfAnys.as(Map<Int, String>.self)
 		XCTAssertEqual(downcastMap, [1: "1", 2: "2"])
 
-		let failedMap: Map<String, Int>? = mapOfAnys.as(Map<String, Int>.self)
-		XCTAssertNil(failedMap)
+		// Casts to unrelated types fail
+		let failedMap1: Map<String, Int>? = mapOfAnys.as(Map<String, Int>.self)
+		XCTAssertNil(failedMap1)
 
+		// Compatible casts succeed even if types are optional
 		let optionalMap: Map<Int?, String?>? = mapOfAnys.as(Map<Int?, String?>.self)
 		XCTAssertEqual(optionalMap, [1: "1", 2: "2"])
+
+		// Incompatible casts fail even if types are optional
+		let failedMap2: Map<String?, Int?>? = mapOfAnys.as(Map<String?, Int?>.self)
+		XCTAssertNil(failedMap2)
+
+		// Casts fail unless all elements match the casted type
+		let failedMap3: Map<String, Int>? = mapOfDifferentTypes.as(Map<String, Int>.self)
+		let failedMap4: Map<Int, String>? = mapOfDifferentTypes.as(Map<Int, String>.self)
+		XCTAssertNil(failedMap3)
+		XCTAssertNil(failedMap4)
 	}
 
 	func testToMutableMap() {

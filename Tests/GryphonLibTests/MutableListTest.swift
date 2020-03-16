@@ -148,7 +148,10 @@ class MutableListTest: XCTestCase {
 	func testCasting() {
 		let listOfAnys: List<Any> = [1, 2, 3]
 		let mutableListOfAnys: MutableList<Any> = [1, 2, 3]
+		let listOfDifferentTypes: List<Any> = [1, "2", 3]
+		let mutableListOfDifferentTypes: MutableList<Any> = [1, "2", 3]
 
+		// Downcasts succeed
 		let downcastLM: MutableList<Int>? = listOfAnys.as(MutableList<Int>.self)
 		let downcastML: List<Int>? = mutableListOfAnys.as(List<Int>.self)
 		let downcastMM: MutableList<Int>? = mutableListOfAnys.as(MutableList<Int>.self)
@@ -156,19 +159,49 @@ class MutableListTest: XCTestCase {
 		XCTAssertEqual(downcastML, [1, 2, 3])
 		XCTAssertEqual(downcastMM, [1, 2, 3])
 
-		let failedLM: MutableList<String>? = listOfAnys.as(MutableList<String>.self)
-		let failedML: List<String>? = mutableListOfAnys.as(List<String>.self)
-		let failedMM: MutableList<String>? = mutableListOfAnys.as(MutableList<String>.self)
-		XCTAssertNil(failedLM)
-		XCTAssertNil(failedML)
-		XCTAssertNil(failedMM)
+		// Casts to unrelated types fail
+		let failedLM1: MutableList<String>? = listOfAnys.as(MutableList<String>.self)
+		let failedML1: List<String>? = mutableListOfAnys.as(List<String>.self)
+		let failedMM1: MutableList<String>? = mutableListOfAnys.as(MutableList<String>.self)
+		XCTAssertNil(failedLM1)
+		XCTAssertNil(failedML1)
+		XCTAssertNil(failedMM1)
 
+		// Compatible casts succeed even if types are optional
 		let optionalLM: MutableList<Int?>? = listOfAnys.as(MutableList<Int?>.self)
 		let optionalML: List<Int?>? = mutableListOfAnys.as(List<Int?>.self)
 		let optionalMM: MutableList<Int?>? = mutableListOfAnys.as(MutableList<Int?>.self)
 		XCTAssertEqual(optionalLM, [1, 2, 3])
 		XCTAssertEqual(optionalML, [1, 2, 3])
 		XCTAssertEqual(optionalMM, [1, 2, 3])
+
+		// Incompatible casts fail even if types are optional
+		let failedLM2: MutableList<String?>? = listOfAnys.as(MutableList<String?>.self)
+		let failedML2: List<String?>? = mutableListOfAnys.as(List<String?>.self)
+		let failedMM2: MutableList<String?>? = mutableListOfAnys.as(MutableList<String?>.self)
+		XCTAssertNil(failedLM2)
+		XCTAssertNil(failedML2)
+		XCTAssertNil(failedMM2)
+
+		// Casts fail unless all elements match the casted type
+		let failedLM3: MutableList<Int>? =
+			listOfDifferentTypes.as(MutableList<Int>.self)
+		let failedML3: List<Int>? =
+			mutableListOfDifferentTypes.as(List<Int>.self)
+		let failedMM3: MutableList<Int>? =
+			mutableListOfDifferentTypes.as(MutableList<Int>.self)
+		let failedLM4: MutableList<String>? =
+			listOfDifferentTypes.as(MutableList<String>.self)
+		let failedML4: List<String>? =
+			mutableListOfDifferentTypes.as(List<String>.self)
+		let failedMM4: MutableList<String>? =
+			mutableListOfDifferentTypes.as(MutableList<String>.self)
+		XCTAssertNil(failedLM3)
+		XCTAssertNil(failedML3)
+		XCTAssertNil(failedMM3)
+		XCTAssertNil(failedLM4)
+		XCTAssertNil(failedML4)
+		XCTAssertNil(failedMM4)
 	}
 
 	func testCopy() {
