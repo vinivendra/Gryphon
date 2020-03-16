@@ -101,7 +101,7 @@ inline fun <reified T> List<*>.castMutable(): MutableList<T> {
 
 @Suppress("UNCHECKED_CAST", "UNUSED_PARAMETER")
 inline fun <reified K, reified V> Map<*, *>.cast()
-    : Map<K, V>?
+    : Map<K, V>
 {
     if (this.all { it.key is K && it.value is V }) {
         return this as Map<K, V>
@@ -113,7 +113,7 @@ inline fun <reified K, reified V> Map<*, *>.cast()
 
 @Suppress("UNCHECKED_CAST", "UNUSED_PARAMETER")
 inline fun <reified K, reified V> Map<*, *>.castMutable()
-    : MutableMap<K, V>?
+    : MutableMap<K, V>
 {
     if (this.all { it.key is K && it.value is V }) {
         return (this as Map<K, V>).toMutableMap()

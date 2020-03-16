@@ -529,10 +529,10 @@ public class Map<Key, Value>: // gryphon ignore
 	}
 
 	// Other methods
-	public init<K, V>(_ map: Map<K, V>) {
-		self.dictionary = map.dictionary as! Buffer
-	}
 
+	/// Used to obtain a Map with new key and/or value types. If all keys and values in the map can
+	/// be casted to the new types, the method succeeds and the new Map is returned. Otherwise, the
+	/// method returns `nil`.
 	public func `as`<CastedKey, CastedValue>(
 		_ type: Map<CastedKey, CastedValue>.Type)
 		-> Map<CastedKey, CastedValue>?
@@ -543,6 +543,16 @@ public class Map<Key, Value>: // gryphon ignore
 		else {
 			return nil
 		}
+	}
+
+	/// Used to obtain a Map with new key and/or value types. If all keys and values in the map can
+	/// be casted to the new types, the method succeeds and the new Map is returned. Otherwise, the
+	/// method crashes.
+	public func forceCast<CastedKey, CastedValue>(
+		to type: Map<CastedKey, CastedValue>.Type)
+		-> Map<CastedKey, CastedValue>
+	{
+		Map<CastedKey, CastedValue>(dictionary as! [CastedKey: CastedValue])
 	}
 
 	public func toMap() -> Map<Key, Value> {
@@ -625,6 +635,9 @@ public class MutableMap<Key, Value>: Map<Key, Value> where Key: Hashable { // gr
 }
 
 extension Map { // gryphon ignore
+	/// Used to obtain a MutableMap with new key and/or value types. If all keys and values in the
+	/// map can be casted to the new types, the method succeeds and the new MutableMap is returned.
+	/// Otherwise, the method returns `nil`.
 	public func `as`<CastedKey, CastedValue>(
 		_ type: MutableMap<CastedKey, CastedValue>.Type)
 		-> MutableMap<CastedKey, CastedValue>?
@@ -635,5 +648,15 @@ extension Map { // gryphon ignore
 		else {
 			return nil
 		}
+	}
+
+	/// Used to obtain a Map with new key and/or value types. If all keys and values in the map can
+	/// be casted to the new types, the method succeeds and the new Map is returned. Otherwise, the
+	/// method crashes.
+	public func forceCast<CastedKey, CastedValue>(
+		to type: MutableMap<CastedKey, CastedValue>.Type)
+		-> MutableMap<CastedKey, CastedValue>
+	{
+		MutableMap<CastedKey, CastedValue>(dictionary as! [CastedKey: CastedValue])
 	}
 }

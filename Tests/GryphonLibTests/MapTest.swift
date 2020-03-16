@@ -79,12 +79,10 @@ class MapTest: XCTestCase {
 	func testInits() {
 		let dictionary1: Map<Int, Int> = [1: 10, 2: 20]
 		let dictionary2: Map<Int, Int> = Map<Int, Int>([1: 10, 2: 20])
-		let dictionary3: Map<Int, Int> = Map<Int, Int>(dictionary1) // gryphon ignore
 		let dictionary4: Map<Int, Int> = Map<Int, Int>()
 		let dictionary5: Map<Int, Int> = [:]
 
 		XCTAssertEqual(dictionary1, dictionary2)
-		XCTAssertEqual(dictionary1, dictionary3) // gryphon ignore
 		XCTAssertEqual(dictionary4, dictionary5)
 		XCTAssertNotEqual(dictionary1, dictionary4)
 		XCTAssertNotEqual(dictionary1, dictionary5)
@@ -115,6 +113,14 @@ class MapTest: XCTestCase {
 		let failedMap4: Map<Int, String>? = mapOfDifferentTypes.as(Map<Int, String>.self)
 		XCTAssertNil(failedMap3)
 		XCTAssertNil(failedMap4)
+
+		// Force downcasts succeed
+		let forcedDowncastMap: Map<Int, String> = mapOfAnys.forceCast(to: Map<Int, String>.self)
+		XCTAssertEqual(forcedDowncastMap, [1: "1", 2: "2"])
+
+		// Compatible forced casts succeed even if types are optional
+		let forcedOptionalMap: Map<Int?, String?> = mapOfAnys.forceCast(to: Map<Int?, String?>.self)
+		XCTAssertEqual(forcedOptionalMap, [1: "1", 2: "2"])
 	}
 
 	func testToMutableMap() {

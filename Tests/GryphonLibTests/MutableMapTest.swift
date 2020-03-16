@@ -83,21 +83,17 @@ class MutableMapTest: XCTestCase {
 	func testInits() {
 		let dictionary1: MutableMap<Int, Int> = [1: 10, 2: 20]
 		let dictionary2: MutableMap<Int, Int> = MutableMap<Int, Int>([1: 10, 2: 20])
-		let dictionary3: MutableMap<Int, Int> = MutableMap<Int, Int>(dictionary1) // gryphon ignore
 		let dictionary4: MutableMap<Int, Int> = MutableMap<Int, Int>()
 		let dictionary5: MutableMap<Int, Int> = [:]
 
 		XCTAssertEqual(dictionary1, dictionary2)
-		XCTAssertEqual(dictionary1, dictionary3) // gryphon ignore
 		XCTAssertEqual(dictionary4, dictionary5)
 
 		dictionary1[3] = 30
 		dictionary4[3] = 30
 
 		XCTAssertNotEqual(dictionary1, dictionary2)
-		XCTAssertNotEqual(dictionary1, dictionary3) // gryphon ignore
 		XCTAssertNotEqual(dictionary4, dictionary5)
-		XCTAssertEqual(dictionary2, dictionary3) // gryphon ignore
 	}
 
 	func testPassingByReference() {
@@ -176,6 +172,28 @@ class MutableMapTest: XCTestCase {
 		XCTAssertNil(failedMapIM4)
 		XCTAssertNil(failedMapMI4)
 		XCTAssertNil(failedMapMM4)
+
+		// Forced downcasts succeed
+		let forcedDowncastMapIM: MutableMap<Int, String> =
+			mapOfAnys.forceCast(to: MutableMap<Int, String>.self)
+		let forcedDowncastMapMI: Map<Int, String> =
+			mutableMapOfAnys.forceCast(to: Map<Int, String>.self)
+		let forcedDowncastMapMM: MutableMap<Int, String> =
+			mutableMapOfAnys.forceCast(to: MutableMap<Int, String>.self)
+		XCTAssertEqual(forcedDowncastMapIM, [1: "1", 2: "2"])
+		XCTAssertEqual(forcedDowncastMapMI, [1: "1", 2: "2"])
+		XCTAssertEqual(forcedDowncastMapMM, [1: "1", 2: "2"])
+
+		// Compatible forced casts succeed even if types are optional
+		let forceOptionalMapIM: MutableMap<Int?, String?> =
+			mapOfAnys.forceCast(to: MutableMap<Int?, String?>.self)
+		let forceOptionalMapMI: Map<Int?, String?> =
+			mutableMapOfAnys.forceCast(to: Map<Int?, String?>.self)
+		let forceOptionalMapMM: MutableMap<Int?, String?> =
+			mutableMapOfAnys.forceCast(to: MutableMap<Int?, String?>.self)
+		XCTAssertEqual(forceOptionalMapIM, [1: "1", 2: "2"])
+		XCTAssertEqual(forceOptionalMapMI, [1: "1", 2: "2"])
+		XCTAssertEqual(forceOptionalMapMM, [1: "1", 2: "2"])
 	}
 
 	func testCopy() {
