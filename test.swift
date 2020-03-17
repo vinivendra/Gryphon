@@ -14,37 +14,8 @@
 // limitations under the License.
 //
 
-struct Box<T> { // gryphon ignore
-	let x: T
+let a: Any = ""
+
+if let a = a as? String {
+	print("It's a string!")
 }
-
-// gryphon insert: internal data class Box<T>(
-// gryphon insert: 	val x: T
-// gryphon insert: ) {
-// gryphon insert: }
-
-//// Instancing generic classes
-let box = Box(x: 0)
-
-//// Declaring generic functions
-func f1<T>(box: Box<T>) {
-	print(box.x)
-}
-
-// With generic return types
-func f2<T>(box: Box<T>) -> T {
-	return box.x
-}
-
-// In extensions
-extension Box {
-	func f3<U>(box: Box<U>) {
-		print(self.x)
-		print(box.x)
-	}
-}
-
-//// Calling generic functions
-f1(box: Box(x: 1))
-print(f2(box: Box(x: 2)))
-Box(x: 3).f3(box: Box(x: 4))
