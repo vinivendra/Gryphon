@@ -124,6 +124,7 @@ class TestUtilities {
 		"closures",
 		"extensions",
 		"functionCalls",
+		"generics",
 		"ifStatement",
 		"inits",
 		"kotlinLiterals",

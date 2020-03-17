@@ -613,10 +613,8 @@ public class KotlinTranslator {
 			result.append("fun ")
 			if let extensionType = functionDeclaration.extendsType {
 				let translatedExtensionType = translateType(extensionType)
-				// TODO: test
 				let companionString = functionDeclaration.isStatic ? "Companion." : ""
 
-				// TODO: tests
 				let genericString: String
 				if let genericExtensionIndex = translatedExtensionType.index(of: "<") {
 					let genericExtensionString =

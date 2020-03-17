@@ -14,6 +14,11 @@
 // limitations under the License.
 //
 
+// gryphon output: Test cases/Bootstrap Outputs/generics.swiftAST
+// gryphon output: Test cases/Bootstrap Outputs/generics.gryphonASTRaw
+// gryphon output: Test cases/Bootstrap Outputs/generics.gryphonAST
+// gryphon output: Test cases/Bootstrap Outputs/generics.kt
+
 struct Box<T> { // gryphon ignore
 	let x: T
 }
