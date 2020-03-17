@@ -142,8 +142,4 @@ class TestUtilities {
 	static let testCasesForAllTests = testCasesForAcceptanceTest + List<String>([
 		"enums",
 	])
-	static let testCasesForTranspilationPassTest = testCasesForAllTests + List<String>([
-		"warnings",
-	])
-	static let allTestCases = testCasesForTranspilationPassTest
 }
