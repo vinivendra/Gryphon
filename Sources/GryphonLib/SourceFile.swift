@@ -56,8 +56,8 @@ public class SourceFile {
 
 		// Comments without values (i.e. `// gryphon ignore`)
 		case ignore
-		case inspect // TODO: test
-		case multiline // TODO: test
+		case inspect
+		case multiline
 		case pure // TODO: test
 		case mute
 	}

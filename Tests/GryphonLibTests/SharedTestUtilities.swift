@@ -135,12 +135,12 @@ class TestUtilities {
 		"openAndFinal-default-final",
 		"operators",
 		"standardLibrary",
+		"strings",
 		"structs",
 		"switches",
 	]
 	static let testCasesForAllTests = testCasesForAcceptanceTest + List<String>([
 		"enums",
-		"strings",
 	])
 	static let testCasesForTranspilationPassTest = testCasesForAllTests + List<String>([
 		"warnings",
