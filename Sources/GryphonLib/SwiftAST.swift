@@ -103,12 +103,6 @@ public final class SwiftAST: PrintableAsTree, Equatable, CustomStringConvertible
 		return self.prettyDescription()
 	}
 
-	public func description(withHorizontalLimit horizontalLimit: Int) -> String {
-		var result = ""
-		self.prettyPrint(horizontalLimit: horizontalLimit) { result += $0 }
-		return result
-	}
-
 	// MARK: - Equatable
 	public static func == (lhs: SwiftAST, rhs: SwiftAST) -> Bool {
 		return lhs.name == rhs.name &&

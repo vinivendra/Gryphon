@@ -55,11 +55,7 @@ class PrintableAsTreeTest: XCTestCase {
 			PrintableTree(
 				"d"), ])
 
-		var result = ""
-		root.prettyPrint {
-			result += $0
-		}
-		XCTAssertEqual(result, """
+		XCTAssertEqual(root.prettyDescription(), """
 			 root
 			 ├─ a
 			 │  └─ b
@@ -80,11 +76,7 @@ class PrintableAsTreeTest: XCTestCase {
 		PrintableTree(
 			"dddddddddddddddddd"), ])
 
-		var result = ""
-		root.prettyPrint(horizontalLimit: 15) {
-			result += $0
-		}
-		XCTAssertEqual(result, """
+		XCTAssertEqual(root.prettyDescription(horizontalLimit: 15), """
 			 root
 			 ├─ aaaaaaaaaa…
 			 │  └─ bbbbbbb…

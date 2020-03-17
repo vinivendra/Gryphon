@@ -152,7 +152,6 @@ public extension PrintableAsTree {
 			printFunction: printFunction)
 	}
 
-	// TODO: replace this in other places that use this method
 	func prettyDescription(horizontalLimit: Int? = nil) -> String {
 		var result = ""
 		prettyPrint(horizontalLimit: horizontalLimit) { result += $0 }

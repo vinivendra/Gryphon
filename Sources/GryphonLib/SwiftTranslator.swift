@@ -3397,10 +3397,7 @@ public class SwiftTranslator {
 		ast: SwiftAST)
 		throws -> Statement
 	{
-		var nodeDescription = ""
-		ast.prettyPrint(horizontalLimit: 100) {
-			nodeDescription += $0
-		}
+		let nodeDescription = ast.prettyDescription(horizontalLimit: 100)
 
 		let message = "failed to turn Swift AST into Gryphon AST: " + errorMessage + "."
 		let astDetails = "Thrown when translating the following AST node:\n\(nodeDescription)"
@@ -3419,10 +3416,7 @@ public class SwiftTranslator {
 		ast: SwiftAST)
 		throws -> Expression
 	{
-		var nodeDescription = ""
-		ast.prettyPrint(horizontalLimit: 100) {
-			nodeDescription += $0
-		}
+		let nodeDescription = ast.prettyDescription(horizontalLimit: 100)
 
 		let message = "failed to turn Swift AST into Gryphon AST: " + errorMessage + "."
 		let astDetails = "Thrown when translating the following AST node:\n\(nodeDescription)"
@@ -3441,10 +3435,7 @@ public class SwiftTranslator {
 		ast: SwiftAST)
 		throws -> IfStatement
 	{
-		var nodeDescription = ""
-		ast.prettyPrint(horizontalLimit: 100) {
-			nodeDescription += $0
-		}
+		let nodeDescription = ast.prettyDescription(horizontalLimit: 100)
 
 		let message = "failed to turn Swift AST into Gryphon AST: " + errorMessage + "."
 		let astDetails = "Thrown when translating the following AST node:\n\(nodeDescription)"
