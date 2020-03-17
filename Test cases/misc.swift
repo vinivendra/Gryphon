@@ -19,6 +19,13 @@
 // gryphon output: Test cases/Bootstrap Outputs/misc.gryphonAST
 // gryphon output: Test cases/Bootstrap Outputs/misc.kt
 
+// While
+var i = 1
+while i <= 10 {
+	print(i)
+	i += 1
+}
+
 // Typealias
 typealias A = Int
 

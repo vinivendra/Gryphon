@@ -864,8 +864,6 @@ public class KotlinTranslator {
 		return result
 	}
 
-	// TODO: Update stdlib tests
-	// TODO: Test whiles
 	private func translateWhileStatement(
 		_ whileStatement: WhileStatement,
 		withIndentation indentation: String)

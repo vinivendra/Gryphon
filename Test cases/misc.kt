@@ -29,6 +29,13 @@ internal fun f(a: Int?) {
 }
 
 fun main(args: Array<String>) {
+	var i: Int = 1
+
+	while (i <= 10) {
+		println(i)
+		i += 1
+	}
+
 	var a: A = 0
 	var bc: BC
 
