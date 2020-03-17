@@ -211,7 +211,6 @@ extension Utilities {
         libraryUpdateLock.lock() // gryphon ignore
         // gryphon insert: libraryUpdateLock.acquire()
 
-        // TODO: defers should always be the first statement, or try-finally's should be adjusted
         defer {
             libraryUpdateLock.unlock() // gryphon ignore
             // gryphon insert: libraryUpdateLock.release()
