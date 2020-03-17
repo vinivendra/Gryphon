@@ -134,6 +134,9 @@ class IntegrationTest: XCTestCase {
 			XCTAssertEqual(
 				Compiler.issues.filter { $0.fullMessage.contains("fileprivate") }.count,
 				1)
+			XCTAssertEqual(
+				Compiler.issues.filter { $0.fullMessage.contains("If condition") }.count,
+				2)
 		}
 		catch let error {
 			XCTFail("🚨 Test failed with error:\n\(error)")

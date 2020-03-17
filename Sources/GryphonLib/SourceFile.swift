@@ -58,7 +58,7 @@ public class SourceFile {
 		case ignore
 		case inspect
 		case multiline
-		case pure // TODO: test
+		case pure
 		case mute
 	}
 
