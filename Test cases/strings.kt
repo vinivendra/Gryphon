@@ -22,4 +22,5 @@ fun main(args: Array<String>) {
 	val escapedString: String = "A string with \"escaped double quotes\" \\ and escaped backslashes \n\t and some escaped characters too."
 	val singleInterpolation: String = "${x}"
 	val interpolationWithDoubleQuotes: String = "\"\"${x}"
+	val character: Char = 'i'
 }

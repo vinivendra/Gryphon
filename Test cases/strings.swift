@@ -29,3 +29,6 @@ let escapedString = "A string with \"escaped double quotes\" \\ and escaped back
 
 let singleInterpolation = "\(x)"
 let interpolationWithDoubleQuotes = "\"\"\(x)"
+
+// Characters
+let character: Character = "i"

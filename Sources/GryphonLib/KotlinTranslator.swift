@@ -1064,7 +1064,6 @@ public class KotlinTranslator {
 				binaryExpression.operatorSymbol == "is",
 				binaryExpression.typeName == "Bool"
 			{
-				// TODO: test
 				let translatedType = try translateExpression(
 					binaryExpression.rightExpression,
 					withIndentation: indentation)
@@ -1992,7 +1991,6 @@ public class KotlinTranslator {
 		}
 	}
 
-	// TODO: Test chars
 	private func translateCharacterLiteral(
 		_ literalCharacterExpression: LiteralCharacterExpression)
 		-> Translation
