@@ -1583,7 +1583,6 @@ public class SwiftTranslator {
 					operatorSymbol: "is",
 					typeName: "Bool")))
 
-				// TODO: test
 				for comparison in comparisons {
 					let range = comparison.comparedExpression.range
 					conditionsResult.append(.condition(expression: BinaryOperatorExpression(

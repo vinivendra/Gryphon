@@ -268,4 +268,20 @@ fun main(args: Array<String>) {
 		val foo: Int = bEnum.d
 		println("--")
 	}
+
+	if (bEnum2 is B.E && bEnum2.g == "foo") {
+		val foo: Int = bEnum2.f
+		println("If case let comparison #1: ${foo}")
+	}
+
+	if (bEnum2 is B.E && bEnum2.f == 0) {
+		val foo: String = bEnum2.g
+		println("If case let comparison #2: ${foo}")
+	}
+
+	if (bEnum2 is B.E) {
+		val foo: Int = bEnum2.f
+		val bar: String = bEnum2.g
+		println("If case let comparison #3: ${foo}, ${bar}")
+	}
 }
