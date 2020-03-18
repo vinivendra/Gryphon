@@ -88,6 +88,8 @@ func a() { // gryphon ignore
 protocol A {
 	var x: Int { get }
 	var y: Int { get }
+
+	func foo()
 }
 
 class B: A {
@@ -95,6 +97,8 @@ class B: A {
 	var y: Int = // gryphon annotation: override
 		2 // gryphon value: 3
 	var z: Int = 0
+
+	func foo() { } // gryphon annotation: override
 }
 
 print(B().x)

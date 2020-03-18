@@ -26,12 +26,19 @@ internal fun f(a: Int = 0, b: Int = 1) {
 internal interface A {
 	val x: Int
 	val y: Int
+
+	fun foo() {
+
+	}
 }
 
 internal open class B: A {
 	override open var x: Int = 1
 	override open var y: Int = 3
 	open var z: Int = 0
+
+	override open fun foo() {
+	}
 }
 
 open internal interface C {

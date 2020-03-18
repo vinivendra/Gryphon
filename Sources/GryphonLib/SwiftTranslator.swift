@@ -1899,7 +1899,6 @@ public class SwiftTranslator {
 			statements = []
 		}
 
-		// TODO: test annotations in functions
 		let annotations = getTranslationCommentValue(
 			forNode: functionDeclaration,
 			key: .annotation)?
