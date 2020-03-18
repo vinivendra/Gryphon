@@ -60,5 +60,9 @@ if let a4 = g(), let a3 = f() { }
 if true, let a5 = g() { }
 if true, let a6 = f() { }
 
+// Test warnings for double optionals
+let maybeInt: Int?? = 0
+let whatever = maybeInt
+
 // Test muting warnings
 let noWarnings: [Int] = [] // gryphon mute

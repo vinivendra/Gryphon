@@ -755,10 +755,17 @@ public class SwiftTranslator {
 				ast: tupleElementExpression)
 		}
 
-		let numberString = tupleElementExpression.standaloneAttributes
+		let number: Int?
+		if let numberString = tupleElementExpression.standaloneAttributes
 			.first(where: { $0.hasPrefix("#") })?
 			.dropFirst()
-		let number = numberString.map { Int($0) } ?? nil
+		{
+			number = Int(numberString)
+		}
+		else {
+			number = nil
+		}
+
 		let leftHandExpression = tupleElementExpression.subtrees.first
 		let tuple = leftHandExpression?["type"]
 
@@ -2033,8 +2040,6 @@ public class SwiftTranslator {
 			isOpen = !context.defaultFinal
 		}
 
-		// TODO: Add a warning when double optionals are found, their behaviour is different in
-		// Kotlin.
 		var expression: Expression?
 		if !danglingPatternBindings.isEmpty {
 			let firstBindingExpression = danglingPatternBindings[0]

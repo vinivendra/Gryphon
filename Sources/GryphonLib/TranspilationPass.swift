@@ -3463,6 +3463,30 @@ public class RaiseStandardLibraryWarningsTranspilationPass: TranspilationPass {
 	}
 }
 
+/// Double optionals behave differently in Swift and Kotlin, so we raise a warning whenever we find
+/// them.
+public class RaiseDoubleOptionalWarningsTranspilationPass: TranspilationPass {
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
+
+	override func replaceExpression( // gryphon annotation: override
+		_ expression: Expression)
+		-> Expression
+	{
+		if let typeName = expression.swiftType {
+			if typeName.hasSuffix("??") {
+				let message = "Double optionals may behave differently in Kotlin."
+				Compiler.handleWarning(
+					message: message,
+					sourceFile: ast.sourceFile,
+					sourceFileRange: expression.range)
+			}
+		}
+
+		return super.replaceExpression(expression)
+	}
+}
+
 /// If a value type's members are all immutable, that value type can safely be translated as a
 /// class. Otherwise, the translation can cause inconsistencies, so this pass raises warnings.
 /// Source: https://forums.swift.org/t/are-immutable-structs-like-classes/16270
@@ -4427,6 +4451,7 @@ public extension TranspilationPass {
 
 		// Raise any warnings that may be left
 		ast = RaiseStandardLibraryWarningsTranspilationPass(ast: ast, context: context).run()
+		ast = RaiseDoubleOptionalWarningsTranspilationPass(ast: ast, context: context).run()
 		ast = RaiseMutableValueTypesWarningsTranspilationPass(ast: ast, context: context).run()
 		ast = RaiseNativeDataStructureWarningsTranspilationPass(ast: ast, context: context).run()
 
