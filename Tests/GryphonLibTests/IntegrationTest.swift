@@ -44,13 +44,13 @@ class IntegrationTest: XCTestCase {
 	public func runAllTests() { // gryphon annotation: override
 		IntegrationTest.setUp()
 		test()
-		warningTest()
+		testWarnings()
 	}
 
 	/// Tests to be run when using Swift on Linux
 	static var allTests = [ // gryphon ignore
 		("test", test),
-		("warningTest", warningTest),
+		("testWarnings", testWarnings),
 	]
 
 	// MARK: - Tests
@@ -101,7 +101,7 @@ class IntegrationTest: XCTestCase {
 		}
 	}
 
-	func warningTest() {
+	func testWarnings() {
 		do {
 			Compiler.clearIssues()
 
@@ -120,7 +120,7 @@ class IntegrationTest: XCTestCase {
 			XCTAssert(Compiler.numberOfErrors == 0)
 
 			// Make sure the comment for muting warnings is working
-			XCTAssert(Compiler.numberOfWarnings == 6)
+			XCTAssert(Compiler.numberOfWarnings == 8)
 
 			XCTAssertEqual(
 				Compiler.issues.filter { $0.fullMessage.contains("mutable variables") }.count,
