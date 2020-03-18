@@ -3151,9 +3151,10 @@ public class RemoveBreaksInSwitchesTranspilationPass: TranspilationPass {
 	}
 }
 
-/// Sealed classes should be tested for subclasses with the `is` operator. This is automatically
-/// done for enum cases with associated values, but in other cases it has to be handled here.
-public class IsOperatorsInSealedClassesTranspilationPass: TranspilationPass {
+/// Sealed classes should be tested for subclasses in switches with the `is` operator. This is
+/// automatically done for enum cases with associated values, but in other cases it has to be
+/// handled here.
+public class IsOperatorsInSwitchesTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
 	// gryphon insert:     super(ast, context) { }
 
@@ -3219,6 +3220,44 @@ public class IsOperatorsInSealedClassesTranspilationPass: TranspilationPass {
 		}
 
 		return caseExpression
+	}
+}
+
+/// When translating an if-case, sealed classes should result in an `is` comparison, but enum
+/// classes should result in an `==` comparison. This pass assumes all if-case comparisons arrive
+/// here as an `is` comparison, meaning sealed classes are already correct but enum classes have to
+/// change.
+public class IsOperatorsInIfStatementsTranspilationPass: TranspilationPass {
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
+
+	override func replaceIfCondition( // gryphon annotation: override
+		_ condition: IfStatement.IfCondition)
+		-> IfStatement.IfCondition
+	{
+		if case let .condition(expression: expression) = condition {
+			if let binaryExpression = expression as? BinaryOperatorExpression {
+				if binaryExpression.operatorSymbol == "is",
+					let typeExpression = binaryExpression.rightExpression as? TypeExpression
+				{
+					// Type expression is currently "MyEnum.enumCase". Separate it so we can check
+					// if the enum is in the context.
+
+					let enumName = typeExpression.typeName.split(withStringSeparator: ".")[0]
+
+					if self.context.enumClasses.contains(enumName) {
+						return .condition(expression: BinaryOperatorExpression(
+							range: binaryExpression.range,
+							leftExpression: binaryExpression.leftExpression,
+							rightExpression: binaryExpression.rightExpression,
+							operatorSymbol: "==",
+							typeName: binaryExpression.typeName))
+					}
+				}
+			}
+		}
+
+		return condition
 	}
 }
 
@@ -4367,9 +4406,11 @@ public extension TranspilationPass {
 		ast = AccessModifiersTranspilationPass(ast: ast, context: context).run()
 		ast = OpenDeclarationsTranspilationPass(ast: ast, context: context).run()
 
-		// - CapitalizeEnums has to be before IsOperatorsInSealedClasses
+		// - CapitalizeEnums has to be before IsOperatorsInSealedClasses and
+		//   IsOperatorsInIfStatementsTranspilationPass
 		ast = CapitalizeEnumsTranspilationPass(ast: ast, context: context).run()
-		ast = IsOperatorsInSealedClassesTranspilationPass(ast: ast, context: context).run()
+		ast = IsOperatorsInSwitchesTranspilationPass(ast: ast, context: context).run()
+		ast = IsOperatorsInIfStatementsTranspilationPass(ast: ast, context: context).run()
 
 		// - SwitchesToExpressions has to be before RemoveBreaksInSwitches:
 		//   RemoveBreaks might remove a case that only has a break, turning an exhaustive switch

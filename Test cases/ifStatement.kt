@@ -42,6 +42,11 @@ internal fun bla(): Int? {
 	return 0
 }
 
+internal enum class A {
+	A1,
+	A2;
+}
+
 internal sealed class B {
 	class C(val d: Int): B()
 	class E(val f: Int, val g: String): B()
@@ -179,6 +184,25 @@ fun main(args: Array<String>) {
 
 	if (x != null) {
 		println("If let #5")
+	}
+
+	val aEnum1: A = A.A1
+	val aEnum2: A = A.A2
+
+	if (aEnum1 == A.A1) {
+		println("If case #1")
+	}
+
+	if (aEnum1 == A.A2) {
+		println("--")
+	}
+
+	if (aEnum2 == A.A1) {
+		println("--")
+	}
+
+	if (aEnum2 == A.A2) {
+		println("If case #2")
 	}
 
 	val bEnum: B = B.C(d = 0)

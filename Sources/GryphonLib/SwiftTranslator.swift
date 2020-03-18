@@ -1558,7 +1558,6 @@ public class SwiftTranslator {
 				condition.subtrees.count >= 2,
 				let declarationReferenceAST = condition.subtrees.last
 			{
-				// TODO: test
 				guard let patternLetResult = try translateEnumPattern(patternLet) else {
 					return try IfConditionsTranslation(
 						conditions: [],

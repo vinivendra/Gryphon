@@ -173,11 +173,37 @@ if let x = x {
 }
 
 //
+enum A {
+	case a1
+	case a2
+}
+
 enum B {
 	case c(d: Int)
 	case e(f: Int, g: String)
 }
 
+//
+let aEnum1 = A.a1
+let aEnum2 = A.a2
+
+if case .a1 = aEnum1 {
+	print("If case #1")
+}
+
+if case .a2 = aEnum1 {
+	print("--")
+}
+
+if case .a1 = aEnum2 {
+	print("--")
+}
+
+if case .a2 = aEnum2 {
+	print("If case #2")
+}
+
+//
 let bEnum = B.c(d: 0)
 let bEnum2 = B.e(f: 0, g: "foo")
 
