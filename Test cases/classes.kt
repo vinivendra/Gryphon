@@ -97,6 +97,18 @@ internal class F {
 	open var a: Int = 0
 }
 
+internal open class MyClass {
+	open var x: Int = 0
+
+	operator open fun get(i: Int): Int {
+		return x + i
+	}
+
+	operator open fun set(i: Int, newValue: Int) {
+		this.x = newValue + 1
+	}
+}
+
 fun main(args: Array<String>) {
 	val box1: Box = Box()
 
@@ -131,4 +143,16 @@ fun main(args: Array<String>) {
 	println(D(x = 10))
 	println(D(string = "not supported"))
 	println(D(string = "A")!!)
+
+	val myClass: MyClass = MyClass()
+
+	println(myClass[1])
+	println(myClass[2])
+	println(myClass[3])
+
+	myClass[1] = 10
+
+	println(myClass[1])
+	println(myClass[2])
+	println(myClass[3])
 }

@@ -1758,7 +1758,6 @@ public class SwiftTranslator {
 			return nil
 		}
 
-		// TODO: test subscripts
 		let functionName: String
 		if isSubscript {
 			if functionDeclaration["get_for"] != nil {
