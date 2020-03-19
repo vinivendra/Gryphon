@@ -51,3 +51,21 @@ func throwingFunc() throws {
 func otherThrowingFunc() throws {
 	try throwingFunc()
 }
+
+// Test enum capitalization
+public enum MyEnum {
+	case fooBar
+	case baz
+}
+
+let a = MyEnum.fooBar // gryphon ignore
+let b = MyEnum.baz // gryphon ignore
+// gryphon insert: val a = MyEnum.FOO_BAR
+// gryphon insert: val b = MyEnum.BAZ
+
+if a == MyEnum.fooBar {
+	print("MyEnum.FOO_BAR")
+}
+if b == MyEnum.baz {
+	print("MyEnum.BAZ")
+}

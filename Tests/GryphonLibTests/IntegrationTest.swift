@@ -55,7 +55,7 @@ class IntegrationTest: XCTestCase {
 
 	// MARK: - Tests
 	func test() {
-		let tests = TestUtilities.testCasesForAllTests
+		let tests = TestUtilities.testCases
 
 		for testName in tests {
 			print("- Testing \(testName)...")

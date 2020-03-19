@@ -19,7 +19,7 @@ import XCTest
 
 class PerformanceTest: XCTestCase {
 	func testASTDumpDecoder() {
-		let tests = TestUtilities.testCasesForAllTests
+		let tests = TestUtilities.testCases
 
 		let astDumpContents: List<String> = tests.map { testName in
 			let testCasePath = TestUtilities.testCasesPath + testName
@@ -40,7 +40,7 @@ class PerformanceTest: XCTestCase {
 	}
 
 	func testSwiftTranslator() {
-		let tests = TestUtilities.testCasesForAllTests
+		let tests = TestUtilities.testCases
 
 		let swiftASTs: List<SwiftAST> = tests.map { testName in
 			let testCasePath = TestUtilities.testCasesPath + testName
@@ -66,7 +66,7 @@ class PerformanceTest: XCTestCase {
 	}
 
 	func testFirstTranspilationPasses() {
-		let tests = TestUtilities.testCasesForAllTests
+		let tests = TestUtilities.testCases
 
 		let astDumpFilePaths: List<String> = tests.map { testName in
 			let testCasePath = TestUtilities.testCasesPath + testName
@@ -96,7 +96,7 @@ class PerformanceTest: XCTestCase {
 	}
 
 	func testSecondTranspilationPasses() {
-		let tests = TestUtilities.testCasesForAllTests
+		let tests = TestUtilities.testCases
 
 		let astDumpFilePaths: List<String> = tests.map { testName in
 			let testCasePath = TestUtilities.testCasesPath + testName
@@ -130,7 +130,7 @@ class PerformanceTest: XCTestCase {
 	}
 
 	func testAllTranspilationPasses() {
-		let tests = TestUtilities.testCasesForAllTests
+		let tests = TestUtilities.testCases
 
 		let astDumpFilePaths: List<String> = tests.map { testName in
 			let testCasePath = TestUtilities.testCasesPath + testName
@@ -160,7 +160,7 @@ class PerformanceTest: XCTestCase {
 	}
 
 	func testKotlinTranslator() {
-		let tests = TestUtilities.testCasesForAllTests
+		let tests = TestUtilities.testCases
 
 		let astsAndContexts: List<(GryphonAST, TranspilationContext)> = tests.map
 			{ testName in
@@ -190,7 +190,7 @@ class PerformanceTest: XCTestCase {
 	}
 
 	func testFullTranspilation() {
-		let tests = TestUtilities.testCasesForAllTests
+		let tests = TestUtilities.testCases
 
 		measure {
 			for testName in tests {

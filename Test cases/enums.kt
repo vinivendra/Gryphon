@@ -66,3 +66,21 @@ internal fun throwingFunc() {
 internal fun otherThrowingFunc() {
 	throwingFunc()
 }
+
+enum class MyEnum {
+	FOO_BAR,
+	BAZ;
+}
+
+val a = MyEnum.FOO_BAR
+val b = MyEnum.BAZ
+
+fun main(args: Array<String>) {
+	if (a == MyEnum.FOO_BAR) {
+		println("MyEnum.FOO_BAR")
+	}
+
+	if (b == MyEnum.BAZ) {
+		println("MyEnum.BAZ")
+	}
+}

@@ -117,11 +117,12 @@ class TestUtilities {
     }
 
 	// MARK: - Test cases
-	static let testCasesForAcceptanceTest: List = [
+	static let testCases: List = [
 		"access",
 		"assignments",
 		"classes",
 		"closures",
+		"enums",
 		"extensions",
 		"functionCalls",
 		"generics",
@@ -139,7 +140,4 @@ class TestUtilities {
 		"structs",
 		"switches",
 	]
-	static let testCasesForAllTests = testCasesForAcceptanceTest + List<String>([
-		"enums",
-	])
 }

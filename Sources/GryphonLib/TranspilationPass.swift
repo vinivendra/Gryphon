@@ -1342,7 +1342,6 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass {
 	}
 }
 
-// TODO: test
 /// Capitalizes references to enums (since enum cases in Kotlin are conventionally written in
 /// capitalized forms)
 public class CapitalizeEnumsTranspilationPass: TranspilationPass {
@@ -1514,6 +1513,9 @@ public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
 	}
 }
 
+/// Some operators in Kotlin hae different symbols (or names) then they so in Swift, so this pass
+/// renames them. Additionally, the Swift AST outputs `==` between enums as `__derived_enum_equals`,
+/// so this pass is also used to rename that.
 public class RenameOperatorsTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
 	// gryphon insert:     super(ast, context) { }
@@ -1529,6 +1531,7 @@ public class RenameOperatorsTranspilationPass: TranspilationPass {
             "&": "and",
             "|": "or",
             "^": "xor",
+			"__derived_enum_equals": "==",
         ]
 		if let operatorTranslation = operatorTranslations[binaryOperatorExpression.operatorSymbol] {
 			return super.replaceBinaryOperatorExpression(BinaryOperatorExpression(

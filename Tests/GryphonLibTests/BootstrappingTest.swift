@@ -52,7 +52,7 @@ class BootstrappingTest: XCTestCase {
 			return
 		}
 
-		let tests = TestUtilities.testCasesForAllTests
+		let tests = TestUtilities.testCases
 
 		for testName in tests {
 			print("- Testing \(testName)...")
@@ -108,7 +108,7 @@ class BootstrappingTest: XCTestCase {
 			return
 		}
 
-		let tests = TestUtilities.testCasesForAllTests
+		let tests = TestUtilities.testCases
 
 		for testName in tests {
 			print("- Testing \(testName)...")
@@ -164,7 +164,7 @@ class BootstrappingTest: XCTestCase {
 			return
 		}
 
-		let tests = TestUtilities.testCasesForAllTests
+		let tests = TestUtilities.testCases
 
 		for testName in tests {
 			print("- Testing \(testName)...")
@@ -220,7 +220,7 @@ class BootstrappingTest: XCTestCase {
 			return
 		}
 
-		let tests = TestUtilities.testCasesForAllTests
+		let tests = TestUtilities.testCases
 
 		for testName in tests {
 			print("- Testing \(testName)...")
