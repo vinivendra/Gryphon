@@ -2212,7 +2212,6 @@ public class SwiftTranslator {
 		case "Open Existential Expression":
 			let processedExpression = try processOpenExistentialExpression(expression)
 			result = try translateExpression(processedExpression)
-		// TODO: Remove new dead code from 5.1 AST adaptations
 		case "Boolean Literal Expression":
 			let value = (expression["value"]! == "true")
 			result = LiteralBoolExpression(

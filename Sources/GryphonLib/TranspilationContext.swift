@@ -130,7 +130,6 @@ public class TranspilationContext {
 		return nil
 	}
 
-	// TODO: These records should probably go in a Context class of some kind
 	/// Stores pure functions so we can reference them later
 	private var pureFunctions: MutableList<FunctionDeclaration> = []
 

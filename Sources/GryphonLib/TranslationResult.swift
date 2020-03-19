@@ -75,7 +75,6 @@ public class Translation {
 			errorMap: errorMap.joined(separator: "\n"))
 	}
 
-	// TODO: Check the performance penalties of using this algorithm
 	private func resolveTranslationInto(
 		translationResult: MutableList<String>,
 		errorMap: MutableList<String>,

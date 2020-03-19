@@ -331,7 +331,6 @@ public class TranspilationPass {
 					value: $0.value.map { replaceExpression($0) })
 		}
 
-		let initializerDeclaration = initializerDeclaration
 		initializerDeclaration.parameters = replacedParameters.toMutableList()
 		initializerDeclaration.statements =
 			initializerDeclaration.statements.map { replaceStatements($0) }
@@ -363,7 +362,6 @@ public class TranspilationPass {
 					value: $0.value.map { replaceExpression($0) })
 			}
 
-		let functionDeclaration = functionDeclaration
 		functionDeclaration.parameters = replacedParameters.toMutableList()
 		functionDeclaration.statements =
 			functionDeclaration.statements.map { replaceStatements($0) }
@@ -381,7 +379,6 @@ public class TranspilationPass {
 		_ variableDeclaration: VariableDeclaration)
 		-> VariableDeclaration
 	{
-		let variableDeclaration = variableDeclaration
 		variableDeclaration.expression =
 			variableDeclaration.expression.map { replaceExpression($0) }
 		if let getter = variableDeclaration.getter {
@@ -446,7 +443,6 @@ public class TranspilationPass {
 		_ ifStatement: IfStatement)
 		-> IfStatement
 	{
-		let ifStatement = ifStatement
 		ifStatement.conditions = replaceIfConditions(ifStatement.conditions)
 		ifStatement.declarations =
 			ifStatement.declarations.map { processVariableDeclaration($0) }.toMutableList()
@@ -1173,8 +1169,6 @@ public class RemoveExtraReturnsInInitsTranspilationPass: TranspilationPass {
 			let lastStatement = initializerDeclaration.statements?.last,
 			lastStatement is ReturnStatement
 		{
-			// TODO: Try removing these assignments now that these are reference types
-			let initializerDeclaration = initializerDeclaration
 			initializerDeclaration.statements?.removeLast()
 			return initializerDeclaration
 		}
@@ -1334,7 +1328,6 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass {
 		_ variableDeclaration: VariableDeclaration)
 		-> VariableDeclaration
 	{
-		let variableDeclaration = variableDeclaration
 		variableDeclaration.typeName = removePrefixes(variableDeclaration.typeName)
 		return super.processVariableDeclaration(variableDeclaration)
 	}
@@ -1369,7 +1362,6 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 				.last!)
 
 			if self.context.sealedClasses.contains(lastEnumType) {
-				let enumExpression = enumExpression
 				enumExpression.identifier =
 					enumExpression.identifier.capitalizedAsCamelCase()
 				return DotExpression(
@@ -1380,7 +1372,6 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 					rightExpression: enumExpression)
 			}
 			else if self.context.enumClasses.contains(lastEnumType) {
-				let enumExpression = enumExpression
 				enumExpression.identifier = enumExpression.identifier.upperSnakeCase()
 				return DotExpression(
 					range: dotExpression.range,
@@ -2308,7 +2299,6 @@ public class SelfToThisTranspilationPass: TranspilationPass {
 		-> DeclarationReferenceExpression
 	{
 		if expression.identifier == "self" {
-			let expression = expression
 			expression.identifier = "this"
 			return expression
 		}
@@ -2382,7 +2372,6 @@ public class AnonymousParametersTranspilationPass: TranspilationPass {
 		-> DeclarationReferenceExpression
 	{
 		if expression.identifier == "$0" {
-			let expression = expression
 			expression.identifier = "it"
 			return expression
 		}
@@ -3306,7 +3295,6 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 		_ variableDeclaration: VariableDeclaration)
 		-> VariableDeclaration
 	{
-		let variableDeclaration = variableDeclaration
 		variableDeclaration.extendsType = self.extendingType
 		return variableDeclaration
 	}
@@ -3798,7 +3786,6 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 			replaceIfLetConditionWithNullCheck($0)
 		}.toMutableList()
 
-		let ifStatement = ifStatement
 		ifStatement.conditions = newConditions
 		return super.processIfStatement(ifStatement)
 	}
@@ -4239,7 +4226,6 @@ public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
 				shouldStillBeGuard = true
 			}
 
-			let ifStatement = ifStatement
 			ifStatement.conditions = List<Expression>([newCondition]).map {
 					IfStatement.IfCondition.condition(expression: $0)
 				}.toMutableList()
@@ -4323,7 +4309,6 @@ public class FixProtocolContentsTranspilationPass: TranspilationPass {
 		-> FunctionDeclaration?
 	{
 		if isInProtocol {
-			let functionDeclaration = functionDeclaration
 			functionDeclaration.statements = nil
 			return super.processFunctionDeclaration(functionDeclaration)
 		}
@@ -4337,7 +4322,6 @@ public class FixProtocolContentsTranspilationPass: TranspilationPass {
 		-> VariableDeclaration
 	{
 		if isInProtocol {
-			let variableDeclaration = variableDeclaration
 			variableDeclaration.getter?.isImplicit = true
 			variableDeclaration.setter?.isImplicit = true
 			variableDeclaration.getter?.statements = nil
