@@ -1472,40 +1472,33 @@ public class CallsToSuperclassInitializersTranspilationPass: TranspilationPass {
 		_ initializerDeclaration: InitializerDeclaration)
 		-> InitializerDeclaration?
 	{
-		var superCall: CallExpression?
-		let newStatements: MutableList<Statement> = []
+		var firstSuperCall: CallExpression?
+		let filteredStatements: MutableList<Statement> = []
 
 		if let statements = initializerDeclaration.statements {
 			for statement in statements {
-				if let maybeSuperCall = getSuperCall(from: statement) {
-					if let superCall = superCall {
-						// TODO: This probably can't happen, but super calls inside ifs and such
-						// _can_ happen and should be warned about
-						let message = "Kotlin only supports a single call to the superclass's " +
-						"initializer"
-						Compiler.handleWarning(
-							message: message,
-							sourceFile: ast.sourceFile,
-							sourceFileRange: superCall.range)
-						Compiler.handleWarning(
-							message: message,
-							sourceFile: ast.sourceFile,
-							sourceFileRange: maybeSuperCall.range)
-
+				if let newSuperCall = getSuperCallFromStatement(statement) {
+					if firstSuperCall != nil {
+						// Swift doesn't allow more than one super call in an init's body's top
+						// level, so this should technically be unreachable, but the warning is here
+						// if it ever gets reached
+						raiseMultipleSuperCallsWarning(forSuperCall: newSuperCall)
 						return initializerDeclaration
 					}
 					else {
-						superCall = maybeSuperCall
+						firstSuperCall = newSuperCall
 					}
 				}
 				else {
 					// Keep all statements except super calls
-					newStatements.append(statement)
+					filteredStatements.append(statement)
 				}
 			}
 		}
 
-		if let superCall = superCall {
+		let replacedStatements = replaceStatements(filteredStatements)
+
+		if let superCall = firstSuperCall {
 			return InitializerDeclaration(
 				range: initializerDeclaration.range,
 				parameters: initializerDeclaration.parameters,
@@ -1518,7 +1511,7 @@ public class CallsToSuperclassInitializersTranspilationPass: TranspilationPass {
 				isMutating: initializerDeclaration.isMutating,
 				isPure: initializerDeclaration.isPure,
 				extendsType: initializerDeclaration.extendsType,
-				statements: newStatements,
+				statements: replacedStatements,
 				access: initializerDeclaration.access,
 				annotations: initializerDeclaration.annotations,
 				superCall: superCall)
@@ -1528,28 +1521,59 @@ public class CallsToSuperclassInitializersTranspilationPass: TranspilationPass {
 		}
 	}
 
-	private func getSuperCall(from statement: Statement) -> CallExpression? {
+	override func replaceCallExpression( // gryphon annotation: override
+		_ callExpression: CallExpression)
+		-> Expression
+	{
+		if let superCall = getSuperCallFromCallExpression(callExpression) {
+			raiseMultipleSuperCallsWarning(forSuperCall: superCall)
+		}
+
+		return super.replaceCallExpression(callExpression)
+	}
+
+	private func getSuperCallFromStatement(_ statement: Statement) -> CallExpression? {
 		if let expressionStatement = statement as? ExpressionStatement {
 			if let callExpression = expressionStatement.expression as? CallExpression {
-				if let dotExpression = callExpression.function as? DotExpression {
-					if let leftExpression = dotExpression.leftExpression as?
-						DeclarationReferenceExpression,
-						let rightExpression = dotExpression.rightExpression as?
-						DeclarationReferenceExpression,
-						leftExpression.identifier == "super",
-						rightExpression.identifier == "init"
-					{
-						return CallExpression(
-							range: callExpression.range,
-							function: leftExpression,
-							parameters: callExpression.parameters,
-							typeName: callExpression.typeName)
-					}
-				}
+				return getSuperCallFromCallExpression(callExpression)
 			}
 		}
 
 		return nil
+	}
+
+	/// Check if a call expression if a super call. If it is, return it in a new format so that it
+	/// can be put in the init's header.
+	private func getSuperCallFromCallExpression(
+		_ callExpression: CallExpression)
+		-> CallExpression?
+	{
+		if let dotExpression = callExpression.function as? DotExpression {
+			if let leftExpression = dotExpression.leftExpression as?
+					DeclarationReferenceExpression,
+				let rightExpression = dotExpression.rightExpression as?
+					DeclarationReferenceExpression,
+				leftExpression.identifier == "super",
+				rightExpression.identifier == "init"
+			{
+				return CallExpression(
+					range: callExpression.range,
+					function: leftExpression,
+					parameters: callExpression.parameters,
+					typeName: callExpression.typeName)
+			}
+		}
+
+		return nil
+	}
+
+	private func raiseMultipleSuperCallsWarning(forSuperCall superCall: CallExpression) {
+		let message = "Kotlin only supports a single call to the superclass's " +
+			"initializer"
+		Compiler.handleWarning(
+			message: message,
+			sourceFile: ast.sourceFile,
+			sourceFileRange: superCall.range)
 	}
 }
 

@@ -120,7 +120,7 @@ class IntegrationTest: XCTestCase {
 			XCTAssert(Compiler.numberOfErrors == 0)
 
 			// Make sure the comment for muting warnings is working
-			XCTAssert(Compiler.numberOfWarnings == 9)
+			XCTAssert(Compiler.numberOfWarnings == 11)
 
 			XCTAssertEqual(
 				Compiler.issues.filter { $0.fullMessage.contains("mutable variables") }.count,
@@ -140,6 +140,10 @@ class IntegrationTest: XCTestCase {
 			XCTAssertEqual(
 				Compiler.issues.filter { $0.fullMessage.contains("Double optionals") }.count,
 				1)
+			XCTAssertEqual(
+				Compiler.issues.filter
+					{ $0.fullMessage.contains("superclass's initializer") }.count,
+				2)
 		}
 		catch let error {
 			XCTFail("🚨 Test failed with error:\n\(error)")

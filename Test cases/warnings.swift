@@ -64,5 +64,25 @@ if true, let a6 = f() { }
 let maybeInt: Int?? = 0
 let whatever = maybeInt
 
+// Test warnings for multiple super calls
+class A {
+	var x = 0
+
+	init(x: Int) {
+		self.x = x
+	}
+}
+
+class B: A {
+	init(y: Int) {
+		if y == 10 {
+			super.init(x: y)
+		}
+		else {
+			super.init(x: 0)
+		}
+	}
+}
+
 // Test muting warnings
 let noWarnings: [Int] = [] // gryphon mute
