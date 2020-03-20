@@ -1427,92 +1427,6 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 	}
 }
 
-/// Some enum prefixes can be omitted. For instance, there's no need to include `MyEnum.` before
-/// `ENUM_CASE` in the variable declarations or function returns below:
-///
-/// enum class MyEnum {
-/// 	ENUM_CASE
-/// }
-/// var x: MyEnum = ENUM_CASE
-/// fun f(): MyEnum {
-/// 	ENUM_CASE
-/// }
-///
-/// Assumes subtrees like the one below are references to enums (see also
-/// CapitalizeAllEnumsTranspilationPass).
-///
-///     ...
-///        └─ dotExpression
-///          ├─ left
-///          │  └─ typeExpression
-///          │     └─ MyEnum
-///          └─ right
-///             └─ declarationReferenceExpression
-///                ├─ (MyEnum.Type) -> MyEnum
-///                └─ myEnum
-// TODO: test
-// TODO: add support for return whens (maybe put this before the when pass)
-public class OmitImplicitEnumPrefixesTranspilationPass: TranspilationPass {
-	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// gryphon insert:     super(ast, context) { }
-
-	private var returnTypesStack: MutableList<String> = []
-
-	private func removePrefixFromPossibleEnumReference(
-		_ dotExpression: DotExpression)
-		-> Expression
-	{
-		if let enumTypeExpression = dotExpression.leftExpression as? TypeExpression,
-			let enumExpression = dotExpression.rightExpression as? DeclarationReferenceExpression
-		{
-			if enumExpression.typeName ==
-					"(\(enumTypeExpression.typeName).Type) -> \(enumTypeExpression.typeName)",
-				!self.context.sealedClasses.contains(enumTypeExpression.typeName)
-			{
-				return enumExpression
-			}
-		}
-
-		return super.replaceDotExpression(dotExpression)
-	}
-
-	override func processFunctionDeclaration( // gryphon annotation: override
-		_ functionDeclaration: FunctionDeclaration)
-		-> FunctionDeclaration?
-	{
-		returnTypesStack.append(functionDeclaration.returnType)
-		defer { returnTypesStack.removeLast() }
-		return super.processFunctionDeclaration(functionDeclaration)
-	}
-
-	override func replaceReturnStatement( // gryphon annotation: override
-		_ returnStatement: ReturnStatement)
-		-> List<Statement>
-	{
-		if let returnType = returnTypesStack.last,
-			let expression = returnStatement.expression,
-			let dotExpression = expression as? DotExpression
-		{
-			if let typeExpression = dotExpression.leftExpression as? TypeExpression {
-				// It's ok to omit if the return type is an optional enum too
-				var returnType = returnType
-				if returnType.hasSuffix("?") {
-					returnType = String(returnType.dropLast("?".count))
-				}
-
-				if typeExpression.typeName == returnType {
-					let newExpression = removePrefixFromPossibleEnumReference(dotExpression)
-					return [ReturnStatement(
-						range: returnStatement.range,
-						expression: newExpression), ]
-				}
-			}
-		}
-
-		return super.replaceReturnStatement(returnStatement)
-	}
-}
-
 /// Some operators in Kotlin hae different symbols (or names) then they so in Swift, so this pass
 /// renames them. Additionally, the Swift AST outputs `==` between enums as `__derived_enum_equals`,
 /// so this pass is also used to rename that.
@@ -4431,7 +4345,6 @@ public extension TranspilationPass {
 		ast = RemoveBreaksInSwitchesTranspilationPass(ast: ast, context: context).run()
 
 		// Improve Kotlin readability
-		ast = OmitImplicitEnumPrefixesTranspilationPass(ast: ast, context: context).run()
 		ast = InnerTypePrefixesTranspilationPass(ast: ast, context: context).run()
 		ast = DoubleNegativesInGuardsTranspilationPass(ast: ast, context: context).run()
 		ast = ReturnIfNilTranspilationPass(ast: ast, context: context).run()
