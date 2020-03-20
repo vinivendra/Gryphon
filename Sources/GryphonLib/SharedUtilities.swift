@@ -159,7 +159,7 @@ extension Utilities {
         -> String
     {
         let components = filePath.split(withStringSeparator: "/", omittingEmptySubsequences: false)
-        let newComponents = MutableList<String>(components.dropLast())
+		let newComponents = components.dropLast().toMutableList()
         let nameComponent = components.last!
         let nameComponents =
             nameComponent.split(withStringSeparator: ".", omittingEmptySubsequences: false)

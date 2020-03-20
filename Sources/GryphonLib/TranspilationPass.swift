@@ -1604,10 +1604,6 @@ public class OptionalsInConditionalCastsTranspilationPass: TranspilationPass {
 	}
 }
 
-// TODO: Improve handling of `open` classes (either remove default open or allow a final annotation
-// to remove it). When that's done, make sure class annotations are tested.
-// TODO: Handle Swift's final and open
-
 /// Declarations that can be overriden in Kotlin have to be marked as `open` to enable overriding,
 /// or `final` to disable it. The default behavior is handled by SwiftTranslator, but users may
 /// choose on a case-by-case basis using annotations. This pass removes `open` and `final`
@@ -1819,8 +1815,6 @@ public class OpenDeclarationsTranspilationPass: TranspilationPass {
 public class AccessModifiersTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
 	// gryphon insert:     super(ast, context) { }
-
-	// TODO: Translate access modifiers for extensions (currently not printed in the AST dump)
 
 	/// A stack containing access modifiers from parent declarations. Modifiers in this stack should
 	/// already be processed.
@@ -2342,9 +2336,13 @@ public class AnonymousParametersTranspilationPass: TranspilationPass {
 
 /// Gryphon's collections aren't defined within the compiler, so they can't take advantage of
 /// checked casts for covariant types. Because of that, casts have to be checked at runtime. This is
-/// done using the `as` method from the GryphonSwiftLibrary, which translates to the `castOrNull`
-/// and `castMutableOrNull` methods from the GryphonKotlinLibrary. The type signature of the Swift
+/// done using the `as` and `forceCast` method from the GryphonSwiftLibrary, which translate to the
+/// `cast(Mutable)(OrNull)` methods from the GryphonKotlinLibrary. The type signature of the Swift
 /// and Kotlin versions is different, so this pass is used to perform the translation.
+/// Additionally, Gryphon uses initializers (i.e. `MutableList<Int>(array)`) to turn native Swift
+/// sequences into MutableLists etc. These initializer calls are translated here to `toMutableList`
+/// etc. All calls to these initializers are translated, even if the translation is redundant, since
+/// we cannot always know if the call is redundant or not.
 public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
 	// gryphon insert:     super(ast, context) { }
@@ -2353,11 +2351,10 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 		_ callExpression: CallExpression)
 		-> Expression
 	{
-		// Deal with cases where an initializer is used directly (i.e. `MutableList<Int>(list)`)
+		// Deal with cases where an initializer is used directly (i.e. `MutableList<Int>(array)`)
 		if let typeExpression = callExpression.function as? TypeExpression,
 			let tupleExpression = callExpression.parameters as? TupleExpression
 		{
-			// TODO: Fix references to toMutableList in the stdlib templates (i.e. include toList)
 			let isMutableList = typeExpression.typeName.hasPrefix("MutableList<")
 			let isList = typeExpression.typeName.hasPrefix("List<")
 			let isMutableMap = typeExpression.typeName.hasPrefix("MutableMap<")
@@ -2399,8 +2396,6 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 					}
 				let mappedGenericString = mappedGenericElements.joined(separator: ", ")
 
-				// TODO: If the generic type is the same, we might be able to optimize here. Try
-				// this once the type system has been refactored
 				return DotExpression(
 					range: callExpression.range,
 					leftExpression: replaceExpression(onlyPair.expression),
@@ -2935,8 +2930,7 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 				let lastStatement = switchCase.statements.last!
 				if let returnStatement = lastStatement as? ReturnStatement {
 					if let returnExpression = returnStatement.expression {
-						let newStatements = MutableList<Statement>(
-							switchCase.statements.dropLast())
+						let newStatements = switchCase.statements.dropLast().toMutableList()
 						newStatements.append(ExpressionStatement(
 							range: returnExpression.range,
 							expression: returnExpression))
@@ -2962,7 +2956,7 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 				// Swift switches must have at least one statement
 				let lastStatement = switchCase.statements.last!
 				if let assignmentStatement = lastStatement as? AssignmentStatement {
-					let newStatements = MutableList<Statement>(switchCase.statements.dropLast())
+					let newStatements = switchCase.statements.dropLast().toMutableList()
 					newStatements.append(ExpressionStatement(
 						range: assignmentStatement.rightHand.range,
 						expression: assignmentStatement.rightHand))
@@ -3578,7 +3572,7 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 		// effects
 		let conditions = isElse ?
 			ifStatement.conditions :
-			MutableList<IfStatement.IfCondition>(ifStatement.conditions.dropFirst())
+			ifStatement.conditions.dropFirst()
 
 		let sideEffectsRanges = conditions.flatMap { rangesWithPossibleSideEffectsInCondition($0) }
 		for range in sideEffectsRanges {

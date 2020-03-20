@@ -2124,10 +2124,10 @@ public class KotlinTranslator {
 				translateFunctionTypeComponent($0)
 			}
 
-			let firstTypes = MutableList<String>(translatedComponents.dropLast().map { "(\($0))" })
+			let firstTypes = translatedComponents.dropLast().map { "(\($0))" }
 			let lastType = translatedComponents.last!
 
-			let allTypes = firstTypes
+			let allTypes = firstTypes.toMutableList()
 			allTypes.append(lastType)
 			return allTypes.joined(separator: " -> ")
 		}

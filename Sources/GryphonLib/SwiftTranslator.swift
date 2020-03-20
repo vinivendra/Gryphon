@@ -620,7 +620,7 @@ public class SwiftTranslator {
 					.subtree(named: "Tuple Expression")?
 					.subtree(named: "Array Expression")
 			{
-				let rawValueASTs = MutableList<SwiftAST>(arrayExpression.subtrees.dropLast())
+				let rawValueASTs = arrayExpression.subtrees.dropLast().toMutableList()
 				rawValues = try rawValueASTs.map { try translateExpression($0) }.toMutableList()
 				break
 			}
@@ -1324,7 +1324,7 @@ public class SwiftTranslator {
 		let translatedExpression = try translateExpression(expression)
 
 		let cases: MutableList<SwitchCase> = []
-		let caseSubtrees = MutableList<SwiftAST>(switchStatement.subtrees.dropFirst())
+		let caseSubtrees = switchStatement.subtrees.dropFirst()
 		for caseSubtree in caseSubtrees {
 			let caseExpressions: MutableList<Expression> = []
 			var extraStatements: MutableList<Statement> = []
@@ -1438,7 +1438,7 @@ public class SwiftTranslator {
 				ast: simplePatternEnumElement)
 		}
 
-		let enumElements = MutableList<Substring>(enumReference.split(separator: "."))
+		let enumElements = enumReference.split(withStringSeparator: ".")
 
 		guard let lastEnumElement = enumElements.last else {
 			return try unexpectedExpressionStructureError(
@@ -2665,9 +2665,7 @@ public class SwiftTranslator {
 
 		let namesArray: MutableList<String>
 		if let names = tupleExpression["names"] {
-			namesArray = MutableList<Substring>(names.split(separator: ","))
-				.map { String($0) }
-				.toMutableList()
+			namesArray = names.split(withStringSeparator: ",")
 		}
 		else {
 			// If there are no names create a list of enough length with all empty names
@@ -2786,7 +2784,7 @@ public class SwiftTranslator {
 		}
 
 		// Drop the "Semantic Expression" at the end
-		let expressionsToTranslate = MutableList<SwiftAST>(arrayExpression.subtrees.dropLast())
+		let expressionsToTranslate = arrayExpression.subtrees.dropLast().toMutableList()
 
 		let expressionsArray = try expressionsToTranslate
 			.map { try translateExpression($0) }
