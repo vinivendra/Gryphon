@@ -686,9 +686,10 @@ public class Driver {
 		}.toMutableList()
 
 		let templatesFilePath = SupportingFile.gryphonTemplatesLibrary.absolutePath
+			.replacingOccurrences(of: " ", with: "\\ ")
 		newComponents.append(templatesFilePath)
 
-		let escapedOutputFileMapPath = SupportingFile.temporaryOutputFileMap.relativePath
+		let escapedOutputFileMapPath = SupportingFile.temporaryOutputFileMap.absolutePath
 			.replacingOccurrences(of: " ", with: "\\ ")
 		newComponents.append("-output-file-map")
 		newComponents.append(escapedOutputFileMapPath)
