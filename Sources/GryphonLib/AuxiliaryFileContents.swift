@@ -383,6 +383,9 @@ private func gryphonTemplates() {
 	_ = _array.removeFirst()
 	_ = "_array.removeAt(0)"
 
+	_ = _array.remove(at: _int)
+	_ = "_array.removeAt(_int)"
+
 	_ = _array.dropFirst()
 	_ = "_array.drop(1)"
 
