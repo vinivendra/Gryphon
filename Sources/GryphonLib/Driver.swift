@@ -644,14 +644,11 @@ public class Driver {
 	}
 
 	static func setupGryphonFolder(forXcodeProject xcodeProjectPath: String) throws {
-		guard let commandResult = Shell.runShellCommand([
+		let commandResult = Shell.runShellCommand([
 			"xcodebuild",
 			"-dry-run",
 			"-project",
-			"\(xcodeProjectPath)", ]) else
-		{
-			throw GryphonError(errorMessage: "Failed to run xcodebuild")
-		}
+			"\(xcodeProjectPath)", ])
 
 		guard commandResult.status == 0 else {
 			throw GryphonError(errorMessage: "Error running xcodebuild:\n" +
@@ -709,14 +706,10 @@ public class Driver {
 
 	static func makeGryphonTargets(forXcodeProject xcodeProjectPath: String) throws {
 		// Run the ruby script
-		guard let commandResult =
-			Shell.runShellCommand([
-				"ruby",
-				"\(SupportingFile.makeGryphonTargets.relativePath)",
-				"\(xcodeProjectPath)", ]) else
-		{
-			throw GryphonError(errorMessage: "Failed to make gryphon targets")
-		}
+		let commandResult = Shell.runShellCommand([
+			"ruby",
+			"\(SupportingFile.makeGryphonTargets.relativePath)",
+			"\(xcodeProjectPath)", ])
 
 		guard commandResult.status == 0 else {
 			throw GryphonError(errorMessage: "Error making gryphon targets:\n" +
@@ -757,13 +750,12 @@ public class Driver {
 		}
 
 		//// Call the Swift compiler to dump the ASTs
-		let maybeCommandResult: Shell.CommandOutput?
+		let commandResult: Shell.CommandOutput
 
 		Compiler.log("Calling the Swift compiler...")
 		if usingXcode {
-			maybeCommandResult = Shell.runShellCommand(
-				["bash", SupportingFile.astDumpsScript.relativePath],
-				timeout: nil)
+			commandResult = Shell.runShellCommand(
+				["bash", SupportingFile.astDumpsScript.relativePath])
 		}
 		else {
 			let arguments: MutableList = [
@@ -776,13 +768,7 @@ public class Driver {
 				arguments.append(Utilities.getAbsoultePath(forFile: swiftFile))
 			}
 
-			maybeCommandResult = Shell.runShellCommand(
-				arguments,
-				timeout: nil)
-		}
-
-		guard let commandResult = maybeCommandResult else {
-			throw GryphonError(errorMessage: "Failed to call the Swift compiler.")
+			commandResult = Shell.runShellCommand(arguments)
 		}
 
 		guard commandResult.status == 0 else {

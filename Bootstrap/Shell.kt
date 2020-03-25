@@ -15,9 +15,8 @@ public class Shell {
         fun runShellCommand(
             command: String,
             arguments: List<String>, 
-            currentFolder: String? = null, 
-            timeout: Long? = Shell.defaultTimeout)
-            : CommandOutput?
+            currentFolder: String? = null)
+            : CommandOutput
         {
             val commandAndArguments = mutableListOf(command)
             commandAndArguments.addAll(arguments)
@@ -39,21 +38,7 @@ public class Shell {
             processBuilder.command(commandAndArguments)
             val process: Process = processBuilder.start()
 
-            val hasFinished: Boolean
-
-            if (timeout != null) {
-                hasFinished = process.waitFor(
-                    timeout,
-                    TimeUnit.SECONDS)
-            }
-            else {
-                hasFinished = true
-                process.waitFor()
-            }
-
-            if (!hasFinished) {
-                return null
-            }
+            process.waitFor()
 
             val output: StringBuilder = StringBuilder()
             val outputReader: BufferedReader = BufferedReader(
@@ -81,15 +66,13 @@ public class Shell {
 
         fun runShellCommand(
             arguments: List<String>, 
-            currentFolder: String? = null, 
-            timeout: Long? = Shell.defaultTimeout)
-            : CommandOutput?
+            currentFolder: String? = null)
+            : CommandOutput
         {
             return runShellCommand(
                 command = "/usr/bin/env",
                 arguments = arguments,
-                currentFolder = currentFolder,
-                timeout = timeout)
+                currentFolder = currentFolder)
         }
     }
 }

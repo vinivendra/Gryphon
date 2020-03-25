@@ -24,14 +24,10 @@ class BootstrappingTest: XCTestCase {
 			return
 		}
 
-		guard let commandResult = Shell.runShellCommand([
+		let commandResult = Shell.runShellCommand([
 				"java", "-jar", "Bootstrap/kotlin.jar",
 				"-test", "-avoid-unicode",
-			]) else
-		{
-			XCTFail("Error running transpiled transpiler. It's possible a command timed out.")
-			return
-		}
+			])
 
 		print(commandResult.standardOutput)
 		print(commandResult.standardError)

@@ -81,16 +81,14 @@ class AcceptanceTest: XCTestCase {
 				try Utilities.createFile(atPath: kotlinFilePath, containing: kotlinCode)
 
 				// Compile the resulting Kotlin code
-				let hue = Shell.runShellCommand(
-				OS.kotlinCompilerPath,
-				arguments: [
-					"-include-runtime", "-d",
-					"\(TestUtilities.kotlinBuildFolder)/kotlin.jar",
-					kotlinFilePath, ])
+				let commandResult = Shell.runShellCommand(
+					OS.kotlinCompilerPath,
+					arguments: [
+						"-include-runtime", "-d",
+						"\(TestUtilities.kotlinBuildFolder)/kotlin.jar",
+						kotlinFilePath, ])
 
-				guard let buildCommandResult = hue,
-					buildCommandResult.status == 0 else
-				{
+				guard commandResult.status == 0 else {
 					XCTFail("Test \(testName) - compilation error. " +
 						"It's possible a command timed out.")
 					continue
@@ -105,8 +103,8 @@ class AcceptanceTest: XCTestCase {
 					arguments.append("--default-final")
 				}
 
-				guard let runCommandResult = Shell.runShellCommand(arguments),
-					runCommandResult.status == 0,
+				let runCommandResult = Shell.runShellCommand(arguments)
+				guard runCommandResult.status == 0,
 					runCommandResult.standardError == "" else
 				{
 					XCTFail("Test \(testName) - execution error. " +

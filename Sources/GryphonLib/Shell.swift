@@ -16,98 +16,106 @@
 
 import Foundation
 
-#if os(Linux) || os(FreeBSD)
-func stopTask(_ task: Process) {}
-#else
-func stopTask(_ task: Process) {
-	task.interrupt()
-}
-#endif
-
-public class Shell {
+/// Used for executing command line programs. Heavily inspired by (and used with the permission of):
+/// https://github.com/SDGGiesbrecht/SDGCornerstone/blob/
+///     54d06623981e6746e957b156d14aad373578af46/Sources/SDGCornerstone/Shell/Shell.swift
+public struct Shell {
 	public struct CommandOutput {
 		public let standardOutput: String
 		public let standardError: String
 		public let status: Int32
 	}
 
-	static let defaultTimeout: TimeInterval = 60
+	/// Used to split data received from process pipes into separate lines
+	private static let newLine = "\n"
+	private static let newLineData = newLine.data(using: String.Encoding.utf8)!
 
-	/// Returns nil when the operation times out.
+	/// Reads available data from the pipe and appends it to the stream, one line of text at a
+	/// time. Returns `true` if there's still more data to read, `false` otherwise.
+	private static func handleInput(pipe: Pipe, stream: inout Data, result: inout String) -> Bool {
+		let newData = pipe.fileHandleForReading.availableData
+		stream.append(newData)
+
+		while let lineEnd = stream.range(of: newLineData) {
+			let line = stream.subdata(in: stream.startIndex ..< lineEnd.lowerBound)
+			stream.removeSubrange(stream.startIndex ..< lineEnd.upperBound)
+			let string = String(data: line, encoding: .utf8) ?? ""
+			result.append(string + newLine)
+		}
+
+		return !newData.isEmpty
+	}
+
+	/// An operation queue used to read a process's standard error at the same time that the
+	/// process's standard output is read in the main queue
+	private static let standardErrorQueue: OperationQueue =  {
+			let queue = OperationQueue()
+			queue.name = String("shell_background")
+			queue.maxConcurrentOperationCount =
+				OperationQueue.defaultMaxConcurrentOperationCount
+			return queue
+		}()
+
 	@discardableResult
 	internal static func runShellCommand(
 		_ command: String,
 		arguments: List<String>,
-		fromFolder currentFolder: String? = nil,
-		timeout: TimeInterval? = Shell.defaultTimeout)
-		-> CommandOutput!
+		fromFolder currentFolder: String? = nil)
+		-> CommandOutput
 	{
-		let outputPipe = Pipe()
-		let errorPipe = Pipe()
-		let task = Process()
+		let process = Process()
+		let standardOutput = Pipe()
+		let standardError = Pipe()
+
+		process.arguments = arguments.array
+		process.qualityOfService = .userInitiated
+		process.standardOutput = standardOutput
+		process.standardError = standardError
 
 		if #available(OSX 10.13, *) {
-			task.executableURL = URL(fileURLWithPath: command)
-		} else {
-			task.launchPath = command
-		}
-
-		task.arguments = arguments.array
-		task.standardOutput = outputPipe
-		task.standardError = errorPipe
-		task.qualityOfService = .userInitiated
-
-		if let currentFolder = currentFolder {
-			if #available(OSX 10.13, *) {
-				task.currentDirectoryURL = URL(fileURLWithPath: currentFolder)
-			} else {
-				task.currentDirectoryPath = currentFolder
+			process.executableURL = URL(fileURLWithPath: command)
+			if let currentFolder = currentFolder {
+				process.currentDirectoryURL = URL(fileURLWithPath: currentFolder)
 			}
-		}
-
-		if #available(OSX 10.13, *) {
-			try! task.run()
+			try! process.run()
 		} else {
-			task.launch()
+			process.launchPath = command
+			if let currentFolder = currentFolder {
+				process.currentDirectoryPath = currentFolder
+			}
+			process.launch()
 		}
 
-		if let timeout = timeout {
-			let startTime = Date()
-			while task.isRunning,
-				Date().timeIntervalSince(startTime) < timeout { }
-		}
-		else {
-			task.waitUntilExit()
-		}
+		var output = ""
+		var outputStream = Data()
+		var error = ""
+		var errorStream = Data()
 
-		guard !task.isRunning else {
-			stopTask(task)
-			return nil
-		}
+		var completeErrorReceived = false
+		standardErrorQueue.addOperation(BlockOperation(block: {
+				while handleInput(pipe: standardError, stream: &errorStream, result: &error) {}
+				completeErrorReceived = true
+			}))
 
-		let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
-		let outputString = String(data: outputData, encoding: .utf8) ?? ""
+		while handleInput(pipe: standardOutput, stream: &outputStream, result: &output) {}
+		while !completeErrorReceived {}
 
-		let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
-		let errorString = String(data: errorData, encoding: .utf8) ?? ""
+		while process.isRunning {}
 
-		return CommandOutput(
-			standardOutput: outputString,
-			standardError: errorString,
-			status: task.terminationStatus)
+		let status = process.terminationStatus
+
+		return CommandOutput(standardOutput: output, standardError: error, status: status)
 	}
 
-	/// Returns nil when the operation times out.
 	@discardableResult
 	internal static func runShellCommand(
 		_ arguments: List<String>,
-		fromFolder currentFolder: String? = nil,
-		timeout: TimeInterval? = Shell.defaultTimeout) -> CommandOutput!
+		fromFolder currentFolder: String? = nil)
+		-> CommandOutput
 	{
 		return runShellCommand(
 			"/usr/bin/env",
 			arguments: arguments,
-			fromFolder: currentFolder,
-			timeout: timeout)
+			fromFolder: currentFolder)
 	}
 }

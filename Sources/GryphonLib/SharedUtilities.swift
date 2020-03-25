@@ -29,7 +29,6 @@ private func gryphonTemplates() throws {
     let _stringArray1: MutableList<String> = []
     let _stringArray2: MutableList<String> = []
     let _fileExtension1 = FileExtension.swift
-    let _timeInterval: TimeInterval = 0
 
     _ = Utilities.file(_string1, wasModifiedLaterThan: _string2)
     _ = "Utilities.fileWasModifiedLaterThan(_string1, _string2)"
@@ -68,31 +67,16 @@ private func gryphonTemplates() throws {
 
     // Shell translations
     _ = Shell.runShellCommand(
-        _string1, arguments: _stringArray1, fromFolder: _string2, timeout: _timeInterval)
-    _ = "Shell.runShellCommand(_string1, arguments = _stringArray1, currentFolder = _string2, " +
-        "timeout = _timeInterval)"
-
-    _ = Shell.runShellCommand(
         _string1, arguments: _stringArray1, fromFolder: _string2)
     _ = "Shell.runShellCommand(_string1, arguments = _stringArray1, currentFolder = _string2)"
-
-    _ = Shell.runShellCommand(
-        _string1, arguments: _stringArray1, timeout: _timeInterval)
-    _ = "Shell.runShellCommand(_string1, arguments = _stringArray1, timeout = _timeInterval)"
 
     _ = Shell.runShellCommand(
         _string1, arguments: _stringArray1)
     _ = "Shell.runShellCommand(_string1, arguments = _stringArray1)"
 
     //
-    _ = Shell.runShellCommand(_stringArray1, fromFolder: _string1, timeout: _timeInterval)
-    _ = "Shell.runShellCommand(_stringArray1, currentFolder = _string1, timeout = _timeInterval)"
-
     _ = Shell.runShellCommand(_stringArray1, fromFolder: _string1)
     _ = "Shell.runShellCommand(_stringArray1, currentFolder = _string1)"
-
-    _ = Shell.runShellCommand(_stringArray1, timeout: _timeInterval)
-    _ = "Shell.runShellCommand(_stringArray1, timeout = _timeInterval)"
 
     _ = Shell.runShellCommand(_stringArray1)
     _ = "Shell.runShellCommand(_stringArray1)"

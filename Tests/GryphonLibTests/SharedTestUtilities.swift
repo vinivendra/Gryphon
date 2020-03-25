@@ -60,12 +60,7 @@ class TestUtilities {
 	static func diffFiles(_ file1Path: String, _ file2Path: String) -> String? {
 		let command: List = ["diff", file1Path, file2Path]
 		let commandResult = Shell.runShellCommand(command)
-		if let commandResult = commandResult {
-			return "\n\n===\n\(commandResult.standardOutput)===\n"
-		}
-		else {
-			return nil
-		}
+		return "\n\n===\n\(commandResult.standardOutput)===\n"
 	}
 
 	static func withTemporaryFile<T>(

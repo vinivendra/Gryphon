@@ -43,10 +43,7 @@ class ShellTest: XCTestCase {
 	// MARK: - Tests
 	func testEcho() {
 		let command: List = ["echo", "foo bar baz"]
-		guard let commandResult = Shell.runShellCommand(command) else {
-			XCTFail("Timed out.")
-			return
-		}
+		let commandResult = Shell.runShellCommand(command)
 		XCTAssertEqual(commandResult.standardOutput, "foo bar baz\n")
 		XCTAssertEqual(commandResult.standardError, "")
 		XCTAssertEqual(commandResult.status, 0)
@@ -54,19 +51,13 @@ class ShellTest: XCTestCase {
 
 	func testSwiftc() {
 		let command1: List = ["swiftc", "-dump-ast"]
-		guard let command1Result = Shell.runShellCommand(command1) else {
-			XCTFail("Timed out.")
-			return
-		}
+		let command1Result = Shell.runShellCommand(command1)
 		XCTAssertEqual(command1Result.standardOutput, "")
 		XCTAssert(command1Result.standardError.contains("<unknown>:0: error: no input files\n"))
 		XCTAssertNotEqual(command1Result.status, 0)
 
 		let command2: List = ["swiftc", "--help"]
-		guard let command2Result = Shell.runShellCommand(command2) else {
-			XCTFail("Timed out.")
-			return
-		}
+		let command2Result = Shell.runShellCommand(command2)
 		XCTAssert(command2Result.standardOutput.contains("-dump-ast"))
 		XCTAssertEqual(command2Result.standardError, "")
 		XCTAssertEqual(command2Result.status, 0)
