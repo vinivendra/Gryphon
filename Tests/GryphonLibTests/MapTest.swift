@@ -216,9 +216,6 @@ class MapTest: XCTestCase {
 	}
 
 	func testMapValues() {// gryphon ignore
-		// TODO: Kotlin's mapValues takes an Entry instead of a value. That has to be translated
-		// somehow. Seems to be hard to do with templates; maybe it'll have to be with a new pass.
-		// Once solved, translate this test and its mutable counterpart.
 		let dictionary: Map<Int, Int> = [1: 10, 2: 20]
 		let mappedDictionary = dictionary.mapValues { $0 * 10 }
 
@@ -227,9 +224,6 @@ class MapTest: XCTestCase {
 	}
 
 	func testSortedBy() { // gryphon ignore
-		// TODO: Either implement a translation for map sorting or remove this method/raise a
-		// warning.
-		// Once solved, translate this test and its mutable counterpart.
 		let dictionary: Map = [1: 20, 2: 10]
 
 		let keySorted = dictionary.sorted { a, b in a.0 < b.0 }

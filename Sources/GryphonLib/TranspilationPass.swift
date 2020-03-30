@@ -2505,8 +2505,6 @@ public class DataStructureInitializersTranspilationPass: TranspilationPass {
 		if let typeExpression = callExpression.function as? TypeExpression {
 
 			// Make sure there are no parameters
-			// TODO: This could be simpler and safer if tupleExpression and tupleShuffleExpression
-			// shared a common "Tuple" superclass
 			if let tupleExpression = tupleExpression {
 				guard tupleExpression.pairs.isEmpty else {
 					return super.replaceCallExpression(callExpression)
@@ -2732,7 +2730,6 @@ public class AutoclosuresTranspilationPass: TranspilationPass {
 		let parametersWithoutParentheses = String(parametersString.dropFirst().dropLast())
 		let parameterTypes = Utilities.splitTypeList(parametersWithoutParentheses)
 
-		// TODO: Add support for tupe shuffle expressions
 		if let tupleExpression = callExpression.parameters as? TupleExpression {
 			for index in tupleExpression.pairs.indices {
 				let pair = tupleExpression.pairs[index]
@@ -2893,8 +2890,6 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 		var assignmentExpression: Expression?
 
 		for statements in switchStatement.cases.map({ $0.statements }) {
-			// TODO: breaks in switches are ignored, which will be incorrect if there's code after
-			// the break. Throw a warning.
 			guard let lastStatement = statements.last else {
 				hasAllReturnCases = false
 				hasAllAssignmentCases = false
@@ -3510,9 +3505,6 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 		_ dotExpression: DotExpression)
 		-> Expression
 	{
-		// TODO: automatically add parentheses around or's in if conditions otherwise they can
-		// associate incorrectly.
-
 		// If the expression is being transformed into a mutableList or a mutableMap it's probably
 		// ok.
 		if let leftExpressionType = dotExpression.leftExpression.swiftType,
@@ -3563,7 +3555,7 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 		raiseWarningsForIfStatement(ifStatement, isElse: false)
 
 		// No recursion by calling super, otherwise we'd run on the else statements twice
-		// TODO: Add recursion on the if's statements
+		// We should still add recursion on the if's statements, though.
 		return ifStatement
 	}
 

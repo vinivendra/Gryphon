@@ -64,7 +64,7 @@ class SourceFileTest: XCTestCase {
 	}
 
 	func testGetTranslationCommentFromLine() {
-		// TODO: add tests for insert comments once they are fixed on multiline strings
+		// gryphon multiline
 		let sourceFileContents = """
 			let x: Int = 0 // gryphon ignore
 			// blabla

@@ -287,7 +287,6 @@ extension Expression {
 		{
 			// Check manually for matches in trailing closures (that don't have labels in code
 			// but do in templates)
-			// FIXME: This should also apply to functions with more than one argument
 			if lhs.pairs.count == 1,
 				let onlyLeftPair = lhs.pairs.first,
 				rhs.pairs.count == 1,
