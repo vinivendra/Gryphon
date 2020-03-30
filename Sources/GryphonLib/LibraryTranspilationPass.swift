@@ -364,8 +364,7 @@ extension Expression {
 			return true
 		}
 		else {
-			// FIXME: Check if this is correct, then either fix it or comment it
-			return true
+			return false
 		}
 	}
 
