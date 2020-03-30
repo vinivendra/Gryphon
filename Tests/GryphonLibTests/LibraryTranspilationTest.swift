@@ -273,9 +273,6 @@ class LibraryTranspilationTest: XCTestCase {
 	// MARK: - Subtyping
 
 	func testSubtyping() {
-		// FIXME: Tests that are commented should work but don't. Rather than fixing them using the
-		// current structure, they should be un-commented after the refactoring of the typing system
-
 		// Same types
 		XCTAssert("String".isSubtype(of: "String"))
 		XCTAssert("Int".isSubtype(of: "Int"))
@@ -379,9 +376,6 @@ class LibraryTranspilationTest: XCTestCase {
 	}
 
 	func testSimplifiedSubtypes() {
-		// FIXME: Tests that are commented should work but don't. Rather than fixing them using the
-		// current structure, they should be un-commented after the refactoring of the typing system
-
 		// Mapped types
 		XCTAssert("Bool".isSubtype(of: "Boolean"))
 		XCTAssert("Boolean".isSubtype(of: "Bool"))

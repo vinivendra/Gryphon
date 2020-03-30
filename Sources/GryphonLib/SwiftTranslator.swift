@@ -1887,7 +1887,6 @@ public class SwiftTranslator {
 		}
 
 		// Translate the return type
-		// FIXME: Doesn't allow to return function types
 		guard let returnType = interfaceTypeComponents.last else
 		{
 			return try unexpectedASTStructureError(
@@ -2511,7 +2510,6 @@ public class SwiftTranslator {
 		}
 
 		// Translate the return type
-		// FIXME: Doesn't allow to return function types
 		guard let typeName = closureExpression["type"] else {
 			return try unexpectedExpressionStructureError(
 				"Unable to get type or return type", ast: closureExpression)
