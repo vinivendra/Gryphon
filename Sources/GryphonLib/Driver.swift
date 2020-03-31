@@ -75,6 +75,104 @@ public class Driver {
 		let kotlinCode: String
 	}
 
+	@discardableResult
+	public static func run(
+		withArguments arguments: List<String>)
+		throws -> Any?
+	{
+		let badArguments = unsupportedArguments(in: arguments)
+		if !badArguments.isEmpty {
+			let argumentsString = badArguments.map { "\"\($0)\"" }.joined(separator: ", ")
+			throw GryphonError(errorMessage: "Unsupported arguments: \(argumentsString).")
+		}
+
+		if arguments.isEmpty ||
+			arguments.contains("help") ||
+			arguments.contains("-help") ||
+			arguments.contains("--help")
+		{
+			printUsage()
+			return nil
+		}
+
+		if arguments.contains("--version") {
+			printVersion()
+			return nil
+		}
+
+		let isVerbose = arguments.contains("--verbose")
+		Compiler.shouldLogProgress(if: isVerbose)
+
+		if arguments.contains("clean") {
+			cleanup()
+			Compiler.log("Cleanup successful.")
+
+			if !arguments.contains("init") {
+				return nil
+			}
+		}
+
+		if arguments.contains("init") {
+			let maybeXcodeProject = getXcodeProject(inArguments: arguments)
+
+			// The `--xcode` flag forces the initialization to add Xcode files to the
+			// Gryphon build folder even if no Xcode project was given. It's currently
+			// used only for developing Gryphon.
+			let shouldInitializeXcodeFiles = (maybeXcodeProject != nil) ||
+				arguments.contains("--xcode")
+
+			try initialize(includingXcodeFiles: shouldInitializeXcodeFiles)
+
+			Compiler.log("Initialization successful.")
+
+			if let xcodeProject = maybeXcodeProject {
+				if isVerbose {
+					_ = try Driver.run(withArguments:
+						["-setupXcode", "--verbose", xcodeProject])
+					_ = try Driver.run(withArguments:
+						["-makeGryphonTargets", "--verbose", xcodeProject])
+				}
+				else {
+					_ = try Driver.run(withArguments:
+						["-setupXcode", xcodeProject])
+					_ = try Driver.run(withArguments:
+						["-makeGryphonTargets", xcodeProject])
+				}
+			}
+
+			return nil
+		}
+
+		if arguments.contains("-setupXcode") {
+			guard let xcodeProject = getXcodeProject(inArguments: arguments) else {
+				throw GryphonError(errorMessage:
+					"Please specify an Xcode project when using `-setupXcode`.")
+			}
+
+			try setupGryphonFolder(forXcodeProject: xcodeProject)
+			Compiler.log("Xcode setup successful.")
+			return nil
+		}
+		if arguments.contains("-makeGryphonTargets") {
+			guard let xcodeProject = getXcodeProject(inArguments: arguments) else {
+				throw GryphonError(errorMessage:
+					"Please specify an Xcode project when using `-makeGryphonTargets`.")
+			}
+
+			try makeGryphonTargets(forXcodeProject: xcodeProject)
+			Compiler.log("Gryphon target creation successful.")
+			return nil
+		}
+
+		// If there's no build folder, create one, perform the transpilation, then delete it
+		if !Utilities.fileExists(at: SupportingFile.gryphonBuildFolder) {
+			return try performCompilationWithTemporaryBuildFolder(withArguments: arguments)
+		}
+		else {
+			return try performCompilation(withArguments: arguments)
+		}
+	}
+
 	public static func runUpToFirstPasses(
 		withSettings settings: Settings,
 		withContext context: TranspilationContext,
@@ -195,104 +293,6 @@ public class Driver {
 		return KotlinTranslation(
 			kotlinFilePath: gryphonAST.outputFileMap[.kt],
 			kotlinCode: kotlinCode)
-	}
-
-	@discardableResult
-	public static func run(
-		withArguments arguments: List<String>)
-		throws -> Any?
-	{
-		let badArguments = unsupportedArguments(in: arguments)
-		if !badArguments.isEmpty {
-			let argumentsString = badArguments.map { "\"\($0)\"" }.joined(separator: ", ")
-			throw GryphonError(errorMessage: "Unsupported arguments: \(argumentsString).")
-		}
-
-		if arguments.isEmpty ||
-			arguments.contains("help") ||
-			arguments.contains("-help") ||
-			arguments.contains("--help")
-		{
-			printUsage()
-			return nil
-		}
-
-		if arguments.contains("--version") {
-			printVersion()
-			return nil
-		}
-
-		let isVerbose = arguments.contains("--verbose")
-		Compiler.shouldLogProgress(if: isVerbose)
-
-		if arguments.contains("clean") {
-			cleanup()
-			Compiler.log("Cleanup successful.")
-
-			if !arguments.contains("init") {
-				return nil
-			}
-		}
-
-		if arguments.contains("init") {
-			let maybeXcodeProject = getXcodeProject(inArguments: arguments)
-
-			// The `--xcode` flag forces the initialization to add Xcode files to the
-			// Gryphon build folder even if no Xcode project was given. It's currently
-			// used only for developing Gryphon.
-			let shouldInitializeXcodeFiles = (maybeXcodeProject != nil) ||
-				arguments.contains("--xcode")
-
-			try initialize(includingXcodeFiles: shouldInitializeXcodeFiles)
-
-			Compiler.log("Initialization successful.")
-
-			if let xcodeProject = maybeXcodeProject {
-				if isVerbose {
-					_ = try Driver.run(withArguments:
-						["-setupXcode", "--verbose", xcodeProject])
-					_ = try Driver.run(withArguments:
-						["-makeGryphonTargets", "--verbose", xcodeProject])
-				}
-				else {
-					_ = try Driver.run(withArguments:
-						["-setupXcode", xcodeProject])
-					_ = try Driver.run(withArguments:
-						["-makeGryphonTargets", xcodeProject])
-				}
-			}
-
-			return nil
-		}
-
-		if arguments.contains("-setupXcode") {
-			guard let xcodeProject = getXcodeProject(inArguments: arguments) else {
-				throw GryphonError(errorMessage:
-					"Please specify an Xcode project when using `-setupXcode`.")
-			}
-
-			try setupGryphonFolder(forXcodeProject: xcodeProject)
-			Compiler.log("Xcode setup successful.")
-			return nil
-		}
-		if arguments.contains("-makeGryphonTargets") {
-			guard let xcodeProject = getXcodeProject(inArguments: arguments) else {
-				throw GryphonError(errorMessage:
-					"Please specify an Xcode project when using `-makeGryphonTargets`.")
-			}
-
-			try makeGryphonTargets(forXcodeProject: xcodeProject)
-			Compiler.log("Gryphon target creation successful.")
-			return nil
-		}
-
-		// If there's no build folder, create one, perform the transpilation, then delete it
-		if !Utilities.fileExists(at: SupportingFile.gryphonBuildFolder) {
-			return try performCompilationWithTemporaryBuildFolder(withArguments: arguments)
-		}
-		else {
-			return try performCompilation(withArguments: arguments)
-		}
 	}
 
 	@discardableResult
