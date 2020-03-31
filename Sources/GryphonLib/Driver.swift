@@ -758,8 +758,9 @@ public class Driver {
 				["bash", SupportingFile.astDumpsScript.relativePath])
 		}
 		else {
-			let arguments: MutableList = [
-				"swiftc",
+			let arguments: MutableList = try [
+				"xcrun",
+				SwiftVersions.getPathForCommand("swiftc"),
 				"-dump-ast",
 				"-module-name", "Main",
 				"-D", "GRYPHON",
