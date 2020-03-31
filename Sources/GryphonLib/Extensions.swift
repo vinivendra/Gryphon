@@ -139,7 +139,10 @@ internal extension String {
 				isEscaping = !isEscaping
 			}
 			else if character == " ", !isEscaping {
-				result.append(String(self[startIndexOfCurrentComponent..<index]))
+				let component = String(self[startIndexOfCurrentComponent..<index])
+				if !component.isEmpty {
+					result.append(component)
+				}
 				startIndexOfCurrentComponent = self.index(after: index)
 			}
 
