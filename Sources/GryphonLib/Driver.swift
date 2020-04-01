@@ -780,7 +780,7 @@ public class Driver {
 		else {
 			let arguments: MutableList = ["xcrun"]
 			if let chosenToolchainName = TranspilationContext.getChosenToolchain() {
-				arguments.append("--toolchain")
+				arguments.append("-toolchain")
 				arguments.append(chosenToolchainName)
 			}
 
