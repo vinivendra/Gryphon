@@ -737,10 +737,15 @@ public class Driver {
 
 	static func makeGryphonTargets(forXcodeProject xcodeProjectPath: String) throws {
 		// Run the ruby script
-		let commandResult = Shell.runShellCommand([
+		let arguments: MutableList = [
 			"ruby",
 			"\(SupportingFile.makeGryphonTargets.relativePath)",
-			"\(xcodeProjectPath)", ])
+			"\(xcodeProjectPath)", ]
+		if let toolchain = TranspilationContext.getChosenToolchain() {
+			arguments.append(toolchain)
+		}
+
+		let commandResult = Shell.runShellCommand(arguments)
 
 		guard commandResult.status == 0 else {
 			throw GryphonError(errorMessage: "Error making gryphon targets:\n" +

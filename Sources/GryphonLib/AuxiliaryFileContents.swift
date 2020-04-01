@@ -821,8 +821,16 @@ else
 end
 
 # Set the script we want to run
-gryphonBuildPhase.shell_script =
-	"gryphon \(dollarSign)(PROJECT_NAME).xcodeproj \(dollarSign)SCRIPT_INPUT_FILE_LIST_0"
+if ARGV.length > 1
+	# If we specified a toolchain
+    gryphonBuildPhase.shell_script =
+		"gryphon \(dollarSign)(PROJECT_NAME).xcodeproj \(dollarSign)SCRIPT_INPUT_FILE_LIST_0" +
+		" --toolchain=\\"" + ARGV[1] + "\\""
+else
+	# If we're using the default toolchain
+    gryphonBuildPhase.shell_script =
+		"gryphon \(dollarSign)(PROJECT_NAME).xcodeproj \(dollarSign)SCRIPT_INPUT_FILE_LIST_0"
+end
 
 # Set the path to the input file list
 gryphonBuildPhase.input_file_list_paths = [
