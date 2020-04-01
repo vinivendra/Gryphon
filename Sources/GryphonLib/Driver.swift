@@ -714,9 +714,20 @@ public class Driver {
 		newComponents.append("-dump-ast")
 		newComponents.append("-D")
 		newComponents.append("GRYPHON")
-		let newCompilationCommand = newComponents.joined(separator: " ")
 
-		result += "\t" + newCompilationCommand + "\n"
+		// Build the resulting command
+		result += "\t"
+		if let userToolchain = TranspilationContext.getChosenToolchain() {
+			// Set the toolchain manually by replacing the direct call to swiftc with a call to
+			// xcrun
+			result += "\txcrun -toolchain \"\(userToolchain)\" swiftc "
+			result += newComponents.dropFirst().joined(separator: " ")
+		}
+		else {
+			// Use the default toolchain
+			result += newComponents.joined(separator: " ")
+		}
+		result += "\n"
 
 		try Utilities.createFile(
 			named: SupportingFile.astDumpsScript.name,
