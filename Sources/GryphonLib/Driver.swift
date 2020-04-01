@@ -38,6 +38,7 @@ public class Driver {
 
 	public static let supportedArgumentsWithParameters: List = [
 		"--indentation=",
+		"--toolchain=",
 		"-line-limit=",
 	]
 
@@ -112,9 +113,17 @@ public class Driver {
 			}
 		}
 
-		if arguments.contains("init") {
-			let maybeXcodeProject = getXcodeProject(inArguments: arguments)
+		if let toolchainArgument = arguments.first(where: { $0.hasPrefix("--toolchain=") }) {
+			let toolchainName = String(toolchainArgument.dropFirst("--toolchain=".count))
+			try TranspilationContext.setChosenToolchain(toolchainName)
+		}
+		else if TranspilationContext.getChosenToolchain() == nil {
+			try TranspilationContext.checkToolchainSupport(nil)
+		}
 
+		let maybeXcodeProject = getXcodeProject(inArguments: arguments)
+
+		if arguments.contains("init") {
 			// The `--xcode` flag forces the initialization to add Xcode files to the
 			// Gryphon build folder even if no Xcode project was given. It's currently
 			// used only for developing Gryphon.
@@ -144,7 +153,7 @@ public class Driver {
 		}
 
 		if arguments.contains("-setupXcode") {
-			guard let xcodeProject = getXcodeProject(inArguments: arguments) else {
+			guard let xcodeProject = maybeXcodeProject else {
 				throw GryphonError(errorMessage:
 					"Please specify an Xcode project when using `-setupXcode`.")
 			}
@@ -154,7 +163,7 @@ public class Driver {
 			return nil
 		}
 		if arguments.contains("-makeGryphonTargets") {
-			guard let xcodeProject = getXcodeProject(inArguments: arguments) else {
+			guard let xcodeProject = maybeXcodeProject else {
 				throw GryphonError(errorMessage:
 					"Please specify an Xcode project when using `-makeGryphonTargets`.")
 			}
@@ -644,11 +653,18 @@ public class Driver {
 	}
 
 	static func setupGryphonFolder(forXcodeProject xcodeProjectPath: String) throws {
-		let commandResult = Shell.runShellCommand([
+		let arguments: MutableList = [
 			"xcodebuild",
 			"-dry-run",
 			"-project",
-			"\(xcodeProjectPath)", ])
+			"\(xcodeProjectPath)", ]
+
+		if let userToolchain = TranspilationContext.getChosenToolchain() {
+			arguments.append("-toolchain")
+			arguments.append(userToolchain)
+		}
+
+		let commandResult = Shell.runShellCommand(arguments)
 
 		guard commandResult.status == 0 else {
 			throw GryphonError(errorMessage: "Error running xcodebuild:\n" +
@@ -666,6 +682,11 @@ public class Driver {
 		}
 
 		let commands = compileSwiftStep.split(withStringSeparator: "\n")
+
+		// Drop the header and the old compilation command
+		var result = commands.dropFirst().dropLast().joined(separator: "\n") + "\n"
+
+		// Fix the call to the Swift compiler
 		let compilationCommand = commands.last!
 		let commandComponents = compilationCommand.splitUsingUnescapedSpaces()
 
@@ -695,13 +716,12 @@ public class Driver {
 		newComponents.append("GRYPHON")
 		let newCompilationCommand = newComponents.joined(separator: " ")
 
-		// Drop the header and the old compilation command
-		var scriptContents = commands.dropFirst().dropLast().joined(separator: "\n")
-		scriptContents += "\n" + newCompilationCommand + "\n"
+		result += "\t" + newCompilationCommand + "\n"
+
 		try Utilities.createFile(
 			named: SupportingFile.astDumpsScript.name,
 			inDirectory: SupportingFile.gryphonBuildFolder,
-			containing: scriptContents)
+			containing: result)
 	}
 
 	static func makeGryphonTargets(forXcodeProject xcodeProjectPath: String) throws {
@@ -758,16 +778,26 @@ public class Driver {
 				["bash", SupportingFile.astDumpsScript.relativePath])
 		}
 		else {
-			let arguments: MutableList = try [
-				"xcrun",
-				SwiftVersions.getPathForCommand("swiftc"),
-				"-dump-ast",
-				"-module-name", "Main",
-				"-D", "GRYPHON",
-				"-output-file-map=\(SupportingFile.temporaryOutputFileMap.absolutePath)", ]
+			let arguments: MutableList = ["xcrun"]
+			if let chosenToolchainName = TranspilationContext.getChosenToolchain() {
+				arguments.append("--toolchain")
+				arguments.append(chosenToolchainName)
+			}
+
+			arguments.append("swiftc")
+			arguments.append("-dump-ast")
+			arguments.append("-module-name")
+			arguments.append("Main")
+			arguments.append("-D")
+			arguments.append("GRYPHON")
+			arguments.append(
+				"-output-file-map=\(SupportingFile.temporaryOutputFileMap.absolutePath)")
+
 			for swiftFile in swiftFiles {
 				arguments.append(Utilities.getAbsoultePath(forFile: swiftFile))
 			}
+
+			print(arguments)
 
 			commandResult = Shell.runShellCommand(arguments)
 		}
@@ -889,6 +919,9 @@ public class Driver {
 
 		      ↪️  --sync
 		            Do not use concurrency.
+
+		      ↪️  --toolchain=<toolchain name>
+		            Specify the toolchain to be used when calling the Swift compiler.
 
 		Advanced commands:
 		  ➡️  clean

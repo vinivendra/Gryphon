@@ -51,6 +51,8 @@ public class TranspilationContext {
 		self.defaultFinal = defaultFinal
 	}
 
+	// MARK: - Templates
+
 	//
 	public struct TranspilationTemplate {
 		let expression: Expression
@@ -62,6 +64,8 @@ public class TranspilationContext {
 	public func addTemplate(_ template: TranspilationTemplate) {
 		templates.insert(template, at: 0)
 	}
+
+	// MARK: - Declaration records
 
 	///
 	/// This variable is used to store enum definitions in order to allow the translator
@@ -92,6 +96,8 @@ public class TranspilationContext {
 	public func addProtocol(_ protocolName: String) {
 		protocols.append(protocolName)
 	}
+
+	// MARK: - Function translations
 
 	/// Stores information on how a Swift function should be translated into Kotlin, including what
 	/// its prefix should be and what its parameters should be named. The `swiftAPIName` and the
@@ -130,6 +136,8 @@ public class TranspilationContext {
 		return nil
 	}
 
+	// MARK: - Pure functions
+
 	/// Stores pure functions so we can reference them later
 	private var pureFunctions: MutableList<FunctionDeclaration> = []
 
@@ -162,5 +170,88 @@ public class TranspilationContext {
 		}
 
 		return false
+	}
+
+	// MARK: - Swift versions
+
+	/// Currently supported versions. If 5.1 is supported, 5.1.x will be too.
+	private static let supportedVersions: List = [
+		"5.1",
+	]
+
+	private static var chosenToolchainName: String?
+	private static var chosenSwiftVersion: String?
+
+	/// Check if the given toolchain uses a supported version of Swift. If it is, set the chosen
+	/// toolchain and the chosen Swift version.
+	public static func setChosenToolchain(_ toolchain: String?) throws {
+		print("Setting toolchain: \(toolchain ?? "nil")")
+
+		let swiftVersion = try checkToolchainSupport(toolchain)
+
+		chosenToolchainName = toolchain
+		chosenSwiftVersion = swiftVersion
+	}
+
+	/// Returns the name of the chosen toolchain, which is set and validated by the
+	/// `setChosenToolchain()` method.
+	public static func getChosenToolchain() -> String? {
+		return chosenToolchainName
+	}
+
+	/// Returns the Swift version currently being used to dump the ASTs. This value is set and
+	/// validated by the `setChosenToolchain()` method.
+	public static func getSwiftVersion() -> String? {
+		return chosenSwiftVersion
+	}
+
+	/// Checks if the given toolchain uses a supported version of Swift. If it does, return that
+	/// Swift version. If it doesn't, throw an error.
+	@discardableResult
+	static func checkToolchainSupport(_ toolchain: String?) throws -> String {
+		let arguments: List<String>
+		if let toolchain = toolchain {
+			arguments = ["xcrun", "--toolchain", toolchain, "swift", "--version"]
+		}
+		else {
+			arguments = ["xcrun", "swift", "--version"]
+		}
+
+		let swiftVersionCommandResult = Shell.runShellCommand(arguments)
+
+		guard swiftVersionCommandResult.status == 0 else {
+			throw GryphonError(errorMessage: "Unable to determine Swift version:\n" +
+				swiftVersionCommandResult.standardOutput +
+				swiftVersionCommandResult.standardError)
+		}
+
+		// The output is expected to be something like
+		// "Apple Swift version 5.1 (swift-5.1-RELEASE)"
+		var swiftVersion = swiftVersionCommandResult.standardOutput
+		let prefixToRemove = swiftVersion.prefix { !$0.isNumber }
+		swiftVersion = String(swiftVersion.dropFirst(prefixToRemove.count))
+		swiftVersion = String(swiftVersion.prefix { $0 != " " })
+
+		guard supportedVersions.contains(where: { $0.hasPrefix(swiftVersion) }) else {
+			var errorMessage = ""
+
+			if let toolchain = toolchain {
+				errorMessage += "Swift version \(swiftVersion) (from toolchain \(toolchain)) " +
+					"is not supported.\n"
+			}
+			else {
+				errorMessage += "Swift version \(swiftVersion) is not supported.\n"
+			}
+
+			let supportedVersionsString = supportedVersions.joined(separator: ", ")
+			errorMessage +=
+				"Currently supported Swift versions: \(supportedVersionsString).\n" +
+				"You can use the `--toolchain=<toolchain name>` option to choose a toolchain " +
+				"with a supported Swift version."
+
+			throw GryphonError(errorMessage: errorMessage)
+		}
+
+		return swiftVersion
 	}
 }

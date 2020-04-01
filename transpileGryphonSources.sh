@@ -1,5 +1,6 @@
 ./.build/debug/Gryphon \
 	--indentation=4 \
+	--toolchain="swift 5.1"\
 	\
 	Sources/GryphonLib/ASTDumpDecoder.swift \
 	Sources/GryphonLib/AuxiliaryFileContents.swift \

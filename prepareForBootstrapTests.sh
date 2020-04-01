@@ -52,6 +52,7 @@ do
 
         if java -jar Bootstrap/kotlin.jar --indentation=t -avoid-unicode -skipASTDumps \
             -emit-swiftAST -emit-rawAST -emit-AST -emit-kotlin $defaultFinal \
+            --toolchain="swift 5.1" \
             "$file"
         then
             echo "      ✅ Done."

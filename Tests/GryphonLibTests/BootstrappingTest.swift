@@ -69,6 +69,7 @@ class BootstrappingTest: XCTestCase {
 					 "--indentation=t",
 					 "-avoid-unicode",
 					 "--write-to-console",
+					 "--toolchain=swift 5.1",
 					 testCasePath, ]
 				if testName.hasSuffix("--default-final") {
 					arguments.append("--default-final")
@@ -125,6 +126,7 @@ class BootstrappingTest: XCTestCase {
 					 "--indentation=t",
 					 "-avoid-unicode",
 					 "--write-to-console",
+					 "--toolchain=swift 5.1",
 					 testCasePath, ]
 				if testName.hasSuffix("-default-final") {
 					arguments.append("--default-final")
@@ -181,6 +183,7 @@ class BootstrappingTest: XCTestCase {
 					 "--indentation=t",
 					 "-avoid-unicode",
 					 "--write-to-console",
+					 "--toolchain=swift 5.1",
 					 testCasePath, ]
 				if testName.hasSuffix("-default-final") {
 					arguments.append("--default-final")
@@ -237,6 +240,7 @@ class BootstrappingTest: XCTestCase {
 					 "--indentation=t",
 					 "-avoid-unicode",
 					 "--write-to-console",
+					 "--toolchain=swift 5.1",
 					 testCasePath, ]
 				if testName.hasSuffix("-default-final") {
 					arguments.append("--default-final")

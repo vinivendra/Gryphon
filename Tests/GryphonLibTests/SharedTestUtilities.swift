@@ -88,6 +88,9 @@ class TestUtilities {
             return
         }
 
+		// TODO: remove this
+		try TranspilationContext.setChosenToolchain("swift 5.1")
+
 		try Utilities.processGryphonTemplatesLibrary()
 
         Compiler.log("\t* Updating ASTs for test cases...")
