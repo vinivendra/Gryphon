@@ -717,10 +717,10 @@ public class Driver {
 
 		// Build the resulting command
 		result += "\t"
-		if let userToolchain = TranspilationContext.getChosenToolchain() {
+		if let chosenToolchain = TranspilationContext.getChosenToolchain() {
 			// Set the toolchain manually by replacing the direct call to swiftc with a call to
 			// xcrun
-			result += "\txcrun -toolchain \"\(userToolchain)\" swiftc "
+			result += "\txcrun -toolchain \"\(chosenToolchain)\" swiftc "
 			result += newComponents.dropFirst().joined(separator: " ")
 		}
 		else {
