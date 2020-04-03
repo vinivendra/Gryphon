@@ -185,10 +185,7 @@ public class TranspilationContext {
 	/// Check if the given toolchain uses a supported version of Swift. If it is, set the chosen
 	/// toolchain and the chosen Swift version.
 	public static func setChosenToolchain(_ toolchain: String?) throws {
-		print("Setting toolchain: \(toolchain ?? "nil")")
-
 		let swiftVersion = try checkToolchainSupport(toolchain)
-
 		chosenToolchainName = toolchain
 		chosenSwiftVersion = swiftVersion
 	}

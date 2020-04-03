@@ -813,8 +813,6 @@ public class Driver {
 				arguments.append(Utilities.getAbsoultePath(forFile: swiftFile))
 			}
 
-			print(arguments)
-
 			commandResult = Shell.runShellCommand(arguments)
 		}
 
