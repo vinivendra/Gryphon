@@ -620,9 +620,12 @@ public class SwiftTranslator {
 					.subtree(named: "Tuple Expression")?
 					.subtree(named: "Array Expression")
 			{
-				let rawValueASTs = arrayExpression.subtrees.dropLast().toMutableList()
-				rawValues = try rawValueASTs.map { try translateExpression($0) }.toMutableList()
-				break
+				if let translatedArrayExpression =
+					try translateArrayExpression(arrayExpression) as? ArrayExpression
+				{
+					rawValues = translatedArrayExpression.elements
+					break
+				}
 			}
 		}
 
