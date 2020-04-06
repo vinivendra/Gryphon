@@ -2849,8 +2849,13 @@ public class SwiftTranslator {
 				ast: arrayExpression)
 		}
 
-		// Drop the "Semantic Expression" at the end
-		let expressionsToTranslate = arrayExpression.subtrees.dropLast().toMutableList()
+		// Drop the "Semantic Expression" at the end (only present in Swift 5.1)
+		let expressionsToTranslate = arrayExpression.subtrees.toMutableList()
+		if let lastExpression = expressionsToTranslate.last,
+			lastExpression.name == "Semantic Expression"
+		{
+			expressionsToTranslate.removeLast()
+		}
 
 		let expressionsArray = try expressionsToTranslate
 			.map { try translateExpression($0) }
