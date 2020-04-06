@@ -2220,7 +2220,6 @@ public class SwiftTranslator {
 			result = try translateAsNumericLiteral(expression)
 		case "Parentheses Expression":
 			if let innerExpression = expression.subtree(at: 0) {
-				// Swift 5: Compiler-created parentheses expressions may be marked with "implicit"
 				if expression.standaloneAttributes.contains("implicit") {
 					result = try translateExpression(innerExpression)
 				}
@@ -2551,10 +2550,20 @@ public class SwiftTranslator {
 
 		let parameters: Expression
 		if let parenthesesExpression = callExpression.subtree(named: "Parentheses Expression") {
-			let expression = try translateExpression(parenthesesExpression)
-			parameters = TupleExpression(
-				range: getRangeRecursively(ofNode: parenthesesExpression),
-				pairs: [LabeledExpression(label: nil, expression: expression)])
+			// If the parentheses only have a "default argument", they're empty
+			if let subtree = parenthesesExpression.subtree(at: 0),
+				subtree.name == "Default Argument Expression"
+			{
+				parameters = TupleExpression(
+					range: getRangeRecursively(ofNode: parenthesesExpression),
+					pairs: [])
+			}
+			else {
+				let expression = try translateExpression(parenthesesExpression)
+				parameters = TupleExpression(
+					range: getRangeRecursively(ofNode: parenthesesExpression),
+					pairs: [LabeledExpression(label: nil, expression: expression)])
+			}
 		}
 		else if let tupleExpression = callExpression.subtree(named: "Tuple Expression") {
 			parameters = try translateTupleExpression(tupleExpression)
@@ -2562,6 +2571,7 @@ public class SwiftTranslator {
 		else if let tupleShuffleExpression = callExpression
 			.subtree(named: "Argument Shuffle Expression")
 		{
+			// Unused since Swift 5.2. New code is in `translateTupleExpression`.
 			let parenthesesExpression = tupleShuffleExpression
 				.subtree(named: "Parentheses Expression")
 
@@ -2661,6 +2671,13 @@ public class SwiftTranslator {
 				ast: tupleExpression)
 		}
 
+		let isTupleShuffleExpression = tupleExpression.subtrees.contains {
+			$0.name == "Vararg Expansion Expression" || $0.name == "Default Argument Expression"
+		}
+		if isTupleShuffleExpression {
+			return try translateTupleShuffleExpression(tupleExpression)
+		}
+
 		let namesArray: MutableList<String>
 		if let names = tupleExpression["names"] {
 			namesArray = names.split(withStringSeparator: ",")
@@ -2687,6 +2704,57 @@ public class SwiftTranslator {
 		return TupleExpression(
 			range: getRangeRecursively(ofNode: tupleExpression),
 			pairs: tuplePairs)
+	}
+
+	internal func translateTupleShuffleExpression(
+		_ tupleExpression: SwiftAST)
+		throws -> Expression
+	{
+		guard tupleExpression.name == "Tuple Expression" else {
+			return try unexpectedExpressionStructureError(
+				"Trying to translate \(tupleExpression.name) as a Tuple Shuffle Expression",
+				ast: tupleExpression)
+		}
+
+		let indices: MutableList<TupleShuffleIndex> = []
+		let labels: MutableList<String?> = []
+		let expressions: MutableList<Expression> = []
+
+		let labelsArray: MutableList<String>
+		if let names = tupleExpression["names"] {
+			labelsArray = names.split(withStringSeparator: ",")
+		}
+		else {
+			// If there are no labels create a list of enough length with all empty labels
+			labelsArray = tupleExpression.subtrees.map { _ in "_" }.toMutableList()
+		}
+
+		for (label, subtree) in zip(labelsArray, tupleExpression.subtrees) {
+			if subtree.name == "Default Argument Expression" {
+				indices.append(.absent)
+				labels.append(nil)
+			}
+			else if subtree.name == "Vararg Expansion Expression" {
+				let implicitArrayExpression = subtree.subtrees[0]
+				let translatedExpressions = try implicitArrayExpression.subtrees.map {
+						try translateExpression($0)
+					}
+				expressions.append(contentsOf: translatedExpressions)
+				indices.append(.variadic(count: translatedExpressions.count))
+				labels.append(label)
+			}
+			else {
+				try expressions.append(translateExpression(subtree))
+				indices.append(.present)
+				labels.append(label)
+			}
+		}
+
+		return TupleShuffleExpression(
+			range: getRangeRecursively(ofNode: tupleExpression),
+			labels: labels,
+			indices: indices,
+			expressions: expressions)
 	}
 
 	internal func translateInterpolatedStringLiteralExpression(

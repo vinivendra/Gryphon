@@ -176,7 +176,7 @@ public class TranspilationContext {
 
 	/// Currently supported versions. If 5.1 is supported, 5.1.x will be too.
 	private static let supportedVersions: List = [
-		"5.1",
+		"5.1", "5.2",
 	]
 
 	private static var chosenToolchainName: String?

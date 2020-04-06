@@ -310,6 +310,11 @@ extension Expression {
 			}
 
 			var result = true
+
+			// Make sure the tuples are of the same size
+			result = result && (lhs.pairs.count == rhs.pairs.count)
+
+			// Check if the expressions inside them match
 			for (leftPair, rightPair) in zip(lhs.pairs, rhs.pairs) {
 				result = result &&
 					leftPair.expression.matches(rightPair.expression, matches) &&

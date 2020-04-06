@@ -82,7 +82,6 @@ class DriverTest: XCTestCase {
 				 "-emit-kotlin",
 				 "--indentation=t",
 				 "--write-to-console",
-				 "--toolchain=swift 5.1",
 				 testCasePath, ])
 			let resultArray1 = driverResult1 as? List<Any?>
 			let kotlinTranslations1 = resultArray1?.as(List<Driver.KotlinTranslation>.self)
@@ -104,7 +103,6 @@ class DriverTest: XCTestCase {
 				 "--indentation=t",
 				 "--no-main-file",
 				 "--write-to-console",
-				 "--toolchain=swift 5.1",
 				 testCasePath, ])
 			let resultArray2 = driverResult2 as? List<Any?>
 			let kotlinTranslations2 = resultArray2?.as(List<Driver.KotlinTranslation>.self)
@@ -141,7 +139,6 @@ class DriverTest: XCTestCase {
 				 "--indentation=t",
 				 "--continue-on-error",
 				 "--write-to-console",
-				 "--toolchain=swift 5.1",
 				 testCasePath, ])
 
 			XCTAssert(Compiler.numberOfErrors == 2)
@@ -155,7 +152,6 @@ class DriverTest: XCTestCase {
 				 "--indentation=t",
 				 "--no-main-file",
 				 "--write-to-console",
-				 "--toolchain=swift 5.1",
 				 testCasePath, ])
 
 			XCTFail("Expected Driver to throw an error.")
@@ -177,7 +173,6 @@ class DriverTest: XCTestCase {
 				 "-emit-kotlin",
 				 "--indentation=t",
 				 "--write-to-console",
-				 "--toolchain=swift 5.1",
 				 testCasePath, ])
 			let resultArray1 = driverResult1 as? List<Any?>
 			let kotlinTranslations1 = resultArray1?.as(List<Driver.KotlinTranslation>.self)
@@ -199,7 +194,6 @@ class DriverTest: XCTestCase {
 				 "-emit-kotlin",
 				 "--indentation=4",
 				 "--write-to-console",
-				 "--toolchain=swift 5.1",
 				 testCasePath, ])
 			let resultArray2 = driverResult2 as? List<Any?>
 			let kotlinTranslations2 = resultArray2?.as(List<Driver.KotlinTranslation>.self)

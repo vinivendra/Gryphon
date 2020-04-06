@@ -94,6 +94,16 @@ internal class ASTDumpDecoder {
 		return buffer[currentIndex] == "<"
 	}
 
+	func canReadOriginalInitializer() -> Bool {
+		let remainingBuffer = buffer[currentIndex...]
+		return remainingBuffer.hasPrefix("Original init:")
+	}
+
+	func canReadProcessedInitializer() -> Bool {
+		let remainingBuffer = buffer[currentIndex...]
+		return remainingBuffer.hasPrefix("Processed init:")
+	}
+
 	// MARK: Read information
 	func readOpeningParenthesis() throws {
 		guard canReadOpeningParenthesis() else {
@@ -111,6 +121,26 @@ internal class ASTDumpDecoder {
 				"Remaining buffer in decoder: \"\(remainingBuffer(upTo: 1_000))\"")
 		}
 		currentIndex = nextIndex()
+		cleanLeadingWhitespace()
+	}
+
+	func readOriginalInitializer() throws {
+		guard canReadOriginalInitializer() else {
+			throw GryphonError(errorMessage:
+				"Decoding error: Expected 'Original init:'.\n" +
+				"Remaining buffer in decoder: \"\(remainingBuffer(upTo: 1_000))\"")
+		}
+		currentIndex = buffer.index(currentIndex, offsetBy: "Original init:".count)
+		cleanLeadingWhitespace()
+	}
+
+	func readProcessedInitializer() throws {
+		guard canReadProcessedInitializer() else {
+			throw GryphonError(errorMessage:
+				"Decoding error: Expected 'Processed init:'.\n" +
+				"Remaining buffer in decoder: \"\(remainingBuffer(upTo: 1_000))\"")
+		}
+		currentIndex = buffer.index(currentIndex, offsetBy: "Processed init:".count)
 		cleanLeadingWhitespace()
 	}
 
@@ -656,6 +686,16 @@ internal extension ASTDumpDecoder {
 			else if canReadClosingParenthesis() {
 				try readClosingParenthesis()
 				break
+			}
+			// Check for initializers
+			else if canReadOriginalInitializer() {
+				try readOriginalInitializer()
+				// Read the original initializer's tree and throw it away
+				_ = try decode()
+			}
+			else if canReadProcessedInitializer() {
+				try readProcessedInitializer()
+				// Let the processed initializer's tree be read normally in the next iteration
 			}
 			// Add standalone attributes
 			else {

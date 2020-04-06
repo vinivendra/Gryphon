@@ -85,7 +85,7 @@ extension PrintableTree {
 /// - `SwiftTranslator.translateStatement`
 /// - `KotlinTranslator.translateSubtree`
 /// - LibraryTranspilationPass's `Expression.matches`
-public /*abstract*/ class Statement: PrintableAsTree, Equatable {
+public /*abstract*/ class Statement: PrintableAsTree, Equatable, CustomStringConvertible {
 	let name: String
 	let range: SourceFileRange?
 
@@ -184,6 +184,10 @@ public /*abstract*/ class Statement: PrintableAsTree, Equatable {
 		}
 
 		return false
+	}
+
+	public var description: String { // gryphon ignore
+		return prettyDescription()
 	}
 }
 
@@ -1108,7 +1112,7 @@ extension PrintableTree {
 /// - `SwiftTranslator.translateExpression`
 /// - `TranspilationPass.replaceExpression`
 /// - LibraryTranspilationPass's `Expression.matches`
-public /*abstract*/ class Expression: PrintableAsTree, Equatable {
+public /*abstract*/ class Expression: PrintableAsTree, Equatable, CustomStringConvertible {
 	let name: String
 	let range: SourceFileRange?
 
@@ -1288,6 +1292,10 @@ public /*abstract*/ class Expression: PrintableAsTree, Equatable {
 		}
 
 		return false
+	}
+
+	public var description: String { // gryphon ignore
+		return prettyDescription()
 	}
 }
 
