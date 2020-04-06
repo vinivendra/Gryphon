@@ -2920,10 +2920,6 @@ public class SwiftTranslator {
 		_ numericLiteralExpression: SwiftAST)
 		throws -> Expression
 	{
-		// FIXME: Negative float literals are translated as positive becuase the AST dump doesn't
-		// seemd to include any info showing they're negative.
-		// Bug filed at https://bugs.swift.org/browse/SR-10131
-
 		let literalExpression: SwiftAST?
 		let rawType: String?
 
