@@ -56,6 +56,8 @@ internal open class A {
 	}
 
 	// Static declarations can't be open
+	// Let declarations can't be open
+	val a8: Int = 0
 }
 
 internal open class A1 {

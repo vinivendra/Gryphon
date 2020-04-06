@@ -2035,6 +2035,10 @@ public class SwiftTranslator {
 		else if let access = access, access == "open" {
 			isOpen = true
 		}
+		else if isLet {
+			// Only var's can be open in Swift
+			isOpen = false
+		}
 		else {
 			isOpen = !context.defaultFinal
 		}
