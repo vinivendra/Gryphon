@@ -611,36 +611,16 @@ public class KotlinTranslator {
 			}
 
 			result.append("fun ")
+
+			if !functionDeclaration.genericTypes.isEmpty {
+				result.append("<\(functionDeclaration.genericTypes.joined(separator: ", "))> ")
+			}
+
 			if let extensionType = functionDeclaration.extendsType {
 				let translatedExtensionType = translateType(extensionType)
 				let companionString = functionDeclaration.isStatic ? "Companion." : ""
 
-				let genericString: String
-				if let genericExtensionIndex = translatedExtensionType.index(of: "<") {
-					let genericExtensionString =
-						translatedExtensionType.suffix(from: genericExtensionIndex)
-					let genericTypes = MutableList<String>(genericExtensionString
-						.dropFirst().dropLast()
-						.split(separator: ",")
-						.map { String($0) })
-					genericTypes.append(contentsOf: functionDeclaration.genericTypes)
-					genericString = "<\(genericTypes.joined(separator: ", "))> "
-				}
-				else if !functionDeclaration.genericTypes.isEmpty {
-					genericString = "<\(functionDeclaration.genericTypes.joined(separator: ", "))> "
-				}
-				else {
-					genericString = ""
-				}
-
-				result.append(genericString + translatedExtensionType + "." + companionString)
-			}
-			else {
-				if !functionDeclaration.genericTypes.isEmpty {
-					let genericString =
-						"<\(functionDeclaration.genericTypes.joined(separator: ", "))> "
-					result.append(genericString)
-				}
+				result.append(translatedExtensionType + "." + companionString)
 			}
 
 			result.append(functionDeclaration.prefix + "(")

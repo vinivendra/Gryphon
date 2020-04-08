@@ -1806,15 +1806,11 @@ public class SwiftTranslator {
 		let isMutating = firstInterfaceTypeComponent.contains("inout")
 
 		let genericTypes: MutableList<String>
-		if let firstGenericString = functionDeclaration.standaloneAttributes
-			.first(where: { $0.hasPrefix("<") })
-		{
-			genericTypes = MutableList<String>(
-				firstGenericString
-					.dropLast()
-					.dropFirst()
-					.split(separator: ",")
-					.map { String($0) })
+		if interfaceType.hasPrefix("<") {
+			// FIXME: This might not work with nested generics
+			let prefix = interfaceType.prefix { $0 != ">" }
+			let genericsString = String(prefix.dropFirst())
+			genericTypes = Utilities.splitTypeList(genericsString, separators: [","])
 		}
 		else {
 			genericTypes = []

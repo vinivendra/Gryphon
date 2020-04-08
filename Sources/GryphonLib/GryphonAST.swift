@@ -581,6 +581,7 @@ public class FunctionDeclaration: Statement {
 			PrintableTree.initOrNil(access),
 			PrintableTree.ofStrings("annotations", annotations),
 			PrintableTree("type: \(functionType)"),
+			PrintableTree.ofStrings("generic types", genericTypes),
 			PrintableTree("prefix: \(prefix)"),
 			PrintableTree("parameters", parametersTrees),
 			PrintableTree("return type: \(returnType)"),

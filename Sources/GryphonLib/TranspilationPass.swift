@@ -4214,6 +4214,7 @@ public class ReturnIfNilTranspilationPass: TranspilationPass {
 	}
 }
 
+/// Removes function bodies and makes variables' getters and setters empty and implicit
 public class FixProtocolContentsTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
 	// gryphon insert:     super(ast, context) { }
@@ -4258,6 +4259,73 @@ public class FixProtocolContentsTranspilationPass: TranspilationPass {
 		else {
 			return super.processVariableDeclaration(variableDeclaration)
 		}
+	}
+}
+
+/// Function declarations in protocols are dumped with a generic constraint of
+/// `<Self where Self: MyProtocol>`. That constraint passes through `Utilities.splitTypeList`, which
+/// removes spaces, so it gets here as `"SelfwhereSelf:MyProtocol"`. This pass removes that
+/// constraint, since it shouldn't show up in the translated code.
+public class FixProtocolGenericsTranspilationPass: TranspilationPass {
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
+
+	var isInProtocol = false
+
+	override func replaceProtocolDeclaration( // gryphon annotation: override
+	_ protocolDeclaration: ProtocolDeclaration)
+	-> List<Statement>
+	{
+		isInProtocol = true
+		let result = super.replaceProtocolDeclaration(protocolDeclaration)
+		isInProtocol = false
+
+		return result
+	}
+
+	override func processFunctionDeclaration( // gryphon annotation: override
+		_ functionDeclaration: FunctionDeclaration)
+		-> FunctionDeclaration?
+	{
+		if isInProtocol {
+			let newGenerics = functionDeclaration.genericTypes.filter {
+					!$0.hasPrefix("SelfwhereSelf")
+				}.toMutableList()
+			functionDeclaration.genericTypes = newGenerics
+			return super.processFunctionDeclaration(functionDeclaration)
+		}
+		else {
+			return super.processFunctionDeclaration(functionDeclaration)
+		}
+	}
+}
+
+/// Extensions for generic types in Swift 5.2 are dumped without the generic information (i.e.
+/// an extension for `Box<T>` is dumped as if it were just for `Box`). We can retrieve that generic
+/// information by looking at a function's type, which includes the extended type (i.e.
+/// `<T> (Box<T>) -> (Int) -> ()`. This pass retrieves that information and adds it to the extended
+/// type if needed.
+public class FixExtensionGenericsTranspilationPass: TranspilationPass {
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
+
+	override func processFunctionDeclaration( // gryphon annotation: override
+		_ functionDeclaration: FunctionDeclaration)
+		-> FunctionDeclaration?
+	{
+		if let extendedType = functionDeclaration.extendsType {
+			var newType = functionDeclaration.functionType
+			let prefixToDiscard = functionDeclaration.functionType.prefix { $0 != "(" }
+			newType = String(functionDeclaration.functionType.dropFirst(prefixToDiscard.count + 1))
+			newType = String(newType.prefix { $0 != ")" })
+
+			// If we're really just adding generics (i.e. `Box` to `Box<T>`)
+			if newType.hasPrefix(extendedType + "<") {
+				functionDeclaration.extendsType = newType
+			}
+		}
+
+		return super.processFunctionDeclaration(functionDeclaration)
 	}
 }
 
@@ -4340,6 +4408,8 @@ public extension TranspilationPass {
 		ast = OptionalsInConditionalCastsTranspilationPass(ast: ast, context: context).run()
 		ast = AccessModifiersTranspilationPass(ast: ast, context: context).run()
 		ast = OpenDeclarationsTranspilationPass(ast: ast, context: context).run()
+		ast = FixProtocolGenericsTranspilationPass(ast: ast, context: context).run()
+		ast = FixExtensionGenericsTranspilationPass(ast: ast, context: context).run()
 
 		// - CapitalizeEnums has to be before IsOperatorsInSealedClasses and
 		//   IsOperatorsInIfStatementsTranspilationPass

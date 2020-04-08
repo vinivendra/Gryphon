@@ -266,8 +266,8 @@ extension Utilities {
 }
 
 extension Utilities {
-	/// Splits a type using the given separators, taking into consideration possible separators.
-	/// For instance, "(A, (B, C))" becomes ["A", "(B, C)"] rather than ["A", "(B", "C)"].
+	/// Splits a type using the given separators, taking into consideration possible brackets.
+	/// For instance, "A, (B, C)" becomes ["A", "(B, C)"] rather than ["A", "(B", "C)"].
     static func splitTypeList( // gryphon pure
         _ typeList: String,
         separators: List<String> = [",", ":"])
