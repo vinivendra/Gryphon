@@ -548,6 +548,10 @@ private func simplifyType(string: String) -> String {
 		let elementType = String(string.dropFirst("ArraySlice<".count).dropLast())
 		return "[\(elementType)]"
 	}
+	else if string.hasPrefix("Array<"), string.hasSuffix(">.SubSequence") {
+		let elementType = String(string.dropFirst("Array<".count).dropLast(">.SubSequence".count))
+		return "[\(elementType)]"
+	}
 
 	// Treat MutableMap as Dictionary
 	if string.hasPrefix("MutableMap<"), string.last! == ">" {
