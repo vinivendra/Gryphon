@@ -122,7 +122,8 @@ class AcceptanceTest: XCTestCase {
 					let expectedOutput = try! Utilities.readFile(outputFilePath)
 					XCTAssert(
 						runCommandResult.standardOutput == expectedOutput,
-						"Test \(testName): program failed to produce expected result. Diff:" +
+						"Test \(testName): program failed to produce expected result. " +
+							"Printing diff ('<' means generated, '>' means expected):" +
 							TestUtilities.diff(runCommandResult.standardOutput, expectedOutput))
 				}
 				else {

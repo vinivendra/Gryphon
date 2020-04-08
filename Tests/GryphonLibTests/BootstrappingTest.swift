@@ -86,7 +86,8 @@ class BootstrappingTest: XCTestCase {
 				// Compare results
 				XCTAssert(
 					transpiledSwiftAST == originalSwiftAST.description,
-					"Test \(testName): failed to produce expected result. Diff:" +
+					"Test \(testName): failed to produce expected result. " +
+						"Printing diff ('<' means generated, '>' means expected):" +
 						TestUtilities.diff(transpiledSwiftAST, originalSwiftAST.description))
 			}
 			catch let error {
@@ -142,7 +143,8 @@ class BootstrappingTest: XCTestCase {
 				// Compare results
 				XCTAssert(
 					transpiledRawAST == originalRawAST.description,
-					"Test \(testName): failed to produce expected result. Diff:" +
+					"Test \(testName): failed to produce expected result. " +
+						"Printing diff ('<' means generated, '>' means expected):" +
 						TestUtilities.diff(transpiledRawAST, originalRawAST.description))
 			}
 			catch let error {
@@ -198,7 +200,8 @@ class BootstrappingTest: XCTestCase {
 				// Compare results
 				XCTAssert(
 					transpiledAST == originalAST.description,
-					"Test \(testName): failed to produce expected result. Diff:" +
+					"Test \(testName): failed to produce expected result. " +
+						"Printing diff ('<' means generated, '>' means expected):" +
 						TestUtilities.diff(transpiledAST, originalAST.description))
 			}
 			catch let error {
@@ -256,7 +259,8 @@ class BootstrappingTest: XCTestCase {
 				// Compare results
 				XCTAssert(
 					transpiledKotlinCode == originalKotlinCode.description,
-					"Test \(testName): failed to produce expected result. Diff:" +
+					"Test \(testName): failed to produce expected result. " +
+						"Printing diff ('<' means generated, '>' means expected):" +
 						TestUtilities.diff(transpiledKotlinCode, originalKotlinCode.description))
 			}
 			catch let error {
