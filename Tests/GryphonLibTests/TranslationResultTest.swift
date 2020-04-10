@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
+// TODO: Find out why this file is making the Swift compiler crash
+
 // gryphon output: Bootstrap/TranslationResultTest.kt
 
 #if !GRYPHON

@@ -33,7 +33,6 @@
 	Tests/GryphonLibTests/PrintableAsTreeTest.swift \
 	Tests/GryphonLibTests/ShellTest.swift \
 	Tests/GryphonLibTests/SourceFileTest.swift \
-	Tests/GryphonLibTests/TranslationResultTest.swift \
 	Tests/GryphonLibTests/UtilitiesTest.swift \
 	\
 	Tests/GryphonLibTests/SharedTestUtilities.swift \
