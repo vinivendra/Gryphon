@@ -2751,9 +2751,27 @@ public class AutoclosuresTranspilationPass: TranspilationPass {
 				}
 			}
 		}
+		else if let tupleExpression = callExpression.parameters as? TupleShuffleExpression {
+			// TODO: add tests for autoclosures in tuples and tupleShuffles
+			for index in tupleExpression.expressions.indices {
+				let expression = tupleExpression.expressions[index]
+				let parameterType = parameterTypes[index]
+
+				if parameterType.hasPrefix("@autoclosure") {
+					let newExpression = ClosureExpression(
+						range: expression.range,
+						parameters: [],
+						statements: [ExpressionStatement(
+							range: expression.range,
+							expression: expression), ],
+						typeName: parameterType)
+
+					tupleExpression.expressions[index] = newExpression
+				}
+			}
+		}
 
 		return callExpression
-
 	}
 }
 
