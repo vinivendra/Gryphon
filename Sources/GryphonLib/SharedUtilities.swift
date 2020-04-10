@@ -379,6 +379,7 @@ extension Utilities {
 			"AnyHashable": "Any",
 
             "String.Index": "Int",
+			"DefaultIndices<String>.Element": "Int",
             "Substring.Index": "Int",
             "Substring": "String",
             "String.SubSequence": "String",
