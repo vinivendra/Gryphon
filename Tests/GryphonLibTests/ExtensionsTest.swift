@@ -26,10 +26,13 @@ struct TestableRange: Equatable {
 	let upperBound: Int
 
 	// gryphon insert: constructor(range: IntRange): this(range.start, range.endInclusive) { }
+	// gryphon insert:
+	// gryphon insert: constructor(string: String, range: IntRange):
+	// gryphon insert: 	this(range.start, range.endInclusive) { }
 
-	init(_ range: Range<String.Index>) { // gryphon ignore
-		self.lowerBound = range.lowerBound.encodedOffset
-		self.upperBound = range.upperBound.encodedOffset
+	init(_ string: String, _ range: Range<String.Index>) { // gryphon ignore
+		self.lowerBound = range.lowerBound.utf16Offset(in: string)
+		self.upperBound = range.upperBound.utf16Offset(in: string)
 	}
 
 	init(_ lowerBound: Int, _ upperBound: Int) { // gryphon ignore
@@ -207,55 +210,56 @@ class ExtensionsTest: XCTestCase {
 
 	func testOccurrencesOfSubstring() {
 		XCTAssertEqual(
-			"->".occurrences(of: "->").map { TestableRange($0) },
+			"->".occurrences(of: "->").map { TestableRange("->", $0) },
 			List<TestableRange>(
 				[TestableRange(0, 2)]))
 		XCTAssertEqual(
-			"a->b".occurrences(of: "->").map { TestableRange($0) },
+			"a->b".occurrences(of: "->").map { TestableRange("a->b", $0) },
 			List<TestableRange>(
 				[TestableRange(1, 3)]))
 		XCTAssertEqual(
-			"a->b->c".occurrences(of: "->").map { TestableRange($0) },
+			"a->b->c".occurrences(of: "->").map { TestableRange("a->b->c", $0) },
 			List<TestableRange>(
 				[TestableRange(1, 3),
 				 TestableRange(4, 6),
 			]))
 		XCTAssertEqual(
-			"->b->c".occurrences(of: "->").map { TestableRange($0) },
+			"->b->c".occurrences(of: "->").map { TestableRange("->b->c", $0) },
 			List<TestableRange>(
 				[TestableRange(0, 2),
 				 TestableRange(3, 5),
 			]))
 		XCTAssertEqual(
-			"->->c".occurrences(of: "->").map { TestableRange($0) },
+			"->->c".occurrences(of: "->").map { TestableRange("->->c", $0) },
 			List<TestableRange>(
 				[TestableRange(0, 2),
 				 TestableRange(2, 4),
 			]))
 		XCTAssertEqual(
-			"a->b->".occurrences(of: "->").map { TestableRange($0) },
+			"a->b->".occurrences(of: "->").map { TestableRange("a->b->", $0) },
 			List<TestableRange>(
 				[TestableRange(1, 3),
 				 TestableRange(4, 6),
 			]))
 		XCTAssertEqual(
-			"a->->".occurrences(of: "->").map { TestableRange($0) },
+			"a->->".occurrences(of: "->").map { TestableRange("a->->", $0) },
 			List<TestableRange>(
 				[TestableRange(1, 3),
 				 TestableRange(3, 5),
 			]))
 		XCTAssertEqual(
-			"a->->b".occurrences(of: "->").map { TestableRange($0) },
+			"a->->b".occurrences(of: "->").map { TestableRange("a->->b", $0) },
 			List<TestableRange>(
 				[TestableRange(1, 3),
 				 TestableRange(3, 5),
 			]))
 		XCTAssertEqual(
-			"abc".occurrences(of: "->").map { TestableRange($0) },
+			"abc".occurrences(of: "->").map { TestableRange("abc", $0) },
 			List<TestableRange>([])) // gryphon value: mutableListOf<TestableRange>()
 		XCTAssertEqual(
-			"->(Int, (String) -> Int) ->-> Int ->"
-				.occurrences(of: "->").map { TestableRange($0) },
+			"->(Int, (String) -> Int) ->-> Int ->".occurrences(of: "->").map {
+					TestableRange("->(Int, (String) -> Int) ->-> Int ->", $0)
+				},
 			List<TestableRange>([
 				TestableRange(0, 2),
 				TestableRange(17, 19),

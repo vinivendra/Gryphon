@@ -1163,7 +1163,7 @@ public class KotlinTranslator {
 			let translatedExtendedType = translateType(extendsType)
 
 			let genericString: String
-			if let genericIndex = translatedExtendedType.index(of: "<") {
+			if let genericIndex = translatedExtendedType.firstIndex(of: "<") {
 				let genericContents = translatedExtendedType.suffix(from: genericIndex)
 				genericString = "\(genericContents) "
 			}
