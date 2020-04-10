@@ -770,43 +770,75 @@ public class SwiftTranslator {
 		}
 
 		let leftHandExpression = tupleElementExpression.subtrees.first
-		let tuple = leftHandExpression?["type"]
+		let tupleType = leftHandExpression?["type"]
 
 		if let number = number,
 			let leftHandExpression = leftHandExpression,
-			let tuple = tuple
+			let tupleType = tupleType
 		{
 			let translatedLeftExpression = try translateExpression(leftHandExpression)
-			let tupleComponents =
-				String(tuple.dropFirst().dropLast()).split(withStringSeparator: ", ")
-			let tupleComponent = tupleComponents[safe: number]
 
-			let labelAndType = tupleComponent?.split(withStringSeparator: ": ")
-			let label = labelAndType?[safe: 0]
-			let typeName = labelAndType?[safe: 1]
+			// If it's a standard tuple (i.e. `(a: Int, b: Int)` or `(Int, Int)`)
+			if tupleType.hasPrefix("(") {
+				let tupleComponents =
+					String(tupleType.dropFirst().dropLast()).split(withStringSeparator: ", ")
+				let tupleComponent = tupleComponents[safe: number]
 
-			if let label = label, let typeName = typeName {
-				let range = getRangeRecursively(ofNode: leftHandExpression)
-				return DotExpression(
-					range: range,
-					leftExpression: translatedLeftExpression,
-					rightExpression: DeclarationReferenceExpression(
+				let labelAndType = tupleComponent?.split(withStringSeparator: ": ")
+				let label = labelAndType?[safe: 0]
+				let typeName = labelAndType?[safe: 1]
+
+				if let label = label, let typeName = typeName {
+					// If there's a label and a type (i.e. `(a: Int, b: Int)`)
+					let range = getRangeRecursively(ofNode: leftHandExpression)
+					return DotExpression(
 						range: range,
-						identifier: label,
-						typeName: typeName,
-						isStandardLibrary: false,
-						isImplicit: false))
+						leftExpression: translatedLeftExpression,
+						rightExpression: DeclarationReferenceExpression(
+							range: range,
+							identifier: label,
+							typeName: typeName,
+							isStandardLibrary: false,
+							isImplicit: false))
+				}
+				else if let tupleComponent = tupleComponent {
+					// If there's just a type (i.e. `(Int, Int)`)
+					let memberName = (number == 0) ? "first" : "second"
+					let range = getRangeRecursively(ofNode: tupleElementExpression)
+					return DotExpression(
+						range: range,
+						leftExpression: translatedLeftExpression,
+						rightExpression: DeclarationReferenceExpression(
+							range: range,
+							identifier: memberName,
+							typeName: tupleComponent,
+							isStandardLibrary: false,
+							isImplicit: false))
+				}
 			}
-			else if let tupleComponent = tupleComponent {
-				let memberName = (number == 0) ? "first" : "second"
+			else if tupleType.hasPrefix("Dictionary<"), tupleType.hasSuffix(">.Element") {
+				// If it's `Dictionary<Foo, Bar>.Element`
+				let genericString = String(tupleType
+					.dropFirst("Dictionary<".count)
+					.dropLast(">.Element".count))
+				let genericTypes = Utilities.splitTypeList(genericString)
+
+				guard let typeName = genericTypes[safe: number] else {
+					return try unexpectedExpressionStructureError(
+						"Unable to parse the dictionary element's member type.",
+						ast: tupleElementExpression)
+				}
+
+				let memberName = (number == 0) ? "key" : "value"
 				let range = getRangeRecursively(ofNode: tupleElementExpression)
+
 				return DotExpression(
 					range: range,
 					leftExpression: translatedLeftExpression,
 					rightExpression: DeclarationReferenceExpression(
 						range: range,
 						identifier: memberName,
-						typeName: tupleComponent,
+						typeName: typeName,
 						isStandardLibrary: false,
 						isImplicit: false))
 			}
