@@ -2155,6 +2155,51 @@ public class TupleShuffleExpression: Expression {
 			lhs.indices == rhs.indices &&
 			lhs.expressions == rhs.expressions
 	}
+
+	/// Turns this tupleShuffleExpression into a TupleExpression, ignoring absent parameters and
+	/// flattening variadics.
+	public func flattenToTupleExpression() -> TupleExpression {
+		// TODO: Check if this algorithm is enough to unite TupleExpression and
+		// TupleShuffleExpression. If it's not, use it at least for the KotlinTranslator.
+		let resultPairs: MutableList<LabeledExpression> = []
+
+		var expressionIndex = 0
+
+		// Variadic arguments can't be named, which means all arguments before them can't be named
+		// either.
+		let containsVariadics = self.indices.contains { $0.isVariadic }
+		var isBeforeVariadic = containsVariadics
+
+		for (label, index) in zip(self.labels, self.indices) {
+			switch index {
+			case .absent:
+				break
+			case .present:
+				let expression = self.expressions[expressionIndex]
+
+				let resultLabel: String?
+				if !isBeforeVariadic, let label = label {
+					resultLabel = label
+				}
+				else {
+					resultLabel = nil
+				}
+
+				resultPairs.append(LabeledExpression(label: resultLabel, expression: expression))
+
+				expressionIndex += 1
+			case let .variadic(count: variadicCount):
+				isBeforeVariadic = false
+				for _ in 0..<variadicCount {
+					let expression = self.expressions[expressionIndex]
+					resultPairs.append(LabeledExpression(label: nil, expression: expression))
+					expressionIndex += 1
+				}
+			}
+		}
+
+		return TupleExpression(range: self.range, pairs: resultPairs)
+	}
 }
 
 public class ErrorExpression: Expression {
@@ -2285,6 +2330,15 @@ public enum TupleShuffleIndex: Equatable, CustomStringConvertible {
 			return true
 		}
 		else {
+			return false
+		}
+	}
+
+	public var isVariadic: Bool {
+		switch self {
+		case .variadic:
+			return true
+		default:
 			return false
 		}
 	}

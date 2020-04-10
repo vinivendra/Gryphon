@@ -130,7 +130,9 @@ extension Expression {
 	}
 
 	private func matches(
-		_ template: Expression, _ matches: MutableMap<String, Expression>) -> Bool
+		_ template: Expression,
+		_ matches: MutableMap<String, Expression>)
+		-> Bool
 	{
 		let lhs = self
 		let rhs = template
@@ -336,6 +338,18 @@ extension Expression {
 			}
 
 			return result
+		}
+		if let lhs = lhs as? TupleExpression,
+			let rhs = rhs as? TupleShuffleExpression
+		{
+			let rhsAsTupleExpression = rhs.flattenToTupleExpression()
+			return lhs.matches(rhsAsTupleExpression, matches)
+		}
+		if let lhs = lhs as? TupleShuffleExpression,
+			let rhs = rhs as? TupleExpression
+		{
+			let lhsAsTupleExpression = lhs.flattenToTupleExpression()
+			return lhsAsTupleExpression.matches(rhs, matches)
 		}
 
 		// If no matches were found

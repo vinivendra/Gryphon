@@ -2594,9 +2594,10 @@ public class SwiftTranslator {
 					pairs: [])
 			}
 			else {
-				let expression = try translateExpression(parenthesesExpression)
+				let innerExpression = parenthesesExpression.subtrees[0]
+				let expression = try translateExpression(innerExpression)
 				parameters = TupleExpression(
-					range: getRangeRecursively(ofNode: parenthesesExpression),
+					range: getRangeRecursively(ofNode: innerExpression),
 					pairs: [LabeledExpression(label: nil, expression: expression)])
 			}
 		}
