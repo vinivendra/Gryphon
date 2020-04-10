@@ -4282,39 +4282,21 @@ public class FixProtocolContentsTranspilationPass: TranspilationPass {
 
 /// Function declarations in protocols are dumped with a generic constraint of
 /// `<Self where Self: MyProtocol>`. That constraint passes through `Utilities.splitTypeList`, which
-/// removes spaces, so it gets here as `"SelfwhereSelf:MyProtocol"`. This pass removes that
+/// removes spaces, so it gets here as `"SelfwhereSelf:MyProtocol"`. This can happen both in
+/// protocol declarations and in extensions (when extending a protocol). This pass removes that
 /// constraint, since it shouldn't show up in the translated code.
 public class FixProtocolGenericsTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
 	// gryphon insert:     super(ast, context) { }
-
-	var isInProtocol = false
-
-	override func replaceProtocolDeclaration( // gryphon annotation: override
-	_ protocolDeclaration: ProtocolDeclaration)
-	-> List<Statement>
-	{
-		isInProtocol = true
-		let result = super.replaceProtocolDeclaration(protocolDeclaration)
-		isInProtocol = false
-
-		return result
-	}
-
 	override func processFunctionDeclaration( // gryphon annotation: override
 		_ functionDeclaration: FunctionDeclaration)
 		-> FunctionDeclaration?
 	{
-		if isInProtocol {
-			let newGenerics = functionDeclaration.genericTypes.filter {
-					!$0.hasPrefix("SelfwhereSelf")
-				}.toMutableList()
-			functionDeclaration.genericTypes = newGenerics
-			return super.processFunctionDeclaration(functionDeclaration)
-		}
-		else {
-			return super.processFunctionDeclaration(functionDeclaration)
-		}
+		let newGenerics = functionDeclaration.genericTypes.filter {
+				!$0.hasPrefix("SelfwhereSelf")
+			}.toMutableList()
+		functionDeclaration.genericTypes = newGenerics
+		return super.processFunctionDeclaration(functionDeclaration)
 	}
 }
 
