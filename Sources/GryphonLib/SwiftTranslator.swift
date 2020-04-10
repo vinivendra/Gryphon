@@ -2776,12 +2776,14 @@ public class SwiftTranslator {
 					}
 				expressions.append(contentsOf: translatedExpressions)
 				indices.append(.variadic(count: translatedExpressions.count))
-				labels.append(label)
+				let validLabelOrNil = (label == "_") ? nil : label
+				labels.append(validLabelOrNil)
 			}
 			else {
 				try expressions.append(translateExpression(subtree))
 				indices.append(.present)
-				labels.append(label)
+				let validLabelOrNil = (label == "_") ? nil : label
+				labels.append(validLabelOrNil)
 			}
 		}
 
