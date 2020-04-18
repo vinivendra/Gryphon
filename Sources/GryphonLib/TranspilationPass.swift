@@ -3214,23 +3214,6 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 		return members
 	}
 
-	override func replaceStatement( // gryphon annotation: override
-		_ statement: Statement)
-		-> List<Statement>
-	{
-		if let extensionDeclaration = statement as? ExtensionDeclaration {
-			return replaceExtension(extensionDeclaration)
-		}
-		if let functionDeclaration = statement as? FunctionDeclaration {
-			return replaceFunctionDeclaration(functionDeclaration)
-		}
-		if let variableDeclaration = statement as? VariableDeclaration {
-			return replaceVariableDeclaration(variableDeclaration)
-		}
-
-		return [statement]
-	}
-
 	override func replaceFunctionDeclaration( // gryphon annotation: override
 		_ functionDeclaration: FunctionDeclaration)
 		-> List<Statement>
@@ -3243,8 +3226,28 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 		_ variableDeclaration: VariableDeclaration)
 		-> VariableDeclaration
 	{
-		variableDeclaration.extendsType = self.extendingType
-		return variableDeclaration
+		// If this variable is in a generic context, we should have detected it earlier in the Swift
+		// Translator and put the information in the extendingType to preserve it. If the variable
+		// is not in an extension (i.e. if it's in a generic class), we remove the extending type
+		// here.
+		// The variableDeclaration will contain `Box<T>`, and the extending type will contain simply
+		// `Box`.
+		if let extensionType = self.extendingType {
+			if let typeWithGenerics = variableDeclaration.extendsType,
+				typeWithGenerics.contains("<"),
+				typeWithGenerics.hasPrefix(extensionType)
+			{
+				return variableDeclaration
+			}
+			else {
+				variableDeclaration.extendsType = self.extendingType
+				return variableDeclaration
+			}
+		}
+		else {
+			variableDeclaration.extendsType = nil
+			return variableDeclaration
+		}
 	}
 }
 

@@ -2035,17 +2035,29 @@ public class SwiftTranslator {
 			getTranslationCommentValue(forNode: variableDeclaration, key: .annotation)?
 			.split(withStringSeparator: " ") ?? []
 
-		let isStatic: Bool
-
 		let accessorDeclaration = variableDeclaration.subtree(named: "Accessor Declaration")
 		let interfaceType = accessorDeclaration?["interface type"]
 		let typeComponents = interfaceType?.split(withStringSeparator: " -> ")
 		let firstTypeComponent = typeComponents?.first
-		if let firstTypeComponent = firstTypeComponent, firstTypeComponent.contains(".Type") {
-			isStatic = true
-		}
-		else {
-			isStatic = false
+
+		var isStatic: Bool = false
+		var extendsType: String?
+		if let firstTypeComponent = firstTypeComponent {
+			if firstTypeComponent.contains(".Type") {
+				isStatic = true
+			}
+
+			// Since Swift 5.2: If this variable is in a generic context (i.e. generic extension or
+			// class), the generic information is available here. It is the only place the generic
+			// type shows up for extensions, so we add it here for call cases and remove it later in
+			// `RemoveExtensionsTranspilationPass` if this is not an extension.
+			// Ths type is formatted as `<T> (Box<T>) -> () -> Int`.
+			if firstTypeComponent.hasPrefix("<") {
+				let discardedPrefix = firstTypeComponent.prefix { $0 != "(" }
+				let typeWithoutPrefix = firstTypeComponent.dropFirst(discardedPrefix.count + 1)
+				let typeString = typeWithoutPrefix.prefix { $0 != ")" }
+				extendsType = String(typeString)
+			}
 		}
 
 		guard let identifier =
@@ -2173,7 +2185,7 @@ public class SwiftTranslator {
 			isLet: isLet,
 			isImplicit: isImplicit,
 			isStatic: isStatic,
-			extendsType: nil,
+			extendsType: extendsType,
 			annotations: annotations)
 	}
 
