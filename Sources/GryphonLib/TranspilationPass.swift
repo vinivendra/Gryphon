@@ -1355,8 +1355,11 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 		if let enumTypeExpression = dotExpression.leftExpression as? TypeExpression,
 			let enumExpression = dotExpression.rightExpression as? DeclarationReferenceExpression
 		{
-			let lastEnumType = String(enumTypeExpression
-				.typeName
+			// Enum types may need to be processed before they can be correctly interpreted
+			// (i.e. they may be `List<MyEnum>.ArrayLiteralElement` instead of `MyEnum`
+			let mappedEnumType = Utilities.getTypeMapping(for: enumTypeExpression.typeName) ??
+				enumTypeExpression.typeName
+			let lastEnumType = String(mappedEnumType
 				.split(withStringSeparator: ".")
 				.last!)
 
