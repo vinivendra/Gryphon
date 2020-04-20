@@ -390,12 +390,21 @@ extension Utilities {
 			return result
 		}
 
-		if (typeName.hasPrefix("Array<") ||
-					typeName.hasPrefix("List<") ||
-					typeName.hasPrefix("MutableList<")),
-				typeName.hasSuffix(">.Index")
+		// Handle arrays that can contain any element type
+		if typeName.hasPrefix("Array<") ||
+			typeName.hasPrefix("List<") ||
+			typeName.hasPrefix("MutableList<")
 		{
-			return "Int"
+			if typeName.hasSuffix(">.Index") {
+				return "Int"
+			}
+			else if typeName.hasSuffix(">.ArrayLiteralElement") {
+				let prefix = typeName.prefix { $0 != "<" }
+				let elementType = String(typeName
+					.dropFirst(prefix.count + 1)
+					.dropLast(">.ArrayLiteralElement".count))
+				return elementType
+			}
 		}
 
 		return nil
