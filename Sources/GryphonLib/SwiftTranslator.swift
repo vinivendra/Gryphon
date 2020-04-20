@@ -2363,9 +2363,32 @@ public class SwiftTranslator {
 					"Unable to get type from Super Reference Expression",
 					ast: expression)
 			}
+		case "Optional Evaluation Expression":
+			// Some casts to optionals (i.e. `Int?` to `Any?`) come wrapped in an optional
+			// expression ("Bind Optional Expression") that has to be unwrapped here.
+			// The "Optional Evaluation Expression" here is just the first node of the pattern that
+			// characterizes this wrapping. If the pattern isn't detected, just ignore the
+			// "Optional Evaluation Expression".
+
+			let derivedToBaseChain = expression
+				.subtree(named: "Inject Into Optional")?
+				.subtree(named: "Derived To Base Expression")?
+				.subtree(named: "Bind Optional Expression")
+
+			if let innerExpression = derivedToBaseChain?.subtree(at: 0) { // gryphon inspect
+				result = try translateExpression(innerExpression)
+			}
+			else if let lastExpression = expression.subtrees.last {
+				result = try translateExpression(lastExpression)
+			}
+			else {
+				result = try unexpectedExpressionStructureError(
+					"Unrecognized structure in automatic expression",
+					ast: expression)
+			}
+
 		case "Autoclosure Expression",
 			 "Inject Into Optional",
-			 "Optional Evaluation Expression",
 			 "Inout Expression",
 			 "Load Expression",
 			 "Function Conversion Expression",
