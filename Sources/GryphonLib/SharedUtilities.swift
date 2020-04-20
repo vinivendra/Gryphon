@@ -384,12 +384,20 @@ extension Utilities {
             "Range<String.Index>": "IntRange",
             "Range<Int>": "IntRange",
 			"Range<Int>.Element": "Int",
-
-            "Array<Element>.Index": "Int",
-			"List<Element>.Index": "Int",
-			"MutableList<Element>.Index": "Int",
         ]
 
-        return typeMappings[typeName]
+		if let result = typeMappings[typeName] {
+			return result
+		}
+
+		if (typeName.hasPrefix("Array<") ||
+					typeName.hasPrefix("List<") ||
+					typeName.hasPrefix("MutableList<")),
+				typeName.hasSuffix(">.Index")
+		{
+			return "Int"
+		}
+
+		return nil
     }
 }

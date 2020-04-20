@@ -567,15 +567,6 @@ private func simplifyType(string: String) -> String {
 		return "[\(elementType)]"
 	}
 
-	// Treat Array<Foo>.Index as Int
-	if (string.hasPrefix("Array<") ||
-				string.hasPrefix("MutableList<") ||
-				string.hasPrefix("List<")),
-			string.hasSuffix(">.Index")
-	{
-		return "Int"
-	}
-
 	// Treat MutableMap as Dictionary
 	if string.hasPrefix("MutableMap<"), string.last! == ">" {
 		let keyValue = String(string.dropFirst("MutableMap<".count).dropLast())
