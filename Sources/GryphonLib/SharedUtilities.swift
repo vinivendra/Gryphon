@@ -383,6 +383,7 @@ extension Utilities {
             "String.Element": "Char",
             "Range<String.Index>": "IntRange",
             "Range<Int>": "IntRange",
+			"Range<Int>.Element": "Int",
 
             "Array<Element>.Index": "Int",
 			"List<Element>.Index": "Int",
