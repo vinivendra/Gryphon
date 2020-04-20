@@ -2111,6 +2111,10 @@ public class KotlinTranslator {
 			allTypes.append(lastType)
 			return allTypes.joined(separator: " -> ")
 		}
+		else if typeName.hasSuffix(" throws") {
+			let cleanType = typeName.dropLast(" throws".count)
+			return translateType(String(cleanType))
+		}
 		else {
 			return Utilities.getTypeMapping(for: typeName) ?? typeName
 		}
