@@ -31,7 +31,6 @@ fun main(args: Array<String>) {
         PrintableAsTreeTest().run()
         ShellTest().run()
         SourceFileTest().run()
-        TranslationResultTest().run()
         UtilitiesTest().run()
 
         // AcceptanceTest().run()
