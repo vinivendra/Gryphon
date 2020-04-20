@@ -1842,7 +1842,12 @@ public class SwiftTranslator {
 			// FIXME: This might not work with nested generics
 			let prefix = interfaceType.prefix { $0 != ">" }
 			let genericsString = String(prefix.dropFirst())
-			genericTypes = Utilities.splitTypeList(genericsString, separators: [","])
+			let rawGenerics = Utilities.splitTypeList(genericsString, separators: [","])
+			genericTypes = rawGenerics.map { (typeName: String) -> String in
+					typeName.contains(" where ") ?
+						String(typeName.prefix { $0 != " " }) :
+						typeName
+				}.toMutableList()
 		}
 		else {
 			genericTypes = []

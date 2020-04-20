@@ -292,7 +292,7 @@ extension Utilities {
 				remainingString = typeList[index...]
 
                 // Add the built result to the array
-                result.append(currentResult)
+				result.append(currentResult.trimmingWhitespaces())
                 currentResult = ""
 				continue
             }
@@ -311,11 +311,6 @@ extension Utilities {
                 bracketsLevel -= 1
                 currentResult.append(character)
             }
-            else if character == " " {
-                if bracketsLevel > 0 {
-                    currentResult.append(character)
-                }
-            }
             else {
                 currentResult.append(character)
             }
@@ -326,7 +321,7 @@ extension Utilities {
 
         // Add the last result that was being built
         if !currentResult.isEmpty {
-            result.append(currentResult)
+			result.append(currentResult.trimmingWhitespaces())
         }
 
         return result

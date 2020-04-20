@@ -252,6 +252,28 @@ internal extension String {
 
 		return result
 	}
+
+	func trimmingWhitespaces() -> String {
+		var firstValidCharacterIndex: String.Index?
+		var lastValidCharacterIndex = self.startIndex
+
+		for index in self.indices {
+			let character = self[index]
+			if character != " " {
+				lastValidCharacterIndex = index
+				if firstValidCharacterIndex == nil {
+					firstValidCharacterIndex = index
+				}
+			}
+		}
+
+		guard let resultStartIndex = firstValidCharacterIndex else {
+			return ""
+		}
+		let resultEndIndex = self.index(after: lastValidCharacterIndex)
+
+		return String(self[resultStartIndex..<resultEndIndex])
+	}
 }
 
 //
