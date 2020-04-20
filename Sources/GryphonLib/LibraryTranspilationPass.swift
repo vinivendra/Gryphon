@@ -568,7 +568,11 @@ private func simplifyType(string: String) -> String {
 	}
 
 	// Treat Array<Foo>.Index as Int
-	if string.hasPrefix("Array<"), string.hasSuffix(">.Index") {
+	if (string.hasPrefix("Array<") ||
+				string.hasPrefix("MutableList<") ||
+				string.hasPrefix("List<")),
+			string.hasSuffix(">.Index")
+	{
 		return "Int"
 	}
 
