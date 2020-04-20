@@ -3048,8 +3048,13 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 			i += 1
 		}
 
-		if let lastStatement = statements.last {
-			result.append(lastStatement)
+		// If the last statement was a switch that became an expression, we skipped it on purpose
+		// by adding 2 to i, so i will be the statements count. Otherwise, we have to process
+		// the last statement now (and i will be the count minus 1).
+		if i != statements.count {
+			if let lastStatement = statements.last {
+				result.append(lastStatement)
+			}
 		}
 
 		return result
