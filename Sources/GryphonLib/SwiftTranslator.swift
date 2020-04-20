@@ -2375,7 +2375,7 @@ public class SwiftTranslator {
 				.subtree(named: "Derived To Base Expression")?
 				.subtree(named: "Bind Optional Expression")
 
-			if let innerExpression = derivedToBaseChain?.subtree(at: 0) { // gryphon inspect
+			if let innerExpression = derivedToBaseChain?.subtree(at: 0) {
 				result = try translateExpression(innerExpression)
 			}
 			else if let lastExpression = expression.subtrees.last {
