@@ -55,54 +55,74 @@ class IntegrationTest: XCTestCase {
 
 	// MARK: - Tests
 	func test() {
-			let tests = TestUtilities.testCases
-			for testName in tests {
-				print("- Testing \(testName)...")
-
-				do {
-					// Generate kotlin code using the whole compiler
-					let testCasePath = TestUtilities.testCasesPath + testName
-					let astDumpFilePath =
-						SupportingFile.pathOfSwiftASTDumpFile(
-							forSwiftFile: testCasePath,
-							swiftVersion: "5.2")
-					let defaultsToFinal = testName.hasSuffix("-default-final")
-					let generatedKotlinCode = try Compiler.transpileKotlinCode(
-						fromASTDumpFiles: [astDumpFilePath],
-						withContext: TranspilationContext(
-							toolchainName: nil,
-							indentationString: "\t",
-							defaultsToFinal: defaultsToFinal)).first!
-
-					// Load the previously stored kotlin code from file
-					let expectedKotlinCode =
-						try! Utilities.readFile(testCasePath.withExtension(.kt))
-
-					XCTAssert(
-						generatedKotlinCode == expectedKotlinCode,
-						"Test \(testName): the transpiler failed to produce expected result. " +
-							"Printing diff ('<' means generated, '>' means expected):" +
-							TestUtilities.diff(generatedKotlinCode, expectedKotlinCode))
-
-					print("\t- Done!")
+		for swiftVersion in TranspilationContext.supportedSwiftVersions {
+			do {
+				guard let toolchainString =
+					try TranspilationContext.getToolchain(forSwiftVersion: swiftVersion) else
+				{
+					XCTFail("Unable to find toolchain for Swift \(swiftVersion)")
+					continue
 				}
-				catch let error {
-					XCTFail("🚨 Test failed with error:\n\(error)")
+
+				let toolchain = (toolchainString == "") ? nil : toolchainString
+
+				print("⛓ Using Swift \(swiftVersion)")
+
+				let tests = TestUtilities.testCases
+				for testName in tests {
+					print("- Testing \(testName)...")
+
+					do {
+						// Generate kotlin code using the whole compiler
+						let testCasePath = TestUtilities.testCasesPath + testName
+						let astDumpFilePath =
+							SupportingFile.pathOfSwiftASTDumpFile(
+								forSwiftFile: testCasePath,
+								swiftVersion: swiftVersion)
+						let defaultsToFinal = testName.hasSuffix("-default-final")
+						let generatedKotlinCode = try Compiler.transpileKotlinCode(
+							fromASTDumpFiles: [astDumpFilePath],
+							withContext: TranspilationContext(
+								toolchainName: toolchain,
+								indentationString: "\t",
+								defaultsToFinal: defaultsToFinal)).first!
+
+						// Load the previously stored kotlin code from file
+						let expectedKotlinCode =
+							try! Utilities.readFile(testCasePath.withExtension(.kt))
+
+						XCTAssert(
+							generatedKotlinCode == expectedKotlinCode,
+							"Test \(testName): the transpiler failed to produce expected result. " +
+								"Printing diff ('<' means generated, '>' means expected):" +
+								TestUtilities.diff(generatedKotlinCode, expectedKotlinCode))
+
+						print("\t- Done!")
+					}
+					catch let error {
+						XCTFail("🚨 Test failed with error:\n\(error)")
+					}
+				}
+
+				let unexpectedWarnings = Compiler.issues.filter {
+						!$0.isError &&
+						!$0.fullMessage.contains("Native type") &&
+						!$0.fullMessage.contains("fileprivate declarations")
+					}
+				XCTAssert(
+					unexpectedWarnings.isEmpty,
+					"Unexpected warnings in integration tests:\n" +
+					"\(unexpectedWarnings.map { $0.fullMessage }.joined(separator: "\n\n"))")
+
+				if Compiler.numberOfErrors != 0 {
+					XCTFail("🚨 Integration test found errors:\n")
+					Compiler.printErrorsAndWarnings()
 				}
 			}
-
-			let unexpectedWarnings = Compiler.issues.filter {
-					!$0.isError &&
-					!$0.fullMessage.contains("Native type") &&
-					!$0.fullMessage.contains("fileprivate declarations")
-				}
-			XCTAssert(unexpectedWarnings.isEmpty, "Unexpected warnings in integration tests:\n" +
-				"\(unexpectedWarnings.map { $0.fullMessage }.joined(separator: "\n\n"))")
-
-			if Compiler.numberOfErrors != 0 {
-				XCTFail("🚨 Integration test found errors:\n")
-				Compiler.printErrorsAndWarnings()
+			catch let error {
+				XCTFail("Error finding toolchain for swift version \(swiftVersion): \(error)")
 			}
+		}
 	}
 
 	func testWarnings() {

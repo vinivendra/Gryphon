@@ -29,39 +29,6 @@ class TestError: Error {
 	// gryphon insert: constructor(): super() { }
 }
 
-extension TranspilationContext {
-	/// Cache for toolchains that use each Swift version (the key is the swift version, the value is
-	/// the toolchain). Swift versions inserted here should be supported. The default toolchain is
-	/// represented as "".
-	static private var swiftVersionToolchains: MutableMap<String, String> = [:]
-
-	/// Returns the name of a toolchain that uses the given Swift version. The first call to this
-	/// function triggers an eager calculation of a toolchain name for each supported Swift version.
-	/// The default toolchain is represented as ""; a `nil` value indicates no toolchain was found
-	/// for the given Swift version.
-	static internal func getToolchain(forSwiftVersion swiftVersion: String) throws -> String? {
-		if swiftVersionToolchains.isEmpty {
-			let defaultVersion = try getVersionOfToolchain(nil)
-			swiftVersionToolchains[defaultVersion] = ""
-
-			for swiftVersion in supportedSwiftVersions {
-				if swiftVersion == defaultVersion {
-					continue
-				}
-
-				let possibleToolchainName = "swift \(swiftVersion)"
-				let versionOfPossibleToolchain =
-					try getVersionOfToolchain(possibleToolchainName)
-				if versionOfPossibleToolchain == swiftVersion {
-					swiftVersionToolchains[swiftVersion] = possibleToolchainName
-				}
-			}
-		}
-
-		return swiftVersionToolchains[swiftVersion]
-	}
-}
-
 class TestUtilities {
 	// MARK: - Diffs
 	static let testCasesPath: String = Utilities.getCurrentFolder() + "/Test cases/"
