@@ -29,6 +29,39 @@ class TestError: Error {
 	// gryphon insert: constructor(): super() { }
 }
 
+extension TranspilationContext {
+	/// Cache for toolchains that use each Swift version (the key is the swift version, the value is
+	/// the toolchain). Swift versions inserted here should be supported. The default toolchain is
+	/// represented as "".
+	static private var swiftVersionToolchains: MutableMap<String, String> = [:]
+
+	/// Returns the name of a toolchain that uses the given Swift version. The first call to this
+	/// function triggers an eager calculation of a toolchain name for each supported Swift version.
+	/// The default toolchain is represented as ""; a `nil` value indicates no toolchain was found
+	/// for the given Swift version.
+	static internal func getToolchain(forSwiftVersion swiftVersion: String) throws -> String? {
+		if swiftVersionToolchains.isEmpty {
+			let defaultVersion = try getVersionOfToolchain(nil)
+			swiftVersionToolchains[defaultVersion] = ""
+
+			for swiftVersion in supportedSwiftVersions {
+				if swiftVersion == defaultVersion {
+					continue
+				}
+
+				let possibleToolchainName = "swift \(swiftVersion)"
+				let versionOfPossibleToolchain =
+					try getVersionOfToolchain(possibleToolchainName)
+				if versionOfPossibleToolchain == swiftVersion {
+					swiftVersionToolchains[swiftVersion] = possibleToolchainName
+				}
+			}
+		}
+
+		return swiftVersionToolchains[swiftVersion]
+	}
+}
+
 class TestUtilities {
 	// MARK: - Diffs
 	static let testCasesPath: String = Utilities.getCurrentFolder() + "/Test cases/"
@@ -85,75 +118,54 @@ class TestUtilities {
 
 	static private var testCasesHaveBeenUpdated = false
 
-	static public func updateASTsForTestCases(usingToolchain toolchain: String?) throws {
-        guard !testCasesHaveBeenUpdated else {
-            return
-        }
+	static public func updateASTsForTestCases() throws {
+		guard !testCasesHaveBeenUpdated else {
+			return
+		}
 
-        Compiler.log("\t* Updating ASTs for test cases...")
-
-		let swiftVersion = try TranspilationContext.getVersionOfToolchain(toolchain)
-
-        let testCasesFolder = "Test cases"
-        if Utilities.needsToDumpASTForSwiftFiles(
-			in: testCasesFolder,
-			forSwiftVersion: swiftVersion)
-		{
-			let testFiles = Utilities.getFiles(inDirectory: testCasesFolder, withExtension: .swift)
-
-			for testFile in testFiles {
-				try Driver.updateASTDumps(
-					forFiles: [testFile],
-					usingXcode: false,
-					usingToolchain: toolchain)
+		for swiftVersion in TranspilationContext.supportedSwiftVersions {
+			guard let toolchain =
+				try TranspilationContext.getToolchain(forSwiftVersion: swiftVersion) else
+			{
+				print("🚨 Toolchain for Swift \(swiftVersion) not found.")
+				continue
 			}
 
+			Compiler.log("\t* Updating ASTs for test cases...")
+
+			let swiftVersion = try TranspilationContext.getVersionOfToolchain(toolchain)
+
+			let testCasesFolder = "Test cases"
 			if Utilities.needsToDumpASTForSwiftFiles(
 				in: testCasesFolder,
 				forSwiftVersion: swiftVersion)
 			{
-				throw GryphonError(errorMessage: "Failed to update the AST of at least one file " +
-					"in the \(testCasesFolder) folder")
-			}
-        }
+				let testFiles = Utilities.getFiles(
+					inDirectory: testCasesFolder,
+					withExtension: .swift)
 
-        testCasesHaveBeenUpdated = true
+				for testFile in testFiles {
+					try Driver.updateASTDumps(
+						forFiles: [testFile],
+						usingXcode: false,
+						usingToolchain: toolchain)
+				}
 
-        Compiler.log("\t- Done!")
-    }
-
-	/// A dictionary that maps Swift versions to the name of toolchain that uses that version. An
-	/// empty string means it's the default toolchain.
-	static internal let availableToolchains: Map<String, String> = {
-		do {
-			var result: MutableMap<String, String> = [:]
-
-			let defaultSwiftVersion = try TranspilationContext.getVersionOfToolchain(nil)
-			result[defaultSwiftVersion] = ""
-
-			for version in TranspilationContext.supportedSwiftVersions {
-				if result[version] == nil {
-					// Check if there's a toolchain named "swift <version>" that gives us the
-					// expected version
-					let toolchainName = "swift \(version)"
-					let toolchainVersion =
-						try TranspilationContext.getVersionOfToolchain(toolchainName)
-					if toolchainVersion == version {
-						result[toolchainVersion] = toolchainName
-					}
-					else {
-						print("⚠️ Warning: no toolchain detected for Swift version \(version).")
-					}
+				if Utilities.needsToDumpASTForSwiftFiles(
+					in: testCasesFolder,
+					forSwiftVersion: swiftVersion)
+				{
+					throw GryphonError(errorMessage:
+						"Failed to update the AST of at least one file in the \(testCasesFolder) " +
+						"folder")
 				}
 			}
 
-			return result
+			testCasesHaveBeenUpdated = true
+
+			Compiler.log("\t- Done!")
 		}
-		catch let error {
-			print("\(error)")
-			fatalError("Failed to determine the Swift version used by a toolchain.")
-		}
-	}()
+    }
 
 	// MARK: - Test cases
 	static let testCases: List = [

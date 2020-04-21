@@ -206,13 +206,14 @@ public class TranspilationContext {
 		"5.1", "5.2",
 	]
 
-	/// Cache for the Swift version used by each toolchain. Toolchains inserted here should already
-	/// have been checked. The default toolchain is represented as "".
-	static private var toolchainVersions: MutableMap<String, String> = [:]
+	/// Cache for the Swift version used by each toolchain (the key is the toolchain, the value is
+	/// the Swift version). Toolchains inserted here should already have been checked. The default
+	/// toolchain is represented as "".
+	static private var toolchainSwiftVersions: MutableMap<String, String> = [:]
 
 	/// Returns a string like "5.1" corresponding to the Swift version used by the given toolchain.
 	static internal func getVersionOfToolchain(_ toolchain: String?) throws -> String {
-		if let result = toolchainVersions[toolchain ?? ""] {
+		if let result = toolchainSwiftVersions[toolchain ?? ""] {
 			return result
 		}
 
@@ -241,7 +242,7 @@ public class TranspilationContext {
 
 		try checkToolchainAndVersionSupport(toolchain, swiftVersion)
 
-		toolchainVersions[toolchain ?? ""] = swiftVersion
+		toolchainSwiftVersions[toolchain ?? ""] = swiftVersion
 
 		return swiftVersion
 	}
@@ -259,7 +260,7 @@ public class TranspilationContext {
 		throws
 	{
 		// If we already checked
-		if let checkedVersion = toolchainVersions[toolchain ?? ""],
+		if let checkedVersion = toolchainSwiftVersions[toolchain ?? ""],
 			checkedVersion == swiftVersion
 		{
 			return

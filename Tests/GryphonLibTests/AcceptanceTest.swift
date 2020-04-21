@@ -32,7 +32,7 @@ class AcceptanceTest: XCTestCase {
 
 	override static func setUp() {
 		do {
-			try TestUtilities.updateASTsForTestCases(usingToolchain: nil)
+			try TestUtilities.updateASTsForTestCases()
 			Utilities.createFolderIfNeeded(at: TestUtilities.kotlinBuildFolder)
 		}
 		catch let error {
