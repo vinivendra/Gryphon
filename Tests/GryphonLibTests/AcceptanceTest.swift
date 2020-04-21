@@ -32,7 +32,7 @@ class AcceptanceTest: XCTestCase {
 
 	override static func setUp() {
 		do {
-			try TestUtilities.updateASTsForTestCases()
+			try TestUtilities.updateASTsForTestCases(usingToolchain: nil)
 			Utilities.createFolderIfNeeded(at: TestUtilities.kotlinBuildFolder)
 		}
 		catch let error {
@@ -70,12 +70,13 @@ class AcceptanceTest: XCTestCase {
 				let testCasePath = TestUtilities.testCasesPath + testName
 				let astDumpFilePath =
 					SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: testCasePath)
-				let defaultFinal = testName.hasSuffix("-default-final")
+				let defaultsToFinal = testName.hasSuffix("-default-final")
 				let kotlinResults = try Compiler.transpileKotlinCode(
 					fromASTDumpFiles: [astDumpFilePath],
 					withContext: TranspilationContext(
+					toolchainName: nil,
 					indentationString: "\t",
-					defaultFinal: defaultFinal))
+					defaultsToFinal: defaultsToFinal))
 				let kotlinCode = kotlinResults[0]
 				let kotlinFilePath = "\(TestUtilities.kotlinBuildFolder)/\(testName).kt"
 				try Utilities.createFile(atPath: kotlinFilePath, containing: kotlinCode)
@@ -99,7 +100,7 @@ class AcceptanceTest: XCTestCase {
 					"java", "-jar",
 					"\(TestUtilities.kotlinBuildFolder)/kotlin.jar",
 					"-test", "-avoid-unicode", ]
-				if defaultFinal {
+				if defaultsToFinal {
 					arguments.append("--default-final")
 				}
 

@@ -16,6 +16,8 @@
 
 // gryphon output: Bootstrap/SharedTestUtilities.kt
 
+// gryphon insert: import kotlin.system.*
+
 import Foundation
 
 #if !GRYPHON
@@ -83,12 +85,10 @@ class TestUtilities {
 
 	static private var testCasesHaveBeenUpdated = false
 
-    static public func updateASTsForTestCases() throws {
+	static public func updateASTsForTestCases(usingToolchain toolchain: String?) throws {
         guard !testCasesHaveBeenUpdated else {
             return
         }
-
-		try Utilities.processGryphonTemplatesLibrary()
 
         Compiler.log("\t* Updating ASTs for test cases...")
 
@@ -97,7 +97,10 @@ class TestUtilities {
 			let testFiles = Utilities.getFiles(inDirectory: testCasesFolder, withExtension: .swift)
 
 			for testFile in testFiles {
-				try Driver.updateASTDumps(forFiles: [testFile], usingXcode: false)
+				try Driver.updateASTDumps(
+					forFiles: [testFile],
+					usingXcode: false,
+					usingToolchain: toolchain)
 			}
 
 			if Utilities.needsToDumpASTForSwiftFiles(in: testCasesFolder) {
@@ -110,6 +113,39 @@ class TestUtilities {
 
         Compiler.log("\t- Done!")
     }
+
+	/// A dictionary that maps Swift versions to the name of toolchain that uses that version. An
+	/// empty string means it's the default toolchain.
+	static internal let availableToolchains: Map<String, String> = {
+		do {
+			var result: MutableMap<String, String> = [:]
+
+			let defaultSwiftVersion = try TranspilationContext.getVersionOfToolchain(nil)
+			result[defaultSwiftVersion] = ""
+
+			for version in TranspilationContext.supportedSwiftVersions {
+				if result[version] == nil {
+					// Check if there's a toolchain named "swift <version>" that gives us the
+					// expected version
+					let toolchainName = "swift \(version)"
+					let toolchainVersion =
+						try TranspilationContext.getVersionOfToolchain(toolchainName)
+					if toolchainVersion == version {
+						result[toolchainVersion] = toolchainName
+					}
+					else {
+						print("⚠️ Warning: no toolchain detected for Swift version \(version).")
+					}
+				}
+			}
+
+			return result
+		}
+		catch let error {
+			print("\(error)")
+			fatalError("Failed to determine the Swift version used by a toolchain.")
+		}
+	}()
 
 	// MARK: - Test cases
 	static let testCases: List = [

@@ -953,7 +953,7 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 				returnType: "String",
 				functionType: "() -> String",
 				genericTypes: [],
-				isOpen: !context.defaultFinal,
+				isOpen: !context.defaultsToFinal,
 				isImplicit: false,
 				isStatic: false,
 				isMutating: false,

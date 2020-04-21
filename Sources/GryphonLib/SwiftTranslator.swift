@@ -477,7 +477,7 @@ public class SwiftTranslator {
 			isOpen = true
 		}
 		else {
-			isOpen = !context.defaultFinal
+			isOpen = !context.defaultsToFinal
 		}
 
 		// Check for inheritance
@@ -1961,7 +1961,7 @@ public class SwiftTranslator {
 			isOpen = true
 		}
 		else {
-			isOpen = !context.defaultFinal
+			isOpen = !context.defaultsToFinal
 		}
 
 		let prefix = String(functionNamePrefix)
@@ -2088,7 +2088,7 @@ public class SwiftTranslator {
 			isOpen = false
 		}
 		else {
-			isOpen = !context.defaultFinal
+			isOpen = !context.defaultsToFinal
 		}
 
 		var expression: Expression?

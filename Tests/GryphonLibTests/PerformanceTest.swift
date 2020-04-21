@@ -55,8 +55,9 @@ class PerformanceTest: XCTestCase {
 						fromSwiftAST: swiftASTs,
 						asMainFile: false,
 						withContext: TranspilationContext(
+							toolchainName: nil,
 							indentationString: "\t",
-							defaultFinal: false))
+							defaultsToFinal: false))
 				}
 				catch let error {
 					XCTFail("🚨 Test failed with error:\n\(error)")
@@ -76,8 +77,9 @@ class PerformanceTest: XCTestCase {
 		let rawASTs = try! Compiler.transpileGryphonRawASTs(
 			fromASTDumpFiles: astDumpFilePaths,
 			withContext: TranspilationContext(
+				toolchainName: nil,
 				indentationString: "\t",
-				defaultFinal: false))
+				defaultsToFinal: false))
 
 		measure {
 			for rawAST in rawASTs {
@@ -85,8 +87,9 @@ class PerformanceTest: XCTestCase {
 					_ = try Compiler.generateGryphonASTAfterFirstPasses(
 						fromGryphonRawAST: rawAST,
 						withContext: TranspilationContext(
+							toolchainName: nil,
 							indentationString: "\t",
-							defaultFinal: false))
+							defaultsToFinal: false))
 				}
 				catch let error {
 					XCTFail("🚨 Test failed with error:\n\(error)")
@@ -96,36 +99,46 @@ class PerformanceTest: XCTestCase {
 	}
 
 	func testSecondTranspilationPasses() {
-		let tests = TestUtilities.testCases
+		do {
+			let tests = TestUtilities.testCases
 
-		let astDumpFilePaths: List<String> = tests.map { testName in
-			let testCasePath = TestUtilities.testCasesPath + testName
-			return SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: testCasePath)
+			let astDumpFilePaths: List<String> = tests.map { testName in
+				let testCasePath = TestUtilities.testCasesPath + testName
+				return SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: testCasePath)
+			}
+
+			let context = try TranspilationContext(
+				toolchainName: nil,
+				indentationString: "\t",
+				defaultsToFinal: false)
+			let semiRawASTs = try! Compiler.transpileGryphonRawASTs(
+				fromASTDumpFiles: astDumpFilePaths,
+				withContext: context)
+				.map {
+					try! Compiler.generateGryphonASTAfterFirstPasses(
+						fromGryphonRawAST: $0,
+						withContext: context)
+				}
+
+			measure {
+				for semiRawAST in semiRawASTs {
+					do {
+						_ = try Compiler.generateGryphonASTAfterSecondPasses(
+							fromGryphonRawAST: semiRawAST,
+							withContext: TranspilationContext(
+								toolchainName: nil,
+								indentationString: "\t",
+								defaultsToFinal: false))
+					}
+					catch let error {
+						XCTFail("🚨 Test failed with error:\n\(error)")
+					}
+				}
+			}
 		}
-
-		let context = TranspilationContext(indentationString: "\t", defaultFinal: false)
-		let semiRawASTs = try! Compiler.transpileGryphonRawASTs(
-			fromASTDumpFiles: astDumpFilePaths,
-			withContext: context)
-			.map {
-				try! Compiler.generateGryphonASTAfterFirstPasses(
-					fromGryphonRawAST: $0,
-					withContext: context)
-			}
-
-		measure {
-			for semiRawAST in semiRawASTs {
-				do {
-					_ = try Compiler.generateGryphonASTAfterSecondPasses(
-						fromGryphonRawAST: semiRawAST,
-						withContext: TranspilationContext(
-							indentationString: "\t",
-							defaultFinal: false))
-				}
-				catch let error {
-					XCTFail("🚨 Test failed with error:\n\(error)")
-				}
-			}
+		catch let error {
+			XCTFail("🚨 Failed to create ASTs or contexts: \(error)")
+			return
 		}
 	}
 
@@ -140,8 +153,9 @@ class PerformanceTest: XCTestCase {
 		let rawASTs = try! Compiler.transpileGryphonRawASTs(
 			fromASTDumpFiles: astDumpFilePaths,
 			withContext: TranspilationContext(
+				toolchainName: nil,
 				indentationString: "\t",
-				defaultFinal: false))
+				defaultsToFinal: false))
 
 		measure {
 			for rawAST in rawASTs {
@@ -149,8 +163,9 @@ class PerformanceTest: XCTestCase {
 					_ = try Compiler.generateGryphonAST(
 						fromGryphonRawAST: rawAST,
 						withContext: TranspilationContext(
+							toolchainName: nil,
 							indentationString: "\t",
-							defaultFinal: false))
+							defaultsToFinal: false))
 				}
 				catch let error {
 					XCTFail("🚨 Test failed with error:\n\(error)")
@@ -162,30 +177,39 @@ class PerformanceTest: XCTestCase {
 	func testKotlinTranslator() {
 		let tests = TestUtilities.testCases
 
-		let astsAndContexts: List<(GryphonAST, TranspilationContext)> = tests.map
-			{ testName in
-				let testCasePath = TestUtilities.testCasesPath + testName
-				let astDumpFilePath =
-					SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: testCasePath)
-				let context = TranspilationContext(indentationString: "\t", defaultFinal: false)
-				let ast = try! Compiler.transpileGryphonASTs(
-					fromASTDumpFiles: [astDumpFilePath],
-					withContext: context).first!
-				return (ast, context)
-			}
+		do {
+			let astsAndContexts: List<(GryphonAST, TranspilationContext)> = try tests.map
+				{ testName in
+					let testCasePath = TestUtilities.testCasesPath + testName
+					let astDumpFilePath =
+						SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: testCasePath)
+					let context = try TranspilationContext(
+						toolchainName: nil,
+						indentationString: "\t",
+						defaultsToFinal: false)
+					let ast = try Compiler.transpileGryphonASTs(
+						fromASTDumpFiles: [astDumpFilePath],
+						withContext: context).first!
+					return (ast, context)
+				}
 
-		measure {
-			for astAndContext in astsAndContexts {
-				do {
-					let (ast, context) = astAndContext
-					_ = try Compiler.generateKotlinCode(
-						fromGryphonAST: ast,
-						withContext: context)
-				}
-				catch let error {
-					XCTFail("🚨 Test failed with error:\n\(error)")
+			measure {
+				for astAndContext in astsAndContexts {
+					do {
+						let (ast, context) = astAndContext
+						_ = try Compiler.generateKotlinCode(
+							fromGryphonAST: ast,
+							withContext: context)
+					}
+					catch let error {
+						XCTFail("🚨 Test failed with error:\n\(error)")
+					}
 				}
 			}
+		}
+		catch let error {
+			XCTFail("🚨 Failed to create ASTs or contexts: \(error)")
+			return
 		}
 	}
 
@@ -201,8 +225,9 @@ class PerformanceTest: XCTestCase {
 					_ = try Compiler.transpileKotlinCode(
 						fromASTDumpFiles: [astDumpFilePath],
 						withContext: TranspilationContext(
+							toolchainName: nil,
 							indentationString: "\t",
-							defaultFinal: false))
+							defaultsToFinal: false))
 				}
 				catch let error {
 					XCTFail("🚨 Test failed with error:\n\(error)")
@@ -223,7 +248,7 @@ class PerformanceTest: XCTestCase {
 
 	override static func setUp() {
 		do {
-			try TestUtilities.updateASTsForTestCases()
+			try TestUtilities.updateASTsForTestCases(usingToolchain: nil)
 		}
 		catch let error {
 			print(error)

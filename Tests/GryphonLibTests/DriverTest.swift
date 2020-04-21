@@ -32,7 +32,7 @@ class DriverTest: XCTestCase {
 
 	override static func setUp() {
 		do {
-			try TestUtilities.updateASTsForTestCases()
+			try TestUtilities.updateASTsForTestCases(usingToolchain: nil)
 		}
 		catch let error {
 			print(error)

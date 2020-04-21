@@ -113,13 +113,15 @@ public class Driver {
 			}
 		}
 
+		let toolchain: String?
 		if let toolchainArgument = arguments.first(where: { $0.hasPrefix("--toolchain=") }) {
 			let toolchainName = String(toolchainArgument.dropFirst("--toolchain=".count))
-			try TranspilationContext.setChosenToolchain(toolchainName)
+			toolchain = toolchainName
 		}
-		else if TranspilationContext.getChosenToolchain() == nil {
-			try TranspilationContext.checkToolchainSupport(nil)
+		else {
+			toolchain = nil
 		}
+		try TranspilationContext.checkToolchainSupport(toolchain)
 
 		let maybeXcodeProject = getXcodeProject(inArguments: arguments)
 
@@ -158,7 +160,7 @@ public class Driver {
 					"Please specify an Xcode project when using `-setupXcode`.")
 			}
 
-			try setupGryphonFolder(forXcodeProject: xcodeProject)
+			try setupGryphonFolder(forXcodeProject: xcodeProject, usingToolchain: toolchain)
 			Compiler.log("Xcode setup successful.")
 			return nil
 		}
@@ -168,17 +170,21 @@ public class Driver {
 					"Please specify an Xcode project when using `-makeGryphonTargets`.")
 			}
 
-			try makeGryphonTargets(forXcodeProject: xcodeProject)
+			try makeGryphonTargets(forXcodeProject: xcodeProject, usingToolchain: toolchain)
 			Compiler.log("Gryphon target creation successful.")
 			return nil
 		}
 
 		// If there's no build folder, create one, perform the transpilation, then delete it
 		if !Utilities.fileExists(at: SupportingFile.gryphonBuildFolder) {
-			return try performCompilationWithTemporaryBuildFolder(withArguments: arguments)
+			return try performCompilationWithTemporaryBuildFolder(
+				withArguments: arguments,
+				usingToolchain: toolchain)
 		}
 		else {
-			return try performCompilation(withArguments: arguments)
+			return try performCompilation(
+				withArguments: arguments,
+				usingToolchain: toolchain)
 		}
 	}
 
@@ -306,7 +312,9 @@ public class Driver {
 
 	@discardableResult
 	public static func performCompilationWithTemporaryBuildFolder(
-		withArguments arguments: List<String>) throws -> Any?
+		withArguments arguments: List<String>,
+		usingToolchain toolchain: String?)
+		throws -> Any?
 	{
 		let isVerbose = arguments.contains("--verbose")
 
@@ -318,7 +326,7 @@ public class Driver {
 			else {
 				_ = try Driver.run(withArguments: ["init"])
 			}
-			result = try performCompilation(withArguments: arguments)
+			result = try performCompilation(withArguments: arguments, usingToolchain: toolchain)
 		}
 		catch let error {
 			// Ensure `clean` runs even if an error was thrown
@@ -344,7 +352,9 @@ public class Driver {
 
 	@discardableResult
 	public static func performCompilation(
-		withArguments arguments: List<String>) throws -> Any?
+		withArguments arguments: List<String>,
+		usingToolchain toolchain: String?)
+		throws -> Any?
 	{
 		defer {
 			Compiler.printErrorsAndWarnings()
@@ -410,7 +420,7 @@ public class Driver {
 		}
 
 		//
-		let defaultFinal = arguments.contains("--default-final")
+		let defaultsToFinal = arguments.contains("--default-final")
 
 		//
 		let settings = Settings(
@@ -472,7 +482,8 @@ public class Driver {
 
 			try updateASTDumps(
 				forFiles: allSourceFiles,
-				usingXcode: isUsingXcode)
+				usingXcode: isUsingXcode,
+				usingToolchain: toolchain)
 
 			// Check that all AST dump files have been updated successfully
 			let outdatedASTDumps = outdatedASTDumpFiles(forInputFiles: allSourceFiles)
@@ -487,11 +498,12 @@ public class Driver {
 						outdatedASTDumps.joined(separator: ", ") +
 						". Attempting to update file list...")
 
-					try setupGryphonFolder(forXcodeProject: xcodeProject)
+					try setupGryphonFolder(forXcodeProject: xcodeProject, usingToolchain: toolchain)
 
 					try updateASTDumps(
 						forFiles: allSourceFiles,
-						usingXcode: isUsingXcode)
+						usingXcode: isUsingXcode,
+						usingToolchain: toolchain)
 
 					let newOutdatedASTDumps = outdatedASTDumpFiles(forInputFiles: allSourceFiles)
 
@@ -511,12 +523,11 @@ public class Driver {
 		//// Perform transpilation
 
 		//
-		Compiler.log("Updating libraries...")
-		let context = TranspilationContext(
+		let context = try TranspilationContext(
+			toolchainName: toolchain,
 			indentationString: indentationString,
-			defaultFinal: defaultFinal)
+			defaultsToFinal: defaultsToFinal)
 
-		//
 		Compiler.log("Translating source files...\n")
 
 		let firstResult: List<Any?>
@@ -652,14 +663,18 @@ public class Driver {
 		Utilities.deleteFolder(at: SupportingFile.gryphonBuildFolder)
 	}
 
-	static func setupGryphonFolder(forXcodeProject xcodeProjectPath: String) throws {
+	static func setupGryphonFolder(
+		forXcodeProject xcodeProjectPath: String,
+		usingToolchain toolchain: String?)
+		throws
+	{
 		let arguments: MutableList = [
 			"xcodebuild",
 			"-dry-run",
 			"-project",
 			"\(xcodeProjectPath)", ]
 
-		if let userToolchain = TranspilationContext.getChosenToolchain() {
+		if let userToolchain = toolchain {
 			arguments.append("-toolchain")
 			arguments.append(userToolchain)
 		}
@@ -717,7 +732,7 @@ public class Driver {
 
 		// Build the resulting command
 		result += "\t"
-		if let chosenToolchain = TranspilationContext.getChosenToolchain() {
+		if let chosenToolchain = toolchain {
 			// Set the toolchain manually by replacing the direct call to swiftc with a call to
 			// xcrun
 			result += "\txcrun -toolchain \"\(chosenToolchain)\" swiftc "
@@ -735,14 +750,18 @@ public class Driver {
 			containing: result)
 	}
 
-	static func makeGryphonTargets(forXcodeProject xcodeProjectPath: String) throws {
+	static func makeGryphonTargets(
+		forXcodeProject xcodeProjectPath: String,
+		usingToolchain toolchain: String?)
+		throws
+	{
 		// Run the ruby script
 		let arguments: MutableList = [
 			"ruby",
 			"\(SupportingFile.makeGryphonTargets.relativePath)",
 			"\(xcodeProjectPath)", ]
-		if let toolchain = TranspilationContext.getChosenToolchain() {
-			arguments.append(toolchain)
+		if let userToolchain = toolchain {
+			arguments.append(userToolchain)
 		}
 
 		let commandResult = Shell.runShellCommand(arguments)
@@ -757,7 +776,12 @@ public class Driver {
 		_ = Utilities.createFileIfNeeded(at: SupportingFile.xcFileList.relativePath)
 	}
 
-	static func updateASTDumps(forFiles swiftFiles: List<String>, usingXcode: Bool) throws {
+	static func updateASTDumps(
+		forFiles swiftFiles: List<String>,
+		usingXcode: Bool,
+		usingToolchain toolchain: String?)
+		throws
+	{
 		//// Create the outputFileMap
 		var outputFileMapContents = "{\n"
 
@@ -795,7 +819,7 @@ public class Driver {
 		}
 		else {
 			let arguments: MutableList = ["xcrun"]
-			if let chosenToolchainName = TranspilationContext.getChosenToolchain() {
+			if let chosenToolchainName = toolchain {
 				arguments.append("-toolchain")
 				arguments.append(chosenToolchainName)
 			}

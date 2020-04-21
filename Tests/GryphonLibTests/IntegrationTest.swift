@@ -32,7 +32,7 @@ class IntegrationTest: XCTestCase {
 
 	override static func setUp() {
 		do {
-			try TestUtilities.updateASTsForTestCases()
+			try TestUtilities.updateASTsForTestCases(usingToolchain: nil)
 		}
 		catch let error {
 			print(error)
@@ -55,51 +55,52 @@ class IntegrationTest: XCTestCase {
 
 	// MARK: - Tests
 	func test() {
-		let tests = TestUtilities.testCases
+			let tests = TestUtilities.testCases
+			for testName in tests {
+				print("- Testing \(testName)...")
 
-		for testName in tests {
-			print("- Testing \(testName)...")
+				do {
+					// Generate kotlin code using the whole compiler
+					let testCasePath = TestUtilities.testCasesPath + testName
+					let astDumpFilePath =
+						SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: testCasePath)
+					let defaultsToFinal = testName.hasSuffix("-default-final")
+					let generatedKotlinCode = try Compiler.transpileKotlinCode(
+						fromASTDumpFiles: [astDumpFilePath],
+						withContext: TranspilationContext(
+							toolchainName: nil,
+							indentationString: "\t",
+							defaultsToFinal: defaultsToFinal)).first!
 
-			do {
-				// Generate kotlin code using the whole compiler
-				let testCasePath = TestUtilities.testCasesPath + testName
-				let astDumpFilePath =
-					SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: testCasePath)
-				let defaultFinal = testName.hasSuffix("-default-final")
-				let generatedKotlinCode = try Compiler.transpileKotlinCode(
-					fromASTDumpFiles: [astDumpFilePath],
-					withContext: TranspilationContext(
-						indentationString: "\t",
-						defaultFinal: defaultFinal)).first!
+					// Load the previously stored kotlin code from file
+					let expectedKotlinCode =
+						try! Utilities.readFile(testCasePath.withExtension(.kt))
 
-				// Load the previously stored kotlin code from file
-				let expectedKotlinCode = try! Utilities.readFile(testCasePath.withExtension(.kt))
+					XCTAssert(
+						generatedKotlinCode == expectedKotlinCode,
+						"Test \(testName): the transpiler failed to produce expected result. " +
+							"Printing diff ('<' means generated, '>' means expected):" +
+							TestUtilities.diff(generatedKotlinCode, expectedKotlinCode))
 
-				XCTAssert(
-					generatedKotlinCode == expectedKotlinCode,
-					"Test \(testName): the transpiler failed to produce expected result. " +
-						"Printing diff ('<' means generated, '>' means expected):" +
-						TestUtilities.diff(generatedKotlinCode, expectedKotlinCode))
-
-				print("\t- Done!")
+					print("\t- Done!")
+				}
+				catch let error {
+					XCTFail("🚨 Test failed with error:\n\(error)")
+				}
 			}
-			catch let error {
-				XCTFail("🚨 Test failed with error:\n\(error)")
-			}
-		}
 
-		let unexpectedWarnings = Compiler.issues.filter {
-				!$0.isError &&
-				!$0.fullMessage.contains("Native type") &&
-				!$0.fullMessage.contains("fileprivate declarations")
-			}
-		XCTAssert(unexpectedWarnings.isEmpty, "Unexpected warnings in integration tests:\n" +
-			"\(unexpectedWarnings.map { $0.fullMessage }.joined(separator: "\n\n"))")
+			let unexpectedWarnings = Compiler.issues.filter {
+					!$0.isError &&
+					!$0.fullMessage.contains("Native type") &&
+					!$0.fullMessage.contains("fileprivate declarations")
+				}
+			XCTAssert(unexpectedWarnings.isEmpty, "Unexpected warnings in integration tests:\n" +
+				"\(unexpectedWarnings.map { $0.fullMessage }.joined(separator: "\n\n"))")
 
-		if Compiler.numberOfErrors != 0 {
-			XCTFail("🚨 Integration test found errors:\n")
-			Compiler.printErrorsAndWarnings()
-		}
+			if Compiler.numberOfErrors != 0 {
+				XCTFail("🚨 Integration test found errors:\n")
+				Compiler.printErrorsAndWarnings()
+			}
 	}
 
 	func testWarnings() {
@@ -113,8 +114,9 @@ class IntegrationTest: XCTestCase {
 			_ = try Compiler.transpileKotlinCode(
 				fromASTDumpFiles: [astDumpFilePath],
 				withContext: TranspilationContext(
+					toolchainName: nil,
 					indentationString: "\t",
-					defaultFinal: false)).first!
+					defaultsToFinal: false)).first!
 
 			Compiler.printErrorsAndWarnings()
 

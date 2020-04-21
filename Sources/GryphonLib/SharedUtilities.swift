@@ -188,10 +188,11 @@ extension Utilities {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-private var templatesLibraryHasBeenProcessed = false
-
 extension Utilities {
-    static public func processGryphonTemplatesLibrary() throws {
+	static public func processGryphonTemplatesLibrary(
+		for transpilationContext: TranspilationContext)
+		throws
+	{
         libraryUpdateLock.lock() // gryphon ignore
         // gryphon insert: libraryUpdateLock.acquire()
 
@@ -200,17 +201,14 @@ extension Utilities {
             // gryphon insert: libraryUpdateLock.release()
         }
 
-        guard !templatesLibraryHasBeenProcessed else {
-            return
-        }
-
 		if Utilities.needsToDumpASTForSwiftFiles(
 			[SupportingFile.gryphonTemplatesLibrary.name],
 			in: SupportingFile.gryphonTemplatesLibrary.folder ?? ".")
 		{
 			try Driver.updateASTDumps(
 				forFiles: [SupportingFile.gryphonTemplatesLibrary.relativePath],
-				usingXcode: false)
+				usingXcode: false,
+				usingToolchain: transpilationContext.toolchainName)
 
 			if Utilities.needsToDumpASTForSwiftFiles(
 				[SupportingFile.gryphonTemplatesLibrary.name],
@@ -224,14 +222,12 @@ extension Utilities {
         let astArray = try Compiler.transpileGryphonRawASTs(
 			fromASTDumpFiles: [SupportingFile.pathOfSwiftASTDumpFile(
 				forSwiftFile: SupportingFile.gryphonTemplatesLibrary.relativePath), ],
-			withContext: TranspilationContext.globalContext)
+			withContext: transpilationContext)
 
         let ast = astArray[0]
 		_ = RecordTemplatesTranspilationPass(
 			ast: ast,
-			context: TranspilationContext.globalContext).run()
-
-        templatesLibraryHasBeenProcessed = true
+			context: transpilationContext).run()
 
         Compiler.log("\t* Done!")
     }

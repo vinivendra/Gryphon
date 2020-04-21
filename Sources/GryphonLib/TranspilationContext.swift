@@ -22,33 +22,60 @@
 // gryphon insert: import kotlin.system.*
 
 public class TranspilationContext {
+	let toolchainName: String?
+	let swiftVersion: String
 	let indentationString: String
-	let defaultFinal: Bool
+	let defaultsToFinal: Bool
 
-	/// The global context is used for information that should be accessible globally, such as
-	/// the Gryphon templates library (which can be calculated once and are the same every time).
-	static let globalContext = TranspilationContext()
+	/// The base contexts are used for information that all transpilation contexts should contain,
+	/// such as the Gryphon templates library (which can be calculated once and are the same every
+	/// time). All transpilation contexts are initialized with the information from the base
+	/// context that corresponds to their Swift version. Base contexts are indexed in this map by
+	/// their Swift versions.
+	static private let baseContexts: MutableMap<String, TranspilationContext> = [:]
 
-	/// Normal contexts should be initialized based on the pre-existing global information, using
+	/// Returns the base context for the requested Swift version. If one hasn't been created yet,
+	/// create it then return it.
+	static internal func getBaseContext(
+		forToolchain toolchainName: String?)
+		throws -> TranspilationContext
+	{
+		let swiftVersion = try TranspilationContext.getVersionOfToolchain(toolchainName)
+		if let result = baseContexts[swiftVersion] {
+			return result
+		}
+		else {
+			let newContext = try TranspilationContext(toolchainName: toolchainName)
+			try Utilities.processGryphonTemplatesLibrary(for: newContext)
+			baseContexts[swiftVersion] = newContext
+			return newContext
+		}
+	}
+
+	/// Normal contexts should be initialized using the correct base context, which is done with the
 	/// the public `init(indentationString:)` method. This method is only for initializing the
-	/// global context.
-	private init() {
+	/// base contexts themselves.
+	private init(toolchainName: String?) throws {
+		try TranspilationContext.checkToolchainSupport(toolchainName)
+
+		self.toolchainName = toolchainName
+		self.swiftVersion = try TranspilationContext.getVersionOfToolchain(toolchainName)
 		self.indentationString = ""
-		self.defaultFinal = false
+		self.defaultsToFinal = false
 		self.templates = []
 	}
 
-	public init(indentationString: String, defaultFinal: Bool) {
-		do {
-			try Utilities.processGryphonTemplatesLibrary()
-		}
-		catch let error {
-			fatalError("Failed to initialize the Gryphon templates library!\n\(error)")
-		}
+	public init(toolchainName: String?, indentationString: String, defaultsToFinal: Bool) throws {
+		try TranspilationContext.checkToolchainSupport(toolchainName)
 
-		self.templates = TranspilationContext.globalContext.templates.toMutableList()
+		self.toolchainName = toolchainName
+		self.swiftVersion = try TranspilationContext.getVersionOfToolchain(toolchainName)
 		self.indentationString = indentationString
-		self.defaultFinal = defaultFinal
+		self.defaultsToFinal = defaultsToFinal
+		self.templates = try TranspilationContext
+			.getBaseContext(forToolchain: toolchainName)
+			.templates
+			.toMutableList()
 	}
 
 	// MARK: - Templates
@@ -175,37 +202,20 @@ public class TranspilationContext {
 	// MARK: - Swift versions
 
 	/// Currently supported versions. If 5.1 is supported, 5.1.x will be too.
-	private static let supportedVersions: List = [
+	public static let supportedSwiftVersions: List = [
 		"5.1", "5.2",
 	]
 
-	private static var chosenToolchainName: String?
-	private static var chosenSwiftVersion: String?
+	/// Cache for the Swift version used by each toolchain. Toolchains inserted here should already
+	/// have been checked. The default toolchain is represented as "".
+	static private var toolchainVersions: MutableMap<String, String> = [:]
 
-	/// Check if the given toolchain uses a supported version of Swift. If it is, set the chosen
-	/// toolchain and the chosen Swift version.
-	public static func setChosenToolchain(_ toolchain: String?) throws {
-		let swiftVersion = try checkToolchainSupport(toolchain)
-		chosenToolchainName = toolchain
-		chosenSwiftVersion = swiftVersion
-	}
+	/// Returns a string like "5.1" corresponding to the Swift version used by the given toolchain.
+	static internal func getVersionOfToolchain(_ toolchain: String?) throws -> String {
+		if let result = toolchainVersions[toolchain ?? ""] {
+			return result
+		}
 
-	/// Returns the name of the chosen toolchain, which is set and validated by the
-	/// `setChosenToolchain()` method.
-	public static func getChosenToolchain() -> String? {
-		return chosenToolchainName
-	}
-
-	/// Returns the Swift version currently being used to dump the ASTs. This value is set and
-	/// validated by the `setChosenToolchain()` method.
-	public static func getSwiftVersion() -> String? {
-		return chosenSwiftVersion
-	}
-
-	/// Checks if the given toolchain uses a supported version of Swift. If it does, return that
-	/// Swift version. If it doesn't, throw an error.
-	@discardableResult
-	static func checkToolchainSupport(_ toolchain: String?) throws -> String {
 		let arguments: List<String>
 		if let toolchain = toolchain {
 			arguments = ["xcrun", "--toolchain", toolchain, "swift", "--version"]
@@ -229,7 +239,33 @@ public class TranspilationContext {
 		swiftVersion = String(swiftVersion.dropFirst(prefixToRemove.count))
 		swiftVersion = String(swiftVersion.prefix { $0 != " " })
 
-		guard supportedVersions.contains(where: { $0.hasPrefix(swiftVersion) }) else {
+		try checkToolchainAndVersionSupport(toolchain, swiftVersion)
+
+		toolchainVersions[toolchain ?? ""] = swiftVersion
+
+		return swiftVersion
+	}
+
+	/// Checks if the given toolchain uses a supported version of Swift. If it doesn't, throw an
+	/// error.
+	static internal func checkToolchainSupport(_ toolchain: String?) throws {
+		let swiftVersion = try getVersionOfToolchain(toolchain)
+		try checkToolchainAndVersionSupport(toolchain, swiftVersion)
+	}
+
+	static private func checkToolchainAndVersionSupport(
+		_ toolchain: String?,
+		_ swiftVersion: String)
+		throws
+	{
+		// If we already checked
+		if let checkedVersion = toolchainVersions[toolchain ?? ""],
+			checkedVersion == swiftVersion
+		{
+			return
+		}
+
+		guard supportedSwiftVersions.contains(where: { $0.hasPrefix(swiftVersion) }) else {
 			var errorMessage = ""
 
 			if let toolchain = toolchain {
@@ -240,7 +276,7 @@ public class TranspilationContext {
 				errorMessage += "Swift version \(swiftVersion) is not supported.\n"
 			}
 
-			let supportedVersionsString = supportedVersions.joined(separator: ", ")
+			let supportedVersionsString = supportedSwiftVersions.joined(separator: ", ")
 			errorMessage +=
 				"Currently supported Swift versions: \(supportedVersionsString).\n" +
 				"You can use the `--toolchain=<toolchain name>` option to choose a toolchain " +
@@ -248,7 +284,5 @@ public class TranspilationContext {
 
 			throw GryphonError(errorMessage: errorMessage)
 		}
-
-		return swiftVersion
 	}
 }
