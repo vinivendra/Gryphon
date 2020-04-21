@@ -198,7 +198,9 @@ public class Driver {
 			return [] // gryphon value: listOf<Any>()
 		}
 
-		let swiftASTDumpFile = SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: inputFilePath)
+		let swiftASTDumpFile = SupportingFile.pathOfSwiftASTDumpFile(
+			forSwiftFile: inputFilePath,
+			swiftVersion: context.swiftVersion)
 
 		let swiftASTDump: String
 		do {
@@ -486,7 +488,10 @@ public class Driver {
 				usingToolchain: toolchain)
 
 			// Check that all AST dump files have been updated successfully
-			let outdatedASTDumps = outdatedASTDumpFiles(forInputFiles: allSourceFiles)
+			let swiftVersion = try TranspilationContext.getVersionOfToolchain(toolchain)
+			let outdatedASTDumps = outdatedASTDumpFiles(
+				forInputFiles: allSourceFiles,
+				swiftVersion: swiftVersion)
 			if !outdatedASTDumps.isEmpty {
 
 				if let xcodeProject = maybeXcodeProject {
@@ -505,7 +510,9 @@ public class Driver {
 						usingXcode: isUsingXcode,
 						usingToolchain: toolchain)
 
-					let newOutdatedASTDumps = outdatedASTDumpFiles(forInputFiles: allSourceFiles)
+					let newOutdatedASTDumps = outdatedASTDumpFiles(
+						forInputFiles: allSourceFiles,
+						swiftVersion: swiftVersion)
 
 					if !newOutdatedASTDumps.isEmpty {
 						throw GryphonError(errorMessage: "Unable to update AST dumps for files: " +
@@ -580,13 +587,16 @@ public class Driver {
 	}
 
 	static func outdatedASTDumpFiles(
-		forInputFiles inputFiles: List<String>)
+		forInputFiles inputFiles: List<String>,
+		swiftVersion: String)
 		-> MutableList<String>
 	{
 		let result: MutableList<String> = []
 
 		for inputFile in inputFiles {
-			let astDumpFile = SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: inputFile)
+			let astDumpFile = SupportingFile.pathOfSwiftASTDumpFile(
+				forSwiftFile: inputFile,
+				swiftVersion: swiftVersion)
 			if !Utilities.fileExists(at: astDumpFile) ||
 				Utilities.file(inputFile, wasModifiedLaterThan: astDumpFile)
 			{
@@ -785,9 +795,13 @@ public class Driver {
 		//// Create the outputFileMap
 		var outputFileMapContents = "{\n"
 
+		let swiftVersion = try TranspilationContext.getVersionOfToolchain(toolchain)
+
 		// Add the swift files
 		for swiftFile in swiftFiles {
-			let astDumpPath = SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: swiftFile)
+			let astDumpPath = SupportingFile.pathOfSwiftASTDumpFile(
+				forSwiftFile: swiftFile,
+				swiftVersion: swiftVersion)
 			let astDumpAbsolutePath = Utilities.getAbsoultePath(forFile: astDumpPath)
 			let swiftAbsoultePath = Utilities.getAbsoultePath(forFile: swiftFile)
 			outputFileMapContents += "\t\"\(swiftAbsoultePath)\": {\n" +
@@ -802,7 +816,9 @@ public class Driver {
 
 		//// Create the necessary folders for the AST dump files
 		for swiftFile in swiftFiles {
-			let astDumpPath = SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: swiftFile)
+			let astDumpPath = SupportingFile.pathOfSwiftASTDumpFile(
+				forSwiftFile: swiftFile,
+				swiftVersion: swiftVersion)
 			let folderPath = astDumpPath.split(withStringSeparator: "/")
 				.dropLast()
 				.joined(separator: "/")

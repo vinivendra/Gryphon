@@ -63,7 +63,9 @@ class IntegrationTest: XCTestCase {
 					// Generate kotlin code using the whole compiler
 					let testCasePath = TestUtilities.testCasesPath + testName
 					let astDumpFilePath =
-						SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: testCasePath)
+						SupportingFile.pathOfSwiftASTDumpFile(
+							forSwiftFile: testCasePath,
+							swiftVersion: "5.2")
 					let defaultsToFinal = testName.hasSuffix("-default-final")
 					let generatedKotlinCode = try Compiler.transpileKotlinCode(
 						fromASTDumpFiles: [astDumpFilePath],
@@ -110,7 +112,9 @@ class IntegrationTest: XCTestCase {
 			// Generate kotlin code using the whole compiler
 			let testCasePath = TestUtilities.testCasesPath + "warnings"
 			let astDumpFilePath =
-				SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: testCasePath)
+				SupportingFile.pathOfSwiftASTDumpFile(
+					forSwiftFile: testCasePath,
+					swiftVersion: "5.2")
 			_ = try Compiler.transpileKotlinCode(
 				fromASTDumpFiles: [astDumpFilePath],
 				withContext: TranspilationContext(

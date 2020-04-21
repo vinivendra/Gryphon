@@ -945,9 +945,13 @@ public class SupportingFile {
 	}
 
 	//
-	static public func pathOfSwiftASTDumpFile(forSwiftFile swiftFile: String) -> String {
+	static public func pathOfSwiftASTDumpFile(
+		forSwiftFile swiftFile: String,
+		swiftVersion: String)
+		-> String
+	{
 		let relativePath = Utilities.getRelativePath(forFile: swiftFile)
-		let pathInGryphonFolder = "\(astDumpsFolder)/\(relativePath)"
+		let pathInGryphonFolder = "\(astDumpsFolder)-Swift-\(swiftVersion)/\(relativePath)"
 		let astDumpPath = Utilities.changeExtension(of: pathInGryphonFolder, to: .swiftASTDump)
 		return astDumpPath
 	}

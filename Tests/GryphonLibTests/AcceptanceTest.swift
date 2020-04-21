@@ -69,7 +69,9 @@ class AcceptanceTest: XCTestCase {
 				// Translate the swift code to kotlin
 				let testCasePath = TestUtilities.testCasesPath + testName
 				let astDumpFilePath =
-					SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: testCasePath)
+					SupportingFile.pathOfSwiftASTDumpFile(
+						forSwiftFile: testCasePath,
+						swiftVersion: "5.2")
 				let defaultsToFinal = testName.hasSuffix("-default-final")
 				let kotlinResults = try Compiler.transpileKotlinCode(
 					fromASTDumpFiles: [astDumpFilePath],

@@ -203,7 +203,8 @@ extension Utilities {
 
 		if Utilities.needsToDumpASTForSwiftFiles(
 			[SupportingFile.gryphonTemplatesLibrary.name],
-			in: SupportingFile.gryphonTemplatesLibrary.folder ?? ".")
+			in: SupportingFile.gryphonTemplatesLibrary.folder ?? ".",
+			forSwiftVersion: transpilationContext.swiftVersion)
 		{
 			try Driver.updateASTDumps(
 				forFiles: [SupportingFile.gryphonTemplatesLibrary.relativePath],
@@ -212,7 +213,8 @@ extension Utilities {
 
 			if Utilities.needsToDumpASTForSwiftFiles(
 				[SupportingFile.gryphonTemplatesLibrary.name],
-				in: SupportingFile.gryphonTemplatesLibrary.folder ?? ".")
+				in: SupportingFile.gryphonTemplatesLibrary.folder ?? ".",
+				forSwiftVersion: transpilationContext.swiftVersion)
 			{
 				throw GryphonError(errorMessage:
 					"Failed to update AST dump for the Gryphon Templates library.")
@@ -220,8 +222,10 @@ extension Utilities {
 		}
 
         let astArray = try Compiler.transpileGryphonRawASTs(
-			fromASTDumpFiles: [SupportingFile.pathOfSwiftASTDumpFile(
-				forSwiftFile: SupportingFile.gryphonTemplatesLibrary.relativePath), ],
+			fromASTDumpFiles: [
+				SupportingFile.pathOfSwiftASTDumpFile(
+					forSwiftFile: SupportingFile.gryphonTemplatesLibrary.relativePath,
+					swiftVersion: transpilationContext.swiftVersion), ],
 			withContext: transpilationContext)
 
         let ast = astArray[0]
@@ -232,15 +236,18 @@ extension Utilities {
         Compiler.log("\t* Done!")
     }
 
-    static internal func needsToDumpASTForSwiftFiles(
-        _ swiftFiles: List<String>? = nil,
-        in folder: String)
+	static internal func needsToDumpASTForSwiftFiles(
+		_ swiftFiles: List<String>? = nil,
+		in folder: String,
+		forSwiftVersion swiftVersion: String)
 		-> Bool
     {
 		let files = getFiles(swiftFiles, inDirectory: folder, withExtension: .swift)
 
         for swiftFile in files {
-			let astDumpFilePath = SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: swiftFile)
+			let astDumpFilePath = SupportingFile.pathOfSwiftASTDumpFile(
+				forSwiftFile: swiftFile,
+				swiftVersion: swiftVersion)
 
             let astDumpFileExists = Utilities.fileExists(at: astDumpFilePath)
             let astDumpFileIsOutdated = !astDumpFileExists ||

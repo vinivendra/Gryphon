@@ -92,8 +92,13 @@ class TestUtilities {
 
         Compiler.log("\t* Updating ASTs for test cases...")
 
+		let swiftVersion = try TranspilationContext.getVersionOfToolchain(toolchain)
+
         let testCasesFolder = "Test cases"
-        if Utilities.needsToDumpASTForSwiftFiles(in: testCasesFolder) {
+        if Utilities.needsToDumpASTForSwiftFiles(
+			in: testCasesFolder,
+			forSwiftVersion: swiftVersion)
+		{
 			let testFiles = Utilities.getFiles(inDirectory: testCasesFolder, withExtension: .swift)
 
 			for testFile in testFiles {
@@ -103,7 +108,10 @@ class TestUtilities {
 					usingToolchain: toolchain)
 			}
 
-			if Utilities.needsToDumpASTForSwiftFiles(in: testCasesFolder) {
+			if Utilities.needsToDumpASTForSwiftFiles(
+				in: testCasesFolder,
+				forSwiftVersion: swiftVersion)
+			{
 				throw GryphonError(errorMessage: "Failed to update the AST of at least one file " +
 					"in the \(testCasesFolder) folder")
 			}

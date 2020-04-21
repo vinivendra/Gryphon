@@ -123,14 +123,36 @@ class UtilitiesTest: XCTestCase {
 
     func testPathOfSwiftASTDumpFile() {
         XCTAssertEqual(
-            SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: "src/path/to/file.swift"),
-            ".gryphon/ASTDumps/src/path/to/file.swiftASTDump")
+            SupportingFile.pathOfSwiftASTDumpFile(
+				forSwiftFile: "src/path/to/file.swift",
+				swiftVersion: "5.2"),
+            ".gryphon/ASTDumps-Swift-5.2/src/path/to/file.swiftASTDump")
         XCTAssertEqual(
-            SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: "folder/file.swift"),
-            ".gryphon/ASTDumps/folder/file.swiftASTDump")
+            SupportingFile.pathOfSwiftASTDumpFile(
+				forSwiftFile: "folder/file.swift",
+				swiftVersion: "5.2"),
+			".gryphon/ASTDumps-Swift-5.2/folder/file.swiftASTDump")
         XCTAssertEqual(
-            SupportingFile.pathOfSwiftASTDumpFile(forSwiftFile: "file.swift"),
-            ".gryphon/ASTDumps/file.swiftASTDump")
+            SupportingFile.pathOfSwiftASTDumpFile(
+				forSwiftFile: "file.swift",
+				swiftVersion: "5.2"),
+			".gryphon/ASTDumps-Swift-5.2/file.swiftASTDump")
+
+		XCTAssertEqual(
+            SupportingFile.pathOfSwiftASTDumpFile(
+				forSwiftFile: "src/path/to/file.swift",
+				swiftVersion: "5.1"),
+            ".gryphon/ASTDumps-Swift-5.1/src/path/to/file.swiftASTDump")
+        XCTAssertEqual(
+            SupportingFile.pathOfSwiftASTDumpFile(
+				forSwiftFile: "folder/file.swift",
+				swiftVersion: "5.1"),
+			".gryphon/ASTDumps-Swift-5.1/folder/file.swiftASTDump")
+        XCTAssertEqual(
+            SupportingFile.pathOfSwiftASTDumpFile(
+				forSwiftFile: "file.swift",
+				swiftVersion: "5.1"),
+			".gryphon/ASTDumps-Swift-5.1/file.swiftASTDump")
     }
 
     func testPathOfKotlinErrorMapFile() {
