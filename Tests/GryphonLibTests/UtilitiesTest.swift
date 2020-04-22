@@ -122,37 +122,23 @@ class UtilitiesTest: XCTestCase {
     }
 
     func testPathOfSwiftASTDumpFile() {
-        XCTAssertEqual(
-            SupportingFile.pathOfSwiftASTDumpFile(
-				forSwiftFile: "src/path/to/file.swift",
-				swiftVersion: "5.2"),
-            ".gryphon/ASTDumps-Swift-5.2/src/path/to/file.swiftASTDump")
-        XCTAssertEqual(
-            SupportingFile.pathOfSwiftASTDumpFile(
-				forSwiftFile: "folder/file.swift",
-				swiftVersion: "5.2"),
-			".gryphon/ASTDumps-Swift-5.2/folder/file.swiftASTDump")
-        XCTAssertEqual(
-            SupportingFile.pathOfSwiftASTDumpFile(
-				forSwiftFile: "file.swift",
-				swiftVersion: "5.2"),
-			".gryphon/ASTDumps-Swift-5.2/file.swiftASTDump")
-
-		XCTAssertEqual(
-            SupportingFile.pathOfSwiftASTDumpFile(
-				forSwiftFile: "src/path/to/file.swift",
-				swiftVersion: "5.1"),
-            ".gryphon/ASTDumps-Swift-5.1/src/path/to/file.swiftASTDump")
-        XCTAssertEqual(
-            SupportingFile.pathOfSwiftASTDumpFile(
-				forSwiftFile: "folder/file.swift",
-				swiftVersion: "5.1"),
-			".gryphon/ASTDumps-Swift-5.1/folder/file.swiftASTDump")
-        XCTAssertEqual(
-            SupportingFile.pathOfSwiftASTDumpFile(
-				forSwiftFile: "file.swift",
-				swiftVersion: "5.1"),
-			".gryphon/ASTDumps-Swift-5.1/file.swiftASTDump")
+		for swiftVersion in TranspilationContext.supportedSwiftVersions {
+			XCTAssertEqual(
+				SupportingFile.pathOfSwiftASTDumpFile(
+					forSwiftFile: "src/path/to/file.swift",
+					swiftVersion: swiftVersion),
+				".gryphon/ASTDumps-Swift-\(swiftVersion)/src/path/to/file.swiftASTDump")
+			XCTAssertEqual(
+				SupportingFile.pathOfSwiftASTDumpFile(
+					forSwiftFile: "folder/file.swift",
+					swiftVersion: swiftVersion),
+				".gryphon/ASTDumps-Swift-\(swiftVersion)/folder/file.swiftASTDump")
+			XCTAssertEqual(
+				SupportingFile.pathOfSwiftASTDumpFile(
+					forSwiftFile: "file.swift",
+					swiftVersion: swiftVersion),
+				".gryphon/ASTDumps-Swift-\(swiftVersion)/file.swiftASTDump")
+		}
     }
 
     func testPathOfKotlinErrorMapFile() {

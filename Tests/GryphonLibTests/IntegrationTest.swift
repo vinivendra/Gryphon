@@ -126,54 +126,67 @@ class IntegrationTest: XCTestCase {
 	}
 
 	func testWarnings() {
-		do {
-			Compiler.clearIssues()
+		for swiftVersion in TranspilationContext.supportedSwiftVersions {
+			do {
+				guard let toolchainString =
+					try TranspilationContext.getToolchain(forSwiftVersion: swiftVersion) else
+				{
+					XCTFail("Unable to find toolchain for Swift \(swiftVersion)")
+					continue
+				}
 
-			// Generate kotlin code using the whole compiler
-			let testCasePath = TestUtilities.testCasesPath + "warnings"
-			let astDumpFilePath =
-				SupportingFile.pathOfSwiftASTDumpFile(
-					forSwiftFile: testCasePath,
-					swiftVersion: "5.2")
-			_ = try Compiler.transpileKotlinCode(
-				fromASTDumpFiles: [astDumpFilePath],
-				withContext: TranspilationContext(
-					toolchainName: nil,
-					indentationString: "\t",
-					defaultsToFinal: false)).first!
+				let toolchain = (toolchainString == "") ? nil : toolchainString
 
-			Compiler.printErrorsAndWarnings()
+				print("⛓ Using Swift \(swiftVersion)")
 
-			XCTAssert(Compiler.numberOfErrors == 0)
+				Compiler.clearIssues()
 
-			// Make sure the comment for muting warnings is working
-			XCTAssert(Compiler.numberOfWarnings == 11)
+				// Generate kotlin code using the whole compiler
+				let testCasePath = TestUtilities.testCasesPath + "warnings"
+				let astDumpFilePath =
+					SupportingFile.pathOfSwiftASTDumpFile(
+						forSwiftFile: testCasePath,
+						swiftVersion: swiftVersion)
+				_ = try Compiler.transpileKotlinCode(
+					fromASTDumpFiles: [astDumpFilePath],
+					withContext: TranspilationContext(
+						toolchainName: toolchain,
+						indentationString: "\t",
+						defaultsToFinal: false)).first!
 
-			XCTAssertEqual(
-				Compiler.issues.filter { $0.fullMessage.contains("mutable variables") }.count,
-				1)
-			XCTAssertEqual(
-				Compiler.issues.filter { $0.fullMessage.contains("mutating methods") }.count,
-				2)
-			XCTAssertEqual(
-				Compiler.issues.filter { $0.fullMessage.contains("Native type") }.count,
-				2)
-			XCTAssertEqual(
-				Compiler.issues.filter { $0.fullMessage.contains("fileprivate") }.count,
-				1)
-			XCTAssertEqual(
-				Compiler.issues.filter { $0.fullMessage.contains("If condition") }.count,
-				2)
-			XCTAssertEqual(
-				Compiler.issues.filter { $0.fullMessage.contains("Double optionals") }.count,
-				1)
-			XCTAssertEqual(
-				Compiler.issues.filter
-					{ $0.fullMessage.contains("superclass's initializer") }.count,
-				2)
-		}
-		catch let error {
-			XCTFail("🚨 Test failed with error:\n\(error)")
+				Compiler.printErrorsAndWarnings()
+
+				XCTAssert(Compiler.numberOfErrors == 0)
+
+				// Make sure the comment for muting warnings is working
+				XCTAssert(Compiler.numberOfWarnings == 11)
+
+				XCTAssertEqual(
+					Compiler.issues.filter { $0.fullMessage.contains("mutable variables") }.count,
+					1)
+				XCTAssertEqual(
+					Compiler.issues.filter { $0.fullMessage.contains("mutating methods") }.count,
+					2)
+				XCTAssertEqual(
+					Compiler.issues.filter { $0.fullMessage.contains("Native type") }.count,
+					2)
+				XCTAssertEqual(
+					Compiler.issues.filter { $0.fullMessage.contains("fileprivate") }.count,
+					1)
+				XCTAssertEqual(
+					Compiler.issues.filter { $0.fullMessage.contains("If condition") }.count,
+					2)
+				XCTAssertEqual(
+					Compiler.issues.filter { $0.fullMessage.contains("Double optionals") }.count,
+					1)
+				XCTAssertEqual(
+					Compiler.issues.filter
+						{ $0.fullMessage.contains("superclass's initializer") }.count,
+					2)
+			}
+			catch let error {
+				XCTFail("🚨 Test failed with error:\n\(error)")
+			}
 		}
 	}
 }

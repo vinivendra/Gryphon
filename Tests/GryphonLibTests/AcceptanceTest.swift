@@ -60,25 +60,29 @@ class AcceptanceTest: XCTestCase {
 	}
 
 	func test() {
-		let tests = TestUtilities.testCases
+		do {
+			let defaultToolchain: String? = nil
+			let defaultSwiftVersion =
+				try TranspilationContext.getVersionOfToolchain(defaultToolchain)
+			print("⛓ Using Swift \(defaultSwiftVersion)")
 
-		for testName in tests {
-			print("- Testing \(testName)...")
+			let tests = TestUtilities.testCases
 
-			do {
+			for testName in tests {
+				print("- Testing \(testName)...")
 				// Translate the swift code to kotlin
 				let testCasePath = TestUtilities.testCasesPath + testName
 				let astDumpFilePath =
 					SupportingFile.pathOfSwiftASTDumpFile(
 						forSwiftFile: testCasePath,
-						swiftVersion: "5.2")
+						swiftVersion: defaultSwiftVersion)
 				let defaultsToFinal = testName.hasSuffix("-default-final")
 				let kotlinResults = try Compiler.transpileKotlinCode(
 					fromASTDumpFiles: [astDumpFilePath],
 					withContext: TranspilationContext(
-					toolchainName: nil,
-					indentationString: "\t",
-					defaultsToFinal: defaultsToFinal))
+						toolchainName: defaultToolchain,
+						indentationString: "\t",
+						defaultsToFinal: defaultsToFinal))
 				let kotlinCode = kotlinResults[0]
 				let kotlinFilePath = "\(TestUtilities.kotlinBuildFolder)/\(testName).kt"
 				try Utilities.createFile(atPath: kotlinFilePath, containing: kotlinCode)
@@ -137,10 +141,11 @@ class AcceptanceTest: XCTestCase {
 				}
 
 				print("\t- Done!")
+
 			}
-			catch let error {
-				XCTFail("🚨 Test failed with error:\n\(error)")
-			}
+		}
+		catch let error {
+			XCTFail("🚨 Test failed with error:\n\(error)")
 		}
 	}
 }
