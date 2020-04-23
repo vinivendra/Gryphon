@@ -272,6 +272,83 @@ class BootstrappingTest: XCTestCase {
 		Compiler.printErrorsAndWarnings()
 	}
 
+	func testTestCasesWithOtherSwiftVersions() {
+		guard !BootstrappingTest.hasError else {
+			XCTFail("Error during setup")
+			return
+		}
+
+		let tests = TestUtilities.testCases
+
+		do {
+			let defaultSwiftVersion = try TranspilationContext.getVersionOfToolchain(nil)
+
+			for swiftVersion in TranspilationContext.supportedSwiftVersions {
+				// The bootstrap test outputs were generated using the default Swift version, so we
+				// test other versions against that.
+				guard swiftVersion != defaultSwiftVersion else {
+					continue
+				}
+				let toolchain = try TranspilationContext.getToolchain(forSwiftVersion: swiftVersion)
+
+				print("⛓ Testing Swift \(swiftVersion) against Swift \(defaultSwiftVersion)")
+
+				for testName in tests {
+					print("- Testing \(testName)...")
+
+					let testCasePath = TestUtilities.testCasesPath + testName + ".swift"
+
+					// Get Kotlin results
+					let testOutputFilePath = BootstrappingTest.getBootstrapOutputFilePath(
+						forTest: testName,
+						withExtension: .kt)
+					let defaultSwiftVersionCode = try Utilities.readFile(testOutputFilePath)
+
+					// Get Swift results
+					let arguments: MutableList = [
+						"java",
+						"-jar",
+						"Bootstrap/kotlin.jar",
+						"--indentation=t",
+						"-avoid-unicode",
+						"-skipASTDumps",
+						"-emit-kotlin",
+						"--write-to-console",
+						testCasePath,
+					]
+					if testName.hasSuffix("-default-final") {
+						arguments.append("--default-final")
+					}
+					if let chosenToolchain = toolchain {
+						arguments.append("--toolchain=\(chosenToolchain)")
+					}
+					let commandResult = Shell.runShellCommand(arguments)
+
+					guard commandResult.status == 0 else {
+						XCTFail("Failed to run bootstrapped transpiler for Swift \(swiftVersion)" +
+							"in test \(testName).")
+						continue
+					}
+
+					let testedSwiftVersionCode = commandResult.standardOutput
+
+					// Compare results
+					XCTAssert(
+						(defaultSwiftVersionCode + "\n") == testedSwiftVersionCode,
+						"Test \(testName): failed to produce expected result. " +
+							"Printing diff ('<' means default Swift, '>' means test Swift):" +
+							TestUtilities.diff(defaultSwiftVersionCode, testedSwiftVersionCode))
+				}
+
+				XCTAssertFalse(Compiler.hasIssues())
+				Compiler.printErrorsAndWarnings()
+			}
+		}
+		catch let error {
+			XCTFail("🚨 Test failed with error:\n\(error)")
+		}
+	}
+
 	static func getBootstrapOutputFilePath(
 		forTest testName: String,
 		withExtension fileExtension: FileExtension)
