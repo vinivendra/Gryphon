@@ -343,7 +343,7 @@ public class SwiftTranslator {
 			}
 
 		default:
-			if subtree.name.hasSuffix("Expression") {
+			if subtree.name.hasSuffix("Expression") || subtree.name == "Inject Into Optional" {
 				let expression = try translateExpression(subtree)
 				result = [ExpressionStatement(
 					range: getRangeRecursively(ofNode: subtree),
@@ -2600,10 +2600,10 @@ public class SwiftTranslator {
 			statements = try translateBraceStatement(lastSubtree)
 		}
 		else {
-			let expression = try translateExpression(lastSubtree)
-			statements = [ExpressionStatement(
-				range: expression.range,
-				expression: expression), ]
+			// If it's a single expression closure, the expression doesn't come wrapped in a brace
+			// statement, but there might be `insert` comments so we still have to check the whole
+			// range.
+			statements = try translateSubtreesInScope([lastSubtree], scope: closureExpression)
 		}
 
 		return ClosureExpression(

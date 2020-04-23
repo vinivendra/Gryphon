@@ -142,6 +142,15 @@ func insertFunction() {
 }
 insertFunction()
 
+var closure = {
+	// gryphon insert: println(\"closure 1\")
+	print("closure 2")
+	// gryphon insert: println(\"closure 3\")
+	print("closure 4")
+	// gryphon insert: println(\"closure 5\")
+}
+closure()
+
 class InsertClass {
 	// gryphon insert: open var a: String = \"class a\"
 	var b: String = "class b"

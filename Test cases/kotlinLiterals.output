@@ -23,6 +23,11 @@ func 2
 func 3
 func 4
 func 5
+closure 1
+closure 2
+closure 3
+closure 4
+closure 5
 class a
 class b
 class c

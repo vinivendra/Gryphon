@@ -142,6 +142,20 @@ fun main(args: Array<String>) {
 
 	insertFunction()
 
+	var closure: (Unit) -> Unit = {
+			println("closure 1")
+
+			println("closure 2")
+
+			println("closure 3")
+
+			println("closure 4")
+
+			println("closure 5")
+		}
+
+	closure()
+
 	val insertClass: InsertClass = InsertClass()
 
 	println(insertClass.a)
