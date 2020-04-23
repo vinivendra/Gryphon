@@ -22,6 +22,11 @@
 import Foundation
 
 public class Compiler {
+	public static var logError: ((String) -> ()) = { input in
+		fputs(input + "\n", stderr) // gryphon ignore
+		// gryphon insert: System.err.println(input)
+	}
+
 	public private(set) static var log: ((String) -> ()) = { _ in }
 
 	public static func shouldLogProgress(if value: Bool) {
@@ -107,11 +112,7 @@ public class Compiler {
 			}
 
 		for issue in sortedIssues {
-			print(issue.fullMessage)
-		}
-
-		if hasIssues() {
-			print("Total: \(numberOfErrors) errors and \(numberOfWarnings) warnings.")
+			logError(issue.fullMessage)
 		}
 	}
 
@@ -348,5 +349,4 @@ internal class CompilerIssue {
 
 		return false
 	}
-
 }
