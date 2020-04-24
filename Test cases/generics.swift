@@ -43,13 +43,19 @@ func f2<T>(box: Box<T>) -> T {
 
 // In extensions
 extension Box {
-	func f3<U>(box: Box<U>) {
+	func f3() { }
+
+	func f4<U>(box: Box<U>) {
 		print(self.x)
 		print(box.x)
+	}
+
+	var a: Int {
+		return 0
 	}
 }
 
 //// Calling generic functions
 f1(box: Box(x: 1))
 print(f2(box: Box(x: 2)))
-Box(x: 3).f3(box: Box(x: 4))
+Box(x: 3).f4(box: Box(x: 4))

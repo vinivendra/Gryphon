@@ -46,3 +46,26 @@ let multiLineClosure: (Int) -> () = { a in
 multiLineClosure(10)
 multiLineClosure(20)
 
+//
+// Test autoclosures
+func f(_ closure: @autoclosure () -> (Int), a: Int) { }
+f(0, a: 0)
+
+// autoclosures + tupleShuffleExpressions
+func g(_ closure: @autoclosure () -> (Int), a: Int = 0, c: Int) { }
+g(0, c: 0)
+
+//
+// Test trailing closures
+func f1(_ closure: () -> (Int)) { }
+f1 { 0 }
+
+func f2(a: Int, _ closure: () -> (Int)) { }
+f2(a: 0) { 0 }
+
+// trailing closures + tupleShuffleExpressions
+func g1(_ closure: () -> (Int), a: Int = 0) { }
+g1 { 0 }
+
+func g2(a: Int = 0, _ closure: () -> (Int)) { }
+g1 { 0 }

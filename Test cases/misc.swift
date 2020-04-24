@@ -59,3 +59,11 @@ f(a: 10)
 print("==")
 f(a: nil)
 print("==")
+
+// Dictionary entries
+let dict = [1: 2]
+
+for entry in dict {
+	print(entry.key)
+	print(entry.value)
+}

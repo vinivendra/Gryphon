@@ -46,4 +46,11 @@ fun main(args: Array<String>) {
 	f(a = null)
 
 	println("==")
+
+	val dict: Map<Int, Int> = mapOf(1 to 2)
+
+	for (entry in dict) {
+		println(entry.key)
+		println(entry.value)
+	}
 }

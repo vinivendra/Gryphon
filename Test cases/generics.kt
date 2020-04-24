@@ -26,10 +26,18 @@ internal fun <T> f2(box: Box<T>): T {
 	return box.x
 }
 
-internal fun <T, U> Box<T>.f3(box: Box<U>) {
+internal fun <T> Box<T>.f3() {
+}
+
+internal fun <T, U> Box<T>.f4(box: Box<U>) {
 	println(this.x)
 	println(box.x)
 }
+
+internal val <T> Box<T>.a: Int
+	get() {
+		return 0
+	}
 
 fun main(args: Array<String>) {
 	val box: Box<Int> = Box(x = 0)
@@ -38,5 +46,5 @@ fun main(args: Array<String>) {
 
 	println(f2(box = Box(x = 2)))
 
-	Box(x = 3).f3(box = Box(x = 4))
+	Box(x = 3).f4(box = Box(x = 4))
 }

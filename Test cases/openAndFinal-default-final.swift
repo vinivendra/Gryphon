@@ -46,6 +46,9 @@ class A {
 	// Static declarations can't be open
 	static var a7 = 0
 	static func b7() { }
+
+	// Let declarations can't be open
+	let a8 = 0
 }
 
 // Test classes
