@@ -142,7 +142,7 @@ fun main(args: Array<String>) {
 
 	insertFunction()
 
-	var closure: (Unit) -> Unit = {
+	var closure: () -> Unit = {
 			println("closure 1")
 
 			println("closure 2")

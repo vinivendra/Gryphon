@@ -21,22 +21,22 @@ internal fun defaultClosure(closure: (String) -> Unit = { println(it) }) {
 	closure("Calling from default closure!")
 }
 
-internal fun f(closure: (Unit) -> Int, a: Int) {
+internal fun f(closure: () -> Int, a: Int) {
 }
 
-internal fun g(closure: (Unit) -> Int, a: Int = 0, c: Int) {
+internal fun g(closure: () -> Int, a: Int = 0, c: Int) {
 }
 
-internal fun f1(closure: (Unit) -> Int) {
+internal fun f1(closure: () -> Int) {
 }
 
-internal fun f2(a: Int, closure: (Unit) -> Int) {
+internal fun f2(a: Int, closure: () -> Int) {
 }
 
-internal fun g1(closure: (Unit) -> Int, a: Int = 0) {
+internal fun g1(closure: () -> Int, a: Int = 0) {
 }
 
-internal fun g2(a: Int = 0, closure: (Unit) -> Int) {
+internal fun g2(a: Int = 0, closure: () -> Int) {
 }
 
 fun main(args: Array<String>) {
