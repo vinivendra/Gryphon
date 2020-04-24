@@ -1366,8 +1366,8 @@ public class KotlinTranslator {
 			return try translateTupleExpression(tupleExpression, withIndentation: indentation)
 		}
 		if let tupleShuffleExpression = expression as? TupleShuffleExpression {
-			return try translateTupleShuffleExpression(
-				tupleShuffleExpression, withIndentation: indentation)
+			return try translateTupleExpression(
+				tupleShuffleExpression.flattenToTupleExpression(), withIndentation: indentation)
 		}
 		if expression is ErrorExpression {
 			return Translation(
@@ -1663,59 +1663,79 @@ public class KotlinTranslator {
 		shouldAddNewlines: Bool)
 		throws -> Translation
 	{
-		if let tupleExpression = callExpression.parameters as? TupleExpression {
-			if let closurePair = tupleExpression.pairs.last {
-				if let closureExpression = closurePair.expression as? ClosureExpression
-				{
-					let closureTranslation = try translateClosureExpression(
-						closureExpression,
-						withIndentation: increaseIndentation(indentation))
-					if tupleExpression.pairs.count > 1 {
-						let newTupleExpression = TupleExpression(
-							range: tupleExpression.range,
-							pairs: tupleExpression.pairs.dropLast().toMutableList())
-
-						let firstParametersTranslation = try translateTupleExpression(
-							newTupleExpression,
-							functionTranslation: functionTranslation,
-							withIndentation: increaseIndentation(indentation),
-							shouldAddNewlines: shouldAddNewlines)
-
-						let result = Translation(range: callExpression.range)
-						result.append(firstParametersTranslation)
-						result.append(" ")
-						result.append(closureTranslation)
-						return result
-					}
-					else {
-						let result = Translation(range: callExpression.range)
-						result.append(" ")
-						result.append(closureTranslation)
-						return result
-					}
-				}
+		let tupleExpression: TupleExpression
+		if let rawTupleExpression = callExpression.parameters as? TupleExpression {
+			if let translationParameters = functionTranslation?.parameters {
+				let newPairs = zip(translationParameters, rawTupleExpression.pairs).map
+					{ translationPairTuple in
+						(translationPairTuple.1.label == nil) ?
+							LabeledExpression(
+								label: nil,
+								expression: translationPairTuple.1.expression) :
+							LabeledExpression(
+								label: translationPairTuple.0,
+								expression: translationPairTuple.1.expression)
+				}.toMutableList()
+				tupleExpression = TupleExpression(range: rawTupleExpression.range, pairs: newPairs)
 			}
-
-			return try translateTupleExpression(
-				tupleExpression,
-				functionTranslation: functionTranslation,
-				withIndentation: increaseIndentation(indentation),
-				shouldAddNewlines: shouldAddNewlines)
+			else {
+				tupleExpression = rawTupleExpression
+			}
 		}
 		else if let tupleShuffleExpression = callExpression.parameters as? TupleShuffleExpression {
-			return try translateTupleShuffleExpression(
-				tupleShuffleExpression,
-				translation: functionTranslation,
-				withIndentation: increaseIndentation(indentation),
-				shouldAddNewlines: shouldAddNewlines)
+			let newLabels = functionTranslation?.parameters.as(MutableList<String?>.self) ??
+				tupleShuffleExpression.labels
+			let newTupleShuffleExpression = TupleShuffleExpression(
+				range: tupleShuffleExpression.range,
+				labels: newLabels,
+				indices: tupleShuffleExpression.indices,
+				expressions: tupleShuffleExpression.expressions)
+			tupleExpression = newTupleShuffleExpression.flattenToTupleExpression()
 		}
-
-		return try unexpectedASTStructureError(
+		else {
+			return try unexpectedASTStructureError(
 			"Expected the parameters to be either a .tupleExpression or a " +
 			".tupleShuffleExpression",
 			AST: ExpressionStatement(
 				range: callExpression.range,
 				expression: callExpression))
+		}
+
+		if let closurePair = tupleExpression.pairs.last {
+			if let closureExpression = closurePair.expression as? ClosureExpression
+			{
+				let closureTranslation = try translateClosureExpression(
+					closureExpression,
+					withIndentation: increaseIndentation(indentation))
+				if tupleExpression.pairs.count > 1 {
+					let newTupleExpression = TupleExpression(
+						range: tupleExpression.range,
+						pairs: tupleExpression.pairs.dropLast().toMutableList())
+
+					let firstParametersTranslation = try translateTupleExpression(
+						newTupleExpression,
+						withIndentation: increaseIndentation(indentation),
+						shouldAddNewlines: shouldAddNewlines)
+
+					let result = Translation(range: callExpression.range)
+					result.append(firstParametersTranslation)
+					result.append(" ")
+					result.append(closureTranslation)
+					return result
+				}
+				else {
+					let result = Translation(range: callExpression.range)
+					result.append(" ")
+					result.append(closureTranslation)
+					return result
+				}
+			}
+		}
+
+		return try translateTupleExpression(
+			tupleExpression,
+			withIndentation: increaseIndentation(indentation),
+			shouldAddNewlines: shouldAddNewlines)
 	}
 
 	private func translateClosureExpression(
@@ -1802,7 +1822,6 @@ public class KotlinTranslator {
 
 	private func translateTupleExpression(
 		_ tupleExpression: TupleExpression,
-		functionTranslation: TranspilationContext.FunctionTranslation? = nil,
 		withIndentation indentation: String,
 		shouldAddNewlines: Bool = false)
 		throws -> Translation
@@ -1813,30 +1832,14 @@ public class KotlinTranslator {
 				string: "()")
 		}
 
-		// In tuple expressions (when used as parameters for call expressions) there seems to be
-		// little risk of triggering errors in Kotlin. Therefore, we can try to omit some parameter
-		// labels in the call when they've also been omitted in Swift.
-		let parameters: List<String?>
-		if let translationParameters = functionTranslation?.parameters {
-			parameters = zip(translationParameters, tupleExpression.pairs).map
-				{ translationPairTuple in
-					(translationPairTuple.1.label == nil) ? nil : translationPairTuple.0
-				}
-		}
-		else {
-			parameters = tupleExpression.pairs.map { $0.label }
-		}
-
-		let expressions = tupleExpression.pairs.map { $0.expression }
-
 		let expressionIndentation =
 			shouldAddNewlines ? increaseIndentation(indentation) : indentation
 
-		let translations = try zip(parameters, expressions)
-			.map { parameterExpressionTuple -> Translation in
+		let translations = try tupleExpression.pairs
+			.map { pair -> Translation in
 				try translateParameter(
-					withLabel: parameterExpressionTuple.0,
-					expression: parameterExpressionTuple.1,
+					withLabel: pair.label,
+					expression: pair.expression,
 					indentation: expressionIndentation)
 			}
 
@@ -1874,71 +1877,6 @@ public class KotlinTranslator {
 		else {
 			return translatedExpression
 		}
-	}
-
-	private func translateTupleShuffleExpression(
-		_ tupleShuffleExpression: TupleShuffleExpression,
-		translation: TranspilationContext.FunctionTranslation? = nil,
-		withIndentation indentation: String,
-		shouldAddNewlines: Bool = false)
-		throws -> Translation
-	{
-		let parameters = translation?.parameters.as(List<String?>.self) ??
-			tupleShuffleExpression.labels
-
-		let increasedIndentation = increaseIndentation(indentation)
-
-		let translations: MutableList<Translation> = []
-		var expressionIndex = 0
-
-		// Variadic arguments can't be named, which means all arguments before them can't be named
-		// either.
-		let containsVariadics = tupleShuffleExpression.indices.contains { indexIsVariadic($0) }
-		var isBeforeVariadic = containsVariadics
-
-		for (label, index) in zip(parameters, tupleShuffleExpression.indices) {
-			switch index {
-			case .absent:
-				break
-			case .present:
-				let expression = tupleShuffleExpression.expressions[expressionIndex]
-
-				let result = Translation(range: expression.range)
-
-				if !isBeforeVariadic, let label = label {
-					result.append("\(label) = ")
-				}
-
-				result.append(
-					try translateExpression(expression, withIndentation: increasedIndentation))
-
-				translations.append(result)
-
-				expressionIndex += 1
-			case let .variadic(count: variadicCount):
-				isBeforeVariadic = false
-				for _ in 0..<variadicCount {
-					let expression = tupleShuffleExpression.expressions[expressionIndex]
-					let result = try translateExpression(
-						expression, withIndentation: increasedIndentation)
-					translations.append(result)
-					expressionIndex += 1
-				}
-			}
-		}
-
-		let result = Translation(range: tupleShuffleExpression.range)
-		result.append("(")
-
-		if shouldAddNewlines {
-			result.append("\n\(indentation)")
-		}
-		let separator = shouldAddNewlines ? ",\n\(indentation)" : ", "
-
-		result.appendTranslations(translations, withSeparator: separator)
-		result.append(")")
-
-		return result
 	}
 
 	private func indexIsVariadic(_ index: TupleShuffleIndex) -> Bool {
