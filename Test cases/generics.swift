@@ -59,3 +59,9 @@ extension Box {
 f1(box: Box(x: 1))
 print(f2(box: Box(x: 2)))
 Box(x: 3).f4(box: Box(x: 4))
+
+//// Test generics with implicit constraints
+// This is implicitly "Key where Key: Hashable"
+func f<Key>() -> [Key: String] {
+	return [:]
+}

@@ -87,3 +87,12 @@ print("==")
 let character: Character = "i"
 
 print(character)
+
+// String indices
+let abc = "abc"
+for index in abc.indices {
+	print(abc[index])
+}
+for char in abc {
+	print(char)
+}

@@ -65,4 +65,14 @@ It still has many lines."""
 	val character: Char = 'i'
 
 	println(character)
+
+	val abc: String = "abc"
+
+	for (index in abc.indices) {
+		println(abc[index])
+	}
+
+	for (char in abc) {
+		println(char)
+	}
 }

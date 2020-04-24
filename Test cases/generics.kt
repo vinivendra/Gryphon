@@ -39,6 +39,10 @@ internal val <T> Box<T>.a: Int
 		return 0
 	}
 
+internal fun <Key> f(): Map<Key, String> {
+	return mapOf()
+}
+
 fun main(args: Array<String>) {
 	val box: Box<Int> = Box(x = 0)
 
