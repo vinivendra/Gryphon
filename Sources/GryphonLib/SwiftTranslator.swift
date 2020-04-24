@@ -2650,20 +2650,16 @@ public class SwiftTranslator {
 			// Unused since Swift 5.2. New code is in `translateTupleExpression`.
 			let parenthesesExpression = tupleShuffleExpression
 				.subtree(named: "Parentheses Expression")
-
 			let tupleExpression = tupleShuffleExpression.subtree(named: "Tuple Expression")
+
+			let innerExpression = parenthesesExpression ?? tupleExpression
+
 			let typeName = tupleShuffleExpression["type"]
 			let elements = tupleShuffleExpression["elements"]
 			let rawIndicesStrings = elements?.split(withStringSeparator: ", ")
 			let rawIndices = rawIndicesStrings.map({ $0.map { Int($0) } })
 
-			if let parenthesesExpression = parenthesesExpression {
-				let expression = try translateExpression(parenthesesExpression)
-				parameters = TupleExpression(
-					range: getRangeRecursively(ofNode: parenthesesExpression),
-					pairs: [LabeledExpression(label: nil, expression: expression)])
-			}
-			else if let tupleExpression = tupleExpression,
+			if let innerExpression = innerExpression,
 				let typeName = typeName,
 				let rawIndices = rawIndices
 			{
@@ -2676,7 +2672,12 @@ public class SwiftTranslator {
 							ast: callExpression)
 					}
 
-					if rawIndex == -2 {
+					// Swift uses -3 for #file, #line, etc when they're implicitly added.
+					// We'll treat these as absent until a better solution is found.
+					if rawIndex < -2 {
+						indices.append(.absent)
+					}
+					else if rawIndex == -2 {
 						let variadicSources = tupleShuffleExpression["variadic_sources"]?
 							.split(withStringSeparator: ", ")
 						guard let variadicCount = variadicSources?.count else {
@@ -2703,9 +2704,9 @@ public class SwiftTranslator {
 					String(typeName.dropFirst().dropLast()).split(withStringSeparator: ", ")
 				let labels = tupleComponents.map { getLabelFromTupleComponent($0) }
 
-				let expressions = try tupleExpression.subtrees.map {
-					try translateExpression($0)
-				}
+				let expressions = try innerExpression.subtrees.map {
+						try translateExpression($0)
+					}
 				parameters = TupleShuffleExpression(
 					range: getRangeRecursively(ofNode: tupleShuffleExpression),
 					labels: labels.toMutableList(),

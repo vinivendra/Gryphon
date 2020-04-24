@@ -66,6 +66,6 @@ fun main(args: Array<String>) {
 	g(closure = { 0 }, c = 0)
 	f1 { 0 }
 	f2(a = 0) { 0 }
-	g1 { 0 }
-	g1 { 0 }
+	g1(closure = { 0 })
+	g2(closure = { 0 })
 }

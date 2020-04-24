@@ -1663,8 +1663,8 @@ public class KotlinTranslator {
 		shouldAddNewlines: Bool)
 		throws -> Translation
 	{
-		let tupleExpression: TupleExpression
 		if let rawTupleExpression = callExpression.parameters as? TupleExpression {
+			let tupleExpression: TupleExpression
 			if let translationParameters = functionTranslation?.parameters {
 				let newPairs = zip(translationParameters, rawTupleExpression.pairs).map
 					{ translationPairTuple in
@@ -1681,6 +1681,42 @@ public class KotlinTranslator {
 			else {
 				tupleExpression = rawTupleExpression
 			}
+
+			if let closurePair = tupleExpression.pairs.last {
+				if let closureExpression = closurePair.expression as? ClosureExpression
+				{
+					let closureTranslation = try translateClosureExpression(
+						closureExpression,
+						withIndentation: increaseIndentation(indentation))
+					if tupleExpression.pairs.count > 1 {
+						let newTupleExpression = TupleExpression(
+							range: tupleExpression.range,
+							pairs: tupleExpression.pairs.dropLast().toMutableList())
+
+						let firstParametersTranslation = try translateTupleExpression(
+							newTupleExpression,
+							withIndentation: increaseIndentation(indentation),
+							shouldAddNewlines: shouldAddNewlines)
+
+						let result = Translation(range: callExpression.range)
+						result.append(firstParametersTranslation)
+						result.append(" ")
+						result.append(closureTranslation)
+						return result
+					}
+					else {
+						let result = Translation(range: callExpression.range)
+						result.append(" ")
+						result.append(closureTranslation)
+						return result
+					}
+				}
+			}
+
+			return try translateTupleExpression(
+				tupleExpression,
+				withIndentation: increaseIndentation(indentation),
+				shouldAddNewlines: shouldAddNewlines)
 		}
 		else if let tupleShuffleExpression = callExpression.parameters as? TupleShuffleExpression {
 			let newLabels = functionTranslation?.parameters.as(MutableList<String?>.self) ??
@@ -1690,52 +1726,20 @@ public class KotlinTranslator {
 				labels: newLabels,
 				indices: tupleShuffleExpression.indices,
 				expressions: tupleShuffleExpression.expressions)
-			tupleExpression = newTupleShuffleExpression.flattenToTupleExpression()
-		}
-		else {
-			return try unexpectedASTStructureError(
-			"Expected the parameters to be either a .tupleExpression or a " +
-			".tupleShuffleExpression",
-			AST: ExpressionStatement(
-				range: callExpression.range,
-				expression: callExpression))
+			let tupleExpression = newTupleShuffleExpression.flattenToTupleExpression()
+
+			return try translateTupleExpression(
+				tupleExpression,
+				withIndentation: increaseIndentation(indentation),
+				shouldAddNewlines: shouldAddNewlines)
 		}
 
-		if let closurePair = tupleExpression.pairs.last {
-			if let closureExpression = closurePair.expression as? ClosureExpression
-			{
-				let closureTranslation = try translateClosureExpression(
-					closureExpression,
-					withIndentation: increaseIndentation(indentation))
-				if tupleExpression.pairs.count > 1 {
-					let newTupleExpression = TupleExpression(
-						range: tupleExpression.range,
-						pairs: tupleExpression.pairs.dropLast().toMutableList())
-
-					let firstParametersTranslation = try translateTupleExpression(
-						newTupleExpression,
-						withIndentation: increaseIndentation(indentation),
-						shouldAddNewlines: shouldAddNewlines)
-
-					let result = Translation(range: callExpression.range)
-					result.append(firstParametersTranslation)
-					result.append(" ")
-					result.append(closureTranslation)
-					return result
-				}
-				else {
-					let result = Translation(range: callExpression.range)
-					result.append(" ")
-					result.append(closureTranslation)
-					return result
-				}
-			}
-		}
-
-		return try translateTupleExpression(
-			tupleExpression,
-			withIndentation: increaseIndentation(indentation),
-			shouldAddNewlines: shouldAddNewlines)
+		return try unexpectedASTStructureError(
+		"Expected the parameters to be either a .tupleExpression or a " +
+		".tupleShuffleExpression",
+		AST: ExpressionStatement(
+			range: callExpression.range,
+			expression: callExpression))
 	}
 
 	private func translateClosureExpression(

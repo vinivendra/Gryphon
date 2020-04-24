@@ -65,7 +65,7 @@ f2(a: 0) { 0 }
 
 // trailing closures + tupleShuffleExpressions
 func g1(_ closure: () -> (Int), a: Int = 0) { }
-g1 { 0 }
+g1({ 0 })
 
 func g2(a: Int = 0, _ closure: () -> (Int)) { }
-g1 { 0 }
+g2 { 0 }
