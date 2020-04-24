@@ -28,6 +28,14 @@ internal fun f(a: Int?) {
 	println(a)
 }
 
+internal interface D {
+	val d: Int
+}
+
+internal fun D.f() {
+	println(this.d)
+}
+
 fun main(args: Array<String>) {
 	var i: Int = 1
 

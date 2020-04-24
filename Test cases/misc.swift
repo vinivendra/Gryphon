@@ -67,3 +67,14 @@ for entry in dict {
 	print(entry.key)
 	print(entry.value)
 }
+
+// Protocol extensions
+protocol D {
+	var d: Int { get }
+}
+
+extension D {
+	func f() {
+		print(self.d)
+	}
+}
