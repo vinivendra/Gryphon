@@ -71,4 +71,13 @@ fun main(args: Array<String>) {
 
 	val maybeSubclass: Subclass? = null
 	val maybeBases: List<Base?> = listOf(maybeSubclass)
+	val range: IntRange = 0 until 1
+
+	for (i in range) {
+		val x: Int = i
+	}
+
+	val array: List<Int> = listOf(1, 2, 3)
+	val arrayIndex: Int? = array.indexOf(1)
+	val bla: Int = 1
 }

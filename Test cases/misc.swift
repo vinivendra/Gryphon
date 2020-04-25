@@ -79,7 +79,9 @@ extension D {
 	}
 }
 
-// Regression test: upcasts to optional types
+//// Regression tests
+
+// Test upcasts to optional types
 class Base { }
 class Subclass: Base {
 	// gryphon insert: constructor(): super() { }
@@ -87,3 +89,16 @@ class Subclass: Base {
 
 let maybeSubclass: Subclass? = nil
 let maybeBases: [Base?] = [maybeSubclass]
+
+// Test Range<Int>.Element
+let range = 0..<1
+for i in range {
+	let x = i
+}
+
+// Test Array<Whatever>.Index
+let array = [1, 2, 3]
+let arrayIndex = array.firstIndex(of: 1)
+
+// Test Array<Whatever>.ArrayLiteralElement
+let bla: Array<Int>.ArrayLiteralElement = 1
