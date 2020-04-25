@@ -96,8 +96,9 @@ class AcceptanceTest: XCTestCase {
 						kotlinFilePath, ])
 
 				guard commandResult.status == 0 else {
-					XCTFail("Test \(testName) - compilation error. " +
-						"It's possible a command timed out.")
+					XCTFail("Test \(testName) - compilation error:\n" +
+						commandResult.standardOutput +
+						commandResult.standardError)
 					continue
 				}
 
