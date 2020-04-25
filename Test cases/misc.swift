@@ -78,3 +78,12 @@ extension D {
 		print(self.d)
 	}
 }
+
+// Regression test: upcasts to optional types
+class Base { }
+class Subclass: Base {
+	// gryphon insert: constructor(): super() { }
+}
+
+let maybeSubclass: Subclass? = nil
+let maybeBases: [Base?] = [maybeSubclass]

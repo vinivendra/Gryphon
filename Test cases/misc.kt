@@ -36,6 +36,13 @@ internal fun D.f() {
 	println(this.d)
 }
 
+internal open class Base {
+}
+
+internal open class Subclass: Base {
+	constructor(): super() { }
+}
+
 fun main(args: Array<String>) {
 	var i: Int = 1
 
@@ -61,4 +68,7 @@ fun main(args: Array<String>) {
 		println(entry.key)
 		println(entry.value)
 	}
+
+	val maybeSubclass: Subclass? = null
+	val maybeBases: List<Base?> = listOf(maybeSubclass)
 }

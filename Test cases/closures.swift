@@ -69,3 +69,7 @@ g1({ 0 })
 
 func g2(a: Int = 0, _ closure: () -> (Int)) { }
 g2 { 0 }
+
+// Test closures with `throws` in their types
+func f3(_ closure: () throws -> ()) { }
+f3 { }

@@ -47,6 +47,14 @@ internal sealed class MySealedClass {
 	class A(val int: Int): MySealedClass()
 }
 
+internal fun f() {
+	val number: Int = 0
+	val name: String = when (number) {
+		0 -> "Zero"
+		else -> "More"
+	}
+}
+
 fun main(args: Array<String>) {
 	printNumberName(0)
 	printNumberName(1)

@@ -115,3 +115,16 @@ switch mySealedClass {
 case let .a(int: int):
 	print(int)
 }
+
+// Regression test: switch expressions as the last statement in a block
+func f() {
+	let number = 0
+
+	let name: String
+	switch number {
+	case 0:
+		name = "Zero"
+	default:
+		name = "More"
+	}
+}

@@ -39,6 +39,9 @@ internal fun g1(closure: () -> Int, a: Int = 0) {
 internal fun g2(a: Int = 0, closure: () -> Int) {
 }
 
+internal fun f3(closure: () -> Unit) {
+}
+
 fun main(args: Array<String>) {
 	val printClosure: (String) -> Unit = { println(it) }
 
@@ -68,4 +71,5 @@ fun main(args: Array<String>) {
 	f2(a = 0) { 0 }
 	g1(closure = { 0 })
 	g2(closure = { 0 })
+	f3 { }
 }
