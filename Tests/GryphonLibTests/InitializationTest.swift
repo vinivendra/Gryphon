@@ -35,7 +35,7 @@ class InitializationTest: XCTestCase {
 
 		do {
 			// Create a new folder
-			try Driver.run(withArguments: ["init", "--xcode"])
+			try Driver.run(withArguments: ["init", "-xcode"])
 
 			// Check the new folder's contents
 			for file in SupportingFile.filesForXcodeInitialization {
