@@ -64,7 +64,7 @@ class BootstrappingTest: XCTestCase {
 
 				// Get Swift results
 				let arguments: MutableList =
-					["-skipASTDumps",
+					["-skip-AST-dumps",
 					 "-emit-swiftAST",
 					 "--indentation=t",
 					 "-avoid-unicode",
@@ -121,7 +121,7 @@ class BootstrappingTest: XCTestCase {
 
 				// Get Swift results
 				let arguments: MutableList =
-					["-skipASTDumps",
+					["-skip-AST-dumps",
 					 "-emit-rawAST",
 					 "--indentation=t",
 					 "-avoid-unicode",
@@ -178,7 +178,7 @@ class BootstrappingTest: XCTestCase {
 
 				// Get Swift results
 				let arguments: MutableList =
-					["-skipASTDumps",
+					["-skip-AST-dumps",
 					 "-emit-AST",
 					 "--indentation=t",
 					 "-avoid-unicode",
@@ -235,7 +235,7 @@ class BootstrappingTest: XCTestCase {
 
 				// Get Swift results
 				let arguments: MutableList =
-					["-skipASTDumps",
+					["-skip-AST-dumps",
 					 "-emit-kotlin",
 					 "--indentation=t",
 					 "-avoid-unicode",
@@ -311,7 +311,7 @@ class BootstrappingTest: XCTestCase {
 						"Bootstrap/kotlin.jar",
 						"--indentation=t",
 						"-avoid-unicode",
-						"-skipASTDumps",
+						"-skip-AST-dumps",
 						"-emit-kotlin",
 						"--write-to-console",
 						testCasePath,

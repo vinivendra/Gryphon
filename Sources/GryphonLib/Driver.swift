@@ -44,9 +44,9 @@ public class Driver {
 
 	public static let debugArguments: List = [
 		"-xcode",
-		"-setupXcode",
-		"-makeGryphonTargets",
-		"-skipASTDumps",
+		"-setup-xcode",
+		"-make-gryphon-targets",
+		"-skip-AST-dumps",
 		"-emit-swiftAST",
 		"-emit-rawAST",
 		"-emit-AST",
@@ -139,35 +139,35 @@ public class Driver {
 			if let xcodeProject = maybeXcodeProject {
 				if isVerbose {
 					_ = try Driver.run(withArguments:
-						["-setupXcode", "--verbose", xcodeProject])
+						["-setup-xcode", "--verbose", xcodeProject])
 					_ = try Driver.run(withArguments:
-						["-makeGryphonTargets", "--verbose", xcodeProject])
+						["-make-gryphon-targets", "--verbose", xcodeProject])
 				}
 				else {
 					_ = try Driver.run(withArguments:
-						["-setupXcode", xcodeProject])
+						["-setup-xcode", xcodeProject])
 					_ = try Driver.run(withArguments:
-						["-makeGryphonTargets", xcodeProject])
+						["-make-gryphon-targets", xcodeProject])
 				}
 			}
 
 			return nil
 		}
 
-		if arguments.contains("-setupXcode") {
+		if arguments.contains("-setup-xcode") {
 			guard let xcodeProject = maybeXcodeProject else {
 				throw GryphonError(errorMessage:
-					"Please specify an Xcode project when using `-setupXcode`.")
+					"Please specify an Xcode project when using `-setup-xcode`.")
 			}
 
 			try setupGryphonFolder(forXcodeProject: xcodeProject, usingToolchain: toolchain)
 			Compiler.log("Xcode setup successful.")
 			return nil
 		}
-		if arguments.contains("-makeGryphonTargets") {
+		if arguments.contains("-make-gryphon-targets") {
 			guard let xcodeProject = maybeXcodeProject else {
 				throw GryphonError(errorMessage:
-					"Please specify an Xcode project when using `-makeGryphonTargets`.")
+					"Please specify an Xcode project when using `-make-gryphon-targets`.")
 			}
 
 			try makeGryphonTargets(forXcodeProject: xcodeProject, usingToolchain: toolchain)
@@ -460,7 +460,7 @@ public class Driver {
 		let shouldRunConcurrently = !arguments.contains("--sync")
 
 		//// Dump the ASTs
-		if !arguments.contains("-skipASTDumps") {
+		if !arguments.contains("-skip-AST-dumps") {
 			let maybeXcodeProject = getXcodeProject(inArguments: arguments)
 			let isUsingXcode = (maybeXcodeProject != nil)
 			let isSkippingFiles = arguments.contains("--skip")
@@ -981,17 +981,17 @@ public class Driver {
 		  ➡️  clean
 		        Clean Gryphon's build folder in the local directory.
 
-		  ➡️  -setupXcode <Xcode project>
+		  ➡️  -setup-xcode <Xcode project>
 		        Configures Gryphon's build folder to be used with the given Xcode
 		        project. Only needed if `gryphon init` was used without specifying an
 		        Xcode project.
 
-		  ➡️  -makeGryphonTargets <Xcode project>
+		  ➡️  -make-gryphon-targets <Xcode project>
 		        Adds auxiliary targets to the given Xcode project. Only needed if
 		        `gryphon init` was used without specifying an Xcode project.
 
 		Advanced translation options:
-		      ↪️  -skipASTDumps
+		      ↪️  -skip-AST-dumps
 		            Skip calling the Swift compiler to update the AST dumps (i.e. if the
 		            Swift sources haven't changed since the last translation).
 

@@ -78,7 +78,7 @@ class DriverTest: XCTestCase {
 
 			//
 			let driverResult1 = try Driver.run(withArguments:
-				["-skipASTDumps",
+				["-skip-AST-dumps",
 				 "-emit-kotlin",
 				 "--indentation=t",
 				 "--write-to-console",
@@ -98,7 +98,7 @@ class DriverTest: XCTestCase {
 
 			//
 			let driverResult2 = try Driver.run(withArguments:
-				["-skipASTDumps",
+				["-skip-AST-dumps",
 				 "-emit-kotlin",
 				 "--indentation=t",
 				 "--no-main-file",
@@ -134,7 +134,7 @@ class DriverTest: XCTestCase {
 			Compiler.clearIssues()
 
 			_ = try Driver.run(withArguments:
-				["-skipASTDumps",
+				["-skip-AST-dumps",
 				 "-emit-kotlin",
 				 "--indentation=t",
 				 "--continue-on-error",
@@ -147,7 +147,7 @@ class DriverTest: XCTestCase {
 			Compiler.clearIssues()
 
 			_ = try Driver.run(withArguments:
-				["-skipASTDumps",
+				["-skip-AST-dumps",
 				 "-emit-kotlin",
 				 "--indentation=t",
 				 "--no-main-file",
@@ -169,7 +169,7 @@ class DriverTest: XCTestCase {
 
 			//
 			let driverResult1 = try Driver.run(withArguments:
-				["-skipASTDumps",
+				["-skip-AST-dumps",
 				 "-emit-kotlin",
 				 "--indentation=t",
 				 "--write-to-console",
@@ -190,7 +190,7 @@ class DriverTest: XCTestCase {
 
 			//
 			let driverResult2 = try Driver.run(withArguments:
-				["-skipASTDumps",
+				["-skip-AST-dumps",
 				 "-emit-kotlin",
 				 "--indentation=4",
 				 "--write-to-console",
