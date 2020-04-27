@@ -43,7 +43,7 @@ public class Driver {
 	]
 
 	public static let debugArguments: List = [
-		"--xcode",
+		"-xcode",
 		"-setupXcode",
 		"-makeGryphonTargets",
 		"-skipASTDumps",
@@ -126,11 +126,11 @@ public class Driver {
 		let maybeXcodeProject = getXcodeProject(inArguments: arguments)
 
 		if arguments.contains("init") {
-			// The `--xcode` flag forces the initialization to add Xcode files to the
+			// The `-xcode` flag forces the initialization to add Xcode files to the
 			// Gryphon build folder even if no Xcode project was given. It's currently
 			// used only for developing Gryphon.
 			let shouldInitializeXcodeFiles = (maybeXcodeProject != nil) ||
-				arguments.contains("--xcode")
+				arguments.contains("-xcode")
 
 			try initialize(includingXcodeFiles: shouldInitializeXcodeFiles)
 
