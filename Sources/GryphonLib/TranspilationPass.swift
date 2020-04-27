@@ -3522,7 +3522,7 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 			"MutableList, List, MutableMap or Map instead."
 			Compiler.handleWarning(
 				message: message,
-				astDetails: expression.prettyDescription(),
+				ast: expression,
 				sourceFile: ast.sourceFile,
 				sourceFileRange: expression.range)
 		}
@@ -3957,8 +3957,9 @@ public class RawValuesTranspilationPass: TranspilationPass {
 				forEnumDeclaration: enumDeclaration) else
 			{
 				Compiler.handleWarning(
-					message: "Failed to create init(rawValue:)",
-					astDetails: "Unable to get all raw values in enum declaration.",
+					message: "Failed to create init(rawValue:). " +
+						"Unable to get all raw values from the enum declaration.",
+					ast: enumDeclaration,
 					sourceFile: ast.sourceFile,
 					sourceFileRange: enumDeclaration.range)
 				return super.replaceEnumDeclaration(enumDeclaration)

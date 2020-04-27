@@ -2093,14 +2093,11 @@ public class KotlinTranslator {
 		AST ast: Statement)
 		throws -> Translation
 	{
-		let nodeDescription = ast.prettyDescription(horizontalLimit: 100)
-
 		let message = "failed to translate Gryphon AST into Kotlin: " + errorMessage + "."
-		let astDetails = "Thrown when translating the following AST node:\n\(nodeDescription)"
 
 		try Compiler.handleError(
 			message: message,
-			astDetails: astDetails,
+			ast: ast,
 			sourceFile: sourceFile,
 			sourceFileRange: ast.range)
 		return Translation(range: ast.range, string: KotlinTranslator.errorTranslation)

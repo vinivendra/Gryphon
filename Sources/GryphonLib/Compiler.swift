@@ -53,14 +53,14 @@ public class Compiler {
 
 	internal static func handleError(
 		message: String,
-		astDetails: String = "",
+		ast: PrintableAsTree? = nil,
 		sourceFile: SourceFile?,
 		sourceFileRange: SourceFileRange?)
 		throws
 	{
 		let issue = CompilerIssue(
 			message: message,
-			astDetails: astDetails,
+			ast: ast,
 			sourceFile: sourceFile,
 			sourceFileRange: sourceFileRange,
 			isError: true)
@@ -75,7 +75,7 @@ public class Compiler {
 
 	internal static func handleWarning(
 		message: String,
-		astDetails: String = "",
+		ast: PrintableAsTree? = nil,
 		sourceFile: SourceFile?,
 		sourceFileRange: SourceFileRange?)
 	{
@@ -90,7 +90,7 @@ public class Compiler {
 
 		Compiler.issues.append(CompilerIssue(
 			message: message,
-			astDetails: astDetails,
+			ast: ast,
 			sourceFile: sourceFile,
 			sourceFileRange: sourceFileRange,
 			isError: false))
@@ -244,20 +244,22 @@ internal class CompilerIssue {
 	let sourceFile: SourceFile?
 	let range: SourceFileRange?
 
+	static var shouldPrintASTs = false
+
 	/// Initializes an issue, using the given information to create the message to be printed.
 	/// The `message` parameter is the short message in the issue header (i.e. "Unrecognized
 	/// identifier"); the details can be verbose, they will be printed later and won't show in Xcode
 	/// (i.e. "while translating the AST:\n\(ast.prettyPrint())").
 	init(
 		message: String,
-		astDetails: String,
+		ast: PrintableAsTree?,
 		sourceFile: SourceFile?,
 		sourceFileRange: SourceFileRange?,
 		isError: Bool)
 	{
 		self.fullMessage = CompilerIssue.createMessage(
 			message: message,
-			astDetails: astDetails,
+			ast: ast,
 			sourceFile: sourceFile,
 			sourceFileRange: sourceFileRange,
 			isError: isError)
@@ -268,11 +270,13 @@ internal class CompilerIssue {
 
 	private static func createMessage(
 		message: String,
-		astDetails: String,
+		ast: PrintableAsTree?,
 		sourceFile: SourceFile?,
 		sourceFileRange: SourceFileRange?,
 		isError: Bool) -> String
 	{
+		let result: String
+
 		let errorOrWarning = isError ? "error" : "warning"
 
 		if let sourceFile = sourceFile {
@@ -303,20 +307,25 @@ internal class CompilerIssue {
 					}
 				}
 
-				return "\(absolutePath):\(sourceFileRange.lineStart):" +
+				result = "\(absolutePath):\(sourceFileRange.lineStart):" +
 					"\(sourceFileRange.columnStart): \(errorOrWarning): \(message)\n" +
 					"\(sourceFileString)\n" +
-					"\(underlineString)\n" +
-					astDetails
+					"\(underlineString)\n"
 			}
 			else {
-				return "\(absolutePath): \(errorOrWarning): \(message)\n" +
-					astDetails
+				result = "\(absolutePath): \(errorOrWarning): \(message)\n"
 			}
 		}
 		else {
-			return "\(errorOrWarning): \(message)\n" +
-				astDetails
+			result = "\(errorOrWarning): \(message)\n"
+		}
+
+		if CompilerIssue.shouldPrintASTs, let ast = ast {
+			return result + "Thrown when translating the following AST node:\n" +
+				ast.prettyDescription()
+		}
+		else {
+			return result
 		}
 	}
 

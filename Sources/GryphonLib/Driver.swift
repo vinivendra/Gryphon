@@ -51,6 +51,7 @@ public class Driver {
 		"-emit-rawAST",
 		"-emit-AST",
 		"-emit-kotlin",
+		"-print-ASTs-on-error",
 		"-avoid-unicode",
 	]
 
@@ -65,8 +66,6 @@ public class Driver {
 		let shouldGenerateSwiftAST: Bool
 
 		let shouldPrintToConsole: Bool
-
-		let horizontalLimit: Int?
 
 		let mainFilePath: String?
 	}
@@ -215,8 +214,7 @@ public class Driver {
 		// Generate the Swift AST
 		let swiftAST = try Compiler.generateSwiftAST(fromASTDump: swiftASTDump)
 		if settings.shouldEmitSwiftAST {
-			let output = swiftAST.prettyDescription(
-				horizontalLimit: settings.horizontalLimit)
+			let output = swiftAST.prettyDescription()
 			print(output)
 		}
 
@@ -232,8 +230,7 @@ public class Driver {
 			withContext: context)
 
 		if settings.shouldEmitSwiftAST {
-			let output = swiftAST.prettyDescription(
-				horizontalLimit: settings.horizontalLimit)
+			let output = swiftAST.prettyDescription()
 			if let outputFilePath = gryphonRawAST.outputFileMap[.swiftAST],
 				!settings.shouldPrintToConsole
 			{
@@ -242,8 +239,7 @@ public class Driver {
 		}
 
 		if settings.shouldEmitRawAST {
-			let output = gryphonRawAST.prettyDescription(
-				horizontalLimit: settings.horizontalLimit)
+			let output = gryphonRawAST.prettyDescription()
 			if let outputFilePath = gryphonRawAST.outputFileMap[.gryphonASTRaw],
 				!settings.shouldPrintToConsole
 			{
@@ -275,8 +271,7 @@ public class Driver {
 		let gryphonAST = try Compiler.generateGryphonASTAfterSecondPasses(
 			fromGryphonRawAST: gryphonFirstPassedAST, withContext: context)
 		if settings.shouldEmitAST {
-			let output = gryphonAST.prettyDescription(
-				horizontalLimit: settings.horizontalLimit)
+			let output = gryphonAST.prettyDescription()
 			if let outputFilePath = gryphonAST.outputFileMap[.gryphonAST],
 				!settings.shouldPrintToConsole
 			{
@@ -369,13 +364,11 @@ public class Driver {
 		Compiler.shouldAvoidUnicodeCharacters = arguments.contains("-avoid-unicode")
 
 		//
-		let horizontalLimit: Int?
+		CompilerIssue.shouldPrintASTs = arguments.contains("-print-ASTs-on-error")
+
 		if let lineLimitArgument = arguments.first(where: { $0.hasPrefix("-line-limit=") }) {
 			let lineLimitString = lineLimitArgument.dropFirst("-line-limit=".count)
-			horizontalLimit = Int(lineLimitString)
-		}
-		else {
-			horizontalLimit = nil
+			printableAsTreeHorizontalLimit = Int(lineLimitString)
 		}
 
 		//
@@ -435,7 +428,6 @@ public class Driver {
 			shouldGenerateRawAST: shouldGenerateRawAST,
 			shouldGenerateSwiftAST: shouldGenerateSwiftAST,
 			shouldPrintToConsole: shouldPrintToConsole,
-			horizontalLimit: horizontalLimit,
 			mainFilePath: mainFilePath)
 
 		//
@@ -918,104 +910,111 @@ public class Driver {
 		print(usageString)
 	}
 
+	/// This string should be limited to be 80 characters wide to fit the terminal standard.
+	/// It should also be indented using spaces to ensure the spacing is correct in different
+	/// terminals.
     static let usageString = """
-		-- Gryphon transpiler --
-		Version \(gryphonVersion)
+-- Gryphon transpiler --
+Version \(gryphonVersion)
 
-		  Running this command with "help", "-help" or "--help" displays the
-		  message below.
-		  Running it with "--version" displays the current version.
+  Running this command with "help", "-help" or "--help" displays the
+  message below.
+  Running it with "--version" displays the current version.
 
-		Main usage:
+Main usage:
 
-		  - Initialization
-		      gryphon init [xcode project]
+  - Initialization
+      gryphon init [xcode project]
 
-		  - Translation
-		      gryphon [xcode project] [options] [input file paths]
+  - Translation
+      gryphon [xcode project] [options] [input file paths]
 
-		  Notes:
-		      - Including the path of an Xcode project makes initialization and
-		        translation compatible with Xcode. Omit the Xcode project when
-		        translating standalone Swift files.
-		      - Input file paths may be:
-		        - Paths to .swift source files.
-		        - Paths to .xcfilelist files, which may contain paths to actual .swift
-		          source files separated by newlines.
+  Notes:
+      - Including the path of an Xcode project makes initialization and
+        translation compatible with Xcode. Omit the Xcode project when
+        translating standalone Swift files.
+      - Input file paths may be:
+        - Paths to .swift source files.
+        - Paths to .xcfilelist files, which may contain paths to actual .swift
+          source files separated by newlines.
 
-		  Options:
-		      ↪️  --skip
-		            Input files after this option will not be translated. Use this to
-		            specify files that have to be compiled by Swift but don't have to be
-		            translated by Gryphon.
+  Options:
+      ↪️  --skip
+            Input files after this option will not be translated. Use this to
+            specify files that have to be compiled by Swift but don't have to be
+            translated by Gryphon.
 
-		      ↪️  --no-main-file
-		            Do not generate a Kotlin file with a "main" function. This is
-		            implied if translating files from an Xcode project.
+      ↪️  --no-main-file
+            Do not generate a Kotlin file with a "main" function. This is
+            implied if translating files from an Xcode project.
 
-		      ↪️  --default-final
-		            Kotlin declarations will be "final" by default instead of "open".
+      ↪️  --default-final
+            Kotlin declarations will be "final" by default instead of "open".
 
-		      ↪️  --continue-on-error
-		            Continue translating even if errors are found.
+      ↪️  --continue-on-error
+            Continue translating even if errors are found.
 
-		      ↪️  --write-to-console
-		            Write the output of any translations to the console (instead of
-		            the specified output files).
+      ↪️  --write-to-console
+            Write the output of any translations to the console (instead of
+            the specified output files).
 
-		      ↪️  --indentation=<N>
-		            Specify the indentation to be used in the output Kotlin files. Use
-		            "t" for tabs or an integer for the corresponding number of spaces.
-		            Defaults to tabs.
+      ↪️  --indentation=<N>
+            Specify the indentation to be used in the output Kotlin files. Use
+            "t" for tabs or an integer for the corresponding number of spaces.
+            Defaults to tabs.
 
-		      ↪️  --verbose
-		            Print more information to the console.
+      ↪️  --verbose
+            Print more information to the console.
 
-		      ↪️  --sync
-		            Do not use concurrency.
+      ↪️  --sync
+            Do not use concurrency.
 
-		      ↪️  --toolchain=<toolchain name>
-		            Specify the toolchain to be used when calling the Swift compiler.
+      ↪️  --toolchain=<toolchain name>
+            Specify the toolchain to be used when calling the Swift compiler.
 
-		Advanced commands:
-		  ➡️  clean
-		        Clean Gryphon's build folder in the local directory.
+Advanced commands:
+  ➡️  clean
+        Clean Gryphon's build folder in the local directory.
 
-		  ➡️  -setup-xcode <Xcode project>
-		        Configures Gryphon's build folder to be used with the given Xcode
-		        project. Only needed if `gryphon init` was used without specifying an
-		        Xcode project.
+  ➡️  -setup-xcode <Xcode project>
+        Configures Gryphon's build folder to be used with the given Xcode
+        project. Only needed if `gryphon init` was used without specifying an
+        Xcode project.
 
-		  ➡️  -make-gryphon-targets <Xcode project>
-		        Adds auxiliary targets to the given Xcode project. Only needed if
-		        `gryphon init` was used without specifying an Xcode project.
+  ➡️  -make-gryphon-targets <Xcode project>
+        Adds auxiliary targets to the given Xcode project. Only needed if
+        `gryphon init` was used without specifying an Xcode project.
 
-		Advanced translation options:
-		      ↪️  -skip-AST-dumps
-		            Skip calling the Swift compiler to update the AST dumps (i.e. if the
-		            Swift sources haven't changed since the last translation).
+Advanced translation options:
+      ↪️  -skip-AST-dumps
+            Skip calling the Swift compiler to update the AST dumps (i.e. if the
+            Swift sources haven't changed since the last translation).
 
-		      ↪️  -emit-swiftAST
-		            Emit the Swift AST (an intermediate representation) either to a file
-		            ending in ".swiftAST" specified by a "// gryphon output: " comment
-		            or to the console if there isn't one.
-		      ↪️  -emit-rawAST
-		            Emit the raw Gryphon AST (an intermediate representation) either to
-		            a file ending in ".gryphonASTRaw" specified by a
-		            "// gryphon output: " comment or to the console if there isn't one.
-		      ↪️  -emit-AST
-		            Emit the processed Gryphon AST (an intermediate representation)
-		            either to a file ending in ".gryphonAST" specified by a
-		            "// gryphon output: " comment or to the console if there isn't one.
-		      ↪️  -emit-kotlin
-		            Emit the Kotlin output either to a file ending in ".kt" specified by
-		            a "// gryphon output: " comment or to the console if there isn't
-		            one. This is the default if no other `-emit` options are used.
+      ↪️  -emit-swiftAST
+            Emit the Swift AST (an intermediate representation) either to a file
+            ending in ".swiftAST" specified by a "// gryphon output: " comment
+            or to the console if there isn't one.
+      ↪️  -emit-rawAST
+            Emit the raw Gryphon AST (an intermediate representation) either to
+            a file ending in ".gryphonASTRaw" specified by a
+            "// gryphon output: " comment or to the console if there isn't one.
+      ↪️  -emit-AST
+            Emit the processed Gryphon AST (an intermediate representation)
+            either to a file ending in ".gryphonAST" specified by a
+            "// gryphon output: " comment or to the console if there isn't one.
+      ↪️  -emit-kotlin
+            Emit the Kotlin output either to a file ending in ".kt" specified by
+            a "// gryphon output: " comment or to the console if there isn't
+            one. This is the default if no other `-emit` options are used.
 
-		      ↪️  -line-limit=<N>
-		            Limit the maximum horizontal size when printing ASTs.
+      ↪️  -print-ASTs-on-error
+            Include the ASTs for the relevant statements or expressions when
+            printing errors.
+      ↪️  -line-limit=<N>
+            Limit the maximum horizontal size when printing ASTs. Useful so
+            the text doesn't wrap and break the AST lines.
 
-		      ↪️  -avoid-unicode
-		            Avoid using Unicode arrows and emojis in some places.
-		"""
+      ↪️  -avoid-unicode
+            Avoid using Unicode arrows and emojis in some places.
+"""
 }

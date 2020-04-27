@@ -81,11 +81,12 @@ public protocol PrintableAsTree {
 	var printableSubtrees: List<PrintableAsTree?> { get }
 }
 
+public var printableAsTreeHorizontalLimit: Int?
+
 public extension PrintableAsTree {
 	func prettyPrint(
 		indentation: MutableList<String> = [],
 		isLast: Bool = true,
-		horizontalLimit: Int? = nil,
 		printFunction: (String) -> () = { print($0, terminator: "") })
 	{
 		let verticalBar = Compiler.shouldAvoidUnicodeCharacters ? "|" : "│"
@@ -94,7 +95,7 @@ public extension PrintableAsTree {
 		let horizontalBar = Compiler.shouldAvoidUnicodeCharacters ? "-" : "─"
 		let ellipsis = Compiler.shouldAvoidUnicodeCharacters ? "..." : "…"
 
-		let horizontalLimit = horizontalLimit ?? Int.max
+		let horizontalLimit = printableAsTreeHorizontalLimit ?? Int.max
 
 		// Print the indentation
 		let indentationString = indentation.joined(separator: "")
@@ -138,7 +139,6 @@ public extension PrintableAsTree {
 			subtree.prettyPrint(
 				indentation: newIndentation,
 				isLast: false,
-				horizontalLimit: horizontalLimit,
 				printFunction: printFunction)
 		}
 
@@ -148,13 +148,12 @@ public extension PrintableAsTree {
 		subtrees.last?.prettyPrint(
 			indentation: newIndentation,
 			isLast: true,
-			horizontalLimit: horizontalLimit,
 			printFunction: printFunction)
 	}
 
-	func prettyDescription(horizontalLimit: Int? = nil) -> String {
+	func prettyDescription() -> String {
 		var result = ""
-		prettyPrint(horizontalLimit: horizontalLimit) { result += $0 }
+		prettyPrint { result += $0 }
 		return result
 	}
 }

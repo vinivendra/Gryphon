@@ -76,13 +76,18 @@ class PrintableAsTreeTest: XCTestCase {
 		PrintableTree(
 			"dddddddddddddddddd"), ])
 
-		XCTAssertEqual(root.prettyDescription(horizontalLimit: 15), """
+		let oldHorizontalLimit = printableAsTreeHorizontalLimit
+		printableAsTreeHorizontalLimit = 15
+
+		XCTAssertEqual(root.prettyDescription(), """
 			 root
 			 ├─ aaaaaaaaaa…
 			 │  └─ bbbbbbb…
 			 │     └─ cccc…
 			 └─ dddddddddd…\n
 			""")
+
+		printableAsTreeHorizontalLimit = oldHorizontalLimit
 	}
 
     func testInitOrNil() {

@@ -3541,14 +3541,11 @@ public class SwiftTranslator {
 		ast: SwiftAST)
 		throws -> Statement
 	{
-		let nodeDescription = ast.prettyDescription(horizontalLimit: 100)
-
 		let message = "failed to turn Swift AST into Gryphon AST: " + errorMessage + "."
-		let astDetails = "Thrown when translating the following AST node:\n\(nodeDescription)"
 
 		try Compiler.handleError(
 			message: message,
-			astDetails: astDetails,
+			ast: ast,
 			sourceFile: sourceFile,
 			sourceFileRange: getRangeRecursively(ofNode: ast))
 		return ErrorStatement(range: getRangeRecursively(ofNode: ast))
@@ -3560,14 +3557,11 @@ public class SwiftTranslator {
 		ast: SwiftAST)
 		throws -> Expression
 	{
-		let nodeDescription = ast.prettyDescription(horizontalLimit: 100)
-
 		let message = "failed to turn Swift AST into Gryphon AST: " + errorMessage + "."
-		let astDetails = "Thrown when translating the following AST node:\n\(nodeDescription)"
 
 		try Compiler.handleError(
 			message: message,
-			astDetails: astDetails,
+			ast: ast,
 			sourceFile: sourceFile,
 			sourceFileRange: getRangeRecursively(ofNode: ast))
 		return ErrorExpression(range: getRangeRecursively(ofNode: ast))
@@ -3579,14 +3573,11 @@ public class SwiftTranslator {
 		ast: SwiftAST)
 		throws -> IfStatement
 	{
-		let nodeDescription = ast.prettyDescription(horizontalLimit: 100)
-
 		let message = "failed to turn Swift AST into Gryphon AST: " + errorMessage + "."
-		let astDetails = "Thrown when translating the following AST node:\n\(nodeDescription)"
 
 		try Compiler.handleError(
 			message: message,
-			astDetails: astDetails,
+			ast: ast,
 			sourceFile: sourceFile,
 			sourceFileRange: getRangeRecursively(ofNode: ast))
 		return IfStatement(

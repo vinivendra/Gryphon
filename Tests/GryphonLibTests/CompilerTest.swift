@@ -86,10 +86,10 @@ class CompilerTest: XCTestCase {
 			columnStart: 5,
 			columnEnd: 5)
 
-		//
+		// Test error
 		let errorMessage = CompilerIssue(
 			message: "My error message",
-			astDetails: "Some details",
+			ast: nil,
 			sourceFile: sourceFile,
 			sourceFileRange: sourceFileRange,
 			isError: true).fullMessage
@@ -103,13 +103,13 @@ class CompilerTest: XCTestCase {
 			path/to/file.swift:1:5: error: My error message
 			let x: Int = 0
 			    ^
-			Some details
+
 			""")
 
-		//
+		// Test warning
 		let warningMessage = CompilerIssue(
 			message: "My warning message",
-			astDetails: "Some details",
+			ast: nil,
 			sourceFile: sourceFile,
 			sourceFileRange: sourceFileRange,
 			isError: false).fullMessage
@@ -123,7 +123,36 @@ class CompilerTest: XCTestCase {
 			path/to/file.swift:1:5: warning: My warning message
 			let x: Int = 0
 			    ^
-			Some details
+
 			""")
+
+		// Test issue with AST
+		let oldShouldPrintASTs = CompilerIssue.shouldPrintASTs
+		CompilerIssue.shouldPrintASTs = true
+
+		let ast = PrintableTree("A", [PrintableTree("B")])
+		let errorMessage2 = CompilerIssue(
+			message: "My error message",
+			ast: ast,
+			sourceFile: sourceFile,
+			sourceFileRange: sourceFileRange,
+			isError: true).fullMessage
+
+		let errorMessageWithAST =
+			errorMessage2.dropFirst(Utilities.getCurrentFolder().count + 1)
+
+		XCTAssertEqual(
+			errorMessageWithAST,
+			"""
+			path/to/file.swift:1:5: error: My error message
+			let x: Int = 0
+			    ^
+			Thrown when translating the following AST node:
+			 A
+			 └─ B
+
+			""")
+
+		CompilerIssue.shouldPrintASTs = oldShouldPrintASTs
     }
 }
