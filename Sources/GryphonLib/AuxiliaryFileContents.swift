@@ -856,7 +856,7 @@ kotlinTarget.build_configurations.each do |config|
 	config.build_settings["PRODUCT_NAME"] = "Koltin"
 	config.build_settings["SUPPORTED_PLATFORMS"] = "macosx"
 	config.build_settings["SUPPORTS_MACCATALYST"] = "FALSE"
-	config.build_settings["ANDROIDROOT"] = "../Android"
+	config.build_settings["ANDROID_ROOT"] = "../Android"
 end
 
 # Create a new run script build phase (or fetch it if it exists)
@@ -888,7 +888,7 @@ rm -f "\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleOutput.tx
 rm -f "\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleErrors.txt"
 
 # Switch to the Android folder so we can use pre-built gradle info to speed up the compilation.
-cd "\(dollarSign)ANDROIDROOT"
+cd "\(dollarSign)ANDROID_ROOT"
 
 # Compile the Android sources and save the logs gack to the iOS folder
 ./gradlew compileDebugSources > \
