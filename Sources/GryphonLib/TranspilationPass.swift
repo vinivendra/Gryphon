@@ -2233,14 +2233,14 @@ public class SelfToThisTranspilationPass: TranspilationPass {
 	}
 
 	override func processDeclarationReferenceExpression( // gryphon annotation: override
-		_ expression: DeclarationReferenceExpression)
+		_ declarationReferenceExpression: DeclarationReferenceExpression)
 		-> DeclarationReferenceExpression
 	{
-		if expression.identifier == "self" {
-			expression.identifier = "this"
-			return expression
+		if declarationReferenceExpression.identifier == "self" {
+			declarationReferenceExpression.identifier = "this"
+			return declarationReferenceExpression
 		}
-		return super.processDeclarationReferenceExpression(expression)
+		return super.processDeclarationReferenceExpression(declarationReferenceExpression)
 	}
 }
 
@@ -2306,15 +2306,15 @@ public class AnonymousParametersTranspilationPass: TranspilationPass {
 	// gryphon insert:     super(ast, context) { }
 
 	override func processDeclarationReferenceExpression( // gryphon annotation: override
-		_ expression: DeclarationReferenceExpression)
+		_ declarationReferenceExpression: DeclarationReferenceExpression)
 		-> DeclarationReferenceExpression
 	{
-		if expression.identifier == "$0" {
-			expression.identifier = "it"
-			return expression
+		if declarationReferenceExpression.identifier == "$0" {
+			declarationReferenceExpression.identifier = "it"
+			return declarationReferenceExpression
 		}
 		else {
-			return super.processDeclarationReferenceExpression(expression)
+			return super.processDeclarationReferenceExpression(declarationReferenceExpression)
 		}
 	}
 
@@ -2998,17 +2998,17 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 
 	/// Replace variable declarations followed by switch statements assignments
 	override func replaceStatements( // gryphon annotation: override
-		_ oldStatements: MutableList<Statement>)
+		_ statements: MutableList<Statement>)
 		-> MutableList<Statement>
 	{
-		let statements = super.replaceStatements(oldStatements)
+		let newStatements = super.replaceStatements(statements)
 
 		let result: MutableList<Statement> = []
 
 		var i = 0
-		while i < (statements.count - 1) {
-			let currentStatement = statements[i]
-			let nextStatement = statements[i + 1]
+		while i < (newStatements.count - 1) {
+			let currentStatement = newStatements[i]
+			let nextStatement = newStatements[i + 1]
 			if let variableDeclaration = currentStatement as? VariableDeclaration,
 				let switchStatement = nextStatement as? SwitchStatement
 			{
@@ -3054,8 +3054,8 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 		// If the last statement was a switch that became an expression, we skipped it on purpose
 		// by adding 2 to i, so i will be the statements count. Otherwise, we have to process
 		// the last statement now (and i will be the count minus 1).
-		if i != statements.count {
-			if let lastStatement = statements.last {
+		if i != newStatements.count {
+			if let lastStatement = newStatements.last {
 				result.append(lastStatement)
 			}
 		}
@@ -3395,18 +3395,18 @@ public class RaiseStandardLibraryWarningsTranspilationPass: TranspilationPass {
 	// gryphon insert:     super(ast, context) { }
 
 	override func processDeclarationReferenceExpression( // gryphon annotation: override
-		_ expression: DeclarationReferenceExpression)
+		_ declarationReferenceExpression: DeclarationReferenceExpression)
 		-> DeclarationReferenceExpression
 	{
-		if expression.isStandardLibrary {
-			let message = "Reference to standard library \"\(expression.identifier)\" was not " +
-				"translated."
+		if declarationReferenceExpression.isStandardLibrary {
+			let message = "Reference to standard library " +
+				"\"\(declarationReferenceExpression.identifier)\" was not translated."
 			Compiler.handleWarning(
 					message: message,
 					sourceFile: ast.sourceFile,
-					sourceFileRange: expression.range)
+					sourceFileRange: declarationReferenceExpression.range)
 		}
-		return super.processDeclarationReferenceExpression(expression)
+		return super.processDeclarationReferenceExpression(declarationReferenceExpression)
 	}
 }
 
