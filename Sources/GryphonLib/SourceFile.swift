@@ -162,7 +162,7 @@ extension SourceFile {
 	}
 }
 
-public struct SourceFileRange: Equatable, Hashable {
+public struct SourceFileRange: Equatable, Hashable, CustomStringConvertible {
 	let lineStart: Int
 	let lineEnd: Int
 	let columnStart: Int
@@ -173,5 +173,9 @@ public struct SourceFileRange: Equatable, Hashable {
 	/// with the same practical meaning but different source file ranges.
 	public static func == (lhs: SourceFileRange, rhs: SourceFileRange) -> Bool {
 		return true
+	}
+
+	public var description: String {
+		return "\(lineStart):\(columnStart) - \(lineEnd):\(columnEnd)"
 	}
 }

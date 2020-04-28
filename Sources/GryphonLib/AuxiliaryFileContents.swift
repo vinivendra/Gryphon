@@ -467,6 +467,15 @@ internal let mapKotlinErrorsToSwiftFileContents = """
 // WARNING: Any changes to this file should be reflected in the literal string in
 // AuxiliaryFileContents.swift
 
+// Examples of compatible errors:
+//
+//main.kt:2:5: error: conflicting declarations: var result: String, var result: String
+//var result: String = ""
+//    ^
+//main.kt:3:5: error: conflicting declarations: var result: String, var result: String
+//var result = result
+//    ^
+
 import Foundation
 
 func getAbsoultePath(forFile file: String) -> String {
@@ -530,16 +539,35 @@ struct ErrorMap {
 
 	func getSwiftRange(forKotlinLine line: Int, column: Int) -> SourceFileRange? {
 		for mapping in mappings {
-			if mapping.kotlinRange.lineStart <= line,
-				mapping.kotlinRange.lineEnd >= line,
-				mapping.kotlinRange.columnStart <= column,
-				mapping.kotlinRange.columnEnd <= column
+			if compare(
+					line1: mapping.kotlinRange.lineStart,
+					column1: mapping.kotlinRange.columnStart,
+					isBeforeLine2: line,
+					column2: column),
+				compare(
+					line1: line,
+					column1: column,
+					isBeforeLine2: mapping.kotlinRange.lineEnd,
+					column2: mapping.kotlinRange.columnEnd)
 			{
 				return mapping.swiftRange
 			}
 		}
 
 		return nil
+	}
+
+	func compare(line1: Int, column1: Int, isBeforeLine2 line2: Int, column2: Int) -> Bool {
+		if line1 < line2 {
+			return true
+		}
+		else if line1 == line2 {
+			if column1 <= column2 {
+				return true
+			}
+		}
+
+		return false
 	}
 }
 
@@ -602,13 +630,6 @@ for error in errors {
 		print(error)
 	}
 }
-
-//main.kt:2:5: error: conflicting declarations: var result: String, var result: String
-//var result: String = ""
-//    ^
-//main.kt:3:5: error: conflicting declarations: var result: String, var result: String
-//var result = result
-//    ^
 
 """
 
@@ -699,16 +720,35 @@ struct ErrorMap {
 
 	func getSwiftRange(forKotlinLine line: Int, column: Int) -> SourceFileRange? {
 		for mapping in mappings {
-			if mapping.kotlinRange.lineStart <= line,
-				mapping.kotlinRange.lineEnd >= line,
-				mapping.kotlinRange.columnStart <= column,
-				mapping.kotlinRange.columnEnd <= column
+			if compare(
+					line1: mapping.kotlinRange.lineStart,
+					column1: mapping.kotlinRange.columnStart,
+					isBeforeLine2: line,
+					column2: column),
+				compare(
+					line1: line,
+					column1: column,
+					isBeforeLine2: mapping.kotlinRange.lineEnd,
+					column2: mapping.kotlinRange.columnEnd)
 			{
 				return mapping.swiftRange
 			}
 		}
 
 		return nil
+	}
+
+	func compare(line1: Int, column1: Int, isBeforeLine2 line2: Int, column2: Int) -> Bool {
+		if line1 < line2 {
+			return true
+		}
+		else if line1 == line2 {
+			if column1 <= column2 {
+				return true
+			}
+		}
+
+		return false
 	}
 }
 

@@ -24,7 +24,7 @@ public struct TranslationResult {
 	let errorMap: String
 }
 
-public class Translation {
+public class Translation: PrintableAsTree, CustomStringConvertible {
 	let swiftRange: SourceFileRange?
 	let children: MutableList<TranslationUnit> = []
 
@@ -37,6 +37,20 @@ public class Translation {
 		self.append(string)
 	}
 
+	//
+	public var description: String {
+		return prettyDescription()
+	}
+
+	public var treeDescription: String { // gryphon annotation: override
+		return "Translation"
+	}
+
+	public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+		return children.forceCast(to: List<PrintableAsTree?>.self)
+	}
+
+	//
 	func append(_ string: String) {
 		children.append(TranslationUnit(string))
 	}
@@ -128,11 +142,11 @@ public class Translation {
 	}
 }
 
-struct TranslationUnit {
+struct TranslationUnit: PrintableAsTree, CustomStringConvertible {
 	let stringLiteral: String?
 	let node: Translation?
 
-	// Only these two initializers exits, therefore exactly one of the properties will always be
+	// Only these two initializers exist, therefore exactly one of the properties will always be
 	// non-nil
 	init(_ stringLiteral: String) { // gryphon ignore
 		self.stringLiteral = stringLiteral
@@ -146,6 +160,38 @@ struct TranslationUnit {
 
 	// gryphon insert: constructor(stringLiteral: String): this(stringLiteral, null) { }
 	// gryphon insert: constructor(node: Translation): this(null, node) { }
+
+	//
+	var description: String {
+		return prettyDescription()
+	}
+
+	var treeDescription: String { // gryphon annotation: override
+		if let stringLiteral = self.stringLiteral {
+			let escapedString = stringLiteral
+				.replacingOccurrences(of: "\n", with: "\\n")
+				.replacingOccurrences(of: "\t", with: "\\t")
+			return "\"\(escapedString)\""
+		}
+		else {
+			let node = self.node!
+			if let range = node.swiftRange {
+				return range.description
+			}
+			else {
+				return ""
+			}
+		}
+	}
+
+	var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+		if let node = self.node {
+			return node.children.forceCast(to: List<PrintableAsTree?>.self)
+		}
+		else {
+			return []
+		}
+	}
 }
 
 internal class SourceFilePosition {
