@@ -2755,7 +2755,6 @@ public class AutoclosuresTranspilationPass: TranspilationPass {
 			}
 		}
 		else if let tupleShuffleExpression = callExpression.parameters as? TupleShuffleExpression {
-			// TODO: add tests for autoclosures in tuples and tupleShuffles
 			for index in tupleShuffleExpression.expressions.indices {
 				let expression = tupleShuffleExpression.expressions[index]
 				let parameterType = parameterTypes[index]

@@ -2159,8 +2159,6 @@ public class TupleShuffleExpression: Expression {
 	/// Turns this tupleShuffleExpression into a TupleExpression, ignoring absent parameters and
 	/// flattening variadics.
 	public func flattenToTupleExpression() -> TupleExpression {
-		// TODO: Check if this algorithm is enough to unite TupleExpression and
-		// TupleShuffleExpression. If it's not, use it at least for the KotlinTranslator.
 		let resultPairs: MutableList<LabeledExpression> = []
 
 		var expressionIndex = 0
