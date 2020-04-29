@@ -8,6 +8,7 @@
 	Sources/GryphonLib/Extensions.swift \
 	Sources/GryphonLib/GryphonAST.swift \
 	Sources/GryphonLib/GryphonSwiftLibrary.swift \
+	Sources/GryphonLib/KotlinTranslationResult.swift \
 	Sources/GryphonLib/KotlinTranslator.swift \
 	Sources/GryphonLib/LibraryTranspilationPass.swift \
 	Sources/GryphonLib/PrintableAsTree.swift \
@@ -15,7 +16,6 @@
 	Sources/GryphonLib/SourceFile.swift \
 	Sources/GryphonLib/SwiftAST.swift \
 	Sources/GryphonLib/SwiftTranslator.swift \
-	Sources/GryphonLib/TranslationResult.swift \
 	Sources/GryphonLib/TranspilationContext.swift \
 	Sources/GryphonLib/TranspilationPass.swift \
 	\
@@ -25,6 +25,7 @@
 	Tests/GryphonLibTests/DriverTest.swift \
 	Tests/GryphonLibTests/ExtensionsTest.swift \
 	Tests/GryphonLibTests/IntegrationTest.swift \
+	Tests/GryphonLibTests/KotlinTranslationResultTest.swift \
 	Tests/GryphonLibTests/LibraryTranspilationTest.swift \
 	Tests/GryphonLibTests/ListTest.swift \
 	Tests/GryphonLibTests/MutableListTest.swift \

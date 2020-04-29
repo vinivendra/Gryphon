@@ -14,17 +14,17 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/TranslationResult.swiftAST
-// gryphon output: Sources/GryphonLib/TranslationResult.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/TranslationResult.gryphonAST
-// gryphon output: Bootstrap/TranslationResult.kt
+// gryphon output: Sources/GryphonLib/KotlinTranslationResult.swiftAST
+// gryphon output: Sources/GryphonLib/KotlinTranslationResult.gryphonASTRaw
+// gryphon output: Sources/GryphonLib/KotlinTranslationResult.gryphonAST
+// gryphon output: Bootstrap/KotlinTranslationResult.kt
 
-public struct TranslationResult {
+public struct KotlinTranslationResult {
 	let translation: String
 	let errorMap: String
 }
 
-public class Translation: PrintableAsTree, CustomStringConvertible {
+public class KotlinTranslation: PrintableAsTree, CustomStringConvertible {
 	let swiftRange: SourceFileRange?
 	let children: MutableList<TranslationUnit> = []
 
@@ -55,7 +55,7 @@ public class Translation: PrintableAsTree, CustomStringConvertible {
 		children.append(TranslationUnit(string))
 	}
 
-	func append(_ map: Translation) {
+	func append(_ map: KotlinTranslation) {
 		children.append(TranslationUnit(map))
 	}
 
@@ -80,11 +80,11 @@ public class Translation: PrintableAsTree, CustomStringConvertible {
 		return true
 	}
 
-	public func resolveTranslation() -> TranslationResult {
+	public func resolveTranslation() -> KotlinTranslationResult {
 		let translationResult: MutableList<String> = []
 		let errorMap: MutableList<String> = []
 		resolveTranslationInto(translationResult: translationResult, errorMap: errorMap)
-		return TranslationResult(
+		return KotlinTranslationResult(
 			translation: translationResult.joined(),
 			errorMap: errorMap.joined(separator: "\n"))
 	}
@@ -144,7 +144,7 @@ public class Translation: PrintableAsTree, CustomStringConvertible {
 
 struct TranslationUnit: PrintableAsTree, CustomStringConvertible {
 	let stringLiteral: String?
-	let node: Translation?
+	let node: KotlinTranslation?
 
 	// Only these two initializers exist, therefore exactly one of the properties will always be
 	// non-nil
@@ -153,13 +153,13 @@ struct TranslationUnit: PrintableAsTree, CustomStringConvertible {
 		self.node = nil
 	}
 
-	init(_ node: Translation) { // gryphon ignore
+	init(_ node: KotlinTranslation) { // gryphon ignore
 		self.stringLiteral = nil
 		self.node = node
 	}
 
 	// gryphon insert: constructor(stringLiteral: String): this(stringLiteral, null) { }
-	// gryphon insert: constructor(node: Translation): this(null, node) { }
+	// gryphon insert: constructor(node: KotlinTranslation): this(null, node) { }
 
 	//
 	var description: String {
@@ -229,9 +229,9 @@ internal class SourceFilePosition {
 	}
 }
 
-extension Translation {
+extension KotlinTranslation {
 	func appendTranslations(
-		_ translations: List<Translation>,
+		_ translations: List<KotlinTranslation>,
 		withSeparator separator: String)
 	{
 		for translation in translations.dropLast() {

@@ -39,7 +39,7 @@ Bootstrap/SharedUtilities.kt
 Bootstrap/SourceFile.kt
 Bootstrap/SwiftAST.kt
 Bootstrap/SwiftTranslator.kt
-Bootstrap/TranslationResult.kt
+Bootstrap/KotlinTranslationResult.kt
 Bootstrap/TranspilationContext.kt
 Bootstrap/TranspilationPass.kt
 
@@ -57,7 +57,7 @@ Bootstrap/MutableMapTest.kt
 Bootstrap/PrintableAsTreeTest.kt
 Bootstrap/ShellTest.kt
 Bootstrap/SourceFileTest.kt
-Bootstrap/TranslationResultTest.kt
+Bootstrap/KotlinTranslationResultTest.kt
 Bootstrap/UtilitiesTest.kt
 
 Bootstrap/SharedTestUtilities.kt

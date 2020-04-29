@@ -16,21 +16,14 @@
 
 // TODO: Find out why this file is making the Swift compiler crash
 
-// gryphon output: Bootstrap/TranslationResultTest.kt
+// gryphon output: Bootstrap/KotlinTranslationResultTest.kt
 
-#if !GRYPHON
+#if canImport(GryphonLib)
 @testable import GryphonLib
 import XCTest
 #endif
 
-#if !GRYPHON
-typealias GryphonTranslation = GryphonLib.Translation
-#else
-typealias GryphonTranslation = Translation // gryphon ignore
-#endif
-// gryphon insert: typealias GryphonTranslation = Translation
-
-class TranslationResultTest: XCTestCase {
+class KotlinTranslationResultTest: XCTestCase {
 	// gryphon insert: constructor(): super() { }
 
 	public func getClassName() -> String { // gryphon annotation: override
@@ -59,7 +52,7 @@ class TranslationResultTest: XCTestCase {
 
 	// MARK: - Tests
 	func testShallowTranslation() {
-		let translation = Translation(range: SourceFileRange(
+		let translation = KotlinTranslation(range: SourceFileRange(
 			lineStart: 1, lineEnd: 1, columnStart: 1, columnEnd: 5))
 		translation.append("fun ")
 		translation.append("foo(")
@@ -114,22 +107,22 @@ class TranslationResultTest: XCTestCase {
 	}
 
 	func testIsEmpty() {
-		let translation = Translation(range: SourceFileRange(
+		let translation = KotlinTranslation(range: SourceFileRange(
 			lineStart: 1, lineEnd: 5, columnStart: 1, columnEnd: 1))
 		translation.append("")
 
-		let translation2 = Translation(range: SourceFileRange(
+		let translation2 = KotlinTranslation(range: SourceFileRange(
 			lineStart: 2, lineEnd: 2, columnStart: 1, columnEnd: 5))
 		translation2.append("")
 		translation2.append("")
 
 		translation.append(translation2)
 
-		let translation3 = Translation(range: SourceFileRange(
+		let translation3 = KotlinTranslation(range: SourceFileRange(
 			lineStart: 3, lineEnd: 3, columnStart: 1, columnEnd: 2))
 		translation3.append("")
 
-		let translation4 = Translation(range: SourceFileRange(
+		let translation4 = KotlinTranslation(range: SourceFileRange(
 			lineStart: 3, lineEnd: 3, columnStart: 3, columnEnd: 5))
 		translation4.append("")
 
@@ -137,7 +130,7 @@ class TranslationResultTest: XCTestCase {
 		translation.append(translation3)
 
 		//
-		let emptyTranslation = Translation(range: SourceFileRange(
+		let emptyTranslation = KotlinTranslation(range: SourceFileRange(
 			lineStart: 1, lineEnd: 5, columnStart: 1, columnEnd: 1))
 
 		//
@@ -200,23 +193,23 @@ class TranslationResultTest: XCTestCase {
 	}
 
 	// MARK: Auxiliary methods
-	func getDeepTranslation() -> GryphonTranslation {
-		let translation = Translation(range: SourceFileRange(
+	func getDeepTranslation() -> KotlinTranslation {
+		let translation = KotlinTranslation(range: SourceFileRange(
 			lineStart: 1, lineEnd: 5, columnStart: 1, columnEnd: 1))
 		translation.append("fun foo(bla: Int): Int {\n")
 
-		let translation2 = Translation(range: SourceFileRange(
+		let translation2 = KotlinTranslation(range: SourceFileRange(
 			lineStart: 2, lineEnd: 2, columnStart: 1, columnEnd: 5))
 		translation2.append("\treturn ")
 		translation2.append("bla\n")
 
 		translation.append(translation2)
 
-		let translation3 = Translation(range: SourceFileRange(
+		let translation3 = KotlinTranslation(range: SourceFileRange(
 			lineStart: 3, lineEnd: 3, columnStart: 1, columnEnd: 2))
 		translation3.append("\treturn ")
 
-		let translation4 = Translation(range: SourceFileRange(
+		let translation4 = KotlinTranslation(range: SourceFileRange(
 			lineStart: 3, lineEnd: 3, columnStart: 3, columnEnd: 5))
 		translation4.append("bla + 1\n")
 
