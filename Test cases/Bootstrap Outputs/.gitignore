@@ -1,0 +1,3 @@
+# Git doesn't do well with empty folders, so we add this file to make it not empty.
+!.gitignore
+
