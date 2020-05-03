@@ -30,7 +30,7 @@ public func allTests() -> [XCTestCaseEntry] {
 		testCase(PrintableAsTreeTest.allTests),
 		testCase(ShellTest.allTests),
 		testCase(SourceFileTest.allTests),
-		testCase(TranslationResultTest.allTests),
+		testCase(KotlinTranslationResultTest.allTests),
 		testCase(UtilitiesTest.allTests),
 		testCase(ListTest.allTests),
 		testCase(MutableListTest.allTests),
