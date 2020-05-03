@@ -57,6 +57,13 @@ class IntegrationTest: XCTestCase {
 	func test() {
 		for swiftVersion in TranspilationContext.supportedSwiftVersions {
 			do {
+				// If we're on linux, skip testing any versions that aren't the default version
+				if OS.osType == .linux,
+					try swiftVersion != TranspilationContext.getVersionOfToolchain(nil)
+				{
+					continue
+				}
+
 				guard let toolchainString =
 					try TranspilationContext.getToolchain(forSwiftVersion: swiftVersion) else
 				{

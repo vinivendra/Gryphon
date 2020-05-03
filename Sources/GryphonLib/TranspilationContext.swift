@@ -225,6 +225,11 @@ public class TranspilationContext {
 			let defaultVersion = try getVersionOfToolchain(nil)
 			swiftVersionToolchains[defaultVersion] = ""
 
+			// Linux has no toolchain support
+			if OS.osType == .linux {
+				return swiftVersionToolchains[swiftVersion]
+			}
+
 			for swiftVersion in supportedSwiftVersions {
 				if swiftVersion == defaultVersion {
 					continue
@@ -272,7 +277,8 @@ public class TranspilationContext {
 		var swiftVersion = swiftVersionCommandResult.standardOutput
 		let prefixToRemove = swiftVersion.prefix { !$0.isNumber }
 		swiftVersion = String(swiftVersion.dropFirst(prefixToRemove.count))
-		swiftVersion = String(swiftVersion.prefix { $0 != " " })
+		let endIndex = swiftVersion.index(swiftVersion.startIndex, offsetBy: 3)
+		swiftVersion = String(swiftVersion[..<endIndex])
 
 		try checkToolchainAndVersionSupport(toolchain, swiftVersion)
 

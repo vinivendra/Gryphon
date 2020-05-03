@@ -837,7 +837,7 @@ public class Driver {
 				arguments.append("xcrun")
 			}
 
-			if let chosenToolchainName = toolchain {
+			if let chosenToolchainName = toolchain, chosenToolchainName != "" {
 				arguments.append("-toolchain")
 				arguments.append(chosenToolchainName)
 			}
