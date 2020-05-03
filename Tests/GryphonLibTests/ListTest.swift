@@ -56,6 +56,7 @@ class ListTest: XCTestCase {
 		// testHash()
 		testSorted()
 		testZip()
+		testPlus()
 	}
 
 	/// Tests to be run when using Swift on Linux
@@ -84,6 +85,7 @@ class ListTest: XCTestCase {
 		("testHash", testHash),
 		("testSorted", testSorted),
 		("testZip", testZip),
+		("testPlus", testPlus),
 		]
 
 	// MARK: - Tests

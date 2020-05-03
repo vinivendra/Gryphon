@@ -391,5 +391,6 @@ class BootstrappingTest: XCTestCase {
 		("testSwiftTranslatorOutput", testSwiftTranslatorOutput),
 		("testTranspilationPassOutput", testTranspilationPassOutput),
 		("testKotlinTranslatorOutput", testKotlinTranslatorOutput),
+		// testTestCasesWithOtherSwiftVersions omitted for linux
 	]
 }
