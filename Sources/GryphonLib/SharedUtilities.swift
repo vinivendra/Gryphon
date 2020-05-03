@@ -80,6 +80,13 @@ private func gryphonTemplates() throws {
 
     _ = Shell.runShellCommand(_stringArray1)
     _ = "Shell.runShellCommand(_stringArray1)"
+
+	//
+	_ = OS.OSType.macOS
+	_ = "OS.OSType.MAC_OS"
+
+	_ = OS.OSType.linux
+	_ = "OS.OSType.LINUX"
 }
 
 public struct GryphonError: Error, CustomStringConvertible {

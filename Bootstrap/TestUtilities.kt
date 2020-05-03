@@ -14,23 +14,6 @@
 // limitations under the License.
 //
 
-public class OS {
-    companion object {
-        val javaOSName = System.getProperty("os.name")
-        val osName = if (javaOSName == "Mac OS X") { "macOS" } else { "Linux" }
-
-        val javaArchitecture = System.getProperty("os.arch")
-        val architecture = if (javaArchitecture == "x86_64") { "x86_64" }
-            else { "i386" }
-
-        val systemIdentifier: String = osName + "-" + architecture
-
-        val kotlinCompilerPath: String = if (osName == "Linux")
-            { "/opt/kotlinc/bin/kotlinc" } else
-            { "/usr/local/bin/kotlinc" }
-    }
-}
-
 internal fun TestUtilities.Companion.changeCurrentDirectoryPath(newPath: String) {
     System.setProperty("user.dir", newPath)
 }

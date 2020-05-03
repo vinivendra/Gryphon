@@ -21,26 +21,6 @@ import XCTest
 
 import Foundation
 
-public class OS {
-	#if os(macOS)
-	static let osName = "macOS"
-	#else
-	static let osName = "Linux"
-	#endif
-
-	#if arch(x86_64)
-	static let architecture = "x86_64"
-	#elseif arch(i386)
-	static let architecture = "i386"
-	#endif
-
-	public static let systemIdentifier: String = osName + "-" + architecture
-
-	static let kotlinCompilerPath = (osName == "Linux") ?
-		"/opt/kotlinc/bin/kotlinc" :
-		"/usr/local/bin/kotlinc"
-}
-
 extension TestUtilities {
 	static func changeCurrentDirectoryPath(_ newPath: String) {
 		let success = FileManager.default.changeCurrentDirectoryPath(newPath)

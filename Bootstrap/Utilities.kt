@@ -21,6 +21,32 @@ import java.util.stream.Collectors
 import java.util.stream.Stream
 import java.util.concurrent.Semaphore
 
+public class OS {
+    enum class OSType {
+        MAC_OS, LINUX;
+    }
+
+    companion object {
+        val javaOSName = System.getProperty("os.name")
+        val osName = if (javaOSName == "Mac OS X")
+            { "macOS" } else
+            { "Linux" }
+        val osType = if (javaOSName == "Mac OS X") 
+            { OSType.MAC_OS } else
+            { OSType.LINUX }
+
+        val javaArchitecture = System.getProperty("os.arch")
+        val architecture = if (javaArchitecture == "x86_64") { "x86_64" }
+            else { "i386" }
+
+        val systemIdentifier: String = osName + "-" + architecture
+
+        val kotlinCompilerPath: String = if (osName == "Linux")
+            { "/opt/kotlinc/bin/kotlinc" } else
+            { "/usr/local/bin/kotlinc" }
+    }
+}
+
 fun Utilities.Companion.fileWasModifiedLaterThan(
     filePath: String, otherFilePath: String): Boolean
 {

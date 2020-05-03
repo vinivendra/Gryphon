@@ -114,6 +114,11 @@ public class Driver {
 
 		let toolchain: String?
 		if let toolchainArgument = arguments.first(where: { $0.hasPrefix("--toolchain=") }) {
+			if OS.osType == .linux {
+				throw GryphonError(errorMessage: "Toolchain support is implemented using xcrun, " +
+					"which is only available in macOS.")
+			}
+
 			let toolchainName = String(toolchainArgument.dropFirst("--toolchain=".count))
 			toolchain = toolchainName
 		}
@@ -826,7 +831,12 @@ public class Driver {
 				["bash", SupportingFile.astDumpsScript.relativePath])
 		}
 		else {
-			let arguments: MutableList = ["xcrun"]
+			let arguments: MutableList<String> = []
+
+			if OS.osType == .macOS {
+				arguments.append("xcrun")
+			}
+
 			if let chosenToolchainName = toolchain {
 				arguments.append("-toolchain")
 				arguments.append(chosenToolchainName)

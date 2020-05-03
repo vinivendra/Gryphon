@@ -17,6 +17,34 @@
 import Foundation
 
 typealias Semaphore = NSLock
+internal let libraryUpdateLock: Semaphore = NSLock()
+
+public class OS {
+	enum OSType {
+		case macOS
+		case linux
+	}
+
+	#if os(macOS)
+	static let osName = "macOS"
+	static let osType = OSType.macOS
+	#else
+	static let osName = "Linux"
+	static let osType = OSType.linux
+	#endif
+
+	#if arch(x86_64)
+	static let architecture = "x86_64"
+	#elseif arch(i386)
+	static let architecture = "i386"
+	#endif
+
+	public static let systemIdentifier: String = osName + "-" + architecture
+
+	static let kotlinCompilerPath = (osType == .linux) ?
+		"/opt/kotlinc/bin/kotlinc" :
+		"/usr/local/bin/kotlinc"
+}
 
 extension Utilities {
 	public static func file(
@@ -196,8 +224,6 @@ extension Utilities {
 		return "/" + URL(fileURLWithPath: file).pathComponents.dropFirst().joined(separator: "/")
 	}
 }
-
-internal let libraryUpdateLock: Semaphore = NSLock()
 
 //
 extension List {

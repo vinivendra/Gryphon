@@ -252,8 +252,11 @@ public class TranspilationContext {
 		if let toolchain = toolchain {
 			arguments = ["xcrun", "--toolchain", toolchain, "swift", "--version"]
 		}
-		else {
+		else if OS.osType == .macOS {
 			arguments = ["xcrun", "swift", "--version"]
+		}
+		else {
+			arguments = ["swift", "--version"]
 		}
 
 		let swiftVersionCommandResult = Shell.runShellCommand(arguments)
@@ -297,7 +300,7 @@ public class TranspilationContext {
 			return
 		}
 
-		guard supportedSwiftVersions.contains(where: { $0.hasPrefix(swiftVersion) }) else {
+		guard supportedSwiftVersions.contains(where: { swiftVersion.hasPrefix($0) }) else {
 			var errorMessage = ""
 
 			if let toolchain = toolchain {
