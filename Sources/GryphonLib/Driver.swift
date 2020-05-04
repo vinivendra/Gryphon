@@ -888,7 +888,6 @@ public class Driver {
 		badArguments = badArguments.filter { !debugArguments.contains($0) }
 		badArguments = badArguments.filter { isSupportedArgumentWithParameters($0) }
 		badArguments = badArguments.filter { isSupportedInputFilePath($0) }
-		badArguments = badArguments.filter { !Utilities.fileHasExtension($0, .xcodeproj) }
 		return badArguments
 	}
 
@@ -901,10 +900,13 @@ public class Driver {
 		return true
 	}
 
+	/// Returns true if it's a swift file, a list of swift files, or an Xcode project
 	static func isSupportedInputFilePath(_ filePath: String) -> Bool {
-		if let fileExtension = Utilities.getExtension(of: filePath) {
+		let cleanPath = filePath.hasSuffix("/") ? String(filePath.dropLast()) : filePath
+		if let fileExtension = Utilities.getExtension(of: cleanPath) {
 			if fileExtension == .swift ||
-				fileExtension == .xcfilelist
+				fileExtension == .xcfilelist ||
+				fileExtension == .xcodeproj
 			{
 				return false
 			}
