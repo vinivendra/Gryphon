@@ -436,7 +436,7 @@ public class Driver {
 			mainFilePath: mainFilePath)
 
 		//
-		var indentationString = "\t"
+		var indentationString = "    "
 		if let indentationArgument = arguments.first(where: { $0.hasPrefix("--indentation=") }) {
 			let indentationargument = indentationArgument
 				.dropFirst("--indentation=".count)
@@ -971,7 +971,7 @@ Main usage:
       ↪️  --indentation=<N>
             Specify the indentation to be used in the output Kotlin files. Use
             "t" for tabs or an integer for the corresponding number of spaces.
-            Defaults to tabs.
+            Defaults to four spaces.
 
       ↪️  --verbose
             Print more information to the console.
