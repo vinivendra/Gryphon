@@ -1709,10 +1709,14 @@ end
 # Set the build settings so that only the "My Mac" platform is available
 # Create a new build setting for setting the Android project's folder
 kotlinTarget.build_configurations.each do |config|
-	config.build_settings["PRODUCT_NAME"] = "Koltin"
+	config.build_settings["PRODUCT_NAME"] = "Kotlin"
 	config.build_settings["SUPPORTED_PLATFORMS"] = "macosx"
 	config.build_settings["SUPPORTS_MACCATALYST"] = "FALSE"
-	config.build_settings["ANDROID_ROOT"] = "../Android"
+
+	# Don't overwrite the Android root folder the user if the user sets it manually
+	if config.build_settings["ANDROID_ROOT"] == nil
+		config.build_settings["ANDROID_ROOT"] = "../Android"
+	end
 end
 
 # Create a new run script build phase (or fetch it if it exists)
