@@ -1750,29 +1750,21 @@ rm -f "\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleErrors.tx
 cd "\(dollarSign)ANDROID_ROOT"
 
 # Compile the Android sources and save the logs gack to the iOS folder
+# This command is allowed to fail so we add "|| true" to the end
 ./gradlew compileDebugSources > \
 	"\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleOutput.txt" 2> \
-	"\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleErrors.txt"
+	"\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleErrors.txt" \
+	|| true
 
 # Switch back to the iOS folder
 cd \(dollarSign)SRCROOT
 
 # Map the Kotlin errors back to Swift
-EXITSTATUS=0
-
 swift \(SupportingFile.mapGradleErrorsToSwiftRelativePath) < \
 	\(SupportingFile.gryphonBuildFolder)/gradleOutput.txt
-if test "\(dollarSign)?" -ne "0" ; then
-	EXITSTATUS=-1
-fi
 
 swift \(SupportingFile.mapGradleErrorsToSwiftRelativePath) < \
 	\(SupportingFile.gryphonBuildFolder)/gradleErrors.txt
-if test "\(dollarSign)?" -ne "0" ; then
-	EXITSTATUS=-1
-fi
-
-exit \(dollarSign)EXITSTATUS
 
 """
 
