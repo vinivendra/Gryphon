@@ -163,7 +163,7 @@ fun Utilities.Companion.deleteFolder(path: String) {
 }
 
 fun Utilities.Companion.deleteFile(path: String) {
-    val file = File(filePath)
+    val file = File(path)
     file.delete()
 }
 

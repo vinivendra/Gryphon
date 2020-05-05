@@ -65,6 +65,9 @@ private func gryphonTemplates() throws {
 	Utilities.deleteFolder(at: _string1)
 	_ = "Utilities.deleteFolder(path = _string1)"
 
+	Utilities.deleteFile(at: _string1)
+	_ = "Utilities.deleteFile(path = _string1)"
+
     // Shell translations
     _ = Shell.runShellCommand(
         _string1, arguments: _stringArray1, fromFolder: _string2)
