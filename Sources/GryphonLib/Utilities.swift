@@ -177,6 +177,11 @@ extension Utilities {
 		let fileManager = FileManager.default
 		try? fileManager.removeItem(atPath: path)
 	}
+
+	public static func deleteFile(at path: String) {
+		let fileManager = FileManager.default
+		try? fileManager.removeItem(atPath: path)
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

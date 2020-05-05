@@ -27,6 +27,7 @@ public class Driver {
 		"--version",
 		"init",
 		"clean",
+		"generate-libraries",
 		"--skip",
 		"--no-main-file",
 		"--default-final",
@@ -44,8 +45,8 @@ public class Driver {
 
 	public static let debugArguments: List = [
 		"-xcode",
-		"-setup-xcode",
-		"-make-gryphon-targets",
+		"setup-xcode",
+		"make-gryphon-targets",
 		"-skip-AST-dumps",
 		"-emit-swiftAST",
 		"-emit-rawAST",
@@ -112,6 +113,12 @@ public class Driver {
 			}
 		}
 
+		if arguments.contains("generate-libraries") {
+			try generateLibraries()
+			Compiler.log("Generated Gryphon libraries.")
+			return nil
+		}
+
 		let toolchain: String?
 		if let toolchainArgument = arguments.first(where: { $0.hasPrefix("--toolchain=") }) {
 			if OS.osType == .linux {
@@ -143,35 +150,35 @@ public class Driver {
 			if let xcodeProject = maybeXcodeProject {
 				if isVerbose {
 					_ = try Driver.run(withArguments:
-						["-setup-xcode", "--verbose", xcodeProject])
+						["setup-xcode", "--verbose", xcodeProject])
 					_ = try Driver.run(withArguments:
-						["-make-gryphon-targets", "--verbose", xcodeProject])
+						["make-gryphon-targets", "--verbose", xcodeProject])
 				}
 				else {
 					_ = try Driver.run(withArguments:
-						["-setup-xcode", xcodeProject])
+						["setup-xcode", xcodeProject])
 					_ = try Driver.run(withArguments:
-						["-make-gryphon-targets", xcodeProject])
+						["make-gryphon-targets", xcodeProject])
 				}
 			}
 
 			return nil
 		}
 
-		if arguments.contains("-setup-xcode") {
+		if arguments.contains("setup-xcode") {
 			guard let xcodeProject = maybeXcodeProject else {
 				throw GryphonError(errorMessage:
-					"Please specify an Xcode project when using `-setup-xcode`.")
+					"Please specify an Xcode project when using `setup-xcode`.")
 			}
 
 			try setupGryphonFolder(forXcodeProject: xcodeProject, usingToolchain: toolchain)
 			Compiler.log("Xcode setup successful.")
 			return nil
 		}
-		if arguments.contains("-make-gryphon-targets") {
+		if arguments.contains("make-gryphon-targets") {
 			guard let xcodeProject = maybeXcodeProject else {
 				throw GryphonError(errorMessage:
-					"Please specify an Xcode project when using `-make-gryphon-targets`.")
+					"Please specify an Xcode project when using `make-gryphon-targets`.")
 			}
 
 			try makeGryphonTargets(forXcodeProject: xcodeProject, usingToolchain: toolchain)
@@ -579,10 +586,6 @@ public class Driver {
 		return secondResult
 	}
 
-	static func getXcodeProject(inArguments arguments: List<String>) -> String? {
-		return arguments.first { Utilities.fileHasExtension($0, .xcodeproj) }
-	}
-
 	static func outdatedASTDumpFiles(
 		forInputFiles inputFiles: List<String>,
 		swiftVersion: String)
@@ -668,6 +671,15 @@ public class Driver {
 
 	static func cleanup() {
 		Utilities.deleteFolder(at: SupportingFile.gryphonBuildFolder)
+	}
+
+	static func generateLibraries() throws {
+		try Utilities.createFile(
+			atPath: SupportingFile.gryphonSwiftLibrary.relativePath,
+			containing: SupportingFile.gryphonSwiftLibrary.contents!)
+		try Utilities.createFile(
+			atPath: SupportingFile.gryphonKotlinLibrary.relativePath,
+			containing: SupportingFile.gryphonKotlinLibrary.contents!)
 	}
 
 	static func setupGryphonFolder(
@@ -886,32 +898,46 @@ public class Driver {
 		var badArguments = arguments
 		badArguments = badArguments.filter { !supportedArguments.contains($0) }
 		badArguments = badArguments.filter { !debugArguments.contains($0) }
-		badArguments = badArguments.filter { isSupportedArgumentWithParameters($0) }
-		badArguments = badArguments.filter { isSupportedInputFilePath($0) }
+		badArguments = badArguments.filter { !isSupportedArgumentWithParameters($0) }
+		badArguments = badArguments.filter { !isXcodeProject($0) }
+		badArguments = badArguments.filter { !isSupportedInputFilePath($0) }
 		return badArguments
 	}
 
 	static func isSupportedArgumentWithParameters(_ argument: String) -> Bool {
 		for supportedArgumentWithParameters in supportedArgumentsWithParameters {
 			if argument.hasPrefix(supportedArgumentWithParameters) {
-				return false
+				return true
 			}
 		}
-		return true
+		return false
 	}
 
-	/// Returns true if it's a swift file, a list of swift files, or an Xcode project
+	/// Returns true if it's a swift file or a list of swift files
 	static func isSupportedInputFilePath(_ filePath: String) -> Bool {
-		let cleanPath = filePath.hasSuffix("/") ? String(filePath.dropLast()) : filePath
-		if let fileExtension = Utilities.getExtension(of: cleanPath) {
+		if let fileExtension = Utilities.getExtension(of: filePath) {
 			if fileExtension == .swift ||
-				fileExtension == .xcfilelist ||
-				fileExtension == .xcodeproj
+				fileExtension == .xcfilelist
 			{
-				return false
+				return true
 			}
 		}
-		return true
+		return false
+	}
+
+	static func isXcodeProject(_ filePath: String) -> Bool {
+		let cleanPath = filePath.hasSuffix("/") ? String(filePath.dropLast()) : filePath
+		return Utilities.fileHasExtension(cleanPath, .xcodeproj)
+	}
+
+	static func getXcodeProject(inArguments arguments: List<String>) -> String? {
+		if let xcodeProject = arguments.first(where: { isXcodeProject($0) }) {
+			let cleanPath = xcodeProject.hasSuffix("/") ?
+				String(xcodeProject.dropLast()) :
+				xcodeProject
+			return cleanPath
+		}
+		return nil
 	}
 
 	static func printVersion() {
@@ -984,16 +1010,22 @@ Main usage:
       ↪️  --toolchain=<toolchain name>
             Specify the toolchain to be used when calling the Swift compiler.
 
-Advanced commands:
+Advanced subcommands:
   ➡️  clean
         Clean Gryphon's build folder in the local directory.
 
-  ➡️  -setup-xcode <Xcode project>
+  ➡️  generate-libraries
+        Creates a copy of the Gryphon Swift library and one of the Gryphon
+        Kotlin Library in the current folder. Add these files to your Swift and
+        Kotlin projects (respectively) to avoid some compilation and runtime
+        errors.
+
+  ➡️  setup-xcode <Xcode project>
         Configures Gryphon's build folder to be used with the given Xcode
         project. Only needed if `gryphon init` was used without specifying an
         Xcode project.
 
-  ➡️  -make-gryphon-targets <Xcode project>
+  ➡️  make-gryphon-targets <Xcode project>
         Adds auxiliary targets to the given Xcode project. Only needed if
         `gryphon init` was used without specifying an Xcode project.
 

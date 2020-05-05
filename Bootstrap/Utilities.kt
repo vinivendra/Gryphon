@@ -162,6 +162,11 @@ fun Utilities.Companion.deleteFolder(path: String) {
     directoryFile.deleteRecursively()
 }
 
+fun Utilities.Companion.deleteFile(path: String) {
+    val file = File(filePath)
+    file.delete()
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 fun Utilities.Companion.getCurrentFolder(): String {

@@ -43,6 +43,7 @@ class DriverTest: XCTestCase {
 	/// Tests to be run by the translated Kotlin version.
 	public func runAllTests() { // gryphon annotation: override
 		DriverTest.setUp()
+		testGenerateGryphonLibraries()
 		testUsageString()
 		testNoMainFile()
 		testContinueOnErrors()
@@ -51,6 +52,7 @@ class DriverTest: XCTestCase {
 
 	/// Tests to be run when using Swift on Linux
 	static var allTests = [ // gryphon ignore
+		("testGenerateGryphonLibraries", testGenerateGryphonLibraries),
 		("testUsageString", testUsageString),
 		("testNoMainFile", testNoMainFile),
 		("testContinueOnErrors", testContinueOnErrors),
@@ -58,6 +60,38 @@ class DriverTest: XCTestCase {
 	]
 
 	// MARK: - Tests
+	func testGenerateGryphonLibraries() {
+		do {
+			try Driver.run(withArguments: ["generate-libraries"])
+
+			let originalSwiftLibraryContents = try Utilities.readFile(
+				"Sources/GryphonLib/GryphonSwiftLibrary.swift")
+			let generatedSwiftLibraryContents = try Utilities.readFile(
+				SupportingFile.gryphonSwiftLibrary.relativePath)
+			XCTAssert(
+				originalSwiftLibraryContents == generatedSwiftLibraryContents,
+					"The generated Swift library is different than the original one. " +
+					"Printing diff ('<' means original, '>' means generated):" +
+				TestUtilities.diff(originalSwiftLibraryContents, generatedSwiftLibraryContents))
+
+			let actualKotlinLibraryContents = try Utilities.readFile(
+				"Bootstrap/GryphonKotlinLibrary.kt")
+			let generatedKotlinLibraryContents = try Utilities.readFile(
+				SupportingFile.gryphonKotlinLibrary.relativePath)
+			XCTAssert(
+				actualKotlinLibraryContents == generatedKotlinLibraryContents,
+					"The generated Kotlin library is different than the original one. " +
+					"Printing diff ('<' means original, '>' means generated):" +
+				TestUtilities.diff(actualKotlinLibraryContents, generatedKotlinLibraryContents))
+
+			Utilities.deleteFile(at: SupportingFile.gryphonSwiftLibrary.relativePath)
+			Utilities.deleteFile(at: SupportingFile.gryphonKotlinLibrary.relativePath)
+		}
+		catch let error {
+			XCTFail("🚨 Test failed with error:\n\(error)")
+		}
+	}
+
 	func testUsageString() {
 		for argument in Driver.supportedArguments {
 			XCTAssert(
