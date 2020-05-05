@@ -1738,6 +1738,9 @@ project.save()
 
 // gryphon multiline
 internal let compileKotlinFileContents = """
+# Exit if any command fails
+set -e
+
 # Remove old logs
 # The `-f` option is here to avoid reporting errors when the files are not found
 rm -f "\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleOutput.txt"
