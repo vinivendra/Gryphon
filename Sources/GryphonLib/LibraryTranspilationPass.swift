@@ -585,7 +585,7 @@ private func simplifyType(string: String) -> String {
 
 	// Convert Array<T> into [T]
 	if string.hasPrefix("Array<"), string.last! == ">" {
-		let elementType = String(string.dropFirst("Reference<".count).dropLast())
+		let elementType = String(string.dropFirst("Array<".count).dropLast())
 		return "[\(elementType)]"
 	}
 
