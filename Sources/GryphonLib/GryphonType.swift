@@ -321,8 +321,8 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 		if case let .namedType(typeName: namedSuperType) = superType {
 			if namedSuperType == "Any" ||
 				namedSuperType == "_Any" ||
-				namedSuperType == "_Hash" ||
-				namedSuperType == "_Compare" ||
+				namedSuperType == "_Hashable" ||
+				namedSuperType == "_Comparable" ||
 				namedSuperType == "_Optional"
 			{
 				return true

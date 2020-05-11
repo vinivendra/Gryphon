@@ -407,8 +407,8 @@ internal extension String {
 		}
 		else if superType == "Any" ||
 			superType == "_Any" ||
-			superType == "_Hash" ||
-			superType == "_Compare" ||
+			superType == "_Hashable" ||
+			superType == "_Comparable" ||
 			superType == "_Optional"
 		{
 			return true

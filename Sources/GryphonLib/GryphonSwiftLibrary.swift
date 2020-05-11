@@ -1,6 +1,6 @@
 // Replacement for Comparable
-private struct _Compare: Comparable { // gryphon ignore
-	static func < (lhs: _Compare, rhs: _Compare) -> Bool {
+private struct _Comparable: Comparable { // gryphon ignore
+	static func < (lhs: _Comparable, rhs: _Comparable) -> Bool {
 		return false
 	}
 }
@@ -11,8 +11,8 @@ private func gryphonTemplates() {
 	let _any: Any = 0
 	let _string: String = ""
 	let _index = _string.startIndex
-	let _comparableArray: List<_Compare> = []
-	let _closure: (_Compare, _Compare) -> Bool = { _, _ in true }
+	let _comparableArray: List<_Comparable> = []
+	let _closure: (_Comparable, _Comparable) -> Bool = { _, _ in true }
 
 	// Templates with an input that references methods defined in this file
 	_ = zip(_array1, _array2)

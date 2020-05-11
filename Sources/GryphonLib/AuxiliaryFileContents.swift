@@ -189,8 +189,8 @@ fun <Element> MutableList<Element>.partition(
 // gryphon multiline
 internal let gryphonSwiftLibraryFileContents = """
 // Replacement for Comparable
-private struct _Compare: Comparable { // gryphon ignore
-	static func < (lhs: _Compare, rhs: _Compare) -> Bool {
+private struct _Comparable: Comparable { // gryphon ignore
+	static func < (lhs: _Comparable, rhs: _Comparable) -> Bool {
 		return false
 	}
 }
@@ -201,8 +201,8 @@ private func gryphonTemplates() {
 	let _any: Any = 0
 	let _string: String = ""
 	let _index = _string.startIndex
-	let _comparableArray: List<_Compare> = []
-	let _closure: (_Compare, _Compare) -> Bool = { _, _ in true }
+	let _comparableArray: List<_Comparable> = []
+	let _closure: (_Comparable, _Comparable) -> Bool = { _, _ in true }
 
 	// Templates with an input that references methods defined in this file
 	_ = zip(_array1, _array2)
@@ -841,8 +841,8 @@ extension Map { // gryphon ignore
 // gryphon multiline
 internal let gryphonXCTestFileContents = """
 // Replacement for Comparable
-private struct _Compare: Comparable {
-	static func < (lhs: _Compare, rhs: _Compare) -> Bool {
+private struct _Comparable: Comparable {
+	static func < (lhs: _Comparable, rhs: _Comparable) -> Bool {
 		return false
 	}
 }
@@ -873,8 +873,8 @@ extension XCTestCase {
 	private func gryphonTemplates() {
 		let _bool = true
 		let _string = ""
-		let _any1: _Compare = _Compare()
-		let _any2: _Compare = _Compare()
+		let _any1: _Comparable = _Comparable()
+		let _any2: _Comparable = _Comparable()
 		let _optional: _Optional? = _Optional()
 
 		XCTAssert(_bool)
@@ -915,11 +915,11 @@ import Foundation
 // MARK: - Define special types as stand-ins for some protocols and other types
 
 // Replacement for Hashable
-private struct _Hash: Hashable { }
+private struct _Hashable: Hashable { }
 
 // Replacement for Comparable
-private struct _Compare: Comparable {
-	static func < (lhs: _Compare, rhs: _Compare) -> Bool {
+private struct _Comparable: Comparable {
+	static func < (lhs: _Comparable, rhs: _Comparable) -> Bool {
 		return false
 	}
 }
@@ -949,8 +949,8 @@ private func gryphonTemplates() {
 	var _array2: [Any] = []
 	let _array3: [Any] = []
 	var _arrayOfOptionals: [Any?] = []
-	var _comparableArray: [_Compare] = []
-	let _compare = _Compare()
+	var _comparableArray: [_Comparable] = []
+	let _comparable = _Comparable()
 	var _index: String.Index = "abc".endIndex
 	let _index1: String.Index = "abc".startIndex
 	let _index2: String.Index = "abc".startIndex
@@ -970,14 +970,14 @@ private func gryphonTemplates() {
 	let _int: Int = 0
 	let _int1: Int = 0
 	let _int2: Int = 0
-	let _dictionary: [_Hash: Any] = [:]
+	let _dictionary: [_Hashable: Any] = [:]
 	let _closure: (Any, Any) -> Any = { a, b in a }
 	let _closure2: (Any) -> Any = { a in a }
 	let _closure3: (Any) -> Bool = { _ in true }
 	let _closure4: (_Optional) -> Any = { _ in true }
 	let _closure5: (Character) -> Bool = { _ in true }
 	let _closure6: (Any) -> Any? = { a in a }
-	let _closure7: (_Compare, _Compare) -> Bool = { _, _ in true }
+	let _closure7: (_Comparable, _Comparable) -> Bool = { _, _ in true }
 
 	// MARK: Declare the templates
 
@@ -1235,11 +1235,11 @@ private func gryphonTemplates() {
 	_ = _comparableArray.sorted()
 	_ = "_comparableArray.sorted()"
 
-	_ = _comparableArray.contains(_compare)
-	_ = "_comparableArray.contains(_compare)"
+	_ = _comparableArray.contains(_comparable)
+	_ = "_comparableArray.contains(_comparable)"
 
-	_ = _comparableArray.firstIndex(of: _compare)
-	_ = "_comparableArray.indexOf(_compare)"
+	_ = _comparableArray.firstIndex(of: _comparable)
+	_ = "_comparableArray.indexOf(_comparable)"
 
 	// Dictionary
 	_ = _dictionary.count
