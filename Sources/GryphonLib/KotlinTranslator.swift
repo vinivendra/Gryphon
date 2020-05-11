@@ -1801,7 +1801,23 @@ public class KotlinTranslator {
 		throws -> KotlinTranslation
 	{
 		var result = templateExpression.pattern
+
+		// Make the matches dictionary into a list
+		let matchesList: MutableList<(String, Expression)> = []
 		for (string, expression) in templateExpression.matches {
+			let tuple = (string, expression) // gryphon value: Pair(string, expression)
+			matchesList.append(tuple)
+		}
+		// Sort the list so that longer strings are before shorter ones.
+		// This issues when one string is a substring of another
+		let sortedMatches = matchesList.sorted { a, b in
+				a.0.count > b.0.count
+			}
+
+		for match in sortedMatches {
+			let string = match.0
+			let expression = match.1
+
 			let expressionTranslation =
 				try translateExpression(expression, withIndentation: indentation)
 					.resolveTranslation().translation
