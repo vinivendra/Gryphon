@@ -40,6 +40,7 @@ public class Driver {
 	public static let supportedArgumentsWithParameters: List = [
 		"--indentation=",
 		"--toolchain=",
+		"--simulator=",
 		"-line-limit=",
 	]
 
@@ -148,18 +149,21 @@ public class Driver {
 			Compiler.log("Initialization successful.")
 
 			if let xcodeProject = maybeXcodeProject {
+				let newArguments: MutableList = [xcodeProject]
 				if isVerbose {
-					_ = try Driver.run(withArguments:
-						["setup-xcode", "--verbose", xcodeProject])
-					_ = try Driver.run(withArguments:
-						["make-gryphon-targets", "--verbose", xcodeProject])
+					newArguments.append("--verbose")
 				}
-				else {
-					_ = try Driver.run(withArguments:
-						["setup-xcode", xcodeProject])
-					_ = try Driver.run(withArguments:
-						["make-gryphon-targets", xcodeProject])
+				if let simulatorVersion = getSimulatorVersion(inArguments: arguments) {
+					newArguments.append("--simulator=\(simulatorVersion)")
 				}
+
+				let setupArguments: MutableList = ["setup-xcode"]
+				setupArguments.append(contentsOf: newArguments)
+				_ = try Driver.run(withArguments: setupArguments)
+
+				let makeTargetArguments: MutableList = ["make-gryphon-targets"]
+				makeTargetArguments.append(contentsOf: newArguments)
+				_ = try Driver.run(withArguments: makeTargetArguments)
 			}
 
 			return nil
@@ -171,7 +175,13 @@ public class Driver {
 					"Please specify an Xcode project when using `setup-xcode`.")
 			}
 
-			try setupGryphonFolder(forXcodeProject: xcodeProject, usingToolchain: toolchain)
+			let simulatorString = getSimulatorVersion(inArguments: arguments)
+
+			try setupGryphonFolder(
+				forXcodeProject: xcodeProject,
+				usingToolchain: toolchain,
+				simulator: simulatorString)
+
 			Compiler.log("Xcode setup successful.")
 			return nil
 		}
@@ -507,7 +517,12 @@ public class Driver {
 						outdatedASTDumps.joined(separator: ", ") +
 						". Attempting to update file list...")
 
-					try setupGryphonFolder(forXcodeProject: xcodeProject, usingToolchain: toolchain)
+					let simulatorString = getSimulatorVersion(inArguments: arguments)
+
+					try setupGryphonFolder(
+						forXcodeProject: xcodeProject,
+						usingToolchain: toolchain,
+						simulator: simulatorString)
 
 					try updateASTDumps(
 						forFiles: allSourceFiles,
@@ -684,7 +699,8 @@ public class Driver {
 
 	static func setupGryphonFolder(
 		forXcodeProject xcodeProjectPath: String,
-		usingToolchain toolchain: String?)
+		usingToolchain toolchain: String?,
+		simulator: String?)
 		throws
 	{
 		let arguments: MutableList = [
@@ -698,10 +714,56 @@ public class Driver {
 			arguments.append(userToolchain)
 		}
 
+		if let simulatorVersion = simulator {
+			arguments.append("-sdk")
+			arguments.append("iphonesimulator\(simulatorVersion)")
+		}
+
 		let commandResult = Shell.runShellCommand(arguments)
 
 		guard commandResult.status == 0 else {
-			throw GryphonError(errorMessage: "Error running xcodebuild:\n" +
+			var errorMessage = "Error running xcodebuild:\n"
+
+			// Code signing errors might be solved by forcing a build with the simulator
+			if simulator == nil,
+				(commandResult.standardError.contains("Code Signing Error:") ||
+				 commandResult.standardOutput.contains("Code Signing Error:"))
+			{
+				errorMessage += "It seems there was a problem with code signing in Xcode.\n"
+
+				// Try to discover the version of an installed simulator
+				let sdkCommandResult = Shell.runShellCommand(["xcodebuild", "-showsdks"])
+				if sdkCommandResult.status == 0 {
+					let output = sdkCommandResult.standardOutput
+					let outputLines = output.split(withStringSeparator: "\n")
+
+					// Valid output lines are of the form:
+					// 	Simulator - iOS 13.4          	-sdk iphonesimulator13.4
+					var maybeiOSVersion: String?
+					for line in outputLines {
+						if line.contains("iphonesimulator") {
+							let components = line.split(withStringSeparator: " ")
+							if let simulatorComponent = components.last {
+								maybeiOSVersion = String(
+									simulatorComponent.dropFirst("iphonesimulator".count))
+							}
+						}
+					}
+
+					if let iosVersion = maybeiOSVersion {
+						errorMessage += "This might be fixed by using an installed simulator.\n" +
+							"Try invoking Gryphon again adding the argument " +
+							"`--simulator=\(iosVersion)`.\n"
+					}
+					else {
+						errorMessage += "This might be fixed by using an installed simulator.\n" +
+							"Try invoking Gryphon again adding the argument " +
+							"`--simulator=<ios version>`.\n"
+					}
+				}
+			}
+
+			throw GryphonError(errorMessage: errorMessage +
 				commandResult.standardOutput +
 				commandResult.standardError)
 		}
@@ -940,6 +1002,15 @@ public class Driver {
 		return nil
 	}
 
+	static func getSimulatorVersion(inArguments arguments: List<String>) -> String? {
+		if let simulatorArgument = arguments.first(where: { $0.hasPrefix("--simulator=") }) {
+			return String(simulatorArgument.dropFirst("--simulator=".count))
+		}
+		else {
+			return nil
+		}
+	}
+
 	static func printVersion() {
 		print("Gryphon version \(gryphonVersion)")
 	}
@@ -962,7 +1033,7 @@ Version \(gryphonVersion)
 Main usage:
 
   - Initialization
-      gryphon init [xcode project]
+      gryphon init [xcode project] [options]
 
   - Translation
       gryphon [xcode project] [options] [input file paths]
@@ -1009,6 +1080,10 @@ Main usage:
 
       ↪️  --toolchain=<toolchain name>
             Specify the toolchain to be used when calling the Swift compiler.
+
+      ↪️  --simulator=<ios version>
+            When initializing Gryphon, build the Xcode project using the given
+            version of iOS in a simulator.
 
 Advanced subcommands:
   ➡️  clean
