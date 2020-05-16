@@ -498,7 +498,7 @@ public class Driver {
 
 			let swiftVersion = try TranspilationContext.getVersionOfToolchain(toolchain)
 
-			let astDumpsSucceeded: Bool
+			var astDumpsSucceeded = true
 			do {
 				try updateASTDumps(
 					forFiles: allSourceFiles,
