@@ -727,16 +727,13 @@ public class Driver {
 
 		let commandResult = Shell.runShellCommand(arguments)
 
-		guard commandResult.status == 0 else {
-			var errorMessage = "Error running xcodebuild:\n"
-
+		// If something went wrong
+		if commandResult.status != 0 {
 			// Code signing errors might be solved by forcing a build with the simulator
 			if simulator == nil,
 				(commandResult.standardError.contains("Code Signing Error:") ||
 				 commandResult.standardOutput.contains("Code Signing Error:"))
 			{
-				errorMessage += "It seems there was a problem with code signing in Xcode.\n"
-
 				// Try to discover the version of an installed simulator
 				let sdkCommandResult = Shell.runShellCommand(["xcodebuild", "-showsdks"])
 				if sdkCommandResult.status == 0 {
@@ -756,20 +753,17 @@ public class Driver {
 						}
 					}
 
-					if let iosVersion = maybeiOSVersion {
-						errorMessage += "This might be fixed by using an installed simulator.\n" +
-							"Try invoking Gryphon again adding the argument " +
-							"`--simulator=\(iosVersion)`.\n"
-					}
-					else {
-						errorMessage += "This might be fixed by using an installed simulator.\n" +
-							"Try invoking Gryphon again adding the argument " +
-							"`--simulator=<ios version>`.\n"
+					if let iOSVersion = maybeiOSVersion {
+						try setupGryphonFolder(forXcodeProject: xcodeProjectPath,
+							usingToolchain: toolchain,
+							simulator: iOSVersion)
+						return
 					}
 				}
 			}
 
-			throw GryphonError(errorMessage: errorMessage +
+			// If we failed to recover, throw an error
+			throw GryphonError(errorMessage: "Error running xcodebuild:\n" +
 				commandResult.standardOutput +
 				commandResult.standardError)
 		}
