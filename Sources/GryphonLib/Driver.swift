@@ -519,10 +519,16 @@ public class Driver {
 
 					let simulatorString = getSimulatorVersion(inArguments: arguments)
 
-					try setupGryphonFolder(
-						forXcodeProject: xcodeProject,
-						usingToolchain: toolchain,
-						simulator: simulatorString)
+					do {
+						// The update may fail if there's a problem calling xcodebuild. In that
+						// case, it's better to ignore the error here and fail with the AST dump
+						// failure message.
+						try setupGryphonFolder(
+							forXcodeProject: xcodeProject,
+							usingToolchain: toolchain,
+							simulator: simulatorString)
+					}
+					catch { }
 
 					try updateASTDumps(
 						forFiles: allSourceFiles,
