@@ -725,6 +725,7 @@ public class Driver {
 	{
 		let arguments: MutableList = [
 			"xcodebuild",
+			"-UseModernBuildSystem=NO",
 			"-dry-run",
 			"-project",
 			"\(xcodeProjectPath)", ]
@@ -810,6 +811,7 @@ public class Driver {
 			argument != "-serialize-diagnostics" &&
 			!argument.hasSuffix(".swiftmodule") &&
 			!argument.hasSuffix("Swift.h") &&
+			!argument.hasSuffix("SwiftFileList") &&
 			!argument.hasPrefix("-emit")
 		}.toMutableList()
 
