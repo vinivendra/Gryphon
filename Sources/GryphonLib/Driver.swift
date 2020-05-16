@@ -40,7 +40,6 @@ public class Driver {
 	public static let supportedArgumentsWithParameters: List = [
 		"--indentation=",
 		"--toolchain=",
-		"--simulator=",
 		"-line-limit=",
 	]
 
@@ -153,9 +152,6 @@ public class Driver {
 				if isVerbose {
 					newArguments.append("--verbose")
 				}
-				if let simulatorVersion = getSimulatorVersion(inArguments: arguments) {
-					newArguments.append("--simulator=\(simulatorVersion)")
-				}
 
 				let setupArguments: MutableList = ["setup-xcode"]
 				setupArguments.append(contentsOf: newArguments)
@@ -175,12 +171,10 @@ public class Driver {
 					"Please specify an Xcode project when using `setup-xcode`.")
 			}
 
-			let simulatorString = getSimulatorVersion(inArguments: arguments)
-
-			try setupGryphonFolder(
+			try createASTDumpsScript(
 				forXcodeProject: xcodeProject,
 				usingToolchain: toolchain,
-				simulator: simulatorString)
+				simulator: nil)
 
 			Compiler.log("Xcode setup successful.")
 			return nil
@@ -530,15 +524,13 @@ public class Driver {
 							". Attempting to update file list...")
 					}
 
-					let simulatorString = getSimulatorVersion(inArguments: arguments)
-
 					do {
 						// If xcodebuild fails, it's better to ignore the error here and fail
 						// with an "AST dump failure" message.
-						try setupGryphonFolder(
+						try createASTDumpsScript(
 							forXcodeProject: xcodeProject,
 							usingToolchain: toolchain,
-							simulator: simulatorString)
+							simulator: nil)
 					}
 					catch { }
 
@@ -717,7 +709,9 @@ public class Driver {
 			containing: SupportingFile.gryphonKotlinLibrary.contents!)
 	}
 
-	static func setupGryphonFolder(
+	/// Calls xcodebuild to create the AST dump script file. If `simulator` is `nil` and xcodebuild
+	/// fails, looks for an installed simulator and tries again recursively.
+	static func createASTDumpsScript(
 		forXcodeProject xcodeProjectPath: String,
 		usingToolchain toolchain: String?,
 		simulator: String?)
@@ -769,7 +763,7 @@ public class Driver {
 					}
 
 					if let iOSVersion = maybeiOSVersion {
-						try setupGryphonFolder(forXcodeProject: xcodeProjectPath,
+						try createASTDumpsScript(forXcodeProject: xcodeProjectPath,
 							usingToolchain: toolchain,
 							simulator: iOSVersion)
 						return
@@ -1018,15 +1012,6 @@ public class Driver {
 		return nil
 	}
 
-	static func getSimulatorVersion(inArguments arguments: List<String>) -> String? {
-		if let simulatorArgument = arguments.first(where: { $0.hasPrefix("--simulator=") }) {
-			return String(simulatorArgument.dropFirst("--simulator=".count))
-		}
-		else {
-			return nil
-		}
-	}
-
 	static func printVersion() {
 		print("Gryphon version \(gryphonVersion)")
 	}
@@ -1096,10 +1081,6 @@ Main usage:
 
       ↪️  --toolchain=<toolchain name>
             Specify the toolchain to be used when calling the Swift compiler.
-
-      ↪️  --simulator=<ios version>
-            When initializing Gryphon, build the Xcode project using the given
-            version of iOS in a simulator.
 
 Advanced subcommands:
   ➡️  clean
