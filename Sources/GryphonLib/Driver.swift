@@ -496,33 +496,45 @@ public class Driver {
 				allSourceFiles.append(contentsOf: skippedFiles)
 			}
 
-			try updateASTDumps(
-				forFiles: allSourceFiles,
-				usingXcode: isUsingXcode,
-				usingToolchain: toolchain)
-
-			// Check that all AST dump files have been updated successfully
 			let swiftVersion = try TranspilationContext.getVersionOfToolchain(toolchain)
-			let outdatedASTDumps = outdatedASTDumpFiles(
+
+			let astDumpsSucceeded: Bool
+			do {
+				try updateASTDumps(
+					forFiles: allSourceFiles,
+					usingXcode: isUsingXcode,
+					usingToolchain: toolchain)
+				astDumpsSucceeded = true
+			}
+			catch {
+				astDumpsSucceeded = false
+			}
+
+			let outdatedASTDumpsAfterFirstUpdate = outdatedASTDumpFiles(
 				forInputFiles: allSourceFiles,
 				swiftVersion: swiftVersion)
-			if !outdatedASTDumps.isEmpty {
 
+			if !astDumpsSucceeded || !outdatedASTDumpsAfterFirstUpdate.isEmpty {
 				if let xcodeProject = maybeXcodeProject {
-					// If the AST dumps are out-of-date and we're using Xcode, it's possible one or
-					// more files are missing from the AST dump script. Try updating the script,
-					// then try to update the files again.
+					// If the AST dump update failed and we're using Xcode, it's possible one
+					// or more files are missing from the AST dump script. Try updating the
+					// script, then try to update the files again.
 
-					Compiler.log("Failed to update some AST dump files: " +
-						outdatedASTDumps.joined(separator: ", ") +
-						". Attempting to update file list...")
+					if outdatedASTDumpsAfterFirstUpdate.isEmpty {
+						Compiler.log("There was an error when with the Swift compiler. " +
+							"Attempting to update file list...")
+					}
+					else {
+						Compiler.log("Failed to update some AST dump files: " +
+							outdatedASTDumpsAfterFirstUpdate.joined(separator: ", ") +
+							". Attempting to update file list...")
+					}
 
 					let simulatorString = getSimulatorVersion(inArguments: arguments)
 
 					do {
-						// The update may fail if there's a problem calling xcodebuild. In that
-						// case, it's better to ignore the error here and fail with the AST dump
-						// failure message.
+						// If xcodebuild fails, it's better to ignore the error here and fail
+						// with an "AST dump failure" message.
 						try setupGryphonFolder(
 							forXcodeProject: xcodeProject,
 							usingToolchain: toolchain,
@@ -535,19 +547,21 @@ public class Driver {
 						usingXcode: isUsingXcode,
 						usingToolchain: toolchain)
 
-					let newOutdatedASTDumps = outdatedASTDumpFiles(
+					let outdatedASTDumpsAfterSecondUpdate = outdatedASTDumpFiles(
 						forInputFiles: allSourceFiles,
 						swiftVersion: swiftVersion)
 
-					if !newOutdatedASTDumps.isEmpty {
-						throw GryphonError(errorMessage: "Unable to update AST dumps for files: " +
-							newOutdatedASTDumps.joined(separator: ", ") + ". " +
+					if !outdatedASTDumpsAfterSecondUpdate.isEmpty {
+						throw GryphonError(
+							errorMessage: "Unable to update AST dumps for files: " +
+								outdatedASTDumpsAfterSecondUpdate.joined(separator: ", ") + ". " +
 							"Make sure the files are being compiled by Xcode.")
 					}
 				}
 				else {
-					throw GryphonError(errorMessage: "Unable to update AST dumps for files: " +
-						outdatedASTDumps.joined(separator: ", ") + ".")
+					throw GryphonError(
+					errorMessage: "Unable to update AST dumps for files: " +
+						outdatedASTDumpsAfterFirstUpdate.joined(separator: ", ") + ".")
 				}
 			}
 		}
