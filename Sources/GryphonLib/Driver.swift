@@ -69,6 +69,7 @@ public class Driver {
 		let shouldPrintToConsole: Bool
 
 		let mainFilePath: String?
+		let xcodeProjectPath: String?
 	}
 
 	public struct KotlinTranslation {
@@ -305,12 +306,23 @@ public class Driver {
 		let kotlinCode = try Compiler.generateKotlinCode(
 			fromGryphonAST: gryphonAST,
 			withContext: context)
-		if let outputFilePath = gryphonAST.outputFileMap[.kt],
-			!settings.shouldPrintToConsole
-		{
-			let absoluteFilePath = Utilities.getAbsoultePath(forFile: outputFilePath)
-			Compiler.log("Writing to file \(absoluteFilePath)")
-			try Utilities.createFile(atPath: outputFilePath, containing: kotlinCode)
+		if !settings.shouldPrintToConsole {
+			if let outputFilePath = gryphonAST.outputFileMap[.kt] {
+				let absoluteFilePath = Utilities.getAbsoultePath(forFile: outputFilePath)
+				Compiler.log("Writing to file \(absoluteFilePath)")
+				try Utilities.createFile(atPath: outputFilePath, containing: kotlinCode)
+			}
+			else if settings.xcodeProjectPath != nil {
+				// If the user didn't ask to print to console and we're in Xcode but there's no
+				// output file, it's likely the user forgot to add an output file
+				Compiler.handleWarning(
+					message: "No output file path set for \"\(inputFilePath)\"." +
+						" Set it with \"// gryphon output: <output file>\".",
+					sourceFile: gryphonAST.sourceFile,
+					sourceFileRange: SourceFileRange(
+						lineStart: 1, lineEnd: 1,
+						columnStart: 1, columnEnd: 1))
+			}
 		}
 		else {
 			if settings.shouldEmitKotlin {
@@ -444,7 +456,8 @@ public class Driver {
 			shouldGenerateRawAST: shouldGenerateRawAST,
 			shouldGenerateSwiftAST: shouldGenerateSwiftAST,
 			shouldPrintToConsole: shouldPrintToConsole,
-			mainFilePath: mainFilePath)
+			mainFilePath: mainFilePath,
+			xcodeProjectPath: getXcodeProject(inArguments: arguments))
 
 		//
 		var indentationString = "    "
