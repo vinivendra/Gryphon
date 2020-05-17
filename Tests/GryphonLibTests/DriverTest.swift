@@ -74,15 +74,23 @@ class DriverTest: XCTestCase {
 					"Printing diff ('<' means original, '>' means generated):" +
 				TestUtilities.diff(originalSwiftLibraryContents, generatedSwiftLibraryContents))
 
+			// The Kotlin library is generated with an extra comment and a `package` placeholder
+			// statement that aren't in the library Gryphon uses internally.
+			// This assumes the statement is followed by two newlines.
 			let actualKotlinLibraryContents = try Utilities.readFile(
 				"Bootstrap/GryphonKotlinLibrary.kt")
 			let generatedKotlinLibraryContents = try Utilities.readFile(
 				SupportingFile.gryphonKotlinLibrary.relativePath)
+			let processedKotlinLibraryContents = String(generatedKotlinLibraryContents
+				.drop(while: { $0 != "\n" }) // Drop the comment
+				.dropFirst("\n".count)
+				.drop(while: { $0 != "\n" }) // Drop the package statement
+				.dropFirst("\n\n".count))
 			XCTAssert(
-				actualKotlinLibraryContents == generatedKotlinLibraryContents,
+				actualKotlinLibraryContents == processedKotlinLibraryContents,
 					"The generated Kotlin library is different than the original one. " +
 					"Printing diff ('<' means original, '>' means generated):" +
-				TestUtilities.diff(actualKotlinLibraryContents, generatedKotlinLibraryContents))
+				TestUtilities.diff(actualKotlinLibraryContents, processedKotlinLibraryContents))
 
 			Utilities.deleteFile(at: SupportingFile.gryphonSwiftLibrary.relativePath)
 			Utilities.deleteFile(at: SupportingFile.gryphonKotlinLibrary.relativePath)

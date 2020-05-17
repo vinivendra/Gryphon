@@ -24,6 +24,9 @@ let kotlinStringInterpolation = "{_string}"
 
 // gryphon multiline
 internal let gryphonKotlinLibraryFileContents = """
+// Replace this with the real package identifier:
+package /* com.example.myApp */
+
 import java.lang.ClassCastException
 
 fun String.suffix(startIndex: Int): String {
