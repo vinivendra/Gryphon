@@ -1044,6 +1044,9 @@ private func gryphonTemplates() {
 	_ = _string.dropFirst(_int)
 	_ = "_string.drop(_int)"
 
+	_ = _string.drop(while: _closure5)
+	_ = "_string.dropWhile _closure5"
+
 	_ = _string.indices
 	_ = "_string.indices"
 
