@@ -25,8 +25,7 @@
 /// overriding the `replace` and `process` methods lets you alter the AST in specific places, which
 /// is how most passes are implemented.
 /// The `process` methods are just like the `replace` methods, except that they return the same type
-/// that they receive. The different names serves only to make this file compile correctly in
-/// Kotlin.
+/// that they receive.
 /// The default implementation of `replace` methods is to simply return the same node as they
 /// received - after visiting all of its subnodes and replacing them if necessary. This means
 /// running the base TranspilationPass class on an AST, without overriding any methods, will simply
@@ -34,8 +33,8 @@
 /// It also means that overriding methods may call their respective super methods if they want to
 /// visit all subnodes (instead of manually re-implementing this visit). For example, when
 /// overriding `replaceIfStatement`, instead of just returning a new if statement a user might call
-/// `return super.replaceIfStatement(myNewIfStatement)` to make sure their overriding method also
-/// runs on nested if statements.
+/// `return super.replaceIfStatement(myNewIfStatement)` to make sure the overridden method also runs
+/// on nested if statements.
 /// The `process` methods are always called from their respective `replace` methods, meaning users
 /// can override either one to replace a certain statement type.
 public class TranspilationPass {

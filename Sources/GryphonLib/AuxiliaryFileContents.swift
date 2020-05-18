@@ -840,7 +840,6 @@ extension Map { // gryphon ignore
 
 """
 
-
 // gryphon multiline
 internal let gryphonXCTestFileContents = """
 // Replacement for Comparable
