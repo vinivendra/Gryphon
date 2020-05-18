@@ -230,12 +230,13 @@ public class Driver {
 
 		// Generate the Swift AST
 		let swiftAST = try Compiler.generateSwiftAST(fromASTDump: swiftASTDump)
-		if settings.shouldEmitSwiftAST {
-			let output = swiftAST.prettyDescription()
-			print(output)
-		}
 
 		guard settings.shouldGenerateRawAST else {
+			if settings.shouldEmitSwiftAST {
+				let output = swiftAST.prettyDescription()
+				print(output)
+			}
+
 			return swiftAST
 		}
 
