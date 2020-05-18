@@ -1,4 +1,4 @@
-<div id="logo" style="width: 500pt; overflow: auto"><img src="https://github.com/vinivendra/Gryphon/raw/master/Gryphon%20Logo.png" alt="Gryphon logo" width="500"></div>
+<div style="height: 70; overflow: auto"><img src="https://github.com/vinivendra/Gryphon/raw/master/Gryphon%20Logo.svg" alt="Gryphon logo" height="70" style="max-width=100%;"></div>
 
 # Gryphon
 
