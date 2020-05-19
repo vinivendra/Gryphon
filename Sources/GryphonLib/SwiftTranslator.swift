@@ -3218,7 +3218,7 @@ public class SwiftTranslator {
 		let result: MutableList<Statement> = []
 		for lineNumber in range {
 			let astRange = SourceFileRange(
-				lineStart: lineNumber, lineEnd: lineNumber, columnStart: 0, columnEnd: 0)
+				lineStart: lineNumber, lineEnd: lineNumber, columnStart: 1, columnEnd: 1)
 
 			let insertComment = sourceFile?.getTranslationCommentFromLine(lineNumber)
 			let commentValue = insertComment?.value
@@ -3241,10 +3241,22 @@ public class SwiftTranslator {
 							string: commentValue,
 							shouldGoToMainFunction: false)))
 				}
-				else if insertComment.key == .output,
-					let fileExtension = Utilities.getExtension(of: commentValue)
-				{
-					outputFileMap[fileExtension] = insertComment.value
+				else if insertComment.key == .output {
+					if let fileExtension = Utilities.getExtension(of: commentValue),
+						(fileExtension == .swiftAST ||
+						 fileExtension == .gryphonASTRaw ||
+						 fileExtension == .gryphonAST ||
+						 fileExtension == .kt)
+					{
+						outputFileMap[fileExtension] = insertComment.value
+					}
+					else {
+						Compiler.handleWarning(
+							message: "Unsupported output file extension in \"\(commentValue)\". " +
+								"Did you mean to use \".kt\"?",
+							sourceFile: sourceFile,
+							sourceFileRange: astRange)
+					}
 				}
 			}
 			else if let normalComment = sourceFile?.getCommentFromLine(lineNumber) {
