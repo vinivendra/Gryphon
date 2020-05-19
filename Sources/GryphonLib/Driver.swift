@@ -504,6 +504,14 @@ public class Driver {
 				allSourceFiles.append(contentsOf: skippedFiles)
 			}
 
+			let missingfiles = allSourceFiles.filter {
+				!Utilities.fileExists(at: $0)
+			}
+			if !missingfiles.isEmpty {
+				throw GryphonError(errorMessage:
+					"File not found: \(missingfiles.joined(separator: ", ")).")
+			}
+
 			let swiftVersion = try TranspilationContext.getVersionOfToolchain(toolchain)
 
 			var astDumpsSucceeded = true
