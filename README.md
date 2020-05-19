@@ -39,4 +39,4 @@ There are also in-depth guides on a few topics:
 - [Using translation comments](https://vinivendra.github.io/Gryphon/translationComments.html)
 - [Using templates](https://vinivendra.github.io/Gryphon/templates.html)
 
-If you would like to contribute to the project, check out the [Contributor's guide](https://vinivendra.github.io/Gryphon/contributing.html).
+If you would like to contribute to the project, check out the [Contributor's guide](https://vinivendra.github.io/Gryphon/contributing.html). See also the [Code of Conduct](https://github.com/vinivendra/Gryphon/blob/master/CODE_OF_CONDUCT.md).
