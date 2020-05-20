@@ -145,7 +145,7 @@ The Gryphon project contains several test classes. However, not all of them are 
 #### On Linux and Docker:
 
 1. Open the `Tests/GryphonLibTests/XCTestManifests.swift` file;
-2. Make sure the `AcceptanceTest`, the `BootstrappingTest` and the `PerformanceTest` are commented;
+2. Make sure the `AcceptanceTest` and the `BootstrappingTest` are commented;
 3. Run `swift test` on the terminal to execute the test suite.
 
 ### Bootstrapping test
