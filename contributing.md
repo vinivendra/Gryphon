@@ -127,7 +127,7 @@ Apple Swift version 5.1...
 
 If they're not available, you can download them on [swift.org](https://swift.org/download/#releases) under `Releases > Swift 5.x`.
 
-If the toolchains aren't installed, a few of tests will fail in IntegrationTest and BootstrappingTest, but that is to be expected. Using toolchains to test different Swift versions is recommended but not required for contributing code.
+If the toolchains aren't installed a few tests will fail as a warning that a Swift version isn't being tested, but that is to be expected. Using toolchains to test different Swift versions is recommended but not required for contributing code.
 
 ### Unit tests
 
