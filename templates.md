@@ -76,7 +76,7 @@ Int.random(in: 5...index) // Doesn't match
 Int.random(in: 0...10)    // Doesn't match
 ````
 
-To do that, the `0` and `index` in the template need to be replaced with placholder variables:
+To do that, the `0` and `index` in the template need to be replaced with placeholder variables:
 
 ```` swift
 func gryphonTemplates() {
@@ -104,7 +104,7 @@ The matched expression will be translated, and the translation will be replaced 
 (Database.fetchNumber().performCalculation()..10).random()
 ````
 
-Placeholder variables will also match some expressions with compatible subtypes, though Gryphon's subtype checking algorithm is limited. For instance, a placeholer variable of type `Any` will match expressions of any type:
+Placeholder variables will also match some expressions with compatible subtypes, though Gryphon's subtype checking algorithm is limited. For instance, a placeholder variable of type `Any` will match expressions of any type:
 
 ```` swift
 func gryphonTemplates() {

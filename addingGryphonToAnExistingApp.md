@@ -74,7 +74,7 @@ Switch to the Gryphon target and hit build (**⌘+B**).
 
 ![Xcode's target switcher](assets/images/iOS/ios7.png)
 
-Gryphon wll probably raise some warnings. It's recommended that you fix these warnings, as they usually indicate potential bugs in the translations. If you have problems, try reading the guides on [translation comments](translationComments.html), [templates](templates.html) and [collections](collections.html) for more information.
+Gryphon will probably raise some warnings. It's recommended that you fix these warnings, as they usually indicate potential bugs in the translations. If you have problems, try reading the guides on [translation comments](translationComments.html), [templates](templates.html) and [collections](collections.html) for more information.
 
 A few tips to handle common warnings:
 

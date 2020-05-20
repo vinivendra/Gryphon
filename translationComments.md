@@ -23,7 +23,7 @@ These comments can handle a variety of tasks, such as making Swift code be ignor
 
 ### Gryphon output
 
-Usually, each Swift file should have a `// gryphon output` comment specifying where that file's translation whould be placed. The translated file can be written as an absolute path or a relative path. Relative paths should be relative to the directory from which Gryphon is called. Note that the Gryphon target in Xcode is called from the directory that contains the Xcode project.
+Usually, each Swift file should have a `// gryphon output` comment specifying where that file's translation should be placed. The translated file can be written as an absolute path or a relative path. Relative paths should be relative to the directory from which Gryphon is called. When using the Gryphon target in Xcode, this is the directory that contains the Xcode project.
 
 Source files that don't contain a `gryphon output` comment will have their translations printed to the standard output.
 
@@ -241,7 +241,7 @@ let array = [1, 2, 3] // gryphon mute
 
 ### Gryphon inspect
 
-`Gryphon inspect` comments are meant maily for debugging Gryphon. When used, the intermediate representations of an expression will be printed to the standard output.
+`Gryphon inspect` comments are meant mainly for debugging Gryphon. When used, the intermediate representations of an expression will be printed to the standard output.
 
 ```` swift
 val x = 0 // gryphon inspect

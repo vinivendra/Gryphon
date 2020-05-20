@@ -66,7 +66,7 @@ iWantAList([1, 2, 3])
 
 ### Creating Arrays from Lists
 
-Getting an `Array` from a `List` can be useful for interfacing translated code with platform-speficic code. It can be done by accessing `List`'s `array` property:
+Getting an `Array` from a `List` can be useful for interfacing translated code with platform-specific code. It can be done by accessing `List`'s `array` property:
 
 ```` swift
 let myList: List = [1, 2, 3]
@@ -134,7 +134,7 @@ Native `Arrays` (and `Dictionaries`) can still be useful, especially for some pe
 let myNativeArray: Array = [1, 2, 3] // gryphon mute
 ````
 
-With performance in mind, mutablility is ignored: all `Arrays` are translated to `Lists`, and all `Dictionaries` are translated to `Maps`.
+With performance in mind, mutability is ignored: all `Arrays` are translated to `Lists`, and all `Dictionaries` are translated to `Maps`.
 
 Performance-critical code can also be written in platform-specific files (that aren't translated), which would allow access to low-level language features that may be unsupported by Gryphon.
 

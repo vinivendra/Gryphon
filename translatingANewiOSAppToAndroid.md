@@ -97,7 +97,7 @@ Now open Xcode again. There should be a target called `Gryphon`. Switch to that 
 
 ![Xcode's target switcher](assets/images/iOS/ios7.png)
 
-Gryphon translates the code sucessfully, but it raises a warning - we didn't tell it where to put the translated code. Do that by adding the following comment to `Model.swift`:
+Gryphon translates the code successfully, but it raises a warning - we didn't tell it where to put the translated code. Do that by adding the following comment to `Model.swift`:
 
 ```` swift
 // gryphon output: ../MyAwesomeAndroidApp/app/src/main/java/com/example/myawesomeandroidapp/Model.kt
