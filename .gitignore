@@ -1,64 +1,8 @@
 ### MacOS files
 .DS_Store
+*.icloud
 
-### Build products
-# Swift build folder
-/.build
-# Gryphon auxiliary folder
-/.gryphon
-# AST Dumps for translated files
-*.swiftAstDump
-# Intermediate representations used in testing
-*.swiftAST
-*.gryphonASTRaw
-*.gryphonAST
-# Used by the test suite to print diffs when tests fail
-/.tmp
-# Used by bootstrap tests to save the Kotlin outputs
-Test cases/Bootstrap Outputs
-# Result of building the translated programs
-*.jar
-
-### Xcode files
-/*.xcodeproj
-**/xcuserdata
-default.profraw
-
-### Kotlin files generated in bootstrap
-Bootstrap/ASTDumpDecoder.kt
-Bootstrap/AuxiliaryFileContents.kt
-Bootstrap/Compiler.kt
-Bootstrap/Driver.kt
-Bootstrap/Extensions.kt
-Bootstrap/GryphonAST.kt
-Bootstrap/KotlinTranslator.kt
-Bootstrap/LibraryTranspilationPass.kt
-Bootstrap/OutputFileMap.kt
-Bootstrap/PrintableAsTree.kt
-Bootstrap/SharedUtilities.kt
-Bootstrap/SourceFile.kt
-Bootstrap/SwiftAST.kt
-Bootstrap/SwiftTranslator.kt
-Bootstrap/KotlinTranslationResult.kt
-Bootstrap/TranspilationContext.kt
-Bootstrap/TranspilationPass.kt
-
-Bootstrap/AcceptanceTest.kt
-Bootstrap/ASTDumpDecoderTest.kt
-Bootstrap/CompilerTest.kt
-Bootstrap/DriverTest.kt
-Bootstrap/ExtensionsTest.kt
-Bootstrap/IntegrationTest.kt
-Bootstrap/LibraryTranspilationTest.kt
-Bootstrap/ListTest.kt
-Bootstrap/MutableListTest.kt
-Bootstrap/MapTest.kt
-Bootstrap/MutableMapTest.kt
-Bootstrap/PrintableAsTreeTest.kt
-Bootstrap/ShellTest.kt
-Bootstrap/SourceFileTest.kt
-Bootstrap/KotlinTranslationResultTest.kt
-Bootstrap/UtilitiesTest.kt
-
-Bootstrap/SharedTestUtilities.kt
+### Jekyll build files
+_site
+.jekyll-cache
 
