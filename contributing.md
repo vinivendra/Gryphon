@@ -21,6 +21,8 @@ Reporting bugs is an important part of contributing to any open source project. 
 
 ## Contributing code
 
+Developers can also contribute by making changes to Gryphon's source code and opening pull requests. There are some suggestions of features and bugs on [GitHub's good first issues](https://github.com/vinivendra/Gryphon/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) that might be a good place to start.
+
 ### On macOS
 
 Start by cloning the repository:
