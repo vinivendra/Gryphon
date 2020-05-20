@@ -20,7 +20,7 @@
 // gryphon output: Bootstrap/Driver.kt
 
 public class Driver {
-	public static let gryphonVersion = "0.4-beta"
+	public static let gryphonVersion = "0.5"
 
 	public static let supportedArguments: List = [
 		"help", "-help", "--help",
