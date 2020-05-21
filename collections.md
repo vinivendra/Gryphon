@@ -145,7 +145,7 @@ An ideal way of solving this value/reference problem would keep Swift's APIs int
 1. there is more than one reference to the array, and
 2. one of the references to the array tries to change it.
 
-This optimization is called *copy-on-write*, and it lets Swift get away with not having to copy the arrays in most cases. Kotlin, however, uses a garbage collector instead of counting references, there's no way to know if there is more than one reference to the array or not. This means we'd have to copy arrays every time they're changed, which can cause apps to become really slow.
+This optimization is called *copy-on-write*, and it lets Swift get away with not having to copy the arrays in most cases. Kotlin, however, uses a garbage collector instead of counting references, so there's no way to know if there is more than one reference to the array or not. This means we'd have to copy arrays every time they're changed, which can cause apps to become really slow.
 
 Kotlin does have access to Java's [CopyOnWriteArrayList](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CopyOnWriteArrayList.html), but it uses a different optimization than Swift's copy-on-write Arrays and is meant only for very specific use cases.
 
