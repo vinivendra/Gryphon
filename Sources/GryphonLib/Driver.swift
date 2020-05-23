@@ -66,7 +66,7 @@ public class Driver {
 		let shouldGenerateRawAST: Bool
 		let shouldGenerateSwiftAST: Bool
 
-		let shouldPrintToConsole: Bool
+		let forcePrintingToConsole: Bool
 
 		let mainFilePath: String?
 		let xcodeProjectPath: String?
@@ -250,7 +250,7 @@ public class Driver {
 		if settings.shouldEmitSwiftAST {
 			let output = swiftAST.prettyDescription()
 			if let outputFilePath = gryphonRawAST.outputFileMap[.swiftAST],
-				!settings.shouldPrintToConsole
+				!settings.forcePrintingToConsole
 			{
 				try Utilities.createFile(atPath: outputFilePath, containing: output)
 			}
@@ -259,7 +259,7 @@ public class Driver {
 		if settings.shouldEmitRawAST {
 			let output = gryphonRawAST.prettyDescription()
 			if let outputFilePath = gryphonRawAST.outputFileMap[.gryphonASTRaw],
-				!settings.shouldPrintToConsole
+				!settings.forcePrintingToConsole
 			{
 				try Utilities.createFile(atPath: outputFilePath, containing: output)
 			}
@@ -291,7 +291,7 @@ public class Driver {
 		if settings.shouldEmitAST {
 			let output = gryphonAST.prettyDescription()
 			if let outputFilePath = gryphonAST.outputFileMap[.gryphonAST],
-				!settings.shouldPrintToConsole
+				!settings.forcePrintingToConsole
 			{
 				try Utilities.createFile(atPath: outputFilePath, containing: output)
 			}
@@ -308,7 +308,7 @@ public class Driver {
 			fromGryphonAST: gryphonAST,
 			withContext: context)
 		if settings.shouldEmitKotlin {
-			if settings.shouldPrintToConsole {
+			if settings.forcePrintingToConsole {
 				Compiler.output(kotlinCode)
 			}
 			else {
@@ -460,7 +460,7 @@ public class Driver {
 			shouldGenerateAST: shouldGenerateAST,
 			shouldGenerateRawAST: shouldGenerateRawAST,
 			shouldGenerateSwiftAST: shouldGenerateSwiftAST,
-			shouldPrintToConsole: shouldPrintToConsole,
+			forcePrintingToConsole: shouldPrintToConsole,
 			mainFilePath: mainFilePath,
 			xcodeProjectPath: getXcodeProject(inArguments: arguments))
 
