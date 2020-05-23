@@ -4491,6 +4491,7 @@ public extension TranspilationPass {
 		return ast
 	}
 
+	/// For debugging only
 	func printParents() {
 		print("[")
 		for parent in parents {

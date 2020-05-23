@@ -31,12 +31,22 @@ public class Compiler {
 
 	public static func shouldLogProgress(if value: Bool) {
 		if value {
-			log = { print($0) }
+			log = { output($0) }
 		}
 		else {
 			log = { _ in }
 		}
 	}
+
+	/// Used for printing strings to stdout. Can be changed by tests in order to check the outputs.
+	public static func output(_ contents: Any) {
+		outputFunction(contents)
+	}
+
+	public static var outputFunction: ((Any) -> ()) =
+		{ contents in
+			print(contents)
+		}
 
 	//
 	public static var shouldStopAtFirstError = false

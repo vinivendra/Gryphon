@@ -43,6 +43,7 @@ class DriverTest: XCTestCase {
 	/// Tests to be run by the translated Kotlin version.
 	public func runAllTests() { // gryphon annotation: override
 		DriverTest.setUp()
+		testOutputs()
 		testGenerateGryphonLibraries()
 		testUsageString()
 		testNoMainFile()
@@ -52,6 +53,7 @@ class DriverTest: XCTestCase {
 
 	/// Tests to be run when using Swift on Linux
 	static var allTests = [ // gryphon ignore
+		("testOutputs", testOutputs),
 		("testGenerateGryphonLibraries", testGenerateGryphonLibraries),
 		("testUsageString", testUsageString),
 		("testNoMainFile", testNoMainFile),
@@ -60,6 +62,29 @@ class DriverTest: XCTestCase {
 	]
 
 	// MARK: - Tests
+	func testOutputs() {
+		var compilerOutput = ""
+		Compiler.outputFunction = { contents in
+				compilerOutput = compilerOutput + "\(contents)"
+			}
+
+		do {
+			try Driver.run(withArguments: ["test.swift"])
+			XCTAssert(!compilerOutput.isEmpty)
+
+			compilerOutput = ""
+			try Driver.run(withArguments: ["Test cases/access.swift"])
+			XCTAssert(compilerOutput.isEmpty)
+
+			compilerOutput = ""
+			try Driver.run(withArguments: ["Test cases/access.swift", "--write-to-console"])
+			XCTAssert(!compilerOutput.isEmpty)
+		}
+		catch let error {
+			XCTFail("🚨 Test failed with error:\n\(error)")
+		}
+	}
+
 	func testGenerateGryphonLibraries() {
 		do {
 			try Driver.run(withArguments: ["generate-libraries"])

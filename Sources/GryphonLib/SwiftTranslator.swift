@@ -356,8 +356,8 @@ public class SwiftTranslator {
 
 		let shouldInspect = nodeHasTranslationComment(subtree, withKey: .inspect)
 		if shouldInspect {
-			print("===\nInspecting:")
-			print(subtree)
+			Compiler.output("===\nInspecting:")
+			Compiler.output(subtree)
 			for statement in result {
 				statement?.prettyPrint()
 			}
@@ -2432,8 +2432,8 @@ public class SwiftTranslator {
 
 		let shouldInspect = nodeHasTranslationComment(expression, withKey: .inspect)
 		if shouldInspect {
-			print("===\nInspecting:")
-			print(expression)
+			Compiler.output("===\nInspecting:")
+			Compiler.output(expression)
 			result.prettyPrint()
 		}
 

@@ -234,7 +234,7 @@ public class Driver {
 		guard settings.shouldGenerateRawAST else {
 			if settings.shouldEmitSwiftAST {
 				let output = swiftAST.prettyDescription()
-				print(output)
+				Compiler.output(output)
 			}
 
 			return swiftAST
@@ -264,7 +264,7 @@ public class Driver {
 				try Utilities.createFile(atPath: outputFilePath, containing: output)
 			}
 			else {
-				print(output)
+				Compiler.output(output)
 			}
 		}
 
@@ -296,7 +296,7 @@ public class Driver {
 				try Utilities.createFile(atPath: outputFilePath, containing: output)
 			}
 			else {
-				print(output)
+				Compiler.output(output)
 			}
 		}
 
@@ -307,27 +307,31 @@ public class Driver {
 		let kotlinCode = try Compiler.generateKotlinCode(
 			fromGryphonAST: gryphonAST,
 			withContext: context)
-		if !settings.shouldPrintToConsole {
-			if let outputFilePath = gryphonAST.outputFileMap[.kt] {
-				let absoluteFilePath = Utilities.getAbsoultePath(forFile: outputFilePath)
-				Compiler.log("Writing to file \(absoluteFilePath)")
-				try Utilities.createFile(atPath: outputFilePath, containing: kotlinCode)
+		if settings.shouldEmitKotlin {
+			if settings.shouldPrintToConsole {
+				Compiler.output(kotlinCode)
 			}
-			else if settings.xcodeProjectPath != nil {
-				// If the user didn't ask to print to console and we're in Xcode but there's no
-				// output file, it's likely the user forgot to add an output file
-				Compiler.handleWarning(
-					message: "No output file path set for \"\(inputFilePath)\"." +
-						" Set it with \"// gryphon output: <output file>\".",
-					sourceFile: gryphonAST.sourceFile,
-					sourceFileRange: SourceFileRange(
-						lineStart: 1, lineEnd: 1,
-						columnStart: 1, columnEnd: 1))
-			}
-		}
-		else {
-			if settings.shouldEmitKotlin {
-				print(kotlinCode)
+			else {
+				if let outputFilePath = gryphonAST.outputFileMap[.kt] {
+					let absoluteFilePath = Utilities.getAbsoultePath(forFile: outputFilePath)
+					Compiler.log("Writing to file \(absoluteFilePath)")
+					try Utilities.createFile(atPath: outputFilePath, containing: kotlinCode)
+				}
+				else {
+					if settings.xcodeProjectPath != nil {
+						// If the user didn't ask to print to console and we're in Xcode but there's
+						// no output file, it's likely the user forgot to add an output file
+						Compiler.handleWarning(
+							message: "No output file path set for \"\(inputFilePath)\"." +
+								" Set it with \"// gryphon output: <output file>\".",
+							sourceFile: gryphonAST.sourceFile,
+							sourceFileRange: SourceFileRange(
+								lineStart: 1, lineEnd: 1,
+								columnStart: 1, columnEnd: 1))
+					}
+
+					Compiler.output(kotlinCode)
+				}
 			}
 		}
 
@@ -1035,11 +1039,11 @@ public class Driver {
 	}
 
 	static func printVersion() {
-		print("Gryphon version \(gryphonVersion)")
+		Compiler.output("Gryphon version \(gryphonVersion)")
 	}
 
 	static func printUsage() {
-		print(usageString)
+		Compiler.output(usageString)
 	}
 
 	/// This string should be limited to be 80 characters wide to fit the terminal standard.
