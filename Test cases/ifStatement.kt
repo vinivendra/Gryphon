@@ -284,4 +284,18 @@ fun main(args: Array<String>) {
 		val bar: String = bEnum2.g
 		println("If case let comparison #3: ${foo}, ${bar}")
 	}
+
+	if ((true || true) && false) {
+		println("--")
+		if ((true || true) && false) {
+			println("--")
+		}
+	}
+	else if ((true || true) && false) {
+		println("--")
+	}
+
+	if (true || true && false) {
+		println("If case operator precedence")
+	}
 }

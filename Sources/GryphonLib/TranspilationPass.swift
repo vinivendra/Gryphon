@@ -3707,6 +3707,48 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 	}
 }
 
+/// Lists of conditions in Swift if statements get translated as && expressions in Kotlin. This
+/// could cause problems if any of the conditions has a precedence that's lower than the &&, since
+/// the conditions would be evaluated in the wrong order. This pass adds parentheses around these
+/// conditions to ensure they're evaluated correctly.
+/// According to https://kotlinlang.org/docs/reference/grammar.html#expressions, only the
+/// disjunction (`||`), spread (`*`) and assignment (`=`, `+=`, `-=`, `*=`,` /=`, `%=`) operators
+/// have lower precedence than `&&`; of those, only `||` is currently supported in if conditions.
+public class AddParenthesesForOperatorsInIfsTranspilationPass: TranspilationPass {
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
+
+	override func processIfStatement( // gryphon annotation: override
+		_ ifStatement: IfStatement)
+		-> IfStatement
+	{
+		// If there's only one condition there's no need to disambiguate
+		guard ifStatement.conditions.count > 1 else {
+			return super.processIfStatement(ifStatement)
+		}
+
+		let newConditions: MutableList<IfStatement.IfCondition> = []
+
+		for condition in ifStatement.conditions {
+			if case let .condition(expression: expression) = condition {
+				if let binaryExpression = expression as? BinaryOperatorExpression,
+					binaryExpression.operatorSymbol == "||"
+				{
+					newConditions.append(.condition(expression: ParenthesesExpression(
+						range: expression.range,
+						expression: expression)))
+					continue
+				}
+			}
+
+			newConditions.append(condition)
+		}
+
+		ifStatement.conditions = newConditions
+		return super.processIfStatement(ifStatement)
+	}
+}
+
 /// Sends let declarations to before the if statement, and replaces them with `x != null` conditions
 public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
@@ -4400,6 +4442,7 @@ public extension TranspilationPass {
 		//   before the conditions are rearranged
 		ast = ShadowedIfLetAsToIsTranspilationPass(ast: ast, context: context).run()
 		ast = RaiseWarningsForSideEffectsInIfLetsTranspilationPass(ast: ast, context: context).run()
+		ast = AddParenthesesForOperatorsInIfsTranspilationPass(ast: ast, context: context).run()
 		ast = RearrangeIfLetsTranspilationPass(ast: ast, context: context).run()
 
 		// Transform structures that need to be slightly different in Kotlin

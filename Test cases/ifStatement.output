@@ -30,3 +30,4 @@ If case let #8: 0, foo
 If case let comparison #1: 0
 If case let comparison #2: foo
 If case let comparison #3: 0, foo
+If case operator precedence

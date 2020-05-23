@@ -265,3 +265,18 @@ if case let .e(f: 0, g: foo) = bEnum2 {
 if case let .e(f: foo, g: bar) = bEnum2 {
 	print("If case let comparison #3: \(foo), \(bar)")
 }
+
+// Parentheses around or expressions
+if true || true, false {
+	print("--")
+	if true || true, false {
+		print("--")
+	}
+}
+else if true || true, false {
+	print("--")
+}
+
+if true || true && false {
+	print("If case operator precedence")
+}
