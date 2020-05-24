@@ -73,3 +73,78 @@ g2 { 0 }
 // Test closures with `throws` in their types
 func f3(_ closure: () throws -> ()) { }
 f3 { }
+
+//
+// Test closures with labeled returns
+
+// Functions that are declaration references
+func bar(_ closure: () -> Int) { }
+
+bar {
+	if true {
+		return 1
+	}
+	else {
+		return 0
+	}
+}
+
+// Functions that are dot expressions
+class A {
+	func bar(_ closure: () -> Int) { }
+}
+
+A().bar {
+	if true {
+		return 1
+	}
+	else {
+		return 0
+	}
+}
+
+// Functions that are type expressions
+struct B {
+	let closure: () -> Int
+}
+
+B {
+	if true {
+		return 1
+	}
+	else {
+		return 0
+	}
+}
+
+// Chained functions
+extension Int {
+	func bar(_ closure: (Int) -> Int) -> Int {
+		return closure(self)
+	}
+	func foo(_ closure: (Int) -> Int) -> Int {
+		return closure(self)
+	}
+}
+
+0.bar { (a: Int) -> Int in
+	if true {
+		return a + 1
+	}
+	return a + 1
+}.foo { (b: Int) -> Int in
+	if true {
+		return b + 1
+	}
+	return b + 1
+}
+
+// Test single-expression closures with converted switch statements
+func foo(_ closure:(Int) -> (Int)) { }
+
+foo {
+	switch $0 {
+	case 0: return 0
+	default: return 1
+	}
+}

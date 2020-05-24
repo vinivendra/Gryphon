@@ -525,7 +525,8 @@ public class TranspilationPass {
 	{
 		return [ReturnStatement(
 			range: returnStatement.range,
-			expression: returnStatement.expression.map { replaceExpression($0) }), ]
+			expression: returnStatement.expression.map { replaceExpression($0) },
+			label: returnStatement.label), ]
 	}
 
 	func replaceAssignmentStatement( // gryphon annotation: open
@@ -1147,7 +1148,8 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 			if expression.identifier == "self" {
 				return [ReturnStatement(
 					range: assignmentStatement.range,
-					expression: assignmentStatement.rightHand), ]
+					expression: assignmentStatement.rightHand,
+					label: nil), ]
 			}
 		}
 
@@ -2567,32 +2569,112 @@ public class DataStructureInitializersTranspilationPass: TranspilationPass {
 	}
 }
 
-/// Closures in kotlin can't have normal "return" statements. Instead, they must have return@f
-/// statements (not yet implemented) or just standalone expressions (easier to implement but more
-/// error-prone). This pass turns return statements in closures into standalone expressions
+/// Closures in kotlin can't have normal "return" statements. Instead, they must have `return@f`
+/// statements (with labels) or just standalone expressions. This pass turns return statements in
+/// closures into standalone expressions where possible, and adds labels in other cases.
+/// Labels can be added automatically by using the calling function's name. If there's more than one
+/// function with that name on the stack (i.e. two nested `map`s), Kotlin raises a warning but
+/// returns to the topmost closure, which is the same behavior as Swift.
 public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
 	// gryphon insert:     super(ast, context) { }
 
+	/// Stores the names of the functions that called the closures in the current stack.
+	/// For instance, if we're inside `filter { map { ... } }`, this contains `["filter", "map"]`.
+	var labelsStack: MutableList<String> = []
+
 	var isInClosure = false
+
+	override func replaceCallExpression( // gryphon annotation: override
+		_ callExpression: CallExpression)
+		-> Expression
+	{
+		if let label = getLabelForFunction(callExpression.function) {
+			labelsStack.append(label)
+			let result = super.replaceCallExpression(callExpression)
+			labelsStack.removeLast()
+			return result
+		}
+		else {
+			return super.replaceCallExpression(callExpression)
+		}
+	}
+
+	func getLabelForFunction(_ functionExpression: Expression) -> String? {
+		if let declarationReferenceExpression =
+			functionExpression as? DeclarationReferenceExpression
+		{
+			return declarationReferenceExpression.identifier
+		}
+		else if let dotExpression = functionExpression as? DotExpression {
+			return getLabelForFunction(dotExpression.rightExpression)
+		}
+		else if let typeExpression = functionExpression as? TypeExpression {
+			return typeExpression.typeName
+		}
+		else {
+			Compiler.handleWarning(
+				message: "Unable to get label for function:\(functionExpression)",
+				sourceFile: ast.sourceFile,
+				sourceFileRange: functionExpression.range)
+			return nil
+		}
+	}
 
 	override func replaceClosureExpression( // gryphon annotation: override
 		_ closureExpression: ClosureExpression)
 		-> Expression
 	{
+		// If it's a single-expression closure
+		if closureExpression.statements.count == 1 {
+			if let returnStatement = closureExpression.statements[0] as? ReturnStatement {
+				if let expression = returnStatement.expression {
+					let newStatements: MutableList<Statement> = [ExpressionStatement(
+						range: returnStatement.range,
+						expression: expression), ]
+					return super.replaceClosureExpression(ClosureExpression(
+						range: closureExpression.range,
+						parameters: closureExpression.parameters,
+						statements: newStatements,
+						typeName: closureExpression.typeName))
+				}
+			}
+			else if let switchStatement = closureExpression.statements[0] as? SwitchStatement {
+				// If it's a switch that's gonna become a return, remove the return and let the
+				// resulting `when` be a standalone expression
+				if let conversionExpression = switchStatement.convertsToExpression,
+					conversionExpression is ReturnStatement
+				{
+					let newSwitchStatement = SwitchStatement(
+						range: switchStatement.range,
+						convertsToExpression: nil,
+						expression: switchStatement.expression,
+						cases: switchStatement.cases)
+					return super.replaceClosureExpression(ClosureExpression(
+						range: closureExpression.range,
+						parameters: closureExpression.parameters,
+						statements: [newSwitchStatement],
+						typeName: closureExpression.typeName))
+				}
+			}
+		}
+
+		// Otherwise
 		isInClosure = true
-		defer { isInClosure = false }
-		return super.replaceClosureExpression(closureExpression)
+		let result = super.replaceClosureExpression(closureExpression)
+		isInClosure = false
+		return result
 	}
 
 	override func replaceReturnStatement( // gryphon annotation: override
 		_ returnStatement: ReturnStatement)
 		-> List<Statement>
 	{
-		if isInClosure, let expression = returnStatement.expression {
-			return [ExpressionStatement(
+		if isInClosure {
+			return super.replaceReturnStatement(ReturnStatement(
 				range: returnStatement.range,
-				expression: expression), ]
+				expression: returnStatement.expression,
+				label: labelsStack.last))
 		}
 		else {
 			return super.replaceReturnStatement(returnStatement)
@@ -2957,7 +3039,8 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 			let conversionExpression =
 				ReturnStatement(
 					range: switchStatement.range,
-					expression: NilLiteralExpression(range: switchStatement.range))
+					expression: NilLiteralExpression(range: switchStatement.range),
+					label: nil)
 			return [SwitchStatement(
 				range: switchStatement.range,
 				convertsToExpression: conversionExpression,
@@ -3947,8 +4030,10 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 				conditions: [],
 				declarations: [],
 				statements: [
-					ReturnStatement(range: range, expression:
-						LiteralBoolExpression(range: range, value: false)),
+					ReturnStatement(
+						range: range,
+						expression: LiteralBoolExpression(range: range, value: false),
+						label: nil),
 				],
 				elseStatement: nil,
 				isGuard: false),
@@ -4053,7 +4138,8 @@ public class RawValuesTranspilationPass: TranspilationPass {
 								identifier: element.name,
 								typeName: enumDeclaration.enumName,
 								isStandardLibrary: false,
-								isImplicit: false))),
+								isImplicit: false)),
+						label: nil),
 				])
 		}.toMutableList()
 
@@ -4061,7 +4147,8 @@ public class RawValuesTranspilationPass: TranspilationPass {
 			expressions: [],
 			statements: [ReturnStatement(
 				range: range,
-				expression: NilLiteralExpression(range: range)), ])
+				expression: NilLiteralExpression(range: range),
+				label: nil), ])
 
 		switchCases.append(defaultSwitchCase)
 
@@ -4121,7 +4208,8 @@ public class RawValuesTranspilationPass: TranspilationPass {
 				statements: [
 					ReturnStatement(
 						range: range,
-						expression: element.rawValue),
+						expression: element.rawValue,
+						label: nil),
 				])
 		}.toMutableList()
 
@@ -4450,7 +4538,6 @@ public extension TranspilationPass {
 		ast = AnonymousParametersTranspilationPass(ast: ast, context: context).run()
 		ast = CovarianceInitsAsCallsTranspilationPass(ast: ast, context: context).run()
 		ast = DataStructureInitializersTranspilationPass(ast: ast, context: context).run()
-		ast = ReturnsInLambdasTranspilationPass(ast: ast, context: context).run()
 		ast = TuplesToPairsTranspilationPass(ast: ast, context: context).run()
 		ast = TupleMembersTranspilationPass(ast: ast, context: context).run()
 		ast = AutoclosuresTranspilationPass(ast: ast, context: context).run()
@@ -4474,8 +4561,11 @@ public extension TranspilationPass {
 		//   RemoveBreaks might remove a case that only has a break, turning an exhaustive switch
 		//   into a non-exhaustive one and making it convertible to an expression. However, only
 		//   exhaustive switches can be converted to expressions, so this should be avoided.
+		// - SwitchesToExpressions has to be before ReturnsInLambdas:
+		//   Returns in lambdas needs to know if the switch becomes a return.
 		ast = SwitchesToExpressionsTranspilationPass(ast: ast, context: context).run()
 		ast = RemoveBreaksInSwitchesTranspilationPass(ast: ast, context: context).run()
+		ast = ReturnsInLambdasTranspilationPass(ast: ast, context: context).run()
 
 		// Improve Kotlin readability
 		ast = InnerTypePrefixesTranspilationPass(ast: ast, context: context).run()

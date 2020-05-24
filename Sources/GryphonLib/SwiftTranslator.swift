@@ -325,7 +325,8 @@ public class SwiftTranslator {
 			let range = getRangeRecursively(ofNode: subtree)
 			result = [ReturnStatement(
 				range: range,
-				expression: NilLiteralExpression(range: range)), ]
+				expression: NilLiteralExpression(range: range),
+				label: nil), ]
 		case "Optional Evaluation Expression":
 
 			// Some assign statements of the form a.b?.c come enveloped in other expressions
@@ -1036,12 +1037,14 @@ public class SwiftTranslator {
 			let translatedExpression = try translateExpression(expression)
 			return ReturnStatement(
 				range: getRangeRecursively(ofNode: returnStatement),
-				expression: translatedExpression)
+				expression: translatedExpression,
+				label: nil)
 		}
 		else {
 			return ReturnStatement(
 				range: getRangeRecursively(ofNode: returnStatement),
-				expression: nil)
+				expression: nil,
+				label: nil)
 		}
 	}
 
@@ -1167,16 +1170,7 @@ public class SwiftTranslator {
 		{
 			let variables: MutableList<LabeledExpression> =
 				variableSubtreeTuple.subtrees.map { subtree in
-					let name = subtree.standaloneAttributes[0]
-					let typeName = subtree.keyValueAttributes["type"]!
-					return LabeledExpression(
-						label: nil,
-						expression: DeclarationReferenceExpression(
-							range: variableRange,
-							identifier: name,
-							typeName: cleanUpType(typeName),
-							isStandardLibrary: false,
-							isImplicit: false))
+					getPairForVariableSubtreeTupleElement(subtree, inRange: variableRange)
 				}.toMutableList()
 
 			variable = TupleExpression(
@@ -1218,6 +1212,23 @@ public class SwiftTranslator {
 			collection: collectionTranslation,
 			variable: variable,
 			statements: statements)
+	}
+
+	private func getPairForVariableSubtreeTupleElement(
+		_ subtree: SwiftAST,
+		inRange range: SourceFileRange?)
+		-> LabeledExpression
+	{
+		let name = subtree.standaloneAttributes[0]
+		let typeName = subtree.keyValueAttributes["type"]!
+		return LabeledExpression(
+			label: nil,
+			expression: DeclarationReferenceExpression(
+				range: range,
+				identifier: name,
+				typeName: cleanUpType(typeName),
+				isStandardLibrary: false,
+				isImplicit: false))
 	}
 
 	internal func translateWhileStatement(_ whileStatement: SwiftAST) throws -> Statement {

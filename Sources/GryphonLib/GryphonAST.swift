@@ -1010,21 +1010,25 @@ public class ThrowStatement: Statement {
 
 public class ReturnStatement: Statement {
 	let expression: Expression?
+	let label: String?
 
 	init(
 		range: SourceFileRange?,
-		expression: Expression?)
+		expression: Expression?,
+		label: String?)
 	{
 		self.expression = expression
+		self.label = label
 		super.init(range: range, name: "ReturnStatement".capitalizedAsCamelCase())
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
-		return [expression]
+		return [expression, PrintableTree.initOrNil(label)]
 	}
 
 	public static func == (lhs: ReturnStatement, rhs: ReturnStatement) -> Bool {
-		return lhs.expression == rhs.expression
+		return lhs.expression == rhs.expression &&
+			lhs.label == rhs.label
 	}
 }
 
