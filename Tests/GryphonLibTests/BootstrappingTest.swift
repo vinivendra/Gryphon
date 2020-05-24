@@ -39,6 +39,7 @@ class BootstrappingTest: XCTestCase {
 
 		if testsFailed {
 			print(commandResult.standardError)
+			print(commandResult.standardOutput)
 		}
 	}
 
