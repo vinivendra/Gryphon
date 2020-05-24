@@ -1728,18 +1728,34 @@ public class KotlinTranslator {
 				expressions: tupleShuffleExpression.expressions)
 			let tupleExpression = newTupleShuffleExpression.flattenToTupleExpression()
 
-			return try translateTupleExpression(
-				tupleExpression,
-				withIndentation: increaseIndentation(indentation),
-				shouldAddNewlines: shouldAddNewlines)
+			// If the tuple was flattened losslessly, we can still try to add trailing closures
+			if tupleShuffleExpression.canBeFlattenedLosslessly {
+				let newCallExpression = CallExpression(
+					range: callExpression.range,
+					function: callExpression.function,
+					parameters: tupleExpression,
+					typeName: callExpression.typeName)
+
+				return try translateParameters(
+					forCallExpression: newCallExpression,
+					withFunctionTranslation: nil,
+					withIndentation: indentation,
+					shouldAddNewlines: shouldAddNewlines)
+			}
+			else {
+				return try translateTupleExpression(
+					tupleExpression,
+					withIndentation: increaseIndentation(indentation),
+					shouldAddNewlines: shouldAddNewlines)
+			}
 		}
 
 		return try unexpectedASTStructureError(
-		"Expected the parameters to be either a .tupleExpression or a " +
-		".tupleShuffleExpression",
-		AST: ExpressionStatement(
-			range: callExpression.range,
-			expression: callExpression))
+			"Expected the parameters to be either a TupleExpression or a TupleShuffleExpression, " +
+				"received \(callExpression.parameters.name).",
+			AST: ExpressionStatement(
+				range: callExpression.range,
+				expression: callExpression))
 	}
 
 	private func translateClosureExpression(

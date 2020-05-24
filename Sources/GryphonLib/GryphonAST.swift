@@ -2156,7 +2156,24 @@ public class TupleShuffleExpression: Expression {
 			lhs.expressions == rhs.expressions
 	}
 
-	/// Turns this tupleShuffleExpression into a TupleExpression, ignoring absent parameters and
+	/// Check if this TupleShuffleExpression can be flattened into a TupleExpression without losing
+	/// information about absent or variadic parameters
+	var canBeFlattenedLosslessly: Bool {
+		for index in self.indices {
+			switch index {
+			case .absent:
+				return false
+			case .present:
+				break
+			case .variadic:
+				return false
+			}
+		}
+
+		return true
+	}
+
+	/// Turns this TupleShuffleExpression into a TupleExpression, ignoring absent parameters and
 	/// flattening variadics.
 	public func flattenToTupleExpression() -> TupleExpression {
 		let resultPairs: MutableList<LabeledExpression> = []
