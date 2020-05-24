@@ -519,6 +519,7 @@ public class Driver {
 			let swiftVersion = try TranspilationContext.getVersionOfToolchain(toolchain)
 
 			var astDumpsSucceeded = true
+			var astDumpError: Error? = nil
 			do {
 				try updateASTDumps(
 					forFiles: allSourceFiles,
@@ -526,8 +527,9 @@ public class Driver {
 					usingToolchain: toolchain)
 				astDumpsSucceeded = true
 			}
-			catch {
+			catch let error {
 				astDumpsSucceeded = false
+				astDumpError = error
 			}
 
 			let outdatedASTDumpsAfterFirstUpdate = outdatedASTDumpFiles(
@@ -577,9 +579,19 @@ public class Driver {
 					}
 				}
 				else {
-					throw GryphonError(
-					errorMessage: "Unable to update AST dumps for files: " +
-						outdatedASTDumpsAfterFirstUpdate.joined(separator: ", ") + ".")
+					if !outdatedASTDumpsAfterFirstUpdate.isEmpty {
+						throw GryphonError(
+							errorMessage: "Unable to update AST dumps for files: " +
+								outdatedASTDumpsAfterFirstUpdate.joined(separator: ", ") + ".")
+					}
+					else if let astDumpError = astDumpError {
+						throw GryphonError(
+							errorMessage: "Unable to update AST dumps:\n\(astDumpError)")
+					}
+					else {
+						throw GryphonError(
+							errorMessage: "Unable to update AST dumps with unknown error.")
+					}
 				}
 			}
 		}
