@@ -3,10 +3,16 @@ layout: tutorialLayout
 ---
 # Contributing
 
-Contributions to Gryphon can take many forms, including sharing it with other developers, reporting bugs, and opening pull requests. The project aims to provide an open and inclusive space for everybody, which is why it abides to the [contributor covenant](https://www.contributor-covenant.org) and has a [code of conduct](https://github.com/vinivendra/Gryphon/blob/master/CODE_OF_CONDUCT.md).
+First off, thank you for considering contributing to Gryphon. The project can always use the support of anybody who's willing to help.
 
-- [Reporting bugs](contributing.html#reporting-bugs)
+Contributions can take many forms: you can share the project with other developers, report bugs (we can't fix what we don't know about!), ask for new features, improve the tutorials, contribute some code, etc. The project aims to provide an open and inclusive space for everybody, which is why it abides to the [contributor covenant](https://www.contributor-covenant.org) and has a [code of conduct](https://github.com/vinivendra/Gryphon/blob/master/CODE_OF_CONDUCT.md).
+
+- [Getting in contact](contributing.html#getting-in-contact)
+- [Reporting bugs and requesting features](contributing.html#reporting-bugs-and-requesting-features)
+- [Improving the website and tutorials](contributing.html#improving-the-website-and-tutorials)
 - [Contributing code](contributing.html#contributing-code)
+	- [Setting up the environment on macOS](contributing.html#setting-up-the-environment-on-macos)
+	- [Setting up the environment on Linux and Docker](contributing.html#setting-up-the-environment-on-linux-and-docker)
 	- [Running the tests](contributing.html#running-the-tests)
 		- [Unit tests](contributing.html#unit-tests)
 		- [Bootstrapping test](contributing.html#bootstrapping-test)
@@ -15,20 +21,45 @@ Contributions to Gryphon can take many forms, including sharing it with other de
 	- [Style](contributing.html#style)
 - [How Gryphon works](contributing.html#how-gryphon-works)
 
-## Reporting bugs
+## Getting in contact
 
-Reporting bugs is an important part of contributing to any open source project. Many times, a bug hasn't yet been fixed simply because the maintainers do not know it exists. Gryphon uses [GitHub issues](https://github.com/vinivendra/Gryphon/issues) to keep track of bugs. Anyone is welcome to open new issues, so long as they are respectful and follow the [code of conduct](https://github.com/vinivendra/Gryphon/blob/master/CODE_OF_CONDUCT.md).
+If at any point you need help using or contributing to Gryphon, or just want to contact the maintainers, feel free to send a message [on Twitter](https://twitter.com/gryphonblog) or [via email](mailto:gryphontranspiler@gmail.com).
+
+## Reporting bugs and requesting features
+
+Reporting bugs and requesting features are very important parts of contributing to any open source project. Many times, a bug hasn't been fixed yet simply because the maintainers do not know it exists. Similarly, a feature may not have been added because the maintainers do not know anyone wants it. Gryphon uses [GitHub issues](https://github.com/vinivendra/Gryphon/issues) to keep track of both bugs and feature requests. Anyone is welcome to open new issues, so long as they are respectful and follow the [code of conduct](https://github.com/vinivendra/Gryphon/blob/master/CODE_OF_CONDUCT.md). If you open a new issue, be sure to tag it with the `bug` label if it's a bug report, or `enhancement` if it's a feature request.
+
+New GitHub issues should be created only for suggesting and discussing ways to improve Gryphon; if you have questions about using Gryphon or need some technical support, try sending a message [on Twitter](https://twitter.com/gryphonblog) or [via email](mailto:gryphontranspiler@gmail.com) instead.
+
+If you find a problem that you think shouldn't be public (for instance, a security issue that someone might exploit if they knew it existed), please *do not* open an issue; just send an email [directly to the maintainers](mailto:gryphontranspiler@gmail.com).
+
+## Improving the website and tutorials
+
+This website is currently hosted using GitHub pages, so its texts and its code are open for anyone who wants to improve them. If you'd like to report a problem, try [sending a message](contributing.html#getting-in-contact) or opening [an issue on GitHub](https://github.com/vinivendra/Gryphon/issues/new).
+
+If you'd like to improve things yourself, feel free to open a pull request - the website is in the `gh-pages` branch, and it's made using [Jekyll](https://jekyllrb.com/docs/). If you don't yet know what a pull request is, keep reading.
 
 ## Contributing code
 
-Developers can also contribute by making changes to Gryphon's source code and opening pull requests. There are some suggestions of features and bugs on [GitHub's good first issues](https://github.com/vinivendra/Gryphon/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) that might be a good place to start.
+Contributions to the project's website and its code are very much encouraged. Gryphon is a large program that takes a lot of work to maintain and improve, and help is always appreciated.
 
-### On macOS
+If this is your first time contributing to an open source project (or contributing to Gryphon), then welcome! Here are a few tips to get you started:
+- Gryphon accepts code contributions in the form of a *pull request*. Try reading [this tutorial](http://www.firsttimersonly.com/) or [this one](http://makeapullrequest.com/) to learn more about how pull requests work and how to create your own. Once you do, come back and read the rest of this document to learn how to set up Gryphon's development environment on your computer.
+- If don't yet know what kind of improvement you want to make, look for issues labeled [first timers only](https://github.com/vinivendra/Gryphon/labels/first%20timers%20only). These issues are easier than most, and there will be a maintainer willing to hold your hand to help you get to your first accepted pull request on an open source project. If there aren't any of these open, you can [send a message](contributing.html#getting-in-contact) asking for one. If you're feeling confident, you can also try out [good first issues](https://github.com/vinivendra/Gryphon/labels/good%20first%20issue), which are meant for people who have contributed to other projects but are new to Gryphon.
+- Remember that everyone was a beginner at first! There's no shame in [asking for help](contributing.html#getting-in-contact).
+
+If you would like to contribute a pull request that isn't yet related to an existing issue, start by [creating an issue of your own](https://github.com/vinivendra/Gryphon/issues/new). It's be a good way to talk about your proposed changes before you start doing the work, and may avoid your pull request being rejected if your changes don't align with the project's direction.
+
+When interacting with the maintainers on GitHub, you can usually expect a response within a couple of days. If you haven’t heard anything after a week, feel free to ping the thread.
+
+Since the public release of the preview (version 0.5), Gryphon uses the `master` branch as its (reasonably) stable branch. This what users will access when installing Gryphon for the first time. Day-to-day development is done on the `development` branch, which is also where pull requests should be made. The `development` branch is merged onto `master` regularly, on a sort-of-weekly basis, resulting in sort-of-weekly updates for the users. The `gh-pages` branch contains the code for this website. Any other branches are works-in-progress that will eventually merge into one of these three main branches.
+
+### Setting up the environment on macOS
 
 Start by cloning the repository:
 
 ```` bash
-$ git clone https://github.com/vinivendra/Gryphon.git
+$ git clone https://github.com/vinivendra/Gryphon.git --branch development
 $ cd Gryphon
 ````
 
@@ -51,11 +82,11 @@ Next, set a few arguments to use with the Gryphon executable:
 
 1. Select `Arguments` on the top;
 2. Add `test.swift` and `--write-to-console`
-3. Optionally, add `-emit-swiftAST -emit-rawAST -emit-AST -emit-kotlin` as well to print the intermediate representations.
+3. You might also want to add `-emit-swiftAST -emit-rawAST -emit-AST -emit-kotlin` to print the intermediate representations, which can help debugging.
     ![The arguments section in Xcode's scheme editor](assets/images/contributing/contributing2.png)
 4. Close the scheme editor.
 
-These arguments can be used to translate the `test.swift` file in the current directory. Add this file to the project so you can edit it and use it for testing your contributions:
+These arguments will make Gryphon translate the `test.swift` file in the current directory. You can add this file to the project so that you can change it and use it to test your contributions:
 
 1. Hit **⌘+⌥+A** to open the file selector;
 2. Select the `test.swift` file;
@@ -65,12 +96,12 @@ These arguments can be used to translate the `test.swift` file in the current di
 
 Once all of that is configured, hit **⌘+R** to run Gryphon. You should see the Kotlin translation of the `test.swift` file show up in Xcode's console, along with other intermediate ASTs if you added the extra arguments.
 
-### On Linux and Docker
+### Setting up the environment on Linux and Docker
 
-Since Linux and Docker don't have access to Xcode, the setup is pretty much the same. Start by cloning the repository if you haven't done it yet:
+Since Linux and Docker don't have access to Xcode, the setup is pretty much the same for both. Start by cloning the repository if you haven't done it yet:
 
 ```` bash
-$ git clone https://github.com/vinivendra/Gryphon.git
+$ git clone https://github.com/vinivendra/Gryphon.git --branch development
 $ cd Gryphon
 ````
 
@@ -86,19 +117,21 @@ Then execute it using:
 $ ./.build/<my_linux_identifier>/debug/Gryphon
 ````
 
+Where `<my_linux_identifier>` is the name of a folder that can vary depending on your operating system (but it's usually the only folder available).
+
 A common invocation involves translating the `test.swift` file and printing its intermediate ASTs for debugging:
 
 ```` bash
-$ ./.build/<my_os_identifier>/debug/Gryphon test.swift --write-to-console -emit-swiftAST -emit-rawAST -emit-AST -emit-kotlin
+$ ./.build/<my_linux_identifier>/debug/Gryphon test.swift --write-to-console -emit-swiftAST -emit-rawAST -emit-AST -emit-kotlin
 ````
 
-Tests can be executed using the following command:
+You can run automated tests on Gryphon (described below) using the following command:
 
 ```` bash
 $ swift test
 ````
 
-To run a specific test class, use the `--filter` option followed by a regular expression:
+To run a specific test, use the `--filter` option followed by a regular expression that matches the desired test:
 
 ```` bash
 $ swift test --filter IntegrationTest
@@ -161,7 +194,7 @@ $ bash prepareForBootstrapTests.sh
 ````
 
 Once the script finishes:
-- On macOS, open Xcode, hit **⌘+6** to open the tests navigator, right-click the `BootstrappintTest` and select `Run "BootstrappingTest"`.
+- On macOS, open Xcode, hit **⌘+6** to open the tests navigator, right-click the `BootstrappingTest` and select `Run "BootstrappingTest"`.
 - On Linux and Docker, uncomment the `BootstrappingTest` from the `XCTestManifests.swift` file, the run `swift test --filter Bootstrap`.
 
 If any files were out of date (for instance, because the `prepareForBootstrapTests.sh` script wasn't executed), this test will raise an error.
