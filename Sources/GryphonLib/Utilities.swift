@@ -108,7 +108,13 @@ fileprivate extension Date {
 
 extension Utilities {
 	internal static func readFile(_ filePath: String) throws -> String {
-		return try String(contentsOfFile: filePath)
+		do {
+			let result = try String(contentsOfFile: filePath)
+			return result
+		}
+		catch let error {
+			throw GryphonError(errorMessage: "Error reading file \(filePath).\n\(error)")
+		}
 	}
 }
 
