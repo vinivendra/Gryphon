@@ -3081,16 +3081,12 @@ public class RemoveBreaksInSwitchesTranspilationPass: TranspilationPass {
 			cases: newCases.toMutableList()))
 	}
 
-	private func removeBreaksInSwitchCase(_ switchCase: SwitchCase) -> SwitchCase? {
-		if switchCase.statements.count == 1,
-			let onlyStatement = switchCase.statements.first,
-			onlyStatement is BreakStatement
-		{
-			return nil
+	private func removeBreaksInSwitchCase(_ switchCase: SwitchCase) -> SwitchCase {
+		let statements = switchCase.statements.prefix {
+			!($0 is BreakStatement)
 		}
-		else {
-			return switchCase
-		}
+		switchCase.statements = statements.toMutableList()
+		return switchCase
 	}
 }
 

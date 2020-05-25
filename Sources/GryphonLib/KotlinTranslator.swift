@@ -985,9 +985,6 @@ public class KotlinTranslator {
 		result.append(") {\n")
 
 		for switchCase in switchStatement.cases {
-			guard !switchCase.statements.isEmpty else {
-				continue
-			}
 
 			result.append(increasedIndentation)
 
