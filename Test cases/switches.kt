@@ -101,4 +101,13 @@ fun main(args: Array<String>) {
 			println(int)
 		}
 	}
+
+	val z: Int = 0
+
+	when (z) {
+		0 -> {
+		}
+		1 -> println(1)
+		else -> println(2)
+	}
 }
