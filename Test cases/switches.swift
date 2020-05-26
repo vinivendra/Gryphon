@@ -128,3 +128,16 @@ func f() {
 		name = "More"
 	}
 }
+
+// break
+let z: Int = 0
+switch z {
+case 0:
+	break
+	print(0)
+case 1:
+	print(1)
+	break
+default:
+	print(2)
+}
