@@ -105,8 +105,6 @@ class IntegrationTest: XCTestCase {
 							"Test \(testName): the transpiler failed to produce expected result. " +
 								"Printing diff ('<' means generated, '>' means expected):" +
 								TestUtilities.diff(generatedKotlinCode, expectedKotlinCode))
-
-						print("\t- Done!")
 					}
 					catch let error {
 						XCTFail("🚨 Test failed with error:\n\(error)")
@@ -163,35 +161,69 @@ class IntegrationTest: XCTestCase {
 						indentationString: "\t",
 						defaultsToFinal: false)).first!
 
-				Compiler.printIssues()
-
-				XCTAssert(Compiler.numberOfErrors == 0)
+				XCTAssert(
+					Compiler.numberOfErrors == 0,
+					"Expected no errors, found \(Compiler.numberOfErrors):\n" +
+						Compiler.issues.filter { $0.isError }.map { $0.fullMessage }
+							.joined(separator: "\n"))
 
 				// Make sure the comment for muting warnings is working
-				XCTAssert(Compiler.numberOfWarnings == 11)
+				XCTAssert(
+					Compiler.numberOfWarnings == 11,
+					"Expected 11 warnings, found \(Compiler.numberOfErrors):\n" +
+						Compiler.issues.filter { !$0.isError }.map { $0.fullMessage }
+							.joined(separator: "\n"))
 
+				var warnings =
+					Compiler.issues.filter { $0.fullMessage.contains("mutable variables") }
 				XCTAssertEqual(
-					Compiler.issues.filter { $0.fullMessage.contains("mutable variables") }.count,
-					1)
+					warnings.count, 1,
+					"Expected 1 warning containing \"mutable variables\", " +
+						"found \(warnings.count) (printed below, if any).\n" +
+						warnings.map { $0.fullMessage }.joined(separator: "\n"))
+
+				warnings = Compiler.issues.filter { $0.fullMessage.contains("mutating methods") }
 				XCTAssertEqual(
-					Compiler.issues.filter { $0.fullMessage.contains("mutating methods") }.count,
-					2)
+					warnings.count, 2,
+					"Expected 2 warnings containing \"mutating methods\", " +
+						"found \(warnings.count) (printed below, if any).\n" +
+						warnings.map { $0.fullMessage }.joined(separator: "\n"))
+
+				warnings = Compiler.issues.filter { $0.fullMessage.contains("Native type") }
 				XCTAssertEqual(
-					Compiler.issues.filter { $0.fullMessage.contains("Native type") }.count,
-					2)
+					warnings.count, 2,
+					"Expected 2 warnings containing \"Native type\", " +
+						"found \(warnings.count) (printed below, if any).\n" +
+						warnings.map { $0.fullMessage }.joined(separator: "\n"))
+
+				warnings = Compiler.issues.filter { $0.fullMessage.contains("fileprivate") }
 				XCTAssertEqual(
-					Compiler.issues.filter { $0.fullMessage.contains("fileprivate") }.count,
-					1)
+					warnings.count, 1,
+					"Expected 1 warning containing \"fileprivate\", " +
+						"found \(warnings.count) (printed below, if any).\n" +
+						warnings.map { $0.fullMessage }.joined(separator: "\n"))
+
+				warnings = Compiler.issues.filter { $0.fullMessage.contains("If condition") }
 				XCTAssertEqual(
-					Compiler.issues.filter { $0.fullMessage.contains("If condition") }.count,
-					2)
+					warnings.count, 2,
+					"Expected 2 warnings containing \"If condition\", " +
+						"found \(warnings.count) (printed below, if any).\n" +
+						warnings.map { $0.fullMessage }.joined(separator: "\n"))
+
+				warnings = Compiler.issues.filter { $0.fullMessage.contains("Double optionals") }
 				XCTAssertEqual(
-					Compiler.issues.filter { $0.fullMessage.contains("Double optionals") }.count,
-					1)
+					warnings.count, 1,
+					"Expected 1 warning containing \"Double optionals\", " +
+						"found \(warnings.count) (printed below, if any).\n" +
+						warnings.map { $0.fullMessage }.joined(separator: "\n"))
+
+				warnings =
+					Compiler.issues.filter { $0.fullMessage.contains("superclass's initializer") }
 				XCTAssertEqual(
-					Compiler.issues.filter
-						{ $0.fullMessage.contains("superclass's initializer") }.count,
-					2)
+					warnings.count, 2,
+					"Expected 2 warnings containing \"superclass's initializer\", " +
+						"found \(warnings.count) (printed below, if any).\n" +
+						warnings.map { $0.fullMessage }.joined(separator: "\n"))
 			}
 			catch let error {
 				XCTFail("🚨 Test failed with error:\n\(error)")
