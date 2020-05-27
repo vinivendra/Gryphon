@@ -73,11 +73,11 @@ class DriverTest: XCTestCase {
 			XCTAssert(!compilerOutput.isEmpty)
 
 			compilerOutput = ""
-			try Driver.run(withArguments: ["Test cases/access.swift"])
+			try Driver.run(withArguments: ["Test cases/outputs.swift"])
 			XCTAssert(compilerOutput.isEmpty)
 
 			compilerOutput = ""
-			try Driver.run(withArguments: ["Test cases/access.swift", "--write-to-console"])
+			try Driver.run(withArguments: ["Test cases/outputs.swift", "--write-to-console"])
 			XCTAssert(!compilerOutput.isEmpty)
 		}
 		catch let error {
