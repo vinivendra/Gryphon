@@ -19,12 +19,13 @@ import XCTest
 #if !os(macOS)
 public func allTests() -> [XCTestCaseEntry] {
 	return [
-		// testCase(AcceptanceTest.allTests),
+		testCase(AcceptanceTest.allTests),
 		testCase(ASTDumpDecoderTest.allTests),
 		testCase(BootstrappingTest.allTests),
 		testCase(CompilerTest.allTests),
 		testCase(DriverTest.allTests),
 		testCase(ExtensionsTest.allTests),
+		testCase(InitializationTest.allTests),
 		testCase(IntegrationTest.allTests),
 		testCase(LibraryTranspilationTest.allTests),
 		testCase(PrintableAsTreeTest.allTests),
@@ -36,9 +37,6 @@ public func allTests() -> [XCTestCaseEntry] {
 		testCase(MutableListTest.allTests),
 		testCase(MapTest.allTests),
 		testCase(MutableMapTest.allTests),
-
-		// Initialization tests reset the stdlib templates file, so they need to be at the end.
-		// testCase(InitializationTest.allTests),
 	]
 }
 #endif
