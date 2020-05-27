@@ -63,9 +63,16 @@ class DriverTest: XCTestCase {
 
 	// MARK: - Tests
 	func testOutputs() {
+		let oldOutputFunction = Compiler.outputFunction
+		let oldErrorFunction = Compiler.logError
+
 		var compilerOutput = ""
+		var compilerError = ""
 		Compiler.outputFunction = { contents in
 				compilerOutput = compilerOutput + "\(contents)"
+			}
+		Compiler.logError = { contents in
+				compilerError = compilerError + "\(contents)"
 			}
 
 		do {
@@ -79,10 +86,29 @@ class DriverTest: XCTestCase {
 			compilerOutput = ""
 			try Driver.run(withArguments: ["Test cases/outputs.swift", "--write-to-console"])
 			XCTAssert(!compilerOutput.isEmpty)
+
+			// Check if --quiet mutes outputs and warnings
+			compilerOutput = ""
+			compilerError = ""
+			try Driver.run(withArguments:
+				["Test cases/warnings.swift", "--write-to-console", "--quiet"])
+			XCTAssert(compilerOutput.isEmpty)
+			XCTAssert(compilerError.isEmpty)
+
+			// Check if --quiet does not mute errors
+			compilerOutput = ""
+			compilerError = ""
+			try Driver.run(withArguments:
+				["Test cases/errors.swift", "--write-to-console", "--quiet", "--continue-on-error"])
+			XCTAssert(compilerOutput.isEmpty)
+			XCTAssert(!compilerError.isEmpty)
 		}
 		catch let error {
 			XCTFail("🚨 Test failed with error:\n\(error)")
 		}
+
+		Compiler.outputFunction = oldOutputFunction
+		Compiler.logError = oldErrorFunction
 	}
 
 	func testGenerateGryphonLibraries() {
@@ -190,7 +216,7 @@ class DriverTest: XCTestCase {
 		}
 
 		XCTAssertFalse(Compiler.hasIssues())
-		Compiler.printErrorsAndWarnings()
+		Compiler.printIssues()
 	}
 
 	func testContinueOnErrors() {
@@ -282,6 +308,6 @@ class DriverTest: XCTestCase {
 		}
 
 		XCTAssertFalse(Compiler.hasIssues())
-		Compiler.printErrorsAndWarnings()
+		Compiler.printIssues()
 	}
 }

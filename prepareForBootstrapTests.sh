@@ -51,7 +51,7 @@ do
 		fi
 
         if java -jar Bootstrap/kotlin.jar --indentation=t -avoid-unicode -skip-AST-dumps \
-            -emit-swiftAST -emit-rawAST -emit-AST -emit-kotlin $defaultFinal \
+            --quiet -emit-swiftAST -emit-rawAST -emit-AST -emit-kotlin $defaultFinal \
             "$file"
         then
             echo "      ✅ Done."

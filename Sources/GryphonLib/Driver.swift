@@ -34,6 +34,7 @@ public class Driver {
 		"--continue-on-error",
 		"--write-to-console",
 		"--verbose",
+		"--quiet",
 		"--sync",
 	]
 
@@ -67,6 +68,7 @@ public class Driver {
 		let shouldGenerateSwiftAST: Bool
 
 		let forcePrintingToConsole: Bool
+		let quietModeIsOn: Bool
 
 		let mainFilePath: String?
 		let xcodeProjectPath: String?
@@ -232,7 +234,7 @@ public class Driver {
 		let swiftAST = try Compiler.generateSwiftAST(fromASTDump: swiftASTDump)
 
 		guard settings.shouldGenerateRawAST else {
-			if settings.shouldEmitSwiftAST {
+			if settings.shouldEmitSwiftAST, !settings.quietModeIsOn {
 				let output = swiftAST.prettyDescription()
 				Compiler.output(output)
 			}
@@ -254,7 +256,7 @@ public class Driver {
 			{
 				try Utilities.createFile(atPath: outputFilePath, containing: output)
 			}
-			else {
+			else if !settings.quietModeIsOn {
 				Compiler.output(output)
 			}
 		}
@@ -266,7 +268,7 @@ public class Driver {
 			{
 				try Utilities.createFile(atPath: outputFilePath, containing: output)
 			}
-			else {
+			else if !settings.quietModeIsOn {
 				Compiler.output(output)
 			}
 		}
@@ -298,7 +300,7 @@ public class Driver {
 			{
 				try Utilities.createFile(atPath: outputFilePath, containing: output)
 			}
-			else {
+			else if !settings.quietModeIsOn {
 				Compiler.output(output)
 			}
 		}
@@ -312,7 +314,9 @@ public class Driver {
 			withContext: context)
 		if settings.shouldEmitKotlin {
 			if settings.forcePrintingToConsole {
-				Compiler.output(kotlinCode)
+				if !settings.quietModeIsOn {
+					Compiler.output(kotlinCode)
+				}
 			}
 			else {
 				if let outputFilePath = gryphonAST.outputFileMap[.kt] {
@@ -389,10 +393,6 @@ public class Driver {
 		usingToolchain toolchain: String?)
 		throws -> Any?
 	{
-		defer {
-			Compiler.printErrorsAndWarnings()
-		}
-
 		Compiler.clearIssues()
 
 		// Parse arguments
@@ -425,7 +425,8 @@ public class Driver {
 		let shouldEmitKotlin = !hasChosenTask || arguments.contains("-emit-kotlin")
 
 		//
-		let shouldPrintToConsole = arguments.contains("--write-to-console")
+		let forcePrintingToConsole = arguments.contains("--write-to-console")
+		let quietModeIsOn = arguments.contains("--quiet")
 
 		//
 		// Note: if we need to print the Swift AST to a file, we need to build the raw Gryphon AST
@@ -433,7 +434,7 @@ public class Driver {
 		let shouldGenerateKotlin = shouldEmitKotlin
 		let shouldGenerateAST = shouldGenerateKotlin || shouldEmitAST
 		let shouldGenerateRawAST = shouldGenerateAST || shouldEmitRawAST ||
-			(shouldEmitSwiftAST && !shouldPrintToConsole)
+			(shouldEmitSwiftAST && !forcePrintingToConsole)
 		let shouldGenerateSwiftAST = shouldGenerateRawAST || shouldEmitSwiftAST
 
 		//
@@ -463,7 +464,8 @@ public class Driver {
 			shouldGenerateAST: shouldGenerateAST,
 			shouldGenerateRawAST: shouldGenerateRawAST,
 			shouldGenerateSwiftAST: shouldGenerateSwiftAST,
-			forcePrintingToConsole: shouldPrintToConsole,
+			forcePrintingToConsole: forcePrintingToConsole,
+			quietModeIsOn: quietModeIsOn,
 			mainFilePath: mainFilePath,
 			xcodeProjectPath: getXcodeProject(inArguments: arguments))
 
@@ -601,57 +603,64 @@ public class Driver {
 
 		//// Perform transpilation
 
-		//
-		let context = try TranspilationContext(
-			toolchainName: toolchain,
-			indentationString: indentationString,
-			defaultsToFinal: defaultsToFinal)
+		do {
+			//
+			let context = try TranspilationContext(
+				toolchainName: toolchain,
+				indentationString: indentationString,
+				defaultsToFinal: defaultsToFinal)
 
-		Compiler.log("Translating source files...\n")
+			Compiler.log("Translating source files...\n")
 
-		let firstResult: List<Any?>
-		if shouldRunConcurrently {
-			firstResult = try inputFilePaths.parallelMap {
-				try runUpToFirstPasses(withSettings: settings, withContext: context, onFile: $0)
+			let firstResult: List<Any?>
+			if shouldRunConcurrently {
+				firstResult = try inputFilePaths.parallelMap {
+					try runUpToFirstPasses(withSettings: settings, withContext: context, onFile: $0)
+				}
 			}
-		}
-		else {
-			firstResult = try inputFilePaths.map {
-				try runUpToFirstPasses(withSettings: settings, withContext: context, onFile: $0)
+			else {
+				firstResult = try inputFilePaths.map {
+					try runUpToFirstPasses(withSettings: settings, withContext: context, onFile: $0)
+				}
 			}
-		}
 
-		// If we've received a non-raw AST then we're in the middle of the transpilation passes.
-		// This means we need to at least run the second round of passes.
-		guard let asts = firstResult.as(List<GryphonAST>.self),
-			settings.shouldGenerateAST else
-		{
-			return firstResult
-		}
-
-		let pairsArray = zip(asts, inputFilePaths)
-
-		let secondResult: List<Any?>
-		if shouldRunConcurrently {
-			secondResult = try pairsArray.parallelMap {
-				try runAfterFirstPasses(
-					onAST: $0.0,
-					withSettings: settings,
-					withContext: context,
-					onFile: $0.1)
+			// If we've received a non-raw AST then we're in the middle of the transpilation passes.
+			// This means we need to at least run the second round of passes.
+			guard let asts = firstResult.as(List<GryphonAST>.self),
+				settings.shouldGenerateAST else
+			{
+				return firstResult
 			}
-		}
-		else {
-			secondResult = try pairsArray.map {
-				try runAfterFirstPasses(
-					onAST: $0.0,
-					withSettings: settings,
-					withContext: context,
-					onFile: $0.1)
-			}
-		}
 
-		return secondResult
+			let pairsArray = zip(asts, inputFilePaths)
+
+			let secondResult: List<Any?>
+			if shouldRunConcurrently {
+				secondResult = try pairsArray.parallelMap {
+					try runAfterFirstPasses(
+						onAST: $0.0,
+						withSettings: settings,
+						withContext: context,
+						onFile: $0.1)
+				}
+			}
+			else {
+				secondResult = try pairsArray.map {
+					try runAfterFirstPasses(
+						onAST: $0.0,
+						withSettings: settings,
+						withContext: context,
+						onFile: $0.1)
+				}
+			}
+
+			Compiler.printIssues(skippingWarnings: quietModeIsOn)
+			return secondResult
+		}
+		catch let error {
+			Compiler.printIssues(skippingWarnings: quietModeIsOn)
+			throw error
+		}
 	}
 
 	static func outdatedASTDumpFiles(
@@ -1108,6 +1117,11 @@ Main usage:
       ↪️  --write-to-console
             Write the output of any translations to the console (instead of
             the specified output files).
+
+      ↪️  --quiet
+            Do not output translations to the console. If this is specified
+            along with `--write-to-console`, no translations will be written
+            anywhere. Also mutes warnings, but not errors.
 
       ↪️  --indentation=<N>
             Specify the indentation to be used in the output Kotlin files. Use

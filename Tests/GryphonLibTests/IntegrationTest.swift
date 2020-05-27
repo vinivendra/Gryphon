@@ -75,6 +75,8 @@ class IntegrationTest: XCTestCase {
 
 				print("⛓ Using Swift \(swiftVersion)")
 
+				Compiler.clearIssues()
+
 				let tests = TestUtilities.testCases
 				for testName in tests {
 					print("- Testing \(testName)...")
@@ -123,7 +125,7 @@ class IntegrationTest: XCTestCase {
 
 				if Compiler.numberOfErrors != 0 {
 					XCTFail("🚨 Integration test found errors:\n")
-					Compiler.printErrorsAndWarnings()
+					Compiler.printIssues()
 				}
 			}
 			catch let error {
@@ -161,7 +163,7 @@ class IntegrationTest: XCTestCase {
 						indentationString: "\t",
 						defaultsToFinal: false)).first!
 
-				Compiler.printErrorsAndWarnings()
+				Compiler.printIssues()
 
 				XCTAssert(Compiler.numberOfErrors == 0)
 
