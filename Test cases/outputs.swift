@@ -15,28 +15,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-internal val String.isString: Boolean
-	get() {
-		return true
-	}
-internal val String.world: String
-	get() {
-		return "World!"
-	}
 
-internal fun String.appendWorld(): String {
-	return this + ", world!"
-}
+// gryphon output: Test cases/Bootstrap Outputs/outputs.swiftAST
+// gryphon output: Test cases/Bootstrap Outputs/outputs.gryphonASTRaw
+// gryphon output: Test cases/Bootstrap Outputs/outputs.gryphonAST
+// gryphon output: Test cases/Bootstrap Outputs/outputs.kt
 
-internal fun String.functionWithVariable() {
-	var string: String = ", world!!"
-	println("Hello${string}")
-}
-
-fun main(args: Array<String>) {
-	println("${"Hello!".isString}")
-	println("${"Hello!".world}")
-	println("${"Hello".appendWorld()}")
-
-	"bla".functionWithVariable()
-}
+print("Hello, world!")

@@ -1,15 +1,17 @@
 //
 // Copyright 2018 Vinicius Jorge Vendramini
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Hippocratic License, Version 2.1;
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// https://firstdonoharm.dev/version/2/1/license.md
 //
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// To the full extent allowed by law, this software comes "AS IS,"
+// WITHOUT ANY WARRANTY, EXPRESS OR IMPLIED, and licensor and any other
+// contributor shall not be liable to anyone for any damages or other
+// liability arising from, out of, or in connection with the sotfware
+// or this license, under any kind of legal claim.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
@@ -506,9 +508,7 @@ public class KotlinTranslator {
 
 		// Translate properties individually, dropping the newlines at the end
 		let propertyTranslations = try properties.map { property -> KotlinTranslation in
-			let translation = try translateSubtree(property, withIndentation: increasedIndentation)
-			translation.dropLast("\n")
-			return translation
+			return try translatePropertyWithoutNewline(property, indentation: increasedIndentation)
 		}
 		result.appendTranslations(propertyTranslations, withSeparator: ",\n")
 		result.append("\n\(indentation))")
@@ -537,6 +537,16 @@ public class KotlinTranslator {
 		}
 
 		return result
+	}
+
+	private func translatePropertyWithoutNewline(
+		_ property: Statement,
+		indentation: String)
+		throws -> KotlinTranslation
+	{
+		let translation = try translateSubtree(property, withIndentation: indentation)
+		translation.dropLast("\n")
+		return translation
 	}
 
 	private func statementIsStructProperty(
@@ -985,9 +995,6 @@ public class KotlinTranslator {
 		result.append(") {\n")
 
 		for switchCase in switchStatement.cases {
-			guard !switchCase.statements.isEmpty else {
-				continue
-			}
 
 			result.append(increasedIndentation)
 
@@ -1103,15 +1110,29 @@ public class KotlinTranslator {
 			let expressionTranslation =
 				try translateExpression(expression, withIndentation: indentation)
 			let result = KotlinTranslation(range: returnStatement.range)
-			result.append("\(indentation)return ")
+			result.append("\(indentation)return")
+
+			if let label = returnStatement.label {
+				result.append("@\(label)")
+			}
+
+			result.append(" ")
 			result.append(expressionTranslation)
 			result.append("\n")
 			return result
 		}
 		else {
-			return KotlinTranslation(
-				range: returnStatement.range,
-				string: "\(indentation)return\n")
+			if let label = returnStatement.label {
+				return KotlinTranslation(
+					range: returnStatement.range,
+					string: "\(indentation)return@\(label)\n")
+			}
+			else {
+				return KotlinTranslation(
+					range: returnStatement.range,
+					string: "\(indentation)return\n")
+			}
+
 		}
 	}
 
@@ -1687,7 +1708,7 @@ public class KotlinTranslator {
 				{
 					let closureTranslation = try translateClosureExpression(
 						closureExpression,
-						withIndentation: increaseIndentation(indentation))
+						withIndentation: indentation)
 					if tupleExpression.pairs.count > 1 {
 						let newTupleExpression = TupleExpression(
 							range: tupleExpression.range,
@@ -1728,18 +1749,34 @@ public class KotlinTranslator {
 				expressions: tupleShuffleExpression.expressions)
 			let tupleExpression = newTupleShuffleExpression.flattenToTupleExpression()
 
-			return try translateTupleExpression(
-				tupleExpression,
-				withIndentation: increaseIndentation(indentation),
-				shouldAddNewlines: shouldAddNewlines)
+			// If the tuple was flattened losslessly, we can still try to add trailing closures
+			if tupleShuffleExpression.canBeFlattenedLosslessly {
+				let newCallExpression = CallExpression(
+					range: callExpression.range,
+					function: callExpression.function,
+					parameters: tupleExpression,
+					typeName: callExpression.typeName)
+
+				return try translateParameters(
+					forCallExpression: newCallExpression,
+					withFunctionTranslation: nil,
+					withIndentation: indentation,
+					shouldAddNewlines: shouldAddNewlines)
+			}
+			else {
+				return try translateTupleExpression(
+					tupleExpression,
+					withIndentation: increaseIndentation(indentation),
+					shouldAddNewlines: shouldAddNewlines)
+			}
 		}
 
 		return try unexpectedASTStructureError(
-		"Expected the parameters to be either a .tupleExpression or a " +
-		".tupleShuffleExpression",
-		AST: ExpressionStatement(
-			range: callExpression.range,
-			expression: callExpression))
+			"Expected the parameters to be either a TupleExpression or a TupleShuffleExpression, " +
+				"received \(callExpression.parameters.name).",
+			AST: ExpressionStatement(
+				range: callExpression.range,
+				expression: callExpression))
 	}
 
 	private func translateClosureExpression(

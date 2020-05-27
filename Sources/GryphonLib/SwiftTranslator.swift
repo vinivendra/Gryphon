@@ -1,15 +1,17 @@
 //
 // Copyright 2018 Vinicius Jorge Vendramini
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Hippocratic License, Version 2.1;
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// https://firstdonoharm.dev/version/2/1/license.md
 //
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// To the full extent allowed by law, this software comes "AS IS,"
+// WITHOUT ANY WARRANTY, EXPRESS OR IMPLIED, and licensor and any other
+// contributor shall not be liable to anyone for any damages or other
+// liability arising from, out of, or in connection with the sotfware
+// or this license, under any kind of legal claim.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
@@ -325,7 +327,8 @@ public class SwiftTranslator {
 			let range = getRangeRecursively(ofNode: subtree)
 			result = [ReturnStatement(
 				range: range,
-				expression: NilLiteralExpression(range: range)), ]
+				expression: NilLiteralExpression(range: range),
+				label: nil), ]
 		case "Optional Evaluation Expression":
 
 			// Some assign statements of the form a.b?.c come enveloped in other expressions
@@ -1036,12 +1039,14 @@ public class SwiftTranslator {
 			let translatedExpression = try translateExpression(expression)
 			return ReturnStatement(
 				range: getRangeRecursively(ofNode: returnStatement),
-				expression: translatedExpression)
+				expression: translatedExpression,
+				label: nil)
 		}
 		else {
 			return ReturnStatement(
 				range: getRangeRecursively(ofNode: returnStatement),
-				expression: nil)
+				expression: nil,
+				label: nil)
 		}
 	}
 
@@ -1167,16 +1172,7 @@ public class SwiftTranslator {
 		{
 			let variables: MutableList<LabeledExpression> =
 				variableSubtreeTuple.subtrees.map { subtree in
-					let name = subtree.standaloneAttributes[0]
-					let typeName = subtree.keyValueAttributes["type"]!
-					return LabeledExpression(
-						label: nil,
-						expression: DeclarationReferenceExpression(
-							range: variableRange,
-							identifier: name,
-							typeName: cleanUpType(typeName),
-							isStandardLibrary: false,
-							isImplicit: false))
+					getPairForVariableSubtreeTupleElement(subtree, inRange: variableRange)
 				}.toMutableList()
 
 			variable = TupleExpression(
@@ -1218,6 +1214,23 @@ public class SwiftTranslator {
 			collection: collectionTranslation,
 			variable: variable,
 			statements: statements)
+	}
+
+	private func getPairForVariableSubtreeTupleElement(
+		_ subtree: SwiftAST,
+		inRange range: SourceFileRange?)
+		-> LabeledExpression
+	{
+		let name = subtree.standaloneAttributes[0]
+		let typeName = subtree.keyValueAttributes["type"]!
+		return LabeledExpression(
+			label: nil,
+			expression: DeclarationReferenceExpression(
+				range: range,
+				identifier: name,
+				typeName: cleanUpType(typeName),
+				isStandardLibrary: false,
+				isImplicit: false))
 	}
 
 	internal func translateWhileStatement(_ whileStatement: SwiftAST) throws -> Statement {
@@ -2566,12 +2579,13 @@ public class SwiftTranslator {
 		let parameters: MutableList<LabeledType> = []
 		if let parameterList = parameterList {
 			for parameter in parameterList.subtrees {
+				if parameter["anonname"] != nil {
+					continue
+				}
+
 				if let name = parameter.standaloneAttributes.first,
 					let typeName = parameter["interface type"]
 				{
-					if name.hasPrefix("anonname=0x") {
-						continue
-					}
 					parameters.append(LabeledType(label: name, typeName: cleanUpType(typeName)))
 				}
 				else {

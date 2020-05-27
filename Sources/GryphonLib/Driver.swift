@@ -1,15 +1,17 @@
 //
 // Copyright 2018 Vinicius Jorge Vendramini
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Hippocratic License, Version 2.1;
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// https://firstdonoharm.dev/version/2/1/license.md
 //
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// To the full extent allowed by law, this software comes "AS IS,"
+// WITHOUT ANY WARRANTY, EXPRESS OR IMPLIED, and licensor and any other
+// contributor shall not be liable to anyone for any damages or other
+// liability arising from, out of, or in connection with the sotfware
+// or this license, under any kind of legal claim.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
@@ -34,6 +36,7 @@ public class Driver {
 		"--continue-on-error",
 		"--write-to-console",
 		"--verbose",
+		"--quiet",
 		"--sync",
 	]
 
@@ -66,7 +69,8 @@ public class Driver {
 		let shouldGenerateRawAST: Bool
 		let shouldGenerateSwiftAST: Bool
 
-		let shouldPrintToConsole: Bool
+		let forcePrintingToConsole: Bool
+		let quietModeIsOn: Bool
 
 		let mainFilePath: String?
 		let xcodeProjectPath: String?
@@ -232,7 +236,7 @@ public class Driver {
 		let swiftAST = try Compiler.generateSwiftAST(fromASTDump: swiftASTDump)
 
 		guard settings.shouldGenerateRawAST else {
-			if settings.shouldEmitSwiftAST {
+			if settings.shouldEmitSwiftAST, !settings.quietModeIsOn {
 				let output = swiftAST.prettyDescription()
 				Compiler.output(output)
 			}
@@ -250,20 +254,23 @@ public class Driver {
 		if settings.shouldEmitSwiftAST {
 			let output = swiftAST.prettyDescription()
 			if let outputFilePath = gryphonRawAST.outputFileMap[.swiftAST],
-				!settings.shouldPrintToConsole
+				!settings.forcePrintingToConsole
 			{
 				try Utilities.createFile(atPath: outputFilePath, containing: output)
+			}
+			else if !settings.quietModeIsOn {
+				Compiler.output(output)
 			}
 		}
 
 		if settings.shouldEmitRawAST {
 			let output = gryphonRawAST.prettyDescription()
 			if let outputFilePath = gryphonRawAST.outputFileMap[.gryphonASTRaw],
-				!settings.shouldPrintToConsole
+				!settings.forcePrintingToConsole
 			{
 				try Utilities.createFile(atPath: outputFilePath, containing: output)
 			}
-			else {
+			else if !settings.quietModeIsOn {
 				Compiler.output(output)
 			}
 		}
@@ -291,11 +298,11 @@ public class Driver {
 		if settings.shouldEmitAST {
 			let output = gryphonAST.prettyDescription()
 			if let outputFilePath = gryphonAST.outputFileMap[.gryphonAST],
-				!settings.shouldPrintToConsole
+				!settings.forcePrintingToConsole
 			{
 				try Utilities.createFile(atPath: outputFilePath, containing: output)
 			}
-			else {
+			else if !settings.quietModeIsOn {
 				Compiler.output(output)
 			}
 		}
@@ -308,8 +315,10 @@ public class Driver {
 			fromGryphonAST: gryphonAST,
 			withContext: context)
 		if settings.shouldEmitKotlin {
-			if settings.shouldPrintToConsole {
-				Compiler.output(kotlinCode)
+			if settings.forcePrintingToConsole {
+				if !settings.quietModeIsOn {
+					Compiler.output(kotlinCode)
+				}
 			}
 			else {
 				if let outputFilePath = gryphonAST.outputFileMap[.kt] {
@@ -330,7 +339,9 @@ public class Driver {
 								columnStart: 1, columnEnd: 1))
 					}
 
-					Compiler.output(kotlinCode)
+					if !settings.quietModeIsOn {
+						Compiler.output(kotlinCode)
+					}
 				}
 			}
 		}
@@ -386,10 +397,6 @@ public class Driver {
 		usingToolchain toolchain: String?)
 		throws -> Any?
 	{
-		defer {
-			Compiler.printErrorsAndWarnings()
-		}
-
 		Compiler.clearIssues()
 
 		// Parse arguments
@@ -422,7 +429,8 @@ public class Driver {
 		let shouldEmitKotlin = !hasChosenTask || arguments.contains("-emit-kotlin")
 
 		//
-		let shouldPrintToConsole = arguments.contains("--write-to-console")
+		let forcePrintingToConsole = arguments.contains("--write-to-console")
+		let quietModeIsOn = arguments.contains("--quiet")
 
 		//
 		// Note: if we need to print the Swift AST to a file, we need to build the raw Gryphon AST
@@ -430,7 +438,7 @@ public class Driver {
 		let shouldGenerateKotlin = shouldEmitKotlin
 		let shouldGenerateAST = shouldGenerateKotlin || shouldEmitAST
 		let shouldGenerateRawAST = shouldGenerateAST || shouldEmitRawAST ||
-			(shouldEmitSwiftAST && !shouldPrintToConsole)
+			(shouldEmitSwiftAST && !forcePrintingToConsole)
 		let shouldGenerateSwiftAST = shouldGenerateRawAST || shouldEmitSwiftAST
 
 		//
@@ -460,7 +468,8 @@ public class Driver {
 			shouldGenerateAST: shouldGenerateAST,
 			shouldGenerateRawAST: shouldGenerateRawAST,
 			shouldGenerateSwiftAST: shouldGenerateSwiftAST,
-			shouldPrintToConsole: shouldPrintToConsole,
+			forcePrintingToConsole: forcePrintingToConsole,
+			quietModeIsOn: quietModeIsOn,
 			mainFilePath: mainFilePath,
 			xcodeProjectPath: getXcodeProject(inArguments: arguments))
 
@@ -519,6 +528,7 @@ public class Driver {
 			let swiftVersion = try TranspilationContext.getVersionOfToolchain(toolchain)
 
 			var astDumpsSucceeded = true
+			var astDumpError: Error? = nil
 			do {
 				try updateASTDumps(
 					forFiles: allSourceFiles,
@@ -526,8 +536,9 @@ public class Driver {
 					usingToolchain: toolchain)
 				astDumpsSucceeded = true
 			}
-			catch {
+			catch let error {
 				astDumpsSucceeded = false
+				astDumpError = error
 			}
 
 			let outdatedASTDumpsAfterFirstUpdate = outdatedASTDumpFiles(
@@ -577,66 +588,83 @@ public class Driver {
 					}
 				}
 				else {
-					throw GryphonError(
-					errorMessage: "Unable to update AST dumps for files: " +
-						outdatedASTDumpsAfterFirstUpdate.joined(separator: ", ") + ".")
+					if !outdatedASTDumpsAfterFirstUpdate.isEmpty {
+						throw GryphonError(
+							errorMessage: "Unable to update AST dumps for files: " +
+								outdatedASTDumpsAfterFirstUpdate.joined(separator: ", ") + ".")
+					}
+					else if let astDumpError = astDumpError {
+						throw GryphonError(
+							errorMessage: "Unable to update AST dumps:\n\(astDumpError)")
+					}
+					else {
+						throw GryphonError(
+							errorMessage: "Unable to update AST dumps with unknown error.")
+					}
 				}
 			}
 		}
 
 		//// Perform transpilation
 
-		//
-		let context = try TranspilationContext(
-			toolchainName: toolchain,
-			indentationString: indentationString,
-			defaultsToFinal: defaultsToFinal)
+		do {
+			//
+			let context = try TranspilationContext(
+				toolchainName: toolchain,
+				indentationString: indentationString,
+				defaultsToFinal: defaultsToFinal)
 
-		Compiler.log("Translating source files...\n")
+			Compiler.log("Translating source files...\n")
 
-		let firstResult: List<Any?>
-		if shouldRunConcurrently {
-			firstResult = try inputFilePaths.parallelMap {
-				try runUpToFirstPasses(withSettings: settings, withContext: context, onFile: $0)
+			let firstResult: List<Any?>
+			if shouldRunConcurrently {
+				firstResult = try inputFilePaths.parallelMap {
+					try runUpToFirstPasses(withSettings: settings, withContext: context, onFile: $0)
+				}
 			}
-		}
-		else {
-			firstResult = try inputFilePaths.map {
-				try runUpToFirstPasses(withSettings: settings, withContext: context, onFile: $0)
+			else {
+				firstResult = try inputFilePaths.map {
+					try runUpToFirstPasses(withSettings: settings, withContext: context, onFile: $0)
+				}
 			}
-		}
 
-		// If we've received a non-raw AST then we're in the middle of the transpilation passes.
-		// This means we need to at least run the second round of passes.
-		guard let asts = firstResult.as(List<GryphonAST>.self),
-			settings.shouldGenerateAST else
-		{
-			return firstResult
-		}
-
-		let pairsArray = zip(asts, inputFilePaths)
-
-		let secondResult: List<Any?>
-		if shouldRunConcurrently {
-			secondResult = try pairsArray.parallelMap {
-				try runAfterFirstPasses(
-					onAST: $0.0,
-					withSettings: settings,
-					withContext: context,
-					onFile: $0.1)
+			// If we've received a non-raw AST then we're in the middle of the transpilation passes.
+			// This means we need to at least run the second round of passes.
+			guard let asts = firstResult.as(List<GryphonAST>.self),
+				settings.shouldGenerateAST else
+			{
+				return firstResult
 			}
-		}
-		else {
-			secondResult = try pairsArray.map {
-				try runAfterFirstPasses(
-					onAST: $0.0,
-					withSettings: settings,
-					withContext: context,
-					onFile: $0.1)
-			}
-		}
 
-		return secondResult
+			let pairsArray = zip(asts, inputFilePaths)
+
+			let secondResult: List<Any?>
+			if shouldRunConcurrently {
+				secondResult = try pairsArray.parallelMap {
+					try runAfterFirstPasses(
+						onAST: $0.0,
+						withSettings: settings,
+						withContext: context,
+						onFile: $0.1)
+				}
+			}
+			else {
+				secondResult = try pairsArray.map {
+					try runAfterFirstPasses(
+						onAST: $0.0,
+						withSettings: settings,
+						withContext: context,
+						onFile: $0.1)
+				}
+			}
+
+			Compiler.printIssues(skippingWarnings: quietModeIsOn)
+			return secondResult
+		}
+		catch let error {
+			Compiler.printIssues(skippingWarnings: quietModeIsOn)
+			throw error
+		}
 	}
 
 	static func outdatedASTDumpFiles(
@@ -1093,6 +1121,11 @@ Main usage:
       ↪️  --write-to-console
             Write the output of any translations to the console (instead of
             the specified output files).
+
+      ↪️  --quiet
+            Do not output translations to the console. If this is specified
+            along with `--write-to-console`, no translations will be written
+            anywhere. Also mutes warnings, but not errors.
 
       ↪️  --indentation=<N>
             Specify the indentation to be used in the output Kotlin files. Use

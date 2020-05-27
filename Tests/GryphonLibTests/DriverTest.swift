@@ -1,15 +1,17 @@
 //
 // Copyright 2018 Vinicius Jorge Vendramini
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Hippocratic License, Version 2.1;
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// https://firstdonoharm.dev/version/2/1/license.md
 //
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// To the full extent allowed by law, this software comes "AS IS,"
+// WITHOUT ANY WARRANTY, EXPRESS OR IMPLIED, and licensor and any other
+// contributor shall not be liable to anyone for any damages or other
+// liability arising from, out of, or in connection with the sotfware
+// or this license, under any kind of legal claim.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
@@ -63,9 +65,16 @@ class DriverTest: XCTestCase {
 
 	// MARK: - Tests
 	func testOutputs() {
+		let oldOutputFunction = Compiler.outputFunction
+		let oldErrorFunction = Compiler.logError
+
 		var compilerOutput = ""
+		var compilerError = ""
 		Compiler.outputFunction = { contents in
 				compilerOutput = compilerOutput + "\(contents)"
+			}
+		Compiler.logError = { contents in
+				compilerError = compilerError + "\(contents)"
 			}
 
 		do {
@@ -73,16 +82,35 @@ class DriverTest: XCTestCase {
 			XCTAssert(!compilerOutput.isEmpty)
 
 			compilerOutput = ""
-			try Driver.run(withArguments: ["Test cases/access.swift"])
+			try Driver.run(withArguments: ["Test cases/outputs.swift"])
 			XCTAssert(compilerOutput.isEmpty)
 
 			compilerOutput = ""
-			try Driver.run(withArguments: ["Test cases/access.swift", "--write-to-console"])
+			try Driver.run(withArguments: ["Test cases/outputs.swift", "--write-to-console"])
 			XCTAssert(!compilerOutput.isEmpty)
+
+			// Check if --quiet mutes outputs and warnings
+			compilerOutput = ""
+			compilerError = ""
+			try Driver.run(withArguments:
+				["Test cases/warnings.swift", "--write-to-console", "--quiet"])
+			XCTAssert(compilerOutput.isEmpty)
+			XCTAssert(compilerError.isEmpty)
+
+			// Check if --quiet does not mute errors
+			compilerOutput = ""
+			compilerError = ""
+			try Driver.run(withArguments:
+				["Test cases/errors.swift", "--write-to-console", "--quiet", "--continue-on-error"])
+			XCTAssert(compilerOutput.isEmpty)
+			XCTAssert(!compilerError.isEmpty)
 		}
 		catch let error {
 			XCTFail("🚨 Test failed with error:\n\(error)")
 		}
+
+		Compiler.outputFunction = oldOutputFunction
+		Compiler.logError = oldErrorFunction
 	}
 
 	func testGenerateGryphonLibraries() {
@@ -149,6 +177,7 @@ class DriverTest: XCTestCase {
 				 "-emit-kotlin",
 				 "--indentation=t",
 				 "--write-to-console",
+				 "--quiet",
 				 testCasePath, ])
 			let resultArray1 = driverResult1 as? List<Any?>
 			let kotlinTranslations1 = resultArray1?.as(List<Driver.KotlinTranslation>.self)
@@ -170,6 +199,7 @@ class DriverTest: XCTestCase {
 				 "--indentation=t",
 				 "--no-main-file",
 				 "--write-to-console",
+				 "--quiet",
 				 testCasePath, ])
 			let resultArray2 = driverResult2 as? List<Any?>
 			let kotlinTranslations2 = resultArray2?.as(List<Driver.KotlinTranslation>.self)
@@ -190,7 +220,7 @@ class DriverTest: XCTestCase {
 		}
 
 		XCTAssertFalse(Compiler.hasIssues())
-		Compiler.printErrorsAndWarnings()
+		Compiler.printIssues()
 	}
 
 	func testContinueOnErrors() {
@@ -206,6 +236,7 @@ class DriverTest: XCTestCase {
 				 "--indentation=t",
 				 "--continue-on-error",
 				 "--write-to-console",
+				 "--quiet",
 				 testCasePath, ])
 
 			XCTAssert(Compiler.numberOfErrors == 2)
@@ -219,6 +250,7 @@ class DriverTest: XCTestCase {
 				 "--indentation=t",
 				 "--no-main-file",
 				 "--write-to-console",
+				 "--quiet",
 				 testCasePath, ])
 
 			XCTFail("Expected Driver to throw an error.")
@@ -240,6 +272,7 @@ class DriverTest: XCTestCase {
 				 "-emit-kotlin",
 				 "--indentation=t",
 				 "--write-to-console",
+				 "--quiet",
 				 testCasePath, ])
 			let resultArray1 = driverResult1 as? List<Any?>
 			let kotlinTranslations1 = resultArray1?.as(List<Driver.KotlinTranslation>.self)
@@ -261,6 +294,7 @@ class DriverTest: XCTestCase {
 				 "-emit-kotlin",
 				 "--indentation=4",
 				 "--write-to-console",
+				 "--quiet",
 				 testCasePath, ])
 			let resultArray2 = driverResult2 as? List<Any?>
 			let kotlinTranslations2 = resultArray2?.as(List<Driver.KotlinTranslation>.self)
@@ -282,6 +316,6 @@ class DriverTest: XCTestCase {
 		}
 
 		XCTAssertFalse(Compiler.hasIssues())
-		Compiler.printErrorsAndWarnings()
+		Compiler.printIssues()
 	}
 }

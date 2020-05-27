@@ -1,15 +1,17 @@
 //
 // Copyright 2018 Vinicius Jorge Vendramini
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Hippocratic License, Version 2.1;
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// https://firstdonoharm.dev/version/2/1/license.md
 //
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// To the full extent allowed by law, this software comes "AS IS,"
+// WITHOUT ANY WARRANTY, EXPRESS OR IMPLIED, and licensor and any other
+// contributor shall not be liable to anyone for any damages or other
+// liability arising from, out of, or in connection with the sotfware
+// or this license, under any kind of legal claim.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
@@ -73,3 +75,78 @@ g2 { 0 }
 // Test closures with `throws` in their types
 func f3(_ closure: () throws -> ()) { }
 f3 { }
+
+//
+// Test closures with labeled returns
+
+// Functions that are declaration references
+func bar(_ closure: () -> Int) { }
+
+bar {
+	if true {
+		return 1
+	}
+	else {
+		return 0
+	}
+}
+
+// Functions that are dot expressions
+class A {
+	func bar(_ closure: () -> Int) { }
+}
+
+A().bar {
+	if true {
+		return 1
+	}
+	else {
+		return 0
+	}
+}
+
+// Functions that are type expressions
+struct B {
+	let closure: () -> Int
+}
+
+B {
+	if true {
+		return 1
+	}
+	else {
+		return 0
+	}
+}
+
+// Chained functions
+extension Int {
+	func bar(_ closure: (Int) -> Int) -> Int {
+		return closure(self)
+	}
+	func foo(_ closure: (Int) -> Int) -> Int {
+		return closure(self)
+	}
+}
+
+0.bar { (a: Int) -> Int in
+	if true {
+		return a + 1
+	}
+	return a + 1
+}.foo { (b: Int) -> Int in
+	if true {
+		return b + 1
+	}
+	return b + 1
+}
+
+// Test single-expression closures with converted switch statements
+func foo(_ closure:(Int) -> (Int)) { }
+
+foo {
+	switch $0 {
+	case 0: return 0
+	default: return 1
+	}
+}

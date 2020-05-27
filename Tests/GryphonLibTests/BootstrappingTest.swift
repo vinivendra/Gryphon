@@ -1,15 +1,17 @@
 //
 // Copyright 2018 Vinicius Jorge Vendramini
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Hippocratic License, Version 2.1;
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// https://firstdonoharm.dev/version/2/1/license.md
 //
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// To the full extent allowed by law, this software comes "AS IS,"
+// WITHOUT ANY WARRANTY, EXPRESS OR IMPLIED, and licensor and any other
+// contributor shall not be liable to anyone for any damages or other
+// liability arising from, out of, or in connection with the sotfware
+// or this license, under any kind of legal claim.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
@@ -39,6 +41,7 @@ class BootstrappingTest: XCTestCase {
 
 		if testsFailed {
 			print(commandResult.standardError)
+			print(commandResult.standardOutput)
 		}
 	}
 
@@ -69,6 +72,7 @@ class BootstrappingTest: XCTestCase {
 					 "--indentation=t",
 					 "-avoid-unicode",
 					 "--write-to-console",
+					 "--quiet",
 					 testCasePath, ]
 				if testName.hasSuffix("--default-final") {
 					arguments.append("--default-final")
@@ -96,7 +100,7 @@ class BootstrappingTest: XCTestCase {
 		}
 
 		XCTAssertFalse(Compiler.hasIssues())
-		Compiler.printErrorsAndWarnings()
+		Compiler.printIssues()
 	}
 
 	func testSwiftTranslatorOutput() {
@@ -126,6 +130,7 @@ class BootstrappingTest: XCTestCase {
 					 "--indentation=t",
 					 "-avoid-unicode",
 					 "--write-to-console",
+					 "--quiet",
 					 testCasePath, ]
 				if testName.hasSuffix("-default-final") {
 					arguments.append("--default-final")
@@ -153,7 +158,7 @@ class BootstrappingTest: XCTestCase {
 		}
 
 		XCTAssertFalse(Compiler.hasIssues())
-		Compiler.printErrorsAndWarnings()
+		Compiler.printIssues()
 	}
 
 	func testTranspilationPassOutput() {
@@ -183,6 +188,7 @@ class BootstrappingTest: XCTestCase {
 					 "--indentation=t",
 					 "-avoid-unicode",
 					 "--write-to-console",
+					 "--quiet",
 					 testCasePath, ]
 				if testName.hasSuffix("-default-final") {
 					arguments.append("--default-final")
@@ -210,7 +216,7 @@ class BootstrappingTest: XCTestCase {
 		}
 
 		XCTAssertFalse(Compiler.hasIssues())
-		Compiler.printErrorsAndWarnings()
+		Compiler.printIssues()
 	}
 
 	func testKotlinTranslatorOutput() {
@@ -240,6 +246,7 @@ class BootstrappingTest: XCTestCase {
 					 "--indentation=t",
 					 "-avoid-unicode",
 					 "--write-to-console",
+					 "--quiet",
 					 testCasePath, ]
 				if testName.hasSuffix("-default-final") {
 					arguments.append("--default-final")
@@ -269,7 +276,7 @@ class BootstrappingTest: XCTestCase {
 		}
 
 		XCTAssertFalse(Compiler.hasIssues())
-		Compiler.printErrorsAndWarnings()
+		Compiler.printIssues()
 	}
 
 	func testTestCasesWithOtherSwiftVersions() {
@@ -341,7 +348,7 @@ class BootstrappingTest: XCTestCase {
 				}
 
 				XCTAssertFalse(Compiler.hasIssues())
-				Compiler.printErrorsAndWarnings()
+				Compiler.printIssues()
 			}
 		}
 		catch let error {

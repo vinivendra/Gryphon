@@ -1,15 +1,17 @@
 //
 // Copyright 2018 Vinicius Jorge Vendramini
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Hippocratic License, Version 2.1;
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// https://firstdonoharm.dev/version/2/1/license.md
 //
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// To the full extent allowed by law, this software comes "AS IS,"
+// WITHOUT ANY WARRANTY, EXPRESS OR IMPLIED, and licensor and any other
+// contributor shall not be liable to anyone for any damages or other
+// liability arising from, out of, or in connection with the sotfware
+// or this license, under any kind of legal claim.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
@@ -42,6 +44,29 @@ internal fun g2(a: Int = 0, closure: () -> Int) {
 internal fun f3(closure: () -> Unit) {
 }
 
+internal fun bar(closure: () -> Int) {
+}
+
+internal open class A {
+	open fun bar(closure: () -> Int) {
+	}
+}
+
+internal data class B(
+	val closure: () -> Int
+)
+
+internal fun Int.bar(closure: (Int) -> Int): Int {
+	return closure(this)
+}
+
+internal fun Int.foo(closure: (Int) -> Int): Int {
+	return closure(this)
+}
+
+internal fun foo(closure: (Int) -> Int) {
+}
+
 fun main(args: Array<String>) {
 	val printClosure: (String) -> Unit = { println(it) }
 
@@ -72,4 +97,47 @@ fun main(args: Array<String>) {
 	g1(closure = { 0 })
 	g2(closure = { 0 })
 	f3 { }
+	bar {
+			if (true) {
+				return@bar 1
+			}
+			else {
+				return@bar 0
+			}
+		}
+	A().bar {
+			if (true) {
+				return@bar 1
+			}
+			else {
+				return@bar 0
+			}
+		}
+	B {
+			if (true) {
+				return@B 1
+			}
+			else {
+				return@B 0
+			}
+		}
+	0.bar { a ->
+			if (true) {
+				return@bar a + 1
+			}
+
+			return@bar a + 1
+		}.foo { b ->
+			if (true) {
+				return@foo b + 1
+			}
+
+			return@foo b + 1
+		}
+	foo {
+			when (it) {
+				0 -> 0
+				else -> 1
+			}
+		}
 }
