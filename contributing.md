@@ -121,7 +121,7 @@ Then execute it using:
 $ ./.build/<my_linux_identifier>/debug/Gryphon
 ````
 
-Where `<my_linux_identifier>` is the name of a folder that can vary depending on your operating system (but it's usually the only folder available).
+Where `<my_linux_identifier>` is the name of a folder that can vary depending on your operating system. If in doubt, run `swift build --show-bin-path` to show the path to the executable.
 
 A common invocation involves translating the `test.swift` file and printing its intermediate ASTs for debugging:
 
