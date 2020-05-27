@@ -124,7 +124,7 @@ errorsOutput="$allFailures"\
 
 # If output isn't empty
 if [[ $errorsOutput == "" ]]; then
-	echo "✅ Done."
+	echo "✅ All tests passed."
 else
 	echo ""
 	echo "🚨 Tests failed:"
