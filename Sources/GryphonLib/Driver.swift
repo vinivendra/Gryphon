@@ -254,6 +254,9 @@ public class Driver {
 			{
 				try Utilities.createFile(atPath: outputFilePath, containing: output)
 			}
+			else {
+				Compiler.output(output)
+			}
 		}
 
 		if settings.shouldEmitRawAST {
