@@ -52,9 +52,13 @@ When interacting with the maintainers on GitHub, you can usually expect a respon
 
 Since the public release of the preview (version 0.5), Gryphon uses the `master` branch as its (reasonably) stable branch. This what users will access when installing Gryphon for the first time. Day-to-day development is done on the `development` branch, which is also where pull requests should be made. The `development` branch is merged onto `master` regularly, on a sort-of-weekly basis, resulting in sort-of-weekly updates for the users. The `gh-pages` branch contains the code for this website. Any other branches are works-in-progress that will eventually merge into one of these three main branches.
 
+### Using GitPod
+
+If you want a quick start to the project, Gryphon supports using GitPod for development. GitPod is a platform that offers an online IDE and terminal that helps users contribute to open source projects. The GitPod build is based on the project's Dockerfile, so any instructions for using Docker in the tutorials should also work in GitPod. You can access a GitPod workspace setup for using Gryphon with [this link](http://gitpod.io/#github.com/vinivendra/Gryphon).
+
 ### Setting up the environment on macOS
 
-Start by cloning the repository, either directly or through a fork you own. Remember to use the `development` branch if you want to change code and the `gh-pages` branch if you want to change the website.
+Start by cloning the repository, either directly or through a fork you own (if you don't know what a fork is, read one of the tutorials on making a pull request, like [this one](http://www.firsttimersonly.com/) or [this one](http://makeapullrequest.com/)). Remember to use the `development` branch if you want to change code and the `gh-pages` branch if you want to change the website.
 
 ```` bash
 $ git clone https://github.com/vinivendra/Gryphon.git --branch development
@@ -106,7 +110,7 @@ You should see the Kotlin translation of the `test.swift` file show up in Xcode'
 
 ### Setting up the environment on Linux and Docker
 
-Since Linux and Docker don't have access to Xcode, the setup is pretty much the same for both. Start by cloning the repository if you haven't done it yet, either directly or through a fork you own. Remember to use the `development` branch if you want to change code and the `gh-pages` branch if you want to change the website.
+Since Linux and Docker don't have access to Xcode, the setup is pretty much the same for both. Start by cloning the repository if you haven't done it yet, either directly or through a fork you own (if you don't know what a fork is, read one of the tutorials on making a pull request, like [this one](http://www.firsttimersonly.com/) or [this one](http://makeapullrequest.com/)). Remember to use the `development` branch if you want to change code and the `gh-pages` branch if you want to change the website.
 
 ```` bash
 $ git clone https://github.com/vinivendra/Gryphon.git --branch development

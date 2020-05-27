@@ -33,13 +33,15 @@ This guide will also assume you have:
 
 3. And [Android Studio](https://developer.android.com/studio/), for creating Android apps.
 
-### On Docker
+### On Docker or GitPod
 
 Gryphon comes with a Dockerfile that configures a [Docker](https://www.docker.com) container. The container is based on the official `swift:latest` container, and includes the Swift compiler, the Kotlin compiler, and the Java Runtime Environment.
 
 Docker users can translate any Swift files that don't import the iOS frameworks, but they don't have access to Xcode or the iOS SDK. Since there's no Xcode support, the Docker container does not include Ruby or Xcodeproj.
 
-To clone the repository and build the Docker container:
+The Docker container can be quickly accessed using GitPod. There's a [GitPod workspace](http://gitpod.io/#github.com/vinivendra/Gryphon) that offers an online IDE and terminal where the project is already set up.
+
+Alternatively, you can clone the repository and build the Docker container locally:
 
 ```` bash
 $ git clone https://github.com/vinivendra/Gryphon.git
