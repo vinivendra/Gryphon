@@ -26,7 +26,6 @@ echo "➡️ [3/4] Compiling Kotlin files..."
 
 if bash buildBootstrappedTranspiler.sh 2> .gryphon/kotlinErrors.errors
 then
-	swift .gryphon/scripts/mapKotlinErrorsToSwift.swift < .gryphon/kotlinErrors.errors
 	echo "✅ Done."
 	echo ""
 else

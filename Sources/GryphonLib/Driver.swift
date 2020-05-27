@@ -337,7 +337,9 @@ public class Driver {
 								columnStart: 1, columnEnd: 1))
 					}
 
-					Compiler.output(kotlinCode)
+					if !settings.quietModeIsOn {
+						Compiler.output(kotlinCode)
+					}
 				}
 			}
 		}
