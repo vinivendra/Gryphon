@@ -64,7 +64,12 @@ function runTest {
 	# Avoids matches to "[22/47] Compiling GryphonLibTests ASTDumpDecoderTest.swift"
 	failures=$(echo "$failures" | grep "^[^\[]")
 
-	allFailures+=$failures
+	if [[ $failures == "" ]]; then
+		: # Do nothing
+	else
+		allFailures+=$failures
+		allFailures+=$'\n'
+	fi
 }
 
 exec 3<> /tmp/foo  #open fd 3.
