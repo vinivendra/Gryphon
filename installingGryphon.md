@@ -89,7 +89,7 @@ We can try out the installation by checking its version:
 
 ```` bash
 $ gryphon --version
-Gryphon version 0.5.1
+Gryphon version 0.6
 ````
 
 If everything works, then the cloned repository can be deleted:
