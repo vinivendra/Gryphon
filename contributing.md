@@ -11,12 +11,10 @@ Contributions can take many forms: you can share the project with other develope
 - [Reporting bugs and requesting features](contributing.html#reporting-bugs-and-requesting-features)
 - [Improving the website and tutorials](contributing.html#improving-the-website-and-tutorials)
 - [Contributing code](contributing.html#contributing-code)
-	- [Setting up the environment on macOS](contributing.html#setting-up-the-environment-on-macos)
-	- [Setting up the environment on Linux and Docker](contributing.html#setting-up-the-environment-on-linux-and-docker)
+	- [Setting up the environment](contributing.html#setting-up-the-environment-on-macos)
 	- [Running the tests](contributing.html#running-the-tests)
-		- [Unit tests](contributing.html#unit-tests)
-		- [Bootstrapping test](contributing.html#bootstrapping-test)
-		- [Acceptance and Performance tests](contributing.html#acceptance-and-performance-tests)
+		- [Manual setup](contributing.html#manual-setup)
+		- [About the bootstrapping test](contributing.html#about-the-bootstrapping-test)
 		- [Additional Docker tests](contributing.html#additional-docker-tests)
 	- [Style](contributing.html#style)
 - [How Gryphon works](contributing.html#how-gryphon-works)
@@ -31,7 +29,7 @@ Reporting bugs and requesting features are very important parts of contributing 
 
 New GitHub issues should be created only for suggesting and discussing ways to improve Gryphon; if you have questions about using Gryphon or need some technical support, try sending a message [on Twitter](https://twitter.com/gryphonblog) or [via email](mailto:gryphontranspiler@gmail.com) instead.
 
-If you find a problem that you think shouldn't be public (for instance, a security issue that someone might exploit if they knew it existed), please *do not* open an issue; just send an email [directly to the maintainers](mailto:gryphontranspiler@gmail.com).
+If you find a problem that you think shouldn't be public (for instance, a security issue that someone might exploit if they knew it existed), please *do not* open an issue; instead, send an email [directly to the maintainers](mailto:gryphontranspiler@gmail.com).
 
 ## Improving the website and tutorials
 
@@ -56,14 +54,20 @@ Since the public release of the preview (version 0.5), Gryphon uses the `master`
 
 ### Setting up the environment on macOS
 
-Start by cloning the repository:
+Start by cloning the repository, either directly or through a fork you own. Remember to use the `development` branch if you want to change code and the `gh-pages` branch if you want to change the website.
 
 ```` bash
 $ git clone https://github.com/vinivendra/Gryphon.git --branch development
 $ cd Gryphon
 ````
 
-Gryphon is set up as a Swift package, so the Swift compiler can be used to generate an Xcode project for navigating the code:
+Gryphon is set up as a Swift package, so you can start looking at the code right away by opening it on Xcode...
+
+```` bash
+$ open Package.swift -a Xcode
+````
+
+...or manually creating an Xcode project:
 
 ```` bash
 $ swift package generate-xcodeproj
@@ -102,7 +106,7 @@ You should see the Kotlin translation of the `test.swift` file show up in Xcode'
 
 ### Setting up the environment on Linux and Docker
 
-Since Linux and Docker don't have access to Xcode, the setup is pretty much the same for both. Start by cloning the repository if you haven't done it yet:
+Since Linux and Docker don't have access to Xcode, the setup is pretty much the same for both. Start by cloning the repository if you haven't done it yet, either directly or through a fork you own. Remember to use the `development` branch if you want to change code and the `gh-pages` branch if you want to change the website.
 
 ```` bash
 $ git clone https://github.com/vinivendra/Gryphon.git --branch development
@@ -121,7 +125,7 @@ Then execute it using:
 $ ./.build/<my_linux_identifier>/debug/Gryphon
 ````
 
-Where `<my_linux_identifier>` is the name of a folder that can vary depending on your operating system. If in doubt, run `swift build --show-bin-path` to show the path to the executable.
+Where `<my_linux_identifier>` is the name of a folder that can vary depending on your operating system. If in doubt, run `swift build --show-bin-path` to show the path to the executable's directory.
 
 A common invocation involves translating the `test.swift` file and printing its intermediate ASTs for debugging:
 
@@ -129,34 +133,33 @@ A common invocation involves translating the `test.swift` file and printing its 
 $ ./.build/<my_linux_identifier>/debug/Gryphon test.swift --write-to-console -emit-swiftAST -emit-rawAST -emit-AST -emit-kotlin
 ````
 
-You can run automated tests on Gryphon (described below) using the following command:
-
-```` bash
-$ swift test
-````
-
-To run a specific test, use the `--filter` option followed by a regular expression that matches the desired test:
-
-```` bash
-$ swift test --filter IntegrationTest
-````
-
 ## Running the tests
 
-### Setup
+The Gryphon project contains several test classes, with a few separations:
+- **Unit tests**, which account for most of the test classes, are the ones that finish quickly and can be used often. (These aren't really unit tests [strictly speaking](https://en.wikipedia.org/wiki/Unit_testing), that's just what they're called internally).
+- **Bootstrapping tests**, which involve making Gryphon translate its own codebase, take a long time to set up and run - but also find a lot of bugs. Run these tests at least once before creating a pull request.
+- **Acceptance tests**, responsible for compiling the translated code, running it, then comparing its output to an `.output` file to make sure everything compiles and runs correctly. These tests also take a long time. You should run them at least once before creating a pull request, but only if you changed any Kotlin files in the `Test cases` folder.
+- **Performance tests**, which measure how long Gryphon takes to translate Swift files all the way. Use these only if you're trying to improve Gryphon's performance: run them once before your changes to record the original times, then run them again after the changes to measure your improvements.
 
-The automated tests require Gryphon to be initialized in the current folder. To do that, run:
+A usual development cycle can involve running unit tests often, then running the bootstrap tests just before committing the changes. Acceptance and performance tests are rarely needed - only in the specific situations mentioned above.
+
+The easiest way to run the test suite is with the test script:
 
 ```` bash
-$ swift build
-$ ./.build/<my_os_identifier>/debug/Gryphon clean init -xcode
+$ bash runTests.sh
 ````
 
-On macOS, Gryphon tests support for different Swift versions using available toolchains. Currently, it supports Swift 5.1 and 5.2. This will happen automatically if you have the toolchains installed. You can check their availability with:
+This script sets up and runs the unit tests. You can add the `-b` flag if you want to include the bootstrapping tests, and the `-a` flag to include the acceptance tests:
+
+```` bash
+$ bash runTests.sh -a -b
+````
+
+On macOS, Gryphon also tests support for different Swift versions using available toolchains. Currently, it supports Swift 5.1 and 5.2. This will happen automatically if you have the toolchains installed. You can check their availability with:
 
 ```` bash
 $ xcrun swift --version
-Apple Swift version 5.2.2...
+Apple Swift version 5.2...
 
 $ xcrun --toolchain "swift 5.1" swift --version
 Apple Swift version 5.1...
@@ -164,30 +167,44 @@ Apple Swift version 5.1...
 
 If they're not available, you can download them on [swift.org](https://swift.org/download/#releases) under `Releases > Swift 5.x`.
 
-If the toolchains aren't installed a few tests will fail as a warning that a Swift version isn't being tested, but that is to be expected. Using toolchains to test different Swift versions is recommended but not required for contributing code.
+If one of the toolchains isn't installed you will see a few warnings saying that a Swift version isn't being tested, but that is to be expected. Using toolchains to test different Swift versions is recommended but not required for contributing code.
 
-### Unit tests
+### Manual setup
 
-The Gryphon project contains several test classes. However, not all of them are meant to be executed every time - some have specific purposes, and some take too long. These tests can be removed from the normal unit tests suite to keep it fast so that it can be used often. They will be explained in the following sections.
+The test script performs a lot of setup work, which can make testing a bit slower than it needs to be. It also doesn't integrate with Xcode, which can be useful for debugging. Here's how to setup the tests manually.
 
-#### On macOS:
+All automated tests require Gryphon to be initialized in the current folder. To do that, run:
+
+```` bash
+$ swift build
+$ ./.build/<my_os_identifier>/debug/Gryphon clean init -xcode
+````
+
+Include the `-xcode` flag even on Linux and Docker to ensure all the necessary files are being generated.
+
+The Bootstrapping test also requires some extra setup, which you can [read about below](contributing.html#aboute-the-bootstrapping-test).
+
+#### Manual setup on macOS:
 
 1. On Xcode, hit **⌘+⇧+,** to bring up the scheme editor:
 2. Select `Test` on the left-hand side, then `Info` on the top;
 3. Click the small triangle on the left of `GryphonLibTests` to open the test list;
-4. Uncheck the `AcceptanceTest`, the `BootstrappingTest` and the `PerformanceTest`;
-5. Click close, then hit `**⌘+U**` to run the test suite.
+4. Uncheck the `AcceptanceTest`, the `BootstrappingTest` and the `PerformanceTest` (the remaining tests are the unit tests);
+5. Click close, then hit **⌘+U** to run the test suite. If you want to run one of the unchecked tests, hit **⌘+6**, right-click the selected test, then click "Run".
 
 
-#### On Linux and Docker:
+#### Manual setup on Linux and Docker:
 
 1. Open the `Tests/GryphonLibTests/XCTestManifests.swift` file;
-2. Make sure the `AcceptanceTest` and the `BootstrappingTest` are commented;
-3. Run `swift test` on the terminal to execute the test suite.
+2. Make sure the `AcceptanceTest` and the `BootstrappingTest` are commented (the `PerformanceTest` normally isn't included in this file);
+3. Run `swift test` on the terminal to execute the unit test suite. If you want to run one of the other tests, uncomment it then run it with the `--filter` option:
+	```` bash
+	$ swift test --filter Acceptance
+	````
 
-### Bootstrapping test
+### About the bootstrapping test
 
-The bootstrapping tests are a way of testing Gryphon with more complicated code than the files in the `Test cases` folder. It consists of making Gryphon translate its own source code into Kotlin, then compiling the result and comparing it to the original Swift executable. This includes seeing if the Kotlin version produces the same output files for each test case, and checking that it passes the same unit tests.
+The bootstrapping tests are a way of testing Gryphon with more complicated code than the files in the `Test cases` folder. They consist of making Gryphon translate its own source code into Kotlin, then compiling the result and comparing it to the original Swift executable. This includes seeing if the Kotlin version produces the same output files for each test case, and checking that it passes the same unit tests.
 
 ![A diagram illustrating the bootstrapping tests](assets/images/contributing/bootstrapTest.png)
 
@@ -197,13 +214,7 @@ The `prepareForBootstrapTests.sh` script is responsible for translating Gryphon'
 $ bash prepareForBootstrapTests.sh
 ````
 
-Once the script finishes:
-- On macOS, open Xcode, hit **⌘+6** to open the tests navigator, right-click the `BootstrappingTest` and select `Run "BootstrappingTest"`.
-- On Linux and Docker, uncomment the `BootstrappingTest` from the `XCTestManifests.swift` file, the run `swift test --filter Bootstrap`.
-
-If any files were out of date (for instance, because the `prepareForBootstrapTests.sh` script wasn't executed), this test will raise an error.
-
-Because the script takes a long time to finish, this test is typically only run before committing changes.
+If any files are out of date when the test runs (for instance, because the `prepareForBootstrapTests.sh` script wasn't executed), it will raise an error.
 
 If the test starts raising unexpected errors, try resetting the environment:
 
@@ -212,17 +223,9 @@ If the test starts raising unexpected errors, try resetting the environment:
 3. Run `bash prepareForBootstrapTests.sh`;
 4. Run only the `BootstrappingTest`.
 
-### Acceptance and Performance tests
-
-These two test classes should only be executed in specific situations.
-
-Acceptance tests are used for making sure that the Kotlin translations of the Swift test cases in the `Test cases` folder work as expected. This is done by compiling the test cases, running them and checking if they produce the expected output (as recorded in the `.output` files). Run them whenever a `.kt` file in the `Test cases` folder is changed.
-
-Performance tests are used only when working on a feature that may significantly impact performance. Run them before making your changes to get a baseline for you computer, then run them after the changes for comparison.
-
 ### Additional Docker tests
 
-If you are using macOS, it is recommended to also run the tests in a Docker container to make sure they work on Linux. To do that, follow the instructions on [setting up the Docker container](installingGryphon.html#on-docker), then run any appropriate tests using the "on Linux and Docker" instructions above.
+If you are using macOS, it is recommended that you also run the tests in a Docker container to make sure they work on Linux. To do that, follow the instructions on [setting up the Docker container](installingGryphon.html#on-docker), then run any appropriate tests using the either the `runTests.sh` script or the "on Linux and Docker" instructions in this file.
 
 ## Style
 
