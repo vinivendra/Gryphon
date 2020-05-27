@@ -1,0 +1,5 @@
+tasks:
+- command: bash install.sh && gryphon clean init -xcode
+
+image:
+  file: Dockerfile
