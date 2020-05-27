@@ -70,6 +70,7 @@ class BootstrappingTest: XCTestCase {
 					 "--indentation=t",
 					 "-avoid-unicode",
 					 "--write-to-console",
+					 "--quiet",
 					 testCasePath, ]
 				if testName.hasSuffix("--default-final") {
 					arguments.append("--default-final")
@@ -97,7 +98,7 @@ class BootstrappingTest: XCTestCase {
 		}
 
 		XCTAssertFalse(Compiler.hasIssues())
-		Compiler.printErrorsAndWarnings()
+		Compiler.printIssues()
 	}
 
 	func testSwiftTranslatorOutput() {
@@ -127,6 +128,7 @@ class BootstrappingTest: XCTestCase {
 					 "--indentation=t",
 					 "-avoid-unicode",
 					 "--write-to-console",
+					 "--quiet",
 					 testCasePath, ]
 				if testName.hasSuffix("-default-final") {
 					arguments.append("--default-final")
@@ -154,7 +156,7 @@ class BootstrappingTest: XCTestCase {
 		}
 
 		XCTAssertFalse(Compiler.hasIssues())
-		Compiler.printErrorsAndWarnings()
+		Compiler.printIssues()
 	}
 
 	func testTranspilationPassOutput() {
@@ -184,6 +186,7 @@ class BootstrappingTest: XCTestCase {
 					 "--indentation=t",
 					 "-avoid-unicode",
 					 "--write-to-console",
+					 "--quiet",
 					 testCasePath, ]
 				if testName.hasSuffix("-default-final") {
 					arguments.append("--default-final")
@@ -211,7 +214,7 @@ class BootstrappingTest: XCTestCase {
 		}
 
 		XCTAssertFalse(Compiler.hasIssues())
-		Compiler.printErrorsAndWarnings()
+		Compiler.printIssues()
 	}
 
 	func testKotlinTranslatorOutput() {
@@ -241,6 +244,7 @@ class BootstrappingTest: XCTestCase {
 					 "--indentation=t",
 					 "-avoid-unicode",
 					 "--write-to-console",
+					 "--quiet",
 					 testCasePath, ]
 				if testName.hasSuffix("-default-final") {
 					arguments.append("--default-final")
@@ -270,7 +274,7 @@ class BootstrappingTest: XCTestCase {
 		}
 
 		XCTAssertFalse(Compiler.hasIssues())
-		Compiler.printErrorsAndWarnings()
+		Compiler.printIssues()
 	}
 
 	func testTestCasesWithOtherSwiftVersions() {
@@ -342,7 +346,7 @@ class BootstrappingTest: XCTestCase {
 				}
 
 				XCTAssertFalse(Compiler.hasIssues())
-				Compiler.printErrorsAndWarnings()
+				Compiler.printIssues()
 			}
 		}
 		catch let error {

@@ -1,5 +1,6 @@
 ./.build/debug/Gryphon \
 	--indentation=4 \
+	--quiet \
 	\
 	Sources/GryphonLib/ASTDumpDecoder.swift \
 	Sources/GryphonLib/AuxiliaryFileContents.swift \

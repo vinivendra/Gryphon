@@ -658,8 +658,7 @@ internal extension ASTDumpDecoder {
 					let string = (readDeclarationLocation() ?? readDeclaration())!
 					keyValueAttributes[key] = string
 				}
-				else if key == "bind"
-				{
+				else if key == "bind" {
 					let string = readDeclarationLocation() ?? readIdentifier()
 					keyValueAttributes[key] = string
 				}
@@ -667,8 +666,8 @@ internal extension ASTDumpDecoder {
 					let string = readIdentifierList()
 					keyValueAttributes[key] = string
 				}
-				// Capture lists are enclosed in parentheses
 				else if key == "captures" {
+					// Capture lists are enclosed in parentheses
 					let string = readIdentifier()
 					keyValueAttributes[key] = string
 				}
@@ -700,7 +699,15 @@ internal extension ASTDumpDecoder {
 			// Add standalone attributes
 			else {
 				let attribute = readStandaloneAttribute()
-				standaloneAttributes.append(attribute)
+
+				if attribute.hasPrefix("anonname=") {
+					// Anonname attributes vary from execution to execution, which can cause some
+					// headaches with the bootstrap tests
+					keyValueAttributes["anonname"] = "<anonname>"
+				}
+				else {
+					standaloneAttributes.append(attribute)
+				}
 			}
 		}
 

@@ -114,8 +114,16 @@ public class Compiler {
 		issues = []
 	}
 
-	public static func printErrorsAndWarnings() {
-		let sortedIssues = issues.sorted { a, b in
+	public static func printIssues(skippingWarnings: Bool = false) {
+		let issuesToPrint: List<CompilerIssue>
+		if skippingWarnings {
+			issuesToPrint = issues.filter { $0.isError }
+		}
+		else {
+			issuesToPrint = issues
+		}
+
+		let sortedIssues = issuesToPrint.sorted { a, b in
 				a.isBeforeIssueInLines(b)
 			}.sorted { a, b in
 				a.isBeforeIssueInSourceFile(b)
