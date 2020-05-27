@@ -4,6 +4,7 @@ tasks:
         ./gryphon clean init -xcode &&
         echo "Welcome to Gryphon!" &&
         echo "If you don't know where to start, try running \"./gryphon test.swift\"."
+  command: unset JAVA_TOOL_OPTIONS
 
 image:
   file: Dockerfile
