@@ -94,7 +94,7 @@ class TestUtilities {
 			guard let toolchain =
 				try TranspilationContext.getToolchain(forSwiftVersion: swiftVersion) else
 			{
-				print("🚨 Toolchain for Swift \(swiftVersion) not found.")
+				print("⚠️ Toolchain for Swift \(swiftVersion) not found.")
 				continue
 			}
 
