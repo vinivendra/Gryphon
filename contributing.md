@@ -94,7 +94,11 @@ These arguments will make Gryphon translate the `test.swift` file in the current
 4. Click `Add`.
     ![Xcode file selector window.](assets/images/contributing/contributing3.png)
 
-Once all of that is configured, hit **⌘+R** to run Gryphon. You should see the Kotlin translation of the `test.swift` file show up in Xcode's console, along with other intermediate ASTs if you added the extra arguments.
+Once all of that is configured, make sure the `Gryphon` scheme is set to run on `My Mac`, then hit **⌘+R** to run Gryphon.
+
+![Xcode's Gryphon target set to run on the My Mac device.](assets/images/contributing/contributing4.png)
+
+You should see the Kotlin translation of the `test.swift` file show up in Xcode's console, along with other intermediate ASTs if you added the extra arguments.
 
 ### Setting up the environment on Linux and Docker
 
