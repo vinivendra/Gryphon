@@ -2577,12 +2577,13 @@ public class SwiftTranslator {
 		let parameters: MutableList<LabeledType> = []
 		if let parameterList = parameterList {
 			for parameter in parameterList.subtrees {
+				if parameter["anonname"] != nil {
+					continue
+				}
+
 				if let name = parameter.standaloneAttributes.first,
 					let typeName = parameter["interface type"]
 				{
-					if name.hasPrefix("anonname=0x") {
-						continue
-					}
 					parameters.append(LabeledType(label: name, typeName: cleanUpType(typeName)))
 				}
 				else {
