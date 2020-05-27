@@ -208,7 +208,7 @@ class UtilitiesTest: XCTestCase {
 
 	func testReadFile() {
 		do {
-			let contents = try Utilities.readFile("Readme.md")
+			let contents = try Utilities.readFile("README.md")
 			XCTAssert(contents.contains("Gryphon"))
 			XCTAssertFalse(contents.contains("blahblahblah"))
 		}
@@ -218,7 +218,7 @@ class UtilitiesTest: XCTestCase {
 	}
 
 	func testFileExists() {
-		XCTAssert(Utilities.fileExists(at: "Readme.md"))
+		XCTAssert(Utilities.fileExists(at: "README.md"))
 		XCTAssertFalse(Utilities.fileExists(at: "foo.txt"))
 	}
 
