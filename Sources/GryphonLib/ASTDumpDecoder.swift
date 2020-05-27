@@ -658,8 +658,7 @@ internal extension ASTDumpDecoder {
 					let string = (readDeclarationLocation() ?? readDeclaration())!
 					keyValueAttributes[key] = string
 				}
-				else if key == "bind"
-				{
+				else if key == "bind" {
 					let string = readDeclarationLocation() ?? readIdentifier()
 					keyValueAttributes[key] = string
 				}
