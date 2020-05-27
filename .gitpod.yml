@@ -1,5 +1,9 @@
 tasks:
-- command: bash install.sh && gryphon clean init -xcode
+- init: swift build &&
+        ln -s .build/debug/Gryphon gryphon &&
+        ./gryphon clean init -xcode &&
+        echo "Welcome to Gryphon!" &&
+        echo "If you don't know where to start, try running \"./gryphon test.swift\"."
 
 image:
   file: Dockerfile
