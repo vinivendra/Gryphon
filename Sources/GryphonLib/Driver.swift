@@ -569,7 +569,13 @@ public class Driver {
 							usingToolchain: toolchain,
 							simulator: nil)
 					}
-					catch { }
+					catch let error {
+						Compiler.logError(
+							"Warning - xcodebuild reported an error creating the AST dump " +
+								"script:\n" +
+								"\(error)\n" +
+								"Trying to update the AST dumps again...")
+					}
 
 					try updateASTDumps(
 						forFiles: allSourceFiles,
