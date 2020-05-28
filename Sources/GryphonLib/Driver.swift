@@ -43,6 +43,7 @@ public class Driver {
 	public static let supportedArgumentsWithParameters: List = [
 		"--indentation=",
 		"--toolchain=",
+		"--target=",
 		"-line-limit=",
 	]
 
@@ -139,6 +140,8 @@ public class Driver {
 		}
 		try TranspilationContext.checkToolchainSupport(toolchain)
 
+		let target = getTarget(inArguments: arguments)
+
 		let maybeXcodeProject = getXcodeProject(inArguments: arguments)
 
 		if arguments.contains("init") {
@@ -178,6 +181,7 @@ public class Driver {
 
 			try createASTDumpsScript(
 				forXcodeProject: xcodeProject,
+				forTarget: target,
 				usingToolchain: toolchain,
 				simulator: nil)
 
@@ -566,6 +570,7 @@ public class Driver {
 						// with an "AST dump failure" message.
 						try createASTDumpsScript(
 							forXcodeProject: xcodeProject,
+							forTarget: getTarget(inArguments: arguments),
 							usingToolchain: toolchain,
 							simulator: nil)
 					}
@@ -589,8 +594,10 @@ public class Driver {
 					if !outdatedASTDumpsAfterSecondUpdate.isEmpty {
 						throw GryphonError(
 							errorMessage: "Unable to update AST dumps for files: " +
-								outdatedASTDumpsAfterSecondUpdate.joined(separator: ", ") + ". " +
-							"Make sure the files are being compiled by Xcode.")
+								outdatedASTDumpsAfterSecondUpdate.joined(separator: ", ") + ".\n" +
+								" - Make sure the files are being compiled by Xcode.\n" +
+								" - Make sure Gryphon is translating the right Xcode target " +
+									"using `--target=<target name>`.")
 					}
 				}
 				else {
@@ -773,6 +780,7 @@ public class Driver {
 	/// fails, looks for an installed simulator and tries again recursively.
 	static func createASTDumpsScript(
 		forXcodeProject xcodeProjectPath: String,
+		forTarget target: String?,
 		usingToolchain toolchain: String?,
 		simulator: String?)
 		throws
@@ -787,6 +795,11 @@ public class Driver {
 		if let userToolchain = toolchain {
 			arguments.append("-toolchain")
 			arguments.append(userToolchain)
+		}
+
+		if let userTarget = target {
+			arguments.append("-target")
+			arguments.append(userTarget)
 		}
 
 		if let simulatorVersion = simulator {
@@ -823,7 +836,9 @@ public class Driver {
 					}
 
 					if let iOSVersion = maybeiOSVersion {
-						try createASTDumpsScript(forXcodeProject: xcodeProjectPath,
+						try createASTDumpsScript(
+							forXcodeProject: xcodeProjectPath,
+							forTarget: target,
 							usingToolchain: toolchain,
 							simulator: iOSVersion)
 						return
@@ -1072,6 +1087,15 @@ public class Driver {
 		return nil
 	}
 
+	static func getTarget(inArguments arguments: List<String>) -> String? {
+		if let targetArgument = arguments.first(where: { $0.hasPrefix("--target=") }) {
+			return String(targetArgument.dropFirst("--target=".count))
+		}
+		else {
+			return nil
+		}
+	}
+
 	static func printVersion() {
 		Compiler.output("Gryphon version \(gryphonVersion)")
 	}
@@ -1146,6 +1170,9 @@ Main usage:
 
       ↪️  --toolchain=<toolchain name>
             Specify the toolchain to be used when calling the Swift compiler.
+
+      ↪️  --target=<target name>
+            Specify the target to be built when translating with Xcode.
 
 Advanced subcommands:
   ➡️  clean
