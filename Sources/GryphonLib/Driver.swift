@@ -87,6 +87,11 @@ public class Driver {
 		withArguments arguments: List<String>)
 		throws -> Any?
 	{
+		let isVerbose = arguments.contains("--verbose")
+		Compiler.shouldLogProgress = isVerbose
+
+		Compiler.log("ℹ️  Gryphon - version \(gryphonVersion)")
+
 		let badArguments = unsupportedArguments(in: arguments)
 		if !badArguments.isEmpty {
 			let argumentsString = badArguments.map { "\"\($0)\"" }.joined(separator: ", ")
@@ -106,9 +111,6 @@ public class Driver {
 			printVersion()
 			return nil
 		}
-
-		let isVerbose = arguments.contains("--verbose")
-		Compiler.shouldLogProgress = isVerbose
 
 		if arguments.contains("clean") {
 
