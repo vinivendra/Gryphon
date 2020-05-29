@@ -213,17 +213,21 @@ extension Utilities {
             // gryphon insert: libraryUpdateLock.release()
         }
 
+		Compiler.logStart("🧑‍💻  Processing the templates library...")
+
 		if Utilities.needsToDumpASTForSwiftFiles(
 			[SupportingFile.gryphonTemplatesLibrary.name],
 			in: SupportingFile.gryphonTemplatesLibrary.folder ?? ".",
 			forSwiftVersion: transpilationContext.swiftVersion)
 		{
+			Compiler.logStart("🧑‍💻  Updating the templates library's AST dump...")
 			try Driver.updateASTDumps(
 				forFiles: [SupportingFile.gryphonTemplatesLibrary.relativePath],
 				forXcodeProject: nil,
 				forTarget: nil,
 				usingToolchain: transpilationContext.toolchainName,
 				shouldTryToRecoverFromErrors: true)
+			Compiler.logEnd("✅  Done updating the templates library's AST dump.")
 
 			if Utilities.needsToDumpASTForSwiftFiles(
 				[SupportingFile.gryphonTemplatesLibrary.name],
@@ -235,6 +239,7 @@ extension Utilities {
 			}
 		}
 
+		Compiler.logStart("🧑‍💻  Transpiling and running passes...")
         let astArray = try Compiler.transpileGryphonRawASTs(
 			fromASTDumpFiles: [
 				SupportingFile.pathOfSwiftASTDumpFile(
@@ -246,8 +251,9 @@ extension Utilities {
 		_ = RecordTemplatesTranspilationPass(
 			ast: ast,
 			context: transpilationContext).run()
+		Compiler.logEnd("✅  Done transpiling and running passes.")
 
-        Compiler.log("\t* Done!")
+		Compiler.logEnd("✅  Done processing the templates library.")
     }
 
 	static internal func needsToDumpASTForSwiftFiles(

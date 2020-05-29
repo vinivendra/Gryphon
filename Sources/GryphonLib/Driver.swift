@@ -87,6 +87,11 @@ public class Driver {
 		withArguments arguments: List<String>)
 		throws -> Any?
 	{
+		let isVerbose = arguments.contains("--verbose")
+		Compiler.shouldLogProgress = isVerbose
+
+		Compiler.log("ℹ️  Gryphon - version \(gryphonVersion)")
+
 		let badArguments = unsupportedArguments(in: arguments)
 		if !badArguments.isEmpty {
 			let argumentsString = badArguments.map { "\"\($0)\"" }.joined(separator: ", ")
@@ -107,12 +112,11 @@ public class Driver {
 			return nil
 		}
 
-		let isVerbose = arguments.contains("--verbose")
-		Compiler.shouldLogProgress(if: isVerbose)
-
 		if arguments.contains("clean") {
+
+			Compiler.logStart("🧑‍💻  Deleting Gryphon files...")
 			cleanup()
-			Compiler.log("Cleanup successful.")
+			Compiler.logEnd("✅  Done deleting Gryphon files.")
 
 			if !arguments.contains("init") {
 				return nil
@@ -120,10 +124,14 @@ public class Driver {
 		}
 
 		if arguments.contains("generate-libraries") {
+			Compiler.logStart("🧑‍💻  Generating libraries...")
 			try generateLibraries()
-			Compiler.log("Generated Gryphon libraries.")
+			Compiler.logEnd("✅  Done generating libraries.")
+
 			return nil
 		}
+
+		Compiler.logStart("🧑‍💻  Checking Xcode arguments...")
 
 		// Get the chosen toolchain, if there is one
 		let toolchain: String?
@@ -139,26 +147,39 @@ public class Driver {
 		else {
 			toolchain = nil
 		}
+
+		Compiler.logStart("🧑‍💻  Checking toolchain support...")
 		try TranspilationContext.checkToolchainSupport(toolchain)
+		let swiftVersion = try TranspilationContext.getVersionOfToolchain(toolchain)
+		Compiler.logEnd("✅  Done checking.")
 
 		if let chosenToolchain = toolchain {
-			Compiler.log("ℹ️\tUsing toolchain \(chosenToolchain).")
+			Compiler.log(
+				"ℹ️  Using toolchain \(chosenToolchain) with Swift \(swiftVersion).")
 		}
 		else {
-			Compiler.log("ℹ️\tUsing default toolchain.")
+			Compiler.log("ℹ️  Using default toolchain with Swift \(swiftVersion).")
 		}
 
 		// Get the chosen target, if there is one
 		let target = getTarget(inArguments: arguments)
 		if let chosenTarget = target {
-			Compiler.log("ℹ️\tUsing target \(chosenTarget).")
+			Compiler.log("ℹ️  Using target \(chosenTarget).")
 		}
 		else {
-			Compiler.log("ℹ️\tUsing default target.")
+			Compiler.log("ℹ️  Using default target.")
 		}
 
-		//
+		// Get the Xcode project, if there is one
 		let maybeXcodeProject = getXcodeProject(inArguments: arguments)
+		if let xcodeProject = maybeXcodeProject {
+			Compiler.log("ℹ️  Using Xcode project \(xcodeProject).")
+		}
+		else {
+			Compiler.log("ℹ️  Not using Xcode.")
+		}
+
+		Compiler.logEnd("✅  Done checking Xcode arguments.")
 
 		if arguments.contains("init") {
 			// The `-xcode` flag forces the initialization to add Xcode files to the
@@ -167,9 +188,8 @@ public class Driver {
 			let shouldInitializeXcodeFiles = (maybeXcodeProject != nil) ||
 				arguments.contains("-xcode")
 
+			Compiler.logStart("🧑‍💻  Initializing...")
 			try initialize(includingXcodeFiles: shouldInitializeXcodeFiles)
-
-			Compiler.log("✅ Initialization successful.")
 
 			if let xcodeProject = maybeXcodeProject {
 				let newArguments: MutableList = [xcodeProject]
@@ -194,6 +214,7 @@ public class Driver {
 				_ = try Driver.run(withArguments: makeTargetArguments)
 			}
 
+			Compiler.logEnd("✅  Done initializing.")
 			return nil
 		}
 
@@ -203,12 +224,15 @@ public class Driver {
 					"Please specify an Xcode project when using `setup-xcode`.")
 			}
 
+			Compiler.logStart("🧑‍💻  Creating AST dump script...")
+
 			try createASTDumpsScript(
 				forXcodeProject: xcodeProject,
 				forTarget: target,
 				usingToolchain: toolchain)
 
-			Compiler.log("✅ Xcode setup successful.")
+			Compiler.logEnd("✅  Done creating AST dump script.")
+
 			return nil
 		}
 		if arguments.contains("make-gryphon-targets") {
@@ -217,24 +241,34 @@ public class Driver {
 					"Please specify an Xcode project when using `make-gryphon-targets`.")
 			}
 
+			Compiler.logStart("🧑‍💻  Adding Gryphon targets to Xcode...")
+
 			try makeGryphonTargets(
 				forXcodeProject: xcodeProject,
 				forTarget: target,
 				usingToolchain: toolchain)
-			Compiler.log("✅ Gryphon target creation successful.")
+
+			Compiler.logEnd("✅  Done adding Gryphon targets.")
+
 			return nil
 		}
 
 		// If there's no build folder, create one, perform the transpilation, then delete it
 		if !Utilities.fileExists(at: SupportingFile.gryphonBuildFolder) {
-			return try performCompilationWithTemporaryBuildFolder(
+			Compiler.logStart("🧑‍💻  Starting compilation with temporary build folder...")
+			let result = try performCompilationWithTemporaryBuildFolder(
 				withArguments: arguments,
 				usingToolchain: toolchain)
+			Compiler.logEnd("✅  Done compilation with temporary build folder")
+			return result
 		}
 		else {
-			return try performCompilation(
+			Compiler.logStart("🧑‍💻  Starting compilation...")
+			let result = try performCompilation(
 				withArguments: arguments,
 				usingToolchain: toolchain)
+			Compiler.logEnd("✅  Done compilation.")
+			return result
 		}
 	}
 
@@ -244,10 +278,14 @@ public class Driver {
 		onFile inputFilePath: String)
 		throws -> Any?
 	{
+		let inputFileRelativePath = Utilities.getRelativePath(forFile: inputFilePath)
+
 		guard settings.shouldGenerateSwiftAST else {
+			Compiler.logStart("☑️  Nothing to do for \(inputFileRelativePath).")
 			return [] // gryphon value: listOf<Any>()
 		}
 
+		Compiler.logStart("🧑‍💻  Reading AST dump file for \(inputFileRelativePath)...")
 		let swiftASTDumpFile = SupportingFile.pathOfSwiftASTDumpFile(
 			forSwiftFile: inputFilePath,
 			swiftVersion: context.swiftVersion)
@@ -261,12 +299,15 @@ public class Driver {
 				"Error reading the AST for file \(inputFilePath). " +
 				"Running `gryphon init` or `gryphon init <xcode_project>` might fix this issue.")
 		}
+		Compiler.logEnd("✅  Done reading AST dump for \(inputFileRelativePath).")
 
-		// Generate the Swift AST
+		Compiler.logStart("🧑‍💻  Generating the Swift AST for \(inputFileRelativePath)...")
 		let swiftAST = try Compiler.generateSwiftAST(fromASTDump: swiftASTDump)
+		Compiler.logEnd("✅  Done generating Swift AST for \(inputFileRelativePath).")
 
 		guard settings.shouldGenerateRawAST else {
 			if settings.shouldEmitSwiftAST, !settings.quietModeIsOn {
+				Compiler.log("✍️  Printing Swift AST for \(inputFileRelativePath):")
 				let output = swiftAST.prettyDescription()
 				Compiler.output(output)
 			}
@@ -276,19 +317,23 @@ public class Driver {
 
 		let isMainFile = (inputFilePath == settings.mainFilePath)
 
+		Compiler.logStart("🧑‍💻  Generating the raw AST for \(inputFileRelativePath)...")
 		let gryphonRawAST = try Compiler.generateGryphonRawAST(
 			fromSwiftAST: swiftAST,
 			asMainFile: isMainFile,
 			withContext: context)
+		Compiler.logEnd("✅  Done generating raw ASt for \(inputFileRelativePath).")
 
 		if settings.shouldEmitSwiftAST {
 			let output = swiftAST.prettyDescription()
 			if let outputFilePath = gryphonRawAST.outputFileMap[.swiftAST],
 				!settings.forcePrintingToConsole
 			{
+				Compiler.log("✍️  Writing Swift AST to file for \(inputFileRelativePath)")
 				try Utilities.createFile(atPath: outputFilePath, containing: output)
 			}
 			else if !settings.quietModeIsOn {
+				Compiler.log("✍️  Printing Swift AST for \(inputFileRelativePath):")
 				Compiler.output(output)
 			}
 		}
@@ -298,9 +343,11 @@ public class Driver {
 			if let outputFilePath = gryphonRawAST.outputFileMap[.gryphonASTRaw],
 				!settings.forcePrintingToConsole
 			{
+				Compiler.log("✍️  Writing raw AST to file for \(inputFileRelativePath)")
 				try Utilities.createFile(atPath: outputFilePath, containing: output)
 			}
 			else if !settings.quietModeIsOn {
+				Compiler.log("✍️  Printing raw AST for \(inputFileRelativePath):")
 				Compiler.output(output)
 			}
 		}
@@ -309,9 +356,11 @@ public class Driver {
 			return gryphonRawAST
 		}
 
+		Compiler.logStart("🧑‍💻  Running first passes on AST for \(inputFileRelativePath)...")
 		let gryphonFirstPassedAST = try Compiler.generateGryphonASTAfterFirstPasses(
 			fromGryphonRawAST: gryphonRawAST,
 			withContext: context)
+		Compiler.logEnd("✅  Done running first passes on AST for \(inputFileRelativePath).")
 
 		return gryphonFirstPassedAST
 	}
@@ -323,16 +372,23 @@ public class Driver {
 		onFile inputFilePath: String)
 		throws -> Any?
 	{
+		let inputFileRelativePath = Utilities.getRelativePath(forFile: inputFilePath)
+
+		Compiler.logStart("🧑‍💻  Running second passes on AST for \(inputFileRelativePath)...")
 		let gryphonAST = try Compiler.generateGryphonASTAfterSecondPasses(
 			fromGryphonRawAST: gryphonFirstPassedAST, withContext: context)
+		Compiler.logEnd("✅  Done running second passes on AST for \(inputFileRelativePath).")
+
 		if settings.shouldEmitAST {
 			let output = gryphonAST.prettyDescription()
 			if let outputFilePath = gryphonAST.outputFileMap[.gryphonAST],
 				!settings.forcePrintingToConsole
 			{
+				Compiler.log("✍️  Writing AST to file for \(inputFileRelativePath)")
 				try Utilities.createFile(atPath: outputFilePath, containing: output)
 			}
 			else if !settings.quietModeIsOn {
+				Compiler.log("✍️  Printing AST for \(inputFileRelativePath):")
 				Compiler.output(output)
 			}
 		}
@@ -341,23 +397,28 @@ public class Driver {
 			return gryphonAST
 		}
 
+		Compiler.logStart("🧑‍💻  Generating Kotlin code for \(inputFileRelativePath)...")
 		let kotlinCode = try Compiler.generateKotlinCode(
 			fromGryphonAST: gryphonAST,
 			withContext: context)
+		Compiler.logEnd("✅  Done generating Kotlin code for \(inputFileRelativePath).")
+
 		if settings.shouldEmitKotlin {
 			if settings.forcePrintingToConsole {
 				if !settings.quietModeIsOn {
+					Compiler.log("✍️  Printing Kotlin code for \(inputFileRelativePath):")
 					Compiler.output(kotlinCode)
 				}
 			}
 			else {
 				if let outputFilePath = gryphonAST.outputFileMap[.kt] {
-					let absoluteFilePath = Utilities.getAbsoultePath(forFile: outputFilePath)
-					Compiler.log("Writing to file \(absoluteFilePath)")
+					Compiler.log("✍️  Writing Kotlin to file for \(inputFileRelativePath)")
 					try Utilities.createFile(atPath: outputFilePath, containing: kotlinCode)
 				}
 				else {
 					if settings.xcodeProjectPath != nil {
+						Compiler.log("⚠️  No output Kotlin file found for \(inputFileRelativePath)")
+
 						// If the user didn't ask to print to console and we're in Xcode but there's
 						// no output file, it's likely the user forgot to add an output file
 						Compiler.handleWarning(
@@ -370,6 +431,7 @@ public class Driver {
 					}
 
 					if !settings.quietModeIsOn {
+						Compiler.log("✍️  Printing Kotlin code for \(inputFileRelativePath):")
 						Compiler.output(kotlinCode)
 					}
 				}
@@ -427,6 +489,8 @@ public class Driver {
 		usingToolchain toolchain: String?)
 		throws -> Any?
 	{
+		Compiler.logStart("🧑‍💻  Parsing arguments...")
+
 		Compiler.clearIssues()
 
 		// Parse arguments
@@ -489,6 +553,9 @@ public class Driver {
 		let defaultsToFinal = arguments.contains("--default-final")
 
 		//
+		let maybeXcodeProject = getXcodeProject(inArguments: arguments)
+
+		//
 		let settings = Settings(
 			shouldEmitSwiftAST: shouldEmitSwiftAST,
 			shouldEmitRawAST: shouldEmitRawAST,
@@ -501,7 +568,22 @@ public class Driver {
 			forcePrintingToConsole: forcePrintingToConsole,
 			quietModeIsOn: quietModeIsOn,
 			mainFilePath: mainFilePath,
-			xcodeProjectPath: getXcodeProject(inArguments: arguments))
+			xcodeProjectPath: maybeXcodeProject)
+
+		Compiler.logStart("🔧  Using settings:")
+		Compiler.log("ℹ️  shouldEmitSwiftAST: \(shouldEmitSwiftAST)")
+		Compiler.log("ℹ️  shouldEmitRawAST: \(shouldEmitRawAST)")
+		Compiler.log("ℹ️  shouldEmitAST: \(shouldEmitAST)")
+		Compiler.log("ℹ️  shouldEmitKotlin: \(shouldEmitKotlin)")
+		Compiler.log("ℹ️  shouldGenerateKotlin: \(shouldGenerateKotlin)")
+		Compiler.log("ℹ️  shouldGenerateAST: \(shouldGenerateAST)")
+		Compiler.log("ℹ️  shouldGenerateRawAST: \(shouldGenerateRawAST)")
+		Compiler.log("ℹ️  shouldGenerateSwiftAST: \(shouldGenerateSwiftAST)")
+		Compiler.log("ℹ️  forcePrintingToConsole: \(forcePrintingToConsole)")
+		Compiler.log("ℹ️  quietModeIsOn: \(quietModeIsOn)")
+		Compiler.log("ℹ️  mainFilePath: \(mainFilePath ?? "no main file")")
+		Compiler.log("ℹ️  xcodeProjectPath: \(maybeXcodeProject ?? "no Xcode project")")
+		Compiler.logEnd("🔧  Settings done.")
 
 		//
 		var indentationString = "    "
@@ -524,8 +606,12 @@ public class Driver {
 		//
 		let shouldRunConcurrently = !arguments.contains("--sync")
 
+		Compiler.logEnd("✅  Done parsing arguments.")
+
 		//// Dump the ASTs
 		if !arguments.contains("-skip-AST-dumps") {
+			Compiler.logStart("🧑‍💻  Preparing to dump the ASTs...")
+
 			let maybeXcodeProject = getXcodeProject(inArguments: arguments)
 			let isUsingXcode = (maybeXcodeProject != nil)
 			let isSkippingFiles = arguments.contains("--skip")
@@ -559,9 +645,12 @@ public class Driver {
 
 			let target = getTarget(inArguments: arguments)
 
+			Compiler.logEnd("✅  Done perparing.")
+
 			var astDumpsSucceeded = true
 			var astDumpError: Error? = nil
 			do {
+				Compiler.logStart("🧑‍💻  Dumping the ASTs...")
 				try updateASTDumps(
 					forFiles: allSourceFiles,
 					forXcodeProject: maybeXcodeProject,
@@ -569,8 +658,10 @@ public class Driver {
 					usingToolchain: toolchain,
 					shouldTryToRecoverFromErrors: true)
 				astDumpsSucceeded = true
+				Compiler.logEnd("✅  Done dumping the ASTs.")
 			}
 			catch let error {
+				Compiler.logEnd("⚠️  Problem dumping the ASTs.")
 				astDumpsSucceeded = false
 				astDumpError = error
 			}
@@ -579,6 +670,11 @@ public class Driver {
 				forInputFiles: allSourceFiles,
 				swiftVersion: swiftVersion)
 
+			if !outdatedASTDumpsAfterFirstUpdate.isEmpty {
+				Compiler.log("⚠️  Found outdated files: " +
+					outdatedASTDumpsAfterFirstUpdate.joined(separator: ", ") + ".")
+			}
+
 			if !astDumpsSucceeded || !outdatedASTDumpsAfterFirstUpdate.isEmpty {
 				if let xcodeProject = maybeXcodeProject {
 					// If the AST dump update failed and we're using Xcode, it's possible one
@@ -586,11 +682,11 @@ public class Driver {
 					// script, then try to update the files again.
 
 					if outdatedASTDumpsAfterFirstUpdate.isEmpty {
-						Compiler.log("There was an error when with the Swift compiler. " +
+						Compiler.logStart("⚠️  There was an error when with the Swift compiler. " +
 							"Attempting to update file list...")
 					}
 					else {
-						Compiler.log("Failed to update the AST dump for some files: " +
+						Compiler.logStart("⚠️  Failed to update the AST dump for some files: " +
 							outdatedASTDumpsAfterFirstUpdate.joined(separator: ", ") +
 							". Attempting to update file list...")
 					}
@@ -602,14 +698,16 @@ public class Driver {
 							forXcodeProject: xcodeProject,
 							forTarget: getTarget(inArguments: arguments),
 							usingToolchain: toolchain)
+						Compiler.logEnd("⚠️  Done.")
 					}
 					catch let error {
-						Compiler.logError(
-							"Warning - there was an error when creating the AST dump " +
+						Compiler.logEnd(
+							"⚠️  There was an error when creating the AST dump " +
 								"script:\n" +
-								"\(error)\n" +
-								"Trying to update the AST dumps again...")
+								"\(error)\n")
 					}
+
+					Compiler.logStart("⚠️  Attempting to update the AST dumps again...")
 
 					try updateASTDumps(
 						forFiles: allSourceFiles,
@@ -629,6 +727,9 @@ public class Driver {
 								" - Make sure the files are being compiled by Xcode.\n" +
 								" - Make sure Gryphon is translating the right Xcode target " +
 									"using `--target=<target name>`.")
+					}
+					else {
+						Compiler.logEnd("✅  Done.")
 					}
 				}
 				else {
@@ -658,15 +759,17 @@ public class Driver {
 				indentationString: indentationString,
 				defaultsToFinal: defaultsToFinal)
 
-			Compiler.log("Translating source files...\n")
+			Compiler.logStart("🧑‍💻 Starting first part of translation [1/2]...")
 
 			let firstResult: List<Any?>
 			if shouldRunConcurrently {
+				Compiler.log("🔀  Translating concurrently, logs may come out of order.")
 				firstResult = try inputFilePaths.parallelMap {
 					try runUpToFirstPasses(withSettings: settings, withContext: context, onFile: $0)
 				}
 			}
 			else {
+				Compiler.log("⏩  Translating sequentially.")
 				firstResult = try inputFilePaths.map {
 					try runUpToFirstPasses(withSettings: settings, withContext: context, onFile: $0)
 				}
@@ -677,13 +780,18 @@ public class Driver {
 			guard let asts = firstResult.as(List<GryphonAST>.self),
 				settings.shouldGenerateAST else
 			{
+				Compiler.log("✅  Done first part of translation. Returning result.")
 				return firstResult
 			}
+
+			Compiler.logEnd("✅  Done first part of translation.")
+			Compiler.logStart("🧑‍💻 Starting second part translation [2/2]...")
 
 			let pairsArray = zip(asts, inputFilePaths)
 
 			let secondResult: List<Any?>
 			if shouldRunConcurrently {
+				Compiler.log("🔀  Translating concurrently, logs may come out of order.")
 				secondResult = try pairsArray.parallelMap {
 					try runAfterFirstPasses(
 						onAST: $0.0,
@@ -693,6 +801,7 @@ public class Driver {
 				}
 			}
 			else {
+				Compiler.log("⏩  Translating sequentially.")
 				secondResult = try pairsArray.map {
 					try runAfterFirstPasses(
 						onAST: $0.0,
@@ -702,11 +811,18 @@ public class Driver {
 				}
 			}
 
+			Compiler.logEnd("✅  Done second part of translation.")
+			Compiler.logStart("🧑‍💻  Printing issues (if there are any)...")
 			Compiler.printIssues(skippingWarnings: quietModeIsOn)
+			Compiler.logEnd("✅  Done printing issues.")
+
 			return secondResult
 		}
 		catch let error {
+			Compiler.log("⚠️  Something happened.")
+			Compiler.logStart("⚠️  Printing issues (if there are any)...")
 			Compiler.printIssues(skippingWarnings: quietModeIsOn)
+			Compiler.logEnd("⚠️  Done printing issues.")
 			throw error
 		}
 	}
@@ -776,9 +892,11 @@ public class Driver {
 		let filesToInitialize: List<SupportingFile>
 
 		if includingXcodeFiles {
+			Compiler.log("ℹ️  Generating xcode files")
 			filesToInitialize = SupportingFile.filesForXcodeInitialization
 		}
 		else {
+			Compiler.log("ℹ️  Generating basic files only")
 			filesToInitialize = SupportingFile.filesForInitialization
 		}
 
@@ -850,20 +968,23 @@ public class Driver {
 				(commandResult.standardError.contains("Code Signing Error:") ||
 				 commandResult.standardOutput.contains("Code Signing Error:"))
 			{
-				Compiler.log("There was a code signing error when running xcodebuild. " +
-					"Using a simulator might fix it. Looking for an installed simulator...")
+				Compiler.log("⚠️  There was a code signing error when running xcodebuild. " +
+					"Using a simulator might fix it.")
+				Compiler.logStart("⚠️  Looking for an installed simulator...")
 				if let iOSVersion = lookForSimulatorVersion() {
-					Compiler.log("Found a simulator for iOS \(iOSVersion). " +
-						"Calling xcodebuild again...")
-					return runXcodebuild(
+					Compiler.logEnd("⚠️  Found a simulator for iOS \(iOSVersion).")
+					Compiler.logStart("⚠️  Calling xcodebuild again...")
+					let result = runXcodebuild(
 						forXcodeProject: xcodeProjectPath,
 						forTarget: target,
 						usingToolchain: toolchain,
 						simulator: iOSVersion,
 						dryRun: dryRun)
+					Compiler.logEnd("⚠️  Done.")
+					return result
 				}
 				else {
-					Compiler.log("No installed simulators were found.")
+					Compiler.logEnd("⚠️  No installed simulators were found.")
 				}
 			}
 		}
@@ -921,6 +1042,8 @@ public class Driver {
 		// to remove their build commands and keep only the target we chose.
 		let targetContents: String
 		if let userTarget = target {
+			Compiler.log("ℹ️  Looking for build instructions for the \(userTarget) target...")
+
 			let separator = "=== BUILD TARGET "
 			let components = output.split(withStringSeparator: separator)
 			guard let selectedComponent = components.first(where: { $0.hasPrefix(userTarget) })
@@ -935,6 +1058,7 @@ public class Driver {
 			targetContents = output
 		}
 
+		Compiler.log("ℹ️  Looking for Swift compilation command...")
 		let buildSteps = targetContents.split(withStringSeparator: "\n\n")
 		guard let compileSwiftStep =
 			buildSteps.first(where: { $0.hasPrefix("CompileSwiftSources") }) else
@@ -952,6 +1076,7 @@ public class Driver {
 			}
 		}
 
+		Compiler.log("ℹ️  Adapting Swift compilation command for dumping ASTs...")
 		let commands = compileSwiftStep.split(withStringSeparator: "\n")
 
 		// Drop the header and the old compilation command
@@ -990,12 +1115,14 @@ public class Driver {
 		// Build the resulting command
 		result += "\t"
 		if let chosenToolchain = toolchain {
+			Compiler.log("ℹ️  Adding toolchain \(chosenToolchain)...")
 			// Set the toolchain manually by replacing the direct call to swiftc with a call to
 			// xcrun
 			result += "\txcrun -toolchain \"\(chosenToolchain)\" swiftc "
 			result += newComponents.dropFirst().joined(separator: " ")
 		}
 		else {
+			Compiler.log("ℹ️  Using default toolchain...")
 			// Use the default toolchain
 			result += newComponents.joined(separator: " ")
 		}
@@ -1027,6 +1154,7 @@ public class Driver {
 			arguments.append("--target=\"\(userTarget)\"")
 		}
 
+		Compiler.logStart("🧑‍💻  Calling ruby to create the Gryphon targets...\n")
 		let commandResult = Shell.runShellCommand(arguments)
 
 		guard commandResult.status == 0 else {
@@ -1035,11 +1163,11 @@ public class Driver {
 				commandResult.standardError)
 		}
 
-		Compiler.log("👇 Calling ruby to create the Gryphon targets...\n" +
-			commandResult.standardOutput +
-			"👆 Done calling ruby to create the Gryphon targets.")
+		Compiler.log(commandResult.standardOutput)
+		Compiler.logEnd("✅  Done calling ruby.")
 
 		// Create the xcfilelist so the user has an easier time finding it and populating it
+		Compiler.log("ℹ️  Creating xcfilelist.")
 		_ = Utilities.createFileIfNeeded(at: SupportingFile.xcFileList.relativePath)
 	}
 
@@ -1052,6 +1180,7 @@ public class Driver {
 		throws
 	{
 		//// Create the outputFileMap
+		Compiler.log("ℹ️  Creating the output file map.")
 		var outputFileMapContents = "{\n"
 
 		let swiftVersion = try TranspilationContext.getVersionOfToolchain(toolchain)
@@ -1074,6 +1203,7 @@ public class Driver {
 			containing: outputFileMapContents)
 
 		//// Create the necessary folders for the AST dump files
+		Compiler.log("ℹ️  Creating folders for placing the AST dump files.")
 		for swiftFile in swiftFiles {
 			let astDumpPath = SupportingFile.pathOfSwiftASTDumpFile(
 				forSwiftFile: swiftFile,
@@ -1087,12 +1217,15 @@ public class Driver {
 		//// Call the Swift compiler to dump the ASTs
 		let commandResult: Shell.CommandOutput
 
-		Compiler.log("Calling the Swift compiler...")
+		Compiler.logStart("🧑‍💻  Calling the Swift compiler...")
 		if xcodeProjectPath != nil {
+			Compiler.logStart("🧑‍💻  Using the Xcode script...")
 			commandResult = Shell.runShellCommand(
 				["bash", SupportingFile.astDumpsScript.relativePath])
+			Compiler.logEnd("✅  Done using the Xcode script.")
 		}
 		else {
+			Compiler.logStart("🧑‍💻  Using swiftc...")
 			let arguments: MutableList<String> = []
 
 			if OS.osType == .macOS {
@@ -1118,7 +1251,9 @@ public class Driver {
 			}
 
 			commandResult = Shell.runShellCommand(arguments)
+			Compiler.logEnd("✅  Done using swiftc.")
 		}
+		Compiler.logEnd("✅  Done calling the Swift compiler.")
 
 		guard commandResult.status == 0 else {
 			if shouldTryToRecoverFromErrors {
@@ -1131,8 +1266,8 @@ public class Driver {
 							$0.contains("-Swift.h' not found")
 						})
 					{
-						Compiler.log("Error updating the ASTs dumps. It seems one or more " +
-							"dependencies wasn't compiled successfully. " +
+						Compiler.logStart("⚠️ Error updating the ASTs dumps. It seems one or " +
+							"more dependencies wasn't compiled successfully. " +
 							"Trying to fix it by running xcodebuild without `-dry-run`...")
 						let commandResult = runXcodebuild(
 							forXcodeProject: xcodeProjectPath,
@@ -1142,12 +1277,13 @@ public class Driver {
 							dryRun: false)
 
 						if commandResult.status != 0 {
-							Compiler.log("Failed. Xcodebuild output:\n" +
+							Compiler.logEnd("⚠️  Failed. Xcodebuild output:\n" +
 								commandResult.standardOutput +
 								commandResult.standardError)
 						}
 						else {
-							Compiler.log("Success. Trying to update the AST dumps again...")
+							Compiler.logEnd("⚠️  Success running xcodebuild.")
+							Compiler.logStart("⚠️  Trying to update the AST dumps again...")
 							// If it worked, try again, but only once to avoid infinite recursion
 							try updateASTDumps(
 								forFiles: swiftFiles,
@@ -1155,6 +1291,7 @@ public class Driver {
 								forTarget: target,
 								usingToolchain: toolchain,
 								shouldTryToRecoverFromErrors: false)
+							Compiler.logEnd("✅  Success updating the AST dumps.")
 							return
 						}
 					}

@@ -29,15 +29,40 @@ public class Compiler {
 		// gryphon insert: System.err.println(input)
 	}
 
-	public private(set) static var log: ((String) -> ()) = { _ in }
+	public static var logIndentation = 0
+	public static var shouldLogProgress = false
+	static func log(_ contents: String) {
+		guard shouldLogProgress else {
+			return
+		}
 
-	public static func shouldLogProgress(if value: Bool) {
-		if value {
-			log = { output($0) }
+		// Add indentation
+		// (If there's a mismatch in indentation increases/decreases and the indentation becomes
+		// negative, this shouldn't crash)
+		var indentation = ""
+		var i = 0
+		while i < logIndentation {
+			indentation += "\t"
+			i += 1
 		}
-		else {
-			log = { _ in }
+
+		// Print contents with the right indentation
+		let contentLines = contents.split(withStringSeparator: "\n")
+		for line in contentLines {
+			output(indentation + line)
 		}
+	}
+
+	/// Log the start of a new operation
+	static func logStart(_ contents: String) {
+		log(contents)
+		logIndentation += 1
+	}
+
+	/// Log the end of an operation
+	static func logEnd(_ contents: String) {
+		logIndentation -= 1
+		log(contents)
 	}
 
 	/// Used for printing strings to stdout. Can be changed by tests in order to check the outputs.
@@ -138,7 +163,6 @@ public class Compiler {
 
 	//
 	public static func generateSwiftAST(fromASTDump astDump: String) throws -> SwiftAST {
-		log("\t- Building SwiftAST...")
 		let ast = try ASTDumpDecoder(encodedString: astDump).decode()
 		return ast
 	}
@@ -155,7 +179,6 @@ public class Compiler {
 		withContext context: TranspilationContext)
 		throws -> GryphonAST
 	{
-		log("\t- Translating Swift ASTs to Gryphon ASTs...")
 		return try SwiftTranslator(context: context).translateAST(swiftAST, asMainFile: asMainFile)
 	}
 
@@ -180,7 +203,6 @@ public class Compiler {
 		withContext context: TranspilationContext)
 		throws -> GryphonAST
 	{
-		log("\t- Running first round of passes...")
 		return TranspilationPass.runFirstRoundOfPasses(on: ast, withContext: context)
 	}
 
@@ -189,7 +211,6 @@ public class Compiler {
 		withContext context: TranspilationContext)
 		throws -> GryphonAST
 	{
-		log("\t- Running second round of passes...")
 		return TranspilationPass.runSecondRoundOfPasses(on: ast, withContext: context)
 	}
 
@@ -199,7 +220,6 @@ public class Compiler {
 		throws -> GryphonAST
 	{
 		var ast = ast
-		log("\t- Running passes on Gryphon ASTs...")
 		ast = TranspilationPass.runFirstRoundOfPasses(on: ast, withContext: context)
 		ast = TranspilationPass.runSecondRoundOfPasses(on: ast, withContext: context)
 		return ast
@@ -224,7 +244,6 @@ public class Compiler {
 		withContext context: TranspilationContext)
 		throws -> String
 	{
-		log("\t- Translating AST to Kotlin...")
 		let translation = try KotlinTranslator(context: context).translateAST(ast)
 		let translationResult = translation.resolveTranslation()
 

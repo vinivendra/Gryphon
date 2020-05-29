@@ -36,6 +36,8 @@ public class Shell {
             currentFolder: String? = null)
             : CommandOutput
         {
+            Compiler.log("🛠  ${arguments.joinToString(separator = " ")}")
+
             val commandAndArguments = mutableListOf(command)
             commandAndArguments.addAll(arguments)
 
