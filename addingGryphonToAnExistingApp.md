@@ -19,7 +19,13 @@ Start by navigating to your iOS app's directory and running `gryphon init`:
 $ gryphon init myAwesomeiOSApp.xcodeproj/
 ````
 
-It is important to do this in the folder that contains the Xcode project, otherwise the new Xcode targets might not work.
+If your Xcode project has more than one target that compiles Swift code, it might be necessary to specify the target you want Gryphon to translate:
+
+```` bash
+$ gryphon init myAwesomeiOSApp.xcodeproj/ --target=<target name>
+````
+
+It is important to call `gryphon init` in the folder that contains the Xcode project, otherwise the new Xcode targets might not work.
 
 ## Step 2: Adding the libraries
 
