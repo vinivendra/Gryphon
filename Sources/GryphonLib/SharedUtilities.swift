@@ -220,8 +220,10 @@ extension Utilities {
 		{
 			try Driver.updateASTDumps(
 				forFiles: [SupportingFile.gryphonTemplatesLibrary.relativePath],
-				usingXcode: false,
-				usingToolchain: transpilationContext.toolchainName)
+				forXcodeProject: nil,
+				forTarget: nil,
+				usingToolchain: transpilationContext.toolchainName,
+				shouldTryToRecoverFromErrors: true)
 
 			if Utilities.needsToDumpASTForSwiftFiles(
 				[SupportingFile.gryphonTemplatesLibrary.name],

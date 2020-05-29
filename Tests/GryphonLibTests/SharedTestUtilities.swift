@@ -116,8 +116,10 @@ class TestUtilities {
 				for testFile in testFiles {
 					try Driver.updateASTDumps(
 						forFiles: [testFile],
-						usingXcode: false,
-						usingToolchain: toolchain)
+						forXcodeProject: nil,
+						forTarget: nil,
+						usingToolchain: toolchain,
+						shouldTryToRecoverFromErrors: true)
 				}
 
 				if Utilities.needsToDumpASTForSwiftFiles(
