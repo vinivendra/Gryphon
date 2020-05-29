@@ -1722,7 +1722,8 @@ end
 # Create the script we want to run
 
 script = "gryphon \\"\(dollarSign){PROJECT_NAME}.xcodeproj\\"" +
-	" \\"\(dollarSign){SRCROOT}/\(SupportingFile.xcFileList.relativePath)\\""
+	" \\"\(dollarSign){SRCROOT}/\(SupportingFile.xcFileList.relativePath)\\"" +
+	" --verbose"
 
 # Add any other argument directly to the script (dropping the xcode project first)
 for argument in ARGV.slice(1...)
