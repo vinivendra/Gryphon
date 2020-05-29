@@ -43,6 +43,7 @@ public class Driver {
 	public static let supportedArgumentsWithParameters: List = [
 		"--indentation=",
 		"--toolchain=",
+		"--target=",
 		"-line-limit=",
 	]
 
@@ -124,6 +125,7 @@ public class Driver {
 			return nil
 		}
 
+		// Get the chosen toolchain, if there is one
 		let toolchain: String?
 		if let toolchainArgument = arguments.first(where: { $0.hasPrefix("--toolchain=") }) {
 			if OS.osType == .linux {
@@ -139,6 +141,23 @@ public class Driver {
 		}
 		try TranspilationContext.checkToolchainSupport(toolchain)
 
+		if let chosenToolchain = toolchain {
+			Compiler.log("ℹ️\tUsing toolchain \(chosenToolchain).")
+		}
+		else {
+			Compiler.log("ℹ️\tUsing default toolchain.")
+		}
+
+		// Get the chosen target, if there is one
+		let target = getTarget(inArguments: arguments)
+		if let chosenTarget = target {
+			Compiler.log("ℹ️\tUsing target \(chosenTarget).")
+		}
+		else {
+			Compiler.log("ℹ️\tUsing default target.")
+		}
+
+		//
 		let maybeXcodeProject = getXcodeProject(inArguments: arguments)
 
 		if arguments.contains("init") {
@@ -150,12 +169,20 @@ public class Driver {
 
 			try initialize(includingXcodeFiles: shouldInitializeXcodeFiles)
 
-			Compiler.log("Initialization successful.")
+			Compiler.log("✅ Initialization successful.")
 
 			if let xcodeProject = maybeXcodeProject {
 				let newArguments: MutableList = [xcodeProject]
 				if isVerbose {
 					newArguments.append("--verbose")
+				}
+
+				if let target = target {
+					newArguments.append("--target=\(target)")
+				}
+
+				if let toolchain = toolchain {
+					newArguments.append("--toolchain=\(toolchain)")
 				}
 
 				let setupArguments: MutableList = ["setup-xcode"]
@@ -178,10 +205,10 @@ public class Driver {
 
 			try createASTDumpsScript(
 				forXcodeProject: xcodeProject,
-				usingToolchain: toolchain,
-				simulator: nil)
+				forTarget: target,
+				usingToolchain: toolchain)
 
-			Compiler.log("Xcode setup successful.")
+			Compiler.log("✅ Xcode setup successful.")
 			return nil
 		}
 		if arguments.contains("make-gryphon-targets") {
@@ -190,8 +217,11 @@ public class Driver {
 					"Please specify an Xcode project when using `make-gryphon-targets`.")
 			}
 
-			try makeGryphonTargets(forXcodeProject: xcodeProject, usingToolchain: toolchain)
-			Compiler.log("Gryphon target creation successful.")
+			try makeGryphonTargets(
+				forXcodeProject: xcodeProject,
+				forTarget: target,
+				usingToolchain: toolchain)
+			Compiler.log("✅ Gryphon target creation successful.")
 			return nil
 		}
 
@@ -527,13 +557,17 @@ public class Driver {
 
 			let swiftVersion = try TranspilationContext.getVersionOfToolchain(toolchain)
 
+			let target = getTarget(inArguments: arguments)
+
 			var astDumpsSucceeded = true
 			var astDumpError: Error? = nil
 			do {
 				try updateASTDumps(
 					forFiles: allSourceFiles,
-					usingXcode: isUsingXcode,
-					usingToolchain: toolchain)
+					forXcodeProject: maybeXcodeProject,
+					forTarget: target,
+					usingToolchain: toolchain,
+					shouldTryToRecoverFromErrors: true)
 				astDumpsSucceeded = true
 			}
 			catch let error {
@@ -556,7 +590,7 @@ public class Driver {
 							"Attempting to update file list...")
 					}
 					else {
-						Compiler.log("Failed to update some AST dump files: " +
+						Compiler.log("Failed to update the AST dump for some files: " +
 							outdatedASTDumpsAfterFirstUpdate.joined(separator: ", ") +
 							". Attempting to update file list...")
 					}
@@ -566,15 +600,23 @@ public class Driver {
 						// with an "AST dump failure" message.
 						try createASTDumpsScript(
 							forXcodeProject: xcodeProject,
-							usingToolchain: toolchain,
-							simulator: nil)
+							forTarget: getTarget(inArguments: arguments),
+							usingToolchain: toolchain)
 					}
-					catch { }
+					catch let error {
+						Compiler.logError(
+							"Warning - there was an error when creating the AST dump " +
+								"script:\n" +
+								"\(error)\n" +
+								"Trying to update the AST dumps again...")
+					}
 
 					try updateASTDumps(
 						forFiles: allSourceFiles,
-						usingXcode: isUsingXcode,
-						usingToolchain: toolchain)
+						forXcodeProject: maybeXcodeProject,
+						forTarget: target,
+						usingToolchain: toolchain,
+						shouldTryToRecoverFromErrors: true)
 
 					let outdatedASTDumpsAfterSecondUpdate = outdatedASTDumpFiles(
 						forInputFiles: allSourceFiles,
@@ -583,8 +625,10 @@ public class Driver {
 					if !outdatedASTDumpsAfterSecondUpdate.isEmpty {
 						throw GryphonError(
 							errorMessage: "Unable to update AST dumps for files: " +
-								outdatedASTDumpsAfterSecondUpdate.joined(separator: ", ") + ". " +
-							"Make sure the files are being compiled by Xcode.")
+								outdatedASTDumpsAfterSecondUpdate.joined(separator: ", ") + ".\n" +
+								" - Make sure the files are being compiled by Xcode.\n" +
+								" - Make sure Gryphon is translating the right Xcode target " +
+									"using `--target=<target name>`.")
 					}
 				}
 				else {
@@ -763,18 +807,18 @@ public class Driver {
 			containing: SupportingFile.gryphonKotlinLibrary.contents!)
 	}
 
-	/// Calls xcodebuild to create the AST dump script file. If `simulator` is `nil` and xcodebuild
-	/// fails, looks for an installed simulator and tries again recursively.
-	static func createASTDumpsScript(
+	/// Calls xcodebuild with the given arguments
+	static func runXcodebuild(
 		forXcodeProject xcodeProjectPath: String,
+		forTarget target: String?,
 		usingToolchain toolchain: String?,
-		simulator: String?)
-		throws
+		simulator: String? = nil,
+		dryRun: Bool)
+		-> Shell.CommandOutput
 	{
 		let arguments: MutableList = [
 			"xcodebuild",
 			"-UseModernBuildSystem=NO",
-			"-dry-run",
 			"-project",
 			"\(xcodeProjectPath)", ]
 
@@ -783,61 +827,129 @@ public class Driver {
 			arguments.append(userToolchain)
 		}
 
+		if let userTarget = target {
+			arguments.append("-target")
+			arguments.append(userTarget)
+		}
+
 		if let simulatorVersion = simulator {
 			arguments.append("-sdk")
 			arguments.append("iphonesimulator\(simulatorVersion)")
 		}
 
+		if dryRun {
+			arguments.append("-dry-run")
+		}
+
 		let commandResult = Shell.runShellCommand(arguments)
 
-		// If something went wrong
+		// If something went wrong, try to recover
 		if commandResult.status != 0 {
 			// Code signing errors might be solved by forcing a build with the simulator
 			if simulator == nil,
 				(commandResult.standardError.contains("Code Signing Error:") ||
 				 commandResult.standardOutput.contains("Code Signing Error:"))
 			{
-				// Try to discover the version of an installed simulator
-				let sdkCommandResult = Shell.runShellCommand(["xcodebuild", "-showsdks"])
-				if sdkCommandResult.status == 0 {
-					let output = sdkCommandResult.standardOutput
-					let outputLines = output.split(withStringSeparator: "\n")
+				Compiler.log("There was a code signing error when running xcodebuild. " +
+					"Using a simulator might fix it. Looking for an installed simulator...")
+				if let iOSVersion = lookForSimulatorVersion() {
+					Compiler.log("Found a simulator for iOS \(iOSVersion). " +
+						"Calling xcodebuild again...")
+					return runXcodebuild(
+						forXcodeProject: xcodeProjectPath,
+						forTarget: target,
+						usingToolchain: toolchain,
+						simulator: iOSVersion,
+						dryRun: dryRun)
+				}
+				else {
+					Compiler.log("No installed simulators were found.")
+				}
+			}
+		}
 
-					// Valid output lines are of the form:
-					// 	Simulator - iOS 13.4          	-sdk iphonesimulator13.4
-					var maybeiOSVersion: String?
-					for line in outputLines {
-						if line.contains("iphonesimulator") {
-							let components = line.split(withStringSeparator: " ")
-							if let simulatorComponent = components.last {
-								maybeiOSVersion = String(
-									simulatorComponent.dropFirst("iphonesimulator".count))
-							}
-						}
-					}
+		return commandResult
+	}
 
-					if let iOSVersion = maybeiOSVersion {
-						try createASTDumpsScript(forXcodeProject: xcodeProjectPath,
-							usingToolchain: toolchain,
-							simulator: iOSVersion)
-						return
+	/// Try to discover an installed simulator version using xcodebuild
+	static func lookForSimulatorVersion() -> String? {
+		// Try to discover the version of an installed simulator
+		let sdkCommandResult = Shell.runShellCommand(["xcodebuild", "-showsdks"])
+		if sdkCommandResult.status == 0 {
+			let output = sdkCommandResult.standardOutput
+			let outputLines = output.split(withStringSeparator: "\n")
+
+			// Valid output lines are of the form:
+			// 	Simulator - iOS 13.4          	-sdk iphonesimulator13.4
+			for line in outputLines {
+				if line.contains("iphonesimulator") {
+					let components = line.split(withStringSeparator: " ")
+					if let simulatorComponent = components.last {
+						return String(
+							simulatorComponent.dropFirst("iphonesimulator".count))
 					}
 				}
 			}
+		}
 
-			// If we failed to recover, throw an error
+		return nil
+	}
+
+	/// Calls xcodebuild to create the AST dump script file. If `simulator` is `nil` and xcodebuild
+	/// fails, looks for an installed simulator and tries again recursively.
+	static func createASTDumpsScript(
+		forXcodeProject xcodeProjectPath: String,
+		forTarget target: String?,
+		usingToolchain toolchain: String?)
+		throws
+	{
+		let commandResult = runXcodebuild(
+			forXcodeProject: xcodeProjectPath,
+			forTarget: target,
+			usingToolchain: toolchain,
+			dryRun: true)
+
+		guard commandResult.status == 0 else {
 			throw GryphonError(errorMessage: "Error running xcodebuild:\n" +
 				commandResult.standardOutput +
 				commandResult.standardError)
 		}
 
 		let output = commandResult.standardOutput
-		let buildSteps = output.split(withStringSeparator: "\n\n")
+
+		// If the target depends on other targets, the other targets will be built first. We have
+		// to remove their build commands and keep only the target we chose.
+		let targetContents: String
+		if let userTarget = target {
+			let separator = "=== BUILD TARGET "
+			let components = output.split(withStringSeparator: separator)
+			guard let selectedComponent = components.first(where: { $0.hasPrefix(userTarget) })
+				else
+			{
+				throw GryphonError(errorMessage: "Failed to find build instructions for target " +
+					"\(userTarget) in the xcodebuild output.")
+			}
+			targetContents = selectedComponent
+		}
+		else {
+			targetContents = output
+		}
+
+		let buildSteps = targetContents.split(withStringSeparator: "\n\n")
 		guard let compileSwiftStep =
 			buildSteps.first(where: { $0.hasPrefix("CompileSwiftSources") }) else
 		{
-			throw GryphonError(errorMessage:
-				"Unable to find the Swift compilation command in the Xcode project.")
+			if output.contains("builtin-validationUtility") {
+				throw GryphonError(errorMessage:
+					"Unable to find the Swift compilation command for the Xcode project.\n" +
+						"It's possible the build might be cached.\n" +
+						"Try deleting the \"build\" folder, if there is one, then run Gryphon " +
+						"again.")
+			}
+			else {
+				throw GryphonError(errorMessage:
+					"Unable to find the Swift compilation command in the Xcode project.")
+			}
 		}
 
 		let commands = compileSwiftStep.split(withStringSeparator: "\n")
@@ -897,6 +1009,7 @@ public class Driver {
 
 	static func makeGryphonTargets(
 		forXcodeProject xcodeProjectPath: String,
+		forTarget target: String?,
 		usingToolchain toolchain: String?)
 		throws
 	{
@@ -905,8 +1018,13 @@ public class Driver {
 			"ruby",
 			"\(SupportingFile.makeGryphonTargets.relativePath)",
 			"\(xcodeProjectPath)", ]
+
+		// Any other arguments will be appended to the target's script
 		if let userToolchain = toolchain {
-			arguments.append(userToolchain)
+			arguments.append("--toolchain=\"\(userToolchain)\"")
+		}
+		if let userTarget = target {
+			arguments.append("--target=\"\(userTarget)\"")
 		}
 
 		let commandResult = Shell.runShellCommand(arguments)
@@ -917,14 +1035,20 @@ public class Driver {
 				commandResult.standardError)
 		}
 
+		Compiler.log("👇 Calling ruby to create the Gryphon targets...\n" +
+			commandResult.standardOutput +
+			"👆 Done calling ruby to create the Gryphon targets.")
+
 		// Create the xcfilelist so the user has an easier time finding it and populating it
 		_ = Utilities.createFileIfNeeded(at: SupportingFile.xcFileList.relativePath)
 	}
 
 	static func updateASTDumps(
 		forFiles swiftFiles: List<String>,
-		usingXcode: Bool,
-		usingToolchain toolchain: String?)
+		forXcodeProject xcodeProjectPath: String?,
+		forTarget target: String?,
+		usingToolchain toolchain: String?,
+		shouldTryToRecoverFromErrors: Bool)
 		throws
 	{
 		//// Create the outputFileMap
@@ -964,7 +1088,7 @@ public class Driver {
 		let commandResult: Shell.CommandOutput
 
 		Compiler.log("Calling the Swift compiler...")
-		if usingXcode {
+		if xcodeProjectPath != nil {
 			commandResult = Shell.runShellCommand(
 				["bash", SupportingFile.astDumpsScript.relativePath])
 		}
@@ -997,6 +1121,46 @@ public class Driver {
 		}
 
 		guard commandResult.status == 0 else {
+			if shouldTryToRecoverFromErrors {
+				// If Swift can't find a framework, try building the project with xcodebuild
+				if let xcodeProjectPath = xcodeProjectPath {
+					let errorLines = commandResult.standardError.split(withStringSeparator: "\n")
+					if errorLines.contains(where: {
+							$0.contains("module.modulemap") &&
+							$0.contains(": error: header '") &&
+							$0.contains("-Swift.h' not found")
+						})
+					{
+						Compiler.log("Error updating the ASTs dumps. It seems one or more " +
+							"dependencies wasn't compiled successfully. " +
+							"Trying to fix it by running xcodebuild without `-dry-run`...")
+						let commandResult = runXcodebuild(
+							forXcodeProject: xcodeProjectPath,
+							forTarget: target,
+							usingToolchain: toolchain,
+							simulator: nil,
+							dryRun: false)
+
+						if commandResult.status != 0 {
+							Compiler.log("Failed. Xcodebuild output:\n" +
+								commandResult.standardOutput +
+								commandResult.standardError)
+						}
+						else {
+							Compiler.log("Success. Trying to update the AST dumps again...")
+							// If it worked, try again, but only once to avoid infinite recursion
+							try updateASTDumps(
+								forFiles: swiftFiles,
+								forXcodeProject: xcodeProjectPath,
+								forTarget: target,
+								usingToolchain: toolchain,
+								shouldTryToRecoverFromErrors: false)
+							return
+						}
+					}
+				}
+			}
+
 			var errorMessage = "Error calling the Swift compiler.\n"
 
 			// Suggest solutions to known problems
@@ -1012,7 +1176,7 @@ public class Driver {
 					"Try running `gryphon init <xcode project>` to fix this problem.\n")
 			}
 
-			errorMessage.append("Swift compiler output:\n\n" +
+			errorMessage.append("====\n\n" +
 				commandResult.standardOutput +
 				commandResult.standardError)
 			throw GryphonError(errorMessage: errorMessage)
@@ -1064,6 +1228,15 @@ public class Driver {
 			return cleanPath
 		}
 		return nil
+	}
+
+	static func getTarget(inArguments arguments: List<String>) -> String? {
+		if let targetArgument = arguments.first(where: { $0.hasPrefix("--target=") }) {
+			return String(targetArgument.dropFirst("--target=".count))
+		}
+		else {
+			return nil
+		}
 	}
 
 	static func printVersion() {
@@ -1140,6 +1313,9 @@ Main usage:
 
       ↪️  --toolchain=<toolchain name>
             Specify the toolchain to be used when calling the Swift compiler.
+
+      ↪️  --target=<target name>
+            Specify the target to be built when translating with Xcode.
 
 Advanced subcommands:
   ➡️  clean
