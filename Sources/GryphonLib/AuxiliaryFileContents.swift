@@ -1719,19 +1719,18 @@ else
 	puts "	Updating Run Script build phase..."
 end
 
-# Set the script we want to run
-if ARGV.length > 1
-	# If we specified a toolchain
-    gryphonBuildPhase.shell_script =
-		"gryphon \\"\(dollarSign){PROJECT_NAME}.xcodeproj\\"" +
-		" \\"\(dollarSign){SRCROOT}/\(SupportingFile.xcFileList.relativePath)\\"" +
-		" --toolchain=\\"" + ARGV[1] + "\\""
-else
-	# If we're using the default toolchain
-    gryphonBuildPhase.shell_script =
-		"gryphon \\"\(dollarSign){PROJECT_NAME}.xcodeproj\\"" +
-		" \\"\(dollarSign){SRCROOT}/\(SupportingFile.xcFileList.relativePath)\\""
+# Create the script we want to run
+
+script = "gryphon \\"\(dollarSign){PROJECT_NAME}.xcodeproj\\"" +
+	" \\"\(dollarSign){SRCROOT}/\(SupportingFile.xcFileList.relativePath)\\""
+
+# Add any other argument directly to the script (dropping the xcode project first)
+for argument in ARGV.slice(1...)
+	puts "	Including " + argument
+    script = script + " " + argument
 end
+
+gryphonBuildPhase.shell_script = script
 
 ####################################################################################################
 # Make the Kotlin target

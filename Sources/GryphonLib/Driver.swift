@@ -125,6 +125,7 @@ public class Driver {
 			return nil
 		}
 
+		// Get the chosen toolchain, if there is one
 		let toolchain: String?
 		if let toolchainArgument = arguments.first(where: { $0.hasPrefix("--toolchain=") }) {
 			if OS.osType == .linux {
@@ -140,8 +141,23 @@ public class Driver {
 		}
 		try TranspilationContext.checkToolchainSupport(toolchain)
 
-		let target = getTarget(inArguments: arguments)
+		if let chosenToolchain = toolchain {
+			Compiler.log("ℹ️\tUsing toolchain \(chosenToolchain).")
+		}
+		else {
+			Compiler.log("ℹ️\tUsing default toolchain.")
+		}
 
+		// Get the chosen target, if there is one
+		let target = getTarget(inArguments: arguments)
+		if let chosenTarget = target {
+			Compiler.log("ℹ️\tUsing target \(chosenTarget).")
+		}
+		else {
+			Compiler.log("ℹ️\tUsing default target.")
+		}
+
+		//
 		let maybeXcodeProject = getXcodeProject(inArguments: arguments)
 
 		if arguments.contains("init") {
@@ -153,7 +169,7 @@ public class Driver {
 
 			try initialize(includingXcodeFiles: shouldInitializeXcodeFiles)
 
-			Compiler.log("Initialization successful.")
+			Compiler.log("✅ Initialization successful.")
 
 			if let xcodeProject = maybeXcodeProject {
 				let newArguments: MutableList = [xcodeProject]
@@ -163,6 +179,10 @@ public class Driver {
 
 				if let target = target {
 					newArguments.append("--target=\(target)")
+				}
+
+				if let toolchain = toolchain {
+					newArguments.append("--toolchain=\(toolchain)")
 				}
 
 				let setupArguments: MutableList = ["setup-xcode"]
@@ -188,7 +208,7 @@ public class Driver {
 				forTarget: target,
 				usingToolchain: toolchain)
 
-			Compiler.log("Xcode setup successful.")
+			Compiler.log("✅ Xcode setup successful.")
 			return nil
 		}
 		if arguments.contains("make-gryphon-targets") {
@@ -197,8 +217,11 @@ public class Driver {
 					"Please specify an Xcode project when using `make-gryphon-targets`.")
 			}
 
-			try makeGryphonTargets(forXcodeProject: xcodeProject, usingToolchain: toolchain)
-			Compiler.log("Gryphon target creation successful.")
+			try makeGryphonTargets(
+				forXcodeProject: xcodeProject,
+				forTarget: target,
+				usingToolchain: toolchain)
+			Compiler.log("✅ Gryphon target creation successful.")
 			return nil
 		}
 
@@ -986,6 +1009,7 @@ public class Driver {
 
 	static func makeGryphonTargets(
 		forXcodeProject xcodeProjectPath: String,
+		forTarget target: String?,
 		usingToolchain toolchain: String?)
 		throws
 	{
@@ -994,8 +1018,13 @@ public class Driver {
 			"ruby",
 			"\(SupportingFile.makeGryphonTargets.relativePath)",
 			"\(xcodeProjectPath)", ]
+
+		// Any other arguments will be appended to the target's script
 		if let userToolchain = toolchain {
-			arguments.append(userToolchain)
+			arguments.append("--toolchain=\"\(userToolchain)\"")
+		}
+		if let userTarget = target {
+			arguments.append("--target=\"\(userTarget)\"")
 		}
 
 		let commandResult = Shell.runShellCommand(arguments)
@@ -1005,6 +1034,10 @@ public class Driver {
 				commandResult.standardOutput +
 				commandResult.standardError)
 		}
+
+		Compiler.log("👇 Calling ruby to create the Gryphon targets...\n" +
+			commandResult.standardOutput +
+			"👆 Done calling ruby to create the Gryphon targets.")
 
 		// Create the xcfilelist so the user has an easier time finding it and populating it
 		_ = Utilities.createFileIfNeeded(at: SupportingFile.xcFileList.relativePath)
