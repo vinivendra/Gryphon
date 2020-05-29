@@ -827,13 +827,20 @@ public class Driver {
 				(commandResult.standardError.contains("Code Signing Error:") ||
 				 commandResult.standardOutput.contains("Code Signing Error:"))
 			{
+				Compiler.log("There was a code signing error when running xcodebuild. " +
+					"Using a simulator might fix it. Looking for an installed simulator...")
 				if let iOSVersion = lookForSimulatorVersion() {
+					Compiler.log("Found a simulator for iOS \(iOSVersion). " +
+						"Calling xcodebuild again...")
 					return runXcodebuild(
 						forXcodeProject: xcodeProjectPath,
 						forTarget: target,
 						usingToolchain: toolchain,
 						simulator: iOSVersion,
 						dryRun: dryRun)
+				}
+				else {
+					Compiler.log("No installed simulators were found.")
 				}
 			}
 		}
