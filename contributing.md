@@ -14,7 +14,7 @@ Contributions can take many forms: you can share the project with other develope
 	- [Setting up the environment](contributing.html#setting-up-the-environment-on-macos)
 	- [Running the tests](contributing.html#running-the-tests)
 		- [Manual setup](contributing.html#manual-setup)
-		- [About the bootstrapping test](contributing.html#about-the-bootstrapping-test)
+		- [Setting up the Bootstrapping test](contributing.html#setting-up-the-bootstrapping-test)
 		- [Additional Docker tests](contributing.html#additional-docker-tests)
 	- [Style](contributing.html#style)
 - [How Gryphon works](contributing.html#how-gryphon-works)
@@ -126,15 +126,13 @@ $ swift build
 Then execute it using:
 
 ```` bash
-$ ./.build/<my_linux_identifier>/debug/Gryphon
+$ ./.build/debug/Gryphon
 ````
-
-Where `<my_linux_identifier>` is the name of a folder that can vary depending on your operating system. If in doubt, run `swift build --show-bin-path` to show the path to the executable's directory.
 
 A common invocation involves translating the `test.swift` file and printing its intermediate ASTs for debugging:
 
 ```` bash
-$ ./.build/<my_linux_identifier>/debug/Gryphon test.swift --write-to-console -emit-swiftAST -emit-rawAST -emit-AST -emit-kotlin
+$ $ ./.build/debug/Gryphon test.swift --write-to-console -emit-swiftAST -emit-rawAST -emit-AST -emit-kotlin
 ````
 
 ## Running the tests
@@ -175,20 +173,18 @@ If one of the toolchains isn't installed you will see a few warnings saying that
 
 ### Manual setup
 
-The test script performs a lot of setup work, which can make testing a bit slower than it needs to be. It also doesn't integrate with Xcode, which can be useful for debugging. Here's how to setup the tests manually.
+The test script performs a lot of setup work, which can make testing a bit slower than it needs to be. It also doesn't integrate with Xcode, which can be useful for debugging. Here's how you can setup the environment to run the tests manually.
 
 All automated tests require Gryphon to be initialized in the current folder. To do that, run:
 
 ```` bash
 $ swift build
-$ ./.build/<my_os_identifier>/debug/Gryphon clean init -xcode
+$ $ ./.build/debug/Gryphon clean init -xcode
 ````
 
 Include the `-xcode` flag even on Linux and Docker to ensure all the necessary files are being generated.
 
-The Bootstrapping test also requires some extra setup, which you can [read about below](contributing.html#aboute-the-bootstrapping-test).
-
-#### Manual setup on macOS:
+#### Setting up unit tests on macOS:
 
 1. On Xcode, hit **⌘+⇧+,** to bring up the scheme editor:
 2. Select `Test` on the left-hand side, then `Info` on the top;
@@ -197,7 +193,7 @@ The Bootstrapping test also requires some extra setup, which you can [read about
 5. Click close, then hit **⌘+U** to run the test suite. If you want to run one of the unchecked tests, hit **⌘+6**, right-click the selected test, then click "Run".
 
 
-#### Manual setup on Linux and Docker:
+#### Setting up unit tests on Linux and Docker:
 
 1. Open the `Tests/GryphonLibTests/XCTestManifests.swift` file;
 2. Make sure the `AcceptanceTest` and the `BootstrappingTest` are commented (the `PerformanceTest` normally isn't included in this file);
@@ -206,7 +202,7 @@ The Bootstrapping test also requires some extra setup, which you can [read about
 	$ swift test --filter Acceptance
 	````
 
-### About the bootstrapping test
+### Setting up the Bootstrapping test
 
 The bootstrapping tests are a way of testing Gryphon with more complicated code than the files in the `Test cases` folder. They consist of making Gryphon translate its own source code into Kotlin, then compiling the result and comparing it to the original Swift executable. This includes seeing if the Kotlin version produces the same output files for each test case, and checking that it passes the same unit tests.
 
@@ -229,7 +225,7 @@ If the test starts raising unexpected errors, try resetting the environment:
 
 ### Additional Docker tests
 
-If you are using macOS, it is recommended that you also run the tests in a Docker container to make sure they work on Linux. To do that, follow the instructions on [setting up the Docker container](installingGryphon.html#on-docker), then run any appropriate tests using the either the `runTests.sh` script or the "on Linux and Docker" instructions in this file.
+If you are using macOS, you might also want to run the tests in a Docker container to make sure they work on Linux. To do that, follow the instructions on [setting up the Docker container](installingGryphon.html#on-docker), then run any appropriate tests using the either the `runTests.sh` script or the "on Linux and Docker" instructions in this file.
 
 ## Style
 
