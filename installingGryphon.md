@@ -46,13 +46,13 @@ Alternatively, you can clone the repository and build the Docker container local
 ```` bash
 $ git clone https://github.com/vinivendra/Gryphon.git
 $ cd Gryphon
-$ docker build -t swift_ubuntu .
+$ docker build -t gryphon .
 ````
 
 To run the container:
 
 ```` bash
-$ docker run -it --rm --privileged -v /path/to/Gryphon/:/app/Gryphon swift_ubuntu
+$ docker run -it --rm --privileged -v /path/to/Gryphon/:/app/Gryphon gryphon
 ````
 
 where `/path/to/Gryphon/` should be an absolute path to the current folder (i.e. the cloned Gryphon repository).
