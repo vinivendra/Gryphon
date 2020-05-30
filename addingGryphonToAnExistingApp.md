@@ -3,7 +3,7 @@ layout: tutorialLayout
 ---
 # Adding Gryphon to an existing app
 
-This guide assumes a certain level of familiarity with the iOS and Android ecosystem. For a more beginner-friendly introduction, check out [Translating a new iOS app to Android](translatingANewiOSAppToAndroid.html). This guide also focuses on Xcode integration, which is only available on macOS; however, Linux and Docker users might still find important information here that they can use with the [command line interface](translatingCommandLinePrograms.html).
+*Note:* This guide assumes a certain level of familiarity with the iOS and Android ecosystem; for a more beginner-friendly introduction, check out [Translating a new iOS app to Android](translatingANewiOSAppToAndroid.html). This guide also focuses on Xcode integration, which is only available on macOS; however, Linux and Docker users might still find important information here that they can use with the [command line interface](translatingCommandLinePrograms.html).
 
 - [Setting up the project](addingGryphonToAnExistingApp.html#step-1-setting-up-the-project)
 - [Adding the libraries](addingGryphonToAnExistingApp.html#step-2-adding-the-libraries)

@@ -4,7 +4,7 @@ layout: tutorialLayout
 
 # Translating a new iOS app to Android
 
-This section describes Gryphon's integration with Xcode, which is not available on Linux and Docker. To translate an iOS app's logic code without Xcode, make sure it can be compiled without the iOS SDK, then translate it using the [command line interface](translatingCommandLinePrograms.html).
+*Note:* This section describes Gryphon's integration with Xcode, which is not available on Linux and Docker. To translate an iOS app's logic code without Xcode, make sure it can be compiled without the iOS SDK, then translate it using the [command line interface](translatingCommandLinePrograms.html).
 
 To translate an existing iOS app, check out [Adding Gryphon to an existing app](addingGryphonToAnExistingApp.html).
 
