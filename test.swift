@@ -103,8 +103,36 @@ class LiteralTemplate: Template { // gryphon ignore
 
 func gryphonTemplates() {
 
-	_ = [1, 2, 3].first.map { $0 }
+	_ = 0
 	_ = Template.call(.dot(.dot("[1, 2, 3]", "first"), "map"), ["{ $0 }"])
+
+	_ = 0
+	_ = Template.call("map", ["_closure2", "_closure3"])
+
+	_ = 0
+	_ = Template.call("map", [])
+
+	_ = 0
+	_ = Template.call(.dot("_array", "map"), [])
+
+	_ = 0
+	_ = Template.call("map", [.dot("_array", "first")])
+
+	_ = 0
+	_ = Template.call("map", [.call(.dot("_array", "map"), [])])
+
+	_ = 0
+	_ = Template.call("map", [
+		.labeledParameter("for", "_closure2"),
+		.labeledParameter("transfrom", "_closure3")])
+
+	_ = Template.call(.dot(.call(.dot(.dot("MyClass", "_array"), "map"), [
+		.labeledParameter("for", "_closure2"),
+		.labeledParameter("transfrom", "_closure3")]),
+			"map"), [
+				.labeledParameter("for", "_closure2"),
+				.labeledParameter("transfrom", "_closure3")])
+
 
 //	_ = print("")
 //	_ = "MyClass"․"_array"․"map"⟮"closure2"∶"_closure2"、"closure3"∶"_closure3"⟯․"map"⟮"closure2"∶"_closure2"、"closure3"∶"_closure3"⟯

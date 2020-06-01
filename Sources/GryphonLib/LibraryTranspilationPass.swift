@@ -94,11 +94,11 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 				tupleExpression.pairs.count == 2
 			{
 				if declarationExpression.identifier == "call",
-					let functionExpression = tupleExpression.pairs[0].expression as? CallExpression,
 					let parametersExpression =
 						tupleExpression.pairs[1].expression as? ArrayExpression
 				{
-					let function = processTemplateNodeExpression(functionExpression)
+					let function = processTemplateNodeExpression(
+						tupleExpression.pairs[0].expression)
 					let parameters = parametersExpression.elements.map {
 							processTemplateParameter($0)
 						}.toMutableList()
@@ -114,8 +114,7 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 					let stringExpression =
 						tupleExpression.pairs[1].expression as? LiteralStringExpression
 				{
-					let left = processTemplateNodeExpression(
-						tupleExpression.pairs[0].expression)
+					let left = processTemplateNodeExpression(tupleExpression.pairs[0].expression)
 					let right = LiteralCodeExpression(
 						range: stringExpression.range,
 						string: stringExpression.value,
@@ -155,14 +154,29 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 					string: stringLiteralExpression.value,
 					shouldGoToMainFunction: false))
 		}
+		else if let callExpression = expression as? CallExpression {
+			if let dotExpression = callExpression.function as? DotExpression,
+				let declarationExpression =
+					dotExpression.rightExpression as? DeclarationReferenceExpression,
+				let tupleExpression = callExpression.parameters as? TupleExpression,
+				tupleExpression.pairs.count == 2
+			{
+				if declarationExpression.identifier == "labeledParameter",
+					let stringExpression =
+						tupleExpression.pairs[0].expression as? LiteralStringExpression
+				{
+					let expression =
+						processTemplateNodeExpression(tupleExpression.pairs[1].expression)
+					return LabeledExpression(
+						label: stringExpression.value,
+						expression: expression)
+				}
+			}
+		}
 
-		Compiler.handleWarning(
-			message: "Failed to interpret template",
-			ast: expression,
-			sourceFile: ast.sourceFile,
-			sourceFileRange: expression.range)
-
-		return LabeledExpression(label: nil, expression: ErrorExpression(range: expression.range))
+		return LabeledExpression(
+			label: nil,
+			expression: processTemplateNodeExpression(expression))
 	}
 
 	/// Some String literals are written as sums of string literals (i.e. "a" + "b") or they'd be
