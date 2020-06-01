@@ -1334,17 +1334,17 @@ public class LiteralCodeExpression: Expression {
 
 public class TemplateExpression: Expression {
 	let typeName: String?
-	let pattern: String
+	let templateExpression: Expression
 	let matches: MutableMap<String, Expression>
 
 	init(
 		range: SourceFileRange?,
 		typeName: String?,
-		pattern: String,
+		templateExpression: Expression,
 		matches: MutableMap<String, Expression>)
 	{
 		self.typeName = typeName
-		self.pattern = pattern
+		self.templateExpression = templateExpression
 		self.matches = matches
 		super.init(range: range, name: "TemplateExpression".capitalizedAsCamelCase())
 	}
@@ -1358,7 +1358,7 @@ public class TemplateExpression: Expression {
 
 		return [
 			PrintableTree.initOrNil(typeName),
-			PrintableTree("pattern \"\(pattern)\""),
+			PrintableTree("expressionTemplate", [templateExpression]),
 			PrintableTree(
 				"matches",
 				sortedMatchesTrees.forceCast(to: List<PrintableAsTree?>.self)), ]
@@ -1369,7 +1369,7 @@ public class TemplateExpression: Expression {
 	}
 
 	public static func == (lhs: TemplateExpression, rhs: TemplateExpression) -> Bool {
-		return lhs.pattern == rhs.pattern &&
+		return lhs.templateExpression == rhs.templateExpression &&
 			lhs.matches == rhs.matches
 	}
 }
@@ -1767,7 +1767,7 @@ public class PostfixUnaryExpression: Expression {
 		self.subExpression = subExpression
 		self.operatorSymbol = operatorSymbol
 		self.typeName = typeName
-		super.init(range: range, name: "PrefixUnaryExpression".capitalizedAsCamelCase())
+		super.init(range: range, name: "PostfixUnaryExpression".capitalizedAsCamelCase())
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
@@ -1826,13 +1826,13 @@ public class IfExpression: Expression {
 public class CallExpression: Expression {
 	let function: Expression
 	let parameters: Expression
-	let typeName: String
+	let typeName: String?
 
 	init(
 		range: SourceFileRange?,
 		function: Expression,
 		parameters: Expression,
-		typeName: String)
+		typeName: String?)
 	{
 		self.function = function
 		self.parameters = parameters
@@ -1842,7 +1842,7 @@ public class CallExpression: Expression {
 
 	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
 		return [
-			PrintableTree("type \(typeName)"),
+			PrintableTree.initOrNil("type", [PrintableTree.initOrNil(typeName)]),
 			PrintableTree.ofExpressions("function", [function]),
 			PrintableTree.ofExpressions("parameters", [parameters]), ]
 	}

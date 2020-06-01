@@ -84,8 +84,8 @@ public class TranspilationContext {
 
 	//
 	public struct TranspilationTemplate {
-		let expression: Expression
-		let string: String
+		let swiftExpression: Expression
+		let templateExpression: Expression
 	}
 
 	var templates: MutableList<TranspilationTemplate> = []

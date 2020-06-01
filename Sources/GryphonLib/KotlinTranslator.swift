@@ -1066,15 +1066,16 @@ public class KotlinTranslator {
 
 				// If it's a range
 				if let template = binaryExpression.leftExpression as? TemplateExpression {
-					if template.pattern.contains("..") ||
-						template.pattern.contains("until") ||
-						template.pattern.contains("rangeTo")
-					{
-						let result = KotlinTranslation(range: caseExpression.range)
-						result.append("in ")
-						result.append(translatedExpression)
-						return result
-					}
+					// FIXME:
+//					if template.templateExpression.contains("..") ||
+//						template.templateExpression.contains("until") ||
+//						template.templateExpression.contains("rangeTo")
+//					{
+//						let result = KotlinTranslation(range: caseExpression.range)
+//						result.append("in ")
+//						result.append(translatedExpression)
+//						return result
+//					}
 				}
 
 				return translatedExpression
@@ -1837,7 +1838,7 @@ public class KotlinTranslator {
 		withIndentation indentation: String)
 		throws -> KotlinTranslation
 	{
-		var result = templateExpression.pattern
+		var result = templateExpression.templateExpression
 
 		// Make the matches dictionary into a list
 		let matchesList: MutableList<(String, Expression)> = []
@@ -1858,11 +1859,12 @@ public class KotlinTranslator {
 			let expressionTranslation =
 				try translateExpression(expression, withIndentation: indentation)
 					.resolveTranslation().translation
-			result = result.replacingOccurrences(
-				of: string,
-				with: expressionTranslation)
+			// FIXME:
+//			result = result.replacingOccurrences(
+//				of: string,
+//				with: expressionTranslation)
 		}
-		return KotlinTranslation(range: templateExpression.range, string: result)
+		return KotlinTranslation(range: templateExpression.range, string: result.description)
 	}
 
 	private func translateDeclarationReferenceExpression(

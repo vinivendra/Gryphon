@@ -44,20 +44,35 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 				}
 			}
 
+			// TODO: reset the test file
+
 			var previousExpression: Expression?
-			for expression in topLevelExpressions {
-				if let templateExpression = previousExpression {
-					guard let literalString = getStringLiteralOrSum(expression) else {
-						continue
+			for templateExpression in topLevelExpressions {
+				if let swiftExpression = previousExpression {
+					if let typeName = templateExpression.swiftType,
+						typeName == "LiteralTemplate" ||
+							typeName == "DotTemplate" ||
+							typeName == "CallTemplate"
+					{
+						let processedExpression =
+							processTemplateNodeExpression(templateExpression)
+						self.context.addTemplate(TranspilationContext.TranspilationTemplate(
+							swiftExpression: swiftExpression,
+							templateExpression: processedExpression))
 					}
-					let cleanString = literalString.removingBackslashEscapes
-					self.context.addTemplate(TranspilationContext.TranspilationTemplate(
-						expression: templateExpression,
-						string: cleanString))
-					previousExpression = nil
+					if let literalString = getStringLiteralOrSum(templateExpression) {
+						let cleanString = literalString.removingBackslashEscapes
+						self.context.addTemplate(TranspilationContext.TranspilationTemplate(
+							swiftExpression: swiftExpression,
+							templateExpression: LiteralCodeExpression(
+								range: templateExpression.range,
+								string: cleanString,
+								shouldGoToMainFunction: false)))
+						previousExpression = nil
+					}
 				}
 				else {
-					previousExpression = expression
+					previousExpression = templateExpression
 				}
 			}
 
@@ -65,6 +80,89 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 		}
 
 		return super.replaceFunctionDeclaration(functionDeclaration)
+	}
+
+	private func processTemplateNodeExpression(
+		_ expression: Expression)
+		-> Expression
+	{
+		if let callExpression = expression as? CallExpression {
+			if let dotExpression = callExpression.function as? DotExpression,
+				let declarationExpression =
+					dotExpression.rightExpression as? DeclarationReferenceExpression,
+				let tupleExpression = callExpression.parameters as? TupleExpression,
+				tupleExpression.pairs.count == 2
+			{
+				if declarationExpression.identifier == "call",
+					let functionExpression = tupleExpression.pairs[0].expression as? CallExpression,
+					let parametersExpression =
+						tupleExpression.pairs[1].expression as? ArrayExpression
+				{
+					let function = processTemplateNodeExpression(functionExpression)
+					let parameters = parametersExpression.elements.map {
+							processTemplateParameter($0)
+						}.toMutableList()
+					return CallExpression(
+						range: function.range,
+						function: function,
+						parameters: TupleExpression(
+							range: tupleExpression.range,
+							pairs: parameters),
+						typeName: nil)
+				}
+				if declarationExpression.identifier == "dot",
+					let stringExpression =
+						tupleExpression.pairs[1].expression as? LiteralStringExpression
+				{
+					let left = processTemplateNodeExpression(
+						tupleExpression.pairs[0].expression)
+					let right = LiteralCodeExpression(
+						range: stringExpression.range,
+						string: stringExpression.value,
+						shouldGoToMainFunction: false)
+					return DotExpression(
+						range: left.range,
+						leftExpression: left,
+						rightExpression: right)
+				}
+			}
+		}
+		else if let stringExpression = expression as? LiteralStringExpression {
+			return LiteralCodeExpression(
+				range: stringExpression.range,
+				string: stringExpression.value,
+				shouldGoToMainFunction: false)
+		}
+
+		Compiler.handleWarning(
+			message: "Failed to interpret template",
+			ast: expression,
+			sourceFile: ast.sourceFile,
+			sourceFileRange: expression.range)
+
+		return ErrorExpression(range: expression.range)
+	}
+
+	private func processTemplateParameter(
+		_ expression: Expression)
+		-> LabeledExpression
+	{
+		if let stringLiteralExpression = expression as? LiteralStringExpression {
+			return LabeledExpression(
+				label: nil,
+				expression: LiteralCodeExpression(
+					range: stringLiteralExpression.range,
+					string: stringLiteralExpression.value,
+					shouldGoToMainFunction: false))
+		}
+
+		Compiler.handleWarning(
+			message: "Failed to interpret template",
+			ast: expression,
+			sourceFile: ast.sourceFile,
+			sourceFileRange: expression.range)
+
+		return LabeledExpression(label: nil, expression: ErrorExpression(range: expression.range))
 	}
 
 	/// Some String literals are written as sums of string literals (i.e. "a" + "b") or they'd be
@@ -99,7 +197,7 @@ public class ReplaceTemplatesTranspilationPass: TranspilationPass {
 		-> Expression
 	{
 		for template in context.templates {
-			if let matches = expression.matches(template.expression) {
+			if let matches = expression.matches(template.swiftExpression) {
 
 				let replacedMatches = matches.mapValues { // gryphon ignore
 					self.replaceExpression($0)
@@ -111,7 +209,7 @@ public class ReplaceTemplatesTranspilationPass: TranspilationPass {
 				return TemplateExpression(
 					range: expression.range,
 					typeName: expression.swiftType,
-					pattern: template.string,
+					templateExpression: template.templateExpression,
 					matches: replacedMatches.toMutableMap())
 			}
 		}
@@ -243,9 +341,19 @@ extension Expression {
 		if let lhs = lhs as? CallExpression,
 			let rhs = rhs as? CallExpression
 		{
+			let typeMatches: Bool
+			if let lhsType = lhs.typeName,
+				let rhsType = rhs.typeName
+			{
+				typeMatches = lhsType.isSubtype(of: rhsType)
+			}
+			else {
+				typeMatches = true
+			}
+
 			return lhs.function.matches(rhs.function, matches) &&
 				lhs.parameters.matches(rhs.parameters, matches) &&
-				lhs.typeName.isSubtype(of: rhs.typeName)
+				typeMatches
 		}
 		if let lhs = lhs as? LiteralIntExpression,
 			let rhs = rhs as? LiteralIntExpression

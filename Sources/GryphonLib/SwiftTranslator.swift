@@ -897,29 +897,41 @@ public class SwiftTranslator {
 				ast: postfixExpression)
 		}
 
-		if let rawType = postfixExpression["type"],
-			let declaration = postfixExpression
-				.subtree(named: "Dot Syntax Call Expression")?
-				.subtree(named: "Declaration Reference Expression")?["decl"],
-			let expression = postfixExpression.subtree(at: 1)
-		{
-			let typeName = cleanUpType(rawType)
-			let expressionTranslation = try translateExpression(expression)
-			let operatorInformation = getInformationFromDeclaration(declaration)
+		if let rawType = postfixExpression["type"] {
+			if let declaration = postfixExpression
+					.subtree(named: "Dot Syntax Call Expression")?
+					.subtree(named: "Declaration Reference Expression")?["decl"],
+				let expression = postfixExpression.subtree(at: 1)
+			{
+				let typeName = cleanUpType(rawType)
+				let expressionTranslation = try translateExpression(expression)
+				let operatorInformation = getInformationFromDeclaration(declaration)
 
-			return PostfixUnaryExpression(
-				range: getRangeRecursively(ofNode: postfixExpression),
-				subExpression: expressionTranslation,
-				operatorSymbol: operatorInformation.identifier,
-				typeName: typeName)
+				return PostfixUnaryExpression(
+					range: getRangeRecursively(ofNode: postfixExpression),
+					subExpression: expressionTranslation,
+					operatorSymbol: operatorInformation.identifier,
+					typeName: typeName)
+			}
+			else if let declaration = postfixExpression
+					.subtree(named: "Declaration Reference Expression")?["decl"],
+				let expression = postfixExpression.subtree(at: 1)?.subtree(at: 0)
+			{
+				let typeName = cleanUpType(rawType)
+				let expressionTranslation = try translateExpression(expression)
+				let operatorInformation = getInformationFromDeclaration(declaration)
+
+				return PostfixUnaryExpression(
+					range: getRangeRecursively(ofNode: postfixExpression),
+					subExpression: expressionTranslation,
+					operatorSymbol: operatorInformation.identifier,
+					typeName: typeName)
+			}
 		}
-		else {
-			return try unexpectedExpressionStructureError(
-				"Expected Postfix Unary Expression to have a Dot Syntax Call Expression with a " +
-					"Declaration Reference Expression, for the operator, and expected it to have " +
-				"a second expression as the operand.",
-				ast: postfixExpression)
-		}
+
+		return try unexpectedExpressionStructureError(
+			"Unidentified structure for Postfix Unary Expression.",
+			ast: postfixExpression)
 	}
 
 	internal func translateBinaryExpression(_ binaryExpression: SwiftAST) throws -> Expression {

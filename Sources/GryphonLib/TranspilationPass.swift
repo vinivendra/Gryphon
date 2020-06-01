@@ -655,7 +655,7 @@ public class TranspilationPass {
 		return TemplateExpression(
 			range: templateExpression.range,
 			typeName: templateExpression.typeName,
-			pattern: templateExpression.pattern,
+			templateExpression: templateExpression.templateExpression,
 			matches: newMatches.toMutableMap())
 	}
 
@@ -3617,29 +3617,32 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 		// ok.
 		if let leftExpressionType = dotExpression.leftExpression.swiftType,
 			leftExpressionType.hasPrefix("["),
-			let callExpression = dotExpression.rightExpression as? CallExpression {
-			if (callExpression.typeName.hasPrefix("MutableList") ||
-					callExpression.typeName.hasPrefix("List") ||
-					callExpression.typeName.hasPrefix("MutableMap") ||
-					callExpression.typeName.hasPrefix("Map")),
-				let declarationReference =
-					callExpression.function as? DeclarationReferenceExpression
-			{
-				if declarationReference.identifier.hasPrefix("toMutable"),
-					(declarationReference.typeName.hasPrefix("MutableList") ||
-						declarationReference.typeName.hasPrefix("MutableMap"))
+			let callExpression = dotExpression.rightExpression as? CallExpression
+		{
+			if let callType = callExpression.typeName {
+				if (callType.hasPrefix("MutableList") ||
+						callType.hasPrefix("List") ||
+						callType.hasPrefix("MutableMap") ||
+						callType.hasPrefix("Map")),
+					let declarationReference =
+						callExpression.function as? DeclarationReferenceExpression
 				{
-					return dotExpression
-				}
-				else if declarationReference.identifier.hasPrefix("toList"),
-					declarationReference.typeName.hasPrefix("List")
-				{
-					return dotExpression
-				}
-				else if declarationReference.identifier.hasPrefix("toMap"),
-					declarationReference.typeName.hasPrefix("Map")
-				{
-					return dotExpression
+					if declarationReference.identifier.hasPrefix("toMutable"),
+						(declarationReference.typeName.hasPrefix("MutableList") ||
+							declarationReference.typeName.hasPrefix("MutableMap"))
+					{
+						return dotExpression
+					}
+					else if declarationReference.identifier.hasPrefix("toList"),
+						declarationReference.typeName.hasPrefix("List")
+					{
+						return dotExpression
+					}
+					else if declarationReference.identifier.hasPrefix("toMap"),
+						declarationReference.typeName.hasPrefix("Map")
+					{
+						return dotExpression
+					}
 				}
 			}
 		}
