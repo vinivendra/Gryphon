@@ -1068,17 +1068,15 @@ public class KotlinTranslator {
 					withIndentation: indentation)
 
 				// If it's a range
-				if let template = binaryExpression.leftExpression as? TemplateExpression {
-					// FIXME:
-//					if template.templateExpression.contains("..") ||
-//						template.templateExpression.contains("until") ||
-//						template.templateExpression.contains("rangeTo")
-//					{
-//						let result = KotlinTranslation(range: caseExpression.range)
-//						result.append("in ")
-//						result.append(translatedExpression)
-//						return result
-//					}
+				if let template = binaryExpression.leftExpression as? TemplateExpression,
+					let typeName = template.typeName,
+					typeName.contains("Range"),
+					binaryExpression.operatorSymbol == "~="
+				{
+					let result = KotlinTranslation(range: caseExpression.range)
+					result.append("in ")
+					result.append(translatedExpression)
+					return result
 				}
 
 				return translatedExpression
@@ -1842,7 +1840,7 @@ public class KotlinTranslator {
 		// If we're translating a template, this expression might be a placeholder that has to be
 		// replaced
 		if let currentTemplateMatches = templateMatchesStack.last {
-			var result = literalCodeExpression.string
+			var result = literalCodeExpression.string.removingBackslashEscapes
 			for match in currentTemplateMatches {
 				let placeholderName = match.0
 				let replacementExpression = match.1
@@ -1858,7 +1856,7 @@ public class KotlinTranslator {
 			}
 			return KotlinTranslation(
 				range: literalCodeExpression.range,
-				string: result.removingBackslashEscapes)
+				string: result)
 		}
 		else {
 			return KotlinTranslation(
