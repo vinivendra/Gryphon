@@ -52,7 +52,8 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 					if let typeName = templateExpression.swiftType,
 						typeName == "LiteralTemplate" ||
 							typeName == "DotTemplate" ||
-							typeName == "CallTemplate"
+							typeName == "CallTemplate" ||
+							typeName == "ConcatenatedTemplate"
 					{
 						let processedExpression =
 							processTemplateNodeExpression(templateExpression)
@@ -131,6 +132,16 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 				range: stringExpression.range,
 				string: stringExpression.value,
 				shouldGoToMainFunction: false)
+		}
+		else if let binaryOperatorExpression = expression as? BinaryOperatorExpression,
+			binaryOperatorExpression.operatorSymbol == "+"
+		{
+			return ConcatenationExpression(
+				range: expression.range,
+				leftExpression: processTemplateNodeExpression(
+					binaryOperatorExpression.leftExpression),
+				rightExpression: processTemplateNodeExpression(
+					binaryOperatorExpression.rightExpression))
 		}
 
 		Compiler.handleWarning(

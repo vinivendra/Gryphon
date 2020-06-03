@@ -555,6 +555,9 @@ public class TranspilationPass {
 		if let expression = expression as? LiteralCodeExpression {
 			return replaceLiteralCodeExpression(expression)
 		}
+		if let expression = expression as? ConcatenationExpression {
+			return replaceConcatenationExpression(expression)
+		}
 		if let expression = expression as? ParenthesesExpression {
 			return replaceParenthesesExpression(expression)
 		}
@@ -655,7 +658,7 @@ public class TranspilationPass {
 		return TemplateExpression(
 			range: templateExpression.range,
 			typeName: templateExpression.typeName,
-			templateExpression: templateExpression.templateExpression,
+			templateExpression: replaceExpression(templateExpression.templateExpression),
 			matches: newMatches.toMutableMap())
 	}
 
@@ -664,6 +667,16 @@ public class TranspilationPass {
 		-> Expression
 	{
 		return literalCodeExpression
+	}
+
+	func replaceConcatenationExpression(
+		_ concatenationExpression: ConcatenationExpression)
+		-> Expression
+	{
+		return ConcatenationExpression(
+			range: concatenationExpression.range,
+			leftExpression: replaceExpression(concatenationExpression.leftExpression),
+			rightExpression: replaceExpression(concatenationExpression.rightExpression))
 	}
 
 	func replaceParenthesesExpression( // gryphon annotation: open

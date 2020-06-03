@@ -1332,6 +1332,34 @@ public class LiteralCodeExpression: Expression {
 	}
 }
 
+/// Represents two expressions whose translations should be joined in the output code, with no
+/// characters between them. Used mainly for concatenating templates.
+public class ConcatenationExpression: Expression {
+	let leftExpression: Expression
+	let rightExpression: Expression
+
+	init(range: SourceFileRange?, leftExpression: Expression, rightExpression: Expression) {
+		self.leftExpression = leftExpression
+		self.rightExpression = rightExpression
+		super.init(range: range, name: "ConcatenationExpression".capitalizedAsCamelCase())
+	}
+
+	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+		return [
+			PrintableTree.ofExpressions("left", [leftExpression]),
+			PrintableTree.ofExpressions("right", [rightExpression]), ]
+	}
+
+	override var swiftType: String? { // gryphon annotation: override
+		return nil
+	}
+
+	public static func == (lhs: ConcatenationExpression, rhs: ConcatenationExpression) -> Bool {
+		return lhs.leftExpression == rhs.leftExpression &&
+			lhs.rightExpression == rhs.rightExpression
+	}
+}
+
 public class TemplateExpression: Expression {
 	let typeName: String?
 	let templateExpression: Expression

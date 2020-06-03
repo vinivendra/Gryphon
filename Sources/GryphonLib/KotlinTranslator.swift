@@ -32,6 +32,9 @@ public class KotlinTranslator {
 	private let context: TranspilationContext
 	private var sourceFile: SourceFile?
 
+	/// Stores the list of matches of any templates that are currently being translated.
+	private let templateMatchesStack: MutableList<List<(String, Expression)>> = []
+
 	// MARK: - Interface
 
 	public init(context: TranspilationContext) {
@@ -1260,7 +1263,7 @@ public class KotlinTranslator {
 
 	// MARK: - Expression translations
 
-	private func translateExpression(
+	internal func translateExpression(
 		_ expression: Expression,
 		withIndentation indentation: String)
 		throws -> KotlinTranslation
@@ -1269,7 +1272,14 @@ public class KotlinTranslator {
 			return try translateTemplateExpression(templateExpression, withIndentation: indentation)
 		}
 		if let literalCodeExpression = expression as? LiteralCodeExpression {
-			return translateLiteralCodeExpression(literalCodeExpression)
+			return try translateLiteralCodeExpression(
+				literalCodeExpression,
+				withIndentation: indentation)
+		}
+		if let concatenationExpression = expression as? ConcatenationExpression {
+			return try translateConcatenationExpression(
+				concatenationExpression,
+				withIndentation: indentation)
 		}
 		if let arrayExpression = expression as? ArrayExpression {
 			return try translateArrayExpression(arrayExpression, withIndentation: indentation)
@@ -1825,12 +1835,49 @@ public class KotlinTranslator {
 	}
 
 	private func translateLiteralCodeExpression(
-		_ expression: LiteralCodeExpression)
-		-> KotlinTranslation
+		_ literalCodeExpression: LiteralCodeExpression,
+		withIndentation indentation: String)
+		throws -> KotlinTranslation
 	{
-		return KotlinTranslation(
-			range: expression.range,
-			string: expression.string.removingBackslashEscapes)
+		// If we're translating a template, this expression might be a placeholder that has to be
+		// replaced
+		if let currentTemplateMatches = templateMatchesStack.last {
+			var result = literalCodeExpression.string
+			for match in currentTemplateMatches {
+				let placeholderName = match.0
+				let replacementExpression = match.1
+
+				if result.contains(placeholderName) {
+					let expressionTranslation =
+						try translateExpression(replacementExpression, withIndentation: indentation)
+							.resolveTranslation().translation
+					result = result.replacingOccurrences(
+						of: placeholderName,
+						with: expressionTranslation)
+				}
+			}
+			return KotlinTranslation(
+				range: literalCodeExpression.range,
+				string: result.removingBackslashEscapes)
+		}
+		else {
+			return KotlinTranslation(
+				range: literalCodeExpression.range,
+				string: literalCodeExpression.string.removingBackslashEscapes)
+		}
+	}
+
+	private func translateConcatenationExpression(
+		_ expression: ConcatenationExpression,
+		withIndentation indentation: String)
+		throws -> KotlinTranslation
+	{
+		let result = KotlinTranslation(range: expression.range)
+		try result.append(
+			translateExpression(expression.leftExpression, withIndentation: indentation))
+		try result.append(
+			translateExpression(expression.rightExpression, withIndentation: indentation))
+		return result
 	}
 
 	private func translateTemplateExpression(
@@ -1838,8 +1885,6 @@ public class KotlinTranslator {
 		withIndentation indentation: String)
 		throws -> KotlinTranslation
 	{
-		var result = templateExpression.templateExpression
-
 		// Make the matches dictionary into a list
 		let matchesList: MutableList<(String, Expression)> = []
 		for (string, expression) in templateExpression.matches {
@@ -1852,19 +1897,12 @@ public class KotlinTranslator {
 				a.0.count > b.0.count
 			}
 
-		for match in sortedMatches {
-			let string = match.0
-			let expression = match.1
-
-			let expressionTranslation =
-				try translateExpression(expression, withIndentation: indentation)
-					.resolveTranslation().translation
-			// FIXME:
-//			result = result.replacingOccurrences(
-//				of: string,
-//				with: expressionTranslation)
-		}
-		return KotlinTranslation(range: templateExpression.range, string: result.description)
+		templateMatchesStack.append(sortedMatches)
+		let result = try translateExpression(
+			templateExpression.templateExpression,
+			withIndentation: indentation)
+		templateMatchesStack.removeLast()
+		return result
 	}
 
 	private func translateDeclarationReferenceExpression(
