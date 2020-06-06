@@ -952,6 +952,132 @@ internal let gryphonTemplatesLibraryFileContents = """
 
 import Foundation
 
+// MARK: - Define template classes and operators
+
+private class Template { // gryphon ignore
+	static func dot(_ left: Template, _ right: String) -> DotTemplate {
+		return DotTemplate(left, right)
+	}
+
+	static func dot(_ left: String, _ right: String) -> DotTemplate {
+		return DotTemplate(LiteralTemplate(string: left), right)
+	}
+
+	static func call(_ function: Template, _ parameters: [ParameterTemplate]) -> CallTemplate {
+		return CallTemplate(function, parameters)
+	}
+
+	static func call(_ function: String, _ parameters: [ParameterTemplate]) -> CallTemplate {
+		return CallTemplate(function, parameters)
+	}
+}
+
+private class DotTemplate: Template { // gryphon ignore
+	let left: Template
+	let right: String
+
+	init(_ left: Template, _ right: String) {
+		self.left = left
+		self.right = right
+	}
+}
+
+private class CallTemplate: Template { // gryphon ignore
+	let function: Template
+	let parameters: [ParameterTemplate]
+
+	init(_ function: Template, _ parameters: [ParameterTemplate]) {
+		self.function = function
+		self.parameters = parameters
+	}
+
+	//
+	init(_ function: String, _ parameters: [ParameterTemplate]) {
+		self.function = LiteralTemplate(string: function)
+		self.parameters = parameters
+	}
+}
+
+private class ParameterTemplate: ExpressibleByStringLiteral { // gryphon ignore
+	let label: String?
+	let template: Template
+
+	private init(_ label: String?, _ template: Template) {
+		if let existingLabel = label {
+			if existingLabel == "_" || existingLabel == "" {
+				self.label = nil
+			}
+			else {
+				self.label = label
+			}
+		}
+		else {
+			self.label = label
+		}
+
+		self.template = template
+	}
+
+	required init(stringLiteral: String) {
+		self.label = nil
+		self.template = LiteralTemplate(string: stringLiteral)
+	}
+
+	static func labeledParameter(_ label: String?, _ template: Template) -> ParameterTemplate {
+		return ParameterTemplate(label, template)
+	}
+
+	static func labeledParameter(_ label: String?, _ template: String) -> ParameterTemplate {
+		return ParameterTemplate(label, LiteralTemplate(string: template))
+	}
+
+	static func dot(_ left: Template, _ right: String) -> ParameterTemplate {
+		return ParameterTemplate(nil, DotTemplate(left, right))
+	}
+
+	static func dot(_ left: String, _ right: String) -> ParameterTemplate {
+		return ParameterTemplate(nil, DotTemplate(LiteralTemplate(string: left), right))
+	}
+
+	static func call(_ function: Template, _ parameters: [ParameterTemplate]) -> ParameterTemplate {
+		return ParameterTemplate(nil, CallTemplate(function, parameters))
+	}
+
+	static func call(_ function: String, _ parameters: [ParameterTemplate]) -> ParameterTemplate {
+		return ParameterTemplate(nil, CallTemplate(function, parameters))
+	}
+}
+
+private class LiteralTemplate: Template { // gryphon ignore
+	let string: String
+
+	init(string: String) {
+		self.string = string
+	}
+}
+
+private class ConcatenatedTemplate: Template { // gryphon ignore
+	let left: Template
+	let right: Template
+
+	init(left: Template, right: Template) {
+		self.left = left
+		self.right = right
+	}
+}
+
+private func + (left: Template, right: Template) -> ConcatenatedTemplate { // gryphon ignore
+	ConcatenatedTemplate(left: left, right: right)
+}
+
+private func + (left: String, right: Template) -> ConcatenatedTemplate { // gryphon ignore
+	ConcatenatedTemplate(left: LiteralTemplate(string: left), right: right)
+}
+
+private func + (left: Template, right: String) -> ConcatenatedTemplate { // gryphon ignore
+	ConcatenatedTemplate(left: left, right: LiteralTemplate(string: right))
+}
+
 // MARK: - Define special types as stand-ins for some protocols and other types
 
 // Replacement for Hashable
@@ -1023,16 +1149,19 @@ private func gryphonTemplates() {
 
 	// System
 	_ = print(_any)
-	_ = "println(_any)"
+	_ = Template.call("println", ["_any"])
 
 	_ = print(_any, terminator: "")
-	_ = "print(_any)"
+	_ = Template.call("print", ["_any"])
 
 	_ = fatalError(_string)
-	_ = "println(\\\"Fatal error: \(dollarSign)\(kotlinStringInterpolation)\\\"); exitProcess(-1)"
+	_ = Template.call("println",
+			["\\\"Fatal error: \(dollarSign)\(kotlinStringInterpolation)\\\""]) +
+		"; " +
+		Template.call("exitProcess", ["-1"])
 
 	_ = assert(_bool)
-	_ = "assert(_bool)"
+	_ = Template.call("assert", ["_bool"])
 
 	// Darwin
 	_ = sqrt(_double)
