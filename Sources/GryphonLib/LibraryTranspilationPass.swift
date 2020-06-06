@@ -89,41 +89,44 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 	{
 		if let callExpression = expression as? CallExpression {
 			if let dotExpression = callExpression.function as? DotExpression,
-				let declarationExpression =
-					dotExpression.rightExpression as? DeclarationReferenceExpression,
 				let tupleExpression = callExpression.parameters as? TupleExpression,
 				tupleExpression.pairs.count == 2
 			{
-				if declarationExpression.identifier == "call",
-					let parametersExpression =
-						tupleExpression.pairs[1].expression as? ArrayExpression
+				if let declarationExpression =
+					dotExpression.rightExpression as? DeclarationReferenceExpression
 				{
-					let function = processTemplateNodeExpression(
-						tupleExpression.pairs[0].expression)
-					let parameters = parametersExpression.elements.map {
-							processTemplateParameter($0)
-						}.toMutableList()
-					return CallExpression(
-						range: function.range,
-						function: function,
-						parameters: TupleExpression(
-							range: tupleExpression.range,
-							pairs: parameters),
-						typeName: nil)
-				}
-				if declarationExpression.identifier == "dot",
-					let stringExpression =
-						tupleExpression.pairs[1].expression as? LiteralStringExpression
-				{
-					let left = processTemplateNodeExpression(tupleExpression.pairs[0].expression)
-					let right = LiteralCodeExpression(
-						range: stringExpression.range,
-						string: stringExpression.value,
-						shouldGoToMainFunction: false)
-					return DotExpression(
-						range: left.range,
-						leftExpression: left,
-						rightExpression: right)
+					if declarationExpression.identifier == "call",
+						let parametersExpression =
+							tupleExpression.pairs[1].expression as? ArrayExpression
+					{
+						let function = processTemplateNodeExpression(
+							tupleExpression.pairs[0].expression)
+						let parameters = parametersExpression.elements.map {
+								processTemplateParameter($0)
+							}.toMutableList()
+						return CallExpression(
+							range: function.range,
+							function: function,
+							parameters: TupleExpression(
+								range: tupleExpression.range,
+								pairs: parameters),
+							typeName: nil)
+					}
+					if declarationExpression.identifier == "dot",
+						let stringExpression =
+							tupleExpression.pairs[1].expression as? LiteralStringExpression
+					{
+						let left =
+							processTemplateNodeExpression(tupleExpression.pairs[0].expression)
+						let right = LiteralCodeExpression(
+							range: stringExpression.range,
+							string: stringExpression.value,
+							shouldGoToMainFunction: false)
+						return DotExpression(
+							range: left.range,
+							leftExpression: left,
+							rightExpression: right)
+					}
 				}
 			}
 		}
@@ -157,22 +160,22 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 		_ expression: Expression)
 		-> LabeledExpression
 	{
-		if let stringLiteralExpression = expression as? LiteralStringExpression {
+		if let expression = expression as? LiteralStringExpression {
 			return LabeledExpression(
 				label: nil,
 				expression: LiteralCodeExpression(
-					range: stringLiteralExpression.range,
-					string: stringLiteralExpression.value,
+					range: expression.range,
+					string: expression.value,
 					shouldGoToMainFunction: false))
 		}
-		else if let callExpression = expression as? CallExpression {
-			if let dotExpression = callExpression.function as? DotExpression,
-				let declarationExpression =
-					dotExpression.rightExpression as? DeclarationReferenceExpression,
-				let tupleExpression = callExpression.parameters as? TupleExpression,
+		else if let expression = expression as? CallExpression {
+			if let dotExpression = expression.function as? DotExpression,
+				let tupleExpression = expression.parameters as? TupleExpression,
 				tupleExpression.pairs.count == 2
 			{
-				if declarationExpression.identifier == "labeledParameter",
+				if let declarationExpression =
+						dotExpression.rightExpression as? DeclarationReferenceExpression,
+					declarationExpression.identifier == "labeledParameter",
 					let stringExpression =
 						tupleExpression.pairs[0].expression as? LiteralStringExpression
 				{

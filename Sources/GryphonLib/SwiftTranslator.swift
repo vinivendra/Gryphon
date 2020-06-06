@@ -898,14 +898,15 @@ public class SwiftTranslator {
 		}
 
 		if let rawType = postfixExpression["type"] {
-			if let declaration = postfixExpression
+			// Try to get the operator either from a dot expression call or directly
+			if let dotDeclaration = postfixExpression
 					.subtree(named: "Dot Syntax Call Expression")?
 					.subtree(named: "Declaration Reference Expression")?["decl"],
-				let expression = postfixExpression.subtree(at: 1)
+				let dotExpression = postfixExpression.subtree(at: 1)
 			{
 				let typeName = cleanUpType(rawType)
-				let expressionTranslation = try translateExpression(expression)
-				let operatorInformation = getInformationFromDeclaration(declaration)
+				let expressionTranslation = try translateExpression(dotExpression)
+				let operatorInformation = getInformationFromDeclaration(dotDeclaration)
 
 				return PostfixUnaryExpression(
 					range: getRangeRecursively(ofNode: postfixExpression),
@@ -913,13 +914,13 @@ public class SwiftTranslator {
 					operatorSymbol: operatorInformation.identifier,
 					typeName: typeName)
 			}
-			else if let declaration = postfixExpression
+			else if let directDeclaration = postfixExpression
 					.subtree(named: "Declaration Reference Expression")?["decl"],
-				let expression = postfixExpression.subtree(at: 1)?.subtree(at: 0)
+				let directExpression = postfixExpression.subtree(at: 1)?.subtree(at: 0)
 			{
 				let typeName = cleanUpType(rawType)
-				let expressionTranslation = try translateExpression(expression)
-				let operatorInformation = getInformationFromDeclaration(declaration)
+				let expressionTranslation = try translateExpression(directExpression)
+				let operatorInformation = getInformationFromDeclaration(directDeclaration)
 
 				return PostfixUnaryExpression(
 					range: getRangeRecursively(ofNode: postfixExpression),
