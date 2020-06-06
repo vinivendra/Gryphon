@@ -2627,9 +2627,12 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 		else if let typeExpression = functionExpression as? TypeExpression {
 			return typeExpression.typeName
 		}
+		else if let literalCodeExpression = functionExpression as? LiteralCodeExpression {
+			return literalCodeExpression.string
+		}
 		else {
 			Compiler.handleWarning(
-				message: "Unable to get label for function:\(functionExpression)",
+				message: "Unable to get label for function.",
 				sourceFile: ast.sourceFile,
 				sourceFileRange: functionExpression.range)
 			return nil
