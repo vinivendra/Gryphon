@@ -72,9 +72,8 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 						previousExpression = nil
 					}
 				}
-				else {
-					previousExpression = templateExpression
-				}
+
+				previousExpression = templateExpression
 			}
 
 			return []
