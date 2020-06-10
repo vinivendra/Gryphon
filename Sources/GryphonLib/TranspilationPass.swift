@@ -960,6 +960,7 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 				isStatic: false,
 				isMutating: false,
 				isPure: false,
+				isJustProtocolInterface: false,
 				extendsType: variableDeclaration.extendsType,
 				statements: getter.statements,
 				access: "public",
@@ -1128,6 +1129,7 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 					isStatic: initializerDeclaration.isStatic,
 					isMutating: initializerDeclaration.isMutating,
 					isPure: initializerDeclaration.isPure,
+					isJustProtocolInterface: initializerDeclaration.isJustProtocolInterface,
 					extendsType: initializerDeclaration.extendsType,
 					statements: newStatements,
 					access: initializerDeclaration.access,
@@ -2010,6 +2012,7 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 			isStatic: functionDeclaration.isStatic,
 			isMutating: functionDeclaration.isMutating,
 			isPure: functionDeclaration.isPure,
+			isJustProtocolInterface: functionDeclaration.isJustProtocolInterface,
 			extendsType: functionDeclaration.extendsType,
 			statements: functionDeclaration.statements,
 			access: translationResult.access,
@@ -4054,6 +4057,7 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 			isStatic: false,
 			isMutating: functionDeclaration.isMutating,
 			isPure: functionDeclaration.isPure,
+			isJustProtocolInterface: functionDeclaration.isJustProtocolInterface,
 			extendsType: nil,
 			statements: newStatements,
 			access: "public",
@@ -4234,6 +4238,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 			isStatic: false,
 			isMutating: false,
 			isPure: false,
+			isJustProtocolInterface: false,
 			extendsType: nil,
 			statements: [switchStatement],
 			access: enumDeclaration.access,
@@ -4394,6 +4399,7 @@ public class FixProtocolContentsTranspilationPass: TranspilationPass {
 	{
 		if isInProtocol {
 			functionDeclaration.statements = nil
+			functionDeclaration.isJustProtocolInterface = true
 			return super.processFunctionDeclaration(functionDeclaration)
 		}
 		else {

@@ -521,6 +521,7 @@ public class FunctionDeclaration: Statement {
 	var isStatic: Bool
 	var isMutating: Bool
 	var isPure: Bool
+	var isJustProtocolInterface: Bool
 	var extendsType: String?
 	var statements: MutableList<Statement>?
 	var access: String?
@@ -538,6 +539,7 @@ public class FunctionDeclaration: Statement {
 		isStatic: Bool,
 		isMutating: Bool,
 		isPure: Bool,
+		isJustProtocolInterface: Bool,
 		extendsType: String?,
 		statements: MutableList<Statement>?,
 		access: String?,
@@ -554,6 +556,7 @@ public class FunctionDeclaration: Statement {
 		self.isStatic = isStatic
 		self.isMutating = isMutating
 		self.isPure = isPure
+		self.isJustProtocolInterface = isJustProtocolInterface
 		self.extendsType = extendsType
 		self.statements = statements
 		self.access = access
@@ -643,6 +646,7 @@ public class InitializerDeclaration: FunctionDeclaration {
 			isStatic: isStatic,
 			isMutating: isMutating,
 			isPure: isPure,
+			isJustProtocolInterface: false,
 			extendsType: extendsType,
 			statements: statements,
 			access: access,

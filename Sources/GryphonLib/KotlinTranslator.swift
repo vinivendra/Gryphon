@@ -668,6 +668,10 @@ public class KotlinTranslator {
 				result.append(": ")
 				result.append(superCallTranslation)
 			}
+			guard functionDeclaration.isJustProtocolInterface == false else {
+				result.append("\n")
+				return result
+			}
 			result.append(" {\n")
 
 			if result.resolveTranslation().translation.count >= KotlinTranslator.lineLimit {
