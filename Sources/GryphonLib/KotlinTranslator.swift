@@ -2020,7 +2020,9 @@ public class KotlinTranslator {
 	// MARK: - Supporting methods
 
 	internal func translateType(_ typeName: String) -> String {
-		let typeName = typeName.replacingOccurrences(of: "()", with: "Unit")
+		let typeName = typeName
+				.replacingOccurrences(of: "()", with: "Unit")
+				.replacingOccurrences(of: "Void", with: "Unit")
 
 		if typeName.hasSuffix("?") {
 			return translateType(String(typeName.dropLast())) + "?"
