@@ -76,6 +76,7 @@ g2 { 0 }
 func f3(_ closure: () throws -> ()) { }
 f3 { }
 
+// Test closures witch return Void instead of ()
 func f4(_ closure: () -> Void) { }
 f4 { }
 
