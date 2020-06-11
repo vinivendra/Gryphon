@@ -34,7 +34,7 @@ Use [Mint](https://github.com/yonaskolb/Mint) to install programs that use the S
 $ brew install mint
 $ mint install vinivendra/Gryphon
 $ gryphon --version
-Gryphon version 0.6.1
+Gryphon version 0.7
 ````
 
 ### GitPod
@@ -52,7 +52,7 @@ $ git clone https://github.com/vinivendra/Gryphon.git
 $ cd Gryphon
 $ bash install.sh
 $ gryphon --version
-Gryphon version 0.6.1
+Gryphon version 0.7
 ````
 
 ### Docker
@@ -66,7 +66,7 @@ $ docker build -t gryphon .
 $ docker run -it --rm --privileged -v /absolute/path/to/current/directory/:/app/Gryphon gryphon
 # bash install.sh
 # gryphon --version
-Gryphon version 0.6.1
+Gryphon version 0.7
 ````
 
 
