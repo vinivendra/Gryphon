@@ -33,7 +33,7 @@ Gryphon supports the Swift package manager, so the easiest way to install it is 
 $ brew install mint
 $ mint install vinivendra/Gryphon
 $ gryphon --version
-Gryphon version 0.6.1
+Gryphon version 0.7
 ````
 
 If you're on Linux (or if you don't wanna use Mint), it might be easier to install Gryphon from the source:
@@ -43,7 +43,7 @@ $ git clone https://github.com/vinivendra/Gryphon.git
 $ cd Gryphon
 $ bash install.sh
 $ gryphon --version
-Gryphon version 0.6.1
+Gryphon version 0.7
 ````
 
 ### Step 3: Bonus dependencies
@@ -88,7 +88,7 @@ The first time you run the container, you can install Gryphon with:
 ```` bash
 $ bash install.sh
 $ gryphon --version
-Gryphon version 0.6.1
+Gryphon version 0.7
 ````
 
 ## Option 3: Using Gryphon on GitPod
