@@ -65,13 +65,7 @@ $ git clone https://github.com/vinivendra/Gryphon.git --branch development
 $ cd Gryphon
 ````
 
-Gryphon is set up as a Swift package, so you can start looking at the code right away by opening it on Xcode...
-
-```` bash
-$ open Package.swift -a Xcode
-````
-
-...or manually creating an Xcode project:
+Gryphon is set up as a Swift package, so you can start looking at the code right away by creating an Xcode project:
 
 ```` bash
 $ swift package generate-xcodeproj
