@@ -573,41 +573,31 @@ private enum class C5 {
 internal interface D1 {
 	val a: Int
 
-	fun b() {
-
-	}
+	fun b()
 }
 
 interface D2 {
 	val a: Int
 
-	fun b() {
-
-	}
+	fun b()
 }
 
 internal interface D3 {
 	val a: Int
 
-	fun b() {
-
-	}
+	fun b()
 }
 
 private interface D4 {
 	val a: Int
 
-	fun b() {
-
-	}
+	fun b()
 }
 
 private interface D5 {
 	val a: Int
 
-	fun b() {
-
-	}
+	fun b()
 }
 
 internal val String.a1: Int
@@ -668,9 +658,7 @@ open class E1 {
 public interface E2 {
 	val a: Int
 
-	fun b() {
-
-	}
+	fun b()
 }
 
 public enum class E3 {

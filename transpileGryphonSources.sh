@@ -1,3 +1,5 @@
+#!/bin/bash
+
 ./.build/debug/Gryphon \
 	--indentation=4 \
 	--quiet \

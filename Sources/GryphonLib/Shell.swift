@@ -65,6 +65,8 @@ public struct Shell {
 		fromFolder currentFolder: String? = nil)
 		-> CommandOutput
 	{
+		Compiler.log("🛠  \(arguments.joined(separator: " "))")
+
 		let process = Process()
 		let standardOutput = Pipe()
 		let standardError = Pipe()
