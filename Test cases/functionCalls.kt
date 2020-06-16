@@ -83,6 +83,10 @@ internal fun bar3(a: Int = 1, b: Int) {
 internal fun bar4(a: Int, b: Int = 2) {
 }
 
+internal open class A {
+	open var baz: (() -> Unit)? = null
+}
+
 internal fun f(a: Int = 0, b: Int = 0, c: Int = 0) {
 	println("${a} ${b} ${c}")
 }
@@ -152,6 +156,15 @@ fun main(args: Array<String>) {
 	bar3(a = 0, b = 0)
 	bar4(a = 0)
 	bar4(a = 0, b = 0)
+
+	var baz: (() -> Unit)? = null
+
+	baz?.invoke()
+	A().baz?.invoke()
+
+	val a: A? = null
+
+	a?.baz?.invoke()
 	f(a = 1)
 	f(b = 1)
 	f(a = 1, b = 1)
