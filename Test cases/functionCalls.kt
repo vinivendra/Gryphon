@@ -152,6 +152,10 @@ fun main(args: Array<String>) {
 	bar3(a = 0, b = 0)
 	bar4(a = 0)
 	bar4(a = 0, b = 0)
+
+	var baz: (() -> Unit)? = null
+
+	baz?.invoke()
 	f(a = 1)
 	f(b = 1)
 	f(a = 1, b = 1)

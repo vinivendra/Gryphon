@@ -2498,6 +2498,36 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 	}
 }
 
+/// Optional function calls like `foo?()` have to be translated to Kotlin as `foo?.invoke()`.
+public class OptionalFunctionCallsTranspilationPass: TranspilationPass {
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
+
+	override func processCallExpression( // gryphon annotation: override
+		_ callExpression: CallExpression)
+		-> CallExpression
+	{
+		if callExpression.function is OptionalExpression {
+			return CallExpression(
+				range: callExpression.range,
+				function: DotExpression(
+					range: callExpression.range,
+					leftExpression: callExpression.function,
+					rightExpression: DeclarationReferenceExpression(
+						range: callExpression.range,
+						identifier: "invoke",
+						typeName: callExpression.typeName,
+						isStandardLibrary: false,
+						isImplicit: false)),
+				parameters: callExpression.parameters,
+				typeName: callExpression.typeName)
+		}
+		else {
+			return super.processCallExpression(callExpression)
+		}
+	}
+}
+
 /// Gryphon's custom data structures use different initializers that need to be turned into the
 /// corresponding Kotlin function calls (i.e. `MutableList<Int>()` to `mutableListOf<Int>()`).
 public class DataStructureInitializersTranspilationPass: TranspilationPass {
@@ -4541,6 +4571,7 @@ public extension TranspilationPass {
 		ast = SelfToThisTranspilationPass(ast: ast, context: context).run()
 		ast = AnonymousParametersTranspilationPass(ast: ast, context: context).run()
 		ast = CovarianceInitsAsCallsTranspilationPass(ast: ast, context: context).run()
+		ast = OptionalFunctionCallsTranspilationPass(ast: ast, context: context).run()
 		ast = DataStructureInitializersTranspilationPass(ast: ast, context: context).run()
 		ast = TuplesToPairsTranspilationPass(ast: ast, context: context).run()
 		ast = TupleMembersTranspilationPass(ast: ast, context: context).run()
