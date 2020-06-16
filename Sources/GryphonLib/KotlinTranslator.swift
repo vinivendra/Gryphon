@@ -2096,7 +2096,7 @@ public class KotlinTranslator {
 				}
 			}
 			else {
-				return translateType(String(typeName.dropFirst().dropLast()))
+				return "(" + translateType(String(typeName.dropFirst().dropLast())) + ")"
 			}
 		}
 		else if typeName.contains(" -> ") {
