@@ -82,4 +82,5 @@ fun main(args: Array<String>) {
 	val array: List<Int> = listOf(1, 2, 3)
 	val arrayIndex: Int? = array.indexOf(1)
 	val bla: Int = 1
+	var foo: (() -> Unit)? = null
 }
