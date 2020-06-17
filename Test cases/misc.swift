@@ -104,3 +104,11 @@ let arrayIndex = array.firstIndex(of: 1)
 
 // Test Array<Whatever>.ArrayLiteralElement
 let bla: Array<Int>.ArrayLiteralElement = 1
+
+// Test tuples as pairs
+let tuple = (1, 2)
+print(tuple.0)
+print(tuple.1)
+
+// Tuple inside tuple
+print((1, 2).0)
