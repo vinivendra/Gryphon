@@ -247,6 +247,10 @@ public class ReplaceTemplatesTranspilationPass: TranspilationPass {
 				pass.range = expression.range
 				let result = pass.replaceExpression(template.templateExpression)
 
+				if let swiftType = expression.swiftType {
+					result.swiftType = swiftType
+				}
+
 				return result
 			}
 		}
@@ -254,7 +258,9 @@ public class ReplaceTemplatesTranspilationPass: TranspilationPass {
 	}
 }
 
-/// To be called on a matched template expression
+/// To be called on a strutured template expression; replaces any matches inside it with the given
+/// expressions in the `matches` list. Any created expressions in the process have their ranges set
+/// to the given `range`.
 private class ReplaceTemplateMatchesTranspilationPass: TranspilationPass {
 // gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
 // gryphon insert:     super(ast, context) { }
