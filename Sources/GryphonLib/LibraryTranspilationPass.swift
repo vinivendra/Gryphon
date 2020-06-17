@@ -270,8 +270,6 @@ private class ReplaceTemplateMatchesTranspilationPass: TranspilationPass {
 		_ literalCodeExpression: LiteralCodeExpression)
 		-> Expression
 	{
-		// TODO: sort matches
-
 		let string = literalCodeExpression.string
 		let stringEndIndex = string.endIndex
 		var previousMatchEndIndex = string.startIndex
