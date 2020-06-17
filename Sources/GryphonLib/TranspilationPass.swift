@@ -3863,10 +3863,16 @@ public class AddParenthesesForOperatorsInIfsTranspilationPass: TranspilationPass
 	}
 }
 
-/// Sends let declarations to before the if statement, and replaces them with `x != null` conditions
+/// Sends let declarations to before the if statement, and replaces them with `x != null`
+/// conditions. Also adds optionals to sequential declarations:
+///
+/// 	val a: Foo? = b
+/// 	val result: Double? = a.c // This `a` should be `a?`
 public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
 	// gryphon insert:     super(ast, context) { }
+
+	let currentDeclarations: MutableList<String> = []
 
 	/// Send the let declarations to before the if statement
 	override func replaceIfStatement( // gryphon annotation: override
@@ -3875,16 +3881,39 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 	{
 		let gatheredDeclarations = gatherLetDeclarations(ifStatement)
 
-		// When if-lets are rearranged, it's possible to have two equal declarations (i.e.
+		// When if-lets are rearranged, it's possible to have two equal declarations (e.g.
 		// `val a = b as? String` showing up twice) coming from two different `else if`s, which
 		// create conflicts in Kotlin.
 		let uniqueDeclarations = gatheredDeclarations.removingDuplicates()
 
-		let result = uniqueDeclarations.forceCast(to: MutableList<Statement>.self)
+		// Add optionals to declarations
+		let processedDeclarations: MutableList<Statement> = []
+		for declaration in uniqueDeclarations {
+			// Process this declaration
+			processedDeclarations.append(contentsOf: replaceVariableDeclaration(declaration))
+			// Add its info for future declarations
+			currentDeclarations.append(declaration.identifier)
+		}
 
+		currentDeclarations.removeAll()
+
+		let result = processedDeclarations
 		result.append(contentsOf: super.replaceIfStatement(ifStatement))
-
 		return result
+	}
+
+	override func replaceDeclarationReferenceExpression( // gryphon annotation: override
+		_ declarationReferenceExpression: DeclarationReferenceExpression)
+		-> Expression
+	{
+		if currentDeclarations.contains(declarationReferenceExpression.identifier) {
+			return OptionalExpression(
+				range: declarationReferenceExpression.range,
+				expression: declarationReferenceExpression)
+		}
+		else {
+			return super.replaceDeclarationReferenceExpression(declarationReferenceExpression)
+		}
 	}
 
 	/// Add conditions (`x != null`) for all let declarations

@@ -278,6 +278,9 @@ printTest(array.contains(10000), "Array contains")
 
 printTest(array.firstIndex(of: 10), "Array firstIndex of")
 
+array.removeAll()
+printTest(array, "Array remove all")
+
 // Dictionaries
 let dictionary = [1: 1, 2: 2]
 let emptyDictionary: [Int: Int] = [:]

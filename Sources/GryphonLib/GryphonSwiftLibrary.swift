@@ -401,6 +401,10 @@ public class MutableList<Element>: List<Element>, // gryphon ignore
 		return array.removeLast()
 	}
 
+	public func removeAll(keepingCapacity keepCapacity: Bool = false) {
+		array.removeAll(keepingCapacity: keepCapacity)
+	}
+
 	public func reverse() {
 		self.array = self.array.reversed()
 	}

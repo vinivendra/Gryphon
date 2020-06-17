@@ -54,6 +54,11 @@ internal sealed class B {
 	class E(val f: Int, val g: String): B()
 }
 
+internal open class C {
+	open var c: C? = null
+	open var x: Int = 0
+}
+
 fun main(args: Array<String>) {
 	if (true) {
 		println("Simple if's")
@@ -299,5 +304,15 @@ fun main(args: Array<String>) {
 
 	if (true || true && false) {
 		println("If case operator precedence")
+	}
+
+	val c0: C? = null
+	val c1: C? = c0
+	val c2: C? = c1?.c
+	val c3: Int? = c2?.c?.x
+	val c4: Int? = c2?.c?.c?.c?.x
+
+	if (c1 != null && c2 != null && c3 != null && c4 != null) {
+		// ...
 	}
 }

@@ -282,3 +282,19 @@ else if true || true, false {
 if true || true && false {
 	print("If case operator precedence")
 }
+
+// Optionals in sequential declarations
+class C {
+    var c: C? = nil
+	var x: Int = 0
+}
+
+let c0: C? = nil
+
+if let c1 = c0,
+	let c2 = c1.c,
+	let c3 = c2.c?.x,
+	let c4 = c2.c?.c?.c?.x
+{
+	// ...
+}

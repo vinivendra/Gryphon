@@ -223,6 +223,10 @@ fun main(args: Array<String>) {
 	printTest(array.contains(10000), "Array contains")
 	printTest(array.indexOf(10), "Array firstIndex of")
 
+	array.clear()
+
+	printTest(array, "Array remove all")
+
 	val dictionary: Map<Int, Int> = mapOf(1 to 1, 2 to 2)
 	val emptyDictionary: Map<Int, Int> = mapOf()
 
