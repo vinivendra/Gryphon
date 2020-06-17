@@ -1061,19 +1061,17 @@ public class KotlinTranslator {
 				let translatedExpression = try translateExpression(
 					binaryExpression.leftExpression,
 					withIndentation: indentation)
+				let resolvedTranslation = translatedExpression.resolveTranslation().translation
 
 				// If it's a range
-				if let template = binaryExpression.leftExpression as? TemplateExpression,
-					binaryExpression.operatorSymbol == "~="
+				if binaryExpression.operatorSymbol == "~=",
+					(resolvedTranslation.contains("until") ||
+						resolvedTranslation.contains(".."))
 				{
-					if let typeName = template.typeName,
-						typeName.contains("Range")
-					{
-						let result = KotlinTranslation(range: caseExpression.range)
-						result.append("in ")
-						result.append(translatedExpression)
-						return result
-					}
+					let result = KotlinTranslation(range: caseExpression.range)
+					result.append("in ")
+					result.append(translatedExpression)
+					return result
 				}
 
 				return translatedExpression
