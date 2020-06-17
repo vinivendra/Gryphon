@@ -1129,7 +1129,10 @@ public /*abstract*/ class Expression: PrintableAsTree, Equatable, CustomStringCo
 	}
 
 	var swiftType: String? { // gryphon annotation: open
-		fatalError("Accessing field in abstract class Expression")
+		get {
+			return nil
+		}
+		set { }
 	}
 
 	// PrintableAsTree
@@ -1317,10 +1320,6 @@ public class LiteralCodeExpression: Expression {
 			shouldGoToMainFunction ? PrintableTree("shouldGoToMainFunction") : nil, ]
 	}
 
-	override var swiftType: String? { // gryphon annotation: override
-		return nil
-	}
-
 	public static func == (lhs: LiteralCodeExpression, rhs: LiteralCodeExpression) -> Bool {
 		return lhs.string == rhs.string &&
 			lhs.shouldGoToMainFunction == rhs.shouldGoToMainFunction
@@ -1345,10 +1344,6 @@ public class ConcatenationExpression: Expression {
 			PrintableTree.ofExpressions("right", [rightExpression]), ]
 	}
 
-	override var swiftType: String? { // gryphon annotation: override
-		return nil
-	}
-
 	public static func == (lhs: ConcatenationExpression, rhs: ConcatenationExpression) -> Bool {
 		return lhs.leftExpression == rhs.leftExpression &&
 			lhs.rightExpression == rhs.rightExpression
@@ -1368,7 +1363,12 @@ public class ParenthesesExpression: Expression {
 	}
 
 	override var swiftType: String? { // gryphon annotation: override
-		return expression.swiftType
+		get {
+			return expression.swiftType
+		}
+		set {
+			expression.swiftType = newValue
+		}
 	}
 
 	public static func == (lhs: ParenthesesExpression, rhs: ParenthesesExpression) -> Bool {
@@ -1389,12 +1389,19 @@ public class ForceValueExpression: Expression {
 	}
 
 	override var swiftType: String? { // gryphon annotation: override
-		let subtype = expression.swiftType
-		if let subtype = subtype, subtype.hasSuffix("?") {
-			return String(subtype.dropLast())
+		get {
+			let subtype = expression.swiftType
+			if let subtype = subtype, subtype.hasSuffix("?") {
+				return String(subtype.dropLast())
+			}
+			else {
+				return nil
+			}
 		}
-		else {
-			return expression.swiftType
+		set {
+			if let newValue = newValue {
+				expression.swiftType = newValue + "?"
+			}
 		}
 	}
 
@@ -1416,11 +1423,19 @@ public class OptionalExpression: Expression {
 	}
 
 	override var swiftType: String? { // gryphon annotation: override
-		if let typeName = expression.swiftType {
-			return String(typeName.dropLast()) // Drop the "?"
+		get {
+			let subtype = expression.swiftType
+			if let subtype = subtype, subtype.hasSuffix("?") {
+				return String(subtype.dropLast())
+			}
+			else {
+				return nil
+			}
 		}
-		else {
-			return nil
+		set {
+			if let newValue = newValue {
+				expression.swiftType = newValue + "?"
+			}
 		}
 	}
 
@@ -1458,7 +1473,14 @@ public class DeclarationReferenceExpression: Expression {
 	}
 
 	override var swiftType: String? { // gryphon annotation: override
-		return typeName
+		get {
+			return typeName
+		}
+		set {
+			if let newValue = newValue {
+				typeName = newValue
+			}
+		}
 	}
 
 	public static func == (
@@ -1474,7 +1496,7 @@ public class DeclarationReferenceExpression: Expression {
 }
 
 public class TypeExpression: Expression {
-	let typeName: String
+	var typeName: String
 
 	init(range: SourceFileRange?, typeName: String) {
 		self.typeName = typeName
@@ -1486,7 +1508,14 @@ public class TypeExpression: Expression {
 	}
 
 	override var swiftType: String? { // gryphon annotation: override
-		return typeName
+		get {
+			return typeName
+		}
+		set {
+			if let newValue = newValue {
+				typeName = newValue
+			}
+		}
 	}
 
 	public static func == (lhs: TypeExpression, rhs: TypeExpression) -> Bool {
@@ -1497,7 +1526,7 @@ public class TypeExpression: Expression {
 public class SubscriptExpression: Expression {
 	let subscriptedExpression: Expression
 	let indexExpression: Expression
-	let typeName: String
+	var typeName: String
 
 	init(
 		range: SourceFileRange?,
@@ -1519,7 +1548,14 @@ public class SubscriptExpression: Expression {
 	}
 
 	override var swiftType: String? { // gryphon annotation: override
-		return typeName
+		get {
+			return typeName
+		}
+		set {
+			if let newValue = newValue {
+				typeName = newValue
+			}
+		}
 	}
 
 	public static func == (lhs: SubscriptExpression, rhs: SubscriptExpression) -> Bool {
@@ -1531,7 +1567,7 @@ public class SubscriptExpression: Expression {
 
 public class ArrayExpression: Expression {
 	let elements: MutableList<Expression>
-	let typeName: String
+	var typeName: String
 
 	init(range: SourceFileRange?, elements: MutableList<Expression>, typeName: String) {
 		self.elements = elements
@@ -1546,7 +1582,14 @@ public class ArrayExpression: Expression {
 	}
 
 	override var swiftType: String? { // gryphon annotation: override
-		return typeName
+		get {
+			return typeName
+		}
+		set {
+			if let newValue = newValue {
+				typeName = newValue
+			}
+		}
 	}
 
 	public static func == (lhs: ArrayExpression, rhs: ArrayExpression) -> Bool {
@@ -1558,7 +1601,7 @@ public class ArrayExpression: Expression {
 public class DictionaryExpression: Expression {
 	let keys: MutableList<Expression>
 	let values: MutableList<Expression>
-	let typeName: String
+	var typeName: String
 
 	init(
 		range: SourceFileRange?,
@@ -1586,7 +1629,14 @@ public class DictionaryExpression: Expression {
 	}
 
 	override var swiftType: String? { // gryphon annotation: override
-		return typeName
+		get {
+			return typeName
+		}
+		set {
+			if let newValue = newValue {
+				typeName = newValue
+			}
+		}
 	}
 
 	public static func == (lhs: DictionaryExpression, rhs: DictionaryExpression) -> Bool {
@@ -1609,7 +1659,12 @@ public class ReturnExpression: Expression {
 	}
 
 	override var swiftType: String? { // gryphon annotation: override
-		return expression?.swiftType
+		get {
+			return expression?.swiftType
+		}
+		set {
+			expression?.swiftType = newValue
+		}
 	}
 
 	public static func == (lhs: ReturnExpression, rhs: ReturnExpression) -> Bool {
@@ -1634,23 +1689,28 @@ public class DotExpression: Expression {
 	}
 
 	override var swiftType: String? { // gryphon annotation: override
-		// Enum references should be considered to have the left type, as the right expression's
-		// is a function type (something like `(MyEnum.Type) -> MyEnum` or
-		// `(A.MyEnum.Type) -> A.MyEnum`).
-		if let leftType = leftExpression as? TypeExpression,
-			let rightDeclarationReference = rightExpression as? DeclarationReferenceExpression
-		{
-			let enumType = leftType.typeName
-
-			if rightDeclarationReference.typeName.hasPrefix("("),
-				rightDeclarationReference.typeName.contains("\(enumType).Type) -> "),
-				rightDeclarationReference.typeName.hasSuffix(enumType)
+		get {
+			// Enum references should be considered to have the left type, as the right expression's
+			// is a function type (something like `(MyEnum.Type) -> MyEnum` or
+			// `(A.MyEnum.Type) -> A.MyEnum`).
+			if let leftType = leftExpression as? TypeExpression,
+				let rightDeclarationReference = rightExpression as? DeclarationReferenceExpression
 			{
-				return enumType
-			}
-		}
+				let enumType = leftType.typeName
 
-		return rightExpression.swiftType
+				if rightDeclarationReference.typeName.hasPrefix("("),
+					rightDeclarationReference.typeName.contains("\(enumType).Type) -> "),
+					rightDeclarationReference.typeName.hasSuffix(enumType)
+				{
+					return enumType
+				}
+			}
+
+			return rightExpression.swiftType
+		}
+		set {
+			rightExpression.swiftType = newValue
+		}
 	}
 
 	public static func == (lhs: DotExpression, rhs: DotExpression) -> Bool {
@@ -1663,7 +1723,7 @@ public class BinaryOperatorExpression: Expression {
 	let leftExpression: Expression
 	let rightExpression: Expression
 	let operatorSymbol: String
-	let typeName: String
+	var typeName: String
 
 	init(
 		range: SourceFileRange?,
@@ -1688,7 +1748,14 @@ public class BinaryOperatorExpression: Expression {
 	}
 
 	override var swiftType: String? { // gryphon annotation: override
-		return typeName
+		get {
+			return typeName
+		}
+		set {
+			if let newValue = newValue {
+				typeName = newValue
+			}
+		}
 	}
 
 	public static func == (lhs: BinaryOperatorExpression, rhs: BinaryOperatorExpression) -> Bool {
@@ -1702,7 +1769,7 @@ public class BinaryOperatorExpression: Expression {
 public class PrefixUnaryExpression: Expression {
 	let subExpression: Expression
 	let operatorSymbol: String
-	let typeName: String
+	var typeName: String
 
 	init(
 		range: SourceFileRange?,
@@ -1724,7 +1791,14 @@ public class PrefixUnaryExpression: Expression {
 	}
 
 	override var swiftType: String? { // gryphon annotation: override
-		return typeName
+		get {
+			return typeName
+		}
+		set {
+			if let newValue = newValue {
+				typeName = newValue
+			}
+		}
 	}
 
 	public static func == (lhs: PrefixUnaryExpression, rhs: PrefixUnaryExpression) -> Bool {
@@ -1737,7 +1811,7 @@ public class PrefixUnaryExpression: Expression {
 public class PostfixUnaryExpression: Expression {
 	let subExpression: Expression
 	let operatorSymbol: String
-	let typeName: String
+	var typeName: String
 
 	init(
 		range: SourceFileRange?,
@@ -1759,7 +1833,14 @@ public class PostfixUnaryExpression: Expression {
 	}
 
 	override var swiftType: String? { // gryphon annotation: override
-		return typeName
+		get {
+			return typeName
+		}
+		set {
+			if let newValue = newValue {
+				typeName = newValue
+			}
+		}
 	}
 
 	public static func == (lhs: PostfixUnaryExpression, rhs: PostfixUnaryExpression) -> Bool {
@@ -1794,7 +1875,13 @@ public class IfExpression: Expression {
 	}
 
 	override var swiftType: String? { // gryphon annotation: override
-		return trueExpression.swiftType
+		get {
+			return trueExpression.swiftType
+		}
+		set {
+			trueExpression.swiftType = newValue
+			falseExpression.swiftType = newValue
+		}
 	}
 
 	public static func == (lhs: IfExpression, rhs: IfExpression) -> Bool {
@@ -1807,7 +1894,7 @@ public class IfExpression: Expression {
 public class CallExpression: Expression {
 	let function: Expression
 	let parameters: Expression
-	let typeName: String?
+	var typeName: String?
 
 	init(
 		range: SourceFileRange?,
@@ -1829,7 +1916,14 @@ public class CallExpression: Expression {
 	}
 
 	override var swiftType: String? { // gryphon annotation: override
-		return typeName
+		get {
+			return typeName
+		}
+		set {
+			if let newValue = newValue {
+				typeName = newValue
+			}
+		}
 	}
 
 	public static func == (
@@ -1846,7 +1940,7 @@ public class CallExpression: Expression {
 public class ClosureExpression: Expression {
 	let parameters: MutableList<LabeledType>
 	let statements: MutableList<Statement>
-	let typeName: String
+	var typeName: String
 
 	init(
 		range: SourceFileRange?,
@@ -1870,7 +1964,14 @@ public class ClosureExpression: Expression {
 	}
 
 	override var swiftType: String? { // gryphon annotation: override
-		return typeName
+		get {
+			return typeName
+		}
+		set {
+			if let newValue = newValue {
+				typeName = newValue
+			}
+		}
 	}
 
 	public static func == (lhs: ClosureExpression, rhs: ClosureExpression) -> Bool {
@@ -1893,7 +1994,10 @@ public class LiteralIntExpression: Expression {
 	}
 
 	override var swiftType: String? { // gryphon annotation: override
-		return "Int"
+		get {
+			return "Int"
+		}
+		set { }
 	}
 
 	public static func == (lhs: LiteralIntExpression, rhs: LiteralIntExpression) -> Bool {
@@ -1914,7 +2018,10 @@ public class LiteralUIntExpression: Expression {
 	}
 
 	override var swiftType: String? { // gryphon annotation: override
-		return "UInt"
+		get {
+			return "UInt"
+		}
+		set { }
 	}
 
 	public static func == (lhs: LiteralUIntExpression, rhs: LiteralUIntExpression) -> Bool {
@@ -1935,7 +2042,10 @@ public class LiteralDoubleExpression: Expression {
 	}
 
 	override var swiftType: String? { // gryphon annotation: override
-		return "Double"
+		get {
+			return "Double"
+		}
+		set { }
 	}
 
 	public static func == (lhs: LiteralDoubleExpression, rhs: LiteralDoubleExpression) -> Bool {
@@ -1956,7 +2066,10 @@ public class LiteralFloatExpression: Expression {
 	}
 
 	override var swiftType: String? { // gryphon annotation: override
-		return "Float"
+		get {
+			return "Float"
+		}
+		set { }
 	}
 
 	public static func == (lhs: LiteralFloatExpression, rhs: LiteralFloatExpression) -> Bool {
@@ -1977,7 +2090,10 @@ public class LiteralBoolExpression: Expression {
 	}
 
 	override var swiftType: String? { // gryphon annotation: override
-		return "Bool"
+		get {
+			return "Bool"
+		}
+		set { }
 	}
 
 	public static func == (lhs: LiteralBoolExpression, rhs: LiteralBoolExpression) -> Bool {
@@ -2003,7 +2119,10 @@ public class LiteralStringExpression: Expression {
 	}
 
 	override var swiftType: String? { // gryphon annotation: override
-		return "String"
+		get {
+			return "String"
+		}
+		set { }
 	}
 
 	public static func == (lhs: LiteralStringExpression, rhs: LiteralStringExpression) -> Bool {
@@ -2024,7 +2143,10 @@ public class LiteralCharacterExpression: Expression {
 	}
 
 	override var swiftType: String? { // gryphon annotation: override
-		return "Character"
+		get {
+			return "Character"
+		}
+		set { }
 	}
 
 	public static func == (lhs: LiteralCharacterExpression, rhs: LiteralCharacterExpression) -> Bool
@@ -2040,10 +2162,6 @@ public class NilLiteralExpression: Expression {
 
 	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
 		return []
-	}
-
-	override var swiftType: String? { // gryphon annotation: override
-		return nil
 	}
 
 	public static func == (lhs: NilLiteralExpression, rhs: NilLiteralExpression) -> Bool {
@@ -2066,7 +2184,10 @@ public class InterpolatedStringLiteralExpression: Expression {
 	}
 
 	override var swiftType: String? { // gryphon annotation: override
-		return "String"
+		get {
+			return "String"
+		}
+		set { }
 	}
 
 	public static func == (
@@ -2099,10 +2220,6 @@ public class TupleExpression: Expression {
 		}
 	}
 
-	override var swiftType: String? { // gryphon annotation: override
-		return nil
-	}
-
 	public static func == (lhs: TupleExpression, rhs: TupleExpression) -> Bool {
 		return lhs.pairs == rhs.pairs
 	}
@@ -2131,10 +2248,6 @@ public class TupleShuffleExpression: Expression {
 			PrintableTree.ofStrings("labels", labelStrings),
 			PrintableTree.ofStrings("indices", indices.map { $0.description }),
 			PrintableTree.ofExpressions("expressions", expressions), ]
-	}
-
-	override var swiftType: String? { // gryphon annotation: override
-		return nil
 	}
 
 	public static func == (lhs: TupleShuffleExpression, rhs: TupleShuffleExpression) -> Bool {
@@ -2211,10 +2324,6 @@ public class ErrorExpression: Expression {
 
 	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
 		return []
-	}
-
-	override var swiftType: String? { // gryphon annotation: override
-		return "<<Error>>"
 	}
 
 	public static func == (lhs: ErrorExpression, rhs: ErrorExpression) -> Bool {
