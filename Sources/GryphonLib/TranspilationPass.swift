@@ -2694,7 +2694,7 @@ public class TuplesToPairsTranspilationPass: TranspilationPass {
 	{
 		// Ensure it's a pair
 		guard tupleExpression.pairs.count == 2 else {
-			return tupleExpression
+			return super.replaceTupleExpression(tupleExpression) 
 		}
 
 		// Ignore tuples in call expressions and for statements
