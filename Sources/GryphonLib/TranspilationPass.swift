@@ -549,11 +549,11 @@ public class TranspilationPass {
 		parents.append(.expressionNode(value: expression))
 		defer { parents.removeLast() }
 
-		if let expression = expression as? TemplateExpression {
-			return replaceTemplateExpression(expression)
-		}
 		if let expression = expression as? LiteralCodeExpression {
 			return replaceLiteralCodeExpression(expression)
+		}
+		if let expression = expression as? ConcatenationExpression {
+			return replaceConcatenationExpression(expression)
 		}
 		if let expression = expression as? ParenthesesExpression {
 			return replaceParenthesesExpression(expression)
@@ -643,27 +643,21 @@ public class TranspilationPass {
 		fatalError("This should never be reached.")
 	}
 
-	func replaceTemplateExpression( // gryphon annotation: open
-		_ templateExpression: TemplateExpression)
-		-> Expression
-	{
-		let newMatches = templateExpression.matches // gryphon ignore
-			.mapValues { replaceExpression($0) }
-		// gryphon insert: val newMatches = templateExpression.matches
-		// gryphon insert:     .mapValues { replaceExpression(it.value) }.toMutableMap()
-
-		return TemplateExpression(
-			range: templateExpression.range,
-			typeName: templateExpression.typeName,
-			pattern: templateExpression.pattern,
-			matches: newMatches.toMutableMap())
-	}
-
 	func replaceLiteralCodeExpression( // gryphon annotation: open
 		_ literalCodeExpression: LiteralCodeExpression)
 		-> Expression
 	{
 		return literalCodeExpression
+	}
+
+	func replaceConcatenationExpression(
+		_ concatenationExpression: ConcatenationExpression)
+		-> Expression
+	{
+		return ConcatenationExpression(
+			range: concatenationExpression.range,
+			leftExpression: replaceExpression(concatenationExpression.leftExpression),
+			rightExpression: replaceExpression(concatenationExpression.rightExpression))
 	}
 
 	func replaceParenthesesExpression( // gryphon annotation: open
@@ -2647,9 +2641,12 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 		else if let typeExpression = functionExpression as? TypeExpression {
 			return typeExpression.typeName
 		}
+		else if let literalCodeExpression = functionExpression as? LiteralCodeExpression {
+			return literalCodeExpression.string
+		}
 		else {
 			Compiler.handleWarning(
-				message: "Unable to get label for function:\(functionExpression)",
+				message: "Unable to get label for function.",
 				sourceFile: ast.sourceFile,
 				sourceFileRange: functionExpression.range)
 			return nil
@@ -2730,7 +2727,7 @@ public class TuplesToPairsTranspilationPass: TranspilationPass {
 	{
 		// Ensure it's a pair
 		guard tupleExpression.pairs.count == 2 else {
-			return tupleExpression
+			return super.replaceTupleExpression(tupleExpression) 
 		}
 
 		// Ignore tuples in call expressions and for statements
@@ -3650,29 +3647,32 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 		// ok.
 		if let leftExpressionType = dotExpression.leftExpression.swiftType,
 			leftExpressionType.hasPrefix("["),
-			let callExpression = dotExpression.rightExpression as? CallExpression {
-			if (callExpression.typeName.hasPrefix("MutableList") ||
-					callExpression.typeName.hasPrefix("List") ||
-					callExpression.typeName.hasPrefix("MutableMap") ||
-					callExpression.typeName.hasPrefix("Map")),
-				let declarationReference =
-					callExpression.function as? DeclarationReferenceExpression
-			{
-				if declarationReference.identifier.hasPrefix("toMutable"),
-					(declarationReference.typeName.hasPrefix("MutableList") ||
-						declarationReference.typeName.hasPrefix("MutableMap"))
+			let callExpression = dotExpression.rightExpression as? CallExpression
+		{
+			if let callType = callExpression.typeName {
+				if (callType.hasPrefix("MutableList") ||
+						callType.hasPrefix("List") ||
+						callType.hasPrefix("MutableMap") ||
+						callType.hasPrefix("Map")),
+					let declarationReference =
+						callExpression.function as? DeclarationReferenceExpression
 				{
-					return dotExpression
-				}
-				else if declarationReference.identifier.hasPrefix("toList"),
-					declarationReference.typeName.hasPrefix("List")
-				{
-					return dotExpression
-				}
-				else if declarationReference.identifier.hasPrefix("toMap"),
-					declarationReference.typeName.hasPrefix("Map")
-				{
-					return dotExpression
+					if declarationReference.identifier.hasPrefix("toMutable"),
+						(declarationReference.typeName.hasPrefix("MutableList") ||
+							declarationReference.typeName.hasPrefix("MutableMap"))
+					{
+						return dotExpression
+					}
+					else if declarationReference.identifier.hasPrefix("toList"),
+						declarationReference.typeName.hasPrefix("List")
+					{
+						return dotExpression
+					}
+					else if declarationReference.identifier.hasPrefix("toMap"),
+						declarationReference.typeName.hasPrefix("Map")
+					{
+						return dotExpression
+					}
 				}
 			}
 		}

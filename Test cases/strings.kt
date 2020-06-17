@@ -59,9 +59,7 @@ It still has many lines."""
 	println("==")
 	println(multilineString3)
 	println("==")
-
 	f()
-
 	println("==")
 
 	val character: Char = 'i'

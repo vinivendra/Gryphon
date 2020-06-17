@@ -45,26 +45,149 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 			}
 
 			var previousExpression: Expression?
-			for expression in topLevelExpressions {
-				if let templateExpression = previousExpression {
-					guard let literalString = getStringLiteralOrSum(expression) else {
-						continue
+			for templateExpression in topLevelExpressions {
+				if let swiftExpression = previousExpression {
+					if let typeName = templateExpression.swiftType,
+						typeName == "LiteralTemplate" ||
+							typeName == "DotTemplate" ||
+							typeName == "CallTemplate" ||
+							typeName == "ConcatenatedTemplate"
+					{
+						let processedExpression =
+							processTemplateNodeExpression(templateExpression)
+						self.context.addTemplate(TranspilationContext.TranspilationTemplate(
+							swiftExpression: swiftExpression,
+							templateExpression: processedExpression))
 					}
-					let cleanString = literalString.removingBackslashEscapes
-					self.context.addTemplate(TranspilationContext.TranspilationTemplate(
-						expression: templateExpression,
-						string: cleanString))
-					previousExpression = nil
+					if let literalString = getStringLiteralOrSum(templateExpression) {
+						let cleanString = literalString.removingBackslashEscapes
+						self.context.addTemplate(TranspilationContext.TranspilationTemplate(
+							swiftExpression: swiftExpression,
+							templateExpression: LiteralCodeExpression(
+								range: templateExpression.range,
+								string: cleanString,
+								shouldGoToMainFunction: false)))
+						previousExpression = nil
+					}
 				}
-				else {
-					previousExpression = expression
-				}
+
+				previousExpression = templateExpression
 			}
 
 			return []
 		}
 
 		return super.replaceFunctionDeclaration(functionDeclaration)
+	}
+
+	private func processTemplateNodeExpression(
+		_ expression: Expression)
+		-> Expression
+	{
+		if let callExpression = expression as? CallExpression {
+			if let dotExpression = callExpression.function as? DotExpression,
+				let tupleExpression = callExpression.parameters as? TupleExpression,
+				tupleExpression.pairs.count == 2
+			{
+				if let declarationExpression =
+					dotExpression.rightExpression as? DeclarationReferenceExpression
+				{
+					if declarationExpression.identifier == "call",
+						let parametersExpression =
+							tupleExpression.pairs[1].expression as? ArrayExpression
+					{
+						let function = processTemplateNodeExpression(
+							tupleExpression.pairs[0].expression)
+						let parameters = parametersExpression.elements.map {
+								processTemplateParameter($0)
+							}.toMutableList()
+						return CallExpression(
+							range: function.range,
+							function: function,
+							parameters: TupleExpression(
+								range: tupleExpression.range,
+								pairs: parameters),
+							typeName: nil)
+					}
+					if declarationExpression.identifier == "dot",
+						let stringExpression =
+							tupleExpression.pairs[1].expression as? LiteralStringExpression
+					{
+						let left =
+							processTemplateNodeExpression(tupleExpression.pairs[0].expression)
+						let right = LiteralCodeExpression(
+							range: stringExpression.range,
+							string: stringExpression.value,
+							shouldGoToMainFunction: false)
+						return DotExpression(
+							range: left.range,
+							leftExpression: left,
+							rightExpression: right)
+					}
+				}
+			}
+		}
+		else if let stringExpression = expression as? LiteralStringExpression {
+			return LiteralCodeExpression(
+				range: stringExpression.range,
+				string: stringExpression.value,
+				shouldGoToMainFunction: false)
+		}
+		else if let binaryOperatorExpression = expression as? BinaryOperatorExpression,
+			binaryOperatorExpression.operatorSymbol == "+"
+		{
+			return ConcatenationExpression(
+				range: expression.range,
+				leftExpression: processTemplateNodeExpression(
+					binaryOperatorExpression.leftExpression),
+				rightExpression: processTemplateNodeExpression(
+					binaryOperatorExpression.rightExpression))
+		}
+
+		Compiler.handleWarning(
+			message: "Failed to interpret template",
+			ast: expression,
+			sourceFile: ast.sourceFile,
+			sourceFileRange: expression.range)
+
+		return ErrorExpression(range: expression.range)
+	}
+
+	private func processTemplateParameter(
+		_ expression: Expression)
+		-> LabeledExpression
+	{
+		if let expression = expression as? LiteralStringExpression {
+			return LabeledExpression(
+				label: nil,
+				expression: LiteralCodeExpression(
+					range: expression.range,
+					string: expression.value,
+					shouldGoToMainFunction: false))
+		}
+		else if let expression = expression as? CallExpression {
+			if let dotExpression = expression.function as? DotExpression,
+				let tupleExpression = expression.parameters as? TupleExpression,
+				tupleExpression.pairs.count == 2
+			{
+				if let declarationExpression =
+						dotExpression.rightExpression as? DeclarationReferenceExpression,
+					declarationExpression.identifier == "labeledParameter",
+					let stringExpression =
+						tupleExpression.pairs[0].expression as? LiteralStringExpression
+				{
+					let expression =
+						processTemplateNodeExpression(tupleExpression.pairs[1].expression)
+					return LabeledExpression(
+						label: stringExpression.value,
+						expression: expression)
+				}
+			}
+		}
+
+		return LabeledExpression(
+			label: nil,
+			expression: processTemplateNodeExpression(expression))
 	}
 
 	/// Some String literals are written as sums of string literals (i.e. "a" + "b") or they'd be
@@ -99,23 +222,140 @@ public class ReplaceTemplatesTranspilationPass: TranspilationPass {
 		-> Expression
 	{
 		for template in context.templates {
-			if let matches = expression.matches(template.expression) {
+			if let matches = expression.matches(template.swiftExpression) {
 
-				let replacedMatches = matches.mapValues { // gryphon ignore
-					self.replaceExpression($0)
+				// Make the matches dictionary into a list
+				let matchesList: MutableList<(String, Expression)> = []
+				for (string, expression) in matches {
+					let tuple = (string, expression)
+					matchesList.append(tuple)
 				}
-				// gryphon insert: val replacedMatches = matches.mapValues {
-				// gryphon insert:     replaceExpression(it.value)
-				// gryphon insert: }.toMutableMap()
+				// Replace the templates recursively on the list
+				let replacedMatches = matchesList.map {
+						return ($0.0, replaceExpression($0.1))
+					}
+				// Sort the list so that longer strings are before shorter ones.
+				// This issues when one string is a substring of another
+				let sortedMatches = replacedMatches.sorted { a, b in
+						a.0.count > b.0.count
+					}
 
-				return TemplateExpression(
-					range: expression.range,
-					typeName: expression.swiftType,
-					pattern: template.string,
-					matches: replacedMatches.toMutableMap())
+				let pass = ReplaceTemplateMatchesTranspilationPass(ast: ast, context: context)
+				pass.matches = sortedMatches
+				pass.range = expression.range
+				let result = pass.replaceExpression(template.templateExpression)
+
+				if let swiftType = expression.swiftType {
+					result.swiftType = swiftType
+				}
+
+				return result
 			}
 		}
 		return super.replaceExpression(expression)
+	}
+}
+
+/// To be called on a strutured template expression; replaces any matches inside it with the given
+/// expressions in the `matches` list. Any created expressions in the process have their ranges set
+/// to the given `range`.
+private class ReplaceTemplateMatchesTranspilationPass: TranspilationPass {
+// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+// gryphon insert:     super(ast, context) { }
+
+	var matches: List<(String, Expression)> = []
+	var range: SourceFileRange?
+
+	override func replaceLiteralCodeExpression( // gryphon annotation: override
+		_ literalCodeExpression: LiteralCodeExpression)
+		-> Expression
+	{
+		let string = literalCodeExpression.string
+		let stringEndIndex = string.endIndex
+		var previousMatchEndIndex = string.startIndex
+		var currentIndex = string.startIndex
+		let expressions: MutableList<Expression> = []
+		while currentIndex != stringEndIndex {
+			let character = string[currentIndex]
+
+			// If we might have found a replaceable string
+			if character == "_" {
+				let substring = string[currentIndex...]
+				var matchFound = false
+
+				// Look through the matches to see if any of them equals our replaceable string
+				for (matchString, matchExpression) in matches {
+
+					// If one of them does
+					if substring.hasPrefix(matchString) {
+
+						// Add the substring that accumulated before the match (if it's not empty)
+						if previousMatchEndIndex != currentIndex {
+							let precedingString =
+								String(string[previousMatchEndIndex..<currentIndex])
+							let precedingStringExpression = LiteralCodeExpression(
+								range: range,
+								string: precedingString,
+								shouldGoToMainFunction: false)
+							expressions.append(precedingStringExpression)
+						}
+
+						// Add the matched expression
+						expressions.append(matchExpression)
+
+						// Jump ahead to after the matched string
+						let matchEndIndex = string.index(currentIndex, offsetBy: matchString.count)
+						previousMatchEndIndex = matchEndIndex
+						currentIndex = matchEndIndex
+
+						// Stop looking for matches
+						matchFound = true
+						break
+					}
+				}
+
+				// If wew found a match we already updated the index, so avoid doing it again
+				if matchFound {
+					continue
+				}
+			}
+
+			currentIndex = string.index(after: currentIndex)
+		}
+
+		// Check if there's a trailing string we need to add
+		if previousMatchEndIndex != stringEndIndex {
+			expressions.append(LiteralCodeExpression(
+				range: range,
+				string: String(string[previousMatchEndIndex...]),
+				shouldGoToMainFunction: false))
+		}
+
+		// Create the resulting expression
+		var result: Expression?
+		for expression in expressions {
+			if let previousResult = result {
+				result = ConcatenationExpression(
+					range: range,
+					leftExpression: previousResult,
+					rightExpression: expression)
+			}
+			else {
+				result = expression
+			}
+		}
+
+		if let existingResult = result {
+			return existingResult
+		}
+		else {
+			Compiler.handleWarning(
+				message: "Unexpected empty result when replacing matches on template",
+				ast: literalCodeExpression,
+				sourceFile: ast.sourceFile,
+				sourceFileRange: literalCodeExpression.range)
+			return literalCodeExpression
+		}
 	}
 }
 
@@ -243,9 +483,19 @@ extension Expression {
 		if let lhs = lhs as? CallExpression,
 			let rhs = rhs as? CallExpression
 		{
+			let typeMatches: Bool
+			if let lhsType = lhs.typeName,
+				let rhsType = rhs.typeName
+			{
+				typeMatches = lhsType.isSubtype(of: rhsType)
+			}
+			else {
+				typeMatches = true
+			}
+
 			return lhs.function.matches(rhs.function, matches) &&
 				lhs.parameters.matches(rhs.parameters, matches) &&
-				lhs.typeName.isSubtype(of: rhs.typeName)
+				typeMatches
 		}
 		if let lhs = lhs as? LiteralIntExpression,
 			let rhs = rhs as? LiteralIntExpression

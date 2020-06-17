@@ -956,6 +956,132 @@ internal let gryphonTemplatesLibraryFileContents = """
 
 import Foundation
 
+// MARK: - Define template classes and operators
+
+private class Template { // gryphon ignore
+	static func dot(_ left: Template, _ right: String) -> DotTemplate {
+		return DotTemplate(left, right)
+	}
+
+	static func dot(_ left: String, _ right: String) -> DotTemplate {
+		return DotTemplate(LiteralTemplate(string: left), right)
+	}
+
+	static func call(_ function: Template, _ parameters: [ParameterTemplate]) -> CallTemplate {
+		return CallTemplate(function, parameters)
+	}
+
+	static func call(_ function: String, _ parameters: [ParameterTemplate]) -> CallTemplate {
+		return CallTemplate(function, parameters)
+	}
+}
+
+private class DotTemplate: Template { // gryphon ignore
+	let left: Template
+	let right: String
+
+	init(_ left: Template, _ right: String) {
+		self.left = left
+		self.right = right
+	}
+}
+
+private class CallTemplate: Template { // gryphon ignore
+	let function: Template
+	let parameters: [ParameterTemplate]
+
+	init(_ function: Template, _ parameters: [ParameterTemplate]) {
+		self.function = function
+		self.parameters = parameters
+	}
+
+	//
+	init(_ function: String, _ parameters: [ParameterTemplate]) {
+		self.function = LiteralTemplate(string: function)
+		self.parameters = parameters
+	}
+}
+
+private class ParameterTemplate: ExpressibleByStringLiteral { // gryphon ignore
+	let label: String?
+	let template: Template
+
+	private init(_ label: String?, _ template: Template) {
+		if let existingLabel = label {
+			if existingLabel == "_" || existingLabel == "" {
+				self.label = nil
+			}
+			else {
+				self.label = label
+			}
+		}
+		else {
+			self.label = label
+		}
+
+		self.template = template
+	}
+
+	required init(stringLiteral: String) {
+		self.label = nil
+		self.template = LiteralTemplate(string: stringLiteral)
+	}
+
+	static func labeledParameter(_ label: String?, _ template: Template) -> ParameterTemplate {
+		return ParameterTemplate(label, template)
+	}
+
+	static func labeledParameter(_ label: String?, _ template: String) -> ParameterTemplate {
+		return ParameterTemplate(label, LiteralTemplate(string: template))
+	}
+
+	static func dot(_ left: Template, _ right: String) -> ParameterTemplate {
+		return ParameterTemplate(nil, DotTemplate(left, right))
+	}
+
+	static func dot(_ left: String, _ right: String) -> ParameterTemplate {
+		return ParameterTemplate(nil, DotTemplate(LiteralTemplate(string: left), right))
+	}
+
+	static func call(_ function: Template, _ parameters: [ParameterTemplate]) -> ParameterTemplate {
+		return ParameterTemplate(nil, CallTemplate(function, parameters))
+	}
+
+	static func call(_ function: String, _ parameters: [ParameterTemplate]) -> ParameterTemplate {
+		return ParameterTemplate(nil, CallTemplate(function, parameters))
+	}
+}
+
+private class LiteralTemplate: Template { // gryphon ignore
+	let string: String
+
+	init(string: String) {
+		self.string = string
+	}
+}
+
+private class ConcatenatedTemplate: Template { // gryphon ignore
+	let left: Template
+	let right: Template
+
+	init(left: Template, right: Template) {
+		self.left = left
+		self.right = right
+	}
+}
+
+private func + (left: Template, right: Template) -> ConcatenatedTemplate { // gryphon ignore
+	ConcatenatedTemplate(left: left, right: right)
+}
+
+private func + (left: String, right: Template) -> ConcatenatedTemplate { // gryphon ignore
+	ConcatenatedTemplate(left: LiteralTemplate(string: left), right: right)
+}
+
+private func + (left: Template, right: String) -> ConcatenatedTemplate { // gryphon ignore
+	ConcatenatedTemplate(left: left, right: LiteralTemplate(string: right))
+}
+
 // MARK: - Define special types as stand-ins for some protocols and other types
 
 // Replacement for Hashable
@@ -1028,20 +1154,23 @@ private func gryphonTemplates() {
 
 	// System
 	_ = print(_any)
-	_ = "println(_any)"
+	_ = Template.call("println", ["_any"])
 
 	_ = print(_any, terminator: "")
-	_ = "print(_any)"
+	_ = Template.call("print", ["_any"])
 
 	_ = fatalError(_string)
-	_ = "println(\\\"Fatal error: \(dollarSign)\(kotlinStringInterpolation)\\\"); exitProcess(-1)"
+	_ = Template.call("println",
+			["\\\"Fatal error: \(dollarSign)\(kotlinStringInterpolation)\\\""]) +
+		"; " +
+		Template.call("exitProcess", ["-1"])
 
 	_ = assert(_bool)
-	_ = "assert(_bool)"
+	_ = Template.call("assert", ["_bool"])
 
 	// Darwin
 	_ = sqrt(_double)
-	_ = "Math.sqrt(_double)"
+	_ = Template.call(.dot("Math", "sqrt"), ["_double"])
 
 	// Numerics
 	_ = Double(_int)
@@ -1064,91 +1193,91 @@ private func gryphonTemplates() {
 
 	// String
 	_ = String(_anyType)
-	_ = "_anyType.toString()"
+	_ = Template.call(.dot("_anyType", "toString"), [])
 
 	_ = _anyType.description
-	_ = "_anyType.toString()"
+	_ = Template.call(.dot("_anyType", "toString"), [])
 
 	_ = _string.isEmpty
-	_ = "_string.isEmpty()"
+	_ = Template.call(.dot("_string", "isEmpty"), [])
 
 	_ = _string.count
-	_ = "_string.length"
+	_ = Template.dot("_string", "length")
 
 	_ = _string.first
-	_ = "_string.firstOrNull()"
+	_ = Template.call(.dot("_string", "firstOrNull"), [])
 
 	_ = _string.last
-	_ = "_string.lastOrNull()"
+	_ = Template.call(.dot("_string", "lastOrNull"), [])
 
 	_ = Double(_string)
-	_ = "_string.toDouble()"
+	_ = Template.call(.dot("_string", "toDouble"), [])
 
 	_ = Float(_string)
-	_ = "_string.toFloat()"
+	_ = Template.call(.dot("_string", "toFloat"), [])
 
 	_ = UInt64(_string)
-	_ = "_string.toULong()"
+	_ = Template.call(.dot("_string", "toULong"), [])
 
 	_ = Int64(_string)
-	_ = "_string.toLong()"
+	_ = Template.call(.dot("_string", "toLong"), [])
 
 	_ = Int(_string)
-	_ = "_string.toIntOrNull()"
+	_ = Template.call(.dot("_string", "toIntOrNull"), [])
 
 	_ = _string.dropLast()
-	_ = "_string.dropLast(1)"
+	_ = Template.call(.dot("_string", "dropLast"), ["1"])
 
 	_ = _string.dropLast(_int)
-	_ = "_string.dropLast(_int)"
+	_ = Template.call(.dot("_string", "dropLast"), ["_int"])
 
 	_ = _string.dropFirst()
-	_ = "_string.drop(1)"
+	_ = Template.call(.dot("_string", "drop"), ["1"])
 
 	_ = _string.dropFirst(_int)
-	_ = "_string.drop(_int)"
+	_ = Template.call(.dot("_string", "drop"), ["_int"])
 
 	_ = _string.drop(while: _closure5)
-	_ = "_string.dropWhile _closure5"
+	_ = Template.call(.dot("_string", "dropWhile"), ["_closure5"])
 
 	_ = _string.indices
-	_ = "_string.indices"
+	_ = Template.dot("_string", "indices")
 
 	_ = _string.firstIndex(of: _character)!
-	_ = "_string.indexOf(_character)"
+	_ = Template.call(.dot("_string", "indexOf"), ["_character"])
 
 	_ = _string.contains(where: _closure5)
-	_ = "(_string.find _closure5 != null)"
+	_ = "(" + Template.call(.dot("_string", "find"), ["_closure5"]) + " != null)"
 
 	_ = _string.firstIndex(of: _character)
-	_ = "_string.indexOrNull(_character)"
+	_ = Template.call(.dot("_string", "indexOrNull"), ["_character"])
 
 	_ = _string.prefix(_int)
-	_ = "_string.substring(0, _int)"
+	_ = Template.call(.dot("_string", "substring"), ["0", "_int"])
 
 	_ = _string.prefix(upTo: _index)
-	_ = "_string.substring(0, _index)"
+	_ = Template.call(.dot("_string", "substring"), ["0", "_index"])
 
 	_ = _string[_index...]
-	_ = "_string.substring(_index)"
+	_ = Template.call(.dot("_string", "substring"), ["_index"])
 
 	_ = _string[..<_index]
-	_ = "_string.substring(0, _index)"
+	_ = Template.call(.dot("_string", "substring"), ["0", "_index"])
 
 	_ = _string[..._index]
-	_ = "_string.substring(0, _index + 1)"
+	_ = Template.call(.dot("_string", "substring"), ["0", "_index + 1"])
 
 	_ = _string[_index1..<_index2]
-	_ = "_string.substring(_index1, _index2)"
+	_ = Template.call(.dot("_string", "substring"), ["_index1", "_index2"])
 
 	_ = _string[_index1..._index2]
-	_ = "_string.substring(_index1, _index2 + 1)"
+	_ = Template.call(.dot("_string", "substring"), ["_index1", "_index2 + 1"])
 
 	_ = String(_substring)
 	_ = "_substring"
 
 	_ = _string.endIndex
-	_ = "_string.length"
+	_ = Template.dot("_string", "length")
 
 	_ = _string.startIndex
 	_ = "0"
@@ -1169,25 +1298,25 @@ private func gryphonTemplates() {
 	_ = "_index + _int"
 
 	_ = _string1.replacingOccurrences(of: _string2, with: _string3)
-	_ = "_string1.replace(_string2, _string3)"
+	_ = Template.call(.dot("_string1", "replace"), ["_string2", "_string3"])
 
 	_ = _string1.prefix(while: _closure5)
-	_ = "_string1.takeWhile _closure5"
+	_ = Template.call(.dot("_string1", "takeWhile"), ["_closure5"])
 
 	_ = _string1.hasPrefix(_string2)
-	_ = "_string1.startsWith(_string2)"
+	_ = Template.call(.dot("_string1", "startsWith"), ["_string2"])
 
 	_ = _string1.hasSuffix(_string2)
-	_ = "_string1.endsWith(_string2)"
+	_ = Template.call(.dot("_string1", "endsWith"), ["_string2"])
 
 	_ = _range.lowerBound
-	_ = "_range.start"
+	_ = Template.dot("_range", "start")
 
 	_ = _range.upperBound
-	_ = "_range.endInclusive"
+	_ = Template.dot("_range", "endInclusive")
 
 	_ = Range<String.Index>(uncheckedBounds: (lower: _index1, upper: _index2))
-	_ = "IntRange(_index1, _index2)"
+	_ = Template.call("IntRange", ["_index1", "_index2"])
 
 	_ = _string1.append(_string2)
 	_ = "_string1 += _string2"
@@ -1196,51 +1325,55 @@ private func gryphonTemplates() {
 	_ = "_string += _character"
 
 	_ = _string.capitalized
-	_ = "_string.capitalize()"
+	_ = Template.call(.dot("_string", "capitalize"), [])
 
 	_ = _string.uppercased()
-	_ = "_string.toUpperCase()"
+	_ = Template.call(.dot("_string", "toUpperCase"), [])
 
 	// Character
 	_ = _character.uppercased()
-	_ = "_character.toUpperCase()"
+	_ = Template.call(.dot("_character", "toUpperCase"), [])
 
 	// Array
 	_ = _array.append(_any)
-	_ = "_array.add(_any)"
+	_ = Template.call(.dot("_array", "add"), ["_any"])
 
 	_ = _array.insert(_any, at: _int)
-	_ = "_array.add(_int, _any)"
+	_ = Template.call(.dot("_array", "add"), ["_int", "_any"])
 
 	_ = _arrayOfOptionals.append(nil)
-	_ = "_arrayOfOptionals.add(null)"
+	_ = Template.call(.dot("_arrayOfOptionals", "add"), ["null"])
 
 	_ = _array1.append(contentsOf: _array2)
-	_ = "_array1.addAll(_array2)"
+	_ = Template.call(.dot("_array1", "addAll"), ["_array2"])
 
 	_ = _array1.append(contentsOf: _array3)
-	_ = "_array1.addAll(_array3)"
+	_ = Template.call(.dot("_array1", "addAll"), ["_array3"])
 
 	_ = _array.isEmpty
-	_ = "_array.isEmpty()"
+	_ = Template.call(.dot("_array", "isEmpty"), [])
 
 	_ = _strArray.joined(separator: _string)
-	_ = "_strArray.joinToString(separator = _string)"
+	_ = Template.call(
+		.dot("_strArray", "joinToString"),
+		[.labeledParameter("separator", "_string")])
 
 	_ = _strArray.joined()
-	_ = "_strArray.joinToString(separator = \\\"\\\")"
+	_ = Template.call(
+		.dot("_strArray", "joinToString"),
+		[.labeledParameter("separator", "\\\"\\\"")])
 
 	_ = _array.count
-	_ = "_array.size"
+	_ = Template.dot("_array", "size")
 
 	_ = _array.indices
-	_ = "_array.indices"
+	_ = Template.dot("_array", "indices")
 
 	_ = _array.startIndex
 	_ = "0"
 
 	_ = _array.endIndex
-	_ = "_array.size"
+	_ = Template.dot("_array", "size")
 
 	_ = _array.index(after: _int)
 	_ = "_int + 1"
@@ -1249,87 +1382,87 @@ private func gryphonTemplates() {
 	_ = "_int - 1"
 
 	_ = _array.first
-	_ = "_array.firstOrNull()"
+	_ = Template.call(.dot("_array", "firstOrNull"), [])
 
 	_ = _array.first(where: _closure3)
-	_ = "_array.find _closure3"
+	_ = Template.call(.dot("_array", "find"), ["_closure3"])
 
 	_ = _array.last(where: _closure3)
-	_ = "_array.findLast _closure3"
+	_ = Template.call(.dot("_array", "findLast"), ["_closure3"])
 
 	_ = _array.last
-	_ = "_array.lastOrNull()"
+	_ = Template.call(.dot("_array", "lastOrNull"), [])
 
 	_ = _array.prefix(while: _closure3)
-	_ = "_array.takeWhile _closure3"
+	_ = Template.call(.dot("_array", "takeWhile"), ["_closure3"])
 
 	_ = _array.removeFirst()
-	_ = "_array.removeAt(0)"
+	_ = Template.call(.dot("_array", "removeAt"), ["0"])
 
 	_ = _array.remove(at: _int)
-	_ = "_array.removeAt(_int)"
+	_ = Template.call(.dot("_array", "removeAt"), ["_int"])
 
 	_ = _array.removeAll()
 	_ = "_array.clear()"
 
 	_ = _array.dropFirst()
-	_ = "_array.drop(1)"
+	_ = Template.call(.dot("_array", "drop"), ["1"])
 
 	_ = _array.dropLast()
-	_ = "_array.dropLast(1)"
+	_ = Template.call(.dot("_array", "dropLast"), ["1"])
 
 	_ = _array.map(_closure2)
-	_ = "_array.map _closure2"
+	_ = Template.call(.dot("_array", "map"), ["_closure2"])
 
 	_ = _array.flatMap(_closure6)
-	_ = "_array.flatMap _closure6"
+	_ = Template.call(.dot("_array", "flatMap"), ["_closure6"])
 
 	_ = _array.compactMap(_closure2)
-	_ = "_array.map _closure2.filterNotNull()"
+	_ = Template.call(.dot(.call(.dot("_array", "map"), ["_closure2"]), "filterNotNull"), [])
 
 	_ = _array.filter(_closure3)
-	_ = "_array.filter _closure3"
+	_ = Template.call(.dot("_array", "filter"), ["_closure3"])
 
 	_ = _array.reduce(_any, _closure)
-	_ = "_array.fold(_any) _closure"
+	_ = Template.call(.dot("_array", "fold"), ["_any", "_closure"])
 
 	_ = zip(_array1, _array2)
-	_ = "_array1.zip(_array2)"
+	_ = Template.call(.dot("_array1", "zip"), ["_array2"])
 
 	_ = _array.firstIndex(where: _closure3)
-	_ = "_array.indexOfFirst _closure3"
+	_ = Template.call(.dot("_array", "indexOfFirst"), ["_closure3"])
 
 	_ = _array.contains(where: _closure3)
-	_ = "(_array.find _closure3 != null)"
+	_ = "(" + Template.call(.dot("_array", "find"), ["_closure3"]) + " != null)"
 
 	_ = _comparableArray.sorted()
-	_ = "_comparableArray.sorted()"
+	_ = Template.call(.dot("_comparableArray", "sorted"), [])
 
 	_ = _comparableArray.contains(_comparable)
-	_ = "_comparableArray.contains(_comparable)"
+	_ = Template.call(.dot("_comparableArray", "contains"), ["_comparable"])
 
 	_ = _comparableArray.firstIndex(of: _comparable)
-	_ = "_comparableArray.indexOf(_comparable)"
+	_ = Template.call(.dot("_comparableArray", "indexOf"), ["_comparable"])
 
 	// Dictionary
 	_ = _dictionary.count
-	_ = "_dictionary.size"
+	_ = Template.dot("_dictionary", "size")
 
 	_ = _dictionary.isEmpty
-	_ = "_dictionary.isEmpty()"
+	_ = Template.call(.dot("_dictionary", "isEmpty"), [])
 
 	_ = _dictionary.map(_closure2)
-	_ = "_dictionary.map _closure2"
+	_ = Template.call(.dot("_dictionary", "map"), ["_closure2"])
 
 	// Int
 	_ = Int.max
-	_ = "Int.MAX_VALUE"
+	_ = Template.dot("Int", "MAX_VALUE")
 
 	_ = Int.min
-	_ = "Int.MIN_VALUE"
+	_ = Template.dot("Int", "MIN_VALUE")
 
 	_ = min(_int1, _int2)
-	_ = "Math.min(_int1, _int2)"
+	_ = Template.call(.dot("Math", "min"), ["_int1", "_int2"])
 
 	_ = _int1..._int2
 	_ = "_int1.._int2"
@@ -1339,11 +1472,11 @@ private func gryphonTemplates() {
 
 	// Double
 	_ = _double1..._double2
-	_ = "(_double1).rangeTo(_double2)"
+	_ = Template.call(.dot("(_double1)", "rangeTo"), ["_double2"])
 
 	// Optional
 	_ = _optional.map(_closure4)
-	_ = "_optional?.let _closure4"
+	_ = Template.call(.dot("_optional?", "let"), ["_closure4"])
 }
 
 """

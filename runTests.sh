@@ -110,7 +110,14 @@ fi
 if [[ $1 == "-b" ]] || [[ $2 == "-b" ]]; then
 	echo "👇    Preparing for BootstrappingTest..."
 
-	bash prepareForBootstrapTests.sh
+	if bash prepareForBootstrapTests.sh
+	then
+		echo "✅ Done."
+		echo ""
+	else
+		echo "🚨 Failed to initialize Gryphon."
+		exit -1
+	fi
 
 	fileNameWithExtension="BootstrappingTest.swift"
 

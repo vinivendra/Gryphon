@@ -32,6 +32,9 @@ public class KotlinTranslator {
 	private let context: TranspilationContext
 	private var sourceFile: SourceFile?
 
+	/// Stores the list of matches of any templates that are currently being translated.
+	private let templateMatchesStack: MutableList<List<(String, Expression)>> = []
+
 	// MARK: - Interface
 
 	public init(context: TranspilationContext) {
@@ -134,11 +137,6 @@ public class KotlinTranslator {
 			{
 				if currentExpressionStatement.expression is CallExpression,
 					nextExpressionStatement.expression is CallExpression
-				{
-					continue
-				}
-				if currentExpressionStatement.expression is TemplateExpression,
-					nextExpressionStatement.expression is TemplateExpression
 				{
 					continue
 				}
@@ -1067,18 +1065,17 @@ public class KotlinTranslator {
 				let translatedExpression = try translateExpression(
 					binaryExpression.leftExpression,
 					withIndentation: indentation)
+				let resolvedTranslation = translatedExpression.resolveTranslation().translation
 
 				// If it's a range
-				if let template = binaryExpression.leftExpression as? TemplateExpression {
-					if template.pattern.contains("..") ||
-						template.pattern.contains("until") ||
-						template.pattern.contains("rangeTo")
-					{
-						let result = KotlinTranslation(range: caseExpression.range)
-						result.append("in ")
-						result.append(translatedExpression)
-						return result
-					}
+				if binaryExpression.operatorSymbol == "~=",
+					(resolvedTranslation.contains("until") ||
+						resolvedTranslation.contains(".."))
+				{
+					let result = KotlinTranslation(range: caseExpression.range)
+					result.append("in ")
+					result.append(translatedExpression)
+					return result
 				}
 
 				return translatedExpression
@@ -1263,16 +1260,20 @@ public class KotlinTranslator {
 
 	// MARK: - Expression translations
 
-	private func translateExpression(
+	internal func translateExpression(
 		_ expression: Expression,
 		withIndentation indentation: String)
 		throws -> KotlinTranslation
 	{
-		if let templateExpression = expression as? TemplateExpression {
-			return try translateTemplateExpression(templateExpression, withIndentation: indentation)
-		}
 		if let literalCodeExpression = expression as? LiteralCodeExpression {
-			return translateLiteralCodeExpression(literalCodeExpression)
+			return try translateLiteralCodeExpression(
+				literalCodeExpression,
+				withIndentation: indentation)
+		}
+		if let concatenationExpression = expression as? ConcatenationExpression {
+			return try translateConcatenationExpression(
+				concatenationExpression,
+				withIndentation: indentation)
 		}
 		if let arrayExpression = expression as? ArrayExpression {
 			return try translateArrayExpression(arrayExpression, withIndentation: indentation)
@@ -1828,45 +1829,26 @@ public class KotlinTranslator {
 	}
 
 	private func translateLiteralCodeExpression(
-		_ expression: LiteralCodeExpression)
-		-> KotlinTranslation
-	{
-		return KotlinTranslation(
-			range: expression.range,
-			string: expression.string.removingBackslashEscapes)
-	}
-
-	private func translateTemplateExpression(
-		_ templateExpression: TemplateExpression,
+		_ literalCodeExpression: LiteralCodeExpression,
 		withIndentation indentation: String)
 		throws -> KotlinTranslation
 	{
-		var result = templateExpression.pattern
+		return KotlinTranslation(
+			range: literalCodeExpression.range,
+			string: literalCodeExpression.string.removingBackslashEscapes)
+	}
 
-		// Make the matches dictionary into a list
-		let matchesList: MutableList<(String, Expression)> = []
-		for (string, expression) in templateExpression.matches {
-			let tuple = (string, expression) // gryphon value: Pair(string, expression)
-			matchesList.append(tuple)
-		}
-		// Sort the list so that longer strings are before shorter ones.
-		// This issues when one string is a substring of another
-		let sortedMatches = matchesList.sorted { a, b in
-				a.0.count > b.0.count
-			}
-
-		for match in sortedMatches {
-			let string = match.0
-			let expression = match.1
-
-			let expressionTranslation =
-				try translateExpression(expression, withIndentation: indentation)
-					.resolveTranslation().translation
-			result = result.replacingOccurrences(
-				of: string,
-				with: expressionTranslation)
-		}
-		return KotlinTranslation(range: templateExpression.range, string: result)
+	private func translateConcatenationExpression(
+		_ expression: ConcatenationExpression,
+		withIndentation indentation: String)
+		throws -> KotlinTranslation
+	{
+		let result = KotlinTranslation(range: expression.range)
+		try result.append(
+			translateExpression(expression.leftExpression, withIndentation: indentation))
+		try result.append(
+			translateExpression(expression.rightExpression, withIndentation: indentation))
+		return result
 	}
 
 	private func translateDeclarationReferenceExpression(

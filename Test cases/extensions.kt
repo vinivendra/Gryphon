@@ -37,6 +37,5 @@ fun main(args: Array<String>) {
 	println("${"Hello!".isString}")
 	println("${"Hello!".world}")
 	println("${"Hello".appendWorld()}")
-
 	"bla".functionWithVariable()
 }
