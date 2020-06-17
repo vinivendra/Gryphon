@@ -26,15 +26,20 @@ This means the main systems and ideas have already been implemented - for instan
 
 Gryphon supports both **macOS** and **Linux**. You can install it with:
 
-### Mint
+### Homebrew
 
-Use [Mint](https://github.com/yonaskolb/Mint) to install programs that use the Swift package manager:
+Use [Homebrew](https://brew.sh) to install Gryphon and its dependencies automatically:
 
 ```` bash
-$ brew install mint
+$ brew install vinivendra/gryphon/gryphon
+````
+
+### Mint
+
+Use [Mint](https://github.com/yonaskolb/Mint) to install Gryphon using the Swift package manager:
+
+```` bash
 $ mint install vinivendra/Gryphon
-$ gryphon --version
-Gryphon version 0.7
 ````
 
 ### GitPod
@@ -43,16 +48,14 @@ Try it out on [GitPod](https://www.gitpod.io) before downloading:
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/vinivendra/Gryphon)
 
-### Installation script
+### Building from source
 
 Clone the repo run the installation script:
 
 ```` bash
 $ git clone https://github.com/vinivendra/Gryphon.git
 $ cd Gryphon
-$ bash install.sh
-$ gryphon --version
-Gryphon version 0.7
+$ ./install.sh
 ````
 
 ### Docker
@@ -64,18 +67,7 @@ $ git clone https://github.com/vinivendra/Gryphon.git
 $ cd Gryphon
 $ docker build -t gryphon .
 $ docker run -it --rm --privileged -v /absolute/path/to/current/directory/:/app/Gryphon gryphon
-# bash install.sh
-# gryphon --version
-Gryphon version 0.7
-````
-
-
-## 🔨 Xcode integration
-
-Users on macOS can also take advantage of Xcode integration; for that, they'll need [Xcodeproj](https://github.com/CocoaPods/Xcodeproj):
-
-```` bash
-$ [sudo] gem install xcodeproj
+# ./install.sh
 ````
 
 ## 📖 Guides
