@@ -549,9 +549,6 @@ public class TranspilationPass {
 		parents.append(.expressionNode(value: expression))
 		defer { parents.removeLast() }
 
-		if let expression = expression as? TemplateExpression {
-			return replaceTemplateExpression(expression)
-		}
 		if let expression = expression as? LiteralCodeExpression {
 			return replaceLiteralCodeExpression(expression)
 		}
@@ -644,22 +641,6 @@ public class TranspilationPass {
 		}
 
 		fatalError("This should never be reached.")
-	}
-
-	func replaceTemplateExpression( // gryphon annotation: open
-		_ templateExpression: TemplateExpression)
-		-> Expression
-	{
-		let newMatches = templateExpression.matches // gryphon ignore
-			.mapValues { replaceExpression($0) }
-		// gryphon insert: val newMatches = templateExpression.matches
-		// gryphon insert:     .mapValues { replaceExpression(it.value) }.toMutableMap()
-
-		return TemplateExpression(
-			range: templateExpression.range,
-			typeName: templateExpression.typeName,
-			templateExpression: replaceExpression(templateExpression.templateExpression),
-			matches: newMatches.toMutableMap())
 	}
 
 	func replaceLiteralCodeExpression( // gryphon annotation: open

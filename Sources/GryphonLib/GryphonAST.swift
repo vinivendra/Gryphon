@@ -1152,11 +1152,6 @@ public /*abstract*/ class Expression: PrintableAsTree, Equatable, CustomStringCo
 		{
 			return lhs == rhs
 		}
-		if let lhs = lhs as? TemplateExpression,
-			let rhs = rhs as? TemplateExpression
-		{
-			return lhs == rhs
-		}
 		if let lhs = lhs as? ParenthesesExpression,
 			let rhs = rhs as? ParenthesesExpression
 		{
@@ -1357,48 +1352,6 @@ public class ConcatenationExpression: Expression {
 	public static func == (lhs: ConcatenationExpression, rhs: ConcatenationExpression) -> Bool {
 		return lhs.leftExpression == rhs.leftExpression &&
 			lhs.rightExpression == rhs.rightExpression
-	}
-}
-
-public class TemplateExpression: Expression {
-	let typeName: String?
-	let templateExpression: Expression
-	let matches: MutableMap<String, Expression>
-
-	init(
-		range: SourceFileRange?,
-		typeName: String?,
-		templateExpression: Expression,
-		matches: MutableMap<String, Expression>)
-	{
-		self.typeName = typeName
-		self.templateExpression = templateExpression
-		self.matches = matches
-		super.init(range: range, name: "TemplateExpression".capitalizedAsCamelCase())
-	}
-
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
-		let matchesTrees = matches.map { PrintableTree($0.key, [$0.value]) }
-
-		let sortedMatchesTrees = matchesTrees.sorted { a, b in
-			a.treeDescription < b.treeDescription
-		}
-
-		return [
-			PrintableTree.initOrNil(typeName),
-			PrintableTree("expressionTemplate", [templateExpression]),
-			PrintableTree(
-				"matches",
-				sortedMatchesTrees.forceCast(to: List<PrintableAsTree?>.self)), ]
-	}
-
-	override var swiftType: String? { // gryphon annotation: override
-		return typeName
-	}
-
-	public static func == (lhs: TemplateExpression, rhs: TemplateExpression) -> Bool {
-		return lhs.templateExpression == rhs.templateExpression &&
-			lhs.matches == rhs.matches
 	}
 }
 

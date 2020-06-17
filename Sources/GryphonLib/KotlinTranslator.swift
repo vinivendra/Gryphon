@@ -140,11 +140,6 @@ public class KotlinTranslator {
 				{
 					continue
 				}
-				if currentExpressionStatement.expression is TemplateExpression,
-					nextExpressionStatement.expression is TemplateExpression
-				{
-					continue
-				}
 				if currentExpressionStatement.expression is LiteralCodeExpression,
 					nextExpressionStatement.expression is LiteralCodeExpression
 				{
@@ -1268,9 +1263,6 @@ public class KotlinTranslator {
 		withIndentation indentation: String)
 		throws -> KotlinTranslation
 	{
-		if let templateExpression = expression as? TemplateExpression {
-			return try translateTemplateExpression(templateExpression, withIndentation: indentation)
-		}
 		if let literalCodeExpression = expression as? LiteralCodeExpression {
 			return try translateLiteralCodeExpression(
 				literalCodeExpression,
@@ -1839,32 +1831,9 @@ public class KotlinTranslator {
 		withIndentation indentation: String)
 		throws -> KotlinTranslation
 	{
-		// If we're translating a template, this expression might be a placeholder that has to be
-		// replaced
-		if let currentTemplateMatches = templateMatchesStack.last {
-			var result = literalCodeExpression.string.removingBackslashEscapes
-			for match in currentTemplateMatches {
-				let placeholderName = match.0
-				let replacementExpression = match.1
-
-				if result.contains(placeholderName) {
-					let expressionTranslation =
-						try translateExpression(replacementExpression, withIndentation: indentation)
-							.resolveTranslation().translation
-					result = result.replacingOccurrences(
-						of: placeholderName,
-						with: expressionTranslation)
-				}
-			}
-			return KotlinTranslation(
-				range: literalCodeExpression.range,
-				string: result)
-		}
-		else {
-			return KotlinTranslation(
-				range: literalCodeExpression.range,
-				string: literalCodeExpression.string.removingBackslashEscapes)
-		}
+		return KotlinTranslation(
+			range: literalCodeExpression.range,
+			string: literalCodeExpression.string.removingBackslashEscapes)
 	}
 
 	private func translateConcatenationExpression(
@@ -1877,31 +1846,6 @@ public class KotlinTranslator {
 			translateExpression(expression.leftExpression, withIndentation: indentation))
 		try result.append(
 			translateExpression(expression.rightExpression, withIndentation: indentation))
-		return result
-	}
-
-	private func translateTemplateExpression(
-		_ templateExpression: TemplateExpression,
-		withIndentation indentation: String)
-		throws -> KotlinTranslation
-	{
-		// Make the matches dictionary into a list
-		let matchesList: MutableList<(String, Expression)> = []
-		for (string, expression) in templateExpression.matches {
-			let tuple = (string, expression) // gryphon value: Pair(string, expression)
-			matchesList.append(tuple)
-		}
-		// Sort the list so that longer strings are before shorter ones.
-		// This issues when one string is a substring of another
-		let sortedMatches = matchesList.sorted { a, b in
-				a.0.count > b.0.count
-			}
-
-		templateMatchesStack.append(sortedMatches)
-		let result = try translateExpression(
-			templateExpression.templateExpression,
-			withIndentation: indentation)
-		templateMatchesStack.removeLast()
 		return result
 	}
 
