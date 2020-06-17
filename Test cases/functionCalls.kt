@@ -134,14 +134,12 @@ fun main(args: Array<String>) {
 	foo3(bar = 0, baz = 0)
 	foo4(0, baz = 0)
 	foo6(0, 0)
-
 	println("${bla()}")
 	println("${bla1(bar = 0)}")
 	println("${bla2(0)}")
 	println("${bla3(bar = 0, baz = 0)}")
 	println("${bla4(0, baz = 0)}")
 	println("${bla6(0, 0)}")
-
 	bar1()
 	bar1(a = 0)
 	bar2()

@@ -35,7 +35,6 @@ fun main(args: Array<String>) {
 	println(double1)
 	println(double2)
 	println(double3)
-
 	foo(int = 5, double = 5.0, float = 5.0f)
 
 	var a: UByte = 255u

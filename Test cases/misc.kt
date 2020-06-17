@@ -57,11 +57,8 @@ fun main(args: Array<String>) {
 	var bc: BC
 
 	f(a = 10)
-
 	println("==")
-
 	f(a = null)
-
 	println("==")
 
 	val dict: Map<Int, Int> = mapOf(1 to 2)

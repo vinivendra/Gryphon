@@ -75,7 +75,6 @@ fun main(args: Array<String>) {
 	val plusClosure: (Int, Int) -> Int = { a, b -> a + b }
 
 	println(plusClosure(2, 3))
-
 	useClosure(closure = printClosure)
 	defaultClosure()
 

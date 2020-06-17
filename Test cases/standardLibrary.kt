@@ -51,7 +51,6 @@ fun main(args: Array<String>) {
 	println("The stored message is: ${message}\nAnd the stored number is: ${number}.")
 	print(0)
 	println(" (Print)")
-
 	printTest(Math.sqrt(9.0), "Sqrt")
 
 	val string: String = "abcde"
@@ -150,33 +149,19 @@ fun main(args: Array<String>) {
 	val arrayOfOptionals: MutableList<Int?> = mutableListOf(1)
 
 	printTest(array, "Array append")
-
 	array.add(4)
-
 	printTest(array, "Array append")
-
 	array.add(0, 0)
-
 	printTest(array, "Array insert")
-
 	array.add(5, 5)
-
 	printTest(array, "Array insert")
-
 	array.add(3, 10)
-
 	printTest(array, "Array insert")
-
 	arrayOfOptionals.add(null)
-
 	printTest(arrayOfOptionals, "Array append nil")
-
 	array3.addAll(array2)
-
 	printTest(array3, "Array append(contentsOf:) constant")
-
 	array3.addAll(array4)
-
 	printTest(array3, "Array append(contentsOf:) variable")
 	printTest(emptyArray.isEmpty(), "Array isEmpty")
 	printTest(array.isEmpty(), "Array isEmpty")
@@ -198,9 +183,7 @@ fun main(args: Array<String>) {
 	printTest(array.find { it > 3 }, "Array first where")
 	printTest(array.findLast { it > 3 }, "Array last where")
 	printTest(array.lastOrNull(), "Array last")
-
 	array.removeAt(0)
-
 	printTest(array, "Array remove first")
 	printTest(array.drop(1), "Array drop first")
 	printTest(array.dropLast(1), "Array drop last")

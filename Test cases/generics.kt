@@ -49,8 +49,6 @@ fun main(args: Array<String>) {
 	val box: Box<Int> = Box(x = 0)
 
 	f1(box = Box(x = 1))
-
 	println(f2(box = Box(x = 2)))
-
 	Box(x = 3).f4(box = Box(x = 4))
 }
