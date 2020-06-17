@@ -142,13 +142,13 @@ A usual development cycle can involve running unit tests often, then running the
 The easiest way to run the test suite is with the test script:
 
 ```` bash
-$ bash runTests.sh
+$ ./runTests.sh
 ````
 
 This script sets up and runs the unit tests. You can add the `-b` flag if you want to include the bootstrapping tests, and the `-a` flag to include the acceptance tests:
 
 ```` bash
-$ bash runTests.sh -a -b
+$ ./runTests.sh -a -b
 ````
 
 On macOS, Gryphon also tests support for different Swift versions using available toolchains. Currently, it supports Swift 5.1 and 5.2. This will happen automatically if you have the toolchains installed. You can check their availability with:
@@ -205,7 +205,7 @@ The bootstrapping tests are a way of testing Gryphon with more complicated code 
 The `prepareForBootstrapTests.sh` script is responsible for translating Gryphon's source code, compiling the translated code, and calling the translated executable to generate the necessary output files for comparison. It should be run before every execution of `BootstrappingTest`, since these tests need updated output files to work.
 
 ```` bash
-$ bash prepareForBootstrapTests.sh
+$ ./prepareForBootstrapTests.sh
 ````
 
 If any files are out of date when the test runs (for instance, because the `prepareForBootstrapTests.sh` script wasn't executed), it will raise an error.
