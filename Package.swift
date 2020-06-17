@@ -24,6 +24,9 @@ import PackageDescription
 
 let package = Package(
 	name: "Gryphon",
+	products: [
+		.executable(name: "gryphon", targets: ["Gryphon"])
+	],
 	dependencies: [
 	],
 	targets: [

@@ -2,10 +2,11 @@
 
 ## The Swift to Kotlin translator
 
+[![Swift package manager compatible](https://img.shields.io/badge/SPM-compatible-brightgreen)](https://www.firsttimersonly.com/)
 [![open ethical](https://img.shields.io/badge/open-ethical-%234baaaa)](https://ethicalsource.dev)
 [![licensed ethically](https://img.shields.io/badge/licensed-ethically-%234baaaa)](https://ethicalsource.dev)
-[![first-timers-only](https://img.shields.io/badge/first--timers--only-friendly-blue.svg)](https://www.firsttimersonly.com/)
 [![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/vinivendra/Gryphon)
+[![first-timers-only](https://img.shields.io/badge/first--timers--only-friendly-blue.svg)](https://www.firsttimersonly.com/)
 [![Follow on Twitter](https://img.shields.io/twitter/follow/gryphonblog?label=Follow&style=social)](https://twitter.com/gryphonblog)
 
 Gryphon is a program that translates Swift code into Kotlin code. It was created to enable mobile app developers to share parts of an iOS app's codebase with Android.
@@ -15,21 +16,74 @@ Gryphon is a program that translates Swift code into Kotlin code. It was created
 - **Xcode integration.** Translate your iOS code to Android, compile the Android app, and see Kotlin's errors and warnings in the Swift lines that originated them - all without leaving Xcode.
 - **Custom-made.** Use special comments and templates to customize your Kotlin translation, and use any platform-specific features you want - even in translated source files.
 
-Check out the [project's website](https://vinivendra.github.io/Gryphon) for more information, or try it out in GitPod before downloading:
-
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/vinivendra/Gryphon)
-
------
-
-- [Status](https://github.com/vinivendra/Gryphon#-status)
-- [Frequently asked questions](https://github.com/vinivendra/Gryphon#-frequently-asked-questions)
-- [Getting started](https://github.com/vinivendra/Gryphon#-getting-started)
-
 ## 👍 Status
 
 Gryphon is now in preview! 🎉
 
 This means the main systems and ideas have already been implemented - for instance, it's been translating its own codebase for a while now. However, new users might still find some new bugs to be fixed. If that's the case, feel free to report a [new issue](https://github.com/vinivendra/Gryphon/issues/new/choose) on GitHub.
+
+## 📲 Installing
+
+Gryphon supports both **macOS** and **Linux**. You can install it with:
+
+### Mint
+
+Use [Mint](https://github.com/yonaskolb/Mint) to install programs that use the Swift package manager:
+
+```` bash
+$ brew install mint
+$ mint install vinivendra/Gryphon
+$ gryphon --version
+Gryphon version 0.7
+````
+
+### GitPod
+
+Try it out on [GitPod](https://www.gitpod.io) before downloading:
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/vinivendra/Gryphon)
+
+### Installation script
+
+Clone the repo run the installation script:
+
+```` bash
+$ git clone https://github.com/vinivendra/Gryphon.git
+$ cd Gryphon
+$ bash install.sh
+$ gryphon --version
+Gryphon version 0.7
+````
+
+### Docker
+
+Install it in a [Docker](https://www.docker.com) container:
+
+```` bash
+$ git clone https://github.com/vinivendra/Gryphon.git
+$ cd Gryphon
+$ docker build -t gryphon .
+$ docker run -it --rm --privileged -v /absolute/path/to/current/directory/:/app/Gryphon gryphon
+# bash install.sh
+# gryphon --version
+Gryphon version 0.7
+````
+
+
+## 🔨 Xcode integration
+
+Users on macOS can also take advantage of Xcode integration; for that, they'll need [Xcodeproj](https://github.com/CocoaPods/Xcodeproj):
+
+```` bash
+$ [sudo] gem install xcodeproj
+````
+
+## 📖 Guides
+
+Check out the [Tutorial](https://vinivendra.github.io/Gryphon/gettingStarted.html) to get started. It covers the basic information needed to begin using Gryphon, whether you want to [translate command line programs](https://vinivendra.github.io/Gryphon/translatingCommandLinePrograms.html), [translate a new iOS app to Android](https://vinivendra.github.io/Gryphon/translatingANewiOSAppToAndroid.html), or [add Gryphon to an existing app](https://vinivendra.github.io/Gryphon/addingGryphonToAnExistingApp.html).
+
+There are also more advanced guides on  [using collections](https://vinivendra.github.io/Gryphon/collections.html), [using translation comments](https://vinivendra.github.io/Gryphon/translationComments.html), and [using templates](https://vinivendra.github.io/Gryphon/templates.html)
+
 
 ## 📘 Frequently asked questions
 
@@ -67,26 +121,12 @@ It is recommended that you start by translating only a few platform-independent 
 
 **Probably not.** The challenges involved in translating Swift code into Kotlin are very specific for these two languages. Translating Kotlin into Swift would require a new front-end for Kotlin, a new back-end for Swift, and all-new logic in the middle to turn one into the other - basically, a whole new Gryphon. The same goes for other combinations of languages.
 
-## 📲 Getting started
+#### How can I help?
 
-Gryphon supports **macOS**, **Linux**, and **Docker**. Xcode integration is only available on macOS, but Linux and Docker users can still translate Swift code that doesn't import the iOS frameworks.
+Thanks for the offer!
 
-Check out the [Tutorial](https://vinivendra.github.io/Gryphon/gettingStarted.html) to get started. It covers the basic information needed to begin using Gryphon:
+If you want to suggest a way to improve Gryphon, feel free to [open a new issue](https://github.com/vinivendra/Gryphon/issues/new/choose) - all bug reports and feature requests are welcome and encouraged.
 
-- [Installing Gryphon](https://vinivendra.github.io/Gryphon/installingGryphon.html)
-- [Translating command line programs](https://vinivendra.github.io/Gryphon/translatingCommandLinePrograms.html)
-    - [Translating a single file](https://vinivendra.github.io/Gryphon/translatingCommandLinePrograms.html#translating-a-single-file)
-    - [Translating multiple files](https://vinivendra.github.io/Gryphon/translatingCommandLinePrograms.html#translating-multiple-files)
-- [Translating a new iOS app to Android](https://vinivendra.github.io/Gryphon/translatingANewiOSAppToAndroid.html)
-  - [Building the Android app using Xcode](https://vinivendra.github.io/Gryphon/buildingTheAndroidAppUsingXcode.html)
-  - [Adding the Gryphon libraries](https://vinivendra.github.io/Gryphon/addingTheGryphonLibraries.html)
-  - [Adding manual translations](https://vinivendra.github.io/Gryphon/addingManualTranslations.html)
-- [Adding Gryphon to an existing app](https://vinivendra.github.io/Gryphon/addingGryphonToAnExistingApp.html)
+If you would like to contribute directly, first check out the [contributor's guide](https://vinivendra.github.io/Gryphon/contributing.html) to learn to set up your environment. Then, if you're looking for inspiration, take a look at some [good first issues](https://github.com/vinivendra/Gryphon/labels/good%20first%20issue) (if you're new to Gryphon) or the beginner-friendly [first timers only](https://github.com/vinivendra/Gryphon/labels/first-timers-only) (if you're new to open source) - or, if you already know what you want to do, [open an issue](https://github.com/vinivendra/Gryphon/issues/new/choose) and let's talk about it.
 
-There are also in-depth guides on a few topics:
-
-- [Using collections](https://vinivendra.github.io/Gryphon/collections.html)
-- [Using translation comments](https://vinivendra.github.io/Gryphon/translationComments.html)
-- [Using templates](https://vinivendra.github.io/Gryphon/templates.html)
-
-The project uses [GitHub issues](https://github.com/vinivendra/Gryphon/issues) to keep track of planned features and bugs. All bug reports and feature requests are welcome and encouraged. If you would like to contribute, check out the [contributor's guide](https://vinivendra.github.io/Gryphon/contributing.html). Then, take a look at some [good first issues](https://github.com/vinivendra/Gryphon/labels/good%20first%20issue) (if you're new to Gryphon) or the beginner-friendly [first timers only](https://github.com/vinivendra/Gryphon/labels/first-timers-only) (if you're new to open source). You should also read the [code of conduct](https://github.com/vinivendra/Gryphon/blob/master/CODE_OF_CONDUCT.md).
+If you're going to contribute, you should probably read the [code of conduct](https://github.com/vinivendra/Gryphon/blob/master/CODE_OF_CONDUCT.md) too.

@@ -614,6 +614,10 @@ public class MutableList<Element>: List<Element>, // gryphon ignore
 		return array.removeLast()
 	}
 
+	public func removeAll(keepingCapacity keepCapacity: Bool = false) {
+		array.removeAll(keepingCapacity: keepCapacity)
+	}
+
 	public func reverse() {
 		self.array = self.array.reversed()
 	}
@@ -1130,6 +1134,7 @@ private func gryphonTemplates() {
 	let _any: Any = "abc"
 	let _anyType: _Any = _Any()
 	let _optional: _Optional? = _Optional()
+	let _float: Float = 0
 	let _double: Double = 0
 	let _double1: Double = 0
 	let _double2: Double = 0
@@ -1166,6 +1171,25 @@ private func gryphonTemplates() {
 	// Darwin
 	_ = sqrt(_double)
 	_ = Template.call(.dot("Math", "sqrt"), ["_double"])
+
+	// Numerics
+	_ = Double(_int)
+	_ = "_int.toDouble()"
+
+	_ = Float(_int)
+	_ = "_int.toFloat()"
+
+	_ = Double(_float)
+	_ = "_float.toDouble()"
+
+	_ = Int(_float)
+	_ = "_float.toInt()"
+
+	_ = Float(_double)
+	_ = "_double.toFloat()"
+
+	_ = Int(_double)
+	_ = "_double.toInt()"
 
 	// String
 	_ = String(_anyType)
@@ -1377,6 +1401,9 @@ private func gryphonTemplates() {
 
 	_ = _array.remove(at: _int)
 	_ = Template.call(.dot("_array", "removeAt"), ["_int"])
+
+	_ = _array.removeAll()
+	_ = "_array.clear()"
 
 	_ = _array.dropFirst()
 	_ = Template.call(.dot("_array", "drop"), ["1"])

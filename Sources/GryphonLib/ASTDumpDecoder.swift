@@ -298,6 +298,10 @@ internal class ASTDumpDecoder {
 			if character == "=" || character == ":" {
 				break
 			}
+			else if character == "@" {
+				// @'s indicate a location rather than a key
+				return nil
+			}
 
 			index = buffer.index(after: index)
 		}

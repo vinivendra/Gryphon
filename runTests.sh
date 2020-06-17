@@ -1,3 +1,5 @@
+#!/bin/bash
+
 echo "➡️ [1/4] Building Gryphon..."
 
 if swift build --build-tests

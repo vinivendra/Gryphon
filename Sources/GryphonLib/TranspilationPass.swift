@@ -954,6 +954,7 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 				isStatic: false,
 				isMutating: false,
 				isPure: false,
+				isJustProtocolInterface: false,
 				extendsType: variableDeclaration.extendsType,
 				statements: getter.statements,
 				access: "public",
@@ -1122,6 +1123,7 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 					isStatic: initializerDeclaration.isStatic,
 					isMutating: initializerDeclaration.isMutating,
 					isPure: initializerDeclaration.isPure,
+					isJustProtocolInterface: initializerDeclaration.isJustProtocolInterface,
 					extendsType: initializerDeclaration.extendsType,
 					statements: newStatements,
 					access: initializerDeclaration.access,
@@ -2004,6 +2006,7 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 			isStatic: functionDeclaration.isStatic,
 			isMutating: functionDeclaration.isMutating,
 			isPure: functionDeclaration.isPure,
+			isJustProtocolInterface: functionDeclaration.isJustProtocolInterface,
 			extendsType: functionDeclaration.extendsType,
 			statements: functionDeclaration.statements,
 			access: translationResult.access,
@@ -2486,6 +2489,36 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 		}
 
 		return super.replaceCallExpression(callExpression)
+	}
+}
+
+/// Optional function calls like `foo?()` have to be translated to Kotlin as `foo?.invoke()`.
+public class OptionalFunctionCallsTranspilationPass: TranspilationPass {
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
+
+	override func processCallExpression( // gryphon annotation: override
+		_ callExpression: CallExpression)
+		-> CallExpression
+	{
+		if callExpression.function is OptionalExpression {
+			return CallExpression(
+				range: callExpression.range,
+				function: DotExpression(
+					range: callExpression.range,
+					leftExpression: callExpression.function,
+					rightExpression: DeclarationReferenceExpression(
+						range: callExpression.range,
+						identifier: "invoke",
+						typeName: callExpression.typeName,
+						isStandardLibrary: false,
+						isImplicit: false)),
+				parameters: callExpression.parameters,
+				typeName: callExpression.typeName)
+		}
+		else {
+			return super.processCallExpression(callExpression)
+		}
 	}
 }
 
@@ -3830,10 +3863,16 @@ public class AddParenthesesForOperatorsInIfsTranspilationPass: TranspilationPass
 	}
 }
 
-/// Sends let declarations to before the if statement, and replaces them with `x != null` conditions
+/// Sends let declarations to before the if statement, and replaces them with `x != null`
+/// conditions. Also adds optionals to sequential declarations:
+///
+/// 	val a: Foo? = b
+/// 	val result: Double? = a.c // This `a` should be `a?`
 public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
 	// gryphon insert:     super(ast, context) { }
+
+	let currentDeclarations: MutableList<String> = []
 
 	/// Send the let declarations to before the if statement
 	override func replaceIfStatement( // gryphon annotation: override
@@ -3842,16 +3881,39 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 	{
 		let gatheredDeclarations = gatherLetDeclarations(ifStatement)
 
-		// When if-lets are rearranged, it's possible to have two equal declarations (i.e.
+		// When if-lets are rearranged, it's possible to have two equal declarations (e.g.
 		// `val a = b as? String` showing up twice) coming from two different `else if`s, which
 		// create conflicts in Kotlin.
 		let uniqueDeclarations = gatheredDeclarations.removingDuplicates()
 
-		let result = uniqueDeclarations.forceCast(to: MutableList<Statement>.self)
+		// Add optionals to declarations
+		let processedDeclarations: MutableList<Statement> = []
+		for declaration in uniqueDeclarations {
+			// Process this declaration
+			processedDeclarations.append(contentsOf: replaceVariableDeclaration(declaration))
+			// Add its info for future declarations
+			currentDeclarations.append(declaration.identifier)
+		}
 
+		currentDeclarations.removeAll()
+
+		let result = processedDeclarations
 		result.append(contentsOf: super.replaceIfStatement(ifStatement))
-
 		return result
+	}
+
+	override func replaceDeclarationReferenceExpression( // gryphon annotation: override
+		_ declarationReferenceExpression: DeclarationReferenceExpression)
+		-> Expression
+	{
+		if currentDeclarations.contains(declarationReferenceExpression.identifier) {
+			return OptionalExpression(
+				range: declarationReferenceExpression.range,
+				expression: declarationReferenceExpression)
+		}
+		else {
+			return super.replaceDeclarationReferenceExpression(declarationReferenceExpression)
+		}
 	}
 
 	/// Add conditions (`x != null`) for all let declarations
@@ -4054,6 +4116,7 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 			isStatic: false,
 			isMutating: functionDeclaration.isMutating,
 			isPure: functionDeclaration.isPure,
+			isJustProtocolInterface: functionDeclaration.isJustProtocolInterface,
 			extendsType: nil,
 			statements: newStatements,
 			access: "public",
@@ -4234,6 +4297,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 			isStatic: false,
 			isMutating: false,
 			isPure: false,
+			isJustProtocolInterface: false,
 			extendsType: nil,
 			statements: [switchStatement],
 			access: enumDeclaration.access,
@@ -4394,6 +4458,7 @@ public class FixProtocolContentsTranspilationPass: TranspilationPass {
 	{
 		if isInProtocol {
 			functionDeclaration.statements = nil
+			functionDeclaration.isJustProtocolInterface = true
 			return super.processFunctionDeclaration(functionDeclaration)
 		}
 		else {
@@ -4535,6 +4600,7 @@ public extension TranspilationPass {
 		ast = SelfToThisTranspilationPass(ast: ast, context: context).run()
 		ast = AnonymousParametersTranspilationPass(ast: ast, context: context).run()
 		ast = CovarianceInitsAsCallsTranspilationPass(ast: ast, context: context).run()
+		ast = OptionalFunctionCallsTranspilationPass(ast: ast, context: context).run()
 		ast = DataStructureInitializersTranspilationPass(ast: ast, context: context).run()
 		ast = TuplesToPairsTranspilationPass(ast: ast, context: context).run()
 		ast = TupleMembersTranspilationPass(ast: ast, context: context).run()

@@ -53,6 +53,25 @@ fun main(args: Array<String>) {
 	println(" (Print)")
 	printTest(Math.sqrt(9.0), "Sqrt")
 
+	val int: Int = 1
+	val float: Float = 0.1f
+	val float1: Float = 0.5f
+	val float2: Float = 0.9f
+	val double: Double = 0.1
+	val double1: Double = 0.5
+	val double2: Double = 0.9
+
+	printTest(int.toDouble(), "Int to Double")
+	printTest(int.toFloat(), "Int to Float")
+	printTest(float.toDouble(), "Float to Double")
+	printTest(float.toInt(), "Float (0.1) to Int")
+	printTest(float1.toInt(), "Float (0.5) to Int")
+	printTest(float2.toInt(), "Float (0.9) to Int")
+	printTest(double.toFloat(), "Double to Float")
+	printTest(double.toInt(), "Double (0.1) to Int")
+	printTest(double1.toInt(), "Double (0.5) to Int")
+	printTest(double2.toInt(), "Double (0.9) to Int")
+
 	val string: String = "abcde"
 	val bIndex: Int = 1
 	val cIndex: Int = 2
@@ -205,6 +224,10 @@ fun main(args: Array<String>) {
 	printTest(array.contains(10), "Array contains")
 	printTest(array.contains(10000), "Array contains")
 	printTest(array.indexOf(10), "Array firstIndex of")
+
+	array.clear()
+
+	printTest(array, "Array remove all")
 
 	val dictionary: Map<Int, Int> = mapOf(1 to 1, 2 to 2)
 	val emptyDictionary: Map<Int, Int> = mapOf()

@@ -29,9 +29,7 @@ internal interface A {
 	val x: Int
 	val y: Int
 
-	fun foo() {
-
-	}
+	fun foo()
 }
 
 internal open class B: A {
