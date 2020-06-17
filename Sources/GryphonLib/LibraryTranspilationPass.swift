@@ -44,8 +44,6 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 				}
 			}
 
-			// TODO: reset the test file
-
 			var previousExpression: Expression?
 			for templateExpression in topLevelExpressions {
 				if let swiftExpression = previousExpression {
