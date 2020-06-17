@@ -2510,7 +2510,7 @@ public class OptionalFunctionCallsTranspilationPass: TranspilationPass {
 					rightExpression: DeclarationReferenceExpression(
 						range: callExpression.range,
 						identifier: "invoke",
-						typeName: callExpression.typeName,
+						typeName: callExpression.function.swiftType ?? "<<Error>>",
 						isStandardLibrary: false,
 						isImplicit: false)),
 				parameters: callExpression.parameters,
