@@ -80,9 +80,4 @@ fun main(args: Array<String>) {
 	val arrayIndex: Int? = array.indexOf(1)
 	val bla: Int = 1
 	var foo: (() -> Unit)? = null
-	val tuple: Pair<Int, Int> = Pair<Int, Int>(1, 2)
-
-	println(tuple.first)
-	println(tuple.second)
-	println(Pair<Int, Int>(1, 2).first)
 }

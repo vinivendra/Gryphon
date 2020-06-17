@@ -107,11 +107,3 @@ let bla: Array<Int>.ArrayLiteralElement = 1
 
 // Test types with parentheses
 var foo: (() -> ())? = nil
-
-// Test tuples as pairs
-let tuple = (1, 2)
-print(tuple.0)
-print(tuple.1)
-
-// Tuple inside tuple
-print((1, 2).0)
