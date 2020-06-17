@@ -1008,6 +1008,7 @@ private func gryphonTemplates() {
 	let _any: Any = "abc"
 	let _anyType: _Any = _Any()
 	let _optional: _Optional? = _Optional()
+	let _float: Float = 0
 	let _double: Double = 0
 	let _double1: Double = 0
 	let _double2: Double = 0
@@ -1041,6 +1042,25 @@ private func gryphonTemplates() {
 	// Darwin
 	_ = sqrt(_double)
 	_ = "Math.sqrt(_double)"
+
+	// Numerics
+	_ = Double(_int)
+	_ = "_int.toDouble()"
+
+	_ = Float(_int)
+	_ = "_int.toFloat()"
+
+	_ = Double(_float)
+	_ = "_float.toDouble()"
+
+	_ = Int(_float)
+	_ = "_float.toInt()"
+
+	_ = Float(_double)
+	_ = "_double.toFloat()"
+
+	_ = Int(_double)
+	_ = "_double.toInt()"
 
 	// String
 	_ = String(_anyType)
