@@ -614,6 +614,10 @@ public class MutableList<Element>: List<Element>, // gryphon ignore
 		return array.removeLast()
 	}
 
+	public func removeAll() {
+		array.removeAll()
+	}
+
 	public func reverse() {
 		self.array = self.array.reversed()
 	}
@@ -1244,6 +1248,9 @@ private func gryphonTemplates() {
 
 	_ = _array.remove(at: _int)
 	_ = "_array.removeAt(_int)"
+
+	_ = _array.removeAll()
+	_ = "_array.clear()"
 
 	_ = _array.dropFirst()
 	_ = "_array.drop(1)"
