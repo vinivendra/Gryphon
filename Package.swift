@@ -1,4 +1,4 @@
-// swift-tools-version:4.0
+// swift-tools-version:5.1
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 //
@@ -24,6 +24,10 @@ import PackageDescription
 
 let package = Package(
 	name: "Gryphon",
+	platforms: [
+		.macOS(.v10_13)
+		/* Linux */
+	],
 	products: [
 		.executable(name: "gryphon", targets: ["Gryphon"])
 	],
@@ -39,5 +43,6 @@ let package = Package(
 		.testTarget(
 			name: "GryphonLibTests",
 			dependencies: ["GryphonLib"])
-	]
+	],
+	swiftLanguageVersions: [.v5]
 )
