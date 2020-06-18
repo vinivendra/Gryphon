@@ -120,10 +120,14 @@ public class TranspilationContext {
 	/// This variable is used to store protocol definitions in order to allow the translator
 	/// to translate conformances to them correctly (instead of as class inheritances).
 	///
-	private(set) var protocols: MutableList<String> = []
+	private var protocols: MutableMap<String, ProtocolDeclaration> = [:]
 
-	public func addProtocol(_ protocolName: String) {
-		protocols.append(protocolName)
+	public func addProtocol(_ protocolDeclaration: ProtocolDeclaration) {
+		protocols[protocolDeclaration.protocolName] = protocolDeclaration
+	}
+
+	public func getProtocol(named name: String) -> ProtocolDeclaration? {
+		return protocols[name]
 	}
 
 	// MARK: - Function translations

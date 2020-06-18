@@ -3524,10 +3524,16 @@ public class RecordEnumsTranspilationPass: TranspilationPass {
 		_ enumDeclaration: EnumDeclaration)
 		-> MutableList<Statement>
 	{
-		let isEnumClass = enumDeclaration.inherits.isEmpty &&
-			enumDeclaration.elements.reduce(true) { result, element in
+		let inheritsOnlyFromProtocols = enumDeclaration.inherits.reduce(true)
+			{ result, inheritance in
+				result && (self.context.getProtocol(named: inheritance) != nil)
+			}
+		let hasNoAssociatedValues = enumDeclaration.elements.reduce(true)
+			{ result, element in
 				result && element.associatedValues.isEmpty
 			}
+
+		let isEnumClass = inheritsOnlyFromProtocols && hasNoAssociatedValues
 
 		if isEnumClass {
 			self.context.addEnumClass(enumDeclaration.enumName)
@@ -3549,7 +3555,7 @@ public class RecordProtocolsTranspilationPass: TranspilationPass {
 		_ protocolDeclaration: ProtocolDeclaration)
 		-> List<Statement>
 	{
-		self.context.addProtocol(protocolDeclaration.protocolName)
+		self.context.addProtocol(protocolDeclaration)
 
 		return super.replaceProtocolDeclaration(protocolDeclaration)
 	}
@@ -4637,8 +4643,8 @@ public extension TranspilationPass {
 
 		// Record information on enum and function translations
 		ast = RecordTemplatesTranspilationPass(ast: ast, context: context).run()
-		ast = RecordEnumsTranspilationPass(ast: ast, context: context).run()
 		ast = RecordProtocolsTranspilationPass(ast: ast, context: context).run()
+		ast = RecordEnumsTranspilationPass(ast: ast, context: context).run()
 		ast = RecordFunctionsTranspilationPass(ast: ast, context: context).run()
 		ast = RecordInitializersTranspilationPass(ast: ast, context: context).run()
 
