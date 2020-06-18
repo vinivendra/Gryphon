@@ -34,6 +34,12 @@ class A1 {
 	internal func b3() { }
 	fileprivate func b4() { }
 	private func b5() { }
+
+	init(c1: Int) { }
+	public init(c2: Double) { }
+	internal init(c3: Float) { }
+	fileprivate init(c4: String) { }
+	private init(c5: Bool) { }
 }
 
 public class A2 {
@@ -48,6 +54,12 @@ public class A2 {
 	internal func b3() { }
 	fileprivate func b4() { }
 	private func b5() { }
+
+	init(c1: Int) { }
+	public init(c2: Double) { }
+	internal init(c3: Float) { }
+	fileprivate init(c4: String) { }
+	private init(c5: Bool) { }
 }
 
 internal class A3 {
@@ -62,6 +74,12 @@ internal class A3 {
 	internal func b3() { }
 	fileprivate func b4() { }
 	private func b5() { }
+
+	init(c1: Int) { }
+	public init(c2: Double) { }
+	internal init(c3: Float) { }
+	fileprivate init(c4: String) { }
+	private init(c5: Bool) { }
 }
 
 fileprivate class A4 {
@@ -76,6 +94,12 @@ fileprivate class A4 {
 	internal func b3() { }
 	fileprivate func b4() { }
 	private func b5() { }
+
+	init(c1: Int) { }
+	public init(c2: Double) { }
+	internal init(c3: Float) { }
+	fileprivate init(c4: String) { }
+	private init(c5: Bool) { }
 }
 
 private class A5 {
@@ -90,6 +114,12 @@ private class A5 {
 	internal func b3() { }
 	fileprivate func b4() { }
 	private func b5() { }
+
+	init(c1: Int) { }
+	public init(c2: Double) { }
+	internal init(c3: Float) { }
+	fileprivate init(c4: String) { }
+	private init(c5: Bool) { }
 }
 
 // Check access modifiers for static members
@@ -374,6 +404,11 @@ public class E1 {
 	private func b2() { } // gryphon annotation: internal
 	private func b3() { } // gryphon annotation: protected
 	internal func b4() { } // gryphon annotation: private
+
+	private init(c1: Int) { } // gryphon annotation: public
+	private init(c2: Double) { } // gryphon annotation: internal
+	private init(c3: Float) { } // gryphon annotation: protected
+	internal init(c4: String) { } // gryphon annotation: private
 }
 
 protocol E2 { // gryphon annotation: public

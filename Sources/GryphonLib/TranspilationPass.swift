@@ -2034,6 +2034,36 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 		return result
 	}
 
+	override func replaceInitializerDeclaration( // gryphon annotation: override
+		_ initializerDeclaration: InitializerDeclaration)
+		-> List<Statement>
+	{
+		let translationResult = translateAccessModifierAndAnnotations(
+			access: initializerDeclaration.access,
+			annotations: initializerDeclaration.annotations,
+			forDeclaration: initializerDeclaration)
+
+		accessModifiersStack.append(translationResult.access)
+		let result = super.replaceInitializerDeclaration(InitializerDeclaration(
+			range: initializerDeclaration.range,
+			parameters: initializerDeclaration.parameters,
+			returnType: initializerDeclaration.returnType,
+			functionType: initializerDeclaration.functionType,
+			genericTypes: initializerDeclaration.genericTypes,
+			isOpen: initializerDeclaration.isOpen,
+			isImplicit: initializerDeclaration.isImplicit,
+			isStatic: initializerDeclaration.isStatic,
+			isMutating: initializerDeclaration.isMutating,
+			isPure: initializerDeclaration.isPure,
+			extendsType: initializerDeclaration.extendsType,
+			statements: initializerDeclaration.statements,
+			access: translationResult.access,
+			annotations: translationResult.annotations,
+			superCall: initializerDeclaration.superCall))
+		accessModifiersStack.removeLast()
+		return result
+	}
+
 	/// The result of translating an access modifier. Contains the translated access modifier, which
 	/// may have reuslted from an access modifier in an annotation; the remaining annotations, or
 	/// nil if there are none; and a flag indicating if an access modifier was taken from the
@@ -4532,6 +4562,34 @@ public class FixExtensionGenericsTranspilationPass: TranspilationPass {
 	}
 }
 
+/// Kotlin initializers cannot be marked as `open`.
+public class RemoveOpenForInitializersTranspilationPass: TranspilationPass {
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
+
+	override func processInitializerDeclaration( // gryphon annotation: override
+		_ initializerDeclaration: InitializerDeclaration)
+		-> InitializerDeclaration?
+	{
+		return InitializerDeclaration(
+			range: initializerDeclaration.range,
+			parameters: initializerDeclaration.parameters,
+			returnType: initializerDeclaration.returnType,
+			functionType: initializerDeclaration.functionType,
+			genericTypes: initializerDeclaration.genericTypes,
+			isOpen: false,
+			isImplicit: initializerDeclaration.isImplicit,
+			isStatic: initializerDeclaration.isStatic,
+			isMutating: initializerDeclaration.isMutating,
+			isPure: initializerDeclaration.isPure,
+			extendsType: initializerDeclaration.extendsType,
+			statements: initializerDeclaration.statements,
+			access: initializerDeclaration.access,
+			annotations: initializerDeclaration.annotations,
+			superCall: initializerDeclaration.superCall)
+	}
+}
+
 public extension TranspilationPass {
 	/// Runs transpilation passes that have to be run on all files before the other passes can
 	/// run. For instance, we need to record all enums declared on all files before we can
@@ -4614,6 +4672,7 @@ public extension TranspilationPass {
 		ast = OpenDeclarationsTranspilationPass(ast: ast, context: context).run()
 		ast = FixProtocolGenericsTranspilationPass(ast: ast, context: context).run()
 		ast = FixExtensionGenericsTranspilationPass(ast: ast, context: context).run()
+		ast = RemoveOpenForInitializersTranspilationPass(ast: ast, context: context).run()
 
 		// - CapitalizeEnums has to be before IsOperatorsInSealedClasses and
 		//   IsOperatorsInIfStatementsTranspilationPass

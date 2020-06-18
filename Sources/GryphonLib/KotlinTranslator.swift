@@ -597,6 +597,19 @@ public class KotlinTranslator {
 		let result = KotlinTranslation(range: functionDeclaration.range)
 		result.append(indentation)
 
+		if !functionDeclaration.annotations.isEmpty {
+			let annotationsString = functionDeclaration.annotations.joined(separator: " ")
+			result.append("\(annotationsString) ")
+		}
+
+		if let access = functionDeclaration.access {
+			result.append("\(access) ")
+		}
+
+		if functionDeclaration.isOpen {
+			result.append("open ")
+		}
+
 		let isInit = (functionDeclaration is InitializerDeclaration)
 		if isInit {
 			result.append("constructor(")
@@ -605,19 +618,6 @@ public class KotlinTranslator {
 			result.append("operator fun invoke(")
 		}
 		else {
-			if !functionDeclaration.annotations.isEmpty {
-				let annotationsString = functionDeclaration.annotations.joined(separator: " ")
-				result.append("\(annotationsString) ")
-			}
-
-			if let access = functionDeclaration.access {
-				result.append("\(access) ")
-			}
-
-			if functionDeclaration.isOpen {
-				result.append("open ")
-			}
-
 			result.append("fun ")
 
 			if !functionDeclaration.genericTypes.isEmpty {
