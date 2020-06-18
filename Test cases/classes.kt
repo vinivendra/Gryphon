@@ -99,6 +99,12 @@ internal class F {
 	open var a: Int = 0
 }
 
+internal interface MyProtocol {
+}
+
+internal open class Inheritance: MyProtocol {
+}
+
 internal open class MyClass {
 	open var x: Int = 0
 

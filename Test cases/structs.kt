@@ -30,6 +30,13 @@ internal data class NoInheritance(
 	val y: Int
 )
 
+internal interface MyProtocol {
+}
+
+internal data class Inheritance(
+	val x: Int
+): MyProtocol
+
 fun main(args: Array<String>) {
 	val a: SupportedStruct = SupportedStruct()
 	val b: OtherSupportedStruct = OtherSupportedStruct(x = 10, y = 20)

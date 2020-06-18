@@ -36,6 +36,12 @@ struct NoInheritance: Equatable, Codable {
 	let y: Int
 }
 
+protocol MyProtocol { }
+
+struct Inheritance: MyProtocol {
+	let x: Int
+}
+
 let a = SupportedStruct()
 let b = OtherSupportedStruct(x: 10, y: 20)
 

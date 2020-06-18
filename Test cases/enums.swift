@@ -38,6 +38,13 @@ enum NoInheritances: String, Equatable, Codable {
 	case barBaz
 }
 
+protocol MyProtocol {
+}
+
+enum Inheritance: MyProtocol {
+	case foo
+}
+
 enum WithMembers {
 	case fooBar
 	case baz

@@ -143,6 +143,13 @@ print(D(x: 10))
 print(D(string: "not supported"))
 print(D(string: "A")!)
 
+// Test protocol
+protocol MyProtocol {
+}
+
+class Inheritance: MyProtocol {
+}
+
 // Test subscripts
 class MyClass {
 	var x = 0

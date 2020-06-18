@@ -50,6 +50,13 @@ internal enum class NoInheritances {
 		}
 }
 
+internal interface MyProtocol {
+}
+
+internal enum class Inheritance: MyProtocol {
+	FOO;
+}
+
 internal enum class WithMembers {
 	FOO_BAR,
 	BAZ;
