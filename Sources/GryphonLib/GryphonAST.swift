@@ -2224,6 +2224,14 @@ public class TupleExpression: Expression {
 		}
 	}
 
+	override var swiftType: String? { // gryphon annotation: override
+		get {
+			let types = pairs.map { $0.expression.swiftType ?? "_" }
+			return "(\(types.joined(separator: ", ")))"
+		}
+		set { }
+	}
+
 	public static func == (lhs: TupleExpression, rhs: TupleExpression) -> Bool {
 		return lhs.pairs == rhs.pairs
 	}
@@ -2258,6 +2266,13 @@ public class TupleShuffleExpression: Expression {
 		return lhs.labels == rhs.labels &&
 			lhs.indices == rhs.indices &&
 			lhs.expressions == rhs.expressions
+	}
+
+	override var swiftType: String? { // gryphon annotation: override
+		get {
+			return self.flattenToTupleExpression().swiftType
+		}
+		set { }
 	}
 
 	/// Check if this TupleShuffleExpression can be flattened into a TupleExpression without losing

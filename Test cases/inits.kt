@@ -45,6 +45,11 @@ internal open class A {
 		y = h
 		z = i
 	}
+
+	constructor(a: Boolean) {
+		x = 10
+		y = 10
+	}
 }
 
 fun main(args: Array<String>) {
@@ -65,6 +70,10 @@ fun main(args: Array<String>) {
 	println("${a.x} ${a.y} ${a.z}")
 
 	a = A(g = 14, h = 15, i = 16)
+
+	println("${a.x} ${a.y} ${a.z}")
+
+	a = A(a = true)
 
 	println("${a.x} ${a.y} ${a.z}")
 }

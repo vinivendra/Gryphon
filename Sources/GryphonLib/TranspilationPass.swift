@@ -3490,6 +3490,32 @@ public class RecordFunctionsTranspilationPass: TranspilationPass {
 	}
 }
 
+/// Equivalent to RecordFunctionsTranspilationPass, but for recording Initializers. Does not look
+/// for `pure` annotations.
+public class RecordInitializersTranspilationPass: TranspilationPass {
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
+
+	override func processInitializerDeclaration( // gryphon annotation: override
+		_ initializerDeclaration: InitializerDeclaration)
+		-> InitializerDeclaration?
+	{
+		let initializedType = initializerDeclaration.returnType
+
+		let swiftAPIName = initializedType + "(" +
+			initializerDeclaration.parameters.map { ($0.apiLabel ?? "_") + ":" }.joined() + ")"
+
+		self.context.addFunctionTranslation(
+			TranspilationContext.FunctionTranslation(
+				swiftAPIName: swiftAPIName,
+				typeName: initializerDeclaration.functionType,
+				prefix: initializedType,
+				parameters: initializerDeclaration.parameters.map { $0.label }.toMutableList()))
+
+		return super.processInitializerDeclaration(initializerDeclaration)
+	}
+}
+
 public class RecordEnumsTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
 	// gryphon insert:     super(ast, context) { }
@@ -4614,6 +4640,7 @@ public extension TranspilationPass {
 		ast = RecordEnumsTranspilationPass(ast: ast, context: context).run()
 		ast = RecordProtocolsTranspilationPass(ast: ast, context: context).run()
 		ast = RecordFunctionsTranspilationPass(ast: ast, context: context).run()
+		ast = RecordInitializersTranspilationPass(ast: ast, context: context).run()
 
 		return ast
 	}

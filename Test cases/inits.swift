@@ -51,6 +51,11 @@ class A {
 		y = h
 		z = i
 	}
+
+	init(with a: Bool) {
+		x = 10
+		y = 10
+	}
 }
 
 var a = A()
@@ -62,4 +67,6 @@ print("\(a.x) \(a.y) \(a.z)")
 a = A(f: "Hello!")
 print("\(a.x) \(a.y) \(a.z)")
 a = A(g: 14, h: 15, i: 16)
+print("\(a.x) \(a.y) \(a.z)")
+a = A(with: true)
 print("\(a.x) \(a.y) \(a.z)")
