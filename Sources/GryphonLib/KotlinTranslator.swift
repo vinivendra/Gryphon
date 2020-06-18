@@ -1650,6 +1650,15 @@ public class KotlinTranslator {
 				forName: expression.identifier,
 				typeName: expression.typeName)
 		}
+		else if let typeExpression = functionExpression as? TypeExpression,
+			let parameterTypes = callExpression.parameters.swiftType
+		{
+			let typeName = typeExpression.typeName
+			let initializerType = "(\(typeName).Type) -> \(parameterTypes) -> \(typeName)"
+			functionTranslation = self.context.getFunctionTranslation(
+				forName: typeName,
+				typeName: initializerType)
+		}
 		else {
 			functionTranslation = nil
 		}
