@@ -57,11 +57,8 @@ fun main(args: Array<String>) {
 	var bc: BC
 
 	f(a = 10)
-
 	println("==")
-
 	f(a = null)
-
 	println("==")
 
 	val dict: Map<Int, Int> = mapOf(1 to 2)
@@ -82,4 +79,5 @@ fun main(args: Array<String>) {
 	val array: List<Int> = listOf(1, 2, 3)
 	val arrayIndex: Int? = array.indexOf(1)
 	val bla: Int = 1
+	var foo: (() -> Unit)? = null
 }

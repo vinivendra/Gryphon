@@ -58,6 +58,26 @@ print(" (Print)")
 // Darwin
 printTest(sqrt(9), "Sqrt")
 
+// Numerics
+let int: Int = 1
+let float: Float = 0.1
+let float1: Float = 0.5
+let float2: Float = 0.9
+let double: Double = 0.1
+let double1: Double = 0.5
+let double2: Double = 0.9
+
+printTest(Double(int), "Int to Double")
+printTest(Float(int), "Int to Float")
+printTest(Double(float), "Float to Double")
+printTest(Int(float), "Float (0.1) to Int")
+printTest(Int(float1), "Float (0.5) to Int")
+printTest(Int(float2), "Float (0.9) to Int")
+printTest(Float(double), "Double to Float")
+printTest(Int(double), "Double (0.1) to Int")
+printTest(Int(double1), "Double (0.5) to Int")
+printTest(Int(double2), "Double (0.9) to Int")
+
 // String
 let string = "abcde"
 let bIndex = string.index(string.startIndex, offsetBy: 1) // gryphon value: 1
@@ -277,6 +297,9 @@ printTest(array.contains(10), "Array contains")
 printTest(array.contains(10000), "Array contains")
 
 printTest(array.firstIndex(of: 10), "Array firstIndex of")
+
+array.removeAll()
+printTest(array, "Array remove all")
 
 // Dictionaries
 let dictionary = [1: 1, 2: 2]

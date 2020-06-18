@@ -51,8 +51,26 @@ fun main(args: Array<String>) {
 	println("The stored message is: ${message}\nAnd the stored number is: ${number}.")
 	print(0)
 	println(" (Print)")
-
 	printTest(Math.sqrt(9.0), "Sqrt")
+
+	val int: Int = 1
+	val float: Float = 0.1f
+	val float1: Float = 0.5f
+	val float2: Float = 0.9f
+	val double: Double = 0.1
+	val double1: Double = 0.5
+	val double2: Double = 0.9
+
+	printTest(int.toDouble(), "Int to Double")
+	printTest(int.toFloat(), "Int to Float")
+	printTest(float.toDouble(), "Float to Double")
+	printTest(float.toInt(), "Float (0.1) to Int")
+	printTest(float1.toInt(), "Float (0.5) to Int")
+	printTest(float2.toInt(), "Float (0.9) to Int")
+	printTest(double.toFloat(), "Double to Float")
+	printTest(double.toInt(), "Double (0.1) to Int")
+	printTest(double1.toInt(), "Double (0.5) to Int")
+	printTest(double2.toInt(), "Double (0.9) to Int")
 
 	val string: String = "abcde"
 	val bIndex: Int = 1
@@ -150,33 +168,19 @@ fun main(args: Array<String>) {
 	val arrayOfOptionals: MutableList<Int?> = mutableListOf(1)
 
 	printTest(array, "Array append")
-
 	array.add(4)
-
 	printTest(array, "Array append")
-
 	array.add(0, 0)
-
 	printTest(array, "Array insert")
-
 	array.add(5, 5)
-
 	printTest(array, "Array insert")
-
 	array.add(3, 10)
-
 	printTest(array, "Array insert")
-
 	arrayOfOptionals.add(null)
-
 	printTest(arrayOfOptionals, "Array append nil")
-
 	array3.addAll(array2)
-
 	printTest(array3, "Array append(contentsOf:) constant")
-
 	array3.addAll(array4)
-
 	printTest(array3, "Array append(contentsOf:) variable")
 	printTest(emptyArray.isEmpty(), "Array isEmpty")
 	printTest(array.isEmpty(), "Array isEmpty")
@@ -198,9 +202,7 @@ fun main(args: Array<String>) {
 	printTest(array.find { it > 3 }, "Array first where")
 	printTest(array.findLast { it > 3 }, "Array last where")
 	printTest(array.lastOrNull(), "Array last")
-
 	array.removeAt(0)
-
 	printTest(array, "Array remove first")
 	printTest(array.drop(1), "Array drop first")
 	printTest(array.dropLast(1), "Array drop last")
@@ -222,6 +224,10 @@ fun main(args: Array<String>) {
 	printTest(array.contains(10), "Array contains")
 	printTest(array.contains(10000), "Array contains")
 	printTest(array.indexOf(10), "Array firstIndex of")
+
+	array.clear()
+
+	printTest(array, "Array remove all")
 
 	val dictionary: Map<Int, Int> = mapOf(1 to 1, 2 to 2)
 	val emptyDictionary: Map<Int, Int> = mapOf()

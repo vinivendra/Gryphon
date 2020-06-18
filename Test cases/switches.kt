@@ -65,7 +65,6 @@ fun main(args: Array<String>) {
 	printNumberName(4)
 	printNumberName(7)
 	printNumberName(10)
-
 	println(getNumberName(0))
 	println(getNumberName(1))
 	println(getNumberName(2))
