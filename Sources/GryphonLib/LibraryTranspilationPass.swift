@@ -51,7 +51,11 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 						typeName == "_GRYLiteralTemplate" ||
 							typeName == "_GRYDotTemplate" ||
 							typeName == "_GRYCallTemplate" ||
-							typeName == "_GRYConcatenatedTemplate"
+							typeName == "_GRYConcatenatedTemplate" ||
+							typeName == "GRYLiteralTemplate" ||
+							typeName == "GRYDotTemplate" ||
+							typeName == "GRYCallTemplate" ||
+							typeName == "GRYConcatenatedTemplate"
 					{
 						let processedExpression =
 							processTemplateNodeExpression(templateExpression)
