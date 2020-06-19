@@ -409,10 +409,10 @@ private func gryphonTemplates() {
 
 	// Templates with an input that references methods defined in this file
 	_ = zip(_array1, _array2)
-	_ = "_array1.zip(_array2)"
+	_ = GRYTemplate.call(.dot("_array1", "zip"), ["_array2"])
 
 	_ = _array1.toList()
-	_ = "_array1.toList()"
+	_ = GRYTemplate.call(.dot("_array1", "toList"), [])
 
 	_ = _array1.appending(_any)
 	_ = "_array1 + _any"
@@ -422,13 +422,14 @@ private func gryphonTemplates() {
 
 	// Templates with an output that references methods defined in the GryphonKotlinLibrary.kt file
 	_ = _string.suffix(from: _index)
-	_ = "_string.suffix(startIndex = _index)"
+	_ = GRYTemplate.call(.dot("_string", "suffix"), [.labeledParameter("startIndex", "_index")])
 
 	_ = _comparableArray.sorted(by: _closure)
-	_ = "_comparableArray.sorted(isAscending = _closure)"
+	_ = GRYTemplate.call(
+		.dot("_comparableArray", "sorted"), [.labeledParameter("isAscending", "_closure")])
 
 	_ = _array1.removeLast()
-	_ = "_array1.removeLast()"
+	_ = GRYTemplate.call(.dot("_array1", "removeLast"), [])
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -31,13 +31,16 @@ private func gryphonTemplates() {
 	let _bool = true
 
 	_ = _array[safe: _index]
-	_ = "_array.getSafe(_index)"
+	_ = GRYTemplate.call(.dot("_array", "getSafe"), ["_index"])
 
 	_ = _string1.split(separator: _character)
-	_ = "_string1.split(separator = _character)"
+	_ = GRYTemplate.call(.dot("_string1", "split"), [.labeledParameter("separator", "_character")])
 
 	_ = _string1.split(separator: _character, omittingEmptySubsequences: _bool)
-	_ = "_string1.split(separator = _character, omittingEmptySubsequences = _bool)"
+	_ = GRYTemplate.call(
+		.dot("_string1", "split"),
+		[.labeledParameter("separator", "_character"),
+		 .labeledParameter("omittingEmptySubsequences", "_bool")])
 }
 
 // gryphon insert: internal fun String.split(
