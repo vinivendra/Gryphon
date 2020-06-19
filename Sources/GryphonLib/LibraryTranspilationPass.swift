@@ -48,10 +48,10 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 			for templateExpression in topLevelExpressions {
 				if let swiftExpression = previousExpression {
 					if let typeName = templateExpression.swiftType,
-						typeName == "LiteralTemplate" ||
-							typeName == "DotTemplate" ||
-							typeName == "CallTemplate" ||
-							typeName == "ConcatenatedTemplate"
+						typeName == "_GRYLiteralTemplate" ||
+							typeName == "_GRYDotTemplate" ||
+							typeName == "_GRYCallTemplate" ||
+							typeName == "_GRYConcatenatedTemplate"
 					{
 						let processedExpression =
 							processTemplateNodeExpression(templateExpression)
