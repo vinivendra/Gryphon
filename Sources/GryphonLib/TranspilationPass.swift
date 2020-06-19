@@ -4622,6 +4622,76 @@ public class RemoveOpenForInitializersTranspilationPass: TranspilationPass {
 	}
 }
 
+/// Kotlin supports variables, functions and subscripts for satistying protocols (though no static
+/// members). All of these must be annotated with `override`, which Swift doesn't do. This pass adds
+/// `override` to all members it detects as satisfying ptotocol requirements.
+public class AddOverridesTranspilationPass: TranspilationPass {
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
+
+	let inheritedProtocolLists: MutableList<List<ProtocolDeclaration>> = []
+
+	override func replaceClassDeclaration( // gryphon annotation: override
+		_ classDeclaration: ClassDeclaration)
+		-> List<Statement>
+	{
+		// Create a list of all known inherited protocols
+		let inheritances = classDeclaration.inherits.compactMap {
+				self.context.getProtocol(named: $0)
+			}
+
+		inheritedProtocolLists.append(inheritances)
+		let result = super.replaceClassDeclaration(classDeclaration)
+		inheritedProtocolLists.removeLast()
+		return result
+	}
+
+	override func processFunctionDeclaration( // gryphon annotation: override
+		_ functionDeclaration: FunctionDeclaration)
+		-> FunctionDeclaration?
+	{
+		guard !functionDeclaration.annotations.contains("override") else {
+			// No recursion so we don't check varianle declarations in function bodies
+			return functionDeclaration
+		}
+
+		if let inheritedProtocols = inheritedProtocolLists.last {
+			for protocolDeclaration in inheritedProtocols {
+				for member in protocolDeclaration.members {
+					if let protocolFunctionDeclaration = member as? FunctionDeclaration,
+						functionDeclaration.prefix == protocolFunctionDeclaration.prefix,
+						functionDeclaration.parameters == protocolFunctionDeclaration.parameters,
+						functionDeclaration.functionType == protocolFunctionDeclaration.functionType
+					{
+						let newAnnotations =
+							functionDeclaration.annotations.appending("override").toMutableList()
+						return FunctionDeclaration(
+							range: functionDeclaration.range,
+							prefix: functionDeclaration.prefix,
+							parameters: functionDeclaration.parameters,
+							returnType: functionDeclaration.returnType,
+							functionType: functionDeclaration.functionType,
+							genericTypes: functionDeclaration.genericTypes,
+							isOpen: functionDeclaration.isOpen,
+							isImplicit: functionDeclaration.isImplicit,
+							isStatic: functionDeclaration.isStatic,
+							isMutating: functionDeclaration.isMutating,
+							isPure: functionDeclaration.isPure,
+							isJustProtocolInterface: functionDeclaration.isJustProtocolInterface,
+							extendsType: functionDeclaration.extendsType,
+							statements: functionDeclaration.statements,
+							access: functionDeclaration.access,
+							annotations: newAnnotations)
+					}
+				}
+			}
+		}
+
+		// No recursion so we don't check varianle declarations in function bodies
+		return functionDeclaration
+	}
+}
+
 public extension TranspilationPass {
 	/// Runs transpilation passes that have to be run on all files before the other passes can
 	/// run. For instance, we need to record all enums declared on all files before we can
@@ -4706,6 +4776,7 @@ public extension TranspilationPass {
 		ast = FixProtocolGenericsTranspilationPass(ast: ast, context: context).run()
 		ast = FixExtensionGenericsTranspilationPass(ast: ast, context: context).run()
 		ast = RemoveOpenForInitializersTranspilationPass(ast: ast, context: context).run()
+		ast = AddOverridesTranspilationPass(ast: ast, context: context).run()
 
 		// - CapitalizeEnums has to be before IsOperatorsInSealedClasses and
 		//   IsOperatorsInIfStatementsTranspilationPass
