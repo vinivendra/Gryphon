@@ -2638,11 +2638,10 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
 	// gryphon insert:     super(ast, context) { }
 
-	/// Stores the names of the functions that called the closures in the current stack.
-	/// For instance, if we're inside `filter { map { ... } }`, this contains `["filter", "map"]`.
+	/// Stores the names of all functions that called are "currently being called".
+	/// For instance, if we're inside `f( a.filter { b.map { ... } })`, this contains
+	/// `["f", "filter", "map"]`.
 	var labelsStack: MutableList<String> = []
-
-	var isInClosure = false
 
 	override func replaceCallExpression( // gryphon annotation: override
 		_ callExpression: CallExpression)
@@ -2687,7 +2686,7 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 		_ closureExpression: ClosureExpression)
 		-> Expression
 	{
-		// If it's a single-expression closure
+		// If it's a single-expression closure, omit the return
 		if closureExpression.statements.count == 1 {
 			if let returnStatement = closureExpression.statements[0] as? ReturnStatement {
 				if let expression = returnStatement.expression {
@@ -2721,26 +2720,18 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 			}
 		}
 
-		// Otherwise
-		isInClosure = true
-		let result = super.replaceClosureExpression(closureExpression)
-		isInClosure = false
-		return result
+		// Otherwise, add labels to any returns
+		return super.replaceClosureExpression(closureExpression)
 	}
 
 	override func replaceReturnStatement( // gryphon annotation: override
 		_ returnStatement: ReturnStatement)
 		-> List<Statement>
 	{
-		if isInClosure {
-			return super.replaceReturnStatement(ReturnStatement(
-				range: returnStatement.range,
-				expression: returnStatement.expression,
-				label: labelsStack.last))
-		}
-		else {
-			return super.replaceReturnStatement(returnStatement)
-		}
+		return super.replaceReturnStatement(ReturnStatement(
+			range: returnStatement.range,
+			expression: returnStatement.expression.map { replaceExpression($0) },
+			label: labelsStack.last))
 	}
 }
 

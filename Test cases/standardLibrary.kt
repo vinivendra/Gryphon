@@ -32,6 +32,10 @@ internal fun printTest(contents: PrintContents, testName: String) {
 	println("(${testName})")
 }
 
+internal open class A {
+	val string: String = ""
+}
+
 fun g(a: Int) {
 	printTest(a, "User template")
 }
@@ -250,4 +254,38 @@ fun main(args: Array<String>) {
 	printTest(Int.MIN_VALUE until 0, "Recursive matches")
 
 	g(a = 10)
+
+	val maybeA: A? = null
+	val a: A? = maybeA
+	val b: Char? = a?.string?.firstOrNull()
+
+	if (a != null && b != null) {
+		// ...
+	}
+
+	println(
+		listOf(1, 2, 3).map { a ->
+					if (a > 1) {
+						return@map 1
+					}
+					else {
+						return@map 2
+					}
+				})
+	println(
+		listOf(1, 2, 3).map { a ->
+					if (a > 1) {
+						return@map listOf(1, 2, 3).filter { b ->
+								if (b > 1) {
+									return@filter true
+								}
+								else {
+									return@filter false
+								}
+							}
+					}
+					else {
+						return@map listOf(2)
+					}
+				})
 }
