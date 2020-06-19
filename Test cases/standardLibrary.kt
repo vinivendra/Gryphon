@@ -263,12 +263,29 @@ fun main(args: Array<String>) {
 		// ...
 	}
 
-	listOf(1, 2, 3).map { a ->
-			if (true) {
-				return@map 1
-			}
-			else {
-				return@map 2
-			}
-		}
+	println(
+		listOf(1, 2, 3).map { a ->
+					if (a > 1) {
+						return@map 1
+					}
+					else {
+						return@map 2
+					}
+				})
+	println(
+		listOf(1, 2, 3).map { a ->
+					if (a > 1) {
+						return@map listOf(1, 2, 3).filter { b ->
+								if (b > 1) {
+									return@filter true
+								}
+								else {
+									return@filter false
+								}
+							}
+					}
+					else {
+						return@map listOf(2)
+					}
+				})
 }

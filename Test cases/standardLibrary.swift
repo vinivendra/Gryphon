@@ -536,11 +536,28 @@ if let a = maybeA, let b = a.string.first {
 }
 
 // Adding `@map` labels in closures called by functions in templates
-[1, 2, 3].map { (a: Int) -> Int in
-	if true {
+print([1, 2, 3].map { (a: Int) -> Int in
+	if a > 1 {
 		return 1
 	}
 	else {
 		return 2
 	}
-}
+})
+
+// Adding labels for nested closures
+print([1, 2, 3].map { (a: Int) -> [Int] in
+	if a > 1 {
+		return [1, 2, 3].filter { (b: Int) -> Bool in
+			if b > 1 {
+				return true
+			}
+			else {
+				return false
+			}
+		}
+	}
+	else {
+		return [2]
+	}
+})
