@@ -1125,7 +1125,7 @@ extension PrintableTree {
 /// - LibraryTranspilationPass's `Expression.matches`
 public /*abstract*/ class Expression: PrintableAsTree, Equatable, CustomStringConvertible {
 	let name: String
-	let range: SourceFileRange?
+	var range: SourceFileRange?
 
 	init(range: SourceFileRange?, name: String) {
 		self.range = range

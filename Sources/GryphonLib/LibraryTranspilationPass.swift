@@ -106,10 +106,10 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 								processTemplateParameter($0)
 							}.toMutableList()
 						return CallExpression(
-							range: function.range,
+							range: nil,
 							function: function,
 							parameters: TupleExpression(
-								range: tupleExpression.range,
+								range: nil,
 								pairs: parameters),
 							typeName: nil)
 					}
@@ -120,11 +120,11 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 						let left =
 							processTemplateNodeExpression(tupleExpression.pairs[0].expression)
 						let right = LiteralCodeExpression(
-							range: stringExpression.range,
+							range: nil,
 							string: stringExpression.value,
 							shouldGoToMainFunction: false)
 						return DotExpression(
-							range: left.range,
+							range: nil,
 							leftExpression: left,
 							rightExpression: right)
 					}
@@ -133,7 +133,7 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 		}
 		else if let stringExpression = expression as? LiteralStringExpression {
 			return LiteralCodeExpression(
-				range: stringExpression.range,
+				range: nil,
 				string: stringExpression.value,
 				shouldGoToMainFunction: false)
 		}
@@ -141,7 +141,7 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 			binaryOperatorExpression.operatorSymbol == "+"
 		{
 			return ConcatenationExpression(
-				range: expression.range,
+				range: nil,
 				leftExpression: processTemplateNodeExpression(
 					binaryOperatorExpression.leftExpression),
 				rightExpression: processTemplateNodeExpression(
@@ -165,7 +165,7 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 			return LabeledExpression(
 				label: nil,
 				expression: LiteralCodeExpression(
-					range: expression.range,
+					range: nil,
 					string: expression.value,
 					shouldGoToMainFunction: false))
 		}
@@ -244,14 +244,18 @@ public class ReplaceTemplatesTranspilationPass: TranspilationPass {
 						a.0.count > b.0.count
 					}
 
+				// Replace any underscored variables found in the templates's LiteralCodeExpressions
+				// with their matched expressions
 				let pass = ReplaceTemplateMatchesTranspilationPass(ast: ast, context: context)
 				pass.matches = sortedMatches
-				pass.range = expression.range
 				let result = pass.replaceExpression(template.templateExpression)
 
+				// Set the original expression's type and range to the template expression that's
+				// replacing it
 				if let swiftType = expression.swiftType {
 					result.swiftType = swiftType
 				}
+				result.range = expression.range
 
 				return result
 			}
@@ -261,14 +265,12 @@ public class ReplaceTemplatesTranspilationPass: TranspilationPass {
 }
 
 /// To be called on a strutured template expression; replaces any matches inside it with the given
-/// expressions in the `matches` list. Any created expressions in the process have their ranges set
-/// to the given `range`.
+/// expressions in the `matches` list.
 private class ReplaceTemplateMatchesTranspilationPass: TranspilationPass {
 // gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
 // gryphon insert:     super(ast, context) { }
 
 	var matches: List<(String, Expression)> = []
-	var range: SourceFileRange?
 
 	override func replaceLiteralCodeExpression( // gryphon annotation: override
 		_ literalCodeExpression: LiteralCodeExpression)
@@ -298,7 +300,7 @@ private class ReplaceTemplateMatchesTranspilationPass: TranspilationPass {
 							let precedingString =
 								String(string[previousMatchEndIndex..<currentIndex])
 							let precedingStringExpression = LiteralCodeExpression(
-								range: range,
+								range: nil,
 								string: precedingString,
 								shouldGoToMainFunction: false)
 							expressions.append(precedingStringExpression)
@@ -330,7 +332,7 @@ private class ReplaceTemplateMatchesTranspilationPass: TranspilationPass {
 		// Check if there's a trailing string we need to add
 		if previousMatchEndIndex != stringEndIndex {
 			expressions.append(LiteralCodeExpression(
-				range: range,
+				range: nil,
 				string: String(string[previousMatchEndIndex...]),
 				shouldGoToMainFunction: false))
 		}
@@ -340,7 +342,7 @@ private class ReplaceTemplateMatchesTranspilationPass: TranspilationPass {
 		for expression in expressions {
 			if let previousResult = result {
 				result = ConcatenationExpression(
-					range: range,
+					range: nil,
 					leftExpression: previousResult,
 					rightExpression: expression)
 			}
