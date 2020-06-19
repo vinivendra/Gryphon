@@ -23,6 +23,169 @@
 
 import Foundation
 
+// MARK: - Template class declarations
+internal class GRYTemplate { // gryphon ignore
+	static func dot(_ left: GRYTemplate, _ right: String) -> GRYDotTemplate {
+		return GRYDotTemplate(left, right)
+	}
+
+	static func dot(_ left: String, _ right: String) -> GRYDotTemplate {
+		return GRYDotTemplate(GRYLiteralTemplate(string: left), right)
+	}
+
+	static func call(
+		_ function: GRYTemplate,
+		_ parameters: [GRYParameterTemplate])
+		-> GRYCallTemplate
+	{
+		return GRYCallTemplate(function, parameters)
+	}
+
+	static func call(
+		_ function: String,
+		_ parameters: [GRYParameterTemplate])
+		-> GRYCallTemplate
+	{
+		return GRYCallTemplate(function, parameters)
+	}
+}
+
+internal class GRYDotTemplate: GRYTemplate { // gryphon ignore
+	let left: GRYTemplate
+	let right: String
+
+	init(_ left: GRYTemplate, _ right: String) {
+		self.left = left
+		self.right = right
+	}
+}
+
+internal class GRYCallTemplate: GRYTemplate { // gryphon ignore
+	let function: GRYTemplate
+	let parameters: [GRYParameterTemplate]
+
+	init(_ function: GRYTemplate, _ parameters: [GRYParameterTemplate]) {
+		self.function = function
+		self.parameters = parameters
+	}
+
+	//
+	init(_ function: String, _ parameters: [GRYParameterTemplate]) {
+		self.function = GRYLiteralTemplate(string: function)
+		self.parameters = parameters
+	}
+}
+
+internal class GRYParameterTemplate: ExpressibleByStringLiteral { // gryphon ignore
+	let label: String?
+	let template: GRYTemplate
+
+	internal init(_ label: String?, _ template: GRYTemplate) {
+		if let existingLabel = label {
+			if existingLabel == "_" || existingLabel == "" {
+				self.label = nil
+			}
+			else {
+				self.label = label
+			}
+		}
+		else {
+			self.label = label
+		}
+
+		self.template = template
+	}
+
+	required init(stringLiteral: String) {
+		self.label = nil
+		self.template = GRYLiteralTemplate(string: stringLiteral)
+	}
+
+	static func labeledParameter(
+		_ label: String?,
+		_ template: GRYTemplate)
+		-> GRYParameterTemplate
+	{
+		return GRYParameterTemplate(label, template)
+	}
+
+	static func labeledParameter(
+		_ label: String?,
+		_ template: String)
+		-> GRYParameterTemplate
+	{
+		return GRYParameterTemplate(label, GRYLiteralTemplate(string: template))
+	}
+
+	static func dot(
+		_ left: GRYTemplate,
+		_ right: String)
+		-> GRYParameterTemplate
+	{
+		return GRYParameterTemplate(nil, GRYDotTemplate(left, right))
+	}
+
+	static func dot(
+		_ left: String,
+		_ right: String)
+		-> GRYParameterTemplate
+	{
+		return GRYParameterTemplate(nil, GRYDotTemplate(GRYLiteralTemplate(string: left), right))
+	}
+
+	static func call(
+		_ function: GRYTemplate,
+		_ parameters: [GRYParameterTemplate])
+		-> GRYParameterTemplate
+	{
+		return GRYParameterTemplate(nil, GRYCallTemplate(function, parameters))
+	}
+
+	static func call(
+		_ function: String,
+		_ parameters: [GRYParameterTemplate])
+		-> GRYParameterTemplate
+	{
+		return GRYParameterTemplate(nil, GRYCallTemplate(function, parameters))
+	}
+}
+
+internal class GRYLiteralTemplate: GRYTemplate { // gryphon ignore
+	let string: String
+
+	init(string: String) {
+		self.string = string
+	}
+}
+
+internal class GRYConcatenatedTemplate: GRYTemplate { // gryphon ignore
+	let left: GRYTemplate
+	let right: GRYTemplate
+
+	init(left: GRYTemplate, right: GRYTemplate) {
+		self.left = left
+		self.right = right
+	}
+}
+
+internal func + ( // gryphon ignore
+	left: GRYTemplate,
+	right: GRYTemplate)
+	-> GRYConcatenatedTemplate
+{
+	GRYConcatenatedTemplate(left: left, right: right)
+}
+
+internal func + (left: String, right: GRYTemplate) -> GRYConcatenatedTemplate { // gryphon ignore
+	GRYConcatenatedTemplate(left: GRYLiteralTemplate(string: left), right: right)
+}
+
+internal func + (left: GRYTemplate, right: String) -> GRYConcatenatedTemplate { // gryphon ignore
+	GRYConcatenatedTemplate(left: left, right: GRYLiteralTemplate(string: right))
+}
+
+// MARK: - Tests
+
 typealias PrintContents = Any // gryphon ignore
 // gryphon insert: typealias PrintContents = Any?
 
@@ -333,8 +496,27 @@ printTest(1.0...3.0, "Double ...")
 // Recursive matches
 printTest(Int.min..<0, "Recursive matches")
 
-//
-// User-defined templates
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// MARK: - Test templates details
+
+// Define the templates
+func gryphonTemplates() {
+	var _int = 0
+	var _a = A()
+
+	f(of: _int)
+	"g(a = _int)"
+
+	_a.string.first
+	GRYTemplate.dot(.dot("_a", "string"), "firstOrNull()")
+}
+
+//////////////////////////////////////////////////////////
+// Auxiliary declarations
+class A {
+	let string: String = ""
+}
+
 func f(of a: Int) { // gryphon ignore
 	printTest(a, "User template")
 }
@@ -343,11 +525,22 @@ func f(of a: Int) { // gryphon ignore
 // gryphon insert: 	printTest(a, "User template")
 // gryphon insert: }
 
+//////////////////////////////////////////////////////////
+// User defined templates
 f(of: 10)
 
-func gryphonTemplates() {
-	var _int = 0
+// Adding `?` in dot chains declared by templates
+let maybeA: A? = nil
+if let a = maybeA, let b = a.string.first {
+	// ...
+}
 
-	f(of: _int)
-	"g(a = _int)"
+// Adding `@map` labels in closures called by functions in templates
+[1, 2, 3].map { (a: Int) -> Int in
+	if true {
+		return 1
+	}
+	else {
+		return 2
+	}
 }
