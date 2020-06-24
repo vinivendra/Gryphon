@@ -36,6 +36,21 @@ internal open class A1 {
 
 	private fun b5() {
 	}
+
+	constructor(c1: Int) {
+	}
+
+	constructor(c2: Double) {
+	}
+
+	constructor(c3: Float) {
+	}
+
+	constructor(c4: String) {
+	}
+
+	private constructor(c5: Boolean) {
+	}
 }
 
 open class A2 {
@@ -58,6 +73,21 @@ open class A2 {
 	}
 
 	private fun b5() {
+	}
+
+	internal constructor(c1: Int) {
+	}
+
+	constructor(c2: Double) {
+	}
+
+	internal constructor(c3: Float) {
+	}
+
+	internal constructor(c4: String) {
+	}
+
+	private constructor(c5: Boolean) {
 	}
 }
 
@@ -82,6 +112,21 @@ internal open class A3 {
 
 	private fun b5() {
 	}
+
+	constructor(c1: Int) {
+	}
+
+	constructor(c2: Double) {
+	}
+
+	constructor(c3: Float) {
+	}
+
+	constructor(c4: String) {
+	}
+
+	private constructor(c5: Boolean) {
+	}
 }
 
 private class A4 {
@@ -105,6 +150,21 @@ private class A4 {
 
 	fun b5() {
 	}
+
+	constructor(c1: Int) {
+	}
+
+	constructor(c2: Double) {
+	}
+
+	constructor(c3: Float) {
+	}
+
+	constructor(c4: String) {
+	}
+
+	constructor(c5: Boolean) {
+	}
 }
 
 private class A5 {
@@ -127,6 +187,21 @@ private class A5 {
 	}
 
 	fun b5() {
+	}
+
+	constructor(c1: Int) {
+	}
+
+	constructor(c2: Double) {
+	}
+
+	constructor(c3: Float) {
+	}
+
+	constructor(c4: String) {
+	}
+
+	constructor(c5: Boolean) {
 	}
 }
 
@@ -652,6 +727,18 @@ open class E1 {
 	}
 
 	private fun b4() {
+	}
+
+	public constructor(c1: Int) {
+	}
+
+	internal constructor(c2: Double) {
+	}
+
+	protected constructor(c3: Float) {
+	}
+
+	private constructor(c4: String) {
 	}
 }
 

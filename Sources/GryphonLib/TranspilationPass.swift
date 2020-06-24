@@ -2034,6 +2034,36 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 		return result
 	}
 
+	override func replaceInitializerDeclaration( // gryphon annotation: override
+		_ initializerDeclaration: InitializerDeclaration)
+		-> List<Statement>
+	{
+		let translationResult = translateAccessModifierAndAnnotations(
+			access: initializerDeclaration.access,
+			annotations: initializerDeclaration.annotations,
+			forDeclaration: initializerDeclaration)
+
+		accessModifiersStack.append(translationResult.access)
+		let result = super.replaceInitializerDeclaration(InitializerDeclaration(
+			range: initializerDeclaration.range,
+			parameters: initializerDeclaration.parameters,
+			returnType: initializerDeclaration.returnType,
+			functionType: initializerDeclaration.functionType,
+			genericTypes: initializerDeclaration.genericTypes,
+			isOpen: initializerDeclaration.isOpen,
+			isImplicit: initializerDeclaration.isImplicit,
+			isStatic: initializerDeclaration.isStatic,
+			isMutating: initializerDeclaration.isMutating,
+			isPure: initializerDeclaration.isPure,
+			extendsType: initializerDeclaration.extendsType,
+			statements: initializerDeclaration.statements,
+			access: translationResult.access,
+			annotations: translationResult.annotations,
+			superCall: initializerDeclaration.superCall))
+		accessModifiersStack.removeLast()
+		return result
+	}
+
 	/// The result of translating an access modifier. Contains the translated access modifier, which
 	/// may have reuslted from an access modifier in an annotation; the remaining annotations, or
 	/// nil if there are none; and a flag indicating if an access modifier was taken from the
@@ -2608,11 +2638,10 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
 	// gryphon insert:     super(ast, context) { }
 
-	/// Stores the names of the functions that called the closures in the current stack.
-	/// For instance, if we're inside `filter { map { ... } }`, this contains `["filter", "map"]`.
+	/// Stores the names of all functions that called are "currently being called".
+	/// For instance, if we're inside `f( a.filter { b.map { ... } })`, this contains
+	/// `["f", "filter", "map"]`.
 	var labelsStack: MutableList<String> = []
-
-	var isInClosure = false
 
 	override func replaceCallExpression( // gryphon annotation: override
 		_ callExpression: CallExpression)
@@ -2657,7 +2686,7 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 		_ closureExpression: ClosureExpression)
 		-> Expression
 	{
-		// If it's a single-expression closure
+		// If it's a single-expression closure, omit the return
 		if closureExpression.statements.count == 1 {
 			if let returnStatement = closureExpression.statements[0] as? ReturnStatement {
 				if let expression = returnStatement.expression {
@@ -2691,26 +2720,18 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 			}
 		}
 
-		// Otherwise
-		isInClosure = true
-		let result = super.replaceClosureExpression(closureExpression)
-		isInClosure = false
-		return result
+		// Otherwise, add labels to any returns
+		return super.replaceClosureExpression(closureExpression)
 	}
 
 	override func replaceReturnStatement( // gryphon annotation: override
 		_ returnStatement: ReturnStatement)
 		-> List<Statement>
 	{
-		if isInClosure {
-			return super.replaceReturnStatement(ReturnStatement(
-				range: returnStatement.range,
-				expression: returnStatement.expression,
-				label: labelsStack.last))
-		}
-		else {
-			return super.replaceReturnStatement(returnStatement)
-		}
+		return super.replaceReturnStatement(ReturnStatement(
+			range: returnStatement.range,
+			expression: returnStatement.expression.map { replaceExpression($0) },
+			label: labelsStack.last))
 	}
 }
 
@@ -3457,6 +3478,32 @@ public class RecordFunctionsTranspilationPass: TranspilationPass {
 		}
 
 		return super.processFunctionDeclaration(functionDeclaration)
+	}
+}
+
+/// Equivalent to RecordFunctionsTranspilationPass, but for recording Initializers. Does not look
+/// for `pure` annotations.
+public class RecordInitializersTranspilationPass: TranspilationPass {
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
+
+	override func processInitializerDeclaration( // gryphon annotation: override
+		_ initializerDeclaration: InitializerDeclaration)
+		-> InitializerDeclaration?
+	{
+		let initializedType = initializerDeclaration.returnType
+
+		let swiftAPIName = initializedType + "(" +
+			initializerDeclaration.parameters.map { ($0.apiLabel ?? "_") + ":" }.joined() + ")"
+
+		self.context.addFunctionTranslation(
+			TranspilationContext.FunctionTranslation(
+				swiftAPIName: swiftAPIName,
+				typeName: initializerDeclaration.functionType,
+				prefix: initializedType,
+				parameters: initializerDeclaration.parameters.map { $0.label }.toMutableList()))
+
+		return super.processInitializerDeclaration(initializerDeclaration)
 	}
 }
 
@@ -4532,6 +4579,34 @@ public class FixExtensionGenericsTranspilationPass: TranspilationPass {
 	}
 }
 
+/// Kotlin initializers cannot be marked as `open`.
+public class RemoveOpenForInitializersTranspilationPass: TranspilationPass {
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
+
+	override func processInitializerDeclaration( // gryphon annotation: override
+		_ initializerDeclaration: InitializerDeclaration)
+		-> InitializerDeclaration?
+	{
+		return InitializerDeclaration(
+			range: initializerDeclaration.range,
+			parameters: initializerDeclaration.parameters,
+			returnType: initializerDeclaration.returnType,
+			functionType: initializerDeclaration.functionType,
+			genericTypes: initializerDeclaration.genericTypes,
+			isOpen: false,
+			isImplicit: initializerDeclaration.isImplicit,
+			isStatic: initializerDeclaration.isStatic,
+			isMutating: initializerDeclaration.isMutating,
+			isPure: initializerDeclaration.isPure,
+			extendsType: initializerDeclaration.extendsType,
+			statements: initializerDeclaration.statements,
+			access: initializerDeclaration.access,
+			annotations: initializerDeclaration.annotations,
+			superCall: initializerDeclaration.superCall)
+	}
+}
+
 public extension TranspilationPass {
 	/// Runs transpilation passes that have to be run on all files before the other passes can
 	/// run. For instance, we need to record all enums declared on all files before we can
@@ -4556,6 +4631,7 @@ public extension TranspilationPass {
 		ast = RecordEnumsTranspilationPass(ast: ast, context: context).run()
 		ast = RecordProtocolsTranspilationPass(ast: ast, context: context).run()
 		ast = RecordFunctionsTranspilationPass(ast: ast, context: context).run()
+		ast = RecordInitializersTranspilationPass(ast: ast, context: context).run()
 
 		return ast
 	}
@@ -4614,6 +4690,7 @@ public extension TranspilationPass {
 		ast = OpenDeclarationsTranspilationPass(ast: ast, context: context).run()
 		ast = FixProtocolGenericsTranspilationPass(ast: ast, context: context).run()
 		ast = FixExtensionGenericsTranspilationPass(ast: ast, context: context).run()
+		ast = RemoveOpenForInitializersTranspilationPass(ast: ast, context: context).run()
 
 		// - CapitalizeEnums has to be before IsOperatorsInSealedClasses and
 		//   IsOperatorsInIfStatementsTranspilationPass

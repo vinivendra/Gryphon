@@ -145,3 +145,5 @@ true                                    (Dictionary isEmpty)
 1.0..3.0                                (Double ...)
 -2147483648..-1                         (Recursive matches)
 10                                      (User template)
+[2, 1, 1]
+[[2], [2, 3], [2, 3]]

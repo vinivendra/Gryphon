@@ -33,65 +33,100 @@ private func gryphonTemplates() throws {
     let _fileExtension1 = FileExtension.swift
 
     _ = Utilities.file(_string1, wasModifiedLaterThan: _string2)
-    _ = "Utilities.fileWasModifiedLaterThan(_string1, _string2)"
+	_ = GRYTemplate.call(.dot("Utilities", "fileWasModifiedLaterThan"), ["_string1", "_string2"])
 
     _ = Utilities.files(_stringArray1, wereModifiedLaterThan: _stringArray2)
-    _ = "Utilities.filesWereModifiedLaterThan(_stringArray1, _stringArray2)"
+	_ = GRYTemplate.call(
+		.dot("Utilities", "filesWereModifiedLaterThan"), ["_stringArray1", "_stringArray2"])
 
     _ = try Utilities.createFile(named: _string1, inDirectory: _string2, containing: _string3)
-    _ = "Utilities.createFileAndDirectory(" +
-        "fileName = _string1, directory = _string2, contents = _string3)"
+	_ = GRYTemplate.call(
+		.dot("Utilities", "createFileAndDirectory"),
+		[.labeledParameter("fileName", "_string1"),
+		 .labeledParameter("directory", "_string2"),
+		 .labeledParameter("contents", "_string3")])
 
     _ = Utilities.getFiles(_stringArray, inDirectory: _string1, withExtension: _fileExtension1)
-    _ = "Utilities.getFiles(" +
-        "selectedFiles = _stringArray, directory = _string1, fileExtension = _fileExtension1)"
+	_ = GRYTemplate.call(
+		.dot("Utilities", "getFiles"),
+		[.labeledParameter("selectedFiles", "_stringArray"),
+		 .labeledParameter("directory", "_string1"),
+		 .labeledParameter("fileExtension", "_fileExtension1")])
 
     _ = Utilities.getFiles(inDirectory: _string1, withExtension: _fileExtension1)
-    _ = "Utilities.getFiles(directory = _string1, fileExtension = _fileExtension1)"
+	_ = GRYTemplate.call(
+		.dot("Utilities", "getFiles"),
+		[.labeledParameter("directory", "_string1"),
+		 .labeledParameter("fileExtension", "_fileExtension1")])
 
     _ = Utilities.getAbsoultePath(forFile: _string1)
-    _ = "Utilities.getAbsoultePath(file = _string1)"
+	_ = GRYTemplate.call(
+		.dot("Utilities", "getAbsoultePath"),
+		[.labeledParameter("file", "_string1")])
 
 	_ = Utilities.fileExists(at: _string1)
-	_ = "Utilities.fileExists(filePath = _string1)"
+	_ = GRYTemplate.call(
+		.dot("Utilities", "fileExists"),
+		[.labeledParameter("filePath", "_string1")])
 
     _ = Utilities.createFileIfNeeded(at: _string1)
-    _ = "Utilities.createFileIfNeeded(filePath = _string1)"
+	_ = GRYTemplate.call(
+		.dot("Utilities", "createFileIfNeeded"),
+		[.labeledParameter("filePath", "_string1")])
 
 	Utilities.createFolderIfNeeded(at: _string1)
-    _ = "Utilities.createFolderIfNeeded(path = _string1)"
+	_ = GRYTemplate.call(
+		.dot("Utilities", "createFolderIfNeeded"),
+		[.labeledParameter("path", "_string1")])
 
     try Utilities.createFile(atPath: _string1, containing: _string2)
-    _ = "Utilities.createFile(filePath = _string1, contents = _string2)"
+	_ = GRYTemplate.call(
+		.dot("Utilities", "createFile"),
+		[.labeledParameter("filePath", "_string1"),
+		 .labeledParameter("contents", "_string2")])
 
 	Utilities.deleteFolder(at: _string1)
-	_ = "Utilities.deleteFolder(path = _string1)"
+	_ = GRYTemplate.call(
+		.dot("Utilities", "deleteFolder"),
+		[.labeledParameter("path", "_string1")])
 
 	Utilities.deleteFile(at: _string1)
-	_ = "Utilities.deleteFile(path = _string1)"
+	_ = GRYTemplate.call(
+		.dot("Utilities", "deleteFolder"),
+		[.labeledParameter("path", "_string1")])
 
     // Shell translations
     _ = Shell.runShellCommand(
         _string1, arguments: _stringArray1, fromFolder: _string2)
-    _ = "Shell.runShellCommand(_string1, arguments = _stringArray1, currentFolder = _string2)"
+	_ = GRYTemplate.call(
+		.dot("Shell", "runShellCommand"),
+		["_string1",
+		 .labeledParameter("arguments", "_stringArray1"),
+		 .labeledParameter("currentFolder", "_string2")])
 
     _ = Shell.runShellCommand(
         _string1, arguments: _stringArray1)
-    _ = "Shell.runShellCommand(_string1, arguments = _stringArray1)"
+	_ = GRYTemplate.call(
+		.dot("Shell", "runShellCommand"),
+		["_string1",
+		 .labeledParameter("arguments", "_stringArray1")])
 
     //
     _ = Shell.runShellCommand(_stringArray1, fromFolder: _string1)
-    _ = "Shell.runShellCommand(_stringArray1, currentFolder = _string1)"
+	_ = GRYTemplate.call(
+		.dot("Shell", "runShellCommand"),
+		["_stringArray1",
+		 .labeledParameter("currentFolder", "_string1")])
 
     _ = Shell.runShellCommand(_stringArray1)
-    _ = "Shell.runShellCommand(_stringArray1)"
+	_ = GRYTemplate.call(.dot("Shell", "runShellCommand"), ["_stringArray1"])
 
 	//
 	_ = OS.OSType.macOS
-	_ = "OS.OSType.MAC_OS"
+	_ = GRYTemplate.dot(.dot("OS", "OSType"), "MAC_OS")
 
 	_ = OS.OSType.linux
-	_ = "OS.OSType.LINUX"
+	_ = GRYTemplate.dot(.dot("OS", "OSType"), "LINUX")
 }
 
 public struct GryphonError: Error, CustomStringConvertible {
