@@ -32,11 +32,20 @@ let package = Package(
 		.executable(name: "gryphon", targets: ["Gryphon"])
 	],
 	dependencies: [
+		.package(
+			url: "https://github.com/apple/swift-syntax.git",
+			.exact("0.50200.0")), // TODO: Review these versions
+		.package(
+			url: "https://github.com/jpsim/SourceKitten",
+			from: "0.29.0"),
 	],
 	targets: [
 		.target(
 			name: "GryphonLib",
-			dependencies: []),
+			dependencies: [
+				"SwiftSyntax",
+				.product(name: "SourceKittenFramework", package: "SourceKitten")
+			]),
 		.target(
 			name: "Gryphon",
 			dependencies: ["GryphonLib"]),
