@@ -285,6 +285,13 @@ public class Driver {
 			return [] // gryphon value: listOf<Any>()
 		}
 
+		Compiler.logStart("🧑‍💻  Processing SwiftSyntax for \(inputFileRelativePath)...")
+		let decoder = SwiftSyntaxDecoder(filePath: inputFilePath)
+		let toTree = SwiftSyntaxToPrintableTreeVisitor()
+		let tree = toTree.convertPrintableTree(decoder.syntaxTree)
+		tree.prettyPrint()
+		Compiler.logEnd("✅  Done processing SwiftSyntax for \(inputFileRelativePath).")
+
 		Compiler.logStart("🧑‍💻  Reading AST dump file for \(inputFileRelativePath)...")
 		let swiftASTDumpFile = SupportingFile.pathOfSwiftASTDumpFile(
 			forSwiftFile: inputFilePath,
