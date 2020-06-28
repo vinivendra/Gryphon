@@ -5,6 +5,7 @@
 # Swift build folders
 /.build
 /.swiftpm
+Package.resolved
 # Gryphon auxiliary folder
 /.gryphon
 # AST Dumps for translated files
