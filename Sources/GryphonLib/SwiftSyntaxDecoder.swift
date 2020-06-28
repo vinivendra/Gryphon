@@ -147,11 +147,30 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	}
 
 	func convertExpression(_ expression: ExprSyntax) throws -> Expression {
-		if let expression = expression.as(StringLiteralExprSyntax.self) {
-			return try convertStringLiteralExpression(expression)
+		if let stringLiteralExpression = expression.as(StringLiteralExprSyntax.self) {
+			return try convertStringLiteralExpression(stringLiteralExpression)
+		}
+		if let integerLiteralExpression = expression.as(IntegerLiteralExprSyntax.self) {
+			return try convertIntegerLiteralExpression(integerLiteralExpression)
 		}
 
 		throw GryphonError(errorMessage: "Failed to convert expression: \(expression)")
+	}
+
+	func convertIntegerLiteralExpression(
+		_ integerLiteralExpression: IntegerLiteralExprSyntax)
+		throws -> Expression
+	{
+		if let intString = integerLiteralExpression.digits.getText(),
+			let intValue = Int64(intString)
+		{
+			return LiteralIntExpression(
+				range: SourceFileRange(integerLiteralExpression),
+				value: intValue)
+		}
+
+		throw GryphonError(errorMessage: "Failed to convert integer literal expression: " +
+			"\(integerLiteralExpression)")
 	}
 
 	func convertStringLiteralExpression(
@@ -167,7 +186,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			}
 		}
 
-		throw GryphonError(errorMessage: "Failed to convert expression: \(stringLiteralExpression)")
+		throw GryphonError(
+			errorMessage: "Failed to convert string literal expression: \(stringLiteralExpression)")
 	}
 }
 
@@ -186,8 +206,11 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 extension SyntaxProtocol {
 	func getText() -> String? {
 		if let firstChild = self.children.first,
-			let tokenSyntax = firstChild.as(TokenSyntax.self)
+			let childTokenSyntax = firstChild.as(TokenSyntax.self)
 		{
+			return childTokenSyntax.text
+		}
+		else if let tokenSyntax = self as? TokenSyntax {
 			return tokenSyntax.text
 		}
 
