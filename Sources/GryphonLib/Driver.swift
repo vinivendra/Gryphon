@@ -290,8 +290,8 @@ public class Driver {
 		let toTree = SwiftSyntaxToPrintableTreeVisitor()
 		let tree = toTree.convertToPrintableTree(decoder.syntaxTree)
 		tree.prettyPrint()
-		let ast = try! decoder.convertToGryphonAST()
-		ast.prettyPrint()
+		let newAst = try! decoder.convertToGryphonAST()
+		newAst.prettyPrint()
 		Compiler.logEnd("✅  Done processing SwiftSyntax for \(inputFileRelativePath).")
 
 		Compiler.logStart("🧑‍💻  Reading AST dump file for \(inputFileRelativePath)...")
@@ -363,6 +363,15 @@ public class Driver {
 
 		guard settings.shouldGenerateAST else {
 			return gryphonRawAST
+		}
+
+		print("\n\n======================================\nComparing ASTs...")
+		if gryphonRawAST == newAst {
+			print("They're the same!")
+		}
+		else {
+			print("Printing diff:")
+			print(TestUtilities.diff(gryphonRawAST.description, newAst.description))
 		}
 
 		Compiler.logStart("🧑‍💻  Running first passes on AST for \(inputFileRelativePath)...")
