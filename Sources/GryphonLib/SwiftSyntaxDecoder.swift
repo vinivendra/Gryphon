@@ -115,8 +115,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 				let expression: Expression?
 				if let exprSyntax = patternBinding.initializer?.value {
-//					expression = convertExpression(exprSyntax)
-					expression = nil
+					expression = try convertExpression(exprSyntax)
 				}
 				else {
 					expression = nil
@@ -145,6 +144,30 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 
 		return result
+	}
+
+	func convertExpression(_ expression: ExprSyntax) throws -> Expression {
+		if let expression = expression.as(StringLiteralExprSyntax.self) {
+			return try convertStringLiteralExpression(expression)
+		}
+
+		throw GryphonError(errorMessage: "Failed to convert expression: \(expression)")
+	}
+
+	func convertStringLiteralExpression(
+		_ stringLiteralExpression: StringLiteralExprSyntax)
+		throws -> Expression
+	{
+		for segment in stringLiteralExpression.segments {
+			if let text = segment.getText() {
+				return LiteralStringExpression(
+					range: SourceFileRange(stringLiteralExpression),
+					value: text,
+					isMultiline: false)
+			}
+		}
+
+		throw GryphonError(errorMessage: "Failed to convert expression: \(stringLiteralExpression)")
 	}
 }
 
