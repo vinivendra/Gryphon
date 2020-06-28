@@ -33,15 +33,16 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	init(filePath: String) {
 		// Call SourceKitten to get the types
 		// TODO: Improve this yaml. SDK paths? Absolute/relative file paths?
+		let absolutePath = Utilities.getAbsoultePath(forFile: filePath)
 		let yaml = """
 		{
 		  key.request: source.request.expression.type,
 		  key.compilerargs: [
-			"\(filePath)",
+			"\(absolutePath)",
 			"-sdk",
 			"/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk"
 		  ],
-		  key.sourcefile: "\(filePath)"
+		  key.sourcefile: "\(absolutePath)"
 		}
 		"""
 		let request = Request.yamlRequest(yaml: yaml)
@@ -110,9 +111,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			let pattern: PatternSyntax = patternBinding.pattern
 
 			if let identifier = pattern.getText() {
-				// TODO: get teh type from SourceKit if there's no annotation
-				let annotatedType = patternBinding.typeAnnotation?.type.getText() ?? ""
-
 				let expression: Expression?
 				if let exprSyntax = patternBinding.initializer?.value {
 					expression = try convertExpression(exprSyntax)
@@ -120,6 +118,10 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				else {
 					expression = nil
 				}
+
+				let annotatedType = patternBinding.typeAnnotation?.type.getText() ??
+					expression?.swiftType ??
+					""
 
 				result.append(VariableDeclaration(
 					range: SourceFileRange(variableDeclaration),
@@ -153,17 +155,31 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let integerLiteralExpression = expression.as(IntegerLiteralExprSyntax.self) {
 			return try convertIntegerLiteralExpression(integerLiteralExpression)
 		}
+		if let identifierExpression = expression.as(IdentifierExprSyntax.self) {
+			return try convertIdentifierExpression(identifierExpression)
+		}
 
 		throw GryphonError(errorMessage: "Failed to convert expression: \(expression)")
+	}
+
+	func convertIdentifierExpression(
+		_ identifierExpression: IdentifierExprSyntax)
+		throws -> Expression
+	{
+		// TODO: DeclRef should have optional type
+		return DeclarationReferenceExpression(
+			range: SourceFileRange(identifierExpression),
+			identifier: identifierExpression.identifier.text,
+			typeName: identifierExpression.getType(fromList: self.expressionTypes) ?? "",
+			isStandardLibrary: false,
+			isImplicit: false)
 	}
 
 	func convertIntegerLiteralExpression(
 		_ integerLiteralExpression: IntegerLiteralExprSyntax)
 		throws -> Expression
 	{
-		if let intString = integerLiteralExpression.digits.getText(),
-			let intValue = Int64(intString)
-		{
+		if let intValue = Int64(integerLiteralExpression.digits.text) {
 			return LiteralIntExpression(
 				range: SourceFileRange(integerLiteralExpression),
 				value: intValue)
@@ -210,9 +226,6 @@ extension SyntaxProtocol {
 		{
 			return childTokenSyntax.text
 		}
-		else if let tokenSyntax = self as? TokenSyntax {
-			return tokenSyntax.text
-		}
 
 		return nil
 	}
@@ -232,7 +245,7 @@ extension SourceFileRange {
 }
 
 private extension SyntaxProtocol {
-	func getType(fromList list: [SwiftSyntaxDecoder.ExpressionType]) -> String? {
+	func getType(fromList list: List<SwiftSyntaxDecoder.ExpressionType>) -> String? {
 		for expressionType in list {
 			if self.positionAfterSkippingLeadingTrivia.utf8Offset == expressionType.offset,
 				self.contentLength.utf8Length == expressionType.length
