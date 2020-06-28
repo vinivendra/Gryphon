@@ -290,6 +290,8 @@ public class Driver {
 		let toTree = SwiftSyntaxToPrintableTreeVisitor()
 		let tree = toTree.convertPrintableTree(decoder.syntaxTree)
 		tree.prettyPrint()
+		let ast = try! decoder.convertToGryphonAST()
+		ast.prettyPrint()
 		Compiler.logEnd("✅  Done processing SwiftSyntax for \(inputFileRelativePath).")
 
 		Compiler.logStart("🧑‍💻  Reading AST dump file for \(inputFileRelativePath)...")

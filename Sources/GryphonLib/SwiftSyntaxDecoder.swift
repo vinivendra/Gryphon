@@ -70,12 +70,118 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let typeName: String
 	}
 
-	func convertToGryphonAST() -> GryphonAST {
+	func convertToGryphonAST() throws -> GryphonAST {
+		let statements: MutableList<Statement> = []
+
+		for statement in self.syntaxTree.statements {
+			let codeBlockItemSyntax: CodeBlockItemSyntax = statement
+			let item: Syntax = codeBlockItemSyntax.item
+
+			if let declaration = item.as(DeclSyntax.self) {
+				try statements.append(contentsOf: convertDeclaration(declaration))
+			}
+		}
+
 		return GryphonAST(
 			sourceFile: nil,
 			declarations: [],
-			statements: [],
+			statements: statements,
 			outputFileMap: [:])
+	}
+
+	func convertDeclaration(_ declaration: DeclSyntax) throws -> MutableList<Statement> {
+		if let declaration = declaration.as(VariableDeclSyntax.self) {
+			return try convertVariableDeclaration(declaration)
+				.forceCast(to: MutableList<Statement>.self)
+		}
+		throw GryphonError(errorMessage: "Failed to convert declaration \(declaration)")
+	}
+
+	func convertVariableDeclaration(
+		_ variableDeclaration: VariableDeclSyntax)
+		throws -> MutableList<VariableDeclaration>
+	{
+		let isLet = (variableDeclaration.letOrVarKeyword.text == "let")
+
+		let result: MutableList<VariableDeclaration> = []
+
+		let patternBindingList: PatternBindingListSyntax = variableDeclaration.bindings
+		for patternBinding in patternBindingList {
+			let pattern: PatternSyntax = patternBinding.pattern
+
+			if let identifier = pattern.getText() {
+				// TODO: get teh type from SourceKit if there's no annotation
+				let annotatedType = patternBinding.typeAnnotation?.type.getText() ?? ""
+
+				let expression: Expression?
+				if let exprSyntax = patternBinding.initializer?.value {
+//					expression = convertExpression(exprSyntax)
+					expression = nil
+				}
+				else {
+					expression = nil
+				}
+
+				result.append(VariableDeclaration(
+					range: SourceFileRange(variableDeclaration),
+					identifier: identifier,
+					typeName: annotatedType,
+					expression: expression,
+					getter: nil,
+					setter: nil,
+					access: nil,
+					isOpen: true,
+					isLet: isLet,
+					isImplicit: false,
+					isStatic: false,
+					extendsType: nil,
+					annotations: []))
+			}
+			else {
+				throw GryphonError(
+					errorMessage: "Failed to convert variable declaration: unknown pattern " +
+					"binding.")
+			}
+		}
+
+		return result
+	}
+}
+
+// Source File
+// ├─ Declarations
+// └─ Statements
+//    └─ VariableDeclaration
+//       ├─ let
+//       ├─ a
+//       ├─ Any
+//       ├─ LiteralStringExpression
+//       │  └─
+//       ├─ internal
+//       └─ open: false
+
+extension SyntaxProtocol {
+	func getText() -> String? {
+		if let firstChild = self.children.first,
+			let tokenSyntax = firstChild.as(TokenSyntax.self)
+		{
+			return tokenSyntax.text
+		}
+
+		return nil
+	}
+}
+
+extension SourceFileRange {
+	// TODO: Implement this init so it creates a correct range (or refactor the data structure, etc)
+	init<SyntaxType: SyntaxProtocol>(_ syntax: SyntaxType) {
+		let position = syntax.positionAfterSkippingLeadingTrivia.utf8Offset
+		let length = syntax.contentLength.utf8Length
+		self.init(
+			lineStart: position,
+			lineEnd: position + length,
+			columnStart: 1,
+			columnEnd: 1)
 	}
 }
 
