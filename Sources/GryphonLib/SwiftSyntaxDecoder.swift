@@ -293,17 +293,56 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		_ stringLiteralExpression: StringLiteralExprSyntax)
 		throws -> Expression
 	{
-		for segment in stringLiteralExpression.segments {
-			if let text = segment.getText() {
-				return LiteralStringExpression(
-					range: SourceFileRange(stringLiteralExpression),
-					value: text,
-					isMultiline: false)
-			}
+		let range = SourceFileRange(stringLiteralExpression)
+
+		// If it's a string literal
+		if stringLiteralExpression.segments.count == 1,
+			let text = stringLiteralExpression.segments.first!.getText()
+		{
+			return LiteralStringExpression(
+				range: range,
+				value: text,
+				isMultiline: false)
 		}
 
-		throw GryphonError(
-			errorMessage: "Failed to convert string literal expression: \(stringLiteralExpression)")
+		// If it's a string interpolation
+		let expressions: MutableList<Expression> = []
+		for segment in stringLiteralExpression.segments {
+			if let stringSegment = segment.as(StringSegmentSyntax.self),
+				let text = stringSegment.getText()
+			{
+				expressions.append(LiteralStringExpression(
+					range: SourceFileRange(stringSegment),
+					value: text,
+					isMultiline: false))
+				continue
+			}
+
+			// `\` + `(` + `expression` + `)`
+			// The expression comes enveloped in a tuple
+			if let expressionSegment = segment.as(ExpressionSegmentSyntax.self) {
+				let children = List(expressionSegment.children)
+				if children.count == 4,
+					children[0].is(TokenSyntax.self),
+					children[1].is(TokenSyntax.self),
+					let tupleExpressionElements = children[2].as(TupleExprElementListSyntax.self),
+					children[3].is(TokenSyntax.self),
+					tupleExpressionElements.count == 1,
+					let onlyTupleElement = tupleExpressionElements.first,
+					onlyTupleElement.label == nil
+				{
+					try expressions.append(convertExpression(onlyTupleElement.expression))
+					continue
+				}
+			}
+
+			throw GryphonError(errorMessage: "Unrecognized expression in string literal " +
+				"interpolation: \(stringLiteralExpression)")
+		}
+
+		return InterpolatedStringLiteralExpression(
+			range: range,
+			expressions: expressions)
 	}
 }
 
