@@ -81,6 +81,19 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			if let declaration = item.as(DeclSyntax.self) {
 				try statements.append(contentsOf: convertDeclaration(declaration))
 			}
+			else if let expression = item.as(ExprSyntax.self) {
+				if shouldConvertToStatement(expression) {
+					try statements.append(convertExpressionToStatement(expression))
+				}
+				else {
+					try statements.append(ExpressionStatement(
+						range: SourceFileRange(expression),
+						expression: convertExpression(expression)))
+				}
+			}
+			else {
+				throw GryphonError(errorMessage: "Failed to convert statement \(statement)")
+			}
 		}
 
 		return GryphonAST(
@@ -160,6 +173,45 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 
 		throw GryphonError(errorMessage: "Failed to convert expression: \(expression)")
+	}
+
+	func shouldConvertToStatement(_ expression: ExprSyntax) -> Bool {
+		if expression.is(SequenceExprSyntax.self) {
+			return true
+		}
+
+		return false
+	}
+
+	func convertExpressionToStatement(_ expression: ExprSyntax) throws -> Statement {
+		if let sequenceExpression = expression.as(SequenceExprSyntax.self) {
+			return try convertSequenceExpression(sequenceExpression)
+		}
+
+		throw GryphonError(errorMessage: "Failed to convert expression to statement: \(expression)")
+	}
+
+	func convertSequenceExpression(
+		_ sequenceExpression: SequenceExprSyntax)
+		throws -> Statement
+	{
+		let expressionList = List(sequenceExpression.elements)
+
+		if expressionList.count == 3,
+			expressionList[1].is(AssignmentExprSyntax.self),
+			let leftExpression = expressionList[0].as(ExprSyntax.self),
+			let rightExpression = expressionList[2].as(ExprSyntax.self)
+		{
+			let translatedLeftExpression = try convertExpression(leftExpression)
+			let translatedRightExpression = try convertExpression(rightExpression)
+			return AssignmentStatement(
+				range: SourceFileRange(sequenceExpression),
+				leftHand: translatedLeftExpression,
+				rightHand: translatedRightExpression)
+		}
+
+		throw GryphonError(errorMessage: "Failed to convert sequence expression: " +
+			"\(sequenceExpression)")
 	}
 
 	func convertIdentifierExpression(
