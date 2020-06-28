@@ -1,5 +1,19 @@
 import SwiftSyntax
 
+extension SyntaxProtocol {
+	func toPrintableTree() -> PrintableTree {
+		return SwiftSyntaxToPrintableTreeVisitor().convertToPrintableTree(self)
+	}
+
+	func prettyPrint() {
+		self.toPrintableTree().prettyPrint()
+	}
+
+	func prettyDescription() -> String {
+		return self.toPrintableTree().prettyDescription()
+	}
+}
+
 open class SwiftSyntaxToPrintableTreeVisitor: SyntaxVisitor {
 	let root = PrintableTree("Root")
 	var nodeStack: MutableList<PrintableTree> = []
@@ -9,7 +23,7 @@ open class SwiftSyntaxToPrintableTreeVisitor: SyntaxVisitor {
 		super.init()
 	}
 
-	func convertPrintableTree<SyntaxType: SyntaxProtocol>(_ node: SyntaxType) -> PrintableTree {
+	func convertToPrintableTree<SyntaxType: SyntaxProtocol>(_ node: SyntaxType) -> PrintableTree {
 		self.walk(node)
 		return root
 	}

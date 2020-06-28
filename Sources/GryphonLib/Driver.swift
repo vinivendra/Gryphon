@@ -288,7 +288,7 @@ public class Driver {
 		Compiler.logStart("🧑‍💻  Processing SwiftSyntax for \(inputFileRelativePath)...")
 		let decoder = SwiftSyntaxDecoder(filePath: inputFilePath)
 		let toTree = SwiftSyntaxToPrintableTreeVisitor()
-		let tree = toTree.convertPrintableTree(decoder.syntaxTree)
+		let tree = toTree.convertToPrintableTree(decoder.syntaxTree)
 		tree.prettyPrint()
 		let ast = try! decoder.convertToGryphonAST()
 		ast.prettyPrint()
