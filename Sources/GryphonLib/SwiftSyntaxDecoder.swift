@@ -171,6 +171,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let identifierExpression = expression.as(IdentifierExprSyntax.self) {
 			return try convertIdentifierExpression(identifierExpression)
 		}
+		if let functionCallExpression = expression.as(FunctionCallExprSyntax.self) {
+			return try convertFunctionCallExpression(functionCallExpression)
+		}
 
 		throw GryphonError(errorMessage: "Failed to convert expression: \(expression)")
 	}
@@ -212,6 +215,51 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 		throw GryphonError(errorMessage: "Failed to convert sequence expression: " +
 			"\(sequenceExpression)")
+	}
+
+	func convertFunctionCallExpression(
+		_ functionCallExpression: FunctionCallExprSyntax)
+		throws -> Expression
+	{
+		let children = List(functionCallExpression.children)
+
+		// `function` + `(` + `tupleExpressionElements` + `)`
+		if children.count == 4,
+			let functionExpression = children[0].as(ExprSyntax.self),
+			children[1].is(TokenSyntax.self),
+			let tupleExpressionElements = children[2].as(TupleExprElementListSyntax.self),
+			children[3].is(TokenSyntax.self)
+		{
+			let functionExpressionTranslation = try convertExpression(functionExpression)
+			let tupleExpression = try convertTupleExpressionElementList(tupleExpressionElements)
+			return CallExpression(
+				range: SourceFileRange(functionCallExpression),
+				function: functionExpressionTranslation,
+				parameters: tupleExpression,
+				typeName: functionCallExpression.getType(fromList: self.expressionTypes))
+		}
+
+		return NilLiteralExpression(range: nil)
+	}
+
+	/// The `convertFunctionCallExpression` method assumes this returns something that can be put in
+	/// a `CallExpression`, like a `TupleExpression` or a `TupleShuffleExpression`.
+	func convertTupleExpressionElementList(
+		_ tupleExprElementListSyntax: TupleExprElementListSyntax)
+		throws -> Expression
+	{
+		let elements = List(tupleExprElementListSyntax)
+		let pairs: MutableList<LabeledExpression> = []
+
+		for tupleExpressionElement in elements {
+			let label = tupleExpressionElement.label?.text
+			let translatedExpression = try convertExpression(tupleExpressionElement.expression)
+			pairs.append(LabeledExpression(label: label, expression: translatedExpression))
+		}
+
+		return TupleExpression(
+			range: SourceFileRange(tupleExprElementListSyntax),
+			pairs: pairs)
 	}
 
 	func convertIdentifierExpression(
