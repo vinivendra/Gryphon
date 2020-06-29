@@ -392,7 +392,8 @@ extension Expression {
 
 		if let declarationExpression = rhs as? DeclarationReferenceExpression {
 			if declarationExpression.identifier.hasPrefix("_"),
-				lhs.isOfType(declarationExpression.typeName, inContext: context)
+				let declarationType = declarationExpression.typeName,
+				lhs.isOfType(declarationType, inContext: context)
 			{
 				matches[declarationExpression.identifier] = lhs
 				return true
@@ -415,8 +416,18 @@ extension Expression {
 		if let lhs = lhs as? DeclarationReferenceExpression,
 			let rhs = rhs as? DeclarationReferenceExpression
 		{
-			return lhs.identifier == rhs.identifier &&
-				context.isSubtype(lhs.typeName, of: rhs.typeName) &&
+			let typeMatches: Bool
+			if let leftType = lhs.typeName,
+				let rightType = rhs.typeName
+			{
+				typeMatches = context.isSubtype(leftType, of: rightType)
+			}
+			else {
+				typeMatches = false
+			}
+
+			return typeMatches &&
+				lhs.identifier == rhs.identifier &&
 				lhs.isImplicit == rhs.isImplicit
 		}
 		if let lhs = lhs as? OptionalExpression,
@@ -435,8 +446,14 @@ extension Expression {
 			guard declarationExpressionMatchesImplicitTypeExpression(rhs) else {
 				return false
 			}
-			let expressionType = String(rhs.typeName.dropLast(".Type".count))
-			return context.isSubtype(lhs.typeName, of: expressionType)
+
+			if let typeName = rhs.typeName {
+				let expressionType = String(typeName.dropLast(".Type".count))
+				return context.isSubtype(lhs.typeName, of: expressionType)
+			}
+			else {
+				return false
+			}
 		}
 		if let lhs = lhs as? DeclarationReferenceExpression,
 			let rhs = rhs as? TypeExpression
@@ -444,8 +461,14 @@ extension Expression {
 			guard declarationExpressionMatchesImplicitTypeExpression(lhs) else {
 				return false
 			}
-			let expressionType = String(lhs.typeName.dropLast(".Type".count))
-			return context.isSubtype(expressionType, of: rhs.typeName)
+
+			if let typeName = lhs.typeName {
+				let expressionType = String(typeName.dropLast(".Type".count))
+				return context.isSubtype(expressionType, of: rhs.typeName)
+			}
+			else {
+				return false
+			}
 		}
 		if let lhs = lhs as? SubscriptExpression,
 			let rhs = rhs as? SubscriptExpression
@@ -472,10 +495,18 @@ extension Expression {
 		if let lhs = lhs as? BinaryOperatorExpression,
 			let rhs = rhs as? BinaryOperatorExpression
 		{
+			let typeMatches: Bool
+			if let leftType = lhs.typeName, let rightType = rhs.typeName {
+				typeMatches = context.isSubtype(leftType, of: rightType)
+			}
+			else {
+				typeMatches = true
+			}
+
 			return lhs.leftExpression.matches(rhs.leftExpression, matches, context) &&
 				lhs.rightExpression.matches(rhs.rightExpression, matches, context) &&
 				lhs.operatorSymbol == rhs.operatorSymbol &&
-				context.isSubtype(lhs.typeName, of: rhs.typeName)
+				typeMatches
 		}
 		if let lhs = lhs as? PrefixUnaryExpression,
 			let rhs = rhs as? PrefixUnaryExpression
@@ -639,8 +670,9 @@ extension Expression {
 	private func declarationExpressionMatchesImplicitTypeExpression(
 		_ expression: DeclarationReferenceExpression) -> Bool
 	{
-		if expression.identifier == "self",
-			expression.typeName.hasSuffix(".Type"),
+		if let typeName = expression.typeName,
+			typeName.hasSuffix(".Type"),
+			expression.identifier == "self",
 			expression.isImplicit
 		{
 			return true

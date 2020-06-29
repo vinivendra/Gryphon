@@ -1,23 +1,21 @@
+//var x: Int = 0
+//var y = x
+//var z = 10
+//z = x
 //
-// Copyright 2018 Vinicius Jorge Vendramini
+//print("\(x)")
+//print("\(y)")
+//print("\(z)")
 //
-// Licensed under the Hippocratic License, Version 2.1;
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
+//let a: Int? = nil
 //
-// https://firstdonoharm.dev/version/2/1/license.md
+//print("\(a)")
 //
-// To the full extent allowed by law, this software comes "AS IS,"
-// WITHOUT ANY WARRANTY, EXPRESS OR IMPLIED, and licensor and any other
-// contributor shall not be liable to anyone for any damages or other
-// liability arising from, out of, or in connection with the sotfware
-// or this license, under any kind of legal claim.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+////
+//let i: Int
+//i = 0
 //
-
-let a: Any = ""
-
-if let a = a as? String {
-	print("It's a string!")
-}
+     let r, g, b: Double
+//r = 10
+//g = 10
+//b = 10

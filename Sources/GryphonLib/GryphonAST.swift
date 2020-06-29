@@ -681,7 +681,7 @@ public class InitializerDeclaration: FunctionDeclaration {
 
 public class VariableDeclaration: Statement {
 	var identifier: String
-	var typeName: String
+	var typeAnnotation: String?
 	var expression: Expression?
 	var getter: FunctionDeclaration?
 	var setter: FunctionDeclaration?
@@ -696,7 +696,7 @@ public class VariableDeclaration: Statement {
 	init(
 		range: SourceFileRange?,
 		identifier: String,
-		typeName: String,
+		typeAnnotation: String?,
 		expression: Expression?,
 		getter: FunctionDeclaration?,
 		setter: FunctionDeclaration?,
@@ -709,7 +709,7 @@ public class VariableDeclaration: Statement {
 		annotations: MutableList<String>)
 	{
 		self.identifier = identifier
-		self.typeName = typeName
+		self.typeAnnotation = typeAnnotation
 		self.expression = expression
 		self.getter = getter
 		self.setter = setter
@@ -731,7 +731,8 @@ public class VariableDeclaration: Statement {
 			isStatic ? PrintableTree("static") : nil,
 			isLet ? PrintableTree("let") : PrintableTree("var"),
 			PrintableTree(identifier),
-			PrintableTree(typeName),
+			PrintableTree.initOrNil(
+				"typeAnnotation", [PrintableTree.initOrNil(typeAnnotation)]),
 			expression,
 			PrintableTree.initOrNil(access),
 			PrintableTree("open: \(isOpen)"),
@@ -746,7 +747,7 @@ public class VariableDeclaration: Statement {
 		-> Bool
 	{
 		return lhs.identifier == rhs.identifier &&
-			lhs.typeName == rhs.typeName &&
+			lhs.typeAnnotation == rhs.typeAnnotation &&
 			lhs.expression == rhs.expression &&
 			lhs.getter == rhs.getter &&
 			lhs.setter == rhs.setter &&
@@ -1450,14 +1451,14 @@ public class OptionalExpression: Expression {
 
 public class DeclarationReferenceExpression: Expression {
 	var identifier: String
-	var typeName: String
+	var typeName: String?
 	var isStandardLibrary: Bool
 	var isImplicit: Bool
 
 	init(
 		range: SourceFileRange?,
 		identifier: String,
-		typeName: String,
+		typeName: String?,
 		isStandardLibrary: Bool,
 		isImplicit: Bool)
 	{
@@ -1470,7 +1471,8 @@ public class DeclarationReferenceExpression: Expression {
 
 	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
 		return [
-			PrintableTree(typeName),
+			PrintableTree.initOrNil(
+				"type", [PrintableTree.initOrNil(typeName)]),
 			PrintableTree(identifier),
 			isStandardLibrary ? PrintableTree("isStandardLibrary") : nil,
 			isImplicit ? PrintableTree("implicit") : nil, ]
@@ -1698,13 +1700,14 @@ public class DotExpression: Expression {
 			// is a function type (something like `(MyEnum.Type) -> MyEnum` or
 			// `(A.MyEnum.Type) -> A.MyEnum`).
 			if let leftType = leftExpression as? TypeExpression,
-				let rightDeclarationReference = rightExpression as? DeclarationReferenceExpression
+				let rightDeclarationReference = rightExpression as? DeclarationReferenceExpression,
+				let rightType = rightDeclarationReference.typeName
 			{
 				let enumType = leftType.typeName
 
-				if rightDeclarationReference.typeName.hasPrefix("("),
-					rightDeclarationReference.typeName.contains("\(enumType).Type) -> "),
-					rightDeclarationReference.typeName.hasSuffix(enumType)
+				if rightType.hasPrefix("("),
+					rightType.contains("\(enumType).Type) -> "),
+					rightType.hasSuffix(enumType)
 				{
 					return enumType
 				}
@@ -1727,14 +1730,14 @@ public class BinaryOperatorExpression: Expression {
 	let leftExpression: Expression
 	let rightExpression: Expression
 	let operatorSymbol: String
-	var typeName: String
+	var typeName: String?
 
 	init(
 		range: SourceFileRange?,
 		leftExpression: Expression,
 		rightExpression: Expression,
 		operatorSymbol: String,
-		typeName: String)
+		typeName: String?)
 	{
 		self.leftExpression = leftExpression
 		self.rightExpression = rightExpression
@@ -1745,7 +1748,8 @@ public class BinaryOperatorExpression: Expression {
 
 	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
 		return [
-			PrintableTree("type \(typeName)"),
+			PrintableTree.initOrNil(
+				"type", [PrintableTree.initOrNil(typeName)]),
 			PrintableTree.ofExpressions("left", [leftExpression]),
 			PrintableTree("operator \(operatorSymbol)"),
 			PrintableTree.ofExpressions("right", [rightExpression]), ]

@@ -976,7 +976,7 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 		}
 
 		if variableDeclaration.identifier == "description",
-			variableDeclaration.typeName == "String"
+			variableDeclaration.typeAnnotation == "String"
 		{
 			let statements: MutableList<Statement>
 			if let getterStatements = variableDeclaration.getter?.statements {
@@ -1381,7 +1381,10 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass {
 		_ variableDeclaration: VariableDeclaration)
 		-> VariableDeclaration
 	{
-		variableDeclaration.typeName = removePrefixes(variableDeclaration.typeName)
+		if let typeAnnotation = variableDeclaration.typeAnnotation {
+			variableDeclaration.typeAnnotation = removePrefixes(typeAnnotation)
+		}
+
 		return super.processVariableDeclaration(variableDeclaration)
 	}
 
@@ -2006,7 +2009,7 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 			let result = super.replaceVariableDeclaration(VariableDeclaration(
 				range: variableDeclaration.range,
 				identifier: variableDeclaration.identifier,
-				typeName: variableDeclaration.typeName,
+				typeAnnotation: variableDeclaration.typeAnnotation,
 				expression: variableDeclaration.expression,
 				getter: variableDeclaration.getter,
 				setter: variableDeclaration.setter,
@@ -2024,7 +2027,7 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 			return super.replaceVariableDeclaration(VariableDeclaration(
 				range: variableDeclaration.range,
 				identifier: variableDeclaration.identifier,
-				typeName: variableDeclaration.typeName,
+				typeAnnotation: variableDeclaration.typeAnnotation,
 				expression: variableDeclaration.expression,
 				getter: variableDeclaration.getter,
 				setter: variableDeclaration.setter,
@@ -3294,11 +3297,10 @@ public class IsOperatorsInSwitchesTranspilationPass: TranspilationPass {
 		-> List<Statement>
 	{
 		if let declarationReferenceExpression =
-			switchStatement.expression as? DeclarationReferenceExpression
+				switchStatement.expression as? DeclarationReferenceExpression,
+			let declarationType = declarationReferenceExpression.typeName
 		{
-			if self.context.sealedClasses.contains(
-				declarationReferenceExpression.typeName)
-			{
+			if self.context.sealedClasses.contains(declarationType) {
 				let newCases = switchStatement.cases.map {
 					replaceIsOperatorsInSwitchCase($0, usingExpression: switchStatement.expression)
 				}
@@ -3835,21 +3837,22 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 						callType.hasPrefix("MutableMap") ||
 						callType.hasPrefix("Map")),
 					let declarationReference =
-						callExpression.function as? DeclarationReferenceExpression
+						callExpression.function as? DeclarationReferenceExpression,
+					let declarationType = declarationReference.typeName
 				{
 					if declarationReference.identifier.hasPrefix("toMutable"),
-						(declarationReference.typeName.hasPrefix("MutableList") ||
-							declarationReference.typeName.hasPrefix("MutableMap"))
+						(declarationType.hasPrefix("MutableList") ||
+							declarationType.hasPrefix("MutableMap"))
 					{
 						return dotExpression
 					}
 					else if declarationReference.identifier.hasPrefix("toList"),
-						declarationReference.typeName.hasPrefix("List")
+						declarationType.hasPrefix("List")
 					{
 						return dotExpression
 					}
 					else if declarationReference.identifier.hasPrefix("toMap"),
-						declarationReference.typeName.hasPrefix("Map")
+						declarationType.hasPrefix("Map")
 					{
 						return dotExpression
 					}
@@ -4119,7 +4122,7 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 				leftExpression: DeclarationReferenceExpression(
 					range: variableDeclaration.expression?.range,
 					identifier: variableDeclaration.identifier,
-					typeName: variableDeclaration.typeName,
+					typeName: variableDeclaration.typeAnnotation,
 					isStandardLibrary: false,
 					isImplicit: false),
 				rightExpression: NilLiteralExpression(
@@ -4212,7 +4215,7 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 		newStatements.append(VariableDeclaration(
 			range: range,
 			identifier: lhs.label,
-			typeName: lhs.typeName,
+			typeAnnotation: lhs.typeName,
 			expression: DeclarationReferenceExpression(
 				range: range,
 				identifier: "this",
@@ -4231,7 +4234,7 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 		newStatements.append(VariableDeclaration(
 			range: range,
 			identifier: rhs.label,
-			typeName: "Any?",
+			typeAnnotation: "Any?",
 			expression: DeclarationReferenceExpression(
 				range: range,
 				identifier: "other",
@@ -4486,7 +4489,7 @@ public class RawValuesTranspilationPass: TranspilationPass {
 		return VariableDeclaration(
 			range: range,
 			identifier: "rawValue",
-			typeName: rawValueType,
+			typeAnnotation: rawValueType,
 			expression: nil,
 			getter: getter,
 			setter: nil,

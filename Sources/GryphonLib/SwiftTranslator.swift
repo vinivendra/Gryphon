@@ -1138,7 +1138,7 @@ public class SwiftTranslator {
 				variableDeclaration = VariableDeclaration(
 					range: range,
 					identifier: variableName,
-					typeName: variableType,
+					typeAnnotation: variableType,
 					expression: nil,
 					getter: nil,
 					setter: nil,
@@ -1453,7 +1453,7 @@ public class SwiftTranslator {
 						VariableDeclaration(
 							range: getRangeRecursively(ofNode: patternLet),
 							identifier: $0.newVariable,
-							typeName: $0.associatedValueType,
+							typeAnnotation: $0.associatedValueType,
 							expression: DotExpression(
 								range: getRangeRecursively(ofNode: patternLet),
 								leftExpression: translatedExpression,
@@ -1637,7 +1637,7 @@ public class SwiftTranslator {
 				conditionsResult.append(.declaration(variableDeclaration: VariableDeclaration(
 					range: getRangeRecursively(ofNode: lastCondition),
 					identifier: name,
-					typeName: typeName,
+					typeAnnotation: typeName,
 					expression: expression,
 					getter: nil,
 					setter: nil,
@@ -1704,7 +1704,7 @@ public class SwiftTranslator {
 					statementsResult.append(VariableDeclaration(
 						range: range,
 						identifier: declaration.newVariable,
-						typeName: declaration.associatedValueType,
+						typeAnnotation: declaration.associatedValueType,
 						expression: DotExpression(
 							range: range,
 							leftExpression: declarationReference,
@@ -2237,7 +2237,7 @@ public class SwiftTranslator {
 		return VariableDeclaration(
 			range: getRangeRecursively(ofNode: variableDeclaration),
 			identifier: identifier,
-			typeName: typeName,
+			typeAnnotation: typeName,
 			expression: expression,
 			getter: getter,
 			setter: setter,

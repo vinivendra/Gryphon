@@ -845,9 +845,15 @@ public class KotlinTranslator {
 		let result = KotlinTranslation(range: catchStatement.range)
 
 		if let variableDeclaration = catchStatement.variableDeclaration {
-			let translatedType = translateType(variableDeclaration.typeName)
-			result.append("\(indentation)catch " +
-				"(\(variableDeclaration.identifier): \(translatedType)) {\n")
+			if let typeAnnotation = variableDeclaration.typeAnnotation {
+				let translatedType = translateType(typeAnnotation)
+				result.append("\(indentation)catch " +
+					"(\(variableDeclaration.identifier): \(translatedType)) {\n")
+			}
+			else {
+				result.append("\(indentation)catch " +
+				"(\(variableDeclaration.identifier)) {\n")
+			}
 		}
 		else {
 			result.append("\(indentation)catch {\n")
@@ -1004,7 +1010,7 @@ public class KotlinTranslator {
 				let newVariableDeclaration = VariableDeclaration(
 					range: nil,
 					identifier: variableDeclaration.identifier,
-					typeName: variableDeclaration.typeName,
+					typeAnnotation: variableDeclaration.typeAnnotation,
 					expression: NilLiteralExpression(range: nil),
 					getter: nil,
 					setter: nil,
@@ -1244,10 +1250,12 @@ public class KotlinTranslator {
 			extensionPrefix = ""
 		}
 
-		result.append("\(extensionPrefix)\(variableDeclaration.identifier): ")
+		result.append("\(extensionPrefix)\(variableDeclaration.identifier)")
 
-		let translatedType = translateType(variableDeclaration.typeName)
-		result.append(translatedType)
+		if let typeAnnotation = variableDeclaration.typeAnnotation {
+			let translatedType = translateType(typeAnnotation)
+			result.append(": \(translatedType)")
+		}
 
 		if let expression = variableDeclaration.expression {
 			let expressionTranslation =
@@ -1699,10 +1707,12 @@ public class KotlinTranslator {
 		}
 
 		let functionTranslation: TranspilationContext.FunctionTranslation?
-		if let expression = functionExpression as? DeclarationReferenceExpression {
+		if let expression = functionExpression as? DeclarationReferenceExpression,
+			let typeName = expression.typeName
+		{
 			functionTranslation = self.context.getFunctionTranslation(
 				forName: expression.identifier,
-				typeName: expression.typeName)
+				typeName: typeName)
 		}
 		else if let typeExpression = functionExpression as? TypeExpression,
 			let parameterTypes = callExpression.parameters.swiftType

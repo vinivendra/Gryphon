@@ -136,18 +136,18 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				}
 
 
-				let annotatedType: String
+				let annotatedType: String?
 				if let typeAnnotation = patternBinding.typeAnnotation?.type {
 					annotatedType = try convertType(typeAnnotation)
 				}
 				else  {
-					annotatedType = expression?.swiftType ?? ""
+					annotatedType = expression?.swiftType
 				}
 
 				result.append(VariableDeclaration(
 					range: SourceFileRange(variableDeclaration),
 					identifier: identifier,
-					typeName: annotatedType,
+					typeAnnotation: annotatedType,
 					expression: expression,
 					getter: nil,
 					setter: nil,
