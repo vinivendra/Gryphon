@@ -116,6 +116,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		throws -> MutableList<VariableDeclaration>
 	{
 		let isLet = (variableDeclaration.letOrVarKeyword.text == "let")
+		let annotations: MutableList<String> = MutableList(variableDeclaration.modifiers?.compactMap {
+			return $0.getText()
+		} ?? [])
 
 		let result: MutableList<VariableDeclaration> = []
 
@@ -132,9 +135,14 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					expression = nil
 				}
 
-				let annotatedType = patternBinding.typeAnnotation?.type.getText() ??
-					expression?.swiftType ??
-					""
+
+				let annotatedType: String
+				if let typeAnnotation = patternBinding.typeAnnotation?.type {
+					annotatedType = try convertType(typeAnnotation)
+				}
+				else  {
+					annotatedType = expression?.swiftType ?? ""
+				}
 
 				result.append(VariableDeclaration(
 					range: SourceFileRange(variableDeclaration),
@@ -149,7 +157,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					isImplicit: false,
 					isStatic: false,
 					extendsType: nil,
-					annotations: []))
+					annotations: annotations))
 			}
 			else {
 				throw GryphonError(
@@ -159,23 +167,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 
 		return result
-	}
-
-	func convertExpression(_ expression: ExprSyntax) throws -> Expression {
-		if let stringLiteralExpression = expression.as(StringLiteralExprSyntax.self) {
-			return try convertStringLiteralExpression(stringLiteralExpression)
-		}
-		if let integerLiteralExpression = expression.as(IntegerLiteralExprSyntax.self) {
-			return try convertIntegerLiteralExpression(integerLiteralExpression)
-		}
-		if let identifierExpression = expression.as(IdentifierExprSyntax.self) {
-			return try convertIdentifierExpression(identifierExpression)
-		}
-		if let functionCallExpression = expression.as(FunctionCallExprSyntax.self) {
-			return try convertFunctionCallExpression(functionCallExpression)
-		}
-
-		throw GryphonError(errorMessage: "Failed to convert expression: \(expression)")
 	}
 
 	func shouldConvertToStatement(_ expression: ExprSyntax) -> Bool {
@@ -215,6 +206,33 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 		throw GryphonError(errorMessage: "Failed to convert sequence expression: " +
 			"\(sequenceExpression)")
+	}
+
+	func convertExpression(_ expression: ExprSyntax) throws -> Expression {
+		if let stringLiteralExpression = expression.as(StringLiteralExprSyntax.self) {
+			return try convertStringLiteralExpression(stringLiteralExpression)
+		}
+		if let integerLiteralExpression = expression.as(IntegerLiteralExprSyntax.self) {
+			return try convertIntegerLiteralExpression(integerLiteralExpression)
+		}
+		if let identifierExpression = expression.as(IdentifierExprSyntax.self) {
+			return try convertIdentifierExpression(identifierExpression)
+		}
+		if let functionCallExpression = expression.as(FunctionCallExprSyntax.self) {
+			return try convertFunctionCallExpression(functionCallExpression)
+		}
+		if let nilLiteralExpression = expression.as(NilLiteralExprSyntax.self) {
+			return try convertNilLiteralExpression(nilLiteralExpression)
+		}
+
+		throw GryphonError(errorMessage: "Failed to convert expression: \(expression)")
+	}
+
+	func convertNilLiteralExpression(
+		_ nilLiteralExpression: NilLiteralExprSyntax)
+		throws -> Expression
+	{
+		return NilLiteralExpression(range: SourceFileRange(nilLiteralExpression))
 	}
 
 	func convertFunctionCallExpression(
@@ -344,19 +362,18 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			range: range,
 			expressions: expressions)
 	}
-}
 
-// Source File
-// ├─ Declarations
-// └─ Statements
-//    └─ VariableDeclaration
-//       ├─ let
-//       ├─ a
-//       ├─ Any
-//       ├─ LiteralStringExpression
-//       │  └─
-//       ├─ internal
-//       └─ open: false
+	func convertType(_ typeSyntax: TypeSyntax) throws -> String {
+		if let text = typeSyntax.getText() {
+			return text
+		}
+		if let optionalType = typeSyntax.as(OptionalTypeSyntax.self) {
+			return try convertType(optionalType.wrappedType) + "?"
+		}
+
+		throw GryphonError(errorMessage: "Unknown type: \(typeSyntax)")
+	}
+}
 
 extension SyntaxProtocol {
 	func getText() -> String? {
