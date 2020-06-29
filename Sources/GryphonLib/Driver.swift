@@ -327,10 +327,11 @@ public class Driver {
 		let isMainFile = (inputFilePath == settings.mainFilePath)
 
 		Compiler.logStart("🧑‍💻  Generating the raw AST for \(inputFileRelativePath)...")
-		let gryphonRawAST = try Compiler.generateGryphonRawAST(
-			fromSwiftAST: swiftAST,
-			asMainFile: isMainFile,
-			withContext: context)
+//		let gryphonRawAST = try Compiler.generateGryphonRawAST(
+//			fromSwiftAST: swiftAST,
+//			asMainFile: isMainFile,
+//			withContext: context)
+		let gryphonRawAST = newAst
 		Compiler.logEnd("✅  Done generating raw ASt for \(inputFileRelativePath).")
 
 		if settings.shouldEmitSwiftAST {
@@ -363,15 +364,6 @@ public class Driver {
 
 		guard settings.shouldGenerateAST else {
 			return gryphonRawAST
-		}
-
-		print("\n\n======================================\nComparing ASTs...")
-		if gryphonRawAST == newAst {
-			print("They're the same!")
-		}
-		else {
-			print("Printing diff:")
-			print(TestUtilities.diff(gryphonRawAST.description, newAst.description))
 		}
 
 		Compiler.logStart("🧑‍💻  Running first passes on AST for \(inputFileRelativePath)...")
