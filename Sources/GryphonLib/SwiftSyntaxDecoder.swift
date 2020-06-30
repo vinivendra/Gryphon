@@ -304,6 +304,16 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		_ integerLiteralExpression: IntegerLiteralExprSyntax)
 		throws -> Expression
 	{
+		if let typeName = integerLiteralExpression.getType(fromList: self.expressionTypes) {
+			if typeName == "Double",
+				let doubleValue = Double(integerLiteralExpression.digits.text)
+			{
+				return LiteralDoubleExpression(
+					range: SourceFileRange(integerLiteralExpression),
+					value: doubleValue)
+			}
+		}
+
 		if let intValue = Int64(integerLiteralExpression.digits.text) {
 			return LiteralIntExpression(
 				range: SourceFileRange(integerLiteralExpression),
