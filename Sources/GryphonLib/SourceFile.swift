@@ -164,6 +164,17 @@ extension SourceFile {
 	}
 }
 
+public struct SourceFilePosition: Hashable, CustomStringConvertible {
+	let line: Int
+	let column: Int
+
+	public var description: String {
+		return "\(line):\(column)"
+	}
+
+	public static let beginningOfFile = SourceFilePosition(line: 1, column: 1)
+}
+
 public struct SourceFileRange: Equatable, Hashable, CustomStringConvertible {
 	let lineStart: Int
 	let lineEnd: Int
@@ -187,5 +198,59 @@ public struct SourceFileRange: Equatable, Hashable, CustomStringConvertible {
 
 	public var description: String {
 		return "\(lineStart):\(columnStart) - \(lineEnd):\(columnEnd)"
+	}
+}
+
+/// SwiftSyntax reports ranges as utf8 offsets from the start, but source files ranges are stored as
+/// line + column combos. The mapping from offsets to lines is done by storing the offset at which
+/// each line begins (e.g. line 0 starts at offset 0, line 1 starts at 10, line 2 starts at 15,
+/// etc.).
+private struct SourceFileLineMap { // gryphon ignore
+	///
+	private let map: List<Int>
+
+	init(sourceFileContents contents: String) {
+		let result: MutableList<Int> = [0]
+		var currentOffset = 1
+		let newLine = UTF8.CodeUnit("\n")!
+
+		for character in contents.utf8 {
+			if character == newLine {
+				result.append(currentOffset)
+			}
+
+			currentOffset += 1
+		}
+
+		self.map = result
+	}
+
+	/// Get the number of the line that contains the character represented by this offset, and the
+	/// column of the character in that line. Lines and columns begin counting at `1`. Newlines are
+	/// counted as being part of the preceding line.
+	func getLineAndColumn(ofOffset offset: Int) -> SourceFilePosition {
+		guard offset != 0 else {
+			return SourceFilePosition.beginningOfFile
+		}
+
+		var lineNumber = 1
+		while lineNumber < map.count {
+			let lineOffset = map[lineNumber]
+			if lineOffset >= offset {
+				let previousLineOffset = map[lineNumber - 1]
+
+				// lineNumber will have passed the line (+1) but it'll also be a 0-based index (-1)
+				let line = lineNumber
+				let column = offset - previousLineOffset
+				return SourceFilePosition(line: line, column: column)
+			}
+			lineNumber += 1
+		}
+
+		// If it's in the last line
+		let previousLineOffset = map.last!
+		let line = map.count
+		let column = offset - previousLineOffset
+		return SourceFilePosition(line: line, column: column)
 	}
 }

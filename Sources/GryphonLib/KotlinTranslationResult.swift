@@ -91,31 +91,33 @@ public class KotlinTranslation: PrintableAsTree, CustomStringConvertible {
 			errorMap: errorMap.joined(separator: "\n"))
 	}
 
+	/// Processes the current translation result and adds the information into the given arrays.
+	/// Returns the position at the end of the current translation result.
 	private func resolveTranslationInto(
 		translationResult: MutableList<String>,
 		errorMap: MutableList<String>,
-		currentPosition: SourceFilePosition = SourceFilePosition())
+		startPosition: SourceFilePosition = SourceFilePosition.beginningOfFile)
+		-> SourceFilePosition
 	{
-		let startingPosition = currentPosition.copy()
+		var currentEndPosition = startPosition
 
 		for child in children {
 			if let string = child.stringLiteral {
-				currentPosition.updateWithString(string)
+				currentEndPosition = currentEndPosition.updated(withString: string)
 				translationResult.append(string)
 			}
 			else {
 				let node = child.node!
-				node.resolveTranslationInto(
+				currentEndPosition = node.resolveTranslationInto(
 					translationResult: translationResult,
 					errorMap: errorMap,
-					currentPosition: currentPosition)
+					startPosition: currentEndPosition)
 			}
 		}
 
 		if let swiftRange = swiftRange {
-			let endPosition = currentPosition.copy()
-			let newEntry = "\(startingPosition.lineNumber):\(startingPosition.columnNumber):" +
-				"\(endPosition.lineNumber):\(endPosition.columnNumber):" +
+			let newEntry = "\(startPosition.line):\(startPosition.column):" +
+				"\(currentEndPosition.line):\(currentEndPosition.column):" +
 				"\(swiftRange.lineStart):\(swiftRange.columnStart):" +
 				"\(swiftRange.lineEnd):\(swiftRange.columnEnd)"
 			let lastEntry = errorMap.last
@@ -123,6 +125,8 @@ public class KotlinTranslation: PrintableAsTree, CustomStringConvertible {
 				errorMap.append(newEntry)
 			}
 		}
+
+		return currentEndPosition
 	}
 
 	/// Goes through the translation subtree looking for the given suffix. If it is found, it is
@@ -196,38 +200,25 @@ struct TranslationUnit: PrintableAsTree, CustomStringConvertible {
 	}
 }
 
-internal class SourceFilePosition {
-	var lineNumber: Int
-	var columnNumber: Int
-
-	public init() {
-		self.lineNumber = 1
-		self.columnNumber = 1
-	}
-
-	private init(lineNumber: Int, columnNumber: Int) {
-		self.lineNumber = lineNumber
-		self.columnNumber = columnNumber
-	}
-
+extension SourceFilePosition {
 	// Note: ensuring new lines only happen at the end of strings (i.e. all strings already come
 	// separated by new lines) could make this more performant.
-	func updateWithString(_ string: String) {
+	/// Move this position forward to the end of the given string, updating the line and column
+	/// numbers accordingly.
+	func updated(withString string: String) -> SourceFilePosition {
 		let newLines = string.occurrences(of: "\n").count
 		if newLines > 0 {
-			self.lineNumber += newLines
+			let newLine = self.line + newLines
 			let lastLineContents = string.split(
 				withStringSeparator: "\n",
 				omittingEmptySubsequences: false).last!
-			self.columnNumber = lastLineContents.count + 1
+			let newColumn = lastLineContents.count + 1
+			return SourceFilePosition(line: newLine, column: newColumn)
 		}
 		else {
-			self.columnNumber += string.count
+			let newColumn = self.column + string.count
+			return SourceFilePosition(line: self.line, column: newColumn)
 		}
-	}
-
-	func copy() -> SourceFilePosition {
-		return SourceFilePosition(lineNumber: self.lineNumber, columnNumber: self.columnNumber)
 	}
 }
 
