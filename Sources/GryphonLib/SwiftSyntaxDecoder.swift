@@ -135,7 +135,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					expression = nil
 				}
 
-
 				let annotatedType: String?
 				if let typeAnnotation = patternBinding.typeAnnotation?.type {
 					annotatedType = try convertType(typeAnnotation)
@@ -163,6 +162,14 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				throw GryphonError(
 					errorMessage: "Failed to convert variable declaration: unknown pattern " +
 					"binding.")
+			}
+		}
+
+		// Propagate the type annotations: `let x, y: Double` becomes `val x; val y: Double`, but it
+		// needs to be `val x: Double; val y: Double`.
+		if result.count > 1, let lastTypeAnnotation = result.last?.typeAnnotation {
+			for declaration in result {
+				declaration.typeAnnotation = declaration.typeAnnotation ?? lastTypeAnnotation
 			}
 		}
 
