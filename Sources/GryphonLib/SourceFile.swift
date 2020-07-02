@@ -319,7 +319,7 @@ private struct SourceFilePositionMap { // gryphon ignore
 		var lineNumber = 1
 		while lineNumber < map.count {
 			let nextOffset = map[lineNumber]
-			if nextOffset >= offset {
+			if nextOffset > offset {
 				let currentLineOffset = map[lineNumber - 1]
 
 				// lineNumber will have passed the line (+1) but it'll also be a 0-based index (-1)
