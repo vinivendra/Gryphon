@@ -99,7 +99,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				}
 			}
 			else {
-				throw GryphonError(errorMessage: "Failed to convert statement \(statement)")
+				try result.append(errorStatement(
+					forASTNode: Syntax(statement),
+					withMessage: "Unknown top-level statement"))
 			}
 		}
 
@@ -262,6 +264,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		return result
 	}
 
+	// MARK: - Declarations
 	func convertDeclaration(_ declaration: DeclSyntax) throws -> MutableList<Statement> {
 		let result: MutableList<Statement> = convertLeadingComments(fromSyntax: Syntax(declaration))
 
@@ -271,12 +274,14 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			return result
 		}
 
-		throw GryphonError(errorMessage: "Failed to convert declaration \(declaration)")
+		return try [errorStatement(
+			forASTNode: Syntax(declaration),
+			withMessage: "Unknown declaration"), ]
 	}
 
 	func convertVariableDeclaration(
 		_ variableDeclaration: VariableDeclSyntax)
-		throws -> MutableList<VariableDeclaration>
+		throws -> MutableList<Statement>
 	{
 		let isLet = (variableDeclaration.letOrVarKeyword.text == "let")
 		let annotations: MutableList<String> = MutableList(variableDeclaration.modifiers?.compactMap {
@@ -284,6 +289,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		} ?? [])
 
 		let result: MutableList<VariableDeclaration> = []
+		let errors: MutableList<Statement> = []
 
 		let patternBindingList: PatternBindingListSyntax = variableDeclaration.bindings
 		for patternBinding in patternBindingList {
@@ -322,9 +328,11 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					annotations: annotations))
 			}
 			else {
-				throw GryphonError(
-					errorMessage: "Failed to convert variable declaration: unknown pattern " +
-					"binding.")
+				try errors.append(
+					errorStatement(
+						forASTNode: Syntax(patternBinding),
+						withMessage: "Failed to convert variable declaration: unknown pattern " +
+						"binding"))
 			}
 		}
 
@@ -336,8 +344,12 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			}
 		}
 
-		return result
+		let resultStatements = result.forceCast(to: MutableList<Statement>.self)
+		resultStatements.append(contentsOf: errors)
+		return resultStatements
 	}
+
+	// MARK: - Statement expressions
 
 	func shouldConvertToStatement(_ expression: ExprSyntax) -> Bool {
 		if expression.is(SequenceExprSyntax.self) {
@@ -352,7 +364,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			return try convertSequenceExpression(sequenceExpression)
 		}
 
-		throw GryphonError(errorMessage: "Failed to convert expression to statement: \(expression)")
+		// Should never be reached because we only call this method with known statements checked
+		// with `shouldConvertToStatement`.
+		return try errorStatement(forASTNode: Syntax(expression), withMessage: "Unknown statement")
 	}
 
 	func convertSequenceExpression(
@@ -374,9 +388,14 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				rightHand: translatedRightExpression)
 		}
 
-		throw GryphonError(errorMessage: "Failed to convert sequence expression: " +
-			"\(sequenceExpression)")
+
+
+		return try errorStatement(
+			forASTNode: Syntax(sequenceExpression),
+			withMessage: "Failed to convert sequence expression")
 	}
+
+	// MARK: - Expressions
 
 	func convertExpression(_ expression: ExprSyntax) throws -> Expression {
 		if let stringLiteralExpression = expression.as(StringLiteralExprSyntax.self) {
@@ -395,7 +414,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			return try convertNilLiteralExpression(nilLiteralExpression)
 		}
 
-		throw GryphonError(errorMessage: "Failed to convert expression: \(expression)")
+		return try errorExpression(
+			forASTNode: Syntax(expression),
+			withMessage: "Unknown expression")
 	}
 
 	func convertNilLiteralExpression(
@@ -483,8 +504,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				value: intValue)
 		}
 
-		throw GryphonError(errorMessage: "Failed to convert integer literal expression: " +
-			"\(integerLiteralExpression)")
+		return try errorExpression(
+			forASTNode: Syntax(integerLiteralExpression),
+			withMessage: "Failed to convert integer literal expression")
 	}
 
 	func convertStringLiteralExpression(
@@ -534,14 +556,17 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				}
 			}
 
-			throw GryphonError(errorMessage: "Unrecognized expression in string literal " +
-				"interpolation: \(stringLiteralExpression)")
+			return try errorExpression(
+				forASTNode: Syntax(stringLiteralExpression),
+				withMessage: "Unrecognized expression in string literal interpolation")
 		}
 
 		return InterpolatedStringLiteralExpression(
 			range: range,
 			expressions: expressions)
 	}
+
+	// MARK: - Helper methods
 
 	func convertType(_ typeSyntax: TypeSyntax) throws -> String {
 		if let text = typeSyntax.getText() {
@@ -551,9 +576,48 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			return try convertType(optionalType.wrappedType) + "?"
 		}
 
-		throw GryphonError(errorMessage: "Unknown type: \(typeSyntax)")
+		try Compiler.handleError(
+			message: "Unknown type",
+			ast: typeSyntax.toPrintableTree(),
+			sourceFile: sourceFile,
+			sourceFileRange: typeSyntax.getRange(inFile: sourceFile))
+		return "<<Error>>"
+	}
+
+	func errorStatement(
+		forASTNode ast: Syntax,
+		withMessage errorMessage: String)
+		throws -> ErrorStatement
+	{
+		let message = "Failed to turn SwiftSyntax node into Gryphon AST: " + errorMessage + "."
+		let range = try? ast.getRange(inFile: sourceFile)
+
+		try Compiler.handleError(
+			message: message,
+			ast: ast.toPrintableTree(),
+			sourceFile: sourceFile,
+			sourceFileRange: range)
+		return ErrorStatement(range: range)
+	}
+
+	func errorExpression(
+		forASTNode ast: Syntax,
+		withMessage errorMessage: String)
+		throws -> ErrorExpression
+	{
+		let message = "Failed to turn SwiftSyntax node into Gryphon AST: " + errorMessage + "."
+		let range = try? ast.getRange(inFile: sourceFile)
+
+		try Compiler.handleError(
+			message: message,
+			ast: ast.toPrintableTree(),
+			sourceFile: sourceFile,
+			sourceFileRange: range)
+		return ErrorExpression(range: range)
 	}
 }
+
+// MARK: - Helper extensions
 
 extension SyntaxProtocol {
 	func getText() -> String? {
