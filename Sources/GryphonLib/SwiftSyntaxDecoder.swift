@@ -206,7 +206,10 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 					// TODO: Remove the `//` added by the KotlinTranslator so we don't have to do
 					// it here
-					let cleanComment = String(comment.dropFirst(3))
+					let commentContents = String(comment.dropFirst(2))
+					let cleanComment = String(commentContents.drop(while: {
+						$0 == " " || $0 == "\t"
+					}))
 
 					if let insertComment = SourceFile.getTranslationCommentFromString(cleanComment),
 						let commentValue = insertComment.value
@@ -248,7 +251,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					else {
 						result.append(CommentStatement(
 							range: commentRange,
-							value: cleanComment))
+							value: commentContents))
 					}
 				}
 			
