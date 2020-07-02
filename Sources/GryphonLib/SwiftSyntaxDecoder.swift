@@ -104,11 +104,40 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			outputFileMap: [:])
 	}
 
-	func convertDeclaration(_ declaration: DeclSyntax) throws -> MutableList<Statement> {
-		if let declaration = declaration.as(VariableDeclSyntax.self) {
-			return try convertVariableDeclaration(declaration)
-				.forceCast(to: MutableList<Statement>.self)
+	func convertLeadingComments(fromSyntax syntax: Syntax) -> MutableList<Statement> {
+		let result: MutableList<Statement> = []
+
+		if let leadingTrivia = syntax.leadingTrivia {
+			var startOffset = syntax.position.utf8Offset
+			for trivia in leadingTrivia {
+				let endOffset = startOffset + trivia.sourceLength.utf8Length
+				if case let .lineComment(comment) = trivia {
+					// TODO: Remove the `// ` added by the KotlinTranslator so we don't have to do
+					// it here
+					let cleanComment = String(comment.dropFirst(3))
+					result.append(CommentStatement(
+						range: SourceFileRange.getRange(
+							withStartOffset: startOffset,
+							withEndOffset: endOffset - 1, // Inclusive end
+							inFile: self.sourceFile),
+						value: cleanComment))
+				}
+				startOffset = endOffset
+			}
 		}
+
+		return result
+	}
+
+	func convertDeclaration(_ declaration: DeclSyntax) throws -> MutableList<Statement> {
+		let result: MutableList<Statement> = convertLeadingComments(fromSyntax: Syntax(declaration))
+
+		if let variableDeclaration = declaration.as(VariableDeclSyntax.self) {
+			try result.append(contentsOf: convertVariableDeclaration(variableDeclaration)
+				.forceCast(to: MutableList<Statement>.self))
+			return result
+		}
+
 		throw GryphonError(errorMessage: "Failed to convert declaration \(declaration)")
 	}
 
