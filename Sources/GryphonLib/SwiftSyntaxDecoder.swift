@@ -26,9 +26,15 @@ import SwiftSyntax
 import SourceKittenFramework
 
 public class SwiftSyntaxDecoder: SyntaxVisitor {
+	/// The source file to be translated
 	let sourceFile: SourceFile
+	/// The tree to be translated, obtained from SwiftSyntax
 	let syntaxTree: SourceFileSyntax
+	/// A list of types associated with source ranges, obtained from SourceKit
 	let expressionTypes: List<ExpressionType>
+	/// The map that relates each type of output to the path to the file in which to write that
+	/// output
+	var outputFileMap: MutableMap<FileExtension, String> = [:]
 
 	init(filePath: String) throws {
 		// Call SourceKitten to get the types
@@ -112,16 +118,59 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			for trivia in leadingTrivia {
 				let endOffset = startOffset + trivia.sourceLength.utf8Length
 				if case let .lineComment(comment) = trivia {
-					// TODO: Remove the `// ` added by the KotlinTranslator so we don't have to do
+					let commentRange = SourceFileRange.getRange(
+						withStartOffset: startOffset,
+						withEndOffset: endOffset - 1, // Inclusive end
+						inFile: self.sourceFile)
+
+					// TODO: Remove the `//` added by the KotlinTranslator so we don't have to do
 					// it here
 					let cleanComment = String(comment.dropFirst(3))
-					result.append(CommentStatement(
-						range: SourceFileRange.getRange(
-							withStartOffset: startOffset,
-							withEndOffset: endOffset - 1, // Inclusive end
-							inFile: self.sourceFile),
-						value: cleanComment))
+
+					if let insertComment = SourceFile.getTranslationCommentFromString(cleanComment),
+						let commentValue = insertComment.value
+					{
+						if insertComment.key == .insertInMain {
+							result.append(ExpressionStatement(
+								range: commentRange,
+								expression: LiteralCodeExpression(
+									range: commentRange,
+									string: commentValue,
+									shouldGoToMainFunction: true)))
+						}
+						else if insertComment.key == .insert {
+							result.append(ExpressionStatement(
+								range: commentRange,
+								expression: LiteralCodeExpression(
+									range: commentRange,
+									string: commentValue,
+									shouldGoToMainFunction: false)))
+						}
+						else if insertComment.key == .output {
+							if let fileExtension = Utilities.getExtension(of: commentValue),
+								(fileExtension == .swiftAST ||
+								 fileExtension == .gryphonASTRaw ||
+								 fileExtension == .gryphonAST ||
+								 fileExtension == .kt)
+							{
+								outputFileMap[fileExtension] = insertComment.value
+							}
+							else {
+								Compiler.handleWarning(
+									message: "Unsupported output file extension in " +
+										"\"\(commentValue)\". Did you mean to use \".kt\"?",
+									sourceFile: sourceFile,
+									sourceFileRange: commentRange)
+							}
+						}
+					}
+					else {
+						result.append(CommentStatement(
+							range: commentRange,
+							value: cleanComment))
+					}
 				}
+			
 				startOffset = endOffset
 			}
 		}

@@ -136,6 +136,15 @@ extension SourceFile {
 
 		let comment = lineComponents[1]
 
+		return SourceFile.getTranslationCommentFromString(comment)
+	}
+
+	/// Returns a keyed comment in the given string, or `nil` if the existing comment isn't keyed).
+	/// Expects the string to not include the initial `// `.
+	public static func getTranslationCommentFromString(
+		_ comment: String)
+		-> SourceFile.TranslationComment?
+	{
 		// Make sure it's a gryphon comment
 		guard comment.hasPrefix("gryphon ") else {
 			return nil
