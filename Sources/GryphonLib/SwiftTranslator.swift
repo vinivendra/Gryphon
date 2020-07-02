@@ -58,7 +58,11 @@ public class SwiftTranslator {
 		sourceFile = SourceFile(path: filePath, contents: contents)
 
 		let fileRange = sourceFile.map {
-			SourceFileRange(lineStart: 0, lineEnd: $0.numberOfLines, columnStart: 0, columnEnd: 0)
+			SourceFileRange(
+				lineStart: 0,
+				lineEnd: $0.numberOfLines,
+				columnStart: 0,
+				columnEnd: 0)
 		}
 		let translatedSubtrees = try translateSubtrees(
 			ast.subtrees,

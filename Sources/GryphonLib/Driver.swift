@@ -286,7 +286,7 @@ public class Driver {
 		}
 
 		Compiler.logStart("🧑‍💻  Processing SwiftSyntax for \(inputFileRelativePath)...")
-		let decoder = SwiftSyntaxDecoder(filePath: inputFilePath)
+		let decoder = try SwiftSyntaxDecoder(filePath: inputFilePath)
 		let toTree = SwiftSyntaxToPrintableTreeVisitor()
 		let tree = toTree.convertToPrintableTree(decoder.syntaxTree)
 		tree.prettyPrint()

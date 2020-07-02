@@ -327,7 +327,7 @@ internal class CompilerIssue {
 					"<<Unable to get line \(sourceFileRange.lineStart) in file \(absolutePath)>>"
 
 				var underlineString = ""
-				if sourceFileRange.columnEnd < sourceFileString.count {
+				if sourceFileRange.columnEnd <= sourceFileString.count {
 					for i in 1..<sourceFileRange.columnStart {
 						let sourceFileCharacter = sourceFileString[
 							sourceFileString.index(sourceFileString.startIndex, offsetBy: i - 1)]
@@ -340,7 +340,7 @@ internal class CompilerIssue {
 					}
 					underlineString += "^"
 					if sourceFileRange.columnStart < sourceFileRange.columnEnd {
-						for _ in (sourceFileRange.columnStart + 1)..<sourceFileRange.columnEnd {
+						for _ in sourceFileRange.columnStart..<sourceFileRange.columnEnd {
 							underlineString += "~"
 						}
 					}

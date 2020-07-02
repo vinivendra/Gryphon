@@ -85,7 +85,7 @@ public class KotlinTranslation: PrintableAsTree, CustomStringConvertible {
 	public func resolveTranslation() -> KotlinTranslationResult {
 		let translationResult: MutableList<String> = []
 		let errorMap: MutableList<String> = []
-		resolveTranslationInto(translationResult: translationResult, errorMap: errorMap)
+		_ = resolveTranslationInto(translationResult: translationResult, errorMap: errorMap)
 		return KotlinTranslationResult(
 			translation: translationResult.joined(),
 			errorMap: errorMap.joined(separator: "\n"))
@@ -118,8 +118,8 @@ public class KotlinTranslation: PrintableAsTree, CustomStringConvertible {
 		if let swiftRange = swiftRange {
 			let newEntry = "\(startPosition.line):\(startPosition.column):" +
 				"\(currentEndPosition.line):\(currentEndPosition.column):" +
-				"\(swiftRange.lineStart):\(swiftRange.columnStart):" +
-				"\(swiftRange.lineEnd):\(swiftRange.columnEnd)"
+				"\(swiftRange.start.line):\(swiftRange.start.column):" +
+				"\(swiftRange.end.line):\(swiftRange.end.column)"
 			let lastEntry = errorMap.last
 			if lastEntry == nil || lastEntry! != newEntry {
 				errorMap.append(newEntry)

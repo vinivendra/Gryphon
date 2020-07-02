@@ -25,10 +25,12 @@ import Foundation
 
 public class SourceFile {
 	public var path: String
-	private let lines: List<Substring>
+	public let contents: String
+	public let lines: List<Substring>
 
 	public init(path: String, contents: String) {
 		self.path = path
+		self.contents = contents
 		self.lines = List<Substring>(
 			contents.split(separator: "\n", omittingEmptySubsequences: false))
 	}
@@ -101,15 +103,19 @@ extension SourceFile {
 			return nil
 		}
 
+		// TODO: Fix this UTF16 offset
 		// Get the comment's range
 		let columnStartIndex = line.occurrences(of: "//").first!.lowerBound
-		let columnStartInt = columnStartIndex.utf16Offset(in: line) // gryphon value: columnStartIndex
+		let columnStartInt =
+			columnStartIndex.utf16Offset(in: line) // gryphon value: columnStartIndex
 
 		let range = SourceFileRange(
-			lineStart: lineNumber,
-			lineEnd: lineNumber,
-			columnStart: columnStartInt,
-			columnEnd: line.count)
+			start: SourceFilePosition(
+				line: lineNumber,
+				column: columnStartInt),
+			end: SourceFilePosition(
+				line: lineNumber,
+				column: line.count))
 
 		return SourceFile.CommonComment(contents: lineComponents[1], range: range)
 	}
@@ -164,6 +170,10 @@ extension SourceFile {
 	}
 }
 
+/// Lines and columns are counted from `1` (i.e. the first line in a file is line number `1` and the
+/// first character in that line is the character in column number `1`). Newlines show up at the end
+/// of each line (e.g. a newline dividing line `1` from line `2` is at
+/// `SourceFilePosition(line: 1, column: line1.count)`.
 public struct SourceFilePosition: Hashable, CustomStringConvertible {
 	let line: Int
 	let column: Int
@@ -175,11 +185,32 @@ public struct SourceFilePosition: Hashable, CustomStringConvertible {
 	public static let beginningOfFile = SourceFilePosition(line: 1, column: 1)
 }
 
+/// Both start and end positions are inlusive in the range (i.e. `[start, end]`)
 public struct SourceFileRange: Equatable, Hashable, CustomStringConvertible {
-	let lineStart: Int
-	let lineEnd: Int
-	let columnStart: Int
-	let columnEnd: Int
+	let start: SourceFilePosition
+	let end: SourceFilePosition
+
+	// TODO: Remove this later
+	var lineStart: Int {
+		get {
+			return start.line
+		}
+	}
+	var lineEnd: Int {
+		get {
+			return end.line
+		}
+	}
+	var columnStart: Int {
+		get {
+			return start.column
+		}
+	}
+	var columnEnd: Int {
+		get {
+			return end.column
+		}
+	}
 
 	/// This is technically incorrect but allows AST nodes with ranges to get an automatic Equatable
 	/// conformance that ignores ranges, which is useful since we're frequently comparing nodes
@@ -197,51 +228,105 @@ public struct SourceFileRange: Equatable, Hashable, CustomStringConvertible {
 	}
 
 	public var description: String {
-		return "\(lineStart):\(columnStart) - \(lineEnd):\(columnEnd)"
+		return "\(start) - \(end)"
+	}
+
+	public static func getRange(
+		withStartOffset startOffset: Int,
+		withEndOffset endOffset: Int,
+		inFile sourceFile: SourceFile)
+		-> SourceFileRange
+	{
+		return SourceFilePositionMap.getRange(
+			withStartOffset: startOffset,
+			withEndOffset: endOffset,
+			inFile: sourceFile)
+	}
+
+	init(
+		start: SourceFilePosition,
+		end: SourceFilePosition)
+	{
+		self.start = start
+		self.end = end
+	}
+
+	// TODO: Remove this later
+	init(
+		lineStart: Int,
+		lineEnd: Int,
+		columnStart: Int,
+		columnEnd: Int)
+	{
+		self.start = SourceFilePosition(line: lineStart, column: columnStart)
+		self.end = SourceFilePosition(line: lineEnd, column: columnEnd)
 	}
 }
 
 /// SwiftSyntax reports ranges as utf8 offsets from the start, but source files ranges are stored as
-/// line + column combos. The mapping from offsets to lines is done by storing the offset at which
-/// each line begins (e.g. line 0 starts at offset 0, line 1 starts at 10, line 2 starts at 15,
-/// etc.).
-private struct SourceFileLineMap { // gryphon ignore
-	///
+/// line + column combos. The mapping from offsets to lines is done by storing the offset of the
+/// first character in each line (e.g. the first character in line `1` has offset `0`, the one in
+/// line `2` may have offset `10`, the one in line `3` may have offest `15`, etc.).
+private struct SourceFilePositionMap { // gryphon ignore
+	/// Cache that uses the paths of source files as indices and returns the offset-line map for
+	/// that file, if any.
+	private static let mapsCache: MutableMap<String, SourceFilePositionMap> = [:]
+
+	/// Contains the offsets corresponding to the start of each line. The element at `0` is the
+	/// offset of the first character of line `1`, etc.
 	private let map: List<Int>
 
-	init(sourceFileContents contents: String) {
+	init(sourceFile: SourceFile) {
 		let result: MutableList<Int> = [0]
-		var currentOffset = 1
-		let newLine = UTF8.CodeUnit("\n")!
+		var accumulatedOffset = 0
 
-		for character in contents.utf8 {
-			if character == newLine {
-				result.append(currentOffset)
-			}
-
-			currentOffset += 1
+		for line in sourceFile.lines {
+			accumulatedOffset += line.utf8.count + 1 // Add the newline character
+			result.append(accumulatedOffset)
 		}
 
 		self.map = result
 	}
 
+	static func getRange(
+		withStartOffset startOffset: Int,
+		withEndOffset endOffset: Int,
+		inFile sourceFile: SourceFile)
+		-> SourceFileRange
+	{
+		if let cachedMap = mapsCache[sourceFile.path] {
+			let startPosition = cachedMap.getPosition(ofOffset: startOffset)
+			let endPosition = cachedMap.getPosition(ofOffset: endOffset)
+			return SourceFileRange(start: startPosition, end: endPosition)
+		}
+		else {
+			let newMap = SourceFilePositionMap(sourceFile: sourceFile)
+			mapsCache[sourceFile.path] = newMap
+			let startPosition = newMap.getPosition(ofOffset: startOffset)
+			let endPosition = newMap.getPosition(ofOffset: endOffset)
+			return SourceFileRange(start: startPosition, end: endPosition)
+		}
+	}
+
 	/// Get the number of the line that contains the character represented by this offset, and the
-	/// column of the character in that line. Lines and columns begin counting at `1`. Newlines are
-	/// counted as being part of the preceding line.
-	func getLineAndColumn(ofOffset offset: Int) -> SourceFilePosition {
+	/// column of the character in that line. Lines and columns for `SourceFilePosition`s begin
+	/// counting at `1`, and newlines are counted as being part of the preceding line.
+	private func getPosition(ofOffset offset: Int) -> SourceFilePosition {
 		guard offset != 0 else {
 			return SourceFilePosition.beginningOfFile
 		}
 
 		var lineNumber = 1
 		while lineNumber < map.count {
-			let lineOffset = map[lineNumber]
-			if lineOffset >= offset {
-				let previousLineOffset = map[lineNumber - 1]
+			let nextOffset = map[lineNumber]
+			if nextOffset >= offset {
+				let currentLineOffset = map[lineNumber - 1]
 
 				// lineNumber will have passed the line (+1) but it'll also be a 0-based index (-1)
 				let line = lineNumber
-				let column = offset - previousLineOffset
+				// currentLineOffset is the index of the first character, which also has to be
+				// counted (+1)
+				let column = offset - currentLineOffset + 1
 				return SourceFilePosition(line: line, column: column)
 			}
 			lineNumber += 1

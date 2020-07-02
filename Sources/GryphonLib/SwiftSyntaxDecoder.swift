@@ -26,11 +26,11 @@ import SwiftSyntax
 import SourceKittenFramework
 
 public class SwiftSyntaxDecoder: SyntaxVisitor {
-	let filePath: String
+	let sourceFile: SourceFile
 	let syntaxTree: SourceFileSyntax
 	let expressionTypes: List<ExpressionType>
 
-	init(filePath: String) {
+	init(filePath: String) throws {
 		// Call SourceKitten to get the types
 		// TODO: Improve this yaml. SDK paths? Absolute/relative file paths?
 		let absolutePath = Utilities.getAbsoultePath(forFile: filePath)
@@ -57,10 +57,11 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		})
 
 		// Call SwiftSyntax to get the tree
-		let tree = try! SyntaxParser.parse(URL(fileURLWithPath: filePath))
+		let tree = try SyntaxParser.parse(URL(fileURLWithPath: filePath))
 
 		// Initialize the properties
-		self.filePath = filePath
+		// TODO: Check if these file readings aren't redundant
+		self.sourceFile = try SourceFile(path: filePath, contents: Utilities.readFile(filePath))
 		self.expressionTypes = typeList
 		self.syntaxTree = tree
 	}
@@ -87,7 +88,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				}
 				else {
 					try statements.append(ExpressionStatement(
-						range: SourceFileRange(expression),
+						range: expression.getRange(inFile: self.sourceFile),
 						expression: convertExpression(expression)))
 				}
 			}
@@ -143,8 +144,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					annotatedType = expression?.swiftType
 				}
 
-				result.append(VariableDeclaration(
-					range: SourceFileRange(variableDeclaration),
+				try result.append(VariableDeclaration(
+					range: variableDeclaration.getRange(inFile: self.sourceFile),
 					identifier: identifier,
 					typeAnnotation: annotatedType,
 					expression: expression,
@@ -205,8 +206,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		{
 			let translatedLeftExpression = try convertExpression(leftExpression)
 			let translatedRightExpression = try convertExpression(rightExpression)
-			return AssignmentStatement(
-				range: SourceFileRange(sequenceExpression),
+			return try AssignmentStatement(
+				range: sequenceExpression.getRange(inFile: self.sourceFile),
 				leftHand: translatedLeftExpression,
 				rightHand: translatedRightExpression)
 		}
@@ -239,7 +240,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		_ nilLiteralExpression: NilLiteralExprSyntax)
 		throws -> Expression
 	{
-		return NilLiteralExpression(range: SourceFileRange(nilLiteralExpression))
+		return try NilLiteralExpression(range: nilLiteralExpression.getRange(inFile: self.sourceFile))
 	}
 
 	func convertFunctionCallExpression(
@@ -257,8 +258,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		{
 			let functionExpressionTranslation = try convertExpression(functionExpression)
 			let tupleExpression = try convertTupleExpressionElementList(tupleExpressionElements)
-			return CallExpression(
-				range: SourceFileRange(functionCallExpression),
+			return try CallExpression(
+				range: functionCallExpression.getRange(inFile: self.sourceFile),
 				function: functionExpressionTranslation,
 				parameters: tupleExpression,
 				typeName: functionCallExpression.getType(fromList: self.expressionTypes))
@@ -282,8 +283,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			pairs.append(LabeledExpression(label: label, expression: translatedExpression))
 		}
 
-		return TupleExpression(
-			range: SourceFileRange(tupleExprElementListSyntax),
+		return try TupleExpression(
+			range: tupleExprElementListSyntax.getRange(inFile: self.sourceFile),
 			pairs: pairs)
 	}
 
@@ -292,8 +293,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		throws -> Expression
 	{
 		// TODO: DeclRef should have optional type
-		return DeclarationReferenceExpression(
-			range: SourceFileRange(identifierExpression),
+		return try DeclarationReferenceExpression(
+			range: identifierExpression.getRange(inFile: self.sourceFile),
 			identifier: identifierExpression.identifier.text,
 			typeName: identifierExpression.getType(fromList: self.expressionTypes) ?? "",
 			isStandardLibrary: false,
@@ -308,15 +309,15 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			if typeName == "Double",
 				let doubleValue = Double(integerLiteralExpression.digits.text)
 			{
-				return LiteralDoubleExpression(
-					range: SourceFileRange(integerLiteralExpression),
+				return try LiteralDoubleExpression(
+					range: integerLiteralExpression.getRange(inFile: self.sourceFile),
 					value: doubleValue)
 			}
 		}
 
 		if let intValue = Int64(integerLiteralExpression.digits.text) {
-			return LiteralIntExpression(
-				range: SourceFileRange(integerLiteralExpression),
+			return try LiteralIntExpression(
+				range: integerLiteralExpression.getRange(inFile: self.sourceFile),
 				value: intValue)
 		}
 
@@ -328,7 +329,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		_ stringLiteralExpression: StringLiteralExprSyntax)
 		throws -> Expression
 	{
-		let range = SourceFileRange(stringLiteralExpression)
+		let range = try stringLiteralExpression.getRange(inFile: self.sourceFile)
 
 		// If it's a string literal
 		if stringLiteralExpression.segments.count == 1,
@@ -346,8 +347,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			if let stringSegment = segment.as(StringSegmentSyntax.self),
 				let text = stringSegment.getText()
 			{
-				expressions.append(LiteralStringExpression(
-					range: SourceFileRange(stringSegment),
+				try expressions.append(LiteralStringExpression(
+					range: stringSegment.getRange(inFile: self.sourceFile),
 					value: text,
 					isMultiline: false))
 				continue
@@ -404,20 +405,19 @@ extension SyntaxProtocol {
 	}
 }
 
-extension SourceFileRange {
-	// TODO: Implement this init so it creates a correct range (or refactor the data structure, etc)
-	init<SyntaxType: SyntaxProtocol>(_ syntax: SyntaxType) {
-		let position = syntax.positionAfterSkippingLeadingTrivia.utf8Offset
-		let length = syntax.contentLength.utf8Length
-		self.init(
-			lineStart: position,
-			lineEnd: position + length,
-			columnStart: 1,
-			columnEnd: 1)
-	}
-}
-
 private extension SyntaxProtocol {
+	func getRange(inFile filePath: SourceFile) throws -> SourceFileRange? {
+		let startOffset = self.positionAfterSkippingLeadingTrivia.utf8Offset
+		let length = self.contentLength.utf8Length
+
+		// The end in a source file range is inclusive (-1)
+		let endOffset = startOffset + length - 1
+		return SourceFileRange.getRange(
+			withStartOffset: startOffset,
+			withEndOffset: endOffset,
+			inFile: filePath)
+	}
+
 	func getType(fromList list: List<SwiftSyntaxDecoder.ExpressionType>) -> String? {
 		for expressionType in list {
 			if self.positionAfterSkippingLeadingTrivia.utf8Offset == expressionType.offset,
