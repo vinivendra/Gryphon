@@ -288,6 +288,8 @@ public class Driver {
 			return [] // gryphon value: listOf<Any>()
 		}
 
+		let isMainFile = (inputFilePath == settings.mainFilePath)
+
 		let swiftAST: PrintableAsTree
 		let gryphonRawAST: GryphonAST
 		if settings.shouldUseSwiftSyntax {
@@ -298,7 +300,7 @@ public class Driver {
 			Compiler.logEnd("✅  Done processing SwiftSyntax for \(inputFileRelativePath).")
 
 			Compiler.logStart("🧑‍💻  Converting SwiftSyntax for \(inputFileRelativePath)...")
-			gryphonRawAST = try! decoder.convertToGryphonAST()
+			gryphonRawAST = try! decoder.convertToGryphonAST(asMainFile: isMainFile)
 			Compiler.logEnd("✅  Done converting SwiftSyntax for \(inputFileRelativePath).")
 		}
 		else {
@@ -332,8 +334,6 @@ public class Driver {
 
 				return swiftAST
 			}
-
-			let isMainFile = (inputFilePath == settings.mainFilePath)
 
 			Compiler.logStart("🧑‍💻  Generating the raw AST for \(inputFileRelativePath)...")
 			gryphonRawAST = try Compiler.generateGryphonRawAST(

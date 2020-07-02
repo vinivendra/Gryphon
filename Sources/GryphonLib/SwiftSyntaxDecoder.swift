@@ -78,22 +78,22 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let typeName: String
 	}
 
-	func convertToGryphonAST() throws -> GryphonAST {
-		let statements: MutableList<Statement> = []
+	func convertToGryphonAST(asMainFile isMainFile: Bool) throws -> GryphonAST {
+		let result: MutableList<Statement> = []
 
 		for statement in self.syntaxTree.statements {
 			let codeBlockItemSyntax: CodeBlockItemSyntax = statement
 			let item: Syntax = codeBlockItemSyntax.item
 
 			if let declaration = item.as(DeclSyntax.self) {
-				try statements.append(contentsOf: convertDeclaration(declaration))
+				try result.append(contentsOf: convertDeclaration(declaration))
 			}
 			else if let expression = item.as(ExprSyntax.self) {
 				if shouldConvertToStatement(expression) {
-					try statements.append(convertExpressionToStatement(expression))
+					try result.append(convertExpressionToStatement(expression))
 				}
 				else {
-					try statements.append(ExpressionStatement(
+					try result.append(ExpressionStatement(
 						range: expression.getRange(inFile: self.sourceFile),
 						expression: convertExpression(expression)))
 				}
@@ -103,11 +103,92 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			}
 		}
 
-		return GryphonAST(
-			sourceFile: nil,
-			declarations: [],
-			statements: statements,
-			outputFileMap: [:])
+		if isMainFile {
+			let declarationsAndStatements = filterStatements(result)
+
+			return GryphonAST(
+				sourceFile: self.sourceFile,
+				declarations: declarationsAndStatements.0,
+				statements: declarationsAndStatements.1,
+				outputFileMap: self.outputFileMap)
+		}
+		else {
+			return GryphonAST(
+				sourceFile: self.sourceFile,
+				declarations: result,
+				statements: [],
+				outputFileMap: self.outputFileMap)
+		}
+	}
+
+	/// Separates declarations from statements for use in a main file. Returns a tuple in the format
+	/// `(declarations, statements)`.
+	func filterStatements(
+		_ allStatements: MutableList<Statement>)
+		-> (MutableList<Statement>, MutableList<Statement>)
+	{
+		let declarations: MutableList<Statement> = []
+		let statements: MutableList<Statement> = []
+
+		var isInTopOfFileComments = true
+		var lastTopOfFileCommentLine = 0
+
+		for statement in allStatements {
+
+			// Special case: comments at the top of the source file (i.e. license comments, etc)
+			// will be put outside of the main function so they're at the top of the source file
+			if isInTopOfFileComments {
+				if let commentStatement = statement as? CommentStatement {
+					if let range = commentStatement.range,
+						lastTopOfFileCommentLine == range.lineStart - 1
+					{
+						lastTopOfFileCommentLine = range.lineEnd
+						declarations.append(statement)
+						continue
+					}
+				}
+
+				isInTopOfFileComments = false
+			}
+
+			// Special case: other comments in main files will be ignored because we can't know if
+			// they're supposed to be in the main function or not
+			if statement is CommentStatement {
+				continue
+			}
+
+			// Special case: expression statements may be literal declarations or normal statements
+			if let expressionStatement = statement as? ExpressionStatement {
+				if let literalCodeExpression =
+						expressionStatement.expression as? LiteralCodeExpression,
+					!literalCodeExpression.shouldGoToMainFunction
+				{
+					declarations.append(statement)
+				}
+				else {
+					statements.append(statement)
+				}
+
+				continue
+			}
+
+			// Common cases: declarations go outside the main function, everything else goes inside.
+			if statement is ProtocolDeclaration ||
+				statement is ClassDeclaration ||
+				statement is StructDeclaration ||
+				statement is ExtensionDeclaration ||
+				statement is FunctionDeclaration ||
+				statement is EnumDeclaration ||
+				statement is TypealiasDeclaration
+			{
+				declarations.append(statement)
+			}
+			else {
+				statements.append(statement)
+			}
+		}
+
+		return (declarations, statements)
 	}
 
 	func convertLeadingComments(fromSyntax syntax: Syntax) -> MutableList<Statement> {
