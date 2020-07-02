@@ -58,6 +58,7 @@ public class Driver {
 		"-emit-kotlin",
 		"-print-ASTs-on-error",
 		"-avoid-unicode",
+		"-swiftSyntax",
 	]
 
 	public struct Settings {
@@ -75,6 +76,8 @@ public class Driver {
 
 		let mainFilePath: String?
 		let xcodeProjectPath: String?
+
+		let shouldUseSwiftSyntax: Bool
 	}
 
 	public struct KotlinTranslation {
@@ -285,54 +288,74 @@ public class Driver {
 			return [] // gryphon value: listOf<Any>()
 		}
 
-		Compiler.logStart("🧑‍💻  Processing SwiftSyntax for \(inputFileRelativePath)...")
-		let decoder = try SwiftSyntaxDecoder(filePath: inputFilePath)
-		let toTree = SwiftSyntaxToPrintableTreeVisitor()
-		let tree = toTree.convertToPrintableTree(decoder.syntaxTree)
-		tree.prettyPrint()
-		let newAst = try! decoder.convertToGryphonAST()
-		newAst.prettyPrint()
-		Compiler.logEnd("✅  Done processing SwiftSyntax for \(inputFileRelativePath).")
+		let swiftAST: PrintableAsTree
+		let gryphonRawAST: GryphonAST
+		if settings.shouldUseSwiftSyntax {
+			Compiler.logStart("🧑‍💻  Processing SwiftSyntax for \(inputFileRelativePath)...")
+			let decoder = try SwiftSyntaxDecoder(filePath: inputFilePath)
+			let printableTreeConverter = SwiftSyntaxToPrintableTreeVisitor()
+			swiftAST = printableTreeConverter.convertToPrintableTree(decoder.syntaxTree)
+			Compiler.logEnd("✅  Done processing SwiftSyntax for \(inputFileRelativePath).")
 
-		Compiler.logStart("🧑‍💻  Reading AST dump file for \(inputFileRelativePath)...")
-		let swiftASTDumpFile = SupportingFile.pathOfSwiftASTDumpFile(
-			forSwiftFile: inputFilePath,
-			swiftVersion: context.swiftVersion)
-
-		let swiftASTDump: String
-		do {
-			swiftASTDump = try Utilities.readFile(swiftASTDumpFile)
+			Compiler.logStart("🧑‍💻  Converting SwiftSyntax for \(inputFileRelativePath)...")
+			gryphonRawAST = try! decoder.convertToGryphonAST()
+			Compiler.logEnd("✅  Done converting SwiftSyntax for \(inputFileRelativePath).")
 		}
-		catch {
-			throw GryphonError(errorMessage:
-				"Error reading the AST for file \(inputFilePath). " +
-				"Running `gryphon init` or `gryphon init <xcode_project>` might fix this issue.")
-		}
-		Compiler.logEnd("✅  Done reading AST dump for \(inputFileRelativePath).")
+		else {
+			Compiler.logStart("🧑‍💻  Reading AST dump file for \(inputFileRelativePath)...")
+			let swiftASTDumpFile = SupportingFile.pathOfSwiftASTDumpFile(
+				forSwiftFile: inputFilePath,
+				swiftVersion: context.swiftVersion)
 
-		Compiler.logStart("🧑‍💻  Generating the Swift AST for \(inputFileRelativePath)...")
-		let swiftAST = try Compiler.generateSwiftAST(fromASTDump: swiftASTDump)
-		Compiler.logEnd("✅  Done generating Swift AST for \(inputFileRelativePath).")
+			let swiftASTDump: String
+			do {
+				swiftASTDump = try Utilities.readFile(swiftASTDumpFile)
+			}
+			catch {
+				throw GryphonError(errorMessage:
+					"Error reading the AST for file \(inputFilePath). " +
+					"Running `gryphon init` or `gryphon init <xcode_project>` might fix this issue.")
+			}
+			Compiler.logEnd("✅  Done reading AST dump for \(inputFileRelativePath).")
 
-		guard settings.shouldGenerateRawAST else {
-			if settings.shouldEmitSwiftAST, !settings.quietModeIsOn {
-				Compiler.log("✍️  Printing Swift AST for \(inputFileRelativePath):")
-				let output = swiftAST.prettyDescription()
-				Compiler.output(output)
+			Compiler.logStart("🧑‍💻  Generating the Swift AST for \(inputFileRelativePath)...")
+			let generatedSwiftAST = try Compiler.generateSwiftAST(fromASTDump: swiftASTDump)
+			swiftAST = generatedSwiftAST
+			Compiler.logEnd("✅  Done generating Swift AST for \(inputFileRelativePath).")
+
+			guard settings.shouldGenerateRawAST else {
+				if settings.shouldEmitSwiftAST, !settings.quietModeIsOn {
+					Compiler.log("✍️  Printing Swift AST for \(inputFileRelativePath):")
+					let output = swiftAST.prettyDescription()
+					Compiler.output(output)
+				}
+
+				return swiftAST
 			}
 
-			return swiftAST
+			let isMainFile = (inputFilePath == settings.mainFilePath)
+
+			Compiler.logStart("🧑‍💻  Generating the raw AST for \(inputFileRelativePath)...")
+			gryphonRawAST = try Compiler.generateGryphonRawAST(
+				fromSwiftAST: generatedSwiftAST,
+				asMainFile: isMainFile,
+				withContext: context)
+			Compiler.logEnd("✅  Done generating raw AST for \(inputFileRelativePath).")
+
+			if settings.shouldEmitSwiftAST {
+				let output = swiftAST.prettyDescription()
+				if let outputFilePath = gryphonRawAST.outputFileMap[.swiftAST],
+					!settings.forcePrintingToConsole
+				{
+					Compiler.log("✍️  Writing Swift AST to file for \(inputFileRelativePath)")
+					try Utilities.createFile(atPath: outputFilePath, containing: output)
+				}
+				else if !settings.quietModeIsOn {
+					Compiler.log("✍️  Printing Swift AST for \(inputFileRelativePath):")
+					Compiler.output(output)
+				}
+			}
 		}
-
-		let isMainFile = (inputFilePath == settings.mainFilePath)
-
-		Compiler.logStart("🧑‍💻  Generating the raw AST for \(inputFileRelativePath)...")
-//		let gryphonRawAST = try Compiler.generateGryphonRawAST(
-//			fromSwiftAST: swiftAST,
-//			asMainFile: isMainFile,
-//			withContext: context)
-		let gryphonRawAST = newAst
-		Compiler.logEnd("✅  Done generating raw ASt for \(inputFileRelativePath).")
 
 		if settings.shouldEmitSwiftAST {
 			let output = swiftAST.prettyDescription()
@@ -558,6 +581,8 @@ public class Driver {
 		//
 		let defaultsToFinal = arguments.contains("--default-final")
 
+		let shouldUseSwiftSyntax = arguments.contains("-swiftSyntax")
+
 		//
 		let maybeXcodeProject = getXcodeProject(inArguments: arguments)
 
@@ -574,7 +599,8 @@ public class Driver {
 			forcePrintingToConsole: forcePrintingToConsole,
 			quietModeIsOn: quietModeIsOn,
 			mainFilePath: mainFilePath,
-			xcodeProjectPath: maybeXcodeProject)
+			xcodeProjectPath: maybeXcodeProject,
+			shouldUseSwiftSyntax: shouldUseSwiftSyntax)
 
 		Compiler.logStart("🔧  Using settings:")
 		Compiler.log("ℹ️  shouldEmitSwiftAST: \(shouldEmitSwiftAST)")
@@ -1522,5 +1548,9 @@ Advanced translation options:
 
       ↪️  -avoid-unicode
             Avoid using Unicode arrows and emojis in some places.
+
+      ↪️  -swiftSyntax
+            Use SwiftSyntax and SourceKit as the frontend instead of the AST
+            dumps.
 """
 }
