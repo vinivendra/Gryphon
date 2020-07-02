@@ -78,19 +78,23 @@ class PerformanceTest: XCTestCase {
 	func testFirstTranspilationPasses() {
 		let tests = TestUtilities.testCases
 
-		let astDumpFilePaths: List<String> = tests.map { testName in
-			let testCasePath = TestUtilities.testCasesPath + testName
+		let testCasePaths = tests.map {
+			TestUtilities.testCasesPath + $0
+		}
+		let astDumpFilePaths: List<String> = testCasePaths.map {
 			return SupportingFile.pathOfSwiftASTDumpFile(
-				forSwiftFile: testCasePath,
+				forSwiftFile: $0,
 				swiftVersion: PerformanceTest.swiftVersion)
 		}
 
 		let rawASTs = try! Compiler.transpileGryphonRawASTs(
+			fromInputFiles: testCasePaths,
 			fromASTDumpFiles: astDumpFilePaths,
 			withContext: TranspilationContext(
 				toolchainName: PerformanceTest.toolchain,
 				indentationString: "\t",
-				defaultsToFinal: false))
+				defaultsToFinal: false),
+			usingSwiftSyntax: true)
 
 		measure {
 			for rawAST in rawASTs {
@@ -113,6 +117,9 @@ class PerformanceTest: XCTestCase {
 		do {
 			let tests = TestUtilities.testCases
 
+			let testCasePaths = tests.map {
+				TestUtilities.testCasesPath + $0
+			}
 			let astDumpFilePaths: List<String> = tests.map { testName in
 				let testCasePath = TestUtilities.testCasesPath + testName
 				return SupportingFile.pathOfSwiftASTDumpFile(
@@ -125,8 +132,10 @@ class PerformanceTest: XCTestCase {
 				indentationString: "\t",
 				defaultsToFinal: false)
 			let semiRawASTs = try! Compiler.transpileGryphonRawASTs(
+				fromInputFiles: testCasePaths,
 				fromASTDumpFiles: astDumpFilePaths,
-				withContext: context)
+				withContext: context,
+				usingSwiftSyntax: false)
 				.map {
 					try! Compiler.generateGryphonASTAfterFirstPasses(
 						fromGryphonRawAST: $0,
@@ -158,6 +167,9 @@ class PerformanceTest: XCTestCase {
 	func testAllTranspilationPasses() {
 		let tests = TestUtilities.testCases
 
+		let testCasePaths = tests.map {
+			TestUtilities.testCasesPath + $0
+		}
 		let astDumpFilePaths: List<String> = tests.map { testName in
 			let testCasePath = TestUtilities.testCasesPath + testName
 			return SupportingFile.pathOfSwiftASTDumpFile(
@@ -166,11 +178,13 @@ class PerformanceTest: XCTestCase {
 		}
 
 		let rawASTs = try! Compiler.transpileGryphonRawASTs(
+			fromInputFiles: testCasePaths,
 			fromASTDumpFiles: astDumpFilePaths,
 			withContext: TranspilationContext(
 				toolchainName: PerformanceTest.toolchain,
 				indentationString: "\t",
-				defaultsToFinal: false))
+				defaultsToFinal: false),
+			usingSwiftSyntax: false)
 
 		measure {
 			for rawAST in rawASTs {
@@ -205,8 +219,10 @@ class PerformanceTest: XCTestCase {
 						indentationString: "\t",
 						defaultsToFinal: false)
 					let ast = try Compiler.transpileGryphonASTs(
+						fromInputFiles: [testCasePath],
 						fromASTDumpFiles: [astDumpFilePath],
-						withContext: context).first!
+						withContext: context,
+						usingSwiftSyntax: false).first!
 					return (ast, context)
 				}
 
@@ -241,11 +257,13 @@ class PerformanceTest: XCTestCase {
 						forSwiftFile: testCasePath,
 						swiftVersion: PerformanceTest.swiftVersion)
 					_ = try Compiler.transpileKotlinCode(
+						fromInputFiles: [testCasePath],
 						fromASTDumpFiles: [astDumpFilePath],
 						withContext: TranspilationContext(
 							toolchainName: PerformanceTest.toolchain,
 							indentationString: "\t",
-							defaultsToFinal: false))
+							defaultsToFinal: false),
+						usingSwiftSyntax: false)
 				}
 				catch let error {
 					XCTFail("🚨 Test failed with error:\n\(error)")

@@ -78,12 +78,15 @@ class AcceptanceTest: XCTestCase {
 						forSwiftFile: testCasePath,
 						swiftVersion: swiftVersion)
 				let defaultsToFinal = testName.hasSuffix("-default-final")
+				let usesSwiftSyntax = TestUtilities.testCasesForSwiftSyntax.contains(testName)
 				let kotlinResults = try Compiler.transpileKotlinCode(
+					fromInputFiles: [testCasePath],
 					fromASTDumpFiles: [astDumpFilePath],
 					withContext: TranspilationContext(
 						toolchainName: nil,
 						indentationString: "\t",
-						defaultsToFinal: defaultsToFinal))
+						defaultsToFinal: defaultsToFinal),
+					usingSwiftSyntax: usesSwiftSyntax)
 				let kotlinCode = kotlinResults[0]
 				let kotlinFilePath = "\(TestUtilities.kotlinBuildFolder)/\(testName).kt"
 				try Utilities.createFile(atPath: kotlinFilePath, containing: kotlinCode)

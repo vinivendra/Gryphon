@@ -74,12 +74,16 @@ class IntegrationTest: XCTestCase {
 							forSwiftFile: testCasePath,
 							swiftVersion: swiftVersion)
 					let defaultsToFinal = testName.hasSuffix("-default-final")
+					let usesSwiftSyntax =
+						TestUtilities.testCasesForSwiftSyntax.contains(testName)
 					let generatedKotlinCode = try Compiler.transpileKotlinCode(
+						fromInputFiles: [testCasePath.withExtension(.swift)],
 						fromASTDumpFiles: [astDumpFilePath],
 						withContext: TranspilationContext(
 							toolchainName: nil,
 							indentationString: "\t",
-							defaultsToFinal: defaultsToFinal)).first!
+							defaultsToFinal: defaultsToFinal),
+						usingSwiftSyntax: usesSwiftSyntax).first!
 
 					// Load the previously stored kotlin code from file
 					let expectedKotlinCode =
@@ -90,9 +94,6 @@ class IntegrationTest: XCTestCase {
 						"Test \(testName): the transpiler failed to produce expected result. " +
 							"Printing diff ('<' means generated, '>' means expected):" +
 							TestUtilities.diff(generatedKotlinCode, expectedKotlinCode))
-				}
-				catch let error {
-					XCTFail("🚨 Test failed with error:\n\(error)")
 				}
 			}
 
@@ -124,16 +125,19 @@ class IntegrationTest: XCTestCase {
 
 			// Generate kotlin code using the whole compiler
 			let testCasePath = TestUtilities.testCasesPath + "warnings"
+			let usesSwiftSyntax = TestUtilities.testCasesForSwiftSyntax.contains("warnings")
 			let astDumpFilePath =
 				SupportingFile.pathOfSwiftASTDumpFile(
 					forSwiftFile: testCasePath,
 					swiftVersion: swiftVersion)
 			_ = try Compiler.transpileKotlinCode(
+				fromInputFiles: [testCasePath],
 				fromASTDumpFiles: [astDumpFilePath],
 				withContext: TranspilationContext(
 					toolchainName: nil,
 					indentationString: "\t",
-					defaultsToFinal: false)).first!
+					defaultsToFinal: false),
+				usingSwiftSyntax: usesSwiftSyntax).first!
 
 			XCTAssert(
 				Compiler.numberOfErrors == 0,

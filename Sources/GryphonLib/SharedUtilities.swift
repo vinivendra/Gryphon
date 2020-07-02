@@ -276,11 +276,13 @@ extension Utilities {
 
 		Compiler.logStart("🧑‍💻  Transpiling and running passes...")
         let astArray = try Compiler.transpileGryphonRawASTs(
+			fromInputFiles: [SupportingFile.gryphonTemplatesLibrary.relativePath],
 			fromASTDumpFiles: [
 				SupportingFile.pathOfSwiftASTDumpFile(
 					forSwiftFile: SupportingFile.gryphonTemplatesLibrary.relativePath,
 					swiftVersion: transpilationContext.swiftVersion), ],
-			withContext: transpilationContext)
+			withContext: transpilationContext,
+			usingSwiftSyntax: false)
 
         let ast = astArray[0]
 		_ = RecordTemplatesTranspilationPass(
