@@ -273,10 +273,95 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				.forceCast(to: MutableList<Statement>.self))
 			return result
 		}
+		if let functionDeclaration = declaration.as(FunctionDeclSyntax.self) {
+			try result.append(convertFunctionDeclaration(functionDeclaration))
+			return result
+		}
 
 		return try [errorStatement(
 			forASTNode: Syntax(declaration),
 			withMessage: "Unknown declaration"), ]
+	}
+
+	func convertFunctionDeclaration(
+		_ functionDeclaration: FunctionDeclSyntax)
+		throws -> Statement
+	{
+		let prefix = functionDeclaration.identifier.text
+
+		let parameters: MutableList<FunctionParameter> = []
+		// Parameter tokens: `firstName` `secondName (optional)` `:` `type`
+		for parameter in functionDeclaration.signature.input.parameterList {
+			if let firstName = parameter.firstName?.text,
+				let typeToken = parameter.children.last,
+				let typeSyntax = typeToken.as(TypeSyntax.self)
+			{
+				// Get the parameter names
+				let label: String
+				let apiLabel: String?
+				if let secondName = parameter.secondName?.text {
+					if firstName == "_" {
+						apiLabel = nil
+					}
+					else {
+						apiLabel = firstName
+					}
+					label = secondName
+				}
+				else {
+					// If there's just one name, it'll the same for implementation and API
+					label = firstName
+					apiLabel = firstName
+				}
+
+				let typeName = try convertType(typeSyntax)
+
+				parameters.append(FunctionParameter(
+					label: label,
+					apiLabel: apiLabel,
+					typeName: typeName,
+					value: nil))
+			}
+			else {
+				try parameters.append(FunctionParameter(
+					label: "<<Error>>",
+					apiLabel: nil,
+					typeName: "<<Error>>",
+					value: errorExpression(
+						forASTNode: Syntax(parameter),
+						withMessage: "Expected parameter to always have a first name and a type.")))
+			}
+		}
+
+		let inputType = "(" + parameters.map { $0.typeName }.joined(separator: ", ") + ")"
+
+		let returnType: String
+		if let returnTypeSyntax = functionDeclaration.signature.output?.returnType {
+			returnType = try convertType(returnTypeSyntax)
+		}
+		else {
+			returnType = "Void"
+		}
+
+		let functionType = inputType + " -> " + returnType
+
+		return FunctionDeclaration(
+			range: try functionDeclaration.getRange(inFile: sourceFile),
+			prefix: prefix,
+			parameters: parameters,
+			returnType: returnType,
+			functionType: functionType,
+			genericTypes: [],
+			isOpen: false,
+			isImplicit: false,
+			isStatic: false,
+			isMutating: false,
+			isPure: false,
+			isJustProtocolInterface: false,
+			extendsType: nil,
+			statements: [],
+			access: nil,
+			annotations: [])
 	}
 
 	func convertVariableDeclaration(

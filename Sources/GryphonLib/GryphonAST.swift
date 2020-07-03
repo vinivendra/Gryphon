@@ -2365,7 +2365,11 @@ public struct LabeledType: Equatable {
 }
 
 public struct FunctionParameter: Equatable {
+	/// The implementation name of the parameter.
 	let label: String
+	/// The name of the parameter used when calling the function. If it's `_` in Swift, it's `nil`
+	/// here. If it's the same as the implementation name (e.g. `f(a: Int)`), it'll be the same
+	/// here.
 	let apiLabel: String?
 	let typeName: String
 	let value: Expression?
