@@ -202,8 +202,14 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		return (declarations, statements)
 	}
 
-	func convertLeadingComments(fromSyntax syntax: Syntax) -> MutableList<Statement> {
+	struct LeadingCommentInformation {
+		let commentStatements: MutableList<Statement>
+		let shouldIgnoreNextStatement: Bool
+	}
+
+	func convertLeadingComments(fromSyntax syntax: Syntax) -> LeadingCommentInformation {
 		let result: MutableList<Statement> = []
+		var shouldIgnoreNextStatement = false
 
 		if let leadingTrivia = syntax.leadingTrivia {
 			var startOffset = syntax.position.utf8Offset
@@ -222,41 +228,46 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 						$0 == " " || $0 == "\t"
 					}))
 
-					if let insertComment = SourceFile.getTranslationCommentFromString(cleanComment),
-						let commentValue = insertComment.value
+					if let insertComment =
+						SourceFile.getTranslationCommentFromString(cleanComment)
 					{
-						if insertComment.key == .insertInMain {
-							result.append(ExpressionStatement(
-								range: commentRange,
-								expression: LiteralCodeExpression(
+						if let commentValue = insertComment.value {
+							if insertComment.key == .insertInMain {
+								result.append(ExpressionStatement(
 									range: commentRange,
-									string: commentValue,
-									shouldGoToMainFunction: true)))
-						}
-						else if insertComment.key == .insert {
-							result.append(ExpressionStatement(
-								range: commentRange,
-								expression: LiteralCodeExpression(
+									expression: LiteralCodeExpression(
+										range: commentRange,
+										string: commentValue,
+										shouldGoToMainFunction: true)))
+							}
+							else if insertComment.key == .insert {
+								result.append(ExpressionStatement(
 									range: commentRange,
-									string: commentValue,
-									shouldGoToMainFunction: false)))
+									expression: LiteralCodeExpression(
+										range: commentRange,
+										string: commentValue,
+										shouldGoToMainFunction: false)))
+							}
+							else if insertComment.key == .output {
+								if let fileExtension = Utilities.getExtension(of: commentValue),
+									(fileExtension == .swiftAST ||
+									 fileExtension == .gryphonASTRaw ||
+									 fileExtension == .gryphonAST ||
+									 fileExtension == .kt)
+								{
+									outputFileMap[fileExtension] = insertComment.value
+								}
+								else {
+									Compiler.handleWarning(
+										message: "Unsupported output file extension in " +
+											"\"\(commentValue)\". Did you mean to use \".kt\"?",
+										sourceFile: sourceFile,
+										sourceFileRange: commentRange)
+								}
+							}
 						}
-						else if insertComment.key == .output {
-							if let fileExtension = Utilities.getExtension(of: commentValue),
-								(fileExtension == .swiftAST ||
-								 fileExtension == .gryphonASTRaw ||
-								 fileExtension == .gryphonAST ||
-								 fileExtension == .kt)
-							{
-								outputFileMap[fileExtension] = insertComment.value
-							}
-							else {
-								Compiler.handleWarning(
-									message: "Unsupported output file extension in " +
-										"\"\(commentValue)\". Did you mean to use \".kt\"?",
-									sourceFile: sourceFile,
-									sourceFileRange: commentRange)
-							}
+						else if insertComment.key == .ignore {
+							shouldIgnoreNextStatement = true
 						}
 					}
 					else {
@@ -270,12 +281,19 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			}
 		}
 
-		return result
+		return LeadingCommentInformation(
+			commentStatements: result,
+			shouldIgnoreNextStatement: shouldIgnoreNextStatement)
 	}
 
 	// MARK: - Statements
 	func convertStatement(_ statement: StmtSyntax) throws -> MutableList<Statement> {
-		let result: MutableList<Statement> = convertLeadingComments(fromSyntax: Syntax(statement))
+		let leadingCommentInformation = convertLeadingComments(fromSyntax: Syntax(statement))
+		let result: MutableList<Statement> = leadingCommentInformation.commentStatements
+
+		if leadingCommentInformation.shouldIgnoreNextStatement {
+			return result
+		}
 
 		if let returnStatement = statement.as(ReturnStmtSyntax.self) {
 			try result.append(convertReturnStatement(returnStatement))
@@ -307,7 +325,12 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 	// MARK: - Declarations
 	func convertDeclaration(_ declaration: DeclSyntax) throws -> MutableList<Statement> {
-		let result: MutableList<Statement> = convertLeadingComments(fromSyntax: Syntax(declaration))
+		let leadingCommentInformation = convertLeadingComments(fromSyntax: Syntax(declaration))
+		let result: MutableList<Statement> = leadingCommentInformation.commentStatements
+
+		if leadingCommentInformation.shouldIgnoreNextStatement {
+			return result
+		}
 
 		if let variableDeclaration = declaration.as(VariableDeclSyntax.self) {
 			try result.append(contentsOf: convertVariableDeclaration(variableDeclaration)
