@@ -324,6 +324,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	}
 
 	// MARK: - Declarations
+
 	func convertDeclaration(_ declaration: DeclSyntax) throws -> MutableList<Statement> {
 		let leadingCommentInformation = convertLeadingComments(fromSyntax: Syntax(declaration))
 		let result: MutableList<Statement> = leadingCommentInformation.commentStatements
@@ -575,6 +576,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let integerLiteralExpression = expression.as(IntegerLiteralExprSyntax.self) {
 			return try convertIntegerLiteralExpression(integerLiteralExpression)
 		}
+		if let booleanLiteralExpression = expression.as(BooleanLiteralExprSyntax.self) {
+			return try convertBooleanLiteralExpression(booleanLiteralExpression)
+		}
 		if let identifierExpression = expression.as(IdentifierExprSyntax.self) {
 			return try convertIdentifierExpression(identifierExpression)
 		}
@@ -595,6 +599,15 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		throws -> Expression
 	{
 		return NilLiteralExpression(range: nilLiteralExpression.getRange(inFile: self.sourceFile))
+	}
+
+	func convertBooleanLiteralExpression(
+		_ booleanLiteralExpression: BooleanLiteralExprSyntax)
+		throws -> Expression
+	{
+		return LiteralBoolExpression(
+			range: booleanLiteralExpression.getRange(inFile: self.sourceFile),
+			value: (booleanLiteralExpression.booleanLiteral.text == "true"))
 	}
 
 	func convertFunctionCallExpression(
