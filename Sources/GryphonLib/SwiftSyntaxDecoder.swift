@@ -79,9 +79,30 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	}
 
 	func convertToGryphonAST(asMainFile isMainFile: Bool) throws -> GryphonAST {
+		let statements = try convertStatements(self.syntaxTree.statements)
+
+		if isMainFile {
+			let declarationsAndStatements = filterStatements(statements)
+
+			return GryphonAST(
+				sourceFile: self.sourceFile,
+				declarations: declarationsAndStatements.0,
+				statements: declarationsAndStatements.1,
+				outputFileMap: self.outputFileMap)
+		}
+		else {
+			return GryphonAST(
+				sourceFile: self.sourceFile,
+				declarations: statements,
+				statements: [],
+				outputFileMap: self.outputFileMap)
+		}
+	}
+
+	func convertStatements(_ statements: CodeBlockItemListSyntax) throws -> MutableList<Statement> {
 		let result: MutableList<Statement> = []
 
-		for statement in self.syntaxTree.statements {
+		for statement in statements {
 			let codeBlockItemSyntax: CodeBlockItemSyntax = statement
 			let item: Syntax = codeBlockItemSyntax.item
 
@@ -105,22 +126,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			}
 		}
 
-		if isMainFile {
-			let declarationsAndStatements = filterStatements(result)
-
-			return GryphonAST(
-				sourceFile: self.sourceFile,
-				declarations: declarationsAndStatements.0,
-				statements: declarationsAndStatements.1,
-				outputFileMap: self.outputFileMap)
-		}
-		else {
-			return GryphonAST(
-				sourceFile: self.sourceFile,
-				declarations: result,
-				statements: [],
-				outputFileMap: self.outputFileMap)
-		}
+		return result
 	}
 
 	/// Separates declarations from statements for use in a main file. Returns a tuple in the format
@@ -345,6 +351,14 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 		let functionType = inputType + " -> " + returnType
 
+		let statements: MutableList<Statement>
+		if let statementsSyntax = functionDeclaration.body?.statements {
+			statements = try convertStatements(statementsSyntax)
+		}
+		else {
+			statements = []
+		}
+
 		return FunctionDeclaration(
 			range: try functionDeclaration.getRange(inFile: sourceFile),
 			prefix: prefix,
@@ -359,7 +373,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			isPure: false,
 			isJustProtocolInterface: false,
 			extendsType: nil,
-			statements: [],
+			statements: statements,
 			access: nil,
 			annotations: [])
 	}
