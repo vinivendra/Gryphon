@@ -2662,7 +2662,9 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 		if let declarationReferenceExpression =
 			functionExpression as? DeclarationReferenceExpression
 		{
-			return declarationReferenceExpression.identifier
+			let functionName = declarationReferenceExpression.identifier // `foo(arg:)`
+			let functionPrefix = String(functionName.prefix(while: { $0 != "(" }))
+			return functionPrefix
 		}
 		else if let dotExpression = functionExpression as? DotExpression {
 			return getLabelForFunction(dotExpression.rightExpression)
