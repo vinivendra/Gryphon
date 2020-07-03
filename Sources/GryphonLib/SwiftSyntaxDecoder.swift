@@ -299,7 +299,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			expression = nil
 		}
 
-		return try ReturnStatement(
+		return ReturnStatement(
 			range: returnStatement.getRange(inFile: self.sourceFile),
 			expression: expression,
 			label: nil)
@@ -395,7 +395,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 
 		return FunctionDeclaration(
-			range: try functionDeclaration.getRange(inFile: sourceFile),
+			range: functionDeclaration.getRange(inFile: sourceFile),
 			prefix: prefix,
 			parameters: parameters,
 			returnType: returnType,
@@ -446,7 +446,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					annotatedType = expression?.swiftType
 				}
 
-				try result.append(VariableDeclaration(
+				result.append(VariableDeclaration(
 					range: variableDeclaration.getRange(inFile: self.sourceFile),
 					identifier: identifier,
 					typeAnnotation: annotatedType,
@@ -516,7 +516,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		{
 			let translatedLeftExpression = try convertExpression(leftExpression)
 			let translatedRightExpression = try convertExpression(rightExpression)
-			return try AssignmentStatement(
+			return AssignmentStatement(
 				range: sequenceExpression.getRange(inFile: self.sourceFile),
 				leftHand: translatedLeftExpression,
 				rightHand: translatedRightExpression)
@@ -557,7 +557,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		_ nilLiteralExpression: NilLiteralExprSyntax)
 		throws -> Expression
 	{
-		return try NilLiteralExpression(range: nilLiteralExpression.getRange(inFile: self.sourceFile))
+		return NilLiteralExpression(range: nilLiteralExpression.getRange(inFile: self.sourceFile))
 	}
 
 	func convertFunctionCallExpression(
@@ -575,7 +575,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		{
 			let functionExpressionTranslation = try convertExpression(functionExpression)
 			let tupleExpression = try convertTupleExpressionElementList(tupleExpressionElements)
-			return try CallExpression(
+			return CallExpression(
 				range: functionCallExpression.getRange(inFile: self.sourceFile),
 				function: functionExpressionTranslation,
 				parameters: tupleExpression,
@@ -600,7 +600,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			pairs.append(LabeledExpression(label: label, expression: translatedExpression))
 		}
 
-		return try TupleExpression(
+		return TupleExpression(
 			range: tupleExprElementListSyntax.getRange(inFile: self.sourceFile),
 			pairs: pairs)
 	}
@@ -610,7 +610,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		throws -> Expression
 	{
 		// TODO: DeclRef should have optional type
-		return try DeclarationReferenceExpression(
+		return DeclarationReferenceExpression(
 			range: identifierExpression.getRange(inFile: self.sourceFile),
 			identifier: identifierExpression.identifier.text,
 			typeName: identifierExpression.getType(fromList: self.expressionTypes) ?? "",
@@ -626,14 +626,14 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			if typeName == "Double",
 				let doubleValue = Double(integerLiteralExpression.digits.text)
 			{
-				return try LiteralDoubleExpression(
+				return LiteralDoubleExpression(
 					range: integerLiteralExpression.getRange(inFile: self.sourceFile),
 					value: doubleValue)
 			}
 		}
 
 		if let intValue = Int64(integerLiteralExpression.digits.text) {
-			return try LiteralIntExpression(
+			return LiteralIntExpression(
 				range: integerLiteralExpression.getRange(inFile: self.sourceFile),
 				value: intValue)
 		}
@@ -647,7 +647,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		_ stringLiteralExpression: StringLiteralExprSyntax)
 		throws -> Expression
 	{
-		let range = try stringLiteralExpression.getRange(inFile: self.sourceFile)
+		let range = stringLiteralExpression.getRange(inFile: self.sourceFile)
 
 		// If it's a string literal
 		if stringLiteralExpression.segments.count == 1,
@@ -665,7 +665,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			if let stringSegment = segment.as(StringSegmentSyntax.self),
 				let text = stringSegment.getText()
 			{
-				try expressions.append(LiteralStringExpression(
+				expressions.append(LiteralStringExpression(
 					range: stringSegment.getRange(inFile: self.sourceFile),
 					value: text,
 					isMultiline: false))
@@ -724,7 +724,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		throws -> ErrorStatement
 	{
 		let message = "Failed to turn SwiftSyntax node into Gryphon AST: " + errorMessage + "."
-		let range = try? ast.getRange(inFile: sourceFile)
+		let range = ast.getRange(inFile: sourceFile)
 
 		try Compiler.handleError(
 			message: message,
@@ -740,7 +740,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		throws -> ErrorExpression
 	{
 		let message = "Failed to turn SwiftSyntax node into Gryphon AST: " + errorMessage + "."
-		let range = try? ast.getRange(inFile: sourceFile)
+		let range = ast.getRange(inFile: sourceFile)
 
 		try Compiler.handleError(
 			message: message,
@@ -766,7 +766,7 @@ extension SyntaxProtocol {
 }
 
 private extension SyntaxProtocol {
-	func getRange(inFile filePath: SourceFile) throws -> SourceFileRange? {
+	func getRange(inFile filePath: SourceFile) -> SourceFileRange? {
 		let startOffset = self.positionAfterSkippingLeadingTrivia.utf8Offset
 		let length = self.contentLength.utf8Length
 
