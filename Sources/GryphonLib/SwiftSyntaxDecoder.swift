@@ -585,6 +585,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let functionCallExpression = expression.as(FunctionCallExprSyntax.self) {
 			return try convertFunctionCallExpression(functionCallExpression)
 		}
+		if let arrayExpression = expression.as(ArrayExprSyntax.self) {
+			return try convertArrayLiteralExpression(arrayExpression)
+		}
 		if let nilLiteralExpression = expression.as(NilLiteralExprSyntax.self) {
 			return try convertNilLiteralExpression(nilLiteralExpression)
 		}
@@ -592,6 +595,26 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		return try errorExpression(
 			forASTNode: Syntax(expression),
 			withMessage: "Unknown expression")
+	}
+
+	func convertArrayLiteralExpression(
+		_ arrayExpression: ArrayExprSyntax)
+		throws -> Expression
+	{
+		guard let typeName = arrayExpression.getType(fromList: self.expressionTypes) else {
+			return try errorExpression(
+				forASTNode: Syntax(arrayExpression),
+				withMessage: "Unable to get array type from SourceKit")
+		}
+
+		let elements: MutableList<Expression> = try MutableList(arrayExpression.elements.map {
+			try convertExpression($0.expression)
+		})
+
+		return ArrayExpression(
+			range: arrayExpression.getRange(inFile: self.sourceFile),
+			elements: elements,
+			typeName: typeName)
 	}
 
 	func convertNilLiteralExpression(
