@@ -753,11 +753,15 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	// MARK: - Helper methods
 
 	func convertType(_ typeSyntax: TypeSyntax) throws -> String {
-		if let text = typeSyntax.getText() {
-			return text
-		}
 		if let optionalType = typeSyntax.as(OptionalTypeSyntax.self) {
 			return try convertType(optionalType.wrappedType) + "?"
+		}
+		if let arrayType = typeSyntax.as(ArrayTypeSyntax.self) {
+			return try "[" + convertType(arrayType.elementType) + "]"
+		}
+
+		if let text = typeSyntax.getText() {
+			return text
 		}
 
 		try Compiler.handleError(
