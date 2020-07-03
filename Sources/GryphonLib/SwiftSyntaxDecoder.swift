@@ -109,6 +109,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			if let declaration = item.as(DeclSyntax.self) {
 				try result.append(contentsOf: convertDeclaration(declaration))
 			}
+			else if let statement = item.as(StmtSyntax.self) {
+				try result.append(contentsOf: convertStatement(statement))
+			}
 			else if let expression = item.as(ExprSyntax.self) {
 				if shouldConvertToStatement(expression) {
 					try result.append(convertExpressionToStatement(expression))
@@ -268,6 +271,38 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 
 		return result
+	}
+
+	// MARK: - Statements
+	func convertStatement(_ statement: StmtSyntax) throws -> MutableList<Statement> {
+		let result: MutableList<Statement> = convertLeadingComments(fromSyntax: Syntax(statement))
+
+		if let returnStatement = statement.as(ReturnStmtSyntax.self) {
+			try result.append(convertReturnStatement(returnStatement))
+			return result
+		}
+
+		return try [errorStatement(
+			forASTNode: Syntax(statement),
+			withMessage: "Unknown declaration"), ]
+	}
+
+	func convertReturnStatement(
+		_ returnStatement: ReturnStmtSyntax)
+		throws -> Statement
+	{
+		let expression: Expression?
+		if let expressionSyntax = returnStatement.expression {
+			expression = try convertExpression(expressionSyntax)
+		}
+		else {
+			expression = nil
+		}
+
+		return try ReturnStatement(
+			range: returnStatement.getRange(inFile: self.sourceFile),
+			expression: expression,
+			label: nil)
 	}
 
 	// MARK: - Declarations
