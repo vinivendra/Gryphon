@@ -318,10 +318,24 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			try result.append(convertFunctionDeclaration(functionDeclaration))
 			return result
 		}
+		if let importDeclaration = declaration.as(ImportDeclSyntax.self) {
+			try result.append(convertImportDeclaration(importDeclaration))
+			return result
+		}
 
 		return try [errorStatement(
 			forASTNode: Syntax(declaration),
 			withMessage: "Unknown declaration"), ]
+	}
+
+	func convertImportDeclaration(
+		_ importDeclaration: ImportDeclSyntax)
+		throws -> Statement
+	{
+		let moduleName = try importDeclaration.path.getLiteralText(fromSourceFile: self.sourceFile)
+		return ImportDeclaration(
+			range: importDeclaration.getRange(inFile: self.sourceFile),
+			moduleName: moduleName)
 	}
 
 	func convertFunctionDeclaration(
@@ -762,6 +776,30 @@ extension SyntaxProtocol {
 		}
 
 		return nil
+	}
+
+	/// Returns the text as it is in the source file, including any trivia in the middle of the
+	/// tokens.
+	func getLiteralText(fromSourceFile sourceFile: SourceFile) throws -> String {
+		let startOffset = self.positionAfterSkippingLeadingTrivia.utf8Offset
+		let length = self.contentLength.utf8Length
+		let endOffset = startOffset + length
+
+		let contents = sourceFile.contents
+		let startIndex = contents.utf8.index(contents.utf8.startIndex, offsetBy: startOffset)
+		let endIndex = contents.utf8.index(contents.utf8.startIndex, offsetBy: endOffset)
+
+		guard let result = String(sourceFile.contents.utf8[startIndex..<endIndex]) else {
+			try Compiler.handleError(
+				message: "Failed to get the literal text starting at offset \(startOffset) with " +
+					"length \(length)",
+				ast: self.toPrintableTree(),
+				sourceFile: sourceFile,
+				sourceFileRange: getRange(inFile: sourceFile))
+			return "<<Error>>"
+		}
+
+		return result
 	}
 }
 
