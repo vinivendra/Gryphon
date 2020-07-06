@@ -523,17 +523,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 	// MARK: - Statement expressions
 
-	func shouldConvertToStatement(_ expression: ExprSyntax) -> Bool {
-		if expression.is(SequenceExprSyntax.self) {
-			return true
-		}
-
-		return false
-	}
-
 	func convertExpressionToStatement(_ expression: ExprSyntax) throws -> Statement {
 		if let sequenceExpression = expression.as(SequenceExprSyntax.self) {
-			return try convertSequenceExpression(sequenceExpression)
+			return try convertSequenceExpressionAsAssignment(sequenceExpression)
 		}
 
 		// Should never be reached because we only call this method with known statements checked
@@ -541,7 +533,33 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		return try errorStatement(forASTNode: Syntax(expression), withMessage: "Unknown statement")
 	}
 
-	func convertSequenceExpression(
+	func shouldConvertToStatement(_ expression: ExprSyntax) -> Bool {
+		if let sequenceExpression = expression.as(SequenceExprSyntax.self) {
+			return isAssignmentExpression(sequenceExpression)
+		}
+
+		return false
+	}
+
+	func isAssignmentExpression(
+		_ sequenceExpression: SequenceExprSyntax)
+		-> Bool
+	{
+		let expressionList = List(sequenceExpression.elements)
+
+		if expressionList.count == 3,
+			expressionList[1].is(AssignmentExprSyntax.self),
+			expressionList[0].is(ExprSyntax.self),
+			expressionList[2].is(ExprSyntax.self)
+		{
+			return true
+		}
+		else {
+			return false
+		}
+	}
+
+	func convertSequenceExpressionAsAssignment(
 		_ sequenceExpression: SequenceExprSyntax)
 		throws -> Statement
 	{
@@ -559,8 +577,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				leftHand: translatedLeftExpression,
 				rightHand: translatedRightExpression)
 		}
-
-
 
 		return try errorStatement(
 			forASTNode: Syntax(sequenceExpression),
@@ -591,6 +607,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let memberAccessExpression = expression.as(MemberAccessExprSyntax.self) {
 			return try convertMemberAccessExpression(memberAccessExpression)
 		}
+		if let sequenceExpression = expression.as(SequenceExprSyntax.self) {
+			return try convertSequenceExpression(sequenceExpression)
+		}
 		if let nilLiteralExpression = expression.as(NilLiteralExprSyntax.self) {
 			return try convertNilLiteralExpression(nilLiteralExpression)
 		}
@@ -598,6 +617,30 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		return try errorExpression(
 			forASTNode: Syntax(expression),
 			withMessage: "Unknown expression")
+	}
+
+	func convertSequenceExpression(
+		_ sequenceExpression: SequenceExprSyntax)
+	throws -> Expression
+	{
+		let expressionList = List(sequenceExpression.elements)
+
+		if expressionList.count == 3,
+			let binaryOperator = expressionList[1].as(BinaryOperatorExprSyntax.self),
+			let leftExpression = expressionList[0].as(ExprSyntax.self),
+			let rightExpression = expressionList[2].as(ExprSyntax.self)
+		{
+			return BinaryOperatorExpression(
+				range: sequenceExpression.getRange(inFile: self.sourceFile),
+				leftExpression: try convertExpression(leftExpression),
+				rightExpression: try convertExpression(rightExpression),
+				operatorSymbol: binaryOperator.operatorToken.text,
+				typeName: sequenceExpression.getType(fromList: self.expressionTypes))
+		}
+
+		return try errorExpression(
+			forASTNode: Syntax(sequenceExpression),
+			withMessage: "Failed to convert sequence expression")
 	}
 
 	func convertMemberAccessExpression(
