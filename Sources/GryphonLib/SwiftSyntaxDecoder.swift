@@ -613,6 +613,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let sequenceExpression = expression.as(SequenceExprSyntax.self) {
 			return try convertSequenceExpression(sequenceExpression)
 		}
+		if let closureExpression = expression.as(ClosureExprSyntax.self) {
+			return try convertClosureExpression(closureExpression)
+		}
 		if let nilLiteralExpression = expression.as(NilLiteralExprSyntax.self) {
 			return try convertNilLiteralExpression(nilLiteralExpression)
 		}
@@ -620,6 +623,58 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		return try errorExpression(
 			forASTNode: Syntax(expression),
 			withMessage: "Unknown expression")
+	}
+
+	func convertClosureExpression(
+		_ closureExpression: ClosureExprSyntax)
+		throws -> Expression
+	{
+		// Get the signature (for the parameter names) and the type
+		guard let typeName = closureExpression.getType(fromList: self.expressionTypes),
+			let signature = closureExpression.signature,
+			let inputParameters = signature.input else
+		{
+			return try errorExpression(
+				forASTNode: Syntax(closureExpression),
+				withMessage: "Unable to convert closure expression")
+
+		}
+
+		// Get the input parameter types (e.g. ["Any", "Any"] from "(Any, Any) -> Any")
+		let inputAndOutputTypes = Utilities.splitTypeList(typeName, separators: ["->"])
+		let inputTupleType = inputAndOutputTypes[0]
+		let inputTypes = Utilities.splitTypeList(
+			String(inputTupleType.dropFirst().dropLast()),
+			separators: [","])
+
+		// Ensure we have the same number of parameter labels and types
+		guard inputTypes.count == inputParameters.children.count else {
+			return try errorExpression(
+				forASTNode: Syntax(inputParameters),
+				withMessage: "Unable to convert closure parameters")
+		}
+
+		// Ensure all the closure parameters are `ClosureParamSyntax`es
+		let parameterSyntaxes: MutableList<ClosureParamSyntax> = []
+		for child in inputParameters.children {
+			guard let parameterSyntax = child.as(ClosureParamSyntax.self) else {
+				return try errorExpression(
+					forASTNode: Syntax(child),
+					withMessage: "Unsupported closure parameter")
+			}
+			parameterSyntaxes.append(parameterSyntax)
+		}
+
+		let parameters: MutableList<LabeledType> = []
+		for (parameterSyntax, inputType) in zip(parameterSyntaxes, inputTypes) {
+			parameters.append(LabeledType(label: parameterSyntax.name.text, typeName: inputType))
+		}
+
+		return ClosureExpression(
+			range: closureExpression.getRange(inFile: self.sourceFile),
+			parameters: parameters,
+			statements: try convertStatements(closureExpression.statements),
+			typeName: typeName)
 	}
 
 	func convertSequenceExpression(
@@ -905,6 +960,14 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 		if let memberType = typeSyntax.as(MemberTypeIdentifierSyntax.self) {
 			return try convertType(memberType.baseType) + "." + memberType.name.text
+		}
+		if let functionType = typeSyntax.as(FunctionTypeSyntax.self) {
+			let argumentsType = try functionType.arguments.map {
+				try convertType($0.type)
+			}.joined(separator: ", ")
+
+			return try "(" + argumentsType + ") -> " +
+				convertType(functionType.returnType)
 		}
 
 		if let text = typeSyntax.getText() {
