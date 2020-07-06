@@ -604,6 +604,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let arrayExpression = expression.as(ArrayExprSyntax.self) {
 			return try convertArrayLiteralExpression(arrayExpression)
 		}
+		if let dictionaryExpression = expression.as(DictionaryExprSyntax.self) {
+			return try convertDictionaryLiteralExpression(dictionaryExpression)
+		}
 		if let memberAccessExpression = expression.as(MemberAccessExprSyntax.self) {
 			return try convertMemberAccessExpression(memberAccessExpression)
 		}
@@ -670,6 +673,38 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				typeName: memberType,
 				isStandardLibrary: false,
 				isImplicit: false))
+	}
+
+	func convertDictionaryLiteralExpression(
+		_ dictionaryExpression: DictionaryExprSyntax)
+		throws -> Expression
+	{
+		// `[` `elements` `]`
+		guard let typeName = dictionaryExpression.getType(fromList: self.expressionTypes) else {
+			return try errorExpression(
+				forASTNode: Syntax(dictionaryExpression),
+				withMessage: "Unable to get dictionary type from SourceKit")
+		}
+
+		let keys: MutableList<Expression> = []
+		let values: MutableList<Expression> = []
+
+		// If the dictionary isn't empty
+		if dictionaryExpression.children.count == 3,
+			let elements =
+				List(dictionaryExpression.children)[1].as(DictionaryElementListSyntax.self)
+		{
+			for dictionaryElement in elements {
+				try keys.append(convertExpression(dictionaryElement.keyExpression))
+				try values.append(convertExpression(dictionaryElement.valueExpression))
+			}
+		}
+
+		return DictionaryExpression(
+			range: dictionaryExpression.getRange(inFile: self.sourceFile),
+			keys: keys,
+			values: values,
+			typeName: typeName)
 	}
 
 	func convertArrayLiteralExpression(
@@ -863,6 +898,10 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 		if let arrayType = typeSyntax.as(ArrayTypeSyntax.self) {
 			return try "[" + convertType(arrayType.elementType) + "]"
+		}
+		if let dictionaryType = typeSyntax.as(DictionaryTypeSyntax.self) {
+			return try "[" + convertType(dictionaryType.keyType) + ":" +
+				convertType(dictionaryType.valueType) + "]"
 		}
 		if let memberType = typeSyntax.as(MemberTypeIdentifierSyntax.self) {
 			return try convertType(memberType.baseType) + "." + memberType.name.text
