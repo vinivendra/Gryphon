@@ -721,30 +721,53 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			withMessage: "Failed to convert sequence expression")
 	}
 
+	/// Can be either `object` `.` `member` or `.` `member`. The latter case is implicitly a
+	/// `MyType` `.` `member`, and the `MyType` can be obtained by searching for the type of the `.`
+	/// token, which will be `MyType.Type`
 	func convertMemberAccessExpression(
 		_ memberAccessExpression: MemberAccessExprSyntax)
 		throws -> Expression
 	{
-		// `expression` `.` `token`
-		guard let expressionSyntax =
-				memberAccessExpression.children.first?.as(ExprSyntax.self),
-			let memberToken = memberAccessExpression.lastToken,
+		// Get information for the right side
+		guard let memberToken = memberAccessExpression.lastToken,
 			let memberType = memberAccessExpression.getType(fromList: self.expressionTypes) else
 		{
 			return try errorExpression(
 				forASTNode: Syntax(memberAccessExpression),
-				withMessage: "Failed to convert member access expression")
+				withMessage: "Failed to convert right side in member access expression")
 		}
 
-		let memberTranslation = memberToken.text
-		let expressionTranslation = try convertExpression(expressionSyntax)
+		let rightSideText = memberToken.text
+
+		// Get information for the left side
+		let leftExpression: Expression
+
+		// If it's an `expression` `.` `token`
+		if let expressionSyntax = memberAccessExpression.children.first?.as(ExprSyntax.self)
+		{
+			leftExpression = try convertExpression(expressionSyntax)
+		}
+		else if let leftType =
+				memberAccessExpression.dot.getType(fromList: self.expressionTypes),
+			leftType.hasSuffix(".Type")
+		{
+			// If it's an `.` `token`
+			leftExpression = TypeExpression(
+				range: memberAccessExpression.dot.getRange(inFile: self.sourceFile),
+				typeName: String(leftType.dropLast(".Type".count)))
+		}
+		else {
+			return try errorExpression(
+				forASTNode: Syntax(memberAccessExpression),
+				withMessage: "Failed to convert left side in member access expression")
+		}
 
 		return DotExpression(
 			range: memberAccessExpression.getRange(inFile: self.sourceFile),
-			leftExpression: expressionTranslation,
+			leftExpression: leftExpression,
 			rightExpression: DeclarationReferenceExpression(
 				range: memberToken.getRange(inFile: self.sourceFile),
-				identifier: memberTranslation,
+				identifier: rightSideText,
 				typeName: memberType,
 				isStandardLibrary: false,
 				isImplicit: false))
