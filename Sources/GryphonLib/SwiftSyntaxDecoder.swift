@@ -563,6 +563,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		_ sequenceExpression: SequenceExprSyntax)
 		throws -> Statement
 	{
+		let range = sequenceExpression.getRange(inFile: self.sourceFile)
 		let expressionList = List(sequenceExpression.elements)
 
 		if expressionList.count == 3,
@@ -570,12 +571,19 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			let leftExpression = expressionList[0].as(ExprSyntax.self),
 			let rightExpression = expressionList[2].as(ExprSyntax.self)
 		{
-			let translatedLeftExpression = try convertExpression(leftExpression)
 			let translatedRightExpression = try convertExpression(rightExpression)
-			return AssignmentStatement(
-				range: sequenceExpression.getRange(inFile: self.sourceFile),
-				leftHand: translatedLeftExpression,
-				rightHand: translatedRightExpression)
+
+			// If it's a discarded statement (e.g. `_ = 0`) make t just the right-side expression
+			if leftExpression.is(DiscardAssignmentExprSyntax.self) {
+				return ExpressionStatement(range: range, expression: translatedRightExpression)
+			}
+			else {
+				let translatedLeftExpression = try convertExpression(leftExpression)
+				return AssignmentStatement(
+					range: range,
+					leftHand: translatedLeftExpression,
+					rightHand: translatedRightExpression)
+			}
 		}
 
 		return try errorStatement(
