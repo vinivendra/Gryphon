@@ -778,6 +778,13 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					range: integerLiteralExpression.getRange(inFile: self.sourceFile),
 					value: doubleValue)
 			}
+			else if typeName == "Float",
+				let floatValue = Float(integerLiteralExpression.digits.text)
+			{
+				return LiteralFloatExpression(
+					range: integerLiteralExpression.getRange(inFile: self.sourceFile),
+					value: floatValue)
+			}
 		}
 
 		if let intValue = Int64(integerLiteralExpression.digits.text) {
