@@ -588,6 +588,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let arrayExpression = expression.as(ArrayExprSyntax.self) {
 			return try convertArrayLiteralExpression(arrayExpression)
 		}
+		if let memberAccessExpression = expression.as(MemberAccessExprSyntax.self) {
+			return try convertMemberAccessExpression(memberAccessExpression)
+		}
 		if let nilLiteralExpression = expression.as(NilLiteralExprSyntax.self) {
 			return try convertNilLiteralExpression(nilLiteralExpression)
 		}
@@ -595,6 +598,35 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		return try errorExpression(
 			forASTNode: Syntax(expression),
 			withMessage: "Unknown expression")
+	}
+
+	func convertMemberAccessExpression(
+		_ memberAccessExpression: MemberAccessExprSyntax)
+		throws -> Expression
+	{
+		// `expression` `.` `token`
+		guard let expressionSyntax =
+				memberAccessExpression.children.first?.as(ExprSyntax.self),
+			let memberToken = memberAccessExpression.lastToken,
+			let memberType = memberAccessExpression.getType(fromList: self.expressionTypes) else
+		{
+			return try errorExpression(
+				forASTNode: Syntax(memberAccessExpression),
+				withMessage: "Failed to convert member access expression")
+		}
+
+		let memberTranslation = memberToken.text
+		let expressionTranslation = try convertExpression(expressionSyntax)
+
+		return DotExpression(
+			range: memberAccessExpression.getRange(inFile: self.sourceFile),
+			leftExpression: expressionTranslation,
+			rightExpression: DeclarationReferenceExpression(
+				range: memberToken.getRange(inFile: self.sourceFile),
+				identifier: memberTranslation,
+				typeName: memberType,
+				isStandardLibrary: false,
+				isImplicit: false))
 	}
 
 	func convertArrayLiteralExpression(
@@ -781,6 +813,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 		if let arrayType = typeSyntax.as(ArrayTypeSyntax.self) {
 			return try "[" + convertType(arrayType.elementType) + "]"
+		}
+		if let memberType = typeSyntax.as(MemberTypeIdentifierSyntax.self) {
+			return try convertType(memberType.baseType) + "." + memberType.name.text
 		}
 
 		if let text = typeSyntax.getText() {
