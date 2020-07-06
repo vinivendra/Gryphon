@@ -547,10 +547,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	{
 		let expressionList = List(sequenceExpression.elements)
 
-		if expressionList.count == 3,
-			expressionList[1].is(AssignmentExprSyntax.self),
-			expressionList[0].is(ExprSyntax.self),
-			expressionList[2].is(ExprSyntax.self)
+		if expressionList.count >= 3,
+			expressionList[1].is(AssignmentExprSyntax.self)
 		{
 			return true
 		}
@@ -559,6 +557,12 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 	}
 
+	/// Assignment expressions are just sequence expressions that start with `expression` `=` and
+	/// then continue as normal sequence expressions (e.g. `expression` `=` `1` + `2`).
+	/// This method is used because assignments have to be translated as statements. It translates
+	/// the expression (and the `=` token) then leaves the rest of the expressions to the
+	/// `convertSequenceExpression` method, using `ignoringFirstElements: 2` to signal that the
+	/// `expression` and the `=` were already translated.
 	func convertSequenceExpressionAsAssignment(
 		_ sequenceExpression: SequenceExprSyntax)
 		throws -> Statement
@@ -566,29 +570,23 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let range = sequenceExpression.getRange(inFile: self.sourceFile)
 		let expressionList = List(sequenceExpression.elements)
 
-		if expressionList.count == 3,
-			expressionList[1].is(AssignmentExprSyntax.self),
-			let leftExpression = expressionList[0].as(ExprSyntax.self),
-			let rightExpression = expressionList[2].as(ExprSyntax.self)
-		{
-			let translatedRightExpression = try convertExpression(rightExpression)
+		let leftExpression = expressionList[0]
 
-			// If it's a discarded statement (e.g. `_ = 0`) make t just the right-side expression
-			if leftExpression.is(DiscardAssignmentExprSyntax.self) {
-				return ExpressionStatement(range: range, expression: translatedRightExpression)
-			}
-			else {
-				let translatedLeftExpression = try convertExpression(leftExpression)
-				return AssignmentStatement(
-					range: range,
-					leftHand: translatedLeftExpression,
-					rightHand: translatedRightExpression)
-			}
+		let convertedRightExpression = try convertSequenceExpression(
+			sequenceExpression,
+			ignoringFirstElements: 2)
+
+		// If it's a discarded statement (e.g. `_ = 0`) make t just the right-side expression
+		if leftExpression.is(DiscardAssignmentExprSyntax.self) {
+			return ExpressionStatement(range: range, expression: convertedRightExpression)
 		}
-
-		return try errorStatement(
-			forASTNode: Syntax(sequenceExpression),
-			withMessage: "Failed to convert sequence expression")
+		else {
+			let convertedLeftExpression = try convertExpression(leftExpression)
+			return AssignmentStatement(
+				range: range,
+				leftHand: convertedLeftExpression,
+				rightHand: convertedRightExpression)
+		}
 	}
 
 	// MARK: - Expressions
@@ -685,21 +683,35 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			typeName: typeName)
 	}
 
+	/// Sequence expressions can either have 2 elements (if it's an `as` cast) or an odd number of
+	/// elements (if it's like `0 + 1 + 2`). This method translates the first two elements directly,
+	/// then the others "recursively", using `numberOfElementsToIgnore` to keep track of how many
+	/// elements were already translated in the list.
 	func convertSequenceExpression(
-		_ sequenceExpression: SequenceExprSyntax)
+		_ sequenceExpression: SequenceExprSyntax,
+		ignoringFirstElements numberOfElementsToIgnore: Int = 0)
 	throws -> Expression
 	{
-		let expressionList = List(sequenceExpression.elements)
+		let elements = List(sequenceExpression.elements.dropFirst(numberOfElementsToIgnore))
 
-		if expressionList.count == 3,
-			let binaryOperator = expressionList[1].as(BinaryOperatorExprSyntax.self),
-			let leftExpression = expressionList[0].as(ExprSyntax.self),
-			let rightExpression = expressionList[2].as(ExprSyntax.self)
+		if elements.count == 1 {
+			let expression = elements[0]
+			return try convertExpression(expression)
+		}
+		if elements.count >= 3,
+			let binaryOperator = elements[1].as(BinaryOperatorExprSyntax.self)
 		{
+			let leftExpression = elements[0]
+			let convertedLeftExpression = try convertExpression(leftExpression)
+
+			let convertedRightExpression = try convertSequenceExpression(
+				sequenceExpression,
+				ignoringFirstElements: numberOfElementsToIgnore + 2)
+
 			return BinaryOperatorExpression(
 				range: sequenceExpression.getRange(inFile: self.sourceFile),
-				leftExpression: try convertExpression(leftExpression),
-				rightExpression: try convertExpression(rightExpression),
+				leftExpression: convertedLeftExpression,
+				rightExpression: convertedRightExpression,
 				operatorSymbol: binaryOperator.operatorToken.text,
 				typeName: sequenceExpression.getType(fromList: self.expressionTypes))
 		}

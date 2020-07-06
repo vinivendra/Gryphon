@@ -1726,6 +1726,8 @@ public class DotExpression: Expression {
 	}
 }
 
+/// Does not take into consideration operator precedence, since that information isn't available in
+/// SwiftSyntax. Other `BinaryOperatorExpressions` can show up recursively on the right side.
 public class BinaryOperatorExpression: Expression {
 	let leftExpression: Expression
 	let rightExpression: Expression
