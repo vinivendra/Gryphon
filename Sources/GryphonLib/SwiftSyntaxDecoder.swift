@@ -622,6 +622,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let closureExpression = expression.as(ClosureExprSyntax.self) {
 			return try convertClosureExpression(closureExpression)
 		}
+		if let forcedValueExpression = expression.as(ForcedValueExprSyntax.self) {
+			return try convertForcedValueExpression(forcedValueExpression)
+		}
 		if let nilLiteralExpression = expression.as(NilLiteralExprSyntax.self) {
 			return try convertNilLiteralExpression(nilLiteralExpression)
 		}
@@ -629,6 +632,15 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		return try errorExpression(
 			forASTNode: Syntax(expression),
 			withMessage: "Unknown expression")
+	}
+
+	func convertForcedValueExpression(
+		_ forcedValueExpression: ForcedValueExprSyntax)
+		throws -> Expression
+	{
+		return try ForceValueExpression(
+			range: forcedValueExpression.getRange(inFile: self.sourceFile),
+			expression: convertExpression(forcedValueExpression.expression))
 	}
 
 	func convertClosureExpression(
