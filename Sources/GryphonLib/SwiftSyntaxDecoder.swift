@@ -628,6 +628,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let subscriptExpression = expression.as(SubscriptExprSyntax.self) {
 			return try convertSubscriptExpression(subscriptExpression)
 		}
+		if let postfixUnaryExpression = expression.as(PostfixUnaryExprSyntax.self) {
+			return try convertPostfixUnaryExpression(postfixUnaryExpression)
+		}
 		if let nilLiteralExpression = expression.as(NilLiteralExprSyntax.self) {
 			return try convertNilLiteralExpression(nilLiteralExpression)
 		}
@@ -635,6 +638,26 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		return try errorExpression(
 			forASTNode: Syntax(expression),
 			withMessage: "Unknown expression")
+	}
+
+	func convertPostfixUnaryExpression(
+		_ postfixUnaryExpression: PostfixUnaryExprSyntax)
+		throws -> Expression
+	{
+		guard let typeName = postfixUnaryExpression.getType(fromList: self.expressionTypes) else {
+			return try errorExpression(
+				forASTNode: Syntax(postfixUnaryExpression),
+				withMessage: "Unable to get type for postfix unary expression")
+		}
+
+		let subExpression = try convertExpression(postfixUnaryExpression.expression)
+		let operatorSymbol = postfixUnaryExpression.operatorToken.text
+
+		return PostfixUnaryExpression(
+			range: postfixUnaryExpression.getRange(inFile: self.sourceFile),
+			subExpression: subExpression,
+			operatorSymbol: operatorSymbol,
+			typeName: typeName)
 	}
 
 	func convertSubscriptExpression(
