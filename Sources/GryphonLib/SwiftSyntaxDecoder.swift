@@ -634,6 +634,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let prefixUnaryExpression = expression.as(PrefixOperatorExprSyntax.self) {
 			return try convertPrefixOperatorExpression(prefixUnaryExpression)
 		}
+		if let specializeExpression = expression.as(SpecializeExprSyntax.self) {
+			return try convertSpecializeExpression(specializeExpression)
+		}
 		if let nilLiteralExpression = expression.as(NilLiteralExprSyntax.self) {
 			return try convertNilLiteralExpression(nilLiteralExpression)
 		}
@@ -641,6 +644,29 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		return try errorExpression(
 			forASTNode: Syntax(expression),
 			withMessage: "Unknown expression")
+	}
+
+	/// A generic expression whose generic arguments are being specialized
+	func convertSpecializeExpression(
+		_ specializeExpression: SpecializeExprSyntax)
+		throws -> Expression
+	{
+		guard let identifierExpression =
+			specializeExpression.expression.as(IdentifierExprSyntax.self) else
+		{
+			return try errorExpression(
+				forASTNode: Syntax(specializeExpression),
+				withMessage: "Failed to convert specialize expression")
+		}
+
+		let identifier = identifierExpression.identifier.text
+		let genericTypes = try specializeExpression.genericArgumentClause.arguments.map {
+				try convertType($0.argumentType)
+			}.joined(separator: ", ")
+
+		return TypeExpression(
+			range: specializeExpression.getRange(inFile: self.sourceFile),
+			typeName: "\(identifier)<\(genericTypes)>")
 	}
 
 	func convertPrefixOperatorExpression(
