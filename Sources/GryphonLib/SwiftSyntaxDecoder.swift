@@ -625,6 +625,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let forcedValueExpression = expression.as(ForcedValueExprSyntax.self) {
 			return try convertForcedValueExpression(forcedValueExpression)
 		}
+		if let subscriptExpression = expression.as(SubscriptExprSyntax.self) {
+			return try convertSubscriptExpression(subscriptExpression)
+		}
 		if let nilLiteralExpression = expression.as(NilLiteralExprSyntax.self) {
 			return try convertNilLiteralExpression(nilLiteralExpression)
 		}
@@ -632,6 +635,28 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		return try errorExpression(
 			forASTNode: Syntax(expression),
 			withMessage: "Unknown expression")
+	}
+
+	func convertSubscriptExpression(
+		_ subscriptExpression: SubscriptExprSyntax)
+		throws -> Expression
+	{
+		guard let indexExpression = subscriptExpression.argumentList.first?.expression,
+			let typeName = subscriptExpression.getType(fromList: self.expressionTypes) else
+		{
+			return try errorExpression(
+				forASTNode: Syntax(subscriptExpression),
+				withMessage: "Unable to convert index expression")
+		}
+
+		let convertedIndexExpression = try convertExpression(indexExpression)
+		let convertedCalledExpression = try convertExpression(subscriptExpression.calledExpression)
+
+		return SubscriptExpression(
+			range: subscriptExpression.getRange(inFile: self.sourceFile),
+			subscriptedExpression: convertedCalledExpression,
+			indexExpression: convertedIndexExpression,
+			typeName: typeName)
 	}
 
 	func convertForcedValueExpression(
@@ -655,7 +680,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			return try errorExpression(
 				forASTNode: Syntax(closureExpression),
 				withMessage: "Unable to convert closure expression")
-
 		}
 
 		// Get the input parameter types (e.g. ["Any", "Any"] from "(Any, Any) -> Any")
