@@ -641,6 +641,14 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			return try convertNilLiteralExpression(nilLiteralExpression)
 		}
 
+		// Expressions that can be translated as their last subexpression
+		if expression.is(InOutExprSyntax.self),
+			let lastChild = expression.children.last,
+			let subExpression = lastChild.as(ExprSyntax.self)
+		{
+			return try convertExpression(subExpression)
+		}
+
 		return try errorExpression(
 			forASTNode: Syntax(expression),
 			withMessage: "Unknown expression")
