@@ -631,6 +631,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let postfixUnaryExpression = expression.as(PostfixUnaryExprSyntax.self) {
 			return try convertPostfixUnaryExpression(postfixUnaryExpression)
 		}
+		if let prefixUnaryExpression = expression.as(PrefixOperatorExprSyntax.self) {
+			return try convertPrefixOperatorExpression(prefixUnaryExpression)
+		}
 		if let nilLiteralExpression = expression.as(NilLiteralExprSyntax.self) {
 			return try convertNilLiteralExpression(nilLiteralExpression)
 		}
@@ -638,6 +641,27 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		return try errorExpression(
 			forASTNode: Syntax(expression),
 			withMessage: "Unknown expression")
+	}
+
+	func convertPrefixOperatorExpression(
+		_ prefixOperatorExpression: PrefixOperatorExprSyntax)
+		throws -> Expression
+	{
+		guard let typeName = prefixOperatorExpression.getType(fromList: self.expressionTypes),
+			let operatorSymbol = prefixOperatorExpression.operatorToken?.text else
+		{
+			return try errorExpression(
+				forASTNode: Syntax(prefixOperatorExpression),
+				withMessage: "Unable to convert prefix operator expression")
+		}
+
+		let subExpression = try convertExpression(prefixOperatorExpression.postfixExpression)
+
+		return PrefixUnaryExpression(
+			range: prefixOperatorExpression.getRange(inFile: self.sourceFile),
+			subExpression: subExpression,
+			operatorSymbol: operatorSymbol,
+			typeName: typeName)
 	}
 
 	func convertPostfixUnaryExpression(
