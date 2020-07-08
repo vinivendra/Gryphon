@@ -3765,7 +3765,7 @@ public class RaiseStructInitializerWarningsTranspilationPass: TranspilationPass 
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
 	// gryphon insert:     super(ast, context) { }
 
-	override func processInitializerDeclaration(
+	override func processInitializerDeclaration( // gryphon annotation: override
 		_ initializerDeclaration: InitializerDeclaration)
 		-> InitializerDeclaration?
 	{
