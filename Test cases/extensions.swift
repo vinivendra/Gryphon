@@ -29,6 +29,10 @@ extension String {
 	var world: String {
 		return "World!"
 	}
+
+	static var abc: String {
+		return "abc"
+	}
 }
 
 extension String {
@@ -40,9 +44,15 @@ extension String {
 		var string = ", world!!"
 		print("Hello\(string)")
 	}
+
+	static func functionABC() -> String {
+		return "abc"
+	}
 }
 
 print("\("Hello!".isString)")
 print("\("Hello!".world)")
 print("\("Hello".appendWorld())")
 "bla".functionWithVariable()
+print("static var \(String.abc)")
+print("static func \(String.functionABC())")

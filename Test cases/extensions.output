@@ -2,3 +2,5 @@ true
 World!
 Hello, world!
 Hello, world!!
+static var abc
+static func abc
