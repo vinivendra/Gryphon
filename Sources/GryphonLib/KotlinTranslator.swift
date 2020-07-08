@@ -655,6 +655,8 @@ public class KotlinTranslator {
 		let parameterStrings = try functionDeclaration.parameters
 			.map { try translateFunctionDeclarationParameter($0, withIndentation: indentation) }
 
+		let singleExpressionStatement = self.isSingleExpressionFunction(functionDeclaration.statements, returnTypeString: returnTypeString)
+
 		if !shouldAddNewlines {
 			result.appendTranslations(parameterStrings, withSeparator: ", ")
 			result.append(")")
@@ -670,7 +672,12 @@ public class KotlinTranslator {
 				result.append("\n")
 				return result
 			}
-			result.append(" {\n")
+
+			if singleExpressionStatement == nil {
+				result.append(" {\n")
+			} else {
+				result.append(" = ")
+			}
 
 			if result.resolveTranslation().translation.count >= KotlinTranslator.lineLimit {
 				return try translateFunctionDeclaration(
@@ -697,7 +704,11 @@ public class KotlinTranslator {
 				result.append("\n")
 			}
 
-			result.append("\(indentation){\n")
+			if singleExpressionStatement == nil {
+				result.append("\(indentation){\n")
+			} else {
+				result.append("\( increaseIndentation(indentation) )= ")
+			}
 		}
 
 		guard let statements = functionDeclaration.statements else {
@@ -728,16 +739,45 @@ public class KotlinTranslator {
 			result.append("\(indentation)}\n")
 		}
 		else {
-			result.append(try translateSubtrees(
-				statements,
-				withIndentation: indentation,
-				limitForAddingNewlines: 3))
+			if let singleExpressionStatement = singleExpressionStatement {
+				result.append(try translateExpression(
+					singleExpressionStatement.expression,
+					withIndentation: indentation))
+				result.append("\n")
+			} else {
+				result.append(try translateSubtrees(
+					statements,
+					withIndentation: indentation,
+					limitForAddingNewlines: 3))
+			}
 		}
 
 		indentation = decreaseIndentation(indentation)
-		result.append(indentation + "}\n")
+		if singleExpressionStatement == nil {
+			result.append(indentation + "}\n")
+		}
 
 		return result
+	}
+
+	private func isSingleExpressionFunction(
+		_ statements: List<Statement>?,
+		returnTypeString: String?)
+		-> ExpressionStatement?
+	{
+		guard let statements = statements,
+			let returnTypeString = returnTypeString else {
+				return nil
+		}
+
+		guard statements.count == 1,
+			let expressionStatement = statements.first as? ExpressionStatement else {
+				return nil
+		}
+
+		return expressionStatement.expression.swiftType == returnTypeString
+			? expressionStatement
+			: nil
 	}
 
 	private func isDeferStatement(
