@@ -1233,7 +1233,12 @@ public class KotlinTranslator {
 				genericString = ""
 			}
 
-			extensionPrefix = genericString + translatedExtendedType + "."
+			if variableDeclaration.isStatic {
+				extensionPrefix = genericString + translatedExtendedType + ".Companion."
+			}
+			else {
+				extensionPrefix = genericString + translatedExtendedType + "."
+			}
 		}
 		else {
 			extensionPrefix = ""

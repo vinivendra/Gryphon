@@ -23,6 +23,10 @@ internal val String.world: String
 	get() {
 		return "World!"
 	}
+internal val String.Companion.abc: String
+	get() {
+		return "abc"
+	}
 
 internal fun String.appendWorld(): String {
 	return this + ", world!"
@@ -33,9 +37,15 @@ internal fun String.functionWithVariable() {
 	println("Hello${string}")
 }
 
+internal fun String.Companion.functionABC(): String {
+	return "abc"
+}
+
 fun main(args: Array<String>) {
 	println("${"Hello!".isString}")
 	println("${"Hello!".world}")
 	println("${"Hello".appendWorld()}")
 	"bla".functionWithVariable()
+	println("static var ${String.abc}")
+	println("static func ${String.functionABC()}")
 }
