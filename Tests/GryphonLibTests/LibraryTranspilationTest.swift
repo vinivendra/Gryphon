@@ -50,6 +50,13 @@ class LibraryTranspilationTest: XCTestCase {
 		("testSimplifiedSubtypes", testSimplifiedSubtypes),
 	]
 
+	// MARK: - Properties
+	/// Mock context used for checking matches.
+	let context = try! TranspilationContext(
+		toolchainName: nil,
+		indentationString: "\t",
+		defaultsToFinal: false)
+
 	// MARK: - Tests
 	func testSimpleMatches() {
 		let range1 = SourceFileRange(lineStart: 1, lineEnd: 1, columnStart: 1, columnEnd: 1)
@@ -86,31 +93,31 @@ class LibraryTranspilationTest: XCTestCase {
 			typeName: "Int")
 
 		// Matches itself
-		XCTAssertNotNil(nilExpression1.matches(nilExpression1))
-		XCTAssertNotNil(integerExpression1.matches(integerExpression1))
+		XCTAssertNotNil(nilExpression1.matches(nilExpression1, inContext: context))
+		XCTAssertNotNil(integerExpression1.matches(integerExpression1, inContext: context))
 
 		// Matches something equal
-		XCTAssertNotNil(nilExpression1.matches(nilExpression2))
-		XCTAssertNotNil(integerExpression1.matches(integerExpression2))
+		XCTAssertNotNil(nilExpression1.matches(nilExpression2, inContext: context))
+		XCTAssertNotNil(integerExpression1.matches(integerExpression2, inContext: context))
 
 		// Does not match an unrelated kind of expression
-		XCTAssertNil(nilExpression1.matches(integerExpression1))
+		XCTAssertNil(nilExpression1.matches(integerExpression1, inContext: context))
 
 		// Does not match an expression with different contents
-		XCTAssertNil(integerExpression1.matches(integerExpression3))
+		XCTAssertNil(integerExpression1.matches(integerExpression3, inContext: context))
 
 		// Matches work recursively
-		XCTAssertNotNil(parenthesesExpression1.matches(parenthesesExpression2))
-		XCTAssertNil(parenthesesExpression1.matches(parenthesesExpression3))
+		XCTAssertNotNil(parenthesesExpression1.matches(parenthesesExpression2, inContext: context))
+		XCTAssertNil(parenthesesExpression1.matches(parenthesesExpression3, inContext: context))
 
 		// Matches work recursively on array literals
-		XCTAssertNotNil(arrayExpression1.matches(arrayExpression2))
-		XCTAssertNil(arrayExpression1.matches(arrayExpression3))
-		XCTAssertNil(arrayExpression1.matches(arrayExpression4))
+		XCTAssertNotNil(arrayExpression1.matches(arrayExpression2, inContext: context))
+		XCTAssertNil(arrayExpression1.matches(arrayExpression3, inContext: context))
+		XCTAssertNil(arrayExpression1.matches(arrayExpression4, inContext: context))
 
 		// Matches ignore ranges
-		XCTAssertNotNil(integerExpression4.matches(integerExpression5))
-		XCTAssertNotNil(integerExpression3.matches(integerExpression5))
+		XCTAssertNotNil(integerExpression4.matches(integerExpression5, inContext: context))
+		XCTAssertNotNil(integerExpression3.matches(integerExpression5, inContext: context))
 	}
 
 	func testMatchDictionary() {
@@ -157,33 +164,35 @@ class LibraryTranspilationTest: XCTestCase {
 
 		// Valid subtype
 		XCTAssertEqual(
-			stringLiteral.matches(anyDeclarationReference),
+			stringLiteral.matches(anyDeclarationReference, inContext: context),
 			["_any": stringLiteral])
 		XCTAssertEqual(
-			stringLiteral.matches(stringDeclarationReference),
+			stringLiteral.matches(stringDeclarationReference, inContext: context),
 			["_string": stringLiteral])
 		XCTAssertEqual(
-			integerLiteral.matches(anyDeclarationReference),
+			integerLiteral.matches(anyDeclarationReference, inContext: context),
 			["_any": integerLiteral])
 
 		// Invalid subtype
-		XCTAssertNil(integerLiteral.matches(stringDeclarationReference))
+		XCTAssertNil(integerLiteral.matches(stringDeclarationReference, inContext: context))
 
 		// Matches work recursively
 		XCTAssertEqual(
-			parenthesesStringExpression.matches(parenthesesAnyTemplate),
+			parenthesesStringExpression.matches(parenthesesAnyTemplate, inContext: context),
 			["_any": stringLiteral])
 		XCTAssertEqual(
-			parenthesesStringExpression.matches(parenthesesStringTemplate),
+			parenthesesStringExpression.matches(parenthesesStringTemplate, inContext: context),
 			["_string": stringLiteral])
 		XCTAssertEqual(
-			parenthesesIntegerExpression.matches(parenthesesAnyTemplate),
+			parenthesesIntegerExpression.matches(parenthesesAnyTemplate, inContext: context),
 			["_any": integerLiteral])
-		XCTAssertNil(parenthesesIntegerExpression.matches(parenthesesStringTemplate))
+		XCTAssertNil(parenthesesIntegerExpression.matches(
+			parenthesesStringTemplate,
+			inContext: context))
 
 		// Multiple matches
 		XCTAssertEqual(
-			arrayExpression.matches(arrayTemplate),
+			arrayExpression.matches(arrayTemplate, inContext: context),
 			["_any": integerLiteral, "_string": stringLiteral])
 	}
 
@@ -199,8 +208,8 @@ class LibraryTranspilationTest: XCTestCase {
 			range: nil,
 			typeName: "Int")
 
-		XCTAssertNotNil(implicitTypeExpression.matches(typeExpression))
-		XCTAssertNotNil(typeExpression.matches(implicitTypeExpression))
+		XCTAssertNotNil(implicitTypeExpression.matches(typeExpression, inContext: context))
+		XCTAssertNotNil(typeExpression.matches(implicitTypeExpression, inContext: context))
 	}
 
 	/// Templates for call expressions with trailing closures (`f { ... }`) are created using
@@ -268,153 +277,157 @@ class LibraryTranspilationTest: XCTestCase {
 			]),
 			typeName: "Void")
 
-		XCTAssertEqual(trailingExpression.matches(template), ["_closure": closureExpression])
-		XCTAssertEqual(normalExpression.matches(template), ["_closure": closureExpression])
+		XCTAssertEqual(
+			trailingExpression.matches(template, inContext: context),
+			["_closure": closureExpression])
+		XCTAssertEqual(
+			normalExpression.matches(template, inContext: context),
+			["_closure": closureExpression])
 	}
 
 	// MARK: - Subtyping
 
 	func testSubtyping() {
 		// Same types
-		XCTAssert("String".isSubtype(of: "String"))
-		XCTAssert("Int".isSubtype(of: "Int"))
-		XCTAssert("Any".isSubtype(of: "Any"))
-		XCTAssert("Box<Int>".isSubtype(of: "Box<Int>"))
-		XCTAssert("Dictionary<Int, String>".isSubtype(of: "Dictionary<Int, String>"))
+		XCTAssert(context.isSubtype("String", of: "String"))
+		XCTAssert(context.isSubtype("Int", of: "Int"))
+		XCTAssert(context.isSubtype("Any", of: "Any"))
+		XCTAssert(context.isSubtype("Box<Int>", of: "Box<Int>"))
+		XCTAssert(context.isSubtype("Dictionary<Int, String>", of: "Dictionary<Int, String>"))
 
 		// Different types
-		XCTAssertFalse("String".isSubtype(of: "Int"))
-		XCTAssertFalse("Int".isSubtype(of: "String"))
+		XCTAssertFalse(context.isSubtype("String", of: "Int"))
+		XCTAssertFalse(context.isSubtype("Int", of: "String"))
 
 		// Empty types
-		XCTAssertFalse("".isSubtype(of: "Int"))
-		XCTAssertFalse("Int".isSubtype(of: ""))
+		XCTAssertFalse(context.isSubtype("", of: "Int"))
+		XCTAssertFalse(context.isSubtype("Int", of: ""))
 
 		// Universal supertypes
-		XCTAssert("String".isSubtype(of: "Any"))
-		XCTAssert("Int".isSubtype(of: "Any"))
-		XCTAssert("Any".isSubtype(of: "Any"))
-		XCTAssert("Box<Int>".isSubtype(of: "Any"))
-		XCTAssert("Dictionary<Int, String>".isSubtype(of: "Any"))
+		XCTAssert(context.isSubtype("String", of: "Any"))
+		XCTAssert(context.isSubtype("Int", of: "Any"))
+		XCTAssert(context.isSubtype("Any", of: "Any"))
+		XCTAssert(context.isSubtype("Box<Int>", of: "Any"))
+		XCTAssert(context.isSubtype("Dictionary<Int, String>", of: "Any"))
 
-		XCTAssert("String".isSubtype(of: "_Any"))
-		XCTAssert("Int".isSubtype(of: "_Any"))
-		XCTAssert("Any".isSubtype(of: "_Any"))
-		XCTAssert("Box<Int>".isSubtype(of: "_Any"))
-		XCTAssert("Dictionary<Int, String>".isSubtype(of: "_Any"))
+		XCTAssert(context.isSubtype("String", of: "_Any"))
+		XCTAssert(context.isSubtype("Int", of: "_Any"))
+		XCTAssert(context.isSubtype("Any", of: "_Any"))
+		XCTAssert(context.isSubtype("Box<Int>", of: "_Any"))
+		XCTAssert(context.isSubtype("Dictionary<Int, String>", of: "_Any"))
 
-		XCTAssert("String".isSubtype(of: "_Hashable"))
-		XCTAssert("Int".isSubtype(of: "_Hashable"))
-		XCTAssert("Any".isSubtype(of: "_Hashable"))
-		XCTAssert("Box<Int>".isSubtype(of: "_Hashable"))
-		XCTAssert("Dictionary<Int, String>".isSubtype(of: "_Hashable"))
+		XCTAssert(context.isSubtype("String", of: "_Hashable"))
+		XCTAssert(context.isSubtype("Int", of: "_Hashable"))
+		XCTAssert(context.isSubtype("Any", of: "_Hashable"))
+		XCTAssert(context.isSubtype("Box<Int>", of: "_Hashable"))
+		XCTAssert(context.isSubtype("Dictionary<Int, String>", of: "_Hashable"))
 
-		XCTAssert("String".isSubtype(of: "_Comparable"))
-		XCTAssert("Int".isSubtype(of: "_Comparable"))
-		XCTAssert("Any".isSubtype(of: "_Comparable"))
-		XCTAssert("Box<Int>".isSubtype(of: "_Comparable"))
-		XCTAssert("Dictionary<Int, String>".isSubtype(of: "_Comparable"))
+		XCTAssert(context.isSubtype("String", of: "_Comparable"))
+		XCTAssert(context.isSubtype("Int", of: "_Comparable"))
+		XCTAssert(context.isSubtype("Any", of: "_Comparable"))
+		XCTAssert(context.isSubtype("Box<Int>", of: "_Comparable"))
+		XCTAssert(context.isSubtype("Dictionary<Int, String>", of: "_Comparable"))
 
-		XCTAssert("String".isSubtype(of: "_Optional"))
-		XCTAssert("Int".isSubtype(of: "_Optional"))
-		XCTAssert("Any".isSubtype(of: "_Optional"))
-		XCTAssert("Box<Int>".isSubtype(of: "_Optional"))
-		XCTAssert("Dictionary<Int, String>".isSubtype(of: "_Optional"))
+		XCTAssert(context.isSubtype("String", of: "_Optional"))
+		XCTAssert(context.isSubtype("Int", of: "_Optional"))
+		XCTAssert(context.isSubtype("Any", of: "_Optional"))
+		XCTAssert(context.isSubtype("Box<Int>", of: "_Optional"))
+		XCTAssert(context.isSubtype("Dictionary<Int, String>", of: "_Optional"))
 
 		// Optionals
-		XCTAssert("String?".isSubtype(of: "_Optional?"))
-		XCTAssert("Int?".isSubtype(of: "_Optional?"))
-		XCTAssert("Any?".isSubtype(of: "_Optional?"))
-		XCTAssert("Box<Int>?".isSubtype(of: "_Optional?"))
-		XCTAssert("Dictionary<Int, String>?".isSubtype(of: "_Optional?"))
+		XCTAssert(context.isSubtype("String?", of: "_Optional?"))
+		XCTAssert(context.isSubtype("Int?", of: "_Optional?"))
+		XCTAssert(context.isSubtype("Any?", of: "_Optional?"))
+		XCTAssert(context.isSubtype("Box<Int>?", of: "_Optional?"))
+		XCTAssert(context.isSubtype("Dictionary<Int, String>?", of: "_Optional?"))
 
-		XCTAssertFalse("String".isSubtype(of: "_Optional?"))
-		XCTAssertFalse("Int".isSubtype(of: "_Optional?"))
-		XCTAssertFalse("Any".isSubtype(of: "_Optional?"))
-		XCTAssertFalse("Box<Int>".isSubtype(of: "_Optional?"))
-		XCTAssertFalse("Dictionary<Int, String>".isSubtype(of: "_Optional?"))
+		XCTAssertFalse(context.isSubtype("String", of: "_Optional?"))
+		XCTAssertFalse(context.isSubtype("Int", of: "_Optional?"))
+		XCTAssertFalse(context.isSubtype("Any", of: "_Optional?"))
+		XCTAssertFalse(context.isSubtype("Box<Int>", of: "_Optional?"))
+		XCTAssertFalse(context.isSubtype("Dictionary<Int, String>", of: "_Optional?"))
 
 		// Tuples
-		XCTAssert("(String)".isSubtype(of: "(String)"))
-		XCTAssert("(String)".isSubtype(of: "(Any)"))
-		XCTAssertFalse("(String)".isSubtype(of: "(Int)"))
+		XCTAssert(context.isSubtype("(String)", of: "(String)"))
+		XCTAssert(context.isSubtype("(String)", of: "(Any)"))
+		XCTAssertFalse(context.isSubtype("(String)", of: "(Int)"))
 
-		XCTAssert("(String, Int)".isSubtype(of: "(String, Int)"))
-		XCTAssert("(String, Int)".isSubtype(of: "(Any, Int)"))
-		XCTAssert("(String, Int)".isSubtype(of: "(String, Any)"))
-		XCTAssert("(String, Int)".isSubtype(of: "(Any, Any)"))
-		XCTAssertFalse("(String, Int)".isSubtype(of: "(Int, Int)"))
+		XCTAssert(context.isSubtype("(String, Int)", of: "(String, Int)"))
+		XCTAssert(context.isSubtype("(String, Int)", of: "(Any, Int)"))
+		XCTAssert(context.isSubtype("(String, Int)", of: "(String, Any)"))
+		XCTAssert(context.isSubtype("(String, Int)", of: "(Any, Any)"))
+		XCTAssertFalse(context.isSubtype("(String, Int)", of: "(Int, Int)"))
 
-		XCTAssertFalse("(String)".isSubtype(of: "(String, String)"))
-		XCTAssertFalse("(String, String)".isSubtype(of: "(String)"))
-		XCTAssertFalse("(String, Int)".isSubtype(of: "(Any)"))
+		XCTAssertFalse(context.isSubtype("(String)", of: "(String, String)"))
+		XCTAssertFalse(context.isSubtype("(String, String)", of: "(String)"))
+		XCTAssertFalse(context.isSubtype("(String, Int)", of: "(Any)"))
 
 		// Arrays
-		XCTAssert("[String]".isSubtype(of: "[String]"))
-		XCTAssert("[String]".isSubtype(of: "[Any]"))
-		XCTAssertFalse("[String]".isSubtype(of: "[Int]"))
+		XCTAssert(context.isSubtype("[String]", of: "[String]"))
+		XCTAssert(context.isSubtype("[String]", of: "[Any]"))
+		XCTAssertFalse(context.isSubtype("[String]", of: "[Int]"))
 
 		// Dictionaries
-		XCTAssert("[String : String]".isSubtype(of: "[String : String]"))
-		XCTAssert("[String : String]".isSubtype(of: "[Any : Any]"))
-		XCTAssert("[String : String]".isSubtype(of: "[String : Any]"))
-		XCTAssert("[String : String]".isSubtype(of: "[Any : String]"))
-		XCTAssertFalse("[String : String]".isSubtype(of: "[Int : Int]"))
-		XCTAssertFalse("[String : String]".isSubtype(of: "[Int : String]"))
-		XCTAssertFalse("[String : String]".isSubtype(of: "[String : Int]"))
+		XCTAssert(context.isSubtype("[String : String]", of: "[String : String]"))
+		XCTAssert(context.isSubtype("[String : String]", of: "[Any : Any]"))
+		XCTAssert(context.isSubtype("[String : String]", of: "[String : Any]"))
+		XCTAssert(context.isSubtype("[String : String]", of: "[Any : String]"))
+		XCTAssertFalse(context.isSubtype("[String : String]", of: "[Int : Int]"))
+		XCTAssertFalse(context.isSubtype("[String : String]", of: "[Int : String]"))
+		XCTAssertFalse(context.isSubtype("[String : String]", of: "[String : Int]"))
 
 		// Generics
-		XCTAssert("Box<String>".isSubtype(of: "Box<Any>"))
-		XCTAssertFalse("Box<String>".isSubtype(of: "Box<Int>"))
-		// XCTAssertFalse("Box<String>".isSubtype(of: "Foo<String>"))
+		XCTAssert(context.isSubtype("Box<String>", of: "Box<Any>"))
+		XCTAssertFalse(context.isSubtype("Box<String>", of: "Box<Int>"))
+		// XCTAssertFalse(context.isSubtype("Box<String>", of: "Foo<String>"))
 
-		XCTAssert("Box<String, String>".isSubtype(of: "Box<Any, Any>"))
-		XCTAssert("Box<String, String>".isSubtype(of: "Box<Any, String>"))
-		XCTAssert("Box<String, String>".isSubtype(of: "Box<String, Any>"))
-		XCTAssertFalse("Box<String, String>".isSubtype(of: "Box<Any>"))
-		XCTAssertFalse("Box<String, String>".isSubtype(of: "Box<Int, String>"))
-		XCTAssertFalse("Box<String, String>".isSubtype(of: "Box<String, Int>"))
-		// XCTAssertFalse("Box<String, String>".isSubtype(of: "Foo<String, String>"))
+		XCTAssert(context.isSubtype("Box<String, String>", of: "Box<Any, Any>"))
+		XCTAssert(context.isSubtype("Box<String, String>", of: "Box<Any, String>"))
+		XCTAssert(context.isSubtype("Box<String, String>", of: "Box<String, Any>"))
+		XCTAssertFalse(context.isSubtype("Box<String, String>", of: "Box<Any>"))
+		XCTAssertFalse(context.isSubtype("Box<String, String>", of: "Box<Int, String>"))
+		XCTAssertFalse(context.isSubtype("Box<String, String>", of: "Box<String, Int>"))
+		// XCTAssertFalse(context.isSubtype("Box<String, String>", of: "Foo<String, String>"))
 	}
 
 	func testSimplifiedSubtypes() {
 		// Mapped types
-		XCTAssert("Bool".isSubtype(of: "Boolean"))
-		XCTAssert("Boolean".isSubtype(of: "Bool"))
+		XCTAssert(context.isSubtype("Bool", of: "Boolean"))
+		XCTAssert(context.isSubtype("Boolean", of: "Bool"))
 
 		// Arrays
-		XCTAssert("MutableList<Int>".isSubtype(of: "[Int]"))
-		XCTAssert("[Int]".isSubtype(of: "MutableList<Int>"))
-		XCTAssert("List<Int>".isSubtype(of: "[Int]"))
-		XCTAssert("[Int]".isSubtype(of: "List<Int>"))
-		// XCTAssert("Array<Int>".isSubtype(of: "[Int]"))
-		// XCTAssert("[Int]".isSubtype(of: "Array<Int>"))
+		XCTAssert(context.isSubtype("MutableList<Int>", of: "[Int]"))
+		XCTAssert(context.isSubtype("[Int]", of: "MutableList<Int>"))
+		XCTAssert(context.isSubtype("List<Int>", of: "[Int]"))
+		XCTAssert(context.isSubtype("[Int]", of: "List<Int>"))
+		// XCTAssert(context.isSubtype("Array<Int>", of: "[Int]"))
+		// XCTAssert(context.isSubtype("[Int]", of: "Array<Int>"))
 
 		// Dictionaries
-		XCTAssert("MutableMap<Int, Int>".isSubtype(of: "[Int : Int]"))
-		XCTAssert("[Int : Int]".isSubtype(of: "MutableMap<Int, Int>"))
-		XCTAssert("Map<Int, Int>".isSubtype(of: "[Int : Int]"))
-		XCTAssert("[Int : Int]".isSubtype(of: "Map<Int, Int>"))
-		// XCTAssert("Dictionary<Int, Int>".isSubtype(of: "[Int : Int]"))
-		// XCTAssert("[Int : Int]".isSubtype(of: "Dictionary<Int, Int>"))
+		XCTAssert(context.isSubtype("MutableMap<Int, Int>", of: "[Int : Int]"))
+		XCTAssert(context.isSubtype("[Int : Int]", of: "MutableMap<Int, Int>"))
+		XCTAssert(context.isSubtype("Map<Int, Int>", of: "[Int : Int]"))
+		XCTAssert(context.isSubtype("[Int : Int]", of: "Map<Int, Int>"))
+		// XCTAssert(context.isSubtype("Dictionary<Int, Int>", of: "[Int : Int]"))
+		// XCTAssert(context.isSubtype("[Int : Int]", of: "Dictionary<Int, Int>"))
 
 		// Array slices
-		XCTAssert("Slice<MutableList<Int>>".isSubtype(of: "[Int]"))
-		XCTAssert("[Int]".isSubtype(of: "Slice<MutableList<Int>>"))
-		// XCTAssert("Slice<List<Int>>".isSubtype(of: "[Int]"))
-		// XCTAssert("[Int]".isSubtype(of: "Slice<List<Int>>"))
-		// XCTAssert("Slice<Array<Int>>".isSubtype(of: "[Int]"))
-		// XCTAssert("[Int]".isSubtype(of: "Slice<Array<Int>>"))
+		XCTAssert(context.isSubtype("Slice<MutableList<Int>>", of: "[Int]"))
+		XCTAssert(context.isSubtype("[Int]", of: "Slice<MutableList<Int>>"))
+		// XCTAssert(context.isSubtype("Slice<List<Int>>", of: "[Int]"))
+		// XCTAssert(context.isSubtype("[Int]", of: "Slice<List<Int>>"))
+		// XCTAssert(context.isSubtype("Slice<Array<Int>>", of: "[Int]"))
+		// XCTAssert(context.isSubtype("[Int]", of: "Slice<Array<Int>>"))
 
 		// Parentheses
-		XCTAssert("(Int)".isSubtype(of: "Int"))
-		XCTAssert("Int".isSubtype(of: "(Int)"))
+		XCTAssert(context.isSubtype("(Int)", of: "Int"))
+		XCTAssert(context.isSubtype("Int", of: "(Int)"))
 
 		// Keywords
-		XCTAssert("inout Int".isSubtype(of: "Int"))
-		XCTAssert("Int".isSubtype(of: "inout Int"))
+		XCTAssert(context.isSubtype("inout Int", of: "Int"))
+		XCTAssert(context.isSubtype("Int", of: "inout Int"))
 
-		XCTAssert("__owned Int".isSubtype(of: "Int"))
-		XCTAssert("Int".isSubtype(of: "__owned Int"))
+		XCTAssert(context.isSubtype("__owned Int", of: "Int"))
+		XCTAssert(context.isSubtype("Int", of: "__owned Int"))
 	}
 }

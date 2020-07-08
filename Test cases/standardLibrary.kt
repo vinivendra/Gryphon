@@ -36,8 +36,26 @@ internal open class A {
 	val string: String = ""
 }
 
+internal open class B {
+	open var description: String = ""
+}
+
+internal open class C {
+	override open fun toString(): String {
+		""
+	}
+}
+
 fun g(a: Int) {
 	printTest(a, "User template")
+}
+
+internal open class D {
+	open class E {
+		override open fun toString(): String {
+			""
+		}
+	}
 }
 
 fun main(args: Array<String>) {
@@ -288,4 +306,8 @@ fun main(args: Array<String>) {
 						return@map listOf(2)
 					}
 				})
+
+	val description1: String = B().description
+	val description2: String = C().toString()
+	val description: String = ""
 }
