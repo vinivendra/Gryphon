@@ -52,9 +52,7 @@ internal open class E {
 }
 
 internal open class F {
-	override open fun toString(): String {
-		return "abc"
-	}
+	override open fun toString(): String = "abc"
 }
 
 fun main(args: Array<String>) {
