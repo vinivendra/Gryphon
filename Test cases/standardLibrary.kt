@@ -41,9 +41,7 @@ internal open class B {
 }
 
 internal open class C {
-	override open fun toString(): String {
-		return ""
-	}
+	override open fun toString(): String = ""
 }
 
 fun g(a: Int) {
@@ -52,9 +50,7 @@ fun g(a: Int) {
 
 internal open class D {
 	open class E {
-		override open fun toString(): String {
-			return ""
-		}
+		override open fun toString(): String = ""
 	}
 }
 
