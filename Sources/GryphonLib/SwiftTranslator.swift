@@ -315,8 +315,18 @@ public class SwiftTranslator {
 		case "Defer Statement":
 			result = [try translateDeferStatement(subtree)]
 		case "Pattern Binding Declaration":
-			try processPatternBindingDeclaration(subtree)
-			result = []
+			// If it's a `let _ = <expression>`
+			if subtree.subtrees.count == 2,
+				subtree.subtrees[0].name == "Pattern Any"
+			{
+				result = try [ExpressionStatement(
+					range: getRangeRecursively(ofNode: subtree),
+					expression: translateExpression(subtree.subtrees[1]))]
+			}
+			else {
+				try processPatternBindingDeclaration(subtree)
+				result = []
+			}
 		case "Return Statement":
 			result = [try translateReturnStatement(subtree)]
 		case "Break Statement":

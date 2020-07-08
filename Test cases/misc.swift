@@ -119,3 +119,6 @@ class E: CustomStringConvertible {
 class F: CustomStringConvertible {
 	var description: String = "abc"
 }
+
+// Anonymous pattern binding
+let _ = "abc"
