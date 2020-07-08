@@ -86,5 +86,20 @@ class B: A {
 	}
 }
 
+// Test warnings on struct initializers
+struct C {
+	let c = 0
+
+	init() { } // warning here
+}
+
+struct D {
+	let d = 0
+
+	class E {
+		init() { } // no warning here
+	}
+}
+
 // Test muting warnings
 let noWarnings: [Int] = [] // gryphon mute
