@@ -3760,6 +3760,44 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 	}
 }
 
+/// Struct initializers aren't yet supported; this raises warnings when they're detected.
+public class RaiseStructInitializerWarningsTranspilationPass: TranspilationPass {
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
+
+	override func processInitializerDeclaration( // gryphon annotation: override
+		_ initializerDeclaration: InitializerDeclaration)
+		-> InitializerDeclaration?
+	{
+		// Get the type that declares this property, if any
+		var isStructInitializer: Bool = false
+		for parent in parents {
+			if case let .statementNode(value: parentStatement) = parent {
+				if parentStatement is ClassDeclaration || parentStatement is EnumDeclaration {
+					isStructInitializer = false
+				}
+				else if parentStatement is StructDeclaration {
+					isStructInitializer = true
+				}
+			}
+		}
+
+		if isStructInitializer {
+			let message = "Secondary initializers in structs are not yet supported." +
+				" Consider using default values for the struct's properties instead."
+			Compiler.handleWarning(
+				message: message,
+				ast: initializerDeclaration,
+				sourceFile: ast.sourceFile,
+				sourceFileRange: initializerDeclaration.range)
+			return nil
+		}
+		else {
+			return super.processInitializerDeclaration(initializerDeclaration)
+		}
+	}
+}
+
 /// `MutableList`s, `List`s, `MutableMap`s, and `Map`s are prefered to
 /// using `Arrays` and `Dictionaries` for guaranteeing correctness. This pass raises warnings when
 /// it finds uses of the native data structures, which should help avoid these bugs.
@@ -3773,7 +3811,7 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 	{
 		if let type = expression.swiftType, type.hasPrefix("[") {
 			let message = "Native type \(type) can lead to different behavior in Kotlin. Prefer " +
-			"MutableList, List, MutableMap or Map instead."
+				"MutableList, List, MutableMap or Map instead."
 			Compiler.handleWarning(
 				message: message,
 				ast: expression,
@@ -4816,6 +4854,7 @@ public extension TranspilationPass {
 		ast = RaiseStandardLibraryWarningsTranspilationPass(ast: ast, context: context).run()
 		ast = RaiseDoubleOptionalWarningsTranspilationPass(ast: ast, context: context).run()
 		ast = RaiseMutableValueTypesWarningsTranspilationPass(ast: ast, context: context).run()
+		ast = RaiseStructInitializerWarningsTranspilationPass(ast: ast, context: context).run()
 		ast = RaiseNativeDataStructureWarningsTranspilationPass(ast: ast, context: context).run()
 
 		return ast
