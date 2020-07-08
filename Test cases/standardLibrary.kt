@@ -42,7 +42,7 @@ internal open class B {
 
 internal open class C {
 	override open fun toString(): String {
-		""
+		return ""
 	}
 }
 
@@ -53,7 +53,7 @@ fun g(a: Int) {
 internal open class D {
 	open class E {
 		override open fun toString(): String {
-			""
+			return ""
 		}
 	}
 }

@@ -983,9 +983,12 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 				statements = getterStatements
 			}
 			else if let expression = variableDeclaration.expression {
-				statements = [ExpressionStatement(
+				// TODO: this can be a single expression once single-expression functions are
+				// supported
+				statements = [ReturnStatement(
 					range: expression.range,
-					expression: expression)]
+					expression: expression,
+					label: nil)]
 			}
 			else {
 				return super.replaceVariableDeclaration(variableDeclaration)
