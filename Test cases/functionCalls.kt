@@ -29,6 +29,22 @@ internal fun definition4(): Int {
 	return 0
 }
 
+internal fun definition5(): Int = 5
+
+internal fun aaaaaaaaaaaaa(
+	bbbbbbbbbbbbbbbb: Int,
+	ccccccccccccc: Int,
+	ddddddddddddddddddddddddd: Int,
+	eeeeeeeeeee: Int)
+	: String
+	= "abc"
+
+internal fun d(): String = aaaaaaaaaaaaa(
+		bbbbbbbbbbbbbbbb = 0,
+		ccccccccccccc = 0,
+		ddddddddddddddddddddddddd = 0,
+		eeeeeeeeeee = 0)
+
 internal fun foo() {
 }
 
