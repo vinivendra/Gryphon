@@ -512,9 +512,17 @@ func gryphonTemplates() {
 }
 
 //////////////////////////////////////////////////////////
-// Auxiliary declarations
+// Auxiliary declarations for the following tests
 class A {
 	let string: String = ""
+}
+
+class B {
+	var description: String = ""
+}
+
+class C: CustomStringConvertible {
+	var description: String = ""
 }
 
 func f(of a: Int) { // gryphon ignore
@@ -561,3 +569,22 @@ print([1, 2, 3].map { (a: Int) -> [Int] in
 		return [2]
 	}
 })
+
+//////////////////////////////////////////////////////////
+// Inheritance checking
+
+// B doesn't conform to CustomStringConvertible, so this is `B().description`
+let description1 = B().description
+
+// C conforms to CustomStringConvertible, so this is `C().toString()`
+let description2 = C().description
+
+// Local variables don't get translated
+let description: String = ""
+
+// Nested classes get translated
+class D {
+	class E: CustomStringConvertible {
+		var description: String = ""
+	}
+}

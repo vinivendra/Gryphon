@@ -45,6 +45,18 @@ internal open class Subclass: Base {
 	constructor(): super() { }
 }
 
+internal open class E {
+	override open fun toString(): String {
+		return "abc"
+	}
+}
+
+internal open class F {
+	override open fun toString(): String {
+		return "abc"
+	}
+}
+
 fun main(args: Array<String>) {
 	var i: Int = 1
 

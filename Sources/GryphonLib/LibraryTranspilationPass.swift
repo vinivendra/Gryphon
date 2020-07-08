@@ -226,7 +226,7 @@ public class ReplaceTemplatesTranspilationPass: TranspilationPass {
 		-> Expression
 	{
 		for template in context.templates {
-			if let matches = expression.matches(template.swiftExpression) {
+			if let matches = expression.matches(template.swiftExpression, inContext: self.context) {
 
 				// Make the matches dictionary into a list
 				let matchesList: MutableList<(String, Expression)> = []
@@ -366,9 +366,13 @@ private class ReplaceTemplateMatchesTranspilationPass: TranspilationPass {
 }
 
 extension Expression {
-	func matches(_ template: Expression) -> MutableMap<String, Expression>? {
+	func matches(
+		_ template: Expression,
+		inContext context: TranspilationContext)
+		-> MutableMap<String, Expression>?
+	{
 		let result: MutableMap<String, Expression> = [:]
-		let success = matches(template, result)
+		let success = self.matches(template, result, context)
 		if success {
 			return result
 		}
@@ -379,7 +383,8 @@ extension Expression {
 
 	private func matches(
 		_ template: Expression,
-		_ matches: MutableMap<String, Expression>)
+		_ matches: MutableMap<String, Expression>,
+		_ context: TranspilationContext)
 		-> Bool
 	{
 		let lhs = self
@@ -387,7 +392,7 @@ extension Expression {
 
 		if let declarationExpression = rhs as? DeclarationReferenceExpression {
 			if declarationExpression.identifier.hasPrefix("_"),
-				lhs.isOfType(declarationExpression.typeName)
+				lhs.isOfType(declarationExpression.typeName, inContext: context)
 			{
 				matches[declarationExpression.identifier] = lhs
 				return true
@@ -400,29 +405,29 @@ extension Expression {
 		if let lhs = lhs as? ParenthesesExpression,
 			let rhs = rhs as? ParenthesesExpression
 		{
-			return lhs.expression.matches(rhs.expression, matches)
+			return lhs.expression.matches(rhs.expression, matches, context)
 		}
 		if let lhs = lhs as? ForceValueExpression,
 			let rhs = rhs as? ForceValueExpression
 		{
-			return lhs.expression.matches(rhs.expression, matches)
+			return lhs.expression.matches(rhs.expression, matches, context)
 		}
 		if let lhs = lhs as? DeclarationReferenceExpression,
 			let rhs = rhs as? DeclarationReferenceExpression
 		{
 			return lhs.identifier == rhs.identifier &&
-				lhs.typeName.isSubtype(of: rhs.typeName) &&
+				context.isSubtype(lhs.typeName, of: rhs.typeName) &&
 				lhs.isImplicit == rhs.isImplicit
 		}
 		if let lhs = lhs as? OptionalExpression,
 			let rhs = rhs as? OptionalExpression
 		{
-			return lhs.expression.matches(rhs.expression, matches)
+			return lhs.expression.matches(rhs.expression, matches, context)
 		}
 		if let lhs = lhs as? TypeExpression,
 			let rhs = rhs as? TypeExpression
 		{
-			return lhs.typeName.isSubtype(of: rhs.typeName)
+			return context.isSubtype(lhs.typeName, of: rhs.typeName)
 		}
 		if let lhs = lhs as? TypeExpression,
 			let rhs = rhs as? DeclarationReferenceExpression
@@ -431,7 +436,7 @@ extension Expression {
 				return false
 			}
 			let expressionType = String(rhs.typeName.dropLast(".Type".count))
-			return lhs.typeName.isSubtype(of: expressionType)
+			return context.isSubtype(lhs.typeName, of: expressionType)
 		}
 		if let lhs = lhs as? DeclarationReferenceExpression,
 			let rhs = rhs as? TypeExpression
@@ -440,51 +445,51 @@ extension Expression {
 				return false
 			}
 			let expressionType = String(lhs.typeName.dropLast(".Type".count))
-			return expressionType.isSubtype(of: rhs.typeName)
+			return context.isSubtype(expressionType, of: rhs.typeName)
 		}
 		if let lhs = lhs as? SubscriptExpression,
 			let rhs = rhs as? SubscriptExpression
 		{
-			return lhs.subscriptedExpression.matches(rhs.subscriptedExpression, matches)
-				&& lhs.indexExpression.matches(rhs.indexExpression, matches)
-				&& lhs.typeName.isSubtype(of: rhs.typeName)
+			return lhs.subscriptedExpression.matches(rhs.subscriptedExpression, matches, context)
+				&& lhs.indexExpression.matches(rhs.indexExpression, matches, context)
+				&& context.isSubtype(lhs.typeName, of: rhs.typeName)
 		}
 		if let lhs = lhs as? ArrayExpression,
 			let rhs = rhs as? ArrayExpression
 		{
 			var result = (lhs.elements.count == rhs.elements.count)
 			for (leftElement, rightElement) in zip(lhs.elements, rhs.elements) {
-				result = result && leftElement.matches(rightElement, matches)
+				result = result && leftElement.matches(rightElement, matches, context)
 			}
-			return result && (lhs.typeName.isSubtype(of: rhs.typeName))
+			return result && (context.isSubtype(lhs.typeName, of: rhs.typeName))
 		}
 		if let lhs = lhs as? DotExpression,
 			let rhs = rhs as? DotExpression
 		{
-			return lhs.leftExpression.matches(rhs.leftExpression, matches) &&
-				lhs.rightExpression.matches(rhs.rightExpression, matches)
+			return lhs.leftExpression.matches(rhs.leftExpression, matches, context) &&
+				lhs.rightExpression.matches(rhs.rightExpression, matches, context)
 		}
 		if let lhs = lhs as? BinaryOperatorExpression,
 			let rhs = rhs as? BinaryOperatorExpression
 		{
-			return lhs.leftExpression.matches(rhs.leftExpression, matches) &&
-				lhs.rightExpression.matches(rhs.rightExpression, matches) &&
+			return lhs.leftExpression.matches(rhs.leftExpression, matches, context) &&
+				lhs.rightExpression.matches(rhs.rightExpression, matches, context) &&
 				lhs.operatorSymbol == rhs.operatorSymbol &&
-				lhs.typeName.isSubtype(of: rhs.typeName)
+				context.isSubtype(lhs.typeName, of: rhs.typeName)
 		}
 		if let lhs = lhs as? PrefixUnaryExpression,
 			let rhs = rhs as? PrefixUnaryExpression
 		{
-			return lhs.subExpression.matches(rhs.subExpression, matches) &&
+			return lhs.subExpression.matches(rhs.subExpression, matches, context) &&
 				lhs.operatorSymbol == rhs.operatorSymbol &&
-				lhs.typeName.isSubtype(of: rhs.typeName)
+				context.isSubtype(lhs.typeName, of: rhs.typeName)
 		}
 		if let lhs = lhs as? PostfixUnaryExpression,
 			let rhs = rhs as? PostfixUnaryExpression
 		{
-			return lhs.subExpression.matches(rhs.subExpression, matches) &&
+			return lhs.subExpression.matches(rhs.subExpression, matches, context) &&
 				lhs.operatorSymbol == rhs.operatorSymbol &&
-				lhs.typeName.isSubtype(of: rhs.typeName)
+				context.isSubtype(lhs.typeName, of: rhs.typeName)
 		}
 		if let lhs = lhs as? CallExpression,
 			let rhs = rhs as? CallExpression
@@ -493,14 +498,14 @@ extension Expression {
 			if let lhsType = lhs.typeName,
 				let rhsType = rhs.typeName
 			{
-				typeMatches = lhsType.isSubtype(of: rhsType)
+				typeMatches = context.isSubtype(lhsType, of: rhsType)
 			}
 			else {
 				typeMatches = true
 			}
 
-			return lhs.function.matches(rhs.function, matches) &&
-				lhs.parameters.matches(rhs.parameters, matches) &&
+			return lhs.function.matches(rhs.function, matches, context) &&
+				lhs.parameters.matches(rhs.parameters, matches, context) &&
 				typeMatches
 		}
 		if let lhs = lhs as? LiteralIntExpression,
@@ -538,7 +543,7 @@ extension Expression {
 		{
 			var result = true
 			for (leftExpression, rightExpression) in zip(lhs.expressions, rhs.expressions) {
-				result = result && leftExpression.matches(rightExpression, matches)
+				result = result && leftExpression.matches(rightExpression, matches, context)
 			}
 			return result
 		}
@@ -559,11 +564,11 @@ extension Expression {
 							onlyRightPair.expression as? ParenthesesExpression
 						{
 							return closureInParentheses.expression.matches(
-								templateInParentheses.expression, matches)
+								templateInParentheses.expression, matches, context)
 						}
 						else {
 							return closureInParentheses.expression.matches(
-								onlyRightPair.expression, matches)
+								onlyRightPair.expression, matches, context)
 						}
 					}
 				}
@@ -577,7 +582,7 @@ extension Expression {
 			// Check if the expressions inside them match
 			for (leftPair, rightPair) in zip(lhs.pairs, rhs.pairs) {
 				result = result &&
-					leftPair.expression.matches(rightPair.expression, matches) &&
+					leftPair.expression.matches(rightPair.expression, matches, context) &&
 					leftPair.label == rightPair.label
 			}
 			return result
@@ -592,7 +597,7 @@ extension Expression {
 			}
 
 			for (leftExpression, rightExpression) in zip(lhs.expressions, rhs.expressions) {
-				result = result && leftExpression.matches(rightExpression, matches)
+				result = result && leftExpression.matches(rightExpression, matches, context)
 			}
 
 			return result
@@ -601,13 +606,13 @@ extension Expression {
 			let rhs = rhs as? TupleShuffleExpression
 		{
 			let rhsAsTupleExpression = rhs.flattenToTupleExpression()
-			return lhs.matches(rhsAsTupleExpression, matches)
+			return lhs.matches(rhsAsTupleExpression, matches, context)
 		}
 		if let lhs = lhs as? TupleShuffleExpression,
 			let rhs = rhs as? TupleExpression
 		{
 			let lhsAsTupleExpression = lhs.flattenToTupleExpression()
-			return lhsAsTupleExpression.matches(rhs, matches)
+			return lhsAsTupleExpression.matches(rhs, matches, context)
 		}
 
 		// If no matches were found
@@ -645,153 +650,168 @@ extension Expression {
 		}
 	}
 
-	func isOfType(_ superType: String) -> Bool {
+	func isOfType(_ superType: String, inContext context: TranspilationContext) -> Bool {
 		guard let typeName = self.swiftType else {
 			return false
 		}
 
-		return typeName.isSubtype(of: superType)
+		return context.isSubtype(typeName, of: superType)
 	}
 }
 
-internal extension String {
-	func isSubtype(of superType: String) -> Bool {
-		// Check common cases
-		if self == superType {
-			return true
-		}
-		else if self.isEmpty || superType.isEmpty {
+internal extension TranspilationContext {
+	func isSubtype(_ subType: String, of superType: String) -> Bool {
+			// Check common cases
+			if subType == superType {
+				return true
+			}
+			else if subType.isEmpty || superType.isEmpty {
+				return false
+			}
+			else if superType == "Any" ||
+				superType == "_Any" ||
+				superType == "_Hashable" ||
+				superType == "_Comparable" ||
+				superType == "_Optional"
+			{
+				return true
+			}
+			else if superType == "_CustomStringConvertible" {
+				if let subTypeInheritances = inheritances[subType] {
+					return subTypeInheritances.contains("CustomStringConvertible")
+				}
+				else {
+					// If the subType was defined externally, assume it's CustomStringConvertible
+					return true
+				}
+			}
+			else if superType == "_Optional?" {
+				return subType.hasSuffix("?")
+			}
+			else if superType == "XCTestCase" {
+				return subType.contains("Test")
+			}
+
+			// Handle tuples
+			if Utilities.isInEnvelopingParentheses(subType),
+				Utilities.isInEnvelopingParentheses(superType)
+			{
+				let subContents = String(subType.dropFirst().dropLast())
+				let superContents = String(superType.dropFirst().dropLast())
+
+				let subComponents = subContents.split(withStringSeparator: ", ")
+				let superComponents = superContents.split(withStringSeparator: ", ")
+
+				guard subComponents.count == superComponents.count else {
+					return false
+				}
+
+				for (subComponent, superComponent) in zip(subComponents, superComponents) {
+					guard self.isSubtype(subComponent, of: superComponent) else {
+						return false
+					}
+				}
+
+				return true
+			}
+
+			// Simplify the types
+			let simpleSubType = simplifyType(string: subType)
+			let simpleSuperType = simplifyType(string: superType)
+			if simpleSubType != subType || simpleSuperType != superType {
+				return self.isSubtype(simpleSubType, of: simpleSuperType)
+			}
+
+			// Handle optionals
+			if subType.last! == "?", superType.last! == "?" {
+				let newSubType = String(subType.dropLast())
+				let newSuperType = String(superType.dropLast())
+				return self.isSubtype(newSubType, of: newSuperType)
+			}
+			else if superType.last! == "?" {
+				let newSuperType = String(superType.dropLast())
+				return self.isSubtype(subType, of: newSuperType)
+			}
+
+			// Analyze components of function types
+			if superType.contains(" -> ") {
+				guard subType.contains(" -> ") else {
+					return false
+				}
+
+				return true
+			}
+
+			// Handle arrays and dictionaries
+			if subType.first! == "[", subType.last! == "]",
+				superType.first! == "[", superType.last! == "]"
+			{
+				if subType.contains(" : ") && superType.contains(" : ") {
+					let subKeyValue =
+						String(subType.dropFirst().dropLast()).split(withStringSeparator: " : ")
+					let superKeyValue =
+						String(superType.dropFirst().dropLast()).split(withStringSeparator: " : ")
+					let subKey = subKeyValue[0]
+					let subValue = subKeyValue[1]
+					let superKey = superKeyValue[0]
+					let superValue = superKeyValue[1]
+					return self.isSubtype(subKey, of: superKey) &&
+						self.isSubtype(subValue, of: superValue)
+				}
+				else if !subType.contains(":") && !superType.contains(":") {
+					let subElement = String(subType.dropFirst().dropLast())
+					let superTypeElement = String(superType.dropFirst().dropLast())
+					return self.isSubtype(subElement, of: superTypeElement)
+				}
+			}
+
+			// Handle generics
+			if subType.contains("<"), subType.last! == ">",
+				superType.contains("<"), superType.last! == ">"
+			{
+				let subStartGenericsIndex = subType.firstIndex(of: "<")!
+				let superTypeStartGenericsIndex = superType.firstIndex(of: "<")!
+
+				let subGenericArguments =
+					String(subType[subStartGenericsIndex...].dropFirst().dropLast())
+				let superTypeGenericArguments =
+					String(superType[superTypeStartGenericsIndex...].dropFirst().dropLast())
+
+				let subTypeComponents = subGenericArguments.split(withStringSeparator: ", ")
+				let superTypeComponents = superTypeGenericArguments.split(withStringSeparator: ", ")
+
+				guard superTypeComponents.count == subTypeComponents.count else {
+					return false
+				}
+
+				for (subTypeComponent, superTypeComponent) in
+					zip(subTypeComponents, superTypeComponents)
+				{
+					if !self.isSubtype(subTypeComponent, of: superTypeComponent) {
+						return false
+					}
+				}
+
+				return true
+			}
+			else if subType.contains("<"), subType.last! == ">" {
+				let typeWithoutGenerics = String(subType.prefix {
+					$0 !=
+						"<" // gryphon value: '<'
+				})
+				return self.isSubtype(typeWithoutGenerics, of: superType)
+			}
+			else if superType.contains("<"), superType.last! == ">" {
+				let typeWithoutGenerics = String(superType.prefix {
+					$0 !=
+						"<" // gryphon value: '<'
+				})
+				return self.isSubtype(subType, of: typeWithoutGenerics)
+			}
+
+			// If no subtype cases were met, say it's not a subtype
 			return false
 		}
-		else if superType == "Any" ||
-			superType == "_Any" ||
-			superType == "_Hashable" ||
-			superType == "_Comparable" ||
-			superType == "_Optional"
-		{
-			return true
-		}
-		else if superType == "_Optional?" {
-			return self.hasSuffix("?")
-		}
-		else if superType == "XCTestCase" {
-			return self.contains("Test")
-		}
-
-		// Handle tuples
-		if Utilities.isInEnvelopingParentheses(self), Utilities.isInEnvelopingParentheses(superType)
-		{
-			let selfContents = String(self.dropFirst().dropLast())
-			let superContents = String(superType.dropFirst().dropLast())
-
-			let selfComponents = selfContents.split(withStringSeparator: ", ")
-			let superComponents = superContents.split(withStringSeparator: ", ")
-
-			guard selfComponents.count == superComponents.count else {
-				return false
-			}
-
-			for (selfComponent, superComponent) in zip(selfComponents, superComponents) {
-				guard selfComponent.isSubtype(of: superComponent) else {
-					return false
-				}
-			}
-
-			return true
-		}
-
-		// Simplify the types
-		let simpleSelf = simplifyType(string: self)
-		let simpleSuperType = simplifyType(string: superType)
-		if simpleSelf != self || simpleSuperType != superType {
-			return simpleSelf.isSubtype(of: simpleSuperType)
-		}
-
-		// Handle optionals
-		if self.last! == "?", superType.last! == "?" {
-			let newSelf = String(self.dropLast())
-			let newSuperType = String(superType.dropLast())
-			return newSelf.isSubtype(of: newSuperType)
-		}
-		else if superType.last! == "?" {
-			let newSuperType = String(superType.dropLast())
-			return self.isSubtype(of: newSuperType)
-		}
-
-		// Analyze components of function types
-		if superType.contains(" -> ") {
-			guard self.contains(" -> ") else {
-				return false
-			}
-
-			return true
-		}
-
-		// Handle arrays and dictionaries
-		if self.first! == "[", self.last! == "]", superType.first! == "[", superType.last! == "]" {
-			if self.contains(" : ") && superType.contains(" : ") {
-				let selfKeyValue =
-					String(self.dropFirst().dropLast()).split(withStringSeparator: " : ")
-				let superKeyValue =
-					String(superType.dropFirst().dropLast()).split(withStringSeparator: " : ")
-				let selfKey = selfKeyValue[0]
-				let selfValue = selfKeyValue[1]
-				let superKey = superKeyValue[0]
-				let superValue = superKeyValue[1]
-				return selfKey.isSubtype(of: superKey) && selfValue.isSubtype(of: superValue)
-			}
-			else if !self.contains(":") && !superType.contains(":") {
-				let selfElement = String(self.dropFirst().dropLast())
-				let superTypeElement = String(superType.dropFirst().dropLast())
-				return selfElement.isSubtype(of: superTypeElement)
-			}
-		}
-
-		// Handle generics
-		if self.contains("<"), self.last! == ">", superType.contains("<"), superType.last! == ">" {
-			let selfStartGenericsIndex = self.firstIndex(of: "<")!
-			let superTypeStartGenericsIndex = superType.firstIndex(of: "<")!
-
-			let selfGenericArguments =
-				String(self[selfStartGenericsIndex...].dropFirst().dropLast())
-			let superTypeGenericArguments =
-				String(superType[superTypeStartGenericsIndex...].dropFirst().dropLast())
-
-			let selfTypeComponents = selfGenericArguments.split(withStringSeparator: ", ")
-			let superTypeComponents = superTypeGenericArguments.split(withStringSeparator: ", ")
-
-			guard superTypeComponents.count == selfTypeComponents.count else {
-				return false
-			}
-
-			for (selfTypeComponent, superTypeComponent) in
-				zip(selfTypeComponents, superTypeComponents)
-			{
-				if !selfTypeComponent.isSubtype(of: superTypeComponent) {
-					return false
-				}
-			}
-
-			return true
-		}
-		else if self.contains("<"), self.last! == ">" {
-			let typeWithoutGenerics = String(self.prefix {
-				$0 !=
-					"<" // gryphon value: '<'
-			})
-			return typeWithoutGenerics.isSubtype(of: superType)
-		}
-		else if superType.contains("<"), superType.last! == ">" {
-			let typeWithoutGenerics = String(superType.prefix {
-				$0 !=
-					"<" // gryphon value: '<'
-			})
-			return self.isSubtype(of: typeWithoutGenerics)
-		}
-
-		// If no subtype cases were met, say it's not a subtype
-		return false
-	}
 }
 
 private func simplifyType(string: String) -> String {
