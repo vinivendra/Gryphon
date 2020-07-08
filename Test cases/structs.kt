@@ -30,12 +30,25 @@ internal data class NoInheritance(
 	val y: Int
 )
 
+internal data class SingleExpressionMembers(
+	val oneParameter: Int = 0
+) {
+	val one: Int
+		get() = 10
+	val two: Int
+		get() = 20
+}
+
 fun main(args: Array<String>) {
 	val a: SupportedStruct = SupportedStruct()
 	val b: OtherSupportedStruct = OtherSupportedStruct(x = 10, y = 20)
+	val c: SingleExpressionMembers = SingleExpressionMembers()
 
 	println(a.x)
 	println(a.y)
 	println(b.x)
 	println(b.y)
+	println(c.oneParameter)
+	println(c.one)
+	println(c.two)
 }
