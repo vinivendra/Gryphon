@@ -116,6 +116,20 @@ internal open class SingleExpressionMembers {
 		get() = 10
 	open val two: Int
 		get() = 20
+	open val dddddddddddddddddddddddddeeeeeeeeeee: Int
+		get() = aaaaaaaaaaaaa(
+			bbbbbbbbbbbbbbbb = 0,
+			ccccccccccccc = 1,
+			ddddddddddddddddddddddddd = 2,
+			eeeeeeeeeee = 3)
+
+	private fun aaaaaaaaaaaaa(
+		bbbbbbbbbbbbbbbb: Int,
+		ccccccccccccc: Int,
+		ddddddddddddddddddddddddd: Int,
+		eeeeeeeeeee: Int)
+		: Int
+		= bbbbbbbbbbbbbbbb * ccccccccccccc * ddddddddddddddddddddddddd * eeeeeeeeeee
 }
 
 fun main(args: Array<String>) {
@@ -169,4 +183,5 @@ fun main(args: Array<String>) {
 
 	println(singleExpressionMembers.one)
 	println(singleExpressionMembers.two)
+	println(singleExpressionMembers.dddddddddddddddddddddddddeeeeeeeeeee)
 }
