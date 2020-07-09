@@ -933,10 +933,64 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 		_ variableDeclaration: VariableDeclaration)
 		-> List<Statement>
 	{
+		// Get the type that declares this property, if any
+		var maybeTypeParent: String?
+		for parent in parents {
+			if case let .statementNode(value: parentStatement) = parent {
+				if let classDeclaration = parentStatement as? ClassDeclaration {
+					maybeTypeParent = classDeclaration.className
+				}
+				else if let structDeclaration = parentStatement as? StructDeclaration {
+					maybeTypeParent = structDeclaration.structName
+				}
+				else if let enumDeclaration = parentStatement as? EnumDeclaration {
+					maybeTypeParent = enumDeclaration.enumName
+				}
+			}
+		}
+
+		if let typeParent = maybeTypeParent {
+			if let inheritances = context.inheritances[typeParent] {
+				// If the description variable isn't satisfying a CustomStringConvertible
+				// requirement, do nothing
+				if !inheritances.contains("CustomStringConvertible") {
+					return super.replaceVariableDeclaration(variableDeclaration)
+				}
+			}
+			else {
+				// If we found the parent type, its inheritances should have been recorded earlier.
+				// Something went wrong.
+				do {
+					try Compiler.handleError(
+						message: "Unable to check inheritances for \(typeParent)",
+						sourceFile: ast.sourceFile,
+						sourceFileRange: variableDeclaration.range)
+				}
+				catch { }
+				return [ErrorStatement(range: variableDeclaration.range)]
+			}
+		}
+		else {
+			// Local variable, do nothing
+			return super.replaceVariableDeclaration(variableDeclaration)
+		}
+
 		if variableDeclaration.identifier == "description",
-			variableDeclaration.typeName == "String",
-			let getter = variableDeclaration.getter
+			variableDeclaration.typeName == "String"
 		{
+			let statements: MutableList<Statement>
+			if let getterStatements = variableDeclaration.getter?.statements {
+				statements = getterStatements
+			}
+			else if let expression = variableDeclaration.expression {
+				statements = [ExpressionStatement(
+					range: expression.range,
+					expression: expression)]
+			}
+			else {
+				return super.replaceVariableDeclaration(variableDeclaration)
+			}
+
 			let newAnnotations = variableDeclaration.annotations
 			if !newAnnotations.contains("override") {
 				newAnnotations.append("override")
@@ -956,7 +1010,7 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 				isPure: false,
 				isJustProtocolInterface: false,
 				extendsType: variableDeclaration.extendsType,
-				statements: getter.statements,
+				statements: statements,
 				access: "public",
 				annotations: newAnnotations), ]
 		}
@@ -2662,7 +2716,9 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 		if let declarationReferenceExpression =
 			functionExpression as? DeclarationReferenceExpression
 		{
-			return declarationReferenceExpression.identifier
+			let functionName = declarationReferenceExpression.identifier // `foo(arg:)`
+			let functionPrefix = String(functionName.prefix(while: { $0 != "(" }))
+			return functionPrefix
 		}
 		else if let dotExpression = functionExpression as? DotExpression {
 			return getLabelForFunction(dotExpression.rightExpression)
@@ -2748,7 +2804,7 @@ public class TuplesToPairsTranspilationPass: TranspilationPass {
 	{
 		// Ensure it's a pair
 		guard tupleExpression.pairs.count == 2 else {
-			return super.replaceTupleExpression(tupleExpression) 
+			return super.replaceTupleExpression(tupleExpression)
 		}
 
 		// Ignore tuples in call expressions and for statements
@@ -3507,6 +3563,45 @@ public class RecordInitializersTranspilationPass: TranspilationPass {
 	}
 }
 
+/// Records the superclass and protocol inheritances of any enum, struct or class declaration.
+/// Inheritances are copied to avoid them changing accidentally later.
+///
+/// TODO: This can cause issues when two nested classes have the same name (e.g. `A.B` and `C.B`).
+public class RecordInheritancesTranspilationPass: TranspilationPass {
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
+
+	override func replaceEnumDeclaration( // gryphon annotation: override
+		_ enumDeclaration: EnumDeclaration)
+		-> List<Statement>
+	{
+		self.context.addInheritances(
+			forType: enumDeclaration.enumName,
+			inheritances: enumDeclaration.inherits.toList())
+		return super.replaceEnumDeclaration(enumDeclaration)
+	}
+
+	override func replaceStructDeclaration( // gryphon annotation: override
+		_ structDeclaration: StructDeclaration)
+		-> List<Statement>
+	{
+		self.context.addInheritances(
+			forType: structDeclaration.structName,
+			inheritances: structDeclaration.inherits.toList())
+		return super.replaceStructDeclaration(structDeclaration)
+	}
+
+	override func replaceClassDeclaration( // gryphon annotation: override
+		_ classDeclaration: ClassDeclaration)
+		-> List<Statement>
+	{
+		self.context.addInheritances(
+			forType: classDeclaration.className,
+			inheritances: classDeclaration.inherits.toList())
+		return super.replaceClassDeclaration(classDeclaration)
+	}
+}
+
 public class RecordEnumsTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
 	// gryphon insert:     super(ast, context) { }
@@ -3662,6 +3757,44 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 	}
 }
 
+/// Struct initializers aren't yet supported; this raises warnings when they're detected.
+public class RaiseStructInitializerWarningsTranspilationPass: TranspilationPass {
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
+
+	override func processInitializerDeclaration( // gryphon annotation: override
+		_ initializerDeclaration: InitializerDeclaration)
+		-> InitializerDeclaration?
+	{
+		// Get the type that declares this property, if any
+		var isStructInitializer: Bool = false
+		for parent in parents {
+			if case let .statementNode(value: parentStatement) = parent {
+				if parentStatement is ClassDeclaration || parentStatement is EnumDeclaration {
+					isStructInitializer = false
+				}
+				else if parentStatement is StructDeclaration {
+					isStructInitializer = true
+				}
+			}
+		}
+
+		if isStructInitializer {
+			let message = "Secondary initializers in structs are not yet supported." +
+				" Consider using default values for the struct's properties instead."
+			Compiler.handleWarning(
+				message: message,
+				ast: initializerDeclaration,
+				sourceFile: ast.sourceFile,
+				sourceFileRange: initializerDeclaration.range)
+			return nil
+		}
+		else {
+			return super.processInitializerDeclaration(initializerDeclaration)
+		}
+	}
+}
+
 /// `MutableList`s, `List`s, `MutableMap`s, and `Map`s are prefered to
 /// using `Arrays` and `Dictionaries` for guaranteeing correctness. This pass raises warnings when
 /// it finds uses of the native data structures, which should help avoid these bugs.
@@ -3675,7 +3808,7 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 	{
 		if let type = expression.swiftType, type.hasPrefix("[") {
 			let message = "Native type \(type) can lead to different behavior in Kotlin. Prefer " +
-			"MutableList, List, MutableMap or Map instead."
+				"MutableList, List, MutableMap or Map instead."
 			Compiler.handleWarning(
 				message: message,
 				ast: expression,
@@ -4621,17 +4754,18 @@ public extension TranspilationPass {
 		// Remove declarations that shouldn't even be considered in the passes
 		ast = RemoveImplicitDeclarationsTranspilationPass(ast: ast, context: context).run()
 
+		// Record information on enum and function translations
+		ast = RecordTemplatesTranspilationPass(ast: ast, context: context).run()
+		ast = RecordProtocolsTranspilationPass(ast: ast, context: context).run()
+		ast = RecordFunctionsTranspilationPass(ast: ast, context: context).run()
+		ast = RecordInitializersTranspilationPass(ast: ast, context: context).run()
+		ast = RecordInheritancesTranspilationPass(ast: ast, context: context).run()
+
 		// RecordEnums needs to be after CleanInheritance: it needs Swift-only inheritances removed
 		// in order to know if the enum inherits from a class or not, and therefore is a sealed
 		// class or an enum class.
 		ast = CleanInheritancesTranspilationPass(ast: ast, context: context).run()
-
-		// Record information on enum and function translations
-		ast = RecordTemplatesTranspilationPass(ast: ast, context: context).run()
 		ast = RecordEnumsTranspilationPass(ast: ast, context: context).run()
-		ast = RecordProtocolsTranspilationPass(ast: ast, context: context).run()
-		ast = RecordFunctionsTranspilationPass(ast: ast, context: context).run()
-		ast = RecordInitializersTranspilationPass(ast: ast, context: context).run()
 
 		return ast
 	}
@@ -4717,6 +4851,7 @@ public extension TranspilationPass {
 		ast = RaiseStandardLibraryWarningsTranspilationPass(ast: ast, context: context).run()
 		ast = RaiseDoubleOptionalWarningsTranspilationPass(ast: ast, context: context).run()
 		ast = RaiseMutableValueTypesWarningsTranspilationPass(ast: ast, context: context).run()
+		ast = RaiseStructInitializerWarningsTranspilationPass(ast: ast, context: context).run()
 		ast = RaiseNativeDataStructureWarningsTranspilationPass(ast: ast, context: context).run()
 
 		return ast

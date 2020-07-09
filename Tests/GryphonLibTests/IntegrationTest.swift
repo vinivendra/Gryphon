@@ -171,8 +171,8 @@ class IntegrationTest: XCTestCase {
 
 				// Make sure the comment for muting warnings is working
 				XCTAssert(
-					Compiler.numberOfWarnings == 11,
-					"Expected 11 warnings, found \(Compiler.numberOfErrors):\n" +
+					Compiler.numberOfWarnings == 12,
+					"Expected 11 warnings, found \(Compiler.numberOfWarnings):\n" +
 						Compiler.issues.filter { !$0.isError }.map { $0.fullMessage }
 							.joined(separator: "\n"))
 
@@ -224,6 +224,14 @@ class IntegrationTest: XCTestCase {
 				XCTAssertEqual(
 					warnings.count, 2,
 					"Expected 2 warnings containing \"superclass's initializer\", " +
+						"found \(warnings.count) (printed below, if any).\n" +
+						warnings.map { $0.fullMessage }.joined(separator: "\n"))
+
+				warnings =
+					Compiler.issues.filter { $0.fullMessage.contains("initializers in structs") }
+				XCTAssertEqual(
+					warnings.count, 1,
+					"Expected 1 warnings containing \"initializers in structs\", " +
 						"found \(warnings.count) (printed below, if any).\n" +
 						warnings.map { $0.fullMessage }.joined(separator: "\n"))
 			}

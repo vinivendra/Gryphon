@@ -126,6 +126,19 @@ public class TranspilationContext {
 		protocols.append(protocolName)
 	}
 
+	///
+	/// This variable is used to store the inheritances (superclasses and protocols) of each type.
+	/// Keys correspond to the type, values correspond to its inheritances.
+	///
+	private(set) var inheritances: MutableMap<String, List<String>> = [:]
+
+	public func addInheritances(
+		forType typeName: String,
+		inheritances typeInheritances: List<String>)
+	{
+		inheritances[typeName] = typeInheritances
+	}
+
 	// MARK: - Function translations
 
 	/// Stores information on how a Swift function should be translated into Kotlin, including what

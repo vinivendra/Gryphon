@@ -143,4 +143,12 @@ fun main(args: Array<String>) {
 				else -> 1
 			}
 		}
+	foo { bla ->
+			if (true) {
+				return@foo 0
+			}
+			else {
+				return@foo 1
+			}
+		}
 }

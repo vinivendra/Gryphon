@@ -107,3 +107,18 @@ let bla: Array<Int>.ArrayLiteralElement = 1
 
 // Test types with parentheses
 var foo: (() -> ())? = nil
+
+// Description as toString() for properties with getters
+class E: CustomStringConvertible {
+	var description: String {
+		return "abc"
+	}
+}
+
+// Description as toString() for properties without getters
+class F: CustomStringConvertible {
+	var description: String = "abc"
+}
+
+// Anonymous pattern binding
+let _ = "abc"

@@ -42,6 +42,19 @@ func definition4() -> Int {
 	return 0
 }
 
+// Single-expression func
+func definition5() -> Int {
+	5
+}
+
+func aaaaaaaaaaaaa(bbbbbbbbbbbbbbbb: Int, ccccccccccccc: Int, ddddddddddddddddddddddddd: Int, eeeeeeeeeee: Int) -> String {
+	"abc"
+}
+
+func d() -> String {
+	aaaaaaaaaaaaa(bbbbbbbbbbbbbbbb: 0, ccccccccccccc: 0, ddddddddddddddddddddddddd: 0, eeeeeeeeeee: 0)
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Function calls without return types
 

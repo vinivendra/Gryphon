@@ -45,6 +45,16 @@ internal open class Subclass: Base {
 	constructor(): super() { }
 }
 
+internal open class E {
+	override open fun toString(): String {
+		return "abc"
+	}
+}
+
+internal open class F {
+	override open fun toString(): String = "abc"
+}
+
 fun main(args: Array<String>) {
 	var i: Int = 1
 
@@ -80,4 +90,6 @@ fun main(args: Array<String>) {
 	val arrayIndex: Int? = array.indexOf(1)
 	val bla: Int = 1
 	var foo: (() -> Unit)? = null
+
+	"abc"
 }

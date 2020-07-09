@@ -154,3 +154,13 @@ foo {
 	default: return 1
 	}
 }
+
+// Test labels in lambda returns
+foo { bla in
+	if true {
+		return 0
+	}
+	else {
+		return 1
+	}
+}
