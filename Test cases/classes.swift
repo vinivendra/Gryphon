@@ -180,8 +180,17 @@ class SingleExpressionMembers {
 			20
 		}
 	}
+
+	var dddddddddddddddddddddddddeeeeeeeeeee: Int {
+		aaaaaaaaaaaaa(bbbbbbbbbbbbbbbb: 0, ccccccccccccc : 1, ddddddddddddddddddddddddd: 2, eeeeeeeeeee: 3)
+	}
+
+	private func aaaaaaaaaaaaa(bbbbbbbbbbbbbbbb: Int, ccccccccccccc: Int, ddddddddddddddddddddddddd: Int, eeeeeeeeeee: Int) -> Int {
+		bbbbbbbbbbbbbbbb * ccccccccccccc * ddddddddddddddddddddddddd * eeeeeeeeeee
+	}
 }
 
 let singleExpressionMembers = SingleExpressionMembers()
 print(singleExpressionMembers.one)
 print(singleExpressionMembers.two)
+print(singleExpressionMembers.dddddddddddddddddddddddddeeeeeeeeeee)
