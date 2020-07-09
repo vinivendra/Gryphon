@@ -36,10 +36,28 @@ struct NoInheritance: Equatable, Codable {
 	let y: Int
 }
 
+struct SingleExpressionMembers {
+	let oneParameter: Int = 0
+
+	var one: Int {
+		10
+	}
+
+	var two: Int {
+		get {
+			20
+		}
+	}
+}
+
 let a = SupportedStruct()
 let b = OtherSupportedStruct(x: 10, y: 20)
+let c = SingleExpressionMembers()
 
 print(a.x)
 print(a.y)
 print(b.x)
 print(b.y)
+print(c.oneParameter)
+print(c.one)
+print(c.two)

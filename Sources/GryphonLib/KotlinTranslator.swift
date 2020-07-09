@@ -1262,12 +1262,21 @@ public class KotlinTranslator {
 		let indentation2 = increaseIndentation(indentation1)
 		if let getter = variableDeclaration.getter {
 			if let statements = getter.statements {
-				result.append(indentation1 + "get() {\n")
-				result.append(try translateSubtrees(
-					statements,
-					withIndentation: indentation2,
-					limitForAddingNewlines: 3))
-				result.append(indentation1 + "}\n")
+				result.append("\(indentation1)get() ")
+
+				if let singleExpressionStatement = isSingleExpressionFunction(statements, returnTypeString: getter.returnType) {
+					result.append("= ")
+					result.append(try translateExpression(singleExpressionStatement.expression,
+														  withIndentation: indentation1))
+					result.append("\n")
+				} else {
+					result.append("{\n")
+					result.append(try translateSubtrees(
+						statements,
+						withIndentation: indentation2,
+						limitForAddingNewlines: 3))
+					result.append(indentation1 + "}\n")
+				}
 			}
 		}
 

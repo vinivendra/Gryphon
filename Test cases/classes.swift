@@ -23,7 +23,7 @@
 
 class Box {
 	var a: Int = 5
-	
+
 	var b: String {
 		get {
 			return "get b"
@@ -32,13 +32,13 @@ class Box {
 			print("set b")
 		}
 	}
-	
+
 	var c: Int?
-	
+
 	func returnFive() -> Int {
 		return a
 	}
-	
+
 	func returnInt(a: Int) -> Int {
 		return a
 	}
@@ -168,3 +168,20 @@ myClass[1] = 10
 print(myClass[1])
 print(myClass[2])
 print(myClass[3])
+
+
+class SingleExpressionMembers {
+	var one: Int {
+		10
+	}
+
+	var two: Int {
+		get {
+			20
+		}
+	}
+}
+
+let singleExpressionMembers = SingleExpressionMembers()
+print(singleExpressionMembers.one)
+print(singleExpressionMembers.two)

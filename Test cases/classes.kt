@@ -111,6 +111,13 @@ internal open class MyClass {
 	}
 }
 
+internal open class SingleExpressionMembers {
+	open val one: Int
+		get() = 10
+	open val two: Int
+		get() = 20
+}
+
 fun main(args: Array<String>) {
 	val box1: Box = Box()
 
@@ -157,4 +164,9 @@ fun main(args: Array<String>) {
 	println(myClass[1])
 	println(myClass[2])
 	println(myClass[3])
+
+	val singleExpressionMembers: SingleExpressionMembers = SingleExpressionMembers()
+
+	println(singleExpressionMembers.one)
+	println(singleExpressionMembers.two)
 }
