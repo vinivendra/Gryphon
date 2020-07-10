@@ -64,9 +64,8 @@ class AcceptanceTest: XCTestCase {
 	func test() {
 		do {
 			let defaultToolchain: String? = nil
-			let defaultSwiftVersion =
+			let swiftVersion =
 				try TranspilationContext.getVersionOfToolchain(defaultToolchain)
-			print("⛓ Using Swift \(defaultSwiftVersion)")
 
 			let tests = TestUtilities.testCases
 
@@ -77,12 +76,12 @@ class AcceptanceTest: XCTestCase {
 				let astDumpFilePath =
 					SupportingFile.pathOfSwiftASTDumpFile(
 						forSwiftFile: testCasePath,
-						swiftVersion: defaultSwiftVersion)
+						swiftVersion: swiftVersion)
 				let defaultsToFinal = testName.hasSuffix("-default-final")
 				let kotlinResults = try Compiler.transpileKotlinCode(
 					fromASTDumpFiles: [astDumpFilePath],
 					withContext: TranspilationContext(
-						toolchainName: defaultToolchain,
+						toolchainName: nil,
 						indentationString: "\t",
 						defaultsToFinal: defaultsToFinal))
 				let kotlinCode = kotlinResults[0]
