@@ -92,50 +92,41 @@ class TestUtilities {
 			return
 		}
 
-		for swiftVersion in TranspilationContext.supportedSwiftVersions {
-			guard let toolchain =
-				try TranspilationContext.getToolchain(forSwiftVersion: swiftVersion) else
-			{
-				print("⚠️ Toolchain for Swift \(swiftVersion) not found.")
-				continue
+		Compiler.log("\t* Updating ASTs for test cases...")
+
+		let swiftVersion = try TranspilationContext.getVersionOfToolchain(nil)
+
+		let testCasesFolder = "Test cases"
+		if Utilities.needsToDumpASTForSwiftFiles(
+			in: testCasesFolder,
+			forSwiftVersion: swiftVersion)
+		{
+			let testFiles = Utilities.getFiles(
+				inDirectory: testCasesFolder,
+				withExtension: .swift)
+
+			for testFile in testFiles {
+				try Driver.updateASTDumps(
+					forFiles: [testFile],
+					forXcodeProject: nil,
+					forTarget: nil,
+					usingToolchain: nil,
+					shouldTryToRecoverFromErrors: true)
 			}
 
-			Compiler.log("\t* Updating ASTs for test cases...")
-
-			let swiftVersion = try TranspilationContext.getVersionOfToolchain(toolchain)
-
-			let testCasesFolder = "Test cases"
 			if Utilities.needsToDumpASTForSwiftFiles(
 				in: testCasesFolder,
 				forSwiftVersion: swiftVersion)
 			{
-				let testFiles = Utilities.getFiles(
-					inDirectory: testCasesFolder,
-					withExtension: .swift)
-
-				for testFile in testFiles {
-					try Driver.updateASTDumps(
-						forFiles: [testFile],
-						forXcodeProject: nil,
-						forTarget: nil,
-						usingToolchain: toolchain,
-						shouldTryToRecoverFromErrors: true)
-				}
-
-				if Utilities.needsToDumpASTForSwiftFiles(
-					in: testCasesFolder,
-					forSwiftVersion: swiftVersion)
-				{
-					throw GryphonError(errorMessage:
-						"Failed to update the AST of at least one file in the \(testCasesFolder) " +
-						"folder")
-				}
+				throw GryphonError(errorMessage:
+					"Failed to update the AST of at least one file in the \(testCasesFolder) " +
+					"folder")
 			}
-
-			testCasesHaveBeenUpdated = true
-
-			Compiler.log("\t- Done!")
 		}
+
+		testCasesHaveBeenUpdated = true
+
+		Compiler.log("\t- Done!")
     }
 
 	// MARK: - Test cases
