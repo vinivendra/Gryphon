@@ -218,7 +218,7 @@ public class TranspilationContext {
 
 	/// Currently supported versions. If 5.1 is supported, 5.1.x will be too.
 	public static let supportedSwiftVersions: List = [
-		"5.1", "5.2",
+		"5.1", "5.2", "5.3"
 	]
 
 	/// Cache for the Swift version used by each toolchain (the key is the toolchain, the value is
