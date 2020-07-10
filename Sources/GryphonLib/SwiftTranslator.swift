@@ -2132,9 +2132,8 @@ public class SwiftTranslator {
 			let firstBindingExpression = danglingPatternBindings[0]
 
 			if let firstBindingExpression = firstBindingExpression {
-				if (firstBindingExpression.identifier == identifier &&
-					firstBindingExpression.typeName == typeName) ||
-					(firstBindingExpression.identifier == "<<Error>>")
+				if firstBindingExpression.identifier == identifier ||
+					firstBindingExpression.identifier == "<<Error>>"
 				{
 					expression = firstBindingExpression.expression
 				}
