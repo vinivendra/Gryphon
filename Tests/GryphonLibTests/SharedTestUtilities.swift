@@ -95,6 +95,7 @@ class TestUtilities {
 		Compiler.log("\t* Updating ASTs for test cases...")
 
 		let swiftVersion = try TranspilationContext.getVersionOfToolchain(nil)
+		print("⛓ Using Swift \(swiftVersion)")
 
 		let testCasesFolder = "Test cases"
 		if Utilities.needsToDumpASTForSwiftFiles(
