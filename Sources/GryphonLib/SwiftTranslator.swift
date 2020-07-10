@@ -2546,12 +2546,24 @@ public class SwiftTranslator {
 		let methodOwner = dotSyntaxCallExpression?.subtree(at: 1)
 
 		if let methodName = methodName, let methodOwner = methodOwner {
-			let methodName = try translateDeclarationReferenceExpression(methodName)
-			let methodOwner = try translateExpression(methodOwner)
+			let methodNameTranslation = try translateDeclarationReferenceExpression(methodName)
+			var methodOwnerTranslation = try translateExpression(methodOwner)
+			
+			// The left expression in Swift 5.3 often comes wrapped in an extra paretheses
+			// expression, whose range is equal to the inner expression's range (since there are no
+			// actual parentheses characters in the source code).
+			if let parenthesesExpression = methodOwnerTranslation as? ParenthesesExpression,
+			   let parenthesesRange = parenthesesExpression.range,
+			   let innerRange = parenthesesExpression.expression.range,
+			   parenthesesRange.isEqual(to: innerRange)
+			{
+				methodOwnerTranslation = parenthesesExpression.expression
+			}
+			
 			function = DotExpression(
 				range: getRangeRecursively(ofNode: callExpression),
-				leftExpression: methodOwner,
-				rightExpression: methodName)
+				leftExpression: methodOwnerTranslation,
+				rightExpression: methodNameTranslation)
 		}
 		else if let declarationReferenceExpression = callExpression
 			.subtree(named: "Declaration Reference Expression")
