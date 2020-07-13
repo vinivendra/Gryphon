@@ -1099,25 +1099,44 @@ public class SwiftTranslator {
 
 		let catchStatements: MutableList<Statement?> = []
 		for catchStatement in doCatchStatement.subtrees.dropFirst() {
-			guard catchStatement.name == "Catch" else {
-				continue
+
+			var range: SourceFileRange?
+			var variableName: String?
+			var variableType: String?
+
+			// If the Swift version is less than 5.3
+			if catchStatement.name == "Catch" {
+				let patternNamed = catchStatement
+					.subtree(named: "Pattern Let")?
+					.subtree(named: "Pattern Named")
+
+				if let patternNamed = patternNamed {
+					range = getRangeRecursively(ofNode: patternNamed)
+				}
+				let patternAttributes = patternNamed?.standaloneAttributes
+				variableName = patternAttributes?.first
+				variableType = patternNamed?["type"]
+			}
+			else if catchStatement.name == "Case Statement",
+				let caseLabelItem = catchStatement.subtree(named: "Case Label Item"),
+				let patternLet = caseLabelItem.subtree(named: "Pattern Let"),
+				let patternNamed = patternLet.subtree(named: "Pattern Named"),
+				let variableDeclarationAST = catchStatement
+					.subtree(named: "Case Body Variables")?
+					.subtree(named: "Variable Declaration")
+			{
+				// If the Swift version is 5.3 of greater
+				range = getRangeRecursively(ofNode: variableDeclarationAST)
+				variableName = patternNamed.standaloneAttributes[safe: 0]
+				variableType = patternNamed["type"]
 			}
 
 			let variableDeclaration: VariableDeclaration?
-
-			let patternNamed = catchStatement
-				.subtree(named: "Pattern Let")?
-				.subtree(named: "Pattern Named")
-			let patternAttributes = patternNamed?.standaloneAttributes
-			let variableName = patternAttributes?.first
-			let variableType = patternNamed?["type"]
-
-			if let patternNamed = patternNamed,
-				let variableName = variableName,
-				let variableType = variableType
+			if let variableName = variableName,
+			   let variableType = variableType
 			{
 				variableDeclaration = VariableDeclaration(
-					range: getRangeRecursively(ofNode: patternNamed),
+					range: range,
 					identifier: variableName,
 					typeName: variableType,
 					expression: nil,
