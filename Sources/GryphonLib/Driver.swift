@@ -1142,8 +1142,9 @@ public class Driver {
 	{
 		// Run the ruby script
 		let arguments: MutableList = [
-			"ruby",
-			"\(SupportingFile.makeGryphonTargets.relativePath)",
+			"bash",
+			"\(SupportingFile.runRubyScript.absolutePath)",
+			"\(SupportingFile.makeGryphonTargets.absolutePath)",
 			"\(xcodeProjectPath)", ]
 
 		// Any other arguments will be appended to the target's script
@@ -1158,9 +1159,20 @@ public class Driver {
 		let commandResult = Shell.runShellCommand(arguments)
 
 		guard commandResult.status == 0 else {
-			throw GryphonError(errorMessage: "Error making gryphon targets:\n" +
-				commandResult.standardOutput +
-				commandResult.standardError)
+			// If ruby is complaining that Xcodeproj is uninstalled
+			if commandResult.standardError.contains(
+				"in `require': cannot load such file -- xcodeproj")
+			{
+				throw GryphonError(errorMessage: "Error making gryphon targets:\n" +
+					"Unable to find Xcodeproj installation. You can try reinstalling Gryphon, or " +
+					"installing Xcodeproj manually (https://github.com/CocoaPods/Xcodeproj).")
+			}
+			else {
+				// If it was an unknown error
+				throw GryphonError(errorMessage: "Error making gryphon targets:\n" +
+					commandResult.standardOutput +
+					commandResult.standardError)
+			}
 		}
 
 		Compiler.log(commandResult.standardOutput)

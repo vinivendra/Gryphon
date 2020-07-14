@@ -21,8 +21,8 @@
 // gryphon output: Sources/GryphonLib/AuxiliaryFileContents.gryphonAST
 // gryphon output: Bootstrap/AuxiliaryFileContents.kt
 
-let dollarSign = "$" // gryphon value: "\\$"
-let kotlinStringInterpolation = "{_string}"
+private let dollarSign = "$" // gryphon value: "\\$"
+private let kotlinStringInterpolation = "{_string}"
 
 // gryphon multiline
 internal let gryphonKotlinLibraryFileContents = """
@@ -2238,6 +2238,10 @@ public class SupportingFile {
 		"mapGradleErrorsToSwift.swift",
 		folder: SupportingFile.gryphonScriptsFolder,
 		contents: mapGradleErrorsToSwiftFileContents)
+	public static let runRubyScript = SupportingFile(
+		"runRubyScript.sh",
+		folder: SupportingFile.gryphonScriptsFolder,
+		contents: rubyScriptFileContents)
 
 	public static let makeGryphonTargets = SupportingFile(
 		"makeGryphonTargets.rb",
@@ -2262,6 +2266,7 @@ public class SupportingFile {
 		gryphonXCTest,
 		mapKotlinErrorsToSwift,
 		mapGradleErrorsToSwift,
+		runRubyScript,
 		makeGryphonTargets,
 		compileKotlin,
 	]
