@@ -55,6 +55,13 @@ internal open class F {
 	override open fun toString(): String = "abc"
 }
 
+internal fun throwingFunction() {
+}
+
+internal data class MyError(
+	val errorMessage: String
+): Exception()
+
 fun main(args: Array<String>) {
 	var i: Int = 1
 
@@ -92,4 +99,25 @@ fun main(args: Array<String>) {
 	var foo: (() -> Unit)? = null
 
 	"abc"
+
+	try {
+		"abc"
+	}
+	catch (error: Exception) {
+		// Do nothing
+	}
+
+	try {
+		"abc"
+	}
+	catch (myError: Exception) {
+		// Do nothing
+	}
+
+	try {
+		throwingFunction()
+	}
+	catch (error: Exception) {
+		throw MyError(errorMessage = "")
+	}
 }

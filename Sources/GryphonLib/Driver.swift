@@ -449,36 +449,32 @@ public class Driver {
 		usingToolchain toolchain: String?)
 		throws -> Any?
 	{
+		let newArguments: MutableList<String> = []
+		
 		let isVerbose = arguments.contains("--verbose")
+		if isVerbose {
+			newArguments.append("--verbose")
+		}
+		if let chosenToolchain = toolchain {
+			newArguments.append("--toolchain=\(chosenToolchain)")
+		}
 
 		var result: Any?
 		do {
-			if isVerbose {
-				_ = try Driver.run(withArguments: ["init", "--verbose"])
-			}
-			else {
-				_ = try Driver.run(withArguments: ["init"])
-			}
+			newArguments.append("init")
+			_ = try Driver.run(withArguments: newArguments)
 			result = try performCompilation(withArguments: arguments, usingToolchain: toolchain)
 		}
 		catch let error {
 			// Ensure `clean` runs even if an error was thrown
-			if isVerbose {
-				_ = try Driver.run(withArguments: ["clean", "--verbose"])
-			}
-			else {
-				_ = try Driver.run(withArguments: ["clean"])
-			}
+			newArguments.append("clean")
+			_ = try Driver.run(withArguments: newArguments)
 			throw error
 		}
 
 		// Call `clean` if no errors were thrown
-		if isVerbose {
-			_ = try Driver.run(withArguments: ["clean", "--verbose"])
-		}
-		else {
-			_ = try Driver.run(withArguments: ["clean"])
-		}
+		newArguments.append("clean")
+		_ = try Driver.run(withArguments: newArguments)
 
 		return result
 	}
