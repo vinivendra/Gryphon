@@ -177,6 +177,14 @@ public struct SourceFileRange: Equatable, Hashable, CustomStringConvertible {
 		return true
 	}
 
+	/// Real equatable comparison
+	public func isEqual(to other: SourceFileRange) -> Bool {
+		return self.lineStart == other.lineStart &&
+			self.lineEnd == other.lineEnd &&
+			self.columnStart == other.columnStart &&
+			self.columnEnd == other.columnEnd
+	}
+
 	public var description: String {
 		return "\(lineStart):\(columnStart) - \(lineEnd):\(columnEnd)"
 	}

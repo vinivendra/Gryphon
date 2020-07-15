@@ -22,7 +22,7 @@
 // gryphon output: Bootstrap/Driver.kt
 
 public class Driver {
-	public static let gryphonVersion = "0.10"
+	public static let gryphonVersion = "0.10.1"
 
 	public static let supportedArguments: List = [
 		"help", "-help", "--help",
@@ -449,36 +449,32 @@ public class Driver {
 		usingToolchain toolchain: String?)
 		throws -> Any?
 	{
+		let newArguments: MutableList<String> = []
+		
 		let isVerbose = arguments.contains("--verbose")
+		if isVerbose {
+			newArguments.append("--verbose")
+		}
+		if let chosenToolchain = toolchain {
+			newArguments.append("--toolchain=\(chosenToolchain)")
+		}
 
 		var result: Any?
 		do {
-			if isVerbose {
-				_ = try Driver.run(withArguments: ["init", "--verbose"])
-			}
-			else {
-				_ = try Driver.run(withArguments: ["init"])
-			}
+			newArguments.append("init")
+			_ = try Driver.run(withArguments: newArguments)
 			result = try performCompilation(withArguments: arguments, usingToolchain: toolchain)
 		}
 		catch let error {
 			// Ensure `clean` runs even if an error was thrown
-			if isVerbose {
-				_ = try Driver.run(withArguments: ["clean", "--verbose"])
-			}
-			else {
-				_ = try Driver.run(withArguments: ["clean"])
-			}
+			newArguments.append("clean")
+			_ = try Driver.run(withArguments: newArguments)
 			throw error
 		}
 
 		// Call `clean` if no errors were thrown
-		if isVerbose {
-			_ = try Driver.run(withArguments: ["clean", "--verbose"])
-		}
-		else {
-			_ = try Driver.run(withArguments: ["clean"])
-		}
+		newArguments.append("clean")
+		_ = try Driver.run(withArguments: newArguments)
 
 		return result
 	}
@@ -1142,8 +1138,9 @@ public class Driver {
 	{
 		// Run the ruby script
 		let arguments: MutableList = [
-			"ruby",
-			"\(SupportingFile.makeGryphonTargets.relativePath)",
+			"bash",
+			"\(SupportingFile.runRubyScript.absolutePath)",
+			"\(SupportingFile.makeGryphonTargets.absolutePath)",
 			"\(xcodeProjectPath)", ]
 
 		// Any other arguments will be appended to the target's script
@@ -1158,9 +1155,20 @@ public class Driver {
 		let commandResult = Shell.runShellCommand(arguments)
 
 		guard commandResult.status == 0 else {
-			throw GryphonError(errorMessage: "Error making gryphon targets:\n" +
-				commandResult.standardOutput +
-				commandResult.standardError)
+			// If ruby is complaining that Xcodeproj is uninstalled
+			if commandResult.standardError.contains(
+				"in `require': cannot load such file -- xcodeproj")
+			{
+				throw GryphonError(errorMessage: "Error making gryphon targets:\n" +
+					"Unable to find Xcodeproj installation. You can try reinstalling Gryphon, or " +
+					"installing Xcodeproj manually (https://github.com/CocoaPods/Xcodeproj).")
+			}
+			else {
+				// If it was an unknown error
+				throw GryphonError(errorMessage: "Error making gryphon targets:\n" +
+					commandResult.standardOutput +
+					commandResult.standardError)
+			}
 		}
 
 		Compiler.log(commandResult.standardOutput)

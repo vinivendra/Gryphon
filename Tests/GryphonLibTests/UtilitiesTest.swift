@@ -224,9 +224,11 @@ class UtilitiesTest: XCTestCase {
 		XCTAssertFalse(Utilities.fileExists(at: "foo.txt"))
 	}
 
-    func testGetCurrentFolder() {
-        XCTAssert(Utilities.getCurrentFolder().hasSuffix("Gryphon"))
-    }
+	func testGetCurrentFolder() {
+		let currentFolder = Utilities.getCurrentFolder()
+		XCTAssert(Utilities.fileExists(
+					at: currentFolder + "/Tests/GryphonLibTests/UtilitiesTest.swift"))
+	}
 
     func testGetFiles() {
         let allSwiftFiles = Utilities.getFiles(

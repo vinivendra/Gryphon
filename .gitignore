@@ -36,6 +36,7 @@ Bootstrap/KotlinTranslator.kt
 Bootstrap/LibraryTranspilationPass.kt
 Bootstrap/OutputFileMap.kt
 Bootstrap/PrintableAsTree.kt
+Bootstrap/RubyScriptContents.kt
 Bootstrap/SharedUtilities.kt
 Bootstrap/SourceFile.kt
 Bootstrap/SwiftAST.kt

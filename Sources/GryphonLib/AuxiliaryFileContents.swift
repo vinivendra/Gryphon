@@ -21,8 +21,8 @@
 // gryphon output: Sources/GryphonLib/AuxiliaryFileContents.gryphonAST
 // gryphon output: Bootstrap/AuxiliaryFileContents.kt
 
-let dollarSign = "$" // gryphon value: "\\$"
-let kotlinStringInterpolation = "{_string}"
+private let dollarSign = "$" // gryphon value: "\\$"
+private let kotlinStringInterpolation = "{_string}"
 
 // gryphon multiline
 internal let gryphonKotlinLibraryFileContents = """
@@ -1678,12 +1678,19 @@ struct ErrorInformation {
 	let errorMessage: String
 }
 
-func getInformation(fromString string: String) -> ErrorInformation {
+func getInformation(fromString string: String) -> ErrorInformation? {
 	let components = string.split(separator: ":")
+
+	guard let lineNumber = Int(components[1]),
+		  let columnNumber = Int(components[2]) else
+	{
+		return nil
+	}
+
 	return ErrorInformation(
 		filePath: String(components[0]),
-		lineNumber: Int(components[1])!,
-		columnNumber: Int(components[2])!,
+		lineNumber: lineNumber,
+		columnNumber: columnNumber,
 		errorMessage: String(components[3...].joined(separator: ":")))
 }
 
@@ -1729,15 +1736,15 @@ struct ErrorMap {
 	func getSwiftRange(forKotlinLine line: Int, column: Int) -> SourceFileRange? {
 		for mapping in mappings {
 			if compare(
-					line1: mapping.kotlinRange.lineStart,
-					column1: mapping.kotlinRange.columnStart,
-					isBeforeLine2: line,
-					column2: column),
-				compare(
-					line1: line,
-					column1: column,
-					isBeforeLine2: mapping.kotlinRange.lineEnd,
-					column2: mapping.kotlinRange.columnEnd)
+				line1: mapping.kotlinRange.lineStart,
+				column1: mapping.kotlinRange.columnStart,
+				isBeforeLine2: line,
+				column2: column),
+			   compare(
+				line1: line,
+				column1: column,
+				isBeforeLine2: mapping.kotlinRange.lineEnd,
+				column2: mapping.kotlinRange.columnEnd)
 			{
 				return mapping.swiftRange
 			}
@@ -1789,7 +1796,12 @@ if !currentError.isEmpty {
 // Handle the errors
 var errorMaps: [String: ErrorMap] = [:]
 for error in errors {
-	let errorInformation = getInformation(fromString: error)
+	guard let errorInformation = getInformation(fromString: error) else {
+		print("🚨 Unrecognized error:")
+		print(error)
+		continue
+	}
+
 	let errorMapPath =
 		"\(SupportingFile.kotlinErrorMapsFolder)/" + errorInformation.filePath.dropLast(2) +
 		"kotlinErrorMap"
@@ -1854,16 +1866,21 @@ struct ErrorInformation {
 	let isError: Bool
 }
 
-func getInformation(fromString string: String) -> ErrorInformation {
+func getInformation(fromString string: String) -> ErrorInformation? {
 	let components = string.split(separator: ":")
 	let filePath = String(components[1].dropFirst()) // Drop the first space
 	let lineAndColumn = components[2].dropFirst(2).dropLast().split(separator: ",")
-	let line = Int(lineAndColumn[0])!
-	let column = Int(lineAndColumn[1].dropFirst())!
+
+	guard let lineNumber = Int(lineAndColumn[0]),
+		let columnNumber = Int(lineAndColumn[1].dropFirst()) else
+	{
+		return nil
+	}
+
 	return ErrorInformation(
 		filePath: getRelativePath(forFile: filePath),
-		lineNumber: line,
-		columnNumber: column,
+		lineNumber: lineNumber,
+		columnNumber: columnNumber,
 		errorMessage: String(components[3...].joined(separator: ":")),
 		isError: components[0] == "e")
 }
@@ -1955,7 +1972,12 @@ var errors = input.filter { \(dollarSign)0.hasPrefix("e: ") || \(dollarSign)0.ha
 // Handle the errors
 var errorMaps: [String: ErrorMap] = [:]
 for error in errors {
-	let errorInformation = getInformation(fromString: error)
+	guard let errorInformation = getInformation(fromString: error) else {
+		print("🚨 Unrecognized error:")
+		print(error)
+		continue
+	}
+
 	let errorMapPath =
 		"\(SupportingFile.kotlinErrorMapsFolder)/" + errorInformation.filePath.dropLast(2) +
 		"kotlinErrorMap"
@@ -2238,6 +2260,10 @@ public class SupportingFile {
 		"mapGradleErrorsToSwift.swift",
 		folder: SupportingFile.gryphonScriptsFolder,
 		contents: mapGradleErrorsToSwiftFileContents)
+	public static let runRubyScript = SupportingFile(
+		"runRubyScript.sh",
+		folder: SupportingFile.gryphonScriptsFolder,
+		contents: rubyScriptFileContents)
 
 	public static let makeGryphonTargets = SupportingFile(
 		"makeGryphonTargets.rb",
@@ -2262,6 +2288,7 @@ public class SupportingFile {
 		gryphonXCTest,
 		mapKotlinErrorsToSwift,
 		mapGradleErrorsToSwift,
+		runRubyScript,
 		makeGryphonTargets,
 		compileKotlin,
 	]
