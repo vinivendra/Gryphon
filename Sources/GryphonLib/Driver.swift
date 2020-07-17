@@ -765,14 +765,14 @@ public class Driver {
 					}
 				}
 				else {
-					if !outdatedASTDumpsAfterFirstUpdate.isEmpty {
+					if let astDumpError = astDumpError {
+						throw GryphonError(
+							errorMessage: "Unable to update AST dumps:\n\(astDumpError)")
+					}
+					else if !outdatedASTDumpsAfterFirstUpdate.isEmpty {
 						throw GryphonError(
 							errorMessage: "Unable to update AST dumps for files: " +
 								outdatedASTDumpsAfterFirstUpdate.joined(separator: ", ") + ".")
-					}
-					else if let astDumpError = astDumpError {
-						throw GryphonError(
-							errorMessage: "Unable to update AST dumps:\n\(astDumpError)")
 					}
 					else {
 						throw GryphonError(
