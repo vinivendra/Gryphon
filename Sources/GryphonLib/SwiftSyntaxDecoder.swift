@@ -299,10 +299,45 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			try result.append(convertReturnStatement(returnStatement))
 			return result
 		}
+		if let ifStatement =  statement.as(IfStmtSyntax.self) {
+			try result.append(convertIfStatement(ifStatement))
+			return result
+		}
 
 		return try [errorStatement(
 			forASTNode: Syntax(statement),
-			withMessage: "Unknown declaration"), ]
+			withMessage: "Unknown statement"), ]
+	}
+
+	func convertIfStatement(
+		_ ifStatement: IfStmtSyntax)
+		throws -> Statement
+	{
+		let conditions: MutableList<IfStatement.IfCondition> = []
+		for condition in ifStatement.conditions {
+			if let child = condition.children.first,
+				let expressionSyntax = child.as(ExprSyntax.self)
+			{
+				let expression = try convertExpression(expressionSyntax)
+				conditions.append(.condition(expression: expression))
+			}
+			else {
+				let expression = try errorExpression(
+					forASTNode: Syntax(condition),
+					withMessage: "Unable to convert if condition")
+				conditions.append(.condition(expression: expression))
+			}
+		}
+
+		let statements = try convertStatements(ifStatement.body.statements)
+
+		return IfStatement(
+			range: ifStatement.getRange(inFile: self.sourceFile),
+			conditions: conditions,
+			declarations: [],
+			statements: statements,
+			elseStatement: nil,
+			isGuard: false)
 	}
 
 	func convertReturnStatement(
