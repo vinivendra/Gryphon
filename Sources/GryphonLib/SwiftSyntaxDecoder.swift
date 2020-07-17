@@ -637,6 +637,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let specializeExpression = expression.as(SpecializeExprSyntax.self) {
 			return try convertSpecializeExpression(specializeExpression)
 		}
+		if let tupleExpression = expression.as(TupleExprSyntax.self) {
+			return try convertTupleExpression(tupleExpression)
+		}
 		if let nilLiteralExpression = expression.as(NilLiteralExprSyntax.self) {
 			return try convertNilLiteralExpression(nilLiteralExpression)
 		}
@@ -652,6 +655,15 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		return try errorExpression(
 			forASTNode: Syntax(expression),
 			withMessage: "Unknown expression")
+	}
+
+	func convertTupleExpression(
+		_ tupleExpression: TupleExprSyntax)
+		throws -> Expression
+	{
+		return try convertTupleExpressionElementList(
+			tupleExpression.elementList,
+			withType: tupleExpression.getType(fromList: self.expressionTypes))
 	}
 
 	/// A generic expression whose generic arguments are being specialized
@@ -962,45 +974,139 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		_ functionCallExpression: FunctionCallExprSyntax)
 		throws -> Expression
 	{
-		let children = List(functionCallExpression.children)
-
-		// `function` + `(` + `tupleExpressionElements` + `)`
-		if children.count == 4,
-			let functionExpression = children[0].as(ExprSyntax.self),
-			children[1].is(TokenSyntax.self),
-			let tupleExpressionElements = children[2].as(TupleExprElementListSyntax.self),
-			children[3].is(TokenSyntax.self)
+		//  Get the type of the call's tuple
+		let tupleTypeName: String?
+		if let leftParenthesesPosition = functionCallExpression.leftParen?
+				.positionAfterSkippingLeadingTrivia.utf8Offset,
+			let rightParenthesesPosition = functionCallExpression.rightParen?
+				.positionAfterSkippingLeadingTrivia.utf8Offset
 		{
-			let functionExpressionTranslation = try convertExpression(functionExpression)
-			let tupleExpression = try convertTupleExpressionElementList(tupleExpressionElements)
-			return CallExpression(
-				range: functionCallExpression.getRange(inFile: self.sourceFile),
-				function: functionExpressionTranslation,
-				parameters: tupleExpression,
-				typeName: functionCallExpression.getType(fromList: self.expressionTypes))
+			let tupleStartPosition = leftParenthesesPosition
+			let tupleLength = rightParenthesesPosition - leftParenthesesPosition + 1
+			let maybeTupleType = self.expressionTypes.first(where: {
+				$0.offset == tupleStartPosition && $0.length == tupleLength
+			})
+			if let tupleType = maybeTupleType {
+				tupleTypeName = tupleType.typeName
+			}
+			else {
+				tupleTypeName = nil
+			}
+		}
+		else {
+			tupleTypeName = nil
 		}
 
-		return NilLiteralExpression(range: nil)
+		let functionExpression = functionCallExpression.calledExpression
+		let functionExpressionTranslation = try convertExpression(functionExpression)
+		let tupleExpression = try convertTupleExpressionElementList(
+			functionCallExpression.argumentList,
+			withType: tupleTypeName)
+
+		return CallExpression(
+			range: functionCallExpression.getRange(inFile: self.sourceFile),
+			function: functionExpressionTranslation,
+			parameters: tupleExpression,
+			typeName: functionCallExpression.getType(fromList: self.expressionTypes))
 	}
 
 	/// The `convertFunctionCallExpression` method assumes this returns something that can be put in
 	/// a `CallExpression`, like a `TupleExpression` or a `TupleShuffleExpression`.
+	/// The type has to be passed in because SourceKit needs the parentheses to determine the tuple
+	/// type, and the type list doesn't include them.
 	func convertTupleExpressionElementList(
-		_ tupleExprElementListSyntax: TupleExprElementListSyntax)
+		_ tupleExprElementListSyntax: TupleExprElementListSyntax,
+		withType tupleType: String?)
 		throws -> Expression
 	{
+		let labeledTypes: List<(String?, String)>?
+		if let tupleType = tupleType {
+			let tupleTypeWithoutParentheses = String(tupleType.dropFirst().dropLast())
+			let tupleTypeComponents = Utilities.splitTypeList(
+				tupleTypeWithoutParentheses,
+				separators: [","])
+			labeledTypes = tupleTypeComponents.map { component -> (String?, String) in
+				let labelAndType = Utilities.splitTypeList(component, separators: [":"])
+				if labelAndType.count >= 2 {
+					let label = labelAndType[0]
+					let type = labelAndType.dropFirst().joined(separator: ":")
+					return (label, type)
+				}
+				else {
+					let type = labelAndType[0]
+					return (nil, type)
+				}
+			}
+		}
+		else {
+			labeledTypes = nil
+		}
+
 		let elements = List(tupleExprElementListSyntax)
 		let pairs: MutableList<LabeledExpression> = []
 
 		for tupleExpressionElement in elements {
 			let label = tupleExpressionElement.label?.text
+
 			let translatedExpression = try convertExpression(tupleExpressionElement.expression)
+
+			// When a variadic parameter is matched to a single expression, the expression's
+			// type comes wrapped in an array (e.g. the `_any` in `print(_any)` has type `[Any]`
+			// instead of `Any`). Try to detect these cases and remove the array wrap.
+			if let typeName = translatedExpression.swiftType {
+				let shouldRemoveArrayWrapper = parameter(
+					withLabel: label,
+					andType: typeName,
+					matchesVariadicInTypeList: labeledTypes)
+				if shouldRemoveArrayWrapper {
+					translatedExpression.swiftType = String(typeName.dropFirst().dropLast())
+				}
+			}
+
 			pairs.append(LabeledExpression(label: label, expression: translatedExpression))
 		}
 
 		return TupleExpression(
 			range: tupleExprElementListSyntax.getRange(inFile: self.sourceFile),
 			pairs: pairs)
+	}
+
+	/// Checks if the parameter with the given label and type matches a variadic parameter in a type
+	/// list.
+	private func parameter(
+		withLabel label: String?,
+		andType typeName: String,
+		matchesVariadicInTypeList labeledTypes: List<(String?, String)>?)
+		-> Bool
+	{
+		guard let labeledTypes = labeledTypes,
+			typeName.hasPrefix("["),
+			typeName.hasSuffix("]") else
+		{
+			return false
+		}
+
+		if let label = label {
+			if let tupleType = labeledTypes.first(where: { $0.0 == label }),
+				tupleType.1.hasSuffix("...")
+			{
+				// If there's a type with a matching label, we know it's the right one
+				return true
+			}
+		}
+		else {
+			// If there's only one parameter without a label, we know it's the right one
+			let unlabeledTypes = labeledTypes.filter({ $0.0 == nil })
+			if unlabeledTypes.count == 1 {
+				if unlabeledTypes[0].1.hasSuffix("...") {
+					return true
+				}
+			}
+			// If there's more than one parameter without a label, Swift's matching rules
+			// probably get more complicated, so that case is unsupported for now
+		}
+
+		return false
 	}
 
 	func convertIdentifierExpression(
