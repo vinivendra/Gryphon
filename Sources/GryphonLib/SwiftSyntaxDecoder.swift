@@ -598,6 +598,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let integerLiteralExpression = expression.as(IntegerLiteralExprSyntax.self) {
 			return try convertIntegerLiteralExpression(integerLiteralExpression)
 		}
+		if let floatLiteralExpression = expression.as(FloatLiteralExprSyntax.self) {
+			return try convertFloatLiteralExpression(floatLiteralExpression)
+		}
 		if let booleanLiteralExpression = expression.as(BooleanLiteralExprSyntax.self) {
 			return try convertBooleanLiteralExpression(booleanLiteralExpression)
 		}
@@ -1120,6 +1123,32 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			typeName: identifierExpression.getType(fromList: self.expressionTypes) ?? "",
 			isStandardLibrary: false,
 			isImplicit: false)
+	}
+
+	func convertFloatLiteralExpression(
+		_ floatLiteralExpression: FloatLiteralExprSyntax)
+		throws -> Expression
+	{
+		if let typeName = floatLiteralExpression.getType(fromList: self.expressionTypes) {
+			if typeName == "Float",
+				let floatValue = Float(floatLiteralExpression.floatingDigits.text)
+			{
+				return LiteralFloatExpression(
+					range: floatLiteralExpression.getRange(inFile: self.sourceFile),
+					value: floatValue)
+			}
+			else if typeName == "Double",
+				let doubleValue = Double(floatLiteralExpression.floatingDigits.text)
+			{
+				return LiteralDoubleExpression(
+					range: floatLiteralExpression.getRange(inFile: self.sourceFile),
+					value: doubleValue)
+			}
+		}
+
+		return try errorExpression(
+			forASTNode: Syntax(floatLiteralExpression),
+			withMessage: "Failed to convert float literal expression")
 	}
 
 	func convertIntegerLiteralExpression(
