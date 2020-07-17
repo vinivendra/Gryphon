@@ -369,12 +369,13 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let prefix = functionDeclaration.identifier.text
 
 		let parameters: MutableList<FunctionParameter> = []
-		// Parameter tokens: `firstName` `secondName (optional)` `:` `type`
+		// Parameter tokens: `firstName` `secondName (optional)` `:` `type` `, (optional)`
 		for parameter in functionDeclaration.signature.input.parameterList {
 			if let firstName = parameter.firstName?.text,
-				let typeToken = parameter.children.last,
-				let typeSyntax = typeToken.as(TypeSyntax.self)
+				let typeToken = parameter.children.first(where: { $0.is(TypeSyntax.self) })
 			{
+				let typeSyntax = typeToken.as(TypeSyntax.self)!
+
 				// Get the parameter names
 				let label: String
 				let apiLabel: String?
@@ -408,7 +409,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					typeName: "<<Error>>",
 					value: errorExpression(
 						forASTNode: Syntax(parameter),
-						withMessage: "Expected parameter to always have a first name and a type.")))
+						withMessage: "Expected parameter to always have a first name and a type")))
 			}
 		}
 
