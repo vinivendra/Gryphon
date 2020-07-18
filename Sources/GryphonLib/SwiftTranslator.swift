@@ -1188,7 +1188,7 @@ public class SwiftTranslator {
 
 		let variableRange = getRangeRecursively(ofNode: forEachStatement.subtrees[0])
 
-		let variable: Expression
+		let variable: Expression?
 		let collectionExpression: SwiftAST
 
 		let maybeCollectionExpression = forEachStatement.subtree(at: 2)
@@ -1230,12 +1230,7 @@ public class SwiftTranslator {
 			let maybeCollectionExpression = maybeCollectionExpression
 		{
 			let typeName = cleanUpType(rawTypeAny)
-			variable = DeclarationReferenceExpression(
-				range: variableRange,
-				identifier: "_0",
-				typeName: typeName,
-				isStandardLibrary: false,
-				isImplicit: false)
+			variable = nil
 			collectionExpression = maybeCollectionExpression
 		}
 		else {

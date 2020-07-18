@@ -812,13 +812,13 @@ public class CatchStatement: Statement {
 
 public class ForEachStatement: Statement {
 	let collection: Expression
-	let variable: Expression
+	let variable: Expression?
 	let statements: MutableList<Statement>
 
 	init(
 		range: SourceFileRange?,
 		collection: Expression,
-		variable: Expression,
+		variable: Expression?,
 		statements: MutableList<Statement>)
 	{
 		self.collection = collection
@@ -829,7 +829,7 @@ public class ForEachStatement: Statement {
 
 	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
 		return [
-			PrintableTree("variable", [variable]),
+			PrintableTree.initOrNil("variable", [variable]),
 			PrintableTree("collection", [collection]),
 			PrintableTree.ofStatements("statements", statements), ]
 	}

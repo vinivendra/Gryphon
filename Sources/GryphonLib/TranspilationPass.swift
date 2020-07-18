@@ -419,7 +419,7 @@ public class TranspilationPass {
 		return [ForEachStatement(
 			range: forEachStatement.range,
 			collection: replaceExpression(forEachStatement.collection),
-			variable: replaceExpression(forEachStatement.variable),
+			variable: forEachStatement.variable.map { replaceExpression($0) },
 			statements: replaceStatements(forEachStatement.statements)), ]
 	}
 

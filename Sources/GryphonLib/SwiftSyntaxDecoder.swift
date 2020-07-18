@@ -299,14 +299,50 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			try result.append(convertReturnStatement(returnStatement))
 			return result
 		}
-		if let ifStatement =  statement.as(IfStmtSyntax.self) {
+		if let ifStatement = statement.as(IfStmtSyntax.self) {
 			try result.append(convertIfStatement(ifStatement))
+			return result
+		}
+		if let forStatement = statement.as(ForInStmtSyntax.self) {
+			try result.append(convertForStatement(forStatement))
 			return result
 		}
 
 		return try [errorStatement(
 			forASTNode: Syntax(statement),
 			withMessage: "Unknown statement"), ]
+	}
+
+	func convertForStatement(
+		_ forStatement: ForInStmtSyntax)
+		throws -> Statement
+	{
+		let variable: Expression?
+		if let identifierPattern = forStatement.pattern.as(IdentifierPatternSyntax.self) {
+			variable = DeclarationReferenceExpression(
+				range: identifierPattern.getRange(inFile: self.sourceFile),
+				identifier: identifierPattern.identifier.text,
+				typeName: identifierPattern.getType(fromList: self.expressionTypes),
+				isStandardLibrary: false,
+				isImplicit: false)
+		}
+		else if forStatement.pattern.is(WildcardPatternSyntax.self) {
+			variable = nil
+		}
+		else {
+			variable = try errorExpression(
+				forASTNode: Syntax(forStatement),
+				withMessage: "Unable to convert variable in for statement")
+		}
+
+		let collection = try convertExpression(forStatement.sequenceExpr)
+		let statements = try convertStatements(forStatement.body.statements)
+
+		return ForEachStatement(
+			range: forStatement.getRange(inFile: self.sourceFile),
+			collection: collection,
+			variable: variable,
+			statements: statements)
 	}
 
 	func convertIfStatement(

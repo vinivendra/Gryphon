@@ -878,8 +878,13 @@ public class KotlinTranslator {
 		let result = KotlinTranslation(range: forEachStatement.range)
 		result.append("\(indentation)for (")
 
-		let variableTranslation =
-			try translateExpression(forEachStatement.variable, withIndentation: indentation)
+		let variableTranslation: KotlinTranslation
+		if let variable = forEachStatement.variable {
+			variableTranslation = try translateExpression(variable, withIndentation: indentation)
+		}
+		else {
+			variableTranslation = KotlinTranslation(range: nil, string: "_0")
+		}
 
 		result.append(variableTranslation)
 		result.append(" in ")
