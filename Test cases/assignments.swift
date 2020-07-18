@@ -176,6 +176,12 @@ private struct _Comparable: Comparable { // gryphon ignore
 // gryphon ignore
 private struct _Optional { } // gryphon ignore
 
+// Replacement for CustomStringConvertible
+// gryphon ignore
+private struct _CustomStringConvertible: CustomStringConvertible { // gryphon ignore
+	var description: String = ""
+}
+
 // Replacement for Any
 // gryphon ignore
 private struct _Any: CustomStringConvertible, LosslessStringConvertible { // gryphon ignore
@@ -213,6 +219,7 @@ private func gryphonTemplates() {
 	let _range: Range<String.Index> = _string.startIndex..<_string.endIndex
 	let _any: Any = "abc"
 	let _anyType: _Any = _Any()
+	let _customStringConvertible = _CustomStringConvertible()
 	let _optional: _Optional? = _Optional()
 	let _float: Float = 0
 	let _double: Double = 0
@@ -275,8 +282,8 @@ private func gryphonTemplates() {
 	_ = String(_anyType)
 	_ = _GRYTemplate.call(.dot("_anyType", "toString"), [])
 
-	_ = _anyType.description
-	_ = _GRYTemplate.call(.dot("_anyType", "toString"), [])
+	_ = _customStringConvertible.description
+	_ = _GRYTemplate.call(.dot("_customStringConvertible", "toString"), [])
 
 	_ = _string.isEmpty
 	_ = _GRYTemplate.call(.dot("_string", "isEmpty"), [])
