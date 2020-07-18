@@ -64,8 +64,6 @@ class IntegrationTest: XCTestCase {
 
 			let tests = TestUtilities.testCases
 			for testName in tests {
-				print("- Testing \(testName)...")
-
 				do {
 					// Generate kotlin code using the whole compiler
 					let testCasePath = TestUtilities.testCasesPath + testName
@@ -76,6 +74,8 @@ class IntegrationTest: XCTestCase {
 					let defaultsToFinal = testName.hasSuffix("-default-final")
 					let usesSwiftSyntax =
 						TestUtilities.testCasesForSwiftSyntax.contains(testName)
+
+					print("- Testing \(testName)\(usesSwiftSyntax ? " (Swift Syntax)" : "")...")
 					let generatedKotlinCode = try Compiler.transpileKotlinCode(
 						fromInputFiles: [testCasePath.withExtension(.swift)],
 						fromASTDumpFiles: [astDumpFilePath],
