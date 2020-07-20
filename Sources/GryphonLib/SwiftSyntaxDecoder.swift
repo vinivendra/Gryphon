@@ -1093,6 +1093,13 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			functionCallExpression.argumentList,
 			withType: tupleTypeName)
 
+		if let trailingClosureSyntax = functionCallExpression.trailingClosure {
+			let closureExpression = try convertClosureExpression(trailingClosureSyntax)
+			tupleExpression.pairs.append(LabeledExpression(
+				label: nil,
+				expression: closureExpression))
+		}
+
 		return CallExpression(
 			range: functionCallExpression.getRange(inFile: self.sourceFile),
 			function: functionExpressionTranslation,
@@ -1107,7 +1114,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	func convertTupleExpressionElementList(
 		_ tupleExprElementListSyntax: TupleExprElementListSyntax,
 		withType tupleType: String?)
-		throws -> Expression
+		throws -> TupleExpression
 	{
 		let labeledTypes: List<(String?, String)>?
 		if let tupleType = tupleType {
