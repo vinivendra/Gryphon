@@ -316,24 +316,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		_ forStatement: ForInStmtSyntax)
 		throws -> Statement
 	{
-		let variable: Expression?
-		if let identifierPattern = forStatement.pattern.as(IdentifierPatternSyntax.self) {
-			variable = DeclarationReferenceExpression(
-				range: identifierPattern.getRange(inFile: self.sourceFile),
-				identifier: identifierPattern.identifier.text,
-				typeName: identifierPattern.getType(fromList: self.expressionTypes),
-				isStandardLibrary: false,
-				isImplicit: false)
-		}
-		else if forStatement.pattern.is(WildcardPatternSyntax.self) {
-			variable = nil
-		}
-		else {
-			variable = try errorExpression(
-				forASTNode: Syntax(forStatement),
-				withMessage: "Unable to convert variable in for statement")
-		}
-
+		let variable = try convertPatternExpression(forStatement.pattern)
 		let collection = try convertExpression(forStatement.sequenceExpr)
 		let statements = try convertStatements(forStatement.body.statements)
 
@@ -718,6 +701,47 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		return try errorExpression(
 			forASTNode: Syntax(expression),
 			withMessage: "Unknown expression")
+	}
+
+	/// Returns:
+	/// - a `DeclarationReferenceExpression` if it's an identifier pattern;
+	/// - a `TupleExpression` if it's a tuple pattern;
+	/// - `nil` if it's a wildcard pattern;
+	func convertPatternExpression(
+		_ patternExpression: PatternSyntax)
+		throws -> Expression?
+	{
+		if let identifierPattern = patternExpression.as(IdentifierPatternSyntax.self) {
+			return DeclarationReferenceExpression(
+				range: identifierPattern.getRange(inFile: self.sourceFile),
+				identifier: identifierPattern.identifier.text,
+				typeName: identifierPattern.getType(fromList: self.expressionTypes),
+				isStandardLibrary: false,
+				isImplicit: false)
+		}
+		else if let tuplePattern = patternExpression.as(TuplePatternSyntax.self) {
+			let expressions = try List(tuplePattern.elements).map
+				{ (patternSyntax: TuplePatternElementSyntax) -> Expression in
+					try convertPatternExpression(patternSyntax.pattern) ??
+						errorExpression(
+							forASTNode: Syntax(patternSyntax),
+							withMessage: "Unsupported pattern inside tuple pattern")
+				}
+			let labeledExpressions = expressions.map {
+					LabeledExpression(label: nil, expression: $0)
+				}
+			return TupleExpression(
+				range: tuplePattern.getRange(inFile: self.sourceFile),
+				pairs: labeledExpressions.toMutableList())
+		}
+		else if patternExpression.is(WildcardPatternSyntax.self) {
+			return nil
+		}
+		else {
+			return try errorExpression(
+				forASTNode: Syntax(patternExpression),
+				withMessage: "Unable to convert pattern")
+		}
 	}
 
 	func convertTupleExpression(
