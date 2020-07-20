@@ -106,11 +106,19 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			let codeBlockItemSyntax: CodeBlockItemSyntax = statement
 			let item: Syntax = codeBlockItemSyntax.item
 
+			let leadingCommentInformation = convertLeadingComments(fromSyntax: item)
+			if leadingCommentInformation.shouldIgnoreNextStatement {
+				continue
+			}
+			else {
+				result.append(contentsOf: leadingCommentInformation.commentStatements)
+			}
+
 			if let declaration = item.as(DeclSyntax.self) {
 				try result.append(contentsOf: convertDeclaration(declaration))
 			}
 			else if let statement = item.as(StmtSyntax.self) {
-				try result.append(contentsOf: convertStatement(statement))
+				try result.append(convertStatement(statement))
 			}
 			else if let expression = item.as(ExprSyntax.self) {
 				if shouldConvertToStatement(expression) {
@@ -267,6 +275,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 							}
 						}
 						else if insertComment.key == .ignore {
+							// TODO: add a warning for translation comments at the end of lines
 							shouldIgnoreNextStatement = true
 						}
 					}
@@ -287,30 +296,20 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	}
 
 	// MARK: - Statements
-	func convertStatement(_ statement: StmtSyntax) throws -> MutableList<Statement> {
-		let leadingCommentInformation = convertLeadingComments(fromSyntax: Syntax(statement))
-		let result: MutableList<Statement> = leadingCommentInformation.commentStatements
-
-		if leadingCommentInformation.shouldIgnoreNextStatement {
-			return result
-		}
-
+	func convertStatement(_ statement: StmtSyntax) throws -> Statement {
 		if let returnStatement = statement.as(ReturnStmtSyntax.self) {
-			try result.append(convertReturnStatement(returnStatement))
-			return result
+			return try convertReturnStatement(returnStatement)
 		}
 		if let ifStatement = statement.as(IfStmtSyntax.self) {
-			try result.append(convertIfStatement(ifStatement))
-			return result
+			return try convertIfStatement(ifStatement)
 		}
 		if let forStatement = statement.as(ForInStmtSyntax.self) {
-			try result.append(convertForStatement(forStatement))
-			return result
+			return try convertForStatement(forStatement)
 		}
 
-		return try [errorStatement(
+		return try errorStatement(
 			forASTNode: Syntax(statement),
-			withMessage: "Unknown statement"), ]
+			withMessage: "Unknown statement")
 	}
 
 	func convertForStatement(
@@ -396,26 +395,15 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 	// MARK: - Declarations
 
-	func convertDeclaration(_ declaration: DeclSyntax) throws -> MutableList<Statement> {
-		let leadingCommentInformation = convertLeadingComments(fromSyntax: Syntax(declaration))
-		let result: MutableList<Statement> = leadingCommentInformation.commentStatements
-
-		if leadingCommentInformation.shouldIgnoreNextStatement {
-			return result
-		}
-
+	func convertDeclaration(_ declaration: DeclSyntax) throws -> List<Statement> {
 		if let variableDeclaration = declaration.as(VariableDeclSyntax.self) {
-			try result.append(contentsOf: convertVariableDeclaration(variableDeclaration)
-				.forceCast(to: MutableList<Statement>.self))
-			return result
+			return try convertVariableDeclaration(variableDeclaration)
 		}
 		if let functionDeclaration = declaration.as(FunctionDeclSyntax.self) {
-			try result.append(convertFunctionDeclaration(functionDeclaration))
-			return result
+			return try [convertFunctionDeclaration(functionDeclaration)]
 		}
 		if let importDeclaration = declaration.as(ImportDeclSyntax.self) {
-			try result.append(convertImportDeclaration(importDeclaration))
-			return result
+			return try [convertImportDeclaration(importDeclaration)]
 		}
 
 		return try [errorStatement(
