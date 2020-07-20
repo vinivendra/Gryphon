@@ -2405,6 +2405,7 @@ public class AnonymousParametersTranspilationPass: TranspilationPass {
 		}
 	}
 
+	// TODO: Remove this if possible after SwiftSyntax
 	override func replaceClosureExpression( // gryphon annotation: override
 		_ closureExpression: ClosureExpression)
 		-> Expression

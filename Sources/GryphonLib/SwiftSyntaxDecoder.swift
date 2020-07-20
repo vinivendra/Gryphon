@@ -840,44 +840,47 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		_ closureExpression: ClosureExprSyntax)
 		throws -> Expression
 	{
-		// Get the signature (for the parameter names) and the type
-		guard let typeName = closureExpression.getType(fromList: self.expressionTypes),
-			let signature = closureExpression.signature,
-			let inputParameters = signature.input else
-		{
+		guard let typeName = closureExpression.getType(fromList: self.expressionTypes) else {
 			return try errorExpression(
 				forASTNode: Syntax(closureExpression),
-				withMessage: "Unable to convert closure expression")
-		}
-
-		// Get the input parameter types (e.g. ["Any", "Any"] from "(Any, Any) -> Any")
-		let inputAndOutputTypes = Utilities.splitTypeList(typeName, separators: ["->"])
-		let inputTupleType = inputAndOutputTypes[0]
-		let inputTypes = Utilities.splitTypeList(
-			String(inputTupleType.dropFirst().dropLast()),
-			separators: [","])
-
-		// Ensure we have the same number of parameter labels and types
-		guard inputTypes.count == inputParameters.children.count else {
-			return try errorExpression(
-				forASTNode: Syntax(inputParameters),
-				withMessage: "Unable to convert closure parameters")
-		}
-
-		// Ensure all the closure parameters are `ClosureParamSyntax`es
-		let parameterSyntaxes: MutableList<ClosureParamSyntax> = []
-		for child in inputParameters.children {
-			guard let parameterSyntax = child.as(ClosureParamSyntax.self) else {
-				return try errorExpression(
-					forASTNode: Syntax(child),
-					withMessage: "Unsupported closure parameter")
-			}
-			parameterSyntaxes.append(parameterSyntax)
+				withMessage: "Unable to get closure type")
 		}
 
 		let parameters: MutableList<LabeledType> = []
-		for (parameterSyntax, inputType) in zip(parameterSyntaxes, inputTypes) {
-			parameters.append(LabeledType(label: parameterSyntax.name.text, typeName: inputType))
+
+		// If there are parameters
+		if let signature = closureExpression.signature,
+			let inputParameters = signature.input
+		{
+			// Get the input parameter types (e.g. ["Any", "Any"] from "(Any, Any) -> Any")
+			let inputAndOutputTypes = Utilities.splitTypeList(typeName, separators: ["->"])
+			let inputTupleType = inputAndOutputTypes[0]
+			let inputTypes = Utilities.splitTypeList(
+				String(inputTupleType.dropFirst().dropLast()),
+				separators: [","])
+
+			// Ensure we have the same number of parameter labels and types
+			guard inputTypes.count == inputParameters.children.count else {
+				return try errorExpression(
+					forASTNode: Syntax(inputParameters),
+					withMessage: "Unable to convert closure parameters")
+			}
+
+			// Ensure all the closure parameters are `ClosureParamSyntax`es
+			let parameterSyntaxes: MutableList<ClosureParamSyntax> = []
+			for child in inputParameters.children {
+				guard let parameterSyntax = child.as(ClosureParamSyntax.self) else {
+					return try errorExpression(
+						forASTNode: Syntax(child),
+						withMessage: "Unsupported closure parameter")
+				}
+				parameterSyntaxes.append(parameterSyntax)
+			}
+
+			for (parameterSyntax, inputType) in zip(parameterSyntaxes, inputTypes) {
+				parameters.append(
+					LabeledType(label: parameterSyntax.name.text, typeName: inputType))
+			}
 		}
 
 		return ClosureExpression(
