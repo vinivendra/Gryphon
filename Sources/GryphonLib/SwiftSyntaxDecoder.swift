@@ -686,6 +686,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let tupleExpression = expression.as(TupleExprSyntax.self) {
 			return try convertTupleExpression(tupleExpression)
 		}
+		if let ternaryExpression = expression.as(TernaryExprSyntax.self) {
+			return try convertTernaryExpression(ternaryExpression)
+		}
 		if let nilLiteralExpression = expression.as(NilLiteralExprSyntax.self) {
 			return try convertNilLiteralExpression(nilLiteralExpression)
 		}
@@ -742,6 +745,21 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				forASTNode: Syntax(patternExpression),
 				withMessage: "Unable to convert pattern")
 		}
+	}
+
+	func convertTernaryExpression(
+		_ ternaryExpression: TernaryExprSyntax)
+		throws -> Expression
+	{
+		let condition = try convertExpression(ternaryExpression.conditionExpression)
+		let trueExpression = try convertExpression(ternaryExpression.firstChoice)
+		let falseExpression = try convertExpression(ternaryExpression.secondChoice)
+
+		return IfExpression(
+			range: ternaryExpression.getRange(inFile: self.sourceFile),
+			condition: condition,
+			trueExpression: trueExpression,
+			falseExpression: falseExpression)
 	}
 
 	func convertTupleExpression(
