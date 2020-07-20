@@ -1305,6 +1305,13 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if stringLiteralExpression.segments.count == 1,
 			let text = stringLiteralExpression.segments.first!.getText()
 		{
+			if let typeName = stringLiteralExpression.getType(fromList: self.expressionTypes),
+				typeName == "String.Element" || typeName == "Character"
+			{
+				return LiteralCharacterExpression(
+					range: range,
+					value: text)
+			}
 			return LiteralStringExpression(
 				range: range,
 				value: text,
