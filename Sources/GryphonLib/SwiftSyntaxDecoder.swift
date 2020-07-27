@@ -926,34 +926,53 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let signature = closureExpression.signature,
 			let inputParameters = signature.input
 		{
-			// Get the input parameter types (e.g. ["Any", "Any"] from "(Any, Any) -> Any")
-			let inputAndOutputTypes = Utilities.splitTypeList(typeName, separators: ["->"])
-			let inputTupleType = inputAndOutputTypes[0]
+			// Get the input parameter types (e.g. ["Any", "Any"] from "((Any, Any) -> Any)")
+			var closureType = typeName
+			while Utilities.isInEnvelopingParentheses(closureType) {
+				closureType = String(closureType.dropFirst().dropLast())
+			}
+
+			let inputAndOutputTypes = Utilities.splitTypeList(closureType, separators: ["->"])
+			var inputType = inputAndOutputTypes[0]
+
+			if inputType.hasSuffix(" throws") {
+				inputType = String(inputType.dropLast(" throws".count))
+			}
+
 			let inputTypes = Utilities.splitTypeList(
-				String(inputTupleType.dropFirst().dropLast()),
+				String(inputType.dropFirst().dropLast()),
 				separators: [","])
 
+			// Get the parameters
+			let cleanInputParameters: List<String>
+			if inputParameters.children.allSatisfy({ $0.is(ClosureParamSyntax.self) }) {
+				cleanInputParameters = List(inputParameters.children).map {
+						$0.as(ClosureParamSyntax.self)!.name.text
+					}
+			}
+			else if let parameterList =
+				inputParameters.children.first(where: { $0.is(FunctionParameterListSyntax.self) }),
+				let castedParameterList = parameterList.as(FunctionParameterListSyntax.self)
+			{
+				cleanInputParameters = List(castedParameterList)
+					.map { $0.firstName?.text ?? $0.secondName?.text ?? "_" }
+			}
+			else {
+				return try errorExpression(
+				forASTNode: Syntax(inputParameters),
+				withMessage: "Unable to convert closure parameters")
+			}
+
 			// Ensure we have the same number of parameter labels and types
-			guard inputTypes.count == inputParameters.children.count else {
+			guard inputTypes.count == cleanInputParameters.count else {
 				return try errorExpression(
 					forASTNode: Syntax(inputParameters),
-					withMessage: "Unable to convert closure parameters")
+					withMessage: "Unable to convert closure parameters; I have " +
+						"\(inputTypes.count) types but \(cleanInputParameters.count) parameters")
 			}
 
-			// Ensure all the closure parameters are `ClosureParamSyntax`es
-			let parameterSyntaxes: MutableList<ClosureParamSyntax> = []
-			for child in inputParameters.children {
-				guard let parameterSyntax = child.as(ClosureParamSyntax.self) else {
-					return try errorExpression(
-						forASTNode: Syntax(child),
-						withMessage: "Unsupported closure parameter")
-				}
-				parameterSyntaxes.append(parameterSyntax)
-			}
-
-			for (parameterSyntax, inputType) in zip(parameterSyntaxes, inputTypes) {
-				parameters.append(
-					LabeledType(label: parameterSyntax.name.text, typeName: inputType))
+			for (parameter, inputType) in zip(cleanInputParameters, inputTypes) {
+				parameters.append(LabeledType(label: parameter, typeName: inputType))
 			}
 		}
 
