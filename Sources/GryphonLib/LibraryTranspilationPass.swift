@@ -369,7 +369,7 @@ extension Expression {
 	func matches(
 		_ template: Expression,
 		inContext context: TranspilationContext,
-		shouldSkipRootTypeComparison: Bool = false)
+		shouldSkipRootTypeComparison: Bool = true)
 		-> MutableMap<String, Expression>?
 	{
 		let result: MutableMap<String, Expression> = [:]
