@@ -336,11 +336,31 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	{
 		let conditions: MutableList<IfStatement.IfCondition> = []
 		for condition in ifStatement.conditions {
-			if let child = condition.children.first,
-				let expressionSyntax = child.as(ExprSyntax.self)
-			{
-				let expression = try convertExpression(expressionSyntax)
-				conditions.append(.condition(expression: expression))
+			if let child = condition.children.first {
+				if let expressionSyntax = child.as(ExprSyntax.self) {
+					let expression = try convertExpression(expressionSyntax)
+					conditions.append(.condition(expression: expression))
+				}
+				else if let optionalBinding = child.as(OptionalBindingConditionSyntax.self),
+					let identifier = optionalBinding.pattern.getText()
+				{
+					let expression = try convertExpression(optionalBinding.initializer.value)
+					conditions.append(IfStatement.IfCondition.declaration(variableDeclaration:
+						VariableDeclaration(
+							range: optionalBinding.getRange(inFile: self.sourceFile),
+							identifier: identifier,
+							typeAnnotation: expression.swiftType,
+							expression: expression,
+							getter: nil,
+							setter: nil,
+							access: nil,
+							isOpen: false,
+							isLet: optionalBinding.letOrVarKeyword.text == "let",
+							isImplicit: false,
+							isStatic: false,
+							extendsType: nil,
+							annotations: [])))
+				}
 			}
 			else {
 				let expression = try errorExpression(
