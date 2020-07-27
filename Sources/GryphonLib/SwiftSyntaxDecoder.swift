@@ -109,7 +109,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		for statement in statements {
 			let item: Syntax = statement.element
 
-			let leadingCommentInformation = convertLeadingComments(fromSyntax: item)
+			let leadingCommentInformation = convertLeadingComments(forStatement: item)
 			if leadingCommentInformation.shouldIgnoreNextStatement {
 				continue
 			}
@@ -218,7 +218,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let shouldIgnoreNextStatement: Bool
 	}
 
-	func convertLeadingComments(fromSyntax syntax: Syntax) -> LeadingCommentInformation {
+	func convertLeadingComments(forStatement syntax: Syntax) -> LeadingCommentInformation {
 		let result: MutableList<Statement> = []
 		var shouldIgnoreNextStatement = false
 
@@ -235,9 +235,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					// TODO: Remove the `//` added by the KotlinTranslator so we don't have to do
 					// it here
 					let commentContents = String(comment.dropFirst(2))
-					let cleanComment = String(commentContents.drop(while: {
-						$0 == " " || $0 == "\t"
-					}))
+					let cleanComment = commentContents.trimmingWhitespaces()
 
 					if let insertComment =
 						SourceFile.getTranslationCommentFromString(cleanComment)
@@ -296,6 +294,51 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		return LeadingCommentInformation(
 			commentStatements: result,
 			shouldIgnoreNextStatement: shouldIgnoreNextStatement)
+	}
+
+	func convertLeadingComments(forExpression syntax: Syntax) -> LiteralCodeExpression? {
+		if let leadingTrivia = syntax.leadingTrivia {
+			var startOffset = syntax.position.utf8Offset
+			for trivia in leadingTrivia {
+				let endOffset = startOffset + trivia.sourceLength.utf8Length
+
+				let maybeCommentString: String?
+				switch trivia {
+				case let .lineComment(comment):
+					maybeCommentString = String(comment.dropFirst(2))
+				case let .blockComment(comment):
+					maybeCommentString = String(comment.dropFirst(2).dropLast(2))
+				default:
+					maybeCommentString = nil
+				}
+
+				if let commentContents = maybeCommentString {
+					let commentRange = SourceFileRange.getRange(
+						withStartOffset: startOffset,
+						withEndOffset: endOffset - 1, // Inclusive end
+						inFile: self.sourceFile)
+
+					let cleanComment = commentContents.trimmingWhitespaces()
+
+					if let insertComment =
+						SourceFile.getTranslationCommentFromString(cleanComment)
+					{
+						if let commentValue = insertComment.value {
+							if insertComment.key == .value {
+								return LiteralCodeExpression(
+									range: commentRange,
+									string: commentValue,
+									shouldGoToMainFunction: false)
+							}
+						}
+					}
+				}
+
+				startOffset = endOffset
+			}
+		}
+
+		return nil
 	}
 
 	// MARK: - Statements
@@ -697,6 +740,10 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	// MARK: - Expressions
 
 	func convertExpression(_ expression: ExprSyntax) throws -> Expression {
+		if let commentExpression = convertLeadingComments(forExpression: Syntax(expression)) {
+			return commentExpression
+		}
+
 		if let stringLiteralExpression = expression.as(StringLiteralExprSyntax.self) {
 			return try convertStringLiteralExpression(stringLiteralExpression)
 		}
