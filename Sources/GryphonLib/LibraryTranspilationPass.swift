@@ -368,11 +368,13 @@ private class ReplaceTemplateMatchesTranspilationPass: TranspilationPass {
 extension Expression {
 	func matches(
 		_ template: Expression,
-		inContext context: TranspilationContext)
+		inContext context: TranspilationContext,
+		shouldSkipRootTypeComparison: Bool = false)
 		-> MutableMap<String, Expression>?
 	{
 		let result: MutableMap<String, Expression> = [:]
-		let success = self.matches(template, result, context)
+		let success = self.matches(template, result, context,
+			shouldSkipRootTypeComparison: shouldSkipRootTypeComparison)
 		if success {
 			return result
 		}
@@ -381,10 +383,22 @@ extension Expression {
 		}
 	}
 
+	/// Checks if `self` matches the given `template` expression, and stores any matching
+	/// underscored variables in the `matches` dictionary. Uses the `context` to calculate subtypes.
+	///
+	/// Note: SourceKit sometimes provides supertypes of expressions instead of their specific
+	/// types. For instance, `print()` expects an `Any`, so the `expression` in `print(expression)`
+	/// will always have type `Any`. This can cause problems when matching `expression` with a
+	/// template of type `Int`, for instance, since the types won't match. To handle this case, the
+	/// `shouldSkipRootTypeComparison` parameter can be used to avoid comparing the root
+	/// expression's type. It isn't set in recursive calls so that inner types get compared
+	/// normally (with the exception of dot expressions, whose types are usually determined by
+	/// their right expression's type).
 	private func matches(
 		_ template: Expression,
 		_ matches: MutableMap<String, Expression>,
-		_ context: TranspilationContext)
+		_ context: TranspilationContext,
+		shouldSkipRootTypeComparison: Bool = false)
 		-> Bool
 	{
 		let lhs = self
@@ -393,7 +407,7 @@ extension Expression {
 		if let declarationExpression = rhs as? DeclarationReferenceExpression {
 			if declarationExpression.identifier.hasPrefix("_"),
 				let declarationType = declarationExpression.typeName,
-				lhs.isOfType(declarationType, inContext: context)
+				shouldSkipRootTypeComparison || lhs.isOfType(declarationType, inContext: context)
 			{
 				matches[declarationExpression.identifier] = lhs
 				return true
@@ -417,7 +431,10 @@ extension Expression {
 			let rhs = rhs as? DeclarationReferenceExpression
 		{
 			let typeMatches: Bool
-			if let leftType = lhs.typeName,
+			if shouldSkipRootTypeComparison {
+				typeMatches = true
+			}
+			else if let leftType = lhs.typeName,
 				let rightType = rhs.typeName
 			{
 				typeMatches = context.isSubtype(leftType, of: rightType)
@@ -475,7 +492,8 @@ extension Expression {
 		{
 			return lhs.subscriptedExpression.matches(rhs.subscriptedExpression, matches, context)
 				&& lhs.indexExpression.matches(rhs.indexExpression, matches, context)
-				&& context.isSubtype(lhs.typeName, of: rhs.typeName)
+				&& (shouldSkipRootTypeComparison ||
+					context.isSubtype(lhs.typeName, of: rhs.typeName))
 		}
 		if let lhs = lhs as? ArrayExpression,
 			let rhs = rhs as? ArrayExpression
@@ -484,19 +502,24 @@ extension Expression {
 			for (leftElement, rightElement) in zip(lhs.elements, rhs.elements) {
 				result = result && leftElement.matches(rightElement, matches, context)
 			}
-			return result && (context.isSubtype(lhs.typeName, of: rhs.typeName))
+			return result && (shouldSkipRootTypeComparison ||
+					context.isSubtype(lhs.typeName, of: rhs.typeName))
 		}
 		if let lhs = lhs as? DotExpression,
 			let rhs = rhs as? DotExpression
 		{
 			return lhs.leftExpression.matches(rhs.leftExpression, matches, context) &&
-				lhs.rightExpression.matches(rhs.rightExpression, matches, context)
+				lhs.rightExpression.matches(rhs.rightExpression, matches, context,
+					shouldSkipRootTypeComparison: true)
 		}
 		if let lhs = lhs as? BinaryOperatorExpression,
 			let rhs = rhs as? BinaryOperatorExpression
 		{
 			let typeMatches: Bool
-			if let leftType = lhs.typeName, let rightType = rhs.typeName {
+			if shouldSkipRootTypeComparison {
+				typeMatches = true
+			}
+			else if let leftType = lhs.typeName, let rightType = rhs.typeName {
 				typeMatches = context.isSubtype(leftType, of: rightType)
 			}
 			else {
@@ -513,20 +536,23 @@ extension Expression {
 		{
 			return lhs.subExpression.matches(rhs.subExpression, matches, context) &&
 				lhs.operatorSymbol == rhs.operatorSymbol &&
-				context.isSubtype(lhs.typeName, of: rhs.typeName)
+				(shouldSkipRootTypeComparison || context.isSubtype(lhs.typeName, of: rhs.typeName))
 		}
 		if let lhs = lhs as? PostfixUnaryExpression,
 			let rhs = rhs as? PostfixUnaryExpression
 		{
 			return lhs.subExpression.matches(rhs.subExpression, matches, context) &&
 				lhs.operatorSymbol == rhs.operatorSymbol &&
-				context.isSubtype(lhs.typeName, of: rhs.typeName)
+				(shouldSkipRootTypeComparison || context.isSubtype(lhs.typeName, of: rhs.typeName))
 		}
 		if let lhs = lhs as? CallExpression,
 			let rhs = rhs as? CallExpression
 		{
 			let typeMatches: Bool
-			if let lhsType = lhs.typeName,
+			if shouldSkipRootTypeComparison {
+				typeMatches = true
+			}
+			else if let lhsType = lhs.typeName,
 				let rhsType = rhs.typeName
 			{
 				typeMatches = context.isSubtype(lhsType, of: rhsType)
@@ -572,7 +598,7 @@ extension Expression {
 		if let lhs = lhs as? InterpolatedStringLiteralExpression,
 			let rhs = rhs as? InterpolatedStringLiteralExpression
 		{
-			var result = true
+			var result = (lhs.expressions.count == rhs.expressions.count)
 			for (leftExpression, rightExpression) in zip(lhs.expressions, rhs.expressions) {
 				result = result && leftExpression.matches(rightExpression, matches, context)
 			}
