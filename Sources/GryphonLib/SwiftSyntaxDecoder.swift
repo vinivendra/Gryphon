@@ -99,12 +99,15 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 	}
 
-	func convertStatements(_ statements: CodeBlockItemListSyntax) throws -> MutableList<Statement> {
+	func convertStatements<Body>(
+		_ statements: Body)
+		throws -> MutableList<Statement>
+		where Body: SyntaxList
+	{
 		let result: MutableList<Statement> = []
 
 		for statement in statements {
-			let codeBlockItemSyntax: CodeBlockItemSyntax = statement
-			let item: Syntax = codeBlockItemSyntax.item
+			let item: Syntax = statement.element
 
 			let leadingCommentInformation = convertLeadingComments(fromSyntax: item)
 			if leadingCommentInformation.shouldIgnoreNextStatement {
@@ -379,6 +382,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	// MARK: - Declarations
 
 	func convertDeclaration(_ declaration: DeclSyntax) throws -> List<Statement> {
+		if let classDeclaration = declaration.as(ClassDeclSyntax.self) {
+			return try [convertClassDeclaration(classDeclaration)]
+		}
 		if let variableDeclaration = declaration.as(VariableDeclSyntax.self) {
 			return try convertVariableDeclaration(variableDeclaration)
 		}
@@ -392,6 +398,24 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		return try [errorStatement(
 			forASTNode: Syntax(declaration),
 			withMessage: "Unknown declaration"), ]
+	}
+
+	func convertClassDeclaration(
+		_ classDeclaration: ClassDeclSyntax)
+		throws -> Statement
+	{
+		let inheritances = try classDeclaration.inheritanceClause?.inheritedTypeCollection.map {
+				try convertType($0.typeName)
+		} ?? []
+
+		return ClassDeclaration(
+			range: classDeclaration.getRange(inFile: self.sourceFile),
+			className: classDeclaration.identifier.text,
+			annotations: [],
+			access: nil,
+			isOpen: true,
+			inherits: MutableList(inheritances),
+			members: try convertStatements(classDeclaration.members.members))
 	}
 
 	func convertImportDeclaration(
@@ -1490,5 +1514,31 @@ private extension SyntaxProtocol {
 		}
 
 		return nil
+	}
+}
+
+/// A sytax that represents a list of elements, e.g. a list of statements or declarations.
+protocol SyntaxList: SyntaxProtocol, Sequence where Element: SyntaxElementContainer { }
+
+/// An element wrapper in a list of syntaxes (e.g. a list of declarations or statements).
+/// These lists, like `MemberDeclListSyntax` and `CodeBlockItemListSyntax`, usually wrap their
+/// elements in these containers. This protocol allows us to use them generically.
+protocol SyntaxElementContainer: SyntaxProtocol {
+	var element: Syntax { get }
+}
+
+extension CodeBlockItemListSyntax: SyntaxList { }
+
+extension CodeBlockItemSyntax: SyntaxElementContainer {
+	var element: Syntax {
+		return self.item
+	}
+}
+
+extension MemberDeclListSyntax: SyntaxList { }
+
+extension MemberDeclListItemSyntax: SyntaxElementContainer {
+	var element: Syntax {
+		return Syntax(self.decl)
 	}
 }
