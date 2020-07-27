@@ -332,7 +332,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 	func convertIfStatement(
 		_ ifStatement: IfStmtSyntax)
-		throws -> Statement
+		throws -> IfStatement
 	{
 		let conditions: MutableList<IfStatement.IfCondition> = []
 		for condition in ifStatement.conditions {
@@ -372,12 +372,30 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 		let statements = try convertStatements(ifStatement.body.statements)
 
+		let elseStatement: IfStatement?
+		if let elseIfSyntax = ifStatement.children.last?.as(IfStmtSyntax.self) {
+			elseStatement = try convertIfStatement(elseIfSyntax)
+		}
+		else if let elseBody = ifStatement.elseBody?.as(CodeBlockSyntax.self) {
+			let elseBodyStatements = try convertStatements(elseBody.statements)
+			elseStatement = IfStatement(
+				range: elseBody.getRange(inFile: self.sourceFile),
+				conditions: [],
+				declarations: [],
+				statements: elseBodyStatements,
+				elseStatement: nil,
+				isGuard: false)
+		}
+		else {
+			elseStatement = nil
+		}
+
 		return IfStatement(
 			range: ifStatement.getRange(inFile: self.sourceFile),
 			conditions: conditions,
 			declarations: [],
 			statements: statements,
-			elseStatement: nil,
+			elseStatement: elseStatement,
 			isGuard: false)
 	}
 
