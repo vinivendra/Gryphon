@@ -1195,9 +1195,7 @@ public class SwiftTranslator {
 
 		let variableSubtreeTuple = forEachStatement.subtree(named: "Pattern Tuple")
 		let variableSubtreeNamed = forEachStatement.subtree(named: "Pattern Named")
-		let variableSubtreeAny = forEachStatement.subtree(named: "Pattern Any")
 		let rawTypeNamed = variableSubtreeNamed?["type"]
-		let rawTypeAny = variableSubtreeAny?["type"]
 		let variableAttributes = variableSubtreeNamed?.standaloneAttributes
 		let variableName = variableAttributes?.first
 
@@ -1226,10 +1224,9 @@ public class SwiftTranslator {
 				pairs: variables)
 			collectionExpression = maybeCollectionExpression
 		}
-		else if let rawTypeAny = rawTypeAny,
+		else if forEachStatement.subtree(named: "Pattern Any") != nil,
 			let maybeCollectionExpression = maybeCollectionExpression
 		{
-			let typeName = cleanUpType(rawTypeAny)
 			variable = nil
 			collectionExpression = maybeCollectionExpression
 		}
