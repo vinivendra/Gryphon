@@ -645,7 +645,10 @@ public class KotlinTranslator {
 					withIndentation: increaseIndentation(indentation))
 			}
 		}
-		else if functionDeclaration.returnType != "()", !isInit {
+		else if functionDeclaration.returnType != "()",
+			functionDeclaration.returnType != "Void",
+			!isInit
+		{
 			// If it doesn't, that place might be used for the return type
 
 			let translatedReturnType = translateType(functionDeclaration.returnType)
