@@ -2164,7 +2164,8 @@ public class SwiftTranslator {
 			expression = LiteralCodeExpression(
 				range: getRangeRecursively(ofNode: variableDeclaration),
 				string: valueReplacement,
-				shouldGoToMainFunction: true)
+				shouldGoToMainFunction: true,
+				typeName: nil)
 		}
 
 		var getter: FunctionDeclaration?
@@ -2254,7 +2255,8 @@ public class SwiftTranslator {
 			return LiteralCodeExpression(
 				range: getRangeRecursively(ofNode: expression),
 				string: valueReplacement,
-				shouldGoToMainFunction: true)
+				shouldGoToMainFunction: true,
+				typeName: nil)
 		}
 
 		let result: Expression
@@ -3297,7 +3299,8 @@ public class SwiftTranslator {
 						expression: LiteralCodeExpression(
 							range: astRange,
 							string: commentValue,
-							shouldGoToMainFunction: true)))
+							shouldGoToMainFunction: true,
+							typeName: nil)))
 				}
 				else if insertComment.key == .insert {
 					result.append(ExpressionStatement(
@@ -3305,7 +3308,8 @@ public class SwiftTranslator {
 						expression: LiteralCodeExpression(
 							range: astRange,
 							string: commentValue,
-							shouldGoToMainFunction: false)))
+							shouldGoToMainFunction: false,
+							typeName: nil)))
 				}
 				else if insertComment.key == .output {
 					if let fileExtension = Utilities.getExtension(of: commentValue),

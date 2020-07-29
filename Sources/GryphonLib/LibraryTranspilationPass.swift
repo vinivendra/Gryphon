@@ -70,7 +70,8 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 							templateExpression: LiteralCodeExpression(
 								range: templateExpression.range,
 								string: cleanString,
-								shouldGoToMainFunction: false)))
+								shouldGoToMainFunction: false,
+								typeName: nil)))
 						previousExpression = nil
 					}
 				}
@@ -122,7 +123,8 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 						let right = LiteralCodeExpression(
 							range: nil,
 							string: stringExpression.value,
-							shouldGoToMainFunction: false)
+							shouldGoToMainFunction: false,
+							typeName: nil)
 						return DotExpression(
 							range: nil,
 							leftExpression: left,
@@ -135,7 +137,8 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 			return LiteralCodeExpression(
 				range: nil,
 				string: stringExpression.value,
-				shouldGoToMainFunction: false)
+				shouldGoToMainFunction: false,
+				typeName: nil)
 		}
 		else if let binaryOperatorExpression = expression as? BinaryOperatorExpression,
 			binaryOperatorExpression.operatorSymbol == "+"
@@ -167,7 +170,8 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 				expression: LiteralCodeExpression(
 					range: nil,
 					string: expression.value,
-					shouldGoToMainFunction: false))
+					shouldGoToMainFunction: false,
+					typeName: nil))
 		}
 		else if let expression = expression as? CallExpression {
 			if let dotExpression = expression.function as? DotExpression,
@@ -302,7 +306,8 @@ private class ReplaceTemplateMatchesTranspilationPass: TranspilationPass {
 							let precedingStringExpression = LiteralCodeExpression(
 								range: nil,
 								string: precedingString,
-								shouldGoToMainFunction: false)
+								shouldGoToMainFunction: false,
+								typeName: nil)
 							expressions.append(precedingStringExpression)
 						}
 
@@ -334,7 +339,8 @@ private class ReplaceTemplateMatchesTranspilationPass: TranspilationPass {
 			expressions.append(LiteralCodeExpression(
 				range: nil,
 				string: String(string[previousMatchEndIndex...]),
-				shouldGoToMainFunction: false))
+				shouldGoToMainFunction: false,
+				typeName: nil))
 		}
 
 		// Create the resulting expression

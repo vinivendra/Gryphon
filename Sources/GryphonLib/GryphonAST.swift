@@ -1312,22 +1312,35 @@ public /*abstract*/ class Expression: PrintableAsTree, Equatable, CustomStringCo
 public class LiteralCodeExpression: Expression {
 	let string: String
 	let shouldGoToMainFunction: Bool
+	var typeName: String?
 
-	init(range: SourceFileRange?, string: String, shouldGoToMainFunction: Bool) {
+	init(range: SourceFileRange?, string: String, shouldGoToMainFunction: Bool, typeName: String?) {
 		self.string = string
 		self.shouldGoToMainFunction = shouldGoToMainFunction
+		self.typeName = typeName
 		super.init(range: range, name: "LiteralCodeExpression".capitalizedAsCamelCase())
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
 		return [
 			PrintableTree(string),
+			PrintableTree.initOrNil(typeName),
 			shouldGoToMainFunction ? PrintableTree("shouldGoToMainFunction") : nil, ]
+	}
+
+	override var swiftType: String? { // gryphon annotation: override
+		get {
+			return typeName
+		}
+		set {
+			typeName = newValue
+		}
 	}
 
 	public static func == (lhs: LiteralCodeExpression, rhs: LiteralCodeExpression) -> Bool {
 		return lhs.string == rhs.string &&
-			lhs.shouldGoToMainFunction == rhs.shouldGoToMainFunction
+			lhs.shouldGoToMainFunction == rhs.shouldGoToMainFunction &&
+			lhs.typeName == rhs.typeName
 	}
 }
 

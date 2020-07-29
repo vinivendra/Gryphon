@@ -250,7 +250,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 									expression: LiteralCodeExpression(
 										range: commentRange,
 										string: commentValue,
-										shouldGoToMainFunction: true)))
+										shouldGoToMainFunction: true,
+										typeName: nil)))
 							}
 							else if insertComment.key == .insert {
 								result.append(ExpressionStatement(
@@ -258,7 +259,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 									expression: LiteralCodeExpression(
 										range: commentRange,
 										string: commentValue,
-										shouldGoToMainFunction: false)))
+										shouldGoToMainFunction: false,
+										typeName: nil)))
 							}
 							else if insertComment.key == .output {
 								if let fileExtension = Utilities.getExtension(of: commentValue),
@@ -331,7 +333,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 								return LiteralCodeExpression(
 									range: commentRange,
 									string: commentValue,
-									shouldGoToMainFunction: false)
+									shouldGoToMainFunction: false,
+									typeName: nil)
 							}
 						}
 					}
@@ -764,6 +767,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 	func convertExpression(_ expression: ExprSyntax) throws -> Expression {
 		if let commentExpression = convertLeadingComments(forExpression: Syntax(expression)) {
+			// Set the LiteralCodeExpression's type to the type of the expression it's replacing
+			commentExpression.typeName = expression.getType(fromList: self.expressionTypes)
 			return commentExpression
 		}
 
