@@ -188,7 +188,7 @@ public class Compiler {
 		withContext context: TranspilationContext)
 		throws -> GryphonAST
 	{
-		let decoder = try SwiftSyntaxDecoder(filePath: inputFilePath)
+		let decoder = try SwiftSyntaxDecoder(filePath: inputFilePath, context: context)
 		return try decoder.convertToGryphonAST(asMainFile: asMainFile)
 	}
 

@@ -35,8 +35,10 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	/// The map that relates each type of output to the path to the file in which to write that
 	/// output
 	var outputFileMap: MutableMap<FileExtension, String> = [:]
+	/// The transpilation context, used for information such as if we should default to open
+	let context: TranspilationContext
 
-	init(filePath: String) throws {
+	init(filePath: String, context: TranspilationContext) throws {
 		// Call SourceKitten to get the types
 		// TODO: Improve this yaml. SDK paths? Absolute/relative file paths?
 		let absolutePath = Utilities.getAbsoultePath(forFile: filePath)
@@ -70,6 +72,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		self.sourceFile = try SourceFile(path: filePath, contents: Utilities.readFile(filePath))
 		self.expressionTypes = typeList
 		self.syntaxTree = tree
+		self.context = context
 	}
 
 	struct ExpressionType {
@@ -604,9 +607,10 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		throws -> MutableList<Statement>
 	{
 		let isLet = (variableDeclaration.letOrVarKeyword.text == "let")
-		let annotations: MutableList<String> = MutableList(variableDeclaration.modifiers?.compactMap {
-			return $0.getText()
-		} ?? [])
+		let annotations: MutableList<String> =
+			MutableList(variableDeclaration.modifiers?.compactMap {
+				return $0.getText()
+			} ?? [])
 
 		let result: MutableList<VariableDeclaration> = []
 		let errors: MutableList<Statement> = []
@@ -632,6 +636,25 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					annotatedType = expression?.swiftType
 				}
 
+				let isOpen: Bool
+				if let modifiers = variableDeclaration.modifiers,
+					modifiers.contains(where: { $0.name.text == "final" })
+				{
+					isOpen = false
+				}
+				else if let modifiers = variableDeclaration.modifiers,
+					modifiers.contains(where: { $0.name.text == "open" })
+				{
+					isOpen = true
+				}
+				else if isLet {
+					// Only var's can be open in Swift
+					isOpen = false
+				}
+				else {
+					isOpen = !self.context.defaultsToFinal
+				}
+
 				result.append(VariableDeclaration(
 					range: variableDeclaration.getRange(inFile: self.sourceFile),
 					identifier: identifier,
@@ -640,7 +663,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					getter: nil,
 					setter: nil,
 					access: nil,
-					isOpen: true,
+					isOpen: isOpen,
 					isLet: isLet,
 					isImplicit: false,
 					isStatic: false,

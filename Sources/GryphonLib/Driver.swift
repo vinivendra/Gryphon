@@ -294,7 +294,7 @@ public class Driver {
 		let gryphonRawAST: GryphonAST
 		if settings.shouldUseSwiftSyntax {
 			Compiler.logStart("🧑‍💻  Processing SwiftSyntax for \(inputFileRelativePath)...")
-			let decoder = try SwiftSyntaxDecoder(filePath: inputFilePath)
+			let decoder = try SwiftSyntaxDecoder(filePath: inputFilePath, context: context)
 			let printableTreeConverter = SwiftSyntaxToPrintableTreeVisitor()
 			swiftAST = printableTreeConverter.convertToPrintableTree(decoder.syntaxTree)
 			Compiler.logEnd("✅  Done processing SwiftSyntax for \(inputFileRelativePath).")
