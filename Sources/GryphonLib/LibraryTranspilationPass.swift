@@ -449,8 +449,13 @@ extension Expression {
 				typeMatches = false
 			}
 
+			// Consider only the prefix of functions, since SwiftSyntax may not include arguments
+			// with default values.
+			let lhsPrefix = String(lhs.identifier.prefix { $0 != "(" })
+			let rhsPrefix = String(rhs.identifier.prefix { $0 != "(" })
+
 			return typeMatches &&
-				lhs.identifier == rhs.identifier &&
+				lhsPrefix == rhsPrefix &&
 				lhs.isImplicit == rhs.isImplicit
 		}
 		if let lhs = lhs as? OptionalExpression,
