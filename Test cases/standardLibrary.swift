@@ -26,7 +26,7 @@ import Foundation
 // MARK: - Define template classes and operators
 
 // gryphon ignore
-private class _GRYTemplate { // gryphon ignore
+private class _GRYTemplate {
 	static func dot(_ left: _GRYTemplate, _ right: String) -> _GRYDotTemplate {
 		return _GRYDotTemplate(left, right)
 	}
@@ -45,7 +45,7 @@ private class _GRYTemplate { // gryphon ignore
 }
 
 // gryphon ignore
-private class _GRYDotTemplate: _GRYTemplate { // gryphon ignore
+private class _GRYDotTemplate: _GRYTemplate {
 	let left: _GRYTemplate
 	let right: String
 
@@ -56,7 +56,7 @@ private class _GRYDotTemplate: _GRYTemplate { // gryphon ignore
 }
 
 // gryphon ignore
-private class _GRYCallTemplate: _GRYTemplate { // gryphon ignore
+private class _GRYCallTemplate: _GRYTemplate {
 	let function: _GRYTemplate
 	let parameters: [_GRYParameterTemplate]
 
@@ -73,7 +73,7 @@ private class _GRYCallTemplate: _GRYTemplate { // gryphon ignore
 }
 
 // gryphon ignore
-private class _GRYParameterTemplate: ExpressibleByStringLiteral { // gryphon ignore
+private class _GRYParameterTemplate: ExpressibleByStringLiteral {
 	let label: String?
 	let template: _GRYTemplate
 
@@ -124,7 +124,7 @@ private class _GRYParameterTemplate: ExpressibleByStringLiteral { // gryphon ign
 }
 
 // gryphon ignore
-private class _GRYLiteralTemplate: _GRYTemplate { // gryphon ignore
+private class _GRYLiteralTemplate: _GRYTemplate {
 	let string: String
 
 	init(string: String) {
@@ -133,7 +133,7 @@ private class _GRYLiteralTemplate: _GRYTemplate { // gryphon ignore
 }
 
 // gryphon ignore
-private class _GRYConcatenatedTemplate: _GRYTemplate { // gryphon ignore
+private class _GRYConcatenatedTemplate: _GRYTemplate {
 	let left: _GRYTemplate
 	let right: _GRYTemplate
 
@@ -144,17 +144,17 @@ private class _GRYConcatenatedTemplate: _GRYTemplate { // gryphon ignore
 }
 
 // gryphon ignore
-private func + (left: _GRYTemplate, right: _GRYTemplate) -> _GRYConcatenatedTemplate { // gryphon ignore
+private func + (left: _GRYTemplate, right: _GRYTemplate) -> _GRYConcatenatedTemplate {
 	_GRYConcatenatedTemplate(left: left, right: right)
 }
 
 // gryphon ignore
-private func + (left: String, right: _GRYTemplate) -> _GRYConcatenatedTemplate { // gryphon ignore
+private func + (left: String, right: _GRYTemplate) -> _GRYConcatenatedTemplate {
 	_GRYConcatenatedTemplate(left: _GRYLiteralTemplate(string: left), right: right)
 }
 
 // gryphon ignore
-private func + (left: _GRYTemplate, right: String) -> _GRYConcatenatedTemplate { // gryphon ignore
+private func + (left: _GRYTemplate, right: String) -> _GRYConcatenatedTemplate {
 	_GRYConcatenatedTemplate(left: left, right: _GRYLiteralTemplate(string: right))
 }
 
@@ -162,11 +162,11 @@ private func + (left: _GRYTemplate, right: String) -> _GRYConcatenatedTemplate {
 
 // Replacement for Hashable
 // gryphon ignore
-private struct _Hashable: Hashable { } // gryphon ignore
+private struct _Hashable: Hashable { }
 
 // Replacement for Comparable
 // gryphon ignore
-private struct _Comparable: Comparable { // gryphon ignore
+private struct _Comparable: Comparable {
 	static func < (lhs: _Comparable, rhs: _Comparable) -> Bool {
 		return false
 	}
@@ -174,17 +174,17 @@ private struct _Comparable: Comparable { // gryphon ignore
 
 // Replacement for Optional
 // gryphon ignore
-private struct _Optional { } // gryphon ignore
+private struct _Optional { }
 
 // Replacement for CustomStringConvertible
 // gryphon ignore
-private struct _CustomStringConvertible: CustomStringConvertible { // gryphon ignore
+private struct _CustomStringConvertible: CustomStringConvertible {
 	var description: String = ""
 }
 
 // Replacement for Any
 // gryphon ignore
-private struct _Any: CustomStringConvertible, LosslessStringConvertible { // gryphon ignore
+private struct _Any: CustomStringConvertible, LosslessStringConvertible {
 	init() { }
 
 	var description: String = ""
@@ -581,7 +581,7 @@ private func gryphonTemplates() {
 // MARK: - Tests
 
 // gryphon ignore
-typealias PrintContents = Any // gryphon ignore
+typealias PrintContents = Any
 // gryphon insert: typealias PrintContents = Any?
 
 func printTest(_ contents: PrintContents, _ testName: String) {
@@ -638,12 +638,12 @@ printTest(Int(double2), "Double (0.9) to Int")
 
 // String
 let string = "abcde"
-let bIndex = string.index(string.startIndex, offsetBy: 1) // gryphon value: 1
-let cIndex = string.index(string.startIndex, offsetBy: 2) // gryphon value: 2
-let dIndex = string.index(string.startIndex, offsetBy: 3) // gryphon value: 3
+let bIndex = /* gryphon value: 1 */ string.index(string.startIndex, offsetBy: 1)
+let cIndex = /* gryphon value: 2 */ string.index(string.startIndex, offsetBy: 2)
+let dIndex = /* gryphon value: 3 */ string.index(string.startIndex, offsetBy: 3)
 var variableIndex = cIndex
-let substring = "abcde".dropLast() // gryphon value: "abcd"
-let range = string.startIndex..<string.endIndex // gryphon value: IntRange(0, string.length)
+let substring = /* gryphon value: "abcd" */ "abcde".dropLast()
+let range = /* gryphon value: IntRange(0, string.length) */ string.startIndex..<string.endIndex
 var variableString = "abcde"
 let character: Character = "i"
 
@@ -761,13 +761,13 @@ printTest(character.uppercased(), "Character uppercased")
 
 // Array
 // gryphon ignore
-var array = [1, 2, 3] // gryphon ignore
+var array = [1, 2, 3]
 let array2 = [2, 1]
 // gryphon ignore
-var array3 = [1] // gryphon ignore
+var array3 = [1]
 let array4 = [2, 1]
 // gryphon ignore
-var arrayOfOptionals: [Int?] = [1] // gryphon ignore
+var arrayOfOptionals: [Int?] = [1]
 let emptyArray: [Int] = []
 let stringArray = ["1", "2", "3"]
 // gryphon insertInMain: val array: MutableList<Int> = mutableListOf(1, 2, 3)
@@ -909,7 +909,7 @@ class C: CustomStringConvertible {
 }
 
 // gryphon ignore
-func f(of a: Int) { // gryphon ignore
+func f(of a: Int) {
 	printTest(a, "User template")
 }
 
@@ -924,7 +924,6 @@ f(of: 10)
 // Adding `?` in dot chains declared by templates
 let maybeA: A? = nil
 if let a = maybeA, let b = a.string.first {
-	// ...
 }
 
 // Adding `@map` labels in closures called by functions in templates

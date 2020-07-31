@@ -274,7 +274,6 @@ fun main(args: Array<String>) {
 	val b: Char? = a?.string?.firstOrNull()
 
 	if (a != null && b != null) {
-		// ...
 	}
 
 	println(

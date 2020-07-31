@@ -158,5 +158,6 @@ class TestUtilities {
 	/// Which test cases in the array above can already be translated using SwiftSyntax
 	static let testCasesForSwiftSyntax: List = [
 		"assignments",
+		"standardLibrary",
 	]
 }
