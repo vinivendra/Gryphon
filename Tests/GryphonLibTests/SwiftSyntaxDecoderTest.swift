@@ -255,8 +255,9 @@ class SwiftSyntaxDecoderTest: XCTestCase {
 				"Statement:\n\(statement.prettyDescription())")
 
 			// - Ternary expressions over assignments
-			// `x = 0 == 1 ? 2 == 3 : 4 == 5`
+			// `y = 0 == 1 ? 2 == 3 : 4 == 5`
 			testPassed = false
+			statement = statementIterator.next()! // Skip `var y = true`
 			statement = statementIterator.next()!
 			if let assignmentStatement = statement as? AssignmentStatement,
 				let ifExpression =

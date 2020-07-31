@@ -40,4 +40,5 @@ _ = 1 + 2
 // - Other operators over ternary expressions
 0 == 1 ? 2 == 3 : 4 == 5
 // - Ternary expressions over assignments
-x = 0 == 1 ? 2 == 3 : 4 == 5
+var y = true
+y = 0 == 1 ? 2 == 3 : 4 == 5
