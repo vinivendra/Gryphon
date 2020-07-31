@@ -622,12 +622,13 @@ public class List<Element>: CustomStringConvertible, // gryphon ignore
 		return array.last
 	}
 
+	// TODO: Add test for dropFirst and dropLast with k != 1
 	public func dropFirst(_ k: Int = 1) -> List<Element> {
-		return List(array.dropFirst())
+		return List(array.dropFirst(k))
 	}
 
 	public func dropLast(_ k: Int = 1) -> List<Element> {
-		return List(array.dropLast())
+		return List(array.dropLast(k))
 	}
 
 	public func appending(_ newElement: Element) -> List<Element> {
@@ -2191,7 +2192,8 @@ public class SupportingFile {
 		return Utilities.getAbsoultePath(forFile: relativePath)
 	}
 
-	//
+	/// Takes the path to a Swift file (with or without extension) and returns the path to its
+	/// corresponding AST dump file, which may or may not exist.
 	static public func pathOfSwiftASTDumpFile(
 		forSwiftFile swiftFile: String,
 		swiftVersion: String)
