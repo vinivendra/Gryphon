@@ -64,37 +64,35 @@ class IntegrationTest: XCTestCase {
 
 			let tests = TestUtilities.testCases
 			for testName in tests {
-				do {
-					// Generate kotlin code using the whole compiler
-					let testCasePath = TestUtilities.testCasesPath + testName
-					let astDumpFilePath =
-						SupportingFile.pathOfSwiftASTDumpFile(
-							forSwiftFile: testCasePath,
-							swiftVersion: swiftVersion)
-					let defaultsToFinal = testName.hasSuffix("-default-final")
-					let usesSwiftSyntax =
-						TestUtilities.testCasesForSwiftSyntax.contains(testName)
+				// Generate kotlin code using the whole compiler
+				let testCasePath = TestUtilities.testCasesPath + testName
+				let astDumpFilePath =
+					SupportingFile.pathOfSwiftASTDumpFile(
+						forSwiftFile: testCasePath,
+						swiftVersion: swiftVersion)
+				let defaultsToFinal = testName.hasSuffix("-default-final")
+				let usesSwiftSyntax =
+					TestUtilities.testCasesForSwiftSyntax.contains(testName)
 
-					print("- Testing \(testName)\(usesSwiftSyntax ? " (Swift Syntax)" : "")...")
-					let generatedKotlinCode = try Compiler.transpileKotlinCode(
-						fromInputFiles: [testCasePath.withExtension(.swift)],
-						fromASTDumpFiles: [astDumpFilePath],
-						withContext: TranspilationContext(
-							toolchainName: nil,
-							indentationString: "\t",
-							defaultsToFinal: defaultsToFinal),
-						usingSwiftSyntax: usesSwiftSyntax).first!
+				print("- Testing \(testName)\(usesSwiftSyntax ? " (Swift Syntax)" : "")...")
+				let generatedKotlinCode = try Compiler.transpileKotlinCode(
+					fromInputFiles: [testCasePath.withExtension(.swift)],
+					fromASTDumpFiles: [astDumpFilePath],
+					withContext: TranspilationContext(
+						toolchainName: nil,
+						indentationString: "\t",
+						defaultsToFinal: defaultsToFinal),
+					usingSwiftSyntax: usesSwiftSyntax).first!
 
-					// Load the previously stored kotlin code from file
-					let expectedKotlinCode =
-						try! Utilities.readFile(testCasePath.withExtension(.kt))
+				// Load the previously stored kotlin code from file
+				let expectedKotlinCode =
+					try! Utilities.readFile(testCasePath.withExtension(.kt))
 
-					XCTAssert(
-						generatedKotlinCode == expectedKotlinCode,
-						"Test \(testName): the transpiler failed to produce expected result. " +
-							"Printing diff ('<' means generated, '>' means expected):" +
-							TestUtilities.diff(generatedKotlinCode, expectedKotlinCode))
-				}
+				XCTAssert(
+					generatedKotlinCode == expectedKotlinCode,
+					"Test \(testName): the transpiler failed to produce expected result. " +
+						"Printing diff ('<' means generated, '>' means expected):" +
+						TestUtilities.diff(generatedKotlinCode, expectedKotlinCode))
 			}
 
 			let unexpectedWarnings = Compiler.issues.filter {
