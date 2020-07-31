@@ -73,14 +73,14 @@ class AcceptanceTest: XCTestCase {
 				print("- Testing \(testName)...")
 				// Translate the swift code to kotlin
 				let testCasePath = TestUtilities.testCasesPath + testName
-				let astDumpFilePath =
-					SupportingFile.pathOfSwiftASTDumpFile(
-						forSwiftFile: testCasePath,
-						swiftVersion: swiftVersion)
+				let swiftFilePath = testCasePath.withExtension(.swift)
+				let astDumpFilePath = SupportingFile.pathOfSwiftASTDumpFile(
+					forSwiftFile: swiftFilePath,
+					swiftVersion: swiftVersion)
 				let defaultsToFinal = testName.hasSuffix("-default-final")
 				let usesSwiftSyntax = TestUtilities.testCasesForSwiftSyntax.contains(testName)
 				let kotlinResults = try Compiler.transpileKotlinCode(
-					fromInputFiles: [testCasePath],
+					fromInputFiles: [swiftFilePath],
 					fromASTDumpFiles: [astDumpFilePath],
 					withContext: TranspilationContext(
 						toolchainName: nil,
