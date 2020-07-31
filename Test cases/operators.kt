@@ -76,4 +76,8 @@ fun main(args: Array<String>) {
 	if (x != 1) {
 		println("true")
 	}
+
+	val precedenceResult: Boolean = if (0 == 1) { 2 == 3 } else { 4 == 5 }
+
+	println(precedenceResult)
 }

@@ -748,7 +748,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 		let convertedRightExpression = try convertSequenceExpression(
 			sequenceExpression,
-			ignoringFirstElements: 2)
+			limitedToElements: List(sequenceExpression.elements.dropFirst(2)))
 
 		// If it's a discarded statement (e.g. `_ = 0`) make t just the right-side expression
 		if leftExpression.is(DiscardAssignmentExprSyntax.self) {
@@ -1076,42 +1076,232 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			typeName: typeName)
 	}
 
-	/// Sequence expressions can either have 2 elements (if it's an `as` cast) or an odd number of
-	/// elements (if it's like `0 + 1 + 2`). This method translates the first two elements directly,
-	/// then the others "recursively", using `numberOfElementsToIgnore` to keep track of how many
-	/// elements were already translated in the list.
 	func convertSequenceExpression(
+		_ sequenceExpression: SequenceExprSyntax)
+		throws -> Expression
+	{
+		return try convertSequenceExpression(
+			sequenceExpression,
+			limitedToElements: List(sequenceExpression.elements))
+	}
+
+	/// Sequence expressions present a series of expressions connected by operators. This method
+	/// uses the `operatorInformation` array to determine which operators to evaluate first,
+	/// segmenting the expressions array apropriately and translating the segments recursively.
+	///
+	/// There are a few edge cases to this:
+	/// - Assignment operators are dealt with before this method is called, since they have to be
+	/// turned into a `Statement`. This can be done because they have the lowest precedence.
+	/// - Ternary operators are incorrectly interpreted by SwiftSyntax. This can cause expressions
+	/// like `a == b ? c : d == e` to become `a == (b ? c : d) == e` instead of
+	/// `(a == b) ? c : (d == e)` like they should. To avoid that, ternary expressions are
+	/// deconstructed and evaluated before all others. This can be done because they have the second
+	/// lowest precedence (only after assignments).
+	/// - The `as` operator's right expression stays inside the `AsExprSyntax` itself, instead of
+	/// outside it, resulting in an even number of expressions.
+	///
+	private func convertSequenceExpression(
 		_ sequenceExpression: SequenceExprSyntax,
-		ignoringFirstElements numberOfElementsToIgnore: Int = 0)
+		limitedToElements elements: List<ExprSyntax>)
 	throws -> Expression
 	{
-		let elements = List(sequenceExpression.elements.dropFirst(numberOfElementsToIgnore))
-
-		if elements.count == 1 {
-			let expression = elements[0]
-			return try convertExpression(expression)
+		if elements.isEmpty {
+			return try errorExpression(
+				forASTNode: Syntax(sequenceExpression),
+				withMessage: "Attempting to convert an empty section of the sequence expression")
 		}
-		if elements.count >= 3,
-			let binaryOperator = elements[1].as(BinaryOperatorExprSyntax.self)
+		else if elements.count == 1, let onlyExpression = elements.first {
+			return try convertExpression(onlyExpression)
+		}
+
+		let range: SourceFileRange?
+		if let rangeStart = elements.first?.getRange(inFile: self.sourceFile),
+			let rangeEnd = elements.last?.getRange(inFile: self.sourceFile)
 		{
-			let leftExpression = elements[0]
-			let convertedLeftExpression = try convertExpression(leftExpression)
+			range = SourceFileRange(start: rangeStart.start, end: rangeEnd.end)
+		}
+		else {
+			range = nil
+		}
 
-			let convertedRightExpression = try convertSequenceExpression(
+		// Ternary expressions should be treated first, as they have the lowest precedence. This is
+		// convenient because SwiftSyntax can handle them incorrectly, turning `a == b ? c : d == e`
+		// into `a == (b ? c : d) == e` instead of `(a == b) ? c : (d == e)`
+		if let ternaryExpressionIndex =
+				elements.firstIndex(where: { $0.is(TernaryExprSyntax.self) }),
+			let ternaryExpression = elements[ternaryExpressionIndex].as(TernaryExprSyntax.self)
+		{
+			let leftHalf = elements.dropLast(elements.count - ternaryExpressionIndex)
+				.toMutableList()
+			leftHalf.append(ternaryExpression.conditionExpression)
+
+			let rightHalf: MutableList = [ternaryExpression.secondChoice]
+			let incompleteRightHalf = elements.dropFirst(ternaryExpressionIndex + 1)
+			rightHalf.append(contentsOf: incompleteRightHalf)
+
+			let leftConversion = try convertSequenceExpression(
 				sequenceExpression,
-				ignoringFirstElements: numberOfElementsToIgnore + 2)
+				limitedToElements: leftHalf)
+			let rightConversion = try convertSequenceExpression(
+				sequenceExpression,
+				limitedToElements: rightHalf)
+			let middleConversion = try convertExpression(ternaryExpression.firstChoice)
 
-			return BinaryOperatorExpression(
-				range: sequenceExpression.getRange(inFile: self.sourceFile),
-				leftExpression: convertedLeftExpression,
-				rightExpression: convertedRightExpression,
-				operatorSymbol: binaryOperator.operatorToken.text,
-				typeName: sequenceExpression.getType(fromList: self.expressionTypes))
+			return IfExpression(
+				range: range,
+				condition: leftConversion,
+				trueExpression: middleConversion,
+				falseExpression: rightConversion)
+		}
+
+		// If all remaining operators have higher precedence than the ternary operator
+		let lowestPrecedenceOperatorIndex = getIndexOfLowestPrecedenceOperator(
+			forSequenceExpression: sequenceExpression,
+			withElements: elements)
+
+		if let index = lowestPrecedenceOperatorIndex {
+			if let operatorSyntax = elements[index].as(BinaryOperatorExprSyntax.self) {
+				let leftHalf = try convertSequenceExpression(
+					sequenceExpression,
+					limitedToElements: elements.dropLast(elements.count - index))
+				let rightHalf = try convertSequenceExpression(
+					sequenceExpression,
+					limitedToElements: elements.dropFirst(index + 1))
+				let operatorString = operatorSyntax.operatorToken.text
+
+				return BinaryOperatorExpression(
+					range: range,
+					leftExpression: leftHalf,
+					rightExpression: rightHalf,
+					operatorSymbol: operatorString,
+					typeName: nil)
+			}
+			else if let asSyntax = elements[index].as(AsExprSyntax.self) {
+				if index != (elements.count - 1) {
+					return try errorExpression(
+						forASTNode: Syntax(sequenceExpression),
+						withMessage: "Unexpected operators after \"as\" cast")
+				}
+
+				let leftHalf = try convertSequenceExpression(
+					sequenceExpression,
+					limitedToElements: elements.dropLast(elements.count - index))
+				let typeName = try convertType(asSyntax.typeName)
+
+				let expressionType: String
+				let operatorString: String
+				if let token = asSyntax.questionOrExclamationMark, token.text == "?" {
+					operatorString = "as?"
+					expressionType = typeName + "?"
+				}
+				else {
+					operatorString = "as"
+					expressionType = typeName
+				}
+
+				return BinaryOperatorExpression(
+					range: range,
+					leftExpression: leftHalf,
+					rightExpression: TypeExpression(
+						range: asSyntax.getRange(inFile: self.sourceFile),
+						typeName: typeName),
+					operatorSymbol: operatorString,
+					typeName: expressionType)
+			}
 		}
 
 		return try errorExpression(
 			forASTNode: Syntax(sequenceExpression),
-			withMessage: "Failed to convert sequence expression")
+			withMessage: "Unable to translate sequence expression")
+	}
+
+	/// Looks for operators in the given elements, using their information based on the
+	/// `operatorInformation` array. Returns the index of the one with the lowest precedence, or
+	/// `nil` something goes wrong (e.g. the array is empty, the algorithm can't find an operator
+	/// it expected to find, etc).
+	private func getIndexOfLowestPrecedenceOperator(
+		forSequenceExpression sequenceExpression: SequenceExprSyntax,
+		withElements elements: List<ExprSyntax>)
+		-> Int?
+	{
+		let startingPrecedence = Int.max
+		var chosenOperatorPrecedence = startingPrecedence
+		var chosenIndexInSequence: Int?
+		for (currentIndex, currentElement) in elements.enumerated() {
+			// Get this operator's information
+			let currentOperatorInformation: OperatorInformation
+			let currentOperatorPrecedence: Int
+			if let binaryOperator = currentElement.as(BinaryOperatorExprSyntax.self) {
+				if let precedence = operatorInformation.firstIndex(
+					where: { $0.operator == binaryOperator.operatorToken.text })
+				{
+					// If it's an existing operator
+					currentOperatorInformation = operatorInformation[precedence]
+					currentOperatorPrecedence = precedence
+				}
+				else {
+					// TODO: Raise warning later (here it might be raised more than once)
+					// If it's an unknown operator, assume it has default precedence
+					if let precedence = operatorInformation.firstIndex(
+						where: { $0.operator == "unknown" })
+					{
+						currentOperatorInformation = operatorInformation[precedence]
+						currentOperatorPrecedence = precedence
+					}
+					else {
+						return nil
+					}
+				}
+			}
+			else if currentElement.is(AsExprSyntax.self) {
+				if let precedence = operatorInformation.firstIndex(where: { $0.operator == "as" }) {
+					currentOperatorInformation = operatorInformation[precedence]
+					currentOperatorPrecedence = precedence
+				}
+				else {
+					return nil
+				}
+			}
+			else {
+				continue
+			}
+
+			// If we found an operator with a lower precedence than the chosen one
+			if currentOperatorPrecedence < chosenOperatorPrecedence {
+				// Choose this one instead
+				chosenOperatorPrecedence = currentOperatorPrecedence
+				chosenIndexInSequence = currentIndex
+			}
+			else if currentOperatorPrecedence == chosenOperatorPrecedence {
+				// If we found an operator with the same precedence, see if its
+				// associativity is .left or .right
+				switch currentOperatorInformation.associativity {
+				case .left:
+					// Do the right one first so the left one stays together
+					chosenOperatorPrecedence = currentOperatorPrecedence
+					chosenIndexInSequence = currentIndex
+				case .right:
+					// Do the left one first so the right one stays together
+					break
+				case .none:
+					// Should never happen
+					Compiler.handleWarning(
+						message: "Found two operators " +
+							"( '\(currentOperatorInformation.operator)' ) with the same " +
+							"precedence but no associativity",
+						ast: sequenceExpression.toPrintableTree(),
+						sourceFile: self.sourceFile,
+						sourceFileRange: sequenceExpression
+							.getRange(inFile: self.sourceFile))
+					break
+				}
+			}
+			else {
+				// If we found an operator with higher precedence, ignore it.
+			}
+		}
+
+		return chosenIndexInSequence
 	}
 
 	/// Can be either `object` `.` `member` or `.` `member`. The latter case is implicitly a
@@ -1674,3 +1864,56 @@ extension MemberDeclListItemSyntax: SyntaxElementContainer {
 		return Syntax(self.decl)
 	}
 }
+
+/// Left associativity means `(a + b + c) == ((a + b) + c)`. None presumably means this operator
+/// can't show up more than once in a row.
+enum OperatorAssociativity {
+	case none
+	case left
+	case right
+}
+
+typealias OperatorInformation = (operator: String, associativity: OperatorAssociativity)
+
+/// Each tuple represents an operator's string an its associativity. This array is ordered inversely
+/// by precedence, with higher precedence operators coming last. This means the last operators
+/// should be evaluated first, etc. It also means that the index of the operators serves as a
+/// stand-in for their precedence, that is, comparing operators' indices is equivalent to comparing
+/// their precedences.
+///
+/// These are infix operators, so they do not include prefix or postfix operators but they do
+/// include the ternary operator.
+///
+/// The "unknown" value is an added placeholder to correspond to unknown operators. It should have
+/// Swift's `Default` precedence, and be (arbitrarily) left-associative.
+///
+/// This information was obtained from
+/// https://developer.apple.com/documentation/swift/swift_standard_library/operator_declarations
+let operatorInformation: [OperatorInformation] = [
+	// Assignment precedence
+	("=", .right), ("*=", .right), ("/=", .right), ("%=", .right), ("+=", .right), ("-=", .right),
+	("<<=", .right), (">>=", .right), ("&=", .right), ("|=", .right), ("^=", .right),
+	// Ternary precedence
+	("?:", .right),
+	// Default precedence (for custom operators when no precedence is specified)
+	("unknown", .left),
+	// Logical disjunction precedence
+	("||", .left),
+	// Logical conjunction precedence
+	("&&", .left),
+	// Comparison precedence
+	("<", .none), ("<=", .none), (">", .none), (">=", .none), ("==", .none), ("!=", .none),
+	("===", .none), ("!==", .none), ("~=", .none), (".==", .none), (".!=", .none), (".<", .none),
+	(".<=", .none), (".>", .none), (".>=", .none),
+	// Nil coalescing precedence
+	("??", .right),
+	// Casting precedence
+	("is", .left), ("as", .left), ("as?", .left), ("as!", .left),
+	// Range formation precedence
+	("..<", .none), ("...", .none),
+	// Addition precedence
+	("+", .left), ("-", .left), ("&+", .left), ("&-", .left), ("|", .left), ("^", .left),
+	// Multiplication precedence
+	("*", .left), ("/", .left), ("%", .left), ("&*", .left), ("&", .left),
+	// Bitwise shift precedence
+	("<<", .none), (">>", .none),]

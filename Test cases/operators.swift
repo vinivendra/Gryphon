@@ -85,3 +85,7 @@ if x == 1 {
 if x != 1 {
 	print("true")
 }
+
+// Precedence (equality above ternary)
+let precedenceResult = 0 == 1 ? 2 == 3 : 4 == 5
+print(precedenceResult)
