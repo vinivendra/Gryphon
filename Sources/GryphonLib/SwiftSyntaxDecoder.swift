@@ -495,11 +495,14 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				try convertType($0.typeName)
 		} ?? []
 
+		let accessAndAnnotations =
+			getAccessAndAnnotations(fromModifiers: classDeclaration.modifiers)
+
 		return ClassDeclaration(
 			range: classDeclaration.getRange(inFile: self.sourceFile),
 			className: classDeclaration.identifier.text,
 			annotations: [],
-			access: nil,
+			access: accessAndAnnotations.access,
 			isOpen: true,
 			inherits: MutableList(inheritances),
 			members: try convertStatements(classDeclaration.members.members))
@@ -586,6 +589,24 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			statements = []
 		}
 
+		let isOpen: Bool
+		if let modifiers = functionDeclaration.modifiers,
+			modifiers.contains(where: { $0.name.text == "final" })
+		{
+			isOpen = false
+		}
+		else if let modifiers = functionDeclaration.modifiers,
+			modifiers.contains(where: { $0.name.text == "open" })
+		{
+			isOpen = true
+		}
+		else {
+			isOpen = !self.context.defaultsToFinal
+		}
+
+		let accessAndAnnotations =
+			getAccessAndAnnotations(fromModifiers: functionDeclaration.modifiers)
+
 		return FunctionDeclaration(
 			range: functionDeclaration.getRange(inFile: sourceFile),
 			prefix: prefix,
@@ -593,7 +614,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			returnType: returnType,
 			functionType: functionType,
 			genericTypes: [],
-			isOpen: false,
+			isOpen: isOpen,
 			isImplicit: false,
 			isStatic: false,
 			isMutating: false,
@@ -601,8 +622,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			isJustProtocolInterface: false,
 			extendsType: nil,
 			statements: statements,
-			access: nil,
-			annotations: [])
+			access: accessAndAnnotations.access,
+			annotations: accessAndAnnotations.annotations)
 	}
 
 	func convertVariableDeclaration(
@@ -610,10 +631,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		throws -> MutableList<Statement>
 	{
 		let isLet = (variableDeclaration.letOrVarKeyword.text == "let")
-		let annotations: MutableList<String> =
-			MutableList(variableDeclaration.modifiers?.compactMap {
-				return $0.getText()
-			} ?? [])
 
 		let result: MutableList<VariableDeclaration> = []
 		let errors: MutableList<Statement> = []
@@ -658,6 +675,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					isOpen = !self.context.defaultsToFinal
 				}
 
+				let accessAndAnnotations =
+					getAccessAndAnnotations(fromModifiers: variableDeclaration.modifiers)
+
 				result.append(VariableDeclaration(
 					range: variableDeclaration.getRange(inFile: self.sourceFile),
 					identifier: identifier,
@@ -665,13 +685,13 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					expression: expression,
 					getter: nil,
 					setter: nil,
-					access: nil,
+					access: accessAndAnnotations.access,
 					isOpen: isOpen,
 					isLet: isLet,
 					isImplicit: false,
 					isStatic: false,
 					extendsType: nil,
-					annotations: annotations))
+					annotations: accessAndAnnotations.annotations))
 			}
 			else {
 				try errors.append(
@@ -693,6 +713,30 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let resultStatements = result.forceCast(to: MutableList<Statement>.self)
 		resultStatements.append(contentsOf: errors)
 		return resultStatements
+	}
+
+	private func getAccessAndAnnotations(
+		fromModifiers modifiers: ModifierListSyntax?)
+		-> (access: String?, annotations: MutableList<String>)
+	{
+		if let modifiers = modifiers {
+			var array = Array(modifiers)
+			let index = array.partition { (syntax: DeclModifierSyntax) -> Bool in
+					return syntax.name.text == "open" ||
+						syntax.name.text == "public" ||
+						syntax.name.text == "internal" ||
+						syntax.name.text == "fileprivate" ||
+						syntax.name.text == "private"
+				}
+			let annonationSyntaxes = array[..<index]
+			let accessSyntaxes = array[index...]
+			let access = accessSyntaxes.first?.name.text
+			let annotations = MutableList(annonationSyntaxes.map { $0.name.text })
+			return (access, annotations)
+		}
+		else {
+			return (nil, [])
+		}
 	}
 
 	// MARK: - Statement expressions
