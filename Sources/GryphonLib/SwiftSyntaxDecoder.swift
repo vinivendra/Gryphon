@@ -472,6 +472,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let classDeclaration = declaration.as(ClassDeclSyntax.self) {
 			return try [convertClassDeclaration(classDeclaration)]
 		}
+		if let structDeclaration = declaration.as(StructDeclSyntax.self) {
+			return try [convertStructDeclaration(structDeclaration)]
+		}
 		if let variableDeclaration = declaration.as(VariableDeclSyntax.self) {
 			return try convertVariableDeclaration(variableDeclaration)
 		}
@@ -487,13 +490,33 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			withMessage: "Unknown declaration"), ]
 	}
 
+	func convertStructDeclaration(
+		_ structDeclaration: StructDeclSyntax)
+		throws -> Statement
+	{
+		let inheritances = try structDeclaration.inheritanceClause?.inheritedTypeCollection.map {
+				try convertType($0.typeName)
+			} ?? []
+
+		let accessAndAnnotations =
+			getAccessAndAnnotations(fromModifiers: structDeclaration.modifiers)
+
+		return StructDeclaration(
+			range: structDeclaration.getRange(inFile: self.sourceFile),
+			annotations: accessAndAnnotations.annotations,
+			structName: structDeclaration.identifier.text,
+			access: accessAndAnnotations.access,
+			inherits: MutableList(inheritances),
+			members: try convertStatements(structDeclaration.members.members))
+	}
+
 	func convertClassDeclaration(
 		_ classDeclaration: ClassDeclSyntax)
 		throws -> Statement
 	{
 		let inheritances = try classDeclaration.inheritanceClause?.inheritedTypeCollection.map {
 				try convertType($0.typeName)
-		} ?? []
+			} ?? []
 
 		let accessAndAnnotations =
 			getAccessAndAnnotations(fromModifiers: classDeclaration.modifiers)

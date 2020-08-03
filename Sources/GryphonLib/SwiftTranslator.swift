@@ -530,7 +530,11 @@ public class SwiftTranslator {
 			return nil
 		}
 
-		let annotations = getTranslationCommentValue(forNode: structDeclaration, key: .annotation)
+		let annotations = getTranslationCommentValue(
+				forNode: structDeclaration,
+				key: .annotation)?
+			.split(withStringSeparator: " ")
+			.toMutableList() ?? []
 
 		let access = structDeclaration["access"]
 

@@ -491,8 +491,8 @@ public class KotlinTranslator {
 		let result = KotlinTranslation(range: structDeclaration.range)
 		result.append(indentation)
 
-		if let annotations = structDeclaration.annotations {
-			result.append("\(annotations) ")
+		if !structDeclaration.annotations.isEmpty {
+			result.append("\(structDeclaration.annotations.joined(separator: " ")) ")
 		}
 
 		if let access = structDeclaration.access {

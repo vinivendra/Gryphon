@@ -1907,21 +1907,13 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 	{
 		let translationResult = translateAccessModifierAndAnnotations(
 			access: structDeclaration.access,
-			annotations: structDeclaration.annotations?.split(withStringSeparator: " ") ?? [],
+			annotations: structDeclaration.annotations,
 			forDeclaration: structDeclaration)
-
-		let resultingAnnotations: String?
-		if !translationResult.annotations.isEmpty {
-			resultingAnnotations = translationResult.annotations.joined(separator: " ")
-		}
-		else {
-			resultingAnnotations = nil
-		}
 
 		accessModifiersStack.append(translationResult.access)
 		let result = super.replaceStructDeclaration(StructDeclaration(
 			range: structDeclaration.range,
-			annotations: resultingAnnotations,
+			annotations: translationResult.annotations,
 			structName: structDeclaration.structName,
 			access: translationResult.access,
 			inherits: structDeclaration.inherits,

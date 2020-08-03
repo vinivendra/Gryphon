@@ -469,7 +469,7 @@ public class ProtocolDeclaration: Statement {
 }
 
 public class StructDeclaration: Statement {
-	let annotations: String?
+	let annotations: MutableList<String>
 	let structName: String
 	let access: String?
 	let inherits: MutableList<String>
@@ -477,7 +477,7 @@ public class StructDeclaration: Statement {
 
 	init(
 		range: SourceFileRange?,
-		annotations: String?,
+		annotations: MutableList<String>,
 		structName: String,
 		access: String?,
 		inherits: MutableList<String>,
@@ -493,8 +493,7 @@ public class StructDeclaration: Statement {
 
 	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
 		return [
-			PrintableTree.initOrNil(
-				"annotations", [PrintableTree.initOrNil(annotations)]),
+			PrintableTree.ofStrings("annotations", annotations),
 			PrintableTree(structName),
 			PrintableTree.initOrNil(access),
 			PrintableTree.ofStrings("inherits", inherits),
