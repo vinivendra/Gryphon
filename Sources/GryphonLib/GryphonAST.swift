@@ -378,7 +378,7 @@ public class CompanionObject: Statement {
 public class EnumDeclaration: Statement {
 	let access: String?
 	let enumName: String
-	let annotations: String?
+	let annotations: MutableList<String>
 	let inherits: MutableList<String>
 	let elements: MutableList<EnumElement>
 	let members: MutableList<Statement>
@@ -388,7 +388,7 @@ public class EnumDeclaration: Statement {
 		range: SourceFileRange?,
 		access: String?,
 		enumName: String,
-		annotations: String?,
+		annotations: MutableList<String>,
 		inherits: MutableList<String>,
 		elements: MutableList<EnumElement>,
 		members: MutableList<Statement>,
@@ -411,8 +411,7 @@ public class EnumDeclaration: Statement {
 		return [
 			PrintableTree(enumName),
 			PrintableTree.initOrNil(access),
-			PrintableTree.initOrNil(
-				"annotations", [PrintableTree.initOrNil(annotations)]),
+			PrintableTree.ofStrings("annotations", annotations),
 			PrintableTree.ofStrings("inherits", inherits),
 			PrintableTree("elements", elementTrees),
 			PrintableTree.ofStatements("members", members),
@@ -2412,13 +2411,13 @@ public class EnumElement: PrintableAsTree, Equatable {
 	var name: String
 	var associatedValues: MutableList<LabeledType>
 	var rawValue: Expression?
-	var annotations: String?
+	var annotations: MutableList<String>
 
 	init(
 		name: String,
 		associatedValues: MutableList<LabeledType>,
 		rawValue: Expression?,
-		annotations: String?)
+		annotations: MutableList<String>)
 	{
 		self.name = name
 		self.associatedValues = associatedValues
@@ -2446,7 +2445,7 @@ public class EnumElement: PrintableAsTree, Equatable {
 			"values: \(associatedValues)"
 		return [
 			PrintableTree.initOrNil(associatedValuesString),
-			PrintableTree.initOrNil(self.annotations), ]
+			PrintableTree.ofStrings("annotations", annotations), ]
 	}
 }
 

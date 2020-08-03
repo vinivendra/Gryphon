@@ -375,6 +375,23 @@ extension List {
 		}
 		return result
 	}
+
+	/// Separates the list in two. The first contains all elements that satisfy the given predicate,
+	/// and the second contains all elements that don't. The separation is stable.
+	func separate(_ predicate: (Element) -> Bool) -> (MutableList<Element>, MutableList<Element>) {
+		let first: MutableList<Element> = []
+		let second: MutableList<Element> = []
+		for element in self {
+			if predicate(element) {
+				first.append(element)
+			}
+			else {
+				second.append(element)
+			}
+		}
+
+		return (first, second)
+	}
 }
 
 extension List where Element: Equatable {

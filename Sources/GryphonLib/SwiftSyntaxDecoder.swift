@@ -475,6 +475,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let structDeclaration = declaration.as(StructDeclSyntax.self) {
 			return try [convertStructDeclaration(structDeclaration)]
 		}
+		if let enumDeclaration = declaration.as(EnumDeclSyntax.self) {
+			return try [convertEnumDeclaration(enumDeclaration)]
+		}
 		if let variableDeclaration = declaration.as(VariableDeclSyntax.self) {
 			return try convertVariableDeclaration(variableDeclaration)
 		}
@@ -488,6 +491,51 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		return try [errorStatement(
 			forASTNode: Syntax(declaration),
 			withMessage: "Unknown declaration"), ]
+	}
+
+	func convertEnumDeclaration(
+		_ enumDeclaration: EnumDeclSyntax)
+		throws -> Statement
+	{
+		let inheritances = try enumDeclaration.inheritanceClause?.inheritedTypeCollection.map {
+				try convertType($0.typeName)
+			} ?? []
+
+		let accessAndAnnotations =
+			getAccessAndAnnotations(fromModifiers: enumDeclaration.modifiers)
+
+		let (cases, members) = List(enumDeclaration.members.members)
+			.separate { $0.element.is(EnumCaseDeclSyntax.self) }
+
+		let elements: MutableList<EnumElement> = []
+		for syntax in cases {
+			if let caseSyntax = syntax.element.as(EnumCaseDeclSyntax.self) {
+				// TODO: add test for `case a, b, c`
+				for element in caseSyntax.elements {
+					elements.append(EnumElement(
+						name: element.identifier.text,
+						associatedValues: [],
+						rawValue: nil,
+						annotations: []))
+				}
+			}
+			else {
+				// Should never happen because of the `is` check above
+				return try errorStatement(
+					forASTNode: syntax.element,
+					withMessage: "Expected enum element to by an EnumCaseDeclSyntax")
+			}
+		}
+
+		return EnumDeclaration(
+			range: enumDeclaration.getRange(inFile: self.sourceFile),
+			access: accessAndAnnotations.access,
+			enumName: enumDeclaration.identifier.text,
+			annotations: accessAndAnnotations.annotations,
+			inherits: MutableList(inheritances),
+			elements: elements,
+			members: try convertStatements(members),
+			isImplicit: false)
 	}
 
 	func convertStructDeclaration(
@@ -743,16 +791,14 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		-> (access: String?, annotations: MutableList<String>)
 	{
 		if let modifiers = modifiers {
-			var array = Array(modifiers)
-			let index = array.partition { (syntax: DeclModifierSyntax) -> Bool in
+			let (accessSyntaxes, annonationSyntaxes) = List(modifiers).separate
+				{ (syntax: DeclModifierSyntax) -> Bool in
 					return syntax.name.text == "open" ||
 						syntax.name.text == "public" ||
 						syntax.name.text == "internal" ||
 						syntax.name.text == "fileprivate" ||
 						syntax.name.text == "private"
 				}
-			let annonationSyntaxes = array[..<index]
-			let accessSyntaxes = array[index...]
 			let access = accessSyntaxes.first?.name.text
 			let annotations = MutableList(annonationSyntaxes.map { $0.name.text })
 			return (access, annotations)
@@ -1907,7 +1953,7 @@ private extension SyntaxProtocol {
 }
 
 /// A sytax that represents a list of elements, e.g. a list of statements or declarations.
-protocol SyntaxList: SyntaxProtocol, Sequence where Element: SyntaxElementContainer { }
+protocol SyntaxList: Sequence where Element: SyntaxElementContainer { }
 
 /// An element wrapper in a list of syntaxes (e.g. a list of declarations or statements).
 /// These lists, like `MemberDeclListSyntax` and `CodeBlockItemListSyntax`, usually wrap their
@@ -1915,6 +1961,8 @@ protocol SyntaxList: SyntaxProtocol, Sequence where Element: SyntaxElementContai
 protocol SyntaxElementContainer: SyntaxProtocol {
 	var element: Syntax { get }
 }
+
+extension List: SyntaxList where Element: SyntaxElementContainer { }
 
 extension CodeBlockItemListSyntax: SyntaxList { }
 

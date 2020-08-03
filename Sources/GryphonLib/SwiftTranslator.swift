@@ -668,8 +668,10 @@ public class SwiftTranslator {
 			}
 
 			let annotations = getTranslationCommentValue(
-				forNode: enumElementDeclaration,
-				key: .annotation)
+					forNode: enumElementDeclaration,
+					key: .annotation)?
+				.split(withStringSeparator: " ")
+				.toMutableList() ?? []
 
 			if !elementName.contains("(") {
 				elements.append(EnumElement(
@@ -713,7 +715,11 @@ public class SwiftTranslator {
 			$0.name != "Enum Element Declaration" && $0.name != "Enum Case Declaration"
 		}
 
-		let annotations = getTranslationCommentValue(forNode: enumDeclaration, key: .annotation)
+		let annotations = getTranslationCommentValue(
+				forNode: enumDeclaration,
+				key: .annotation)?
+			.split(withStringSeparator: " ")
+			.toMutableList() ?? []
 
 		let translatedMembers = try translateSubtreesInScope(
 			members.toMutableList(),

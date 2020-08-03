@@ -308,8 +308,8 @@ public class KotlinTranslator {
 		let result = KotlinTranslation(range: enumDeclaration.range)
 		result.append(indentation)
 
-		if let annotations = enumDeclaration.annotations {
-			result.append("\(annotations) ")
+		if !enumDeclaration.annotations.isEmpty {
+			result.append("\(enumDeclaration.annotations.joined(separator: " ")) ")
 		}
 
 		if let access = enumDeclaration.access {
@@ -337,7 +337,9 @@ public class KotlinTranslator {
 			hasCases = true
 			let translation = enumDeclaration.elements.map {
 					increasedIndentation +
-						(($0.annotations == nil) ? "" : "\($0.annotations!) ") +
+						(($0.annotations.isEmpty) ?
+							"" :
+							"\($0.annotations.joined(separator: " ")) ") +
 						$0.name
 				}.joined(separator: ",\n") + ";\n"
 			result.append(translation)
@@ -373,7 +375,9 @@ public class KotlinTranslator {
 		withIndentation indentation: String) -> KotlinTranslation
 	{
 		let capitalizedElementName = element.name.capitalizedAsCamelCase()
-		let annotationsString = (element.annotations == nil) ? "" : "\(element.annotations!) "
+		let annotationsString = element.annotations.isEmpty ?
+			"" :
+			"\(element.annotations.joined(separator: " ")) "
 
 		let result = KotlinTranslation(range: nil)
 		result.append("\(indentation)\(annotationsString)class \(capitalizedElementName)")

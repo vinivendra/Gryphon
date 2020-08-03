@@ -1928,23 +1928,15 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 	{
 		let translationResult = translateAccessModifierAndAnnotations(
 			access: enumDeclaration.access,
-			annotations: enumDeclaration.annotations?.split(withStringSeparator: " ") ?? [],
+			annotations: enumDeclaration.annotations,
 			forDeclaration: enumDeclaration)
-
-		let resultingAnnotations: String?
-		if !translationResult.annotations.isEmpty {
-			resultingAnnotations = translationResult.annotations.joined(separator: " ")
-		}
-		else {
-			resultingAnnotations = nil
-		}
 
 		accessModifiersStack.append(translationResult.access)
 		let result = super.replaceEnumDeclaration(EnumDeclaration(
 			range: enumDeclaration.range,
 			access: translationResult.access,
 			enumName: enumDeclaration.enumName,
-			annotations: resultingAnnotations,
+			annotations: translationResult.annotations,
 			inherits: enumDeclaration.inherits,
 			elements: enumDeclaration.elements,
 			members: enumDeclaration.members,
