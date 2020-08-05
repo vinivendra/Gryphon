@@ -710,7 +710,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		for patternBinding in patternBindingList {
 			let pattern: PatternSyntax = patternBinding.pattern
 
+			// If we can find the variable's name
 			if let identifier = pattern.getText() {
+
 				let expression: Expression?
 				if let exprSyntax = patternBinding.initializer?.value {
 					expression = try convertExpression(exprSyntax)
@@ -725,6 +727,169 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				}
 				else  {
 					annotatedType = expression?.swiftType
+				}
+
+				// Look for getters and setters
+				var errorHappened = false
+				var getter: FunctionDeclaration?
+				var setter: FunctionDeclaration?
+				if let maybeCodeBlock = patternBinding.children.first(where:
+						{ $0.is(CodeBlockSyntax.self) }),
+					let codeBlock = maybeCodeBlock.as(CodeBlockSyntax.self)
+				{
+					// TODO: test
+					// If there's an implicit getter (e.g. `var a: Int { return 0 }`)
+					let range = codeBlock.getRange(inFile: self.sourceFile)
+					let statements = try convertStatements(codeBlock.statements)
+
+					guard let typeName = annotatedType else {
+						let error = try errorStatement(
+							forASTNode: Syntax(codeBlock),
+							withMessage: "Expected variables with getters to have an explicit type")
+						getter = FunctionDeclaration(
+							range: range,
+							prefix: "get",
+							parameters: [], returnType: "", functionType: "", genericTypes: [],
+							isOpen: false, isImplicit: false, isStatic: false, isMutating: false,
+							isPure: false, isJustProtocolInterface: false, extendsType: nil,
+							statements: [error],
+							access: nil, annotations: [])
+						break
+					}
+
+					getter = FunctionDeclaration(
+						range: codeBlock.getRange(inFile: self.sourceFile),
+						prefix: "get",
+						parameters: [],
+						returnType: typeName,
+						functionType: "() -> \(typeName)",
+						genericTypes: [],
+						isOpen: false,
+						isImplicit: false,
+						isStatic: false,
+						isMutating: false,
+						isPure: false,
+						isJustProtocolInterface: false,
+						extendsType: nil,
+						statements: statements,
+						access: nil,
+						annotations: [])
+				}
+				else if let maybeAccesor = patternBinding.accessor,
+					let accessorBlock = maybeAccesor.as(AccessorBlockSyntax.self)
+				{
+					// If there's an explicit getter or setter (e.g. `get { return 0 }`)
+
+					for accessor in accessorBlock.accessors {
+						let range = accessor.getRange(inFile: self.sourceFile)
+						let prefix = accessor.accessorKind.text
+
+						if let maybeCodeBlock = accessor.children.first(where:
+								{ $0.is(CodeBlockSyntax.self) }),
+							let codeBlock = maybeCodeBlock.as(CodeBlockSyntax.self)
+						{
+							let statements = try convertStatements(codeBlock.statements)
+
+							guard let typeName = annotatedType else {
+								let error = try errorStatement(
+									forASTNode: Syntax(codeBlock),
+									withMessage: "Expected variables with getters or setters to " +
+										"have an explicit type")
+								getter = FunctionDeclaration(
+									range: range,
+									prefix: prefix,
+									parameters: [], returnType: "", functionType: "",
+									genericTypes: [], isOpen: false, isImplicit: false,
+									isStatic: false, isMutating: false, isPure: false,
+									isJustProtocolInterface: false, extendsType: nil,
+									statements: [error],
+									access: nil, annotations: [])
+								break
+							}
+
+							let parameters: MutableList<FunctionParameter>
+							if prefix == "get" {
+								parameters = []
+							}
+							else {
+								parameters = [FunctionParameter(
+									label: "newValue",
+									apiLabel: nil,
+									typeName: typeName,
+									value: nil)]
+							}
+
+							let returnType: String
+							let functionType: String
+							if prefix == "get" {
+								returnType = typeName
+								functionType = "() -> \(typeName)"
+							}
+							else {
+								returnType = "()"
+								functionType = "(\(typeName)) -> ()"
+							}
+
+							let functionDeclaration = FunctionDeclaration(
+								range: range,
+								prefix: prefix,
+								parameters: parameters,
+								returnType: returnType,
+								functionType: functionType,
+								genericTypes: [],
+								isOpen: false,
+								isImplicit: false,
+								isStatic: false,
+								isMutating: false,
+								isPure: false,
+								isJustProtocolInterface: false,
+								extendsType: nil,
+								statements: statements,
+								access: nil,
+								annotations: [])
+
+							if accessor.accessorKind.text == "get" {
+								getter = functionDeclaration
+							}
+							else {
+								setter = functionDeclaration
+							}
+						}
+						else {
+							errorHappened = true
+							let error = try errorStatement(
+								forASTNode: Syntax(accessor),
+								withMessage: "Unable to get the accessor's statements or its type")
+							let errorFunctionDeclaration = FunctionDeclaration(
+								range: range,
+								prefix: prefix,
+								parameters: [],
+								returnType: "",
+								functionType: "",
+								genericTypes: [],
+								isOpen: false,
+								isImplicit: false,
+								isStatic: false,
+								isMutating: false,
+								isPure: false,
+								isJustProtocolInterface: false,
+								extendsType: nil,
+								statements: [error],
+								access: nil,
+								annotations: [])
+							if accessor.accessorKind.text == "get" {
+								getter = errorFunctionDeclaration
+							}
+							else {
+								setter = errorFunctionDeclaration
+							}
+							break
+						}
+					}
+				}
+
+				if errorHappened {
+					continue
 				}
 
 				let isOpen: Bool
@@ -754,8 +919,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					identifier: identifier,
 					typeAnnotation: annotatedType,
 					expression: expression,
-					getter: nil,
-					setter: nil,
+					getter: getter,
+					setter: setter,
 					access: accessAndAnnotations.access,
 					isOpen: isOpen,
 					isLet: isLet,
