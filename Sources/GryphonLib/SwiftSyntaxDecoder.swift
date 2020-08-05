@@ -469,6 +469,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	// MARK: - Declarations
 
 	func convertDeclaration(_ declaration: DeclSyntax) throws -> List<Statement> {
+		if let extensionDeclaration = declaration.as(ExtensionDeclSyntax.self) {
+			return try [convertExtensionDeclaration(extensionDeclaration)]
+		}
 		if let protocolDeclaration = declaration.as(ProtocolDeclSyntax.self) {
 			return try [convertProtocolDeclaration(protocolDeclaration)]
 		}
@@ -494,6 +497,16 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		return try [errorStatement(
 			forASTNode: Syntax(declaration),
 			withMessage: "Unknown declaration"), ]
+	}
+
+	func convertExtensionDeclaration(
+		_ extensionDeclaration: ExtensionDeclSyntax)
+		throws -> Statement
+	{
+		return ExtensionDeclaration(
+			range: extensionDeclaration.getRange(inFile: self.sourceFile),
+			typeName: try convertType(extensionDeclaration.extendedType),
+			members: try convertStatements(extensionDeclaration.members.members))
 	}
 
 	func convertProtocolDeclaration(
