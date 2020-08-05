@@ -270,6 +270,25 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	}
 
 	private func getLeadingComments(
+		forSyntax syntax: Syntax,
+		withKey key: SourceFile.CommentKey)
+		-> List<SourceFile.TranslationComment>
+	{
+		let leadingComments = getLeadingComments(forSyntax: syntax)
+		return leadingComments.compactMap { comment -> SourceFile.TranslationComment? in
+				if case let .translationComment(comment: translationComment, range: _)
+						= comment,
+					translationComment.key == key
+				{
+					return translationComment
+				}
+				else {
+					return nil
+				}
+			}
+	}
+
+	private func getLeadingComments(
 		forSyntax syntax: Syntax)
 		-> MutableList<LeadingComment>
 	{
@@ -489,11 +508,19 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let accessAndAnnotations =
 			getAccessAndAnnotations(fromModifiers: protocolDeclaration.modifiers)
 
+		// Get annotations from `gryphon annotation` comments
+		let annotationComments = getLeadingComments(
+			forSyntax: Syntax(protocolDeclaration),
+			withKey: .annotation)
+		let manualAnnotations = annotationComments.compactMap { $0.value }
+		let annotations = accessAndAnnotations.annotations
+		annotations.append(contentsOf: manualAnnotations)
+
 		return ProtocolDeclaration(
 			range: protocolDeclaration.getRange(inFile: self.sourceFile),
 			protocolName: protocolDeclaration.identifier.text,
 			access: accessAndAnnotations.access,
-			annotations: accessAndAnnotations.annotations,
+			annotations: annotations,
 			members: try convertStatements(protocolDeclaration.members.members))
 	}
 
@@ -507,6 +534,13 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 		let accessAndAnnotations =
 			getAccessAndAnnotations(fromModifiers: enumDeclaration.modifiers)
+		// Get annotations from `gryphon annotation` comments
+		let annotationComments = getLeadingComments(
+			forSyntax: Syntax(enumDeclaration),
+			withKey: .annotation)
+		let manualAnnotations = annotationComments.compactMap { $0.value }
+		let annotations = accessAndAnnotations.annotations
+		annotations.append(contentsOf: manualAnnotations)
 
 		let (cases, members) = List(enumDeclaration.members.members)
 			.separate { $0.element.is(EnumCaseDeclSyntax.self) }
@@ -535,7 +569,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			range: enumDeclaration.getRange(inFile: self.sourceFile),
 			access: accessAndAnnotations.access,
 			enumName: enumDeclaration.identifier.text,
-			annotations: accessAndAnnotations.annotations,
+			annotations: annotations,
 			inherits: MutableList(inheritances),
 			elements: elements,
 			members: try convertStatements(members),
@@ -552,10 +586,17 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 		let accessAndAnnotations =
 			getAccessAndAnnotations(fromModifiers: structDeclaration.modifiers)
+		// Get annotations from `gryphon annotation` comments
+		let annotationComments = getLeadingComments(
+			forSyntax: Syntax(structDeclaration),
+			withKey: .annotation)
+		let manualAnnotations = annotationComments.compactMap { $0.value }
+		let annotations = accessAndAnnotations.annotations
+		annotations.append(contentsOf: manualAnnotations)
 
 		return StructDeclaration(
 			range: structDeclaration.getRange(inFile: self.sourceFile),
-			annotations: accessAndAnnotations.annotations,
+			annotations: annotations,
 			structName: structDeclaration.identifier.text,
 			access: accessAndAnnotations.access,
 			inherits: MutableList(inheritances),
@@ -572,6 +613,13 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 		let accessAndAnnotations =
 			getAccessAndAnnotations(fromModifiers: classDeclaration.modifiers)
+		// Get annotations from `gryphon annotation` comments
+		let annotationComments = getLeadingComments(
+			forSyntax: Syntax(classDeclaration),
+			withKey: .annotation)
+		let manualAnnotations = annotationComments.compactMap { $0.value }
+		let annotations = accessAndAnnotations.annotations
+		annotations.append(contentsOf: manualAnnotations)
 
 		return ClassDeclaration(
 			range: classDeclaration.getRange(inFile: self.sourceFile),
@@ -682,6 +730,14 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let accessAndAnnotations =
 			getAccessAndAnnotations(fromModifiers: functionDeclaration.modifiers)
 
+		// Get annotations from `gryphon annotation` comments
+		let annotationComments = getLeadingComments(
+			forSyntax: Syntax(functionDeclaration),
+			withKey: .annotation)
+		let manualAnnotations = annotationComments.compactMap { $0.value }
+		let annotations = accessAndAnnotations.annotations
+		annotations.append(contentsOf: manualAnnotations)
+
 		return FunctionDeclaration(
 			range: functionDeclaration.getRange(inFile: sourceFile),
 			prefix: prefix,
@@ -698,7 +754,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			extendsType: nil,
 			statements: statements,
 			access: accessAndAnnotations.access,
-			annotations: accessAndAnnotations.annotations)
+			annotations: annotations)
 	}
 
 	func convertVariableDeclaration(
@@ -892,6 +948,14 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				let accessAndAnnotations =
 					getAccessAndAnnotations(fromModifiers: variableDeclaration.modifiers)
 
+				// Get annotations from `gryphon annotation` comments
+				let annotationComments = getLeadingComments(
+					forSyntax: Syntax(variableDeclaration),
+					withKey: .annotation)
+				let manualAnnotations = annotationComments.compactMap { $0.value }
+				let annotations = accessAndAnnotations.annotations
+				annotations.append(contentsOf: manualAnnotations)
+
 				result.append(VariableDeclaration(
 					range: variableDeclaration.getRange(inFile: self.sourceFile),
 					identifier: identifier,
@@ -905,7 +969,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					isImplicit: false,
 					isStatic: false,
 					extendsType: nil,
-					annotations: accessAndAnnotations.annotations))
+					annotations: annotations))
 			}
 			else {
 				try errors.append(
@@ -1022,25 +1086,16 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	// MARK: - Expressions
 
 	func convertExpression(_ expression: ExprSyntax) throws -> Expression {
-		let leadingComments = getLeadingComments(forSyntax: Syntax(expression))
+		let leadingComments = getLeadingComments(forSyntax: Syntax(expression), withKey: .value)
 
 		// If we're replacing this expression with a `gryphon value` comment
-		let literalCodeExpressions = leadingComments.compactMap
-			{ comment -> LiteralCodeExpression? in
-				if case let .translationComment(
-						comment: translationComment, range: range) = comment,
-					translationComment.key == .value,
-					let literalExpression = translationComment.value
-				{
-					return LiteralCodeExpression(
-						range: range,
-						string: literalExpression,
-						shouldGoToMainFunction: false,
-						typeName: expression.getType(fromList: self.expressionTypes))
-				}
-				else {
-					return nil
-				}
+		let literalCodeExpressions = leadingComments.compactMap{ $0.value }
+			.map {
+				return LiteralCodeExpression(
+					range: expression.getRange(inFile: self.sourceFile),
+					string: $0,
+					shouldGoToMainFunction: false,
+					typeName: expression.getType(fromList: self.expressionTypes))
 			}
 		if let literalCodeExpression = literalCodeExpressions.first {
 			return literalCodeExpression
