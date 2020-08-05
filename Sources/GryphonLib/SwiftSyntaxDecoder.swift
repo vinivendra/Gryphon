@@ -112,12 +112,60 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		for statement in statements {
 			let item: Syntax = statement.element
 
-			let leadingCommentInformation = convertLeadingComments(forStatement: item)
-			if leadingCommentInformation.shouldIgnoreNextStatement {
-				continue
+			// Parse the statement's leading comments
+			var shouldIgnoreStatement = false
+			let leadingComments = getLeadingComments(forSyntax: Syntax(statement))
+			for comment in leadingComments {
+				switch comment {
+				case let .translationComment(comment: translationComment, range: range):
+					if let commentValue = translationComment.value {
+						if translationComment.key == .insertInMain {
+							result.append(ExpressionStatement(
+								range: range,
+								expression: LiteralCodeExpression(
+									range: range,
+									string: commentValue,
+									shouldGoToMainFunction: true,
+									typeName: nil)))
+						}
+						else if translationComment.key == .insert {
+							result.append(ExpressionStatement(
+								range: range,
+								expression: LiteralCodeExpression(
+									range: range,
+									string: commentValue,
+									shouldGoToMainFunction: false,
+									typeName: nil)))
+						}
+						else if translationComment.key == .output {
+							if let fileExtension = Utilities.getExtension(of: commentValue),
+								(fileExtension == .swiftAST ||
+								 fileExtension == .gryphonASTRaw ||
+								 fileExtension == .gryphonAST ||
+								 fileExtension == .kt)
+							{
+								outputFileMap[fileExtension] = translationComment.value
+							}
+							else {
+								Compiler.handleWarning(
+									message: "Unsupported output file extension in " +
+										"\"\(commentValue)\". Did you mean to use \".kt\"?",
+									sourceFile: sourceFile,
+									sourceFileRange: range)
+							}
+						}
+					}
+					else if translationComment.key == .ignore {
+						// TODO: add a warning for translation comments at the end of lines
+						shouldIgnoreStatement = true
+					}
+				case let .normalComment(comment: normalComment):
+					result.append(normalComment)
+				}
 			}
-			else {
-				result.append(contentsOf: leadingCommentInformation.commentStatements)
+
+			if shouldIgnoreStatement {
+				continue
 			}
 
 			if let declaration = item.as(DeclSyntax.self) {
@@ -165,7 +213,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			if isInTopOfFileComments {
 				if let commentStatement = statement as? CommentStatement {
 					if let range = commentStatement.range,
-						lastTopOfFileCommentLine == range.lineStart - 1
+						lastTopOfFileCommentLine >= range.lineStart - 1
 					{
 						lastTopOfFileCommentLine = range.lineEnd
 						declarations.append(statement)
@@ -216,92 +264,17 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		return (declarations, statements)
 	}
 
-	struct LeadingCommentInformation {
-		let commentStatements: MutableList<Statement>
-		let shouldIgnoreNextStatement: Bool
+	private enum LeadingComment {
+		case translationComment(comment: SourceFile.TranslationComment, range: SourceFileRange)
+		case normalComment(comment: CommentStatement)
 	}
 
-	func convertLeadingComments(forStatement syntax: Syntax) -> LeadingCommentInformation {
-		let result: MutableList<Statement> = []
-		var shouldIgnoreNextStatement = false
+	private func getLeadingComments(
+		forSyntax syntax: Syntax)
+		-> MutableList<LeadingComment>
+	{
+		let result: MutableList<LeadingComment> = []
 
-		if let leadingTrivia = syntax.leadingTrivia {
-			var startOffset = syntax.position.utf8Offset
-			for trivia in leadingTrivia {
-				let endOffset = startOffset + trivia.sourceLength.utf8Length
-				if case let .lineComment(comment) = trivia {
-					let commentRange = SourceFileRange.getRange(
-						withStartOffset: startOffset,
-						withEndOffset: endOffset - 1, // Inclusive end
-						inFile: self.sourceFile)
-
-					// TODO: Remove the `//` added by the KotlinTranslator so we don't have to do
-					// it here
-					let commentContents = String(comment.dropFirst(2))
-					let cleanComment = commentContents.trimmingWhitespaces()
-
-					if let insertComment =
-						SourceFile.getTranslationCommentFromString(cleanComment)
-					{
-						if let commentValue = insertComment.value {
-							if insertComment.key == .insertInMain {
-								result.append(ExpressionStatement(
-									range: commentRange,
-									expression: LiteralCodeExpression(
-										range: commentRange,
-										string: commentValue,
-										shouldGoToMainFunction: true,
-										typeName: nil)))
-							}
-							else if insertComment.key == .insert {
-								result.append(ExpressionStatement(
-									range: commentRange,
-									expression: LiteralCodeExpression(
-										range: commentRange,
-										string: commentValue,
-										shouldGoToMainFunction: false,
-										typeName: nil)))
-							}
-							else if insertComment.key == .output {
-								if let fileExtension = Utilities.getExtension(of: commentValue),
-									(fileExtension == .swiftAST ||
-									 fileExtension == .gryphonASTRaw ||
-									 fileExtension == .gryphonAST ||
-									 fileExtension == .kt)
-								{
-									outputFileMap[fileExtension] = insertComment.value
-								}
-								else {
-									Compiler.handleWarning(
-										message: "Unsupported output file extension in " +
-											"\"\(commentValue)\". Did you mean to use \".kt\"?",
-										sourceFile: sourceFile,
-										sourceFileRange: commentRange)
-								}
-							}
-						}
-						else if insertComment.key == .ignore {
-							// TODO: add a warning for translation comments at the end of lines
-							shouldIgnoreNextStatement = true
-						}
-					}
-					else {
-						result.append(CommentStatement(
-							range: commentRange,
-							value: commentContents))
-					}
-				}
-			
-				startOffset = endOffset
-			}
-		}
-
-		return LeadingCommentInformation(
-			commentStatements: result,
-			shouldIgnoreNextStatement: shouldIgnoreNextStatement)
-	}
-
-	func convertLeadingComments(forExpression syntax: Syntax) -> LiteralCodeExpression? {
 		if let leadingTrivia = syntax.leadingTrivia {
 			var startOffset = syntax.position.utf8Offset
 			for trivia in leadingTrivia {
@@ -317,26 +290,26 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					maybeCommentString = nil
 				}
 
-				if let commentContents = maybeCommentString {
-					let commentRange = SourceFileRange.getRange(
+				if let commentString = maybeCommentString {
+					let cleanComment = commentString.trimmingWhitespaces()
+
+					let range = SourceFileRange.getRange(
 						withStartOffset: startOffset,
 						withEndOffset: endOffset - 1, // Inclusive end
 						inFile: self.sourceFile)
 
-					let cleanComment = commentContents.trimmingWhitespaces()
-
-					if let insertComment =
+					if let translationComment =
 						SourceFile.getTranslationCommentFromString(cleanComment)
 					{
-						if let commentValue = insertComment.value {
-							if insertComment.key == .value {
-								return LiteralCodeExpression(
-									range: commentRange,
-									string: commentValue,
-									shouldGoToMainFunction: false,
-									typeName: nil)
-							}
-						}
+						result.append(.translationComment(
+							comment: translationComment,
+							range: range))
+					}
+					else {
+						let normalComment = CommentStatement(
+							range: range,
+							value: commentString)
+						result.append(.normalComment(comment: normalComment))
 					}
 				}
 
@@ -344,7 +317,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			}
 		}
 
-		return nil
+		return result
 	}
 
 	// MARK: - Statements
@@ -1049,10 +1022,28 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	// MARK: - Expressions
 
 	func convertExpression(_ expression: ExprSyntax) throws -> Expression {
-		if let commentExpression = convertLeadingComments(forExpression: Syntax(expression)) {
-			// Set the LiteralCodeExpression's type to the type of the expression it's replacing
-			commentExpression.typeName = expression.getType(fromList: self.expressionTypes)
-			return commentExpression
+		let leadingComments = getLeadingComments(forSyntax: Syntax(expression))
+
+		// If we're replacing this expression with a `gryphon value` comment
+		let literalCodeExpressions = leadingComments.compactMap
+			{ comment -> LiteralCodeExpression? in
+				if case let .translationComment(
+						comment: translationComment, range: range) = comment,
+					translationComment.key == .value,
+					let literalExpression = translationComment.value
+				{
+					return LiteralCodeExpression(
+						range: range,
+						string: literalExpression,
+						shouldGoToMainFunction: false,
+						typeName: expression.getType(fromList: self.expressionTypes))
+				}
+				else {
+					return nil
+				}
+			}
+		if let literalCodeExpression = literalCodeExpressions.first {
+			return literalCodeExpression
 		}
 
 		if let stringLiteralExpression = expression.as(StringLiteralExprSyntax.self) {
