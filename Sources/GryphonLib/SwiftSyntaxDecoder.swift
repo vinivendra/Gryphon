@@ -624,7 +624,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		return ClassDeclaration(
 			range: classDeclaration.getRange(inFile: self.sourceFile),
 			className: classDeclaration.identifier.text,
-			annotations: [],
+			annotations: annotations,
 			access: accessAndAnnotations.access,
 			isOpen: true,
 			inherits: MutableList(inheritances),
