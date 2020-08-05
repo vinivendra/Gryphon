@@ -404,8 +404,8 @@ public class KotlinTranslator {
 		let result = KotlinTranslation(range: protocolDeclaration.range)
 		result.append("\(indentation)")
 
-		if let annotations = protocolDeclaration.annotations {
-			result.append("\(annotations) ")
+		if !protocolDeclaration.annotations.isEmpty {
+			result.append("\(protocolDeclaration.annotations.joined(separator: " ")) ")
 		}
 
 		if let access = protocolDeclaration.access {

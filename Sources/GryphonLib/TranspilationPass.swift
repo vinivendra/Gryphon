@@ -1951,16 +1951,8 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 	{
 		let translationResult = translateAccessModifierAndAnnotations(
 			access: protocolDeclaration.access,
-			annotations: protocolDeclaration.annotations?.split(withStringSeparator: " ") ?? [],
+			annotations: protocolDeclaration.annotations,
 			forDeclaration: protocolDeclaration)
-
-		let resultingAnnotations: String?
-		if !translationResult.annotations.isEmpty {
-			resultingAnnotations = translationResult.annotations.joined(separator: " ")
-		}
-		else {
-			resultingAnnotations = nil
-		}
 
 		// Push the non-existent "protocol" access modifier as a special marker so that inner
 		// declarations will omit their own access modifiers. This is because declarations inside
@@ -1970,7 +1962,7 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 			range: protocolDeclaration.range,
 			protocolName: protocolDeclaration.protocolName,
 			access: translationResult.access,
-			annotations: resultingAnnotations,
+			annotations: translationResult.annotations,
 			members: protocolDeclaration.members))
 		accessModifiersStack.removeLast()
 		return result

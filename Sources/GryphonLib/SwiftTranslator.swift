@@ -400,7 +400,11 @@ public class SwiftTranslator {
 		}
 
 		let access = protocolDeclaration["access"]
-		let annotations = getTranslationCommentValue(forNode: protocolDeclaration, key: .annotation)
+		let annotations = getTranslationCommentValue(
+				forNode: protocolDeclaration,
+				key: .annotation)?
+			.split(withStringSeparator: " ")
+			.toMutableList() ?? []
 
 		let members = try translateSubtreesOf(protocolDeclaration)
 

@@ -469,6 +469,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	// MARK: - Declarations
 
 	func convertDeclaration(_ declaration: DeclSyntax) throws -> List<Statement> {
+		if let protocolDeclaration = declaration.as(ProtocolDeclSyntax.self) {
+			return try [convertProtocolDeclaration(protocolDeclaration)]
+		}
 		if let classDeclaration = declaration.as(ClassDeclSyntax.self) {
 			return try [convertClassDeclaration(classDeclaration)]
 		}
@@ -491,6 +494,21 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		return try [errorStatement(
 			forASTNode: Syntax(declaration),
 			withMessage: "Unknown declaration"), ]
+	}
+
+	func convertProtocolDeclaration(
+		_ protocolDeclaration: ProtocolDeclSyntax)
+		throws -> Statement
+	{
+		let accessAndAnnotations =
+			getAccessAndAnnotations(fromModifiers: protocolDeclaration.modifiers)
+
+		return ProtocolDeclaration(
+			range: protocolDeclaration.getRange(inFile: self.sourceFile),
+			protocolName: protocolDeclaration.identifier.text,
+			access: accessAndAnnotations.access,
+			annotations: accessAndAnnotations.annotations,
+			members: try convertStatements(protocolDeclaration.members.members))
 	}
 
 	func convertEnumDeclaration(
@@ -754,6 +772,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 							isPure: false, isJustProtocolInterface: false, extendsType: nil,
 							statements: [error],
 							access: nil, annotations: [])
+						errorHappened = true
 						break
 					}
 
@@ -784,6 +803,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 						let range = accessor.getRange(inFile: self.sourceFile)
 						let prefix = accessor.accessorKind.text
 
+						// If there the accessor has a body (if not, assume it's a protocol's
+						// `{ get }` and do nothing).
 						if let maybeCodeBlock = accessor.children.first(where:
 								{ $0.is(CodeBlockSyntax.self) }),
 							let codeBlock = maybeCodeBlock.as(CodeBlockSyntax.self)
@@ -804,6 +825,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 									isJustProtocolInterface: false, extendsType: nil,
 									statements: [error],
 									access: nil, annotations: [])
+								errorHappened = true
 								break
 							}
 
@@ -854,36 +876,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 							else {
 								setter = functionDeclaration
 							}
-						}
-						else {
-							errorHappened = true
-							let error = try errorStatement(
-								forASTNode: Syntax(accessor),
-								withMessage: "Unable to get the accessor's statements or its type")
-							let errorFunctionDeclaration = FunctionDeclaration(
-								range: range,
-								prefix: prefix,
-								parameters: [],
-								returnType: "",
-								functionType: "",
-								genericTypes: [],
-								isOpen: false,
-								isImplicit: false,
-								isStatic: false,
-								isMutating: false,
-								isPure: false,
-								isJustProtocolInterface: false,
-								extendsType: nil,
-								statements: [error],
-								access: nil,
-								annotations: [])
-							if accessor.accessorKind.text == "get" {
-								getter = errorFunctionDeclaration
-							}
-							else {
-								setter = errorFunctionDeclaration
-							}
-							break
 						}
 					}
 				}

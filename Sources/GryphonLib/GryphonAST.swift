@@ -433,14 +433,14 @@ public class EnumDeclaration: Statement {
 public class ProtocolDeclaration: Statement {
 	let protocolName: String
 	let access: String?
-	let annotations: String?
+	let annotations: MutableList<String>
 	let members: MutableList<Statement>
 
 	init(
 		range: SourceFileRange?,
 		protocolName: String,
 		access: String?,
-		annotations: String?,
+		annotations: MutableList<String>,
 		members: MutableList<Statement>)
 	{
 		self.protocolName = protocolName
@@ -454,8 +454,7 @@ public class ProtocolDeclaration: Statement {
 		return [
 			PrintableTree(protocolName),
 			PrintableTree.initOrNil(access),
-			PrintableTree.initOrNil(
-				"annotations", [PrintableTree.initOrNil(annotations)]),
+			PrintableTree.ofStrings("annotations", annotations),
 			PrintableTree.ofStatements("members", members), ]
 	}
 
