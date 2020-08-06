@@ -1,4 +1,4 @@
-<img src="https://github.com/vinivendra/Gryphon/raw/master/Gryphon%20Logo.svg" alt="Gryphon logo" height="70">
+<img src="https://github.com/vinivendra/Gryphon/raw/release/Gryphon%20Logo.svg" alt="Gryphon logo" height="70">
 
 ## The Swift to Kotlin translator
 
