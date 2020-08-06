@@ -57,187 +57,158 @@ class IntegrationTest: XCTestCase {
 
 	// MARK: - Tests
 	func test() {
-		for swiftVersion in TranspilationContext.supportedSwiftVersions {
-			do {
-				// If we're on linux, skip testing any versions that aren't the default version
-				if OS.osType == .linux,
-					try swiftVersion != TranspilationContext.getVersionOfToolchain(nil)
-				{
-					continue
+		do {
+			let swiftVersion = try TranspilationContext.getVersionOfToolchain(nil)
+
+			Compiler.clearIssues()
+
+			let tests = TestUtilities.testCases
+			for testName in tests {
+				print("- Testing \(testName)...")
+
+				do {
+					// Generate kotlin code using the whole compiler
+					let testCasePath = TestUtilities.testCasesPath + testName
+					let astDumpFilePath =
+						SupportingFile.pathOfSwiftASTDumpFile(
+							forSwiftFile: testCasePath,
+							swiftVersion: swiftVersion)
+					let defaultsToFinal = testName.hasSuffix("-default-final")
+					let generatedKotlinCode = try Compiler.transpileKotlinCode(
+						fromASTDumpFiles: [astDumpFilePath],
+						withContext: TranspilationContext(
+							toolchainName: nil,
+							indentationString: "\t",
+							defaultsToFinal: defaultsToFinal)).first!
+
+					// Load the previously stored kotlin code from file
+					let expectedKotlinCode =
+						try! Utilities.readFile(testCasePath.withExtension(.kt))
+
+					XCTAssert(
+						generatedKotlinCode == expectedKotlinCode,
+						"Test \(testName): the transpiler failed to produce expected result. " +
+							"Printing diff ('<' means generated, '>' means expected):" +
+							TestUtilities.diff(generatedKotlinCode, expectedKotlinCode))
 				}
-
-				guard let toolchainString =
-					try TranspilationContext.getToolchain(forSwiftVersion: swiftVersion) else
-				{
-					print("⚠️Unable to find toolchain for Swift \(swiftVersion)")
-					continue
-				}
-
-				let toolchain = (toolchainString == "") ? nil : toolchainString
-
-				print("⛓ Using Swift \(swiftVersion)")
-
-				Compiler.clearIssues()
-
-				let tests = TestUtilities.testCases
-				for testName in tests {
-					print("- Testing \(testName)...")
-
-					do {
-						// Generate kotlin code using the whole compiler
-						let testCasePath = TestUtilities.testCasesPath + testName
-						let astDumpFilePath =
-							SupportingFile.pathOfSwiftASTDumpFile(
-								forSwiftFile: testCasePath,
-								swiftVersion: swiftVersion)
-						let defaultsToFinal = testName.hasSuffix("-default-final")
-						let generatedKotlinCode = try Compiler.transpileKotlinCode(
-							fromASTDumpFiles: [astDumpFilePath],
-							withContext: TranspilationContext(
-								toolchainName: toolchain,
-								indentationString: "\t",
-								defaultsToFinal: defaultsToFinal)).first!
-
-						// Load the previously stored kotlin code from file
-						let expectedKotlinCode =
-							try! Utilities.readFile(testCasePath.withExtension(.kt))
-
-						XCTAssert(
-							generatedKotlinCode == expectedKotlinCode,
-							"Test \(testName): the transpiler failed to produce expected result. " +
-								"Printing diff ('<' means generated, '>' means expected):" +
-								TestUtilities.diff(generatedKotlinCode, expectedKotlinCode))
-					}
-					catch let error {
-						XCTFail("🚨 Test failed with error:\n\(error)")
-					}
-				}
-
-				let unexpectedWarnings = Compiler.issues.filter {
-						!$0.isError &&
-						!$0.fullMessage.contains("Native type") &&
-						!$0.fullMessage.contains("fileprivate declarations")
-					}
-				XCTAssert(
-					unexpectedWarnings.isEmpty,
-					"Unexpected warnings in integration tests:\n" +
-					"\(unexpectedWarnings.map { $0.fullMessage }.joined(separator: "\n\n"))")
-
-				if Compiler.numberOfErrors != 0 {
-					XCTFail("🚨 Integration test found errors:\n")
-					Compiler.printIssues()
+				catch let error {
+					XCTFail("🚨 Test failed with error:\n\(error)")
 				}
 			}
-			catch let error {
-				XCTFail("Error finding toolchain for swift version \(swiftVersion): \(error)")
+
+			let unexpectedWarnings = Compiler.issues.filter {
+					!$0.isError &&
+					!$0.fullMessage.contains("Native type") &&
+					!$0.fullMessage.contains("fileprivate declarations")
+				}
+			XCTAssert(
+				unexpectedWarnings.isEmpty,
+				"Unexpected warnings in integration tests:\n" +
+				"\(unexpectedWarnings.map { $0.fullMessage }.joined(separator: "\n\n"))")
+
+			if Compiler.numberOfErrors != 0 {
+				XCTFail("🚨 Integration test found errors:\n")
+				Compiler.printIssues()
 			}
+		}
+		catch let error {
+			XCTFail("🚨 Test failed with error:\n\(error)")
 		}
 	}
 
 	func testWarnings() {
-		for swiftVersion in TranspilationContext.supportedSwiftVersions {
-			do {
-				guard let toolchainString =
-					try TranspilationContext.getToolchain(forSwiftVersion: swiftVersion) else
-				{
-					print("⚠️Unable to find toolchain for Swift \(swiftVersion)")
-					continue
-				}
+		do {
+			let swiftVersion = try TranspilationContext.getVersionOfToolchain(nil)
 
-				let toolchain = (toolchainString == "") ? nil : toolchainString
+			Compiler.clearIssues()
 
-				print("⛓ Using Swift \(swiftVersion)")
+			// Generate kotlin code using the whole compiler
+			let testCasePath = TestUtilities.testCasesPath + "warnings"
+			let astDumpFilePath =
+				SupportingFile.pathOfSwiftASTDumpFile(
+					forSwiftFile: testCasePath,
+					swiftVersion: swiftVersion)
+			_ = try Compiler.transpileKotlinCode(
+				fromASTDumpFiles: [astDumpFilePath],
+				withContext: TranspilationContext(
+					toolchainName: nil,
+					indentationString: "\t",
+					defaultsToFinal: false)).first!
 
-				Compiler.clearIssues()
+			XCTAssert(
+				Compiler.numberOfErrors == 0,
+				"Expected no errors, found \(Compiler.numberOfErrors):\n" +
+					Compiler.issues.filter { $0.isError }.map { $0.fullMessage }
+						.joined(separator: "\n"))
 
-				// Generate kotlin code using the whole compiler
-				let testCasePath = TestUtilities.testCasesPath + "warnings"
-				let astDumpFilePath =
-					SupportingFile.pathOfSwiftASTDumpFile(
-						forSwiftFile: testCasePath,
-						swiftVersion: swiftVersion)
-				_ = try Compiler.transpileKotlinCode(
-					fromASTDumpFiles: [astDumpFilePath],
-					withContext: TranspilationContext(
-						toolchainName: toolchain,
-						indentationString: "\t",
-						defaultsToFinal: false)).first!
+			// Make sure the comment for muting warnings is working
+			XCTAssert(
+				Compiler.numberOfWarnings == 12,
+				"Expected 11 warnings, found \(Compiler.numberOfWarnings):\n" +
+					Compiler.issues.filter { !$0.isError }.map { $0.fullMessage }
+						.joined(separator: "\n"))
 
-				XCTAssert(
-					Compiler.numberOfErrors == 0,
-					"Expected no errors, found \(Compiler.numberOfErrors):\n" +
-						Compiler.issues.filter { $0.isError }.map { $0.fullMessage }
-							.joined(separator: "\n"))
+			var warnings =
+				Compiler.issues.filter { $0.fullMessage.contains("mutable variables") }
+			XCTAssertEqual(
+				warnings.count, 1,
+				"Expected 1 warning containing \"mutable variables\", " +
+					"found \(warnings.count) (printed below, if any).\n" +
+					warnings.map { $0.fullMessage }.joined(separator: "\n"))
 
-				// Make sure the comment for muting warnings is working
-				XCTAssert(
-					Compiler.numberOfWarnings == 12,
-					"Expected 11 warnings, found \(Compiler.numberOfWarnings):\n" +
-						Compiler.issues.filter { !$0.isError }.map { $0.fullMessage }
-							.joined(separator: "\n"))
+			warnings = Compiler.issues.filter { $0.fullMessage.contains("mutating methods") }
+			XCTAssertEqual(
+				warnings.count, 2,
+				"Expected 2 warnings containing \"mutating methods\", " +
+					"found \(warnings.count) (printed below, if any).\n" +
+					warnings.map { $0.fullMessage }.joined(separator: "\n"))
 
-				var warnings =
-					Compiler.issues.filter { $0.fullMessage.contains("mutable variables") }
-				XCTAssertEqual(
-					warnings.count, 1,
-					"Expected 1 warning containing \"mutable variables\", " +
-						"found \(warnings.count) (printed below, if any).\n" +
-						warnings.map { $0.fullMessage }.joined(separator: "\n"))
+			warnings = Compiler.issues.filter { $0.fullMessage.contains("Native type") }
+			XCTAssertEqual(
+				warnings.count, 2,
+				"Expected 2 warnings containing \"Native type\", " +
+					"found \(warnings.count) (printed below, if any).\n" +
+					warnings.map { $0.fullMessage }.joined(separator: "\n"))
 
-				warnings = Compiler.issues.filter { $0.fullMessage.contains("mutating methods") }
-				XCTAssertEqual(
-					warnings.count, 2,
-					"Expected 2 warnings containing \"mutating methods\", " +
-						"found \(warnings.count) (printed below, if any).\n" +
-						warnings.map { $0.fullMessage }.joined(separator: "\n"))
+			warnings = Compiler.issues.filter { $0.fullMessage.contains("fileprivate") }
+			XCTAssertEqual(
+				warnings.count, 1,
+				"Expected 1 warning containing \"fileprivate\", " +
+					"found \(warnings.count) (printed below, if any).\n" +
+					warnings.map { $0.fullMessage }.joined(separator: "\n"))
 
-				warnings = Compiler.issues.filter { $0.fullMessage.contains("Native type") }
-				XCTAssertEqual(
-					warnings.count, 2,
-					"Expected 2 warnings containing \"Native type\", " +
-						"found \(warnings.count) (printed below, if any).\n" +
-						warnings.map { $0.fullMessage }.joined(separator: "\n"))
+			warnings = Compiler.issues.filter { $0.fullMessage.contains("If condition") }
+			XCTAssertEqual(
+				warnings.count, 2,
+				"Expected 2 warnings containing \"If condition\", " +
+					"found \(warnings.count) (printed below, if any).\n" +
+					warnings.map { $0.fullMessage }.joined(separator: "\n"))
 
-				warnings = Compiler.issues.filter { $0.fullMessage.contains("fileprivate") }
-				XCTAssertEqual(
-					warnings.count, 1,
-					"Expected 1 warning containing \"fileprivate\", " +
-						"found \(warnings.count) (printed below, if any).\n" +
-						warnings.map { $0.fullMessage }.joined(separator: "\n"))
+			warnings = Compiler.issues.filter { $0.fullMessage.contains("Double optionals") }
+			XCTAssertEqual(
+				warnings.count, 1,
+				"Expected 1 warning containing \"Double optionals\", " +
+					"found \(warnings.count) (printed below, if any).\n" +
+					warnings.map { $0.fullMessage }.joined(separator: "\n"))
 
-				warnings = Compiler.issues.filter { $0.fullMessage.contains("If condition") }
-				XCTAssertEqual(
-					warnings.count, 2,
-					"Expected 2 warnings containing \"If condition\", " +
-						"found \(warnings.count) (printed below, if any).\n" +
-						warnings.map { $0.fullMessage }.joined(separator: "\n"))
+			warnings =
+				Compiler.issues.filter { $0.fullMessage.contains("superclass's initializer") }
+			XCTAssertEqual(
+				warnings.count, 2,
+				"Expected 2 warnings containing \"superclass's initializer\", " +
+					"found \(warnings.count) (printed below, if any).\n" +
+					warnings.map { $0.fullMessage }.joined(separator: "\n"))
 
-				warnings = Compiler.issues.filter { $0.fullMessage.contains("Double optionals") }
-				XCTAssertEqual(
-					warnings.count, 1,
-					"Expected 1 warning containing \"Double optionals\", " +
-						"found \(warnings.count) (printed below, if any).\n" +
-						warnings.map { $0.fullMessage }.joined(separator: "\n"))
-
-				warnings =
-					Compiler.issues.filter { $0.fullMessage.contains("superclass's initializer") }
-				XCTAssertEqual(
-					warnings.count, 2,
-					"Expected 2 warnings containing \"superclass's initializer\", " +
-						"found \(warnings.count) (printed below, if any).\n" +
-						warnings.map { $0.fullMessage }.joined(separator: "\n"))
-
-				warnings =
-					Compiler.issues.filter { $0.fullMessage.contains("initializers in structs") }
-				XCTAssertEqual(
-					warnings.count, 1,
-					"Expected 1 warnings containing \"initializers in structs\", " +
-						"found \(warnings.count) (printed below, if any).\n" +
-						warnings.map { $0.fullMessage }.joined(separator: "\n"))
-			}
-			catch let error {
-				XCTFail("🚨 Test failed with error:\n\(error)")
-			}
+			warnings =
+				Compiler.issues.filter { $0.fullMessage.contains("initializers in structs") }
+			XCTAssertEqual(
+				warnings.count, 1,
+				"Expected 1 warnings containing \"initializers in structs\", " +
+					"found \(warnings.count) (printed below, if any).\n" +
+					warnings.map { $0.fullMessage }.joined(separator: "\n"))
+		}
+		catch let error {
+			XCTFail("🚨 Test failed with error:\n\(error)")
 		}
 	}
 }

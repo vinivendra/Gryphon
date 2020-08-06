@@ -122,3 +122,36 @@ class F: CustomStringConvertible {
 
 // Anonymous pattern binding
 let _ = "abc"
+
+// Do-catch statements
+
+// - Empty
+do {
+	"abc"
+}
+catch {
+	// Do nothing
+}
+
+// - With variable
+do {
+	"abc"
+}
+catch let myError {
+	// Do nothing
+}
+
+// With `try` and `throw`
+func throwingFunction() throws { }
+
+struct MyError: Error {
+	let errorMessage: String
+}
+
+do {
+	try throwingFunction()
+}
+catch {
+	throw MyError(errorMessage: "")
+}
+

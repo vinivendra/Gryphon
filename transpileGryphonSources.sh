@@ -15,6 +15,7 @@
 	Sources/GryphonLib/KotlinTranslator.swift \
 	Sources/GryphonLib/LibraryTranspilationPass.swift \
 	Sources/GryphonLib/PrintableAsTree.swift \
+	Sources/GryphonLib/RubyScriptContents.swift \
 	Sources/GryphonLib/SharedUtilities.swift \
 	Sources/GryphonLib/SourceFile.swift \
 	Sources/GryphonLib/SwiftAST.swift \

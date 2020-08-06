@@ -1099,25 +1099,44 @@ public class SwiftTranslator {
 
 		let catchStatements: MutableList<Statement?> = []
 		for catchStatement in doCatchStatement.subtrees.dropFirst() {
-			guard catchStatement.name == "Catch" else {
-				continue
+
+			var range: SourceFileRange?
+			var variableName: String?
+			var variableType: String?
+
+			// If the Swift version is less than 5.3
+			if catchStatement.name == "Catch" {
+				let patternNamed = catchStatement
+					.subtree(named: "Pattern Let")?
+					.subtree(named: "Pattern Named")
+
+				if let patternNamed = patternNamed {
+					range = getRangeRecursively(ofNode: patternNamed)
+				}
+				let patternAttributes = patternNamed?.standaloneAttributes
+				variableName = patternAttributes?.first
+				variableType = patternNamed?["type"]
+			}
+			else if catchStatement.name == "Case Statement",
+				let caseLabelItem = catchStatement.subtree(named: "Case Label Item"),
+				let patternLet = caseLabelItem.subtree(named: "Pattern Let"),
+				let patternNamed = patternLet.subtree(named: "Pattern Named"),
+				let variableDeclarationAST = catchStatement
+					.subtree(named: "Case Body Variables")?
+					.subtree(named: "Variable Declaration")
+			{
+				// If the Swift version is 5.3 of greater
+				range = getRangeRecursively(ofNode: variableDeclarationAST)
+				variableName = patternNamed.standaloneAttributes[safe: 0]
+				variableType = patternNamed["type"]
 			}
 
 			let variableDeclaration: VariableDeclaration?
-
-			let patternNamed = catchStatement
-				.subtree(named: "Pattern Let")?
-				.subtree(named: "Pattern Named")
-			let patternAttributes = patternNamed?.standaloneAttributes
-			let variableName = patternAttributes?.first
-			let variableType = patternNamed?["type"]
-
-			if let patternNamed = patternNamed,
-				let variableName = variableName,
-				let variableType = variableType
+			if let variableName = variableName,
+			   let variableType = variableType
 			{
 				variableDeclaration = VariableDeclaration(
-					range: getRangeRecursively(ofNode: patternNamed),
+					range: range,
 					identifier: variableName,
 					typeName: variableType,
 					expression: nil,
@@ -2132,9 +2151,8 @@ public class SwiftTranslator {
 			let firstBindingExpression = danglingPatternBindings[0]
 
 			if let firstBindingExpression = firstBindingExpression {
-				if (firstBindingExpression.identifier == identifier &&
-					firstBindingExpression.typeName == typeName) ||
-					(firstBindingExpression.identifier == "<<Error>>")
+				if firstBindingExpression.identifier == identifier ||
+					firstBindingExpression.identifier == "<<Error>>"
 				{
 					expression = firstBindingExpression.expression
 				}
@@ -2547,12 +2565,24 @@ public class SwiftTranslator {
 		let methodOwner = dotSyntaxCallExpression?.subtree(at: 1)
 
 		if let methodName = methodName, let methodOwner = methodOwner {
-			let methodName = try translateDeclarationReferenceExpression(methodName)
-			let methodOwner = try translateExpression(methodOwner)
+			let methodNameTranslation = try translateDeclarationReferenceExpression(methodName)
+			var methodOwnerTranslation = try translateExpression(methodOwner)
+			
+			// The left expression in Swift 5.3 often comes wrapped in an extra paretheses
+			// expression, whose range is equal to the inner expression's range (since there are no
+			// actual parentheses characters in the source code).
+			if let parenthesesExpression = methodOwnerTranslation as? ParenthesesExpression,
+			   let parenthesesRange = parenthesesExpression.range,
+			   let innerRange = parenthesesExpression.expression.range,
+			   parenthesesRange.isEqual(to: innerRange)
+			{
+				methodOwnerTranslation = parenthesesExpression.expression
+			}
+			
 			function = DotExpression(
 				range: getRangeRecursively(ofNode: callExpression),
-				leftExpression: methodOwner,
-				rightExpression: methodName)
+				leftExpression: methodOwnerTranslation,
+				rightExpression: methodNameTranslation)
 		}
 		else if let declarationReferenceExpression = callExpression
 			.subtree(named: "Declaration Reference Expression")
