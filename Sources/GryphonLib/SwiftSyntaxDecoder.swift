@@ -733,6 +733,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let accessAndAnnotations =
 			getAccessAndAnnotations(fromModifiers: functionLikeDeclaration.modifierList)
 
+		let isStatic = accessAndAnnotations.annotations.remove("static")
+
 		// Get annotations from `gryphon annotation` comments
 		let annotationComments = getLeadingComments(
 			forSyntax: functionLikeDeclaration.asSyntax,
@@ -751,7 +753,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				genericTypes: [],
 				isOpen: isOpen,
 				isImplicit: false,
-				isStatic: false,
+				isStatic: isStatic,
 				isMutating: false,
 				isPure: false,
 				isJustProtocolInterface: false,
@@ -971,6 +973,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				let accessAndAnnotations =
 					getAccessAndAnnotations(fromModifiers: variableDeclaration.modifiers)
 
+				let isStatic = accessAndAnnotations.annotations.remove("static")
+
 				// Get annotations from `gryphon annotation` comments
 				let annotationComments = getLeadingComments(
 					forSyntax: Syntax(variableDeclaration),
@@ -990,7 +994,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					isOpen: isOpen,
 					isLet: isLet,
 					isImplicit: false,
-					isStatic: false,
+					isStatic: isStatic,
 					extendsType: nil,
 					annotations: annotations))
 			}

@@ -426,6 +426,21 @@ extension List where Element: Equatable {
 	}
 }
 
+extension MutableList where Element: Equatable {
+	/// Removes the given element, if it is in the list. Returns `true` if the element was present,
+	/// `false` otherwise.
+	@discardableResult
+	func remove(_ element: Element) -> Bool {
+		if let index = self.firstIndex(of: element) {
+			self.array.remove(at: index)
+			return true
+		}
+		else {
+			return false
+		}
+	}
+}
+
 //
 extension PrintableTree {
 	static func ofStrings(_ description: String, _ subtrees: List<String>)
