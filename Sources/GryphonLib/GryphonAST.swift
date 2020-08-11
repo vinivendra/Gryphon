@@ -680,7 +680,11 @@ public class VariableDeclaration: Statement {
 	var identifier: String
 	var typeAnnotation: String?
 	var expression: Expression?
+	/// Might be a stub (i.e. with almost all members nil or empty) if it's a protocol's getter
+	/// (e.g. `var a: Int { get }`).
 	var getter: FunctionDeclaration?
+	/// Might be a stub (i.e. with almost all members nil or empty) if it's a protocol's setter
+	/// (e.g. `var a: Int { get set }`).
 	var setter: FunctionDeclaration?
 	var access: String?
 	var isOpen: Bool

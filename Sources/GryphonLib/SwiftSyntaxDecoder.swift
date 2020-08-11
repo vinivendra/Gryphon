@@ -871,7 +871,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 						let prefix = accessor.accessorKind.text
 
 						// If there the accessor has a body (if not, assume it's a protocol's
-						// `{ get }` and do nothing).
+						// `{ get }`).
 						if let maybeCodeBlock = accessor.children.first(where:
 								{ $0.is(CodeBlockSyntax.self) }),
 							let codeBlock = maybeCodeBlock.as(CodeBlockSyntax.self)
@@ -934,6 +934,32 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 								isJustProtocolInterface: false,
 								extendsType: nil,
 								statements: statements,
+								access: nil,
+								annotations: [])
+
+							if accessor.accessorKind.text == "get" {
+								getter = functionDeclaration
+							}
+							else {
+								setter = functionDeclaration
+							}
+						}
+						else {
+							let functionDeclaration = FunctionDeclaration(
+								range: range,
+								prefix: prefix,
+								parameters: [],
+								returnType: "",
+								functionType: "",
+								genericTypes: [],
+								isOpen: false,
+								isImplicit: false,
+								isStatic: false,
+								isMutating: false,
+								isPure: false,
+								isJustProtocolInterface: false,
+								extendsType: nil,
+								statements: [],
 								access: nil,
 								annotations: [])
 
