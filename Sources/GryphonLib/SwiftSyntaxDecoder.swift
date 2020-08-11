@@ -353,10 +353,67 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let forStatement = statement.as(ForInStmtSyntax.self) {
 			return try convertForStatement(forStatement)
 		}
+		if let switchStatement = statement.as(SwitchStmtSyntax.self) {
+			return try convertSwitchStatement(switchStatement)
+		}
 
 		return try errorStatement(
 			forASTNode: Syntax(statement),
 			withMessage: "Unknown statement")
+	}
+
+	func convertSwitchStatement(
+		_ switchStatement: SwitchStmtSyntax)
+		throws -> Statement
+	{
+		let expression = try convertExpression(switchStatement.expression)
+
+		let cases: MutableList<SwitchCase> = []
+		for syntax in switchStatement.cases {
+			if let switchCase = syntax.as(SwitchCaseSyntax.self) {
+				let expressions: MutableList<Expression>
+				if let label = switchCase.label.as(SwitchCaseLabelSyntax.self) {
+					// If it's a case with an expression
+					expressions = try MutableList(label.caseItems.map { item -> Expression in
+						guard let expression = item.pattern.as(ExpressionPatternSyntax.self) else {
+							return try errorExpression(
+								forASTNode: Syntax(item),
+								withMessage: "Unsupported switch case item")
+						}
+						return try convertExpression(expression.expression)
+					})
+				}
+				else if switchCase.label.is(SwitchDefaultLabelSyntax.self) {
+					// If it's a `default:` label
+					expressions = []
+				}
+				else {
+					expressions = [try errorExpression(
+						forASTNode: switchCase.label,
+						withMessage: "Unsupported switch case label")]
+				}
+
+				let statements = try convertStatements(switchCase.statements)
+
+				cases.append(SwitchCase(
+					expressions: expressions,
+					statements: statements))
+			}
+			else {
+				let expression = try errorExpression(
+					forASTNode: syntax,
+					withMessage: "Unsupported switch case")
+				cases.append(SwitchCase(
+					expressions: [expression],
+					statements: []))
+			}
+		}
+
+		return SwitchStatement(
+			range: switchStatement.getRange(inFile: self.sourceFile),
+			convertsToExpression: nil,
+			expression: expression,
+			cases: cases)
 	}
 
 	func convertForStatement(
