@@ -344,7 +344,10 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let returnStatement = statement.as(ReturnStmtSyntax.self) {
 			return try convertReturnStatement(returnStatement)
 		}
-		if let ifStatement = statement.as(IfStmtSyntax.self) {
+		if let ifStatement: IfLikeSyntax =
+			statement.as(IfStmtSyntax.self) ??
+			statement.as(GuardStmtSyntax.self)
+		{
 			return try convertIfStatement(ifStatement)
 		}
 		if let forStatement = statement.as(ForInStmtSyntax.self) {
@@ -372,11 +375,11 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	}
 
 	func convertIfStatement(
-		_ ifStatement: IfStmtSyntax)
+		_ ifStatement: IfLikeSyntax)
 		throws -> IfStatement
 	{
 		let conditions: MutableList<IfStatement.IfCondition> = []
-		for condition in ifStatement.conditions {
+		for condition in ifStatement.ifConditions {
 			if let child = condition.children.first {
 				if let expressionSyntax = child.as(ExprSyntax.self) {
 					let expression = try convertExpression(expressionSyntax)
@@ -411,16 +414,16 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			}
 		}
 
-		let statements = try convertStatements(ifStatement.body.statements)
+		let statements = try convertStatements(ifStatement.statements)
 
 		let elseStatement: IfStatement?
 		if let elseIfSyntax = ifStatement.children.last?.as(IfStmtSyntax.self) {
 			elseStatement = try convertIfStatement(elseIfSyntax)
 		}
-		else if let elseBody = ifStatement.elseBody?.as(CodeBlockSyntax.self) {
-			let elseBodyStatements = try convertStatements(elseBody.statements)
+		else if let elseBlock = ifStatement.elseBlock {
+			let elseBodyStatements = try convertStatements(elseBlock.statements)
 			elseStatement = IfStatement(
-				range: elseBody.getRange(inFile: self.sourceFile),
+				range: elseBlock.getRange(inFile: self.sourceFile),
 				conditions: [],
 				declarations: [],
 				statements: elseBodyStatements,
@@ -437,7 +440,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			declarations: [],
 			statements: statements,
 			elseStatement: elseStatement,
-			isGuard: false)
+			isGuard: ifStatement.isGuard)
 	}
 
 	func convertReturnStatement(
@@ -2289,6 +2292,50 @@ extension InitializerDeclSyntax: FunctionLikeSyntax {
 		// cause problems. Maybe we can set the type in a TranspilationPass, based on the enveloping
 		// class.
 		return nil
+	}
+}
+
+/// A protocol to convert IfStmtSyntax and GuardStmtSyntax with the same algorithm.
+protocol IfLikeSyntax: SyntaxProtocol {
+	var ifConditions: ConditionElementListSyntax { get }
+	var statements: CodeBlockItemListSyntax { get }
+	var elseBlock: CodeBlockSyntax? { get }
+	var isGuard: Bool { get }
+}
+
+extension IfStmtSyntax: IfLikeSyntax {
+	var ifConditions: ConditionElementListSyntax {
+		return self.conditions
+	}
+
+	var statements: CodeBlockItemListSyntax {
+		return self.body.statements
+	}
+
+	var elseBlock: CodeBlockSyntax? {
+		return self.elseBody?.as(CodeBlockSyntax.self)
+	}
+
+	var isGuard: Bool {
+		return false
+	}
+}
+
+extension GuardStmtSyntax: IfLikeSyntax {
+	var ifConditions: ConditionElementListSyntax {
+		return self.conditions
+	}
+
+	var statements: CodeBlockItemListSyntax {
+		return self.body.statements
+	}
+
+	var elseBlock: CodeBlockSyntax? {
+		return nil
+	}
+
+	var isGuard: Bool {
+		return true
 	}
 }
 
