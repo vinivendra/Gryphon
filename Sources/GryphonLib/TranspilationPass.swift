@@ -1157,34 +1157,35 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 		_ initializerDeclaration: InitializerDeclaration)
 		-> List<Statement>
 	{
-		if initializerDeclaration.isStatic == true,
-			initializerDeclaration.extendsType == nil
+		// TODO: replace this with a check for isOptional once SwiftSyntax is fully supported
+		if (initializerDeclaration.isStatic == true &&
+				initializerDeclaration.extendsType == nil &&
+				initializerDeclaration.returnType.hasSuffix("?")) ||
+			initializerDeclaration.isOptional
 		{
-			if initializerDeclaration.returnType.hasSuffix("?") {
-				isFailableInitializer = true
-				let newStatements = replaceStatements(initializerDeclaration.statements ?? [])
-				isFailableInitializer = false
+			isFailableInitializer = true
+			let newStatements = replaceStatements(initializerDeclaration.statements ?? [])
+			isFailableInitializer = false
 
-				let result: MutableList<Statement> = [FunctionDeclaration(
-					range: initializerDeclaration.range,
-					prefix: "invoke",
-					parameters: initializerDeclaration.parameters,
-					returnType: initializerDeclaration.returnType,
-					functionType: initializerDeclaration.functionType,
-					genericTypes: initializerDeclaration.genericTypes,
-					isOpen: initializerDeclaration.isOpen,
-					isImplicit: initializerDeclaration.isImplicit,
-					isStatic: initializerDeclaration.isStatic,
-					isMutating: initializerDeclaration.isMutating,
-					isPure: initializerDeclaration.isPure,
-					isJustProtocolInterface: initializerDeclaration.isJustProtocolInterface,
-					extendsType: initializerDeclaration.extendsType,
-					statements: newStatements,
-					access: initializerDeclaration.access,
-					annotations: initializerDeclaration.annotations), ]
+			let result: MutableList<Statement> = [FunctionDeclaration(
+				range: initializerDeclaration.range,
+				prefix: "invoke",
+				parameters: initializerDeclaration.parameters,
+				returnType: initializerDeclaration.returnType,
+				functionType: initializerDeclaration.functionType,
+				genericTypes: initializerDeclaration.genericTypes,
+				isOpen: initializerDeclaration.isOpen,
+				isImplicit: initializerDeclaration.isImplicit,
+				isStatic: initializerDeclaration.isStatic,
+				isMutating: initializerDeclaration.isMutating,
+				isPure: initializerDeclaration.isPure,
+				isJustProtocolInterface: initializerDeclaration.isJustProtocolInterface,
+				extendsType: initializerDeclaration.extendsType,
+				statements: newStatements,
+				access: initializerDeclaration.access,
+				annotations: initializerDeclaration.annotations), ]
 
-				return result
-			}
+			return result
 		}
 
 		return super.replaceInitializerDeclaration(initializerDeclaration)
@@ -1573,7 +1574,8 @@ public class CallsToSuperclassInitializersTranspilationPass: TranspilationPass {
 				statements: replacedStatements,
 				access: initializerDeclaration.access,
 				annotations: initializerDeclaration.annotations,
-				superCall: superCall)
+				superCall: superCall,
+				isOptional: initializerDeclaration.isOptional)
 		}
 		else {
 			return initializerDeclaration
@@ -2092,7 +2094,8 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 			statements: initializerDeclaration.statements,
 			access: translationResult.access,
 			annotations: translationResult.annotations,
-			superCall: initializerDeclaration.superCall))
+			superCall: initializerDeclaration.superCall,
+			isOptional: initializerDeclaration.isOptional))
 		accessModifiersStack.removeLast()
 		return result
 	}
@@ -4403,7 +4406,8 @@ public class RawValuesTranspilationPass: TranspilationPass {
 			statements: [switchStatement],
 			access: enumDeclaration.access,
 			annotations: [],
-			superCall: nil)
+			superCall: nil,
+			isOptional: true)
 	}
 
 	private func createRawValueVariable(
@@ -4716,7 +4720,8 @@ public class RemoveOpenForInitializersTranspilationPass: TranspilationPass {
 			statements: initializerDeclaration.statements,
 			access: initializerDeclaration.access,
 			annotations: initializerDeclaration.annotations,
-			superCall: initializerDeclaration.superCall)
+			superCall: initializerDeclaration.superCall,
+			isOptional: initializerDeclaration.isOptional)
 	}
 }
 

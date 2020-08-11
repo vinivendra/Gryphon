@@ -838,7 +838,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				statements: statements,
 				access: accessAndAnnotations.access,
 				annotations: annotations,
-				superCall: nil)
+				superCall: nil,
+				isOptional: functionLikeDeclaration.isOptional)
 		}
 	}
 
@@ -2295,6 +2296,8 @@ protocol FunctionLikeSyntax: SyntaxProtocol {
 	var statements: CodeBlockItemListSyntax? { get }
 	var modifierList: ModifierListSyntax? { get }
 	var returnType: TypeSyntax? { get }
+	/// For optional initializers
+	var isOptional: Bool { get }
 }
 
 extension FunctionDeclSyntax: FunctionLikeSyntax {
@@ -2320,6 +2323,10 @@ extension FunctionDeclSyntax: FunctionLikeSyntax {
 
 	var returnType: TypeSyntax? {
 		return signature.output?.returnType
+	}
+
+	var isOptional: Bool {
+		return false
 	}
 }
 
@@ -2349,6 +2356,10 @@ extension InitializerDeclSyntax: FunctionLikeSyntax {
 		// cause problems. Maybe we can set the type in a TranspilationPass, based on the enveloping
 		// class.
 		return nil
+	}
+
+	var isOptional: Bool {
+		return (self.optionalMark != nil)
 	}
 }
 

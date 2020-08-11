@@ -2045,7 +2045,8 @@ public class SwiftTranslator {
 				statements: statements,
 				access: access,
 				annotations: annotations,
-				superCall: nil)
+				superCall: nil,
+				isOptional: false)
 		}
 		else {
 			return FunctionDeclaration(

@@ -611,6 +611,7 @@ public class FunctionDeclaration: Statement {
 
 public class InitializerDeclaration: FunctionDeclaration {
 	let superCall: CallExpression?
+	let isOptional: Bool
 
 	init(
 		range: SourceFileRange?,
@@ -628,9 +629,11 @@ public class InitializerDeclaration: FunctionDeclaration {
 		access: String?,
 		annotations: MutableList<String>,
 		superCall: CallExpression?,
+		isOptional: Bool,
 		name: String = "FunctionDeclaration".capitalizedAsCamelCase())
 	{
 		self.superCall = superCall
+		self.isOptional = isOptional
 		super.init(
 			range: range,
 			prefix: "init",
@@ -654,6 +657,7 @@ public class InitializerDeclaration: FunctionDeclaration {
 	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
 		let result = super.printableSubtrees.toMutableList()
 		result.append(PrintableTree.initOrNil("super call", [superCall]))
+		result.append(PrintableTree("isOptional: \(isOptional)"))
 		return result
 	}
 
@@ -672,7 +676,8 @@ public class InitializerDeclaration: FunctionDeclaration {
 			lhs.statements == rhs.statements &&
 			lhs.access == rhs.access &&
 			lhs.annotations == rhs.annotations &&
-			lhs.superCall == rhs.superCall
+			lhs.superCall == rhs.superCall &&
+			lhs.isOptional == rhs.isOptional
 	}
 }
 
