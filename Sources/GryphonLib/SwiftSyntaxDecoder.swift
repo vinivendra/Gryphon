@@ -479,7 +479,10 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let variableDeclaration = declaration.as(VariableDeclSyntax.self) {
 			return try convertVariableDeclaration(variableDeclaration)
 		}
-		if let functionDeclaration = declaration.as(FunctionDeclSyntax.self) {
+		if let functionDeclaration: FunctionLikeSyntax =
+			declaration.as(FunctionDeclSyntax.self) ??
+			declaration.as(InitializerDeclSyntax.self)
+		{
 			return try [convertFunctionDeclaration(functionDeclaration)]
 		}
 		if let importDeclaration = declaration.as(ImportDeclSyntax.self) {
@@ -642,14 +645,14 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	}
 
 	func convertFunctionDeclaration(
-		_ functionDeclaration: FunctionDeclSyntax)
+		_ functionLikeDeclaration: FunctionLikeSyntax)
 		throws -> Statement
 	{
-		let prefix = functionDeclaration.identifier.text
+		let prefix = functionLikeDeclaration.prefix
 
 		let parameters: MutableList<FunctionParameter> = []
 		// Parameter tokens: `firstName` `secondName (optional)` `:` `type` `, (optional)`
-		for parameter in functionDeclaration.signature.input.parameterList {
+		for parameter in functionLikeDeclaration.parameterList {
 			if let firstName = parameter.firstName?.text,
 				let typeToken = parameter.children.first(where: { $0.is(TypeSyntax.self) })
 			{
@@ -695,7 +698,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let inputType = "(" + parameters.map { $0.typeName }.joined(separator: ", ") + ")"
 
 		let returnType: String
-		if let returnTypeSyntax = functionDeclaration.signature.output?.returnType {
+		if let returnTypeSyntax = functionLikeDeclaration.returnType {
 			returnType = try convertType(returnTypeSyntax)
 		}
 		else {
@@ -705,7 +708,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let functionType = inputType + " -> " + returnType
 
 		let statements: MutableList<Statement>
-		if let statementsSyntax = functionDeclaration.body?.statements {
+		if let statementsSyntax = functionLikeDeclaration.statements {
 			statements = try convertStatements(statementsSyntax)
 		}
 		else {
@@ -713,12 +716,12 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 
 		let isOpen: Bool
-		if let modifiers = functionDeclaration.modifiers,
+		if let modifiers = functionLikeDeclaration.modifierList,
 			modifiers.contains(where: { $0.name.text == "final" })
 		{
 			isOpen = false
 		}
-		else if let modifiers = functionDeclaration.modifiers,
+		else if let modifiers = functionLikeDeclaration.modifierList,
 			modifiers.contains(where: { $0.name.text == "open" })
 		{
 			isOpen = true
@@ -728,33 +731,53 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 
 		let accessAndAnnotations =
-			getAccessAndAnnotations(fromModifiers: functionDeclaration.modifiers)
+			getAccessAndAnnotations(fromModifiers: functionLikeDeclaration.modifierList)
 
 		// Get annotations from `gryphon annotation` comments
 		let annotationComments = getLeadingComments(
-			forSyntax: Syntax(functionDeclaration),
+			forSyntax: functionLikeDeclaration.asSyntax,
 			withKey: .annotation)
 		let manualAnnotations = annotationComments.compactMap { $0.value }
 		let annotations = accessAndAnnotations.annotations
 		annotations.append(contentsOf: manualAnnotations)
 
-		return FunctionDeclaration(
-			range: functionDeclaration.getRange(inFile: sourceFile),
-			prefix: prefix,
-			parameters: parameters,
-			returnType: returnType,
-			functionType: functionType,
-			genericTypes: [],
-			isOpen: isOpen,
-			isImplicit: false,
-			isStatic: false,
-			isMutating: false,
-			isPure: false,
-			isJustProtocolInterface: false,
-			extendsType: nil,
-			statements: statements,
-			access: accessAndAnnotations.access,
-			annotations: annotations)
+		if !functionLikeDeclaration.isInitializer {
+			return FunctionDeclaration(
+				range: functionLikeDeclaration.getRange(inFile: sourceFile),
+				prefix: prefix,
+				parameters: parameters,
+				returnType: returnType,
+				functionType: functionType,
+				genericTypes: [],
+				isOpen: isOpen,
+				isImplicit: false,
+				isStatic: false,
+				isMutating: false,
+				isPure: false,
+				isJustProtocolInterface: false,
+				extendsType: nil,
+				statements: statements,
+				access: accessAndAnnotations.access,
+				annotations: annotations)
+		}
+		else {
+			return InitializerDeclaration(
+				range: functionLikeDeclaration.getRange(inFile: sourceFile),
+				parameters: parameters,
+				returnType: returnType,
+				functionType: functionType,
+				genericTypes: [],
+				isOpen: isOpen,
+				isImplicit: false,
+				isStatic: false,
+				isMutating: false,
+				isPure: false,
+				extendsType: nil,
+				statements: statements,
+				access: accessAndAnnotations.access,
+				annotations: annotations,
+				superCall: nil)
+		}
 	}
 
 	func convertVariableDeclaration(
@@ -2164,6 +2187,77 @@ private extension SyntaxProtocol {
 			}
 		}
 
+		return nil
+	}
+}
+
+extension SyntaxProtocol {
+	var asSyntax: Syntax {
+		return Syntax(self)
+	}
+}
+
+/// A protocol to convert FunctionDeclSyntax and InitializerDeclSyntax with the same algorithm.
+protocol FunctionLikeSyntax: SyntaxProtocol {
+	var isInitializer: Bool { get }
+	var prefix: String { get }
+	var parameterList: FunctionParameterListSyntax { get }
+	var statements: CodeBlockItemListSyntax? { get }
+	var modifierList: ModifierListSyntax? { get }
+	var returnType: TypeSyntax? { get }
+}
+
+extension FunctionDeclSyntax: FunctionLikeSyntax {
+	var isInitializer: Bool {
+		return false
+	}
+
+	var prefix: String {
+		return self.identifier.text
+	}
+
+	var parameterList: FunctionParameterListSyntax {
+		return self.signature.input.parameterList
+	}
+
+	var statements: CodeBlockItemListSyntax? {
+		return self.body?.statements
+	}
+
+	var modifierList: ModifierListSyntax? {
+		return self.modifiers
+	}
+
+	var returnType: TypeSyntax? {
+		return signature.output?.returnType
+	}
+}
+
+extension InitializerDeclSyntax: FunctionLikeSyntax {
+	var isInitializer: Bool {
+		return true
+	}
+
+	var prefix: String {
+		return "init"
+	}
+
+	var parameterList: FunctionParameterListSyntax {
+		return self.parameters.parameterList
+	}
+
+	var statements: CodeBlockItemListSyntax? {
+		return self.body?.statements
+	}
+
+	var modifierList: ModifierListSyntax? {
+		return self.modifiers
+	}
+
+	var returnType: TypeSyntax? {
+		// FIXME: InitializerDeclSyntaxes don't seem to have access to the returnType. This might
+		// cause problems. Maybe we can set the type in a TranspilationPass, based on the enveloping
+		// class.
 		return nil
 	}
 }
