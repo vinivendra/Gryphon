@@ -395,41 +395,58 @@ private var a5: Int = 0
 
 // Check that annotations are correctly interpreted and treated as access modifiers
 public class E1 {
-	private var a1 = 0 // gryphon annotation: public
-	private var a2 = 0 // gryphon annotation: internal
-	private var a3 = 0 // gryphon annotation: protected
-	internal var a4 = 0 // gryphon annotation: private
+	// gryphon annotation: public
+	private var a1 = 0
+	// gryphon annotation: internal
+	private var a2 = 0
+	// gryphon annotation: protected
+	private var a3 = 0
+	// gryphon annotation: private
+	internal var a4 = 0
 
-	private func b1() { } // gryphon annotation: public
-	private func b2() { } // gryphon annotation: internal
-	private func b3() { } // gryphon annotation: protected
-	internal func b4() { } // gryphon annotation: private
+	// gryphon annotation: public
+	private func b1() { }
+	// gryphon annotation: internal
+	private func b2() { }
+	// gryphon annotation: protected
+	private func b3() { }
+	// gryphon annotation: private
+	internal func b4() { }
 
-	private init(c1: Int) { } // gryphon annotation: public
-	private init(c2: Double) { } // gryphon annotation: internal
-	private init(c3: Float) { } // gryphon annotation: protected
-	internal init(c4: String) { } // gryphon annotation: private
+	// gryphon annotation: public
+	private init(c1: Int) { }
+	// gryphon annotation: internal
+	private init(c2: Double) { }
+	// gryphon annotation: protected
+	private init(c3: Float) { }
+	// gryphon annotation: private
+	internal init(c4: String) { }
 }
 
-protocol E2 { // gryphon annotation: public
+// gryphon annotation: public
+protocol E2 {
 	var a: Int { get }
 	func b()
 }
 
-enum E3 { // gryphon annotation: public
+// gryphon annotation: public
+enum E3 {
 	case a
 }
 
-struct E4 { // gryphon annotation: public
+// gryphon annotation: public
+struct E4 {
 	let a: Int = 0
 }
 
-class E5 { // gryphon annotation: public
+// gryphon annotation: public
+class E5 {
 }
 
 // Check that access modifiers are correctly calculated when a parent is protected
 class E6 {
-	class Nested { // gryphon annotation: protected
+	// gryphon annotation: protected
+	class Nested {
 		public var a1: Int = 0
 		internal var a2: Int = 0
 		fileprivate var a3: Int = 0
