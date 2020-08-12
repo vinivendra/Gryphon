@@ -539,6 +539,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let variableDeclaration = declaration.as(VariableDeclSyntax.self) {
 			return try convertVariableDeclaration(variableDeclaration)
 		}
+		if let subscriptDeclaration = declaration.as(SubscriptDeclSyntax.self) {
+			return try convertSubscriptDeclaration(subscriptDeclaration)
+		}
 		if let functionDeclaration: FunctionLikeSyntax =
 			declaration.as(FunctionDeclSyntax.self) ??
 			declaration.as(InitializerDeclSyntax.self)
@@ -552,6 +555,95 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		return try [errorStatement(
 			forASTNode: Syntax(declaration),
 			withMessage: "Unknown declaration"), ]
+	}
+
+	func convertSubscriptDeclaration(
+		_ subscriptDeclaration: SubscriptDeclSyntax)
+		throws -> MutableList<Statement>
+	{
+		let result: MutableList<Statement> = []
+
+		let subscriptParameters = try convertParameters(subscriptDeclaration.indices.parameterList)
+		let subscriptReturnType = try convertType(subscriptDeclaration.result.returnType)
+
+		if let accessorBlock = subscriptDeclaration.accessor?.as(AccessorBlockSyntax.self) {
+			for accessor in accessorBlock.accessors {
+				if let maybeCodeBlock =
+						accessor.children.first(where: { $0.is(CodeBlockSyntax.self) }),
+					let codeBlock = maybeCodeBlock.as(CodeBlockSyntax.self)
+				{
+					let statements = try convertStatements(codeBlock.statements)
+
+					let prefix = accessor.accessorKind.text
+
+					let parameters: MutableList<FunctionParameter>
+					let returnType: String
+					if prefix == "get" {
+						parameters = subscriptParameters
+						returnType = subscriptReturnType
+					}
+					else {
+						parameters = subscriptParameters.appending(FunctionParameter(
+							label: "newValue",
+							apiLabel: nil,
+							typeName: subscriptReturnType,
+							value: nil)).toMutableList()
+						returnType = "Void"
+					}
+
+					let parameterType = parameters.map { $0.typeName }.joined(separator: ", ")
+					let functionType = "(\(parameterType)) -> \(returnType)"
+
+					let accessAndAnnotations =
+						getAccessAndAnnotations(fromModifiers: subscriptDeclaration.modifiers)
+
+					let annotations = accessAndAnnotations.annotations
+
+					let isOpen: Bool
+					if annotations.remove("final") {
+						isOpen = false
+					}
+					else if let access = accessAndAnnotations.access, access == "open" {
+						isOpen = true
+					}
+					else {
+						isOpen = !context.defaultsToFinal
+					}
+
+					annotations.append("operator")
+
+					result.append(FunctionDeclaration(
+						range: accessor.getRange(inFile: self.sourceFile),
+						prefix: prefix,
+						parameters: parameters,
+						returnType: returnType,
+						functionType: functionType,
+						genericTypes: [],
+						isOpen: isOpen,
+						isImplicit: false,
+						isStatic: false,
+						isMutating: false,
+						isPure: false,
+						isJustProtocolInterface: false,
+						extendsType: nil,
+						statements: statements,
+						access: accessAndAnnotations.access,
+						annotations: annotations))
+				}
+				else {
+					try result.append(errorStatement(
+						forASTNode: Syntax(accessor),
+						withMessage: "Unable to get code block in subscript declaration"))
+				}
+			}
+		}
+		else {
+			try result.append(errorStatement(
+				forASTNode: Syntax(subscriptDeclaration),
+				withMessage: "Unable to find getters or setters in subscript declaration"))
+		}
+
+		return result
 	}
 
 	func convertExtensionDeclaration(
@@ -710,50 +802,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	{
 		let prefix = functionLikeDeclaration.prefix
 
-		let parameters: MutableList<FunctionParameter> = []
-		// Parameter tokens: `firstName` `secondName (optional)` `:` `type` `, (optional)`
-		for parameter in functionLikeDeclaration.parameterList {
-			if let firstName = parameter.firstName?.text,
-				let typeToken = parameter.children.first(where: { $0.is(TypeSyntax.self) })
-			{
-				let typeSyntax = typeToken.as(TypeSyntax.self)!
-
-				// Get the parameter names
-				let label: String
-				let apiLabel: String?
-				if let secondName = parameter.secondName?.text {
-					if firstName == "_" {
-						apiLabel = nil
-					}
-					else {
-						apiLabel = firstName
-					}
-					label = secondName
-				}
-				else {
-					// If there's just one name, it'll the same for implementation and API
-					label = firstName
-					apiLabel = firstName
-				}
-
-				let typeName = try convertType(typeSyntax)
-
-				parameters.append(FunctionParameter(
-					label: label,
-					apiLabel: apiLabel,
-					typeName: typeName,
-					value: nil))
-			}
-			else {
-				try parameters.append(FunctionParameter(
-					label: "<<Error>>",
-					apiLabel: nil,
-					typeName: "<<Error>>",
-					value: errorExpression(
-						forASTNode: Syntax(parameter),
-						withMessage: "Expected parameter to always have a first name and a type")))
-			}
-		}
+		let parameters: MutableList<FunctionParameter> =
+			try convertParameters(functionLikeDeclaration.parameterList)
 
 		let inputType = "(" + parameters.map { $0.typeName }.joined(separator: ", ") + ")"
 
@@ -841,6 +891,58 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				superCall: nil,
 				isOptional: functionLikeDeclaration.isOptional)
 		}
+	}
+
+	/// Parameter tokens: `firstName` `secondName (optional)` `:` `type` `, (optional)`
+	func convertParameters(
+		_ parameterList: FunctionParameterListSyntax)
+		throws -> MutableList<FunctionParameter>
+	{
+		let result: MutableList<FunctionParameter> = []
+		for parameter in parameterList {
+			if let firstName = parameter.firstName?.text,
+				let typeToken = parameter.children.first(where: { $0.is(TypeSyntax.self) })
+			{
+				let typeSyntax = typeToken.as(TypeSyntax.self)!
+
+				// Get the parameter names
+				let label: String
+				let apiLabel: String?
+				if let secondName = parameter.secondName?.text {
+					if firstName == "_" {
+						apiLabel = nil
+					}
+					else {
+						apiLabel = firstName
+					}
+					label = secondName
+				}
+				else {
+					// If there's just one name, it'll the same for implementation and API
+					label = firstName
+					apiLabel = firstName
+				}
+
+				let typeName = try convertType(typeSyntax)
+
+				result.append(FunctionParameter(
+					label: label,
+					apiLabel: apiLabel,
+					typeName: typeName,
+					value: nil))
+			}
+			else {
+				try result.append(FunctionParameter(
+					label: "<<Error>>",
+					apiLabel: nil,
+					typeName: "<<Error>>",
+					value: errorExpression(
+						forASTNode: Syntax(parameter),
+						withMessage: "Expected parameter to always have a first name and a type")))
+			}
+		}
+
+		return result
 	}
 
 	func convertVariableDeclaration(
