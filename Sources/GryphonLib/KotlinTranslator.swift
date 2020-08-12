@@ -662,9 +662,17 @@ public class KotlinTranslator {
 		let parameterStrings = try functionDeclaration.parameters
 			.map { try translateFunctionDeclarationParameter($0, withIndentation: indentation) }
 
-		let singleExpressionStatement = self.getSingleExpressionFunction(
-			functionDeclaration.statements,
-			returnTypeString: returnTypeString)
+		let singleExpressionStatement: ExpressionStatement?
+		if functionDeclaration.returnType != "Void",
+			functionDeclaration.returnType != "()",
+			functionDeclaration.returnType != "Unit"
+		{
+			singleExpressionStatement =
+				self.getSingleExpressionStatement(functionDeclaration.statements)
+		}
+		else {
+			singleExpressionStatement = nil
+		}
 
 		if !shouldAddNewlines {
 			result.appendTranslations(parameterStrings, withSeparator: ", ")
@@ -769,10 +777,10 @@ public class KotlinTranslator {
 		return result
 	}
 
-	/// Returns the single expression if this is a single expression function, or `nil` otherwise.
-	private func getSingleExpressionFunction(
-		_ statements: List<Statement>?,
-		returnTypeString: String?)
+	/// Used to determine if the function is a single-expression function.
+	/// Returns the single expression if it is, or `nil` otherwise.
+	private func getSingleExpressionStatement(
+		_ statements: List<Statement>?)
 		-> ExpressionStatement?
 	{
 		guard let statements = statements,
@@ -1282,7 +1290,8 @@ public class KotlinTranslator {
 			if let statements = getter.statements {
 				result.append("\(indentation1)get() ")
 
-				if let singleExpressionStatement = getSingleExpressionFunction(statements, returnTypeString: getter.returnType) {
+				if let singleExpressionStatement = getSingleExpressionStatement(statements)
+				{
 					result.append("= ")
 					result.append(try translateExpression(singleExpressionStatement.expression,
 														  withIndentation: indentation1))
