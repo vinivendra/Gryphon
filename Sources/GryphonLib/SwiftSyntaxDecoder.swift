@@ -925,11 +925,19 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 				let typeName = try convertType(typeSyntax)
 
+				let defaultValue: Expression?
+				if let defaultExpression = parameter.defaultArgument?.value {
+					defaultValue = try convertExpression(defaultExpression)
+				}
+				else {
+					defaultValue = nil
+				}
+
 				result.append(FunctionParameter(
 					label: label,
 					apiLabel: apiLabel,
 					typeName: typeName,
-					value: nil))
+					value: defaultValue))
 			}
 			else {
 				try result.append(FunctionParameter(
