@@ -2274,6 +2274,10 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			return try "(" + argumentsType + ") -> " +
 				convertType(functionType.returnType)
 		}
+		if let tupleType = typeSyntax.as(TupleTypeSyntax.self) {
+			let elements = try tupleType.elements.map { try convertType($0.type) }
+			return "(\(elements.joined(separator: ", ")))"
+		}
 
 		if let text = typeSyntax.getText() {
 			return text
