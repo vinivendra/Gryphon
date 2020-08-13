@@ -1145,6 +1145,56 @@ public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
 	}
 }
 
+/// SwiftSyntax does not include return types in initializers, but we can get them from the
+/// encolsing class, struct, or enum.
+public class ReturnTypesForInitsTranspilationPass: TranspilationPass {
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
+
+	let typeDeclarationStack: MutableList<String> = []
+
+	override func replaceInitializerDeclaration( // gryphon annotation: override
+		_ initializerDeclaration: InitializerDeclaration)
+		-> List<Statement>
+	{
+		if let enclosingType = typeDeclarationStack.last {
+			initializerDeclaration.returnType = enclosingType
+		}
+
+		return [initializerDeclaration]
+	}
+
+	override func replaceClassDeclaration( // gryphon annotation: override
+		_ classDeclaration: ClassDeclaration)
+		-> List<Statement>
+	{
+		typeDeclarationStack.append(classDeclaration.className)
+		let result = super.replaceClassDeclaration(classDeclaration)
+		typeDeclarationStack.removeLast()
+		return result
+	}
+
+	override func replaceStructDeclaration( // gryphon annotation: override
+		_ structDeclaration: StructDeclaration)
+		-> List<Statement>
+	{
+		typeDeclarationStack.append(structDeclaration.structName)
+		let result = super.replaceStructDeclaration(structDeclaration)
+		typeDeclarationStack.removeLast()
+		return result
+	}
+
+	override func replaceEnumDeclaration( // gryphon annotation: override
+		_ enumDeclaration: EnumDeclaration)
+		-> List<Statement>
+	{
+		typeDeclarationStack.append(enumDeclaration.enumName)
+		let result = super.replaceEnumDeclaration(enumDeclaration)
+		typeDeclarationStack.removeLast()
+		return result
+	}
+}
+
 /// Optional initializers can be translated as `invoke` operators to have similar syntax and
 /// functionality.
 public class OptionalInitsTranspilationPass: TranspilationPass {
@@ -1167,11 +1217,16 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 			let newStatements = replaceStatements(initializerDeclaration.statements ?? [])
 			isFailableInitializer = false
 
+			// TODO: simplify this once SwiftSyntax is fully supported
+			let newReturnType = initializerDeclaration.returnType.hasSuffix("?") ?
+				initializerDeclaration.returnType :
+				initializerDeclaration.returnType + "?"
+
 			let result: MutableList<Statement> = [FunctionDeclaration(
 				range: initializerDeclaration.range,
 				prefix: "invoke",
 				parameters: initializerDeclaration.parameters,
-				returnType: initializerDeclaration.returnType,
+				returnType: newReturnType,
 				functionType: initializerDeclaration.functionType,
 				genericTypes: initializerDeclaration.genericTypes,
 				isOpen: initializerDeclaration.isOpen,
@@ -4776,6 +4831,8 @@ public extension TranspilationPass {
 		ast = EquatableOperatorsTranspilationPass(ast: ast, context: context).run()
 		ast = RawValuesTranspilationPass(ast: ast, context: context).run()
 		ast = DescriptionAsToStringTranspilationPass(ast: ast, context: context).run()
+		// Optional inits needs to know the return types for inits
+		ast = ReturnTypesForInitsTranspilationPass(ast: ast, context: context).run()
 		ast = OptionalInitsTranspilationPass(ast: ast, context: context).run()
 		ast = StaticMembersTranspilationPass(ast: ast, context: context).run()
 		ast = FixProtocolContentsTranspilationPass(ast: ast, context: context).run()
