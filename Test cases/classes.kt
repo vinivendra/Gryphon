@@ -24,7 +24,7 @@ internal open class Box {
 		set(newValue) {
 			println("set b")
 		}
-	open var c: Int? = null
+	open var c: Int?
 
 	open fun returnFive(): Int {
 		return a

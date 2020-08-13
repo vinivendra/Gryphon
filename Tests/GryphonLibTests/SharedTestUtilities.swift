@@ -159,6 +159,7 @@ class TestUtilities {
 	static let testCasesForSwiftSyntax: List = [
 		"access",
 		"assignments",
+		"classes",
 		"standardLibrary",
 	]
 }
