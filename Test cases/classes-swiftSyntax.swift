@@ -94,7 +94,8 @@ class C {
 struct D {
 	let x: Int
 
-	init(x: Int) { // gryphon ignore
+	// gryphon ignore
+	init(x: Int) {
 		self.x = x
 	}
 
@@ -115,11 +116,13 @@ struct D {
 }
 
 // Test open/final
-class E { // gryphon annotation: open
+// gryphon annotation: open
+class E {
 	var a = 0
 }
 
-class F { // gryphon annotation: final
+// gryphon annotation: final
+class F {
 	var a = 0
 }
 

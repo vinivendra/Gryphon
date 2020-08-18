@@ -16,35 +16,38 @@
 // limitations under the License.
 //
 
-// gryphon output: Test cases/Bootstrap Outputs/assignments.swiftAST
-// gryphon output: Test cases/Bootstrap Outputs/assignments.gryphonASTRaw
-// gryphon output: Test cases/Bootstrap Outputs/assignments.gryphonAST
-// gryphon output: Test cases/Bootstrap Outputs/assignments.kt
+fun main(args: Array<String>) {
+	var x: Int = 0
+	var y: Int = x
+	var z: Int = 10
 
-var x: Int = 0
-var y = x
-var z = 10
-z = x
+	z = x
 
-print("\(x)")
-print("\(y)")
-print("\(z)")
+	println("${x}")
+	println("${y}")
+	println("${z}")
 
-//
-let a: Int? = nil
+	val a: Int? = null
 
-print("\(a)")
+	println("${a}")
 
-//
-let i: Int
-i = 0
+	val i: Int
 
-let r, g, b: Double
-r = 10
-g = 10
-b = 10
+	i = 0
 
-let red = 1, green = 2, blue = 3
+	val r: Double
+	val g: Double
+	val b: Double
 
-let v = 0, w: Double
-let v2: Double, w2 = 0
+	r = 10.0
+	g = 10.0
+	b = 10.0
+
+	val red: Int = 1
+	val green: Int = 2
+	val blue: Int = 3
+	val v: Int = 0
+	val w: Double
+	val v2: Double
+	val w2: Int = 0
+}
