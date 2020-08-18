@@ -160,6 +160,7 @@ class TestUtilities {
 		"access",
 		"assignments",
 		"classes",
+		"closures",
 		"standardLibrary",
 	]
 }
