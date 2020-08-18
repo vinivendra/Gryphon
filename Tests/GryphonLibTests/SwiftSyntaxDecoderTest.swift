@@ -59,8 +59,8 @@ class SwiftSyntaxDecoderTest: XCTestCase {
 				withContext: TranspilationContext(
 					toolchainName: nil,
 					indentationString: "\t",
-					defaultsToFinal: false),
-				usingSwiftSyntax: true).first!
+					defaultsToFinal: false,
+					isUsingSwiftSyntax: true)).first!
 
 			// Check if the decoded statements are as we expect them
 			var statementIterator = gryphonAST.statements.makeIterator()

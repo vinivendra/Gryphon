@@ -66,7 +66,8 @@ class PerformanceTest: XCTestCase {
 						withContext: TranspilationContext(
 							toolchainName: PerformanceTest.toolchain,
 							indentationString: "\t",
-							defaultsToFinal: false))
+							defaultsToFinal: false,
+							isUsingSwiftSyntax: true))
 				}
 				catch let error {
 					XCTFail("🚨 Test failed with error:\n\(error)")
@@ -93,8 +94,8 @@ class PerformanceTest: XCTestCase {
 			withContext: TranspilationContext(
 				toolchainName: PerformanceTest.toolchain,
 				indentationString: "\t",
-				defaultsToFinal: false),
-			usingSwiftSyntax: true)
+				defaultsToFinal: false,
+				isUsingSwiftSyntax: true))
 
 		measure {
 			for rawAST in rawASTs {
@@ -104,7 +105,8 @@ class PerformanceTest: XCTestCase {
 						withContext: TranspilationContext(
 							toolchainName: PerformanceTest.toolchain,
 							indentationString: "\t",
-							defaultsToFinal: false))
+							defaultsToFinal: false,
+							isUsingSwiftSyntax: true))
 				}
 				catch let error {
 					XCTFail("🚨 Test failed with error:\n\(error)")
@@ -130,12 +132,12 @@ class PerformanceTest: XCTestCase {
 			let context = try TranspilationContext(
 				toolchainName: PerformanceTest.toolchain,
 				indentationString: "\t",
-				defaultsToFinal: false)
+				defaultsToFinal: false,
+				isUsingSwiftSyntax: true)
 			let semiRawASTs = try! Compiler.transpileGryphonRawASTs(
 				fromInputFiles: testCasePaths,
 				fromASTDumpFiles: astDumpFilePaths,
-				withContext: context,
-				usingSwiftSyntax: false)
+				withContext: context)
 				.map {
 					try! Compiler.generateGryphonASTAfterFirstPasses(
 						fromGryphonRawAST: $0,
@@ -150,7 +152,8 @@ class PerformanceTest: XCTestCase {
 							withContext: TranspilationContext(
 								toolchainName: PerformanceTest.toolchain,
 								indentationString: "\t",
-								defaultsToFinal: false))
+								defaultsToFinal: false,
+								isUsingSwiftSyntax: true))
 					}
 					catch let error {
 						XCTFail("🚨 Test failed with error:\n\(error)")
@@ -183,8 +186,8 @@ class PerformanceTest: XCTestCase {
 			withContext: TranspilationContext(
 				toolchainName: PerformanceTest.toolchain,
 				indentationString: "\t",
-				defaultsToFinal: false),
-			usingSwiftSyntax: false)
+				defaultsToFinal: false,
+				isUsingSwiftSyntax: true))
 
 		measure {
 			for rawAST in rawASTs {
@@ -194,7 +197,8 @@ class PerformanceTest: XCTestCase {
 						withContext: TranspilationContext(
 							toolchainName: PerformanceTest.toolchain,
 							indentationString: "\t",
-							defaultsToFinal: false))
+							defaultsToFinal: false,
+							isUsingSwiftSyntax: true))
 				}
 				catch let error {
 					XCTFail("🚨 Test failed with error:\n\(error)")
@@ -217,12 +221,12 @@ class PerformanceTest: XCTestCase {
 					let context = try TranspilationContext(
 						toolchainName: PerformanceTest.toolchain,
 						indentationString: "\t",
-						defaultsToFinal: false)
+						defaultsToFinal: false,
+						isUsingSwiftSyntax: true)
 					let ast = try Compiler.transpileGryphonASTs(
 						fromInputFiles: [testCasePath],
 						fromASTDumpFiles: [astDumpFilePath],
-						withContext: context,
-						usingSwiftSyntax: false).first!
+						withContext: context).first!
 					return (ast, context)
 				}
 
@@ -262,8 +266,8 @@ class PerformanceTest: XCTestCase {
 						withContext: TranspilationContext(
 							toolchainName: PerformanceTest.toolchain,
 							indentationString: "\t",
-							defaultsToFinal: false),
-						usingSwiftSyntax: false)
+							defaultsToFinal: false,
+							isUsingSwiftSyntax: true))
 				}
 				catch let error {
 					XCTFail("🚨 Test failed with error:\n\(error)")

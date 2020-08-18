@@ -76,8 +76,6 @@ public class Driver {
 
 		let mainFilePath: String?
 		let xcodeProjectPath: String?
-
-		let shouldUseSwiftSyntax: Bool
 	}
 
 	public struct KotlinTranslation {
@@ -292,7 +290,7 @@ public class Driver {
 
 		let swiftAST: PrintableAsTree
 		let gryphonRawAST: GryphonAST
-		if settings.shouldUseSwiftSyntax {
+		if context.isUsingSwiftSyntax {
 			Compiler.logStart("🧑‍💻  Processing SwiftSyntax for \(inputFileRelativePath)...")
 			let decoder = try SwiftSyntaxDecoder(filePath: inputFilePath, context: context)
 			let printableTreeConverter = SwiftSyntaxToPrintableTreeVisitor()
@@ -599,8 +597,7 @@ public class Driver {
 			forcePrintingToConsole: forcePrintingToConsole,
 			quietModeIsOn: quietModeIsOn,
 			mainFilePath: mainFilePath,
-			xcodeProjectPath: maybeXcodeProject,
-			shouldUseSwiftSyntax: shouldUseSwiftSyntax)
+			xcodeProjectPath: maybeXcodeProject)
 
 		Compiler.logStart("🔧  Using settings:")
 		Compiler.log("ℹ️  shouldEmitSwiftAST: \(shouldEmitSwiftAST)")
@@ -789,7 +786,8 @@ public class Driver {
 			let context = try TranspilationContext(
 				toolchainName: toolchain,
 				indentationString: indentationString,
-				defaultsToFinal: defaultsToFinal)
+				defaultsToFinal: defaultsToFinal,
+				isUsingSwiftSyntax: shouldUseSwiftSyntax)
 
 			Compiler.logStart("🧑‍💻 Starting first part of translation [1/2]...")
 

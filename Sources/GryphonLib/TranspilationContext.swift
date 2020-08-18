@@ -28,6 +28,7 @@ public class TranspilationContext {
 	let swiftVersion: String
 	let indentationString: String
 	let defaultsToFinal: Bool
+	let isUsingSwiftSyntax: Bool
 
 	/// The base contexts are used for information that all transpilation contexts should contain,
 	/// such as the Gryphon templates library (which can be calculated once and are the same every
@@ -64,16 +65,24 @@ public class TranspilationContext {
 		self.swiftVersion = try TranspilationContext.getVersionOfToolchain(toolchainName)
 		self.indentationString = ""
 		self.defaultsToFinal = false
+		self.isUsingSwiftSyntax = false
 		self.templates = []
 	}
 
-	public init(toolchainName: String?, indentationString: String, defaultsToFinal: Bool) throws {
+	public init(
+		toolchainName: String?,
+		indentationString: String,
+		defaultsToFinal: Bool,
+		isUsingSwiftSyntax: Bool)
+		throws
+	{
 		try TranspilationContext.checkToolchainSupport(toolchainName)
 
 		self.toolchainName = toolchainName
 		self.swiftVersion = try TranspilationContext.getVersionOfToolchain(toolchainName)
 		self.indentationString = indentationString
 		self.defaultsToFinal = defaultsToFinal
+		self.isUsingSwiftSyntax = isUsingSwiftSyntax
 		self.templates = try TranspilationContext
 			.getBaseContext(forToolchain: toolchainName)
 			.templates
@@ -153,7 +162,7 @@ public class TranspilationContext {
 		let swiftAPIName: String
 		let typeName: String
 		let prefix: String
-		let parameters: List<String>
+		let parameters: List<FunctionParameter>
 	}
 
 	private var functionTranslations: MutableList<FunctionTranslation> = []
@@ -168,8 +177,18 @@ public class TranspilationContext {
 		// Functions with unnamed parameters here are identified only by their prefix. For instance
 		// `f(_:_:)` here is named `f` but has been stored earlier as `f(_:_:)`.
 		for functionTranslation in functionTranslations {
+			// Avoid confusions with Void and ()
+			let translationType = functionTranslation.typeName
+				.replacingOccurrences(of: "Void", with: "()")
+				.replacingOccurrences(of: "@autoclosure", with: "")
+				.replacingOccurrences(of: " ", with: "")
+			let functionType = typeName
+				.replacingOccurrences(of: "Void", with: "()")
+				.replacingOccurrences(of: "@autoclosure", with: "")
+				.replacingOccurrences(of: " ", with: "")
+
 			if functionTranslation.swiftAPIName.hasPrefix(name),
-				functionTranslation.typeName == typeName
+				translationType == functionType
 			{
 				return functionTranslation
 			}

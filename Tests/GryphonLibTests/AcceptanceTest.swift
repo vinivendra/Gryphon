@@ -85,8 +85,8 @@ class AcceptanceTest: XCTestCase {
 					withContext: TranspilationContext(
 						toolchainName: nil,
 						indentationString: "\t",
-						defaultsToFinal: defaultsToFinal),
-					usingSwiftSyntax: usesSwiftSyntax)
+						defaultsToFinal: defaultsToFinal,
+						isUsingSwiftSyntax: usesSwiftSyntax))
 				let kotlinCode = kotlinResults[0]
 				let kotlinFilePath = "\(TestUtilities.kotlinBuildFolder)/\(testName).kt"
 				try Utilities.createFile(atPath: kotlinFilePath, containing: kotlinCode)

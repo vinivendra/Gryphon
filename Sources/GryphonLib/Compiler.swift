@@ -195,13 +195,12 @@ public class Compiler {
 	public static func transpileGryphonRawASTs(
 		fromInputFiles inputFiles: List<String>,
 		fromASTDumpFiles astDumpFiles: List<String>,
-		withContext context: TranspilationContext,
-		usingSwiftSyntax: Bool)
+		withContext context: TranspilationContext)
 		throws -> List<GryphonAST>
 	{
 		let translateAsMainFile = (inputFiles.count == 1)
 
-		if usingSwiftSyntax {
+		if context.isUsingSwiftSyntax {
 			return try inputFiles.map {
 				try generateGryphonRawASTUsingSwiftSyntax(
 					forFile: $0,
@@ -251,15 +250,13 @@ public class Compiler {
 	public static func transpileGryphonASTs(
 		fromInputFiles inputFiles: List<String>,
 		fromASTDumpFiles astDumpFiles: List<String>,
-		withContext context: TranspilationContext,
-		usingSwiftSyntax: Bool)
+		withContext context: TranspilationContext)
 		throws -> List<GryphonAST>
 	{
 		let rawASTs = try transpileGryphonRawASTs(
 			fromInputFiles: inputFiles,
 			fromASTDumpFiles: astDumpFiles,
-			withContext: context,
-			usingSwiftSyntax: usingSwiftSyntax)
+			withContext: context)
 		return try rawASTs.map {
 			try generateGryphonAST(fromGryphonRawAST: $0, withContext: context)
 		}
@@ -291,15 +288,13 @@ public class Compiler {
 	public static func transpileKotlinCode(
 		fromInputFiles inputFiles: List<String>,
 		fromASTDumpFiles astDumpFiles: List<String>,
-		withContext context: TranspilationContext,
-		usingSwiftSyntax: Bool)
+		withContext context: TranspilationContext)
 		throws -> List<String>
 	{
 		let asts = try transpileGryphonASTs(
 			fromInputFiles: inputFiles,
 			fromASTDumpFiles: astDumpFiles,
-			withContext: context,
-			usingSwiftSyntax: usingSwiftSyntax)
+			withContext: context)
 		return try asts.map {
 			try generateKotlinCode(fromGryphonAST: $0, withContext: context)
 		}

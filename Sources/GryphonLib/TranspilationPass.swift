@@ -329,7 +329,8 @@ public class TranspilationPass {
 					label: $0.label,
 					apiLabel: $0.apiLabel,
 					typeName: $0.typeName,
-					value: $0.value.map { replaceExpression($0) })
+					value: $0.value.map { replaceExpression($0) },
+					isVariadic: $0.isVariadic)
 		}
 
 		initializerDeclaration.parameters = replacedParameters.toMutableList()
@@ -360,7 +361,8 @@ public class TranspilationPass {
 					label: $0.label,
 					apiLabel: $0.apiLabel,
 					typeName: $0.typeName,
-					value: $0.value.map { replaceExpression($0) })
+					value: $0.value.map { replaceExpression($0) },
+					isVariadic: $0.isVariadic)
 			}
 
 		functionDeclaration.parameters = replacedParameters.toMutableList()
@@ -1159,6 +1161,11 @@ public class ReturnTypesForInitsTranspilationPass: TranspilationPass {
 	{
 		if let enclosingType = typeDeclarationStack.last {
 			initializerDeclaration.returnType = enclosingType
+			initializerDeclaration.functionType = "(" +
+				initializerDeclaration.parameters
+					.map { $0.typeName }
+					.joined(separator: ", ") +
+				") -> " + enclosingType
 		}
 
 		return [initializerDeclaration]
@@ -3558,12 +3565,11 @@ public class RecordFunctionsTranspilationPass: TranspilationPass {
 		let swiftAPIName = functionDeclaration.prefix + "(" +
 			functionDeclaration.parameters.map { ($0.apiLabel ?? "_") + ":" }.joined() + ")"
 
-		self.context.addFunctionTranslation(
-			TranspilationContext.FunctionTranslation(
-				swiftAPIName: swiftAPIName,
-				typeName: functionDeclaration.functionType,
-				prefix: functionDeclaration.prefix,
-				parameters: functionDeclaration.parameters.map { $0.label }.toMutableList()))
+		self.context.addFunctionTranslation(TranspilationContext.FunctionTranslation(
+			swiftAPIName: swiftAPIName,
+			typeName: functionDeclaration.functionType,
+			prefix: functionDeclaration.prefix,
+			parameters: functionDeclaration.parameters))
 
 		//
 		if functionDeclaration.isPure {
@@ -3594,7 +3600,7 @@ public class RecordInitializersTranspilationPass: TranspilationPass {
 				swiftAPIName: swiftAPIName,
 				typeName: initializerDeclaration.functionType,
 				prefix: initializedType,
-				parameters: initializerDeclaration.parameters.map { $0.label }.toMutableList()))
+				parameters: initializerDeclaration.parameters))
 
 		return super.processInitializerDeclaration(initializerDeclaration)
 	}
@@ -4794,6 +4800,9 @@ public extension TranspilationPass {
 		// Remove declarations that shouldn't even be considered in the passes
 		ast = RemoveImplicitDeclarationsTranspilationPass(ast: ast, context: context).run()
 
+		// We need to specify the initializers' return types before recording them
+		ast = ReturnTypesForInitsTranspilationPass(ast: ast, context: context).run()
+
 		// Record information on enum and function translations
 		ast = RecordTemplatesTranspilationPass(ast: ast, context: context).run()
 		ast = RecordProtocolsTranspilationPass(ast: ast, context: context).run()
@@ -4831,8 +4840,6 @@ public extension TranspilationPass {
 		ast = EquatableOperatorsTranspilationPass(ast: ast, context: context).run()
 		ast = RawValuesTranspilationPass(ast: ast, context: context).run()
 		ast = DescriptionAsToStringTranspilationPass(ast: ast, context: context).run()
-		// Optional inits needs to know the return types for inits
-		ast = ReturnTypesForInitsTranspilationPass(ast: ast, context: context).run()
 		ast = OptionalInitsTranspilationPass(ast: ast, context: context).run()
 		ast = StaticMembersTranspilationPass(ast: ast, context: context).run()
 		ast = FixProtocolContentsTranspilationPass(ast: ast, context: context).run()

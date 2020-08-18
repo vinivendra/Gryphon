@@ -805,7 +805,10 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let parameters: MutableList<FunctionParameter> =
 			try convertParameters(functionLikeDeclaration.parameterList)
 
-		let inputType = "(" + parameters.map { $0.typeName }.joined(separator: ", ") + ")"
+		let inputType = "(" + parameters
+				.map { $0.typeName + ($0.isVariadic ? "..." : "") }
+				.joined(separator: ", ") +
+			")"
 
 		let returnType: String
 		if let returnTypeSyntax = functionLikeDeclaration.returnType {
@@ -937,7 +940,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					label: label,
 					apiLabel: apiLabel,
 					typeName: typeName,
-					value: defaultValue))
+					value: defaultValue,
+					isVariadic: parameter.ellipsis != nil))
 			}
 			else {
 				try result.append(FunctionParameter(
@@ -2261,6 +2265,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	// MARK: - Helper methods
 
 	func convertType(_ typeSyntax: TypeSyntax) throws -> String {
+		if let attributedType = typeSyntax.as(AttributedTypeSyntax.self) {
+			return try convertType(attributedType.baseType)
+		}
 		if let optionalType = typeSyntax.as(OptionalTypeSyntax.self) {
 			return try convertType(optionalType.wrappedType) + "?"
 		}
@@ -2601,3 +2608,1027 @@ let operatorInformation: [OperatorInformation] = [
 	("*", .left), ("/", .left), ("%", .left), ("&*", .left), ("&", .left),
 	// Bitwise shift precedence
 	("<<", .none), (">>", .none),]
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Whether the given parameter requires an argument.
+func parameterRequiresArgument(
+	params: List<FunctionParameter>,
+	paramInfo: ParameterListInfo,
+	paramIdx: Int) -> Bool
+{
+	return !paramInfo.defaultArguments[paramIdx]
+		&& !params[paramIdx].isVariadic
+}
+
+/// Determine whether any parameter from the given index up until the end
+/// requires an argument to be provided.
+///
+/// \param params The parameters themselves.
+/// \param paramInfo Declaration-provided information about the parameters.
+/// \param firstParamIdx The first parameter to examine to determine whether any
+/// parameter in the range \c [paramIdx, params.size()) requires an argument.
+/// \param beforeLabel If non-empty, stop examining parameters when we reach
+/// a parameter with this label.
+func anyParameterRequiresArgument(
+	params: List<FunctionParameter>,
+	paramInfo: ParameterListInfo,
+	firstParamIdx: Int,
+	beforeLabel: String?) -> Bool
+{
+	for paramIdx in firstParamIdx..<params.count {
+		// If have been asked to stop when we reach a parameter with a particular
+		// label, and we see a parameter with that label, we're done: no parameter
+		// requires an argument.
+		if let beforeLabel = beforeLabel, beforeLabel == params[paramIdx].apiLabel {
+			break
+		}
+
+		// If this parameter requires an argument, tell the caller.
+		if parameterRequiresArgument(params: params, paramInfo: paramInfo, paramIdx: paramIdx) {
+			return true
+		}
+	}
+
+	// No parameters required arguments.
+	return false
+}
+
+enum TrailingClosureMatching {
+	case forward
+	case backward
+}
+
+struct ParameterListInfo {
+	let defaultArguments: List<Bool>
+	let acceptsUnlabeledTrailingClosures: List<Bool>
+}
+
+
+//static bool matchCallArgumentsImpl(
+//								   SmallVectorImpl<AnyFunctionType::Param> &args,
+//								   ArrayRef<AnyFunctionType::Param> params,
+//								   const ParameterListInfo &paramInfo,
+//								   Optional<unsigned> unlabeledTrailingClosureArgIndex,
+//								   bool allowFixes,
+//								   TrailingClosureMatching trailingClosureMatching,
+//								   MatchCallArgumentListener &listener,
+//								   SmallVectorImpl<ParamBinding> &parameterBindings) {
+
+/// Seems to return true if there needs to be a fix, and false if everything went OK.
+///
+/// \param args The arguments of the call
+/// \param params The parameters of the function definition
+/// \param paramInfo Information on the (definition's?) default arguments and whether they accept
+/// 	unlabeled trailing closures.
+/// \param trailingClosureMatching If we're trying to match the trailing closures forwards or
+/// 	backwards
+func matchCallArguments(
+	args: List<LabeledExpression>,
+	params: List<FunctionParameter>,
+	paramInfo: ParameterListInfo,
+	unlabeledTrailingClosureArgIndex: Int?,
+	allowFixes: Bool,
+	trailingClosureMatching: TrailingClosureMatching,
+	parameterBindings: MutableList<MutableList<Int>>
+	) -> Bool
+{
+
+	//	assert(params.size() == paramInfo.size() && "Default map does not match");
+	//	assert(!unlabeledTrailingClosureArgIndex ||
+	//		   *unlabeledTrailingClosureArgIndex < args.size());
+
+	// Keep track of the parameter we're matching and what argument indices
+	// got bound to each parameter.
+
+	//	unsigned numParams = params.size();
+	//	parameterBindings.clear();
+	//	parameterBindings.resize(numParams);
+	let numParams = params.count
+	parameterBindings.removeAll()
+	for _ in 0..<numParams {
+		parameterBindings.append([])
+	}
+
+	// Keep track of which arguments we have claimed from the argument tuple.
+	//	unsigned numArgs = args.size();
+	//	SmallVector<bool, 4> claimedArgs(numArgs, false);
+	//	SmallVector<Identifier, 4> actualArgNames;
+	//	unsigned numClaimedArgs = 0;
+
+	let numArgs = args.count
+	let claimedArgs = MutableList<Bool>(repeating: false, count: numArgs)
+	let actualArgNames: MutableList<String?> = []
+	var numClaimedArgs = 0
+
+	// Indicates whether any of the arguments are potentially out-of-order,
+	// requiring further checking at the end.
+	//	bool potentiallyOutOfOrder = false;
+
+	var potentiallyOutOfOrder = false
+
+	// Local function that claims the argument at \c argNumber, returning the
+	// index of the claimed argument. This is primarily a helper for
+	// \c claimNextNamed.
+
+	//	auto claim = [&](Identifier expectedName, unsigned argNumber,
+	//					 bool ignoreNameClash = false)  -> unsigned {
+	let claim =
+	{ (expectedName: String?, argNumber: Int, ignoreNameClash: Bool /* = false */) -> Int in
+		// Make sure we can claim this argument.
+		//		assert(argNumber != numArgs && "Must have a valid index to claim");
+		//		assert(!claimedArgs[argNumber] && "Argument already claimed");
+		assert(argNumber != numArgs, "Must have a valid index to claim")
+		assert(!claimedArgs[argNumber], "Argument already claimed")
+
+		//		if (!actualArgNames.empty()) {
+		if !actualArgNames.isEmpty {
+			// We're recording argument names; record this one.
+			actualArgNames[argNumber] = expectedName
+		}
+		//		} else if (args[argNumber].getLabel() != expectedName && !ignoreNameClash) {
+		else if args[argNumber].label != expectedName, !ignoreNameClash {
+			// We have an argument name mismatch. Start recording argument names.
+			// actualArgNames.resize(numArgs);
+
+			// Figure out previous argument names from the parameter bindings.
+			// for (auto i : indices(params)) {
+			for i in params.indices {
+				// const auto &param = params[i];
+				// bool firstArg = true;
+				let param = params[i]
+				var firstArg = true
+
+				// for (auto argIdx : parameterBindings[i]) {
+				for argIdx in parameterBindings[i] {
+					// actualArgNames[argIdx] = firstArg ? param.getLabel() : Identifier();
+					actualArgNames[argIdx] = firstArg ? param.apiLabel : ""
+					firstArg = false
+				}
+			}
+
+			// Record this argument name.
+			// actualArgNames[argNumber] = expectedName;
+			actualArgNames[argNumber] = expectedName
+		}
+
+		// claimedArgs[argNumber] = true;
+		// ++numClaimedArgs;
+		// return argNumber;
+		claimedArgs[argNumber] = true
+		numClaimedArgs += 1
+		return argNumber;
+	}
+
+	// Local function that skips over any claimed arguments.
+	//	auto skipClaimedArgs = [&](unsigned &nextArgIdx) {
+	let skipClaimedArgs = { (nextArgIdx: inout Int) -> Int in
+		//		while (nextArgIdx != numArgs && claimedArgs[nextArgIdx])
+		while nextArgIdx != numArgs, claimedArgs[nextArgIdx] {
+			//			++nextArgIdx;
+			nextArgIdx += 1
+		}
+		//		return nextArgIdx;
+		return nextArgIdx
+	}
+
+	// Local function that retrieves the next unclaimed argument with the given
+	// name (which may be empty). This routine claims the argument.
+
+	//	auto claimNextNamed = [&](unsigned &nextArgIdx, Identifier paramLabel,
+	//							  bool ignoreNameMismatch,
+	//							  bool forVariadic = false) -> Optional<unsigned> {
+	let claimNextNamed =
+	{ (nextArgIdx: inout Int,
+	   paramLabel: String?,
+	   ignoreNameMismatch: Bool,
+	   forVariadic: Bool /* = false */) -> Int? in
+		// Skip over any claimed arguments.
+		// skipClaimedArgs(nextArgIdx);
+		_ = skipClaimedArgs(&nextArgIdx)
+
+		// If we've claimed all of the arguments, there's nothing more to do.
+		//		if (numClaimedArgs == numArgs)
+		//			return None;
+		if numClaimedArgs == numArgs {
+			return nil
+		}
+
+		// Go hunting for an unclaimed argument whose name does match.
+		//		Optional<unsigned> claimedWithSameName;
+		var claimedWithSameName: Int?
+
+		//		for (unsigned i = nextArgIdx; i != numArgs; ++i) {
+		var i: Int = nextArgIdx
+		while i != numArgs {
+			//			auto argLabel = args[i].getLabel();
+			let argLabel = args[i].label
+
+			//			if (argLabel != paramLabel) {
+			if argLabel != paramLabel {
+				// If this is an attempt to claim additional unlabeled arguments
+				// for variadic parameter, we have to stop at first labeled argument.
+				//				if (forVariadic)
+				//					return None;
+				if forVariadic {
+					return nil
+				}
+
+				// Otherwise we can continue trying to find argument which
+				// matches parameter with or without label.
+				i += 1
+				continue
+			}
+
+			// Skip claimed arguments.
+			//			if (claimedArgs[i]) {
+			//				assert(!forVariadic && "Cannot be for a variadic claim");
+			//				// Note that we have already claimed an argument with the same name.
+			//				if (!claimedWithSameName)
+			//					claimedWithSameName = i;
+			//				continue;
+			//			}
+
+			// Skip claimed arguments.
+			if claimedArgs[i] {
+				assert(!forVariadic, "Cannot be for a variadic claim")
+				// Note that we have already claimed an argument with the same name.
+				if claimedWithSameName == nil {
+					claimedWithSameName = i
+				}
+
+				i += 1
+				continue
+			}
+
+			// We found a match.  If the match wasn't the next one, we have
+			// potentially out of order arguments.
+			//			if (i != nextArgIdx) {
+			//				assert(!forVariadic && "Cannot be for a variadic claim");
+			//				// Avoid claiming un-labeled defaulted parameters
+			//				// by out-of-order un-labeled arguments or parts
+			//				// of variadic argument sequence, because that might
+			//				// be incorrect:
+			//				// ```swift
+			//				// func foo(_ a: Int, _ b: Int = 0, c: Int = 0, _ d: Int) {}
+			//				// foo(1, c: 2, 3) // -> `3` will be claimed as '_ b:'.
+			//				// ```
+			//				if (argLabel.empty())
+			//					continue;
+			//
+			//				potentiallyOutOfOrder = true;
+			//			}
+
+
+			if i != nextArgIdx {
+				assert(!forVariadic, "Cannot be for a variadic claim")
+				// Avoid claiming un-labeled defaulted parameters
+				// by out-of-order un-labeled arguments or parts
+				// of variadic argument sequence, because that might
+				// be incorrect:
+				// ```swift
+				// func foo(_ a: Int, _ b: Int = 0, c: Int = 0, _ d: Int) {}
+				// foo(1, c: 2, 3) // -> `3` will be claimed as '_ b:'.
+				// ```
+				if argLabel == nil || argLabel!.isEmpty {
+					i += 1
+					continue
+				}
+
+				potentiallyOutOfOrder = true
+			}
+
+			// Claim it.
+			// return claim(paramLabel, i);
+			return claim(paramLabel, i, false)
+		}
+
+		// // If we're not supposed to attempt any fixes, we're done.
+		// if (!allowFixes)
+		// return None;
+
+		if !allowFixes {
+			return nil
+		}
+
+		// Several things could have gone wrong here, and we'll check for each
+		// of them at some point:
+		//   - The keyword argument might be redundant, in which case we can point
+		//     out the issue.
+		//   - The argument might be unnamed, in which case we try to fix the
+		//     problem by adding the name.
+		//   - The argument might have extraneous label, in which case we try to
+		//     fix the problem by removing such label.
+		//   - The keyword argument might be a typo for an actual argument name, in
+		//     which case we should find the closest match to correct to.
+
+		//		// Missing or extraneous label.
+		//		if (nextArgIdx != numArgs && ignoreNameMismatch) {
+		//			auto argLabel = args[nextArgIdx].getLabel();
+		//			// Claim this argument if we are asked to ignore labeling failure,
+		//			// only if argument doesn't have a label when parameter expected
+		//			// it to, or vice versa.
+		//			if (paramLabel.empty() || argLabel.empty())
+		//				return claim(paramLabel, nextArgIdx);
+		//		}
+
+		// Missing or extraneous label.
+		if nextArgIdx != numArgs && ignoreNameMismatch {
+			let argLabel = args[nextArgIdx].label
+			// Claim this argument if we are asked to ignore labeling failure,
+			// only if argument doesn't have a label when parameter expected
+			// it to, or vice versa.
+			if paramLabel == nil || paramLabel!.isEmpty || argLabel == nil || argLabel!.isEmpty {
+				return claim(paramLabel, nextArgIdx, false)
+			}
+		}
+
+		//		// Redundant keyword arguments.
+		//		if (claimedWithSameName) {
+		//			// FIXME: We can provide better diagnostics here.
+		//			return None;
+		//		}
+
+		// Redundant keyword arguments.
+		if claimedWithSameName != nil {
+			// FIXME: We can provide better diagnostics here.
+			return nil
+		}
+
+		//		// Typo correction is handled in a later pass.
+		//		return None;
+
+		// Typo correction is handled in a later pass.
+		return nil
+	}
+
+	// Local function that attempts to bind the given parameter to arguments in
+	// the list.
+	//	bool haveUnfulfilledParams = false;
+	//	auto bindNextParameter = [&](unsigned paramIdx, unsigned &nextArgIdx,
+	//								 bool ignoreNameMismatch) {
+	var haveUnfulfilledParams = false
+	let bindNextParameter =
+	{ (paramIdx: Int, nextArgIdx: inout Int, ignoreNameMismatch: Bool) in
+		//		const auto &param = params[paramIdx];
+		//		Identifier paramLabel = param.getLabel();
+		let param = params[paramIdx]
+		var paramLabel = param.apiLabel
+
+		// If we have the trailing closure argument and are performing a forward
+		// match, look for the matching parameter.
+		if (trailingClosureMatching == .forward &&
+			unlabeledTrailingClosureArgIndex != nil &&
+			skipClaimedArgs(&nextArgIdx) == unlabeledTrailingClosureArgIndex)
+		{
+			// If the parameter we are looking at does not support the (unlabeled)
+			// trailing closure argument, this parameter is unfulfilled.
+			if (!paramInfo.acceptsUnlabeledTrailingClosures[paramIdx] &&
+				!ignoreNameMismatch)
+			{
+				haveUnfulfilledParams = true;
+				return;
+			}
+
+			// If this parameter does not require an argument, consider applying a
+			// "fuzzy" match rule that skips this parameter if doing so is the only
+			// way to successfully match arguments to parameters.
+
+			//			if (!parameterRequiresArgument(params, paramInfo, paramIdx) &&
+			//				param.getPlainType()->getASTContext().LangOpts
+			//				.EnableFuzzyForwardScanTrailingClosureMatching &&
+			//				anyParameterRequiresArgument(
+			//											 params, paramInfo, paramIdx + 1,
+			//											 nextArgIdx + 1 < numArgs
+			//											 ? Optional<Identifier>(args[nextArgIdx + 1].getLabel())
+			//											 : Optional<Identifier>(None))) {
+			//				haveUnfulfilledParams = true;
+			//				return;
+			//			}
+			if !parameterRequiresArgument(params: params, paramInfo: paramInfo, paramIdx: paramIdx),
+				anyParameterRequiresArgument(
+					params: params,
+					paramInfo: paramInfo,
+					firstParamIdx: paramIdx + 1,
+					beforeLabel: nextArgIdx + 1 < numArgs
+						? args[nextArgIdx + 1].label
+						: nil)
+			{
+				haveUnfulfilledParams = true
+				return
+			}
+
+			// The argument is unlabeled, so mark the parameter as unlabeled as
+			// well.
+			//			paramLabel = Identifier();
+			paramLabel = nil
+		}
+
+
+		// Handle variadic parameters.
+		//		if (param.isVariadic()) {
+		if param.isVariadic {
+
+			// Claim the next argument with the name of this parameter.
+			//			auto claimed =
+			//			claimNextNamed(nextArgIdx, paramLabel, ignoreNameMismatch);
+			let maybeClaimed = claimNextNamed(&nextArgIdx, paramLabel, ignoreNameMismatch, false)
+
+			// If there was no such argument, leave the parameter unfulfilled.
+			//			if (!claimed) {
+			//				haveUnfulfilledParams = true;
+			//				return;
+			//			}
+
+			guard let claimed = maybeClaimed else {
+				haveUnfulfilledParams = true
+				return
+			}
+
+			// Record the first argument for the variadic.
+			//			parameterBindings[paramIdx].push_back(*claimed);
+			parameterBindings[paramIdx].append(claimed)
+
+			// If the argument is itself variadic, we're forwarding varargs
+			// with a VarargExpansionExpr; don't collect any more arguments.
+			//			if (args[*claimed].isVariadic()) {
+			//				return;
+			//			}
+
+//			if (args[claimed].isVariadic) {
+//				return
+//			}
+
+			var currentNextArgIdx = nextArgIdx
+
+			//				nextArgIdx = *claimed;
+			nextArgIdx = claimed
+
+			// Claim any additional unnamed arguments.
+
+			// while (true) {
+			// 	// If the next argument is the unlabeled trailing closure and the
+			// 	// variadic parameter does not accept the unlabeled trailing closure
+			// 	// argument, we're done.
+			// 	if (trailingClosureMatching == TrailingClosureMatching::Forward &&
+			// 		unlabeledTrailingClosureArgIndex &&
+			// 		skipClaimedArgs(nextArgIdx)
+			// 		== *unlabeledTrailingClosureArgIndex &&
+			// 		!paramInfo.acceptsUnlabeledTrailingClosureArgument(paramIdx))
+			// 	break;
+			//
+			// 	if ((claimed = claimNextNamed(nextArgIdx, Identifier(), false, true)))
+			// 	parameterBindings[paramIdx].push_back(*claimed);
+			// 	else
+			// 	break;
+			// }
+
+			while true {
+				// If the next argument is the unlabeled trailing closure and the
+				// variadic parameter does not accept the unlabeled trailing closure
+				// argument, we're done.
+				if trailingClosureMatching == .forward,
+					let unlabeledTrailingClosureArgIndex = unlabeledTrailingClosureArgIndex,
+					skipClaimedArgs(&nextArgIdx) == unlabeledTrailingClosureArgIndex,
+					!paramInfo.acceptsUnlabeledTrailingClosures[paramIdx]
+				{
+					break
+				}
+
+				if let claimed = claimNextNamed(&nextArgIdx, nil, false, true) {
+					parameterBindings[paramIdx].append(claimed)
+				}
+				else {
+					break
+				}
+			}
+
+			nextArgIdx = currentNextArgIdx
+			return
+		}
+
+		// Try to claim an argument for this parameter.
+		//		if (auto claimed =
+		//			claimNextNamed(nextArgIdx, paramLabel, ignoreNameMismatch)) {
+		//			parameterBindings[paramIdx].push_back(*claimed);
+		//			return;
+		//		}
+
+		if let claimed = claimNextNamed(&nextArgIdx, paramLabel, ignoreNameMismatch, false) {
+			parameterBindings[paramIdx].append(claimed)
+			return
+		}
+
+		// There was no argument to claim. Leave the argument unfulfilled.
+		haveUnfulfilledParams = true
+	}
+
+	// If we have an unlabeled trailing closure and are matching backward, match
+	// the trailing closure argument near the end.
+	if let unlabeledTrailingClosureArgIndex = unlabeledTrailingClosureArgIndex,
+		trailingClosureMatching == .backward
+	{
+		//		assert(!claimedArgs[*unlabeledTrailingClosureArgIndex]);
+		assert(!claimedArgs[unlabeledTrailingClosureArgIndex])
+
+		// One past the next parameter index to look at.
+		let prevParamIdx = numParams
+
+		// Scan backwards from the end to match the unlabeled trailing closure.
+		// Optional<unsigned> unlabeledParamIdx;
+		var unlabeledParamIdx: Int? = nil
+
+		if prevParamIdx > 0 {
+			var paramIdx = prevParamIdx - 1
+
+			// bool lastAcceptsTrailingClosure =
+			// 	backwardScanAcceptsTrailingClosure(params[paramIdx]);
+			var lastAcceptsTrailingClosure = false
+
+			// If the last parameter is defaulted, this might be
+			// an attempt to use a trailing closure with previous
+			// parameter that accepts a function type e.g.
+			//
+			// func foo(_: () -> Int, _ x: Int = 0) {}
+			// foo { 42 }
+			//			if (!lastAcceptsTrailingClosure && paramIdx > 0 &&
+			//				paramInfo.hasDefaultArgument(paramIdx)) {
+			//				auto paramType = params[paramIdx - 1].getPlainType();
+			//				// If the parameter before defaulted last accepts.
+			//				if (paramType->is<AnyFunctionType>()) {
+			//					lastAcceptsTrailingClosure = true;
+			//					paramIdx -= 1;
+			//				}
+			//			}
+			if paramIdx > 0 &&
+				paramInfo.defaultArguments[paramIdx]
+			{
+				let paramType = params[paramIdx - 1].typeName
+				// If the parameter before defaulted last accepts.
+				if paramType.contains("->") {
+					lastAcceptsTrailingClosure = true
+					paramIdx -= 1
+				}
+			}
+
+			//			if (lastAcceptsTrailingClosure)
+			//				unlabeledParamIdx = paramIdx;
+
+			if (lastAcceptsTrailingClosure) {
+				unlabeledParamIdx = paramIdx
+			}
+		}
+
+		// Trailing closure argument couldn't be matched to anything. Fail fast.
+		guard let nonNilUnlabeledParamIdx = unlabeledParamIdx else {
+			return true
+		}
+
+		// Claim the parameter/argument pair.
+		//		claim(
+		//			  params[*unlabeledParamIdx].getLabel(),
+		//			  *unlabeledTrailingClosureArgIndex,
+		//			  /*ignoreNameClash=*/true);
+		//		parameterBindings[*unlabeledParamIdx].push_back(
+		//														*unlabeledTrailingClosureArgIndex);
+
+		_ = claim(params[nonNilUnlabeledParamIdx].apiLabel,
+			unlabeledTrailingClosureArgIndex,
+			/*ignoreNameClash=*/true)
+		parameterBindings[nonNilUnlabeledParamIdx].append(
+			unlabeledTrailingClosureArgIndex)
+	}
+
+	//	{
+	//		unsigned nextArgIdx = 0;
+	//		// Mark through the parameters, binding them to their arguments.
+	//		for (auto paramIdx : indices(params)) {
+	//			if (parameterBindings[paramIdx].empty())
+	//				bindNextParameter(paramIdx, nextArgIdx, false);
+	//		}
+	//	}
+
+	var nextArgIdx = 0
+	// Mark through the parameters, binding them to their arguments.
+	for paramIdx in params.indices {
+		if (parameterBindings[paramIdx].isEmpty) {
+			bindNextParameter(paramIdx, &nextArgIdx, false)
+		}
+	}
+
+	// If we have any unclaimed arguments, complain about those.
+	//	if (numClaimedArgs != numArgs) {
+
+	if numClaimedArgs != numArgs {
+		// Find all of the named, unclaimed arguments.
+		//		llvm::SmallVector<unsigned, 4> unclaimedNamedArgs;
+		//		for (auto argIdx : indices(args)) {
+		//			if (claimedArgs[argIdx]) continue;
+		//			if (!args[argIdx].getLabel().empty())
+		//				unclaimedNamedArgs.push_back(argIdx);
+		//		}
+
+		// Find all of the named, unclaimed arguments.
+		let unclaimedNamedArgs: MutableList<Int> = []
+		for argIdx in args.indices {
+			if claimedArgs[argIdx] {
+				continue
+			}
+			if let label = args[argIdx].label, !label.isEmpty {
+				unclaimedNamedArgs.append(argIdx)
+			}
+		}
+
+		//		if (!unclaimedNamedArgs.empty()) {
+		if !unclaimedNamedArgs.isEmpty {
+			// Find all of the named, unfulfilled parameters.
+			// llvm::SmallVector<unsigned, 4> unfulfilledNamedParams;
+			// bool hasUnfulfilledUnnamedParams = false;
+			// for (auto paramIdx : indices(params)) {
+			// 	if (parameterBindings[paramIdx].empty()) {
+			// 		if (params[paramIdx].getLabel().empty())
+			// 		hasUnfulfilledUnnamedParams = true;
+			// 		else
+			// 		unfulfilledNamedParams.push_back(paramIdx);
+			// 	}
+			// }
+
+			let unfulfilledNamedParams: MutableList<Int> = []
+			var hasUnfulfilledUnnamedParams = false
+			for paramIdx in params.indices {
+				if parameterBindings[paramIdx].isEmpty {
+					if let label = params[paramIdx].apiLabel, label.isEmpty {
+						hasUnfulfilledUnnamedParams = true
+					}
+					else {
+						unfulfilledNamedParams.append(paramIdx)
+					}
+				}
+			}
+
+			// Find all of the unfulfilled parameters, and match them up
+			// semi-positionally.
+			// if (numClaimedArgs != numArgs) {
+			// 	// Restart at the first argument/parameter.
+			// 	unsigned nextArgIdx = 0;
+			// 	haveUnfulfilledParams = false;
+			// 	for (auto paramIdx : indices(params)) {
+			// 		// Skip fulfilled parameters.
+			// 		if (!parameterBindings[paramIdx].empty())
+			// 		continue;
+			//
+			// 		bindNextParameter(paramIdx, nextArgIdx, true);
+			// 	}
+			// }
+
+			if numClaimedArgs != numArgs {
+				// Restart at the first argument/parameter.
+				var nextArgIdx = 0
+				haveUnfulfilledParams = false
+				for paramIdx in params.indices {
+					// Skip fulfilled parameters.
+					if parameterBindings[paramIdx].isEmpty {
+						continue
+					}
+
+					bindNextParameter(paramIdx, &nextArgIdx, true)
+				}
+			}
+
+
+			//// If there are as many arguments as parameters but we still
+			//// haven't claimed all of the arguments, it could mean that
+			//// labels don't line up, if so let's try to claim arguments
+			//// with incorrect labels, and let OoO/re-labeling logic diagnose that.
+			//if (numArgs == numParams && numClaimedArgs != numArgs) {
+			//	for (auto i : indices(args)) {
+			//		if (claimedArgs[i] || !parameterBindings[i].empty())
+			//		continue;
+			//
+			//		// If parameter has a default value, we don't really
+			//		// now if label doesn't match because it's incorrect
+			//		// or argument belongs to some other parameter, so
+			//		// we just leave this parameter unfulfilled.
+			//		if (paramInfo.hasDefaultArgument(i))
+			//		continue;
+			//
+			//		// Looks like there was no parameter claimed at the same
+			//		// position, it could only mean that label is completely
+			//		// different, because typo correction has been attempted already.
+			//		parameterBindings[i].push_back(claim(params[i].getLabel(), i));
+			//	}
+			//}
+
+			if numArgs == numParams, numClaimedArgs != numArgs {
+				for i in args.indices {
+					if claimedArgs[i] || !parameterBindings[i].isEmpty {
+						continue
+					}
+
+					// If parameter has a default value, we don't really
+					// now if label doesn't match because it's incorrect
+					// or argument belongs to some other parameter, so
+					// we just leave this parameter unfulfilled.
+					if paramInfo.defaultArguments[i] {
+						continue
+					}
+
+					// Looks like there was no parameter claimed at the same
+					// position, it could only mean that label is completely
+					// different, because typo correction has been attempted already.
+					parameterBindings[i].append(claim(params[i].apiLabel, i, false))
+				}
+			}
+
+			// If we still haven't claimed all of the arguments,
+			// fail if there is no recovery.
+			//if (numClaimedArgs != numArgs) {
+			//	for (auto index : indices(claimedArgs)) {
+			//		if (claimedArgs[index])
+			//		continue;
+			//
+			//		if (listener.extraArgument(index)) /* Should attempt fixes*/
+			//		return true;
+			//	}
+			//}
+
+			// FIXME: If we had the actual parameters and knew the body names, those
+			// matches would be best.
+			// potentiallyOutOfOrder = true;
+			potentiallyOutOfOrder = true
+		}
+
+		// If we have any unfulfilled parameters, check them now.
+		//	if (haveUnfulfilledParams) {
+		//		for (auto paramIdx : indices(params)) {
+		//			// If we have a binding for this parameter, we're done.
+		//			if (!parameterBindings[paramIdx].empty())
+		//				continue;
+		//
+		//			const auto &param = params[paramIdx];
+		//
+		//			// Variadic parameters can be unfulfilled.
+		//			if (param.isVariadic())
+		//				continue;
+		//
+		//			// Parameters with defaults can be unfulfilled.
+		//			if (paramInfo.hasDefaultArgument(paramIdx))
+		//				continue;
+		//
+		//			if (auto newArgIdx = listener.missingArgument(paramIdx)) {
+		//				parameterBindings[paramIdx].push_back(*newArgIdx);
+		//				continue;
+		//			}
+		//
+		//			return true;
+		//		}
+		//	}
+
+		if haveUnfulfilledParams {
+			for paramIdx in params.indices {
+				// If we have a binding for this parameter, we're done.
+				if !parameterBindings[paramIdx].isEmpty {
+					continue
+				}
+
+				let param = params[paramIdx]
+
+				// Variadic parameters can be unfulfilled.
+				if param.isVariadic {
+					continue
+				}
+
+				// Parameters with defaults can be unfulfilled.
+				if paramInfo.defaultArguments[paramIdx] {
+					continue
+				}
+
+//				if let newArgIdx = listener.missingArgument(paramIdx) {
+//					parameterBindings[paramIdx].push_back(*newArgIdx);
+//					continue;
+//				}
+
+				return true
+			}
+		}
+
+		//	// If any arguments were provided out-of-order, check whether we have
+		//	// violated any of the reordering rules.
+		//	if (potentiallyOutOfOrder) {
+
+		if potentiallyOutOfOrder {
+			// If we've seen label failures and now there is an out-of-order
+			// parameter (or even worse - OoO parameter with label re-naming),
+			// we most likely have no idea what would be the best
+			// diagnostic for this situation, so let's just try to re-label.
+
+			//auto isOutOfOrderArgument = [&](unsigned toParamIdx, unsigned fromArgIdx,
+			//								unsigned toArgIdx) {
+			//	if (fromArgIdx <= toArgIdx) {
+			//		return false;
+			//	}
+			//
+			//	auto newLabel = args[fromArgIdx].getLabel();
+			//	auto oldLabel = args[toArgIdx].getLabel();
+			//
+			//	if (newLabel != params[toParamIdx].getLabel()) {
+			//		return false;
+			//	}
+
+			let isOutOfOrderArgument =
+			{ (toParamIdx: Int, fromArgIdx: Int, toArgIdx: Int) -> Bool in
+				if fromArgIdx <= toArgIdx {
+					return false
+				}
+
+				let newLabel = args[fromArgIdx].label
+				let oldLabel = args[toArgIdx].label
+
+				if newLabel != params[toParamIdx].apiLabel {
+					return false
+				}
+
+				//auto paramIdx = toParamIdx + 1;
+				//for (; paramIdx < params.size(); ++paramIdx) {
+				//	// Looks like new position (excluding defaulted parameters),
+				//	// has a valid label.
+				//	if (oldLabel == params[paramIdx].getLabel())
+				//		break;
+				//
+				//	// If we are moving the the position with a different label
+				//	// and there is no default value for it, can't diagnose the
+				//	// problem as a simple re-ordering.
+				//	if (!paramInfo.hasDefaultArgument(paramIdx))
+				//		return false;
+				//}
+
+				var paramIdx = toParamIdx + 1
+				while paramIdx < params.count {
+					// Looks like new position (excluding defaulted parameters),
+					// has a valid label.
+					if oldLabel == params[paramIdx].apiLabel {
+						break
+					}
+
+					// If we are moving the the position with a different label
+					// and there is no default value for it, can't diagnose the
+					// problem as a simple re-ordering.
+					if !paramInfo.defaultArguments[paramIdx] {
+						return false
+					}
+
+					paramIdx += 1
+				}
+
+				// label was not found
+				//			if (paramIdx == params.size()) {
+				//				return false;
+				//			}
+				//
+				//			return true;
+
+				if paramIdx == params.count {
+					return false
+				}
+
+				return true
+			}
+
+			//SmallVector<unsigned, 4> paramToArgMap;
+			//paramToArgMap.reserve(params.size());
+			//{
+			//	unsigned argIdx = 0;
+			//	for (const auto &binding : parameterBindings) {
+			//		paramToArgMap.push_back(argIdx);
+			//		argIdx += binding.size();
+			//	}
+			//}
+
+			let paramToArgMap: MutableList<Int> = []
+			var argIdx = 0
+			for binding in parameterBindings {
+				paramToArgMap.append(argIdx)
+				argIdx += binding.count
+			}
+
+			// Enumerate the parameters and their bindings to see if any arguments are
+			// our of order
+			// bool hadLabelMismatch = false;
+			var hadLabelMismatch = false
+
+			//		for (const auto paramIdx : indices(params)) {
+			//			const auto toArgIdx = paramToArgMap[paramIdx];
+			//			const auto &binding = parameterBindings[paramIdx];
+
+			for paramIdx in params.indices {
+				let toArgIdx = paramToArgMap[paramIdx]
+				let binding = parameterBindings[paramIdx]
+
+				// for (const auto paramBindIdx : indices(binding)) {
+				for paramBindIdx in binding.indices {
+					// We've found the parameter that has an out of order
+					// argument, and know the indices of the argument that
+					// needs to move (fromArgIdx) and the argument location
+					// it should move to (toArgIdx).
+					//				const auto fromArgIdx = binding[paramBindIdx];
+
+					let fromArgIdx = binding[paramBindIdx]
+
+					//// Does nothing for variadic tail.
+					//if (params[paramIdx].isVariadic() && paramBindIdx > 0) {
+					//	assert(args[fromArgIdx].getLabel().empty());
+					//	continue;
+					//}
+
+					// Does nothing for variadic tail.
+					if params[paramIdx].isVariadic, paramBindIdx > 0 {
+						assert(args[fromArgIdx].label == nil ||
+							args[fromArgIdx].label!.isEmpty);
+						continue
+					}
+
+					// First let's double check if out-of-order argument is nothing
+					// more than a simple label mismatch, because in situation where
+					// one argument requires label and another one doesn't, but caller
+					// doesn't provide either, problem is going to be identified as
+					// out-of-order argument instead of label mismatch.
+
+					let expectedLabel: String? =
+						fromArgIdx == unlabeledTrailingClosureArgIndex ?
+							nil :
+							params[paramIdx].apiLabel
+					let argumentLabel = args[fromArgIdx].label
+
+					if (argumentLabel != expectedLabel) {
+						// - The parameter is unnamed, in which case we try to fix the
+						//   problem by removing the name.
+
+						//if (expectedLabel.empty()) {
+						//	hadLabelMismatch = true;
+						//	if (listener.extraneousLabel(paramIdx))
+						//		return true;
+						//	// - The argument is unnamed, in which case we try to fix the
+						//	//   problem by adding the name.
+
+						if expectedLabel == nil || expectedLabel!.isEmpty {
+							hadLabelMismatch = true
+							// - The argument is unnamed, in which case we try to fix the
+							//   problem by adding the name.
+						}
+
+						//} else if (argumentLabel.empty()) {
+						//	hadLabelMismatch = true;
+						//	if (listener.missingLabel(paramIdx))
+						//		return true;
+						//	// - The argument label has a typo at the same position.
+
+						else if argumentLabel == nil || argumentLabel!.isEmpty {
+							hadLabelMismatch = true
+
+							// - The argument label has a typo at the same position.
+						}
+
+						//} else if (fromArgIdx == toArgIdx) {
+						//	hadLabelMismatch = true;
+						//	if (listener.incorrectLabel(paramIdx))
+						//		return true;
+						//}
+
+						else if fromArgIdx == toArgIdx {
+							hadLabelMismatch = true
+						}
+					}
+
+					//				if (fromArgIdx == toArgIdx) {
+					//					// If the argument is in the right location, just continue
+					//					continue;
+					//				}
+
+					if fromArgIdx == toArgIdx {
+						// If the argument is in the right location, just continue
+						continue
+					}
+				}
+			}
+		}
+	}
+
+	// If no arguments were renamed, the call arguments match up with the
+	// parameters.
+	//	if (actualArgNames.empty())
+	//		return false;
+
+	if actualArgNames.isEmpty {
+		return false
+	}
+
+	// The arguments were relabeled; notify the listener.
+	//	return listener.relabelArguments(actualArgNames);
+	//}
+
+	return true
+}
+
+

@@ -1753,11 +1753,22 @@ public class KotlinTranslator {
 			result.append(try translateExpression(functionExpression, withIndentation: indentation))
 		}
 
-		let parametersTranslation = try translateParameters(
-			forCallExpression: callExpression,
-			withFunctionTranslation: functionTranslation,
-			withIndentation: indentation,
-			shouldAddNewlines: shouldAddNewlines)
+		let parametersTranslation: KotlinTranslation
+		if context.isUsingSwiftSyntax {
+			parametersTranslation = try translateParametersNew(
+				forCallExpression: callExpression,
+				withFunctionTranslation: functionTranslation,
+				withIndentation: indentation,
+				shouldAddNewlines: shouldAddNewlines)
+		}
+		else {
+			parametersTranslation = try translateParameters(
+				forCallExpression: callExpression,
+				withFunctionTranslation: functionTranslation,
+				withIndentation: indentation,
+				shouldAddNewlines: shouldAddNewlines,
+				allowsTrailingClosure: true)
+		}
 
 		result.append(parametersTranslation)
 
@@ -1774,11 +1785,102 @@ public class KotlinTranslator {
 		}
 	}
 
-	private func translateParameters(
+	// TODO: Remove the old one once SwiftSyntax is done
+	// TODO: This logic should probably be in a transpilation pass
+	private func translateParametersNew(
 		forCallExpression callExpression: CallExpression,
 		withFunctionTranslation functionTranslation: TranspilationContext.FunctionTranslation?,
 		withIndentation indentation: String,
 		shouldAddNewlines: Bool)
+		throws -> KotlinTranslation
+	{
+		if let functionTranslation = functionTranslation {
+			let callArguments = (callExpression.parameters as! TupleExpression).pairs
+
+			let defaultArguments = functionTranslation.parameters.map { $0.value != nil }
+
+			let matchResult: MutableList<MutableList<Int>> = []
+
+			let matchFailed = matchCallArguments(
+				args: callArguments,
+				params: functionTranslation.parameters,
+				paramInfo: ParameterListInfo(
+					defaultArguments: defaultArguments,
+					acceptsUnlabeledTrailingClosures: []),
+				unlabeledTrailingClosureArgIndex: nil,
+				allowFixes: false,
+				trailingClosureMatching: .forward,
+				parameterBindings: matchResult)
+
+			if matchFailed {
+				return try unexpectedASTStructureError(
+					"Unable to match these parameters to their declarations",
+					AST: ExpressionStatement(
+						range: callExpression.parameters.range,
+						expression: callExpression.parameters))
+			}
+
+			let resultPairs: MutableList<LabeledExpression> = []
+
+			// Variadic arguments can't be named, which means all arguments before them can't be
+			// named either.
+			let lastVariadicIndex =
+				functionTranslation.parameters.lastIndex(where: { $0.isVariadic }) ??
+				-1
+
+			// matchResult will be something like [[0], [1], [2], [3, 4], [5], []]
+			for declarationIndex in functionTranslation.parameters.indices {
+				let isBeforeVariadic = (declarationIndex <= lastVariadicIndex)
+
+				let implementationLabel = functionTranslation.parameters[declarationIndex].label
+
+				let callIndices = matchResult[declarationIndex]
+				for callIndex in callIndices {
+					let argument = callArguments[callIndex]
+					resultPairs.append(LabeledExpression(
+						label: isBeforeVariadic ? nil : implementationLabel,
+						expression: argument.expression))
+				}
+			}
+
+			let newTupleExpression = TupleExpression(
+				range: callExpression.parameters.range,
+				pairs: resultPairs)
+
+			let newCallExpression = CallExpression(
+				range: callExpression.range,
+				function: callExpression.function,
+				parameters: newTupleExpression,
+				typeName: callExpression.typeName)
+
+			let hasVariadic =
+				functionTranslation.parameters.contains(where: { $0.isVariadic })
+			let hasDefaultArgument =
+				functionTranslation.parameters.contains(where: { $0.value != nil })
+			let allowsTrailingClosure = (!hasDefaultArgument && !hasVariadic)
+
+			return try translateParameters(
+				forCallExpression: newCallExpression,
+				withFunctionTranslation: nil,
+				withIndentation: indentation,
+				shouldAddNewlines: shouldAddNewlines,
+				allowsTrailingClosure: allowsTrailingClosure)
+		}
+
+		return try translateParameters(
+			forCallExpression: callExpression,
+			withFunctionTranslation: functionTranslation,
+			withIndentation: indentation,
+			shouldAddNewlines: shouldAddNewlines,
+			allowsTrailingClosure: true)
+	}
+
+	private func translateParameters(
+		forCallExpression callExpression: CallExpression,
+		withFunctionTranslation functionTranslation: TranspilationContext.FunctionTranslation?,
+		withIndentation indentation: String,
+		shouldAddNewlines: Bool,
+		allowsTrailingClosure: Bool)
 		throws -> KotlinTranslation
 	{
 		if let rawTupleExpression = callExpression.parameters as? TupleExpression {
@@ -1791,7 +1893,7 @@ public class KotlinTranslator {
 								label: nil,
 								expression: translationPairTuple.1.expression) :
 							LabeledExpression(
-								label: translationPairTuple.0,
+								label: translationPairTuple.0.apiLabel,
 								expression: translationPairTuple.1.expression)
 				}.toMutableList()
 				tupleExpression = TupleExpression(range: rawTupleExpression.range, pairs: newPairs)
@@ -1800,7 +1902,7 @@ public class KotlinTranslator {
 				tupleExpression = rawTupleExpression
 			}
 
-			if let closurePair = tupleExpression.pairs.last {
+			if allowsTrailingClosure, let closurePair = tupleExpression.pairs.last {
 				if let closureExpression = closurePair.expression as? ClosureExpression
 				{
 					let closureTranslation = try translateClosureExpression(
@@ -1858,7 +1960,8 @@ public class KotlinTranslator {
 					forCallExpression: newCallExpression,
 					withFunctionTranslation: nil,
 					withIndentation: indentation,
-					shouldAddNewlines: shouldAddNewlines)
+					shouldAddNewlines: shouldAddNewlines,
+					allowsTrailingClosure: allowsTrailingClosure)
 			}
 			else {
 				return try translateTupleExpression(

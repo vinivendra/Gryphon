@@ -81,8 +81,8 @@ class IntegrationTest: XCTestCase {
 					withContext: TranspilationContext(
 						toolchainName: nil,
 						indentationString: "\t",
-						defaultsToFinal: defaultsToFinal),
-					usingSwiftSyntax: usesSwiftSyntax).first!
+						defaultsToFinal: defaultsToFinal,
+						isUsingSwiftSyntax: usesSwiftSyntax)).first!
 
 				// Load the previously stored kotlin code from file
 				let expectedKotlinCode =
@@ -134,8 +134,8 @@ class IntegrationTest: XCTestCase {
 				withContext: TranspilationContext(
 					toolchainName: nil,
 					indentationString: "\t",
-					defaultsToFinal: false),
-				usingSwiftSyntax: usesSwiftSyntax).first!
+					defaultsToFinal: false,
+					isUsingSwiftSyntax: usesSwiftSyntax)).first!
 
 			XCTAssert(
 				Compiler.numberOfErrors == 0,

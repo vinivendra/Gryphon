@@ -571,6 +571,7 @@ public class FunctionDeclaration: Statement {
 						PrintableTree("label: \(parameter.label)"),
 						PrintableTree("type: \(parameter.typeName)"),
 						PrintableTree.initOrNil("value", [parameter.value]),
+						PrintableTree.initOrNil(parameter.isVariadic ? "variadic" : nil),
 					])
 			}
 
@@ -2393,8 +2394,24 @@ public struct FunctionParameter: Equatable {
 	/// here. If it's the same as the implementation name (e.g. `f(a: Int)`), it'll be the same
 	/// here.
 	let apiLabel: String?
+	/// If it's a variadic parameter (e.g. `Int...`) this contains just the base type (e.g. `Int`).
 	let typeName: String
 	let value: Expression?
+	let isVariadic: Bool
+
+	init(
+		label: String,
+		apiLabel: String?,
+		typeName: String,
+		value: Expression?,
+		isVariadic: Bool = false)
+	{
+		self.label = label
+		self.apiLabel = apiLabel
+		self.typeName = typeName
+		self.value = value
+		self.isVariadic = isVariadic
+	}
 }
 
 public class SwitchCase: Equatable {
