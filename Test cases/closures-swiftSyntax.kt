@@ -92,7 +92,7 @@ fun main(args: Array<String>) {
 
 	multiLineClosure(10)
 	multiLineClosure(20)
-	f({ 0 }, a = 0)
+	f(closure = { 0 }, a = 0)
 	g(closure = { 0 }, c = 0)
 	f1 { 0 }
 	f2(a = 0) { 0 }
