@@ -1939,7 +1939,7 @@ public class KotlinTranslator {
 				shouldAddNewlines: shouldAddNewlines)
 		}
 		else if let tupleShuffleExpression = callExpression.parameters as? TupleShuffleExpression {
-			let newLabels = functionTranslation?.parameters.as(MutableList<String?>.self) ??
+			let newLabels = functionTranslation?.parameters.map { $0.label }.toMutableList() ??
 				tupleShuffleExpression.labels
 			let newTupleShuffleExpression = TupleShuffleExpression(
 				range: tupleShuffleExpression.range,
