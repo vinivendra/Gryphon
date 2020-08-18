@@ -1155,20 +1155,27 @@ public class ReturnTypesForInitsTranspilationPass: TranspilationPass {
 
 	let typeDeclarationStack: MutableList<String> = []
 
-	override func replaceInitializerDeclaration( // gryphon annotation: override
+	override func processInitializerDeclaration( // gryphon annotation: override
 		_ initializerDeclaration: InitializerDeclaration)
-		-> List<Statement>
+		-> InitializerDeclaration?
 	{
-		if let enclosingType = typeDeclarationStack.last {
+		if context.isUsingSwiftSyntax, let enclosingType = typeDeclarationStack.last {
 			initializerDeclaration.returnType = enclosingType
-			initializerDeclaration.functionType = "(" +
+
+			let functionType = "(" +
 				initializerDeclaration.parameters
 					.map { $0.typeName }
 					.joined(separator: ", ") +
 				") -> " + enclosingType
+			if context.isUsingSwiftSyntax {
+				initializerDeclaration.functionType = functionType
+			}
+			else {
+				initializerDeclaration.functionType = "(\(enclosingType).Type) -> \(functionType)"
+			}
 		}
 
-		return [initializerDeclaration]
+		return initializerDeclaration
 	}
 
 	override func replaceClassDeclaration( // gryphon annotation: override

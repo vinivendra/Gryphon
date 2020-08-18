@@ -1893,9 +1893,9 @@ public class KotlinTranslator {
 								label: nil,
 								expression: translationPairTuple.1.expression) :
 							LabeledExpression(
-								label: translationPairTuple.0.apiLabel,
+								label: translationPairTuple.0.label,
 								expression: translationPairTuple.1.expression)
-				}.toMutableList()
+					}.toMutableList()
 				tupleExpression = TupleExpression(range: rawTupleExpression.range, pairs: newPairs)
 			}
 			else {
