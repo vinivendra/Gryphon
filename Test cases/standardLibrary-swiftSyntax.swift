@@ -914,7 +914,7 @@ func f(of a: Int) {
 }
 
 // gryphon insert: fun g(a: Int) {
-// gryphon insert: 	printTest(a, "User template")
+// gryphon insert: 	printTest(contents = a, testName = "User template")
 // gryphon insert: }
 
 //////////////////////////////////////////////////////////
