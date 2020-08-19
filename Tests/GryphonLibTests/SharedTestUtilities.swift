@@ -161,6 +161,7 @@ class TestUtilities {
 		"assignments",
 		"classes",
 		"closures",
+		"functionCalls",
 		"standardLibrary",
 	]
 }
