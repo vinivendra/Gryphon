@@ -1344,6 +1344,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let identifierExpression = expression.as(IdentifierExprSyntax.self) {
 			return try convertIdentifierExpression(identifierExpression)
 		}
+		if let optionalChainingExpression = expression.as(OptionalChainingExprSyntax.self) {
+			return try convertOptionalChainingExpression(optionalChainingExpression)
+		}
 		if let functionCallExpression = expression.as(FunctionCallExprSyntax.self) {
 			return try convertFunctionCallExpression(functionCallExpression)
 		}
@@ -2125,6 +2128,15 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 
 		return false
+	}
+
+	func convertOptionalChainingExpression(
+		_ optionalChainingExpression: OptionalChainingExprSyntax)
+		throws -> Expression
+	{
+		return OptionalExpression(
+			range: optionalChainingExpression.getRange(inFile: self.sourceFile),
+			expression: try convertExpression(optionalChainingExpression.expression))
 	}
 
 	func convertIdentifierExpression(
