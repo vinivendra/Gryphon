@@ -128,6 +128,9 @@ a?.baz?()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Tuple Shuffles
+print("Testing tuple shuffles")
+print("- Named parameters with default values")
+
 func f(a: Int = 0, b: Int = 0, c: Int = 0) {
 	print("\(a) \(b) \(c)")
 }
@@ -139,6 +142,18 @@ f(c: 1)
 f(a: 1, c: 1)
 f(b: 1, c: 1)
 f(a: 1, b: 1, c: 1)
+
+print("- Unnamed parameters with default values")
+
+func f1(_ a: Int = 0, _ b: Int = 0, _ c: Int = 0) {
+	print("\(a) \(b) \(c)")
+}
+
+f1(1)
+f1(1, 1)
+f1(1, 1, 1)
+
+print("- Variadics and default values")
 
 func variadics(a: Int, b: Int..., c: Int = 0) { // gryphon ignore
 	print(a, terminator: "")

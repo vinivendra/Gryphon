@@ -107,6 +107,10 @@ internal fun f(a: Int = 0, b: Int = 0, c: Int = 0) {
 	println("${a} ${b} ${c}")
 }
 
+internal fun f1(a: Int = 0, b: Int = 0, c: Int = 0) {
+	println("${a} ${b} ${c}")
+}
+
 internal fun variadics(a: Int, vararg b: Int, c: Int = 0) {
 	print(a)
 	for (element in b) {
@@ -179,6 +183,8 @@ fun main(args: Array<String>) {
 	val a: A? = null
 
 	a?.baz?.invoke()
+	println("Testing tuple shuffles")
+	println("- Named parameters with default values")
 	f(a = 1)
 	f(b = 1)
 	f(a = 1, b = 1)
@@ -186,6 +192,11 @@ fun main(args: Array<String>) {
 	f(a = 1, c = 1)
 	f(b = 1, c = 1)
 	f(a = 1, b = 1, c = 1)
+	println("- Unnamed parameters with default values")
+	f1(a = 1)
+	f1(a = 1, b = 1)
+	f1(a = 1, b = 1, c = 1)
+	println("- Variadics and default values")
 	variadics(1, 1, 2, 3, c = 1)
 	variadics(1, 1, 2, 3)
 	fooBarBaz(
