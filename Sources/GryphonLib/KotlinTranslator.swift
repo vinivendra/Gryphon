@@ -822,15 +822,21 @@ public class KotlinTranslator {
 		withIndentation indentation: String)
 		throws -> KotlinTranslation
 	{
-		let labelAndTypeString = parameter.label + ": " + translateType(parameter.typeName)
+		let result = KotlinTranslation(range: nil)
+
+		if parameter.isVariadic {
+			result.append("vararg ")
+		}
+
+		result.append(parameter.label + ": " + translateType(parameter.typeName))
+
 		if let defaultValue = parameter.value {
-			let result = KotlinTranslation(range: nil)
-			result.append(labelAndTypeString + " = ")
+			result.append(" = ")
 			result.append(try translateExpression(defaultValue, withIndentation: indentation))
 			return result
 		}
 		else {
-			return KotlinTranslation(range: nil, string: labelAndTypeString)
+			return result
 		}
 	}
 
