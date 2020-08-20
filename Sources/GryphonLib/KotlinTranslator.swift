@@ -1810,11 +1810,8 @@ public class KotlinTranslator {
 			let matchFailed = matchCallArguments(
 				args: callArguments,
 				params: functionTranslation.parameters,
-				paramInfo: ParameterListInfo(
-					defaultArguments: defaultArguments,
-					acceptsUnlabeledTrailingClosures: []),
+				paramInfo: ParameterListInfo(defaultArguments: defaultArguments),
 				unlabeledTrailingClosureArgIndex: nil,
-				allowFixes: false,
 				trailingClosureMatching: .forward,
 				parameterBindings: matchResult)
 
