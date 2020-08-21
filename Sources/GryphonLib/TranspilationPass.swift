@@ -2435,6 +2435,28 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 	}
 }
 
+/// Variables with an optional type don't have to be explicitly initialized with `nil` in Swift,
+/// (though it happens implicitl), but they might in Kotlin.
+public class ImplicitNilsInOptionalVariablesTranspilationPass: TranspilationPass {
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
+
+	override func processVariableDeclaration( // gryphon annotation: override
+		_ variableDeclaration: VariableDeclaration)
+		-> VariableDeclaration
+	{
+		if !variableDeclaration.isLet,
+			variableDeclaration.expression == nil,
+			let typeName = variableDeclaration.typeAnnotation,
+			typeName.hasSuffix("?")
+		{
+			variableDeclaration.expression = NilLiteralExpression(range: nil)
+		}
+
+		return variableDeclaration
+	}
+}
+
 /// The "anonymous parameter" `$0` has to be replaced by `it`
 public class AnonymousParametersTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
@@ -4864,6 +4886,7 @@ public extension TranspilationPass {
 
 		// Transform structures that need to be slightly different in Kotlin
 		ast = SelfToThisTranspilationPass(ast: ast, context: context).run()
+		ast = ImplicitNilsInOptionalVariablesTranspilationPass(ast: ast, context: context).run()
 		ast = AnonymousParametersTranspilationPass(ast: ast, context: context).run()
 		ast = CovarianceInitsAsCallsTranspilationPass(ast: ast, context: context).run()
 		ast = OptionalFunctionCallsTranspilationPass(ast: ast, context: context).run()
