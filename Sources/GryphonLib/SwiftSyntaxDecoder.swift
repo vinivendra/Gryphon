@@ -350,6 +350,11 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		{
 			return try convertIfStatement(ifStatement)
 		}
+		if let throwStatement = statement.as(ThrowStmtSyntax.self) {
+			return ThrowStatement(
+				range: throwStatement.getRange(inFile: self.sourceFile),
+				expression: try convertExpression(throwStatement.expression))
+		}
 		if let forStatement = statement.as(ForInStmtSyntax.self) {
 			return try convertForStatement(forStatement)
 		}
@@ -1344,6 +1349,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			return literalCodeExpression
 		}
 
+		if let tryExpression = expression.as(TryExprSyntax.self) {
+			return try convertExpression(tryExpression.expression)
+		}
 		if let stringLiteralExpression = expression.as(StringLiteralExprSyntax.self) {
 			return try convertStringLiteralExpression(stringLiteralExpression)
 		}
