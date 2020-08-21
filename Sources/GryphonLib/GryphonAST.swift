@@ -2470,7 +2470,8 @@ public class EnumElement: PrintableAsTree, Equatable {
 			"values: \(associatedValues)"
 		return [
 			PrintableTree.initOrNil(associatedValuesString),
-			PrintableTree.ofStrings("annotations", annotations), ]
+			PrintableTree.ofStrings("annotations", annotations),
+			PrintableTree.initOrNil("rawValue", [rawValue]), ]
 	}
 }
 

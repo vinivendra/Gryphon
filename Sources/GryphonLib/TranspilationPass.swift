@@ -4377,8 +4377,47 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 	}
 }
 
-/// Create a rawValue variable for enums that conform to rawRepresentable
-public class RawValuesTranspilationPass: TranspilationPass {
+/// Populate implicit raw values when needed. For strings, the raw value is the same as the case's
+/// identifier; for integers, it's 1 more than the last case, starting at 0.
+public class ImplicitRawValuesTranspilationPass: TranspilationPass {
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
+
+	override func replaceEnumDeclaration( // gryphon annotation: override
+		_ enumDeclaration: EnumDeclaration)
+		-> List<Statement>
+	{
+		if enumDeclaration.inherits.contains("String") {
+			for element in enumDeclaration.elements {
+				if element.rawValue == nil {
+					element.rawValue = LiteralStringExpression(
+						range: enumDeclaration.range,
+						value: element.name,
+						isMultiline: false)
+				}
+			}
+		}
+		else if enumDeclaration.inherits.contains("Int") {
+			var lastValue: Int64 = -1 // So that the first will be 0
+			for element in enumDeclaration.elements {
+				if let rawValue = element.rawValue as? LiteralIntExpression {
+					lastValue = rawValue.value
+				}
+				else {
+					element.rawValue = LiteralIntExpression(
+						range: enumDeclaration.range,
+						value: lastValue + 1)
+					lastValue = lastValue + 1
+				}
+			}
+		}
+
+		return super.replaceEnumDeclaration(enumDeclaration)
+	}
+}
+
+/// Create a rawValue variable and initializer for enums that conform to rawRepresentable
+public class RawValuesMembersTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
 	// gryphon insert:     super(ast, context) { }
 
@@ -4842,6 +4881,9 @@ public extension TranspilationPass {
 		// RecordEnums needs to be after CleanInheritance: it needs Swift-only inheritances removed
 		// in order to know if the enum inherits from a class or not, and therefore is a sealed
 		// class or an enum class.
+		// ImplicitRawValues needs to know if the enum inherits from a String or Int in order to
+		// populate the implicit raw values correctly.
+		ast = ImplicitRawValuesTranspilationPass(ast: ast, context: context).run()
 		ast = CleanInheritancesTranspilationPass(ast: ast, context: context).run()
 		ast = RecordEnumsTranspilationPass(ast: ast, context: context).run()
 
@@ -4857,17 +4899,17 @@ public extension TranspilationPass {
 	{
 		var ast = sourceFile
 
-		// Replace templates (must go before other passes since templates are recorded before
-		// running any passes)
+		/// Replace templates (must go before other passes since templates are recorded before
+		/// running any passes)
 		ast = ReplaceTemplatesTranspilationPass(ast: ast, context: context).run()
 
-		// Cleanup
+		/// Cleanup
 		ast = RemoveParenthesesTranspilationPass(ast: ast, context: context).run()
 		ast = RemoveExtraReturnsInInitsTranspilationPass(ast: ast, context: context).run()
 
-		// Transform structures that need to be significantly different in Kotlin
+		/// Transform structures that need to be significantly different in Kotlin
 		ast = EquatableOperatorsTranspilationPass(ast: ast, context: context).run()
-		ast = RawValuesTranspilationPass(ast: ast, context: context).run()
+		ast = RawValuesMembersTranspilationPass(ast: ast, context: context).run()
 		ast = DescriptionAsToStringTranspilationPass(ast: ast, context: context).run()
 		ast = OptionalInitsTranspilationPass(ast: ast, context: context).run()
 		ast = StaticMembersTranspilationPass(ast: ast, context: context).run()
@@ -4884,7 +4926,7 @@ public extension TranspilationPass {
 		ast = AddParenthesesForOperatorsInIfsTranspilationPass(ast: ast, context: context).run()
 		ast = RearrangeIfLetsTranspilationPass(ast: ast, context: context).run()
 
-		// Transform structures that need to be slightly different in Kotlin
+		/// Transform structures that need to be slightly different in Kotlin
 		ast = SelfToThisTranspilationPass(ast: ast, context: context).run()
 		ast = ImplicitNilsInOptionalVariablesTranspilationPass(ast: ast, context: context).run()
 		ast = AnonymousParametersTranspilationPass(ast: ast, context: context).run()
@@ -4921,12 +4963,12 @@ public extension TranspilationPass {
 		ast = RemoveBreaksInSwitchesTranspilationPass(ast: ast, context: context).run()
 		ast = ReturnsInLambdasTranspilationPass(ast: ast, context: context).run()
 
-		// Improve Kotlin readability
+		/// Improve Kotlin readability
 		ast = InnerTypePrefixesTranspilationPass(ast: ast, context: context).run()
 		ast = DoubleNegativesInGuardsTranspilationPass(ast: ast, context: context).run()
 		ast = ReturnIfNilTranspilationPass(ast: ast, context: context).run()
 
-		// Raise any warnings that may be left
+		/// Raise any warnings that may be left
 		ast = RaiseStandardLibraryWarningsTranspilationPass(ast: ast, context: context).run()
 		ast = RaiseDoubleOptionalWarningsTranspilationPass(ast: ast, context: context).run()
 		ast = RaiseMutableValueTypesWarningsTranspilationPass(ast: ast, context: context).run()

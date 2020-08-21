@@ -705,10 +705,25 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			if let caseSyntax = syntax.element.as(EnumCaseDeclSyntax.self) {
 				// TODO: add test for `case a, b, c`
 				for element in caseSyntax.elements {
+					let associatedValues: MutableList<LabeledType>
+					if let parameters = element.associatedValue?.parameterList {
+						let convertedParameters = try convertParameters(parameters)
+						associatedValues = convertedParameters.map {
+							LabeledType(
+								label: $0.label,
+								typeName: $0.typeName)
+						}.toMutableList()
+					}
+					else {
+						associatedValues = []
+					}
+
+					let rawValue = try element.rawValue.map { try convertExpression($0.value) }
+
 					elements.append(EnumElement(
 						name: element.identifier.text,
-						associatedValues: [],
-						rawValue: nil,
+						associatedValues: associatedValues,
+						rawValue: rawValue,
 						annotations: []))
 				}
 			}
