@@ -259,6 +259,44 @@ class DriverTest: XCTestCase {
 			// If the Driver threw an error then it's working correctly.
 		}
 
+		// Repeat the test using SwiftSyntax
+		do {
+			let testCasePath = TestUtilities.testCasesPath + "errors.swift"
+
+			//
+			Compiler.clearIssues()
+
+			_ = try Driver.run(withArguments:
+				["-skip-AST-dumps",
+				 "-emit-kotlin",
+				 "--indentation=t",
+				 "--continue-on-error",
+				 "--write-to-console",
+				 "--quiet",
+				 "-swiftSyntax",
+				 testCasePath, ])
+
+			XCTAssert(Compiler.numberOfErrors == 2)
+
+			//
+			Compiler.clearIssues()
+
+			_ = try Driver.run(withArguments:
+				["-skip-AST-dumps",
+				 "-emit-kotlin",
+				 "--indentation=t",
+				 "--no-main-file",
+				 "--write-to-console",
+				 "--quiet",
+				 "-swiftSyntax",
+				 testCasePath, ])
+
+			XCTFail("Expected Driver to throw an error.")
+		}
+		catch {
+			// If the Driver threw an error then it's working correctly.
+		}
+
 		Compiler.clearIssues()
 	}
 
