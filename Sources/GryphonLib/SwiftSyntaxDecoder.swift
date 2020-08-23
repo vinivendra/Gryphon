@@ -770,6 +770,18 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		_ structDeclaration: StructDeclSyntax)
 		throws -> Statement
 	{
+		let structBaseType = structDeclaration.identifier.text
+
+		// TODO: Support generic classes, etc
+		let structName: String
+		if let generics = structDeclaration.genericParameterClause?.genericParameterList {
+			let genericString = generics.map { $0.name.text }.joined(separator: ", ")
+			structName = structBaseType + "<" + genericString + ">"
+		}
+		else {
+			structName = structBaseType
+		}
+
 		let inheritances = try structDeclaration.inheritanceClause?.inheritedTypeCollection.map {
 				try convertType($0.typeName)
 			} ?? []
@@ -787,7 +799,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		return StructDeclaration(
 			range: structDeclaration.getRange(inFile: self.sourceFile),
 			annotations: annotations,
-			structName: structDeclaration.identifier.text,
+			structName: structName,
 			access: accessAndAnnotations.access,
 			inherits: MutableList(inheritances),
 			members: try convertStatements(structDeclaration.members.members))
