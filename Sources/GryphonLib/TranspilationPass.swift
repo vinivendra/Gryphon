@@ -4801,6 +4801,9 @@ public class FixProtocolGenericsTranspilationPass: TranspilationPass {
 /// information by looking at a function's type, which includes the extended type (i.e.
 /// `<T> (Box<T>) -> (Int) -> ()`. This pass retrieves that information and adds it to the extended
 /// type if needed.
+///
+/// If we're in SwiftSyntax, we also have to add the extended type's generics to the function
+/// declaration itself.
 public class FixExtensionGenericsTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
 	// gryphon insert:     super(ast, context) { }
@@ -4809,19 +4812,34 @@ public class FixExtensionGenericsTranspilationPass: TranspilationPass {
 		_ functionDeclaration: FunctionDeclaration)
 		-> FunctionDeclaration?
 	{
-		if let extendedType = functionDeclaration.extendsType {
-			var newType = functionDeclaration.functionType
-			let prefixToDiscard = functionDeclaration.functionType.prefix { $0 != "(" }
-			newType = String(functionDeclaration.functionType.dropFirst(prefixToDiscard.count + 1))
-			newType = String(newType.prefix { $0 != ")" })
-
-			// If we're really just adding generics (i.e. `Box` to `Box<T>`)
-			if newType.hasPrefix(extendedType + "<") {
-				functionDeclaration.extendsType = newType
+		if context.isUsingSwiftSyntax {
+			if let extendedType = functionDeclaration.extendsType, extendedType.contains("<") {
+				let genericString = String(extendedType
+					.drop(while: { $0 != "<" })
+					.dropFirst()
+					.dropLast())
+				let genericTypes = Utilities.splitTypeList(genericString, separators: [","])
+				functionDeclaration.genericTypes.append(contentsOf: genericTypes)
 			}
-		}
 
-		return super.processFunctionDeclaration(functionDeclaration)
+			return super.processFunctionDeclaration(functionDeclaration)
+		}
+		else {
+			if let extendedType = functionDeclaration.extendsType {
+				var newType = functionDeclaration.functionType
+				let prefixToDiscard = functionDeclaration.functionType.prefix { $0 != "(" }
+				newType = String(functionDeclaration.functionType
+					.dropFirst(prefixToDiscard.count + 1))
+				newType = String(newType.prefix { $0 != ")" })
+
+				// If we're really just adding generics (i.e. `Box` to `Box<T>`)
+				if newType.hasPrefix(extendedType + "<") {
+					functionDeclaration.extendsType = newType
+				}
+			}
+
+			return super.processFunctionDeclaration(functionDeclaration)
+		}
 	}
 }
 

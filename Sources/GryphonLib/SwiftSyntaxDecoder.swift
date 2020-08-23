@@ -655,9 +655,24 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		_ extensionDeclaration: ExtensionDeclSyntax)
 		throws -> Statement
 	{
+		// TODO: add tests
+		let comments = getLeadingComments(
+			forSyntax: Syntax(extensionDeclaration),
+			withKey: .generics)
+
+		let syntaxType = try convertType(extensionDeclaration.extendedType)
+
+		let extendedType: String
+		if let comment = comments.first, let value = comment.value {
+			extendedType = syntaxType + "<\(value)>"
+		}
+		else {
+			extendedType = syntaxType
+		}
+
 		return ExtensionDeclaration(
 			range: extensionDeclaration.getRange(inFile: self.sourceFile),
-			typeName: try convertType(extensionDeclaration.extendedType),
+			typeName: extendedType,
 			members: try convertStatements(extensionDeclaration.members.members))
 	}
 
@@ -874,6 +889,14 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let annotations = accessAndAnnotations.annotations
 		annotations.append(contentsOf: manualAnnotations)
 
+		let generics: MutableList<String>
+		if let genericsSyntax = functionLikeDeclaration.generics {
+			generics = MutableList(genericsSyntax.map { $0.name.text })
+		}
+		else {
+			generics = []
+		}
+
 		if !functionLikeDeclaration.isInitializer {
 			let isStatic = accessAndAnnotations.annotations.remove("static")
 
@@ -883,7 +906,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				parameters: parameters,
 				returnType: returnType,
 				functionType: functionType,
-				genericTypes: [],
+				genericTypes: generics,
 				isOpen: isOpen,
 				isImplicit: false,
 				isStatic: isStatic,
@@ -901,7 +924,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				parameters: parameters,
 				returnType: returnType,
 				functionType: functionType,
-				genericTypes: [],
+				genericTypes: generics,
 				isOpen: isOpen,
 				isImplicit: false,
 				isStatic: true,
@@ -2328,6 +2351,17 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			let elements = try tupleType.elements.map { try convertType($0.type) }
 			return "(\(elements.joined(separator: ", ")))"
 		}
+		if let simpleType = typeSyntax.as(SimpleTypeIdentifierSyntax.self) {
+			let baseType = simpleType.name.text
+			if let generics = simpleType.genericArgumentClause?.arguments {
+				let genericString = try generics
+					.map { try convertType($0.argumentType) }
+					.joined(separator: ", ")
+				return baseType + "<" + genericString + ">"
+			}
+
+			return baseType
+		}
 
 		if let text = typeSyntax.getText() {
 			return text
@@ -2452,6 +2486,7 @@ protocol FunctionLikeSyntax: SyntaxProtocol {
 	var statements: CodeBlockItemListSyntax? { get }
 	var modifierList: ModifierListSyntax? { get }
 	var returnType: TypeSyntax? { get }
+	var generics: GenericParameterListSyntax? { get }
 	/// For optional initializers
 	var isOptional: Bool { get }
 }
@@ -2479,6 +2514,10 @@ extension FunctionDeclSyntax: FunctionLikeSyntax {
 
 	var returnType: TypeSyntax? {
 		return signature.output?.returnType
+	}
+
+	var generics: GenericParameterListSyntax? {
+		return self.genericParameterClause?.genericParameterList
 	}
 
 	var isOptional: Bool {
@@ -2512,6 +2551,10 @@ extension InitializerDeclSyntax: FunctionLikeSyntax {
 		// cause problems. Maybe we can set the type in a TranspilationPass, based on the enveloping
 		// class.
 		return nil
+	}
+
+	var generics: GenericParameterListSyntax? {
+		return self.genericParameterClause?.genericParameterList
 	}
 
 	var isOptional: Bool {

@@ -56,6 +56,7 @@ public class SourceFile {
 		case insertInMain
 		case value
 		case annotation
+		case generics
 		case output
 
 		// Comments without values (i.e. `// gryphon ignore`)
