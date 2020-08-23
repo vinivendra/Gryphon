@@ -163,6 +163,7 @@ class TestUtilities {
 		"closures",
 		"enums",
 		"extensions",
+		"generics",
 		"functionCalls",
 		"standardLibrary",
 	]
