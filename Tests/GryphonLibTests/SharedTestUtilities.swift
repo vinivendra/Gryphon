@@ -164,6 +164,7 @@ class TestUtilities {
 		"enums",
 		"extensions",
 		"generics",
+		"ifStatement",
 		"functionCalls",
 		"standardLibrary",
 	]
