@@ -441,39 +441,63 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		throws -> IfStatement
 	{
 		let conditions: MutableList<IfStatement.IfCondition> = []
-		for condition in ifStatement.ifConditions {
-			if let child = condition.children.first {
-				if let expressionSyntax = child.as(ExprSyntax.self) {
-					let expression = try convertExpression(expressionSyntax)
-					conditions.append(.condition(expression: expression))
-				}
-				else if let optionalBinding = child.as(OptionalBindingConditionSyntax.self),
-					let identifier = optionalBinding.pattern.getText()
-				{
-					let expression = try convertExpression(optionalBinding.initializer.value)
-					conditions.append(IfStatement.IfCondition.declaration(variableDeclaration:
-						VariableDeclaration(
-							range: optionalBinding.getRange(inFile: self.sourceFile),
-							identifier: identifier,
-							typeAnnotation: expression.swiftType,
-							expression: expression,
-							getter: nil,
-							setter: nil,
-							access: nil,
-							isOpen: false,
-							isLet: optionalBinding.letOrVarKeyword.text == "let",
-							isImplicit: false,
-							isStatic: false,
-							extendsType: nil,
-							annotations: [])))
-				}
-			}
-			else {
-				let expression = try errorExpression(
-					forASTNode: Syntax(condition),
-					withMessage: "Unable to convert if condition")
+		for ifCondition in ifStatement.ifConditions {
+			if let expressionSyntax = ifCondition.condition.as(ExprSyntax.self) {
+				// if (expr)
+				let expression = try convertExpression(expressionSyntax)
 				conditions.append(.condition(expression: expression))
+				continue
 			}
+			else if let optionalBinding =
+					ifCondition.condition.as(OptionalBindingConditionSyntax.self),
+				let identifier = optionalBinding.pattern.getText()
+			{
+				// if let
+				let expression = try convertExpression(optionalBinding.initializer.value)
+				conditions.append(IfStatement.IfCondition.declaration(variableDeclaration:
+					VariableDeclaration(
+						range: optionalBinding.getRange(inFile: self.sourceFile),
+						identifier: identifier,
+						typeAnnotation: expression.swiftType,
+						expression: expression,
+						getter: nil,
+						setter: nil,
+						access: nil,
+						isOpen: false,
+						isLet: optionalBinding.letOrVarKeyword.text == "let",
+						isImplicit: false,
+						isStatic: false,
+						extendsType: nil,
+						annotations: [])))
+				continue
+			}
+			else if let matchingPattern =
+					ifCondition.condition.as(MatchingPatternConditionSyntax.self),
+				let expressionPattern = matchingPattern.pattern.as(ExpressionPatternSyntax.self),
+				let enumExpression = expressionPattern.expression.as(MemberAccessExprSyntax.self)
+			{
+				// if case
+
+				// The enumExpression may come as `.a1`, without direct way of knowing waht to place
+				// before the dot. Try to guess it from the type of the pattern expression.
+				let patternExpression = try convertExpression(matchingPattern.initializer.value)
+
+				if let enumType = patternExpression.swiftType {
+					conditions.append(.condition(expression: BinaryOperatorExpression(
+						range: ifCondition.getRange(inFile: self.sourceFile),
+						leftExpression: try convertExpression(matchingPattern.initializer.value),
+						rightExpression: try convertMemberAccessExpression(
+							enumExpression,
+							typeName: enumType),
+						operatorSymbol: "==",
+						typeName: "Bool")))
+					continue
+				}
+			}
+
+			try conditions.append(.condition(expression: errorExpression(
+				forASTNode: Syntax(ifCondition),
+				withMessage: "Unable to translate if condition")))
 		}
 
 		let statements = try convertStatements(ifStatement.statements)
@@ -1923,29 +1947,31 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	}
 
 	/// Can be either `object` `.` `member` or `.` `member`. The latter case is implicitly a
-	/// `MyType` `.` `member`, and the `MyType` can be obtained by searching for the type of the `.`
-	/// token, which will be `MyType.Type`
+	/// `MyType` `.` `member`, and the `MyType` can usually be obtained by searching for the type of
+	///  the `.` token, which will be `MyType.Type`; when the type isn't available, it can be given
+	/// by the `typeName` parameter.
 	func convertMemberAccessExpression(
-		_ memberAccessExpression: MemberAccessExprSyntax)
+		_ memberAccessExpression: MemberAccessExprSyntax,
+		typeName: String? = nil)
 		throws -> Expression
 	{
 		// Get information for the right side
-		guard let memberToken = memberAccessExpression.lastToken,
-			let memberType = memberAccessExpression.getType(fromList: self.expressionTypes) else
+		guard let memberType = memberAccessExpression.getType(fromList: self.expressionTypes) ??
+			typeName else
 		{
 			return try errorExpression(
 				forASTNode: Syntax(memberAccessExpression),
-				withMessage: "Failed to convert right side in member access expression")
+				withMessage: "Failed to get a type for the member access expression")
 		}
 
-		let rightSideText = memberToken.text
+		let rightSideToken = memberAccessExpression.name
+		let rightSideText = rightSideToken.text
 
 		// Get information for the left side
 		let leftExpression: Expression
 
-		// If it's an `expression` `.` `token`
-		if let expressionSyntax = memberAccessExpression.children.first?.as(ExprSyntax.self)
-		{
+		if let expressionSyntax = memberAccessExpression.base {
+			// If it's an `expression` `.` `token`
 			leftExpression = try convertExpression(expressionSyntax)
 		}
 		else if let leftType =
@@ -1957,6 +1983,12 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				range: memberAccessExpression.dot.getRange(inFile: self.sourceFile),
 				typeName: String(leftType.dropLast(".Type".count)))
 		}
+		else if let leftType = typeName {
+			// If it's an `.` `token` and the left type was given
+			leftExpression = TypeExpression(
+				range: memberAccessExpression.dot.getRange(inFile: self.sourceFile),
+				typeName: leftType)
+		}
 		else {
 			return try errorExpression(
 				forASTNode: Syntax(memberAccessExpression),
@@ -1967,7 +1999,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			range: memberAccessExpression.getRange(inFile: self.sourceFile),
 			leftExpression: leftExpression,
 			rightExpression: DeclarationReferenceExpression(
-				range: memberToken.getRange(inFile: self.sourceFile),
+				range: rightSideToken.getRange(inFile: self.sourceFile),
 				identifier: rightSideText,
 				typeName: memberType,
 				isStandardLibrary: false,
