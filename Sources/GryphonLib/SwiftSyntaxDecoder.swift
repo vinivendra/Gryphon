@@ -567,7 +567,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 										setter: nil,
 										access: nil,
 										isOpen: false,
-										isLet: false,
+										isLet: true,
 										isImplicit: false,
 										isStatic: false,
 										extendsType: nil,
