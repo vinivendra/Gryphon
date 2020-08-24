@@ -440,6 +440,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		_ ifStatement: IfLikeSyntax)
 		throws -> IfStatement
 	{
+		let statements: MutableList<Statement> = []
 		let conditions: MutableList<IfStatement.IfCondition> = []
 		for ifCondition in ifStatement.ifConditions {
 			if let expressionSyntax = ifCondition.condition.as(ExprSyntax.self) {
@@ -477,30 +478,129 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				let enumExpression = expressionPattern.expression.as(MemberAccessExprSyntax.self)
 			{
 				// if case
+				let leftExpression = matchingPattern.initializer.value
 
 				// The enumExpression may come as `.a1`, without direct way of knowing waht to place
 				// before the dot. Try to guess it from the type of the pattern expression.
 				let patternExpression = try convertExpression(matchingPattern.initializer.value)
 
+				// TODO: test a case where the left expression is present
 				if let enumType = patternExpression.swiftType {
-					conditions.append(.condition(expression: BinaryOperatorExpression(
-						range: ifCondition.getRange(inFile: self.sourceFile),
-						leftExpression: try convertExpression(matchingPattern.initializer.value),
-						rightExpression: try convertMemberAccessExpression(
-							enumExpression,
-							typeName: enumType),
-						operatorSymbol: "is",
-						typeName: "Bool")))
-					continue
+					let dotExpression = try convertMemberAccessExpression(
+						enumExpression,
+						typeName: enumType)
+					if let typeName = dotExpressionToString(dotExpression) {
+						conditions.append(.condition(expression: BinaryOperatorExpression(
+							range: ifCondition.getRange(inFile: self.sourceFile),
+							leftExpression: try convertExpression(leftExpression),
+							rightExpression: TypeExpression(
+								range: enumExpression.getRange(inFile: self.sourceFile),
+								typeName: typeName),
+							operatorSymbol: "is",
+							typeName: "Bool")))
+						continue
+					}
+				}
+			}
+			else if let matchingPattern =
+					ifCondition.condition.as(MatchingPatternConditionSyntax.self),
+				let valueBindingPattern =
+					matchingPattern.pattern.as(ValueBindingPatternSyntax.self),
+				let valuePattern =
+					valueBindingPattern.valuePattern.as(ExpressionPatternSyntax.self),
+				let callExpression =
+					valuePattern.expression.as(FunctionCallExprSyntax.self),
+				let calledExpression =
+					callExpression.calledExpression.as(MemberAccessExprSyntax.self)
+			{
+				// if case let
+				let leftExpression = matchingPattern.initializer.value
+
+				// The enumExpression may come as `.a1`, without direct way of knowing what to place
+				// before the dot. Try to guess it from the type of the pattern expression.
+				let patternExpression = try convertExpression(matchingPattern.initializer.value)
+
+				// TODO: test a case where the left expression is present
+				if let enumType = patternExpression.swiftType {
+					let dotExpression = try convertMemberAccessExpression(
+						calledExpression,
+						typeName: enumType)
+					if let typeName = dotExpressionToString(dotExpression) {
+						let enumExpression = try convertExpression(leftExpression)
+						conditions.append(.condition(expression: BinaryOperatorExpression(
+							range: ifCondition.getRange(inFile: self.sourceFile),
+							leftExpression: enumExpression,
+							rightExpression: TypeExpression(
+								range: calledExpression.getRange(inFile: self.sourceFile),
+								typeName: typeName),
+							operatorSymbol: "is",
+							typeName: "Bool")))
+
+						for argument in callExpression.argumentList {
+							if let label = argument.label {
+								// Create the enum member expression (e.g. `A.b`)
+								let range = argument.getRange(inFile: self.sourceFile)
+								let enumMember = DeclarationReferenceExpression(
+									range: range,
+									identifier: label.text,
+									typeName: typeName,
+									isStandardLibrary: false,
+									isImplicit: false)
+								let enumExpression = DotExpression(
+									range: range,
+									leftExpression: enumExpression,
+									rightExpression: enumMember)
+
+								if let pattern =
+									argument.expression.as(UnresolvedPatternExprSyntax.self),
+								let identifierPattern =
+									pattern.pattern.as(IdentifierPatternSyntax.self)
+								{
+									// If we're declaring a variable, e.g. the `bar` in
+									// `A.b(foo: bar)`
+									statements.append(VariableDeclaration(
+										range: argument.getRange(inFile: self.sourceFile),
+										identifier: identifierPattern.identifier.text,
+										typeAnnotation: nil,
+										expression: enumExpression,
+										getter: nil,
+										setter: nil,
+										access: nil,
+										isOpen: false,
+										isLet: false,
+										isImplicit: false,
+										isStatic: false,
+										extendsType: nil,
+										annotations: []))
+								}
+								else {
+									// If we're comparing a value, e.g. the `"bar"` in
+									// `A.b(foo: "bar")`
+									let comparedExpression =
+										try convertExpression(argument.expression)
+									conditions.append(.condition(
+										expression: BinaryOperatorExpression(
+											range: argument.getRange(inFile: self.sourceFile),
+											leftExpression: enumExpression,
+											rightExpression: comparedExpression,
+											operatorSymbol: "==",
+											typeName: "Bool")))
+								}
+							}
+						}
+
+						continue
+					}
 				}
 			}
 
+			// If we didn't `continue` before this point then this isn't a known if condition
 			try conditions.append(.condition(expression: errorExpression(
 				forASTNode: Syntax(ifCondition),
 				withMessage: "Unable to translate if condition")))
 		}
 
-		let statements = try convertStatements(ifStatement.statements)
+		statements.append(contentsOf: try convertStatements(ifStatement.statements))
 
 		let elseStatement: IfStatement?
 		if let elseIfSyntax = ifStatement.children.last?.as(IfStmtSyntax.self) {
@@ -527,6 +627,29 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			statements: statements,
 			elseStatement: elseStatement,
 			isGuard: ifStatement.isGuard)
+	}
+
+	/// Takes an expression like `A.B.C` and returns it as a string ("A.B.C"). Returns `nil` if any
+	/// expressions in the dot chain aren't declaration references or type expressions.
+	private func dotExpressionToString(_ expression: Expression) -> String? {
+		if let typeExpression = expression as? TypeExpression {
+			return typeExpression.typeName
+		}
+		else if let declarationExpression = expression as? DeclarationReferenceExpression {
+			return declarationExpression.identifier
+		}
+		else if let dotExpression = expression as? DotExpression {
+			guard let rightString = dotExpressionToString(dotExpression.rightExpression),
+				let leftString = dotExpressionToString(dotExpression.leftExpression) else
+			{
+				return nil
+			}
+
+			return leftString + "." + rightString
+		}
+		else {
+			return nil
+		}
 	}
 
 	func convertReturnStatement(

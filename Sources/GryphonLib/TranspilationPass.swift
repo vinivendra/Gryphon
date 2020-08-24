@@ -1474,17 +1474,48 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
 	// gryphon insert:     super(ast, context) { }
 
+	override func replaceTypeExpression( // gryphon annotation: override
+		_ typeExpression: TypeExpression)
+		-> Expression
+	{
+		let typeComponents = typeExpression.typeName.split(withStringSeparator: ".")
+
+		if typeComponents.count == 2,
+			self.context.sealedClasses.contains(typeComponents[0]) ||
+				self.context.enumClasses.contains(typeComponents[0])
+		{
+			let newType = typeComponents[0] + "." + typeComponents[1].capitalizedAsCamelCase()
+			return TypeExpression(
+				range: typeExpression.range,
+				typeName: newType)
+		}
+
+		return super.replaceTypeExpression(typeExpression)
+	}
+
 	override func replaceDotExpression( // gryphon annotation: override
 		_ dotExpression: DotExpression)
 		-> Expression
 	{
-		if let enumTypeExpression = dotExpression.leftExpression as? TypeExpression,
-			let enumExpression = dotExpression.rightExpression as? DeclarationReferenceExpression
+		let enumType: String
+		if !context.isUsingSwiftSyntax,
+			let enumExpression = dotExpression.leftExpression as? TypeExpression
 		{
+			enumType = enumExpression.typeName
+		}
+		else if context.isUsingSwiftSyntax,
+			let enumExpression = dotExpression.leftExpression as? DeclarationReferenceExpression
+		{
+			enumType = enumExpression.identifier
+		}
+		else {
+			return super.replaceDotExpression(dotExpression)
+		}
+
+		if let enumExpression = dotExpression.rightExpression as? DeclarationReferenceExpression {
 			// Enum types may need to be processed before they can be correctly interpreted
 			// (i.e. they may be `List<MyEnum>.ArrayLiteralElement` instead of `MyEnum`
-			let mappedEnumType = Utilities.getTypeMapping(for: enumTypeExpression.typeName) ??
-				enumTypeExpression.typeName
+			let mappedEnumType = Utilities.getTypeMapping(for: enumType) ?? enumType
 			let lastEnumType = String(mappedEnumType
 				.split(withStringSeparator: ".")
 				.last!)
@@ -1496,7 +1527,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 					range: dotExpression.range,
 					leftExpression: TypeExpression(
 						range: dotExpression.leftExpression.range,
-						typeName: enumTypeExpression.typeName),
+						typeName: enumType),
 					rightExpression: enumExpression)
 			}
 			else if self.context.enumClasses.contains(lastEnumType) {
@@ -1505,7 +1536,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 					range: dotExpression.range,
 					leftExpression: TypeExpression(
 						range: dotExpression.leftExpression.range,
-						typeName: enumTypeExpression.typeName),
+						typeName: enumType),
 					rightExpression: enumExpression)
 			}
 		}
