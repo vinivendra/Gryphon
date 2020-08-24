@@ -573,6 +573,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 										extendsType: nil,
 										annotations: []))
 								}
+								else if argument.expression.is(DiscardAssignmentExprSyntax.self) {
+									// `A.b(foo: _)`, just ignore it
+								}
 								else {
 									// If we're comparing a value, e.g. the `"bar"` in
 									// `A.b(foo: "bar")`
