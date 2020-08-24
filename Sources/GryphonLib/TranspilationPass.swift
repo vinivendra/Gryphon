@@ -3441,14 +3441,28 @@ public class IsOperatorsInIfStatementsTranspilationPass: TranspilationPass {
 	{
 		if case let .condition(expression: expression) = condition {
 			if let binaryExpression = expression as? BinaryOperatorExpression {
-				if binaryExpression.operatorSymbol == "is",
-					let typeExpression = binaryExpression.rightExpression as? TypeExpression
+				if binaryExpression.operatorSymbol == "is"
 				{
-					// Type expression is currently "MyEnum.enumCase". Separate it so we can check
-					// if the enum is in the context.
+					// Get the enum name to check if it's a sealed class or an enum class
+					let enumName: String
+					if !context.isUsingSwiftSyntax,
+						let typeExpression = binaryExpression.rightExpression as? TypeExpression
+					{
+						// Type expression is currently "MyEnum.enumCase". Separate it so we can
+						// check if the enum is in the context.
+						enumName = typeExpression.typeName.split(withStringSeparator: ".")[0]
+					}
+					else if context.isUsingSwiftSyntax,
+						let dotExpression = binaryExpression.rightExpression as? DotExpression,
+						let typeExpression = dotExpression.leftExpression as? TypeExpression
+					{
+						enumName = typeExpression.typeName
+					}
+					else {
+						return condition
+					}
 
-					let enumName = typeExpression.typeName.split(withStringSeparator: ".")[0]
-
+					// If it's an enum class, change it from "is" to "=="
 					if self.context.enumClasses.contains(enumName) {
 						return .condition(expression: BinaryOperatorExpression(
 							range: binaryExpression.range,

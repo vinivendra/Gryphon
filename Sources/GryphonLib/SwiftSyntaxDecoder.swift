@@ -489,7 +489,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 						rightExpression: try convertMemberAccessExpression(
 							enumExpression,
 							typeName: enumType),
-						operatorSymbol: "==",
+						operatorSymbol: "is",
 						typeName: "Bool")))
 					continue
 				}
