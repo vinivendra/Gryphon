@@ -165,6 +165,7 @@ class TestUtilities {
 		"extensions",
 		"generics",
 		"ifStatement",
+		"inits",
 		"functionCalls",
 		"standardLibrary",
 	]
