@@ -313,5 +313,6 @@ fun main(args: Array<String>) {
 	val c4: Int? = c2?.c?.c?.c?.x
 
 	if (c1 != null && c2 != null && c3 != null && c4 != null) {
+		// ...
 	}
 }

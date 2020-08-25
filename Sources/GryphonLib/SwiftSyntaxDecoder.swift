@@ -102,6 +102,65 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 	}
 
+	func convertBlock<Block>(
+		_ block: Block)
+		throws -> MutableList<Statement>
+		where Block: SyntaxListContainer
+	{
+		let statements = try convertStatements(block.elements)
+
+		// Parse the ending comments
+		let triviaPieces = getLeadingComments(forSyntax: block.endSyntax)
+		for comment in triviaPieces {
+			switch comment {
+			case let .translationComment(comment: translationComment, range: range):
+				if let commentValue = translationComment.value {
+					if translationComment.key == .insertInMain {
+						statements.append(ExpressionStatement(
+							range: range,
+							expression: LiteralCodeExpression(
+								range: range,
+								string: commentValue,
+								shouldGoToMainFunction: true,
+								typeName: nil)))
+					}
+					else if translationComment.key == .insert {
+						statements.append(ExpressionStatement(
+							range: range,
+							expression: LiteralCodeExpression(
+								range: range,
+								string: commentValue,
+								shouldGoToMainFunction: false,
+								typeName: nil)))
+					}
+					else if translationComment.key == .output {
+						if let fileExtension = Utilities.getExtension(of: commentValue),
+							(fileExtension == .swiftAST ||
+							 fileExtension == .gryphonASTRaw ||
+							 fileExtension == .gryphonAST ||
+							 fileExtension == .kt)
+						{
+							outputFileMap[fileExtension] = translationComment.value
+						}
+						else {
+							Compiler.handleWarning(
+								message: "Unsupported output file extension in " +
+									"\"\(commentValue)\". Did you mean to use \".kt\"?",
+								sourceFile: sourceFile,
+								sourceFileRange: range)
+						}
+					}
+				}
+			case let .normalComment(comment: normalComment):
+				statements.append(normalComment)
+			}
+		}
+
+		return statements
+	}
+
+	/// Converts a list of statements. Ignores possible trivia at the end, since the list doesn't
+	/// include braces (and the end trivia is associated with the closing brace).
 	func convertStatements<Body>(
 		_ statements: Body)
 		throws -> MutableList<Statement>
@@ -264,7 +323,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		return (declarations, statements)
 	}
 
-	private enum LeadingComment {
+	private enum Comment {
 		case translationComment(comment: SourceFile.TranslationComment, range: SourceFileRange)
 		case normalComment(comment: CommentStatement)
 	}
@@ -290,9 +349,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 	private func getLeadingComments(
 		forSyntax syntax: Syntax)
-		-> MutableList<LeadingComment>
+		-> MutableList<Comment>
 	{
-		let result: MutableList<LeadingComment> = []
+		let result: MutableList<Comment> = []
 
 		if let leadingTrivia = syntax.leadingTrivia {
 			var startOffset = syntax.position.utf8Offset
@@ -398,6 +457,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 						withMessage: "Unsupported switch case label")]
 				}
 
+				// TODO: Check for comments at the end
 				let statements = try convertStatements(switchCase.statements)
 
 				cases.append(SwitchCase(
@@ -427,7 +487,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	{
 		let variable = try convertPatternExpression(forStatement.pattern)
 		let collection = try convertExpression(forStatement.sequenceExpr)
-		let statements = try convertStatements(forStatement.body.statements)
+		let statements = try convertBlock(forStatement.body)
 
 		return ForEachStatement(
 			range: forStatement.getRange(inFile: self.sourceFile),
@@ -603,14 +663,14 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				withMessage: "Unable to translate if condition")))
 		}
 
-		statements.append(contentsOf: try convertStatements(ifStatement.statements))
+		statements.append(contentsOf: try convertBlock(ifStatement.statements))
 
 		let elseStatement: IfStatement?
 		if let elseIfSyntax = ifStatement.children.last?.as(IfStmtSyntax.self) {
 			elseStatement = try convertIfStatement(elseIfSyntax)
 		}
 		else if let elseBlock = ifStatement.elseBlock {
-			let elseBodyStatements = try convertStatements(elseBlock.statements)
+			let elseBodyStatements = try convertBlock(elseBlock)
 			elseStatement = IfStatement(
 				range: elseBlock.getRange(inFile: self.sourceFile),
 				conditions: [],
@@ -727,7 +787,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 						accessor.children.first(where: { $0.is(CodeBlockSyntax.self) }),
 					let codeBlock = maybeCodeBlock.as(CodeBlockSyntax.self)
 				{
-					let statements = try convertStatements(codeBlock.statements)
+					let statements = try convertBlock(codeBlock)
 
 					let prefix = accessor.accessorKind.text
 
@@ -823,7 +883,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		return ExtensionDeclaration(
 			range: extensionDeclaration.getRange(inFile: self.sourceFile),
 			typeName: extendedType,
-			members: try convertStatements(extensionDeclaration.members.members))
+			members: try convertBlock(extensionDeclaration.members))
 	}
 
 	func convertProtocolDeclaration(
@@ -846,7 +906,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			protocolName: protocolDeclaration.identifier.text,
 			access: accessAndAnnotations.access,
 			annotations: annotations,
-			members: try convertStatements(protocolDeclaration.members.members))
+			members: try convertBlock(protocolDeclaration.members))
 	}
 
 	func convertEnumDeclaration(
@@ -952,7 +1012,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			structName: structName,
 			access: accessAndAnnotations.access,
 			inherits: MutableList(inheritances),
-			members: try convertStatements(structDeclaration.members.members))
+			members: try convertBlock(structDeclaration.members))
 	}
 
 	func convertClassDeclaration(
@@ -980,7 +1040,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			access: accessAndAnnotations.access,
 			isOpen: true,
 			inherits: MutableList(inheritances),
-			members: try convertStatements(classDeclaration.members.members))
+			members: try convertBlock(classDeclaration.members))
 	}
 
 	func convertImportDeclaration(
@@ -1019,7 +1079,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 		let statements: MutableList<Statement>
 		if let statementsSyntax = functionLikeDeclaration.statements {
-			statements = try convertStatements(statementsSyntax)
+			statements = try convertBlock(statementsSyntax)
 		}
 		else {
 			statements = []
@@ -1205,7 +1265,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					// TODO: test
 					// If there's an implicit getter (e.g. `var a: Int { return 0 }`)
 					let range = codeBlock.getRange(inFile: self.sourceFile)
-					let statements = try convertStatements(codeBlock.statements)
+					let statements = try convertBlock(codeBlock)
 
 					guard let typeName = annotatedType else {
 						let error = try errorStatement(
@@ -1256,7 +1316,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 								{ $0.is(CodeBlockSyntax.self) }),
 							let codeBlock = maybeCodeBlock.as(CodeBlockSyntax.self)
 						{
-							let statements = try convertStatements(codeBlock.statements)
+							let statements = try convertBlock(codeBlock)
 
 							guard let typeName = annotatedType else {
 								let error = try errorStatement(
@@ -2653,7 +2713,7 @@ protocol FunctionLikeSyntax: SyntaxProtocol {
 	var isInitializer: Bool { get }
 	var prefix: String { get }
 	var parameterList: FunctionParameterListSyntax { get }
-	var statements: CodeBlockItemListSyntax? { get }
+	var statements: CodeBlockSyntax? { get }
 	var modifierList: ModifierListSyntax? { get }
 	var returnType: TypeSyntax? { get }
 	var generics: GenericParameterListSyntax? { get }
@@ -2674,8 +2734,8 @@ extension FunctionDeclSyntax: FunctionLikeSyntax {
 		return self.signature.input.parameterList
 	}
 
-	var statements: CodeBlockItemListSyntax? {
-		return self.body?.statements
+	var statements: CodeBlockSyntax? {
+		return self.body
 	}
 
 	var modifierList: ModifierListSyntax? {
@@ -2708,8 +2768,8 @@ extension InitializerDeclSyntax: FunctionLikeSyntax {
 		return self.parameters.parameterList
 	}
 
-	var statements: CodeBlockItemListSyntax? {
-		return self.body?.statements
+	var statements: CodeBlockSyntax? {
+		return self.body
 	}
 
 	var modifierList: ModifierListSyntax? {
@@ -2735,7 +2795,7 @@ extension InitializerDeclSyntax: FunctionLikeSyntax {
 /// A protocol to convert IfStmtSyntax and GuardStmtSyntax with the same algorithm.
 protocol IfLikeSyntax: SyntaxProtocol {
 	var ifConditions: ConditionElementListSyntax { get }
-	var statements: CodeBlockItemListSyntax { get }
+	var statements: CodeBlockSyntax { get }
 	var elseBlock: CodeBlockSyntax? { get }
 	var isGuard: Bool { get }
 }
@@ -2745,8 +2805,8 @@ extension IfStmtSyntax: IfLikeSyntax {
 		return self.conditions
 	}
 
-	var statements: CodeBlockItemListSyntax {
-		return self.body.statements
+	var statements: CodeBlockSyntax {
+		return self.body
 	}
 
 	var elseBlock: CodeBlockSyntax? {
@@ -2763,8 +2823,8 @@ extension GuardStmtSyntax: IfLikeSyntax {
 		return self.conditions
 	}
 
-	var statements: CodeBlockItemListSyntax {
-		return self.body.statements
+	var statements: CodeBlockSyntax {
+		return self.body
 	}
 
 	var elseBlock: CodeBlockSyntax? {
@@ -2773,6 +2833,33 @@ extension GuardStmtSyntax: IfLikeSyntax {
 
 	var isGuard: Bool {
 		return true
+	}
+}
+
+/// A syntax that represents a code block. Contains a SyntaxList of statements and an endSyntax
+/// (usually a closing brace) from which to get the final comments (using its `leadingSyntax` and
+/// `position.utf8offset`).
+protocol SyntaxListContainer: SyntaxProtocol {
+	associatedtype ElementList: SyntaxList
+	var elements: ElementList { get }
+	var endSyntax: Syntax { get }
+}
+
+extension CodeBlockSyntax: SyntaxListContainer {
+	var elements: CodeBlockItemListSyntax {
+		return self.statements
+	}
+	var endSyntax: Syntax {
+		return Syntax(self.rightBrace)
+	}
+}
+
+extension MemberDeclBlockSyntax: SyntaxListContainer {
+	var elements: MemberDeclListSyntax {
+		return self.members
+	}
+	var endSyntax: Syntax {
+		return Syntax(self.rightBrace)
 	}
 }
 
