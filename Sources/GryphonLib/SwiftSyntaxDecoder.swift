@@ -1997,12 +1997,25 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					limitedToElements: elements.dropFirst(index + 1))
 				let operatorString = operatorSyntax.operatorToken.text
 
+				let typeName: String?
+				if let operatorType =
+						operatorSyntax.operatorToken.getType(fromList: self.expressionTypes),
+					let resultType = Utilities.splitTypeList(operatorType, separators: ["->"]).last
+				{
+					// The operator type will be a function type like `(Int, Int) -> Int` for
+					// `1 + 1`, so we use that function's result type
+					typeName = resultType
+				}
+				else {
+					typeName = nil
+				}
+
 				return BinaryOperatorExpression(
 					range: range,
 					leftExpression: leftHalf,
 					rightExpression: rightHalf,
 					operatorSymbol: operatorString,
-					typeName: nil)
+					typeName: typeName)
 			}
 			else if let asSyntax = elements[index].as(AsExprSyntax.self) {
 				if index != (elements.count - 1) {
