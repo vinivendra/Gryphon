@@ -40,6 +40,9 @@ import Foundation
 let languageName = /* gryphon value: \"kotlin\" */ "swift"
 print("Hello from \(languageName)!")
 
+let magicNumber: Int = /* gryphon value: 40 + 5-3 */ 40 + 2
+print(magicNumber)
+
 func f(a: Int = 0, b: Int = /* gryphon value: 1 */ 0) {
 	print(a + b)
 }

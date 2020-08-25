@@ -98,6 +98,10 @@ fun main(args: Array<String>) {
 	val languageName: String = "kotlin"
 
 	println("Hello from ${languageName}!")
+
+	val magicNumber: Int = 40 + 5-3
+
+	println(magicNumber)
 	f(a = 0, b = 1)
 
 	println("This will be ignored by swift, but not by kotlin.")
