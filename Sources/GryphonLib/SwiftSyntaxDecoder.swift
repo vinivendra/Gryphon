@@ -793,6 +793,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let importDeclaration = declaration.as(ImportDeclSyntax.self) {
 			return try [convertImportDeclaration(importDeclaration)]
 		}
+		if let typealiasDeclaration = declaration.as(TypealiasDeclSyntax.self) {
+			return try [convertTypealiasDeclaration(typealiasDeclaration)]
+		}
 
 		return try [errorStatement(
 			forASTNode: Syntax(declaration),
@@ -1068,6 +1071,27 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			isOpen: true,
 			inherits: MutableList(inheritances),
 			members: try convertBlock(classDeclaration.members))
+	}
+
+	func convertTypealiasDeclaration(
+		_ typealiasDeclaration: TypealiasDeclSyntax)
+		throws -> Statement
+	{
+		guard let typeSyntax = typealiasDeclaration.initializer?.value else {
+			return try errorStatement(
+				forASTNode: Syntax(typealiasDeclaration),
+				withMessage: "Unable to get the type name.")
+		}
+
+		let accessAndAnnotations =
+			getAccessAndAnnotations(fromModifiers: typealiasDeclaration.modifiers)
+
+		return TypealiasDeclaration(
+			range: typealiasDeclaration.getRange(inFile: self.sourceFile),
+			identifier: typealiasDeclaration.identifier.text,
+			typeName: try convertType(typeSyntax),
+			access: accessAndAnnotations.access,
+			isImplicit: false)
 	}
 
 	func convertImportDeclaration(
