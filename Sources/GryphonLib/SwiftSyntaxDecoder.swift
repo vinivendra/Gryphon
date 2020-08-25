@@ -82,7 +82,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	}
 
 	func convertToGryphonAST(asMainFile isMainFile: Bool) throws -> GryphonAST {
-		let statements = try convertStatements(self.syntaxTree.statements)
+		let statements = try convertBlock(self.syntaxTree)
 
 		if isMainFile {
 			let declarationsAndStatements = filterStatements(statements)
@@ -2882,6 +2882,15 @@ extension ClosureExprSyntax: SyntaxListContainer {
 	}
 	var endSyntax: Syntax {
 		return Syntax(self.rightBrace)
+	}
+}
+
+extension SourceFileSyntax: SyntaxListContainer {
+	var elements: CodeBlockItemListSyntax {
+		return self.statements
+	}
+	var endSyntax: Syntax {
+		return Syntax(self.eofToken)
 	}
 }
 
