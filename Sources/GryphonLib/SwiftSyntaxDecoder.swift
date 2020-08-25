@@ -1297,6 +1297,18 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					expression = nil
 				}
 
+				// If it's a `let _ = foo`
+				guard identifier != "_" else {
+					if let expression = expression {
+						return [ExpressionStatement(
+							range: variableDeclaration.getRange(inFile: self.sourceFile),
+							expression: expression), ]
+					}
+					else {
+						return []
+					}
+				}
+
 				let annotatedType: String?
 				if let typeAnnotation = patternBinding.typeAnnotation?.type {
 					annotatedType = try convertType(typeAnnotation)
