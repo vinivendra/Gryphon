@@ -1900,7 +1900,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		return ClosureExpression(
 			range: closureExpression.getRange(inFile: self.sourceFile),
 			parameters: parameters,
-			statements: try convertStatements(closureExpression.statements),
+			statements: try convertBlock(closureExpression),
 			typeName: typeName)
 	}
 
@@ -2857,6 +2857,15 @@ extension CodeBlockSyntax: SyntaxListContainer {
 extension MemberDeclBlockSyntax: SyntaxListContainer {
 	var elements: MemberDeclListSyntax {
 		return self.members
+	}
+	var endSyntax: Syntax {
+		return Syntax(self.rightBrace)
+	}
+}
+
+extension ClosureExprSyntax: SyntaxListContainer {
+	var elements: CodeBlockItemListSyntax {
+		return self.statements
 	}
 	var endSyntax: Syntax {
 		return Syntax(self.rightBrace)
