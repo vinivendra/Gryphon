@@ -417,6 +417,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let forStatement = statement.as(ForInStmtSyntax.self) {
 			return try convertForStatement(forStatement)
 		}
+		if let whileStatement = statement.as(WhileStmtSyntax.self) {
+			return try convertWhileStatement(whileStatement)
+		}
 		if let switchStatement = statement.as(SwitchStmtSyntax.self) {
 			return try convertSwitchStatement(switchStatement)
 		}
@@ -479,6 +482,30 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			convertsToExpression: nil,
 			expression: expression,
 			cases: cases)
+	}
+
+	func convertWhileStatement(
+		_ whileStatement: WhileStmtSyntax)
+		throws -> Statement
+	{
+		let conditions = whileStatement.conditions
+
+		guard conditions.count == 1,
+			let onlyCondition = conditions.first,
+			let onlyExpression = onlyCondition.condition.as(ExprSyntax.self) else
+		{
+			return try errorStatement(
+				forASTNode: Syntax(whileStatement),
+				withMessage: "Expected while statement to have one expression as its condition")
+		}
+
+		let expression = try convertExpression(onlyExpression)
+		let statements = try convertBlock(whileStatement.body)
+
+		return WhileStatement(
+			range: whileStatement.getRange(inFile: self.sourceFile),
+			expression: expression,
+			statements: statements)
 	}
 
 	func convertForStatement(
