@@ -166,6 +166,7 @@ class TestUtilities {
 		"generics",
 		"ifStatement",
 		"inits",
+		"kotlinLiterals",
 		"functionCalls",
 		"standardLibrary",
 	]
