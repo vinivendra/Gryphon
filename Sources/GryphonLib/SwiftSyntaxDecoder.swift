@@ -2668,13 +2668,58 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				// in Swift) includes:
 				// - an extra newline at the beggining
 				// - an extra newline at the end, possibly followed by some indentation
-				if cleanText.hasPrefix("\n"),
-					let lastNewlineIndex = cleanText.lastIndex(of: "\n"),
-					cleanText[cleanText.index(after: lastNewlineIndex)...]
+				// The indentation before the end determines the indentation that will be ignored
+				// throughout the string.
+
+				// Ensure the string really does start and end with newlines
+				if text.hasPrefix("\n"),
+					let lastNewlineIndex = text.lastIndex(of: "\n"),
+					text[text.index(after: lastNewlineIndex)...]
 						.allSatisfy({ $0 == " " || $0 == "\t" })
 				{
-					cleanText = String(cleanText[..<lastNewlineIndex])
-					cleanText = String(cleanText.dropFirst())
+					let stringLines = text.split(
+							withStringSeparator: "\n",
+							omittingEmptySubsequences: false)
+					let lastLine = stringLines.last!
+					let indentation = lastLine
+
+					let stringRange = stringLiteralExpression.getRange(inFile: self.sourceFile)
+
+					let cleanLines = stringLines.dropFirst().dropLast().enumerated().map
+						{ (index: Int, line: String) -> String in
+							if line.isEmpty {
+								// Empty lines are ok
+								return line
+							}
+
+							if !line.hasPrefix(indentation) {
+								// If we're dealing with different indentation, like spaces vs tabs
+								let problemRange: SourceFileRange?
+								if let range = stringRange {
+									problemRange = SourceFileRange(
+										lineStart: range.lineStart + index,
+										lineEnd: range.lineStart + index,
+										columnStart: 1,
+										columnEnd: indentation.count + 1)
+								}
+								else {
+									problemRange = nil
+								}
+
+								Compiler.handleWarning(
+									message: "Unexpected indentation around here",
+									ast: stringLiteralExpression.toPrintableTree(),
+									sourceFile: self.sourceFile,
+									sourceFileRange: problemRange)
+
+								return line
+							}
+							else {
+								return String(line.dropFirst(indentation.count))
+							}
+						}
+
+					cleanText = cleanLines.joined(separator: "\n")
 				}
 				else {
 					// This shouldn't happen
