@@ -1125,12 +1125,23 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let annotations = accessAndAnnotations.annotations
 		annotations.append(contentsOf: manualAnnotations)
 
+		let isOpen: Bool
+		if annotations.remove("final") {
+			isOpen = false
+		}
+		else if let access = accessAndAnnotations.access, access == "open" {
+			isOpen = true
+		}
+		else {
+			isOpen = !context.defaultsToFinal
+		}
+
 		return ClassDeclaration(
 			range: classDeclaration.getRange(inFile: self.sourceFile),
 			className: classDeclaration.identifier.text,
 			annotations: annotations,
 			access: accessAndAnnotations.access,
-			isOpen: true,
+			isOpen: isOpen,
 			inherits: MutableList(inheritances),
 			members: try convertBlock(classDeclaration.members))
 	}
@@ -1198,21 +1209,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			statements = []
 		}
 
-		let isOpen: Bool
-		if let modifiers = functionLikeDeclaration.modifierList,
-			modifiers.contains(where: { $0.name.text == "final" })
-		{
-			isOpen = false
-		}
-		else if let modifiers = functionLikeDeclaration.modifierList,
-			modifiers.contains(where: { $0.name.text == "open" })
-		{
-			isOpen = true
-		}
-		else {
-			isOpen = !self.context.defaultsToFinal
-		}
-
 		let accessAndAnnotations =
 			getAccessAndAnnotations(fromModifiers: functionLikeDeclaration.modifierList)
 
@@ -1223,6 +1219,17 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let manualAnnotations = annotationComments.compactMap { $0.value }
 		let annotations = accessAndAnnotations.annotations
 		annotations.append(contentsOf: manualAnnotations)
+
+		let isOpen: Bool
+		if annotations.remove("final") {
+			isOpen = false
+		}
+		else if let access = accessAndAnnotations.access, access == "open" {
+			isOpen = true
+		}
+		else {
+			isOpen = !context.defaultsToFinal
+		}
 
 		let generics: MutableList<String>
 		if let genericsSyntax = functionLikeDeclaration.generics {
@@ -1542,25 +1549,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					continue
 				}
 
-				let isOpen: Bool
-				if let modifiers = variableDeclaration.modifiers,
-					modifiers.contains(where: { $0.name.text == "final" })
-				{
-					isOpen = false
-				}
-				else if let modifiers = variableDeclaration.modifiers,
-					modifiers.contains(where: { $0.name.text == "open" })
-				{
-					isOpen = true
-				}
-				else if isLet {
-					// Only var's can be open in Swift
-					isOpen = false
-				}
-				else {
-					isOpen = !self.context.defaultsToFinal
-				}
-
 				let accessAndAnnotations =
 					getAccessAndAnnotations(fromModifiers: variableDeclaration.modifiers)
 
@@ -1573,6 +1561,21 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				let manualAnnotations = annotationComments.compactMap { $0.value }
 				let annotations = accessAndAnnotations.annotations
 				annotations.append(contentsOf: manualAnnotations)
+
+				let isOpen: Bool
+				if annotations.remove("final") {
+					isOpen = false
+				}
+				else if let access = accessAndAnnotations.access, access == "open" {
+					isOpen = true
+				}
+				else if isLet {
+					// Only var's can be open in Swift
+					isOpen = false
+				}
+				else {
+					isOpen = !context.defaultsToFinal
+				}
 
 				result.append(VariableDeclaration(
 					range: variableDeclaration.getRange(inFile: self.sourceFile),
