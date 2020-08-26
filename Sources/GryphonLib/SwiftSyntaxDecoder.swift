@@ -2570,16 +2570,20 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		_ floatLiteralExpression: FloatLiteralExprSyntax)
 		throws -> Expression
 	{
+		let string = floatLiteralExpression.floatingDigits.text
+		// Remove the `_` from `1_000`
+		let cleanString = string.replacingOccurrences(of: "_", with: "")
+
 		if let typeName = floatLiteralExpression.getType(fromList: self.expressionTypes) {
 			if typeName == "Float",
-				let floatValue = Float(floatLiteralExpression.floatingDigits.text)
+				let floatValue = Float(cleanString)
 			{
 				return LiteralFloatExpression(
 					range: floatLiteralExpression.getRange(inFile: self.sourceFile),
 					value: floatValue)
 			}
 			else if typeName == "Double",
-				let doubleValue = Double(floatLiteralExpression.floatingDigits.text)
+				let doubleValue = Double(cleanString)
 			{
 				return LiteralDoubleExpression(
 					range: floatLiteralExpression.getRange(inFile: self.sourceFile),
@@ -2596,24 +2600,35 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		_ integerLiteralExpression: IntegerLiteralExprSyntax)
 		throws -> Expression
 	{
+		let string = integerLiteralExpression.digits.text
+		// Remove the `_` from `1_000`
+		let cleanString = string.replacingOccurrences(of: "_", with: "")
+
 		if let typeName = integerLiteralExpression.getType(fromList: self.expressionTypes) {
 			if typeName == "Double",
-				let doubleValue = Double(integerLiteralExpression.digits.text)
+				let doubleValue = Double(cleanString)
 			{
 				return LiteralDoubleExpression(
 					range: integerLiteralExpression.getRange(inFile: self.sourceFile),
 					value: doubleValue)
 			}
-			else if typeName == "Float",
-				let floatValue = Float(integerLiteralExpression.digits.text)
+			else if typeName.hasPrefix("Float"),
+				let floatValue = Float(cleanString)
 			{
 				return LiteralFloatExpression(
 					range: integerLiteralExpression.getRange(inFile: self.sourceFile),
 					value: floatValue)
 			}
+			else if typeName.hasPrefix("UInt"),
+				let uIntValue = UInt64(cleanString)
+			{
+				return LiteralUIntExpression(
+					range: integerLiteralExpression.getRange(inFile: self.sourceFile),
+					value: uIntValue)
+			}
 		}
 
-		if let intValue = Int64(integerLiteralExpression.digits.text) {
+		if let intValue = Int64(cleanString) {
 			return LiteralIntExpression(
 				range: integerLiteralExpression.getRange(inFile: self.sourceFile),
 				value: intValue)
