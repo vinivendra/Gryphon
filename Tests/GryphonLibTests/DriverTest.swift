@@ -113,6 +113,66 @@ class DriverTest: XCTestCase {
 		Compiler.logError = oldErrorFunction
 	}
 
+	func testOutputsWithSwiftSyntax() {
+		let oldOutputFunction = Compiler.outputFunction
+		let oldErrorFunction = Compiler.logError
+
+		var compilerOutput = ""
+		var compilerError = ""
+		Compiler.outputFunction = { contents in
+				compilerOutput = compilerOutput + "\(contents)"
+			}
+		Compiler.logError = { contents in
+				compilerError = compilerError + "\(contents)"
+			}
+
+		do {
+			try Driver.run(withArguments: ["test.swift", "-swiftSyntax"])
+			XCTAssert(!compilerOutput.isEmpty)
+
+			compilerOutput = ""
+			try Driver.run(withArguments: ["Test cases/outputs.swift", "-swiftSyntax"])
+			XCTAssert(compilerOutput.isEmpty)
+
+			compilerOutput = ""
+			try Driver.run(withArguments:
+				["Test cases/outputs.swift",
+				 "--write-to-console",
+				 "-swiftSyntax"])
+			XCTAssert(!compilerOutput.isEmpty)
+
+			// Check if --quiet mutes outputs and warnings
+			// TODO: Run this test
+//			compilerOutput = ""
+//			compilerError = ""
+//			try Driver.run(withArguments:
+//				["Test cases/warnings.swift",
+//				 "--write-to-console",
+//				 "--quiet",
+//				 "-swiftSyntax"])
+//			XCTAssert(compilerOutput.isEmpty)
+//			XCTAssert(compilerError.isEmpty)
+
+			// Check if --quiet does not mute errors
+			compilerOutput = ""
+			compilerError = ""
+			try Driver.run(withArguments:
+				["Test cases/errors.swift",
+				 "--write-to-console",
+				 "--quiet",
+				 "--continue-on-error",
+				 "-swiftSyntax"])
+			XCTAssert(compilerOutput.isEmpty)
+			XCTAssert(!compilerError.isEmpty)
+		}
+		catch let error {
+			XCTFail("🚨 Test failed with error:\n\(error)")
+		}
+
+		Compiler.outputFunction = oldOutputFunction
+		Compiler.logError = oldErrorFunction
+	}
+
 	func testGenerateGryphonLibraries() {
 		do {
 			try Driver.run(withArguments: ["generate-libraries"])
