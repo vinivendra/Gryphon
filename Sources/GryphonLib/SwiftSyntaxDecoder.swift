@@ -2659,10 +2659,38 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					range: range,
 					value: text)
 			}
+
+			let isMultiline = (stringLiteralExpression.openQuote.tokenKind == .multilineStringQuote)
+
+			var cleanText = text
+			if isMultiline {
+				// The text obtained from SwiftSyntax (as compared to whats considered semantically
+				// in Swift) includes:
+				// - an extra newline at the beggining
+				// - an extra newline at the end, possibly followed by some indentation
+				if cleanText.hasPrefix("\n"),
+					let lastNewlineIndex = cleanText.lastIndex(of: "\n"),
+					cleanText[cleanText.index(after: lastNewlineIndex)...]
+						.allSatisfy({ $0 == " " || $0 == "\t" })
+				{
+					cleanText = String(cleanText[..<lastNewlineIndex])
+					cleanText = String(cleanText.dropFirst())
+				}
+				else {
+					// This shouldn't happen
+					Compiler.handleWarning(
+						message: "Expected multiline strings to have extra newlines at the " +
+						"beggining and at the end",
+						ast: stringLiteralExpression.toPrintableTree(),
+						sourceFile: self.sourceFile,
+						sourceFileRange: stringLiteralExpression.getRange(inFile: self.sourceFile))
+				}
+			}
+
 			return LiteralStringExpression(
 				range: range,
-				value: text,
-				isMultiline: false)
+				value: cleanText,
+				isMultiline: isMultiline)
 		}
 
 		// If it's a string interpolation
