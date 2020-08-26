@@ -170,6 +170,7 @@ class TestUtilities {
 		"kotlinLiterals",
 		"logicOperators",
 		"misc",
+		"numericLiterals",
 		"standardLibrary",
 	]
 }
