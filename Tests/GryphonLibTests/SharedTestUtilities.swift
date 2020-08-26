@@ -163,12 +163,13 @@ class TestUtilities {
 		"closures",
 		"enums",
 		"extensions",
+		"functionCalls",
 		"generics",
 		"ifStatement",
 		"inits",
 		"kotlinLiterals",
 		"logicOperators",
-		"functionCalls",
+		"misc",
 		"standardLibrary",
 	]
 }
