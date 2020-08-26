@@ -174,6 +174,7 @@ class TestUtilities {
 		"openAndFinal",
 		"openAndFinal-default-final",
 		"operators",
+		"strings",
 		"standardLibrary",
 	]
 }
