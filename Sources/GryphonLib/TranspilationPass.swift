@@ -4903,6 +4903,39 @@ public class RemoveOpenForInitializersTranspilationPass: TranspilationPass {
 	}
 }
 
+/// Kotlin catch statements must have a variable declaration
+public class AddVariablesToCatchesTranspilationPass: TranspilationPass {
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
+
+	override func replaceCatchStatement( // gryphon annotation: override
+		_ catchStatement: CatchStatement)
+		-> List<Statement>
+	{
+		if catchStatement.variableDeclaration == nil {
+			return super.replaceCatchStatement(CatchStatement(
+				range: catchStatement.range,
+				variableDeclaration: VariableDeclaration(
+					range: catchStatement.range,
+					identifier: "_error",
+					typeAnnotation: "Error",
+					expression: nil,
+					getter: nil,
+					setter: nil,
+					access: nil,
+					isOpen: false,
+					isLet: true,
+					isImplicit: false,
+					isStatic: false,
+					extendsType: nil,
+					annotations: []),
+				statements: catchStatement.statements))
+		}
+
+		return super.replaceCatchStatement(catchStatement)
+	}
+}
+
 public extension TranspilationPass {
 	/// Runs transpilation passes that have to be run on all files before the other passes can
 	/// run. For instance, we need to record all enums declared on all files before we can
@@ -4995,6 +5028,7 @@ public extension TranspilationPass {
 		ast = FixProtocolGenericsTranspilationPass(ast: ast, context: context).run()
 		ast = FixExtensionGenericsTranspilationPass(ast: ast, context: context).run()
 		ast = RemoveOpenForInitializersTranspilationPass(ast: ast, context: context).run()
+		ast = AddVariablesToCatchesTranspilationPass(ast: ast, context: context).run()
 
 		// - CapitalizeEnums has to be before IsOperatorsInSealedClasses and
 		//   IsOperatorsInIfStatementsTranspilationPass

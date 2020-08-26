@@ -231,7 +231,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				try result.append(contentsOf: convertDeclaration(declaration))
 			}
 			else if let statement = item.as(StmtSyntax.self) {
-				try result.append(convertStatement(statement))
+				try result.append(contentsOf: convertStatement(statement))
 			}
 			else if let expression = item.as(ExprSyntax.self) {
 				if shouldConvertToStatement(expression) {
@@ -399,34 +399,96 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	}
 
 	// MARK: - Statements
-	func convertStatement(_ statement: StmtSyntax) throws -> Statement {
+	func convertStatement(_ statement: StmtSyntax) throws -> List<Statement> {
 		if let returnStatement = statement.as(ReturnStmtSyntax.self) {
-			return try convertReturnStatement(returnStatement)
+			return try [convertReturnStatement(returnStatement)]
 		}
 		if let ifStatement: IfLikeSyntax =
 			statement.as(IfStmtSyntax.self) ??
 			statement.as(GuardStmtSyntax.self)
 		{
-			return try convertIfStatement(ifStatement)
+			return try [convertIfStatement(ifStatement)]
 		}
 		if let throwStatement = statement.as(ThrowStmtSyntax.self) {
-			return ThrowStatement(
+			return [ThrowStatement(
 				range: throwStatement.getRange(inFile: self.sourceFile),
-				expression: try convertExpression(throwStatement.expression))
+				expression: try convertExpression(throwStatement.expression))]
 		}
 		if let forStatement = statement.as(ForInStmtSyntax.self) {
-			return try convertForStatement(forStatement)
+			return try [convertForStatement(forStatement)]
 		}
 		if let whileStatement = statement.as(WhileStmtSyntax.self) {
-			return try convertWhileStatement(whileStatement)
+			return try [convertWhileStatement(whileStatement)]
 		}
 		if let switchStatement = statement.as(SwitchStmtSyntax.self) {
-			return try convertSwitchStatement(switchStatement)
+			return try [convertSwitchStatement(switchStatement)]
+		}
+		if let doStatement = statement.as(DoStmtSyntax.self) {
+			return try convertDoStatement(doStatement)
 		}
 
-		return try errorStatement(
+		return try [errorStatement(
 			forASTNode: Syntax(statement),
-			withMessage: "Unknown statement")
+			withMessage: "Unknown statement")]
+	}
+
+	func convertDoStatement(
+		_ doStatement: DoStmtSyntax)
+		throws -> MutableList<Statement>
+	{
+		let result: MutableList<Statement> = []
+
+		result.append(DoStatement(
+			range: doStatement.getRange(inFile: self.sourceFile),
+			statements: try convertBlock(doStatement.body)))
+
+		if let catchClauses = doStatement.catchClauses {
+			for catchClause in catchClauses {
+				let variableDeclaration: VariableDeclaration?
+				if let pattern = catchClause.pattern {
+					// If a variable is being declared
+					if let valueBindingPattern =
+							pattern.as(ValueBindingPatternSyntax.self),
+						let valuePattern =
+							valueBindingPattern.valuePattern.as(IdentifierPatternSyntax.self)
+					{
+						// If the declaration is supported
+						variableDeclaration = VariableDeclaration(
+							range: pattern.getRange(inFile: self.sourceFile),
+							identifier: valuePattern.identifier.text,
+							typeAnnotation: "Error",
+							expression: nil,
+							getter: nil,
+							setter: nil,
+							access: nil,
+							isOpen: false,
+							isLet: valueBindingPattern.letOrVarKeyword.text == "let",
+							isImplicit: false,
+							isStatic: false,
+							extendsType: nil,
+							annotations: [])
+					}
+					else {
+						// If the declaration is not supported
+						try result.append(errorStatement(
+							forASTNode: Syntax(pattern),
+							withMessage: "Unsupported pattern in catch clause"))
+						continue
+					}
+				}
+				else {
+					// If no variables are being declared
+					variableDeclaration = nil
+				}
+
+				result.append(CatchStatement(
+					range: catchClause.getRange(inFile: self.sourceFile),
+					variableDeclaration: variableDeclaration,
+					statements: try convertBlock(catchClause.body)))
+			}
+		}
+
+		return result
 	}
 
 	func convertSwitchStatement(
