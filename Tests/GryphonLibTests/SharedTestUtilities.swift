@@ -171,6 +171,9 @@ class TestUtilities {
 		"logicOperators",
 		"misc",
 		"numericLiterals",
+		"openAndFinal",
+		"openAndFinal-default-final",
+		"operators",
 		"standardLibrary",
 	]
 }
