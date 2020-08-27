@@ -400,6 +400,14 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 	// MARK: - Statements
 	func convertStatement(_ statement: StmtSyntax) throws -> List<Statement> {
+		if let breakStatement = statement.as(BreakStmtSyntax.self) {
+			return [BreakStatement(range: breakStatement.getRange(inFile: self.sourceFile))]
+		}
+		if let throwStatement = statement.as(ThrowStmtSyntax.self) {
+			return [ThrowStatement(
+				range: throwStatement.getRange(inFile: self.sourceFile),
+				expression: try convertExpression(throwStatement.expression))]
+		}
 		if let returnStatement = statement.as(ReturnStmtSyntax.self) {
 			return try [convertReturnStatement(returnStatement)]
 		}
@@ -408,11 +416,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			statement.as(GuardStmtSyntax.self)
 		{
 			return try [convertIfStatement(ifStatement)]
-		}
-		if let throwStatement = statement.as(ThrowStmtSyntax.self) {
-			return [ThrowStatement(
-				range: throwStatement.getRange(inFile: self.sourceFile),
-				expression: try convertExpression(throwStatement.expression))]
 		}
 		if let forStatement = statement.as(ForInStmtSyntax.self) {
 			return try [convertForStatement(forStatement)]
