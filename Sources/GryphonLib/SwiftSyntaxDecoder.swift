@@ -495,21 +495,69 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		_ switchStatement: SwitchStmtSyntax)
 		throws -> Statement
 	{
-		let expression = try convertExpression(switchStatement.expression)
+		let switchExpression = try convertExpression(switchStatement.expression)
 
 		let cases: MutableList<SwitchCase> = []
 		for syntax in switchStatement.cases {
+			let statements: MutableList<Statement> = []
+
 			if let switchCase = syntax.as(SwitchCaseSyntax.self) {
 				let expressions: MutableList<Expression>
 				if let label = switchCase.label.as(SwitchCaseLabelSyntax.self) {
 					// If it's a case with an expression
 					expressions = try MutableList(label.caseItems.map { item -> Expression in
-						guard let expression = item.pattern.as(ExpressionPatternSyntax.self) else {
+						if let expression = item.pattern.as(ExpressionPatternSyntax.self) {
+							// If it's a simple case
+
+							// FIXME: SourceKit doesn't include info on `.a` anywhere, apparently
+							if let memberExpression =
+									expression.expression.as(MemberAccessExprSyntax.self),
+								memberExpression.base == nil,
+								let typeName = switchExpression.swiftType
+							{
+								// If it's a `.a`, assume the type is the same as the switch
+								// expression's
+								return try convertMemberAccessExpression(
+									memberExpression,
+									typeName: typeName)
+							}
+							else {
+								return try convertExpression(expression.expression)
+							}
+						}
+						else if let pattern = item.pattern.as(ValueBindingPatternSyntax.self) {
+							// If it's a case let
+							let caseLetResult = try convertCaseLet(
+								pattern: pattern,
+								patternExpression: switchExpression)
+
+							statements.append(contentsOf:
+								caseLetResult.variables.forceCast(to: MutableList<Statement>.self))
+
+							guard caseLetResult.conditions.count == 1,
+								let onlyCondition = caseLetResult.conditions.first else
+							{
+								if caseLetResult.conditions.count == 0 {
+									return try errorExpression(
+										forASTNode: Syntax(item),
+										withMessage: "Expected case let to yield at least one " +
+											"expression")
+								}
+								else {
+									return try errorExpression(
+										forASTNode: Syntax(item),
+										withMessage: "Case let's with expressions are not " +
+											"supported in Kotlin.")
+								}
+							}
+
+							return onlyCondition
+						}
+						else {
 							return try errorExpression(
 								forASTNode: Syntax(item),
 								withMessage: "Unsupported switch case item")
 						}
-						return try convertExpression(expression.expression)
 					})
 				}
 				else if switchCase.label.is(SwitchDefaultLabelSyntax.self) {
@@ -522,8 +570,10 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 						withMessage: "Unsupported switch case label")]
 				}
 
+				// Add the explicit statements after possible variable declarations derived from
+				// `case let`
 				// TODO: Check for comments at the end
-				let statements = try convertStatements(switchCase.statements)
+				try statements.append(contentsOf: convertStatements(switchCase.statements))
 
 				cases.append(SwitchCase(
 					expressions: expressions,
@@ -542,7 +592,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		return SwitchStatement(
 			range: switchStatement.getRange(inFile: self.sourceFile),
 			convertsToExpression: nil,
-			expression: expression,
+			expression: switchExpression,
 			cases: cases)
 	}
 
@@ -654,96 +704,18 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			else if let matchingPattern =
 					ifCondition.condition.as(MatchingPatternConditionSyntax.self),
 				let valueBindingPattern =
-					matchingPattern.pattern.as(ValueBindingPatternSyntax.self),
-				let valuePattern =
-					valueBindingPattern.valuePattern.as(ExpressionPatternSyntax.self),
-				let callExpression =
-					valuePattern.expression.as(FunctionCallExprSyntax.self),
-				let calledExpression =
-					callExpression.calledExpression.as(MemberAccessExprSyntax.self)
+					matchingPattern.pattern.as(ValueBindingPatternSyntax.self)
 			{
-				// if case let
-				let leftExpression = matchingPattern.initializer.value
-
-				// The enumExpression may come as `.a1`, without direct way of knowing what to place
-				// before the dot. Try to guess it from the type of the pattern expression.
+				// If case let
 				let patternExpression = try convertExpression(matchingPattern.initializer.value)
-
-				// TODO: test a case where the left expression is present
-				if let enumType = patternExpression.swiftType {
-					let dotExpression = try convertMemberAccessExpression(
-						calledExpression,
-						typeName: enumType)
-					if let typeName = dotExpressionToString(dotExpression) {
-						let enumExpression = try convertExpression(leftExpression)
-						conditions.append(.condition(expression: BinaryOperatorExpression(
-							range: ifCondition.getRange(inFile: self.sourceFile),
-							leftExpression: enumExpression,
-							rightExpression: TypeExpression(
-								range: calledExpression.getRange(inFile: self.sourceFile),
-								typeName: typeName),
-							operatorSymbol: "is",
-							typeName: "Bool")))
-
-						for argument in callExpression.argumentList {
-							if let label = argument.label {
-								// Create the enum member expression (e.g. `A.b`)
-								let range = argument.getRange(inFile: self.sourceFile)
-								let enumMember = DeclarationReferenceExpression(
-									range: range,
-									identifier: label.text,
-									typeName: typeName,
-									isStandardLibrary: false,
-									isImplicit: false)
-								let enumExpression = DotExpression(
-									range: range,
-									leftExpression: enumExpression,
-									rightExpression: enumMember)
-
-								if let pattern =
-									argument.expression.as(UnresolvedPatternExprSyntax.self),
-								let identifierPattern =
-									pattern.pattern.as(IdentifierPatternSyntax.self)
-								{
-									// If we're declaring a variable, e.g. the `bar` in
-									// `A.b(foo: bar)`
-									statements.append(VariableDeclaration(
-										range: argument.getRange(inFile: self.sourceFile),
-										identifier: identifierPattern.identifier.text,
-										typeAnnotation: nil,
-										expression: enumExpression,
-										getter: nil,
-										setter: nil,
-										access: nil,
-										isOpen: false,
-										isLet: true,
-										isImplicit: false,
-										isStatic: false,
-										extendsType: nil,
-										annotations: []))
-								}
-								else if argument.expression.is(DiscardAssignmentExprSyntax.self) {
-									// `A.b(foo: _)`, just ignore it
-								}
-								else {
-									// If we're comparing a value, e.g. the `"bar"` in
-									// `A.b(foo: "bar")`
-									let comparedExpression =
-										try convertExpression(argument.expression)
-									conditions.append(.condition(
-										expression: BinaryOperatorExpression(
-											range: argument.getRange(inFile: self.sourceFile),
-											leftExpression: enumExpression,
-											rightExpression: comparedExpression,
-											operatorSymbol: "==",
-											typeName: "Bool")))
-								}
-							}
-						}
-
-						continue
-					}
-				}
+				let caseLetResult = try convertCaseLet(
+					pattern: valueBindingPattern,
+					patternExpression: patternExpression)
+				conditions.append(contentsOf:
+					caseLetResult.conditions.map { .condition(expression: $0) })
+				statements.append(contentsOf:
+					caseLetResult.variables.forceCast(to: MutableList<Statement>.self))
+				continue
 			}
 
 			// If we didn't `continue` before this point then this isn't a known if condition
@@ -779,6 +751,115 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			statements: statements,
 			elseStatement: elseStatement,
 			isGuard: ifStatement.isGuard)
+	}
+
+	/// The result of translating a case let like `A.a(b: c, d: 0)`
+	private struct CaseLetResult {
+		/// The conditions derived from this, like `exp is A.a` and `exp.d == 0`
+		let conditions: MutableList<Expression>
+		/// The variable declarations that unwrap the case let, like `let c = exp.b`
+		let variables: MutableList<VariableDeclaration>
+	}
+
+	/// Translates a case let like `A.a(b: c) = myEnum`. The `pattern` parameter is the `A.a(b: c)`,
+	/// and the `expression` parameter is the `myEnum`.
+	private func convertCaseLet(
+		pattern: ValueBindingPatternSyntax,
+		patternExpression: Expression)
+		throws -> CaseLetResult
+	{
+		let conditions: MutableList<Expression> = []
+		let variableDeclarations: MutableList<VariableDeclaration> = []
+
+		if let valuePattern =
+				pattern.valuePattern.as(ExpressionPatternSyntax.self),
+			let callExpression =
+				valuePattern.expression.as(FunctionCallExprSyntax.self),
+			let calledExpression =
+				callExpression.calledExpression.as(MemberAccessExprSyntax.self)
+		{
+			// TODO: test a case where the left expression is present
+			if let enumType = patternExpression.swiftType {
+				let dotExpression = try convertMemberAccessExpression(
+					calledExpression,
+					typeName: enumType)
+				if let typeName = dotExpressionToString(dotExpression) {
+					conditions.append(BinaryOperatorExpression(
+						range: pattern.getRange(inFile: self.sourceFile),
+						leftExpression: patternExpression,
+						rightExpression: TypeExpression(
+							range: calledExpression.getRange(inFile: self.sourceFile),
+							typeName: typeName),
+						operatorSymbol: "is",
+						typeName: "Bool"))
+
+					for argument in callExpression.argumentList {
+						if let label = argument.label {
+							// Create the enum member expression (e.g. `A.b`)
+							let range = argument.getRange(inFile: self.sourceFile)
+							let enumMember = DeclarationReferenceExpression(
+								range: range,
+								identifier: label.text,
+								typeName: typeName,
+								isStandardLibrary: false,
+								isImplicit: false)
+							let enumExpression = DotExpression(
+								range: range,
+								leftExpression: patternExpression,
+								rightExpression: enumMember)
+
+							if let pattern =
+								argument.expression.as(UnresolvedPatternExprSyntax.self),
+								let identifierPattern =
+								pattern.pattern.as(IdentifierPatternSyntax.self)
+							{
+								// If we're declaring a variable, e.g. the `bar` in
+								// `A.b(foo: bar)`
+								variableDeclarations.append(VariableDeclaration(
+									range: argument.getRange(inFile: self.sourceFile),
+									identifier: identifierPattern.identifier.text,
+									typeAnnotation: nil,
+									expression: enumExpression,
+									getter: nil,
+									setter: nil,
+									access: nil,
+									isOpen: false,
+									isLet: true,
+									isImplicit: false,
+									isStatic: false,
+									extendsType: nil,
+									annotations: []))
+							}
+							else if argument.expression.is(DiscardAssignmentExprSyntax.self) {
+								// `A.b(foo: _)`, just ignore it
+							}
+							else {
+								// If we're comparing a value, e.g. the `"bar"` in
+								// `A.b(foo: "bar")`
+								let comparedExpression = try convertExpression(argument.expression)
+								conditions.append(BinaryOperatorExpression(
+									range: argument.getRange(inFile: self.sourceFile),
+									leftExpression: enumExpression,
+									rightExpression: comparedExpression,
+									operatorSymbol: "==",
+									typeName: "Bool"))
+							}
+						}
+					}
+
+					return CaseLetResult(
+						conditions: conditions,
+						variables: variableDeclarations)
+				}
+			}
+		}
+
+		conditions.append(try errorExpression(
+			forASTNode: Syntax(pattern),
+			withMessage: "Unable to convert case let pattern."))
+		return CaseLetResult(
+			conditions: conditions,
+			variables: variableDeclarations)
 	}
 
 	/// Takes an expression like `A.B.C` and returns it as a string ("A.B.C"). Returns `nil` if any
