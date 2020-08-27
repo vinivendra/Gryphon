@@ -175,6 +175,7 @@ class TestUtilities {
 		"openAndFinal-default-final",
 		"operators",
 		"strings",
+		"structs",
 		"standardLibrary",
 	]
 }
