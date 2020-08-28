@@ -176,6 +176,7 @@ class TestUtilities {
 		"operators",
 		"strings",
 		"structs",
+		"switches",
 		"standardLibrary",
 	]
 }
