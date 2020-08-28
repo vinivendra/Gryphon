@@ -1123,6 +1123,7 @@ public class KotlinTranslator {
 				binaryExpression.operatorSymbol == "is",
 				binaryExpression.typeName == "Bool"
 			{
+				// If is a check for a cast (`direction is .north`)
 				let translatedType = try translateExpression(
 					binaryExpression.rightExpression,
 					withIndentation: indentation)
@@ -1137,7 +1138,7 @@ public class KotlinTranslator {
 					withIndentation: indentation)
 				let resolvedTranslation = translatedExpression.resolveTranslation().translation
 
-				// If it's a range
+				// If it's a range (`1 in 0..1`)
 				if binaryExpression.operatorSymbol == "~=",
 					(resolvedTranslation.contains("until") ||
 						resolvedTranslation.contains(".."))
@@ -1151,11 +1152,29 @@ public class KotlinTranslator {
 				return translatedExpression
 			}
 		}
-
-		let translatedExpression = try translateExpression(
-			caseExpression,
-			withIndentation: indentation)
-		return translatedExpression
+		else if context.isUsingSwiftSyntax,
+			let concatenationExpression = caseExpression as? ConcatenationExpression,
+			let leftConcatenationExpression =
+				concatenationExpression.leftExpression as? ConcatenationExpression,
+			let literalOperator =
+				leftConcatenationExpression.rightExpression as? LiteralCodeExpression,
+			literalOperator.string == ".." || literalOperator.string == " until "
+		{
+			// If it's a range (`1 in 0..1`) in the SwiftSyntax format
+			let result = KotlinTranslation(range: caseExpression.range)
+			result.append("in ")
+			let translatedExpression = try translateExpression(
+				caseExpression,
+				withIndentation: indentation)
+			result.append(translatedExpression)
+			return result
+		}
+		else {
+			let translatedExpression = try translateExpression(
+				caseExpression,
+				withIndentation: indentation)
+			return translatedExpression
+		}
 	}
 
 	private func translateThrowStatement(
