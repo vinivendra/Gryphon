@@ -66,6 +66,10 @@ fun main(args: Array<String>) {
 	var i: Int = 1
 
 	while (i <= 10) {
+		if (i == 5) {
+			i += 1
+			continue
+		}
 		println(i)
 		i += 1
 	}

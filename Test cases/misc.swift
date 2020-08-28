@@ -21,9 +21,13 @@
 // gryphon output: Test cases/Bootstrap Outputs/misc.gryphonAST
 // gryphon output: Test cases/Bootstrap Outputs/misc.kt
 
-// While
+// While and continue
 var i = 1
 while i <= 10 {
+	if i == 5 {
+		i += 1
+		continue
+	}
 	print(i)
 	i += 1
 }

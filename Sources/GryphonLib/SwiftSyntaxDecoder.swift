@@ -403,6 +403,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let breakStatement = statement.as(BreakStmtSyntax.self) {
 			return [BreakStatement(range: breakStatement.getRange(inFile: self.sourceFile))]
 		}
+		if let continueStatement = statement.as(ContinueStmtSyntax.self) {
+			return [ContinueStatement(range: continueStatement.getRange(inFile: self.sourceFile))]
+		}
 		if let throwStatement = statement.as(ThrowStmtSyntax.self) {
 			return [ThrowStatement(
 				range: throwStatement.getRange(inFile: self.sourceFile),
