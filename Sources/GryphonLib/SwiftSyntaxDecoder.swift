@@ -42,13 +42,14 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		// Call SourceKitten to get the types
 		// TODO: Improve this yaml. SDK paths? Absolute/relative file paths?
 		let absolutePath = Utilities.getAbsoultePath(forFile: filePath)
+		let sdkPath = try TranspilationContext.getMacOSSDKPath()
 		let yaml = """
 		{
 		  key.request: source.request.expression.type,
 		  key.compilerargs: [
 			"\(absolutePath)",
 			"-sdk",
-			"/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk"
+			"\(sdkPath)"
 		  ],
 		  key.sourcefile: "\(absolutePath)"
 		}

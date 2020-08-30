@@ -23,6 +23,8 @@
 
 // gryphon insert: import kotlin.system.*
 
+import Foundation
+
 public class TranspilationContext {
 	let toolchainName: String?
 	let swiftVersion: String
@@ -322,6 +324,36 @@ public class TranspilationContext {
 				"with a supported Swift version."
 
 			throw GryphonError(errorMessage: errorMessage)
+		}
+	}
+
+	// MARK: - macOS SDK
+	private static var macOSSDKPath: String? = nil
+	private static let macOSSDKLock: Semaphore = NSLock()
+
+	static func getMacOSSDKPath() throws -> String {
+		macOSSDKLock.lock()
+
+		defer {
+			macOSSDKLock.unlock()
+		}
+
+		if let macOSSDKPath = macOSSDKPath {
+			return macOSSDKPath
+		}
+		else {
+			// TODO: Linux support
+			let commandResult = Shell.runShellCommand(
+				["xcrun", "--show-sdk-path", "--sdk", "macosx"])
+			if commandResult.status == 0 {
+				// Drop the \n at the end
+				let result = String(commandResult.standardOutput.prefix(while: { $0 != "\n" }))
+				macOSSDKPath = result
+				return result
+			}
+			else {
+				throw GryphonError(errorMessage: "Unable to get macOS SDK path")
+			}
 		}
 	}
 }
