@@ -84,7 +84,8 @@ class IntegrationTest: XCTestCase {
 						toolchainName: nil,
 						indentationString: "\t",
 						defaultsToFinal: defaultsToFinal,
-						isUsingSwiftSyntax: false)).first!
+						isUsingSwiftSyntax: false,
+						compiledFiles: [testCasePath.withExtension(.swift)])).first!
 
 				// Load the previously stored kotlin code from file
 				let expectedKotlinCode =
@@ -107,7 +108,8 @@ class IntegrationTest: XCTestCase {
 							toolchainName: nil,
 							indentationString: "\t",
 							defaultsToFinal: defaultsToFinal,
-							isUsingSwiftSyntax: true)).first!
+							isUsingSwiftSyntax: true,
+							compiledFiles: [testCasePath.withExtension(.swift)])).first!
 
 					// Load the previously stored kotlin code from file
 					let expectedKotlinCode =
@@ -161,7 +163,8 @@ class IntegrationTest: XCTestCase {
 					toolchainName: nil,
 					indentationString: "\t",
 					defaultsToFinal: false,
-					isUsingSwiftSyntax: usesSwiftSyntax)).first!
+					isUsingSwiftSyntax: usesSwiftSyntax,
+					compiledFiles: [testCasePath])).first!
 
 			XCTAssert(
 				Compiler.numberOfErrors == 0,

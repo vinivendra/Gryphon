@@ -67,7 +67,8 @@ class PerformanceTest: XCTestCase {
 							toolchainName: PerformanceTest.toolchain,
 							indentationString: "\t",
 							defaultsToFinal: false,
-							isUsingSwiftSyntax: true))
+							isUsingSwiftSyntax: true,
+							compiledFiles: []))
 				}
 				catch let error {
 					XCTFail("🚨 Test failed with error:\n\(error)")
@@ -95,7 +96,8 @@ class PerformanceTest: XCTestCase {
 				toolchainName: PerformanceTest.toolchain,
 				indentationString: "\t",
 				defaultsToFinal: false,
-				isUsingSwiftSyntax: true))
+				isUsingSwiftSyntax: true,
+				compiledFiles: testCasePaths))
 
 		measure {
 			for rawAST in rawASTs {
@@ -106,7 +108,8 @@ class PerformanceTest: XCTestCase {
 							toolchainName: PerformanceTest.toolchain,
 							indentationString: "\t",
 							defaultsToFinal: false,
-							isUsingSwiftSyntax: true))
+							isUsingSwiftSyntax: true,
+							compiledFiles: []))
 				}
 				catch let error {
 					XCTFail("🚨 Test failed with error:\n\(error)")
@@ -133,7 +136,8 @@ class PerformanceTest: XCTestCase {
 				toolchainName: PerformanceTest.toolchain,
 				indentationString: "\t",
 				defaultsToFinal: false,
-				isUsingSwiftSyntax: true)
+				isUsingSwiftSyntax: true,
+				compiledFiles: [])
 			let semiRawASTs = try! Compiler.transpileGryphonRawASTs(
 				fromInputFiles: testCasePaths,
 				fromASTDumpFiles: astDumpFilePaths,
@@ -153,7 +157,8 @@ class PerformanceTest: XCTestCase {
 								toolchainName: PerformanceTest.toolchain,
 								indentationString: "\t",
 								defaultsToFinal: false,
-								isUsingSwiftSyntax: true))
+								isUsingSwiftSyntax: true,
+								compiledFiles: []))
 					}
 					catch let error {
 						XCTFail("🚨 Test failed with error:\n\(error)")
@@ -187,7 +192,8 @@ class PerformanceTest: XCTestCase {
 				toolchainName: PerformanceTest.toolchain,
 				indentationString: "\t",
 				defaultsToFinal: false,
-				isUsingSwiftSyntax: true))
+				isUsingSwiftSyntax: true,
+				compiledFiles: []))
 
 		measure {
 			for rawAST in rawASTs {
@@ -198,7 +204,8 @@ class PerformanceTest: XCTestCase {
 							toolchainName: PerformanceTest.toolchain,
 							indentationString: "\t",
 							defaultsToFinal: false,
-							isUsingSwiftSyntax: true))
+							isUsingSwiftSyntax: true,
+							compiledFiles: []))
 				}
 				catch let error {
 					XCTFail("🚨 Test failed with error:\n\(error)")
@@ -222,7 +229,8 @@ class PerformanceTest: XCTestCase {
 						toolchainName: PerformanceTest.toolchain,
 						indentationString: "\t",
 						defaultsToFinal: false,
-						isUsingSwiftSyntax: true)
+						isUsingSwiftSyntax: true,
+						compiledFiles: [])
 					let ast = try Compiler.transpileGryphonASTs(
 						fromInputFiles: [testCasePath],
 						fromASTDumpFiles: [astDumpFilePath],
@@ -267,7 +275,8 @@ class PerformanceTest: XCTestCase {
 							toolchainName: PerformanceTest.toolchain,
 							indentationString: "\t",
 							defaultsToFinal: false,
-							isUsingSwiftSyntax: true))
+							isUsingSwiftSyntax: true,
+							compiledFiles: []))
 				}
 				catch let error {
 					XCTFail("🚨 Test failed with error:\n\(error)")

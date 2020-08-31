@@ -637,29 +637,31 @@ public class Driver {
 
 		Compiler.logEnd("✅  Done parsing arguments.")
 
+		//// Get the input files
+		let isSkippingFiles = arguments.contains("--skip")
+
+		let inputFiles = try getInputFilePaths(inArguments: arguments)
+		if inputFiles.isEmpty {
+			throw GryphonError(errorMessage: "No input files provided.")
+		}
+		let allSourceFiles = inputFiles.toMutableList()
+
+		if isSkippingFiles {
+			let skippedFiles = try getSkippedInputFilePaths(inArguments: arguments)
+			allSourceFiles.append(contentsOf: skippedFiles)
+		}
+
 		//// Dump the ASTs
 		if !arguments.contains("-skip-AST-dumps") {
 			Compiler.logStart("🧑‍💻  Preparing to dump the ASTs...")
 
 			let maybeXcodeProject = getXcodeProject(inArguments: arguments)
 			let isUsingXcode = (maybeXcodeProject != nil)
-			let isSkippingFiles = arguments.contains("--skip")
 
 			if isUsingXcode && isSkippingFiles {
 				throw GryphonError(errorMessage: "Argument `--skip` is not supported when " +
 					"translating with Xcode support. To skip translation of a file, remove it " +
 					"from the `xcfilelist`.")
-			}
-
-			let inputFiles = try getInputFilePaths(inArguments: arguments)
-			if inputFiles.isEmpty {
-				throw GryphonError(errorMessage: "No input files provided.")
-			}
-			let allSourceFiles = inputFiles.toMutableList()
-
-			if isSkippingFiles {
-				let skippedFiles = try getSkippedInputFilePaths(inArguments: arguments)
-				allSourceFiles.append(contentsOf: skippedFiles)
 			}
 
 			let missingfiles = allSourceFiles.filter {
@@ -787,7 +789,8 @@ public class Driver {
 				toolchainName: toolchain,
 				indentationString: indentationString,
 				defaultsToFinal: defaultsToFinal,
-				isUsingSwiftSyntax: shouldUseSwiftSyntax)
+				isUsingSwiftSyntax: shouldUseSwiftSyntax,
+				compiledFiles: allSourceFiles)
 
 			Compiler.logStart("🧑‍💻 Starting first part of translation [1/2]...")
 

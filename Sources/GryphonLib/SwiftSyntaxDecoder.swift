@@ -39,25 +39,41 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	let context: TranspilationContext
 
 	init(filePath: String, context: TranspilationContext) throws {
+		Compiler.logStart("🧑‍💻  Calling SourceKit...")
+
 		// Call SourceKitten to get the types
 		// TODO: Improve this yaml. SDK paths? Absolute/relative file paths?
 		let absolutePath = Utilities.getAbsoultePath(forFile: filePath)
 		let sdkPath = try TranspilationContext.getMacOSSDKPath()
+		let compiledFilePathsString = context.compiledFiles
+			.map { Utilities.getAbsoultePath(forFile: $0) }
+			.map { "\"\($0)\"" }
+			.joined(separator: ", ")
 		let yaml = """
 		{
 		  key.request: source.request.expression.type,
 		  key.compilerargs: [
-			"\(absolutePath)",
+			\(compiledFilePathsString),
 			"-sdk",
 			"\(sdkPath)"
 		  ],
 		  key.sourcefile: "\(absolutePath)"
 		}
 		"""
-		let request = Request.yamlRequest(yaml: yaml)
-		let result = try! request.send()
 
-		let list = result["key.expression_type_list"] as! [[String: SourceKitRepresentable]]
+		let sourceKitResult: [String: SourceKitRepresentable]
+		do {
+			let request = Request.yamlRequest(yaml: yaml)
+			sourceKitResult = try request.send()
+		}
+		catch let error {
+			Compiler.log("SourceKit YAML:\n\(yaml)")
+			throw GryphonError(errorMessage: "Failed to call SourceKit: " +
+				"\(error.localizedDescription)")
+		}
+
+		let list = sourceKitResult["key.expression_type_list"]
+			as! [[String: SourceKitRepresentable]]
 		let typeList = List(list.map {
 			ExpressionType(
 				offset: Int($0["key.expression_offset"]! as! Int64),
@@ -65,8 +81,12 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				typeName: $0["key.expression_type"]! as! String)
 		})
 
+		Compiler.logEnd("✅  Done calling SourceKit.")
+
+		Compiler.logStart("🧑‍💻  Calling SwiftSyntax...")
 		// Call SwiftSyntax to get the tree
 		let tree = try SyntaxParser.parse(URL(fileURLWithPath: filePath))
+		Compiler.logEnd("✅  Done calling SwiftSyntax.")
 
 		// Initialize the properties
 		// TODO: Check if these file readings aren't redundant

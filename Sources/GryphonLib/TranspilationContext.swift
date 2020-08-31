@@ -31,6 +31,8 @@ public class TranspilationContext {
 	let indentationString: String
 	let defaultsToFinal: Bool
 	let isUsingSwiftSyntax: Bool
+	/// All files that should be included in this `swiftc` compilation.
+	let compiledFiles: List<String>
 
 	/// The base contexts are used for information that all transpilation contexts should contain,
 	/// such as the Gryphon templates library (which can be calculated once and are the same every
@@ -69,13 +71,15 @@ public class TranspilationContext {
 		self.defaultsToFinal = false
 		self.isUsingSwiftSyntax = false
 		self.templates = []
+		self.compiledFiles = []
 	}
 
 	public init(
 		toolchainName: String?,
 		indentationString: String,
 		defaultsToFinal: Bool,
-		isUsingSwiftSyntax: Bool)
+		isUsingSwiftSyntax: Bool,
+		compiledFiles: List<String>)
 		throws
 	{
 		try TranspilationContext.checkToolchainSupport(toolchainName)
@@ -85,6 +89,7 @@ public class TranspilationContext {
 		self.indentationString = indentationString
 		self.defaultsToFinal = defaultsToFinal
 		self.isUsingSwiftSyntax = isUsingSwiftSyntax
+		self.compiledFiles = compiledFiles
 		self.templates = try TranspilationContext
 			.getBaseContext(forToolchain: toolchainName)
 			.templates

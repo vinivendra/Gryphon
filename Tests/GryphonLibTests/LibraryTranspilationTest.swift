@@ -56,7 +56,8 @@ class LibraryTranspilationTest: XCTestCase {
 		toolchainName: nil,
 		indentationString: "\t",
 		defaultsToFinal: false,
-		isUsingSwiftSyntax: true)
+		isUsingSwiftSyntax: true,
+		compiledFiles: [])
 
 	// MARK: - Tests
 	func testSimpleMatches() {
