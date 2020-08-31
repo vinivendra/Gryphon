@@ -2168,22 +2168,39 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let signature = closureExpression.signature,
 			let inputParameters = signature.input
 		{
-			// Get the input parameter types (e.g. ["Any", "Any"] from "((Any, Any) -> Any)")
+			// Get the input parameter types (e.g. ["Any", "Any"] from
+			// "(foo: (Any, Any) throws -> Any)")
 			var closureType = typeName
+			// Remove the enveloping parentheses
+			// "(foo: (Any, Any) throws -> Any)" becomes "foo: (Any, Any) throws -> Any"
 			while Utilities.isInEnvelopingParentheses(closureType) {
 				closureType = String(closureType.dropFirst().dropLast())
 			}
 
+			// Separate the parameters (from the return type)
+			// ...becomes "foo: (Any, Any) throws"
 			let inputAndOutputTypes = Utilities.splitTypeList(closureType, separators: ["->"])
 			var inputType = inputAndOutputTypes[0]
 
+			// Remove the throws, if it's there
+			// ...becomes "foo: (Any, Any)"
 			if inputType.hasSuffix(" throws") {
 				inputType = String(inputType.dropLast(" throws".count))
 			}
 
-			let inputTypes = Utilities.splitTypeList(
-				String(inputType.dropFirst().dropLast()),
-				separators: [","])
+			// Remove the label, if it's there
+			// ...becomes "(Any, Any)"
+			inputType = String(inputType.drop(while: { $0 != "(" }))
+
+			// Remove the enveloping parentheses
+			// ...becomes "Any, Any"
+			while Utilities.isInEnvelopingParentheses(inputType) {
+				inputType = String(inputType.dropFirst().dropLast())
+			}
+
+			// Separate the types
+			// ...becomes ["Any", "Any"]
+			let inputTypes = Utilities.splitTypeList(inputType, separators: [","])
 
 			// Get the parameters
 			let cleanInputParameters: List<String>
