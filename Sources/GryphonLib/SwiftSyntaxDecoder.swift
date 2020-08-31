@@ -128,7 +128,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		throws -> MutableList<Statement>
 		where Block: SyntaxListContainer
 	{
-		let statements = try convertStatements(block.elements)
+		let statements = try convertStatements(block.syntaxElements)
 
 		// Parse the ending comments
 		let triviaPieces = getLeadingComments(forSyntax: block.endSyntax)
@@ -936,6 +936,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let extensionDeclaration = declaration.as(ExtensionDeclSyntax.self) {
 			return try [convertExtensionDeclaration(extensionDeclaration)]
 		}
+		if let ifConfigDeclaration = declaration.as(IfConfigDeclSyntax.self) {
+			return try convertIfConfigDeclaration(ifConfigDeclaration)
+		}
 		if let protocolDeclaration = declaration.as(ProtocolDeclSyntax.self) {
 			return try [convertProtocolDeclaration(protocolDeclaration)]
 		}
@@ -1084,6 +1087,88 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			range: extensionDeclaration.getRange(inFile: self.sourceFile),
 			typeName: extendedType,
 			members: try convertBlock(extensionDeclaration.members))
+	}
+
+	/// Convert `#if GRYPHON`
+	func convertIfConfigDeclaration(
+		_ ifConfigDeclaration: IfConfigDeclSyntax)
+		throws -> MutableList<Statement>
+	{
+		let result: MutableList<Statement> = []
+
+		// Records if we're dealing with `#if GRYPHON` or `#if !GRYPHON`
+		var gryphonClauseIsNegated = false
+
+		var nextClauses = ifConfigDeclaration.clauses.dropFirst().makeIterator()
+		for clause in ifConfigDeclaration.clauses {
+			let nextClause = nextClauses.next()
+
+			let block: CodeBlockItemListSyntax
+
+			// If it's a `#if`
+			if let condition = clause.condition {
+				if let identifierCondition = condition.as(IdentifierExprSyntax.self),
+					identifierCondition.identifier.text == "GRYPHON",
+					let conditionBlock = clause.elements.as(CodeBlockItemListSyntax.self)
+				{
+					// If it's a `#if GRYPHON`
+					gryphonClauseIsNegated = false
+					block = conditionBlock
+				}
+				else if let prefixOperatorCondition = condition.as(PrefixOperatorExprSyntax.self),
+					let operatorString = prefixOperatorCondition.operatorToken?.text,
+					operatorString == "!",
+					let identifierCondition =
+						prefixOperatorCondition.postfixExpression.as(IdentifierExprSyntax.self),
+					identifierCondition.identifier.text == "GRYPHON"
+				{
+					// If it's a `#if !GRYPHON`
+					gryphonClauseIsNegated = true
+					continue
+				}
+				else {
+					return try [errorStatement(
+						forASTNode: Syntax(clause),
+						withMessage: "Unsupported #if declaration; only `#if GRYPHON`, " +
+							"`#if !GRYPHON` and `#else` are supported.")]
+				}
+			}
+			else if let conditionBlock = clause.elements.as(CodeBlockItemListSyntax.self) {
+				// If it's a `#else`
+				if gryphonClauseIsNegated {
+					// If there was a `#if !GRYPHON` before, we have to translate the `#else`
+					block = conditionBlock
+				}
+				else {
+					continue
+				}
+			}
+			else {
+				// If there isn't even a block
+				return try [errorStatement(
+					forASTNode: Syntax(clause),
+					withMessage: "Unsupported #if declaration; only `#if GRYPHON`, " +
+						"`#if !GRYPHON` and `#else` are supported.")]
+			}
+
+			// Figure out where this block of statements ends
+			let endSyntax: Syntax
+			if let nextClause = nextClause {
+				// If there's another clause after this one
+				endSyntax = Syntax(nextClause.poundKeyword)
+			}
+			else {
+				// If this is the last clause
+				endSyntax = Syntax(ifConfigDeclaration.poundEndif)
+			}
+
+			let container = SomeSyntaxListContainer(
+				syntaxElements: block,
+				endSyntax: endSyntax)
+			try result.append(contentsOf: convertBlock(container))
+		}
+
+		return result
 	}
 
 	func convertProtocolDeclaration(
@@ -3176,14 +3261,14 @@ extension GuardStmtSyntax: IfLikeSyntax {
 /// A syntax that represents a code block. Contains a SyntaxList of statements and an endSyntax
 /// (usually a closing brace) from which to get the final comments (using its `leadingSyntax` and
 /// `position.utf8offset`).
-protocol SyntaxListContainer: SyntaxProtocol {
+protocol SyntaxListContainer {
 	associatedtype ElementList: SyntaxList
-	var elements: ElementList { get }
+	var syntaxElements: ElementList { get }
 	var endSyntax: Syntax { get }
 }
 
 extension CodeBlockSyntax: SyntaxListContainer {
-	var elements: CodeBlockItemListSyntax {
+	var syntaxElements: CodeBlockItemListSyntax {
 		return self.statements
 	}
 	var endSyntax: Syntax {
@@ -3192,7 +3277,7 @@ extension CodeBlockSyntax: SyntaxListContainer {
 }
 
 extension MemberDeclBlockSyntax: SyntaxListContainer {
-	var elements: MemberDeclListSyntax {
+	var syntaxElements: MemberDeclListSyntax {
 		return self.members
 	}
 	var endSyntax: Syntax {
@@ -3201,7 +3286,7 @@ extension MemberDeclBlockSyntax: SyntaxListContainer {
 }
 
 extension ClosureExprSyntax: SyntaxListContainer {
-	var elements: CodeBlockItemListSyntax {
+	var syntaxElements: CodeBlockItemListSyntax {
 		return self.statements
 	}
 	var endSyntax: Syntax {
@@ -3210,12 +3295,17 @@ extension ClosureExprSyntax: SyntaxListContainer {
 }
 
 extension SourceFileSyntax: SyntaxListContainer {
-	var elements: CodeBlockItemListSyntax {
+	var syntaxElements: CodeBlockItemListSyntax {
 		return self.statements
 	}
 	var endSyntax: Syntax {
 		return Syntax(self.eofToken)
 	}
+}
+
+struct SomeSyntaxListContainer: SyntaxListContainer {
+	let syntaxElements: CodeBlockItemListSyntax
+	let endSyntax: Syntax
 }
 
 /// A sytax that represents a list of elements, e.g. a list of statements or declarations.

@@ -160,3 +160,23 @@ catch {
 	throw MyError(errorMessage: "")
 }
 
+// #if's
+#if GRYPHON
+func gryphon1() { }
+#else
+func notGryphon1() { }
+#endif
+
+#if !GRYPHON
+func notGryphon2() { }
+#else
+func gryphon2() { }
+#endif
+
+#if GRYPHON
+#else
+#endif
+
+#if !GRYPHON
+#else
+#endif

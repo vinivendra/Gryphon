@@ -62,6 +62,12 @@ internal data class MyError(
 	val errorMessage: String
 ): Exception()
 
+internal fun gryphon1() {
+}
+
+internal fun gryphon2() {
+}
+
 fun main(args: Array<String>) {
 	var i: Int = 1
 
