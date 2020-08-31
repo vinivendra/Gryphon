@@ -1823,14 +1823,30 @@ public class KotlinTranslator {
 			let callArguments = (callExpression.parameters as! TupleExpression).pairs
 
 			let defaultArguments = functionTranslation.parameters.map { $0.value != nil }
+			let acceptsUnlabeledTrailingClosures = functionTranslation.parameters.map { _ in true }
 
 			let matchResult: MutableList<MutableList<Int>> = []
+
+			// Check if there's an unlabeled closure at the end (and assume it's a trailing closure
+			// if there is)
+			let unlabeledTrailingClosureArgIndex: Int?
+			if let lastArgument = callArguments.last,
+				lastArgument.expression is ClosureExpression,
+				lastArgument.label == nil
+			{
+				unlabeledTrailingClosureArgIndex = callArguments.count - 1
+			}
+			else {
+				unlabeledTrailingClosureArgIndex = nil
+			}
 
 			let matchFailed = matchCallArguments(
 				args: callArguments,
 				params: functionTranslation.parameters,
-				paramInfo: ParameterListInfo(defaultArguments: defaultArguments),
-				unlabeledTrailingClosureArgIndex: nil,
+				paramInfo: ParameterListInfo(
+					defaultArguments: defaultArguments,
+					acceptsUnlabeledTrailingClosures: acceptsUnlabeledTrailingClosures),
+				unlabeledTrailingClosureArgIndex: unlabeledTrailingClosureArgIndex,
 				trailingClosureMatching: .forward,
 				parameterBindings: matchResult)
 

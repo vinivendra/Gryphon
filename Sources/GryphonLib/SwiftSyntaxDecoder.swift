@@ -3797,5 +3797,5 @@ enum TrailingClosureMatching {
 
 struct ParameterListInfo {
 	let defaultArguments: List<Bool>
-	let acceptsUnlabeledTrailingClosures: List<Bool> = []
+	let acceptsUnlabeledTrailingClosures: List<Bool>
 }

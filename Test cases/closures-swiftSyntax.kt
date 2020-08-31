@@ -47,6 +47,9 @@ internal fun f3(closure: () -> Unit) {
 internal fun f4(closure: () -> Unit) {
 }
 
+internal fun f5(bar: (Int, Int) -> Boolean) {
+}
+
 internal fun bar(closure: () -> Int) {
 }
 
@@ -100,6 +103,7 @@ fun main(args: Array<String>) {
 	g2(closure = { 0 })
 	f3 { }
 	f4 { }
+	f5 { a, b -> true }
 	bar {
 			if (true) {
 				return@bar 1

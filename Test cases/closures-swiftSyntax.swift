@@ -80,6 +80,10 @@ f3 { }
 func f4(_ closure: () -> Void) { }
 f4 { }
 
+// Test trailing closures that match a labeled parameter
+func f5(bar: (Int, Int) -> Bool) { }
+f5 { a, b in true }
+
 //
 // Test closures with labeled returns
 
