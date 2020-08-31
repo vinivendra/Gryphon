@@ -135,6 +135,10 @@ public struct GryphonError: Error, CustomStringConvertible {
 	public var description: String {
 		return "🚨 " + errorMessage
 	}
+
+	init(errorMessage: String) {
+		self.errorMessage = errorMessage
+	}
 }
 
 public class Utilities {
