@@ -95,6 +95,9 @@ fun main(args: Array<String>) {
 
 	multiLineClosure(10)
 	multiLineClosure(20)
+
+	val tupleClosure: (Pair<Int, Int>) -> Unit = { }
+
 	f(closure = { 0 }, a = 0)
 	g(closure = { 0 }, c = 0)
 	f1 { 0 }

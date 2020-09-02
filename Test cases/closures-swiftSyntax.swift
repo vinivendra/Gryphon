@@ -48,6 +48,9 @@ let multiLineClosure: (Int) -> () = { a in
 multiLineClosure(10)
 multiLineClosure(20)
 
+// Closures with tuples as input types
+let tupleClosure = { (a: (Int, Int)) in }
+
 //
 // Test autoclosures
 func f(_ closure: @autoclosure () -> (Int), a: Int) { }
