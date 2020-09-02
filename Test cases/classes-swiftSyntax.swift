@@ -160,6 +160,12 @@ class MyClass {
 	}
 }
 
+class MyOtherClass {
+	subscript(i: Int) -> Int { // implicit getter
+		return i
+	}
+}
+
 let myClass = MyClass()
 
 print(myClass[1])

@@ -111,6 +111,13 @@ internal open class MyClass {
 	}
 }
 
+internal open class MyOtherClass {
+	operator open fun get(i: Int): Int {
+		// implicit get
+		return i
+	}
+}
+
 internal open class SingleExpressionMembers {
 	open val one: Int
 		get() = 10

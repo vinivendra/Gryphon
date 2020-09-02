@@ -987,6 +987,12 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			withMessage: "Unknown declaration"), ]
 	}
 
+	private struct Accessor {
+		let isGet: Bool
+		let statements: CodeBlockSyntax
+		let range: SourceFileRange?
+	}
+
 	func convertSubscriptDeclaration(
 		_ subscriptDeclaration: SubscriptDeclSyntax)
 		throws -> MutableList<Statement>
@@ -996,81 +1002,95 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let subscriptParameters = try convertParameters(subscriptDeclaration.indices.parameterList)
 		let subscriptReturnType = try convertType(subscriptDeclaration.result.returnType)
 
+		let accessors: List<Accessor>
 		if let accessorBlock = subscriptDeclaration.accessor?.as(AccessorBlockSyntax.self) {
-			for accessor in accessorBlock.accessors {
-				if let maybeCodeBlock =
-						accessor.children.first(where: { $0.is(CodeBlockSyntax.self) }),
-					let codeBlock = maybeCodeBlock.as(CodeBlockSyntax.self)
-				{
-					let statements = try convertBlock(codeBlock)
-
-					let prefix = accessor.accessorKind.text
-
-					let parameters: MutableList<FunctionParameter>
-					let returnType: String
-					if prefix == "get" {
-						parameters = subscriptParameters
-						returnType = subscriptReturnType
-					}
-					else {
-						parameters = subscriptParameters.appending(FunctionParameter(
-							label: "newValue",
-							apiLabel: nil,
-							typeName: subscriptReturnType,
-							value: nil)).toMutableList()
-						returnType = "Void"
-					}
-
-					let parameterType = parameters.map { $0.typeName }.joined(separator: ", ")
-					let functionType = "(\(parameterType)) -> \(returnType)"
-
-					let accessAndAnnotations =
-						getAccessAndAnnotations(fromModifiers: subscriptDeclaration.modifiers)
-
-					let annotations = accessAndAnnotations.annotations
-
-					let isOpen: Bool
-					if annotations.remove("final") {
-						isOpen = false
-					}
-					else if let access = accessAndAnnotations.access, access == "open" {
-						isOpen = true
-					}
-					else {
-						isOpen = !context.defaultsToFinal
-					}
-
-					annotations.append("operator")
-
-					result.append(FunctionDeclaration(
-						range: accessor.getRange(inFile: self.sourceFile),
-						prefix: prefix,
-						parameters: parameters,
-						returnType: returnType,
-						functionType: functionType,
-						genericTypes: [],
-						isOpen: isOpen,
-						isImplicit: false,
-						isStatic: false,
-						isMutating: false,
-						isPure: false,
-						isJustProtocolInterface: false,
-						extendsType: nil,
-						statements: statements,
-						access: accessAndAnnotations.access,
-						annotations: annotations))
+			accessors = List(accessorBlock.accessors.compactMap { accessor in
+				if let body = accessor.body {
+					return Accessor(
+						isGet: accessor.accessorKind.text == "get",
+						statements: body,
+						range: accessor.getRange(inFile: self.sourceFile))
 				}
 				else {
-					try result.append(errorStatement(
-						forASTNode: Syntax(accessor),
-						withMessage: "Unable to get code block in subscript declaration"))
+					return nil
 				}
+			})
+
+			if accessors.count != accessorBlock.accessors.count {
+				// If we failed to get one of the bodies
+				try result.append(errorStatement(
+					forASTNode: Syntax(accessorBlock),
+					withMessage: "Unable to get code block in subscript declaration"))
 			}
 		}
+		else if let accessorBlock = subscriptDeclaration.accessor?.as(CodeBlockSyntax.self) {
+			accessors = [Accessor(
+				isGet: true,
+				statements: accessorBlock,
+				range: accessorBlock.getRange(inFile: self.sourceFile)), ]
+		}
 		else {
-			try result.append(errorStatement(
+			return try [errorStatement(
 				forASTNode: Syntax(subscriptDeclaration),
-				withMessage: "Unable to find getters or setters in subscript declaration"))
+				withMessage: "Unable to find getters or setters in subscript declaration")]
+		}
+
+		for accessor in accessors {
+			let statements = try convertBlock(accessor.statements)
+
+			let parameters: MutableList<FunctionParameter>
+			let returnType: String
+			if accessor.isGet {
+				parameters = subscriptParameters
+				returnType = subscriptReturnType
+			}
+			else {
+				parameters = subscriptParameters.appending(FunctionParameter(
+					label: "newValue",
+					apiLabel: nil,
+					typeName: subscriptReturnType,
+					value: nil)).toMutableList()
+				returnType = "Void"
+			}
+
+			let parameterType = parameters.map { $0.typeName }.joined(separator: ", ")
+			let functionType = "(\(parameterType)) -> \(returnType)"
+
+			let accessAndAnnotations =
+				getAccessAndAnnotations(fromModifiers: subscriptDeclaration.modifiers)
+
+			let annotations = accessAndAnnotations.annotations
+
+			let isOpen: Bool
+			if annotations.remove("final") {
+				isOpen = false
+			}
+			else if let access = accessAndAnnotations.access, access == "open" {
+				isOpen = true
+			}
+			else {
+				isOpen = !context.defaultsToFinal
+			}
+
+			annotations.append("operator")
+
+			result.append(FunctionDeclaration(
+				range: accessor.range,
+				prefix: accessor.isGet ? "get" : "set",
+				parameters: parameters,
+				returnType: returnType,
+				functionType: functionType,
+				genericTypes: [],
+				isOpen: isOpen,
+				isImplicit: false,
+				isStatic: false,
+				isMutating: false,
+				isPure: false,
+				isJustProtocolInterface: false,
+				extendsType: nil,
+				statements: statements,
+				access: accessAndAnnotations.access,
+				annotations: annotations))
 		}
 
 		return result
