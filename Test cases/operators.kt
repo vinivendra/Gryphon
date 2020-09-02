@@ -80,4 +80,16 @@ fun main(args: Array<String>) {
 	val precedenceResult: Boolean = if (0 == 1) { 2 == 3 } else { 4 == 5 }
 
 	println(precedenceResult)
+
+	val castResult1: Any = precedenceResult
+
+	println(castResult1)
+
+	val castResult2: Any? = precedenceResult
+
+	println(castResult2)
+
+	val castResult3: Boolean = precedenceResult is Boolean
+
+	println(castResult3)
 }

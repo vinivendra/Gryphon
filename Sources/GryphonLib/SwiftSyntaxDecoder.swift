@@ -2290,7 +2290,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	/// deconstructed and evaluated before all others. This can be done because they have the second
 	/// lowest precedence (only after assignments).
 	/// - The `as` operator's right expression stays inside the `AsExprSyntax` itself, instead of
-	/// outside it, resulting in an even number of expressions.
+	/// outside it, resulting in an even number of expressions. Similarly with the `is` operator and
+	/// `IsEpxrSyntax` expressions.
 	///
 	private func convertSequenceExpression(
 		_ sequenceExpression: SequenceExprSyntax,
@@ -2413,6 +2414,26 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					operatorSymbol: operatorString,
 					typeName: expressionType)
 			}
+			else if let isSyntax = elements[index].as(IsExprSyntax.self) {
+				if index != (elements.count - 1) {
+					return try errorExpression(
+						forASTNode: Syntax(sequenceExpression),
+						withMessage: "Unexpected operators after \"is\" cast")
+				}
+
+				let leftHalf = try convertSequenceExpression(
+					sequenceExpression,
+					limitedToElements: elements.dropLast(elements.count - index))
+
+				return BinaryOperatorExpression(
+					range: range,
+					leftExpression: leftHalf,
+					rightExpression: TypeExpression(
+						range: isSyntax.getRange(inFile: self.sourceFile),
+						typeName: try convertType(isSyntax.typeName)),
+					operatorSymbol: "is",
+					typeName: "Bool")
+			}
 		}
 
 		return try errorExpression(
@@ -2458,7 +2479,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					}
 				}
 			}
-			else if currentElement.is(AsExprSyntax.self) {
+			else if currentElement.is(AsExprSyntax.self) || currentElement.is(IsExprSyntax.self) {
+				// Both `as` and `is` have the same `CastingPrecedence`
 				if let precedence = operatorInformation.firstIndex(where: { $0.operator == "as" }) {
 					currentOperatorInformation = operatorInformation[precedence]
 					currentOperatorPrecedence = precedence

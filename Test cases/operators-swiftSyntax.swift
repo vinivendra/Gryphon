@@ -89,3 +89,11 @@ if x != 1 {
 // Precedence (equality above ternary)
 let precedenceResult = 0 == 1 ? 2 == 3 : 4 == 5
 print(precedenceResult)
+
+// Precedence (support `as`, `as?` and `is`)
+let castResult1 = precedenceResult as Any
+print(castResult1)
+let castResult2 = precedenceResult as? Any
+print(castResult2)
+let castResult3 = precedenceResult is Bool
+print(castResult3)
