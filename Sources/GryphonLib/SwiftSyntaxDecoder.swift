@@ -1927,6 +1927,14 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			return literalCodeExpression
 		}
 
+		if let superExpression = expression.as(SuperRefExprSyntax.self) {
+			return DeclarationReferenceExpression(
+				range: superExpression.getRange(inFile: self.sourceFile),
+				identifier: "super",
+				typeName: superExpression.getType(fromList: self.expressionTypes),
+				isStandardLibrary: false,
+				isImplicit: false)
+		}
 		if let tryExpression = expression.as(TryExprSyntax.self) {
 			return try convertExpression(tryExpression.expression)
 		}

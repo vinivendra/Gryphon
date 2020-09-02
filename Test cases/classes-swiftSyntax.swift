@@ -197,3 +197,18 @@ let singleExpressionMembers = SingleExpressionMembers()
 print(singleExpressionMembers.one)
 print(singleExpressionMembers.two)
 print(singleExpressionMembers.dddddddddddddddddddddddddeeeeeeeeeee)
+
+// Super calls
+class Superclass {
+	var x = 0
+
+	init(x: Int) {
+		self.x = x
+	}
+}
+
+class Subclass: Superclass {
+	init(y: Int) {
+		super.init(x: y + 1)
+	}
+}

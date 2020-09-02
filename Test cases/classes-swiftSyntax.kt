@@ -132,6 +132,19 @@ internal open class SingleExpressionMembers {
 		= bbbbbbbbbbbbbbbb * ccccccccccccc * ddddddddddddddddddddddddd * eeeeeeeeeee
 }
 
+internal open class Superclass {
+	open var x: Int = 0
+
+	constructor(x: Int) {
+		this.x = x
+	}
+}
+
+internal open class Subclass: Superclass {
+	constructor(y: Int): super(x = y + 1) {
+	}
+}
+
 fun main(args: Array<String>) {
 	val box1: Box = Box()
 
