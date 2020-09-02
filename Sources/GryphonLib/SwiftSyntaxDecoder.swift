@@ -435,6 +435,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let returnStatement = statement.as(ReturnStmtSyntax.self) {
 			return try [convertReturnStatement(returnStatement)]
 		}
+		if let deferStatement = statement.as(DeferStmtSyntax.self) {
+			return try [convertDeferStatement(deferStatement)]
+		}
 		if let ifStatement: IfLikeSyntax =
 			statement.as(IfStmtSyntax.self) ??
 			statement.as(GuardStmtSyntax.self)
@@ -660,6 +663,15 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			collection: collection,
 			variable: variable,
 			statements: statements)
+	}
+
+	func convertDeferStatement(
+		_ deferStatement: DeferStmtSyntax)
+		throws -> DeferStatement
+	{
+		return DeferStatement(
+			range: deferStatement.getRange(inFile: self.sourceFile),
+			statements: try convertBlock(deferStatement.body))
 	}
 
 	func convertIfStatement(

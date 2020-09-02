@@ -180,3 +180,13 @@ func gryphon2() { }
 #if !GRYPHON
 #else
 #endif
+
+// Defer
+func g() {
+	defer {
+		print("Second")
+	}
+	print("First")
+}
+
+g()

@@ -68,6 +68,15 @@ internal fun gryphon1() {
 internal fun gryphon2() {
 }
 
+internal fun g() {
+	try {
+		println("First")
+	}
+	finally {
+		println("Second")
+	}
+}
+
 fun main(args: Array<String>) {
 	var i: Int = 1
 
@@ -130,4 +139,6 @@ fun main(args: Array<String>) {
 	catch (_error: Exception) {
 		throw MyError(errorMessage = "")
 	}
+
+	g()
 }
