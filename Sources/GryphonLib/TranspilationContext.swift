@@ -194,7 +194,10 @@ public class TranspilationContext {
 				.replacingOccurrences(of: "@autoclosure", with: "")
 				.replacingOccurrences(of: " ", with: "")
 
-			if functionTranslation.swiftAPIName.hasPrefix(name),
+			let translationPrefix = functionTranslation.swiftAPIName.prefix(while: { $0 != "(" })
+			let namePrefix = name.prefix(while: { $0 != "(" })
+
+			if translationPrefix == namePrefix,
 				translationType == functionType
 			{
 				return functionTranslation
