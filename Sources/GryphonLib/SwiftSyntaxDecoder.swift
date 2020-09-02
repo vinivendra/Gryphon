@@ -1444,8 +1444,10 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			generics = []
 		}
 
+		let isMutating = annotations.remove("mutating")
+
 		if !functionLikeDeclaration.isInitializer {
-			let isStatic = accessAndAnnotations.annotations.remove("static")
+			let isStatic = annotations.remove("static")
 
 			return FunctionDeclaration(
 				range: functionLikeDeclaration.getRange(inFile: sourceFile),
@@ -1457,7 +1459,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				isOpen: isOpen,
 				isImplicit: false,
 				isStatic: isStatic,
-				isMutating: false,
+				isMutating: isMutating,
 				isPure: false,
 				isJustProtocolInterface: false,
 				extendsType: nil,
@@ -1475,7 +1477,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				isOpen: isOpen,
 				isImplicit: false,
 				isStatic: true,
-				isMutating: false,
+				isMutating: isMutating,
 				isPure: false,
 				extendsType: nil,
 				statements: statements,
