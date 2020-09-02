@@ -2218,9 +2218,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			// ...becomes "(Any, Any)"
 			inputType = String(inputType.drop(while: { $0 != "(" }))
 
-			// Remove the enveloping parentheses
+			// Remove the enveloping parentheses. Do it only once to avoid destructuring tuples.
 			// ...becomes "Any, Any"
-			while Utilities.isInEnvelopingParentheses(inputType) {
+			if Utilities.isInEnvelopingParentheses(inputType) {
 				inputType = String(inputType.dropFirst().dropLast())
 			}
 
@@ -2253,7 +2253,10 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				return try errorExpression(
 					forASTNode: Syntax(inputParameters),
 					withMessage: "Unable to convert closure parameters; I have " +
-						"\(inputTypes.count) types but \(cleanInputParameters.count) parameters")
+						"\(inputTypes.count) types but \(cleanInputParameters.count) parameters. " +
+						"The types are \(inputTypes.readableList(withQuotes: true)), obtained " +
+						"from \"\(closureType)\", and the parameters are " +
+						"\(cleanInputParameters.readableList(withQuotes: true))")
 			}
 
 			for (parameter, inputType) in zip(cleanInputParameters, inputTypes) {

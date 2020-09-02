@@ -327,6 +327,28 @@ extension Character {
 }
 
 //
+extension List where Element == String {
+	// Turns ["a", "b", "c"] into "a, b and c", optionally adding double quotes to each element
+	func readableList(withQuotes: Bool = false) -> String {
+		if withQuotes {
+			return self.map { "\"\($0)\"" }.readableList()
+		}
+
+		if self.count == 0 {
+			return ""
+		}
+		else if self.count == 1 {
+			return "\(self[0])"
+		}
+
+		let prefix = self.dropLast().joined(separator: ", ")
+		let suffix = " and \(self.last!)"
+
+		return prefix + suffix
+	}
+}
+
+//
 extension List {
 	/// Returns nil if index is out of bounds.
 	subscript (safe index: Int) -> Element? { // gryphon ignore
