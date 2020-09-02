@@ -579,6 +579,7 @@ public class FunctionDeclaration: Statement {
 			extendsType.map { PrintableTree("extends type \($0)") },
 			PrintableTree("open: \(isOpen)"),
 			isImplicit ? PrintableTree("implicit") : nil,
+			isPure ? PrintableTree("pure") : nil,
 			isStatic ? PrintableTree("static") : nil,
 			isMutating ? PrintableTree("mutating") : nil,
 			PrintableTree.initOrNil(access),

@@ -1446,6 +1446,10 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 		let isMutating = annotations.remove("mutating")
 
+		let isPure = !getLeadingComments(
+			forSyntax: functionLikeDeclaration.asSyntax,
+			withKey: .pure).isEmpty
+
 		if !functionLikeDeclaration.isInitializer {
 			let isStatic = annotations.remove("static")
 
@@ -1460,7 +1464,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				isImplicit: false,
 				isStatic: isStatic,
 				isMutating: isMutating,
-				isPure: false,
+				isPure: isPure,
 				isJustProtocolInterface: false,
 				extendsType: nil,
 				statements: statements,
@@ -1478,7 +1482,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				isImplicit: false,
 				isStatic: true,
 				isMutating: isMutating,
-				isPure: false,
+				isPure: isPure,
 				extendsType: nil,
 				statements: statements,
 				access: accessAndAnnotations.access,
@@ -3171,6 +3175,7 @@ extension SyntaxProtocol {
 
 /// A protocol to convert FunctionDeclSyntax and InitializerDeclSyntax with the same algorithm.
 protocol FunctionLikeSyntax: SyntaxProtocol {
+	var asSyntax: Syntax { get }
 	var isInitializer: Bool { get }
 	var prefix: String { get }
 	var parameterList: FunctionParameterListSyntax { get }
@@ -3183,6 +3188,10 @@ protocol FunctionLikeSyntax: SyntaxProtocol {
 }
 
 extension FunctionDeclSyntax: FunctionLikeSyntax {
+	var asSyntax: Syntax {
+		return Syntax(self)
+	}
+
 	var isInitializer: Bool {
 		return false
 	}
@@ -3217,6 +3226,10 @@ extension FunctionDeclSyntax: FunctionLikeSyntax {
 }
 
 extension InitializerDeclSyntax: FunctionLikeSyntax {
+	var asSyntax: Syntax {
+		return Syntax(self)
+	}
+
 	var isInitializer: Bool {
 		return true
 	}
