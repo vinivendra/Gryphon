@@ -62,6 +62,15 @@ internal data class MyError(
 	val errorMessage: String
 ): Exception()
 
+internal fun g() {
+	try {
+		println("First")
+	}
+	finally {
+		println("Second")
+	}
+}
+
 fun main(args: Array<String>) {
 	var i: Int = 1
 
@@ -124,4 +133,6 @@ fun main(args: Array<String>) {
 	catch (error: Exception) {
 		throw MyError(errorMessage = "")
 	}
+
+	g()
 }

@@ -159,3 +159,12 @@ catch {
 	throw MyError(errorMessage: "")
 }
 
+// Defer
+func g() {
+	defer {
+		print("Second")
+	}
+	print("First")
+}
+
+g()
