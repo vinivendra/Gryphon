@@ -160,6 +160,7 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 
 		Compiler.handleWarning(
 			message: "Failed to interpret template",
+			syntax: expression.syntax,
 			ast: expression,
 			sourceFile: ast.sourceFile,
 			sourceFileRange: expression.range)
@@ -374,6 +375,7 @@ private class ReplaceTemplateMatchesTranspilationPass: TranspilationPass {
 		else {
 			Compiler.handleWarning(
 				message: "Unexpected empty result when replacing matches on template",
+				syntax: literalCodeExpression.syntax,
 				ast: literalCodeExpression,
 				sourceFile: ast.sourceFile,
 				sourceFileRange: literalCodeExpression.range)

@@ -455,6 +455,7 @@ public class Driver {
 						Compiler.handleWarning(
 							message: "No output file path set for \"\(inputFilePath)\"." +
 								" Set it with \"// gryphon output: <output file>\".",
+							syntax: nil,
 							sourceFile: gryphonAST.sourceFile,
 							sourceFileRange: SourceFileRange(
 								lineStart: 1, lineEnd: 1,

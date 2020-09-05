@@ -131,7 +131,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let statements = try convertStatements(block.syntaxElements)
 
 		// Parse the ending comments
-		let triviaPieces = getLeadingComments(forSyntax: block.endSyntax)
+		let triviaPieces = SwiftSyntaxDecoder.getLeadingComments(
+			forSyntax: block.endSyntax,
+			sourceFile: self.sourceFile)
 		for comment in triviaPieces {
 			switch comment {
 			case let .translationComment(
@@ -174,6 +176,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 							Compiler.handleWarning(
 								message: "Unsupported output file extension in " +
 									"\"\(commentValue)\". Did you mean to use \".kt\"?",
+								syntax: nil,
 								sourceFile: sourceFile,
 								sourceFileRange: range)
 						}
@@ -201,7 +204,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 			// Parse the statement's leading comments
 			var shouldIgnoreStatement = false
-			let leadingComments = getLeadingComments(forSyntax: Syntax(statement))
+			let leadingComments = SwiftSyntaxDecoder.getLeadingComments(
+				forSyntax: Syntax(statement),
+				sourceFile: self.sourceFile)
 			for comment in leadingComments {
 				switch comment {
 				case let .translationComment(
@@ -244,6 +249,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 								Compiler.handleWarning(
 									message: "Unsupported output file extension in " +
 										"\"\(commentValue)\". Did you mean to use \".kt\"?",
+									syntax: nil,
 									sourceFile: sourceFile,
 									sourceFileRange: range)
 							}
@@ -359,7 +365,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		return (declarations, statements)
 	}
 
-	private enum Comment {
+	internal enum Comment {
 		case translationComment(
 			syntax: Syntax,
 			range: SourceFileRange,
@@ -368,12 +374,24 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			comment: CommentStatement)
 	}
 
-	private func getLeadingComments(
+	func getLeadingComments(
 		forSyntax syntax: Syntax,
 		withKey key: SourceFile.CommentKey)
 		-> List<SourceFile.TranslationComment>
 	{
-		let leadingComments = getLeadingComments(forSyntax: syntax)
+		return SwiftSyntaxDecoder.getLeadingComments(
+			forSyntax: syntax,
+			sourceFile: self.sourceFile,
+			withKey: key)
+	}
+
+	internal static func getLeadingComments(
+		forSyntax syntax: Syntax,
+		sourceFile: SourceFile,
+		withKey key: SourceFile.CommentKey)
+		-> List<SourceFile.TranslationComment>
+	{
+		let leadingComments = getLeadingComments(forSyntax: syntax, sourceFile: sourceFile)
 		return leadingComments.compactMap { comment -> SourceFile.TranslationComment? in
 			if case let .translationComment(syntax: _, range: _, comment: translationComment)
 						= comment,
@@ -387,8 +405,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			}
 	}
 
-	private func getLeadingComments(
-		forSyntax syntax: Syntax)
+	internal static func getLeadingComments(
+		forSyntax syntax: Syntax,
+		sourceFile: SourceFile)
 		-> MutableList<Comment>
 	{
 		let result: MutableList<Comment> = []
@@ -414,7 +433,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					let range = SourceFileRange.getRange(
 						withStartOffset: startOffset,
 						withEndOffset: endOffset - 1, // Inclusive end
-						inFile: self.sourceFile)
+						inFile: sourceFile)
 
 					if let translationComment =
 						SourceFile.getTranslationCommentFromString(cleanComment)
@@ -2623,6 +2642,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 						message: "Found two operators " +
 							"( '\(currentOperatorInformation.operator)' ) with the same " +
 							"precedence but no associativity",
+						syntax: Syntax(sequenceExpression),
 						ast: sequenceExpression.toPrintableTree(),
 						sourceFile: self.sourceFile,
 						sourceFileRange: sequenceExpression
@@ -3093,6 +3113,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 								Compiler.handleWarning(
 									message: "Unexpected indentation around here",
+									syntax: nil,
 									ast: stringLiteralExpression.toPrintableTree(),
 									sourceFile: self.sourceFile,
 									sourceFileRange: problemRange)
@@ -3111,6 +3132,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					Compiler.handleWarning(
 						message: "Expected multiline strings to have extra newlines at the " +
 						"beggining and at the end",
+						syntax: Syntax(stringLiteralExpression),
 						ast: stringLiteralExpression.toPrintableTree(),
 						sourceFile: self.sourceFile,
 						sourceFileRange: stringLiteralExpression.getRange(inFile: self.sourceFile))

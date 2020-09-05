@@ -55,7 +55,8 @@ class MyClass {
 
 // Test warnings for pure function
 func f() -> Bool? { return true }
-func g() -> Bool? { return true } // gryphon pure
+// gryphon pure
+func g() -> Bool? { return true }
 
 if let a1 = f(), let a2 = g() { }
 if let a4 = g(), let a3 = f() { }
@@ -102,4 +103,5 @@ struct D {
 }
 
 // Test muting warnings
-let noWarnings: [Int] = [] // gryphon mute
+// gryphon mute
+let noWarnings: [Int] = []

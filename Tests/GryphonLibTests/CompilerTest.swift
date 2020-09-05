@@ -61,7 +61,7 @@ class CompilerTest: XCTestCase {
 			XCTAssert(Compiler.numberOfWarnings == 0)
 
 			//
-			Compiler.handleWarning(message: "", sourceFile: nil, sourceFileRange: nil)
+			Compiler.handleWarning(message: "", syntax: nil, sourceFile: nil, sourceFileRange: nil)
 
 			XCTAssert(Compiler.hasIssues())
 			XCTAssert(Compiler.numberOfErrors == 0)

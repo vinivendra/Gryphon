@@ -22,6 +22,7 @@
 // gryphon output: Bootstrap/Compiler.kt
 
 import Foundation
+import SwiftSyntax
 
 public class Compiler {
 	public static var logError: ((String) -> ()) = { input in
@@ -110,19 +111,19 @@ public class Compiler {
 		}
 	}
 
+	/// Uses the given syntax to check for `mute` comments before raising the warning.
 	internal static func handleWarning(
 		message: String,
+		syntax: Syntax?,
 		ast: PrintableAsTree? = nil,
 		sourceFile: SourceFile?,
 		sourceFileRange: SourceFileRange?)
 	{
-		// Check if there's a comment muting warnings in this line in the source code
-		if let sourceFileRange = sourceFileRange {
-			if let comment = sourceFile?.getTranslationCommentFromLine(sourceFileRange.lineStart) {
-				if comment.key == .mute {
-					return
-				}
-			}
+		if let syntax = syntax,
+			let sourceFile = sourceFile,
+			shouldMuteWarnings(forSyntax: syntax, inSourceFile: sourceFile)
+		{
+			return
 		}
 
 		Compiler.issues.append(CompilerIssue(
@@ -159,6 +160,63 @@ public class Compiler {
 		for issue in sortedIssues {
 			logError(issue.fullMessage)
 		}
+	}
+
+	/// Checks this syntax for a leading mute comment. If there isn't one, check its parent
+	/// syntaxes. Stop at the first statement or declaration, so we only check (e.g.) a variable
+	/// declaration but not its enveloping class.
+	public static func shouldMuteWarnings(
+		forSyntax syntax: Syntax,
+		inSourceFile sourceFile: SourceFile)
+		-> Bool
+	{
+		var currentSyntax = syntax
+
+		while true {
+			if !SwiftSyntaxDecoder.getLeadingComments(
+					forSyntax: currentSyntax,
+					sourceFile: sourceFile,
+					withKey: .mute)
+				.isEmpty
+			{
+				// If there's a mute comment
+				return true
+			}
+
+			// If we we're checking a statement or declaration
+			if currentSyntax.is(StmtSyntax.self) || currentSyntax.is(DeclSyntax.self) {
+				return false
+			}
+
+			if let parent = currentSyntax.parent {
+				currentSyntax = parent
+			}
+			else {
+				return false
+			}
+		}
+	}
+
+	/// Checks this statement for a mute comment.
+	func shouldMuteWarning(
+		forStatement statement: Statement,
+		inSourceFile sourceFile: SourceFile)
+		-> Bool
+	{
+		guard let currentSyntax = statement.syntax else {
+			return false
+		}
+
+		if !SwiftSyntaxDecoder.getLeadingComments(
+				forSyntax: currentSyntax,
+				sourceFile: sourceFile,
+				withKey: .mute)
+			.isEmpty
+		{
+			return true
+		}
+
+		return false
 	}
 
 	//

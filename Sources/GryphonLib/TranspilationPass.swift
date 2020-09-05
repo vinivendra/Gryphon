@@ -23,6 +23,8 @@
 
 // gryphon insert: import kotlin.system.*
 
+import SwiftSyntax
+
 /// Implements the basic algorithm that visits nodes in the AST. Subclassing this class and
 /// overriding the `replace` and `process` methods lets you alter the AST in specific places, which
 /// is how most passes are implemented.
@@ -1795,6 +1797,7 @@ public class CallsToSuperclassInitializersTranspilationPass: TranspilationPass {
 			"initializer"
 		Compiler.handleWarning(
 			message: message,
+			syntax: superCall.syntax,
 			sourceFile: ast.sourceFile,
 			sourceFileRange: superCall.range)
 	}
@@ -2437,6 +2440,7 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 			"Defaulting to \"internal\"."
 		Compiler.handleWarning(
 			message: message,
+			syntax: declaration.syntax,
 			sourceFile: ast.sourceFile,
 			sourceFileRange: declaration.range)
 	}
@@ -2445,6 +2449,7 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 		let message = "Failed to calculate the correct access modifier. Defaulting to \"public\"."
 		Compiler.handleWarning(
 			message: message,
+			syntax: declaration.syntax,
 			sourceFile: ast.sourceFile,
 			sourceFileRange: declaration.range)
 	}
@@ -2929,6 +2934,7 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 		else {
 			Compiler.handleWarning(
 				message: "Unable to get label for function.",
+				syntax: functionExpression.syntax,
 				sourceFile: ast.sourceFile,
 				sourceFileRange: functionExpression.range)
 			return nil
@@ -3889,6 +3895,7 @@ public class RaiseStandardLibraryWarningsTranspilationPass: TranspilationPass {
 				"\"\(declarationReferenceExpression.identifier)\" was not translated."
 			Compiler.handleWarning(
 					message: message,
+					syntax: declarationReferenceExpression.syntax,
 					sourceFile: ast.sourceFile,
 					sourceFileRange: declarationReferenceExpression.range)
 		}
@@ -3911,6 +3918,7 @@ public class RaiseDoubleOptionalWarningsTranspilationPass: TranspilationPass {
 				let message = "Double optionals may behave differently in Kotlin."
 				Compiler.handleWarning(
 					message: message,
+					syntax: expression.syntax,
 					sourceFile: ast.sourceFile,
 					sourceFileRange: expression.range)
 			}
@@ -3943,6 +3951,7 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 						structDeclaration.structName
 					Compiler.handleWarning(
 						message: message,
+						syntax: variableDeclaration.syntax,
 						sourceFile: ast.sourceFile,
 						sourceFileRange: variableDeclaration.range)
 					continue
@@ -3958,6 +3967,7 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 						"\(methodName) inside struct \(structDeclaration.structName)"
 					Compiler.handleWarning(
 						message: message,
+						syntax: functionDeclaration.syntax,
 						sourceFile: ast.sourceFile,
 						sourceFileRange: functionDeclaration.range)
 					continue
@@ -3982,6 +3992,7 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 						"\(methodName) inside enum \(enumDeclaration.enumName)"
 					Compiler.handleWarning(
 						message: message,
+						syntax: functionDeclaration.syntax,
 						sourceFile: ast.sourceFile,
 						sourceFileRange: functionDeclaration.range)
 				}
@@ -4019,6 +4030,7 @@ public class RaiseStructInitializerWarningsTranspilationPass: TranspilationPass 
 				" Consider using default values for the struct's properties instead."
 			Compiler.handleWarning(
 				message: message,
+				syntax: initializerDeclaration.syntax,
 				ast: initializerDeclaration,
 				sourceFile: ast.sourceFile,
 				sourceFileRange: initializerDeclaration.range)
@@ -4046,6 +4058,7 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 				"MutableList, List, MutableMap or Map instead."
 			Compiler.handleWarning(
 				message: message,
+				syntax: expression.syntax,
 				ast: expression,
 				sourceFile: ast.sourceFile,
 				sourceFileRange: expression.range)
@@ -4123,10 +4136,15 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 			ifStatement.conditions :
 			ifStatement.conditions.dropFirst()
 
-		let sideEffectsRanges = conditions.flatMap { rangesWithPossibleSideEffectsInCondition($0) }
-		for range in sideEffectsRanges {
+		let sideEffectsRanges = conditions.flatMap {
+			informationOnPossibleSideEffectsInCondition($0)
+		}
+		for rangeAndSyntax in sideEffectsRanges {
+			let syntax = rangeAndSyntax.0
+			let range = rangeAndSyntax.1
 			Compiler.handleWarning(
 				message: "If condition may have side effects.",
+				syntax: syntax,
 				sourceFile: ast.sourceFile,
 				sourceFileRange: range)
 		}
@@ -4136,100 +4154,100 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 		}
 	}
 
-	private func rangesWithPossibleSideEffectsInCondition(
+	private func informationOnPossibleSideEffectsInCondition(
 		_ condition: IfStatement.IfCondition)
-		-> MutableList<SourceFileRange>
+		-> MutableList<(Syntax?, SourceFileRange)>
 	{
 		if case let .declaration(variableDeclaration: variableDeclaration) = condition {
 			if let expression = variableDeclaration.expression {
-				return rangesWithPossibleSideEffectsIn(expression)
+				return informationOnPossibleSideEffectsIn(expression)
 			}
 		}
 
 		return []
 	}
 
-	private func rangesWithPossibleSideEffectsIn(
+	private func informationOnPossibleSideEffectsIn(
 		_ expression: Expression)
-		-> MutableList<SourceFileRange>
+		-> MutableList<(Syntax?, SourceFileRange)>
 	{
 		if let expression = expression as? CallExpression {
 			if !self.context.isReferencingPureFunction(expression),
 				let range = expression.range
 			{
-				return [range]
+				return [(expression.syntax, range)]
 			}
 			else {
 				return []
 			}
 		}
 		if let expression = expression as? ParenthesesExpression {
-			return rangesWithPossibleSideEffectsIn(expression.expression)
+			return informationOnPossibleSideEffectsIn(expression.expression)
 		}
 		if let expression = expression as? ForceValueExpression {
-			return rangesWithPossibleSideEffectsIn(expression.expression)
+			return informationOnPossibleSideEffectsIn(expression.expression)
 		}
 		if let expression = expression as? OptionalExpression {
-			return rangesWithPossibleSideEffectsIn(expression.expression)
+			return informationOnPossibleSideEffectsIn(expression.expression)
 		}
 		if let expression = expression as? SubscriptExpression {
-			let result = rangesWithPossibleSideEffectsIn(expression.subscriptedExpression)
+			let result = informationOnPossibleSideEffectsIn(expression.subscriptedExpression)
 			result.append(contentsOf:
-				rangesWithPossibleSideEffectsIn(expression.indexExpression))
+				informationOnPossibleSideEffectsIn(expression.indexExpression))
 			return result
 		}
 		if let expression = expression as? ArrayExpression {
 			return expression.elements
-				.flatMap { rangesWithPossibleSideEffectsIn($0) }
+				.flatMap { informationOnPossibleSideEffectsIn($0) }
 				.toMutableList()
 		}
 		if let expression = expression as? DictionaryExpression {
 			let result = expression.keys
-				.flatMap { rangesWithPossibleSideEffectsIn($0) }
+				.flatMap { informationOnPossibleSideEffectsIn($0) }
 				.toMutableList()
 			result.append(contentsOf:
-				expression.values.flatMap { rangesWithPossibleSideEffectsIn($0) })
+				expression.values.flatMap { informationOnPossibleSideEffectsIn($0) })
 			return result
 		}
 		if let expression = expression as? DotExpression {
-			let result = rangesWithPossibleSideEffectsIn(expression.leftExpression)
+			let result = informationOnPossibleSideEffectsIn(expression.leftExpression)
 			result.append(contentsOf:
-				rangesWithPossibleSideEffectsIn(expression.rightExpression))
+				informationOnPossibleSideEffectsIn(expression.rightExpression))
 			return result
 		}
 		if let expression = expression as? BinaryOperatorExpression {
-			let result = rangesWithPossibleSideEffectsIn(expression.leftExpression)
+			let result = informationOnPossibleSideEffectsIn(expression.leftExpression)
 			result.append(contentsOf:
-				rangesWithPossibleSideEffectsIn(expression.rightExpression))
+				informationOnPossibleSideEffectsIn(expression.rightExpression))
 			return result
 		}
 		if let expression = expression as? PrefixUnaryExpression {
-			return rangesWithPossibleSideEffectsIn(expression.subExpression)
+			return informationOnPossibleSideEffectsIn(expression.subExpression)
 		}
 		if let expression = expression as? PostfixUnaryExpression {
-			return rangesWithPossibleSideEffectsIn(expression.subExpression)
+			return informationOnPossibleSideEffectsIn(expression.subExpression)
 		}
 		if let expression = expression as? IfExpression {
-			let result = rangesWithPossibleSideEffectsIn(expression.condition)
+			let result = informationOnPossibleSideEffectsIn(expression.condition)
 			result.append(contentsOf:
-				rangesWithPossibleSideEffectsIn(expression.trueExpression))
+				informationOnPossibleSideEffectsIn(expression.trueExpression))
 			result.append(contentsOf:
-				rangesWithPossibleSideEffectsIn(expression.falseExpression))
+				informationOnPossibleSideEffectsIn(expression.falseExpression))
 			return result
 		}
 		if let expression = expression as? InterpolatedStringLiteralExpression {
 			return expression.expressions
-				.flatMap { rangesWithPossibleSideEffectsIn($0) }
+				.flatMap { informationOnPossibleSideEffectsIn($0) }
 				.toMutableList()
 		}
 		if let expression = expression as? TupleExpression {
 			return expression.pairs
-				.flatMap { rangesWithPossibleSideEffectsIn($0.expression) }
+				.flatMap { informationOnPossibleSideEffectsIn($0.expression) }
 				.toMutableList()
 		}
 		if let expression = expression as? TupleShuffleExpression {
 			return expression.expressions
-				.flatMap { rangesWithPossibleSideEffectsIn($0) }
+				.flatMap { informationOnPossibleSideEffectsIn($0) }
 				.toMutableList()
 		}
 
@@ -4624,6 +4642,7 @@ public class RawValuesMembersTranspilationPass: TranspilationPass {
 				Compiler.handleWarning(
 					message: "Failed to create init(rawValue:). " +
 						"Unable to get all raw values from the enum declaration.",
+					syntax: enumDeclaration.syntax,
 					ast: enumDeclaration,
 					sourceFile: ast.sourceFile,
 					sourceFileRange: enumDeclaration.range)

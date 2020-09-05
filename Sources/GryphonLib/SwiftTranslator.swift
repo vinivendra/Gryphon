@@ -3339,6 +3339,7 @@ public class SwiftTranslator {
 						Compiler.handleWarning(
 							message: "Unsupported output file extension in \"\(commentValue)\". " +
 								"Did you mean to use \".kt\"?",
+							syntax: nil,
 							sourceFile: sourceFile,
 							sourceFileRange: astRange)
 					}

@@ -150,8 +150,7 @@ class IntegrationTest: XCTestCase {
 			Compiler.clearIssues()
 
 			// Generate kotlin code using the whole compiler
-			let testCasePath = TestUtilities.testCasesPath + "warnings"
-			let usesSwiftSyntax = TestUtilities.testCasesForSwiftSyntax.contains("warnings")
+			let testCasePath = TestUtilities.testCasesPath + "warnings.swift"
 			let astDumpFilePath =
 				SupportingFile.pathOfSwiftASTDumpFile(
 					forSwiftFile: testCasePath,
@@ -163,7 +162,7 @@ class IntegrationTest: XCTestCase {
 					toolchainName: nil,
 					indentationString: "\t",
 					defaultsToFinal: false,
-					isUsingSwiftSyntax: usesSwiftSyntax,
+					isUsingSwiftSyntax: true,
 					compiledFiles: [testCasePath])).first!
 
 			XCTAssert(
@@ -173,9 +172,11 @@ class IntegrationTest: XCTestCase {
 						.joined(separator: "\n"))
 
 			// Make sure the comment for muting warnings is working
+			let numberOfExpectedWarnings = 12
 			XCTAssert(
-				Compiler.numberOfWarnings == 12,
-				"Expected 11 warnings, found \(Compiler.numberOfWarnings):\n" +
+				Compiler.numberOfWarnings == numberOfExpectedWarnings,
+				"Expected \(numberOfExpectedWarnings) warnings, found " +
+					"\(Compiler.numberOfWarnings):\n" +
 					Compiler.issues.filter { !$0.isError }.map { $0.fullMessage }
 						.joined(separator: "\n"))
 
@@ -194,6 +195,7 @@ class IntegrationTest: XCTestCase {
 					"found \(warnings.count) (printed below, if any).\n" +
 					warnings.map { $0.fullMessage }.joined(separator: "\n"))
 
+			// 3 warnings here (instead of 2) may indicate a problem with muting warnings
 			warnings = Compiler.issues.filter { $0.fullMessage.contains("Native type") }
 			XCTAssertEqual(
 				warnings.count, 2,
@@ -242,4 +244,5 @@ class IntegrationTest: XCTestCase {
 			XCTFail("🚨 Test failed with error:\n\(error)")
 		}
 	}
+
 }
