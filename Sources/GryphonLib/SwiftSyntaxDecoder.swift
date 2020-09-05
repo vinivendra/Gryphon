@@ -134,12 +134,17 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let triviaPieces = getLeadingComments(forSyntax: block.endSyntax)
 		for comment in triviaPieces {
 			switch comment {
-			case let .translationComment(comment: translationComment, range: range):
+			case let .translationComment(
+					syntax: syntax,
+					range: range,
+					comment: translationComment):
 				if let commentValue = translationComment.value {
 					if translationComment.key == .insertInMain {
 						statements.append(ExpressionStatement(
+							syntax: syntax,
 							range: range,
 							expression: LiteralCodeExpression(
+								syntax: syntax,
 								range: range,
 								string: commentValue,
 								shouldGoToMainFunction: true,
@@ -147,8 +152,10 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					}
 					else if translationComment.key == .insert {
 						statements.append(ExpressionStatement(
+							syntax: syntax,
 							range: range,
 							expression: LiteralCodeExpression(
+								syntax: syntax,
 								range: range,
 								string: commentValue,
 								shouldGoToMainFunction: false,
@@ -197,12 +204,17 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			let leadingComments = getLeadingComments(forSyntax: Syntax(statement))
 			for comment in leadingComments {
 				switch comment {
-				case let .translationComment(comment: translationComment, range: range):
+				case let .translationComment(
+						syntax: syntax,
+						range: range,
+						comment: translationComment):
 					if let commentValue = translationComment.value {
 						if translationComment.key == .insertInMain {
 							result.append(ExpressionStatement(
+								syntax: syntax,
 								range: range,
 								expression: LiteralCodeExpression(
+									syntax: syntax,
 									range: range,
 									string: commentValue,
 									shouldGoToMainFunction: true,
@@ -210,8 +222,10 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 						}
 						else if translationComment.key == .insert {
 							result.append(ExpressionStatement(
+								syntax: syntax,
 								range: range,
 								expression: LiteralCodeExpression(
+									syntax: syntax,
 									range: range,
 									string: commentValue,
 									shouldGoToMainFunction: false,
@@ -260,6 +274,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				}
 				else {
 					try result.append(ExpressionStatement(
+						syntax: item,
 						range: expression.getRange(inFile: self.sourceFile),
 						expression: convertExpression(expression)))
 				}
@@ -345,8 +360,12 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	}
 
 	private enum Comment {
-		case translationComment(comment: SourceFile.TranslationComment, range: SourceFileRange)
-		case normalComment(comment: CommentStatement)
+		case translationComment(
+			syntax: Syntax,
+			range: SourceFileRange,
+			comment: SourceFile.TranslationComment)
+		case normalComment(
+			comment: CommentStatement)
 	}
 
 	private func getLeadingComments(
@@ -356,7 +375,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	{
 		let leadingComments = getLeadingComments(forSyntax: syntax)
 		return leadingComments.compactMap { comment -> SourceFile.TranslationComment? in
-				if case let .translationComment(comment: translationComment, range: _)
+			if case let .translationComment(syntax: _, range: _, comment: translationComment)
 						= comment,
 					translationComment.key == key
 				{
@@ -401,11 +420,13 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 						SourceFile.getTranslationCommentFromString(cleanComment)
 					{
 						result.append(.translationComment(
-							comment: translationComment,
-							range: range))
+							syntax: syntax,
+							range: range,
+							comment: translationComment))
 					}
 					else {
 						let normalComment = CommentStatement(
+							syntax: syntax,
 							range: range,
 							value: commentString)
 						result.append(.normalComment(comment: normalComment))
@@ -422,13 +443,18 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	// MARK: - Statements
 	func convertStatement(_ statement: StmtSyntax) throws -> List<Statement> {
 		if let breakStatement = statement.as(BreakStmtSyntax.self) {
-			return [BreakStatement(range: breakStatement.getRange(inFile: self.sourceFile))]
+			return [BreakStatement(
+				syntax: Syntax(statement),
+				range: breakStatement.getRange(inFile: self.sourceFile))]
 		}
 		if let continueStatement = statement.as(ContinueStmtSyntax.self) {
-			return [ContinueStatement(range: continueStatement.getRange(inFile: self.sourceFile))]
+			return [ContinueStatement(
+				syntax: Syntax(statement),
+				range: continueStatement.getRange(inFile: self.sourceFile))]
 		}
 		if let throwStatement = statement.as(ThrowStmtSyntax.self) {
 			return [ThrowStatement(
+				syntax: Syntax(statement),
 				range: throwStatement.getRange(inFile: self.sourceFile),
 				expression: try convertExpression(throwStatement.expression))]
 		}
@@ -469,6 +495,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let result: MutableList<Statement> = []
 
 		result.append(DoStatement(
+			syntax: Syntax(doStatement),
 			range: doStatement.getRange(inFile: self.sourceFile),
 			statements: try convertBlock(doStatement.body)))
 
@@ -484,6 +511,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					{
 						// If the declaration is supported
 						variableDeclaration = VariableDeclaration(
+							syntax: Syntax(pattern),
 							range: pattern.getRange(inFile: self.sourceFile),
 							identifier: valuePattern.identifier.text,
 							typeAnnotation: "Error",
@@ -512,6 +540,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				}
 
 				result.append(CatchStatement(
+					syntax: Syntax(catchClause),
 					range: catchClause.getRange(inFile: self.sourceFile),
 					variableDeclaration: variableDeclaration,
 					statements: try convertBlock(catchClause.body)))
@@ -620,6 +649,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 
 		return SwitchStatement(
+			syntax: Syntax(switchStatement),
 			range: switchStatement.getRange(inFile: self.sourceFile),
 			convertsToExpression: nil,
 			expression: switchExpression,
@@ -645,6 +675,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let statements = try convertBlock(whileStatement.body)
 
 		return WhileStatement(
+			syntax: Syntax(whileStatement),
 			range: whileStatement.getRange(inFile: self.sourceFile),
 			expression: expression,
 			statements: statements)
@@ -659,6 +690,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let statements = try convertBlock(forStatement.body)
 
 		return ForEachStatement(
+			syntax: Syntax(forStatement),
 			range: forStatement.getRange(inFile: self.sourceFile),
 			collection: collection,
 			variable: variable,
@@ -670,6 +702,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		throws -> DeferStatement
 	{
 		return DeferStatement(
+			syntax: Syntax(deferStatement),
 			range: deferStatement.getRange(inFile: self.sourceFile),
 			statements: try convertBlock(deferStatement.body))
 	}
@@ -695,6 +728,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				let expression = try convertExpression(optionalBinding.initializer.value)
 				conditions.append(IfStatement.IfCondition.declaration(variableDeclaration:
 					VariableDeclaration(
+						syntax: Syntax(optionalBinding),
 						range: optionalBinding.getRange(inFile: self.sourceFile),
 						identifier: identifier,
 						typeAnnotation: expression.swiftType,
@@ -729,9 +763,11 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 						typeName: enumType)
 					if let typeName = dotExpressionToString(dotExpression) {
 						conditions.append(.condition(expression: BinaryOperatorExpression(
+							syntax: Syntax(ifCondition),
 							range: ifCondition.getRange(inFile: self.sourceFile),
 							leftExpression: try convertExpression(leftExpression),
 							rightExpression: TypeExpression(
+								syntax: Syntax(enumExpression),
 								range: enumExpression.getRange(inFile: self.sourceFile),
 								typeName: typeName),
 							operatorSymbol: "is",
@@ -772,6 +808,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		else if let elseBlock = ifStatement.elseBlock {
 			let elseBodyStatements = try convertBlock(elseBlock)
 			elseStatement = IfStatement(
+				syntax: Syntax(elseBlock),
 				range: elseBlock.getRange(inFile: self.sourceFile),
 				conditions: [],
 				declarations: [],
@@ -784,6 +821,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 
 		return IfStatement(
+			syntax: ifStatement.asSyntax,
 			range: ifStatement.getRange(inFile: self.sourceFile),
 			conditions: conditions,
 			declarations: [],
@@ -824,9 +862,11 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					typeName: enumType)
 				if let typeName = dotExpressionToString(dotExpression) {
 					conditions.append(BinaryOperatorExpression(
+						syntax: Syntax(pattern),
 						range: pattern.getRange(inFile: self.sourceFile),
 						leftExpression: patternExpression,
 						rightExpression: TypeExpression(
+							syntax: Syntax(calledExpression),
 							range: calledExpression.getRange(inFile: self.sourceFile),
 							typeName: typeName),
 						operatorSymbol: "is",
@@ -837,12 +877,14 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 							// Create the enum member expression (e.g. `A.b`)
 							let range = argument.getRange(inFile: self.sourceFile)
 							let enumMember = DeclarationReferenceExpression(
+								syntax: Syntax(argument),
 								range: range,
 								identifier: label.text,
 								typeName: typeName,
 								isStandardLibrary: false,
 								isImplicit: false)
 							let enumExpression = DotExpression(
+								syntax: Syntax(argument),
 								range: range,
 								leftExpression: patternExpression,
 								rightExpression: enumMember)
@@ -855,6 +897,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 								// If we're declaring a variable, e.g. the `bar` in
 								// `A.b(foo: bar)`
 								variableDeclarations.append(VariableDeclaration(
+									syntax: Syntax(argument),
 									range: argument.getRange(inFile: self.sourceFile),
 									identifier: identifierPattern.identifier.text,
 									typeAnnotation: nil,
@@ -877,6 +920,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 								// `A.b(foo: "bar")`
 								let comparedExpression = try convertExpression(argument.expression)
 								conditions.append(BinaryOperatorExpression(
+									syntax: Syntax(argument),
 									range: argument.getRange(inFile: self.sourceFile),
 									leftExpression: enumExpression,
 									rightExpression: comparedExpression,
@@ -937,6 +981,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 
 		return ReturnStatement(
+			syntax: Syntax(returnStatement),
 			range: returnStatement.getRange(inFile: self.sourceFile),
 			expression: expression,
 			label: nil)
@@ -1075,6 +1120,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			annotations.append("operator")
 
 			result.append(FunctionDeclaration(
+				syntax: Syntax(accessor.statements),
 				range: accessor.range,
 				prefix: accessor.isGet ? "get" : "set",
 				parameters: parameters,
@@ -1116,6 +1162,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 
 		return ExtensionDeclaration(
+			syntax: Syntax(extensionDeclaration),
 			range: extensionDeclaration.getRange(inFile: self.sourceFile),
 			typeName: extendedType,
 			members: try convertBlock(extensionDeclaration.members))
@@ -1219,6 +1266,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		annotations.append(contentsOf: manualAnnotations)
 
 		return ProtocolDeclaration(
+			syntax: Syntax(protocolDeclaration),
 			range: protocolDeclaration.getRange(inFile: self.sourceFile),
 			protocolName: protocolDeclaration.identifier.text,
 			access: accessAndAnnotations.access,
@@ -1268,6 +1316,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					let rawValue = try element.rawValue.map { try convertExpression($0.value) }
 
 					elements.append(EnumElement(
+						syntax: Syntax(element),
 						name: element.identifier.text,
 						associatedValues: associatedValues,
 						rawValue: rawValue,
@@ -1283,6 +1332,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 
 		return EnumDeclaration(
+			syntax: Syntax(enumDeclaration),
 			range: enumDeclaration.getRange(inFile: self.sourceFile),
 			access: accessAndAnnotations.access,
 			enumName: enumDeclaration.identifier.text,
@@ -1324,6 +1374,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		annotations.append(contentsOf: manualAnnotations)
 
 		return StructDeclaration(
+			syntax: Syntax(structDeclaration),
 			range: structDeclaration.getRange(inFile: self.sourceFile),
 			annotations: annotations,
 			structName: structName,
@@ -1362,6 +1413,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 
 		return ClassDeclaration(
+			syntax: Syntax(classDeclaration),
 			range: classDeclaration.getRange(inFile: self.sourceFile),
 			className: classDeclaration.identifier.text,
 			annotations: annotations,
@@ -1385,6 +1437,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			getAccessAndAnnotations(fromModifiers: typealiasDeclaration.modifiers)
 
 		return TypealiasDeclaration(
+			syntax: Syntax(typealiasDeclaration),
 			range: typealiasDeclaration.getRange(inFile: self.sourceFile),
 			identifier: typealiasDeclaration.identifier.text,
 			typeName: try convertType(typeSyntax),
@@ -1398,6 +1451,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	{
 		let moduleName = try importDeclaration.path.getLiteralText(fromSourceFile: self.sourceFile)
 		return ImportDeclaration(
+			syntax: Syntax(importDeclaration),
 			range: importDeclaration.getRange(inFile: self.sourceFile),
 			moduleName: moduleName)
 	}
@@ -1474,6 +1528,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			let isStatic = annotations.remove("static")
 
 			return FunctionDeclaration(
+				syntax: functionLikeDeclaration.asSyntax,
 				range: functionLikeDeclaration.getRange(inFile: sourceFile),
 				prefix: prefix,
 				parameters: parameters,
@@ -1493,6 +1548,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 		else {
 			return InitializerDeclaration(
+				syntax: functionLikeDeclaration.asSyntax,
 				range: functionLikeDeclaration.getRange(inFile: sourceFile),
 				parameters: parameters,
 				returnType: returnType,
@@ -1601,6 +1657,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				guard identifier != "_" else {
 					if let expression = expression {
 						return [ExpressionStatement(
+							syntax: Syntax(variableDeclaration),
 							range: variableDeclaration.getRange(inFile: self.sourceFile),
 							expression: expression), ]
 					}
@@ -1635,6 +1692,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 							forASTNode: Syntax(codeBlock),
 							withMessage: "Expected variables with getters to have an explicit type")
 						getter = FunctionDeclaration(
+							syntax: Syntax(codeBlock),
 							range: range,
 							prefix: "get",
 							parameters: [], returnType: "", functionType: "", genericTypes: [],
@@ -1647,6 +1705,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					}
 
 					getter = FunctionDeclaration(
+						syntax: Syntax(codeBlock),
 						range: codeBlock.getRange(inFile: self.sourceFile),
 						prefix: "get",
 						parameters: [],
@@ -1687,6 +1746,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 									withMessage: "Expected variables with getters or setters to " +
 										"have an explicit type")
 								getter = FunctionDeclaration(
+									syntax: Syntax(accessor),
 									range: range,
 									prefix: prefix,
 									parameters: [], returnType: "", functionType: "",
@@ -1723,6 +1783,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 							}
 
 							let functionDeclaration = FunctionDeclaration(
+								syntax: Syntax(accessor),
 								range: range,
 								prefix: prefix,
 								parameters: parameters,
@@ -1749,6 +1810,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 						}
 						else {
 							let functionDeclaration = FunctionDeclaration(
+								syntax: Syntax(accessor),
 								range: range,
 								prefix: prefix,
 								parameters: [],
@@ -1809,6 +1871,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				}
 
 				result.append(VariableDeclaration(
+					syntax: Syntax(variableDeclaration),
 					range: variableDeclaration.getRange(inFile: self.sourceFile),
 					identifier: identifier,
 					typeAnnotation: annotatedType,
@@ -1922,13 +1985,17 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			sequenceExpression,
 			limitedToElements: List(sequenceExpression.elements.dropFirst(2)))
 
-		// If it's a discarded statement (e.g. `_ = 0`) make t just the right-side expression
+		// If it's a discarded statement (e.g. `_ = 0`) make it just the right-side expression
 		if leftExpression.is(DiscardAssignmentExprSyntax.self) {
-			return ExpressionStatement(range: range, expression: convertedRightExpression)
+			return ExpressionStatement(
+				syntax: Syntax(sequenceExpression),
+				range: range,
+				expression: convertedRightExpression)
 		}
 		else {
 			let convertedLeftExpression = try convertExpression(leftExpression)
 			return AssignmentStatement(
+				syntax: Syntax(sequenceExpression),
 				range: range,
 				leftHand: convertedLeftExpression,
 				rightHand: convertedRightExpression)
@@ -1944,6 +2011,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let literalCodeExpressions = leadingComments.compactMap{ $0.value }
 			.map {
 				return LiteralCodeExpression(
+					syntax: Syntax(expression),
 					range: expression.getRange(inFile: self.sourceFile),
 					string: $0,
 					shouldGoToMainFunction: false,
@@ -1955,6 +2023,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 		if let superExpression = expression.as(SuperRefExprSyntax.self) {
 			return DeclarationReferenceExpression(
+				syntax: Syntax(superExpression),
 				range: superExpression.getRange(inFile: self.sourceFile),
 				identifier: "super",
 				typeName: superExpression.getType(fromList: self.expressionTypes),
@@ -2048,6 +2117,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	{
 		if let identifierPattern = patternExpression.as(IdentifierPatternSyntax.self) {
 			return DeclarationReferenceExpression(
+				syntax: Syntax(identifierPattern),
 				range: identifierPattern.getRange(inFile: self.sourceFile),
 				identifier: identifierPattern.identifier.text,
 				typeName: identifierPattern.getType(fromList: self.expressionTypes),
@@ -2066,6 +2136,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					LabeledExpression(label: nil, expression: $0)
 				}
 			return TupleExpression(
+				syntax: Syntax(tuplePattern),
 				range: tuplePattern.getRange(inFile: self.sourceFile),
 				pairs: labeledExpressions.toMutableList())
 		}
@@ -2088,6 +2159,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let falseExpression = try convertExpression(ternaryExpression.secondChoice)
 
 		return IfExpression(
+			syntax: Syntax(ternaryExpression),
 			range: ternaryExpression.getRange(inFile: self.sourceFile),
 			condition: condition,
 			trueExpression: trueExpression,
@@ -2122,6 +2194,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			}.joined(separator: ", ")
 
 		return TypeExpression(
+			syntax: Syntax(specializeExpression),
 			range: specializeExpression.getRange(inFile: self.sourceFile),
 			typeName: "\(identifier)<\(genericTypes)>")
 	}
@@ -2141,6 +2214,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let subExpression = try convertExpression(prefixOperatorExpression.postfixExpression)
 
 		return PrefixUnaryExpression(
+			syntax: Syntax(prefixOperatorExpression),
 			range: prefixOperatorExpression.getRange(inFile: self.sourceFile),
 			subExpression: subExpression,
 			operatorSymbol: operatorSymbol,
@@ -2161,6 +2235,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let operatorSymbol = postfixUnaryExpression.operatorToken.text
 
 		return PostfixUnaryExpression(
+			syntax: Syntax(postfixUnaryExpression),
 			range: postfixUnaryExpression.getRange(inFile: self.sourceFile),
 			subExpression: subExpression,
 			operatorSymbol: operatorSymbol,
@@ -2183,6 +2258,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let convertedCalledExpression = try convertExpression(subscriptExpression.calledExpression)
 
 		return SubscriptExpression(
+			syntax: Syntax(subscriptExpression),
 			range: subscriptExpression.getRange(inFile: self.sourceFile),
 			subscriptedExpression: convertedCalledExpression,
 			indexExpression: convertedIndexExpression,
@@ -2194,6 +2270,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		throws -> Expression
 	{
 		return try ForceValueExpression(
+			syntax: Syntax(forcedValueExpression),
 			range: forcedValueExpression.getRange(inFile: self.sourceFile),
 			expression: convertExpression(forcedValueExpression.expression))
 	}
@@ -2285,6 +2362,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 
 		return ClosureExpression(
+			syntax: Syntax(closureExpression),
 			range: closureExpression.getRange(inFile: self.sourceFile),
 			parameters: parameters,
 			statements: try convertBlock(closureExpression),
@@ -2364,6 +2442,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			let middleConversion = try convertExpression(ternaryExpression.firstChoice)
 
 			return IfExpression(
+				syntax: Syntax(ternaryExpression),
 				range: range,
 				condition: leftConversion,
 				trueExpression: middleConversion,
@@ -2399,6 +2478,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				}
 
 				return BinaryOperatorExpression(
+					syntax: Syntax(operatorSyntax),
 					range: range,
 					leftExpression: leftHalf,
 					rightExpression: rightHalf,
@@ -2429,9 +2509,11 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				}
 
 				return BinaryOperatorExpression(
+					syntax: Syntax(asSyntax),
 					range: range,
 					leftExpression: leftHalf,
 					rightExpression: TypeExpression(
+						syntax: Syntax(asSyntax),
 						range: asSyntax.getRange(inFile: self.sourceFile),
 						typeName: typeName),
 					operatorSymbol: operatorString,
@@ -2449,9 +2531,11 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					limitedToElements: elements.dropLast(elements.count - index))
 
 				return BinaryOperatorExpression(
+					syntax: Syntax(isSyntax),
 					range: range,
 					leftExpression: leftHalf,
 					rightExpression: TypeExpression(
+						syntax: Syntax(isSyntax),
 						range: isSyntax.getRange(inFile: self.sourceFile),
 						typeName: try convertType(isSyntax.typeName)),
 					operatorSymbol: "is",
@@ -2588,13 +2672,15 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		{
 			// If it's an `.` `token`
 			leftExpression = TypeExpression(
-				range: memberAccessExpression.dot.getRange(inFile: self.sourceFile),
+				syntax: Syntax(memberAccessExpression),
+				range: memberAccessExpression.getRange(inFile: self.sourceFile),
 				typeName: String(leftType.dropLast(".Type".count)))
 		}
 		else if let leftType = typeName {
 			// If it's an `.` `token` and the left type was given
 			leftExpression = TypeExpression(
-				range: memberAccessExpression.dot.getRange(inFile: self.sourceFile),
+				syntax: Syntax(memberAccessExpression),
+				range: memberAccessExpression.getRange(inFile: self.sourceFile),
 				typeName: leftType)
 		}
 		else {
@@ -2604,9 +2690,11 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 
 		return DotExpression(
+			syntax: Syntax(memberAccessExpression),
 			range: memberAccessExpression.getRange(inFile: self.sourceFile),
 			leftExpression: leftExpression,
 			rightExpression: DeclarationReferenceExpression(
+				syntax: Syntax(rightSideToken),
 				range: rightSideToken.getRange(inFile: self.sourceFile),
 				identifier: rightSideText,
 				typeName: memberType,
@@ -2640,6 +2728,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 
 		return DictionaryExpression(
+			syntax: Syntax(dictionaryExpression),
 			range: dictionaryExpression.getRange(inFile: self.sourceFile),
 			keys: keys,
 			values: values,
@@ -2661,6 +2750,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		})
 
 		return ArrayExpression(
+			syntax: Syntax(arrayExpression),
 			range: arrayExpression.getRange(inFile: self.sourceFile),
 			elements: elements,
 			typeName: typeName)
@@ -2670,7 +2760,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		_ nilLiteralExpression: NilLiteralExprSyntax)
 		throws -> Expression
 	{
-		return NilLiteralExpression(range: nilLiteralExpression.getRange(inFile: self.sourceFile))
+		return NilLiteralExpression(
+			syntax: Syntax(nilLiteralExpression),
+			range: nilLiteralExpression.getRange(inFile: self.sourceFile))
 	}
 
 	func convertBooleanLiteralExpression(
@@ -2678,6 +2770,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		throws -> Expression
 	{
 		return LiteralBoolExpression(
+			syntax: Syntax(booleanLiteralExpression),
 			range: booleanLiteralExpression.getRange(inFile: self.sourceFile),
 			value: (booleanLiteralExpression.booleanLiteral.text == "true"))
 	}
@@ -2723,6 +2816,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 
 		return CallExpression(
+			syntax: Syntax(functionCallExpression),
 			range: functionCallExpression.getRange(inFile: self.sourceFile),
 			function: functionExpressionTranslation,
 			parameters: tupleExpression,
@@ -2786,6 +2880,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 
 		return TupleExpression(
+			syntax: Syntax(tupleExprElementListSyntax),
 			range: tupleExprElementListSyntax.getRange(inFile: self.sourceFile),
 			pairs: pairs)
 	}
@@ -2833,6 +2928,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		throws -> Expression
 	{
 		return OptionalExpression(
+			syntax: Syntax(optionalChainingExpression),
 			range: optionalChainingExpression.getRange(inFile: self.sourceFile),
 			expression: try convertExpression(optionalChainingExpression.expression))
 	}
@@ -2843,6 +2939,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	{
 		// TODO: DeclRef should have optional type
 		return DeclarationReferenceExpression(
+			syntax: Syntax(identifierExpression),
 			range: identifierExpression.getRange(inFile: self.sourceFile),
 			identifier: identifierExpression.identifier.text,
 			typeName: identifierExpression.getType(fromList: self.expressionTypes) ?? "",
@@ -2863,6 +2960,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				let floatValue = Float(cleanString)
 			{
 				return LiteralFloatExpression(
+					syntax: Syntax(floatLiteralExpression),
 					range: floatLiteralExpression.getRange(inFile: self.sourceFile),
 					value: floatValue)
 			}
@@ -2870,6 +2968,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				let doubleValue = Double(cleanString)
 			{
 				return LiteralDoubleExpression(
+					syntax: Syntax(floatLiteralExpression),
 					range: floatLiteralExpression.getRange(inFile: self.sourceFile),
 					value: doubleValue)
 			}
@@ -2893,6 +2992,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				let doubleValue = Double(cleanString)
 			{
 				return LiteralDoubleExpression(
+					syntax: Syntax(integerLiteralExpression),
 					range: integerLiteralExpression.getRange(inFile: self.sourceFile),
 					value: doubleValue)
 			}
@@ -2900,6 +3000,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				let floatValue = Float(cleanString)
 			{
 				return LiteralFloatExpression(
+					syntax: Syntax(integerLiteralExpression),
 					range: integerLiteralExpression.getRange(inFile: self.sourceFile),
 					value: floatValue)
 			}
@@ -2907,6 +3008,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				let uIntValue = UInt64(cleanString)
 			{
 				return LiteralUIntExpression(
+					syntax: Syntax(integerLiteralExpression),
 					range: integerLiteralExpression.getRange(inFile: self.sourceFile),
 					value: uIntValue)
 			}
@@ -2914,6 +3016,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 		if let intValue = Int64(cleanString) {
 			return LiteralIntExpression(
+				syntax: Syntax(integerLiteralExpression),
 				range: integerLiteralExpression.getRange(inFile: self.sourceFile),
 				value: intValue)
 		}
@@ -2937,6 +3040,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				typeName == "String.Element" || typeName == "Character"
 			{
 				return LiteralCharacterExpression(
+					syntax: Syntax(stringLiteralExpression),
 					range: range,
 					value: text)
 			}
@@ -3014,6 +3118,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			}
 
 			return LiteralStringExpression(
+				syntax: Syntax(stringLiteralExpression),
 				range: range,
 				value: cleanText,
 				isMultiline: isMultiline)
@@ -3026,6 +3131,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				let text = stringSegment.getText()
 			{
 				expressions.append(LiteralStringExpression(
+					syntax: Syntax(stringSegment),
 					range: stringSegment.getRange(inFile: self.sourceFile),
 					value: text,
 					isMultiline: false))
@@ -3056,6 +3162,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 
 		return InterpolatedStringLiteralExpression(
+			syntax: Syntax(stringLiteralExpression),
 			range: range,
 			expressions: expressions)
 	}
@@ -3128,7 +3235,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			ast: ast.toPrintableTree(),
 			sourceFile: sourceFile,
 			sourceFileRange: range)
-		return ErrorStatement(range: range)
+		return ErrorStatement(syntax: ast, range: range)
 	}
 
 	func errorExpression(
@@ -3144,7 +3251,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			ast: ast.toPrintableTree(),
 			sourceFile: sourceFile,
 			sourceFileRange: range)
-		return ErrorExpression(range: range)
+		return ErrorExpression(syntax: ast, range: range)
 	}
 }
 
@@ -3313,6 +3420,7 @@ extension InitializerDeclSyntax: FunctionLikeSyntax {
 
 /// A protocol to convert IfStmtSyntax and GuardStmtSyntax with the same algorithm.
 protocol IfLikeSyntax: SyntaxProtocol {
+	var asSyntax: Syntax { get }
 	var ifConditions: ConditionElementListSyntax { get }
 	var statements: CodeBlockSyntax { get }
 	var elseBlock: CodeBlockSyntax? { get }
@@ -3320,6 +3428,10 @@ protocol IfLikeSyntax: SyntaxProtocol {
 }
 
 extension IfStmtSyntax: IfLikeSyntax {
+	var asSyntax: Syntax {
+		return Syntax(self)
+	}
+
 	var ifConditions: ConditionElementListSyntax {
 		return self.conditions
 	}
@@ -3338,6 +3450,10 @@ extension IfStmtSyntax: IfLikeSyntax {
 }
 
 extension GuardStmtSyntax: IfLikeSyntax {
+	var asSyntax: Syntax {
+		return Syntax(self)
+	}
+
 	var ifConditions: ConditionElementListSyntax {
 		return self.conditions
 	}

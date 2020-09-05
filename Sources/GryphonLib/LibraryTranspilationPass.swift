@@ -68,6 +68,7 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 						self.context.addTemplate(TranspilationContext.TranspilationTemplate(
 							swiftExpression: swiftExpression,
 							templateExpression: LiteralCodeExpression(
+								syntax: templateExpression.syntax,
 								range: templateExpression.range,
 								string: cleanString,
 								shouldGoToMainFunction: false,
@@ -107,9 +108,11 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 								processTemplateParameter($0)
 							}.toMutableList()
 						return CallExpression(
+							syntax: nil,
 							range: nil,
 							function: function,
 							parameters: TupleExpression(
+								syntax: nil,
 								range: nil,
 								pairs: parameters),
 							typeName: nil)
@@ -121,11 +124,13 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 						let left =
 							processTemplateNodeExpression(tupleExpression.pairs[0].expression)
 						let right = LiteralCodeExpression(
+							syntax: nil,
 							range: nil,
 							string: stringExpression.value,
 							shouldGoToMainFunction: false,
 							typeName: nil)
 						return DotExpression(
+							syntax: nil,
 							range: nil,
 							leftExpression: left,
 							rightExpression: right)
@@ -135,6 +140,7 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 		}
 		else if let stringExpression = expression as? LiteralStringExpression {
 			return LiteralCodeExpression(
+				syntax: nil,
 				range: nil,
 				string: stringExpression.value,
 				shouldGoToMainFunction: false,
@@ -144,6 +150,7 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 			binaryOperatorExpression.operatorSymbol == "+"
 		{
 			return ConcatenationExpression(
+				syntax: nil,
 				range: nil,
 				leftExpression: processTemplateNodeExpression(
 					binaryOperatorExpression.leftExpression),
@@ -157,7 +164,7 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 			sourceFile: ast.sourceFile,
 			sourceFileRange: expression.range)
 
-		return ErrorExpression(range: expression.range)
+		return ErrorExpression(syntax: expression.syntax, range: expression.range)
 	}
 
 	private func processTemplateParameter(
@@ -168,6 +175,7 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 			return LabeledExpression(
 				label: nil,
 				expression: LiteralCodeExpression(
+					syntax: nil,
 					range: nil,
 					string: expression.value,
 					shouldGoToMainFunction: false,
@@ -304,6 +312,7 @@ private class ReplaceTemplateMatchesTranspilationPass: TranspilationPass {
 							let precedingString =
 								String(string[previousMatchEndIndex..<currentIndex])
 							let precedingStringExpression = LiteralCodeExpression(
+								syntax: nil,
 								range: nil,
 								string: precedingString,
 								shouldGoToMainFunction: false,
@@ -337,6 +346,7 @@ private class ReplaceTemplateMatchesTranspilationPass: TranspilationPass {
 		// Check if there's a trailing string we need to add
 		if previousMatchEndIndex != stringEndIndex {
 			expressions.append(LiteralCodeExpression(
+				syntax: nil,
 				range: nil,
 				string: String(string[previousMatchEndIndex...]),
 				shouldGoToMainFunction: false,
@@ -348,6 +358,7 @@ private class ReplaceTemplateMatchesTranspilationPass: TranspilationPass {
 		for expression in expressions {
 			if let previousResult = result {
 				result = ConcatenationExpression(
+					syntax: nil,
 					range: nil,
 					leftExpression: previousResult,
 					rightExpression: expression)

@@ -33,7 +33,7 @@ public class SwiftTranslator {
 	let errorDanglingPatternDeclaration = PatternBindingDeclaration(
 		identifier: "<<Error>>",
 		typeName: "<<Error>>",
-		expression: ErrorExpression(range: nil))
+		expression: ErrorExpression(syntax: nil, range: nil))
 
 	internal var context: TranspilationContext
 	internal var sourceFile: SourceFile?

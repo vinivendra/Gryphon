@@ -179,16 +179,16 @@ public class TranspilationPass {
 			return replaceReturnStatement(returnStatement)
 		}
 		if statement is BreakStatement {
-			return [BreakStatement(range: statement.range)]
+			return [BreakStatement(syntax: statement.syntax, range: statement.range)]
 		}
 		if statement is ContinueStatement {
-			return [ContinueStatement(range: statement.range)]
+			return [ContinueStatement(syntax: statement.syntax, range: statement.range)]
 		}
 		if let assignmentStatement = statement as? AssignmentStatement {
 			return replaceAssignmentStatement(assignmentStatement)
 		}
 		if statement is ErrorStatement {
-			return [ErrorStatement(range: statement.range)]
+			return [ErrorStatement(syntax: statement.syntax, range: statement.range)]
 		}
 
 		fatalError("This should never be reached.")
@@ -206,6 +206,7 @@ public class TranspilationPass {
 		-> List<Statement>
 	{
 		return [ExpressionStatement(
+			syntax: expressionStatement.syntax,
 			range: expressionStatement.range,
 			expression: replaceExpression(expressionStatement.expression)), ]
 	}
@@ -215,6 +216,7 @@ public class TranspilationPass {
 		-> List<Statement>
 	{
 		return [ExtensionDeclaration(
+			syntax: extensionDeclaration.syntax,
 			range: extensionDeclaration.range,
 			typeName: extensionDeclaration.typeName,
 			members: replaceStatements(extensionDeclaration.members)), ]
@@ -239,6 +241,7 @@ public class TranspilationPass {
 		-> List<Statement>
 	{
 		return [ClassDeclaration(
+			syntax: classDeclaration.syntax,
 			range: classDeclaration.range,
 			className: classDeclaration.className,
 			annotations: classDeclaration.annotations,
@@ -253,6 +256,7 @@ public class TranspilationPass {
 		-> List<Statement>
 	{
 		return [CompanionObject(
+			syntax: companionObject.syntax,
 			range: companionObject.range,
 			members: replaceStatements(companionObject.members)), ]
 	}
@@ -263,6 +267,7 @@ public class TranspilationPass {
 	{
 		return [
 			EnumDeclaration(
+				syntax: enumDeclaration.syntax,
 				range: enumDeclaration.range,
 				access: enumDeclaration.access,
 				enumName: enumDeclaration.enumName,
@@ -287,6 +292,7 @@ public class TranspilationPass {
 		-> List<Statement>
 	{
 		return [ProtocolDeclaration(
+			syntax: protocolDeclaration.syntax,
 			range: protocolDeclaration.range,
 			protocolName: protocolDeclaration.protocolName,
 			access: protocolDeclaration.access,
@@ -299,6 +305,7 @@ public class TranspilationPass {
 		-> List<Statement>
 	{
 		return [StructDeclaration(
+			syntax: structDeclaration.syntax,
 			range: structDeclaration.range,
 			annotations: structDeclaration.annotations,
 			structName: structDeclaration.structName,
@@ -398,6 +405,7 @@ public class TranspilationPass {
 		-> List<Statement>
 	{
 		return [DoStatement(
+			syntax: doStatement.syntax,
 			range: doStatement.range,
 			statements: replaceStatements(doStatement.statements)), ]
 	}
@@ -407,6 +415,7 @@ public class TranspilationPass {
 		-> List<Statement>
 	{
 		return [CatchStatement(
+			syntax: catchStatement.syntax,
 			range: catchStatement.range,
 			variableDeclaration: catchStatement.variableDeclaration
 				.map { processVariableDeclaration($0) },
@@ -419,6 +428,7 @@ public class TranspilationPass {
 		-> List<Statement>
 	{
 		return [ForEachStatement(
+			syntax: forEachStatement.syntax,
 			range: forEachStatement.range,
 			collection: replaceExpression(forEachStatement.collection),
 			variable: forEachStatement.variable.map { replaceExpression($0) },
@@ -430,6 +440,7 @@ public class TranspilationPass {
 		-> List<Statement>
 	{
 		return [WhileStatement(
+			syntax: whileStatement.syntax,
 			range: whileStatement.range,
 			expression: replaceExpression(whileStatement.expression),
 			statements: replaceStatements(whileStatement.statements)), ]
@@ -499,6 +510,7 @@ public class TranspilationPass {
 			}
 
 		return [SwitchStatement(
+			syntax: switchStatement.syntax,
 			range: switchStatement.range,
 			convertsToExpression: replacedConvertsToExpression,
 			expression: replaceExpression(switchStatement.expression),
@@ -510,6 +522,7 @@ public class TranspilationPass {
 		-> List<Statement>
 	{
 		return [DeferStatement(
+			syntax: deferStatement.syntax,
 			range: deferStatement.range,
 			statements: replaceStatements(deferStatement.statements)), ]
 	}
@@ -519,6 +532,7 @@ public class TranspilationPass {
 		-> List<Statement>
 	{
 		return [ThrowStatement(
+			syntax: throwStatement.syntax,
 			range: throwStatement.range,
 			expression: replaceExpression(throwStatement.expression)), ]
 	}
@@ -528,6 +542,7 @@ public class TranspilationPass {
 		-> List<Statement>
 	{
 		return [ReturnStatement(
+			syntax: returnStatement.syntax,
 			range: returnStatement.range,
 			expression: returnStatement.expression.map { replaceExpression($0) },
 			label: returnStatement.label), ]
@@ -538,6 +553,7 @@ public class TranspilationPass {
 		-> List<Statement>
 	{
 		return [AssignmentStatement(
+			syntax: assignmentStatement.syntax,
 			range: assignmentStatement.range,
 			leftHand: replaceExpression(assignmentStatement.leftHand),
 			rightHand: replaceExpression(assignmentStatement.rightHand)), ]
@@ -639,7 +655,9 @@ public class TranspilationPass {
 			return replaceTupleShuffleExpression(expression)
 		}
 		if expression is ErrorExpression {
-			return ErrorExpression(range: expression.range)
+			return ErrorExpression(
+				syntax: expression.syntax,
+				range: expression.range)
 		}
 
 		fatalError("This should never be reached.")
@@ -657,6 +675,7 @@ public class TranspilationPass {
 		-> Expression
 	{
 		return ConcatenationExpression(
+			syntax: concatenationExpression.syntax,
 			range: concatenationExpression.range,
 			leftExpression: replaceExpression(concatenationExpression.leftExpression),
 			rightExpression: replaceExpression(concatenationExpression.rightExpression))
@@ -667,6 +686,7 @@ public class TranspilationPass {
 		-> Expression
 	{
 		return ParenthesesExpression(
+			syntax: parenthesesExpression.syntax,
 			range: parenthesesExpression.range,
 			expression: replaceExpression(parenthesesExpression.expression))
 	}
@@ -676,6 +696,7 @@ public class TranspilationPass {
 		-> Expression
 	{
 		return ForceValueExpression(
+			syntax: forceValueExpression.syntax,
 			range: forceValueExpression.range,
 			expression: replaceExpression(forceValueExpression.expression))
 	}
@@ -685,6 +706,7 @@ public class TranspilationPass {
 		-> Expression
 	{
 		return OptionalExpression(
+			syntax: optionalExpression.syntax,
 			range: optionalExpression.range,
 			expression: replaceExpression(optionalExpression.expression))
 	}
@@ -715,6 +737,7 @@ public class TranspilationPass {
 		-> Expression
 	{
 		return SubscriptExpression(
+			syntax: subscriptExpression.syntax,
 			range: subscriptExpression.range,
 			subscriptedExpression: replaceExpression(subscriptExpression.subscriptedExpression),
 			indexExpression: replaceExpression(subscriptExpression.indexExpression),
@@ -726,6 +749,7 @@ public class TranspilationPass {
 		-> Expression
 	{
 		return ArrayExpression(
+			syntax: arrayExpression.syntax,
 			range: arrayExpression.range,
 			elements: arrayExpression.elements.map { replaceExpression($0) }.toMutableList(),
 			typeName: arrayExpression.typeName)
@@ -736,6 +760,7 @@ public class TranspilationPass {
 		-> Expression
 	{
 		return DictionaryExpression(
+			syntax: dictionaryExpression.syntax,
 			range: dictionaryExpression.range,
 			keys: dictionaryExpression.keys.map { replaceExpression($0) }.toMutableList(),
 			values: dictionaryExpression.values.map { replaceExpression($0) }.toMutableList(),
@@ -747,6 +772,7 @@ public class TranspilationPass {
 		-> Expression
 	{
 		return ReturnExpression(
+			syntax: returnStatement.syntax,
 			range: returnStatement.range,
 			expression: returnStatement.expression.map { replaceExpression($0) })
 	}
@@ -756,6 +782,7 @@ public class TranspilationPass {
 		-> Expression
 	{
 		return DotExpression(
+			syntax: dotExpression.syntax,
 			range: dotExpression.range,
 			leftExpression: replaceExpression(dotExpression.leftExpression),
 			rightExpression: replaceExpression(dotExpression.rightExpression))
@@ -766,6 +793,7 @@ public class TranspilationPass {
 		-> Expression
 	{
 		return BinaryOperatorExpression(
+			syntax: binaryOperatorExpression.syntax,
 			range: binaryOperatorExpression.range,
 			leftExpression: replaceExpression(binaryOperatorExpression.leftExpression),
 			rightExpression: replaceExpression(binaryOperatorExpression.rightExpression),
@@ -778,6 +806,7 @@ public class TranspilationPass {
 		-> Expression
 	{
 		return PrefixUnaryExpression(
+			syntax: prefixUnaryExpression.syntax,
 			range: prefixUnaryExpression.range,
 			subExpression: replaceExpression(prefixUnaryExpression.subExpression),
 			operatorSymbol: prefixUnaryExpression.operatorSymbol,
@@ -789,6 +818,7 @@ public class TranspilationPass {
 		-> Expression
 	{
 		return PostfixUnaryExpression(
+			syntax: postfixUnaryExpression.syntax,
 			range: postfixUnaryExpression.range,
 			subExpression: replaceExpression(postfixUnaryExpression.subExpression),
 			operatorSymbol: postfixUnaryExpression.operatorSymbol,
@@ -800,6 +830,7 @@ public class TranspilationPass {
 		-> Expression
 	{
 		return IfExpression(
+			syntax: ifExpression.syntax,
 			range: ifExpression.range,
 			condition: replaceExpression(ifExpression.condition),
 			trueExpression: replaceExpression(ifExpression.trueExpression),
@@ -818,6 +849,7 @@ public class TranspilationPass {
 		-> CallExpression
 	{
 		return CallExpression(
+			syntax: callExpression.syntax,
 			range: callExpression.range,
 			function: replaceExpression(callExpression.function),
 			parameters: replaceExpression(callExpression.parameters),
@@ -829,6 +861,7 @@ public class TranspilationPass {
 		-> Expression
 	{
 		return ClosureExpression(
+			syntax: closureExpression.syntax,
 			range: closureExpression.range,
 			parameters: closureExpression.parameters,
 			statements: replaceStatements(closureExpression.statements),
@@ -895,6 +928,7 @@ public class TranspilationPass {
 		-> Expression
 	{
 		return InterpolatedStringLiteralExpression(
+			syntax: interpolatedStringLiteralExpression.syntax,
 			range: interpolatedStringLiteralExpression.range,
 			expressions: interpolatedStringLiteralExpression.expressions
 				.map { replaceExpression($0) }.toMutableList())
@@ -905,6 +939,7 @@ public class TranspilationPass {
 		-> Expression
 	{
 		return TupleExpression(
+			syntax: tupleExpression.syntax,
 			range: tupleExpression.range,
 			pairs: tupleExpression.pairs.map {
 				LabeledExpression(label: $0.label, expression: replaceExpression($0.expression))
@@ -916,6 +951,7 @@ public class TranspilationPass {
 		-> Expression
 	{
 		return TupleShuffleExpression(
+			syntax: tupleShuffleExpression.syntax,
 			range: tupleShuffleExpression.range,
 			labels: tupleShuffleExpression.labels,
 			indices: tupleShuffleExpression.indices,
@@ -969,7 +1005,9 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 						sourceFileRange: variableDeclaration.range)
 				}
 				catch { }
-				return [ErrorStatement(range: variableDeclaration.range)]
+				return [ErrorStatement(
+					syntax: variableDeclaration.syntax,
+					range: variableDeclaration.range)]
 			}
 		}
 		else {
@@ -986,6 +1024,7 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 			}
 			else if let expression = variableDeclaration.expression {
 				statements = [ExpressionStatement(
+					syntax: expression.syntax,
 					range: expression.range,
 					expression: expression)]
 			}
@@ -999,6 +1038,7 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 			}
 
 			return [FunctionDeclaration(
+				syntax: variableDeclaration.syntax,
 				range: variableDeclaration.range,
 				prefix: "toString",
 				parameters: [],
@@ -1031,6 +1071,7 @@ public class RemoveParenthesesTranspilationPass: TranspilationPass {
 	{
 		if let parentheses = subscriptExpression.indexExpression as? ParenthesesExpression {
 			return super.replaceSubscriptExpression(SubscriptExpression(
+				syntax: subscriptExpression.syntax,
 				range: subscriptExpression.range,
 				subscriptedExpression: subscriptExpression.subscriptedExpression,
 				indexExpression: parentheses.expression,
@@ -1086,6 +1127,7 @@ public class RemoveParenthesesTranspilationPass: TranspilationPass {
 		}
 
 		return IfExpression(
+			syntax: ifExpression.syntax,
 			range: ifExpression.range,
 			condition: replacedCondition,
 			trueExpression: replacedTrueExpression,
@@ -1237,6 +1279,7 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 				initializerDeclaration.returnType + "?"
 
 			let result: MutableList<Statement> = [FunctionDeclaration(
+				syntax: initializerDeclaration.syntax,
 				range: initializerDeclaration.range,
 				prefix: "invoke",
 				parameters: initializerDeclaration.parameters,
@@ -1269,6 +1312,7 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 		{
 			if expression.identifier == "self" {
 				return [ReturnStatement(
+					syntax: assignmentStatement.syntax,
 					range: assignmentStatement.range,
 					expression: assignmentStatement.rightHand,
 					label: nil), ]
@@ -1320,7 +1364,10 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 		let nonStaticMembers = members.filter { !isStaticMember($0) }
 
 		let newMembers: MutableList<Statement> =
-			[CompanionObject(range: range, members: staticMembers.toMutableList())]
+			[CompanionObject(
+				syntax: nil,
+				range: range,
+				members: staticMembers.toMutableList())]
 		newMembers.append(contentsOf: nonStaticMembers)
 
 		return newMembers
@@ -1353,6 +1400,7 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 			classDeclaration.members,
 			withRange: classDeclaration.range)
 		return super.replaceClassDeclaration(ClassDeclaration(
+			syntax: classDeclaration.syntax,
 			range: classDeclaration.range,
 			className: classDeclaration.className,
 			annotations: classDeclaration.annotations,
@@ -1370,6 +1418,7 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 			structDeclaration.members,
 			withRange: structDeclaration.range)
 		return super.replaceStructDeclaration(StructDeclaration(
+			syntax: structDeclaration.syntax,
 			range: structDeclaration.range,
 			annotations: structDeclaration.annotations,
 			structName: structDeclaration.structName,
@@ -1386,6 +1435,7 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 			enumDeclaration.members,
 			withRange: enumDeclaration.range)
 		return super.replaceEnumDeclaration(EnumDeclaration(
+			syntax: enumDeclaration.syntax,
 			range: enumDeclaration.range,
 			access: enumDeclaration.access,
 			enumName: enumDeclaration.enumName,
@@ -1463,6 +1513,7 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass {
 		-> Expression
 	{
 		return TypeExpression(
+			syntax: typeExpression.syntax,
 			range: typeExpression.range,
 			typeName: removePrefixes(typeExpression.typeName))
 	}
@@ -1486,6 +1537,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 		{
 			let newType = typeComponents[0] + "." + typeComponents[1].capitalizedAsCamelCase()
 			return TypeExpression(
+				syntax: typeExpression.syntax,
 				range: typeExpression.range,
 				typeName: newType)
 		}
@@ -1524,8 +1576,10 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 				enumExpression.identifier =
 					enumExpression.identifier.capitalizedAsCamelCase()
 				return DotExpression(
+					syntax: dotExpression.syntax,
 					range: dotExpression.range,
 					leftExpression: TypeExpression(
+						syntax: dotExpression.leftExpression.syntax,
 						range: dotExpression.leftExpression.range,
 						typeName: enumType),
 					rightExpression: enumExpression)
@@ -1533,8 +1587,10 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 			else if self.context.enumClasses.contains(lastEnumType) {
 				enumExpression.identifier = enumExpression.identifier.upperSnakeCase()
 				return DotExpression(
+					syntax: dotExpression.syntax,
 					range: dotExpression.range,
 					leftExpression: TypeExpression(
+						syntax: dotExpression.leftExpression.syntax,
 						range: dotExpression.leftExpression.range,
 						typeName: enumType),
 					rightExpression: enumExpression)
@@ -1556,6 +1612,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 		if isSealedClass {
 			newElements = enumDeclaration.elements.map { element in
 				EnumElement(
+					syntax: element.syntax,
 					name: element.name.capitalizedAsCamelCase(),
 					associatedValues: element.associatedValues,
 					rawValue: element.rawValue,
@@ -1565,6 +1622,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 		else if isEnumClass {
 			newElements = enumDeclaration.elements.map { element in
 				EnumElement(
+					syntax: element.syntax,
 					name: element.name.upperSnakeCase(),
 					associatedValues: element.associatedValues,
 					rawValue: element.rawValue,
@@ -1576,6 +1634,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 		}
 
 		return super.replaceEnumDeclaration(EnumDeclaration(
+			syntax: enumDeclaration.syntax,
 			range: enumDeclaration.range,
 			access: enumDeclaration.access,
 			enumName: enumDeclaration.enumName,
@@ -1609,6 +1668,7 @@ public class RenameOperatorsTranspilationPass: TranspilationPass {
         ]
 		if let operatorTranslation = operatorTranslations[binaryOperatorExpression.operatorSymbol] {
 			return super.replaceBinaryOperatorExpression(BinaryOperatorExpression(
+				syntax: binaryOperatorExpression.syntax,
 				range: binaryOperatorExpression.range,
 				leftExpression: binaryOperatorExpression.leftExpression,
 				rightExpression: binaryOperatorExpression.rightExpression,
@@ -1660,6 +1720,7 @@ public class CallsToSuperclassInitializersTranspilationPass: TranspilationPass {
 
 		if let superCall = firstSuperCall {
 			return InitializerDeclaration(
+				syntax: initializerDeclaration.syntax,
 				range: initializerDeclaration.range,
 				parameters: initializerDeclaration.parameters,
 				returnType: initializerDeclaration.returnType,
@@ -1718,6 +1779,7 @@ public class CallsToSuperclassInitializersTranspilationPass: TranspilationPass {
 				rightExpression.identifier == "init"
 			{
 				return CallExpression(
+					syntax: callExpression.syntax,
 					range: callExpression.range,
 					function: leftExpression,
 					parameters: callExpression.parameters,
@@ -1757,6 +1819,7 @@ public class OptionalsInConditionalCastsTranspilationPass: TranspilationPass {
 		}
 
 		return BinaryOperatorExpression(
+			syntax: binaryOperatorExpression.syntax,
 			range: binaryOperatorExpression.range,
 			leftExpression: optionalExpression.expression,
 			rightExpression: binaryOperatorExpression.rightExpression,
@@ -1827,6 +1890,7 @@ public class OpenDeclarationsTranspilationPass: TranspilationPass {
 		}
 
 		let result = super.replaceClassDeclaration(ClassDeclaration(
+			syntax: classDeclaration.syntax,
 			range: classDeclaration.range,
 			className: classDeclaration.className,
 			annotations: annotationsResult,
@@ -1992,6 +2056,7 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 
 		accessModifiersStack.append(translationResult.access)
 		let result = super.replaceClassDeclaration(ClassDeclaration(
+			syntax: classDeclaration.syntax,
 			range: classDeclaration.range,
 			className: classDeclaration.className,
 			annotations: translationResult.annotations,
@@ -2014,6 +2079,7 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 
 		accessModifiersStack.append(translationResult.access)
 		let result = super.replaceStructDeclaration(StructDeclaration(
+			syntax: structDeclaration.syntax,
 			range: structDeclaration.range,
 			annotations: translationResult.annotations,
 			structName: structDeclaration.structName,
@@ -2035,6 +2101,7 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 
 		accessModifiersStack.append(translationResult.access)
 		let result = super.replaceEnumDeclaration(EnumDeclaration(
+			syntax: enumDeclaration.syntax,
 			range: enumDeclaration.range,
 			access: translationResult.access,
 			enumName: enumDeclaration.enumName,
@@ -2061,6 +2128,7 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 		// a protocol always inherit the procotol's access modifier.
 		accessModifiersStack.append("protocol")
 		let result = super.replaceProtocolDeclaration(ProtocolDeclaration(
+			syntax: protocolDeclaration.syntax,
 			range: protocolDeclaration.range,
 			protocolName: protocolDeclaration.protocolName,
 			access: translationResult.access,
@@ -2085,6 +2153,7 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 		if translationResult.didUseAnnotations || isTopLevelNode || thisVariableIsAProperty() {
 			accessModifiersStack.append(translationResult.access)
 			let result = super.replaceVariableDeclaration(VariableDeclaration(
+				syntax: variableDeclaration.syntax,
 				range: variableDeclaration.range,
 				identifier: variableDeclaration.identifier,
 				typeAnnotation: variableDeclaration.typeAnnotation,
@@ -2103,6 +2172,7 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 		}
 		else {
 			return super.replaceVariableDeclaration(VariableDeclaration(
+				syntax: variableDeclaration.syntax,
 				range: variableDeclaration.range,
 				identifier: variableDeclaration.identifier,
 				typeAnnotation: variableDeclaration.typeAnnotation,
@@ -2130,6 +2200,7 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 
 		accessModifiersStack.append(translationResult.access)
 		let result = super.replaceFunctionDeclaration(FunctionDeclaration(
+			syntax: functionDeclaration.syntax,
 			range: functionDeclaration.range,
 			prefix: functionDeclaration.prefix,
 			parameters: functionDeclaration.parameters,
@@ -2160,6 +2231,7 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 
 		accessModifiersStack.append(newAccess)
 		let result = super.replaceTypealiasDeclaration(TypealiasDeclaration(
+			syntax: typealiasDeclaration.syntax,
 			range: typealiasDeclaration.range,
 			identifier: typealiasDeclaration.identifier,
 			typeName: typealiasDeclaration.typeName,
@@ -2180,6 +2252,7 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 
 		accessModifiersStack.append(translationResult.access)
 		let result = super.replaceInitializerDeclaration(InitializerDeclaration(
+			syntax: initializerDeclaration.syntax,
 			range: initializerDeclaration.range,
 			parameters: initializerDeclaration.parameters,
 			returnType: initializerDeclaration.returnType,
@@ -2421,6 +2494,7 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 		-> List<Statement>
 	{
 		return super.replaceEnumDeclaration(EnumDeclaration(
+			syntax: enumDeclaration.syntax,
 			range: enumDeclaration.range,
 			access: enumDeclaration.access,
 			enumName: enumDeclaration.enumName,
@@ -2439,6 +2513,7 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 		-> List<Statement>
 	{
 		return super.replaceStructDeclaration(StructDeclaration(
+			syntax: structDeclaration.syntax,
 			range: structDeclaration.range,
 			annotations: structDeclaration.annotations,
 			structName: structDeclaration.structName,
@@ -2454,6 +2529,7 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 		-> List<Statement>
 	{
 		return super.replaceClassDeclaration(ClassDeclaration(
+			syntax: classDeclaration.syntax,
 			range: classDeclaration.range,
 			className: classDeclaration.className,
 			annotations: classDeclaration.annotations,
@@ -2467,7 +2543,7 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 }
 
 /// Variables with an optional type don't have to be explicitly initialized with `nil` in Swift,
-/// (though it happens implicitl), but they might in Kotlin.
+/// (though it happens implicitly), but they might in Kotlin.
 public class ImplicitNilsInOptionalVariablesTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
 	// gryphon insert:     super(ast, context) { }
@@ -2481,7 +2557,9 @@ public class ImplicitNilsInOptionalVariablesTranspilationPass: TranspilationPass
 			let typeName = variableDeclaration.typeAnnotation,
 			typeName.hasSuffix("?")
 		{
-			variableDeclaration.expression = NilLiteralExpression(range: nil)
+			variableDeclaration.expression = NilLiteralExpression(
+				syntax: variableDeclaration.syntax,
+				range: nil)
 		}
 
 		return variableDeclaration
@@ -2515,6 +2593,7 @@ public class AnonymousParametersTranspilationPass: TranspilationPass {
 			closureExpression.parameters[0].label == "$0"
 		{
 			return super.replaceClosureExpression(ClosureExpression(
+				syntax: closureExpression.syntax,
 				range: closureExpression.range,
 				parameters: [],
 				statements: closureExpression.statements,
@@ -2589,17 +2668,21 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 				let mappedGenericString = mappedGenericElements.joined(separator: ", ")
 
 				return DotExpression(
+					syntax: callExpression.syntax,
 					range: callExpression.range,
 					leftExpression: replaceExpression(onlyPair.expression),
 					rightExpression: CallExpression(
+						syntax: callExpression.syntax,
 						range: callExpression.range,
 						function: DeclarationReferenceExpression(
+							syntax: callExpression.syntax,
 							range: callExpression.range,
 							identifier: "\(functionName)<\(mappedGenericString)>",
 							typeName: typeExpression.typeName,
 							isStandardLibrary: false,
 							isImplicit: false),
 						parameters: TupleExpression(
+							syntax: callExpression.syntax,
 							range: callExpression.range,
 							pairs: []),
 						typeName: typeExpression.typeName))
@@ -2658,17 +2741,21 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 							"\(methodPrefix)<\(castedGenericTypes.joined(separator: ", "))>"
 
 						return CallExpression(
+							syntax: callExpression.syntax,
 							range: callExpression.range,
 							function: DotExpression(
+								syntax: dotExpression.syntax,
 								range: dotExpression.range,
 								leftExpression: dotExpression.leftExpression,
 								rightExpression: DeclarationReferenceExpression(
+									syntax: rightExpression.syntax,
 									range: rightExpression.range,
 									identifier: fullMethodName,
 									typeName: rightExpression.typeName,
 									isStandardLibrary: rightExpression.isStandardLibrary,
 									isImplicit: rightExpression.isImplicit)),
 							parameters: TupleExpression(
+								syntax: tupleExpression.syntax,
 								range: tupleExpression.range,
 								pairs: []),
 							typeName: callExpression.typeName)
@@ -2692,11 +2779,14 @@ public class OptionalFunctionCallsTranspilationPass: TranspilationPass {
 	{
 		if callExpression.function is OptionalExpression {
 			return CallExpression(
+				syntax: callExpression.syntax,
 				range: callExpression.range,
 				function: DotExpression(
+					syntax: callExpression.syntax,
 					range: callExpression.range,
 					leftExpression: callExpression.function,
 					rightExpression: DeclarationReferenceExpression(
+						syntax: callExpression.syntax,
 						range: callExpression.range,
 						identifier: "invoke",
 						typeName: callExpression.function.swiftType ?? "<<Error>>",
@@ -2772,8 +2862,10 @@ public class DataStructureInitializersTranspilationPass: TranspilationPass {
 			}
 
 			return CallExpression(
+				syntax: callExpression.syntax,
 				range: callExpression.range,
 				function: DeclarationReferenceExpression(
+					syntax: callExpression.syntax,
 					range: callExpression.range,
 					identifier: "\(functionName)<\(genericElements)>",
 					typeName: typeName,
@@ -2852,9 +2944,11 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 			if let returnStatement = closureExpression.statements[0] as? ReturnStatement {
 				if let expression = returnStatement.expression {
 					let newStatements: MutableList<Statement> = [ExpressionStatement(
+						syntax: returnStatement.syntax,
 						range: returnStatement.range,
 						expression: expression), ]
 					return super.replaceClosureExpression(ClosureExpression(
+						syntax: closureExpression.syntax,
 						range: closureExpression.range,
 						parameters: closureExpression.parameters,
 						statements: newStatements,
@@ -2868,11 +2962,13 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 					conversionExpression is ReturnStatement
 				{
 					let newSwitchStatement = SwitchStatement(
+						syntax: switchStatement.syntax,
 						range: switchStatement.range,
 						convertsToExpression: nil,
 						expression: switchStatement.expression,
 						cases: switchStatement.cases)
 					return super.replaceClosureExpression(ClosureExpression(
+						syntax: closureExpression.syntax,
 						range: closureExpression.range,
 						parameters: closureExpression.parameters,
 						statements: [newSwitchStatement],
@@ -2890,6 +2986,7 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 		-> List<Statement>
 	{
 		return super.replaceReturnStatement(ReturnStatement(
+			syntax: returnStatement.syntax,
 			range: returnStatement.range,
 			expression: returnStatement.expression.map { replaceExpression($0) },
 			label: labelsStack.last))
@@ -2934,11 +3031,14 @@ public class TuplesToPairsTranspilationPass: TranspilationPass {
 		let pairType = "Pair<\(types.joined(separator: ", "))>"
 
 		return CallExpression(
+			syntax: tupleExpression.syntax,
 			range: tupleExpression.range,
 			function: TypeExpression(
+				syntax: tupleExpression.syntax,
 				range: tupleExpression.range,
 				typeName: pairType),
 			parameters: TupleExpression(
+				syntax: tupleExpression.syntax,
 				range: tupleExpression.range,
 				pairs: [
 					LabeledExpression(
@@ -2997,9 +3097,11 @@ public class TupleMembersTranspilationPass: TranspilationPass {
 		let newIdentifier = (tupleMemberIndex == 0) ? "first" : "second"
 
 		return DotExpression(
+			syntax: dotExpression.syntax,
 			range: dotExpression.range,
 			leftExpression: dotExpression.leftExpression,
 			rightExpression: DeclarationReferenceExpression(
+				syntax: memberExpression.syntax,
 				range: memberExpression.range,
 				identifier: newIdentifier,
 				typeName: memberExpression.typeName,
@@ -3036,9 +3138,11 @@ public class AutoclosuresTranspilationPass: TranspilationPass {
 
 				if parameterType.hasPrefix("@autoclosure") {
 					let newExpression = ClosureExpression(
+						syntax: expression.syntax,
 						range: expression.range,
 						parameters: [],
 						statements: [ExpressionStatement(
+							syntax: expression.syntax,
 							range: expression.range,
 							expression: expression), ],
 						typeName: parameterType)
@@ -3056,9 +3160,11 @@ public class AutoclosuresTranspilationPass: TranspilationPass {
 
 				if parameterType.hasPrefix("@autoclosure") {
 					let newExpression = ClosureExpression(
+						syntax: expression.syntax,
 						range: expression.range,
 						parameters: [],
 						statements: [ExpressionStatement(
+							syntax: expression.syntax,
 							range: expression.range,
 							expression: expression), ],
 						typeName: parameterType)
@@ -3089,17 +3195,21 @@ public class RefactorOptionalsInSubscriptsTranspilationPass: TranspilationPass {
 		if subscriptExpression.subscriptedExpression is OptionalExpression {
 			let indexExpressionType = subscriptExpression.indexExpression.swiftType ?? "<<Error>>"
 			return replaceDotExpression(DotExpression(
+				syntax: subscriptExpression.syntax,
 				range: subscriptExpression.range,
 				leftExpression: subscriptExpression.subscriptedExpression,
 				rightExpression: CallExpression(
+					syntax: subscriptExpression.subscriptedExpression.syntax,
 					range: subscriptExpression.subscriptedExpression.range,
 					function: DeclarationReferenceExpression(
+						syntax: subscriptExpression.subscriptedExpression.syntax,
 						range: subscriptExpression.subscriptedExpression.range,
 						identifier: "get",
 						typeName: "(\(indexExpressionType)) -> \(subscriptExpression.typeName)",
 						isStandardLibrary: false,
 						isImplicit: false),
 					parameters: TupleExpression(
+						syntax: subscriptExpression.indexExpression.syntax,
 						range: subscriptExpression.indexExpression.range,
 						pairs: [LabeledExpression(
 							label: nil,
@@ -3132,6 +3242,7 @@ public class AddOptionalsInDotChainsTranspilationPass: TranspilationPass {
 		{
 			if dotExpressionChainHasOptionals(leftDotExpression.leftExpression) {
 				return DotExpression(
+					syntax: dotExpression.syntax,
 					range: dotExpression.range,
 					leftExpression: addOptionalsToDotExpressionChain(leftDotExpression),
 					rightExpression: dotExpression.rightExpression)
@@ -3158,9 +3269,11 @@ public class AddOptionalsInDotChainsTranspilationPass: TranspilationPass {
 			}
 
 			return addOptionalsToDotExpressionChain(DotExpression(
+				syntax: dotExpression.syntax,
 				range: dotExpression.range,
 				leftExpression: processedLeftExpression,
 				rightExpression: OptionalExpression(
+					syntax: dotExpression.rightExpression.syntax,
 					range: dotExpression.rightExpression.range,
 					expression: dotExpression.rightExpression)))
 		}
@@ -3242,6 +3355,7 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 					if let returnExpression = returnStatement.expression {
 						let newStatements = switchCase.statements.dropLast().toMutableList()
 						newStatements.append(ExpressionStatement(
+							syntax: returnExpression.syntax,
 							range: returnExpression.range,
 							expression: returnExpression))
 						newCases.append(SwitchCase(
@@ -3252,10 +3366,14 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 			}
 			let conversionExpression =
 				ReturnStatement(
+					syntax: switchStatement.syntax,
 					range: switchStatement.range,
-					expression: NilLiteralExpression(range: switchStatement.range),
+					expression: NilLiteralExpression(
+						syntax: switchStatement.syntax,
+						range: switchStatement.range),
 					label: nil)
 			return [SwitchStatement(
+				syntax: switchStatement.syntax,
 				range: switchStatement.range,
 				convertsToExpression: conversionExpression,
 				expression: switchStatement.expression,
@@ -3269,6 +3387,7 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 				if let assignmentStatement = lastStatement as? AssignmentStatement {
 					let newStatements = switchCase.statements.dropLast().toMutableList()
 					newStatements.append(ExpressionStatement(
+						syntax: assignmentStatement.rightHand.syntax,
 						range: assignmentStatement.rightHand.range,
 						expression: assignmentStatement.rightHand))
 					newCases.append(SwitchCase(
@@ -3277,10 +3396,14 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 				}
 			}
 			let conversionExpression = AssignmentStatement(
+				syntax: switchStatement.syntax,
 				range: switchStatement.range,
 				leftHand: assignmentExpression,
-				rightHand: NilLiteralExpression(range: switchStatement.range))
+				rightHand: NilLiteralExpression(
+					syntax: switchStatement.syntax,
+					range: switchStatement.range))
 			return [SwitchStatement(
+				syntax: switchStatement.syntax,
 				range: switchStatement.range,
 				convertsToExpression: conversionExpression,
 				expression: switchStatement.expression,
@@ -3321,12 +3444,14 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 							!assignmentExpression.isImplicit
 						{
 							variableDeclaration.expression = NilLiteralExpression(
+								syntax: switchStatement.syntax,
 								range: switchStatement.range)
 							variableDeclaration.getter = nil
 							variableDeclaration.setter = nil
 							variableDeclaration.isStatic = false
 							let newConversionExpression = variableDeclaration
 							result.append(SwitchStatement(
+								syntax: switchStatement.syntax,
 								range: switchStatement.range,
 								convertsToExpression: newConversionExpression,
 								expression: switchStatement.expression,
@@ -3372,6 +3497,7 @@ public class RemoveBreaksInSwitchesTranspilationPass: TranspilationPass {
 		let newCases = switchStatement.cases.compactMap { removeBreaksInSwitchCase($0) }
 
 		return super.replaceSwitchStatement(SwitchStatement(
+			syntax: switchStatement.syntax,
 			range: switchStatement.range,
 			convertsToExpression: switchStatement.convertsToExpression,
 			expression: switchStatement.expression,
@@ -3408,6 +3534,7 @@ public class IsOperatorsInSwitchesTranspilationPass: TranspilationPass {
 				}
 
 				return super.replaceSwitchStatement(SwitchStatement(
+					syntax: switchStatement.syntax,
 					range: switchStatement.range,
 					convertsToExpression: switchStatement.convertsToExpression,
 					expression: switchStatement.expression,
@@ -3443,9 +3570,11 @@ public class IsOperatorsInSwitchesTranspilationPass: TranspilationPass {
 					dotExpression.rightExpression as? DeclarationReferenceExpression
 			{
 				return BinaryOperatorExpression(
+					syntax: dotExpression.syntax,
 					range: dotExpression.range,
 					leftExpression: expression,
 					rightExpression: TypeExpression(
+						syntax: typeExpression.syntax,
 						range: typeExpression.range,
 						typeName: "\(typeExpression.typeName)." +
 							"\(declarationReferenceExpression.identifier)"),
@@ -3482,6 +3611,7 @@ public class IsOperatorsInIfStatementsTranspilationPass: TranspilationPass {
 					// If it's an enum class, change it from "is" to "=="
 					if self.context.enumClasses.contains(enumName) {
 						return .condition(expression: BinaryOperatorExpression(
+							syntax: binaryExpression.syntax,
 							range: binaryExpression.range,
 							leftExpression: binaryExpression.leftExpression,
 							rightExpression: binaryExpression.rightExpression,
@@ -3577,6 +3707,7 @@ public class ShadowedIfLetAsToIsTranspilationPass: TranspilationPass {
 								conditionWasReplaced = true
 								newConditions.append(IfStatement.IfCondition.condition(
 									expression: BinaryOperatorExpression(
+										syntax: binaryOperator.syntax,
 										range: binaryOperator.range,
 										leftExpression: leftExpression,
 										rightExpression: rightExpression,
@@ -3594,6 +3725,7 @@ public class ShadowedIfLetAsToIsTranspilationPass: TranspilationPass {
 		}
 
 		return super.processIfStatement(IfStatement(
+			syntax: ifStatement.syntax,
 			range: ifStatement.range,
 			conditions: newConditions,
 			declarations: ifStatement.declarations,
@@ -4133,6 +4265,7 @@ public class AddParenthesesForOperatorsInIfsTranspilationPass: TranspilationPass
 					binaryExpression.operatorSymbol == "||"
 				{
 					newConditions.append(.condition(expression: ParenthesesExpression(
+						syntax: expression.syntax,
 						range: expression.range,
 						expression: expression)))
 					continue
@@ -4192,6 +4325,7 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 	{
 		if currentDeclarations.contains(declarationReferenceExpression.identifier) {
 			return OptionalExpression(
+				syntax: declarationReferenceExpression.syntax,
 				range: declarationReferenceExpression.range,
 				expression: declarationReferenceExpression)
 		}
@@ -4219,14 +4353,17 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 	{
 		if case let .declaration(variableDeclaration: variableDeclaration) = condition {
 			return .condition(expression: BinaryOperatorExpression(
+				syntax: variableDeclaration.syntax,
 				range: variableDeclaration.range,
 				leftExpression: DeclarationReferenceExpression(
+					syntax: variableDeclaration.expression?.syntax,
 					range: variableDeclaration.expression?.range,
 					identifier: variableDeclaration.identifier,
 					typeName: variableDeclaration.typeAnnotation,
 					isStandardLibrary: false,
 					isImplicit: false),
 				rightExpression: NilLiteralExpression(
+					syntax: variableDeclaration.syntax,
 					range: variableDeclaration.range),
 				operatorSymbol: "!=",
 				typeName: "Boolean"))
@@ -4310,14 +4447,17 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 		let newStatements: MutableList<Statement> = []
 
 		let range = functionDeclaration.range
+		let syntax = functionDeclaration.syntax
 
 		// Declare new variables with the same name as the Swift paramemeters, containing `this` and
 		// `other`
 		newStatements.append(VariableDeclaration(
+			syntax: syntax,
 			range: range,
 			identifier: lhs.label,
 			typeAnnotation: lhs.typeName,
 			expression: DeclarationReferenceExpression(
+				syntax: syntax,
 				range: range,
 				identifier: "this",
 				typeName: lhs.typeName,
@@ -4333,10 +4473,12 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 			extendsType: nil,
 			annotations: []))
 		newStatements.append(VariableDeclaration(
+			syntax: syntax,
 			range: range,
 			identifier: rhs.label,
 			typeAnnotation: "Any?",
 			expression: DeclarationReferenceExpression(
+				syntax: syntax,
 				range: range,
 				identifier: "other",
 				typeName: "Any?",
@@ -4354,29 +4496,40 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 
 		// Add an if statement to guarantee the comparison only happens between the right types
 		newStatements.append(IfStatement(
+			syntax: syntax,
 			range: range,
 			conditions: [ .condition(expression: BinaryOperatorExpression(
+				syntax: syntax,
 				range: range,
 				leftExpression: DeclarationReferenceExpression(
+					syntax: syntax,
 					range: range,
 					identifier: rhs.label,
 					typeName: "Any?",
 					isStandardLibrary: false,
 					isImplicit: false),
-				rightExpression: TypeExpression(range: range, typeName: rhs.typeName),
+				rightExpression: TypeExpression(
+					syntax: syntax,
+					range: range,
+					typeName: rhs.typeName),
 				operatorSymbol: "is",
 				typeName: "Bool")),
 			],
 			declarations: [],
 			statements: oldStatements,
 			elseStatement: IfStatement(
+				syntax: syntax,
 				range: range,
 				conditions: [],
 				declarations: [],
 				statements: [
 					ReturnStatement(
+						syntax: syntax,
 						range: range,
-						expression: LiteralBoolExpression(range: range, value: false),
+						expression: LiteralBoolExpression(
+							syntax: syntax,
+							range: range,
+							value: false),
 						label: nil),
 				],
 				elseStatement: nil,
@@ -4384,6 +4537,7 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 			isGuard: false))
 
 		return super.processFunctionDeclaration(FunctionDeclaration(
+			syntax: syntax,
 			range: range,
 			prefix: "equals",
 			parameters: [
@@ -4422,6 +4576,7 @@ public class ImplicitRawValuesTranspilationPass: TranspilationPass {
 			for element in enumDeclaration.elements {
 				if element.rawValue == nil {
 					element.rawValue = LiteralStringExpression(
+						syntax: enumDeclaration.syntax,
 						range: enumDeclaration.range,
 						value: element.name,
 						isMultiline: false)
@@ -4436,6 +4591,7 @@ public class ImplicitRawValuesTranspilationPass: TranspilationPass {
 				}
 				else {
 					element.rawValue = LiteralIntExpression(
+						syntax: enumDeclaration.syntax,
 						range: enumDeclaration.range,
 						value: lastValue + 1)
 					lastValue = lastValue + 1
@@ -4479,6 +4635,7 @@ public class RawValuesMembersTranspilationPass: TranspilationPass {
 			newMembers.append(rawValueVariable)
 
 			return super.replaceEnumDeclaration(EnumDeclaration(
+				syntax: enumDeclaration.syntax,
 				range: enumDeclaration.range,
 				access: enumDeclaration.access,
 				enumName: enumDeclaration.enumName,
@@ -4505,19 +4662,24 @@ public class RawValuesMembersTranspilationPass: TranspilationPass {
 		}
 
 		let range = enumDeclaration.range
+		let syntax = enumDeclaration.syntax
 
 		let switchCases = enumDeclaration.elements.map { element -> SwitchCase in
 			SwitchCase(
 				expressions: [element.rawValue!],
 				statements: [
 					ReturnStatement(
+						syntax: syntax,
 						range: range,
 						expression: DotExpression(
+							syntax: syntax,
 							range: range,
 							leftExpression: TypeExpression(
+								syntax: syntax,
 								range: range,
 								typeName: enumDeclaration.enumName),
 							rightExpression: DeclarationReferenceExpression(
+								syntax: syntax,
 								range: range,
 								identifier: element.name,
 								typeName: enumDeclaration.enumName,
@@ -4530,16 +4692,19 @@ public class RawValuesMembersTranspilationPass: TranspilationPass {
 		let defaultSwitchCase = SwitchCase(
 			expressions: [],
 			statements: [ReturnStatement(
+				syntax: syntax,
 				range: range,
-				expression: NilLiteralExpression(range: range),
+				expression: NilLiteralExpression(syntax: syntax, range: range),
 				label: nil), ])
 
 		switchCases.append(defaultSwitchCase)
 
 		let switchStatement = SwitchStatement(
+			syntax: syntax,
 			range: range,
 			convertsToExpression: nil,
 			expression: DeclarationReferenceExpression(
+				syntax: syntax,
 				range: range,
 				identifier: "rawValue",
 				typeName: rawValueType,
@@ -4548,6 +4713,7 @@ public class RawValuesMembersTranspilationPass: TranspilationPass {
 			cases: switchCases)
 
 		return InitializerDeclaration(
+			syntax: syntax,
 			range: range,
 			parameters: [FunctionParameter(
 				label: "rawValue",
@@ -4576,15 +4742,19 @@ public class RawValuesMembersTranspilationPass: TranspilationPass {
 		-> VariableDeclaration
 	{
 		let range = enumDeclaration.range
+		let syntax = enumDeclaration.syntax
 
 		let switchCases = enumDeclaration.elements.map { element in
 			SwitchCase(
 				expressions: [DotExpression(
+					syntax: syntax,
 					range: range,
 					leftExpression: TypeExpression(
+						syntax: syntax,
 						range: range,
 						typeName: enumDeclaration.enumName),
 					rightExpression: DeclarationReferenceExpression(
+						syntax: syntax,
 						range: range,
 						identifier: element.name,
 						typeName: enumDeclaration.enumName,
@@ -4592,6 +4762,7 @@ public class RawValuesMembersTranspilationPass: TranspilationPass {
 						isImplicit: false)), ],
 				statements: [
 					ReturnStatement(
+						syntax: syntax,
 						range: range,
 						expression: element.rawValue,
 						label: nil),
@@ -4599,9 +4770,11 @@ public class RawValuesMembersTranspilationPass: TranspilationPass {
 		}.toMutableList()
 
 		let switchStatement = SwitchStatement(
+			syntax: syntax,
 			range: range,
 			convertsToExpression: nil,
 			expression: DeclarationReferenceExpression(
+				syntax: syntax,
 				range: range,
 				identifier: "this",
 				typeName: enumDeclaration.enumName,
@@ -4610,6 +4783,7 @@ public class RawValuesMembersTranspilationPass: TranspilationPass {
 			cases: switchCases)
 
 		let getter = FunctionDeclaration(
+			syntax: syntax,
 			range: range,
 			prefix: "get",
 			parameters: [],
@@ -4628,6 +4802,7 @@ public class RawValuesMembersTranspilationPass: TranspilationPass {
 			annotations: [])
 
 		return VariableDeclaration(
+			syntax: syntax,
 			range: range,
 			identifier: "rawValue",
 			typeAnnotation: rawValueType,
@@ -4673,6 +4848,7 @@ public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
 				binaryOperatorExpression.operatorSymbol == "!="
 			{
 				newCondition = BinaryOperatorExpression(
+					syntax: binaryOperatorExpression.syntax,
 					range: binaryOperatorExpression.range,
 					leftExpression: binaryOperatorExpression.leftExpression,
 					rightExpression: binaryOperatorExpression.rightExpression,
@@ -4685,6 +4861,7 @@ public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
 				binaryOperatorExpression.operatorSymbol == "=="
 			{
 				newCondition = BinaryOperatorExpression(
+					syntax: binaryOperatorExpression.syntax,
 					range: binaryOperatorExpression.range,
 					leftExpression: binaryOperatorExpression.leftExpression,
 					rightExpression: binaryOperatorExpression.rightExpression,
@@ -4739,11 +4916,14 @@ public class ReturnIfNilTranspilationPass: TranspilationPass {
 							binaryOperatorExpression.rightExpression is NilLiteralExpression
 						{
 							return [ExpressionStatement(
+								syntax: ifStatement.syntax,
 								range: ifStatement.range,
 								expression: BinaryOperatorExpression(
+									syntax: ifStatement.syntax,
 									range: ifStatement.range,
 									leftExpression: binaryOperatorExpression.leftExpression,
 									rightExpression: ReturnExpression(
+										syntax: ifStatement.syntax,
 										range: ifStatement.range,
 										expression: returnStatement.expression),
 									operatorSymbol: "?:",
@@ -4884,6 +5064,7 @@ public class RemoveOpenForInitializersTranspilationPass: TranspilationPass {
 		-> InitializerDeclaration?
 	{
 		return InitializerDeclaration(
+			syntax: initializerDeclaration.syntax,
 			range: initializerDeclaration.range,
 			parameters: initializerDeclaration.parameters,
 			returnType: initializerDeclaration.returnType,
@@ -4914,8 +5095,10 @@ public class AddVariablesToCatchesTranspilationPass: TranspilationPass {
 	{
 		if catchStatement.variableDeclaration == nil {
 			return super.replaceCatchStatement(CatchStatement(
+				syntax: catchStatement.syntax,
 				range: catchStatement.range,
 				variableDeclaration: VariableDeclaration(
+					syntax: catchStatement.syntax,
 					range: catchStatement.range,
 					identifier: "_error",
 					typeAnnotation: "Error",

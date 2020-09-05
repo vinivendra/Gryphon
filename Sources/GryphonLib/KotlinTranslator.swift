@@ -1032,10 +1032,11 @@ public class KotlinTranslator {
 			}
 			else if let variableDeclaration = convertsToExpression as? VariableDeclaration {
 				let newVariableDeclaration = VariableDeclaration(
+					syntax: nil,
 					range: nil,
 					identifier: variableDeclaration.identifier,
 					typeAnnotation: variableDeclaration.typeAnnotation,
-					expression: NilLiteralExpression(range: nil),
+					expression: NilLiteralExpression(syntax: nil, range: nil),
 					getter: nil,
 					setter: nil,
 					access: nil,
@@ -1854,6 +1855,7 @@ public class KotlinTranslator {
 				return try unexpectedASTStructureError(
 					"Unable to match these parameters to their declarations",
 					AST: ExpressionStatement(
+						syntax: callExpression.parameters.syntax,
 						range: callExpression.parameters.range,
 						expression: callExpression.parameters))
 			}
@@ -1882,10 +1884,12 @@ public class KotlinTranslator {
 			}
 
 			let newTupleExpression = TupleExpression(
+				syntax: callExpression.parameters.syntax,
 				range: callExpression.parameters.range,
 				pairs: resultPairs)
 
 			let newCallExpression = CallExpression(
+				syntax: callExpression.syntax,
 				range: callExpression.range,
 				function: callExpression.function,
 				parameters: newTupleExpression,
@@ -1934,7 +1938,10 @@ public class KotlinTranslator {
 								label: translationPairTuple.0.label,
 								expression: translationPairTuple.1.expression)
 					}.toMutableList()
-				tupleExpression = TupleExpression(range: rawTupleExpression.range, pairs: newPairs)
+				tupleExpression = TupleExpression(
+					syntax: rawTupleExpression.syntax,
+					range: rawTupleExpression.range,
+					pairs: newPairs)
 			}
 			else {
 				tupleExpression = rawTupleExpression
@@ -1948,6 +1955,7 @@ public class KotlinTranslator {
 						withIndentation: indentation)
 					if tupleExpression.pairs.count > 1 {
 						let newTupleExpression = TupleExpression(
+							syntax: tupleExpression.syntax,
 							range: tupleExpression.range,
 							pairs: tupleExpression.pairs.dropLast().toMutableList())
 
@@ -1980,6 +1988,7 @@ public class KotlinTranslator {
 			let newLabels = functionTranslation?.parameters.map { $0.label }.toMutableList() ??
 				tupleShuffleExpression.labels
 			let newTupleShuffleExpression = TupleShuffleExpression(
+				syntax: tupleShuffleExpression.syntax,
 				range: tupleShuffleExpression.range,
 				labels: newLabels,
 				indices: tupleShuffleExpression.indices,
@@ -1989,6 +1998,7 @@ public class KotlinTranslator {
 			// If the tuple was flattened losslessly, we can still try to add trailing closures
 			if tupleShuffleExpression.canBeFlattenedLosslessly {
 				let newCallExpression = CallExpression(
+					syntax: callExpression.syntax,
 					range: callExpression.range,
 					function: callExpression.function,
 					parameters: tupleExpression,
@@ -2013,6 +2023,7 @@ public class KotlinTranslator {
 			"Expected the parameters to be either a TupleExpression or a TupleShuffleExpression, " +
 				"received \(callExpression.parameters.name).",
 			AST: ExpressionStatement(
+				syntax: callExpression.syntax,
 				range: callExpression.range,
 				expression: callExpression))
 	}
