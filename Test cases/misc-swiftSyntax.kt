@@ -89,6 +89,9 @@ fun main(args: Array<String>) {
 		i += 1
 	}
 
+	while (true && false) {
+	}
+
 	var a: A = 0
 	var bc: BC
 

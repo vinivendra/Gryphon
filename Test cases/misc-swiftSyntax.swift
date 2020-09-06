@@ -32,6 +32,9 @@ while i <= 10 {
 	i += 1
 }
 
+// While with multiple conditions
+while true, false { }
+
 // Typealias
 typealias A = Int
 

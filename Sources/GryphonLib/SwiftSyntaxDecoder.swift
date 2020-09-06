@@ -679,24 +679,44 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		_ whileStatement: WhileStmtSyntax)
 		throws -> Statement
 	{
-		let conditions = whileStatement.conditions
+		var whileExpression: Expression? = nil
+		for condition in whileStatement.conditions {
+			let newExpression: Expression
+			if let conditionExpression = condition.condition.as(ExprSyntax.self) {
+				newExpression = try convertExpression(conditionExpression)
+			}
+			else {
+				newExpression = try errorExpression(
+					forASTNode: Syntax(condition.condition),
+					withMessage: "Expected while condition to be an expression")
+			}
 
-		guard conditions.count == 1,
-			let onlyCondition = conditions.first,
-			let onlyExpression = onlyCondition.condition.as(ExprSyntax.self) else
-		{
-			return try errorStatement(
-				forASTNode: Syntax(whileStatement),
-				withMessage: "Expected while statement to have one expression as its condition")
+			if let previousExpression = whileExpression {
+				whileExpression = BinaryOperatorExpression(
+					syntax: previousExpression.syntax,
+					range: previousExpression.range,
+					leftExpression: previousExpression,
+					rightExpression: newExpression,
+					operatorSymbol: "&&",
+					typeName: "Bool")
+			}
+			else {
+				whileExpression = newExpression
+			}
 		}
 
-		let expression = try convertExpression(onlyExpression)
 		let statements = try convertBlock(whileStatement.body)
+
+		guard let builtExpression = whileExpression else {
+			return try errorStatement(
+				forASTNode: Syntax(whileStatement),
+				withMessage: "Expected while statement at least one expression as its condition")
+		}
 
 		return WhileStatement(
 			syntax: Syntax(whileStatement),
 			range: whileStatement.getRange(inFile: self.sourceFile),
-			expression: expression,
+			expression: builtExpression,
 			statements: statements)
 	}
 
