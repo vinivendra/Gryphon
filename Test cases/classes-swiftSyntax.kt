@@ -113,7 +113,7 @@ internal open class MyClass {
 
 internal open class MyOtherClass {
 	operator open fun get(i: Int): Int {
-		// implicit get
+		// implicit getter
 		return i
 	}
 }
