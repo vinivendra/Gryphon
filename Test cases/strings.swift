@@ -98,3 +98,10 @@ for index in abc.indices {
 for char in abc {
 	print(char)
 }
+
+print("$foo")
+print("${foo}")
+
+let bar = "$foo"
+let  baz = "\(bar)"
+print(baz)

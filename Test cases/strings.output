@@ -32,3 +32,6 @@ c
 a
 b
 c
+$foo
+${foo}
+$foo
