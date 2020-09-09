@@ -75,4 +75,13 @@ It still has many lines."""
 	for (char in abc) {
 		println(char)
 	}
+
+	println("\$foo")
+	println("\${foo}")
+
+	val bar: String = "\$foo"
+	val baz: String = "${bar}"
+
+	println(baz)
+	println("\${foo} ${bar}")
 }
