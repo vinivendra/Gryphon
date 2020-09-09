@@ -280,7 +280,8 @@ class LibraryTranspilationTest: XCTestCase {
 						range: nil,
 						expression: closureExpression)),
 			]),
-			typeName: "Void")
+			typeName: "Void",
+			allowsTrailingClosure: true)
 
 		let normalExpression = CallExpression(
 			range: nil,
@@ -296,7 +297,8 @@ class LibraryTranspilationTest: XCTestCase {
 					label: "b",
 					expression: closureExpression),
 			]),
-			typeName: "Void")
+			typeName: "Void",
+			allowsTrailingClosure: true)
 
 		let template = CallExpression(
 			range: nil,
@@ -317,7 +319,8 @@ class LibraryTranspilationTest: XCTestCase {
 						isStandardLibrary: false,
 						isImplicit: false)),
 			]),
-			typeName: "Void")
+			typeName: "Void",
+			allowsTrailingClosure: true)
 
 		XCTAssertEqual(
 			trailingExpression.matches(

@@ -1686,15 +1686,19 @@ public class TypeExpression: Expression {
 }
 
 public class SubscriptExpression: Expression {
+	/// The `foo` in `foo[index]`
 	let subscriptedExpression: Expression
-	let indexExpression: Expression
+	/// Represents the labels and expressions used as an "index" for the subscript, e.g.
+	/// `foo[index1: "bar", index2: "baz"]`. In most cases the tuple will probably contain a single
+	/// expression without a label, e.g. `foo[index]`.
+	let indexExpression: TupleExpression
 	var typeName: String
 
 	init(
 		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		subscriptedExpression: Expression,
-		indexExpression: Expression,
+		indexExpression: TupleExpression,
 		typeName: String)
 	{
 		self.subscriptedExpression = subscriptedExpression
@@ -2101,20 +2105,26 @@ public class IfExpression: Expression {
 }
 
 public class CallExpression: Expression {
-	let function: Expression
-	let parameters: Expression
+	var function: Expression
+	var parameters: Expression
 	var typeName: String?
+	/// If this function call can be written with a trailing closure in Kotlin (it can't in some
+	/// instances of calls with variadics and default arguments). This gets decided in a
+	/// Transpilation Pass.
+	var allowsTrailingClosure: Bool
 
 	init(
 		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		function: Expression,
 		parameters: Expression,
-		typeName: String?)
+		typeName: String?,
+		allowsTrailingClosure: Bool)
 	{
 		self.function = function
 		self.parameters = parameters
 		self.typeName = typeName
+		self.allowsTrailingClosure = allowsTrailingClosure
 		super.init(
 			syntax: syntax,
 			range: range,
@@ -2125,7 +2135,8 @@ public class CallExpression: Expression {
 		return [
 			PrintableTree.initOrNil("type", [PrintableTree.initOrNil(typeName)]),
 			PrintableTree.ofExpressions("function", [function]),
-			PrintableTree.ofExpressions("parameters", [parameters]), ]
+			PrintableTree.ofExpressions("parameters", [parameters]),
+			allowsTrailingClosure ? PrintableTree("allowsTrailingClosure") : nil, ]
 	}
 
 	override var swiftType: String? { // gryphon annotation: override
@@ -2146,7 +2157,8 @@ public class CallExpression: Expression {
 	{
 		return lhs.function == rhs.function &&
 			lhs.parameters == rhs.parameters &&
-			lhs.typeName == rhs.typeName
+			lhs.typeName == rhs.typeName &&
+			lhs.allowsTrailingClosure == rhs.allowsTrailingClosure
 	}
 }
 
@@ -2450,7 +2462,7 @@ public class InterpolatedStringLiteralExpression: Expression {
 }
 
 public class TupleExpression: Expression {
-	let pairs: MutableList<LabeledExpression>
+	var pairs: MutableList<LabeledExpression>
 
 	init(syntax: Syntax? = nil, range: SourceFileRange?, pairs: MutableList<LabeledExpression>) {
 		self.pairs = pairs

@@ -1980,10 +1980,11 @@ public class SwiftTranslator {
 			}
 		}
 
-		// Subscript setters in Kotlin must be (index, newValue) instead of Swift's
-		// (newValue, index)
-		if isSubscript {
-			parameters.reverse()
+		// Subscript setters in Kotlin must be (indices..., newValue) instead of Swift's
+		// (newValue, indices...)
+		if isSubscript, functionName == "set", let newValueParameter = parameters.first {
+			parameters.removeFirst()
+			parameters.append(newValueParameter)
 		}
 
 		// Translate the return type
@@ -2621,7 +2622,8 @@ public class SwiftTranslator {
 			range: range,
 			function: function,
 			parameters: parameters,
-			typeName: typeName)
+			typeName: typeName,
+			allowsTrailingClosure: true)
 	}
 
 	internal func translateClosureExpression(
@@ -2976,25 +2978,42 @@ public class SwiftTranslator {
 		}
 
 		let rawType = subscriptExpression["type"]
-		let subscriptContents = subscriptExpression.subtree(
-			at: 1,
-			named: "Parentheses Expression") ??
+		let indexExpression = subscriptExpression.subtree(
+				at: 1,
+				named: "Parentheses Expression") ??
 			subscriptExpression.subtree(
 				at: 1, named: "Tuple Expression")
 		let subscriptedExpression = subscriptExpression.subtree(at: 0)
 
 		if let rawType = rawType,
-			let subscriptContents = subscriptContents,
+			let indexExpression = indexExpression,
 			let subscriptedExpression = subscriptedExpression
 		{
 			let typeName = cleanUpType(rawType)
-			let subscriptContentsTranslation = try translateExpression(subscriptContents)
 			let subscriptedExpressionTranslation = try translateExpression(subscriptedExpression)
+
+			// Make sure the index expression is a tuple expression
+			let indexTranslation = try translateExpression(indexExpression)
+			let indexTupleExpression: TupleExpression
+			if let parenthesesExpression = indexTranslation as? ParenthesesExpression {
+				indexTupleExpression = TupleExpression(
+					range: indexTranslation.range,
+					pairs: [LabeledExpression(
+						label: nil,
+						expression: parenthesesExpression.expression), ])
+			}
+			else if let tupleExpression = indexTranslation as? TupleExpression {
+				indexTupleExpression = tupleExpression
+			}
+			else {
+				return try unexpectedExpressionStructureError(
+					"Unrecognized structure", ast: subscriptExpression)
+			}
 
 			return SubscriptExpression(
 				range: getRangeRecursively(ofNode: subscriptExpression),
 				subscriptedExpression: subscriptedExpressionTranslation,
-				indexExpression: subscriptContentsTranslation,
+				indexExpression: indexTupleExpression,
 				typeName: typeName)
 		}
 		else {

@@ -146,39 +146,6 @@ print(D(x: 10))
 print(D(string: "not supported"))
 print(D(string: "A")!)
 
-// Test subscripts
-class MyClass {
-	var x = 0
-
-	subscript(i: Int) -> Int {
-		get {
-			return x + i
-		}
-		set {
-			self.x = newValue + 1
-		}
-	}
-}
-
-class MyOtherClass {
-	subscript(i: Int) -> Int { // implicit getter
-		return i
-	}
-}
-
-let myClass = MyClass()
-
-print(myClass[1])
-print(myClass[2])
-print(myClass[3])
-
-myClass[1] = 10
-
-print(myClass[1])
-print(myClass[2])
-print(myClass[3])
-
-
 class SingleExpressionMembers {
 	var one: Int {
 		10

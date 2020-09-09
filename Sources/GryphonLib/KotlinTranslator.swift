@@ -1516,9 +1516,6 @@ public class KotlinTranslator {
 		withIndentation indentation: String)
 		throws -> KotlinTranslation
 	{
-		let translatedIndexExpression = try translateExpression(
-			subscriptExpression.indexExpression,
-			withIndentation: indentation)
 		let translatedSubscriptedExpression = try translateExpression(
 			subscriptExpression.subscriptedExpression,
 			withIndentation: indentation)
@@ -1526,7 +1523,15 @@ public class KotlinTranslator {
 		let result = KotlinTranslation(range: subscriptExpression.range)
 		result.append(translatedSubscriptedExpression)
 		result.append("[")
-		result.append(translatedIndexExpression)
+
+		// Translate the indices without the labels (subscript expressions in Kotlin don't support
+		// labels
+		let increasedIndentation = increaseIndentation(indentation)
+		let indexTranslations = try subscriptExpression.indexExpression.pairs.map {
+			try translateExpression($0.expression, withIndentation: increasedIndentation)
+		}
+		result.appendTranslations(indexTranslations, withSeparator: ", ")
+
 		result.append("]")
 		return result
 	}
@@ -1752,7 +1757,11 @@ public class KotlinTranslator {
 		}
 
 		let functionTranslation: TranspilationContext.FunctionTranslation?
-		if let expression = functionExpression as? DeclarationReferenceExpression,
+		if context.isUsingSwiftSyntax {
+			// In SwiftSyntax this translation happens in a TranspilationPass
+			functionTranslation = nil
+		}
+		else if let expression = functionExpression as? DeclarationReferenceExpression,
 			let typeName = expression.typeName
 		{
 			functionTranslation = self.context.getFunctionTranslation(
@@ -1780,21 +1789,11 @@ public class KotlinTranslator {
 		}
 
 		let parametersTranslation: KotlinTranslation
-		if context.isUsingSwiftSyntax {
-			parametersTranslation = try translateParametersNew(
-				forCallExpression: callExpression,
-				withFunctionTranslation: functionTranslation,
-				withIndentation: indentation,
-				shouldAddNewlines: shouldAddNewlines)
-		}
-		else {
-			parametersTranslation = try translateParameters(
-				forCallExpression: callExpression,
-				withFunctionTranslation: functionTranslation,
-				withIndentation: indentation,
-				shouldAddNewlines: shouldAddNewlines,
-				allowsTrailingClosure: true)
-		}
+		parametersTranslation = try translateParameters(
+			forCallExpression: callExpression,
+			withFunctionTranslation: functionTranslation,
+			withIndentation: indentation,
+			shouldAddNewlines: shouldAddNewlines)
 
 		result.append(parametersTranslation)
 
@@ -1811,118 +1810,11 @@ public class KotlinTranslator {
 		}
 	}
 
-	// TODO: Remove the old one once SwiftSyntax is done
-	// TODO: This logic should probably be in a transpilation pass
-	private func translateParametersNew(
-		forCallExpression callExpression: CallExpression,
-		withFunctionTranslation functionTranslation: TranspilationContext.FunctionTranslation?,
-		withIndentation indentation: String,
-		shouldAddNewlines: Bool)
-		throws -> KotlinTranslation
-	{
-		if let functionTranslation = functionTranslation {
-			let callArguments = (callExpression.parameters as! TupleExpression).pairs
-
-			let defaultArguments = functionTranslation.parameters.map { $0.value != nil }
-			let acceptsUnlabeledTrailingClosures = functionTranslation.parameters.map { _ in true }
-
-			let matchResult: MutableList<MutableList<Int>> = []
-
-			// Check if there's an unlabeled closure at the end (and assume it's a trailing closure
-			// if there is)
-			let unlabeledTrailingClosureArgIndex: Int?
-			if let lastArgument = callArguments.last,
-				lastArgument.expression is ClosureExpression,
-				lastArgument.label == nil
-			{
-				unlabeledTrailingClosureArgIndex = callArguments.count - 1
-			}
-			else {
-				unlabeledTrailingClosureArgIndex = nil
-			}
-
-			let matchFailed = matchCallArguments(
-				args: callArguments,
-				params: functionTranslation.parameters,
-				paramInfo: ParameterListInfo(
-					defaultArguments: defaultArguments,
-					acceptsUnlabeledTrailingClosures: acceptsUnlabeledTrailingClosures),
-				unlabeledTrailingClosureArgIndex: unlabeledTrailingClosureArgIndex,
-				trailingClosureMatching: .forward,
-				parameterBindings: matchResult)
-
-			if matchFailed {
-				return try unexpectedASTStructureError(
-					"Unable to match these parameters to their declarations",
-					AST: ExpressionStatement(
-						syntax: callExpression.parameters.syntax,
-						range: callExpression.parameters.range,
-						expression: callExpression.parameters))
-			}
-
-			let resultPairs: MutableList<LabeledExpression> = []
-
-			// Variadic arguments can't be named, which means all arguments before them can't be
-			// named either.
-			let lastVariadicIndex =
-				functionTranslation.parameters.lastIndex(where: { $0.isVariadic }) ??
-				-1
-
-			// matchResult will be something like [[0], [1], [2], [3, 4], [5], []]
-			for declarationIndex in functionTranslation.parameters.indices {
-				let isBeforeVariadic = (declarationIndex <= lastVariadicIndex)
-
-				let implementationLabel = functionTranslation.parameters[declarationIndex].label
-
-				let callIndices = matchResult[declarationIndex]
-				for callIndex in callIndices {
-					let argument = callArguments[callIndex]
-					resultPairs.append(LabeledExpression(
-						label: isBeforeVariadic ? nil : implementationLabel,
-						expression: argument.expression))
-				}
-			}
-
-			let newTupleExpression = TupleExpression(
-				syntax: callExpression.parameters.syntax,
-				range: callExpression.parameters.range,
-				pairs: resultPairs)
-
-			let newCallExpression = CallExpression(
-				syntax: callExpression.syntax,
-				range: callExpression.range,
-				function: callExpression.function,
-				parameters: newTupleExpression,
-				typeName: callExpression.typeName)
-
-			let hasVariadic =
-				functionTranslation.parameters.contains(where: { $0.isVariadic })
-			let hasDefaultArgument =
-				functionTranslation.parameters.contains(where: { $0.value != nil })
-			let allowsTrailingClosure = (!hasDefaultArgument && !hasVariadic)
-
-			return try translateParameters(
-				forCallExpression: newCallExpression,
-				withFunctionTranslation: nil,
-				withIndentation: indentation,
-				shouldAddNewlines: shouldAddNewlines,
-				allowsTrailingClosure: allowsTrailingClosure)
-		}
-
-		return try translateParameters(
-			forCallExpression: callExpression,
-			withFunctionTranslation: functionTranslation,
-			withIndentation: indentation,
-			shouldAddNewlines: shouldAddNewlines,
-			allowsTrailingClosure: true)
-	}
-
 	private func translateParameters(
 		forCallExpression callExpression: CallExpression,
 		withFunctionTranslation functionTranslation: TranspilationContext.FunctionTranslation?,
 		withIndentation indentation: String,
-		shouldAddNewlines: Bool,
-		allowsTrailingClosure: Bool)
+		shouldAddNewlines: Bool)
 		throws -> KotlinTranslation
 	{
 		if let rawTupleExpression = callExpression.parameters as? TupleExpression {
@@ -1947,7 +1839,7 @@ public class KotlinTranslator {
 				tupleExpression = rawTupleExpression
 			}
 
-			if allowsTrailingClosure, let closurePair = tupleExpression.pairs.last {
+			if callExpression.allowsTrailingClosure, let closurePair = tupleExpression.pairs.last {
 				if let closureExpression = closurePair.expression as? ClosureExpression
 				{
 					let closureTranslation = try translateClosureExpression(
@@ -2002,14 +1894,14 @@ public class KotlinTranslator {
 					range: callExpression.range,
 					function: callExpression.function,
 					parameters: tupleExpression,
-					typeName: callExpression.typeName)
+					typeName: callExpression.typeName,
+					allowsTrailingClosure: callExpression.allowsTrailingClosure)
 
 				return try translateParameters(
 					forCallExpression: newCallExpression,
 					withFunctionTranslation: nil,
 					withIndentation: indentation,
-					shouldAddNewlines: shouldAddNewlines,
-					allowsTrailingClosure: allowsTrailingClosure)
+					shouldAddNewlines: shouldAddNewlines)
 			}
 			else {
 				return try translateTupleExpression(
@@ -2130,20 +2022,20 @@ public class KotlinTranslator {
 					indentation: expressionIndentation)
 			}
 
+		let result = KotlinTranslation(range: tupleExpression.range)
+		result.append("(")
+
 		if !shouldAddNewlines {
-			let result = KotlinTranslation(range: tupleExpression.range)
-			result.append("(")
 			result.appendTranslations(translations, withSeparator: ", ")
-			result.append(")")
-			return result
 		}
 		else {
-			let result = KotlinTranslation(range: tupleExpression.range)
-			result.append("(\n\(indentation)")
+			result.append("\n\(indentation)")
 			result.appendTranslations(translations, withSeparator: ",\n\(indentation)")
-			result.append(")")
-			return result
 		}
+
+		result.append(")")
+
+		return result
 	}
 
 	private func translateParameter(

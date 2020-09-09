@@ -15,39 +15,66 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-internal data class Box<T>(
-	val x: T
-)
+internal open class A {
+	open var x: Int = 0
 
-internal fun <T> f1(box: Box<T>) {
-	println(box.x)
-}
-
-internal fun <T> f2(box: Box<T>): T {
-	return box.x
-}
-
-internal fun <T> Box<T>.f3() {
-}
-
-internal fun <U, T> Box<T>.f4(box: Box<U>) {
-	println(this.x)
-	println(box.x)
-}
-
-internal val <T> Box<T>.a: Int
-	get() {
-		return 0
+	operator open fun get(i: Int): Int {
+		return x + i
 	}
 
-internal fun <Key> f(): Map<Key, String> {
-	return mapOf()
+	operator open fun set(i: Int, newValue: Int) {
+		this.x = newValue + 1
+	}
+}
+
+internal open class B {
+	operator open fun get(i: Int): Int {
+		return i
+	}
+}
+
+internal open class D {
+	operator open fun get(a: Int, b: Int): Int {
+		return a + b
+	}
+
+	operator open fun set(a: Int, b: Int, newValue: Int) {
+		println("${a} ${b} ${newValue}")
+	}
 }
 
 fun main(args: Array<String>) {
-	val box: Box<Int> = Box(0)
+	val a: A = A()
 
-	f1(Box(1))
-	println(f2(Box(2)))
-	Box(3).f4(Box(4))
+	a[1] = 10
+
+	println(a[1])
+
+	val b: B = B()
+
+	println(b[1])
+	println(0)
+
+	val d: D = D()
+
+	println(d[0, 1])
+
+	d[0, 1] = 2
+
+	println(1)
+	println("0 1 2")
+
+	val a1: A? = A()
+
+	println(a1?.get(1))
+
+	val b1: B? = B()
+
+	println(b1?.get(1))
+	println(0)
+
+	val d1: D? = D()
+
+	println(d1?.get(0, 1))
+	println(1)
 }

@@ -742,7 +742,7 @@ public class TranspilationPass {
 			syntax: subscriptExpression.syntax,
 			range: subscriptExpression.range,
 			subscriptedExpression: replaceExpression(subscriptExpression.subscriptedExpression),
-			indexExpression: replaceExpression(subscriptExpression.indexExpression),
+			indexExpression: processTupleExpression(subscriptExpression.indexExpression),
 			typeName: subscriptExpression.typeName)
 	}
 
@@ -855,7 +855,8 @@ public class TranspilationPass {
 			range: callExpression.range,
 			function: replaceExpression(callExpression.function),
 			parameters: replaceExpression(callExpression.parameters),
-			typeName: callExpression.typeName)
+			typeName: callExpression.typeName,
+			allowsTrailingClosure: callExpression.allowsTrailingClosure)
 	}
 
 	func replaceClosureExpression( // gryphon annotation: open
@@ -939,6 +940,13 @@ public class TranspilationPass {
 	func replaceTupleExpression( // gryphon annotation: open
 		_ tupleExpression: TupleExpression)
 		-> Expression
+	{
+		return processTupleExpression(tupleExpression)
+	}
+
+	func processTupleExpression( // gryphon annotation: open
+		_ tupleExpression: TupleExpression)
+		-> TupleExpression
 	{
 		return TupleExpression(
 			syntax: tupleExpression.syntax,
@@ -1071,12 +1079,20 @@ public class RemoveParenthesesTranspilationPass: TranspilationPass {
 		_ subscriptExpression: SubscriptExpression)
 		-> Expression
 	{
-		if let parentheses = subscriptExpression.indexExpression as? ParenthesesExpression {
+		if subscriptExpression.indexExpression.pairs.count == 1,
+			let onlyExpression = subscriptExpression.indexExpression.pairs.first,
+			onlyExpression.label == nil,
+			let parenthesesExpression = onlyExpression.expression as? ParenthesesExpression
+		{
 			return super.replaceSubscriptExpression(SubscriptExpression(
 				syntax: subscriptExpression.syntax,
 				range: subscriptExpression.range,
 				subscriptedExpression: subscriptExpression.subscriptedExpression,
-				indexExpression: parentheses.expression,
+				indexExpression: TupleExpression(
+					range: subscriptExpression.indexExpression.range,
+					pairs: [LabeledExpression(
+						label: nil,
+						expression: parenthesesExpression.expression), ]),
 				typeName: subscriptExpression.typeName))
 		}
 
@@ -1210,7 +1226,8 @@ public class ReturnTypesForInitsTranspilationPass: TranspilationPass {
 				initializerDeclaration.parameters
 					.map { $0.typeName }
 					.joined(separator: ", ") +
-				") -> " + enclosingType
+				") -> " + enclosingType +
+				(initializerDeclaration.isOptional ? "?" : "")
 			if context.isUsingSwiftSyntax {
 				initializerDeclaration.functionType = functionType
 			}
@@ -1785,7 +1802,8 @@ public class CallsToSuperclassInitializersTranspilationPass: TranspilationPass {
 					range: callExpression.range,
 					function: leftExpression,
 					parameters: callExpression.parameters,
-					typeName: callExpression.typeName)
+					typeName: callExpression.typeName,
+					allowsTrailingClosure: callExpression.allowsTrailingClosure)
 			}
 		}
 
@@ -2690,7 +2708,8 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 							syntax: callExpression.syntax,
 							range: callExpression.range,
 							pairs: []),
-						typeName: typeExpression.typeName))
+						typeName: typeExpression.typeName,
+						allowsTrailingClosure: callExpression.allowsTrailingClosure))
 			}
 		}
 
@@ -2763,7 +2782,8 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 								syntax: tupleExpression.syntax,
 								range: tupleExpression.range,
 								pairs: []),
-							typeName: callExpression.typeName)
+							typeName: callExpression.typeName,
+							allowsTrailingClosure: callExpression.allowsTrailingClosure)
 					}
 				}
 			}
@@ -2798,7 +2818,8 @@ public class OptionalFunctionCallsTranspilationPass: TranspilationPass {
 						isStandardLibrary: false,
 						isImplicit: false)),
 				parameters: callExpression.parameters,
-				typeName: callExpression.typeName)
+				typeName: callExpression.typeName,
+				allowsTrailingClosure: callExpression.allowsTrailingClosure)
 		}
 		else {
 			return super.processCallExpression(callExpression)
@@ -2877,7 +2898,8 @@ public class DataStructureInitializersTranspilationPass: TranspilationPass {
 					isStandardLibrary: false,
 					isImplicit: false),
 				parameters: parameters,
-				typeName: typeName)
+				typeName: typeName,
+				allowsTrailingClosure: callExpression.allowsTrailingClosure)
 		}
 
 		return super.replaceCallExpression(callExpression)
@@ -3054,7 +3076,8 @@ public class TuplesToPairsTranspilationPass: TranspilationPass {
 						label: nil,
 						expression: tupleExpression.pairs[1].expression),
 			]),
-			typeName: pairType)
+			typeName: pairType,
+			allowsTrailingClosure: false)
 	}
 }
 
@@ -3200,6 +3223,15 @@ public class RefactorOptionalsInSubscriptsTranspilationPass: TranspilationPass {
 	{
 		if subscriptExpression.subscriptedExpression is OptionalExpression {
 			let indexExpressionType = subscriptExpression.indexExpression.swiftType ?? "<<Error>>"
+
+			let returnType: String
+			if context.isUsingSwiftSyntax, subscriptExpression.typeName.hasSuffix("?") {
+				returnType = String(subscriptExpression.typeName.dropLast())
+			}
+			else {
+				returnType = subscriptExpression.typeName
+			}
+
 			return replaceDotExpression(DotExpression(
 				syntax: subscriptExpression.syntax,
 				range: subscriptExpression.range,
@@ -3211,16 +3243,12 @@ public class RefactorOptionalsInSubscriptsTranspilationPass: TranspilationPass {
 						syntax: subscriptExpression.subscriptedExpression.syntax,
 						range: subscriptExpression.subscriptedExpression.range,
 						identifier: "get",
-						typeName: "(\(indexExpressionType)) -> \(subscriptExpression.typeName)",
+						typeName: "\(indexExpressionType) -> \(returnType)",
 						isStandardLibrary: false,
 						isImplicit: false),
-					parameters: TupleExpression(
-						syntax: subscriptExpression.indexExpression.syntax,
-						range: subscriptExpression.indexExpression.range,
-						pairs: [LabeledExpression(
-							label: nil,
-							expression: subscriptExpression.indexExpression), ]),
-					typeName: subscriptExpression.typeName)))
+					parameters: subscriptExpression.indexExpression,
+					typeName: subscriptExpression.typeName,
+					allowsTrailingClosure: false)))
 		}
 		else {
 			return super.replaceSubscriptExpression(subscriptExpression)
@@ -3750,8 +3778,11 @@ public class ShadowedIfLetAsToIsTranspilationPass: TranspilationPass {
 /// This pass goes through all the function declarations it finds and stores the information needed
 /// to translate these functions correctly later.
 ///
-/// It also records all functions that have been marked as pure so that they don't raise warnings
-/// for possible side-effects in if-lets.
+/// It also records :
+/// - all functions that have been marked as pure so that they don't raise warnings
+///   for possible side-effects in if-lets.
+/// - memberwise initializers automatically created for structs.
+/// - initializers automatically created for sealed classes.
 public class RecordFunctionsTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
 	// gryphon insert:     super(ast, context) { }
@@ -3775,6 +3806,119 @@ public class RecordFunctionsTranspilationPass: TranspilationPass {
 		}
 
 		return super.processFunctionDeclaration(functionDeclaration)
+	}
+
+	override func replaceEnumDeclaration( // gryphon annotation: override
+		_ enumDeclaration: EnumDeclaration)
+		-> List<Statement>
+	{
+		guard context.sealedClasses.contains(enumDeclaration.enumName) else {
+			return super.replaceEnumDeclaration(enumDeclaration)
+		}
+
+		for element in enumDeclaration.elements {
+			let parameters = element.associatedValues.compactMap
+				{ (labeledType: LabeledType) -> FunctionParameter? in
+					return FunctionParameter(
+						label: labeledType.label,
+						apiLabel: labeledType.label,
+						typeName: labeledType.typeName,
+						value: nil)
+				}.toMutableList()
+
+			let functionType = "(\(parameters.map { $0.typeName }.joined(separator: ","))) -> " +
+				enumDeclaration.enumName
+
+			let fakeFunctionDeclaration = FunctionDeclaration(
+				range: nil,
+				prefix: element.name,
+				parameters: parameters,
+				returnType: enumDeclaration.enumName,
+				functionType: functionType,
+				genericTypes: [],
+				isOpen: false,
+				isImplicit: false,
+				isStatic: false,
+				isMutating: false,
+				isPure: false,
+				isJustProtocolInterface: false,
+				extendsType: nil,
+				statements: [],
+				access: nil,
+				annotations: [])
+
+			// Record the fake declaration
+			_ = processFunctionDeclaration(fakeFunctionDeclaration)
+		}
+
+		return super.replaceEnumDeclaration(enumDeclaration)
+	}
+
+	override func replaceStructDeclaration( // gryphon annotation: override
+		_ structDeclaration: StructDeclaration)
+		-> List<Statement>
+	{
+		guard !structDeclaration.members.contains(where: { $0 is InitializerDeclaration }) else {
+			return super.replaceStructDeclaration(structDeclaration)
+		}
+
+		// Create a fake initializer declaration to send to the function that records it
+		let properties = structDeclaration.members.compactMap { statementAsStructProperty($0) }
+
+		let parameters = properties.compactMap
+			{ (variableDeclaration: VariableDeclaration) -> FunctionParameter? in
+				guard let typeName = variableDeclaration.typeAnnotation ??
+					variableDeclaration.expression?.swiftType else
+				{
+					return nil
+				}
+				return FunctionParameter(
+					label: variableDeclaration.identifier,
+					apiLabel: variableDeclaration.identifier,
+					typeName: typeName,
+					value: variableDeclaration.expression)
+			}.toMutableList()
+		let functionType = "(\(parameters.map { $0.typeName }.joined(separator: ","))) -> " +
+			structDeclaration.structName
+
+		let fakeFunctionDeclaration = FunctionDeclaration(
+			range: nil,
+			prefix: structDeclaration.structName,
+			parameters: parameters,
+			returnType: structDeclaration.structName,
+			functionType: functionType,
+			genericTypes: [],
+			isOpen: false,
+			isImplicit: false,
+			isStatic: false,
+			isMutating: false,
+			isPure: false,
+			isJustProtocolInterface: false,
+			extendsType: nil,
+			statements: [],
+			access: nil,
+			annotations: [])
+
+		// Record the fake declaration
+		_ = processFunctionDeclaration(fakeFunctionDeclaration)
+
+		return super.replaceStructDeclaration(structDeclaration)
+	}
+
+	private func statementAsStructProperty(
+		_ statement: Statement)
+		-> VariableDeclaration?
+	{
+		if let variableDeclaration = statement as? VariableDeclaration {
+			if variableDeclaration.getter == nil,
+				variableDeclaration.setter == nil,
+				!variableDeclaration.isStatic
+			{
+				return variableDeclaration
+			}
+		}
+
+		return nil
 	}
 }
 
@@ -5138,6 +5282,159 @@ public class AddVariablesToCatchesTranspilationPass: TranspilationPass {
 	}
 }
 
+/// Tries to match call expressions to known function declarations so we can use the internal
+/// parameter names, e.g. turn `f(a = 0)` into `f(b = 0)` when we've seen a `f(a b: Int)`. If no
+/// matches are found, remove all labels; this might cause correctness problems, but it happens too
+/// often to do anything else.
+public class MatchFunctionCallsToDeclarationsTranspilationPass: TranspilationPass {
+	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+	// gryphon insert:     super(ast, context) { }
+
+	override func processCallExpression( // gryphon annotation: override
+		_ callExpression: CallExpression)
+		-> CallExpression
+	{
+		guard context.isUsingSwiftSyntax else {
+			return callExpression
+		}
+
+		let tupleExpression = callExpression.parameters as! TupleExpression
+
+		// Go through the dot expression chain to get the final expression
+		var functionExpression = callExpression.function
+		while true {
+			if let expression = functionExpression as? DotExpression {
+				functionExpression = expression.rightExpression
+			}
+			else {
+				break
+			}
+		}
+
+		// Don't try to match templates
+		if functionExpression is LiteralCodeExpression {
+			return super.processCallExpression(callExpression)
+		}
+
+		// Try to find a function translation
+		let maybeFunctionTranslation: TranspilationContext.FunctionTranslation?
+		if let expression = functionExpression as? DeclarationReferenceExpression,
+			let typeName = expression.typeName
+		{
+			maybeFunctionTranslation = self.context.getFunctionTranslation(
+				forName: expression.identifier,
+				typeName: typeName)
+		}
+		else if let typeExpression = functionExpression as? TypeExpression,
+			let parameterTypes = callExpression.parameters.swiftType
+		{
+			let typeName = typeExpression.typeName
+			let initializerType = "(\(typeName).Type) -> \(parameterTypes) -> \(typeName)"
+			maybeFunctionTranslation = self.context.getFunctionTranslation(
+				forName: typeName,
+				typeName: initializerType)
+		}
+		else {
+			maybeFunctionTranslation = nil
+		}
+
+		guard let functionTranslation = maybeFunctionTranslation else {
+			removeLabels(fromTupleExpression: tupleExpression)
+			return super.processCallExpression(callExpression)
+		}
+
+
+
+		// Try to match the call to the declaration using the swiftc algorithm
+		let callArguments = tupleExpression.pairs
+
+		let defaultArguments = functionTranslation.parameters.map { $0.value != nil }
+		let acceptsUnlabeledTrailingClosures = functionTranslation.parameters.map { _ in true }
+
+		let matchResult: MutableList<MutableList<Int>> = []
+
+		// Check if there's an unlabeled closure at the end (and assume it's a trailing closure
+		// if there is)
+		let unlabeledTrailingClosureArgIndex: Int?
+		if let lastArgument = callArguments.last,
+			lastArgument.expression is ClosureExpression,
+			lastArgument.label == nil
+		{
+			unlabeledTrailingClosureArgIndex = callArguments.count - 1
+		}
+		else {
+			unlabeledTrailingClosureArgIndex = nil
+		}
+
+		let matchFailed = matchCallArguments(
+			args: callArguments,
+			params: functionTranslation.parameters,
+			paramInfo: ParameterListInfo(
+				defaultArguments: defaultArguments,
+				acceptsUnlabeledTrailingClosures: acceptsUnlabeledTrailingClosures),
+			unlabeledTrailingClosureArgIndex: unlabeledTrailingClosureArgIndex,
+			trailingClosureMatching: .forward,
+			parameterBindings: matchResult)
+
+		if matchFailed {
+			Compiler.handleWarning(
+				message: "Unable to match these parameters to their declarations, " +
+					"removing all labels",
+				syntax: callExpression.parameters.syntax,
+				ast: callExpression.parameters,
+				sourceFile: ast.sourceFile,
+				sourceFileRange: callExpression.parameters.range)
+
+			removeLabels(fromTupleExpression: tupleExpression)
+			return super.processCallExpression(callExpression)
+		}
+
+		let resultPairs: MutableList<LabeledExpression> = []
+
+		// Variadic arguments can't be named, which means all arguments before them can't be
+		// named either.
+		let lastVariadicIndex =
+			functionTranslation.parameters.lastIndex(where: { $0.isVariadic }) ??
+			-1
+
+		// matchResult will be something like [[0], [1], [2], [3, 4], [5], []]
+		for declarationIndex in functionTranslation.parameters.indices {
+			let isBeforeVariadic = (declarationIndex <= lastVariadicIndex)
+
+			let implementationLabel = functionTranslation.parameters[declarationIndex].label
+
+			let callIndices = matchResult[declarationIndex]
+			for callIndex in callIndices {
+				let argument = callArguments[callIndex]
+				resultPairs.append(LabeledExpression(
+					label: isBeforeVariadic ? nil : implementationLabel,
+					expression: argument.expression))
+			}
+		}
+
+		// Figure out if we can write a trailing closure in Kotlin
+		let hasVariadic =
+			functionTranslation.parameters.contains(where: { $0.isVariadic })
+		let hasDefaultArgument =
+			functionTranslation.parameters.contains(where: { $0.value != nil })
+		let allowsTrailingClosure = (!hasDefaultArgument && !hasVariadic)
+
+		tupleExpression.pairs = resultPairs
+		callExpression.allowsTrailingClosure = allowsTrailingClosure
+		return super.processCallExpression(callExpression)
+	}
+
+	private func removeLabels(fromTupleExpression tupleExpression: TupleExpression) {
+		let newPairs = tupleExpression.pairs.map {
+			LabeledExpression(
+				label: nil,
+				expression: $0.expression)
+		}.toMutableList()
+
+		tupleExpression.pairs = newPairs
+	}
+}
+
 public extension TranspilationPass {
 	/// Runs transpilation passes that have to be run on all files before the other passes can
 	/// run. For instance, we need to record all enums declared on all files before we can
@@ -5158,7 +5455,6 @@ public extension TranspilationPass {
 		// Record information on enum and function translations
 		ast = RecordTemplatesTranspilationPass(ast: ast, context: context).run()
 		ast = RecordProtocolsTranspilationPass(ast: ast, context: context).run()
-		ast = RecordFunctionsTranspilationPass(ast: ast, context: context).run()
 		ast = RecordInitializersTranspilationPass(ast: ast, context: context).run()
 		ast = RecordInheritancesTranspilationPass(ast: ast, context: context).run()
 
@@ -5170,6 +5466,10 @@ public extension TranspilationPass {
 		ast = ImplicitRawValuesTranspilationPass(ast: ast, context: context).run()
 		ast = CleanInheritancesTranspilationPass(ast: ast, context: context).run()
 		ast = RecordEnumsTranspilationPass(ast: ast, context: context).run()
+
+		// RecordFunctions needs RecordEnums so it can know which enums are sealed classes and need
+		// their sealed class initializers recorded.
+		ast = RecordFunctionsTranspilationPass(ast: ast, context: context).run()
 
 		return ast
 	}
@@ -5231,6 +5531,7 @@ public extension TranspilationPass {
 		ast = FixExtensionGenericsTranspilationPass(ast: ast, context: context).run()
 		ast = RemoveOpenForInitializersTranspilationPass(ast: ast, context: context).run()
 		ast = AddVariablesToCatchesTranspilationPass(ast: ast, context: context).run()
+		ast = MatchFunctionCallsToDeclarationsTranspilationPass(ast: ast, context: context).run()
 
 		// - CapitalizeEnums has to be before IsOperatorsInSealedClasses and
 		//   IsOperatorsInIfStatementsTranspilationPass

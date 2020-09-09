@@ -80,11 +80,11 @@ internal data class D(
 		operator fun invoke(string: String?): D? {
 			string ?: return null
 			return when (string) {
-				"A" -> D(x = 0)
-				"B" -> D(x = 0)
-				"C" -> D(x = 0)
-				"D" -> D(x = 0)
-				"E" -> D(x = 0)
+				"A" -> D(0)
+				"B" -> D(0)
+				"C" -> D(0)
+				"D" -> D(0)
+				"E" -> D(0)
 				else -> null
 			}
 		}
@@ -97,25 +97,6 @@ internal open class E {
 
 internal class F {
 	open var a: Int = 0
-}
-
-internal open class MyClass {
-	open var x: Int = 0
-
-	operator open fun get(i: Int): Int {
-		return x + i
-	}
-
-	operator open fun set(i: Int, newValue: Int) {
-		this.x = newValue + 1
-	}
-}
-
-internal open class MyOtherClass {
-	operator open fun get(i: Int): Int {
-		// implicit getter
-		return i
-	}
 }
 
 internal open class SingleExpressionMembers {
@@ -183,21 +164,9 @@ fun main(args: Array<String>) {
 
 	println(C().e())
 	println(C.f())
-	println(D(x = 10))
+	println(D(10))
 	println(D(string = "not supported"))
 	println(D(string = "A")!!)
-
-	val myClass: MyClass = MyClass()
-
-	println(myClass[1])
-	println(myClass[2])
-	println(myClass[3])
-
-	myClass[1] = 10
-
-	println(myClass[1])
-	println(myClass[2])
-	println(myClass[3])
 
 	val singleExpressionMembers: SingleExpressionMembers = SingleExpressionMembers()
 

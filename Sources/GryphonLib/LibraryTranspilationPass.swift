@@ -115,7 +115,8 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 								syntax: nil,
 								range: nil,
 								pairs: parameters),
-							typeName: nil)
+							typeName: nil,
+							allowsTrailingClosure: true)
 					}
 					if declarationExpression.identifier == "dot",
 						let stringExpression =

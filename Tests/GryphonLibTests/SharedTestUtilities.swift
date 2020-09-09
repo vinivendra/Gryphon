@@ -152,6 +152,7 @@ class TestUtilities {
 		"standardLibrary",
 		"strings",
 		"structs",
+		"subscripts",
 		"switches",
 	]
 
@@ -174,9 +175,10 @@ class TestUtilities {
 		"openAndFinal",
 		"openAndFinal-default-final",
 		"operators",
+		"standardLibrary",
 		"strings",
 		"structs",
+		"subscripts",
 		"switches",
-		"standardLibrary",
 	]
 }

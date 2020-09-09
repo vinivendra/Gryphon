@@ -188,14 +188,19 @@ public class TranspilationContext {
 			let translationType = functionTranslation.typeName
 				.replacingOccurrences(of: "Void", with: "()")
 				.replacingOccurrences(of: "@autoclosure", with: "")
+				.replacingOccurrences(of: "@escaping", with: "")
 				.replacingOccurrences(of: " ", with: "")
+				.replacingOccurrences(of: "throws", with: "")
 			let functionType = typeName
 				.replacingOccurrences(of: "Void", with: "()")
 				.replacingOccurrences(of: "@autoclosure", with: "")
+				.replacingOccurrences(of: "@escaping", with: "")
 				.replacingOccurrences(of: " ", with: "")
+				.replacingOccurrences(of: "throws", with: "")
 
-			let translationPrefix = functionTranslation.swiftAPIName.prefix(while: { $0 != "(" })
-			let namePrefix = name.prefix(while: { $0 != "(" })
+			let translationPrefix = functionTranslation.swiftAPIName
+				.prefix(while: { $0 != "(" && $0 != "<" })
+			let namePrefix = name.prefix(while: { $0 != "(" && $0 != "<" })
 
 			if translationPrefix == namePrefix,
 				translationType == functionType

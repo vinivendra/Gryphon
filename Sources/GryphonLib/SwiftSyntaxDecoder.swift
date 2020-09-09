@@ -2285,7 +2285,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		_ subscriptExpression: SubscriptExprSyntax)
 		throws -> Expression
 	{
-		guard let indexExpression = subscriptExpression.argumentList.first?.expression,
+		guard let indexTypeName = getType(
+				from: subscriptExpression.leftBracket,
+				to: subscriptExpression.rightBracket),
 			let typeName = subscriptExpression.getType(fromList: self.expressionTypes) else
 		{
 			return try errorExpression(
@@ -2293,7 +2295,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				withMessage: "Unable to convert index expression")
 		}
 
-		let convertedIndexExpression = try convertExpression(indexExpression)
+		let convertedIndexExpression = try convertTupleExpressionElementList(
+			subscriptExpression.argumentList,
+			withType: indexTypeName)
 		let convertedCalledExpression = try convertExpression(subscriptExpression.calledExpression)
 
 		return SubscriptExpression(
@@ -2860,11 +2864,10 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			range: functionCallExpression.getRange(inFile: self.sourceFile),
 			function: functionExpressionTranslation,
 			parameters: tupleExpression,
-			typeName: functionCallExpression.getType(fromList: self.expressionTypes))
+			typeName: functionCallExpression.getType(fromList: self.expressionTypes),
+			allowsTrailingClosure: false)
 	}
 
-	/// The `convertFunctionCallExpression` method assumes this returns something that can be put in
-	/// a `CallExpression`, like a `TupleExpression` or a `TupleShuffleExpression`.
 	/// The type has to be passed in because SourceKit needs the parentheses to determine the tuple
 	/// type, and the type list doesn't include them.
 	func convertTupleExpressionElementList(
@@ -3295,6 +3298,31 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			sourceFileRange: range)
 		return ErrorExpression(syntax: ast, range: range)
 	}
+
+	/// Use this method when there isn't a single `Syntax` object that provides the adequate length;
+	/// otherwise, prefer `Syntax.getType(fromList:)`.
+	func getType(from startToken: TokenSyntax, to endToken: TokenSyntax) -> String? {
+		let startPosition = startToken.positionAfterSkippingLeadingTrivia.utf8Offset
+		let endPosition = endToken.endPositionBeforeTrailingTrivia.utf8Offset
+		let length = endPosition - startPosition
+		return getType(position: startPosition, length: length)
+	}
+
+	/// Use this method when there isn't a single `Syntax` object that provides the adequate length;
+	/// otherwise, prefer `Syntax.getType(fromList:)`. The `position` parameter should probably be
+	/// calculated using `Syntax.positionAfterSkippingLeadingTrivia.utf8Offset`, and the `length`
+	/// with `Syntax.contentLength.utf8Length`.
+	func getType(position: Int, length: Int) -> String? {
+		for expressionType in self.expressionTypes {
+			if position == expressionType.offset,
+				length == expressionType.length
+			{
+				return expressionType.typeName
+			}
+		}
+
+		return nil
+	}
 }
 
 // MARK: - Helper extensions
@@ -3369,7 +3397,6 @@ extension SyntaxProtocol {
 
 /// A protocol to convert FunctionDeclSyntax and InitializerDeclSyntax with the same algorithm.
 protocol FunctionLikeSyntax: SyntaxProtocol {
-	var asSyntax: Syntax { get }
 	var isInitializer: Bool { get }
 	var prefix: String { get }
 	var parameterList: FunctionParameterListSyntax { get }
@@ -3382,10 +3409,6 @@ protocol FunctionLikeSyntax: SyntaxProtocol {
 }
 
 extension FunctionDeclSyntax: FunctionLikeSyntax {
-	var asSyntax: Syntax {
-		return Syntax(self)
-	}
-
 	var isInitializer: Bool {
 		return false
 	}
@@ -3420,10 +3443,6 @@ extension FunctionDeclSyntax: FunctionLikeSyntax {
 }
 
 extension InitializerDeclSyntax: FunctionLikeSyntax {
-	var asSyntax: Syntax {
-		return Syntax(self)
-	}
-
 	var isInitializer: Bool {
 		return true
 	}
@@ -3462,7 +3481,6 @@ extension InitializerDeclSyntax: FunctionLikeSyntax {
 
 /// A protocol to convert IfStmtSyntax and GuardStmtSyntax with the same algorithm.
 protocol IfLikeSyntax: SyntaxProtocol {
-	var asSyntax: Syntax { get }
 	var ifConditions: ConditionElementListSyntax { get }
 	var statements: CodeBlockSyntax { get }
 	var elseBlock: CodeBlockSyntax? { get }
@@ -3470,10 +3488,6 @@ protocol IfLikeSyntax: SyntaxProtocol {
 }
 
 extension IfStmtSyntax: IfLikeSyntax {
-	var asSyntax: Syntax {
-		return Syntax(self)
-	}
-
 	var ifConditions: ConditionElementListSyntax {
 		return self.conditions
 	}
@@ -3492,10 +3506,6 @@ extension IfStmtSyntax: IfLikeSyntax {
 }
 
 extension GuardStmtSyntax: IfLikeSyntax {
-	var asSyntax: Syntax {
-		return Syntax(self)
-	}
-
 	var ifConditions: ConditionElementListSyntax {
 		return self.conditions
 	}
