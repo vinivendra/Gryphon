@@ -83,4 +83,5 @@ It still has many lines."""
 	val baz: String = "${bar}"
 
 	println(baz)
+	println("\${foo} ${bar}")
 }

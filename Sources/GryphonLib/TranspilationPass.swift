@@ -4839,6 +4839,7 @@ public extension TranspilationPass {
 		ast = FixProtocolGenericsTranspilationPass(ast: ast, context: context).run()
 		ast = FixExtensionGenericsTranspilationPass(ast: ast, context: context).run()
 		ast = RemoveOpenForInitializersTranspilationPass(ast: ast, context: context).run()
+        ast = EscapeDollarSignsInStringsTranspilationPass(ast: ast, context: context).run()
 
 		// - CapitalizeEnums has to be before IsOperatorsInSealedClasses and
 		//   IsOperatorsInIfStatementsTranspilationPass

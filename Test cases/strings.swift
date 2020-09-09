@@ -103,5 +103,6 @@ print("$foo")
 print("${foo}")
 
 let bar = "$foo"
-let  baz = "\(bar)"
+let baz = "\(bar)"
 print(baz)
+print("${foo} \(bar)")
