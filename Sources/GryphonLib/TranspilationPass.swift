@@ -4712,6 +4712,20 @@ public class FixExtensionGenericsTranspilationPass: TranspilationPass {
 	}
 }
 
+public class EscapeDollarSignsInStringsTranspilationPass: TranspilationPass {
+    // gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
+    // gryphon insert:     super(ast, context) { }
+    
+    override func replaceLiteralStringExpression( // gryphon annotation: override
+        _ literalStringExpression: LiteralStringExpression) -> Expression {
+        let replacedLiteralStringExpression = LiteralStringExpression(
+            range: literalStringExpression.range,
+            value: literalStringExpression.value.replacingOccurrences(of: "$", with: "\\$"),
+            isMultiline: literalStringExpression.isMultiline)
+        return super.replaceLiteralStringExpression(replacedLiteralStringExpression)
+    }
+}
+
 /// Kotlin initializers cannot be marked as `open`.
 public class RemoveOpenForInitializersTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
@@ -4825,6 +4839,7 @@ public extension TranspilationPass {
 		ast = FixProtocolGenericsTranspilationPass(ast: ast, context: context).run()
 		ast = FixExtensionGenericsTranspilationPass(ast: ast, context: context).run()
 		ast = RemoveOpenForInitializersTranspilationPass(ast: ast, context: context).run()
+        ast = EscapeDollarSignsInStringsTranspilationPass(ast: ast, context: context).run()
 
 		// - CapitalizeEnums has to be before IsOperatorsInSealedClasses and
 		//   IsOperatorsInIfStatementsTranspilationPass
