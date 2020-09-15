@@ -241,6 +241,10 @@ internal class ASTDumpDecoder {
 				break
 			}
 
+			if character == ")" {
+				break
+			}
+
 			if character == "," {
 				previousCharacterIsComma = true
 			}

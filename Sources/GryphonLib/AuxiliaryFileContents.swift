@@ -2066,6 +2066,8 @@ if !errors.isEmpty {
 internal let makeGryphonTargetsFileContents = """
 require 'xcodeproj'
 
+puts "	Ruby version " + RUBY_VERSION
+
 if ARGV.length < 1
     STDERR.puts "Error: please specify the path to the Xcode project as an argument."
     exit(false)
@@ -2117,7 +2119,9 @@ script = "gryphon \\"\(dollarSign){PROJECT_NAME}.xcodeproj\\"" +
 	" --verbose"
 
 # Add any other argument directly to the script (dropping the xcode project first)
-for argument in ARGV.slice(1...)
+arguments = Array.new(ARGV) # Copy the arguments array
+arguments.shift # Remove the first element
+for argument in arguments
 	puts "		Including " + argument
     script = script + " " + argument
 end
