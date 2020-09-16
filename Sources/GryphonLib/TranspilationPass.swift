@@ -5217,7 +5217,9 @@ public class FixExtensionGenericsTranspilationPass: TranspilationPass {
 	}
 }
 
-public class EscapeDollarSignsInStringsTranspilationPass: TranspilationPass {
+/// - Escapes `$`s in strings (to avoid accidental string interpolations in Kotlin).
+/// - Escapes `'`s in character literals.
+public class EscapeSpecialCharactersInStringsTranspilationPass: TranspilationPass {
     // gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
     // gryphon insert:     super(ast, context) { }
     
@@ -5229,6 +5231,21 @@ public class EscapeDollarSignsInStringsTranspilationPass: TranspilationPass {
             isMultiline: literalStringExpression.isMultiline)
         return super.replaceLiteralStringExpression(replacedLiteralStringExpression)
     }
+
+	override func replaceLiteralCharacterExpression( // gryphon annotation: override
+		_ literalCharacterExpression: LiteralCharacterExpression)
+		-> Expression
+	{
+		if context.isUsingSwiftSyntax {
+			let replacedLiteralCharacterExpression = LiteralCharacterExpression(
+				range: literalCharacterExpression.range,
+				value: literalCharacterExpression.value.replacingOccurrences(of: "'", with: "\\'"))
+			return super.replaceLiteralCharacterExpression(replacedLiteralCharacterExpression)
+		}
+		else {
+			return super.replaceLiteralCharacterExpression(literalCharacterExpression)
+		}
+	}
 }
 
 /// Kotlin initializers cannot be marked as `open`.
@@ -5546,7 +5563,7 @@ public extension TranspilationPass {
 		ast = RemoveOpenForInitializersTranspilationPass(ast: ast, context: context).run()
 		ast = AddVariablesToCatchesTranspilationPass(ast: ast, context: context).run()
 		ast = MatchFunctionCallsToDeclarationsTranspilationPass(ast: ast, context: context).run()
-        ast = EscapeDollarSignsInStringsTranspilationPass(ast: ast, context: context).run()
+        ast = EscapeSpecialCharactersInStringsTranspilationPass(ast: ast, context: context).run()
 
 		// - CapitalizeEnums has to be before IsOperatorsInSealedClasses and
 		//   IsOperatorsInIfStatementsTranspilationPass

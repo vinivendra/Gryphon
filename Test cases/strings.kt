@@ -63,6 +63,7 @@ It still has many lines."""
 	println("==")
 
 	val character: Char = 'i'
+	val escapedCharacter: Char = '\''
 
 	println(character)
 

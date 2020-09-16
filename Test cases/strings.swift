@@ -87,6 +87,7 @@ print("==")
 
 // Characters
 let character: Character = "i"
+let escapedCharacter: Character = "'"
 
 print(character)
 

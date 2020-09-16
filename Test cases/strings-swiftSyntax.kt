@@ -62,6 +62,7 @@ It still has many lines."""
 	println("==")
 
 	val character: Char = 'i'
+	val escapedCharacter: Char = '\''
 
 	println(character)
 
@@ -74,4 +75,13 @@ It still has many lines."""
 	for (char in abc) {
 		println(char)
 	}
+
+	println("\$foo")
+	println("\${foo}")
+
+	val bar: String = "\$foo"
+	val baz: String = "${bar}"
+
+	println(baz)
+	println("\${foo} ${bar}")
 }
