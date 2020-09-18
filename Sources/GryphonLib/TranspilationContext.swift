@@ -35,24 +35,31 @@ public class TranspilationContext {
 	let compiledFiles: List<String>
 
 	/// The base contexts are used for information that all transpilation contexts should contain,
-	/// such as the Gryphon templates library (which can be calculated once and are the same every
+	/// such as the Gryphon templates library (which can be calculated once and is the same every
 	/// time). All transpilation contexts are initialized with the information from the base
-	/// context that corresponds to their Swift version. Base contexts are indexed in this map by
-	/// their Swift versions.
-	static private let baseContexts: MutableMap<String, TranspilationContext> = [:]
+	/// context that corresponds to their Swift version and whether they use SwiftSyntax. Base
+	/// contexts are indexed in these maps by their Swift versions.
+	static private let baseContextsForASTDumps: MutableMap<String, TranspilationContext> = [:]
+	static private let baseContextsForSwiftSyntax: MutableMap<String, TranspilationContext> = [:]
 
-	/// Returns the base context for the requested Swift version. If one hasn't been created yet,
-	/// create it then return it.
+	/// Returns the base context for the requested Swift version and SwiftSyntax usage. If one
+	/// hasn't been created yet, create it then return it.
 	static internal func getBaseContext(
-		forToolchain toolchainName: String?)
+		forToolchain toolchainName: String?,
+		usingSwiftSyntax: Bool)
 		throws -> TranspilationContext
 	{
 		let swiftVersion = try TranspilationContext.getVersionOfToolchain(toolchainName)
+
+		let baseContexts = usingSwiftSyntax ? baseContextsForSwiftSyntax : baseContextsForASTDumps
+
 		if let result = baseContexts[swiftVersion] {
 			return result
 		}
 		else {
-			let newContext = try TranspilationContext(toolchainName: toolchainName)
+			let newContext = try TranspilationContext(
+				toolchainName: toolchainName,
+				usingSwiftSyntax: usingSwiftSyntax)
 			try Utilities.processGryphonTemplatesLibrary(for: newContext)
 			baseContexts[swiftVersion] = newContext
 			return newContext
@@ -60,18 +67,17 @@ public class TranspilationContext {
 	}
 
 	/// Normal contexts should be initialized using the correct base context, which is done with the
-	/// the public `init(indentationString:)` method. This method is only for initializing the
-	/// base contexts themselves.
-	private init(toolchainName: String?) throws {
+	/// the public `init` method. This method is only for initializing the base contexts themselves.
+	private init(toolchainName: String?, usingSwiftSyntax: Bool) throws {
 		try TranspilationContext.checkToolchainSupport(toolchainName)
 
 		self.toolchainName = toolchainName
 		self.swiftVersion = try TranspilationContext.getVersionOfToolchain(toolchainName)
 		self.indentationString = ""
 		self.defaultsToFinal = false
-		self.isUsingSwiftSyntax = false
+		self.isUsingSwiftSyntax = usingSwiftSyntax
 		self.templates = []
-		self.compiledFiles = []
+		self.compiledFiles = [SupportingFile.gryphonTemplatesLibrary.absolutePath]
 	}
 
 	public init(
@@ -91,7 +97,7 @@ public class TranspilationContext {
 		self.isUsingSwiftSyntax = isUsingSwiftSyntax
 		self.compiledFiles = compiledFiles
 		self.templates = try TranspilationContext
-			.getBaseContext(forToolchain: toolchainName)
+			.getBaseContext(forToolchain: toolchainName, usingSwiftSyntax: isUsingSwiftSyntax)
 			.templates
 			.toMutableList()
 	}
