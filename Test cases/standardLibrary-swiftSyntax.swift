@@ -21,6 +21,8 @@
 // gryphon output: Test cases/Bootstrap Outputs/standardLibrary.gryphonAST
 // gryphon output: Test cases/Bootstrap Outputs/standardLibrary.kt
 
+// gryphon insert: import kotlin.system.*
+
 import Foundation
 
 // MARK: - Define template classes and operators
@@ -548,4 +550,10 @@ class D {
 	class E: CustomStringConvertible {
 		var description: String = ""
 	}
+}
+
+//////////////////////////////////////////////////////////
+// Check autoclosure matches
+if false {
+	fatalError("Never reached")
 }

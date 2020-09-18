@@ -414,11 +414,16 @@ extension Expression {
 	/// expression's type. It isn't set in recursive calls so that inner types get compared
 	/// normally (with the exception of dot expressions, whose types are usually determined by
 	/// their right expression's type).
+	///
+	/// Note: SourceKit also reports some `@autoclosure` arguments with type `() -> T` instead of
+	/// just `T`. The `shouldMatchAutoclosures` argument is used when call expressions contain
+	/// autoclosures, so we can match the types correctly.
 	private func matches(
 		_ template: Expression,
 		_ matches: MutableMap<String, Expression>,
 		_ context: TranspilationContext,
-		shouldSkipRootTypeComparison: Bool = false)
+		shouldSkipRootTypeComparison: Bool = false,
+		shouldMatchAutoclosures: Bool = false)
 		-> Bool
 	{
 		let lhs = self
@@ -426,11 +431,23 @@ extension Expression {
 
 		if let declarationExpression = rhs as? DeclarationReferenceExpression {
 			if declarationExpression.identifier.hasPrefix("_"),
-				let declarationType = declarationExpression.typeName,
-				shouldSkipRootTypeComparison || lhs.isOfType(declarationType, inContext: context)
+				let declarationType = declarationExpression.typeName
 			{
-				matches[declarationExpression.identifier] = lhs
-				return true
+				if shouldSkipRootTypeComparison ||
+					lhs.isOfType(declarationType, inContext: context)
+				{
+					matches[declarationExpression.identifier] = lhs
+					return true
+				}
+				else if shouldMatchAutoclosures,
+					declarationType.contains("->"),
+					let processedType =
+						Utilities.splitTypeList(declarationType, separators: ["->"]).last,
+					lhs.isOfType(processedType, inContext: context)
+				{
+					matches[declarationExpression.identifier] = lhs
+					return true
+				}
 			}
 		}
 
@@ -586,8 +603,18 @@ extension Expression {
 				typeMatches = true
 			}
 
+			let usesAutoclosures: Bool
+			if let rhsType = rhs.function.swiftType {
+				usesAutoclosures = rhsType.contains("@autoclosure")
+			}
+			else {
+				usesAutoclosures = false
+			}
+
 			return lhs.function.matches(rhs.function, matches, context) &&
-				lhs.parameters.matches(rhs.parameters, matches, context) &&
+				lhs.parameters.matches(
+					rhs.parameters, matches, context,
+					shouldMatchAutoclosures: usesAutoclosures) &&
 				typeMatches
 		}
 		if let lhs = lhs as? LiteralIntExpression,
@@ -664,7 +691,9 @@ extension Expression {
 			// Check if the expressions inside them match
 			for (leftPair, rightPair) in zip(lhs.pairs, rhs.pairs) {
 				result = result &&
-					leftPair.expression.matches(rightPair.expression, matches, context) &&
+					leftPair.expression.matches(
+						rightPair.expression, matches, context,
+						shouldMatchAutoclosures: shouldMatchAutoclosures) &&
 					leftPair.label == rightPair.label
 			}
 			return result

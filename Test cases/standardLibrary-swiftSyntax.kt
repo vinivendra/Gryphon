@@ -15,6 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import kotlin.system.*
 typealias PrintContents = Any?
 
 internal fun printTest(contents: PrintContents, testName: String) {
@@ -311,4 +312,8 @@ fun main(args: Array<String>) {
 	val description1: String = B().description
 	val description2: String = C().toString()
 	val description: String = ""
+
+	if (false) {
+		println("Fatal error: ${"Never reached"}"); exitProcess(-1)
+	}
 }
