@@ -3074,6 +3074,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		throws -> Expression
 	{
 		let range = stringLiteralExpression.getRange(inFile: self.sourceFile)
+		let isMultiline = (stringLiteralExpression.openQuote.tokenKind == .multilineStringQuote)
 
 		// If it's a string literal
 		if stringLiteralExpression.segments.count == 1,
@@ -3087,8 +3088,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					range: range,
 					value: text)
 			}
-
-			let isMultiline = (stringLiteralExpression.openQuote.tokenKind == .multilineStringQuote)
 
 			var cleanText = text
 			if isMultiline {
@@ -3179,7 +3178,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					syntax: Syntax(stringSegment),
 					range: stringSegment.getRange(inFile: self.sourceFile),
 					value: text,
-					isMultiline: false))
+					isMultiline: isMultiline))
 				continue
 			}
 

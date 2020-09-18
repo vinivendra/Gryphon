@@ -50,6 +50,9 @@ It still has many lines."""
 		This multiline string has indentation.
 		It also has many lines.
 """
+	val multilineInterpolation: String = """
+${x}
+"""
 
 	println("==")
 	println(multilineString1)

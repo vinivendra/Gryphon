@@ -60,6 +60,10 @@ let multilineString3 = """
 
 """
 
+let multilineInterpolation = """
+\(x)
+"""
+
 func f() {
 	let multilineString = """
 
