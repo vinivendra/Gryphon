@@ -120,6 +120,26 @@ internal open class SingleExpressionMembers {
 		= bbbbbbbbbbbbbbbb * ccccccccccccc * ddddddddddddddddddddddddd * eeeeeeeeeee
 }
 
+internal open class G {
+	companion object {
+		fun setUp() {
+		}
+	}
+
+	constructor() {
+	}
+}
+
+internal open class H: G {
+	companion object {
+		fun setUp() {
+		}
+	}
+
+	constructor() {
+	}
+}
+
 fun main(args: Array<String>) {
 	val box1: Box = Box()
 

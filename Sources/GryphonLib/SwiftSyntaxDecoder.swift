@@ -1564,7 +1564,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			withKey: .pure).isEmpty
 
 		if !functionLikeDeclaration.isInitializer {
-			let isStatic = annotations.remove("static")
+			let isStatic = annotations.remove("static") || annotations.remove("class")
 
 			return FunctionDeclaration(
 				syntax: functionLikeDeclaration.asSyntax,

@@ -185,3 +185,15 @@ class Subclass: Superclass {
 		super.init(x: y + 1)
 	}
 }
+
+// Test `class` annotations
+class G {
+	init() { }
+	class func setUp() { }
+}
+
+// Test removing `override` annotations
+class H: G {
+	override init() { }
+	override static func setUp() { }
+}

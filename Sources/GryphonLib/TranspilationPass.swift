@@ -5248,6 +5248,31 @@ public class EscapeSpecialCharactersInStringsTranspilationPass: TranspilationPas
 	}
 }
 
+/// Removes `override` annotations from static members and initializers, as they're not supported in
+/// Kotlin.
+public class RemoveOverridesTranspilationPass: TranspilationPass {
+	override func replaceCompanionObject(_ companionObject: CompanionObject) -> List<Statement> {
+		for statement in companionObject.members {
+			if let variableDeclaration = statement as? VariableDeclaration {
+				variableDeclaration.annotations.remove("override")
+			}
+			if let functionDeclaration = statement as? FunctionDeclaration {
+				functionDeclaration.annotations.remove("override")
+			}
+		}
+
+		return super.replaceCompanionObject(companionObject)
+	}
+
+	override func replaceInitializerDeclaration(
+		_ initializerDeclaration: InitializerDeclaration)
+		-> List<Statement>
+	{
+		initializerDeclaration.annotations.remove("override")
+		return super.replaceInitializerDeclaration(initializerDeclaration)
+	}
+}
+
 /// Kotlin initializers cannot be marked as `open`.
 public class RemoveOpenForInitializersTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
@@ -5564,6 +5589,7 @@ public extension TranspilationPass {
 		ast = AddVariablesToCatchesTranspilationPass(ast: ast, context: context).run()
 		ast = MatchFunctionCallsToDeclarationsTranspilationPass(ast: ast, context: context).run()
         ast = EscapeSpecialCharactersInStringsTranspilationPass(ast: ast, context: context).run()
+		ast = RemoveOverridesTranspilationPass(ast: ast, context: context).run()
 
 		// - CapitalizeEnums has to be before IsOperatorsInSealedClasses and
 		//   IsOperatorsInIfStatementsTranspilationPass

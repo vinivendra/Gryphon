@@ -133,6 +133,26 @@ internal open class Subclass: Superclass {
 	}
 }
 
+internal open class G {
+	companion object {
+		fun setUp() {
+		}
+	}
+
+	constructor() {
+	}
+}
+
+internal open class H: G {
+	companion object {
+		fun setUp() {
+		}
+	}
+
+	constructor() {
+	}
+}
+
 fun main(args: Array<String>) {
 	val box1: Box = Box()
 

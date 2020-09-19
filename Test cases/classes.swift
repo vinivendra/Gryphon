@@ -167,3 +167,15 @@ let singleExpressionMembers = SingleExpressionMembers()
 print(singleExpressionMembers.one)
 print(singleExpressionMembers.two)
 print(singleExpressionMembers.dddddddddddddddddddddddddeeeeeeeeeee)
+
+// Test `class` annotations
+class G {
+	init() { }
+	class func setUp() { }
+}
+
+// Test removing `override` annotations
+class H: G {
+	override init() { }
+	override static func setUp() { }
+}
