@@ -2725,15 +2725,29 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 				let tupleExpression = callExpression.parameters as? TupleExpression
 			{
 				if (rightExpression.identifier == "as" ||
-						rightExpression.identifier == "forceCast(to:)"),
+					rightExpression.identifier.hasPrefix("forceCast")),
 					tupleExpression.pairs.count == 1,
 					let onlyPair = tupleExpression.pairs.first
 				{
-					let methodSuffix = (rightExpression.identifier == "forceCast(to:)") ?
+					let methodSuffix = (rightExpression.identifier.hasPrefix("forceCast")) ?
 						"" :
 						"OrNull"
 
-					if let typeExpression = onlyPair.expression as? TypeExpression {
+					let maybeTypeExpression: TypeExpression?
+					if context.isUsingSwiftSyntax,
+						let dotTypeExpression = onlyPair.expression as? DotExpression,
+						let leftTypeExpression = dotTypeExpression.leftExpression as? TypeExpression
+					{
+						maybeTypeExpression = leftTypeExpression
+					}
+					else if let typeExpression = onlyPair.expression as? TypeExpression {
+						maybeTypeExpression = typeExpression
+					}
+					else {
+						maybeTypeExpression = nil
+					}
+
+					if let typeExpression = maybeTypeExpression {
 						let methodPrefix: String
 						let castedGenerics: String
 						if typeExpression.typeName.hasPrefix("List<") {

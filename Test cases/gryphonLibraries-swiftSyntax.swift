@@ -16,6 +16,8 @@
 // limitations under the License.
 //
 
+// Gryphon Swift Library
+
 // MARK: - Template class declarations
 // gryphon ignore
 internal class GRYTemplate {
@@ -867,3 +869,189 @@ extension Map {
 		MutableMap<CastedKey, CastedValue>(dictionary as! [CastedKey: CastedValue])
 	}
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Gryphon Kotlin Library
+
+// gryphon insert: import java.lang.ClassCastException
+// gryphon insert:
+// gryphon insert: fun String.suffix(startIndex: Int): String {
+// gryphon insert:     return this.substring(startIndex, this.length)
+// gryphon insert: }
+// gryphon insert:
+// gryphon insert: fun <T> MutableList<T>.removeLast() {
+// gryphon insert:     this.removeAt(this.size - 1)
+// gryphon insert: }
+// gryphon insert:
+// gryphon insert: fun String.indexOrNull(character: Char): Int? {
+// gryphon insert:     val result = this.indexOf(character)
+// gryphon insert:     if (result == -1) {
+// gryphon insert:         return null
+// gryphon insert:     }
+// gryphon insert:     else {
+// gryphon insert:         return result
+// gryphon insert:     }
+// gryphon insert: }
+// gryphon insert:
+// gryphon insert: @Suppress("UNCHECKED_CAST", "UNUSED_PARAMETER")
+// gryphon insert: inline fun <reified T> List<*>.castOrNull(): List<T>? {
+// gryphon insert:     if (this.all { it is T }) {
+// gryphon insert:         return this as List<T>
+// gryphon insert:     }
+// gryphon insert:     else {
+// gryphon insert:         return null
+// gryphon insert:     }
+// gryphon insert: }
+// gryphon insert:
+// gryphon insert: @Suppress("UNCHECKED_CAST", "UNUSED_PARAMETER")
+// gryphon insert: inline fun <reified T> List<*>.castMutableOrNull(): MutableList<T>? {
+// gryphon insert:     if (this.all { it is T }) {
+// gryphon insert:         return (this as List<T>).toMutableList()
+// gryphon insert:     }
+// gryphon insert:     else {
+// gryphon insert:         return null
+// gryphon insert:     }
+// gryphon insert: }
+// gryphon insert:
+// gryphon insert: @Suppress("UNCHECKED_CAST", "UNUSED_PARAMETER")
+// gryphon insert: inline fun <reified K, reified V> Map<*, *>.castOrNull()
+// gryphon insert:     : Map<K, V>?
+// gryphon insert: {
+// gryphon insert:     if (this.all { it.key is K && it.value is V }) {
+// gryphon insert:         return this as Map<K, V>
+// gryphon insert:     }
+// gryphon insert:     else {
+// gryphon insert:         return null
+// gryphon insert:     }
+// gryphon insert: }
+// gryphon insert:
+// gryphon insert: @Suppress("UNCHECKED_CAST", "UNUSED_PARAMETER")
+// gryphon insert: inline fun <reified K, reified V> Map<*, *>.castMutableOrNull()
+// gryphon insert:     : MutableMap<K, V>?
+// gryphon insert: {
+// gryphon insert:     if (this.all { it.key is K && it.value is V }) {
+// gryphon insert:         return (this as Map<K, V>).toMutableMap()
+// gryphon insert:     }
+// gryphon insert:     else {
+// gryphon insert:         return null
+// gryphon insert:     }
+// gryphon insert: }
+// gryphon insert:
+// gryphon insert:
+// gryphon insert: @Suppress("UNCHECKED_CAST", "UNUSED_PARAMETER")
+// gryphon insert: inline fun <reified T> List<*>.cast(): List<T> {
+// gryphon insert:     if (this.all { it is T }) {
+// gryphon insert:         return this as List<T>
+// gryphon insert:     }
+// gryphon insert:     else {
+// gryphon insert:         throw ClassCastException()
+// gryphon insert:     }
+// gryphon insert: }
+// gryphon insert:
+// gryphon insert: @Suppress("UNCHECKED_CAST", "UNUSED_PARAMETER")
+// gryphon insert: inline fun <reified T> List<*>.castMutable(): MutableList<T> {
+// gryphon insert:     if (this.all { it is T }) {
+// gryphon insert:         return (this as List<T>).toMutableList()
+// gryphon insert:     }
+// gryphon insert:     else {
+// gryphon insert:         throw ClassCastException()
+// gryphon insert:     }
+// gryphon insert: }
+// gryphon insert:
+// gryphon insert: @Suppress("UNCHECKED_CAST", "UNUSED_PARAMETER")
+// gryphon insert: inline fun <reified K, reified V> Map<*, *>.cast()
+// gryphon insert:     : Map<K, V>
+// gryphon insert: {
+// gryphon insert:     if (this.all { it.key is K && it.value is V }) {
+// gryphon insert:         return this as Map<K, V>
+// gryphon insert:     }
+// gryphon insert:     else {
+// gryphon insert:         throw ClassCastException()
+// gryphon insert:     }
+// gryphon insert: }
+// gryphon insert:
+// gryphon insert: @Suppress("UNCHECKED_CAST", "UNUSED_PARAMETER")
+// gryphon insert: inline fun <reified K, reified V> Map<*, *>.castMutable()
+// gryphon insert:     : MutableMap<K, V>
+// gryphon insert: {
+// gryphon insert:     if (this.all { it.key is K && it.value is V }) {
+// gryphon insert:         return (this as Map<K, V>).toMutableMap()
+// gryphon insert:     }
+// gryphon insert:     else {
+// gryphon insert:         throw ClassCastException()
+// gryphon insert:     }
+// gryphon insert: }
+// gryphon insert:
+// gryphon insert: fun <Element> List<Element>.sorted(
+// gryphon insert:     isAscending: (Element, Element) -> Boolean)
+// gryphon insert:     : MutableList<Element>
+// gryphon insert: {
+// gryphon insert:     val copyList = this.toMutableList()
+// gryphon insert:     copyList.quicksort(0, this.size - 1, isAscending)
+// gryphon insert:     return copyList
+// gryphon insert: }
+// gryphon insert:
+// gryphon insert: fun <Element> MutableList<Element>.quicksort(
+// gryphon insert:     left: Int,
+// gryphon insert:     right: Int,
+// gryphon insert:     isAscending: (Element, Element) -> Boolean)
+// gryphon insert: {
+// gryphon insert:     if (left < right) {
+// gryphon insert:         val pivot = this.partition(left, right, isAscending)
+// gryphon insert:         this.quicksort(left, pivot - 1, isAscending)
+// gryphon insert:         this.quicksort(pivot + 1, right, isAscending)
+// gryphon insert:     }
+// gryphon insert: }
+// gryphon insert:
+// gryphon insert: fun <Element> MutableList<Element>.partition(
+// gryphon insert:     left: Int,
+// gryphon insert:     right: Int,
+// gryphon insert:     isAscending: (Element, Element) -> Boolean)
+// gryphon insert:     : Int
+// gryphon insert: {
+// gryphon insert:     val pivot = this[right]
+// gryphon insert:
+// gryphon insert:     var i = left - 1
+// gryphon insert:
+// gryphon insert:     var j = left
+// gryphon insert:     while (j <= right - 1) {
+// gryphon insert:         if (isAscending(this[j], pivot)) {
+// gryphon insert:             i += 1
+// gryphon insert:
+// gryphon insert:             val aux = this[i]
+// gryphon insert:             this[i] = this[j]
+// gryphon insert:             this[j] = aux
+// gryphon insert:         }
+// gryphon insert:
+// gryphon insert:         j += 1
+// gryphon insert:     }
+// gryphon insert:
+// gryphon insert:     val aux = this[i + 1]
+// gryphon insert:     this[i + 1] = this[right]
+// gryphon insert:     this[right] = aux
+// gryphon insert:
+// gryphon insert:     return i + 1
+// gryphon insert: }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Test casts
+let strings: List<String> = ["abc", "def"]
+let anys = strings.as(List<Any>.self)
+print(anys)
+
+let mutableAnys = strings.as(MutableList<Any>.self)
+print(mutableAnys)
+
+let forcedAnys = strings.forceCast(to: List<Any>.self)
+print(forcedAnys)
+
+let mutableForcedAnys = strings.forceCast(to: MutableList<Any>.self)
+print(mutableForcedAnys)
+
+let failedCast1 = strings.as(List<Int>.self)
+print(failedCast1)
+
+let anys2: List<Any> = ["", 0]
+let failedCast2 = anys2.as(List<String>.self)
+print(failedCast2)

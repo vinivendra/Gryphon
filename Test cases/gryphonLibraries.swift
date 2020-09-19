@@ -16,9 +16,10 @@
 // limitations under the License.
 //
 
+// Gryphon Swift Library
+
 // MARK: - Template class declarations
-// gryphon ignore
-internal class GRYTemplate {
+internal class GRYTemplate { // gryphon ignore
 	static func dot(_ left: GRYTemplate, _ right: String) -> GRYDotTemplate {
 		return GRYDotTemplate(left, right)
 	}
@@ -44,8 +45,7 @@ internal class GRYTemplate {
 	}
 }
 
-// gryphon ignore
-internal class GRYDotTemplate: GRYTemplate {
+internal class GRYDotTemplate: GRYTemplate { // gryphon ignore
 	let left: GRYTemplate
 	let right: String
 
@@ -55,8 +55,7 @@ internal class GRYDotTemplate: GRYTemplate {
 	}
 }
 
-// gryphon ignore
-internal class GRYCallTemplate: GRYTemplate {
+internal class GRYCallTemplate: GRYTemplate { // gryphon ignore
 	let function: GRYTemplate
 	let parameters: [GRYParameterTemplate]
 
@@ -72,8 +71,7 @@ internal class GRYCallTemplate: GRYTemplate {
 	}
 }
 
-// gryphon ignore
-internal class GRYParameterTemplate: ExpressibleByStringLiteral {
+internal class GRYParameterTemplate: ExpressibleByStringLiteral { // gryphon ignore
 	let label: String?
 	let template: GRYTemplate
 
@@ -147,8 +145,7 @@ internal class GRYParameterTemplate: ExpressibleByStringLiteral {
 	}
 }
 
-// gryphon ignore
-internal class GRYLiteralTemplate: GRYTemplate {
+internal class GRYLiteralTemplate: GRYTemplate { // gryphon ignore
 	let string: String
 
 	init(string: String) {
@@ -156,8 +153,7 @@ internal class GRYLiteralTemplate: GRYTemplate {
 	}
 }
 
-// gryphon ignore
-internal class GRYConcatenatedTemplate: GRYTemplate {
+internal class GRYConcatenatedTemplate: GRYTemplate { // gryphon ignore
 	let left: GRYTemplate
 	let right: GRYTemplate
 
@@ -167,8 +163,7 @@ internal class GRYConcatenatedTemplate: GRYTemplate {
 	}
 }
 
-// gryphon ignore
-internal func + (
+internal func + ( // gryphon ignore
 	left: GRYTemplate,
 	right: GRYTemplate)
 	-> GRYConcatenatedTemplate
@@ -176,26 +171,23 @@ internal func + (
 	GRYConcatenatedTemplate(left: left, right: right)
 }
 
-// gryphon ignore
-internal func + (left: String, right: GRYTemplate) -> GRYConcatenatedTemplate {
+internal func + (left: String, right: GRYTemplate) -> GRYConcatenatedTemplate { // gryphon ignore
 	GRYConcatenatedTemplate(left: GRYLiteralTemplate(string: left), right: right)
 }
 
-// gryphon ignore
-internal func + (left: GRYTemplate, right: String) -> GRYConcatenatedTemplate {
+internal func + (left: GRYTemplate, right: String) -> GRYConcatenatedTemplate { // gryphon ignore
 	GRYConcatenatedTemplate(left: left, right: GRYLiteralTemplate(string: right))
 }
 
 // MARK: - Templates
 // Replacement for Comparable
-// gryphon ignore
-private struct _Comparable: Comparable {
+private struct _Comparable: Comparable { // gryphon ignore
 	static func < (lhs: _Comparable, rhs: _Comparable) -> Bool {
 		return false
 	}
 }
 
-private func gryphonTemplates() {
+private func gryphonTemplates() { // gryphon ignore
 	let _array1: MutableList<Any> = [1, 2, 3]
 	let _array2: MutableList<Any> = [1, 2, 3]
 	let _any: Any = 0
@@ -236,8 +228,7 @@ private func gryphonTemplates() {
 /// (link found via https://www.raywenderlich.com/139591/building-custom-collection-swift)
 /// the Array type in Swift conforms exactly to these protocols,
 /// plus CustomReflectable (which is beyond Gryphon's scope for now).
-// gryphon ignore
-public struct _ListSlice<Element>: Collection,
+public struct _ListSlice<Element>: Collection, // gryphon ignore
 	BidirectionalCollection,
 	RandomAccessCollection,
 	MutableCollection,
@@ -311,8 +302,7 @@ public struct _ListSlice<Element>: Collection,
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// gryphon ignore
-public class List<Element>: CustomStringConvertible,
+public class List<Element>: CustomStringConvertible, // gryphon ignore
 	CustomDebugStringConvertible,
 	ExpressibleByArrayLiteral,
 	Sequence,
@@ -487,15 +477,13 @@ public class List<Element>: CustomStringConvertible,
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// gryphon ignore
-extension List {
+extension List { // gryphon ignore
 	public func toMutableList() -> MutableList<Element> {
 		return MutableList(array)
 	}
 }
 
-// gryphon ignore
-extension List {
+extension List { // gryphon ignore
 	@inlinable
 	public static func + <Other>(
 		lhs: List<Element>,
@@ -512,8 +500,7 @@ extension List {
 	}
 }
 
-// gryphon ignore
-extension List: Equatable where Element: Equatable {
+extension List: Equatable where Element: Equatable { // gryphon ignore
 	public static func == (lhs: List, rhs: List) -> Bool {
 		return lhs.array == rhs.array
 	}
@@ -524,15 +511,13 @@ extension List: Equatable where Element: Equatable {
 	}
 }
 
-// gryphon ignore
-extension List: Hashable where Element: Hashable {
+extension List: Hashable where Element: Hashable { // gryphon ignore
 	public func hash(into hasher: inout Hasher) {
 		array.hash(into: &hasher)
 	}
 }
 
-// gryphon ignore
-extension List where Element: Comparable {
+extension List where Element: Comparable { // gryphon ignore
 	@inlinable
 	public func sorted() -> List<Element> {
 		return List(array.sorted())
@@ -541,8 +526,7 @@ extension List where Element: Comparable {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// gryphon ignore
-public class MutableList<Element>: List<Element>,
+public class MutableList<Element>: List<Element>, // gryphon ignore
 	MutableCollection,
 	RangeReplaceableCollection
 {
@@ -602,8 +586,7 @@ public class MutableList<Element>: List<Element>,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// gryphon ignore
-extension List {
+extension List { // gryphon ignore
 
 	/// Used to obtain a MutableList with a new element type. If all elements in the list can be
 	/// casted to the new type, the method succeeds and the new MutableList is returned. Otherwise,
@@ -633,8 +616,7 @@ extension List {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// gryphon ignore
-public func zip<ASequence, ListElement>(
+public func zip<ASequence, ListElement>( // gryphon ignore
 	_ array1: ASequence,
 	_ array2: List<ListElement>)
 	-> List<(ASequence.Element, ListElement)>
@@ -643,8 +625,7 @@ public func zip<ASequence, ListElement>(
 	return List(Swift.zip(array1, array2))
 }
 
-// gryphon ignore
-public func zip<ASequence, ListElement>(
+public func zip<ASequence, ListElement>( // gryphon ignore
 	_ array1: List<ListElement>,
 	_ array2: ASequence)
 	-> List<(ListElement, ASequence.Element)>
@@ -653,8 +634,7 @@ public func zip<ASequence, ListElement>(
 	return List(Swift.zip(array1, array2))
 }
 
-// gryphon ignore
-public func zip<List1Element, List2Element>(
+public func zip<List1Element, List2Element>( // gryphon ignore
 	_ array1: List<List1Element>,
 	_ array2: List<List2Element>)
 	-> List<(List1Element, List2Element)>
@@ -667,8 +647,7 @@ public func zip<List1Element, List2Element>(
 /// According to https://swiftdoc.org/v4.2/type/dictionary/hierarchy/
 /// the Dictionary type in Swift conforms exactly to these protocols,
 /// plus CustomReflectable (which is beyond Gryphon's scope for now).
-// gryphon ignore
-public class Map<Key, Value>:
+public class Map<Key, Value>: // gryphon ignore
 	CustomStringConvertible,
 	CustomDebugStringConvertible,
 	ExpressibleByDictionaryLiteral,
@@ -805,22 +784,19 @@ public class Map<Key, Value>:
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// gryphon ignore
-extension Map {
+extension Map { // gryphon ignore
 	public func toMutableMap() -> MutableMap<Key, Value> {
 		return MutableMap(dictionary)
 	}
 }
 
-// gryphon ignore
-extension Map: Equatable where Value: Equatable {
+extension Map: Equatable where Value: Equatable { // gryphon ignore
 	public static func == (lhs: Map, rhs: Map) -> Bool {
 		return lhs.dictionary == rhs.dictionary
 	}
 }
 
-// gryphon ignore
-extension Map: Hashable where Value: Hashable {
+extension Map: Hashable where Value: Hashable { // gryphon ignore
 	public func hash(into hasher: inout Hasher) {
 		dictionary.hash(into: &hasher)
 	}
@@ -828,8 +804,7 @@ extension Map: Hashable where Value: Hashable {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// gryphon ignore
-public class MutableMap<Key, Value>: Map<Key, Value> where Key: Hashable {
+public class MutableMap<Key, Value>: Map<Key, Value> where Key: Hashable { // gryphon ignore
 	override public subscript (_ key: Key) -> Value? {
 		get {
 			return dictionary[key]
@@ -840,8 +815,7 @@ public class MutableMap<Key, Value>: Map<Key, Value> where Key: Hashable {
 	}
 }
 
-// gryphon ignore
-extension Map {
+extension Map { // gryphon ignore
 	/// Used to obtain a MutableMap with new key and/or value types. If all keys and values in the
 	/// map can be casted to the new types, the method succeeds and the new MutableMap is returned.
 	/// Otherwise, the method returns `nil`.
@@ -867,3 +841,189 @@ extension Map {
 		MutableMap<CastedKey, CastedValue>(dictionary as! [CastedKey: CastedValue])
 	}
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Gryphon Kotlin Library
+
+// gryphon insert: import java.lang.ClassCastException
+// gryphon insert:
+// gryphon insert: fun String.suffix(startIndex: Int): String {
+// gryphon insert:     return this.substring(startIndex, this.length)
+// gryphon insert: }
+// gryphon insert:
+// gryphon insert: fun <T> MutableList<T>.removeLast() {
+// gryphon insert:     this.removeAt(this.size - 1)
+// gryphon insert: }
+// gryphon insert:
+// gryphon insert: fun String.indexOrNull(character: Char): Int? {
+// gryphon insert:     val result = this.indexOf(character)
+// gryphon insert:     if (result == -1) {
+// gryphon insert:         return null
+// gryphon insert:     }
+// gryphon insert:     else {
+// gryphon insert:         return result
+// gryphon insert:     }
+// gryphon insert: }
+// gryphon insert:
+// gryphon insert: @Suppress("UNCHECKED_CAST", "UNUSED_PARAMETER")
+// gryphon insert: inline fun <reified T> List<*>.castOrNull(): List<T>? {
+// gryphon insert:     if (this.all { it is T }) {
+// gryphon insert:         return this as List<T>
+// gryphon insert:     }
+// gryphon insert:     else {
+// gryphon insert:         return null
+// gryphon insert:     }
+// gryphon insert: }
+// gryphon insert:
+// gryphon insert: @Suppress("UNCHECKED_CAST", "UNUSED_PARAMETER")
+// gryphon insert: inline fun <reified T> List<*>.castMutableOrNull(): MutableList<T>? {
+// gryphon insert:     if (this.all { it is T }) {
+// gryphon insert:         return (this as List<T>).toMutableList()
+// gryphon insert:     }
+// gryphon insert:     else {
+// gryphon insert:         return null
+// gryphon insert:     }
+// gryphon insert: }
+// gryphon insert:
+// gryphon insert: @Suppress("UNCHECKED_CAST", "UNUSED_PARAMETER")
+// gryphon insert: inline fun <reified K, reified V> Map<*, *>.castOrNull()
+// gryphon insert:     : Map<K, V>?
+// gryphon insert: {
+// gryphon insert:     if (this.all { it.key is K && it.value is V }) {
+// gryphon insert:         return this as Map<K, V>
+// gryphon insert:     }
+// gryphon insert:     else {
+// gryphon insert:         return null
+// gryphon insert:     }
+// gryphon insert: }
+// gryphon insert:
+// gryphon insert: @Suppress("UNCHECKED_CAST", "UNUSED_PARAMETER")
+// gryphon insert: inline fun <reified K, reified V> Map<*, *>.castMutableOrNull()
+// gryphon insert:     : MutableMap<K, V>?
+// gryphon insert: {
+// gryphon insert:     if (this.all { it.key is K && it.value is V }) {
+// gryphon insert:         return (this as Map<K, V>).toMutableMap()
+// gryphon insert:     }
+// gryphon insert:     else {
+// gryphon insert:         return null
+// gryphon insert:     }
+// gryphon insert: }
+// gryphon insert:
+// gryphon insert:
+// gryphon insert: @Suppress("UNCHECKED_CAST", "UNUSED_PARAMETER")
+// gryphon insert: inline fun <reified T> List<*>.cast(): List<T> {
+// gryphon insert:     if (this.all { it is T }) {
+// gryphon insert:         return this as List<T>
+// gryphon insert:     }
+// gryphon insert:     else {
+// gryphon insert:         throw ClassCastException()
+// gryphon insert:     }
+// gryphon insert: }
+// gryphon insert:
+// gryphon insert: @Suppress("UNCHECKED_CAST", "UNUSED_PARAMETER")
+// gryphon insert: inline fun <reified T> List<*>.castMutable(): MutableList<T> {
+// gryphon insert:     if (this.all { it is T }) {
+// gryphon insert:         return (this as List<T>).toMutableList()
+// gryphon insert:     }
+// gryphon insert:     else {
+// gryphon insert:         throw ClassCastException()
+// gryphon insert:     }
+// gryphon insert: }
+// gryphon insert:
+// gryphon insert: @Suppress("UNCHECKED_CAST", "UNUSED_PARAMETER")
+// gryphon insert: inline fun <reified K, reified V> Map<*, *>.cast()
+// gryphon insert:     : Map<K, V>
+// gryphon insert: {
+// gryphon insert:     if (this.all { it.key is K && it.value is V }) {
+// gryphon insert:         return this as Map<K, V>
+// gryphon insert:     }
+// gryphon insert:     else {
+// gryphon insert:         throw ClassCastException()
+// gryphon insert:     }
+// gryphon insert: }
+// gryphon insert:
+// gryphon insert: @Suppress("UNCHECKED_CAST", "UNUSED_PARAMETER")
+// gryphon insert: inline fun <reified K, reified V> Map<*, *>.castMutable()
+// gryphon insert:     : MutableMap<K, V>
+// gryphon insert: {
+// gryphon insert:     if (this.all { it.key is K && it.value is V }) {
+// gryphon insert:         return (this as Map<K, V>).toMutableMap()
+// gryphon insert:     }
+// gryphon insert:     else {
+// gryphon insert:         throw ClassCastException()
+// gryphon insert:     }
+// gryphon insert: }
+// gryphon insert:
+// gryphon insert: fun <Element> List<Element>.sorted(
+// gryphon insert:     isAscending: (Element, Element) -> Boolean)
+// gryphon insert:     : MutableList<Element>
+// gryphon insert: {
+// gryphon insert:     val copyList = this.toMutableList()
+// gryphon insert:     copyList.quicksort(0, this.size - 1, isAscending)
+// gryphon insert:     return copyList
+// gryphon insert: }
+// gryphon insert:
+// gryphon insert: fun <Element> MutableList<Element>.quicksort(
+// gryphon insert:     left: Int,
+// gryphon insert:     right: Int,
+// gryphon insert:     isAscending: (Element, Element) -> Boolean)
+// gryphon insert: {
+// gryphon insert:     if (left < right) {
+// gryphon insert:         val pivot = this.partition(left, right, isAscending)
+// gryphon insert:         this.quicksort(left, pivot - 1, isAscending)
+// gryphon insert:         this.quicksort(pivot + 1, right, isAscending)
+// gryphon insert:     }
+// gryphon insert: }
+// gryphon insert:
+// gryphon insert: fun <Element> MutableList<Element>.partition(
+// gryphon insert:     left: Int,
+// gryphon insert:     right: Int,
+// gryphon insert:     isAscending: (Element, Element) -> Boolean)
+// gryphon insert:     : Int
+// gryphon insert: {
+// gryphon insert:     val pivot = this[right]
+// gryphon insert:
+// gryphon insert:     var i = left - 1
+// gryphon insert:
+// gryphon insert:     var j = left
+// gryphon insert:     while (j <= right - 1) {
+// gryphon insert:         if (isAscending(this[j], pivot)) {
+// gryphon insert:             i += 1
+// gryphon insert:
+// gryphon insert:             val aux = this[i]
+// gryphon insert:             this[i] = this[j]
+// gryphon insert:             this[j] = aux
+// gryphon insert:         }
+// gryphon insert:
+// gryphon insert:         j += 1
+// gryphon insert:     }
+// gryphon insert:
+// gryphon insert:     val aux = this[i + 1]
+// gryphon insert:     this[i + 1] = this[right]
+// gryphon insert:     this[right] = aux
+// gryphon insert:
+// gryphon insert:     return i + 1
+// gryphon insert: }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Test casts
+let strings: List<String> = ["abc", "def"]
+let anys = strings.as(List<Any>.self)
+print(anys)
+
+let mutableAnys = strings.as(MutableList<Any>.self)
+print(mutableAnys)
+
+let forcedAnys = strings.forceCast(to: List<Any>.self)
+print(forcedAnys)
+
+let mutableForcedAnys = strings.forceCast(to: MutableList<Any>.self)
+print(mutableForcedAnys)
+
+let failedCast1 = strings.as(List<Int>.self)
+print(failedCast1)
+
+let anys2: List<Any> = ["", 0]
+let failedCast2 = anys2.as(List<String>.self)
+print(failedCast2)

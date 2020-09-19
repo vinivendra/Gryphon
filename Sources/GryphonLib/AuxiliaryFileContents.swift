@@ -643,6 +643,10 @@ public class List<Element>: CustomStringConvertible,
 		return List(array.dropLast(k))
 	}
 
+	public func drop(while predicate: (Element) throws -> Bool) rethrows -> List<Element> {
+		return try List(array.drop(while: predicate))
+	}
+
 	public func appending(_ newElement: Element) -> List<Element> {
 		return List<Element>(self.array + [newElement])
 	}
@@ -803,6 +807,10 @@ public class MutableList<Element>: List<Element>,
 
 	public func reverse() {
 		self.array = self.array.reversed()
+	}
+
+	override public func drop(while predicate: (Element) throws -> Bool) rethrows -> List<Element> {
+		return try List(array.drop(while: predicate))
 	}
 }
 
