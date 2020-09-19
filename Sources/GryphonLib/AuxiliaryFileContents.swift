@@ -1806,6 +1806,17 @@ struct ErrorMap {
 	}
 }
 
+/// Maps Kotlin errors to hints about how to fix them
+let errorHints: [(kotlinError: String, hint: String)] = [
+	("type has a constructor, and thus must be initialized here",
+		"try explicitly declaring an initializer for this type")]
+
+func getHint(forErrorMessage errorMessage: String) -> String? {
+	return errorHints.first(where: { errorHint in
+			errorMessage.contains(errorHint.kotlinError)
+		})?.hint
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 var input: [String] = []
 
@@ -1863,8 +1874,18 @@ for error in errors {
 		forKotlinLine: errorInformation.lineNumber,
 		column: errorInformation.columnNumber)
 	{
-		print("\\(getAbsoultePath(forFile: errorMap.swiftFilePath)):\\(swiftRange.lineStart):" +
-			"\\(swiftRange.columnStart):\\(errorInformation.errorMessage)")
+		if let hint = getHint(forErrorMessage: errorInformation.errorMessage) {
+			let lines = errorInformation.errorMessage.split(separator: "\\n")
+			let errorMessage = lines[0] + " (Gryphon hint: \\(hint))\\n" +
+				lines.dropFirst().joined(separator: "\\n")
+
+			print("\\(getAbsoultePath(forFile: errorMap.swiftFilePath)):\\(swiftRange.lineStart):" +
+				"\\(swiftRange.columnStart):\\(errorMessage)")
+		}
+		else {
+			print("\\(getAbsoultePath(forFile: errorMap.swiftFilePath)):\\(swiftRange.lineStart):" +
+				"\\(swiftRange.columnStart):\\(errorInformation.errorMessage)")
+		}
 	}
 	else {
 		print(error)
@@ -1997,6 +2018,17 @@ struct ErrorMap {
 	}
 }
 
+/// Maps Kotlin errors to hints about how to fix them
+let errorHints: [(kotlinError: String, hint: String)] = [
+	("type has a constructor, and thus must be initialized here",
+		"try explicitly declaring an initializer for this type")]
+
+func getHint(forErrorMessage errorMessage: String) -> String? {
+	return errorHints.first(where: { errorHint in
+			errorMessage.contains(errorHint.kotlinError)
+		})?.hint
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 var input: [String] = []
 
@@ -2040,17 +2072,27 @@ for error in errors {
 
 	let errorMap = errorMaps[errorMapPath]!
 
+	let errorString = errorInformation.isError ? "error" : "warning"
+
 	if let swiftRange = errorMap.getSwiftRange(
 		forKotlinLine: errorInformation.lineNumber,
 		column: errorInformation.columnNumber)
 	{
-		let errorString = errorInformation.isError ? "error" : "warning"
-		print("\\(getAbsoultePath(forFile: errorMap.swiftFilePath)):\\(swiftRange.lineStart):" +
-			"\\(swiftRange.columnStart): \\(errorString):\\(errorInformation.errorMessage)")
+		if let hint = getHint(forErrorMessage: errorInformation.errorMessage) {
+			let lines = errorInformation.errorMessage.split(separator: "\\n")
+			let errorMessage = lines[0] + " (Gryphon hint: \\(hint))\\n" +
+				lines.dropFirst().joined(separator: "\\n")
+
+			print("\\(getAbsoultePath(forFile: errorMap.swiftFilePath)):\\(swiftRange.lineStart):" +
+				"\\(swiftRange.columnStart): \\(errorString):\\(errorMessage)")
+		}
+		else {
+			print("\\(getAbsoultePath(forFile: errorMap.swiftFilePath)):\\(swiftRange.lineStart):" +
+				"\\(swiftRange.columnStart): \\(errorString):\\(errorInformation.errorMessage)")
+		}
 	}
 	else {
 		// Print error with the available information
-		let errorString = errorInformation.isError ? "error" : "warning"
 		print("\\(getAbsoultePath(forFile: errorMap.swiftFilePath)):" +
 			"0:0: \\(errorString):\\(errorInformation.errorMessage)")
 	}
@@ -2116,7 +2158,7 @@ end
 
 script = "gryphon \\"\(dollarSign){PROJECT_NAME}.xcodeproj\\"" +
 	" \\"\(dollarSign){SRCROOT}/\(SupportingFile.xcFileList.relativePath)\\"" +
-	" --verbose"
+	" --verbose --continue-on-error"
 
 # Add any other argument directly to the script (dropping the xcode project first)
 arguments = Array.new(ARGV) # Copy the arguments array
@@ -2196,7 +2238,7 @@ cd "\(dollarSign)ANDROID_ROOT"
 	|| true
 
 # Switch back to the iOS folder
-cd \(dollarSign)SRCROOT
+cd "\(dollarSign)SRCROOT"
 
 # Map the Kotlin errors back to Swift
 swift \(SupportingFile.mapGradleErrorsToSwiftRelativePath) < \

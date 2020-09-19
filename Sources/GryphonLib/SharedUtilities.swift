@@ -133,7 +133,7 @@ public struct GryphonError: Error, CustomStringConvertible {
 	let errorMessage: String
 
 	public var description: String {
-		return "🚨 " + errorMessage
+		return errorMessage
 	}
 
 	init(errorMessage: String) {
