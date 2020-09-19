@@ -1707,7 +1707,18 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 				let annotatedType: String?
 				if let typeAnnotation = patternBinding.typeAnnotation?.type {
-					annotatedType = try convertType(typeAnnotation)
+					let typeName = try convertType(typeAnnotation)
+
+					if let expressionType = expression?.swiftType,
+						expressionType.hasPrefix("\(typeName)<")
+					{
+						// If the variable is annotated as `let a: A` but `A` is generic and the
+						// expression is of type `A<T>`, use the expression's type instead
+						annotatedType = expressionType
+					}
+					else {
+						annotatedType = typeName
+					}
 				}
 				else  {
 					annotatedType = expression?.swiftType

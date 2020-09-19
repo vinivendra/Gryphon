@@ -25,8 +25,11 @@ struct Box<T> {
 	let x: T
 }
 
-//// Instancing generic classes
+//// Instanciating generic classes
 let box = Box(x: 0)
+
+//// Generic variables with type annotations
+let box1: Box = Box(x: 0)
 
 //// Declaring generic functions
 func f1<T>(box: Box<T>) {

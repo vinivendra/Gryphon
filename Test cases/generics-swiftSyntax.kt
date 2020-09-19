@@ -46,6 +46,7 @@ internal fun <Key> f(): Map<Key, String> {
 
 fun main(args: Array<String>) {
 	val box: Box<Int> = Box(0)
+	val box1: Box<Int> = Box(0)
 
 	f1(Box(1))
 	println(f2(Box(2)))
