@@ -178,3 +178,13 @@ struct G: Equatable {
 		return lhs.x > 0
 	}
 }
+
+// CustomStringConvertible
+class H: CustomStringConvertible {
+	var description: String {
+		// User code
+		return "my description"
+	}
+}
+
+print("\(H())")

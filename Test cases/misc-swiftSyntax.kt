@@ -93,6 +93,13 @@ internal data class G(
 	}
 }
 
+internal open class H {
+	override open fun toString(): String {
+		// User code
+		return "my description"
+	}
+}
+
 fun main(args: Array<String>) {
 	var i: Int = 1
 
@@ -160,4 +167,5 @@ fun main(args: Array<String>) {
 	}
 
 	g()
+	println("${H()}")
 }
