@@ -117,8 +117,9 @@ class IntegrationTest: XCTestCase {
 
 					XCTAssert(
 						generatedKotlinCode == expectedKotlinCode,
-						"Test \(testName): the transpiler failed to produce expected result. " +
-							"Printing diff ('<' means generated, '>' means expected):" +
+						"Test \(testName) (Swift Syntax): the transpiler failed to produce " +
+							"expected result. Printing diff ('<' means generated, '>' means " +
+							"expected):" +
 							TestUtilities.diff(generatedKotlinCode, expectedKotlinCode))
 				}
 			}
