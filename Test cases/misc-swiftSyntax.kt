@@ -77,6 +77,22 @@ internal fun g() {
 	}
 }
 
+internal data class G(
+	val x: Int = 0
+) {
+	override open fun equals(other: Any?): Boolean {
+		val lhs: G = this
+		val rhs: Any? = other
+		if (rhs is G) {
+			// User code
+			return lhs.x > 0
+		}
+		else {
+			return false
+		}
+	}
+}
+
 fun main(args: Array<String>) {
 	var i: Int = 1
 

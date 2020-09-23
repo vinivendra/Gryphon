@@ -193,3 +193,13 @@ func g() {
 }
 
 g()
+
+// Equatable
+struct G: Equatable {
+	let x = 0
+
+	static func ==(lhs: G, rhs: G) -> Bool {
+		// User code
+		return lhs.x > 0
+	}
+}
