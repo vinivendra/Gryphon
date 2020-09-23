@@ -124,6 +124,11 @@ class F: CustomStringConvertible {
 	var description: String = "abc"
 }
 
+// No `toString` for classes without `CustomStringConvertible`
+class H {
+	var description: String = "abc"
+}
+
 // Anonymous pattern binding
 let _ = "abc"
 
@@ -179,12 +184,9 @@ struct G: Equatable {
 	}
 }
 
-// CustomStringConvertible
-class H: CustomStringConvertible {
-	var description: String {
-		// User code
-		return "my description"
-	}
-}
+// Test tuples (declaration and member reference)
+let x = (0, 0)
+print("\(x.0), \(x.1)")
 
-print("\(H())")
+let y: (a: Int, b: Int) = (a: 0, b: 0)
+print("\(y.a), \(y.b)")

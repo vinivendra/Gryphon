@@ -3119,22 +3119,32 @@ public class TupleMembersTranspilationPass: TranspilationPass {
 		let innerString = String(swiftType.dropFirst().dropLast())
 		let tupleComponents = Utilities.splitTypeList(innerString, separators: [","])
 
-		// If the tuple will be translated as a pair and the right expression refers to one of the
-		// tuple's components
-		guard let tupleMemberIndex = tupleComponents.firstIndex(where: {
-					$0.split(withStringSeparator: ":").first == memberExpression.identifier
-				}),
-			tupleComponents.count == 2
-			else
-		{
-			return dotExpression
+		// Only Pairs are supported for now
+		guard tupleComponents.count == 2 else {
+			return super.replaceDotExpression(dotExpression)
 		}
 
-		// One exception to this rule: key-value tuples (assumed to be from dictionaries)
+		// Key-value tuples are assumed to be from dictionaries (as a special case)
 		guard !(tupleComponents[0].hasPrefix("key:") && tupleComponents[1].hasPrefix("value:"))
 			else
 		{
-			return dotExpression
+			return super.replaceDotExpression(dotExpression)
+		}
+
+		// Get the index of the member we're referencing
+		let tupleMemberIndex: Int
+		if let index = Int(memberExpression.identifier) {
+			// If it's a tuple without labels (e.g. `(Int, Int)` and `tuple.0`)
+			tupleMemberIndex = index
+		}
+		else if let index = tupleComponents.firstIndex(where:
+			{ $0.split(withStringSeparator: ":").first == memberExpression.identifier })
+		{
+			// If the right expression refers to one of the tuple's named components
+			tupleMemberIndex = index
+		}
+		else {
+			return super.replaceDotExpression(dotExpression)
 		}
 
 		let newIdentifier = (tupleMemberIndex == 0) ? "first" : "second"

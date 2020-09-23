@@ -55,6 +55,10 @@ internal open class F {
 	override open fun toString(): String = "abc"
 }
 
+internal open class H {
+	open var description: String = "abc"
+}
+
 internal fun throwingFunction() {
 }
 
@@ -84,13 +88,6 @@ internal data class G(
 		else {
 			return false
 		}
-	}
-}
-
-internal open class H {
-	override open fun toString(): String {
-		// User code
-		return "my description"
 	}
 }
 
@@ -158,5 +155,12 @@ fun main(args: Array<String>) {
 	}
 
 	g()
-	println("${H()}")
+
+	val x: Pair<Int, Int> = Pair<Int, Int>(0, 0)
+
+	println("${x.first}, ${x.second}")
+
+	val y: Pair<Int, Int> = Pair<Int, Int>(0, 0)
+
+	println("${y.first}, ${y.second}")
 }
