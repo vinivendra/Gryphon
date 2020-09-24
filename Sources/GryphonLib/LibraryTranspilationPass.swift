@@ -500,12 +500,9 @@ extension Expression {
 			return context.isSubtype(lhs.typeName, of: rhs.typeName)
 		}
 		if let lhs = lhs as? TypeExpression,
-			let rhs = rhs as? DeclarationReferenceExpression
+			let rhs = rhs as? DeclarationReferenceExpression,
+			declarationExpressionMatchesImplicitTypeExpression(rhs)
 		{
-			guard declarationExpressionMatchesImplicitTypeExpression(rhs) else {
-				return false
-			}
-
 			if let typeName = rhs.typeName {
 				let expressionType = String(typeName.dropLast(".Type".count))
 				return context.isSubtype(lhs.typeName, of: expressionType)
@@ -515,12 +512,9 @@ extension Expression {
 			}
 		}
 		if let lhs = lhs as? DeclarationReferenceExpression,
-			let rhs = rhs as? TypeExpression
+			let rhs = rhs as? TypeExpression,
+			declarationExpressionMatchesImplicitTypeExpression(lhs)
 		{
-			guard declarationExpressionMatchesImplicitTypeExpression(lhs) else {
-				return false
-			}
-
 			if let typeName = lhs.typeName {
 				let expressionType = String(typeName.dropLast(".Type".count))
 				return context.isSubtype(expressionType, of: rhs.typeName)
@@ -528,6 +522,16 @@ extension Expression {
 			else {
 				return false
 			}
+		}
+		if let lhs = lhs as? TypeExpression,
+			let rhsImplicitType = expressionChainAsImplicitTypeExpression(rhs)
+		{
+			return lhs.typeName == rhsImplicitType
+		}
+		if let lhsImplicitType = expressionChainAsImplicitTypeExpression(lhs),
+			let rhs = rhs as? TypeExpression
+		{
+			return rhs.typeName == lhsImplicitType
 		}
 		if let lhs = lhs as? SubscriptExpression,
 			let rhs = rhs as? SubscriptExpression
@@ -730,7 +734,6 @@ extension Expression {
 		return false
 	}
 
-	///
 	/// In a static context, some type expressions can be omitted. When that happens, they get
 	/// translated as declaration references instead of type expressions. However, they should still
 	/// match type expressions, as they're basically the same. This method should detect those
@@ -743,12 +746,14 @@ extension Expression {
 	/// 	static func a() { }
 	/// 	static func b() {
 	/// 		a() // implicitly this is A.a(), and the implicit `A` gets dumped as a declaration
-	/// 		// reference expression instead of a type expression.
+	/// 		// reference expression (with identifier "self" and type "A.Type") instead of a type
+	/// 		// expression.
 	/// 	}
 	/// ```
 	///
 	private func declarationExpressionMatchesImplicitTypeExpression(
-		_ expression: DeclarationReferenceExpression) -> Bool
+		_ expression: DeclarationReferenceExpression)
+		-> Bool
 	{
 		if let typeName = expression.typeName,
 			typeName.hasSuffix(".Type"),
@@ -759,6 +764,40 @@ extension Expression {
 		}
 		else {
 			return false
+		}
+	}
+
+	/// Similarly to `declarationExpressionMatchesImplicitTypeExpression`, some type expressions can
+	/// be translated as chains of declaration references (e.g. `A.B.C`). This function identifies
+	/// these cases and returns the type as a String (or `nil` otherwise).
+	///
+	/// Example:
+	///
+	/// ````
+	/// enum A {
+	/// 	enum B {
+	/// 		case c
+	/// 	}
+	/// }
+	/// let x: A.B = .c // There's an implicit type expression for "A.B" here
+	/// let y = A.B.c // There's an explicit `dot(declRef: "A", declRef: "B")` here
+	/// ````
+	///
+	private func expressionChainAsImplicitTypeExpression(
+		_ expression: Expression)
+		-> String?
+	{
+		if let dotExpression = expression as? DotExpression,
+			let left = expressionChainAsImplicitTypeExpression(dotExpression.leftExpression),
+			let right = expressionChainAsImplicitTypeExpression(dotExpression.rightExpression)
+		{
+			return "\(left).\(right)"
+		}
+		else if let declarationExpression = expression as? DeclarationReferenceExpression {
+			return declarationExpression.identifier
+		}
+		else {
+			return nil
 		}
 	}
 

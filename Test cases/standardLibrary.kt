@@ -48,6 +48,14 @@ fun g(a: Int) {
 	printTest(a, "User template")
 }
 
+enum class G {
+	I;
+
+	enum class H {
+		K;
+	}
+}
+
 internal open class D {
 	open class E {
 		override open fun toString(): String = ""
@@ -306,4 +314,6 @@ fun main(args: Array<String>) {
 	val description1: String = B().description
 	val description2: String = C().toString()
 	val description: String = ""
+	val w: G = G.I
+	val y: G.H = G.H.K
 }

@@ -28,58 +28,58 @@ import Foundation
 // MARK: - Define template classes and operators
 
 // gryphon ignore
-private class _GRYTemplate {
-	static func dot(_ left: _GRYTemplate, _ right: String) -> _GRYDotTemplate {
-		return _GRYDotTemplate(left, right)
+private class GRYTemplate {
+	static func dot(_ left: GRYTemplate, _ right: String) -> GRYDotTemplate {
+		return GRYDotTemplate(left, right)
 	}
 
-	static func dot(_ left: String, _ right: String) -> _GRYDotTemplate {
-		return _GRYDotTemplate(_GRYLiteralTemplate(string: left), right)
+	static func dot(_ left: String, _ right: String) -> GRYDotTemplate {
+		return GRYDotTemplate(GRYLiteralTemplate(string: left), right)
 	}
 
-	static func call(_ function: _GRYTemplate, _ parameters: [_GRYParameterTemplate]) -> _GRYCallTemplate {
-		return _GRYCallTemplate(function, parameters)
+	static func call(_ function: GRYTemplate, _ parameters: [GRYParameterTemplate]) -> GRYCallTemplate {
+		return GRYCallTemplate(function, parameters)
 	}
 
-	static func call(_ function: String, _ parameters: [_GRYParameterTemplate]) -> _GRYCallTemplate {
-		return _GRYCallTemplate(function, parameters)
+	static func call(_ function: String, _ parameters: [GRYParameterTemplate]) -> GRYCallTemplate {
+		return GRYCallTemplate(function, parameters)
 	}
 }
 
 // gryphon ignore
-private class _GRYDotTemplate: _GRYTemplate {
-	let left: _GRYTemplate
+private class GRYDotTemplate: GRYTemplate {
+	let left: GRYTemplate
 	let right: String
 
-	init(_ left: _GRYTemplate, _ right: String) {
+	init(_ left: GRYTemplate, _ right: String) {
 		self.left = left
 		self.right = right
 	}
 }
 
 // gryphon ignore
-private class _GRYCallTemplate: _GRYTemplate {
-	let function: _GRYTemplate
-	let parameters: [_GRYParameterTemplate]
+private class GRYCallTemplate: GRYTemplate {
+	let function: GRYTemplate
+	let parameters: [GRYParameterTemplate]
 
-	init(_ function: _GRYTemplate, _ parameters: [_GRYParameterTemplate]) {
+	init(_ function: GRYTemplate, _ parameters: [GRYParameterTemplate]) {
 		self.function = function
 		self.parameters = parameters
 	}
 
 	//
-	init(_ function: String, _ parameters: [_GRYParameterTemplate]) {
-		self.function = _GRYLiteralTemplate(string: function)
+	init(_ function: String, _ parameters: [GRYParameterTemplate]) {
+		self.function = GRYLiteralTemplate(string: function)
 		self.parameters = parameters
 	}
 }
 
 // gryphon ignore
-private class _GRYParameterTemplate: ExpressibleByStringLiteral {
+private class GRYParameterTemplate: ExpressibleByStringLiteral {
 	let label: String?
-	let template: _GRYTemplate
+	let template: GRYTemplate
 
-	private init(_ label: String?, _ template: _GRYTemplate) {
+	private init(_ label: String?, _ template: GRYTemplate) {
 		if let existingLabel = label {
 			if existingLabel == "_" || existingLabel == "" {
 				self.label = nil
@@ -97,36 +97,36 @@ private class _GRYParameterTemplate: ExpressibleByStringLiteral {
 
 	required init(stringLiteral: String) {
 		self.label = nil
-		self.template = _GRYLiteralTemplate(string: stringLiteral)
+		self.template = GRYLiteralTemplate(string: stringLiteral)
 	}
 
-	static func labeledParameter(_ label: String?, _ template: _GRYTemplate) -> _GRYParameterTemplate {
-		return _GRYParameterTemplate(label, template)
+	static func labeledParameter(_ label: String?, _ template: GRYTemplate) -> GRYParameterTemplate {
+		return GRYParameterTemplate(label, template)
 	}
 
-	static func labeledParameter(_ label: String?, _ template: String) -> _GRYParameterTemplate {
-		return _GRYParameterTemplate(label, _GRYLiteralTemplate(string: template))
+	static func labeledParameter(_ label: String?, _ template: String) -> GRYParameterTemplate {
+		return GRYParameterTemplate(label, GRYLiteralTemplate(string: template))
 	}
 
-	static func dot(_ left: _GRYTemplate, _ right: String) -> _GRYParameterTemplate {
-		return _GRYParameterTemplate(nil, _GRYDotTemplate(left, right))
+	static func dot(_ left: GRYTemplate, _ right: String) -> GRYParameterTemplate {
+		return GRYParameterTemplate(nil, GRYDotTemplate(left, right))
 	}
 
-	static func dot(_ left: String, _ right: String) -> _GRYParameterTemplate {
-		return _GRYParameterTemplate(nil, _GRYDotTemplate(_GRYLiteralTemplate(string: left), right))
+	static func dot(_ left: String, _ right: String) -> GRYParameterTemplate {
+		return GRYParameterTemplate(nil, GRYDotTemplate(GRYLiteralTemplate(string: left), right))
 	}
 
-	static func call(_ function: _GRYTemplate, _ parameters: [_GRYParameterTemplate]) -> _GRYParameterTemplate {
-		return _GRYParameterTemplate(nil, _GRYCallTemplate(function, parameters))
+	static func call(_ function: GRYTemplate, _ parameters: [GRYParameterTemplate]) -> GRYParameterTemplate {
+		return GRYParameterTemplate(nil, GRYCallTemplate(function, parameters))
 	}
 
-	static func call(_ function: String, _ parameters: [_GRYParameterTemplate]) -> _GRYParameterTemplate {
-		return _GRYParameterTemplate(nil, _GRYCallTemplate(function, parameters))
+	static func call(_ function: String, _ parameters: [GRYParameterTemplate]) -> GRYParameterTemplate {
+		return GRYParameterTemplate(nil, GRYCallTemplate(function, parameters))
 	}
 }
 
 // gryphon ignore
-private class _GRYLiteralTemplate: _GRYTemplate {
+private class GRYLiteralTemplate: GRYTemplate {
 	let string: String
 
 	init(string: String) {
@@ -135,11 +135,11 @@ private class _GRYLiteralTemplate: _GRYTemplate {
 }
 
 // gryphon ignore
-private class _GRYConcatenatedTemplate: _GRYTemplate {
-	let left: _GRYTemplate
-	let right: _GRYTemplate
+private class GRYConcatenatedTemplate: GRYTemplate {
+	let left: GRYTemplate
+	let right: GRYTemplate
 
-	init(left: _GRYTemplate, right: _GRYTemplate) {
+	init(left: GRYTemplate, right: GRYTemplate) {
 		self.left = left
 		self.right = right
 	}
@@ -155,7 +155,19 @@ private func gryphonTemplates() {
 	"g(a = _int)"
 
 	_a.string.first
-	_GRYTemplate.dot(.dot("_a", "string"), "firstOrNull()")
+	GRYTemplate.dot(.dot("_a", "string"), "firstOrNull()")
+
+	_ = G.i
+	_ = GRYTemplate.dot("G", "I")
+
+	let _: G = .j
+	_ = GRYTemplate.dot("G", "J")
+
+	_ = G.H.k
+	_ = GRYTemplate.dot(.dot("G", "H"), "K")
+
+	let _: G.H = .l
+	_ = GRYTemplate.dot(.dot("G", "H"), "L")
 }
 
 // MARK: - Tests
@@ -497,6 +509,26 @@ func f(of a: Int) {
 // gryphon insert: 	printTest(contents = a, testName = "User template")
 // gryphon insert: }
 
+// gryphon ignore
+enum G {
+	case i
+	case j
+
+	enum H {
+		case k
+		case l
+	}
+}
+
+// gryphon insert:
+// gryphon insert: enum class G {
+// gryphon insert: 	I, J;
+// gryphon insert:
+// gryphon insert: 	enum class H {
+// gryphon insert: 		K, L;
+// gryphon insert: 	}
+// gryphon insert: }
+
 //////////////////////////////////////////////////////////
 // User defined templates
 f(of: 10)
@@ -557,3 +589,11 @@ class D {
 if false {
 	fatalError("Never reached")
 }
+
+//////////////////////////////////////////////////////////
+// Check implicit TypeExpressions match explicit DotExpressions
+// (if they don't match this won't be capitalized)
+let w: G = .i
+let x = G.j
+let y: G.H = .k
+let z = G.H.l

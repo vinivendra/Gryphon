@@ -49,6 +49,14 @@ fun g(a: Int) {
 	printTest(contents = a, testName = "User template")
 }
 
+enum class G {
+	I, J;
+
+	enum class H {
+		K, L;
+	}
+}
+
 internal open class D {
 	open class E {
 		override open fun toString(): String = ""
@@ -316,4 +324,9 @@ fun main(args: Array<String>) {
 	if (false) {
 		println("Fatal error: ${"Never reached"}"); exitProcess(-1)
 	}
+
+	val w: G = G.I
+	val x: G = G.J
+	val y: G.H = G.H.K
+	val z: G.H = G.H.L
 }

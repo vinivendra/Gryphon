@@ -509,6 +509,12 @@ func gryphonTemplates() {
 
 	_a.string.first
 	GRYTemplate.dot(.dot("_a", "string"), "firstOrNull()")
+
+	_ = G.i
+	_ = GRYTemplate.dot("G", "I")
+
+	_ = G.H.k
+	_ = GRYTemplate.dot(.dot("G", "H"), "K")
 }
 
 //////////////////////////////////////////////////////////
@@ -531,6 +537,23 @@ func f(of a: Int) { // gryphon ignore
 
 // gryphon insert: fun g(a: Int) {
 // gryphon insert: 	printTest(a, "User template")
+// gryphon insert: }
+
+enum G { // gryphon ignore
+	case i
+
+	enum H {
+		case k
+	}
+}
+
+// gryphon insert:
+// gryphon insert: enum class G {
+// gryphon insert: 	I;
+// gryphon insert:
+// gryphon insert: 	enum class H {
+// gryphon insert: 		K;
+// gryphon insert: 	}
 // gryphon insert: }
 
 //////////////////////////////////////////////////////////
@@ -588,3 +611,9 @@ class D {
 		var description: String = ""
 	}
 }
+
+//////////////////////////////////////////////////////////
+// Check implicit TypeExpressions match explicit DotExpressions
+// (if they don't match this won't be capitalized)
+let w: G = .i
+let y: G.H = .k
