@@ -24,23 +24,28 @@
 // gryphon insert: import kotlin.system.*
 
 import SwiftSyntax
+import SourceKittenFramework
 
 public final class GryphonAST: PrintableAsTree, Equatable, CustomStringConvertible {
 	let sourceFile: SourceFile?
 	let declarations: MutableList<Statement>
 	let statements: MutableList<Statement>
 	let outputFileMap: MutableMap<FileExtension, String>
+	/// Stores the raw SourceKit response of an indexing operation for this AST
+	var indexingResponse: [String: SourceKitRepresentable]
 
 	init(
 		sourceFile: SourceFile?,
 		declarations: MutableList<Statement>,
 		statements: MutableList<Statement>,
-		outputFileMap: MutableMap<FileExtension, String>)
+		outputFileMap: MutableMap<FileExtension, String>,
+		indexingResponse: [String: SourceKitRepresentable])
 	{
 		self.sourceFile = sourceFile
 		self.declarations = declarations
 		self.statements = statements
 		self.outputFileMap = outputFileMap
+		self.indexingResponse = indexingResponse
 	}
 
 	//

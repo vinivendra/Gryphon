@@ -51,13 +51,17 @@ class LibraryTranspilationTest: XCTestCase {
 	]
 
 	// MARK: - Properties
-	/// Mock context used for checking matches.
-	let context = try! TranspilationContext(
-		toolchainName: nil,
-		indentationString: "\t",
-		defaultsToFinal: false,
-		isUsingSwiftSyntax: true,
-		compiledFiles: [])
+	/// Mock transpilation pass used for checking matches.
+	let pass = ReplaceTemplatesTranspilationPass(
+		ast: GryphonAST(
+			sourceFile: nil, declarations: [], statements: [], outputFileMap: [:],
+			indexingResponse: [:]),
+		context: try! TranspilationContext(
+			toolchainName: nil,
+			indentationString: "\t",
+			defaultsToFinal: false,
+			isUsingSwiftSyntax: true,
+			compiledFiles: []))
 
 	// MARK: - Tests
 	func testSimpleMatches() {
@@ -95,44 +99,70 @@ class LibraryTranspilationTest: XCTestCase {
 			typeName: "Int")
 
 		// Matches itself
-		XCTAssertNotNil(nilExpression1.matches(
-			nilExpression1, inContext: context, shouldSkipRootTypeComparison: false))
-		XCTAssertNotNil(integerExpression1.matches(
-			integerExpression1, inContext: context, shouldSkipRootTypeComparison: false))
+		XCTAssertNotNil(pass.match(
+			nilExpression1,
+			withTemplate: nilExpression1,
+			shouldSkipRootTypeComparison: false))
+		XCTAssertNotNil(pass.match(
+			integerExpression1,
+			withTemplate: integerExpression1,
+			shouldSkipRootTypeComparison: false))
 
 		// Matches something equal
-		XCTAssertNotNil(nilExpression1.matches(
-			nilExpression2, inContext: context, shouldSkipRootTypeComparison: false))
-		XCTAssertNotNil(integerExpression1.matches(
-			integerExpression2, inContext: context, shouldSkipRootTypeComparison: false))
+		XCTAssertNotNil(pass.match(
+			nilExpression1,
+			withTemplate: nilExpression2,
+			shouldSkipRootTypeComparison: false))
+		XCTAssertNotNil(pass.match(
+			integerExpression1,
+			withTemplate: integerExpression2,
+			shouldSkipRootTypeComparison: false))
 
 		// Does not match an unrelated kind of expression
-		XCTAssertNil(nilExpression1.matches(
-			integerExpression1, inContext: context, shouldSkipRootTypeComparison: false))
+		XCTAssertNil(pass.match(
+			nilExpression1,
+			withTemplate: integerExpression1,
+			shouldSkipRootTypeComparison: false))
 
 		// Does not match an expression with different contents
-		XCTAssertNil(integerExpression1.matches(
-			integerExpression3, inContext: context, shouldSkipRootTypeComparison: false))
+		XCTAssertNil(pass.match(
+			integerExpression1,
+			withTemplate: integerExpression3,
+			shouldSkipRootTypeComparison: false))
 
 		// Matches work recursively
-		XCTAssertNotNil(parenthesesExpression1.matches(
-			parenthesesExpression2, inContext: context, shouldSkipRootTypeComparison: false))
-		XCTAssertNil(parenthesesExpression1.matches(
-			parenthesesExpression3, inContext: context, shouldSkipRootTypeComparison: false))
+		XCTAssertNotNil(pass.match(
+			parenthesesExpression1,
+			withTemplate: parenthesesExpression2,
+			shouldSkipRootTypeComparison: false))
+		XCTAssertNil(pass.match(
+			parenthesesExpression1,
+			withTemplate: parenthesesExpression3,
+			shouldSkipRootTypeComparison: false))
 
 		// Matches work recursively on array literals
-		XCTAssertNotNil(arrayExpression1.matches(
-			arrayExpression2, inContext: context, shouldSkipRootTypeComparison: false))
-		XCTAssertNil(arrayExpression1.matches(
-			arrayExpression3, inContext: context, shouldSkipRootTypeComparison: false))
-		XCTAssertNil(arrayExpression1.matches(
-			arrayExpression4, inContext: context, shouldSkipRootTypeComparison: false))
+		XCTAssertNotNil(pass.match(
+			arrayExpression1,
+			withTemplate: arrayExpression2,
+			shouldSkipRootTypeComparison: false))
+		XCTAssertNil(pass.match(
+			arrayExpression1,
+			withTemplate: arrayExpression3,
+			shouldSkipRootTypeComparison: false))
+		XCTAssertNil(pass.match(
+			arrayExpression1,
+			withTemplate: arrayExpression4,
+			shouldSkipRootTypeComparison: false))
 
 		// Matches ignore ranges
-		XCTAssertNotNil(integerExpression4.matches(
-			integerExpression5, inContext: context, shouldSkipRootTypeComparison: false))
-		XCTAssertNotNil(integerExpression3.matches(
-			integerExpression5, inContext: context, shouldSkipRootTypeComparison: false))
+		XCTAssertNotNil(pass.match(
+			integerExpression4,
+			withTemplate: integerExpression5,
+			shouldSkipRootTypeComparison: false))
+		XCTAssertNotNil(pass.match(
+			integerExpression3,
+			withTemplate: integerExpression5,
+			shouldSkipRootTypeComparison: false))
 	}
 
 	func testMatchDictionary() {
@@ -178,56 +208,56 @@ class LibraryTranspilationTest: XCTestCase {
 			typeName: "Any")
 
 		// Valid subtype
-		XCTAssertEqual(stringLiteral.matches(
-				anyDeclarationReference,
-				inContext: context,
+		XCTAssertEqual(pass.match(
+				stringLiteral,
+				withTemplate: anyDeclarationReference,
 				shouldSkipRootTypeComparison: false),
 			["_any": stringLiteral])
-		XCTAssertEqual(stringLiteral.matches(
-				stringDeclarationReference,
-				inContext: context,
+		XCTAssertEqual(pass.match(
+				stringLiteral,
+				withTemplate: stringDeclarationReference,
 				shouldSkipRootTypeComparison: false),
 			["_string": stringLiteral])
-		XCTAssertEqual(integerLiteral.matches(
-				anyDeclarationReference,
-				inContext: context,
+		XCTAssertEqual(pass.match(
+			integerLiteral,
+			withTemplate: 	anyDeclarationReference,
 				shouldSkipRootTypeComparison: false),
 			["_any": integerLiteral])
 
 		// Invalid subtype
-		XCTAssertNil(integerLiteral.matches(
-			stringDeclarationReference,
-			inContext: context,
+		XCTAssertNil(pass.match(
+			integerLiteral,
+			withTemplate: stringDeclarationReference,
 			shouldSkipRootTypeComparison: false))
 
 		// Matches work recursively
 		XCTAssertEqual(
-			parenthesesStringExpression.matches(
-				parenthesesAnyTemplate,
-				inContext: context,
+			pass.match(
+				parenthesesStringExpression,
+				withTemplate: parenthesesAnyTemplate,
 				shouldSkipRootTypeComparison: false),
 			["_any": stringLiteral])
 		XCTAssertEqual(
-			parenthesesStringExpression.matches(
-				parenthesesStringTemplate,
-				inContext: context,
+			pass.match(
+				parenthesesStringExpression,
+				withTemplate: parenthesesStringTemplate,
 				shouldSkipRootTypeComparison: false),
 			["_string": stringLiteral])
 		XCTAssertEqual(
-			parenthesesIntegerExpression.matches(
-				parenthesesAnyTemplate,
-				inContext: context,
+			pass.match(
+				parenthesesIntegerExpression,
+				withTemplate: parenthesesAnyTemplate,
 				shouldSkipRootTypeComparison: false),
 			["_any": integerLiteral])
-		XCTAssertNil(parenthesesIntegerExpression.matches(
-			parenthesesStringTemplate,
-			inContext: context,
+		XCTAssertNil(pass.match(
+			parenthesesIntegerExpression,
+			withTemplate: parenthesesStringTemplate,
 			shouldSkipRootTypeComparison: false))
 
 		// Multiple matches
-		XCTAssertEqual(arrayExpression.matches(
-				arrayTemplate,
-				inContext: context,
+		XCTAssertEqual(pass.match(
+				arrayExpression,
+				withTemplate: 	arrayTemplate,
 				shouldSkipRootTypeComparison: false),
 			["_any": integerLiteral, "_string": stringLiteral])
 	}
@@ -244,13 +274,13 @@ class LibraryTranspilationTest: XCTestCase {
 			range: nil,
 			typeName: "Int")
 
-		XCTAssertNotNil(implicitTypeExpression.matches(
-			typeExpression,
-			inContext: context,
-			shouldSkipRootTypeComparison: false))
-		XCTAssertNotNil(typeExpression.matches(
+		XCTAssertNotNil(pass.match(
 			implicitTypeExpression,
-			inContext: context,
+			withTemplate: typeExpression,
+			shouldSkipRootTypeComparison: false))
+		XCTAssertNotNil(pass.match(
+			typeExpression,
+			withTemplate: implicitTypeExpression,
 			shouldSkipRootTypeComparison: false))
 	}
 
@@ -322,16 +352,14 @@ class LibraryTranspilationTest: XCTestCase {
 			typeName: "Void",
 			allowsTrailingClosure: true)
 
-		XCTAssertEqual(
-			trailingExpression.matches(
-				template,
-				inContext: context,
+		XCTAssertEqual(pass.match(
+				trailingExpression,
+				withTemplate: template,
 				shouldSkipRootTypeComparison: false),
 			["_closure": closureExpression])
-		XCTAssertEqual(
-			normalExpression.matches(
-				template,
-				inContext: context,
+		XCTAssertEqual(pass.match(
+				normalExpression,
+				withTemplate: template,
 				shouldSkipRootTypeComparison: false),
 			["_closure": closureExpression])
 	}
@@ -339,6 +367,8 @@ class LibraryTranspilationTest: XCTestCase {
 	// MARK: - Subtyping
 
 	func testSubtyping() {
+		let context = pass.context
+
 		// Same types
 		XCTAssert(context.isSubtype("String", of: "String"))
 		XCTAssert(context.isSubtype("Int", of: "Int"))
@@ -442,6 +472,8 @@ class LibraryTranspilationTest: XCTestCase {
 	}
 
 	func testSimplifiedSubtypes() {
+		let context = pass.context
+
 		// Mapped types
 		XCTAssert(context.isSubtype("Bool", of: "Boolean"))
 		XCTAssert(context.isSubtype("Boolean", of: "Bool"))

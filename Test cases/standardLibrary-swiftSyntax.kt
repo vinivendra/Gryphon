@@ -63,6 +63,36 @@ internal open class D {
 	}
 }
 
+internal val String.bla: Int
+	get() {
+		return 0
+	}
+
+internal open class M {
+}
+
+internal val M.bla: Int
+	get() {
+		return 10
+	}
+internal val M.foo: Int
+	get() {
+		return 0
+	}
+
+internal enum class N {
+	O;
+}
+
+internal val N.bla: Int
+	get() {
+		return 10
+	}
+internal val N.foo: Int
+	get() {
+		return 0
+	}
+
 fun main(args: Array<String>) {
 	println("Hello, world!")
 	println(42)

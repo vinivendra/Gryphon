@@ -75,14 +75,16 @@ public class SwiftTranslator {
 				sourceFile: sourceFile,
 				declarations: declarationsAndStatements.declarations,
 				statements: declarationsAndStatements.statements,
-				outputFileMap: outputFileMap)
+				outputFileMap: outputFileMap,
+				indexingResponse: [:])
 		}
 		else {
 			return GryphonAST(
 				sourceFile: sourceFile,
 				declarations: translatedSubtrees,
 				statements: [],
-				outputFileMap: outputFileMap)
+				outputFileMap: outputFileMap,
+				indexingResponse: [:])
 		}
 	}
 

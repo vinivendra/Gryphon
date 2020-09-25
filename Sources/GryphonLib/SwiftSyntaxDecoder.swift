@@ -25,21 +25,176 @@ import Foundation
 import SwiftSyntax
 import SourceKittenFramework
 
-public class SwiftSyntaxDecoder: SyntaxVisitor {
-	/// The source file to be translated
-	let sourceFile: SourceFile
-	/// The tree to be translated, obtained from SwiftSyntax
-	let syntaxTree: SourceFileSyntax
-	/// A list of types associated with source ranges, obtained from SourceKit
-	let expressionTypes: List<ExpressionType>
-	/// The map that relates each type of output to the path to the file in which to write that
-	/// output
-	var outputFileMap: MutableMap<FileExtension, String> = [:]
-	/// The transpilation context, used for information such as if we should default to open
-	let context: TranspilationContext
+public class SourceKit {
+	struct ExpressionType {
+		let offset: Int
+		let length: Int
+		let typeName: String
+	}
 
-	init(filePath: String, context: TranspilationContext) throws {
-		Compiler.logStart("🧑‍💻  Calling SourceKit...")
+	/// Executes an indexing request using SourceKit. Returns the raw result of the request.
+	static func requestIndexing(
+		forFileAtPath filePath: String,
+		context: TranspilationContext)
+		throws -> [String: SourceKitRepresentable]
+	{
+		Compiler.logStart("🧑‍💻  Calling SourceKit (indexing)...")
+		defer {
+			Compiler.logEnd("✅  Done calling SourceKit (indexing).")
+		}
+
+		let absolutePath = Utilities.getAbsoultePath(forFile: filePath)
+		let sdkPath = try TranspilationContext.getMacOSSDKPath()
+		let arguments = context.compiledFiles
+			.map { Utilities.getAbsoultePath(forFile: $0) }
+			.toMutableList()
+		arguments.append("-sdk")
+		arguments.append(sdkPath)
+
+		let request = Request.index(file: absolutePath, arguments: arguments.array)
+		let sourceKitResult: [String: SourceKitRepresentable] = try request.send()
+
+		processTypeUSRs(forIndexingResponse: sourceKitResult)
+
+		return sourceKitResult
+	}
+
+	/// Maps a type's USR to the type's name
+	static let typeUSRs: MutableMap<String, String> = [:]
+
+	/// Goes through the `indexingResponse` recording the USR for any type it finds. Expects the
+	/// `indexingResponse` to be a valid tree from a SourceKit indexing request, but it can be
+	/// either the root of the tree or an inner node.
+	private static func processTypeUSRs(
+		forIndexingResponse indexingResponse: [String: SourceKitRepresentable])
+	{
+		guard let children =
+			indexingResponse["key.entities"] as? [[String: SourceKitRepresentable]] else
+		{
+			return
+		}
+
+		// The `kind` strings can be found at
+		// https://github.com/apple/swift/blob/main/utils/gyb_sourcekit_support/UIDs.py
+		for child in children {
+			if let kind = child["key.kind"] as? String,
+				kind == "source.lang.swift.ref.struct" ||
+					kind == "source.lang.swift.ref.class" ||
+					kind == "source.lang.swift.ref.enum",
+				let name = child["key.name"] as? String,
+				let usr = child["key.usr"] as? String
+			{
+				if !usr.hasPrefix("s:") {
+					Compiler.handleWarning(
+						message: "Unexpected USR (\"\(usr)\") for type (\"\(name)\")",
+						syntax: nil, sourceFile: nil, sourceFileRange: nil)
+				}
+				else {
+					let cleanUSR = String(usr.dropFirst("s:".count))
+					typeUSRs[cleanUSR] = name
+				}
+			}
+
+			processTypeUSRs(forIndexingResponse: child)
+		}
+	}
+
+	/// Looks in the `indexingResponse` for the given `expression`. If the expression is found,
+	/// looks into the expression's `usr` to try to identify its parent type (e.g. `String` for
+	/// `String.startIndex`). Expects the `indexingResponse` to be a valid tree from a SourceKit
+	/// indexing request, but it can be either the root of the tree or an inner node.
+	static func getParentType(
+		forExpression expression: DeclarationReferenceExpression,
+		usingIndexingResponse indexingResponse: [String: SourceKitRepresentable])
+		-> String?
+	{
+		guard let expressionRange = expression.range,
+			let children =
+				indexingResponse["key.entities"] as? [[String: SourceKitRepresentable]] else
+		{
+			return nil
+		}
+
+		// We only have access to the start position of each entity's range, so if an entity is
+		// enveloping our expression, it will have a start position before our expression.
+		for index in children.indices {
+			let child = children[index]
+
+			if let columnInt64 = child["key.column"] as? Int64,
+				let lineInt64 = child["key.line"] as? Int64
+			{
+				let column = Int(columnInt64)
+				let line = Int(lineInt64)
+				let childPosition = SourceFilePosition(line: line, column: column)
+				if childPosition < expressionRange.start {
+					// It might be inside this child
+					if let result = getParentType(
+						forExpression: expression, usingIndexingResponse: child)
+					{
+						return result
+					}
+					else {
+						continue
+					}
+				}
+				else if childPosition == expressionRange.start {
+					// It might be this one: check the kind and the name
+					if let kind = child["key.kind"] as? String,
+						kind == "source.lang.swift.ref.var.instance",
+						let name = child["key.name"] as? String,
+						name == expression.identifier,
+						let usr = child["key.usr"] as? String,
+						let firstUSRComponent = usr.split(withStringSeparator: name).first
+					{
+						// This is the one
+						// Get the parent type's USR, e.g. the `4test1AC` in "s:4test1AC3fooSivp"
+						// (for a property named `foo`). The first USR component is alredy
+						// "s:4test1AC3".
+						let reversedComponent = firstUSRComponent.reversed() // 3CA1tset4:s
+						let reversedUSRWithSuffix = reversedComponent
+							.drop(while: { $0.isNumber }) // CA1tset4:s
+						let reversedUSR = reversedUSRWithSuffix
+							.prefix(while: { !$0.isPunctuation }) // CA1tset4
+						let typeUSR = String(reversedUSR.reversed()) // 4test1AC
+						return typeUSRs[typeUSR]
+					}
+					else {
+						// Right range but wrong contents; look inside it
+						return getParentType(
+							forExpression: expression,
+							usingIndexingResponse: child)
+					}
+				}
+				else {
+					// This one is after the one we're looking for
+					continue
+				}
+			}
+		}
+
+		// If the last child was still before the searched expression, look inside it.
+		if let lastChild = children.last {
+			return getParentType(
+				forExpression: expression,
+				usingIndexingResponse: lastChild)
+		}
+		else {
+			return nil
+		}
+	}
+
+	/// Executes an indexing request using SourceKit. Returns the result of the request, processed
+	/// into a list of `ExpressionTypes`.
+	static func requestExpressionTypes(
+		forFilePath filePath: String,
+		context: TranspilationContext)
+		throws -> List<ExpressionType>
+	{
+		Compiler.logStart("🧑‍💻  Calling SourceKit (expression types)...")
+
+		defer {
+			Compiler.logEnd("✅  Done calling SourceKit (expression types).")
+		}
 
 		// Call SourceKitten to get the types
 		// TODO: Improve this yaml. SDK paths? Absolute/relative file paths?
@@ -81,7 +236,26 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				typeName: $0["key.expression_type"]! as! String)
 		})
 
-		Compiler.logEnd("✅  Done calling SourceKit.")
+		return typeList
+	}
+}
+
+public class SwiftSyntaxDecoder: SyntaxVisitor {
+	/// The source file to be translated
+	let sourceFile: SourceFile
+	/// The tree to be translated, obtained from SwiftSyntax
+	let syntaxTree: SourceFileSyntax
+	/// A list of types associated with source ranges, obtained from SourceKit
+	let expressionTypes: List<SourceKit.ExpressionType>
+	/// The map that relates each type of output to the path to the file in which to write that
+	/// output
+	var outputFileMap: MutableMap<FileExtension, String> = [:]
+	/// The transpilation context, used for information such as if we should default to open
+	let context: TranspilationContext
+
+	init(filePath: String, context: TranspilationContext) throws {
+		let typeList =
+			try SourceKit.requestExpressionTypes(forFilePath: filePath, context: context)
 
 		Compiler.logStart("🧑‍💻  Calling SwiftSyntax...")
 		// Call SwiftSyntax to get the tree
@@ -96,13 +270,10 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		self.context = context
 	}
 
-	struct ExpressionType {
-		let offset: Int
-		let length: Int
-		let typeName: String
-	}
-
 	func convertToGryphonAST(asMainFile isMainFile: Bool) throws -> GryphonAST {
+		let indexingResponse = try SourceKit.requestIndexing(
+			forFileAtPath: self.sourceFile.path,
+			context: context)
 		let statements = try convertBlock(self.syntaxTree)
 
 		if isMainFile {
@@ -112,14 +283,16 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				sourceFile: self.sourceFile,
 				declarations: declarationsAndStatements.0,
 				statements: declarationsAndStatements.1,
-				outputFileMap: self.outputFileMap)
+				outputFileMap: self.outputFileMap,
+				indexingResponse: indexingResponse)
 		}
 		else {
 			return GryphonAST(
 				sourceFile: self.sourceFile,
 				declarations: statements,
 				statements: [],
-				outputFileMap: self.outputFileMap)
+				outputFileMap: self.outputFileMap,
+				indexingResponse: indexingResponse)
 		}
 	}
 
@@ -3386,7 +3559,7 @@ private extension SyntaxProtocol {
 			inFile: filePath)
 	}
 
-	func getType(fromList list: List<SwiftSyntaxDecoder.ExpressionType>) -> String? {
+	func getType(fromList list: List<SourceKit.ExpressionType>) -> String? {
 		for expressionType in list {
 			if self.positionAfterSkippingLeadingTrivia.utf8Offset == expressionType.offset,
 				self.contentLength.utf8Length == expressionType.length

@@ -503,6 +503,8 @@ printTest(Int.min..<0, "Recursive matches")
 func gryphonTemplates() {
 	var _int = 0
 	var _a = A()
+	let _m = M()
+	let _n = N.o
 
 	f(of: _int)
 	"g(a = _int)"
@@ -515,6 +517,12 @@ func gryphonTemplates() {
 
 	_ = G.H.k
 	_ = GRYTemplate.dot(.dot("G", "H"), "K")
+
+	_ = _m.foo
+	_ = "10"
+
+	_ = _n.foo
+	_ = "10"
 }
 
 //////////////////////////////////////////////////////////
@@ -617,3 +625,40 @@ class D {
 // (if they don't match this won't be capitalized)
 let w: G = .i
 let y: G.H = .k
+
+//////////////////////////////////////////////////////////
+// Check implicit `self` matches successfully in structs,
+// classes or enums, be they user-defined or standard library.
+
+// Standard library struct
+extension String {
+	var bla: String.Index {
+		return /*self.*/ startIndex
+	}
+}
+
+// User-defined class
+class M { }
+
+extension M {
+	var bla: Int {
+		return /*self.*/ foo
+	}
+	var foo: Int {
+		return 0
+	}
+}
+
+// User-defined enum
+enum N {
+	case o
+}
+
+extension N {
+	var bla: Int {
+		return /*self.*/ foo
+	}
+	var foo: Int {
+		return 0
+	}
+}

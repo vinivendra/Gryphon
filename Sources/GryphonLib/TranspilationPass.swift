@@ -75,7 +75,8 @@ public class TranspilationPass {
 			sourceFile: ast.sourceFile,
 			declarations: replacedDeclarations,
 			statements: replacedStatements,
-			outputFileMap: ast.outputFileMap)
+			outputFileMap: ast.outputFileMap,
+			indexingResponse: ast.indexingResponse)
 	}
 
 	// MARK: - Helper functions

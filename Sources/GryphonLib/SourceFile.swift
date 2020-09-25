@@ -184,7 +184,7 @@ extension SourceFile {
 /// first character in that line is the character in column number `1`). Newlines show up at the end
 /// of each line (e.g. a newline dividing line `1` from line `2` is at
 /// `SourceFilePosition(line: 1, column: line1.count)`.
-public struct SourceFilePosition: Hashable, CustomStringConvertible {
+public struct SourceFilePosition: Hashable, CustomStringConvertible, Comparable, Equatable {
 	let line: Int
 	let column: Int
 
@@ -193,6 +193,18 @@ public struct SourceFilePosition: Hashable, CustomStringConvertible {
 	}
 
 	public static let beginningOfFile = SourceFilePosition(line: 1, column: 1)
+
+	public static func < (lhs: SourceFilePosition, rhs: SourceFilePosition) -> Bool {
+		if lhs.line < rhs.line {
+			return true
+		}
+		else if lhs.line == rhs.line {
+			return lhs.column < rhs.column
+		}
+		else {
+			return false
+		}
+	}
 }
 
 /// Both start and end positions are inlusive in the range (i.e. `[start, end]`)

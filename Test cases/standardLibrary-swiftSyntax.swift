@@ -150,6 +150,8 @@ private func gryphonTemplates() {
 	// User-defined templates
 	let _int: Int = 0
 	var _a = A()
+	let _m = M()
+	let _n = N.o
 
 	f(of: _int)
 	"g(a = _int)"
@@ -168,6 +170,12 @@ private func gryphonTemplates() {
 
 	let _: G.H = .l
 	_ = GRYTemplate.dot(.dot("G", "H"), "L")
+
+	_ = _m.foo
+	_ = "10"
+
+	_ = _n.foo
+	_ = "10"
 }
 
 // MARK: - Tests
@@ -597,3 +605,40 @@ let w: G = .i
 let x = G.j
 let y: G.H = .k
 let z = G.H.l
+
+//////////////////////////////////////////////////////////
+// Check implicit `self` matches successfully in structs,
+// classes or enums, be they user-defined or standard library.
+
+// Standard library struct
+extension String {
+	var bla: String.Index {
+		return /*self.*/ startIndex
+	}
+}
+
+// User-defined class
+class M { }
+
+extension M {
+	var bla: Int {
+		return /*self.*/ foo
+	}
+	var foo: Int {
+		return 0
+	}
+}
+
+// User-defined enum
+enum N {
+	case o
+}
+
+extension N {
+	var bla: Int {
+		return /*self.*/ foo
+	}
+	var foo: Int {
+		return 0
+	}
+}
