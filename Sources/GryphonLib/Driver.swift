@@ -292,13 +292,18 @@ public class Driver {
 		let gryphonRawAST: GryphonAST
 		if context.isUsingSwiftSyntax {
 			Compiler.logStart("🧑‍💻  Processing SwiftSyntax for \(inputFileRelativePath)...")
-			let decoder = try SwiftSyntaxDecoder(filePath: inputFilePath, context: context)
+			let decoder = try Compiler.generateSwiftSyntaxDecoder(
+				fromSwiftFile: inputFilePath,
+				withContext: context)
 			let printableTreeConverter = SwiftSyntaxToPrintableTreeVisitor()
 			swiftAST = printableTreeConverter.convertToPrintableTree(decoder.syntaxTree)
 			Compiler.logEnd("✅  Done processing SwiftSyntax for \(inputFileRelativePath).")
 
 			Compiler.logStart("🧑‍💻  Converting SwiftSyntax for \(inputFileRelativePath)...")
-			gryphonRawAST = try decoder.convertToGryphonAST(asMainFile: isMainFile)
+			gryphonRawAST = try Compiler.generateGryphonRawASTUsingSwiftSyntax(
+				usingFileDecoder: decoder,
+				asMainFile: isMainFile,
+				withContext: context)
 			Compiler.logEnd("✅  Done converting SwiftSyntax for \(inputFileRelativePath).")
 		}
 		else {
@@ -1225,6 +1230,8 @@ public class Driver {
 		shouldTryToRecoverFromErrors: Bool)
 		throws
 	{
+		let logInfo = Log.startLog(name: "Update AST dumps")
+		defer { Log.endLog(info: logInfo) }
 		//// Create the outputFileMap
 		Compiler.log("ℹ️  Creating the output file map.")
 		var outputFileMapContents = "{\n"

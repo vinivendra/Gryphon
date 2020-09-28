@@ -39,8 +39,11 @@ public class SourceKit {
 		throws -> [String: SourceKitRepresentable]
 	{
 		Compiler.logStart("🧑‍💻  Calling SourceKit (indexing)...")
+		let logInfo = Log.startLog(name: "SourceKit Indexing")
+
 		defer {
 			Compiler.logEnd("✅  Done calling SourceKit (indexing).")
+			Log.endLog(info: logInfo)
 		}
 
 		let absolutePath = Utilities.getAbsoultePath(forFile: filePath)
@@ -188,12 +191,14 @@ public class SourceKit {
 	static func requestExpressionTypes(
 		forFilePath filePath: String,
 		context: TranspilationContext)
-		throws -> List<ExpressionType>
+		throws -> SortedList<ExpressionType>
 	{
 		Compiler.logStart("🧑‍💻  Calling SourceKit (expression types)...")
+		let logInfo = Log.startLog(name: "SourceKit Expression Types")
 
 		defer {
 			Compiler.logEnd("✅  Done calling SourceKit (expression types).")
+			Log.endLog(info: logInfo)
 		}
 
 		// Call SourceKitten to get the types
@@ -229,14 +234,54 @@ public class SourceKit {
 
 		let list = sourceKitResult["key.expression_type_list"]
 			as! [[String: SourceKitRepresentable]]
-		let typeList = List(list.map {
+		let typeList = list.map {
 			ExpressionType(
 				offset: Int($0["key.expression_offset"]! as! Int64),
 				length: Int($0["key.expression_length"]! as! Int64),
 				typeName: $0["key.expression_type"]! as! String)
-		})
+		}
 
-		return typeList
+		// Sort by offset (ascending), breaking ties using length (ascending)
+		let sortedList = SortedList(typeList) { a, b in
+			if a.offset == b.offset {
+				return a.length < b.length
+			}
+			else {
+				return a.offset < b.offset
+			}
+		}
+		return sortedList
+	}
+}
+
+extension SyntaxProtocol {
+	// TODO: Add unit tests for SortedList
+	func getType(fromList list: SortedList<SourceKit.ExpressionType>) -> String? {
+		let offset = self.positionAfterSkippingLeadingTrivia.utf8Offset
+		let length = self.contentLength.utf8Length
+
+		let result = list.search { typeExpression in
+			// Types are sorted by offset
+			if typeExpression.offset < offset {
+				return .orderedAscending
+			}
+			else if typeExpression.offset > offset {
+				return .orderedDescending
+			}
+			else { // Offset ties are sorted by length
+				if typeExpression.length < length {
+					return .orderedAscending
+				}
+				else if typeExpression.length > length {
+					return .orderedDescending
+				}
+				else {
+					return .orderedSame
+				}
+			}
+		}
+
+		return result?.typeName
 	}
 }
 
@@ -246,7 +291,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	/// The tree to be translated, obtained from SwiftSyntax
 	let syntaxTree: SourceFileSyntax
 	/// A list of types associated with source ranges, obtained from SourceKit
-	let expressionTypes: List<SourceKit.ExpressionType>
+	let expressionTypes: SortedList<SourceKit.ExpressionType>
 	/// The map that relates each type of output to the path to the file in which to write that
 	/// output
 	var outputFileMap: MutableMap<FileExtension, String> = [:]
@@ -3557,18 +3602,6 @@ private extension SyntaxProtocol {
 			withStartOffset: startOffset,
 			withEndOffset: endOffset,
 			inFile: filePath)
-	}
-
-	func getType(fromList list: List<SourceKit.ExpressionType>) -> String? {
-		for expressionType in list {
-			if self.positionAfterSkippingLeadingTrivia.utf8Offset == expressionType.offset,
-				self.contentLength.utf8Length == expressionType.length
-			{
-				return expressionType.typeName
-			}
-		}
-
-		return nil
 	}
 }
 

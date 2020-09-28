@@ -463,6 +463,66 @@ extension MutableList where Element: Equatable {
 	}
 }
 
+class SortedList<Element>: List<Element> {
+	init(_ array: [Element], sortedBy closure: (Element, Element) throws -> Bool) rethrows {
+		let sortedArray = try array.sorted(by: closure)
+		super.init(sortedArray)
+	}
+
+	public required init(arrayLiteral elements: Element...) {
+		fatalError("Sorted Array can't be initialized by a literal array. " +
+			"Use init(_: sortedBy:) or init(of:) instead.")
+	}
+
+	/// The `predicate` should return `.orderedAscending` if the searched element is larger than the
+	/// given element, `.orderedDescending` if the contrary is true, and `.orderedSame` if the given
+	/// element is the searched element.
+	func search(predicate: (Element) -> ComparisonResult) -> Element? {
+		var left = 0
+		var right = array.count - 1
+		while left <= right {
+			let middle = (left + right) / 2
+			let comparison = predicate(array[middle])
+			switch comparison {
+			case .orderedAscending:
+				left = middle + 1
+			case .orderedDescending:
+				right = middle - 1
+			case .orderedSame:
+				return array[middle]
+			}
+		}
+
+		return nil
+	}
+}
+
+extension SortedList where Element: Comparable {
+	convenience init(of array: [Element]) {
+		self.init(array, sortedBy: <)
+	}
+
+	func search(for element: Element) -> Element? {
+		var left = 0
+		var right = array.count - 1
+		while left <= right {
+			let middle = (left + right) / 2
+
+			if array[middle] < element {
+				left = middle + 1
+			}
+			else if array[middle] > element {
+				right = middle - 1
+			}
+			else {
+				return array[middle]
+			}
+		}
+
+		return nil
+	}
+}
+
 //
 extension PrintableTree {
 	static func ofStrings(_ description: String, _ subtrees: List<String>)

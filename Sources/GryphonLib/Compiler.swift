@@ -32,6 +32,7 @@ public class Compiler {
 
 	public static var logIndentation = 0
 	public static var shouldLogProgress = false
+
 	static func log(_ contents: String) {
 		guard shouldLogProgress else {
 			return
@@ -221,8 +222,20 @@ public class Compiler {
 
 	//
 	public static func generateSwiftAST(fromASTDump astDump: String) throws -> SwiftAST {
+		let logInfo = Log.startLog(name: "1 - AST Dump Decode")
+		defer { Log.endLog(info: logInfo) }
 		let ast = try ASTDumpDecoder(encodedString: astDump).decode()
 		return ast
+	}
+
+	public static func generateSwiftSyntaxDecoder(
+		fromSwiftFile inputFilePath: String,
+		withContext context: TranspilationContext)
+		throws -> SwiftSyntaxDecoder
+	{
+		let logInfo = Log.startLog(name: "1 - Swift Syntax")
+		defer { Log.endLog(info: logInfo) }
+		return try SwiftSyntaxDecoder(filePath: inputFilePath, context: context)
 	}
 
 	public static func transpileSwiftAST(fromASTDumpFile inputFile: String) throws -> SwiftAST {
@@ -237,16 +250,19 @@ public class Compiler {
 		withContext context: TranspilationContext)
 		throws -> GryphonAST
 	{
+		let logInfo = Log.startLog(name: "1.5 - Swift Translator")
+		defer { Log.endLog(info: logInfo) }
 		return try SwiftTranslator(context: context).translateAST(swiftAST, asMainFile: asMainFile)
 	}
 
 	public static func generateGryphonRawASTUsingSwiftSyntax(
-		forFile inputFilePath: String,
+		usingFileDecoder decoder: SwiftSyntaxDecoder,
 		asMainFile: Bool,
 		withContext context: TranspilationContext)
 		throws -> GryphonAST
 	{
-		let decoder = try SwiftSyntaxDecoder(filePath: inputFilePath, context: context)
+		let logInfo = Log.startLog(name: "1.5 - Swift Syntax Decoder")
+		defer { Log.endLog(info: logInfo) }
 		return try decoder.convertToGryphonAST(asMainFile: asMainFile)
 	}
 
@@ -260,8 +276,11 @@ public class Compiler {
 
 		if context.isUsingSwiftSyntax {
 			return try inputFiles.map {
-				try generateGryphonRawASTUsingSwiftSyntax(
-					forFile: $0,
+				let decoder = try generateSwiftSyntaxDecoder(
+					fromSwiftFile: $0,
+					withContext: context)
+				return try generateGryphonRawASTUsingSwiftSyntax(
+					usingFileDecoder: decoder,
 					asMainFile: translateAsMainFile,
 					withContext: context)
 			}
@@ -283,6 +302,8 @@ public class Compiler {
 		withContext context: TranspilationContext)
 		throws -> GryphonAST
 	{
+		let logInfo = Log.startLog(name: "2 - First round")
+		defer { Log.endLog(info: logInfo) }
 		return TranspilationPass.runFirstRoundOfPasses(on: ast, withContext: context)
 	}
 
@@ -291,6 +312,8 @@ public class Compiler {
 		withContext context: TranspilationContext)
 		throws -> GryphonAST
 	{
+		let logInfo = Log.startLog(name: "3 - Second round")
+		defer { Log.endLog(info: logInfo) }
 		return TranspilationPass.runSecondRoundOfPasses(on: ast, withContext: context)
 	}
 
@@ -326,6 +349,8 @@ public class Compiler {
 		withContext context: TranspilationContext)
 		throws -> String
 	{
+		let logInfo = Log.startLog(name: "4 - Kotlin code")
+		defer { Log.endLog(info: logInfo) }
 		let translation = try KotlinTranslator(context: context).translateAST(ast)
 		let translationResult = translation.resolveTranslation()
 

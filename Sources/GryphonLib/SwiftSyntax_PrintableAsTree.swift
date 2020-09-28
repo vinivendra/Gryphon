@@ -24,6 +24,8 @@ open class SwiftSyntaxToPrintableTreeVisitor: SyntaxVisitor {
 	}
 
 	func convertToPrintableTree<SyntaxType: SyntaxProtocol>(_ node: SyntaxType) -> PrintableTree {
+		let logInfo = Log.startLog(name: "Converting SS for printing")
+		defer { Log.endLog(info: logInfo) }
 		self.walk(node)
 		return root
 	}
