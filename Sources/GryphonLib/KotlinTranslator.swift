@@ -779,15 +779,19 @@ public class KotlinTranslator {
 
 	/// Used to determine if the function is a single-expression function.
 	/// Returns the single expression if it is, or `nil` otherwise.
+	/// Makes an exception for ConcatenationExpressions and LiteralCodeExpression, which may
+	/// translate as more than one expression (e.g. `a(); b()`) causing Kotlin compilation to fail.
 	private func getSingleExpressionStatement(
 		_ statements: List<Statement>?)
 		-> ExpressionStatement?
 	{
 		guard let statements = statements,
 			statements.count == 1,
-			let expressionStatement = statements.first as? ExpressionStatement else
+			let expressionStatement = statements.first as? ExpressionStatement,
+			!(expressionStatement.expression is ConcatenationExpression),
+			!(expressionStatement.expression is LiteralCodeExpression) else
 		{
-				return nil
+			return nil
 		}
 
 		return expressionStatement

@@ -15,6 +15,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import kotlin.system.exitProcess
+
 internal open class Box {
 	open var a: Int = 5
 	open var b: String
@@ -104,6 +106,10 @@ internal open class SingleExpressionMembers {
 		get() = 10
 	open val two: Int
 		get() = 20
+	open val noSingleExpression: Int
+		get() {
+			println("Fatal error: ${"foo"}"); exitProcess(-1)
+		}
 	open val dddddddddddddddddddddddddeeeeeeeeeee: Int
 		get() = aaaaaaaaaaaaa(
 			bbbbbbbbbbbbbbbb = 0,

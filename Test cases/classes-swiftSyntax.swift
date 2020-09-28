@@ -21,6 +21,8 @@
 // gryphon output: Test cases/Bootstrap Outputs/classes.gryphonAST
 // gryphon output: Test cases/Bootstrap Outputs/classes.kt
 
+// gryphon insert: import kotlin.system.exitProcess
+
 class Box {
 	var a: Int = 5
 
@@ -155,6 +157,10 @@ class SingleExpressionMembers {
 		get {
 			20
 		}
+	}
+
+	var noSingleExpression: Int {
+		fatalError("foo")
 	}
 
 	var dddddddddddddddddddddddddeeeeeeeeeee: Int {
