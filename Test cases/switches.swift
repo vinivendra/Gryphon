@@ -110,12 +110,15 @@ default:
 
 enum MySealedClass {
 	case a(int: Int)
+	case b
 }
 
 let mySealedClass = MySealedClass.a(int: 0)
 switch mySealedClass {
 case let .a(int: int):
 	print(int)
+case .b:
+	print("b")
 }
 
 // Regression test: switch expressions as the last statement in a block

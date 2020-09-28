@@ -47,6 +47,7 @@ internal enum class MyEnum {
 
 internal sealed class MySealedClass {
 	class A(val int: Int): MySealedClass()
+	class B: MySealedClass()
 }
 
 internal fun f() {
@@ -101,6 +102,7 @@ fun main(args: Array<String>) {
 			val int = mySealedClass.int
 			println(int)
 		}
+		is MySealedClass.B -> println("b")
 	}
 
 	val z: Int = 0
