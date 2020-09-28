@@ -419,6 +419,7 @@ printTest(array.index(before: 2), "Array index before")
 printTest(array.first, "Array first")
 printTest(emptyArray.first, "Array first")
 
+printTest(array.first { $0 == 1 }, "Array first where")
 printTest(array.first(where: { $0 > 3 }), "Array first where")
 
 printTest(array.last(where: { $0 > 3 }), "Array last where")

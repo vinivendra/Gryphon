@@ -260,6 +260,7 @@ fun main(args: Array<String>) {
 	printTest(contents = 2 - 1, testName = "Array index before")
 	printTest(contents = array.firstOrNull(), testName = "Array first")
 	printTest(contents = emptyArray.firstOrNull(), testName = "Array first")
+	printTest(contents = array.find { it == 1 }, testName = "Array first where")
 	printTest(contents = array.find { it > 3 }, testName = "Array first where")
 	printTest(contents = array.findLast { it > 3 }, testName = "Array last where")
 	printTest(contents = array.lastOrNull(), testName = "Array last")

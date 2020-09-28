@@ -279,7 +279,7 @@ public class ReplaceTemplatesTranspilationPass: TranspilationPass {
 	}
 }
 
-/// To be called on a strutured template expression; replaces any matches inside it with the given
+/// To be called on a structured template expression; replaces any matches inside it with the given
 /// expressions in the `matches` list.
 private class ReplaceTemplateMatchesTranspilationPass: TranspilationPass {
 // gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
@@ -678,20 +678,25 @@ extension ReplaceTemplatesTranspilationPass {
 				rhs.pairs.count == 1,
 				let onlyRightPair = rhs.pairs.first
 			{
-				if let closureInParentheses = onlyLeftPair.expression as? ParenthesesExpression {
-					if closureInParentheses.expression is ClosureExpression {
-						// Unwrap a redundant parentheses expression if needed
-						if let templateInParentheses =
-							onlyRightPair.expression as? ParenthesesExpression
-						{
-							return match(closureInParentheses.expression,
-								templateInParentheses.expression, matches)
-						}
-						else {
-							return match(closureInParentheses.expression,
-								onlyRightPair.expression, matches)
-						}
+				// Unwrap redundant parentheses if needed
+				let leftExpression: Expression
+				if let parentheses = onlyLeftPair.expression as? ParenthesesExpression {
+					leftExpression = parentheses.expression
+				}
+				else {
+					leftExpression = onlyLeftPair.expression
+				}
+
+				if leftExpression is ClosureExpression {
+					let rightExpression: Expression
+					if let parentheses = onlyRightPair.expression as? ParenthesesExpression {
+						rightExpression = parentheses.expression
 					}
+					else {
+						rightExpression = onlyRightPair.expression
+					}
+
+					return match(leftExpression, rightExpression, matches)
 				}
 			}
 
@@ -856,9 +861,13 @@ internal extension TranspilationContext {
 			}
 			else if superType == "Any" ||
 				superType == "_Any" ||
-				superType == "_Hashable" ||
-				superType == "_Comparable" ||
 				superType == "_Optional"
+			{
+				return true
+			}
+			else if superType == "_Hashable" ||
+				superType == "_Comparable",
+				!subType.contains("->")
 			{
 				return true
 			}

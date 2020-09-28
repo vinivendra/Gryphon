@@ -255,6 +255,7 @@ fun main(args: Array<String>) {
 	printTest(2 - 1, "Array index before")
 	printTest(array.firstOrNull(), "Array first")
 	printTest(emptyArray.firstOrNull(), "Array first")
+	printTest(array.find { it == 1 }, "Array first where")
 	printTest(array.find { it > 3 }, "Array first where")
 	printTest(array.findLast { it > 3 }, "Array last where")
 	printTest(array.lastOrNull(), "Array last")
