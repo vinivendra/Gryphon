@@ -2567,7 +2567,8 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 }
 
 /// Variables with an optional type don't have to be explicitly initialized with `nil` in Swift,
-/// (though it happens implicitly), but they might in Kotlin.
+/// (though it happens implicitly), but they might in Kotlin. This doesn't count for variables with
+/// getters.
 public class ImplicitNilsInOptionalVariablesTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
 	// gryphon insert:     super(ast, context) { }
@@ -2578,6 +2579,8 @@ public class ImplicitNilsInOptionalVariablesTranspilationPass: TranspilationPass
 	{
 		if !variableDeclaration.isLet,
 			variableDeclaration.expression == nil,
+			variableDeclaration.getter == nil,
+			variableDeclaration.setter == nil,
 			let typeName = variableDeclaration.typeAnnotation,
 			typeName.hasSuffix("?")
 		{

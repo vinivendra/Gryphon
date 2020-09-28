@@ -37,6 +37,12 @@ class Box {
 
 	var c: Int?
 
+	var d: Int? {
+		get {
+			return 0
+		}
+	}
+
 	func returnFive() -> Int {
 		return a
 	}

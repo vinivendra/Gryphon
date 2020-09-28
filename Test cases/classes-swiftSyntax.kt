@@ -27,6 +27,10 @@ internal open class Box {
 			println("set b")
 		}
 	open var c: Int? = null
+	open val d: Int?
+		get() {
+			return 0
+		}
 
 	open fun returnFive(): Int {
 		return a
