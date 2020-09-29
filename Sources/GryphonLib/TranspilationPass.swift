@@ -1549,13 +1549,16 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 		_ typeExpression: TypeExpression)
 		-> Expression
 	{
-		let typeComponents = typeExpression.typeName.split(withStringSeparator: ".")
+		let typeComponents = Utilities.splitTypeList(typeExpression.typeName, separators: ["."])
 
-		if typeComponents.count == 2,
-			self.context.sealedClasses.contains(typeComponents[0]) ||
-				self.context.enumClasses.contains(typeComponents[0])
+		// This should work for both `B.c` and `A.B.c` (assuming the recorded enum name is `B`).
+		if typeComponents.count >= 2,
+			let secondToLastComponent = typeComponents.secondToLast,
+			self.context.sealedClasses.contains(secondToLastComponent) ||
+				self.context.enumClasses.contains(secondToLastComponent)
 		{
-			let newType = typeComponents[0] + "." + typeComponents[1].capitalizedAsCamelCase()
+			let typePrefix = typeComponents.dropLast().joined(separator: ".")
+			let newType = typePrefix + "." + typeComponents.last!.capitalizedAsCamelCase()
 			return TypeExpression(
 				syntax: typeExpression.syntax,
 				range: typeExpression.range,

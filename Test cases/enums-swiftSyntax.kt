@@ -74,6 +74,21 @@ enum class MyEnum {
 	BAZ;
 }
 
+open class K {
+	sealed class A {
+		class B(val int: Int): A()
+
+		internal fun foo(): Int {
+			return when (this) {
+				is A.B -> {
+					val int = this.int
+					0
+				}
+			}
+		}
+	}
+}
+
 fun main(args: Array<String>) {
 	val a = MyEnum.FOO_BAR
 	val b = MyEnum.BAZ

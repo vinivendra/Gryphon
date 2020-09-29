@@ -73,3 +73,17 @@ if a == MyEnum.fooBar {
 if b == MyEnum.baz {
 	print("MyEnum.BAZ")
 }
+
+// Capitalization for nested enums
+public class K {
+	public enum A {
+		case b(int: Int)
+
+		func foo() -> Int {
+			switch self {
+			case let .b(int: int):
+				return 0
+			}
+		}
+	}
+}
