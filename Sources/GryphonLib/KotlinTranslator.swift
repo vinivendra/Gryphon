@@ -1548,7 +1548,7 @@ public class KotlinTranslator {
 		let result = KotlinTranslation(range: arrayExpression.range)
 
 		let translations = try arrayExpression.elements.map {
-				try translateExpression($0, withIndentation: indentation)
+			try translateExpression($0, withIndentation: indentation)
 			}
 
 		if arrayExpression.typeName.hasPrefix("MutableList") {
@@ -2150,11 +2150,16 @@ public class KotlinTranslator {
 				.replacingOccurrences(of: "()", with: "Unit")
 				.replacingOccurrences(of: "Void", with: "Unit")
 
-		if typeName.hasSuffix("?") {
+		if let mappedType = Utilities.getTypeMapping(for: typeName) {
+			return mappedType
+		}
+		else if typeName.hasSuffix("?") {
+			// Optionals
 			return translateType(String(typeName.dropLast())) + "?"
 		}
 		else if typeName.hasPrefix("[") {
 			if typeName.contains(":") {
+				// Dictionaries
 				let innerType = String(typeName.dropLast().dropFirst())
 				let innerTypes = Utilities.splitTypeList(innerType)
 				let keyType = innerTypes[0]
@@ -2164,46 +2169,35 @@ public class KotlinTranslator {
 				return "Map<\(translatedKey), \(translatedValue)>"
 			}
 			else {
+				// Arrays
 				let innerType = String(typeName.dropLast().dropFirst())
 				let translatedInnerType = translateType(innerType)
 				return "List<\(translatedInnerType)>"
 			}
 		}
-		else if typeName.hasPrefix("MutableList<") && (typeName.last! == ">") {
-			let innerType = String(typeName.dropLast().dropFirst("MutableList<".count))
-			let translatedInnerType = translateType(innerType)
-			return "MutableList<\(translatedInnerType)>"
-		}
-		else if typeName.hasPrefix("List<") && (typeName.last! == ">") {
-			let innerType = String(typeName.dropLast().dropFirst("List<".count))
-			let translatedInnerType = translateType(innerType)
-			return "List<\(translatedInnerType)>"
-		}
-		else if typeName.hasPrefix("MutableMap<") && (typeName.last! == ">") {
-			let innerTypes = String(typeName.dropLast().dropFirst("MutableMap<".count))
-			let keyValue = Utilities.splitTypeList(innerTypes)
-			let key = keyValue[0]
-			let value = keyValue[1]
-			let translatedKey = translateType(key)
-			let translatedValue = translateType(value)
-			return "MutableMap<\(translatedKey), \(translatedValue)>"
-		}
-		else if typeName.hasPrefix("Map<") && (typeName.last! == ">") {
-			let innerTypes = String(typeName.dropLast().dropFirst("Map<".count))
-			let keyValue = Utilities.splitTypeList(innerTypes)
-			let key = keyValue[0]
-			let value = keyValue[1]
-			let translatedKey = translateType(key)
-			let translatedValue = translateType(value)
-			return "Map<\(translatedKey), \(translatedValue)>"
+		else if let genericInformation = getGenericTypeInformation(for: typeName) {
+			// Generics
+
+			// Example: "Map<Int, Int>"
+			let baseType = genericInformation.0 // "Map"
+			let genericTypesString = genericInformation.1 // "Int, Int"
+
+			let translatedBastType = translateType(baseType)
+
+			let genericTypes = Utilities.splitTypeList(genericTypesString, separators: [","])
+			let translatedGenerics = genericTypes.map { translateType($0) }
+			let translatedGenericsString = translatedGenerics.joined(separator: ", ")
+
+			return "\(translatedBastType)<\(translatedGenericsString)>"
 		}
 		else if Utilities.isInEnvelopingParentheses(typeName) {
+			// Tuples
 			let innerTypeString = String(typeName.dropFirst().dropLast())
 			let innerTypes = Utilities.splitTypeList(innerTypeString, separators: [", "])
 			if innerTypes.count == 2 {
 				// If it's a named tuple, use only the types
-				let processedTypes = innerTypes.map {
-					Utilities.splitTypeList($0, separators: [":"]).last!
+				let translatedTypes = innerTypes.map {
+					translateType(Utilities.splitTypeList($0, separators: [":"]).last!)
 				}
 
 				// One exception: key-value tuples from dictionaries should become Entry, not Pair
@@ -2211,10 +2205,10 @@ public class KotlinTranslator {
 					Utilities.splitTypeList($0, separators: [":"]).first!
 				}
 				if names == ["key", "value"] {
-					return "Entry<\(processedTypes.joined(separator: ", "))>"
+					return "Entry<\(translatedTypes.joined(separator: ", "))>"
 				}
 				else {
-					return "Pair<\(processedTypes.joined(separator: ", "))>"
+					return "Pair<\(translatedTypes.joined(separator: ", "))>"
 				}
 			}
 			else {
@@ -2222,6 +2216,7 @@ public class KotlinTranslator {
 			}
 		}
 		else if typeName.contains(" -> ") {
+			// Functions
 			let functionComponents = Utilities.splitTypeList(typeName, separators: [" -> "])
 			let translatedComponents = functionComponents.map {
 				translateFunctionTypeComponent($0)
@@ -2241,7 +2236,29 @@ public class KotlinTranslator {
 			return translateType(String(cleanType))
 		}
 		else {
-			return Utilities.getTypeMapping(for: typeName) ?? typeName
+			return typeName
+		}
+	}
+
+	// If the given string represents a generic type, returns its base type and generic contents
+	// (e.g. returns `("A", "Int, Int")` for `A<Int, Int>`). Otherwise, returns `nil`.
+	private func getGenericTypeInformation(for typeName: String) -> (String, String)? {
+		let baseType = String(typeName.prefix(while: {
+			!$0.isPunctuation &&
+			$0 != "<" &&
+			$0 != "[" &&
+			$0 != "," &&
+			$0 != ":" }))
+		let genericsWithBrackets = typeName.dropFirst(baseType.count)
+
+		if genericsWithBrackets.first == "<",
+			genericsWithBrackets.last == ">"
+		{
+			let generics = String(genericsWithBrackets.dropFirst().dropLast())
+			return (baseType, generics)
+		}
+		else {
+			return nil
 		}
 	}
 

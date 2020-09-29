@@ -2936,13 +2936,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		throws -> Expression
 	{
 		// Get information for the right side
-		guard let memberType = memberAccessExpression.getType(fromList: self.expressionTypes) ??
-			typeName else
-		{
-			return try errorExpression(
-				forASTNode: Syntax(memberAccessExpression),
-				withMessage: "Failed to get a type for the member access expression")
-		}
+		let memberType = memberAccessExpression.getType(fromList: self.expressionTypes) ?? typeName
 
 		let rightSideToken = memberAccessExpression.name
 		let rightSideText = rightSideToken.text

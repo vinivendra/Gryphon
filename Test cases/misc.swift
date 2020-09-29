@@ -199,3 +199,6 @@ print("\(x.0), \(x.1)")
 
 let y: (a: Int, b: Int) = (a: 0, b: 0)
 print("\(y.a), \(y.b)")
+
+let z: ((Int, Int), Int) = ((0, 0), 0)
+print(z.0.0)

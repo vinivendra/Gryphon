@@ -3067,12 +3067,12 @@ public class TuplesToPairsTranspilationPass: TranspilationPass {
 		if let parent = parent {
 			if case let .expressionNode(value: parentExpression) = parent {
 				guard !(parentExpression is CallExpression) else {
-					return tupleExpression
+					return super.replaceTupleExpression(tupleExpression)
 				}
 			}
 			else if case let .statementNode(value: parentStatement) = parent {
 				guard !(parentStatement is ForEachStatement) else {
-					return tupleExpression
+					return super.replaceTupleExpression(tupleExpression)
 				}
 			}
 		}
@@ -3080,7 +3080,7 @@ public class TuplesToPairsTranspilationPass: TranspilationPass {
 		// Try to find out the types of the expressions so we can form the correct result type
 		let maybeTypes = tupleExpression.pairs.map { $0.expression.swiftType }
 		guard let types = maybeTypes.as(List<String>.self) else {
-			return tupleExpression
+			return super.replaceTupleExpression(tupleExpression)
 		}
 		let pairType = "Pair<\(types.joined(separator: ", "))>"
 
@@ -3097,10 +3097,10 @@ public class TuplesToPairsTranspilationPass: TranspilationPass {
 				pairs: [
 					LabeledExpression(
 						label: nil,
-						expression: tupleExpression.pairs[0].expression),
+						expression: super.replaceExpression(tupleExpression.pairs[0].expression)),
 					LabeledExpression(
 						label: nil,
-						expression: tupleExpression.pairs[1].expression),
+						expression: super.replaceExpression(tupleExpression.pairs[1].expression)),
 			]),
 			typeName: pairType,
 			allowsTrailingClosure: false)
@@ -3119,13 +3119,20 @@ public class TupleMembersTranspilationPass: TranspilationPass {
 	{
 		// Supported tuple types here will be a string like "(foo: Int, bar: Int)"
 
+		// First, replace tuple members recursively, as this can sometimes give us useful type
+		// information
+		let replacedExpression = super.replaceDotExpression(dotExpression)
+		guard let replacedDotExpression = replacedExpression as? DotExpression else {
+			return replacedExpression
+		}
+
 		// If the left expression is of a tuple type and the right expression refers to its member
-		guard let swiftType = dotExpression.leftExpression.swiftType,
+		guard let swiftType = replacedDotExpression.leftExpression.swiftType,
 			Utilities.isInEnvelopingParentheses(swiftType),
-			let memberExpression = dotExpression.rightExpression as? DeclarationReferenceExpression
-			else
+			let memberExpression =
+				replacedDotExpression.rightExpression as? DeclarationReferenceExpression else
 		{
-			return dotExpression
+			return replacedDotExpression
 		}
 
 		let innerString = String(swiftType.dropFirst().dropLast())
@@ -3133,14 +3140,14 @@ public class TupleMembersTranspilationPass: TranspilationPass {
 
 		// Only Pairs are supported for now
 		guard tupleComponents.count == 2 else {
-			return super.replaceDotExpression(dotExpression)
+			return replacedDotExpression
 		}
 
 		// Key-value tuples are assumed to be from dictionaries (as a special case)
 		guard !(tupleComponents[0].hasPrefix("key:") && tupleComponents[1].hasPrefix("value:"))
 			else
 		{
-			return super.replaceDotExpression(dotExpression)
+			return replacedDotExpression
 		}
 
 		// Get the index of the member we're referencing
@@ -3156,20 +3163,23 @@ public class TupleMembersTranspilationPass: TranspilationPass {
 			tupleMemberIndex = index
 		}
 		else {
-			return super.replaceDotExpression(dotExpression)
+			return replacedDotExpression
 		}
 
 		let newIdentifier = (tupleMemberIndex == 0) ? "first" : "second"
 
+		// If we already had a type, leave it. If not, get the type from the tuple's type
+		let typeName = memberExpression.typeName ?? tupleComponents[tupleMemberIndex]
+
 		return DotExpression(
-			syntax: dotExpression.syntax,
-			range: dotExpression.range,
-			leftExpression: dotExpression.leftExpression,
+			syntax: replacedDotExpression.syntax,
+			range: replacedDotExpression.range,
+			leftExpression: replacedDotExpression.leftExpression,
 			rightExpression: DeclarationReferenceExpression(
 				syntax: memberExpression.syntax,
 				range: memberExpression.range,
 				identifier: newIdentifier,
-				typeName: memberExpression.typeName,
+				typeName: typeName,
 				isStandardLibrary: memberExpression.isStandardLibrary,
 				isImplicit: memberExpression.isImplicit))
 	}

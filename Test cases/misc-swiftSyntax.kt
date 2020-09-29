@@ -174,4 +174,8 @@ fun main(args: Array<String>) {
 	val y: Pair<Int, Int> = Pair<Int, Int>(0, 0)
 
 	println("${y.first}, ${y.second}")
+
+	val z: Pair<Pair<Int, Int>, Int> = Pair<Pair<Int, Int>, Int>(Pair<Int, Int>(0, 0), 0)
+
+	println(z.first.first)
 }
