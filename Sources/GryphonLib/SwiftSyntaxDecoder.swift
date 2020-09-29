@@ -148,20 +148,19 @@ public class SourceKit {
 						kind == "source.lang.swift.ref.var.instance",
 						let name = child["key.name"] as? String,
 						name == expression.identifier,
-						let usr = child["key.usr"] as? String,
-						let firstUSRComponent = usr.split(withStringSeparator: name).first
+						let grandchildren =
+							child["key.entities"] as? [[String: SourceKitRepresentable]],
+						let getterGrandchild = grandchildren.first(where:
+							{ $0["key.kind"] as? String ==
+								"source.lang.swift.ref.function.accessor.getter" }),
+						let parentUSR = getterGrandchild["key.receiver_usr"] as? String // `s:SS`
 					{
 						// This is the one
-						// Get the parent type's USR, e.g. the `4test1AC` in "s:4test1AC3fooSivp"
-						// (for a property named `foo`). The first USR component is alredy
-						// "s:4test1AC3".
-						let reversedComponent = firstUSRComponent.reversed() // 3CA1tset4:s
-						let reversedUSRWithSuffix = reversedComponent
-							.drop(while: { $0.isNumber }) // CA1tset4:s
-						let reversedUSR = reversedUSRWithSuffix
-							.prefix(while: { !$0.isPunctuation }) // CA1tset4
-						let typeUSR = String(reversedUSR.reversed()) // 4test1AC
-						return typeUSRs[typeUSR]
+						// Remove the starting `s:`
+						let cleanParentUSR = String(parentUSR
+							.drop(while: { !$0.isPunctuation })
+							.dropFirst())
+						return typeUSRs[cleanParentUSR]
 					}
 					// Checks for a method
 					else if let kind = child["key.kind"] as? String,
@@ -170,6 +169,7 @@ public class SourceKit {
 						name.hasPrefix(expression.identifier + "("),
 						let parentUSR = child["key.receiver_usr"] as? String // `s:SS`
 					{
+						// This is the one
 						// Remove the starting `s:`
 						let cleanParentUSR = String(parentUSR
 							.drop(while: { !$0.isPunctuation })

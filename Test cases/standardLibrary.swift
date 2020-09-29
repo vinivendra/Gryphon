@@ -677,3 +677,12 @@ extension N {
 		return a
 	}
 }
+
+// Generic contexts and contexts where the property is of a different type,
+// e.g. "Sequence.first" but "extension Array".
+// gryphon generics: Element
+extension Array {
+	var a: Element {
+		return first!
+	}
+}

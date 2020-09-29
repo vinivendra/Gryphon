@@ -100,6 +100,11 @@ internal fun N.bar(a: Int): Int {
 	return a
 }
 
+internal val <Element> Array<Element>.a: Element
+	get() {
+		return firstOrNull()!!
+	}
+
 fun main(args: Array<String>) {
 	println("Hello, world!")
 	println(42)

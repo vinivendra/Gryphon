@@ -1062,6 +1062,12 @@ private func simplifyType(string: String) -> String {
 		return "[\(elementType)]"
 	}
 
+	// Treat "Array" (without an element type) as an "Array<Any>"
+	// Might happen in complex generic contexts
+	if string == "Array" {
+		return "[Any]"
+	}
+
 	// Remove parentheses
 	if Utilities.isInEnvelopingParentheses(string) {
 		return String(string.dropFirst().dropLast())
