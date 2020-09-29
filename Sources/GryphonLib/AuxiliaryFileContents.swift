@@ -1547,6 +1547,9 @@ private func gryphonTemplates() {
 	_ = _string.uppercased()
 	_ = _GRYTemplate.call(.dot("_string", "toUpperCase"), [])
 
+	_ = Substring(_string)
+	_ = "_string"
+
 	// Character
 	_ = _character.uppercased()
 	_ = _GRYTemplate.call(.dot("_character", "toUpperCase"), [])

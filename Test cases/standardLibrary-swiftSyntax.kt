@@ -215,6 +215,7 @@ fun main(args: Array<String>) {
 	printTest(contents = variableString, testName = "String append character")
 	printTest(contents = string.capitalize(), testName = "String capitalized")
 	printTest(contents = string.toUpperCase(), testName = "String uppercased")
+	printTest(contents = "a", testName = "Substring initializer")
 	printTest(contents = character.toUpperCase(), testName = "Character uppercased")
 
 	val array2: List<Int> = listOf(2, 1)

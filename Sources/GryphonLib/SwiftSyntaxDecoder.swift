@@ -3075,8 +3075,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			tupleTypeName = nil
 		}
 
-		let functionExpression = functionCallExpression.calledExpression
-		let functionExpressionTranslation = try convertExpression(functionExpression)
 		let tupleExpression = try convertTupleExpressionElementList(
 			functionCallExpression.argumentList,
 			withType: tupleTypeName)
@@ -3088,12 +3086,31 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				expression: closureExpression))
 		}
 
+		let callType = functionCallExpression.getType(fromList: self.expressionTypes)
+
+		let functionExpression = functionCallExpression.calledExpression
+		let functionExpressionTranslation = try convertExpression(functionExpression)
+
+		// Sometimes the function expressions don't have a type but we can fix that here.
+		// E.g. the `Substring` in `Substring("a")` has no type from SourceKit, but we can build it
+		// from the identifier (`Substring`) and the parameter types (`(String)`).
+		if functionExpressionTranslation.swiftType == nil,
+			let declarationReferenceExpression =
+				functionExpressionTranslation as? DeclarationReferenceExpression,
+			let parameterTypes = tupleExpression.swiftType,
+			SourceKit.typeUSRs.contains(where: // If the identifier is a known type
+				{ $0.value == declarationReferenceExpression.identifier })
+		{
+			declarationReferenceExpression.typeName = "\(parameterTypes) -> " +
+				declarationReferenceExpression.identifier
+		}
+
 		return CallExpression(
 			syntax: Syntax(functionCallExpression),
 			range: functionCallExpression.getRange(inFile: self.sourceFile),
 			function: functionExpressionTranslation,
 			parameters: tupleExpression,
-			typeName: functionCallExpression.getType(fromList: self.expressionTypes),
+			typeName: callType,
 			allowsTrailingClosure: false)
 	}
 
@@ -3214,7 +3231,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			syntax: Syntax(identifierExpression),
 			range: identifierExpression.getRange(inFile: self.sourceFile),
 			identifier: identifierExpression.identifier.text,
-			typeName: identifierExpression.getType(fromList: self.expressionTypes) ?? "",
+			typeName: identifierExpression.getType(fromList: self.expressionTypes),
 			isStandardLibrary: false,
 			isImplicit: false)
 	}

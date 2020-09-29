@@ -361,6 +361,8 @@ printTest(string.capitalized, "String capitalized")
 
 printTest(string.uppercased(), "String uppercased")
 
+printTest(Substring("a"), "Substring initializer")
+
 // Character
 printTest(character.uppercased(), "Character uppercased")
 
