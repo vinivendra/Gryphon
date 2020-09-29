@@ -1820,7 +1820,9 @@ struct ErrorMap {
 /// Maps Kotlin errors to hints about how to fix them
 let errorHints: [(kotlinError: String, hint: String)] = [
 	("type has a constructor, and thus must be initialized here",
-		"try explicitly declaring an initializer for this type")]
+		"try explicitly declaring an initializer for this type"),
+	("type argument expected for class",
+		"try adding a \\"// gryphon generics:\\" comment")]
 
 func getHint(forErrorMessage errorMessage: String) -> String? {
 	return errorHints.first(where: { errorHint in
@@ -2032,7 +2034,9 @@ struct ErrorMap {
 /// Maps Kotlin errors to hints about how to fix them
 let errorHints: [(kotlinError: String, hint: String)] = [
 	("type has a constructor, and thus must be initialized here",
-		"try explicitly declaring an initializer for this type")]
+		"try explicitly declaring an initializer for this type"),
+	("type argument expected for class",
+		"try adding a \\"// gryphon generics:\\" comment")]
 
 func getHint(forErrorMessage errorMessage: String) -> String? {
 	return errorHints.first(where: { errorHint in
