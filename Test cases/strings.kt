@@ -73,6 +73,8 @@ It still has many lines."""
 		}
 	}
 
+	"abc".drop(1).dropWhile { it != '\n' }
+
 	val abc: String = "abc"
 
 	for (index in abc.indices) {

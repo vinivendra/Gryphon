@@ -99,6 +99,9 @@ default:
 	break
 }
 
+// Character literals for Substring.Element
+"abc".dropFirst().drop(while: { $0 != "\n" })
+
 // String indices
 let abc = "abc"
 for index in abc.indices {

@@ -3310,7 +3310,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			let text = stringLiteralExpression.segments.first!.getText()
 		{
 			if let typeName = stringLiteralExpression.getType(fromList: self.expressionTypes),
-				typeName == "String.Element" || typeName == "Character"
+				Utilities.getTypeMapping(for: typeName) == "Char"
 			{
 				return LiteralCharacterExpression(
 					syntax: Syntax(stringLiteralExpression),
