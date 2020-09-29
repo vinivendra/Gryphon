@@ -5306,6 +5306,32 @@ public class RemoveOverridesTranspilationPass: TranspilationPass {
 	}
 }
 
+/// Expressions in switch cases can be (wrongly) interpreted by SourceKit as always having type
+/// Bool. This can be especially problematic for character literals, which get translated as String
+/// literals if we don't know their type is Character. This pass goes through switch cases where the
+/// switch's expression is a Character and turns the cases' StringLiteralExpressions into
+/// CharacterLiteralExpressions.
+public class CharactersInSwitchesTranspilationPass: TranspilationPass {
+	override func replaceSwitchStatement(_ switchStatement: SwitchStatement) -> List<Statement> {
+		if let typeName = switchStatement.expression.swiftType,
+			typeName == "Character"
+		{
+			for switchCase in switchStatement.cases {
+				for index in switchCase.expressions.indices {
+					let expression = switchCase.expressions[index]
+					if let stringLiteral = expression as? LiteralStringExpression {
+						switchCase.expressions[index] = LiteralCharacterExpression(
+							range: stringLiteral.range,
+							value: stringLiteral.value)
+					}
+				}
+			}
+		}
+
+		return super.replaceSwitchStatement(switchStatement)
+	}
+}
+
 /// Kotlin initializers cannot be marked as `open`.
 public class RemoveOpenForInitializersTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
@@ -5623,6 +5649,7 @@ public extension TranspilationPass {
 		ast = MatchFunctionCallsToDeclarationsTranspilationPass(ast: ast, context: context).run()
         ast = EscapeSpecialCharactersInStringsTranspilationPass(ast: ast, context: context).run()
 		ast = RemoveOverridesTranspilationPass(ast: ast, context: context).run()
+		ast = CharactersInSwitchesTranspilationPass(ast: ast, context: context).run()
 
 		// - CapitalizeEnums has to be before IsOperatorsInSealedClasses and
 		//   IsOperatorsInIfStatementsTranspilationPass

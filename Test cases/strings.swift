@@ -91,6 +91,14 @@ let escapedCharacter: Character = "'"
 
 print(character)
 
+// Character literals in switch cases
+switch character {
+case "\n":
+	print("")
+default:
+	break
+}
+
 // String indices
 let abc = "abc"
 for index in abc.indices {

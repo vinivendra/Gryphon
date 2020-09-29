@@ -67,6 +67,12 @@ It still has many lines."""
 
 	println(character)
 
+	when (character) {
+		'\n' -> println("")
+		else -> {
+		}
+	}
+
 	val abc: String = "abc"
 
 	for (index in abc.indices) {
