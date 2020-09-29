@@ -65,7 +65,7 @@ internal open class D {
 
 internal val String.bla: Int
 	get() {
-		return 0
+		return this.length - 1
 	}
 
 internal open class M {
@@ -73,12 +73,16 @@ internal open class M {
 
 internal val M.bla: Int
 	get() {
-		return 10
+		return 10 + 1
 	}
 internal val M.foo: Int
 	get() {
 		return 0
 	}
+
+internal fun M.bar(a: Int): Int {
+	return a
+}
 
 internal enum class N {
 	O;
@@ -86,12 +90,16 @@ internal enum class N {
 
 internal val N.bla: Int
 	get() {
-		return 10
+		return 10 + 1
 	}
 internal val N.foo: Int
 	get() {
 		return 0
 	}
+
+internal fun N.bar(a: Int): Int {
+	return a
+}
 
 fun main(args: Array<String>) {
 	println("Hello, world!")

@@ -141,7 +141,9 @@ public class SourceKit {
 					}
 				}
 				else if childPosition == expressionRange.start {
-					// It might be this one: check the kind and the name
+					// It might be this one
+
+					// Checks for a property
 					if let kind = child["key.kind"] as? String,
 						kind == "source.lang.swift.ref.var.instance",
 						let name = child["key.name"] as? String,
@@ -160,6 +162,19 @@ public class SourceKit {
 							.prefix(while: { !$0.isPunctuation }) // CA1tset4
 						let typeUSR = String(reversedUSR.reversed()) // 4test1AC
 						return typeUSRs[typeUSR]
+					}
+					// Checks for a method
+					else if let kind = child["key.kind"] as? String,
+						kind == "source.lang.swift.ref.function.method.instance",
+						let name = child["key.name"] as? String, // something like `foo(bar:)`
+						name.hasPrefix(expression.identifier + "("),
+						let parentUSR = child["key.receiver_usr"] as? String // `s:SS`
+					{
+						// Remove the starting `s:`
+						let cleanParentUSR = String(parentUSR
+							.drop(while: { !$0.isPunctuation })
+							.dropFirst())
+						return typeUSRs[cleanParentUSR]
 					}
 					else {
 						// Right range but wrong contents; look inside it

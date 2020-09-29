@@ -174,8 +174,14 @@ private func gryphonTemplates() {
 	_ = _m.foo
 	_ = "10"
 
+	_ = _m.bar(_int)
+	_ = "_int + 1"
+
 	_ = _n.foo
 	_ = "10"
+
+	_ = _n.bar(_int)
+	_ = "_int + 1"
 }
 
 // MARK: - Tests
@@ -616,7 +622,7 @@ let z = G.H.l
 // Standard library struct
 extension String {
 	var bla: String.Index {
-		return /*self.*/ startIndex
+		return /*self.*/ index(before: /*self.*/ endIndex)
 	}
 }
 
@@ -625,10 +631,13 @@ class M { }
 
 extension M {
 	var bla: Int {
-		return /*self.*/ foo
+		return /*self.*/ bar(/*self.*/ foo)
 	}
 	var foo: Int {
 		return 0
+	}
+	func bar(_ a: Int) -> Int {
+		return a
 	}
 }
 
@@ -639,9 +648,12 @@ enum N {
 
 extension N {
 	var bla: Int {
-		return /*self.*/ foo
+		return /*self.*/ bar(/*self.*/ foo)
 	}
 	var foo: Int {
 		return 0
+	}
+	func bar(_ a: Int) -> Int {
+		return a
 	}
 }
