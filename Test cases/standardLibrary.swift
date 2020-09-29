@@ -686,3 +686,17 @@ extension Array {
 		return first!
 	}
 }
+
+//
+class List<Element> { // gryphon ignore
+	var count: Int {
+		return 0
+	}
+}
+
+// gryphon generics: Element
+extension List {
+	var a: Int {
+		return count
+	}
+}

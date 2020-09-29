@@ -760,8 +760,7 @@ extension ReplaceTemplatesTranspilationPass {
 					typeName: parentType,
 					isStandardLibrary: false,
 					isImplicit: false)
-				return match(implicitSelfExpression,
-					rhs.leftExpression, matches)
+				return match(implicitSelfExpression, rhs.leftExpression, matches)
 			}
 			else {
 				return false
@@ -1064,8 +1063,20 @@ private func simplifyType(string: String) -> String {
 
 	// Treat "Array" (without an element type) as an "Array<Any>"
 	// Might happen in complex generic contexts
-	if string == "Array" {
+	if string == "Array" ||
+		string == "List" ||
+		string == "MutableList"
+	{
 		return "[Any]"
+	}
+
+	// Treat "Dictionary" (without an element type) as an "Dictionary<Any, Any>"
+	// Might happen in complex generic contexts
+	if string == "Dictionary" ||
+		string == "Map" ||
+		string == "MutableMap"
+	{
+		return "[Any: Any]"
 	}
 
 	// Remove parentheses

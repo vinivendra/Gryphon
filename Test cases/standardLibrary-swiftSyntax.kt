@@ -105,6 +105,10 @@ internal val <Element> Array<Element>.a: Element
 	get() {
 		return this.firstOrNull()!!
 	}
+internal val <Element> List<Element>.a: Int
+	get() {
+		return this.size
+	}
 
 fun main(args: Array<String>) {
 	println("Hello, world!")
