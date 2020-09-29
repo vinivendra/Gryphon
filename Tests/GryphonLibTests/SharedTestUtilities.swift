@@ -184,4 +184,11 @@ class TestUtilities {
 		"subscripts",
 		"switches",
 	]
+
+	/// The same tests in `testCases`, sorted so that recently modified tests come first.
+	static let sortedTests = SortedList(testCases) { testNameA, testNameB in
+			let testPathA = (TestUtilities.testCasesPath + testNameA).withExtension(.kt)
+			let testPathB = (TestUtilities.testCasesPath + testNameB).withExtension(.kt)
+			return Utilities.file(testPathA, wasModifiedLaterThan: testPathB)
+		}
 }

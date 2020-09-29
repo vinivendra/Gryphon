@@ -62,7 +62,7 @@ class IntegrationTest: XCTestCase {
 
 			Compiler.clearIssues()
 
-			let tests = TestUtilities.testCases
+			let tests = TestUtilities.sortedTests
 			for testName in tests {
 
 				let shouldTestSwiftSyntax =

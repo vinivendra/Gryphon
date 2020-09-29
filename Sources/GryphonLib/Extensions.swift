@@ -469,6 +469,11 @@ class SortedList<Element>: List<Element> {
 		super.init(sortedArray)
 	}
 
+	init(_ list: List<Element>, sortedBy closure: (Element, Element) throws -> Bool) rethrows {
+		let sortedArray = try list.array.sorted(by: closure)
+		super.init(sortedArray)
+	}
+
 	public required init(arrayLiteral elements: Element...) {
 		fatalError("Sorted Array can't be initialized by a literal array. " +
 			"Use init(_: sortedBy:) or init(of:) instead.")

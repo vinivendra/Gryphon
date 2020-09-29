@@ -62,16 +62,9 @@ class AcceptanceTest: XCTestCase {
 	}
 
 	func test() {
-		let tests = TestUtilities.testCases
+		let tests = TestUtilities.sortedTests
 
-		// Test recently modified tests first
-		let sortedTests = tests.sorted { testNameA, testNameB in
-			let testPathA = (TestUtilities.testCasesPath + testNameA).withExtension(.kt)
-			let testPathB = (TestUtilities.testCasesPath + testNameB).withExtension(.kt)
-			return Utilities.file(testPathA, wasModifiedLaterThan: testPathB)
-		}
-
-		for testName in sortedTests {
+		for testName in tests {
 			print("- Testing \(testName)...")
 
 			if let errorMessage = runTest(onTestCaseNamed: testName, usingSwiftSyntax: false) {
