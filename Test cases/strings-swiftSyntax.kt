@@ -69,9 +69,11 @@ ${x}
 
 	println(character)
 
-	when (character) {
-		'\n' -> println("")
-		else -> {
+	for (character in "abc") {
+		when (character) {
+			'\n' -> println("")
+			else -> {
+			}
 		}
 	}
 

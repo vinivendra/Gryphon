@@ -5314,7 +5314,7 @@ public class RemoveOverridesTranspilationPass: TranspilationPass {
 public class CharactersInSwitchesTranspilationPass: TranspilationPass {
 	override func replaceSwitchStatement(_ switchStatement: SwitchStatement) -> List<Statement> {
 		if let typeName = switchStatement.expression.swiftType,
-			typeName == "Character"
+			Utilities.getTypeMapping(for: typeName) == "Char"
 		{
 			for switchCase in switchStatement.cases {
 				for index in switchCase.expressions.indices {

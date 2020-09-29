@@ -67,9 +67,11 @@ It still has many lines."""
 
 	println(character)
 
-	when (character) {
-		'\n' -> println("")
-		else -> {
+	for (character in "abc") {
+		when (character) {
+			'\n' -> println("")
+			else -> {
+			}
 		}
 	}
 

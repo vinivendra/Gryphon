@@ -92,11 +92,13 @@ let escapedCharacter: Character = "'"
 print(character)
 
 // Character literals in switch cases
-switch character {
-case "\n":
-	print("")
-default:
-	break
+for character in "abc" {
+	switch character { // String.Element should be the same as Character
+	case "\n":
+		print("")
+	default:
+		break
+	}
 }
 
 // Character literals for Substring.Element
