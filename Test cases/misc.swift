@@ -109,6 +109,15 @@ let arrayIndex = array.firstIndex(of: 1)
 // Test Array<Whatever>.ArrayLiteralElement
 let bla: Array<Int>.ArrayLiteralElement = 1
 
+// Test Array literals
+// (SourceKit says some literals are `() -> Array`, not `Array`)
+public class MutableList<Element>: ExpressibleByArrayLiteral { // gryphon ignore
+	public required init(arrayLiteral elements: Element...) { }
+}
+
+let array2: MutableList<Int> = []
+let array3: MutableList<Int> = array2 ?? []
+
 // Test types with parentheses
 var foo: (() -> ())? = nil
 

@@ -1548,7 +1548,7 @@ public class KotlinTranslator {
 		let result = KotlinTranslation(range: arrayExpression.range)
 
 		let translations = try arrayExpression.elements.map {
-			try translateExpression($0, withIndentation: indentation)
+				try translateExpression($0, withIndentation: indentation)
 			}
 
 		if arrayExpression.typeName.hasPrefix("MutableList") {

@@ -3033,6 +3033,18 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				withMessage: "Unable to get array type from SourceKit")
 		}
 
+		// Sometimes the type comes as an initializer (e.g. `() -> MutableList<Int>` instead of
+		// `MutableList<Int>`)
+		let cleanType: String
+		if typeName.hasPrefix("("),
+			typeName.contains("->")
+		{
+			cleanType = Utilities.splitTypeList(typeName, separators: ["->"]).last!
+		}
+		else {
+			cleanType = typeName
+		}
+
 		let elements: MutableList<Expression> = try MutableList(arrayExpression.elements.map {
 			try convertExpression($0.expression)
 		})
@@ -3041,7 +3053,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			syntax: Syntax(arrayExpression),
 			range: arrayExpression.getRange(inFile: self.sourceFile),
 			elements: elements,
-			typeName: typeName)
+			typeName: cleanType)
 	}
 
 	func convertNilLiteralExpression(

@@ -129,6 +129,8 @@ fun main(args: Array<String>) {
 	val array: List<Int> = listOf(1, 2, 3)
 	val arrayIndex: Int? = array.indexOf(1)
 	val bla: Int = 1
+	val array2: MutableList<Int> = mutableListOf()
+	val array3: MutableList<Int> = array2 ?: mutableListOf()
 	var foo: (() -> Unit)? = null
 
 	"abc"
