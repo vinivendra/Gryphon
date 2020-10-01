@@ -99,7 +99,7 @@ fun main(args: Array<String>) {
 
 	when (mySealedClass) {
 		is MySealedClass.A -> {
-			val int = mySealedClass.int
+			val int: Int = mySealedClass.int
 			println(int)
 		}
 		is MySealedClass.B -> println("b")

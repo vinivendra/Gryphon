@@ -1554,8 +1554,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 		// This should work for both `B.c` and `A.B.c` (assuming the recorded enum name is `B`).
 		if typeComponents.count >= 2,
 			let secondToLastComponent = typeComponents.secondToLast,
-			self.context.sealedClasses.contains(secondToLastComponent) ||
-				self.context.enumClasses.contains(secondToLastComponent)
+			self.context.hasEnum(named: secondToLastComponent)
 		{
 			let typePrefix = typeComponents.dropLast().joined(separator: ".")
 			let newType = typePrefix + "." + typeComponents.last!.capitalizedAsCamelCase()
@@ -1600,7 +1599,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 				.split(withStringSeparator: ".")
 				.last!)
 
-			if self.context.sealedClasses.contains(lastEnumType) {
+			if self.context.hasSealedClass(named: lastEnumType) {
 				enumExpression.identifier =
 					enumExpression.identifier.capitalizedAsCamelCase()
 				return DotExpression(
@@ -1612,7 +1611,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 						typeName: enumType),
 					rightExpression: enumExpression)
 			}
-			else if self.context.enumClasses.contains(lastEnumType) {
+			else if self.context.hasEnumClass(named: lastEnumType) {
 				enumExpression.identifier = enumExpression.identifier.upperSnakeCase()
 				return DotExpression(
 					syntax: dotExpression.syntax,
@@ -1633,8 +1632,8 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 		-> List<Statement>
 	{
 		let isSealedClass =
-			self.context.sealedClasses.contains(enumDeclaration.enumName)
-		let isEnumClass = self.context.enumClasses.contains(enumDeclaration.enumName)
+			self.context.hasSealedClass(named: enumDeclaration.enumName)
+		let isEnumClass = self.context.hasEnumClass(named: enumDeclaration.enumName)
 
 		let newElements: MutableList<EnumElement>
 		if isSealedClass {
@@ -3608,7 +3607,7 @@ public class IsOperatorsInSwitchesTranspilationPass: TranspilationPass {
 				switchStatement.expression as? DeclarationReferenceExpression,
 			let declarationType = declarationReferenceExpression.typeName
 		{
-			if self.context.sealedClasses.contains(declarationType) {
+			if self.context.hasSealedClass(named: declarationType) {
 				let newCases = switchStatement.cases.map {
 					replaceIsOperatorsInSwitchCase($0, usingExpression: switchStatement.expression)
 				}
@@ -3689,7 +3688,7 @@ public class IsOperatorsInIfStatementsTranspilationPass: TranspilationPass {
 					let enumName = typeExpression.typeName.split(withStringSeparator: ".")[0]
 
 					// If it's an enum class, change it from "is" to "=="
-					if self.context.enumClasses.contains(enumName) {
+					if self.context.hasEnumClass(named: enumName) {
 						return .condition(expression: BinaryOperatorExpression(
 							syntax: binaryExpression.syntax,
 							range: binaryExpression.range,
@@ -3858,7 +3857,7 @@ public class RecordFunctionsTranspilationPass: TranspilationPass {
 		_ enumDeclaration: EnumDeclaration)
 		-> List<Statement>
 	{
-		guard context.sealedClasses.contains(enumDeclaration.enumName) else {
+		guard context.hasSealedClass(named: enumDeclaration.enumName) else {
 			return super.replaceEnumDeclaration(enumDeclaration)
 		}
 
@@ -4047,10 +4046,10 @@ public class RecordEnumsTranspilationPass: TranspilationPass {
 			}
 
 		if isEnumClass {
-			self.context.addEnumClass(enumDeclaration.enumName)
+			self.context.addEnumClass(enumDeclaration)
 		}
 		else {
-			self.context.addSealedClass(enumDeclaration.enumName)
+			self.context.addSealedClass(enumDeclaration)
 		}
 
 		return [enumDeclaration]
@@ -5345,6 +5344,60 @@ public class CharactersInSwitchesTranspilationPass: TranspilationPass {
 	}
 }
 
+/// Switch statements with `case let`s have their `let` declarations turned into variable
+/// declarations by the frontend. SourceKit has no type information on these expressions, so it
+/// doesn't know what type annotations to use. This pass tries to add the pass annotations by
+/// looking up the enum declaration.
+public class AnnotationsForCaseLetsTranspilationPass: TranspilationPass {
+	override func replaceSwitchStatement(_ switchStatement: SwitchStatement) -> List<Statement> {
+		for switchCase in switchStatement.cases {
+			// Example: `A.B(int: Int)`
+
+			// If it's a case let
+			if switchCase.expressions.count == 1,
+				let onlyExpression = switchCase.expressions.first, // `a is A.B`
+				let binaryExpression = onlyExpression as? BinaryOperatorExpression,
+				binaryExpression.leftExpression is DeclarationReferenceExpression,
+				let typeExpression = binaryExpression.rightExpression as? TypeExpression
+			{
+				let typeComponents =
+					Utilities.splitTypeList(typeExpression.typeName, separators: ["."])
+
+				// Get the declaration of the chosen element `B`
+				guard let enumName = typeComponents.secondToLast,
+					let enumDeclaration = self.context.getSealedClass(named: enumName),
+					let chosenElementName = typeComponents.last,
+					let chosenElement =
+						enumDeclaration.elements.first(where: { $0.name == chosenElementName }) else
+				{
+					continue
+				}
+
+				let variableDeclarations = switchCase.statements
+					.prefix { $0 is VariableDeclaration }
+					.forceCast(to: List<VariableDeclaration>.self)
+				for variableDeclaration in variableDeclarations {
+					// `let int = a.int`
+					// Make sure we're declaring an associated value, then find out the type of that
+					// value
+					if variableDeclaration.typeAnnotation == nil,
+						let dotExpression = variableDeclaration.expression as? DotExpression,
+						(dotExpression.leftExpression.swiftType ?? enumName) == enumName,
+						let rightExpression = // Get the associated value
+							dotExpression.rightExpression as? DeclarationReferenceExpression,
+						let associatedValue = chosenElement.associatedValues
+							.first(where: { $0.label == rightExpression.identifier })
+					{
+						variableDeclaration.typeAnnotation = associatedValue.typeName
+					}
+				}
+			}
+		}
+
+		return super.replaceSwitchStatement(switchStatement)
+	}
+}
+
 /// Kotlin initializers cannot be marked as `open`.
 public class RemoveOpenForInitializersTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
@@ -5663,6 +5716,7 @@ public extension TranspilationPass {
         ast = EscapeSpecialCharactersInStringsTranspilationPass(ast: ast, context: context).run()
 		ast = RemoveOverridesTranspilationPass(ast: ast, context: context).run()
 		ast = CharactersInSwitchesTranspilationPass(ast: ast, context: context).run()
+		ast = AnnotationsForCaseLetsTranspilationPass(ast: ast, context: context).run()
 
 		// - CapitalizeEnums has to be before IsOperatorsInSealedClasses and
 		//   IsOperatorsInIfStatementsTranspilationPass

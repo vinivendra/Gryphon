@@ -118,31 +118,59 @@ public class TranspilationContext {
 
 	// MARK: - Declaration records
 
-	///
 	/// This variable is used to store enum definitions in order to allow the translator
 	/// to translate them as sealed classes (see the `translate(dotSyntaxCallExpression)` method).
-	///
-	private(set) var sealedClasses: MutableList<String> = []
+	/// Uses enum names as keys, and the declarations themselves as values.
+	internal var sealedClasses: MutableMap<String, EnumDeclaration> = [:]
 
-	public func addSealedClass(_ className: String) {
-		sealedClasses.append(className)
-	}
-
-	///
 	/// This variable is used to store enum definitions in order to allow the translator
 	/// to translate them as enum classes (see the `translate(dotSyntaxCallExpression)` method).
-	///
-	private(set) var enumClasses: MutableList<String> = []
+	/// Uses enum names as keys, and the declarations themselves as values.
+	internal var enumClasses: MutableMap<String, EnumDeclaration> = [:]
 
-	public func addEnumClass(_ className: String) {
-		enumClasses.append(className)
+	public func addEnumClass(_ declaration: EnumDeclaration) {
+		enumClasses[declaration.enumName] = declaration
+	}
+
+	public func addSealedClass(_ declaration: EnumDeclaration) {
+		sealedClasses[declaration.enumName] = declaration
+	}
+
+	/// Gets an enum class with the given name, if one was recorded
+	public func getEnumClass(named name: String) -> EnumDeclaration? {
+		return enumClasses[name]
+	}
+
+	/// Gets a sealed class with the given name, if one was recorded
+	public func getSealedClass(named name: String) -> EnumDeclaration? {
+		return sealedClasses[name]
+	}
+
+	/// Gets an enum class or a sealed class with the given name, if one was recorded
+	public func getEnum(named name: String) -> EnumDeclaration? {
+		return enumClasses[name] ?? sealedClasses[name]
+	}
+
+	/// Checks if an enum class with the given name was recorded
+	public func hasEnumClass(named name: String) -> Bool {
+		return getEnumClass(named: name) != nil
+	}
+
+	/// Checks if a sealed class with the given name was recorded
+	public func hasSealedClass(named name: String) -> Bool {
+		return getSealedClass(named: name) != nil
+	}
+
+	/// Checks if an enum class or a sealed class with the given name was recorded
+	public func hasEnum(named name: String) -> Bool {
+		return getEnum(named: name) != nil
 	}
 
 	///
 	/// This variable is used to store protocol definitions in order to allow the translator
 	/// to translate conformances to them correctly (instead of as class inheritances).
 	///
-	private(set) var protocols: MutableList<String> = []
+	internal var protocols: MutableList<String> = []
 
 	public func addProtocol(_ protocolName: String) {
 		protocols.append(protocolName)
@@ -152,7 +180,7 @@ public class TranspilationContext {
 	/// This variable is used to store the inheritances (superclasses and protocols) of each type.
 	/// Keys correspond to the type, values correspond to its inheritances.
 	///
-	private(set) var inheritances: MutableMap<String, List<String>> = [:]
+	internal var inheritances: MutableMap<String, List<String>> = [:]
 
 	public func addInheritances(
 		forType typeName: String,

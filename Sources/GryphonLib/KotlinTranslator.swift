@@ -301,7 +301,7 @@ public class KotlinTranslator {
 		withIndentation indentation: String)
 		throws -> KotlinTranslation
 	{
-		let isEnumClass = self.context.enumClasses.contains(enumDeclaration.enumName)
+		let isEnumClass = self.context.hasEnumClass(named: enumDeclaration.enumName)
 
 		let enumString = isEnumClass ? "enum" : "sealed"
 
@@ -1637,7 +1637,7 @@ public class KotlinTranslator {
 		let leftHandString = leftHandTranslation.resolveTranslation().translation
 		let rightHandString = rightHandTranslation.resolveTranslation().translation
 
-		if self.context.sealedClasses.contains(leftHandString) {
+		if self.context.hasSealedClass(named: leftHandString) {
 			let translatedEnumCase = rightHandString.capitalizedAsCamelCase()
 			let result = KotlinTranslation(range: dotExpression.range)
 			result.append(leftHandTranslation)
@@ -1648,7 +1648,7 @@ public class KotlinTranslator {
 		}
 		else {
 			let enumName = leftHandString.split(withStringSeparator: ".").last!
-			if self.context.enumClasses.contains(enumName) {
+			if self.context.hasEnumClass(named: enumName) {
 				let translatedEnumCase = rightHandString.upperSnakeCase()
 				let result = KotlinTranslation(range: dotExpression.range)
 				result.append(leftHandTranslation)
