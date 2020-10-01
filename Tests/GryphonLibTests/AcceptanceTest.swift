@@ -73,7 +73,7 @@ class AcceptanceTest: XCTestCase {
 
 			print("\t- Done!")
 
-			let shouldTestSwiftSyntax = TestUtilities.testCasesForSwiftSyntax.contains(testName)
+			let shouldTestSwiftSyntax = true
 			if shouldTestSwiftSyntax {
 				print("- Testing \(testName) (Swift syntax)...")
 

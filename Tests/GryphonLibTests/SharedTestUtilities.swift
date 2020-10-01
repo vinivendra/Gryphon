@@ -158,33 +158,6 @@ class TestUtilities {
 		"switches",
 	]
 
-	/// Which test cases in the array above can already be translated using SwiftSyntax
-	static let testCasesForSwiftSyntax: List = [
-		"access",
-		"assignments",
-		"classes",
-		"closures",
-		"enums",
-		"extensions",
-		"functionCalls",
-		"generics",
-		"gryphonLibraries",
-		"ifStatement",
-		"inits",
-		"kotlinLiterals",
-		"logicOperators",
-		"misc",
-		"numericLiterals",
-		"openAndFinal",
-		"openAndFinal-default-final",
-		"operators",
-		"standardLibrary",
-		"strings",
-		"structs",
-		"subscripts",
-		"switches",
-	]
-
 	/// The same tests in `testCases`, sorted so that recently modified tests come first.
 	static let sortedTests = SortedList(testCases) { testNameA, testNameB in
 			let testPathA = (TestUtilities.testCasesPath + testNameA).withExtension(.kt)

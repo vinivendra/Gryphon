@@ -65,8 +65,7 @@ class IntegrationTest: XCTestCase {
 			let tests = TestUtilities.sortedTests
 			for testName in tests {
 
-				let shouldTestSwiftSyntax =
-					TestUtilities.testCasesForSwiftSyntax.contains(testName)
+				let shouldTestSwiftSyntax = true
 
 				// Generate kotlin code using the whole compiler
 				let testCasePath = TestUtilities.testCasesPath + testName
