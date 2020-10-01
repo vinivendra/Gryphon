@@ -178,4 +178,7 @@ fun main(args: Array<String>) {
 	val z: Pair<Pair<Int, Int>, Int> = Pair<Pair<Int, Int>, Int>(Pair<Int, Int>(0, 0), 0)
 
 	println(z.first.first)
+
+	val dictionary: Map<Int, Int> = mapOf(1 to 10, 2 to 20)
+	val mappedDictionary: List<Int> = dictionary.map { it.key + it.value }
 }

@@ -202,3 +202,6 @@ print("\(y.a), \(y.b)")
 
 let z: ((Int, Int), Int) = ((0, 0), 0)
 print(z.0.0)
+
+let dictionary = [1: 10, 2: 20]
+let mappedDictionary = dictionary.map { $0.0 + $0.1 }

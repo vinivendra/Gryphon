@@ -3125,10 +3125,35 @@ public class TupleMembersTranspilationPass: TranspilationPass {
 			return replacedExpression
 		}
 
-		// If the left expression is of a tuple type and the right expression refers to its member
-		guard let swiftType = replacedDotExpression.leftExpression.swiftType,
-			Utilities.isInEnvelopingParentheses(swiftType),
-			let memberExpression =
+		// Support both `(Int, Int)` and `Dictionary<Int, Int>.Element`
+		let swiftType: String
+		if let typeName = replacedDotExpression.leftExpression.swiftType,
+			Utilities.isInEnvelopingParentheses(typeName)
+		{
+			swiftType = typeName
+		}
+		else if let typeName = replacedDotExpression.leftExpression.swiftType {
+			let typeComponents = Utilities.splitTypeList(typeName, separators: ["."])
+			if typeComponents.count == 2,
+				typeComponents.last == "Element",
+				let firstComponent = typeComponents.first,
+				firstComponent.hasPrefix("Dictionary<"),
+				firstComponent.hasSuffix(">")
+			{
+				let innerTypes = String(firstComponent.dropFirst("Dictionary<".count).dropLast())
+				let innerTypeComponents = Utilities.splitTypeList(innerTypes, separators: [","])
+				swiftType = "(key: \(innerTypeComponents[0]), value: \(innerTypeComponents[1]))"
+			}
+			else {
+				return replacedDotExpression
+			}
+		}
+		else {
+			return replacedDotExpression
+		}
+
+		// Check that the right expression refers to the tuple's member
+		guard let memberExpression =
 				replacedDotExpression.rightExpression as? DeclarationReferenceExpression else
 		{
 			return replacedDotExpression
@@ -3139,13 +3164,6 @@ public class TupleMembersTranspilationPass: TranspilationPass {
 
 		// Only Pairs are supported for now
 		guard tupleComponents.count == 2 else {
-			return replacedDotExpression
-		}
-
-		// Key-value tuples are assumed to be from dictionaries (as a special case)
-		guard !(tupleComponents[0].hasPrefix("key:") && tupleComponents[1].hasPrefix("value:"))
-			else
-		{
 			return replacedDotExpression
 		}
 
@@ -3165,10 +3183,18 @@ public class TupleMembersTranspilationPass: TranspilationPass {
 			return replacedDotExpression
 		}
 
-		let newIdentifier = (tupleMemberIndex == 0) ? "first" : "second"
-
 		// If we already had a type, leave it. If not, get the type from the tuple's type
 		let typeName = memberExpression.typeName ?? tupleComponents[tupleMemberIndex]
+
+		let newIdentifier: String
+
+		// Key-value tuples are assumed to be from dictionaries (as a special case)
+		if tupleComponents[0].hasPrefix("key:") && tupleComponents[1].hasPrefix("value:") {
+			newIdentifier = (tupleMemberIndex == 0) ? "key" : "value"
+		}
+		else {
+			newIdentifier = (tupleMemberIndex == 0) ? "first" : "second"
+		}
 
 		return DotExpression(
 			syntax: replacedDotExpression.syntax,
