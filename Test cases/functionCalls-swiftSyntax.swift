@@ -166,6 +166,11 @@ func variadics(a: Int, b: Int..., c: Int = 0) {
 variadics(a: 1, b: 1, 2, 3, c: 1)
 variadics(a: 1, b: 1, 2, 3)
 
+print("- Trailing closures and default arguments")
+
+func f2(a: Int = 0, b: (Int) -> () = { print($0) }) { }
+f2 { print($0) }
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Function calls with many parameters
 class AClassWithABigName { }

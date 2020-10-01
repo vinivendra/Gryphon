@@ -5594,10 +5594,14 @@ public class MatchFunctionCallsToDeclarationsTranspilationPass: TranspilationPas
 		let callArguments = tupleExpression.pairs
 
 		let defaultArguments = functionTranslation.parameters.map { $0.value != nil }
-		let acceptsUnlabeledTrailingClosures = functionTranslation.parameters.map { _ in true }
+		let acceptsUnlabeledTrailingClosures = functionTranslation.parameters.map {
+			// Only accept trailing closures if the parameter has a function type
+			Utilities.splitTypeList($0.typeName, separators: ["->"]).count > 1
+		}
 
 		let matchResult: MutableList<MutableList<Int>> = []
 
+		// TODO: Do this only if there really was a trailing closure in Swift
 		// Check if there's an unlabeled closure at the end (and assume it's a trailing closure
 		// if there is)
 		let unlabeledTrailingClosureArgIndex: Int?

@@ -119,6 +119,9 @@ internal fun variadics(a: Int, vararg b: Int, c: Int = 0) {
 	println(c)
 }
 
+internal fun f2(a: Int = 0, b: (Int) -> Unit = { println(it) }) {
+}
+
 internal open class AClassWithABigName {
 }
 
@@ -199,6 +202,8 @@ fun main(args: Array<String>) {
 	println("- Variadics and default values")
 	variadics(1, 1, 2, 3, c = 1)
 	variadics(1, 1, 2, 3)
+	println("- Trailing closures and default arguments")
+	f2(b = { println(it) })
 	fooBarBaz(
 		someBigName = AClassWithABigName(),
 		anotherBigName = AClassWithABigName(),
