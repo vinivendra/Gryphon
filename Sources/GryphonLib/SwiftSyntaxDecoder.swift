@@ -83,7 +83,10 @@ public class SourceKit {
 			if let kind = child["key.kind"] as? String,
 				kind == "source.lang.swift.ref.struct" ||
 					kind == "source.lang.swift.ref.class" ||
-					kind == "source.lang.swift.ref.enum",
+					kind == "source.lang.swift.ref.enum" ||
+					kind == "source.lang.swift.decl.struct" ||
+					kind == "source.lang.swift.decl.class" ||
+					kind == "source.lang.swift.decl.enum",
 				let name = child["key.name"] as? String,
 				let usr = child["key.usr"] as? String
 			{

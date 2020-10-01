@@ -313,3 +313,21 @@ if let c1 = c0,
 {
 	// ...
 }
+
+// Don't shadow declarations with implicit `self.`
+enum D {
+	case e(int: Int)
+}
+
+class F {
+	var f: D? {
+		return nil
+	}
+
+	func g() {
+		if let f = f, case let .e(int: int) = f {
+			print(int)
+		}
+	}
+}
+

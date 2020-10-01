@@ -59,6 +59,25 @@ internal open class C {
 	open var x: Int = 0
 }
 
+internal sealed class D {
+	class E(val int: Int): D()
+}
+
+internal open class F {
+	open val f: D?
+		get() {
+			return null
+		}
+
+	open fun g() {
+		val f: D? = f
+		if (f != null && f is D.E) {
+			val int: Int = f.int
+			println(int)
+		}
+	}
+}
+
 fun main(args: Array<String>) {
 	if (true) {
 		println("Simple if's")
