@@ -220,29 +220,29 @@ fun main(args: Array<String>) {
 	}
 
 	if (bEnum is B.C) {
-		val foo = bEnum.d
+		val foo: Int = bEnum.d
 		println("If case let #2: ${foo}")
 	}
 
 	if (bEnum is B.E) {
-		val foo = bEnum.f
-		val bar = bEnum.g
+		val foo: Int = bEnum.f
+		val bar: String = bEnum.g
 		println("--")
 	}
 
 	if (bEnum2 is B.E) {
-		val foo = bEnum2.f
-		val bar = bEnum2.g
+		val foo: Int = bEnum2.f
+		val bar: String = bEnum2.g
 		println("If case let #3: ${foo}, ${bar}")
 	}
 
 	if (bEnum2 is B.E) {
-		val bar = bEnum2.g
+		val bar: String = bEnum2.g
 		println("If case let #4: ${bar}")
 	}
 
 	if (bEnum2 is B.E) {
-		val foo = bEnum2.f
+		val foo: Int = bEnum2.f
 		println("If case let #5: ${foo}")
 	}
 
@@ -254,12 +254,12 @@ fun main(args: Array<String>) {
 		println("--")
 	}
 	else if (bEnum is B.C) {
-		val foo = bEnum.d
+		val foo: Int = bEnum.d
 		println("If case let #7: ${foo}")
 	}
 	else if (bEnum2 is B.E) {
-		val foo = bEnum2.f
-		val bar = bEnum2.g
+		val foo: Int = bEnum2.f
+		val bar: String = bEnum2.g
 		println("--")
 	}
 
@@ -267,28 +267,47 @@ fun main(args: Array<String>) {
 		println("--")
 	}
 	else if (bEnum2 is B.E) {
-		val foo = bEnum2.f
-		val bar = bEnum2.g
+		val foo: Int = bEnum2.f
+		val bar: String = bEnum2.g
 		println("If case let #8: ${foo}, ${bar}")
 	}
 	else if (bEnum is B.C) {
-		val foo = bEnum.d
+		val foo: Int = bEnum.d
 		println("--")
 	}
 
+	if (bEnum is B.C && bEnum2 is B.E) {
+		val foo: Int = bEnum.d
+		val bar: Int = bEnum2.f
+		val baz: String = bEnum2.g
+
+		println("If case let #9: ${foo}, ${bar}, ${baz}")
+	}
+
+	if (false) {
+		println("--")
+	}
+	else if (bEnum is B.C && bEnum2 is B.E) {
+		val foo: Int = bEnum.d
+		val bar: Int = bEnum2.f
+		val baz: String = bEnum2.g
+
+		println("If case let #10: ${foo}, ${bar}, ${baz}")
+	}
+
 	if (bEnum2 is B.E && bEnum2.g == "foo") {
-		val foo = bEnum2.f
+		val foo: Int = bEnum2.f
 		println("If case let comparison #1: ${foo}")
 	}
 
 	if (bEnum2 is B.E && bEnum2.f == 0) {
-		val foo = bEnum2.g
+		val foo: String = bEnum2.g
 		println("If case let comparison #2: ${foo}")
 	}
 
 	if (bEnum2 is B.E) {
-		val foo = bEnum2.f
-		val bar = bEnum2.g
+		val foo: Int = bEnum2.f
+		val bar: String = bEnum2.g
 		println("If case let comparison #3: ${foo}, ${bar}")
 	}
 

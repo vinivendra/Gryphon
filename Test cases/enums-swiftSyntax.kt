@@ -81,7 +81,7 @@ open class K {
 		internal fun foo(): Int {
 			return when (this) {
 				is A.B -> {
-					val int = this.int
+					val int: Int = this.int
 					0
 				}
 			}

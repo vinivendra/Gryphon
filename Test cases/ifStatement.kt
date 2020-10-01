@@ -276,6 +276,25 @@ fun main(args: Array<String>) {
 		println("--")
 	}
 
+	if (bEnum is B.C && bEnum2 is B.E) {
+		val foo: Int = bEnum.d
+		val bar: Int = bEnum2.f
+		val baz: String = bEnum2.g
+
+		println("If case let #9: ${foo}, ${bar}, ${baz}")
+	}
+
+	if (false) {
+		println("--")
+	}
+	else if (bEnum is B.C && bEnum2 is B.E) {
+		val foo: Int = bEnum.d
+		val bar: Int = bEnum2.f
+		val baz: String = bEnum2.g
+
+		println("If case let #10: ${foo}, ${bar}, ${baz}")
+	}
+
 	if (bEnum2 is B.E && bEnum2.g == "foo") {
 		val foo: Int = bEnum2.f
 		println("If case let comparison #1: ${foo}")

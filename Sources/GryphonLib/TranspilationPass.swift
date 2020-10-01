@@ -5370,57 +5370,95 @@ public class CharactersInSwitchesTranspilationPass: TranspilationPass {
 	}
 }
 
-/// Switch statements with `case let`s have their `let` declarations turned into variable
+/// Switch and if statements with `case let`s have their `let` declarations turned into variable
 /// declarations by the frontend. SourceKit has no type information on these expressions, so it
 /// doesn't know what type annotations to use. This pass tries to add the pass annotations by
 /// looking up the enum declaration.
 public class AnnotationsForCaseLetsTranspilationPass: TranspilationPass {
 	override func replaceSwitchStatement(_ switchStatement: SwitchStatement) -> List<Statement> {
 		for switchCase in switchStatement.cases {
-			// Example: `A.B(int: Int)`
-
-			// If it's a case let
-			if switchCase.expressions.count == 1,
-				let onlyExpression = switchCase.expressions.first, // `a is A.B`
-				let binaryExpression = onlyExpression as? BinaryOperatorExpression,
-				binaryExpression.leftExpression is DeclarationReferenceExpression,
-				let typeExpression = binaryExpression.rightExpression as? TypeExpression
-			{
-				let typeComponents =
-					Utilities.splitTypeList(typeExpression.typeName, separators: ["."])
-
-				// Get the declaration of the chosen element `B`
-				guard let enumName = typeComponents.secondToLast,
-					let enumDeclaration = self.context.getSealedClass(named: enumName),
-					let chosenElementName = typeComponents.last,
-					let chosenElement =
-						enumDeclaration.elements.first(where: { $0.name == chosenElementName }) else
-				{
-					continue
-				}
-
-				let variableDeclarations = switchCase.statements
-					.prefix { $0 is VariableDeclaration }
-					.forceCast(to: List<VariableDeclaration>.self)
-				for variableDeclaration in variableDeclarations {
-					// `let int = a.int`
-					// Make sure we're declaring an associated value, then find out the type of that
-					// value
-					if variableDeclaration.typeAnnotation == nil,
-						let dotExpression = variableDeclaration.expression as? DotExpression,
-						(dotExpression.leftExpression.swiftType ?? enumName) == enumName,
-						let rightExpression = // Get the associated value
-							dotExpression.rightExpression as? DeclarationReferenceExpression,
-						let associatedValue = chosenElement.associatedValues
-							.first(where: { $0.label == rightExpression.identifier })
-					{
-						variableDeclaration.typeAnnotation = associatedValue.typeName
-					}
-				}
-			}
+			setAnnotationsForCaselet(
+				withExpressions: switchCase.expressions,
+				onStatements: switchCase.statements)
 		}
 
 		return super.replaceSwitchStatement(switchStatement)
+	}
+
+	override func processIfStatement(_ ifStatement: IfStatement) -> IfStatement {
+		let expressions = ifStatement.conditions.compactMap
+			{ (condition: IfStatement.IfCondition) -> Expression? in
+				if case let .condition(expression: expression) = condition {
+					return expression
+				}
+				else {
+					return nil
+				}
+			}
+
+		setAnnotationsForCaselet(
+			withExpressions: expressions,
+			onStatements: ifStatement.statements)
+
+		return super.processIfStatement(ifStatement)
+	}
+
+	/// Takes all of the expressions of a `case let` (from either an `if` or a `switch`) and all of
+	/// its statements. Sets the appropriate type annotations in the first variable declarations of
+	/// the list of statements.
+	private func setAnnotationsForCaselet(
+		withExpressions expressions: List<Expression>,
+		onStatements statements: List<Statement>)
+	{
+		// Example: `A.B(int: Int)`
+
+		for expression in expressions {
+			// Check if it's a case let
+			guard let binaryExpression = // `a is A.B`
+					expression as? BinaryOperatorExpression,
+				let caseLetDeclarationExpression =
+					binaryExpression.leftExpression as? DeclarationReferenceExpression,
+				let typeExpression = binaryExpression.rightExpression as? TypeExpression,
+				binaryExpression.operatorSymbol == "is" else
+			{
+				continue
+			}
+
+			// ["A", "B"]
+			let typeComponents =
+				Utilities.splitTypeList(typeExpression.typeName, separators: ["."])
+
+			// Get the enum element declaration
+			guard let enumName = typeComponents.secondToLast,
+				let enumDeclaration = self.context.getSealedClass(named: enumName),
+				let chosenElementName = typeComponents.last,
+				let chosenElement =
+					enumDeclaration.elements.first(where: { $0.name == chosenElementName }) else
+			{
+				continue
+			}
+
+			// Set the type annotations in the variable declarations
+			let variableDeclarations = statements
+				.prefix { $0 is VariableDeclaration }
+				.forceCast(to: List<VariableDeclaration>.self)
+			for variableDeclaration in variableDeclarations {
+				// `let int = a.int`
+				// Make sure we're declaring an associated value, then find out the type of that
+				// value
+				if variableDeclaration.typeAnnotation == nil,
+					// If we're accessing a member of the case let's enum expression
+					let dotExpression = variableDeclaration.expression as? DotExpression,
+					dotExpression.leftExpression == caseLetDeclarationExpression,
+					let rightExpression = // Get the associated value
+						dotExpression.rightExpression as? DeclarationReferenceExpression,
+					let associatedValue = chosenElement.associatedValues
+						.first(where: { $0.label == rightExpression.identifier })
+				{
+					variableDeclaration.typeAnnotation = associatedValue.typeName
+				}
+			}
+		}
 	}
 }
 
