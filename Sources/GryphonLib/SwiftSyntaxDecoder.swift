@@ -1200,6 +1200,22 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 									typeName: "Bool"))
 							}
 						}
+						else {
+							// If there's no label (e.g. the `value` on `A.b(value: Int)` we can't
+							// declare the variable.
+							try variableDeclarations.append(VariableDeclaration(
+								syntax: Syntax(argument),
+								range: argument.getRange(inFile: self.sourceFile),
+								identifier: "<<Error>>",
+								typeAnnotation: nil,
+								expression: errorExpression(
+									forASTNode: Syntax(argument),
+									withMessage: "Failed to get the label for this enum's " +
+										"associated value"),
+								getter: nil, setter: nil, access: nil, isOpen: false,
+								isLet: true, isImplicit: false, isStatic: false, extendsType: nil,
+								annotations: []))
+						}
 					}
 
 					return CaseLetResult(
