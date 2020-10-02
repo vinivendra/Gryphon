@@ -4412,15 +4412,17 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 		-> MutableList<(Syntax?, SourceFileRange)>
 	{
 		if let expression = expression as? CallExpression {
+			let parameterInfo = informationOnPossibleSideEffectsIn(expression.parameters)
+				.toMutableList()
+
 			if !expression.isPure,
 				!self.context.isReferencingPureFunction(expression),
 				let range = expression.range
 			{
-				return [(expression.syntax, range)]
+				parameterInfo.append((expression.syntax, range))
 			}
-			else {
-				return []
-			}
+
+			return parameterInfo
 		}
 		if let expression = expression as? ParenthesesExpression {
 			return informationOnPossibleSideEffectsIn(expression.expression)

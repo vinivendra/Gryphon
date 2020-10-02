@@ -242,6 +242,12 @@ if let a4 = g(), let a3 = f() { }
 if true, let a5 = g() { }
 if true, let a6 = f() { }
 
+// Warnings for impure arguments of pure functions
+// gryphon pure
+func f1(_ a: Int?) -> Int? { return nil }
+func g1() -> Int? { return nil }
+if let b = g1(), let c = f1(g1()) { }
+
 // Test warnings for double optionals
 let maybeInt: Int?? = 0
 let whatever = maybeInt
