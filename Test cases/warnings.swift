@@ -105,3 +105,15 @@ struct D {
 // Test muting warnings
 // gryphon mute
 let noWarnings: [Int] = []
+
+// No warnings for failing to match a call expression to a non-existent memberwise initializer
+struct A {
+	let b: Int
+
+	// gryphon ignore
+	init(_ b: Int) {
+		self.b = b
+	}
+}
+
+let a = A(1)

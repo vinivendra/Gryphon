@@ -1861,7 +1861,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					label = secondName
 				}
 				else {
-					// If there's just one name, it'll the same for implementation and API
+					// If there's just one name, it'll be the same for implementation and API
 					label = firstName
 					apiLabel = firstName
 				}

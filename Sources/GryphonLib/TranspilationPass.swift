@@ -3935,7 +3935,18 @@ public class RecordFunctionsTranspilationPass: TranspilationPass {
 		_ structDeclaration: StructDeclaration)
 		-> List<Statement>
 	{
+		// We need to create an initializer declaration to represent the automatic initializer Swift
+		// creates
+
+		// If there are any explicit initializers, Swift won't create the automatic one
 		guard !structDeclaration.members.contains(where: { $0 is InitializerDeclaration }) else {
+			return super.replaceStructDeclaration(structDeclaration)
+		}
+
+		// Check if there are any other initializers that were ignored with a translation comment
+		if let structSyntax = structDeclaration.syntax?.as(StructDeclSyntax.self),
+			structSyntax.members.members.contains(where: { $0.decl.is(InitializerDeclSyntax.self) })
+		{
 			return super.replaceStructDeclaration(structDeclaration)
 		}
 
@@ -5599,8 +5610,6 @@ public class MatchFunctionCallsToDeclarationsTranspilationPass: TranspilationPas
 			removeLabels(fromTupleExpression: tupleExpression)
 			return super.processCallExpression(callExpression)
 		}
-
-
 
 		// Try to match the call to the declaration using the swiftc algorithm
 		let callArguments = tupleExpression.pairs
