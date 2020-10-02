@@ -311,3 +311,6 @@ func gryphonTemplates() {
 
 let k = K()
 if let l = k.k, let m = k.k { }
+
+func n() -> Int? { return nil }
+if let o = n(), let p = /* gryphon pure */ n() { }
