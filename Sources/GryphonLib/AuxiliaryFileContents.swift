@@ -1370,23 +1370,23 @@ private func gryphonTemplates() {
 	// MARK: Declare the templates
 
 	// System
-	_ = print(_any)
+	_ = print(_any) // gryphon pure
 	_ = _GRYTemplate.call("println", ["_any"])
 
-	_ = print(_any, terminator: "")
+	_ = print(_any, terminator: "") // gryphon pure
 	_ = _GRYTemplate.call("print", ["_any"])
 
-	_ = fatalError(_string)
+	_ = fatalError(_string) // gryphon pure
 	_ = _GRYTemplate.call("println",
 			["\\\"Fatal error: \(dollarSign)\(kotlinStringInterpolation)\\\""]) +
 		"; " +
 		_GRYTemplate.call("exitProcess", ["-1"])
 
-	_ = assert(_bool)
+	_ = assert(_bool) // gryphon pure
 	_ = _GRYTemplate.call("assert", ["_bool"])
 
 	// Darwin
-	_ = sqrt(_double)
+	_ = sqrt(_double) // gryphon pure
 	_ = _GRYTemplate.call(.dot("Math", "sqrt"), ["_double"])
 
 	// Numerics
@@ -1409,49 +1409,49 @@ private func gryphonTemplates() {
 	_ = "_double.toInt()"
 
 	// String
-	_ = String(_anyType)
+	_ = String(_anyType) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_anyType", "toString"), [])
 
-	_ = _customStringConvertible.description
+	_ = _customStringConvertible.description // gryphon pure
 	_ = _GRYTemplate.call(.dot("_customStringConvertible", "toString"), [])
 
-	_ = _string.isEmpty
+	_ = _string.isEmpty // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "isEmpty"), [])
 
 	_ = _string.count
 	_ = _GRYTemplate.dot("_string", "length")
 
-	_ = _string.first
+	_ = _string.first // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "firstOrNull"), [])
 
-	_ = _string.last
+	_ = _string.last // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "lastOrNull"), [])
 
-	_ = Double(_string)
+	_ = Double(_string) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "toDouble"), [])
 
-	_ = Float(_string)
+	_ = Float(_string) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "toFloat"), [])
 
-	_ = UInt64(_string)
+	_ = UInt64(_string) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "toULong"), [])
 
-	_ = Int64(_string)
+	_ = Int64(_string) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "toLong"), [])
 
-	_ = Int(_string)
+	_ = Int(_string) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "toIntOrNull"), [])
 
-	_ = _string.dropLast()
+	_ = _string.dropLast() // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "dropLast"), ["1"])
 
-	_ = _string.dropLast(_int)
+	_ = _string.dropLast(_int) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "dropLast"), ["_int"])
 
-	_ = _string.dropFirst()
+	_ = _string.dropFirst() // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "drop"), ["1"])
 
-	_ = _string.dropFirst(_int)
+	_ = _string.dropFirst(_int) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "drop"), ["_int"])
 
 	_ = _string.drop(while: _closure5)
@@ -1460,34 +1460,34 @@ private func gryphonTemplates() {
 	_ = _string.indices
 	_ = _GRYTemplate.dot("_string", "indices")
 
-	_ = _string.firstIndex(of: _character)!
+	_ = _string.firstIndex(of: _character)! // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "indexOf"), ["_character"])
 
 	_ = _string.contains(where: _closure5)
 	_ = "(" + _GRYTemplate.call(.dot("_string", "find"), ["_closure5"]) + " != null)"
 
-	_ = _string.firstIndex(of: _character)
+	_ = _string.firstIndex(of: _character) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "indexOrNull"), ["_character"])
 
-	_ = _string.prefix(_int)
+	_ = _string.prefix(_int) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "substring"), ["0", "_int"])
 
-	_ = _string.prefix(upTo: _index)
+	_ = _string.prefix(upTo: _index) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "substring"), ["0", "_index"])
 
-	_ = _string[_index...]
+	_ = _string[_index...] // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "substring"), ["_index"])
 
-	_ = _string[..<_index]
+	_ = _string[..<_index] // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "substring"), ["0", "_index"])
 
-	_ = _string[..._index]
+	_ = _string[..._index] // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "substring"), ["0", "_index + 1"])
 
-	_ = _string[_index1..<_index2]
+	_ = _string[_index1..<_index2] // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "substring"), ["_index1", "_index2"])
 
-	_ = _string[_index1..._index2]
+	_ = _string[_index1..._index2] // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "substring"), ["_index1", "_index2 + 1"])
 
 	_ = String(_substring)
@@ -1520,10 +1520,10 @@ private func gryphonTemplates() {
 	_ = _string1.prefix(while: _closure5)
 	_ = _GRYTemplate.call(.dot("_string1", "takeWhile"), ["_closure5"])
 
-	_ = _string1.hasPrefix(_string2)
+	_ = _string1.hasPrefix(_string2) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string1", "startsWith"), ["_string2"])
 
-	_ = _string1.hasSuffix(_string2)
+	_ = _string1.hasSuffix(_string2) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string1", "endsWith"), ["_string2"])
 
 	_ = _range.lowerBound
@@ -1541,44 +1541,44 @@ private func gryphonTemplates() {
 	_ = _string.append(_character)
 	_ = "_string += _character"
 
-	_ = _string.capitalized
+	_ = _string.capitalized // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "capitalize"), [])
 
-	_ = _string.uppercased()
+	_ = _string.uppercased() // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "toUpperCase"), [])
 
 	_ = Substring(_string)
 	_ = "_string"
 
 	// Character
-	_ = _character.uppercased()
+	_ = _character.uppercased() // gryphon pure
 	_ = _GRYTemplate.call(.dot("_character", "toUpperCase"), [])
 
 	// Array
-	_ = _array.append(_any)
+	_ = _array.append(_any) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_array", "add"), ["_any"])
 
-	_ = _array.insert(_any, at: _int)
+	_ = _array.insert(_any, at: _int) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_array", "add"), ["_int", "_any"])
 
-	_ = _arrayOfOptionals.append(nil)
+	_ = _arrayOfOptionals.append(nil) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_arrayOfOptionals", "add"), ["null"])
 
-	_ = _array1.append(contentsOf: _array2)
+	_ = _array1.append(contentsOf: _array2) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_array1", "addAll"), ["_array2"])
 
-	_ = _array1.append(contentsOf: _array3)
+	_ = _array1.append(contentsOf: _array3) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_array1", "addAll"), ["_array3"])
 
-	_ = _array.isEmpty
+	_ = _array.isEmpty // gryphon pure
 	_ = _GRYTemplate.call(.dot("_array", "isEmpty"), [])
 
-	_ = _strArray.joined(separator: _string)
+	_ = _strArray.joined(separator: _string) // gryphon pure
 	_ = _GRYTemplate.call(
 		.dot("_strArray", "joinToString"),
 		[.labeledParameter("separator", "_string")])
 
-	_ = _strArray.joined()
+	_ = _strArray.joined() // gryphon pure
 	_ = _GRYTemplate.call(
 		.dot("_strArray", "joinToString"),
 		[.labeledParameter("separator", "\\\"\\\"")])
@@ -1601,7 +1601,7 @@ private func gryphonTemplates() {
 	_ = _array.index(before: _int)
 	_ = "_int - 1"
 
-	_ = _array.first
+	_ = _array.first // gryphon pure
 	_ = _GRYTemplate.call(.dot("_array", "firstOrNull"), [])
 
 	_ = _array.first(where: _closure3)
@@ -1610,7 +1610,7 @@ private func gryphonTemplates() {
 	_ = _array.last(where: _closure3)
 	_ = _GRYTemplate.call(.dot("_array", "findLast"), ["_closure3"])
 
-	_ = _array.last
+	_ = _array.last // gryphon pure
 	_ = _GRYTemplate.call(.dot("_array", "lastOrNull"), [])
 
 	_ = _array.prefix(while: _closure3)
@@ -1625,10 +1625,10 @@ private func gryphonTemplates() {
 	_ = _array.removeAll()
 	_ = "_array.clear()"
 
-	_ = _array.dropFirst()
+	_ = _array.dropFirst() // gryphon pure
 	_ = _GRYTemplate.call(.dot("_array", "drop"), ["1"])
 
-	_ = _array.dropLast()
+	_ = _array.dropLast() // gryphon pure
 	_ = _GRYTemplate.call(.dot("_array", "dropLast"), ["1"])
 
 	_ = _array.map(_closure2)
@@ -1646,7 +1646,7 @@ private func gryphonTemplates() {
 	_ = _array.reduce(_any, _closure)
 	_ = _GRYTemplate.call(.dot("_array", "fold"), ["_any", "_closure"])
 
-	_ = zip(_array1, _array2)
+	_ = zip(_array1, _array2) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_array1", "zip"), ["_array2"])
 
 	_ = _array.firstIndex(where: _closure3)
@@ -1655,20 +1655,20 @@ private func gryphonTemplates() {
 	_ = _array.contains(where: _closure3)
 	_ = "(" + _GRYTemplate.call(.dot("_array", "find"), ["_closure3"]) + " != null)"
 
-	_ = _comparableArray.sorted()
+	_ = _comparableArray.sorted() // gryphon pure
 	_ = _GRYTemplate.call(.dot("_comparableArray", "sorted"), [])
 
-	_ = _comparableArray.contains(_comparable)
+	_ = _comparableArray.contains(_comparable) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_comparableArray", "contains"), ["_comparable"])
 
-	_ = _comparableArray.firstIndex(of: _comparable)
+	_ = _comparableArray.firstIndex(of: _comparable) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_comparableArray", "indexOf"), ["_comparable"])
 
 	// Dictionary
 	_ = _dictionary.count
 	_ = _GRYTemplate.dot("_dictionary", "size")
 
-	_ = _dictionary.isEmpty
+	_ = _dictionary.isEmpty // gryphon pure
 	_ = _GRYTemplate.call(.dot("_dictionary", "isEmpty"), [])
 
 	_ = _dictionary.map(_closure2)
@@ -1681,7 +1681,7 @@ private func gryphonTemplates() {
 	_ = Int.min
 	_ = _GRYTemplate.dot("Int", "MIN_VALUE")
 
-	_ = min(_int1, _int2)
+	_ = min(_int1, _int2) // gryphon pure
 	_ = _GRYTemplate.call(.dot("Math", "min"), ["_int1", "_int2"])
 
 	_ = _int1..._int2
@@ -1691,7 +1691,7 @@ private func gryphonTemplates() {
 	_ = "_int1 until _int2"
 
 	// Double
-	_ = _double1..._double2
+	_ = _double1..._double2 // gryphon pure
 	_ = _GRYTemplate.call(.dot("(_double1)", "rangeTo"), ["_double2"])
 
 	// Optional

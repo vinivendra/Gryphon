@@ -2255,6 +2255,10 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		_ sequenceExpression: SequenceExprSyntax)
 		throws -> Statement
 	{
+		SwiftSyntaxDecoder.isTranslatingPureAssignment = !getLeadingComments(
+			forSyntax: Syntax(sequenceExpression),
+			withKey: .pure).isEmpty
+
 		let range = sequenceExpression.getRange(inFile: self.sourceFile)
 		let expressionList = List(sequenceExpression.elements)
 
@@ -2264,22 +2268,30 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			sequenceExpression,
 			limitedToElements: List(sequenceExpression.elements.dropFirst(2)))
 
+		let result: Statement
 		// If it's a discarded statement (e.g. `_ = 0`) make it just the right-side expression
 		if leftExpression.is(DiscardAssignmentExprSyntax.self) {
-			return ExpressionStatement(
+			result = ExpressionStatement(
 				syntax: Syntax(sequenceExpression),
 				range: range,
 				expression: convertedRightExpression)
 		}
 		else {
 			let convertedLeftExpression = try convertExpression(leftExpression)
-			return AssignmentStatement(
+			result = AssignmentStatement(
 				syntax: Syntax(sequenceExpression),
 				range: range,
 				leftHand: convertedLeftExpression,
 				rightHand: convertedRightExpression)
 		}
+
+		SwiftSyntaxDecoder.isTranslatingPureAssignment = false
+
+		return result
 	}
+
+	/// Allow pure comments to be placed before assignments as well as function calls
+	static var isTranslatingPureAssignment = false
 
 	// MARK: - Expressions
 
@@ -3122,9 +3134,10 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				declarationReferenceExpression.identifier
 		}
 
-		let isPure = !getLeadingComments(
-			forSyntax: Syntax(functionCallExpression),
-			withKey: .pure).isEmpty
+		let isPure = SwiftSyntaxDecoder.isTranslatingPureAssignment ||
+			!getLeadingComments(
+				forSyntax: Syntax(functionCallExpression),
+				withKey: .pure).isEmpty
 
 		return CallExpression(
 			syntax: Syntax(functionCallExpression),

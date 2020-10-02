@@ -305,18 +305,26 @@ let j = H(1)
 
 // No warnings for pure templates
 class K {
-	let k: Int? = nil
+	let k1: Int? = nil
+	let k2: Int? = nil
 }
 
 func gryphonTemplates() {
 	let _k: K = K()
 
-	_ = _k.k
-	_ = /* gryphon pure */ GRYTemplate.call(.dot("_k", "k"), [])
+	_ = _k.k1
+	_ = /* gryphon pure */ GRYTemplate.call(.dot("_k", "k1"), [])
+
+	_ = _k.k2 // gryphon pure
+	_ = GRYTemplate.call(.dot("_k", "k2"), [])
 }
 
 let k = K()
-if let l = k.k, let m = k.k { }
+if let l = k.k1, let m = k.k1 { }
+if let l = k.k2, let m = k.k2 { }
 
 func n() -> Int? { return nil }
 if let o = n(), let p = /* gryphon pure */ n() { }
+
+let q = ""
+if let r = q.first, let s = q.first { }
