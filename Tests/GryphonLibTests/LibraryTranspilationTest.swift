@@ -99,67 +99,67 @@ class LibraryTranspilationTest: XCTestCase {
 			typeName: "Int")
 
 		// Matches itself
-		XCTAssertNotNil(pass.match(
+		XCTAssertNotNil(pass.matchExpression(
 			nilExpression1,
 			withTemplate: nilExpression1,
 			shouldSkipRootTypeComparison: false))
-		XCTAssertNotNil(pass.match(
+		XCTAssertNotNil(pass.matchExpression(
 			integerExpression1,
 			withTemplate: integerExpression1,
 			shouldSkipRootTypeComparison: false))
 
 		// Matches something equal
-		XCTAssertNotNil(pass.match(
+		XCTAssertNotNil(pass.matchExpression(
 			nilExpression1,
 			withTemplate: nilExpression2,
 			shouldSkipRootTypeComparison: false))
-		XCTAssertNotNil(pass.match(
+		XCTAssertNotNil(pass.matchExpression(
 			integerExpression1,
 			withTemplate: integerExpression2,
 			shouldSkipRootTypeComparison: false))
 
 		// Does not match an unrelated kind of expression
-		XCTAssertNil(pass.match(
+		XCTAssertNil(pass.matchExpression(
 			nilExpression1,
 			withTemplate: integerExpression1,
 			shouldSkipRootTypeComparison: false))
 
 		// Does not match an expression with different contents
-		XCTAssertNil(pass.match(
+		XCTAssertNil(pass.matchExpression(
 			integerExpression1,
 			withTemplate: integerExpression3,
 			shouldSkipRootTypeComparison: false))
 
 		// Matches work recursively
-		XCTAssertNotNil(pass.match(
+		XCTAssertNotNil(pass.matchExpression(
 			parenthesesExpression1,
 			withTemplate: parenthesesExpression2,
 			shouldSkipRootTypeComparison: false))
-		XCTAssertNil(pass.match(
+		XCTAssertNil(pass.matchExpression(
 			parenthesesExpression1,
 			withTemplate: parenthesesExpression3,
 			shouldSkipRootTypeComparison: false))
 
 		// Matches work recursively on array literals
-		XCTAssertNotNil(pass.match(
+		XCTAssertNotNil(pass.matchExpression(
 			arrayExpression1,
 			withTemplate: arrayExpression2,
 			shouldSkipRootTypeComparison: false))
-		XCTAssertNil(pass.match(
+		XCTAssertNil(pass.matchExpression(
 			arrayExpression1,
 			withTemplate: arrayExpression3,
 			shouldSkipRootTypeComparison: false))
-		XCTAssertNil(pass.match(
+		XCTAssertNil(pass.matchExpression(
 			arrayExpression1,
 			withTemplate: arrayExpression4,
 			shouldSkipRootTypeComparison: false))
 
 		// Matches ignore ranges
-		XCTAssertNotNil(pass.match(
+		XCTAssertNotNil(pass.matchExpression(
 			integerExpression4,
 			withTemplate: integerExpression5,
 			shouldSkipRootTypeComparison: false))
-		XCTAssertNotNil(pass.match(
+		XCTAssertNotNil(pass.matchExpression(
 			integerExpression3,
 			withTemplate: integerExpression5,
 			shouldSkipRootTypeComparison: false))
@@ -208,54 +208,54 @@ class LibraryTranspilationTest: XCTestCase {
 			typeName: "Any")
 
 		// Valid subtype
-		XCTAssertEqual(pass.match(
+		XCTAssertEqual(pass.matchExpression(
 				stringLiteral,
 				withTemplate: anyDeclarationReference,
 				shouldSkipRootTypeComparison: false),
 			["_any": stringLiteral])
-		XCTAssertEqual(pass.match(
+		XCTAssertEqual(pass.matchExpression(
 				stringLiteral,
 				withTemplate: stringDeclarationReference,
 				shouldSkipRootTypeComparison: false),
 			["_string": stringLiteral])
-		XCTAssertEqual(pass.match(
+		XCTAssertEqual(pass.matchExpression(
 			integerLiteral,
 			withTemplate: 	anyDeclarationReference,
 				shouldSkipRootTypeComparison: false),
 			["_any": integerLiteral])
 
 		// Invalid subtype
-		XCTAssertNil(pass.match(
+		XCTAssertNil(pass.matchExpression(
 			integerLiteral,
 			withTemplate: stringDeclarationReference,
 			shouldSkipRootTypeComparison: false))
 
 		// Matches work recursively
 		XCTAssertEqual(
-			pass.match(
+			pass.matchExpression(
 				parenthesesStringExpression,
 				withTemplate: parenthesesAnyTemplate,
 				shouldSkipRootTypeComparison: false),
 			["_any": stringLiteral])
 		XCTAssertEqual(
-			pass.match(
+			pass.matchExpression(
 				parenthesesStringExpression,
 				withTemplate: parenthesesStringTemplate,
 				shouldSkipRootTypeComparison: false),
 			["_string": stringLiteral])
 		XCTAssertEqual(
-			pass.match(
+			pass.matchExpression(
 				parenthesesIntegerExpression,
 				withTemplate: parenthesesAnyTemplate,
 				shouldSkipRootTypeComparison: false),
 			["_any": integerLiteral])
-		XCTAssertNil(pass.match(
+		XCTAssertNil(pass.matchExpression(
 			parenthesesIntegerExpression,
 			withTemplate: parenthesesStringTemplate,
 			shouldSkipRootTypeComparison: false))
 
 		// Multiple matches
-		XCTAssertEqual(pass.match(
+		XCTAssertEqual(pass.matchExpression(
 				arrayExpression,
 				withTemplate: 	arrayTemplate,
 				shouldSkipRootTypeComparison: false),
@@ -274,11 +274,11 @@ class LibraryTranspilationTest: XCTestCase {
 			range: nil,
 			typeName: "Int")
 
-		XCTAssertNotNil(pass.match(
+		XCTAssertNotNil(pass.matchExpression(
 			implicitTypeExpression,
 			withTemplate: typeExpression,
 			shouldSkipRootTypeComparison: false))
-		XCTAssertNotNil(pass.match(
+		XCTAssertNotNil(pass.matchExpression(
 			typeExpression,
 			withTemplate: implicitTypeExpression,
 			shouldSkipRootTypeComparison: false))
@@ -311,7 +311,8 @@ class LibraryTranspilationTest: XCTestCase {
 						expression: closureExpression)),
 			]),
 			typeName: "Void",
-			allowsTrailingClosure: true)
+			allowsTrailingClosure: true,
+			isPure: true)
 
 		let normalExpression = CallExpression(
 			range: nil,
@@ -328,7 +329,8 @@ class LibraryTranspilationTest: XCTestCase {
 					expression: closureExpression),
 			]),
 			typeName: "Void",
-			allowsTrailingClosure: true)
+			allowsTrailingClosure: true,
+			isPure: true)
 
 		let template = CallExpression(
 			range: nil,
@@ -350,14 +352,15 @@ class LibraryTranspilationTest: XCTestCase {
 						isImplicit: false)),
 			]),
 			typeName: "Void",
-			allowsTrailingClosure: true)
+			allowsTrailingClosure: true,
+			isPure: true)
 
-		XCTAssertEqual(pass.match(
+		XCTAssertEqual(pass.matchExpression(
 				trailingExpression,
 				withTemplate: template,
 				shouldSkipRootTypeComparison: false),
 			["_closure": closureExpression])
-		XCTAssertEqual(pass.match(
+		XCTAssertEqual(pass.matchExpression(
 				normalExpression,
 				withTemplate: template,
 				shouldSkipRootTypeComparison: false),

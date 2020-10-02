@@ -21,6 +21,185 @@
 // gryphon output: Test cases/Bootstrap Outputs/warnings.gryphonAST
 // gryphon output: Test cases/Bootstrap Outputs/warnings.kt
 
+// gryphon ignore
+internal class GRYTemplate {
+	static func dot(_ left: GRYTemplate, _ right: String) -> GRYDotTemplate {
+		return GRYDotTemplate(left, right)
+	}
+
+	static func dot(_ left: String, _ right: String) -> GRYDotTemplate {
+		return GRYDotTemplate(GRYLiteralTemplate(string: left), right)
+	}
+
+	static func call(
+		_ function: GRYTemplate,
+		_ parameters: [GRYParameterTemplate])
+		-> GRYCallTemplate
+	{
+		return GRYCallTemplate(function, parameters)
+	}
+
+	static func call(
+		_ function: String,
+		_ parameters: [GRYParameterTemplate])
+		-> GRYCallTemplate
+	{
+		return GRYCallTemplate(function, parameters)
+	}
+}
+
+// gryphon ignore
+internal class GRYDotTemplate: GRYTemplate {
+	let left: GRYTemplate
+	let right: String
+
+	init(_ left: GRYTemplate, _ right: String) {
+		self.left = left
+		self.right = right
+	}
+}
+
+// gryphon ignore
+internal class GRYCallTemplate: GRYTemplate {
+	let function: GRYTemplate
+	let parameters: [GRYParameterTemplate]
+
+	init(_ function: GRYTemplate, _ parameters: [GRYParameterTemplate]) {
+		self.function = function
+		self.parameters = parameters
+	}
+
+	//
+	init(_ function: String, _ parameters: [GRYParameterTemplate]) {
+		self.function = GRYLiteralTemplate(string: function)
+		self.parameters = parameters
+	}
+}
+
+// gryphon ignore
+internal class GRYParameterTemplate: ExpressibleByStringLiteral {
+	let label: String?
+	let template: GRYTemplate
+
+	internal init(_ label: String?, _ template: GRYTemplate) {
+		if let existingLabel = label {
+			if existingLabel == "_" || existingLabel == "" {
+				self.label = nil
+			}
+			else {
+				self.label = label
+			}
+		}
+		else {
+			self.label = label
+		}
+
+		self.template = template
+	}
+
+	required init(stringLiteral: String) {
+		self.label = nil
+		self.template = GRYLiteralTemplate(string: stringLiteral)
+	}
+
+	static func labeledParameter(
+		_ label: String?,
+		_ template: GRYTemplate)
+		-> GRYParameterTemplate
+	{
+		return GRYParameterTemplate(label, template)
+	}
+
+	static func labeledParameter(
+		_ label: String?,
+		_ template: String)
+		-> GRYParameterTemplate
+	{
+		return GRYParameterTemplate(label, GRYLiteralTemplate(string: template))
+	}
+
+	static func dot(
+		_ left: GRYTemplate,
+		_ right: String)
+		-> GRYParameterTemplate
+	{
+		return GRYParameterTemplate(nil, GRYDotTemplate(left, right))
+	}
+
+	static func dot(
+		_ left: String,
+		_ right: String)
+		-> GRYParameterTemplate
+	{
+		return GRYParameterTemplate(nil, GRYDotTemplate(GRYLiteralTemplate(string: left), right))
+	}
+
+	static func call(
+		_ function: GRYTemplate,
+		_ parameters: [GRYParameterTemplate])
+		-> GRYParameterTemplate
+	{
+		return GRYParameterTemplate(nil, GRYCallTemplate(function, parameters))
+	}
+
+	static func call(
+		_ function: String,
+		_ parameters: [GRYParameterTemplate])
+		-> GRYParameterTemplate
+	{
+		return GRYParameterTemplate(nil, GRYCallTemplate(function, parameters))
+	}
+}
+
+// gryphon ignore
+internal class GRYLiteralTemplate: GRYTemplate {
+	let string: String
+
+	init(string: String) {
+		self.string = string
+	}
+}
+
+// gryphon ignore
+internal class GRYConcatenatedTemplate: GRYTemplate {
+	let left: GRYTemplate
+	let right: GRYTemplate
+
+	init(left: GRYTemplate, right: GRYTemplate) {
+		self.left = left
+		self.right = right
+	}
+}
+
+// gryphon ignore
+internal func + (
+	left: GRYTemplate,
+	right: GRYTemplate)
+	-> GRYConcatenatedTemplate
+{
+	GRYConcatenatedTemplate(left: left, right: right)
+}
+
+// gryphon ignore
+internal func + (left: String, right: GRYTemplate) -> GRYConcatenatedTemplate {
+	GRYConcatenatedTemplate(left: GRYLiteralTemplate(string: left), right: right)
+}
+
+// gryphon ignore
+internal func + (left: GRYTemplate, right: String) -> GRYConcatenatedTemplate {
+	GRYConcatenatedTemplate(left: left, right: GRYLiteralTemplate(string: right))
+}
+
+// MARK: - Templates
+// Replacement for Comparable
+// gryphon ignore
+private struct _Comparable: Comparable {
+	static func < (lhs: _Comparable, rhs: _Comparable) -> Bool {
+		return false
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 // Test warnings for mutable value types
 struct UnsupportedStruct {
 	let immutableVariable = 0
@@ -117,3 +296,18 @@ struct H {
 }
 
 let j = H(1)
+
+// No warnings for pure templates
+class K {
+	let k: Int? = nil
+}
+
+func gryphonTemplates() {
+	let _k: K = K()
+
+	_ = _k.k
+	_ = /* gryphon pure */ GRYTemplate.call(.dot("_k", "k"), [])
+}
+
+let k = K()
+if let l = k.k, let m = k.k { }

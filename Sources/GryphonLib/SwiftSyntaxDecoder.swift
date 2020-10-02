@@ -3122,13 +3122,18 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				declarationReferenceExpression.identifier
 		}
 
+		let isPure = !getLeadingComments(
+			forSyntax: Syntax(functionCallExpression),
+			withKey: .pure).isEmpty
+
 		return CallExpression(
 			syntax: Syntax(functionCallExpression),
 			range: functionCallExpression.getRange(inFile: self.sourceFile),
 			function: functionExpressionTranslation,
 			parameters: tupleExpression,
 			typeName: callType,
-			allowsTrailingClosure: false)
+			allowsTrailingClosure: false,
+			isPure: isPure)
 	}
 
 	/// The type has to be passed in because SourceKit needs the parentheses to determine the tuple

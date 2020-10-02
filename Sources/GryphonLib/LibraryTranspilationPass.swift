@@ -86,8 +86,12 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 		return super.replaceFunctionDeclaration(functionDeclaration)
 	}
 
+	/// Turns a template expression (e.g. `GRYTemplate.call("f", ...)`) into an actual expression
+	/// (e.g. `f(...)`).
+	/// If the expression has been marked as pure, propagates this to any inner call expressions.
 	private func processTemplateNodeExpression(
-		_ expression: Expression)
+		_ expression: Expression,
+		callsArePure: Bool = false)
 		-> Expression
 	{
 		if let callExpression = expression as? CallExpression {
@@ -95,6 +99,8 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 				let tupleExpression = callExpression.parameters as? TupleExpression,
 				tupleExpression.pairs.count == 2
 			{
+				let isPure = callsArePure || callExpression.isPure
+
 				if let declarationExpression =
 					dotExpression.rightExpression as? DeclarationReferenceExpression
 				{
@@ -103,9 +109,10 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 							tupleExpression.pairs[1].expression as? ArrayExpression
 					{
 						let function = processTemplateNodeExpression(
-							tupleExpression.pairs[0].expression)
+							tupleExpression.pairs[0].expression,
+							callsArePure: isPure)
 						let parameters = parametersExpression.elements.map {
-								processTemplateParameter($0)
+								processTemplateParameter($0, callsArePure: isPure)
 							}.toMutableList()
 						return CallExpression(
 							syntax: nil,
@@ -116,14 +123,16 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 								range: nil,
 								pairs: parameters),
 							typeName: nil,
-							allowsTrailingClosure: true)
+							allowsTrailingClosure: true,
+							isPure: isPure)
 					}
 					if declarationExpression.identifier == "dot",
 						let stringExpression =
 							tupleExpression.pairs[1].expression as? LiteralStringExpression
 					{
-						let left =
-							processTemplateNodeExpression(tupleExpression.pairs[0].expression)
+						let left = processTemplateNodeExpression(
+							tupleExpression.pairs[0].expression,
+							callsArePure: isPure)
 						let right = LiteralCodeExpression(
 							syntax: nil,
 							range: nil,
@@ -154,9 +163,11 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 				syntax: nil,
 				range: nil,
 				leftExpression: processTemplateNodeExpression(
-					binaryOperatorExpression.leftExpression),
+					binaryOperatorExpression.leftExpression,
+					callsArePure: callsArePure),
 				rightExpression: processTemplateNodeExpression(
-					binaryOperatorExpression.rightExpression))
+					binaryOperatorExpression.rightExpression,
+					callsArePure: callsArePure))
 		}
 
 		Compiler.handleWarning(
@@ -170,7 +181,8 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 	}
 
 	private func processTemplateParameter(
-		_ expression: Expression)
+		_ expression: Expression,
+		callsArePure: Bool)
 		-> LabeledExpression
 	{
 		if let expression = expression as? LiteralStringExpression {
@@ -194,8 +206,9 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 					let stringExpression =
 						tupleExpression.pairs[0].expression as? LiteralStringExpression
 				{
-					let expression =
-						processTemplateNodeExpression(tupleExpression.pairs[1].expression)
+					let expression = processTemplateNodeExpression(
+						tupleExpression.pairs[1].expression,
+						callsArePure: callsArePure)
 					return LabeledExpression(
 						label: stringExpression.value,
 						expression: expression)
@@ -205,7 +218,7 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 
 		return LabeledExpression(
 			label: nil,
-			expression: processTemplateNodeExpression(expression))
+			expression: processTemplateNodeExpression(expression, callsArePure: callsArePure))
 	}
 
 	/// Some String literals are written as sums of string literals (i.e. "a" + "b") or they'd be
@@ -241,7 +254,7 @@ public class ReplaceTemplatesTranspilationPass: TranspilationPass {
 		-> Expression
 	{
 		for template in context.templates {
-			if let matches = match(expression, withTemplate: template.swiftExpression) {
+			if let matches = matchExpression(expression, withTemplate: template.swiftExpression) {
 
 				// Make the matches dictionary into a list
 				let matchesList: MutableList<(String, Expression)> = []
@@ -387,7 +400,7 @@ private class ReplaceTemplateMatchesTranspilationPass: TranspilationPass {
 }
 
 extension ReplaceTemplatesTranspilationPass {
-	func match(
+	func matchExpression(
 		_ expression: Expression,
 		withTemplate template: Expression,
 		shouldSkipRootTypeComparison: Bool = true)

@@ -857,7 +857,8 @@ public class TranspilationPass {
 			function: replaceExpression(callExpression.function),
 			parameters: replaceExpression(callExpression.parameters),
 			typeName: callExpression.typeName,
-			allowsTrailingClosure: callExpression.allowsTrailingClosure)
+			allowsTrailingClosure: callExpression.allowsTrailingClosure,
+			isPure: callExpression.isPure)
 	}
 
 	func replaceClosureExpression( // gryphon annotation: open
@@ -1817,7 +1818,8 @@ public class CallsToSuperclassInitializersTranspilationPass: TranspilationPass {
 					function: leftExpression,
 					parameters: callExpression.parameters,
 					typeName: callExpression.typeName,
-					allowsTrailingClosure: callExpression.allowsTrailingClosure)
+					allowsTrailingClosure: callExpression.allowsTrailingClosure,
+					isPure: callExpression.isPure)
 			}
 		}
 
@@ -2726,7 +2728,8 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 							range: callExpression.range,
 							pairs: []),
 						typeName: typeExpression.typeName,
-						allowsTrailingClosure: callExpression.allowsTrailingClosure))
+						allowsTrailingClosure: callExpression.allowsTrailingClosure,
+						isPure: callExpression.isPure))
 			}
 		}
 
@@ -2814,7 +2817,8 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 								range: tupleExpression.range,
 								pairs: []),
 							typeName: callExpression.typeName,
-							allowsTrailingClosure: callExpression.allowsTrailingClosure)
+							allowsTrailingClosure: callExpression.allowsTrailingClosure,
+							isPure: callExpression.isPure)
 					}
 				}
 			}
@@ -2850,7 +2854,8 @@ public class OptionalFunctionCallsTranspilationPass: TranspilationPass {
 						isImplicit: false)),
 				parameters: callExpression.parameters,
 				typeName: callExpression.typeName,
-				allowsTrailingClosure: callExpression.allowsTrailingClosure)
+				allowsTrailingClosure: callExpression.allowsTrailingClosure,
+				isPure: callExpression.isPure)
 		}
 		else {
 			return super.processCallExpression(callExpression)
@@ -2930,7 +2935,8 @@ public class DataStructureInitializersTranspilationPass: TranspilationPass {
 					isImplicit: false),
 				parameters: parameters,
 				typeName: typeName,
-				allowsTrailingClosure: callExpression.allowsTrailingClosure)
+				allowsTrailingClosure: callExpression.allowsTrailingClosure,
+				isPure: callExpression.isPure)
 		}
 
 		return super.replaceCallExpression(callExpression)
@@ -3108,7 +3114,8 @@ public class TuplesToPairsTranspilationPass: TranspilationPass {
 						expression: super.replaceExpression(tupleExpression.pairs[1].expression)),
 			]),
 			typeName: pairType,
-			allowsTrailingClosure: false)
+			allowsTrailingClosure: false,
+			isPure: true)
 	}
 }
 
@@ -3325,7 +3332,8 @@ public class RefactorOptionalsInSubscriptsTranspilationPass: TranspilationPass {
 						isImplicit: false),
 					parameters: subscriptExpression.indexExpression,
 					typeName: subscriptExpression.typeName,
-					allowsTrailingClosure: false)))
+					allowsTrailingClosure: false,
+					isPure: true)))
 		}
 		else {
 			return super.replaceSubscriptExpression(subscriptExpression)
@@ -4404,7 +4412,8 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 		-> MutableList<(Syntax?, SourceFileRange)>
 	{
 		if let expression = expression as? CallExpression {
-			if !self.context.isReferencingPureFunction(expression),
+			if !expression.isPure,
+				!self.context.isReferencingPureFunction(expression),
 				let range = expression.range
 			{
 				return [(expression.syntax, range)]

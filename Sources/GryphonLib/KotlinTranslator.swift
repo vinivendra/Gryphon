@@ -1899,7 +1899,8 @@ public class KotlinTranslator {
 					function: callExpression.function,
 					parameters: tupleExpression,
 					typeName: callExpression.typeName,
-					allowsTrailingClosure: callExpression.allowsTrailingClosure)
+					allowsTrailingClosure: callExpression.allowsTrailingClosure,
+					isPure: callExpression.isPure)
 
 				return try translateParameters(
 					forCallExpression: newCallExpression,

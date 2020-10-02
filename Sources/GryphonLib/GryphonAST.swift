@@ -2146,6 +2146,8 @@ public class CallExpression: Expression {
 	/// instances of calls with variadics and default arguments). This gets decided in a
 	/// Transpilation Pass.
 	var allowsTrailingClosure: Bool
+	/// Signals if this call expression was marked as pure by a translation comment
+	var isPure: Bool
 
 	init(
 		syntax: Syntax? = nil,
@@ -2153,12 +2155,14 @@ public class CallExpression: Expression {
 		function: Expression,
 		parameters: Expression,
 		typeName: String?,
-		allowsTrailingClosure: Bool)
+		allowsTrailingClosure: Bool,
+		isPure: Bool)
 	{
 		self.function = function
 		self.parameters = parameters
 		self.typeName = typeName
 		self.allowsTrailingClosure = allowsTrailingClosure
+		self.isPure = isPure
 		super.init(
 			syntax: syntax,
 			range: range,
@@ -2170,7 +2174,8 @@ public class CallExpression: Expression {
 			PrintableTree.initOrNil("type", [PrintableTree.initOrNil(typeName)]),
 			PrintableTree.ofExpressions("function", [function]),
 			PrintableTree.ofExpressions("parameters", [parameters]),
-			allowsTrailingClosure ? PrintableTree("allowsTrailingClosure") : nil, ]
+			allowsTrailingClosure ? PrintableTree("allowsTrailingClosure") : nil,
+			isPure ? PrintableTree("isPure") : nil, ]
 	}
 
 	override var swiftType: String? { // gryphon annotation: override
@@ -2192,7 +2197,8 @@ public class CallExpression: Expression {
 		return lhs.function == rhs.function &&
 			lhs.parameters == rhs.parameters &&
 			lhs.typeName == rhs.typeName &&
-			lhs.allowsTrailingClosure == rhs.allowsTrailingClosure
+			lhs.allowsTrailingClosure == rhs.allowsTrailingClosure &&
+			lhs.isPure == rhs.isPure
 	}
 }
 

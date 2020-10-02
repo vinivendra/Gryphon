@@ -2625,7 +2625,8 @@ public class SwiftTranslator {
 			function: function,
 			parameters: parameters,
 			typeName: typeName,
-			allowsTrailingClosure: true)
+			allowsTrailingClosure: true,
+			isPure: false)
 	}
 
 	internal func translateClosureExpression(
