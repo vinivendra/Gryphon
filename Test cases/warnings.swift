@@ -107,13 +107,13 @@ struct D {
 let noWarnings: [Int] = []
 
 // No warnings for failing to match a call expression to a non-existent memberwise initializer
-struct A {
-	let b: Int
+struct H {
+	let i: Int
 
 	// gryphon ignore
-	init(_ b: Int) {
-		self.b = b
+	init(_ i: Int) {
+		self.i = i
 	}
 }
 
-let a = A(1)
+let j = H(1)
