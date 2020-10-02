@@ -285,6 +285,15 @@ public class ReplaceTemplatesTranspilationPass: TranspilationPass {
 				}
 				result.range = expression.range
 
+				// If the user marked this function call as pure, don't let that be overwritten by
+				// an impure template expression
+				if let callExpression = expression as? CallExpression,
+					callExpression.isPure,
+					let resultAsCall = result as? CallExpression
+				{
+					resultAsCall.isPure = true
+				}
+
 				return result
 			}
 		}

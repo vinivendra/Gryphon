@@ -328,3 +328,5 @@ if let o = n(), let p = /* gryphon pure */ n() { }
 
 let q = ""
 if let r = q.first, let s = q.first { }
+
+if true, let b = /* gryphon pure */ nativeArray.first(where: { $0 == 0 }) { }

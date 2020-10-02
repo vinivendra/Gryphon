@@ -172,7 +172,7 @@ class IntegrationTest: XCTestCase {
 						.joined(separator: "\n"))
 
 			// Make sure the comment for muting warnings is working
-			let numberOfExpectedWarnings = 13
+			let numberOfExpectedWarnings = 14
 			XCTAssert(
 				Compiler.numberOfWarnings == numberOfExpectedWarnings,
 				"Expected \(numberOfExpectedWarnings) warnings, found " +
@@ -195,10 +195,10 @@ class IntegrationTest: XCTestCase {
 					"found \(warnings.count) (printed below, if any).\n" +
 					warnings.map { $0.fullMessage }.joined(separator: "\n"))
 
-			// 3 warnings here (instead of 2) may indicate a problem with muting warnings
+			// 4 warnings here (instead of 3) may indicate a problem with muting warnings
 			warnings = Compiler.issues.filter { $0.fullMessage.contains("Native type") }
 			XCTAssertEqual(
-				warnings.count, 2,
+				warnings.count, 3,
 				"Expected 2 warnings containing \"Native type\", " +
 					"found \(warnings.count) (printed below, if any).\n" +
 					warnings.map { $0.fullMessage }.joined(separator: "\n"))
