@@ -100,4 +100,6 @@ fun main(args: Array<String>) {
 	if (b == MyEnum.BAZ) {
 		println("MyEnum.BAZ")
 	}
+
+	val c: K.A = K.A.B(0)
 }

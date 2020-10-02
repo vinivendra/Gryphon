@@ -1587,6 +1587,12 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 		{
 			enumType = enumExpression.typeName
 		}
+		else if context.isUsingSwiftSyntax,
+			let enumExpression = dotExpression.leftExpression as? DotExpression,
+			let typeName = enumExpression.asString()
+		{
+			enumType = typeName
+		}
 		else {
 			return super.replaceDotExpression(dotExpression)
 		}

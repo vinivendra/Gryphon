@@ -87,3 +87,5 @@ public class K {
 		}
 	}
 }
+
+let c = K.A.b(int: 0)

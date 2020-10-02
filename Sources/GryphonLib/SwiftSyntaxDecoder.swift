@@ -1036,7 +1036,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					let dotExpression = try convertMemberAccessExpression(
 						enumExpression,
 						typeName: enumType)
-					if let typeName = dotExpressionToString(dotExpression) {
+					if let typeName = dotExpression.asString() {
 						conditions.append(.condition(expression: BinaryOperatorExpression(
 							syntax: Syntax(ifCondition),
 							range: ifCondition.getRange(inFile: self.sourceFile),
@@ -1135,7 +1135,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				let dotExpression = try convertMemberAccessExpression(
 					calledExpression,
 					typeName: enumType)
-				if let typeName = dotExpressionToString(dotExpression) {
+				if let typeName = dotExpression.asString() {
 					conditions.append(BinaryOperatorExpression(
 						syntax: Syntax(pattern),
 						range: pattern.getRange(inFile: self.sourceFile),
@@ -1234,29 +1234,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		return CaseLetResult(
 			conditions: conditions,
 			variables: variableDeclarations)
-	}
-
-	/// Takes an expression like `A.B.C` and returns it as a string ("A.B.C"). Returns `nil` if any
-	/// expressions in the dot chain aren't declaration references or type expressions.
-	private func dotExpressionToString(_ expression: Expression) -> String? {
-		if let typeExpression = expression as? TypeExpression {
-			return typeExpression.typeName
-		}
-		else if let declarationExpression = expression as? DeclarationReferenceExpression {
-			return declarationExpression.identifier
-		}
-		else if let dotExpression = expression as? DotExpression {
-			guard let rightString = dotExpressionToString(dotExpression.rightExpression),
-				let leftString = dotExpressionToString(dotExpression.leftExpression) else
-			{
-				return nil
-			}
-
-			return leftString + "." + rightString
-		}
-		else {
-			return nil
-		}
 	}
 
 	func convertReturnStatement(
@@ -2952,7 +2929,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	func convertMemberAccessExpression(
 		_ memberAccessExpression: MemberAccessExprSyntax,
 		typeName: String? = nil)
-		throws -> Expression
+		throws -> DotExpression
 	{
 		// Get information for the right side
 		let memberType = memberAccessExpression.getType(fromList: self.expressionTypes) ?? typeName
@@ -2985,7 +2962,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				typeName: leftType)
 		}
 		else {
-			return try errorExpression(
+			leftExpression = try errorExpression(
 				forASTNode: Syntax(memberAccessExpression),
 				withMessage: "Failed to convert left side in member access expression")
 		}

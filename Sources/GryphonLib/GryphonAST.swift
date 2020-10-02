@@ -1912,6 +1912,35 @@ public class DotExpression: Expression {
 		}
 	}
 
+	/// Takes an expression like `A.B.C` and returns it as a string ("A.B.C"). Returns `nil` if any
+	/// expressions in the dot chain aren't declaration references or type expressions.
+	/// This allows DotExpressions, TypeExpressions and DeclarationReferenceExpressions to be used
+	/// somewhat interchangeably in some contexts.
+	public func asString() -> String? {
+		return dotExpressionToString(self)
+	}
+
+	private func dotExpressionToString(_ expression: Expression) -> String? {
+		if let typeExpression = expression as? TypeExpression {
+			return typeExpression.typeName
+		}
+		else if let declarationExpression = expression as? DeclarationReferenceExpression {
+			return declarationExpression.identifier
+		}
+		else if let dotExpression = expression as? DotExpression {
+			guard let rightString = dotExpressionToString(dotExpression.rightExpression),
+				let leftString = dotExpressionToString(dotExpression.leftExpression) else
+			{
+				return nil
+			}
+
+			return leftString + "." + rightString
+		}
+		else {
+			return nil
+		}
+	}
+
 	public static func == (lhs: DotExpression, rhs: DotExpression) -> Bool {
 		return lhs.leftExpression == rhs.leftExpression &&
 			lhs.rightExpression == rhs.rightExpression
