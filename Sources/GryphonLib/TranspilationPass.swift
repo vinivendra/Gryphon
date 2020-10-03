@@ -1000,7 +1000,7 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 		}
 
 		if let typeParent = maybeTypeParent {
-			if let inheritances = context.inheritances[typeParent] {
+			if let inheritances = context.inheritances.atomic[typeParent] {
 				// If the description variable isn't satisfying a CustomStringConvertible
 				// requirement, do nothing
 				if !inheritances.contains("CustomStringConvertible") {

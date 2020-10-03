@@ -321,7 +321,7 @@ public class KotlinTranslator {
 		if !enumDeclaration.inherits.isEmpty {
 			var translatedInheritedTypes = enumDeclaration.inherits.map { translateType($0) }
 			translatedInheritedTypes = translatedInheritedTypes.map {
-				self.context.protocols.contains($0) ?
+				self.context.protocols.atomic.contains($0) ?
 					$0 :
 					$0 + "()"
 			}
@@ -518,7 +518,7 @@ public class KotlinTranslator {
 		if !structDeclaration.inherits.isEmpty {
 			var translatedInheritedTypes = structDeclaration.inherits.map { translateType($0) }
 			translatedInheritedTypes = translatedInheritedTypes.map {
-				self.context.protocols.contains($0) ?
+				self.context.protocols.atomic.contains($0) ?
 					$0 :
 					$0 + "()"
 			}

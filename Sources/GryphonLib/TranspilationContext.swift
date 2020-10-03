@@ -121,34 +121,34 @@ public class TranspilationContext {
 	/// This variable is used to store enum definitions in order to allow the translator
 	/// to translate them as sealed classes (see the `translate(dotSyntaxCallExpression)` method).
 	/// Uses enum names as keys, and the declarations themselves as values.
-	internal var sealedClasses: MutableMap<String, EnumDeclaration> = [:]
+	private var sealedClasses: Atomic<MutableMap<String, EnumDeclaration>> = Atomic([:])
 
 	/// This variable is used to store enum definitions in order to allow the translator
 	/// to translate them as enum classes (see the `translate(dotSyntaxCallExpression)` method).
 	/// Uses enum names as keys, and the declarations themselves as values.
-	internal var enumClasses: MutableMap<String, EnumDeclaration> = [:]
+	private var enumClasses: Atomic<MutableMap<String, EnumDeclaration>> = Atomic([:])
 
 	public func addEnumClass(_ declaration: EnumDeclaration) {
-		enumClasses[declaration.enumName] = declaration
+		enumClasses.mutateAtomically { $0[declaration.enumName] = declaration }
 	}
 
 	public func addSealedClass(_ declaration: EnumDeclaration) {
-		sealedClasses[declaration.enumName] = declaration
+		sealedClasses.mutateAtomically { $0[declaration.enumName] = declaration }
 	}
 
 	/// Gets an enum class with the given name, if one was recorded
 	public func getEnumClass(named name: String) -> EnumDeclaration? {
-		return enumClasses[name]
+		return enumClasses.atomic[name]
 	}
 
 	/// Gets a sealed class with the given name, if one was recorded
 	public func getSealedClass(named name: String) -> EnumDeclaration? {
-		return sealedClasses[name]
+		return sealedClasses.atomic[name]
 	}
 
 	/// Gets an enum class or a sealed class with the given name, if one was recorded
 	public func getEnum(named name: String) -> EnumDeclaration? {
-		return enumClasses[name] ?? sealedClasses[name]
+		return enumClasses.atomic[name] ?? sealedClasses.atomic[name]
 	}
 
 	/// Checks if an enum class with the given name was recorded
@@ -170,23 +170,23 @@ public class TranspilationContext {
 	/// This variable is used to store protocol definitions in order to allow the translator
 	/// to translate conformances to them correctly (instead of as class inheritances).
 	///
-	internal var protocols: MutableList<String> = []
+	internal var protocols: Atomic<MutableList<String>> = Atomic([])
 
 	public func addProtocol(_ protocolName: String) {
-		protocols.append(protocolName)
+		protocols.mutateAtomically { $0.append(protocolName) }
 	}
 
 	///
 	/// This variable is used to store the inheritances (superclasses and protocols) of each type.
 	/// Keys correspond to the type, values correspond to its inheritances.
 	///
-	internal var inheritances: MutableMap<String, List<String>> = [:]
+	internal var inheritances: Atomic<MutableMap<String, List<String>>> = Atomic([:])
 
 	public func addInheritances(
 		forType typeName: String,
 		inheritances typeInheritances: List<String>)
 	{
-		inheritances[typeName] = typeInheritances
+		inheritances.mutateAtomically { $0[typeName] = typeInheritances }
 	}
 
 	// MARK: - Function translations
@@ -206,10 +206,10 @@ public class TranspilationContext {
 		let parameters: List<FunctionParameter>
 	}
 
-	private var functionTranslations: MutableList<FunctionTranslation> = []
+	private var functionTranslations: Atomic<MutableList<FunctionTranslation>> = Atomic([])
 
 	public func addFunctionTranslation(_ newValue: FunctionTranslation) {
-		functionTranslations.append(newValue)
+		functionTranslations.mutateAtomically { $0.append(newValue) }
 	}
 
 	public func getFunctionTranslation(forName name: String, typeName: String)
@@ -217,7 +217,8 @@ public class TranspilationContext {
 	{
 		// Functions with unnamed parameters here are identified only by their prefix. For instance
 		// `f(_:_:)` here is named `f` but has been stored earlier as `f(_:_:)`.
-		for functionTranslation in functionTranslations {
+		let allTranslations = functionTranslations.atomic
+		for functionTranslation in allTranslations {
 			// Avoid confusions with Void and ()
 			let translationType = functionTranslation.typeName
 				.replacingOccurrences(of: "Void", with: "()")
@@ -249,10 +250,10 @@ public class TranspilationContext {
 	// MARK: - Pure functions
 
 	/// Stores pure functions so we can reference them later
-	private var pureFunctions: MutableList<FunctionDeclaration> = []
+	private var pureFunctions: Atomic<MutableList<FunctionDeclaration>> = Atomic([])
 
 	public func recordPureFunction(_ newValue: FunctionDeclaration) {
-		pureFunctions.append(newValue)
+		pureFunctions.mutateAtomically { $0.append(newValue) }
 	}
 
 	public func isReferencingPureFunction(
@@ -270,7 +271,8 @@ public class TranspilationContext {
 		}
 
 		if let declarationExpression = finalCallExpression as? DeclarationReferenceExpression {
-			for functionDeclaration in pureFunctions {
+			let allPureFunctions = pureFunctions.atomic
+			for functionDeclaration in allPureFunctions {
 				if declarationExpression.identifier.hasPrefix(functionDeclaration.prefix),
 					declarationExpression.typeName == functionDeclaration.functionType
 				{

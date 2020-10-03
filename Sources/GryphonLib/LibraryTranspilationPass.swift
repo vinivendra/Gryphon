@@ -893,7 +893,7 @@ internal extension TranspilationContext {
 				return true
 			}
 			else if superType == "_CustomStringConvertible" {
-				if let subTypeInheritances = inheritances[subType] {
+				if let subTypeInheritances = inheritances.atomic[subType] {
 					return subTypeInheritances.contains("CustomStringConvertible")
 				}
 				else {
