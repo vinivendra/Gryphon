@@ -51,13 +51,13 @@ public struct Shell {
 
 	/// An operation queue used to read a process's standard error at the same time that the
 	/// process's standard output is read in the main queue
-	private static let standardErrorQueue: OperationQueue =  {
-			let queue = OperationQueue()
-			queue.name = String("shell_background")
-			queue.maxConcurrentOperationCount =
-				OperationQueue.defaultMaxConcurrentOperationCount
-			return queue
-		}()
+	private static func createStandardErrorQueue() -> OperationQueue {
+		let queue = OperationQueue()
+		queue.name = String("shell_background")
+		queue.maxConcurrentOperationCount =
+			OperationQueue.defaultMaxConcurrentOperationCount
+		return queue
+	}
 
 	@discardableResult
 	internal static func runShellCommand(
@@ -96,20 +96,25 @@ public struct Shell {
 		var error = ""
 		var errorStream = Data()
 
-		var completeErrorReceived = false
+		let standardErrorQueue = createStandardErrorQueue()
 		standardErrorQueue.addOperation(BlockOperation(block: {
 				while handleInput(pipe: standardError, stream: &errorStream, result: &error) {}
-				completeErrorReceived = true
 			}))
 
 		while handleInput(pipe: standardOutput, stream: &outputStream, result: &output) {}
-		while !completeErrorReceived {}
+
+		standardErrorQueue.waitUntilAllOperationsAreFinished()
 
 		while process.isRunning {}
 
 		let status = process.terminationStatus
 
-		return CommandOutput(standardOutput: output, standardError: error, status: status)
+		let result = CommandOutput(
+			standardOutput: output,
+			standardError: error,
+			status: status)
+
+		return result
 	}
 
 	@discardableResult
