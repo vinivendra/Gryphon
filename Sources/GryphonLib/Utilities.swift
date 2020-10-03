@@ -21,6 +21,8 @@ import os
 
 typealias Semaphore = NSLock
 internal let libraryUpdateLock: Semaphore = NSLock()
+/// Used for synchronizing anything that prints to either stdout or stderr
+internal let printingLock = NSLock()
 
 internal class Log {
 	static let os_log = OSLog(

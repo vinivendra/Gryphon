@@ -26,11 +26,28 @@ import SwiftSyntax
 
 public class Compiler {
 	public static var logError: ((String) -> ()) = { input in
+		printingLock.lock()
 		fputs(input + "\n", stderr) // gryphon ignore
 		// gryphon insert: System.err.println(input)
+		printingLock.unlock()
 	}
 
-	public static var logIndentation = 0
+	private static let __logIndentationLock = NSLock()
+	private static var __logIndentation = 0
+	private static var logIndentation: Int {
+		get {
+			__logIndentationLock.lock()
+			let result = __logIndentation
+			__logIndentationLock.unlock()
+			return result
+		}
+		set {
+			__logIndentationLock.lock()
+			__logIndentation = newValue
+			__logIndentationLock.unlock()
+		}
+	}
+
 	public static var shouldLogProgress = false
 
 	static func log(_ contents: String) {
@@ -72,9 +89,13 @@ public class Compiler {
 		outputFunction(contents)
 	}
 
+	/// The function used to output logs to the console. Set to a variable for testing. Any
+	/// alternatives to this function should consider using the `printingLock`.
 	public static var outputFunction: ((Any) -> ()) =
 		{ contents in
+			printingLock.lock()
 			print(contents)
+			printingLock.unlock()
 		}
 
 	//
