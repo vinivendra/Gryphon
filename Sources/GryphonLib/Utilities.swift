@@ -24,6 +24,39 @@ internal let libraryUpdateLock: Semaphore = NSLock()
 /// Used for synchronizing anything that prints to either stdout or stderr
 internal let printingLock = NSLock()
 
+class Atomic<Value> {
+    var __value: Value
+	let lock = NSLock()
+
+	init(_ value: Value) {
+        self.__value = value
+    }
+
+    var value: Value {
+        get {
+			lock.lock()
+			let result = __value
+			lock.unlock()
+			return result
+		}
+        set {
+			lock.lock()
+			__value = newValue
+			lock.unlock()
+		}
+    }
+
+	/// Use this to mutate the value (to guarantee that the get and set are atomic). Returns the new
+	/// value.
+	@discardableResult
+	func mutate(_ closure: (inout Value) -> ()) -> Value {
+		lock.lock()
+		closure(&__value)
+		lock.unlock()
+		return __value
+	}
+}
+
 internal class Log {
 	static let os_log = OSLog(
 		subsystem: "com.gryphon.app",

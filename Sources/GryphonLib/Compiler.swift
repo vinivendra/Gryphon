@@ -25,21 +25,7 @@ import Foundation
 import SwiftSyntax
 
 public class Compiler {
-	private static let __logIndentationLock = NSLock()
-	private static var __logIndentation = 0
-	private static var logIndentation: Int {
-		get {
-			__logIndentationLock.lock()
-			let result = __logIndentation
-			__logIndentationLock.unlock()
-			return result
-		}
-		set {
-			__logIndentationLock.lock()
-			__logIndentation = newValue
-			__logIndentationLock.unlock()
-		}
-	}
+	private static var logIndentation: Atomic<Int> = Atomic(0)
 
 	public static var shouldLogProgress = false
 
@@ -53,7 +39,7 @@ public class Compiler {
 		// negative, this shouldn't crash)
 		var indentation = ""
 		var i = 0
-		while i < logIndentation {
+		while i < logIndentation.value {
 			indentation += "\t"
 			i += 1
 		}
@@ -68,12 +54,12 @@ public class Compiler {
 	/// Log the start of a new operation
 	static func logStart(_ contents: String) {
 		log(contents)
-		logIndentation += 1
+		logIndentation.mutate { $0 += 1 }
 	}
 
 	/// Log the end of an operation
 	static func logEnd(_ contents: String) {
-		logIndentation -= 1
+		logIndentation.mutate { $0 -= 1 }
 		log(contents)
 	}
 
