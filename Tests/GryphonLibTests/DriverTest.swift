@@ -70,10 +70,10 @@ class DriverTest: XCTestCase {
 
 		var compilerOutput = ""
 		var compilerError = ""
-		Compiler.outputFunction = { contents in
-				compilerOutput = compilerOutput + "\(contents)"
+		Compiler.outputFunction = { (contents: Any, terminator: String) -> () in
+				compilerOutput = compilerOutput + "\(contents)" + terminator
 			}
-		Compiler.logError = { contents in
+		Compiler.logError = { (contents: Any) -> () in
 				compilerError = compilerError + "\(contents)"
 			}
 
@@ -119,10 +119,10 @@ class DriverTest: XCTestCase {
 
 		var compilerOutput = ""
 		var compilerError = ""
-		Compiler.outputFunction = { contents in
-				compilerOutput = compilerOutput + "\(contents)"
+		Compiler.outputFunction = { (contents: Any, terminator: String) -> () in
+				compilerOutput = compilerOutput + "\(contents)" + terminator
 			}
-		Compiler.logError = { contents in
+		Compiler.logError = { (contents: Any) -> () in
 				compilerError = compilerError + "\(contents)"
 			}
 

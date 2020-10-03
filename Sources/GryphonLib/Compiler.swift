@@ -25,13 +25,6 @@ import Foundation
 import SwiftSyntax
 
 public class Compiler {
-	public static var logError: ((String) -> ()) = { input in
-		printingLock.lock()
-		fputs(input + "\n", stderr) // gryphon ignore
-		// gryphon insert: System.err.println(input)
-		printingLock.unlock()
-	}
-
 	private static let __logIndentationLock = NSLock()
 	private static var __logIndentation = 0
 	private static var logIndentation: Int {
@@ -85,18 +78,27 @@ public class Compiler {
 	}
 
 	/// Used for printing strings to stdout. Can be changed by tests in order to check the outputs.
-	public static func output(_ contents: Any) {
-		outputFunction(contents)
+	public static func output(_ contents: Any, terminator: String = "\n") {
+		outputFunction(contents, terminator)
 	}
 
 	/// The function used to output logs to the console. Set to a variable for testing. Any
 	/// alternatives to this function should consider using the `printingLock`.
-	public static var outputFunction: ((Any) -> ()) =
-		{ contents in
+	public static var outputFunction: ((Any, String) -> ()) =
+		{ contents, terminator in
 			printingLock.lock()
-			print(contents)
+			print(contents, terminator: terminator)
 			printingLock.unlock()
 		}
+
+	/// The function used to error logs to stderr. Set to a variable for testing. Any
+	/// alternatives to this function should consider using the `printingLock`.
+	public static var logError: ((String) -> ()) = { input in
+		printingLock.lock()
+		fputs(input + "\n", stderr) // gryphon ignore
+		// gryphon insert: System.err.println(input)
+		printingLock.unlock()
+	}
 
 	//
 	public static var shouldStopAtFirstError = false

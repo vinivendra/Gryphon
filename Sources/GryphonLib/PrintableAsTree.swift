@@ -89,7 +89,7 @@ public extension PrintableAsTree {
 	func prettyPrint(
 		indentation: MutableList<String> = [],
 		isLast: Bool = true,
-		printFunction: (String) -> () = { print($0, terminator: "") })
+		printFunction: (String) -> () = { Compiler.output($0, terminator: "") })
 	{
 		let verticalBar = Compiler.shouldAvoidUnicodeCharacters ? "|" : "│"
 		let verticalRightBar = Compiler.shouldAvoidUnicodeCharacters ? "|" : "├"
