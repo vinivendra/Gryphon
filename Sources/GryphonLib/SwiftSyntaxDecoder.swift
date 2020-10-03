@@ -63,7 +63,7 @@ public class SourceKit {
 	}
 
 	/// Maps a type's USR to the type's name
-	static let typeUSRs: MutableMap<String, String> = [:]
+	static let typeUSRs: Atomic<MutableMap<String, String>> = Atomic([:])
 
 	/// Goes through the `indexingResponse` recording the USR for any type it finds. Expects the
 	/// `indexingResponse` to be a valid tree from a SourceKit indexing request, but it can be
@@ -97,7 +97,7 @@ public class SourceKit {
 				}
 				else {
 					let cleanUSR = String(usr.dropFirst("s:".count))
-					typeUSRs[cleanUSR] = name
+					typeUSRs.mutateAtomically { $0[cleanUSR] = name }
 				}
 			}
 
@@ -163,7 +163,7 @@ public class SourceKit {
 						let cleanParentUSR = String(parentUSR
 							.drop(while: { !$0.isPunctuation })
 							.dropFirst())
-						return typeUSRs[cleanParentUSR]
+						return typeUSRs.atomic[cleanParentUSR]
 					}
 					// Checks for a method
 					else if let kind = child["key.kind"] as? String,
@@ -177,7 +177,7 @@ public class SourceKit {
 						let cleanParentUSR = String(parentUSR
 							.drop(while: { !$0.isPunctuation })
 							.dropFirst())
-						return typeUSRs[cleanParentUSR]
+						return typeUSRs.atomic[cleanParentUSR]
 					}
 					else {
 						// Right range but wrong contents; look inside it
@@ -315,6 +315,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	var outputFileMap: MutableMap<FileExtension, String> = [:]
 	/// The transpilation context, used for information such as if we should default to open
 	let context: TranspilationContext
+	/// Allow pure comments to be placed before assignments as well as function calls
+	var isTranslatingPureAssignment = false
 
 	init(filePath: String, context: TranspilationContext) throws {
 		let typeList =
@@ -2255,7 +2257,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		_ sequenceExpression: SequenceExprSyntax)
 		throws -> Statement
 	{
-		SwiftSyntaxDecoder.isTranslatingPureAssignment = !getLeadingComments(
+		self.isTranslatingPureAssignment = !getLeadingComments(
 			forSyntax: Syntax(sequenceExpression),
 			withKey: .pure).isEmpty
 
@@ -2285,13 +2287,10 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				rightHand: convertedRightExpression)
 		}
 
-		SwiftSyntaxDecoder.isTranslatingPureAssignment = false
+		self.isTranslatingPureAssignment = false
 
 		return result
 	}
-
-	/// Allow pure comments to be placed before assignments as well as function calls
-	static var isTranslatingPureAssignment = false
 
 	// MARK: - Expressions
 
@@ -3127,14 +3126,14 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			let declarationReferenceExpression =
 				functionExpressionTranslation as? DeclarationReferenceExpression,
 			let parameterTypes = tupleExpression.swiftType,
-			SourceKit.typeUSRs.contains(where: // If the identifier is a known type
+			SourceKit.typeUSRs.atomic.contains(where: // If the identifier is a known type
 				{ $0.value == declarationReferenceExpression.identifier })
 		{
 			declarationReferenceExpression.typeName = "\(parameterTypes) -> " +
 				declarationReferenceExpression.identifier
 		}
 
-		let isPure = SwiftSyntaxDecoder.isTranslatingPureAssignment ||
+		let isPure = self.isTranslatingPureAssignment ||
 			!getLeadingComments(
 				forSyntax: Syntax(functionCallExpression),
 				withKey: .pure).isEmpty

@@ -292,7 +292,7 @@ public struct SourceFileRange: Equatable, Hashable, CustomStringConvertible {
 private struct SourceFilePositionMap { // gryphon ignore
 	/// Cache that uses the paths of source files as indices and returns the offset-line map for
 	/// that file, if any.
-	private static let mapsCache: MutableMap<String, SourceFilePositionMap> = [:]
+	private static let mapsCache: Atomic<MutableMap<String, SourceFilePositionMap>> = Atomic([:])
 
 	/// Contains the offsets corresponding to the start of each line. The element at `0` is the
 	/// offset of the first character of line `1`, etc.
@@ -316,17 +316,19 @@ private struct SourceFilePositionMap { // gryphon ignore
 		inFile sourceFile: SourceFile)
 		-> SourceFileRange
 	{
-		if let cachedMap = mapsCache[sourceFile.path] {
-			let startPosition = cachedMap.getPosition(ofOffset: startOffset)
-			let endPosition = cachedMap.getPosition(ofOffset: endOffset)
-			return SourceFileRange(start: startPosition, end: endPosition)
-		}
-		else {
-			let newMap = SourceFilePositionMap(sourceFile: sourceFile)
-			mapsCache[sourceFile.path] = newMap
-			let startPosition = newMap.getPosition(ofOffset: startOffset)
-			let endPosition = newMap.getPosition(ofOffset: endOffset)
-			return SourceFileRange(start: startPosition, end: endPosition)
+		return mapsCache.mutateAtomically { mapsCache in
+			if let cachedMap = mapsCache[sourceFile.path] {
+				let startPosition = cachedMap.getPosition(ofOffset: startOffset)
+				let endPosition = cachedMap.getPosition(ofOffset: endOffset)
+				return SourceFileRange(start: startPosition, end: endPosition)
+			}
+			else {
+				let newMap = SourceFilePositionMap(sourceFile: sourceFile)
+				mapsCache[sourceFile.path] = newMap
+				let startPosition = newMap.getPosition(ofOffset: startOffset)
+				let endPosition = newMap.getPosition(ofOffset: endOffset)
+				return SourceFileRange(start: startPosition, end: endPosition)
+			}
 		}
 	}
 

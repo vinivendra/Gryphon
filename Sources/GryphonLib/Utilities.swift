@@ -32,7 +32,7 @@ class Atomic<Value> {
         self.__value = value
     }
 
-    var value: Value {
+    var atomic: Value {
         get {
 			lock.lock()
 			let result = __value
@@ -49,11 +49,11 @@ class Atomic<Value> {
 	/// Use this to mutate the value (to guarantee that the get and set are atomic). Returns the new
 	/// value.
 	@discardableResult
-	func mutate(_ closure: (inout Value) -> ()) -> Value {
+	func mutateAtomically<Result>(_ closure: (inout Value) -> (Result)) -> Result {
 		lock.lock()
-		closure(&__value)
+		let result = closure(&__value)
 		lock.unlock()
-		return __value
+		return result
 	}
 }
 
