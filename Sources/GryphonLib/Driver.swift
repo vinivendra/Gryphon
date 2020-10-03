@@ -295,8 +295,7 @@ public class Driver {
 			let decoder = try Compiler.generateSwiftSyntaxDecoder(
 				fromSwiftFile: inputFilePath,
 				withContext: context)
-			let printableTreeConverter = SwiftSyntaxToPrintableTreeVisitor()
-			swiftAST = printableTreeConverter.convertToPrintableTree(decoder.syntaxTree)
+			swiftAST = decoder.syntaxTree.toPrintableTree()
 			Compiler.logEnd("✅  Done processing SwiftSyntax for \(inputFileRelativePath).")
 
 			Compiler.logStart("🧑‍💻  Converting SwiftSyntax for \(inputFileRelativePath)...")
