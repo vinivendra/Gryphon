@@ -1922,7 +1922,7 @@ public class KotlinTranslator {
 			range: declarationReferenceExpression.range,
 			string: String(declarationReferenceExpression.identifier.prefix {
 					$0 !=
-						"(" // gryphon value: '('
+						/* gryphon value: '(' */ "("
 				}))
 	}
 
@@ -2055,7 +2055,7 @@ public class KotlinTranslator {
 				}
 			}
 			else {
-				let startDelimiter = "${" // gryphon value: \"\\${\"
+				let startDelimiter = /* gryphon value: \"\\${\" */ "${"
 				result.append(startDelimiter)
 				result.append(try translateExpression(expression, withIndentation: indentation))
 				result.append("}")

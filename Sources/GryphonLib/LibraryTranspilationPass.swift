@@ -29,7 +29,7 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
 	// gryphon insert:     super(ast, context) { }
 
-	override func replaceFunctionDeclaration( // gryphon annotation: override
+	override func replaceFunctionDeclaration(
 		_ functionDeclaration: FunctionDeclaration)
 		-> List<Statement>
 	{
@@ -221,7 +221,7 @@ public class ReplaceTemplatesTranspilationPass: TranspilationPass {
 	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
 	// gryphon insert:     super(ast, context) { }
 
-	override func replaceExpression( // gryphon annotation: override
+	override func replaceExpression(
 		_ expression: Expression)
 		-> Expression
 	{
@@ -272,7 +272,7 @@ private class ReplaceTemplateMatchesTranspilationPass: TranspilationPass {
 
 	var matches: List<(String, Expression)> = []
 
-	override func replaceLiteralCodeExpression( // gryphon annotation: override
+	override func replaceLiteralCodeExpression(
 		_ literalCodeExpression: LiteralCodeExpression)
 		-> Expression
 	{
@@ -797,14 +797,14 @@ internal extension TranspilationContext {
 			else if subType.contains("<"), subType.last! == ">" {
 				let typeWithoutGenerics = String(subType.prefix {
 					$0 !=
-						"<" // gryphon value: '<'
+						/* gryphon value: '<' */ "<"
 				})
 				return self.isSubtype(typeWithoutGenerics, of: superType)
 			}
 			else if superType.contains("<"), superType.last! == ">" {
 				let typeWithoutGenerics = String(superType.prefix {
 					$0 !=
-						"<" // gryphon value: '<'
+						/* gryphon value: '<' */ "<"
 				})
 				return self.isSubtype(subType, of: typeWithoutGenerics)
 			}

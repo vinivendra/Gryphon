@@ -77,7 +77,8 @@ public class SourceFile {
 
 extension SourceFile {
 	/// Returns any comment in the given line, or `nil` if there isn't one. Line indices start at 1.
-	public func getCommentFromLine(_ lineNumber: Int) -> CommonComment? { // gryphon pure
+	// gryphon pure
+	public func getCommentFromLine(_ lineNumber: Int) -> SourceFile.CommonComment? {
 		guard let line = getLine(lineNumber) else {
 			return nil
 		}
@@ -93,9 +94,9 @@ extension SourceFile {
 		// If the comment comes after some code (not yet supported)
 		let commentIsAfterCode = lineComponents[0].contains {
 			$0 !=
-				" " // gryphon value: ' '
+				/* gryphon value: ' ' */ " "
 			&& $0 !=
-				"\t" // gryphon value: '\\t'
+				/* gryphon value: '\\t' */ "\t"
 		}
 		guard !commentIsAfterCode else {
 			return nil
@@ -103,7 +104,8 @@ extension SourceFile {
 
 		// Get the comment's range
 		let columnStartIndex = line.occurrences(of: "//").first!.lowerBound
-		let columnStartInt = columnStartIndex.utf16Offset(in: line) // gryphon value: columnStartIndex
+		let columnStartInt = /* gryphon value: columnStartIndex */
+			columnStartIndex.utf16Offset(in: line)
 
 		let range = SourceFileRange(
 			lineStart: lineNumber,

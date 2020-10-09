@@ -28,7 +28,8 @@ import XCTest
 class IntegrationTest: XCTestCase {
 	// gryphon insert: constructor(): super() { }
 
-	public func getClassName() -> String { // gryphon annotation: override
+	// gryphon annotation: override
+	public func getClassName() -> String {
 		return "IntegrationTest"
 	}
 
@@ -43,14 +44,16 @@ class IntegrationTest: XCTestCase {
 	}
 
 	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // gryphon annotation: override
+	// gryphon annotation: override
+	public func runAllTests() {
 		IntegrationTest.setUp()
 		test()
 		testWarnings()
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // gryphon ignore
+	// gryphon ignore
+	static var allTests = [
 		("test", test),
 		("testWarnings", testWarnings),
 	]

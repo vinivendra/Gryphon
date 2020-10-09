@@ -183,7 +183,9 @@ public class SwiftTranslator {
 				columnEnd: 0)
 		}
 		// If we don't, start at the first statement with a range
-		else if let subtree = subtrees.first(where: { getRange(ofNode: $0) != nil }) {
+		else if let subtree =
+			/* gryphon pure */ subtrees.first(where: { getRange(ofNode: $0) != nil })
+		{
 			lastRange = getRange(ofNode: subtree)!
 		}
 		// If there is no info on ranges, then just translate the subtrees normally
@@ -1909,7 +1911,7 @@ public class SwiftTranslator {
 
 		let functionNamePrefix = functionName.prefix {
 			$0 !=
-				"(" // gryphon value: '('
+				/* gryphon value: '(' */ "("
 		}
 
 		// Get the function parameters.
@@ -2801,7 +2803,7 @@ public class SwiftTranslator {
 		if component.contains(":") {
 			let label = component.prefix(while: {
 					$0 !=
-						":" // gryphon value: ':'
+						/* gryphon value: ':' */ ":"
 				})
 			return String(label)
 		}

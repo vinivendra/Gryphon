@@ -26,18 +26,21 @@ import XCTest
 class SourceFileTest: XCTestCase {
 	// gryphon insert: constructor(): super() { }
 
-	public func getClassName() -> String { // gryphon annotation: override
+	// gryphon annotation: override
+	public func getClassName() -> String {
 		return "SourceFileTest"
 	}
 
 	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // gryphon annotation: override
+	// gryphon annotation: override
+	public func runAllTests() {
 		testGetCommentFromLine()
 		testGetTranslationCommentFromLine()
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // gryphon ignore
+	// gryphon ignore
+	static var allTests = [
 		("testGetCommentFromLine", testGetCommentFromLine),
 		("testGetTranslationCommentFromLine", testGetTranslationCommentFromLine),
 	]
@@ -45,7 +48,8 @@ class SourceFileTest: XCTestCase {
 	// MARK: - Tests
 	func testGetCommentFromLine() {
 		let sourceFileContents = """
-			let x: Int = 0 // gryphon ignore
+			// gryphon ignore
+			let x: Int = 0
 			// blabla
 			let x: Int = 0
 
@@ -68,7 +72,8 @@ class SourceFileTest: XCTestCase {
 	func testGetTranslationCommentFromLine() {
 		// gryphon multiline
 		let sourceFileContents = """
-			let x: Int = 0 // gryphon ignore
+			// gryphon ignore
+			let x: Int = 0
 			// blabla
 			let x: Int = 0
 

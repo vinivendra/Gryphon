@@ -21,7 +21,6 @@
 // gryphon output: Sources/GryphonLib/RubyScriptContents.gryphonAST
 // gryphon output: Bootstrap/RubyScriptContents.kt
 
-// gryphon multiline
 internal let rubyScriptFileContents = """
 #!/bin/bash
 exec ruby "$@"

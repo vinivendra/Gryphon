@@ -28,7 +28,8 @@ import XCTest
 class DriverTest: XCTestCase {
 	// gryphon insert: constructor(): super() { }
 
-	public func getClassName() -> String { // gryphon annotation: override
+	// gryphon annotation: override
+	public func getClassName() -> String {
 		return "DriverTest"
 	}
 
@@ -43,7 +44,8 @@ class DriverTest: XCTestCase {
 	}
 
 	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // gryphon annotation: override
+	// gryphon annotation: override
+	public func runAllTests() {
 		DriverTest.setUp()
 		testOutputs()
 		testGenerateGryphonLibraries()
@@ -54,7 +56,8 @@ class DriverTest: XCTestCase {
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // gryphon ignore
+	// gryphon ignore
+	static var allTests = [
 		("testOutputs", testOutputs),
 		("testGenerateGryphonLibraries", testGenerateGryphonLibraries),
 		("testUsageString", testUsageString),

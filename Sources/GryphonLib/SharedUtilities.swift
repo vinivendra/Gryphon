@@ -240,11 +240,13 @@ extension Utilities {
 		for transpilationContext: TranspilationContext)
 		throws
 	{
-        libraryUpdateLock.lock() // gryphon ignore
+        // gryphon ignore
+        libraryUpdateLock.lock()
         // gryphon insert: libraryUpdateLock.acquire()
 
         defer {
-            libraryUpdateLock.unlock() // gryphon ignore
+            // gryphon ignore
+            libraryUpdateLock.unlock()
             // gryphon insert: libraryUpdateLock.release()
         }
 
@@ -326,7 +328,8 @@ extension Utilities {
 extension Utilities {
 	/// Splits a type using the given separators, taking into consideration possible brackets.
 	/// For instance, "A, (B, C)" becomes ["A", "(B, C)"] rather than ["A", "(B", "C)"].
-    static func splitTypeList( // gryphon pure
+	// gryphon pure
+	static func splitTypeList(
         _ typeList: String,
         separators: List<String> = [",", ":"])
         -> MutableList<String>
@@ -343,7 +346,8 @@ extension Utilities {
 
             // If we're not inside brackets and we've found a separator
             if bracketsLevel <= 0,
-                let foundSeparator = separators.first(where: { remainingString.hasPrefix($0) })
+                let foundSeparator =
+					/* gryphon pure */ separators.first(where: { remainingString.hasPrefix($0) })
             {
                 // Skip the separator
                 index = typeList.index(index, offsetBy: foundSeparator.count)

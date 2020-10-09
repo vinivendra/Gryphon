@@ -107,7 +107,8 @@ internal extension String {
 		var substringOffset = self.startIndex
 
 		while substringOffset < self.endIndex {
-			let maybeIndex = // gryphon ignore
+			// gryphon ignore
+			let maybeIndex =
 				currentSubstring.range(of: searchedSubstring)?.lowerBound
 			// gryphon insert: var maybeIndex: Int? = currentSubstring.indexOf(searchedSubstring)
 			// gryphon insert: maybeIndex = if (maybeIndex == -1) { null } else { maybeIndex }
@@ -118,7 +119,7 @@ internal extension String {
 
 			// In Kotlin the foundIndex is counted from the substring's start, but in Swift it's
 			// from the string's start. This compensates for that difference.
-			let occurenceStartIndex = foundIndex // gryphon value: foundIndex + substringOffset
+			let occurenceStartIndex = /* gryphon value: foundIndex + substringOffset */ foundIndex
 
 			let occurenceEndIndex =
 				currentSubstring.index(occurenceStartIndex, offsetBy: searchedSubstring.count)
@@ -190,7 +191,8 @@ internal extension String {
 		var result: String = ""
 		result.append(self[self.startIndex].uppercased())
 
-		let indicesWithoutTheFirstOne = self.indices.dropFirst() // gryphon ignore
+		// gryphon ignore
+		let indicesWithoutTheFirstOne = self.indices.dropFirst()
 		// gryphon insert: val indicesWithoutTheFirstOne = this.indices.drop(1)
 
 		for index in indicesWithoutTheFirstOne {
@@ -327,9 +329,11 @@ extension Character {
 }
 
 //
+// gryphon generics: Element
 extension List {
 	/// Returns nil if index is out of bounds.
-	subscript (safe index: Int) -> Element? { // gryphon ignore
+	// gryphon ignore
+	subscript (safe index: Int) -> Element? {
 		return getSafe(index)
 	}
 
@@ -354,7 +358,8 @@ extension List {
 		}
 
 		var newArray: MutableList<Element> = []
-		newArray.reserveCapacity(self.count) // gryphon ignore
+		// gryphon ignore
+		newArray.reserveCapacity(self.count)
 		newArray.append(contentsOf: self.dropFirst())
 		newArray.append(first)
 
@@ -377,6 +382,7 @@ extension List {
 	}
 }
 
+// gryphon generics: Element
 extension List where Element: Equatable {
 	/// Removes duplicated items from the array, keeping the first unique items. Returns a copy of
 	/// the array with only unique items in it. O(n^2).

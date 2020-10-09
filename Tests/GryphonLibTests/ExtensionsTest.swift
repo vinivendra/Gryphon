@@ -32,12 +32,14 @@ struct TestableRange: Equatable {
 	// gryphon insert: constructor(string: String, range: IntRange):
 	// gryphon insert: 	this(range.start, range.endInclusive) { }
 
-	init(_ string: String, _ range: Range<String.Index>) { // gryphon ignore
+	// gryphon ignore
+	init(_ string: String, _ range: Range<String.Index>) {
 		self.lowerBound = range.lowerBound.utf16Offset(in: string)
 		self.upperBound = range.upperBound.utf16Offset(in: string)
 	}
 
-	init(_ lowerBound: Int, _ upperBound: Int) { // gryphon ignore
+	// gryphon ignore
+	init(_ lowerBound: Int, _ upperBound: Int) {
 		self.lowerBound = lowerBound
 		self.upperBound = upperBound
 	}
@@ -46,12 +48,14 @@ struct TestableRange: Equatable {
 class ExtensionsTest: XCTestCase {
 	// gryphon insert: constructor(): super() { }
 
-	public func getClassName() -> String { // gryphon annotation: override
+	// gryphon annotation: override
+	public func getClassName() -> String {
 		return "ExtensionsTest"
 	}
 
 	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // gryphon annotation: override
+	// gryphon annotation: override
+	public func runAllTests() {
 		testStringSplit()
 		testOccurrencesOfSubstring()
 		testSplitUsingUnescapedSpaces()
@@ -68,7 +72,8 @@ class ExtensionsTest: XCTestCase {
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // gryphon ignore
+	// gryphon ignore
+	static var allTests = [
 		("testStringSplit", testStringSplit),
 		("testOccurrencesOfSubstring", testOccurrencesOfSubstring),
 		("testSplitUsingUnescapedSpaces", testSplitUsingUnescapedSpaces),
@@ -257,7 +262,8 @@ class ExtensionsTest: XCTestCase {
 			]))
 		XCTAssertEqual(
 			"abc".occurrences(of: "->").map { TestableRange("abc", $0) },
-			List<TestableRange>([])) // gryphon value: mutableListOf<TestableRange>()
+			/* gryphon value: mutableListOf<TestableRange>() */
+				List<TestableRange>([]))
 		XCTAssertEqual(
 			"->(Int, (String) -> Int) ->-> Int ->".occurrences(of: "->").map {
 					TestableRange("->(Int, (String) -> Int) ->-> Int ->", $0)

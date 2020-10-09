@@ -25,7 +25,8 @@ import Foundation
 
 public class Compiler {
 	public static var logError: ((String) -> ()) = { input in
-		fputs(input + "\n", stderr) // gryphon ignore
+		// gryphon ignore
+		fputs(input + "\n", stderr)
 		// gryphon insert: System.err.println(input)
 	}
 

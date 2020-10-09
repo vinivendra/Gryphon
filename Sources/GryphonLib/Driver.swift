@@ -282,7 +282,7 @@ public class Driver {
 
 		guard settings.shouldGenerateSwiftAST else {
 			Compiler.logStart("☑️  Nothing to do for \(inputFileRelativePath).")
-			return [] // gryphon value: listOf<Any>()
+			return /* gryphon value: listOf<Any>() */ []
 		}
 
 		Compiler.logStart("🧑‍💻  Reading AST dump file for \(inputFileRelativePath)...")

@@ -22,8 +22,10 @@
 // gryphon output: Bootstrap/PrintableAsTree.kt
 
 public class PrintableTree: PrintableAsTree {
-	public var treeDescription: String // gryphon annotation: override
-	public var printableSubtrees: List<PrintableAsTree?> // gryphon annotation: override
+	// gryphon annotation: override
+	public var treeDescription: String
+	// gryphon annotation: override
+	public var printableSubtrees: List<PrintableAsTree?>
 
 	init(_ description: String) {
 		self.treeDescription = description

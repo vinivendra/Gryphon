@@ -26,12 +26,14 @@ import XCTest
 class UtilitiesTest: XCTestCase {
 	// gryphon insert: constructor(): super() { }
 
-	public func getClassName() -> String { // gryphon annotation: override
+	// gryphon annotation: override
+	public func getClassName() -> String {
 		return "UtilitiesTest"
 	}
 
 	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // gryphon annotation: override
+	// gryphon annotation: override
+	public func runAllTests() {
 		testExpandSwiftAbbreviation()
 		testFileExtension()
 		testChangeExtension()
@@ -51,7 +53,8 @@ class UtilitiesTest: XCTestCase {
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // gryphon ignore
+	// gryphon ignore
+	static var allTests = [
 		("testExpandSwiftAbbreviation", testExpandSwiftAbbreviation),
 		("testFileExtension", testFileExtension),
 		("testChangeExtension", testChangeExtension),
@@ -265,7 +268,8 @@ class UtilitiesTest: XCTestCase {
         let array1: List<Int> = []
         let array2: List = [1]
         let array3: List = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-        let array4: List = List<Int>([Int](0...10_000)) // gryphon ignore
+        // gryphon ignore
+        let array4: List = List<Int>([Int](0...10_000))
 		// gryphon insert: val array4: List<Int> = (0..10000).map{ it }
 
 		let array1Copy = array1.toList()
@@ -278,7 +282,8 @@ class UtilitiesTest: XCTestCase {
         let mappedArray3 = try! array3.parallelMap { $0 * 2 }
         let mappedArray4 = try! array4.parallelMap { $0 * 2 }
 
-        let array4Result = List<Int>([Int](0...10_000)).map { $0 * 2 } // gryphon ignore
+        // gryphon ignore
+        let array4Result = List<Int>([Int](0...10_000)).map { $0 * 2 }
 		// gryphon insert: val array4Result: List<Int> = (0..10000).map{ it * 2 }
 
         XCTAssertEqual(array1, array1Copy)

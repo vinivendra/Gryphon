@@ -21,10 +21,9 @@
 // gryphon output: Sources/GryphonLib/AuxiliaryFileContents.gryphonAST
 // gryphon output: Bootstrap/AuxiliaryFileContents.kt
 
-private let dollarSign = "$" // gryphon value: "\\$"
+private let dollarSign = /* gryphon value: "\\$" */ "$"
 private let kotlinStringInterpolation = "{_string}"
 
-// gryphon multiline
 internal let gryphonKotlinLibraryFileContents = """
 // Replace this with the real package identifier:
 package /* com.example.myApp */
@@ -209,7 +208,6 @@ fun <Element> MutableList<Element>.partition(
 
 """
 
-// gryphon multiline
 internal let gryphonSwiftLibraryFileContents = """
 //
 // Copyright 2018 Vinicius Jorge Vendramini
@@ -230,7 +228,8 @@ internal let gryphonSwiftLibraryFileContents = """
 //
 
 // MARK: - Template class declarations
-internal class GRYTemplate { // gryphon ignore
+// gryphon ignore
+internal class GRYTemplate {
 	static func dot(_ left: GRYTemplate, _ right: String) -> GRYDotTemplate {
 		return GRYDotTemplate(left, right)
 	}
@@ -256,7 +255,8 @@ internal class GRYTemplate { // gryphon ignore
 	}
 }
 
-internal class GRYDotTemplate: GRYTemplate { // gryphon ignore
+// gryphon ignore
+internal class GRYDotTemplate: GRYTemplate {
 	let left: GRYTemplate
 	let right: String
 
@@ -266,7 +266,8 @@ internal class GRYDotTemplate: GRYTemplate { // gryphon ignore
 	}
 }
 
-internal class GRYCallTemplate: GRYTemplate { // gryphon ignore
+// gryphon ignore
+internal class GRYCallTemplate: GRYTemplate {
 	let function: GRYTemplate
 	let parameters: [GRYParameterTemplate]
 
@@ -282,7 +283,8 @@ internal class GRYCallTemplate: GRYTemplate { // gryphon ignore
 	}
 }
 
-internal class GRYParameterTemplate: ExpressibleByStringLiteral { // gryphon ignore
+// gryphon ignore
+internal class GRYParameterTemplate: ExpressibleByStringLiteral {
 	let label: String?
 	let template: GRYTemplate
 
@@ -356,7 +358,8 @@ internal class GRYParameterTemplate: ExpressibleByStringLiteral { // gryphon ign
 	}
 }
 
-internal class GRYLiteralTemplate: GRYTemplate { // gryphon ignore
+// gryphon ignore
+internal class GRYLiteralTemplate: GRYTemplate {
 	let string: String
 
 	init(string: String) {
@@ -364,7 +367,8 @@ internal class GRYLiteralTemplate: GRYTemplate { // gryphon ignore
 	}
 }
 
-internal class GRYConcatenatedTemplate: GRYTemplate { // gryphon ignore
+// gryphon ignore
+internal class GRYConcatenatedTemplate: GRYTemplate {
 	let left: GRYTemplate
 	let right: GRYTemplate
 
@@ -374,7 +378,8 @@ internal class GRYConcatenatedTemplate: GRYTemplate { // gryphon ignore
 	}
 }
 
-internal func + ( // gryphon ignore
+// gryphon ignore
+internal func + (
 	left: GRYTemplate,
 	right: GRYTemplate)
 	-> GRYConcatenatedTemplate
@@ -382,17 +387,20 @@ internal func + ( // gryphon ignore
 	GRYConcatenatedTemplate(left: left, right: right)
 }
 
-internal func + (left: String, right: GRYTemplate) -> GRYConcatenatedTemplate { // gryphon ignore
+// gryphon ignore
+internal func + (left: String, right: GRYTemplate) -> GRYConcatenatedTemplate {
 	GRYConcatenatedTemplate(left: GRYLiteralTemplate(string: left), right: right)
 }
 
-internal func + (left: GRYTemplate, right: String) -> GRYConcatenatedTemplate { // gryphon ignore
+// gryphon ignore
+internal func + (left: GRYTemplate, right: String) -> GRYConcatenatedTemplate {
 	GRYConcatenatedTemplate(left: left, right: GRYLiteralTemplate(string: right))
 }
 
 // MARK: - Templates
 // Replacement for Comparable
-private struct _Comparable: Comparable { // gryphon ignore
+// gryphon ignore
+private struct _Comparable: Comparable {
 	static func < (lhs: _Comparable, rhs: _Comparable) -> Bool {
 		return false
 	}
@@ -439,7 +447,8 @@ private func gryphonTemplates() {
 /// (link found via https://www.raywenderlich.com/139591/building-custom-collection-swift)
 /// the Array type in Swift conforms exactly to these protocols,
 /// plus CustomReflectable (which is beyond Gryphon's scope for now).
-public struct _ListSlice<Element>: Collection, // gryphon ignore
+// gryphon ignore
+public struct _ListSlice<Element>: Collection,
 	BidirectionalCollection,
 	RandomAccessCollection,
 	MutableCollection,
@@ -513,7 +522,8 @@ public struct _ListSlice<Element>: Collection, // gryphon ignore
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-public class List<Element>: CustomStringConvertible, // gryphon ignore
+// gryphon ignore
+public class List<Element>: CustomStringConvertible,
 	CustomDebugStringConvertible,
 	ExpressibleByArrayLiteral,
 	Sequence,
@@ -683,13 +693,15 @@ public class List<Element>: CustomStringConvertible, // gryphon ignore
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-extension List { // gryphon ignore
+// gryphon ignore
+extension List {
 	public func toMutableList() -> MutableList<Element> {
 		return MutableList(array)
 	}
 }
 
-extension List { // gryphon ignore
+// gryphon ignore
+extension List {
 	@inlinable
 	public static func + <Other>(
 		lhs: List<Element>,
@@ -706,7 +718,8 @@ extension List { // gryphon ignore
 	}
 }
 
-extension List: Equatable where Element: Equatable { // gryphon ignore
+// gryphon ignore
+extension List: Equatable where Element: Equatable {
 	public static func == (lhs: List, rhs: List) -> Bool {
 		return lhs.array == rhs.array
 	}
@@ -717,13 +730,15 @@ extension List: Equatable where Element: Equatable { // gryphon ignore
 	}
 }
 
-extension List: Hashable where Element: Hashable { // gryphon ignore
+// gryphon ignore
+extension List: Hashable where Element: Hashable {
 	public func hash(into hasher: inout Hasher) {
 		array.hash(into: &hasher)
 	}
 }
 
-extension List where Element: Comparable { // gryphon ignore
+// gryphon ignore
+extension List where Element: Comparable {
 	@inlinable
 	public func sorted() -> List<Element> {
 		return List(array.sorted())
@@ -732,7 +747,8 @@ extension List where Element: Comparable { // gryphon ignore
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-public class MutableList<Element>: List<Element>, // gryphon ignore
+// gryphon ignore
+public class MutableList<Element>: List<Element>,
 	MutableCollection,
 	RangeReplaceableCollection
 {
@@ -788,7 +804,8 @@ public class MutableList<Element>: List<Element>, // gryphon ignore
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-extension List { // gryphon ignore
+// gryphon ignore
+extension List {
 
 	/// Used to obtain a MutableList with a new element type. If all elements in the list can be
 	/// casted to the new type, the method succeeds and the new MutableList is returned. Otherwise,
@@ -818,7 +835,8 @@ extension List { // gryphon ignore
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-public func zip<ASequence, ListElement>( // gryphon ignore
+// gryphon ignore
+public func zip<ASequence, ListElement>(
 	_ array1: ASequence,
 	_ array2: List<ListElement>)
 	-> List<(ASequence.Element, ListElement)>
@@ -827,7 +845,8 @@ public func zip<ASequence, ListElement>( // gryphon ignore
 	return List(Swift.zip(array1, array2))
 }
 
-public func zip<ASequence, ListElement>( // gryphon ignore
+// gryphon ignore
+public func zip<ASequence, ListElement>(
 	_ array1: List<ListElement>,
 	_ array2: ASequence)
 	-> List<(ListElement, ASequence.Element)>
@@ -836,7 +855,8 @@ public func zip<ASequence, ListElement>( // gryphon ignore
 	return List(Swift.zip(array1, array2))
 }
 
-public func zip<List1Element, List2Element>( // gryphon ignore
+// gryphon ignore
+public func zip<List1Element, List2Element>(
 	_ array1: List<List1Element>,
 	_ array2: List<List2Element>)
 	-> List<(List1Element, List2Element)>
@@ -849,7 +869,8 @@ public func zip<List1Element, List2Element>( // gryphon ignore
 /// According to https://swiftdoc.org/v4.2/type/dictionary/hierarchy/
 /// the Dictionary type in Swift conforms exactly to these protocols,
 /// plus CustomReflectable (which is beyond Gryphon's scope for now).
-public class Map<Key, Value>: // gryphon ignore
+// gryphon ignore
+public class Map<Key, Value>:
 	CustomStringConvertible,
 	CustomDebugStringConvertible,
 	ExpressibleByDictionaryLiteral,
@@ -986,19 +1007,22 @@ public class Map<Key, Value>: // gryphon ignore
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-extension Map { // gryphon ignore
+// gryphon ignore
+extension Map {
 	public func toMutableMap() -> MutableMap<Key, Value> {
 		return MutableMap(dictionary)
 	}
 }
 
-extension Map: Equatable where Value: Equatable { // gryphon ignore
+// gryphon ignore
+extension Map: Equatable where Value: Equatable {
 	public static func == (lhs: Map, rhs: Map) -> Bool {
 		return lhs.dictionary == rhs.dictionary
 	}
 }
 
-extension Map: Hashable where Value: Hashable { // gryphon ignore
+// gryphon ignore
+extension Map: Hashable where Value: Hashable {
 	public func hash(into hasher: inout Hasher) {
 		dictionary.hash(into: &hasher)
 	}
@@ -1006,7 +1030,8 @@ extension Map: Hashable where Value: Hashable { // gryphon ignore
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-public class MutableMap<Key, Value>: Map<Key, Value> where Key: Hashable { // gryphon ignore
+// gryphon ignore
+public class MutableMap<Key, Value>: Map<Key, Value> where Key: Hashable {
 	override public subscript (_ key: Key) -> Value? {
 		get {
 			return dictionary[key]
@@ -1017,7 +1042,8 @@ public class MutableMap<Key, Value>: Map<Key, Value> where Key: Hashable { // gr
 	}
 }
 
-extension Map { // gryphon ignore
+// gryphon ignore
+extension Map {
 	/// Used to obtain a MutableMap with new key and/or value types. If all keys and values in the
 	/// map can be casted to the new types, the method succeeds and the new MutableMap is returned.
 	/// Otherwise, the method returns `nil`.
@@ -1046,7 +1072,6 @@ extension Map { // gryphon ignore
 
 """
 
-// gryphon multiline
 internal let gryphonXCTestFileContents = """
 // Replacement for Comparable
 private struct _Comparable: Comparable {
@@ -1058,7 +1083,8 @@ private struct _Comparable: Comparable {
 // Replacement for Optional
 private struct _Optional { }
 
-class XCTestCase { // gryphon ignore
+// gryphon ignore
+class XCTestCase {
 	class func setUp() { }
 	class func tearDown() { }
 
@@ -1113,7 +1139,6 @@ extension XCTestCase {
 
 """
 
-// gryphon multiline
 internal let gryphonTemplatesLibraryFileContents = """
 // WARNING: Any changes to this file should be reflected in the literal string in
 // AuxiliaryFileContents.swift
@@ -1122,7 +1147,8 @@ import Foundation
 
 // MARK: - Define template classes and operators
 
-private class _GRYTemplate { // gryphon ignore
+// gryphon ignore
+private class _GRYTemplate {
 	static func dot(_ left: _GRYTemplate, _ right: String) -> _GRYDotTemplate {
 		return _GRYDotTemplate(left, right)
 	}
@@ -1140,7 +1166,8 @@ private class _GRYTemplate { // gryphon ignore
 	}
 }
 
-private class _GRYDotTemplate: _GRYTemplate { // gryphon ignore
+// gryphon ignore
+private class _GRYDotTemplate: _GRYTemplate {
 	let left: _GRYTemplate
 	let right: String
 
@@ -1150,7 +1177,8 @@ private class _GRYDotTemplate: _GRYTemplate { // gryphon ignore
 	}
 }
 
-private class _GRYCallTemplate: _GRYTemplate { // gryphon ignore
+// gryphon ignore
+private class _GRYCallTemplate: _GRYTemplate {
 	let function: _GRYTemplate
 	let parameters: [_GRYParameterTemplate]
 
@@ -1166,7 +1194,8 @@ private class _GRYCallTemplate: _GRYTemplate { // gryphon ignore
 	}
 }
 
-private class _GRYParameterTemplate: ExpressibleByStringLiteral { // gryphon ignore
+// gryphon ignore
+private class _GRYParameterTemplate: ExpressibleByStringLiteral {
 	let label: String?
 	let template: _GRYTemplate
 
@@ -1216,7 +1245,8 @@ private class _GRYParameterTemplate: ExpressibleByStringLiteral { // gryphon ign
 	}
 }
 
-private class _GRYLiteralTemplate: _GRYTemplate { // gryphon ignore
+// gryphon ignore
+private class _GRYLiteralTemplate: _GRYTemplate {
 	let string: String
 
 	init(string: String) {
@@ -1224,7 +1254,8 @@ private class _GRYLiteralTemplate: _GRYTemplate { // gryphon ignore
 	}
 }
 
-private class _GRYConcatenatedTemplate: _GRYTemplate { // gryphon ignore
+// gryphon ignore
+private class _GRYConcatenatedTemplate: _GRYTemplate {
 	let left: _GRYTemplate
 	let right: _GRYTemplate
 
@@ -1234,15 +1265,18 @@ private class _GRYConcatenatedTemplate: _GRYTemplate { // gryphon ignore
 	}
 }
 
-private func + (left: _GRYTemplate, right: _GRYTemplate) -> _GRYConcatenatedTemplate { // gryphon ignore
+// gryphon ignore
+private func + (left: _GRYTemplate, right: _GRYTemplate) -> _GRYConcatenatedTemplate {
 	_GRYConcatenatedTemplate(left: left, right: right)
 }
 
-private func + (left: String, right: _GRYTemplate) -> _GRYConcatenatedTemplate { // gryphon ignore
+// gryphon ignore
+private func + (left: String, right: _GRYTemplate) -> _GRYConcatenatedTemplate {
 	_GRYConcatenatedTemplate(left: _GRYLiteralTemplate(string: left), right: right)
 }
 
-private func + (left: _GRYTemplate, right: String) -> _GRYConcatenatedTemplate { // gryphon ignore
+// gryphon ignore
+private func + (left: _GRYTemplate, right: String) -> _GRYConcatenatedTemplate {
 	_GRYConcatenatedTemplate(left: left, right: _GRYLiteralTemplate(string: right))
 }
 
@@ -1651,7 +1685,6 @@ private func gryphonTemplates() {
 
 """
 
-// gryphon multiline
 internal let mapKotlinErrorsToSwiftFileContents = """
 // WARNING: Any changes to this file should be reflected in the literal string in
 // AuxiliaryFileContents.swift
@@ -1834,7 +1867,6 @@ for error in errors {
 
 """
 
-// gryphon multiline
 internal let mapGradleErrorsToSwiftFileContents = """
 // WARNING: Any changes to this file should be reflected in the literal string in
 // AuxiliaryFileContents.swift
@@ -2023,7 +2055,6 @@ if !errors.isEmpty {
 
 """
 
-// gryphon multiline
 internal let makeGryphonTargetsFileContents = """
 require 'xcodeproj'
 
@@ -2136,7 +2167,6 @@ project.save()
 
 """
 
-// gryphon multiline
 internal let compileKotlinFileContents = """
 # Exit if any command fails
 set -e

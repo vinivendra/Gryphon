@@ -100,7 +100,7 @@ public class TranspilationContext {
 	/// This variable is used to store enum definitions in order to allow the translator
 	/// to translate them as sealed classes (see the `translate(dotSyntaxCallExpression)` method).
 	///
-	private(set) var sealedClasses: MutableList<String> = []
+	internal var sealedClasses: MutableList<String> = []
 
 	public func addSealedClass(_ className: String) {
 		sealedClasses.append(className)
@@ -110,7 +110,7 @@ public class TranspilationContext {
 	/// This variable is used to store enum definitions in order to allow the translator
 	/// to translate them as enum classes (see the `translate(dotSyntaxCallExpression)` method).
 	///
-	private(set) var enumClasses: MutableList<String> = []
+	internal var enumClasses: MutableList<String> = []
 
 	public func addEnumClass(_ className: String) {
 		enumClasses.append(className)
@@ -120,7 +120,7 @@ public class TranspilationContext {
 	/// This variable is used to store protocol definitions in order to allow the translator
 	/// to translate conformances to them correctly (instead of as class inheritances).
 	///
-	private(set) var protocols: MutableList<String> = []
+	internal var protocols: MutableList<String> = []
 
 	public func addProtocol(_ protocolName: String) {
 		protocols.append(protocolName)
@@ -130,7 +130,7 @@ public class TranspilationContext {
 	/// This variable is used to store the inheritances (superclasses and protocols) of each type.
 	/// Keys correspond to the type, values correspond to its inheritances.
 	///
-	private(set) var inheritances: MutableMap<String, List<String>> = [:]
+	internal var inheritances: MutableMap<String, List<String>> = [:]
 
 	public func addInheritances(
 		forType typeName: String,

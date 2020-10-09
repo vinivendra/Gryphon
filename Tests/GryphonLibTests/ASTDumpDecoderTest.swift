@@ -26,18 +26,21 @@ import XCTest
 class ASTDumpDecoderTest: XCTestCase {
 	// gryphon insert: constructor(): super() { }
 
-	public func getClassName() -> String { // gryphon annotation: override
+	// gryphon annotation: override
+	public func getClassName() -> String {
 		return "ASTDumpDecoderTest"
 	}
 
 	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // gryphon annotation: override
+	// gryphon annotation: override
+	public func runAllTests() {
 		testDecoderCanRead()
 		testDecoderRead()
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // gryphon ignore
+	// gryphon ignore
+	static var allTests = [
 		("testDecoderCanRead", testDecoderCanRead),
 		("testDecoderRead", testDecoderRead),
 	]

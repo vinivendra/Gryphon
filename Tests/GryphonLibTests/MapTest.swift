@@ -28,12 +28,14 @@ import Foundation
 class MapTest: XCTestCase {
 	// gryphon insert: constructor(): super() { }
 
-	public func getClassName() -> String { // gryphon annotation: override
+	// gryphon annotation: override
+	public func getClassName() -> String {
 		return "MapTest"
 	}
 
 	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // gryphon annotation: override
+	// gryphon annotation: override
+	public func runAllTests() {
 		testEquatable()
 		testInits()
 		testCasting()
@@ -51,7 +53,8 @@ class MapTest: XCTestCase {
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // gryphon ignore
+	// gryphon ignore
+	static var allTests = [
 		("testEquatable", testEquatable),
 		("testInits", testInits),
 		("testCasting", testCasting),
@@ -153,7 +156,8 @@ class MapTest: XCTestCase {
 		XCTAssert(!dictionary.description.contains("3"))
 	}
 
-	func testDebugDescription() { // gryphon ignore
+	// gryphon ignore
+	func testDebugDescription() {
 		let dictionary: Map = [1: 10, 2: 20]
 
 		XCTAssert(dictionary.debugDescription.contains("1"))
@@ -163,7 +167,8 @@ class MapTest: XCTestCase {
 		XCTAssert(!dictionary.debugDescription.contains("3"))
 	}
 
-	func testCollectionIndices() { // gryphon ignore
+	// gryphon ignore
+	func testCollectionIndices() {
 		let dictionary: Map = [1: 10, 2: 20]
 		let lastIndex = dictionary.index(after: dictionary.startIndex)
 
@@ -217,7 +222,8 @@ class MapTest: XCTestCase {
 		XCTAssertEqual(dictionary, [1: 10, 2: 20])
 	}
 
-	func testMapValues() {// gryphon ignore
+	// gryphon ignore
+	func testMapValues() {
 		let dictionary: Map<Int, Int> = [1: 10, 2: 20]
 		let mappedDictionary = dictionary.mapValues { $0 * 10 }
 
@@ -225,7 +231,8 @@ class MapTest: XCTestCase {
 		XCTAssertEqual(dictionary, [1: 10, 2: 20])
 	}
 
-	func testSortedBy() { // gryphon ignore
+	// gryphon ignore
+	func testSortedBy() {
 		let dictionary: Map = [1: 20, 2: 10]
 
 		let keySorted = dictionary.sorted { a, b in a.0 < b.0 }
@@ -250,7 +257,8 @@ class MapTest: XCTestCase {
 		XCTAssertEqual(dictionary, [1: 20, 2: 10])
 	}
 
-	func testHash() { // gryphon ignore
+	// gryphon ignore
+	func testHash() {
 		let dictionary1: Map = [1: 20, 2: 10]
 		let dictionary2: Map = [1: 20, 2: 10]
 		let dictionary3: Map = [1: 20, 2: 10, 3: 30]
