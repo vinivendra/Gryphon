@@ -110,14 +110,20 @@ fi
 if [[ $1 == "-b" ]] || [[ $2 == "-b" ]]; then
 	echo "👇    Running bootstrapping tests..."
 
-	bash runBootstrappingTests.sh
+	if bash runBootstrappingTests.sh
+	then
+		echo "✅ Bootstrapping tests succeeded."
+		echo ""
+	else
+		allFailures+=$'Bootstrapping tests failed'
+	fi
 
 	echo "👆    Done running bootstrapping tests."
 fi
 
 exec 3>&- #close fd 3.
 
-errorsOutput="$allFailures"\
+errorsOutput="$allFailures"
 
 # If output isn't empty
 if [[ $errorsOutput == "" ]]; then

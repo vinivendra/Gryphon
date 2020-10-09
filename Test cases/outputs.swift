@@ -16,9 +16,9 @@
 // limitations under the License.
 //
 
-// gryphon output: Test cases/Bootstrap Outputs/outputs.swiftAST
-// gryphon output: Test cases/Bootstrap Outputs/outputs.gryphonASTRaw
-// gryphon output: Test cases/Bootstrap Outputs/outputs.gryphonAST
-// gryphon output: Test cases/Bootstrap Outputs/outputs.kt
+// gryphon output: Test cases/outputs.swiftAST
+// gryphon output: Test cases/outputs.gryphonASTRaw
+// gryphon output: Test cases/outputs.gryphonAST
+// gryphon output: Test cases/outputs.kt
 
 print("Hello, world!")
