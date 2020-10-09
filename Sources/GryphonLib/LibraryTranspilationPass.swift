@@ -768,7 +768,6 @@ extension ReplaceTemplatesTranspilationPass {
 		if let lhs = lhs as? DeclarationReferenceExpression,
 			let rhs = rhs as? DotExpression
 		{
-			// TODO: make this match call expressions too
 			// Try to match expressions with implicit `self` (e.g. `(self.)startIndex` and
 			// `_string.startIndex`)
 			if match(lhs, rhs.rightExpression, [:]),

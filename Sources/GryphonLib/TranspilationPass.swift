@@ -4678,7 +4678,8 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 			let expression = declarationExpression as? DeclarationReferenceExpression
 		{
 			if expression.identifier == variableDeclaration.identifier {
-				// Check for an implicit self (`val a = self.a` is necessary in some Kotlin contexts)
+				// Check for an implicit self (`val a = self.a` is necessary in some Kotlin
+				// contexts)
 				if SourceKit.getParentType(
 					forExpression: expression,
 					usingIndexingResponse: self.ast.indexingResponse) == nil
