@@ -1,5 +1,6 @@
 #!/bin/bash
 
+export JAVA_OPTS="-Xmx2048m"
 kotlinc -include-runtime \
-	-d Bootstrap/kotlin.jar \
+	-d gryphon-old/Bootstrap/kotlin.jar \
 	Bootstrap/*.kt

@@ -2,48 +2,47 @@
 
 ./.build/debug/Gryphon \
 	--indentation=4 \
-	--quiet \
-	\
-	Sources/GryphonLib/ASTDumpDecoder.swift \
-	Sources/GryphonLib/AuxiliaryFileContents.swift \
-	Sources/GryphonLib/Compiler.swift \
-	Sources/GryphonLib/Driver.swift \
-	Sources/GryphonLib/Extensions.swift \
-	Sources/GryphonLib/GryphonAST.swift \
-	Sources/GryphonLib/GryphonSwiftLibrary.swift \
-	Sources/GryphonLib/KotlinTranslationResult.swift \
-	Sources/GryphonLib/KotlinTranslator.swift \
-	Sources/GryphonLib/LibraryTranspilationPass.swift \
-	Sources/GryphonLib/PrintableAsTree.swift \
-	Sources/GryphonLib/RubyScriptContents.swift \
-	Sources/GryphonLib/SharedUtilities.swift \
-	Sources/GryphonLib/SourceFile.swift \
-	Sources/GryphonLib/SwiftAST.swift \
-	Sources/GryphonLib/SwiftTranslator.swift \
-	Sources/GryphonLib/TranspilationContext.swift \
-	Sources/GryphonLib/TranspilationPass.swift \
-	\
-	Tests/GryphonLibTests/AcceptanceTest.swift \
-	Tests/GryphonLibTests/ASTDumpDecoderTest.swift \
-	Tests/GryphonLibTests/CompilerTest.swift \
-	Tests/GryphonLibTests/DriverTest.swift \
-	Tests/GryphonLibTests/ExtensionsTest.swift \
-	Tests/GryphonLibTests/IntegrationTest.swift \
-	Tests/GryphonLibTests/KotlinTranslationResultTest.swift \
-	Tests/GryphonLibTests/LibraryTranspilationTest.swift \
-	Tests/GryphonLibTests/ListTest.swift \
-	Tests/GryphonLibTests/MutableListTest.swift \
-	Tests/GryphonLibTests/MapTest.swift \
-	Tests/GryphonLibTests/MutableMapTest.swift \
-	Tests/GryphonLibTests/PrintableAsTreeTest.swift \
-	Tests/GryphonLibTests/ShellTest.swift \
-	Tests/GryphonLibTests/SourceFileTest.swift \
-	Tests/GryphonLibTests/UtilitiesTest.swift \
-	\
-	Tests/GryphonLibTests/SharedTestUtilities.swift \
-	\
+	-print-ASTs-on-error \
+	-swiftSyntax \
+	-skip-AST-dumps \
+	--continue-on-error \
+	gryphon-old/Sources/GryphonLib/ASTDumpDecoder.swift \
+	gryphon-old/Sources/GryphonLib/AuxiliaryFileContents.swift \
+	gryphon-old/Sources/GryphonLib/Compiler.swift \
+	gryphon-old/Sources/GryphonLib/Driver.swift \
+	gryphon-old/Sources/GryphonLib/Extensions.swift \
+	gryphon-old/Sources/GryphonLib/GryphonAST.swift \
+	gryphon-old/Sources/GryphonLib/GryphonSwiftLibrary.swift \
+	gryphon-old/Sources/GryphonLib/KotlinTranslationResult.swift \
+	gryphon-old/Sources/GryphonLib/KotlinTranslator.swift \
+	gryphon-old/Sources/GryphonLib/LibraryTranspilationPass.swift \
+	gryphon-old/Sources/GryphonLib/PrintableAsTree.swift \
+	gryphon-old/Sources/GryphonLib/RubyScriptContents.swift \
+	gryphon-old/Sources/GryphonLib/SharedUtilities.swift \
+	gryphon-old/Sources/GryphonLib/SourceFile.swift \
+	gryphon-old/Sources/GryphonLib/SwiftAST.swift \
+	gryphon-old/Sources/GryphonLib/SwiftTranslator.swift \
+	gryphon-old/Sources/GryphonLib/TranspilationContext.swift \
+	gryphon-old/Sources/GryphonLib/TranspilationPass.swift \
+	gryphon-old/Tests/GryphonLibTests/AcceptanceTest.swift \
+	gryphon-old/Tests/GryphonLibTests/ASTDumpDecoderTest.swift \
+	gryphon-old/Tests/GryphonLibTests/CompilerTest.swift \
+	gryphon-old/Tests/GryphonLibTests/DriverTest.swift \
+	gryphon-old/Tests/GryphonLibTests/ExtensionsTest.swift \
+	gryphon-old/Tests/GryphonLibTests/IntegrationTest.swift \
+	gryphon-old/Tests/GryphonLibTests/KotlinTranslationResultTest.swift \
+	gryphon-old/Tests/GryphonLibTests/LibraryTranspilationTest.swift \
+	gryphon-old/Tests/GryphonLibTests/ListTest.swift \
+	gryphon-old/Tests/GryphonLibTests/MutableListTest.swift \
+	gryphon-old/Tests/GryphonLibTests/MapTest.swift \
+	gryphon-old/Tests/GryphonLibTests/MutableMapTest.swift \
+	gryphon-old/Tests/GryphonLibTests/PrintableAsTreeTest.swift \
+	gryphon-old/Tests/GryphonLibTests/ShellTest.swift \
+	gryphon-old/Tests/GryphonLibTests/SourceFileTest.swift \
+	gryphon-old/Tests/GryphonLibTests/UtilitiesTest.swift \
+	gryphon-old/Tests/GryphonLibTests/SharedTestUtilities.swift \
 	--skip \
-	Sources/GryphonLib/Shell.swift \
-	Sources/GryphonLib/Utilities.swift \
-	Tests/GryphonLibTests/TestUtilities.swift \
-	.gryphon/GryphonXCTest.swift
+	gryphon-old/Sources/GryphonLib/Shell.swift \
+	gryphon-old/Sources/GryphonLib/Utilities.swift \
+	gryphon-old/Tests/GryphonLibTests/TestUtilities.swift \
+	gryphon-old/.gryphon/GryphonXCTest.swift

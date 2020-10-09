@@ -106,25 +106,13 @@ if [[ $1 == "-a" ]] || [[ $2 == "-a" ]]; then
 	runTest $fileNameWithExtension
 fi
 
-# If we have to run BootstrappingTest
+# If we have to run bootstrapping tests
 if [[ $1 == "-b" ]] || [[ $2 == "-b" ]]; then
-	echo "👇    Preparing for BootstrappingTest..."
+	echo "👇    Running bootstrapping tests..."
 
-	if bash prepareForBootstrapTests.sh
-	then
-		echo "✅ Done."
-		echo ""
-	else
-		echo "🚨 Failed to initialize Gryphon."
-		exit -1
-	fi
+	bash runBootstrappingTests.sh
 
-	fileNameWithExtension="BootstrappingTest.swift"
-
-	echo "👆    Done preparing for BootstrappingTest."
-	echo "↪️    Running $fileNameWithExtension..."
-
-	runTest $fileNameWithExtension
+	echo "👆    Done running bootstrapping tests."
 fi
 
 exec 3>&- #close fd 3.
