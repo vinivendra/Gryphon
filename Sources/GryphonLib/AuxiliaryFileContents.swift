@@ -634,7 +634,6 @@ public class List<Element>: CustomStringConvertible,
 		return array.last
 	}
 
-	// TODO: Add test for dropFirst and dropLast with k != 1
 	public func dropFirst(_ k: Int = 1) -> List<Element> {
 		return List(array.dropFirst(k))
 	}
@@ -1628,8 +1627,14 @@ private func gryphonTemplates() {
 	_ = _array.dropFirst() // gryphon pure
 	_ = _GRYTemplate.call(.dot("_array", "drop"), ["1"])
 
+	_ = _array.dropFirst(_int) // gryphon pure
+	_ = _GRYTemplate.call(.dot("_array", "drop"), ["_int"])
+
 	_ = _array.dropLast() // gryphon pure
 	_ = _GRYTemplate.call(.dot("_array", "dropLast"), ["1"])
+
+	_ = _array.dropLast(_int) // gryphon pure
+	_ = _GRYTemplate.call(.dot("_array", "dropLast"), ["_int"])
 
 	_ = _array.map(_closure2)
 	_ = _GRYTemplate.call(.dot("_array", "map"), ["_closure2"])

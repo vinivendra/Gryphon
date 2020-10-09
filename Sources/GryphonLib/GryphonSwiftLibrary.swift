@@ -421,7 +421,6 @@ public class List<Element>: CustomStringConvertible,
 		return array.last
 	}
 
-	// TODO: Add test for dropFirst and dropLast with k != 1
 	public func dropFirst(_ k: Int = 1) -> List<Element> {
 		return List(array.dropFirst(k))
 	}

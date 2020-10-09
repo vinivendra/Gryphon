@@ -285,7 +285,7 @@ printTest(Int("1"), "String int")
 
 printTest("abcde".dropLast(), "String dropLast()")
 
-printTest("abcde".dropLast(2), "String dorpLast(int)")
+printTest("abcde".dropLast(2), "String dropLast(int)")
 
 printTest("abcde".dropFirst(), "String dropFirst")
 
@@ -433,9 +433,13 @@ printTest(array.last, "Array last")
 array.removeFirst()
 printTest(array, "Array remove first")
 
-printTest(array.dropFirst(), "Array drop first")
+printTest(array.dropFirst(), "Array dropFirst")
 
-printTest(array.dropLast(), "Array drop last")
+printTest(array.dropFirst(2), "Array dropFirst(int)")
+
+printTest(array.dropLast(), "Array dropLast")
+
+printTest(array.dropLast(2), "Array dropLast(int)")
 
 printTest(array.map { $0 + 1 }, "Array map")
 

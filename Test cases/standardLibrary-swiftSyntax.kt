@@ -177,7 +177,7 @@ fun main(args: Array<String>) {
 	printTest(contents = "0".toIntOrNull(), testName = "String int")
 	printTest(contents = "1".toIntOrNull(), testName = "String int")
 	printTest(contents = "abcde".dropLast(1), testName = "String dropLast()")
-	printTest(contents = "abcde".dropLast(2), testName = "String dorpLast(int)")
+	printTest(contents = "abcde".dropLast(2), testName = "String dropLast(int)")
 	printTest(contents = "abcde".drop(1), testName = "String dropFirst")
 	printTest(contents = "abcde".drop(2), testName = "String dropFirst(int)")
 
@@ -284,8 +284,10 @@ fun main(args: Array<String>) {
 	printTest(contents = array.lastOrNull(), testName = "Array last")
 	array.removeAt(0)
 	printTest(contents = array, testName = "Array remove first")
-	printTest(contents = array.drop(1), testName = "Array drop first")
-	printTest(contents = array.dropLast(1), testName = "Array drop last")
+	printTest(contents = array.drop(1), testName = "Array dropFirst")
+	printTest(contents = array.drop(2), testName = "Array dropFirst(int)")
+	printTest(contents = array.dropLast(1), testName = "Array dropLast")
+	printTest(contents = array.dropLast(2), testName = "Array dropLast(int)")
 	printTest(contents = array.map { it + 1 }, testName = "Array map")
 	printTest(contents = array.flatMap { listOf(it + 1, it + 2) }, testName = "Array flat map")
 	printTest(
