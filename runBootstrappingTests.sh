@@ -1,6 +1,28 @@
 #!/bin/bash
 
-echo "➡️ [1/6] Building Gryphon..."
+echo "➡️ [1/7] Updating Gryphon (old)..."
+
+set -e
+
+# If the directory doesn't exist yet
+if [ ! -d "gryphon-old" ]; then
+	echo "	↪️ Cloning..."
+	mkdir -p gryphon-old
+	git clone \
+		--branch bootstrap \
+		https://github.com/vinivendra/Gryphon.git \
+		gryphon-old
+fi
+
+cd gryphon-old
+git checkout bootstrap
+git pull
+cd ..
+
+set +e
+
+
+echo "➡️ [2/7] Building Gryphon..."
 
 if swift build
 then
@@ -12,7 +34,7 @@ else
 fi
 
 
-echo "➡️ [2/6] Initializing Gryphon (old)..."
+echo "➡️ [3/7] Initializing Gryphon (old)..."
 
 cd "gryphon-old"
 
@@ -28,7 +50,7 @@ fi
 cd ..
 
 
-echo "➡️ [3/6] Transpiling the Gryphon (old) source files to Kotlin..."
+echo "➡️ [4/7] Transpiling the Gryphon (old) source files to Kotlin..."
 
 if bash transpileGryphonSources.sh
 then
@@ -40,7 +62,7 @@ else
 fi
 
 
-echo "➡️ [4/6] Compiling Kotlin files..."
+echo "➡️ [5/7] Compiling Kotlin files..."
 
 if bash buildBootstrappedTranspiler.sh 2> .gryphon/kotlinErrors.errors
 then
@@ -53,7 +75,7 @@ else
 fi
 
 
-echo "➡️ [5/6] Building Gryphon (old)..."
+echo "➡️ [6/7] Building Gryphon (old)..."
 
 cd "gryphon-old"
 
@@ -66,16 +88,16 @@ else
 	exit -1
 fi
 
-echo "➡️ [6/6] Comparing Gryphon (old) with Gryphon (old) transpiled..."
+echo "➡️ [7/7] Comparing Gryphon (old) with Gryphon (old) transpiled..."
 
 for file in Test\ cases/*.swift
 do
-    if [[ $file == *"errors.swift" ]]; then
-        echo "    ↪️ Skipping $file..."
+	if [[ $file == *"errors.swift" ]]; then
+		echo "	↪️ Skipping $file..."
 	elif [[ $file == *"-swiftSyntax"* ]]; then
-		echo "    ↪️ Skipping $file..."
-    else
-        echo "    ↪️ Testing $file..."
+		echo "	↪️ Skipping $file..."
+	else
+		echo "	↪️ Testing $file..."
 
 		defaultFinal="";
 		if [[ $file == *"-default-final.swift" ]]; then
@@ -86,13 +108,11 @@ do
 		for representation in "${representations[@]}"
 		do
 
-			echo "      ↪️ $representation"
+			echo "	  ↪️ $representation"
 
 			java -jar Bootstrap/kotlin.jar \
 				--indentation=t -avoid-unicode $representation $defaultFinal --write-to-console \
 				"$file" > .gryphon/generatedResult.txt 2> .gryphon/errors.txt
-
-			sed -i 'sed' 's/0x[0-9a-z]*/hex/g' .gryphon/generatedResult.txt
 
 			if [[ $? -ne 0 ]]; then
 				echo "🚨 failed to generate bootstrap results!"
@@ -104,23 +124,24 @@ do
 				--indentation=t -avoid-unicode $representation $defaultFinal --write-to-console \
 				"$file" > .gryphon/expectedResult.txt 2> .gryphon/errors.txt
 
-			sed -i 'sed' 's/0x[0-9a-z]*/hex/g' .gryphon/expectedResult.txt
-
 			if [[ $? -ne 0 ]]; then
 				echo "🚨 failed to generate expected results!"
 				cat .gryphon/errors.txt
 				exit -1
 			fi
 
+			sed -i 'sed' 's/0x[0-9a-z]*/hex/g' .gryphon/generatedResult.txt
+			sed -i 'sed' 's/0x[0-9a-z]*/hex/g' .gryphon/expectedResult.txt
+
 			if diff .gryphon/generatedResult.txt .gryphon/expectedResult.txt
 			then
-				echo "      ✅ Succeeded."
+				echo "	  ✅ Succeeded."
 			else
 				echo "🚨 generated results are different than expected!"
 				exit -1
 			fi
 		done
-    fi
+	fi
 done
 
 echo "✅ Done."
