@@ -104,11 +104,9 @@ extension SourceFile {
 			return nil
 		}
 
-		// TODO: Fix this UTF16 offset
 		// Get the comment's range
 		let columnStartIndex = line.occurrences(of: "//").first!.lowerBound
-		let columnStartInt =
-			columnStartIndex.utf16Offset(in: line) // gryphon value: columnStartIndex
+		let columnStartInt = line.distance(from: line.startIndex, to: columnStartIndex)
 
 		let range = SourceFileRange(
 			start: SourceFilePosition(
