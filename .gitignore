@@ -20,6 +20,8 @@ Package.resolved
 Test cases/Bootstrap Outputs
 # Result of building the translated programs
 *.jar
+# Old Gryphon version (for bootstrapping)
+/gryphon-old
 
 ### Xcode files
 /*.xcodeproj
