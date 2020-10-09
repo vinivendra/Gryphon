@@ -3806,8 +3806,8 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 		_ expression: Expression)
 		-> Expression
 	{
-		if let type = expression.swiftType, type.hasPrefix("[") {
-			if type.contains(":") {
+		if let type = expression.swiftType {
+			if type.isDictionaryDeclaration() {
 				let message = "Native type \(type) can lead to different behavior in Kotlin. Prefer " +
 					"Map or MutableMap instead."
 				Compiler.handleWarning(
@@ -3815,7 +3815,7 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 					ast: expression,
 					sourceFile: ast.sourceFile,
 					sourceFileRange: expression.range)
-			} else {
+			} else if type.isArrayDeclaration() {
 				let message = "Native type \(type) can lead to different behavior in Kotlin. Prefer " +
 					"List or MutableList instead."
 				Compiler.handleWarning(
