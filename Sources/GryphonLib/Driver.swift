@@ -91,7 +91,8 @@ public class Driver {
 		let isVerbose = arguments.contains("--verbose")
 		Compiler.shouldLogProgress = isVerbose
 
-		Compiler.log("ℹ️  Gryphon - version \(gryphonVersion)")
+		Compiler.log("ℹ️  Gryphon version \(gryphonVersion)")
+		Compiler.log("ℹ️  SwiftSyntax version \(TranspilationContext.swiftSyntaxVersion)")
 
 		let badArguments = unsupportedArguments(in: arguments)
 		if !badArguments.isEmpty {
@@ -1430,6 +1431,8 @@ public class Driver {
 
 	static func printVersion() {
 		Compiler.output("Gryphon version \(gryphonVersion)")
+		Compiler.output(
+			"Using Swift \(TranspilationContext.swiftSyntaxVersion) for SwiftSyntax compilations.")
 	}
 
 	static func printUsage() {

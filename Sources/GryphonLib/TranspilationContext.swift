@@ -34,6 +34,12 @@ public class TranspilationContext {
 	/// All files that should be included in this `swiftc` compilation.
 	let compiledFiles: List<String>
 
+	#if swift(>=5.3)
+		static let swiftSyntaxVersion = "5.3"
+	#else
+		static let swiftSyntaxVersion = "5.2"
+	#endif
+
 	/// The base contexts are used for information that all transpilation contexts should contain,
 	/// such as the Gryphon templates library (which can be calculated once and is the same every
 	/// time). All transpilation contexts are initialized with the information from the base
