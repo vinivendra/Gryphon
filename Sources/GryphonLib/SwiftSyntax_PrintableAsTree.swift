@@ -340,16 +340,6 @@ extension Syntax {
 			{ return "Obj CSelector" }
 		else if self.is(DifferentiableAttributeArgumentsSyntax.self)
 			{ return "Differentiable Attribute Arguments" }
-		else if self.is(DifferentiationParamsClauseSyntax.self)
-			{ return "Differentiation Params Clause" }
-		else if self.is(DifferentiationParamsSyntax.self)
-			{ return "Differentiation Params" }
-		else if self.is(DifferentiationParamListSyntax.self)
-			{ return "Differentiation Param List" }
-		else if self.is(DifferentiationParamSyntax.self)
-			{ return "Differentiation Param" }
-		else if self.is(DifferentiableAttributeFuncSpecifierSyntax.self)
-			{ return "Differentiable Attribute Func Specifier" }
 		else if self.is(FunctionDeclNameSyntax.self)
 			{ return "Function Decl Name" }
 		else if self.is(ContinueStmtSyntax.self)
@@ -510,7 +500,47 @@ extension Syntax {
 			{ return "Availability Version Restriction" }
 		else if self.is(VersionTupleSyntax.self)
 			{ return "Version Tuple" }
-		else
-			{ return nil }
+
+		// Nodes exclusive to Swift 5.2
+		#if swift(<5.3)
+		if self.is(DifferentiationParamsClauseSyntax.self)
+			{ return "Differentiation Params Clause" }
+		else if self.is(DifferentiationParamsSyntax.self)
+			{ return "Differentiation Params" }
+		else if self.is(DifferentiationParamListSyntax.self)
+			{ return "Differentiation Param List" }
+		else if self.is(DifferentiationParamSyntax.self)
+			{ return "Differentiation Param" }
+		else if self.is(DifferentiableAttributeFuncSpecifierSyntax.self)
+			{ return "Differentiable Attribute Func Specifier" }
+		#endif
+
+		// Nodes exclusive to Swift 5.3
+		#if swift(>=5.3)
+		if self.is(PoundFileIDExprSyntax.self)
+			{ return "PoundFileIDExprSyntax" }
+		else if self.is(MultipleTrailingClosureElementSyntax.self)
+			{ return "MultipleTrailingClosureElementSyntax" }
+		else if self.is(MultipleTrailingClosureElementListSyntax.self)
+			{ return "MultipleTrailingClosureElementListSyntax" }
+		else if self.is(DifferentiabilityParamsClauseSyntax.self)
+			{ return "DifferentiabilityParamsClauseSyntax" }
+		else if self.is(DifferentiabilityParamsSyntax.self)
+			{ return "DifferentiabilityParamsSyntax" }
+		else if self.is(DifferentiabilityParamListSyntax.self)
+			{ return "DifferentiabilityParamListSyntax" }
+		else if self.is(DifferentiabilityParamSyntax.self)
+			{ return "DifferentiabilityParamSyntax" }
+		else if self.is(DerivativeRegistrationAttributeArgumentsSyntax.self)
+			{ return "DerivativeRegistrationAttributeArgumentsSyntax" }
+		else if self.is(QualifiedDeclNameSyntax.self)
+			{ return "QualifiedDeclNameSyntax" }
+		else if self.is(CatchItemListSyntax.self)
+			{ return "CatchItemListSyntax" }
+		else if self.is(CatchItemSyntax.self)
+			{ return "CatchItemSyntax" }
+		#endif
+
+		return nil
 	}
 }

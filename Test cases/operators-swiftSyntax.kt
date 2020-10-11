@@ -86,9 +86,6 @@ fun main(args: Array<String>) {
 	println(castResult1)
 
 	val castResult2: Any? = precedenceResult as? Any
-
-	println(castResult2)
-
 	val castResult3: Boolean = precedenceResult is Boolean
 
 	println(castResult3)

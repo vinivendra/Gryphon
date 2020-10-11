@@ -22,6 +22,12 @@
 
 import PackageDescription
 
+#if swift(>=5.3)
+let swiftSyntaxVersion = Version("0.50300.0")
+#else
+let swiftSyntaxVersion = Version("0.50200.0")
+#endif
+
 let package = Package(
 	name: "Gryphon",
 	platforms: [
@@ -34,10 +40,10 @@ let package = Package(
 	dependencies: [
 		.package(
 			url: "https://github.com/apple/swift-syntax.git",
-			.exact("0.50200.0")), // TODO: Review these versions
+			.exact(swiftSyntaxVersion)),
 		.package(
 			url: "https://github.com/jpsim/SourceKitten",
-			from: "0.29.0"),
+			from: "0.30.1"),
 	],
 	targets: [
 		.target(

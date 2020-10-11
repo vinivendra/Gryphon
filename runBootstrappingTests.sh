@@ -131,7 +131,10 @@ do
 			fi
 
 			sed -i 'sed' 's/0x[0-9a-z]*/hex/g' .gryphon/generatedResult.txt
+			sed -i 'sed' 's/@opened("[0-9A-Z\-]*")/@opened/g' .gryphon/generatedResult.txt
+
 			sed -i 'sed' 's/0x[0-9a-z]*/hex/g' .gryphon/expectedResult.txt
+			sed -i 'sed' 's/@opened("[0-9A-Z\-]*")/@opened/g' .gryphon/expectedResult.txt
 
 			if diff .gryphon/generatedResult.txt .gryphon/expectedResult.txt
 			then

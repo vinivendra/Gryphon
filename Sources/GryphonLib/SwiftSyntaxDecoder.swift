@@ -759,7 +759,23 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let catchClauses = doStatement.catchClauses {
 			for catchClause in catchClauses {
 				let variableDeclaration: VariableDeclaration?
-				if let pattern = catchClause.pattern {
+
+				#if swift(>=5.3)
+					if let catchItems = catchClause.catchItems, catchItems.count > 1 {
+						let secondItem = catchItems.dropFirst().first!
+						Compiler.handleWarning(
+							message: "Multiple catch clauses aren't supported yet.",
+							syntax: Syntax(secondItem),
+							ast: secondItem.toPrintableTree(),
+							sourceFile: self.sourceFile,
+							sourceFileRange: secondItem.getRange(inFile: self.sourceFile))
+					}
+					let maybePattern = catchClause.catchItems?.first?.pattern
+				#else
+					let maybePattern = catchClause.pattern
+				#endif
+
+				if let pattern = maybePattern {
 					// If a variable is being declared
 					if let valueBindingPattern =
 							pattern.as(ValueBindingPatternSyntax.self),
