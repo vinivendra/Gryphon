@@ -22,6 +22,8 @@ Gryphon is now in preview! 🎉
 
 This means the main systems and ideas have already been implemented - for instance, it's been translating its own codebase for a while now. However, new users might still find some new bugs to be fixed. If that's the case, feel free to report a [new issue](https://github.com/vinivendra/Gryphon/issues/new/choose) on GitHub.
 
+You can also check out the currently supported translations for the Swift standard library [here](https://github.com/vinivendra/Gryphon/blob/development/Status.md).
+
 ## 📲 Installing
 
 Gryphon supports both **macOS** and **Linux**. You can install it with:
