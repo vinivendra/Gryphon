@@ -163,10 +163,17 @@ class IntegrationTest: XCTestCase {
 					"found \(warnings.count) (printed below, if any).\n" +
 					warnings.map { $0.fullMessage }.joined(separator: "\n"))
 
-			warnings = Compiler.issues.filter { $0.fullMessage.contains("Native type") }
+			warnings = Compiler.issues.filter { $0.fullMessage.contains("MutableList") }
 			XCTAssertEqual(
-				warnings.count, 2,
-				"Expected 2 warnings containing \"Native type\", " +
+				warnings.count, 1,
+				"Expected 1 warning containing \"MutableList\", " +
+					"found \(warnings.count) (printed below, if any).\n" +
+					warnings.map { $0.fullMessage }.joined(separator: "\n"))
+			
+			warnings = Compiler.issues.filter { $0.fullMessage.contains("MutableMap") }
+			XCTAssertEqual(
+				warnings.count, 1,
+				"Expected 1 warning containing \"MutableMap\", " +
 					"found \(warnings.count) (printed below, if any).\n" +
 					warnings.map { $0.fullMessage }.joined(separator: "\n"))
 
