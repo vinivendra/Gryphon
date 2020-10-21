@@ -691,106 +691,108 @@ public class Driver {
 
 			let target = getTarget(inArguments: arguments)
 
-			Compiler.logEnd("✅  Done perparing.")
+			Compiler.logEnd("✅  Done preparing.")
 
-			var astDumpsSucceeded = true
-			var astDumpError: Error? = nil
-			do {
-				Compiler.logStart("🧑‍💻  Dumping the ASTs...")
-				try updateASTDumps(
-					forFiles: allSourceFiles,
-					forXcodeProject: maybeXcodeProject,
-					forTarget: target,
-					usingToolchain: toolchain,
-					shouldTryToRecoverFromErrors: true)
-				astDumpsSucceeded = true
-				Compiler.logEnd("✅  Done dumping the ASTs.")
-			}
-			catch let error {
-				Compiler.logEnd("⚠️  Problem dumping the ASTs.")
-				astDumpsSucceeded = false
-				astDumpError = error
-			}
-
-			let outdatedASTDumpsAfterFirstUpdate = outdatedASTDumpFiles(
-				forInputFiles: allSourceFiles,
-				swiftVersion: swiftVersion)
-
-			if !outdatedASTDumpsAfterFirstUpdate.isEmpty {
-				Compiler.log("⚠️  Found outdated files: " +
-					outdatedASTDumpsAfterFirstUpdate.joined(separator: ", ") + ".")
-			}
-
-			if !astDumpsSucceeded || !outdatedASTDumpsAfterFirstUpdate.isEmpty {
-				if let xcodeProject = maybeXcodeProject {
-					// If the AST dump update failed and we're using Xcode, it's possible one
-					// or more files are missing from the AST dump script. Try updating the
-					// script, then try to update the files again.
-
-					if outdatedASTDumpsAfterFirstUpdate.isEmpty {
-						Compiler.logStart("⚠️  There was an error with the Swift compiler. " +
-							"Attempting to update file list...")
-					}
-					else {
-						Compiler.logStart("⚠️  Failed to update the AST dump for some files: " +
-							outdatedASTDumpsAfterFirstUpdate.joined(separator: ", ") +
-							". Attempting to update file list...")
-					}
-
-					do {
-						// If xcodebuild fails, it's better to ignore the error here and fail
-						// with an "AST dump failure" message.
-						try createIOSCompilationFiles(
-							forXcodeProject: xcodeProject,
-							forTarget: getTarget(inArguments: arguments),
-							usingToolchain: toolchain)
-						Compiler.logEnd("⚠️  Done.")
-					}
-					catch let error {
-						Compiler.logEnd(
-							"⚠️  There was an error when getting the Swift compilation command " +
-								"from the Xcode project:" +
-								"\(error)\n")
-					}
-
-					Compiler.logStart("⚠️  Attempting to update the AST dumps again...")
-
+			if !shouldUseSwiftSyntax {
+				var astDumpsSucceeded = true
+				var astDumpError: Error? = nil
+				do {
+					Compiler.logStart("🧑‍💻  Dumping the ASTs...")
 					try updateASTDumps(
 						forFiles: allSourceFiles,
 						forXcodeProject: maybeXcodeProject,
 						forTarget: target,
 						usingToolchain: toolchain,
 						shouldTryToRecoverFromErrors: true)
-
-					let outdatedASTDumpsAfterSecondUpdate = outdatedASTDumpFiles(
-						forInputFiles: allSourceFiles,
-						swiftVersion: swiftVersion)
-
-					if !outdatedASTDumpsAfterSecondUpdate.isEmpty {
-						throw GryphonError(
-							errorMessage: "Unable to update AST dumps for files: " +
-								outdatedASTDumpsAfterSecondUpdate.joined(separator: ", ") + ".\n" +
-								" - Make sure the files are being compiled by Xcode.\n" +
-								" - Make sure Gryphon is translating the right Xcode target " +
-									"using `--target=<target name>`.")
-					}
-					else {
-						Compiler.logEnd("✅  Done.")
-					}
+					astDumpsSucceeded = true
+					Compiler.logEnd("✅  Done dumping the ASTs.")
 				}
-				else {
-					if let astDumpError = astDumpError {
-						throw GryphonError(
-							errorMessage: "Unable to update AST dumps:\n\(astDumpError)")
-					}
-					else if !outdatedASTDumpsAfterFirstUpdate.isEmpty {
-						throw GryphonError(
-							errorMessage: "Unable to update AST dumps for files: " +
-								outdatedASTDumpsAfterFirstUpdate.joined(separator: ", ") + ".")
+				catch let error {
+					Compiler.logEnd("⚠️  Problem dumping the ASTs.")
+					astDumpsSucceeded = false
+					astDumpError = error
+				}
+
+				let outdatedASTDumpsAfterFirstUpdate = outdatedASTDumpFiles(
+					forInputFiles: allSourceFiles,
+					swiftVersion: swiftVersion)
+
+				if !outdatedASTDumpsAfterFirstUpdate.isEmpty {
+					Compiler.log("⚠️  Found outdated files: " +
+						outdatedASTDumpsAfterFirstUpdate.joined(separator: ", ") + ".")
+				}
+
+				if !astDumpsSucceeded || !outdatedASTDumpsAfterFirstUpdate.isEmpty {
+					if let xcodeProject = maybeXcodeProject {
+						// If the AST dump update failed and we're using Xcode, it's possible one
+						// or more files are missing from the AST dump script. Try updating the
+						// script, then try to update the files again.
+
+						if outdatedASTDumpsAfterFirstUpdate.isEmpty {
+							Compiler.logStart("⚠️  There was an error with the Swift compiler. " +
+								"Attempting to update file list...")
+						}
+						else {
+							Compiler.logStart("⚠️  Failed to update the AST dump for some files: " +
+								outdatedASTDumpsAfterFirstUpdate.joined(separator: ", ") +
+								". Attempting to update file list...")
+						}
+
+						do {
+							// If xcodebuild fails, it's better to ignore the error here and fail
+							// with an "AST dump failure" message.
+							try createIOSCompilationFiles(
+								forXcodeProject: xcodeProject,
+								forTarget: getTarget(inArguments: arguments),
+								usingToolchain: toolchain)
+							Compiler.logEnd("⚠️  Done.")
+						}
+						catch let error {
+							Compiler.logEnd(
+								"⚠️  There was an error when getting the Swift compilation command " +
+									"from the Xcode project:" +
+									"\(error)\n")
+						}
+
+						Compiler.logStart("⚠️  Attempting to update the AST dumps again...")
+
+						try updateASTDumps(
+							forFiles: allSourceFiles,
+							forXcodeProject: maybeXcodeProject,
+							forTarget: target,
+							usingToolchain: toolchain,
+							shouldTryToRecoverFromErrors: true)
+
+						let outdatedASTDumpsAfterSecondUpdate = outdatedASTDumpFiles(
+							forInputFiles: allSourceFiles,
+							swiftVersion: swiftVersion)
+
+						if !outdatedASTDumpsAfterSecondUpdate.isEmpty {
+							throw GryphonError(
+								errorMessage: "Unable to update AST dumps for files: " +
+									outdatedASTDumpsAfterSecondUpdate.joined(separator: ", ") + ".\n" +
+									" - Make sure the files are being compiled by Xcode.\n" +
+									" - Make sure Gryphon is translating the right Xcode target " +
+										"using `--target=<target name>`.")
+						}
+						else {
+							Compiler.logEnd("✅  Done.")
+						}
 					}
 					else {
-						throw GryphonError(
-							errorMessage: "Unable to update AST dumps with unknown error.")
+						if let astDumpError = astDumpError {
+							throw GryphonError(
+								errorMessage: "Unable to update AST dumps:\n\(astDumpError)")
+						}
+						else if !outdatedASTDumpsAfterFirstUpdate.isEmpty {
+							throw GryphonError(
+								errorMessage: "Unable to update AST dumps for files: " +
+									outdatedASTDumpsAfterFirstUpdate.joined(separator: ", ") + ".")
+						}
+						else {
+							throw GryphonError(
+								errorMessage: "Unable to update AST dumps with unknown error.")
+						}
 					}
 				}
 			}
