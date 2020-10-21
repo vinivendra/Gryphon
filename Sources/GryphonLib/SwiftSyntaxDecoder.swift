@@ -42,17 +42,26 @@ public class SourceKit {
 		let logInfo = Log.startLog(name: "SourceKit Indexing")
 
 		defer {
-			Compiler.logEnd("✅  Done calling SourceKit (indexing).")
+			// End the log for Instruments even if errors are thrown
 			Log.endLog(info: logInfo)
 		}
 
 		let absolutePath = Utilities.getAbsoultePath(forFile: filePath)
-		let request = Request.index(
-			file: absolutePath,
-			arguments: context.compilationArguments.argumentsForSourceKit.array)
+		let arguments = context.compilationArguments.argumentsForSourceKit.array
+
+		Compiler.log("ℹ️  Request for file \"\(absolutePath)\"")
+		Compiler.log("ℹ️  Request with compiler arguments: [")
+		for argument in arguments {
+			Compiler.log("\t\"\(argument)\",")
+		}
+		Compiler.log("]")
+
+		let request = Request.index(file: absolutePath, arguments: arguments)
 		let sourceKitResult: [String: SourceKitRepresentable] = try request.send()
 
 		processTypeUSRs(forIndexingResponse: sourceKitResult)
+
+		Compiler.logEnd("✅  Done calling SourceKit (indexing).")
 
 		return sourceKitResult
 	}
@@ -210,7 +219,7 @@ public class SourceKit {
 		let logInfo = Log.startLog(name: "SourceKit Expression Types")
 
 		defer {
-			Compiler.logEnd("✅  Done calling SourceKit (expression types).")
+			// End the log for Instruments even if errors are thrown
 			Log.endLog(info: logInfo)
 		}
 
@@ -219,16 +228,18 @@ public class SourceKit {
 		let absolutePath = Utilities.getAbsoultePath(forFile: filePath)
 		let compilationArgumentsString = context.compilationArguments.argumentsForSourceKit
 			.map { "\"\($0)\"" }
-			.joined(separator: ", ")
+			.joined(separator: ",\n    ")
 		let yaml = """
 		{
 		  key.request: source.request.expression.type,
 		  key.compilerargs: [
-			\(compilationArgumentsString)
+		    \(compilationArgumentsString)
 		  ],
 		  key.sourcefile: "\(absolutePath)"
 		}
 		"""
+
+		Compiler.log("Request with YAML:\n\"\"\"\(yaml)\"\"\"")
 
 		let sourceKitResult: [String: SourceKitRepresentable]
 		do {
@@ -236,7 +247,6 @@ public class SourceKit {
 			sourceKitResult = try request.send()
 		}
 		catch let error {
-			Compiler.log("SourceKit YAML:\n\(yaml)")
 			throw GryphonError(errorMessage: "Failed to call SourceKit: " +
 				"\(error.localizedDescription)")
 		}
@@ -259,6 +269,9 @@ public class SourceKit {
 				return a.offset < b.offset
 			}
 		}
+
+		Compiler.logEnd("✅  Done calling SourceKit (expression types).")
+
 		return sortedList
 	}
 }
