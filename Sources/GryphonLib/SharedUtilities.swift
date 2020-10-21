@@ -254,27 +254,29 @@ extension Utilities {
 
 		Compiler.logStart("🧑‍💻  Processing the templates library...")
 
-		if Utilities.needsToDumpASTForSwiftFiles(
-			[SupportingFile.gryphonTemplatesLibrary.name],
-			in: SupportingFile.gryphonTemplatesLibrary.folder ?? ".",
-			forSwiftVersion: transpilationContext.swiftVersion)
-		{
-			Compiler.logStart("🧑‍💻  Updating the templates library's AST dump...")
-			try Driver.updateASTDumps(
-				forFiles: [SupportingFile.gryphonTemplatesLibrary.relativePath],
-				forXcodeProject: nil,
-				forTarget: nil,
-				usingToolchain: transpilationContext.toolchainName,
-				shouldTryToRecoverFromErrors: true)
-			Compiler.logEnd("✅  Done updating the templates library's AST dump.")
-
+		if !transpilationContext.isUsingSwiftSyntax {
 			if Utilities.needsToDumpASTForSwiftFiles(
 				[SupportingFile.gryphonTemplatesLibrary.name],
 				in: SupportingFile.gryphonTemplatesLibrary.folder ?? ".",
 				forSwiftVersion: transpilationContext.swiftVersion)
 			{
-				throw GryphonError(errorMessage:
-					"Failed to update AST dump for the Gryphon Templates library.")
+				Compiler.logStart("🧑‍💻  Updating the templates library's AST dump...")
+				try Driver.updateASTDumps(
+					forFiles: [SupportingFile.gryphonTemplatesLibrary.relativePath],
+					forXcodeProject: nil,
+					forTarget: nil,
+					usingToolchain: transpilationContext.toolchainName,
+					shouldTryToRecoverFromErrors: true)
+				Compiler.logEnd("✅  Done updating the templates library's AST dump.")
+
+				if Utilities.needsToDumpASTForSwiftFiles(
+					[SupportingFile.gryphonTemplatesLibrary.name],
+					in: SupportingFile.gryphonTemplatesLibrary.folder ?? ".",
+					forSwiftVersion: transpilationContext.swiftVersion)
+				{
+					throw GryphonError(errorMessage:
+						"Failed to update AST dump for the Gryphon Templates library.")
+				}
 			}
 		}
 
