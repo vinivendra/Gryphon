@@ -801,6 +801,7 @@ public class Driver {
 			let arguments = try String(
 					contentsOfFile: SupportingFile.sourceKitCompilationArguments.absolutePath)
 				.splitUsingUnescapedSpaces()
+				.map { $0.replacingOccurrences(of: "\\ ", with: " ") }
 				.toMutableList()
 
 			guard let sdkArgumentIndex = arguments.firstIndex(of: "-sdk") else {
