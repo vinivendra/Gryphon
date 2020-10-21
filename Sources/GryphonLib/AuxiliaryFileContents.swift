@@ -804,6 +804,11 @@ public class MutableList<Element>: List<Element>,
 		array.removeAll(keepingCapacity: keepCapacity)
 	}
 
+	@discardableResult
+	public func remove(at index: Int) -> Element {
+		return array.remove(at: index)
+	}
+
 	public func reverse() {
 		self.array = self.array.reversed()
 	}
@@ -2347,6 +2352,10 @@ public class SupportingFile {
 		contents: nil)
 	public static let astDumpsScript = SupportingFile(
 		"updateASTDumps.sh",
+		folder: SupportingFile.gryphonBuildFolder,
+		contents: nil)
+	public static let sourceKitCompilationArguments = SupportingFile(
+		"sourceKitCompilationArguments.txt",
 		folder: SupportingFile.gryphonBuildFolder,
 		contents: nil)
 	public static let gryphonXCTest = SupportingFile(

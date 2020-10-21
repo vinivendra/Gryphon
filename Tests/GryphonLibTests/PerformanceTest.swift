@@ -77,7 +77,8 @@ class PerformanceTest: XCTestCase {
 							indentationString: "\t",
 							defaultsToFinal: false,
 							isUsingSwiftSyntax: false,
-							compiledFiles: []))
+							compilationArguments: TranspilationContext.SwiftCompilationArguments(
+								absoluteFilePathsAndOtherArguments: [])))
 				}
 				catch let error {
 					XCTFail("🚨 Test failed with error:\n\(error)")
@@ -100,9 +101,10 @@ class PerformanceTest: XCTestCase {
 				indentationString: "\t",
 				defaultsToFinal: testName.contains("-default-final"),
 				isUsingSwiftSyntax: true,
-				compiledFiles: [
-					SupportingFile.gryphonTemplatesLibrary.absolutePath,
-					testCasePath, ])
+				compilationArguments: TranspilationContext.SwiftCompilationArguments(
+					absoluteFilePathsAndOtherArguments: [
+						SupportingFile.gryphonTemplatesLibrary.absolutePath,
+						testCasePath, ]))
 			return (testCasePath, context)
 		}
 
@@ -138,9 +140,10 @@ class PerformanceTest: XCTestCase {
 					indentationString: "\t",
 					defaultsToFinal: testName.contains("-default-final"),
 					isUsingSwiftSyntax: PerformanceTest.shouldUseSwiftSyntax,
-					compiledFiles: [
-						SupportingFile.gryphonTemplatesLibrary.absolutePath,
-						testCasePath, ])
+					compilationArguments: TranspilationContext.SwiftCompilationArguments.init(
+						absoluteFilePathsAndOtherArguments: [
+							SupportingFile.gryphonTemplatesLibrary.absolutePath,
+							testCasePath, ]))
 				let rawAST = try! Compiler.transpileGryphonRawASTs(
 					fromInputFiles: [testCasePath],
 					fromASTDumpFiles: [astDumpFilePath],
@@ -176,9 +179,10 @@ class PerformanceTest: XCTestCase {
 					indentationString: "\t",
 					defaultsToFinal: testName.contains("-default-final"),
 					isUsingSwiftSyntax: PerformanceTest.shouldUseSwiftSyntax,
-					compiledFiles: [
-						SupportingFile.gryphonTemplatesLibrary.absolutePath,
-						testCasePath, ])
+					compilationArguments: TranspilationContext.SwiftCompilationArguments(
+						absoluteFilePathsAndOtherArguments: [
+							SupportingFile.gryphonTemplatesLibrary.absolutePath,
+							testCasePath, ]))
 				let rawAST = try! Compiler.transpileGryphonRawASTs(
 					fromInputFiles: [testCasePath],
 					fromASTDumpFiles: [astDumpFilePath],
@@ -217,9 +221,10 @@ class PerformanceTest: XCTestCase {
 					indentationString: "\t",
 					defaultsToFinal: testName.contains("-default-final"),
 					isUsingSwiftSyntax: PerformanceTest.shouldUseSwiftSyntax,
-					compiledFiles: [
-						SupportingFile.gryphonTemplatesLibrary.absolutePath,
-						testCasePath, ])
+					compilationArguments: TranspilationContext.SwiftCompilationArguments(
+						absoluteFilePathsAndOtherArguments: [
+							SupportingFile.gryphonTemplatesLibrary.absolutePath,
+							testCasePath, ]))
 				let rawAST = try! Compiler.transpileGryphonRawASTs(
 					fromInputFiles: [testCasePath],
 					fromASTDumpFiles: [astDumpFilePath],
@@ -255,9 +260,10 @@ class PerformanceTest: XCTestCase {
 					indentationString: "\t",
 					defaultsToFinal: testName.contains("-default-final"),
 					isUsingSwiftSyntax: PerformanceTest.shouldUseSwiftSyntax,
-					compiledFiles: [
-						SupportingFile.gryphonTemplatesLibrary.absolutePath,
-						testCasePath, ])
+					compilationArguments: TranspilationContext.SwiftCompilationArguments(
+						absoluteFilePathsAndOtherArguments: [
+							SupportingFile.gryphonTemplatesLibrary.absolutePath,
+							testCasePath, ]))
 				let rawAST = try! Compiler.transpileGryphonASTs(
 					fromInputFiles: [testCasePath],
 					fromASTDumpFiles: [astDumpFilePath],
@@ -294,9 +300,10 @@ class PerformanceTest: XCTestCase {
 						indentationString: "\t",
 						defaultsToFinal: testName.contains("-default-final"),
 						isUsingSwiftSyntax: PerformanceTest.shouldUseSwiftSyntax,
-						compiledFiles: [
-							SupportingFile.gryphonTemplatesLibrary.absolutePath,
-							testCasePath, ])
+						compilationArguments: TranspilationContext.SwiftCompilationArguments(
+							absoluteFilePathsAndOtherArguments: [
+								SupportingFile.gryphonTemplatesLibrary.absolutePath,
+								testCasePath, ]))
 					_ = try Compiler.transpileKotlinCode(
 						fromInputFiles: [testCasePath],
 						fromASTDumpFiles: [astDumpFilePath],

@@ -47,14 +47,9 @@ public class SourceKit {
 		}
 
 		let absolutePath = Utilities.getAbsoultePath(forFile: filePath)
-		let sdkPath = try TranspilationContext.getMacOSSDKPath()
-		let arguments = context.compiledFiles
-			.map { Utilities.getAbsoultePath(forFile: $0) }
-			.toMutableList()
-		arguments.append("-sdk")
-		arguments.append(sdkPath)
-
-		let request = Request.index(file: absolutePath, arguments: arguments.array)
+		let request = Request.index(
+			file: absolutePath,
+			arguments: context.compilationArguments.argumentsForSourceKit.array)
 		let sourceKitResult: [String: SourceKitRepresentable] = try request.send()
 
 		processTypeUSRs(forIndexingResponse: sourceKitResult)
@@ -222,18 +217,14 @@ public class SourceKit {
 		// Call SourceKitten to get the types
 		// TODO: Improve this yaml. SDK paths? Absolute/relative file paths?
 		let absolutePath = Utilities.getAbsoultePath(forFile: filePath)
-		let sdkPath = try TranspilationContext.getMacOSSDKPath()
-		let compiledFilePathsString = context.compiledFiles
-			.map { Utilities.getAbsoultePath(forFile: $0) }
+		let compilationArgumentsString = context.compilationArguments.argumentsForSourceKit
 			.map { "\"\($0)\"" }
 			.joined(separator: ", ")
 		let yaml = """
 		{
 		  key.request: source.request.expression.type,
 		  key.compilerargs: [
-			\(compiledFilePathsString),
-			"-sdk",
-			"\(sdkPath)"
+			\(compilationArgumentsString)
 		  ],
 		  key.sourcefile: "\(absolutePath)"
 		}

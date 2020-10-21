@@ -61,7 +61,8 @@ class LibraryTranspilationTest: XCTestCase {
 			indentationString: "\t",
 			defaultsToFinal: false,
 			isUsingSwiftSyntax: true,
-			compiledFiles: []))
+			compilationArguments: TranspilationContext.SwiftCompilationArguments(
+				absoluteFilePathsAndOtherArguments: [])))
 
 	// MARK: - Tests
 	func testSimpleMatches() {

@@ -268,6 +268,7 @@ extension Utilities {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 extension Utilities {
+	/// The absolute path to the current folder
 	static func getCurrentFolder() -> String {
 		return FileManager.default.currentDirectoryPath
 	}

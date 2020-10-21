@@ -31,8 +31,35 @@ public class TranspilationContext {
 	let indentationString: String
 	let defaultsToFinal: Bool
 	let isUsingSwiftSyntax: Bool
-	/// All files that should be included in this `swiftc` compilation.
-	let compiledFiles: List<String>
+	let compilationArguments: SwiftCompilationArguments
+
+	/// All arguments that should be included in this `swiftc` compilation.
+	public struct SwiftCompilationArguments {
+		/// Absolute paths to any files included in the compilation, as well
+		/// as any other `swiftc` arguments. These are stored in a
+		/// single list because it might not be trivial to separate them.
+		let absoluteFilePathsAndOtherArguments: List<String>
+		/// The path to the SDK that should be used.
+		let absolutePathToSDK: String
+
+		/// If no SDK path is given, tries to get the SDK path for the current OS (as opposed to an iOS SDK).
+		init(
+			absoluteFilePathsAndOtherArguments: List<String>,
+			absolutePathToSDK: String? = nil) throws
+		{
+			self.absoluteFilePathsAndOtherArguments = absoluteFilePathsAndOtherArguments
+			self.absolutePathToSDK = try absolutePathToSDK ?? TranspilationContext.getMacOSSDKPath()
+		}
+
+		/// Returns all the necessary arguments for a SourceKit request,
+		/// including "-sdk" and the SDK path.
+		var argumentsForSourceKit: MutableList<String> {
+			let mutableArguments = absoluteFilePathsAndOtherArguments.toMutableList()
+			mutableArguments.append("-sdk")
+			mutableArguments.append(absolutePathToSDK)
+			return mutableArguments
+		}
+	}
 
 	#if swift(>=5.3)
 		static let swiftSyntaxVersion = "5.3"
@@ -83,7 +110,8 @@ public class TranspilationContext {
 		self.defaultsToFinal = false
 		self.isUsingSwiftSyntax = usingSwiftSyntax
 		self.templates = []
-		self.compiledFiles = [SupportingFile.gryphonTemplatesLibrary.absolutePath]
+		self.compilationArguments = try SwiftCompilationArguments(absoluteFilePathsAndOtherArguments:
+			[SupportingFile.gryphonTemplatesLibrary.absolutePath])
 	}
 
 	public init(
@@ -91,7 +119,7 @@ public class TranspilationContext {
 		indentationString: String,
 		defaultsToFinal: Bool,
 		isUsingSwiftSyntax: Bool,
-		compiledFiles: List<String>)
+		compilationArguments: SwiftCompilationArguments)
 		throws
 	{
 		try TranspilationContext.checkToolchainSupport(toolchainName)
@@ -101,7 +129,7 @@ public class TranspilationContext {
 		self.indentationString = indentationString
 		self.defaultsToFinal = defaultsToFinal
 		self.isUsingSwiftSyntax = isUsingSwiftSyntax
-		self.compiledFiles = compiledFiles
+		self.compilationArguments = compilationArguments
 		self.templates = try TranspilationContext
 			.getBaseContext(forToolchain: toolchainName, usingSwiftSyntax: isUsingSwiftSyntax)
 			.templates
