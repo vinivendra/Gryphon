@@ -4,10 +4,10 @@ set -e
 
 echo "➡️ [1/5] Resetting the Xcode project..."
 
-cd "XcodeTests/iOS"
+cd "Test Files/XcodeTests/iOS"
 
 # Remove Gryphon-generated files
-./../../.build/debug/Gryphon clean
+./../../../.build/debug/Gryphon clean
 rm -f "gryphonInputFiles.xcfilelist"
 
 # Remove the old Xcodeproj, replace it with a clean copy of the backup
@@ -24,7 +24,7 @@ echo ""
 echo "➡️ [2/5] Initializing the Xcode project..."
 
 # Initialize the Xcode project
-./../../.build/debug/Gryphon init "GryphoniOSTest.xcodeproj" -swiftSyntax
+./../../../.build/debug/Gryphon init "GryphoniOSTest.xcodeproj" -swiftSyntax
 
 # Add the "Model.swift" file to the list of files to be translated
 echo "GryphoniOSTest/Model.swift" > "gryphonInputFiles.xcfilelist"
@@ -94,7 +94,7 @@ rm -f output.txt
 cp "../ModelWithErrors.swift" "GryphoniOSTest/Model.swift"
 
 # Transpile the model file
-./../../.build/debug/Gryphon "GryphoniOSTest/Model.swift" -swiftSyntax
+./../../../.build/debug/Gryphon "GryphoniOSTest/Model.swift" -swiftSyntax
 
 # Run the Kotlin target
 if [[ $(xcodebuild -project GryphoniOSTest.xcodeproj/ -scheme Kotlin > output.txt 2> /dev/null) ]];

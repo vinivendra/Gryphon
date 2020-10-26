@@ -1,0 +1,14 @@
+e: /Users/vini/Development/Gryphon/Gryphon exp/Test files/XcodeTests/Android/app/src/main/java/com/gryphon/gryphonandroidtest/Model.kt: (21, 12): Unresolved reference: Kotlin
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileDebugKotlin'.
+> Compilation error. See log for more details
+
+* Try:
+Run with --stacktrace option to get the stack trace. Run with --info or --debug option to get more log output. Run with --scan to get full insights.
+
+* Get more help at https://help.gradle.org
+
+BUILD FAILED in 2s
