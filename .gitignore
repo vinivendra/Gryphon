@@ -18,14 +18,16 @@ Package.resolved
 /.tmp
 # Result of building the translated programs
 *.jar
+# (Exception for gradle wrappers)
+!**/gradle/wrapper/gradle-wrapper.jar
 # Old Gryphon version (for bootstrapping)
 Test files/Bootstrap/gryphon-old
 # Xcode tests
-XcodeTests/iOS/.gryphon
-XcodeTests/iOS/gryphonInputFiles.xcfilelist
-XcodeTests/iOS/build
-XcodeTests/iOS/GryphoniOSTest.xcodeproj
-XcodeTests/iOS/output.txt
+Test files/XcodeTests/iOS/.gryphon
+Test files/XcodeTests/iOS/gryphonInputFiles.xcfilelist
+Test files/XcodeTests/iOS/build
+Test files/XcodeTests/iOS/GryphoniOSTest.xcodeproj
+Test files/XcodeTests/iOS/output.txt
 
 
 ### Xcode files
