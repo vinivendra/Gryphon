@@ -2274,6 +2274,7 @@ swift \(SupportingFile.mapGradleErrorsToSwiftRelativePath) \\
 	> \(SupportingFile.gryphonBuildFolder)/swiftErrors.txt \\
 	|| true
 
+set +e
 
 if [ -s \(SupportingFile.gryphonBuildFolder)/swiftOutput.txt ]
 then
