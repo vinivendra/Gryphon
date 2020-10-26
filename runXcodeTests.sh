@@ -4,7 +4,7 @@ set -e
 
 echo "➡️ [1/5] Resetting the Xcode project..."
 
-cd "iOSTests/GryphoniOSTest"
+cd "XcodeTests/iOS"
 
 # Remove Gryphon-generated files
 ./../../.build/debug/Gryphon clean
@@ -12,7 +12,7 @@ rm -f "gryphonInputFiles.xcfilelist"
 
 # Remove the old Xcodeproj, replace it with a clean copy of the backup
 rm -rf "GryphoniOSTest.xcodeproj"
-cp -r "GryphoniOSTest.model.xcodeproj" "GryphoniOSTest.xcodeproj"
+cp -r "GryphoniOSTest.backup.xcodeproj" "GryphoniOSTest.xcodeproj"
 
 # Copy the model file to the right place
 cp "../Model.swift" "GryphoniOSTest/Model.swift"
