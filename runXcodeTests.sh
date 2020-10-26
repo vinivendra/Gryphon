@@ -42,7 +42,16 @@ rm -f ../Android/app/src/main/java/com/gryphon/gryphonandroidtest/Model.kt
 rm -f output.txt
 
 # Run the Gryphon target
-xcodebuild -project GryphoniOSTest.xcodeproj/ -scheme Gryphon > output.txt
+if xcodebuild -project GryphoniOSTest.xcodeproj/ -scheme Gryphon > output.txt
+then
+	echo "✅ Done."
+	echo ""
+else
+	echo "🚨 Error running Gryphon target. Printing xcodebuild output:"
+	cat output.txt || true
+	sleep 3 # Wait for cat to finish printing before exiting
+	exit -1
+fi
 
 # Check if Gryphon raised warnings or errors for the Model.swift file
 if [[ $(grep -E "Model\.swift:[0-9]+:[0-9]+: error" output.txt) ]];
@@ -79,10 +88,16 @@ echo "➡️ [4/5] Running the Kotlin target..."
 rm -f output.txt
 
 # Run the Kotlin target
-xcodebuild -project GryphoniOSTest.xcodeproj/ -scheme Kotlin > output.txt
-
-echo "✅ Done."
-echo ""
+if xcodebuild -project GryphoniOSTest.xcodeproj/ -scheme Kotlin > output.txt
+then
+	echo "✅ Done."
+	echo ""
+else
+	echo "🚨 Error running Kotlin target. Printing xcodebuild output:"
+	cat output.txt || true
+	sleep 3 # Wait for cat to finish printing before exiting
+	exit -1
+fi
 
 
 echo "➡️ [5/5] Testing Kotlin error mapping..."
