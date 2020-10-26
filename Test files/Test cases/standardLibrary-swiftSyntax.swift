@@ -16,11 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Test files/Test cases/Bootstrap Outputs/standardLibrary.swiftAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/standardLibrary.gryphonASTRaw
-// gryphon output: Test files/Test cases/Bootstrap Outputs/standardLibrary.gryphonAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/standardLibrary.kt
-
 // gryphon insert: import kotlin.system.*
 
 import Foundation

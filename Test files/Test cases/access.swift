@@ -16,11 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Test files/Test cases/Bootstrap Outputs/access.swiftAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/access.gryphonASTRaw
-// gryphon output: Test files/Test cases/Bootstrap Outputs/access.gryphonAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/access.kt
-
 // Check access modifiers inside classes
 class A1 {
 	var a1 = 0

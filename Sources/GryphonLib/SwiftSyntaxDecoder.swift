@@ -16,11 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/SwiftSyntaxDecoder.swiftAST
-// gryphon output: Sources/GryphonLib/SwiftSyntaxDecoder.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/SwiftSyntaxDecoder.gryphonAST
-// gryphon output: Bootstrap/SwiftSyntaxDecoder.kt
-
 import Foundation
 import SwiftSyntax
 import SourceKittenFramework

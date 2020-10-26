@@ -16,11 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Test files/Test cases/Bootstrap Outputs/classes.swiftAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/classes.gryphonASTRaw
-// gryphon output: Test files/Test cases/Bootstrap Outputs/classes.gryphonAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/classes.kt
-
 // gryphon insert: import kotlin.system.exitProcess
 
 class Box {

@@ -16,11 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Test files/Test cases/Bootstrap Outputs/assignments.swiftAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/assignments.gryphonASTRaw
-// gryphon output: Test files/Test cases/Bootstrap Outputs/assignments.gryphonAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/assignments.kt
-
 var x: Int = 0
 var y = x
 var z = 10

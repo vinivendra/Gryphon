@@ -16,11 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/KotlinTranslationResult.swiftAST
-// gryphon output: Sources/GryphonLib/KotlinTranslationResult.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/KotlinTranslationResult.gryphonAST
-// gryphon output: Bootstrap/KotlinTranslationResult.kt
-
 public struct KotlinTranslationResult {
 	let translation: String
 	let errorMap: String

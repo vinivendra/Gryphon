@@ -16,11 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Test files/Test cases/Bootstrap Outputs/protocols.swiftAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/protocols.gryphonASTRaw
-// gryphon output: Test files/Test cases/Bootstrap Outputs/protocols.gryphonAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/protocols.kt
-
 // Protocol inheritances aren't supported yet, but they shouldn't crash the AST dump decoder, which
 // can happend when the protocol `B` below is empty.
 public protocol A { }

@@ -16,11 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Test files/Test cases/Bootstrap Outputs/warnings.swiftAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/warnings.gryphonASTRaw
-// gryphon output: Test files/Test cases/Bootstrap Outputs/warnings.gryphonAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/warnings.kt
-
 // gryphon ignore
 internal class GRYTemplate {
 	static func dot(_ left: GRYTemplate, _ right: String) -> GRYDotTemplate {

@@ -16,11 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Test files/Test cases/Bootstrap Outputs/errors.swiftAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/errors.gryphonASTRaw
-// gryphon output: Test files/Test cases/Bootstrap Outputs/errors.gryphonAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/errors.kt
-
 // This file should contain two lines that cause Gryphon to throw an error, but it doesn't have to
 // be these lines specifically. If these errors are ever "fixed", they can be replaced by others.
 

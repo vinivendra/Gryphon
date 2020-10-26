@@ -16,8 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Bootstrap/UtilitiesTest.kt
-
 #if !GRYPHON
 @testable import GryphonLib
 import XCTest

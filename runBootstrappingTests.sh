@@ -5,19 +5,19 @@ echo "➡️ [1/7] Updating Gryphon (old)..."
 set -e
 
 # If the directory doesn't exist yet
-if [ ! -d "gryphon-old" ]; then
+if [ ! -d "Test Files/Bootstrap/gryphon-old" ]; then
 	echo "	↪️ Cloning..."
-	mkdir -p gryphon-old
+	mkdir -p "Test Files/Bootstrap/gryphon-old"
 	git clone \
 		--branch bootstrap \
 		https://github.com/vinivendra/Gryphon.git \
-		gryphon-old
+		"Test Files/Bootstrap/gryphon-old"
 fi
 
-cd gryphon-old
+cd "Test Files/Bootstrap/gryphon-old"
 git checkout bootstrap
 git pull
-cd ..
+cd ../../..
 
 set +e
 
@@ -36,9 +36,9 @@ fi
 
 echo "➡️ [3/7] Initializing Gryphon (old)..."
 
-cd "gryphon-old"
+cd "Test Files/Bootstrap/gryphon-old"
 
-if ./../.build/debug/Gryphon init -xcode
+if ./../../../.build/debug/Gryphon init -xcode
 then
 	echo "✅ Done."
 	echo ""
@@ -47,7 +47,7 @@ else
 	exit -1
 fi
 
-cd ..
+cd ../../..
 
 
 echo "➡️ [4/7] Transpiling the Gryphon (old) source files to Kotlin..."
@@ -77,7 +77,7 @@ fi
 
 echo "➡️ [6/7] Building Gryphon (old)..."
 
-cd "gryphon-old"
+cd "Test Files/Bootstrap/gryphon-old"
 
 if swift build
 then

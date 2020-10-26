@@ -16,11 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Test files/Test cases/Bootstrap Outputs/generics.swiftAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/generics.gryphonASTRaw
-// gryphon output: Test files/Test cases/Bootstrap Outputs/generics.gryphonAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/generics.kt
-
 struct Box<T> {
 	let x: T
 }

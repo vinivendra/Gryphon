@@ -16,11 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/AuxiliaryFileContents.swiftAST
-// gryphon output: Sources/GryphonLib/AuxiliaryFileContents.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/AuxiliaryFileContents.gryphonAST
-// gryphon output: Bootstrap/AuxiliaryFileContents.kt
-
 private let dollarSign = "$" // gryphon value: "\\$"
 private let kotlinStringInterpolation = "{_string}"
 

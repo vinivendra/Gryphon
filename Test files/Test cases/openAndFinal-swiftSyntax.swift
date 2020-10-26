@@ -16,11 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Test files/Test cases/Bootstrap Outputs/openAndFinal.swiftAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/openAndFinal.gryphonASTRaw
-// gryphon output: Test files/Test cases/Bootstrap Outputs/openAndFinal.gryphonAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/openAndFinal.kt
-
 // Test variables and methods
 class A {
 	// Open by default, final if compiled with -default-final

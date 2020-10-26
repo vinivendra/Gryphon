@@ -16,11 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/RubyScriptContents.swiftAST
-// gryphon output: Sources/GryphonLib/RubyScriptContents.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/RubyScriptContents.gryphonAST
-// gryphon output: Bootstrap/RubyScriptContents.kt
-
 // gryphon multiline
 internal let rubyScriptFileContents = """
 #!/bin/bash

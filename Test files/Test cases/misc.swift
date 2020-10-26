@@ -16,11 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Test files/Test cases/Bootstrap Outputs/misc.swiftAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/misc.gryphonASTRaw
-// gryphon output: Test files/Test cases/Bootstrap Outputs/misc.gryphonAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/misc.kt
-
 // While and continue
 var i = 1
 while i <= 10 {

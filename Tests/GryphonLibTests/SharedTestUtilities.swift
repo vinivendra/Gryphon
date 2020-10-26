@@ -16,8 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Bootstrap/SharedTestUtilities.kt
-
 // gryphon insert: import kotlin.system.*
 
 import Foundation
@@ -33,8 +31,11 @@ class TestError: Error {
 
 class TestUtilities {
 	// MARK: - Diffs
-	static let relativeTestCasesPath = "Test files/Test cases"
-	static let testCasesPath: String = Utilities.getCurrentFolder() + "/\(relativeTestCasesPath)/"
+	static let relativeTestFilesPath = "Test files"
+	static let relativeTestCasesPath = "\(relativeTestFilesPath)/Test cases"
+	static let relativeBootstrapPath = "\(relativeTestFilesPath)/Bootstrap"
+	static let testCasesPath = Utilities.getCurrentFolder() + "/\(relativeTestCasesPath)/"
+	static let bootstrapPath = Utilities.getCurrentFolder() + "/\(relativeBootstrapPath)/"
 
 	static func diff(_ string1: String, _ string2: String) -> String {
 		do {

@@ -16,11 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/SharedUtilities.swiftAST
-// gryphon output: Sources/GryphonLib/SharedUtilities.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/SharedUtilities.gryphonAST
-// gryphon output: Bootstrap/SharedUtilities.kt
-
 import Foundation
 
 private func gryphonTemplates() throws {

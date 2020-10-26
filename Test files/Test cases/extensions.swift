@@ -16,11 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Test files/Test cases/Bootstrap Outputs/extensions.swiftAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/extensions.gryphonASTRaw
-// gryphon output: Test files/Test cases/Bootstrap Outputs/extensions.gryphonAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/extensions.kt
-
 extension String {
 	var isString: Bool {
 		return true

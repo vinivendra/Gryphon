@@ -16,11 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Test files/Test cases/Bootstrap Outputs/structs.swiftAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/structs.gryphonASTRaw
-// gryphon output: Test files/Test cases/Bootstrap Outputs/structs.gryphonAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/structs.kt
-
 struct SupportedStruct {
 	let x = 0
 	let y = 1

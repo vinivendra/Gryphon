@@ -16,11 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Test files/Test cases/Bootstrap Outputs/subscripts.swiftAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/subscripts.gryphonASTRaw
-// gryphon output: Test files/Test cases/Bootstrap Outputs/subscripts.gryphonAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/subscripts.kt
-
 // Normal subscripts
 class A {
 	var x = 0

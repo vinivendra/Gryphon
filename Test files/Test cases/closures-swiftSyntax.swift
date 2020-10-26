@@ -16,11 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Test files/Test cases/Bootstrap Outputs/closures.swiftAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/closures.gryphonASTRaw
-// gryphon output: Test files/Test cases/Bootstrap Outputs/closures.gryphonAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/closures.kt
-
 let printClosure: (String) -> () = { print($0) }
 printClosure("Hello, world!")
 

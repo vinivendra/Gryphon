@@ -16,11 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Test files/Test cases/Bootstrap Outputs/kotlinLiterals.swiftAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/kotlinLiterals.gryphonASTRaw
-// gryphon output: Test files/Test cases/Bootstrap Outputs/kotlinLiterals.gryphonAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/kotlinLiterals.kt
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Insert code at the beginning of the file

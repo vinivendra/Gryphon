@@ -16,11 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Test files/Test cases/Bootstrap Outputs/functionCalls.swiftAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/functionCalls.gryphonASTRaw
-// gryphon output: Test files/Test cases/Bootstrap Outputs/functionCalls.gryphonAST
-// gryphon output: Test files/Test cases/Bootstrap Outputs/functionCalls.kt
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Function definitions
 

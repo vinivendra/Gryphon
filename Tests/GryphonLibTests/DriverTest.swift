@@ -16,8 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Bootstrap/DriverTest.kt
-
 #if !GRYPHON
 @testable import GryphonLib
 import XCTest
@@ -200,7 +198,7 @@ class DriverTest: XCTestCase {
 			// statement that aren't in the library Gryphon uses internally.
 			// This assumes the statement is followed by two newlines.
 			let actualKotlinLibraryContents = try Utilities.readFile(
-				"Bootstrap/GryphonKotlinLibrary.kt")
+				TestUtilities.bootstrapPath + "GryphonKotlinLibrary.kt")
 			let generatedKotlinLibraryContents = try Utilities.readFile(
 				SupportingFile.gryphonKotlinLibrary.relativePath)
 			let processedKotlinLibraryContents = String(generatedKotlinLibraryContents

@@ -16,11 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/ASTDumpDecoder.swiftAST
-// gryphon output: Sources/GryphonLib/ASTDumpDecoder.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/ASTDumpDecoder.gryphonAST
-// gryphon output: Bootstrap/ASTDumpDecoder.kt
-
 internal class ASTDumpDecoder {
 	let buffer: String
 	var currentIndex: String.Index
