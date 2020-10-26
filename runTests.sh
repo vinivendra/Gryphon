@@ -1,5 +1,42 @@
 #!/bin/bash
 
+####################################################################################################
+# Read the arguments
+
+unitTests=0
+acceptanceTests=0
+bootstrapTests=0
+xcodeTests=0
+
+while test $# -gt 0
+do
+    case "$1" in
+        -u) unitTests=1
+            ;;
+        -a) acceptanceTests=1
+            ;;
+        -b) bootstrapTests=1
+            ;;
+        -u) xcodeTests=1
+            ;;
+    esac
+    shift
+done
+
+if [[ unitTests -eq 0 && acceptanceTests -eq 0 && bootstrapTests -eq 0 && xcodeTests -eq 0 ]];
+then
+	echo "Please specify at least one option:"
+	echo "	-u: run unit tests"
+	echo "	-a: run acceptance tests"
+	echo "	-b: run bootstrap tests"
+	echo "	-x: run Xcode tests"
+	exit 0
+fi
+
+
+####################################################################################################
+# Prepare for the tests
+
 echo "➡️ [1/4] Building Gryphon..."
 
 if swift build --build-tests
@@ -74,41 +111,68 @@ function runTest {
 	fi
 }
 
+
+####################################################################################################
+# Run the tests
+
 exec 3<> /tmp/foo  #open fd 3.
 
-for file in Tests/GryphonLibTests/*.swift
-do
-	if [[ $file == *"XCTestManifests.swift" ]]; then
-		: # Do nothing
-	elif [[ $file == *"TestUtilities.swift" ]]; then
-		: # Do nothing
-	elif [[ $file == *"PerformanceTest.swift" ]]; then
-		: # Do nothing
-	elif [[ $file == *"AcceptanceTest.swift" ]]; then
-		: # Do nothing
-	elif [[ $file == *"BootstrappingTest.swift" ]]; then
-		: # Do nothing
-	else
-		fileNameWithExtension=$(basename $file)
 
-		echo "↪️    Running $fileNameWithExtension..."
+# If we have to run unit tests
+if [[ unitTests ]]; then
+	echo "👇    Running unit tests..."
+	# Indent test output
+	exec 4>&1
+	exec 1> >(paste /dev/null -)
 
-		runTest $fileNameWithExtension
-	fi
-done
+	for file in Tests/GryphonLibTests/*.swift
+	do
+		if [[ $file == *"XCTestManifests.swift" ]]; then
+			: # Do nothing
+		elif [[ $file == *"TestUtilities.swift" ]]; then
+			: # Do nothing
+		elif [[ $file == *"PerformanceTest.swift" ]]; then
+			: # Do nothing
+		elif [[ $file == *"AcceptanceTest.swift" ]]; then
+			: # Do nothing
+		else
+			fileNameWithExtension=$(basename $file)
 
-# If we have to run AcceptanceTest
-if [[ $1 == "-a" ]] || [[ $2 == "-a" ]]; then
+			echo "↪️    Running $fileNameWithExtension..."
+
+			runTest $fileNameWithExtension
+		fi
+	done
+
+	# Restore indentation
+	exec 1>&4 4>&-
+	echo "👆    Done running unit tests."
+fi
+
+# If we have to run acceptance tests
+if [[ acceptanceTests ]]; then
+	echo "👇    Running acceptance tests..."
+	# Indent test output
+	exec 4>&1
+	exec 1> >(paste /dev/null -)
+
 	fileNameWithExtension="AcceptanceTest.swift"
 
 	echo "↪️    Running $fileNameWithExtension..."
 
 	runTest $fileNameWithExtension
+
+	# Restore indentation
+	exec 1>&4 4>&-
+	echo "👆    Done running acceptance tests."
 fi
 
 # If we have to run bootstrapping tests
-if [[ $1 == "-b" ]] || [[ $2 == "-b" ]]; then
+if [[ bootstrapTests ]]; then
 	echo "👇    Running bootstrapping tests..."
+	# Indent test output
+	exec 4>&1
+	exec 1> >(paste /dev/null -)
 
 	if bash runBootstrappingTests.sh
 	then
@@ -118,10 +182,35 @@ if [[ $1 == "-b" ]] || [[ $2 == "-b" ]]; then
 		allFailures+=$'Bootstrapping tests failed'
 	fi
 
+	# Restore indentation
+	exec 1>&4 4>&-
 	echo "👆    Done running bootstrapping tests."
 fi
 
+# If we have to run Xcode tests
+if [[ xcodeTests ]]; then
+	echo "👇    Running Xcode tests..."
+	# Indent test output
+	exec 4>&1
+	exec 1> >(paste /dev/null -)
+
+	if bash runXcodeTests.sh
+	then
+		echo "✅ Xcode tests succeeded."
+		echo ""
+	else
+		allFailures+=$'Xcode tests failed'
+	fi
+
+	# Restore indentation
+	exec 1>&4 4>&-
+	echo "👆    Done running Xcode tests."
+fi
+
 exec 3>&- #close fd 3.
+
+####################################################################################################
+# Check for errors
 
 errorsOutput="$allFailures"
 
