@@ -33,7 +33,8 @@ class TestError: Error {
 
 class TestUtilities {
 	// MARK: - Diffs
-	static let testCasesPath: String = Utilities.getCurrentFolder() + "/Test cases/"
+	static let relativeTestCasesPath = "Test files/Test cases"
+	static let testCasesPath: String = Utilities.getCurrentFolder() + "/\(relativeTestCasesPath)/"
 
 	static func diff(_ string1: String, _ string2: String) -> String {
 		do {
@@ -97,7 +98,7 @@ class TestUtilities {
 		let swiftVersion = try TranspilationContext.getVersionOfToolchain(nil)
 		print("⛓ Using Swift \(swiftVersion)")
 
-		let testCasesFolder = "Test cases"
+		let testCasesFolder = TestUtilities.relativeTestCasesPath
 		if Utilities.needsToDumpASTForSwiftFiles(
 			in: testCasesFolder,
 			forSwiftVersion: swiftVersion)
