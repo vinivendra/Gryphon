@@ -17,7 +17,7 @@ do
             ;;
         -b) bootstrapTests=1
             ;;
-        -u) xcodeTests=1
+        -x) xcodeTests=1
             ;;
     esac
     shift
