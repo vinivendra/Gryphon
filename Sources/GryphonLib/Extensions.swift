@@ -16,10 +16,7 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/Extensions.swiftAST
-// gryphon output: Sources/GryphonLib/Extensions.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/Extensions.gryphonAST
-// gryphon output: Bootstrap/Extensions.kt
+// gryphon output: Test files/Bootstrap/Extensions.kt
 
 import Foundation
 

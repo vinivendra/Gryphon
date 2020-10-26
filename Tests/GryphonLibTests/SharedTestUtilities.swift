@@ -16,7 +16,7 @@
 // limitations under the License.
 //
 
-// gryphon output: Bootstrap/SharedTestUtilities.kt
+// gryphon output: Test Files/Bootstrap/SharedTestUtilities.kt
 
 // gryphon insert: import kotlin.system.*
 

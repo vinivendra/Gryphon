@@ -16,10 +16,7 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/TranspilationContext.swiftAST
-// gryphon output: Sources/GryphonLib/TranspilationContext.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/TranspilationContext.gryphonAST
-// gryphon output: Bootstrap/TranspilationContext.kt
+// gryphon output: Test files/Bootstrap/TranspilationContext.kt
 
 // gryphon insert: import kotlin.system.*
 

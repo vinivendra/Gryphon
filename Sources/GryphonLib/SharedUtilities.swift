@@ -16,10 +16,7 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/SharedUtilities.swiftAST
-// gryphon output: Sources/GryphonLib/SharedUtilities.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/SharedUtilities.gryphonAST
-// gryphon output: Bootstrap/SharedUtilities.kt
+// gryphon output: Test files/Bootstrap/SharedUtilities.kt
 
 import Foundation
 

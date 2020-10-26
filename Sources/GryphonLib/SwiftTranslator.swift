@@ -16,10 +16,7 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/SwiftTranslator.swiftAST
-// gryphon output: Sources/GryphonLib/SwiftTranslator.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/SwiftTranslator.gryphonAST
-// gryphon output: Bootstrap/SwiftTranslator.kt
+// gryphon output: Test files/Bootstrap/SwiftTranslator.kt
 
 import Foundation
 

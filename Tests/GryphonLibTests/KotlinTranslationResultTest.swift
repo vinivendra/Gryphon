@@ -16,7 +16,7 @@
 // limitations under the License.
 //
 
-// gryphon output: Bootstrap/KotlinTranslationResultTest.kt
+// gryphon output: Test Files/Bootstrap/KotlinTranslationResultTest.kt
 
 #if !GRYPHON
 @testable import GryphonLib

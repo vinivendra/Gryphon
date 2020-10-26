@@ -16,10 +16,7 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/LibraryTranspilationPass.swiftAST
-// gryphon output: Sources/GryphonLib/LibraryTranspilationPass.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/LibraryTranspilationPass.gryphonAST
-// gryphon output: Bootstrap/LibraryTranspilationPass.kt
+// gryphon output: Test files/Bootstrap/LibraryTranspilationPass.kt
 
 import Foundation
 
