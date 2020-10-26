@@ -2246,26 +2246,49 @@ set -e
 # The `-f` option is here to avoid reporting errors when the files are not found
 rm -f "\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleOutput.txt"
 rm -f "\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleErrors.txt"
+rm -f "\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/swiftOutput.txt"
+rm -f "\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/swiftErrors.txt"
 
 # Switch to the Android folder so we can use pre-built gradle info to speed up the compilation.
 cd "\(dollarSign)ANDROID_ROOT"
 
 # Compile the Android sources and save the logs gack to the iOS folder
-# This command is allowed to fail so we add "|| true" to the end
-./gradlew compileDebugSources > \
-	"\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleOutput.txt" 2> \
-	"\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleErrors.txt" \
-	|| true
+set +e
+./gradlew compileDebugSources > \\
+	"\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleOutput.txt" 2> \\
+	"\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleErrors.txt"
+kotlinCompilationStatus=\(dollarSign)?
+set -e
 
 # Switch back to the iOS folder
 cd "\(dollarSign)SRCROOT"
 
 # Map the Kotlin errors back to Swift
-swift \(SupportingFile.mapGradleErrorsToSwiftRelativePath) < \
-	\(SupportingFile.gryphonBuildFolder)/gradleOutput.txt
+swift \(SupportingFile.mapGradleErrorsToSwiftRelativePath) \\
+	< \(SupportingFile.gryphonBuildFolder)/gradleOutput.txt \\
+	> \(SupportingFile.gryphonBuildFolder)/swiftOutput.txt \\
+	|| true
 
-swift \(SupportingFile.mapGradleErrorsToSwiftRelativePath) < \
-	\(SupportingFile.gryphonBuildFolder)/gradleErrors.txt
+swift \(SupportingFile.mapGradleErrorsToSwiftRelativePath) \\
+	< \(SupportingFile.gryphonBuildFolder)/gradleErrors.txt \\
+	> \(SupportingFile.gryphonBuildFolder)/swiftErrors.txt \\
+	|| true
+
+
+if [ -s \(SupportingFile.gryphonBuildFolder)/swiftOutput.txt ]
+then
+	if [ -s \(SupportingFile.gryphonBuildFolder)/swiftError.txt ]
+	then
+		echo "Failed to map Kotlin errors."
+		cat \(SupportingFile.gryphonBuildFolder)/gradleOutput.txt
+		cat \(SupportingFile.gryphonBuildFolder)/gradleError.txt
+		exit \(dollarSign)kotlinCompilationStatus
+	fi
+fi
+
+cat \(SupportingFile.gryphonBuildFolder)/swiftOutput.txt
+cat \(SupportingFile.gryphonBuildFolder)/swiftError.txt
+exit -1
 
 """
 
