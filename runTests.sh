@@ -11,19 +11,27 @@ xcodeTests=0
 while test $# -gt 0
 do
     case "$1" in
-        -u) unitTests=1
+        "-u")
+			unitTests=1
             ;;
-        -a) acceptanceTests=1
+        "-a")
+			acceptanceTests=1
             ;;
-        -b) bootstrapTests=1
+        "-b")
+			bootstrapTests=1
             ;;
-        -x) xcodeTests=1
+        "-x")
+			xcodeTests=1
             ;;
+		*)
+			echo "Skipping unknown argument '$1'"
+			;;
     esac
+
     shift
 done
 
-if [[ unitTests -eq 0 && acceptanceTests -eq 0 && bootstrapTests -eq 0 && xcodeTests -eq 0 ]];
+if [[ $unitTests -eq 0 && $acceptanceTests -eq 0 && $bootstrapTests -eq 0 && $xcodeTests -eq 0 ]];
 then
 	echo "Please specify at least one option:"
 	echo "	-u: run unit tests"
@@ -119,7 +127,7 @@ exec 3<> /tmp/foo  #open fd 3.
 
 
 # If we have to run unit tests
-if [[ unitTests ]]; then
+if [[ $unitTests -ne 0 ]]; then
 	echo "👇    Running unit tests..."
 	# Indent test output
 	exec 4>&1
@@ -150,7 +158,7 @@ if [[ unitTests ]]; then
 fi
 
 # If we have to run acceptance tests
-if [[ acceptanceTests ]]; then
+if [[ $acceptanceTests -ne 0 ]]; then
 	echo "👇    Running acceptance tests..."
 	# Indent test output
 	exec 4>&1
@@ -168,7 +176,7 @@ if [[ acceptanceTests ]]; then
 fi
 
 # If we have to run bootstrapping tests
-if [[ bootstrapTests ]]; then
+if [[ $bootstrapTests -ne 0 ]]; then
 	echo "👇    Running bootstrapping tests..."
 	# Indent test output
 	exec 4>&1
@@ -188,7 +196,7 @@ if [[ bootstrapTests ]]; then
 fi
 
 # If we have to run Xcode tests
-if [[ xcodeTests ]]; then
+if [[ $xcodeTests -ne 0 ]]; then
 	echo "👇    Running Xcode tests..."
 	# Indent test output
 	exec 4>&1
