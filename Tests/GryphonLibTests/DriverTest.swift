@@ -76,7 +76,7 @@ class DriverTest: XCTestCase {
 			}
 
 		do {
-			try Driver.run(withArguments: ["test.swift"])
+			try Driver.run(withArguments: ["\(TestUtilities.relativeTestFilesPath)/test.swift"])
 			XCTAssert(!compilerOutput.isEmpty)
 
 			compilerOutput = ""
@@ -132,7 +132,9 @@ class DriverTest: XCTestCase {
 			}
 
 		do {
-			try Driver.run(withArguments: ["test.swift", "-swiftSyntax"])
+			try Driver.run(withArguments:
+							["\(TestUtilities.relativeTestFilesPath)/test.swift",
+							 "-swiftSyntax"])
 			XCTAssert(!compilerOutput.isEmpty)
 
 			compilerOutput = ""
