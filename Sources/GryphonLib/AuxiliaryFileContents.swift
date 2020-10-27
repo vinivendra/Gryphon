@@ -16,10 +16,6 @@
 // limitations under the License.
 //
 
-private let dollarSign = "$" // gryphon value: "\\$"
-private let kotlinStringInterpolation = "{_string}"
-
-// gryphon multiline
 internal let gryphonKotlinLibraryFileContents = """
 // Replace this with the real package identifier:
 package /* com.example.myApp */
@@ -204,7 +200,6 @@ fun <Element> MutableList<Element>.partition(
 
 """
 
-// gryphon multiline
 internal let gryphonSwiftLibraryFileContents = """
 //
 // Copyright 2018 Vinicius Jorge Vendramini
@@ -902,7 +897,7 @@ public class Map<Key, Value>:
 
 	// The tuple inside the list has to be translated as a Pair for Kotlin compatibility
 	public func toList() -> List<(Key, Value)> {
-		return List(dictionary).map { (\(dollarSign)0.0, \(dollarSign)0.1) }
+		return List(dictionary).map { ($0.0, $0.1) }
 	}
 
 	// Custom (Debug) String Convertible
@@ -1082,7 +1077,6 @@ extension Map {
 
 """
 
-// gryphon multiline
 internal let gryphonXCTestFileContents = """
 // Replacement for Comparable
 private struct _Comparable: Comparable {
@@ -1150,7 +1144,6 @@ extension XCTestCase {
 
 """
 
-// gryphon multiline
 internal let gryphonTemplatesLibraryFileContents = """
 // WARNING: Any changes to this file should be reflected in the literal string in
 // AuxiliaryFileContents.swift
@@ -1377,7 +1370,7 @@ private func gryphonTemplates() {
 
 	_ = fatalError(_string) // gryphon pure
 	_ = _GRYTemplate.call("println",
-			["\\\"Fatal error: \(dollarSign)\(kotlinStringInterpolation)\\\""]) +
+			["\\\"Fatal error: ${_string}\\\""]) +
 		"; " +
 		_GRYTemplate.call("exitProcess", ["-1"])
 
@@ -1706,7 +1699,6 @@ private func gryphonTemplates() {
 
 """
 
-// gryphon multiline
 internal let mapKotlinErrorsToSwiftFileContents = """
 // WARNING: Any changes to this file should be reflected in the literal string in
 // AuxiliaryFileContents.swift
@@ -1912,7 +1904,6 @@ for error in errors {
 
 """
 
-// gryphon multiline
 internal let mapGradleErrorsToSwiftFileContents = """
 // WARNING: Any changes to this file should be reflected in the literal string in
 // AuxiliaryFileContents.swift
@@ -2058,7 +2049,7 @@ while let nextLine = readLine(strippingNewline: false) {
 }
 
 // Get only lines with errors and warnings
-var errors = input.filter { \(dollarSign)0.hasPrefix("e: ") || \(dollarSign)0.hasPrefix("w: ") }
+var errors = input.filter { $0.hasPrefix("e: ") || $0.hasPrefix("w: ") }
 
 // Handle the errors
 var errorMaps: [String: ErrorMap] = [:]
@@ -2124,7 +2115,6 @@ if !errors.isEmpty {
 
 """
 
-// gryphon multiline
 internal let makeGryphonTargetsFileContents = """
 require 'xcodeproj'
 
@@ -2176,8 +2166,8 @@ end
 
 # Create the script we want to run
 
-script = "gryphon \\"\(dollarSign){PROJECT_NAME}.xcodeproj\\"" +
-	" \\"\(dollarSign){SRCROOT}/\(SupportingFile.xcFileList.relativePath)\\"" +
+script = "gryphon \\"${PROJECT_NAME}.xcodeproj\\"" +
+	" \\"${SRCROOT}/\(SupportingFile.xcFileList.relativePath)\\"" +
 	" --verbose --continue-on-error"
 
 # Add any other argument directly to the script (dropping the xcode project first)
@@ -2237,40 +2227,39 @@ project.save()
 
 """
 
-// gryphon multiline
 internal let compileKotlinFileContents = """
 # Exit if any command fails
 set -e
 
 # Prints a file only if it exists (and waits a bit so the printing can finish before proceeding)
 safeCat () {
-	if [[ -f \(dollarSign)1 ]];
+	if [[ -f $1 ]];
 	then
-		cat \(dollarSign)1
+		cat $1
 		sleep 2
 	fi
 }
 
 # Remove old logs
 # The `-f` option is here to avoid reporting errors when the files are not found
-rm -f "\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleOutput.txt"
-rm -f "\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleErrors.txt"
-rm -f "\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/swiftOutput.txt"
-rm -f "\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/swiftErrors.txt"
+rm -f "$SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleOutput.txt"
+rm -f "$SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleErrors.txt"
+rm -f "$SRCROOT/\(SupportingFile.gryphonBuildFolder)/swiftOutput.txt"
+rm -f "$SRCROOT/\(SupportingFile.gryphonBuildFolder)/swiftErrors.txt"
 
 # Switch to the Android folder so we can use pre-built gradle info to speed up the compilation.
-cd "\(dollarSign)ANDROID_ROOT"
+cd "$ANDROID_ROOT"
 
 # Compile the Android sources and save the logs gack to the iOS folder
 set +e
 ./gradlew compileDebugSources > \\
-	"\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleOutput.txt" 2> \\
-	"\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleErrors.txt"
-kotlinCompilationStatus=\(dollarSign)?
+	"$SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleOutput.txt" 2> \\
+	"$SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleErrors.txt"
+kotlinCompilationStatus=$?
 set -e
 
 # Switch back to the iOS folder
-cd "\(dollarSign)SRCROOT"
+cd "$SRCROOT"
 
 set +e
 
@@ -2296,7 +2285,7 @@ else
 	# and exit with the Kotlin compiler's status
 	safeCat \(SupportingFile.gryphonBuildFolder)/gradleOutput.txt
 	safeCat \(SupportingFile.gryphonBuildFolder)/gradleErrors.txt
-	exit \(dollarSign)kotlinCompilationStatus
+	exit $kotlinCompilationStatus
 fi
 
 """
