@@ -76,8 +76,7 @@ public class Compiler {
 	/// alternatives to this function should consider using the `printingLock`.
 	public static var logError: ((String) -> ()) = { input in
 		printingLock.lock()
-		fputs(input + "\n", stderr) // gryphon ignore
-		// gryphon insert: System.err.println(input)
+		fputs(input + "\n", stderr)
 		printingLock.unlock()
 	}
 

@@ -16,8 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon insert: import kotlin.system.*
-
 import Foundation
 
 #if !GRYPHON
@@ -25,9 +23,7 @@ import Foundation
 import XCTest
 #endif
 
-class TestError: Error {
-	// gryphon insert: constructor(): super() { }
-}
+class TestError: Error { }
 
 class TestUtilities {
 	// MARK: - Diffs

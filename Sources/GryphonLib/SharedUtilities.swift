@@ -240,11 +240,9 @@ extension Utilities {
 		throws
 	{
         libraryUpdateLock.lock() // gryphon ignore
-        // gryphon insert: libraryUpdateLock.acquire()
 
         defer {
             libraryUpdateLock.unlock() // gryphon ignore
-            // gryphon insert: libraryUpdateLock.release()
         }
 
 		Compiler.logStart("🧑‍💻  Processing the templates library...")

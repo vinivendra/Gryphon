@@ -22,8 +22,6 @@ import XCTest
 #endif
 
 class KotlinTranslationResultTest: XCTestCase {
-	// gryphon insert: constructor(): super() { }
-
 	public func getClassName() -> String { // gryphon annotation: override
 		return "TranslationResultTest"
 	}

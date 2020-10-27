@@ -21,9 +21,6 @@ import Foundation
 /// This pass records templates statically in TranspilationTemplate so they can be retrieved later.
 
 public class RecordTemplatesTranspilationPass: TranspilationPass {
-	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// gryphon insert:     super(ast, context) { }
-
 	override func replaceFunctionDeclaration( // gryphon annotation: override
 		_ functionDeclaration: FunctionDeclaration)
 		-> List<Statement>
@@ -241,9 +238,6 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 
 /// Looks for expressions that match any templates and replaces them with the template expressions.
 public class ReplaceTemplatesTranspilationPass: TranspilationPass {
-	// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
-	// gryphon insert:     super(ast, context) { }
-
 	override func replaceExpression( // gryphon annotation: override
 		_ expression: Expression)
 		-> Expression
@@ -299,9 +293,6 @@ public class ReplaceTemplatesTranspilationPass: TranspilationPass {
 /// To be called on a structured template expression; replaces any matches inside it with the given
 /// expressions in the `matches` list.
 private class ReplaceTemplateMatchesTranspilationPass: TranspilationPass {
-// gryphon insert: constructor(ast: GryphonAST, context: TranspilationContext):
-// gryphon insert:     super(ast, context) { }
-
 	var matches: List<(String, Expression)> = []
 
 	override func replaceLiteralCodeExpression( // gryphon annotation: override

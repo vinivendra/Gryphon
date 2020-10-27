@@ -16,8 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon insert: import kotlin.system.*
-
 import SwiftSyntax
 import SourceKittenFramework
 

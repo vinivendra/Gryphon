@@ -16,8 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon insert: import kotlin.system.*
-
 public class KotlinTranslator {
 	// MARK: - Constants
 	static let errorTranslation = "<<Error>>"

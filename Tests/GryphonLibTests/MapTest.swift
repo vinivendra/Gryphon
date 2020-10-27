@@ -24,8 +24,6 @@ import Foundation
 #endif
 
 class MapTest: XCTestCase {
-	// gryphon insert: constructor(): super() { }
-
 	public func getClassName() -> String { // gryphon annotation: override
 		return "MapTest"
 	}

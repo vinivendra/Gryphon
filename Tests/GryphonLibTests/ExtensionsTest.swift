@@ -25,11 +25,6 @@ struct TestableRange: Equatable {
 	let lowerBound: Int
 	let upperBound: Int
 
-	// gryphon insert: constructor(range: IntRange): this(range.start, range.endInclusive) { }
-	// gryphon insert:
-	// gryphon insert: constructor(string: String, range: IntRange):
-	// gryphon insert: 	this(range.start, range.endInclusive) { }
-
 	init(_ string: String, _ range: Range<String.Index>) { // gryphon ignore
 		self.lowerBound = range.lowerBound.utf16Offset(in: string)
 		self.upperBound = range.upperBound.utf16Offset(in: string)
@@ -42,8 +37,6 @@ struct TestableRange: Equatable {
 }
 
 class ExtensionsTest: XCTestCase {
-	// gryphon insert: constructor(): super() { }
-
 	public func getClassName() -> String { // gryphon annotation: override
 		return "ExtensionsTest"
 	}

@@ -22,8 +22,6 @@ import XCTest
 #endif
 
 class ShellTest: XCTestCase {
-	// gryphon insert: constructor(): super() { }
-
 	public func getClassName() -> String { // gryphon annotation: override
 		return "ShellTest"
 	}

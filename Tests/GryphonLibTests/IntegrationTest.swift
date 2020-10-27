@@ -21,11 +21,7 @@
 import XCTest
 #endif
 
-// gryphon insert: import kotlin.system.exitProcess
-
 class IntegrationTest: XCTestCase {
-	// gryphon insert: constructor(): super() { }
-
 	public func getClassName() -> String { // gryphon annotation: override
 		return "IntegrationTest"
 	}

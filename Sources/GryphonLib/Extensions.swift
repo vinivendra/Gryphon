@@ -38,17 +38,6 @@ private func gryphonTemplates() {
 		 .labeledParameter("omittingEmptySubsequences", "_bool")])
 }
 
-// gryphon insert: internal fun String.split(
-// gryphon insert:     separator: Char,
-// gryphon insert:     maxSplits: Int = Int.MAX_VALUE,
-// gryphon insert:     omittingEmptySubsequences: Boolean = true)
-// gryphon insert:     : MutableList<String>
-// gryphon insert: {
-// gryphon insert:     return this.split(separator = separator.toString(),
-// gryphon insert:         maxSplits = maxSplits,
-// gryphon insert:         omittingEmptySubsequences = omittingEmptySubsequences)
-// gryphon insert: }
-
 internal extension String {
 	// Result should have at most maxSplits + 1 elements.
 	func split(
@@ -104,8 +93,6 @@ internal extension String {
 		while substringOffset < self.endIndex {
 			let maybeIndex = // gryphon ignore
 				currentSubstring.range(of: searchedSubstring)?.lowerBound
-			// gryphon insert: var maybeIndex: Int? = currentSubstring.indexOf(searchedSubstring)
-			// gryphon insert: maybeIndex = if (maybeIndex == -1) { null } else { maybeIndex }
 
 			guard let foundIndex = maybeIndex else {
 				break
@@ -186,7 +173,6 @@ internal extension String {
 		result.append(self[self.startIndex].uppercased())
 
 		let indicesWithoutTheFirstOne = self.indices.dropFirst() // gryphon ignore
-		// gryphon insert: val indicesWithoutTheFirstOne = this.indices.drop(1)
 
 		for index in indicesWithoutTheFirstOne {
 			let currentCharacter = self[index]

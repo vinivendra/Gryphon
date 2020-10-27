@@ -159,9 +159,6 @@ struct TranslationUnit: PrintableAsTree, CustomStringConvertible {
 		self.node = node
 	}
 
-	// gryphon insert: constructor(stringLiteral: String): this(stringLiteral, null) { }
-	// gryphon insert: constructor(node: KotlinTranslation): this(null, node) { }
-
 	//
 	var description: String {
 		return prettyDescription()
