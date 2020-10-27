@@ -10,6 +10,11 @@ safeCat () {
 }
 
 
+# Set the Android SDK path in the properties file
+echo "sdk.dir=/Users/$USER/Library/Android/sdk" > \
+	"Test files/XcodeTests/Android/local.properties"
+
+
 echo "➡️ [1/5] Resetting the Xcode project..."
 
 cd "Test Files/XcodeTests/iOS"
