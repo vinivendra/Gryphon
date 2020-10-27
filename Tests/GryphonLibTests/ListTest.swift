@@ -331,8 +331,8 @@ class ListTest: XCTestCase {
 	}
 
 	func testZip() {
-		let array1: [Int] = [3, 2, 1] // gryphon mute
-		let array2: [Int] = [1, 2, 3] // gryphon mute
+		let array1: [Int] = [3, 2, 1]
+		let array2: [Int] = [1, 2, 3]
 		let list1: List = [3, 2, 1]
 		let list2: List = [1, 2, 3]
 
@@ -340,11 +340,11 @@ class ListTest: XCTestCase {
 			XCTAssertEqual(a + b, 4)
 		}
 
-		for (a, b) in zip(array1, list2) { // gryphon mute
+		for (a, b) in zip(array1, list2) {
 			XCTAssertEqual(a + b, 4)
 		}
 
-		for (a, b) in zip(list1, array2) { // gryphon mute
+		for (a, b) in zip(list1, array2) {
 			XCTAssertEqual(a + b, 4)
 		}
 	}

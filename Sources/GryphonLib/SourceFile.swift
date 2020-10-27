@@ -75,7 +75,7 @@ public class SourceFile {
 
 extension SourceFile {
 	/// Returns any comment in the given line, or `nil` if there isn't one. Line indices start at 1.
-	public func getCommentFromLine(_ lineNumber: Int) -> CommonComment? { // gryphon pure
+	public func getCommentFromLine(_ lineNumber: Int) -> CommonComment? {
 		guard let line = getLine(lineNumber) else {
 			return nil
 		}
