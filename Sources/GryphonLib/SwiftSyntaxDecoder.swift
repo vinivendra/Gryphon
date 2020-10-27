@@ -219,7 +219,6 @@ public class SourceKit {
 		}
 
 		// Call SourceKitten to get the types
-		// TODO: Improve this yaml. SDK paths? Absolute/relative file paths?
 		let absolutePath = Utilities.getAbsoultePath(forFile: filePath)
 		let compilationArgumentsString = context.compilationArguments.argumentsForSourceKit
 			.map { "\"\($0)\"" }
