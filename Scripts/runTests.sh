@@ -182,7 +182,7 @@ if [[ $bootstrapTests -ne 0 ]]; then
 	exec 4>&1
 	exec 1> >(paste /dev/null -)
 
-	if bash runBootstrappingTests.sh
+	if bash Scripts/runBootstrappingTests.sh
 	then
 		echo "✅ Bootstrapping tests succeeded."
 		echo ""
@@ -202,7 +202,7 @@ if [[ $xcodeTests -ne 0 ]]; then
 	exec 4>&1
 	exec 1> >(paste /dev/null -)
 
-	if bash runXcodeTests.sh
+	if bash Scripts/runXcodeTests.sh
 	then
 		echo "✅ Xcode tests succeeded."
 		echo ""

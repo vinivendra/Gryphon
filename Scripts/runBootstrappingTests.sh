@@ -52,7 +52,7 @@ cd ../../..
 
 echo "➡️ [4/7] Transpiling the Gryphon (old) source files to Kotlin..."
 
-if bash transpileGryphonSources.sh
+if bash Scripts/transpileGryphonSources.sh
 then
 	echo "✅ Done."
 	echo ""
@@ -64,7 +64,7 @@ fi
 
 echo "➡️ [5/7] Compiling Kotlin files..."
 
-if bash buildBootstrappedTranspiler.sh 2> .gryphon/kotlinErrors.errors
+if bash Scripts/buildBootstrappedTranspiler.sh 2> .gryphon/kotlinErrors.errors
 then
 	echo "✅ Done."
 	echo ""
