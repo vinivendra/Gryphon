@@ -190,7 +190,7 @@ public /*abstract*/ class Statement: PrintableAsTree, Equatable, CustomStringCon
 		return false
 	}
 
-	public var description: String { // gryphon ignore
+	public var description: String {
 		return prettyDescription()
 	}
 }
@@ -1412,7 +1412,7 @@ public /*abstract*/ class Expression: PrintableAsTree, Equatable, CustomStringCo
 		return false
 	}
 
-	public var description: String { // gryphon ignore
+	public var description: String {
 		return prettyDescription()
 	}
 }

@@ -91,8 +91,7 @@ internal extension String {
 		var substringOffset = self.startIndex
 
 		while substringOffset < self.endIndex {
-			let maybeIndex = // gryphon ignore
-				currentSubstring.range(of: searchedSubstring)?.lowerBound
+			let maybeIndex = currentSubstring.range(of: searchedSubstring)?.lowerBound
 
 			guard let foundIndex = maybeIndex else {
 				break
@@ -172,7 +171,7 @@ internal extension String {
 		var result: String = ""
 		result.append(self[self.startIndex].uppercased())
 
-		let indicesWithoutTheFirstOne = self.indices.dropFirst() // gryphon ignore
+		let indicesWithoutTheFirstOne = self.indices.dropFirst()
 
 		for index in indicesWithoutTheFirstOne {
 			let currentCharacter = self[index]
@@ -332,7 +331,7 @@ extension List where Element == String {
 //
 extension List {
 	/// Returns nil if index is out of bounds.
-	subscript (safe index: Int) -> Element? { // gryphon ignore
+	subscript (safe index: Int) -> Element? {
 		return getSafe(index)
 	}
 
@@ -357,7 +356,7 @@ extension List {
 		}
 
 		var newArray: MutableList<Element> = []
-		newArray.reserveCapacity(self.count) // gryphon ignore
+		newArray.reserveCapacity(self.count)
 		newArray.append(contentsOf: self.dropFirst())
 		newArray.append(first)
 

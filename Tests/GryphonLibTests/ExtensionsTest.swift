@@ -25,12 +25,12 @@ struct TestableRange: Equatable {
 	let lowerBound: Int
 	let upperBound: Int
 
-	init(_ string: String, _ range: Range<String.Index>) { // gryphon ignore
+	init(_ string: String, _ range: Range<String.Index>) {
 		self.lowerBound = range.lowerBound.utf16Offset(in: string)
 		self.upperBound = range.upperBound.utf16Offset(in: string)
 	}
 
-	init(_ lowerBound: Int, _ upperBound: Int) { // gryphon ignore
+	init(_ lowerBound: Int, _ upperBound: Int) {
 		self.lowerBound = lowerBound
 		self.upperBound = upperBound
 	}
@@ -59,7 +59,7 @@ class ExtensionsTest: XCTestCase {
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // gryphon ignore
+	static var allTests = [
 		("testStringSplit", testStringSplit),
 		("testOccurrencesOfSubstring", testOccurrencesOfSubstring),
 		("testSplitUsingUnescapedSpaces", testSplitUsingUnescapedSpaces),

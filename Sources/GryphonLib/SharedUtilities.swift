@@ -239,10 +239,10 @@ extension Utilities {
 		for transpilationContext: TranspilationContext)
 		throws
 	{
-        libraryUpdateLock.lock() // gryphon ignore
+        libraryUpdateLock.lock()
 
         defer {
-            libraryUpdateLock.unlock() // gryphon ignore
+            libraryUpdateLock.unlock()
         }
 
 		Compiler.logStart("🧑‍💻  Processing the templates library...")

@@ -48,7 +48,7 @@ class DriverTest: XCTestCase {
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // gryphon ignore
+	static var allTests = [
 		("testOutputs", testOutputs),
 		("testGenerateGryphonLibraries", testGenerateGryphonLibraries),
 		("testUsageString", testUsageString),

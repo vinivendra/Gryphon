@@ -66,7 +66,7 @@ class MutableListTest: XCTestCase {
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // gryphon ignore
+	static var allTests = [
 		("testEquatable", testEquatable),
 		("testInits", testInits),
 		("testPassingByReference", testPassingByReference),
@@ -115,27 +115,27 @@ class MutableListTest: XCTestCase {
 	func testInits() {
 		let list1: MutableList = [1, 2, 3]
 		let list2: MutableList = MutableList<Int>([1, 2, 3])
-		let list3: MutableList = MutableList(list1) // gryphon ignore
-		let sequence = AnySequence([1, 2, 3]) // gryphon ignore
-		let list4: MutableList = MutableList<Int>(sequence) // gryphon ignore
+		let list3: MutableList = MutableList(list1)
+		let sequence = AnySequence([1, 2, 3])
+		let list4: MutableList = MutableList<Int>(sequence)
 		let list5: MutableList = MutableList<Int>()
 		let list6: MutableList<Int> = []
 
 		XCTAssertEqual(list1, list2)
-		XCTAssertEqual(list1, list3) // gryphon ignore
-		XCTAssertEqual(list1, list4) // gryphon ignore
+		XCTAssertEqual(list1, list3)
+		XCTAssertEqual(list1, list4)
 		XCTAssertEqual(list5, list6)
 
 		list1.append(4)
 		list5.append(4)
 
 		XCTAssertNotEqual(list1, list2)
-		XCTAssertNotEqual(list1, list3) // gryphon ignore
-		XCTAssertNotEqual(list1, list4) // gryphon ignore
+		XCTAssertNotEqual(list1, list3)
+		XCTAssertNotEqual(list1, list4)
 		XCTAssertNotEqual(list5, list6)
 		XCTAssertEqual(list2, [1, 2, 3])
-		XCTAssertEqual(list2, list3) // gryphon ignore
-		XCTAssertEqual(list2, list4) // gryphon ignore
+		XCTAssertEqual(list2, list3)
+		XCTAssertEqual(list2, list4)
 	}
 
 	func testPassingByReference() {
@@ -262,7 +262,7 @@ class MutableListTest: XCTestCase {
 		XCTAssert(!list.description.contains("4"))
 	}
 
-	func testDebugDescription() { // gryphon ignore
+	func testDebugDescription() {
 		let list: MutableList = [1, 2, 3]
 
 		XCTAssert(list.debugDescription.contains("1"))
@@ -442,7 +442,7 @@ class MutableListTest: XCTestCase {
 		XCTAssertEqual(list.firstIndex(of: 10), 2)
 	}
 
-	func testHash() { // gryphon ignore
+	func testHash() {
 		let list1: MutableList = [1, 2, 3]
 		let list2: MutableList = [1, 2, 3]
 		let list3: MutableList = [1, 2, 3, 4]

@@ -277,7 +277,7 @@ public struct SourceFileRange: Equatable, Hashable, CustomStringConvertible {
 /// line + column combos. The mapping from offsets to lines is done by storing the offset of the
 /// first character in each line (e.g. the first character in line `1` has offset `0`, the one in
 /// line `2` may have offset `10`, the one in line `3` may have offest `15`, etc.).
-private struct SourceFilePositionMap { // gryphon ignore
+private struct SourceFilePositionMap {
 	/// Cache that uses the paths of source files as indices and returns the offset-line map for
 	/// that file, if any.
 	private static let mapsCache: Atomic<MutableMap<String, SourceFilePositionMap>> = Atomic([:])

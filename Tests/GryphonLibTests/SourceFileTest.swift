@@ -33,7 +33,7 @@ class SourceFileTest: XCTestCase {
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // gryphon ignore
+	static var allTests = [
 		("testGetCommentFromLine", testGetCommentFromLine),
 		("testGetTranslationCommentFromLine", testGetTranslationCommentFromLine),
 	]

@@ -149,12 +149,12 @@ struct TranslationUnit: PrintableAsTree, CustomStringConvertible {
 
 	// Only these two initializers exist, therefore exactly one of the properties will always be
 	// non-nil
-	init(_ stringLiteral: String) { // gryphon ignore
+	init(_ stringLiteral: String) {
 		self.stringLiteral = stringLiteral
 		self.node = nil
 	}
 
-	init(_ node: KotlinTranslation) { // gryphon ignore
+	init(_ node: KotlinTranslation) {
 		self.stringLiteral = nil
 		self.node = node
 	}

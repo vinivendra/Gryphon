@@ -45,7 +45,7 @@ class AcceptanceTest: XCTestCase {
 	}
 
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // gryphon ignore
+	static var allTests = [
 		("testKotlinCompiler", testKotlinCompiler),
 		("test", test),
 	]
