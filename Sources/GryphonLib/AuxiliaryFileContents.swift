@@ -2242,6 +2242,15 @@ internal let compileKotlinFileContents = """
 # Exit if any command fails
 set -e
 
+# Prints a file only if it exists (and waits a bit so the printing can finish before proceeding)
+safeCat () {
+	if [[ -f \(dollarSign)1 ]];
+	then
+		cat \(dollarSign)1
+		sleep 2
+	fi
+}
+
 # Remove old logs
 # The `-f` option is here to avoid reporting errors when the files are not found
 rm -f "\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleOutput.txt"
@@ -2263,33 +2272,32 @@ set -e
 # Switch back to the iOS folder
 cd "\(dollarSign)SRCROOT"
 
+set +e
+
 # Map the Kotlin errors back to Swift
 swift \(SupportingFile.mapGradleErrorsToSwiftRelativePath) \\
 	< \(SupportingFile.gryphonBuildFolder)/gradleOutput.txt \\
-	> \(SupportingFile.gryphonBuildFolder)/swiftOutput.txt \\
-	|| true
+	> \(SupportingFile.gryphonBuildFolder)/swiftOutput.txt
 
 swift \(SupportingFile.mapGradleErrorsToSwiftRelativePath) \\
 	< \(SupportingFile.gryphonBuildFolder)/gradleErrors.txt \\
-	> \(SupportingFile.gryphonBuildFolder)/swiftErrors.txt \\
-	|| true
+	> \(SupportingFile.gryphonBuildFolder)/swiftErrors.txt
 
-set +e
-
-if [ -s \(SupportingFile.gryphonBuildFolder)/swiftOutput.txt ]
+# Print the errors
+if [ -s \(SupportingFile.gryphonBuildFolder)/swiftOutput.txt ] || \\
+	[ -s \(SupportingFile.gryphonBuildFolder)/swiftErrors.txt ]
 then
-	if [ -s \(SupportingFile.gryphonBuildFolder)/swiftError.txt ]
-	then
-		echo "Failed to map Kotlin errors."
-		cat \(SupportingFile.gryphonBuildFolder)/gradleOutput.txt
-		cat \(SupportingFile.gryphonBuildFolder)/gradleError.txt
-		exit \(dollarSign)kotlinCompilationStatus
-	fi
+	# If there are errors in Swift files (the Swift output and error files aren't empty)
+	safeCat \(SupportingFile.gryphonBuildFolder)/swiftOutput.txt
+	safeCat \(SupportingFile.gryphonBuildFolder)/swiftErrors.txt
+	exit -1
+else
+	# If the Swift files are empty, print the Kotlin output (there may have been other errors)
+	# and exit with the Kotlin compiler's status
+	safeCat \(SupportingFile.gryphonBuildFolder)/gradleOutput.txt
+	safeCat \(SupportingFile.gryphonBuildFolder)/gradleErrors.txt
+	exit \(dollarSign)kotlinCompilationStatus
 fi
-
-cat \(SupportingFile.gryphonBuildFolder)/swiftOutput.txt
-cat \(SupportingFile.gryphonBuildFolder)/swiftError.txt
-exit -1
 
 """
 

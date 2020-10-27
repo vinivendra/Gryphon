@@ -1,6 +1,14 @@
 #!/bin/bash
-
 set -e
+
+# Prints a file only if it exists
+safeCat () {
+	if [[ -f $1 ]];
+	then
+		cat $1
+	fi
+}
+
 
 echo "➡️ [1/5] Resetting the Xcode project..."
 
@@ -42,11 +50,8 @@ rm -f ../Android/app/src/main/java/com/gryphon/gryphonandroidtest/Model.kt
 rm -f output.txt
 
 # Run the Gryphon target
-if xcodebuild -project GryphoniOSTest.xcodeproj/ -scheme Gryphon > output.txt
+if [[ $(xcodebuild -project GryphoniOSTest.xcodeproj/ -scheme Gryphon > output.txt) ]];
 then
-	echo "✅ Done."
-	echo ""
-else
 	echo "🚨 Error running Gryphon target. Printing xcodebuild output:"
 	cat output.txt || true
 	sleep 3 # Wait for cat to finish printing before exiting
@@ -125,6 +130,8 @@ then
 	echo ""
 else
 	echo "🚨 Expected Kotlin to report an error at \"Model.swift:24:37\"."
+	safeCat output.txt
+	sleep 3
 	exit -1
 fi
 
