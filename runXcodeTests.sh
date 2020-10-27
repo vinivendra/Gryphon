@@ -15,7 +15,7 @@ echo "sdk.dir=/Users/$USER/Library/Android/sdk" > \
 	"Test files/XcodeTests/Android/local.properties"
 
 
-echo "➡️ [1/5] Resetting the Xcode project..."
+echo "➡️ [1/8] Resetting the Xcode project..."
 
 cd "Test Files/XcodeTests/iOS"
 
@@ -34,7 +34,7 @@ echo "✅ Done."
 echo ""
 
 
-echo "➡️ [2/5] Initializing the Xcode project..."
+echo "➡️ [2/8] Initializing the Xcode project..."
 
 # Initialize the Xcode project
 ./../../../.build/debug/Gryphon init "GryphoniOSTest.xcodeproj" -swiftSyntax
@@ -46,7 +46,7 @@ echo "✅ Done."
 echo ""
 
 
-echo "➡️ [3/5] Running the Gryphon target..."
+echo "➡️ [3/8] Running the Gryphon target..."
 
 # Remove the previously translated file
 rm -f ../Android/app/src/main/java/com/gryphon/gryphonandroidtest/Model.kt
@@ -92,7 +92,84 @@ echo "✅ Done."
 echo ""
 
 
-echo "➡️ [4/5] Running the Kotlin target..."
+echo "➡️ [4/8] Resetting the Xcode project..."
+
+# Remove Gryphon-generated files
+./../../../.build/debug/Gryphon clean
+rm -f "gryphonInputFiles.xcfilelist"
+
+# Remove the old Xcodeproj, replace it with a clean copy of the (target) backup
+rm -rf "GryphoniOSTest.xcodeproj"
+cp -r "GryphoniOSTest.targetBackup.xcodeproj" "GryphoniOSTest.xcodeproj"
+
+# Copy the model file to the right place
+cp "../Model.swift" "GryphoniOSTest/Model.swift"
+
+echo "✅ Done."
+echo ""
+
+
+echo "➡️ [5/8] Initializing the Xcode project with '--target'..."
+
+# Initialize the Xcode project
+./../../../.build/debug/Gryphon init "GryphoniOSTest.xcodeproj" --target=GryphoniOSTest -swiftSyntax
+
+# Add the "Model.swift" file to the list of files to be translated
+echo "GryphoniOSTest/Model.swift" > "gryphonInputFiles.xcfilelist"
+
+echo "✅ Done."
+echo ""
+
+
+echo "➡️ [6/8] Running the Gryphon target..."
+
+# Remove the previously translated file
+rm -f ../Android/app/src/main/java/com/gryphon/gryphonandroidtest/Model.kt
+
+# Remove file that stores errors and warnings
+rm -f output.txt
+
+# Run the Gryphon target
+if xcodebuild -project GryphoniOSTest.xcodeproj/ -scheme Gryphon > output.txt
+then
+	:
+else
+	echo "🚨 Error running Gryphon target. Printing xcodebuild output:"
+	cat output.txt || true
+	sleep 3 # Wait for cat to finish printing before exiting
+	exit -1
+fi
+
+# Check if Gryphon raised warnings or errors for the Model.swift file
+if [[ $(grep -E "Model\.swift:[0-9]+:[0-9]+: error" output.txt) ]];
+then
+	echo "🚨 Gryphon raised an error."
+	grep -E "Model\.swift:[0-9]+:[0-9]+: error" output.txt
+	exit -1
+fi
+
+if [[ $(grep -E "Model\.swift:[0-9]+:[0-9]+: warning" output.txt) ]];
+then
+	echo "🚨 Gryphon raised a warning:"
+	grep -E "Model\.swift:[0-9]+:[0-9]+: warning" output.txt
+	exit -1
+fi
+
+# Check if the generated code is correct
+if [[ $(diff \
+	../Model.kt \
+	../Android/app/src/main/java/com/gryphon/gryphonandroidtest/Model.kt) ]];
+then
+	echo "🚨 Generated code is different from what was expected."
+	diff ../Model.kt ../Android/app/src/main/java/com/gryphon/gryphonandroidtest/Model.kt
+	exit -1
+fi
+
+echo "✅ Done."
+echo ""
+
+
+echo "➡️ [7/8] Running the Kotlin target..."
 
 # Remove file that stores errors and warnings
 rm -f output.txt
@@ -110,7 +187,7 @@ else
 fi
 
 
-echo "➡️ [5/5] Testing Kotlin error mapping..."
+echo "➡️ [8/8] Testing Kotlin error mapping..."
 
 # Remove file that stores errors and warnings
 rm -f output.txt
@@ -139,9 +216,3 @@ else
 	sleep 3
 	exit -1
 fi
-
-# TODO: - Test Gryphon with --target, etc
-# TODO: - Rename the iOSTest folder
-# TODO: - Add Xcode tests to the runTests.sh script
-
-set +e
