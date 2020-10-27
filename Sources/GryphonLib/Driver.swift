@@ -90,6 +90,7 @@ public class Driver {
 
 		Compiler.log("ℹ️  Gryphon version \(gryphonVersion)")
 		Compiler.log("ℹ️  SwiftSyntax version \(TranspilationContext.swiftSyntaxVersion)")
+		Compiler.log("ℹ️  Using \(isUsingSwiftSyntax ? "Swift Syntax" : "AST dumps")")
 
 		let badArguments = unsupportedArguments(in: arguments)
 		if !badArguments.isEmpty {
@@ -1247,7 +1248,7 @@ public class Driver {
 		if let userTarget = target {
 			arguments.append("--target=\"\(userTarget)\"")
 		}
-		else if usingSwiftSyntax {
+		if usingSwiftSyntax {
 			arguments.append("-swiftSyntax")
 		}
 
