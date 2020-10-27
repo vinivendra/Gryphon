@@ -24,12 +24,12 @@ import Foundation
 #endif
 
 class MutableListTest: XCTestCase {
-	public func getClassName() -> String { // gryphon annotation: override
+	public func getClassName() -> String {
 		return "MutableListTest"
 	}
 
 	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // gryphon annotation: override
+	public func runAllTests() {
 		testEquatable()
 		testInits()
 		testPassingByReference()

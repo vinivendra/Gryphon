@@ -22,12 +22,12 @@ import XCTest
 #endif
 
 class SourceFileTest: XCTestCase {
-	public func getClassName() -> String { // gryphon annotation: override
+	public func getClassName() -> String {
 		return "SourceFileTest"
 	}
 
 	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // gryphon annotation: override
+	public func runAllTests() {
 		testGetCommentFromLine()
 		testGetTranslationCommentFromLine()
 	}
@@ -62,7 +62,6 @@ class SourceFileTest: XCTestCase {
 	}
 
 	func testGetTranslationCommentFromLine() {
-		// gryphon multiline
 		let sourceFileContents = """
 			let x: Int = 0 // gryphon ignore
 			// blabla

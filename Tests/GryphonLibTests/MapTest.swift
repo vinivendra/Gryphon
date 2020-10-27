@@ -24,12 +24,12 @@ import Foundation
 #endif
 
 class MapTest: XCTestCase {
-	public func getClassName() -> String { // gryphon annotation: override
+	public func getClassName() -> String {
 		return "MapTest"
 	}
 
 	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // gryphon annotation: override
+	public func runAllTests() {
 		testEquatable()
 		testInits()
 		testCasting()

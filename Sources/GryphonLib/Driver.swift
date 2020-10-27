@@ -287,7 +287,7 @@ public class Driver {
 
 		guard settings.shouldGenerateSwiftAST else {
 			Compiler.logStart("☑️  Nothing to do for \(inputFileRelativePath).")
-			return [] // gryphon value: listOf<Any>()
+			return []
 		}
 
 		let isMainFile = (inputFilePath == settings.mainFilePath)

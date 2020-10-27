@@ -22,7 +22,7 @@ import XCTest
 #endif
 
 class IntegrationTest: XCTestCase {
-	public func getClassName() -> String { // gryphon annotation: override
+	public func getClassName() -> String {
 		return "IntegrationTest"
 	}
 
@@ -37,7 +37,7 @@ class IntegrationTest: XCTestCase {
 	}
 
 	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // gryphon annotation: override
+	public func runAllTests() {
 		IntegrationTest.setUp()
 		test()
 		testWarnings()

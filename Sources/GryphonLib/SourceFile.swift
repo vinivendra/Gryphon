@@ -89,12 +89,7 @@ extension SourceFile {
 		}
 
 		// If the comment comes after some code (not yet supported)
-		let commentIsAfterCode = lineComponents[0].contains {
-			$0 !=
-				" " // gryphon value: ' '
-			&& $0 !=
-				"\t" // gryphon value: '\\t'
-		}
+		let commentIsAfterCode = lineComponents[0].contains { $0 != " " && $0 != "\t" }
 		guard !commentIsAfterCode else {
 			return nil
 		}

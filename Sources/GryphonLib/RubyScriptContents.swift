@@ -16,7 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon multiline
 internal let rubyScriptFileContents = """
 #!/bin/bash
 exec ruby "$@"

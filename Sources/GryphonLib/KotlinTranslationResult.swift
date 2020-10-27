@@ -39,11 +39,11 @@ public class KotlinTranslation: PrintableAsTree, CustomStringConvertible {
 		return prettyDescription()
 	}
 
-	public var treeDescription: String { // gryphon annotation: override
+	public var treeDescription: String {
 		return "Translation"
 	}
 
-	public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	public var printableSubtrees: List<PrintableAsTree?> {
 		return children.forceCast(to: List<PrintableAsTree?>.self)
 	}
 
@@ -164,7 +164,7 @@ struct TranslationUnit: PrintableAsTree, CustomStringConvertible {
 		return prettyDescription()
 	}
 
-	var treeDescription: String { // gryphon annotation: override
+	var treeDescription: String {
 		if let stringLiteral = self.stringLiteral {
 			let escapedString = stringLiteral
 				.replacingOccurrences(of: "\n", with: "\\n")
@@ -182,7 +182,7 @@ struct TranslationUnit: PrintableAsTree, CustomStringConvertible {
 		}
 	}
 
-	var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	var printableSubtrees: List<PrintableAsTree?> {
 		if let node = self.node {
 			return node.children.forceCast(to: List<PrintableAsTree?>.self)
 		}

@@ -1991,10 +1991,7 @@ public class KotlinTranslator {
 	{
 		return KotlinTranslation(
 			range: declarationReferenceExpression.range,
-			string: String(declarationReferenceExpression.identifier.prefix {
-					$0 !=
-						"(" // gryphon value: '('
-				}))
+			string: String(declarationReferenceExpression.identifier.prefix { $0 != "(" }))
 	}
 
 	private func translateTupleExpression(
@@ -2126,8 +2123,7 @@ public class KotlinTranslator {
 				}
 			}
 			else {
-				let startDelimiter = "${" // gryphon value: \"\\${\"
-				result.append(startDelimiter)
+				result.append("${")
 				result.append(try translateExpression(expression, withIndentation: indentation))
 				result.append("}")
 			}

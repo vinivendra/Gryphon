@@ -22,12 +22,12 @@ import XCTest
 #endif
 
 class LibraryTranspilationTest: XCTestCase {
-	public func getClassName() -> String { // gryphon annotation: override
+	public func getClassName() -> String {
 		return "LibraryTranspilationTest"
 	}
 
 	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // gryphon annotation: override
+	public func runAllTests() {
 		testSimpleMatches()
 		testMatchDictionary()
 		testImplicitTypeExpression()

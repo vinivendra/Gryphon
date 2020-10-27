@@ -37,12 +37,12 @@ struct TestableRange: Equatable {
 }
 
 class ExtensionsTest: XCTestCase {
-	public func getClassName() -> String { // gryphon annotation: override
+	public func getClassName() -> String {
 		return "ExtensionsTest"
 	}
 
 	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // gryphon annotation: override
+	public func runAllTests() {
 		testStringSplit()
 		testOccurrencesOfSubstring()
 		testSplitUsingUnescapedSpaces()
@@ -248,7 +248,7 @@ class ExtensionsTest: XCTestCase {
 			]))
 		XCTAssertEqual(
 			"abc".occurrences(of: "->").map { TestableRange("abc", $0) },
-			List<TestableRange>([])) // gryphon value: mutableListOf<TestableRange>()
+			List<TestableRange>([]))
 		XCTAssertEqual(
 			"->(Int, (String) -> Int) ->-> Int ->".occurrences(of: "->").map {
 					TestableRange("->(Int, (String) -> Int) ->-> Int ->", $0)

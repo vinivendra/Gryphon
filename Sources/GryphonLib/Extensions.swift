@@ -100,7 +100,7 @@ internal extension String {
 
 			// In Kotlin the foundIndex is counted from the substring's start, but in Swift it's
 			// from the string's start. This compensates for that difference.
-			let occurenceStartIndex = foundIndex // gryphon value: foundIndex + substringOffset
+			let occurenceStartIndex = foundIndex
 
 			let occurenceEndIndex =
 				currentSubstring.index(occurenceStartIndex, offsetBy: searchedSubstring.count)

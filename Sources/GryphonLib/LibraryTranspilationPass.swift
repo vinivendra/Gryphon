@@ -21,7 +21,7 @@ import Foundation
 /// This pass records templates statically in TranspilationTemplate so they can be retrieved later.
 
 public class RecordTemplatesTranspilationPass: TranspilationPass {
-	override func replaceFunctionDeclaration( // gryphon annotation: override
+	override func replaceFunctionDeclaration(
 		_ functionDeclaration: FunctionDeclaration)
 		-> List<Statement>
 	{
@@ -238,7 +238,7 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 
 /// Looks for expressions that match any templates and replaces them with the template expressions.
 public class ReplaceTemplatesTranspilationPass: TranspilationPass {
-	override func replaceExpression( // gryphon annotation: override
+	override func replaceExpression(
 		_ expression: Expression)
 		-> Expression
 	{
@@ -295,7 +295,7 @@ public class ReplaceTemplatesTranspilationPass: TranspilationPass {
 private class ReplaceTemplateMatchesTranspilationPass: TranspilationPass {
 	var matches: List<(String, Expression)> = []
 
-	override func replaceLiteralCodeExpression( // gryphon annotation: override
+	override func replaceLiteralCodeExpression(
 		_ literalCodeExpression: LiteralCodeExpression)
 		-> Expression
 	{
@@ -996,17 +996,11 @@ internal extension TranspilationContext {
 				return true
 			}
 			else if subType.contains("<"), subType.last! == ">" {
-				let typeWithoutGenerics = String(subType.prefix {
-					$0 !=
-						"<" // gryphon value: '<'
-				})
+				let typeWithoutGenerics = String(subType.prefix { $0 != "<" })
 				return self.isSubtype(typeWithoutGenerics, of: superType)
 			}
 			else if superType.contains("<"), superType.last! == ">" {
-				let typeWithoutGenerics = String(superType.prefix {
-					$0 !=
-						"<" // gryphon value: '<'
-				})
+				let typeWithoutGenerics = String(superType.prefix { $0 != "<" })
 				return self.isSubtype(subType, of: typeWithoutGenerics)
 			}
 

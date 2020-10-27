@@ -1914,10 +1914,7 @@ public class SwiftTranslator {
 			genericTypes = []
 		}
 
-		let functionNamePrefix = functionName.prefix {
-			$0 !=
-				"(" // gryphon value: '('
-		}
+		let functionNamePrefix = functionName.prefix { $0 != "(" }
 
 		// Get the function parameters.
 		let parameterList: SwiftAST?
@@ -2812,10 +2809,7 @@ public class SwiftTranslator {
 	/// each component in the tuple and returns either `nil` or "a" accordingly.
 	private func getLabelFromTupleComponent(_ component: String) -> String? {
 		if component.contains(":") {
-			let label = component.prefix(while: {
-					$0 !=
-						":" // gryphon value: ':'
-				})
+			let label = component.prefix(while: { $0 != ":" })
 			return String(label)
 		}
 		else {
