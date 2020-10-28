@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# TODO: Fail gracefully when called with `-x` on Linux
+
 ####################################################################################################
 # Read the arguments
 

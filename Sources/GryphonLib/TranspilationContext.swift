@@ -32,8 +32,8 @@ public class TranspilationContext {
 		/// as any other `swiftc` arguments. These are stored in a
 		/// single list because it might not be trivial to separate them.
 		let absoluteFilePathsAndOtherArguments: List<String>
-		/// The path to the SDK that should be used.
-		let absolutePathToSDK: String
+		/// The path to the SDK that should be used. On Linux, this is `nil`.
+		let absolutePathToSDK: String?
 
 		/// If no SDK path is given, tries to get the SDK path for the current OS (as opposed to an iOS SDK).
 		init(
@@ -41,15 +41,17 @@ public class TranspilationContext {
 			absolutePathToSDK: String? = nil) throws
 		{
 			self.absoluteFilePathsAndOtherArguments = absoluteFilePathsAndOtherArguments
-			self.absolutePathToSDK = try absolutePathToSDK ?? TranspilationContext.getMacOSSDKPath()
+			self.absolutePathToSDK = try absolutePathToSDK ?? TranspilationContext.getSDKPath()
 		}
 
 		/// Returns all the necessary arguments for a SourceKit request,
 		/// including "-sdk" and the SDK path.
 		var argumentsForSourceKit: MutableList<String> {
 			let mutableArguments = absoluteFilePathsAndOtherArguments.toMutableList()
-			mutableArguments.append("-sdk")
-			mutableArguments.append(absolutePathToSDK)
+			if let sdkPath = absolutePathToSDK {
+				mutableArguments.append("-sdk")
+				mutableArguments.append(sdkPath)
+			}
 			return mutableArguments
 		}
 	}
@@ -404,32 +406,41 @@ public class TranspilationContext {
 	}
 
 	// MARK: - macOS SDK
-	private static var macOSSDKPath: String? = nil
-	private static let macOSSDKLock: Semaphore = NSLock()
+	private static var sdkPath: String? = nil
+	private static let sdkLock: Semaphore = NSLock()
 
-	static func getMacOSSDKPath() throws -> String {
-		macOSSDKLock.lock()
+	/// On macOS, tries to find the SDK path using `xcrun`, and throws an error if that fails.
+	/// On Linux, returns `nil`.
+	static func getSDKPath() throws -> String? {
+		sdkLock.lock()
 
 		defer {
-			macOSSDKLock.unlock()
+			sdkLock.unlock()
 		}
 
-		if let macOSSDKPath = macOSSDKPath {
+		#if os(macOS)
+
+		if let macOSSDKPath = sdkPath {
 			return macOSSDKPath
 		}
 		else {
-			// TODO: Linux support
 			let commandResult = Shell.runShellCommand(
 				["xcrun", "--show-sdk-path", "--sdk", "macosx"])
 			if commandResult.status == 0 {
 				// Drop the \n at the end
 				let result = String(commandResult.standardOutput.prefix(while: { $0 != "\n" }))
-				macOSSDKPath = result
+				sdkPath = result
 				return result
 			}
 			else {
 				throw GryphonError(errorMessage: "Unable to get macOS SDK path")
 			}
 		}
+
+		#else
+
+		return nil
+
+		#endif
 	}
 }

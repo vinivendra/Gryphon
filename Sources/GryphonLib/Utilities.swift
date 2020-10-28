@@ -17,7 +17,65 @@
 //
 
 import Foundation
+
+#if canImport(os)
 import os
+
+// Logs for macOS's Instruments
+internal class Log {
+	static private let os_log = OSLog(
+		subsystem: "com.gryphon.app",
+		category: "PointsOfInterest"
+	)
+
+	struct LogInfo {
+		let name: StaticString
+		let id: Any
+	}
+
+	static func startLog(name: StaticString) -> LogInfo {
+		if #available(OSX 10.14, *) {
+			let id = OSSignpostID(log: os_log)
+			os_signpost(
+				.begin,
+				log: Log.os_log,
+				name: name,
+				signpostID: id)
+			return LogInfo(name: name, id: id)
+		}
+		else {
+			return LogInfo(name: "", id: 0)
+		}
+	}
+
+	static func endLog(info: LogInfo) {
+		if #available(OSX 10.14, *) {
+			os_signpost(
+				.end,
+				log: Log.os_log,
+				name: info.name,
+				signpostID: info.id as! OSSignpostID)
+		}
+	}
+}
+
+#else
+
+// Do nothing on Linux
+internal class Log {
+	struct LogInfo {
+		let name: StaticString
+		let id: Any
+	}
+
+	static func startLog(name: StaticString) -> LogInfo {
+		return LogInfo(name: "", id: 0)
+	}
+
+	static func endLog(info: LogInfo) { }
+}
+
+#endif
 
 typealias Semaphore = NSLock
 internal let libraryUpdateLock: Semaphore = NSLock()
@@ -54,43 +112,6 @@ class Atomic<Value> {
 		let result = closure(&__value)
 		lock.unlock()
 		return result
-	}
-}
-
-internal class Log {
-	static let os_log = OSLog(
-		subsystem: "com.gryphon.app",
-		category: "PointsOfInterest"
-	)
-
-	struct LogInfo {
-		let name: StaticString
-		let id: Any
-	}
-
-	static func startLog(name: StaticString) -> LogInfo {
-		if #available(OSX 10.14, *) {
-			let id = OSSignpostID(log: os_log)
-			os_signpost(
-				.begin,
-				log: Log.os_log,
-				name: name,
-				signpostID: id)
-			return LogInfo(name: name, id: id)
-		}
-		else {
-			return LogInfo(name: "", id: 0)
-		}
-	}
-
-	static func endLog(info: LogInfo) {
-		if #available(OSX 10.14, *) {
-			os_signpost(
-				.end,
-				log: Log.os_log,
-				name: info.name,
-				signpostID: info.id as! OSSignpostID)
-		}
 	}
 }
 

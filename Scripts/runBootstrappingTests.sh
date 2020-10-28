@@ -130,11 +130,23 @@ do
 				exit -1
 			fi
 
-			sed -i 'sed' 's/0x[0-9a-z]*/hex/g' .gryphon/generatedResult.txt
-			sed -i 'sed' 's/@opened("[0-9A-Z\-]*")/@opened/g' .gryphon/generatedResult.txt
+			# Remove random numbers that can be different in each execution
+			if uname -s | grep "Darwin"
+			then
+				# If we're using macOS
+				sed -i 'sed' 's/0x[0-9a-z]*/hex/g' .gryphon/generatedResult.txt
+				sed -i 'sed' 's/@opened("[0-9A-Z\-]*")/@opened/g' .gryphon/generatedResult.txt
 
-			sed -i 'sed' 's/0x[0-9a-z]*/hex/g' .gryphon/expectedResult.txt
-			sed -i 'sed' 's/@opened("[0-9A-Z\-]*")/@opened/g' .gryphon/expectedResult.txt
+				sed -i 'sed' 's/0x[0-9a-z]*/hex/g' .gryphon/expectedResult.txt
+				sed -i 'sed' 's/@opened("[0-9A-Z\-]*")/@opened/g' .gryphon/expectedResult.txt
+			else
+				# If we're using Linux
+				sed -i 's/0x[0-9a-z]*/hex/g' .gryphon/generatedResult.txt
+				sed -i 's/@opened("[0-9A-Z\-]*")/@opened/g' .gryphon/generatedResult.txt
+
+				sed -i 's/0x[0-9a-z]*/hex/g' .gryphon/expectedResult.txt
+				sed -i 's/@opened("[0-9A-Z\-]*")/@opened/g' .gryphon/expectedResult.txt
+			fi
 
 			if diff .gryphon/generatedResult.txt .gryphon/expectedResult.txt
 			then

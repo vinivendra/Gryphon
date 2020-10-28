@@ -17,7 +17,6 @@
 //
 
 import Foundation
-import os
 
 /// Used for executing command line programs. Heavily inspired by (and used with the permission of):
 /// https://github.com/SDGGiesbrecht/SDGCornerstone/blob/
