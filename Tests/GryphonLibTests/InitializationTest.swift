@@ -18,7 +18,6 @@
 
 @testable import GryphonLib
 import XCTest
-import Foundation
 
 class InitializationTest: XCTestCase {
 	/// Tests to be run when using Swift on Linux

@@ -16,12 +16,8 @@
 // limitations under the License.
 //
 
-import Foundation
-
-#if !GRYPHON
 @testable import GryphonLib
 import XCTest
-#endif
 
 class TestError: Error { }
 

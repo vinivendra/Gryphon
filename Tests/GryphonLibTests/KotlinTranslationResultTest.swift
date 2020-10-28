@@ -16,10 +16,8 @@
 // limitations under the License.
 //
 
-#if canImport(GryphonLib)
 @testable import GryphonLib
 import XCTest
-#endif
 
 class KotlinTranslationResultTest: XCTestCase {
 	/// Tests to be run when using Swift on Linux

@@ -16,10 +16,8 @@
 // limitations under the License.
 //
 
-#if !GRYPHON
 @testable import GryphonLib
 import XCTest
-#endif
 
 struct TestableRange: Equatable {
 	let lowerBound: Int

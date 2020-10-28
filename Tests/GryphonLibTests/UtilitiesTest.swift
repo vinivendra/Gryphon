@@ -16,10 +16,8 @@
 // limitations under the License.
 //
 
-#if !GRYPHON
 @testable import GryphonLib
 import XCTest
-#endif
 
 class UtilitiesTest: XCTestCase {
 	/// Tests to be run when using Swift on Linux
