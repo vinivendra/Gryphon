@@ -22,16 +22,6 @@ import XCTest
 #endif
 
 class ShellTest: XCTestCase {
-	public func getClassName() -> String {
-		return "ShellTest"
-	}
-
-	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() {
-		testEcho()
-		testSwiftc()
-	}
-
 	/// Tests to be run when using Swift on Linux
 	static var allTests = [
 		("testEcho", testEcho),

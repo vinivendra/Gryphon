@@ -22,9 +22,11 @@ import XCTest
 #endif
 
 class IntegrationTest: XCTestCase {
-	public func getClassName() -> String {
-		return "IntegrationTest"
-	}
+	/// Tests to be run when using Swift on Linux
+	static var allTests = [
+		("test", test),
+		("testWarnings", testWarnings),
+	]
 
 	override static func setUp() {
 		do {
@@ -35,19 +37,6 @@ class IntegrationTest: XCTestCase {
 			fatalError("Failed to update test files.")
 		}
 	}
-
-	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() {
-		IntegrationTest.setUp()
-		test()
-		testWarnings()
-	}
-
-	/// Tests to be run when using Swift on Linux
-	static var allTests = [
-		("test", test),
-		("testWarnings", testWarnings),
-	]
 
 	// MARK: - Tests
 	func test() {

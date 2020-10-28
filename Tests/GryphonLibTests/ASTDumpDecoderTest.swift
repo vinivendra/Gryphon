@@ -22,16 +22,6 @@ import XCTest
 #endif
 
 class ASTDumpDecoderTest: XCTestCase {
-	public func getClassName() -> String {
-		return "ASTDumpDecoderTest"
-	}
-
-	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() {
-		testDecoderCanRead()
-		testDecoderRead()
-	}
-
 	/// Tests to be run when using Swift on Linux
 	static var allTests = [
 		("testDecoderCanRead", testDecoderCanRead),

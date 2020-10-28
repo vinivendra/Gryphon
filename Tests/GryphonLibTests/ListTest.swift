@@ -24,39 +24,6 @@ import Foundation
 #endif
 
 class ListTest: XCTestCase {
-	public func getClassName() -> String {
-		return "ListTest"
-	}
-
-	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() {
-		testEquatable()
-		testInits()
-		testCasting()
-		testToMutableList()
-		testSubscript()
-		testDescription()
-		// testDebugDescription()
-		testCollectionIndices()
-		testIsEmpty()
-		testFirst()
-		testLast()
-		testIndexBefore()
-		testAppending()
-		testFilter()
-		testMap()
-		testCompactMap()
-		testFlatMap()
-		testSortedBy()
-		testAppendingContentsOf()
-		testIndices()
-		testIndexOfElement()
-		// testHash()
-		testSorted()
-		testZip()
-		testPlus()
-	}
-
 	/// Tests to be run when using Swift on Linux
 	static var allTests = [
 		("testEquatable", testEquatable),
@@ -84,7 +51,7 @@ class ListTest: XCTestCase {
 		("testSorted", testSorted),
 		("testZip", testZip),
 		("testPlus", testPlus),
-		]
+	]
 
 	// MARK: - Tests
 	func testEquatable() {

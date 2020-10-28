@@ -22,30 +22,6 @@ import XCTest
 #endif
 
 class UtilitiesTest: XCTestCase {
-	public func getClassName() -> String {
-		return "UtilitiesTest"
-	}
-
-	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() {
-		testExpandSwiftAbbreviation()
-		testFileExtension()
-		testChangeExtension()
-		testGetExtension()
-		testPathOfSwiftASTDumpFile()
-		testPathOfKotlinErrorMapFile()
-		testGetRelativePath()
-		testSplitTypeList()
-		testIsInEnvelopingParentheses()
-		testGetTypeMapping()
-		testReadFile()
-		testFileExists()
-		testGetCurrentFolder()
-		testGetFiles()
-		testGetAbsolutePath()
-		testParallelMap()
-	}
-
 	/// Tests to be run when using Swift on Linux
 	static var allTests = [
 		("testExpandSwiftAbbreviation", testExpandSwiftAbbreviation),

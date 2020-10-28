@@ -24,30 +24,6 @@ import Foundation
 #endif
 
 class MutableMapTest: XCTestCase {
-	public func getClassName() -> String {
-		return "MutableMapTest"
-	}
-
-	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() {
-		testEquatable()
-		testInits()
-		testPassingByReference()
-		testCasting()
-		testCopy()
-		testToMap()
-		testSubscript()
-		testDescription()
-		// testDebugDescription()
-		// testCollectionIndices()
-		testCount()
-		testIsEmpty()
-		testMap()
-		// testMapValues()
-		// testSortedBy()
-		// testHash()
-	}
-
 	/// Tests to be run when using Swift on Linux
 	static var allTests = [
 		("testEquatable", testEquatable),

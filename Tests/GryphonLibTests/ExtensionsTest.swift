@@ -37,27 +37,6 @@ struct TestableRange: Equatable {
 }
 
 class ExtensionsTest: XCTestCase {
-	public func getClassName() -> String {
-		return "ExtensionsTest"
-	}
-
-	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() {
-		testStringSplit()
-		testOccurrencesOfSubstring()
-		testSplitUsingUnescapedSpaces()
-		testRemoveTrailingWhitespace()
-		testUpperSnakeCase()
-		testCapitalizedAsCamelCase()
-		testRemovingBackslashEscapes()
-		testIsNumberAndIsUppercase()
-		testSafeIndex()
-		testSecondToLast()
-		testRotated()
-		testGroupBy()
-		testRemovingDuplicates()
-	}
-
 	/// Tests to be run when using Swift on Linux
 	static var allTests = [
 		("testStringSplit", testStringSplit),

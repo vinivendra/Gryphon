@@ -22,9 +22,11 @@ import XCTest
 #endif
 
 class AcceptanceTest: XCTestCase {
-	public func getClassName() -> String {
-		return "AcceptanceTest"
-	}
+	/// Tests to be run when using Swift on Linux
+	static var allTests = [
+		("testKotlinCompiler", testKotlinCompiler),
+		("test", test),
+	]
 
 	override static func setUp() {
 		do {
@@ -36,19 +38,6 @@ class AcceptanceTest: XCTestCase {
 			fatalError("Failed to update test files.")
 		}
 	}
-
-	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() {
-		AcceptanceTest.setUp()
-		testKotlinCompiler()
-		test()
-	}
-
-	/// Tests to be run when using Swift on Linux
-	static var allTests = [
-		("testKotlinCompiler", testKotlinCompiler),
-		("test", test),
-	]
 
 	// MARK: - Tests
 	func testKotlinCompiler() {

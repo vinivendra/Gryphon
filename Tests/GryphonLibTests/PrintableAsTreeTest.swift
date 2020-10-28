@@ -22,17 +22,6 @@ import XCTest
 #endif
 
 class PrintableAsTreeTest: XCTestCase {
-	public func getClassName() -> String {
-		return "PrintableAsTreeTest"
-	}
-
-	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() {
-		testPrinting()
-		testHorizontalLimit()
-		testInitOrNil()
-	}
-
 	/// Tests to be run when using Swift on Linux
 	static var allTests = [
 		("testPrinting", testPrinting),

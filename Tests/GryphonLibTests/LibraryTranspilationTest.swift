@@ -22,20 +22,6 @@ import XCTest
 #endif
 
 class LibraryTranspilationTest: XCTestCase {
-	public func getClassName() -> String {
-		return "LibraryTranspilationTest"
-	}
-
-	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() {
-		testSimpleMatches()
-		testMatchDictionary()
-		testImplicitTypeExpression()
-		testTrailingClosures()
-		testSubtyping()
-		testSimplifiedSubtypes()
-	}
-
 	/// Tests to be run when using Swift on Linux
 	static var allTests = [
 		("testSimpleMatches", testSimpleMatches),

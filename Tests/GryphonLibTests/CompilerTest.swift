@@ -22,16 +22,6 @@ import XCTest
 #endif
 
 class CompilerTest: XCTestCase {
-	public func getClassName() -> String {
-		return "CompilerTest"
-	}
-
-	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() {
-		testErrorHandling()
-		testErrorMessages()
-	}
-
 	/// Tests to be run when using Swift on Linux
 	static var allTests = [
 		("testErrorHandling", testErrorHandling),

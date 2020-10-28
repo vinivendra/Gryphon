@@ -22,16 +22,6 @@ import XCTest
 #endif
 
 class SourceFileTest: XCTestCase {
-	public func getClassName() -> String {
-		return "SourceFileTest"
-	}
-
-	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() {
-		testGetCommentFromLine()
-		testGetTranslationCommentFromLine()
-	}
-
 	/// Tests to be run when using Swift on Linux
 	static var allTests = [
 		("testGetCommentFromLine", testGetCommentFromLine),

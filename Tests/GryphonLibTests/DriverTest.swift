@@ -22,9 +22,15 @@ import XCTest
 #endif
 
 class DriverTest: XCTestCase {
-	public func getClassName() -> String {
-		return "DriverTest"
-	}
+	/// Tests to be run when using Swift on Linux
+	static var allTests = [
+		("testOutputs", testOutputs),
+		("testGenerateGryphonLibraries", testGenerateGryphonLibraries),
+		("testUsageString", testUsageString),
+		("testNoMainFile", testNoMainFile),
+		("testContinueOnErrors", testContinueOnErrors),
+		("testIndentation", testIndentation),
+	]
 
 	override static func setUp() {
 		do {
@@ -35,27 +41,6 @@ class DriverTest: XCTestCase {
 			fatalError("Failed to update test files.")
 		}
 	}
-
-	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() {
-		DriverTest.setUp()
-		testOutputs()
-		testGenerateGryphonLibraries()
-		testUsageString()
-		testNoMainFile()
-		testContinueOnErrors()
-		testIndentation()
-	}
-
-	/// Tests to be run when using Swift on Linux
-	static var allTests = [
-		("testOutputs", testOutputs),
-		("testGenerateGryphonLibraries", testGenerateGryphonLibraries),
-		("testUsageString", testUsageString),
-		("testNoMainFile", testNoMainFile),
-		("testContinueOnErrors", testContinueOnErrors),
-		("testIndentation", testIndentation),
-	]
 
 	// MARK: - Tests
 	func testOutputs() {

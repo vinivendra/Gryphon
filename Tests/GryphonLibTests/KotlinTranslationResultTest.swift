@@ -22,19 +22,6 @@ import XCTest
 #endif
 
 class KotlinTranslationResultTest: XCTestCase {
-	public func getClassName() -> String {
-		return "TranslationResultTest"
-	}
-
-	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() {
-		testShallowTranslation()
-		testDeepTranslation()
-		testDropLast()
-		testIsEmpty()
-		testSourceFileUpdatePosition()
-	}
-
 	/// Tests to be run when using Swift on Linux
 	static var allTests = [
 		("testShallowTranslation", testShallowTranslation),

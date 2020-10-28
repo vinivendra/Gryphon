@@ -22,15 +22,6 @@ import XCTest
 #endif
 
 class SwiftSyntaxDecoderTest: XCTestCase {
-	public func getClassName() -> String {
-		return "SwiftSyntaxDecoderTest"
-	}
-
-	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() {
-		test()
-	}
-
 	/// Tests to be run when using Swift on Linux
 	static var allTests = [
 		("test", test),

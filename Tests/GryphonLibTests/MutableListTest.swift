@@ -24,47 +24,6 @@ import Foundation
 #endif
 
 class MutableListTest: XCTestCase {
-	public func getClassName() -> String {
-		return "MutableListTest"
-	}
-
-	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() {
-		testEquatable()
-		testInits()
-		testPassingByReference()
-		testCasting()
-		testCopy()
-		testToList()
-		testSubscript()
-		testDescription()
-		// testDebugDescription()
-		testCollectionIndices()
-		testIsEmpty()
-		testFirst()
-		testLast()
-		testIndexBefore()
-		testAppendContentsOf()
-		testAppend()
-		testAppending()
-		testInsert()
-		testFilter()
-		testMap()
-		testCompactMap()
-		testFlatMap()
-		testSortedBy()
-		testAppendingContentsOf()
-		testRemoveFirst()
-		testRemoveLast()
-		testReverse()
-		testIndices()
-		testIndexOfElement()
-		// testHash()
-		testSorted()
-		testZip()
-		testPlus()
-	}
-
 	/// Tests to be run when using Swift on Linux
 	static var allTests = [
 		("testEquatable", testEquatable),
