@@ -271,7 +271,6 @@ public class SourceKit {
 }
 
 extension SyntaxProtocol {
-	// TODO: Add unit tests for SortedList
 	func getType(fromList list: SortedList<SourceKit.ExpressionType>) -> String? {
 		let offset = self.positionAfterSkippingLeadingTrivia.utf8Offset
 		let length = self.contentLength.utf8Length
