@@ -459,6 +459,7 @@ class SortedList<Element>: List<Element> {
 			"Use init(_: sortedBy:) or init(of:) instead.")
 	}
 
+	/// Search for an element using the given `predicate` with a binary search.
 	/// The `predicate` should return `.orderedAscending` if the searched element is larger than the
 	/// given element, `.orderedDescending` if the contrary is true, and `.orderedSame` if the given
 	/// element is the searched element.

@@ -38,6 +38,7 @@ public func allTests() -> [XCTestCaseEntry] {
 		testCase(MutableListTest.allTests),
 		testCase(MapTest.allTests),
 		testCase(MutableMapTest.allTests),
+		testCase(SortedListTest.allTests),
 	]
 }
 #endif
