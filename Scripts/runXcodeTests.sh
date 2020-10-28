@@ -1,6 +1,14 @@
 #!/bin/bash
 set -e
 
+if uname -s | grep "Darwin"
+then
+	:
+else
+	echo "Xcode tests are only supported on on macOS."
+	exit 0
+fi
+
 # Prints a file only if it exists
 safeCat () {
 	if [[ -f $1 ]];
