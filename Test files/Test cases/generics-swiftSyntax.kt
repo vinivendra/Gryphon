@@ -19,6 +19,10 @@ internal data class Box<T>(
 	val x: T
 )
 
+internal open class Box2<T> {
+	val x: T? = null
+}
+
 internal fun <T> f1(box: Box<T>) {
 	println(box.x)
 }

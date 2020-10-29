@@ -20,6 +20,10 @@ struct Box<T> {
 	let x: T
 }
 
+class Box2<T> {
+	let x: T? = nil
+}
+
 //// Instanciating generic classes
 let box = Box(x: 0)
 

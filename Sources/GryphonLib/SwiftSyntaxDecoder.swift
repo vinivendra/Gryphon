@@ -1667,6 +1667,17 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		_ classDeclaration: ClassDeclSyntax)
 		throws -> Statement
 	{
+		let classBaseType = classDeclaration.identifier.text
+
+		let className: String
+		if let generics = classDeclaration.genericParameterClause?.genericParameterList {
+			let genericString = generics.map { $0.name.text }.joined(separator: ", ")
+			className = classBaseType + "<" + genericString + ">"
+		}
+		else {
+			className = classBaseType
+		}
+
 		let inheritances = try classDeclaration.inheritanceClause?.inheritedTypeCollection.map {
 				try convertType($0.typeName)
 			} ?? []
@@ -1695,7 +1706,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		return ClassDeclaration(
 			syntax: Syntax(classDeclaration),
 			range: classDeclaration.getRange(inFile: self.sourceFile),
-			className: classDeclaration.identifier.text,
+			className: className,
 			annotations: annotations,
 			access: accessAndAnnotations.access,
 			isOpen: isOpen,
