@@ -325,3 +325,16 @@ let q = ""
 if let r = q.first, let s = q.first { }
 
 if true, let b = /* gryphon pure */ nativeArray.first(where: { $0 == 0 }) { }
+
+// Warnings for custom operators
+// gryphon ignore
+infix operator +++: AdditionPrecedence
+
+// gryphon ignore
+extension Int {
+	static func +++ (left: Int, right: Int) -> Int {
+		return left + 3 * right
+	}
+}
+
+print(1 + 2 +++ 3 + 4)

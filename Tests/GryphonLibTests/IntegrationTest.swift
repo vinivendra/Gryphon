@@ -161,7 +161,7 @@ class IntegrationTest: XCTestCase {
 						.joined(separator: "\n"))
 
 			// Make sure the comment for muting warnings is working
-			let numberOfExpectedWarnings = 14
+			let numberOfExpectedWarnings = 15
 			XCTAssert(
 				Compiler.numberOfWarnings == numberOfExpectedWarnings,
 				"Expected \(numberOfExpectedWarnings) warnings, found " +
@@ -226,6 +226,14 @@ class IntegrationTest: XCTestCase {
 			XCTAssertEqual(
 				warnings.count, 1,
 				"Expected 1 warnings containing \"initializers in structs\", " +
+					"found \(warnings.count) (printed below, if any).\n" +
+					warnings.map { $0.fullMessage }.joined(separator: "\n"))
+
+			warnings =
+				Compiler.issues.filter { $0.fullMessage.contains("Unknown operator") }
+			XCTAssertEqual(
+				warnings.count, 1,
+				"Expected 1 warnings containing \"Unknown operator\", " +
 					"found \(warnings.count) (printed below, if any).\n" +
 					warnings.map { $0.fullMessage }.joined(separator: "\n"))
 		}

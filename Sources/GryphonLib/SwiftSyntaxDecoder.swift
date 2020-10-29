@@ -2708,9 +2708,12 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	/// outside it, resulting in an even number of expressions. Similarly with the `is` operator and
 	/// `IsEpxrSyntax` expressions.
 	///
+	/// This method calls itself recursively, and uses `isRecursiveCall` to avoid raising
+	/// warnings more than once for the same operator.
 	private func convertSequenceExpression(
 		_ sequenceExpression: SequenceExprSyntax,
-		limitedToElements elements: List<ExprSyntax>)
+		limitedToElements elements: List<ExprSyntax>,
+		isRecursiveCall: Bool = false)
 	throws -> Expression
 	{
 		if elements.isEmpty {
@@ -2749,10 +2752,12 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 			let leftConversion = try convertSequenceExpression(
 				sequenceExpression,
-				limitedToElements: leftHalf)
+				limitedToElements: leftHalf,
+				isRecursiveCall: true)
 			let rightConversion = try convertSequenceExpression(
 				sequenceExpression,
-				limitedToElements: rightHalf)
+				limitedToElements: rightHalf,
+				isRecursiveCall: true)
 			let middleConversion = try convertExpression(ternaryExpression.firstChoice)
 
 			return IfExpression(
@@ -2766,16 +2771,19 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		// If all remaining operators have higher precedence than the ternary operator
 		let lowestPrecedenceOperatorIndex = getIndexOfLowestPrecedenceOperator(
 			forSequenceExpression: sequenceExpression,
-			withElements: elements)
+			withElements: elements,
+			shouldRaiseWarnings: !isRecursiveCall)
 
 		if let index = lowestPrecedenceOperatorIndex {
 			if let operatorSyntax = elements[index].as(BinaryOperatorExprSyntax.self) {
 				let leftHalf = try convertSequenceExpression(
 					sequenceExpression,
-					limitedToElements: elements.dropLast(elements.count - index))
+					limitedToElements: elements.dropLast(elements.count - index),
+					isRecursiveCall: true)
 				let rightHalf = try convertSequenceExpression(
 					sequenceExpression,
-					limitedToElements: elements.dropFirst(index + 1))
+					limitedToElements: elements.dropFirst(index + 1),
+					isRecursiveCall: true)
 				let operatorString = operatorSyntax.operatorToken.text
 
 				let typeName: String?
@@ -2808,7 +2816,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 				let leftHalf = try convertSequenceExpression(
 					sequenceExpression,
-					limitedToElements: elements.dropLast(elements.count - index))
+					limitedToElements: elements.dropLast(elements.count - index),
+					isRecursiveCall: true)
 				let typeName = try convertType(asSyntax.typeName)
 
 				let expressionType: String
@@ -2842,7 +2851,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 				let leftHalf = try convertSequenceExpression(
 					sequenceExpression,
-					limitedToElements: elements.dropLast(elements.count - index))
+					limitedToElements: elements.dropLast(elements.count - index),
+					isRecursiveCall: true)
 
 				return BinaryOperatorExpression(
 					syntax: Syntax(isSyntax),
@@ -2866,9 +2876,11 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	/// `operatorInformation` array. Returns the index of the one with the lowest precedence, or
 	/// `nil` something goes wrong (e.g. the array is empty, the algorithm can't find an operator
 	/// it expected to find, etc).
+	/// If `shouldRaiseWarnings` is `true`, may raise warnings for unknown operators.
 	private func getIndexOfLowestPrecedenceOperator(
 		forSequenceExpression sequenceExpression: SequenceExprSyntax,
-		withElements elements: List<ExprSyntax>)
+		withElements elements: List<ExprSyntax>,
+		shouldRaiseWarnings: Bool)
 		-> Int?
 	{
 		let startingPrecedence = Int.max
@@ -2887,8 +2899,18 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					currentOperatorPrecedence = precedence
 				}
 				else {
-					// TODO: Raise warning later (here it might be raised more than once)
 					// If it's an unknown operator, assume it has default precedence
+
+					if shouldRaiseWarnings {
+						Compiler.handleWarning(
+							message: "Unknown operator being translated literally",
+							syntax: binaryOperator.operatorToken.asSyntax,
+							ast: binaryOperator.operatorToken.toPrintableTree(),
+							sourceFile: self.sourceFile,
+							sourceFileRange: binaryOperator.operatorToken.getRange(
+								inFile: self.sourceFile))
+					}
+
 					if let precedence = operatorInformation.firstIndex(
 						where: { $0.operator == "unknown" })
 					{
