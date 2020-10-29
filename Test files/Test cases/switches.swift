@@ -102,7 +102,6 @@ default:
 }
 
 // Switch on a sealed class
-
 enum MySealedClass {
 	case a(int: Int)
 	case b
@@ -115,6 +114,21 @@ case let .a(int: int):
 case .b:
 	print("b")
 }
+
+// Switch case with multiple expressions
+func g(i: Int) {
+	switch i {
+	case 0, 1, 2:
+		print("Low")
+	default:
+		print("High")
+	}
+}
+
+g(i: 0)
+g(i: 1)
+g(i: 2)
+g(i: 3)
 
 // Regression test: switch expressions as the last statement in a block
 func f() {

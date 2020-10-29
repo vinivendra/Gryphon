@@ -50,6 +50,13 @@ internal sealed class MySealedClass {
 	class B: MySealedClass()
 }
 
+internal fun g(i: Int) {
+	when (i) {
+		0, 1, 2 -> println("Low")
+		else -> println("High")
+	}
+}
+
 internal fun f() {
 	val number: Int = 0
 	val name: String = when (number) {
@@ -104,6 +111,11 @@ fun main(args: Array<String>) {
 		}
 		is MySealedClass.B -> println("b")
 	}
+
+	g(i = 0)
+	g(i = 1)
+	g(i = 2)
+	g(i = 3)
 
 	val z: Int = 0
 

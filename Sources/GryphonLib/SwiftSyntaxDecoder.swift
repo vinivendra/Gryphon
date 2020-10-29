@@ -1579,7 +1579,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let elements: MutableList<EnumElement> = []
 		for syntax in cases {
 			if let caseSyntax = syntax.element.as(EnumCaseDeclSyntax.self) {
-				// TODO: add test for `case a, b, c`
 				for element in caseSyntax.elements {
 					let associatedValues: MutableList<LabeledType>
 					if let parameters = element.associatedValue?.parameterList {
