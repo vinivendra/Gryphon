@@ -3302,7 +3302,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		_ identifierExpression: IdentifierExprSyntax)
 		throws -> Expression
 	{
-		// TODO: DeclRef should have optional type
 		return DeclarationReferenceExpression(
 			syntax: Syntax(identifierExpression),
 			range: identifierExpression.getRange(inFile: self.sourceFile),
