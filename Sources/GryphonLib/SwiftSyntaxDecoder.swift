@@ -1984,7 +1984,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 						{ $0.is(CodeBlockSyntax.self) }),
 					let codeBlock = maybeCodeBlock.as(CodeBlockSyntax.self)
 				{
-					// TODO: test
 					// If there's an implicit getter (e.g. `var a: Int { return 0 }`)
 					let range = codeBlock.getRange(inFile: self.sourceFile)
 					let statements = try convertBlock(codeBlock)

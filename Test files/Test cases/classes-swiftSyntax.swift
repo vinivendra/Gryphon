@@ -38,6 +38,10 @@ class Box {
 		}
 	}
 
+	var e: Int? {
+		return 0
+	}
+
 	func returnFive() -> Int {
 		return a
 	}

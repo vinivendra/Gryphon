@@ -31,6 +31,10 @@ internal open class Box {
 		get() {
 			return 0
 		}
+	open val e: Int?
+		get() {
+			return 0
+		}
 
 	open fun returnFive(): Int {
 		return a
