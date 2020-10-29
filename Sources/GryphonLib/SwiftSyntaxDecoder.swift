@@ -1428,7 +1428,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		_ extensionDeclaration: ExtensionDeclSyntax)
 		throws -> Statement
 	{
-		// TODO: add tests
 		let comments = getLeadingComments(
 			forSyntax: Syntax(extensionDeclaration),
 			withKey: .generics)
