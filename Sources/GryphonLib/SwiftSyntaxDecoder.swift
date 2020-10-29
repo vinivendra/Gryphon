@@ -325,8 +325,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		Compiler.logEnd("✅  Done calling SwiftSyntax.")
 
 		// Initialize the properties
-		// TODO: Check if these file readings aren't redundant
-		self.sourceFile = try SourceFile(path: filePath, contents: Utilities.readFile(filePath))
+		self.sourceFile = try SourceFile.readFile(atPath: filePath)
 		self.expressionTypes = typeList
 		self.syntaxTree = tree
 		self.context = context

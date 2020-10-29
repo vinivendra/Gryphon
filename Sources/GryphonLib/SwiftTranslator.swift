@@ -49,8 +49,7 @@ public class SwiftTranslator {
 	{
 		let filePath = ast.standaloneAttributes[0]
 
-		let contents = try Utilities.readFile(filePath)
-		sourceFile = SourceFile(path: filePath, contents: contents)
+		sourceFile = try SourceFile.readFile(atPath: filePath)
 
 		let fileRange = sourceFile.map {
 			SourceFileRange(

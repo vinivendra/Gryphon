@@ -23,7 +23,25 @@ public class SourceFile {
 	public let contents: String
 	public let lines: List<Substring>
 
-	public init(path: String, contents: String) {
+	/// Caches all Source Files that have already been read, using (absolute) file paths as keys.
+	private static let cache: Atomic<MutableMap<String, SourceFile>> = Atomic([:])
+
+	/// Initializes the source file and caches it.
+	public static func readFile(atPath filePath: String) throws -> SourceFile {
+		if let result = SourceFile.cache.atomic[filePath] {
+			return result
+		}
+		else {
+			let contents = try Utilities.readFile(filePath)
+			let result = SourceFile(path: filePath, contents: contents)
+			SourceFile.cache.mutateAtomically { $0[filePath] = result }
+			return result
+		}
+	}
+
+	/// Don't call this directly, except for testing. Otherwise, prefer `readFile(atPath:)`.
+	/// SourceFiles created by direct calls to this initializer aren't cached.
+	internal init(path: String, contents: String) {
 		self.path = path
 		self.contents = contents
 		self.lines = List<Substring>(
