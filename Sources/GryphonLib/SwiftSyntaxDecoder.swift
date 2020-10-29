@@ -1559,6 +1559,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		_ enumDeclaration: EnumDeclSyntax)
 		throws -> Statement
 	{
+		// TODO: (after structured types) support generic enums (with assoc. values)
 		let inheritances = try enumDeclaration.inheritanceClause?.inheritedTypeCollection.map {
 				try convertType($0.typeName)
 			} ?? []
@@ -1629,7 +1630,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	{
 		let structBaseType = structDeclaration.identifier.text
 
-		// TODO: Support generic classes, etc
 		let structName: String
 		if let generics = structDeclaration.genericParameterClause?.genericParameterList {
 			let genericString = generics.map { $0.name.text }.joined(separator: ", ")
