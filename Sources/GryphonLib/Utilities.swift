@@ -83,8 +83,8 @@ internal let libraryUpdateLock: Semaphore = NSLock()
 internal let printingLock = NSLock()
 
 class Atomic<Value> {
-    var __value: Value
-	let lock = NSLock()
+    private var __value: Value
+	private let lock = NSLock()
 
 	init(_ value: Value) {
         self.__value = value
