@@ -1262,7 +1262,7 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 		_ initializerDeclaration: InitializerDeclaration)
 		-> List<Statement>
 	{
-		// TODO: replace this with a check for isOptional once SwiftSyntax is fully supported
+		// TODO: (after removing AST dumps) replace this with a check for isOptional
 		if (initializerDeclaration.isStatic == true &&
 				initializerDeclaration.extendsType == nil &&
 				initializerDeclaration.returnType.hasSuffix("?")) ||
@@ -1272,7 +1272,7 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 			let newStatements = replaceStatements(initializerDeclaration.statements ?? [])
 			isFailableInitializer = false
 
-			// TODO: simplify this once SwiftSyntax is fully supported
+			// TODO: (after removing AST dumps) simplify this
 			let newReturnType = initializerDeclaration.returnType.hasSuffix("?") ?
 				initializerDeclaration.returnType :
 				initializerDeclaration.returnType + "?"
@@ -2565,7 +2565,7 @@ public class AnonymousParametersTranspilationPass: TranspilationPass {
 		}
 	}
 
-	// TODO: Remove this if possible after SwiftSyntax
+	// TODO: (after removing AST dumps) remove this if possible
 	override func replaceClosureExpression(
 		_ closureExpression: ClosureExpression)
 		-> Expression
@@ -3932,10 +3932,9 @@ public class RecordInitializersTranspilationPass: TranspilationPass {
 	}
 }
 
+// TODO: This can cause issues when two nested classes have the same name (e.g. `A.B` and `C.B`).
 /// Records the superclass and protocol inheritances of any enum, struct or class declaration.
 /// Inheritances are copied to avoid them changing accidentally later.
-///
-/// TODO: This can cause issues when two nested classes have the same name (e.g. `A.B` and `C.B`).
 public class RecordInheritancesTranspilationPass: TranspilationPass {
 	override func replaceEnumDeclaration(
 		_ enumDeclaration: EnumDeclaration)

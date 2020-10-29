@@ -218,7 +218,7 @@ public struct SourceFileRange: Equatable, Hashable, CustomStringConvertible {
 	let start: SourceFilePosition
 	let end: SourceFilePosition
 
-	// TODO: Remove this later (once AST dumps are removed)
+	// TODO: (after removing AST dumps) remove this
 	var lineStart: Int {
 		get {
 			return start.line
@@ -279,7 +279,7 @@ public struct SourceFileRange: Equatable, Hashable, CustomStringConvertible {
 		self.end = end
 	}
 
-	// TODO: Remove this later (once AST dumps are removed)
+	// TODO: (after removing AST dumps) remove this
 	init(
 		lineStart: Int,
 		lineEnd: Int,
