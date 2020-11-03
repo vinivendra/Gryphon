@@ -131,7 +131,7 @@ do
 			fi
 
 			# Remove random numbers that can be different in each execution
-			if uname -s | grep "Darwin"
+			if uname -s | grep "Darwin" > /dev/null
 			then
 				# If we're using macOS
 				sed -i 'sed' 's/0x[0-9a-z]*/hex/g' .gryphon/generatedResult.txt
