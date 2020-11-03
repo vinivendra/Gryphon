@@ -529,7 +529,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 						}
 					}
 					else if translationComment.key == .ignore {
-						// TODO: add a warning for translation comments at the end of lines
 						shouldIgnoreStatement = true
 					}
 				case let .normalComment(comment: normalComment):
@@ -939,7 +938,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 				// Add the explicit statements after possible variable declarations derived from
 				// `case let`
-				// TODO: Check for comments at the end
 				try statements.append(contentsOf: convertStatements(switchCase.statements))
 
 				cases.append(SwitchCase(
