@@ -130,16 +130,15 @@ class DriverTest: XCTestCase {
 			XCTAssert(!compilerOutput.isEmpty)
 
 			// Check if --quiet mutes outputs and warnings
-			// TODO: Run this test
-//			compilerOutput = ""
-//			compilerError = ""
-//			try Driver.run(withArguments:
-//				["\(TestUtilities.testCasesPath)warnings.swift",
-//				 "--write-to-console",
-//				 "--quiet",
-//				 "-swiftSyntax"])
-//			XCTAssert(compilerOutput.isEmpty)
-//			XCTAssert(compilerError.isEmpty)
+			compilerOutput = ""
+			compilerError = ""
+			try Driver.run(withArguments:
+				["\(TestUtilities.testCasesPath)warnings.swift",
+				 "--write-to-console",
+				 "--quiet",
+				 "-swiftSyntax"])
+			XCTAssert(compilerOutput.isEmpty)
+			XCTAssert(compilerError.isEmpty)
 
 			// Check if --quiet does not mute errors
 			compilerOutput = ""
