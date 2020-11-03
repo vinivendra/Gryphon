@@ -420,7 +420,7 @@ extension ReplaceTemplatesTranspilationPass {
 	/// Uses the AST's `context` to calculate subtypes and its `indexingResponse` to calculate the
 	/// type of implicit references to `self`.
 	///
-	/// Note: SourceKit sometimes provides supertypes of expressions instead of their specific
+	/// - Note: SourceKit sometimes provides supertypes of expressions instead of their specific
 	/// types. For instance, `print()` expects an `Any`, so the `expression` in `print(expression)`
 	/// will always have type `Any`. This can cause problems when matching `expression` with a
 	/// template of type `Int`, for instance, since the types won't match. To handle this case, the
@@ -429,9 +429,9 @@ extension ReplaceTemplatesTranspilationPass {
 	/// normally (with the exception of dot expressions, whose types are usually determined by
 	/// their right expression's type).
 	///
-	/// Note: SourceKit also reports some `@autoclosure` arguments with type `() -> T` instead of
-	/// just `T`. The `shouldMatchAutoclosures` argument is used when call expressions contain
-	/// autoclosures, so we can match the types correctly.
+	/// - Note: SourceKit also reports some `@autoclosure` arguments with type `() -> T`
+	/// instead of just `T`. The `shouldMatchAutoclosures` argument is used when call expressions
+	/// contain autoclosures, so we can match the types correctly.
 	private func match(
 		_ expression: Expression,
 		_ template: Expression,
@@ -756,6 +756,15 @@ extension ReplaceTemplatesTranspilationPass {
 		{
 			// Try to match expressions with implicit `self` (e.g. `(self.)startIndex` and
 			// `_string.startIndex`)
+
+			// There can't be an implicit `self` before the right-hand side of a dot expression
+			if let parent = lhs.parent,
+			   let parentDotExpression = parent as? DotExpression,
+			   parentDotExpression.rightExpression == lhs
+			{
+				return false
+			}
+
 			if match(lhs, rhs.rightExpression, [:]),
 				let parentType = SourceKit.getParentType(
 					forExpression: lhs,
@@ -878,7 +887,7 @@ internal extension TranspilationContext {
 				return true
 			}
 			else if superType == "_CustomStringConvertible" {
-				if let subTypeInheritances = inheritances.atomic[subType] {
+				if let subTypeInheritances = getInheritance(forFullType: subType) {
 					return subTypeInheritances.contains("CustomStringConvertible")
 				}
 				else {

@@ -59,6 +59,18 @@ internal open class H {
 	open var description: String = "abc"
 }
 
+internal open class I {
+	open class K {
+		override open fun toString(): String = ""
+	}
+}
+
+internal open class J {
+	open class K {
+		open var description: String = ""
+	}
+}
+
 internal fun throwingFunction() {
 }
 
@@ -141,6 +153,8 @@ fun main(args: Array<String>) {
 	val array2: MutableList<Int> = mutableListOf()
 	val array3: MutableList<Int> = array2 ?: mutableListOf()
 	var foo: (() -> Unit)? = null
+	val ik: String = I.K().toString()
+	val jk: String = J.K().description
 
 	"abc"
 

@@ -1231,11 +1231,13 @@ extension PrintableTree {
 /// - `TranspilationPass.replaceExpression`
 /// - LibraryTranspilationPass's `Expression.matches`
 public /*abstract*/ class Expression: PrintableAsTree, Equatable, CustomStringConvertible {
+	fileprivate(set) var parent: Expression?
 	let syntax: Syntax?
 	let name: String
 	var range: SourceFileRange?
 
-	init(syntax: Syntax? = nil, range: SourceFileRange?, name: String) {
+	init(parent: Expression? = nil, syntax: Syntax? = nil, range: SourceFileRange?, name: String) {
+		self.parent = parent
 		self.syntax = syntax
 		self.range = range
 		self.name = name
@@ -1479,6 +1481,8 @@ public class ConcatenationExpression: Expression {
 			syntax: syntax,
 			range: range,
 			name: "ConcatenationExpression".capitalizedAsCamelCase())
+		leftExpression.parent = self
+		rightExpression.parent = self
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> {
@@ -1502,6 +1506,7 @@ public class ParenthesesExpression: Expression {
 			syntax: syntax,
 			range: range,
 			name: "ParenthesesExpression".capitalizedAsCamelCase())
+		expression.parent = self
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> {
@@ -1531,6 +1536,7 @@ public class ForceValueExpression: Expression {
 			syntax: syntax,
 			range: range,
 			name: "ForceValueExpression".capitalizedAsCamelCase())
+		expression.parent = self
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> {
@@ -1568,6 +1574,7 @@ public class OptionalExpression: Expression {
 			syntax: syntax,
 			range: range,
 			name: "OptionalExpression".capitalizedAsCamelCase())
+		expression.parent = self
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> {
@@ -1706,6 +1713,8 @@ public class SubscriptExpression: Expression {
 			syntax: syntax,
 			range: range,
 			name: "SubscriptExpression".capitalizedAsCamelCase())
+		subscriptedExpression.parent = self
+		indexExpression.parent = self
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> {
@@ -1749,6 +1758,9 @@ public class ArrayExpression: Expression {
 			syntax: syntax,
 			range: range,
 			name: "ArrayExpression".capitalizedAsCamelCase())
+		for element in elements {
+			element.parent = self
+		}
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> {
@@ -1793,6 +1805,12 @@ public class DictionaryExpression: Expression {
 			syntax: syntax,
 			range: range,
 			name: "DictionaryExpression".capitalizedAsCamelCase())
+		for key in keys {
+			key.parent = self
+		}
+		for value in values {
+			value.parent = self
+		}
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> {
@@ -1835,6 +1853,7 @@ public class ReturnExpression: Expression {
 			syntax: syntax,
 			range: range,
 			name: "ReturnExpression".capitalizedAsCamelCase())
+		expression?.parent = self
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> {
@@ -1871,6 +1890,8 @@ public class DotExpression: Expression {
 			syntax: syntax,
 			range: range,
 			name: "DotExpression".capitalizedAsCamelCase())
+		leftExpression.parent = self
+		rightExpression.parent = self
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> {
@@ -1964,6 +1985,8 @@ public class BinaryOperatorExpression: Expression {
 			syntax: syntax,
 			range: range,
 			name: "BinaryOperatorExpression".capitalizedAsCamelCase())
+		leftExpression.parent = self
+		rightExpression.parent = self
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> {
@@ -2013,6 +2036,7 @@ public class PrefixUnaryExpression: Expression {
 			syntax: syntax,
 			range: range,
 			name: "PrefixUnaryExpression".capitalizedAsCamelCase())
+		subExpression.parent = self
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> {
@@ -2059,6 +2083,7 @@ public class PostfixUnaryExpression: Expression {
 			syntax: syntax,
 			range: range,
 			name: "PostfixUnaryExpression".capitalizedAsCamelCase())
+		subExpression.parent = self
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> {
@@ -2105,6 +2130,9 @@ public class IfExpression: Expression {
 			syntax: syntax,
 			range: range,
 			name: "IfExpression".capitalizedAsCamelCase())
+		condition.parent = self
+		trueExpression.parent = self
+		falseExpression.parent = self
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> {
@@ -2160,6 +2188,8 @@ public class CallExpression: Expression {
 			syntax: syntax,
 			range: range,
 			name: "CallExpression".capitalizedAsCamelCase())
+		function.parent = self
+		parameters.parent = self
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> {
@@ -2465,6 +2495,9 @@ public class InterpolatedStringLiteralExpression: Expression {
 			syntax: syntax,
 			range: range,
 			name: "InterpolatedStringLiteralExpression".capitalizedAsCamelCase())
+		for expression in expressions {
+			expression.parent = self
+		}
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> {
@@ -2503,6 +2536,9 @@ public class TupleExpression: Expression {
 			syntax: syntax,
 			range: range,
 			name: "TupleExpression".capitalizedAsCamelCase())
+		for pair in pairs {
+			pair.expression.parent = self
+		}
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> {
@@ -2543,6 +2579,9 @@ public class TupleShuffleExpression: Expression {
 			syntax: syntax,
 			range: range,
 			name: "TupleShuffleExpression".capitalizedAsCamelCase())
+		for expression in expressions {
+			expression.parent = self
+		}
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> {

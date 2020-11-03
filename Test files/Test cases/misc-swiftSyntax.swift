@@ -138,6 +138,22 @@ class H {
 	var description: String = "abc"
 }
 
+// No mistaking the `K` in `I.K` with the `K` in `J.K`
+class I {
+	class K: CustomStringConvertible {
+		var description = ""
+	}
+}
+
+class J {
+	class K {
+		var description = ""
+	}
+}
+
+let ik = I.K().description
+let jk = J.K().description
+
 // Anonymous pattern binding
 let _ = "abc"
 

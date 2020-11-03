@@ -39,9 +39,38 @@ public class TranspilationPass {
 	let ast: GryphonAST
 	let context: TranspilationContext
 
+	/// The parent nodes of the node that's currently being visited.
 	internal var parents: MutableList<ASTNode> = []
+
+	/// The parent node of the node that's currently being visited.
 	internal var parent: ASTNode? {
 		return parents.secondToLast
+	}
+
+	/// Returns the parent types of the current node, joined with `.`.
+	/// Includes the current node, if it's a type.
+	/// For instance, if we have a class `A` with a nested struct  `B`
+	/// which has a nested enum `C`, the full type of the enum would be
+	/// `A.B.C`. The full type of a method in that enum would also be `A.B.C`.
+	/// If there are no types (and the current node isn't a type), returns
+	/// an empty string.
+	func getFullType() -> String {
+		let result: MutableList<String> = []
+		for parent in self.parents {
+			if case let .statementNode(value: parentStatement) = parent {
+				if let classDeclaration = parentStatement as? ClassDeclaration {
+					result.append(classDeclaration.className)
+				}
+				else if let structDeclaration = parentStatement as? StructDeclaration {
+					result.append(structDeclaration.structName)
+				}
+				else if let enumDeclaration = parentStatement as? EnumDeclaration {
+					result.append(enumDeclaration.enumName)
+				}
+			}
+		}
+
+		return result.joined(separator: ".")
 	}
 
 	/// Is the current node that's being replaced a statement on the main function or a declaration?
@@ -973,24 +1002,10 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 		_ variableDeclaration: VariableDeclaration)
 		-> List<Statement>
 	{
-		// Get the type that declares this property, if any
-		var maybeTypeParent: String?
-		for parent in parents {
-			if case let .statementNode(value: parentStatement) = parent {
-				if let classDeclaration = parentStatement as? ClassDeclaration {
-					maybeTypeParent = classDeclaration.className
-				}
-				else if let structDeclaration = parentStatement as? StructDeclaration {
-					maybeTypeParent = structDeclaration.structName
-				}
-				else if let enumDeclaration = parentStatement as? EnumDeclaration {
-					maybeTypeParent = enumDeclaration.enumName
-				}
-			}
-		}
+		let fullType = getFullType()
 
-		if let typeParent = maybeTypeParent {
-			if let inheritances = context.inheritances.atomic[typeParent] {
+		if !fullType.isEmpty {
+			if let inheritances = context.getInheritance(forFullType: fullType) {
 				// If the description variable isn't satisfying a CustomStringConvertible
 				// requirement, do nothing
 				if !inheritances.contains("CustomStringConvertible") {
@@ -1002,7 +1017,7 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 				// Something went wrong.
 				do {
 					try Compiler.handleError(
-						message: "Unable to check inheritances for \(typeParent)",
+						message: "Unable to check inheritances for \(fullType)",
 						sourceFile: ast.sourceFile,
 						sourceFileRange: variableDeclaration.range)
 				}
@@ -3932,7 +3947,6 @@ public class RecordInitializersTranspilationPass: TranspilationPass {
 	}
 }
 
-// TODO: This can cause issues when two nested classes have the same name (e.g. `A.B` and `C.B`).
 /// Records the superclass and protocol inheritances of any enum, struct or class declaration.
 /// Inheritances are copied to avoid them changing accidentally later.
 public class RecordInheritancesTranspilationPass: TranspilationPass {
@@ -3941,7 +3955,7 @@ public class RecordInheritancesTranspilationPass: TranspilationPass {
 		-> List<Statement>
 	{
 		self.context.addInheritances(
-			forType: enumDeclaration.enumName,
+			forFullType: getFullType(),
 			inheritances: enumDeclaration.inherits.toList())
 		return super.replaceEnumDeclaration(enumDeclaration)
 	}
@@ -3951,7 +3965,7 @@ public class RecordInheritancesTranspilationPass: TranspilationPass {
 		-> List<Statement>
 	{
 		self.context.addInheritances(
-			forType: structDeclaration.structName,
+			forFullType: getFullType(),
 			inheritances: structDeclaration.inherits.toList())
 		return super.replaceStructDeclaration(structDeclaration)
 	}
@@ -3961,7 +3975,7 @@ public class RecordInheritancesTranspilationPass: TranspilationPass {
 		-> List<Statement>
 	{
 		self.context.addInheritances(
-			forType: classDeclaration.className,
+			forFullType: getFullType(),
 			inheritances: classDeclaration.inherits.toList())
 		return super.replaceClassDeclaration(classDeclaration)
 	}

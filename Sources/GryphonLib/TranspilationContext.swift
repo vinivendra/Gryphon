@@ -207,15 +207,24 @@ public class TranspilationContext {
 
 	///
 	/// This variable is used to store the inheritances (superclasses and protocols) of each type.
-	/// Keys correspond to the type, values correspond to its inheritances.
+	/// Keys correspond to the full type name (e.g. `A.B.C`), values correspond to its
+	/// inheritances.
 	///
-	internal var inheritances: Atomic<MutableMap<String, List<String>>> = Atomic([:])
+	private var inheritances: Atomic<MutableMap<String, List<String>>> = Atomic([:])
 
+	/// Stores the inheritances for a given type. The type's name should include its parent
+	/// types, e.g. `A.B.C` instead of just `C`.
 	public func addInheritances(
-		forType typeName: String,
+		forFullType typeName: String,
 		inheritances typeInheritances: List<String>)
 	{
 		inheritances.mutateAtomically { $0[typeName] = typeInheritances }
+	}
+
+	/// Gets the inheritances for a given type. The type's name should include its parent
+	/// types, e.g. `A.B.C` instead of just `C`.
+	public func getInheritance(forFullType typeName: String) -> List<String>? {
+		return inheritances.atomic[typeName]
 	}
 
 	// MARK: - Function translations
