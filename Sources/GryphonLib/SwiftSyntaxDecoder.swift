@@ -436,6 +436,45 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		for statement in statements {
 			let item: Syntax = statement.element
 
+			// Raise warnings for deprecated translation comments
+			if let range = statement.getRange(inFile: self.sourceFile),
+			   let translationComment =
+			      self.sourceFile.getTranslationCommentFromLine(range.lineStart)
+			{
+				if translationComment.key == .ignore {
+					Compiler.handleWarning(
+						message: "Deprecated: the \"gryphon ignore\" comment should be before " +
+							"this statement. " +
+							"Fix it: move \"// gryphon ignore\" to the line above this one.",
+						syntax: Syntax(statement),
+						ast: statement.toPrintableTree(),
+						sourceFile: self.sourceFile,
+						sourceFileRange: range)
+				}
+				else if translationComment.key == .annotation {
+					Compiler.handleWarning(
+						message: "Deprecated: the \"gryphon annotation\" comment should be " +
+							"before this statement. " +
+							"Fix it: move \"// gryphon annotation: ...\" to the line above this " +
+							"one.",
+						syntax: Syntax(statement),
+						ast: statement.toPrintableTree(),
+						sourceFile: self.sourceFile,
+						sourceFileRange: range)
+				}
+				else if translationComment.key == .mute {
+					Compiler.handleWarning(
+						message: "Deprecated: the \"gryphon mute\" comment should be " +
+							"before this statement. " +
+							"Fix it: move \"// gryphon mute\" to the line above this " +
+							"one.",
+						syntax: Syntax(statement),
+						ast: statement.toPrintableTree(),
+						sourceFile: self.sourceFile,
+						sourceFileRange: range)
+				}
+			}
+
 			// Parse the statement's leading comments
 			var shouldIgnoreStatement = false
 			let leadingComments = SwiftSyntaxDecoder.getLeadingComments(
@@ -1814,6 +1853,19 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let isPure = !getLeadingComments(
 			forSyntax: functionLikeDeclaration.asSyntax,
 			withKey: .pure).isEmpty
+		if let range = functionLikeDeclaration.getRange(inFile: self.sourceFile),
+		   let translationComment = self.sourceFile.getTranslationCommentFromLine(range.lineStart),
+		   translationComment.key == .pure
+		{
+			Compiler.handleWarning(
+				message: "Deprecated: the \"gryphon pure\" comment should be before " +
+					"this function. " +
+					"Fix it: move \"// gryphon pure\" to the line above this one.",
+				syntax: functionLikeDeclaration.asSyntax,
+				ast: functionLikeDeclaration.toPrintableTree(),
+				sourceFile: self.sourceFile,
+				sourceFileRange: range)
+		}
 
 		if !functionLikeDeclaration.isInitializer {
 			let isStatic = annotations.remove("static") || annotations.remove("class")
@@ -2316,6 +2368,23 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 	func convertExpression(_ expression: ExprSyntax) throws -> Expression {
 		let leadingComments = getLeadingComments(forSyntax: Syntax(expression), withKey: .value)
+
+		if let range = expression.getRange(inFile: self.sourceFile),
+		   let translationComment = self.sourceFile.getTranslationCommentFromLine(range.lineStart),
+		   translationComment.key == .value,
+		   let commentValue = translationComment.value,
+		   let swiftText = try? expression.getLiteralText(fromSourceFile: self.sourceFile)
+		{
+			Compiler.handleWarning(
+				message: "Deprecated: the \"gryphon value\" comment should be immediately " +
+					"before this expression. " +
+					"Fix it: replace with \"/* gryphon value: \(commentValue) */ " +
+					"\(swiftText)\".",
+				syntax: Syntax(expression),
+				ast: expression.toPrintableTree(),
+				sourceFile: self.sourceFile,
+				sourceFileRange: range)
+		}
 
 		// If we're replacing this expression with a `gryphon value` comment
 		let literalCodeExpressions = leadingComments.compactMap{ $0.value }
@@ -3400,6 +3469,20 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	{
 		let range = stringLiteralExpression.getRange(inFile: self.sourceFile)
 		let isMultiline = (stringLiteralExpression.openQuote.tokenKind == .multilineStringQuote)
+
+		if let range = stringLiteralExpression.getRange(inFile: self.sourceFile),
+		   range.lineStart >= 2,
+		   let translationComment =
+		      self.sourceFile.getTranslationCommentFromLine(range.lineStart - 1),
+		   translationComment.key == .multiline
+		{
+			Compiler.handleWarning(
+				message: "Deprecated: \"// gryphon multiline\" comments aren't necessary anymore.",
+				syntax: Syntax(stringLiteralExpression),
+				ast: stringLiteralExpression.toPrintableTree(),
+				sourceFile: self.sourceFile,
+				sourceFileRange: range)
+		}
 
 		// If it's a string literal
 		if stringLiteralExpression.segments.count == 1,

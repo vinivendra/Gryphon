@@ -338,3 +338,21 @@ extension Int {
 }
 
 print(1 + 2 +++ 3 + 4)
+
+// Warnings for legacy translation comments
+// gryphon multiline
+let foo = """
+aaa
+"""
+
+let languageName = "swift" // gryphon value: \"kotlin\"
+
+let foo1 = "" // gryphon ignore
+
+protocol Foo { // gryphon annotation: open
+}
+
+func foo2() { // gryphon pure
+}
+
+let foo3 = "" // gryphon mute

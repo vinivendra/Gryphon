@@ -161,7 +161,7 @@ class IntegrationTest: XCTestCase {
 						.joined(separator: "\n"))
 
 			// Make sure the comment for muting warnings is working
-			let numberOfExpectedWarnings = 15
+			let numberOfExpectedWarnings = 21
 			XCTAssert(
 				Compiler.numberOfWarnings == numberOfExpectedWarnings,
 				"Expected \(numberOfExpectedWarnings) warnings, found " +
@@ -234,6 +234,14 @@ class IntegrationTest: XCTestCase {
 			XCTAssertEqual(
 				warnings.count, 1,
 				"Expected 1 warnings containing \"Unknown operator\", " +
+					"found \(warnings.count) (printed below, if any).\n" +
+					warnings.map { $0.fullMessage }.joined(separator: "\n"))
+
+			warnings =
+				Compiler.issues.filter { $0.fullMessage.contains("Deprecated") }
+			XCTAssertEqual(
+				warnings.count, 6,
+				"Expected 6 warnings containing \"Deprecated\", " +
 					"found \(warnings.count) (printed below, if any).\n" +
 					warnings.map { $0.fullMessage }.joined(separator: "\n"))
 		}
