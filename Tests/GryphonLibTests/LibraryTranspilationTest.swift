@@ -269,13 +269,20 @@ class LibraryTranspilationTest: XCTestCase {
 	/// closures normally (`f(b: _closure)`), but they still have to match call expressions with
 	/// trailing closures.
 	func testTrailingClosures() {
-		let closureExpression = ClosureExpression(
+		let trailingClosureExpression = ClosureExpression(
 			range: nil,
 			parameters: [],
 			statements: [],
-			typeName: "() -> ()")
+			typeName: "() -> ()",
+			isTrailing: true)
+		let nonTrailingClosureExpression = ClosureExpression(
+			range: nil,
+			parameters: [],
+			statements: [],
+			typeName: "() -> ()",
+			isTrailing: false)
 
-		let trailingExpression = CallExpression(
+		let trailingCallExpression = CallExpression(
 			range: nil,
 			function: DeclarationReferenceExpression(
 				range: nil,
@@ -289,13 +296,13 @@ class LibraryTranspilationTest: XCTestCase {
 					label: nil,
 					expression: ParenthesesExpression(
 						range: nil,
-						expression: closureExpression)),
+						expression: trailingClosureExpression)),
 			]),
 			typeName: "Void",
 			allowsTrailingClosure: true,
 			isPure: true)
 
-		let normalExpression = CallExpression(
+		let nonTrailingCallExpression = CallExpression(
 			range: nil,
 			function: DeclarationReferenceExpression(
 				range: nil,
@@ -307,7 +314,7 @@ class LibraryTranspilationTest: XCTestCase {
 				range: nil,
 				pairs: [LabeledExpression(
 					label: "b",
-					expression: closureExpression),
+					expression: nonTrailingClosureExpression),
 			]),
 			typeName: "Void",
 			allowsTrailingClosure: true,
@@ -337,15 +344,15 @@ class LibraryTranspilationTest: XCTestCase {
 			isPure: true)
 
 		XCTAssertEqual(pass.matchExpression(
-				trailingExpression,
+				trailingCallExpression,
 				withTemplate: template,
 				shouldSkipRootTypeComparison: false),
-			["_closure": closureExpression])
+			["_closure": trailingClosureExpression])
 		XCTAssertEqual(pass.matchExpression(
-				normalExpression,
+				nonTrailingCallExpression,
 				withTemplate: template,
 				shouldSkipRootTypeComparison: false),
-			["_closure": closureExpression])
+			["_closure": nonTrailingClosureExpression])
 	}
 
 	// MARK: - Subtyping

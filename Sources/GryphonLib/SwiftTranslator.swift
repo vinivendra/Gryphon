@@ -2688,7 +2688,8 @@ public class SwiftTranslator {
 			range: getRangeRecursively(ofNode: closureExpression),
 			parameters: parameters,
 			statements: statements,
-			typeName: cleanUpType(typeName))
+			typeName: cleanUpType(typeName),
+			isTrailing: true)
 	}
 
 	internal func translateCallExpressionParameters(

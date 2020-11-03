@@ -2590,7 +2590,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	}
 
 	func convertClosureExpression(
-		_ closureExpression: ClosureExprSyntax)
+		_ closureExpression: ClosureExprSyntax,
+		isTrailing: Bool = false)
 		throws -> Expression
 	{
 		guard let typeName = closureExpression.getType(fromList: self.expressionTypes) else {
@@ -2680,7 +2681,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			range: closureExpression.getRange(inFile: self.sourceFile),
 			parameters: parameters,
 			statements: try convertBlock(closureExpression),
-			typeName: typeName)
+			typeName: typeName,
+			isTrailing: isTrailing)
 	}
 
 	func convertSequenceExpression(
@@ -3150,7 +3152,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			withType: tupleTypeName)
 
 		if let trailingClosureSyntax = functionCallExpression.trailingClosure {
-			let closureExpression = try convertClosureExpression(trailingClosureSyntax)
+			let closureExpression = try convertClosureExpression(
+				trailingClosureSyntax,
+				isTrailing: true)
 			tupleExpression.pairs.append(LabeledExpression(
 				label: nil,
 				expression: closureExpression))

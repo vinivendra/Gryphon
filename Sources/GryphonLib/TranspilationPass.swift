@@ -892,7 +892,8 @@ public class TranspilationPass {
 			range: closureExpression.range,
 			parameters: closureExpression.parameters,
 			statements: replaceStatements(closureExpression.statements),
-			typeName: closureExpression.typeName)
+			typeName: closureExpression.typeName,
+			isTrailing: closureExpression.isTrailing)
 	}
 
 	func replaceLiteralIntExpression(
@@ -2593,7 +2594,8 @@ public class AnonymousParametersTranspilationPass: TranspilationPass {
 				range: closureExpression.range,
 				parameters: [],
 				statements: closureExpression.statements,
-				typeName: closureExpression.typeName))
+				typeName: closureExpression.typeName,
+				isTrailing: closureExpression.isTrailing))
 		}
 		else {
 			return super.replaceClosureExpression(closureExpression)
@@ -2959,7 +2961,8 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 						range: closureExpression.range,
 						parameters: closureExpression.parameters,
 						statements: newStatements,
-						typeName: closureExpression.typeName))
+						typeName: closureExpression.typeName,
+						isTrailing: closureExpression.isTrailing))
 				}
 			}
 			else if let switchStatement = closureExpression.statements[0] as? SwitchStatement {
@@ -2979,7 +2982,8 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 						range: closureExpression.range,
 						parameters: closureExpression.parameters,
 						statements: [newSwitchStatement],
-						typeName: closureExpression.typeName))
+						typeName: closureExpression.typeName,
+						isTrailing: closureExpression.isTrailing))
 				}
 			}
 		}
@@ -3191,7 +3195,8 @@ public class AutoclosuresTranspilationPass: TranspilationPass {
 							syntax: expression.syntax,
 							range: expression.range,
 							expression: expression), ],
-						typeName: parameterType)
+						typeName: parameterType,
+						isTrailing: false)
 
 					tupleExpression.pairs[index] = LabeledExpression(
 						label: pair.label,
@@ -3213,7 +3218,8 @@ public class AutoclosuresTranspilationPass: TranspilationPass {
 							syntax: expression.syntax,
 							range: expression.range,
 							expression: expression), ],
-						typeName: parameterType)
+						typeName: parameterType,
+						isTrailing: false)
 
 					tupleShuffleExpression.expressions[index] = newExpression
 				}
@@ -5468,18 +5474,33 @@ public class MatchFunctionCallsToDeclarationsTranspilationPass: TranspilationPas
 
 		let matchResult: MutableList<MutableList<Int>> = []
 
-		// TODO: Do this only if there really was a trailing closure in Swift
 		// Check if there's an unlabeled closure at the end (and assume it's a trailing closure
 		// if there is)
 		let unlabeledTrailingClosureArgIndex: Int?
-		if let lastArgument = callArguments.last,
-			lastArgument.expression is ClosureExpression,
-			lastArgument.label == nil
-		{
-			unlabeledTrailingClosureArgIndex = callArguments.count - 1
+		if context.isUsingSwiftSyntax {
+			unlabeledTrailingClosureArgIndex = callArguments.lastIndex(where:
+				{ labeledExpression in
+					if labeledExpression.label == nil,
+					   let closure = labeledExpression.expression as? ClosureExpression,
+					   closure.isTrailing
+					{
+						return true
+					}
+					else {
+						return false
+					}
+				})
 		}
 		else {
-			unlabeledTrailingClosureArgIndex = nil
+			if let lastArgument = callArguments.last,
+			   lastArgument.expression is ClosureExpression,
+			   lastArgument.label == nil
+			{
+				unlabeledTrailingClosureArgIndex = callArguments.count - 1
+			}
+			else {
+				unlabeledTrailingClosureArgIndex = nil
+			}
 		}
 
 		let matchFailed = matchCallArguments(

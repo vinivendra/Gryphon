@@ -77,7 +77,7 @@ ${x}
 		}
 	}
 
-	"abc".drop(1).dropWhile { it != '\n' }
+	"abc".drop(1).dropWhile({ it != '\n' })
 
 	val abc: String = "abc"
 

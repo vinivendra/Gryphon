@@ -1836,35 +1836,36 @@ public class KotlinTranslator {
 				tupleExpression = rawTupleExpression
 			}
 
-			if callExpression.allowsTrailingClosure, let closurePair = tupleExpression.pairs.last {
-				if let closureExpression = closurePair.expression as? ClosureExpression
-				{
-					let closureTranslation = try translateClosureExpression(
-						closureExpression,
-						withIndentation: indentation)
-					if tupleExpression.pairs.count > 1 {
-						let newTupleExpression = TupleExpression(
-							syntax: tupleExpression.syntax,
-							range: tupleExpression.range,
-							pairs: tupleExpression.pairs.dropLast().toMutableList())
+			if callExpression.allowsTrailingClosure,
+			   let closurePair = tupleExpression.pairs.last,
+			   let closureExpression = closurePair.expression as? ClosureExpression,
+			   closureExpression.isTrailing
+			{
+				let closureTranslation = try translateClosureExpression(
+					closureExpression,
+					withIndentation: indentation)
+				if tupleExpression.pairs.count > 1 {
+					let newTupleExpression = TupleExpression(
+						syntax: tupleExpression.syntax,
+						range: tupleExpression.range,
+						pairs: tupleExpression.pairs.dropLast().toMutableList())
 
-						let firstParametersTranslation = try translateTupleExpression(
-							newTupleExpression,
-							withIndentation: increaseIndentation(indentation),
-							shouldAddNewlines: shouldAddNewlines)
+					let firstParametersTranslation = try translateTupleExpression(
+						newTupleExpression,
+						withIndentation: increaseIndentation(indentation),
+						shouldAddNewlines: shouldAddNewlines)
 
-						let result = KotlinTranslation(range: callExpression.range)
-						result.append(firstParametersTranslation)
-						result.append(" ")
-						result.append(closureTranslation)
-						return result
-					}
-					else {
-						let result = KotlinTranslation(range: callExpression.range)
-						result.append(" ")
-						result.append(closureTranslation)
-						return result
-					}
+					let result = KotlinTranslation(range: callExpression.range)
+					result.append(firstParametersTranslation)
+					result.append(" ")
+					result.append(closureTranslation)
+					return result
+				}
+				else {
+					let result = KotlinTranslation(range: callExpression.range)
+					result.append(" ")
+					result.append(closureTranslation)
+					return result
 				}
 			}
 

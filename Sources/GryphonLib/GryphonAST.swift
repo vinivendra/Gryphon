@@ -2230,17 +2230,20 @@ public class ClosureExpression: Expression {
 	let parameters: MutableList<LabeledType>
 	let statements: MutableList<Statement>
 	var typeName: String
+	var isTrailing: Bool
 
 	init(
 		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		parameters: MutableList<LabeledType>,
 		statements: MutableList<Statement>,
-		typeName: String)
+		typeName: String,
+		isTrailing: Bool)
 	{
 		self.parameters = parameters
 		self.statements = statements
 		self.typeName = typeName
+		self.isTrailing = isTrailing
 		super.init(
 			syntax: syntax,
 			range: range,
@@ -2253,6 +2256,7 @@ public class ClosureExpression: Expression {
 		return [
 			PrintableTree(typeName),
 			PrintableTree(parametersString),
+			isTrailing ? PrintableTree("isTrailing") : nil,
 			PrintableTree.ofStatements("statements", statements), ]
 	}
 
