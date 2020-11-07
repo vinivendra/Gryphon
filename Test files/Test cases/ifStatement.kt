@@ -318,6 +318,11 @@ fun main(args: Array<String>) {
 		println("If case let #10: ${foo}, ${bar}, ${baz}")
 	}
 
+	if (bEnum is B.C) {
+		val foo: Int = bEnum.d
+		println("If case let #11: ${foo}")
+	}
+
 	if (bEnum2 is B.E && bEnum2.g == "foo") {
 		val foo: Int = bEnum2.f
 		println("If case let comparison #1: ${foo}")

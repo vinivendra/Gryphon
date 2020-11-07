@@ -30,6 +30,7 @@ If case let #7: 0
 If case let #8: 0, foo
 If case let #9: 0, 0, foo
 If case let #10: 0, 0, foo
+If case let #11: 0
 If case let comparison #1: 0
 If case let comparison #2: foo
 If case let comparison #3: 0, foo

@@ -271,6 +271,10 @@ else if case let .c(d: foo) = bEnum,
 	print("If case let #10: \(foo), \(bar), \(baz)")
 }
 
+if case let B.c(d: foo) = bEnum {
+	print("If case let #11: \(foo)")
+}
+
 //
 if case let .e(f: foo, g: "foo") = bEnum2 {
 	print("If case let comparison #1: \(foo)")

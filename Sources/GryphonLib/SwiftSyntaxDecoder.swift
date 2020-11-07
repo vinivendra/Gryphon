@@ -1192,101 +1192,110 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			let calledExpression =
 				callExpression.calledExpression.as(MemberAccessExprSyntax.self)
 		{
-			// TODO: test a case where the left expression is present
-			if let enumType = patternExpression.swiftType {
-				let dotExpression = try convertMemberAccessExpression(
-					calledExpression,
-					typeName: enumType)
-				if let typeName = dotExpression.asString() {
-					conditions.append(BinaryOperatorExpression(
-						syntax: Syntax(pattern),
-						range: pattern.getRange(inFile: self.sourceFile),
-						leftExpression: patternExpression,
-						rightExpression: TypeExpression(
-							syntax: Syntax(calledExpression),
-							range: calledExpression.getRange(inFile: self.sourceFile),
-							typeName: typeName),
-						operatorSymbol: "is",
-						typeName: "Bool"))
+			let dotExpression: DotExpression
+			if calledExpression.base == nil {
+				if let enumType = patternExpression.swiftType {
+					dotExpression = try convertMemberAccessExpression(
+						calledExpression,
+						typeName: enumType)
+				}
+				else {
+					dotExpression = try convertMemberAccessExpression(calledExpression)
+				}
+			}
+			else {
+				dotExpression = try convertMemberAccessExpression(calledExpression)
+			}
 
-					for argument in callExpression.argumentList {
-						if let label = argument.label {
-							// Create the enum member expression (e.g. `A.b`)
-							let range = argument.getRange(inFile: self.sourceFile)
-							let enumMember = DeclarationReferenceExpression(
-								syntax: Syntax(argument),
-								range: range,
-								identifier: label.text,
-								typeName: typeName,
-								isStandardLibrary: false,
-								isImplicit: false)
-							let enumExpression = DotExpression(
-								syntax: Syntax(argument),
-								range: range,
-								leftExpression: patternExpression,
-								rightExpression: enumMember)
+			if let typeName = dotExpression.asString() {
+				conditions.append(BinaryOperatorExpression(
+					syntax: Syntax(pattern),
+					range: pattern.getRange(inFile: self.sourceFile),
+					leftExpression: patternExpression,
+					rightExpression: TypeExpression(
+						syntax: Syntax(calledExpression),
+						range: calledExpression.getRange(inFile: self.sourceFile),
+						typeName: typeName),
+					operatorSymbol: "is",
+					typeName: "Bool"))
 
-							if let pattern =
-								argument.expression.as(UnresolvedPatternExprSyntax.self),
-								let identifierPattern =
-								pattern.pattern.as(IdentifierPatternSyntax.self)
-							{
-								// If we're declaring a variable, e.g. the `bar` in
-								// `A.b(foo: bar)`
-								variableDeclarations.append(VariableDeclaration(
-									syntax: Syntax(argument),
-									range: argument.getRange(inFile: self.sourceFile),
-									identifier: identifierPattern.identifier.text,
-									typeAnnotation: nil,
-									expression: enumExpression,
-									getter: nil,
-									setter: nil,
-									access: nil,
-									isOpen: false,
-									isLet: true,
-									isImplicit: false,
-									isStatic: false,
-									extendsType: nil,
-									annotations: []))
-							}
-							else if argument.expression.is(DiscardAssignmentExprSyntax.self) {
-								// `A.b(foo: _)`, just ignore it
-							}
-							else {
-								// If we're comparing a value, e.g. the `"bar"` in
-								// `A.b(foo: "bar")`
-								let comparedExpression = try convertExpression(argument.expression)
-								conditions.append(BinaryOperatorExpression(
-									syntax: Syntax(argument),
-									range: argument.getRange(inFile: self.sourceFile),
-									leftExpression: enumExpression,
-									rightExpression: comparedExpression,
-									operatorSymbol: "==",
-									typeName: "Bool"))
-							}
-						}
-						else {
-							// If there's no label (e.g. the `value` on `A.b(value: Int)` we can't
-							// declare the variable.
-							try variableDeclarations.append(VariableDeclaration(
+				for argument in callExpression.argumentList {
+					if let label = argument.label {
+						// Create the enum member expression (e.g. `A.b`)
+						let range = argument.getRange(inFile: self.sourceFile)
+						let enumMember = DeclarationReferenceExpression(
+							syntax: Syntax(argument),
+							range: range,
+							identifier: label.text,
+							typeName: typeName,
+							isStandardLibrary: false,
+							isImplicit: false)
+						let enumExpression = DotExpression(
+							syntax: Syntax(argument),
+							range: range,
+							leftExpression: patternExpression,
+							rightExpression: enumMember)
+
+						if let pattern =
+							argument.expression.as(UnresolvedPatternExprSyntax.self),
+							let identifierPattern =
+							pattern.pattern.as(IdentifierPatternSyntax.self)
+						{
+							// If we're declaring a variable, e.g. the `bar` in
+							// `A.b(foo: bar)`
+							variableDeclarations.append(VariableDeclaration(
 								syntax: Syntax(argument),
 								range: argument.getRange(inFile: self.sourceFile),
-								identifier: "<<Error>>",
+								identifier: identifierPattern.identifier.text,
 								typeAnnotation: nil,
-								expression: errorExpression(
-									forASTNode: Syntax(argument),
-									withMessage: "Failed to get the label for this enum's " +
-										"associated value"),
-								getter: nil, setter: nil, access: nil, isOpen: false,
-								isLet: true, isImplicit: false, isStatic: false, extendsType: nil,
+								expression: enumExpression,
+								getter: nil,
+								setter: nil,
+								access: nil,
+								isOpen: false,
+								isLet: true,
+								isImplicit: false,
+								isStatic: false,
+								extendsType: nil,
 								annotations: []))
 						}
+						else if argument.expression.is(DiscardAssignmentExprSyntax.self) {
+							// `A.b(foo: _)`, just ignore it
+						}
+						else {
+							// If we're comparing a value, e.g. the `"bar"` in
+							// `A.b(foo: "bar")`
+							let comparedExpression = try convertExpression(argument.expression)
+							conditions.append(BinaryOperatorExpression(
+								syntax: Syntax(argument),
+								range: argument.getRange(inFile: self.sourceFile),
+								leftExpression: enumExpression,
+								rightExpression: comparedExpression,
+								operatorSymbol: "==",
+								typeName: "Bool"))
+						}
 					}
-
-					return CaseLetResult(
-						conditions: conditions,
-						variables: variableDeclarations)
+					else {
+						// If there's no label (e.g. the `value` on `A.b(value: Int)` we can't
+						// declare the variable.
+						try variableDeclarations.append(VariableDeclaration(
+							syntax: Syntax(argument),
+							range: argument.getRange(inFile: self.sourceFile),
+							identifier: "<<Error>>",
+							typeAnnotation: nil,
+							expression: errorExpression(
+								forASTNode: Syntax(argument),
+								withMessage: "Failed to get the label for this enum's " +
+									"associated value"),
+							getter: nil, setter: nil, access: nil, isOpen: false,
+							isLet: true, isImplicit: false, isStatic: false, extendsType: nil,
+							annotations: []))
+					}
 				}
+
+				return CaseLetResult(
+					conditions: conditions,
+					variables: variableDeclarations)
 			}
 		}
 
