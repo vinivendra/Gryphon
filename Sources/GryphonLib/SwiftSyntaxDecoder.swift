@@ -1078,28 +1078,39 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				// if case
 				let leftExpression = matchingPattern.initializer.value
 
-				// The enumExpression may come as `.a1`, without direct way of knowing waht to place
-				// before the dot. Try to guess it from the type of the pattern expression.
-				let patternExpression = try convertExpression(matchingPattern.initializer.value)
-
-				// TODO: test a case where the left expression is present
-				if let enumType = patternExpression.swiftType {
-					let dotExpression = try convertMemberAccessExpression(
-						enumExpression,
-						typeName: enumType)
-					if let typeName = dotExpression.asString() {
-						conditions.append(.condition(expression: BinaryOperatorExpression(
-							syntax: Syntax(ifCondition),
-							range: ifCondition.getRange(inFile: self.sourceFile),
-							leftExpression: try convertExpression(leftExpression),
-							rightExpression: TypeExpression(
-								syntax: Syntax(enumExpression),
-								range: enumExpression.getRange(inFile: self.sourceFile),
-								typeName: typeName),
-							operatorSymbol: "is",
-							typeName: "Bool")))
-						continue
+				let dotExpression: DotExpression
+				if enumExpression.base == nil {
+					// The enumExpression may come as `.a1`, without direct way of knowing what to
+					// place before the dot. Try to guess it from the type of the pattern
+					// expression.
+					let patternExpression = try convertExpression(matchingPattern.initializer.value)
+					if let enumType = patternExpression.swiftType {
+						dotExpression = try convertMemberAccessExpression(
+							enumExpression,
+							typeName: enumType)
 					}
+					else {
+						// If that fails, try the normal way, which will probably fail too
+						dotExpression = try convertMemberAccessExpression(enumExpression)
+					}
+				}
+				else {
+					// If there's an explicit expression on the left side
+					dotExpression = try convertMemberAccessExpression(enumExpression)
+				}
+
+				if let typeName = dotExpression.asString() {
+					conditions.append(.condition(expression: BinaryOperatorExpression(
+						syntax: Syntax(ifCondition),
+						range: ifCondition.getRange(inFile: self.sourceFile),
+						leftExpression: try convertExpression(leftExpression),
+						rightExpression: TypeExpression(
+							syntax: Syntax(enumExpression),
+							range: enumExpression.getRange(inFile: self.sourceFile),
+							typeName: typeName),
+						operatorSymbol: "is",
+						typeName: "Bool")))
+					continue
 				}
 			}
 			else if let matchingPattern =

@@ -231,6 +231,10 @@ fun main(args: Array<String>) {
 		println("If case #2")
 	}
 
+	if (aEnum2 == A.A2) {
+		println("If case #3")
+	}
+
 	val bEnum: B = B.C(d = 0)
 	val bEnum2: B = B.E(f = 0, g = "foo")
 

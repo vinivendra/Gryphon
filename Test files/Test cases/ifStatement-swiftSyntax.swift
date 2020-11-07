@@ -200,6 +200,10 @@ if case .a2 = aEnum2 {
 	print("If case #2")
 }
 
+if case A.a2 = aEnum2 {
+	print("If case #3")
+}
+
 //
 let bEnum = B.c(d: 0)
 let bEnum2 = B.e(f: 0, g: "foo")
