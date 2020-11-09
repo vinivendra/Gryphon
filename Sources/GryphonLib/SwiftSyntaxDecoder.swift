@@ -874,8 +874,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					expressions = try MutableList(label.caseItems.map { item -> Expression in
 						if let expression = item.pattern.as(ExpressionPatternSyntax.self) {
 							// If it's a simple case
-
-							// FIXME: SourceKit doesn't include info on `.a` anywhere, apparently
 							if let memberExpression =
 									expression.expression.as(MemberAccessExprSyntax.self),
 								memberExpression.base == nil,
@@ -3877,9 +3875,6 @@ extension InitializerDeclSyntax: FunctionLikeSyntax {
 	}
 
 	var returnType: TypeSyntax? {
-		// FIXME: InitializerDeclSyntaxes don't seem to have access to the returnType. This might
-		// cause problems. Maybe we can set the type in a TranspilationPass, based on the enveloping
-		// class.
 		return nil
 	}
 
