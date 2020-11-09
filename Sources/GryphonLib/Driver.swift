@@ -33,6 +33,7 @@ public class Driver {
 		"--verbose",
 		"--quiet",
 		"--sync",
+		"--legacyFrontend",
 	]
 
 	public static let supportedArgumentsWithParameters: List = [
@@ -53,7 +54,6 @@ public class Driver {
 		"-emit-kotlin",
 		"-print-ASTs-on-error",
 		"-avoid-unicode",
-		"-swiftSyntax",
 	]
 
 	public struct Settings {
@@ -86,7 +86,7 @@ public class Driver {
 		let isVerbose = arguments.contains("--verbose")
 		Compiler.shouldLogProgress = isVerbose
 
-		let isUsingSwiftSyntax = arguments.contains("-swiftSyntax")
+		let isUsingSwiftSyntax = !arguments.contains("--legacyFrontend")
 
 		Compiler.log("ℹ️  Gryphon version \(gryphonVersion)")
 		Compiler.log("ℹ️  SwiftSyntax version \(TranspilationContext.swiftSyntaxVersion)")
@@ -197,8 +197,8 @@ public class Driver {
 					newArguments.append("--verbose")
 				}
 
-				if isUsingSwiftSyntax {
-					newArguments.append("-swiftSyntax")
+				if !isUsingSwiftSyntax {
+					newArguments.append("--legacyFrontend")
 				}
 
 				if let target = target {
@@ -494,8 +494,8 @@ public class Driver {
 		if arguments.contains("--verbose") {
 			newArguments.append("--verbose")
 		}
-		if arguments.contains("-swiftSyntax") {
-			newArguments.append("-swiftSyntax")
+		if arguments.contains("--legacyFrontend") {
+			newArguments.append("--legacyFrontend")
 		}
 		if let chosenToolchain = toolchain {
 			newArguments.append("--toolchain=\(chosenToolchain)")
@@ -590,7 +590,7 @@ public class Driver {
 		//
 		let defaultsToFinal = arguments.contains("--default-final")
 
-		let shouldUseSwiftSyntax = arguments.contains("-swiftSyntax")
+		let shouldUseSwiftSyntax = !arguments.contains("--legacyFrontend")
 
 		//
 		let maybeXcodeProject = getXcodeProject(inArguments: arguments)
@@ -1248,8 +1248,8 @@ public class Driver {
 		if let userTarget = target {
 			arguments.append("--target=\"\(userTarget)\"")
 		}
-		if usingSwiftSyntax {
-			arguments.append("-swiftSyntax")
+		if !usingSwiftSyntax {
+			arguments.append("--legacyFrontend")
 		}
 
 		Compiler.logStart("🧑‍💻  Calling ruby to create the Gryphon targets...\n")
@@ -1567,6 +1567,9 @@ Main usage:
       ↪️  --target=<target name>
             Specify the target to be built when translating with Xcode.
 
+      ↪️  --legacyFrontend
+            Use AST dumps as the frontend instead of SwiftSyntax and SourceKit.
+
 Advanced subcommands:
   ➡️  clean
         Clean Gryphon's build folder in the local directory.
@@ -1617,9 +1620,5 @@ Advanced translation options:
 
       ↪️  -avoid-unicode
             Avoid using Unicode arrows and emojis in some places.
-
-      ↪️  -swiftSyntax
-            Use SwiftSyntax and SourceKit as the frontend instead of the AST
-            dumps.
 """
 }

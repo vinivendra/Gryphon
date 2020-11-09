@@ -45,7 +45,7 @@ echo ""
 echo "➡️ [2/8] Initializing the Xcode project..."
 
 # Initialize the Xcode project
-./../../../.build/debug/Gryphon init "GryphoniOSTest.xcodeproj" -swiftSyntax
+./../../../.build/debug/Gryphon init "GryphoniOSTest.xcodeproj"
 
 # Add the "Model.swift" file to the list of files to be translated
 echo "GryphoniOSTest/Model.swift" > "gryphonInputFiles.xcfilelist"
@@ -74,7 +74,7 @@ fi
 # Check if Gryphon raised warnings or errors for the Model.swift file
 if [[ $(grep -E "Model\.swift:[0-9]+:[0-9]+: error" output.txt) ]];
 then
-	echo "🚨 Gryphon raised an error."
+	echo "🚨 Gryphon raised an error:"
 	grep -E "Model\.swift:[0-9]+:[0-9]+: error" output.txt
 	exit -1
 fi
@@ -120,7 +120,7 @@ echo ""
 echo "➡️ [5/8] Initializing the Xcode project with '--target'..."
 
 # Initialize the Xcode project
-./../../../.build/debug/Gryphon init "GryphoniOSTest.xcodeproj" --target=GryphoniOSTest -swiftSyntax
+./../../../.build/debug/Gryphon init "GryphoniOSTest.xcodeproj" --target=GryphoniOSTest
 
 # Add the "Model.swift" file to the list of files to be translated
 echo "GryphoniOSTest/Model.swift" > "gryphonInputFiles.xcfilelist"
@@ -204,7 +204,7 @@ rm -f output.txt
 cp "../ModelWithErrors.swift" "GryphoniOSTest/Model.swift"
 
 # Transpile the model file
-./../../../.build/debug/Gryphon "GryphoniOSTest/Model.swift" -swiftSyntax
+./../../../.build/debug/Gryphon "GryphoniOSTest/Model.swift"
 
 # Run the Kotlin target
 if [[ $(xcodebuild -project GryphoniOSTest.xcodeproj/ -scheme Kotlin > output.txt 2> /dev/null) ]];

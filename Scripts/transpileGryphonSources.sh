@@ -3,7 +3,6 @@
 ./.build/debug/Gryphon \
 	--indentation=4 \
 	-print-ASTs-on-error \
-	-swiftSyntax \
 	-skip-AST-dumps \
 	--continue-on-error \
 	Test\ Files/Bootstrap/gryphon-old/Sources/GryphonLib/ASTDumpDecoder.swift \

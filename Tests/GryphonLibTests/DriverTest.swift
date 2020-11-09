@@ -97,7 +97,7 @@ class DriverTest: XCTestCase {
 		Compiler.logError = oldErrorFunction
 	}
 
-	func testOutputsWithSwiftSyntax() {
+	func testOutputsWithASTDumps() {
 		let oldOutputFunction = Compiler.outputFunction
 		let oldErrorFunction = Compiler.logError
 
@@ -113,20 +113,20 @@ class DriverTest: XCTestCase {
 		do {
 			try Driver.run(withArguments:
 							["\(TestUtilities.relativeTestFilesPath)/test.swift",
-							 "-swiftSyntax"])
+							 "--legacyFrontend"])
 			XCTAssert(!compilerOutput.isEmpty)
 
 			compilerOutput = ""
 			try Driver.run(withArguments:
 							["\(TestUtilities.testCasesPath)outputs.swift",
-							 "-swiftSyntax"])
+							 "--legacyFrontend"])
 			XCTAssert(compilerOutput.isEmpty)
 
 			compilerOutput = ""
 			try Driver.run(withArguments:
 							["\(TestUtilities.testCasesPath)outputs.swift",
 							 "--write-to-console",
-							 "-swiftSyntax"])
+							 "--legacyFrontend"])
 			XCTAssert(!compilerOutput.isEmpty)
 
 			// Check if --quiet mutes outputs and warnings
@@ -136,7 +136,7 @@ class DriverTest: XCTestCase {
 				["\(TestUtilities.testCasesPath)warnings.swift",
 				 "--write-to-console",
 				 "--quiet",
-				 "-swiftSyntax"])
+				 "--legacyFrontend"])
 			XCTAssert(compilerOutput.isEmpty)
 			XCTAssert(compilerError.isEmpty)
 
@@ -148,7 +148,7 @@ class DriverTest: XCTestCase {
 							 "--write-to-console",
 							 "--quiet",
 							 "--continue-on-error",
-							 "-swiftSyntax"])
+							 "--legacyFrontend"])
 			XCTAssert(compilerOutput.isEmpty)
 			XCTAssert(!compilerError.isEmpty)
 		}
@@ -306,7 +306,7 @@ class DriverTest: XCTestCase {
 			// If the Driver threw an error then it's working correctly.
 		}
 
-		// Repeat the test using SwiftSyntax
+		// Repeat the test using AST dumps
 		do {
 			let testCasePath = TestUtilities.testCasesPath + "errors.swift"
 
@@ -320,7 +320,7 @@ class DriverTest: XCTestCase {
 				 "--continue-on-error",
 				 "--write-to-console",
 				 "--quiet",
-				 "-swiftSyntax",
+				 "--legacyFrontend",
 				 testCasePath, ])
 
 			XCTAssert(Compiler.numberOfErrors == 2)
@@ -335,7 +335,7 @@ class DriverTest: XCTestCase {
 				 "--no-main-file",
 				 "--write-to-console",
 				 "--quiet",
-				 "-swiftSyntax",
+				 "--legacyFrontend",
 				 testCasePath, ])
 
 			XCTFail("Expected Driver to throw an error.")
