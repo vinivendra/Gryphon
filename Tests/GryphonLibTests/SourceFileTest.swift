@@ -70,7 +70,6 @@ class SourceFileTest: XCTestCase {
 	}
 
 	func testGetTranslationCommentFromLine() {
-		// gryphon multiline
 		let sourceFileContents = """
 			// gryphon ignore
 			let x: Int = 0
