@@ -3695,7 +3695,16 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		withMessage errorMessage: String)
 		throws -> ErrorStatement
 	{
-		let message = "Failed to turn SwiftSyntax node into Gryphon AST: " + errorMessage + "."
+		let cleanErrorMessage: String
+		if errorMessage.hasSuffix(".") {
+			cleanErrorMessage = String(errorMessage.dropLast())
+		}
+		else {
+			cleanErrorMessage = errorMessage
+		}
+
+		let message = cleanErrorMessage + " (failed to translate SwiftSyntax node)."
+
 		let range = ast.getRange(inFile: sourceFile)
 
 		try Compiler.handleError(
@@ -3711,7 +3720,16 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		withMessage errorMessage: String)
 		throws -> ErrorExpression
 	{
-		let message = "Failed to turn SwiftSyntax node into Gryphon AST: " + errorMessage + "."
+		let cleanErrorMessage: String
+		if errorMessage.hasSuffix(".") {
+			cleanErrorMessage = String(errorMessage.dropLast())
+		}
+		else {
+			cleanErrorMessage = errorMessage
+		}
+
+		let message = cleanErrorMessage + " (failed to translate SwiftSyntax node)."
+
 		let range = ast.getRange(inFile: sourceFile)
 
 		try Compiler.handleError(
