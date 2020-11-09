@@ -468,3 +468,22 @@ extension Utilities {
 		return nil
     }
 }
+
+extension String {
+	func isArrayDeclaration() -> Bool {
+		if self.hasPrefix("[") {
+			return self.contains(":") == false
+		} else {
+			return self.hasPrefix("Array")
+		}
+	}
+	
+	func isDictionaryDeclaration() -> Bool {
+		if self.hasPrefix("[") {
+			return self.contains(":")
+		} else {
+			return self.hasPrefix("Dictionary")
+		}
+	}
+}
+
