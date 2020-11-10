@@ -1,6 +1,6 @@
 tasks:
 - init: swift build &&
-        ln -s .build/debug/Gryphon gryphon &&
+        ln -s .build/debug/gryphon gryphon &&
         ./gryphon clean init -xcode &&
         echo "Welcome to Gryphon!" &&
         echo "If you don't know where to start, try running \"./gryphon test.swift\"."
