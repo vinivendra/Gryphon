@@ -25,14 +25,14 @@ public final class GryphonAST: PrintableAsTree, Equatable, CustomStringConvertib
 	let statements: MutableList<Statement>
 	let outputFileMap: MutableMap<FileExtension, String>
 	/// Stores the raw SourceKit response of an indexing operation for this AST
-	var indexingResponse: [String: SourceKitRepresentable]
+	var indexingResponse: Map<String, SourceKitRepresentable>
 
 	init(
 		sourceFile: SourceFile?,
 		declarations: MutableList<Statement>,
 		statements: MutableList<Statement>,
 		outputFileMap: MutableMap<FileExtension, String>,
-		indexingResponse: [String: SourceKitRepresentable])
+		indexingResponse: Map<String, SourceKitRepresentable>)
 	{
 		self.sourceFile = sourceFile
 		self.declarations = declarations

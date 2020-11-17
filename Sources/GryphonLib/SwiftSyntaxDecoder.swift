@@ -31,7 +31,7 @@ public class SourceKit {
 	static func requestIndexing(
 		forFileAtPath filePath: String,
 		context: TranspilationContext)
-		throws -> [String: SourceKitRepresentable]
+		throws -> Map<String, SourceKitRepresentable>
 	{
 		Compiler.logStart("🧑‍💻  Calling SourceKit (indexing)...")
 		let logInfo = Log.startLog(name: "SourceKit Indexing")
@@ -58,7 +58,7 @@ public class SourceKit {
 
 		Compiler.logEnd("✅  Done calling SourceKit (indexing).")
 
-		return sourceKitResult
+		return Map(sourceKitResult)
 	}
 
 	/// Maps a type's USR to the type's name
@@ -107,12 +107,13 @@ public class SourceKit {
 	/// Looks in the `indexingResponse` for the given `expression`.
 	/// Expects the `indexingResponse` to be a valid tree from a SourceKit
 	/// indexing request, but it can be either the root of the tree or an inner node.
-	static func search(
-		forExpression expression: DeclarationReferenceExpression,
+	static func searchForExpression(
+		inRange range: SourceFileRange?,
+		withIdentifier identifier: String,
 		inIndexingResponse indexingResponse: [String: SourceKitRepresentable])
 		-> [String: SourceKitRepresentable]?
 	{
-		guard let expressionRange = expression.range,
+		guard let expressionRange = range,
 			let children =
 				indexingResponse["key.entities"] as? [[String: SourceKitRepresentable]] else
 		{
@@ -132,8 +133,9 @@ public class SourceKit {
 				let childPosition = SourceFilePosition(line: line, column: column)
 				if childPosition < expressionRange.start {
 					// It might be inside this child
-					if let result = search(
-						forExpression: expression,
+					if let result = searchForExpression(
+						inRange: range,
+						withIdentifier: identifier,
 						inIndexingResponse: child)
 					{
 						return result
@@ -145,28 +147,22 @@ public class SourceKit {
 				else if childPosition == expressionRange.start {
 					// It might be this one
 
-					// Checks for a property
 					if let kind = child["key.kind"] as? String,
-						kind == "source.lang.swift.ref.var.instance",
+						(kind == "source.lang.swift.ref.var.instance" ||
+							kind == "source.lang.swift.ref.function.method.instance" ||
+							kind == "source.lang.swift.ref.var.static" ||
+							kind == "source.lang.swift.ref.function.method.static"),
 						let name = child["key.name"] as? String,
-						name == expression.identifier
-					{
-						// This is the one
-						return child
-					}
-					// Checks for a method
-					else if let kind = child["key.kind"] as? String,
-						kind == "source.lang.swift.ref.function.method.instance",
-						let name = child["key.name"] as? String, // something like `foo(bar:)`
-						name.hasPrefix(expression.identifier + "(")
+						(name == identifier || name.hasPrefix(identifier + "("))
 					{
 						// This is the one
 						return child
 					}
 					else {
 						// Right range but wrong contents; look inside it
-						return search(
-							forExpression: expression,
+						return searchForExpression(
+							inRange: expressionRange,
+							withIdentifier: identifier,
 							inIndexingResponse: child)
 					}
 				}
@@ -179,8 +175,9 @@ public class SourceKit {
 
 		// If the last child was still before the searched expression, look inside it.
 		if let lastChild = children.last {
-			return search(
-				forExpression: expression,
+			return searchForExpression(
+				inRange: expressionRange,
+				withIdentifier: identifier,
 				inIndexingResponse: lastChild)
 		}
 		else {
@@ -190,16 +187,41 @@ public class SourceKit {
 
 	/// Calls `search(forExpression:, inIndexingResponse:)`
 	/// to look for the given expression. If the expression is found,
+	/// looks into the expression's `usr` to try to identify if it is declared
+	/// in the Swift standard library.
+	/// If the expression is not found, returns `false`.
+	static func expressionIsFromTheSwiftStandardLibrary(
+		expressionRange: SourceFileRange?,
+		expressionIdentifier: String,
+		usingIndexingResponse indexingResponse: [String: SourceKitRepresentable])
+		-> Bool
+	{
+		if let child = searchForExpression(
+			inRange: expressionRange,
+			withIdentifier: expressionIdentifier,
+			inIndexingResponse: indexingResponse),
+		   let usr = child["key.usr"] as? String
+		{
+			return usr.hasPrefix("s:s")
+		}
+		else {
+			return false
+		}
+	}
+
+	/// Calls `search(forExpression:, inIndexingResponse:)`
+	/// to look for the given expression. If the expression is found,
 	/// looks into the expression's `usr` to try to identify its parent type (e.g. `String` for
 	/// `String.startIndex`).
 	static func getParentType(
 			forExpression expression: DeclarationReferenceExpression,
-			usingIndexingResponse indexingResponse: [String: SourceKitRepresentable])
+			usingIndexingResponse indexingResponse: Map<String, SourceKitRepresentable>)
 		-> String?
 	{
-		guard let child = search(
-				forExpression: expression,
-				inIndexingResponse: indexingResponse) else
+		guard let child = searchForExpression(
+				inRange: expression.range,
+				withIdentifier: expression.identifier,
+				inIndexingResponse: indexingResponse.dictionary) else
 		{
 			return nil
 		}
@@ -363,6 +385,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	let syntaxTree: SourceFileSyntax
 	/// A list of types associated with source ranges, obtained from SourceKit
 	let expressionTypes: SortedList<SourceKit.ExpressionType>
+	/// The result of a SourceKit indexing request
+	let indexingResponse: Map<String, SourceKitRepresentable>
 	/// The map that relates each type of output to the path to the file in which to write that
 	/// output
 	var outputFileMap: MutableMap<FileExtension, String> = [:]
@@ -381,9 +405,14 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	init(sourceFile: SourceFile, context: TranspilationContext) throws {
 		// Try to call SourceKit. If it fails, update the Swift compiler arguments and try again.
 		var maybeTypeList: SortedList<SourceKit.ExpressionType>? = nil
+		var maybeIndexingResponse: Map<String, SourceKitRepresentable>? = nil
+
 		do {
 			maybeTypeList =
 				try SourceKit.requestExpressionTypes(forFile: sourceFile, context: context)
+			maybeIndexingResponse = try SourceKit.requestIndexing(
+				forFileAtPath: sourceFile.path,
+				context: context)
 		}
 		catch let error {
 			try SwiftSyntaxDecoder.didUpdateSwiftCompilerArguments.mutateAtomically
@@ -401,6 +430,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					maybeTypeList = try SourceKit.requestExpressionTypes(
 						forFile: sourceFile,
 						context: context)
+					maybeIndexingResponse = try SourceKit.requestIndexing(
+						forFileAtPath: sourceFile.path,
+						context: context)
 					didUpdateSwiftCompilerArguments = true
 				}
 				else {
@@ -409,13 +441,12 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			}
 		}
 
-		guard let typeList = maybeTypeList else {
+		guard let typeList = maybeTypeList,
+			  let indexingResponse = maybeIndexingResponse else
+		{
 			throw GryphonError(errorMessage: "Failed to get SourceKit's expression type list " +
 								"for file at \(sourceFile.path)")
 		}
-
-		Compiler.log("Expressions for \(sourceFile.path)")
-		Compiler.log(typeList.map { $0.typeName }.joined(separator: "\n"))
 
 		Compiler.logStart("🧑‍💻  Calling SwiftSyntax...")
 		// Call SwiftSyntax to get the tree
@@ -425,14 +456,12 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		// Initialize the properties
 		self.sourceFile = sourceFile
 		self.expressionTypes = typeList
+		self.indexingResponse = indexingResponse
 		self.syntaxTree = tree
 		self.context = context
 	}
 
 	func convertToGryphonAST(asMainFile isMainFile: Bool) throws -> GryphonAST {
-		let indexingResponse = try SourceKit.requestIndexing(
-			forFileAtPath: self.sourceFile.path,
-			context: context)
 		let statements = try convertBlock(self.syntaxTree)
 
 		if isMainFile {
@@ -443,7 +472,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				declarations: declarationsAndStatements.0,
 				statements: declarationsAndStatements.1,
 				outputFileMap: self.outputFileMap,
-				indexingResponse: indexingResponse)
+				indexingResponse: self.indexingResponse)
 		}
 		else {
 			return GryphonAST(
@@ -451,7 +480,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				declarations: statements,
 				statements: [],
 				outputFileMap: self.outputFileMap,
-				indexingResponse: indexingResponse)
+				indexingResponse: self.indexingResponse)
 		}
 	}
 
@@ -733,6 +762,17 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 
 		return (declarations, statements)
+	}
+
+	func expressionIsFromTheSwiftStandardLibrary(
+		expressionRange: SourceFileRange?,
+		expressionIdentifier: String)
+		-> Bool
+	{
+		return SourceKit.expressionIsFromTheSwiftStandardLibrary(
+			expressionRange: expressionRange,
+			expressionIdentifier: expressionIdentifier,
+			usingIndexingResponse: self.indexingResponse.dictionary)
 	}
 
 	internal enum Comment {
@@ -1324,7 +1364,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 							range: range,
 							identifier: label.text,
 							typeName: typeName,
-							isStandardLibrary: false,
+							isStandardLibrary: expressionIsFromTheSwiftStandardLibrary(
+								expressionRange: range,
+								expressionIdentifier: label.text),
 							isImplicit: false)
 						let enumExpression = DotExpression(
 							syntax: Syntax(argument),
@@ -2515,12 +2557,15 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 
 		if let superExpression = expression.as(SuperRefExprSyntax.self) {
+			let range = superExpression.getRange(inFile: self.sourceFile)
 			return DeclarationReferenceExpression(
 				syntax: Syntax(superExpression),
-				range: superExpression.getRange(inFile: self.sourceFile),
+				range: range,
 				identifier: "super",
 				typeName: superExpression.getType(fromList: self.expressionTypes),
-				isStandardLibrary: false,
+				isStandardLibrary: expressionIsFromTheSwiftStandardLibrary(
+					expressionRange: range,
+					expressionIdentifier: "super"),
 				isImplicit: false)
 		}
 		if let tryExpression = expression.as(TryExprSyntax.self) {
@@ -2609,12 +2654,15 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		throws -> Expression?
 	{
 		if let identifierPattern = patternExpression.as(IdentifierPatternSyntax.self) {
+			let range = identifierPattern.getRange(inFile: self.sourceFile)
 			return DeclarationReferenceExpression(
 				syntax: Syntax(identifierPattern),
-				range: identifierPattern.getRange(inFile: self.sourceFile),
+				range: range,
 				identifier: identifierPattern.identifier.text,
 				typeName: identifierPattern.getType(fromList: self.expressionTypes),
-				isStandardLibrary: false,
+				isStandardLibrary: expressionIsFromTheSwiftStandardLibrary(
+					expressionRange: range,
+					expressionIdentifier: identifierPattern.identifier.text),
 				isImplicit: false)
 		}
 		else if let tuplePattern = patternExpression.as(TuplePatternSyntax.self) {
@@ -3205,17 +3253,22 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				withMessage: "Failed to convert left side in member access expression")
 		}
 
+		let rightSideRange = rightSideToken.getRange(inFile: self.sourceFile)
+		let rightExpression = DeclarationReferenceExpression(
+			syntax: Syntax(rightSideToken),
+			range: rightSideRange,
+			identifier: rightSideText,
+			typeName: memberType,
+			isStandardLibrary: expressionIsFromTheSwiftStandardLibrary(
+				expressionRange: rightSideRange,
+				expressionIdentifier: rightSideText),
+			isImplicit: false)
+
 		return DotExpression(
 			syntax: Syntax(memberAccessExpression),
 			range: memberAccessExpression.getRange(inFile: self.sourceFile),
 			leftExpression: leftExpression,
-			rightExpression: DeclarationReferenceExpression(
-				syntax: Syntax(rightSideToken),
-				range: rightSideToken.getRange(inFile: self.sourceFile),
-				identifier: rightSideText,
-				typeName: memberType,
-				isStandardLibrary: false,
-				isImplicit: false))
+			rightExpression: rightExpression)
 	}
 
 	func convertDictionaryLiteralExpression(
@@ -3489,12 +3542,15 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		_ identifierExpression: IdentifierExprSyntax)
 		throws -> Expression
 	{
+		let range = identifierExpression.getRange(inFile: self.sourceFile)
 		return DeclarationReferenceExpression(
 			syntax: Syntax(identifierExpression),
-			range: identifierExpression.getRange(inFile: self.sourceFile),
+			range: range,
 			identifier: identifierExpression.identifier.text,
 			typeName: identifierExpression.getType(fromList: self.expressionTypes),
-			isStandardLibrary: false,
+			isStandardLibrary: expressionIsFromTheSwiftStandardLibrary(
+				expressionRange: range,
+				expressionIdentifier: identifierExpression.identifier.text),
 			isImplicit: false)
 	}
 
