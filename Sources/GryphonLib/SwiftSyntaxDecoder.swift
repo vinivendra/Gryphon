@@ -104,14 +104,13 @@ public class SourceKit {
 		}
 	}
 
-	/// Looks in the `indexingResponse` for the given `expression`. If the expression is found,
-	/// looks into the expression's `usr` to try to identify its parent type (e.g. `String` for
-	/// `String.startIndex`). Expects the `indexingResponse` to be a valid tree from a SourceKit
+	/// Looks in the `indexingResponse` for the given `expression`.
+	/// Expects the `indexingResponse` to be a valid tree from a SourceKit
 	/// indexing request, but it can be either the root of the tree or an inner node.
-	static func getParentType(
+	static func search(
 		forExpression expression: DeclarationReferenceExpression,
-		usingIndexingResponse indexingResponse: [String: SourceKitRepresentable])
-		-> String?
+		inIndexingResponse indexingResponse: [String: SourceKitRepresentable])
+		-> [String: SourceKitRepresentable]?
 	{
 		guard let expressionRange = expression.range,
 			let children =
@@ -133,8 +132,9 @@ public class SourceKit {
 				let childPosition = SourceFilePosition(line: line, column: column)
 				if childPosition < expressionRange.start {
 					// It might be inside this child
-					if let result = getParentType(
-						forExpression: expression, usingIndexingResponse: child)
+					if let result = search(
+						forExpression: expression,
+						inIndexingResponse: child)
 					{
 						return result
 					}
@@ -149,40 +149,25 @@ public class SourceKit {
 					if let kind = child["key.kind"] as? String,
 						kind == "source.lang.swift.ref.var.instance",
 						let name = child["key.name"] as? String,
-						name == expression.identifier,
-						let grandchildren =
-							child["key.entities"] as? [[String: SourceKitRepresentable]],
-						let getterGrandchild = grandchildren.first(where:
-							{ $0["key.kind"] as? String ==
-								"source.lang.swift.ref.function.accessor.getter" }),
-						let parentUSR = getterGrandchild["key.receiver_usr"] as? String // `s:SS`
+						name == expression.identifier
 					{
 						// This is the one
-						// Remove the starting `s:`
-						let cleanParentUSR = String(parentUSR
-							.drop(while: { !$0.isPunctuation })
-							.dropFirst())
-						return typeUSRs.atomic[cleanParentUSR]
+						return child
 					}
 					// Checks for a method
 					else if let kind = child["key.kind"] as? String,
 						kind == "source.lang.swift.ref.function.method.instance",
 						let name = child["key.name"] as? String, // something like `foo(bar:)`
-						name.hasPrefix(expression.identifier + "("),
-						let parentUSR = child["key.receiver_usr"] as? String // `s:SS`
+						name.hasPrefix(expression.identifier + "(")
 					{
 						// This is the one
-						// Remove the starting `s:`
-						let cleanParentUSR = String(parentUSR
-							.drop(while: { !$0.isPunctuation })
-							.dropFirst())
-						return typeUSRs.atomic[cleanParentUSR]
+						return child
 					}
 					else {
 						// Right range but wrong contents; look inside it
-						return getParentType(
+						return search(
 							forExpression: expression,
-							usingIndexingResponse: child)
+							inIndexingResponse: child)
 					}
 				}
 				else {
@@ -194,9 +179,60 @@ public class SourceKit {
 
 		// If the last child was still before the searched expression, look inside it.
 		if let lastChild = children.last {
-			return getParentType(
+			return search(
 				forExpression: expression,
-				usingIndexingResponse: lastChild)
+				inIndexingResponse: lastChild)
+		}
+		else {
+			return nil
+		}
+	}
+
+	/// Calls `search(forExpression:, inIndexingResponse:)`
+	/// to look for the given expression. If the expression is found,
+	/// looks into the expression's `usr` to try to identify its parent type (e.g. `String` for
+	/// `String.startIndex`).
+	static func getParentType(
+			forExpression expression: DeclarationReferenceExpression,
+			usingIndexingResponse indexingResponse: [String: SourceKitRepresentable])
+		-> String?
+	{
+		guard let child = search(
+				forExpression: expression,
+				inIndexingResponse: indexingResponse) else
+		{
+			return nil
+		}
+
+		// Checks for a property
+		if let kind = child["key.kind"] as? String,
+		   kind == "source.lang.swift.ref.var.instance",
+		   let name = child["key.name"] as? String,
+		   name == expression.identifier,
+		   let grandchildren =
+			child["key.entities"] as? [[String: SourceKitRepresentable]],
+		   let getterGrandchild = grandchildren.first(where:
+			{ $0["key.kind"] as? String == "source.lang.swift.ref.function.accessor.getter" }),
+		   let parentUSR = getterGrandchild["key.receiver_usr"] as? String // `s:SS`
+		{
+			// Remove the starting `s:`
+			let cleanParentUSR = String(parentUSR
+											.drop(while: { !$0.isPunctuation })
+											.dropFirst())
+			return typeUSRs.atomic[cleanParentUSR]
+		}
+		// Checks for a method
+		else if let kind = child["key.kind"] as? String,
+				kind == "source.lang.swift.ref.function.method.instance",
+				let name = child["key.name"] as? String, // something like `foo(bar:)`
+				name.hasPrefix(expression.identifier + "("),
+				let parentUSR = child["key.receiver_usr"] as? String // `s:SS`
+		{
+			// Remove the starting `s:`
+			let cleanParentUSR = String(parentUSR
+											.drop(while: { !$0.isPunctuation })
+											.dropFirst())
+			return typeUSRs.atomic[cleanParentUSR]
 		}
 		else {
 			return nil
