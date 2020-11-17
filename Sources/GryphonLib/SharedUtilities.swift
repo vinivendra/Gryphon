@@ -471,18 +471,26 @@ extension Utilities {
 
 extension String {
 	func isArrayDeclaration() -> Bool {
-		if self.hasPrefix("[") {
-			return self.contains(":") == false
-		} else {
-			return self.hasPrefix("Array")
+		if (self.hasPrefix("[") && !self.contains(":")) ||
+			self == "Array" ||
+			self.hasPrefix("Array<")
+		{
+			return true
+		}
+		else {
+			return false
 		}
 	}
 	
 	func isDictionaryDeclaration() -> Bool {
-		if self.hasPrefix("[") {
-			return self.contains(":")
-		} else {
-			return self.hasPrefix("Dictionary")
+		if (self.hasPrefix("[") && self.contains(":")) ||
+			self == "Dictionary" ||
+			self.hasPrefix("Dictionary<")
+		{
+			return true
+		}
+		else {
+			return false
 		}
 	}
 }
