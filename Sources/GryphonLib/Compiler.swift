@@ -238,7 +238,8 @@ public class Compiler {
 	{
 		let logInfo = Log.startLog(name: "1 - Swift Syntax")
 		defer { Log.endLog(info: logInfo) }
-		return try SwiftSyntaxDecoder(filePath: inputFilePath, context: context)
+		let sourceFile = try SourceFile.readFile(atPath: inputFilePath)
+		return try SwiftSyntaxDecoder(sourceFile: sourceFile, context: context)
 	}
 
 	public static func transpileSwiftAST(fromASTDumpFile inputFile: String) throws -> SwiftAST {
@@ -434,7 +435,7 @@ internal class CompilerIssue {
 
 		if let sourceFile = sourceFile {
 			let sourceFilePath = sourceFile.path
-			let absolutePath = Utilities.getAbsoultePath(forFile: sourceFilePath)
+			let absolutePath = Utilities.getAbsolutePath(forFile: sourceFilePath)
 
 			if let sourceFileRange = sourceFileRange {
 				let sourceFileString = sourceFile.getLine(sourceFileRange.lineStart) ??

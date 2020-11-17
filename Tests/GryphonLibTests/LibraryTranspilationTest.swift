@@ -42,7 +42,9 @@ class LibraryTranspilationTest: XCTestCase {
 			defaultsToFinal: false,
 			isUsingSwiftSyntax: true,
 			compilationArguments: TranspilationContext.SwiftCompilationArguments(
-				absoluteFilePathsAndOtherArguments: [])))
+				absoluteFilePathsAndOtherArguments: []),
+			xcodeProjectPath: nil,
+			target: nil))
 
 	// MARK: - Tests
 	func testSimpleMatches() {

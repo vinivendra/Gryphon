@@ -83,23 +83,24 @@ internal let libraryUpdateLock: Semaphore = NSLock()
 internal let printingLock = NSLock()
 
 class Atomic<Value> {
-    private var __value: Value
+    private var value: Value
 	private let lock = NSLock()
 
 	init(_ value: Value) {
-        self.__value = value
+        self.value = value
     }
 
+	/// Access this value atomically.
     var atomic: Value {
         get {
 			lock.lock()
-			let result = __value
+			let result = value
 			lock.unlock()
 			return result
 		}
         set {
 			lock.lock()
-			__value = newValue
+			value = newValue
 			lock.unlock()
 		}
     }
@@ -107,9 +108,9 @@ class Atomic<Value> {
 	/// Use this to mutate the value (to guarantee that the get and set are atomic). Returns the new
 	/// value.
 	@discardableResult
-	func mutateAtomically<Result>(_ closure: (inout Value) -> (Result)) -> Result {
+	func mutateAtomically<Result>(_ closure: (inout Value) throws -> (Result)) rethrows -> Result {
 		lock.lock()
-		let result = closure(&__value)
+		let result = try closure(&value)
 		lock.unlock()
 		return result
 	}
@@ -328,7 +329,7 @@ extension Utilities {
 }
 
 extension Utilities {
-	public static func getAbsoultePath(forFile file: String) -> String {
+	public static func getAbsolutePath(forFile file: String) -> String {
 		return "/" + URL(fileURLWithPath: file).pathComponents.dropFirst().joined(separator: "/")
 	}
 }

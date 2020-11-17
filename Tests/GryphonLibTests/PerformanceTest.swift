@@ -78,7 +78,9 @@ class PerformanceTest: XCTestCase {
 							defaultsToFinal: false,
 							isUsingSwiftSyntax: false,
 							compilationArguments: TranspilationContext.SwiftCompilationArguments(
-								absoluteFilePathsAndOtherArguments: [])))
+								absoluteFilePathsAndOtherArguments: []),
+							xcodeProjectPath: nil,
+							target: nil))
 				}
 				catch let error {
 					XCTFail("🚨 Test failed with error:\n\(error)")
@@ -104,7 +106,9 @@ class PerformanceTest: XCTestCase {
 				compilationArguments: TranspilationContext.SwiftCompilationArguments(
 					absoluteFilePathsAndOtherArguments: [
 						SupportingFile.gryphonTemplatesLibrary.absolutePath,
-						testCasePath, ]))
+						testCasePath, ]),
+				xcodeProjectPath: nil,
+				target: nil)
 			return (testCasePath, context)
 		}
 
@@ -143,7 +147,9 @@ class PerformanceTest: XCTestCase {
 					compilationArguments: TranspilationContext.SwiftCompilationArguments.init(
 						absoluteFilePathsAndOtherArguments: [
 							SupportingFile.gryphonTemplatesLibrary.absolutePath,
-							testCasePath, ]))
+							testCasePath, ]),
+					xcodeProjectPath: nil,
+					target: nil)
 				let rawAST = try! Compiler.transpileGryphonRawASTs(
 					fromInputFiles: [testCasePath],
 					fromASTDumpFiles: [astDumpFilePath],
@@ -182,7 +188,9 @@ class PerformanceTest: XCTestCase {
 					compilationArguments: TranspilationContext.SwiftCompilationArguments(
 						absoluteFilePathsAndOtherArguments: [
 							SupportingFile.gryphonTemplatesLibrary.absolutePath,
-							testCasePath, ]))
+							testCasePath, ]),
+					xcodeProjectPath: nil,
+					target: nil)
 				let rawAST = try! Compiler.transpileGryphonRawASTs(
 					fromInputFiles: [testCasePath],
 					fromASTDumpFiles: [astDumpFilePath],
@@ -224,7 +232,9 @@ class PerformanceTest: XCTestCase {
 					compilationArguments: TranspilationContext.SwiftCompilationArguments(
 						absoluteFilePathsAndOtherArguments: [
 							SupportingFile.gryphonTemplatesLibrary.absolutePath,
-							testCasePath, ]))
+							testCasePath, ]),
+					xcodeProjectPath: nil,
+					target: nil)
 				let rawAST = try! Compiler.transpileGryphonRawASTs(
 					fromInputFiles: [testCasePath],
 					fromASTDumpFiles: [astDumpFilePath],
@@ -263,7 +273,9 @@ class PerformanceTest: XCTestCase {
 					compilationArguments: TranspilationContext.SwiftCompilationArguments(
 						absoluteFilePathsAndOtherArguments: [
 							SupportingFile.gryphonTemplatesLibrary.absolutePath,
-							testCasePath, ]))
+							testCasePath, ]),
+					xcodeProjectPath: nil,
+					target: nil)
 				let rawAST = try! Compiler.transpileGryphonASTs(
 					fromInputFiles: [testCasePath],
 					fromASTDumpFiles: [astDumpFilePath],
@@ -303,7 +315,9 @@ class PerformanceTest: XCTestCase {
 						compilationArguments: TranspilationContext.SwiftCompilationArguments(
 							absoluteFilePathsAndOtherArguments: [
 								SupportingFile.gryphonTemplatesLibrary.absolutePath,
-								testCasePath, ]))
+								testCasePath, ]),
+						xcodeProjectPath: nil,
+						target: nil)
 					_ = try Compiler.transpileKotlinCode(
 						fromInputFiles: [testCasePath],
 						fromASTDumpFiles: [astDumpFilePath],

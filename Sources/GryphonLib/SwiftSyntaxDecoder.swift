@@ -41,7 +41,7 @@ public class SourceKit {
 			Log.endLog(info: logInfo)
 		}
 
-		let absolutePath = Utilities.getAbsoultePath(forFile: filePath)
+		let absolutePath = Utilities.getAbsolutePath(forFile: filePath)
 		let arguments = context.compilationArguments.argumentsForSourceKit.array
 
 		Compiler.log("ℹ️  Request for file \"\(absolutePath)\"")
@@ -206,7 +206,7 @@ public class SourceKit {
 	/// Executes an indexing request using SourceKit. Returns the result of the request, processed
 	/// into a list of `ExpressionTypes`.
 	static func requestExpressionTypes(
-		forFilePath filePath: String,
+		forFile sourceFile: SourceFile,
 		context: TranspilationContext)
 		throws -> SortedList<ExpressionType>
 	{
@@ -219,7 +219,7 @@ public class SourceKit {
 		}
 
 		// Call SourceKitten to get the types
-		let absolutePath = Utilities.getAbsoultePath(forFile: filePath)
+		let absolutePath = Utilities.getAbsolutePath(forFile: sourceFile.path)
 		let compilationArgumentsString = context.compilationArguments.argumentsForSourceKit
 			.map { "\"\($0)\"" }
 			.joined(separator: ",\n    ")
@@ -252,6 +252,26 @@ public class SourceKit {
 				offset: Int($0["key.expression_offset"]! as! Int64),
 				length: Int($0["key.expression_length"]! as! Int64),
 				typeName: $0["key.expression_type"]! as! String)
+		}
+
+		// If there's an error, we might have to re-init to include a new file in the compilation.
+		// Throw an error here so that the caller has the opportunity to do that.
+		if let errorType = typeList.first(where: { $0.typeName == "<<error type>>" }) {
+			let maybeRange = sourceFile.getRange(
+				forSourceKitOffset: errorType.offset,
+				length: errorType.length)
+			
+			var errorMessage = "SourceKit failed to get an expression's type"
+
+			if let range = maybeRange {
+				errorMessage += " at \(sourceFile.path):\(range.lineStart):\(range.columnStart)"
+			}
+
+			if context.xcodeProjectPath != nil {
+				errorMessage += ". Try running `gryphon init` again."
+			}
+
+			throw GryphonError(errorMessage: errorMessage)
 		}
 
 		// Sort by offset (ascending), breaking ties using length (ascending)
@@ -315,17 +335,59 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	/// Allow pure comments to be placed before assignments as well as function calls
 	var isTranslatingPureAssignment = false
 
-	init(filePath: String, context: TranspilationContext) throws {
-		let typeList =
-			try SourceKit.requestExpressionTypes(forFilePath: filePath, context: context)
+	/// When a Swift file gets added to an Xcode project, the Swift compiler arguments
+	/// that had been saved become outdated (they don't include the new file), which can
+	/// lead to `SourceKit.requestExpressionTypes` failing. If that happens, we
+	/// can update the saved compiler arguments then try again, but it's only worth doing once.
+	/// This variable keeps track of whether or not it's been done.
+	static var didUpdateSwiftCompilerArguments: Atomic<Bool> = Atomic(false)
+
+	init(sourceFile: SourceFile, context: TranspilationContext) throws {
+		// Try to call SourceKit. If it fails, update the Swift compiler arguments and try again.
+		var maybeTypeList: SortedList<SourceKit.ExpressionType>? = nil
+		do {
+			maybeTypeList =
+				try SourceKit.requestExpressionTypes(forFile: sourceFile, context: context)
+		}
+		catch let error {
+			try SwiftSyntaxDecoder.didUpdateSwiftCompilerArguments.mutateAtomically
+			{ didUpdateSwiftCompilerArguments in
+				if !didUpdateSwiftCompilerArguments,
+				   let xcodeProjectPath = context.xcodeProjectPath
+				{
+					Compiler.log(
+						"⚠️ Something went wrong, attempting to update iOS compilation files")
+					try Driver.createIOSCompilationFiles(
+						forXcodeProject: xcodeProjectPath,
+						forTarget: context.target,
+						usingToolchain: context.toolchainName)
+					context.compilationArguments = try Driver.readCompilationArgumentsFromFile()
+					maybeTypeList = try SourceKit.requestExpressionTypes(
+						forFile: sourceFile,
+						context: context)
+					didUpdateSwiftCompilerArguments = true
+				}
+				else {
+					throw error
+				}
+			}
+		}
+
+		guard let typeList = maybeTypeList else {
+			throw GryphonError(errorMessage: "Failed to get SourceKit's expression type list " +
+								"for file at \(sourceFile.path)")
+		}
+
+		Compiler.log("Expressions for \(sourceFile.path)")
+		Compiler.log(typeList.map { $0.typeName }.joined(separator: "\n"))
 
 		Compiler.logStart("🧑‍💻  Calling SwiftSyntax...")
 		// Call SwiftSyntax to get the tree
-		let tree = try SyntaxParser.parse(URL(fileURLWithPath: filePath))
+		let tree = try SyntaxParser.parse(URL(fileURLWithPath: sourceFile.path))
 		Compiler.logEnd("✅  Done calling SwiftSyntax.")
 
 		// Initialize the properties
-		self.sourceFile = try SourceFile.readFile(atPath: filePath)
+		self.sourceFile = sourceFile
 		self.expressionTypes = typeList
 		self.syntaxTree = tree
 		self.context = context
@@ -3805,16 +3867,10 @@ extension SyntaxProtocol {
 }
 
 private extension SyntaxProtocol {
-	func getRange(inFile filePath: SourceFile) -> SourceFileRange? {
-		let startOffset = self.positionAfterSkippingLeadingTrivia.utf8Offset
-		let length = self.contentLength.utf8Length
-
-		// The end in a source file range is inclusive (-1)
-		let endOffset = startOffset + length - 1
-		return SourceFileRange.getRange(
-			withStartOffset: startOffset,
-			withEndOffset: endOffset,
-			inFile: filePath)
+	func getRange(inFile sourceFile: SourceFile) -> SourceFileRange? {
+		return sourceFile.getRange(
+			forSourceKitOffset: self.positionAfterSkippingLeadingTrivia.utf8Offset,
+			length: self.contentLength.utf8Length)
 	}
 }
 

@@ -24,7 +24,9 @@ public class TranspilationContext {
 	let indentationString: String
 	let defaultsToFinal: Bool
 	let isUsingSwiftSyntax: Bool
-	let compilationArguments: SwiftCompilationArguments
+	var compilationArguments: SwiftCompilationArguments
+	let xcodeProjectPath: String?
+	let target: String?
 
 	/// All arguments that should be included in this `swiftc` compilation.
 	public struct SwiftCompilationArguments {
@@ -107,6 +109,8 @@ public class TranspilationContext {
 		self.templates = []
 		self.compilationArguments = try SwiftCompilationArguments(absoluteFilePathsAndOtherArguments:
 			[SupportingFile.gryphonTemplatesLibrary.absolutePath])
+		self.xcodeProjectPath = nil
+		self.target = nil
 	}
 
 	public init(
@@ -114,7 +118,9 @@ public class TranspilationContext {
 		indentationString: String,
 		defaultsToFinal: Bool,
 		isUsingSwiftSyntax: Bool,
-		compilationArguments: SwiftCompilationArguments)
+		compilationArguments: SwiftCompilationArguments,
+		xcodeProjectPath: String?,
+		target: String?)
 		throws
 	{
 		try TranspilationContext.checkToolchainSupport(toolchainName)
@@ -125,6 +131,8 @@ public class TranspilationContext {
 		self.defaultsToFinal = defaultsToFinal
 		self.isUsingSwiftSyntax = isUsingSwiftSyntax
 		self.compilationArguments = compilationArguments
+		self.xcodeProjectPath = xcodeProjectPath
+		self.target = target
 		self.templates = try TranspilationContext
 			.getBaseContext(forToolchain: toolchainName, usingSwiftSyntax: isUsingSwiftSyntax)
 			.templates

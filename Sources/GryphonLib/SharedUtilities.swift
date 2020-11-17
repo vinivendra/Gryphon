@@ -54,7 +54,7 @@ private func gryphonTemplates() throws {
 		[.labeledParameter("directory", "_string1"),
 		 .labeledParameter("fileExtension", "_fileExtension1")])
 
-    _ = Utilities.getAbsoultePath(forFile: _string1)
+    _ = Utilities.getAbsolutePath(forFile: _string1)
 	_ = GRYTemplate.call(
 		.dot("Utilities", "getAbsoultePath"),
 		[.labeledParameter("file", "_string1")])
@@ -318,7 +318,7 @@ extension Utilities {
 
 	public static func getRelativePath(forFile file: String) -> String {
 		let currentDirectoryPath = Utilities.getCurrentFolder()
-		let absoluteFilePath = getAbsoultePath(forFile: file)
+		let absoluteFilePath = getAbsolutePath(forFile: file)
 		return String(absoluteFilePath.dropFirst(currentDirectoryPath.count + 1))
 	}
 }

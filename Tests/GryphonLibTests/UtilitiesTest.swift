@@ -225,7 +225,7 @@ class UtilitiesTest: XCTestCase {
 
     func testGetAbsolutePath() {
         let file = "Sources/GryphonLib/Utilities.swift"
-        let absolutePath = Utilities.getAbsoultePath(forFile: file)
+        let absolutePath = Utilities.getAbsolutePath(forFile: file)
 
         XCTAssert(absolutePath.hasPrefix("/"))
         XCTAssert(absolutePath.hasSuffix(file))

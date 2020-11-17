@@ -2314,7 +2314,7 @@ public class SupportingFile {
 	}
 
 	var absolutePath: String {
-		return Utilities.getAbsoultePath(forFile: relativePath)
+		return Utilities.getAbsolutePath(forFile: relativePath)
 	}
 
 	/// Takes the path to a Swift file (with or without extension) and returns the path to its

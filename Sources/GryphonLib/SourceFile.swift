@@ -28,19 +28,21 @@ public class SourceFile {
 
 	/// Initializes the source file and caches it.
 	public static func readFile(atPath filePath: String) throws -> SourceFile {
-		if let result = SourceFile.cache.atomic[filePath] {
+		let absolutePath = Utilities.getAbsolutePath(forFile: filePath)
+		if let result = SourceFile.cache.atomic[absolutePath] {
 			return result
 		}
 		else {
-			let contents = try Utilities.readFile(filePath)
-			let result = SourceFile(path: filePath, contents: contents)
-			SourceFile.cache.mutateAtomically { $0[filePath] = result }
+			let contents = try Utilities.readFile(absolutePath)
+			let result = SourceFile(path: absolutePath, contents: contents)
+			SourceFile.cache.mutateAtomically { $0[absolutePath] = result }
 			return result
 		}
 	}
 
 	/// Don't call this directly, except for testing. Otherwise, prefer `readFile(atPath:)`.
 	/// SourceFiles created by direct calls to this initializer aren't cached.
+	/// File paths should be absolute.
 	internal init(path: String, contents: String) {
 		self.path = path
 		self.contents = contents
@@ -88,6 +90,18 @@ public class SourceFile {
 	public struct CommonComment {
 		let contents: String
 		let range: SourceFileRange
+	}
+}
+
+extension SourceFile {
+	/// Turns a SourceKit offset and length (in UTF8) into a range in this SourceFile.
+	func getRange(forSourceKitOffset offset: Int, length: Int) -> SourceFileRange? {
+		// The end in a source file range is inclusive (-1)
+		let endOffset = offset + length - 1
+		return SourceFileRange.getRange(
+			withStartOffset: offset,
+			withEndOffset: endOffset,
+			inFile: self)
 	}
 }
 

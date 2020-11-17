@@ -67,7 +67,9 @@ class IntegrationTest: XCTestCase {
 						isUsingSwiftSyntax: false,
 						compilationArguments: TranspilationContext.SwiftCompilationArguments(
 							absoluteFilePathsAndOtherArguments:
-								[testCasePath.withExtension(.swift)])))
+								[testCasePath.withExtension(.swift)]),
+						xcodeProjectPath: nil,
+						target: nil))
 					.first!
 
 				// Load the previously stored kotlin code from file
@@ -94,7 +96,9 @@ class IntegrationTest: XCTestCase {
 							isUsingSwiftSyntax: true,
 							compilationArguments: TranspilationContext.SwiftCompilationArguments(
 								absoluteFilePathsAndOtherArguments:
-									[testCasePath.withExtension(.swift)])))
+									[testCasePath.withExtension(.swift)]),
+							xcodeProjectPath: nil,
+							target: nil))
 						.first!
 
 					// Load the previously stored kotlin code from file
@@ -151,7 +155,9 @@ class IntegrationTest: XCTestCase {
 					defaultsToFinal: false,
 					isUsingSwiftSyntax: true,
 					compilationArguments: TranspilationContext.SwiftCompilationArguments(
-						absoluteFilePathsAndOtherArguments: [testCasePath])))
+						absoluteFilePathsAndOtherArguments: [testCasePath]),
+					xcodeProjectPath: nil,
+					target: nil))
 				.first!
 
 			XCTAssert(

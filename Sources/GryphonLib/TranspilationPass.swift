@@ -3788,8 +3788,9 @@ public class RecordFunctionsTranspilationPass: TranspilationPass {
 		_ functionDeclaration: FunctionDeclaration)
 		-> FunctionDeclaration?
 	{
-		let swiftAPIName = functionDeclaration.prefix + "(" +
-			functionDeclaration.parameters.map { ($0.apiLabel ?? "_") + ":" }.joined() + ")"
+		let parametersString =
+			functionDeclaration.parameters.map { ($0.apiLabel ?? "_") + ":" }.joined()
+		let swiftAPIName = functionDeclaration.prefix + "(" + parametersString + ")"
 
 		self.context.addFunctionTranslation(TranspilationContext.FunctionTranslation(
 			swiftAPIName: swiftAPIName,
@@ -3939,8 +3940,9 @@ public class RecordInitializersTranspilationPass: TranspilationPass {
 	{
 		let initializedType = initializerDeclaration.returnType
 
-		let swiftAPIName = initializedType + "(" +
-			initializerDeclaration.parameters.map { ($0.apiLabel ?? "_") + ":" }.joined() + ")"
+		let parametersString =
+			initializerDeclaration.parameters.map { ($0.apiLabel ?? "_") + ":" }.joined()
+		let swiftAPIName = initializedType + "(" + parametersString + ")"
 
 		self.context.addFunctionTranslation(
 			TranspilationContext.FunctionTranslation(

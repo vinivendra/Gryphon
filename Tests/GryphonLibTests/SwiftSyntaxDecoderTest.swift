@@ -47,7 +47,9 @@ class SwiftSyntaxDecoderTest: XCTestCase {
 					defaultsToFinal: false,
 					isUsingSwiftSyntax: true,
 					compilationArguments: TranspilationContext.SwiftCompilationArguments(
-						absoluteFilePathsAndOtherArguments: [testCasePath.withExtension(.swift)])))
+						absoluteFilePathsAndOtherArguments: [testCasePath.withExtension(.swift)]),
+					xcodeProjectPath: nil,
+					target: nil))
 				.first!
 
 			// Check if the decoded statements are as we expect them

@@ -594,6 +594,7 @@ public class Driver {
 
 		//
 		let maybeXcodeProject = getXcodeProject(inArguments: arguments)
+		let maybeTarget = getTarget(inArguments: arguments)
 
 		//
 		let settings = Settings(
@@ -685,8 +686,6 @@ public class Driver {
 
 			let swiftVersion = try TranspilationContext.getVersionOfToolchain(toolchain)
 
-			let target = getTarget(inArguments: arguments)
-
 			Compiler.logEnd("✅  Done preparing.")
 
 			if !shouldUseSwiftSyntax {
@@ -697,7 +696,7 @@ public class Driver {
 					try updateASTDumps(
 						forFiles: allSourceFiles,
 						forXcodeProject: maybeXcodeProject,
-						forTarget: target,
+						forTarget: maybeTarget,
 						usingToolchain: toolchain,
 						shouldTryToRecoverFromErrors: true)
 					astDumpsSucceeded = true
@@ -745,8 +744,8 @@ public class Driver {
 						}
 						catch let error {
 							Compiler.logEnd(
-								"⚠️  There was an error when getting the Swift compilation command " +
-									"from the Xcode project:" +
+								"⚠️  There was an error when getting the Swift compilation " +
+									"command from the Xcode project:" +
 									"\(error)\n")
 						}
 
@@ -755,7 +754,7 @@ public class Driver {
 						try updateASTDumps(
 							forFiles: allSourceFiles,
 							forXcodeProject: maybeXcodeProject,
-							forTarget: target,
+							forTarget: maybeTarget,
 							usingToolchain: toolchain,
 							shouldTryToRecoverFromErrors: true)
 
@@ -766,7 +765,8 @@ public class Driver {
 						if !outdatedASTDumpsAfterSecondUpdate.isEmpty {
 							throw GryphonError(
 								errorMessage: "Unable to update AST dumps for files: " +
-									outdatedASTDumpsAfterSecondUpdate.joined(separator: ", ") + ".\n" +
+									outdatedASTDumpsAfterSecondUpdate.joined(separator: ", ") +
+									".\n" +
 									" - Make sure the files are being compiled by Xcode.\n" +
 									" - Make sure Gryphon is translating the right Xcode target " +
 										"using `--target=<target name>`.")
@@ -796,30 +796,11 @@ public class Driver {
 
 		let compilationArguments: TranspilationContext.SwiftCompilationArguments
 		if maybeXcodeProject != nil {
-			let arguments = try String(
-					contentsOfFile: SupportingFile.sourceKitCompilationArguments.absolutePath)
-				.splitUsingUnescapedSpaces()
-				.map { $0.replacingOccurrences(of: "\\ ", with: " ") }
-				.toMutableList()
-
-			guard let sdkArgumentIndex = arguments.firstIndex(of: "-sdk") else {
-				throw GryphonError(
-					errorMessage: "Unable to find path to the SDK in the iOS compilation " +
-						"arguments. Try cleaning the Xcode project, building it again, and " +
-						"running `gryphon init <xcodeproj>`.")
-			}
-
-			let sdkPath = arguments[sdkArgumentIndex + 1]
-			arguments.remove(at: sdkArgumentIndex) // Remove the "-sdk"
-			arguments.remove(at: sdkArgumentIndex) // Remove the SDK path
-
-			compilationArguments = try TranspilationContext.SwiftCompilationArguments(
-				absoluteFilePathsAndOtherArguments: arguments,
-				absolutePathToSDK: sdkPath)
+			compilationArguments = try readCompilationArgumentsFromFile()
 		}
 		else {
 			let arguments = allSourceFiles
-				.map { Utilities.getAbsoultePath(forFile: $0) }
+				.map { Utilities.getAbsolutePath(forFile: $0) }
 				.toMutableList()
 
 			compilationArguments = try TranspilationContext.SwiftCompilationArguments(
@@ -827,15 +808,15 @@ public class Driver {
 		}
 
 		/// Perform transpilation
-
 		do {
-			//
 			let context = try TranspilationContext(
 				toolchainName: toolchain,
 				indentationString: indentationString,
 				defaultsToFinal: defaultsToFinal,
 				isUsingSwiftSyntax: shouldUseSwiftSyntax,
-				compilationArguments: compilationArguments)
+				compilationArguments: compilationArguments,
+				xcodeProjectPath: maybeXcodeProject,
+				target: maybeTarget)
 
 			Compiler.logStart("🧑‍💻 Starting first part of translation [1/2]...")
 
@@ -903,6 +884,35 @@ public class Driver {
 			Compiler.logEnd("⚠️  Done printing issues.")
 			throw error
 		}
+	}
+
+	/// Reads the saved information from the `sourceKitCompilationArguments` file
+	/// and structures it into a `SwiftCompilationArguments` object.
+	/// Use this method only when using Xcode, since it depends on
+	/// an Xcode-only file.
+	static func readCompilationArgumentsFromFile()
+		throws -> TranspilationContext.SwiftCompilationArguments
+	{
+		let arguments = try String(
+			contentsOfFile: SupportingFile.sourceKitCompilationArguments.absolutePath)
+			.splitUsingUnescapedSpaces()
+			.map { $0.replacingOccurrences(of: "\\ ", with: " ") }
+			.toMutableList()
+
+		guard let sdkArgumentIndex = arguments.firstIndex(of: "-sdk") else {
+			throw GryphonError(
+				errorMessage: "Unable to find path to the SDK in the iOS compilation " +
+					"arguments. Try cleaning the Xcode project, building it again, and " +
+					"running `gryphon init <xcodeproj>`.")
+		}
+
+		let sdkPath = arguments[sdkArgumentIndex + 1]
+		arguments.remove(at: sdkArgumentIndex) // Remove the "-sdk"
+		arguments.remove(at: sdkArgumentIndex) // Remove the SDK path
+
+		return try TranspilationContext.SwiftCompilationArguments(
+			absoluteFilePathsAndOtherArguments: arguments,
+			absolutePathToSDK: sdkPath)
 	}
 
 	static func outdatedASTDumpFiles(
@@ -1301,8 +1311,8 @@ public class Driver {
 			let astDumpPath = SupportingFile.pathOfSwiftASTDumpFile(
 				forSwiftFile: swiftFile,
 				swiftVersion: swiftVersion)
-			let astDumpAbsolutePath = Utilities.getAbsoultePath(forFile: astDumpPath)
-			let swiftAbsoultePath = Utilities.getAbsoultePath(forFile: swiftFile)
+			let astDumpAbsolutePath = Utilities.getAbsolutePath(forFile: astDumpPath)
+			let swiftAbsoultePath = Utilities.getAbsolutePath(forFile: swiftFile)
 			outputFileMapContents += "\t\"\(swiftAbsoultePath)\": {\n" +
 				"\t\t\"ast-dump\": \"\(astDumpAbsolutePath)\",\n" +
 				"\t},\n"
@@ -1358,7 +1368,7 @@ public class Driver {
 				"-output-file-map=\(SupportingFile.temporaryOutputFileMap.absolutePath)")
 
 			for swiftFile in swiftFiles {
-				arguments.append(Utilities.getAbsoultePath(forFile: swiftFile))
+				arguments.append(Utilities.getAbsolutePath(forFile: swiftFile))
 			}
 
 			commandResult = Shell.runShellCommand(arguments)
@@ -1488,9 +1498,8 @@ public class Driver {
 	}
 
 	static func printVersion() {
-		Compiler.output("Gryphon version \(gryphonVersion)")
-		Compiler.output(
-			"Using Swift \(TranspilationContext.swiftSyntaxVersion) for SwiftSyntax compilations.")
+		Compiler.output("Gryphon version \(gryphonVersion), using the Swift " +
+			"\(TranspilationContext.swiftSyntaxVersion) parser")
 	}
 
 	static func printUsage() {
