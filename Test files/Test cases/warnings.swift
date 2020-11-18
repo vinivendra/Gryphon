@@ -339,6 +339,9 @@ extension Int {
 
 print(1 + 2 +++ 3 + 4)
 
+// Warnings for references to the standard library
+let t = Int.random(in: 0...10)
+
 // Warnings for legacy translation comments
 // gryphon multiline
 let foo = """
