@@ -333,7 +333,7 @@ public class Driver {
 
 			guard settings.shouldGenerateRawAST else {
 				if settings.shouldEmitSwiftAST, !settings.quietModeIsOn {
-					Compiler.log("✍️  Printing Swift AST for \(inputFileRelativePath):")
+					Compiler.log("📝  Printing Swift AST for \(inputFileRelativePath):")
 					let output = swiftAST.prettyDescription()
 					Compiler.output(output)
 				}
@@ -353,11 +353,11 @@ public class Driver {
 				if let outputFilePath = gryphonRawAST.outputFileMap[.swiftAST],
 					!settings.forcePrintingToConsole
 				{
-					Compiler.log("✍️  Writing Swift AST to file for \(inputFileRelativePath)")
+					Compiler.log("📝  Writing Swift AST to file for \(inputFileRelativePath)")
 					try Utilities.createFile(atPath: outputFilePath, containing: output)
 				}
 				else if !settings.quietModeIsOn {
-					Compiler.log("✍️  Printing Swift AST for \(inputFileRelativePath):")
+					Compiler.log("📝  Printing Swift AST for \(inputFileRelativePath):")
 					Compiler.output(output)
 				}
 			}
@@ -368,11 +368,11 @@ public class Driver {
 			if let outputFilePath = gryphonRawAST.outputFileMap[.swiftAST],
 				!settings.forcePrintingToConsole
 			{
-				Compiler.log("✍️  Writing Swift AST to file for \(inputFileRelativePath)")
+				Compiler.log("📝  Writing Swift AST to file for \(inputFileRelativePath)")
 				try Utilities.createFile(atPath: outputFilePath, containing: output)
 			}
 			else if !settings.quietModeIsOn {
-				Compiler.log("✍️  Printing Swift AST for \(inputFileRelativePath):")
+				Compiler.log("📝  Printing Swift AST for \(inputFileRelativePath):")
 				Compiler.output(output)
 			}
 		}
@@ -382,11 +382,11 @@ public class Driver {
 			if let outputFilePath = gryphonRawAST.outputFileMap[.gryphonASTRaw],
 				!settings.forcePrintingToConsole
 			{
-				Compiler.log("✍️  Writing raw AST to file for \(inputFileRelativePath)")
+				Compiler.log("📝  Writing raw AST to file for \(inputFileRelativePath)")
 				try Utilities.createFile(atPath: outputFilePath, containing: output)
 			}
 			else if !settings.quietModeIsOn {
-				Compiler.log("✍️  Printing raw AST for \(inputFileRelativePath):")
+				Compiler.log("📝  Printing raw AST for \(inputFileRelativePath):")
 				Compiler.output(output)
 			}
 		}
@@ -423,11 +423,11 @@ public class Driver {
 			if let outputFilePath = gryphonAST.outputFileMap[.gryphonAST],
 				!settings.forcePrintingToConsole
 			{
-				Compiler.log("✍️  Writing AST to file for \(inputFileRelativePath)")
+				Compiler.log("📝  Writing AST to file for \(inputFileRelativePath)")
 				try Utilities.createFile(atPath: outputFilePath, containing: output)
 			}
 			else if !settings.quietModeIsOn {
-				Compiler.log("✍️  Printing AST for \(inputFileRelativePath):")
+				Compiler.log("📝  Printing AST for \(inputFileRelativePath):")
 				Compiler.output(output)
 			}
 		}
@@ -445,13 +445,13 @@ public class Driver {
 		if settings.shouldEmitKotlin {
 			if settings.forcePrintingToConsole {
 				if !settings.quietModeIsOn {
-					Compiler.log("✍️  Printing Kotlin code for \(inputFileRelativePath):")
+					Compiler.log("📝  Printing Kotlin code for \(inputFileRelativePath):")
 					Compiler.output(kotlinCode)
 				}
 			}
 			else {
 				if let outputFilePath = gryphonAST.outputFileMap[.kt] {
-					Compiler.log("✍️  Writing Kotlin to file for \(inputFileRelativePath)")
+					Compiler.log("📝  Writing Kotlin to file for \(inputFileRelativePath)")
 					try Utilities.createFile(atPath: outputFilePath, containing: kotlinCode)
 				}
 				else {
@@ -471,7 +471,7 @@ public class Driver {
 					}
 
 					if !settings.quietModeIsOn {
-						Compiler.log("✍️  Printing Kotlin code for \(inputFileRelativePath):")
+						Compiler.log("📝  Printing Kotlin code for \(inputFileRelativePath):")
 						Compiler.output(kotlinCode)
 					}
 				}
