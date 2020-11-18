@@ -140,6 +140,13 @@ public class Driver {
 				throw GryphonError(errorMessage: "Toolchain support is implemented using xcrun, " +
 					"which is only available in macOS.")
 			}
+			if isUsingSwiftSyntax {
+				throw GryphonError(errorMessage:
+					"Gryphon's new frontend always uses the Swift version it was built with. " +
+					"The current version was built with (and uses) Swift " +
+					"\(TranspilationContext.swiftSyntaxVersion). " +
+					"To use a different version, please reinstall Gryphon.")
+			}
 
 			let toolchainName = String(toolchainArgument.dropFirst("--toolchain=".count))
 			toolchain = toolchainName
