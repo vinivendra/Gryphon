@@ -208,4 +208,9 @@ fun main(args: Array<String>) {
 	val list2: MutableList<Int> = nativeArray.toMutableList()
 	val map1: Map<Int, Int> = nativeMap.toMap()
 	val map2: MutableMap<Int, Int> = nativeMap.toMutableMap()
+
+	list1.toList()
+	list2.toList()
+	map1.toMap()
+	map2.toMap()
 }

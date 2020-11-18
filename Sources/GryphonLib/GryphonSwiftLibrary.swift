@@ -204,6 +204,8 @@ private func gryphonTemplates() {
 	let _array2: MutableList<Any> = [1, 2, 3]
 	let _array3: [Any] = [1, 2, 3]
 	let _dictionary: [_Hashable: Any] = [:]
+	let _list: List<Any> = []
+	let _map: Map<_Hashable, Any> = [:]
 	let _any: Any = 0
 	let _string: String = ""
 	let _index = _string.startIndex
@@ -234,6 +236,12 @@ private func gryphonTemplates() {
 
 	_ = MutableMap(_dictionary)
 	_ = GRYTemplate.call(.dot("_dictionary", "toMutableMap"), [])
+
+	_ = _list.array
+	_ = GRYTemplate.call(.dot("_list", "toList"), [])
+
+	_ = _map.dictionary
+	_ = GRYTemplate.call(.dot("_map", "toMap"), [])
 
 	// Templates with an output that references methods defined in the GryphonKotlinLibrary.kt file
 	_ = _string.suffix(from: _index)
