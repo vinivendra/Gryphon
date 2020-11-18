@@ -100,11 +100,11 @@ internal fun N.bar(a: Int): Int {
 	return a
 }
 
-internal val <Element> Array<Element>.a: Element
+internal val <Element> List<Element>.a: Element
 	get() {
 		return firstOrNull()!!
 	}
-internal val <Element> List<Element>.a: Int
+internal val <Element> List<Element>.b: Int
 	get() {
 		return size
 	}

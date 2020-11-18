@@ -138,6 +138,7 @@ fun main(args: Array<String>) {
 		val x: Int = i
 	}
 
+	val arrayOfInts: List<Int> = listOf(1, 2, 3)
 	val array: List<Int> = listOf(1, 2, 3)
 	val arrayIndex: Int? = array.indexOf(1)
 	val bla: Int = 1

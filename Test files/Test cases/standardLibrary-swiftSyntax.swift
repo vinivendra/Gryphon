@@ -676,7 +676,7 @@ class List<Element> {
 
 // gryphon generics: Element
 extension List {
-	var a: Int {
+	var b: Int {
 		return count
 	}
 }

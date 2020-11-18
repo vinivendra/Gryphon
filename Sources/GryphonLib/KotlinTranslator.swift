@@ -2166,6 +2166,20 @@ public class KotlinTranslator {
 				return "List<\(translatedInnerType)>"
 			}
 		}
+		else if typeName.hasPrefix("Array<"), typeName.hasSuffix(">") {
+			let innerType = String(typeName.dropFirst("Array<".count).dropLast())
+			let translatedInnerType = translateType(innerType)
+			return "List<\(translatedInnerType)>"
+		}
+		else if typeName.hasPrefix("Dictionary<"), typeName.hasSuffix(">") {
+			let innerType = String(typeName.dropFirst("Dictionary<".count).dropLast())
+			let innerTypes = Utilities.splitTypeList(innerType, separators: [","])
+			let keyType = innerTypes[0]
+			let valueType = innerTypes[1]
+			let translatedKey = translateType(keyType)
+			let translatedValue = translateType(valueType)
+			return "Map<\(translatedKey), \(translatedValue)>"
+		}
 		else if let genericInformation = getGenericTypeInformation(for: typeName) {
 			// Generics
 
