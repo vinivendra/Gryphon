@@ -195,9 +195,15 @@ private struct _Comparable: Comparable {
 	}
 }
 
+// Replacement for Hashable
+// gryphon ignore
+private struct _Hashable: Hashable { }
+
 private func gryphonTemplates() {
 	let _array1: MutableList<Any> = [1, 2, 3]
 	let _array2: MutableList<Any> = [1, 2, 3]
+	let _array3: [Any] = [1, 2, 3]
+	let _dictionary: [_Hashable: Any] = [:]
 	let _any: Any = 0
 	let _string: String = ""
 	let _index = _string.startIndex
@@ -216,6 +222,18 @@ private func gryphonTemplates() {
 
 	_ = _array1.appending(contentsOf: _array2)
 	_ = "_array1 + _array2"
+
+	_ = List(_array3)
+	_ = GRYTemplate.call(.dot("_array3", "toList"), [])
+
+	_ = MutableList(_array3)
+	_ = GRYTemplate.call(.dot("_array3", "toMutableList"), [])
+
+	_ = Map(_dictionary)
+	_ = GRYTemplate.call(.dot("_dictionary", "toMap"), [])
+
+	_ = MutableMap(_dictionary)
+	_ = GRYTemplate.call(.dot("_dictionary", "toMutableMap"), [])
 
 	// Templates with an output that references methods defined in the GryphonKotlinLibrary.kt file
 	_ = _string.suffix(from: _index)

@@ -201,4 +201,11 @@ fun main(args: Array<String>) {
 	val failedCast2: List<String>? = anys2.castOrNull<String>()
 
 	println(failedCast2)
+
+	val nativeArray: List<Int> = listOf(1, 2, 3)
+	val nativeMap: Map<Int, Int> = mapOf(1 to 2)
+	val list1: List<Int> = nativeArray.toList()
+	val list2: MutableList<Int> = nativeArray.toMutableList()
+	val map1: Map<Int, Int> = nativeMap.toMap()
+	val map2: MutableMap<Int, Int> = nativeMap.toMutableMap()
 }
