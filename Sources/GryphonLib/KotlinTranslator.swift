@@ -1294,8 +1294,19 @@ public class KotlinTranslator {
 		result.append("\(extensionPrefix)\(variableDeclaration.identifier)")
 
 		if let typeAnnotation = variableDeclaration.typeAnnotation {
-			let translatedType = translateType(typeAnnotation)
-			result.append(": \(translatedType)")
+			// Kotlin doesn't support just "List" as the type annotation.
+			// If the type is just "Array", try to get the element type from the expression.
+			// If we can't, leave it empty and hope Kotlin figures it out.
+			if typeAnnotation == "Array" || typeAnnotation == "Dictionary" {
+				if let expressionType = variableDeclaration.expression?.swiftType {
+					let translatedType = translateType(expressionType)
+					result.append(": \(translatedType)")
+				}
+			}
+			else {
+				let translatedType = translateType(typeAnnotation)
+				result.append(": \(translatedType)")
+			}
 		}
 
 		if let expression = variableDeclaration.expression {

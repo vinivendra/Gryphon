@@ -101,8 +101,11 @@ for i in range {
 	let x = i
 }
 
+// Test Array
+let arrayOfInts1: Array = [1, 2, 3]
+
 // Test Array<Whatever>
-let arrayOfInts: Array<Int> = [1, 2, 3]
+let arrayOfInts2: Array<Int> = [1, 2, 3]
 
 // Test Array<Whatever>.Index
 let array = [1, 2, 3]
