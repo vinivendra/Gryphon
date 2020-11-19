@@ -29,14 +29,18 @@ public class SourceFile {
 	/// Initializes the source file and caches it.
 	public static func readFile(atPath filePath: String) throws -> SourceFile {
 		let absolutePath = Utilities.getAbsolutePath(forFile: filePath)
-		if let result = SourceFile.cache.atomic[absolutePath] {
-			return result
-		}
-		else {
-			let contents = try Utilities.readFile(absolutePath)
-			let result = SourceFile(path: absolutePath, contents: contents)
-			SourceFile.cache.mutateAtomically { $0[absolutePath] = result }
-			return result
+
+		return try SourceFile.cache.mutateAtomically
+		{ (cache: inout MutableMap<String, SourceFile>) -> SourceFile in
+			if let result = cache[absolutePath] {
+				return result
+			}
+			else {
+				let contents = try Utilities.readFile(absolutePath)
+				let result = SourceFile(path: absolutePath, contents: contents)
+				cache[absolutePath] = result
+				return result
+			}
 		}
 	}
 
