@@ -16,19 +16,40 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/SourceFile.swiftAST
-// gryphon output: Sources/GryphonLib/SourceFile.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/SourceFile.gryphonAST
-// gryphon output: Bootstrap/SourceFile.kt
-
 import Foundation
 
 public class SourceFile {
 	public var path: String
-	private let lines: List<Substring>
+	public let contents: String
+	public let lines: List<Substring>
 
-	public init(path: String, contents: String) {
+	/// Caches all Source Files that have already been read, using (absolute) file paths as keys.
+	private static let cache: Atomic<MutableMap<String, SourceFile>> = Atomic([:])
+
+	/// Initializes the source file and caches it.
+	public static func readFile(atPath filePath: String) throws -> SourceFile {
+		let absolutePath = Utilities.getAbsolutePath(forFile: filePath)
+
+		return try SourceFile.cache.mutateAtomically
+		{ (cache: inout MutableMap<String, SourceFile>) -> SourceFile in
+			if let result = cache[absolutePath] {
+				return result
+			}
+			else {
+				let contents = try Utilities.readFile(absolutePath)
+				let result = SourceFile(path: absolutePath, contents: contents)
+				cache[absolutePath] = result
+				return result
+			}
+		}
+	}
+
+	/// Don't call this directly, except for testing. Otherwise, prefer `readFile(atPath:)`.
+	/// SourceFiles created by direct calls to this initializer aren't cached.
+	/// File paths should be absolute.
+	internal init(path: String, contents: String) {
 		self.path = path
+		self.contents = contents
 		self.lines = List<Substring>(
 			contents.split(separator: "\n", omittingEmptySubsequences: false))
 	}
@@ -54,6 +75,7 @@ public class SourceFile {
 		case insertInMain
 		case value
 		case annotation
+		case generics
 		case output
 
 		// Comments without values (i.e. `// gryphon ignore`)
@@ -76,8 +98,20 @@ public class SourceFile {
 }
 
 extension SourceFile {
+	/// Turns a SourceKit offset and length (in UTF8) into a range in this SourceFile.
+	func getRange(forSourceKitOffset offset: Int, length: Int) -> SourceFileRange? {
+		// The end in a source file range is inclusive (-1)
+		let endOffset = offset + length - 1
+		return SourceFileRange.getRange(
+			withStartOffset: offset,
+			withEndOffset: endOffset,
+			inFile: self)
+	}
+}
+
+extension SourceFile {
 	/// Returns any comment in the given line, or `nil` if there isn't one. Line indices start at 1.
-	public func getCommentFromLine(_ lineNumber: Int) -> CommonComment? { // gryphon pure
+	public func getCommentFromLine(_ lineNumber: Int) -> CommonComment? {
 		guard let line = getLine(lineNumber) else {
 			return nil
 		}
@@ -91,25 +125,22 @@ extension SourceFile {
 		}
 
 		// If the comment comes after some code (not yet supported)
-		let commentIsAfterCode = lineComponents[0].contains {
-			$0 !=
-				" " // gryphon value: ' '
-			&& $0 !=
-				"\t" // gryphon value: '\\t'
-		}
+		let commentIsAfterCode = lineComponents[0].contains { $0 != " " && $0 != "\t" }
 		guard !commentIsAfterCode else {
 			return nil
 		}
 
 		// Get the comment's range
 		let columnStartIndex = line.occurrences(of: "//").first!.lowerBound
-		let columnStartInt = columnStartIndex.utf16Offset(in: line) // gryphon value: columnStartIndex
+		let columnStartInt = line.distance(from: line.startIndex, to: columnStartIndex)
 
 		let range = SourceFileRange(
-			lineStart: lineNumber,
-			lineEnd: lineNumber,
-			columnStart: columnStartInt,
-			columnEnd: line.count)
+			start: SourceFilePosition(
+				line: lineNumber,
+				column: columnStartInt),
+			end: SourceFilePosition(
+				line: lineNumber,
+				column: line.count))
 
 		return SourceFile.CommonComment(contents: lineComponents[1], range: range)
 	}
@@ -130,6 +161,15 @@ extension SourceFile {
 
 		let comment = lineComponents[1]
 
+		return SourceFile.getTranslationCommentFromString(comment)
+	}
+
+	/// Returns a keyed comment in the given string, or `nil` if the existing comment isn't keyed).
+	/// Expects the string to not include the initial `// `.
+	public static func getTranslationCommentFromString(
+		_ comment: String)
+		-> SourceFile.TranslationComment?
+	{
 		// Make sure it's a gryphon comment
 		guard comment.hasPrefix("gryphon ") else {
 			return nil
@@ -164,11 +204,51 @@ extension SourceFile {
 	}
 }
 
+/// Lines and columns are counted from `1` (i.e. the first line in a file is line number `1` and the
+/// first character in that line is the character in column number `1`). Newlines show up at the end
+/// of each line (e.g. a newline dividing line `1` from line `2` is at
+/// `SourceFilePosition(line: 1, column: line1.count)`.
+public struct SourceFilePosition: Hashable, CustomStringConvertible, Comparable, Equatable {
+	let line: Int
+	let column: Int
+
+	public var description: String {
+		return "\(line):\(column)"
+	}
+
+	public static let beginningOfFile = SourceFilePosition(line: 1, column: 1)
+
+	public static func < (lhs: SourceFilePosition, rhs: SourceFilePosition) -> Bool {
+		if lhs.line < rhs.line {
+			return true
+		}
+		else if lhs.line == rhs.line {
+			return lhs.column < rhs.column
+		}
+		else {
+			return false
+		}
+	}
+}
+
+/// Both start and end positions are inlusive in the range (i.e. `[start, end]`)
 public struct SourceFileRange: Equatable, Hashable, CustomStringConvertible {
-	let lineStart: Int
-	let lineEnd: Int
-	let columnStart: Int
-	let columnEnd: Int
+	let start: SourceFilePosition
+	let end: SourceFilePosition
+
+	// TODO: (after removing AST dumps) remove this
+	var lineStart: Int {
+		return start.line
+	}
+	var lineEnd: Int {
+		return end.line
+	}
+	var columnStart: Int {
+		return start.column
+	}
+	var columnEnd: Int {
+		return end.column
+	}
 
 	/// This is technically incorrect but allows AST nodes with ranges to get an automatic Equatable
 	/// conformance that ignores ranges, which is useful since we're frequently comparing nodes
@@ -186,6 +266,116 @@ public struct SourceFileRange: Equatable, Hashable, CustomStringConvertible {
 	}
 
 	public var description: String {
-		return "\(lineStart):\(columnStart) - \(lineEnd):\(columnEnd)"
+		return "\(start) - \(end)"
+	}
+
+	public static func getRange(
+		withStartOffset startOffset: Int,
+		withEndOffset endOffset: Int,
+		inFile sourceFile: SourceFile)
+		-> SourceFileRange
+	{
+		return SourceFilePositionMap.getRange(
+			withStartOffset: startOffset,
+			withEndOffset: endOffset,
+			inFile: sourceFile)
+	}
+
+	init(
+		start: SourceFilePosition,
+		end: SourceFilePosition)
+	{
+		self.start = start
+		self.end = end
+	}
+
+	// TODO: (after removing AST dumps) remove this
+	init(
+		lineStart: Int,
+		lineEnd: Int,
+		columnStart: Int,
+		columnEnd: Int)
+	{
+		self.start = SourceFilePosition(line: lineStart, column: columnStart)
+		self.end = SourceFilePosition(line: lineEnd, column: columnEnd)
+	}
+}
+
+/// SwiftSyntax reports ranges as utf8 offsets from the start, but source files ranges are stored as
+/// line + column combos. The mapping from offsets to lines is done by storing the offset of the
+/// first character in each line (e.g. the first character in line `1` has offset `0`, the one in
+/// line `2` may have offset `10`, the one in line `3` may have offest `15`, etc.).
+private struct SourceFilePositionMap {
+	/// Cache that uses the paths of source files as indices and returns the offset-line map for
+	/// that file, if any.
+	private static let mapsCache: Atomic<MutableMap<String, SourceFilePositionMap>> = Atomic([:])
+
+	/// Contains the offsets corresponding to the start of each line. The element at `0` is the
+	/// offset of the first character of line `1`, etc.
+	private let map: List<Int>
+
+	init(sourceFile: SourceFile) {
+		let result: MutableList<Int> = [0]
+		var accumulatedOffset = 0
+
+		for line in sourceFile.lines {
+			accumulatedOffset += line.utf8.count + 1 // Add the newline character
+			result.append(accumulatedOffset)
+		}
+
+		self.map = result
+	}
+
+	static func getRange(
+		withStartOffset startOffset: Int,
+		withEndOffset endOffset: Int,
+		inFile sourceFile: SourceFile)
+		-> SourceFileRange
+	{
+		return mapsCache.mutateAtomically { mapsCache in
+			if let cachedMap = mapsCache[sourceFile.path] {
+				let startPosition = cachedMap.getPosition(ofOffset: startOffset)
+				let endPosition = cachedMap.getPosition(ofOffset: endOffset)
+				return SourceFileRange(start: startPosition, end: endPosition)
+			}
+			else {
+				let newMap = SourceFilePositionMap(sourceFile: sourceFile)
+				mapsCache[sourceFile.path] = newMap
+				let startPosition = newMap.getPosition(ofOffset: startOffset)
+				let endPosition = newMap.getPosition(ofOffset: endOffset)
+				return SourceFileRange(start: startPosition, end: endPosition)
+			}
+		}
+	}
+
+	/// Get the number of the line that contains the character represented by this offset, and the
+	/// column of the character in that line. Lines and columns for `SourceFilePosition`s begin
+	/// counting at `1`, and newlines are counted as being part of the preceding line.
+	private func getPosition(ofOffset offset: Int) -> SourceFilePosition {
+		guard offset != 0 else {
+			return SourceFilePosition.beginningOfFile
+		}
+
+		var lineNumber = 1
+		while lineNumber < map.count {
+			let nextOffset = map[lineNumber]
+			if nextOffset > offset {
+				let currentLineOffset = map[lineNumber - 1]
+
+				// lineNumber will have passed the line (+1) but it'll also be a 0-based index (-1)
+				let line = lineNumber
+				// currentLineOffset is the index of the first character, which also has to be
+				// counted (+1)
+				let column = offset - currentLineOffset + 1
+				return SourceFilePosition(line: line, column: column)
+			}
+			lineNumber += 1
+		}
+
+		// If it's in the last line
+		let previousLineOffset = map.last!
+		let line = map.count
+		let column = offset - previousLineOffset
+		return SourceFilePosition(line: line, column: column)
 	}
 }

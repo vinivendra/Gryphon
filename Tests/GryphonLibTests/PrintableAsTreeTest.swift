@@ -16,29 +16,12 @@
 // limitations under the License.
 //
 
-// gryphon output: Bootstrap/PrintableAsTreeTest.kt
-
-#if !GRYPHON
 @testable import GryphonLib
 import XCTest
-#endif
 
 class PrintableAsTreeTest: XCTestCase {
-	// gryphon insert: constructor(): super() { }
-
-	public func getClassName() -> String { // gryphon annotation: override
-		return "PrintableAsTreeTest"
-	}
-
-	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // gryphon annotation: override
-		testPrinting()
-		testHorizontalLimit()
-		testInitOrNil()
-	}
-
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // gryphon ignore
+	static var allTests = [
 		("testPrinting", testPrinting),
 		("testHorizontalLimit", testHorizontalLimit),
 		("testInitOrNil", testInitOrNil),

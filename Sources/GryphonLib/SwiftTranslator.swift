@@ -16,11 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/SwiftTranslator.swiftAST
-// gryphon output: Sources/GryphonLib/SwiftTranslator.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/SwiftTranslator.gryphonAST
-// gryphon output: Bootstrap/SwiftTranslator.kt
-
 import Foundation
 
 public class SwiftTranslator {
@@ -33,7 +28,7 @@ public class SwiftTranslator {
 	let errorDanglingPatternDeclaration = PatternBindingDeclaration(
 		identifier: "<<Error>>",
 		typeName: "<<Error>>",
-		expression: ErrorExpression(range: nil))
+		expression: ErrorExpression(syntax: nil, range: nil))
 
 	internal var context: TranspilationContext
 	internal var sourceFile: SourceFile?
@@ -54,11 +49,14 @@ public class SwiftTranslator {
 	{
 		let filePath = ast.standaloneAttributes[0]
 
-		let contents = try Utilities.readFile(filePath)
-		sourceFile = SourceFile(path: filePath, contents: contents)
+		sourceFile = try SourceFile.readFile(atPath: filePath)
 
 		let fileRange = sourceFile.map {
-			SourceFileRange(lineStart: 0, lineEnd: $0.numberOfLines, columnStart: 0, columnEnd: 0)
+			SourceFileRange(
+				lineStart: 0,
+				lineEnd: $0.numberOfLines,
+				columnStart: 0,
+				columnEnd: 0)
 		}
 		let translatedSubtrees = try translateSubtrees(
 			ast.subtrees,
@@ -71,14 +69,16 @@ public class SwiftTranslator {
 				sourceFile: sourceFile,
 				declarations: declarationsAndStatements.declarations,
 				statements: declarationsAndStatements.statements,
-				outputFileMap: outputFileMap)
+				outputFileMap: outputFileMap,
+				indexingResponse: [:])
 		}
 		else {
 			return GryphonAST(
 				sourceFile: sourceFile,
 				declarations: translatedSubtrees,
 				statements: [],
-				outputFileMap: outputFileMap)
+				outputFileMap: outputFileMap,
+				indexingResponse: [:])
 		}
 	}
 
@@ -321,7 +321,7 @@ public class SwiftTranslator {
 			{
 				result = try [ExpressionStatement(
 					range: getRangeRecursively(ofNode: subtree),
-					expression: translateExpression(subtree.subtrees[1]))]
+					expression: translateExpression(subtree.subtrees[1])), ]
 			}
 			else {
 				try processPatternBindingDeclaration(subtree)
@@ -396,7 +396,11 @@ public class SwiftTranslator {
 		}
 
 		let access = protocolDeclaration["access"]
-		let annotations = getTranslationCommentValue(forNode: protocolDeclaration, key: .annotation)
+		let annotations = getTranslationCommentValue(
+				forNode: protocolDeclaration,
+				key: .annotation)?
+			.split(withStringSeparator: " ")
+			.toMutableList() ?? []
 
 		let members = try translateSubtreesOf(protocolDeclaration)
 
@@ -526,7 +530,11 @@ public class SwiftTranslator {
 			return nil
 		}
 
-		let annotations = getTranslationCommentValue(forNode: structDeclaration, key: .annotation)
+		let annotations = getTranslationCommentValue(
+				forNode: structDeclaration,
+				key: .annotation)?
+			.split(withStringSeparator: " ")
+			.toMutableList() ?? []
 
 		let access = structDeclaration["access"]
 
@@ -622,7 +630,7 @@ public class SwiftTranslator {
 
 		var rawValues: MutableList<Expression> = []
 		let constructorDeclarations = enumDeclaration.subtrees.filter {
-			$0.name ==  "Constructor Declaration"
+			$0.name == "Constructor Declaration"
 		}
 		for constructorDeclaration in constructorDeclarations {
 			if constructorDeclaration.standaloneAttributes.contains("init(rawValue:)"),
@@ -660,8 +668,10 @@ public class SwiftTranslator {
 			}
 
 			let annotations = getTranslationCommentValue(
-				forNode: enumElementDeclaration,
-				key: .annotation)
+					forNode: enumElementDeclaration,
+					key: .annotation)?
+				.split(withStringSeparator: " ")
+				.toMutableList() ?? []
 
 			if !elementName.contains("(") {
 				elements.append(EnumElement(
@@ -705,7 +715,11 @@ public class SwiftTranslator {
 			$0.name != "Enum Element Declaration" && $0.name != "Enum Case Declaration"
 		}
 
-		let annotations = getTranslationCommentValue(forNode: enumDeclaration, key: .annotation)
+		let annotations = getTranslationCommentValue(
+				forNode: enumDeclaration,
+				key: .annotation)?
+			.split(withStringSeparator: " ")
+			.toMutableList() ?? []
 
 		let translatedMembers = try translateSubtreesInScope(
 			members.toMutableList(),
@@ -1138,7 +1152,7 @@ public class SwiftTranslator {
 				variableDeclaration = VariableDeclaration(
 					range: range,
 					identifier: variableName,
-					typeName: variableType,
+					typeAnnotation: variableType,
 					expression: nil,
 					getter: nil,
 					setter: nil,
@@ -1184,16 +1198,14 @@ public class SwiftTranslator {
 
 		let variableRange = getRangeRecursively(ofNode: forEachStatement.subtrees[0])
 
-		let variable: Expression
+		let variable: Expression?
 		let collectionExpression: SwiftAST
 
 		let maybeCollectionExpression = forEachStatement.subtree(at: 2)
 
 		let variableSubtreeTuple = forEachStatement.subtree(named: "Pattern Tuple")
 		let variableSubtreeNamed = forEachStatement.subtree(named: "Pattern Named")
-		let variableSubtreeAny = forEachStatement.subtree(named: "Pattern Any")
 		let rawTypeNamed = variableSubtreeNamed?["type"]
-		let rawTypeAny = variableSubtreeAny?["type"]
 		let variableAttributes = variableSubtreeNamed?.standaloneAttributes
 		let variableName = variableAttributes?.first
 
@@ -1222,16 +1234,10 @@ public class SwiftTranslator {
 				pairs: variables)
 			collectionExpression = maybeCollectionExpression
 		}
-		else if let rawTypeAny = rawTypeAny,
+		else if forEachStatement.subtree(named: "Pattern Any") != nil,
 			let maybeCollectionExpression = maybeCollectionExpression
 		{
-			let typeName = cleanUpType(rawTypeAny)
-			variable = DeclarationReferenceExpression(
-				range: variableRange,
-				identifier: "_0",
-				typeName: typeName,
-				isStandardLibrary: false,
-				isImplicit: false)
+			variable = nil
 			collectionExpression = maybeCollectionExpression
 		}
 		else {
@@ -1453,7 +1459,7 @@ public class SwiftTranslator {
 						VariableDeclaration(
 							range: getRangeRecursively(ofNode: patternLet),
 							identifier: $0.newVariable,
-							typeName: $0.associatedValueType,
+							typeAnnotation: $0.associatedValueType,
 							expression: DotExpression(
 								range: getRangeRecursively(ofNode: patternLet),
 								leftExpression: translatedExpression,
@@ -1637,7 +1643,7 @@ public class SwiftTranslator {
 				conditionsResult.append(.declaration(variableDeclaration: VariableDeclaration(
 					range: getRangeRecursively(ofNode: lastCondition),
 					identifier: name,
-					typeName: typeName,
+					typeAnnotation: typeName,
 					expression: expression,
 					getter: nil,
 					setter: nil,
@@ -1704,7 +1710,7 @@ public class SwiftTranslator {
 					statementsResult.append(VariableDeclaration(
 						range: range,
 						identifier: declaration.newVariable,
-						typeName: declaration.associatedValueType,
+						typeAnnotation: declaration.associatedValueType,
 						expression: DotExpression(
 							range: range,
 							leftExpression: declarationReference,
@@ -1907,10 +1913,7 @@ public class SwiftTranslator {
 			genericTypes = []
 		}
 
-		let functionNamePrefix = functionName.prefix {
-			$0 !=
-				"(" // gryphon value: '('
-		}
+		let functionNamePrefix = functionName.prefix { $0 != "(" }
 
 		// Get the function parameters.
 		let parameterList: SwiftAST?
@@ -1970,10 +1973,11 @@ public class SwiftTranslator {
 			}
 		}
 
-		// Subscript setters in Kotlin must be (index, newValue) instead of Swift's
-		// (newValue, index)
-		if isSubscript {
-			parameters.reverse()
+		// Subscript setters in Kotlin must be (indices..., newValue) instead of Swift's
+		// (newValue, indices...)
+		if isSubscript, functionName == "set", let newValueParameter = parameters.first {
+			parameters.removeFirst()
+			parameters.append(newValueParameter)
 		}
 
 		// Translate the return type
@@ -2035,7 +2039,8 @@ public class SwiftTranslator {
 				statements: statements,
 				access: access,
 				annotations: annotations,
-				superCall: nil)
+				superCall: nil,
+				isOptional: false)
 		}
 		else {
 			return FunctionDeclaration(
@@ -2168,7 +2173,8 @@ public class SwiftTranslator {
 			expression = LiteralCodeExpression(
 				range: getRangeRecursively(ofNode: variableDeclaration),
 				string: valueReplacement,
-				shouldGoToMainFunction: true)
+				shouldGoToMainFunction: true,
+				typeName: nil)
 		}
 
 		var getter: FunctionDeclaration?
@@ -2237,7 +2243,7 @@ public class SwiftTranslator {
 		return VariableDeclaration(
 			range: getRangeRecursively(ofNode: variableDeclaration),
 			identifier: identifier,
-			typeName: typeName,
+			typeAnnotation: typeName,
 			expression: expression,
 			getter: getter,
 			setter: setter,
@@ -2258,7 +2264,8 @@ public class SwiftTranslator {
 			return LiteralCodeExpression(
 				range: getRangeRecursively(ofNode: expression),
 				string: valueReplacement,
-				shouldGoToMainFunction: true)
+				shouldGoToMainFunction: true,
+				typeName: nil)
 		}
 
 		let result: Expression
@@ -2567,7 +2574,7 @@ public class SwiftTranslator {
 		if let methodName = methodName, let methodOwner = methodOwner {
 			let methodNameTranslation = try translateDeclarationReferenceExpression(methodName)
 			var methodOwnerTranslation = try translateExpression(methodOwner)
-			
+
 			// The left expression in Swift 5.3 often comes wrapped in an extra paretheses
 			// expression, whose range is equal to the inner expression's range (since there are no
 			// actual parentheses characters in the source code).
@@ -2578,7 +2585,7 @@ public class SwiftTranslator {
 			{
 				methodOwnerTranslation = parenthesesExpression.expression
 			}
-			
+
 			function = DotExpression(
 				range: getRangeRecursively(ofNode: callExpression),
 				leftExpression: methodOwnerTranslation,
@@ -2608,7 +2615,9 @@ public class SwiftTranslator {
 			range: range,
 			function: function,
 			parameters: parameters,
-			typeName: typeName)
+			typeName: typeName,
+			allowsTrailingClosure: true,
+			isPure: false)
 	}
 
 	internal func translateClosureExpression(
@@ -2679,7 +2688,8 @@ public class SwiftTranslator {
 			range: getRangeRecursively(ofNode: closureExpression),
 			parameters: parameters,
 			statements: statements,
-			typeName: cleanUpType(typeName))
+			typeName: cleanUpType(typeName),
+			isTrailing: true)
 	}
 
 	internal func translateCallExpressionParameters(
@@ -2799,10 +2809,7 @@ public class SwiftTranslator {
 	/// each component in the tuple and returns either `nil` or "a" accordingly.
 	private func getLabelFromTupleComponent(_ component: String) -> String? {
 		if component.contains(":") {
-			let label = component.prefix(while: {
-					$0 !=
-						":" // gryphon value: ':'
-				})
+			let label = component.prefix(while: { $0 != ":" })
 			return String(label)
 		}
 		else {
@@ -2963,25 +2970,42 @@ public class SwiftTranslator {
 		}
 
 		let rawType = subscriptExpression["type"]
-		let subscriptContents = subscriptExpression.subtree(
-			at: 1,
-			named: "Parentheses Expression") ??
+		let indexExpression = subscriptExpression.subtree(
+				at: 1,
+				named: "Parentheses Expression") ??
 			subscriptExpression.subtree(
 				at: 1, named: "Tuple Expression")
 		let subscriptedExpression = subscriptExpression.subtree(at: 0)
 
 		if let rawType = rawType,
-			let subscriptContents = subscriptContents,
+			let indexExpression = indexExpression,
 			let subscriptedExpression = subscriptedExpression
 		{
 			let typeName = cleanUpType(rawType)
-			let subscriptContentsTranslation = try translateExpression(subscriptContents)
 			let subscriptedExpressionTranslation = try translateExpression(subscriptedExpression)
+
+			// Make sure the index expression is a tuple expression
+			let indexTranslation = try translateExpression(indexExpression)
+			let indexTupleExpression: TupleExpression
+			if let parenthesesExpression = indexTranslation as? ParenthesesExpression {
+				indexTupleExpression = TupleExpression(
+					range: indexTranslation.range,
+					pairs: [LabeledExpression(
+						label: nil,
+						expression: parenthesesExpression.expression), ])
+			}
+			else if let tupleExpression = indexTranslation as? TupleExpression {
+				indexTupleExpression = tupleExpression
+			}
+			else {
+				return try unexpectedExpressionStructureError(
+					"Unrecognized structure", ast: subscriptExpression)
+			}
 
 			return SubscriptExpression(
 				range: getRangeRecursively(ofNode: subscriptExpression),
 				subscriptedExpression: subscriptedExpressionTranslation,
-				indexExpression: subscriptContentsTranslation,
+				indexExpression: indexTupleExpression,
 				typeName: typeName)
 		}
 		else {
@@ -3301,7 +3325,8 @@ public class SwiftTranslator {
 						expression: LiteralCodeExpression(
 							range: astRange,
 							string: commentValue,
-							shouldGoToMainFunction: true)))
+							shouldGoToMainFunction: true,
+							typeName: nil)))
 				}
 				else if insertComment.key == .insert {
 					result.append(ExpressionStatement(
@@ -3309,7 +3334,8 @@ public class SwiftTranslator {
 						expression: LiteralCodeExpression(
 							range: astRange,
 							string: commentValue,
-							shouldGoToMainFunction: false)))
+							shouldGoToMainFunction: false,
+							typeName: nil)))
 				}
 				else if insertComment.key == .output {
 					if let fileExtension = Utilities.getExtension(of: commentValue),
@@ -3324,6 +3350,7 @@ public class SwiftTranslator {
 						Compiler.handleWarning(
 							message: "Unsupported output file extension in \"\(commentValue)\". " +
 								"Did you mean to use \".kt\"?",
+							syntax: nil,
 							sourceFile: sourceFile,
 							sourceFileRange: astRange)
 					}

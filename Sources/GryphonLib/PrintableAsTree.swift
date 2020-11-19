@@ -16,14 +16,9 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/PrintableAsTree.swiftAST
-// gryphon output: Sources/GryphonLib/PrintableAsTree.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/PrintableAsTree.gryphonAST
-// gryphon output: Bootstrap/PrintableAsTree.kt
-
 public class PrintableTree: PrintableAsTree {
-	public var treeDescription: String // gryphon annotation: override
-	public var printableSubtrees: List<PrintableAsTree?> // gryphon annotation: override
+	public var treeDescription: String
+	public var printableSubtrees: List<PrintableAsTree?>
 
 	init(_ description: String) {
 		self.treeDescription = description
@@ -89,7 +84,7 @@ public extension PrintableAsTree {
 	func prettyPrint(
 		indentation: MutableList<String> = [],
 		isLast: Bool = true,
-		printFunction: (String) -> () = { print($0, terminator: "") })
+		printFunction: (String) -> () = { Compiler.output($0, terminator: "") })
 	{
 		let verticalBar = Compiler.shouldAvoidUnicodeCharacters ? "|" : "│"
 		let verticalRightBar = Compiler.shouldAvoidUnicodeCharacters ? "|" : "├"

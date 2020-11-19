@@ -1,4 +1,4 @@
-FROM swift:latest
+FROM swift:5.3
 
 
 # Update, upgrade and install a few useful tools
@@ -38,5 +38,5 @@ RUN update-alternatives --config javac
 
 WORKDIR /app/Gryphon
 
-# Build with: docker build -t swift_ubuntu .
-# Run with: docker run -it --rm --privileged -v /path/to/Gryphon:/app/Gryphon swift_ubuntu
+# Build with: docker build -t gryphon .
+# Run with: docker run -it --rm --privileged -v /path/to/Gryphon/:/app/Gryphon gryphon

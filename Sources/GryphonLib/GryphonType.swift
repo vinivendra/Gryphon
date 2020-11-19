@@ -16,11 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/GryphonType.swiftAST
-// gryphon output: Sources/GryphonLib/GryphonType.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/GryphonType.gryphonAST
-// gryphon output: Bootstrap/GryphonType.kt
-
 indirect enum GryphonType: CustomStringConvertible, Equatable {
 	case namedType(typeName: String)
 	case optional(subType: GryphonType)

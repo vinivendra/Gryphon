@@ -16,21 +16,19 @@
 // limitations under the License.
 //
 
-// gryphon output: Bootstrap/DriverTest.kt
-
-#if !GRYPHON
 @testable import GryphonLib
 import XCTest
-#endif
-
-// gryphon insert: import kotlin.system.exitProcess
 
 class DriverTest: XCTestCase {
-	// gryphon insert: constructor(): super() { }
-
-	public func getClassName() -> String { // gryphon annotation: override
-		return "DriverTest"
-	}
+	/// Tests to be run when using Swift on Linux
+	static var allTests = [
+		("testOutputs", testOutputs),
+		("testGenerateGryphonLibraries", testGenerateGryphonLibraries),
+		("testUsageString", testUsageString),
+		("testNoMainFile", testNoMainFile),
+		("testContinueOnErrors", testContinueOnErrors),
+		("testIndentation", testIndentation),
+	]
 
 	override static func setUp() {
 		do {
@@ -42,27 +40,6 @@ class DriverTest: XCTestCase {
 		}
 	}
 
-	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // gryphon annotation: override
-		DriverTest.setUp()
-		testOutputs()
-		testGenerateGryphonLibraries()
-		testUsageString()
-		testNoMainFile()
-		testContinueOnErrors()
-		testIndentation()
-	}
-
-	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // gryphon ignore
-		("testOutputs", testOutputs),
-		("testGenerateGryphonLibraries", testGenerateGryphonLibraries),
-		("testUsageString", testUsageString),
-		("testNoMainFile", testNoMainFile),
-		("testContinueOnErrors", testContinueOnErrors),
-		("testIndentation", testIndentation),
-	]
-
 	// MARK: - Tests
 	func testOutputs() {
 		let oldOutputFunction = Compiler.outputFunction
@@ -70,30 +47,34 @@ class DriverTest: XCTestCase {
 
 		var compilerOutput = ""
 		var compilerError = ""
-		Compiler.outputFunction = { contents in
-				compilerOutput = compilerOutput + "\(contents)"
+		Compiler.outputFunction = { (contents: Any, terminator: String) -> () in
+				compilerOutput += "\(contents)" + terminator
 			}
-		Compiler.logError = { contents in
-				compilerError = compilerError + "\(contents)"
+		Compiler.logError = { (contents: Any) -> () in
+				compilerError += "\(contents)"
 			}
 
 		do {
-			try Driver.run(withArguments: ["test.swift"])
+			try Driver.run(withArguments: ["\(TestUtilities.relativeTestFilesPath)/test.swift"])
 			XCTAssert(!compilerOutput.isEmpty)
 
 			compilerOutput = ""
-			try Driver.run(withArguments: ["Test cases/outputs.swift"])
+			try Driver.run(withArguments: ["\(TestUtilities.testCasesPath)outputs.swift"])
 			XCTAssert(compilerOutput.isEmpty)
 
 			compilerOutput = ""
-			try Driver.run(withArguments: ["Test cases/outputs.swift", "--write-to-console"])
+			try Driver.run(withArguments:
+							["\(TestUtilities.testCasesPath)outputs.swift",
+							 "--write-to-console", ])
 			XCTAssert(!compilerOutput.isEmpty)
 
 			// Check if --quiet mutes outputs and warnings
 			compilerOutput = ""
 			compilerError = ""
 			try Driver.run(withArguments:
-				["Test cases/warnings.swift", "--write-to-console", "--quiet"])
+							["\(TestUtilities.testCasesPath)warnings.swift",
+							 "--write-to-console",
+							 "--quiet", ])
 			XCTAssert(compilerOutput.isEmpty)
 			XCTAssert(compilerError.isEmpty)
 
@@ -101,7 +82,73 @@ class DriverTest: XCTestCase {
 			compilerOutput = ""
 			compilerError = ""
 			try Driver.run(withArguments:
-				["Test cases/errors.swift", "--write-to-console", "--quiet", "--continue-on-error"])
+							["\(TestUtilities.testCasesPath)errors.swift",
+							 "--write-to-console",
+							 "--quiet",
+							 "--continue-on-error", ])
+			XCTAssert(compilerOutput.isEmpty)
+			XCTAssert(!compilerError.isEmpty)
+		}
+		catch let error {
+			XCTFail("🚨 Test failed with error:\n\(error)")
+		}
+
+		Compiler.outputFunction = oldOutputFunction
+		Compiler.logError = oldErrorFunction
+	}
+
+	func testOutputsWithASTDumps() {
+		let oldOutputFunction = Compiler.outputFunction
+		let oldErrorFunction = Compiler.logError
+
+		var compilerOutput = ""
+		var compilerError = ""
+		Compiler.outputFunction = { (contents: Any, terminator: String) -> () in
+				compilerOutput += "\(contents)" + terminator
+			}
+		Compiler.logError = { (contents: Any) -> () in
+				compilerError += "\(contents)"
+			}
+
+		do {
+			try Driver.run(withArguments:
+							["\(TestUtilities.relativeTestFilesPath)/test.swift",
+							 "--legacyFrontend", ])
+			XCTAssert(!compilerOutput.isEmpty)
+
+			compilerOutput = ""
+			try Driver.run(withArguments:
+							["\(TestUtilities.testCasesPath)outputs.swift",
+							 "--legacyFrontend", ])
+			XCTAssert(compilerOutput.isEmpty)
+
+			compilerOutput = ""
+			try Driver.run(withArguments:
+							["\(TestUtilities.testCasesPath)outputs.swift",
+							 "--write-to-console",
+							 "--legacyFrontend", ])
+			XCTAssert(!compilerOutput.isEmpty)
+
+			// Check if --quiet mutes outputs and warnings
+			compilerOutput = ""
+			compilerError = ""
+			try Driver.run(withArguments:
+				["\(TestUtilities.testCasesPath)warnings.swift",
+				 "--write-to-console",
+				 "--quiet",
+				 "--legacyFrontend", ])
+			XCTAssert(compilerOutput.isEmpty)
+			XCTAssert(compilerError.isEmpty)
+
+			// Check if --quiet does not mute errors
+			compilerOutput = ""
+			compilerError = ""
+			try Driver.run(withArguments:
+							["\(TestUtilities.testCasesPath)errors.swift",
+							 "--write-to-console",
+							 "--quiet",
+							 "--continue-on-error",
+							 "--legacyFrontend", ])
 			XCTAssert(compilerOutput.isEmpty)
 			XCTAssert(!compilerError.isEmpty)
 		}
@@ -131,7 +178,7 @@ class DriverTest: XCTestCase {
 			// statement that aren't in the library Gryphon uses internally.
 			// This assumes the statement is followed by two newlines.
 			let actualKotlinLibraryContents = try Utilities.readFile(
-				"Bootstrap/GryphonKotlinLibrary.kt")
+				TestUtilities.bootstrapPath + "GryphonKotlinLibrary.kt")
 			let generatedKotlinLibraryContents = try Utilities.readFile(
 				SupportingFile.gryphonKotlinLibrary.relativePath)
 			let processedKotlinLibraryContents = String(generatedKotlinLibraryContents
@@ -251,6 +298,44 @@ class DriverTest: XCTestCase {
 				 "--no-main-file",
 				 "--write-to-console",
 				 "--quiet",
+				 testCasePath, ])
+
+			XCTFail("Expected Driver to throw an error.")
+		}
+		catch {
+			// If the Driver threw an error then it's working correctly.
+		}
+
+		// Repeat the test using AST dumps
+		do {
+			let testCasePath = TestUtilities.testCasesPath + "errors.swift"
+
+			//
+			Compiler.clearIssues()
+
+			_ = try Driver.run(withArguments:
+				["-skip-AST-dumps",
+				 "-emit-kotlin",
+				 "--indentation=t",
+				 "--continue-on-error",
+				 "--write-to-console",
+				 "--quiet",
+				 "--legacyFrontend",
+				 testCasePath, ])
+
+			XCTAssert(Compiler.numberOfErrors == 2)
+
+			//
+			Compiler.clearIssues()
+
+			_ = try Driver.run(withArguments:
+				["-skip-AST-dumps",
+				 "-emit-kotlin",
+				 "--indentation=t",
+				 "--no-main-file",
+				 "--write-to-console",
+				 "--quiet",
+				 "--legacyFrontend",
 				 testCasePath, ])
 
 			XCTFail("Expected Driver to throw an error.")

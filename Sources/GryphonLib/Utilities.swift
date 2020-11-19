@@ -18,8 +18,103 @@
 
 import Foundation
 
+#if canImport(os)
+import os
+
+// Logs for macOS's Instruments
+internal class Log {
+	static private let os_log = OSLog(
+		subsystem: "com.gryphon.app",
+		category: "PointsOfInterest"
+	)
+
+	struct LogInfo {
+		let name: StaticString
+		let id: Any
+	}
+
+	static func startLog(name: StaticString) -> LogInfo {
+		if #available(OSX 10.14, *) {
+			let id = OSSignpostID(log: os_log)
+			os_signpost(
+				.begin,
+				log: Log.os_log,
+				name: name,
+				signpostID: id)
+			return LogInfo(name: name, id: id)
+		}
+		else {
+			return LogInfo(name: "", id: 0)
+		}
+	}
+
+	static func endLog(info: LogInfo) {
+		if #available(OSX 10.14, *) {
+			os_signpost(
+				.end,
+				log: Log.os_log,
+				name: info.name,
+				signpostID: info.id as! OSSignpostID)
+		}
+	}
+}
+
+#else
+
+// Do nothing on Linux
+internal class Log {
+	struct LogInfo {
+		let name: StaticString
+		let id: Any
+	}
+
+	static func startLog(name: StaticString) -> LogInfo {
+		return LogInfo(name: "", id: 0)
+	}
+
+	static func endLog(info: LogInfo) { }
+}
+
+#endif
+
 typealias Semaphore = NSLock
 internal let libraryUpdateLock: Semaphore = NSLock()
+/// Used for synchronizing anything that prints to either stdout or stderr
+internal let printingLock = NSLock()
+
+class Atomic<Value> {
+    private var value: Value
+	private let lock = NSLock()
+
+	init(_ value: Value) {
+        self.value = value
+    }
+
+	/// Access this value atomically.
+    var atomic: Value {
+        get {
+			lock.lock()
+			let result = value
+			lock.unlock()
+			return result
+		}
+        set {
+			lock.lock()
+			value = newValue
+			lock.unlock()
+		}
+    }
+
+	/// Use this to mutate the value (to guarantee that the get and set are atomic). Returns the new
+	/// value.
+	@discardableResult
+	func mutateAtomically<Result>(_ closure: (inout Value) throws -> (Result)) rethrows -> Result {
+		lock.lock()
+		let result = try closure(&value)
+		lock.unlock()
+		return result
+	}
+}
 
 public class OS {
 	enum OSType {
@@ -195,6 +290,7 @@ extension Utilities {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 extension Utilities {
+	/// The absolute path to the current folder
 	static func getCurrentFolder() -> String {
 		return FileManager.default.currentDirectoryPath
 	}
@@ -233,7 +329,7 @@ extension Utilities {
 }
 
 extension Utilities {
-	public static func getAbsoultePath(forFile file: String) -> String {
+	public static func getAbsolutePath(forFile file: String) -> String {
 		return "/" + URL(fileURLWithPath: file).pathComponents.dropFirst().joined(separator: "/")
 	}
 }
