@@ -16,11 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/Extensions.swiftAST
-// gryphon output: Sources/GryphonLib/Extensions.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/Extensions.gryphonAST
-// gryphon output: Bootstrap/Extensions.kt
-
 import Foundation
 
 private func gryphonTemplates() {
@@ -40,19 +35,8 @@ private func gryphonTemplates() {
 	_ = GRYTemplate.call(
 		.dot("_string1", "split"),
 		[.labeledParameter("separator", "_character"),
-		 .labeledParameter("omittingEmptySubsequences", "_bool")])
+		 .labeledParameter("omittingEmptySubsequences", "_bool"), ])
 }
-
-// gryphon insert: internal fun String.split(
-// gryphon insert:     separator: Char,
-// gryphon insert:     maxSplits: Int = Int.MAX_VALUE,
-// gryphon insert:     omittingEmptySubsequences: Boolean = true)
-// gryphon insert:     : MutableList<String>
-// gryphon insert: {
-// gryphon insert:     return this.split(separator = separator.toString(),
-// gryphon insert:         maxSplits = maxSplits,
-// gryphon insert:         omittingEmptySubsequences = omittingEmptySubsequences)
-// gryphon insert: }
 
 internal extension String {
 	// Result should have at most maxSplits + 1 elements.
@@ -107,10 +91,7 @@ internal extension String {
 		var substringOffset = self.startIndex
 
 		while substringOffset < self.endIndex {
-			let maybeIndex = // gryphon ignore
-				currentSubstring.range(of: searchedSubstring)?.lowerBound
-			// gryphon insert: var maybeIndex: Int? = currentSubstring.indexOf(searchedSubstring)
-			// gryphon insert: maybeIndex = if (maybeIndex == -1) { null } else { maybeIndex }
+			let maybeIndex = currentSubstring.range(of: searchedSubstring)?.lowerBound
 
 			guard let foundIndex = maybeIndex else {
 				break
@@ -118,7 +99,7 @@ internal extension String {
 
 			// In Kotlin the foundIndex is counted from the substring's start, but in Swift it's
 			// from the string's start. This compensates for that difference.
-			let occurenceStartIndex = foundIndex // gryphon value: foundIndex + substringOffset
+			let occurenceStartIndex = foundIndex
 
 			let occurenceEndIndex =
 				currentSubstring.index(occurenceStartIndex, offsetBy: searchedSubstring.count)
@@ -190,8 +171,7 @@ internal extension String {
 		var result: String = ""
 		result.append(self[self.startIndex].uppercased())
 
-		let indicesWithoutTheFirstOne = self.indices.dropFirst() // gryphon ignore
-		// gryphon insert: val indicesWithoutTheFirstOne = this.indices.drop(1)
+		let indicesWithoutTheFirstOne = self.indices.dropFirst()
 
 		for index in indicesWithoutTheFirstOne {
 			let currentCharacter = self[index]
@@ -327,9 +307,31 @@ extension Character {
 }
 
 //
+extension List where Element == String {
+	// Turns ["a", "b", "c"] into "a, b and c", optionally adding double quotes to each element
+	func readableList(withQuotes: Bool = false) -> String {
+		if withQuotes {
+			return self.map { "\"\($0)\"" }.readableList()
+		}
+
+		if self.isEmpty {
+			return ""
+		}
+		else if self.count == 1 {
+			return "\(self[0])"
+		}
+
+		let prefix = self.dropLast().joined(separator: ", ")
+		let suffix = " and \(self.last!)"
+
+		return prefix + suffix
+	}
+}
+
+//
 extension List {
 	/// Returns nil if index is out of bounds.
-	subscript (safe index: Int) -> Element? { // gryphon ignore
+	subscript (safe index: Int) -> Element? {
 		return getSafe(index)
 	}
 
@@ -354,7 +356,7 @@ extension List {
 		}
 
 		var newArray: MutableList<Element> = []
-		newArray.reserveCapacity(self.count) // gryphon ignore
+		newArray.reserveCapacity(self.count)
 		newArray.append(contentsOf: self.dropFirst())
 		newArray.append(first)
 
@@ -374,6 +376,23 @@ extension List {
 			result[key] = array
 		}
 		return result
+	}
+
+	/// Separates the list in two. The first contains all elements that satisfy the given predicate,
+	/// and the second contains all elements that don't. The separation is stable.
+	func separate(_ predicate: (Element) -> Bool) -> (MutableList<Element>, MutableList<Element>) {
+		let first: MutableList<Element> = []
+		let second: MutableList<Element> = []
+		for element in self {
+			if predicate(element) {
+				first.append(element)
+			}
+			else {
+				second.append(element)
+			}
+		}
+
+		return (first, second)
 	}
 }
 
@@ -406,6 +425,87 @@ extension List where Element: Equatable {
 		}
 
 		return result
+	}
+}
+
+extension MutableList where Element: Equatable {
+	/// Removes the given element, if it is in the list. Returns `true` if the element was present,
+	/// `false` otherwise.
+	@discardableResult
+	func remove(_ element: Element) -> Bool {
+		if let index = self.firstIndex(of: element) {
+			self.array.remove(at: index)
+			return true
+		}
+		else {
+			return false
+		}
+	}
+}
+
+class SortedList<Element>: List<Element> {
+	init(_ array: [Element], sortedBy closure: (Element, Element) throws -> Bool) rethrows {
+		let sortedArray = try array.sorted(by: closure)
+		super.init(sortedArray)
+	}
+
+	init(_ list: List<Element>, sortedBy closure: (Element, Element) throws -> Bool) rethrows {
+		let sortedArray = try list.array.sorted(by: closure)
+		super.init(sortedArray)
+	}
+
+	public required init(arrayLiteral elements: Element...) {
+		fatalError("Sorted Array can't be initialized by a literal array. " +
+			"Use init(_: sortedBy:) or init(of:) instead.")
+	}
+
+	/// Search for an element using the given `predicate` with a binary search.
+	/// The `predicate` should return `.orderedAscending` if the searched element is larger than the
+	/// given element, `.orderedDescending` if the contrary is true, and `.orderedSame` if the given
+	/// element is the searched element.
+	func search(predicate: (Element) -> ComparisonResult) -> Element? {
+		var left = 0
+		var right = array.count - 1
+		while left <= right {
+			let middle = (left + right) / 2
+			let comparison = predicate(array[middle])
+			switch comparison {
+			case .orderedAscending:
+				left = middle + 1
+			case .orderedDescending:
+				right = middle - 1
+			case .orderedSame:
+				return array[middle]
+			}
+		}
+
+		return nil
+	}
+}
+
+extension SortedList where Element: Comparable {
+	convenience init(of array: [Element]) {
+		self.init(array, sortedBy: <)
+	}
+
+	func search(for element: Element) -> Element? {
+		var left = 0
+		var right = array.count - 1
+		while left <= right {
+			let middle = (left + right) / 2
+
+			if array[middle] < element {
+				left = middle + 1
+			}
+			else if array[middle] > element {
+				right = middle - 1
+			}
+			else {
+				return array[middle]
+			}
+		}
+
+		return nil
 	}
 }
 

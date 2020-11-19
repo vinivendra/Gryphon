@@ -16,11 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/KotlinTranslationResult.swiftAST
-// gryphon output: Sources/GryphonLib/KotlinTranslationResult.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/KotlinTranslationResult.gryphonAST
-// gryphon output: Bootstrap/KotlinTranslationResult.kt
-
 public struct KotlinTranslationResult {
 	let translation: String
 	let errorMap: String
@@ -44,11 +39,11 @@ public class KotlinTranslation: PrintableAsTree, CustomStringConvertible {
 		return prettyDescription()
 	}
 
-	public var treeDescription: String { // gryphon annotation: override
+	public var treeDescription: String {
 		return "Translation"
 	}
 
-	public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	public var printableSubtrees: List<PrintableAsTree?> {
 		return children.forceCast(to: List<PrintableAsTree?>.self)
 	}
 
@@ -85,44 +80,48 @@ public class KotlinTranslation: PrintableAsTree, CustomStringConvertible {
 	public func resolveTranslation() -> KotlinTranslationResult {
 		let translationResult: MutableList<String> = []
 		let errorMap: MutableList<String> = []
-		resolveTranslationInto(translationResult: translationResult, errorMap: errorMap)
+		_ = resolveTranslationInto(translationResult: translationResult, errorMap: errorMap)
 		return KotlinTranslationResult(
 			translation: translationResult.joined(),
 			errorMap: errorMap.joined(separator: "\n"))
 	}
 
+	/// Processes the current translation result and adds the information into the given arrays.
+	/// Returns the position at the end of the current translation result.
 	private func resolveTranslationInto(
 		translationResult: MutableList<String>,
 		errorMap: MutableList<String>,
-		currentPosition: SourceFilePosition = SourceFilePosition())
+		startPosition: SourceFilePosition = SourceFilePosition.beginningOfFile)
+		-> SourceFilePosition
 	{
-		let startingPosition = currentPosition.copy()
+		var currentEndPosition = startPosition
 
 		for child in children {
 			if let string = child.stringLiteral {
-				currentPosition.updateWithString(string)
+				currentEndPosition = currentEndPosition.updated(withString: string)
 				translationResult.append(string)
 			}
 			else {
 				let node = child.node!
-				node.resolveTranslationInto(
+				currentEndPosition = node.resolveTranslationInto(
 					translationResult: translationResult,
 					errorMap: errorMap,
-					currentPosition: currentPosition)
+					startPosition: currentEndPosition)
 			}
 		}
 
 		if let swiftRange = swiftRange {
-			let endPosition = currentPosition.copy()
-			let newEntry = "\(startingPosition.lineNumber):\(startingPosition.columnNumber):" +
-				"\(endPosition.lineNumber):\(endPosition.columnNumber):" +
-				"\(swiftRange.lineStart):\(swiftRange.columnStart):" +
-				"\(swiftRange.lineEnd):\(swiftRange.columnEnd)"
+			let newEntry = "\(startPosition.line):\(startPosition.column):" +
+				"\(currentEndPosition.line):\(currentEndPosition.column):" +
+				"\(swiftRange.start.line):\(swiftRange.start.column):" +
+				"\(swiftRange.end.line):\(swiftRange.end.column)"
 			let lastEntry = errorMap.last
 			if lastEntry == nil || lastEntry! != newEntry {
 				errorMap.append(newEntry)
 			}
 		}
+
+		return currentEndPosition
 	}
 
 	/// Goes through the translation subtree looking for the given suffix. If it is found, it is
@@ -150,25 +149,22 @@ struct TranslationUnit: PrintableAsTree, CustomStringConvertible {
 
 	// Only these two initializers exist, therefore exactly one of the properties will always be
 	// non-nil
-	init(_ stringLiteral: String) { // gryphon ignore
+	init(_ stringLiteral: String) {
 		self.stringLiteral = stringLiteral
 		self.node = nil
 	}
 
-	init(_ node: KotlinTranslation) { // gryphon ignore
+	init(_ node: KotlinTranslation) {
 		self.stringLiteral = nil
 		self.node = node
 	}
-
-	// gryphon insert: constructor(stringLiteral: String): this(stringLiteral, null) { }
-	// gryphon insert: constructor(node: KotlinTranslation): this(null, node) { }
 
 	//
 	var description: String {
 		return prettyDescription()
 	}
 
-	var treeDescription: String { // gryphon annotation: override
+	var treeDescription: String {
 		if let stringLiteral = self.stringLiteral {
 			let escapedString = stringLiteral
 				.replacingOccurrences(of: "\n", with: "\\n")
@@ -186,7 +182,7 @@ struct TranslationUnit: PrintableAsTree, CustomStringConvertible {
 		}
 	}
 
-	var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	var printableSubtrees: List<PrintableAsTree?> {
 		if let node = self.node {
 			return node.children.forceCast(to: List<PrintableAsTree?>.self)
 		}
@@ -196,38 +192,25 @@ struct TranslationUnit: PrintableAsTree, CustomStringConvertible {
 	}
 }
 
-internal class SourceFilePosition {
-	var lineNumber: Int
-	var columnNumber: Int
-
-	public init() {
-		self.lineNumber = 1
-		self.columnNumber = 1
-	}
-
-	private init(lineNumber: Int, columnNumber: Int) {
-		self.lineNumber = lineNumber
-		self.columnNumber = columnNumber
-	}
-
+extension SourceFilePosition {
 	// Note: ensuring new lines only happen at the end of strings (i.e. all strings already come
 	// separated by new lines) could make this more performant.
-	func updateWithString(_ string: String) {
+	/// Move this position forward to the end of the given string, updating the line and column
+	/// numbers accordingly.
+	func updated(withString string: String) -> SourceFilePosition {
 		let newLines = string.occurrences(of: "\n").count
 		if newLines > 0 {
-			self.lineNumber += newLines
+			let newLine = self.line + newLines
 			let lastLineContents = string.split(
 				withStringSeparator: "\n",
 				omittingEmptySubsequences: false).last!
-			self.columnNumber = lastLineContents.count + 1
+			let newColumn = lastLineContents.count + 1
+			return SourceFilePosition(line: newLine, column: newColumn)
 		}
 		else {
-			self.columnNumber += string.count
+			let newColumn = self.column + string.count
+			return SourceFilePosition(line: self.line, column: newColumn)
 		}
-	}
-
-	func copy() -> SourceFilePosition {
-		return SourceFilePosition(lineNumber: self.lineNumber, columnNumber: self.columnNumber)
 	}
 }
 

@@ -16,28 +16,12 @@
 // limitations under the License.
 //
 
-// gryphon output: Bootstrap/ShellTest.kt
-
-#if !GRYPHON
 @testable import GryphonLib
 import XCTest
-#endif
 
 class ShellTest: XCTestCase {
-	// gryphon insert: constructor(): super() { }
-
-	public func getClassName() -> String { // gryphon annotation: override
-		return "ShellTest"
-	}
-
-	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // gryphon annotation: override
-		testEcho()
-		testSwiftc()
-	}
-
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // gryphon ignore
+	static var allTests = [
 		("testEcho", testEcho),
 		("testSwiftc", testSwiftc),
 	]

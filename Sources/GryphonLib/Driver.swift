@@ -16,13 +16,8 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/Driver.swiftAST
-// gryphon output: Sources/GryphonLib/Driver.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/Driver.gryphonAST
-// gryphon output: Bootstrap/Driver.kt
-
 public class Driver {
-	public static let gryphonVersion = "0.10.4"
+	public static let gryphonVersion = "0.10.6"
 
 	public static let supportedArguments: List = [
 		"help", "-help", "--help",
@@ -38,6 +33,7 @@ public class Driver {
 		"--verbose",
 		"--quiet",
 		"--sync",
+		"--legacyFrontend",
 	]
 
 	public static let supportedArgumentsWithParameters: List = [
@@ -90,7 +86,11 @@ public class Driver {
 		let isVerbose = arguments.contains("--verbose")
 		Compiler.shouldLogProgress = isVerbose
 
-		Compiler.log("ℹ️  Gryphon - version \(gryphonVersion)")
+		let isUsingSwiftSyntax = !arguments.contains("--legacyFrontend")
+
+		Compiler.log("ℹ️  Gryphon version \(gryphonVersion)")
+		Compiler.log("ℹ️  SwiftSyntax version \(TranspilationContext.swiftSyntaxVersion)")
+		Compiler.log("ℹ️  Using \(isUsingSwiftSyntax ? "Swift Syntax" : "AST dumps")")
 
 		let badArguments = unsupportedArguments(in: arguments)
 		if !badArguments.isEmpty {
@@ -139,6 +139,13 @@ public class Driver {
 			if OS.osType == .linux {
 				throw GryphonError(errorMessage: "Toolchain support is implemented using xcrun, " +
 					"which is only available in macOS.")
+			}
+			if isUsingSwiftSyntax {
+				throw GryphonError(errorMessage:
+					"Gryphon's new frontend always uses the Swift version it was built with. " +
+					"The current version was built with (and uses) Swift " +
+					"\(TranspilationContext.swiftSyntaxVersion). " +
+					"To use a different version, please reinstall Gryphon.")
 			}
 
 			let toolchainName = String(toolchainArgument.dropFirst("--toolchain=".count))
@@ -197,6 +204,10 @@ public class Driver {
 					newArguments.append("--verbose")
 				}
 
+				if !isUsingSwiftSyntax {
+					newArguments.append("--legacyFrontend")
+				}
+
 				if let target = target {
 					newArguments.append("--target=\(target)")
 				}
@@ -226,7 +237,7 @@ public class Driver {
 
 			Compiler.logStart("🧑‍💻  Creating AST dump script...")
 
-			try createASTDumpsScript(
+			try createIOSCompilationFiles(
 				forXcodeProject: xcodeProject,
 				forTarget: target,
 				usingToolchain: toolchain)
@@ -246,7 +257,8 @@ public class Driver {
 			try makeGryphonTargets(
 				forXcodeProject: xcodeProject,
 				forTarget: target,
-				usingToolchain: toolchain)
+				usingToolchain: toolchain,
+				usingSwiftSyntax: isUsingSwiftSyntax)
 
 			Compiler.logEnd("✅  Done adding Gryphon targets.")
 
@@ -282,58 +294,92 @@ public class Driver {
 
 		guard settings.shouldGenerateSwiftAST else {
 			Compiler.logStart("☑️  Nothing to do for \(inputFileRelativePath).")
-			return [] // gryphon value: listOf<Any>()
-		}
-
-		Compiler.logStart("🧑‍💻  Reading AST dump file for \(inputFileRelativePath)...")
-		let swiftASTDumpFile = SupportingFile.pathOfSwiftASTDumpFile(
-			forSwiftFile: inputFilePath,
-			swiftVersion: context.swiftVersion)
-
-		let swiftASTDump: String
-		do {
-			swiftASTDump = try Utilities.readFile(swiftASTDumpFile)
-		}
-		catch {
-			throw GryphonError(errorMessage:
-				"Error reading the AST for file \(inputFilePath). " +
-				"Running `gryphon init` or `gryphon init <xcode_project>` might fix this issue.")
-		}
-		Compiler.logEnd("✅  Done reading AST dump for \(inputFileRelativePath).")
-
-		Compiler.logStart("🧑‍💻  Generating the Swift AST for \(inputFileRelativePath)...")
-		let swiftAST = try Compiler.generateSwiftAST(fromASTDump: swiftASTDump)
-		Compiler.logEnd("✅  Done generating Swift AST for \(inputFileRelativePath).")
-
-		guard settings.shouldGenerateRawAST else {
-			if settings.shouldEmitSwiftAST, !settings.quietModeIsOn {
-				Compiler.log("✍️  Printing Swift AST for \(inputFileRelativePath):")
-				let output = swiftAST.prettyDescription()
-				Compiler.output(output)
-			}
-
-			return swiftAST
+			return []
 		}
 
 		let isMainFile = (inputFilePath == settings.mainFilePath)
 
-		Compiler.logStart("🧑‍💻  Generating the raw AST for \(inputFileRelativePath)...")
-		let gryphonRawAST = try Compiler.generateGryphonRawAST(
-			fromSwiftAST: swiftAST,
-			asMainFile: isMainFile,
-			withContext: context)
-		Compiler.logEnd("✅  Done generating raw ASt for \(inputFileRelativePath).")
+		let swiftAST: PrintableAsTree
+		let gryphonRawAST: GryphonAST
+		if context.isUsingSwiftSyntax {
+			Compiler.logStart("🧑‍💻  Processing SwiftSyntax for \(inputFileRelativePath)...")
+			let decoder = try Compiler.generateSwiftSyntaxDecoder(
+				fromSwiftFile: inputFilePath,
+				withContext: context)
+			swiftAST = decoder.syntaxTree.toPrintableTree()
+			Compiler.logEnd("✅  Done processing SwiftSyntax for \(inputFileRelativePath).")
+
+			Compiler.logStart("🧑‍💻  Converting SwiftSyntax for \(inputFileRelativePath)...")
+			gryphonRawAST = try Compiler.generateGryphonRawASTUsingSwiftSyntax(
+				usingFileDecoder: decoder,
+				asMainFile: isMainFile,
+				withContext: context)
+			Compiler.logEnd("✅  Done converting SwiftSyntax for \(inputFileRelativePath).")
+		}
+		else {
+			Compiler.logStart("🧑‍💻  Reading AST dump file for \(inputFileRelativePath)...")
+			let swiftASTDumpFile = SupportingFile.pathOfSwiftASTDumpFile(
+				forSwiftFile: inputFilePath,
+				swiftVersion: context.swiftVersion)
+
+			let swiftASTDump: String
+			do {
+				swiftASTDump = try Utilities.readFile(swiftASTDumpFile)
+			}
+			catch {
+				throw GryphonError(errorMessage:
+					"Error reading the AST for file \(inputFilePath). " +
+					"Running `gryphon init` or `gryphon init <xcode_project>` might fix this issue.")
+			}
+			Compiler.logEnd("✅  Done reading AST dump for \(inputFileRelativePath).")
+
+			Compiler.logStart("🧑‍💻  Generating the Swift AST for \(inputFileRelativePath)...")
+			let generatedSwiftAST = try Compiler.generateSwiftAST(fromASTDump: swiftASTDump)
+			swiftAST = generatedSwiftAST
+			Compiler.logEnd("✅  Done generating Swift AST for \(inputFileRelativePath).")
+
+			guard settings.shouldGenerateRawAST else {
+				if settings.shouldEmitSwiftAST, !settings.quietModeIsOn {
+					Compiler.log("📝  Printing Swift AST for \(inputFileRelativePath):")
+					let output = swiftAST.prettyDescription()
+					Compiler.output(output)
+				}
+
+				return swiftAST
+			}
+
+			Compiler.logStart("🧑‍💻  Generating the raw AST for \(inputFileRelativePath)...")
+			gryphonRawAST = try Compiler.generateGryphonRawAST(
+				fromSwiftAST: generatedSwiftAST,
+				asMainFile: isMainFile,
+				withContext: context)
+			Compiler.logEnd("✅  Done generating raw AST for \(inputFileRelativePath).")
+
+			if settings.shouldEmitSwiftAST {
+				let output = swiftAST.prettyDescription()
+				if let outputFilePath = gryphonRawAST.outputFileMap[.swiftAST],
+					!settings.forcePrintingToConsole
+				{
+					Compiler.log("📝  Writing Swift AST to file for \(inputFileRelativePath)")
+					try Utilities.createFile(atPath: outputFilePath, containing: output)
+				}
+				else if !settings.quietModeIsOn {
+					Compiler.log("📝  Printing Swift AST for \(inputFileRelativePath):")
+					Compiler.output(output)
+				}
+			}
+		}
 
 		if settings.shouldEmitSwiftAST {
 			let output = swiftAST.prettyDescription()
 			if let outputFilePath = gryphonRawAST.outputFileMap[.swiftAST],
 				!settings.forcePrintingToConsole
 			{
-				Compiler.log("✍️  Writing Swift AST to file for \(inputFileRelativePath)")
+				Compiler.log("📝  Writing Swift AST to file for \(inputFileRelativePath)")
 				try Utilities.createFile(atPath: outputFilePath, containing: output)
 			}
 			else if !settings.quietModeIsOn {
-				Compiler.log("✍️  Printing Swift AST for \(inputFileRelativePath):")
+				Compiler.log("📝  Printing Swift AST for \(inputFileRelativePath):")
 				Compiler.output(output)
 			}
 		}
@@ -343,11 +389,11 @@ public class Driver {
 			if let outputFilePath = gryphonRawAST.outputFileMap[.gryphonASTRaw],
 				!settings.forcePrintingToConsole
 			{
-				Compiler.log("✍️  Writing raw AST to file for \(inputFileRelativePath)")
+				Compiler.log("📝  Writing raw AST to file for \(inputFileRelativePath)")
 				try Utilities.createFile(atPath: outputFilePath, containing: output)
 			}
 			else if !settings.quietModeIsOn {
-				Compiler.log("✍️  Printing raw AST for \(inputFileRelativePath):")
+				Compiler.log("📝  Printing raw AST for \(inputFileRelativePath):")
 				Compiler.output(output)
 			}
 		}
@@ -384,11 +430,11 @@ public class Driver {
 			if let outputFilePath = gryphonAST.outputFileMap[.gryphonAST],
 				!settings.forcePrintingToConsole
 			{
-				Compiler.log("✍️  Writing AST to file for \(inputFileRelativePath)")
+				Compiler.log("📝  Writing AST to file for \(inputFileRelativePath)")
 				try Utilities.createFile(atPath: outputFilePath, containing: output)
 			}
 			else if !settings.quietModeIsOn {
-				Compiler.log("✍️  Printing AST for \(inputFileRelativePath):")
+				Compiler.log("📝  Printing AST for \(inputFileRelativePath):")
 				Compiler.output(output)
 			}
 		}
@@ -406,13 +452,13 @@ public class Driver {
 		if settings.shouldEmitKotlin {
 			if settings.forcePrintingToConsole {
 				if !settings.quietModeIsOn {
-					Compiler.log("✍️  Printing Kotlin code for \(inputFileRelativePath):")
+					Compiler.log("📝  Printing Kotlin code for \(inputFileRelativePath):")
 					Compiler.output(kotlinCode)
 				}
 			}
 			else {
 				if let outputFilePath = gryphonAST.outputFileMap[.kt] {
-					Compiler.log("✍️  Writing Kotlin to file for \(inputFileRelativePath)")
+					Compiler.log("📝  Writing Kotlin to file for \(inputFileRelativePath)")
 					try Utilities.createFile(atPath: outputFilePath, containing: kotlinCode)
 				}
 				else {
@@ -424,6 +470,7 @@ public class Driver {
 						Compiler.handleWarning(
 							message: "No output file path set for \"\(inputFilePath)\"." +
 								" Set it with \"// gryphon output: <output file>\".",
+							syntax: nil,
 							sourceFile: gryphonAST.sourceFile,
 							sourceFileRange: SourceFileRange(
 								lineStart: 1, lineEnd: 1,
@@ -431,7 +478,7 @@ public class Driver {
 					}
 
 					if !settings.quietModeIsOn {
-						Compiler.log("✍️  Printing Kotlin code for \(inputFileRelativePath):")
+						Compiler.log("📝  Printing Kotlin code for \(inputFileRelativePath):")
 						Compiler.output(kotlinCode)
 					}
 				}
@@ -450,10 +497,12 @@ public class Driver {
 		throws -> Any?
 	{
 		let newArguments: MutableList<String> = []
-		
-		let isVerbose = arguments.contains("--verbose")
-		if isVerbose {
+
+		if arguments.contains("--verbose") {
 			newArguments.append("--verbose")
+		}
+		if arguments.contains("--legacyFrontend") {
+			newArguments.append("--legacyFrontend")
 		}
 		if let chosenToolchain = toolchain {
 			newArguments.append("--toolchain=\(chosenToolchain)")
@@ -548,8 +597,11 @@ public class Driver {
 		//
 		let defaultsToFinal = arguments.contains("--default-final")
 
+		let shouldUseSwiftSyntax = !arguments.contains("--legacyFrontend")
+
 		//
 		let maybeXcodeProject = getXcodeProject(inArguments: arguments)
+		let maybeTarget = getTarget(inArguments: arguments)
 
 		//
 		let settings = Settings(
@@ -604,29 +656,31 @@ public class Driver {
 
 		Compiler.logEnd("✅  Done parsing arguments.")
 
-		//// Dump the ASTs
+		/// Get the input files
+		let isSkippingFiles = arguments.contains("--skip")
+
+		let inputFiles = try getInputFilePaths(inArguments: arguments)
+		if inputFiles.isEmpty {
+			throw GryphonError(errorMessage: "No input files provided.")
+		}
+		let allSourceFiles = inputFiles.toMutableList()
+
+		if isSkippingFiles {
+			let skippedFiles = try getSkippedInputFilePaths(inArguments: arguments)
+			allSourceFiles.append(contentsOf: skippedFiles)
+		}
+
+		/// Dump the ASTs
 		if !arguments.contains("-skip-AST-dumps") {
 			Compiler.logStart("🧑‍💻  Preparing to dump the ASTs...")
 
 			let maybeXcodeProject = getXcodeProject(inArguments: arguments)
 			let isUsingXcode = (maybeXcodeProject != nil)
-			let isSkippingFiles = arguments.contains("--skip")
 
 			if isUsingXcode && isSkippingFiles {
 				throw GryphonError(errorMessage: "Argument `--skip` is not supported when " +
 					"translating with Xcode support. To skip translation of a file, remove it " +
 					"from the `xcfilelist`.")
-			}
-
-			let inputFiles = try getInputFilePaths(inArguments: arguments)
-			if inputFiles.isEmpty {
-				throw GryphonError(errorMessage: "No input files provided.")
-			}
-			let allSourceFiles = inputFiles.toMutableList()
-
-			if isSkippingFiles {
-				let skippedFiles = try getSkippedInputFilePaths(inArguments: arguments)
-				allSourceFiles.append(contentsOf: skippedFiles)
 			}
 
 			let missingfiles = allSourceFiles.filter {
@@ -639,121 +693,137 @@ public class Driver {
 
 			let swiftVersion = try TranspilationContext.getVersionOfToolchain(toolchain)
 
-			let target = getTarget(inArguments: arguments)
+			Compiler.logEnd("✅  Done preparing.")
 
-			Compiler.logEnd("✅  Done perparing.")
-
-			var astDumpsSucceeded = true
-			var astDumpError: Error? = nil
-			do {
-				Compiler.logStart("🧑‍💻  Dumping the ASTs...")
-				try updateASTDumps(
-					forFiles: allSourceFiles,
-					forXcodeProject: maybeXcodeProject,
-					forTarget: target,
-					usingToolchain: toolchain,
-					shouldTryToRecoverFromErrors: true)
-				astDumpsSucceeded = true
-				Compiler.logEnd("✅  Done dumping the ASTs.")
-			}
-			catch let error {
-				Compiler.logEnd("⚠️  Problem dumping the ASTs.")
-				astDumpsSucceeded = false
-				astDumpError = error
-			}
-
-			let outdatedASTDumpsAfterFirstUpdate = outdatedASTDumpFiles(
-				forInputFiles: allSourceFiles,
-				swiftVersion: swiftVersion)
-
-			if !outdatedASTDumpsAfterFirstUpdate.isEmpty {
-				Compiler.log("⚠️  Found outdated files: " +
-					outdatedASTDumpsAfterFirstUpdate.joined(separator: ", ") + ".")
-			}
-
-			if !astDumpsSucceeded || !outdatedASTDumpsAfterFirstUpdate.isEmpty {
-				if let xcodeProject = maybeXcodeProject {
-					// If the AST dump update failed and we're using Xcode, it's possible one
-					// or more files are missing from the AST dump script. Try updating the
-					// script, then try to update the files again.
-
-					if outdatedASTDumpsAfterFirstUpdate.isEmpty {
-						Compiler.logStart("⚠️  There was an error when with the Swift compiler. " +
-							"Attempting to update file list...")
-					}
-					else {
-						Compiler.logStart("⚠️  Failed to update the AST dump for some files: " +
-							outdatedASTDumpsAfterFirstUpdate.joined(separator: ", ") +
-							". Attempting to update file list...")
-					}
-
-					do {
-						// If xcodebuild fails, it's better to ignore the error here and fail
-						// with an "AST dump failure" message.
-						try createASTDumpsScript(
-							forXcodeProject: xcodeProject,
-							forTarget: getTarget(inArguments: arguments),
-							usingToolchain: toolchain)
-						Compiler.logEnd("⚠️  Done.")
-					}
-					catch let error {
-						Compiler.logEnd(
-							"⚠️  There was an error when creating the AST dump " +
-								"script:\n" +
-								"\(error)\n")
-					}
-
-					Compiler.logStart("⚠️  Attempting to update the AST dumps again...")
-
+			if !shouldUseSwiftSyntax {
+				var astDumpsSucceeded = true
+				var astDumpError: Error?
+				do {
+					Compiler.logStart("🧑‍💻  Dumping the ASTs...")
 					try updateASTDumps(
 						forFiles: allSourceFiles,
 						forXcodeProject: maybeXcodeProject,
-						forTarget: target,
+						forTarget: maybeTarget,
 						usingToolchain: toolchain,
 						shouldTryToRecoverFromErrors: true)
-
-					let outdatedASTDumpsAfterSecondUpdate = outdatedASTDumpFiles(
-						forInputFiles: allSourceFiles,
-						swiftVersion: swiftVersion)
-
-					if !outdatedASTDumpsAfterSecondUpdate.isEmpty {
-						throw GryphonError(
-							errorMessage: "Unable to update AST dumps for files: " +
-								outdatedASTDumpsAfterSecondUpdate.joined(separator: ", ") + ".\n" +
-								" - Make sure the files are being compiled by Xcode.\n" +
-								" - Make sure Gryphon is translating the right Xcode target " +
-									"using `--target=<target name>`.")
-					}
-					else {
-						Compiler.logEnd("✅  Done.")
-					}
+					astDumpsSucceeded = true
+					Compiler.logEnd("✅  Done dumping the ASTs.")
 				}
-				else {
-					if !outdatedASTDumpsAfterFirstUpdate.isEmpty {
-						throw GryphonError(
-							errorMessage: "Unable to update AST dumps for files: " +
-								outdatedASTDumpsAfterFirstUpdate.joined(separator: ", ") + ".")
-					}
-					else if let astDumpError = astDumpError {
-						throw GryphonError(
-							errorMessage: "Unable to update AST dumps:\n\(astDumpError)")
+				catch let error {
+					Compiler.logEnd("⚠️  Problem dumping the ASTs.")
+					astDumpsSucceeded = false
+					astDumpError = error
+				}
+
+				let outdatedASTDumpsAfterFirstUpdate = outdatedASTDumpFiles(
+					forInputFiles: allSourceFiles,
+					swiftVersion: swiftVersion)
+
+				if !outdatedASTDumpsAfterFirstUpdate.isEmpty {
+					Compiler.log("⚠️  Found outdated files: " +
+						outdatedASTDumpsAfterFirstUpdate.joined(separator: ", ") + ".")
+				}
+
+				if !astDumpsSucceeded || !outdatedASTDumpsAfterFirstUpdate.isEmpty {
+					if let xcodeProject = maybeXcodeProject {
+						// If the AST dump update failed and we're using Xcode, it's possible one
+						// or more files are missing from the AST dump script. Try updating the
+						// script, then try to update the files again.
+
+						if outdatedASTDumpsAfterFirstUpdate.isEmpty {
+							Compiler.logStart("⚠️  There was an error with the Swift compiler. " +
+								"Attempting to update file list...")
+						}
+						else {
+							Compiler.logStart("⚠️  Failed to update the AST dump for some files: " +
+								outdatedASTDumpsAfterFirstUpdate.joined(separator: ", ") +
+								". Attempting to update file list...")
+						}
+
+						do {
+							// If xcodebuild fails, it's better to ignore the error here and fail
+							// with an "AST dump failure" message.
+							try createIOSCompilationFiles(
+								forXcodeProject: xcodeProject,
+								forTarget: getTarget(inArguments: arguments),
+								usingToolchain: toolchain)
+							Compiler.logEnd("⚠️  Done.")
+						}
+						catch let error {
+							Compiler.logEnd(
+								"⚠️  There was an error when getting the Swift compilation " +
+									"command from the Xcode project:" +
+									"\(error)\n")
+						}
+
+						Compiler.logStart("⚠️  Attempting to update the AST dumps again...")
+
+						try updateASTDumps(
+							forFiles: allSourceFiles,
+							forXcodeProject: maybeXcodeProject,
+							forTarget: maybeTarget,
+							usingToolchain: toolchain,
+							shouldTryToRecoverFromErrors: true)
+
+						let outdatedASTDumpsAfterSecondUpdate = outdatedASTDumpFiles(
+							forInputFiles: allSourceFiles,
+							swiftVersion: swiftVersion)
+
+						if !outdatedASTDumpsAfterSecondUpdate.isEmpty {
+							throw GryphonError(
+								errorMessage: "Unable to update AST dumps for files: " +
+									outdatedASTDumpsAfterSecondUpdate.joined(separator: ", ") +
+									".\n" +
+									" - Make sure the files are being compiled by Xcode.\n" +
+									" - Make sure Gryphon is translating the right Xcode target " +
+										"using `--target=<target name>`.")
+						}
+						else {
+							Compiler.logEnd("✅  Done.")
+						}
 					}
 					else {
-						throw GryphonError(
-							errorMessage: "Unable to update AST dumps with unknown error.")
+						if let astDumpError = astDumpError {
+							throw GryphonError(
+								errorMessage: "Unable to update AST dumps:\n\(astDumpError)")
+						}
+						else if !outdatedASTDumpsAfterFirstUpdate.isEmpty {
+							throw GryphonError(
+								errorMessage: "Unable to update AST dumps for files: " +
+									outdatedASTDumpsAfterFirstUpdate.joined(separator: ", ") + ".")
+						}
+						else {
+							throw GryphonError(
+								errorMessage: "Unable to update AST dumps with unknown error.")
+						}
 					}
 				}
 			}
 		}
 
-		//// Perform transpilation
+		let compilationArguments: TranspilationContext.SwiftCompilationArguments
+		if maybeXcodeProject != nil {
+			compilationArguments = try readCompilationArgumentsFromFile()
+		}
+		else {
+			let arguments = allSourceFiles
+				.map { Utilities.getAbsolutePath(forFile: $0) }
+				.toMutableList()
 
+			compilationArguments = try TranspilationContext.SwiftCompilationArguments(
+				absoluteFilePathsAndOtherArguments: arguments)
+		}
+
+		/// Perform transpilation
 		do {
-			//
 			let context = try TranspilationContext(
 				toolchainName: toolchain,
 				indentationString: indentationString,
-				defaultsToFinal: defaultsToFinal)
+				defaultsToFinal: defaultsToFinal,
+				isUsingSwiftSyntax: shouldUseSwiftSyntax,
+				compilationArguments: compilationArguments,
+				xcodeProjectPath: maybeXcodeProject,
+				target: maybeTarget)
 
 			Compiler.logStart("🧑‍💻 Starting first part of translation [1/2]...")
 
@@ -821,6 +891,35 @@ public class Driver {
 			Compiler.logEnd("⚠️  Done printing issues.")
 			throw error
 		}
+	}
+
+	/// Reads the saved information from the `sourceKitCompilationArguments` file
+	/// and structures it into a `SwiftCompilationArguments` object.
+	/// Use this method only when using Xcode, since it depends on
+	/// an Xcode-only file.
+	static func readCompilationArgumentsFromFile()
+		throws -> TranspilationContext.SwiftCompilationArguments
+	{
+		let arguments = try String(
+			contentsOfFile: SupportingFile.sourceKitCompilationArguments.absolutePath)
+			.splitUsingUnescapedSpaces()
+			.map { $0.replacingOccurrences(of: "\\ ", with: " ") }
+			.toMutableList()
+
+		guard let sdkArgumentIndex = arguments.firstIndex(of: "-sdk") else {
+			throw GryphonError(
+				errorMessage: "Unable to find path to the SDK in the iOS compilation " +
+					"arguments. Try cleaning the Xcode project, building it again, and " +
+					"running `gryphon init <xcodeproj>`.")
+		}
+
+		let sdkPath = arguments[sdkArgumentIndex + 1]
+		arguments.remove(at: sdkArgumentIndex) // Remove the "-sdk"
+		arguments.remove(at: sdkArgumentIndex) // Remove the SDK path
+
+		return try TranspilationContext.SwiftCompilationArguments(
+			absoluteFilePathsAndOtherArguments: arguments,
+			absolutePathToSDK: sdkPath)
 	}
 
 	static func outdatedASTDumpFiles(
@@ -1012,9 +1111,10 @@ public class Driver {
 		return nil
 	}
 
-	/// Calls xcodebuild to create the AST dump script file. If `simulator` is `nil` and xcodebuild
-	/// fails, looks for an installed simulator and tries again recursively.
-	static func createASTDumpsScript(
+	/// Calls xcodebuild to create the files for compiling iOS projects.
+	/// This includes a bash script that calls `swiftc` with `-dump-ast`
+	/// and a file with the `swiftc` arguments for SourceKit.
+	static func createIOSCompilationFiles(
 		forXcodeProject xcodeProjectPath: String,
 		forTarget target: String?,
 		usingToolchain toolchain: String?)
@@ -1076,13 +1176,14 @@ public class Driver {
 		let commands = compileSwiftStep.split(withStringSeparator: "\n")
 
 		// Drop the header and the old compilation command
-		var result = commands.dropFirst().dropLast().joined(separator: "\n") + "\n"
+		var astDumpScriptContents = commands.dropFirst().dropLast().joined(separator: "\n") + "\n"
+		var sourceKitFileContents = ""
 
 		// Fix the call to the Swift compiler
 		let compilationCommand = commands.last!
 		let commandComponents = compilationCommand.splitUsingUnescapedSpaces()
 
-		let newComponents = commandComponents.filter { (argument: String) -> Bool in
+		let filteredArguments = commandComponents.filter { (argument: String) -> Bool in
 			argument != "-incremental" &&
 			argument != "-whole-module-optimization" &&
 			argument != "-c" &&
@@ -1094,46 +1195,60 @@ public class Driver {
 			!argument.hasSuffix("Swift.h") &&
 			!argument.hasSuffix("SwiftFileList") &&
 			!argument.hasPrefix("-emit")
-		}.toMutableList()
+		}
+
+		let astDumpArguments = filteredArguments.toMutableList()
+		let sourceKitArguments = filteredArguments.toMutableList()
 
 		let templatesFilePath = SupportingFile.gryphonTemplatesLibrary.absolutePath
 			.replacingOccurrences(of: " ", with: "\\ ")
-		newComponents.append(templatesFilePath)
+		astDumpArguments.append(templatesFilePath)
 
 		let escapedOutputFileMapPath = SupportingFile.temporaryOutputFileMap.absolutePath
 			.replacingOccurrences(of: " ", with: "\\ ")
-		newComponents.append("-output-file-map")
-		newComponents.append(escapedOutputFileMapPath)
-		newComponents.append("-dump-ast")
-		newComponents.append("-D")
-		newComponents.append("GRYPHON")
+		astDumpArguments.append("-output-file-map")
+		astDumpArguments.append(escapedOutputFileMapPath)
+
+		astDumpArguments.append("-dump-ast")
+
+		astDumpArguments.append("-D")
+		astDumpArguments.append("GRYPHON")
+		sourceKitArguments.append("-D")
+		sourceKitArguments.append("GRYPHON")
 
 		// Build the resulting command
-		result += "\t"
+		astDumpScriptContents += "\t"
 		if let chosenToolchain = toolchain {
 			Compiler.log("ℹ️  Adding toolchain \(chosenToolchain)...")
 			// Set the toolchain manually by replacing the direct call to swiftc with a call to
 			// xcrun
-			result += "\txcrun -toolchain \"\(chosenToolchain)\" swiftc "
-			result += newComponents.dropFirst().joined(separator: " ")
+			astDumpScriptContents += "\txcrun -toolchain \"\(chosenToolchain)\" swiftc "
+			astDumpScriptContents += astDumpArguments.dropFirst().joined(separator: " ")
 		}
 		else {
 			Compiler.log("ℹ️  Using default toolchain...")
 			// Use the default toolchain
-			result += newComponents.joined(separator: " ")
+			astDumpScriptContents += astDumpArguments.joined(separator: " ")
 		}
-		result += "\n"
+		astDumpScriptContents += "\n"
+
+		sourceKitFileContents += sourceKitArguments.dropFirst().joined(separator: " ")
 
 		try Utilities.createFile(
 			named: SupportingFile.astDumpsScript.name,
-			inDirectory: SupportingFile.gryphonBuildFolder,
-			containing: result)
+			inDirectory: SupportingFile.astDumpsScript.folder ?? ".",
+			containing: astDumpScriptContents)
+		try Utilities.createFile(
+			named: SupportingFile.sourceKitCompilationArguments.name,
+			inDirectory: SupportingFile.sourceKitCompilationArguments.folder ?? ".",
+			containing: sourceKitFileContents)
 	}
 
 	static func makeGryphonTargets(
 		forXcodeProject xcodeProjectPath: String,
 		forTarget target: String?,
-		usingToolchain toolchain: String?)
+		usingToolchain toolchain: String?,
+		usingSwiftSyntax: Bool)
 		throws
 	{
 		// Run the ruby script
@@ -1149,6 +1264,9 @@ public class Driver {
 		}
 		if let userTarget = target {
 			arguments.append("--target=\"\(userTarget)\"")
+		}
+		if !usingSwiftSyntax {
+			arguments.append("--legacyFrontend")
 		}
 
 		Compiler.logStart("🧑‍💻  Calling ruby to create the Gryphon targets...\n")
@@ -1187,7 +1305,9 @@ public class Driver {
 		shouldTryToRecoverFromErrors: Bool)
 		throws
 	{
-		//// Create the outputFileMap
+		let logInfo = Log.startLog(name: "Update AST dumps")
+		defer { Log.endLog(info: logInfo) }
+		/// Create the outputFileMap
 		Compiler.log("ℹ️  Creating the output file map.")
 		var outputFileMapContents = "{\n"
 
@@ -1198,8 +1318,8 @@ public class Driver {
 			let astDumpPath = SupportingFile.pathOfSwiftASTDumpFile(
 				forSwiftFile: swiftFile,
 				swiftVersion: swiftVersion)
-			let astDumpAbsolutePath = Utilities.getAbsoultePath(forFile: astDumpPath)
-			let swiftAbsoultePath = Utilities.getAbsoultePath(forFile: swiftFile)
+			let astDumpAbsolutePath = Utilities.getAbsolutePath(forFile: astDumpPath)
+			let swiftAbsoultePath = Utilities.getAbsolutePath(forFile: swiftFile)
 			outputFileMapContents += "\t\"\(swiftAbsoultePath)\": {\n" +
 				"\t\t\"ast-dump\": \"\(astDumpAbsolutePath)\",\n" +
 				"\t},\n"
@@ -1210,7 +1330,7 @@ public class Driver {
 			atPath: SupportingFile.temporaryOutputFileMap.relativePath,
 			containing: outputFileMapContents)
 
-		//// Create the necessary folders for the AST dump files
+		/// Create the necessary folders for the AST dump files
 		Compiler.log("ℹ️  Creating folders for placing the AST dump files.")
 		for swiftFile in swiftFiles {
 			let astDumpPath = SupportingFile.pathOfSwiftASTDumpFile(
@@ -1222,7 +1342,7 @@ public class Driver {
 			Utilities.createFolderIfNeeded(at: folderPath)
 		}
 
-		//// Call the Swift compiler to dump the ASTs
+		/// Call the Swift compiler to dump the ASTs
 		let commandResult: Shell.CommandOutput
 
 		Compiler.logStart("🧑‍💻  Calling the Swift compiler...")
@@ -1255,7 +1375,7 @@ public class Driver {
 				"-output-file-map=\(SupportingFile.temporaryOutputFileMap.absolutePath)")
 
 			for swiftFile in swiftFiles {
-				arguments.append(Utilities.getAbsoultePath(forFile: swiftFile))
+				arguments.append(Utilities.getAbsolutePath(forFile: swiftFile))
 			}
 
 			commandResult = Shell.runShellCommand(arguments)
@@ -1385,7 +1505,8 @@ public class Driver {
 	}
 
 	static func printVersion() {
-		Compiler.output("Gryphon version \(gryphonVersion)")
+		Compiler.output("Gryphon version \(gryphonVersion), using the Swift " +
+			"\(TranspilationContext.swiftSyntaxVersion) parser")
 	}
 
 	static func printUsage() {
@@ -1461,6 +1582,9 @@ Main usage:
 
       ↪️  --target=<target name>
             Specify the target to be built when translating with Xcode.
+
+      ↪️  --legacyFrontend
+            Use AST dumps as the frontend instead of SwiftSyntax and SourceKit.
 
 Advanced subcommands:
   ➡️  clean

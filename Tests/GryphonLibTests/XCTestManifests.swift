@@ -23,7 +23,7 @@ public func allTests() -> [XCTestCaseEntry] {
 	return [
 		testCase(AcceptanceTest.allTests),
 		testCase(ASTDumpDecoderTest.allTests),
-		testCase(BootstrappingTest.allTests),
+		testCase(SwiftSyntaxDecoderTest.allTests),
 		testCase(CompilerTest.allTests),
 		testCase(DriverTest.allTests),
 		testCase(ExtensionsTest.allTests),
@@ -39,6 +39,7 @@ public func allTests() -> [XCTestCaseEntry] {
 		testCase(MutableListTest.allTests),
 		testCase(MapTest.allTests),
 		testCase(MutableMapTest.allTests),
+		testCase(SortedListTest.allTests),
 	]
 }
 #endif

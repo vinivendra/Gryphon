@@ -16,29 +16,29 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/GryphonAST.swiftAST
-// gryphon output: Sources/GryphonLib/GryphonAST.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/GryphonAST.gryphonAST
-// gryphon output: Bootstrap/GryphonAST.kt
-
-// gryphon insert: import kotlin.system.*
+import SwiftSyntax
+import SourceKittenFramework
 
 public final class GryphonAST: PrintableAsTree, Equatable, CustomStringConvertible {
 	let sourceFile: SourceFile?
 	let declarations: MutableList<Statement>
 	let statements: MutableList<Statement>
 	let outputFileMap: MutableMap<FileExtension, String>
+	/// Stores the raw SourceKit response of an indexing operation for this AST
+	var indexingResponse: Map<String, SourceKitRepresentable>
 
 	init(
 		sourceFile: SourceFile?,
 		declarations: MutableList<Statement>,
 		statements: MutableList<Statement>,
-		outputFileMap: MutableMap<FileExtension, String>)
+		outputFileMap: MutableMap<FileExtension, String>,
+		indexingResponse: Map<String, SourceKitRepresentable>)
 	{
 		self.sourceFile = sourceFile
 		self.declarations = declarations
 		self.statements = statements
 		self.outputFileMap = outputFileMap
+		self.indexingResponse = indexingResponse
 	}
 
 	//
@@ -48,11 +48,11 @@ public final class GryphonAST: PrintableAsTree, Equatable, CustomStringConvertib
 	}
 
 	//
-	public var treeDescription: String { // gryphon annotation: override
+	public var treeDescription: String {
 		return "Source File"
 	}
 
-	public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	public var printableSubtrees: List<PrintableAsTree?> {
 		return
 			[PrintableTree(
 				"Declarations",
@@ -88,20 +88,22 @@ extension PrintableTree {
 /// - `KotlinTranslator.translateSubtree`
 /// - LibraryTranspilationPass's `Expression.matches`
 public /*abstract*/ class Statement: PrintableAsTree, Equatable, CustomStringConvertible {
+	let syntax: Syntax?
 	let name: String
 	let range: SourceFileRange?
 
-	init(range: SourceFileRange?, name: String) {
+	init(syntax: Syntax? = nil, range: SourceFileRange?, name: String) {
 		self.range = range
 		self.name = name
+		self.syntax = syntax
 	}
 
 	// PrintableAsTree
-	public var treeDescription: String { // gryphon annotation: override
+	public var treeDescription: String {
 		return name
 	}
 
-	public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	public var printableSubtrees: List<PrintableAsTree?> {
 		fatalError("Accessing field in abstract class Statement")
 	}
 
@@ -188,7 +190,7 @@ public /*abstract*/ class Statement: PrintableAsTree, Equatable, CustomStringCon
 		return false
 	}
 
-	public var description: String { // gryphon ignore
+	public var description: String {
 		return prettyDescription()
 	}
 }
@@ -196,12 +198,12 @@ public /*abstract*/ class Statement: PrintableAsTree, Equatable, CustomStringCon
 public class CommentStatement: Statement {
 	let value: String
 
-	init(range: SourceFileRange?, value: String) {
+	init(syntax: Syntax? = nil, range: SourceFileRange?, value: String) {
 		self.value = value
-		super.init(range: range, name: "CommentStatement".capitalizedAsCamelCase())
+		super.init(syntax: syntax, range: range, name: "CommentStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [PrintableTree("//\(value)")]
 	}
 
@@ -213,12 +215,15 @@ public class CommentStatement: Statement {
 public class ExpressionStatement: Statement {
 	let expression: Expression
 
-	init(range: SourceFileRange?, expression: Expression) {
+	init(syntax: Syntax? = nil, range: SourceFileRange?, expression: Expression) {
 		self.expression = expression
-		super.init(range: range, name: "ExpressionStatement".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "ExpressionStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [expression]
 	}
 
@@ -234,6 +239,7 @@ public class TypealiasDeclaration: Statement {
 	let isImplicit: Bool
 
 	init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		identifier: String,
 		typeName: String,
@@ -244,10 +250,13 @@ public class TypealiasDeclaration: Statement {
 		self.typeName = typeName
 		self.isImplicit = isImplicit
 		self.access = access
-		super.init(range: range, name: "TypealiasDeclaration".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "TypealiasDeclaration".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
 			isImplicit ? PrintableTree("implicit") : nil,
 			PrintableTree("identifier: \(identifier)"),
@@ -268,16 +277,20 @@ public class ExtensionDeclaration: Statement {
 	let members: MutableList<Statement>
 
 	init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		typeName: String,
 		members: MutableList<Statement>)
 	{
 		self.typeName = typeName
 		self.members = members
-		super.init(range: range, name: "ExtensionDeclaration".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "ExtensionDeclaration".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
 			PrintableTree(typeName),
 			PrintableTree.ofStatements("members", members), ]
@@ -293,14 +306,18 @@ public class ImportDeclaration: Statement {
 	let moduleName: String
 
 	init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		moduleName: String)
 	{
 		self.moduleName = moduleName
-		super.init(range: range, name: "ImportDeclaration".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "ImportDeclaration".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [PrintableTree(moduleName)]
 	}
 
@@ -318,6 +335,7 @@ public class ClassDeclaration: Statement {
 	let members: MutableList<Statement>
 
 	init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		className: String,
 		annotations: MutableList<String>,
@@ -332,10 +350,13 @@ public class ClassDeclaration: Statement {
 		self.isOpen = isOpen
 		self.inherits = inherits
 		self.members = members
-		super.init(range: range, name: "ClassDeclaration".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "ClassDeclaration".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return  [
 			PrintableTree(className),
 			PrintableTree.ofStrings("annotations", annotations),
@@ -359,14 +380,18 @@ public class CompanionObject: Statement {
 	let members: MutableList<Statement>
 
 	init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		members: MutableList<Statement>)
 	{
 		self.members = members
-		super.init(range: range, name: "CompanionObject".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "CompanionObject".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return members.forceCast(to: List<PrintableAsTree?>.self)
 	}
 
@@ -378,17 +403,18 @@ public class CompanionObject: Statement {
 public class EnumDeclaration: Statement {
 	let access: String?
 	let enumName: String
-	let annotations: String?
+	let annotations: MutableList<String>
 	let inherits: MutableList<String>
 	let elements: MutableList<EnumElement>
 	let members: MutableList<Statement>
 	let isImplicit: Bool
 
 	init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		access: String?,
 		enumName: String,
-		annotations: String?,
+		annotations: MutableList<String>,
 		inherits: MutableList<String>,
 		elements: MutableList<EnumElement>,
 		members: MutableList<Statement>,
@@ -401,18 +427,20 @@ public class EnumDeclaration: Statement {
 		self.elements = elements
 		self.members = members
 		self.isImplicit = isImplicit
-		super.init(range: range, name: "EnumDeclaration".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "EnumDeclaration".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		let elementTrees = elements.map
 			{ (element: EnumElement) -> PrintableAsTree? in element }
 
 		return [
 			PrintableTree(enumName),
 			PrintableTree.initOrNil(access),
-			PrintableTree.initOrNil(
-				"annotations", [PrintableTree.initOrNil(annotations)]),
+			PrintableTree.ofStrings("annotations", annotations),
 			PrintableTree.ofStrings("inherits", inherits),
 			PrintableTree("elements", elementTrees),
 			PrintableTree.ofStatements("members", members),
@@ -434,29 +462,32 @@ public class EnumDeclaration: Statement {
 public class ProtocolDeclaration: Statement {
 	let protocolName: String
 	let access: String?
-	let annotations: String?
+	let annotations: MutableList<String>
 	let members: MutableList<Statement>
 
 	init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		protocolName: String,
 		access: String?,
-		annotations: String?,
+		annotations: MutableList<String>,
 		members: MutableList<Statement>)
 	{
 		self.protocolName = protocolName
 		self.access = access
 		self.annotations = annotations
 		self.members = members
-		super.init(range: range, name: "ProtocolDeclaration".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "ProtocolDeclaration".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
 			PrintableTree(protocolName),
 			PrintableTree.initOrNil(access),
-			PrintableTree.initOrNil(
-				"annotations", [PrintableTree.initOrNil(annotations)]),
+			PrintableTree.ofStrings("annotations", annotations),
 			PrintableTree.ofStatements("members", members), ]
 	}
 
@@ -469,15 +500,16 @@ public class ProtocolDeclaration: Statement {
 }
 
 public class StructDeclaration: Statement {
-	let annotations: String?
+	let annotations: MutableList<String>
 	let structName: String
 	let access: String?
 	let inherits: MutableList<String>
 	let members: MutableList<Statement>
 
 	init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
-		annotations: String?,
+		annotations: MutableList<String>,
 		structName: String,
 		access: String?,
 		inherits: MutableList<String>,
@@ -488,13 +520,15 @@ public class StructDeclaration: Statement {
 		self.access = access
 		self.inherits = inherits
 		self.members = members
-		super.init(range: range, name: "StructDeclaration".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "StructDeclaration".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
-			PrintableTree.initOrNil(
-				"annotations", [PrintableTree.initOrNil(annotations)]),
+			PrintableTree.ofStrings("annotations", annotations),
 			PrintableTree(structName),
 			PrintableTree.initOrNil(access),
 			PrintableTree.ofStrings("inherits", inherits),
@@ -528,6 +562,7 @@ public class FunctionDeclaration: Statement {
 	var annotations: MutableList<String>
 
 	init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		prefix: String,
 		parameters: MutableList<FunctionParameter>,
@@ -561,10 +596,10 @@ public class FunctionDeclaration: Statement {
 		self.statements = statements
 		self.access = access
 		self.annotations = annotations
-		super.init(range: range, name: name)
+		super.init(syntax: syntax, range: range, name: name)
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		let parametersTrees = parameters
 			.map { parameter -> PrintableAsTree? in
 				PrintableTree(
@@ -574,6 +609,7 @@ public class FunctionDeclaration: Statement {
 						PrintableTree("label: \(parameter.label)"),
 						PrintableTree("type: \(parameter.typeName)"),
 						PrintableTree.initOrNil("value", [parameter.value]),
+						PrintableTree.initOrNil(parameter.isVariadic ? "variadic" : nil),
 					])
 			}
 
@@ -581,6 +617,7 @@ public class FunctionDeclaration: Statement {
 			extendsType.map { PrintableTree("extends type \($0)") },
 			PrintableTree("open: \(isOpen)"),
 			isImplicit ? PrintableTree("implicit") : nil,
+			isPure ? PrintableTree("pure") : nil,
 			isStatic ? PrintableTree("static") : nil,
 			isMutating ? PrintableTree("mutating") : nil,
 			PrintableTree.initOrNil(access),
@@ -614,8 +651,10 @@ public class FunctionDeclaration: Statement {
 
 public class InitializerDeclaration: FunctionDeclaration {
 	let superCall: CallExpression?
+	let isOptional: Bool
 
 	init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		parameters: MutableList<FunctionParameter>,
 		returnType: String,
@@ -631,10 +670,13 @@ public class InitializerDeclaration: FunctionDeclaration {
 		access: String?,
 		annotations: MutableList<String>,
 		superCall: CallExpression?,
+		isOptional: Bool,
 		name: String = "FunctionDeclaration".capitalizedAsCamelCase())
 	{
 		self.superCall = superCall
+		self.isOptional = isOptional
 		super.init(
+			syntax: syntax,
 			range: range,
 			prefix: "init",
 			parameters: parameters,
@@ -654,9 +696,10 @@ public class InitializerDeclaration: FunctionDeclaration {
 			name: "InitializerDeclaration".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		let result = super.printableSubtrees.toMutableList()
 		result.append(PrintableTree.initOrNil("super call", [superCall]))
+		result.append(PrintableTree("isOptional: \(isOptional)"))
 		return result
 	}
 
@@ -675,15 +718,20 @@ public class InitializerDeclaration: FunctionDeclaration {
 			lhs.statements == rhs.statements &&
 			lhs.access == rhs.access &&
 			lhs.annotations == rhs.annotations &&
-			lhs.superCall == rhs.superCall
+			lhs.superCall == rhs.superCall &&
+			lhs.isOptional == rhs.isOptional
 	}
 }
 
 public class VariableDeclaration: Statement {
 	var identifier: String
-	var typeName: String
+	var typeAnnotation: String?
 	var expression: Expression?
+	/// Might be a stub (i.e. with almost all members nil or empty) if it's a protocol's getter
+	/// (e.g. `var a: Int { get }`).
 	var getter: FunctionDeclaration?
+	/// Might be a stub (i.e. with almost all members nil or empty) if it's a protocol's setter
+	/// (e.g. `var a: Int { get set }`).
 	var setter: FunctionDeclaration?
 	var access: String?
 	var isOpen: Bool
@@ -694,9 +742,10 @@ public class VariableDeclaration: Statement {
 	var annotations: MutableList<String>
 
 	init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		identifier: String,
-		typeName: String,
+		typeAnnotation: String?,
 		expression: Expression?,
 		getter: FunctionDeclaration?,
 		setter: FunctionDeclaration?,
@@ -709,7 +758,7 @@ public class VariableDeclaration: Statement {
 		annotations: MutableList<String>)
 	{
 		self.identifier = identifier
-		self.typeName = typeName
+		self.typeAnnotation = typeAnnotation
 		self.expression = expression
 		self.getter = getter
 		self.setter = setter
@@ -720,10 +769,13 @@ public class VariableDeclaration: Statement {
 		self.isStatic = isStatic
 		self.extendsType = extendsType
 		self.annotations = annotations
-		super.init(range: range, name: "VariableDeclaration".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "VariableDeclaration".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
 			PrintableTree.initOrNil(
 				"extendsType", [PrintableTree.initOrNil(extendsType)]),
@@ -731,7 +783,8 @@ public class VariableDeclaration: Statement {
 			isStatic ? PrintableTree("static") : nil,
 			isLet ? PrintableTree("let") : PrintableTree("var"),
 			PrintableTree(identifier),
-			PrintableTree(typeName),
+			PrintableTree.initOrNil(
+				"typeAnnotation", [PrintableTree.initOrNil(typeAnnotation)]),
 			expression,
 			PrintableTree.initOrNil(access),
 			PrintableTree("open: \(isOpen)"),
@@ -746,7 +799,7 @@ public class VariableDeclaration: Statement {
 		-> Bool
 	{
 		return lhs.identifier == rhs.identifier &&
-			lhs.typeName == rhs.typeName &&
+			lhs.typeAnnotation == rhs.typeAnnotation &&
 			lhs.expression == rhs.expression &&
 			lhs.getter == rhs.getter &&
 			lhs.setter == rhs.setter &&
@@ -764,14 +817,18 @@ public class DoStatement: Statement {
 	let statements: MutableList<Statement>
 
 	init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		statements: MutableList<Statement>)
 	{
 		self.statements = statements
-		super.init(range: range, name: "DoStatement".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "DoStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return statements.forceCast(to: List<PrintableAsTree?>.self)
 	}
 
@@ -785,16 +842,20 @@ public class CatchStatement: Statement {
 	let statements: MutableList<Statement>
 
 	init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		variableDeclaration: VariableDeclaration?,
 		statements: MutableList<Statement>)
 	{
 		self.variableDeclaration = variableDeclaration
 		self.statements = statements
-		super.init(range: range, name: "CatchStatement".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "CatchStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
 			PrintableTree(
 				"variableDeclaration", MutableList<PrintableAsTree?>([variableDeclaration])),
@@ -811,24 +872,28 @@ public class CatchStatement: Statement {
 
 public class ForEachStatement: Statement {
 	let collection: Expression
-	let variable: Expression
+	let variable: Expression?
 	let statements: MutableList<Statement>
 
 	init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		collection: Expression,
-		variable: Expression,
+		variable: Expression?,
 		statements: MutableList<Statement>)
 	{
 		self.collection = collection
 		self.variable = variable
 		self.statements = statements
-		super.init(range: range, name: "ForEachStatement".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "ForEachStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
-			PrintableTree("variable", [variable]),
+			PrintableTree.initOrNil("variable", [variable]),
 			PrintableTree("collection", [collection]),
 			PrintableTree.ofStatements("statements", statements), ]
 	}
@@ -845,16 +910,20 @@ public class WhileStatement: Statement {
 	let statements: MutableList<Statement>
 
 	init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		expression: Expression,
 		statements: MutableList<Statement>)
 	{
 		self.expression = expression
 		self.statements = statements
-		super.init(range: range, name: "WhileStatement".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "WhileStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
 			PrintableTree.ofExpressions("expression", [expression]),
 			PrintableTree.ofStatements("statements", statements), ]
@@ -880,7 +949,10 @@ public class IfStatement: Statement {
 		func toStatement() -> Statement {
 			switch self {
 			case let .condition(expression: expression):
-				return ExpressionStatement(range: nil, expression: expression)
+				return ExpressionStatement(
+					syntax: expression.syntax,
+					range: expression.range,
+					expression: expression)
 			case let .declaration(variableDeclaration: variableDeclaration):
 				return variableDeclaration
 			}
@@ -888,6 +960,7 @@ public class IfStatement: Statement {
 	}
 
 	public init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		conditions: MutableList<IfCondition>,
 		declarations: MutableList<VariableDeclaration>,
@@ -900,10 +973,13 @@ public class IfStatement: Statement {
 		self.statements = statements
 		self.elseStatement = elseStatement
 		self.isGuard = isGuard
-		super.init(range: range, name: "IfStatement".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "IfStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		let declarationTrees = declarations
 		let conditionTrees = conditions.map { $0.toStatement() }
 		let elseStatementTrees = elseStatement?.printableSubtrees ?? []
@@ -938,6 +1014,7 @@ public class SwitchStatement: Statement {
 	let cases: MutableList<SwitchCase>
 
 	init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		convertsToExpression: Statement?,
 		expression: Expression,
@@ -946,10 +1023,13 @@ public class SwitchStatement: Statement {
 		self.convertsToExpression = convertsToExpression
 		self.expression = expression
 		self.cases = cases
-		super.init(range: range, name: "SwitchStatement".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "SwitchStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		let caseItems = cases.map { switchCase -> PrintableAsTree? in
 			PrintableTree("case item", [
 				PrintableTree.ofExpressions(
@@ -978,14 +1058,18 @@ public class DeferStatement: Statement {
 	let statements: MutableList<Statement>
 
 	init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		statements: MutableList<Statement>)
 	{
 		self.statements = statements
-		super.init(range: range, name: "DeferStatement".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "DeferStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return statements.forceCast(to: List<PrintableAsTree?>.self)
 	}
 
@@ -998,14 +1082,18 @@ public class ThrowStatement: Statement {
 	let expression: Expression
 
 	init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		expression: Expression)
 	{
 		self.expression = expression
-		super.init(range: range, name: "ThrowStatement".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "ThrowStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [expression]
 	}
 
@@ -1019,16 +1107,20 @@ public class ReturnStatement: Statement {
 	let label: String?
 
 	init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		expression: Expression?,
 		label: String?)
 	{
 		self.expression = expression
 		self.label = label
-		super.init(range: range, name: "ReturnStatement".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "ReturnStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [expression, PrintableTree.initOrNil(label)]
 	}
 
@@ -1039,11 +1131,17 @@ public class ReturnStatement: Statement {
 }
 
 public class BreakStatement: Statement {
-	init(range: SourceFileRange?) {
-		super.init(range: range, name: "BreakStatement".capitalizedAsCamelCase())
+	init(
+		syntax: Syntax? = nil,
+		range: SourceFileRange?)
+	{
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "BreakStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return []
 	}
 
@@ -1053,11 +1151,14 @@ public class BreakStatement: Statement {
 }
 
 public class ContinueStatement: Statement {
-	init(range: SourceFileRange?) {
-		super.init(range: range, name: "ContinueStatement".capitalizedAsCamelCase())
+	init(syntax: Syntax? = nil, range: SourceFileRange?) {
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "ContinueStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return []
 	}
 
@@ -1071,16 +1172,20 @@ public class AssignmentStatement: Statement {
 	let rightHand: Expression
 
 	init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		leftHand: Expression,
 		rightHand: Expression)
 	{
 		self.leftHand = leftHand
 		self.rightHand = rightHand
-		super.init(range: range, name: "AssignmentStatement".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "AssignmentStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [leftHand, rightHand]
 	}
 
@@ -1091,11 +1196,14 @@ public class AssignmentStatement: Statement {
 }
 
 public class ErrorStatement: Statement {
-	init(range: SourceFileRange?) {
-		super.init(range: range, name: "ErrorStatement".capitalizedAsCamelCase())
+	init(syntax: Syntax? = nil, range: SourceFileRange?) {
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "ErrorStatement".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return []
 	}
 
@@ -1124,15 +1232,19 @@ extension PrintableTree {
 /// - `TranspilationPass.replaceExpression`
 /// - LibraryTranspilationPass's `Expression.matches`
 public /*abstract*/ class Expression: PrintableAsTree, Equatable, CustomStringConvertible {
+	fileprivate(set) var parent: Expression?
+	let syntax: Syntax?
 	let name: String
 	var range: SourceFileRange?
 
-	init(range: SourceFileRange?, name: String) {
+	init(parent: Expression? = nil, syntax: Syntax? = nil, range: SourceFileRange?, name: String) {
+		self.parent = parent
+		self.syntax = syntax
 		self.range = range
 		self.name = name
 	}
 
-	var swiftType: String? { // gryphon annotation: open
+	var swiftType: String? {
 		get {
 			return nil
 		}
@@ -1140,11 +1252,11 @@ public /*abstract*/ class Expression: PrintableAsTree, Equatable, CustomStringCo
 	}
 
 	// PrintableAsTree
-	public var treeDescription: String { // gryphon annotation: override
+	public var treeDescription: String {
 		return name
 	}
 
-	public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	public var printableSubtrees: List<PrintableAsTree?> {
 		fatalError("Accessing field in abstract class Expression")
 	}
 
@@ -1303,7 +1415,7 @@ public /*abstract*/ class Expression: PrintableAsTree, Equatable, CustomStringCo
 		return false
 	}
 
-	public var description: String { // gryphon ignore
+	public var description: String {
 		return prettyDescription()
 	}
 }
@@ -1311,22 +1423,44 @@ public /*abstract*/ class Expression: PrintableAsTree, Equatable, CustomStringCo
 public class LiteralCodeExpression: Expression {
 	let string: String
 	let shouldGoToMainFunction: Bool
+	var typeName: String?
 
-	init(range: SourceFileRange?, string: String, shouldGoToMainFunction: Bool) {
+	init(
+		syntax: Syntax? = nil,
+		range: SourceFileRange?,
+		string: String,
+		shouldGoToMainFunction: Bool,
+		typeName: String?)
+	{
 		self.string = string
 		self.shouldGoToMainFunction = shouldGoToMainFunction
-		super.init(range: range, name: "LiteralCodeExpression".capitalizedAsCamelCase())
+		self.typeName = typeName
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "LiteralCodeExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
 			PrintableTree(string),
+			PrintableTree.initOrNil(typeName),
 			shouldGoToMainFunction ? PrintableTree("shouldGoToMainFunction") : nil, ]
+	}
+
+	override var swiftType: String? {
+		get {
+			return typeName
+		}
+		set {
+			typeName = newValue
+		}
 	}
 
 	public static func == (lhs: LiteralCodeExpression, rhs: LiteralCodeExpression) -> Bool {
 		return lhs.string == rhs.string &&
-			lhs.shouldGoToMainFunction == rhs.shouldGoToMainFunction
+			lhs.shouldGoToMainFunction == rhs.shouldGoToMainFunction &&
+			lhs.typeName == rhs.typeName
 	}
 }
 
@@ -1336,13 +1470,23 @@ public class ConcatenationExpression: Expression {
 	let leftExpression: Expression
 	let rightExpression: Expression
 
-	init(range: SourceFileRange?, leftExpression: Expression, rightExpression: Expression) {
+	init(
+		syntax: Syntax? = nil,
+		range: SourceFileRange?,
+		leftExpression: Expression,
+		rightExpression: Expression)
+	{
 		self.leftExpression = leftExpression
 		self.rightExpression = rightExpression
-		super.init(range: range, name: "ConcatenationExpression".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "ConcatenationExpression".capitalizedAsCamelCase())
+		leftExpression.parent = self
+		rightExpression.parent = self
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
 			PrintableTree.ofExpressions("left", [leftExpression]),
 			PrintableTree.ofExpressions("right", [rightExpression]), ]
@@ -1357,16 +1501,20 @@ public class ConcatenationExpression: Expression {
 public class ParenthesesExpression: Expression {
 	let expression: Expression
 
-	init(range: SourceFileRange?, expression: Expression) {
+	init(syntax: Syntax? = nil, range: SourceFileRange?, expression: Expression) {
 		self.expression = expression
-		super.init(range: range, name: "ParenthesesExpression".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "ParenthesesExpression".capitalizedAsCamelCase())
+		expression.parent = self
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [expression]
 	}
 
-	override var swiftType: String? { // gryphon annotation: override
+	override var swiftType: String? {
 		get {
 			return expression.swiftType
 		}
@@ -1383,16 +1531,20 @@ public class ParenthesesExpression: Expression {
 public class ForceValueExpression: Expression {
 	let expression: Expression
 
-	init(range: SourceFileRange?, expression: Expression) {
+	init(syntax: Syntax? = nil, range: SourceFileRange?, expression: Expression) {
 		self.expression = expression
-		super.init(range: range, name: "ForceValueExpression".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "ForceValueExpression".capitalizedAsCamelCase())
+		expression.parent = self
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [expression]
 	}
 
-	override var swiftType: String? { // gryphon annotation: override
+	override var swiftType: String? {
 		get {
 			let subtype = expression.swiftType
 			if let subtype = subtype, subtype.hasSuffix("?") {
@@ -1417,16 +1569,20 @@ public class ForceValueExpression: Expression {
 public class OptionalExpression: Expression {
 	let expression: Expression
 
-	init(range: SourceFileRange?, expression: Expression) {
+	init(syntax: Syntax? = nil, range: SourceFileRange?, expression: Expression) {
 		self.expression = expression
-		super.init(range: range, name: "OptionalExpression".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "OptionalExpression".capitalizedAsCamelCase())
+		expression.parent = self
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [expression]
 	}
 
-	override var swiftType: String? { // gryphon annotation: override
+	override var swiftType: String? {
 		get {
 			let subtype = expression.swiftType
 			if let subtype = subtype, subtype.hasSuffix("?") {
@@ -1450,14 +1606,15 @@ public class OptionalExpression: Expression {
 
 public class DeclarationReferenceExpression: Expression {
 	var identifier: String
-	var typeName: String
+	var typeName: String?
 	var isStandardLibrary: Bool
 	var isImplicit: Bool
 
 	init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		identifier: String,
-		typeName: String,
+		typeName: String?,
 		isStandardLibrary: Bool,
 		isImplicit: Bool)
 	{
@@ -1465,18 +1622,22 @@ public class DeclarationReferenceExpression: Expression {
 		self.typeName = typeName
 		self.isStandardLibrary = isStandardLibrary
 		self.isImplicit = isImplicit
-		super.init(range: range, name: "DeclarationReferenceExpression".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "DeclarationReferenceExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
-			PrintableTree(typeName),
+			PrintableTree.initOrNil(
+				"type", [PrintableTree.initOrNil(typeName)]),
 			PrintableTree(identifier),
 			isStandardLibrary ? PrintableTree("isStandardLibrary") : nil,
 			isImplicit ? PrintableTree("implicit") : nil, ]
 	}
 
-	override var swiftType: String? { // gryphon annotation: override
+	override var swiftType: String? {
 		get {
 			return typeName
 		}
@@ -1502,16 +1663,19 @@ public class DeclarationReferenceExpression: Expression {
 public class TypeExpression: Expression {
 	var typeName: String
 
-	init(range: SourceFileRange?, typeName: String) {
+	init(syntax: Syntax? = nil, range: SourceFileRange?, typeName: String) {
 		self.typeName = typeName
-		super.init(range: range, name: "TypeExpression".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "TypeExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [PrintableTree(typeName)]
 	}
 
-	override var swiftType: String? { // gryphon annotation: override
+	override var swiftType: String? {
 		get {
 			return typeName
 		}
@@ -1528,30 +1692,40 @@ public class TypeExpression: Expression {
 }
 
 public class SubscriptExpression: Expression {
+	/// The `foo` in `foo[index]`
 	let subscriptedExpression: Expression
-	let indexExpression: Expression
+	/// Represents the labels and expressions used as an "index" for the subscript, e.g.
+	/// `foo[index1: "bar", index2: "baz"]`. In most cases the tuple will probably contain a single
+	/// expression without a label, e.g. `foo[index]`.
+	let indexExpression: TupleExpression
 	var typeName: String
 
 	init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		subscriptedExpression: Expression,
-		indexExpression: Expression,
+		indexExpression: TupleExpression,
 		typeName: String)
 	{
 		self.subscriptedExpression = subscriptedExpression
 		self.indexExpression = indexExpression
 		self.typeName = typeName
-		super.init(range: range, name: "SubscriptExpression".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "SubscriptExpression".capitalizedAsCamelCase())
+		subscriptedExpression.parent = self
+		indexExpression.parent = self
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
 			PrintableTree("type \(typeName)"),
 			PrintableTree.ofExpressions("subscriptedExpression", [subscriptedExpression]),
 			PrintableTree.ofExpressions("indexExpression", [indexExpression]), ]
 	}
 
-	override var swiftType: String? { // gryphon annotation: override
+	override var swiftType: String? {
 		get {
 			return typeName
 		}
@@ -1573,19 +1747,30 @@ public class ArrayExpression: Expression {
 	let elements: MutableList<Expression>
 	var typeName: String
 
-	init(range: SourceFileRange?, elements: MutableList<Expression>, typeName: String) {
+	init(
+		syntax: Syntax? = nil,
+		range: SourceFileRange?,
+		elements: MutableList<Expression>,
+		typeName: String)
+	{
 		self.elements = elements
 		self.typeName = typeName
-		super.init(range: range, name: "ArrayExpression".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "ArrayExpression".capitalizedAsCamelCase())
+		for element in elements {
+			element.parent = self
+		}
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
 			PrintableTree("type \(typeName)"),
 			PrintableTree.ofExpressions("elements", elements), ]
 	}
 
-	override var swiftType: String? { // gryphon annotation: override
+	override var swiftType: String? {
 		get {
 			return typeName
 		}
@@ -1608,6 +1793,7 @@ public class DictionaryExpression: Expression {
 	var typeName: String
 
 	init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		keys: MutableList<Expression>,
 		values: MutableList<Expression>,
@@ -1616,10 +1802,19 @@ public class DictionaryExpression: Expression {
 		self.keys = keys
 		self.values = values
 		self.typeName = typeName
-		super.init(range: range, name: "DictionaryExpression".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "DictionaryExpression".capitalizedAsCamelCase())
+		for key in keys {
+			key.parent = self
+		}
+		for value in values {
+			value.parent = self
+		}
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		let keyValueTrees = zip(keys, values).map
 		{ (pair: (first: Expression, second: Expression)) -> PrintableAsTree? in
 			PrintableTree("pair", [
@@ -1632,7 +1827,7 @@ public class DictionaryExpression: Expression {
 			PrintableTree("key value pairs", keyValueTrees), ]
 	}
 
-	override var swiftType: String? { // gryphon annotation: override
+	override var swiftType: String? {
 		get {
 			return typeName
 		}
@@ -1653,16 +1848,20 @@ public class DictionaryExpression: Expression {
 public class ReturnExpression: Expression {
 	let expression: Expression?
 
-	init(range: SourceFileRange?, expression: Expression?) {
+	init(syntax: Syntax? = nil, range: SourceFileRange?, expression: Expression?) {
 		self.expression = expression
-		super.init(range: range, name: "ReturnExpression".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "ReturnExpression".capitalizedAsCamelCase())
+		expression?.parent = self
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [expression]
 	}
 
-	override var swiftType: String? { // gryphon annotation: override
+	override var swiftType: String? {
 		get {
 			return expression?.swiftType
 		}
@@ -1680,31 +1879,42 @@ public class DotExpression: Expression {
 	let leftExpression: Expression
 	let rightExpression: Expression
 
-	init(range: SourceFileRange?, leftExpression: Expression, rightExpression: Expression) {
+	init(
+		syntax: Syntax? = nil,
+		range: SourceFileRange?,
+		leftExpression: Expression,
+		rightExpression: Expression)
+	{
 		self.leftExpression = leftExpression
 		self.rightExpression = rightExpression
-		super.init(range: range, name: "DotExpression".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "DotExpression".capitalizedAsCamelCase())
+		leftExpression.parent = self
+		rightExpression.parent = self
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
 			PrintableTree.ofExpressions("left", [leftExpression]),
 			PrintableTree.ofExpressions("right", [rightExpression]), ]
 	}
 
-	override var swiftType: String? { // gryphon annotation: override
+	override var swiftType: String? {
 		get {
 			// Enum references should be considered to have the left type, as the right expression's
 			// is a function type (something like `(MyEnum.Type) -> MyEnum` or
 			// `(A.MyEnum.Type) -> A.MyEnum`).
 			if let leftType = leftExpression as? TypeExpression,
-				let rightDeclarationReference = rightExpression as? DeclarationReferenceExpression
+				let rightDeclarationReference = rightExpression as? DeclarationReferenceExpression,
+				let rightType = rightDeclarationReference.typeName
 			{
 				let enumType = leftType.typeName
 
-				if rightDeclarationReference.typeName.hasPrefix("("),
-					rightDeclarationReference.typeName.contains("\(enumType).Type) -> "),
-					rightDeclarationReference.typeName.hasSuffix(enumType)
+				if rightType.hasPrefix("("),
+					rightType.contains("\(enumType).Type) -> "),
+					rightType.hasSuffix(enumType)
 				{
 					return enumType
 				}
@@ -1717,41 +1927,79 @@ public class DotExpression: Expression {
 		}
 	}
 
+	/// Takes an expression like `A.B.C` and returns it as a string ("A.B.C"). Returns `nil` if any
+	/// expressions in the dot chain aren't declaration references or type expressions.
+	/// This allows DotExpressions, TypeExpressions and DeclarationReferenceExpressions to be used
+	/// somewhat interchangeably in some contexts.
+	public func asString() -> String? {
+		return dotExpressionToString(self)
+	}
+
+	private func dotExpressionToString(_ expression: Expression) -> String? {
+		if let typeExpression = expression as? TypeExpression {
+			return typeExpression.typeName
+		}
+		else if let declarationExpression = expression as? DeclarationReferenceExpression {
+			return declarationExpression.identifier
+		}
+		else if let dotExpression = expression as? DotExpression {
+			guard let rightString = dotExpressionToString(dotExpression.rightExpression),
+				let leftString = dotExpressionToString(dotExpression.leftExpression) else
+			{
+				return nil
+			}
+
+			return leftString + "." + rightString
+		}
+		else {
+			return nil
+		}
+	}
+
 	public static func == (lhs: DotExpression, rhs: DotExpression) -> Bool {
 		return lhs.leftExpression == rhs.leftExpression &&
 			lhs.rightExpression == rhs.rightExpression
 	}
 }
 
+/// Does not take into consideration operator precedence, since that information isn't available in
+/// Syntax. Other `BinaryOperatorExpressions` can show up recursively on the right side.
 public class BinaryOperatorExpression: Expression {
 	let leftExpression: Expression
 	let rightExpression: Expression
 	let operatorSymbol: String
-	var typeName: String
+	var typeName: String?
 
 	init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		leftExpression: Expression,
 		rightExpression: Expression,
 		operatorSymbol: String,
-		typeName: String)
+		typeName: String?)
 	{
 		self.leftExpression = leftExpression
 		self.rightExpression = rightExpression
 		self.operatorSymbol = operatorSymbol
 		self.typeName = typeName
-		super.init(range: range, name: "BinaryOperatorExpression".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "BinaryOperatorExpression".capitalizedAsCamelCase())
+		leftExpression.parent = self
+		rightExpression.parent = self
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
-			PrintableTree("type \(typeName)"),
+			PrintableTree.initOrNil(
+				"type", [PrintableTree.initOrNil(typeName)]),
 			PrintableTree.ofExpressions("left", [leftExpression]),
 			PrintableTree("operator \(operatorSymbol)"),
 			PrintableTree.ofExpressions("right", [rightExpression]), ]
 	}
 
-	override var swiftType: String? { // gryphon annotation: override
+	override var swiftType: String? {
 		get {
 			return typeName
 		}
@@ -1776,6 +2024,7 @@ public class PrefixUnaryExpression: Expression {
 	var typeName: String
 
 	init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		subExpression: Expression,
 		operatorSymbol: String,
@@ -1784,17 +2033,21 @@ public class PrefixUnaryExpression: Expression {
 		self.subExpression = subExpression
 		self.operatorSymbol = operatorSymbol
 		self.typeName = typeName
-		super.init(range: range, name: "PrefixUnaryExpression".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "PrefixUnaryExpression".capitalizedAsCamelCase())
+		subExpression.parent = self
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
 			PrintableTree("type \(typeName)"),
 			PrintableTree("operator \(operatorSymbol)"),
 			PrintableTree.ofExpressions("expression", [subExpression]), ]
 	}
 
-	override var swiftType: String? { // gryphon annotation: override
+	override var swiftType: String? {
 		get {
 			return typeName
 		}
@@ -1818,6 +2071,7 @@ public class PostfixUnaryExpression: Expression {
 	var typeName: String
 
 	init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		subExpression: Expression,
 		operatorSymbol: String,
@@ -1826,17 +2080,21 @@ public class PostfixUnaryExpression: Expression {
 		self.subExpression = subExpression
 		self.operatorSymbol = operatorSymbol
 		self.typeName = typeName
-		super.init(range: range, name: "PostfixUnaryExpression".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "PostfixUnaryExpression".capitalizedAsCamelCase())
+		subExpression.parent = self
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
 			PrintableTree("type \(typeName)"),
 			PrintableTree("operator \(operatorSymbol)"),
 			PrintableTree.ofExpressions("expression", [subExpression]), ]
 	}
 
-	override var swiftType: String? { // gryphon annotation: override
+	override var swiftType: String? {
 		get {
 			return typeName
 		}
@@ -1860,6 +2118,7 @@ public class IfExpression: Expression {
 	let falseExpression: Expression
 
 	init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		condition: Expression,
 		trueExpression: Expression,
@@ -1868,17 +2127,23 @@ public class IfExpression: Expression {
 		self.condition = condition
 		self.trueExpression = trueExpression
 		self.falseExpression = falseExpression
-		super.init(range: range, name: "IfExpression".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "IfExpression".capitalizedAsCamelCase())
+		condition.parent = self
+		trueExpression.parent = self
+		falseExpression.parent = self
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
 			PrintableTree.ofExpressions("condition", [condition]),
 			PrintableTree.ofExpressions("trueExpression", [trueExpression]),
 			PrintableTree.ofExpressions("falseExpression", [falseExpression]), ]
 	}
 
-	override var swiftType: String? { // gryphon annotation: override
+	override var swiftType: String? {
 		get {
 			return trueExpression.swiftType
 		}
@@ -1896,30 +2161,48 @@ public class IfExpression: Expression {
 }
 
 public class CallExpression: Expression {
-	let function: Expression
-	let parameters: Expression
+	var function: Expression
+	var parameters: Expression
 	var typeName: String?
+	/// If this function call can be written with a trailing closure in Kotlin (it can't in some
+	/// instances of calls with variadics and default arguments). This gets decided in a
+	/// Transpilation Pass.
+	var allowsTrailingClosure: Bool
+	/// Signals if this call expression was marked as pure by a translation comment
+	var isPure: Bool
 
 	init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		function: Expression,
 		parameters: Expression,
-		typeName: String?)
+		typeName: String?,
+		allowsTrailingClosure: Bool,
+		isPure: Bool)
 	{
 		self.function = function
 		self.parameters = parameters
 		self.typeName = typeName
-		super.init(range: range, name: "CallExpression".capitalizedAsCamelCase())
+		self.allowsTrailingClosure = allowsTrailingClosure
+		self.isPure = isPure
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "CallExpression".capitalizedAsCamelCase())
+		function.parent = self
+		parameters.parent = self
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
 			PrintableTree.initOrNil("type", [PrintableTree.initOrNil(typeName)]),
 			PrintableTree.ofExpressions("function", [function]),
-			PrintableTree.ofExpressions("parameters", [parameters]), ]
+			PrintableTree.ofExpressions("parameters", [parameters]),
+			allowsTrailingClosure ? PrintableTree("allowsTrailingClosure") : nil,
+			isPure ? PrintableTree("isPure") : nil, ]
 	}
 
-	override var swiftType: String? { // gryphon annotation: override
+	override var swiftType: String? {
 		get {
 			return typeName
 		}
@@ -1937,37 +2220,48 @@ public class CallExpression: Expression {
 	{
 		return lhs.function == rhs.function &&
 			lhs.parameters == rhs.parameters &&
-			lhs.typeName == rhs.typeName
+			lhs.typeName == rhs.typeName &&
+			lhs.allowsTrailingClosure == rhs.allowsTrailingClosure &&
+			lhs.isPure == rhs.isPure
 	}
 }
 
 public class ClosureExpression: Expression {
+	// Closures that use anonymous parameters (e.g. `$0`) may leave this empty
 	let parameters: MutableList<LabeledType>
 	let statements: MutableList<Statement>
 	var typeName: String
+	var isTrailing: Bool
 
 	init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		parameters: MutableList<LabeledType>,
 		statements: MutableList<Statement>,
-		typeName: String)
+		typeName: String,
+		isTrailing: Bool)
 	{
 		self.parameters = parameters
 		self.statements = statements
 		self.typeName = typeName
-		super.init(range: range, name: "ClosureExpression".capitalizedAsCamelCase())
+		self.isTrailing = isTrailing
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "ClosureExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		let parametersString =
 			"(" + parameters.map { $0.label + ":" }.joined(separator: ", ") + ")"
 		return [
 			PrintableTree(typeName),
 			PrintableTree(parametersString),
+			isTrailing ? PrintableTree("isTrailing") : nil,
 			PrintableTree.ofStatements("statements", statements), ]
 	}
 
-	override var swiftType: String? { // gryphon annotation: override
+	override var swiftType: String? {
 		get {
 			return typeName
 		}
@@ -1988,16 +2282,19 @@ public class ClosureExpression: Expression {
 public class LiteralIntExpression: Expression {
 	let value: Int64
 
-	init(range: SourceFileRange?, value: Int64) {
+	init(syntax: Syntax? = nil, range: SourceFileRange?, value: Int64) {
 		self.value = value
-		super.init(range: range, name: "LiteralIntExpression".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "LiteralIntExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [PrintableTree(String(value))]
 	}
 
-	override var swiftType: String? { // gryphon annotation: override
+	override var swiftType: String? {
 		get {
 			return "Int"
 		}
@@ -2012,16 +2309,19 @@ public class LiteralIntExpression: Expression {
 public class LiteralUIntExpression: Expression {
 	let value: UInt64
 
-	init(range: SourceFileRange?, value: UInt64) {
+	init(syntax: Syntax? = nil, range: SourceFileRange?, value: UInt64) {
 		self.value = value
-		super.init(range: range, name: "LiteralUIntExpression".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "LiteralUIntExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [PrintableTree(String(value))]
 	}
 
-	override var swiftType: String? { // gryphon annotation: override
+	override var swiftType: String? {
 		get {
 			return "UInt"
 		}
@@ -2036,16 +2336,19 @@ public class LiteralUIntExpression: Expression {
 public class LiteralDoubleExpression: Expression {
 	let value: Double
 
-	init(range: SourceFileRange?, value: Double) {
+	init(syntax: Syntax? = nil, range: SourceFileRange?, value: Double) {
 		self.value = value
-		super.init(range: range, name: "LiteralDoubleExpression".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "LiteralDoubleExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [PrintableTree(String(value))]
 	}
 
-	override var swiftType: String? { // gryphon annotation: override
+	override var swiftType: String? {
 		get {
 			return "Double"
 		}
@@ -2060,16 +2363,19 @@ public class LiteralDoubleExpression: Expression {
 public class LiteralFloatExpression: Expression {
 	let value: Float
 
-	init(range: SourceFileRange?, value: Float) {
+	init(syntax: Syntax? = nil, range: SourceFileRange?, value: Float) {
 		self.value = value
-		super.init(range: range, name: "LiteralFloatExpression".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "LiteralFloatExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [PrintableTree(String(value))]
 	}
 
-	override var swiftType: String? { // gryphon annotation: override
+	override var swiftType: String? {
 		get {
 			return "Float"
 		}
@@ -2084,16 +2390,19 @@ public class LiteralFloatExpression: Expression {
 public class LiteralBoolExpression: Expression {
 	let value: Bool
 
-	init(range: SourceFileRange?, value: Bool) {
+	init(syntax: Syntax? = nil, range: SourceFileRange?, value: Bool) {
 		self.value = value
-		super.init(range: range, name: "LiteralBoolExpression".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "LiteralBoolExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [PrintableTree(String(value))]
 	}
 
-	override var swiftType: String? { // gryphon annotation: override
+	override var swiftType: String? {
 		get {
 			return "Bool"
 		}
@@ -2109,20 +2418,23 @@ public class LiteralStringExpression: Expression {
 	let value: String
 	let isMultiline: Bool
 
-	init(range: SourceFileRange?, value: String, isMultiline: Bool) {
+	init(syntax: Syntax? = nil, range: SourceFileRange?, value: String, isMultiline: Bool) {
 		self.value = value
 		self.isMultiline = isMultiline
-		super.init(range: range, name: "LiteralStringExpression".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "LiteralStringExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
 			PrintableTree(value),
 			isMultiline ? PrintableTree("multiline") : nil,
 		]
 	}
 
-	override var swiftType: String? { // gryphon annotation: override
+	override var swiftType: String? {
 		get {
 			return "String"
 		}
@@ -2137,16 +2449,19 @@ public class LiteralStringExpression: Expression {
 public class LiteralCharacterExpression: Expression {
 	let value: String
 
-	init(range: SourceFileRange?, value: String) {
+	init(syntax: Syntax? = nil, range: SourceFileRange?, value: String) {
 		self.value = value
-		super.init(range: range, name: "LiteralCharacterExpression".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "LiteralCharacterExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [PrintableTree(String(value))]
 	}
 
-	override var swiftType: String? { // gryphon annotation: override
+	override var swiftType: String? {
 		get {
 			return "Character"
 		}
@@ -2160,11 +2475,14 @@ public class LiteralCharacterExpression: Expression {
 }
 
 public class NilLiteralExpression: Expression {
-	init(range: SourceFileRange?) {
-		super.init(range: range, name: "NilLiteralExpression".capitalizedAsCamelCase())
+	init(syntax: Syntax? = nil, range: SourceFileRange?) {
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "NilLiteralExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return []
 	}
 
@@ -2176,18 +2494,22 @@ public class NilLiteralExpression: Expression {
 public class InterpolatedStringLiteralExpression: Expression {
 	let expressions: MutableList<Expression>
 
-	init(range: SourceFileRange?, expressions: MutableList<Expression>) {
+	init(syntax: Syntax? = nil, range: SourceFileRange?, expressions: MutableList<Expression>) {
 		self.expressions = expressions
 		super.init(
+			syntax: syntax,
 			range: range,
 			name: "InterpolatedStringLiteralExpression".capitalizedAsCamelCase())
+		for expression in expressions {
+			expression.parent = self
+		}
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [PrintableTree.ofExpressions("expressions", expressions)]
 	}
 
-	override var swiftType: String? { // gryphon annotation: override
+	override var swiftType: String? {
 		get {
 			return "String"
 		}
@@ -2211,20 +2533,26 @@ public class InterpolatedStringLiteralExpression: Expression {
 }
 
 public class TupleExpression: Expression {
-	let pairs: MutableList<LabeledExpression>
+	var pairs: MutableList<LabeledExpression>
 
-	init(range: SourceFileRange?, pairs: MutableList<LabeledExpression>) {
+	init(syntax: Syntax? = nil, range: SourceFileRange?, pairs: MutableList<LabeledExpression>) {
 		self.pairs = pairs
-		super.init(range: range, name: "TupleExpression".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "TupleExpression".capitalizedAsCamelCase())
+		for pair in pairs {
+			pair.expression.parent = self
+		}
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return pairs.map {
 			PrintableTree.ofExpressions(($0.label ?? "_") + ":", [$0.expression])
 		}
 	}
 
-	override var swiftType: String? { // gryphon annotation: override
+	override var swiftType: String? {
 		get {
 			let types = pairs.map { $0.expression.swiftType ?? "_" }
 			return "(\(types.joined(separator: ", ")))"
@@ -2243,6 +2571,7 @@ public class TupleShuffleExpression: Expression {
 	let expressions: MutableList<Expression>
 
 	init(
+		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		labels: MutableList<String?>,
 		indices: MutableList<TupleShuffleIndex>,
@@ -2251,10 +2580,16 @@ public class TupleShuffleExpression: Expression {
 		self.labels = labels
 		self.indices = indices
 		self.expressions = expressions
-		super.init(range: range, name: "TupleShuffleExpression".capitalizedAsCamelCase())
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "TupleShuffleExpression".capitalizedAsCamelCase())
+		for expression in expressions {
+			expression.parent = self
+		}
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		let labelStrings = labels.map { ($0 ?? "_") + ":" }
 		return [
 			PrintableTree.ofStrings("labels", labelStrings),
@@ -2268,7 +2603,7 @@ public class TupleShuffleExpression: Expression {
 			lhs.expressions == rhs.expressions
 	}
 
-	override var swiftType: String? { // gryphon annotation: override
+	override var swiftType: String? {
 		get {
 			return self.flattenToTupleExpression().swiftType
 		}
@@ -2332,16 +2667,19 @@ public class TupleShuffleExpression: Expression {
 			}
 		}
 
-		return TupleExpression(range: self.range, pairs: resultPairs)
+		return TupleExpression(syntax: syntax, range: self.range, pairs: resultPairs)
 	}
 }
 
 public class ErrorExpression: Expression {
-	init(range: SourceFileRange?) {
-		super.init(range: range, name: "ErrorExpression".capitalizedAsCamelCase())
+	init(syntax: Syntax? = nil, range: SourceFileRange?) {
+		super.init(
+			syntax: syntax,
+			range: range,
+			name: "ErrorExpression".capitalizedAsCamelCase())
 	}
 
-	override public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	override public var printableSubtrees: List<PrintableAsTree?> {
 		return []
 	}
 
@@ -2361,10 +2699,30 @@ public struct LabeledType: Equatable {
 }
 
 public struct FunctionParameter: Equatable {
+	/// The implementation name of the parameter.
 	let label: String
+	/// The name of the parameter used when calling the function. If it's `_` in Swift, it's `nil`
+	/// here. If it's the same as the implementation name (e.g. `f(a: Int)`), it'll be the same
+	/// here.
 	let apiLabel: String?
+	/// If it's a variadic parameter (e.g. `Int...`) this contains just the base type (e.g. `Int`).
 	let typeName: String
 	let value: Expression?
+	let isVariadic: Bool
+
+	init(
+		label: String,
+		apiLabel: String?,
+		typeName: String,
+		value: Expression?,
+		isVariadic: Bool = false)
+	{
+		self.label = label
+		self.apiLabel = apiLabel
+		self.typeName = typeName
+		self.value = value
+		self.isVariadic = isVariadic
+	}
 }
 
 public class SwitchCase: Equatable {
@@ -2386,17 +2744,20 @@ public class SwitchCase: Equatable {
 }
 
 public class EnumElement: PrintableAsTree, Equatable {
+	var syntax: Syntax?
 	var name: String
 	var associatedValues: MutableList<LabeledType>
 	var rawValue: Expression?
-	var annotations: String?
+	var annotations: MutableList<String>
 
 	init(
+		syntax: Syntax? = nil,
 		name: String,
 		associatedValues: MutableList<LabeledType>,
 		rawValue: Expression?,
-		annotations: String?)
+		annotations: MutableList<String>)
 	{
+		self.syntax = syntax
 		self.name = name
 		self.associatedValues = associatedValues
 		self.rawValue = rawValue
@@ -2410,11 +2771,11 @@ public class EnumElement: PrintableAsTree, Equatable {
 		lhs.annotations == rhs.annotations
 	}
 
-	public var treeDescription: String { // gryphon annotation: override
+	public var treeDescription: String {
 		return ".\(self.name)"
 	}
 
-	public var printableSubtrees: List<PrintableAsTree?> { // gryphon annotation: override
+	public var printableSubtrees: List<PrintableAsTree?> {
 		let associatedValues = self.associatedValues
 			.map { "\($0.label): \($0.typeName)" }
 			.joined(separator: ", ")
@@ -2423,7 +2784,8 @@ public class EnumElement: PrintableAsTree, Equatable {
 			"values: \(associatedValues)"
 		return [
 			PrintableTree.initOrNil(associatedValuesString),
-			PrintableTree.initOrNil(self.annotations), ]
+			PrintableTree.ofStrings("annotations", annotations),
+			PrintableTree.initOrNil("rawValue", [rawValue]), ]
 	}
 }
 

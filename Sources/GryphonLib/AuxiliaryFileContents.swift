@@ -16,15 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/AuxiliaryFileContents.swiftAST
-// gryphon output: Sources/GryphonLib/AuxiliaryFileContents.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/AuxiliaryFileContents.gryphonAST
-// gryphon output: Bootstrap/AuxiliaryFileContents.kt
-
-private let dollarSign = "$" // gryphon value: "\\$"
-private let kotlinStringInterpolation = "{_string}"
-
-// gryphon multiline
 internal let gryphonKotlinLibraryFileContents = """
 // Replace this with the real package identifier:
 package /* com.example.myApp */
@@ -209,7 +200,6 @@ fun <Element> MutableList<Element>.partition(
 
 """
 
-// gryphon multiline
 internal let gryphonSwiftLibraryFileContents = """
 //
 // Copyright 2018 Vinicius Jorge Vendramini
@@ -230,7 +220,8 @@ internal let gryphonSwiftLibraryFileContents = """
 //
 
 // MARK: - Template class declarations
-internal class GRYTemplate { // gryphon ignore
+// gryphon ignore
+internal class GRYTemplate {
 	static func dot(_ left: GRYTemplate, _ right: String) -> GRYDotTemplate {
 		return GRYDotTemplate(left, right)
 	}
@@ -256,7 +247,8 @@ internal class GRYTemplate { // gryphon ignore
 	}
 }
 
-internal class GRYDotTemplate: GRYTemplate { // gryphon ignore
+// gryphon ignore
+internal class GRYDotTemplate: GRYTemplate {
 	let left: GRYTemplate
 	let right: String
 
@@ -266,7 +258,8 @@ internal class GRYDotTemplate: GRYTemplate { // gryphon ignore
 	}
 }
 
-internal class GRYCallTemplate: GRYTemplate { // gryphon ignore
+// gryphon ignore
+internal class GRYCallTemplate: GRYTemplate {
 	let function: GRYTemplate
 	let parameters: [GRYParameterTemplate]
 
@@ -282,7 +275,8 @@ internal class GRYCallTemplate: GRYTemplate { // gryphon ignore
 	}
 }
 
-internal class GRYParameterTemplate: ExpressibleByStringLiteral { // gryphon ignore
+// gryphon ignore
+internal class GRYParameterTemplate: ExpressibleByStringLiteral {
 	let label: String?
 	let template: GRYTemplate
 
@@ -356,7 +350,8 @@ internal class GRYParameterTemplate: ExpressibleByStringLiteral { // gryphon ign
 	}
 }
 
-internal class GRYLiteralTemplate: GRYTemplate { // gryphon ignore
+// gryphon ignore
+internal class GRYLiteralTemplate: GRYTemplate {
 	let string: String
 
 	init(string: String) {
@@ -364,7 +359,8 @@ internal class GRYLiteralTemplate: GRYTemplate { // gryphon ignore
 	}
 }
 
-internal class GRYConcatenatedTemplate: GRYTemplate { // gryphon ignore
+// gryphon ignore
+internal class GRYConcatenatedTemplate: GRYTemplate {
 	let left: GRYTemplate
 	let right: GRYTemplate
 
@@ -374,7 +370,8 @@ internal class GRYConcatenatedTemplate: GRYTemplate { // gryphon ignore
 	}
 }
 
-internal func + ( // gryphon ignore
+// gryphon ignore
+internal func + (
 	left: GRYTemplate,
 	right: GRYTemplate)
 	-> GRYConcatenatedTemplate
@@ -382,25 +379,36 @@ internal func + ( // gryphon ignore
 	GRYConcatenatedTemplate(left: left, right: right)
 }
 
-internal func + (left: String, right: GRYTemplate) -> GRYConcatenatedTemplate { // gryphon ignore
+// gryphon ignore
+internal func + (left: String, right: GRYTemplate) -> GRYConcatenatedTemplate {
 	GRYConcatenatedTemplate(left: GRYLiteralTemplate(string: left), right: right)
 }
 
-internal func + (left: GRYTemplate, right: String) -> GRYConcatenatedTemplate { // gryphon ignore
+// gryphon ignore
+internal func + (left: GRYTemplate, right: String) -> GRYConcatenatedTemplate {
 	GRYConcatenatedTemplate(left: left, right: GRYLiteralTemplate(string: right))
 }
 
 // MARK: - Templates
 // Replacement for Comparable
-private struct _Comparable: Comparable { // gryphon ignore
+// gryphon ignore
+private struct _Comparable: Comparable {
 	static func < (lhs: _Comparable, rhs: _Comparable) -> Bool {
 		return false
 	}
 }
 
+// Replacement for Hashable
+// gryphon ignore
+private struct _Hashable: Hashable { }
+
 private func gryphonTemplates() {
 	let _array1: MutableList<Any> = [1, 2, 3]
 	let _array2: MutableList<Any> = [1, 2, 3]
+	let _array3: [Any] = [1, 2, 3]
+	let _dictionary: [_Hashable: Any] = [:]
+	let _list: List<Any> = []
+	let _map: Map<_Hashable, Any> = [:]
 	let _any: Any = 0
 	let _string: String = ""
 	let _index = _string.startIndex
@@ -419,6 +427,24 @@ private func gryphonTemplates() {
 
 	_ = _array1.appending(contentsOf: _array2)
 	_ = "_array1 + _array2"
+
+	_ = List(_array3)
+	_ = GRYTemplate.call(.dot("_array3", "toList"), [])
+
+	_ = MutableList(_array3)
+	_ = GRYTemplate.call(.dot("_array3", "toMutableList"), [])
+
+	_ = Map(_dictionary)
+	_ = GRYTemplate.call(.dot("_dictionary", "toMap"), [])
+
+	_ = MutableMap(_dictionary)
+	_ = GRYTemplate.call(.dot("_dictionary", "toMutableMap"), [])
+
+	_ = _list.array
+	_ = GRYTemplate.call(.dot("_list", "toList"), [])
+
+	_ = _map.dictionary
+	_ = GRYTemplate.call(.dot("_map", "toMap"), [])
 
 	// Templates with an output that references methods defined in the GryphonKotlinLibrary.kt file
 	_ = _string.suffix(from: _index)
@@ -439,7 +465,8 @@ private func gryphonTemplates() {
 /// (link found via https://www.raywenderlich.com/139591/building-custom-collection-swift)
 /// the Array type in Swift conforms exactly to these protocols,
 /// plus CustomReflectable (which is beyond Gryphon's scope for now).
-public struct _ListSlice<Element>: Collection, // gryphon ignore
+// gryphon ignore
+public struct _ListSlice<Element>: Collection,
 	BidirectionalCollection,
 	RandomAccessCollection,
 	MutableCollection,
@@ -513,7 +540,8 @@ public struct _ListSlice<Element>: Collection, // gryphon ignore
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-public class List<Element>: CustomStringConvertible, // gryphon ignore
+// gryphon ignore
+public class List<Element>: CustomStringConvertible,
 	CustomDebugStringConvertible,
 	ExpressibleByArrayLiteral,
 	Sequence,
@@ -623,11 +651,15 @@ public class List<Element>: CustomStringConvertible, // gryphon ignore
 	}
 
 	public func dropFirst(_ k: Int = 1) -> List<Element> {
-		return List(array.dropFirst())
+		return List(array.dropFirst(k))
 	}
 
 	public func dropLast(_ k: Int = 1) -> List<Element> {
-		return List(array.dropLast())
+		return List(array.dropLast(k))
+	}
+
+	public func drop(while predicate: (Element) throws -> Bool) rethrows -> List<Element> {
+		return try List(array.drop(while: predicate))
 	}
 
 	public func appending(_ newElement: Element) -> List<Element> {
@@ -683,13 +715,15 @@ public class List<Element>: CustomStringConvertible, // gryphon ignore
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-extension List { // gryphon ignore
+// gryphon ignore
+extension List {
 	public func toMutableList() -> MutableList<Element> {
 		return MutableList(array)
 	}
 }
 
-extension List { // gryphon ignore
+// gryphon ignore
+extension List {
 	@inlinable
 	public static func + <Other>(
 		lhs: List<Element>,
@@ -706,7 +740,8 @@ extension List { // gryphon ignore
 	}
 }
 
-extension List: Equatable where Element: Equatable { // gryphon ignore
+// gryphon ignore
+extension List: Equatable where Element: Equatable {
 	public static func == (lhs: List, rhs: List) -> Bool {
 		return lhs.array == rhs.array
 	}
@@ -717,13 +752,15 @@ extension List: Equatable where Element: Equatable { // gryphon ignore
 	}
 }
 
-extension List: Hashable where Element: Hashable { // gryphon ignore
+// gryphon ignore
+extension List: Hashable where Element: Hashable {
 	public func hash(into hasher: inout Hasher) {
 		array.hash(into: &hasher)
 	}
 }
 
-extension List where Element: Comparable { // gryphon ignore
+// gryphon ignore
+extension List where Element: Comparable {
 	@inlinable
 	public func sorted() -> List<Element> {
 		return List(array.sorted())
@@ -732,7 +769,8 @@ extension List where Element: Comparable { // gryphon ignore
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-public class MutableList<Element>: List<Element>, // gryphon ignore
+// gryphon ignore
+public class MutableList<Element>: List<Element>,
 	MutableCollection,
 	RangeReplaceableCollection
 {
@@ -782,13 +820,23 @@ public class MutableList<Element>: List<Element>, // gryphon ignore
 		array.removeAll(keepingCapacity: keepCapacity)
 	}
 
+	@discardableResult
+	public func remove(at index: Int) -> Element {
+		return array.remove(at: index)
+	}
+
 	public func reverse() {
 		self.array = self.array.reversed()
+	}
+
+	override public func drop(while predicate: (Element) throws -> Bool) rethrows -> List<Element> {
+		return try List(array.drop(while: predicate))
 	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-extension List { // gryphon ignore
+// gryphon ignore
+extension List {
 
 	/// Used to obtain a MutableList with a new element type. If all elements in the list can be
 	/// casted to the new type, the method succeeds and the new MutableList is returned. Otherwise,
@@ -818,7 +866,8 @@ extension List { // gryphon ignore
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-public func zip<ASequence, ListElement>( // gryphon ignore
+// gryphon ignore
+public func zip<ASequence, ListElement>(
 	_ array1: ASequence,
 	_ array2: List<ListElement>)
 	-> List<(ASequence.Element, ListElement)>
@@ -827,7 +876,8 @@ public func zip<ASequence, ListElement>( // gryphon ignore
 	return List(Swift.zip(array1, array2))
 }
 
-public func zip<ASequence, ListElement>( // gryphon ignore
+// gryphon ignore
+public func zip<ASequence, ListElement>(
 	_ array1: List<ListElement>,
 	_ array2: ASequence)
 	-> List<(ListElement, ASequence.Element)>
@@ -836,7 +886,8 @@ public func zip<ASequence, ListElement>( // gryphon ignore
 	return List(Swift.zip(array1, array2))
 }
 
-public func zip<List1Element, List2Element>( // gryphon ignore
+// gryphon ignore
+public func zip<List1Element, List2Element>(
 	_ array1: List<List1Element>,
 	_ array2: List<List2Element>)
 	-> List<(List1Element, List2Element)>
@@ -849,8 +900,8 @@ public func zip<List1Element, List2Element>( // gryphon ignore
 /// According to https://swiftdoc.org/v4.2/type/dictionary/hierarchy/
 /// the Dictionary type in Swift conforms exactly to these protocols,
 /// plus CustomReflectable (which is beyond Gryphon's scope for now).
-public class Map<Key, Value>: // gryphon ignore
-	CustomStringConvertible,
+// gryphon ignore
+public class Map<Key, Value>: CustomStringConvertible,
 	CustomDebugStringConvertible,
 	ExpressibleByDictionaryLiteral,
 	Collection
@@ -871,7 +922,7 @@ public class Map<Key, Value>: // gryphon ignore
 
 	// The tuple inside the list has to be translated as a Pair for Kotlin compatibility
 	public func toList() -> List<(Key, Value)> {
-		return List(dictionary).map { (\(dollarSign)0.0, \(dollarSign)0.1) }
+		return List(dictionary).map { ($0.0, $0.1) }
 	}
 
 	// Custom (Debug) String Convertible
@@ -986,19 +1037,22 @@ public class Map<Key, Value>: // gryphon ignore
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-extension Map { // gryphon ignore
+// gryphon ignore
+extension Map {
 	public func toMutableMap() -> MutableMap<Key, Value> {
 		return MutableMap(dictionary)
 	}
 }
 
-extension Map: Equatable where Value: Equatable { // gryphon ignore
+// gryphon ignore
+extension Map: Equatable where Value: Equatable {
 	public static func == (lhs: Map, rhs: Map) -> Bool {
 		return lhs.dictionary == rhs.dictionary
 	}
 }
 
-extension Map: Hashable where Value: Hashable { // gryphon ignore
+// gryphon ignore
+extension Map: Hashable where Value: Hashable {
 	public func hash(into hasher: inout Hasher) {
 		dictionary.hash(into: &hasher)
 	}
@@ -1006,7 +1060,8 @@ extension Map: Hashable where Value: Hashable { // gryphon ignore
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-public class MutableMap<Key, Value>: Map<Key, Value> where Key: Hashable { // gryphon ignore
+// gryphon ignore
+public class MutableMap<Key, Value>: Map<Key, Value> where Key: Hashable {
 	override public subscript (_ key: Key) -> Value? {
 		get {
 			return dictionary[key]
@@ -1017,7 +1072,8 @@ public class MutableMap<Key, Value>: Map<Key, Value> where Key: Hashable { // gr
 	}
 }
 
-extension Map { // gryphon ignore
+// gryphon ignore
+extension Map {
 	/// Used to obtain a MutableMap with new key and/or value types. If all keys and values in the
 	/// map can be casted to the new types, the method succeeds and the new MutableMap is returned.
 	/// Otherwise, the method returns `nil`.
@@ -1046,7 +1102,6 @@ extension Map { // gryphon ignore
 
 """
 
-// gryphon multiline
 internal let gryphonXCTestFileContents = """
 // Replacement for Comparable
 private struct _Comparable: Comparable {
@@ -1058,7 +1113,8 @@ private struct _Comparable: Comparable {
 // Replacement for Optional
 private struct _Optional { }
 
-class XCTestCase { // gryphon ignore
+// gryphon ignore
+class XCTestCase {
 	class func setUp() { }
 	class func tearDown() { }
 
@@ -1113,7 +1169,6 @@ extension XCTestCase {
 
 """
 
-// gryphon multiline
 internal let gryphonTemplatesLibraryFileContents = """
 // WARNING: Any changes to this file should be reflected in the literal string in
 // AuxiliaryFileContents.swift
@@ -1122,7 +1177,8 @@ import Foundation
 
 // MARK: - Define template classes and operators
 
-private class _GRYTemplate { // gryphon ignore
+// gryphon ignore
+private class _GRYTemplate {
 	static func dot(_ left: _GRYTemplate, _ right: String) -> _GRYDotTemplate {
 		return _GRYDotTemplate(left, right)
 	}
@@ -1131,16 +1187,25 @@ private class _GRYTemplate { // gryphon ignore
 		return _GRYDotTemplate(_GRYLiteralTemplate(string: left), right)
 	}
 
-	static func call(_ function: _GRYTemplate, _ parameters: [_GRYParameterTemplate]) -> _GRYCallTemplate {
+	static func call(
+		_ function: _GRYTemplate,
+		_ parameters: [_GRYParameterTemplate])
+		-> _GRYCallTemplate
+	{
 		return _GRYCallTemplate(function, parameters)
 	}
 
-	static func call(_ function: String, _ parameters: [_GRYParameterTemplate]) -> _GRYCallTemplate {
+	static func call(
+		_ function: String,
+		_ parameters: [_GRYParameterTemplate])
+		-> _GRYCallTemplate
+	{
 		return _GRYCallTemplate(function, parameters)
 	}
 }
 
-private class _GRYDotTemplate: _GRYTemplate { // gryphon ignore
+// gryphon ignore
+private class _GRYDotTemplate: _GRYTemplate {
 	let left: _GRYTemplate
 	let right: String
 
@@ -1150,7 +1215,8 @@ private class _GRYDotTemplate: _GRYTemplate { // gryphon ignore
 	}
 }
 
-private class _GRYCallTemplate: _GRYTemplate { // gryphon ignore
+// gryphon ignore
+private class _GRYCallTemplate: _GRYTemplate {
 	let function: _GRYTemplate
 	let parameters: [_GRYParameterTemplate]
 
@@ -1166,7 +1232,8 @@ private class _GRYCallTemplate: _GRYTemplate { // gryphon ignore
 	}
 }
 
-private class _GRYParameterTemplate: ExpressibleByStringLiteral { // gryphon ignore
+// gryphon ignore
+private class _GRYParameterTemplate: ExpressibleByStringLiteral {
 	let label: String?
 	let template: _GRYTemplate
 
@@ -1207,16 +1274,25 @@ private class _GRYParameterTemplate: ExpressibleByStringLiteral { // gryphon ign
 		return _GRYParameterTemplate(nil, _GRYDotTemplate(_GRYLiteralTemplate(string: left), right))
 	}
 
-	static func call(_ function: _GRYTemplate, _ parameters: [_GRYParameterTemplate]) -> _GRYParameterTemplate {
+	static func call(
+		_ function: _GRYTemplate,
+		_ parameters: [_GRYParameterTemplate])
+		-> _GRYParameterTemplate
+	{
 		return _GRYParameterTemplate(nil, _GRYCallTemplate(function, parameters))
 	}
 
-	static func call(_ function: String, _ parameters: [_GRYParameterTemplate]) -> _GRYParameterTemplate {
+	static func call(
+		_ function: String,
+		_ parameters: [_GRYParameterTemplate])
+		-> _GRYParameterTemplate
+	{
 		return _GRYParameterTemplate(nil, _GRYCallTemplate(function, parameters))
 	}
 }
 
-private class _GRYLiteralTemplate: _GRYTemplate { // gryphon ignore
+// gryphon ignore
+private class _GRYLiteralTemplate: _GRYTemplate {
 	let string: String
 
 	init(string: String) {
@@ -1224,7 +1300,8 @@ private class _GRYLiteralTemplate: _GRYTemplate { // gryphon ignore
 	}
 }
 
-private class _GRYConcatenatedTemplate: _GRYTemplate { // gryphon ignore
+// gryphon ignore
+private class _GRYConcatenatedTemplate: _GRYTemplate {
 	let left: _GRYTemplate
 	let right: _GRYTemplate
 
@@ -1234,15 +1311,18 @@ private class _GRYConcatenatedTemplate: _GRYTemplate { // gryphon ignore
 	}
 }
 
-private func + (left: _GRYTemplate, right: _GRYTemplate) -> _GRYConcatenatedTemplate { // gryphon ignore
+// gryphon ignore
+private func + (left: _GRYTemplate, right: _GRYTemplate) -> _GRYConcatenatedTemplate {
 	_GRYConcatenatedTemplate(left: left, right: right)
 }
 
-private func + (left: String, right: _GRYTemplate) -> _GRYConcatenatedTemplate { // gryphon ignore
+// gryphon ignore
+private func + (left: String, right: _GRYTemplate) -> _GRYConcatenatedTemplate {
 	_GRYConcatenatedTemplate(left: _GRYLiteralTemplate(string: left), right: right)
 }
 
-private func + (left: _GRYTemplate, right: String) -> _GRYConcatenatedTemplate { // gryphon ignore
+// gryphon ignore
+private func + (left: _GRYTemplate, right: String) -> _GRYConcatenatedTemplate {
 	_GRYConcatenatedTemplate(left: left, right: _GRYLiteralTemplate(string: right))
 }
 
@@ -1323,23 +1403,23 @@ private func gryphonTemplates() {
 	// MARK: Declare the templates
 
 	// System
-	_ = print(_any)
+	_ = print(_any) // gryphon pure
 	_ = _GRYTemplate.call("println", ["_any"])
 
-	_ = print(_any, terminator: "")
+	_ = print(_any, terminator: "") // gryphon pure
 	_ = _GRYTemplate.call("print", ["_any"])
 
-	_ = fatalError(_string)
+	_ = fatalError(_string) // gryphon pure
 	_ = _GRYTemplate.call("println",
-			["\\\"Fatal error: \(dollarSign)\(kotlinStringInterpolation)\\\""]) +
+			["\\\"Fatal error: ${_string}\\\""]) +
 		"; " +
 		_GRYTemplate.call("exitProcess", ["-1"])
 
-	_ = assert(_bool)
+	_ = assert(_bool) // gryphon pure
 	_ = _GRYTemplate.call("assert", ["_bool"])
 
 	// Darwin
-	_ = sqrt(_double)
+	_ = sqrt(_double) // gryphon pure
 	_ = _GRYTemplate.call(.dot("Math", "sqrt"), ["_double"])
 
 	// Numerics
@@ -1362,49 +1442,49 @@ private func gryphonTemplates() {
 	_ = "_double.toInt()"
 
 	// String
-	_ = String(_anyType)
+	_ = String(_anyType) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_anyType", "toString"), [])
 
-	_ = _customStringConvertible.description
+	_ = _customStringConvertible.description // gryphon pure
 	_ = _GRYTemplate.call(.dot("_customStringConvertible", "toString"), [])
 
-	_ = _string.isEmpty
+	_ = _string.isEmpty // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "isEmpty"), [])
 
 	_ = _string.count
 	_ = _GRYTemplate.dot("_string", "length")
 
-	_ = _string.first
+	_ = _string.first // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "firstOrNull"), [])
 
-	_ = _string.last
+	_ = _string.last // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "lastOrNull"), [])
 
-	_ = Double(_string)
+	_ = Double(_string) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "toDouble"), [])
 
-	_ = Float(_string)
+	_ = Float(_string) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "toFloat"), [])
 
-	_ = UInt64(_string)
+	_ = UInt64(_string) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "toULong"), [])
 
-	_ = Int64(_string)
+	_ = Int64(_string) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "toLong"), [])
 
-	_ = Int(_string)
+	_ = Int(_string) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "toIntOrNull"), [])
 
-	_ = _string.dropLast()
+	_ = _string.dropLast() // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "dropLast"), ["1"])
 
-	_ = _string.dropLast(_int)
+	_ = _string.dropLast(_int) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "dropLast"), ["_int"])
 
-	_ = _string.dropFirst()
+	_ = _string.dropFirst() // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "drop"), ["1"])
 
-	_ = _string.dropFirst(_int)
+	_ = _string.dropFirst(_int) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "drop"), ["_int"])
 
 	_ = _string.drop(while: _closure5)
@@ -1413,34 +1493,34 @@ private func gryphonTemplates() {
 	_ = _string.indices
 	_ = _GRYTemplate.dot("_string", "indices")
 
-	_ = _string.firstIndex(of: _character)!
+	_ = _string.firstIndex(of: _character)! // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "indexOf"), ["_character"])
 
 	_ = _string.contains(where: _closure5)
 	_ = "(" + _GRYTemplate.call(.dot("_string", "find"), ["_closure5"]) + " != null)"
 
-	_ = _string.firstIndex(of: _character)
+	_ = _string.firstIndex(of: _character) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "indexOrNull"), ["_character"])
 
-	_ = _string.prefix(_int)
+	_ = _string.prefix(_int) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "substring"), ["0", "_int"])
 
-	_ = _string.prefix(upTo: _index)
+	_ = _string.prefix(upTo: _index) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "substring"), ["0", "_index"])
 
-	_ = _string[_index...]
+	_ = _string[_index...] // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "substring"), ["_index"])
 
-	_ = _string[..<_index]
+	_ = _string[..<_index] // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "substring"), ["0", "_index"])
 
-	_ = _string[..._index]
+	_ = _string[..._index] // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "substring"), ["0", "_index + 1"])
 
-	_ = _string[_index1..<_index2]
+	_ = _string[_index1..<_index2] // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "substring"), ["_index1", "_index2"])
 
-	_ = _string[_index1..._index2]
+	_ = _string[_index1..._index2] // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "substring"), ["_index1", "_index2 + 1"])
 
 	_ = String(_substring)
@@ -1473,10 +1553,10 @@ private func gryphonTemplates() {
 	_ = _string1.prefix(while: _closure5)
 	_ = _GRYTemplate.call(.dot("_string1", "takeWhile"), ["_closure5"])
 
-	_ = _string1.hasPrefix(_string2)
+	_ = _string1.hasPrefix(_string2) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string1", "startsWith"), ["_string2"])
 
-	_ = _string1.hasSuffix(_string2)
+	_ = _string1.hasSuffix(_string2) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string1", "endsWith"), ["_string2"])
 
 	_ = _range.lowerBound
@@ -1494,41 +1574,44 @@ private func gryphonTemplates() {
 	_ = _string.append(_character)
 	_ = "_string += _character"
 
-	_ = _string.capitalized
+	_ = _string.capitalized // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "capitalize"), [])
 
-	_ = _string.uppercased()
+	_ = _string.uppercased() // gryphon pure
 	_ = _GRYTemplate.call(.dot("_string", "toUpperCase"), [])
 
+	_ = Substring(_string)
+	_ = "_string"
+
 	// Character
-	_ = _character.uppercased()
+	_ = _character.uppercased() // gryphon pure
 	_ = _GRYTemplate.call(.dot("_character", "toUpperCase"), [])
 
 	// Array
-	_ = _array.append(_any)
+	_ = _array.append(_any) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_array", "add"), ["_any"])
 
-	_ = _array.insert(_any, at: _int)
+	_ = _array.insert(_any, at: _int) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_array", "add"), ["_int", "_any"])
 
-	_ = _arrayOfOptionals.append(nil)
+	_ = _arrayOfOptionals.append(nil) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_arrayOfOptionals", "add"), ["null"])
 
-	_ = _array1.append(contentsOf: _array2)
+	_ = _array1.append(contentsOf: _array2) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_array1", "addAll"), ["_array2"])
 
-	_ = _array1.append(contentsOf: _array3)
+	_ = _array1.append(contentsOf: _array3) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_array1", "addAll"), ["_array3"])
 
-	_ = _array.isEmpty
+	_ = _array.isEmpty // gryphon pure
 	_ = _GRYTemplate.call(.dot("_array", "isEmpty"), [])
 
-	_ = _strArray.joined(separator: _string)
+	_ = _strArray.joined(separator: _string) // gryphon pure
 	_ = _GRYTemplate.call(
 		.dot("_strArray", "joinToString"),
 		[.labeledParameter("separator", "_string")])
 
-	_ = _strArray.joined()
+	_ = _strArray.joined() // gryphon pure
 	_ = _GRYTemplate.call(
 		.dot("_strArray", "joinToString"),
 		[.labeledParameter("separator", "\\\"\\\"")])
@@ -1551,7 +1634,7 @@ private func gryphonTemplates() {
 	_ = _array.index(before: _int)
 	_ = "_int - 1"
 
-	_ = _array.first
+	_ = _array.first // gryphon pure
 	_ = _GRYTemplate.call(.dot("_array", "firstOrNull"), [])
 
 	_ = _array.first(where: _closure3)
@@ -1560,7 +1643,7 @@ private func gryphonTemplates() {
 	_ = _array.last(where: _closure3)
 	_ = _GRYTemplate.call(.dot("_array", "findLast"), ["_closure3"])
 
-	_ = _array.last
+	_ = _array.last // gryphon pure
 	_ = _GRYTemplate.call(.dot("_array", "lastOrNull"), [])
 
 	_ = _array.prefix(while: _closure3)
@@ -1575,11 +1658,17 @@ private func gryphonTemplates() {
 	_ = _array.removeAll()
 	_ = "_array.clear()"
 
-	_ = _array.dropFirst()
+	_ = _array.dropFirst() // gryphon pure
 	_ = _GRYTemplate.call(.dot("_array", "drop"), ["1"])
 
-	_ = _array.dropLast()
+	_ = _array.dropFirst(_int) // gryphon pure
+	_ = _GRYTemplate.call(.dot("_array", "drop"), ["_int"])
+
+	_ = _array.dropLast() // gryphon pure
 	_ = _GRYTemplate.call(.dot("_array", "dropLast"), ["1"])
+
+	_ = _array.dropLast(_int) // gryphon pure
+	_ = _GRYTemplate.call(.dot("_array", "dropLast"), ["_int"])
 
 	_ = _array.map(_closure2)
 	_ = _GRYTemplate.call(.dot("_array", "map"), ["_closure2"])
@@ -1596,7 +1685,7 @@ private func gryphonTemplates() {
 	_ = _array.reduce(_any, _closure)
 	_ = _GRYTemplate.call(.dot("_array", "fold"), ["_any", "_closure"])
 
-	_ = zip(_array1, _array2)
+	_ = zip(_array1, _array2) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_array1", "zip"), ["_array2"])
 
 	_ = _array.firstIndex(where: _closure3)
@@ -1605,20 +1694,20 @@ private func gryphonTemplates() {
 	_ = _array.contains(where: _closure3)
 	_ = "(" + _GRYTemplate.call(.dot("_array", "find"), ["_closure3"]) + " != null)"
 
-	_ = _comparableArray.sorted()
+	_ = _comparableArray.sorted() // gryphon pure
 	_ = _GRYTemplate.call(.dot("_comparableArray", "sorted"), [])
 
-	_ = _comparableArray.contains(_comparable)
+	_ = _comparableArray.contains(_comparable) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_comparableArray", "contains"), ["_comparable"])
 
-	_ = _comparableArray.firstIndex(of: _comparable)
+	_ = _comparableArray.firstIndex(of: _comparable) // gryphon pure
 	_ = _GRYTemplate.call(.dot("_comparableArray", "indexOf"), ["_comparable"])
 
 	// Dictionary
 	_ = _dictionary.count
 	_ = _GRYTemplate.dot("_dictionary", "size")
 
-	_ = _dictionary.isEmpty
+	_ = _dictionary.isEmpty // gryphon pure
 	_ = _GRYTemplate.call(.dot("_dictionary", "isEmpty"), [])
 
 	_ = _dictionary.map(_closure2)
@@ -1631,7 +1720,7 @@ private func gryphonTemplates() {
 	_ = Int.min
 	_ = _GRYTemplate.dot("Int", "MIN_VALUE")
 
-	_ = min(_int1, _int2)
+	_ = min(_int1, _int2) // gryphon pure
 	_ = _GRYTemplate.call(.dot("Math", "min"), ["_int1", "_int2"])
 
 	_ = _int1..._int2
@@ -1641,7 +1730,7 @@ private func gryphonTemplates() {
 	_ = "_int1 until _int2"
 
 	// Double
-	_ = _double1..._double2
+	_ = _double1..._double2 // gryphon pure
 	_ = _GRYTemplate.call(.dot("(_double1)", "rangeTo"), ["_double2"])
 
 	// Optional
@@ -1651,7 +1740,6 @@ private func gryphonTemplates() {
 
 """
 
-// gryphon multiline
 internal let mapKotlinErrorsToSwiftFileContents = """
 // WARNING: Any changes to this file should be reflected in the literal string in
 // AuxiliaryFileContents.swift
@@ -1767,6 +1855,19 @@ struct ErrorMap {
 	}
 }
 
+/// Maps Kotlin errors to hints about how to fix them
+let errorHints: [(kotlinError: String, hint: String)] = [
+	("type has a constructor, and thus must be initialized here",
+		"try explicitly declaring an initializer for this type"),
+	("type argument expected for class",
+		"try adding a \\"// gryphon generics:\\" comment")]
+
+func getHint(forErrorMessage errorMessage: String) -> String? {
+	return errorHints.first(where: { errorHint in
+			errorMessage.contains(errorHint.kotlinError)
+		})?.hint
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 var input: [String] = []
 
@@ -1824,8 +1925,18 @@ for error in errors {
 		forKotlinLine: errorInformation.lineNumber,
 		column: errorInformation.columnNumber)
 	{
-		print("\\(getAbsoultePath(forFile: errorMap.swiftFilePath)):\\(swiftRange.lineStart):" +
-			"\\(swiftRange.columnStart):\\(errorInformation.errorMessage)")
+		if let hint = getHint(forErrorMessage: errorInformation.errorMessage) {
+			let lines = errorInformation.errorMessage.split(separator: "\\n")
+			let errorMessage = lines[0] + " (Gryphon hint: \\(hint))\\n" +
+				lines.dropFirst().joined(separator: "\\n")
+
+			print("\\(getAbsoultePath(forFile: errorMap.swiftFilePath)):\\(swiftRange.lineStart):" +
+				"\\(swiftRange.columnStart):\\(errorMessage)")
+		}
+		else {
+			print("\\(getAbsoultePath(forFile: errorMap.swiftFilePath)):\\(swiftRange.lineStart):" +
+				"\\(swiftRange.columnStart):\\(errorInformation.errorMessage)")
+		}
 	}
 	else {
 		print(error)
@@ -1834,7 +1945,6 @@ for error in errors {
 
 """
 
-// gryphon multiline
 internal let mapGradleErrorsToSwiftFileContents = """
 // WARNING: Any changes to this file should be reflected in the literal string in
 // AuxiliaryFileContents.swift
@@ -1958,6 +2068,19 @@ struct ErrorMap {
 	}
 }
 
+/// Maps Kotlin errors to hints about how to fix them
+let errorHints: [(kotlinError: String, hint: String)] = [
+	("type has a constructor, and thus must be initialized here",
+		"try explicitly declaring an initializer for this type"),
+	("type argument expected for class",
+		"try adding a \\"// gryphon generics:\\" comment")]
+
+func getHint(forErrorMessage errorMessage: String) -> String? {
+	return errorHints.first(where: { errorHint in
+			errorMessage.contains(errorHint.kotlinError)
+		})?.hint
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 var input: [String] = []
 
@@ -1967,7 +2090,7 @@ while let nextLine = readLine(strippingNewline: false) {
 }
 
 // Get only lines with errors and warnings
-var errors = input.filter { \(dollarSign)0.hasPrefix("e: ") || \(dollarSign)0.hasPrefix("w: ") }
+var errors = input.filter { $0.hasPrefix("e: ") || $0.hasPrefix("w: ") }
 
 // Handle the errors
 var errorMaps: [String: ErrorMap] = [:]
@@ -2001,17 +2124,27 @@ for error in errors {
 
 	let errorMap = errorMaps[errorMapPath]!
 
+	let errorString = errorInformation.isError ? "error" : "warning"
+
 	if let swiftRange = errorMap.getSwiftRange(
 		forKotlinLine: errorInformation.lineNumber,
 		column: errorInformation.columnNumber)
 	{
-		let errorString = errorInformation.isError ? "error" : "warning"
-		print("\\(getAbsoultePath(forFile: errorMap.swiftFilePath)):\\(swiftRange.lineStart):" +
-			"\\(swiftRange.columnStart): \\(errorString):\\(errorInformation.errorMessage)")
+		if let hint = getHint(forErrorMessage: errorInformation.errorMessage) {
+			let lines = errorInformation.errorMessage.split(separator: "\\n")
+			let errorMessage = lines[0] + " (Gryphon hint: \\(hint))\\n" +
+				lines.dropFirst().joined(separator: "\\n")
+
+			print("\\(getAbsoultePath(forFile: errorMap.swiftFilePath)):\\(swiftRange.lineStart):" +
+				"\\(swiftRange.columnStart): \\(errorString):\\(errorMessage)")
+		}
+		else {
+			print("\\(getAbsoultePath(forFile: errorMap.swiftFilePath)):\\(swiftRange.lineStart):" +
+				"\\(swiftRange.columnStart): \\(errorString):\\(errorInformation.errorMessage)")
+		}
 	}
 	else {
 		// Print error with the available information
-		let errorString = errorInformation.isError ? "error" : "warning"
 		print("\\(getAbsoultePath(forFile: errorMap.swiftFilePath)):" +
 			"0:0: \\(errorString):\\(errorInformation.errorMessage)")
 	}
@@ -2023,7 +2156,6 @@ if !errors.isEmpty {
 
 """
 
-// gryphon multiline
 internal let makeGryphonTargetsFileContents = """
 require 'xcodeproj'
 
@@ -2075,9 +2207,9 @@ end
 
 # Create the script we want to run
 
-script = "gryphon \\"\(dollarSign){PROJECT_NAME}.xcodeproj\\"" +
-	" \\"\(dollarSign){SRCROOT}/\(SupportingFile.xcFileList.relativePath)\\"" +
-	" --verbose"
+script = "gryphon \\"${PROJECT_NAME}.xcodeproj\\"" +
+	" \\"${SRCROOT}/\(SupportingFile.xcFileList.relativePath)\\"" +
+	" --verbose --continue-on-error"
 
 # Add any other argument directly to the script (dropping the xcode project first)
 arguments = Array.new(ARGV) # Copy the arguments array
@@ -2136,35 +2268,66 @@ project.save()
 
 """
 
-// gryphon multiline
 internal let compileKotlinFileContents = """
 # Exit if any command fails
 set -e
 
+# Prints a file only if it exists (and waits a bit so the printing can finish before proceeding)
+safeCat () {
+	if [[ -f $1 ]];
+	then
+		cat $1
+		sleep 2
+	fi
+}
+
 # Remove old logs
 # The `-f` option is here to avoid reporting errors when the files are not found
-rm -f "\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleOutput.txt"
-rm -f "\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleErrors.txt"
+rm -f "$SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleOutput.txt"
+rm -f "$SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleErrors.txt"
+rm -f "$SRCROOT/\(SupportingFile.gryphonBuildFolder)/swiftOutput.txt"
+rm -f "$SRCROOT/\(SupportingFile.gryphonBuildFolder)/swiftErrors.txt"
 
 # Switch to the Android folder so we can use pre-built gradle info to speed up the compilation.
-cd "\(dollarSign)ANDROID_ROOT"
+cd "$ANDROID_ROOT"
 
 # Compile the Android sources and save the logs gack to the iOS folder
-# This command is allowed to fail so we add "|| true" to the end
-./gradlew compileDebugSources > \
-	"\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleOutput.txt" 2> \
-	"\(dollarSign)SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleErrors.txt" \
-	|| true
+set +e
+./gradlew compileDebugSources > \\
+	"$SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleOutput.txt" 2> \\
+	"$SRCROOT/\(SupportingFile.gryphonBuildFolder)/gradleErrors.txt"
+kotlinCompilationStatus=$?
+set -e
 
 # Switch back to the iOS folder
-cd \(dollarSign)SRCROOT
+cd "$SRCROOT"
+
+set +e
 
 # Map the Kotlin errors back to Swift
-swift \(SupportingFile.mapGradleErrorsToSwiftRelativePath) < \
-	\(SupportingFile.gryphonBuildFolder)/gradleOutput.txt
+swift \(SupportingFile.mapGradleErrorsToSwiftRelativePath) \\
+	< \(SupportingFile.gryphonBuildFolder)/gradleOutput.txt \\
+	> \(SupportingFile.gryphonBuildFolder)/swiftOutput.txt
 
-swift \(SupportingFile.mapGradleErrorsToSwiftRelativePath) < \
-	\(SupportingFile.gryphonBuildFolder)/gradleErrors.txt
+swift \(SupportingFile.mapGradleErrorsToSwiftRelativePath) \\
+	< \(SupportingFile.gryphonBuildFolder)/gradleErrors.txt \\
+	> \(SupportingFile.gryphonBuildFolder)/swiftErrors.txt
+
+# Print the errors
+if [ -s \(SupportingFile.gryphonBuildFolder)/swiftOutput.txt ] || \\
+	[ -s \(SupportingFile.gryphonBuildFolder)/swiftErrors.txt ]
+then
+	# If there are errors in Swift files (the Swift output and error files aren't empty)
+	safeCat \(SupportingFile.gryphonBuildFolder)/swiftOutput.txt
+	safeCat \(SupportingFile.gryphonBuildFolder)/swiftErrors.txt
+	exit -1
+else
+	# If the Swift files are empty, print the Kotlin output (there may have been other errors)
+	# and exit with the Kotlin compiler's status
+	safeCat \(SupportingFile.gryphonBuildFolder)/gradleOutput.txt
+	safeCat \(SupportingFile.gryphonBuildFolder)/gradleErrors.txt
+	exit $kotlinCompilationStatus
+fi
 
 """
 
@@ -2192,10 +2355,11 @@ public class SupportingFile {
 	}
 
 	var absolutePath: String {
-		return Utilities.getAbsoultePath(forFile: relativePath)
+		return Utilities.getAbsolutePath(forFile: relativePath)
 	}
 
-	//
+	/// Takes the path to a Swift file (with or without extension) and returns the path to its
+	/// corresponding AST dump file, which may or may not exist.
 	static public func pathOfSwiftASTDumpFile(
 		forSwiftFile swiftFile: String,
 		swiftVersion: String)
@@ -2245,6 +2409,10 @@ public class SupportingFile {
 		contents: nil)
 	public static let astDumpsScript = SupportingFile(
 		"updateASTDumps.sh",
+		folder: SupportingFile.gryphonBuildFolder,
+		contents: nil)
+	public static let sourceKitCompilationArguments = SupportingFile(
+		"sourceKitCompilationArguments.txt",
 		folder: SupportingFile.gryphonBuildFolder,
 		contents: nil)
 	public static let gryphonXCTest = SupportingFile(

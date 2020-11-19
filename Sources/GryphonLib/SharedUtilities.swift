@@ -16,11 +16,6 @@
 // limitations under the License.
 //
 
-// gryphon output: Sources/GryphonLib/SharedUtilities.swiftAST
-// gryphon output: Sources/GryphonLib/SharedUtilities.gryphonASTRaw
-// gryphon output: Sources/GryphonLib/SharedUtilities.gryphonAST
-// gryphon output: Bootstrap/SharedUtilities.kt
-
 import Foundation
 
 private func gryphonTemplates() throws {
@@ -44,22 +39,22 @@ private func gryphonTemplates() throws {
 		.dot("Utilities", "createFileAndDirectory"),
 		[.labeledParameter("fileName", "_string1"),
 		 .labeledParameter("directory", "_string2"),
-		 .labeledParameter("contents", "_string3")])
+		 .labeledParameter("contents", "_string3"), ])
 
     _ = Utilities.getFiles(_stringArray, inDirectory: _string1, withExtension: _fileExtension1)
 	_ = GRYTemplate.call(
 		.dot("Utilities", "getFiles"),
 		[.labeledParameter("selectedFiles", "_stringArray"),
 		 .labeledParameter("directory", "_string1"),
-		 .labeledParameter("fileExtension", "_fileExtension1")])
+		 .labeledParameter("fileExtension", "_fileExtension1"), ])
 
     _ = Utilities.getFiles(inDirectory: _string1, withExtension: _fileExtension1)
 	_ = GRYTemplate.call(
 		.dot("Utilities", "getFiles"),
 		[.labeledParameter("directory", "_string1"),
-		 .labeledParameter("fileExtension", "_fileExtension1")])
+		 .labeledParameter("fileExtension", "_fileExtension1"), ])
 
-    _ = Utilities.getAbsoultePath(forFile: _string1)
+    _ = Utilities.getAbsolutePath(forFile: _string1)
 	_ = GRYTemplate.call(
 		.dot("Utilities", "getAbsoultePath"),
 		[.labeledParameter("file", "_string1")])
@@ -83,7 +78,7 @@ private func gryphonTemplates() throws {
 	_ = GRYTemplate.call(
 		.dot("Utilities", "createFile"),
 		[.labeledParameter("filePath", "_string1"),
-		 .labeledParameter("contents", "_string2")])
+		 .labeledParameter("contents", "_string2"), ])
 
 	Utilities.deleteFolder(at: _string1)
 	_ = GRYTemplate.call(
@@ -102,21 +97,21 @@ private func gryphonTemplates() throws {
 		.dot("Shell", "runShellCommand"),
 		["_string1",
 		 .labeledParameter("arguments", "_stringArray1"),
-		 .labeledParameter("currentFolder", "_string2")])
+		 .labeledParameter("currentFolder", "_string2"), ])
 
     _ = Shell.runShellCommand(
         _string1, arguments: _stringArray1)
 	_ = GRYTemplate.call(
 		.dot("Shell", "runShellCommand"),
 		["_string1",
-		 .labeledParameter("arguments", "_stringArray1")])
+		 .labeledParameter("arguments", "_stringArray1"), ])
 
     //
     _ = Shell.runShellCommand(_stringArray1, fromFolder: _string1)
 	_ = GRYTemplate.call(
 		.dot("Shell", "runShellCommand"),
 		["_stringArray1",
-		 .labeledParameter("currentFolder", "_string1")])
+		 .labeledParameter("currentFolder", "_string1"), ])
 
     _ = Shell.runShellCommand(_stringArray1)
 	_ = GRYTemplate.call(.dot("Shell", "runShellCommand"), ["_stringArray1"])
@@ -133,7 +128,11 @@ public struct GryphonError: Error, CustomStringConvertible {
 	let errorMessage: String
 
 	public var description: String {
-		return "🚨 " + errorMessage
+		return errorMessage
+	}
+
+	init(errorMessage: String) {
+		self.errorMessage = errorMessage
 	}
 }
 
@@ -240,49 +239,50 @@ extension Utilities {
 		for transpilationContext: TranspilationContext)
 		throws
 	{
-        libraryUpdateLock.lock() // gryphon ignore
-        // gryphon insert: libraryUpdateLock.acquire()
+        libraryUpdateLock.lock()
 
         defer {
-            libraryUpdateLock.unlock() // gryphon ignore
-            // gryphon insert: libraryUpdateLock.release()
+            libraryUpdateLock.unlock()
         }
 
 		Compiler.logStart("🧑‍💻  Processing the templates library...")
 
-		if Utilities.needsToDumpASTForSwiftFiles(
-			[SupportingFile.gryphonTemplatesLibrary.name],
-			in: SupportingFile.gryphonTemplatesLibrary.folder ?? ".",
-			forSwiftVersion: transpilationContext.swiftVersion)
-		{
-			Compiler.logStart("🧑‍💻  Updating the templates library's AST dump...")
-			try Driver.updateASTDumps(
-				forFiles: [SupportingFile.gryphonTemplatesLibrary.relativePath],
-				forXcodeProject: nil,
-				forTarget: nil,
-				usingToolchain: transpilationContext.toolchainName,
-				shouldTryToRecoverFromErrors: true)
-			Compiler.logEnd("✅  Done updating the templates library's AST dump.")
-
+		if !transpilationContext.isUsingSwiftSyntax {
 			if Utilities.needsToDumpASTForSwiftFiles(
 				[SupportingFile.gryphonTemplatesLibrary.name],
 				in: SupportingFile.gryphonTemplatesLibrary.folder ?? ".",
 				forSwiftVersion: transpilationContext.swiftVersion)
 			{
-				throw GryphonError(errorMessage:
-					"Failed to update AST dump for the Gryphon Templates library.")
+				Compiler.logStart("🧑‍💻  Updating the templates library's AST dump...")
+				try Driver.updateASTDumps(
+					forFiles: [SupportingFile.gryphonTemplatesLibrary.relativePath],
+					forXcodeProject: nil,
+					forTarget: nil,
+					usingToolchain: transpilationContext.toolchainName,
+					shouldTryToRecoverFromErrors: true)
+				Compiler.logEnd("✅  Done updating the templates library's AST dump.")
+
+				if Utilities.needsToDumpASTForSwiftFiles(
+					[SupportingFile.gryphonTemplatesLibrary.name],
+					in: SupportingFile.gryphonTemplatesLibrary.folder ?? ".",
+					forSwiftVersion: transpilationContext.swiftVersion)
+				{
+					throw GryphonError(errorMessage:
+						"Failed to update AST dump for the Gryphon Templates library.")
+				}
 			}
 		}
 
 		Compiler.logStart("🧑‍💻  Transpiling and running passes...")
-        let astArray = try Compiler.transpileGryphonRawASTs(
+		let astArray = try Compiler.transpileGryphonRawASTs(
+			fromInputFiles: [SupportingFile.gryphonTemplatesLibrary.relativePath],
 			fromASTDumpFiles: [
 				SupportingFile.pathOfSwiftASTDumpFile(
 					forSwiftFile: SupportingFile.gryphonTemplatesLibrary.relativePath,
 					swiftVersion: transpilationContext.swiftVersion), ],
 			withContext: transpilationContext)
 
-        let ast = astArray[0]
+		let ast = astArray[0]
 		_ = RecordTemplatesTranspilationPass(
 			ast: ast,
 			context: transpilationContext).run()
@@ -318,7 +318,7 @@ extension Utilities {
 
 	public static func getRelativePath(forFile file: String) -> String {
 		let currentDirectoryPath = Utilities.getCurrentFolder()
-		let absoluteFilePath = getAbsoultePath(forFile: file)
+		let absoluteFilePath = getAbsolutePath(forFile: file)
 		return String(absoluteFilePath.dropFirst(currentDirectoryPath.count + 1))
 	}
 }
@@ -326,7 +326,7 @@ extension Utilities {
 extension Utilities {
 	/// Splits a type using the given separators, taking into consideration possible brackets.
 	/// For instance, "A, (B, C)" becomes ["A", "(B, C)"] rather than ["A", "(B", "C)"].
-    static func splitTypeList( // gryphon pure
+    static func splitTypeList(
         _ typeList: String,
         separators: List<String> = [",", ":"])
         -> MutableList<String>
@@ -471,19 +471,26 @@ extension Utilities {
 
 extension String {
 	func isArrayDeclaration() -> Bool {
-		if self.hasPrefix("[") {
-			return self.contains(":") == false
-		} else {
-			return self.hasPrefix("Array")
+		if (self.hasPrefix("[") && !self.contains(":")) ||
+			self == "Array" ||
+			self.hasPrefix("Array<")
+		{
+			return true
+		}
+		else {
+			return false
 		}
 	}
-	
+
 	func isDictionaryDeclaration() -> Bool {
-		if self.hasPrefix("[") {
-			return self.contains(":")
-		} else {
-			return self.hasPrefix("Dictionary")
+		if (self.hasPrefix("[") && self.contains(":")) ||
+			self == "Dictionary" ||
+			self.hasPrefix("Dictionary<")
+		{
+			return true
+		}
+		else {
+			return false
 		}
 	}
 }
-

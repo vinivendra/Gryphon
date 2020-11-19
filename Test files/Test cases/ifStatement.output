@@ -1,0 +1,37 @@
+Simple if's
+If with a function
+Simple, with empty else if and else
+Simple, with empty else if and else #2
+Simple, with empty else if and else #3
+Else if and else with contents
+Else if and else with contents #2
+Else if and else with contents that get executed
+Else if and else with contents that get executed #2
+Guard
+0
+If let
+0
+If let #2
+null
+If let #3
+0, 0, 0, 0
+If let #4
+If let #5
+If case #1
+If case #2
+If case #3
+If case let #1
+If case let #2: 0
+If case let #3: 0, foo
+If case let #4: foo
+If case let #5: 0
+If case let #6
+If case let #7: 0
+If case let #8: 0, foo
+If case let #9: 0, 0, foo
+If case let #10: 0, 0, foo
+If case let #11: 0
+If case let comparison #1: 0
+If case let comparison #2: foo
+If case let comparison #3: 0, foo
+If case operator precedence

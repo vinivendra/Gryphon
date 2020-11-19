@@ -20,7 +20,7 @@ Gryphon is a program that translates Swift code into Kotlin code. It was created
 
 Gryphon is now in preview! 🎉
 
-This means the main systems and ideas have already been implemented - for instance, it's been translating its own codebase for a while now. However, new users might still find some new bugs to be fixed. If that's the case, feel free to report a [new issue](https://github.com/vinivendra/Gryphon/issues/new/choose) on GitHub.
+This means the main systems and ideas have already been implemented - for instance, it's been translating a complete version of its own codebase for a while now. However, users often find new bugs to be fixed. If that's the case, feel free to report a [new issue](https://github.com/vinivendra/Gryphon/issues/new/choose) on GitHub.
 
 You can also check out the currently supported translations for the Swift standard library [here](https://github.com/vinivendra/Gryphon/blob/development/Status.md).
 
@@ -57,7 +57,7 @@ Clone the repo run the installation script:
 ```` bash
 $ git clone https://github.com/vinivendra/Gryphon.git
 $ cd Gryphon
-$ ./install.sh
+$ ./Scripts/install.sh
 ````
 
 ### Docker
@@ -69,7 +69,7 @@ $ git clone https://github.com/vinivendra/Gryphon.git
 $ cd Gryphon
 $ docker build -t gryphon .
 $ docker run -it --rm --privileged -v /absolute/path/to/current/directory/:/app/Gryphon gryphon
-# ./install.sh
+# ./Scripts/install.sh
 ````
 
 ## 📖 Guides
@@ -91,21 +91,21 @@ Gryphon's output code is meant to behave just like the input code that created i
 
 #### Will I be able to understand the translated code?
 
-One of Gryphon's main goals is to make sure translated code can be understood by human beings. As a rule, **if you understand the input Swift code, you should also be able to understand the translated Kotlin code** - if you don't, feel free to [file a bug](https://github.com/vinivendra/Gryphon/issues).
+One of Gryphon's main goals is to make sure translated code can be understood by human beings. As a rule, **if you understand the input Swift code, you should also be able to understand the translated Kotlin code** - if you don't, feel free to [file a bug report](https://github.com/vinivendra/Gryphon/issues).
 
 This is done within some realistic constraints: the priority is that the translated code has to behave correctly, for instance. Gryphon attempts to find a "reasonably understandable Kotlin" middle ground somewhere between "machine-code-like Kotlin" and "perfectly idiomatic Kotlin".
 
 #### Can I translate anything written in Swift?
 
-Gryphon's support for Swift features is constantly evolving. **It is currently capable of translating many of the main features one might expect** - classes, structs, enums, closures, extensions, protocols, etc - enough that it currently translates around 97% of its own codebase (the other 3% are platform-specific files). Some Swift features are just waiting to be implemented, while others can't be translated to Kotlin and may never be supported.
+Gryphon's support for Swift features is constantly evolving. **It is currently capable of translating many of the main features one might expect** - classes, structs, enums, closures, extensions, protocols, etc - enough that it currently translates around 97% of a version of its own codebase (the other 3% are platform-specific files). Some Swift features are just waiting to be implemented, while others can't be translated to Kotlin and may never be supported.
 
 #### Can Gryphon help translate my existing iOS app?
 
-**Yes - but it will need some adaptations** (though probably less than your average multiplatform framework). This depends on your application - how similar app's architecture is to its Android counterpart, how often your code uses Swift features unsupported by Gryphon, etc.
+**Yes - but it will need some adaptations (though probably less than your average multiplatform framework)**. This depends on your application - how similar app's architecture is to its Android counterpart, how often your code uses Swift features unsupported by Gryphon, etc.
 
 It's worth noting that, like [other transpilers](https://developers.google.com/j2objc/) for app development, Gryphon is best suited for translating platform-independent logic code. There's currently no support for translating calls to UIKit, for instance - and there's no telling if that will happen someday.
 
-It is recommended that you start by translating only a few platform-independent parts of your code, adding new files incrementally. It might helo to use architectures with clear separations between UI code and logic code - like [MVP](https://en.wikipedia.org/wiki/Model–view–presenter) and [MVC](https://en.wikipedia.org/wiki/Model–view–controller) to separate the code that can be translated. For more information, check out [Adding Gryphon to an existing app](https://vinivendra.github.io/Gryphon/addingGryphonToAnExistingApp.html).
+It is recommended that you start by translating only a few platform-independent parts of your code, adding new files incrementally. It might help to use architectures with clear separations between UI code and logic code - like [MVP](https://en.wikipedia.org/wiki/Model–view–presenter) and [MVC](https://en.wikipedia.org/wiki/Model–view–controller) to separate the code that can be translated. For more information, check out [Adding Gryphon to an existing app](https://vinivendra.github.io/Gryphon/addingGryphonToAnExistingApp.html).
 
 #### Can I use Gryphon to translate a non-iOS app?
 
@@ -119,7 +119,7 @@ It is recommended that you start by translating only a few platform-independent 
 
 Thanks for the offer!
 
-If you want to suggest a way to improve Gryphon, feel free to [open a new issue](https://github.com/vinivendra/Gryphon/issues/new/choose) - all bug reports and feature requests are welcome and encouraged.
+If you want to suggest a way to improve Gryphon, feel free to [open a new issue](https://github.com/vinivendra/Gryphon/issues/new/choose). All bug reports and feature requests are welcome and encouraged - we can't fix it if we don't know about it!
 
 If you would like to contribute directly, first check out the [contributor's guide](https://vinivendra.github.io/Gryphon/contributing.html) to learn to set up your environment. Then, if you're looking for inspiration, take a look at some [good first issues](https://github.com/vinivendra/Gryphon/labels/good%20first%20issue) (if you're new to Gryphon) or the beginner-friendly [first timers only](https://github.com/vinivendra/Gryphon/labels/first-timers-only) (if you're new to open source) - or, if you already know what you want to do, [open an issue](https://github.com/vinivendra/Gryphon/issues/new/choose) and let's talk about it.
 

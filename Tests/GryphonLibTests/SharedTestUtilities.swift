@@ -16,24 +16,18 @@
 // limitations under the License.
 //
 
-// gryphon output: Bootstrap/SharedTestUtilities.kt
-
-// gryphon insert: import kotlin.system.*
-
-import Foundation
-
-#if !GRYPHON
 @testable import GryphonLib
 import XCTest
-#endif
 
-class TestError: Error {
-	// gryphon insert: constructor(): super() { }
-}
+class TestError: Error { }
 
 class TestUtilities {
 	// MARK: - Diffs
-	static let testCasesPath: String = Utilities.getCurrentFolder() + "/Test cases/"
+	static let relativeTestFilesPath = "Test files"
+	static let relativeTestCasesPath = "\(relativeTestFilesPath)/Test cases"
+	static let relativeBootstrapPath = "\(relativeTestFilesPath)/Bootstrap"
+	static let testCasesPath = Utilities.getCurrentFolder() + "/\(relativeTestCasesPath)/"
+	static let bootstrapPath = Utilities.getCurrentFolder() + "/\(relativeBootstrapPath)/"
 
 	static func diff(_ string1: String, _ string2: String) -> String {
 		do {
@@ -97,7 +91,7 @@ class TestUtilities {
 		let swiftVersion = try TranspilationContext.getVersionOfToolchain(nil)
 		print("⛓ Using Swift \(swiftVersion)")
 
-		let testCasesFolder = "Test cases"
+		let testCasesFolder = TestUtilities.relativeTestCasesPath
 		if Utilities.needsToDumpASTForSwiftFiles(
 			in: testCasesFolder,
 			forSwiftVersion: swiftVersion)
@@ -140,6 +134,7 @@ class TestUtilities {
 		"extensions",
 		"functionCalls",
 		"generics",
+		"gryphonLibraries",
 		"ifStatement",
 		"inits",
 		"kotlinLiterals",
@@ -153,6 +148,14 @@ class TestUtilities {
 		"standardLibrary",
 		"strings",
 		"structs",
+		"subscripts",
 		"switches",
 	]
+
+	/// The same tests in `testCases`, sorted so that recently modified tests come first.
+	static let sortedTests = SortedList(testCases) { testNameA, testNameB in
+			let testPathA = (TestUtilities.testCasesPath + testNameA).withExtension(.kt)
+			let testPathB = (TestUtilities.testCasesPath + testNameB).withExtension(.kt)
+			return Utilities.file(testPathA, wasModifiedLaterThan: testPathB)
+		}
 }

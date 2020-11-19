@@ -16,28 +16,12 @@
 // limitations under the License.
 //
 
-// gryphon output: Bootstrap/SourceFileTest.kt
-
-#if !GRYPHON
 @testable import GryphonLib
 import XCTest
-#endif
 
 class SourceFileTest: XCTestCase {
-	// gryphon insert: constructor(): super() { }
-
-	public func getClassName() -> String { // gryphon annotation: override
-		return "SourceFileTest"
-	}
-
-	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // gryphon annotation: override
-		testGetCommentFromLine()
-		testGetTranslationCommentFromLine()
-	}
-
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // gryphon ignore
+	static var allTests = [
 		("testGetCommentFromLine", testGetCommentFromLine),
 		("testGetTranslationCommentFromLine", testGetTranslationCommentFromLine),
 	]
@@ -66,7 +50,6 @@ class SourceFileTest: XCTestCase {
 	}
 
 	func testGetTranslationCommentFromLine() {
-		// gryphon multiline
 		let sourceFileContents = """
 			let x: Int = 0 // gryphon ignore
 			// blabla

@@ -16,53 +16,12 @@
 // limitations under the License.
 //
 
-// gryphon output: Bootstrap/ListTest.kt
-
-#if !GRYPHON
 @testable import GryphonLib
 import XCTest
-#else
-import Foundation
-#endif
 
 class ListTest: XCTestCase {
-	// gryphon insert: constructor(): super() { }
-
-	public func getClassName() -> String { // gryphon annotation: override
-		return "ListTest"
-	}
-
-	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // gryphon annotation: override
-		testEquatable()
-		testInits()
-		testCasting()
-		testToMutableList()
-		testSubscript()
-		testDescription()
-		// testDebugDescription()
-		testCollectionIndices()
-		testIsEmpty()
-		testFirst()
-		testLast()
-		testIndexBefore()
-		testAppending()
-		testFilter()
-		testMap()
-		testCompactMap()
-		testFlatMap()
-		testSortedBy()
-		testAppendingContentsOf()
-		testIndices()
-		testIndexOfElement()
-		// testHash()
-		testSorted()
-		testZip()
-		testPlus()
-	}
-
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // gryphon ignore
+	static var allTests = [
 		("testEquatable", testEquatable),
 		("testInits", testInits),
 		("testCasting", testCasting),
@@ -88,7 +47,7 @@ class ListTest: XCTestCase {
 		("testSorted", testSorted),
 		("testZip", testZip),
 		("testPlus", testPlus),
-		]
+	]
 
 	// MARK: - Tests
 	func testEquatable() {
@@ -103,15 +62,15 @@ class ListTest: XCTestCase {
 	func testInits() {
 		let list1: List = [1, 2, 3]
 		let list2: List = List<Int>([1, 2, 3])
-		let list3: List = List(list1) // gryphon ignore
-		let sequence = AnySequence([1, 2, 3]) // gryphon ignore
-		let list4: List = List(sequence) // gryphon ignore
+		let list3: List = List(list1)
+		let sequence = AnySequence([1, 2, 3])
+		let list4: List = List(sequence)
 		let list5: List = List<Int>()
 		let list6: List<Int> = []
 
 		XCTAssertEqual(list1, list2)
-		XCTAssertEqual(list1, list3) // gryphon ignore
-		XCTAssertEqual(list1, list4) // gryphon ignore
+		XCTAssertEqual(list1, list3)
+		XCTAssertEqual(list1, list4)
 		XCTAssertNotEqual(list1, list5)
 		XCTAssertNotEqual(list1, list6)
 		XCTAssertEqual(list5, list6)
@@ -180,7 +139,7 @@ class ListTest: XCTestCase {
 		XCTAssert(!list.description.contains("4"))
 	}
 
-	func testDebugDescription() { // gryphon ignore
+	func testDebugDescription() {
 		let list: List = [1, 2, 3]
 
 		XCTAssert(list.debugDescription.contains("1"))
@@ -312,7 +271,7 @@ class ListTest: XCTestCase {
 		XCTAssertEqual(list.firstIndex(of: 10), 2)
 	}
 
-	func testHash() { // gryphon ignore
+	func testHash() {
 		let list1: List = [1, 2, 3]
 		let list2: List = [1, 2, 3]
 		let list3: List = [1, 2, 3, 4]
@@ -335,8 +294,8 @@ class ListTest: XCTestCase {
 	}
 
 	func testZip() {
-		let array1: [Int] = [3, 2, 1] // gryphon mute
-		let array2: [Int] = [1, 2, 3] // gryphon mute
+		let array1: [Int] = [3, 2, 1]
+		let array2: [Int] = [1, 2, 3]
 		let list1: List = [3, 2, 1]
 		let list2: List = [1, 2, 3]
 
@@ -344,11 +303,11 @@ class ListTest: XCTestCase {
 			XCTAssertEqual(a + b, 4)
 		}
 
-		for (a, b) in zip(array1, list2) { // gryphon mute
+		for (a, b) in zip(array1, list2) {
 			XCTAssertEqual(a + b, 4)
 		}
 
-		for (a, b) in zip(list1, array2) { // gryphon mute
+		for (a, b) in zip(list1, array2) {
 			XCTAssertEqual(a + b, 4)
 		}
 	}

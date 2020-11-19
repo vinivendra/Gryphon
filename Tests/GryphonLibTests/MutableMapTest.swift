@@ -16,44 +16,12 @@
 // limitations under the License.
 //
 
-// gryphon output: Bootstrap/MutableMapTest.kt
-
-#if !GRYPHON
 @testable import GryphonLib
 import XCTest
-#else
-import Foundation
-#endif
 
 class MutableMapTest: XCTestCase {
-	// gryphon insert: constructor(): super() { }
-
-	public func getClassName() -> String { // gryphon annotation: override
-		return "MutableMapTest"
-	}
-
-	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // gryphon annotation: override
-		testEquatable()
-		testInits()
-		testPassingByReference()
-		testCasting()
-		testCopy()
-		testToMap()
-		testSubscript()
-		testDescription()
-		// testDebugDescription()
-		// testCollectionIndices()
-		testCount()
-		testIsEmpty()
-		testMap()
-		// testMapValues()
-		// testSortedBy()
-		// testHash()
-	}
-
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // gryphon ignore
+	static var allTests = [
 		("testEquatable", testEquatable),
 		("testInits", testInits),
 		("testPassingByReference", testPassingByReference),
@@ -237,7 +205,7 @@ class MutableMapTest: XCTestCase {
 		XCTAssert(!dictionary.description.contains("3"))
 	}
 
-	func testDebugDescription() { // gryphon ignore
+	func testDebugDescription() {
 		let dictionary: MutableMap = [1: 10, 2: 20]
 
 		XCTAssert(dictionary.debugDescription.contains("1"))
@@ -247,7 +215,7 @@ class MutableMapTest: XCTestCase {
 		XCTAssert(!dictionary.debugDescription.contains("3"))
 	}
 
-	func testCollectionIndices() { // gryphon ignore
+	func testCollectionIndices() {
 		let dictionary: MutableMap = [1: 10, 2: 20]
 		let lastIndex = dictionary.index(after: dictionary.startIndex)
 
@@ -301,7 +269,7 @@ class MutableMapTest: XCTestCase {
 		XCTAssertEqual(dictionary, [1: 10, 2: 20])
 	}
 
-	func testMapValues() { // gryphon ignore
+	func testMapValues() {
 		let dictionary: MutableMap = [1: 10, 2: 20]
 		let mappedDictionary = dictionary.mapValues { $0 * 10 }
 
@@ -309,7 +277,7 @@ class MutableMapTest: XCTestCase {
 		XCTAssertEqual(dictionary, [1: 10, 2: 20])
 	}
 
-	func testSortedBy() { // gryphon ignore
+	func testSortedBy() {
 		let dictionary: MutableMap = [1: 20, 2: 10]
 
 		let keySorted = dictionary.sorted { $0.0 < $1.0 }
@@ -334,7 +302,7 @@ class MutableMapTest: XCTestCase {
 		XCTAssertEqual(dictionary, [1: 20, 2: 10])
 	}
 
-	func testHash() { // gryphon ignore
+	func testHash() {
 		let dictionary1: MutableMap = [1: 20, 2: 10]
 		let dictionary2: MutableMap = [1: 20, 2: 10]
 		let dictionary3: MutableMap = [1: 20, 2: 10, 3: 30]

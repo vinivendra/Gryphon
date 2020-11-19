@@ -22,12 +22,17 @@ import XCTest
 class PerformanceTest: XCTestCase {
 	static let toolchain: String? = nil
 	static let swiftVersion: String = try! TranspilationContext.getVersionOfToolchain(toolchain)
+	static let shouldUseSwiftSyntax = true
 
 	func testASTDumpDecoder() {
+		guard !PerformanceTest.shouldUseSwiftSyntax else {
+			return
+		}
+
 		let tests = TestUtilities.testCases
 
 		let astDumpContents: List<String> = tests.map { testName in
-			let testCasePath = TestUtilities.testCasesPath + testName
+			let testCasePath = TestUtilities.testCasesPath + testName + ".swift"
 			let astDumpFilePath = SupportingFile.pathOfSwiftASTDumpFile(
 				forSwiftFile: testCasePath,
 				swiftVersion: PerformanceTest.swiftVersion)
@@ -47,10 +52,14 @@ class PerformanceTest: XCTestCase {
 	}
 
 	func testSwiftTranslator() {
+		guard !PerformanceTest.shouldUseSwiftSyntax else {
+			return
+		}
+
 		let tests = TestUtilities.testCases
 
 		let swiftASTs: List<SwiftAST> = tests.map { testName in
-			let testCasePath = TestUtilities.testCasesPath + testName
+			let testCasePath = TestUtilities.testCasesPath + testName + ".swift"
 			let astDumpFilePath = SupportingFile.pathOfSwiftASTDumpFile(
 				forSwiftFile: testCasePath,
 				swiftVersion: PerformanceTest.swiftVersion)
@@ -66,7 +75,53 @@ class PerformanceTest: XCTestCase {
 						withContext: TranspilationContext(
 							toolchainName: PerformanceTest.toolchain,
 							indentationString: "\t",
-							defaultsToFinal: false))
+							defaultsToFinal: false,
+							isUsingSwiftSyntax: false,
+							compilationArguments: TranspilationContext.SwiftCompilationArguments(
+								absoluteFilePathsAndOtherArguments: []),
+							xcodeProjectPath: nil,
+							target: nil))
+				}
+				catch let error {
+					XCTFail("🚨 Test failed with error:\n\(error)")
+				}
+			}
+		}
+	}
+
+	func testSwiftSyntaxDecoder() {
+		guard PerformanceTest.shouldUseSwiftSyntax else {
+			return
+		}
+
+		let tests = TestUtilities.testCases
+
+		let pathsAndContexts: List<(String, TranspilationContext)> = tests.map { testName in
+			let testCasePath = TestUtilities.testCasesPath + testName + ".swift"
+			let context = try! TranspilationContext(
+				toolchainName: PerformanceTest.toolchain,
+				indentationString: "\t",
+				defaultsToFinal: testName.contains("-default-final"),
+				isUsingSwiftSyntax: true,
+				compilationArguments: TranspilationContext.SwiftCompilationArguments(
+					absoluteFilePathsAndOtherArguments: [
+						SupportingFile.gryphonTemplatesLibrary.absolutePath,
+						testCasePath, ]),
+				xcodeProjectPath: nil,
+				target: nil)
+			return (testCasePath, context)
+		}
+
+		measure {
+			for (path, context) in pathsAndContexts {
+				do {
+					let decoder = try Compiler.generateSwiftSyntaxDecoder(
+						fromSwiftFile: path,
+						withContext: context)
+					_ = try Compiler.generateGryphonRawASTUsingSwiftSyntax(
+						usingFileDecoder: decoder,
+						asMainFile: true,
+						withContext: context)
 				}
 				catch let error {
 					XCTFail("🚨 Test failed with error:\n\(error)")
@@ -78,29 +133,36 @@ class PerformanceTest: XCTestCase {
 	func testFirstTranspilationPasses() {
 		let tests = TestUtilities.testCases
 
-		let astDumpFilePaths: List<String> = tests.map { testName in
-			let testCasePath = TestUtilities.testCasesPath + testName
-			return SupportingFile.pathOfSwiftASTDumpFile(
-				forSwiftFile: testCasePath,
-				swiftVersion: PerformanceTest.swiftVersion)
-		}
-
-		let rawASTs = try! Compiler.transpileGryphonRawASTs(
-			fromASTDumpFiles: astDumpFilePaths,
-			withContext: TranspilationContext(
-				toolchainName: PerformanceTest.toolchain,
-				indentationString: "\t",
-				defaultsToFinal: false))
+		let rawASTsAndContexts = tests.map
+			{ (testName: String) -> (GryphonAST, TranspilationContext) in
+				let testCasePath = TestUtilities.testCasesPath + testName + ".swift"
+				let astDumpFilePath = SupportingFile.pathOfSwiftASTDumpFile(
+					forSwiftFile: testName,
+					swiftVersion: PerformanceTest.swiftVersion)
+				let context = try! TranspilationContext(
+					toolchainName: PerformanceTest.toolchain,
+					indentationString: "\t",
+					defaultsToFinal: testName.contains("-default-final"),
+					isUsingSwiftSyntax: PerformanceTest.shouldUseSwiftSyntax,
+					compilationArguments: TranspilationContext.SwiftCompilationArguments(
+						absoluteFilePathsAndOtherArguments: [
+							SupportingFile.gryphonTemplatesLibrary.absolutePath,
+							testCasePath, ]),
+					xcodeProjectPath: nil,
+					target: nil)
+				let rawAST = try! Compiler.transpileGryphonRawASTs(
+					fromInputFiles: [testCasePath],
+					fromASTDumpFiles: [astDumpFilePath],
+					withContext: context)
+				return (rawAST[0], context)
+			}
 
 		measure {
-			for rawAST in rawASTs {
+			for (rawAST, context) in rawASTsAndContexts {
 				do {
 					_ = try Compiler.generateGryphonASTAfterFirstPasses(
 						fromGryphonRawAST: rawAST,
-						withContext: TranspilationContext(
-							toolchainName: PerformanceTest.toolchain,
-							indentationString: "\t",
-							defaultsToFinal: false))
+						withContext: context)
 				}
 				catch let error {
 					XCTFail("🚨 Test failed with error:\n\(error)")
@@ -110,77 +172,82 @@ class PerformanceTest: XCTestCase {
 	}
 
 	func testSecondTranspilationPasses() {
-		do {
-			let tests = TestUtilities.testCases
+		let tests = TestUtilities.testCases
 
-			let astDumpFilePaths: List<String> = tests.map { testName in
-				let testCasePath = TestUtilities.testCasesPath + testName
-				return SupportingFile.pathOfSwiftASTDumpFile(
-					forSwiftFile: testCasePath,
+		let semiRawASTsAndContexts = tests.map
+			{ (testName: String) -> (GryphonAST, TranspilationContext) in
+				let testCasePath = TestUtilities.testCasesPath + testName + ".swift"
+				let astDumpFilePath = SupportingFile.pathOfSwiftASTDumpFile(
+					forSwiftFile: testName,
 					swiftVersion: PerformanceTest.swiftVersion)
+				let context = try! TranspilationContext(
+					toolchainName: PerformanceTest.toolchain,
+					indentationString: "\t",
+					defaultsToFinal: testName.contains("-default-final"),
+					isUsingSwiftSyntax: PerformanceTest.shouldUseSwiftSyntax,
+					compilationArguments: TranspilationContext.SwiftCompilationArguments(
+						absoluteFilePathsAndOtherArguments: [
+							SupportingFile.gryphonTemplatesLibrary.absolutePath,
+							testCasePath, ]),
+					xcodeProjectPath: nil,
+					target: nil)
+				let rawAST = try! Compiler.transpileGryphonRawASTs(
+					fromInputFiles: [testCasePath],
+					fromASTDumpFiles: [astDumpFilePath],
+					withContext: context)
+				let semiRawAST = try! Compiler.generateGryphonASTAfterFirstPasses(
+					fromGryphonRawAST: rawAST[0],
+					withContext: context)
+				return (semiRawAST, context)
 			}
 
-			let context = try TranspilationContext(
-				toolchainName: PerformanceTest.toolchain,
-				indentationString: "\t",
-				defaultsToFinal: false)
-			let semiRawASTs = try! Compiler.transpileGryphonRawASTs(
-				fromASTDumpFiles: astDumpFilePaths,
-				withContext: context)
-				.map {
-					try! Compiler.generateGryphonASTAfterFirstPasses(
-						fromGryphonRawAST: $0,
+		measure {
+			for (semiRawAST, context) in semiRawASTsAndContexts {
+				do {
+					_ = try Compiler.generateGryphonASTAfterSecondPasses(
+						fromGryphonRawAST: semiRawAST,
 						withContext: context)
 				}
-
-			measure {
-				for semiRawAST in semiRawASTs {
-					do {
-						_ = try Compiler.generateGryphonASTAfterSecondPasses(
-							fromGryphonRawAST: semiRawAST,
-							withContext: TranspilationContext(
-								toolchainName: PerformanceTest.toolchain,
-								indentationString: "\t",
-								defaultsToFinal: false))
-					}
-					catch let error {
-						XCTFail("🚨 Test failed with error:\n\(error)")
-					}
+				catch let error {
+					XCTFail("🚨 Test failed with error:\n\(error)")
 				}
 			}
-		}
-		catch let error {
-			XCTFail("🚨 Failed to create ASTs or contexts: \(error)")
-			return
 		}
 	}
 
 	func testAllTranspilationPasses() {
 		let tests = TestUtilities.testCases
 
-		let astDumpFilePaths: List<String> = tests.map { testName in
-			let testCasePath = TestUtilities.testCasesPath + testName
-			return SupportingFile.pathOfSwiftASTDumpFile(
-				forSwiftFile: testCasePath,
-				swiftVersion: PerformanceTest.swiftVersion)
-		}
-
-		let rawASTs = try! Compiler.transpileGryphonRawASTs(
-			fromASTDumpFiles: astDumpFilePaths,
-			withContext: TranspilationContext(
-				toolchainName: PerformanceTest.toolchain,
-				indentationString: "\t",
-				defaultsToFinal: false))
+		let rawASTsAndContexts = tests.map
+			{ (testName: String) -> (GryphonAST, TranspilationContext) in
+				let testCasePath = TestUtilities.testCasesPath + testName + ".swift"
+				let astDumpFilePath = SupportingFile.pathOfSwiftASTDumpFile(
+					forSwiftFile: testName,
+					swiftVersion: PerformanceTest.swiftVersion)
+				let context = try! TranspilationContext(
+					toolchainName: PerformanceTest.toolchain,
+					indentationString: "\t",
+					defaultsToFinal: testName.contains("-default-final"),
+					isUsingSwiftSyntax: PerformanceTest.shouldUseSwiftSyntax,
+					compilationArguments: TranspilationContext.SwiftCompilationArguments(
+						absoluteFilePathsAndOtherArguments: [
+							SupportingFile.gryphonTemplatesLibrary.absolutePath,
+							testCasePath, ]),
+					xcodeProjectPath: nil,
+					target: nil)
+				let rawAST = try! Compiler.transpileGryphonRawASTs(
+					fromInputFiles: [testCasePath],
+					fromASTDumpFiles: [astDumpFilePath],
+					withContext: context)
+				return (rawAST[0], context)
+			}
 
 		measure {
-			for rawAST in rawASTs {
+			for (rawAST, context) in rawASTsAndContexts {
 				do {
 					_ = try Compiler.generateGryphonAST(
 						fromGryphonRawAST: rawAST,
-						withContext: TranspilationContext(
-							toolchainName: PerformanceTest.toolchain,
-							indentationString: "\t",
-							defaultsToFinal: false))
+						withContext: context)
 				}
 				catch let error {
 					XCTFail("🚨 Test failed with error:\n\(error)")
@@ -192,41 +259,41 @@ class PerformanceTest: XCTestCase {
 	func testKotlinTranslator() {
 		let tests = TestUtilities.testCases
 
-		do {
-			let astsAndContexts: List<(GryphonAST, TranspilationContext)> = try tests.map
-				{ testName in
-					let testCasePath = TestUtilities.testCasesPath + testName
-					let astDumpFilePath =
-						SupportingFile.pathOfSwiftASTDumpFile(
-							forSwiftFile: testCasePath,
-							swiftVersion: PerformanceTest.swiftVersion)
-					let context = try TranspilationContext(
-						toolchainName: PerformanceTest.toolchain,
-						indentationString: "\t",
-						defaultsToFinal: false)
-					let ast = try Compiler.transpileGryphonASTs(
-						fromASTDumpFiles: [astDumpFilePath],
-						withContext: context).first!
-					return (ast, context)
-				}
+		let astsAndContexts = tests.map
+			{ (testName: String) -> (GryphonAST, TranspilationContext) in
+				let testCasePath = TestUtilities.testCasesPath + testName + ".swift"
+				let astDumpFilePath = SupportingFile.pathOfSwiftASTDumpFile(
+					forSwiftFile: testName,
+					swiftVersion: PerformanceTest.swiftVersion)
+				let context = try! TranspilationContext(
+					toolchainName: PerformanceTest.toolchain,
+					indentationString: "\t",
+					defaultsToFinal: testName.contains("-default-final"),
+					isUsingSwiftSyntax: PerformanceTest.shouldUseSwiftSyntax,
+					compilationArguments: TranspilationContext.SwiftCompilationArguments(
+						absoluteFilePathsAndOtherArguments: [
+							SupportingFile.gryphonTemplatesLibrary.absolutePath,
+							testCasePath, ]),
+					xcodeProjectPath: nil,
+					target: nil)
+				let rawAST = try! Compiler.transpileGryphonASTs(
+					fromInputFiles: [testCasePath],
+					fromASTDumpFiles: [astDumpFilePath],
+					withContext: context)
+				return (rawAST[0], context)
+			}
 
-			measure {
-				for astAndContext in astsAndContexts {
-					do {
-						let (ast, context) = astAndContext
-						_ = try Compiler.generateKotlinCode(
-							fromGryphonAST: ast,
-							withContext: context)
-					}
-					catch let error {
-						XCTFail("🚨 Test failed with error:\n\(error)")
-					}
+		measure {
+			for (ast, context) in astsAndContexts {
+				do {
+					_ = try Compiler.generateKotlinCode(
+						fromGryphonAST: ast,
+						withContext: context)
+				}
+				catch let error {
+					XCTFail("🚨 Test failed with error:\n\(error)")
 				}
 			}
-		}
-		catch let error {
-			XCTFail("🚨 Failed to create ASTs or contexts: \(error)")
-			return
 		}
 	}
 
@@ -236,16 +303,25 @@ class PerformanceTest: XCTestCase {
 		measure {
 			for testName in tests {
 				do {
-					let testCasePath = TestUtilities.testCasesPath + testName
+					let testCasePath = TestUtilities.testCasesPath + testName + ".swift"
 					let astDumpFilePath = SupportingFile.pathOfSwiftASTDumpFile(
 						forSwiftFile: testCasePath,
 						swiftVersion: PerformanceTest.swiftVersion)
+					let context = try! TranspilationContext(
+						toolchainName: PerformanceTest.toolchain,
+						indentationString: "\t",
+						defaultsToFinal: testName.contains("-default-final"),
+						isUsingSwiftSyntax: PerformanceTest.shouldUseSwiftSyntax,
+						compilationArguments: TranspilationContext.SwiftCompilationArguments(
+							absoluteFilePathsAndOtherArguments: [
+								SupportingFile.gryphonTemplatesLibrary.absolutePath,
+								testCasePath, ]),
+						xcodeProjectPath: nil,
+						target: nil)
 					_ = try Compiler.transpileKotlinCode(
+						fromInputFiles: [testCasePath],
 						fromASTDumpFiles: [astDumpFilePath],
-						withContext: TranspilationContext(
-							toolchainName: PerformanceTest.toolchain,
-							indentationString: "\t",
-							defaultsToFinal: false))
+						withContext: context)
 				}
 				catch let error {
 					XCTFail("🚨 Test failed with error:\n\(error)")

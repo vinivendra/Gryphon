@@ -16,38 +16,17 @@
 // limitations under the License.
 //
 
-// gryphon output: Bootstrap/KotlinTranslationResultTest.kt
-
-#if canImport(GryphonLib)
 @testable import GryphonLib
 import XCTest
-#endif
 
 class KotlinTranslationResultTest: XCTestCase {
-	// gryphon insert: constructor(): super() { }
-
-	public func getClassName() -> String { // gryphon annotation: override
-		return "TranslationResultTest"
-	}
-
-	/// Tests to be run by the translated Kotlin version.
-	public func runAllTests() { // gryphon annotation: override
-		testShallowTranslation()
-		testDeepTranslation()
-		testDropLast()
-		testIsEmpty()
-		testSourceFilePositionPosition()
-		testSourceFilePositionCopy()
-	}
-
 	/// Tests to be run when using Swift on Linux
-	static var allTests = [ // gryphon ignore
+	static var allTests = [
 		("testShallowTranslation", testShallowTranslation),
 		("testDeepTranslation", testDeepTranslation),
 		("testDropLast", testDropLast),
 		("testIsEmpty", testIsEmpty),
-		("testSourceFilePositionPosition", testSourceFilePositionPosition),
-		("testSourceFilePositionCopy", testSourceFilePositionCopy),
+		("testSourceFileUpdatePosition", testSourceFileUpdatePosition),
 	]
 
 	// MARK: - Tests
@@ -139,57 +118,34 @@ class KotlinTranslationResultTest: XCTestCase {
 		XCTAssertFalse(getDeepTranslation().isEmpty)
 	}
 
-	func testSourceFilePositionPosition() {
-		let position = SourceFilePosition()
-		XCTAssertEqual(position.lineNumber, 1)
-		XCTAssertEqual(position.columnNumber, 1)
+	func testSourceFileUpdatePosition() {
+		let position = SourceFilePosition.beginningOfFile
+		XCTAssertEqual(position.line, 1)
+		XCTAssertEqual(position.column, 1)
 
-		position.updateWithString("bla")
-		XCTAssertEqual(position.lineNumber, 1)
-		XCTAssertEqual(position.columnNumber, 4)
+		let position1 = position.updated(withString: "bla")
+		XCTAssertEqual(position1.line, 1)
+		XCTAssertEqual(position1.column, 4)
 
-		position.updateWithString("bla")
-		XCTAssertEqual(position.lineNumber, 1)
-		XCTAssertEqual(position.columnNumber, 7)
+		let position2 = position1.updated(withString: "bla")
+		XCTAssertEqual(position2.line, 1)
+		XCTAssertEqual(position2.column, 7)
 
-		position.updateWithString("\n")
-		XCTAssertEqual(position.lineNumber, 2)
-		XCTAssertEqual(position.columnNumber, 1)
+		let position3 = position2.updated(withString: "\n")
+		XCTAssertEqual(position3.line, 2)
+		XCTAssertEqual(position3.column, 1)
 
-		position.updateWithString("blabla")
-		XCTAssertEqual(position.lineNumber, 2)
-		XCTAssertEqual(position.columnNumber, 7)
+		let position4 = position3.updated(withString: "blabla")
+		XCTAssertEqual(position4.line, 2)
+		XCTAssertEqual(position4.column, 7)
 
-		position.updateWithString("blabla\n")
-		XCTAssertEqual(position.lineNumber, 3)
-		XCTAssertEqual(position.columnNumber, 1)
+		let position5 = position4.updated(withString: "blabla\n")
+		XCTAssertEqual(position5.line, 3)
+		XCTAssertEqual(position5.column, 1)
 
-		position.updateWithString("blabla\nblabla")
-		XCTAssertEqual(position.lineNumber, 4)
-		XCTAssertEqual(position.columnNumber, 7)
-	}
-
-	func testSourceFilePositionCopy() {
-		let position = SourceFilePosition()
-		let position2 = position.copy()
-
-		XCTAssertEqual(position.lineNumber, position2.lineNumber)
-		XCTAssertEqual(position.columnNumber, position2.columnNumber)
-
-		position.updateWithString("blabla\nblabla")
-		let position3 = position.copy()
-
-		XCTAssertNotEqual(position.lineNumber, position2.lineNumber)
-		XCTAssertNotEqual(position.columnNumber, position2.columnNumber)
-		XCTAssertEqual(position.lineNumber, position3.lineNumber)
-		XCTAssertEqual(position.columnNumber, position3.columnNumber)
-
-		position.updateWithString("blabla\nblablabla")
-
-		XCTAssertNotEqual(position.lineNumber, position2.lineNumber)
-		XCTAssertNotEqual(position.columnNumber, position2.columnNumber)
-		XCTAssertNotEqual(position.lineNumber, position3.lineNumber)
-		XCTAssertNotEqual(position.columnNumber, position3.columnNumber)
+		let position6 = position5.updated(withString: "blabla\nblabla")
+		XCTAssertEqual(position6.line, 4)
+		XCTAssertEqual(position6.column, 7)
 	}
 
 	// MARK: Auxiliary methods

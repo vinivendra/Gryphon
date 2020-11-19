@@ -1,4 +1,6 @@
 disabled_rules:
+  - closure_parameter_position
+  - unused_setter_value
   - implicit_return
   - cyclomatic_complexity
   - file_length

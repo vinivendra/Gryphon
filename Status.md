@@ -161,7 +161,9 @@ This section includes types with translations that are already supported, as wel
 		- `array.insert(any, at: int)` ➡️ `array.add(int, any)`
 		- `array1.append(contentsOf: array2)` ➡️ `array.addAll(array2)`
 		- `array.dropFirst()` ➡️ `array.drop(1)`
+		- `array.dropFirst(int)` ➡️ `array.drop(int)`
 		- `array.dropLast()` ➡️ `array.dropLast(1)`
+		- `array.dropLast(int)` ➡️ `array.dropLast(int)`
 		- `array.removeFirst()` ➡️ `array.removeAt(0)`
 		- `array.removeLast()` ➡️ 📖 `array.removeLast()`
 		- `array.remove(at: int)` ➡️ `array.removeAt(int)`

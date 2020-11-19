@@ -1,0 +1,23 @@
+0
+1
+2
+3
+4
+6
+Testing tuple shuffles
+- Named parameters with default values
+1 0 0
+0 1 0
+1 1 0
+0 0 1
+1 0 1
+0 1 1
+1 1 1
+- Unnamed parameters with default values
+1 0 0
+1 1 0
+1 1 1
+- Variadics and default values
+11231
+11230
+- Trailing closures and default arguments
