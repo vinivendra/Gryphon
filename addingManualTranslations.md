@@ -28,7 +28,7 @@ Switch to the Gryphon target and translate the model with **⌘+B**. Gryphon wil
 
 ![Warning: Reference to standard library "random(in:)" was not translated.](assets/images/iOS/ios10.png)
 
-This happens because Gryphon doesn't yet support the new `random` methods from the Swift standard library.
+This happens because Gryphon doesn't yet support the `random` methods from the Swift standard library.
 
 This statement could be translated to Kotlin as `(0..index).random()`; we can teach Gryphon to do that in two ways:
 
@@ -37,7 +37,7 @@ This statement could be translated to Kotlin as `(0..index).random()`; we can te
 Remember the `// gryphon insert:` comment we added to the beginning of the file a few steps ago? That's an example of a *translation comment* - a special kind of comment that can be used to insert code, remove it, change it, etc. We can use a similar translation comment, `// gryphon value:`, to manually specify the value we want to use for the `random` variable:
 
 ```` swift
-let random = Int.random(in: 0...index) // gryphon value: (0..10).random()
+let random = /* gryphon value: (0..10).random() */ Int.random(in: 0...index)
 ````
 
 If you try translating this code again (**⌘+B** on the Gryphon target), you'll see the warning's now gone and the Android app builds and runs successfully.
@@ -67,7 +67,7 @@ Here's what this function does:
 - Then, it defines the template itself, which is the expression we want to translate - in this case, the `Int.random(in: 0...index)` expression. Every time Gryphon finds this expression in the code, it'll look up our translation and use it.
 - Finally, it states the translation to be used, as a literal string.
 
-This definition already works - if you remove the `// gryphon value:` comment from before, everything should translate and compile correctly. However, templates really shine when they can be used for different cases - this one will only work if we want a random number from `0` to `index`, since that's what we wrote. We can change that by replacing these hard coded values with variables that start with an underscore, which act as placeholders. Gryphon knows it can match underscored variables in templates to any expression of the same type.
+This definition already works - if you remove the `gryphon value` comment from before, everything should translate and compile correctly. However, templates really shine when they can be used for different cases - this one will only work if we want a random number from `0` to `index`, since that's what we wrote. We can change that by replacing these hard coded values with variables that start with `_`, which act as placeholders. Gryphon knows it can match these variables to any expression of the same type.
 
 Replace the `gryphonTemplates` function with the one below:
 
@@ -84,7 +84,7 @@ private func gryphonTemplates() {
 }
 ````
 
-This template will work for any expression of the form `Int.random(in: _startNumber..._endNumber)`, no matter what values they use for `_startNumber` and `_endNumber` - so long as they're both `Ints`. In particular, it will still match our `Int.random(in: 0...index)` expression, since both `0` and `index` are `Ints`.
+This template will work for any expression of the form `Int.random(in: _startNumber..._endNumber)`, no matter what values are used for `_startNumber` and `_endNumber` - so long as they're both `Int`s. In particular, it will still match our `Int.random(in: 0...index)` expression, since both `0` and `index` are `Int`s.
 
 The only remaining issue is that Swift is raising warnings for unused expressions. We can silence them with an empty assignment to `_`:
 
@@ -95,7 +95,7 @@ _ = Int.random(in: _startNumber..._endNumber)
 _ = "(_startNumber.._endNumber).random()"
 ````
 
-You should now be able to translate the code (**⌘+B** on the Gryphon target), build the iOS app (**⌘+B** on the MyAwesomeiOSApp target) and build the Android app (**⌘+B** on the Kotlin target), and everything should be working fine.
+You should now be able to build the iOS app (**⌘+B** on the MyAwesomeiOSApp target), translate the code (**⌘+B** on the Gryphon target), and build the Android app (**⌘+B** on the Kotlin target), and everything should be working fine.
 
 For more information on using templates, check out the [templates guide](templates.html).
 

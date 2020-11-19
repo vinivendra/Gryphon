@@ -7,11 +7,9 @@ layout: tutorialLayout
 Welcome! Here's everything you'll need to install Gryphon and follow the tutorials on this website.
 
 - [Option 1: Using Gryphon on macOS or Linux](installingGryphon.html#option-1-using-gryphon-on-macos-or-linux)
-	- [Step 1: Installing Swift](installingGryphon.html#step-1-installing-swift)
-	- [Step 2: Installing Gryphon](installingGryphon.html#step-2-installing-gryphon)
-	- [Step 3: Bonus dependencies](installingGryphon.html#step-3-bonus-dependencies)
 - [Option 2: Using Gryphon on Docker](installingGryphon.html#option-2-using-gryphon-on-docker)
 - [Option 3: Using Gryphon on GitPod](installingGryphon.html#option-3-using-gryphon-on-gitpod)
+- [Using different Swift versions](installingGryphon.html#using-different-swift-versions)
 
 ## Option 1: Using Gryphon on macOS or Linux
 
@@ -36,14 +34,14 @@ Or building from the source:
 ```` bash
 $ git clone https://github.com/vinivendra/Gryphon.git
 $ cd Gryphon
-$ ./install.sh
+$ ./Scripts/install.sh
 ````
 
-Make sure you also download any dependencies you need. Gryphon uses Ruby and the [Xcodeproj](https://github.com/CocoaPods/Xcodeproj) tool for [Xcode](https://apps.apple.com/us/app/xcode/id497799835) integration. You might also want to get [Kotlin](https://github.com/JetBrains/kotlin/releases/tag/v1.3.72), [Java](https://www.oracle.com/java/technologies/javase-jre8-downloads.html), and [Android Studio](https://developer.android.com/studio/) to follow the tutorials.
+Make sure you also download any dependencies you need. Gryphon uses Ruby and the [Xcodeproj](https://github.com/CocoaPods/Xcodeproj) tool for Xcode integration. You might also want to get [Kotlin](https://github.com/JetBrains/kotlin/releases/tag/v1.4.10), [Java](https://www.oracle.com/java/technologies/javase-jre8-downloads.html), and [Android Studio](https://developer.android.com/studio/) to follow some of the tutorials.
 
 ## Option 2: Using Gryphon on Docker
 
-The [Gryphon repository](https://github.com/vinivendra/Gryphon) includes a Dockerfile that builds a [Docker](https://www.docker.com) container already loaded with Swift, Kotlin and Java. Docker containers are guaranteed to work the same in all compatible systems, so they can be useful if you have problems with the installation or the dependencies. You can build the container with
+[Docker](https://www.docker.com) containers are guaranteed to work the same in all compatible systems, so they can be useful if you have problems with the installation or the dependencies. The [Gryphon repository](https://github.com/vinivendra/Gryphon) includes a Dockerfile that builds a Docker container already loaded with Swift, Kotlin and Java. You can build the container with
 
 ```` bash
 $ git clone https://github.com/vinivendra/Gryphon.git
@@ -59,15 +57,41 @@ $ docker run -it --rm --privileged -v /path/to/Gryphon/:/app/Gryphon gryphon
 
 where `/path/to/Gryphon/` should be an absolute path to the current folder (i.e. the cloned Gryphon repository).
 
-The first time you run the container, you can install Gryphon in it with:
+Once the container is running you can build Gryphon, create a shortcut to the built binary, then run it:
 
 ```` bash
-$ ./install.sh
+$ swift build
+$ ln -s .build/debug/gryphon gryphon
+$ ./gryphon "Test files/test.swift"
 ````
 
 ## Option 3: Using Gryphon on GitPod
 
-The Docker container is also available as a [GitPod workspace](http://gitpod.io/#github.com/vinivendra/Gryphon) where you can use Gryphon online, without having to install it or download it.
+The Docker container is also available as a [GitPod workspace](http://gitpod.io/#github.com/vinivendra/Gryphon) where you can use Gryphon online, without having to install it or download it. You can run Gryphon in the workspace directly with
+
+```` bash
+$ ./gryphon "Test files/test.swift"
+````
+
+## Using different Swift versions
+
+Gryphon executables are linked with the Swift version used to build them. For example, if you install Gryphon using Swift 5.3, the resulting `gryphon` executable will be linked to the Swift 5.3 parser, and will always parse Swift code following the Swift 5.3 rules:
+
+```` bash
+$ swift --version
+Apple Swift version 5.3
+$ brew install vinivendra/gryphon/gryphon
+$ gryphon --version
+Gryphon version x.y.z, using the Swift 5.3 parser
+````
+
+If you ever need Gryphon to use a different Swift version, just install it again using the Swift version of your choice.
+
+When using Docker, the Swift version is defined in the first line of the Dockerfile. You can change that line and call `docker build` again to change the Swift version:
+
+````
+FROM swift:5.3
+````
 
 ## What's next?
 

@@ -4,6 +4,8 @@ layout: tutorialLayout
 
 # Translating command line programs
 
+*Note: This guide assumes you can run Gryphon by calling `gryphon` from the command line, but Docker-based installations may be using `./gryphon` instead, so adapt your commands accordingly.*
+
 ## Translating a single file
 
 Let's start by translating a simple Swift file from the command line.
@@ -87,7 +89,7 @@ func getMessage() -> String {
 }
 ````
 
-Notice the `// gryphon output:` comment at the top of both files that specifies the output file path for each one. If we translate them both, we'll notice Gryphon generates the two files accordingly:
+Notice the `// gryphon output:` comment at the top of both files that specifies the output file path for each one. If we translate them both, Gryphon generates the `main.kt` and `message.kt` files accordingly:
 
 ```` bash
 $ gryphon message.swift main.swift
@@ -123,25 +125,13 @@ internal fun getMessage(): String {
 }
 ````
 
-Because the `message.swift` file is now "platform-specific", so we no longer need to translate it. However, if try calling Gryphon without it, we'll get an error:
-
-```` bash
-$ gryphon main.swift
-🚨 Error calling the Swift compiler.
-Swift compiler output:
-
-main.swift:3:7: error: use of unresolved identifier 'getMessage'
-print(getMessage())
-      ^~~~~~~~~~
-````
-
-This happens because Gryphon needs to partially compile the Swift code, which means it needs to know of all necessary files to compile a program. We can tell Gryphon the `message.swift` file should be compiled - but not translated - by passing it after the `--skip` flag:
+The `message.swift` file is now "platform-specific" (that is, it's different for each language). We need to tell Gryphon not to translate it, otherwise our changes to `message.kt` will be overwritten by the translation. We can do that by passing `message.swift` after the  `--skip` flag:
 
 ```` bash
 $ gryphon main.swift --skip message.swift
 ````
 
-Now the translation can finish successfully. We can test it out with:
+Now, if we test the translation, we get:
 
 ```` bash
 $ swiftc message.swift main.swift
@@ -157,9 +147,9 @@ There are a few other flags that can be used to customize translations. The `--i
 
 ## That's it!
 
-Next: check out how to [translate a new iOS app to Android](translatingANewiOSAppToAndroid.html) or how to [add Gryphon to an existing app](addingGryphonToAnExistingApp.html).
+Next: learn to use Gryphon's [collections](collections.html) to avoid reference problems, as well as [translation comments](translationComments.html) and [templates](templates.html) to customize your code.
 
-For more in-depth information, check out the documentation on using Gryphon's [collections](collections.html), [translation comments](translationComments.html), and [templates](templates.html).
+If you're an app developer, check out how to [translate a new iOS app to Android](translatingANewiOSAppToAndroid.html) or how to [add Gryphon to an existing app](addingGryphonToAnExistingApp.html).
 
 Have any doubts? [Ask a question on Twitter](https://twitter.com/gryphonblog).
 

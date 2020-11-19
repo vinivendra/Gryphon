@@ -12,11 +12,11 @@ To translate an existing iOS app, check out [Adding Gryphon to an existing app](
 
 Create a folder called `MyAwesomeApp`. This is the folder where we'll put our new iOS and Android apps.
 
-Create the iOS project by opening Xcode and going to `File > New > Project` in the menu (or pressing "**⌘ + ⇧ + N**"). Choose `iOS > Single View App` and click `Next`.
+Create the iOS project by opening Xcode and going to `File > New > Project` in the menu (or pressing "**⌘ + ⇧ + N**"). Choose `iOS > App` and click `Next`.
 
 ![Xcode's "Choose a template for your new project" window](assets/images/iOS/ios1.png)
 
-Call it `MyAwesomeiOSApp` in the `Product Name` field and set the `Language` to `Swift`. Then click `Next`.
+Call it `MyAwesomeiOSApp` in the `Product Name` field and make sure the `Language` is set to `Swift`. Then click `Next`.
 
 ![Xcode's "Choose the options for your new project" window](assets/images/iOS/ios2.png)
 
@@ -26,7 +26,7 @@ Navigate to the `MyAwesomeApp` folder you created at the beginning of this step 
 
 #### Step 2: Create the Android project
 
-Let's do the same for Android now. Open Android Studio and click `Start a new Android Studio project`.
+Let's do the same for Android now. Open Android Studio and click `Create New Project`.
 
 ![Android Studio's starting window](assets/images/iOS/android1.png)
 
@@ -34,7 +34,7 @@ Choose `Phone and Tablet` and `Empty Activity`, then click `Next`.
 
 ![Android Studio's "Choose your project" window](assets/images/iOS/android2.png)
 
-Name it `MyAwesomeAndroidApp` and choose `Kotlin` as the language. Set the `Save Location` as a new `MyAwesomeAndroidApp` folder inside your existing `MyAwesomeApp` folder, then click `Finish`.
+Name it `MyAwesomeAndroidApp`, set the Package Name to `com.example.myawesomeandroidapp`, and choose `Kotlin` as the language. Set the `Save Location` as a new `MyAwesomeAndroidApp` folder inside your existing `MyAwesomeApp` folder, then click `Finish`.
 
 ![Android Studio's "Configure your project" window](assets/images/iOS/android3.png)
 
@@ -51,7 +51,7 @@ This command tells Gryphon to set up to translate Swift files in the iOS app. It
 
 #### Step 4: Add a file to translate
 
-If you open the Xcode project, you'll see we have an `AppDelegate.swift`, a `SceneDelegate.swift` and a `ViewController.swift`. These files are for iOS-only code. Let's add a new file to share with Android.
+If you open the Xcode project, you'll see we already have a few Swift files. These files contain iOS-only code. Let's add a new file to share with Android.
 
 Go to `File > New > File` (or press "**⌘ + N**"). Choose `iOS > Swift File` and click `Next`.
 
@@ -82,11 +82,9 @@ enum Suit: String {
 
 ````
 
-Notice the `// gryphon insert` comment above. It adds the `"package com.example.myawesomeandroidapp"` line to the translated Kotlin file, which tells Android to include it when building the app. This type of comment that lets us manually change the output code is called a *translation comment*; you can learn more about it [here](translationComments.html).
+Notice the `// gryphon insert` comment at the top. It adds the `"package com.example.myawesomeandroidapp"` line to the translated Kotlin file, which tells Android to include the file when building the app. This type of comment that lets us manually change the output code is called a *translation comment*; you can learn more about it [here](translationComments.html).
 
-<!-- 1. The `// gryphon output` comment specifies the path to this file's translation. Notice that the path is not relative to location of this file, but to the location of the Xcode project. This allows us to move the Swift source files around without having to update their output file paths. -->
-
-Next, we have to include the new `Model.swift` file in the list of files that we'll share with Android. Gryphon looks for this list in a file called `gryphonInputFiles.xcfilelist` that it created. This list should contain all of the files to be translated, one in each line. For now, it's empty. Let's add the path to our Model file:
+Next, we have to include the new `Model.swift` file in the list of files that we'll share with Android. Gryphon looks for this list in a file called `gryphonInputFiles.xcfilelist` that was created in the `MyAwesomeiOSApp` folder. This list should contain all of the files to be translated, one in each line. For now, it's empty. Let's add the path to our Model file:
 
 ````
 MyAwesomeiOSApp/Model.swift

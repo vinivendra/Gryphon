@@ -28,9 +28,9 @@ package com.example.myawesomeandroidapp
 
 ## Step 2: Using the libraries
 
-Now that both apps have access to the libraries, we can fix the code. Gryphon already clued us in on what the problem might be with its warning message: we're using native Swift `Arrays` instead of Gryphon's `Lists`.
+Now that both apps have access to the libraries, we can fix the code. If you switch to the `Gryphon` target, you'll see it already clued us in on what the problem might be with its warning message: we're using native Swift `Arrays` instead of Gryphon's `Lists`.
 
-Gryphon warns us of this problem because it knows this code might behave differently on Kotlin than on Swift. In fact, it does: the Kotlin version works, but the Swift version has a bug. We could see the problem if we tried using the model:
+Gryphon warns us of this problem because it knows this code might behave differently in Kotlin than in Swift. In fact, it does: the Kotlin version works, but the Swift version has a bug. We could see the problem if we tried using our `Model` class:
 
 ```` swift
 let model = Model()
@@ -45,16 +45,16 @@ print("Oh no, there are still \(model.deck.count) cards in the deck.")
 // Oh no, there are still 52 cards in the deck.
 ````
 
-This happens because Swift's `Arrays` are passed by value, but Kotlin's `Lists` are passed by reference. There's a more detailed explanation of this problem (and of the reasoning behind its solution) [in the documentation](collections.html), but the solution here is pretty simple: open the `Model.swift` file in Xcode and switch the `deck`'s type from `Array<Card>` to `MutableList<Card>`.
+This happens because Kotlin uses `Lists` (and `MutableLists`), which are passed by reference, but Swift uses `Arrays`, which are passed by value. We can fix this by replacing Swift `Arrays` with Gryphon's `Lists` (and `MutableLists`), which are also passed by reference. Try opening the `Model.swift` file in Xcode and switching the `deck`'s type from `Array<Card>` to `MutableList<Card>`.
 
 ```` swift
 class Model {
     var deck: MutableList<Card> = []
 ````
 
-Switch to the Gryphon target and translate the code with **⌘+B**. The warnings that showed up before should be gone now.
+Now, if you translate the code with **⌘+B** on the Gryphon target, the warnings and errors that showed up before will be gone. Using Gryphon's `List` and `MutableList` instead of Swift's `Array` is recommended to avoid these bugs. For more information, check out the documentation on [collections](collections.html).
 
-We might also want to turn the `currentDeck` variable into a `let` to silence the Swift warning that pops up:
+Finally, we might also want to turn the `currentDeck` variable into a `let` to silence the Swift warning that pops up:
 
 ```` swift
     func draw() -> Card? {
@@ -62,9 +62,7 @@ We might also want to turn the `currentDeck` variable into a `let` to silence th
         // ...
 ````
 
-If we switch to the `MyAwesoneiOSApp` target and build it, it should build and run correctly, as should the Android app.
-
-When programming with Gryphon, it's always recommended to use `Lists` or `MutableLists` instead of Swift `Arrays`, and `Maps` or `MutableMaps` instead of Swift `Dictionaries`. This can prevent compilation errors, as well as bugs like these that can be hard to track down. For more information on using `Lists` and `Maps`, see the [collections guide](collections.html).
+If we switch to the `MyAwesoneiOSApp` target, it should build correctly, as should the `Kotlin` target.
 
 ---
 

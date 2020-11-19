@@ -49,15 +49,16 @@ Make sure both files are being compiled in their respective apps - files transla
 
 Start by selecting which of your app's files you want to translate. It's likely the selected files will need to be adapted to be used with Gryphon, so it's recommended you start with only a few files and increase their number gradually.
 
-You can also choose to translate only some parts of a file by commenting declarations with `// gryphon ignore`:
+You can also choose not to translate some parts of a file by commenting declarations with `// gryphon ignore`:
 
 ```` swift
-class MyClass { // gryphon ignore
+// gryphon ignore
+class MyClass {
 	// ...
 }
 ````
 
-Any declarations marked with this comment will not be translated. This works for most supported declarations, such as extensions, protocols, functions, etc. Just make sure the comment is in the first line of the declaration. For more information, check out the [translation comments guide](translationComments.html).
+Any declarations marked with this comment will not be translated. This works for most supported declarations, such as extensions, protocols, functions, etc. Just make sure the comment goes before the declaration. For more information, check out the [translation comments guide](translationComments.html).
 
 Once you decide which files will be translated, add them to the new `gryphonInputFiles.xcfilelist` file, separated by newlines:
 
@@ -74,6 +75,12 @@ Now open each of these files and add a `// gryphon output:` comment saying where
 // gryphon output: ../MyAwesomeAndroidApp/app/src/main/java/com/example/myawesomeandroidapp/SharedFile.kt
 ````
 
+You might also want to add a `package` statement to the start of each file using a `gryphon insert` comment:
+
+````
+// gryphon insert: package com.example.myawesomeandroidapp
+````
+
 ## Step 4: Adapting the shared files
 
 Switch to the Gryphon target and hit build (**⌘+B**).
@@ -88,13 +95,13 @@ A few tips to handle common warnings:
 
 - **⚠️ Native type Array/Dictionary can lead to different behavior in Kotlin**: Use `Lists` and `MutableLists` instead of Swift's `Arrays`, and use `Maps` and `MutableMaps` instead of Swift's `Dictionaries`. These classes have the same API as their Swift counterparts, but they're passed by reference, so they'll have the same behavior as the Kotlin translations. For more information, read the [collections guide](collections.html) or check out their implementation in the `GryphonSwiftLibrary.swift` file.
 
-- **⚠️ If condition may have side effects**: Statements like "`if let foo = bar()`" can cause unintended side-effects in Kotlin. Use `// gryphon pure` comments when possible for functions that don't have side-effects. Otherwise, try refactoring the `if` statement in question into two nested `if` statements. You can read more details on this issue [in the documentation](translationComments.html#gryphon-pure).
+- **⚠️ If condition may have side effects**: Statements like "`if let foo = bar()`" can cause unintended side-effects in Kotlin. If you know that the function being called doesn't have any side-effects, you can mark its declaration with `// gryphon pure` to silence this warning. Otherwise,  try refactoring try refactoring your code so that the function call is the first condition of the if statement. You can read more details on this issue [in the documentation](translationComments.html#gryphon-pure).
 
 - **⚠️ No support for mutable variables/mutating methods in value types**: Value types in Swift are translated as classes in Kotlin, which are passed by reference. This can lead to bugs when the value types have mutable members. You can try making the types immutable - that is, changing `var` to `let` and removing the `mutating` modifiers from functions. For `structs`, you can also try turning them into `classes`.
 
-- **⚠️ Double optionals may behave differently in Kotlin**: Some Swift expressions can have types like `Int??`, with two (or more) optionals. These types are treated differently in Kotlin, which can lead to bugs. Try breaking up the expression into smaller parts to find the double optional if needed. Then, try using an `if let` or a `guard-let` to unwrap the optional before it gets doubled.
+- **⚠️ Double optionals may behave differently in Kotlin**: Some Swift expressions can have types like `Int??`, with two (or more) optionals. These types are treated differently in Kotlin, which can lead to bugs. If you can't find the double optional in an expression, try breaking it up into smaller parts. Then, try using an `if let` or a `guard let` to unwrap the optional before it gets doubled.
 
-If you know the code is being translated correctly you can also [mute the warning](translationComments.html#gryphon-mute) with a `// gryphon mute` comment.
+If you know the code is being translated correctly, you can also [mute any warning](translationComments.html#gryphon-mute) with a `// gryphon mute` comment.
 
 ## Step 5: Building the Android app with Xcode
 
