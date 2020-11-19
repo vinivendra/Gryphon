@@ -203,7 +203,7 @@ class LibraryTranspilationTest: XCTestCase {
 			["_string": stringLiteral])
 		XCTAssertEqual(pass.matchExpression(
 			integerLiteral,
-			withTemplate: 	anyDeclarationReference,
+			withTemplate: anyDeclarationReference,
 				shouldSkipRootTypeComparison: false),
 			["_any": integerLiteral])
 
@@ -240,7 +240,7 @@ class LibraryTranspilationTest: XCTestCase {
 		// Multiple matches
 		XCTAssertEqual(pass.matchExpression(
 				arrayExpression,
-				withTemplate: 	arrayTemplate,
+				withTemplate: arrayTemplate,
 				shouldSkipRootTypeComparison: false),
 			["_any": integerLiteral, "_string": stringLiteral])
 	}

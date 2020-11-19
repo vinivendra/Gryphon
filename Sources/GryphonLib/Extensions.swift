@@ -35,7 +35,7 @@ private func gryphonTemplates() {
 	_ = GRYTemplate.call(
 		.dot("_string1", "split"),
 		[.labeledParameter("separator", "_character"),
-		 .labeledParameter("omittingEmptySubsequences", "_bool")])
+		 .labeledParameter("omittingEmptySubsequences", "_bool"), ])
 }
 
 internal extension String {
@@ -314,7 +314,7 @@ extension List where Element == String {
 			return self.map { "\"\($0)\"" }.readableList()
 		}
 
-		if self.count == 0 {
+		if self.isEmpty {
 			return ""
 		}
 		else if self.count == 1 {

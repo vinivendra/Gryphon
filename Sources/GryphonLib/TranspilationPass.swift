@@ -1025,7 +1025,7 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 				catch { }
 				return [ErrorStatement(
 					syntax: variableDeclaration.syntax,
-					range: variableDeclaration.range)]
+					range: variableDeclaration.range), ]
 			}
 		}
 		else {
@@ -1044,7 +1044,7 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 				statements = [ExpressionStatement(
 					syntax: expression.syntax,
 					range: expression.range,
-					expression: expression)]
+					expression: expression), ]
 			}
 			else {
 				return super.replaceVariableDeclaration(variableDeclaration)
@@ -1376,7 +1376,7 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 			[CompanionObject(
 				syntax: nil,
 				range: range,
-				members: staticMembers.toMutableList())]
+				members: staticMembers.toMutableList()), ]
 		newMembers.append(contentsOf: nonStaticMembers)
 
 		return newMembers
@@ -4744,7 +4744,7 @@ public class ImplicitRawValuesTranspilationPass: TranspilationPass {
 						syntax: enumDeclaration.syntax,
 						range: enumDeclaration.range,
 						value: lastValue + 1)
-					lastValue = lastValue + 1
+					lastValue += 1
 				}
 			}
 		}

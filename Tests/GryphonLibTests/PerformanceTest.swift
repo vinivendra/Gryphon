@@ -144,7 +144,7 @@ class PerformanceTest: XCTestCase {
 					indentationString: "\t",
 					defaultsToFinal: testName.contains("-default-final"),
 					isUsingSwiftSyntax: PerformanceTest.shouldUseSwiftSyntax,
-					compilationArguments: TranspilationContext.SwiftCompilationArguments.init(
+					compilationArguments: TranspilationContext.SwiftCompilationArguments(
 						absoluteFilePathsAndOtherArguments: [
 							SupportingFile.gryphonTemplatesLibrary.absolutePath,
 							testCasePath, ]),

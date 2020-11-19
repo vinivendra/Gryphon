@@ -37,7 +37,8 @@ public class TranspilationContext {
 		/// The path to the SDK that should be used. On Linux, this is `nil`.
 		let absolutePathToSDK: String?
 
-		/// If no SDK path is given, tries to get the SDK path for the current OS (as opposed to an iOS SDK).
+		/// If no SDK path is given, tries to get the SDK path for the current OS
+		/// (as opposed to an iOS SDK).
 		init(
 			absoluteFilePathsAndOtherArguments: List<String>,
 			absolutePathToSDK: String? = nil) throws
@@ -334,7 +335,7 @@ public class TranspilationContext {
 
 	/// Currently supported versions. If 5.1 is supported, 5.1.x will be too.
 	public static let supportedSwiftVersions: List = [
-		"5.1", "5.2", "5.3"
+		"5.1", "5.2", "5.3",
 	]
 
 	/// Cache for the Swift version used by each toolchain (the key is the toolchain, the value is
@@ -423,7 +424,7 @@ public class TranspilationContext {
 	}
 
 	// MARK: - macOS SDK
-	private static var sdkPath: String? = nil
+	private static var sdkPath: String?
 	private static let sdkLock: Semaphore = NSLock()
 
 	/// On macOS, tries to find the SDK path using `xcrun`, and throws an error if that fails.

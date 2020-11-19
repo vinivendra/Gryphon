@@ -901,8 +901,7 @@ public func zip<List1Element, List2Element>(
 /// the Dictionary type in Swift conforms exactly to these protocols,
 /// plus CustomReflectable (which is beyond Gryphon's scope for now).
 // gryphon ignore
-public class Map<Key, Value>:
-	CustomStringConvertible,
+public class Map<Key, Value>: CustomStringConvertible,
 	CustomDebugStringConvertible,
 	ExpressibleByDictionaryLiteral,
 	Collection
@@ -1188,11 +1187,19 @@ private class _GRYTemplate {
 		return _GRYDotTemplate(_GRYLiteralTemplate(string: left), right)
 	}
 
-	static func call(_ function: _GRYTemplate, _ parameters: [_GRYParameterTemplate]) -> _GRYCallTemplate {
+	static func call(
+		_ function: _GRYTemplate,
+		_ parameters: [_GRYParameterTemplate])
+		-> _GRYCallTemplate
+	{
 		return _GRYCallTemplate(function, parameters)
 	}
 
-	static func call(_ function: String, _ parameters: [_GRYParameterTemplate]) -> _GRYCallTemplate {
+	static func call(
+		_ function: String,
+		_ parameters: [_GRYParameterTemplate])
+		-> _GRYCallTemplate
+	{
 		return _GRYCallTemplate(function, parameters)
 	}
 }
@@ -1267,11 +1274,19 @@ private class _GRYParameterTemplate: ExpressibleByStringLiteral {
 		return _GRYParameterTemplate(nil, _GRYDotTemplate(_GRYLiteralTemplate(string: left), right))
 	}
 
-	static func call(_ function: _GRYTemplate, _ parameters: [_GRYParameterTemplate]) -> _GRYParameterTemplate {
+	static func call(
+		_ function: _GRYTemplate,
+		_ parameters: [_GRYParameterTemplate])
+		-> _GRYParameterTemplate
+	{
 		return _GRYParameterTemplate(nil, _GRYCallTemplate(function, parameters))
 	}
 
-	static func call(_ function: String, _ parameters: [_GRYParameterTemplate]) -> _GRYParameterTemplate {
+	static func call(
+		_ function: String,
+		_ parameters: [_GRYParameterTemplate])
+		-> _GRYParameterTemplate
+	{
 		return _GRYParameterTemplate(nil, _GRYCallTemplate(function, parameters))
 	}
 }

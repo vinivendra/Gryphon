@@ -697,7 +697,7 @@ public class Driver {
 
 			if !shouldUseSwiftSyntax {
 				var astDumpsSucceeded = true
-				var astDumpError: Error? = nil
+				var astDumpError: Error?
 				do {
 					Compiler.logStart("🧑‍💻  Dumping the ASTs...")
 					try updateASTDumps(

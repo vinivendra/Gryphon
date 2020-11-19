@@ -238,24 +238,16 @@ public struct SourceFileRange: Equatable, Hashable, CustomStringConvertible {
 
 	// TODO: (after removing AST dumps) remove this
 	var lineStart: Int {
-		get {
-			return start.line
-		}
+		return start.line
 	}
 	var lineEnd: Int {
-		get {
-			return end.line
-		}
+		return end.line
 	}
 	var columnStart: Int {
-		get {
-			return start.column
-		}
+		return start.column
 	}
 	var columnEnd: Int {
-		get {
-			return end.column
-		}
+		return end.column
 	}
 
 	/// This is technically incorrect but allows AST nodes with ranges to get an automatic Equatable

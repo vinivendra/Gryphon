@@ -48,10 +48,10 @@ class DriverTest: XCTestCase {
 		var compilerOutput = ""
 		var compilerError = ""
 		Compiler.outputFunction = { (contents: Any, terminator: String) -> () in
-				compilerOutput = compilerOutput + "\(contents)" + terminator
+				compilerOutput += "\(contents)" + terminator
 			}
 		Compiler.logError = { (contents: Any) -> () in
-				compilerError = compilerError + "\(contents)"
+				compilerError += "\(contents)"
 			}
 
 		do {
@@ -65,7 +65,7 @@ class DriverTest: XCTestCase {
 			compilerOutput = ""
 			try Driver.run(withArguments:
 							["\(TestUtilities.testCasesPath)outputs.swift",
-							 "--write-to-console"])
+							 "--write-to-console", ])
 			XCTAssert(!compilerOutput.isEmpty)
 
 			// Check if --quiet mutes outputs and warnings
@@ -74,7 +74,7 @@ class DriverTest: XCTestCase {
 			try Driver.run(withArguments:
 							["\(TestUtilities.testCasesPath)warnings.swift",
 							 "--write-to-console",
-							 "--quiet"])
+							 "--quiet", ])
 			XCTAssert(compilerOutput.isEmpty)
 			XCTAssert(compilerError.isEmpty)
 
@@ -85,7 +85,7 @@ class DriverTest: XCTestCase {
 							["\(TestUtilities.testCasesPath)errors.swift",
 							 "--write-to-console",
 							 "--quiet",
-							 "--continue-on-error"])
+							 "--continue-on-error", ])
 			XCTAssert(compilerOutput.isEmpty)
 			XCTAssert(!compilerError.isEmpty)
 		}
@@ -104,29 +104,29 @@ class DriverTest: XCTestCase {
 		var compilerOutput = ""
 		var compilerError = ""
 		Compiler.outputFunction = { (contents: Any, terminator: String) -> () in
-				compilerOutput = compilerOutput + "\(contents)" + terminator
+				compilerOutput += "\(contents)" + terminator
 			}
 		Compiler.logError = { (contents: Any) -> () in
-				compilerError = compilerError + "\(contents)"
+				compilerError += "\(contents)"
 			}
 
 		do {
 			try Driver.run(withArguments:
 							["\(TestUtilities.relativeTestFilesPath)/test.swift",
-							 "--legacyFrontend"])
+							 "--legacyFrontend", ])
 			XCTAssert(!compilerOutput.isEmpty)
 
 			compilerOutput = ""
 			try Driver.run(withArguments:
 							["\(TestUtilities.testCasesPath)outputs.swift",
-							 "--legacyFrontend"])
+							 "--legacyFrontend", ])
 			XCTAssert(compilerOutput.isEmpty)
 
 			compilerOutput = ""
 			try Driver.run(withArguments:
 							["\(TestUtilities.testCasesPath)outputs.swift",
 							 "--write-to-console",
-							 "--legacyFrontend"])
+							 "--legacyFrontend", ])
 			XCTAssert(!compilerOutput.isEmpty)
 
 			// Check if --quiet mutes outputs and warnings
@@ -136,7 +136,7 @@ class DriverTest: XCTestCase {
 				["\(TestUtilities.testCasesPath)warnings.swift",
 				 "--write-to-console",
 				 "--quiet",
-				 "--legacyFrontend"])
+				 "--legacyFrontend", ])
 			XCTAssert(compilerOutput.isEmpty)
 			XCTAssert(compilerError.isEmpty)
 
@@ -148,7 +148,7 @@ class DriverTest: XCTestCase {
 							 "--write-to-console",
 							 "--quiet",
 							 "--continue-on-error",
-							 "--legacyFrontend"])
+							 "--legacyFrontend", ])
 			XCTAssert(compilerOutput.isEmpty)
 			XCTAssert(!compilerError.isEmpty)
 		}

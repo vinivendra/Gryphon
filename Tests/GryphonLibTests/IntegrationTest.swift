@@ -197,7 +197,7 @@ class IntegrationTest: XCTestCase {
 				"Expected 1 warning containing \"MutableList\", " +
 					"found \(warnings.count) (printed below, if any).\n" +
 					warnings.map { $0.fullMessage }.joined(separator: "\n"))
-			
+
 			warnings = Compiler.issues.filter { $0.fullMessage.contains("MutableMap") }
 			XCTAssertEqual(
 				warnings.count, 1,

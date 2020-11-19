@@ -318,7 +318,7 @@ public class SourceKit {
 			let maybeRange = sourceFile.getRange(
 				forSourceKitOffset: errorType.offset,
 				length: errorType.length)
-			
+
 			var errorMessage = "SourceKit failed to get an expression's type"
 
 			if let range = maybeRange {
@@ -404,8 +404,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 	init(sourceFile: SourceFile, context: TranspilationContext) throws {
 		// Try to call SourceKit. If it fails, update the Swift compiler arguments and try again.
-		var maybeTypeList: SortedList<SourceKit.ExpressionType>? = nil
-		var maybeIndexingResponse: Map<String, SourceKitRepresentable>? = nil
+		var maybeTypeList: SortedList<SourceKit.ExpressionType>?
+		var maybeIndexingResponse: Map<String, SourceKitRepresentable>?
 
 		do {
 			maybeTypeList =
@@ -874,18 +874,18 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		if let breakStatement = statement.as(BreakStmtSyntax.self) {
 			return [BreakStatement(
 				syntax: Syntax(statement),
-				range: breakStatement.getRange(inFile: self.sourceFile))]
+				range: breakStatement.getRange(inFile: self.sourceFile)), ]
 		}
 		if let continueStatement = statement.as(ContinueStmtSyntax.self) {
 			return [ContinueStatement(
 				syntax: Syntax(statement),
-				range: continueStatement.getRange(inFile: self.sourceFile))]
+				range: continueStatement.getRange(inFile: self.sourceFile)), ]
 		}
 		if let throwStatement = statement.as(ThrowStmtSyntax.self) {
 			return [ThrowStatement(
 				syntax: Syntax(statement),
 				range: throwStatement.getRange(inFile: self.sourceFile),
-				expression: try convertExpression(throwStatement.expression))]
+				expression: try convertExpression(throwStatement.expression)), ]
 		}
 		if let returnStatement = statement.as(ReturnStmtSyntax.self) {
 			return try [convertReturnStatement(returnStatement)]
@@ -914,7 +914,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 		return try [errorStatement(
 			forASTNode: Syntax(statement),
-			withMessage: "Unknown statement")]
+			withMessage: "Unknown statement"), ]
 	}
 
 	func convertDoStatement(
@@ -1039,7 +1039,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 							guard caseLetResult.conditions.count == 1,
 								let onlyCondition = caseLetResult.conditions.first else
 							{
-								if caseLetResult.conditions.count == 0 {
+								if caseLetResult.conditions.isEmpty {
 									return try errorExpression(
 										forASTNode: Syntax(item),
 										withMessage: "Expected case let to yield at least one " +
@@ -1069,7 +1069,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				else {
 					expressions = [try errorExpression(
 						forASTNode: switchCase.label,
-						withMessage: "Unsupported switch case label")]
+						withMessage: "Unsupported switch case label"), ]
 				}
 
 				// Add the explicit statements after possible variable declarations derived from
@@ -1102,7 +1102,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		_ whileStatement: WhileStmtSyntax)
 		throws -> Statement
 	{
-		var whileExpression: Expression? = nil
+		var whileExpression: Expression?
 		for condition in whileStatement.conditions {
 			let newExpression: Expression
 			if let conditionExpression = condition.condition.as(ExprSyntax.self) {
@@ -1554,7 +1554,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		else {
 			return try [errorStatement(
 				forASTNode: Syntax(subscriptDeclaration),
-				withMessage: "Unable to find getters or setters in subscript declaration")]
+				withMessage: "Unable to find getters or setters in subscript declaration"), ]
 		}
 
 		for accessor in accessors {
@@ -1685,7 +1685,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					return try [errorStatement(
 						forASTNode: Syntax(clause),
 						withMessage: "Unsupported #if declaration; only `#if GRYPHON`, " +
-							"`#if !GRYPHON` and `#else` are supported.")]
+							"`#if !GRYPHON` and `#else` are supported."), ]
 				}
 			}
 			else if let conditionBlock = clause.elements.as(CodeBlockItemListSyntax.self) {
@@ -1703,7 +1703,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				return try [errorStatement(
 					forASTNode: Syntax(clause),
 					withMessage: "Unsupported #if declaration; only `#if GRYPHON`, " +
-						"`#if !GRYPHON` and `#else` are supported.")]
+						"`#if !GRYPHON` and `#else` are supported."), ]
 			}
 
 			// Figure out where this block of statements ends
@@ -2277,7 +2277,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 									label: "newValue",
 									apiLabel: nil,
 									typeName: typeName,
-									value: nil)]
+									value: nil), ]
 							}
 
 							let returnType: String
@@ -3197,7 +3197,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 						sourceFile: self.sourceFile,
 						sourceFileRange: sequenceExpression
 							.getRange(inFile: self.sourceFile))
-					break
 				}
 			}
 			else {
@@ -3408,8 +3407,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			let declarationReferenceExpression =
 				functionExpressionTranslation as? DeclarationReferenceExpression,
 			let parameterTypes = tupleExpression.swiftType,
-			SourceKit.typeUSRs.atomic.contains(where: // If the identifier is a known type
-				{ $0.value == declarationReferenceExpression.identifier })
+			SourceKit.typeUSRs.atomic.contains(
+				where: { $0.value == declarationReferenceExpression.identifier })
 		{
 			declarationReferenceExpression.typeName = "\(parameterTypes) -> " +
 				declarationReferenceExpression.identifier
@@ -4226,8 +4225,7 @@ let operatorInformation: [OperatorInformation] = [
 	// Multiplication precedence
 	("*", .left), ("/", .left), ("%", .left), ("&*", .left), ("&", .left),
 	// Bitwise shift precedence
-	("<<", .none), (">>", .none),]
-
+	("<<", .none), (">>", .none), ]
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4316,7 +4314,7 @@ func matchCallArguments(
 
 		claimedArgs[argNumber] = true
 		numClaimedArgs += 1
-		return argNumber;
+		return argNumber
 	}
 
 	// Local function that skips over any claimed arguments.
@@ -4332,7 +4330,7 @@ func matchCallArguments(
 	let claimNextNamed =
 	{ (nextArgIdx: inout Int,
 	   paramLabel: String?,
-	   ignoreNameMismatch: Bool,
+	   _: Bool,
 	   forVariadic: Bool /* = false */) -> Int? in
 		// Skip over any claimed arguments.
 		_ = skipClaimedArgs(&nextArgIdx)
@@ -4409,14 +4407,14 @@ func matchCallArguments(
 
 		// If we have the trailing closure argument and are performing a forward
 		// match, look for the matching parameter.
-		if (trailingClosureMatching == .forward &&
+		if trailingClosureMatching == .forward &&
 			unlabeledTrailingClosureArgIndex != nil &&
-			skipClaimedArgs(&nextArgIdx) == unlabeledTrailingClosureArgIndex)
+			skipClaimedArgs(&nextArgIdx) == unlabeledTrailingClosureArgIndex
 		{
 			// If the parameter we are looking at does not support the (unlabeled)
 			// trailing closure argument, this parameter is unfulfilled.
-			if (!paramInfo.acceptsUnlabeledTrailingClosures[paramIdx] &&
-				!ignoreNameMismatch)
+			if !paramInfo.acceptsUnlabeledTrailingClosures[paramIdx] &&
+				!ignoreNameMismatch
 			{
 				return
 			}
@@ -4440,7 +4438,6 @@ func matchCallArguments(
 			// well.
 			paramLabel = nil
 		}
-
 
 		// Handle variadic parameters.
 		if param.isVariadic {
@@ -4504,7 +4501,7 @@ func matchCallArguments(
 
 		// Scan backwards from the end to match the unlabeled trailing closure.
 		// Optional<unsigned> unlabeledParamIdx;
-		var unlabeledParamIdx: Int? = nil
+		var unlabeledParamIdx: Int?
 
 		if prevParamIdx > 0 {
 			var paramIdx = prevParamIdx - 1
@@ -4528,7 +4525,7 @@ func matchCallArguments(
 				}
 			}
 
-			if (lastAcceptsTrailingClosure) {
+			if lastAcceptsTrailingClosure {
 				unlabeledParamIdx = paramIdx
 			}
 		}
@@ -4549,7 +4546,7 @@ func matchCallArguments(
 	var nextArgIdx = 0
 	// Mark through the parameters, binding them to their arguments.
 	for paramIdx in params.indices {
-		if (parameterBindings[paramIdx].isEmpty) {
+		if parameterBindings[paramIdx].isEmpty {
 			bindNextParameter(paramIdx, &nextArgIdx, false)
 		}
 	}

@@ -698,8 +698,7 @@ public func zip<List1Element, List2Element>(
 /// the Dictionary type in Swift conforms exactly to these protocols,
 /// plus CustomReflectable (which is beyond Gryphon's scope for now).
 // gryphon ignore
-public class Map<Key, Value>:
-	CustomStringConvertible,
+public class Map<Key, Value>: CustomStringConvertible,
 	CustomDebugStringConvertible,
 	ExpressibleByDictionaryLiteral,
 	Collection

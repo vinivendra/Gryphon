@@ -1131,8 +1131,9 @@ public class ReturnStatement: Statement {
 }
 
 public class BreakStatement: Statement {
-	init(syntax: Syntax? = nil,
-		 range: SourceFileRange?)
+	init(
+		syntax: Syntax? = nil,
+		range: SourceFileRange?)
 	{
 		super.init(
 			syntax: syntax,

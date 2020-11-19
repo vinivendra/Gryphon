@@ -321,7 +321,7 @@ public class SwiftTranslator {
 			{
 				result = try [ExpressionStatement(
 					range: getRangeRecursively(ofNode: subtree),
-					expression: translateExpression(subtree.subtrees[1]))]
+					expression: translateExpression(subtree.subtrees[1])), ]
 			}
 			else {
 				try processPatternBindingDeclaration(subtree)
@@ -630,7 +630,7 @@ public class SwiftTranslator {
 
 		var rawValues: MutableList<Expression> = []
 		let constructorDeclarations = enumDeclaration.subtrees.filter {
-			$0.name ==  "Constructor Declaration"
+			$0.name == "Constructor Declaration"
 		}
 		for constructorDeclaration in constructorDeclarations {
 			if constructorDeclaration.standaloneAttributes.contains("init(rawValue:)"),
@@ -2574,7 +2574,7 @@ public class SwiftTranslator {
 		if let methodName = methodName, let methodOwner = methodOwner {
 			let methodNameTranslation = try translateDeclarationReferenceExpression(methodName)
 			var methodOwnerTranslation = try translateExpression(methodOwner)
-			
+
 			// The left expression in Swift 5.3 often comes wrapped in an extra paretheses
 			// expression, whose range is equal to the inner expression's range (since there are no
 			// actual parentheses characters in the source code).
@@ -2585,7 +2585,7 @@ public class SwiftTranslator {
 			{
 				methodOwnerTranslation = parenthesesExpression.expression
 			}
-			
+
 			function = DotExpression(
 				range: getRangeRecursively(ofNode: callExpression),
 				leftExpression: methodOwnerTranslation,

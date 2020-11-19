@@ -39,20 +39,20 @@ private func gryphonTemplates() throws {
 		.dot("Utilities", "createFileAndDirectory"),
 		[.labeledParameter("fileName", "_string1"),
 		 .labeledParameter("directory", "_string2"),
-		 .labeledParameter("contents", "_string3")])
+		 .labeledParameter("contents", "_string3"), ])
 
     _ = Utilities.getFiles(_stringArray, inDirectory: _string1, withExtension: _fileExtension1)
 	_ = GRYTemplate.call(
 		.dot("Utilities", "getFiles"),
 		[.labeledParameter("selectedFiles", "_stringArray"),
 		 .labeledParameter("directory", "_string1"),
-		 .labeledParameter("fileExtension", "_fileExtension1")])
+		 .labeledParameter("fileExtension", "_fileExtension1"), ])
 
     _ = Utilities.getFiles(inDirectory: _string1, withExtension: _fileExtension1)
 	_ = GRYTemplate.call(
 		.dot("Utilities", "getFiles"),
 		[.labeledParameter("directory", "_string1"),
-		 .labeledParameter("fileExtension", "_fileExtension1")])
+		 .labeledParameter("fileExtension", "_fileExtension1"), ])
 
     _ = Utilities.getAbsolutePath(forFile: _string1)
 	_ = GRYTemplate.call(
@@ -78,7 +78,7 @@ private func gryphonTemplates() throws {
 	_ = GRYTemplate.call(
 		.dot("Utilities", "createFile"),
 		[.labeledParameter("filePath", "_string1"),
-		 .labeledParameter("contents", "_string2")])
+		 .labeledParameter("contents", "_string2"), ])
 
 	Utilities.deleteFolder(at: _string1)
 	_ = GRYTemplate.call(
@@ -97,21 +97,21 @@ private func gryphonTemplates() throws {
 		.dot("Shell", "runShellCommand"),
 		["_string1",
 		 .labeledParameter("arguments", "_stringArray1"),
-		 .labeledParameter("currentFolder", "_string2")])
+		 .labeledParameter("currentFolder", "_string2"), ])
 
     _ = Shell.runShellCommand(
         _string1, arguments: _stringArray1)
 	_ = GRYTemplate.call(
 		.dot("Shell", "runShellCommand"),
 		["_string1",
-		 .labeledParameter("arguments", "_stringArray1")])
+		 .labeledParameter("arguments", "_stringArray1"), ])
 
     //
     _ = Shell.runShellCommand(_stringArray1, fromFolder: _string1)
 	_ = GRYTemplate.call(
 		.dot("Shell", "runShellCommand"),
 		["_stringArray1",
-		 .labeledParameter("currentFolder", "_string1")])
+		 .labeledParameter("currentFolder", "_string1"), ])
 
     _ = Shell.runShellCommand(_stringArray1)
 	_ = GRYTemplate.call(.dot("Shell", "runShellCommand"), ["_stringArray1"])
@@ -481,7 +481,7 @@ extension String {
 			return false
 		}
 	}
-	
+
 	func isDictionaryDeclaration() -> Bool {
 		if (self.hasPrefix("[") && self.contains(":")) ||
 			self == "Dictionary" ||
@@ -494,4 +494,3 @@ extension String {
 		}
 	}
 }
-
