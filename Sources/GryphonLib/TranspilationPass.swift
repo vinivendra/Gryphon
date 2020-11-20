@@ -1000,6 +1000,15 @@ public class TranspilationPass {
 /// This may be limited for some uses (especially when we need to change the classes
 /// of expressions or statements).
 public class FastTranspilationPass: TranspilationPass {
+	override func run() -> GryphonAST {
+		isReplacingStatements = true
+		visitStatements(ast.statements)
+		isReplacingStatements = false
+		visitStatements(ast.declarations)
+
+		return ast
+	}
+
 	// MARK: - Replace Statements
 	func visitStatements(_ statements: List<Statement>) {
 		statements.forEach { visitStatement($0) }
