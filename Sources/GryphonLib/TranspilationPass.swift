@@ -996,6 +996,447 @@ public class TranspilationPass {
 	}
 }
 
+/// A Transpilation Pass that visits AST nodes without replacing them, which avoids unnecessary copies.
+/// This may be limited for some uses (especially when we need to change the classes
+/// of expressions or statements).
+public class FastTranspilationPass: TranspilationPass {
+	// MARK: - Replace Statements
+	func visitStatements(_ statements: List<Statement>) {
+		statements.forEach { visitStatement($0) }
+	}
+
+	func visitStatement(_ statement: Statement) {
+		parents.append(.statementNode(value: statement))
+		defer { parents.removeLast() }
+
+		if let commentStatement = statement as? CommentStatement {
+			visitComment(commentStatement)
+		}
+		else if let expressionStatement = statement as? ExpressionStatement {
+			visitExpressionStatement(expressionStatement)
+		}
+		else if let extensionDeclaration = statement as? ExtensionDeclaration {
+			visitExtension(extensionDeclaration)
+		}
+		else if let importDeclaration = statement as? ImportDeclaration {
+			visitImportDeclaration(importDeclaration)
+		}
+		else if let typealiasDeclaration = statement as? TypealiasDeclaration {
+			visitTypealiasDeclaration(typealiasDeclaration)
+		}
+		else if let classDeclaration = statement as? ClassDeclaration {
+			visitClassDeclaration(classDeclaration)
+		}
+		else if let companionObject = statement as? CompanionObject {
+			visitCompanionObject(companionObject)
+		}
+		else if let enumDeclaration = statement as? EnumDeclaration {
+			visitEnumDeclaration(enumDeclaration)
+		}
+		else if let protocolDeclaration = statement as? ProtocolDeclaration {
+			visitProtocolDeclaration(protocolDeclaration)
+		}
+		else if let structDeclaration = statement as? StructDeclaration {
+			visitStructDeclaration(structDeclaration)
+		}
+		else if let initializerDeclaration = statement as? InitializerDeclaration {
+			visitInitializerDeclaration(initializerDeclaration)
+		}
+		else if let functionDeclaration = statement as? FunctionDeclaration {
+			visitFunctionDeclaration(functionDeclaration)
+		}
+		else if let variableDeclaration = statement as? VariableDeclaration {
+			visitVariableDeclaration(variableDeclaration)
+		}
+		else if let doStatement = statement as? DoStatement {
+			visitDoStatement(doStatement)
+		}
+		else if let catchStatement = statement as? CatchStatement {
+			visitCatchStatement(catchStatement)
+		}
+		else if let forEachStatement = statement as? ForEachStatement {
+			visitForEachStatement(forEachStatement)
+		}
+		else if let whileStatement = statement as? WhileStatement {
+			visitWhileStatement(whileStatement)
+		}
+		else if let ifStatement = statement as? IfStatement {
+			visitIfStatement(ifStatement)
+		}
+		else if let switchStatement = statement as? SwitchStatement {
+			visitSwitchStatement(switchStatement)
+		}
+		else if let deferStatement = statement as? DeferStatement {
+			visitDeferStatement(deferStatement)
+		}
+		else if let throwStatement = statement as? ThrowStatement {
+			visitThrowStatement(throwStatement)
+		}
+		else if let returnStatement = statement as? ReturnStatement {
+			visitReturnStatement(returnStatement)
+		}
+		else if let assignmentStatement = statement as? AssignmentStatement {
+			visitAssignmentStatement(assignmentStatement)
+		}
+		else if statement is BreakStatement {
+			return
+		}
+		else if statement is ContinueStatement {
+			return
+		}
+		else if statement is ErrorStatement {
+			return
+		}
+		else {
+			fatalError("This should never be reached.")
+		}
+	}
+
+	func visitComment(_: CommentStatement) { }
+
+	func visitExpressionStatement(_ expressionStatement: ExpressionStatement) {
+		visitExpression(expressionStatement.expression)
+	}
+
+	func visitExtension(_ extensionDeclaration: ExtensionDeclaration) {
+		visitStatements(extensionDeclaration.members)
+	}
+
+	func visitImportDeclaration(_: ImportDeclaration) { }
+
+	func visitTypealiasDeclaration(_: TypealiasDeclaration) { }
+
+	func visitClassDeclaration(_ classDeclaration: ClassDeclaration) {
+		visitStatements(classDeclaration.members)
+	}
+
+	func visitCompanionObject(_ companionObject: CompanionObject) {
+		visitStatements(companionObject.members)
+	}
+
+	func visitEnumDeclaration(_ enumDeclaration: EnumDeclaration) {
+		enumDeclaration.elements.forEach { visitEnumElementDeclaration($0) }
+		visitStatements(enumDeclaration.members)
+	}
+
+	func visitEnumElementDeclaration(_ enumElement: EnumElement) { }
+
+	func visitProtocolDeclaration(_ protocolDeclaration: ProtocolDeclaration) {
+		visitStatements(protocolDeclaration.members)
+	}
+
+	func visitStructDeclaration(_ structDeclaration: StructDeclaration) {
+		visitStatements(structDeclaration.members)
+	}
+
+	func visitInitializerDeclaration(_ initializerDeclaration: InitializerDeclaration) {
+		initializerDeclaration.parameters.forEach {
+			visitExpression($0.value)
+		}
+		initializerDeclaration.statements.map { visitStatements($0) }
+	}
+
+	func visitFunctionDeclaration(_ functionDeclaration: FunctionDeclaration) {
+		functionDeclaration.parameters.forEach {
+			visitExpression($0.value)
+		}
+		functionDeclaration.statements.map { visitStatements($0) }
+	}
+
+	func visitVariableDeclaration(_ variableDeclaration: VariableDeclaration) {
+		visitExpression(variableDeclaration.expression)
+		_ = variableDeclaration.getter.map { visitFunctionDeclaration($0) }
+		_ = variableDeclaration.setter.map { visitFunctionDeclaration($0) }
+	}
+
+	func visitDoStatement(_ doStatement: DoStatement) {
+		visitStatements(doStatement.statements)
+	}
+
+	func visitCatchStatement(_ catchStatement: CatchStatement) {
+		_ = catchStatement.variableDeclaration.map { visitVariableDeclaration($0) }
+		visitStatements(catchStatement.statements)
+	}
+
+	func visitForEachStatement(_ forEachStatement: ForEachStatement) {
+		visitExpression(forEachStatement.collection)
+		visitExpression(forEachStatement.variable)
+		visitStatements(forEachStatement.statements)
+	}
+
+	func visitWhileStatement(_ whileStatement: WhileStatement) {
+		visitExpression(whileStatement.expression)
+		visitStatements(whileStatement.statements)
+	}
+
+	func visitIfStatement(_ ifStatement: IfStatement) {
+		visitIfConditions(ifStatement.conditions)
+		_ = ifStatement.declarations.map { visitVariableDeclaration($0) }
+		visitStatements(ifStatement.statements)
+		ifStatement.elseStatement.map { visitIfStatement($0) }
+	}
+
+	func visitIfConditions(_ conditions: MutableList<IfStatement.IfCondition>) {
+		_ = conditions.map { visitIfCondition($0) }
+	}
+
+	func visitIfCondition(_ condition: IfStatement.IfCondition) {
+		switch condition {
+		case let .condition(expression: expression):
+			visitExpression(expression)
+		case let .declaration(variableDeclaration: variableDeclaration):
+			visitVariableDeclaration(variableDeclaration)
+		}
+	}
+
+	func visitSwitchStatement(_ switchStatement: SwitchStatement) {
+		switchStatement.convertsToExpression.map { visitStatement($0) }
+
+		switchStatement.cases.forEach { switchCase in
+			_ = switchCase.expressions.map { visitExpression($0) }
+			visitStatements(switchCase.statements)
+		}
+
+		visitExpression(switchStatement.expression)
+	}
+
+	func visitDeferStatement(_ deferStatement: DeferStatement) {
+		visitStatements(deferStatement.statements)
+	}
+
+	func visitThrowStatement(_ throwStatement: ThrowStatement) {
+		visitExpression(throwStatement.expression)
+	}
+
+	func visitReturnStatement(_ returnStatement: ReturnStatement) {
+		visitExpression(returnStatement.expression)
+	}
+
+	func visitAssignmentStatement(_ assignmentStatement: AssignmentStatement) {
+		visitExpression(assignmentStatement.leftHand)
+		visitExpression(assignmentStatement.rightHand)
+	}
+
+	// MARK: - Replace Expressions
+	func visitExpression(_ maybeExpression: Expression?) {
+		guard let rawExpression = maybeExpression else {
+			return
+		}
+
+		parents.append(.expressionNode(value: rawExpression))
+		defer { parents.removeLast() }
+
+		if let expression = rawExpression as? LiteralCodeExpression {
+			visitLiteralCodeExpression(expression)
+		}
+		else if let expression = rawExpression as? ConcatenationExpression {
+			visitConcatenationExpression(expression)
+		}
+		else if let expression = rawExpression as? ParenthesesExpression {
+			visitParenthesesExpression(expression)
+		}
+		else if let expression = rawExpression as? ForceValueExpression {
+			visitForceValueExpression(expression)
+		}
+		else if let expression = rawExpression as? OptionalExpression {
+			visitOptionalExpression(expression)
+		}
+		else if let expression = rawExpression as? DeclarationReferenceExpression {
+			visitDeclarationReferenceExpression(expression)
+		}
+		else if let expression = rawExpression as? TypeExpression {
+			visitTypeExpression(expression)
+		}
+		else if let expression = rawExpression as? SubscriptExpression {
+			visitSubscriptExpression(expression)
+		}
+		else if let expression = rawExpression as? ArrayExpression {
+			visitArrayExpression(expression)
+		}
+		else if let expression = rawExpression as? DictionaryExpression {
+			visitDictionaryExpression(expression)
+		}
+		else if let expression = rawExpression as? ReturnExpression {
+			visitReturnExpression(expression)
+		}
+		else if let expression = rawExpression as? DotExpression {
+			visitDotExpression(expression)
+		}
+		else if let expression = rawExpression as? BinaryOperatorExpression {
+			visitBinaryOperatorExpression(expression)
+		}
+		else if let expression = rawExpression as? PrefixUnaryExpression {
+			visitPrefixUnaryExpression(expression)
+		}
+		else if let expression = rawExpression as? PostfixUnaryExpression {
+			visitPostfixUnaryExpression(expression)
+		}
+		else if let expression = rawExpression as? IfExpression {
+			visitIfExpression(expression)
+		}
+		else if let expression = rawExpression as? CallExpression {
+			visitCallExpression(expression)
+		}
+		else if let expression = rawExpression as? ClosureExpression {
+			visitClosureExpression(expression)
+		}
+		else if let expression = rawExpression as? LiteralIntExpression {
+			visitLiteralIntExpression(expression)
+		}
+		else if let expression = rawExpression as? LiteralUIntExpression {
+			visitLiteralUIntExpression(expression)
+		}
+		else if let expression = rawExpression as? LiteralDoubleExpression {
+			visitLiteralDoubleExpression(expression)
+		}
+		else if let expression = rawExpression as? LiteralFloatExpression {
+			visitLiteralFloatExpression(expression)
+		}
+		else if let expression = rawExpression as? LiteralBoolExpression {
+			visitLiteralBoolExpression(expression)
+		}
+		else if let expression = rawExpression as? LiteralStringExpression {
+			visitLiteralStringExpression(expression)
+		}
+		else if let expression = rawExpression as? LiteralCharacterExpression {
+			visitLiteralCharacterExpression(expression)
+		}
+		else if let expression = rawExpression as? NilLiteralExpression {
+			visitNilLiteralExpression(expression)
+		}
+		else if let expression = rawExpression as? InterpolatedStringLiteralExpression {
+			visitInterpolatedStringLiteralExpression(expression)
+		}
+		else if let expression = rawExpression as? TupleExpression {
+			visitTupleExpression(expression)
+		}
+		else if let expression = rawExpression as? TupleShuffleExpression {
+			visitTupleShuffleExpression(expression)
+		}
+		else if rawExpression is ErrorExpression {
+			return
+		}
+		else {
+			fatalError("This should never be reached.")
+		}
+	}
+
+	func visitLiteralCodeExpression(_ literalCodeExpression: LiteralCodeExpression) { }
+
+	func visitConcatenationExpression(_ concatenationExpression: ConcatenationExpression) {
+		visitExpression(concatenationExpression.leftExpression)
+		visitExpression(concatenationExpression.rightExpression)
+	}
+
+	func visitParenthesesExpression(_ parenthesesExpression: ParenthesesExpression) {
+		visitExpression(parenthesesExpression.expression)
+	}
+
+	func visitForceValueExpression(_ forceValueExpression: ForceValueExpression) {
+		visitExpression(forceValueExpression.expression)
+	}
+
+	func visitOptionalExpression(_ optionalExpression: OptionalExpression) {
+		visitExpression(optionalExpression.expression)
+	}
+
+	func visitDeclarationReferenceExpression(
+		_ declarationReferenceExpression: DeclarationReferenceExpression) { }
+
+	func visitTypeExpression(_ typeExpression: TypeExpression) { }
+
+	func visitSubscriptExpression(_ subscriptExpression: SubscriptExpression) {
+		visitExpression(subscriptExpression.subscriptedExpression)
+		visitTupleExpression(subscriptExpression.indexExpression)
+	}
+
+	func visitArrayExpression(_ arrayExpression: ArrayExpression) {
+		arrayExpression.elements.forEach { visitExpression($0) }
+	}
+
+	func visitDictionaryExpression(_ dictionaryExpression: DictionaryExpression) {
+		dictionaryExpression.keys.forEach { visitExpression($0) }
+		dictionaryExpression.values.forEach { visitExpression($0) }
+	}
+
+	func visitReturnExpression(_ returnStatement: ReturnExpression) {
+		visitExpression(returnStatement.expression)
+	}
+
+	func visitDotExpression(_ dotExpression: DotExpression) {
+		visitExpression(dotExpression.leftExpression)
+		visitExpression(dotExpression.rightExpression)
+	}
+
+	func visitBinaryOperatorExpression(_ binaryOperatorExpression: BinaryOperatorExpression) {
+		visitExpression(binaryOperatorExpression.leftExpression)
+		visitExpression(binaryOperatorExpression.rightExpression)
+	}
+
+	func visitPrefixUnaryExpression(_ prefixUnaryExpression: PrefixUnaryExpression) {
+		visitExpression(prefixUnaryExpression.subExpression)
+	}
+
+	func visitPostfixUnaryExpression(_ postfixUnaryExpression: PostfixUnaryExpression) {
+		visitExpression(postfixUnaryExpression.subExpression)
+	}
+
+	func visitIfExpression(_ ifExpression: IfExpression) {
+		visitExpression(ifExpression.condition)
+		visitExpression(ifExpression.trueExpression)
+		visitExpression(ifExpression.falseExpression)
+	}
+
+	func visitCallExpression(_ callExpression: CallExpression) {
+		visitExpression(callExpression.function)
+		visitExpression(callExpression.parameters)
+	}
+
+	func visitClosureExpression(_ closureExpression: ClosureExpression) {
+		visitStatements(closureExpression.statements)
+	}
+
+	func visitLiteralIntExpression(
+		_ literalIntExpression: LiteralIntExpression) { }
+
+	func visitLiteralUIntExpression(
+		_ literalUIntExpression: LiteralUIntExpression) { }
+
+	func visitLiteralDoubleExpression(
+		_ literalDoubleExpression: LiteralDoubleExpression) { }
+
+	func visitLiteralFloatExpression(
+		_ literalFloatExpression: LiteralFloatExpression) { }
+
+	func visitLiteralBoolExpression(
+		_ literalBoolExpression: LiteralBoolExpression) { }
+
+	func visitLiteralStringExpression(
+		_ literalStringExpression: LiteralStringExpression) { }
+
+	func visitLiteralCharacterExpression(
+		_ literalCharacterExpression: LiteralCharacterExpression) { }
+
+	func visitNilLiteralExpression(
+		_ nilLiteralExpression: NilLiteralExpression) { }
+
+	func visitInterpolatedStringLiteralExpression(
+		_ interpolatedStringLiteralExpression: InterpolatedStringLiteralExpression)
+	{
+		interpolatedStringLiteralExpression.expressions.forEach { visitExpression($0) }
+	}
+
+	func visitTupleExpression(_ tupleExpression: TupleExpression) {
+		tupleExpression.pairs.forEach {
+			visitExpression($0.expression)
+		}
+	}
+
+	func visitTupleShuffleExpression(_ tupleShuffleExpression: TupleShuffleExpression) {
+		tupleShuffleExpression.expressions.forEach { visitExpression($0) }
+	}
+}
+
 // MARK: - Transpilation passes
 
 public class DescriptionAsToStringTranspilationPass: TranspilationPass {
