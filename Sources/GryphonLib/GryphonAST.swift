@@ -1876,8 +1876,8 @@ public class ReturnExpression: Expression {
 }
 
 public class DotExpression: Expression {
-	let leftExpression: Expression
-	let rightExpression: Expression
+	var leftExpression: Expression
+	var rightExpression: Expression
 
 	init(
 		syntax: Syntax? = nil,

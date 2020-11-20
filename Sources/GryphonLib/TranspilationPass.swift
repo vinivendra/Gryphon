@@ -1661,13 +1661,10 @@ public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
 
 /// SwiftSyntax does not include return types in initializers, but we can get them from the
 /// encolsing class, struct, or enum.
-public class ReturnTypesForInitsTranspilationPass: TranspilationPass {
+public class ReturnTypesForInitsTranspilationPass: FastTranspilationPass {
 	let typeDeclarationStack: MutableList<String> = []
 
-	override func processInitializerDeclaration(
-		_ initializerDeclaration: InitializerDeclaration)
-		-> InitializerDeclaration?
-	{
+	override func visitInitializerDeclaration(_ initializerDeclaration: InitializerDeclaration) {
 		if context.isUsingSwiftSyntax, let enclosingType = typeDeclarationStack.last {
 			initializerDeclaration.returnType = enclosingType
 
@@ -1685,37 +1682,25 @@ public class ReturnTypesForInitsTranspilationPass: TranspilationPass {
 			}
 		}
 
-		return initializerDeclaration
+		super.visitInitializerDeclaration(initializerDeclaration)
 	}
 
-	override func replaceClassDeclaration(
-		_ classDeclaration: ClassDeclaration)
-		-> List<Statement>
-	{
+	override func visitClassDeclaration(_ classDeclaration: ClassDeclaration) {
 		typeDeclarationStack.append(classDeclaration.className)
-		let result = super.replaceClassDeclaration(classDeclaration)
+		super.visitClassDeclaration(classDeclaration)
 		typeDeclarationStack.removeLast()
-		return result
 	}
 
-	override func replaceStructDeclaration(
-		_ structDeclaration: StructDeclaration)
-		-> List<Statement>
-	{
+	override func visitStructDeclaration(_ structDeclaration: StructDeclaration) {
 		typeDeclarationStack.append(structDeclaration.structName)
-		let result = super.replaceStructDeclaration(structDeclaration)
+		super.visitStructDeclaration(structDeclaration)
 		typeDeclarationStack.removeLast()
-		return result
 	}
 
-	override func replaceEnumDeclaration(
-		_ enumDeclaration: EnumDeclaration)
-		-> List<Statement>
-	{
+	override func visitEnumDeclaration(_ enumDeclaration: EnumDeclaration) {
 		typeDeclarationStack.append(enumDeclaration.enumName)
-		let result = super.replaceEnumDeclaration(enumDeclaration)
+		super.visitEnumDeclaration(enumDeclaration)
 		typeDeclarationStack.removeLast()
-		return result
 	}
 }
 
@@ -1788,21 +1773,17 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 	}
 }
 
-public class RemoveExtraReturnsInInitsTranspilationPass: TranspilationPass {
-	override func processInitializerDeclaration(
-		_ initializerDeclaration: InitializerDeclaration)
-		-> InitializerDeclaration?
-	{
+public class RemoveExtraReturnsInInitsTranspilationPass: FastTranspilationPass {
+	override func visitInitializerDeclaration(_ initializerDeclaration: InitializerDeclaration) {
 		if initializerDeclaration.isStatic == true,
 			initializerDeclaration.extendsType == nil,
 			let lastStatement = initializerDeclaration.statements?.last,
 			lastStatement is ReturnStatement
 		{
 			initializerDeclaration.statements?.removeLast()
-			return initializerDeclaration
 		}
 
-		return initializerDeclaration
+		super.visitInitializerDeclaration(initializerDeclaration)
 	}
 }
 
@@ -1915,7 +1896,7 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 /// 	let x = A.B() // This becomes just B()
 /// }
 /// ````
-public class InnerTypePrefixesTranspilationPass: TranspilationPass {
+public class InnerTypePrefixesTranspilationPass: FastTranspilationPass {
 	var typeNamesStack: MutableList<String> = []
 
 	func removePrefixes(_ typeName: String) -> String {
@@ -1933,55 +1914,35 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass {
 		return result
 	}
 
-	override func replaceClassDeclaration(
-		_ classDeclaration: ClassDeclaration)
-		-> List<Statement>
-	{
+	override func visitClassDeclaration(_ classDeclaration: ClassDeclaration) {
 		typeNamesStack.append(classDeclaration.className)
-		let result = super.replaceClassDeclaration(classDeclaration)
+		super.visitClassDeclaration(classDeclaration)
 		typeNamesStack.removeLast()
-		return result
 	}
 
-	override func replaceStructDeclaration(
-		_ structDeclaration: StructDeclaration)
-		-> List<Statement>
-	{
+	override func visitStructDeclaration(_ structDeclaration: StructDeclaration) {
 		typeNamesStack.append(structDeclaration.structName)
-		let result = super.replaceStructDeclaration(structDeclaration)
+		super.visitStructDeclaration(structDeclaration)
 		typeNamesStack.removeLast()
-		return result
 	}
 
-	override func processVariableDeclaration(
-		_ variableDeclaration: VariableDeclaration)
-		-> VariableDeclaration
-	{
+	override func visitVariableDeclaration(_ variableDeclaration: VariableDeclaration) {
 		if let typeAnnotation = variableDeclaration.typeAnnotation {
 			variableDeclaration.typeAnnotation = removePrefixes(typeAnnotation)
 		}
 
-		return super.processVariableDeclaration(variableDeclaration)
+		super.visitVariableDeclaration(variableDeclaration)
 	}
 
-	override func replaceTypeExpression(
-		_ typeExpression: TypeExpression)
-		-> Expression
-	{
-		return TypeExpression(
-			syntax: typeExpression.syntax,
-			range: typeExpression.range,
-			typeName: removePrefixes(typeExpression.typeName))
+	override func visitTypeExpression(_ typeExpression: TypeExpression) {
+		typeExpression.typeName = removePrefixes(typeExpression.typeName)
 	}
 }
 
 /// Capitalizes references to enums (since enum cases in Kotlin are conventionally written in
 /// capitalized forms)
-public class CapitalizeEnumsTranspilationPass: TranspilationPass {
-	override func replaceTypeExpression(
-		_ typeExpression: TypeExpression)
-		-> Expression
-	{
+public class CapitalizeEnumsTranspilationPass: FastTranspilationPass {
+	override func visitTypeExpression(_ typeExpression: TypeExpression) {
 		let typeComponents = Utilities.splitTypeList(typeExpression.typeName, separators: ["."])
 
 		// This should work for both `B.c` and `A.B.c` (assuming the recorded enum name is `B`).
@@ -1991,19 +1952,13 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 		{
 			let typePrefix = typeComponents.dropLast().joined(separator: ".")
 			let newType = typePrefix + "." + typeComponents.last!.capitalizedAsCamelCase()
-			return TypeExpression(
-				syntax: typeExpression.syntax,
-				range: typeExpression.range,
-				typeName: newType)
+			typeExpression.typeName = newType
 		}
 
-		return super.replaceTypeExpression(typeExpression)
+		super.visitTypeExpression(typeExpression)
 	}
 
-	override func replaceDotExpression(
-		_ dotExpression: DotExpression)
-		-> Expression
-	{
+	override func visitDotExpression(_ dotExpression: DotExpression) {
 		let enumType: String
 		if !context.isUsingSwiftSyntax,
 			let enumExpression = dotExpression.leftExpression as? TypeExpression
@@ -2027,7 +1982,8 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 			enumType = typeName
 		}
 		else {
-			return super.replaceDotExpression(dotExpression)
+			super.visitDotExpression(dotExpression)
+			return
 		}
 
 		if let enumExpression = dotExpression.rightExpression as? DeclarationReferenceExpression {
@@ -2039,76 +1995,48 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 				.last!)
 
 			if self.context.hasSealedClass(named: lastEnumType) {
-				enumExpression.identifier =
-					enumExpression.identifier.capitalizedAsCamelCase()
-				return DotExpression(
-					syntax: dotExpression.syntax,
-					range: dotExpression.range,
-					leftExpression: TypeExpression(
-						syntax: dotExpression.leftExpression.syntax,
-						range: dotExpression.leftExpression.range,
-						typeName: enumType),
-					rightExpression: enumExpression)
+				enumExpression.identifier = enumExpression.identifier.capitalizedAsCamelCase()
+				dotExpression.leftExpression = TypeExpression(
+					syntax: dotExpression.leftExpression.syntax,
+					range: dotExpression.leftExpression.range,
+					typeName: enumType)
+				dotExpression.rightExpression = enumExpression
+
+				super.visitDotExpression(dotExpression)
+				return
 			}
 			else if self.context.hasEnumClass(named: lastEnumType) {
 				enumExpression.identifier = enumExpression.identifier.upperSnakeCase()
-				return DotExpression(
-					syntax: dotExpression.syntax,
-					range: dotExpression.range,
-					leftExpression: TypeExpression(
-						syntax: dotExpression.leftExpression.syntax,
-						range: dotExpression.leftExpression.range,
-						typeName: enumType),
-					rightExpression: enumExpression)
+				dotExpression.leftExpression = TypeExpression(
+					syntax: dotExpression.leftExpression.syntax,
+					range: dotExpression.leftExpression.range,
+					typeName: enumType)
+				dotExpression.rightExpression = enumExpression
+
+				super.visitDotExpression(dotExpression)
+				return
 			}
 		}
 
-		return super.replaceDotExpression(dotExpression)
+		super.visitDotExpression(dotExpression)
 	}
 
-	override func replaceEnumDeclaration(
-		_ enumDeclaration: EnumDeclaration)
-		-> List<Statement>
-	{
-		let isSealedClass =
-			self.context.hasSealedClass(named: enumDeclaration.enumName)
+	override func visitEnumDeclaration(_ enumDeclaration: EnumDeclaration) {
+		let isSealedClass = self.context.hasSealedClass(named: enumDeclaration.enumName)
 		let isEnumClass = self.context.hasEnumClass(named: enumDeclaration.enumName)
 
-		let newElements: MutableList<EnumElement>
 		if isSealedClass {
-			newElements = enumDeclaration.elements.map { element in
-				EnumElement(
-					syntax: element.syntax,
-					name: element.name.capitalizedAsCamelCase(),
-					associatedValues: element.associatedValues,
-					rawValue: element.rawValue,
-					annotations: element.annotations)
-			}.toMutableList()
+			enumDeclaration.elements.forEach { element in
+				element.name = element.name.capitalizedAsCamelCase()
+			}
 		}
 		else if isEnumClass {
-			newElements = enumDeclaration.elements.map { element in
-				EnumElement(
-					syntax: element.syntax,
-					name: element.name.upperSnakeCase(),
-					associatedValues: element.associatedValues,
-					rawValue: element.rawValue,
-					annotations: element.annotations)
-			}.toMutableList()
-		}
-		else {
-			newElements = enumDeclaration.elements
+			enumDeclaration.elements.forEach { element in
+				element.name = element.name.upperSnakeCase()
+			}
 		}
 
-		return super.replaceEnumDeclaration(EnumDeclaration(
-			syntax: enumDeclaration.syntax,
-			range: enumDeclaration.range,
-			access: enumDeclaration.access,
-			enumName: enumDeclaration.enumName,
-			annotations: enumDeclaration.annotations,
-			inherits: enumDeclaration.inherits,
-			elements: newElements,
-			members: enumDeclaration.members,
-			isImplicit: enumDeclaration.isImplicit))
+		super.visitEnumDeclaration(enumDeclaration)
 	}
 }
 
