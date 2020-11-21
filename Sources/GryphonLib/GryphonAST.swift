@@ -1104,7 +1104,7 @@ public class ThrowStatement: Statement {
 
 public class ReturnStatement: Statement {
 	let expression: Expression?
-	let label: String?
+	var label: String?
 
 	init(
 		syntax: Syntax? = nil,
@@ -2228,8 +2228,8 @@ public class CallExpression: Expression {
 
 public class ClosureExpression: Expression {
 	// Closures that use anonymous parameters (e.g. `$0`) may leave this empty
-	let parameters: MutableList<LabeledType>
-	let statements: MutableList<Statement>
+	var parameters: MutableList<LabeledType>
+	var statements: MutableList<Statement>
 	var typeName: String
 	var isTrailing: Bool
 

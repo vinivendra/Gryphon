@@ -2790,39 +2790,26 @@ public class ImplicitNilsInOptionalVariablesTranspilationPass: FastTranspilation
 }
 
 /// The "anonymous parameter" `$0` has to be replaced by `it`
-public class AnonymousParametersTranspilationPass: SlowTranspilationPass {
-	override func processDeclarationReferenceExpression(
+public class AnonymousParametersTranspilationPass: FastTranspilationPass {
+	override func visitDeclarationReferenceExpression(
 		_ declarationReferenceExpression: DeclarationReferenceExpression)
-		-> DeclarationReferenceExpression
 	{
 		if declarationReferenceExpression.identifier == "$0" {
 			declarationReferenceExpression.identifier = "it"
-			return declarationReferenceExpression
 		}
-		else {
-			return super.processDeclarationReferenceExpression(declarationReferenceExpression)
-		}
+
+		super.visitDeclarationReferenceExpression(declarationReferenceExpression)
 	}
 
 	// TODO: (after removing AST dumps) remove this if possible
-	override func replaceClosureExpression(
-		_ closureExpression: ClosureExpression)
-		-> Expression
-	{
+	override func visitClosureExpression(_ closureExpression: ClosureExpression) {
 		if closureExpression.parameters.count == 1,
 			closureExpression.parameters[0].label == "$0"
 		{
-			return super.replaceClosureExpression(ClosureExpression(
-				syntax: closureExpression.syntax,
-				range: closureExpression.range,
-				parameters: [],
-				statements: closureExpression.statements,
-				typeName: closureExpression.typeName,
-				isTrailing: closureExpression.isTrailing))
+			closureExpression.parameters = []
 		}
-		else {
-			return super.replaceClosureExpression(closureExpression)
-		}
+
+		super.visitClosureExpression(closureExpression)
 	}
 }
 
@@ -3005,44 +2992,30 @@ public class CovarianceInitsAsCallsTranspilationPass: SlowTranspilationPass {
 }
 
 /// Optional function calls like `foo?()` have to be translated to Kotlin as `foo?.invoke()`.
-public class OptionalFunctionCallsTranspilationPass: SlowTranspilationPass {
-	override func processCallExpression(
-		_ callExpression: CallExpression)
-		-> CallExpression
-	{
+public class OptionalFunctionCallsTranspilationPass: FastTranspilationPass {
+	override func visitCallExpression(_ callExpression: CallExpression) {
 		if callExpression.function is OptionalExpression {
-			return CallExpression(
+			callExpression.function = DotExpression(
 				syntax: callExpression.syntax,
 				range: callExpression.range,
-				function: DotExpression(
+				leftExpression: callExpression.function,
+				rightExpression: DeclarationReferenceExpression(
 					syntax: callExpression.syntax,
 					range: callExpression.range,
-					leftExpression: callExpression.function,
-					rightExpression: DeclarationReferenceExpression(
-						syntax: callExpression.syntax,
-						range: callExpression.range,
-						identifier: "invoke",
-						typeName: callExpression.function.swiftType ?? "<<Error>>",
-						isStandardLibrary: false,
-						isImplicit: false)),
-				parameters: callExpression.parameters,
-				typeName: callExpression.typeName,
-				allowsTrailingClosure: callExpression.allowsTrailingClosure,
-				isPure: callExpression.isPure)
+					identifier: "invoke",
+					typeName: callExpression.function.swiftType ?? "<<Error>>",
+					isStandardLibrary: false,
+					isImplicit: false))
 		}
-		else {
-			return super.processCallExpression(callExpression)
-		}
+
+		return super.visitCallExpression(callExpression)
 	}
 }
 
 /// Gryphon's custom data structures use different initializers that need to be turned into the
 /// corresponding Kotlin function calls (i.e. `MutableList<Int>()` to `mutableListOf<Int>()`).
-public class DataStructureInitializersTranspilationPass: SlowTranspilationPass {
-	override func replaceCallExpression(
-		_ callExpression: CallExpression)
-		-> Expression
-	{
+public class DataStructureInitializersTranspilationPass: FastTranspilationPass {
+	override func visitCallExpression(_ callExpression: CallExpression) {
 		let tupleExpression = callExpression.parameters as? TupleExpression
 		let tupleShuffleExpression = callExpression.parameters as? TupleShuffleExpression
 
@@ -3051,12 +3024,14 @@ public class DataStructureInitializersTranspilationPass: SlowTranspilationPass {
 			// Make sure there are no parameters
 			if let tupleExpression = tupleExpression {
 				guard tupleExpression.pairs.isEmpty else {
-					return super.replaceCallExpression(callExpression)
+					super.visitCallExpression(callExpression)
+					return
 				}
 			}
 			else if let tupleShuffleExpression = tupleShuffleExpression {
 				guard tupleShuffleExpression.expressions.isEmpty else {
-					return super.replaceCallExpression(callExpression)
+					super.visitCallExpression(callExpression)
+					return
 				}
 			}
 
@@ -3082,7 +3057,8 @@ public class DataStructureInitializersTranspilationPass: SlowTranspilationPass {
 				genericElements = String(typeName.dropFirst("Map<".count).dropLast())
 			}
 			else {
-				return super.replaceCallExpression(callExpression)
+				super.visitCallExpression(callExpression)
+				return
 			}
 
 			let parameters: Expression
@@ -3093,23 +3069,19 @@ public class DataStructureInitializersTranspilationPass: SlowTranspilationPass {
 				parameters = tupleShuffleExpression!
 			}
 
-			return CallExpression(
-				syntax: callExpression.syntax,
-				range: callExpression.range,
-				function: DeclarationReferenceExpression(
+			callExpression.function = DeclarationReferenceExpression(
 					syntax: callExpression.syntax,
 					range: callExpression.range,
 					identifier: "\(functionName)<\(genericElements)>",
 					typeName: typeName,
 					isStandardLibrary: false,
-					isImplicit: false),
-				parameters: parameters,
-				typeName: typeName,
-				allowsTrailingClosure: callExpression.allowsTrailingClosure,
-				isPure: callExpression.isPure)
+					isImplicit: false)
+			callExpression.parameters = parameters
+			callExpression.typeName = typeName
 		}
 
-		return super.replaceCallExpression(callExpression)
+		super.visitCallExpression(callExpression)
+		return
 	}
 }
 
@@ -3119,24 +3091,22 @@ public class DataStructureInitializersTranspilationPass: SlowTranspilationPass {
 /// Labels can be added automatically by using the calling function's name. If there's more than one
 /// function with that name on the stack (i.e. two nested `map`s), Kotlin raises a warning but
 /// returns to the topmost closure, which is the same behavior as Swift.
-public class ReturnsInLambdasTranspilationPass: SlowTranspilationPass {
+public class ReturnsInLambdasTranspilationPass: FastTranspilationPass {
 	/// Stores the names of all functions that called are "currently being called".
 	/// For instance, if we're inside `f( a.filter { b.map { ... } })`, this contains
 	/// `["f", "filter", "map"]`.
 	var labelsStack: MutableList<String> = []
 
-	override func replaceCallExpression(
-		_ callExpression: CallExpression)
-		-> Expression
-	{
+	override func visitCallExpression(_ callExpression: CallExpression) {
 		if let label = getLabelForFunction(callExpression.function) {
 			labelsStack.append(label)
-			let result = super.replaceCallExpression(callExpression)
+			super.visitCallExpression(callExpression)
 			labelsStack.removeLast()
-			return result
+			return
 		}
 		else {
-			return super.replaceCallExpression(callExpression)
+			super.visitCallExpression(callExpression)
+			return
 		}
 	}
 
@@ -3167,10 +3137,7 @@ public class ReturnsInLambdasTranspilationPass: SlowTranspilationPass {
 		}
 	}
 
-	override func replaceClosureExpression(
-		_ closureExpression: ClosureExpression)
-		-> Expression
-	{
+	override func visitClosureExpression(_ closureExpression: ClosureExpression) {
 		// If it's a single-expression closure, omit the return
 		if closureExpression.statements.count == 1 {
 			if let returnStatement = closureExpression.statements[0] as? ReturnStatement {
@@ -3179,13 +3146,9 @@ public class ReturnsInLambdasTranspilationPass: SlowTranspilationPass {
 						syntax: returnStatement.syntax,
 						range: returnStatement.range,
 						expression: expression), ]
-					return super.replaceClosureExpression(ClosureExpression(
-						syntax: closureExpression.syntax,
-						range: closureExpression.range,
-						parameters: closureExpression.parameters,
-						statements: newStatements,
-						typeName: closureExpression.typeName,
-						isTrailing: closureExpression.isTrailing))
+					closureExpression.statements = newStatements
+					super.visitClosureExpression(closureExpression)
+					return
 				}
 			}
 			else if let switchStatement = closureExpression.statements[0] as? SwitchStatement {
@@ -3200,30 +3163,21 @@ public class ReturnsInLambdasTranspilationPass: SlowTranspilationPass {
 						convertsToExpression: nil,
 						expression: switchStatement.expression,
 						cases: switchStatement.cases)
-					return super.replaceClosureExpression(ClosureExpression(
-						syntax: closureExpression.syntax,
-						range: closureExpression.range,
-						parameters: closureExpression.parameters,
-						statements: [newSwitchStatement],
-						typeName: closureExpression.typeName,
-						isTrailing: closureExpression.isTrailing))
+					closureExpression.statements = [newSwitchStatement]
+					super.visitClosureExpression(closureExpression)
+					return
 				}
 			}
 		}
 
 		// Otherwise, add labels to any returns
-		return super.replaceClosureExpression(closureExpression)
+		super.visitClosureExpression(closureExpression)
+		return
 	}
 
-	override func replaceReturnStatement(
-		_ returnStatement: ReturnStatement)
-		-> List<Statement>
-	{
-		return super.replaceReturnStatement(ReturnStatement(
-			syntax: returnStatement.syntax,
-			range: returnStatement.range,
-			expression: returnStatement.expression.map { replaceExpression($0) },
-			label: labelsStack.last))
+	override func visitReturnStatement(_ returnStatement: ReturnStatement) {
+		returnStatement.label = labelsStack.last
+		super.visitReturnStatement(returnStatement)
 	}
 }
 
