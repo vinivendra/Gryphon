@@ -235,7 +235,7 @@ public class ExpressionStatement: Statement {
 public class TypealiasDeclaration: Statement {
 	let identifier: String
 	let typeName: String
-	let access: String?
+	var access: String?
 	let isImplicit: Bool
 
 	init(
@@ -328,10 +328,10 @@ public class ImportDeclaration: Statement {
 
 public class ClassDeclaration: Statement {
 	let className: String
-	let annotations: MutableList<String>
-	let access: String?
-	let isOpen: Bool
-	let inherits: MutableList<String>
+	var annotations: MutableList<String>
+	var access: String?
+	var isOpen: Bool
+	var inherits: MutableList<String>
 	let members: MutableList<Statement>
 
 	init(
@@ -401,10 +401,10 @@ public class CompanionObject: Statement {
 }
 
 public class EnumDeclaration: Statement {
-	let access: String?
+	var access: String?
 	let enumName: String
-	let annotations: MutableList<String>
-	let inherits: MutableList<String>
+	var annotations: MutableList<String>
+	var inherits: MutableList<String>
 	let elements: MutableList<EnumElement>
 	let members: MutableList<Statement>
 	let isImplicit: Bool
@@ -461,8 +461,8 @@ public class EnumDeclaration: Statement {
 
 public class ProtocolDeclaration: Statement {
 	let protocolName: String
-	let access: String?
-	let annotations: MutableList<String>
+	var access: String?
+	var annotations: MutableList<String>
 	let members: MutableList<Statement>
 
 	init(
@@ -500,10 +500,10 @@ public class ProtocolDeclaration: Statement {
 }
 
 public class StructDeclaration: Statement {
-	let annotations: MutableList<String>
+	var annotations: MutableList<String>
 	let structName: String
-	let access: String?
-	let inherits: MutableList<String>
+	var access: String?
+	var inherits: MutableList<String>
 	let members: MutableList<Statement>
 
 	init(
@@ -1965,9 +1965,9 @@ public class DotExpression: Expression {
 /// Does not take into consideration operator precedence, since that information isn't available in
 /// Syntax. Other `BinaryOperatorExpressions` can show up recursively on the right side.
 public class BinaryOperatorExpression: Expression {
-	let leftExpression: Expression
-	let rightExpression: Expression
-	let operatorSymbol: String
+	var leftExpression: Expression
+	var rightExpression: Expression
+	var operatorSymbol: String
 	var typeName: String?
 
 	init(
