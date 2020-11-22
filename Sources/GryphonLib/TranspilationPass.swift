@@ -3241,28 +3241,22 @@ public class TuplesToPairsTranspilationPass: SlowTranspilationPass {
 
 /// When tuples are translated as pairs, their members need to be translated as the pair's `first`
 /// and `second` members.
-public class TupleMembersTranspilationPass: SlowTranspilationPass {
-	override func replaceDotExpression(
-		_ dotExpression: DotExpression)
-		-> Expression
-	{
+public class TupleMembersTranspilationPass: FastTranspilationPass {
+	override func visitDotExpression(_ dotExpression: DotExpression) {
 		// Supported tuple types here will be a string like "(foo: Int, bar: Int)"
 
 		// First, replace tuple members recursively, as this can sometimes give us useful type
 		// information
-		let replacedExpression = super.replaceDotExpression(dotExpression)
-		guard let replacedDotExpression = replacedExpression as? DotExpression else {
-			return replacedExpression
-		}
+		super.visitDotExpression(dotExpression)
 
 		// Support both `(Int, Int)` and `Dictionary<Int, Int>.Element`
 		let swiftType: String
-		if let typeName = replacedDotExpression.leftExpression.swiftType,
+		if let typeName = dotExpression.leftExpression.swiftType,
 			Utilities.isInEnvelopingParentheses(typeName)
 		{
 			swiftType = typeName
 		}
-		else if let typeName = replacedDotExpression.leftExpression.swiftType {
+		else if let typeName = dotExpression.leftExpression.swiftType {
 			let typeComponents = Utilities.splitTypeList(typeName, separators: ["."])
 			if typeComponents.count == 2,
 				typeComponents.last == "Element",
@@ -3275,18 +3269,18 @@ public class TupleMembersTranspilationPass: SlowTranspilationPass {
 				swiftType = "(key: \(innerTypeComponents[0]), value: \(innerTypeComponents[1]))"
 			}
 			else {
-				return replacedDotExpression
+				return
 			}
 		}
 		else {
-			return replacedDotExpression
+			return
 		}
 
 		// Check that the right expression refers to the tuple's member
 		guard let memberExpression =
-				replacedDotExpression.rightExpression as? DeclarationReferenceExpression else
+				dotExpression.rightExpression as? DeclarationReferenceExpression else
 		{
-			return replacedDotExpression
+			return
 		}
 
 		let innerString = String(swiftType.dropFirst().dropLast())
@@ -3294,7 +3288,7 @@ public class TupleMembersTranspilationPass: SlowTranspilationPass {
 
 		// Only Pairs are supported for now
 		guard tupleComponents.count == 2 else {
-			return replacedDotExpression
+			return
 		}
 
 		// Get the index of the member we're referencing
@@ -3310,7 +3304,7 @@ public class TupleMembersTranspilationPass: SlowTranspilationPass {
 			tupleMemberIndex = index
 		}
 		else {
-			return replacedDotExpression
+			return
 		}
 
 		// If we already had a type, leave it. If not, get the type from the tuple's type
@@ -3326,31 +3320,24 @@ public class TupleMembersTranspilationPass: SlowTranspilationPass {
 			newIdentifier = (tupleMemberIndex == 0) ? "first" : "second"
 		}
 
-		return DotExpression(
-			syntax: replacedDotExpression.syntax,
-			range: replacedDotExpression.range,
-			leftExpression: replacedDotExpression.leftExpression,
-			rightExpression: DeclarationReferenceExpression(
-				syntax: memberExpression.syntax,
-				range: memberExpression.range,
-				identifier: newIdentifier,
-				typeName: typeName,
-				isStandardLibrary: memberExpression.isStandardLibrary,
-				isImplicit: memberExpression.isImplicit))
+		dotExpression.rightExpression = DeclarationReferenceExpression(
+			syntax: memberExpression.syntax,
+			range: memberExpression.range,
+			identifier: newIdentifier,
+			typeName: typeName,
+			isStandardLibrary: memberExpression.isStandardLibrary,
+			isImplicit: memberExpression.isImplicit)
 	}
 }
 
 /// Kotlin doesn't support autoclosures, but we can turn them into normal closures so they work
 /// correctly.
-public class AutoclosuresTranspilationPass: SlowTranspilationPass {
-	override func replaceCallExpression(
-		_ callExpression: CallExpression)
-		-> Expression
-	{
+public class AutoclosuresTranspilationPass: FastTranspilationPass {
+	override func visitCallExpression(_ callExpression: CallExpression) {
 		guard let type = callExpression.function.swiftType,
 			type.contains("@autoclosure") else
 		{
-			return callExpression
+			return
 		}
 
 		let parametersString = Utilities.splitTypeList(type, separators: [" -> "]).secondToLast!
@@ -3403,7 +3390,7 @@ public class AutoclosuresTranspilationPass: SlowTranspilationPass {
 			}
 		}
 
-		return callExpression
+		super.visitCallExpression(callExpression)
 	}
 }
 
@@ -3461,53 +3448,33 @@ public class RefactorOptionalsInSubscriptsTranspilationPass: SlowTranspilationPa
 /// // Becomes
 /// foo?.bar?.baz
 /// ````
-public class AddOptionalsInDotChainsTranspilationPass: SlowTranspilationPass {
-	override func replaceDotExpression(
-		_ dotExpression: DotExpression)
-		-> Expression
-	{
+public class AddOptionalsInDotChainsTranspilationPass: FastTranspilationPass {
+	override func visitDotExpression(_ dotExpression: DotExpression) {
 		if !(dotExpression.rightExpression is OptionalExpression),
 			let leftDotExpression = dotExpression.leftExpression as? DotExpression
 		{
-			if dotExpressionChainHasOptionals(leftDotExpression.leftExpression) {
-				return DotExpression(
-					syntax: dotExpression.syntax,
-					range: dotExpression.range,
-					leftExpression: addOptionalsToDotExpressionChain(leftDotExpression),
-					rightExpression: dotExpression.rightExpression)
-			}
+			addOptionalsToDotExpressionChain(leftDotExpression)
 		}
-
-		return super.replaceDotExpression(dotExpression)
+		else {
+			super.visitDotExpression(dotExpression)
+		}
 	}
 
-	func addOptionalsToDotExpressionChain(
-		_ dotExpression: DotExpression)
-		-> Expression
-	{
+	func addOptionalsToDotExpressionChain(_ dotExpression: DotExpression) {
 		if !(dotExpression.rightExpression is OptionalExpression),
 			dotExpressionChainHasOptionals(dotExpression.leftExpression)
 		{
-
-			let processedLeftExpression: Expression
 			if let leftDotExpression = dotExpression.leftExpression as? DotExpression {
-				processedLeftExpression = addOptionalsToDotExpressionChain(leftDotExpression)
-			}
-			else {
-				processedLeftExpression = dotExpression.leftExpression
+				addOptionalsToDotExpressionChain(leftDotExpression)
 			}
 
-			return addOptionalsToDotExpressionChain(DotExpression(
-				syntax: dotExpression.syntax,
-				range: dotExpression.range,
-				leftExpression: processedLeftExpression,
-				rightExpression: OptionalExpression(
-					syntax: dotExpression.rightExpression.syntax,
-					range: dotExpression.rightExpression.range,
-					expression: dotExpression.rightExpression)))
+			dotExpression.rightExpression = OptionalExpression(
+				syntax: dotExpression.rightExpression.syntax,
+				range: dotExpression.rightExpression.range,
+				expression: dotExpression.rightExpression)
 		}
 
-		return super.replaceDotExpression(dotExpression)
+		super.visitDotExpression(dotExpression)
 	}
 
 	private func dotExpressionChainHasOptionals(_ expression: Expression) -> Bool {
@@ -3712,71 +3679,48 @@ public class SwitchesToExpressionsTranspilationPass: SlowTranspilationPass {
 
 /// Breaks are not allowed in Kotlin `when` statements, but the `when` statements don't have to be
 /// exhaustive. Just remove the cases that only have breaks.
-public class RemoveBreaksInSwitchesTranspilationPass: SlowTranspilationPass {
-	override func replaceSwitchStatement(
-		_ switchStatement: SwitchStatement)
-		-> List<Statement>
-	{
-		let newCases = switchStatement.cases.compactMap { removeBreaksInSwitchCase($0) }
-
-		return super.replaceSwitchStatement(SwitchStatement(
-			syntax: switchStatement.syntax,
-			range: switchStatement.range,
-			convertsToExpression: switchStatement.convertsToExpression,
-			expression: switchStatement.expression,
-			cases: newCases.toMutableList()))
+public class RemoveBreaksInSwitchesTranspilationPass: FastTranspilationPass {
+	override func visitSwitchStatement(_ switchStatement: SwitchStatement) {
+		switchStatement.cases.forEach { removeBreaksInSwitchCase($0) }
+		super.visitSwitchStatement(switchStatement)
 	}
 
-	private func removeBreaksInSwitchCase(_ switchCase: SwitchCase) -> SwitchCase {
-		let statements = switchCase.statements.prefix {
-			!($0 is BreakStatement)
-		}
-		switchCase.statements = statements.toMutableList()
-		return switchCase
+	private func removeBreaksInSwitchCase(_ switchCase: SwitchCase) {
+		let statementsBeforeBreak = switchCase.statements
+			.prefix { !($0 is BreakStatement) }
+			.toMutableList()
+		switchCase.statements = statementsBeforeBreak
 	}
 }
 
 /// Sealed classes should be tested for subclasses in switches with the `is` operator. This is
 /// automatically done for enum cases with associated values, but in other cases it has to be
 /// handled here.
-public class IsOperatorsInSwitchesTranspilationPass: SlowTranspilationPass {
-	override func replaceSwitchStatement(
-		_ switchStatement: SwitchStatement)
-		-> List<Statement>
-	{
+public class IsOperatorsInSwitchesTranspilationPass: FastTranspilationPass {
+	override func visitSwitchStatement(_ switchStatement: SwitchStatement) {
 		if let declarationReferenceExpression =
 				switchStatement.expression as? DeclarationReferenceExpression,
 			let declarationType = declarationReferenceExpression.typeName
 		{
 			if self.context.hasSealedClass(named: declarationType) {
-				let newCases = switchStatement.cases.map {
+				switchStatement.cases.forEach {
 					replaceIsOperatorsInSwitchCase($0, usingExpression: switchStatement.expression)
 				}
-
-				return super.replaceSwitchStatement(SwitchStatement(
-					syntax: switchStatement.syntax,
-					range: switchStatement.range,
-					convertsToExpression: switchStatement.convertsToExpression,
-					expression: switchStatement.expression,
-					cases: newCases.toMutableList()))
 			}
 		}
 
-		return super.replaceSwitchStatement(switchStatement)
+		super.visitSwitchStatement(switchStatement)
 	}
 
 	private func replaceIsOperatorsInSwitchCase(
 		_ switchCase: SwitchCase,
 		usingExpression expression: Expression)
-		-> SwitchCase
 	{
 		let newExpressions = switchCase.expressions.map {
 			replaceIsOperatorsInExpression($0, usingExpression: expression)
-		}
+		}.toMutableList()
 
-		return SwitchCase(
-			expressions: newExpressions.toMutableList(),
-			statements: switchCase.statements)
+		switchCase.expressions = newExpressions
 	}
 
 	private func replaceIsOperatorsInExpression(
@@ -3784,23 +3728,22 @@ public class IsOperatorsInSwitchesTranspilationPass: SlowTranspilationPass {
 		usingExpression expression: Expression)
 		-> Expression
 	{
-		if let dotExpression = caseExpression as? DotExpression {
-			if let typeExpression = dotExpression.leftExpression as? TypeExpression,
-				let declarationReferenceExpression =
-					dotExpression.rightExpression as? DeclarationReferenceExpression
-			{
-				return BinaryOperatorExpression(
-					syntax: dotExpression.syntax,
-					range: dotExpression.range,
-					leftExpression: expression,
-					rightExpression: TypeExpression(
-						syntax: typeExpression.syntax,
-						range: typeExpression.range,
-						typeName: "\(typeExpression.typeName)." +
-							"\(declarationReferenceExpression.identifier)"),
-					operatorSymbol: "is",
-					typeName: "Bool")
-			}
+		if let dotExpression = caseExpression as? DotExpression,
+		   let typeExpression = dotExpression.leftExpression as? TypeExpression,
+		   let declarationReferenceExpression =
+			dotExpression.rightExpression as? DeclarationReferenceExpression
+		{
+			return BinaryOperatorExpression(
+				syntax: dotExpression.syntax,
+				range: dotExpression.range,
+				leftExpression: expression,
+				rightExpression: TypeExpression(
+					syntax: typeExpression.syntax,
+					range: typeExpression.range,
+					typeName: "\(typeExpression.typeName)." +
+						"\(declarationReferenceExpression.identifier)"),
+				operatorSymbol: "is",
+				typeName: "Bool")
 		}
 
 		return caseExpression
@@ -3811,11 +3754,8 @@ public class IsOperatorsInSwitchesTranspilationPass: SlowTranspilationPass {
 /// classes should result in an `==` comparison. This pass assumes all if-case comparisons arrive
 /// here as an `is` comparison, meaning sealed classes are already correct but enum classes have to
 /// change.
-public class IsOperatorsInIfStatementsTranspilationPass: SlowTranspilationPass {
-	override func replaceIfCondition(
-		_ condition: IfStatement.IfCondition)
-		-> IfStatement.IfCondition
-	{
+public class IsOperatorsInIfStatementsTranspilationPass: FastTranspilationPass {
+	override func visitIfCondition(_ condition: IfStatement.IfCondition) {
 		if case let .condition(expression: expression) = condition {
 			if let binaryExpression = expression as? BinaryOperatorExpression {
 				if binaryExpression.operatorSymbol == "is",
@@ -3827,19 +3767,13 @@ public class IsOperatorsInIfStatementsTranspilationPass: SlowTranspilationPass {
 
 					// If it's an enum class, change it from "is" to "=="
 					if self.context.hasEnumClass(named: enumName) {
-						return .condition(expression: BinaryOperatorExpression(
-							syntax: binaryExpression.syntax,
-							range: binaryExpression.range,
-							leftExpression: binaryExpression.leftExpression,
-							rightExpression: binaryExpression.rightExpression,
-							operatorSymbol: "==",
-							typeName: binaryExpression.typeName))
+						binaryExpression.operatorSymbol = "=="
 					}
 				}
 			}
 		}
 
-		return condition
+		return super.visitIfCondition(condition)
 	}
 }
 
@@ -3895,11 +3829,8 @@ public class RemoveExtensionsTranspilationPass: SlowTranspilationPass {
 
 /// If let conditions of the type `if let foo = foo as? Type` can be more simply translated as
 /// `if (foo is Type)`. This pass makes that transformation.
-public class ShadowedIfLetAsToIsTranspilationPass: SlowTranspilationPass {
-	override func processIfStatement(
-		_ ifStatement: IfStatement)
-		-> IfStatement
-	{
+public class ShadowedIfLetAsToIsTranspilationPass: FastTranspilationPass {
+	override func visitIfStatement(_ ifStatement: IfStatement) {
 		let newConditions: MutableList<IfStatement.IfCondition> = []
 
 		for condition in ifStatement.conditions {
@@ -3935,14 +3866,8 @@ public class ShadowedIfLetAsToIsTranspilationPass: SlowTranspilationPass {
 			}
 		}
 
-		return super.processIfStatement(IfStatement(
-			syntax: ifStatement.syntax,
-			range: ifStatement.range,
-			conditions: newConditions,
-			declarations: ifStatement.declarations,
-			statements: ifStatement.statements,
-			elseStatement: ifStatement.elseStatement,
-			isGuard: ifStatement.isGuard))
+		ifStatement.conditions = newConditions
+		super.visitIfStatement(ifStatement)
 	}
 }
 
@@ -3960,11 +3885,8 @@ public class ShadowedIfLetAsToIsTranspilationPass: SlowTranspilationPass {
 ///   for possible side-effects in if-lets.
 /// - memberwise initializers automatically created for structs.
 /// - initializers automatically created for sealed classes.
-public class RecordFunctionsTranspilationPass: SlowTranspilationPass {
-	override func processFunctionDeclaration(
-		_ functionDeclaration: FunctionDeclaration)
-		-> FunctionDeclaration?
-	{
+public class RecordFunctionsTranspilationPass: FastTranspilationPass {
+	override func visitFunctionDeclaration(_ functionDeclaration: FunctionDeclaration) {
 		let parametersString =
 			functionDeclaration.parameters.map { ($0.apiLabel ?? "_") + ":" }.joined()
 		let swiftAPIName = functionDeclaration.prefix + "(" + parametersString + ")"
@@ -3980,15 +3902,13 @@ public class RecordFunctionsTranspilationPass: SlowTranspilationPass {
 			self.context.recordPureFunction(functionDeclaration)
 		}
 
-		return super.processFunctionDeclaration(functionDeclaration)
+		super.visitFunctionDeclaration(functionDeclaration)
 	}
 
-	override func replaceEnumDeclaration(
-		_ enumDeclaration: EnumDeclaration)
-		-> List<Statement>
-	{
+	override func visitEnumDeclaration(_ enumDeclaration: EnumDeclaration) {
 		guard context.hasSealedClass(named: enumDeclaration.enumName) else {
-			return super.replaceEnumDeclaration(enumDeclaration)
+			super.visitEnumDeclaration(enumDeclaration)
+			return
 		}
 
 		for element in enumDeclaration.elements {
@@ -4023,29 +3943,28 @@ public class RecordFunctionsTranspilationPass: SlowTranspilationPass {
 				annotations: [])
 
 			// Record the fake declaration
-			_ = processFunctionDeclaration(fakeFunctionDeclaration)
+			visitFunctionDeclaration(fakeFunctionDeclaration)
 		}
 
-		return super.replaceEnumDeclaration(enumDeclaration)
+		super.visitEnumDeclaration(enumDeclaration)
 	}
 
-	override func replaceStructDeclaration(
-		_ structDeclaration: StructDeclaration)
-		-> List<Statement>
-	{
+	override func visitStructDeclaration(_ structDeclaration: StructDeclaration) {
 		// We need to create an initializer declaration to represent the automatic initializer Swift
 		// creates
 
 		// If there are any explicit initializers, Swift won't create the automatic one
 		guard !structDeclaration.members.contains(where: { $0 is InitializerDeclaration }) else {
-			return super.replaceStructDeclaration(structDeclaration)
+			super.visitStructDeclaration(structDeclaration)
+			return
 		}
 
 		// Check if there are any other initializers that were ignored with a translation comment
 		if let structSyntax = structDeclaration.syntax?.as(StructDeclSyntax.self),
 			structSyntax.members.members.contains(where: { $0.decl.is(InitializerDeclSyntax.self) })
 		{
-			return super.replaceStructDeclaration(structDeclaration)
+			super.visitStructDeclaration(structDeclaration)
+			return
 		}
 
 		// Create a fake initializer declaration to send to the function that records it
@@ -4086,9 +4005,9 @@ public class RecordFunctionsTranspilationPass: SlowTranspilationPass {
 			annotations: [])
 
 		// Record the fake declaration
-		_ = processFunctionDeclaration(fakeFunctionDeclaration)
+		visitFunctionDeclaration(fakeFunctionDeclaration)
 
-		return super.replaceStructDeclaration(structDeclaration)
+		super.visitStructDeclaration(structDeclaration)
 	}
 
 	private func statementAsStructProperty(
@@ -4110,11 +4029,8 @@ public class RecordFunctionsTranspilationPass: SlowTranspilationPass {
 
 /// Equivalent to RecordFunctionsTranspilationPass, but for recording Initializers. Does not look
 /// for `pure` annotations.
-public class RecordInitializersTranspilationPass: SlowTranspilationPass {
-	override func processInitializerDeclaration(
-		_ initializerDeclaration: InitializerDeclaration)
-		-> InitializerDeclaration?
-	{
+public class RecordInitializersTranspilationPass: FastTranspilationPass {
+	override func visitInitializerDeclaration(_ initializerDeclaration: InitializerDeclaration) {
 		let initializedType = initializerDeclaration.returnType
 
 		let parametersString =
@@ -4128,49 +4044,37 @@ public class RecordInitializersTranspilationPass: SlowTranspilationPass {
 				prefix: initializedType,
 				parameters: initializerDeclaration.parameters))
 
-		return super.processInitializerDeclaration(initializerDeclaration)
+		super.visitInitializerDeclaration(initializerDeclaration)
 	}
 }
 
 /// Records the superclass and protocol inheritances of any enum, struct or class declaration.
 /// Inheritances are copied to avoid them changing accidentally later.
-public class RecordInheritancesTranspilationPass: SlowTranspilationPass {
-	override func replaceEnumDeclaration(
-		_ enumDeclaration: EnumDeclaration)
-		-> List<Statement>
-	{
+public class RecordInheritancesTranspilationPass: FastTranspilationPass {
+	override func visitEnumDeclaration(_ enumDeclaration: EnumDeclaration) {
 		self.context.addInheritances(
 			forFullType: getFullType(),
 			inheritances: enumDeclaration.inherits.toList())
-		return super.replaceEnumDeclaration(enumDeclaration)
+		super.visitEnumDeclaration(enumDeclaration)
 	}
 
-	override func replaceStructDeclaration(
-		_ structDeclaration: StructDeclaration)
-		-> List<Statement>
-	{
+	override func visitStructDeclaration(_ structDeclaration: StructDeclaration) {
 		self.context.addInheritances(
 			forFullType: getFullType(),
 			inheritances: structDeclaration.inherits.toList())
-		return super.replaceStructDeclaration(structDeclaration)
+		super.visitStructDeclaration(structDeclaration)
 	}
 
-	override func replaceClassDeclaration(
-		_ classDeclaration: ClassDeclaration)
-		-> List<Statement>
-	{
+	override func visitClassDeclaration(_ classDeclaration: ClassDeclaration) {
 		self.context.addInheritances(
 			forFullType: getFullType(),
 			inheritances: classDeclaration.inherits.toList())
-		return super.replaceClassDeclaration(classDeclaration)
+		super.visitClassDeclaration(classDeclaration)
 	}
 }
 
-public class RecordEnumsTranspilationPass: SlowTranspilationPass {
-	override func replaceEnumDeclaration(
-		_ enumDeclaration: EnumDeclaration)
-		-> MutableList<Statement>
-	{
+public class RecordEnumsTranspilationPass: FastTranspilationPass {
+	override func visitEnumDeclaration(_ enumDeclaration: EnumDeclaration) {
 		let isEnumClass = enumDeclaration.inherits.isEmpty &&
 			enumDeclaration.elements.reduce(true) { result, element in
 				result && element.associatedValues.isEmpty
@@ -4183,26 +4087,21 @@ public class RecordEnumsTranspilationPass: SlowTranspilationPass {
 			self.context.addSealedClass(enumDeclaration)
 		}
 
-		return [enumDeclaration]
+		super.visitEnumDeclaration(enumDeclaration)
 	}
 }
 
 /// Records all protocol declarations in the Kotlin Translator
-public class RecordProtocolsTranspilationPass: SlowTranspilationPass {
-	override func replaceProtocolDeclaration(
-		_ protocolDeclaration: ProtocolDeclaration)
-		-> List<Statement>
-	{
+public class RecordProtocolsTranspilationPass: FastTranspilationPass {
+	override func visitProtocolDeclaration(_ protocolDeclaration: ProtocolDeclaration) {
 		self.context.addProtocol(protocolDeclaration.protocolName)
-
-		return super.replaceProtocolDeclaration(protocolDeclaration)
+		super.visitProtocolDeclaration(protocolDeclaration)
 	}
 }
 
-public class RaiseStandardLibraryWarningsTranspilationPass: SlowTranspilationPass {
-	override func processDeclarationReferenceExpression(
+public class RaiseStandardLibraryWarningsTranspilationPass: FastTranspilationPass {
+	override func visitDeclarationReferenceExpression(
 		_ declarationReferenceExpression: DeclarationReferenceExpression)
-		-> DeclarationReferenceExpression
 	{
 		if declarationReferenceExpression.isStandardLibrary {
 			let message = "Reference to standard library " +
@@ -4213,18 +4112,15 @@ public class RaiseStandardLibraryWarningsTranspilationPass: SlowTranspilationPas
 					sourceFile: ast.sourceFile,
 					sourceFileRange: declarationReferenceExpression.range)
 		}
-		return super.processDeclarationReferenceExpression(declarationReferenceExpression)
+		super.visitDeclarationReferenceExpression(declarationReferenceExpression)
 	}
 }
 
 /// Double optionals behave differently in Swift and Kotlin, so we raise a warning whenever we find
 /// them.
-public class RaiseDoubleOptionalWarningsTranspilationPass: SlowTranspilationPass {
-	override func replaceExpression(
-		_ expression: Expression)
-		-> Expression
-	{
-		if let typeName = expression.swiftType {
+public class RaiseDoubleOptionalWarningsTranspilationPass: FastTranspilationPass {
+	override func visitExpression(_ expression: Expression?) {
+		if let expression = expression, let typeName = expression.swiftType {
 			if typeName.hasSuffix("??") {
 				let message = "Double optionals may behave differently in Kotlin."
 				Compiler.handleWarning(
@@ -4235,7 +4131,7 @@ public class RaiseDoubleOptionalWarningsTranspilationPass: SlowTranspilationPass
 			}
 		}
 
-		return super.replaceExpression(expression)
+		super.visitExpression(expression)
 	}
 }
 

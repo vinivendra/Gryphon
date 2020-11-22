@@ -1011,7 +1011,7 @@ public class IfStatement: Statement {
 public class SwitchStatement: Statement {
 	let convertsToExpression: Statement?
 	let expression: Expression
-	let cases: MutableList<SwitchCase>
+	var cases: MutableList<SwitchCase>
 
 	init(
 		syntax: Syntax? = nil,
