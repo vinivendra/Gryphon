@@ -50,6 +50,8 @@ gryphon init "GryphoniOSTest.xcodeproj"
 
 # Add the "Model.swift" file to the list of files to be translated
 echo "GryphoniOSTest/Model.swift" > "gryphonInputFiles.xcfilelist"
+# Add a commented file path that should be ignored
+echo "# GryphoniOSTest/UnexistingFile.swift" >> "gryphonInputFiles.xcfilelist"
 
 echo "✅ Done."
 echo ""
@@ -125,6 +127,8 @@ gryphon init "GryphoniOSTest.xcodeproj" --target=GryphoniOSTest
 
 # Add the "Model.swift" file to the list of files to be translated
 echo "GryphoniOSTest/Model.swift" > "gryphonInputFiles.xcfilelist"
+# Add a commented file path that should be ignored
+echo "# GryphoniOSTest/UnexistingFile.swift" >> "gryphonInputFiles.xcfilelist"
 
 echo "✅ Done."
 echo ""
