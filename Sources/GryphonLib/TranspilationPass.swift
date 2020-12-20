@@ -4743,7 +4743,8 @@ public class ImplicitRawValuesTranspilationPass: TranspilationPass {
 					element.rawValue = LiteralIntExpression(
 						syntax: enumDeclaration.syntax,
 						range: enumDeclaration.range,
-						value: lastValue + 1)
+						value: lastValue + 1,
+						radix: .decimal)
 					lastValue += 1
 				}
 			}

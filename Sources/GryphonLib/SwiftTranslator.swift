@@ -3153,7 +3153,8 @@ public class SwiftTranslator {
 			else if typeName.hasPrefix("U") {
 				return LiteralUIntExpression(
 					range: getRangeRecursively(ofNode: literalExpression),
-					value: UInt64(signedValue)!)
+					value: UInt64(signedValue)!,
+					radix: .decimal)
 			}
 			else {
 				if signedValue == "-9223372036854775808" {
@@ -3164,7 +3165,8 @@ public class SwiftTranslator {
 				else {
 					return LiteralIntExpression(
 						range: getRangeRecursively(ofNode: literalExpression),
-						value: Int64(signedValue)!)
+						value: Int64(signedValue)!,
+						radix: .decimal)
 				}
 			}
 		}

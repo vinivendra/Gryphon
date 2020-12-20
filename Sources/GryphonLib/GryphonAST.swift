@@ -2279,11 +2279,30 @@ public class ClosureExpression: Expression {
 	}
 }
 
+public enum Radix: Int {
+	case decimal = 10
+	case hexadecimal = 16
+	case binary = 2
+
+	var prefix: String {
+		switch self {
+		case .decimal:
+			return ""
+		case .hexadecimal:
+			return "0x"
+		case .binary:
+			return "0b"
+		}
+	}
+}
+
 public class LiteralIntExpression: Expression {
 	let value: Int64
+	let radix: Radix
 
-	init(syntax: Syntax? = nil, range: SourceFileRange?, value: Int64) {
+	init(syntax: Syntax? = nil, range: SourceFileRange?, value: Int64, radix: Radix) {
 		self.value = value
+		self.radix = radix
 		super.init(
 			syntax: syntax,
 			range: range,
@@ -2291,7 +2310,9 @@ public class LiteralIntExpression: Expression {
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> {
-		return [PrintableTree(String(value))]
+		return [
+			PrintableTree(String(value)),
+			PrintableTree("Radix: \(radix.rawValue)"), ]
 	}
 
 	override var swiftType: String? {
@@ -2302,15 +2323,18 @@ public class LiteralIntExpression: Expression {
 	}
 
 	public static func == (lhs: LiteralIntExpression, rhs: LiteralIntExpression) -> Bool {
-		return lhs.value == rhs.value
+		return lhs.value == rhs.value &&
+			lhs.radix == rhs.radix
 	}
 }
 
 public class LiteralUIntExpression: Expression {
 	let value: UInt64
+	let radix: Radix
 
-	init(syntax: Syntax? = nil, range: SourceFileRange?, value: UInt64) {
+	init(syntax: Syntax? = nil, range: SourceFileRange?, value: UInt64, radix: Radix) {
 		self.value = value
+		self.radix = radix
 		super.init(
 			syntax: syntax,
 			range: range,
@@ -2318,7 +2342,9 @@ public class LiteralUIntExpression: Expression {
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> {
-		return [PrintableTree(String(value))]
+		return [
+			PrintableTree(String(value)),
+			PrintableTree("Radix: \(radix.rawValue)"), ]
 	}
 
 	override var swiftType: String? {
@@ -2329,7 +2355,8 @@ public class LiteralUIntExpression: Expression {
 	}
 
 	public static func == (lhs: LiteralUIntExpression, rhs: LiteralUIntExpression) -> Bool {
-		return lhs.value == rhs.value
+		return lhs.value == rhs.value &&
+			lhs.radix == rhs.radix
 	}
 }
 
