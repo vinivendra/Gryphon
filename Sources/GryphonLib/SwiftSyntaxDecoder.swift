@@ -3591,7 +3591,16 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	{
 		let string = integerLiteralExpression.digits.text
 		// Remove the `_` from `1_000`
-		let cleanString = string.replacingOccurrences(of: "_", with: "")
+        var cleanString = string.replacingOccurrences(of: "_", with: "")
+        // Support literals like 0xFF and 0b101
+        var radix = 10
+        if (cleanString.hasPrefix("0x")) {
+            radix = 16
+            cleanString.removeFirst(2)
+        } else if (cleanString.hasPrefix("0b")) {
+            radix = 2
+            cleanString.removeFirst(2)
+        }
 
 		if let typeName = integerLiteralExpression.getType(fromList: self.expressionTypes) {
 			if typeName == "Double",
@@ -3611,7 +3620,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					value: floatValue)
 			}
 			else if typeName.hasPrefix("UInt"),
-				let uIntValue = UInt64(cleanString)
+				let uIntValue = UInt64(cleanString, radix: radix)
 			{
 				return LiteralUIntExpression(
 					syntax: Syntax(integerLiteralExpression),
@@ -3620,7 +3629,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			}
 		}
 
-		if let intValue = Int64(cleanString) {
+		if let intValue = Int64(cleanString, radix: radix) {
 			return LiteralIntExpression(
 				syntax: Syntax(integerLiteralExpression),
 				range: integerLiteralExpression.getRange(inFile: self.sourceFile),
