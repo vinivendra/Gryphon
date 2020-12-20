@@ -3594,10 +3594,11 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
         var cleanString = string.replacingOccurrences(of: "_", with: "")
         // Support literals like 0xFF and 0b101
         var radix = 10
-        if (cleanString.hasPrefix("0x")) {
+        if cleanString.hasPrefix("0x") {
             radix = 16
             cleanString.removeFirst(2)
-        } else if (cleanString.hasPrefix("0b")) {
+        }
+		else if cleanString.hasPrefix("0b") {
             radix = 2
             cleanString.removeFirst(2)
         }
