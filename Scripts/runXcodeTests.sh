@@ -18,17 +18,18 @@ safeCat () {
 }
 
 
+echo "➡️ [1/8] Preparing..."
+
+# Install Gryphon (Xcode uses the installed binary, so it should be the one we want to test)
+./Scripts/install.sh
+
 # Set the Android SDK path in the properties file
 echo "sdk.dir=/Users/$USER/Library/Android/sdk" > \
 	"Test files/XcodeTests/Android/local.properties"
 
-
-echo "➡️ [1/8] Resetting the Xcode project..."
-
-cd "Test Files/XcodeTests/iOS"
-
 # Remove Gryphon-generated files
-./../../../.build/debug/Gryphon clean
+cd "Test Files/XcodeTests/iOS"
+gryphon clean
 rm -f "gryphonInputFiles.xcfilelist"
 
 # Remove the old Xcodeproj, replace it with a clean copy of the backup
@@ -45,7 +46,7 @@ echo ""
 echo "➡️ [2/8] Initializing the Xcode project..."
 
 # Initialize the Xcode project
-./../../../.build/debug/Gryphon init "GryphoniOSTest.xcodeproj"
+gryphon init "GryphoniOSTest.xcodeproj"
 
 # Add the "Model.swift" file to the list of files to be translated
 echo "GryphoniOSTest/Model.swift" > "gryphonInputFiles.xcfilelist"
@@ -103,7 +104,7 @@ echo ""
 echo "➡️ [4/8] Resetting the Xcode project..."
 
 # Remove Gryphon-generated files
-./../../../.build/debug/Gryphon clean
+gryphon clean
 rm -f "gryphonInputFiles.xcfilelist"
 
 # Remove the old Xcodeproj, replace it with a clean copy of the (target) backup
@@ -120,7 +121,7 @@ echo ""
 echo "➡️ [5/8] Initializing the Xcode project with '--target'..."
 
 # Initialize the Xcode project
-./../../../.build/debug/Gryphon init "GryphoniOSTest.xcodeproj" --target=GryphoniOSTest
+gryphon init "GryphoniOSTest.xcodeproj" --target=GryphoniOSTest
 
 # Add the "Model.swift" file to the list of files to be translated
 echo "GryphoniOSTest/Model.swift" > "gryphonInputFiles.xcfilelist"
@@ -204,7 +205,7 @@ rm -f output.txt
 cp "../ModelWithErrors.swift" "GryphoniOSTest/Model.swift"
 
 # Transpile the model file
-./../../../.build/debug/Gryphon "GryphoniOSTest/Model.swift"
+gryphon "GryphoniOSTest/Model.swift"
 
 # Run the Kotlin target
 if [[ $(xcodebuild -project GryphoniOSTest.xcodeproj/ -scheme Kotlin > output.txt 2> /dev/null) ]];
