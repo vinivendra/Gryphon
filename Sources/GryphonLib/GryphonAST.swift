@@ -464,6 +464,7 @@ public class ProtocolDeclaration: Statement {
 	let access: String?
 	let annotations: MutableList<String>
 	let members: MutableList<Statement>
+    let inherits: MutableList<String>
 
 	init(
 		syntax: Syntax? = nil,
@@ -471,12 +472,14 @@ public class ProtocolDeclaration: Statement {
 		protocolName: String,
 		access: String?,
 		annotations: MutableList<String>,
-		members: MutableList<Statement>)
+		members: MutableList<Statement>,
+        inherits: MutableList<String>)
 	{
 		self.protocolName = protocolName
 		self.access = access
 		self.annotations = annotations
 		self.members = members
+        self.inherits = inherits
 		super.init(
 			syntax: syntax,
 			range: range,

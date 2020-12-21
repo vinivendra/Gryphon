@@ -401,6 +401,15 @@ public class SwiftTranslator {
 				key: .annotation)?
 			.split(withStringSeparator: " ")
 			.toMutableList() ?? []
+        
+        // Check for inheritance
+        let inheritanceArray: MutableList<String>
+        if let inheritanceList = protocolDeclaration["inherits"] {
+            inheritanceArray = inheritanceList.split(withStringSeparator: ", ")
+        }
+        else {
+            inheritanceArray = []
+        }
 
 		let members = try translateSubtreesOf(protocolDeclaration)
 
@@ -409,7 +418,8 @@ public class SwiftTranslator {
 			protocolName: protocolName,
 			access: access,
 			annotations: annotations,
-			members: members)
+			members: members,
+            inherits: inheritanceArray)
 	}
 
 	internal func translateAssignExpression(_ assignExpression: SwiftAST) throws -> Statement {

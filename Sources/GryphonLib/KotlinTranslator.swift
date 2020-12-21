@@ -404,8 +404,13 @@ public class KotlinTranslator {
 		if let access = protocolDeclaration.access {
 			result.append("\(access) ")
 		}
-
+        
 		result.append("interface \(protocolDeclaration.protocolName) {\n")
+        
+        if !protocolDeclaration.inherits.isEmpty {
+            let translatedInheritances = protocolDeclaration.inherits.map { translateType($0) }
+            result.append(": " + translatedInheritances.joined(separator: ", "))
+        }
 
 		let contents = try translateSubtrees(
 			protocolDeclaration.members,
