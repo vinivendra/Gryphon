@@ -323,7 +323,7 @@ public class TranspilationPass {
 			access: protocolDeclaration.access,
 			annotations: protocolDeclaration.annotations,
 			members: replaceStatements(protocolDeclaration.members),
-                    inherits: protocolDeclaration.inherits), ]
+			inherits: protocolDeclaration.inherits), ]
 	}
 
 	func replaceStructDeclaration(
@@ -2139,7 +2139,7 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 			access: translationResult.access,
 			annotations: translationResult.annotations,
 			members: protocolDeclaration.members,
-            inherits: protocolDeclaration.inherits))
+			inherits: protocolDeclaration.inherits))
 		accessModifiersStack.removeLast()
 		return result
 	}

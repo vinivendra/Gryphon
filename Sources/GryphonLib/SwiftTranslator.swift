@@ -397,19 +397,18 @@ public class SwiftTranslator {
 
 		let access = protocolDeclaration["access"]
 		let annotations = getTranslationCommentValue(
-				forNode: protocolDeclaration,
-				key: .annotation)?
+			forNode: protocolDeclaration,
+			key: .annotation)?
 			.split(withStringSeparator: " ")
 			.toMutableList() ?? []
-        
-        // Check for inheritance
-        let inheritanceArray: MutableList<String>
-        if let inheritanceList = protocolDeclaration["inherits"] {
-            inheritanceArray = inheritanceList.split(withStringSeparator: ", ")
-        }
-        else {
-            inheritanceArray = []
-        }
+
+		let inheritanceArray: MutableList<String>
+		if let inheritanceList = protocolDeclaration["inherits"] {
+			inheritanceArray = inheritanceList.split(withStringSeparator: ", ")
+		}
+		else {
+			inheritanceArray = []
+		}
 
 		let members = try translateSubtreesOf(protocolDeclaration)
 
@@ -419,7 +418,7 @@ public class SwiftTranslator {
 			access: access,
 			annotations: annotations,
 			members: members,
-            inherits: inheritanceArray)
+			inherits: inheritanceArray)
 	}
 
 	internal func translateAssignExpression(_ assignExpression: SwiftAST) throws -> Statement {

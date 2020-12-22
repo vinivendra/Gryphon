@@ -379,7 +379,6 @@ extension SyntaxProtocol {
 }
 
 public class SwiftSyntaxDecoder: SyntaxVisitor {
-    
 	/// The source file to be translated
 	let sourceFile: SourceFile
 	/// The tree to be translated, obtained from SwiftSyntax
@@ -1741,10 +1740,10 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let manualAnnotations = annotationComments.compactMap { $0.value }
 		let annotations = accessAndAnnotations.annotations
 		annotations.append(contentsOf: manualAnnotations)
-        
-        let inheritances = try protocolDeclaration.inheritanceClause?.inheritedTypeCollection.map {
-                try convertType($0.typeName)
-            } ?? []
+
+		let inheritances = try protocolDeclaration.inheritanceClause?.inheritedTypeCollection.map {
+			try convertType($0.typeName)
+		} ?? []
 
 		return ProtocolDeclaration(
 			syntax: Syntax(protocolDeclaration),
@@ -1753,7 +1752,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			access: accessAndAnnotations.access,
 			annotations: annotations,
 			members: try convertBlock(protocolDeclaration.members),
-            inherits: MutableList(inheritances))
+			inherits: MutableList(inheritances))
 	}
 
 	func convertEnumDeclaration(
