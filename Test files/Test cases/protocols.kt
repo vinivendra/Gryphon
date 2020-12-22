@@ -15,12 +15,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-interface A {
+internal interface A {
+	fun a()
 }
 
-interface B: A {
+internal interface B {
+	fun b()
+}
+
+internal interface C: A, B {
+	fun c()
+}
+
+internal open class D: C {
+	override open fun a() {
+	}
+
+	override open fun b() {
+	}
+
+	override open fun c() {
+	}
 }
 
 fun main(args: Array<String>) {
+	val c: C = D()
+	val a: A = c
+	val b: B = c
+
 	println("Everything ok.")
 }

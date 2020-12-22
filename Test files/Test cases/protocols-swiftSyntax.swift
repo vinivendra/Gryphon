@@ -16,7 +16,29 @@
 // limitations under the License.
 //
 
-public protocol A { }
-public protocol B: A { }
+protocol A {
+	func a()
+}
+
+protocol B {
+	func b()
+}
+
+protocol C: A, B {
+	func c()
+}
+
+class D: C {
+	// gryphon annotation: override
+	func a() { }
+	// gryphon annotation: override
+	func b() { }
+	// gryphon annotation: override
+	func c() { }
+}
+
+let c: C = D()
+let a: A = c
+let b: B = c
 
 print("Everything ok.")
