@@ -53,11 +53,11 @@ class LibraryTranspilationTest: XCTestCase {
 
 		let nilExpression1 = NilLiteralExpression(range: nil)
 		let nilExpression2 = NilLiteralExpression(range: nil)
-		let integerExpression1 = LiteralIntExpression(range: nil, value: 10)
-		let integerExpression2 = LiteralIntExpression(range: nil, value: 10)
-		let integerExpression3 = LiteralIntExpression(range: nil, value: 100)
-		let integerExpression4 = LiteralIntExpression(range: range1, value: 100)
-		let integerExpression5 = LiteralIntExpression(range: range2, value: 100)
+		let integerExpression1 = LiteralIntExpression(range: nil, value: 10, radix: .decimal)
+		let integerExpression2 = LiteralIntExpression(range: nil, value: 10, radix: .decimal)
+		let integerExpression3 = LiteralIntExpression(range: nil, value: 100, radix: .decimal)
+		let integerExpression4 = LiteralIntExpression(range: range1, value: 100, radix: .decimal)
+		let integerExpression5 = LiteralIntExpression(range: range2, value: 100, radix: .decimal)
 		let parenthesesExpression1 = ParenthesesExpression(
 			range: nil, expression: integerExpression1)
 		let parenthesesExpression2 = ParenthesesExpression(
@@ -178,7 +178,8 @@ class LibraryTranspilationTest: XCTestCase {
 			isMultiline: false)
 		let integerLiteral = LiteralIntExpression(
 			range: nil,
-			value: 10)
+			value: 10,
+			radix: .decimal)
 		let parenthesesStringExpression = ParenthesesExpression(
 			range: nil,
 			expression: stringLiteral)

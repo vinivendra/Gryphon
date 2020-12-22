@@ -16,9 +16,26 @@
 // limitations under the License.
 //
 
-// Protocol inheritances aren't supported yet, but they shouldn't crash the AST dump decoder, which
-// can happend when the protocol `B` below is empty.
-public protocol A { }
-public protocol B: A { }
+protocol A {
+	func a()
+}
+
+protocol B {
+	func b()
+}
+
+protocol C: A, B {
+	func c()
+}
+
+class D: C {
+	func a() { } // gryphon annotation: override
+	func b() { } // gryphon annotation: override
+	func c() { } // gryphon annotation: override
+}
+
+let c: C = D()
+let a: A = c
+let b: B = c
 
 print("Everything ok.")

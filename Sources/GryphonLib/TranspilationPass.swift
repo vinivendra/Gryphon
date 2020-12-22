@@ -324,7 +324,8 @@ public class SlowTranspilationPass: TranspilationPass {
 			protocolName: protocolDeclaration.protocolName,
 			access: protocolDeclaration.access,
 			annotations: protocolDeclaration.annotations,
-			members: replaceStatements(protocolDeclaration.members)), ]
+			members: replaceStatements(protocolDeclaration.members),
+			inherits: protocolDeclaration.inherits), ]
 	}
 
 	func replaceStructDeclaration(
@@ -4816,7 +4817,8 @@ public class ImplicitRawValuesTranspilationPass: SlowTranspilationPass {
 					element.rawValue = LiteralIntExpression(
 						syntax: enumDeclaration.syntax,
 						range: enumDeclaration.range,
-						value: lastValue + 1)
+						value: lastValue + 1,
+						radix: .decimal)
 					lastValue += 1
 				}
 			}

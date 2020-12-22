@@ -397,10 +397,18 @@ public class SwiftTranslator {
 
 		let access = protocolDeclaration["access"]
 		let annotations = getTranslationCommentValue(
-				forNode: protocolDeclaration,
-				key: .annotation)?
+			forNode: protocolDeclaration,
+			key: .annotation)?
 			.split(withStringSeparator: " ")
 			.toMutableList() ?? []
+
+		let inheritanceArray: MutableList<String>
+		if let inheritanceList = protocolDeclaration["inherits"] {
+			inheritanceArray = inheritanceList.split(withStringSeparator: ", ")
+		}
+		else {
+			inheritanceArray = []
+		}
 
 		let members = try translateSubtreesOf(protocolDeclaration)
 
@@ -409,7 +417,8 @@ public class SwiftTranslator {
 			protocolName: protocolName,
 			access: access,
 			annotations: annotations,
-			members: members)
+			members: members,
+			inherits: inheritanceArray)
 	}
 
 	internal func translateAssignExpression(_ assignExpression: SwiftAST) throws -> Statement {
@@ -3153,7 +3162,8 @@ public class SwiftTranslator {
 			else if typeName.hasPrefix("U") {
 				return LiteralUIntExpression(
 					range: getRangeRecursively(ofNode: literalExpression),
-					value: UInt64(signedValue)!)
+					value: UInt64(signedValue)!,
+					radix: .decimal)
 			}
 			else {
 				if signedValue == "-9223372036854775808" {
@@ -3164,7 +3174,8 @@ public class SwiftTranslator {
 				else {
 					return LiteralIntExpression(
 						range: getRangeRecursively(ofNode: literalExpression),
-						value: Int64(signedValue)!)
+						value: Int64(signedValue)!,
+						radix: .decimal)
 				}
 			}
 		}

@@ -73,3 +73,8 @@ var o: Int = 1_000_000
 var p: UInt = 1_000_000
 m = 1_000_000
 n = 1_000_000
+
+var q: Int = 0x101
+q = 0b101
+var r: UInt = 0x101
+r = 0b101

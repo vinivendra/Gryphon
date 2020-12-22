@@ -1741,13 +1741,18 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let annotations = accessAndAnnotations.annotations
 		annotations.append(contentsOf: manualAnnotations)
 
+		let inheritances = try protocolDeclaration.inheritanceClause?.inheritedTypeCollection.map {
+			try convertType($0.typeName)
+		} ?? []
+
 		return ProtocolDeclaration(
 			syntax: Syntax(protocolDeclaration),
 			range: protocolDeclaration.getRange(inFile: self.sourceFile),
 			protocolName: protocolDeclaration.identifier.text,
 			access: accessAndAnnotations.access,
 			annotations: annotations,
-			members: try convertBlock(protocolDeclaration.members))
+			members: try convertBlock(protocolDeclaration.members),
+			inherits: MutableList(inheritances))
 	}
 
 	func convertEnumDeclaration(
@@ -3591,7 +3596,20 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	{
 		let string = integerLiteralExpression.digits.text
 		// Remove the `_` from `1_000`
-		let cleanString = string.replacingOccurrences(of: "_", with: "")
+        var cleanString = string.replacingOccurrences(of: "_", with: "")
+        // Support literals like 0xFF and 0b101
+		var radix: Radix
+        if cleanString.hasPrefix("0x") {
+			radix = .hexadecimal
+            cleanString.removeFirst(2)
+        }
+		else if cleanString.hasPrefix("0b") {
+			radix = .binary
+            cleanString.removeFirst(2)
+        }
+		else {
+			radix = .decimal
+		}
 
 		if let typeName = integerLiteralExpression.getType(fromList: self.expressionTypes) {
 			if typeName == "Double",
@@ -3611,20 +3629,22 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					value: floatValue)
 			}
 			else if typeName.hasPrefix("UInt"),
-				let uIntValue = UInt64(cleanString)
+					let uIntValue = UInt64(cleanString, radix: radix.rawValue)
 			{
 				return LiteralUIntExpression(
 					syntax: Syntax(integerLiteralExpression),
 					range: integerLiteralExpression.getRange(inFile: self.sourceFile),
-					value: uIntValue)
+					value: uIntValue,
+					radix: radix)
 			}
 		}
 
-		if let intValue = Int64(cleanString) {
+		if let intValue = Int64(cleanString, radix: radix.rawValue) {
 			return LiteralIntExpression(
 				syntax: Syntax(integerLiteralExpression),
 				range: integerLiteralExpression.getRange(inFile: self.sourceFile),
-				value: intValue)
+				value: intValue,
+				radix: radix)
 		}
 
 		return try errorExpression(
