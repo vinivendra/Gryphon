@@ -999,9 +999,9 @@ public class SlowTranspilationPass: TranspilationPass {
 	}
 }
 
-/// A Transpilation Pass that visits AST nodes without replacing them, which avoids unnecessary copies.
-/// This may be limited for some uses (especially when we need to change the classes
-/// of expressions or statements).
+/// A Transpilation Pass that visits AST nodes without replacing them, which avoids
+/// unnecessary copies. This may be limited for some uses (especially when we need to
+/// change the classes of expressions or statements).
 public class FastTranspilationPass: TranspilationPass {
 	func run() -> GryphonAST {
 		isReplacingStatements = true
