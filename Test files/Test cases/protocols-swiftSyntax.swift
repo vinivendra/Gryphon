@@ -16,8 +16,6 @@
 // limitations under the License.
 //
 
-// Protocol inheritances aren't supported yet, but they shouldn't crash the AST dump decoder, which
-// can happend when the protocol `B` below is empty.
 public protocol A { }
 public protocol B: A { }
 
