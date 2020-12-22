@@ -18,7 +18,7 @@
 interface A {
 }
 
-interface B {
+interface B: A {
 }
 
 fun main(args: Array<String>) {
