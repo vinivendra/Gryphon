@@ -4139,11 +4139,8 @@ public class RaiseDoubleOptionalWarningsTranspilationPass: FastTranspilationPass
 /// If a value type's members are all immutable, that value type can safely be translated as a
 /// class. Otherwise, the translation can cause inconsistencies, so this pass raises warnings.
 /// Source: https://forums.swift.org/t/are-immutable-structs-like-classes/16270
-public class RaiseMutableValueTypesWarningsTranspilationPass: SlowTranspilationPass {
-	override func replaceStructDeclaration(
-		_ structDeclaration: StructDeclaration)
-		-> List<Statement>
-	{
+public class RaiseMutableValueTypesWarningsTranspilationPass: FastTranspilationPass {
+	override func visitStructDeclaration(_ structDeclaration: StructDeclaration) {
 		for member in structDeclaration.members {
 			if let variableDeclaration = member as? VariableDeclaration {
 				if !variableDeclaration.isImplicit,
@@ -4180,13 +4177,10 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: SlowTranspilationP
 			}
 		}
 
-		return super.replaceStructDeclaration(structDeclaration)
+		super.visitStructDeclaration(structDeclaration)
 	}
 
-	override func replaceEnumDeclaration(
-		_ enumDeclaration: EnumDeclaration)
-		-> List<Statement>
-	{
+	override func visitEnumDeclaration(_ enumDeclaration: EnumDeclaration) {
 		for member in enumDeclaration.members {
 			if let functionDeclaration = member as? FunctionDeclaration {
 				if functionDeclaration.isMutating {
@@ -4204,16 +4198,13 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: SlowTranspilationP
 			}
 		}
 
-		return super.replaceEnumDeclaration(enumDeclaration)
+		super.visitEnumDeclaration(enumDeclaration)
 	}
 }
 
 /// Struct initializers aren't yet supported; this raises warnings when they're detected.
-public class RaiseStructInitializerWarningsTranspilationPass: SlowTranspilationPass {
-	override func processInitializerDeclaration(
-		_ initializerDeclaration: InitializerDeclaration)
-		-> InitializerDeclaration?
-	{
+public class RaiseStructInitializerWarningsTranspilationPass: FastTranspilationPass {
+	override func visitInitializerDeclaration(_ initializerDeclaration: InitializerDeclaration) {
 		// Get the type that declares this property, if any
 		var isStructInitializer: Bool = false
 		for parent in parents {
@@ -4236,23 +4227,18 @@ public class RaiseStructInitializerWarningsTranspilationPass: SlowTranspilationP
 				ast: initializerDeclaration,
 				sourceFile: ast.sourceFile,
 				sourceFileRange: initializerDeclaration.range)
-			return nil
 		}
-		else {
-			return super.processInitializerDeclaration(initializerDeclaration)
-		}
+
+		super.visitInitializerDeclaration(initializerDeclaration)
 	}
 }
 
 /// `MutableList`s, `List`s, `MutableMap`s, and `Map`s are prefered to
 /// using `Arrays` and `Dictionaries` for guaranteeing correctness. This pass raises warnings when
 /// it finds uses of the native data structures, which should help avoid these bugs.
-public class RaiseNativeDataStructureWarningsTranspilationPass: SlowTranspilationPass {
-	override func replaceExpression(
-		_ expression: Expression)
-		-> Expression
-	{
-		if let type = expression.swiftType {
+public class RaiseNativeDataStructureWarningsTranspilationPass: FastTranspilationPass {
+	override func visitExpression(_ expression: Expression?) {
+		if let expression = expression, let type = expression.swiftType {
 			if type.isDictionaryDeclaration() {
 				let message = "Native type \(type) can lead to different behavior in Kotlin. " +
 					"Prefer Map or MutableMap instead."
@@ -4275,13 +4261,10 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: SlowTranspilatio
 			}
 		}
 
-		return super.replaceExpression(expression)
+		super.visitExpression(expression)
 	}
 
-	override func replaceDotExpression(
-		_ dotExpression: DotExpression)
-		-> Expression
-	{
+	override func visitDotExpression(_ dotExpression: DotExpression) {
 		// If the expression is being transformed into a mutableList or a mutableMap it's probably
 		// ok.
 		if let leftExpressionType = dotExpression.leftExpression.swiftType,
@@ -4301,23 +4284,23 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: SlowTranspilatio
 						(declarationType.hasPrefix("MutableList") ||
 							declarationType.hasPrefix("MutableMap"))
 					{
-						return dotExpression
+						return
 					}
 					else if declarationReference.identifier.hasPrefix("toList"),
 						declarationType.hasPrefix("List")
 					{
-						return dotExpression
+						return
 					}
 					else if declarationReference.identifier.hasPrefix("toMap"),
 						declarationType.hasPrefix("Map")
 					{
-						return dotExpression
+						return
 					}
 				}
 			}
 		}
 
-		return super.replaceDotExpression(dotExpression)
+		super.visitDotExpression(dotExpression)
 	}
 }
 
@@ -4325,16 +4308,12 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: SlowTranspilatio
 /// rearranged to be before the if statement. This will cause any let conditions that have side
 /// effects (i.e. `let x = sideEffects()`) to run eagerly on Kotlin but lazily on Swift, which can
 /// lead to incorrect behavior.
-public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: SlowTranspilationPass {
-	override func processIfStatement(
-		_ ifStatement: IfStatement)
-		-> IfStatement
-	{
+public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: FastTranspilationPass {
+	override func visitIfStatement(_ ifStatement: IfStatement) {
 		raiseWarningsForIfStatement(ifStatement, isElse: false)
 
 		// No recursion by calling super, otherwise we'd run on the else statements twice
-		// We should still add recursion on the if's statements, though.
-		return ifStatement
+		// TODO: We should still add recursion on the if's statements, though.
 	}
 
 	private func raiseWarningsForIfStatement(_ ifStatement: IfStatement, isElse: Bool) {
@@ -4473,14 +4452,12 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: SlowTranspila
 /// According to https://kotlinlang.org/docs/reference/grammar.html#expressions, only the
 /// disjunction (`||`), spread (`*`) and assignment (`=`, `+=`, `-=`, `*=`,` /=`, `%=`) operators
 /// have lower precedence than `&&`; of those, only `||` is currently supported in if conditions.
-public class AddParenthesesForOperatorsInIfsTranspilationPass: SlowTranspilationPass {
-	override func processIfStatement(
-		_ ifStatement: IfStatement)
-		-> IfStatement
-	{
+public class AddParenthesesForOperatorsInIfsTranspilationPass: FastTranspilationPass {
+	override func visitIfStatement(_ ifStatement: IfStatement) {
 		// If there's only one condition there's no need to disambiguate
 		guard ifStatement.conditions.count > 1 else {
-			return super.processIfStatement(ifStatement)
+			super.visitIfStatement(ifStatement)
+			return
 		}
 
 		let newConditions: MutableList<IfStatement.IfCondition> = []
@@ -4502,7 +4479,8 @@ public class AddParenthesesForOperatorsInIfsTranspilationPass: SlowTranspilation
 		}
 
 		ifStatement.conditions = newConditions
-		return super.processIfStatement(ifStatement)
+
+		super.visitIfStatement(ifStatement)
 	}
 }
 
@@ -4656,16 +4634,13 @@ public class RearrangeIfLetsTranspilationPass: SlowTranspilationPass {
 }
 
 /// Change the implementation of a `==` operator to be usable in Kotlin
-public class EquatableOperatorsTranspilationPass: SlowTranspilationPass {
-	override func processFunctionDeclaration(
-		_ functionDeclaration: FunctionDeclaration)
-		-> FunctionDeclaration?
-	{
+public class EquatableOperatorsTranspilationPass: FastTranspilationPass {
+	override func visitFunctionDeclaration(_ functionDeclaration: FunctionDeclaration) {
 		guard functionDeclaration.prefix == "==",
 			functionDeclaration.parameters.count == 2,
 			let oldStatements = functionDeclaration.statements else
 		{
-			return functionDeclaration
+			return
 		}
 
 		let lhs = functionDeclaration.parameters[0]
@@ -4763,39 +4738,30 @@ public class EquatableOperatorsTranspilationPass: SlowTranspilationPass {
 				isGuard: false),
 			isGuard: false))
 
-		return super.processFunctionDeclaration(FunctionDeclaration(
-			syntax: syntax,
-			range: range,
-			prefix: "equals",
-			parameters: [
-				FunctionParameter(
-					label: "other",
-					apiLabel: nil,
-					typeName: "Any?",
-					value: nil), ],
-			returnType: "Bool",
-			functionType: "(Any?) -> Bool",
-			genericTypes: [],
-			isOpen: true,
-			isImplicit: functionDeclaration.isImplicit,
-			isStatic: false,
-			isMutating: functionDeclaration.isMutating,
-			isPure: functionDeclaration.isPure,
-			isJustProtocolInterface: functionDeclaration.isJustProtocolInterface,
-			extendsType: nil,
-			statements: newStatements,
-			access: "public",
-			annotations: ["override", "open"]))
+		functionDeclaration.prefix = "equals"
+		functionDeclaration.parameters = [FunctionParameter(
+			label: "other",
+			apiLabel: nil,
+			typeName: "Any?",
+			value: nil), ]
+		functionDeclaration.returnType = "Bool"
+		functionDeclaration.functionType = "(Any?) -> Bool"
+		functionDeclaration.genericTypes = []
+		functionDeclaration.isOpen = true
+		functionDeclaration.isStatic = false
+		functionDeclaration.extendsType = nil
+		functionDeclaration.statements = newStatements
+		functionDeclaration.access = "public"
+		functionDeclaration.annotations = ["override", "open"]
+
+		super.visitFunctionDeclaration(functionDeclaration)
 	}
 }
 
 /// Populate implicit raw values when needed. For strings, the raw value is the same as the case's
 /// identifier; for integers, it's 1 more than the last case, starting at 0.
-public class ImplicitRawValuesTranspilationPass: SlowTranspilationPass {
-	override func replaceEnumDeclaration(
-		_ enumDeclaration: EnumDeclaration)
-		-> List<Statement>
-	{
+public class ImplicitRawValuesTranspilationPass: FastTranspilationPass {
+	override func visitEnumDeclaration(_ enumDeclaration: EnumDeclaration) {
 		if enumDeclaration.inherits.contains("String") {
 			for element in enumDeclaration.elements {
 				if element.rawValue == nil {
@@ -4824,16 +4790,17 @@ public class ImplicitRawValuesTranspilationPass: SlowTranspilationPass {
 			}
 		}
 
-		return super.replaceEnumDeclaration(enumDeclaration)
+		super.visitEnumDeclaration(enumDeclaration)
 	}
 }
 
 /// Create a rawValue variable and initializer for enums that conform to rawRepresentable
-public class RawValuesMembersTranspilationPass: SlowTranspilationPass {
-	override func replaceEnumDeclaration(
-		_ enumDeclaration: EnumDeclaration)
-		-> List<Statement>
-	{
+public class RawValuesMembersTranspilationPass: FastTranspilationPass {
+	override func visitEnumDeclaration(_ enumDeclaration: EnumDeclaration) {
+		defer {
+			super.visitEnumDeclaration(enumDeclaration)
+		}
+
 		if let typeName = enumDeclaration.elements.compactMap({ $0.rawValue?.swiftType }).first {
 			let rawValueVariable = createRawValueVariable(
 				withRawValueType: typeName,
@@ -4850,26 +4817,14 @@ public class RawValuesMembersTranspilationPass: SlowTranspilationPass {
 					ast: enumDeclaration,
 					sourceFile: ast.sourceFile,
 					sourceFileRange: enumDeclaration.range)
-				return super.replaceEnumDeclaration(enumDeclaration)
+				return
 			}
 
 			let newMembers = enumDeclaration.members
 			newMembers.append(rawValueInitializer)
 			newMembers.append(rawValueVariable)
 
-			return super.replaceEnumDeclaration(EnumDeclaration(
-				syntax: enumDeclaration.syntax,
-				range: enumDeclaration.range,
-				access: enumDeclaration.access,
-				enumName: enumDeclaration.enumName,
-				annotations: enumDeclaration.annotations,
-				inherits: enumDeclaration.inherits,
-				elements: enumDeclaration.elements,
-				members: newMembers,
-				isImplicit: enumDeclaration.isImplicit))
-		}
-		else {
-			return super.replaceEnumDeclaration(enumDeclaration)
+			enumDeclaration.members = newMembers
 		}
 	}
 
@@ -5045,11 +5000,8 @@ public class RawValuesMembersTranspilationPass: SlowTranspilationPass {
 /// Guards are translated as if statements with a ! at the start of the condition. Sometimes, the
 /// ! combines with a != or even another !, causing a double negative in the condition that can
 /// be removed (or turned into a single ==). This pass performs that transformation.
-public class DoubleNegativesInGuardsTranspilationPass: SlowTranspilationPass {
-	override func processIfStatement(
-		_ ifStatement: IfStatement)
-		-> IfStatement
-	{
+public class DoubleNegativesInGuardsTranspilationPass: FastTranspilationPass {
+	override func visitIfStatement(_ ifStatement: IfStatement) {
 		if ifStatement.isGuard,
 			ifStatement.conditions.count == 1,
 			let onlyCondition = ifStatement.conditions.first,
@@ -5098,11 +5050,9 @@ public class DoubleNegativesInGuardsTranspilationPass: SlowTranspilationPass {
 					IfStatement.IfCondition.condition(expression: $0)
 				}.toMutableList()
 			ifStatement.isGuard = shouldStillBeGuard
-			return super.processIfStatement(ifStatement)
 		}
-		else {
-			return super.processIfStatement(ifStatement)
-		}
+
+		super.visitIfStatement(ifStatement)
 	}
 }
 
@@ -5156,48 +5106,33 @@ public class ReturnIfNilTranspilationPass: SlowTranspilationPass {
 }
 
 /// Removes function bodies and makes variables' getters and setters empty and implicit
-public class FixProtocolContentsTranspilationPass: SlowTranspilationPass {
+public class FixProtocolContentsTranspilationPass: FastTranspilationPass {
 	var isInProtocol = false
 
-	override func replaceProtocolDeclaration(
-		_ protocolDeclaration: ProtocolDeclaration)
-		-> List<Statement>
-	{
+	override func visitProtocolDeclaration(_ protocolDeclaration: ProtocolDeclaration) {
 		isInProtocol = true
-		let result = super.replaceProtocolDeclaration(protocolDeclaration)
+		super.visitProtocolDeclaration(protocolDeclaration)
 		isInProtocol = false
-
-		return result
 	}
 
-	override func processFunctionDeclaration(
-		_ functionDeclaration: FunctionDeclaration)
-		-> FunctionDeclaration?
-	{
+	override func visitFunctionDeclaration(_ functionDeclaration: FunctionDeclaration) {
 		if isInProtocol {
 			functionDeclaration.statements = nil
 			functionDeclaration.isJustProtocolInterface = true
-			return super.processFunctionDeclaration(functionDeclaration)
 		}
-		else {
-			return super.processFunctionDeclaration(functionDeclaration)
-		}
+
+		super.visitFunctionDeclaration(functionDeclaration)
 	}
 
-	override func processVariableDeclaration(
-		_ variableDeclaration: VariableDeclaration)
-		-> VariableDeclaration
-	{
+	override func visitVariableDeclaration(_ variableDeclaration: VariableDeclaration) {
 		if isInProtocol {
 			variableDeclaration.getter?.isImplicit = true
 			variableDeclaration.setter?.isImplicit = true
 			variableDeclaration.getter?.statements = nil
 			variableDeclaration.setter?.statements = nil
-			return super.processVariableDeclaration(variableDeclaration)
 		}
-		else {
-			return super.processVariableDeclaration(variableDeclaration)
-		}
+
+		super.visitVariableDeclaration(variableDeclaration)
 	}
 }
 
@@ -5206,16 +5141,13 @@ public class FixProtocolContentsTranspilationPass: SlowTranspilationPass {
 /// simplifies it to `"SelfwhereSelf:MyProtocol"`. This can happen both in protocol declarations and
 /// in extensions (when extending a protocol). This pass removes that constraint, since it shouldn't
 /// show up in the translated code.
-public class FixProtocolGenericsTranspilationPass: SlowTranspilationPass {
-	override func processFunctionDeclaration(
-		_ functionDeclaration: FunctionDeclaration)
-		-> FunctionDeclaration?
-	{
+public class FixProtocolGenericsTranspilationPass: FastTranspilationPass {
+	override func visitFunctionDeclaration(_ functionDeclaration: FunctionDeclaration) {
 		let newGenerics = functionDeclaration.genericTypes.filter {
 				!$0.hasPrefix("Self")
 			}.toMutableList()
 		functionDeclaration.genericTypes = newGenerics
-		return super.processFunctionDeclaration(functionDeclaration)
+		super.visitFunctionDeclaration(functionDeclaration)
 	}
 }
 
@@ -5227,11 +5159,8 @@ public class FixProtocolGenericsTranspilationPass: SlowTranspilationPass {
 ///
 /// If we're in SwiftSyntax, we also have to add the extended type's generics to the function
 /// declaration itself.
-public class FixExtensionGenericsTranspilationPass: SlowTranspilationPass {
-	override func processFunctionDeclaration(
-		_ functionDeclaration: FunctionDeclaration)
-		-> FunctionDeclaration?
-	{
+public class FixExtensionGenericsTranspilationPass: FastTranspilationPass {
+	override func visitFunctionDeclaration(_ functionDeclaration: FunctionDeclaration) {
 		if context.isUsingSwiftSyntax {
 			if let extendedType = functionDeclaration.extendsType, extendedType.contains("<") {
 				let genericString = String(extendedType
@@ -5241,8 +5170,6 @@ public class FixExtensionGenericsTranspilationPass: SlowTranspilationPass {
 				let genericTypes = Utilities.splitTypeList(genericString, separators: [","])
 				functionDeclaration.genericTypes.append(contentsOf: genericTypes)
 			}
-
-			return super.processFunctionDeclaration(functionDeclaration)
 		}
 		else {
 			if let extendedType = functionDeclaration.extendsType {
@@ -5257,45 +5184,39 @@ public class FixExtensionGenericsTranspilationPass: SlowTranspilationPass {
 					functionDeclaration.extendsType = newType
 				}
 			}
-
-			return super.processFunctionDeclaration(functionDeclaration)
 		}
+
+		super.visitFunctionDeclaration(functionDeclaration)
 	}
 }
 
 /// - Escapes `$`s in strings (to avoid accidental string interpolations in Kotlin).
 /// - Escapes `'`s in character literals.
-public class EscapeSpecialCharactersInStringsTranspilationPass: SlowTranspilationPass {
+public class EscapeSpecialCharactersInStringsTranspilationPass: FastTranspilationPass {
 
-    override func replaceLiteralStringExpression(
-        _ literalStringExpression: LiteralStringExpression) -> Expression {
-        let replacedLiteralStringExpression = LiteralStringExpression(
-            range: literalStringExpression.range,
-            value: literalStringExpression.value.replacingOccurrences(of: "$", with: "\\$"),
-            isMultiline: literalStringExpression.isMultiline)
-        return super.replaceLiteralStringExpression(replacedLiteralStringExpression)
+    override func visitLiteralStringExpression(
+        _ literalStringExpression: LiteralStringExpression)
+	{
+		literalStringExpression.value =
+			literalStringExpression.value.replacingOccurrences(of: "$", with: "\\$")
+		super.visitLiteralStringExpression(literalStringExpression)
     }
 
-	override func replaceLiteralCharacterExpression(
+	override func visitLiteralCharacterExpression(
 		_ literalCharacterExpression: LiteralCharacterExpression)
-		-> Expression
 	{
 		if context.isUsingSwiftSyntax {
-			let replacedLiteralCharacterExpression = LiteralCharacterExpression(
-				range: literalCharacterExpression.range,
-				value: literalCharacterExpression.value.replacingOccurrences(of: "'", with: "\\'"))
-			return super.replaceLiteralCharacterExpression(replacedLiteralCharacterExpression)
+			literalCharacterExpression.value =
+				literalCharacterExpression.value.replacingOccurrences(of: "'", with: "\\'")
 		}
-		else {
-			return super.replaceLiteralCharacterExpression(literalCharacterExpression)
-		}
+		super.visitLiteralCharacterExpression(literalCharacterExpression)
 	}
 }
 
 /// Removes `override` annotations from static members and initializers, as they're not supported in
 /// Kotlin.
-public class RemoveOverridesTranspilationPass: SlowTranspilationPass {
-	override func replaceCompanionObject(_ companionObject: CompanionObject) -> List<Statement> {
+public class RemoveOverridesTranspilationPass: FastTranspilationPass {
+	override func visitCompanionObject(_ companionObject: CompanionObject) {
 		for statement in companionObject.members {
 			if let variableDeclaration = statement as? VariableDeclaration {
 				variableDeclaration.annotations.remove("override")
@@ -5305,15 +5226,12 @@ public class RemoveOverridesTranspilationPass: SlowTranspilationPass {
 			}
 		}
 
-		return super.replaceCompanionObject(companionObject)
+		super.visitCompanionObject(companionObject)
 	}
 
-	override func replaceInitializerDeclaration(
-		_ initializerDeclaration: InitializerDeclaration)
-		-> List<Statement>
-	{
+	override func visitInitializerDeclaration(_ initializerDeclaration: InitializerDeclaration) {
 		initializerDeclaration.annotations.remove("override")
-		return super.replaceInitializerDeclaration(initializerDeclaration)
+		super.visitInitializerDeclaration(initializerDeclaration)
 	}
 }
 
@@ -5322,8 +5240,8 @@ public class RemoveOverridesTranspilationPass: SlowTranspilationPass {
 /// literals if we don't know their type is Character. This pass goes through switch cases where the
 /// switch's expression is a Character and turns the cases' StringLiteralExpressions into
 /// CharacterLiteralExpressions.
-public class CharactersInSwitchesTranspilationPass: SlowTranspilationPass {
-	override func replaceSwitchStatement(_ switchStatement: SwitchStatement) -> List<Statement> {
+public class CharactersInSwitchesTranspilationPass: FastTranspilationPass {
+	override func visitSwitchStatement(_ switchStatement: SwitchStatement) {
 		if let typeName = switchStatement.expression.swiftType,
 			Utilities.getTypeMapping(for: typeName) == "Char"
 		{
@@ -5339,7 +5257,7 @@ public class CharactersInSwitchesTranspilationPass: SlowTranspilationPass {
 			}
 		}
 
-		return super.replaceSwitchStatement(switchStatement)
+		super.visitSwitchStatement(switchStatement)
 	}
 }
 
@@ -5347,18 +5265,18 @@ public class CharactersInSwitchesTranspilationPass: SlowTranspilationPass {
 /// declarations by the frontend. SourceKit has no type information on these expressions, so it
 /// doesn't know what type annotations to use. This pass tries to add the pass annotations by
 /// looking up the enum declaration.
-public class AnnotationsForCaseLetsTranspilationPass: SlowTranspilationPass {
-	override func replaceSwitchStatement(_ switchStatement: SwitchStatement) -> List<Statement> {
+public class AnnotationsForCaseLetsTranspilationPass: FastTranspilationPass {
+	override func visitSwitchStatement(_ switchStatement: SwitchStatement) {
 		for switchCase in switchStatement.cases {
 			setAnnotationsForCaselet(
 				withExpressions: switchCase.expressions,
 				onStatements: switchCase.statements)
 		}
 
-		return super.replaceSwitchStatement(switchStatement)
+		super.visitSwitchStatement(switchStatement)
 	}
 
-	override func processIfStatement(_ ifStatement: IfStatement) -> IfStatement {
+	override func visitIfStatement(_ ifStatement: IfStatement) {
 		let expressions = ifStatement.conditions.compactMap
 			{ (condition: IfStatement.IfCondition) -> Expression? in
 				if case let .condition(expression: expression) = condition {
@@ -5373,7 +5291,7 @@ public class AnnotationsForCaseLetsTranspilationPass: SlowTranspilationPass {
 			withExpressions: expressions,
 			onStatements: ifStatement.statements)
 
-		return super.processIfStatement(ifStatement)
+		super.visitIfStatement(ifStatement)
 	}
 
 	/// Takes all of the expressions of a `case let` (from either an `if` or a `switch`) and all of
@@ -5436,61 +5354,34 @@ public class AnnotationsForCaseLetsTranspilationPass: SlowTranspilationPass {
 }
 
 /// Kotlin initializers cannot be marked as `open`.
-public class RemoveOpenForInitializersTranspilationPass: SlowTranspilationPass {
-	override func processInitializerDeclaration(
-		_ initializerDeclaration: InitializerDeclaration)
-		-> InitializerDeclaration?
-	{
-		return InitializerDeclaration(
-			syntax: initializerDeclaration.syntax,
-			range: initializerDeclaration.range,
-			parameters: initializerDeclaration.parameters,
-			returnType: initializerDeclaration.returnType,
-			functionType: initializerDeclaration.functionType,
-			genericTypes: initializerDeclaration.genericTypes,
-			isOpen: false,
-			isImplicit: initializerDeclaration.isImplicit,
-			isStatic: initializerDeclaration.isStatic,
-			isMutating: initializerDeclaration.isMutating,
-			isPure: initializerDeclaration.isPure,
-			extendsType: initializerDeclaration.extendsType,
-			statements: initializerDeclaration.statements,
-			access: initializerDeclaration.access,
-			annotations: initializerDeclaration.annotations,
-			superCall: initializerDeclaration.superCall,
-			isOptional: initializerDeclaration.isOptional)
+public class RemoveOpenForInitializersTranspilationPass: FastTranspilationPass {
+	override func visitInitializerDeclaration(_ initializerDeclaration: InitializerDeclaration) {
+		initializerDeclaration.isOpen = false
 	}
 }
 
 /// Kotlin catch statements must have a variable declaration
-public class AddVariablesToCatchesTranspilationPass: SlowTranspilationPass {
-	override func replaceCatchStatement(
-		_ catchStatement: CatchStatement)
-		-> List<Statement>
-	{
+public class AddVariablesToCatchesTranspilationPass: FastTranspilationPass {
+	override func visitCatchStatement(_ catchStatement: CatchStatement) {
 		if catchStatement.variableDeclaration == nil {
-			return super.replaceCatchStatement(CatchStatement(
+			catchStatement.variableDeclaration = VariableDeclaration(
 				syntax: catchStatement.syntax,
 				range: catchStatement.range,
-				variableDeclaration: VariableDeclaration(
-					syntax: catchStatement.syntax,
-					range: catchStatement.range,
-					identifier: "_error",
-					typeAnnotation: "Error",
-					expression: nil,
-					getter: nil,
-					setter: nil,
-					access: nil,
-					isOpen: false,
-					isLet: true,
-					isImplicit: false,
-					isStatic: false,
-					extendsType: nil,
-					annotations: []),
-				statements: catchStatement.statements))
+				identifier: "_error",
+				typeAnnotation: "Error",
+				expression: nil,
+				getter: nil,
+				setter: nil,
+				access: nil,
+				isOpen: false,
+				isLet: true,
+				isImplicit: false,
+				isStatic: false,
+				extendsType: nil,
+				annotations: [])
 		}
 
-		return super.replaceCatchStatement(catchStatement)
+		super.visitCatchStatement(catchStatement)
 	}
 }
 
@@ -5498,13 +5389,10 @@ public class AddVariablesToCatchesTranspilationPass: SlowTranspilationPass {
 /// parameter names, e.g. turn `f(a = 0)` into `f(b = 0)` when we've seen a `f(a b: Int)`. If no
 /// matches are found, remove all labels; this might cause correctness problems, but it happens too
 /// often to do anything else.
-public class MatchFunctionCallsToDeclarationsTranspilationPass: SlowTranspilationPass {
-	override func processCallExpression(
-		_ callExpression: CallExpression)
-		-> CallExpression
-	{
+public class MatchFunctionCallsToDeclarationsTranspilationPass: FastTranspilationPass {
+	override func visitCallExpression(_ callExpression: CallExpression) {
 		guard context.isUsingSwiftSyntax else {
-			return callExpression
+			return
 		}
 
 		let tupleExpression = callExpression.parameters as! TupleExpression
@@ -5522,7 +5410,8 @@ public class MatchFunctionCallsToDeclarationsTranspilationPass: SlowTranspilatio
 
 		// Don't try to match templates
 		if functionExpression is LiteralCodeExpression {
-			return super.processCallExpression(callExpression)
+			super.visitCallExpression(callExpression)
+			return
 		}
 
 		// Try to find a function translation
@@ -5549,7 +5438,8 @@ public class MatchFunctionCallsToDeclarationsTranspilationPass: SlowTranspilatio
 
 		guard let functionTranslation = maybeFunctionTranslation else {
 			removeLabels(fromTupleExpression: tupleExpression)
-			return super.processCallExpression(callExpression)
+			super.visitCallExpression(callExpression)
+			return
 		}
 
 		// Try to match the call to the declaration using the swiftc algorithm
@@ -5612,7 +5502,8 @@ public class MatchFunctionCallsToDeclarationsTranspilationPass: SlowTranspilatio
 				sourceFileRange: callExpression.parameters.range)
 
 			removeLabels(fromTupleExpression: tupleExpression)
-			return super.processCallExpression(callExpression)
+			super.visitCallExpression(callExpression)
+			return
 		}
 
 		let resultPairs: MutableList<LabeledExpression> = []
@@ -5647,7 +5538,9 @@ public class MatchFunctionCallsToDeclarationsTranspilationPass: SlowTranspilatio
 
 		tupleExpression.pairs = resultPairs
 		callExpression.allowsTrailingClosure = allowsTrailingClosure
-		return super.processCallExpression(callExpression)
+
+		super.visitCallExpression(callExpression)
+		return
 	}
 
 	private func removeLabels(fromTupleExpression tupleExpression: TupleExpression) {

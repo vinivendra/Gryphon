@@ -406,7 +406,7 @@ public class EnumDeclaration: Statement {
 	var annotations: MutableList<String>
 	var inherits: MutableList<String>
 	let elements: MutableList<EnumElement>
-	let members: MutableList<Statement>
+	var members: MutableList<Statement>
 	let isImplicit: Bool
 
 	init(
@@ -841,7 +841,7 @@ public class DoStatement: Statement {
 }
 
 public class CatchStatement: Statement {
-	let variableDeclaration: VariableDeclaration?
+	var variableDeclaration: VariableDeclaration?
 	let statements: MutableList<Statement>
 
 	init(
@@ -2445,8 +2445,8 @@ public class LiteralBoolExpression: Expression {
 }
 
 public class LiteralStringExpression: Expression {
-	let value: String
-	let isMultiline: Bool
+	var value: String
+	var isMultiline: Bool
 
 	init(syntax: Syntax? = nil, range: SourceFileRange?, value: String, isMultiline: Bool) {
 		self.value = value
@@ -2477,7 +2477,7 @@ public class LiteralStringExpression: Expression {
 }
 
 public class LiteralCharacterExpression: Expression {
-	let value: String
+	var value: String
 
 	init(syntax: Syntax? = nil, range: SourceFileRange?, value: String) {
 		self.value = value
