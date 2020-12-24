@@ -1219,7 +1219,7 @@ public class ReturnTypesForInitsTranspilationPass: TranspilationPass {
 		_ initializerDeclaration: InitializerDeclaration)
 		-> InitializerDeclaration?
 	{
-		if context.isUsingSwiftSyntax, let enclosingType = typeDeclarationStack.last {
+		if let enclosingType = typeDeclarationStack.last {
 			initializerDeclaration.returnType = enclosingType
 
 			let functionType = "(" +
@@ -1228,12 +1228,7 @@ public class ReturnTypesForInitsTranspilationPass: TranspilationPass {
 					.joined(separator: ", ") +
 				") -> " + enclosingType +
 				(initializerDeclaration.isOptional ? "?" : "")
-			if context.isUsingSwiftSyntax {
-				initializerDeclaration.functionType = functionType
-			}
-			else {
-				initializerDeclaration.functionType = "(\(enclosingType).Type) -> \(functionType)"
-			}
+			initializerDeclaration.functionType = functionType
 		}
 
 		return initializerDeclaration
@@ -1556,23 +1551,15 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 		-> Expression
 	{
 		let enumType: String
-		if !context.isUsingSwiftSyntax,
-			let enumExpression = dotExpression.leftExpression as? TypeExpression
-		{
-			enumType = enumExpression.typeName
-		}
-		else if context.isUsingSwiftSyntax,
-			let enumExpression = dotExpression.leftExpression as? DeclarationReferenceExpression
+		if let enumExpression = dotExpression.leftExpression as? DeclarationReferenceExpression
 		{
 			enumType = enumExpression.identifier
 		}
-		else if context.isUsingSwiftSyntax,
-			let enumExpression = dotExpression.leftExpression as? TypeExpression
+		else if let enumExpression = dotExpression.leftExpression as? TypeExpression
 		{
 			enumType = enumExpression.typeName
 		}
-		else if context.isUsingSwiftSyntax,
-			let enumExpression = dotExpression.leftExpression as? DotExpression,
+		else if let enumExpression = dotExpression.leftExpression as? DotExpression,
 			let typeName = enumExpression.asString()
 		{
 			enumType = typeName
@@ -2709,8 +2696,7 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 						"OrNull"
 
 					let maybeTypeExpression: TypeExpression?
-					if context.isUsingSwiftSyntax,
-						let dotTypeExpression = onlyPair.expression as? DotExpression,
+					if let dotTypeExpression = onlyPair.expression as? DotExpression,
 						let leftTypeExpression = dotTypeExpression.leftExpression as? TypeExpression
 					{
 						maybeTypeExpression = leftTypeExpression
@@ -3247,7 +3233,7 @@ public class RefactorOptionalsInSubscriptsTranspilationPass: TranspilationPass {
 			let indexExpressionType = subscriptExpression.indexExpression.swiftType ?? "<<Error>>"
 
 			let returnType: String
-			if context.isUsingSwiftSyntax, subscriptExpression.typeName.hasSuffix("?") {
+			if subscriptExpression.typeName.hasSuffix("?") {
 				returnType = String(subscriptExpression.typeName.dropLast())
 			}
 			else {
@@ -5147,47 +5133,22 @@ public class FixProtocolGenericsTranspilationPass: TranspilationPass {
 	}
 }
 
-/// Extensions for generic types in Swift 5.2 are dumped without the generic information (i.e.
-/// an extension for `Box<T>` is dumped as if it were just for `Box`). We can retrieve that generic
-/// information by looking at a function's type, which includes the extended type (i.e.
-/// `<T> (Box<T>) -> (Int) -> ()`. This pass retrieves that information and adds it to the extended
-/// type if needed.
-///
-/// If we're in SwiftSyntax, we also have to add the extended type's generics to the function
-/// declaration itself.
+/// Function declarations in extensions of generic types need to know the generic information.
 public class FixExtensionGenericsTranspilationPass: TranspilationPass {
 	override func processFunctionDeclaration(
 		_ functionDeclaration: FunctionDeclaration)
 		-> FunctionDeclaration?
 	{
-		if context.isUsingSwiftSyntax {
-			if let extendedType = functionDeclaration.extendsType, extendedType.contains("<") {
-				let genericString = String(extendedType
-					.drop(while: { $0 != "<" })
-					.dropFirst()
-					.dropLast())
-				let genericTypes = Utilities.splitTypeList(genericString, separators: [","])
-				functionDeclaration.genericTypes.append(contentsOf: genericTypes)
-			}
-
-			return super.processFunctionDeclaration(functionDeclaration)
+		if let extendedType = functionDeclaration.extendsType, extendedType.contains("<") {
+			let genericString = String(extendedType
+				.drop(while: { $0 != "<" })
+				.dropFirst()
+				.dropLast())
+			let genericTypes = Utilities.splitTypeList(genericString, separators: [","])
+			functionDeclaration.genericTypes.append(contentsOf: genericTypes)
 		}
-		else {
-			if let extendedType = functionDeclaration.extendsType {
-				var newType = functionDeclaration.functionType
-				let prefixToDiscard = functionDeclaration.functionType.prefix { $0 != "(" }
-				newType = String(functionDeclaration.functionType
-					.dropFirst(prefixToDiscard.count + 1))
-				newType = String(newType.prefix { $0 != ")" })
 
-				// If we're really just adding generics (i.e. `Box` to `Box<T>`)
-				if newType.hasPrefix(extendedType + "<") {
-					functionDeclaration.extendsType = newType
-				}
-			}
-
-			return super.processFunctionDeclaration(functionDeclaration)
-		}
+		return super.processFunctionDeclaration(functionDeclaration)
 	}
 }
 
@@ -5208,15 +5169,10 @@ public class EscapeSpecialCharactersInStringsTranspilationPass: TranspilationPas
 		_ literalCharacterExpression: LiteralCharacterExpression)
 		-> Expression
 	{
-		if context.isUsingSwiftSyntax {
-			let replacedLiteralCharacterExpression = LiteralCharacterExpression(
-				range: literalCharacterExpression.range,
-				value: literalCharacterExpression.value.replacingOccurrences(of: "'", with: "\\'"))
-			return super.replaceLiteralCharacterExpression(replacedLiteralCharacterExpression)
-		}
-		else {
-			return super.replaceLiteralCharacterExpression(literalCharacterExpression)
-		}
+		let replacedLiteralCharacterExpression = LiteralCharacterExpression(
+			range: literalCharacterExpression.range,
+			value: literalCharacterExpression.value.replacingOccurrences(of: "'", with: "\\'"))
+		return super.replaceLiteralCharacterExpression(replacedLiteralCharacterExpression)
 	}
 }
 
@@ -5431,10 +5387,6 @@ public class MatchFunctionCallsToDeclarationsTranspilationPass: TranspilationPas
 		_ callExpression: CallExpression)
 		-> CallExpression
 	{
-		guard context.isUsingSwiftSyntax else {
-			return callExpression
-		}
-
 		let tupleExpression = callExpression.parameters as! TupleExpression
 
 		// Go through the dot expression chain to get the final expression
@@ -5493,32 +5445,18 @@ public class MatchFunctionCallsToDeclarationsTranspilationPass: TranspilationPas
 
 		// Check if there's an unlabeled closure at the end (and assume it's a trailing closure
 		// if there is)
-		let unlabeledTrailingClosureArgIndex: Int?
-		if context.isUsingSwiftSyntax {
-			unlabeledTrailingClosureArgIndex = callArguments.lastIndex(where:
-				{ labeledExpression in
-					if labeledExpression.label == nil,
-					   let closure = labeledExpression.expression as? ClosureExpression,
-					   closure.isTrailing
-					{
-						return true
-					}
-					else {
-						return false
-					}
-				})
-		}
-		else {
-			if let lastArgument = callArguments.last,
-			   lastArgument.expression is ClosureExpression,
-			   lastArgument.label == nil
-			{
-				unlabeledTrailingClosureArgIndex = callArguments.count - 1
-			}
-			else {
-				unlabeledTrailingClosureArgIndex = nil
-			}
-		}
+		let unlabeledTrailingClosureArgIndex = callArguments.lastIndex(where:
+			{ labeledExpression in
+				if labeledExpression.label == nil,
+				   let closure = labeledExpression.expression as? ClosureExpression,
+				   closure.isTrailing
+				{
+					return true
+				}
+				else {
+					return false
+				}
+			})
 
 		let matchFailed = matchCallArguments(
 			args: callArguments,
