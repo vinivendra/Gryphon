@@ -37,7 +37,7 @@ $ cd Gryphon
 $ ./Scripts/install.sh
 ````
 
-Make sure you also download any dependencies you need. Gryphon uses Ruby and the [Xcodeproj](https://github.com/CocoaPods/Xcodeproj) tool for Xcode integration. You might also want to get [Kotlin](https://github.com/JetBrains/kotlin/releases/tag/v1.4.10), [Java](https://www.oracle.com/java/technologies/javase-jre8-downloads.html), and [Android Studio](https://developer.android.com/studio/) to follow some of the tutorials.
+Make sure you also download any dependencies you need. Gryphon uses Ruby and the [Xcodeproj](https://github.com/CocoaPods/Xcodeproj) tool for Xcode integration. You might also want to get [Kotlin](https://github.com/JetBrains/kotlin/releases/latest), [Java](https://www.oracle.com/java/technologies/javase-jre8-downloads.html), and [Android Studio](https://developer.android.com/studio/) to follow some of the tutorials.
 
 ## Option 2: Using Gryphon on Docker
 
