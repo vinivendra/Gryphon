@@ -1157,15 +1157,14 @@ public class KotlinTranslator {
 				return translatedExpression
 			}
 		}
-		else if context.isUsingSwiftSyntax,
-			let concatenationExpression = caseExpression as? ConcatenationExpression,
+		else if let concatenationExpression = caseExpression as? ConcatenationExpression,
 			let leftConcatenationExpression =
 				concatenationExpression.leftExpression as? ConcatenationExpression,
 			let literalOperator =
 				leftConcatenationExpression.rightExpression as? LiteralCodeExpression,
 			literalOperator.string == ".." || literalOperator.string == " until "
 		{
-			// If it's a range (`1 in 0..1`) in the SwiftSyntax format
+			// If it's a range (`1 in 0..1`)
 			let result = KotlinTranslation(range: caseExpression.range)
 			result.append("in ")
 			let translatedExpression = try translateExpression(
@@ -1776,42 +1775,11 @@ public class KotlinTranslator {
 			}
 		}
 
-		let functionTranslation: TranspilationContext.FunctionTranslation?
-		if context.isUsingSwiftSyntax {
-			// In SwiftSyntax this translation happens in a TranspilationPass
-			functionTranslation = nil
-		}
-		else if let expression = functionExpression as? DeclarationReferenceExpression,
-			let typeName = expression.typeName
-		{
-			functionTranslation = self.context.getFunctionTranslation(
-				forName: expression.identifier,
-				typeName: typeName)
-		}
-		else if let typeExpression = functionExpression as? TypeExpression,
-			let parameterTypes = callExpression.parameters.swiftType
-		{
-			let typeName = typeExpression.typeName
-			let initializerType = "(\(typeName).Type) -> \(parameterTypes) -> \(typeName)"
-			functionTranslation = self.context.getFunctionTranslation(
-				forName: typeName,
-				typeName: initializerType)
-		}
-		else {
-			functionTranslation = nil
-		}
-
-		if let prefix = functionTranslation?.prefix {
-			result.append(prefix)
-		}
-		else {
-			result.append(try translateExpression(functionExpression, withIndentation: indentation))
-		}
+		result.append(try translateExpression(functionExpression, withIndentation: indentation))
 
 		let parametersTranslation: KotlinTranslation
 		parametersTranslation = try translateParameters(
 			forCallExpression: callExpression,
-			withFunctionTranslation: functionTranslation,
 			withIndentation: indentation,
 			shouldAddNewlines: shouldAddNewlines)
 
@@ -1832,33 +1800,11 @@ public class KotlinTranslator {
 
 	private func translateParameters(
 		forCallExpression callExpression: CallExpression,
-		withFunctionTranslation functionTranslation: TranspilationContext.FunctionTranslation?,
 		withIndentation indentation: String,
 		shouldAddNewlines: Bool)
 		throws -> KotlinTranslation
 	{
-		if let rawTupleExpression = callExpression.parameters as? TupleExpression {
-			let tupleExpression: TupleExpression
-			if let translationParameters = functionTranslation?.parameters {
-				let newPairs = zip(translationParameters, rawTupleExpression.pairs).map
-					{ translationPairTuple in
-						(translationPairTuple.1.label == nil) ?
-							LabeledExpression(
-								label: nil,
-								expression: translationPairTuple.1.expression) :
-							LabeledExpression(
-								label: translationPairTuple.0.label,
-								expression: translationPairTuple.1.expression)
-					}.toMutableList()
-				tupleExpression = TupleExpression(
-					syntax: rawTupleExpression.syntax,
-					range: rawTupleExpression.range,
-					pairs: newPairs)
-			}
-			else {
-				tupleExpression = rawTupleExpression
-			}
-
+		if let tupleExpression = callExpression.parameters as? TupleExpression {
 			if callExpression.allowsTrailingClosure,
 			   let closurePair = tupleExpression.pairs.last,
 			   let closureExpression = closurePair.expression as? ClosureExpression,
@@ -1898,8 +1844,7 @@ public class KotlinTranslator {
 				shouldAddNewlines: shouldAddNewlines)
 		}
 		else if let tupleShuffleExpression = callExpression.parameters as? TupleShuffleExpression {
-			let newLabels = functionTranslation?.parameters.map { $0.label }.toMutableList() ??
-				tupleShuffleExpression.labels
+			let newLabels = tupleShuffleExpression.labels
 			let newTupleShuffleExpression = TupleShuffleExpression(
 				syntax: tupleShuffleExpression.syntax,
 				range: tupleShuffleExpression.range,
@@ -1921,7 +1866,6 @@ public class KotlinTranslator {
 
 				return try translateParameters(
 					forCallExpression: newCallExpression,
-					withFunctionTranslation: nil,
 					withIndentation: indentation,
 					shouldAddNewlines: shouldAddNewlines)
 			}
