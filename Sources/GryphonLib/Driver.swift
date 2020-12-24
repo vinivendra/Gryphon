@@ -33,7 +33,6 @@ public class Driver {
 		"--verbose",
 		"--quiet",
 		"--sync",
-		"--legacyFrontend",
 	]
 
 	public static let supportedArgumentsWithParameters: List = [
@@ -86,11 +85,8 @@ public class Driver {
 		let isVerbose = arguments.contains("--verbose")
 		Compiler.shouldLogProgress = isVerbose
 
-		let isUsingSwiftSyntax = !arguments.contains("--legacyFrontend")
-
 		Compiler.log("ℹ️  Gryphon version \(gryphonVersion)")
 		Compiler.log("ℹ️  SwiftSyntax version \(TranspilationContext.swiftSyntaxVersion)")
-		Compiler.log("ℹ️  Using \(isUsingSwiftSyntax ? "Swift Syntax" : "AST dumps")")
 
 		let badArguments = unsupportedArguments(in: arguments)
 		if !badArguments.isEmpty {
@@ -167,10 +163,6 @@ public class Driver {
 				let newArguments: MutableList = [xcodeProject]
 				if isVerbose {
 					newArguments.append("--verbose")
-				}
-
-				if !isUsingSwiftSyntax {
-					newArguments.append("--legacyFrontend")
 				}
 
 				if let target = target {
@@ -392,9 +384,6 @@ public class Driver {
 
 		if arguments.contains("--verbose") {
 			newArguments.append("--verbose")
-		}
-		if arguments.contains("--legacyFrontend") {
-			newArguments.append("--legacyFrontend")
 		}
 
 		var result: Any?
@@ -1181,9 +1170,6 @@ Main usage:
 
       ↪️  --target=<target name>
             Specify the target to be built when translating with Xcode.
-
-      ↪️  --legacyFrontend
-            Use AST dumps as the frontend instead of SwiftSyntax and SourceKit.
 
 Advanced subcommands:
   ➡️  clean

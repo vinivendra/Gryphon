@@ -87,69 +87,6 @@ class DriverTest: XCTestCase {
 		Compiler.logError = oldErrorFunction
 	}
 
-	func testOutputsWithASTDumps() {
-		let oldOutputFunction = Compiler.outputFunction
-		let oldErrorFunction = Compiler.logError
-
-		var compilerOutput = ""
-		var compilerError = ""
-		Compiler.outputFunction = { (contents: Any, terminator: String) -> () in
-				compilerOutput += "\(contents)" + terminator
-			}
-		Compiler.logError = { (contents: Any) -> () in
-				compilerError += "\(contents)"
-			}
-
-		do {
-			try Driver.run(withArguments:
-							["\(TestUtilities.relativeTestFilesPath)/test.swift",
-							 "--legacyFrontend", ])
-			XCTAssert(!compilerOutput.isEmpty)
-
-			compilerOutput = ""
-			try Driver.run(withArguments:
-							["\(TestUtilities.testCasesPath)outputs.swift",
-							 "--legacyFrontend", ])
-			XCTAssert(compilerOutput.isEmpty)
-
-			compilerOutput = ""
-			try Driver.run(withArguments:
-							["\(TestUtilities.testCasesPath)outputs.swift",
-							 "--write-to-console",
-							 "--legacyFrontend", ])
-			XCTAssert(!compilerOutput.isEmpty)
-
-			// Check if --quiet mutes outputs and warnings
-			compilerOutput = ""
-			compilerError = ""
-			try Driver.run(withArguments:
-				["\(TestUtilities.testCasesPath)warnings.swift",
-				 "--write-to-console",
-				 "--quiet",
-				 "--legacyFrontend", ])
-			XCTAssert(compilerOutput.isEmpty)
-			XCTAssert(compilerError.isEmpty)
-
-			// Check if --quiet does not mute errors
-			compilerOutput = ""
-			compilerError = ""
-			try Driver.run(withArguments:
-							["\(TestUtilities.testCasesPath)errors.swift",
-							 "--write-to-console",
-							 "--quiet",
-							 "--continue-on-error",
-							 "--legacyFrontend", ])
-			XCTAssert(compilerOutput.isEmpty)
-			XCTAssert(!compilerError.isEmpty)
-		}
-		catch let error {
-			XCTFail("🚨 Test failed with error:\n\(error)")
-		}
-
-		Compiler.outputFunction = oldOutputFunction
-		Compiler.logError = oldErrorFunction
-	}
-
 	func testGenerateGryphonLibraries() {
 		do {
 			try Driver.run(withArguments: ["generate-libraries"])
