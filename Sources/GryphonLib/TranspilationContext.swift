@@ -19,11 +19,8 @@
 import Foundation
 
 public class TranspilationContext {
-	let toolchainName: String? = nil
-	let swiftVersion: String = ""
 	let indentationString: String
 	let defaultsToFinal: Bool
-	let isUsingSwiftSyntax: Bool = true
 	var compilationArguments: SwiftCompilationArguments
 	let xcodeProjectPath: String?
 	let target: String?

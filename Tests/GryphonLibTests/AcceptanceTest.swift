@@ -41,95 +41,66 @@ class AcceptanceTest: XCTestCase {
 		for testName in tests {
 			print("- Testing \(testName)...")
 
-			if let errorMessage = runTest(onTestCaseNamed: testName, usingSwiftSyntax: false) {
-				XCTFail(errorMessage)
+			// Compile the Kotlin code
+			let testCasePath = TestUtilities.testCasesPath + testName
+
+			let kotlinFilePath = (testCasePath + "-swiftSyntax").withExtension(.kt)
+
+			let commandResult = Shell.runShellCommand(
+				OS.kotlinCompilerPath,
+				arguments: [
+					"-include-runtime", "-d",
+					"\(TestUtilities.kotlinBuildFolder)/kotlin.jar",
+					kotlinFilePath, ])
+
+			guard commandResult.status == 0 else {
+				XCTFail("Test \(testName) - compilation error:\n" +
+					commandResult.standardOutput +
+					commandResult.standardError)
+				continue
+			}
+
+			// Run the compiled binary
+			let arguments: MutableList = [
+				"java", "-jar",
+				"\(TestUtilities.kotlinBuildFolder)/kotlin.jar",
+				"-test", "-avoid-unicode", ]
+
+			let defaultsToFinal = testName.contains("-default-final")
+			if defaultsToFinal {
+				arguments.append("--default-final")
+			}
+
+			let runCommandResult = Shell.runShellCommand(arguments)
+			guard runCommandResult.status == 0,
+				  runCommandResult.standardError == "" else
+			{
+				XCTFail("Test \(testName) - execution error. It's possible a command timed out.")
+				continue
+			}
+
+			// Compare the result of running the binary with its expected output
+
+			// Files that don't output anything are just included here to ensure the compilation
+			// succeeds and have no file that contains the expected output (since there's no
+			// expected output).
+			let outputFilePath = testCasePath.withExtension(.output)
+			if Utilities.fileExists(at: outputFilePath) {
+				let expectedOutput = try! Utilities.readFile(outputFilePath)
+				if runCommandResult.standardOutput != expectedOutput {
+					XCTFail("Test \(testName): program failed to produce expected result. " +
+						"Printing diff ('<' means generated, '>' means expected):" +
+						TestUtilities.diff(runCommandResult.standardOutput, expectedOutput))
+				}
+			}
+			else {
+				if !runCommandResult.standardOutput.isEmpty {
+					XCTFail("Test \(testName): expected no output from program. Received output:" +
+						runCommandResult.standardOutput)
+				}
 			}
 
 			print("\t- Done!")
-
-			let shouldTestSwiftSyntax = true
-			if shouldTestSwiftSyntax {
-				print("- Testing \(testName) (Swift syntax)...")
-
-				if let errorMessage = runTest(
-					onTestCaseNamed: testName,
-					usingSwiftSyntax: true)
-				{
-					XCTFail(errorMessage)
-				}
-
-				print("\t- Done!")
-			}
 		}
-	}
-
-	/// Compiles the existing Kotlin test case, runs it and compares it to the output file. Returns
-	/// an error message if an error occurs.
-	func runTest(onTestCaseNamed testName: String, usingSwiftSyntax: Bool) -> String? {
-		// Compile the Kotlin code
-		let testCasePath = TestUtilities.testCasesPath + testName
-
-		let kotlinFilePath: String
-		if usingSwiftSyntax {
-			kotlinFilePath = (testCasePath + "-swiftSyntax").withExtension(.kt)
-		}
-		else {
-			kotlinFilePath = testCasePath.withExtension(.kt)
-		}
-
-		let commandResult = Shell.runShellCommand(
-			OS.kotlinCompilerPath,
-			arguments: [
-				"-include-runtime", "-d",
-				"\(TestUtilities.kotlinBuildFolder)/kotlin.jar",
-				kotlinFilePath, ])
-
-		guard commandResult.status == 0 else {
-			return "Test \(testName) - compilation error:\n" +
-				commandResult.standardOutput +
-				commandResult.standardError
-		}
-
-		// Run the compiled binary
-		let arguments: MutableList = [
-			"java", "-jar",
-			"\(TestUtilities.kotlinBuildFolder)/kotlin.jar",
-			"-test", "-avoid-unicode", ]
-
-		let defaultsToFinal = testName.contains("-default-final")
-		if defaultsToFinal {
-			arguments.append("--default-final")
-		}
-
-		let runCommandResult = Shell.runShellCommand(arguments)
-		guard runCommandResult.status == 0,
-			runCommandResult.standardError == "" else
-		{
-			return "Test \(testName) - execution error. " +
-				"It's possible a command timed out."
-		}
-
-		// Compare the result of running the binary with its expected output
-
-		// Files that don't output anything are just included here to ensure the compilation
-		// succeeds and have no file that contains the expected output (since there's no
-		// expected output).
-		let outputFilePath = testCasePath.withExtension(.output)
-		if Utilities.fileExists(at: outputFilePath) {
-			let expectedOutput = try! Utilities.readFile(outputFilePath)
-			if runCommandResult.standardOutput != expectedOutput {
-				return "Test \(testName): program failed to produce expected result. " +
-					"Printing diff ('<' means generated, '>' means expected):" +
-					TestUtilities.diff(runCommandResult.standardOutput, expectedOutput)
-			}
-		}
-		else {
-			if !runCommandResult.standardOutput.isEmpty {
-				return "Test \(testName): expected no output from program. Received output:" +
-					runCommandResult.standardOutput
-			}
-		}
-
-		return nil
 	}
 }

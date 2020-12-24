@@ -236,7 +236,7 @@ public class Compiler {
 	}
 
 	//
-	public static func generateGryphonRawASTUsingSwiftSyntax(
+	public static func generateGryphonRawAST(
 		usingFileDecoder decoder: SwiftSyntaxDecoder,
 		asMainFile: Bool,
 		withContext context: TranspilationContext)
@@ -259,7 +259,7 @@ public class Compiler {
 			let decoder = try generateSwiftSyntaxDecoder(
 				fromSwiftFile: $0,
 				withContext: context)
-			return try generateGryphonRawASTUsingSwiftSyntax(
+			return try generateGryphonRawAST(
 				usingFileDecoder: decoder,
 				asMainFile: translateAsMainFile,
 				withContext: context)

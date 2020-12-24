@@ -249,7 +249,7 @@ public class Driver {
 		Compiler.logEnd("✅  Done processing SwiftSyntax for \(inputFileRelativePath).")
 
 		Compiler.logStart("🧑‍💻  Converting SwiftSyntax for \(inputFileRelativePath)...")
-		let gryphonRawAST = try Compiler.generateGryphonRawASTUsingSwiftSyntax(
+		let gryphonRawAST = try Compiler.generateGryphonRawAST(
 			usingFileDecoder: decoder,
 			asMainFile: isMainFile,
 			withContext: context)
@@ -686,27 +686,6 @@ public class Driver {
 		return try TranspilationContext.SwiftCompilationArguments(
 			absoluteFilePathsAndOtherArguments: arguments,
 			absolutePathToSDK: sdkPath)
-	}
-
-	static func outdatedASTDumpFiles(
-		forInputFiles inputFiles: List<String>,
-		swiftVersion: String)
-		-> MutableList<String>
-	{
-		let result: MutableList<String> = []
-
-		for inputFile in inputFiles {
-			let astDumpFile = SupportingFile.pathOfSwiftASTDumpFile(
-				forSwiftFile: inputFile,
-				swiftVersion: swiftVersion)
-			if !Utilities.fileExists(at: astDumpFile) ||
-				Utilities.file(inputFile, wasModifiedLaterThan: astDumpFile)
-			{
-				result.append(inputFile)
-			}
-		}
-
-		return result
 	}
 
 	/// Returns a list of all Swift input files, including those inside xcfilelists, but

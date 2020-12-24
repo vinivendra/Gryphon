@@ -43,7 +43,7 @@ class PerformanceTest: XCTestCase {
 					let decoder = try Compiler.generateSwiftSyntaxDecoder(
 						fromSwiftFile: path,
 						withContext: context)
-					_ = try Compiler.generateGryphonRawASTUsingSwiftSyntax(
+					_ = try Compiler.generateGryphonRawAST(
 						usingFileDecoder: decoder,
 						asMainFile: true,
 						withContext: context)

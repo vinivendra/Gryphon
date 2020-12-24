@@ -249,10 +249,7 @@ extension Utilities {
 
 		let astArray = try Compiler.transpileGryphonRawASTs(
 			fromInputFiles: [SupportingFile.gryphonTemplatesLibrary.relativePath],
-			fromASTDumpFiles: [
-				SupportingFile.pathOfSwiftASTDumpFile(
-					forSwiftFile: SupportingFile.gryphonTemplatesLibrary.relativePath,
-					swiftVersion: transpilationContext.swiftVersion), ],
+			fromASTDumpFiles: [],
 			withContext: transpilationContext)
 
 		let ast = astArray[0]

@@ -2358,19 +2358,6 @@ public class SupportingFile {
 		return Utilities.getAbsolutePath(forFile: relativePath)
 	}
 
-	/// Takes the path to a Swift file (with or without extension) and returns the path to its
-	/// corresponding AST dump file, which may or may not exist.
-	static public func pathOfSwiftASTDumpFile(
-		forSwiftFile swiftFile: String,
-		swiftVersion: String)
-		-> String
-	{
-		let relativePath = Utilities.getRelativePath(forFile: swiftFile)
-		let pathInGryphonFolder = "\(astDumpsFolder)-Swift-\(swiftVersion)/\(relativePath)"
-		let astDumpPath = Utilities.changeExtension(of: pathInGryphonFolder, to: .swiftASTDump)
-		return astDumpPath
-	}
-
 	static public func pathOfKotlinErrorMapFile(forKotlinFile kotlinFile: String) -> String {
 		let relativePath = Utilities.getRelativePath(forFile: kotlinFile)
 		let pathInGryphonFolder = "\(kotlinErrorMapsFolder)/\(relativePath)"
