@@ -914,8 +914,6 @@ public class Driver {
 		Compiler.log("ℹ️  Adapting Swift compilation command for dumping ASTs...")
 		let commands = compileSwiftStep.split(withStringSeparator: "\n")
 
-		// Drop the header and the old compilation command
-		var astDumpScriptContents = commands.dropFirst().dropLast().joined(separator: "\n") + "\n"
 		var sourceKitFileContents = ""
 
 		// Fix the call to the Swift compiler
@@ -936,34 +934,14 @@ public class Driver {
 			!argument.hasPrefix("-emit")
 		}
 
-		let astDumpArguments = filteredArguments.toMutableList()
 		let sourceKitArguments = filteredArguments.toMutableList()
 
-		let templatesFilePath = SupportingFile.gryphonTemplatesLibrary.absolutePath
-			.replacingOccurrences(of: " ", with: "\\ ")
-		astDumpArguments.append(templatesFilePath)
-
-		let escapedOutputFileMapPath = SupportingFile.temporaryOutputFileMap.absolutePath
-			.replacingOccurrences(of: " ", with: "\\ ")
-		astDumpArguments.append("-output-file-map")
-		astDumpArguments.append(escapedOutputFileMapPath)
-
-		astDumpArguments.append("-dump-ast")
-
-		astDumpArguments.append("-D")
-		astDumpArguments.append("GRYPHON")
 		sourceKitArguments.append("-D")
 		sourceKitArguments.append("GRYPHON")
 
 		// Build the resulting command
-		astDumpScriptContents += "\t" + astDumpArguments.joined(separator: " ") + "\n"
-
 		sourceKitFileContents += sourceKitArguments.dropFirst().joined(separator: " ")
 
-		try Utilities.createFile(
-			named: SupportingFile.astDumpsScript.name,
-			inDirectory: SupportingFile.astDumpsScript.folder ?? ".",
-			containing: astDumpScriptContents)
 		try Utilities.createFile(
 			named: SupportingFile.sourceKitCompilationArguments.name,
 			inDirectory: SupportingFile.sourceKitCompilationArguments.folder ?? ".",

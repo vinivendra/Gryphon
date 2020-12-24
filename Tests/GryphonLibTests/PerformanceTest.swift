@@ -72,7 +72,6 @@ class PerformanceTest: XCTestCase {
 					target: nil)
 				let rawAST = try! Compiler.transpileGryphonRawASTs(
 					fromInputFiles: [testCasePath],
-					fromASTDumpFiles: [],
 					withContext: context)
 				return (rawAST[0], context)
 			}
@@ -108,7 +107,6 @@ class PerformanceTest: XCTestCase {
 					target: nil)
 				let rawAST = try! Compiler.transpileGryphonRawASTs(
 					fromInputFiles: [testCasePath],
-					fromASTDumpFiles: [],
 					withContext: context)
 				let semiRawAST = try! Compiler.generateGryphonASTAfterFirstPasses(
 					fromGryphonRawAST: rawAST[0],
@@ -147,7 +145,6 @@ class PerformanceTest: XCTestCase {
 					target: nil)
 				let rawAST = try! Compiler.transpileGryphonRawASTs(
 					fromInputFiles: [testCasePath],
-					fromASTDumpFiles: [],
 					withContext: context)
 				return (rawAST[0], context)
 			}
@@ -183,7 +180,6 @@ class PerformanceTest: XCTestCase {
 					target: nil)
 				let rawAST = try! Compiler.transpileGryphonASTs(
 					fromInputFiles: [testCasePath],
-					fromASTDumpFiles: [],
 					withContext: context)
 				return (rawAST[0], context)
 			}
@@ -220,7 +216,6 @@ class PerformanceTest: XCTestCase {
 						target: nil)
 					_ = try Compiler.transpileKotlinCode(
 						fromInputFiles: [testCasePath],
-						fromASTDumpFiles: [],
 						withContext: context)
 				}
 				catch let error {

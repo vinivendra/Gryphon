@@ -64,8 +64,8 @@ class UtilitiesTest: XCTestCase {
 	}
 
 	func testFileExtension() {
-		XCTAssertEqual(FileExtension.swiftASTDump.rawValue, "swiftASTDump")
-		XCTAssertEqual("fileName".withExtension(.swiftASTDump), "fileName.swiftASTDump")
+		XCTAssertEqual(FileExtension.swiftAST.rawValue, "swiftAST")
+		XCTAssertEqual("fileName".withExtension(.swiftAST), "fileName.swiftAST")
 	}
 
 	func testChangeExtension() {

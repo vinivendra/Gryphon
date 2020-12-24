@@ -40,7 +40,6 @@ class IntegrationTest: XCTestCase {
 				print("- Testing \(testName) (Swift Syntax)...")
 				let generatedKotlinCode = try Compiler.transpileKotlinCode(
 					fromInputFiles: [testCasePath.withExtension(.swift)],
-					fromASTDumpFiles: [],
 					withContext: TranspilationContext(
 						indentationString: "\t",
 						defaultsToFinal: defaultsToFinal,
@@ -91,7 +90,6 @@ class IntegrationTest: XCTestCase {
 			let testCasePath = TestUtilities.testCasesPath + "warnings.swift"
 			_ = try Compiler.transpileKotlinCode(
 				fromInputFiles: [testCasePath],
-				fromASTDumpFiles: [],
 				withContext: TranspilationContext(
 					indentationString: "\t",
 					defaultsToFinal: false,

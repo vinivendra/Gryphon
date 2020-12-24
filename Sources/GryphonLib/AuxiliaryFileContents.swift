@@ -2369,7 +2369,6 @@ public class SupportingFile {
 	public static let gryphonBuildFolder = ".gryphon"
 	public static let gryphonScriptsFolder = "\(gryphonBuildFolder)/scripts"
 	public static let kotlinErrorMapsFolder = "\(gryphonBuildFolder)/KotlinErrorMaps"
-	public static let astDumpsFolder = "\(gryphonBuildFolder)/ASTDumps"
 
 	// Files in the project folder
 	public static let xcFileList = SupportingFile(
@@ -2392,10 +2391,6 @@ public class SupportingFile {
 		contents: gryphonTemplatesLibraryFileContents)
 	public static let temporaryOutputFileMap = SupportingFile(
 		"output-file-map.json",
-		folder: SupportingFile.gryphonBuildFolder,
-		contents: nil)
-	public static let astDumpsScript = SupportingFile(
-		"updateASTDumps.sh",
 		folder: SupportingFile.gryphonBuildFolder,
 		contents: nil)
 	public static let sourceKitCompilationArguments = SupportingFile(

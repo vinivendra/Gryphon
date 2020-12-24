@@ -34,7 +34,6 @@ class SwiftSyntaxDecoderTest: XCTestCase {
 			let testCasePath = TestUtilities.testCasesPath + testName
 			let gryphonAST = try Compiler.transpileGryphonRawASTs(
 				fromInputFiles: [testCasePath.withExtension(.swift)],
-				fromASTDumpFiles: [],
 				withContext: TranspilationContext(
 					indentationString: "\t",
 					defaultsToFinal: false,

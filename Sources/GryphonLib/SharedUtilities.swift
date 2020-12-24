@@ -163,7 +163,6 @@ public class Utilities {
 }
 
 public enum FileExtension: String {
-    case swiftASTDump
     case swiftAST
     case gryphonASTRaw
     case gryphonAST
@@ -249,7 +248,6 @@ extension Utilities {
 
 		let astArray = try Compiler.transpileGryphonRawASTs(
 			fromInputFiles: [SupportingFile.gryphonTemplatesLibrary.relativePath],
-			fromASTDumpFiles: [],
 			withContext: transpilationContext)
 
 		let ast = astArray[0]
