@@ -399,12 +399,12 @@ internal class CompilerIssue {
 			let absolutePath = Utilities.getAbsolutePath(forFile: sourceFilePath)
 
 			if let sourceFileRange = sourceFileRange {
-				let sourceFileString = sourceFile.getLine(sourceFileRange.lineStart) ??
-					"<<Unable to get line \(sourceFileRange.lineStart) in file \(absolutePath)>>"
+				let sourceFileString = sourceFile.getLine(sourceFileRange.start.line) ??
+					"<<Unable to get line \(sourceFileRange.start.line) in file \(absolutePath)>>"
 
 				var underlineString = ""
-				if sourceFileRange.columnEnd <= sourceFileString.count {
-					for i in 1..<sourceFileRange.columnStart {
+				if sourceFileRange.end.column <= sourceFileString.count {
+					for i in 1..<sourceFileRange.start.column {
 						let sourceFileCharacter = sourceFileString[
 							sourceFileString.index(sourceFileString.startIndex, offsetBy: i - 1)]
 						if sourceFileCharacter == "\t" {
@@ -415,15 +415,15 @@ internal class CompilerIssue {
 						}
 					}
 					underlineString += "^"
-					if sourceFileRange.columnStart < sourceFileRange.columnEnd {
-						for _ in sourceFileRange.columnStart..<sourceFileRange.columnEnd {
+					if sourceFileRange.start.column < sourceFileRange.end.column {
+						for _ in sourceFileRange.start.column..<sourceFileRange.end.column {
 							underlineString += "~"
 						}
 					}
 				}
 
-				result = "\(absolutePath):\(sourceFileRange.lineStart):" +
-					"\(sourceFileRange.columnStart): \(errorOrWarning): \(message)\n" +
+				result = "\(absolutePath):\(sourceFileRange.start.line):" +
+					"\(sourceFileRange.start.column): \(errorOrWarning): \(message)\n" +
 					"\(sourceFileString)\n" +
 					"\(underlineString)\n"
 			}
@@ -447,8 +447,8 @@ internal class CompilerIssue {
 	/// Comparison function for ordering issues with smaller lines first, and issues with no lines
 	/// last (i.e. issues where the `range` is `nil`).
 	func isBeforeIssueInLines(_ otherIssue: CompilerIssue) -> Bool {
-		if let thisLine = self.range?.lineStart {
-			if let otherLine = otherIssue.range?.lineStart {
+		if let thisLine = self.range?.start.line {
+			if let otherLine = otherIssue.range?.start.line {
 				return thisLine < otherLine
 			}
 			else {

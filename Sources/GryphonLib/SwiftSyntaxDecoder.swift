@@ -322,7 +322,7 @@ public class SourceKit {
 			var errorMessage = "SourceKit failed to get an expression's type"
 
 			if let range = maybeRange {
-				errorMessage += " at \(sourceFile.path):\(range.lineStart):\(range.columnStart)"
+				errorMessage += " at \(sourceFile.path):\(range.start.line):\(range.start.column)"
 			}
 
 			if context.xcodeProjectPath != nil {
@@ -565,7 +565,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			// Raise warnings for deprecated translation comments
 			if let range = statement.getRange(inFile: self.sourceFile),
 			   let translationComment =
-			      self.sourceFile.getTranslationCommentFromLine(range.lineStart)
+			      self.sourceFile.getTranslationCommentFromLine(range.start.line)
 			{
 				if translationComment.key == .ignore {
 					Compiler.handleWarning(
@@ -712,9 +712,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			if isInTopOfFileComments {
 				if let commentStatement = statement as? CommentStatement {
 					if let range = commentStatement.range,
-						lastTopOfFileCommentLine >= range.lineStart - 1
+						lastTopOfFileCommentLine >= range.start.line - 1
 					{
-						lastTopOfFileCommentLine = range.lineEnd
+						lastTopOfFileCommentLine = range.end.line
 						declarations.append(statement)
 						continue
 					}
@@ -2014,7 +2014,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			forSyntax: functionLikeDeclaration.asSyntax,
 			withKey: .pure).isEmpty
 		if let range = functionLikeDeclaration.getRange(inFile: self.sourceFile),
-		   let translationComment = self.sourceFile.getTranslationCommentFromLine(range.lineStart),
+		   let translationComment = self.sourceFile.getTranslationCommentFromLine(range.start.line),
 		   translationComment.key == .pure
 		{
 			Compiler.handleWarning(
@@ -2530,7 +2530,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let leadingComments = getLeadingComments(forSyntax: Syntax(expression), withKey: .value)
 
 		if let range = expression.getRange(inFile: self.sourceFile),
-		   let translationComment = self.sourceFile.getTranslationCommentFromLine(range.lineStart),
+		   let translationComment = self.sourceFile.getTranslationCommentFromLine(range.start.line),
 		   translationComment.key == .value,
 		   let commentValue = translationComment.value,
 		   let swiftText = try? expression.getLiteralText(fromSourceFile: self.sourceFile)
@@ -3659,9 +3659,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let isMultiline = (stringLiteralExpression.openQuote.tokenKind == .multilineStringQuote)
 
 		if let range = stringLiteralExpression.getRange(inFile: self.sourceFile),
-		   range.lineStart >= 2,
+		   range.start.line >= 2,
 		   let translationComment =
-		      self.sourceFile.getTranslationCommentFromLine(range.lineStart - 1),
+		      self.sourceFile.getTranslationCommentFromLine(range.start.line - 1),
 		   translationComment.key == .multiline
 		{
 			Compiler.handleWarning(
@@ -3720,8 +3720,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 								let problemRange: SourceFileRange?
 								if let range = stringRange {
 									problemRange = SourceFileRange(
-										lineStart: range.lineStart + index,
-										lineEnd: range.lineStart + index,
+										lineStart: range.start.line + index,
+										lineEnd: range.start.line + index,
 										columnStart: 1,
 										columnEnd: indentation.count + 1)
 								}

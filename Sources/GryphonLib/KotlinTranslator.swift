@@ -82,10 +82,10 @@ public class KotlinTranslator {
 
 		if let startRange = startRange, let endRange = endRange {
 			subtreesRange = SourceFileRange(
-				lineStart: startRange.lineStart,
-				lineEnd: endRange.lineEnd,
-				columnStart: startRange.columnStart,
-				columnEnd: endRange.columnEnd)
+				lineStart: startRange.start.line,
+				lineEnd: endRange.end.line,
+				columnStart: startRange.start.column,
+				columnEnd: endRange.end.column)
 		}
 		else {
 			subtreesRange = nil

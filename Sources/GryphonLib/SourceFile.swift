@@ -236,20 +236,6 @@ public struct SourceFileRange: Equatable, Hashable, CustomStringConvertible {
 	let start: SourceFilePosition
 	let end: SourceFilePosition
 
-	// TODO: (after removing AST dumps) remove this
-	var lineStart: Int {
-		return start.line
-	}
-	var lineEnd: Int {
-		return end.line
-	}
-	var columnStart: Int {
-		return start.column
-	}
-	var columnEnd: Int {
-		return end.column
-	}
-
 	/// This is technically incorrect but allows AST nodes with ranges to get an automatic Equatable
 	/// conformance that ignores ranges, which is useful since we're frequently comparing nodes
 	/// with the same practical meaning but different source file ranges.
@@ -259,10 +245,10 @@ public struct SourceFileRange: Equatable, Hashable, CustomStringConvertible {
 
 	/// Real equatable comparison
 	public func isEqual(to other: SourceFileRange) -> Bool {
-		return self.lineStart == other.lineStart &&
-			self.lineEnd == other.lineEnd &&
-			self.columnStart == other.columnStart &&
-			self.columnEnd == other.columnEnd
+		return self.start.line == other.start.line &&
+			self.end.line == other.end.line &&
+			self.start.column == other.start.column &&
+			self.end.column == other.end.column
 	}
 
 	public var description: String {
