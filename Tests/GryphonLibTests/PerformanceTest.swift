@@ -24,71 +24,6 @@ class PerformanceTest: XCTestCase {
 	static let swiftVersion: String = try! TranspilationContext.getVersionOfToolchain(toolchain)
 	static let shouldUseSwiftSyntax = true
 
-	func testASTDumpDecoder() {
-		guard !PerformanceTest.shouldUseSwiftSyntax else {
-			return
-		}
-
-		let tests = TestUtilities.testCases
-
-		let astDumpContents: List<String> = tests.map { testName in
-			let testCasePath = TestUtilities.testCasesPath + testName + ".swift"
-			let astDumpFilePath = SupportingFile.pathOfSwiftASTDumpFile(
-				forSwiftFile: testCasePath,
-				swiftVersion: PerformanceTest.swiftVersion)
-			return try! String(contentsOfFile: astDumpFilePath)
-		}
-
-		measure {
-			for astDump in astDumpContents {
-				do {
-					_ = try Compiler.generateSwiftAST(fromASTDump: astDump)
-				}
-				catch let error {
-					XCTFail("🚨 Test failed with error:\n\(error)")
-				}
-			}
-		}
-	}
-
-	func testSwiftTranslator() {
-		guard !PerformanceTest.shouldUseSwiftSyntax else {
-			return
-		}
-
-		let tests = TestUtilities.testCases
-
-		let swiftASTs: List<SwiftAST> = tests.map { testName in
-			let testCasePath = TestUtilities.testCasesPath + testName + ".swift"
-			let astDumpFilePath = SupportingFile.pathOfSwiftASTDumpFile(
-				forSwiftFile: testCasePath,
-				swiftVersion: PerformanceTest.swiftVersion)
-			return try! Compiler.transpileSwiftAST(fromASTDumpFile: astDumpFilePath)
-		}
-
-		measure {
-			for swiftASTs in swiftASTs {
-				do {
-					_ = try Compiler.generateGryphonRawAST(
-						fromSwiftAST: swiftASTs,
-						asMainFile: false,
-						withContext: TranspilationContext(
-							toolchainName: PerformanceTest.toolchain,
-							indentationString: "\t",
-							defaultsToFinal: false,
-							isUsingSwiftSyntax: false,
-							compilationArguments: TranspilationContext.SwiftCompilationArguments(
-								absoluteFilePathsAndOtherArguments: []),
-							xcodeProjectPath: nil,
-							target: nil))
-				}
-				catch let error {
-					XCTFail("🚨 Test failed with error:\n\(error)")
-				}
-			}
-		}
-	}
-
 	func testSwiftSyntaxDecoder() {
 		guard PerformanceTest.shouldUseSwiftSyntax else {
 			return
@@ -331,8 +266,6 @@ class PerformanceTest: XCTestCase {
 	}
 
 	static var allTests = [
-		("testASTDumpDecoder", testASTDumpDecoder),
-		("testSwiftTranslator", testSwiftTranslator),
 		("testFirstTranspilationPasses", testFirstTranspilationPasses),
 		("testSecondTranspilationPasses", testSecondTranspilationPasses),
 		("testAllTranspilationPasses", testAllTranspilationPasses),

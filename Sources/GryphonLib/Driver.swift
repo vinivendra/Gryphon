@@ -299,76 +299,19 @@ public class Driver {
 
 		let isMainFile = (inputFilePath == settings.mainFilePath)
 
-		let swiftAST: PrintableAsTree
-		let gryphonRawAST: GryphonAST
-		if context.isUsingSwiftSyntax {
-			Compiler.logStart("🧑‍💻  Processing SwiftSyntax for \(inputFileRelativePath)...")
-			let decoder = try Compiler.generateSwiftSyntaxDecoder(
-				fromSwiftFile: inputFilePath,
-				withContext: context)
-			swiftAST = decoder.syntaxTree.toPrintableTree()
-			Compiler.logEnd("✅  Done processing SwiftSyntax for \(inputFileRelativePath).")
+		Compiler.logStart("🧑‍💻  Processing SwiftSyntax for \(inputFileRelativePath)...")
+		let decoder = try Compiler.generateSwiftSyntaxDecoder(
+			fromSwiftFile: inputFilePath,
+			withContext: context)
+		let swiftAST = decoder.syntaxTree.toPrintableTree()
+		Compiler.logEnd("✅  Done processing SwiftSyntax for \(inputFileRelativePath).")
 
-			Compiler.logStart("🧑‍💻  Converting SwiftSyntax for \(inputFileRelativePath)...")
-			gryphonRawAST = try Compiler.generateGryphonRawASTUsingSwiftSyntax(
-				usingFileDecoder: decoder,
-				asMainFile: isMainFile,
-				withContext: context)
-			Compiler.logEnd("✅  Done converting SwiftSyntax for \(inputFileRelativePath).")
-		}
-		else {
-			Compiler.logStart("🧑‍💻  Reading AST dump file for \(inputFileRelativePath)...")
-			let swiftASTDumpFile = SupportingFile.pathOfSwiftASTDumpFile(
-				forSwiftFile: inputFilePath,
-				swiftVersion: context.swiftVersion)
-
-			let swiftASTDump: String
-			do {
-				swiftASTDump = try Utilities.readFile(swiftASTDumpFile)
-			}
-			catch {
-				throw GryphonError(errorMessage:
-					"Error reading the AST for file \(inputFilePath). " +
-					"Running `gryphon init` or `gryphon init <xcode_project>` might fix this issue.")
-			}
-			Compiler.logEnd("✅  Done reading AST dump for \(inputFileRelativePath).")
-
-			Compiler.logStart("🧑‍💻  Generating the Swift AST for \(inputFileRelativePath)...")
-			let generatedSwiftAST = try Compiler.generateSwiftAST(fromASTDump: swiftASTDump)
-			swiftAST = generatedSwiftAST
-			Compiler.logEnd("✅  Done generating Swift AST for \(inputFileRelativePath).")
-
-			guard settings.shouldGenerateRawAST else {
-				if settings.shouldEmitSwiftAST, !settings.quietModeIsOn {
-					Compiler.log("📝  Printing Swift AST for \(inputFileRelativePath):")
-					let output = swiftAST.prettyDescription()
-					Compiler.output(output)
-				}
-
-				return swiftAST
-			}
-
-			Compiler.logStart("🧑‍💻  Generating the raw AST for \(inputFileRelativePath)...")
-			gryphonRawAST = try Compiler.generateGryphonRawAST(
-				fromSwiftAST: generatedSwiftAST,
-				asMainFile: isMainFile,
-				withContext: context)
-			Compiler.logEnd("✅  Done generating raw AST for \(inputFileRelativePath).")
-
-			if settings.shouldEmitSwiftAST {
-				let output = swiftAST.prettyDescription()
-				if let outputFilePath = gryphonRawAST.outputFileMap[.swiftAST],
-					!settings.forcePrintingToConsole
-				{
-					Compiler.log("📝  Writing Swift AST to file for \(inputFileRelativePath)")
-					try Utilities.createFile(atPath: outputFilePath, containing: output)
-				}
-				else if !settings.quietModeIsOn {
-					Compiler.log("📝  Printing Swift AST for \(inputFileRelativePath):")
-					Compiler.output(output)
-				}
-			}
-		}
+		Compiler.logStart("🧑‍💻  Converting SwiftSyntax for \(inputFileRelativePath)...")
+		let gryphonRawAST = try Compiler.generateGryphonRawASTUsingSwiftSyntax(
+			usingFileDecoder: decoder,
+			asMainFile: isMainFile,
+			withContext: context)
+		Compiler.logEnd("✅  Done converting SwiftSyntax for \(inputFileRelativePath).")
 
 		if settings.shouldEmitSwiftAST {
 			let output = swiftAST.prettyDescription()
@@ -597,8 +540,6 @@ public class Driver {
 		//
 		let defaultsToFinal = arguments.contains("--default-final")
 
-		let shouldUseSwiftSyntax = !arguments.contains("--legacyFrontend")
-
 		//
 		let maybeXcodeProject = getXcodeProject(inArguments: arguments)
 		let maybeTarget = getTarget(inArguments: arguments)
@@ -691,114 +632,7 @@ public class Driver {
 					"File not found: \(missingfiles.joined(separator: ", ")).")
 			}
 
-			let swiftVersion = try TranspilationContext.getVersionOfToolchain(toolchain)
-
 			Compiler.logEnd("✅  Done preparing.")
-
-			if !shouldUseSwiftSyntax {
-				var astDumpsSucceeded = true
-				var astDumpError: Error?
-				do {
-					Compiler.logStart("🧑‍💻  Dumping the ASTs...")
-					try updateASTDumps(
-						forFiles: allSourceFiles,
-						forXcodeProject: maybeXcodeProject,
-						forTarget: maybeTarget,
-						usingToolchain: toolchain,
-						shouldTryToRecoverFromErrors: true)
-					astDumpsSucceeded = true
-					Compiler.logEnd("✅  Done dumping the ASTs.")
-				}
-				catch let error {
-					Compiler.logEnd("⚠️  Problem dumping the ASTs.")
-					astDumpsSucceeded = false
-					astDumpError = error
-				}
-
-				let outdatedASTDumpsAfterFirstUpdate = outdatedASTDumpFiles(
-					forInputFiles: allSourceFiles,
-					swiftVersion: swiftVersion)
-
-				if !outdatedASTDumpsAfterFirstUpdate.isEmpty {
-					Compiler.log("⚠️  Found outdated files: " +
-						outdatedASTDumpsAfterFirstUpdate.joined(separator: ", ") + ".")
-				}
-
-				if !astDumpsSucceeded || !outdatedASTDumpsAfterFirstUpdate.isEmpty {
-					if let xcodeProject = maybeXcodeProject {
-						// If the AST dump update failed and we're using Xcode, it's possible one
-						// or more files are missing from the AST dump script. Try updating the
-						// script, then try to update the files again.
-
-						if outdatedASTDumpsAfterFirstUpdate.isEmpty {
-							Compiler.logStart("⚠️  There was an error with the Swift compiler. " +
-								"Attempting to update file list...")
-						}
-						else {
-							Compiler.logStart("⚠️  Failed to update the AST dump for some files: " +
-								outdatedASTDumpsAfterFirstUpdate.joined(separator: ", ") +
-								". Attempting to update file list...")
-						}
-
-						do {
-							// If xcodebuild fails, it's better to ignore the error here and fail
-							// with an "AST dump failure" message.
-							try createIOSCompilationFiles(
-								forXcodeProject: xcodeProject,
-								forTarget: getTarget(inArguments: arguments),
-								usingToolchain: toolchain)
-							Compiler.logEnd("⚠️  Done.")
-						}
-						catch let error {
-							Compiler.logEnd(
-								"⚠️  There was an error when getting the Swift compilation " +
-									"command from the Xcode project:" +
-									"\(error)\n")
-						}
-
-						Compiler.logStart("⚠️  Attempting to update the AST dumps again...")
-
-						try updateASTDumps(
-							forFiles: allSourceFiles,
-							forXcodeProject: maybeXcodeProject,
-							forTarget: maybeTarget,
-							usingToolchain: toolchain,
-							shouldTryToRecoverFromErrors: true)
-
-						let outdatedASTDumpsAfterSecondUpdate = outdatedASTDumpFiles(
-							forInputFiles: allSourceFiles,
-							swiftVersion: swiftVersion)
-
-						if !outdatedASTDumpsAfterSecondUpdate.isEmpty {
-							throw GryphonError(
-								errorMessage: "Unable to update AST dumps for files: " +
-									outdatedASTDumpsAfterSecondUpdate.joined(separator: ", ") +
-									".\n" +
-									" - Make sure the files are being compiled by Xcode.\n" +
-									" - Make sure Gryphon is translating the right Xcode target " +
-										"using `--target=<target name>`.")
-						}
-						else {
-							Compiler.logEnd("✅  Done.")
-						}
-					}
-					else {
-						if let astDumpError = astDumpError {
-							throw GryphonError(
-								errorMessage: "Unable to update AST dumps:\n\(astDumpError)")
-						}
-						else if !outdatedASTDumpsAfterFirstUpdate.isEmpty {
-							throw GryphonError(
-								errorMessage: "Unable to update AST dumps for files: " +
-									outdatedASTDumpsAfterFirstUpdate.joined(separator: ", ") + ".")
-						}
-						else {
-							throw GryphonError(
-								errorMessage: "Unable to update AST dumps with unknown error.")
-						}
-					}
-				}
-			}
 		}
 
 		let compilationArguments: TranspilationContext.SwiftCompilationArguments
@@ -820,7 +654,7 @@ public class Driver {
 				toolchainName: toolchain,
 				indentationString: indentationString,
 				defaultsToFinal: defaultsToFinal,
-				isUsingSwiftSyntax: shouldUseSwiftSyntax,
+				isUsingSwiftSyntax: true,
 				compilationArguments: compilationArguments,
 				xcodeProjectPath: maybeXcodeProject,
 				target: maybeTarget)

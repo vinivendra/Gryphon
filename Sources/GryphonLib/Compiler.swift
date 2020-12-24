@@ -224,13 +224,6 @@ public class Compiler {
 	}
 
 	//
-	public static func generateSwiftAST(fromASTDump astDump: String) throws -> SwiftAST {
-		let logInfo = Log.startLog(name: "1 - AST Dump Decode")
-		defer { Log.endLog(info: logInfo) }
-		let ast = try ASTDumpDecoder(encodedString: astDump).decode()
-		return ast
-	}
-
 	public static func generateSwiftSyntaxDecoder(
 		fromSwiftFile inputFilePath: String,
 		withContext context: TranspilationContext)
@@ -242,23 +235,7 @@ public class Compiler {
 		return try SwiftSyntaxDecoder(sourceFile: sourceFile, context: context)
 	}
 
-	public static func transpileSwiftAST(fromASTDumpFile inputFile: String) throws -> SwiftAST {
-		let astDump = try Utilities.readFile(inputFile)
-		return try generateSwiftAST(fromASTDump: astDump)
-	}
-
 	//
-	public static func generateGryphonRawAST(
-		fromSwiftAST swiftAST: SwiftAST,
-		asMainFile: Bool,
-		withContext context: TranspilationContext)
-		throws -> GryphonAST
-	{
-		let logInfo = Log.startLog(name: "1.5 - Swift Translator")
-		defer { Log.endLog(info: logInfo) }
-		return try SwiftTranslator(context: context).translateAST(swiftAST, asMainFile: asMainFile)
-	}
-
 	public static func generateGryphonRawASTUsingSwiftSyntax(
 		usingFileDecoder decoder: SwiftSyntaxDecoder,
 		asMainFile: Bool,
@@ -278,25 +255,14 @@ public class Compiler {
 	{
 		let translateAsMainFile = (inputFiles.count == 1)
 
-		if context.isUsingSwiftSyntax {
-			return try inputFiles.map {
-				let decoder = try generateSwiftSyntaxDecoder(
-					fromSwiftFile: $0,
-					withContext: context)
-				return try generateGryphonRawASTUsingSwiftSyntax(
-					usingFileDecoder: decoder,
-					asMainFile: translateAsMainFile,
-					withContext: context)
-			}
-		}
-		else {
-			let asts = try astDumpFiles.map { try transpileSwiftAST(fromASTDumpFile: $0) }
-			return try asts.map {
-				try generateGryphonRawAST(
-					fromSwiftAST: $0,
-					asMainFile: translateAsMainFile,
-					withContext: context)
-			}
+		return try inputFiles.map {
+			let decoder = try generateSwiftSyntaxDecoder(
+				fromSwiftFile: $0,
+				withContext: context)
+			return try generateGryphonRawASTUsingSwiftSyntax(
+				usingFileDecoder: decoder,
+				asMainFile: translateAsMainFile,
+				withContext: context)
 		}
 	}
 
