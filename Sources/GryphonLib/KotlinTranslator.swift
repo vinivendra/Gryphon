@@ -2076,12 +2076,6 @@ public class KotlinTranslator {
 
 		for expression in interpolatedStringLiteralExpression.expressions {
 			if let literalStringExpression = expression as? LiteralStringExpression {
-				// Empty strings, as a special case, are represented by the swift ast dump
-				// as two double quotes with nothing between them, instead of an actual empty string
-				guard literalStringExpression.value != "\"\"" else {
-					continue
-				}
-
 				if isMultiline {
 					let processedString = literalStringExpression.value.removingBackslashEscapes
 					result.append(processedString)

@@ -1827,8 +1827,8 @@ public class OptionalsInConditionalCastsTranspilationPass: TranspilationPass {
 }
 
 /// Declarations that can be overriden in Kotlin have to be marked as `open` to enable overriding,
-/// or `final` to disable it. The default behavior is handled by the SwiftSyntaxDecoder, but users may
-/// choose on a case-by-case basis using annotations. This pass removes `open` and `final`
+/// or `final` to disable it. The default behavior is handled by the SwiftSyntaxDecoder, but users
+/// may choose on a case-by-case basis using annotations. This pass removes `open` and `final`
 /// annotations and sets the declaration's `isOpen` flag accordingly.
 ///
 /// The precedence rules should be (more or less):

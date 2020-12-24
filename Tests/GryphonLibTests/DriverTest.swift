@@ -147,8 +147,7 @@ class DriverTest: XCTestCase {
 
 			//
 			let driverResult1 = try Driver.run(withArguments:
-				["-skip-AST-dumps",
-				 "-emit-kotlin",
+				["-emit-kotlin",
 				 "--indentation=t",
 				 "--write-to-console",
 				 "--quiet",
@@ -168,8 +167,7 @@ class DriverTest: XCTestCase {
 
 			//
 			let driverResult2 = try Driver.run(withArguments:
-				["-skip-AST-dumps",
-				 "-emit-kotlin",
+				["-emit-kotlin",
 				 "--indentation=t",
 				 "--no-main-file",
 				 "--write-to-console",
@@ -205,8 +203,7 @@ class DriverTest: XCTestCase {
 			Compiler.clearIssues()
 
 			_ = try Driver.run(withArguments:
-				["-skip-AST-dumps",
-				 "-emit-kotlin",
+				["-emit-kotlin",
 				 "--indentation=t",
 				 "--continue-on-error",
 				 "--write-to-console",
@@ -219,50 +216,11 @@ class DriverTest: XCTestCase {
 			Compiler.clearIssues()
 
 			_ = try Driver.run(withArguments:
-				["-skip-AST-dumps",
-				 "-emit-kotlin",
+				["-emit-kotlin",
 				 "--indentation=t",
 				 "--no-main-file",
 				 "--write-to-console",
 				 "--quiet",
-				 testCasePath, ])
-
-			XCTFail("Expected Driver to throw an error.")
-		}
-		catch {
-			// If the Driver threw an error then it's working correctly.
-		}
-
-		// Repeat the test using AST dumps
-		do {
-			let testCasePath = TestUtilities.testCasesPath + "errors.swift"
-
-			//
-			Compiler.clearIssues()
-
-			_ = try Driver.run(withArguments:
-				["-skip-AST-dumps",
-				 "-emit-kotlin",
-				 "--indentation=t",
-				 "--continue-on-error",
-				 "--write-to-console",
-				 "--quiet",
-				 "--legacyFrontend",
-				 testCasePath, ])
-
-			XCTAssert(Compiler.numberOfErrors == 1)
-
-			//
-			Compiler.clearIssues()
-
-			_ = try Driver.run(withArguments:
-				["-skip-AST-dumps",
-				 "-emit-kotlin",
-				 "--indentation=t",
-				 "--no-main-file",
-				 "--write-to-console",
-				 "--quiet",
-				 "--legacyFrontend",
 				 testCasePath, ])
 
 			XCTFail("Expected Driver to throw an error.")
@@ -280,8 +238,7 @@ class DriverTest: XCTestCase {
 
 			//
 			let driverResult1 = try Driver.run(withArguments:
-				["-skip-AST-dumps",
-				 "-emit-kotlin",
+				["-emit-kotlin",
 				 "--indentation=t",
 				 "--write-to-console",
 				 "--quiet",
@@ -302,8 +259,7 @@ class DriverTest: XCTestCase {
 
 			//
 			let driverResult2 = try Driver.run(withArguments:
-				["-skip-AST-dumps",
-				 "-emit-kotlin",
+				["-emit-kotlin",
 				 "--indentation=4",
 				 "--write-to-console",
 				 "--quiet",

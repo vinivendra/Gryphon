@@ -46,7 +46,6 @@ public class Driver {
 		"-xcode",
 		"setup-xcode",
 		"make-gryphon-targets",
-		"-skip-AST-dumps",
 		"-emit-swiftAST",
 		"-emit-rawAST",
 		"-emit-AST",
@@ -188,11 +187,11 @@ public class Driver {
 					"Please specify an Xcode project when using `setup-xcode`.")
 			}
 
-			Compiler.logStart("🧑‍💻  Creating AST dump script...")
+			Compiler.logStart("🧑‍💻  Creating iOS compilation files...")
 
 			try createIOSCompilationFiles(forXcodeProject: xcodeProject, forTarget: target)
 
-			Compiler.logEnd("✅  Done creating AST dump script.")
+			Compiler.logEnd("✅  Done creating iOS compilation files.")
 
 			return nil
 		}
@@ -543,30 +542,6 @@ public class Driver {
 		if isSkippingFiles {
 			let skippedFiles = try getSkippedInputFilePaths(inArguments: arguments)
 			allSourceFiles.append(contentsOf: skippedFiles)
-		}
-
-		/// Dump the ASTs
-		if !arguments.contains("-skip-AST-dumps") {
-			Compiler.logStart("🧑‍💻  Preparing to dump the ASTs...")
-
-			let maybeXcodeProject = getXcodeProject(inArguments: arguments)
-			let isUsingXcode = (maybeXcodeProject != nil)
-
-			if isUsingXcode && isSkippingFiles {
-				throw GryphonError(errorMessage: "Argument `--skip` is not supported when " +
-					"translating with Xcode support. To skip translation of a file, remove it " +
-					"from the `xcfilelist`.")
-			}
-
-			let missingfiles = allSourceFiles.filter {
-				!Utilities.fileExists(at: $0)
-			}
-			if !missingfiles.isEmpty {
-				throw GryphonError(errorMessage:
-					"File not found: \(missingfiles.joined(separator: ", ")).")
-			}
-
-			Compiler.logEnd("✅  Done preparing.")
 		}
 
 		let compilationArguments: TranspilationContext.SwiftCompilationArguments
@@ -1148,10 +1123,6 @@ Advanced subcommands:
         `gryphon init` was used without specifying an Xcode project.
 
 Advanced translation options:
-      ↪️  -skip-AST-dumps
-            Skip calling the Swift compiler to update the AST dumps (i.e. if the
-            Swift sources haven't changed since the last translation).
-
       ↪️  -emit-swiftAST
             Emit the Swift AST (an intermediate representation) either to a file
             ending in ".swiftAST" specified by a "// gryphon output: " comment
