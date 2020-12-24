@@ -20,24 +20,14 @@
 import XCTest
 
 class PerformanceTest: XCTestCase {
-	static let toolchain: String? = nil
-	static let swiftVersion: String = try! TranspilationContext.getVersionOfToolchain(toolchain)
-	static let shouldUseSwiftSyntax = true
-
 	func testSwiftSyntaxDecoder() {
-		guard PerformanceTest.shouldUseSwiftSyntax else {
-			return
-		}
-
 		let tests = TestUtilities.testCases
 
 		let pathsAndContexts: List<(String, TranspilationContext)> = tests.map { testName in
 			let testCasePath = TestUtilities.testCasesPath + testName + ".swift"
 			let context = try! TranspilationContext(
-				toolchainName: PerformanceTest.toolchain,
 				indentationString: "\t",
 				defaultsToFinal: testName.contains("-default-final"),
-				isUsingSwiftSyntax: true,
 				compilationArguments: TranspilationContext.SwiftCompilationArguments(
 					absoluteFilePathsAndOtherArguments: [
 						SupportingFile.gryphonTemplatesLibrary.absolutePath,
@@ -71,14 +61,9 @@ class PerformanceTest: XCTestCase {
 		let rawASTsAndContexts = tests.map
 			{ (testName: String) -> (GryphonAST, TranspilationContext) in
 				let testCasePath = TestUtilities.testCasesPath + testName + ".swift"
-				let astDumpFilePath = SupportingFile.pathOfSwiftASTDumpFile(
-					forSwiftFile: testName,
-					swiftVersion: PerformanceTest.swiftVersion)
 				let context = try! TranspilationContext(
-					toolchainName: PerformanceTest.toolchain,
 					indentationString: "\t",
 					defaultsToFinal: testName.contains("-default-final"),
-					isUsingSwiftSyntax: PerformanceTest.shouldUseSwiftSyntax,
 					compilationArguments: TranspilationContext.SwiftCompilationArguments(
 						absoluteFilePathsAndOtherArguments: [
 							SupportingFile.gryphonTemplatesLibrary.absolutePath,
@@ -87,7 +72,7 @@ class PerformanceTest: XCTestCase {
 					target: nil)
 				let rawAST = try! Compiler.transpileGryphonRawASTs(
 					fromInputFiles: [testCasePath],
-					fromASTDumpFiles: [astDumpFilePath],
+					fromASTDumpFiles: [],
 					withContext: context)
 				return (rawAST[0], context)
 			}
@@ -112,14 +97,9 @@ class PerformanceTest: XCTestCase {
 		let semiRawASTsAndContexts = tests.map
 			{ (testName: String) -> (GryphonAST, TranspilationContext) in
 				let testCasePath = TestUtilities.testCasesPath + testName + ".swift"
-				let astDumpFilePath = SupportingFile.pathOfSwiftASTDumpFile(
-					forSwiftFile: testName,
-					swiftVersion: PerformanceTest.swiftVersion)
 				let context = try! TranspilationContext(
-					toolchainName: PerformanceTest.toolchain,
 					indentationString: "\t",
 					defaultsToFinal: testName.contains("-default-final"),
-					isUsingSwiftSyntax: PerformanceTest.shouldUseSwiftSyntax,
 					compilationArguments: TranspilationContext.SwiftCompilationArguments(
 						absoluteFilePathsAndOtherArguments: [
 							SupportingFile.gryphonTemplatesLibrary.absolutePath,
@@ -128,7 +108,7 @@ class PerformanceTest: XCTestCase {
 					target: nil)
 				let rawAST = try! Compiler.transpileGryphonRawASTs(
 					fromInputFiles: [testCasePath],
-					fromASTDumpFiles: [astDumpFilePath],
+					fromASTDumpFiles: [],
 					withContext: context)
 				let semiRawAST = try! Compiler.generateGryphonASTAfterFirstPasses(
 					fromGryphonRawAST: rawAST[0],
@@ -156,14 +136,9 @@ class PerformanceTest: XCTestCase {
 		let rawASTsAndContexts = tests.map
 			{ (testName: String) -> (GryphonAST, TranspilationContext) in
 				let testCasePath = TestUtilities.testCasesPath + testName + ".swift"
-				let astDumpFilePath = SupportingFile.pathOfSwiftASTDumpFile(
-					forSwiftFile: testName,
-					swiftVersion: PerformanceTest.swiftVersion)
 				let context = try! TranspilationContext(
-					toolchainName: PerformanceTest.toolchain,
 					indentationString: "\t",
 					defaultsToFinal: testName.contains("-default-final"),
-					isUsingSwiftSyntax: PerformanceTest.shouldUseSwiftSyntax,
 					compilationArguments: TranspilationContext.SwiftCompilationArguments(
 						absoluteFilePathsAndOtherArguments: [
 							SupportingFile.gryphonTemplatesLibrary.absolutePath,
@@ -172,7 +147,7 @@ class PerformanceTest: XCTestCase {
 					target: nil)
 				let rawAST = try! Compiler.transpileGryphonRawASTs(
 					fromInputFiles: [testCasePath],
-					fromASTDumpFiles: [astDumpFilePath],
+					fromASTDumpFiles: [],
 					withContext: context)
 				return (rawAST[0], context)
 			}
@@ -197,14 +172,9 @@ class PerformanceTest: XCTestCase {
 		let astsAndContexts = tests.map
 			{ (testName: String) -> (GryphonAST, TranspilationContext) in
 				let testCasePath = TestUtilities.testCasesPath + testName + ".swift"
-				let astDumpFilePath = SupportingFile.pathOfSwiftASTDumpFile(
-					forSwiftFile: testName,
-					swiftVersion: PerformanceTest.swiftVersion)
 				let context = try! TranspilationContext(
-					toolchainName: PerformanceTest.toolchain,
 					indentationString: "\t",
 					defaultsToFinal: testName.contains("-default-final"),
-					isUsingSwiftSyntax: PerformanceTest.shouldUseSwiftSyntax,
 					compilationArguments: TranspilationContext.SwiftCompilationArguments(
 						absoluteFilePathsAndOtherArguments: [
 							SupportingFile.gryphonTemplatesLibrary.absolutePath,
@@ -213,7 +183,7 @@ class PerformanceTest: XCTestCase {
 					target: nil)
 				let rawAST = try! Compiler.transpileGryphonASTs(
 					fromInputFiles: [testCasePath],
-					fromASTDumpFiles: [astDumpFilePath],
+					fromASTDumpFiles: [],
 					withContext: context)
 				return (rawAST[0], context)
 			}
@@ -239,14 +209,9 @@ class PerformanceTest: XCTestCase {
 			for testName in tests {
 				do {
 					let testCasePath = TestUtilities.testCasesPath + testName + ".swift"
-					let astDumpFilePath = SupportingFile.pathOfSwiftASTDumpFile(
-						forSwiftFile: testCasePath,
-						swiftVersion: PerformanceTest.swiftVersion)
 					let context = try! TranspilationContext(
-						toolchainName: PerformanceTest.toolchain,
 						indentationString: "\t",
 						defaultsToFinal: testName.contains("-default-final"),
-						isUsingSwiftSyntax: PerformanceTest.shouldUseSwiftSyntax,
 						compilationArguments: TranspilationContext.SwiftCompilationArguments(
 							absoluteFilePathsAndOtherArguments: [
 								SupportingFile.gryphonTemplatesLibrary.absolutePath,
@@ -255,7 +220,7 @@ class PerformanceTest: XCTestCase {
 						target: nil)
 					_ = try Compiler.transpileKotlinCode(
 						fromInputFiles: [testCasePath],
-						fromASTDumpFiles: [astDumpFilePath],
+						fromASTDumpFiles: [],
 						withContext: context)
 				}
 				catch let error {
@@ -272,14 +237,4 @@ class PerformanceTest: XCTestCase {
 		("testKotlinTranslator", testKotlinTranslator),
 		("testFullTranspilation", testFullTranspilation),
 	]
-
-	override static func setUp() {
-		do {
-			try TestUtilities.updateASTsForTestCases()
-		}
-		catch let error {
-			print(error)
-			fatalError("Failed to update test files.")
-		}
-	}
 }

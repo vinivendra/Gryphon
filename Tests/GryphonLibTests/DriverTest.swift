@@ -30,16 +30,6 @@ class DriverTest: XCTestCase {
 		("testIndentation", testIndentation),
 	]
 
-	override static func setUp() {
-		do {
-			try TestUtilities.updateASTsForTestCases()
-		}
-		catch let error {
-			print(error)
-			fatalError("Failed to update test files.")
-		}
-	}
-
 	// MARK: - Tests
 	func testOutputs() {
 		let oldOutputFunction = Compiler.outputFunction

@@ -26,16 +26,6 @@ class IntegrationTest: XCTestCase {
 		("testWarnings", testWarnings),
 	]
 
-	override static func setUp() {
-		do {
-			try TestUtilities.updateASTsForTestCases()
-		}
-		catch let error {
-			print(error)
-			fatalError("Failed to update test files.")
-		}
-	}
-
 	// MARK: - Tests
 	func test() {
 		do {
@@ -52,10 +42,8 @@ class IntegrationTest: XCTestCase {
 					fromInputFiles: [testCasePath.withExtension(.swift)],
 					fromASTDumpFiles: [],
 					withContext: TranspilationContext(
-						toolchainName: nil,
 						indentationString: "\t",
 						defaultsToFinal: defaultsToFinal,
-						isUsingSwiftSyntax: true,
 						compilationArguments: TranspilationContext.SwiftCompilationArguments(
 							absoluteFilePathsAndOtherArguments:
 								[testCasePath.withExtension(.swift)]),
@@ -97,24 +85,16 @@ class IntegrationTest: XCTestCase {
 
 	func testWarnings() {
 		do {
-			let swiftVersion = try TranspilationContext.getVersionOfToolchain(nil)
-
 			Compiler.clearIssues()
 
 			// Generate kotlin code using the whole compiler
 			let testCasePath = TestUtilities.testCasesPath + "warnings.swift"
-			let astDumpFilePath =
-				SupportingFile.pathOfSwiftASTDumpFile(
-					forSwiftFile: testCasePath,
-					swiftVersion: swiftVersion)
 			_ = try Compiler.transpileKotlinCode(
 				fromInputFiles: [testCasePath],
-				fromASTDumpFiles: [astDumpFilePath],
+				fromASTDumpFiles: [],
 				withContext: TranspilationContext(
-					toolchainName: nil,
 					indentationString: "\t",
 					defaultsToFinal: false,
-					isUsingSwiftSyntax: true,
 					compilationArguments: TranspilationContext.SwiftCompilationArguments(
 						absoluteFilePathsAndOtherArguments: [testCasePath]),
 					xcodeProjectPath: nil,

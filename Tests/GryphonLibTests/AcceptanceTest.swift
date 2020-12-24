@@ -27,14 +27,7 @@ class AcceptanceTest: XCTestCase {
 	]
 
 	override static func setUp() {
-		do {
-			try TestUtilities.updateASTsForTestCases()
-			Utilities.createFolderIfNeeded(at: TestUtilities.kotlinBuildFolder)
-		}
-		catch let error {
-			print(error)
-			fatalError("Failed to update test files.")
-		}
+		Utilities.createFolderIfNeeded(at: TestUtilities.kotlinBuildFolder)
 	}
 
 	// MARK: - Tests
