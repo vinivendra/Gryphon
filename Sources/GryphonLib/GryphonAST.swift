@@ -84,7 +84,6 @@ extension PrintableTree {
 /// Necessary changes when adding a new statement:
 /// - GryphonAST's `Statement.==`
 /// - `TranspilationPass.replaceStatement`
-/// - `SwiftTranslator.translateStatement`
 /// - `KotlinTranslator.translateSubtree`
 /// - LibraryTranspilationPass's `Expression.matches`
 public /*abstract*/ class Statement: PrintableAsTree, Equatable, CustomStringConvertible {
@@ -1231,7 +1230,6 @@ extension PrintableTree {
 /// Necessary changes when adding a new expression:
 /// - GryphonAST's `Expression.==`
 /// - `KotlinTranslator.translateExpression`
-/// - `SwiftTranslator.translateExpression`
 /// - `TranspilationPass.replaceExpression`
 /// - LibraryTranspilationPass's `Expression.matches`
 public /*abstract*/ class Expression: PrintableAsTree, Equatable, CustomStringConvertible {
