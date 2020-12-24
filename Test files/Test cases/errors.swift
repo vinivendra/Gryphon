@@ -16,8 +16,7 @@
 // limitations under the License.
 //
 
-// This file should contain two lines that cause Gryphon to throw an error, but it doesn't have to
-// be these lines specifically. If these errors are ever "fixed", they can be replaced by others.
+// This file should contain a line that causes Gryphon to throw an error, but it doesn't have to
+// be this line specifically. If this error is ever "fixed", it can be replaced by another one.
 
-var y: Int = 0x0101
-var x: Int = 0b0101
+var h: Int64 = -9223372036854775808

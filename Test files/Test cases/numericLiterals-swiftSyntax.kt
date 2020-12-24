@@ -68,4 +68,12 @@ fun main(args: Array<String>) {
 
 	m = 1000000.0
 	n = 1000000.0f
+
+	var q: Int = 0x101
+
+	q = 0b101
+
+	var r: UInt = 0x101u
+
+	r = 0b101u
 }

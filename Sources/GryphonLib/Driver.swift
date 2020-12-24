@@ -17,7 +17,7 @@
 //
 
 public class Driver {
-	public static let gryphonVersion = "0.10.6"
+	public static let gryphonVersion = "0.12"
 
 	public static let supportedArguments: List = [
 		"help", "-help", "--help",
@@ -945,6 +945,7 @@ public class Driver {
 
 	/// Returns a list of all Swift input files, including those inside xcfilelists, but
 	/// excluding any files paths after the `--skip` flag.
+	/// Also excludes any commented files (with `#`) in an xcfilelist.
 	static func getInputFilePaths(
 		inArguments arguments: List<String>)
 		throws -> MutableList<String>
@@ -970,7 +971,9 @@ public class Driver {
 		for fileList in fileLists {
 			let contents = try Utilities.readFile(fileList)
 			let files = contents.split(withStringSeparator: "\n")
-			result.append(contentsOf: files)
+			let cleanFiles = files.map { $0.trimmingWhitespaces() }
+			let uncommentedFiles = cleanFiles.filter { !$0.hasPrefix("#") }
+			result.append(contentsOf: uncommentedFiles)
 		}
 
 		return result

@@ -238,6 +238,7 @@ internal extension String {
 		return result
 	}
 
+	/// Removes whitespaces from the beggining and the end of the string.
 	func trimmingWhitespaces() -> String {
 		var firstValidCharacterIndex: String.Index?
 		var lastValidCharacterIndex = self.startIndex

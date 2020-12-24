@@ -286,7 +286,7 @@ class DriverTest: XCTestCase {
 				 "--quiet",
 				 testCasePath, ])
 
-			XCTAssert(Compiler.numberOfErrors == 2)
+			XCTAssert(Compiler.numberOfErrors == 1)
 
 			//
 			Compiler.clearIssues()
@@ -323,7 +323,7 @@ class DriverTest: XCTestCase {
 				 "--legacyFrontend",
 				 testCasePath, ])
 
-			XCTAssert(Compiler.numberOfErrors == 2)
+			XCTAssert(Compiler.numberOfErrors == 1)
 
 			//
 			Compiler.clearIssues()

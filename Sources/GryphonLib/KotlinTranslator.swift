@@ -405,7 +405,14 @@ public class KotlinTranslator {
 			result.append("\(access) ")
 		}
 
-		result.append("interface \(protocolDeclaration.protocolName) {\n")
+		result.append("interface \(protocolDeclaration.protocolName)")
+
+		if !protocolDeclaration.inherits.isEmpty {
+			let translatedInheritances = protocolDeclaration.inherits.map { translateType($0) }
+			result.append(": " + translatedInheritances.joined(separator: ", "))
+		}
+
+		result.append(" {\n")
 
 		let contents = try translateSubtrees(
 			protocolDeclaration.members,
@@ -1476,12 +1483,17 @@ public class KotlinTranslator {
 		if let literalIntExpression = expression as? LiteralIntExpression {
 			return KotlinTranslation(
 				range: literalIntExpression.range,
-				string: String(literalIntExpression.value))
+				string: literalIntExpression.radix.prefix +
+					String(literalIntExpression.value,
+						   radix: literalIntExpression.radix.rawValue))
 		}
 		if let literalUIntExpression = expression as? LiteralUIntExpression {
 			return KotlinTranslation(
 				range: literalUIntExpression.range,
-				string: String(literalUIntExpression.value) + "u")
+				string: literalUIntExpression.radix.prefix +
+					String(literalUIntExpression.value,
+						   radix: literalUIntExpression.radix.rawValue) +
+					"u")
 		}
 		if let literalDoubleExpression = expression as? LiteralDoubleExpression {
 			return KotlinTranslation(
