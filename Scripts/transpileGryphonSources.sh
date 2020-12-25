@@ -4,6 +4,7 @@
 	--indentation=4 \
 	-print-ASTs-on-error \
 	--continue-on-error \
+	Test\ Files/Bootstrap/gryphon-old/Sources/GryphonLib/ASTDumpDecoder.swift \
 	Test\ Files/Bootstrap/gryphon-old/Sources/GryphonLib/AuxiliaryFileContents.swift \
 	Test\ Files/Bootstrap/gryphon-old/Sources/GryphonLib/Compiler.swift \
 	Test\ Files/Bootstrap/gryphon-old/Sources/GryphonLib/Driver.swift \
@@ -18,9 +19,11 @@
 	Test\ Files/Bootstrap/gryphon-old/Sources/GryphonLib/SharedUtilities.swift \
 	Test\ Files/Bootstrap/gryphon-old/Sources/GryphonLib/SourceFile.swift \
 	Test\ Files/Bootstrap/gryphon-old/Sources/GryphonLib/SwiftAST.swift \
+	Test\ Files/Bootstrap/gryphon-old/Sources/GryphonLib/SwiftTranslator.swift \
 	Test\ Files/Bootstrap/gryphon-old/Sources/GryphonLib/TranspilationContext.swift \
 	Test\ Files/Bootstrap/gryphon-old/Sources/GryphonLib/TranspilationPass.swift \
 	Test\ Files/Bootstrap/gryphon-old/Tests/GryphonLibTests/AcceptanceTest.swift \
+	Test\ Files/Bootstrap/gryphon-old/Tests/GryphonLibTests/ASTDumpDecoderTest.swift \
 	Test\ Files/Bootstrap/gryphon-old/Tests/GryphonLibTests/CompilerTest.swift \
 	Test\ Files/Bootstrap/gryphon-old/Tests/GryphonLibTests/DriverTest.swift \
 	Test\ Files/Bootstrap/gryphon-old/Tests/GryphonLibTests/ExtensionsTest.swift \
