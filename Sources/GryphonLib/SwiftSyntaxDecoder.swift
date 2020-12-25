@@ -305,35 +305,45 @@ public class SourceKit {
 
 		let list = sourceKitResult["key.expression_type_list"]
 			as! [[String: SourceKitRepresentable]]
-		let typeList = list.map {
-			ExpressionType(
-				offset: Int($0["key.expression_offset"]! as! Int64),
-				length: Int($0["key.expression_length"]! as! Int64),
-				typeName: $0["key.expression_type"]! as! String)
-		}
+
+		let astsAndTypes: [(ast: [String: SourceKitRepresentable],
+							type: SourceKit.ExpressionType)] =
+			list.map {
+				($0,
+				 ExpressionType(
+					offset: Int($0["key.expression_offset"]! as! Int64),
+					length: Int($0["key.expression_length"]! as! Int64),
+					typeName: $0["key.expression_type"]! as! String))
+			}
 
 		// If there's an error, we might have to re-init to include a new file in the compilation.
 		// Throw an error here so that the caller has the opportunity to do that.
-		if let errorType = typeList.first(where: { $0.typeName == "<<error type>>" }) {
-			let maybeRange = sourceFile.getRange(
-				forSourceKitOffset: errorType.offset,
-				length: errorType.length)
-
+		if let errorASTAndType =
+			astsAndTypes.first(where: { $0.type.typeName == "<<error type>>" })
+		{
 			var errorMessage = "SourceKit failed to get an expression's type"
-
-			if let range = maybeRange {
-				errorMessage += " at \(sourceFile.path):\(range.start.line):\(range.start.column)"
-			}
-
 			if context.xcodeProjectPath != nil {
 				errorMessage += ". Try running `gryphon init` again."
 			}
 
-			throw GryphonError(errorMessage: errorMessage)
+			let range = sourceFile.getRange(
+				forSourceKitOffset: errorASTAndType.type.offset,
+				length: errorASTAndType.type.length)
+
+			let completeMessage = CompilerIssue(
+					message: errorMessage,
+					ast: errorASTAndType.ast.toPrintableTree(),
+					sourceFile: sourceFile,
+					sourceFileRange: range,
+					isError: true)
+				.fullMessage
+
+			throw GryphonError(errorMessage: completeMessage)
 		}
 
 		// Sort by offset (ascending), breaking ties using length (ascending)
-		let sortedList = SortedList(typeList) { a, b in
+		let types = astsAndTypes.map { $0.type }
+		let sortedTypes = SortedList(types) { a, b in
 			if a.offset == b.offset {
 				return a.length < b.length
 			}
@@ -344,7 +354,24 @@ public class SourceKit {
 
 		Compiler.logEnd("✅  Done calling SourceKit (expression types).")
 
-		return sortedList
+		return sortedTypes
+	}
+}
+
+extension SourceKitRepresentable {
+	func toPrintableTree() -> PrintableTree {
+		if let array = self as? [SourceKitRepresentable] {
+			let subtrees: List<PrintableAsTree?> = List(array.map { $0.toPrintableTree() })
+			return PrintableTree("Array", subtrees)
+		}
+		else if let dictionary = self as? [String: SourceKitRepresentable] {
+			let subtrees: List<PrintableAsTree?> =
+				List(dictionary.map { PrintableTree($0, [$1.toPrintableTree()]) })
+			return PrintableTree("Object", subtrees)
+		}
+		else {
+			return PrintableTree(String(describing: self))
+		}
 	}
 }
 

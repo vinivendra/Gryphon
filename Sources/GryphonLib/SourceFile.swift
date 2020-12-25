@@ -99,7 +99,7 @@ public class SourceFile {
 
 extension SourceFile {
 	/// Turns a SourceKit offset and length (in UTF8) into a range in this SourceFile.
-	func getRange(forSourceKitOffset offset: Int, length: Int) -> SourceFileRange? {
+	func getRange(forSourceKitOffset offset: Int, length: Int) -> SourceFileRange {
 		// The end in a source file range is inclusive (-1)
 		let endOffset = offset + length - 1
 		return SourceFileRange.getRange(
