@@ -1274,12 +1274,7 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 		_ initializerDeclaration: InitializerDeclaration)
 		-> List<Statement>
 	{
-		// TODO: (after removing AST dumps) replace this with a check for isOptional
-		if (initializerDeclaration.isStatic == true &&
-				initializerDeclaration.extendsType == nil &&
-				initializerDeclaration.returnType.hasSuffix("?")) ||
-			initializerDeclaration.isOptional
-		{
+		if initializerDeclaration.isOptional {
 			isFailableInitializer = true
 			let newStatements = replaceStatements(initializerDeclaration.statements ?? [])
 			isFailableInitializer = false

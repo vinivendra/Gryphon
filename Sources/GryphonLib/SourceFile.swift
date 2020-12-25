@@ -275,7 +275,6 @@ public struct SourceFileRange: Equatable, Hashable, CustomStringConvertible {
 		self.end = end
 	}
 
-	// TODO: (after removing AST dumps) remove this
 	init(
 		lineStart: Int,
 		lineEnd: Int,
