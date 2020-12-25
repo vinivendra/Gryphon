@@ -99,7 +99,7 @@ public class SourceFile {
 
 extension SourceFile {
 	/// Turns a SourceKit offset and length (in UTF8) into a range in this SourceFile.
-	func getRange(forSourceKitOffset offset: Int, length: Int) -> SourceFileRange? {
+	func getRange(forSourceKitOffset offset: Int, length: Int) -> SourceFileRange {
 		// The end in a source file range is inclusive (-1)
 		let endOffset = offset + length - 1
 		return SourceFileRange.getRange(
@@ -236,20 +236,6 @@ public struct SourceFileRange: Equatable, Hashable, CustomStringConvertible {
 	let start: SourceFilePosition
 	let end: SourceFilePosition
 
-	// TODO: (after removing AST dumps) remove this
-	var lineStart: Int {
-		return start.line
-	}
-	var lineEnd: Int {
-		return end.line
-	}
-	var columnStart: Int {
-		return start.column
-	}
-	var columnEnd: Int {
-		return end.column
-	}
-
 	/// This is technically incorrect but allows AST nodes with ranges to get an automatic Equatable
 	/// conformance that ignores ranges, which is useful since we're frequently comparing nodes
 	/// with the same practical meaning but different source file ranges.
@@ -259,10 +245,10 @@ public struct SourceFileRange: Equatable, Hashable, CustomStringConvertible {
 
 	/// Real equatable comparison
 	public func isEqual(to other: SourceFileRange) -> Bool {
-		return self.lineStart == other.lineStart &&
-			self.lineEnd == other.lineEnd &&
-			self.columnStart == other.columnStart &&
-			self.columnEnd == other.columnEnd
+		return self.start.line == other.start.line &&
+			self.end.line == other.end.line &&
+			self.start.column == other.start.column &&
+			self.end.column == other.end.column
 	}
 
 	public var description: String {
@@ -289,7 +275,6 @@ public struct SourceFileRange: Equatable, Hashable, CustomStringConvertible {
 		self.end = end
 	}
 
-	// TODO: (after removing AST dumps) remove this
 	init(
 		lineStart: Int,
 		lineEnd: Int,

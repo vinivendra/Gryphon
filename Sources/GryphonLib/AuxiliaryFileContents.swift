@@ -2358,19 +2358,6 @@ public class SupportingFile {
 		return Utilities.getAbsolutePath(forFile: relativePath)
 	}
 
-	/// Takes the path to a Swift file (with or without extension) and returns the path to its
-	/// corresponding AST dump file, which may or may not exist.
-	static public func pathOfSwiftASTDumpFile(
-		forSwiftFile swiftFile: String,
-		swiftVersion: String)
-		-> String
-	{
-		let relativePath = Utilities.getRelativePath(forFile: swiftFile)
-		let pathInGryphonFolder = "\(astDumpsFolder)-Swift-\(swiftVersion)/\(relativePath)"
-		let astDumpPath = Utilities.changeExtension(of: pathInGryphonFolder, to: .swiftASTDump)
-		return astDumpPath
-	}
-
 	static public func pathOfKotlinErrorMapFile(forKotlinFile kotlinFile: String) -> String {
 		let relativePath = Utilities.getRelativePath(forFile: kotlinFile)
 		let pathInGryphonFolder = "\(kotlinErrorMapsFolder)/\(relativePath)"
@@ -2382,7 +2369,6 @@ public class SupportingFile {
 	public static let gryphonBuildFolder = ".gryphon"
 	public static let gryphonScriptsFolder = "\(gryphonBuildFolder)/scripts"
 	public static let kotlinErrorMapsFolder = "\(gryphonBuildFolder)/KotlinErrorMaps"
-	public static let astDumpsFolder = "\(gryphonBuildFolder)/ASTDumps"
 
 	// Files in the project folder
 	public static let xcFileList = SupportingFile(
@@ -2405,10 +2391,6 @@ public class SupportingFile {
 		contents: gryphonTemplatesLibraryFileContents)
 	public static let temporaryOutputFileMap = SupportingFile(
 		"output-file-map.json",
-		folder: SupportingFile.gryphonBuildFolder,
-		contents: nil)
-	public static let astDumpsScript = SupportingFile(
-		"updateASTDumps.sh",
 		folder: SupportingFile.gryphonBuildFolder,
 		contents: nil)
 	public static let sourceKitCompilationArguments = SupportingFile(

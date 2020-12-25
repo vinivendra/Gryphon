@@ -108,7 +108,7 @@ function runTest {
 	failures=$(echo "$commandErrors" | grep $1)
 
 	# Remove lines that start with a '['
-	# Avoids matches to "[22/47] Compiling GryphonLibTests ASTDumpDecoderTest.swift"
+	# Avoids matches to "[22/47] Compiling GryphonLibTests SwiftSyntaxDecoderTest.swift"
 	failures=$(echo "$failures" | grep "^[^\[]")
 
 	if [[ $failures == "" ]]; then

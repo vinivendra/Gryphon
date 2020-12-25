@@ -22,6 +22,8 @@ let y = "The string above is \(x)"
 let z = 0
 let w = "Here's another interpolated string: \(x), \(y) and \(z)"
 
+let emptyString = ""
+
 let escapedString = "A string with \"escaped double quotes\" \\ and escaped backslashes\n\t and some escaped characters too."
 
 let singleInterpolation = "\(x)"
@@ -31,6 +33,7 @@ print(x)
 print(y)
 print(z)
 print(w)
+print(emptyString)
 print(escapedString)
 print(singleInterpolation)
 print(interpolationWithDoubleQuotes)

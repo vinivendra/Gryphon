@@ -37,10 +37,8 @@ class LibraryTranspilationTest: XCTestCase {
 			sourceFile: nil, declarations: [], statements: [], outputFileMap: [:],
 			indexingResponse: [:]),
 		context: try! TranspilationContext(
-			toolchainName: nil,
 			indentationString: "\t",
 			defaultsToFinal: false,
-			isUsingSwiftSyntax: true,
 			compilationArguments: TranspilationContext.SwiftCompilationArguments(
 				absoluteFilePathsAndOtherArguments: []),
 			xcodeProjectPath: nil,

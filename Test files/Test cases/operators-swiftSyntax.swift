@@ -89,6 +89,6 @@ print(precedenceResult)
 let castResult1 = precedenceResult as Any
 print(castResult1)
 let castResult2 = precedenceResult as? Any
-// TODO: (after removing AST dumps) Print `castResult2` once AST dumps are dropped
+print(castResult2)
 let castResult3 = precedenceResult is Bool
 print(castResult3)

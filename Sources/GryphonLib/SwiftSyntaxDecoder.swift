@@ -305,35 +305,45 @@ public class SourceKit {
 
 		let list = sourceKitResult["key.expression_type_list"]
 			as! [[String: SourceKitRepresentable]]
-		let typeList = list.map {
-			ExpressionType(
-				offset: Int($0["key.expression_offset"]! as! Int64),
-				length: Int($0["key.expression_length"]! as! Int64),
-				typeName: $0["key.expression_type"]! as! String)
-		}
+
+		let astsAndTypes: [(ast: [String: SourceKitRepresentable],
+							type: SourceKit.ExpressionType)] =
+			list.map {
+				($0,
+				 ExpressionType(
+					offset: Int($0["key.expression_offset"]! as! Int64),
+					length: Int($0["key.expression_length"]! as! Int64),
+					typeName: $0["key.expression_type"]! as! String))
+			}
 
 		// If there's an error, we might have to re-init to include a new file in the compilation.
 		// Throw an error here so that the caller has the opportunity to do that.
-		if let errorType = typeList.first(where: { $0.typeName == "<<error type>>" }) {
-			let maybeRange = sourceFile.getRange(
-				forSourceKitOffset: errorType.offset,
-				length: errorType.length)
-
+		if let errorASTAndType =
+			astsAndTypes.first(where: { $0.type.typeName == "<<error type>>" })
+		{
 			var errorMessage = "SourceKit failed to get an expression's type"
-
-			if let range = maybeRange {
-				errorMessage += " at \(sourceFile.path):\(range.lineStart):\(range.columnStart)"
-			}
-
 			if context.xcodeProjectPath != nil {
 				errorMessage += ". Try running `gryphon init` again."
 			}
 
-			throw GryphonError(errorMessage: errorMessage)
+			let range = sourceFile.getRange(
+				forSourceKitOffset: errorASTAndType.type.offset,
+				length: errorASTAndType.type.length)
+
+			let completeMessage = CompilerIssue(
+					message: errorMessage,
+					ast: errorASTAndType.ast.toPrintableTree(),
+					sourceFile: sourceFile,
+					sourceFileRange: range,
+					isError: true)
+				.fullMessage
+
+			throw GryphonError(errorMessage: completeMessage)
 		}
 
 		// Sort by offset (ascending), breaking ties using length (ascending)
-		let sortedList = SortedList(typeList) { a, b in
+		let types = astsAndTypes.map { $0.type }
+		let sortedTypes = SortedList(types) { a, b in
 			if a.offset == b.offset {
 				return a.length < b.length
 			}
@@ -344,7 +354,24 @@ public class SourceKit {
 
 		Compiler.logEnd("✅  Done calling SourceKit (expression types).")
 
-		return sortedList
+		return sortedTypes
+	}
+}
+
+extension SourceKitRepresentable {
+	func toPrintableTree() -> PrintableTree {
+		if let array = self as? [SourceKitRepresentable] {
+			let subtrees: List<PrintableAsTree?> = List(array.map { $0.toPrintableTree() })
+			return PrintableTree("Array", subtrees)
+		}
+		else if let dictionary = self as? [String: SourceKitRepresentable] {
+			let subtrees: List<PrintableAsTree?> =
+				List(dictionary.map { PrintableTree($0, [$1.toPrintableTree()]) })
+			return PrintableTree("Object", subtrees)
+		}
+		else {
+			return PrintableTree(String(describing: self))
+		}
 	}
 }
 
@@ -424,8 +451,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 						"⚠️ Something went wrong, attempting to update iOS compilation files")
 					try Driver.createIOSCompilationFiles(
 						forXcodeProject: xcodeProjectPath,
-						forTarget: context.target,
-						usingToolchain: context.toolchainName)
+						forTarget: context.target)
 					context.compilationArguments = try Driver.readCompilationArgumentsFromFile()
 					maybeTypeList = try SourceKit.requestExpressionTypes(
 						forFile: sourceFile,
@@ -566,7 +592,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			// Raise warnings for deprecated translation comments
 			if let range = statement.getRange(inFile: self.sourceFile),
 			   let translationComment =
-			      self.sourceFile.getTranslationCommentFromLine(range.lineStart)
+			      self.sourceFile.getTranslationCommentFromLine(range.start.line)
 			{
 				if translationComment.key == .ignore {
 					Compiler.handleWarning(
@@ -713,9 +739,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			if isInTopOfFileComments {
 				if let commentStatement = statement as? CommentStatement {
 					if let range = commentStatement.range,
-						lastTopOfFileCommentLine >= range.lineStart - 1
+						lastTopOfFileCommentLine >= range.start.line - 1
 					{
-						lastTopOfFileCommentLine = range.lineEnd
+						lastTopOfFileCommentLine = range.end.line
 						declarations.append(statement)
 						continue
 					}
@@ -2015,7 +2041,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			forSyntax: functionLikeDeclaration.asSyntax,
 			withKey: .pure).isEmpty
 		if let range = functionLikeDeclaration.getRange(inFile: self.sourceFile),
-		   let translationComment = self.sourceFile.getTranslationCommentFromLine(range.lineStart),
+		   let translationComment = self.sourceFile.getTranslationCommentFromLine(range.start.line),
 		   translationComment.key == .pure
 		{
 			Compiler.handleWarning(
@@ -2531,7 +2557,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let leadingComments = getLeadingComments(forSyntax: Syntax(expression), withKey: .value)
 
 		if let range = expression.getRange(inFile: self.sourceFile),
-		   let translationComment = self.sourceFile.getTranslationCommentFromLine(range.lineStart),
+		   let translationComment = self.sourceFile.getTranslationCommentFromLine(range.start.line),
 		   translationComment.key == .value,
 		   let commentValue = translationComment.value,
 		   let swiftText = try? expression.getLiteralText(fromSourceFile: self.sourceFile)
@@ -3660,9 +3686,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let isMultiline = (stringLiteralExpression.openQuote.tokenKind == .multilineStringQuote)
 
 		if let range = stringLiteralExpression.getRange(inFile: self.sourceFile),
-		   range.lineStart >= 2,
+		   range.start.line >= 2,
 		   let translationComment =
-		      self.sourceFile.getTranslationCommentFromLine(range.lineStart - 1),
+		      self.sourceFile.getTranslationCommentFromLine(range.start.line - 1),
 		   translationComment.key == .multiline
 		{
 			Compiler.handleWarning(
@@ -3721,8 +3747,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 								let problemRange: SourceFileRange?
 								if let range = stringRange {
 									problemRange = SourceFileRange(
-										lineStart: range.lineStart + index,
-										lineEnd: range.lineStart + index,
+										lineStart: range.start.line + index,
+										lineEnd: range.start.line + index,
 										columnStart: 1,
 										columnEnd: indentation.count + 1)
 								}
