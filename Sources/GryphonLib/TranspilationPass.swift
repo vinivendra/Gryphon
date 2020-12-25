@@ -1279,7 +1279,6 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 			let newStatements = replaceStatements(initializerDeclaration.statements ?? [])
 			isFailableInitializer = false
 
-			// TODO: (after removing AST dumps) simplify this
 			let newReturnType = initializerDeclaration.returnType.hasSuffix("?") ?
 				initializerDeclaration.returnType :
 				initializerDeclaration.returnType + "?"
@@ -2562,27 +2561,6 @@ public class AnonymousParametersTranspilationPass: TranspilationPass {
 		}
 		else {
 			return super.processDeclarationReferenceExpression(declarationReferenceExpression)
-		}
-	}
-
-	// TODO: (after removing AST dumps) remove this if possible
-	override func replaceClosureExpression(
-		_ closureExpression: ClosureExpression)
-		-> Expression
-	{
-		if closureExpression.parameters.count == 1,
-			closureExpression.parameters[0].label == "$0"
-		{
-			return super.replaceClosureExpression(ClosureExpression(
-				syntax: closureExpression.syntax,
-				range: closureExpression.range,
-				parameters: [],
-				statements: closureExpression.statements,
-				typeName: closureExpression.typeName,
-				isTrailing: closureExpression.isTrailing))
-		}
-		else {
-			return super.replaceClosureExpression(closureExpression)
 		}
 	}
 }
