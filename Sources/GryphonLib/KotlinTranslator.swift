@@ -2166,16 +2166,7 @@ public class KotlinTranslator {
 					translateType(Utilities.splitTypeList($0, separators: [":"]).last!)
 				}
 
-				// One exception: key-value tuples from dictionaries should become Entry, not Pair
-				let names = innerTypes.map {
-					Utilities.splitTypeList($0, separators: [":"]).first!
-				}
-				if names == ["key", "value"] {
-					return "Entry<\(translatedTypes.joined(separator: ", "))>"
-				}
-				else {
-					return "Pair<\(translatedTypes.joined(separator: ", "))>"
-				}
+				return "Pair<\(translatedTypes.joined(separator: ", "))>"
 			}
 			else {
 				return "(" + translateType(String(typeName.dropFirst().dropLast())) + ")"
