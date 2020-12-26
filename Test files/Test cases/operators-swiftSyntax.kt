@@ -92,4 +92,10 @@ fun main(args: Array<String>) {
 	val castResult3: Boolean = precedenceResult is Boolean
 
 	println(castResult3)
+
+	val a: Int? = null
+	val b: Int? = 1
+	val c: Int = a ?: b ?: 2
+
+	println(c)
 }

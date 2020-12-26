@@ -3743,7 +3743,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 							}
 
 							if !line.hasPrefix(indentation) {
-								// If we're dealing with different indentation, like spaces vs tabs
+								// If we're dealing with different indentation, like spaces vs tabs.
+								// Should be unreachable, since Swift already checks for this.
 								let problemRange: SourceFileRange?
 								if let range = stringRange {
 									problemRange = SourceFileRange(

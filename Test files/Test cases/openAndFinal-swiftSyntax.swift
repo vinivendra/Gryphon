@@ -50,7 +50,17 @@ class A {
 
 	// Let declarations can't be open
 	let a8 = 0
+
+	// Subscripts
+	open subscript(i: Int) -> Int {
+		return i
+	}
+
+	final subscript(j: String) -> String {
+		return j
+	}
 }
+
 
 // Test classes
 
@@ -65,6 +75,9 @@ class A3 { }
 
 // Private declarations can't be open
 private class A4 { }
+
+// Explicitly open
+open class A5 { }
 
 // Test value types
 struct B {
