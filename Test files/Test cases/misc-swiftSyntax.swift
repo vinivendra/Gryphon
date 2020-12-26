@@ -107,6 +107,9 @@ let arrayOfInts1: Array = [1, 2, 3]
 // Test Array<Whatever>
 let arrayOfInts2: Array<Int> = [1, 2, 3]
 
+// Test Dictionary<Whatever, Whatever>
+let dictionary: Dictionary<Int, Int> = [1: 2]
+
 // Test Array<Whatever>.Index
 let array = [1, 2, 3]
 let arrayIndex = array.firstIndex(of: 1)
