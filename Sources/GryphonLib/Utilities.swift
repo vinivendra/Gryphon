@@ -161,49 +161,6 @@ extension Utilities {
 }
 
 extension Utilities {
-	public static func files(
-		_ filePaths: List<String>,
-		wereModifiedLaterThan otherFilePaths: List<String>)
-		-> Bool
-	{
-		guard !filePaths.isEmpty, !otherFilePaths.isEmpty else {
-			return true
-		}
-
-		let fileManager = FileManager.default
-
-		// Get the latest modification date among the first files
-		var latestDate = Date.distantPast
-		for filePath in filePaths {
-			let fileAttributes = try! fileManager.attributesOfItem(atPath: filePath)
-			let fileModifiedDate = fileAttributes[.modificationDate] as! Date
-
-			if !latestDate.isAfter(fileModifiedDate) {
-				latestDate = fileModifiedDate
-			}
-		}
-
-		// Ensure that latest date is still before all dates from other files
-		for filePath in otherFilePaths {
-			let fileAttributes = try! fileManager.attributesOfItem(atPath: filePath)
-			let fileModifiedDate = fileAttributes[.modificationDate] as! Date
-
-			if latestDate.isAfter(fileModifiedDate) {
-				return true
-			}
-		}
-
-		return false
-	}
-}
-
-fileprivate extension Date {
-	func isAfter(_ other: Date) -> Bool {
-		return (self.timeIntervalSince(other) > 0)
-	}
-}
-
-extension Utilities {
 	internal static func readFile(_ filePath: String) throws -> String {
 		do {
 			let result = try String(contentsOfFile: filePath)
