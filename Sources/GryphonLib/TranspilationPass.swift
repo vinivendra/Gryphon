@@ -1328,24 +1328,6 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 	}
 }
 
-public class RemoveExtraReturnsInInitsTranspilationPass: TranspilationPass {
-	override func processInitializerDeclaration(
-		_ initializerDeclaration: InitializerDeclaration)
-		-> InitializerDeclaration?
-	{
-		if initializerDeclaration.isStatic == true,
-			initializerDeclaration.extendsType == nil,
-			let lastStatement = initializerDeclaration.statements?.last,
-			lastStatement is ReturnStatement
-		{
-			initializerDeclaration.statements?.removeLast()
-			return initializerDeclaration
-		}
-
-		return initializerDeclaration
-	}
-}
-
 /// The static functions and variables in a class must all be placed inside a single companion
 /// object.
 public class StaticMembersTranspilationPass: TranspilationPass {
@@ -2440,23 +2422,6 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 }
 
 public class SelfToThisTranspilationPass: TranspilationPass {
-	override func replaceDotExpression(
-		_ dotExpression: DotExpression)
-		-> Expression
-	{
-		if let declarationReferenceExpression =
-			dotExpression.leftExpression as? DeclarationReferenceExpression
-		{
-			if declarationReferenceExpression.identifier == "self",
-				declarationReferenceExpression.isImplicit
-			{
-				return replaceExpression(dotExpression.rightExpression)
-			}
-		}
-
-		return super.replaceDotExpression(dotExpression)
-	}
-
 	override func processDeclarationReferenceExpression(
 		_ declarationReferenceExpression: DeclarationReferenceExpression)
 		-> DeclarationReferenceExpression
@@ -5534,7 +5499,6 @@ public extension TranspilationPass {
 
 		/// Cleanup
 		ast = RemoveParenthesesTranspilationPass(ast: ast, context: context).run()
-		ast = RemoveExtraReturnsInInitsTranspilationPass(ast: ast, context: context).run()
 
 		/// Transform structures that need to be significantly different in Kotlin
 		ast = EquatableOperatorsTranspilationPass(ast: ast, context: context).run()
