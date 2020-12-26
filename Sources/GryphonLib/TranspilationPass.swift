@@ -3640,40 +3640,20 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 		return members
 	}
 
-	override func replaceFunctionDeclaration(
+	override func processFunctionDeclaration(
 		_ functionDeclaration: FunctionDeclaration)
-		-> List<Statement>
+		-> FunctionDeclaration
 	{
 		functionDeclaration.extendsType = self.extendingType
-		return [functionDeclaration]
+		return functionDeclaration
 	}
 
 	override func processVariableDeclaration(
 		_ variableDeclaration: VariableDeclaration)
 		-> VariableDeclaration
 	{
-		// If this variable is in a generic context, we should have detected it earlier in the Swift
-		// Translator and put the information in the extendingType to preserve it. If the variable
-		// is not in an extension (i.e. if it's in a generic class), we remove the extending type
-		// here.
-		// The variableDeclaration will contain `Box<T>`, and the extending type will contain simply
-		// `Box`.
-		if let extensionType = self.extendingType {
-			if let typeWithGenerics = variableDeclaration.extendsType,
-				typeWithGenerics.contains("<"),
-				typeWithGenerics.hasPrefix(extensionType)
-			{
-				return variableDeclaration
-			}
-			else {
-				variableDeclaration.extendsType = self.extendingType
-				return variableDeclaration
-			}
-		}
-		else {
-			variableDeclaration.extendsType = nil
-			return variableDeclaration
-		}
+		variableDeclaration.extendsType = self.extendingType
+		return variableDeclaration
 	}
 }
 
