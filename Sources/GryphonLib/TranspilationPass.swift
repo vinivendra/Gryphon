@@ -1080,85 +1080,6 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 	}
 }
 
-public class RemoveParenthesesTranspilationPass: TranspilationPass {
-	override func replaceSubscriptExpression(
-		_ subscriptExpression: SubscriptExpression)
-		-> Expression
-	{
-		if subscriptExpression.indexExpression.pairs.count == 1,
-			let onlyExpression = subscriptExpression.indexExpression.pairs.first,
-			onlyExpression.label == nil,
-			let parenthesesExpression = onlyExpression.expression as? ParenthesesExpression
-		{
-			return super.replaceSubscriptExpression(SubscriptExpression(
-				syntax: subscriptExpression.syntax,
-				range: subscriptExpression.range,
-				subscriptedExpression: subscriptExpression.subscriptedExpression,
-				indexExpression: TupleExpression(
-					range: subscriptExpression.indexExpression.range,
-					pairs: [LabeledExpression(
-						label: nil,
-						expression: parenthesesExpression.expression), ]),
-				typeName: subscriptExpression.typeName))
-		}
-
-		return super.replaceSubscriptExpression(subscriptExpression)
-	}
-
-	override func replaceParenthesesExpression(
-		_ parenthesesExpression: ParenthesesExpression)
-		-> Expression
-	{
-		if let parent = parent,
-			case let .expressionNode(parentExpression) = parent
-		{
-			if parentExpression is TupleExpression ||
-				parentExpression is InterpolatedStringLiteralExpression
-			{
-				return replaceExpression(parenthesesExpression.expression)
-			}
-		}
-
-		return super.replaceParenthesesExpression(parenthesesExpression)
-	}
-
-	override func replaceIfExpression(
-		_ ifExpression: IfExpression)
-		-> Expression
-	{
-		let replacedCondition: Expression
-		if let condition = ifExpression.condition as? ParenthesesExpression {
-			replacedCondition = condition.expression
-		}
-		else {
-			replacedCondition = ifExpression.condition
-		}
-
-		let replacedTrueExpression: Expression
-		if let trueExpression = ifExpression.trueExpression as? ParenthesesExpression {
-			replacedTrueExpression = trueExpression.expression
-		}
-		else {
-			replacedTrueExpression = ifExpression.trueExpression
-		}
-
-		let replacedFalseExpression: Expression
-		if let falseExpression = ifExpression.falseExpression as? ParenthesesExpression {
-			replacedFalseExpression = falseExpression.expression
-		}
-		else {
-			replacedFalseExpression = ifExpression.falseExpression
-		}
-
-		return IfExpression(
-			syntax: ifExpression.syntax,
-			range: ifExpression.range,
-			condition: replacedCondition,
-			trueExpression: replacedTrueExpression,
-			falseExpression: replacedFalseExpression)
-	}
-}
-
 /// Removes implicit declarations so that they don't show up on the translation
 public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
 	override func replaceEnumDeclaration(
@@ -5496,9 +5417,6 @@ public extension TranspilationPass {
 		/// Replace templates (must go before other passes since templates are recorded before
 		/// running any passes)
 		ast = ReplaceTemplatesTranspilationPass(ast: ast, context: context).run()
-
-		/// Cleanup
-		ast = RemoveParenthesesTranspilationPass(ast: ast, context: context).run()
 
 		/// Transform structures that need to be significantly different in Kotlin
 		ast = EquatableOperatorsTranspilationPass(ast: ast, context: context).run()
