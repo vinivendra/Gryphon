@@ -109,6 +109,18 @@ internal data class G(
 	}
 }
 
+internal open class N {
+	val o: Int = 0
+}
+
+internal open class M {
+	val n: N = N()
+}
+
+internal open class L {
+	val m: M = M()
+}
+
 fun main(args: Array<String>) {
 	var i: Int = 1
 
@@ -197,4 +209,7 @@ fun main(args: Array<String>) {
 
 	val dictionary: Map<Int, Int> = mapOf(1 to 10, 2 to 20)
 	val mappedDictionary: List<Int> = dictionary.map { it.key + it.value }
+	val l: L? = L()
+
+	println(l?.m?.n?.o)
 }

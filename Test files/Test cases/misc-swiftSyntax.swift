@@ -248,3 +248,19 @@ print(z.0.0)
 
 let dictionary = [1: 10, 2: 20]
 let mappedDictionary = dictionary.map { $0.0 + $0.1 }
+
+// Optional chains
+class N {
+	let o = 0
+}
+
+class M {
+	let n = N()
+}
+
+class L {
+	let m = M()
+}
+
+let l: L? = L()
+print(l?.m.n.o)
