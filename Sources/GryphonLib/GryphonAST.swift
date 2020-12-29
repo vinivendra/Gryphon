@@ -1402,11 +1402,6 @@ public /*abstract*/ class Expression: PrintableAsTree, Equatable, CustomStringCo
 		{
 			return lhs == rhs
 		}
-		if let lhs = lhs as? TupleShuffleExpression,
-			let rhs = rhs as? TupleShuffleExpression
-		{
-			return lhs == rhs
-		}
 		if lhs is ErrorExpression,
 			rhs is ErrorExpression
 		{
@@ -2163,7 +2158,7 @@ public class IfExpression: Expression {
 
 public class CallExpression: Expression {
 	var function: Expression
-	var parameters: Expression
+	var arguments: TupleExpression
 	var typeName: String?
 	/// If this function call can be written with a trailing closure in Kotlin (it can't in some
 	/// instances of calls with variadics and default arguments). This gets decided in a
@@ -2176,13 +2171,13 @@ public class CallExpression: Expression {
 		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		function: Expression,
-		parameters: Expression,
+		arguments: TupleExpression,
 		typeName: String?,
 		allowsTrailingClosure: Bool,
 		isPure: Bool)
 	{
 		self.function = function
-		self.parameters = parameters
+		self.arguments = arguments
 		self.typeName = typeName
 		self.allowsTrailingClosure = allowsTrailingClosure
 		self.isPure = isPure
@@ -2191,14 +2186,14 @@ public class CallExpression: Expression {
 			range: range,
 			name: "CallExpression".capitalizedAsCamelCase())
 		function.parent = self
-		parameters.parent = self
+		arguments.parent = self
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
 			PrintableTree.initOrNil("type", [PrintableTree.initOrNil(typeName)]),
 			PrintableTree.ofExpressions("function", [function]),
-			PrintableTree.ofExpressions("parameters", [parameters]),
+			PrintableTree.ofExpressions("arguments", [arguments]),
 			allowsTrailingClosure ? PrintableTree("allowsTrailingClosure") : nil,
 			isPure ? PrintableTree("isPure") : nil, ]
 	}
@@ -2220,7 +2215,7 @@ public class CallExpression: Expression {
 		-> Bool
 	{
 		return lhs.function == rhs.function &&
-			lhs.parameters == rhs.parameters &&
+			lhs.arguments == rhs.arguments &&
 			lhs.typeName == rhs.typeName &&
 			lhs.allowsTrailingClosure == rhs.allowsTrailingClosure &&
 			lhs.isPure == rhs.isPure
@@ -2590,112 +2585,6 @@ public class TupleExpression: Expression {
 
 	public static func == (lhs: TupleExpression, rhs: TupleExpression) -> Bool {
 		return lhs.pairs == rhs.pairs
-	}
-}
-
-public class TupleShuffleExpression: Expression {
-	let labels: MutableList<String?>
-	let indices: MutableList<TupleShuffleIndex>
-	let expressions: MutableList<Expression>
-
-	init(
-		syntax: Syntax? = nil,
-		range: SourceFileRange?,
-		labels: MutableList<String?>,
-		indices: MutableList<TupleShuffleIndex>,
-		expressions: MutableList<Expression>)
-	{
-		self.labels = labels
-		self.indices = indices
-		self.expressions = expressions
-		super.init(
-			syntax: syntax,
-			range: range,
-			name: "TupleShuffleExpression".capitalizedAsCamelCase())
-		for expression in expressions {
-			expression.parent = self
-		}
-	}
-
-	override public var printableSubtrees: List<PrintableAsTree?> {
-		let labelStrings = labels.map { ($0 ?? "_") + ":" }
-		return [
-			PrintableTree.ofStrings("labels", labelStrings),
-			PrintableTree.ofStrings("indices", indices.map { $0.description }),
-			PrintableTree.ofExpressions("expressions", expressions), ]
-	}
-
-	public static func == (lhs: TupleShuffleExpression, rhs: TupleShuffleExpression) -> Bool {
-		return lhs.labels == rhs.labels &&
-			lhs.indices == rhs.indices &&
-			lhs.expressions == rhs.expressions
-	}
-
-	override var swiftType: String? {
-		get {
-			return self.flattenToTupleExpression().swiftType
-		}
-		set { }
-	}
-
-	/// Check if this TupleShuffleExpression can be flattened into a TupleExpression without losing
-	/// information about absent or variadic parameters
-	var canBeFlattenedLosslessly: Bool {
-		for index in self.indices {
-			switch index {
-			case .absent:
-				return false
-			case .present:
-				break
-			case .variadic:
-				return false
-			}
-		}
-
-		return true
-	}
-
-	/// Turns this TupleShuffleExpression into a TupleExpression, ignoring absent parameters and
-	/// flattening variadics.
-	public func flattenToTupleExpression() -> TupleExpression {
-		let resultPairs: MutableList<LabeledExpression> = []
-
-		var expressionIndex = 0
-
-		// Variadic arguments can't be named, which means all arguments before them can't be named
-		// either.
-		let containsVariadics = self.indices.contains { $0.isVariadic }
-		var isBeforeVariadic = containsVariadics
-
-		for (label, index) in zip(self.labels, self.indices) {
-			switch index {
-			case .absent:
-				break
-			case .present:
-				let expression = self.expressions[expressionIndex]
-
-				let resultLabel: String?
-				if !isBeforeVariadic, let label = label {
-					resultLabel = label
-				}
-				else {
-					resultLabel = nil
-				}
-
-				resultPairs.append(LabeledExpression(label: resultLabel, expression: expression))
-
-				expressionIndex += 1
-			case let .variadic(count: variadicCount):
-				isBeforeVariadic = false
-				for _ in 0..<variadicCount {
-					let expression = self.expressions[expressionIndex]
-					resultPairs.append(LabeledExpression(label: nil, expression: expression))
-					expressionIndex += 1
-				}
-			}
-		}
-
-		return TupleExpression(syntax: syntax, range: self.range, pairs: resultPairs)
 	}
 }
 

@@ -3454,7 +3454,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			syntax: Syntax(functionCallExpression),
 			range: functionCallExpression.getRange(inFile: self.sourceFile),
 			function: functionExpressionTranslation,
-			parameters: tupleExpression,
+			arguments: tupleExpression,
 			typeName: callType,
 			allowsTrailingClosure: false,
 			isPure: isPure)

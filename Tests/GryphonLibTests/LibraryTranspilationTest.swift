@@ -291,7 +291,7 @@ class LibraryTranspilationTest: XCTestCase {
 				typeName: "(() -> ()) -> ()",
 				isStandardLibrary: false,
 				isImplicit: false),
-			parameters: TupleExpression(
+			arguments: TupleExpression(
 				range: nil,
 				pairs: [LabeledExpression(
 					label: nil,
@@ -311,7 +311,7 @@ class LibraryTranspilationTest: XCTestCase {
 				typeName: "(() -> ()) -> ()",
 				isStandardLibrary: false,
 				isImplicit: false),
-			parameters: TupleExpression(
+			arguments: TupleExpression(
 				range: nil,
 				pairs: [LabeledExpression(
 					label: "b",
@@ -329,7 +329,7 @@ class LibraryTranspilationTest: XCTestCase {
 				typeName: "(() -> ()) -> ()",
 				isStandardLibrary: false,
 				isImplicit: false),
-			parameters: TupleExpression(
+			arguments: TupleExpression(
 				range: nil,
 				pairs: [LabeledExpression(
 					label: "b",

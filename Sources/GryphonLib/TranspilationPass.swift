@@ -677,9 +677,6 @@ public class TranspilationPass {
 		if let expression = expression as? TupleExpression {
 			return replaceTupleExpression(expression)
 		}
-		if let expression = expression as? TupleShuffleExpression {
-			return replaceTupleShuffleExpression(expression)
-		}
 		if expression is ErrorExpression {
 			return ErrorExpression(
 				syntax: expression.syntax,
@@ -878,7 +875,7 @@ public class TranspilationPass {
 			syntax: callExpression.syntax,
 			range: callExpression.range,
 			function: replaceExpression(callExpression.function),
-			parameters: replaceExpression(callExpression.parameters),
+			arguments: processTupleExpression(callExpression.arguments),
 			typeName: callExpression.typeName,
 			allowsTrailingClosure: callExpression.allowsTrailingClosure,
 			isPure: callExpression.isPure)
@@ -980,20 +977,6 @@ public class TranspilationPass {
 			pairs: tupleExpression.pairs.map {
 				LabeledExpression(label: $0.label, expression: replaceExpression($0.expression))
 			}.toMutableList())
-	}
-
-	func replaceTupleShuffleExpression(
-		_ tupleShuffleExpression: TupleShuffleExpression)
-		-> Expression
-	{
-		return TupleShuffleExpression(
-			syntax: tupleShuffleExpression.syntax,
-			range: tupleShuffleExpression.range,
-			labels: tupleShuffleExpression.labels,
-			indices: tupleShuffleExpression.indices,
-			expressions: tupleShuffleExpression.expressions
-				.map { replaceExpression($0) }
-				.toMutableList())
 	}
 }
 
@@ -1677,7 +1660,7 @@ public class CallsToSuperclassInitializersTranspilationPass: TranspilationPass {
 					syntax: callExpression.syntax,
 					range: callExpression.range,
 					function: leftExpression,
-					parameters: callExpression.parameters,
+					arguments: callExpression.arguments,
 					typeName: callExpression.typeName,
 					allowsTrailingClosure: callExpression.allowsTrailingClosure,
 					isPure: callExpression.isPure)
@@ -2466,9 +2449,7 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 		-> Expression
 	{
 		// Deal with cases where an initializer is used directly (i.e. `MutableList<Int>(array)`)
-		if let typeExpression = callExpression.function as? TypeExpression,
-			let tupleExpression = callExpression.parameters as? TupleExpression
-		{
+		if let typeExpression = callExpression.function as? TypeExpression {
 			let isMutableList = typeExpression.typeName.hasPrefix("MutableList<")
 			let isList = typeExpression.typeName.hasPrefix("List<")
 			let isMutableMap = typeExpression.typeName.hasPrefix("MutableMap<")
@@ -2500,8 +2481,8 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 				return super.replaceCallExpression(callExpression)
 			}
 
-			if tupleExpression.pairs.count == 1,
-				let onlyPair = tupleExpression.pairs.first
+			if callExpression.arguments.pairs.count == 1,
+				let onlyPair = callExpression.arguments.pairs.first
 			{
 				let genericElements =
 					Utilities.splitTypeList(genericElementsString, separators: [","])
@@ -2524,7 +2505,7 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 							typeName: typeExpression.typeName,
 							isStandardLibrary: false,
 							isImplicit: false),
-						parameters: TupleExpression(
+						arguments: TupleExpression(
 							syntax: callExpression.syntax,
 							range: callExpression.range,
 							pairs: []),
@@ -2542,13 +2523,12 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 					leftType.hasPrefix("MutableMap") ||
 					leftType.hasPrefix("Map")),
 				let rightExpression =
-					dotExpression.rightExpression as? DeclarationReferenceExpression,
-				let tupleExpression = callExpression.parameters as? TupleExpression
+					dotExpression.rightExpression as? DeclarationReferenceExpression
 			{
 				if (rightExpression.identifier == "as" ||
 					rightExpression.identifier.hasPrefix("forceCast")),
-					tupleExpression.pairs.count == 1,
-					let onlyPair = tupleExpression.pairs.first
+				   callExpression.arguments.pairs.count == 1,
+					let onlyPair = callExpression.arguments.pairs.first
 				{
 					let methodSuffix = (rightExpression.identifier.hasPrefix("forceCast")) ?
 						"" :
@@ -2612,9 +2592,9 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 									typeName: rightExpression.typeName,
 									isStandardLibrary: rightExpression.isStandardLibrary,
 									isImplicit: rightExpression.isImplicit)),
-							parameters: TupleExpression(
-								syntax: tupleExpression.syntax,
-								range: tupleExpression.range,
+							arguments: TupleExpression(
+								syntax: callExpression.arguments.syntax,
+								range: callExpression.arguments.range,
 								pairs: []),
 							typeName: callExpression.typeName,
 							allowsTrailingClosure: callExpression.allowsTrailingClosure,
@@ -2649,7 +2629,7 @@ public class OptionalFunctionCallsTranspilationPass: TranspilationPass {
 						typeName: callExpression.function.swiftType ?? "<<Error>>",
 						isStandardLibrary: false,
 						isImplicit: false)),
-				parameters: callExpression.parameters,
+				arguments: callExpression.arguments,
 				typeName: callExpression.typeName,
 				allowsTrailingClosure: callExpression.allowsTrailingClosure,
 				isPure: callExpression.isPure)
@@ -2667,21 +2647,11 @@ public class DataStructureInitializersTranspilationPass: TranspilationPass {
 		_ callExpression: CallExpression)
 		-> Expression
 	{
-		let tupleExpression = callExpression.parameters as? TupleExpression
-		let tupleShuffleExpression = callExpression.parameters as? TupleShuffleExpression
-
 		if let typeExpression = callExpression.function as? TypeExpression {
 
 			// Make sure there are no parameters
-			if let tupleExpression = tupleExpression {
-				guard tupleExpression.pairs.isEmpty else {
-					return super.replaceCallExpression(callExpression)
-				}
-			}
-			else if let tupleShuffleExpression = tupleShuffleExpression {
-				guard tupleShuffleExpression.expressions.isEmpty else {
-					return super.replaceCallExpression(callExpression)
-				}
+			guard callExpression.arguments.pairs.isEmpty else {
+				return super.replaceCallExpression(callExpression)
 			}
 
 			// Get the function's name and the generic elements
@@ -2709,14 +2679,6 @@ public class DataStructureInitializersTranspilationPass: TranspilationPass {
 				return super.replaceCallExpression(callExpression)
 			}
 
-			let parameters: Expression
-			if let tupleExpression = tupleExpression {
-				parameters = tupleExpression
-			}
-			else {
-				parameters = tupleShuffleExpression!
-			}
-
 			return CallExpression(
 				syntax: callExpression.syntax,
 				range: callExpression.range,
@@ -2727,7 +2689,7 @@ public class DataStructureInitializersTranspilationPass: TranspilationPass {
 					typeName: typeName,
 					isStandardLibrary: false,
 					isImplicit: false),
-				parameters: parameters,
+				arguments: callExpression.arguments,
 				typeName: typeName,
 				allowsTrailingClosure: callExpression.allowsTrailingClosure,
 				isPure: callExpression.isPure)
@@ -2892,7 +2854,7 @@ public class TuplesToPairsTranspilationPass: TranspilationPass {
 				syntax: tupleExpression.syntax,
 				range: tupleExpression.range,
 				typeName: pairType),
-			parameters: TupleExpression(
+			arguments: TupleExpression(
 				syntax: tupleExpression.syntax,
 				range: tupleExpression.range,
 				pairs: [
@@ -3027,49 +2989,26 @@ public class AutoclosuresTranspilationPass: TranspilationPass {
 		let parametersWithoutParentheses = String(parametersString.dropFirst().dropLast())
 		let parameterTypes = Utilities.splitTypeList(parametersWithoutParentheses)
 
-		if let tupleExpression = callExpression.parameters as? TupleExpression {
-			for index in tupleExpression.pairs.indices {
-				let pair = tupleExpression.pairs[index]
-				let expression = pair.expression
-				let parameterType = parameterTypes[index]
+		for index in callExpression.arguments.pairs.indices {
+			let pair = callExpression.arguments.pairs[index]
+			let expression = pair.expression
+			let parameterType = parameterTypes[index]
 
-				if parameterType.hasPrefix("@autoclosure") {
-					let newExpression = ClosureExpression(
+			if parameterType.hasPrefix("@autoclosure") {
+				let newExpression = ClosureExpression(
+					syntax: expression.syntax,
+					range: expression.range,
+					parameters: [],
+					statements: [ExpressionStatement(
 						syntax: expression.syntax,
 						range: expression.range,
-						parameters: [],
-						statements: [ExpressionStatement(
-							syntax: expression.syntax,
-							range: expression.range,
-							expression: expression), ],
-						typeName: parameterType,
-						isTrailing: false)
+						expression: expression), ],
+					typeName: parameterType,
+					isTrailing: false)
 
-					tupleExpression.pairs[index] = LabeledExpression(
-						label: pair.label,
-						expression: newExpression)
-				}
-			}
-		}
-		else if let tupleShuffleExpression = callExpression.parameters as? TupleShuffleExpression {
-			for index in tupleShuffleExpression.expressions.indices {
-				let expression = tupleShuffleExpression.expressions[index]
-				let parameterType = parameterTypes[index]
-
-				if parameterType.hasPrefix("@autoclosure") {
-					let newExpression = ClosureExpression(
-						syntax: expression.syntax,
-						range: expression.range,
-						parameters: [],
-						statements: [ExpressionStatement(
-							syntax: expression.syntax,
-							range: expression.range,
-							expression: expression), ],
-						typeName: parameterType,
-						isTrailing: false)
-
-					tupleShuffleExpression.expressions[index] = newExpression
-				}
+				callExpression.arguments.pairs[index] = LabeledExpression(
+					label: pair.label,
+					expression: newExpression)
 			}
 		}
 
@@ -3113,7 +3052,7 @@ public class RefactorOptionalsInSubscriptsTranspilationPass: TranspilationPass {
 						typeName: "\(indexExpressionType) -> \(returnType)",
 						isStandardLibrary: false,
 						isImplicit: false),
-					parameters: subscriptExpression.indexExpression,
+					arguments: subscriptExpression.indexExpression,
 					typeName: subscriptExpression.typeName,
 					allowsTrailingClosure: false,
 					isPure: true)))
@@ -4133,7 +4072,7 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 		-> MutableList<(Syntax?, SourceFileRange)>
 	{
 		if let expression = expression as? CallExpression {
-			let parameterInfo = informationOnPossibleSideEffectsIn(expression.parameters)
+			let parameterInfo = informationOnPossibleSideEffectsIn(expression.arguments)
 				.toMutableList()
 
 			if !expression.isPure,
@@ -4207,11 +4146,6 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 		if let expression = expression as? TupleExpression {
 			return expression.pairs
 				.flatMap { informationOnPossibleSideEffectsIn($0.expression) }
-				.toMutableList()
-		}
-		if let expression = expression as? TupleShuffleExpression {
-			return expression.expressions
-				.flatMap { informationOnPossibleSideEffectsIn($0) }
 				.toMutableList()
 		}
 
@@ -5226,7 +5160,7 @@ public class MatchFunctionCallsToDeclarationsTranspilationPass: TranspilationPas
 		_ callExpression: CallExpression)
 		-> CallExpression
 	{
-		let tupleExpression = callExpression.parameters as! TupleExpression
+		let arguments = callExpression.arguments
 
 		// Go through the dot expression chain to get the final expression
 		var functionExpression = callExpression.function
@@ -5254,10 +5188,10 @@ public class MatchFunctionCallsToDeclarationsTranspilationPass: TranspilationPas
 				typeName: typeName)
 		}
 		else if let typeExpression = functionExpression as? TypeExpression,
-			let parameterTypes = callExpression.parameters.swiftType
+			let argumentTypes = callExpression.arguments.swiftType
 		{
 			let typeName = typeExpression.typeName
-			let initializerType = "(\(typeName).Type) -> \(parameterTypes) -> \(typeName)"
+			let initializerType = "(\(typeName).Type) -> \(argumentTypes) -> \(typeName)"
 			maybeFunctionTranslation = self.context.getFunctionTranslation(
 				forName: typeName,
 				typeName: initializerType)
@@ -5267,12 +5201,12 @@ public class MatchFunctionCallsToDeclarationsTranspilationPass: TranspilationPas
 		}
 
 		guard let functionTranslation = maybeFunctionTranslation else {
-			removeLabels(fromTupleExpression: tupleExpression)
+			removeLabels(fromTupleExpression: arguments)
 			return super.processCallExpression(callExpression)
 		}
 
 		// Try to match the call to the declaration using the swiftc algorithm
-		let callArguments = tupleExpression.pairs
+		let callArguments = arguments.pairs
 
 		let defaultArguments = functionTranslation.parameters.map { $0.value != nil }
 		let acceptsUnlabeledTrailingClosures = functionTranslation.parameters.map {
@@ -5311,12 +5245,12 @@ public class MatchFunctionCallsToDeclarationsTranspilationPass: TranspilationPas
 			Compiler.handleWarning(
 				message: "Unable to match these parameters to their declarations, " +
 					"removing all labels",
-				syntax: callExpression.parameters.syntax,
-				ast: callExpression.parameters,
+				syntax: callExpression.arguments.syntax,
+				ast: callExpression.arguments,
 				sourceFile: ast.sourceFile,
-				sourceFileRange: callExpression.parameters.range)
+				sourceFileRange: callExpression.arguments.range)
 
-			removeLabels(fromTupleExpression: tupleExpression)
+			removeLabels(fromTupleExpression: arguments)
 			return super.processCallExpression(callExpression)
 		}
 
@@ -5350,7 +5284,7 @@ public class MatchFunctionCallsToDeclarationsTranspilationPass: TranspilationPas
 			functionTranslation.parameters.contains(where: { $0.value != nil })
 		let allowsTrailingClosure = (!hasDefaultArgument && !hasVariadic)
 
-		tupleExpression.pairs = resultPairs
+		arguments.pairs = resultPairs
 		callExpression.allowsTrailingClosure = allowsTrailingClosure
 		return super.processCallExpression(callExpression)
 	}
