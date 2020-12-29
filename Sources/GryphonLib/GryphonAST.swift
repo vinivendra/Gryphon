@@ -107,6 +107,9 @@ public /*abstract*/ class Statement: PrintableAsTree, Equatable, CustomStringCon
 	}
 
 	public static func == (lhs: Statement, rhs: Statement) -> Bool {
+		if let lhs = lhs as? VariableDeclaration, let rhs = rhs as? VariableDeclaration {
+			return lhs == rhs
+		}
 		if let lhs = lhs as? CommentStatement, let rhs = rhs as? CommentStatement {
 			return lhs == rhs
 		}
@@ -141,9 +144,6 @@ public /*abstract*/ class Statement: PrintableAsTree, Equatable, CustomStringCon
 			return lhs == rhs
 		}
 		if let lhs = lhs as? InitializerDeclaration, let rhs = rhs as? InitializerDeclaration {
-			return lhs == rhs
-		}
-		if let lhs = lhs as? VariableDeclaration, let rhs = rhs as? VariableDeclaration {
 			return lhs == rhs
 		}
 		if let lhs = lhs as? DoStatement, let rhs = rhs as? DoStatement {
@@ -1262,6 +1262,61 @@ public /*abstract*/ class Expression: PrintableAsTree, Equatable, CustomStringCo
 	}
 
 	public static func == (lhs: Expression, rhs: Expression) -> Bool {
+		if let lhs = lhs as? DeclarationReferenceExpression,
+		   let rhs = rhs as? DeclarationReferenceExpression
+		{
+			return lhs == rhs
+		}
+		if let lhs = lhs as? LiteralIntExpression,
+		   let rhs = rhs as? LiteralIntExpression
+		{
+			return lhs == rhs
+		}
+		if let lhs = lhs as? LiteralUIntExpression,
+		   let rhs = rhs as? LiteralUIntExpression
+		{
+			return lhs == rhs
+		}
+		if let lhs = lhs as? LiteralDoubleExpression,
+		   let rhs = rhs as? LiteralDoubleExpression
+		{
+			return lhs == rhs
+		}
+		if let lhs = lhs as? LiteralFloatExpression,
+		   let rhs = rhs as? LiteralFloatExpression
+		{
+			return lhs == rhs
+		}
+		if let lhs = lhs as? LiteralBoolExpression,
+		   let rhs = rhs as? LiteralBoolExpression
+		{
+			return lhs == rhs
+		}
+		if let lhs = lhs as? LiteralStringExpression,
+		   let rhs = rhs as? LiteralStringExpression
+		{
+			return lhs == rhs
+		}
+		if let lhs = lhs as? LiteralCharacterExpression,
+		   let rhs = rhs as? LiteralCharacterExpression
+		{
+			return lhs == rhs
+		}
+		if let lhs = lhs as? ClosureExpression,
+		   let rhs = rhs as? ClosureExpression
+		{
+			return lhs == rhs
+		}
+		if let lhs = lhs as? TypeExpression,
+		   let rhs = rhs as? TypeExpression
+		{
+			return lhs == rhs
+		}
+		if let lhs = lhs as? BinaryOperatorExpression,
+		   let rhs = rhs as? BinaryOperatorExpression
+		{
+			return lhs == rhs
+		}
 		if let lhs = lhs as? LiteralCodeExpression,
 			let rhs = rhs as? LiteralCodeExpression
 		{
@@ -1284,16 +1339,6 @@ public /*abstract*/ class Expression: PrintableAsTree, Equatable, CustomStringCo
 		}
 		if let lhs = lhs as? OptionalExpression,
 			let rhs = rhs as? OptionalExpression
-		{
-			return lhs == rhs
-		}
-		if let lhs = lhs as? DeclarationReferenceExpression,
-			let rhs = rhs as? DeclarationReferenceExpression
-		{
-			return lhs == rhs
-		}
-		if let lhs = lhs as? TypeExpression,
-			let rhs = rhs as? TypeExpression
 		{
 			return lhs == rhs
 		}
@@ -1322,11 +1367,6 @@ public /*abstract*/ class Expression: PrintableAsTree, Equatable, CustomStringCo
 		{
 			return lhs == rhs
 		}
-		if let lhs = lhs as? BinaryOperatorExpression,
-			let rhs = rhs as? BinaryOperatorExpression
-		{
-			return lhs == rhs
-		}
 		if let lhs = lhs as? PrefixUnaryExpression,
 			let rhs = rhs as? PrefixUnaryExpression
 		{
@@ -1344,46 +1384,6 @@ public /*abstract*/ class Expression: PrintableAsTree, Equatable, CustomStringCo
 		}
 		if let lhs = lhs as? CallExpression,
 			let rhs = rhs as? CallExpression
-		{
-			return lhs == rhs
-		}
-		if let lhs = lhs as? ClosureExpression,
-			let rhs = rhs as? ClosureExpression
-		{
-			return lhs == rhs
-		}
-		if let lhs = lhs as? LiteralIntExpression,
-			let rhs = rhs as? LiteralIntExpression
-		{
-			return lhs == rhs
-		}
-		if let lhs = lhs as? LiteralUIntExpression,
-			let rhs = rhs as? LiteralUIntExpression
-		{
-			return lhs == rhs
-		}
-		if let lhs = lhs as? LiteralDoubleExpression,
-			let rhs = rhs as? LiteralDoubleExpression
-		{
-			return lhs == rhs
-		}
-		if let lhs = lhs as? LiteralFloatExpression,
-			let rhs = rhs as? LiteralFloatExpression
-		{
-			return lhs == rhs
-		}
-		if let lhs = lhs as? LiteralBoolExpression,
-			let rhs = rhs as? LiteralBoolExpression
-		{
-			return lhs == rhs
-		}
-		if let lhs = lhs as? LiteralStringExpression,
-			let rhs = rhs as? LiteralStringExpression
-		{
-			return lhs == rhs
-		}
-		if let lhs = lhs as? LiteralCharacterExpression,
-			let rhs = rhs as? LiteralCharacterExpression
 		{
 			return lhs == rhs
 		}
