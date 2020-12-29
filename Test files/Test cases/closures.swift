@@ -159,3 +159,16 @@ foo { bla in
 		return 1
 	}
 }
+
+// Labels in returns without expressions
+func foo2(_ closure:(Int) -> ()) { }
+
+foo2 { bla in
+	if true {
+		return
+	}
+	else {
+		print("False")
+		return
+	}
+}

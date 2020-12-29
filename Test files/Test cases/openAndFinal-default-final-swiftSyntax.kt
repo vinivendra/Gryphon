@@ -60,6 +60,15 @@ internal class A {
 	// Static declarations can't be open
 	// Let declarations can't be open
 	val a8: Int = 0
+
+	// Subscripts
+	operator open fun get(i: Int): Int {
+		return i
+	}
+
+	operator fun get(j: String): String {
+		return j
+	}
 }
 
 internal class A1 {
@@ -72,6 +81,9 @@ internal class A3 {
 }
 
 private class A4 {
+}
+
+open class A5 {
 }
 
 internal data class B(

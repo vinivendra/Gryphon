@@ -201,28 +201,6 @@ public class Compiler {
 		}
 	}
 
-	/// Checks this statement for a mute comment.
-	func shouldMuteWarning(
-		forStatement statement: Statement,
-		inSourceFile sourceFile: SourceFile)
-		-> Bool
-	{
-		guard let currentSyntax = statement.syntax else {
-			return false
-		}
-
-		if !SwiftSyntaxDecoder.getLeadingComments(
-				forSyntax: currentSyntax,
-				sourceFile: sourceFile,
-				withKey: .mute)
-			.isEmpty
-		{
-			return true
-		}
-
-		return false
-	}
-
 	//
 	public static func generateSwiftSyntaxDecoder(
 		fromSwiftFile inputFilePath: String,

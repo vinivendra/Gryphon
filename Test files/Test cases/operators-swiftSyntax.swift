@@ -92,3 +92,9 @@ let castResult2 = precedenceResult as? Any
 print(castResult2)
 let castResult3 = precedenceResult is Bool
 print(castResult3)
+
+// Precedence (same precedence, right associativity)
+let a: Int? = nil
+let b: Int? = 1
+let c = a ?? b ?? 2
+print(c)

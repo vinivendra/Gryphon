@@ -301,8 +301,7 @@ public class TranspilationPass {
 				elements: enumDeclaration.elements
 					.flatMap { replaceEnumElementDeclaration($0) }
 					.toMutableList(),
-				members: replaceStatements(enumDeclaration.members),
-				isImplicit: enumDeclaration.isImplicit), ]
+				members: replaceStatements(enumDeclaration.members)), ]
 	}
 
 	func replaceEnumElementDeclaration(
@@ -677,9 +676,6 @@ public class TranspilationPass {
 		if let expression = expression as? TupleExpression {
 			return replaceTupleExpression(expression)
 		}
-		if let expression = expression as? TupleShuffleExpression {
-			return replaceTupleShuffleExpression(expression)
-		}
 		if expression is ErrorExpression {
 			return ErrorExpression(
 				syntax: expression.syntax,
@@ -878,7 +874,7 @@ public class TranspilationPass {
 			syntax: callExpression.syntax,
 			range: callExpression.range,
 			function: replaceExpression(callExpression.function),
-			parameters: replaceExpression(callExpression.parameters),
+			arguments: processTupleExpression(callExpression.arguments),
 			typeName: callExpression.typeName,
 			allowsTrailingClosure: callExpression.allowsTrailingClosure,
 			isPure: callExpression.isPure)
@@ -981,20 +977,6 @@ public class TranspilationPass {
 				LabeledExpression(label: $0.label, expression: replaceExpression($0.expression))
 			}.toMutableList())
 	}
-
-	func replaceTupleShuffleExpression(
-		_ tupleShuffleExpression: TupleShuffleExpression)
-		-> Expression
-	{
-		return TupleShuffleExpression(
-			syntax: tupleShuffleExpression.syntax,
-			range: tupleShuffleExpression.range,
-			labels: tupleShuffleExpression.labels,
-			indices: tupleShuffleExpression.indices,
-			expressions: tupleShuffleExpression.expressions
-				.map { replaceExpression($0) }
-				.toMutableList())
-	}
 }
 
 // MARK: - Transpilation passes
@@ -1065,7 +1047,6 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 				functionType: "() -> String",
 				genericTypes: [],
 				isOpen: !context.defaultsToFinal,
-				isImplicit: false,
 				isStatic: false,
 				isMutating: false,
 				isPure: false,
@@ -1077,136 +1058,6 @@ public class DescriptionAsToStringTranspilationPass: TranspilationPass {
 		}
 
 		return super.replaceVariableDeclaration(variableDeclaration)
-	}
-}
-
-public class RemoveParenthesesTranspilationPass: TranspilationPass {
-	override func replaceSubscriptExpression(
-		_ subscriptExpression: SubscriptExpression)
-		-> Expression
-	{
-		if subscriptExpression.indexExpression.pairs.count == 1,
-			let onlyExpression = subscriptExpression.indexExpression.pairs.first,
-			onlyExpression.label == nil,
-			let parenthesesExpression = onlyExpression.expression as? ParenthesesExpression
-		{
-			return super.replaceSubscriptExpression(SubscriptExpression(
-				syntax: subscriptExpression.syntax,
-				range: subscriptExpression.range,
-				subscriptedExpression: subscriptExpression.subscriptedExpression,
-				indexExpression: TupleExpression(
-					range: subscriptExpression.indexExpression.range,
-					pairs: [LabeledExpression(
-						label: nil,
-						expression: parenthesesExpression.expression), ]),
-				typeName: subscriptExpression.typeName))
-		}
-
-		return super.replaceSubscriptExpression(subscriptExpression)
-	}
-
-	override func replaceParenthesesExpression(
-		_ parenthesesExpression: ParenthesesExpression)
-		-> Expression
-	{
-		if let parent = parent,
-			case let .expressionNode(parentExpression) = parent
-		{
-			if parentExpression is TupleExpression ||
-				parentExpression is InterpolatedStringLiteralExpression
-			{
-				return replaceExpression(parenthesesExpression.expression)
-			}
-		}
-
-		return super.replaceParenthesesExpression(parenthesesExpression)
-	}
-
-	override func replaceIfExpression(
-		_ ifExpression: IfExpression)
-		-> Expression
-	{
-		let replacedCondition: Expression
-		if let condition = ifExpression.condition as? ParenthesesExpression {
-			replacedCondition = condition.expression
-		}
-		else {
-			replacedCondition = ifExpression.condition
-		}
-
-		let replacedTrueExpression: Expression
-		if let trueExpression = ifExpression.trueExpression as? ParenthesesExpression {
-			replacedTrueExpression = trueExpression.expression
-		}
-		else {
-			replacedTrueExpression = ifExpression.trueExpression
-		}
-
-		let replacedFalseExpression: Expression
-		if let falseExpression = ifExpression.falseExpression as? ParenthesesExpression {
-			replacedFalseExpression = falseExpression.expression
-		}
-		else {
-			replacedFalseExpression = ifExpression.falseExpression
-		}
-
-		return IfExpression(
-			syntax: ifExpression.syntax,
-			range: ifExpression.range,
-			condition: replacedCondition,
-			trueExpression: replacedTrueExpression,
-			falseExpression: replacedFalseExpression)
-	}
-}
-
-/// Removes implicit declarations so that they don't show up on the translation
-public class RemoveImplicitDeclarationsTranspilationPass: TranspilationPass {
-	override func replaceEnumDeclaration(
-		_ enumDeclaration: EnumDeclaration)
-		-> List<Statement>
-	{
-		if enumDeclaration.isImplicit {
-			return []
-		}
-		else {
-			return super.replaceEnumDeclaration(enumDeclaration)
-		}
-	}
-
-	override func replaceTypealiasDeclaration(
-		_ typealiasDeclaration: TypealiasDeclaration)
-		-> List<Statement>
-	{
-		if typealiasDeclaration.isImplicit {
-			return []
-		}
-		else {
-			return super.replaceTypealiasDeclaration(typealiasDeclaration)
-		}
-	}
-
-	override func replaceVariableDeclaration(
-		_ variableDeclaration: VariableDeclaration)
-		-> List<Statement>
-	{
-		if variableDeclaration.isImplicit {
-			return []
-		}
-		else {
-			return super.replaceVariableDeclaration(variableDeclaration)
-		}
-	}
-
-	override func processFunctionDeclaration(
-		_ functionDeclaration: FunctionDeclaration)
-		-> FunctionDeclaration?
-	{
-		if functionDeclaration.isImplicit {
-			return nil
-		}
-		else {
-			return super.processFunctionDeclaration(functionDeclaration)
-		}
 	}
 }
 
@@ -1292,7 +1143,6 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 				functionType: initializerDeclaration.functionType,
 				genericTypes: initializerDeclaration.genericTypes,
 				isOpen: initializerDeclaration.isOpen,
-				isImplicit: initializerDeclaration.isImplicit,
 				isStatic: initializerDeclaration.isStatic,
 				isMutating: initializerDeclaration.isMutating,
 				isPure: initializerDeclaration.isPure,
@@ -1325,24 +1175,6 @@ public class OptionalInitsTranspilationPass: TranspilationPass {
 		}
 
 		return super.replaceAssignmentStatement(assignmentStatement)
-	}
-}
-
-public class RemoveExtraReturnsInInitsTranspilationPass: TranspilationPass {
-	override func processInitializerDeclaration(
-		_ initializerDeclaration: InitializerDeclaration)
-		-> InitializerDeclaration?
-	{
-		if initializerDeclaration.isStatic == true,
-			initializerDeclaration.extendsType == nil,
-			let lastStatement = initializerDeclaration.statements?.last,
-			lastStatement is ReturnStatement
-		{
-			initializerDeclaration.statements?.removeLast()
-			return initializerDeclaration
-		}
-
-		return initializerDeclaration
 	}
 }
 
@@ -1441,8 +1273,7 @@ public class StaticMembersTranspilationPass: TranspilationPass {
 			annotations: enumDeclaration.annotations,
 			inherits: enumDeclaration.inherits,
 			elements: enumDeclaration.elements,
-			members: newMembers,
-			isImplicit: enumDeclaration.isImplicit))
+			members: newMembers))
 	}
 }
 
@@ -1639,8 +1470,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 			annotations: enumDeclaration.annotations,
 			inherits: enumDeclaration.inherits,
 			elements: newElements,
-			members: enumDeclaration.members,
-			isImplicit: enumDeclaration.isImplicit))
+			members: enumDeclaration.members))
 	}
 }
 
@@ -1719,7 +1549,6 @@ public class CallsToSuperclassInitializersTranspilationPass: TranspilationPass {
 				functionType: initializerDeclaration.functionType,
 				genericTypes: initializerDeclaration.genericTypes,
 				isOpen: initializerDeclaration.isOpen,
-				isImplicit: initializerDeclaration.isImplicit,
 				isStatic: initializerDeclaration.isStatic,
 				isMutating: initializerDeclaration.isMutating,
 				isPure: initializerDeclaration.isPure,
@@ -1774,7 +1603,7 @@ public class CallsToSuperclassInitializersTranspilationPass: TranspilationPass {
 					syntax: callExpression.syntax,
 					range: callExpression.range,
 					function: leftExpression,
-					parameters: callExpression.parameters,
+					arguments: callExpression.arguments,
 					typeName: callExpression.typeName,
 					allowsTrailingClosure: callExpression.allowsTrailingClosure,
 					isPure: callExpression.isPure)
@@ -2094,8 +1923,7 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 			annotations: translationResult.annotations,
 			inherits: enumDeclaration.inherits,
 			elements: enumDeclaration.elements,
-			members: enumDeclaration.members,
-			isImplicit: enumDeclaration.isImplicit))
+			members: enumDeclaration.members))
 		accessModifiersStack.removeLast()
 		return result
 	}
@@ -2150,7 +1978,6 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 				access: translationResult.access,
 				isOpen: variableDeclaration.isOpen,
 				isLet: variableDeclaration.isLet,
-				isImplicit: variableDeclaration.isImplicit,
 				isStatic: variableDeclaration.isStatic,
 				extendsType: variableDeclaration.extendsType,
 				annotations: translationResult.annotations))
@@ -2169,7 +1996,6 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 				access: nil,
 				isOpen: variableDeclaration.isOpen,
 				isLet: variableDeclaration.isLet,
-				isImplicit: variableDeclaration.isImplicit,
 				isStatic: variableDeclaration.isStatic,
 				extendsType: variableDeclaration.extendsType,
 				annotations: variableDeclaration.annotations))
@@ -2195,7 +2021,6 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 			functionType: functionDeclaration.functionType,
 			genericTypes: functionDeclaration.genericTypes,
 			isOpen: functionDeclaration.isOpen,
-			isImplicit: functionDeclaration.isImplicit,
 			isStatic: functionDeclaration.isStatic,
 			isMutating: functionDeclaration.isMutating,
 			isPure: functionDeclaration.isPure,
@@ -2222,8 +2047,7 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 			range: typealiasDeclaration.range,
 			identifier: typealiasDeclaration.identifier,
 			typeName: typealiasDeclaration.typeName,
-			access: newAccess,
-			isImplicit: typealiasDeclaration.isImplicit))
+			access: newAccess))
 		accessModifiersStack.removeLast()
 		return result
 	}
@@ -2246,7 +2070,6 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 			functionType: initializerDeclaration.functionType,
 			genericTypes: initializerDeclaration.genericTypes,
 			isOpen: initializerDeclaration.isOpen,
-			isImplicit: initializerDeclaration.isImplicit,
 			isStatic: initializerDeclaration.isStatic,
 			isMutating: initializerDeclaration.isMutating,
 			isPure: initializerDeclaration.isPure,
@@ -2440,23 +2263,6 @@ public class AccessModifiersTranspilationPass: TranspilationPass {
 }
 
 public class SelfToThisTranspilationPass: TranspilationPass {
-	override func replaceDotExpression(
-		_ dotExpression: DotExpression)
-		-> Expression
-	{
-		if let declarationReferenceExpression =
-			dotExpression.leftExpression as? DeclarationReferenceExpression
-		{
-			if declarationReferenceExpression.identifier == "self",
-				declarationReferenceExpression.isImplicit
-			{
-				return replaceExpression(dotExpression.rightExpression)
-			}
-		}
-
-		return super.replaceDotExpression(dotExpression)
-	}
-
 	override func processDeclarationReferenceExpression(
 		_ declarationReferenceExpression: DeclarationReferenceExpression)
 		-> DeclarationReferenceExpression
@@ -2487,8 +2293,7 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 						!TranspilationPass.isASwiftRawRepresentableType($0)
 				}.toMutableList(),
 			elements: enumDeclaration.elements,
-			members: enumDeclaration.members,
-			isImplicit: enumDeclaration.isImplicit))
+			members: enumDeclaration.members))
 	}
 
 	override func replaceStructDeclaration(
@@ -2580,9 +2385,7 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 		-> Expression
 	{
 		// Deal with cases where an initializer is used directly (i.e. `MutableList<Int>(array)`)
-		if let typeExpression = callExpression.function as? TypeExpression,
-			let tupleExpression = callExpression.parameters as? TupleExpression
-		{
+		if let typeExpression = callExpression.function as? TypeExpression {
 			let isMutableList = typeExpression.typeName.hasPrefix("MutableList<")
 			let isList = typeExpression.typeName.hasPrefix("List<")
 			let isMutableMap = typeExpression.typeName.hasPrefix("MutableMap<")
@@ -2614,8 +2417,8 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 				return super.replaceCallExpression(callExpression)
 			}
 
-			if tupleExpression.pairs.count == 1,
-				let onlyPair = tupleExpression.pairs.first
+			if callExpression.arguments.pairs.count == 1,
+				let onlyPair = callExpression.arguments.pairs.first
 			{
 				let genericElements =
 					Utilities.splitTypeList(genericElementsString, separators: [","])
@@ -2636,9 +2439,8 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 							range: callExpression.range,
 							identifier: "\(functionName)<\(mappedGenericString)>",
 							typeName: typeExpression.typeName,
-							isStandardLibrary: false,
-							isImplicit: false),
-						parameters: TupleExpression(
+							isStandardLibrary: false),
+						arguments: TupleExpression(
 							syntax: callExpression.syntax,
 							range: callExpression.range,
 							pairs: []),
@@ -2656,13 +2458,12 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 					leftType.hasPrefix("MutableMap") ||
 					leftType.hasPrefix("Map")),
 				let rightExpression =
-					dotExpression.rightExpression as? DeclarationReferenceExpression,
-				let tupleExpression = callExpression.parameters as? TupleExpression
+					dotExpression.rightExpression as? DeclarationReferenceExpression
 			{
 				if (rightExpression.identifier == "as" ||
 					rightExpression.identifier.hasPrefix("forceCast")),
-					tupleExpression.pairs.count == 1,
-					let onlyPair = tupleExpression.pairs.first
+				   callExpression.arguments.pairs.count == 1,
+					let onlyPair = callExpression.arguments.pairs.first
 				{
 					let methodSuffix = (rightExpression.identifier.hasPrefix("forceCast")) ?
 						"" :
@@ -2724,11 +2525,10 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 									range: rightExpression.range,
 									identifier: fullMethodName,
 									typeName: rightExpression.typeName,
-									isStandardLibrary: rightExpression.isStandardLibrary,
-									isImplicit: rightExpression.isImplicit)),
-							parameters: TupleExpression(
-								syntax: tupleExpression.syntax,
-								range: tupleExpression.range,
+									isStandardLibrary: rightExpression.isStandardLibrary)),
+							arguments: TupleExpression(
+								syntax: callExpression.arguments.syntax,
+								range: callExpression.arguments.range,
 								pairs: []),
 							typeName: callExpression.typeName,
 							allowsTrailingClosure: callExpression.allowsTrailingClosure,
@@ -2761,9 +2561,8 @@ public class OptionalFunctionCallsTranspilationPass: TranspilationPass {
 						range: callExpression.range,
 						identifier: "invoke",
 						typeName: callExpression.function.swiftType ?? "<<Error>>",
-						isStandardLibrary: false,
-						isImplicit: false)),
-				parameters: callExpression.parameters,
+						isStandardLibrary: false)),
+				arguments: callExpression.arguments,
 				typeName: callExpression.typeName,
 				allowsTrailingClosure: callExpression.allowsTrailingClosure,
 				isPure: callExpression.isPure)
@@ -2781,21 +2580,11 @@ public class DataStructureInitializersTranspilationPass: TranspilationPass {
 		_ callExpression: CallExpression)
 		-> Expression
 	{
-		let tupleExpression = callExpression.parameters as? TupleExpression
-		let tupleShuffleExpression = callExpression.parameters as? TupleShuffleExpression
-
 		if let typeExpression = callExpression.function as? TypeExpression {
 
 			// Make sure there are no parameters
-			if let tupleExpression = tupleExpression {
-				guard tupleExpression.pairs.isEmpty else {
-					return super.replaceCallExpression(callExpression)
-				}
-			}
-			else if let tupleShuffleExpression = tupleShuffleExpression {
-				guard tupleShuffleExpression.expressions.isEmpty else {
-					return super.replaceCallExpression(callExpression)
-				}
+			guard callExpression.arguments.pairs.isEmpty else {
+				return super.replaceCallExpression(callExpression)
 			}
 
 			// Get the function's name and the generic elements
@@ -2823,14 +2612,6 @@ public class DataStructureInitializersTranspilationPass: TranspilationPass {
 				return super.replaceCallExpression(callExpression)
 			}
 
-			let parameters: Expression
-			if let tupleExpression = tupleExpression {
-				parameters = tupleExpression
-			}
-			else {
-				parameters = tupleShuffleExpression!
-			}
-
 			return CallExpression(
 				syntax: callExpression.syntax,
 				range: callExpression.range,
@@ -2839,9 +2620,8 @@ public class DataStructureInitializersTranspilationPass: TranspilationPass {
 					range: callExpression.range,
 					identifier: "\(functionName)<\(genericElements)>",
 					typeName: typeName,
-					isStandardLibrary: false,
-					isImplicit: false),
-				parameters: parameters,
+					isStandardLibrary: false),
+				arguments: callExpression.arguments,
 				typeName: typeName,
 				allowsTrailingClosure: callExpression.allowsTrailingClosure,
 				isPure: callExpression.isPure)
@@ -3006,7 +2786,7 @@ public class TuplesToPairsTranspilationPass: TranspilationPass {
 				syntax: tupleExpression.syntax,
 				range: tupleExpression.range,
 				typeName: pairType),
-			parameters: TupleExpression(
+			arguments: TupleExpression(
 				syntax: tupleExpression.syntax,
 				range: tupleExpression.range,
 				pairs: [
@@ -3119,8 +2899,7 @@ public class TupleMembersTranspilationPass: TranspilationPass {
 				range: memberExpression.range,
 				identifier: newIdentifier,
 				typeName: typeName,
-				isStandardLibrary: memberExpression.isStandardLibrary,
-				isImplicit: memberExpression.isImplicit))
+				isStandardLibrary: memberExpression.isStandardLibrary))
 	}
 }
 
@@ -3141,49 +2920,26 @@ public class AutoclosuresTranspilationPass: TranspilationPass {
 		let parametersWithoutParentheses = String(parametersString.dropFirst().dropLast())
 		let parameterTypes = Utilities.splitTypeList(parametersWithoutParentheses)
 
-		if let tupleExpression = callExpression.parameters as? TupleExpression {
-			for index in tupleExpression.pairs.indices {
-				let pair = tupleExpression.pairs[index]
-				let expression = pair.expression
-				let parameterType = parameterTypes[index]
+		for index in callExpression.arguments.pairs.indices {
+			let pair = callExpression.arguments.pairs[index]
+			let expression = pair.expression
+			let parameterType = parameterTypes[index]
 
-				if parameterType.hasPrefix("@autoclosure") {
-					let newExpression = ClosureExpression(
+			if parameterType.hasPrefix("@autoclosure") {
+				let newExpression = ClosureExpression(
+					syntax: expression.syntax,
+					range: expression.range,
+					parameters: [],
+					statements: [ExpressionStatement(
 						syntax: expression.syntax,
 						range: expression.range,
-						parameters: [],
-						statements: [ExpressionStatement(
-							syntax: expression.syntax,
-							range: expression.range,
-							expression: expression), ],
-						typeName: parameterType,
-						isTrailing: false)
+						expression: expression), ],
+					typeName: parameterType,
+					isTrailing: false)
 
-					tupleExpression.pairs[index] = LabeledExpression(
-						label: pair.label,
-						expression: newExpression)
-				}
-			}
-		}
-		else if let tupleShuffleExpression = callExpression.parameters as? TupleShuffleExpression {
-			for index in tupleShuffleExpression.expressions.indices {
-				let expression = tupleShuffleExpression.expressions[index]
-				let parameterType = parameterTypes[index]
-
-				if parameterType.hasPrefix("@autoclosure") {
-					let newExpression = ClosureExpression(
-						syntax: expression.syntax,
-						range: expression.range,
-						parameters: [],
-						statements: [ExpressionStatement(
-							syntax: expression.syntax,
-							range: expression.range,
-							expression: expression), ],
-						typeName: parameterType,
-						isTrailing: false)
-
-					tupleShuffleExpression.expressions[index] = newExpression
-				}
+				callExpression.arguments.pairs[index] = LabeledExpression(
+					label: pair.label,
+					expression: newExpression)
 			}
 		}
 
@@ -3225,9 +2981,8 @@ public class RefactorOptionalsInSubscriptsTranspilationPass: TranspilationPass {
 						range: subscriptExpression.subscriptedExpression.range,
 						identifier: "get",
 						typeName: "\(indexExpressionType) -> \(returnType)",
-						isStandardLibrary: false,
-						isImplicit: false),
-					parameters: subscriptExpression.indexExpression,
+						isStandardLibrary: false),
+					arguments: subscriptExpression.indexExpression,
 					typeName: subscriptExpression.typeName,
 					allowsTrailingClosure: false,
 					isPure: true)))
@@ -3440,8 +3195,7 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 			if let variableDeclaration = currentStatement as? VariableDeclaration,
 				let switchStatement = nextStatement as? SwitchStatement
 			{
-				if variableDeclaration.isImplicit == false,
-					variableDeclaration.extendsType == nil,
+				if variableDeclaration.extendsType == nil,
 					let switchConversion = switchStatement.convertsToExpression,
 					let assignmentStatement = switchConversion as? AssignmentStatement
 				{
@@ -3450,8 +3204,7 @@ public class SwitchesToExpressionsTranspilationPass: TranspilationPass {
 					{
 
 						if assignmentExpression.identifier == variableDeclaration.identifier,
-							!assignmentExpression.isStandardLibrary,
-							!assignmentExpression.isImplicit
+							!assignmentExpression.isStandardLibrary
 						{
 							variableDeclaration.expression = NilLiteralExpression(
 								syntax: switchStatement.syntax,
@@ -3640,40 +3393,20 @@ public class RemoveExtensionsTranspilationPass: TranspilationPass {
 		return members
 	}
 
-	override func replaceFunctionDeclaration(
+	override func processFunctionDeclaration(
 		_ functionDeclaration: FunctionDeclaration)
-		-> List<Statement>
+		-> FunctionDeclaration
 	{
 		functionDeclaration.extendsType = self.extendingType
-		return [functionDeclaration]
+		return functionDeclaration
 	}
 
 	override func processVariableDeclaration(
 		_ variableDeclaration: VariableDeclaration)
 		-> VariableDeclaration
 	{
-		// If this variable is in a generic context, we should have detected it earlier in the Swift
-		// Translator and put the information in the extendingType to preserve it. If the variable
-		// is not in an extension (i.e. if it's in a generic class), we remove the extending type
-		// here.
-		// The variableDeclaration will contain `Box<T>`, and the extending type will contain simply
-		// `Box`.
-		if let extensionType = self.extendingType {
-			if let typeWithGenerics = variableDeclaration.extendsType,
-				typeWithGenerics.contains("<"),
-				typeWithGenerics.hasPrefix(extensionType)
-			{
-				return variableDeclaration
-			}
-			else {
-				variableDeclaration.extendsType = self.extendingType
-				return variableDeclaration
-			}
-		}
-		else {
-			variableDeclaration.extendsType = nil
-			return variableDeclaration
-		}
+		variableDeclaration.extendsType = self.extendingType
+		return variableDeclaration
 	}
 }
 
@@ -3796,7 +3529,6 @@ public class RecordFunctionsTranspilationPass: TranspilationPass {
 				functionType: functionType,
 				genericTypes: [],
 				isOpen: false,
-				isImplicit: false,
 				isStatic: false,
 				isMutating: false,
 				isPure: false,
@@ -3859,7 +3591,6 @@ public class RecordFunctionsTranspilationPass: TranspilationPass {
 			functionType: functionType,
 			genericTypes: [],
 			isOpen: false,
-			isImplicit: false,
 			isStatic: false,
 			isMutating: false,
 			isPure: false,
@@ -4033,8 +3764,7 @@ public class RaiseMutableValueTypesWarningsTranspilationPass: TranspilationPass 
 	{
 		for member in structDeclaration.members {
 			if let variableDeclaration = member as? VariableDeclaration {
-				if !variableDeclaration.isImplicit,
-					!variableDeclaration.isStatic,
+				if !variableDeclaration.isStatic,
 					!variableDeclaration.isLet,
 					variableDeclaration.getter == nil
 				{
@@ -4267,7 +3997,7 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 		-> MutableList<(Syntax?, SourceFileRange)>
 	{
 		if let expression = expression as? CallExpression {
-			let parameterInfo = informationOnPossibleSideEffectsIn(expression.parameters)
+			let parameterInfo = informationOnPossibleSideEffectsIn(expression.arguments)
 				.toMutableList()
 
 			if !expression.isPure,
@@ -4341,11 +4071,6 @@ public class RaiseWarningsForSideEffectsInIfLetsTranspilationPass: Transpilation
 		if let expression = expression as? TupleExpression {
 			return expression.pairs
 				.flatMap { informationOnPossibleSideEffectsIn($0.expression) }
-				.toMutableList()
-		}
-		if let expression = expression as? TupleShuffleExpression {
-			return expression.expressions
-				.flatMap { informationOnPossibleSideEffectsIn($0) }
 				.toMutableList()
 		}
 
@@ -4470,8 +4195,7 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 					range: variableDeclaration.expression?.range,
 					identifier: variableDeclaration.identifier,
 					typeName: variableDeclaration.typeAnnotation,
-					isStandardLibrary: false,
-					isImplicit: false),
+					isStandardLibrary: false),
 				rightExpression: NilLiteralExpression(
 					syntax: variableDeclaration.syntax,
 					range: variableDeclaration.range),
@@ -4575,14 +4299,12 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 				range: range,
 				identifier: "this",
 				typeName: lhs.typeName,
-				isStandardLibrary: false,
-				isImplicit: false),
+				isStandardLibrary: false),
 			getter: nil,
 			setter: nil,
 			access: nil,
 			isOpen: false,
 			isLet: true,
-			isImplicit: false,
 			isStatic: false,
 			extendsType: nil,
 			annotations: []))
@@ -4596,14 +4318,12 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 				range: range,
 				identifier: "other",
 				typeName: "Any?",
-				isStandardLibrary: false,
-				isImplicit: false),
+				isStandardLibrary: false),
 			getter: nil,
 			setter: nil,
 			access: nil,
 			isOpen: false,
 			isLet: true,
-			isImplicit: false,
 			isStatic: false,
 			extendsType: nil,
 			annotations: []))
@@ -4620,8 +4340,7 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 					range: range,
 					identifier: rhs.label,
 					typeName: "Any?",
-					isStandardLibrary: false,
-					isImplicit: false),
+					isStandardLibrary: false),
 				rightExpression: TypeExpression(
 					syntax: syntax,
 					range: range,
@@ -4664,7 +4383,6 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 			functionType: "(Any?) -> Bool",
 			genericTypes: [],
 			isOpen: true,
-			isImplicit: functionDeclaration.isImplicit,
 			isStatic: false,
 			isMutating: functionDeclaration.isMutating,
 			isPure: functionDeclaration.isPure,
@@ -4752,8 +4470,7 @@ public class RawValuesMembersTranspilationPass: TranspilationPass {
 				annotations: enumDeclaration.annotations,
 				inherits: enumDeclaration.inherits,
 				elements: enumDeclaration.elements,
-				members: newMembers,
-				isImplicit: enumDeclaration.isImplicit))
+				members: newMembers))
 		}
 		else {
 			return super.replaceEnumDeclaration(enumDeclaration)
@@ -4793,8 +4510,7 @@ public class RawValuesMembersTranspilationPass: TranspilationPass {
 								range: range,
 								identifier: element.name,
 								typeName: enumDeclaration.enumName,
-								isStandardLibrary: false,
-								isImplicit: false)),
+								isStandardLibrary: false)),
 						label: nil),
 				])
 		}.toMutableList()
@@ -4818,8 +4534,7 @@ public class RawValuesMembersTranspilationPass: TranspilationPass {
 				range: range,
 				identifier: "rawValue",
 				typeName: rawValueType,
-				isStandardLibrary: false,
-				isImplicit: false),
+				isStandardLibrary: false),
 			cases: switchCases)
 
 		return InitializerDeclaration(
@@ -4834,7 +4549,6 @@ public class RawValuesMembersTranspilationPass: TranspilationPass {
 			functionType: "(\(rawValueType)) -> \(enumDeclaration.enumName)?",
 			genericTypes: [],
 			isOpen: false,
-			isImplicit: false,
 			isStatic: true,
 			isMutating: false,
 			isPure: true,
@@ -4868,8 +4582,7 @@ public class RawValuesMembersTranspilationPass: TranspilationPass {
 						range: range,
 						identifier: element.name,
 						typeName: enumDeclaration.enumName,
-						isStandardLibrary: false,
-						isImplicit: false)), ],
+						isStandardLibrary: false)), ],
 				statements: [
 					ReturnStatement(
 						syntax: syntax,
@@ -4888,8 +4601,7 @@ public class RawValuesMembersTranspilationPass: TranspilationPass {
 				range: range,
 				identifier: "this",
 				typeName: enumDeclaration.enumName,
-				isStandardLibrary: false,
-				isImplicit: false),
+				isStandardLibrary: false),
 			cases: switchCases)
 
 		let getter = FunctionDeclaration(
@@ -4901,7 +4613,6 @@ public class RawValuesMembersTranspilationPass: TranspilationPass {
 			functionType: "() -> \(rawValueType)",
 			genericTypes: [],
 			isOpen: false,
-			isImplicit: false,
 			isStatic: false,
 			isMutating: false,
 			isPure: false,
@@ -4922,7 +4633,6 @@ public class RawValuesMembersTranspilationPass: TranspilationPass {
 			access: nil,
 			isOpen: false,
 			isLet: false,
-			isImplicit: false,
 			isStatic: false,
 			extendsType: nil,
 			annotations: [])
@@ -5076,8 +4786,6 @@ public class FixProtocolContentsTranspilationPass: TranspilationPass {
 		-> VariableDeclaration
 	{
 		if isInProtocol {
-			variableDeclaration.getter?.isImplicit = true
-			variableDeclaration.setter?.isImplicit = true
 			variableDeclaration.getter?.statements = nil
 			variableDeclaration.setter?.statements = nil
 			return super.processVariableDeclaration(variableDeclaration)
@@ -5306,7 +5014,6 @@ public class RemoveOpenForInitializersTranspilationPass: TranspilationPass {
 			functionType: initializerDeclaration.functionType,
 			genericTypes: initializerDeclaration.genericTypes,
 			isOpen: false,
-			isImplicit: initializerDeclaration.isImplicit,
 			isStatic: initializerDeclaration.isStatic,
 			isMutating: initializerDeclaration.isMutating,
 			isPure: initializerDeclaration.isPure,
@@ -5340,7 +5047,6 @@ public class AddVariablesToCatchesTranspilationPass: TranspilationPass {
 					access: nil,
 					isOpen: false,
 					isLet: true,
-					isImplicit: false,
 					isStatic: false,
 					extendsType: nil,
 					annotations: []),
@@ -5360,7 +5066,7 @@ public class MatchFunctionCallsToDeclarationsTranspilationPass: TranspilationPas
 		_ callExpression: CallExpression)
 		-> CallExpression
 	{
-		let tupleExpression = callExpression.parameters as! TupleExpression
+		let arguments = callExpression.arguments
 
 		// Go through the dot expression chain to get the final expression
 		var functionExpression = callExpression.function
@@ -5388,10 +5094,10 @@ public class MatchFunctionCallsToDeclarationsTranspilationPass: TranspilationPas
 				typeName: typeName)
 		}
 		else if let typeExpression = functionExpression as? TypeExpression,
-			let parameterTypes = callExpression.parameters.swiftType
+			let argumentTypes = callExpression.arguments.swiftType
 		{
 			let typeName = typeExpression.typeName
-			let initializerType = "(\(typeName).Type) -> \(parameterTypes) -> \(typeName)"
+			let initializerType = "(\(typeName).Type) -> \(argumentTypes) -> \(typeName)"
 			maybeFunctionTranslation = self.context.getFunctionTranslation(
 				forName: typeName,
 				typeName: initializerType)
@@ -5401,12 +5107,12 @@ public class MatchFunctionCallsToDeclarationsTranspilationPass: TranspilationPas
 		}
 
 		guard let functionTranslation = maybeFunctionTranslation else {
-			removeLabels(fromTupleExpression: tupleExpression)
+			removeLabels(fromTupleExpression: arguments)
 			return super.processCallExpression(callExpression)
 		}
 
 		// Try to match the call to the declaration using the swiftc algorithm
-		let callArguments = tupleExpression.pairs
+		let callArguments = arguments.pairs
 
 		let defaultArguments = functionTranslation.parameters.map { $0.value != nil }
 		let acceptsUnlabeledTrailingClosures = functionTranslation.parameters.map {
@@ -5445,12 +5151,12 @@ public class MatchFunctionCallsToDeclarationsTranspilationPass: TranspilationPas
 			Compiler.handleWarning(
 				message: "Unable to match these parameters to their declarations, " +
 					"removing all labels",
-				syntax: callExpression.parameters.syntax,
-				ast: callExpression.parameters,
+				syntax: callExpression.arguments.syntax,
+				ast: callExpression.arguments,
 				sourceFile: ast.sourceFile,
-				sourceFileRange: callExpression.parameters.range)
+				sourceFileRange: callExpression.arguments.range)
 
-			removeLabels(fromTupleExpression: tupleExpression)
+			removeLabels(fromTupleExpression: arguments)
 			return super.processCallExpression(callExpression)
 		}
 
@@ -5484,7 +5190,7 @@ public class MatchFunctionCallsToDeclarationsTranspilationPass: TranspilationPas
 			functionTranslation.parameters.contains(where: { $0.value != nil })
 		let allowsTrailingClosure = (!hasDefaultArgument && !hasVariadic)
 
-		tupleExpression.pairs = resultPairs
+		arguments.pairs = resultPairs
 		callExpression.allowsTrailingClosure = allowsTrailingClosure
 		return super.processCallExpression(callExpression)
 	}
@@ -5510,9 +5216,6 @@ public extension TranspilationPass {
 		-> GryphonAST
 	{
 		var ast = sourceFile
-
-		// Remove declarations that shouldn't even be considered in the passes
-		ast = RemoveImplicitDeclarationsTranspilationPass(ast: ast, context: context).run()
 
 		// We need to specify the initializers' return types before recording them
 		ast = ReturnTypesForInitsTranspilationPass(ast: ast, context: context).run()
@@ -5551,10 +5254,6 @@ public extension TranspilationPass {
 		/// Replace templates (must go before other passes since templates are recorded before
 		/// running any passes)
 		ast = ReplaceTemplatesTranspilationPass(ast: ast, context: context).run()
-
-		/// Cleanup
-		ast = RemoveParenthesesTranspilationPass(ast: ast, context: context).run()
-		ast = RemoveExtraReturnsInInitsTranspilationPass(ast: ast, context: context).run()
 
 		/// Transform structures that need to be significantly different in Kotlin
 		ast = EquatableOperatorsTranspilationPass(ast: ast, context: context).run()

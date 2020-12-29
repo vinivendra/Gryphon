@@ -592,10 +592,6 @@ public class KotlinTranslator {
 		shouldAddNewlines: Bool = false)
 		throws -> KotlinTranslation
 	{
-		guard !functionDeclaration.isImplicit else {
-			return KotlinTranslation(range: functionDeclaration.range)
-		}
-
 		var indentation = indentation
 
 		let result = KotlinTranslation(range: functionDeclaration.range)
@@ -1046,7 +1042,6 @@ public class KotlinTranslator {
 					access: nil,
 					isOpen: false,
 					isLet: variableDeclaration.isLet,
-					isImplicit: false,
 					isStatic: false,
 					extendsType: nil,
 					annotations: variableDeclaration.annotations)
@@ -1137,25 +1132,6 @@ public class KotlinTranslator {
 				result.append(translatedType)
 				return result
 			}
-			else {
-				let translatedExpression = try translateExpression(
-					binaryExpression.leftExpression,
-					withIndentation: indentation)
-				let resolvedTranslation = translatedExpression.resolveTranslation().translation
-
-				// If it's a range (`1 in 0..1`)
-				if binaryExpression.operatorSymbol == "~=",
-					(resolvedTranslation.contains("until") ||
-						resolvedTranslation.contains(".."))
-				{
-					let result = KotlinTranslation(range: caseExpression.range)
-					result.append("in ")
-					result.append(translatedExpression)
-					return result
-				}
-
-				return translatedExpression
-			}
 		}
 		else if let concatenationExpression = caseExpression as? ConcatenationExpression,
 			let leftConcatenationExpression =
@@ -1173,12 +1149,11 @@ public class KotlinTranslator {
 			result.append(translatedExpression)
 			return result
 		}
-		else {
-			let translatedExpression = try translateExpression(
-				caseExpression,
-				withIndentation: indentation)
-			return translatedExpression
-		}
+
+		let translatedExpression = try translateExpression(
+			caseExpression,
+			withIndentation: indentation)
+		return translatedExpression
 	}
 
 	private func translateThrowStatement(
@@ -1235,10 +1210,6 @@ public class KotlinTranslator {
 		withIndentation indentation: String)
 		throws -> KotlinTranslation
 	{
-		guard !variableDeclaration.isImplicit else {
-			return KotlinTranslation(range: variableDeclaration.range)
-		}
-
 		let result = KotlinTranslation(range: variableDeclaration.range)
 		result.append(indentation)
 
@@ -1516,10 +1487,6 @@ public class KotlinTranslator {
 		}
 		if let tupleExpression = expression as? TupleExpression {
 			return try translateTupleExpression(tupleExpression, withIndentation: indentation)
-		}
-		if let tupleShuffleExpression = expression as? TupleShuffleExpression {
-			return try translateTupleExpression(
-				tupleShuffleExpression.flattenToTupleExpression(), withIndentation: indentation)
 		}
 		if expression is ErrorExpression {
 			return KotlinTranslation(
@@ -1804,86 +1771,43 @@ public class KotlinTranslator {
 		shouldAddNewlines: Bool)
 		throws -> KotlinTranslation
 	{
-		if let tupleExpression = callExpression.parameters as? TupleExpression {
-			if callExpression.allowsTrailingClosure,
-			   let closurePair = tupleExpression.pairs.last,
-			   let closureExpression = closurePair.expression as? ClosureExpression,
-			   closureExpression.isTrailing
-			{
-				let closureTranslation = try translateClosureExpression(
-					closureExpression,
-					withIndentation: indentation)
-				if tupleExpression.pairs.count > 1 {
-					let newTupleExpression = TupleExpression(
-						syntax: tupleExpression.syntax,
-						range: tupleExpression.range,
-						pairs: tupleExpression.pairs.dropLast().toMutableList())
+		if callExpression.allowsTrailingClosure,
+		   let closurePair = callExpression.arguments.pairs.last,
+		   let closureExpression = closurePair.expression as? ClosureExpression,
+		   closureExpression.isTrailing
+		{
+			let closureTranslation = try translateClosureExpression(
+				closureExpression,
+				withIndentation: indentation)
+			if callExpression.arguments.pairs.count > 1 {
+				let newTupleExpression = TupleExpression(
+					syntax: callExpression.arguments.syntax,
+					range: callExpression.arguments.range,
+					pairs: callExpression.arguments.pairs.dropLast().toMutableList())
 
-					let firstParametersTranslation = try translateTupleExpression(
-						newTupleExpression,
-						withIndentation: increaseIndentation(indentation),
-						shouldAddNewlines: shouldAddNewlines)
-
-					let result = KotlinTranslation(range: callExpression.range)
-					result.append(firstParametersTranslation)
-					result.append(" ")
-					result.append(closureTranslation)
-					return result
-				}
-				else {
-					let result = KotlinTranslation(range: callExpression.range)
-					result.append(" ")
-					result.append(closureTranslation)
-					return result
-				}
-			}
-
-			return try translateTupleExpression(
-				tupleExpression,
-				withIndentation: increaseIndentation(indentation),
-				shouldAddNewlines: shouldAddNewlines)
-		}
-		else if let tupleShuffleExpression = callExpression.parameters as? TupleShuffleExpression {
-			let newLabels = tupleShuffleExpression.labels
-			let newTupleShuffleExpression = TupleShuffleExpression(
-				syntax: tupleShuffleExpression.syntax,
-				range: tupleShuffleExpression.range,
-				labels: newLabels,
-				indices: tupleShuffleExpression.indices,
-				expressions: tupleShuffleExpression.expressions)
-			let tupleExpression = newTupleShuffleExpression.flattenToTupleExpression()
-
-			// If the tuple was flattened losslessly, we can still try to add trailing closures
-			if tupleShuffleExpression.canBeFlattenedLosslessly {
-				let newCallExpression = CallExpression(
-					syntax: callExpression.syntax,
-					range: callExpression.range,
-					function: callExpression.function,
-					parameters: tupleExpression,
-					typeName: callExpression.typeName,
-					allowsTrailingClosure: callExpression.allowsTrailingClosure,
-					isPure: callExpression.isPure)
-
-				return try translateParameters(
-					forCallExpression: newCallExpression,
-					withIndentation: indentation,
-					shouldAddNewlines: shouldAddNewlines)
-			}
-			else {
-				return try translateTupleExpression(
-					tupleExpression,
+				let firstParametersTranslation = try translateTupleExpression(
+					newTupleExpression,
 					withIndentation: increaseIndentation(indentation),
 					shouldAddNewlines: shouldAddNewlines)
+
+				let result = KotlinTranslation(range: callExpression.range)
+				result.append(firstParametersTranslation)
+				result.append(" ")
+				result.append(closureTranslation)
+				return result
+			}
+			else {
+				let result = KotlinTranslation(range: callExpression.range)
+				result.append(" ")
+				result.append(closureTranslation)
+				return result
 			}
 		}
 
-		return try unexpectedASTStructureError(
-			"Expected the parameters to be either a TupleExpression or a TupleShuffleExpression, " +
-				"received \(callExpression.parameters.name).",
-			AST: ExpressionStatement(
-				syntax: callExpression.syntax,
-				range: callExpression.range,
-				expression: callExpression))
+		return try translateTupleExpression(
+			callExpression.arguments,
+			withIndentation: increaseIndentation(indentation),
+			shouldAddNewlines: shouldAddNewlines)
 	}
 
 	private func translateClosureExpression(
@@ -2166,16 +2090,7 @@ public class KotlinTranslator {
 					translateType(Utilities.splitTypeList($0, separators: [":"]).last!)
 				}
 
-				// One exception: key-value tuples from dictionaries should become Entry, not Pair
-				let names = innerTypes.map {
-					Utilities.splitTypeList($0, separators: [":"]).first!
-				}
-				if names == ["key", "value"] {
-					return "Entry<\(translatedTypes.joined(separator: ", "))>"
-				}
-				else {
-					return "Pair<\(translatedTypes.joined(separator: ", "))>"
-				}
+				return "Pair<\(translatedTypes.joined(separator: ", "))>"
 			}
 			else {
 				return "(" + translateType(String(typeName.dropFirst().dropLast())) + ")"

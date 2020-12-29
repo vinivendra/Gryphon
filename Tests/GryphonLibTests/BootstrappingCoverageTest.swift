@@ -38,6 +38,7 @@ class BootstrappingCoverageTest: XCTestCase {
 		}
 
 		let arguments: List = [
+			"--verbose",
 			"--indentation=4",
 			"-print-ASTs-on-error",
 			"--continue-on-error",

@@ -16,7 +16,7 @@ fi
 
 cd "Test Files/Bootstrap/gryphon-old"
 git checkout bootstrap
-git pull
+git pull --ff-only
 cd ../../..
 
 set +e
