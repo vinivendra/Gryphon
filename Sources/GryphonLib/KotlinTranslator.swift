@@ -1137,25 +1137,6 @@ public class KotlinTranslator {
 				result.append(translatedType)
 				return result
 			}
-			else {
-				let translatedExpression = try translateExpression(
-					binaryExpression.leftExpression,
-					withIndentation: indentation)
-				let resolvedTranslation = translatedExpression.resolveTranslation().translation
-
-				// If it's a range (`1 in 0..1`)
-				if binaryExpression.operatorSymbol == "~=",
-					(resolvedTranslation.contains("until") ||
-						resolvedTranslation.contains(".."))
-				{
-					let result = KotlinTranslation(range: caseExpression.range)
-					result.append("in ")
-					result.append(translatedExpression)
-					return result
-				}
-
-				return translatedExpression
-			}
 		}
 		else if let concatenationExpression = caseExpression as? ConcatenationExpression,
 			let leftConcatenationExpression =
@@ -1173,12 +1154,11 @@ public class KotlinTranslator {
 			result.append(translatedExpression)
 			return result
 		}
-		else {
-			let translatedExpression = try translateExpression(
-				caseExpression,
-				withIndentation: indentation)
-			return translatedExpression
-		}
+
+		let translatedExpression = try translateExpression(
+			caseExpression,
+			withIndentation: indentation)
+		return translatedExpression
 	}
 
 	private func translateThrowStatement(
