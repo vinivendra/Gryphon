@@ -235,19 +235,16 @@ public class TypealiasDeclaration: Statement {
 	let identifier: String
 	let typeName: String
 	let access: String?
-	let isImplicit: Bool
 
 	init(
 		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		identifier: String,
 		typeName: String,
-		access: String?,
-		isImplicit: Bool)
+		access: String?)
 	{
 		self.identifier = identifier
 		self.typeName = typeName
-		self.isImplicit = isImplicit
 		self.access = access
 		super.init(
 			syntax: syntax,
@@ -257,7 +254,6 @@ public class TypealiasDeclaration: Statement {
 
 	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
-			isImplicit ? PrintableTree("implicit") : nil,
 			PrintableTree("identifier: \(identifier)"),
 			PrintableTree("typeName: \(typeName)"),
 			PrintableTree.initOrNil(access), ]
@@ -266,8 +262,7 @@ public class TypealiasDeclaration: Statement {
 	public static func == (lhs: TypealiasDeclaration, rhs: TypealiasDeclaration) -> Bool {
 		return lhs.identifier == rhs.identifier &&
 			lhs.typeName == rhs.typeName &&
-			lhs.access == rhs.access &&
-			lhs.isImplicit == rhs.isImplicit
+			lhs.access == rhs.access
 	}
 }
 
@@ -406,7 +401,6 @@ public class EnumDeclaration: Statement {
 	let inherits: MutableList<String>
 	let elements: MutableList<EnumElement>
 	let members: MutableList<Statement>
-	let isImplicit: Bool
 
 	init(
 		syntax: Syntax? = nil,
@@ -416,8 +410,7 @@ public class EnumDeclaration: Statement {
 		annotations: MutableList<String>,
 		inherits: MutableList<String>,
 		elements: MutableList<EnumElement>,
-		members: MutableList<Statement>,
-		isImplicit: Bool)
+		members: MutableList<Statement>)
 	{
 		self.access = access
 		self.enumName = enumName
@@ -425,7 +418,6 @@ public class EnumDeclaration: Statement {
 		self.inherits = inherits
 		self.elements = elements
 		self.members = members
-		self.isImplicit = isImplicit
 		super.init(
 			syntax: syntax,
 			range: range,
@@ -443,7 +435,6 @@ public class EnumDeclaration: Statement {
 			PrintableTree.ofStrings("inherits", inherits),
 			PrintableTree("elements", elementTrees),
 			PrintableTree.ofStatements("members", members),
-			isImplicit ? PrintableTree("implicit") : nil,
 		]
 	}
 
@@ -453,8 +444,7 @@ public class EnumDeclaration: Statement {
 			lhs.annotations == rhs.annotations &&
 			lhs.inherits == rhs.inherits &&
 			lhs.elements == rhs.elements &&
-			lhs.members == rhs.members &&
-			lhs.isImplicit == rhs.isImplicit
+			lhs.members == rhs.members
 	}
 }
 
@@ -553,7 +543,6 @@ public class FunctionDeclaration: Statement {
 	var functionType: String
 	var genericTypes: MutableList<String>
 	var isOpen: Bool
-	var isImplicit: Bool
 	var isStatic: Bool
 	var isMutating: Bool
 	var isPure: Bool
@@ -572,7 +561,6 @@ public class FunctionDeclaration: Statement {
 		functionType: String,
 		genericTypes: MutableList<String>,
 		isOpen: Bool,
-		isImplicit: Bool,
 		isStatic: Bool,
 		isMutating: Bool,
 		isPure: Bool,
@@ -589,7 +577,6 @@ public class FunctionDeclaration: Statement {
 		self.functionType = functionType
 		self.genericTypes = genericTypes
 		self.isOpen = isOpen
-		self.isImplicit = isImplicit
 		self.isStatic = isStatic
 		self.isMutating = isMutating
 		self.isPure = isPure
@@ -618,7 +605,6 @@ public class FunctionDeclaration: Statement {
 		return [
 			extendsType.map { PrintableTree("extends type \($0)") },
 			PrintableTree("open: \(isOpen)"),
-			isImplicit ? PrintableTree("implicit") : nil,
 			isPure ? PrintableTree("pure") : nil,
 			isStatic ? PrintableTree("static") : nil,
 			isMutating ? PrintableTree("mutating") : nil,
@@ -640,7 +626,6 @@ public class FunctionDeclaration: Statement {
 			lhs.functionType == rhs.functionType &&
 			lhs.genericTypes == rhs.genericTypes &&
 			lhs.isOpen == rhs.isOpen &&
-			lhs.isImplicit == rhs.isImplicit &&
 			lhs.isStatic == rhs.isStatic &&
 			lhs.isMutating == rhs.isMutating &&
 			lhs.isPure == rhs.isPure &&
@@ -663,7 +648,6 @@ public class InitializerDeclaration: FunctionDeclaration {
 		functionType: String,
 		genericTypes: MutableList<String>,
 		isOpen: Bool,
-		isImplicit: Bool,
 		isStatic: Bool,
 		isMutating: Bool,
 		isPure: Bool,
@@ -686,7 +670,6 @@ public class InitializerDeclaration: FunctionDeclaration {
 			functionType: functionType,
 			genericTypes: genericTypes,
 			isOpen: isOpen,
-			isImplicit: isImplicit,
 			isStatic: isStatic,
 			isMutating: isMutating,
 			isPure: isPure,
@@ -712,7 +695,6 @@ public class InitializerDeclaration: FunctionDeclaration {
 			lhs.returnType == rhs.returnType &&
 			lhs.functionType == rhs.functionType &&
 			lhs.genericTypes == rhs.genericTypes &&
-			lhs.isImplicit == rhs.isImplicit &&
 			lhs.isStatic == rhs.isStatic &&
 			lhs.isMutating == rhs.isMutating &&
 			lhs.isPure == rhs.isPure &&
@@ -738,7 +720,6 @@ public class VariableDeclaration: Statement {
 	var access: String?
 	var isOpen: Bool
 	var isLet: Bool
-	var isImplicit: Bool
 	var isStatic: Bool
 	var extendsType: String?
 	var annotations: MutableList<String>
@@ -754,7 +735,6 @@ public class VariableDeclaration: Statement {
 		access: String?,
 		isOpen: Bool,
 		isLet: Bool,
-		isImplicit: Bool,
 		isStatic: Bool,
 		extendsType: String?,
 		annotations: MutableList<String>)
@@ -767,7 +747,6 @@ public class VariableDeclaration: Statement {
 		self.access = access
 		self.isOpen = isOpen
 		self.isLet = isLet
-		self.isImplicit = isImplicit
 		self.isStatic = isStatic
 		self.extendsType = extendsType
 		self.annotations = annotations
@@ -781,7 +760,6 @@ public class VariableDeclaration: Statement {
 		return [
 			PrintableTree.initOrNil(
 				"extendsType", [PrintableTree.initOrNil(extendsType)]),
-			isImplicit ? PrintableTree("implicit") : nil,
 			isStatic ? PrintableTree("static") : nil,
 			isLet ? PrintableTree("let") : PrintableTree("var"),
 			PrintableTree(identifier),
@@ -808,7 +786,6 @@ public class VariableDeclaration: Statement {
 			lhs.access == rhs.access &&
 			lhs.isOpen == rhs.isOpen &&
 			lhs.isLet == rhs.isLet &&
-			lhs.isImplicit == rhs.isImplicit &&
 			lhs.isStatic == rhs.isStatic &&
 			lhs.extendsType == rhs.extendsType &&
 			lhs.annotations == rhs.annotations
@@ -1604,20 +1581,17 @@ public class DeclarationReferenceExpression: Expression {
 	var identifier: String
 	var typeName: String?
 	var isStandardLibrary: Bool
-	var isImplicit: Bool
 
 	init(
 		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		identifier: String,
 		typeName: String?,
-		isStandardLibrary: Bool,
-		isImplicit: Bool)
+		isStandardLibrary: Bool)
 	{
 		self.identifier = identifier
 		self.typeName = typeName
 		self.isStandardLibrary = isStandardLibrary
-		self.isImplicit = isImplicit
 		super.init(
 			syntax: syntax,
 			range: range,
@@ -1629,8 +1603,7 @@ public class DeclarationReferenceExpression: Expression {
 			PrintableTree.initOrNil(
 				"type", [PrintableTree.initOrNil(typeName)]),
 			PrintableTree(identifier),
-			isStandardLibrary ? PrintableTree("isStandardLibrary") : nil,
-			isImplicit ? PrintableTree("implicit") : nil, ]
+			isStandardLibrary ? PrintableTree("isStandardLibrary") : nil, ]
 	}
 
 	override var swiftType: String? {
@@ -1651,8 +1624,7 @@ public class DeclarationReferenceExpression: Expression {
 	{
 		return lhs.identifier == rhs.identifier &&
 			lhs.typeName == rhs.typeName &&
-			lhs.isStandardLibrary == rhs.isStandardLibrary &&
-			lhs.isImplicit == rhs.isImplicit
+			lhs.isStandardLibrary == rhs.isStandardLibrary
 	}
 }
 

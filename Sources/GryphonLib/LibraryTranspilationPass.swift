@@ -500,8 +500,7 @@ extension ReplaceTemplatesTranspilationPass {
 			let rhsPrefix = String(rhs.identifier.prefix { $0 != "(" })
 
 			return typeMatches &&
-				lhsPrefix == rhsPrefix &&
-				lhs.isImplicit == rhs.isImplicit
+				lhsPrefix == rhsPrefix
 		}
 		if let lhs = lhs as? OptionalExpression,
 			let rhs = rhs as? OptionalExpression
@@ -746,8 +745,7 @@ extension ReplaceTemplatesTranspilationPass {
 					range: nil,
 					identifier: "self",
 					typeName: parentType,
-					isStandardLibrary: false,
-					isImplicit: false)
+					isStandardLibrary: false)
 				return match(implicitSelfExpression, rhs.leftExpression, matches)
 			}
 			else {
@@ -782,8 +780,7 @@ extension ReplaceTemplatesTranspilationPass {
 	{
 		if let typeName = expression.typeName,
 			typeName.hasSuffix(".Type"),
-			expression.identifier == "self",
-			expression.isImplicit
+			expression.identifier == "self"
 		{
 			return true
 		}

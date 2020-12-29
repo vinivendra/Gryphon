@@ -992,7 +992,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 							access: nil,
 							isOpen: false,
 							isLet: valueBindingPattern.letOrVarKeyword.text == "let",
-							isImplicit: false,
 							isStatic: false,
 							extendsType: nil,
 							annotations: [])
@@ -1226,7 +1225,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 						access: nil,
 						isOpen: false,
 						isLet: optionalBinding.letOrVarKeyword.text == "let",
-						isImplicit: false,
 						isStatic: false,
 						extendsType: nil,
 						annotations: [])))
@@ -1392,8 +1390,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 							typeName: typeName,
 							isStandardLibrary: expressionIsFromTheSwiftStandardLibrary(
 								expressionRange: range,
-								expressionIdentifier: label.text),
-							isImplicit: false)
+								expressionIdentifier: label.text))
 						let enumExpression = DotExpression(
 							syntax: Syntax(argument),
 							range: range,
@@ -1418,7 +1415,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 								access: nil,
 								isOpen: false,
 								isLet: true,
-								isImplicit: false,
 								isStatic: false,
 								extendsType: nil,
 								annotations: []))
@@ -1452,7 +1448,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 								withMessage: "Failed to get the label for this enum's " +
 									"associated value"),
 							getter: nil, setter: nil, access: nil, isOpen: false,
-							isLet: true, isImplicit: false, isStatic: false, extendsType: nil,
+							isLet: true, isStatic: false, extendsType: nil,
 							annotations: []))
 					}
 				}
@@ -1631,7 +1627,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				functionType: functionType,
 				genericTypes: [],
 				isOpen: isOpen,
-				isImplicit: false,
 				isStatic: false,
 				isMutating: false,
 				isPure: false,
@@ -1846,8 +1841,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			annotations: annotations,
 			inherits: MutableList(inheritances),
 			elements: elements,
-			members: try convertStatements(members),
-			isImplicit: false)
+			members: try convertStatements(members))
 	}
 
 	func convertStructDeclaration(
@@ -1958,8 +1952,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			range: typealiasDeclaration.getRange(inFile: self.sourceFile),
 			identifier: typealiasDeclaration.identifier.text,
 			typeName: try convertType(typeSyntax),
-			access: accessAndAnnotations.access,
-			isImplicit: false)
+			access: accessAndAnnotations.access)
 	}
 
 	func convertImportDeclaration(
@@ -2066,7 +2059,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				functionType: functionType,
 				genericTypes: generics,
 				isOpen: isOpen,
-				isImplicit: false,
 				isStatic: isStatic,
 				isMutating: isMutating,
 				isPure: isPure,
@@ -2085,7 +2077,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				functionType: functionType,
 				genericTypes: generics,
 				isOpen: isOpen,
-				isImplicit: false,
 				isStatic: true,
 				isMutating: isMutating,
 				isPure: isPure,
@@ -2236,7 +2227,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 							range: range,
 							prefix: "get",
 							parameters: [], returnType: "", functionType: "", genericTypes: [],
-							isOpen: false, isImplicit: false, isStatic: false, isMutating: false,
+							isOpen: false, isStatic: false, isMutating: false,
 							isPure: false, isJustProtocolInterface: false, extendsType: nil,
 							statements: [error],
 							access: nil, annotations: [])
@@ -2253,7 +2244,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 						functionType: "() -> \(typeName)",
 						genericTypes: [],
 						isOpen: false,
-						isImplicit: false,
 						isStatic: false,
 						isMutating: false,
 						isPure: false,
@@ -2290,7 +2280,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 									range: range,
 									prefix: prefix,
 									parameters: [], returnType: "", functionType: "",
-									genericTypes: [], isOpen: false, isImplicit: false,
+									genericTypes: [], isOpen: false,
 									isStatic: false, isMutating: false, isPure: false,
 									isJustProtocolInterface: false, extendsType: nil,
 									statements: [error],
@@ -2331,7 +2321,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 								functionType: functionType,
 								genericTypes: [],
 								isOpen: false,
-								isImplicit: false,
 								isStatic: false,
 								isMutating: false,
 								isPure: false,
@@ -2358,7 +2347,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 								functionType: "",
 								genericTypes: [],
 								isOpen: false,
-								isImplicit: false,
 								isStatic: false,
 								isMutating: false,
 								isPure: false,
@@ -2421,7 +2409,6 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					access: accessAndAnnotations.access,
 					isOpen: isOpen,
 					isLet: isLet,
-					isImplicit: false,
 					isStatic: isStatic,
 					extendsType: nil,
 					annotations: annotations))
@@ -2596,8 +2583,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				typeName: superExpression.getType(fromList: self.expressionTypes),
 				isStandardLibrary: expressionIsFromTheSwiftStandardLibrary(
 					expressionRange: range,
-					expressionIdentifier: "super"),
-				isImplicit: false)
+					expressionIdentifier: "super"))
 		}
 		if let tryExpression = expression.as(TryExprSyntax.self) {
 			return try convertExpression(tryExpression.expression)
@@ -2693,8 +2679,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				typeName: identifierPattern.getType(fromList: self.expressionTypes),
 				isStandardLibrary: expressionIsFromTheSwiftStandardLibrary(
 					expressionRange: range,
-					expressionIdentifier: identifierPattern.identifier.text),
-				isImplicit: false)
+					expressionIdentifier: identifierPattern.identifier.text))
 		}
 		else if let tuplePattern = patternExpression.as(TuplePatternSyntax.self) {
 			let expressions = try List(tuplePattern.elements).map
@@ -3291,8 +3276,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			typeName: memberType,
 			isStandardLibrary: expressionIsFromTheSwiftStandardLibrary(
 				expressionRange: rightSideRange,
-				expressionIdentifier: rightSideText),
-			isImplicit: false)
+				expressionIdentifier: rightSideText))
 
 		return DotExpression(
 			syntax: Syntax(memberAccessExpression),
@@ -3580,8 +3564,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			typeName: identifierExpression.getType(fromList: self.expressionTypes),
 			isStandardLibrary: expressionIsFromTheSwiftStandardLibrary(
 				expressionRange: range,
-				expressionIdentifier: identifierExpression.identifier.text),
-			isImplicit: false)
+				expressionIdentifier: identifierExpression.identifier.text))
 	}
 
 	func convertFloatLiteralExpression(

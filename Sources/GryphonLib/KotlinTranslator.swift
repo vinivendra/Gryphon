@@ -592,10 +592,6 @@ public class KotlinTranslator {
 		shouldAddNewlines: Bool = false)
 		throws -> KotlinTranslation
 	{
-		guard !functionDeclaration.isImplicit else {
-			return KotlinTranslation(range: functionDeclaration.range)
-		}
-
 		var indentation = indentation
 
 		let result = KotlinTranslation(range: functionDeclaration.range)
@@ -1046,7 +1042,6 @@ public class KotlinTranslator {
 					access: nil,
 					isOpen: false,
 					isLet: variableDeclaration.isLet,
-					isImplicit: false,
 					isStatic: false,
 					extendsType: nil,
 					annotations: variableDeclaration.annotations)
@@ -1215,10 +1210,6 @@ public class KotlinTranslator {
 		withIndentation indentation: String)
 		throws -> KotlinTranslation
 	{
-		guard !variableDeclaration.isImplicit else {
-			return KotlinTranslation(range: variableDeclaration.range)
-		}
-
 		let result = KotlinTranslation(range: variableDeclaration.range)
 		result.append(indentation)
 

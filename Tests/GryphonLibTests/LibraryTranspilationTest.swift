@@ -151,14 +151,12 @@ class LibraryTranspilationTest: XCTestCase {
 			range: nil,
 			identifier: "_any",
 			typeName: "Any",
-			isStandardLibrary: false,
-			isImplicit: false)
+			isStandardLibrary: false)
 		let stringDeclarationReference = DeclarationReferenceExpression(
 			range: nil,
 			identifier: "_string",
 			typeName: "String",
-			isStandardLibrary: false,
-			isImplicit: false)
+			isStandardLibrary: false)
 		let parenthesesAnyTemplate = ParenthesesExpression(
 			range: nil,
 			expression: anyDeclarationReference)
@@ -250,8 +248,7 @@ class LibraryTranspilationTest: XCTestCase {
 			range: nil,
 			identifier: "self",
 			typeName: "Int.Type",
-			isStandardLibrary: false,
-			isImplicit: true)
+			isStandardLibrary: false)
 		let typeExpression = TypeExpression(
 			range: nil,
 			typeName: "Int")
@@ -289,8 +286,7 @@ class LibraryTranspilationTest: XCTestCase {
 				range: nil,
 				identifier: "f(b:)",
 				typeName: "(() -> ()) -> ()",
-				isStandardLibrary: false,
-				isImplicit: false),
+				isStandardLibrary: false),
 			arguments: TupleExpression(
 				range: nil,
 				pairs: [LabeledExpression(
@@ -309,8 +305,7 @@ class LibraryTranspilationTest: XCTestCase {
 				range: nil,
 				identifier: "f(b:)",
 				typeName: "(() -> ()) -> ()",
-				isStandardLibrary: false,
-				isImplicit: false),
+				isStandardLibrary: false),
 			arguments: TupleExpression(
 				range: nil,
 				pairs: [LabeledExpression(
@@ -327,8 +322,7 @@ class LibraryTranspilationTest: XCTestCase {
 				range: nil,
 				identifier: "f(b:)",
 				typeName: "(() -> ()) -> ()",
-				isStandardLibrary: false,
-				isImplicit: false),
+				isStandardLibrary: false),
 			arguments: TupleExpression(
 				range: nil,
 				pairs: [LabeledExpression(
@@ -337,8 +331,7 @@ class LibraryTranspilationTest: XCTestCase {
 						range: nil,
 						identifier: "_closure",
 						typeName: "() -> ()",
-						isStandardLibrary: false,
-						isImplicit: false)),
+						isStandardLibrary: false)),
 			]),
 			typeName: "Void",
 			allowsTrailingClosure: true,
