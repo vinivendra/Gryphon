@@ -70,6 +70,9 @@ internal fun Int.foo(closure: (Int) -> Int): Int {
 internal fun foo(closure: (Int) -> Int) {
 }
 
+internal fun foo2(closure: (Int) -> Unit) {
+}
+
 fun main(args: Array<String>) {
 	val printClosure: (String) -> Unit = { println(it) }
 
@@ -151,4 +154,13 @@ fun main(args: Array<String>) {
 				return@foo 1
 			}
 		}
+	foo2 { bla ->
+		if (true) {
+			return@foo2
+		}
+		else {
+			println("False")
+			return@foo2
+		}
+	}
 }
