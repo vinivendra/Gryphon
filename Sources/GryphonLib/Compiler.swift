@@ -20,6 +20,8 @@ import Foundation
 import SwiftSyntax
 
 public class Compiler {
+	// MARK: - Logging and printing
+
 	private static var logIndentation: Atomic<Int> = Atomic(0)
 
 	public static var shouldLogProgress = false
@@ -80,9 +82,13 @@ public class Compiler {
 		printingLock.unlock()
 	}
 
-	//
+	// MARK: - Issues
+
 	public static var shouldStopAtFirstError = false
 	public static var shouldAvoidUnicodeCharacters = false
+	/// Checked before raising warnings so that we can mute them on specific places
+	/// e.g. when checking the standard library
+	public static var shouldMuteWarnings = false
 
 	internal static var issues: MutableList<CompilerIssue> = []
 
@@ -123,6 +129,10 @@ public class Compiler {
 		sourceFile: SourceFile?,
 		sourceFileRange: SourceFileRange?)
 	{
+		guard !shouldMuteWarnings else {
+			return
+		}
+
 		if let syntax = syntax,
 			let sourceFile = sourceFile,
 			shouldMuteWarnings(forSyntax: syntax, inSourceFile: sourceFile)
@@ -199,6 +209,37 @@ public class Compiler {
 				return false
 			}
 		}
+	}
+
+	// MARK: - Compiling
+
+	static internal let libraryUpdateLock = NSLock()
+
+	static public func processGryphonTemplatesLibrary(
+		for transpilationContext: TranspilationContext)
+	throws
+	{
+		libraryUpdateLock.lock()
+
+		defer {
+			libraryUpdateLock.unlock()
+		}
+
+		Compiler.logStart("🧑‍💻  Processing the templates library...")
+		let wasMutingWarnings = Compiler.shouldMuteWarnings
+		Compiler.shouldMuteWarnings = true
+
+		let astArray = try Compiler.transpileGryphonRawASTs(
+			fromInputFiles: [SupportingFile.gryphonTemplatesLibrary.relativePath],
+			withContext: transpilationContext)
+
+		let ast = astArray[0]
+		_ = RecordTemplatesTranspilationPass(
+			ast: ast,
+			context: transpilationContext).run()
+
+		Compiler.shouldMuteWarnings = wasMutingWarnings
+		Compiler.logEnd("✅  Done processing the templates library.")
 	}
 
 	//

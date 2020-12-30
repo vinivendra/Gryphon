@@ -74,7 +74,7 @@ public class TranspilationContext {
 		}
 		else {
 			let result = try TranspilationContext()
-			try Utilities.processGryphonTemplatesLibrary(for: result)
+			try Compiler.processGryphonTemplatesLibrary(for: result)
 			baseContext = result
 			return result
 		}
@@ -311,7 +311,7 @@ public class TranspilationContext {
 
 	// MARK: - macOS SDK
 	private static var sdkPath: String?
-	private static let sdkLock: Semaphore = NSLock()
+	private static let sdkLock = NSLock()
 
 	/// On macOS, tries to find the SDK path using `xcrun`, and throws an error if that fails.
 	/// On Linux, returns `nil`.

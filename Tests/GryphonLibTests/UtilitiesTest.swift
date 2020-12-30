@@ -184,7 +184,7 @@ class UtilitiesTest: XCTestCase {
             inDirectory: "Sources/GryphonLib",
             withExtension: .swift)
         let someSwiftFiles = Utilities.getFiles(
-            ["Utilities", "SharedUtilities"],
+            ["Utilities", "Compiler"],
             inDirectory: "Sources/GryphonLib",
             withExtension: .swift)
         let kotlinFiles = Utilities.getFiles(
@@ -192,11 +192,11 @@ class UtilitiesTest: XCTestCase {
             withExtension: .kt)
 
         XCTAssert(allSwiftFiles.contains { $0.hasSuffix("/Utilities.swift") })
-        XCTAssert(allSwiftFiles.contains { $0.hasSuffix("/SharedUtilities.swift") })
+        XCTAssert(allSwiftFiles.contains { $0.hasSuffix("/Compiler.swift") })
         XCTAssert(allSwiftFiles.contains { $0.hasSuffix("/TranspilationPass.swift") })
 
         XCTAssert(someSwiftFiles.contains { $0.hasSuffix("/Utilities.swift") })
-        XCTAssert(someSwiftFiles.contains { $0.hasSuffix("/SharedUtilities.swift") })
+        XCTAssert(someSwiftFiles.contains { $0.hasSuffix("/Compiler.swift") })
         XCTAssert(someSwiftFiles.count == 2)
 
         XCTAssert(kotlinFiles.isEmpty)
