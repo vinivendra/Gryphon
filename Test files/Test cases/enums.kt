@@ -75,6 +75,44 @@ open class K {
 	}
 }
 
+internal enum class E1(val rawValue: Int) {
+	A(rawValue = 0),
+	B(rawValue = 1);
+
+	companion object {
+		operator fun invoke(rawValue: Int): E1? = values().firstOrNull { it.rawValue == rawValue }
+	}
+}
+
+internal enum class E2(val rawValue: String) {
+	A(rawValue = "a"),
+	A_B(rawValue = "aB");
+
+	companion object {
+		operator fun invoke(rawValue: String): E2? = values().firstOrNull { it.rawValue == rawValue }
+	}
+}
+
+internal enum class E3(val rawValue: Int) {
+	A(rawValue = 10),
+	B(rawValue = 100),
+	C(rawValue = 101);
+
+	companion object {
+		operator fun invoke(rawValue: Int): E3? = values().firstOrNull { it.rawValue == rawValue }
+	}
+}
+
+internal enum class E4(val rawValue: String) {
+	A(rawValue = "aaA"),
+	A_B(rawValue = "B_A"),
+	C(rawValue = "c");
+
+	companion object {
+		operator fun invoke(rawValue: String): E4? = values().firstOrNull { it.rawValue == rawValue }
+	}
+}
+
 fun main(args: Array<String>) {
 	val a = MyEnum.FOO_BAR
 	val b = MyEnum.BAZ
@@ -88,4 +126,11 @@ fun main(args: Array<String>) {
 	}
 
 	val c: K.A = K.A.B(0)
+
+	println(E1.B.rawValue)
+	println(E2.A_B.rawValue)
+	println(E3.A.rawValue)
+	println(E3.C.rawValue)
+	println(E4.A.rawValue)
+	println(E4.C.rawValue)
 }

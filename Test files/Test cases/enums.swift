@@ -84,3 +84,35 @@ public class K {
 }
 
 let c = K.A.b(int: 0)
+
+// Test default rawValues
+enum E1: Int {
+	case a
+	case b
+}
+
+enum E2: String {
+	case a
+	case aB
+}
+
+print(E1.b.rawValue)
+print(E2.aB.rawValue)
+
+// Test manual rawValues
+enum E3: Int {
+	case a = 10
+	case b = 100
+	case c
+}
+
+enum E4: String {
+	case a = "aaA"
+	case aB = "B_A"
+	case c
+}
+
+print(E3.a.rawValue)
+print(E3.c.rawValue)
+print(E4.a.rawValue)
+print(E4.c.rawValue)
