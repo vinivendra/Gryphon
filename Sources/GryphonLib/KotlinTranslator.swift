@@ -311,6 +311,28 @@ public class KotlinTranslator {
 
 		result.append("\(enumString) class \(enumDeclaration.enumName)")
 
+		if isEnumClass {
+			let maybeRawValueDeclaration = enumDeclaration.members.compactMap
+				{ (member: Statement) -> VariableDeclaration? in
+					if let variableDeclaration = member as? VariableDeclaration,
+					   variableDeclaration.identifier == "rawValue",
+					   variableDeclaration.getter == nil,
+					   variableDeclaration.setter == nil
+
+					{
+						return variableDeclaration
+					}
+					return nil
+			}.first
+
+			if let rawValueDeclaration = maybeRawValueDeclaration,
+			   let typeAnnotation = rawValueDeclaration.typeAnnotation
+			{
+				enumDeclaration.members.remove(rawValueDeclaration)
+				result.append("(val rawValue: \(typeAnnotation))")
+			}
+		}
+
 		if !enumDeclaration.inherits.isEmpty {
 			var translatedInheritedTypes = enumDeclaration.inherits.map { translateType($0) }
 			translatedInheritedTypes = translatedInheritedTypes.map {
@@ -325,20 +347,37 @@ public class KotlinTranslator {
 
 		let increasedIndentation = increaseIndentation(indentation)
 
-		var hasCases = false
 		if isEnumClass {
-			hasCases = true
-			let translation = enumDeclaration.elements.map {
-					increasedIndentation +
-						(($0.annotations.isEmpty) ?
-							"" :
-							"\($0.annotations.joined(separator: " ")) ") +
-						$0.name
-				}.joined(separator: ",\n") + ";\n"
-			result.append(translation)
+			let translations = try enumDeclaration.elements.map
+				{ (element: EnumElement) -> KotlinTranslation in
+					let result = KotlinTranslation(range: enumDeclaration.range)
+					result.append(increasedIndentation)
+
+					if !element.annotations.isEmpty {
+						result.append(element.annotations.joined(separator: " "))
+						result.append(" ")
+					}
+
+					result.append(element.name)
+
+					if let rawValue = element.rawValue {
+						result.append("(rawValue = ")
+						try result.append(translateExpression(
+							rawValue,
+							withIndentation: increaseIndentation(increasedIndentation)))
+						result.append(")")
+					}
+
+					return result
+				}
+
+			result.appendTranslations(translations, withSeparator: ",\n")
+
+			if !enumDeclaration.elements.isEmpty {
+				result.append(";\n")
+			}
 		}
 		else {
-			hasCases = true
 			for element in enumDeclaration.elements {
 				let translation = translateEnumElementDeclaration(
 					enumName: enumDeclaration.enumName,
@@ -352,7 +391,7 @@ public class KotlinTranslator {
 			try translateSubtrees(enumDeclaration.members, withIndentation: increasedIndentation)
 
 		// Add a newline between cases and members if needed
-		if hasCases && !membersTranslation.isEmpty {
+		if !enumDeclaration.elements.isEmpty && !membersTranslation.isEmpty {
 			result.append("\n")
 		}
 

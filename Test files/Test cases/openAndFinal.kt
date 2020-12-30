@@ -109,8 +109,6 @@ internal data class B(
 }
 
 internal enum class C {
-;
-
 	companion object {
 		var a3: Int = 0
 

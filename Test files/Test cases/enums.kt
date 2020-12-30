@@ -27,27 +27,13 @@ internal sealed class OtherError: Exception() {
 	class IntAndString(val int: Int, val string: String): OtherError()
 }
 
-internal enum class NoInheritances {
-	FOO_BAR,
-	BAR_BAZ;
+internal enum class NoInheritances(val rawValue: String) {
+	FOO_BAR(rawValue = "foo-bar"),
+	BAR_BAZ(rawValue = "barBaz");
 
 	companion object {
-		operator fun invoke(rawValue: String): NoInheritances? {
-			return when (rawValue) {
-				"foo-bar" -> NoInheritances.FOO_BAR
-				"barBaz" -> NoInheritances.BAR_BAZ
-				else -> null
-			}
-		}
+		operator fun invoke(rawValue: String): NoInheritances? = values().firstOrNull { it.rawValue == rawValue }
 	}
-
-	val rawValue: String
-		get() {
-			return when (this) {
-				NoInheritances.FOO_BAR -> "foo-bar"
-				NoInheritances.BAR_BAZ -> "barBaz"
-			}
-		}
 }
 
 internal enum class WithMembers {

@@ -4444,98 +4444,86 @@ public class RawValuesMembersTranspilationPass: TranspilationPass {
 				withRawValueType: typeName,
 				forEnumDeclaration: enumDeclaration)
 
-			guard let rawValueInitializer = createRawValueInitializer(
+			let rawValueInitializer = createRawValueInitializer(
 				withRawValueType: typeName,
-				forEnumDeclaration: enumDeclaration) else
-			{
-				Compiler.handleWarning(
-					message: "Failed to create init(rawValue:). " +
-						"Unable to get all raw values from the enum declaration.",
-					syntax: enumDeclaration.syntax,
-					ast: enumDeclaration,
-					sourceFile: ast.sourceFile,
-					sourceFileRange: enumDeclaration.range)
-				return super.replaceEnumDeclaration(enumDeclaration)
-			}
+				forEnumDeclaration: enumDeclaration)
 
-			let newMembers = enumDeclaration.members
-			newMembers.append(rawValueInitializer)
-			newMembers.append(rawValueVariable)
+			enumDeclaration.members.append(rawValueInitializer)
+			enumDeclaration.members.append(rawValueVariable)
+		}
 
-			return super.replaceEnumDeclaration(EnumDeclaration(
-				syntax: enumDeclaration.syntax,
-				range: enumDeclaration.range,
-				access: enumDeclaration.access,
-				enumName: enumDeclaration.enumName,
-				annotations: enumDeclaration.annotations,
-				inherits: enumDeclaration.inherits,
-				elements: enumDeclaration.elements,
-				members: newMembers))
-		}
-		else {
-			return super.replaceEnumDeclaration(enumDeclaration)
-		}
+		return super.replaceEnumDeclaration(enumDeclaration)
 	}
 
 	private func createRawValueInitializer(
 		withRawValueType rawValueType: String,
 		forEnumDeclaration enumDeclaration: EnumDeclaration)
-		-> FunctionDeclaration?
+		-> InitializerDeclaration
 	{
-		for element in enumDeclaration.elements {
-			if element.rawValue == nil {
-				return nil
-			}
-		}
-
 		let range = enumDeclaration.range
 		let syntax = enumDeclaration.syntax
 
-		let switchCases = enumDeclaration.elements.map { element -> SwitchCase in
-			SwitchCase(
-				expressions: [element.rawValue!],
-				statements: [
-					ReturnStatement(
-						syntax: syntax,
-						range: range,
-						expression: DotExpression(
-							syntax: syntax,
-							range: range,
-							leftExpression: TypeExpression(
-								syntax: syntax,
-								range: range,
-								typeName: enumDeclaration.enumName),
-							rightExpression: DeclarationReferenceExpression(
-								syntax: syntax,
-								range: range,
-								identifier: element.name,
-								typeName: enumDeclaration.enumName,
-								isStandardLibrary: false)),
-						label: nil),
-				])
-		}.toMutableList()
-
-		let defaultSwitchCase = SwitchCase(
-			expressions: [],
-			statements: [ReturnStatement(
-				syntax: syntax,
-				range: range,
-				expression: NilLiteralExpression(syntax: syntax, range: range),
-				label: nil), ])
-
-		switchCases.append(defaultSwitchCase)
-
-		let switchStatement = SwitchStatement(
-			syntax: syntax,
+		// it.rawValue == rawValue
+		let comparisonExpression = BinaryOperatorExpression(
 			range: range,
-			convertsToExpression: nil,
-			expression: DeclarationReferenceExpression(
-				syntax: syntax,
+			leftExpression: DotExpression(
+				range: range,
+				leftExpression: DeclarationReferenceExpression(
+					range: range,
+					identifier: "it",
+					typeName: enumDeclaration.enumName,
+					isStandardLibrary: false),
+				rightExpression: DeclarationReferenceExpression(
+					range: range,
+					identifier: "rawValue",
+					typeName: rawValueType,
+					isStandardLibrary: false)),
+			rightExpression: DeclarationReferenceExpression(
 				range: range,
 				identifier: "rawValue",
 				typeName: rawValueType,
 				isStandardLibrary: false),
-			cases: switchCases)
+			operatorSymbol: "==",
+			typeName: "Bool")
+
+		// { it.rawValue == rawValue }
+		let closure = ClosureExpression(
+			range: range,
+			parameters: [],
+			statements: [ExpressionStatement(range: range, expression: comparisonExpression)],
+			typeName: "(\(enumDeclaration.enumName)) -> Bool",
+			isTrailing: true)
+
+		// firstOrNull { it.rawValue == rawValue }
+		let callExpression = CallExpression(
+			range: range,
+			function: DeclarationReferenceExpression(
+				range: range,
+				identifier: "firstOrNull",
+				typeName: "((\(enumDeclaration.enumName)) -> Bool) -> \(enumDeclaration.enumName)?",
+				isStandardLibrary: false),
+			arguments: TupleExpression(
+				range: range,
+				pairs: [LabeledExpression(label: nil, expression: closure)]),
+			typeName: enumDeclaration.enumName,
+			allowsTrailingClosure: true,
+			isPure: true)
+
+		// values().firstOrNull { it.rawValue == rawValue }
+		let dotExpression = DotExpression(
+			range: range,
+			leftExpression: CallExpression(
+				range: range,
+				function: DeclarationReferenceExpression(
+					range: range,
+					identifier: "values",
+					typeName: "() -> List<\(enumDeclaration.enumName)>",
+					isStandardLibrary: false),
+				arguments: TupleExpression(range: nil, pairs: []),
+				typeName: "List<\(enumDeclaration.enumName)>",
+				allowsTrailingClosure: false,
+				isPure: true),
+			rightExpression: callExpression)
 
 		return InitializerDeclaration(
 			syntax: syntax,
@@ -4553,7 +4541,7 @@ public class RawValuesMembersTranspilationPass: TranspilationPass {
 			isMutating: false,
 			isPure: true,
 			extendsType: nil,
-			statements: [switchStatement],
+			statements: [ExpressionStatement(range: range, expression: dotExpression)],
 			access: enumDeclaration.access,
 			annotations: [],
 			superCall: nil,
@@ -4568,71 +4556,17 @@ public class RawValuesMembersTranspilationPass: TranspilationPass {
 		let range = enumDeclaration.range
 		let syntax = enumDeclaration.syntax
 
-		let switchCases = enumDeclaration.elements.map { element in
-			SwitchCase(
-				expressions: [DotExpression(
-					syntax: syntax,
-					range: range,
-					leftExpression: TypeExpression(
-						syntax: syntax,
-						range: range,
-						typeName: enumDeclaration.enumName),
-					rightExpression: DeclarationReferenceExpression(
-						syntax: syntax,
-						range: range,
-						identifier: element.name,
-						typeName: enumDeclaration.enumName,
-						isStandardLibrary: false)), ],
-				statements: [
-					ReturnStatement(
-						syntax: syntax,
-						range: range,
-						expression: element.rawValue,
-						label: nil),
-				])
-		}.toMutableList()
-
-		let switchStatement = SwitchStatement(
-			syntax: syntax,
-			range: range,
-			convertsToExpression: nil,
-			expression: DeclarationReferenceExpression(
-				syntax: syntax,
-				range: range,
-				identifier: "this",
-				typeName: enumDeclaration.enumName,
-				isStandardLibrary: false),
-			cases: switchCases)
-
-		let getter = FunctionDeclaration(
-			syntax: syntax,
-			range: range,
-			prefix: "get",
-			parameters: [],
-			returnType: rawValueType,
-			functionType: "() -> \(rawValueType)",
-			genericTypes: [],
-			isOpen: false,
-			isStatic: false,
-			isMutating: false,
-			isPure: false,
-			isJustProtocolInterface: false,
-			extendsType: nil,
-			statements: [switchStatement],
-			access: enumDeclaration.access,
-			annotations: [])
-
 		return VariableDeclaration(
 			syntax: syntax,
 			range: range,
 			identifier: "rawValue",
 			typeAnnotation: rawValueType,
 			expression: nil,
-			getter: getter,
+			getter: nil,
 			setter: nil,
 			access: nil,
 			isOpen: false,
-			isLet: false,
+			isLet: true,
 			isStatic: false,
 			extendsType: nil,
 			annotations: [])
