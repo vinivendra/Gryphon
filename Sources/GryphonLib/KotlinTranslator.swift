@@ -376,6 +376,10 @@ public class KotlinTranslator {
 			if !enumDeclaration.elements.isEmpty {
 				result.append(";\n")
 			}
+			else {
+				result.append(increaseIndentation(indentation))
+				result.append(";\n")
+			}
 		}
 		else {
 			for element in enumDeclaration.elements {
@@ -391,7 +395,7 @@ public class KotlinTranslator {
 			try translateSubtrees(enumDeclaration.members, withIndentation: increasedIndentation)
 
 		// Add a newline between cases and members if needed
-		if !enumDeclaration.elements.isEmpty && !membersTranslation.isEmpty {
+		if !membersTranslation.isEmpty {
 			result.append("\n")
 		}
 

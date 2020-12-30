@@ -15,6 +15,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+internal enum class EmptyEnum {
+	;
+}
+
 internal sealed class CalculatorError: Exception() {
 	class InvalidCharacter: CalculatorError()
 	class MultipleCharacters: CalculatorError()

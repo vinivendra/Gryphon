@@ -16,6 +16,9 @@
 // limitations under the License.
 //
 
+enum EmptyEnum {
+}
+
 enum CalculatorError: Error {
 	case invalidCharacter
 	case multipleCharacters
