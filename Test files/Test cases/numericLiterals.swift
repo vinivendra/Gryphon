@@ -60,9 +60,21 @@ var j: Float32 = 0
 var k: Float64 = 0
 var l: Double = 0
 
-// Number formats
+// Number formats (float literals)
 var m: Double = 1.21875e1
+var n: Float = 1.21875e1
 m = 000123.456
+n = 000123.456
 m = 1_000_000.000_000_1
+n = 1_000_000.000_000_1
 
-var n: Int = 1_000_000
+// Number formats (integer literals)
+var o: Int = 1_000_000
+var p: UInt = 1_000_000
+m = 1_000_000
+n = 1_000_000
+
+var q: Int = 0x101
+q = 0b101
+var r: UInt = 0x101
+r = 0b101

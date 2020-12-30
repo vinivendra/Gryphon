@@ -74,9 +74,6 @@ enum class MyEnum {
 	BAZ;
 }
 
-val a = MyEnum.FOO_BAR
-val b = MyEnum.BAZ
-
 open class K {
 	sealed class A {
 		class B(val int: Int): A()
@@ -93,6 +90,9 @@ open class K {
 }
 
 fun main(args: Array<String>) {
+	val a = MyEnum.FOO_BAR
+	val b = MyEnum.BAZ
+
 	if (a == MyEnum.FOO_BAR) {
 		println("MyEnum.FOO_BAR")
 	}
@@ -101,5 +101,5 @@ fun main(args: Array<String>) {
 		println("MyEnum.BAZ")
 	}
 
-	val c: K.A = K.A.B(int = 0)
+	val c: K.A = K.A.B(0)
 }

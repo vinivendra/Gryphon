@@ -111,7 +111,7 @@ internal fun f1(a: Int = 0, b: Int = 0, c: Int = 0) {
 	println("${a} ${b} ${c}")
 }
 
-fun variadics(a: Int, vararg b: Int, c: Int = 0) {
+internal fun variadics(a: Int, vararg b: Int, c: Int = 0) {
 	print(a)
 	for (element in b) {
 		print(element)
@@ -157,16 +157,16 @@ internal fun fooFooBarBazFoo(
 fun main(args: Array<String>) {
 	foo()
 	foo1(bar = 0)
-	foo2(0)
+	foo2(bar = 0)
 	foo3(bar = 0, baz = 0)
-	foo4(0, baz = 0)
-	foo6(0, 0)
+	foo4(bar = 0, baz = 0)
+	foo6(bar = 0, baz = 0)
 	println("${bla()}")
 	println("${bla1(bar = 0)}")
-	println("${bla2(0)}")
+	println("${bla2(bar = 0)}")
 	println("${bla3(bar = 0, baz = 0)}")
-	println("${bla4(0, baz = 0)}")
-	println("${bla6(0, 0)}")
+	println("${bla4(bar = 0, baz = 0)}")
+	println("${bla6(bar = 0, baz = 0)}")
 	bar1()
 	bar1(a = 0)
 	bar2()
@@ -198,7 +198,7 @@ fun main(args: Array<String>) {
 	println("- Unnamed parameters with default values")
 	f1(a = 1)
 	f1(a = 1, b = 1)
-	f1(1, 1, 1)
+	f1(a = 1, b = 1, c = 1)
 	println("- Variadics and default values")
 	variadics(1, 1, 2, 3, c = 1)
 	variadics(1, 1, 2, 3)

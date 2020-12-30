@@ -32,22 +32,17 @@
 import Foundation
 
 // Kotlin literals as expressions
-let languageName = "swift" // gryphon value: \"kotlin\"
+let languageName = /* gryphon value: \"kotlin\" */ "swift"
 print("Hello from \(languageName)!")
 
-let magicNumber: Int = 40 + // gryphon value: 40 + 5-3
-	2 // gryphon value: this comment will be ignored
+let magicNumber: Int = /* gryphon value: 40 + 5-3 */ 40 + 2
 print(magicNumber)
 
-func f(a: Int = 0,
-	   b: Int = 0 // gryphon value: 1
-	) {
+func f(a: Int = 0, b: Int = /* gryphon value: 1 */ 0) {
 	print(a + b)
 }
 
-f(a: 0,
-  b: 0 // gryphon value: 1
-)
+f(a: 0, b: /* gryphon value: 1 */ 0)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Kotlin literals as statements
@@ -58,26 +53,33 @@ f(a: 0,
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Ignore swift statements
-print("This will be ignored by kotlin, but not by swift.") // gryphon ignore
+// gryphon ignore
+print("This will be ignored by kotlin, but not by swift.")
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Call something swift can't parse
-let squareRoot = sqrt(9) // gryphon value: Math.sqrt(9.0)
+let squareRoot = /* gryphon value: Math.sqrt(9.0) */ sqrt(9)
 print(squareRoot)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Ignore a swift declaration
-class IgnoredClass // gryphon ignore
-{
-}
-enum IgnoredEnum // gryphon ignore
-{
-}
-enum IgnoredStruct // gryphon ignore
+// gryphon ignore
+class IgnoredClass
 {
 }
 
-func a() { // gryphon ignore
+// gryphon ignore
+enum IgnoredEnum
+{
+}
+
+// gryphon ignore
+enum IgnoredStruct
+{
+}
+
+// gryphon ignore
+func a() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -90,25 +92,30 @@ protocol A {
 }
 
 class B: A {
-	var x: Int = 1 // gryphon annotation: override
-	var y: Int = // gryphon annotation: override
-		2 // gryphon value: 3
+	// gryphon annotation: override
+	var x: Int = 1
+	// gryphon annotation: override
+	var y: Int = /* gryphon value: 3 */ 2
 	var z: Int = 0
 
-	func foo() { } // gryphon annotation: override
+	// gryphon annotation: override
+	func foo() { }
 }
 
 print(B().x)
 print(B().y)
 
-protocol C { // gryphon annotation: open
+// gryphon annotation: open
+protocol C {
 }
 
-enum D { // gryphon annotation: final
+// gryphon annotation: final
+enum D {
 	case a
 }
 
-struct E { // gryphon annotation: final
+// gryphon annotation: final
+struct E {
 	let a: Int = 0
 }
 
@@ -149,12 +156,6 @@ var closure = {
 closure()
 
 class InsertClass {
-	// gryphon insert: open var a: String = \"class a\"
-	var b: String = "class b"
-	// gryphon insert: open var c: String = \"class c\"
-	var d: String = "class d"
-	// gryphon insert: open var e: String = \"class e\"
-
 	func insertMethod() {
 		// gryphon insert: println(\"method 1\")
 		print("method 2")
@@ -162,7 +163,14 @@ class InsertClass {
 		print("method 4")
 		// gryphon insert: println(\"method 5\")
 	}
+
+	// gryphon insert: open var a: String = \"class a\"
+	var b: String = "class b"
+	// gryphon insert: open var c: String = \"class c\"
+	var d: String = "class d"
+	// gryphon insert: open var e: String = \"class e\"
 }
+
 let insertClass = InsertClass()
 // gryphon insertInMain: println(insertClass.a)
 // gryphon insertInMain: println(insertClass.b)

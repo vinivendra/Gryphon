@@ -101,7 +101,8 @@ class C {
 struct D {
 	let x: Int
 
-	init(x: Int) { // gryphon ignore
+	// gryphon ignore
+	init(x: Int) {
 		self.x = x
 	}
 
@@ -122,11 +123,13 @@ struct D {
 }
 
 // Test open/final
-class E { // gryphon annotation: open
+// gryphon annotation: open
+class E {
 	var a = 0
 }
 
-class F { // gryphon annotation: final
+// gryphon annotation: final
+class F {
 	var a = 0
 }
 
@@ -178,6 +181,21 @@ let singleExpressionMembers = SingleExpressionMembers()
 print(singleExpressionMembers.one)
 print(singleExpressionMembers.two)
 print(singleExpressionMembers.dddddddddddddddddddddddddeeeeeeeeeee)
+
+// Super calls
+class Superclass {
+	var x = 0
+
+	init(x: Int) {
+		self.x = x
+	}
+}
+
+class Subclass: Superclass {
+	init(y: Int) {
+		super.init(x: y + 1)
+	}
+}
 
 // Test `class` annotations
 class G {

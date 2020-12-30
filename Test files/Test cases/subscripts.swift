@@ -44,7 +44,15 @@ class B {
 let b = B()
 print(b[1])
 
-print(0) // For compatiblity with the swiftSyntax test
+// Labeled subscripts
+class C {
+	subscript(a b: Int) -> Int {
+		return b
+	}
+}
+
+let c = C()
+print(c[a: 0])
 
 // Multiple indices
 class D {
@@ -62,9 +70,21 @@ let d = D()
 print(d[0, 1])
 d[0, 1] = 2
 
-// For compatiblity with the swiftSyntax test
-print(1)
-print("0 1 2")
+// Multiple labeled subscripts
+class E {
+	subscript(a b: Int, c d: Int) -> Int {
+		get {
+			return b + d
+		}
+		set {
+			print("\(b) \(d) \(newValue)")
+		}
+	}
+}
+
+let e = E()
+print(e[a: 0, c: 1])
+e[a: 0, c: 1] = 2
 
 // Optional subscripts
 let a1: A? = A()
@@ -73,9 +93,11 @@ print(a1?[1])
 let b1: B? = B()
 print(b1?[1])
 
-print(0) // For compatiblity with the swiftSyntax test
+let c1: C? = C()
+print(c1?[a: 0])
 
 let d1: D? = D()
 print(d1?[0, 1])
 
-print(1) // For compatiblity with the swiftSyntax test
+let e1: E? = E()
+print(e1?[a: 0, c: 1])

@@ -44,7 +44,7 @@ class AcceptanceTest: XCTestCase {
 			// Compile the Kotlin code
 			let testCasePath = TestUtilities.testCasesPath + testName
 
-			let kotlinFilePath = (testCasePath + "-swiftSyntax").withExtension(.kt)
+			let kotlinFilePath = testCasePath.withExtension(.kt)
 
 			let commandResult = Shell.runShellCommand(
 				OS.kotlinCompilerPath,

@@ -55,10 +55,12 @@ public enum MyEnum {
 	case baz
 }
 
-let a = MyEnum.fooBar // gryphon ignore
-let b = MyEnum.baz // gryphon ignore
-// gryphon insert: val a = MyEnum.FOO_BAR
-// gryphon insert: val b = MyEnum.BAZ
+// gryphon ignore
+let a = MyEnum.fooBar
+// gryphon ignore
+let b = MyEnum.baz
+// gryphon insertInMain: val a = MyEnum.FOO_BAR
+// gryphon insertInMain: val b = MyEnum.BAZ
 
 if a == MyEnum.fooBar {
 	print("MyEnum.FOO_BAR")

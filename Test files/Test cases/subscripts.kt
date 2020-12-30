@@ -33,6 +33,12 @@ internal open class B {
 	}
 }
 
+internal open class C {
+	operator open fun get(b: Int): Int {
+		return b
+	}
+}
+
 internal open class D {
 	operator open fun get(a: Int, b: Int): Int {
 		return a + b
@@ -40,6 +46,16 @@ internal open class D {
 
 	operator open fun set(a: Int, b: Int, newValue: Int) {
 		println("${a} ${b} ${newValue}")
+	}
+}
+
+internal open class E {
+	operator open fun get(b: Int, d: Int): Int {
+		return b + d
+	}
+
+	operator open fun set(b: Int, d: Int, newValue: Int) {
+		println("${b} ${d} ${newValue}")
 	}
 }
 
@@ -53,7 +69,10 @@ fun main(args: Array<String>) {
 	val b: B = B()
 
 	println(b[1])
-	println(0)
+
+	val c: C = C()
+
+	println(c[0])
 
 	val d: D = D()
 
@@ -61,8 +80,11 @@ fun main(args: Array<String>) {
 
 	d[0, 1] = 2
 
-	println(1)
-	println("0 1 2")
+	val e: E = E()
+
+	println(e[0, 1])
+
+	e[0, 1] = 2
 
 	val a1: A? = A()
 
@@ -71,10 +93,16 @@ fun main(args: Array<String>) {
 	val b1: B? = B()
 
 	println(b1?.get(1))
-	println(0)
+
+	val c1: C? = C()
+
+	println(c1?.get(0))
 
 	val d1: D? = D()
 
 	println(d1?.get(0, 1))
-	println(1)
+
+	val e1: E? = E()
+
+	println(e1?.get(0, 1))
 }

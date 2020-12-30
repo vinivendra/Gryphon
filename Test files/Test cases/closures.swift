@@ -43,6 +43,9 @@ let multiLineClosure: (Int) -> () = { a in
 multiLineClosure(10)
 multiLineClosure(20)
 
+// Closures with tuples as input types
+let tupleClosure = { (a: (Int, Int)) in }
+
 //
 // Test autoclosures
 func f(_ closure: @autoclosure () -> (Int), a: Int) { }
@@ -74,6 +77,10 @@ f3 { }
 // Test closures which return Void instead of ()
 func f4(_ closure: () -> Void) { }
 f4 { }
+
+// Test trailing closures that match a labeled parameter
+func f5(bar: (Int, Int) -> Bool) { }
+f5 { a, b in true }
 
 //
 // Test closures with labeled returns
@@ -157,18 +164,5 @@ foo { bla in
 	}
 	else {
 		return 1
-	}
-}
-
-// Labels in returns without expressions
-func foo2(_ closure:(Int) -> ()) { }
-
-foo2 { bla in
-	if true {
-		return
-	}
-	else {
-		print("False")
-		return
 	}
 }

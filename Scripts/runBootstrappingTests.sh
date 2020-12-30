@@ -94,8 +94,6 @@ for file in Test\ cases/*.swift
 do
 	if [[ $file == *"errors.swift" ]]; then
 		echo "	↪️ Skipping $file..."
-	elif [[ $file == *"-swiftSyntax"* ]]; then
-		echo "	↪️ Skipping $file..."
 	else
 		echo "	↪️ Testing $file..."
 

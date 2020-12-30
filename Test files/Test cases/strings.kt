@@ -16,7 +16,6 @@
 // limitations under the License.
 //
 internal fun f() {
-	// gryphon multiline
 	val multilineString: String = """
 	This multiline string has nested indentation.
 	And it has many lines.
@@ -29,6 +28,7 @@ fun main(args: Array<String>) {
 	val y: String = "The string above is ${x}"
 	val z: Int = 0
 	val w: String = "Here's another interpolated string: ${x}, ${y} and ${z}"
+	val emptyString: String = ""
 	val escapedString: String = "A string with \"escaped double quotes\" \\ and escaped backslashes\n\t and some escaped characters too."
 	val singleInterpolation: String = "${x}"
 	val interpolationWithDoubleQuotes: String = "\"\"${x}"
@@ -37,6 +37,7 @@ fun main(args: Array<String>) {
 	println(y)
 	println(z)
 	println(w)
+	println(emptyString)
 	println(escapedString)
 	println(singleInterpolation)
 	println(interpolationWithDoubleQuotes)
@@ -50,6 +51,9 @@ It still has many lines."""
 	val multilineString3: String = """
 		This multiline string has indentation.
 		It also has many lines.
+"""
+	val multilineInterpolation: String = """
+${x}
 """
 
 	println("==")
@@ -75,7 +79,7 @@ It still has many lines."""
 		}
 	}
 
-	"abc".drop(1).dropWhile { it != '\n' }
+	"abc".drop(1).dropWhile({ it != '\n' })
 
 	val abc: String = "abc"
 

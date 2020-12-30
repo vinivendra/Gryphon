@@ -48,14 +48,17 @@ fun main(args: Array<String>) {
 	println("${z}")
 
 	if (x) {
+		// Will get printed
 		println("true")
 	}
 
 	if (!x) {
+		// Won't get printed
 		println("false")
 	}
 
 	if (t && (!f) || f) {
+		// Will get printed
 		println("true")
 	}
 }

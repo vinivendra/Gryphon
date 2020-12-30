@@ -81,11 +81,21 @@ fun main(args: Array<String>) {
 
 	println(precedenceResult)
 
-	val castResult1: Any = precedenceResult
+	val castResult1: Any = precedenceResult as Any
 
 	println(castResult1)
+
+	val castResult2: Any? = precedenceResult as? Any
+
+	println(castResult2)
 
 	val castResult3: Boolean = precedenceResult is Boolean
 
 	println(castResult3)
+
+	val a: Int? = null
+	val b: Int? = 1
+	val c: Int = a ?: b ?: 2
+
+	println(c)
 }

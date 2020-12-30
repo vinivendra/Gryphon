@@ -34,7 +34,7 @@ class IntegrationTest: XCTestCase {
 			let tests = TestUtilities.sortedTests
 			for testName in tests {
 				// Generate kotlin code using the whole compiler
-				let testCasePath = TestUtilities.testCasesPath + testName + "-swiftSyntax"
+				let testCasePath = TestUtilities.testCasesPath + testName
 				let defaultsToFinal = testName.contains("-default-final")
 
 				print("- Testing \(testName) (Swift Syntax)...")

@@ -29,9 +29,12 @@ protocol C: A, B {
 }
 
 class D: C {
-	func a() { } // gryphon annotation: override
-	func b() { } // gryphon annotation: override
-	func c() { } // gryphon annotation: override
+	// gryphon annotation: override
+	func a() { }
+	// gryphon annotation: override
+	func b() { }
+	// gryphon annotation: override
+	func c() { }
 }
 
 let c: C = D()

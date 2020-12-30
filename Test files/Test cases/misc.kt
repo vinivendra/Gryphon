@@ -78,6 +78,12 @@ internal data class MyError(
 	val errorMessage: String
 ): Exception()
 
+internal fun gryphon1() {
+}
+
+internal fun gryphon2() {
+}
+
 internal fun g() {
 	try {
 		println("First")
@@ -103,6 +109,18 @@ internal data class G(
 	}
 }
 
+internal open class N {
+	val o: Int = 0
+}
+
+internal open class M {
+	val n: N = N()
+}
+
+internal open class L {
+	val m: M = M()
+}
+
 fun main(args: Array<String>) {
 	var i: Int = 1
 
@@ -113,6 +131,9 @@ fun main(args: Array<String>) {
 		}
 		println(i)
 		i += 1
+	}
+
+	while (true && false) {
 	}
 
 	var a: A = 0
@@ -140,6 +161,7 @@ fun main(args: Array<String>) {
 
 	val arrayOfInts1: List<Int> = listOf(1, 2, 3)
 	val arrayOfInts2: List<Int> = listOf(1, 2, 3)
+	val dictionaryOfInts: Map<Int, Int> = mapOf(1 to 2)
 	val array: List<Int> = listOf(1, 2, 3)
 	val arrayIndex: Int? = array.indexOf(1)
 	val bla: Int = 1
@@ -154,7 +176,7 @@ fun main(args: Array<String>) {
 	try {
 		"abc"
 	}
-	catch (error: Exception) {
+	catch (_error: Exception) {
 		// Do nothing
 	}
 
@@ -168,7 +190,7 @@ fun main(args: Array<String>) {
 	try {
 		throwingFunction()
 	}
-	catch (error: Exception) {
+	catch (_error: Exception) {
 		throw MyError(errorMessage = "")
 	}
 
@@ -188,4 +210,7 @@ fun main(args: Array<String>) {
 
 	val dictionary: Map<Int, Int> = mapOf(1 to 10, 2 to 20)
 	val mappedDictionary: List<Int> = dictionary.map { it.key + it.value }
+	val l: L? = L()
+
+	println(l?.m?.n?.o)
 }

@@ -150,21 +150,13 @@ f1(1, 1, 1)
 
 print("- Variadics and default values")
 
-func variadics(a: Int, b: Int..., c: Int = 0) { // gryphon ignore
+func variadics(a: Int, b: Int..., c: Int = 0) {
 	print(a, terminator: "")
 	for element in b {
 		print(element, terminator: "")
 	}
 	print(c)
 }
-
-// gryphon insert: fun variadics(a: Int, vararg b: Int, c: Int = 0) {
-// gryphon insert: 	print(a)
-// gryphon insert: 	for (element in b) {
-// gryphon insert: 		print(element)
-// gryphon insert: 	}
-// gryphon insert: 	println(c)
-// gryphon insert: }
 
 variadics(a: 1, b: 1, 2, 3, c: 1)
 variadics(a: 1, b: 1, 2, 3)

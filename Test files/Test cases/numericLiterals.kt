@@ -56,9 +56,24 @@ fun main(args: Array<String>) {
 	var k: Double = 0.0
 	var l: Double = 0.0
 	var m: Double = 12.1875
+	var n: Float = 12.1875f
 
 	m = 123.456
+	n = 123.456f
 	m = 1000000.0000001
+	n = 1000000.0f
 
-	var n: Int = 1000000
+	var o: Int = 1000000
+	var p: UInt = 1000000u
+
+	m = 1000000.0
+	n = 1000000.0f
+
+	var q: Int = 0x101
+
+	q = 0b101
+
+	var r: UInt = 0x101u
+
+	r = 0b101u
 }

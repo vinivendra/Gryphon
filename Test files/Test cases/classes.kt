@@ -90,11 +90,11 @@ internal data class D(
 		operator fun invoke(string: String?): D? {
 			string ?: return null
 			return when (string) {
-				"A" -> D(x = 0)
-				"B" -> D(x = 0)
-				"C" -> D(x = 0)
-				"D" -> D(x = 0)
-				"E" -> D(x = 0)
+				"A" -> D(0)
+				"B" -> D(0)
+				"C" -> D(0)
+				"D" -> D(0)
+				"E" -> D(0)
 				else -> null
 			}
 		}
@@ -132,6 +132,19 @@ internal open class SingleExpressionMembers {
 		eeeeeeeeeee: Int)
 		: Int
 		= bbbbbbbbbbbbbbbb * ccccccccccccc * ddddddddddddddddddddddddd * eeeeeeeeeee
+}
+
+internal open class Superclass {
+	open var x: Int = 0
+
+	constructor(x: Int) {
+		this.x = x
+	}
+}
+
+internal open class Subclass: Superclass {
+	constructor(y: Int): super(x = y + 1) {
+	}
 }
 
 internal open class G {
@@ -185,7 +198,7 @@ fun main(args: Array<String>) {
 
 	println(C().e())
 	println(C.f())
-	println(D(x = 10))
+	println(D(10))
 	println(D(string = "not supported"))
 	println(D(string = "A")!!)
 
