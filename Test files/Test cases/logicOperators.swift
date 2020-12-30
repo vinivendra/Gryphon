@@ -52,13 +52,16 @@ print("\(z)")
 
 //
 if x {
-	print("true") // Will get printed
+	// Will get printed
+	print("true")
 }
 
 if !x {
-	print("false") // Won't get printed
+	// Won't get printed
+	print("false")
 }
 
 if t && (!f) || f {
-	print("true") // Will get printed
+	// Will get printed
+	print("true")
 }

@@ -16,14 +16,13 @@
 // limitations under the License.
 //
 
-struct Box<T> { // gryphon ignore
+struct Box<T> {
 	let x: T
 }
 
-// gryphon insert: internal data class Box<T>(
-// gryphon insert: 	val x: T
-// gryphon insert: ) {
-// gryphon insert: }
+class Box2<T> {
+	let x: T? = nil
+}
 
 //// Instanciating generic classes
 let box = Box(x: 0)
@@ -42,6 +41,7 @@ func f2<T>(box: Box<T>) -> T {
 }
 
 // In extensions
+// gryphon generics: T
 extension Box {
 	func f3() { }
 

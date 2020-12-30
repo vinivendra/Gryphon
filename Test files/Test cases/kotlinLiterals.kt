@@ -65,16 +65,6 @@ internal fun insertFunction() {
 }
 
 internal open class InsertClass {
-	open var a: String = "class a"
-
-	open var b: String = "class b"
-
-	open var c: String = "class c"
-
-	open var d: String = "class d"
-
-	open var e: String = "class e"
-
 	open fun insertMethod() {
 		println("method 1")
 
@@ -86,6 +76,16 @@ internal open class InsertClass {
 
 		println("method 5")
 	}
+
+	open var a: String = "class a"
+
+	open var b: String = "class b"
+
+	open var c: String = "class c"
+
+	open var d: String = "class d"
+
+	open var e: String = "class e"
 }
 
 fun myOtherFunction(): String {

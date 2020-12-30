@@ -17,7 +17,10 @@
 //
 internal data class Box<T>(
 	val x: T
-) {
+)
+
+internal open class Box2<T> {
+	val x: T? = null
 }
 
 internal fun <T> f1(box: Box<T>) {
@@ -31,7 +34,7 @@ internal fun <T> f2(box: Box<T>): T {
 internal fun <T> Box<T>.f3() {
 }
 
-internal fun <T, U> Box<T>.f4(box: Box<U>) {
+internal fun <U, T> Box<T>.f4(box: Box<U>) {
 	println(this.x)
 	println(box.x)
 }
@@ -46,10 +49,10 @@ internal fun <Key> f(): Map<Key, String> {
 }
 
 fun main(args: Array<String>) {
-	val box: Box<Int> = Box(x = 0)
-	val box1: Box<Int> = Box(x = 0)
+	val box: Box<Int> = Box(0)
+	val box1: Box<Int> = Box(0)
 
-	f1(box = Box(x = 1))
-	println(f2(box = Box(x = 2)))
-	Box(x = 3).f4(box = Box(x = 4))
+	f1(Box(1))
+	println(f2(Box(2)))
+	Box(3).f4(Box(4))
 }

@@ -28,24 +28,15 @@ class SwiftSyntaxDecoderTest: XCTestCase {
 	// MARK: - Tests
 	func test() {
 		do {
-			let swiftVersion = try TranspilationContext.getVersionOfToolchain(nil)
-
 			Compiler.clearIssues()
 
 			let testName = "swiftSyntax"
 			let testCasePath = TestUtilities.testCasesPath + testName
-			let astDumpFilePath =
-				SupportingFile.pathOfSwiftASTDumpFile(
-					forSwiftFile: testCasePath,
-					swiftVersion: swiftVersion)
 			let gryphonAST = try Compiler.transpileGryphonRawASTs(
 				fromInputFiles: [testCasePath.withExtension(.swift)],
-				fromASTDumpFiles: [astDumpFilePath],
 				withContext: TranspilationContext(
-					toolchainName: nil,
 					indentationString: "\t",
 					defaultsToFinal: false,
-					isUsingSwiftSyntax: true,
 					compilationArguments: TranspilationContext.SwiftCompilationArguments(
 						absoluteFilePathsAndOtherArguments: [testCasePath.withExtension(.swift)]),
 					xcodeProjectPath: nil,

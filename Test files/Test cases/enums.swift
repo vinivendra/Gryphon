@@ -16,6 +16,9 @@
 // limitations under the License.
 //
 
+enum EmptyEnum {
+}
+
 enum CalculatorError: Error {
 	case invalidCharacter
 	case multipleCharacters
@@ -55,10 +58,12 @@ public enum MyEnum {
 	case baz
 }
 
-let a = MyEnum.fooBar // gryphon ignore
-let b = MyEnum.baz // gryphon ignore
-// gryphon insert: val a = MyEnum.FOO_BAR
-// gryphon insert: val b = MyEnum.BAZ
+// gryphon ignore
+let a = MyEnum.fooBar
+// gryphon ignore
+let b = MyEnum.baz
+// gryphon insertInMain: val a = MyEnum.FOO_BAR
+// gryphon insertInMain: val b = MyEnum.BAZ
 
 if a == MyEnum.fooBar {
 	print("MyEnum.FOO_BAR")
@@ -82,3 +87,35 @@ public class K {
 }
 
 let c = K.A.b(int: 0)
+
+// Test default rawValues
+enum E1: Int {
+	case a
+	case b
+}
+
+enum E2: String {
+	case a
+	case aB
+}
+
+print(E1.b.rawValue)
+print(E2.aB.rawValue)
+
+// Test manual rawValues
+enum E3: Int {
+	case a = 10
+	case b = 100
+	case c
+}
+
+enum E4: String {
+	case a = "aaA"
+	case aB = "B_A"
+	case c
+}
+
+print(E3.a.rawValue)
+print(E3.c.rawValue)
+print(E4.a.rawValue)
+print(E4.c.rawValue)

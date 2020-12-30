@@ -88,9 +88,10 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 	{
 		if let callExpression = expression as? CallExpression {
 			if let dotExpression = callExpression.function as? DotExpression,
-				let tupleExpression = callExpression.parameters as? TupleExpression,
-				tupleExpression.pairs.count == 2
+			   callExpression.arguments.pairs.count == 2
 			{
+				let arguments = callExpression.arguments
+
 				let isPure = callsArePure || callExpression.isPure
 
 				if let declarationExpression =
@@ -98,10 +99,10 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 				{
 					if declarationExpression.identifier == "call",
 						let parametersExpression =
-							tupleExpression.pairs[1].expression as? ArrayExpression
+							arguments.pairs[1].expression as? ArrayExpression
 					{
 						let function = processTemplateNodeExpression(
-							tupleExpression.pairs[0].expression,
+							arguments.pairs[0].expression,
 							callsArePure: isPure)
 						let parameters = parametersExpression.elements.map {
 								processTemplateParameter($0, callsArePure: isPure)
@@ -110,7 +111,7 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 							syntax: nil,
 							range: nil,
 							function: function,
-							parameters: TupleExpression(
+							arguments: TupleExpression(
 								syntax: nil,
 								range: nil,
 								pairs: parameters),
@@ -120,10 +121,10 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 					}
 					if declarationExpression.identifier == "dot",
 						let stringExpression =
-							tupleExpression.pairs[1].expression as? LiteralStringExpression
+							arguments.pairs[1].expression as? LiteralStringExpression
 					{
 						let left = processTemplateNodeExpression(
-							tupleExpression.pairs[0].expression,
+							arguments.pairs[0].expression,
 							callsArePure: isPure)
 						let right = LiteralCodeExpression(
 							syntax: nil,
@@ -189,17 +190,16 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 		}
 		else if let expression = expression as? CallExpression {
 			if let dotExpression = expression.function as? DotExpression,
-				let tupleExpression = expression.parameters as? TupleExpression,
-				tupleExpression.pairs.count == 2
+			   expression.arguments.pairs.count == 2
 			{
 				if let declarationExpression =
 						dotExpression.rightExpression as? DeclarationReferenceExpression,
 					declarationExpression.identifier == "labeledParameter",
 					let stringExpression =
-						tupleExpression.pairs[0].expression as? LiteralStringExpression
+						expression.arguments.pairs[0].expression as? LiteralStringExpression
 				{
 					let expression = processTemplateNodeExpression(
-						tupleExpression.pairs[1].expression,
+						expression.arguments.pairs[1].expression,
 						callsArePure: callsArePure)
 					return LabeledExpression(
 						label: stringExpression.value,
@@ -500,8 +500,7 @@ extension ReplaceTemplatesTranspilationPass {
 			let rhsPrefix = String(rhs.identifier.prefix { $0 != "(" })
 
 			return typeMatches &&
-				lhsPrefix == rhsPrefix &&
-				lhs.isImplicit == rhs.isImplicit
+				lhsPrefix == rhsPrefix
 		}
 		if let lhs = lhs as? OptionalExpression,
 			let rhs = rhs as? OptionalExpression
@@ -631,8 +630,8 @@ extension ReplaceTemplatesTranspilationPass {
 			}
 
 			return match(lhs.function, rhs.function, matches) &&
-				match(lhs.parameters,
-					rhs.parameters, matches,
+				match(lhs.arguments,
+					rhs.arguments, matches,
 					shouldMatchAutoclosures: usesAutoclosures) &&
 				typeMatches
 		}
@@ -723,34 +722,6 @@ extension ReplaceTemplatesTranspilationPass {
 			}
 			return result
 		}
-		if let lhs = lhs as? TupleShuffleExpression,
-			let rhs = rhs as? TupleShuffleExpression
-		{
-			var result = (lhs.labels == rhs.labels)
-
-			for (leftIndex, rightIndex) in zip(lhs.indices, rhs.indices) {
-				result = result && leftIndex == rightIndex
-			}
-
-			for (leftExpression, rightExpression) in zip(lhs.expressions, rhs.expressions) {
-				result = result &&
-					match(leftExpression, rightExpression, matches)
-			}
-
-			return result
-		}
-		if let lhs = lhs as? TupleExpression,
-			let rhs = rhs as? TupleShuffleExpression
-		{
-			let rhsAsTupleExpression = rhs.flattenToTupleExpression()
-			return match(lhs, rhsAsTupleExpression, matches)
-		}
-		if let lhs = lhs as? TupleShuffleExpression,
-			let rhs = rhs as? TupleExpression
-		{
-			let lhsAsTupleExpression = lhs.flattenToTupleExpression()
-			return match(lhsAsTupleExpression, rhs, matches)
-		}
 		if let lhs = lhs as? DeclarationReferenceExpression,
 			let rhs = rhs as? DotExpression
 		{
@@ -774,8 +745,7 @@ extension ReplaceTemplatesTranspilationPass {
 					range: nil,
 					identifier: "self",
 					typeName: parentType,
-					isStandardLibrary: false,
-					isImplicit: false)
+					isStandardLibrary: false)
 				return match(implicitSelfExpression, rhs.leftExpression, matches)
 			}
 			else {
@@ -810,8 +780,7 @@ extension ReplaceTemplatesTranspilationPass {
 	{
 		if let typeName = expression.typeName,
 			typeName.hasSuffix(".Type"),
-			expression.identifier == "self",
-			expression.isImplicit
+			expression.identifier == "self"
 		{
 			return true
 		}

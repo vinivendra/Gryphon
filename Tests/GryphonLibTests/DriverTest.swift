@@ -30,16 +30,6 @@ class DriverTest: XCTestCase {
 		("testIndentation", testIndentation),
 	]
 
-	override static func setUp() {
-		do {
-			try TestUtilities.updateASTsForTestCases()
-		}
-		catch let error {
-			print(error)
-			fatalError("Failed to update test files.")
-		}
-	}
-
 	// MARK: - Tests
 	func testOutputs() {
 		let oldOutputFunction = Compiler.outputFunction
@@ -86,69 +76,6 @@ class DriverTest: XCTestCase {
 							 "--write-to-console",
 							 "--quiet",
 							 "--continue-on-error", ])
-			XCTAssert(compilerOutput.isEmpty)
-			XCTAssert(!compilerError.isEmpty)
-		}
-		catch let error {
-			XCTFail("🚨 Test failed with error:\n\(error)")
-		}
-
-		Compiler.outputFunction = oldOutputFunction
-		Compiler.logError = oldErrorFunction
-	}
-
-	func testOutputsWithASTDumps() {
-		let oldOutputFunction = Compiler.outputFunction
-		let oldErrorFunction = Compiler.logError
-
-		var compilerOutput = ""
-		var compilerError = ""
-		Compiler.outputFunction = { (contents: Any, terminator: String) -> () in
-				compilerOutput += "\(contents)" + terminator
-			}
-		Compiler.logError = { (contents: Any) -> () in
-				compilerError += "\(contents)"
-			}
-
-		do {
-			try Driver.run(withArguments:
-							["\(TestUtilities.relativeTestFilesPath)/test.swift",
-							 "--legacyFrontend", ])
-			XCTAssert(!compilerOutput.isEmpty)
-
-			compilerOutput = ""
-			try Driver.run(withArguments:
-							["\(TestUtilities.testCasesPath)outputs.swift",
-							 "--legacyFrontend", ])
-			XCTAssert(compilerOutput.isEmpty)
-
-			compilerOutput = ""
-			try Driver.run(withArguments:
-							["\(TestUtilities.testCasesPath)outputs.swift",
-							 "--write-to-console",
-							 "--legacyFrontend", ])
-			XCTAssert(!compilerOutput.isEmpty)
-
-			// Check if --quiet mutes outputs and warnings
-			compilerOutput = ""
-			compilerError = ""
-			try Driver.run(withArguments:
-				["\(TestUtilities.testCasesPath)warnings.swift",
-				 "--write-to-console",
-				 "--quiet",
-				 "--legacyFrontend", ])
-			XCTAssert(compilerOutput.isEmpty)
-			XCTAssert(compilerError.isEmpty)
-
-			// Check if --quiet does not mute errors
-			compilerOutput = ""
-			compilerError = ""
-			try Driver.run(withArguments:
-							["\(TestUtilities.testCasesPath)errors.swift",
-							 "--write-to-console",
-							 "--quiet",
-							 "--continue-on-error",
-							 "--legacyFrontend", ])
 			XCTAssert(compilerOutput.isEmpty)
 			XCTAssert(!compilerError.isEmpty)
 		}
@@ -220,8 +147,7 @@ class DriverTest: XCTestCase {
 
 			//
 			let driverResult1 = try Driver.run(withArguments:
-				["-skip-AST-dumps",
-				 "-emit-kotlin",
+				["-emit-kotlin",
 				 "--indentation=t",
 				 "--write-to-console",
 				 "--quiet",
@@ -241,8 +167,7 @@ class DriverTest: XCTestCase {
 
 			//
 			let driverResult2 = try Driver.run(withArguments:
-				["-skip-AST-dumps",
-				 "-emit-kotlin",
+				["-emit-kotlin",
 				 "--indentation=t",
 				 "--no-main-file",
 				 "--write-to-console",
@@ -278,8 +203,7 @@ class DriverTest: XCTestCase {
 			Compiler.clearIssues()
 
 			_ = try Driver.run(withArguments:
-				["-skip-AST-dumps",
-				 "-emit-kotlin",
+				["-emit-kotlin",
 				 "--indentation=t",
 				 "--continue-on-error",
 				 "--write-to-console",
@@ -292,50 +216,11 @@ class DriverTest: XCTestCase {
 			Compiler.clearIssues()
 
 			_ = try Driver.run(withArguments:
-				["-skip-AST-dumps",
-				 "-emit-kotlin",
+				["-emit-kotlin",
 				 "--indentation=t",
 				 "--no-main-file",
 				 "--write-to-console",
 				 "--quiet",
-				 testCasePath, ])
-
-			XCTFail("Expected Driver to throw an error.")
-		}
-		catch {
-			// If the Driver threw an error then it's working correctly.
-		}
-
-		// Repeat the test using AST dumps
-		do {
-			let testCasePath = TestUtilities.testCasesPath + "errors.swift"
-
-			//
-			Compiler.clearIssues()
-
-			_ = try Driver.run(withArguments:
-				["-skip-AST-dumps",
-				 "-emit-kotlin",
-				 "--indentation=t",
-				 "--continue-on-error",
-				 "--write-to-console",
-				 "--quiet",
-				 "--legacyFrontend",
-				 testCasePath, ])
-
-			XCTAssert(Compiler.numberOfErrors == 1)
-
-			//
-			Compiler.clearIssues()
-
-			_ = try Driver.run(withArguments:
-				["-skip-AST-dumps",
-				 "-emit-kotlin",
-				 "--indentation=t",
-				 "--no-main-file",
-				 "--write-to-console",
-				 "--quiet",
-				 "--legacyFrontend",
 				 testCasePath, ])
 
 			XCTFail("Expected Driver to throw an error.")
@@ -353,8 +238,7 @@ class DriverTest: XCTestCase {
 
 			//
 			let driverResult1 = try Driver.run(withArguments:
-				["-skip-AST-dumps",
-				 "-emit-kotlin",
+				["-emit-kotlin",
 				 "--indentation=t",
 				 "--write-to-console",
 				 "--quiet",
@@ -375,8 +259,7 @@ class DriverTest: XCTestCase {
 
 			//
 			let driverResult2 = try Driver.run(withArguments:
-				["-skip-AST-dumps",
-				 "-emit-kotlin",
+				["-emit-kotlin",
 				 "--indentation=4",
 				 "--write-to-console",
 				 "--quiet",

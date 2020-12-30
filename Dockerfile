@@ -13,10 +13,10 @@ RUN apt-get install wget -y
 
 # Install Kotlin 1.3.61
 
-### From https://hub.docker.com/r/jujhars13/docker-kotlin/~/dockerfile/
-ENV VERSION 1.3.61
-ENV KOTLIN_URL https://github.com/JetBrains/kotlin/releases/download/v${VERSION}/kotlin-compiler-${VERSION}.zip
-RUN wget ${KOTLIN_URL} -O /tmp/kotlin.zip && \
+### Inspired by https://hub.docker.com/r/jujhars13/docker-kotlin/~/dockerfile/
+### and https://stackoverflow.com/questions/24085978/github-url-for-latest-release-of-the-download-file
+
+RUN wget $(curl -s https://api.github.com/repos/JetBrains/kotlin/releases/latest | grep 'browser_download_url' | grep 'compiler' | cut -d\" -f4) -O /tmp/kotlin.zip && \
     unzip /tmp/kotlin.zip -d /opt && \
     rm /tmp/kotlin.zip
 ENV PATH $PATH:/opt/kotlinc/bin

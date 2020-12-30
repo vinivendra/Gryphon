@@ -16,7 +16,7 @@ fi
 
 cd "Test Files/Bootstrap/gryphon-old"
 git checkout bootstrap
-git pull
+git pull --ff-only
 cd ../../..
 
 set +e
@@ -93,8 +93,6 @@ echo "➡️ [7/7] Comparing Gryphon (old) with Gryphon (old) transpiled..."
 for file in Test\ cases/*.swift
 do
 	if [[ $file == *"errors.swift" ]]; then
-		echo "	↪️ Skipping $file..."
-	elif [[ $file == *"-swiftSyntax"* ]]; then
 		echo "	↪️ Skipping $file..."
 	else
 		echo "	↪️ Testing $file..."

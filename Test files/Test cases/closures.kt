@@ -47,6 +47,9 @@ internal fun f3(closure: () -> Unit) {
 internal fun f4(closure: () -> Unit) {
 }
 
+internal fun f5(bar: (Int, Int) -> Boolean) {
+}
+
 internal fun bar(closure: () -> Int) {
 }
 
@@ -92,7 +95,10 @@ fun main(args: Array<String>) {
 
 	multiLineClosure(10)
 	multiLineClosure(20)
-	f({ 0 }, a = 0)
+
+	val tupleClosure: (Pair<Int, Int>) -> Unit = { }
+
+	f(closure = { 0 }, a = 0)
 	g(closure = { 0 }, c = 0)
 	f1 { 0 }
 	f2(a = 0) { 0 }
@@ -100,6 +106,7 @@ fun main(args: Array<String>) {
 	g2(closure = { 0 })
 	f3 { }
 	f4 { }
+	f5 { a, b -> true }
 	bar {
 			if (true) {
 				return@bar 1

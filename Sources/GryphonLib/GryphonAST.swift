@@ -84,7 +84,6 @@ extension PrintableTree {
 /// Necessary changes when adding a new statement:
 /// - GryphonAST's `Statement.==`
 /// - `TranspilationPass.replaceStatement`
-/// - `SwiftTranslator.translateStatement`
 /// - `KotlinTranslator.translateSubtree`
 /// - LibraryTranspilationPass's `Expression.matches`
 public /*abstract*/ class Statement: PrintableAsTree, Equatable, CustomStringConvertible {
@@ -108,6 +107,9 @@ public /*abstract*/ class Statement: PrintableAsTree, Equatable, CustomStringCon
 	}
 
 	public static func == (lhs: Statement, rhs: Statement) -> Bool {
+		if let lhs = lhs as? VariableDeclaration, let rhs = rhs as? VariableDeclaration {
+			return lhs == rhs
+		}
 		if let lhs = lhs as? CommentStatement, let rhs = rhs as? CommentStatement {
 			return lhs == rhs
 		}
@@ -142,9 +144,6 @@ public /*abstract*/ class Statement: PrintableAsTree, Equatable, CustomStringCon
 			return lhs == rhs
 		}
 		if let lhs = lhs as? InitializerDeclaration, let rhs = rhs as? InitializerDeclaration {
-			return lhs == rhs
-		}
-		if let lhs = lhs as? VariableDeclaration, let rhs = rhs as? VariableDeclaration {
 			return lhs == rhs
 		}
 		if let lhs = lhs as? DoStatement, let rhs = rhs as? DoStatement {
@@ -236,19 +235,16 @@ public class TypealiasDeclaration: Statement {
 	let identifier: String
 	let typeName: String
 	let access: String?
-	let isImplicit: Bool
 
 	init(
 		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		identifier: String,
 		typeName: String,
-		access: String?,
-		isImplicit: Bool)
+		access: String?)
 	{
 		self.identifier = identifier
 		self.typeName = typeName
-		self.isImplicit = isImplicit
 		self.access = access
 		super.init(
 			syntax: syntax,
@@ -258,7 +254,6 @@ public class TypealiasDeclaration: Statement {
 
 	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
-			isImplicit ? PrintableTree("implicit") : nil,
 			PrintableTree("identifier: \(identifier)"),
 			PrintableTree("typeName: \(typeName)"),
 			PrintableTree.initOrNil(access), ]
@@ -267,8 +262,7 @@ public class TypealiasDeclaration: Statement {
 	public static func == (lhs: TypealiasDeclaration, rhs: TypealiasDeclaration) -> Bool {
 		return lhs.identifier == rhs.identifier &&
 			lhs.typeName == rhs.typeName &&
-			lhs.access == rhs.access &&
-			lhs.isImplicit == rhs.isImplicit
+			lhs.access == rhs.access
 	}
 }
 
@@ -407,7 +401,6 @@ public class EnumDeclaration: Statement {
 	let inherits: MutableList<String>
 	let elements: MutableList<EnumElement>
 	let members: MutableList<Statement>
-	let isImplicit: Bool
 
 	init(
 		syntax: Syntax? = nil,
@@ -417,8 +410,7 @@ public class EnumDeclaration: Statement {
 		annotations: MutableList<String>,
 		inherits: MutableList<String>,
 		elements: MutableList<EnumElement>,
-		members: MutableList<Statement>,
-		isImplicit: Bool)
+		members: MutableList<Statement>)
 	{
 		self.access = access
 		self.enumName = enumName
@@ -426,7 +418,6 @@ public class EnumDeclaration: Statement {
 		self.inherits = inherits
 		self.elements = elements
 		self.members = members
-		self.isImplicit = isImplicit
 		super.init(
 			syntax: syntax,
 			range: range,
@@ -444,7 +435,6 @@ public class EnumDeclaration: Statement {
 			PrintableTree.ofStrings("inherits", inherits),
 			PrintableTree("elements", elementTrees),
 			PrintableTree.ofStatements("members", members),
-			isImplicit ? PrintableTree("implicit") : nil,
 		]
 	}
 
@@ -454,8 +444,7 @@ public class EnumDeclaration: Statement {
 			lhs.annotations == rhs.annotations &&
 			lhs.inherits == rhs.inherits &&
 			lhs.elements == rhs.elements &&
-			lhs.members == rhs.members &&
-			lhs.isImplicit == rhs.isImplicit
+			lhs.members == rhs.members
 	}
 }
 
@@ -554,7 +543,6 @@ public class FunctionDeclaration: Statement {
 	var functionType: String
 	var genericTypes: MutableList<String>
 	var isOpen: Bool
-	var isImplicit: Bool
 	var isStatic: Bool
 	var isMutating: Bool
 	var isPure: Bool
@@ -573,7 +561,6 @@ public class FunctionDeclaration: Statement {
 		functionType: String,
 		genericTypes: MutableList<String>,
 		isOpen: Bool,
-		isImplicit: Bool,
 		isStatic: Bool,
 		isMutating: Bool,
 		isPure: Bool,
@@ -590,7 +577,6 @@ public class FunctionDeclaration: Statement {
 		self.functionType = functionType
 		self.genericTypes = genericTypes
 		self.isOpen = isOpen
-		self.isImplicit = isImplicit
 		self.isStatic = isStatic
 		self.isMutating = isMutating
 		self.isPure = isPure
@@ -619,7 +605,6 @@ public class FunctionDeclaration: Statement {
 		return [
 			extendsType.map { PrintableTree("extends type \($0)") },
 			PrintableTree("open: \(isOpen)"),
-			isImplicit ? PrintableTree("implicit") : nil,
 			isPure ? PrintableTree("pure") : nil,
 			isStatic ? PrintableTree("static") : nil,
 			isMutating ? PrintableTree("mutating") : nil,
@@ -641,7 +626,6 @@ public class FunctionDeclaration: Statement {
 			lhs.functionType == rhs.functionType &&
 			lhs.genericTypes == rhs.genericTypes &&
 			lhs.isOpen == rhs.isOpen &&
-			lhs.isImplicit == rhs.isImplicit &&
 			lhs.isStatic == rhs.isStatic &&
 			lhs.isMutating == rhs.isMutating &&
 			lhs.isPure == rhs.isPure &&
@@ -664,7 +648,6 @@ public class InitializerDeclaration: FunctionDeclaration {
 		functionType: String,
 		genericTypes: MutableList<String>,
 		isOpen: Bool,
-		isImplicit: Bool,
 		isStatic: Bool,
 		isMutating: Bool,
 		isPure: Bool,
@@ -687,7 +670,6 @@ public class InitializerDeclaration: FunctionDeclaration {
 			functionType: functionType,
 			genericTypes: genericTypes,
 			isOpen: isOpen,
-			isImplicit: isImplicit,
 			isStatic: isStatic,
 			isMutating: isMutating,
 			isPure: isPure,
@@ -713,7 +695,6 @@ public class InitializerDeclaration: FunctionDeclaration {
 			lhs.returnType == rhs.returnType &&
 			lhs.functionType == rhs.functionType &&
 			lhs.genericTypes == rhs.genericTypes &&
-			lhs.isImplicit == rhs.isImplicit &&
 			lhs.isStatic == rhs.isStatic &&
 			lhs.isMutating == rhs.isMutating &&
 			lhs.isPure == rhs.isPure &&
@@ -739,7 +720,6 @@ public class VariableDeclaration: Statement {
 	var access: String?
 	var isOpen: Bool
 	var isLet: Bool
-	var isImplicit: Bool
 	var isStatic: Bool
 	var extendsType: String?
 	var annotations: MutableList<String>
@@ -755,7 +735,6 @@ public class VariableDeclaration: Statement {
 		access: String?,
 		isOpen: Bool,
 		isLet: Bool,
-		isImplicit: Bool,
 		isStatic: Bool,
 		extendsType: String?,
 		annotations: MutableList<String>)
@@ -768,7 +747,6 @@ public class VariableDeclaration: Statement {
 		self.access = access
 		self.isOpen = isOpen
 		self.isLet = isLet
-		self.isImplicit = isImplicit
 		self.isStatic = isStatic
 		self.extendsType = extendsType
 		self.annotations = annotations
@@ -782,7 +760,6 @@ public class VariableDeclaration: Statement {
 		return [
 			PrintableTree.initOrNil(
 				"extendsType", [PrintableTree.initOrNil(extendsType)]),
-			isImplicit ? PrintableTree("implicit") : nil,
 			isStatic ? PrintableTree("static") : nil,
 			isLet ? PrintableTree("let") : PrintableTree("var"),
 			PrintableTree(identifier),
@@ -809,7 +786,6 @@ public class VariableDeclaration: Statement {
 			lhs.access == rhs.access &&
 			lhs.isOpen == rhs.isOpen &&
 			lhs.isLet == rhs.isLet &&
-			lhs.isImplicit == rhs.isImplicit &&
 			lhs.isStatic == rhs.isStatic &&
 			lhs.extendsType == rhs.extendsType &&
 			lhs.annotations == rhs.annotations
@@ -1231,7 +1207,6 @@ extension PrintableTree {
 /// Necessary changes when adding a new expression:
 /// - GryphonAST's `Expression.==`
 /// - `KotlinTranslator.translateExpression`
-/// - `SwiftTranslator.translateExpression`
 /// - `TranspilationPass.replaceExpression`
 /// - LibraryTranspilationPass's `Expression.matches`
 public /*abstract*/ class Expression: PrintableAsTree, Equatable, CustomStringConvertible {
@@ -1264,6 +1239,61 @@ public /*abstract*/ class Expression: PrintableAsTree, Equatable, CustomStringCo
 	}
 
 	public static func == (lhs: Expression, rhs: Expression) -> Bool {
+		if let lhs = lhs as? DeclarationReferenceExpression,
+		   let rhs = rhs as? DeclarationReferenceExpression
+		{
+			return lhs == rhs
+		}
+		if let lhs = lhs as? LiteralIntExpression,
+		   let rhs = rhs as? LiteralIntExpression
+		{
+			return lhs == rhs
+		}
+		if let lhs = lhs as? LiteralUIntExpression,
+		   let rhs = rhs as? LiteralUIntExpression
+		{
+			return lhs == rhs
+		}
+		if let lhs = lhs as? LiteralDoubleExpression,
+		   let rhs = rhs as? LiteralDoubleExpression
+		{
+			return lhs == rhs
+		}
+		if let lhs = lhs as? LiteralFloatExpression,
+		   let rhs = rhs as? LiteralFloatExpression
+		{
+			return lhs == rhs
+		}
+		if let lhs = lhs as? LiteralBoolExpression,
+		   let rhs = rhs as? LiteralBoolExpression
+		{
+			return lhs == rhs
+		}
+		if let lhs = lhs as? LiteralStringExpression,
+		   let rhs = rhs as? LiteralStringExpression
+		{
+			return lhs == rhs
+		}
+		if let lhs = lhs as? LiteralCharacterExpression,
+		   let rhs = rhs as? LiteralCharacterExpression
+		{
+			return lhs == rhs
+		}
+		if let lhs = lhs as? ClosureExpression,
+		   let rhs = rhs as? ClosureExpression
+		{
+			return lhs == rhs
+		}
+		if let lhs = lhs as? TypeExpression,
+		   let rhs = rhs as? TypeExpression
+		{
+			return lhs == rhs
+		}
+		if let lhs = lhs as? BinaryOperatorExpression,
+		   let rhs = rhs as? BinaryOperatorExpression
+		{
+			return lhs == rhs
+		}
 		if let lhs = lhs as? LiteralCodeExpression,
 			let rhs = rhs as? LiteralCodeExpression
 		{
@@ -1286,16 +1316,6 @@ public /*abstract*/ class Expression: PrintableAsTree, Equatable, CustomStringCo
 		}
 		if let lhs = lhs as? OptionalExpression,
 			let rhs = rhs as? OptionalExpression
-		{
-			return lhs == rhs
-		}
-		if let lhs = lhs as? DeclarationReferenceExpression,
-			let rhs = rhs as? DeclarationReferenceExpression
-		{
-			return lhs == rhs
-		}
-		if let lhs = lhs as? TypeExpression,
-			let rhs = rhs as? TypeExpression
 		{
 			return lhs == rhs
 		}
@@ -1324,11 +1344,6 @@ public /*abstract*/ class Expression: PrintableAsTree, Equatable, CustomStringCo
 		{
 			return lhs == rhs
 		}
-		if let lhs = lhs as? BinaryOperatorExpression,
-			let rhs = rhs as? BinaryOperatorExpression
-		{
-			return lhs == rhs
-		}
 		if let lhs = lhs as? PrefixUnaryExpression,
 			let rhs = rhs as? PrefixUnaryExpression
 		{
@@ -1349,46 +1364,6 @@ public /*abstract*/ class Expression: PrintableAsTree, Equatable, CustomStringCo
 		{
 			return lhs == rhs
 		}
-		if let lhs = lhs as? ClosureExpression,
-			let rhs = rhs as? ClosureExpression
-		{
-			return lhs == rhs
-		}
-		if let lhs = lhs as? LiteralIntExpression,
-			let rhs = rhs as? LiteralIntExpression
-		{
-			return lhs == rhs
-		}
-		if let lhs = lhs as? LiteralUIntExpression,
-			let rhs = rhs as? LiteralUIntExpression
-		{
-			return lhs == rhs
-		}
-		if let lhs = lhs as? LiteralDoubleExpression,
-			let rhs = rhs as? LiteralDoubleExpression
-		{
-			return lhs == rhs
-		}
-		if let lhs = lhs as? LiteralFloatExpression,
-			let rhs = rhs as? LiteralFloatExpression
-		{
-			return lhs == rhs
-		}
-		if let lhs = lhs as? LiteralBoolExpression,
-			let rhs = rhs as? LiteralBoolExpression
-		{
-			return lhs == rhs
-		}
-		if let lhs = lhs as? LiteralStringExpression,
-			let rhs = rhs as? LiteralStringExpression
-		{
-			return lhs == rhs
-		}
-		if let lhs = lhs as? LiteralCharacterExpression,
-			let rhs = rhs as? LiteralCharacterExpression
-		{
-			return lhs == rhs
-		}
 		if lhs is NilLiteralExpression,
 			rhs is NilLiteralExpression
 		{
@@ -1401,11 +1376,6 @@ public /*abstract*/ class Expression: PrintableAsTree, Equatable, CustomStringCo
 		}
 		if let lhs = lhs as? TupleExpression,
 			let rhs = rhs as? TupleExpression
-		{
-			return lhs == rhs
-		}
-		if let lhs = lhs as? TupleShuffleExpression,
-			let rhs = rhs as? TupleShuffleExpression
 		{
 			return lhs == rhs
 		}
@@ -1611,20 +1581,17 @@ public class DeclarationReferenceExpression: Expression {
 	var identifier: String
 	var typeName: String?
 	var isStandardLibrary: Bool
-	var isImplicit: Bool
 
 	init(
 		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		identifier: String,
 		typeName: String?,
-		isStandardLibrary: Bool,
-		isImplicit: Bool)
+		isStandardLibrary: Bool)
 	{
 		self.identifier = identifier
 		self.typeName = typeName
 		self.isStandardLibrary = isStandardLibrary
-		self.isImplicit = isImplicit
 		super.init(
 			syntax: syntax,
 			range: range,
@@ -1636,8 +1603,7 @@ public class DeclarationReferenceExpression: Expression {
 			PrintableTree.initOrNil(
 				"type", [PrintableTree.initOrNil(typeName)]),
 			PrintableTree(identifier),
-			isStandardLibrary ? PrintableTree("isStandardLibrary") : nil,
-			isImplicit ? PrintableTree("implicit") : nil, ]
+			isStandardLibrary ? PrintableTree("isStandardLibrary") : nil, ]
 	}
 
 	override var swiftType: String? {
@@ -1658,8 +1624,7 @@ public class DeclarationReferenceExpression: Expression {
 	{
 		return lhs.identifier == rhs.identifier &&
 			lhs.typeName == rhs.typeName &&
-			lhs.isStandardLibrary == rhs.isStandardLibrary &&
-			lhs.isImplicit == rhs.isImplicit
+			lhs.isStandardLibrary == rhs.isStandardLibrary
 	}
 }
 
@@ -2165,7 +2130,7 @@ public class IfExpression: Expression {
 
 public class CallExpression: Expression {
 	var function: Expression
-	var parameters: Expression
+	var arguments: TupleExpression
 	var typeName: String?
 	/// If this function call can be written with a trailing closure in Kotlin (it can't in some
 	/// instances of calls with variadics and default arguments). This gets decided in a
@@ -2178,13 +2143,13 @@ public class CallExpression: Expression {
 		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		function: Expression,
-		parameters: Expression,
+		arguments: TupleExpression,
 		typeName: String?,
 		allowsTrailingClosure: Bool,
 		isPure: Bool)
 	{
 		self.function = function
-		self.parameters = parameters
+		self.arguments = arguments
 		self.typeName = typeName
 		self.allowsTrailingClosure = allowsTrailingClosure
 		self.isPure = isPure
@@ -2193,14 +2158,14 @@ public class CallExpression: Expression {
 			range: range,
 			name: "CallExpression".capitalizedAsCamelCase())
 		function.parent = self
-		parameters.parent = self
+		arguments.parent = self
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
 			PrintableTree.initOrNil("type", [PrintableTree.initOrNil(typeName)]),
 			PrintableTree.ofExpressions("function", [function]),
-			PrintableTree.ofExpressions("parameters", [parameters]),
+			PrintableTree.ofExpressions("arguments", [arguments]),
 			allowsTrailingClosure ? PrintableTree("allowsTrailingClosure") : nil,
 			isPure ? PrintableTree("isPure") : nil, ]
 	}
@@ -2222,7 +2187,7 @@ public class CallExpression: Expression {
 		-> Bool
 	{
 		return lhs.function == rhs.function &&
-			lhs.parameters == rhs.parameters &&
+			lhs.arguments == rhs.arguments &&
 			lhs.typeName == rhs.typeName &&
 			lhs.allowsTrailingClosure == rhs.allowsTrailingClosure &&
 			lhs.isPure == rhs.isPure
@@ -2592,112 +2557,6 @@ public class TupleExpression: Expression {
 
 	public static func == (lhs: TupleExpression, rhs: TupleExpression) -> Bool {
 		return lhs.pairs == rhs.pairs
-	}
-}
-
-public class TupleShuffleExpression: Expression {
-	let labels: MutableList<String?>
-	let indices: MutableList<TupleShuffleIndex>
-	let expressions: MutableList<Expression>
-
-	init(
-		syntax: Syntax? = nil,
-		range: SourceFileRange?,
-		labels: MutableList<String?>,
-		indices: MutableList<TupleShuffleIndex>,
-		expressions: MutableList<Expression>)
-	{
-		self.labels = labels
-		self.indices = indices
-		self.expressions = expressions
-		super.init(
-			syntax: syntax,
-			range: range,
-			name: "TupleShuffleExpression".capitalizedAsCamelCase())
-		for expression in expressions {
-			expression.parent = self
-		}
-	}
-
-	override public var printableSubtrees: List<PrintableAsTree?> {
-		let labelStrings = labels.map { ($0 ?? "_") + ":" }
-		return [
-			PrintableTree.ofStrings("labels", labelStrings),
-			PrintableTree.ofStrings("indices", indices.map { $0.description }),
-			PrintableTree.ofExpressions("expressions", expressions), ]
-	}
-
-	public static func == (lhs: TupleShuffleExpression, rhs: TupleShuffleExpression) -> Bool {
-		return lhs.labels == rhs.labels &&
-			lhs.indices == rhs.indices &&
-			lhs.expressions == rhs.expressions
-	}
-
-	override var swiftType: String? {
-		get {
-			return self.flattenToTupleExpression().swiftType
-		}
-		set { }
-	}
-
-	/// Check if this TupleShuffleExpression can be flattened into a TupleExpression without losing
-	/// information about absent or variadic parameters
-	var canBeFlattenedLosslessly: Bool {
-		for index in self.indices {
-			switch index {
-			case .absent:
-				return false
-			case .present:
-				break
-			case .variadic:
-				return false
-			}
-		}
-
-		return true
-	}
-
-	/// Turns this TupleShuffleExpression into a TupleExpression, ignoring absent parameters and
-	/// flattening variadics.
-	public func flattenToTupleExpression() -> TupleExpression {
-		let resultPairs: MutableList<LabeledExpression> = []
-
-		var expressionIndex = 0
-
-		// Variadic arguments can't be named, which means all arguments before them can't be named
-		// either.
-		let containsVariadics = self.indices.contains { $0.isVariadic }
-		var isBeforeVariadic = containsVariadics
-
-		for (label, index) in zip(self.labels, self.indices) {
-			switch index {
-			case .absent:
-				break
-			case .present:
-				let expression = self.expressions[expressionIndex]
-
-				let resultLabel: String?
-				if !isBeforeVariadic, let label = label {
-					resultLabel = label
-				}
-				else {
-					resultLabel = nil
-				}
-
-				resultPairs.append(LabeledExpression(label: resultLabel, expression: expression))
-
-				expressionIndex += 1
-			case let .variadic(count: variadicCount):
-				isBeforeVariadic = false
-				for _ in 0..<variadicCount {
-					let expression = self.expressions[expressionIndex]
-					resultPairs.append(LabeledExpression(label: nil, expression: expression))
-					expressionIndex += 1
-				}
-			}
-		}
-
-		return TupleExpression(syntax: syntax, range: self.range, pairs: resultPairs)
 	}
 }
 

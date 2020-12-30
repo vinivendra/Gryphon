@@ -66,18 +66,18 @@ internal fun f() {
 }
 
 fun main(args: Array<String>) {
-	printNumberName(0)
-	printNumberName(1)
-	printNumberName(2)
-	printNumberName(3)
-	printNumberName(4)
-	printNumberName(7)
-	printNumberName(10)
-	println(getNumberName(0))
-	println(getNumberName(1))
-	println(getNumberName(2))
-	println(getNumberName(3))
-	println(getNumberName(4))
+	printNumberName(x = 0)
+	printNumberName(x = 1)
+	printNumberName(x = 2)
+	printNumberName(x = 3)
+	printNumberName(x = 4)
+	printNumberName(x = 7)
+	printNumberName(x = 10)
+	println(getNumberName(x = 0))
+	println(getNumberName(x = 1))
+	println(getNumberName(x = 2))
+	println(getNumberName(x = 3))
+	println(getNumberName(x = 4))
 
 	var y: Int = 0
 

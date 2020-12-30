@@ -22,6 +22,8 @@ let y = "The string above is \(x)"
 let z = 0
 let w = "Here's another interpolated string: \(x), \(y) and \(z)"
 
+let emptyString = ""
+
 let escapedString = "A string with \"escaped double quotes\" \\ and escaped backslashes\n\t and some escaped characters too."
 
 let singleInterpolation = "\(x)"
@@ -31,13 +33,12 @@ print(x)
 print(y)
 print(z)
 print(w)
+print(emptyString)
 print(escapedString)
 print(singleInterpolation)
 print(interpolationWithDoubleQuotes)
 
 // Multiline
-
-// gryphon multiline
 let multilineString1 = """
 
 This is a multiline string.
@@ -45,13 +46,11 @@ It has many lines.
 
 """
 
-// gryphon multiline
 let multilineString2 = """
 This multiline string has less whitespace.
 It still has many lines.
 """
 
-// gryphon multiline
 let multilineString3 = """
 
 		This multiline string has indentation.
@@ -59,8 +58,11 @@ let multilineString3 = """
 
 """
 
+let multilineInterpolation = """
+\(x)
+"""
+
 func f() {
-	// gryphon multiline
 	let multilineString = """
 
 		This multiline string has nested indentation.

@@ -26,7 +26,6 @@ class UtilitiesTest: XCTestCase {
 		("testFileExtension", testFileExtension),
 		("testChangeExtension", testChangeExtension),
 		("testGetExtension", testGetExtension),
-		("testPathOfSwiftASTDumpFile", testPathOfSwiftASTDumpFile),
 		("testPathOfKotlinErrorMapFile", testPathOfKotlinErrorMapFile),
 		("testGetRelativePath", testGetRelativePath),
 		("testSplitTypeList", testSplitTypeList),
@@ -65,8 +64,8 @@ class UtilitiesTest: XCTestCase {
 	}
 
 	func testFileExtension() {
-		XCTAssertEqual(FileExtension.swiftASTDump.rawValue, "swiftASTDump")
-		XCTAssertEqual("fileName".withExtension(.swiftASTDump), "fileName.swiftASTDump")
+		XCTAssertEqual(FileExtension.swiftAST.rawValue, "swiftAST")
+		XCTAssertEqual("fileName".withExtension(.swiftAST), "fileName.swiftAST")
 	}
 
 	func testChangeExtension() {
@@ -91,26 +90,6 @@ class UtilitiesTest: XCTestCase {
         XCTAssertEqual(Utilities.getExtension(of: "path/to/test.output"), .output)
         XCTAssertEqual(Utilities.getExtension(of: "test.swift"), .swift)
         XCTAssertEqual(Utilities.getExtension(of: "/path/to/test.kt"), .kt)
-    }
-
-    func testPathOfSwiftASTDumpFile() {
-		for swiftVersion in TranspilationContext.supportedSwiftVersions {
-			XCTAssertEqual(
-				SupportingFile.pathOfSwiftASTDumpFile(
-					forSwiftFile: "src/path/to/file.swift",
-					swiftVersion: swiftVersion),
-				".gryphon/ASTDumps-Swift-\(swiftVersion)/src/path/to/file.swiftASTDump")
-			XCTAssertEqual(
-				SupportingFile.pathOfSwiftASTDumpFile(
-					forSwiftFile: "folder/file.swift",
-					swiftVersion: swiftVersion),
-				".gryphon/ASTDumps-Swift-\(swiftVersion)/folder/file.swiftASTDump")
-			XCTAssertEqual(
-				SupportingFile.pathOfSwiftASTDumpFile(
-					forSwiftFile: "file.swift",
-					swiftVersion: swiftVersion),
-				".gryphon/ASTDumps-Swift-\(swiftVersion)/file.swiftASTDump")
-		}
     }
 
     func testPathOfKotlinErrorMapFile() {
@@ -205,7 +184,7 @@ class UtilitiesTest: XCTestCase {
             inDirectory: "Sources/GryphonLib",
             withExtension: .swift)
         let someSwiftFiles = Utilities.getFiles(
-            ["Utilities", "SharedUtilities"],
+            ["Utilities", "Compiler"],
             inDirectory: "Sources/GryphonLib",
             withExtension: .swift)
         let kotlinFiles = Utilities.getFiles(
@@ -213,11 +192,11 @@ class UtilitiesTest: XCTestCase {
             withExtension: .kt)
 
         XCTAssert(allSwiftFiles.contains { $0.hasSuffix("/Utilities.swift") })
-        XCTAssert(allSwiftFiles.contains { $0.hasSuffix("/SharedUtilities.swift") })
+        XCTAssert(allSwiftFiles.contains { $0.hasSuffix("/Compiler.swift") })
         XCTAssert(allSwiftFiles.contains { $0.hasSuffix("/TranspilationPass.swift") })
 
         XCTAssert(someSwiftFiles.contains { $0.hasSuffix("/Utilities.swift") })
-        XCTAssert(someSwiftFiles.contains { $0.hasSuffix("/SharedUtilities.swift") })
+        XCTAssert(someSwiftFiles.contains { $0.hasSuffix("/Compiler.swift") })
         XCTAssert(someSwiftFiles.count == 2)
 
         XCTAssert(kotlinFiles.isEmpty)

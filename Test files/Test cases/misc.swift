@@ -27,6 +27,9 @@ while i <= 10 {
 	i += 1
 }
 
+// While with multiple conditions
+while true, false { }
+
 // Typealias
 typealias A = Int
 
@@ -40,7 +43,8 @@ class B {
 typealias BC = B.C
 
 // Typealias with generics
-class List<T> { } // gryphon ignore
+// gryphon ignore
+class List<T> { }
 
 typealias ListInt = List<Int>
 
@@ -103,6 +107,9 @@ let arrayOfInts1: Array = [1, 2, 3]
 // Test Array<Whatever>
 let arrayOfInts2: Array<Int> = [1, 2, 3]
 
+// Test Dictionary<Whatever, Whatever>
+let dictionaryOfInts: Dictionary<Int, Int> = [1: 2]
+
 // Test Array<Whatever>.Index
 let array = [1, 2, 3]
 let arrayIndex = array.firstIndex(of: 1)
@@ -112,7 +119,8 @@ let bla: Array<Int>.ArrayLiteralElement = 1
 
 // Test Array literals
 // (SourceKit says some literals are `() -> Array`, not `Array`)
-public class MutableList<Element>: ExpressibleByArrayLiteral { // gryphon ignore
+// gryphon ignore
+public class MutableList<Element>: ExpressibleByArrayLiteral {
 	public required init(arrayLiteral elements: Element...) { }
 }
 
@@ -140,7 +148,6 @@ class H {
 }
 
 // No mistaking the `K` in `I.K` with the `K` in `J.K`
-// Also a regression test: no implicit `self` in `J.K().description`
 class I {
 	class K: CustomStringConvertible {
 		var description = ""
@@ -191,6 +198,27 @@ catch {
 	throw MyError(errorMessage: "")
 }
 
+// #if's
+#if GRYPHON
+func gryphon1() { }
+#else
+func notGryphon1() { }
+#endif
+
+#if !GRYPHON
+func notGryphon2() { }
+#else
+func gryphon2() { }
+#endif
+
+#if GRYPHON
+#else
+#endif
+
+#if !GRYPHON
+#else
+#endif
+
 // Defer
 func g() {
 	defer {
@@ -223,3 +251,19 @@ print(z.0.0)
 
 let dictionary = [1: 10, 2: 20]
 let mappedDictionary = dictionary.map { $0.0 + $0.1 }
+
+// Optional chains
+class N {
+	let o = 0
+}
+
+class M {
+	let n = N()
+}
+
+class L {
+	let m = M()
+}
+
+let l: L? = L()
+print(l?.m.n.o)

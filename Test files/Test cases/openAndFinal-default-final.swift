@@ -23,11 +23,15 @@ class A {
 	func b1() { }
 
 	// Overriding with annotations
-	var a2 = 0 // gryphon annotation: open
-	func b2() { } // gryphon annotation: open
+	// gryphon annotation: open
+	var a2 = 0
+	// gryphon annotation: open
+	func b2() { }
 
-	var a3 = 0 // gryphon annotation: final
-	func b3() { } // gryphon annotation: final
+	// gryphon annotation: final
+	var a3 = 0
+	// gryphon annotation: final
+	func b3() { }
 
 	// Swift annotations
 	open var a4 = 0
@@ -46,6 +50,15 @@ class A {
 
 	// Let declarations can't be open
 	let a8 = 0
+
+	// Subscripts
+	open subscript(i: Int) -> Int {
+		return i
+	}
+
+	final subscript(j: String) -> String {
+		return j
+	}
 }
 
 // Test classes
@@ -54,11 +67,16 @@ class A {
 class A1 { }
 
 // Overriding with annotations
-class A2 { } // gryphon annotation: open
-class A3 { } // gryphon annotation: final
+// gryphon annotation: open
+class A2 { }
+// gryphon annotation: final
+class A3 { }
 
 // Private declarations can't be open
 private class A4 { }
+
+// Explicitly open
+open class A5 { }
 
 // Test value types
 struct B {
@@ -67,8 +85,10 @@ struct B {
 	func b1() { }
 
 	// Override with annotations
-	let a2 = 0 // gryphon annotation: open
-	func b2() { } // gryphon annotation: open
+	// gryphon annotation: open
+	let a2 = 0
+	// gryphon annotation: open
+	func b2() { }
 
 	// Test static declarations
 	static var a3 = 0
@@ -80,7 +100,8 @@ enum C {
 	func b1() { }
 
 	// Override with annotations
-	func b2() { } // gryphon annotation: open
+	// gryphon annotation: open
+	func b2() { }
 
 	// Test static declarations
 	static var a3 = 0
