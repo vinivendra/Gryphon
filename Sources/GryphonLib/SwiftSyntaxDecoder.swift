@@ -3576,17 +3576,36 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let cleanString = string.replacingOccurrences(of: "_", with: "")
 
 		if let typeName = floatLiteralExpression.getType(fromList: self.expressionTypes) {
-			if typeName == "Float",
-				let floatValue = Float(cleanString)
-			{
+			// Find out if it's a Float or a Double
+			let typeIsFloat: Bool
+			if typeName == "Float" {
+				typeIsFloat = true
+			}
+			else if typeName == "Double" {
+				typeIsFloat = false
+			}
+			// Deal with autoclosures like "() -> throws Double"
+			else if typeName.contains("->"), typeName.hasSuffix("Float") {
+				typeIsFloat = true
+			}
+			else if typeName.contains("->"), typeName.hasSuffix("Double") {
+				typeIsFloat = false
+			}
+			// If it's an unexpected case
+			else if typeName.contains("Float") {
+				typeIsFloat = true
+			}
+			else {
+				typeIsFloat = false
+			}
+
+			if typeIsFloat, let floatValue = Float(cleanString) {
 				return LiteralFloatExpression(
 					syntax: Syntax(floatLiteralExpression),
 					range: floatLiteralExpression.getRange(inFile: self.sourceFile),
 					value: floatValue)
 			}
-			else if typeName == "Double",
-				let doubleValue = Double(cleanString)
-			{
+			else if !typeIsFloat, let doubleValue = Double(cleanString) {
 				return LiteralDoubleExpression(
 					syntax: Syntax(floatLiteralExpression),
 					range: floatLiteralExpression.getRange(inFile: self.sourceFile),
@@ -3594,9 +3613,22 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			}
 		}
 
+		if let doubleValue = Double(cleanString) {
+			Compiler.handleWarning(
+				message: "Failed to get this number's type, assuming it's a Double",
+				syntax: Syntax(floatLiteralExpression),
+				ast: floatLiteralExpression.toPrintableTree(),
+				sourceFile: self.sourceFile,
+				sourceFileRange: floatLiteralExpression.getRange(inFile: self.sourceFile))
+			return LiteralDoubleExpression(
+				syntax: Syntax(floatLiteralExpression),
+				range: floatLiteralExpression.getRange(inFile: self.sourceFile),
+				value: doubleValue)
+		}
+
 		return try errorExpression(
 			forASTNode: Syntax(floatLiteralExpression),
-			withMessage: "Failed to convert float literal expression")
+			withMessage: "Failed to turn this number into a Double")
 	}
 
 	func convertIntegerLiteralExpression(

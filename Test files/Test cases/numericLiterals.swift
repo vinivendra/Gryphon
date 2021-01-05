@@ -78,3 +78,12 @@ var q: Int = 0x101
 q = 0b101
 var r: UInt = 0x101
 r = 0b101
+
+// Literal floats as autoclosures
+public func foo1(_ bar: Double?) -> Double {
+	return bar ?? 0.0
+}
+
+public func foo2(_ bar: Float?) -> Float {
+	return bar ?? 0.0
+}
