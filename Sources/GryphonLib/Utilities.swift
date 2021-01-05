@@ -233,6 +233,10 @@ public struct GryphonError: Error, CustomStringConvertible {
 
 // MARK: - Misc Utilities
 
+func todo(_ message: String) -> Never {
+	fatalError(message)
+}
+
 extension String {
 	func isArrayDeclaration() -> Bool {
 		if (self.hasPrefix("[") && !self.contains(":")) ||

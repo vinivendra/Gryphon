@@ -3853,48 +3853,58 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	// MARK: - Helper methods
 
 	func convertType(_ typeSyntax: TypeSyntax) throws -> String {
+		return try convertToGryphonType(typeSyntax).description
+	}
+
+	func convertToGryphonType(_ typeSyntax: TypeSyntax) throws -> GryphonType {
 		if let attributedType = typeSyntax.as(AttributedTypeSyntax.self) {
-			return try convertType(attributedType.baseType)
+			return try convertToGryphonType(attributedType.baseType)
 		}
-		if let optionalType = typeSyntax.as(OptionalTypeSyntax.self) {
-			return try convertType(optionalType.wrappedType) + "?"
+		else if let optionalType = typeSyntax.as(OptionalTypeSyntax.self) {
+			return try .optional(convertToGryphonType(optionalType.wrappedType))
 		}
-		if let arrayType = typeSyntax.as(ArrayTypeSyntax.self) {
-			return try "[" + convertType(arrayType.elementType) + "]"
+		else if let arrayType = typeSyntax.as(ArrayTypeSyntax.self) {
+			return try .generic(
+				typeName: .named("Array"),
+				genericArguments: [convertToGryphonType(arrayType.elementType)])
 		}
-		if let dictionaryType = typeSyntax.as(DictionaryTypeSyntax.self) {
-			return try "[" + convertType(dictionaryType.keyType) + ":" +
-				convertType(dictionaryType.valueType) + "]"
+		else if let dictionaryType = typeSyntax.as(DictionaryTypeSyntax.self) {
+			return try .generic(
+				typeName: .named("Dictionary"),
+				genericArguments: [
+					convertToGryphonType(dictionaryType.keyType),
+					convertToGryphonType(dictionaryType.valueType), ])
 		}
 		if let memberType = typeSyntax.as(MemberTypeIdentifierSyntax.self) {
-			return try convertType(memberType.baseType) + "." + memberType.name.text
+			return try .dot(
+				left: convertToGryphonType(memberType.baseType),
+				right: memberType.name.text)
 		}
 		if let functionType = typeSyntax.as(FunctionTypeSyntax.self) {
-			let argumentsType = try functionType.arguments.map {
-				try convertType($0.type)
-			}.joined(separator: ", ")
+			let argumentsType = try functionType.arguments.map { try convertToGryphonType($0.type) }
 
-			return try "(" + argumentsType + ") -> " +
-				convertType(functionType.returnType)
+			return try .function(
+				parameters: argumentsType,
+				returnType: convertToGryphonType(functionType.returnType))
 		}
 		if let tupleType = typeSyntax.as(TupleTypeSyntax.self) {
-			let elements = try tupleType.elements.map { try convertType($0.type) }
-			return "(\(elements.joined(separator: ", ")))"
+			let elements = try tupleType.elements.map { try convertToGryphonType($0.type) }
+			return .tuple(elements)
 		}
 		if let simpleType = typeSyntax.as(SimpleTypeIdentifierSyntax.self) {
 			let baseType = simpleType.name.text
 			if let generics = simpleType.genericArgumentClause?.arguments {
-				let genericString = try generics
-					.map { try convertType($0.argumentType) }
-					.joined(separator: ", ")
-				return baseType + "<" + genericString + ">"
+				let genericArguments =
+					try generics.map { try convertToGryphonType($0.argumentType) }
+				// TODO: what about generic types with a based that isn't .named?
+				return .generic(typeName: .named(baseType), genericArguments: genericArguments)
 			}
 
-			return baseType
+			return .named(baseType)
 		}
 
 		if let text = typeSyntax.getText() {
-			return text
+			return .named(text)
 		}
 
 		try Compiler.handleError(
@@ -3902,7 +3912,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			ast: typeSyntax.toPrintableTree(),
 			sourceFile: sourceFile,
 			sourceFileRange: typeSyntax.getRange(inFile: sourceFile))
-		return "<<Error>>"
+		return .named("<<Error>>")
 	}
 
 	func errorStatement(
