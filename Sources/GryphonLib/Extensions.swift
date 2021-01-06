@@ -429,6 +429,36 @@ extension List where Element: Equatable {
 	}
 }
 
+extension RandomAccessCollection where Element: Equatable {
+	/// Checks if a collection contains the elements of another one, in the same order.
+	/// If the given collection is empty, returns `true`.
+	/// This is `O(self.count)`.
+	func contains<C: Collection>(collection: C) -> Bool where C.Element == Element {
+		guard !collection.isEmpty else {
+			return true
+		}
+
+		guard self.count >= collection.count else {
+			return false
+		}
+
+		var collectionIndex = collection.startIndex
+		for index in self.indices {
+			if self[index] == collection[collectionIndex] {
+				collection.formIndex(after: &collectionIndex)
+				if collectionIndex == collection.endIndex {
+					return true
+				}
+			}
+			else {
+				collectionIndex = collection.startIndex
+			}
+		}
+
+		return false
+	}
+}
+
 extension MutableList where Element: Equatable {
 	/// Removes the given element, if it is in the list. Returns `true` if the element was present,
 	/// `false` otherwise.

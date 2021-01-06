@@ -50,6 +50,7 @@ class ExtensionsTest: XCTestCase {
 		("testRotated", testRotated),
 		("testGroupBy", testGroupBy),
 		("testRemovingDuplicates", testRemovingDuplicates),
+		("testContainsCollection", testContainsCollection),
 	]
 
 	// MARK: - Tests
@@ -364,5 +365,23 @@ class ExtensionsTest: XCTestCase {
 		XCTAssertEqual(array1.removingDuplicates(), [1, 2, 3])
 		XCTAssertEqual(array2.removingDuplicates(), [1, 2, 3])
 		XCTAssertEqual(array3.removingDuplicates(), [])
+	}
+
+	func testContainsCollection() {
+		let array1 = [1, 2, 3]
+		let array2 = [1, 2, 3, 4]
+		let array3 = [1]
+		let array4: [Int] = []
+		let array5 = [3, 2, 1]
+
+		XCTAssert(array2.contains(collection: array1))
+		XCTAssert(array2.contains(collection: array3))
+		XCTAssert(array2.contains(collection: array4))
+		XCTAssert(array2.contains(collection: array3))
+
+		XCTAssertFalse(array3.contains(collection: array1))
+		XCTAssertFalse(array4.contains(collection: array3))
+		XCTAssertFalse(array1.contains(collection: array2))
+		XCTAssertFalse(array2.contains(collection: array5))
 	}
 }
