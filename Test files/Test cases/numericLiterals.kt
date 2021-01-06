@@ -21,6 +21,14 @@ internal fun foo(int: Int, double: Double, float: Float) {
 	println(float)
 }
 
+fun foo1(bar: Double?): Double {
+	return bar ?: 0.0
+}
+
+fun foo2(bar: Float?): Float {
+	return bar ?: 0.0f
+}
+
 fun main(args: Array<String>) {
 	val int1: Int = 0
 	val int2: Int = 3

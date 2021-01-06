@@ -45,12 +45,16 @@ public class TranspilationContext {
 		}
 
 		/// Returns all the necessary arguments for a SourceKit request,
-		/// including "-sdk" and the SDK path.
+		/// including "-D", "GRYPHON", "-sdk" and the SDK path
 		var argumentsForSourceKit: MutableList<String> {
 			let mutableArguments = absoluteFilePathsAndOtherArguments.toMutableList()
 			if let sdkPath = absolutePathToSDK {
 				mutableArguments.append("-sdk")
 				mutableArguments.append(sdkPath)
+			}
+			if !mutableArguments.contains(collection: ["-D", "GRYPHON"]) {
+				mutableArguments.append("-D")
+				mutableArguments.append("GRYPHON")
 			}
 			return mutableArguments
 		}
