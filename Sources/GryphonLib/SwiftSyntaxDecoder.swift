@@ -42,7 +42,7 @@ public class SourceKit {
 		}
 
 		let absolutePath = Utilities.getAbsolutePath(forFile: filePath)
-		let arguments = context.compilationArguments.argumentsForSourceKit.array
+		let arguments = try context.getArgumentsForSourceKit().array
 
 		Compiler.log("ℹ️  Request for file \"\(absolutePath)\"")
 		Compiler.log("ℹ️  Request with compiler arguments: [")
@@ -278,7 +278,7 @@ public class SourceKit {
 
 		// Call SourceKitten to get the types
 		let absolutePath = Utilities.getAbsolutePath(forFile: sourceFile.path)
-		let compilationArgumentsString = context.compilationArguments.argumentsForSourceKit
+		let compilationArgumentsString = try context.getArgumentsForSourceKit()
 			.map { "\"\($0)\"" }
 			.joined(separator: ",\n    ")
 		let yaml = """
@@ -452,7 +452,10 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					try Driver.createIOSCompilationFiles(
 						forXcodeProject: xcodeProjectPath,
 						forTarget: context.target)
-					context.compilationArguments = try Driver.readCompilationArgumentsFromFile()
+					let (sdkPath, otherSwiftArguments) =
+						try Driver.readCompilationArgumentsFromFile()
+					context.absolutePathToSDK = sdkPath
+					context.swiftCompilationArguments = otherSwiftArguments
 					maybeTypeList = try SourceKit.requestExpressionTypes(
 						forFile: sourceFile,
 						context: context)

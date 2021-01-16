@@ -39,10 +39,10 @@ class LibraryTranspilationTest: XCTestCase {
 		context: try! TranspilationContext(
 			indentationString: "\t",
 			defaultsToFinal: false,
-			compilationArguments: TranspilationContext.SwiftCompilationArguments(
-				absoluteFilePathsAndOtherArguments: []),
 			xcodeProjectPath: nil,
-			target: nil))
+			target: nil,
+			swiftCompilationArguments: [],
+			absolutePathToSDK: nil))
 
 	// MARK: - Tests
 	func testSimpleMatches() {

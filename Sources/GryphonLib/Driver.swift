@@ -524,17 +524,18 @@ public class Driver {
 			allSourceFiles.append(contentsOf: skippedFiles)
 		}
 
-		let compilationArguments: TranspilationContext.SwiftCompilationArguments
+		let sdkPath: String?
+		let otherSwiftArguments: MutableList<String>
 		if maybeXcodeProject != nil {
-			compilationArguments = try readCompilationArgumentsFromFile()
+			(sdkPath, otherSwiftArguments) = try readCompilationArgumentsFromFile()
 		}
 		else {
 			let arguments = allSourceFiles
 				.map { Utilities.getAbsolutePath(forFile: $0) }
 				.toMutableList()
 
-			compilationArguments = try TranspilationContext.SwiftCompilationArguments(
-				absoluteFilePathsAndOtherArguments: arguments)
+			sdkPath = nil
+			otherSwiftArguments = arguments
 		}
 
 		/// Perform transpilation
@@ -542,9 +543,10 @@ public class Driver {
 			let context = try TranspilationContext(
 				indentationString: indentationString,
 				defaultsToFinal: defaultsToFinal,
-				compilationArguments: compilationArguments,
 				xcodeProjectPath: maybeXcodeProject,
-				target: maybeTarget)
+				target: maybeTarget,
+				swiftCompilationArguments: otherSwiftArguments,
+				absolutePathToSDK: sdkPath)
 
 			Compiler.logStart("🧑‍💻 Starting first part of translation [1/2]...")
 
@@ -619,7 +621,7 @@ public class Driver {
 	/// Use this method only when using Xcode, since it depends on
 	/// an Xcode-only file.
 	static func readCompilationArgumentsFromFile()
-		throws -> TranspilationContext.SwiftCompilationArguments
+		throws -> (sdkPath: String, otherArguments: MutableList<String>)
 	{
 		let arguments = try String(
 			contentsOfFile: SupportingFile.sourceKitCompilationArguments.absolutePath)
@@ -638,9 +640,7 @@ public class Driver {
 		arguments.remove(at: sdkArgumentIndex) // Remove the "-sdk"
 		arguments.remove(at: sdkArgumentIndex) // Remove the SDK path
 
-		return try TranspilationContext.SwiftCompilationArguments(
-			absoluteFilePathsAndOtherArguments: arguments,
-			absolutePathToSDK: sdkPath)
+		return (sdkPath, arguments)
 	}
 
 	/// Returns a list of all Swift input files, including those inside xcfilelists, but
