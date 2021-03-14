@@ -19,6 +19,7 @@
 indirect enum SwiftType: CustomStringConvertible, Equatable {
 	case namedType(typeName: String)
 	case optional(subType: SwiftType)
+	case dot(leftType: SwiftType, rightType: String)
 	case tuple(subTypes: MutableList<SwiftType>)
 	case function(parameters: MutableList<SwiftType>, returnType: SwiftType)
 	case generic(typeName: String, genericArguments: MutableList<SwiftType>)
@@ -34,6 +35,8 @@ indirect enum SwiftType: CustomStringConvertible, Equatable {
 			default:
 				return "\(subType)?"
 			}
+		case let .dot(leftType: leftType, rightType: rightType):
+			return "\(leftType).\(rightType)"
 		case let .tuple(subTypes: subTypes):
 			let innerTypes = subTypes.map { $0.description }.joined(separator: ", ")
 			return "(\(innerTypes))"
