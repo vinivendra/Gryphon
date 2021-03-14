@@ -1547,7 +1547,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		let result: MutableList<Statement> = []
 
 		let subscriptParameters = try convertParameters(subscriptDeclaration.indices.parameterList)
-		let subscriptReturnType = try convertType(subscriptDeclaration.result.returnType)
+		let subscriptReturnType = try convertType(subscriptDeclaration.result.returnType).description
 
 		let accessors: List<Accessor>
 		if let accessorBlock = subscriptDeclaration.accessor?.as(AccessorBlockSyntax.self) {
@@ -1651,7 +1651,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			forSyntax: Syntax(extensionDeclaration),
 			withKey: .generics)
 
-		let syntaxType = try convertType(extensionDeclaration.extendedType)
+		let syntaxType = try convertType(extensionDeclaration.extendedType).description
 
 		let extendedType: String
 		if let comment = comments.first, let value = comment.value {
@@ -1766,7 +1766,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		annotations.append(contentsOf: manualAnnotations)
 
 		let inheritances = try protocolDeclaration.inheritanceClause?.inheritedTypeCollection.map {
-			try convertType($0.typeName)
+			try convertType($0.typeName).description
 		} ?? []
 
 		return ProtocolDeclaration(
@@ -1785,7 +1785,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	{
 		// TODO: (after structured types) support generic enums (with assoc. values)
 		let inheritances = try enumDeclaration.inheritanceClause?.inheritedTypeCollection.map {
-				try convertType($0.typeName)
+				try convertType($0.typeName).description
 			} ?? []
 
 		let accessAndAnnotations =
@@ -1863,7 +1863,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 
 		let inheritances = try structDeclaration.inheritanceClause?.inheritedTypeCollection.map {
-				try convertType($0.typeName)
+				try convertType($0.typeName).description
 			} ?? []
 
 		let accessAndAnnotations =
@@ -1902,7 +1902,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 
 		let inheritances = try classDeclaration.inheritanceClause?.inheritedTypeCollection.map {
-				try convertType($0.typeName)
+				try convertType($0.typeName).description
 			} ?? []
 
 		let accessAndAnnotations =
@@ -1954,7 +1954,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			syntax: Syntax(typealiasDeclaration),
 			range: typealiasDeclaration.getRange(inFile: self.sourceFile),
 			identifier: typealiasDeclaration.identifier.text,
-			typeName: try convertType(typeSyntax),
+			typeName: try convertType(typeSyntax).description,
 			access: accessAndAnnotations.access)
 	}
 
@@ -1985,7 +1985,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 		let returnType: String
 		if let returnTypeSyntax = functionLikeDeclaration.returnType {
-			returnType = try convertType(returnTypeSyntax)
+			returnType = try convertType(returnTypeSyntax).description
 		}
 		else {
 			returnType = "Void"
@@ -2122,7 +2122,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					apiLabel = firstName
 				}
 
-				let typeName = try convertType(typeSyntax)
+				let typeName = try convertType(typeSyntax).description
 
 				let defaultValue: Expression?
 				if let defaultExpression = parameter.defaultArgument?.value {
@@ -2192,7 +2192,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 				let annotatedType: String?
 				if let typeAnnotation = patternBinding.typeAnnotation?.type {
-					let typeName = try convertType(typeAnnotation)
+					let typeName = try convertType(typeAnnotation).description
 
 					if let expressionType = expression?.swiftType,
 						expressionType.hasPrefix("\(typeName)<")
@@ -2750,7 +2750,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 		let identifier = identifierExpression.identifier.text
 		let genericTypes = try specializeExpression.genericArgumentClause.arguments.map {
-				try convertType($0.argumentType)
+				try convertType($0.argumentType).description
 			}.joined(separator: ", ")
 
 		return TypeExpression(
@@ -3070,7 +3070,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					sequenceExpression,
 					limitedToElements: elements.dropLast(elements.count - index),
 					isRecursiveCall: true)
-				let typeName = try convertType(asSyntax.typeName)
+				let typeName = try convertType(asSyntax.typeName).description
 
 				let expressionType: String
 				let operatorString: String
@@ -3113,7 +3113,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					rightExpression: TypeExpression(
 						syntax: Syntax(isSyntax),
 						range: isSyntax.getRange(inFile: self.sourceFile),
-						typeName: try convertType(isSyntax.typeName)),
+						typeName: try convertType(isSyntax.typeName).description),
 					operatorSymbol: "is",
 					typeName: "Bool")
 			}
@@ -3855,49 +3855,53 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 	// MARK: - Helper methods
 
-	func convertType(_ typeSyntax: TypeSyntax) throws -> String {
+	func convertType(_ typeSyntax: TypeSyntax) throws -> SwiftType {
 		if let attributedType = typeSyntax.as(AttributedTypeSyntax.self) {
 			return try convertType(attributedType.baseType)
 		}
 		if let optionalType = typeSyntax.as(OptionalTypeSyntax.self) {
-			return try convertType(optionalType.wrappedType) + "?"
+			return try .optional(subType: convertType(optionalType.wrappedType))
 		}
 		if let arrayType = typeSyntax.as(ArrayTypeSyntax.self) {
-			return try "[" + convertType(arrayType.elementType) + "]"
+			return try .array(of: convertType(arrayType.elementType))
 		}
 		if let dictionaryType = typeSyntax.as(DictionaryTypeSyntax.self) {
-			return try "[" + convertType(dictionaryType.keyType) + ":" +
-				convertType(dictionaryType.valueType) + "]"
+			return try .dictionary(
+				withKey: convertType(dictionaryType.keyType),
+				value: convertType(dictionaryType.valueType))
 		}
 		if let memberType = typeSyntax.as(MemberTypeIdentifierSyntax.self) {
-			return try convertType(memberType.baseType) + "." + memberType.name.text
+			return try .dot(
+				leftType: convertType(memberType.baseType),
+				rightType: memberType.name.text)
 		}
 		if let functionType = typeSyntax.as(FunctionTypeSyntax.self) {
-			let argumentsType = try functionType.arguments.map {
+			let parameters = try MutableList(functionType.arguments.map {
 				try convertType($0.type)
-			}.joined(separator: ", ")
+			})
 
-			return try "(" + argumentsType + ") -> " +
-				convertType(functionType.returnType)
+			return try .function(
+				parameters: parameters,
+				returnType: convertType(functionType.returnType))
 		}
 		if let tupleType = typeSyntax.as(TupleTypeSyntax.self) {
-			let elements = try tupleType.elements.map { try convertType($0.type) }
-			return "(\(elements.joined(separator: ", ")))"
+			let elements = try MutableList(
+				tupleType.elements.map { try convertType($0.type) })
+			return .tuple(subTypes: elements)
 		}
 		if let simpleType = typeSyntax.as(SimpleTypeIdentifierSyntax.self) {
 			let baseType = simpleType.name.text
 			if let generics = simpleType.genericArgumentClause?.arguments {
-				let genericString = try generics
-					.map { try convertType($0.argumentType) }
-					.joined(separator: ", ")
-				return baseType + "<" + genericString + ">"
+				let genericString = try MutableList(
+					generics.map { try convertType($0.argumentType) })
+				return .generic(typeName: baseType, genericArguments: genericString)
 			}
 
-			return baseType
+			return .namedType(typeName: baseType)
 		}
 
 		if let text = typeSyntax.getText() {
-			return text
+			return .namedType(typeName: text)
 		}
 
 		try Compiler.handleError(
@@ -3905,7 +3909,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			ast: typeSyntax.toPrintableTree(),
 			sourceFile: sourceFile,
 			sourceFileRange: typeSyntax.getRange(inFile: sourceFile))
-		return "<<Error>>"
+		return .namedType(typeName: "<<Error>>")
 	}
 
 	func errorStatement(
