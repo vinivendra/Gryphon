@@ -16,14 +16,12 @@
 // limitations under the License.
 //
 
-indirect enum GryphonType: CustomStringConvertible, Equatable {
+indirect enum SwiftType: CustomStringConvertible, Equatable {
 	case namedType(typeName: String)
-	case optional(subType: GryphonType)
-	case array(subType: GryphonType)
-	case dictionary(key: GryphonType, value: GryphonType)
-	case tuple(subTypes: MutableList<GryphonType>)
-	case function(parameters: MutableList<GryphonType>, returnType: GryphonType)
-	case generic(typeName: String, genericArguments: MutableList<GryphonType>)
+	case optional(subType: SwiftType)
+	case tuple(subTypes: MutableList<SwiftType>)
+	case function(parameters: MutableList<SwiftType>, returnType: SwiftType)
+	case generic(typeName: String, genericArguments: MutableList<SwiftType>)
 
 	var description: String {
 		switch self {
@@ -36,10 +34,6 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 			default:
 				return "\(subType)?"
 			}
-		case let .array(subType: subType):
-			return "[\(subType)]"
-		case let .dictionary(key: key, value: value):
-			return "[\(key): \(value)]"
 		case let .tuple(subTypes: subTypes):
 			let innerTypes = subTypes.map { $0.description }.joined(separator: ", ")
 			return "(\(innerTypes))"
@@ -52,7 +46,72 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 		}
 	}
 
-	static func create(fromString string: String) -> GryphonType? {
+	/// Creates an Array type with the given element type.
+	static func array(of element: SwiftType) -> SwiftType {
+		return .generic(typeName: "Array", genericArguments: [element])
+	}
+
+	/// Creates a Dictionary type with the given key and value types.
+	static func dictionary(withKey key: SwiftType, value: SwiftType) -> SwiftType {
+		return .generic(typeName: "Dictionary", genericArguments: [key, value])
+	}
+
+	/// If this is a `.generic("Array", [<<Element>>])`, returns the `<<Element>>`; otherwise,
+	/// returns `nil`.
+	var arrayElement: SwiftType? {
+		if case let .generic(typeName: "Array", genericArguments: arguments) = self,
+		   arguments.count == 1
+		{
+			return arguments[0]
+		}
+		else {
+			return nil
+		}
+	}
+
+	/// If this is a `.generic(<<Array>>, [<<Element>>])` where `<<Array>>` can be `"Array"`,
+	/// `"List"` or `"MutableList"`, returns the `<<Element>>`; otherwise, returns `nil`.
+	var arrayLikeElement: SwiftType? {
+		if case let .generic(typeName: baseType, genericArguments: arguments) = self,
+		   baseType == "Array" || baseType == "List" || baseType == "MutableList",
+		   arguments.count == 1
+		{
+			return arguments[0]
+		}
+		else {
+			return nil
+		}
+	}
+
+	/// If this is a `.generic("Dictionary", [<<Key>>, <<Value>>])`, returns the `<<Key>>` and the
+	/// `<<Value>>`; otherwise, returns `nil`.
+	var dictionaryKeyAndValue: (SwiftType, SwiftType)? {
+		if case let .generic(typeName: "Dictionary", genericArguments: arguments) = self,
+		   arguments.count == 2
+		{
+			return (arguments[0], arguments[1])
+		}
+		else {
+			return nil
+		}
+	}
+
+	/// If this is a `.generic(<<Dictionary>>, [<<Key>>, <<Value>>])`, where `<<Dictionary>>` can be
+	/// `"Dictionary"`, `"Map"` or `"MutableMap"`, returns the `<<Key>>` and the `<<Value>>`;
+	/// otherwise, returns `nil`.
+	var dictionaryLikeKeyAndValue: (SwiftType, SwiftType)? {
+		if case let .generic(typeName: baseType, genericArguments: arguments) = self,
+		   baseType == "Dictionary" || baseType == "Map" || baseType == "MutableMap",
+		   arguments.count == 2
+		{
+			return (arguments[0], arguments[1])
+		}
+		else {
+			return nil
+		}
+	}
+
+	static func create(fromString string: String) -> SwiftType? {
 		return Parser(string: string).parse()
 	}
 
@@ -65,7 +124,7 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 			self.index = string.startIndex
 		}
 
-		func parse() -> GryphonType? {
+		func parse() -> SwiftType? {
 			guard !string.isEmpty else {
 				return nil
 			}
@@ -89,7 +148,7 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 
 		/// Parses the next type, starting at `index`. Leaves `index` in the position after the end
 		/// of the parsed type if successful; returns `nil` otherwise.
-		private func parseType() -> GryphonType? {
+		private func parseType() -> SwiftType? {
 			guard let nonOptionalType = parseNonOptionalType() else {
 				return nil
 			}
@@ -106,8 +165,15 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 		}
 
 		/// Parses a type ignoring possible "?"s at its end
-		private func parseNonOptionalType() -> GryphonType? {
+		private func parseNonOptionalType() -> SwiftType? {
 			cleanLeadingWhitespace()
+
+			// TODO:
+			// - autoclosure
+			// - convention
+			// - escaping
+			// - throws
+			// - rethrows
 
 			// Two special cases: types with `inout` and `__owned` prefixes
 			if string[index...].hasPrefix("inout ") {
@@ -139,7 +205,7 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 					}
 
 					index = string.index(after: index)
-					return .array(subType: subType1)
+					return .array(of: subType1)
 				}
 				else {
 					// if it's a dictionary
@@ -155,7 +221,7 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 					}
 
 					index = string.index(after: index)
-					return .dictionary(key: subType1, value: subType2)
+					return .generic(typeName: "Dictionary", genericArguments: [subType1, subType2])
 				}
 			}
 
@@ -166,7 +232,7 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 				// Check for labels before the tuple type, i.e. `(bla: Int, foo: String)` should be
 				// parsed as `(Int, String)`
 
-				let subType1: GryphonType
+				let subType1: SwiftType
 				guard let firstAttempt = parseType() else {
 					return nil
 				}
@@ -189,7 +255,7 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 					index = string.index(after: index)
 
 					// Check for labels just as before
-					let newSubType: GryphonType
+					let newSubType: SwiftType
 					guard let firstAttempt = parseType() else {
 						return nil
 					}
@@ -289,10 +355,10 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 				// Sometimes other types (arrays, dictionaries and optionals) can be written as
 				// generics, i.e. `Array<Int>` or `Optional<String>`.
 				if normalType == "Array", genericElements.count == 1 {
-					return .array(subType: genericElements[0])
+					return .array(of: genericElements[0])
 				}
 				else if normalType == "Dictionary", genericElements.count == 2 {
-					return .dictionary(key: genericElements[0], value: genericElements[1])
+					return .dictionary(withKey: genericElements[0], value: genericElements[1])
 				}
 				else if normalType == "Optional", genericElements.count == 1 {
 					return .optional(subType: genericElements[0])
@@ -307,7 +373,7 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 		}
 	}
 
-	func isSubtype(of superType: GryphonType) -> Bool {
+	func isSubtype(of superType: SwiftType) -> Bool {
 		// Trivial case
 		if self == superType {
 			return true
@@ -387,8 +453,8 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 		}
 
 		// Handle arrays
-		if case let .array(subType: superElementType) = superType {
-			if case let .array(subType: selfElementType) = self {
+		if let superElementType = superType.arrayElement {
+			if let selfElementType = self.arrayElement {
 				return selfElementType.isSubtype(of: superElementType)
 			}
 			else {
@@ -397,8 +463,8 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 		}
 
 		// Handle dictionaries
-		if case let .dictionary(key: superKey, value: superValue) = superType {
-			if case let .dictionary(key: selfKey, value: selfValue) = self {
+		if let (superKey, superValue) = superType.dictionaryKeyAndValue {
+			if let (selfKey, selfValue) = self.dictionaryKeyAndValue {
 				return selfKey.isSubtype(of: superKey) && selfValue.isSubtype(of: superValue)
 			}
 			else {
@@ -416,8 +482,8 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 				genericArguments: selfTypeArguments) = self
 			{
 				// Check if the named parts are the same
-				let namedSuperType = GryphonType.namedType(typeName: superTypeName)
-				let namedSelfType = GryphonType.namedType(typeName: selfTypeName)
+				let namedSuperType = SwiftType.namedType(typeName: superTypeName)
+				let namedSelfType = SwiftType.namedType(typeName: selfTypeName)
 				guard namedSelfType.isSubtype(of: namedSuperType) else {
 					return false
 				}
@@ -443,7 +509,7 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 		return false
 	}
 
-	private func simplifyType(_ gryphonType: GryphonType) -> GryphonType? {
+	private func simplifyType(_ gryphonType: SwiftType) -> SwiftType? {
 		// Deal with standard library types that can be handled as other types
 		if case let .namedType(typeName: typeName) = gryphonType {
 			if let result = Utilities.getTypeMapping(for: typeName) {
@@ -452,10 +518,8 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 		}
 
 		if case let .generic(typeName: typeName, genericArguments: genericArguments) = gryphonType {
-			// Treat MutableList, List and ArraySlice as Array
-			if typeName == "MutableList" || typeName == "List" || typeName == "ArraySlice" {
-				// MutableList should have exactly one generic argument, which is its element
-				return .array(subType: genericArguments[0])
+			if gryphonType.arrayElement != nil {
+				return gryphonType
 			}
 
 			// Treat Slice as Array
@@ -465,19 +529,17 @@ indirect enum GryphonType: CustomStringConvertible, Equatable {
 					typeName: innerTypeName,
 					genericArguments: innerGenericArguments) = genericArguments[0]
 			{
-				// There should be exactly one generic argument: the element
-				if innerTypeName == "MutableList" {
-					return .array(subType: innerGenericArguments[0])
-				}
-				else if innerTypeName == "List" {
-					return .array(subType: innerGenericArguments[0])
+				if innerTypeName == "MutableList" || innerTypeName == "List" {
+					return .generic(
+						typeName: innerTypeName,
+						genericArguments: [innerGenericArguments[0]])
 				}
 			}
 
 			// Treat MutableMap as Dictionary
 			if typeName == "MutableMap" || typeName == "Map" {
 				// MutableMap should have exactly two generic argument: a key and a value
-				return .dictionary(key: genericArguments[0], value: genericArguments[1])
+				return .dictionary(withKey: genericArguments[0], value: genericArguments[1])
 			}
 		}
 
