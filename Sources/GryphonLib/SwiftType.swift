@@ -58,6 +58,23 @@ extension SwiftType: CustomStringConvertible {
 }
 
 extension SwiftTypeContents: CustomStringConvertible {
+	var refinedType: SwiftTypeRefined {
+		switch self {
+		case let .named(refinedType):
+			return refinedType
+		case let .optional(refinedType):
+			return refinedType
+		case let .dot(refinedType):
+			return refinedType
+		case let .tuple(refinedType):
+			return refinedType
+		case let .function(refinedType):
+			return refinedType
+		case let .generic(refinedType):
+			return refinedType
+		}
+	}
+
 	var description: String {
 		switch self {
 		case let .named(refinedType):
@@ -267,10 +284,10 @@ extension SwiftType {
 	}
 }
 
-protocol SwiftTypeRefined: CustomStringConvertible, Equatable { }
+protocol SwiftTypeRefined: CustomStringConvertible { }
 
 extension SwiftType {
-	struct Named: SwiftTypeRefined {
+	struct Named: SwiftTypeRefined, Equatable {
 		let typeName: String
 
 		var description: String {
@@ -281,7 +298,7 @@ extension SwiftType {
 			return SwiftType(.named(self))
 		}
 	}
-	struct Optional: SwiftTypeRefined {
+	struct Optional: SwiftTypeRefined, Equatable {
 		let subType: SwiftType
 
 		var description: String {
@@ -297,7 +314,7 @@ extension SwiftType {
 			return SwiftType(.optional(self))
 		}
 	}
-	struct Dot: SwiftTypeRefined {
+	struct Dot: SwiftTypeRefined, Equatable {
 		let leftType: SwiftType
 		let rightType: String
 
@@ -309,7 +326,7 @@ extension SwiftType {
 			return SwiftType(.dot(self))
 		}
 	}
-	struct Tuple: SwiftTypeRefined {
+	struct Tuple: SwiftTypeRefined, Equatable {
 		let subTypes: MutableList<LabeledSwiftType>
 
 		var description: String {
@@ -321,7 +338,7 @@ extension SwiftType {
 			return SwiftType(.tuple(self))
 		}
 	}
-	struct Function: SwiftTypeRefined {
+	struct Function: SwiftTypeRefined, Equatable {
 		let parameters: MutableList<SwiftType>
 		let returnType: SwiftType
 
@@ -334,7 +351,7 @@ extension SwiftType {
 			return SwiftType(.function(self))
 		}
 	}
-	struct Generic: SwiftTypeRefined {
+	struct Generic: SwiftTypeRefined, Equatable {
 		let typeName: String
 		let genericArguments: MutableList<SwiftType>
 
