@@ -24,7 +24,7 @@ public class SourceKit {
 	struct ExpressionType {
 		let offset: Int
 		let length: Int
-		let typeName: String
+		let typeName: SwiftType
 	}
 
 	/// Executes an indexing request using SourceKit. Returns the raw result of the request.
@@ -308,18 +308,27 @@ public class SourceKit {
 
 		let astsAndTypes: [(ast: [String: SourceKitRepresentable],
 							type: SourceKit.ExpressionType)] =
-			list.map {
-				($0,
-				 ExpressionType(
-					offset: Int($0["key.expression_offset"]! as! Int64),
-					length: Int($0["key.expression_length"]! as! Int64),
-					typeName: $0["key.expression_type"]! as! String))
+			try list.map { ast in
+				let typeName = ast["key.expression_type"]! as! String
+				let syntax = try! SwiftSyntax.SyntaxParser.parse(source: "let x: \(typeName)")
+				let typeSyntax = syntax.statements.first!
+					.item.as(VariableDeclSyntax.self)!
+					.bindings.first!
+					.typeAnnotation!
+					.type
+				let swiftType = try typeSyntax.toSwiftType(usingSourceFile: sourceFile)
+
+				return (ast,
+					ExpressionType(
+						offset: Int(ast["key.expression_offset"]! as! Int64),
+						length: Int(ast["key.expression_length"]! as! Int64),
+						typeName: swiftType))
 			}
 
 		// If there's an error, we might have to re-init to include a new file in the compilation.
 		// Throw an error here so that the caller has the opportunity to do that.
 		if let errorASTAndType =
-			astsAndTypes.first(where: { $0.type.typeName == "<<error type>>" })
+			astsAndTypes.first(where: { $0.type.typeName.description == "<<error type>>" })
 		{
 			var errorMessage = "SourceKit failed to get an expression's type"
 			if context.xcodeProjectPath != nil {
@@ -401,7 +410,7 @@ extension SyntaxProtocol {
 			}
 		}
 
-		return result?.typeName
+		return result?.typeName.description
 	}
 }
 
@@ -3390,7 +3399,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				$0.offset == tupleStartPosition && $0.length == tupleLength
 			})
 			if let tupleType = maybeTupleType {
-				tupleTypeName = tupleType.typeName
+				tupleTypeName = tupleType.typeName.description
 			}
 			else {
 				tupleTypeName = nil
@@ -3464,8 +3473,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				let labelAndType = Utilities.splitTypeList(component, separators: [":"])
 				if labelAndType.count >= 2 {
 					let label = labelAndType[0]
+					let cleanLabel = (label == "_") ? nil : label
 					let type = labelAndType.dropFirst().joined(separator: ":")
-					return (label, type)
+					return (cleanLabel, type)
 				}
 				else {
 					let type = labelAndType[0]
@@ -3494,7 +3504,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					andType: typeName,
 					matchesVariadicInTypeList: labeledTypes)
 				if shouldRemoveArrayWrapper {
-					translatedExpression.swiftType = String(typeName.dropFirst().dropLast())
+					translatedExpression.swiftType = String(typeName
+						.dropFirst("Array<".count)
+						.dropLast(">".count))
 				}
 			}
 
@@ -3516,8 +3528,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		-> Bool
 	{
 		guard let labeledTypes = labeledTypes,
-			typeName.hasPrefix("["),
-			typeName.hasSuffix("]") else
+			typeName.hasPrefix("Array<"),
+			typeName.hasSuffix(">") else
 		{
 			return false
 		}
@@ -3534,7 +3546,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			// If there's only one parameter without a label, we know it's the right one
 			let unlabeledTypes = labeledTypes.filter({ $0.0 == nil })
 			if unlabeledTypes.count == 1 {
-				if unlabeledTypes[0].1.hasSuffix("...") {
+				let typeName = unlabeledTypes[0].1
+				if typeName.hasPrefix("Array<"), typeName.hasSuffix(">") {
 					return true
 				}
 			}
@@ -3856,60 +3869,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	// MARK: - Helper methods
 
 	func convertType(_ typeSyntax: TypeSyntax) throws -> SwiftType {
-		if let attributedType = typeSyntax.as(AttributedTypeSyntax.self) {
-			return try convertType(attributedType.baseType)
-		}
-		if let optionalType = typeSyntax.as(OptionalTypeSyntax.self) {
-			return try .optional(subType: convertType(optionalType.wrappedType))
-		}
-		if let arrayType = typeSyntax.as(ArrayTypeSyntax.self) {
-			return try .array(of: convertType(arrayType.elementType))
-		}
-		if let dictionaryType = typeSyntax.as(DictionaryTypeSyntax.self) {
-			return try .dictionary(
-				withKey: convertType(dictionaryType.keyType),
-				value: convertType(dictionaryType.valueType))
-		}
-		if let memberType = typeSyntax.as(MemberTypeIdentifierSyntax.self) {
-			return try .dot(
-				leftType: convertType(memberType.baseType),
-				rightType: memberType.name.text)
-		}
-		if let functionType = typeSyntax.as(FunctionTypeSyntax.self) {
-			let parameters = try MutableList(functionType.arguments.map {
-				try convertType($0.type)
-			})
-
-			return try .function(
-				parameters: parameters,
-				returnType: convertType(functionType.returnType))
-		}
-		if let tupleType = typeSyntax.as(TupleTypeSyntax.self) {
-			let elements = try MutableList(
-				tupleType.elements.map { try convertType($0.type) })
-			return .tuple(subTypes: elements)
-		}
-		if let simpleType = typeSyntax.as(SimpleTypeIdentifierSyntax.self) {
-			let baseType = simpleType.name.text
-			if let generics = simpleType.genericArgumentClause?.arguments {
-				let genericString = try MutableList(
-					generics.map { try convertType($0.argumentType) })
-				return .generic(typeName: baseType, genericArguments: genericString)
-			}
-
-			return .namedType(typeName: baseType)
-		}
-
-		if let text = typeSyntax.getText() {
-			return .namedType(typeName: text)
-		}
-
-		try Compiler.handleError(
-			message: "Unknown type",
-			ast: typeSyntax.toPrintableTree(),
-			sourceFile: sourceFile,
-			sourceFileRange: typeSyntax.getRange(inFile: sourceFile))
-		return .namedType(typeName: "<<Error>>")
+		return try typeSyntax.toSwiftType(usingSourceFile: sourceFile)
 	}
 
 	func errorStatement(
@@ -3980,7 +3940,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			if position == expressionType.offset,
 				length == expressionType.length
 			{
-				return expressionType.typeName
+				return expressionType.typeName.description
 			}
 		}
 
@@ -3989,6 +3949,89 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 }
 
 // MARK: - Helper extensions
+
+extension TypeSyntax {
+	/// Translates this typeSyntax into a Gryphin SwiftType struct.
+	/// Variadics information often isn't included in the SwiftSyntax type struct, but outside of it
+	/// (e.g. `TupleTypeElementSyntax(type: typeStruct, ellipsis: "...")`) so it has to be injected
+	/// here.
+	func toSwiftType(
+		asVariadic: Bool = false,
+		usingSourceFile sourceFile: SourceFile)
+		throws -> SwiftType
+	{
+		if asVariadic {
+			return try .array(of: self.toSwiftType(asVariadic: false, usingSourceFile: sourceFile))
+		}
+
+		if let attributedType = self.as(AttributedTypeSyntax.self) {
+			return try attributedType.baseType.toSwiftType(usingSourceFile: sourceFile)
+		}
+		else if let optionalType = self.as(OptionalTypeSyntax.self) {
+			return try .optional(
+				subType: optionalType.wrappedType.toSwiftType(usingSourceFile: sourceFile))
+		}
+		else if let arrayType = self.as(ArrayTypeSyntax.self) {
+			return try .array(of: arrayType.elementType.toSwiftType(usingSourceFile: sourceFile))
+		}
+		else if let dictionaryType = self.as(DictionaryTypeSyntax.self) {
+			return try .dictionary(
+				withKey: dictionaryType.keyType.toSwiftType(usingSourceFile: sourceFile),
+				value: dictionaryType.valueType.toSwiftType(usingSourceFile: sourceFile))
+		}
+		else if let memberType = self.as(MemberTypeIdentifierSyntax.self) {
+			return try .dot(
+				leftType: memberType.baseType.toSwiftType(usingSourceFile: sourceFile),
+				rightType: memberType.name.text)
+		}
+		else if let functionType = self.as(FunctionTypeSyntax.self) {
+			let parameters = try MutableList(functionType.arguments.map {
+				try $0.type.toSwiftType(
+					asVariadic: $0.ellipsis != nil,
+					usingSourceFile: sourceFile)
+			})
+
+			return try .function(
+				parameters: parameters,
+				returnType: functionType.returnType.toSwiftType(usingSourceFile: sourceFile))
+		}
+		else if let tupleType = self.as(TupleTypeSyntax.self) {
+			let elements = try MutableList(tupleType.elements.map {
+				try SwiftType.LabeledSwiftType(
+					label: $0.name?.text,
+					swiftType: $0.type.toSwiftType(
+						asVariadic: $0.ellipsis != nil,
+						usingSourceFile: sourceFile))
+			})
+			return .tuple(subTypes: elements)
+		}
+		else if let metaType = self.as(MetatypeTypeSyntax.self) {
+			return try .dot(
+				leftType: metaType.baseType.toSwiftType(usingSourceFile: sourceFile),
+				rightType: metaType.typeOrProtocol.text)
+		}
+		else if let simpleType = self.as(SimpleTypeIdentifierSyntax.self) {
+			let baseType = simpleType.name.text
+			if let generics = simpleType.genericArgumentClause?.arguments {
+				let genericString = try MutableList(
+					generics.map { try $0.argumentType.toSwiftType(usingSourceFile: sourceFile) })
+				return .generic(typeName: baseType, genericArguments: genericString)
+			}
+
+			return .namedType(typeName: baseType)
+		}
+		else if let text = self.getText() {
+			return .namedType(typeName: text)
+		}
+
+		try Compiler.handleError(
+			message: "Unknown type",
+			ast: self.toPrintableTree(),
+			sourceFile: sourceFile,
+			sourceFileRange: self.getRange(inFile: sourceFile))
+		return .namedType(typeName: "<<Error>>")
+	}
+}
 
 extension SyntaxProtocol {
 	func getText() -> String? {

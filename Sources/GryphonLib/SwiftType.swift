@@ -16,13 +16,31 @@
 // limitations under the License.
 //
 
+// TODO:
+// - Use SwiftType's parser to get the types from SourceKit
+//     (and convert them back to string for the rest of the translation)
+
 indirect enum SwiftType: CustomStringConvertible, Equatable {
 	case namedType(typeName: String)
 	case optional(subType: SwiftType)
 	case dot(leftType: SwiftType, rightType: String)
-	case tuple(subTypes: MutableList<SwiftType>)
+	case tuple(subTypes: MutableList<LabeledSwiftType>)
 	case function(parameters: MutableList<SwiftType>, returnType: SwiftType)
 	case generic(typeName: String, genericArguments: MutableList<SwiftType>)
+
+	struct LabeledSwiftType: CustomStringConvertible, Equatable {
+		let label: String?
+		let swiftType: SwiftType
+
+		init(label: String?, swiftType: SwiftType) {
+			self.label = (label == "_") ? nil : label
+			self.swiftType = swiftType
+		}
+
+		var description: String {
+			return "\(label ?? "_"): \(swiftType)"
+		}
+	}
 
 	var description: String {
 		switch self {
@@ -178,6 +196,16 @@ indirect enum SwiftType: CustomStringConvertible, Equatable {
 			// - throws
 			// - rethrows
 
+			if string.contains("autoclosure") ||
+				string.contains("convention") ||
+				string.contains("escaping") ||
+				string.contains("throws")
+			{
+				print("Error parsing:")
+				print(string)
+				fatalError(string)
+			}
+
 			// Two special cases: types with `inout` and `__owned` prefixes
 			if string[index...].hasPrefix("inout ") {
 				index = string.index(index, offsetBy: "inout ".count)
@@ -303,7 +331,9 @@ indirect enum SwiftType: CustomStringConvertible, Equatable {
 						return tupleElements[0]
 					}
 					else {
-						return .tuple(subTypes: tupleElements)
+						return .tuple(subTypes: tupleElements.map {
+							LabeledSwiftType(label: nil, swiftType: $0)
+						}.toMutableList())
 					}
 				}
 			}
@@ -313,8 +343,7 @@ indirect enum SwiftType: CustomStringConvertible, Equatable {
 			while normalTypeEndIndex != string.endIndex,
 				(string[normalTypeEndIndex].isLetter ||
 					string[normalTypeEndIndex].isNumber ||
-					string[normalTypeEndIndex] == "_" ||
-					string[normalTypeEndIndex] == ".")
+					string[normalTypeEndIndex] == "_")
 			{
 				normalTypeEndIndex = string.index(after: normalTypeEndIndex)
 			}
@@ -330,8 +359,6 @@ indirect enum SwiftType: CustomStringConvertible, Equatable {
 
 			// Check if it's a generic
 			if index != string.endIndex, string[index] == "<" {
-				// If it's a generic type
-
 				index = string.index(after: index)
 
 				guard let subType1 = parseType() else {
@@ -355,15 +382,8 @@ indirect enum SwiftType: CustomStringConvertible, Equatable {
 				}
 				index = string.index(after: index)
 
-				// Sometimes other types (arrays, dictionaries and optionals) can be written as
-				// generics, i.e. `Array<Int>` or `Optional<String>`.
-				if normalType == "Array", genericElements.count == 1 {
-					return .array(of: genericElements[0])
-				}
-				else if normalType == "Dictionary", genericElements.count == 2 {
-					return .dictionary(withKey: genericElements[0], value: genericElements[1])
-				}
-				else if normalType == "Optional", genericElements.count == 1 {
+				// If it's an optional written as a generic
+				if normalType == "Optional", genericElements.count == 1 {
 					return .optional(subType: genericElements[0])
 				}
 
@@ -416,7 +436,7 @@ indirect enum SwiftType: CustomStringConvertible, Equatable {
 			}
 
 			for (selfSubType, superSubType) in zip(selfSubTypes, selfSubTypes) {
-				guard selfSubType.isSubtype(of: superSubType) else {
+				guard selfSubType.swiftType.isSubtype(of: superSubType.swiftType) else {
 					return false
 				}
 			}
