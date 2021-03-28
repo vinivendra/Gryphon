@@ -3972,9 +3972,11 @@ extension TypeSyntax {
 					$0.tokens.map { $0.text }.joined()
 				})
 			}
-			else if let specificer = attributedType.specifier {
-				attributes = [specificer.text]
-			}
+//			else if let specificer = attributedType.specifier {
+//				// TODO: Add this back after the type refactor is done (currently it might mess up
+//				// with the string algorithms
+//				attributes = [specificer.text]
+//			}
 			else {
 				attributes = []
 			}
