@@ -3965,7 +3965,21 @@ extension TypeSyntax {
 		}
 
 		if let attributedType = self.as(AttributedTypeSyntax.self) {
-			return try attributedType.baseType.toSwiftType(usingSourceFile: sourceFile)
+			var result = try attributedType.baseType.toSwiftType(usingSourceFile: sourceFile)
+			let attributes: MutableList<String>
+			if let syntaxAttributes = attributedType.attributes {
+				attributes = MutableList(syntaxAttributes.compactMap {
+					$0.tokens.map { $0.text }.joined()
+				})
+			}
+			else if let specificer = attributedType.specifier {
+				attributes = [specificer.text]
+			}
+			else {
+				attributes = []
+			}
+			result.attributes = attributes
+			return result
 		}
 		else if let optionalType = self.as(OptionalTypeSyntax.self) {
 			return try .optional(
@@ -3997,7 +4011,7 @@ extension TypeSyntax {
 		}
 		else if let tupleType = self.as(TupleTypeSyntax.self) {
 			let elements = try MutableList(tupleType.elements.map {
-				try SwiftType.LabeledSwiftType(
+				try LabeledSwiftType(
 					label: $0.name?.text,
 					swiftType: $0.type.toSwiftType(
 						asVariadic: $0.ellipsis != nil,
@@ -4019,10 +4033,10 @@ extension TypeSyntax {
 				return .generic(typeName: baseType, genericArguments: genericString)
 			}
 
-			return .namedType(typeName: baseType)
+			return .named(typeName: baseType)
 		}
 		else if let text = self.getText() {
-			return .namedType(typeName: text)
+			return .named(typeName: text)
 		}
 
 		try Compiler.handleError(
@@ -4030,7 +4044,7 @@ extension TypeSyntax {
 			ast: self.toPrintableTree(),
 			sourceFile: sourceFile,
 			sourceFileRange: self.getRange(inFile: sourceFile))
-		return .namedType(typeName: "<<Error>>")
+		return .named(typeName: "<<Error>>")
 	}
 }
 
