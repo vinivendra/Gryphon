@@ -4003,6 +4003,7 @@ extension TypeSyntax {
 						asVariadic: $0.ellipsis != nil,
 						usingSourceFile: sourceFile))
 			})
+
 			return .tuple(subTypes: elements)
 		}
 		else if let metaType = self.as(MetatypeTypeSyntax.self) {

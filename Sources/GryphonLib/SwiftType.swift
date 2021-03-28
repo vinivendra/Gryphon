@@ -38,7 +38,12 @@ indirect enum SwiftType: CustomStringConvertible, Equatable {
 		}
 
 		var description: String {
-			return "\(label ?? "_"): \(swiftType)"
+			if let label = label {
+				return "\(label): \(swiftType)"
+			}
+			else {
+				return swiftType.description
+			}
 		}
 	}
 
