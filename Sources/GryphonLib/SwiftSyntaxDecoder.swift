@@ -1988,7 +1988,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			try convertParameters(functionLikeDeclaration.parameterList)
 
 		let inputType = "(" + parameters
-				.map { $0.typeName + ($0.isVariadic ? "..." : "") }
+				.map { $0.isVariadic ? "Array<\($0.typeName)>" : $0.typeName }
 				.joined(separator: ", ") +
 			")"
 
