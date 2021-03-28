@@ -2066,6 +2066,7 @@ public class KotlinTranslator {
 
 	internal func translateType(_ typeName: String) -> String {
 		let typeName = typeName
+				.replacingOccurrences(of: "@autoclosure", with: "")
 				.replacingOccurrences(of: "()", with: "Unit")
 				.replacingOccurrences(of: "Void", with: "Unit")
 
