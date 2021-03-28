@@ -1040,6 +1040,15 @@ private func simplifyType(string: String) -> String {
 		return "[\(elementType)]"
 	}
 
+	// Convert Dictionary<K, V> into [K: V]
+	if string.hasPrefix("Dictionary<"), string.last! == ">" {
+		let genericTypesString = String(string.dropFirst("Dictionary<".count).dropLast())
+		let genericTypes = Utilities.splitTypeList(genericTypesString, separators: [","])
+		if genericTypes.count == 2 {
+			return "[\(genericTypes[0]) : \(genericTypes[1])]"
+		}
+	}
+
 	// Treat "Array" (without an element type) as an "Array<Any>"
 	// Might happen in complex generic contexts
 	if string == "Array" ||
