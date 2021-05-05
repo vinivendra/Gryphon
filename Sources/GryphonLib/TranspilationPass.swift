@@ -2311,6 +2311,22 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 				.toMutableList(),
 			members: structDeclaration.members))
 	}
+    
+    override func replaceProtocolDeclaration(
+        _ protocolDeclaration: ProtocolDeclaration)
+        -> List<Statement>
+    {
+        return super.replaceProtocolDeclaration(ProtocolDeclaration(
+            range: protocolDeclaration.range,
+            protocolName: protocolDeclaration.protocolName,
+            access: protocolDeclaration.access,
+            annotations: protocolDeclaration.annotations,
+            members: protocolDeclaration.members,
+            inherits: protocolDeclaration.inherits
+                .filter { !TranspilationPass.isASwiftProtocol($0) }
+                .toMutableList()
+            ))
+    }
 
 	override func replaceClassDeclaration(
 		_ classDeclaration: ClassDeclaration)
