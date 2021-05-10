@@ -35,14 +35,12 @@ class ShellTest: XCTestCase {
 	// gryphon annotation: override
 	public func runAllTests() {
 		testEcho()
-		testSwiftc()
 	}
 
 	/// Tests to be run when using Swift on Linux
 	// gryphon ignore
 	static var allTests = [
 		("testEcho", testEcho),
-		("testSwiftc", testSwiftc),
 	]
 
 	// MARK: - Tests
@@ -52,19 +50,5 @@ class ShellTest: XCTestCase {
 		XCTAssertEqual(commandResult.standardOutput, "foo bar baz\n")
 		XCTAssertEqual(commandResult.standardError, "")
 		XCTAssertEqual(commandResult.status, 0)
-	}
-
-	func testSwiftc() {
-		let command1: List = ["swiftc", "-dump-ast"]
-		let command1Result = Shell.runShellCommand(command1)
-		XCTAssertEqual(command1Result.standardOutput, "")
-		XCTAssert(command1Result.standardError.contains("<unknown>:0: error: no input files\n"))
-		XCTAssertNotEqual(command1Result.status, 0)
-
-		let command2: List = ["swiftc", "--help"]
-		let command2Result = Shell.runShellCommand(command2)
-		XCTAssert(command2Result.standardOutput.contains("-dump-ast"))
-		XCTAssertEqual(command2Result.standardError, "")
-		XCTAssertEqual(command2Result.status, 0)
 	}
 }

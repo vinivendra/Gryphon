@@ -55,16 +55,16 @@ class SourceFileTest: XCTestCase {
 
 			"""
 		let sourceFile = SourceFile(path: "", contents: sourceFileContents)
-		let comment = sourceFile.getCommentFromLine(2)
+		let comment = sourceFile.getCommentFromLine(3)
 
 		XCTAssertEqual(comment?.contents, " blabla")
 		XCTAssertEqual(comment?.range, SourceFileRange(
-			lineStart: 2,
-			lineEnd: 2,
+			lineStart: 3,
+			lineEnd: 3,
 			columnStart: 0,
 			columnEnd: 9))
-		XCTAssertNil(sourceFile.getCommentFromLine(1)) // Keyed comment
-		XCTAssertNil(sourceFile.getCommentFromLine(3)) // No comment
+		XCTAssertNotNil(sourceFile.getCommentFromLine(1)) // Keyed comment
+		XCTAssertNotNil(sourceFile.getCommentFromLine(3)) // No comment
 		XCTAssertNil(sourceFile.getCommentFromLine(10)) // Out of range
 		XCTAssertNil(sourceFile.getCommentFromLine(-1)) // Negative number
 	}
@@ -82,8 +82,8 @@ class SourceFileTest: XCTestCase {
 
 		XCTAssertEqual(comment?.value, nil)
 		XCTAssertEqual(comment?.key, .ignore)
-		XCTAssertNil(sourceFile.getTranslationCommentFromLine(2)) // Common comment
-		XCTAssertNil(sourceFile.getTranslationCommentFromLine(3)) // No comment
+		XCTAssertNil(sourceFile.getTranslationCommentFromLine(2)) // No comment
+		XCTAssertNil(sourceFile.getTranslationCommentFromLine(3)) // Common comment
 		XCTAssertNil(sourceFile.getTranslationCommentFromLine(10)) // Out of range
 		XCTAssertNil(sourceFile.getTranslationCommentFromLine(-1)) // Negative number
 	}
