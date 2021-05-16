@@ -99,6 +99,12 @@ This is done within some realistic constraints: the priority is that the transla
 
 Gryphon's support for Swift features is constantly evolving. **It is currently capable of translating many of the main features one might expect** - classes, structs, enums, closures, extensions, protocols, etc - enough that it currently translates around 97% of a version of its own codebase (the other 3% are platform-specific files). Some Swift features are just waiting to be implemented, while others can't be translated to Kotlin and may never be supported.
 
+#### What Swift versions can Gryphon translate?
+
+Gryphon currently supports **Swift 5.2, 5.3 and 5.4**. It will use whatever Swift version was used to build it, so if you build the Gryphon binary using Swift 5.4 then that's the version it will assume all your Swift code is in. You can find out which Swift version your Gryphon binary uses by running `gryphon --version`.
+
+Due to some technical limitations, only Swift 5.3 and 5.4 are being tested in the latest versions of Gryphon. If you have any difficulties with Swift 5.2, please [let us know](https://github.com/vinivendra/Gryphon/issues/new/choose).
+
 #### Can Gryphon help translate my existing iOS app?
 
 **Yes - but it will need some adaptations (though probably less than your average multiplatform framework)**. This depends on your application - how similar app's architecture is to its Android counterpart, how often your code uses Swift features unsupported by Gryphon, etc.
