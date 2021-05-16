@@ -28,12 +28,12 @@ class PerformanceTest: XCTestCase {
 			let context = try! TranspilationContext(
 				indentationString: "\t",
 				defaultsToFinal: testName.contains("-default-final"),
-				compilationArguments: TranspilationContext.SwiftCompilationArguments(
-					absoluteFilePathsAndOtherArguments: [
-						SupportingFile.gryphonTemplatesLibrary.absolutePath,
-						testCasePath, ]),
 				xcodeProjectPath: nil,
-				target: nil)
+				target: nil,
+				swiftCompilationArguments: [
+					SupportingFile.gryphonTemplatesLibrary.absolutePath,
+					testCasePath, ],
+				absolutePathToSDK: nil)
 			return (testCasePath, context)
 		}
 
@@ -64,12 +64,12 @@ class PerformanceTest: XCTestCase {
 				let context = try! TranspilationContext(
 					indentationString: "\t",
 					defaultsToFinal: testName.contains("-default-final"),
-					compilationArguments: TranspilationContext.SwiftCompilationArguments(
-						absoluteFilePathsAndOtherArguments: [
-							SupportingFile.gryphonTemplatesLibrary.absolutePath,
-							testCasePath, ]),
 					xcodeProjectPath: nil,
-					target: nil)
+					target: nil,
+					swiftCompilationArguments: [
+						SupportingFile.gryphonTemplatesLibrary.absolutePath,
+						testCasePath, ],
+					absolutePathToSDK: nil)
 				let rawAST = try! Compiler.transpileGryphonRawASTs(
 					fromInputFiles: [testCasePath],
 					withContext: context)
@@ -99,12 +99,12 @@ class PerformanceTest: XCTestCase {
 				let context = try! TranspilationContext(
 					indentationString: "\t",
 					defaultsToFinal: testName.contains("-default-final"),
-					compilationArguments: TranspilationContext.SwiftCompilationArguments(
-						absoluteFilePathsAndOtherArguments: [
-							SupportingFile.gryphonTemplatesLibrary.absolutePath,
-							testCasePath, ]),
 					xcodeProjectPath: nil,
-					target: nil)
+					target: nil,
+					swiftCompilationArguments: [
+						SupportingFile.gryphonTemplatesLibrary.absolutePath,
+						testCasePath, ],
+					absolutePathToSDK: nil)
 				let rawAST = try! Compiler.transpileGryphonRawASTs(
 					fromInputFiles: [testCasePath],
 					withContext: context)
@@ -137,12 +137,12 @@ class PerformanceTest: XCTestCase {
 				let context = try! TranspilationContext(
 					indentationString: "\t",
 					defaultsToFinal: testName.contains("-default-final"),
-					compilationArguments: TranspilationContext.SwiftCompilationArguments(
-						absoluteFilePathsAndOtherArguments: [
-							SupportingFile.gryphonTemplatesLibrary.absolutePath,
-							testCasePath, ]),
 					xcodeProjectPath: nil,
-					target: nil)
+					target: nil,
+					swiftCompilationArguments: [
+						SupportingFile.gryphonTemplatesLibrary.absolutePath,
+						testCasePath, ],
+					absolutePathToSDK: nil)
 				let rawAST = try! Compiler.transpileGryphonRawASTs(
 					fromInputFiles: [testCasePath],
 					withContext: context)
@@ -172,12 +172,12 @@ class PerformanceTest: XCTestCase {
 				let context = try! TranspilationContext(
 					indentationString: "\t",
 					defaultsToFinal: testName.contains("-default-final"),
-					compilationArguments: TranspilationContext.SwiftCompilationArguments(
-						absoluteFilePathsAndOtherArguments: [
-							SupportingFile.gryphonTemplatesLibrary.absolutePath,
-							testCasePath, ]),
 					xcodeProjectPath: nil,
-					target: nil)
+					target: nil,
+					swiftCompilationArguments: [
+						SupportingFile.gryphonTemplatesLibrary.absolutePath,
+						testCasePath, ],
+					absolutePathToSDK: nil)
 				let rawAST = try! Compiler.transpileGryphonASTs(
 					fromInputFiles: [testCasePath],
 					withContext: context)
@@ -208,12 +208,12 @@ class PerformanceTest: XCTestCase {
 					let context = try! TranspilationContext(
 						indentationString: "\t",
 						defaultsToFinal: testName.contains("-default-final"),
-						compilationArguments: TranspilationContext.SwiftCompilationArguments(
-							absoluteFilePathsAndOtherArguments: [
-								SupportingFile.gryphonTemplatesLibrary.absolutePath,
-								testCasePath, ]),
 						xcodeProjectPath: nil,
-						target: nil)
+						target: nil,
+						swiftCompilationArguments: [
+							SupportingFile.gryphonTemplatesLibrary.absolutePath,
+							testCasePath, ],
+						absolutePathToSDK: nil)
 					_ = try Compiler.transpileKotlinCode(
 						fromInputFiles: [testCasePath],
 						withContext: context)

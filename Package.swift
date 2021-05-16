@@ -22,7 +22,9 @@
 
 import PackageDescription
 
-#if swift(>=5.3)
+#if swift(>=5.4)
+let swiftSyntaxVersion = Version("0.50400.0")
+#elseif swift(>=5.3)
 let swiftSyntaxVersion = Version("0.50300.0")
 #else
 let swiftSyntaxVersion = Version("0.50200.0")

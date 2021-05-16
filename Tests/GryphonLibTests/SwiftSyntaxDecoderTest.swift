@@ -37,10 +37,10 @@ class SwiftSyntaxDecoderTest: XCTestCase {
 				withContext: TranspilationContext(
 					indentationString: "\t",
 					defaultsToFinal: false,
-					compilationArguments: TranspilationContext.SwiftCompilationArguments(
-						absoluteFilePathsAndOtherArguments: [testCasePath.withExtension(.swift)]),
 					xcodeProjectPath: nil,
-					target: nil))
+					target: nil,
+					swiftCompilationArguments: [testCasePath.withExtension(.swift)],
+					absolutePathToSDK: nil))
 				.first!
 
 			// Check if the decoded statements are as we expect them

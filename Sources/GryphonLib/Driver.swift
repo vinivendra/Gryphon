@@ -17,7 +17,7 @@
 //
 
 public class Driver {
-	public static let gryphonVersion = "0.13.1"
+	public static let gryphonVersion = "0.14"
 
 	public static let supportedArguments: List = [
 		"help", "-help", "--help",
@@ -37,7 +37,6 @@ public class Driver {
 
 	public static let supportedArgumentsWithParameters: List = [
 		"--indentation=",
-		"--toolchain=",
 		"--target=",
 		"-line-limit=",
 	]
@@ -129,7 +128,7 @@ public class Driver {
 		Compiler.logStart("🧑‍💻  Checking Xcode arguments...")
 
 		// Get the chosen target, if there is one
-		let target = getTarget(inArguments: arguments)
+		let target = getValue(of: "--target", inArguments: arguments)
 		if let chosenTarget = target {
 			Compiler.log("ℹ️  Using target \(chosenTarget).")
 		}
@@ -159,21 +158,14 @@ public class Driver {
 			try initialize(includingXcodeFiles: shouldInitializeXcodeFiles)
 
 			if let xcodeProject = maybeXcodeProject {
-				let newArguments: MutableList = [xcodeProject]
-				if isVerbose {
-					newArguments.append("--verbose")
-				}
+				let recursiveArguments = getRecursiveArguments(from: arguments)
 
-				if let target = target {
-					newArguments.append("--target=\(target)")
-				}
-
-				let setupArguments: MutableList = ["setup-xcode"]
-				setupArguments.append(contentsOf: newArguments)
+				let setupArguments: MutableList = ["setup-xcode", xcodeProject]
+				setupArguments.append(contentsOf: recursiveArguments)
 				_ = try Driver.run(withArguments: setupArguments)
 
-				let makeTargetArguments: MutableList = ["make-gryphon-targets"]
-				makeTargetArguments.append(contentsOf: newArguments)
+				let makeTargetArguments: MutableList = ["make-gryphon-targets", xcodeProject]
+				makeTargetArguments.append(contentsOf: recursiveArguments)
 				_ = try Driver.run(withArguments: makeTargetArguments)
 			}
 
@@ -379,11 +371,7 @@ public class Driver {
 		withArguments arguments: List<String>)
 		throws -> Any?
 	{
-		let newArguments: MutableList<String> = []
-
-		if arguments.contains("--verbose") {
-			newArguments.append("--verbose")
-		}
+		let newArguments = getRecursiveArguments(from: arguments)
 
 		var result: Any?
 		do {
@@ -421,8 +409,7 @@ public class Driver {
 		//
 		CompilerIssue.shouldPrintASTs = arguments.contains("-print-ASTs-on-error")
 
-		if let lineLimitArgument = arguments.first(where: { $0.hasPrefix("-line-limit=") }) {
-			let lineLimitString = lineLimitArgument.dropFirst("-line-limit=".count)
+		if let lineLimitString = getValue(of: "-line-limit", inArguments: arguments) {
 			printableAsTreeHorizontalLimit = Int(lineLimitString)
 		}
 
@@ -475,7 +462,7 @@ public class Driver {
 
 		//
 		let maybeXcodeProject = getXcodeProject(inArguments: arguments)
-		let maybeTarget = getTarget(inArguments: arguments)
+		let maybeTarget = getValue(of: "--target", inArguments: arguments)
 
 		//
 		let settings = Settings(
@@ -509,19 +496,12 @@ public class Driver {
 
 		//
 		var indentationString = "    "
-		if let indentationArgument = arguments.first(where: { $0.hasPrefix("--indentation=") }) {
-			let indentationargument = indentationArgument
-				.dropFirst("--indentation=".count)
-
-			if indentationargument == "t" {
+		if let indentationArgument = getValue(of: "--indentation", inArguments: arguments) {
+			if indentationArgument == "t" {
 				indentationString = "\t"
 			}
-			else if let numberOfSpaces = Int(indentationargument) {
-				var result = ""
-				for _ in 0..<numberOfSpaces {
-					result += " "
-				}
-				indentationString = result
+			else if let numberOfSpaces = Int(indentationArgument) {
+				indentationString = String(repeating: " ", count: numberOfSpaces)
 			}
 		}
 
@@ -544,17 +524,18 @@ public class Driver {
 			allSourceFiles.append(contentsOf: skippedFiles)
 		}
 
-		let compilationArguments: TranspilationContext.SwiftCompilationArguments
+		let sdkPath: String?
+		let otherSwiftArguments: MutableList<String>
 		if maybeXcodeProject != nil {
-			compilationArguments = try readCompilationArgumentsFromFile()
+			(sdkPath, otherSwiftArguments) = try readCompilationArgumentsFromFile()
 		}
 		else {
 			let arguments = allSourceFiles
 				.map { Utilities.getAbsolutePath(forFile: $0) }
 				.toMutableList()
 
-			compilationArguments = try TranspilationContext.SwiftCompilationArguments(
-				absoluteFilePathsAndOtherArguments: arguments)
+			sdkPath = nil
+			otherSwiftArguments = arguments
 		}
 
 		/// Perform transpilation
@@ -562,9 +543,10 @@ public class Driver {
 			let context = try TranspilationContext(
 				indentationString: indentationString,
 				defaultsToFinal: defaultsToFinal,
-				compilationArguments: compilationArguments,
 				xcodeProjectPath: maybeXcodeProject,
-				target: maybeTarget)
+				target: maybeTarget,
+				swiftCompilationArguments: otherSwiftArguments,
+				absolutePathToSDK: sdkPath)
 
 			Compiler.logStart("🧑‍💻 Starting first part of translation [1/2]...")
 
@@ -639,7 +621,7 @@ public class Driver {
 	/// Use this method only when using Xcode, since it depends on
 	/// an Xcode-only file.
 	static func readCompilationArgumentsFromFile()
-		throws -> TranspilationContext.SwiftCompilationArguments
+		throws -> (sdkPath: String, otherArguments: MutableList<String>)
 	{
 		let arguments = try String(
 			contentsOfFile: SupportingFile.sourceKitCompilationArguments.absolutePath)
@@ -658,9 +640,7 @@ public class Driver {
 		arguments.remove(at: sdkArgumentIndex) // Remove the "-sdk"
 		arguments.remove(at: sdkArgumentIndex) // Remove the SDK path
 
-		return try TranspilationContext.SwiftCompilationArguments(
-			absoluteFilePathsAndOtherArguments: arguments,
-			absolutePathToSDK: sdkPath)
+		return (sdkPath, arguments)
 	}
 
 	/// Returns a list of all Swift input files, including those inside xcfilelists, but
@@ -1015,13 +995,31 @@ public class Driver {
 		return nil
 	}
 
-	static func getTarget(inArguments arguments: List<String>) -> String? {
-		if let targetArgument = arguments.first(where: { $0.hasPrefix("--target=") }) {
-			return String(targetArgument.dropFirst("--target=".count))
+	/// Looks for an argument of the format "<argument>=<value>" and returns the value. For example,
+	/// `getValue(of: "--target", inArguments: ["--target=Foo"])` returns `"Foo"`. Returns `nil` if
+	/// the argument is absent.
+	static func getValue(of argument: String, inArguments arguments: List<String>) -> String? {
+		if let targetArgument = arguments.first(where: { $0.hasPrefix("\(argument)=") }) {
+			return String(targetArgument.dropFirst("\(argument)=".count))
 		}
 		else {
 			return nil
 		}
+	}
+
+	/// Fetches the arguments that should be included in recursive driver calls, which are
+	/// `--target=` and `--verbose`.
+	static func getRecursiveArguments(from arguments: List<String>) -> MutableList<String> {
+		let result: MutableList<String> = []
+
+		if arguments.contains("--verbose") {
+			result.append("--verbose")
+		}
+		if let targetArgument = arguments.first(where: { $0.hasPrefix("--target=") }) {
+			result.append(targetArgument)
+		}
+
+		return result
 	}
 
 	static func printVersion() {
@@ -1096,9 +1094,6 @@ Main usage:
 
       ↪️  --sync
             Do not use concurrency.
-
-      ↪️  --toolchain=<toolchain name>
-            Specify the toolchain to be used when calling the Swift compiler.
 
       ↪️  --target=<target name>
             Specify the target to be built when translating with Xcode.

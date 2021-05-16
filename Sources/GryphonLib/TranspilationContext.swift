@@ -21,46 +21,20 @@ import Foundation
 public class TranspilationContext {
 	let indentationString: String
 	let defaultsToFinal: Bool
-	var compilationArguments: SwiftCompilationArguments
 	let xcodeProjectPath: String?
 	let target: String?
+	/// Absolute paths to any files included in the compilation, as well as any other `swiftc`
+	/// arguments (except for the SDK path, which should be set in `absolutePathToSDK`).
+	/// May be updated if we try to re-init an Xcode project to look for new Swift files.
+	var swiftCompilationArguments: List<String>
+	/// The path to the SDK that should be used, if explicitly set by an argument or from a file.
+	/// If it's `nil`, `getArgumentsForSourceKit` will attempt to fetch the default macOS SDK.
+	/// May be updated if we try to re-init an Xcode project to look for new Swift files.
+	var absolutePathToSDK: String?
 
-	/// All arguments that should be included in this `swiftc` compilation.
-	public struct SwiftCompilationArguments {
-		/// Absolute paths to any files included in the compilation, as well
-		/// as any other `swiftc` arguments. These are stored in a
-		/// single list because it might not be trivial to separate them.
-		let absoluteFilePathsAndOtherArguments: List<String>
-		/// The path to the SDK that should be used. On Linux, this is `nil`.
-		let absolutePathToSDK: String?
-
-		/// If no SDK path is given, tries to get the SDK path for the current OS
-		/// (as opposed to an iOS SDK).
-		init(
-			absoluteFilePathsAndOtherArguments: List<String>,
-			absolutePathToSDK: String? = nil) throws
-		{
-			self.absoluteFilePathsAndOtherArguments = absoluteFilePathsAndOtherArguments
-			self.absolutePathToSDK = try absolutePathToSDK ?? TranspilationContext.getSDKPath()
-		}
-
-		/// Returns all the necessary arguments for a SourceKit request,
-		/// including "-D", "GRYPHON", "-sdk" and the SDK path
-		var argumentsForSourceKit: MutableList<String> {
-			let mutableArguments = absoluteFilePathsAndOtherArguments.toMutableList()
-			if let sdkPath = absolutePathToSDK {
-				mutableArguments.append("-sdk")
-				mutableArguments.append(sdkPath)
-			}
-			if !mutableArguments.contains(collection: ["-D", "GRYPHON"]) {
-				mutableArguments.append("-D")
-				mutableArguments.append("GRYPHON")
-			}
-			return mutableArguments
-		}
-	}
-
-	#if swift(>=5.3)
+	#if swift(>=5.4)
+		static let swiftSyntaxVersion = "5.4"
+	#elseif swift(>=5.3)
 		static let swiftSyntaxVersion = "5.3"
 	#else
 		static let swiftSyntaxVersion = "5.2"
@@ -90,29 +64,31 @@ public class TranspilationContext {
 		self.indentationString = ""
 		self.defaultsToFinal = false
 		self.templates = []
-		self.compilationArguments = try SwiftCompilationArguments(absoluteFilePathsAndOtherArguments:
-			[SupportingFile.gryphonTemplatesLibrary.absolutePath])
 		self.xcodeProjectPath = nil
 		self.target = nil
+		self.swiftCompilationArguments = [SupportingFile.gryphonTemplatesLibrary.absolutePath]
+		self.absolutePathToSDK = nil
 	}
 
 	public init(
 		indentationString: String,
 		defaultsToFinal: Bool,
-		compilationArguments: SwiftCompilationArguments,
 		xcodeProjectPath: String?,
-		target: String?)
+		target: String?,
+		swiftCompilationArguments: List<String>,
+		absolutePathToSDK: String?)
 		throws
 	{
 		self.indentationString = indentationString
 		self.defaultsToFinal = defaultsToFinal
-		self.compilationArguments = compilationArguments
 		self.xcodeProjectPath = xcodeProjectPath
 		self.target = target
 		self.templates = try TranspilationContext
 			.getBaseContext()
 			.templates
 			.toMutableList()
+		self.swiftCompilationArguments = swiftCompilationArguments
+		self.absolutePathToSDK = absolutePathToSDK
 	}
 
 	// MARK: - Templates
@@ -306,20 +282,32 @@ public class TranspilationContext {
 		return false
 	}
 
-	// MARK: - Swift versions
+	// MARK: - Swift compiler arguments
 
-	/// Currently supported versions. If 5.1 is supported, 5.1.x will be too.
-	public static let supportedSwiftVersions: List = [
-		"5.1", "5.2", "5.3",
-	]
+	/// Returns all the necessary arguments for a SourceKit request,
+	/// including "-D", "GRYPHON", "-sdk" and the SDK path. If no path was explicitly set (in
+	/// `absolutePathToSDK`) and we're on macOS, tries to find the default macOS SDK.
+	func getArgumentsForSourceKit() throws -> MutableList<String> {
+		let mutableArguments = swiftCompilationArguments.toMutableList()
+		if let sdkPath = try absolutePathToSDK ?? TranspilationContext.getDefaultSDKPath() {
+			mutableArguments.append("-sdk")
+			mutableArguments.append(sdkPath)
+		}
+		if !mutableArguments.contains(collection: ["-D", "GRYPHON"]) {
+			mutableArguments.append("-D")
+			mutableArguments.append("GRYPHON")
+		}
+		return mutableArguments
+	}
 
-	// MARK: - macOS SDK
-	private static var sdkPath: String?
+	// MARK: - Default SDK
+
+	private static var defaultSDKPath: String?
 	private static let sdkLock = NSLock()
 
 	/// On macOS, tries to find the SDK path using `xcrun`, and throws an error if that fails.
 	/// On Linux, returns `nil`.
-	static func getSDKPath() throws -> String? {
+	static func getDefaultSDKPath() throws -> String? {
 		sdkLock.lock()
 
 		defer {
@@ -328,7 +316,7 @@ public class TranspilationContext {
 
 		#if os(macOS)
 
-		if let macOSSDKPath = sdkPath {
+		if let macOSSDKPath = defaultSDKPath {
 			return macOSSDKPath
 		}
 		else {
@@ -337,7 +325,7 @@ public class TranspilationContext {
 			if commandResult.status == 0 {
 				// Drop the \n at the end
 				let result = String(commandResult.standardOutput.prefix(while: { $0 != "\n" }))
-				sdkPath = result
+				defaultSDKPath = result
 				return result
 			}
 			else {

@@ -43,11 +43,10 @@ class IntegrationTest: XCTestCase {
 					withContext: TranspilationContext(
 						indentationString: "\t",
 						defaultsToFinal: defaultsToFinal,
-						compilationArguments: TranspilationContext.SwiftCompilationArguments(
-							absoluteFilePathsAndOtherArguments:
-								[testCasePath.withExtension(.swift)]),
 						xcodeProjectPath: nil,
-						target: nil))
+						target: nil,
+						swiftCompilationArguments: [testCasePath.withExtension(.swift)],
+						absolutePathToSDK: nil))
 					.first!
 
 				// Load the previously stored kotlin code from file
@@ -93,10 +92,10 @@ class IntegrationTest: XCTestCase {
 				withContext: TranspilationContext(
 					indentationString: "\t",
 					defaultsToFinal: false,
-					compilationArguments: TranspilationContext.SwiftCompilationArguments(
-						absoluteFilePathsAndOtherArguments: [testCasePath]),
 					xcodeProjectPath: nil,
-					target: nil))
+					target: nil,
+					swiftCompilationArguments: [testCasePath],
+					absolutePathToSDK: nil))
 				.first!
 
 			XCTAssert(
