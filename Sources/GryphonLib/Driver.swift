@@ -17,7 +17,7 @@
 //
 
 public class Driver {
-	public static let gryphonVersion = "0.13.1"
+	public static let gryphonVersion = "0.14"
 
 	public static let supportedArguments: List = [
 		"help", "-help", "--help",
