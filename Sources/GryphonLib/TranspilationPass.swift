@@ -2311,7 +2311,7 @@ public class CleanInheritancesTranspilationPass: TranspilationPass {
 				.toMutableList(),
 			members: structDeclaration.members))
 	}
-    
+
     override func replaceProtocolDeclaration(
         _ protocolDeclaration: ProtocolDeclaration)
         -> List<Statement>
