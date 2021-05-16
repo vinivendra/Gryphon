@@ -282,13 +282,6 @@ public class TranspilationContext {
 		return false
 	}
 
-	// MARK: - Swift versions
-
-	/// Currently supported versions. If 5.1 is supported, 5.1.x will be too.
-	public static let supportedSwiftVersions: List = [
-		"5.1", "5.2", "5.3", "5.4",
-	]
-
 	// MARK: - Swift compiler arguments
 
 	/// Returns all the necessary arguments for a SourceKit request,
