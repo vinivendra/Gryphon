@@ -1,4 +1,4 @@
-FROM swift:5.3
+FROM swift:5.4
 
 
 # Update, upgrade and install a few useful tools
