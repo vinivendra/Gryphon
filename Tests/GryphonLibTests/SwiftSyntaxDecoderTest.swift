@@ -131,7 +131,7 @@ class SwiftSyntaxDecoderTest: XCTestCase {
 				let castingExpression =
 					expressionStatement.expression as? BinaryOperatorExpression,
 				castingExpression.operatorSymbol == "as",
-				castingExpression.typeName == "Int",
+				castingExpression.type?.description == "Int",
 				let additionExpression =
 					castingExpression.leftExpression as? BinaryOperatorExpression,
 				additionExpression.operatorSymbol == "+"
@@ -149,9 +149,9 @@ class SwiftSyntaxDecoderTest: XCTestCase {
 				let castingExpression =
 					expressionStatement.expression as? BinaryOperatorExpression,
 				castingExpression.operatorSymbol == "as?",
-				castingExpression.typeName == "Int?",
+				castingExpression.type?.description == "Int?",
 				let typeExpression = castingExpression.rightExpression as? TypeExpression,
-				typeExpression.typeName == "Int"
+				typeExpression.type.description == "Int"
 			{
 				testPassed = true
 			}

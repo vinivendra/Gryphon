@@ -1222,7 +1222,7 @@ public /*abstract*/ class Expression: PrintableAsTree, Equatable, CustomStringCo
 		self.name = name
 	}
 
-	var swiftType: String? {
+	var swiftType: SwiftType? {
 		get {
 			return nil
 		}
@@ -1396,18 +1396,18 @@ public /*abstract*/ class Expression: PrintableAsTree, Equatable, CustomStringCo
 public class LiteralCodeExpression: Expression {
 	let string: String
 	let shouldGoToMainFunction: Bool
-	var typeName: String?
+	var type: SwiftType?
 
 	init(
 		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		string: String,
 		shouldGoToMainFunction: Bool,
-		typeName: String?)
+		type: SwiftType?)
 	{
 		self.string = string
 		self.shouldGoToMainFunction = shouldGoToMainFunction
-		self.typeName = typeName
+		self.type = type
 		super.init(
 			syntax: syntax,
 			range: range,
@@ -1417,23 +1417,23 @@ public class LiteralCodeExpression: Expression {
 	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
 			PrintableTree(string),
-			PrintableTree.initOrNil(typeName),
+			PrintableTree.initOrNil(type?.description),
 			shouldGoToMainFunction ? PrintableTree("shouldGoToMainFunction") : nil, ]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: SwiftType? {
 		get {
-			return typeName
+			return type
 		}
 		set {
-			typeName = newValue
+			type = newValue
 		}
 	}
 
 	public static func == (lhs: LiteralCodeExpression, rhs: LiteralCodeExpression) -> Bool {
 		return lhs.string == rhs.string &&
 			lhs.shouldGoToMainFunction == rhs.shouldGoToMainFunction &&
-			lhs.typeName == rhs.typeName
+			lhs.type == rhs.type
 	}
 }
 
@@ -1487,7 +1487,7 @@ public class ParenthesesExpression: Expression {
 		return [expression]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: SwiftType? {
 		get {
 			return expression.swiftType
 		}
@@ -1517,11 +1517,11 @@ public class ForceValueExpression: Expression {
 		return [expression]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: SwiftType? {
 		get {
 			let subtype = expression.swiftType
-			if let subtype = subtype, subtype.hasSuffix("?") {
-				return String(subtype.dropLast())
+			if let subtype = subtype?.asOptional {
+				return subtype.subType
 			}
 			else {
 				return nil
@@ -1529,7 +1529,7 @@ public class ForceValueExpression: Expression {
 		}
 		set {
 			if let newValue = newValue {
-				expression.swiftType = newValue + "?"
+				expression.swiftType = .optional(subType: newValue)
 			}
 		}
 	}
@@ -1555,11 +1555,11 @@ public class OptionalExpression: Expression {
 		return [expression]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: SwiftType? {
 		get {
 			let subtype = expression.swiftType
-			if let subtype = subtype, subtype.hasSuffix("?") {
-				return String(subtype.dropLast())
+			if let subtype = subtype?.asOptional {
+				return subtype.subType
 			}
 			else {
 				return nil
@@ -1567,7 +1567,7 @@ public class OptionalExpression: Expression {
 		}
 		set {
 			if let newValue = newValue {
-				expression.swiftType = newValue + "?"
+				expression.swiftType = .optional(subType: newValue)
 			}
 		}
 	}
@@ -1579,18 +1579,18 @@ public class OptionalExpression: Expression {
 
 public class DeclarationReferenceExpression: Expression {
 	var identifier: String
-	var typeName: String?
 	var isStandardLibrary: Bool
+	var type: SwiftType?
 
 	init(
 		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		identifier: String,
-		typeName: String?,
+		type: SwiftType?,
 		isStandardLibrary: Bool)
 	{
 		self.identifier = identifier
-		self.typeName = typeName
+		self.type = type
 		self.isStandardLibrary = isStandardLibrary
 		super.init(
 			syntax: syntax,
@@ -1601,18 +1601,18 @@ public class DeclarationReferenceExpression: Expression {
 	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
 			PrintableTree.initOrNil(
-				"type", [PrintableTree.initOrNil(typeName)]),
+				"type", [PrintableTree.initOrNil(type?.description)]),
 			PrintableTree(identifier),
 			isStandardLibrary ? PrintableTree("isStandardLibrary") : nil, ]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: SwiftType? {
 		get {
-			return typeName
+			return type
 		}
 		set {
 			if let newValue = newValue {
-				typeName = newValue
+				type = newValue
 			}
 		}
 	}
@@ -1623,16 +1623,16 @@ public class DeclarationReferenceExpression: Expression {
 		-> Bool
 	{
 		return lhs.identifier == rhs.identifier &&
-			lhs.typeName == rhs.typeName &&
+			lhs.swiftType == rhs.swiftType &&
 			lhs.isStandardLibrary == rhs.isStandardLibrary
 	}
 }
 
 public class TypeExpression: Expression {
-	var typeName: String
+	var type: SwiftType
 
-	init(syntax: Syntax? = nil, range: SourceFileRange?, typeName: String) {
-		self.typeName = typeName
+	init(syntax: Syntax? = nil, range: SourceFileRange?, type: SwiftType) {
+		self.type = type
 		super.init(
 			syntax: syntax,
 			range: range,
@@ -1640,22 +1640,22 @@ public class TypeExpression: Expression {
 	}
 
 	override public var printableSubtrees: List<PrintableAsTree?> {
-		return [PrintableTree(typeName)]
+		return [PrintableTree(type.description)]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: SwiftType? {
 		get {
-			return typeName
+			return type
 		}
 		set {
 			if let newValue = newValue {
-				typeName = newValue
+				type = newValue
 			}
 		}
 	}
 
 	public static func == (lhs: TypeExpression, rhs: TypeExpression) -> Bool {
-		return lhs.typeName == rhs.typeName
+		return lhs.swiftType == rhs.swiftType
 	}
 }
 
@@ -1666,18 +1666,18 @@ public class SubscriptExpression: Expression {
 	/// `foo[index1: "bar", index2: "baz"]`. In most cases the tuple will probably contain a single
 	/// expression without a label, e.g. `foo[index]`.
 	let indexExpression: TupleExpression
-	var typeName: String
+	var type: SwiftType
 
 	init(
 		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		subscriptedExpression: Expression,
 		indexExpression: TupleExpression,
-		typeName: String)
+		type: SwiftType)
 	{
 		self.subscriptedExpression = subscriptedExpression
 		self.indexExpression = indexExpression
-		self.typeName = typeName
+		self.type = type
 		super.init(
 			syntax: syntax,
 			range: range,
@@ -1688,18 +1688,18 @@ public class SubscriptExpression: Expression {
 
 	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
-			PrintableTree("type \(typeName)"),
+			PrintableTree("type: \(type.description)"),
 			PrintableTree.ofExpressions("subscriptedExpression", [subscriptedExpression]),
 			PrintableTree.ofExpressions("indexExpression", [indexExpression]), ]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: SwiftType? {
 		get {
-			return typeName
+			return type
 		}
 		set {
 			if let newValue = newValue {
-				typeName = newValue
+				type = newValue
 			}
 		}
 	}
@@ -1707,22 +1707,22 @@ public class SubscriptExpression: Expression {
 	public static func == (lhs: SubscriptExpression, rhs: SubscriptExpression) -> Bool {
 		return lhs.subscriptedExpression == rhs.subscriptedExpression &&
 			lhs.indexExpression == rhs.indexExpression &&
-			lhs.typeName == rhs.typeName
+			lhs.swiftType == rhs.swiftType
 	}
 }
 
 public class ArrayExpression: Expression {
 	let elements: MutableList<Expression>
-	var typeName: String
+	var type: SwiftType
 
 	init(
 		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		elements: MutableList<Expression>,
-		typeName: String)
+		type: SwiftType)
 	{
 		self.elements = elements
-		self.typeName = typeName
+		self.type = type
 		super.init(
 			syntax: syntax,
 			range: range,
@@ -1734,42 +1734,42 @@ public class ArrayExpression: Expression {
 
 	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
-			PrintableTree("type \(typeName)"),
+			PrintableTree("type: \(type.description)"),
 			PrintableTree.ofExpressions("elements", elements), ]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: SwiftType? {
 		get {
-			return typeName
+			return type
 		}
 		set {
 			if let newValue = newValue {
-				typeName = newValue
+				type = newValue
 			}
 		}
 	}
 
 	public static func == (lhs: ArrayExpression, rhs: ArrayExpression) -> Bool {
 		return lhs.elements == rhs.elements &&
-			lhs.typeName == rhs.typeName
+			lhs.swiftType == rhs.swiftType
 	}
 }
 
 public class DictionaryExpression: Expression {
 	let keys: MutableList<Expression>
 	let values: MutableList<Expression>
-	var typeName: String
+	var type: SwiftType
 
 	init(
 		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		keys: MutableList<Expression>,
 		values: MutableList<Expression>,
-		typeName: String)
+		type: SwiftType)
 	{
 		self.keys = keys
 		self.values = values
-		self.typeName = typeName
+		self.type = type
 		super.init(
 			syntax: syntax,
 			range: range,
@@ -1791,17 +1791,17 @@ public class DictionaryExpression: Expression {
 				])
 		}
 		return [
-			PrintableTree("type \(typeName)"),
+			PrintableTree("type \(type.description)"),
 			PrintableTree("key value pairs", keyValueTrees), ]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: SwiftType? {
 		get {
-			return typeName
+			return type
 		}
 		set {
 			if let newValue = newValue {
-				typeName = newValue
+				type = newValue
 			}
 		}
 	}
@@ -1809,7 +1809,7 @@ public class DictionaryExpression: Expression {
 	public static func == (lhs: DictionaryExpression, rhs: DictionaryExpression) -> Bool {
 		return lhs.keys == rhs.keys &&
 			lhs.values == rhs.values &&
-			lhs.typeName == rhs.typeName
+			lhs.type == rhs.type
 	}
 }
 
@@ -1829,7 +1829,7 @@ public class ReturnExpression: Expression {
 		return [expression]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: SwiftType? {
 		get {
 			return expression?.swiftType
 		}
@@ -1869,20 +1869,26 @@ public class DotExpression: Expression {
 			PrintableTree.ofExpressions("right", [rightExpression]), ]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: SwiftType? {
 		get {
 			// Enum references should be considered to have the left type, as the right expression's
 			// is a function type (something like `(MyEnum.Type) -> MyEnum` or
 			// `(A.MyEnum.Type) -> A.MyEnum`).
 			if let leftType = leftExpression as? TypeExpression,
 				let rightDeclarationReference = rightExpression as? DeclarationReferenceExpression,
-				let rightType = rightDeclarationReference.typeName
+				let rightType = rightDeclarationReference.swiftType
 			{
-				let enumType = leftType.typeName
+				let enumType = leftType.type
 
-				if rightType.hasPrefix("("),
-					rightType.contains("\(enumType).Type) -> "),
-					rightType.hasSuffix(enumType)
+				if rightType == .function(
+					parameters: [.dot(leftType: enumType, rightType: "Type")],
+					returnType: enumType)
+				{
+					return enumType
+				}
+				else if rightType.description.hasPrefix("("),
+					rightType.description.contains("\(enumType).Type) -> "),
+					rightType.description.hasSuffix(enumType.description)
 				{
 					return enumType
 				}
@@ -1905,7 +1911,7 @@ public class DotExpression: Expression {
 
 	private func dotExpressionToString(_ expression: Expression) -> String? {
 		if let typeExpression = expression as? TypeExpression {
-			return typeExpression.typeName
+			return typeExpression.type.description
 		}
 		else if let declarationExpression = expression as? DeclarationReferenceExpression {
 			return declarationExpression.identifier
@@ -1936,7 +1942,7 @@ public class BinaryOperatorExpression: Expression {
 	let leftExpression: Expression
 	let rightExpression: Expression
 	let operatorSymbol: String
-	var typeName: String?
+	var type: SwiftType?
 
 	init(
 		syntax: Syntax? = nil,
@@ -1944,12 +1950,12 @@ public class BinaryOperatorExpression: Expression {
 		leftExpression: Expression,
 		rightExpression: Expression,
 		operatorSymbol: String,
-		typeName: String?)
+		type: SwiftType?)
 	{
 		self.leftExpression = leftExpression
 		self.rightExpression = rightExpression
 		self.operatorSymbol = operatorSymbol
-		self.typeName = typeName
+		self.type = type
 		super.init(
 			syntax: syntax,
 			range: range,
@@ -1961,19 +1967,19 @@ public class BinaryOperatorExpression: Expression {
 	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
 			PrintableTree.initOrNil(
-				"type", [PrintableTree.initOrNil(typeName)]),
+				"type", [PrintableTree.initOrNil(swiftType?.description)]),
 			PrintableTree.ofExpressions("left", [leftExpression]),
 			PrintableTree("operator \(operatorSymbol)"),
 			PrintableTree.ofExpressions("right", [rightExpression]), ]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: SwiftType? {
 		get {
-			return typeName
+			return type
 		}
 		set {
 			if let newValue = newValue {
-				typeName = newValue
+				type = newValue
 			}
 		}
 	}
@@ -1982,25 +1988,25 @@ public class BinaryOperatorExpression: Expression {
 		return lhs.leftExpression == rhs.leftExpression &&
 			lhs.rightExpression == rhs.rightExpression &&
 			lhs.operatorSymbol == rhs.operatorSymbol &&
-			lhs.typeName == rhs.typeName
+			lhs.type == rhs.type
 	}
 }
 
 public class PrefixUnaryExpression: Expression {
 	let subExpression: Expression
 	let operatorSymbol: String
-	var typeName: String
+	var type: SwiftType
 
 	init(
 		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		subExpression: Expression,
 		operatorSymbol: String,
-		typeName: String)
+		type: SwiftType)
 	{
 		self.subExpression = subExpression
 		self.operatorSymbol = operatorSymbol
-		self.typeName = typeName
+		self.type = type
 		super.init(
 			syntax: syntax,
 			range: range,
@@ -2010,18 +2016,18 @@ public class PrefixUnaryExpression: Expression {
 
 	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
-			PrintableTree("type \(typeName)"),
+			PrintableTree("type \(type)"),
 			PrintableTree("operator \(operatorSymbol)"),
 			PrintableTree.ofExpressions("expression", [subExpression]), ]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: SwiftType? {
 		get {
-			return typeName
+			return type
 		}
 		set {
 			if let newValue = newValue {
-				typeName = newValue
+				type = newValue
 			}
 		}
 	}
@@ -2029,25 +2035,25 @@ public class PrefixUnaryExpression: Expression {
 	public static func == (lhs: PrefixUnaryExpression, rhs: PrefixUnaryExpression) -> Bool {
 		return lhs.subExpression == rhs.subExpression &&
 			lhs.operatorSymbol == rhs.operatorSymbol &&
-			lhs.typeName == rhs.typeName
+			lhs.type == rhs.type
 	}
 }
 
 public class PostfixUnaryExpression: Expression {
 	let subExpression: Expression
 	let operatorSymbol: String
-	var typeName: String
+	var type: SwiftType
 
 	init(
 		syntax: Syntax? = nil,
 		range: SourceFileRange?,
 		subExpression: Expression,
 		operatorSymbol: String,
-		typeName: String)
+		type: SwiftType)
 	{
 		self.subExpression = subExpression
 		self.operatorSymbol = operatorSymbol
-		self.typeName = typeName
+		self.type = type
 		super.init(
 			syntax: syntax,
 			range: range,
@@ -2057,18 +2063,18 @@ public class PostfixUnaryExpression: Expression {
 
 	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
-			PrintableTree("type \(typeName)"),
+			PrintableTree("type \(type)"),
 			PrintableTree("operator \(operatorSymbol)"),
 			PrintableTree.ofExpressions("expression", [subExpression]), ]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: SwiftType? {
 		get {
-			return typeName
+			return type
 		}
 		set {
 			if let newValue = newValue {
-				typeName = newValue
+				type = newValue
 			}
 		}
 	}
@@ -2076,7 +2082,7 @@ public class PostfixUnaryExpression: Expression {
 	public static func == (lhs: PostfixUnaryExpression, rhs: PostfixUnaryExpression) -> Bool {
 		return lhs.subExpression == rhs.subExpression &&
 			lhs.operatorSymbol == rhs.operatorSymbol &&
-			lhs.typeName == rhs.typeName
+			lhs.type == rhs.type
 	}
 }
 
@@ -2111,7 +2117,7 @@ public class IfExpression: Expression {
 			PrintableTree.ofExpressions("falseExpression", [falseExpression]), ]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: SwiftType? {
 		get {
 			return trueExpression.swiftType
 		}
@@ -2131,7 +2137,7 @@ public class IfExpression: Expression {
 public class CallExpression: Expression {
 	var function: Expression
 	var arguments: TupleExpression
-	var typeName: String?
+	var type: SwiftType?
 	/// If this function call can be written with a trailing closure in Kotlin (it can't in some
 	/// instances of calls with variadics and default arguments). This gets decided in a
 	/// Transpilation Pass.
@@ -2144,13 +2150,13 @@ public class CallExpression: Expression {
 		range: SourceFileRange?,
 		function: Expression,
 		arguments: TupleExpression,
-		typeName: String?,
+		type: SwiftType?,
 		allowsTrailingClosure: Bool,
 		isPure: Bool)
 	{
 		self.function = function
 		self.arguments = arguments
-		self.typeName = typeName
+		self.type = type
 		self.allowsTrailingClosure = allowsTrailingClosure
 		self.isPure = isPure
 		super.init(
@@ -2163,20 +2169,20 @@ public class CallExpression: Expression {
 
 	override public var printableSubtrees: List<PrintableAsTree?> {
 		return [
-			PrintableTree.initOrNil("type", [PrintableTree.initOrNil(typeName)]),
+			PrintableTree.initOrNil("type", [PrintableTree.initOrNil(type?.description)]),
 			PrintableTree.ofExpressions("function", [function]),
 			PrintableTree.ofExpressions("arguments", [arguments]),
 			allowsTrailingClosure ? PrintableTree("allowsTrailingClosure") : nil,
 			isPure ? PrintableTree("isPure") : nil, ]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: SwiftType? {
 		get {
-			return typeName
+			return type
 		}
 		set {
 			if let newValue = newValue {
-				typeName = newValue
+				type = newValue
 			}
 		}
 	}
@@ -2188,7 +2194,7 @@ public class CallExpression: Expression {
 	{
 		return lhs.function == rhs.function &&
 			lhs.arguments == rhs.arguments &&
-			lhs.typeName == rhs.typeName &&
+			lhs.type == rhs.type &&
 			lhs.allowsTrailingClosure == rhs.allowsTrailingClosure &&
 			lhs.isPure == rhs.isPure
 	}
@@ -2198,7 +2204,7 @@ public class ClosureExpression: Expression {
 	// Closures that use anonymous parameters (e.g. `$0`) may leave this empty
 	let parameters: MutableList<LabeledType>
 	let statements: MutableList<Statement>
-	var typeName: String
+	var type: SwiftType
 	var isTrailing: Bool
 
 	init(
@@ -2206,12 +2212,12 @@ public class ClosureExpression: Expression {
 		range: SourceFileRange?,
 		parameters: MutableList<LabeledType>,
 		statements: MutableList<Statement>,
-		typeName: String,
+		type: SwiftType,
 		isTrailing: Bool)
 	{
 		self.parameters = parameters
 		self.statements = statements
-		self.typeName = typeName
+		self.type = type
 		self.isTrailing = isTrailing
 		super.init(
 			syntax: syntax,
@@ -2223,19 +2229,19 @@ public class ClosureExpression: Expression {
 		let parametersString =
 			"(" + parameters.map { $0.label + ":" }.joined(separator: ", ") + ")"
 		return [
-			PrintableTree(typeName),
+			PrintableTree(type.description),
 			PrintableTree(parametersString),
 			isTrailing ? PrintableTree("isTrailing") : nil,
 			PrintableTree.ofStatements("statements", statements), ]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: SwiftType? {
 		get {
-			return typeName
+			return type
 		}
 		set {
 			if let newValue = newValue {
-				typeName = newValue
+				type = newValue
 			}
 		}
 	}
@@ -2243,7 +2249,7 @@ public class ClosureExpression: Expression {
 	public static func == (lhs: ClosureExpression, rhs: ClosureExpression) -> Bool {
 		return lhs.parameters == rhs.parameters &&
 			lhs.parameters == rhs.parameters &&
-			lhs.typeName == rhs.typeName
+			lhs.type == rhs.type
 	}
 }
 
@@ -2283,9 +2289,9 @@ public class LiteralIntExpression: Expression {
 			PrintableTree("Radix: \(radix.rawValue)"), ]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: SwiftType? {
 		get {
-			return "Int"
+			return .named(typeName: "Int")
 		}
 		set { }
 	}
@@ -2315,9 +2321,9 @@ public class LiteralUIntExpression: Expression {
 			PrintableTree("Radix: \(radix.rawValue)"), ]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: SwiftType? {
 		get {
-			return "UInt"
+			return .named(typeName: "UInt")
 		}
 		set { }
 	}
@@ -2343,9 +2349,9 @@ public class LiteralDoubleExpression: Expression {
 		return [PrintableTree(String(value))]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: SwiftType? {
 		get {
-			return "Double"
+			return .named(typeName: "Double")
 		}
 		set { }
 	}
@@ -2370,9 +2376,9 @@ public class LiteralFloatExpression: Expression {
 		return [PrintableTree(String(value))]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: SwiftType? {
 		get {
-			return "Float"
+			return .named(typeName: "Float")
 		}
 		set { }
 	}
@@ -2397,9 +2403,9 @@ public class LiteralBoolExpression: Expression {
 		return [PrintableTree(String(value))]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: SwiftType? {
 		get {
-			return "Bool"
+			return .named(typeName: "Bool")
 		}
 		set { }
 	}
@@ -2429,9 +2435,9 @@ public class LiteralStringExpression: Expression {
 		]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: SwiftType? {
 		get {
-			return "String"
+			return .named(typeName: "String")
 		}
 		set { }
 	}
@@ -2456,9 +2462,9 @@ public class LiteralCharacterExpression: Expression {
 		return [PrintableTree(String(value))]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: SwiftType? {
 		get {
-			return "Character"
+			return .named(typeName: "Character")
 		}
 		set { }
 	}
@@ -2504,9 +2510,9 @@ public class InterpolatedStringLiteralExpression: Expression {
 		return [PrintableTree.ofExpressions("expressions", expressions)]
 	}
 
-	override var swiftType: String? {
+	override var swiftType: SwiftType? {
 		get {
-			return "String"
+			return .named(typeName: "String")
 		}
 		set { }
 	}
@@ -2547,10 +2553,15 @@ public class TupleExpression: Expression {
 		}
 	}
 
-	override var swiftType: String? {
+	override var swiftType: SwiftType? {
 		get {
-			let types = pairs.map { $0.expression.swiftType ?? "_" }
-			return "(\(types.joined(separator: ", ")))"
+			let types = pairs.map {
+					LabeledSwiftType(
+						label: $0.label,
+						swiftType: $0.expression.swiftType ??
+							.named(typeName: "<<missing type>>")) }
+				.toMutableList()
+			return .tuple(subTypes: types)
 		}
 		set { }
 	}

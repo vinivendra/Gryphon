@@ -155,7 +155,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 								range: range,
 								string: commentValue,
 								shouldGoToMainFunction: true,
-								typeName: nil)))
+								type: nil)))
 					}
 					else if translationComment.key == .insert {
 						statements.append(ExpressionStatement(
@@ -166,7 +166,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 								range: range,
 								string: commentValue,
 								shouldGoToMainFunction: false,
-								typeName: nil)))
+								type: nil)))
 					}
 					else if translationComment.key == .output {
 						if let fileExtension = Utilities.getExtension(of: commentValue),
@@ -267,7 +267,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 									range: range,
 									string: commentValue,
 									shouldGoToMainFunction: true,
-									typeName: nil)))
+									type: nil)))
 						}
 						else if translationComment.key == .insert {
 							result.append(ExpressionStatement(
@@ -278,7 +278,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 									range: range,
 									string: commentValue,
 									shouldGoToMainFunction: false,
-									typeName: nil)))
+									type: nil)))
 						}
 						else if translationComment.key == .output {
 							if let fileExtension = Utilities.getExtension(of: commentValue),
@@ -764,7 +764,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					leftExpression: previousExpression,
 					rightExpression: newExpression,
 					operatorSymbol: "&&",
-					typeName: "Bool")
+					type: .named(typeName: "Bool"))
 			}
 			else {
 				whileExpression = newExpression
@@ -836,7 +836,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 						syntax: Syntax(optionalBinding),
 						range: optionalBinding.getRange(inFile: self.sourceFile),
 						identifier: identifier,
-						typeAnnotation: expression.swiftType,
+						typeAnnotation: expression.swiftType?.description,
 						expression: expression,
 						getter: nil,
 						setter: nil,
@@ -885,9 +885,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 						rightExpression: TypeExpression(
 							syntax: Syntax(enumExpression),
 							range: enumExpression.getRange(inFile: self.sourceFile),
-							typeName: typeName),
+							type: SwiftType.parse(from: typeName, sourceFile: self.sourceFile)),
 						operatorSymbol: "is",
-						typeName: "Bool")))
+						type: .named(typeName: "Bool"))))
 					continue
 				}
 			}
@@ -993,9 +993,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					rightExpression: TypeExpression(
 						syntax: Syntax(calledExpression),
 						range: calledExpression.getRange(inFile: self.sourceFile),
-						typeName: typeName),
+						type: SwiftType.parse(from: typeName, sourceFile: self.sourceFile)),
 					operatorSymbol: "is",
-					typeName: "Bool"))
+					type: .named(typeName: "Bool")))
 
 				for argument in callExpression.argumentList {
 					if let label = argument.label {
@@ -1005,7 +1005,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 							syntax: Syntax(argument),
 							range: range,
 							identifier: label.text,
-							typeName: typeName,
+							type: SwiftType.parse(from: typeName, sourceFile: self.sourceFile),
 							isStandardLibrary: expressionIsFromTheSwiftStandardLibrary(
 								expressionRange: range,
 								expressionIdentifier: label.text))
@@ -1050,7 +1050,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 								leftExpression: enumExpression,
 								rightExpression: comparedExpression,
 								operatorSymbol: "==",
-								typeName: "Bool"))
+								type: .named(typeName: "Bool")))
 						}
 					}
 					else {
@@ -1810,18 +1810,18 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					let typeName = try convertType(typeAnnotation).description
 
 					if let expressionType = expression?.swiftType,
-						expressionType.hasPrefix("\(typeName)<")
+					   expressionType.description.hasPrefix("\(typeName)<")
 					{
 						// If the variable is annotated as `let a: A` but `A` is generic and the
 						// expression is of type `A<T>`, use the expression's type instead
-						annotatedType = expressionType
+						annotatedType = expressionType.description
 					}
 					else {
 						annotatedType = typeName
 					}
 				}
 				else  {
-					annotatedType = expression?.swiftType
+					annotatedType = expression?.swiftType?.description
 				}
 
 				// Look for getters and setters
@@ -2179,14 +2179,16 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 
 		// If we're replacing this expression with a `gryphon value` comment
-		let literalCodeExpressions = leadingComments.compactMap{ $0.value }
-			.map {
+		let literalCodeExpressions = try leadingComments.compactMap{ $0.value }
+			.map { (literal: String) -> LiteralCodeExpression in
 				return LiteralCodeExpression(
 					syntax: Syntax(expression),
 					range: expression.getRange(inFile: self.sourceFile),
-					string: $0,
+					string: literal,
 					shouldGoToMainFunction: false,
-					typeName: expression.getType(fromList: self.expressionTypes))
+					type: try expression.getSwiftType(
+						fromList: self.expressionTypes,
+						sourceFile: self.sourceFile))
 			}
 		if let literalCodeExpression = literalCodeExpressions.first {
 			return literalCodeExpression
@@ -2198,7 +2200,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				syntax: Syntax(superExpression),
 				range: range,
 				identifier: "super",
-				typeName: superExpression.getType(fromList: self.expressionTypes),
+				type: try superExpression.getSwiftType(
+					fromList: self.expressionTypes,
+					sourceFile: self.sourceFile),
 				isStandardLibrary: expressionIsFromTheSwiftStandardLibrary(
 					expressionRange: range,
 					expressionIdentifier: "super"))
@@ -2294,7 +2298,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				syntax: Syntax(identifierPattern),
 				range: range,
 				identifier: identifierPattern.identifier.text,
-				typeName: identifierPattern.getType(fromList: self.expressionTypes),
+				type: try identifierPattern.getSwiftType(
+					fromList: self.expressionTypes,
+					sourceFile: self.sourceFile),
 				isStandardLibrary: expressionIsFromTheSwiftStandardLibrary(
 					expressionRange: range,
 					expressionIdentifier: identifierPattern.identifier.text))
@@ -2364,21 +2370,24 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 
 		let identifier = identifierExpression.identifier.text
-		let genericTypes = try specializeExpression.genericArgumentClause.arguments.map {
-				try convertType($0.argumentType).description
-			}.joined(separator: ", ")
+		let genericTypes = try MutableList(
+			specializeExpression.genericArgumentClause.arguments.map {
+				try convertType($0.argumentType)
+			})
 
 		return TypeExpression(
 			syntax: Syntax(specializeExpression),
 			range: specializeExpression.getRange(inFile: self.sourceFile),
-			typeName: "\(identifier)<\(genericTypes)>")
+			type: .generic(typeName: identifier, genericArguments: genericTypes))
 	}
 
 	func convertPrefixOperatorExpression(
 		_ prefixOperatorExpression: PrefixOperatorExprSyntax)
 		throws -> Expression
 	{
-		guard let typeName = prefixOperatorExpression.getType(fromList: self.expressionTypes),
+		guard let type = try prefixOperatorExpression.getSwiftType(
+				fromList: self.expressionTypes,
+				sourceFile: self.sourceFile),
 			let operatorSymbol = prefixOperatorExpression.operatorToken?.text else
 		{
 			return try errorExpression(
@@ -2393,14 +2402,17 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			range: prefixOperatorExpression.getRange(inFile: self.sourceFile),
 			subExpression: subExpression,
 			operatorSymbol: operatorSymbol,
-			typeName: typeName)
+			type: type)
 	}
 
 	func convertPostfixUnaryExpression(
 		_ postfixUnaryExpression: PostfixUnaryExprSyntax)
 		throws -> Expression
 	{
-		guard let typeName = postfixUnaryExpression.getType(fromList: self.expressionTypes) else {
+		guard let type = try postfixUnaryExpression.getSwiftType(
+				fromList: self.expressionTypes,
+				sourceFile: self.sourceFile) else
+		{
 			return try errorExpression(
 				forASTNode: Syntax(postfixUnaryExpression),
 				withMessage: "Unable to get type for postfix unary expression")
@@ -2414,7 +2426,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			range: postfixUnaryExpression.getRange(inFile: self.sourceFile),
 			subExpression: subExpression,
 			operatorSymbol: operatorSymbol,
-			typeName: typeName)
+			type: type)
 	}
 
 	func convertSubscriptExpression(
@@ -2424,7 +2436,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		guard let indexTypeName = getType(
 				from: subscriptExpression.leftBracket,
 				to: subscriptExpression.rightBracket),
-			let typeName = subscriptExpression.getType(fromList: self.expressionTypes) else
+			let type = try subscriptExpression.getSwiftType(
+				fromList: self.expressionTypes,
+				sourceFile: self.sourceFile) else
 		{
 			return try errorExpression(
 				forASTNode: Syntax(subscriptExpression),
@@ -2441,7 +2455,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			range: subscriptExpression.getRange(inFile: self.sourceFile),
 			subscriptedExpression: convertedCalledExpression,
 			indexExpression: convertedIndexExpression,
-			typeName: typeName)
+			type: type)
 	}
 
 	func convertForcedValueExpression(
@@ -2464,6 +2478,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				forASTNode: Syntax(closureExpression),
 				withMessage: "Unable to get closure type")
 		}
+
+		let type = SwiftType.parse(from: typeName, sourceFile: self.sourceFile)
 
 		let parameters: MutableList<LabeledType> = []
 
@@ -2546,7 +2562,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			range: closureExpression.getRange(inFile: self.sourceFile),
 			parameters: parameters,
 			statements: try convertBlock(closureExpression),
-			typeName: typeName,
+			type: type,
 			isTrailing: isTrailing)
 	}
 
@@ -2653,17 +2669,17 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					isRecursiveCall: true)
 				let operatorString = operatorSyntax.operatorToken.text
 
-				let typeName: String?
+				let type: SwiftType?
 				if let operatorType =
 						operatorSyntax.operatorToken.getType(fromList: self.expressionTypes),
 					let resultType = Utilities.splitTypeList(operatorType, separators: ["->"]).last
 				{
 					// The operator type will be a function type like `(Int, Int) -> Int` for
 					// `1 + 1`, so we use that function's result type
-					typeName = resultType
+					type = SwiftType.parse(from: resultType, sourceFile: self.sourceFile)
 				}
 				else {
-					typeName = nil
+					type = nil
 				}
 
 				return BinaryOperatorExpression(
@@ -2672,7 +2688,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					leftExpression: leftHalf,
 					rightExpression: rightHalf,
 					operatorSymbol: operatorString,
-					typeName: typeName)
+					type: type)
 			}
 			else if let asSyntax = elements[index].as(AsExprSyntax.self) {
 				if index != (elements.count - 1) {
@@ -2698,6 +2714,8 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					expressionType = typeName
 				}
 
+				let type = SwiftType.parse(from: expressionType, sourceFile: self.sourceFile)
+
 				return BinaryOperatorExpression(
 					syntax: Syntax(asSyntax),
 					range: range,
@@ -2705,9 +2723,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					rightExpression: TypeExpression(
 						syntax: Syntax(asSyntax),
 						range: asSyntax.getRange(inFile: self.sourceFile),
-						typeName: typeName),
+						type: type),
 					operatorSymbol: operatorString,
-					typeName: expressionType)
+					type: type)
 			}
 			else if let isSyntax = elements[index].as(IsExprSyntax.self) {
 				if index != (elements.count - 1) {
@@ -2728,9 +2746,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 					rightExpression: TypeExpression(
 						syntax: Syntax(isSyntax),
 						range: isSyntax.getRange(inFile: self.sourceFile),
-						typeName: try convertType(isSyntax.typeName).description),
+						type: try convertType(isSyntax.typeName)),
 					operatorSymbol: "is",
-					typeName: "Bool")
+					type: .named(typeName: "Bool"))
 			}
 		}
 
@@ -2847,11 +2865,12 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 	/// by the `typeName` parameter.
 	func convertMemberAccessExpression(
 		_ memberAccessExpression: MemberAccessExprSyntax,
-		typeName: String? = nil)
+		typeName: SwiftType? = nil)
 		throws -> DotExpression
 	{
 		// Get information for the right side
-		let memberType = memberAccessExpression.getType(fromList: self.expressionTypes) ?? typeName
+		let memberType = memberAccessExpression.getType(fromList: self.expressionTypes) ??
+			typeName?.description
 
 		let rightSideToken = memberAccessExpression.name
 		let rightSideText = rightSideToken.text
@@ -2868,17 +2887,21 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			leftType.hasSuffix(".Type")
 		{
 			// If it's an `.` `token`
+
+			let typeName = String(leftType.dropLast(".Type".count))
+			let type = SwiftType.parse(from: typeName, sourceFile: sourceFile)
+
 			leftExpression = TypeExpression(
 				syntax: Syntax(memberAccessExpression),
 				range: memberAccessExpression.getRange(inFile: self.sourceFile),
-				typeName: String(leftType.dropLast(".Type".count)))
+				type: type)
 		}
 		else if let leftType = typeName {
 			// If it's an `.` `token` and the left type was given
 			leftExpression = TypeExpression(
 				syntax: Syntax(memberAccessExpression),
 				range: memberAccessExpression.getRange(inFile: self.sourceFile),
-				typeName: leftType)
+				type: leftType)
 		}
 		else {
 			leftExpression = try errorExpression(
@@ -2887,11 +2910,18 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		}
 
 		let rightSideRange = rightSideToken.getRange(inFile: self.sourceFile)
+		let type: SwiftType?
+		if let memberType = memberType {
+			type = SwiftType.parse(from: memberType, sourceFile: sourceFile)
+		}
+		else {
+			type = nil
+		}
 		let rightExpression = DeclarationReferenceExpression(
 			syntax: Syntax(rightSideToken),
 			range: rightSideRange,
 			identifier: rightSideText,
-			typeName: memberType,
+			type: type,
 			isStandardLibrary: expressionIsFromTheSwiftStandardLibrary(
 				expressionRange: rightSideRange,
 				expressionIdentifier: rightSideText))
@@ -2908,7 +2938,10 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 		throws -> Expression
 	{
 		// `[` `elements` `]`
-		guard let typeName = dictionaryExpression.getType(fromList: self.expressionTypes) else {
+		guard let type = try dictionaryExpression.getSwiftType(
+				fromList: self.expressionTypes,
+				sourceFile: self.sourceFile) else
+		{
 			return try errorExpression(
 				forASTNode: Syntax(dictionaryExpression),
 				withMessage: "Unable to get dictionary type from SourceKit")
@@ -2933,7 +2966,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			range: dictionaryExpression.getRange(inFile: self.sourceFile),
 			keys: keys,
 			values: values,
-			typeName: typeName)
+			type: type)
 	}
 
 	func convertArrayLiteralExpression(
@@ -2962,11 +2995,13 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			try convertExpression($0.expression)
 		})
 
+		let type = SwiftType.parse(from: cleanType, sourceFile: self.sourceFile)
+
 		return ArrayExpression(
 			syntax: Syntax(arrayExpression),
 			range: arrayExpression.getRange(inFile: self.sourceFile),
 			elements: elements,
-			typeName: cleanType)
+			type: type)
 	}
 
 	func convertNilLiteralExpression(
@@ -3028,7 +3063,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 				expression: closureExpression))
 		}
 
-		let callType = functionCallExpression.getType(fromList: self.expressionTypes)
+		let callType = try functionCallExpression.getSwiftType(
+			fromList: self.expressionTypes,
+			sourceFile: self.sourceFile)
 
 		let functionExpression = functionCallExpression.calledExpression
 		let functionExpressionTranslation = try convertExpression(functionExpression)
@@ -3043,8 +3080,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			SourceKit.typeUSRs.atomic.contains(
 				where: { $0.value == declarationReferenceExpression.identifier })
 		{
-			declarationReferenceExpression.typeName = "\(parameterTypes) -> " +
-				declarationReferenceExpression.identifier
+			let typeName = "\(parameterTypes) -> " + declarationReferenceExpression.identifier
+			let type = SwiftType.parse(from: typeName, sourceFile: self.sourceFile)
+			declarationReferenceExpression.swiftType = type
 		}
 
 		let isPure = self.isTranslatingPureAssignment ||
@@ -3057,7 +3095,7 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			range: functionCallExpression.getRange(inFile: self.sourceFile),
 			function: functionExpressionTranslation,
 			arguments: tupleExpression,
-			typeName: callType,
+			type: callType,
 			allowsTrailingClosure: false,
 			isPure: isPure)
 	}
@@ -3104,15 +3142,18 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			// When a variadic parameter is matched to a single expression, the expression's
 			// type comes wrapped in an array (e.g. the `_any` in `print(_any)` has type `[Any]`
 			// instead of `Any`). Try to detect these cases and remove the array wrap.
-			if let typeName = translatedExpression.swiftType {
+			if let typeName = translatedExpression.swiftType?.description {
 				let shouldRemoveArrayWrapper = parameter(
 					withLabel: label,
 					andType: typeName,
 					matchesVariadicInTypeList: labeledTypes)
 				if shouldRemoveArrayWrapper {
-					translatedExpression.swiftType = String(typeName
-						.dropFirst("Array<".count)
-						.dropLast(">".count))
+					let type = SwiftType.parse(
+						from: String(typeName
+							.dropFirst("Array<".count)
+							.dropLast(">".count)),
+						sourceFile: self.sourceFile)
+					translatedExpression.swiftType = type
 				}
 			}
 
@@ -3183,7 +3224,9 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 			syntax: Syntax(identifierExpression),
 			range: range,
 			identifier: identifierExpression.identifier.text,
-			typeName: identifierExpression.getType(fromList: self.expressionTypes),
+			type: try identifierExpression.getSwiftType(
+				fromList: self.expressionTypes,
+				sourceFile: self.sourceFile),
 			isStandardLibrary: expressionIsFromTheSwiftStandardLibrary(
 				expressionRange: range,
 				expressionIdentifier: identifierExpression.identifier.text))
@@ -3559,14 +3602,14 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 extension SwiftType {
 	/// Calls SwiftSyntax to parse a given type from a String and turn it into a `TypeSyntax`. Then
 	/// uses the `toSwiftType` algorithm to turn the `TypeSyntax` into a `SwiftType`.
-	static func parse(from typeName: String, sourceFile: SourceFile? = nil) throws -> SwiftType {
+	static func parse(from typeName: String, sourceFile: SourceFile? = nil) -> SwiftType {
 		let syntax = try! SwiftSyntax.SyntaxParser.parse(source: "let x: \(typeName)")
 		let typeSyntax = syntax.statements.first!
 			.item.as(VariableDeclSyntax.self)!
 			.bindings.first!
 			.typeAnnotation!
 			.type
-		return try typeSyntax.toSwiftType(usingSourceFile: sourceFile)
+		return try! typeSyntax.toSwiftType(usingSourceFile: sourceFile)
 	}
 }
 

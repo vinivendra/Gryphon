@@ -308,9 +308,9 @@ public class SourceKit {
 
 		let astsAndTypes: [(ast: [String: SourceKitRepresentable],
 							type: SourceKit.ExpressionType)] =
-			try list.map { ast in
+			list.map { ast in
 				let typeName = ast["key.expression_type"]! as! String
-				let swiftType = try SwiftType.parse(from: typeName, sourceFile: sourceFile)
+				let swiftType = SwiftType.parse(from: typeName, sourceFile: sourceFile)
 
 				return (ast,
 						ExpressionType(
@@ -405,5 +405,18 @@ extension SyntaxProtocol {
 		}
 
 		return result?.typeName.description
+	}
+
+	func getSwiftType(
+		fromList list: SortedList<SourceKit.ExpressionType>,
+		sourceFile: SourceFile)
+		throws -> SwiftType?
+	{
+		if let typeName = getType(fromList: list) {
+			return SwiftType.parse(from: typeName, sourceFile: sourceFile)
+		}
+		else {
+			return nil
+		}
 	}
 }

@@ -270,7 +270,8 @@ public class TranspilationContext {
 			let allPureFunctions = pureFunctions.atomic
 			for functionDeclaration in allPureFunctions {
 				if declarationExpression.identifier.hasPrefix(functionDeclaration.prefix),
-					declarationExpression.typeName == functionDeclaration.functionType
+				   declarationExpression.swiftType == (SwiftType.parse(
+						from: functionDeclaration.functionType, sourceFile: nil))
 				{
 					return true
 				}

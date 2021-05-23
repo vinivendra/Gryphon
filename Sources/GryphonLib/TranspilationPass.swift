@@ -763,7 +763,7 @@ public class TranspilationPass {
 			range: subscriptExpression.range,
 			subscriptedExpression: replaceExpression(subscriptExpression.subscriptedExpression),
 			indexExpression: processTupleExpression(subscriptExpression.indexExpression),
-			typeName: subscriptExpression.typeName)
+			type: subscriptExpression.type)
 	}
 
 	func replaceArrayExpression(
@@ -774,7 +774,7 @@ public class TranspilationPass {
 			syntax: arrayExpression.syntax,
 			range: arrayExpression.range,
 			elements: arrayExpression.elements.map { replaceExpression($0) }.toMutableList(),
-			typeName: arrayExpression.typeName)
+			type: arrayExpression.type)
 	}
 
 	func replaceDictionaryExpression(
@@ -786,7 +786,7 @@ public class TranspilationPass {
 			range: dictionaryExpression.range,
 			keys: dictionaryExpression.keys.map { replaceExpression($0) }.toMutableList(),
 			values: dictionaryExpression.values.map { replaceExpression($0) }.toMutableList(),
-			typeName: dictionaryExpression.typeName)
+			type: dictionaryExpression.type)
 	}
 
 	func replaceReturnExpression(
@@ -820,7 +820,7 @@ public class TranspilationPass {
 			leftExpression: replaceExpression(binaryOperatorExpression.leftExpression),
 			rightExpression: replaceExpression(binaryOperatorExpression.rightExpression),
 			operatorSymbol: binaryOperatorExpression.operatorSymbol,
-			typeName: binaryOperatorExpression.typeName)
+			type: binaryOperatorExpression.type)
 	}
 
 	func replacePrefixUnaryExpression(
@@ -832,7 +832,7 @@ public class TranspilationPass {
 			range: prefixUnaryExpression.range,
 			subExpression: replaceExpression(prefixUnaryExpression.subExpression),
 			operatorSymbol: prefixUnaryExpression.operatorSymbol,
-			typeName: prefixUnaryExpression.typeName)
+			type: prefixUnaryExpression.type)
 	}
 
 	func replacePostfixUnaryExpression(
@@ -844,7 +844,7 @@ public class TranspilationPass {
 			range: postfixUnaryExpression.range,
 			subExpression: replaceExpression(postfixUnaryExpression.subExpression),
 			operatorSymbol: postfixUnaryExpression.operatorSymbol,
-			typeName: postfixUnaryExpression.typeName)
+			type: postfixUnaryExpression.type)
 	}
 
 	func replaceIfExpression(
@@ -875,7 +875,7 @@ public class TranspilationPass {
 			range: callExpression.range,
 			function: replaceExpression(callExpression.function),
 			arguments: processTupleExpression(callExpression.arguments),
-			typeName: callExpression.typeName,
+			type: callExpression.type,
 			allowsTrailingClosure: callExpression.allowsTrailingClosure,
 			isPure: callExpression.isPure)
 	}
@@ -889,7 +889,7 @@ public class TranspilationPass {
 			range: closureExpression.range,
 			parameters: closureExpression.parameters,
 			statements: replaceStatements(closureExpression.statements),
-			typeName: closureExpression.typeName,
+			type: closureExpression.type,
 			isTrailing: closureExpression.isTrailing)
 	}
 
@@ -1339,10 +1339,11 @@ public class InnerTypePrefixesTranspilationPass: TranspilationPass {
 		_ typeExpression: TypeExpression)
 		-> Expression
 	{
+		let type = SwiftType.parse(from: removePrefixes(typeExpression.type.description))
 		return TypeExpression(
 			syntax: typeExpression.syntax,
 			range: typeExpression.range,
-			typeName: removePrefixes(typeExpression.typeName))
+			type: type)
 	}
 }
 
@@ -1353,7 +1354,9 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 		_ typeExpression: TypeExpression)
 		-> Expression
 	{
-		let typeComponents = Utilities.splitTypeList(typeExpression.typeName, separators: ["."])
+		let typeComponents = Utilities.splitTypeList(
+			typeExpression.type.description,
+			separators: ["."])
 
 		// This should work for both `B.c` and `A.B.c` (assuming the recorded enum name is `B`).
 		if typeComponents.count >= 2,
@@ -1362,10 +1365,11 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 		{
 			let typePrefix = typeComponents.dropLast().joined(separator: ".")
 			let newType = typePrefix + "." + typeComponents.last!.capitalizedAsCamelCase()
+			let type = SwiftType.parse(from: newType, sourceFile: ast.sourceFile)
 			return TypeExpression(
 				syntax: typeExpression.syntax,
 				range: typeExpression.range,
-				typeName: newType)
+				type: type)
 		}
 
 		return super.replaceTypeExpression(typeExpression)
@@ -1382,7 +1386,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 		}
 		else if let enumExpression = dotExpression.leftExpression as? TypeExpression
 		{
-			enumType = enumExpression.typeName
+			enumType = enumExpression.type.description
 		}
 		else if let enumExpression = dotExpression.leftExpression as? DotExpression,
 			let typeName = enumExpression.asString()
@@ -1397,6 +1401,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 			// Enum types may need to be processed before they can be correctly interpreted
 			// (i.e. they may be `List<MyEnum>.ArrayLiteralElement` instead of `MyEnum`
 			let mappedEnumType = Utilities.getTypeMapping(for: enumType) ?? enumType
+			let type = SwiftType.parse(from: enumType, sourceFile: ast.sourceFile)
 			let lastEnumType = String(mappedEnumType
 				.split(withStringSeparator: ".")
 				.last!)
@@ -1410,7 +1415,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 					leftExpression: TypeExpression(
 						syntax: dotExpression.leftExpression.syntax,
 						range: dotExpression.leftExpression.range,
-						typeName: enumType),
+						type: type),
 					rightExpression: enumExpression)
 			}
 			else if self.context.hasEnumClass(named: lastEnumType) {
@@ -1421,7 +1426,7 @@ public class CapitalizeEnumsTranspilationPass: TranspilationPass {
 					leftExpression: TypeExpression(
 						syntax: dotExpression.leftExpression.syntax,
 						range: dotExpression.leftExpression.range,
-						typeName: enumType),
+						type: type),
 					rightExpression: enumExpression)
 			}
 		}
@@ -1498,7 +1503,7 @@ public class RenameOperatorsTranspilationPass: TranspilationPass {
 				leftExpression: binaryOperatorExpression.leftExpression,
 				rightExpression: binaryOperatorExpression.rightExpression,
 				operatorSymbol: operatorTranslation,
-				typeName: binaryOperatorExpression.typeName))
+				type: binaryOperatorExpression.type))
 		}
 		else {
 			return super.replaceBinaryOperatorExpression(binaryOperatorExpression)
@@ -1604,7 +1609,7 @@ public class CallsToSuperclassInitializersTranspilationPass: TranspilationPass {
 					range: callExpression.range,
 					function: leftExpression,
 					arguments: callExpression.arguments,
-					typeName: callExpression.typeName,
+					type: callExpression.type,
 					allowsTrailingClosure: callExpression.allowsTrailingClosure,
 					isPure: callExpression.isPure)
 			}
@@ -1645,7 +1650,7 @@ public class OptionalsInConditionalCastsTranspilationPass: TranspilationPass {
 			leftExpression: optionalExpression.expression,
 			rightExpression: binaryOperatorExpression.rightExpression,
 			operatorSymbol: "as?",
-			typeName: binaryOperatorExpression.typeName)
+			type: binaryOperatorExpression.type)
 	}
 }
 
@@ -2386,32 +2391,33 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 	{
 		// Deal with cases where an initializer is used directly (i.e. `MutableList<Int>(array)`)
 		if let typeExpression = callExpression.function as? TypeExpression {
-			let isMutableList = typeExpression.typeName.hasPrefix("MutableList<")
-			let isList = typeExpression.typeName.hasPrefix("List<")
-			let isMutableMap = typeExpression.typeName.hasPrefix("MutableMap<")
-			let isMap = typeExpression.typeName.hasPrefix("Map<")
+			let typeName = typeExpression.type.description
+			let isMutableList = typeName.hasPrefix("MutableList<")
+			let isList = typeName.hasPrefix("List<")
+			let isMutableMap = typeName.hasPrefix("MutableMap<")
+			let isMap = typeName.hasPrefix("Map<")
 
 			let functionName: String
 			let genericElementsString: String
 			if isMutableList {
 				functionName = "toMutableList"
 				genericElementsString =
-					String(typeExpression.typeName.dropFirst("MutableList<".count).dropLast())
+					String(typeName.dropFirst("MutableList<".count).dropLast())
 			}
 			else if isList {
 				functionName = "toList"
 				genericElementsString =
-					String(typeExpression.typeName.dropFirst("List<".count).dropLast())
+					String(typeName.dropFirst("List<".count).dropLast())
 			}
 			else if isMutableMap {
 				functionName = "toMutableMap"
 				genericElementsString =
-					String(typeExpression.typeName.dropFirst("MutableMap<".count).dropLast())
+					String(typeName.dropFirst("MutableMap<".count).dropLast())
 			}
 			else if isMap {
 				functionName = "toMap"
 				genericElementsString =
-					String(typeExpression.typeName.dropFirst("Map<".count).dropLast())
+					String(typeName.dropFirst("Map<".count).dropLast())
 			}
 			else {
 				return super.replaceCallExpression(callExpression)
@@ -2438,13 +2444,13 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 							syntax: callExpression.syntax,
 							range: callExpression.range,
 							identifier: "\(functionName)<\(mappedGenericString)>",
-							typeName: typeExpression.typeName,
+							type: typeExpression.type,
 							isStandardLibrary: false),
 						arguments: TupleExpression(
 							syntax: callExpression.syntax,
 							range: callExpression.range,
 							pairs: []),
-						typeName: typeExpression.typeName,
+						type: typeExpression.type,
 						allowsTrailingClosure: callExpression.allowsTrailingClosure,
 						isPure: callExpression.isPure))
 			}
@@ -2452,7 +2458,7 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 
 		// Deal with cases where the casting method is called (i.e. `list.as(List<Int>.self)`)
 		if let dotExpression = callExpression.function as? DotExpression {
-			if let leftType = dotExpression.leftExpression.swiftType,
+			if let leftType = dotExpression.leftExpression.swiftType?.description,
 				(leftType.hasPrefix("MutableList") ||
 					leftType.hasPrefix("List") ||
 					leftType.hasPrefix("MutableMap") ||
@@ -2483,27 +2489,28 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 					}
 
 					if let typeExpression = maybeTypeExpression {
+						let typeName = typeExpression.type.description
 						let methodPrefix: String
 						let castedGenerics: String
-						if typeExpression.typeName.hasPrefix("List<") {
+						if typeName.hasPrefix("List<") {
 							methodPrefix = "cast" + methodSuffix
 							castedGenerics = String(
-								typeExpression.typeName.dropFirst("List<".count).dropLast())
+								typeName.dropFirst("List<".count).dropLast())
 						}
-						else if typeExpression.typeName.hasPrefix("MutableList<") {
+						else if typeName.hasPrefix("MutableList<") {
 							methodPrefix = "castMutable" + methodSuffix
 							castedGenerics = String(
-								typeExpression.typeName.dropFirst("MutableList<".count).dropLast())
+								typeName.dropFirst("MutableList<".count).dropLast())
 						}
-						else if typeExpression.typeName.hasPrefix("Map<") {
+						else if typeName.hasPrefix("Map<") {
 							methodPrefix = "cast" + methodSuffix
 							castedGenerics = String(
-								typeExpression.typeName.dropFirst("Map<".count).dropLast())
+								typeName.dropFirst("Map<".count).dropLast())
 						}
-						else if typeExpression.typeName.hasPrefix("MutableMap<") {
+						else if typeName.hasPrefix("MutableMap<") {
 							methodPrefix = "castMutable" + methodSuffix
 							castedGenerics = String(
-								typeExpression.typeName.dropFirst("MutableMap<".count).dropLast())
+								typeName.dropFirst("MutableMap<".count).dropLast())
 						}
 						else {
 							return super.replaceCallExpression(callExpression)
@@ -2524,13 +2531,13 @@ public class CovarianceInitsAsCallsTranspilationPass: TranspilationPass {
 									syntax: rightExpression.syntax,
 									range: rightExpression.range,
 									identifier: fullMethodName,
-									typeName: rightExpression.typeName,
+									type: rightExpression.type,
 									isStandardLibrary: rightExpression.isStandardLibrary)),
 							arguments: TupleExpression(
 								syntax: callExpression.arguments.syntax,
 								range: callExpression.arguments.range,
 								pairs: []),
-							typeName: callExpression.typeName,
+							type: callExpression.type,
 							allowsTrailingClosure: callExpression.allowsTrailingClosure,
 							isPure: callExpression.isPure)
 					}
@@ -2560,10 +2567,11 @@ public class OptionalFunctionCallsTranspilationPass: TranspilationPass {
 						syntax: callExpression.syntax,
 						range: callExpression.range,
 						identifier: "invoke",
-						typeName: callExpression.function.swiftType ?? "<<Error>>",
+						type: callExpression.function.swiftType ??
+							.named(typeName: "<<Error>>"),
 						isStandardLibrary: false)),
 				arguments: callExpression.arguments,
-				typeName: callExpression.typeName,
+				type: callExpression.type,
 				allowsTrailingClosure: callExpression.allowsTrailingClosure,
 				isPure: callExpression.isPure)
 		}
@@ -2588,7 +2596,8 @@ public class DataStructureInitializersTranspilationPass: TranspilationPass {
 			}
 
 			// Get the function's name and the generic elements
-			let typeName = typeExpression.typeName
+			let type = typeExpression.type
+			let typeName = type.description
 
 			let functionName: String
 			let genericElements: String
@@ -2619,10 +2628,10 @@ public class DataStructureInitializersTranspilationPass: TranspilationPass {
 					syntax: callExpression.syntax,
 					range: callExpression.range,
 					identifier: "\(functionName)<\(genericElements)>",
-					typeName: typeName,
+					type: type,
 					isStandardLibrary: false),
 				arguments: callExpression.arguments,
-				typeName: typeName,
+				type: type,
 				allowsTrailingClosure: callExpression.allowsTrailingClosure,
 				isPure: callExpression.isPure)
 		}
@@ -2670,7 +2679,7 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 			return getLabelForFunction(dotExpression.rightExpression)
 		}
 		else if let typeExpression = functionExpression as? TypeExpression {
-			return typeExpression.typeName
+			return typeExpression.type.description
 		}
 		else if let literalCodeExpression = functionExpression as? LiteralCodeExpression {
 			return literalCodeExpression.string
@@ -2702,7 +2711,7 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 						range: closureExpression.range,
 						parameters: closureExpression.parameters,
 						statements: newStatements,
-						typeName: closureExpression.typeName,
+						type: closureExpression.type,
 						isTrailing: closureExpression.isTrailing))
 				}
 			}
@@ -2723,7 +2732,7 @@ public class ReturnsInLambdasTranspilationPass: TranspilationPass {
 						range: closureExpression.range,
 						parameters: closureExpression.parameters,
 						statements: [newSwitchStatement],
-						typeName: closureExpression.typeName,
+						type: closureExpression.type,
 						isTrailing: closureExpression.isTrailing))
 				}
 			}
@@ -2774,10 +2783,12 @@ public class TuplesToPairsTranspilationPass: TranspilationPass {
 
 		// Try to find out the types of the expressions so we can form the correct result type
 		let maybeTypes = tupleExpression.pairs.map { $0.expression.swiftType }
-		guard let types = maybeTypes.as(List<String>.self) else {
+		guard let types = maybeTypes.as(List<String>.self)?.toMutableList() else {
 			return super.replaceTupleExpression(tupleExpression)
 		}
-		let pairType = "Pair<\(types.joined(separator: ", "))>"
+		let pairType = SwiftType.parse(
+			from: "Pair<\(types.joined(separator: ", "))>",
+			sourceFile: ast.sourceFile)
 
 		return CallExpression(
 			syntax: tupleExpression.syntax,
@@ -2785,7 +2796,7 @@ public class TuplesToPairsTranspilationPass: TranspilationPass {
 			function: TypeExpression(
 				syntax: tupleExpression.syntax,
 				range: tupleExpression.range,
-				typeName: pairType),
+				type: pairType),
 			arguments: TupleExpression(
 				syntax: tupleExpression.syntax,
 				range: tupleExpression.range,
@@ -2797,7 +2808,7 @@ public class TuplesToPairsTranspilationPass: TranspilationPass {
 						label: nil,
 						expression: super.replaceExpression(tupleExpression.pairs[1].expression)),
 			]),
-			typeName: pairType,
+			type: pairType,
 			allowsTrailingClosure: false,
 			isPure: true)
 	}
@@ -2821,12 +2832,12 @@ public class TupleMembersTranspilationPass: TranspilationPass {
 
 		// Support both `(Int, Int)` and `Dictionary<Int, Int>.Element`
 		let swiftType: String
-		if let typeName = replacedDotExpression.leftExpression.swiftType,
+		if let typeName = replacedDotExpression.leftExpression.swiftType?.description,
 			Utilities.isInEnvelopingParentheses(typeName)
 		{
 			swiftType = typeName
 		}
-		else if let typeName = replacedDotExpression.leftExpression.swiftType {
+		else if let typeName = replacedDotExpression.leftExpression.swiftType?.description {
 			let typeComponents = Utilities.splitTypeList(typeName, separators: ["."])
 			if typeComponents.count == 2,
 				typeComponents.last == "Element",
@@ -2878,7 +2889,8 @@ public class TupleMembersTranspilationPass: TranspilationPass {
 		}
 
 		// If we already had a type, leave it. If not, get the type from the tuple's type
-		let typeName = memberExpression.typeName ?? tupleComponents[tupleMemberIndex]
+		let type = memberExpression.type ??
+			SwiftType.parse(from: tupleComponents[tupleMemberIndex], sourceFile: ast.sourceFile)
 
 		let newIdentifier: String
 
@@ -2898,7 +2910,7 @@ public class TupleMembersTranspilationPass: TranspilationPass {
 				syntax: memberExpression.syntax,
 				range: memberExpression.range,
 				identifier: newIdentifier,
-				typeName: typeName,
+				type: type,
 				isStandardLibrary: memberExpression.isStandardLibrary))
 	}
 }
@@ -2910,13 +2922,13 @@ public class AutoclosuresTranspilationPass: TranspilationPass {
 		_ callExpression: CallExpression)
 		-> Expression
 	{
-		guard let type = callExpression.function.swiftType,
-			type.contains("@autoclosure") else
+		guard let typeName = callExpression.function.swiftType?.description,
+			  typeName.contains("@autoclosure") else
 		{
 			return callExpression
 		}
 
-		let parametersString = Utilities.splitTypeList(type, separators: [" -> "]).secondToLast!
+		let parametersString = Utilities.splitTypeList(typeName, separators: [" -> "]).secondToLast!
 		let parametersWithoutParentheses = String(parametersString.dropFirst().dropLast())
 		let parameterTypes = Utilities.splitTypeList(parametersWithoutParentheses)
 
@@ -2934,7 +2946,7 @@ public class AutoclosuresTranspilationPass: TranspilationPass {
 						syntax: expression.syntax,
 						range: expression.range,
 						expression: expression), ],
-					typeName: parameterType,
+					type: SwiftType.parse(from: parameterType, sourceFile: ast.sourceFile),
 					isTrailing: false)
 
 				callExpression.arguments.pairs[index] = LabeledExpression(
@@ -2959,14 +2971,15 @@ public class RefactorOptionalsInSubscriptsTranspilationPass: TranspilationPass {
 		-> Expression
 	{
 		if subscriptExpression.subscriptedExpression is OptionalExpression {
-			let indexExpressionType = subscriptExpression.indexExpression.swiftType ?? "<<Error>>"
+			let indexExpressionType = subscriptExpression.indexExpression.swiftType?.description ??
+				"<<Error>>"
 
 			let returnType: String
-			if subscriptExpression.typeName.hasSuffix("?") {
-				returnType = String(subscriptExpression.typeName.dropLast())
+			if subscriptExpression.type.description.hasSuffix("?") {
+				returnType = String(subscriptExpression.type.description.dropLast())
 			}
 			else {
-				returnType = subscriptExpression.typeName
+				returnType = subscriptExpression.type.description
 			}
 
 			return replaceDotExpression(DotExpression(
@@ -2980,10 +2993,12 @@ public class RefactorOptionalsInSubscriptsTranspilationPass: TranspilationPass {
 						syntax: subscriptExpression.subscriptedExpression.syntax,
 						range: subscriptExpression.subscriptedExpression.range,
 						identifier: "get",
-						typeName: "\(indexExpressionType) -> \(returnType)",
+						type: SwiftType.parse(
+							from: "\(indexExpressionType) -> \(returnType)",
+							sourceFile: ast.sourceFile),
 						isStandardLibrary: false),
 					arguments: subscriptExpression.indexExpression,
-					typeName: subscriptExpression.typeName,
+					type: subscriptExpression.type,
 					allowsTrailingClosure: false,
 					isPure: true)))
 		}
@@ -3283,7 +3298,7 @@ public class IsOperatorsInSwitchesTranspilationPass: TranspilationPass {
 	{
 		if let declarationReferenceExpression =
 				switchStatement.expression as? DeclarationReferenceExpression,
-			let declarationType = declarationReferenceExpression.typeName
+		   let declarationType = declarationReferenceExpression.type?.description
 		{
 			if self.context.hasSealedClass(named: declarationType) {
 				let newCases = switchStatement.cases.map {
@@ -3333,10 +3348,12 @@ public class IsOperatorsInSwitchesTranspilationPass: TranspilationPass {
 					rightExpression: TypeExpression(
 						syntax: typeExpression.syntax,
 						range: typeExpression.range,
-						typeName: "\(typeExpression.typeName)." +
-							"\(declarationReferenceExpression.identifier)"),
+						type: SwiftType.parse(
+							from: "\(typeExpression.type.description)." +
+								"\(declarationReferenceExpression.identifier)",
+							sourceFile: ast.sourceFile)),
 					operatorSymbol: "is",
-					typeName: "Bool")
+					type: .named(typeName: "Bool"))
 			}
 		}
 
@@ -3360,7 +3377,8 @@ public class IsOperatorsInIfStatementsTranspilationPass: TranspilationPass {
 				{
 					// Type expression is currently "MyEnum.enumCase". Separate it so we can
 					// check if the enum is in the context.
-					let enumName = typeExpression.typeName.split(withStringSeparator: ".")[0]
+					let enumName = typeExpression.type.description
+						.split(withStringSeparator: ".")[0]
 
 					// If it's an enum class, change it from "is" to "=="
 					if self.context.hasEnumClass(named: enumName) {
@@ -3370,7 +3388,7 @@ public class IsOperatorsInIfStatementsTranspilationPass: TranspilationPass {
 							leftExpression: binaryExpression.leftExpression,
 							rightExpression: binaryExpression.rightExpression,
 							operatorSymbol: "==",
-							typeName: binaryExpression.typeName))
+							type: binaryExpression.type))
 					}
 				}
 			}
@@ -3440,7 +3458,7 @@ public class ShadowedIfLetAsToIsTranspilationPass: TranspilationPass {
 										leftExpression: leftExpression,
 										rightExpression: rightExpression,
 										operatorSymbol: "is",
-										typeName: "Bool")))
+										type: .named(typeName: "Bool"))))
 							}
 						}
 					}
@@ -3570,7 +3588,7 @@ public class RecordFunctionsTranspilationPass: TranspilationPass {
 		let parameters = properties.compactMap
 			{ (variableDeclaration: VariableDeclaration) -> FunctionParameter? in
 				guard let typeName = variableDeclaration.typeAnnotation ??
-					variableDeclaration.expression?.swiftType else
+					variableDeclaration.expression?.swiftType?.description else
 				{
 					return nil
 				}
@@ -3739,7 +3757,7 @@ public class RaiseDoubleOptionalWarningsTranspilationPass: TranspilationPass {
 		_ expression: Expression)
 		-> Expression
 	{
-		if let typeName = expression.swiftType {
+		if let typeName = expression.swiftType?.description {
 			if typeName.hasSuffix("??") {
 				let message = "Double optionals may behave differently in Kotlin."
 				Compiler.handleWarning(
@@ -3869,7 +3887,7 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 		_ expression: Expression)
 		-> Expression
 	{
-		if let type = expression.swiftType {
+		if let type = expression.swiftType?.description {
 			if type.isDictionaryDeclaration() {
 				let message = "Native type \(type) can lead to different behavior in Kotlin. " +
 					"Prefer Map or MutableMap instead."
@@ -3901,18 +3919,18 @@ public class RaiseNativeDataStructureWarningsTranspilationPass: TranspilationPas
 	{
 		// If the expression is being transformed into a mutableList or a mutableMap it's probably
 		// ok.
-		if let leftExpressionType = dotExpression.leftExpression.swiftType,
+		if let leftExpressionType = dotExpression.leftExpression.swiftType?.description,
 			leftExpressionType.hasPrefix("["),
 			let callExpression = dotExpression.rightExpression as? CallExpression
 		{
-			if let callType = callExpression.typeName {
+			if let callType = callExpression.type?.description {
 				if (callType.hasPrefix("MutableList") ||
 						callType.hasPrefix("List") ||
 						callType.hasPrefix("MutableMap") ||
 						callType.hasPrefix("Map")),
 					let declarationReference =
 						callExpression.function as? DeclarationReferenceExpression,
-					let declarationType = declarationReference.typeName
+					let declarationType = declarationReference.type?.description
 				{
 					if declarationReference.identifier.hasPrefix("toMutable"),
 						(declarationType.hasPrefix("MutableList") ||
@@ -4187,6 +4205,11 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 		-> IfStatement.IfCondition
 	{
 		if case let .declaration(variableDeclaration: variableDeclaration) = condition {
+			let type = variableDeclaration.typeAnnotation.map {
+				SwiftType.parse(
+					from: $0,
+					sourceFile: ast.sourceFile)
+			}
 			return .condition(expression: BinaryOperatorExpression(
 				syntax: variableDeclaration.syntax,
 				range: variableDeclaration.range,
@@ -4194,13 +4217,13 @@ public class RearrangeIfLetsTranspilationPass: TranspilationPass {
 					syntax: variableDeclaration.expression?.syntax,
 					range: variableDeclaration.expression?.range,
 					identifier: variableDeclaration.identifier,
-					typeName: variableDeclaration.typeAnnotation,
+					type: type,
 					isStandardLibrary: false),
 				rightExpression: NilLiteralExpression(
 					syntax: variableDeclaration.syntax,
 					range: variableDeclaration.range),
 				operatorSymbol: "!=",
-				typeName: "Boolean"))
+				type: .named(typeName: "Bool")))
 		}
 		else {
 			return condition
@@ -4298,7 +4321,7 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 				syntax: syntax,
 				range: range,
 				identifier: "this",
-				typeName: lhs.typeName,
+				type: SwiftType.parse(from: lhs.typeName, sourceFile: ast.sourceFile),
 				isStandardLibrary: false),
 			getter: nil,
 			setter: nil,
@@ -4317,7 +4340,7 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 				syntax: syntax,
 				range: range,
 				identifier: "other",
-				typeName: "Any?",
+				type: .named(typeName: "Any?"),
 				isStandardLibrary: false),
 			getter: nil,
 			setter: nil,
@@ -4339,14 +4362,16 @@ public class EquatableOperatorsTranspilationPass: TranspilationPass {
 					syntax: syntax,
 					range: range,
 					identifier: rhs.label,
-					typeName: "Any?",
+					type: .named(typeName: "Any?"),
 					isStandardLibrary: false),
 				rightExpression: TypeExpression(
 					syntax: syntax,
 					range: range,
-					typeName: rhs.typeName),
+					type: SwiftType.parse(
+						from: rhs.typeName,
+						sourceFile: ast.sourceFile)),
 				operatorSymbol: "is",
-				typeName: "Bool")),
+				type: .named(typeName: "Bool"))),
 			],
 			declarations: [],
 			statements: oldStatements,
@@ -4439,13 +4464,13 @@ public class RawValuesMembersTranspilationPass: TranspilationPass {
 		_ enumDeclaration: EnumDeclaration)
 		-> List<Statement>
 	{
-		if let typeName = enumDeclaration.elements.compactMap({ $0.rawValue?.swiftType }).first {
+		if let type = enumDeclaration.elements.compactMap({ $0.rawValue?.swiftType }).first {
 			let rawValueVariable = createRawValueVariable(
-				withRawValueType: typeName,
+				withRawValueType: type.description,
 				forEnumDeclaration: enumDeclaration)
 
 			let rawValueInitializer = createRawValueInitializer(
-				withRawValueType: typeName,
+				withRawValueType: type.description,
 				forEnumDeclaration: enumDeclaration)
 
 			enumDeclaration.members.append(rawValueInitializer)
@@ -4471,27 +4496,29 @@ public class RawValuesMembersTranspilationPass: TranspilationPass {
 				leftExpression: DeclarationReferenceExpression(
 					range: range,
 					identifier: "it",
-					typeName: enumDeclaration.enumName,
+					type: .named(typeName: enumDeclaration.enumName),
 					isStandardLibrary: false),
 				rightExpression: DeclarationReferenceExpression(
 					range: range,
 					identifier: "rawValue",
-					typeName: rawValueType,
+					type: .named(typeName: rawValueType),
 					isStandardLibrary: false)),
 			rightExpression: DeclarationReferenceExpression(
 				range: range,
 				identifier: "rawValue",
-				typeName: rawValueType,
+				type: .named(typeName: rawValueType),
 				isStandardLibrary: false),
 			operatorSymbol: "==",
-			typeName: "Bool")
+			type: .named(typeName: "Bool"))
 
 		// { it.rawValue == rawValue }
 		let closure = ClosureExpression(
 			range: range,
 			parameters: [],
 			statements: [ExpressionStatement(range: range, expression: comparisonExpression)],
-			typeName: "(\(enumDeclaration.enumName)) -> Bool",
+			type: .function(
+				parameters: [.named(typeName: enumDeclaration.enumName)],
+				returnType: .named(typeName: "Bool")),
 			isTrailing: true)
 
 		// firstOrNull { it.rawValue == rawValue }
@@ -4500,12 +4527,17 @@ public class RawValuesMembersTranspilationPass: TranspilationPass {
 			function: DeclarationReferenceExpression(
 				range: range,
 				identifier: "firstOrNull",
-				typeName: "((\(enumDeclaration.enumName)) -> Bool) -> \(enumDeclaration.enumName)?",
+				// "((\(enumDeclaration.enumName)) -> Bool) -> \(enumDeclaration.enumName)?"
+				type: .function(
+					parameters: [.function(
+						parameters: [.named(typeName: enumDeclaration.enumName)],
+						returnType: .named(typeName: "Bool"))],
+					returnType: .optional(subType: .named(typeName: enumDeclaration.enumName))),
 				isStandardLibrary: false),
 			arguments: TupleExpression(
 				range: range,
 				pairs: [LabeledExpression(label: nil, expression: closure)]),
-			typeName: enumDeclaration.enumName,
+			type: .named(typeName: enumDeclaration.enumName),
 			allowsTrailingClosure: true,
 			isPure: true)
 
@@ -4517,10 +4549,16 @@ public class RawValuesMembersTranspilationPass: TranspilationPass {
 				function: DeclarationReferenceExpression(
 					range: range,
 					identifier: "values",
-					typeName: "() -> List<\(enumDeclaration.enumName)>",
+					type: .function(
+						parameters: [],
+						returnType: .generic(
+							typeName: "List",
+							genericArguments: [.named(typeName: enumDeclaration.enumName)])),
 					isStandardLibrary: false),
 				arguments: TupleExpression(range: nil, pairs: []),
-				typeName: "List<\(enumDeclaration.enumName)>",
+				type: .generic(
+					typeName: "List",
+					genericArguments: [.named(typeName: enumDeclaration.enumName)]),
 				allowsTrailingClosure: false,
 				isPure: true),
 			rightExpression: callExpression)
@@ -4604,7 +4642,7 @@ public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
 					leftExpression: binaryOperatorExpression.leftExpression,
 					rightExpression: binaryOperatorExpression.rightExpression,
 					operatorSymbol: "==",
-					typeName: binaryOperatorExpression.typeName)
+					type: binaryOperatorExpression.type)
 				shouldStillBeGuard = false
 			}
 			else if let binaryOperatorExpression =
@@ -4617,7 +4655,7 @@ public class DoubleNegativesInGuardsTranspilationPass: TranspilationPass {
 					leftExpression: binaryOperatorExpression.leftExpression,
 					rightExpression: binaryOperatorExpression.rightExpression,
 					operatorSymbol: "!=",
-					typeName: binaryOperatorExpression.typeName)
+					type: binaryOperatorExpression.type)
 				shouldStillBeGuard = false
 			}
 			else {
@@ -4675,7 +4713,7 @@ public class ReturnIfNilTranspilationPass: TranspilationPass {
 										range: ifStatement.range,
 										expression: returnStatement.expression),
 									operatorSymbol: "?:",
-									typeName: declarationExpression.typeName)), ]
+									type: declarationExpression.type)), ]
 						}
 					}
 				}
@@ -4823,7 +4861,7 @@ public class RemoveOverridesTranspilationPass: TranspilationPass {
 /// CharacterLiteralExpressions.
 public class CharactersInSwitchesTranspilationPass: TranspilationPass {
 	override func replaceSwitchStatement(_ switchStatement: SwitchStatement) -> List<Statement> {
-		if let typeName = switchStatement.expression.swiftType,
+		if let typeName = switchStatement.expression.swiftType?.description,
 			Utilities.getTypeMapping(for: typeName) == "Char"
 		{
 			for switchCase in switchStatement.cases {
@@ -4898,7 +4936,7 @@ public class AnnotationsForCaseLetsTranspilationPass: TranspilationPass {
 
 			// ["A", "B"]
 			let typeComponents =
-				Utilities.splitTypeList(typeExpression.typeName, separators: ["."])
+				Utilities.splitTypeList(typeExpression.type.description, separators: ["."])
 
 			// Get the enum element declaration
 			guard let enumName = typeComponents.secondToLast,
@@ -5021,7 +5059,7 @@ public class MatchFunctionCallsToDeclarationsTranspilationPass: TranspilationPas
 		// Try to find a function translation
 		let maybeFunctionTranslation: TranspilationContext.FunctionTranslation?
 		if let expression = functionExpression as? DeclarationReferenceExpression,
-			let typeName = expression.typeName
+		   let typeName = expression.type?.description
 		{
 			maybeFunctionTranslation = self.context.getFunctionTranslation(
 				forName: expression.identifier,
@@ -5030,7 +5068,7 @@ public class MatchFunctionCallsToDeclarationsTranspilationPass: TranspilationPas
 		else if let typeExpression = functionExpression as? TypeExpression,
 			let argumentTypes = callExpression.arguments.swiftType
 		{
-			let typeName = typeExpression.typeName
+			let typeName = typeExpression.type.description
 			let initializerType = "(\(typeName).Type) -> \(argumentTypes) -> \(typeName)"
 			maybeFunctionTranslation = self.context.getFunctionTranslation(
 				forName: typeName,

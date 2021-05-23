@@ -1164,7 +1164,7 @@ public class KotlinTranslator {
 		if let binaryExpression = caseExpression as? BinaryOperatorExpression {
 			if binaryExpression.leftExpression == switchExpression,
 				binaryExpression.operatorSymbol == "is",
-				binaryExpression.typeName == "Bool"
+				binaryExpression.type?.description == "Bool"
 			{
 				// If is a check for a cast (`direction is .north`)
 				let translatedType = try translateExpression(
@@ -1319,7 +1319,7 @@ public class KotlinTranslator {
 			// If we can't, leave it empty and hope Kotlin figures it out.
 			if typeAnnotation == "Array" || typeAnnotation == "Dictionary" {
 				if let expressionType = variableDeclaration.expression?.swiftType {
-					let translatedType = translateType(expressionType)
+					let translatedType = translateType(expressionType.description)
 					result.append(": \(translatedType)")
 				}
 			}
@@ -1462,7 +1462,7 @@ public class KotlinTranslator {
 		if let typeExpression = expression as? TypeExpression {
 			return KotlinTranslation(
 				range: typeExpression.range,
-				string: translateType(typeExpression.typeName))
+				string: translateType(typeExpression.type.description))
 		}
 		if let subscriptExpression = expression as? SubscriptExpression {
 			return try translateSubscriptExpression(
@@ -1576,7 +1576,7 @@ public class KotlinTranslator {
 			try translateExpression($0, withIndentation: indentation)
 			}
 
-		if arrayExpression.typeName.hasPrefix("MutableList") {
+		if arrayExpression.type.description.hasPrefix("MutableList") {
 			result.append("mutableListOf")
 		}
 		else {
@@ -1597,7 +1597,7 @@ public class KotlinTranslator {
 	{
 		let result = KotlinTranslation(range: dictionaryExpression.range)
 
-		if dictionaryExpression.typeName.hasPrefix("MutableMap") {
+		if dictionaryExpression.type.description.hasPrefix("MutableMap") {
 			result.append("mutableMapOf(")
 		}
 		else {

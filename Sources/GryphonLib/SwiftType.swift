@@ -17,9 +17,17 @@
 //
 
 // TODO:
-// - Use the string everywhere
-// - Make the string be updated when the type changes
-// - Remove the string little by little, top to bottom
+// - Use the SwiftType in the AST, always converting it to/from String in order to set and modify it
+//   - To turn a String into a SwiftType
+//     - Use `try SwiftType.parse(from: String, sourceFile: SourceFile?)`
+//     - Use `getSwiftType(fromList: self.expressionTypes, sourceFile: self.sourceFile)`
+//  - To turn a SwiftType into a String
+//     - Use `type.description`
+// - Use the SwiftType in the KotlinTranslation (if applicable)
+// - Remove the `parse` and `description` uses little by little, top to bottom, to use only the
+//   SwiftType structs (never the String representations)
+// - Consider bulk parsing the SwiftTypes by creating a fake file with many `let x: Type` (instead
+//   of just one at a time) to improve performance.
 
 /**
 * `SwiftType`s are organized as in a pseudo-subclass hierarchy, but using structs. The superclass is

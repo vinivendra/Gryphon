@@ -65,19 +65,19 @@ class LibraryTranspilationTest: XCTestCase {
 		let arrayExpression1 = ArrayExpression(
 			range: nil,
 			elements: [integerExpression1, integerExpression2, integerExpression3],
-			typeName: "Int")
+			type: .named(typeName: "Int"))
 		let arrayExpression2 = ArrayExpression(
 			range: nil,
 			elements: [integerExpression1, integerExpression2, integerExpression3],
-			typeName: "Int")
+			type: .named(typeName: "Int"))
 		let arrayExpression3 = ArrayExpression(
 			range: nil,
 			elements: [integerExpression1, integerExpression1, integerExpression1],
-			typeName: "Int")
+			type: .named(typeName: "Int"))
 		let arrayExpression4 = ArrayExpression(
 			range: nil,
 			elements: [integerExpression1],
-			typeName: "Int")
+			type: .named(typeName: "Int"))
 
 		// Matches itself
 		XCTAssertNotNil(pass.matchExpression(
@@ -150,12 +150,12 @@ class LibraryTranspilationTest: XCTestCase {
 		let anyDeclarationReference = DeclarationReferenceExpression(
 			range: nil,
 			identifier: "_any",
-			typeName: "Any",
+			type: .named(typeName: "Any"),
 			isStandardLibrary: false)
 		let stringDeclarationReference = DeclarationReferenceExpression(
 			range: nil,
 			identifier: "_string",
-			typeName: "String",
+			type: .named(typeName: "String"),
 			isStandardLibrary: false)
 		let parenthesesAnyTemplate = ParenthesesExpression(
 			range: nil,
@@ -166,7 +166,7 @@ class LibraryTranspilationTest: XCTestCase {
 		let arrayTemplate = ArrayExpression(
 			range: nil,
 			elements: [anyDeclarationReference, stringDeclarationReference],
-			typeName: "Any")
+			type: .named(typeName: "Any"))
 
 		let stringLiteral = LiteralStringExpression(
 			range: nil,
@@ -185,7 +185,7 @@ class LibraryTranspilationTest: XCTestCase {
 		let arrayExpression = ArrayExpression(
 			range: nil,
 			elements: [integerLiteral, stringLiteral],
-			typeName: "Any")
+			type: .named(typeName: "Any"))
 
 		// Valid subtype
 		XCTAssertEqual(pass.matchExpression(
@@ -247,11 +247,11 @@ class LibraryTranspilationTest: XCTestCase {
 		let implicitTypeExpression = DeclarationReferenceExpression(
 			range: nil,
 			identifier: "self",
-			typeName: "Int.Type",
+			type: .dot(leftType: .named(typeName: "Int"), rightType: "Type"),
 			isStandardLibrary: false)
 		let typeExpression = TypeExpression(
 			range: nil,
-			typeName: "Int")
+			type: .named(typeName: "Int"))
 
 		XCTAssertNotNil(pass.matchExpression(
 			implicitTypeExpression,
@@ -271,13 +271,13 @@ class LibraryTranspilationTest: XCTestCase {
 			range: nil,
 			parameters: [],
 			statements: [],
-			typeName: "() -> ()",
+			type: .function(parameters: [], returnType: .named(typeName: "Void")),
 			isTrailing: true)
 		let nonTrailingClosureExpression = ClosureExpression(
 			range: nil,
 			parameters: [],
 			statements: [],
-			typeName: "() -> ()",
+			type: .function(parameters: [], returnType: .named(typeName: "Void")),
 			isTrailing: false)
 
 		let trailingCallExpression = CallExpression(
@@ -285,7 +285,9 @@ class LibraryTranspilationTest: XCTestCase {
 			function: DeclarationReferenceExpression(
 				range: nil,
 				identifier: "f(b:)",
-				typeName: "(() -> ()) -> ()",
+				type: .function(
+					parameters: [.function(parameters: [], returnType: .named(typeName: "Void"))],
+					returnType: .named(typeName: "Void")),
 				isStandardLibrary: false),
 			arguments: TupleExpression(
 				range: nil,
@@ -295,7 +297,7 @@ class LibraryTranspilationTest: XCTestCase {
 						range: nil,
 						expression: trailingClosureExpression)),
 			]),
-			typeName: "Void",
+			type: .named(typeName: "Void"),
 			allowsTrailingClosure: true,
 			isPure: true)
 
@@ -304,7 +306,9 @@ class LibraryTranspilationTest: XCTestCase {
 			function: DeclarationReferenceExpression(
 				range: nil,
 				identifier: "f(b:)",
-				typeName: "(() -> ()) -> ()",
+				type: .function(
+					parameters: [.function(parameters: [], returnType: .named(typeName: "Void"))],
+					returnType: .named(typeName: "Void")),
 				isStandardLibrary: false),
 			arguments: TupleExpression(
 				range: nil,
@@ -312,7 +316,7 @@ class LibraryTranspilationTest: XCTestCase {
 					label: "b",
 					expression: nonTrailingClosureExpression),
 			]),
-			typeName: "Void",
+			type: .named(typeName: "Void"),
 			allowsTrailingClosure: true,
 			isPure: true)
 
@@ -321,7 +325,9 @@ class LibraryTranspilationTest: XCTestCase {
 			function: DeclarationReferenceExpression(
 				range: nil,
 				identifier: "f(b:)",
-				typeName: "(() -> ()) -> ()",
+				type: .function(
+					parameters: [.function(parameters: [], returnType: .named(typeName: "Void"))],
+					returnType: .named(typeName: "Void")),
 				isStandardLibrary: false),
 			arguments: TupleExpression(
 				range: nil,
@@ -330,10 +336,10 @@ class LibraryTranspilationTest: XCTestCase {
 					expression: DeclarationReferenceExpression(
 						range: nil,
 						identifier: "_closure",
-						typeName: "() -> ()",
+						type: .function(parameters: [], returnType: .named(typeName: "Void")),
 						isStandardLibrary: false)),
 			]),
-			typeName: "Void",
+			type: .named(typeName: "Void"),
 			allowsTrailingClosure: true,
 			isPure: true)
 

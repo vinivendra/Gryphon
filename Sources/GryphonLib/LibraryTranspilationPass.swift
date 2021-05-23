@@ -40,14 +40,14 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 			for templateExpression in topLevelExpressions {
 				if let swiftExpression = previousExpression {
 					if let typeName = templateExpression.swiftType,
-						typeName == "_GRYLiteralTemplate" ||
-							typeName == "_GRYDotTemplate" ||
-							typeName == "_GRYCallTemplate" ||
-							typeName == "_GRYConcatenatedTemplate" ||
-							typeName == "GRYLiteralTemplate" ||
-							typeName == "GRYDotTemplate" ||
-							typeName == "GRYCallTemplate" ||
-							typeName == "GRYConcatenatedTemplate"
+						typeName == .named(typeName: "_GRYLiteralTemplate") ||
+						typeName == .named(typeName: "_GRYDotTemplate") ||
+						typeName == .named(typeName: "_GRYCallTemplate") ||
+						typeName == .named(typeName: "_GRYConcatenatedTemplate") ||
+						typeName == .named(typeName: "GRYLiteralTemplate") ||
+						typeName == .named(typeName: "GRYDotTemplate") ||
+						typeName == .named(typeName: "GRYCallTemplate") ||
+						typeName == .named(typeName: "GRYConcatenatedTemplate")
 					{
 						let processedExpression =
 							processTemplateNodeExpression(templateExpression)
@@ -64,7 +64,7 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 								range: templateExpression.range,
 								string: cleanString,
 								shouldGoToMainFunction: false,
-								typeName: nil)))
+								type: nil)))
 						previousExpression = nil
 					}
 				}
@@ -115,7 +115,7 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 								syntax: nil,
 								range: nil,
 								pairs: parameters),
-							typeName: nil,
+							type: nil,
 							allowsTrailingClosure: true,
 							isPure: isPure)
 					}
@@ -131,7 +131,7 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 							range: nil,
 							string: stringExpression.value,
 							shouldGoToMainFunction: false,
-							typeName: nil)
+							type: nil)
 						return DotExpression(
 							syntax: nil,
 							range: nil,
@@ -147,7 +147,7 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 				range: nil,
 				string: stringExpression.value,
 				shouldGoToMainFunction: false,
-				typeName: nil)
+				type: nil)
 		}
 		else if let binaryOperatorExpression = expression as? BinaryOperatorExpression,
 			binaryOperatorExpression.operatorSymbol == "+"
@@ -186,7 +186,7 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 					range: nil,
 					string: expression.value,
 					shouldGoToMainFunction: false,
-					typeName: nil))
+					type: nil))
 		}
 		else if let expression = expression as? CallExpression {
 			if let dotExpression = expression.function as? DotExpression,
@@ -223,7 +223,7 @@ public class RecordTemplatesTranspilationPass: TranspilationPass {
 
 		if let binaryExpression = expression as? BinaryOperatorExpression,
 			binaryExpression.operatorSymbol == "+",
-			binaryExpression.typeName == "String"
+			binaryExpression.type == .named(typeName: "String")
 		{
 			if let leftString = getStringLiteralOrSum(binaryExpression.leftExpression),
 				let rightString = getStringLiteralOrSum(binaryExpression.rightExpression)
@@ -327,7 +327,7 @@ private class ReplaceTemplateMatchesTranspilationPass: TranspilationPass {
 								range: nil,
 								string: precedingString,
 								shouldGoToMainFunction: false,
-								typeName: nil)
+								type: nil)
 							expressions.append(precedingStringExpression)
 						}
 
@@ -361,7 +361,7 @@ private class ReplaceTemplateMatchesTranspilationPass: TranspilationPass {
 				range: nil,
 				string: String(string[previousMatchEndIndex...]),
 				shouldGoToMainFunction: false,
-				typeName: nil))
+				type: nil))
 		}
 
 		// Create the resulting expression
@@ -445,7 +445,7 @@ extension ReplaceTemplatesTranspilationPass {
 
 		if let declarationExpression = rhs as? DeclarationReferenceExpression {
 			if declarationExpression.identifier.hasPrefix("_"),
-				let declarationType = declarationExpression.typeName
+				let declarationType = declarationExpression.type
 			{
 				if shouldSkipRootTypeComparison ||
 					lhs.isOfType(declarationType, inContext: context)
@@ -454,9 +454,11 @@ extension ReplaceTemplatesTranspilationPass {
 					return true
 				}
 				else if shouldMatchAutoclosures,
-					declarationType.contains("->"),
+						declarationType.description.contains("->"),
 					let processedType =
-						Utilities.splitTypeList(declarationType, separators: ["->"]).last,
+						Utilities.splitTypeList(
+							declarationType.description,
+							separators: ["->"]).last,
 					lhs.isOfType(processedType, inContext: context)
 				{
 					matches[declarationExpression.identifier] = lhs
@@ -485,8 +487,8 @@ extension ReplaceTemplatesTranspilationPass {
 			if shouldSkipRootTypeComparison {
 				typeMatches = true
 			}
-			else if let leftType = lhs.typeName,
-				let rightType = rhs.typeName
+			else if let leftType = lhs.type,
+				let rightType = rhs.type
 			{
 				typeMatches = context.isSubtype(leftType, of: rightType)
 			}
@@ -510,15 +512,15 @@ extension ReplaceTemplatesTranspilationPass {
 		if let lhs = lhs as? TypeExpression,
 			let rhs = rhs as? TypeExpression
 		{
-			return context.isSubtype(lhs.typeName, of: rhs.typeName)
+			return context.isSubtype(lhs.type, of: rhs.type)
 		}
 		if let lhs = lhs as? TypeExpression,
 			let rhs = rhs as? DeclarationReferenceExpression,
 			declarationExpressionMatchesImplicitTypeExpression(rhs)
 		{
-			if let typeName = rhs.typeName {
-				let expressionType = String(typeName.dropLast(".Type".count))
-				return context.isSubtype(lhs.typeName, of: expressionType)
+			if let typeName = rhs.type {
+				let expressionType = String(typeName.description.dropLast(".Type".count))
+				return context.isSubtype(lhs.type.description, of: expressionType)
 			}
 			else {
 				return false
@@ -528,9 +530,9 @@ extension ReplaceTemplatesTranspilationPass {
 			let rhs = rhs as? TypeExpression,
 			declarationExpressionMatchesImplicitTypeExpression(lhs)
 		{
-			if let typeName = lhs.typeName {
-				let expressionType = String(typeName.dropLast(".Type".count))
-				return context.isSubtype(expressionType, of: rhs.typeName)
+			if let typeName = lhs.type {
+				let expressionType = String(typeName.description.dropLast(".Type".count))
+				return context.isSubtype(expressionType, of: rhs.type.description)
 			}
 			else {
 				return false
@@ -539,12 +541,12 @@ extension ReplaceTemplatesTranspilationPass {
 		if let lhs = lhs as? TypeExpression,
 			let rhsImplicitType = expressionChainAsImplicitTypeExpression(rhs)
 		{
-			return lhs.typeName == rhsImplicitType
+			return lhs.type.description == rhsImplicitType
 		}
 		if let lhsImplicitType = expressionChainAsImplicitTypeExpression(lhs),
 			let rhs = rhs as? TypeExpression
 		{
-			return rhs.typeName == lhsImplicitType
+			return rhs.type.description == lhsImplicitType
 		}
 		if let lhs = lhs as? SubscriptExpression,
 			let rhs = rhs as? SubscriptExpression
@@ -553,7 +555,7 @@ extension ReplaceTemplatesTranspilationPass {
 					rhs.subscriptedExpression, matches)
 				&& match(lhs.indexExpression, rhs.indexExpression, matches)
 				&& (shouldSkipRootTypeComparison ||
-					context.isSubtype(lhs.typeName, of: rhs.typeName))
+					context.isSubtype(lhs.type, of: rhs.type))
 		}
 		if let lhs = lhs as? ArrayExpression,
 			let rhs = rhs as? ArrayExpression
@@ -563,7 +565,7 @@ extension ReplaceTemplatesTranspilationPass {
 				result = result && match(leftElement, rightElement, matches)
 			}
 			return result && (shouldSkipRootTypeComparison ||
-					context.isSubtype(lhs.typeName, of: rhs.typeName))
+					context.isSubtype(lhs.type, of: rhs.type))
 		}
 		if let lhs = lhs as? DotExpression,
 			let rhs = rhs as? DotExpression
@@ -579,7 +581,7 @@ extension ReplaceTemplatesTranspilationPass {
 			if shouldSkipRootTypeComparison {
 				typeMatches = true
 			}
-			else if let leftType = lhs.typeName, let rightType = rhs.typeName {
+			else if let leftType = lhs.type, let rightType = rhs.type {
 				typeMatches = context.isSubtype(leftType, of: rightType)
 			}
 			else {
@@ -596,14 +598,14 @@ extension ReplaceTemplatesTranspilationPass {
 		{
 			return match(lhs.subExpression, rhs.subExpression, matches) &&
 				lhs.operatorSymbol == rhs.operatorSymbol &&
-				(shouldSkipRootTypeComparison || context.isSubtype(lhs.typeName, of: rhs.typeName))
+				(shouldSkipRootTypeComparison || context.isSubtype(lhs.type, of: rhs.type))
 		}
 		if let lhs = lhs as? PostfixUnaryExpression,
 			let rhs = rhs as? PostfixUnaryExpression
 		{
 			return match(lhs.subExpression, rhs.subExpression, matches) &&
 				lhs.operatorSymbol == rhs.operatorSymbol &&
-				(shouldSkipRootTypeComparison || context.isSubtype(lhs.typeName, of: rhs.typeName))
+				(shouldSkipRootTypeComparison || context.isSubtype(lhs.type, of: rhs.type))
 		}
 		if let lhs = lhs as? CallExpression,
 			let rhs = rhs as? CallExpression
@@ -612,8 +614,8 @@ extension ReplaceTemplatesTranspilationPass {
 			if shouldSkipRootTypeComparison {
 				typeMatches = true
 			}
-			else if let lhsType = lhs.typeName,
-				let rhsType = rhs.typeName
+			else if let lhsType = lhs.type,
+				let rhsType = rhs.type
 			{
 				typeMatches = context.isSubtype(lhsType, of: rhsType)
 			}
@@ -623,7 +625,7 @@ extension ReplaceTemplatesTranspilationPass {
 
 			let usesAutoclosures: Bool
 			if let rhsType = rhs.function.swiftType {
-				usesAutoclosures = rhsType.contains("@autoclosure")
+				usesAutoclosures = rhsType.description.contains("@autoclosure")
 			}
 			else {
 				usesAutoclosures = false
@@ -744,7 +746,7 @@ extension ReplaceTemplatesTranspilationPass {
 				let implicitSelfExpression = DeclarationReferenceExpression(
 					range: nil,
 					identifier: "self",
-					typeName: parentType,
+					type: SwiftType.parse(from: parentType),
 					isStandardLibrary: false)
 				return match(implicitSelfExpression, rhs.leftExpression, matches)
 			}
@@ -778,8 +780,8 @@ extension ReplaceTemplatesTranspilationPass {
 		_ expression: DeclarationReferenceExpression)
 		-> Bool
 	{
-		if let typeName = expression.typeName,
-			typeName.hasSuffix(".Type"),
+		if let type = expression.type,
+		   type.description.hasSuffix(".Type"),
 			expression.identifier == "self"
 		{
 			return true
@@ -825,16 +827,28 @@ extension ReplaceTemplatesTranspilationPass {
 }
 
 extension Expression {
+	func isOfType(_ superType: SwiftType, inContext context: TranspilationContext) -> Bool {
+		guard let typeName = self.swiftType else {
+			return false
+		}
+
+		return context.isSubtype(typeName.description, of: superType.description)
+	}
+
 	func isOfType(_ superType: String, inContext context: TranspilationContext) -> Bool {
 		guard let typeName = self.swiftType else {
 			return false
 		}
 
-		return context.isSubtype(typeName, of: superType)
+		return context.isSubtype(typeName.description, of: superType)
 	}
 }
 
 internal extension TranspilationContext {
+	func isSubtype(_ subType: SwiftType, of superType: SwiftType) -> Bool {
+		return isSubtype(subType.description, of: superType.description)
+	}
+
 	func isSubtype(_ subType: String, of superType: String) -> Bool {
 			// Check common cases
 			if subType == superType {
