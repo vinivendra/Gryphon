@@ -17,7 +17,6 @@
 //
 
 // TODO:
-// - Add a String to SwiftType, created from its description
 // - Use the string everywhere
 // - Make the string be updated when the type changes
 // - Remove the string little by little, top to bottom
