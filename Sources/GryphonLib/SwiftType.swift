@@ -17,8 +17,10 @@
 //
 
 // TODO:
-// - Use SwiftType's parser to get the types from SourceKit
-//     (and convert them back to string for the rest of the translation)
+// - Add a String to SwiftType, created from its description
+// - Use the string everywhere
+// - Make the string be updated when the type changes
+// - Remove the string little by little, top to bottom
 
 /**
 * `SwiftType`s are organized as in a pseudo-subclass hierarchy, but using structs. The superclass is
