@@ -310,13 +310,7 @@ public class SourceKit {
 							type: SourceKit.ExpressionType)] =
 			try list.map { ast in
 				let typeName = ast["key.expression_type"]! as! String
-				let syntax = try! SwiftSyntax.SyntaxParser.parse(source: "let x: \(typeName)")
-				let typeSyntax = syntax.statements.first!
-					.item.as(VariableDeclSyntax.self)!
-					.bindings.first!
-					.typeAnnotation!
-					.type
-				let swiftType = try typeSyntax.toSwiftType(usingSourceFile: sourceFile)
+				let swiftType = try SwiftType.parse(from: typeName, sourceFile: sourceFile)
 
 				return (ast,
 						ExpressionType(

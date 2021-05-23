@@ -3556,6 +3556,20 @@ public class SwiftSyntaxDecoder: SyntaxVisitor {
 
 // MARK: - Helper extensions
 
+extension SwiftType {
+	/// Calls SwiftSyntax to parse a given type from a String and turn it into a `TypeSyntax`. Then
+	/// uses the `toSwiftType` algorithm to turn the `TypeSyntax` into a `SwiftType`.
+	static func parse(from typeName: String, sourceFile: SourceFile? = nil) throws -> SwiftType {
+		let syntax = try! SwiftSyntax.SyntaxParser.parse(source: "let x: \(typeName)")
+		let typeSyntax = syntax.statements.first!
+			.item.as(VariableDeclSyntax.self)!
+			.bindings.first!
+			.typeAnnotation!
+			.type
+		return try typeSyntax.toSwiftType(usingSourceFile: sourceFile)
+	}
+}
+
 extension TypeSyntax {
 	/// Translates this typeSyntax into a Gryphin SwiftType struct.
 	/// Variadics information often isn't included in the SwiftSyntax type struct, but outside of it
@@ -3563,7 +3577,7 @@ extension TypeSyntax {
 	/// here.
 	func toSwiftType(
 		asVariadic: Bool = false,
-		usingSourceFile sourceFile: SourceFile)
+		usingSourceFile sourceFile: SourceFile?)
 		throws -> SwiftType
 	{
 		if asVariadic {
@@ -3647,11 +3661,21 @@ extension TypeSyntax {
 			return .named(typeName: text)
 		}
 
-		try Compiler.handleError(
-			message: "Unknown type",
-			ast: self.toPrintableTree(),
-			sourceFile: sourceFile,
-			sourceFileRange: self.getRange(inFile: sourceFile))
+		if let sourceFile = sourceFile {
+			try Compiler.handleError(
+				message: "Unknown type",
+				ast: self.toPrintableTree(),
+				sourceFile: sourceFile,
+				sourceFileRange: self.getRange(inFile: sourceFile))
+		}
+		else {
+			try Compiler.handleError(
+				message: "Unknown type",
+				ast: self.toPrintableTree(),
+				sourceFile: nil,
+				sourceFileRange: nil)
+		}
+
 		return .named(typeName: "<<Error>>")
 	}
 }
