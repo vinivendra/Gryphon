@@ -155,8 +155,7 @@ class SwiftSyntaxDecoderTest: XCTestCase {
 			{
 				testPassed = true
 			}
-			XCTAssert(testPassed, "Expected optional casts to have optional versions of the " +
-				"casted types.\n" +
+			XCTAssert(testPassed, "Unexpected error in optional casts.\n" +
 				"Range: \(String(describing: statement.range))\n" +
 				"Statement:\n\(statement.prettyDescription())")
 
