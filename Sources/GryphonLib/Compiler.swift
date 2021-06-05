@@ -348,7 +348,10 @@ public class Compiler {
 				errorMapFilePath.split(withStringSeparator: "/").dropLast().joined(separator: "/")
 			let errorMapFileContents = swiftFilePath + "\n" + errorMap
 			Utilities.createFolderIfNeeded(at: errorMapFolder)
-			try Utilities.createFile(atPath: errorMapFilePath, containing: errorMapFileContents)
+			try Utilities.createFile(
+				atPath: errorMapFilePath,
+				containing: errorMapFileContents,
+				createIntermediateFolders: false)
 		}
 
 		return translationResult.translation

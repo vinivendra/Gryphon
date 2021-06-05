@@ -543,16 +543,34 @@ extension Utilities {
 		try? fileManager.removeItem(at: fileURL)
 
 		// Create the file and write to it
-		try createFile(atPath: filePath, containing: contents)
+		try createFile(atPath: filePath, containing: contents, createIntermediateFolders: false)
 
 		return filePath
 	}
 
-	internal static func createFile(atPath filePath: String, containing contents: String) throws {
+	internal static func createFile(
+		atPath filePath: String,
+		containing contents: String,
+		createIntermediateFolders: Bool)
+		throws
+	{
+		if createIntermediateFolders {
+			let folderPath = filePath.split(separator: "/").dropLast().joined(separator: "/")
+			createFolderIfNeeded(at: folderPath)
+		}
+
 		let fileManager = FileManager.default
 		let successful = fileManager.createFile(atPath: filePath, contents: Data(contents.utf8))
 		if !successful {
-			throw GryphonError(errorMessage: "Error writing to file \(filePath)")
+			if createIntermediateFolders {
+				throw GryphonError(errorMessage: "Error writing to file \(filePath)")
+			}
+			else {
+				throw GryphonError(errorMessage:
+					"Error writing to file \(filePath).\n" +
+					"If the file path is right but the folder doesn't exist, try using the " +
+					"`--create-folders` argument to create any necessary intermediate folders.")
+			}
 		}
 	}
 

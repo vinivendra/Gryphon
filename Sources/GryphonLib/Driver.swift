@@ -29,6 +29,7 @@ public class Driver {
 		"--no-main-file",
 		"--default-final",
 		"--continue-on-error",
+		"--create-folders",
 		"--write-to-console",
 		"--verbose",
 		"--quiet",
@@ -63,6 +64,7 @@ public class Driver {
 		let shouldGenerateRawAST: Bool
 		let shouldGenerateSwiftAST: Bool
 
+		let shouldCreateFolders: Bool
 		let forcePrintingToConsole: Bool
 		let quietModeIsOn: Bool
 
@@ -252,7 +254,10 @@ public class Driver {
 				!settings.forcePrintingToConsole
 			{
 				Compiler.log("📝  Writing Swift AST to file for \(inputFileRelativePath)")
-				try Utilities.createFile(atPath: outputFilePath, containing: output)
+				try Utilities.createFile(
+					atPath: outputFilePath,
+					containing: output,
+					createIntermediateFolders: settings.shouldCreateFolders)
 			}
 			else if !settings.quietModeIsOn {
 				Compiler.log("📝  Printing Swift AST for \(inputFileRelativePath):")
@@ -266,7 +271,10 @@ public class Driver {
 				!settings.forcePrintingToConsole
 			{
 				Compiler.log("📝  Writing raw AST to file for \(inputFileRelativePath)")
-				try Utilities.createFile(atPath: outputFilePath, containing: output)
+				try Utilities.createFile(
+					atPath: outputFilePath,
+					containing: output,
+					createIntermediateFolders: settings.shouldCreateFolders)
 			}
 			else if !settings.quietModeIsOn {
 				Compiler.log("📝  Printing raw AST for \(inputFileRelativePath):")
@@ -307,7 +315,10 @@ public class Driver {
 				!settings.forcePrintingToConsole
 			{
 				Compiler.log("📝  Writing AST to file for \(inputFileRelativePath)")
-				try Utilities.createFile(atPath: outputFilePath, containing: output)
+				try Utilities.createFile(
+					atPath: outputFilePath,
+					containing: output,
+					createIntermediateFolders: settings.shouldCreateFolders)
 			}
 			else if !settings.quietModeIsOn {
 				Compiler.log("📝  Printing AST for \(inputFileRelativePath):")
@@ -335,7 +346,10 @@ public class Driver {
 			else {
 				if let outputFilePath = gryphonAST.outputFileMap[.kt] {
 					Compiler.log("📝  Writing Kotlin to file for \(inputFileRelativePath)")
-					try Utilities.createFile(atPath: outputFilePath, containing: kotlinCode)
+					try Utilities.createFile(
+						atPath: outputFilePath,
+						containing: kotlinCode,
+						createIntermediateFolders: settings.shouldCreateFolders)
 				}
 				else {
 					if settings.xcodeProjectPath != nil {
@@ -431,6 +445,7 @@ public class Driver {
 		let shouldEmitKotlin = !hasChosenTask || arguments.contains("-emit-kotlin")
 
 		//
+		let shouldCreateFolders = arguments.contains("--create-folders")
 		let forcePrintingToConsole = arguments.contains("--write-to-console")
 		let quietModeIsOn = arguments.contains("--quiet")
 
@@ -474,6 +489,7 @@ public class Driver {
 			shouldGenerateAST: shouldGenerateAST,
 			shouldGenerateRawAST: shouldGenerateRawAST,
 			shouldGenerateSwiftAST: shouldGenerateSwiftAST,
+			shouldCreateFolders: shouldCreateFolders,
 			forcePrintingToConsole: forcePrintingToConsole,
 			quietModeIsOn: quietModeIsOn,
 			mainFilePath: mainFilePath,
@@ -711,7 +727,8 @@ public class Driver {
 				}
 				try Utilities.createFile(
 					atPath: file.relativePath,
-					containing: contents)
+					containing: contents,
+					createIntermediateFolders: false)
 			}
 		}
 	}
@@ -723,10 +740,12 @@ public class Driver {
 	static func generateLibraries() throws {
 		try Utilities.createFile(
 			atPath: SupportingFile.gryphonSwiftLibrary.relativePath,
-			containing: SupportingFile.gryphonSwiftLibrary.contents!)
+			containing: SupportingFile.gryphonSwiftLibrary.contents!,
+			createIntermediateFolders: false)
 		try Utilities.createFile(
 			atPath: SupportingFile.gryphonKotlinLibrary.relativePath,
-			containing: SupportingFile.gryphonKotlinLibrary.contents!)
+			containing: SupportingFile.gryphonKotlinLibrary.contents!,
+			createIntermediateFolders: false)
 	}
 
 	/// Calls xcodebuild with the given arguments
@@ -1080,6 +1099,10 @@ Main usage:
 
       ↪️  --continue-on-error
             Continue translating even if errors are found.
+
+	  ↪️  --create-folders
+			Create intermediate folders (if needed) before writing the output
+			files.
 
       ↪️  --write-to-console
             Write the output of any translations to the console (instead of
