@@ -676,6 +676,12 @@ public class Driver {
 			result.append(contentsOf: uncommentedFiles)
 		}
 
+		let missingFiles = result.filter({ !Utilities.fileExists(at: $0) })
+		if !missingFiles.isEmpty {
+			throw GryphonError(
+				errorMessage: "Unable to open files: \(missingFiles.joined(separator: ", "))")
+		}
+
 		return result
 	}
 
