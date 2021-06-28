@@ -22,6 +22,7 @@ public class TranspilationContext {
 	let indentationString: String
 	let defaultsToFinal: Bool
 	let xcodeProjectPath: String?
+	let pathConfigurations: Map< String, String>
 	let target: String?
 	/// Absolute paths to any files included in the compilation, as well as any other `swiftc`
 	/// arguments (except for the SDK path, which should be set in `absolutePathToSDK`).
@@ -65,6 +66,7 @@ public class TranspilationContext {
 		self.defaultsToFinal = false
 		self.templates = []
 		self.xcodeProjectPath = nil
+		self.pathConfigurations = [:]
 		self.target = nil
 		self.swiftCompilationArguments = [SupportingFile.gryphonTemplatesLibrary.absolutePath]
 		self.absolutePathToSDK = nil
@@ -74,6 +76,7 @@ public class TranspilationContext {
 		indentationString: String,
 		defaultsToFinal: Bool,
 		xcodeProjectPath: String?,
+		pathConfigurations: Map<String, String>,
 		target: String?,
 		swiftCompilationArguments: List<String>,
 		absolutePathToSDK: String?)
@@ -82,6 +85,7 @@ public class TranspilationContext {
 		self.indentationString = indentationString
 		self.defaultsToFinal = defaultsToFinal
 		self.xcodeProjectPath = xcodeProjectPath
+		self.pathConfigurations = pathConfigurations
 		self.target = target
 		self.templates = try TranspilationContext
 			.getBaseContext()
@@ -89,6 +93,20 @@ public class TranspilationContext {
 			.toMutableList()
 		self.swiftCompilationArguments = swiftCompilationArguments
 		self.absolutePathToSDK = absolutePathToSDK
+	}
+
+	// MARK: - Path configurations
+
+	/// Replaces occurrences of key in the `pathConfigurations` with their values.
+	/// Reorders the `pathConfigurations` by size to avoid substring clashes (e.g.
+	/// replacing "$ANDROID" instead of "$ANDROID_HOME")
+	func replacePathConfigurations(in string: String) -> String {
+		let list = List(pathConfigurations).sorted { $0.key.count < $1.key.count }
+		var string = string
+		for (key, value) in list {
+			string = string.replacingOccurrences(of: key, with: value)
+		}
+		return string
 	}
 
 	// MARK: - Templates

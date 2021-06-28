@@ -40,6 +40,7 @@ class LibraryTranspilationTest: XCTestCase {
 			indentationString: "\t",
 			defaultsToFinal: false,
 			xcodeProjectPath: nil,
+			pathConfigurations: [:],
 			target: nil,
 			swiftCompilationArguments: [],
 			absolutePathToSDK: nil))

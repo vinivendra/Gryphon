@@ -38,6 +38,7 @@ class SwiftSyntaxDecoderTest: XCTestCase {
 					indentationString: "\t",
 					defaultsToFinal: false,
 					xcodeProjectPath: nil,
+					pathConfigurations: [:],
 					target: nil,
 					swiftCompilationArguments: [testCasePath.withExtension(.swift)],
 					absolutePathToSDK: nil))
@@ -111,7 +112,7 @@ class SwiftSyntaxDecoderTest: XCTestCase {
 				let tupleExpression =
 					multiplicationExpression.rightExpression as? TupleExpression,
 				tupleExpression.pairs.count == 1,
-				let onlyPair = tupleExpression.pairs.first,
+ 				let onlyPair = tupleExpression.pairs.first,
 				onlyPair.label == nil,
 				let additionExpression =
 					onlyPair.expression as? BinaryOperatorExpression,

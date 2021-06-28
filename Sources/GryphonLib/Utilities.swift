@@ -442,6 +442,7 @@ public enum FileExtension: String {
 
 	case xcfilelist
 	case xcodeproj
+	case config
 }
 
 extension String {

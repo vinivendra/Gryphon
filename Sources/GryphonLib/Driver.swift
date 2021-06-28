@@ -70,6 +70,7 @@ public class Driver {
 
 		let mainFilePath: String?
 		let xcodeProjectPath: String?
+		let pathConfigurations: Map<String, String>
 	}
 
 	public struct KotlinTranslation {
@@ -480,6 +481,10 @@ public class Driver {
 		let maybeTarget = getValue(of: "--target", inArguments: arguments)
 
 		//
+		let pathConfigurationFiles = getPathConfigurationFiles(inArguments: arguments)
+		let pathConfigurations = try getPathConfigurations(from: pathConfigurationFiles)
+
+		//
 		let settings = Settings(
 			shouldEmitSwiftAST: shouldEmitSwiftAST,
 			shouldEmitRawAST: shouldEmitRawAST,
@@ -493,7 +498,8 @@ public class Driver {
 			forcePrintingToConsole: forcePrintingToConsole,
 			quietModeIsOn: quietModeIsOn,
 			mainFilePath: mainFilePath,
-			xcodeProjectPath: maybeXcodeProject)
+			xcodeProjectPath: maybeXcodeProject,
+			pathConfigurations: pathConfigurations)
 
 		Compiler.logStart("🔧  Using settings:")
 		Compiler.log("ℹ️  shouldEmitSwiftAST: \(shouldEmitSwiftAST)")
@@ -508,6 +514,7 @@ public class Driver {
 		Compiler.log("ℹ️  quietModeIsOn: \(quietModeIsOn)")
 		Compiler.log("ℹ️  mainFilePath: \(mainFilePath ?? "no main file")")
 		Compiler.log("ℹ️  xcodeProjectPath: \(maybeXcodeProject ?? "no Xcode project")")
+		Compiler.log("ℹ️  pathConfigurations: \(pathConfigurations)")
 		Compiler.logEnd("🔧  Settings done.")
 
 		//
@@ -560,6 +567,7 @@ public class Driver {
 				indentationString: indentationString,
 				defaultsToFinal: defaultsToFinal,
 				xcodeProjectPath: maybeXcodeProject,
+				pathConfigurations: pathConfigurations,
 				target: maybeTarget,
 				swiftCompilationArguments: otherSwiftArguments,
 				absolutePathToSDK: sdkPath)
@@ -980,6 +988,7 @@ public class Driver {
 		badArguments = badArguments.filter { !debugArguments.contains($0) }
 		badArguments = badArguments.filter { !isSupportedArgumentWithParameters($0) }
 		badArguments = badArguments.filter { !isXcodeProject($0) }
+		badArguments = badArguments.filter { !isPathConfigurationFile($0) }
 		badArguments = badArguments.filter { !isSupportedInputFilePath($0) }
 		return badArguments
 	}
@@ -1018,6 +1027,41 @@ public class Driver {
 			return cleanPath
 		}
 		return nil
+	}
+
+	static func isPathConfigurationFile(_ filePath: String) -> Bool {
+		let cleanPath = filePath.hasSuffix("/") ? String(filePath.dropLast()) : filePath
+		return Utilities.fileHasExtension(cleanPath, .config)
+	}
+
+	static func getPathConfigurationFiles(inArguments arguments: List<String>) -> List<String> {
+		return arguments
+			.filter { isPathConfigurationFile($0) }
+			.map { $0.hasSuffix("/") ? String($0.dropLast()) : $0 }
+	}
+
+	static func getPathConfigurations(
+		from configFileLists: List<String>)
+	throws -> Map<String, String>
+	{
+		let result = MutableMap<String, String>()
+
+		for file in configFileLists {
+			let contents = try Utilities.readFile(file)
+			for line in contents.split(separator: "\n") {
+				let components = line.split(separator: "=")
+				guard components.count >= 2 else {
+					continue
+				}
+				let key = String(components[0])
+					.trimmingWhitespaces()
+				let value = String(components.dropFirst().joined(separator: "="))
+					.trimmingWhitespaces()
+				result[key] = value
+			}
+		}
+
+		return result
 	}
 
 	/// Looks for an argument of the format "<argument>=<value>" and returns the value. For example,

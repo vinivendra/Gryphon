@@ -44,6 +44,7 @@ class IntegrationTest: XCTestCase {
 						indentationString: "\t",
 						defaultsToFinal: defaultsToFinal,
 						xcodeProjectPath: nil,
+						pathConfigurations: [:],
 						target: nil,
 						swiftCompilationArguments: [testCasePath.withExtension(.swift)],
 						absolutePathToSDK: nil))
@@ -93,6 +94,7 @@ class IntegrationTest: XCTestCase {
 					indentationString: "\t",
 					defaultsToFinal: false,
 					xcodeProjectPath: nil,
+					pathConfigurations: [:],
 					target: nil,
 					swiftCompilationArguments: [testCasePath],
 					absolutePathToSDK: nil))
